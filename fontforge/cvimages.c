@@ -69,14 +69,17 @@ static unichar_t wildbdf[] = { '*', '.', 'b', 'd','{', 'f', ',','f','.','g','z',
 static unichar_t wildpcf[] = { '*', '.', 'p', 'c','{', 'f', ',','f','.','g','z',',','f','.','Z',',','f','.','b','z','2','}',  '\0' };
 static unichar_t wildttf[] = { '*', '.', '{', 't', 't','f',',','o','t','f',',','o','t','b',',','t','t','c','}',  '\0' };
 static unichar_t wildpk[] = { '*', '{', 'p', 'k', ',', 'g', 'f', '}',  '\0' };		/* pk fonts can have names like cmr10.300pk, not a normal extension */
-static unichar_t wildmac[] = { '*', '{', 'b', 'i', 'n', ',', 'h', 'q', 'x', ',', 'd','f','o','n','t', '}',  '\0' };		/* pk fonts can have names like cmr10.300pk, not a normal extension */
-static unichar_t wildwin[] = { '*', '{', 'f', 'o', 'n', ',', 'f', 'n', 't', '}',  '\0' };		/* pk fonts can have names like cmr10.300pk, not a normal extension */
+static unichar_t wildmac[] = { '*', '{', 'b', 'i', 'n', ',', 'h', 'q', 'x', ',', 'd','f','o','n','t', '}',  '\0' };
+static unichar_t wildwin[] = { '*', '{', 'f', 'o', 'n', ',', 'f', 'n', 't', '}',  '\0' };
+static unichar_t wildpalm[] = { '*', 'p', 'd', 'b',  '\0' };
 static unichar_t *wildchr[] = { wildimg, wildps,
 #ifndef _NO_LIBXML
 wildsvg,
 #endif
 wildfig };
-static unichar_t *wildfnt[] = { wildbdf, wildttf, wildpk, wildpcf, wildmac, wildwin, wildimg, wildtemplate, wildps, wildepstemplate
+static unichar_t *wildfnt[] = { wildbdf, wildttf, wildpk, wildpcf, wildmac,
+wildwin, wildpalm,
+wildimg, wildtemplate, wildps, wildepstemplate
 #ifndef _NO_LIBXML
 , wildsvg, wildsvgtemplate
 #endif
@@ -1328,6 +1331,7 @@ static GTextInfo fvformats[] = {
     { (unichar_t *) "PCF", NULL, 0, 0, (void *) fv_pcf, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_MacBitmap, NULL, 0, 0, (void *) fv_mac, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "Win FON", NULL, 0, 0, (void *) fv_win, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) "palm", NULL, 0, 0, (void *) fv_palm, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_Image, NULL, 0, 0, (void *) fv_image, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_Template, NULL, 0, 0, (void *) fv_imgtemplate, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "EPS", NULL, 0, 0, (void *) fv_eps, 0, 0, 0, 0, 0, 0, 0, 1 },
@@ -1376,6 +1380,8 @@ return( true );
 		d->done = FVImportMult(d->fv,temp,toback,bf_nfntmacbin);
 	    else if ( format==fv_win )
 		d->done = FVImportMult(d->fv,temp,toback,bf_fon);
+	    else if ( format==fv_palm )
+		d->done = FVImportMult(d->fv,temp,toback,bf_palm);
 	    else if ( format==fv_image )
 		d->done = FVImportImages(d->fv,temp,format,toback,-1);
 	    else if ( format==fv_imgtemplate )

@@ -1098,6 +1098,7 @@ char *GetPostscriptFontName(char *dir, int mult) {
 			                       'd','f','o','n','t',',',
 			                       'm','f',',',
 			                       'i','k',',',
+			                       'p','d','b',',',
 			                       'f','o','n',',',
 			                       'f','n','t','}', 
 	     '{','.','g','z',',','.','Z',',','.','b','z','2',',','}',  '\0' };
@@ -9165,6 +9166,8 @@ return( NULL );
     } else if ( strmatch(fullname+strlen(strippedname)-4, ".fon")==0 ||
 		strmatch(fullname+strlen(strippedname)-4, ".fnt")==0 ) {
 	sf = SFReadWinFON(fullname,0);
+    } else if ( strmatch(fullname+strlen(strippedname)-4, ".pdb")==0 ) {
+	sf = SFReadPalmPdb(fullname,0);
     } else if ( strmatch(fullname+strlen(fullname)-4, ".pfa")==0 ||
 		strmatch(fullname+strlen(fullname)-4, ".pfb")==0 ||
 		strmatch(fullname+strlen(fullname)-4, ".pf3")==0 ||

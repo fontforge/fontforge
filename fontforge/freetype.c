@@ -956,6 +956,7 @@ static SplineSet *RStrokeOutline(struct reflayer *layer,SplineChar *sc) {
     si.join = layer->stroke_pen.linejoin;
     si.cap = layer->stroke_pen.linecap;
     si.stroke_type = si_std;
+    si.toobigwarn = true;
 return( SSStroke(layer->splines,&si,sc));
 }
 

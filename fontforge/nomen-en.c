@@ -3695,8 +3695,15 @@ static char *str_OverlapBadDir = "Glyph %.40hs contains an overlapped region whe
 static char *str_Mag = "Mag:";
 static char *str_Cor = "Cor:";
 
-    /* group.c */
-static char *str_ShowGrp="Show Group";
+    /* palmfonts.c */
+static char *str_UnexpectedDensity = "Unexpected density";
+static char *str_UnexpectedDensityLong = "One of the bitmap fonts, %d, specified is not an integral scale up of the smallest font, %d (or is too large a factor)"
+static char *str_BadMetrics = "Bad Metrics";
+static char *str_NoCorrespondingGlyph = "One of the fonts %d,%d is missing glyph %d"
+static char *str_GlyphKernsBadly = "In font %d the glyph %.30hs either starts before 0, or extends after the advance width or is above the ascent or below the descent"
+static char *str_AdvanceWidthBad = "In font %d the advance width of glyph %.30hs does not scale the base advance width properly, it shall be forced to the proper value"
+static char *str_AdvanceWidthTooBig = "Advance width of glyph %.30hs must be less than 127"
+static char *str_OnlyFirst256 = "Only the first 256 glyphs in the encoding will be used";
 
     /* Adjectives, etc. that are sometimes masculine and sometimes feminine in french (perhaps other langs) */
 static char str_NewDDD_fem[] = "New...";

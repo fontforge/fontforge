@@ -1163,7 +1163,8 @@ extern struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
 	struct pschars *subrs,int flags/*, enum fontformat format*/);
 extern struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds,int flags);
 enum bitmapformat { bf_bdf, bf_ttf, bf_sfnt_dfont, 
-	bf_nfntmacbin, /*bf_nfntdfont, */bf_fon, bf_otb, bf_none };
+	bf_nfntmacbin, /*bf_nfntdfont, */bf_fon, bf_otb, bf_palm,
+	bf_none };
 extern const char *GetAuthor(void);
 extern SplineChar *SFFindExistingCharMac(SplineFont *,int unienc);
 extern void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
@@ -1180,8 +1181,10 @@ extern int _WriteType42SFNTS(FILE *type42,SplineFont *sf,enum fontformat format,
 extern int WriteMacTTFFont(char *fontname,SplineFont *sf, enum fontformat format,
 	int32 *bsizes, enum bitmapformat bf,int flags);
 extern int WriteMacBitmaps(char *filename,SplineFont *sf, int32 *sizes,int is_dfont);
+extern int WritePalmBitmaps(char *filename,SplineFont *sf, int32 *sizes);
 extern int WriteMacFamily(char *filename,struct sflist *sfs,enum fontformat format,
 	enum bitmapformat bf,int flags);
+extern long mactime(void);
 extern int WriteSVGFont(char *fontname,SplineFont *sf,enum fontformat format,int flags);
 extern void SfListFree(struct sflist *sfs);
 extern struct ttflangname *TTFLangNamesCopy(struct ttflangname *old);
@@ -1547,6 +1550,7 @@ extern SplineFont *_CFFParse(FILE *temp,int len,char *fontsetname);
 extern SplineFont *CFFParse(char *filename);
 extern SplineFont *SFReadMacBinary(char *filename,int flags);
 extern SplineFont *SFReadWinFON(char *filename,int toback);
+extern SplineFont *SFReadPalmPdb(char *filename,int toback);
 extern SplineFont *LoadSplineFont(char *filename,enum openflags);
 extern SplineFont *ReadSplineFont(char *filename,enum openflags);	/* Don't use this, use LoadSF instead */
 extern SplineFont *SFFromBDF(char *filename,int ispk,int toback);
@@ -1825,4 +1829,3 @@ extern void SFBuildSyllables(SplineFont *sf);
 extern void DefaultOtherSubrs(void);
 extern int ReadOtherSubrsFile(char *filename);
 #endif
-

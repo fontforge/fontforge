@@ -658,8 +658,9 @@ extern void FVVKernFromHKern(FontView *fv);
 extern int AutoWidthScript(SplineFont *sf,int spacing);
 extern int AutoKernScript(SplineFont *sf,int spacing, int threshold,char *kernfile);
 
-enum fvformats { fv_bdf, fv_ttf, fv_pk, fv_pcf, fv_mac, fv_win, fv_image,
-	fv_imgtemplate, fv_eps, fv_epstemplate, fv_svg, fv_svgtemplate,
+enum fvformats { fv_bdf, fv_ttf, fv_pk, fv_pcf, fv_mac, fv_win, fv_palm,
+	fv_image, fv_imgtemplate, fv_eps, fv_epstemplate,
+	fv_svg, fv_svgtemplate,
 	fv_fig };
 extern void SCImportSVG(SplineChar *sc,int layer,char *path,int doclear);
 extern void SCImportPSFile(SplineChar *sc,int layer,FILE *ps,int doclear,int flags);
