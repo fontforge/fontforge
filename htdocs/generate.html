@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Sep-2002 -->
-  <!-- AP: Last modified: 2-Feb-2004 -->
+  <!-- AP: Last modified: 4-Feb-2004 -->
   <TITLE>Generate Font Dialog</TITLE>
 </HEAD>
 <BODY>
@@ -271,6 +271,17 @@ Because this dialog is for Mac families, only Mac formats are supported.
 Right above the [Save] button is a list of all fonts that PfaEdit thinks
 should be included in this family, along with their bitmap info. If you don't
 want a font to be in the family simply uncheck its checkbox.
+<P>
+The font styles that are allowed in a family are limitted by the capabilities
+of the mac 'FOND' resource which only allows one style of a given type and
+does not support the concepts of "Light", "Black" (if there is already a
+"Bold" style), "Oblique" (if there is already an "Italic" style), etc. Generally
+PfaEdit will be able to figure out a font's style from its fontname, but
+in some cases you may wish to override this by setting the
+<A HREF="fontinfo.html#Mac-Style">mac style </A>directly in fontinfo.
+<P>
+For information on creating mac font families beyond the capabilities of
+this dialog look at the <A HREF="faq.html#extensive-families">FAQ</A>.
 <P>
 <BR Clear=All>
 <P ALIGN=Center>
