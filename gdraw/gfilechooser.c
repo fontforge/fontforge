@@ -116,8 +116,9 @@ return( false );
 		break;
 		}
 		if ( ppt==ept ) {
-		    while ( *ept!='}' && *ept!='\0' ) ++ept;
-		    if ( GGadgetWildMatch(ept+1,npt,ignorecase))
+		    unichar_t *ecurly = ept;
+		    while ( *ecurly!='}' && *ecurly!='\0' ) ++ecurly;
+		    if ( GGadgetWildMatch(ecurly+1,npt,ignorecase))
 return( true );
 		}
 		if ( *ept=='}' )
