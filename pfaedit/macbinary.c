@@ -35,6 +35,12 @@
 #include "ustring.h"
 #include "ttf.h"
 #include "psfont.h"
+#if __Mac
+# include <MacFiles.h>
+#else
+#undef __Mac
+#define __Mac 0
+#endif
 
 /* A Mac Resource fork */
 /*  http://developer.apple.com/techpubs/mac/MoreToolbox/MoreToolbox-9.html */
@@ -97,6 +103,7 @@
 /* End of borrowed code */
 
 /* ******************************** Creation ******************************** */
+#if !__Mac
 static int crcbuffer(uint8 *buffer,int size) {
     int crc = 0, i;
 
@@ -104,6 +111,7 @@ static int crcbuffer(uint8 *buffer,int size) {
 	crc = updcrc( ((buffer[i]<<8)|buffer[i+1]) , crc );
 return( crc );
 }
+#endif
 
 static uint16 HashToId(char *fontname,SplineFont *sf) {
     int low = 128, high = 0x3fff;
@@ -819,7 +827,8 @@ static void DumpResourceMap(FILE *res,struct resourcetype *rtypes,enum fontforma
     putlong(res,mend-rend);		/* length of map section */
 }
 
-static void DumpMacBinaryHeader(FILE *res,struct macbinaryheader *mb) {
+static int DumpMacBinaryHeader(FILE *res,struct macbinaryheader *mb) {
+#if !__Mac
     uint8 header[128], *hpt; char buffer[256], *pt, *dpt;
     uint32 len;
     time_t now;
@@ -896,6 +905,57 @@ static void DumpMacBinaryHeader(FILE *res,struct macbinaryheader *mb) {
 
     fseek(res,0,SEEK_SET);
     fwrite(header,1,sizeof(header),res);
+return( true );
+#else
+    int ret;
+    FSRef ref;
+    FSSpec spec;
+    short macfile;
+    char *buf, *dirname, *pt, *fname;
+    Str255 damnthemac;
+    FSCatalogInfo info;
+    int len;
+    /* When on the mac let's just create a real resource fork. We do this by */
+    /*  creating a mac file with a resource fork, opening that fork, and */
+    /*  dumping all the data in the temporary file after the macbinary header */
+
+    /* The mac file routines are really lovely. I can't convert a pathspec to */
+    /*  an FSRef unless the file exists. So I can't get an FSSpec to create */
+    /*  the file with. That is incredibly stupid and annoying of them */
+    /* But the directory should exist... */
+    fname = mb->macfilename?mb->macfilename:mb->binfilename;
+    dirname = copy(fname);
+    pt = strrchr(dirname,'/');
+    if ( pt==NULL )
+return( false );
+    pt[1] = '\0';
+    ret=FSPathMakeRef( (uint8 *) dirname,&ref,NULL);
+    free(dirname);
+    if ( ret!=noErr )
+return( false );
+    if ( FSGetCatalogInfo(&ref,kFSCatInfoNodeID,&info,NULL,&spec,NULL)!=noErr )
+return( false );
+    pt = strrchr(fname,'/')+1;
+    damnthemac[0] = strlen(pt);
+    strncpy( (char *) damnthemac+1,pt,damnthemac[0]);
+    if ( (ret=FSMakeFSSpec(spec.vRefNum,info.nodeID,damnthemac,&spec))!=noErr &&
+	    ret!=fnfErr )
+return( false );
+    if ( (ret=FSpCreateResFile(&spec,mb->creator,mb->type,smSystemScript))!=noErr &&
+	    ret!=dupFNErr )
+return( false );
+    if ( FSpOpenRF(&spec,fsWrPerm,&macfile)!=noErr )
+return( false );
+    SetEOF(macfile,0);		/* Truncate it just in case it existed... */
+    fseek(res,128,SEEK_SET);	/* Everything after the mac binary header in */
+	/* the temp file is resource fork */
+    buf = galloc(8*1024);
+    while ( (len=fread(buf,1,8*1024,res))>0 )
+	FSWrite(macfile,&len,buf);
+    FSClose(macfile);
+    free(buf);
+return( true );
+#endif
 }
 
 static void WriteDummyMacHeaders(FILE *res) {
@@ -959,7 +1019,10 @@ return( 0 );
 return( 0 );
     }
 
-    res = fopen(filename,"w+");
+    if ( __Mac && format==ff_pfbmacbin )
+	res = tmpfile();
+    else
+	res = fopen(filename,"w+");
     if ( res==NULL ) {
 	fclose(temppfb);
 return( 0 );
@@ -982,8 +1045,8 @@ return( 0 );
 	/* I shan't bother with that... It'll look ugly with no icon, but oh well */
     header.type = CHR('L','W','F','N');
     header.creator = CHR('G','W','p','1');
-    DumpMacBinaryHeader(res,&header);
-    ret = !ferror(res);
+    ret = DumpMacBinaryHeader(res,&header);
+    if ( ferror(res) ) ret = 0;
     if ( fclose(res)==-1 ) ret = 0;
 return( ret );
 }
@@ -1000,14 +1063,19 @@ int WriteMacTTFFont(char *filename,SplineFont *sf,enum fontformat format,
     if ( tempttf==NULL )
 return( 0 );
 
-    if ( _WriteTTFFont(tempttf,sf,format==ff_none?ff_none:format-1,bsizes,bf)==0 || ferror(tempttf) ) {
+    if ( _WriteTTFFont(tempttf,sf,format==ff_none?ff_none:
+				  format==ff_ttfmacbin?ff_ttf:
+			          format-1,bsizes,bf)==0 || ferror(tempttf) ) {
 	fclose(tempttf);
 return( 0 );
     }
     if ( bf!=bf_ttf_apple && bf!=bf_ttf_ms && bf!=bf_sfnt_dfont )
 	bsizes = NULL;		/* as far as the FOND for the truetype is concerned anyway */
 
-    res = fopen(filename,"w+");
+    if ( __Mac && format==ff_ttfmacbin )
+	res = tmpfile();
+    else
+	res = fopen(filename,"w+");
     if ( res==NULL ) {
 	fclose(tempttf);
 return( 0 );
@@ -1041,15 +1109,16 @@ return( 0 );
     DumpResourceMap(res,resources,format);
     free(dummynfnts);
 
+    ret = true;
     if ( format==ff_ttfmacbin ) {
 	header.macfilename = NULL;
 	header.binfilename = filename;
 	    /* Fontographer uses the old suitcase format for both bitmaps and ttf */
 	header.type = CHR('F','F','I','L');
 	header.creator = CHR('D','M','O','V');
-	DumpMacBinaryHeader(res,&header);
+	ret = DumpMacBinaryHeader(res,&header);
     }
-    ret = !ferror(res);
+    if ( ferror(res) ) ret = false;
     if ( fclose(res)==-1 ) ret = 0;
 return( ret );
 }
@@ -1077,9 +1146,12 @@ int WriteMacBitmaps(char *filename,SplineFont *sf, real *sizes, int is_dfont) {
 	if ( dpt==NULL )
 	    dpt = pt+strlen(pt);
     }
-    strcpy(dpt,is_dfont?".bmap.dfont":".bmap.bin");
+    strcpy(dpt,is_dfont?".bmap.dfont":__Mac?".bmap":".bmap.bin");
 
-    res = fopen(binfilename,"w+");
+    if ( __Mac && !is_dfont )
+	res = tmpfile();
+    else
+	res = fopen(binfilename,"w+");
     if ( res==NULL ) {
 return( 0 );
     }
@@ -1100,15 +1172,16 @@ return( 0 );
     rlist[1][0].name = sf->familyname;
     DumpResourceMap(res,resources,is_dfont?ff_ttfdfont:ff_ttfmacbin);
 
+    ret = true;
     if ( !is_dfont ) {
 	header.macfilename = NULL;
 	header.binfilename = binfilename;
 	    /* Fontographer uses the old suitcase format for both bitmaps and ttf */
 	header.type = CHR('F','F','I','L');
 	header.creator = CHR('D','M','O','V');
-	DumpMacBinaryHeader(res,&header);
+	ret = DumpMacBinaryHeader(res,&header);
     }
-    ret = !ferror(res);
+    if ( ferror(res)) ret = false;
     if ( fclose(res)==-1 ) ret = 0;
     free(resources[0].res);
 return( ret );
@@ -1392,24 +1465,21 @@ return( sf );
 return( (SplineFont *) -1 );	/* It's a valid resource file, but just has no fonts */
 }
 
-#ifdef __Mac
-#include "MacFiles.h"
-
+#if __Mac
 static SplineFont *HasResourceFork(char *filename) {
     /* If we're on a mac, we can try to see if we've got a real resource fork */
-    Str255 p_file;
+    /* (if we do, copy it into a temporary data file and then manipulate that)*/
+    FSRef ref;
     FSSpec spec;
-    short res;
+    short res, err;
     int cnt;
     SplineFont *ret;
     FILE *temp;
     char *buf;
 
-    if ( strlen( filename )>255 )
+    if ( FSPathMakeRef( (uint8 *) filename,&ref,NULL)!=noErr )
 return( NULL );
-    p_file[0] = strlen(filename);
-    strncpy((char *) p_file+1,filename,strlen(filename));
-    if ( FSMakeFSSpec(0,0,p_file,&spec)!=noErr )
+    if ( FSGetCatalogInfo(&ref,0,NULL,NULL,&spec,NULL)!=noErr )
 return( NULL );
     if ( FSpOpenRF(&spec,fsRdPerm,&res)!=noErr )
 return( NULL );
@@ -1417,12 +1487,12 @@ return( NULL );
     buf = malloc(8192);
     while ( 1 ) {
 	cnt = 8192;
-	ret = FSRead(res,&cnt,buf);
+	err = FSRead(res,&cnt,buf);
 	if ( cnt!=0 )
 	    fwrite(buf,1,cnt,temp);
-	if ( ret==eofErr )
+	if ( err==eofErr )
     break;
-	if ( ret!=noErr )
+	if ( err!=noErr )
     break;
     }
     free(buf);
@@ -1574,7 +1644,7 @@ return( sf );
 
     sf = IsResourceFork(f,0,filename);
     fclose(f);
-#ifdef __Mac
+#if __Mac
     if ( sf==NULL )
 	sf = HasResourceFork(filename);
 #endif

@@ -11,6 +11,8 @@ case "$host" in
 gww_nodynamic="yes"
 AC_DEFINE(_CursorsMustBe16x16)
 AC_DEFINE(_Keyboard,1)
+AC_DEFINE(__Mac,1)
+LIBS="/System/Library/Frameworks/CoreServices.framework/CoreServices $LIBS"
  ;;
 powerpc-*-*linux*)
 AC_DEFINE(_Keyboard,3)
@@ -25,12 +27,12 @@ esac
 AC_SEARCH_LIBS(dlopen, dl) dnl some systems have this in libc
 AC_SEARCH_LIBS(inet_aton, resolv) dnl some systems have this in libc
 
-dnl Some old versions of lib(un)gif don't work for us, they've got the
-dnl Function argument in the wrong place. So two checks for gif.
-
 dnl Is there a better way to add a directory to the include path?
 
 CFLAGS="$CFLAGS -I/usr/include/freetype2/"
+
+dnl Some old versions of lib(un)gif don't work for us, they've got the
+dnl Function argument in the wrong place. So two checks for gif.
 
 AC_CHECK_LIB(ungif, DGifOpenFileName, [
 echo -n checking for ExtensionBlock.Function in gif_lib.h...

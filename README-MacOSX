@@ -52,11 +52,7 @@ invoking menu items (that is both ^Q and Cmd-Q will cause PfaEdit to quit).
 CAVEATS
  1) PfaEdit does not conform to Apple's Human Interface Guidelines, and never
     will.
- 2) PfaEdit does not know how to read a font out of a resource fork.
-    You cannot create an NFNT with 2byte encodings (CJK), use the "sbit"
-    bitmap format instead (which is only available if No Outline Font is
-    generated. (I can't test this well, it works in my simple tests)
- 3) The default window manager (twm) does not work well with PfaEdit when
+ 2) The default window manager (twm) does not work well with PfaEdit when
     run in Rootless mode.
     PfaEdit allows the window manager to position its windows for it, and
     twm does this by allowing the user to click anywhere on the screen to

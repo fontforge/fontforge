@@ -64,24 +64,38 @@ unichar_t fontsnf[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-',
 #include "MacFiles.h"
 #define CHR(ch1,ch2,ch3,ch4) (((ch1)<<24)|((ch2)<<16)|((ch3)<<8)|(ch4))
 
-static unichar_t *MacMime(const unichar_t *path) {
+unichar_t *_GioMacMime(const char *path) {
     /* If we're on a mac, we can try to see if we've got a real resource fork */
-    Str255 p_file;
+    FSRef ref;
     FSSpec spec;
     FInfo info;
 
-    if ( u_strlen( path )>255 )
+    if ( FSPathMakeRef( (uint8 *) path,&ref,NULL)!=noErr )
 return( NULL );
-    p_file[0] = u_strlen(path);
-    cu_strncpy((char *) p_file+1,path,u_strlen(path));
-    if ( FSMakeFSSpec(0,0,p_file,&spec)!=noErr )
-return( unknown );
+    if ( FSGetCatalogInfo(&ref,0,NULL,NULL,&spec,NULL)!=noErr )
+return( NULL );
     if ( FSpGetFInfo(&spec,&info)!=noErr )
-return( unknown );
+return( NULL );
     if ( info.fdType==CHR('F','F','I','L') )
 return( fontmacsuit );
+    if ( info.fdType==CHR('G','I','F','f') )
+return( imagegif );
+    if ( info.fdType==CHR('P','N','G',' ') )
+return( imagepng );
+/*
+    if ( info.fdType==CHR('B','M','P',' ') )
+return( imagebmp );
+*/
+    if ( info.fdType==CHR('J','P','E','G') )
+return( imagejpeg );
+/*
+    if ( info.fdType==CHR('T','I','F','F') )
+return( imagetiff );
+*/
+    if ( info.fdType==CHR('T','E','X','T') )
+return( textplain );
 
-return( unknown );
+return( NULL );
 }
 #endif
 
@@ -156,9 +170,5 @@ return( fontpcf );
     else if ( uc_strmatch(pt,".snf")==0 )
 return( fontsnf );
 
-#ifdef __Mac
-return( MacMime( path ));
-#else
 return( unknown );
-#endif
 }

@@ -45,19 +45,33 @@ struct gfc_data {
     SplineFont *sf;
 };
 
+#if __Mac
+static char *extensions[] = { ".pfa", ".pfb", "", ".ps", ".ps", ".cid",
+	".ttf", ".ttf", ".suit", ".dfont", ".otf", ".otf.dfont", ".otf",
+	".otf.dfont", NULL };
+#else
 static char *extensions[] = { ".pfa", ".pfb", ".bin", ".ps", ".ps", ".cid",
 	".ttf", ".ttf", ".ttf.bin", ".dfont", ".otf", ".otf.dfont", ".otf",
 	".otf.dfont", NULL };
+#endif
 static GTextInfo formattypes[] = {
     { (unichar_t *) "PS Type 1 (Ascii)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "PS Type 1 (Binary)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+#if __Mac
+    { (unichar_t *) "PS Type 1 (Resource)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+#else
     { (unichar_t *) "PS Type 1 (MacBin)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+#endif
     { (unichar_t *) "PS Type 3", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "PS Type 0", NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "PS CID", NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "True Type", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "True Type (Symbol)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+#if __Mac
+    { (unichar_t *) "True Type (Resource)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+#else
     { (unichar_t *) "True Type (MacBin)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+#endif
     { (unichar_t *) "True Type (Mac dfont)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "Open Type", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "Open Type (Mac dfont)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
@@ -72,7 +86,11 @@ static GTextInfo bitmaptypes[] = {
     { (unichar_t *) "In TTF (Apple)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "sbits only (dfont)", NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "GDF", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+#if __Mac
+    { (unichar_t *) "NFNT (Resource)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+#else
     { (unichar_t *) "NFNT (MacBin)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+#endif
     { (unichar_t *) "NFNT (dfont)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_Nobitmapfonts, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }
@@ -567,6 +585,15 @@ return( true );
 	    else
 		GGadgetSelectOneListItem(d->bmptype,bf_ttf_apple);
 	}
+#if __Mac
+	{ GGadget *pulldown, *list, *tf;
+	    /* The name of the postscript file is fixed and depends solely on */
+	    /*  the font name. If the user tried to change it, the font would */
+	    /*  not be found */
+	    GFileChooserGetChildren(d->gfc,&pulldown,&list,&tf);
+	    GGadgetSetVisible(tf,format!=ff_pfbmacbin);
+	}
+#endif
     }
 return( true );
 }
@@ -813,6 +840,12 @@ int FontMenuGeneratePostscript(SplineFont *sf) {
     }
     GFileChooserGetChildren(gcd[0].ret,&pulldown,&files,&tf);
     GWidgetIndicateFocusGadget(tf);
+#if __Mac
+	/* The name of the postscript file is fixed and depends solely on */
+	/*  the font name. If the user tried to change it, the font would */
+	/*  not be found */
+	GGadgetSetVisible(tf,ofs!=ff_pfbmacbin);
+#endif
 
     memset(&d,'\0',sizeof(d));
     d.sf = sf;
