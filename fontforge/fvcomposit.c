@@ -1133,11 +1133,13 @@ static SplineChar *GetGoodAccentGlyph(SplineFont *sf, int uni, int basech,
 
     /* Look to see if there are upper case variants of the accents available */
     if ( isupper(basech) || (basech>=0x400 && basech<=0x52f) ) {
-	char *uc_accent = copyn(rsc->name,strlen(rsc->name)+10);
+	char *uc_accent;
 	SplineChar *test = NULL;
 	char buffer[80];
 	char *suffix;
 
+	uc_accent = galloc(strlen(rsc->name)+11);
+	strcpy(uc_accent,rsc->name);
 	if ( basech>=0x400 && basech<=0x52f ) {
 	    if ( isupper(basech) )
 		suffix = "cyrcap";

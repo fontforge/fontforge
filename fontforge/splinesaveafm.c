@@ -2031,7 +2031,7 @@ return( top );
 	cnt[offpos] += cnt[offpos+1];
 	totvalues[offpos] += totvalues[offpos+1];
 	diff = 1;
-	for ( k=offpos+1; k+diff<256; ++k ) {
+	for ( k=offpos+1; k+diff<top; ++k ) {
 	    values[k] = values[k+diff];
 	    topvalues[k] = topvalues[k+diff];
 	    cnt[k] = cnt[k+diff];

@@ -3220,7 +3220,7 @@ static void bCorrectDirection(Context *c) {
 	error( c, "Wrong number of arguments");
     else if ( c->a.argc==2 && c->a.vals[1].type!=v_int )
 	error(c,"Bad argument type");
-    else
+    else if ( c->a.argc==2 )
 	checkrefs = c->a.vals[1].u.ival;
     for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && c->curfv->selected[i] ) {
 	sc = sf->chars[i];
