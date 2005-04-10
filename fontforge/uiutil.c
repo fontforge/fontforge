@@ -27,6 +27,7 @@
 #include "pfaeditui.h"
 #include <gfile.h>
 #include <stdarg.h>
+#include <unistd.h>
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <utype.h>
 #include <ustring.h>
@@ -295,6 +296,47 @@ return;
 #endif
 }
 
+static int SupportedLocale(char *fullspec,char *locale) {
+    static char *supported[] = { "ja", NULL };
+    int i;
+
+    for ( i=0; supported[i]!=NULL; ++i ) {
+	if ( strcmp(locale,supported[i])==0 ) {
+	    strcat(fullspec,locale);
+	    strcat(fullspec,"/");
+return( true );
+	}
+    }
+return( false );
+}
+
+static void AppendSupportedLocale(char *fullspec) {
+    /* KANOU has provided a japanese translation of the docs */
+    /* Edward Lee is working on traditional chinese */
+    const char *loc = getenv("LC_ALL");
+    char buffer[40], *pt;
+
+    if ( loc==NULL ) loc = getenv("LC_MESSAGES");
+    if ( loc==NULL ) loc = getenv("LANG");
+    if ( loc==NULL )
+return;
+    strncpy(buffer,loc,sizeof(buffer));
+    if ( SupportedLocale(fullspec,buffer))
+return;
+    pt = strchr(buffer,'.');
+    if ( pt!=NULL ) {
+	*pt = '\0';
+	if ( SupportedLocale(fullspec,buffer))
+return;
+    }
+    pt = strchr(buffer,'_');
+    if ( pt!=NULL ) {
+	*pt = '\0';
+	if ( SupportedLocale(fullspec,buffer))
+return;
+    }
+}
+    
 void help(char *file) {
     char fullspec[1024], *temp, *pt;
 
@@ -336,6 +378,7 @@ return;
 	}
 	if ( !GFileReadable( fullspec )) {
 	    strcpy(fullspec,"http://fontforge.sf.net/");
+	    AppendSupportedLocale(fullspec);
 	    strcat(fullspec,file);
 	} else if ( pt!=NULL )
 	    *pt = '#';
