@@ -4779,8 +4779,8 @@ return(true);
 	if ( enc==NULL )
 return( true );
 	vmetrics = GGadgetIsChecked(GWidgetGetControl(gw,CID_HasVerticalMetrics));
-	upos = GetIntR(gw,CID_UPos, _STR_Upos,&err);
-	uwid = GetIntR(gw,CID_UWidth,_STR_Uheight,&err);
+	upos = GetRealR(gw,CID_UPos, _STR_Upos,&err);
+	uwid = GetRealR(gw,CID_UWidth,_STR_Uheight,&err);
 	GetIntR(gw,CID_Em,_STR_EmSize,&err);	/* just check for errors. redundant info */
 	as = GetIntR(gw,CID_Ascent,_STR_Ascent,&err);
 	des = GetIntR(gw,CID_Descent,_STR_Descent,&err);
