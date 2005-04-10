@@ -407,8 +407,8 @@ int SFFindChar(SplineFont *sf, int unienc, const char *name ) {
 return( SFFindChar(sf,unienc,NULL));
 	    if ( sf->encoding_name->psnames!=NULL ) {
 		for ( index = sf->encoding_name->char_cnt-1; index>=0; --index )
-		    if ( sf->encoding_name->psnames[i]!=NULL &&
-			    strcmp(sf->encoding_name->psnames[i],name)==0 )
+		    if ( sf->encoding_name->psnames[index]!=NULL &&
+			    strcmp(sf->encoding_name->psnames[index],name)==0 )
 return( index );
 	    }
 	    for ( unienc=psunicodenames_cnt-1; unienc>=0; --unienc )

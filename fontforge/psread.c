@@ -3045,7 +3045,7 @@ Encoding *PSSlurpEncodings(FILE *file) {
 	if ( tok!=pt_openarray )
 return( head );
 	for ( i=0; i<1024; ++i ) {
-	    encs[i] = 0;
+	    encs[i] = -1;
 	    names[i]=NULL;
 	}
 
