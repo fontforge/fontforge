@@ -1983,7 +1983,7 @@ return( -1 );
 return( bottom );
 }
 
-static int bDoSelect(Context *c, int signal_error) {
+static int bDoSelect(Context *c, int signal_error, int select) {
     int top, bottom, i,j;
     int any = false;
 
@@ -2015,7 +2015,7 @@ return( any ? -1 : -2 );
 
 	if ( top<bottom ) { j=top; top=bottom; bottom = j; }
 	for ( j=bottom; j<=top; ++j ) {
-	    c->curfv->selected[j] = true;
+	    c->curfv->selected[j] = select;
 	    ++any;
 	}
     }
@@ -2025,18 +2025,24 @@ return( any );
 static void bSelectMore(Context *c) {
     if ( c->a.argc==1 )
 	error( c, "SelectMore needs at least one argument");
-    bDoSelect(c,true);
+    bDoSelect(c,true,true);
+}
+
+static void bSelectFewer(Context *c) {
+    if ( c->a.argc==1 )
+	error( c, "SelectFewer needs at least one argument");
+    bDoSelect(c,true,false);
 }
 
 static void bSelect(Context *c) {
     memset(c->curfv->selected,0,c->curfv->sf->charcnt);
-    bDoSelect(c,true);
+    bDoSelect(c,true,true);
 }
 
 static void bSelectIf(Context *c) {
     memset(c->curfv->selected,0,c->curfv->sf->charcnt);
     c->return_val.type = v_int;
-    c->return_val.u.ival = bDoSelect(c,false);
+    c->return_val.u.ival = bDoSelect(c,false,true);
 }
 
 static void bSelectByATT(Context *c) {
@@ -4989,6 +4995,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "SelectAll", bSelectAll },
     { "SelectNone", bSelectNone },
     { "SelectMore", bSelectMore },
+    { "SelectFewer", bSelectFewer },
     { "Select", bSelect },
     { "SelectIf", bSelectIf },
     { "SelectByATT", bSelectByATT },
