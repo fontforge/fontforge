@@ -5149,6 +5149,12 @@ return( ch );
 	ch = _cgetc(c);
 	if ( ch=='\n' )
   goto tail_recursion;
+        if ( ch=='\r' ) {
+	    ch = _cgetc(c);
+	    if ( ch!='\n' )
+		c->ungotch = ch;
+  goto tail_recursion;
+	}
 	c->ungotch = ch;
 	ch = '\\';
     }
