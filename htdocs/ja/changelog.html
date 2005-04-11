@@ -1,0 +1,1108 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 27-Aug-2002 -->
+  <!-- AP: Last modified: 9-Mar-2005 -->
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
+<!--<TITLE>Change log for FontForge</TITLE> -->
+    <TITLE>FontForge の変更履歴</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
+</HEAD>
+<BODY>
+<H1 ALIGN=Center>
+<!--<A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL> -->
+    <A NAME="change-log">変更点</A> <SMALL>(拡張とバグ修正)</SMALL>
+</H1>
+<UL>
+  <LI>
+<!--9-Mar-2005-->
+    2005年3月9日
+    <UL>
+      <LI>
+<!--	Deleting a glyph class within a kerning by classes object caused a crash -->
+	クラスによるカーニング指定に含まれるクラスを削除するとクラッシュする問題がありました。
+      <LI>
+<!--	Added some support for palm bitmap fonts -->
+	Palm ビットマップフォントのある程度のサポートを追加。
+      <LI>
+<!--	Replace with reference only replaced the first instance. -->
+	参照による置換では、最初のインスタンスしか置き換えていませんでした。
+      <LI>
+<!--	The Options dlg behaved oddly with respect to Apple &amp; OpenType modes -->
+	Apple および OpenType モードに関して、オプションダイアログが変な動作をしていました。
+      <LI>
+<!--	When given a glyph with conflicting hints for which the first contour contained
+	no hints, then in type2 output the glyph was drawn at a strange offset from
+	its correct position. -->
+	矛盾するヒントをもち、最初の輪郭にヒントが含まれないグリフが与えられたとき、Type2 出力においてグリフが正しい位置に比べ変にずれて描画されていました。
+      <LI>
+<!--	When generating an opentype font from a script, and specifying flags, the
+	round coordinates flag was ignored -->
+	スクリプトから OpenType フォントを出力する際、フラグを指定するとき、座標値を整数へ丸めるフラグ指定が無視されていました。
+      <LI>
+<!--    When generating a font from a script using the default flag setting, we would
+	always generate afm/tfm/pfm files -->
+	スクリプトからデフォルトのフラグ設定でフォントを出力するとき、常に AFM/TFM/PFM ファイルを出力していました。
+      <LI>
+<!--	KANOU pointed out that the stroked font import glyph command only worked
+	if multilayer set. -->
+	ストロークフォントのグリフ取り込みコマンドが正常に動作するのはマルチレイヤのときのみであることを狩野が指摘しました。
+      <LI>
+<!--	Added a preview bitmap to eps files. -->
+	EPS ファイルに、プレビュー用のビットマップを追加。
+      <LI>
+<!--	In a bitmap only font the font metrics menu items behaved in unexpected ways
+	(as if they referred to a postscript font rather than the bitmap fonts) -->
+	ビットマップのみのフォントでは、フォントメトリックメニューの項目は予想外の振舞をしていました (ビットマップフォントでなく、PostScript フォントとして参照されたかのように振舞っていました)。
+      <LI>
+<!--	Various fixes to make importing stroked eps files into stroked fonts work
+	better. -->
+	ストロークフォントへのEPS ファイルの取り込みがより良好に動作するようにするための多数の修正。
+      <LI>
+<!--	KANOU requests a preference item to turn off use of freetype in font view. -->
+	フォントビューで FreeType を使わないようにするための環境設定項目を狩野がリクエストしました。
+      <LI>
+<!--	Fix more rounding errors in remove overlap. -->
+	重複除去における丸めエラーの追加修正。
+      <LI>
+<!--	Fix some problems in the routine which finds roots of an arbetrary quartic. -->
+	任意の 4 次式の根を求めるルーチンのいくつかの問題修正。
+      <LI>
+<!--	The remove bump option of simplify could screw up memory. -->
+	単純化コマンドのコブを取り除くオプションが、メモリを破壊していました。
+      <LI>
+<!--	Remove overlap got unhappy about control points which caused a very tiny
+	overlap between adjacent splines -->
+	重複除去処理は、隣接するスプライン間に非常に小さな重なり合い生じるような制御点があると不幸な結果をもたらしていました。
+      <LI>
+<!--	Redo from the fontview usually caused a crash. -->
+	フォントビューでのやりなおし処理がたびたびクラッシュを引き起こしていました、。
+      <LI>
+<!--	KANOU provides a MakeLine scripting command -->
+	MakeLine スクリプトコマンドを狩野が提供。
+      <LI>
+<!--	If TYPE3 (multilayer) was not enabled, there was a flow of control through
+	a function which did not return anything. -->
+	Type3 (マルチレイヤ) を使用可能にしていないとき、関数が何も返さないことによる制御の氾濫がありました。 -->
+      <LI>
+<!--	Recovery files did not contain multilayer marks which lead to strange behavior
+	and crashes -->
+	エラー回復ファイルに複数レイヤマスクが含まれておらず、奇妙な振舞いやクラッシュを引き起こしていました。
+      <LI>
+<!--	Converting a font to multilayer caused a crash if there were outline glyph
+	windows open. -->
+	フォントをマルチレイヤフォントに変換するとき、アウトライングリフウィンドウが開いているとクラッシュを引き起こしていました。
+      <LI>
+<!--	Make the encoding for scripts be utf8 consistently -->
+	スクリプトのエンコーディングを常に UTF-8 と見なすように変更。
+      <LI>
+<!--	Allow the scripting Export command to take a format spec -->
+	Export スクリプトコマンドがフォーマットを引数で指定できるように変更。
+      <LI>
+<!--	Add support for reals to the scripting language -->
+	スクリプト言語への実数サポートの追加。
+      <LI>
+<!--	NearlyHv{Cps,Lines} scripting commands erroneously complained about too many
+	args -->
+	NearlyHv{Cps,Lines} スクリプトコマンドは、引数が多すぎるというエラーを誤って出していました。
+      <LI>
+<!--	ff had a bug when outputting otf contextual ligatures -->
+	OTF 文脈依存の合字の出力部分にバグがありました。
+      <LI>
+<!--	Fix various crashes and infinite loops involved in parsing bad font files. -->
+	壊れたフォントファイルの解析処理で無限ループが起こる各種のバグを修正。
+      <LI>
+<!--	ff had problems with user defined encodings. -->
+	ユーザ定義のエンコーディング処理に問題がありました。
+      <LI>
+<!--	Made ff work if the psuedo-type "real" was defined to be a double. -->
+	仮想データ型 "real" を double に typedef しても動くように変更。
+      <LI>
+<!--	the string += concattonation operator in scripting screwed up memory -->
+	スクリプトで文字列を += で結合した時にメモリを破壊していました。
+      <LI>
+<!--	Problems with -c &lt;arg&gt; syntax -->
+	-c &lt;arg&gt; 構文に問題がありました。
+      <LI>
+<!--	The font type detector could fail to notice an svg file as such if it began
+	with a byte order character. -->
+	フォントタイプ検出ルーチンが、バイトオーダ識別文字で始まる SVG ファイルの検出に失敗していました。
+      <LI>
+<!--	Ord didn't do proper type checking on its second argument -->
+	Ord は、2 番目の引数の型が正しいかのチェックを正しく行っていませんでした。
+    </UL>
+  <LI>
+<!--9-Feb-2005-->
+    2005年2月9日
+    <UL>
+      <LI>
+<!--	Use freetype's FT_Outline_Get_Bitmap to make freetype rasterize from our
+	internal data structures. Use freetype by default for the fontview and
+	metricsview (except in some cases). -->
+	ff の内部データ構造を FreeType でラスタライズするために、FT_Outline_Get_Bitmap をしよう。フォントビューとメトリックビューでは (いくつかの場合を除き) FreeType をデフォルトに変更。
+      <LI>
+<!--	The bitmap dlg didn't work for multilayered fonts when told to use freetype
+	to rasterize. -->
+	FreeType をラスタライズに使用するように指定したとき、マルチレイヤフォントではビットマップダイアログが動いていませんでした、。
+      <LI>
+<!--	If we had a contour nested inside another, and did an Overlap Exclude with
+	the nested contour selected, then that contour was not excluded. -->
+	ある輪郭が別の輪郭の内側に入れ子になっている時、内側の輪郭を選択して「重複部分を除去(E)」を呼び出してもその輪郭が除去されませんでした。
+      <LI>
+<!--	The []Correct Direction check box when importing PostScript, didn't do anything.
+	(or rather it did, but got overrulled later) -->
+	PostScript の取り込み時には、[]アウトラインの向きを修正(C) チェックボックスが何の役にも立っていませんでした (と言うか、修正はしていたのですが、後で取り消されていました)。
+      <LI>
+<!--	In bitmap only fonts, bitmaps created without moving the width line would
+	get lost. -->
+	ビットマップのみのデータでは、文字幅の線を移動しない場合には作成されたビットマップは失われていました。
+      <LI>
+<!--	Added a scripting command "SelectByColor" -->
+	スクリプトコマンド "SelectByColor" の追加。
+      <LI>
+<!--	Don't apply transformations to glyphs which aren't worth outputting -->
+	出力する意味のないグリフには座標変換を適用しないように変更。
+      <LI>
+<!--	Moving control points with the get point info command had problems in quadratic
+	splines. -->
+	2 次スプラインの制御点を、「情報を得る(I)」ダイアログで数値入力して移動した時の処理に問題がありました。
+      <LI>
+<!--	When adding type42 support I broke multiple master support. -->
+	Type42 サポートを追加した時にマルチプルマスターサポートを動かなくしていました。
+      <LI>
+<!--	Werner provided a patch to add a trailing newline to my type1 fonts. -->
+	Type1 フォントのファイル末尾に改行を付け加えるためのパッチを Werner が提供しました。
+      <LI>
+<!--	Support for PaintType==2 and stroked fonts. -->
+	PaintType == 2 およびストロークフォントのサポート。
+      <LI>
+<!--	Various problems with the clustering command -->
+	近い値のまとめ処理の多数の問題を解決。
+      <LI>
+<!--	Oops, somehow a patch reverted and things didn't work on systems without
+	iconv -->
+	おっと、なぜかパッチが逆戻りして、iconv のないシステムで動かなくなってました。
+      <LI>
+<!--	worked on a couple of other configuration problems for the mac -->
+	Mac での設定問題が他に 2, 3 あったのを直しました。
+      <LI>
+<!--	Some people install libraries without headers. Be prepared. -->
+	ヘッダのないライブラリをインストールしている人がたまにいます。備えておくようにしました。
+      <LI>
+<!--	Uniscribe (MS unicode text layout routines) may ignore either the GPOS or
+	the GSUB table depending on the script, and may even refuse to use the font
+	at all if it doesn't have the right stuff in GPOS/GSUB. A Hebrew font must
+	have both a GPOS and a GSUB. If it doesn't the font is not used. A latin
+	font need not have either, but if it doesn't have GSUB then GPOS won't be
+	used. -->
+	Uniscribe (MS の Unicode テキストレイアウトルーチン) は、用字系によって GPOS または GSUB テーブルの存在を無視することがあり、場合によっては GPOS/GSUB に適切なデータがないとフォントの仕様を完全に拒否する可能性すらあります。ヘブライ語フォントは GPOS と GSUB の両方を含んでいる必要があります。どちらかがフォントに含まれていないとそれは使用されません。ラテン文字のフォントはどちらも含んでいる必要はありませんが、GSUB が含まれていないと、GPOS は使用されません。
+	<P>
+<!--	Sergey Malkin from MicroSoft tells me: -->
+	Microsoft の Sergey Malkin は私にこう言いました:
+	<BLOCKQUOTE>
+<!--	  Each shaping engine in Uniscribe can decide on its requirements for layout
+	  tables - some of them require both GSUB and GPOS, in some cases any table
+	  present is enough, or it can work without any table. -->
+	  Uniscribe の各字形エンジンはレイアウトテーブルに対する必要事項を決めることができます――いくつかのエンジンは GSUB と GPOS を必要とし、いくつかの場合にはどちらかのテーブルが存在するだけで十分であり、またはどちらのテーブルも無くても動作可能である場合もあります。
+	  <P>
+<!--	  Sometimes, purpose of the check is to determine if font is supporting particular
+	  script - if required tables are not there font is just rejected by this shaping
+	  engine. Sometimes, shaping engine can not just reject the font because there
+	  are fonts using older shaping technologies we still have to support, so it
+	  uses some logic when to fallback to legacy layout code. -->
+	  時には、チェックの目的はフォントが特定の用字系をサポートしているかを確かめることにあります――必要なテーブルが存在しなければ、それらのフォントはその字形処理エンジンによって拒絶されます。時には、字形処理エンジンは、我々がまだサポートを続ける必要がある古い字形処理技術を使用しているために、単純に拒絶するだけではすまない場合があり、そのような場合には旧式のレイアウトコードへのフォールバックを行う何らかのロジックを使用します。
+	  <P>
+<!--	  In your case this is Hebrew, where both tables are required to use OpenType
+	  processing. Arabic requires both tables too, Latin requires GSUB to execute
+	  GPOS. But in general, if you have both tables you should be safe with any
+	  script to get fully featured OpenType shaping. -->
+	  あなたの場合はこれはヘブライ文字であり、OpenType 処理を使用するには両方のテーブルが必要です。アラビア文字も、両方のテーブルを必要とします。ラテン文字は GPOS を実行するために GSUB が必要です。しかし一般に言って、OpenType 字形処理 の完全な機能を利用するためには両方のテーブルを含めておくのが完全です。
+	</BLOCKQUOTE>
+	<P>
+<!--	So the script sub-table of both GPOS/GSUB should contain all scripts used
+	in either (rather than just the scripts used in the current one). -->
+	そういうわけで、GPOS/GSUB 両テーブルの GPOS/GSUB は、(現在存在する字形処理に関わる文字だけでなく) フォント内に含まれる全ての文字の用字系を含んでいるべきだということになります。
+      <LI>
+<!--	The AddATT scripting command didn't understand Nested. -->
+	AddATT スクリプトコマンドは Nested を理解していませんでした。
+      <LI>
+<!--	Add a cli argument "-c" to introduce a scripting command in an argument. -->
+	コマンドライン引数 "-c" を、引数でのスクリプトコマンド直接指定を導入するために追加。
+      <LI>
+<!--	Someone ran ff on a solaris box without iconv. (Odd because iconv is there
+	by default). FF ran fine (Odder, why didn't it demand the library?), but
+	crashed when it tried to use a conversion which didn't exist. -->
+	FF を iconv の載ってない Solaris で実行した人がいます (iconv はデフォルトで入っているので、不思議な話です)。FF はちゃんと動きました (もっと不思議です。ライブラリを要求しなかったのはなぜでしょう?) が、存在しない変換ルーチンを使おうとした時にクラッシュを起こしていました。
+      <LI>
+<!--	There's another ASCII map in Unicode (0xe0000-0xe007f). -->
+	ASCII とのもう 1 つの対応 (0xe0000-0xe007f) を Unicode に追加。
+      <LI>
+<!--	Allow user to supply their own OtherSubrs routines (Some people object to
+	Adobe's copyright). -->
+	ユーザが自分自身の OtherSubr ルーチンを提供することができるようにしました (Adobe の著作権に縛られたくない人々がいるからです)。
+      <LI>
+<!--	Codes to handle identifying a loaded font by relative filespec didn't work. -->
+	相対ファイル指定によって読み込んだフォントの識別処理コードが動いていませんでした。
+      <LI>
+<!--	Change Add Extrema so that it only adds extrema if -->
+	「極大点の追加(X)」コマンドを変更し、以下の場合のみ点を追加するようにしました:
+	<OL>
+	  <LI>
+<!--	    The spline length is &gt;= em_size/32 -->
+	    スプラインの長さ ≧ em_size/32 である
+	  <LI>
+<!--	    The extremum is an extremum of the entire contour containing the spline. -->
+	    スプラインの極値が、そのスプラインを含む曲線全体の極値である
+	</OL>
+	<P>
+<!--	(Behavior in the outline view when there is a selection remains the same.
+	So if the endpoints of a spline are both selected then all local extrema
+	will be added to that spline, no matter how long it may be). -->
+	(アウトラインビューで範囲選択を行っているときのふるまいは今までと同じです。ですから、あるスプラインの端点が両方選択されているときは、スプラインの長さに関わらず、全ての局所的な極値がスプラインに追加されます)。
+      <LI>
+<!--	Patch by Ralf Stubner. Fonts without UniqueID had a bad syntax. -->
+	UniqueID のないフォントの構文が誤っていたのを Ralf Stubner のパッチにより修正。
+    </UL>
+  <LI>
+<!--17-Jan-2005-->
+    2005年1月17日
+    <UL>
+      <LI>
+<!--	CapsLock now makes the arrow keys scroll in the outline view -->
+	アウトラインビューで、CapsLock キーを押していると矢印キーで画面スクロールできるように変更。
+      <LI>
+<!--	We lost count of hints when generating type2 fonts in glyphs with references
+	to something containing hints which did not overlap. If we were unlucky,
+	&lt;new-cnt+7&gt;/8 was different than &lt;real-cnt+7&gt;/8 and we ended
+	up with garbage in the charstring. -->
+	Type2 フォントを出力したときに、重なり合わないヒントを含む別グリフへの参照を含むグリフからヒントの個数が失われていました。運が悪いと、&lt;間違った個数+7&gt;/8 が &lt;本当の個数+7&gt;/8 と違う値になり、charstring 内にゴミデータが書き出される結果となりました。
+      <LI>
+<!--	Add a TeX table to contain TeX metrics. -->
+	TeX のメトリックを格納する TeX テーブルを追加。
+      <LI>
+<!--	TFM output was wrong. the TFtoPL doc says " -->
+	TFM 出力が間違っていました。TFtoPL の文書には " と書いてあります。
+      <LI>
+<!--	reencoding with original encoding could create a glyph table one too small
+	resulting in writing/reading garbage and an eventual crash. -->
+	Original エンコーディングに符号化方式を変換するとグリフテーブルの文字数が 1 個少なくなることがあり、その結果としてゴミを読み書きしたり、クラッシュしたりしていました。
+      <LI>
+<!--	KANOU fixed a couple of problems in reading glyph names from bdf fonts. -->
+	BDF フォントからのグリフ名の読み込みにあった 2,3 の問題を狩野が修正しました。
+      <LI>
+<!--	KANOU needed to disambiguate between "Point" a unit of measurement and "Point"
+	a geometric object. -->
+	狩野は、"Point" を長さの単位「ポイント」と幾何学的対象「点」に訳し分ける必要がありました。
+    </UL>
+  <LI>
+<!--16-Jan-2005-->
+    2005年1月16日
+    <UL>
+      <LI>
+<!--
+	Added support for OpenType Device Tables (These allow you to add small
+	corrections to things like kerning at a given point size. Often at small
+	point sizes kerning and advance widths will round in such a way as to produce
+	unpleasing results. Device tables allow you to correct for that). -->
+	OpenType デバイステーブルのサポートを追加 (これらのテーブルを使って、特定のポイントサイズのカーニングなどの微細な補正が出来るようになりました。小さなサイズではカーニングや送り幅が丸められた値が不愉快な結果をもたらすことがよくあります。デバイステーブルを使うと、それを修正することができます)
+      <LI>
+<!--	Add dialogs for kerning pairs and anchors to allow users to set device tables.
+	Extend dlg for kerning classes for this. -->
+	カーニングペアとアンカーに関するダイアログを追加し、ユーザがデバイステーブルを追加できるようにしました。カーニングクラスの拡張ダイアログがそれです。
+      <LI>
+<!--	Neil Parker suggested a patch for panose values that didn't apply to latin
+	fonts -->
+	ラテン文字のフォントに適用されない Panose 値に関するパッチを Neil Parker が提案しました。
+      <LI>
+<!--	Doing a Get Info on a single point caused a crash on the mac -->
+	Mac 上で、1 個の点に対して「情報を得る」を行うとクラッシュを起こしていました。
+      <LI>
+<!--	Further attempts to improve spline approximation, underlying Merge &amp;
+	Simplify commands -->
+	合併(M)および単純化(S)コマンドが使っているスプライン近似をさらに改良しようと試みました。
+      <LI>
+<!--	Relaxed simplify's definition of parallel so it will merge a few more straight
+	lines. -->
+	単純化(S)で使用している平行の定義を緩やかな物にし、直線以外の物を合併できるようにしました。
+      <LI>
+<!--	Make the behavior of Simplify More consistant across font/outline view. Simplify
+	More can now set the default behavior for future simplify commands. -->
+	「さらに単純化」のふるまいをフォントビューとアウトラインビューで一貫性のある物にしました。今や、将来の「単純化」コマンドとして「更に単純化」をデフォルトのふるまいとして品質上差し支えないでしょう。
+      <LI>
+<!--	Provide a menu command to round to hundredths of a em-unit -->
+	em ユニットの 100 分の 1 に丸めるコマンドを追加。
+      <LI>
+<!--	Add a new facility to cluster coordinates to the same value. Useful as a
+	prepass to Remove Overlap. -->
+	座標を同じ値にまとめる新機能を追加。重複除去の前処理として役立ちます。
+      <LI>
+<!--	Bug reading ligature data from a tfm file -->
+	TFM ファイルから合字データを読み込む処理にバグがありました。
+      <LI>
+<!--	Add support for GPOS 'size' feature. Create a 'size' pane of the fontinfo
+	dlg -->
+	GPOS の 'size' 機能のサポートを追加。フォント情報ダイアログに「サイズ」タブを追加。
+      <LI>
+<!--	Replace with Reference had an interesting flaw. Consider the open and closed
+	bullet characters. If the (single) contour in closed bullet matched the outer
+	contour in open bullet then it would replace it with a reference. But this
+	is incorrect as the two contours of open bullet need to be treated as a unit. -->
+	「参照に置換」には興味深い欠陥がありました。黒丸文字と白丸文字があったとしましょう。黒丸の (1 個しかない) 輪郭が、白丸の外側の輪郭と一致したとすると、それは参照で置き換えられます。しかしこれは誤りです。なぜなら、白丸の 2 個の輪郭を 1 個の単位として扱わなければならないからです。
+      <LI>
+<!--	Could get a bad memory reference in the font view if the mouse were to extend
+	the selection outside of the window. -->
+	フォントビューで選択範囲を広げるためにマウスをウィンドウの外側に移動しなければならないとき、不正なメモリ参照を起こしていました。
+      <LI>
+<!--	Add a scripting function to return whether a file exists. -->
+	ファイルが存在するかどうかを返すスクリプト関数を追加。
+      <LI>
+<!--	In a Type1 font, if a glyph had no conflicting hints (and no flex hints)
+	and got put in a subroutine, then we'd get no hints at all. -->
+	Type1 フォントでは、あるグリフに衝突するヒントが存在せず (なおかつ flex ヒントが存在せず)、それがサブルーチン内に存在したとき、ヒントが完全に失われていました。
+      <LI>
+<!--	Be more willing to generate format12 cmap subtables (unicode, non-bmp tables) -->
+	フォーマット 12 の cmap サブテーブル (Unicode の非 BMP 対応のテーブル) をより積極的に出力するようにしました。
+    </UL>
+  <LI>
+<!--6-Jan-2005-->
+    2005年1月6日
+    <UL>
+      <LI>
+<!--	New Copyright message, etc. Get rid of pfaedit message. -->
+	メッセージなどの著作権表示を更新。旧称 PfaEdit に関するメッセージを削除。
+      <LI>
+<!--	Simplify produced strange results on quadratic splines. -->
+	2 次スプラインで単純化コマンドが変な結果を出していました。
+      <LI>
+<!--	Simplify had problems with tangent points -->
+	直線と曲線の接点 (曲線の開始点) の単純化に問題がありました。
+      <LI>
+<!--	Changing a point's type from a tangent to a curve usually had unexpected
+	results. -->
+	曲線の開始点を曲線上の点に変換したとき、一般に予想外の結果を引き起こしていました。
+      <LI>
+<!--	Add a warning message in remove overlap when user passes us two intersecting
+	contours which are oriented in oposite directions. Unfortunately it also
+	complains about some other things. -->
+	ユーザが、2 本の交差する反対向きの輪郭を重複除去処理に渡したときに、警告処理を出すようにしました。残念ながらその他の場合にもこの警告が出てしまうことがあります。
+      <LI>
+<!--	The 18 Dec changes to remove overlap introduced an infinite loop in some
+	rare cases. (When there is a gradient of 0 in distance function between two
+	splines). -->
+	12 月 18 日に加えた重複除去処理への変更により、ある稀な場合 (2 本のスプライン間の距離を求めるときに傾きが 0 の場合) に無限ループを起こすようになってしまっていました。
+      <LI>
+<!--	In a conditional operator (like &amp;&amp; or ||) in scripting where the
+	second operand was not evaluated and the second operand contained a procedure
+	call, then ff would crash -->
+	スクリプト処理で条件演算子 (&amp;&amp; や || など) の 2 番目の引数が評価されず、そこに手続き呼び出しが含まれていた場合、ff はクラッシュしていました。
+      <LI>
+<!--	Tweaked the point info dialog to show small offsets better -->
+	「点の情報」ダイアログが、小さなオフセットをよりよく表示できるように微調整。
+      <LI>
+<!--	Tweaked the merge command to behave better when merging tiny spline segments
+	(where the length of the spline segment is so small that it should just be
+	treated as a zero length spline and its slope ignored). -->
+	小さなスプライン部品を合併するときによりよく動作するように 合併(M) コマンドを微調整。
+	(スプライン部品の長さが非常に小さく、事実上長さ 0 のスプラインと見なすべきときは、傾きを無視します)。
+      <LI>
+<!--	Added an "Invert selection" command to the outline view, from Yoshiki Hayashi -->
+	アウトラインビューに「選択範囲を反転」コマンドを、林芳樹の提供により追加。
+      <LI>
+<!--	Pasting from the font view did not clear a glyph's instructions. -->
+	フォントビューからの貼り付けはグリフの命令をクリアしていませんでした。
+      <LI>
+<!--	New version of AutoHint. I've removed Diagonal Stem hints and mimum distance
+	hints for now. -->
+	自動ヒントづけの新バージョン。斜交ステムヒントと最小距離ヒントをを削除しました。
+    </UL>
+  <LI>
+<!--31-Dec-2004-->
+    2004年12月31日
+    <UL>
+      <LI>
+<!--	Ah, windows pfm files expect the metrics to be output in win latin encoding
+	order, not in the encoding defined by the pfb file. (Actually there are other
+	posibilities for encoding, but as none is documented, I must ignore them). -->
+	ああ、Windows の PFM ファイルは、メトリックを PFB ファイルでの定義順ではなく、Windows のラテンエンコーディングの順序で出力されると想定していました。(実際にはエンコーディングは他のものである可能性もありますが、何も文書化されていないので、それを無視せざるを得ません。)
+      <LI>
+<!--	ReplaceWithReference broke at some point -->
+	ReplaceWithReference は、ある種の点で壊れることがわかりました。
+      <LI>
+<!--	Add an argument-pair to the ReplaceWithReference() scripting command to allow
+	the user to specify the amount of error that will be accepted. -->
+	ReplaceWithReference() スクリプトコマンドに、ユーザが許容できる誤差の量を指定できるように 2 個の引数ペアを追加。
+      <LI>
+<!--	When generating a Type1 font, if a glyph had a single reference to a glyph
+	not in adobe encoding, and that glyph itself had a single reference (in adobe
+	enc) and some splines, then ff would make a reference to the ref in adobe
+	enc and ignore the splines. -->
+	Type 1 フォントを出力する時、あるグリフに、Adobe エンコーディングに含まれないグリフへの参照があり、そのグリフ自身に (Adobe エンコーディング内の) 単一参照があったとき、ff は Adobe エンコーディングへの参照を行い、スプラインを無視していました。
+      <LI>
+<!--	Upgrade to Adobe-Japan1-6 -->
+	Adobe-Japan1-6 への更新
+      <LI>
+<!--	Various fixes to svg output -->
+	SVG 出力の各種の修正
+	<UL>
+	  <LI>
+<!--	    export glyph to svg didn't work -->
+	    グリフの SVG 書き出しが動いていませんでした。
+	  <LI>
+<!--	    multilayered generation had problems -->
+	    マルチレイヤフォントの出力に問題がありました。
+	</UL>
+      <LI>
+<!--	Ghost hints could get outside a glyphs bounding box in a type2 font. -->
+	Type2 フォントでは、ghost ヒントがグリフのバウンディングボックスをはみ出すことがありました。
+      <LI>
+<!--	The generated truetype unique id string had an off by one error in the month -->
+	TrueType ユニーク ID 文字列を出力した時、日付が1ヶ月ずれていました。
+      <LI>
+<!--	Add support for dashed lines in multilayered mode -->
+	マルチレイヤモードでの点線サポートの追加。
+      <LI>
+<!--	In Full Page Glyph printing, the glyph was offset slightly from where it
+	should have been. -->
+	ページ全体にグリフを印字するとき、グリフが本来あるべき場所から僅かにずれていました。
+      <LI>
+<!--	Pasting a reference into a multi-layered font produced a very odd layer -->
+	マルチレイヤフォントに参照を貼り付けたとき、とてもおかしなレイヤデータができていました。
+      <LI>
+<!--	ff didn't update the metrics view if the user pasted the selection with the
+	middle mouse button. -->
+	ff は、ユーザがマウス中ボタンで選択内容を貼り付けたときにメトリックビューの更新をしていませんでした。
+      <LI>
+<!--	if a character were not in the current encoding then ff would not display
+	it in the metrics view (even if it were in the font) -->
+	文字が現在のエンコーディングの中に存在しない場合、ff は (それがフォント内に存在しても) メトリックビューで表示していませんでした。
+      <LI>
+<!--	Make the behavior of control points at the ends of open paths more reasonable. -->
+	開いたパスの端点にある制御点のふるまいをより納得のいく物にしました。
+      <LI>
+<!--	The Point-&gt;Curve command did not adust control points correctly. -->
+	「点(P)→曲線(C)」コマンドは、制御点を正しく補正していませんでした。
+      <LI>
+<!--	The View-&gt;Display Substitutions had numerous problems. -->
+	「表示(V)→置換グリフを表示(U)」にはいろいろ問題がありました。
+      <LI>
+<!--	Fix several problems from unicode unification of accents. Many characters
+	which are said to be based on cedilla actually use a comma, other characters
+	said to be carons also use comma. Make the n-with-apostrophe character be
+	treated as an accented letter. -->
+	Unicode におけるアクセントの包摂に伴ういくつかの問題を修正しました。セディラが下につくことになっている文字の多くが実際の処理ではカンマを用いており、キャロンを使用すると言われている文字が実際にはカンマを用いていました。アポストロフィつき n の文字をアクセントつき文字に変更しました。
+      <LI>
+<!--	Werner points out that straight lines should generally not be simplified
+	(as they will no longer be straight afterwards). Add this knowledge to the
+	simplify command. -->
+	直線は (後で直線ではなくなるため) 一般に単純化してはならないと Werner が指摘しました。この知識を単純化コマンドに導入しました。
+    </UL>
+  <LI>
+<!--18-Dec-2004-->
+    2004年12月18日
+    <UL>
+      <LI>
+<!--	Added a raster debugger wndow-->
+	ラスタデバッガウィンドウを追加。
+      <LI>
+<!--	Each time debugger starts, remember what debug windows were open last time
+	it was used. -->
+	デバッガが起動するたびに、前回デバッガを使った時にどのウィンドウが開いていたかを思い出すようにしました。
+      <LI>
+<!--	Constraining the pen tool did not do what I expected -->
+	ペンツールの限定が意図通りに動いていませんでした、。
+      <LI>
+<!--	If a glyph was encoded twice (or more) in a font, and an opentype font (or
+	perhaps a bitmap only sfnt) were generated, then any glyphs after the second
+	encoding would have the wrong width (ie. there would be an extra entry in
+	the horizontal metrics table corresponding to a (non-existant) copy of the
+	doubly encoded glyph) -->
+	1 個のフォント内で同じグリフに 2 個 (乃至それ以上) の文字符号が割り当てられていた場合、OpenType (および、おそらくビットマップのみのsfntも) の生成時に、2番目のエンコーディングの後にある全てのグリフの幅がが間違った値になっていました (すなわち、水平メトリックテーブルに、二重符号化されたグリフの (存在しない) コピーに対応する余計な項目が hmtx テーブルに含まれていました)。
+      <LI>
+<!--	If a type1 font never defined .notdef but used it at least twice it the Encoding
+	vector, then ff would crash. -->
+	Type1 フォントに .notdef グリフが定義されていないにもかかわらず、Encoding ベクタで 2 化言い条使われていた場合、ff はクラッシュしていました。
+      <LI>
+<!--	Updated Japanese UI (by KANOU) -->
+	日本語 UI の更新 (狩野による)
+      <LI>
+<!--	Werner found some crashes related to calling isalnum (etc.) using an index
+	outside of bmp. -->
+	BMP に収まらないインデックスを isalnum (など) に与えることに関連するいくつかのクラッシュを Werner が発見しました。
+      <LI>
+<!--	More changes (I hope improvements) to remove overlap -->
+	重複除去のさらなる変更 (改良であることを願います)
+    </UL>
+  <LI>
+<!--13-Dec-2004-->
+    2004年12月13日
+    <UL>
+      <LI>
+<!--	Some fixes to the raster display of the debug window -->
+	デバッグウィンドウのラスタ表示をいくつか修正
+      <LI>
+<!--	Conversion of cubic to quadratic had a rounding error introduced by -O2.
+	Made it a bit more forgiving about rounding errors. -->
+	3 次→ 2 次変換には、-O2 によって生じる丸めエラーがありました。丸め誤差により寛容であるように修正。
+      <LI>
+<!--	Added two new buttons to the point info dialog to allow the user to walk
+	around the current contour (Normally the Next button skips to the start of
+	the next contour if you are at the end of the current one, the "Next On Contour"
+	button returns to the first point on the contour) -->
+	点の情報ダイアログに、現在の輪郭を歩いて回るための 2 つのボタンを新設 (通常、[次]ボタンは現在の輪郭の最後の点にいる時には次の輪郭の先頭に移動しますが、[同じ輪郭上の次の点]ボタンは輪郭上の最初の点に戻ります)。
+      <LI>
+<!--	improve interpretation of some type3 fonts (including those produced by
+	fontographer 4) -->
+	ある種の Type 3 フォント (Fontographer 4 で出力されたものを含む) に対応する改良 
+      <LI>
+<!--	patch by Yoshki Hayashi to fix mnemonic crash in layers palette -->
+	レイヤパレットでのニモニックによるクラッシュを修正する林芳樹のパッチを当てました。
+      <LI>
+<!--	Added a rand() scripting command -->
+	Rand() スクリプトコマンドの追加
+      <LI>
+<!--	Support backslash newline to break up lines in a scrpt -->
+	スクリプト内での行分割のための行末のバックスラッシュのサポート
+      <LI>
+<!--	The internal adobe standard encoding thought it was unicode causing strange
+	effects -->
+	Adobe Standard エンコーディング
+      <LI>
+<!--	Type3 fonts that set colour/grey didn't work -->
+	カラー/グレーを指定した Type3 フォントが動作していませんでした。
+      <LI>
+<!--	Printing at 140pt tried printing 4 glyphs across although there was only
+	room for 3 -->
+	140 ポイントでの印字時に、3 文字しか表示できないにもかかわらず 4 文字印刷しようとしていました。
+      <LI>
+<!--	At install tell pkg-config the verson of fontforge -->
+	インストール時に、pkg-config に FontForge のバージョンを教えるようにしました。
+    </UL>
+  <LI>
+<!--3-Dec-2004-->
+    2004年12月3日
+    <UL>
+      <LI>
+<!--	If a cff file contained unencoded glyphs then ff would crash when loading
+	it. -->
+	CFF  ファイルに文字符号をもたないグリフが含まれていた場合、ff が読み込み時にクラッシュしていました。
+      <LI>
+<!--	When converting from cubic to quadratic splines, ff would sometimes produce
+	a line when it should have found a spline -->
+	3 次から 2 次スプラインに変換したとき、ff はスプラインを置くべき場所に直線を作成していることがしばしばありました。
+      <LI>
+<!--	During debugging of a ttf glyph, show what rasterization would produce if
+	the current splines were used (highlight pixels which change) -->
+	TTF グリフのデバッグ中に、現在のスプラインが使用されていた場合、ラスタライズ処理がどのような結果となるかを表示するようにしました (変更されるピクセルをハイライト表示)。
+      <LI>
+<!--	The debugger windows didn't always say "&lt;empty&gt;" when they should have. -->
+	デバッガウィンドウは、"&lt;空&gt;" を表示すべきときに必ずしも表示していませんでした。
+      <LI>
+<!--	The debugger would often crash the second time we closed its window -->
+	デバッガウィンドウを 2 回目に閉じたときにクラッシュが起きていました。
+      <LI>
+<!--	Asking for the script (as latin, greek, cyrillic...) of ".notdef" caused
+	us to look at unallocated memory. -->
+	".notdef" の属する用字系を調べるときに、割り当てていないメモリを参照しようとしていました。
+      <LI>
+<!--	We weren't labelling control points in the debugger -->
+	デバッガ内で制御点をラベルづけしていませんでした。
+      <LI>
+<!--	debugger and grid fitter for tt fonts showed curved splines as lines -->
+	TTF のデバッガとグリッド合わせ機で、曲がったスプラインを直線として表示していました。
+      <LI>
+<!--	Kerning pairs did not get scaled when changing em-size -->
+	em サイズの変更値にカーニングペアが尺度変換されていませんでした。
+      <LI>
+<!--	Add a preference for turning off automatic gotos as the user types in the
+	glyph window -->
+	ユーザがグリフウィンドウで文字キーを押したときにその文字に自動移動しないようにできる環境設定項目を追加しました。
+      <LI>
+<!--	Add a command to the glyph window to toggle between the two most recent glyphs
+	used in that window (a mini history) -->
+	グリフウィンドウが最近開いた 2 個のグリフを行き来できるコマンド (簡易ヒストリ) を追加。
+      <LI>
+<!--	Improved the points debugger window to show -->
+	点のデバッガウィンドウが以下の情報を表示できるように改良。
+	<UL>
+	  <LI>
+<!--	    implied points -->
+	    暗黙の点 (2 個のオフカーブ点の中点)
+	  <LI>
+<!--	    whether a point is on or off the curve (normal or control) -->
+	    点が曲線上の点またはオフカーブ点 (通常または制御点) のどちらか
+	  <LI>
+<!--	    added a scroll bar -->
+	    スクロールバーの追加
+	</UL>
+      <LI>
+<!--	Provide info on debugging points as mouse moves over them. -->
+	マウスを点の上に置いたときに、点のデバッグ情報を表示するようにしました。
+      <LI>
+<!--	Fix (an innocuous) reference to unallocated memory -->
+	割り当てられていないメモリの (無害な) 参照を修正。
+      <LI>
+<!--	Added ability to insert an uninterpreted table into an SFNT -->
+	解釈されないテーブルを SFNT 中に挿入できる機能を追加
+	<UL>
+	  <LI>
+<!--	    New preference item: PreserveTables which lists a comma seperated set of
+	    table tags which are to be loaded from SFNT files without interpretation
+	    (Note if ff thinks it understands a table it will parse it rather than preserving
+	    it) -->
+	    新しい環境設定項目: PreserveTables。これは、SFNT ファイルから解釈せずに読み込むテーブルタグのカンマ区切りリストです (ff がそのテーブルを解釈可能だと判断した場合には、そのテーブルを保持せずに解析することにご注意ください)
+	  <LI>
+<!--	    Scripting command LoadTableFromFile("tag ","filename") -->
+	    スクリプトコマンド LoadTableFromFile("tag ","filename")。
+	  <LI>
+<!--	    Scripting command SaveTableToFile("tag ","filename") -->
+	    スクリプトコマンド SaveTableToFile("tag ","filename")
+	  <LI>
+<!--	    Scripting command RemovePreservedTable("tag ") -->
+	    スクリプトコマンド RemovePreservedTable("tag ")
+	  <LI>
+<!--	    Scripting command HasPreservedTable("tag ") -->
+	    スクリプトコマンド HasPreservedTable("tag ")
+	</UL>
+    </UL>
+  <LI>
+<!--22-Nov-2004-->
+    2004年11月22日
+    <UL>
+      <LI>
+<!--	Kevin Schoedel suggests a new scripting command DrawsSomething() -->
+	新しいスクリプトコマンド DrawsSomething() を Kevin Schoedel が提案しました。
+      <LI>
+<!--	Kevin Schoedel requests that PrintFont be able to print a string sample (as
+	opposed to a sample file) -->
+	PrintFont 関数が (サンプルファイルでなく) 引数で与えた文字列サンプルを印字できるように Kevin Schoedel がリクエストしました。
+      <LI>
+<!--	Kevin Schoedel points out that type1 fonts stuffed into mac resource forks
+	are to be read in resource order rather than file order (often the two are
+	the same) and provides a patch to fix this. -->
+	Mac のリソースフォークに詰め込まれた Type1 フォントは、ファイル順でなくリソース順に読み込まれるようになっている (しばしば両者は同一です) ことを Kevin Schoedel が指摘し、これを修正するパッチを作成しました。
+      <LI>
+<!--	Change the way the default language/locale is picked in fontinfo-&gt;TTF
+	Names -->
+	フォント情報(F)→[TTF名]で、デフォルトの言語/ロケールを抽出する方法を変更。
+      <LI>
+<!--	Remember (across invocations) whether palettes should be hidden or not. -->
+	どのパレットが隠されており、どれがそうでないかを (次の呼び出し時にも) 覚えているようにしました。
+      <LI>
+<!--	Ignore NUL chars when reading PostScript strings (PS supports NULs in strings,
+	I'm not going to bother, but I don't want to parse incorrectly because of
+	them). -->
+	PostScript 文字列を読み込むときに NUL 文字を無視するように変更 (PS は NUL が含まれる文字列をサポートしていますが、面倒なので私はやるつもりはありません。し思わい、それによって文字列を正しく解析できないのは困ります)。
+      <LI>
+<!--	ff lost the ability to Select("U+xxxx") or Select("=") from a script. -->
+	ff は、スクリプトで Select("U+xxxx") または Select("=") を行う能力を失いました。
+      <LI>
+<!--	Oops, the routine to read PostScript FontNames from a ttf file was broken
+	by the encoding change. -->
+	おっと、PostScript の FontName を TTF ファイルから読み出すルーチンが、エンコーディング処理の書き換えで壊れていました。
+      <LI>
+<!--	If a ttf file contained an erroneous composite glyph with flags indicating
+	more components after the glyph had run out of data, then ff might attempt
+	to read instructions also and have problems. -->
+	TTF ファイルに、あるグリフの後ろにさらなる構成要素が存在することを示すフラグの設定された、エラーのある複合グリフが含まれていた場合、データが使い尽くされ、ff は命令を読み込もうとして問題を起こしていました。
+      <LI>
+<!--	If a font contains multiple ttf names for a given string in a language then
+	allow the user to pick which one s/he likes best. -->
+	フォント内に、特定の文字列に対して複数の同一言語の TTF 名が含まれていた場合、ユーザが望むものを選択できるようにしました。
+      <LI>
+<!--	Another case where a bad otf table crashes fontforge -->
+	壊れた OTF テーブルが FontForge をクラッシュさせる例がまだありました。
+      <LI>
+<!--	If a ttf/otf font does not contain a postscript FontName string in the name
+	table, then ff's attempt to synthesize one out of fullname/familyname did
+	not check for a valid name. -->
+	TTF/OTF フォントに PostScript FontName 文字列が含まれていなかった場合に、ff が FullName/FamilyName のどちらかと同期しようとする処理で、名前文字列が正しいかどうかのチェックをしていませんでした。
+    </UL>
+  <LI>
+<!--15-Nov-2004-->
+    2004年11月15日
+    <UL>
+      <LI>
+<!--	If ff started without a prefs file, then creating a new font would crash -->
+	ff を prefs ファイルのない環境で起動したとき、フォントの新規作成時にクラッシュしていました。
+      <LI>
+<!--	If a copyright string contained a newline then ff would generate bad postscript -->
+	著作権表示文字列に改行が入っているときに、ff は間違った PostScript を出力していました。
+      <LI>
+<!--	If user added a comment to an empty glyph then the comment wasn't saved in
+	the sfd file. -->
+	ユーザが空のグリフにコメントを追加しても、そのコメントは SFD ファイルに保存されていませんでした。
+      <LI>
+<!--	If ff saved a utf7 string to an sfd file (ttf names, etc.) and that string
+	contained a hyphen that followed immediately after something that needed
+	to be encoded in base64, then the hyphen would be lost. -->
+	ff が UTF-7 文字列を SFD ファイルに (TTF 名などで) 保存していて、その文字列に base64 でエンコードすべき文字列の直後にハイフンが続いて出現していたとき、ハイフンが抜け落ちていました。
+      <LI>
+<!--	new french UI -->
+	フランス語 UI の更新。
+      <LI>
+<!--	ff was (usually) setting the ascent/descent fields of the 'hhea' table to
+	0. When the font was drawn on the mac it was clipped to nothing.
+	<FONT COLOR="Red"><STRONG><BIG>Caveat: Old sfd files are still broken and
+	there is no UI for fixing them. Instead you must edit them manually, and
+	change:</BIG></STRONG></FONT> -->
+	ff は (公式には) hhea テーブルの ascent/descent フィールドを 0 に設定していました。フォントを Mac で描画したとき、表示がクリッピングされて何も表示されていませんでした。
+	<FONT COLOR="Red"><STRONG><BIG>警告: 古い SFD ファイルはまだ壊れたままであり、これを修正するための UI は存在しません。その値を手で編集して、さらに以下のように書き換えなければなりません:</BIG></STRONG></FONT>
+	<PRE>HheadAOffset: 0
+HheadDOffset: 0
+</PRE>
+	<P>
+<!--	to be: -->
+	を以下のようにします:
+	<PRE>HheadAOffset: 1
+HheadDOffset: 1
+</PRE>
+    </UL>
+  <LI>
+<!--12-Nov-2004-->
+    2004年11月12日
+    <UL>
+      <LI>
+<!--	ff would crash on postscript fonts where the encoding included a glyph name
+	not defined in CharStrings (probably broken on 12-Oct) -->
+	PostScript フォントが、Charstrings で定義されていないグリフ名をエンコーディングに含んでいたとき、ff がそれを開こうとしたときにクラッシュしていました (おそらく10月12日以来壊れていました)。
+      <LI>
+<!--	More remove overlap work -->
+	重複除去処理のさらなる作業
+      <LI>
+<!--	In the glyph window, when the scaled distance between the top and bottom
+	of the window is less than 1 em-unit, then the vertical ruler was drawn with
+	the top and bottom labels reversed. -->
+	グリフウィンドウ内で、ウィンドウの上端と下端の間で拡大・縮小された距離が 1 emユニットよりも小さい場合、垂直ルーラーの上下のラベルが逆転していました。
+      <LI>
+<!--	sfd files used to have a limit of 1023 characters in ttf 'name' table strings. -->
+	TTF の 'name' テーブル文字列の長さが、1023 文字までに限られていました。
+    </UL>
+  <LI>
+<!--6-Nov-2004-->
+    2004年11月6日
+    <UL>
+      <LI>
+<!--	Encoding change broke prefs dialog -->
+	エンコーディング処理の変更により、環境設定ダイアログが壊れていました。
+    </UL>
+  <LI>
+<!--5-Nov-2004-->
+    2004年11月5日
+    <UL>
+      <LI>
+<!--	Encoding change didn't work on libiconv systems -->
+	変更されたエンコーディング処理は libiconv のあるシステムでは動いていませんでした。
+    </UL>
+  <LI>
+<!--4-Nov-2004-->
+    2004年11月4日
+    <UL>
+      <LI>
+<!--	Added a new scripting command: AddAccent() to add an arbetrary accent to
+	an arbetrary glyph. -->
+	新しいスクリプトコマンドの追加: 任意のグリフに任意のアクセントを追加するための AddAccent() コマンド。
+    </UL>
+  <LI>
+<!--3-Nov-2004-->
+    2004年11月3日
+    <UL>
+      <LI>
+<!--	KANOU has a <A HREF="http://khdd.net/fontforge-jman/">Japanese version</A>
+	of this reference manual under construction. -->
+	このリファレンスマニュアルの<A HREF="http://khdd.net/fontforge-jman/">日本語版</a>を狩野が構築中です。
+      <LI>
+<!--	In MultiLayered mode, the "New Layer" menu item left a dangling pointer which
+	caused a crash if anyone looked at the background layer. -->
+	マルチレイヤモードで、「新規レイヤ」メニュー項目がダングリングポインタを残しており、背面レイヤを表示しようとしたときにクラッシュを引き起こしていました。
+      <LI>
+<!--	In MultiLayered mode, if one clicked beyond the last layer in the Layers
+	palette, ff would crash. -->
+	複数レイヤモードで、レイヤパレットで最後のレイヤより後をクリックすると ff がクラッシュしていました。
+      <LI>
+<!--	KANOU provided a patch to fix another crash in the layers palette. -->
+	レイヤパレットでクラッシュが起こるもう 1 つの場合のパッチを狩野が提供しました。
+      <LI>
+<!--	KANOU has provided a new Japanese UI. -->
+	新しい日本語 UI を狩野が提供しました。
+      <LI>
+<!--	Made an addition to CharInfo() scripting command so user can determine the
+	horizontal extrema of a glyph at a given vertical position. Similar addition
+	for vertical extrema at horizontal pos. -->
+	CharInfo() スクリプトコマンドに、ユーザが特定の垂直位置における水平方向の極大値を知ることができる機能追加を行いました。同様の追加は、特定の水平位置での垂直方向の極大値に対しても行っています。
+      <LI>
+<!--	Add a scripting command (PasteWithOffset) to allow user to apply an offset
+	when pasting. For building accented letters by hand. -->
+	ユーザが貼り付け時にオフセットを適用できるスクリプトコマンド (PasteWithOffset) を追加しました。手動でアクセントつき文字を構築するのに使えます。
+      <LI>
+<!--	KANOU provides a patch to fix a problem in the new encoding stuff. -->
+	新しいエンコーディング処理で起こる問題を解決するパッチを狩野が提供しました。
+      <LI>
+<!--	Select(".notdef") usually didn't work. -->
+	Select(".notdef") は一般に動作していませんでした。
+    </UL>
+  <LI>
+<!--28-Oct-2004-->
+    2004年10月28日
+    <UL>
+      <LI>
+<!--	Kanou noticed that ISO 15924 has been updated and provide a patch including
+	new scripts. -->
+	ISO 15924 が更新されていたことに狩野が気づき、新しい用字系を含むパッチを提供しました。
+      <LI>
+<!--	I have redone the way ff handles encodings internally. We used to depend
+	on the encodings builtin to gdraw/gunicode. Now we use iconv() (if there
+	is no iconv, then ff will use a dummy iconv which understands the encodings
+	of gdraw/gunicode). Encodings are identified by name rather than by number
+	now. -->
+	ff が文字エンコーディングを内部的に扱う方法を書き直しました。今までは gdraw/gunicode に組み込まれたエンコーディングに依存していました。今後、iconv() を使用することにします (iconv が存在しない場合、ff は gdraw/gunicode 組み込みの符号化方式を理解するダミーの iconv を使用します)。エンコーディングは数字でなく名前によって識別されるようになります。
+      <LI>
+<!--	Further fixes to the extremum detector -->
+	極大値検出処理の追加修正。
+      <LI>
+<!--	Further fixes to remove overlap -->
+	重複除去処理の追加修正。
+      <LI>
+<!--	Added an extra argument to scripting RoundToInt, so that you can have control
+	over what it rounds to (ie. round to hundredths, tenths, etc.) -->
+	スクリプトの RoundToInt に追加引数を追加し、丸め処理の単位 (例: 1/100, 1/10 など) を調節できるようにしました。
+      <LI>
+<!--	Added two new scripting commands NearlyHvCps() and NearlyHvLines() which
+	look for control points or lines that are nearly horizontal or vertical and
+	force them to be horizontal or vertical. -->
+	殆んど水平・垂直に近い制御点または直線を検出し、それを強制的に水平・垂直に揃える 2 つの新規スクリプトコマンド NearlyHvCps() および NearlyHvLines() を追加。
+      <LI>
+<!--	Kanou provided a patch so that the GRadio.Font resource controls the font
+	in the layers palette of the glyph view. -->
+	GRadio.Font リソースがグリフビューのレイヤパレットも制御するようなパッチを狩野が提供しました。
+    </UL>
+  <LI>
+<!--23-Oct-2004-->
+    2004年10月23日
+    <UL>
+      <LI>
+<!--	Remove overlap had problems with splines which made abrupt turns (ie. tiny
+	splines after we found extrema points and divided the spline into bits between
+	extrema) -->
+	重複除去処理は、突然方向変化するスプライン (すなわち、極大点を発見した後に微小なスプラインが発生し、スプラインを極大点の間で分割した場合) の扱いに問題がありました 
+      <LI>
+<!--	Remove overlap could munch memory -->
+	重複除去処理がメモリを喰い尽くすことがありました。
+      <LI>
+<!--	The ruler tool showed all tiny splines as having a length of 0-->
+	ものさしツールは、すべての微小なスプラインを長さ 0 と表示していました。
+      <LI>
+<!--	Autorecovery had problems with glyphs containing features (would complain
+	about sli) -->
+	機能を含むグリフの自動回復に問題がありました (sli に関する問題があると表示していました)。
+      <LI>
+<!--	KANOU wants to be able to scale greymap fonts -->
+	グレイマップフォントを拡大・縮小できるように狩野が望みました。
+      <LI>
+<!--	removed routines from fvcomposit.c, metricsview.c that were duplicates of
+	fvfonts.c -->
+	fvfonts.c と重複する fvcomposit.c, metricsview.c のルーチンを削除。
+      <LI>
+<!--	Oops, the default mac filesystem isn't case concious either, extend the windows
+	export patch to the mac. -->
+	おっと、Mac のデフォルトファイルシステムは大文字/小文字を区別しないんでした。Windows の書き出し処理のパッチを Mac にも適用しました。
+      <LI>
+<!--	Simplify didn't have a very good extremum detector and would sometimes delete
+	extrema. -->
+	単純化コマンドはあまりよい極大値検出ルーチンを持っていなかったので、たまに極大値を削除することがありました。
+    </UL>
+  <LI>
+<!--14-Oct-2004-->
+    2004年10月14日
+    <UL>
+      <LI>
+<!--	Remove overlap had problems with tiny splines. -->
+	微小なスプラインがあるときに重複除去処理に問題がありました。
+    </UL>
+  <LI>
+<!--13-Oct-2004-->
+    2004年10月13日
+    <UL>
+      <LI>
+<!--	I notice (in Fontes &amp; Codages) that the labels in the metrics view aren't
+	translatable -->
+	メトリックビュー内のラベルが平行移動できないことに (Fontes &amp; Codages を読んでいて) 気づきました。
+      <LI>
+<!--	Fontes &amp; Codages suggests that it would be nice if the glyph labels in
+	the fontview could be something other than an image of the glyph (glyph name,
+	unicode code point, encoding, etc.)
+	Fontes &amp; Codages は、フォントビュー内のグリフラベルがグリフの画像以外の何か (グリフ名、Unicode コードポイント、文字符号など) であった方がいいと示唆しています。
+      <LI>
+<!--	Change the word "Character" to "Glyph" where appropriate. -->
+	文字 (character) という単語をグリフ (glyph) に書き換えた方がよい場所は変更しました。
+      <LI>
+<!--	Move the Open Outline/Bitmap/Metrics commands to the Window menu, and change
+	"Open" to "New". -->
+	ウィンドウメニューのアウトライン/ビットマップ/メトリックコマンドを移動し、「…を開く」を「新規…」に書き換えました。
+    </UL>
+  <LI>
+<!--12-Oct-2004-->
+    2004年10月12日
+    <UL>
+      <LI>
+<!--	We have a Spanish UI now, courtesy of Walter Echarri. Yeah! -->
+	スペイン語の UI が、Walter Echarri のおかげで使用可能です。イェイ!
+      <LI>
+<!--	Support for loading type3 fonts (that ff produced) was broken. Note: ff is
+	still unable to load many type3 fonts (any that are filtered, or that use
+	images for example), but it should be able to read its own fonts. -->
+	Type3 フォント (ff が出力したもの) の読み込みサポートが壊れていました。注意: ff は現時点でも多くの Type3 フォントを読み込めません (フィルタ処理を要するもの、または画像などを使用するもの) が、自分で書き出したフォントは読めるようにしておくべきです。
+      <LI>
+<!--	(I hope) minor change to the way .notdef is handled when reading postscript
+	files. -->
+	PostScript ファイルからの読み込み時の .notdef の扱いを少し変更しました (と思います)。
+      <LI>
+<!--	Added support for printing to pdf file -->
+	PDF ファイルへの印刷サポートを追加しました。
+      <LI>
+<!--	(fixed a bug in pdf generation from the export command) -->
+	(書き出しコマンドからの PDF 出力のバグを修正。)
+      <LI>
+<!--	Fixed various problems from turning off the multilayer bit in fontinfo -->
+	フォント情報ダイアログでマルチレイヤビットをオフにしたときに発生するさまざまな問題を修正。
+      <LI>
+<!--	KANOU needs a couple more strings disambiguated. -->
+	さらに 2 個の文字列の厳密な区別を狩野が要求しました。
+      <LI>
+<!--	Add support for generating type42 and type 11 (type42 cid) fonts, add support
+	for loading type42 (but I'm not bothering with type11s) and use these guys
+	when printing order2 fonts. -->
+	Type42 と Type 11 (Type42 CID) フォントの出力サポートおよび、Type42 読み込みのサポート (Type11 の読み込みまでは対応しないつもりです) の追加ならびに、2 次アウトラインのフォントを印刷するときにそれらを使うようにしました。
+      <LI>
+<!--	Check to make sure the PostScript Fontname is valid when reading in a truetype
+	(or svg) font (syntax doesn't enforce this), and if not warn the user and
+	fix it up. -->
+	TrueType (および SVG) フォントの読み込み時に、PostScript フォント名が正しいかのチェックを加え (構文上不正なものも可能です)、不正な場合はユーザに警告して修正するようにしました。
+      <LI>
+<!--	Add some new scripting commands for handling MM fonts since someone seems
+	to want them. -->
+	誰かが欲しがっているようですので、MM フォントの処理のためのスクリプトコマンドを追加しました。
+      <LI>
+<!--	Used to complain if there were more than one Unique Font ID in the truetype
+	'name' table. (because the OpenType list said there should only be one, else
+	it would not be unique). But both Apple and MS ship with fonts containing
+	multiple Unique Font IDs. God knows what that means, or when you pick one
+	over the other... Anyway I changed my error into a warning. -->
+	ユニークフォント ID が TrueType 'name' テーブルに 2 個以上含まれているときに警告するようにしました。(OpenType メーリングリストで、それは 1 個しか存在するべきではなく、そうでなければユニークではないからです)。しかし Apple も MS も複数の Font ID を含むフォントを出荷しています。その真意は神のみぞ知るですが、またはどれか 1 個を選択してもらう必要があります…。それにも関わらず、エラーを警告に変更しました。
+    </UL>
+  <LI>
+<!--30-Sept-2004-->
+    2004年9月30日
+    <UL>
+      <LI>
+<!--	I have rewritten Remove Overlap from scratch. I seems less likely to crash,
+	but I'm not sure that in any other respect it is improved. -->
+	重複除去処理を一から書き直しました。クラッシュが減ったように思いますが、他の点で品質が向上したかは疑問です。
+      <LI>
+<!--	In the character view the Remove Overlap (and Intersect and Find Intersections)
+	now only work on selected contours, or, if no contours are selected then
+	on all contours. This change makes these commands consistant with most other
+	commands in the character view, but it is a change from past behavior. -->
+	文字ビュー上では、重複除去 (および「重複部分を抽出」「交点を発見」) は選択されている輪郭、または輪郭を選択していないときはすべての輪郭に適用されるように変更しました。この変更により、これらのコマンドが文字ビュー上のほとんどの他のコマンドと一貫したふるまいをするようになりましたが、今までのふるまいとは違います。
+      <LI>
+<!--	The Import scripting command has been extended to give the user control over
+	the stroking flags (correct direction, remove overlap, handle erasers). And
+	the background flag has been extended a bit to apply to other things than
+	bitmaps. -->
+	スクリプトコマンド Import を、ユーザがストローク処理フラグ (方向の補正、重複除去、消しゴムの扱い) を制御できるように拡張しました。また、背景フラグをビットマップ以外のものに適用できるように拡張しました。
+      <LI>
+<!--	ff had a pointer dangling to a freed block after loading a font containing
+	multiple versions of some greek letters. -->
+	ff は、同じギリシャ文字の複数のバージョンを含むフォントを読み込んだときに、解放したメモリブロックを指すダングリングポインタが残っていました。
+      <LI>
+<!--	U+1D400-U+1D7FF are stylized variants of the latin and greek alphabets as
+	used in Mathematics. The font view will now display (in the glyph header)
+	the proper variant of the glyph (assuming it can find a font with that style). -->
+	U+1D400～U+1D7FF の範囲はラテンおよびギリシャアルファベットの、数学で使用される各種スタイルつきのグリフです。フォントビューで (グリフヘッダに) グリフの適切なスタイルを表示するようにありました (そのスタイルのフォントが見つかることが前提です)。
+      <LI>
+<!--	The AMS (American Mathematical Society) has their own interpretation of the
+	public use area. FF now understands their glyph names as alternates for those
+	glyphs, and has an AMS interpretation (under FontInfo-&gt;Encoding) that
+	will make ff use those names in new fonts. -->
+	AMS (アメリカ数学会) は、Unicode の私用領域に対する独自の解釈をもっています。FF はそれらのグリフ名をそれらのグリフの別名と理解し、ff が新規に作成するフォントで AMS の解釈 (フォント情報→[エンコーディング]で) による名前を使用できるようになりました。
+      <LI>
+<!--	Many of code points in the AMS PUA are reencodings of other glyphs. FontForge
+	will automatically generate these reencodings for you. -->
+	AMS の PUA にある文字の多くは別の場所にあるグリフを重複符号化したものです。FontForge はそれらの再符号化を自動的に生成します。
+      <LI>
+<!--	The AMS also describes how some TeX glyph names map to unicode. So include
+	those names in our alternate list too (so we can map them correctly, not
+	as a way of encouraging people to use them). -->
+	AMS は、いくつかの TeX グリフ名を どのように Unicode に対応させるかを定めています。これらの名前も我々の別名リストに取り込みました (これにより正しい対応づけができるようになりましたが、人々にこれらを使うように推奨するためではありません)。
+      <LI>
+<!--	Both the AMS defn. of the PUA and the Big5 defn. map characters which are
+	properly in other unicode planes into the BMP. FF now understands this, and
+	converting between a BMP encoding and a full unicode encoding will move things
+	from the PUA to their proper unicode slot in higher planes. -->
+	AMS による PUA の定義と Big5 の定義の両方とも、Unicode の別の面に正規に定義された文字を BMP に割り付けています。ff はこれを理解できるようになり、BMP エンコーディングから完全な Unicode エンコーディングを行うときに、PUA から上位面にあるそれらの適切な符号位置に移動できるようになりました。
+      <LI>
+<!--	Find Problems thought that adjacent splines intersected at their common
+	end-point. I suppose they do, but it isn't useful information -->
+	問題点を発見ダイアログは、は、隣同士のスプラインは共通の端点で交差すると考えていました。私はそうだと思いますが、これは有益な情報ではありません。
+      <LI>
+<!--	In the char view, I used to blank out the status line when the mouse moved
+	outside the window. But some of that info is still valid. So only blank out
+	the meaningless bits. -->
+	文字ビュー内では、マウスをウィンドウの外側に移動したときにステータスラインを消去していました。しかし一情報は正しいままなので、意味をなさない部分のみを消去するようにしました。
+      <LI>
+<!--	Kanou requests a disambiguation between two strings with the same label in
+	English but different meanings in Japanese. (Vertical/VerticalWriting) -->
+	英語では同じラベルをもっていても、日本語では異なる意味をもつ「垂直」と「縦書き」を区別するように狩野がリクエストしました。
+      <LI>
+<!--	The Point-&gt;Make Line command would crash if either of the the two points
+	was missing a previous or next spline. -->
+	点(P)→直線に変換(L)コマンドは、2個の点のどちらかが前または次のスプラインをもたないときにクラッシュを引き起こしていました。
+      <LI>
+<!--	Pierre HANSER provides a patch to problems.c (it would crash when dealing
+	with fonts with an encoding with &lt; 32 code points. -->
+	problems.c に対するパッチを Pierre HANSER が提供しました (今までは、32 未満のコードポイントを使用しているフォントを扱うとクラッシュしていました)。
+      <LI>
+<!--	Pierre HANSER provides a patch to merge fonts (it would crash when merging
+	bitmap fonts. -->
+	フォントの合併処理に対するパッチを Pierre HANSER が提供しました (ビットマップフォントを合併するとクラッシュしていました)。
+      <LI>
+<!--	Closing a charview window with a docked palette could cause a crash if the
+	cursor was moved quickly into another charview which needed a new cursor. -->
+	連結表示したパレットをもつ文字ビューウィンドウを閉じるとき、マウスカーソルが、新しいカーソルを必要とする別の文字ビューに素早く移動するとクラッシュしていました。
+      <LI>
+<!--	The perspective icon had the wrong background -->
+	透視変換アイコンの背景が間違っていました。
+      <LI>
+<!--	Piska keeps complaining about the way ff handles 0 width strokes. He wants
+	it to have zero width (disappear, I guess), but PS says it should be stroked
+	as the thinnest line possible (not clear what this should mean in ff, I interpret
+	it as a 1em-unit stroke). But METAPOST uses a 0 width stroke in cases where
+	it wants no stroking (with a fill) so in the special case of a fill with
+	a 0 width stroke, turn off stroking. -->
+	ff が幅 0 のストロークを扱うやり方に対して、Piska にはまだ不満がありました。彼は、幅ゼロをもたせたかったのです (私は、表示が消えると思いました) が、PS は、デバイスが表示可能なもっとも細い線を引くように定めているのです (これが ff でどのような意味をもつかは明瞭ではありませんが、私は幅 1 em のストロークと解釈しました)。しかし METAPOST では、幅 0 のストロークを、輪郭を引かずに (塗りつぶしだけを) 行いたいときに使用していますので、幅 0 のストロークで塗りつぶしを行うときには、輪郭を引かないようにしました。	
+      <LI>
+<!--	Use a different approach to approximating a set of points with fixed slopes
+	at the end points. Used to do least squares (fixup slopes), least squares
+	again (fixup slopes). Now I do least squares (fixup slopes), perturb the
+	lengths of the slope vectors until we find the best fit. -->
+	端点において傾きが固定された点の集合を近似するのに、今までと違うアプローチを使うようにしました。(傾きの補正に) 最小自乗法を適用し、(傾きの補正に) 最小自乗法をもう一度適用していました。これからは、(傾きの補正に) 最小自乗法を適用し、最良近似が見つかるまで傾きベクトルの長さを微調整するようになります。
+      <LI>
+<!--	I was generating flex hints when I should not have done so. Add a heuristic
+	so that ff doesn't add flexes to small circles. -->
+	flex ヒントを出力すべきでないときに出力していました。ff が小さな円に対して flex を追加しないようなヒューリスティックを追加しました。
+      <LI>
+<!--	Failed to read long format pk bitmaps. -->
+	長いフォーマットの pk ビットマップの読み込みができていませんでした。
+      <LI>
+<!--	Patch by Mchael Ghrken to make the Skew scripting command take a
+	numerator/denominator style argument. -->
+	スクリプティントコマンド Skew が分子/分母形式の引数をとれるように、Mchael Ghrken がパッチを提供しました。
+    </UL>
+  <LI>
+<!--<A HREF="oldchangelog.html">Earlier Changes </A> -->
+    <A HREF="oldchangelog.html">これ以前の変更点</A>
+  <LI>
+<!--<A HREF="pfaeditchangelog.html">Changes to PfaEdit (predecessor to
+    FontForge)</A>-->
+    <A HREF="pfaeditchangelog.html">PfaEdit (FontForge の旧名称) への変更点</A>
+</UL>
+</BODY></HTML>
