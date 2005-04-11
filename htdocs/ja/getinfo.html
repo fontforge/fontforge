@@ -1,0 +1,185 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 14-Dec-2000 -->
+  <!-- AP: Last modified: 5-Dec-2004 -->
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
+<!--<TITLE>Get Info</TITLE>-->
+    <TITLE>情報を得る</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
+</HEAD>
+<BODY>
+<H1 ALIGN=Center>
+<!--Get Info-->
+    情報を得る
+</H1>
+<P>
+<!--
+In the Outline View the Get Info command can generate one of four different
+dialogs depending on what is selected. If a single thing s selected, and
+that thing is a point then the point info dialog is brought up, if it is
+a reference then the point info dialog is brought up, if it is a background
+image then the image dialog is brought up. If it is an anchor point then
+the anchor point dialog is brought up. -->
+アウトラインビューでは、情報を得る コマンドを実行すると、その時選択している内容によって異なる 4 種類のダイアログを生成することができます。1 個の物だけを選択している場合、それが点であれば 点の情報 ダイアログが起動し、参照であれば 参照 ダイアログが起動し、背景画像であれば 画像 ダイアログが起動します。選択されているのがアンカーポイント 1 個だけのときは アンカーポイント ダイアログが起動します。
+<H2>
+<!--Point Info-->
+    点の情報
+</H2>
+<P>
+<IMG SRC="pointinfo.png" WIDTH="321" HEIGHT="495" ALIGN="Right"><!-- This shows
+information about the current point. The Base position is where the point
+itself is. -->
+ここでは現在の点に関する情報を表示します。基準(B) は、その点自身の置かれた位置を表します。
+<P>
+<!--
+The Next CP shows both the location of the next control point, and the offset
+to that point from the base (and whether this setting is the default for
+that point, if this point is the last on an open contour then the [] Default
+button will be grey), underneath the offsets it shows the same information
+in a different format -- as a distance from the point itself, and the angle 
+to it. -->
+次の点: は次の制御点の位置と、基準点からのオフセット (および、その位置設定がその点に対するデフォルトかどうか。もしその点が開いたパスの最後に位置する場合は、[]デフォルト ボタンは灰色表示になります) の両方を表示します。その下に表示されているのは、同じ情報を異なる表現――点自体からの距離と、その角度――で表した物です。
+<P>
+<!--
+The Prev CP does the same for the previous control point. -->
+前の点: は同じ情報を前の制御点に対して表示します。
+<P>
+<!--
+You may change any of these and the change is reflected in the outline view.
+Your changes are constrained by the point type (for instance with tangent
+points, you may not change the angle fields as these are fixed). -->
+これらの値はすべて変更可能で、変更はアウトラインビューに反映されます。可能な変更は、点の型によって制約されています (例えば、曲線の開始点では 角度 フィールドは固定されているので変更できません。
+<P>
+<!--
+You may also change whether a point is a curve, corner or tangent point (Caution:
+Changing from a corner point to a curve point and back to a corner point
+is NOT a no op. It may change the control points) You may move on to the
+next or previous point on the path, or the next/previous point of the current
+contour. If you cancel then all changes to all points are canceled. -->
+点が曲線上の点か、角の点、それとも曲線の開始点のどれであるかを変更することもできます。(警告: 角の点を曲線上の点に変換し、また角の点に戻すのは何もしないのと同じでは<EM>ありません</EM>)。パス上の前または次の点に移るか、現在の輪郭上の次/前の点に移動することができます。操作をキャンセルすると、すべての点に対するすべての動作が取り消されます。
+<P>
+<!--
+The colors of the labels reflect the colors of the items they refer to. The
+point itself will be drawn in red, the previous control point will be drawn
+in magenta and the next control point will be drawn in dull cyan. -->
+ラベルの色は、それが参照しているものの色を反映しています。点そのものは赤で表示され、前の制御点はマゼンタ、次の制御点は鈍いシアンで表示されます。
+<BR CLEAR=ALL>
+<H3>
+  <IMG SRC="hintmaskinfo.png" WIDTH="321" HEIGHT="459" ALIGN="Right"><!--<A NAME="HintMask">Hint</A>
+  Mask-->
+  <A NAME="HintMask">ヒントマスク</A>
+</H3>
+<P>
+<IMG SRC="charwithhintmask.png" WIDTH="309" HEIGHT="322" ALIGN="Left"><!-- If
+you want to control what hints are active at a given point (and at all subsequent
+points until an new hintmask is given) you can use the hint mask pane. This
+provides you with a list of all hints in the current glyph, you should select
+the ones which you want active. -->
+もし、指定された点 (および、この後で、新しいヒントマスクが作成される前に作成されるすべての点) でどのヒントが有効になっているかを制御したいならば、ヒントマスク 画面を使うことができます。これは、現在のグリフ内のすべてのヒントのリストを提供します。その中から、有効にしたいヒントを 1 つ選んでください。
+<P>
+<!--
+As you select hints, the glyph view will darken those hints so you can see
+what you've selected.-->
+ヒントを選択すると、グリフビューのヒントが暗い色で表示されるので、選択されたヒントを目で確認できます。
+<P>
+<!--
+Points with circles drawn around them have hintmasks. -->
+丸で囲まれた点は、ヒントマスクがあることを示しています。
+<P>
+<!--
+According to Adobe's documentation you should never have two hints which
+conflict active at the same time. FontForge will warn you if you do this.
+Unfortunately there are fonts (even fonts from Adobe) which do not follow
+this rule, so I have made this a warning rather than an error. -->
+Adobe の文書によると、同時に有効となっていて矛盾する 2 つのヒントが含まれることは全く禁じられています。FontForge は、それを行うと警告を発します。残念なことにこのルールに従わないフォント (Adobe が販売しているフォントですら) が実在するので、これをエラーとはせずに警告に止めています。
+<P>
+<!--
+Remember to hold the control key down when making disjoint selections. -->
+連続していない複数の要素を選択するときには Control キーを押すことに留意してください。
+<P>
+<!--
+Sadly the direction in which hintmasks apply is backwards from what you would
+expect (the hintmask applies to this point an all previous points on the
+contour, rather than all subsequent ones). -->
+残念ながらヒントマスクが適用される方向は普通に考える向きとは逆さまです (ヒントマスクは、この点から輪郭上のすべての前の点に対して適用されるのであって、その後の点に対して適用されるのではありません)。
+<H4>
+<!--Active Hints-->
+    有効なヒント
+</H4>
+<P>
+<!--
+This looks just like the hint mask, except you cannot change anything it
+in. It shows you what hints are currently selected at this point. If a point
+has a hint mask then the two will be identical.<BR Clear=All> -->
+これはヒントマスクと見た目上同じですが、ここでは何も変更できない点が異なります。現在の点においてどのヒントが現在選択されているかを表示します。点にヒントマスクが設定されているならば、これら 2 つは同一になります。<BR Clear=ALL>
+<H2>
+  <IMG SRC="agetinfo.png" WIDTH="226" HEIGHT="329" ALIGN="Right"><!--<A NAME="Anchors">Anchor
+  Points</A> Info-->
+  <A NAME="Anchors">アンカーポイント情報</A>
+</H2>
+<P>
+<!--
+This dialog shows the selected <A HREF="overview.html#Anchors">anchor point</A>
+with the anchor class, location, type and (for ligatures) the ligature index.
+You may change any of these attributes (as long as your changes are reasonable).
+You may create new points or delete the current one. As with normal points
+above you may step through all the anchor points in your glyph. -->
+このダイアログは選択中の<A HREF="overview.html#Anchors">アンカーポイント</A>をアンカークラス、位置、タイプと (合字については) 合字のインデックスを表示します。これらの任意の属性を変更可能です (その変更が筋が通っている場合)。点を新規に作成したり現在ある点を削除したりできます。上で説明した通常の点と同様、グリフ内に存在するアンカーポイントを順次切り替えて表示することができます。
+<P>
+<!--
+Anchor points may also be created with the
+<A HREF="pointmenu.html#AddAnchor">Point-&gt;Add Anchor</A> command.-->
+アンカーポイントは <A HREF="pointmenu.html#AddAnchor">点(P)→アンカーを追加(A)</A> コマンドで作成することもできます。
+<BR Clear=All>
+<H2>
+  <IMG SRC="rgetinfo.png" WIDTH="297" HEIGHT="284" ALIGN="Right"><!--Reference
+  Info-->
+  参照の情報
+</H2>
+<P>
+<!--
+This dialog shows the name of the selected reference, its encoding in the
+font and its postscript transformation matrix. You may alter the transformation
+matrix if you desire. -->
+このダイアログは選択された参照の名前、そのフォント内でのコード位置と PostScript 変換行列を表示します。必要ならば変換行列を変更することもできます。
+<P>
+<!--
+The transformation matrix maps points in the glyph being refered to into
+their location in the current glyph: <BR> -->
+変換行列はグリフ内の点を、参照されているグリフでの元の位置から、現在のグリフ上の位置に変換します:<BR>
+<CODE>&nbsp; &nbsp; x<SUB>current</SUB> = TM[1,1]*x<SUB>ref</SUB> +
+TM[2,1]*y<SUB>ref</SUB> + TM[3,1]<BR>
+&nbsp; &nbsp; y<SUB>current</SUB> = TM[1,2]*y<SUB>ref</SUB> +
+TM[2,2]*y<SUB>ref</SUB> + TM[3,2]</CODE>
+<P>
+<!--
+The [Show] button will open a glyph outline view showing the character being
+referred to.<BR CLEAR=ALL> -->
+[表示(S)] ボタンを押すと、参照されているグリフのアウトラインビューを開きます。
+<H2>
+<!--Image Info-->
+    画像情報
+</H2>
+<P>
+<!--
+This dialog gives the offset to the lower left corner of the image and the
+scale factors applied to the image. Currently you may not alter anything
+here, it is purely informational. -->
+このダイアログは、画像の左下隅のオフセットと、画像に適用された拡大/縮小率を表示します。現在のところ、ここでは何も編集できません。単に情報提供の役にしか立ちません。
+<P>
+<!--
+See Also: -->
+参照:
+<UL>
+  <LI>
+<!--<A HREF="fontinfo.html">The font info dialog</A> -->
+    <A HREF="fontinfo.html">フォント情報ダイアログ</A>
+  <LI>
+<!--<A HREF="charinfo.html">The glyph info dialog</A>-->
+    <A HREF="charinfo.html">グリフ情報ダイアログ</A>
+</UL>
+<P ALIGN=Center>
+-- <A HREF="elementmenu.html">前</A> -- <A HREF="overview.html">目次</A>
+-- <A HREF="elementmenu.html">次</A> --
+</BODY></HTML>

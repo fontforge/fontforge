@@ -1,0 +1,654 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 16-Sep-2001 -->
+  <!-- AP: Last modified: 11-Dec-2004 -->
+<!--<TITLE>Older changes to FontForge</TITLE> -->
+    <TITLE>FontForge への以前の変更点</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
+</HEAD>
+<BODY>
+<P>
+<!--
+<A HREF="changelog.html">Current changes</A><BR> -->
+<A HREF="changelog.html">最近の変更点</A><BR>
+<!--
+<A HREF="pfaeditchangelog.html">Changes to PfaEdit (predecessor to
+FontForge)</A> -->
+<A HREF="pfaeditchangelog.html">PfaEdit (FontForge の旧名称) の変更点</A>
+<UL>
+  <LI>
+    24-Aug-2004
+    <UL>
+      <LI>
+	Oops, didn't get the expand stroke scripting patch quite right
+      <LI>
+<!--	<FONT COLOR="Red"><STRONG><BIG>Changed the way preferences are handled in
+	scripts</BIG></STRONG></FONT> -->
+	<FONT COLOR="Red"><STRONG><BIG>スクリプトでの環境設定項目の扱いを変更:</BIG></STRONG></FONT>
+	<UL>
+	  <LI>
+<!--	    By default preferences are no longer loaded when starting a script. -->
+	    デフォルトで、スクリプト開始時に環境設定ファイルを読み込むことはなくなりました。
+	  <LI>
+<!--	    Preferences are not saved in a script unless explicitly requested. -->
+	    環境設定は、ユーザが指定しない限りファイルに保存されなくなりました。
+	  <LI>
+<!--	    Added 2 new scripting functions LoadPrefs() and SavePrefs() -->
+	    LoadPrefs() と SavePrefs() の 2 つの新スクリプトコマンドを追加。
+	  <LI>
+<!--	    Added an environment variable FONTFORGE_LOADPREFS to give the user control
+	    over loading of preferences. -->
+	    ユーザが環境設定を読み込むかを設定できる FONTFORGE_LOADPREFS を追加。
+	</UL>
+      <LI>
+	Used to have a preference item DumpGlyphMap. Now we have an equivalent flag
+	in the Generate Fonts [Options] dialog.
+      <LI>
+	The SetPanose scripting command didn't work. MURAOKA Taro provides a patch
+      <LI>
+	It was not possible to get or set NewCharset preference item with GetPref/SetPref
+	scripting commands. Now GetPref returns a magic number, which may be used
+	in SetPref. SetPref will accept either a number or one of the encodings accepted
+	by Reencode().
+      <LI>
+	If you copied a glyph feature from a glyph that didn't have that feature,
+	and then did a paste ff would crash.
+      <LI>
+	Added two new tools to the outline character view. One allows you to rotated
+	your glyph through 3dimensions (and project it back on the xy plane), the
+	other allows you to do a perspective transformation.
+      <LI>
+	Extended the Transformation dialog to handle 3D rotation+projection. After
+	all it's just:
+	<TABLE BORDER CELLPADDING="2" ALIGN="Center">
+	  <TR>
+	    <TD>cos(y-axis-rotation)</TD>
+	    <TD><P ALIGN=Center>
+	      0</TD>
+	  </TR>
+	  <TR>
+	    <TD><P ALIGN=Center>
+	      0</TD>
+	    <TD>cos(x-axis-rotation)</TD>
+	  </TR>
+	</TABLE>
+      <LI>
+	Add a Point of View dialog to do real perspective projections
+      <LI>
+	Remove the FONTFORGE_CONFIG_NONLINEAR flag, and enable the nonlinear dlg
+	perminantly. I need some of its routines to do the projective projections.
+      <LI>
+	There was a path through LoadEncodingFile (in a script) where it would silently
+	fail.
+      <LI>
+	LoadEncodingFile would save default encodings even though it hadn't loaded
+	them. It no longer does this, but now SavePrefs does it instead.
+      <LI>
+	Added the ability to see (and create) simple substitutions in the font view.
+      <LI>
+	The embossed box around the fontinfo dlg wasn't always in the right place
+    </UL>
+  <LI>
+    8-Aug-2004
+    <UL>
+      <LI>
+	Zhang Lin-bo reports two bugs (which were really three)
+	<UL>
+	  <LI>
+	    Expand Stroke failed when given a path consisting of a single point had a
+	    zero length spline returning to itself.
+	  <LI>
+	    AddExtrema falls into an infinite loop if the initial spline of a path needs
+	    an extremum added to it.
+	  <LI>
+	    Expand Stroke generates garbage output in some very obscure conditions.
+	  <LI>
+	    AutoHint crashes when given garbage input.
+	</UL>
+      <LI>
+	Michael G&auml;hrken points out that ExpandStroke scripting command doesn't
+	work for caligraphic stroking, provides a patch and an extension.
+      <LI>
+	KANOU provides a patch for BDFMakeChar in CID keyed fonts.
+      <LI>
+	Change the Shades palette in the bitmap view so that it shows what grey level
+	is underneath the cursor.
+      <LI>
+	When the width is huge, then moving it causes it to wrap into negative values.
+	It should probably stick at SHRT_MAX instead.
+      <LI>
+	If one moves to a negative width and releases the mouse, an error message
+	pops up warning of this. If you move the cursor around the width continued
+	to change.
+      <LI>
+	If one moves to a negative width, and in response to the width warning says
+	[No] then the width reverted to the wrong value.
+      <LI>
+	ff would crash on a postscript sequence containing "{}" if that was the first
+	function defined.
+      <LI>
+	I got the locale wrong for Hong Kong
+      <LI>
+	If nothing was selected in the import dlg (or any of the file open dlgs)
+	and the user pressed [OK], then the directory would be returned.
+      <LI>
+	Improved error message for Import dlg.
+      <LI>
+	In spanish various dlgs had buttons that were too close together (and similar
+	problems)
+    </UL>
+  <LI>
+    01-Aug-2004
+    <UL>
+      <LI>
+	ff did not generate amfm files correctly
+      <LI>
+	Changed the Merge Kern Infor (menu item and scripting command) to
+	<UL>
+	  <LI>
+	    support pfm files
+	  <LI>
+	    detect file type from the file header rather than from the extension
+	</UL>
+      <LI>
+	Added InterpolateFonts as a scripting command
+      <LI>
+	Added GetEnv as a scripting command
+      <LI>
+	The scripting $fontversion and $copyright psuedo variables broke when I added
+	the fond name changes.
+      <LI>
+	More problems with tfm files.
+      <LI>
+	Fixed a couple of problems related to dialog sizing for different languages.
+      <LI>
+	In Windows 3.1 some chinese fonts were released with a ttf version of 2 (rather
+	than 1). Add this to the list of supported TrueType/OpenType versions (see
+	discussion on freetype mailing list, july 2004 for more info)
+      <LI>
+	Added both a menu and scripting command to copy kerning &amp; substitution
+	info from one glyph to another.
+      <LI>
+	FontForge fails to load some svg fonts properly (if they use the "t" directive
+	within a path =&gt; quadratic splines, control point implied, relative to
+	last point). Result is a nasty scribble.
+      <LI>
+	Windows file systems are not case conscious. The file names generated for
+	Export use glyph names (which are case conscious). So on windows exporting
+	"a" and "A" will overwrite the same file. (Add a "$" in front of capital
+	letters to distinguish).
+      <LI>
+	We were not scaling refs/images uniformly when we dragged corners. Instead
+	we changed the sides by the same amount (this works for squares, but nothing
+	else).
+      <LI>
+	XML does not allow backspace as an input character, even when specified by
+	an entity. This means we can't specify the unicode code point for backspace
+	in a an svg font (and many ttf fonts contain a blank backspace char, god
+	only knows why).
+      <LI>
+	The Default ATT-&gt;Unicode decomposition didn't work.
+      <LI>
+	Added a new entry to Default ATT, Caps-&gt;Small Caps (and cleaned up lower
+	case-&gt;small caps too).
+      <LI>
+	Eschew 0 width hints.
+      <LI>
+	Add support for localized unicode glyph names (currently only french is
+	available)
+    </UL>
+  <LI>
+    3-July-2004
+    <UL>
+      <LI>
+	Undoes in the Guide layer caused a crash (introduced with multi-layer)
+      <LI>
+	Fixed another problem with subroutine references in type1 output
+      <LI>
+	Preserve hhea.ascent/descent and some OS/2 values (no UI for these, but they
+	are retained)
+      <LI>
+	KANOU provided two patches
+	<UL>
+	  <LI>
+	    One to set the the average Char Width field of OS/2 properly
+	  <LI>
+	    One to set the 'gasp' table so that Windows would actually use embedded bitmaps
+	</UL>
+      <LI>
+	Added support (in build accent) to look for upper case and cyrillic variants
+	of accents (use grave.cap rather than grave, use breve.cyr rather than breve)
+	when building upper case or cyrillic letters.
+      <LI>
+	Points were not being properly renumbered if they were out of order (when
+	editing in quadratic mode)
+      <LI>
+	When a character had a color attached to it, it looked very strange if the
+	user changed it.
+      <LI>
+	Added an "x" to check boxes when checked
+      <LI>
+	FF did not realize that tonos should be treated as an accent (it is spacing,
+	which confused ff)
+      <LI>
+	Cleaned up an ancient message in the nomen files. Used to be three seperate
+	strings, now one with format specs in it.
+    </UL>
+  <LI>
+    18-June-2004
+    <UL>
+      <LI>
+	Point types were not set properly after conversion from quadratic to cubic
+	splines.
+      <LI>
+	Several preference items were not being saved and were not accessable from
+	scripts.
+      <LI>
+	Scripts could not set the resolution for bdf fonts
+      <LI>
+	Still having problems with references to references in type1 subroutines.
+      <LI>
+	AutoTrace had problems with multi-layered mode.
+      <LI>
+	Enhance "ItalicConstrained" in the Character View to allow vertical constrains
+	as well as those parallel to the italic angle.
+      <LI>
+	Build Accented Characters had problems when there were bitmap characters
+	involved.
+      <LI>
+	Can no longer blindly rotate splinesets in type2 fonts to avoid an initial
+	flex.
+      <LI>
+	Add three new problems to Find Problems
+	<UL>
+	  <LI>
+	    Check for intersecting contours
+	  <LI>
+	    Check for mulitple glyphs with same unicode code point
+	  <LI>
+	    Check for multiple glyphs with same name
+	</UL>
+    </UL>
+  <LI>
+    31-May-2004
+    <UL>
+      <LI>
+	In the 19-May build I introduced a bug which could generate NaN values for
+	control points.
+    </UL>
+  <LI>
+    29-May-2004
+    <UL>
+      <LI>
+	The MergeKern scripting command didn't have the capabilities of its menu
+	counterpart.
+      <LI>
+	Enhance the pattern matching capabilities on font names when loading kerning
+	information from a mac FOND (there is no place in the FOND that names the
+	styles, so best we can do is make reasonable guesses).
+      <LI>
+	When editing quadratic fonts (truetype), changing the type of a point to
+	be a tangent caused the previous control point to be set the to same location
+	as the next control point. Bleah.
+      <LI>
+	New versions of libpng will not automagically load libz when they are loaded.
+	Needed a patch to load libz manually.
+      <LI>
+	Fixed a couple of bugs in contextual / chaining dialog.
+      <LI>
+	When reading PostScript arrays FF failed to parse negative numbers properly.
+      <LI>
+	Make it an error (which it should be) to create a mac postscript resource
+	file without also generating an NFNT.
+      <LI>
+	Warn that NFNTs don't work under OS/X, warn that POST resources are probably
+	depreciated.
+      <LI>
+	WinAscent/Descent were being saved incorrectly in sfd files, leading to bad
+	WinAscent/Descent in t/otf OS/2 tables.
+      <LI>
+	Crash in ExpandStroke from a NaN when try to intersect parallel lines
+      <LI>
+	Improved Merge a little bit for quadratic splines
+    </UL>
+  <LI>
+    23-May-2004
+    <UL>
+      <LI>
+	Added popups in the Open Font dialog to show the fontname(s) of any font(s)
+	in a file.
+      <LI>
+	FontForge failed to load background images. A bug introduced 24-Feb (part
+	of multi-layer)
+      <LI>
+	Reordered the which glyph FF would pick when searching for accents. It used
+	to use ASCII versions of the accents over those in the U+03xx range.
+    </UL>
+  <LI>
+    20-May-2004
+    <UL>
+      <LI>
+	Bug in scripting change for mac families.
+      <LI>
+	Added a Paste After command (which isn't visible by default) which will allow
+	you to build up words more easily.
+    </UL>
+  <LI>
+    19-May-2004
+    <UL>
+      <LI>
+	Give the user access to the OS/2 fields WinAscent and WinDescent.
+      <LI>
+	Add a new command (Points-&gt;Make Line) which will turn a spline between
+	two selected points into a line.
+      <LI>
+	Improve the behavior of defaulting control points so we don't get
+	self-intersecting loops
+      <LI>
+	Add a mode to the pointer tool. Holding down the &lt;Alt&gt; key now means
+	we don't join two open contours if they make contact while dragging.
+      <LI>
+	When loading an otf file and saving it as ttf, sometimes the space glyph
+	would become zero width.
+      <LI>
+	Redid the way mac families were output. Should be more flexible under OS/X
+    </UL>
+  <LI>
+    9-May-2004
+    <UL>
+      <LI>
+	Several problems with tfm files. Didn't handle tfms with more that 128 lig/kerns.
+      <LI>
+	Failed to set the r2l flag properly in 'morx' tables
+      <LI>
+	More typos in the ghost hint code
+      <LI>
+	Allow users to express error term of the scripting Simplify command as a
+	fraction.
+      <LI>
+	The strings in the context / chaining dlg's initial pane were wrong
+      <LI>
+	Fixed some bugs in converting OT contextual substitutions to Mac state machines
+      <LI>
+	If we wanted to put a glyph with references into a subroutine (in type1 output)
+	we failed miserably
+      <LI>
+	Added a new command
+	<A HREF="editmenu.html#ReplaceRef">Edit-&gt;ReplaceWithReference </A>(and
+	a scripting version too), which searches all glyphs in the font for any selected
+	glyphs, and for each embedded occurance it replaces the outlines of the glyph
+	with a reference to it. This is because reading a postscript (type2 or type1)
+	font generally loses all reference information.
+      <LI>
+	The documentation for OS/2.winAscent makes no sense. I shall ignore it and
+	set winAscent to hhea.ascent
+      <LI>
+	Sivan says that hebrew kerning is broken again.
+      <LI>
+	The search dlg didn't work on quadratic (truetype) fonts
+    </UL>
+  <LI>
+    2-May-2004
+    <UL>
+      <LI>
+	I've changed the colour of check boxes because people found black confusing
+      <LI>
+	FontForge read Italic Correction incorrectly out of tfm files and had minor
+	problems generating tfm files.
+      <LI>
+	the kern class dlg had an uninitialized variable (introduced with the multiple
+	master code I think)
+      <LI>
+	FontForge would sometimes crash when generating a GDEF table for some types
+	of otf font.
+      <LI>
+	Pierre Hanser has updated the french UI, and pointed out some problems with
+	the english UI.
+      <LI>
+	In a version of FontForge compiled with MultiLayer on, Pasting something
+	containing a reference screwed up memory
+    </UL>
+  <LI>
+    25-Apr-2004
+    <UL>
+      <LI>
+	AutoHint produced ghost hints for curved stems that sometimes were outside
+	of the character.
+      <LI>
+	Fixed some uninitialized variables in MetaFont (but the algorthim is still
+	flawed)
+      <LI>
+	FontForge had problems when the fontview was maximized.
+      <LI>
+	The 18-Apr patch for cubic-&gt;quadratic conversion had a bug which generally
+	resulted in a crash.
+      <LI>
+	When flickering in and out of compacted mode, during a Generate Fonts, the
+	encodings in the displayed bitmap could get out of sync with those of the
+	font leading to a crash.
+      <LI>
+	Don't mess with the control points in point type conversion
+	(corner-&gt;curve/tangent) when the they are already reasonable.
+      <LI>
+	Allow rectangles and ellipses to have seperate settings of the center out
+	flag.
+      <LI>
+	Add a dialog which allows you to specify exactly where rectangles/ellipses
+	should go.
+      <LI>
+	Double-clicking on the scale/flap/rotate/skew tool brings up the transform
+	dialog.
+      <LI>
+	Add a couple of entries in the transform dlg option menus which copy information
+	from the last ruler measurement.
+      <LI>
+	Give the user control over how long the ruler window hangs around.
+    </UL>
+  <LI>
+    18-Apr-2004
+    <UL>
+      <LI>
+	Fix a couple of bugs dealing with references in multilayered editing.
+      <LI>
+	Uninitialized variable in creation of 'name' table (introduced on 10-Apr)
+      <LI>
+	Edit-&gt;Merge didn't work properly on quadratic splines
+      <LI>
+	LCarets should have ignored the script assigned to them, but they didn't.
+      <LI>
+	Put in more protection against bad GSUB/GPOS tables. In particular mangal.ttf
+	has a bad GSUB table (with erroneous class specifications).
+      <LI>
+	FontForge wasn't setting <TT>'hhea'.caretSlopeRun</TT> appropriately in italic
+	fonts (should match <TT>tan(italicAngle)</TT>).
+      <LI>
+	Oops. Can do much better converting from cubic to quadratic splines. We were
+	getting far too many linear segments.
+      <LI>
+	Our cubic-&gt;quadratic conversion could generate splines where the endpoints
+	were less than 1 unit apart. Since ttf rounds all coords to ints, this meant
+	we'd get the two endpoints on top of one another.
+      <LI>
+	When generating a truetype font from a cubic database, FontForge calculated
+	'maxp'.maxCompositePoints incorrectly.
+      <LI>
+	Gave the user control over when point numbers are visible (even for cubic
+	fonts)
+    </UL>
+  <LI>
+    10-Apr-2004
+    <UL>
+      <LI>
+	The flatten commands didn't preserve the ttf 'name' table nor the 'OS/2'
+	table
+      <LI>
+	Redid the way 'name' table was generated, hopefully we do better for the
+	mac now.
+      <LI>
+	the 'kern' table had a bad rangeShift value (it was the negative of what
+	it should be)
+      <LI>
+	Pasting a reference from one font to another could crash if the destination
+	font did not have the refered character.
+      <LI>
+	".null" was appearing twice in the 'post' table when saving a ttf file a
+	second time.
+      <LI>
+	Markus Schwarzenberg points out that the ScaleToEm() scripting command didn't
+	work when given a single argument.
+      <LI>
+	Pierre Hanser points out that the version fix on 4-Apr had a bug that caused
+	crashes on Macs (perhaps elsewhere).
+    </UL>
+  <LI>
+    04-Apr-2004
+    <UL>
+      <LI>
+	Several more fixes for cff output.
+      <LI>
+	We had a bad habit of including extraneous hintmask operators in output
+      <LI>
+	Add a proper ff version (well, as much as my versions be proper) to
+	postscript/svg output
+      <LI>
+	Patch from Kanou about reading format 2 bitmaps in a sfnt
+      <LI>
+	Patch from Kanou. MS requires a weird format for GSUB in vertical writing.
+    </UL>
+  <LI>
+    29-Mar-2004
+    <UL>
+      <LI>
+	When Type1 output needed to output a reference as inline splines (as opposed
+	to a subroutine call or using a seac command) then it would lose any translation
+	applied to that reference.
+      <LI>
+	Patch to Type3 output from R.L.Horn
+      <LI>
+	FontForge used to crash when reading in a bdf glyph with a bad bounding box.
+      <LI>
+	Reading a kerning class from an sfd file when that class had more second
+	character classes than first character classes would screw up memory and
+	probably cause a crash.
+      <LI>
+	Attempting to edit a 'cvt ' table in a font without one caused a crash.
+	Attempting to edit a 'cvt ' table in a font with one showed an empty table.
+      <LI>
+	Make scaling from the fontview apply to kerning and positioning data.
+      <LI>
+	Drawing a rectangle by dragging from center out didn't work
+      <LI>
+	Display phantom points when debugging. Be prepared to find either 2 (horizontal
+	metrics) or 4 (both horizontal or vertical) depending on what version of
+	freetype we've got.
+      <LI>
+	Bug in both reading and writing encoding format 0 of cff fonts. I forgot
+	to ignore .notdef so everything was off by 1.
+      <LI>
+	If a glyph was used as a reference in another glyph, and we put it in a
+	subroutine (type1 output), and it had hint conflicts, then the first group
+	of hints never got output.
+      <LI>
+	In multilayered mode, the Revert Glyph command left memory in a potentially
+	bad state. (If you immediately closed the charview, then nothing bad would
+	happen, but if you tried any editing in it, then nasty things happened.)
+    </UL>
+  <LI>
+    21-Mar-2004
+    <UL>
+      <LI>
+	When flattening a CID file fontforge lost track of the script/lang list (and
+	other things) which caused bugs when dealing with substitutions
+      <LI>
+	When saving multiply, fontforge could free a fonts hash table several times
+      <LI>
+	When flattening by a CMAP file from a script fontforge could crash
+      <LI>
+	Added a CIDFlatten command to scripting.
+      <LI>
+	The "cleanup of OS/2" on 29-Feb actually broke WinAscent/Descent
+      <LI>
+	When loading a mac unicode string from the 'name' table, fontforge failed
+	to convert the language correctly.
+      <LI>
+	When loading a mac contextual substitution statemachine, fontforge made egregious
+	errors in guessing to what glyphs were usable for a substitution of the marked
+	glyph.
+      <LI>
+	Added the current encoding to the font's window title (also display a flag
+	to show whether the font has been changed)
+      <LI>
+	When moving points around on an order2 contour fontforge could end up with
+	bad control points and would then produce annoying internal errors alerting
+	the user to this fact.
+      <LI>
+	The CID Flatten commands did not work when the view was compacted.
+      <LI>
+	CharInfo had been deliberately disabled in CID fonts
+      <LI>
+	Show ATT didn't work with CID keyed fonts
+      <LI>
+	The preference mapping between mac and opentype small caps features was wrong.
+      <LI>
+	Werner found a strange bug in splinefill that I can't reproduce (and can't
+	understand how it could happen) but the fix appears obvious.
+      <LI>
+	Add a command to show what glyphs use the current glyph in a substitution
+	(so "A.swash" would show that "A" used it, and "i" would show that "fi" used
+	it).
+      <LI>
+	Changed the extension shown in the Generate Fonts dlg for multiple saves
+	to ".pfb". Put in a %s to make it obvious that more will be added to the
+	name. Support people who want .pfa fonts too.
+      <LI>
+	The dialog for adding/editing correspondences between mac feature/settings
+	and opentype features never went away.
+      <LI>
+	Disable the Default ATT menu if no char is selected in the fontview.
+      <LI>
+	FontForge sometimes had trouble drawing the correct rotated glyph in cid
+	fonts on the display lines of the fontview.
+      <LI>
+	Changed the way names used in cidmap files, so there are new cidmap files
+	now.
+      <LI>
+	The ShowAtt dialog could overwrite itself if there were enough aats in it.
+	(and at one point the vertical scroll bar was set to the bounds of the horizontal
+	scroll bar)
+      <LI>
+	Still getting the windows ascent/descent wrong. This time in CID keyed fonts.
+      <LI>
+	Add some new language translations for things like "Bold" (dutch, swedish,
+	norwegian)
+      <LI>
+	Dragging and dropping a char from the font view into the char info dlg (to
+	create a substitution) created a crash instead.
+      <LI>
+	Support more of postscript in the interpreter
+      <LI>
+	Our svg fonts pointed to a not-yet-existing dtd file
+      <LI>
+	Support for Apple's distortable fonts (sort of like truetype multi-master
+	fonts)
+      <LI>
+	Depressing the control key now makes popups live longer (until the mouse
+	moves).
+      <LI>
+	new command in MM menu: Blend to new font
+    </UL>
+  <LI>
+    2-Mar-2004
+    <UL>
+      <LI>
+<!--	Changed name from pfaedit to fontforge -->
+	PfaEdit から FontForge への名称変更
+    </UL>
+</UL>
+<P>
+<!--
+FontForge was first released on 2-Mar-2004. An earlier version of the program,
+called PfaEdit, was begun in Sept of 2000, released on the web 7-Nov-2000,
+and moved to pfaedit.sf.net on 21-Apr-2001. -->
+FontForge の最初の版は 2004 年 3 月 2 日に公開されました。このプログラムはそれ以前 PfaEdit と呼ばれていましたが、2000 年 9 月に開発が始まり、2000 年 11 月 7 日に最初に公開され、2001 年 1 月 21 日に pfaedit.sf.net に移行しました。
+</BODY></HTML>

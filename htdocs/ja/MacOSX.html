@@ -1,0 +1,183 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 06-Dec-2002 -->
+  <!-- AP: Last modified: 27-Dec-2004 -->
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
+<!--<TITLE>Special issues for FontForge on Mac OS/X</TITLE>-->
+    <TITLE>Mac OS X 上での FontForge に関する特別な事柄</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
+</HEAD>
+<BODY>
+<H1 ALIGN=Center>
+<!--  FontForge on Mac OS/X -->
+      Mac OS X 上での FontForge
+</H1>
+<H2>
+<!--Building FontForge -->
+    FontForge の構築
+</H2>
+<P>
+<!--
+Before you do anything you must get a copy of the Mac Developer Tools. These
+now ship with each new mac (on the CD labeled XCode), it is optional software,
+you must explicitly install it, or you can get this
+<A HREF="http://connect.apple.com/">from Apple</A> (you can either download
+a 250Meg file, or pay them $20 to FedEx you a CD. -->
+何は措いてもしなければならないのは、Mac Developer Tools のコピーを入手することです。
+それらは今では各 Mac に同梱されている (XCode と書かれた CD に入っています) 必須ではないソフトウェアですので、それを選択してインストールする必要があります。または、これを <A HREF="http://connect.apple.com/">Apple から</A>入手する必要があります (250 メガバイトのファイルをダウンロードするか、20 ドル払って FedEx で CD を送ってもらうこともできます)。
+<P>
+<!--
+Then you must install X11. Again it ships with new macs, again it must be
+explicitly installed. You need to install two X packages. The first is X11User
+on the third install CD, the second is X11SDK on the XCode CD. -->
+それから X11 をインストールする必要があります。
+これもまた、新しい Mac には同梱されていて、選択しないとインストールされないソフトウェアです。
+2 個の X パッケージをインストールする必要があります。
+1 つは 3 枚目のインストール CD に入っている X11User で、もう 1 つは XCode の CD に入っている X11SDK です。
+<P>
+<!--
+It is possible to build FontForge without X11. There will be no user interface,
+but you can run scripts. -->
+FontForge を X11 無しで構築することも可能です。
+その場合ユーザインターフェイスはありませんが、スクリプトの実行は可能です。
+<P>
+<!--
+Thirdly you may choose to install some image libraries (I recommend at least
+installing libpng). Currently FontForge only tries to link statically with
+these libraries. -->
+その次に、幾つかの画像処理ライブラリをインストールして使うことができます (少なくとも libpng はインストールしておくことをお勧めします)。
+現在は、FontForge はこれらのライブラリを常にスタティックリンクしようとします。
+<UL>
+  <LI>
+<!--<A HREF="http://www.libpng.org/pub/png/libpng.html">libpng</A> (and required
+    helper <A HREF="http://www.gzip.org/zlib/">zlib</A>) -->
+    <A HREF="http://www.libpng.org/pub/png/libpng.html">libpng</A> (ヘルパーとして <A HREF="http://www.gzip.org/zlib/">zlib</A> が必要)
+  <LI>
+    <A HREF="http://www.libtiff.org/">libtiff</A>
+  <LI>
+    <A HREF="http://gnuwin32.sourceforge.net/packages/libungif.htm">libungif</A>
+  <LI>
+<!--(see the <A HREF="index.html#Dependencies">dependencies</A> entry for a more
+    complete list)-->
+    (<A HREF="index.html#Dependencies">依存関係</A>の項目に、より完全なリストがあります)
+</UL>
+<P>
+<!--
+Finally you are ready to build fontforge. Download the most recent sources -->
+<A HREF="index.html#source">from this site.</A> then:
+やっと、FontForge を構築する準備ができました。
+最新版のソースを <A HREF="index.html#source">このサイト</A>からインストールして、それから以下のようにしてください:
+<BLOCKQUOTE>
+  <PRE>$ gunzip fontforge_full-*.tgz
+$ tar xf fontforge_full-*.tar
+$ cd fontforge
+$ configure
+$ make
+$ sudo make install
+</PRE>
+</BLOCKQUOTE>
+<H2>
+<!-- Installing the Mac OS/X <A NAME="binary">binary</A> distribution -->
+     Mac OS X へのバイナリのインストール方法
+</H2>
+<P>
+<!--
+Before installing FontForge you should ensure that you have X windows up
+and running. Apple now ships this with new Macs, but it is optional software
+(CD 3) and you must explicitly request it by customizing your install. You
+can also get this <A HREF="http://www.apple.com/macosx/x11/download/">from
+apple</A>, or from <A HREF="http://www.osxgnu.org/">the GNU Mac OS/X site</A>.
+(Or you can download the package built without X, which has no user interface
+but will let you run scripts). -->
+FontForge をインストールする前に、X ウィンドウシステム (X11) があなたのシステム上で稼働しているかを確認するべきです。
+現在、Apple は X11 を Mac と一緒に出荷しています。
+これを <A HREF="http://www.apple.com/macosx/x11/download/">Apple から</A>か、または <A HREF="http://www.osxgnu.org/">GNU の Mac OS X サイト</A>からダウンロードすることもできます。
+(別の方法として、X なしでビルドされたバイナリをダウンロードすることもできます。これはユーザインターフェースを持っていませんが、スクリプトを実行することはできます。)
+<P>
+<!--
+After that you should just be able to unpack the packages provided in the
+<A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338">File
+Release area.</A>. -->
+それが終わったらすぐに、<A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338">ファイルリリース場所</A>で公開されているパッケージを展開することができるはずです。
+<P>
+<!--
+These packages install into /usr/local/bin. You may need to add that to your
+PATH environment variable, and do something similar for MANPATH: -->
+これらのパッケージは /usr/local/bin にインストールを行います。
+おそらく、PATH 環境変数に値を加え、MANPATH にも同様の追加をしたほうが便利でしょう:
+<BLOCKQUOTE>
+  <PRE>$ vi ~/.cshrc
+setenv PATH /usr/local/bin:$PATH
+setenv MANPATH /usr/local/share/man:$MANPATH
+</PRE>
+</BLOCKQUOTE>
+<P>
+<!--
+If your shell is bash -->
+bash を使用しているなら、以下のようになります。
+<BLOCKQUOTE>
+  <PRE>$ vi ~/.bashrc
+PATH=/usr/local/bin:$PATH ; export PATH
+MANPATH=/usr/local/share/man:$MANPATH ; export MANPATH
+</PRE>
+</BLOCKQUOTE>
+<P>
+<!--
+See the <A HREF="index.html#Dependencies">dependencies</A> section for external
+libraries/programs you may want to add to your system to enhance FontForge's
+capabilities. -->
+FontForgeの能力を拡張するためにシステムに追加するといいライブラリ・プログラムに関しては、<A HREF="index.html#Dependencies">依存関係</A>のセクションを参照してください。
+<H2>
+<!-- <A NAME="Running">Running</A> FontForge on Mac OS/X -->
+     FontForge を Mac OS X で<A NAME="Running">実行する</A>方法
+</H2>
+<P>
+<!--
+The X server (XDarwin) must be running before FontForge can start. XDarwin
+lives in the Applications folder and may be started by double clicking on
+it. -->
+FontForge を実行できるようにするには、あらかじめ X サーバ (XDarwin) を立ち上げておく必要があります。
+XDarwin は Applications フォルダにあるので、ダブルクリックで実行することができます。
+<P>
+<!--
+You may start FontForge either from an xterm or from a Terminal window. If
+you start it from a Terminal window you must first type:<BR> -->
+FontForge は xterm からもターミナルウィンドウからも実行することができます。
+ターミナルウィンドウから実行する時は、まず以下のように打ち込む必要があります。<BR>
+$ setenv DISPLAY :0
+<P>
+<!--
+The default window manager (twm) doesn't work well with FontForge when X
+is running in rootless mode. -->
+デフォルトのウィンドウマネージャ (twm) は、X がルートレスモードで動いている時にはうまく動作しません。
+<P>
+<!--
+FontForge allows the window manager to position its windows for it, and twm
+does this by allowing the user to click anywhere on the screen to position
+the upper left corner of the new window. Unfortunately unless X has a window
+under the location where you want the upper left corner to be Aqua will put
+X into the background and steal the click from X. -->
+FontForge はウィンドウマネージャがウィンドウの位置を変えることを許しており、twm では、ユーザが画面の任意の位置でクリックすると、新しく作られたウィンドウの左上端が指定されたことになって位置変更が行われます。
+不幸なことに、X がその下にウィンドウを開いていないと、Aqua は X をバックグラウンドにやって X からのクリックを奪い取ってしまいます。
+<P>
+<!--
+<FONT COLOR="Red"><STRONG>You can only open a window if you position it so
+that it's upper left corner is on one of X's already existing
+windows.</STRONG></FONT> -->
+<FONT COLOR="Red"><STRONG>ウィンドウの位置を決めないと、そのウィンドウを開くことができませんので、そのウィンドウの左上の位置は、X11 の既に存在するウィンドウに重なることになります。</STRONG></FONT>
+<H2>
+<!-- Caveats for Mac OS/X -->
+     Mac OS X に関する注意
+</H2>
+<OL>
+  <LI>
+<!--FontForge does not conform to Apple's Human Interface Guidelines -->
+    FontForge は Apple のヒューマンインターフェイスガイドラインに従っていません。
+</OL>
+<P>
+<A HREF="http://www.hexley.com/"><IMG SRC="hexley.png" WIDTH="113" HEIGHT="127"></A><BR>
+<!--
+(Hexley the platypus, unofficial Darwin mascot, copyright Jon Hooper)-->
+(カモノハシの Hexley、Darwin の非公式マスコット。Copyright(C) Jon Hooper)
+</BODY></HTML>
