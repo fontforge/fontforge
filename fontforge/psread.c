@@ -1050,8 +1050,6 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 		}
 	    }
 	} else if ( tok==pt_unknown && (kv=lookup(&dict,tokbuf))!=NULL ) {
-	    if ( strcmp(tokbuf,"s")==0 )
-		printf( "s => %s\n", kv->u.str );
 	    if ( kv->type == ps_instr )
 		pushio(wrapper,NULL,copy(kv->u.str),0);
 	    else if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
