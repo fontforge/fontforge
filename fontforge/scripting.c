@@ -5052,6 +5052,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "RoundToInt", bRoundToInt },
     { "RoundToCluster", bRoundToCluster },
     { "Autotrace", bAutotrace },
+    { "AutoTrace", bAutotrace },	/* Oops. docs say upperT, old scripts expect lowert */
     { "CorrectDirection", bCorrectDirection },
     { "AddATT", bAddATT },
     { "DefaultATT", bDefaultATT },
