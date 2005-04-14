@@ -712,7 +712,7 @@ return( false );
     }
     if ( strcmp(sc->name,".null")==0 || strcmp(sc->name,"nonmarkingreturn")==0 )
 return(true);
-    if ( !sc->widthset && sc->width==sc->parent->ascent+sc->parent->descent &&
+    if ( !sc->widthset &&
 	    (strcmp(sc->name,".notdef")==0 || sc->enc==sc->unicodeenc ||
 	     strcmp(sc->name,".null")==0 || strcmp(sc->name,"nonmarkingreturn")==0 ))
 return(true);

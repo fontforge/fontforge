@@ -784,8 +784,7 @@ return( sc!=NULL &&
 #if HANYANG
 	    sc->compositionunit ||
 #endif
-	    sc->dependents!=NULL ||
-	    sc->width!=sc->parent->ascent+sc->parent->descent ) &&
+	    sc->dependents!=NULL ) &&
 	( strcmp(sc->name,".notdef")!=0 || sc->enc==0) &&
 	( (strcmp(sc->name,".null")!=0 && strcmp(sc->name,"glyph1")!=0 &&
 	   strcmp(sc->name,"nonmarkingreturn")!=0 && strcmp(sc->name,"glyph2")!=0) ||
