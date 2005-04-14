@@ -786,7 +786,7 @@ static void FillOutline(SplineSet *spl,FT_Outline *outline,int *pmax,int *cmax,
     if ( order2 ) {
 	for ( k=0; k<2; ++k ) {
 	    pcnt = ccnt = 0;
-	    for ( ss = spl ; ss!=NULL; ss=ss->next ) {
+	    for ( ss = spl ; ss!=NULL; ss=ss->next ) if ( ss->first->prev!=NULL ) {
 		for ( sp=ss->first; ; ) {
 		    if ( k ) {
 			outline->points[pcnt].x = rint(sp->me.x*scale)-bb->minx;
@@ -830,7 +830,7 @@ static void FillOutline(SplineSet *spl,FT_Outline *outline,int *pmax,int *cmax,
     } else {
 	for ( k=0; k<2; ++k ) {
 	    pcnt = ccnt = 0;
-	    for ( ss = spl ; ss!=NULL; ss=ss->next ) {
+	    for ( ss = spl ; ss!=NULL; ss=ss->next ) if ( ss->first->prev!=NULL ) {
 		for ( sp=ss->first; ; ) {
 		    if ( k ) {
 			outline->points[pcnt].x = rint(sp->me.x*scale)-bb->minx;
