@@ -701,6 +701,11 @@ void SplineCharFindBounds(SplineChar *sc,DBounds *bounds) {
 	_SplineSetFindBounds(sc->layers[i].splines,bounds);
 #endif
     }
+    if ( sc->parent->strokedfont && (bounds->minx!=bounds->maxx || bounds->miny!=bounds->maxy)) {
+	real sw = sc->parent->strokewidth;
+	bounds->minx -= sw; bounds->miny -= sw;
+	bounds->maxx += sw; bounds->maxy += sw;
+    }
 }
 
 void SplineFontFindBounds(SplineFont *sf,DBounds *bounds) {
@@ -830,9 +835,29 @@ void SplineSetQuickBounds(SplineSet *ss,DBounds *b) {
 void SplineCharQuickBounds(SplineChar *sc, DBounds *b) {
     RefChar *ref;
     int i;
+    DBounds temp;
 
+    memset(b,0,sizeof(*b));
     for ( i=ly_fore; i<sc->layer_cnt; ++i ) {
-	SplineSetQuickBounds(sc->layers[i].splines,b);
+	SplineSetQuickBounds(sc->layers[i].splines,&temp);
+#ifdef FONTFORGE_CONFIG_TYPE3
+	for ( img=sc->layers[i].images; img!=NULL; img=img->next )
+	    _ImageFindBounds(img,b);
+	if ( sc->layers[i].dostroke && sc->layers[i].splines!=NULL ) {
+	    if ( sc->layers[i].stroke_pen.width!=WIDTH_INHERITED )
+		e = sc->layers[i].stroke_pen.width*sc->layers[i].stroke_pen.trans[0];
+	    else
+		e = sc->layers[i].stroke_pen.trans[0];
+	    temp.minx -= e; temp.maxx += e;
+	    temp.miny -= e; temp.maxy += e;
+	}
+#endif
+	if ( temp.minx!=0 || temp.maxx != 0 || temp.maxy != 0 || temp.miny!=0 ) {
+	    if ( temp.minx < b->minx ) b->minx = temp.minx;
+	    if ( temp.miny < b->miny ) b->miny = temp.miny;
+	    if ( temp.maxx > b->maxx ) b->maxx = temp.maxx;
+	    if ( temp.maxy > b->maxy ) b->maxy = temp.maxy;
+	}
 	for ( ref = sc->layers[i].refs; ref!=NULL; ref = ref->next ) {
 	    /*SplineSetQuickBounds(ref->layers[0].splines,&temp);*/
 	    if ( b->minx==0 && b->maxx==0 && b->miny==0 && b->maxy == 0 )
@@ -844,6 +869,11 @@ void SplineCharQuickBounds(SplineChar *sc, DBounds *b) {
 		if ( ref->bb.maxy > b->maxy ) b->maxy = ref->bb.maxy;
 	    }
 	}
+    }
+    if ( sc->parent->strokedfont && (b->minx!=b->maxx || b->miny!=b->maxy)) {
+	real sw = sc->parent->strokewidth;
+	b->minx -= sw; b->miny -= sw;
+	b->maxx += sw; b->maxy += sw;
     }
 }
 
@@ -882,9 +912,29 @@ void SplineSetQuickConservativeBounds(SplineSet *ss,DBounds *b) {
 void SplineCharQuickConservativeBounds(SplineChar *sc, DBounds *b) {
     RefChar *ref;
     int i;
+    DBounds temp;
 
+    memset(b,0,sizeof(*b));
     for ( i=ly_fore; i<sc->layer_cnt; ++i ) {
-	SplineSetQuickConservativeBounds(sc->layers[i].splines,b);
+	SplineSetQuickConservativeBounds(sc->layers[i].splines,&temp);
+#ifdef FONTFORGE_CONFIG_TYPE3
+	for ( img=sc->layers[i].images; img!=NULL; img=img->next )
+	    _ImageFindBounds(img,b);
+	if ( sc->layers[i].dostroke && sc->layers[i].splines!=NULL ) {
+	    if ( sc->layers[i].stroke_pen.width!=WIDTH_INHERITED )
+		e = sc->layers[i].stroke_pen.width*sc->layers[i].stroke_pen.trans[0];
+	    else
+		e = sc->layers[i].stroke_pen.trans[0];
+	    temp.minx -= e; temp.maxx += e;
+	    temp.miny -= e; temp.maxy += e;
+	}
+#endif
+	if ( temp.minx!=0 || temp.maxx != 0 || temp.maxy != 0 || temp.miny!=0 ) {
+	    if ( temp.minx < b->minx ) b->minx = temp.minx;
+	    if ( temp.miny < b->miny ) b->miny = temp.miny;
+	    if ( temp.maxx > b->maxx ) b->maxx = temp.maxx;
+	    if ( temp.maxy > b->maxy ) b->maxy = temp.maxy;
+	}
 	for ( ref = sc->layers[i].refs; ref!=NULL; ref = ref->next ) {
 	    /*SplineSetQuickConservativeBounds(ref->layers[0].splines,&temp);*/
 	    if ( b->minx==0 && b->maxx==0 && b->miny==0 && b->maxy == 0 )
@@ -896,6 +946,11 @@ void SplineCharQuickConservativeBounds(SplineChar *sc, DBounds *b) {
 		if ( ref->bb.maxy > b->maxy ) b->maxy = ref->bb.maxy;
 	    }
 	}
+    }
+    if ( sc->parent->strokedfont && (b->minx!=b->maxx || b->miny!=b->maxy)) {
+	real sw = sc->parent->strokewidth;
+	b->minx -= sw; b->miny -= sw;
+	b->maxx += sw; b->maxy += sw;
     }
 }
 
