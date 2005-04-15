@@ -635,11 +635,14 @@ unichar_t *TagFullName(SplineFont *sf,uint32 tag, int ismac) {
 	    free( setname );
 	}
     } else {
+	int stag = tag;
+	if ( tag==CHR('n','u','t','f') )
+	    stag = CHR('a','f','r','c');
 	if ( tag==REQUIRED_FEATURE ) {
 	    u_strcpy(ubuf,GStringGetResource(_STR_RequiredFeature,NULL));
 	} else {
 	    for ( k=0; pst_tags[k]!=NULL; ++k ) {
-		for ( j=0; pst_tags[k][j].text!=NULL && tag!=(uint32) pst_tags[k][j].userdata; ++j );
+		for ( j=0; pst_tags[k][j].text!=NULL && stag!=(uint32) pst_tags[k][j].userdata; ++j );
 		if ( pst_tags[k][j].text!=NULL )
 	    break;
 	    }
