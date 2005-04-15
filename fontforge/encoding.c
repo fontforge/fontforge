@@ -391,7 +391,9 @@ return( NULL );
 	enc->char_cnt = 256;
 	enc->only_1byte = true;
     }
-    if ( strstrmatch(iconv_name,"JP")!=NULL || strstrmatch(iconv_name,"sjis")!=NULL )
+    if ( strstrmatch(iconv_name,"JP")!=NULL ||
+	    strstrmatch(iconv_name,"sjis")!=NULL ||
+	    strstrmatch(iconv_name,"cp932")!=NULL )
 	enc->is_japanese = true;
     else if ( strstrmatch(iconv_name,"KR")!=NULL )
 	enc->is_korean = true;
