@@ -842,6 +842,30 @@ static void bReal(Context *c) {
     c->return_val.u.fval = (float) c->a.vals[1].u.ival;
 }
 
+static void bUCodePoint(Context *c) {
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type==v_real )
+	c->return_val.u.ival = c->a.vals[1].u.fval;
+    else if ( c->a.vals[1].type==v_unicode || c->a.vals[1].type==v_int )
+	c->return_val.u.ival = c->a.vals[1].u.ival;
+    else
+	error( c, "Bad type for argument" );
+    c->return_val.type = v_unicode;
+}
+
+static void bInt(Context *c) {
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type==v_real )
+	c->return_val.u.ival = c->a.vals[1].u.fval;
+    else if ( c->a.vals[1].type==v_unicode || c->a.vals[1].type==v_int )
+	c->return_val.u.ival = c->a.vals[1].u.ival;
+    else
+	error( c, "Bad type for argument" );
+    c->return_val.type = v_int;
+}
+
 static void bFloor(Context *c) {
     if ( c->a.argc!=2 )
 	error( c, "Wrong number of arguments" );
@@ -2612,7 +2636,7 @@ static void bSetTeXParams(Context *c) {
 		(c->curfv->sf->ascent+c->curfv->sf->descent);
 }
 
-static SplineChar *GetOneSelChar(Context *c) {
+static int GetOneSelCharIndex(Context *c) {
     SplineFont *sf = c->curfv->sf;
     int i, found = -1;
 
@@ -2624,7 +2648,12 @@ static SplineChar *GetOneSelChar(Context *c) {
     }
     if ( found==-1 )
 	error(c,"No characters selected" );
-return( SFMakeChar(sf,found));
+return( found );
+}
+
+static SplineChar *GetOneSelChar(Context *c) {
+    int found = GetOneSelCharIndex(c);
+return( SFMakeChar(c->curfv->sf,found));
 }
 
 static void bSetCharName(Context *c) {
@@ -4196,7 +4225,7 @@ static void bCharCnt(Context *c) {
 
 static void bInFont(Context *c) {
     SplineFont *sf = c->curfv->sf;
-    if ( c->a.argc!=2 )
+    if ( c->a.argc>2 )
 	error( c, "Wrong number of arguments");
     c->return_val.type = v_int;
     if ( c->a.vals[1].type==v_int )
@@ -4217,10 +4246,12 @@ static void bInFont(Context *c) {
 
 static void bWorthOutputting(Context *c) {
     SplineFont *sf = c->curfv->sf;
-    if ( c->a.argc!=2 )
+    if ( c->a.argc>2 )
 	error( c, "Wrong number of arguments");
     c->return_val.type = v_int;
-    if ( c->a.vals[1].type==v_int )
+    if ( c->a.argc==1 )
+	c->return_val.u.ival = SCWorthOutputting(sf->chars[GetOneSelCharIndex(c)]);
+    else if ( c->a.vals[1].type==v_int )
 	c->return_val.u.ival = c->a.vals[1].u.ival>=0 &&
 		c->a.vals[1].u.ival<sf->charcnt &&
 		SCWorthOutputting(sf->chars[c->a.vals[1].u.ival]);
@@ -4243,7 +4274,9 @@ static void bDrawsSomething(Context *c) {
     if ( c->a.argc!=2 )
 	error( c, "Wrong number of arguments");
     c->return_val.type = v_int;
-    if ( c->a.vals[1].type==v_int )
+    if ( c->a.argc==1 )
+	c->return_val.u.ival = SCDrawsSomething(sf->chars[GetOneSelCharIndex(c)]);
+    else if ( c->a.vals[1].type==v_int )
 	c->return_val.u.ival = c->a.vals[1].u.ival>=0 &&
 		c->a.vals[1].u.ival<sf->charcnt &&
 		SCDrawsSomething(sf->chars[c->a.vals[1].u.ival]);
@@ -4814,14 +4847,18 @@ static void bCharInfo(Context *c) {
     SplineChar *sc;
     DBounds b;
     KernClass *kc;
-    int i;
+    int i, found;
+    SplineChar dummy;
 
     if ( c->a.argc!=2 && c->a.argc!=3 && c->a.argc!=5 )
 	error( c, "Wrong number of arguments");
     else if ( c->a.vals[1].type!=v_str )
 	error( c, "Bad type for argument");
 
-    sc = GetOneSelChar(c);
+    found = GetOneSelCharIndex(c);
+    sc = sf->chars[found];
+    if ( sc==NULL )
+	sc = SCBuildDummy(&dummy,sf,found);
 
     c->return_val.type = v_int;
     if ( c->a.argc==5 ) {
@@ -4940,6 +4977,8 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "Chr", bChr, 1 },
     { "Ord", bOrd, 1 },
     { "Real", bReal, 1 },
+    { "Int", bInt, 1 },
+    { "UCodePoint", bUCodePoint, 1 },
     { "Floor", bFloor, 1 },
     { "Ceil", bCeil, 1 },
     { "Round", bRound, 1 },
