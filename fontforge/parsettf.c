@@ -2692,6 +2692,8 @@ static void readcffenc(FILE *ttf,struct topdicts *dict,struct ttfinfo *info,
 
     if ( info->encoding_start!=0 )		/* Use the cmap instead */
 return;
+    if ( info->subfontcnt!=0 )
+return;						/* Use cids instead */
 
     for ( i=0; i<info->glyph_cnt; ++i ) {
 	if ( info->chars[i]->unicodeenc==-1 )
@@ -4926,7 +4928,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 
     if ( info->encoding_name==NULL )
 	info->encoding_name = &custom;		/* Can happen in a type42 */
-    if ( info->encoding_name->only_1byte )
+    if ( info->encoding_name->only_1byte && info->subfontcnt == 0 )
 	/* Don't trust those encodings */
 	CheckEncoding(info);
     if ( info->twobytesymbol )
