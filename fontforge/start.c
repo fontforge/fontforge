@@ -40,6 +40,9 @@
 #if !defined(_NO_LIBUNINAMESLIST) && !defined(_STATIC_LIBUNINAMESLIST) && !defined(NODYNAMIC)
 #  include <dynamic.h>
 #endif
+#ifdef __Mac
+# include <stdlib.h>		/* getenv,setenv */
+#endif
 
 int32 unicode_from_adobestd[256];
 struct lconv localeinfo;
@@ -184,6 +187,16 @@ static void initrand(void) {
 
     gettimeofday(&tv,NULL);
     srand(tv.tv_usec);
+}
+
+static void initlibrarysearchpath(void) {
+#ifdef __Mac
+    /* If the user has not set library path, then point it at fink */
+    /*  otherwise leave alone. On the mac people often use fink to */
+    /*  install image libs. For some reason fink installs in a place */
+    /*  the dynamic loader doesn't find */
+    setenv("DYLD_LIBRARY_PATH","/sw/lib",0);
+#endif
 }
 
 struct delayed_event {
@@ -538,9 +551,10 @@ int main( int argc, char **argv ) {
 	default_encoding=FindOrMakeEncoding("ISO8859-1");
     if ( default_encoding==NULL )
 	default_encoding=&custom;	/* In case iconv is broken */
+    initlibrarysearchpath();
+    initrand();
     initadobeenc();
     inituninameannot();
-    initrand();
     CheckIsScript(argc,argv);		/* Will run the script and exit if it is a script */
 					/* If there is no UI, there is always a script */
 			                /*  and we will never return from the above */
