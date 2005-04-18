@@ -836,6 +836,10 @@ void SplineCharQuickBounds(SplineChar *sc, DBounds *b) {
     RefChar *ref;
     int i;
     DBounds temp;
+#ifdef FONTFORGE_CONFIG_TYPE3
+    real e;
+    ImageList *img;
+#endif
 
     memset(b,0,sizeof(*b));
     for ( i=ly_fore; i<sc->layer_cnt; ++i ) {
@@ -913,6 +917,10 @@ void SplineCharQuickConservativeBounds(SplineChar *sc, DBounds *b) {
     RefChar *ref;
     int i;
     DBounds temp;
+#ifdef FONTFORGE_CONFIG_TYPE3
+    real e;
+    ImageList *img;
+#endif
 
     memset(b,0,sizeof(*b));
     for ( i=ly_fore; i<sc->layer_cnt; ++i ) {
