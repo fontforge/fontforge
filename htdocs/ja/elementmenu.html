@@ -391,7 +391,7 @@ compiling FontForge. -->
   <DD>
 <!--This brings up a list of pixel sizes for bitmap fonts.<BR> -->
     このコマンドはビットマップフォントのピクセルサイズ一覧を表示します。
-    <IMG SRC="bitmapsavail.png" WIDTH="263" HEIGHT="366" ALIGN="Right"> <!-- If you
+    <IMG SRC="../bitmapsavail.png" WIDTH="263" HEIGHT="366" ALIGN="Right"> <!-- If you
     have bitmap fonts this will show their pixel sizes. If you remove a size
     that is in the list then that font will be deleted from the sfd file. If
     you add a size then that size font will be created and stored in the sfd
@@ -482,7 +482,7 @@ compiling FontForge. -->
     instead the entire complex of sub-fonts share bitmaps.<BR Clear=Right> -->
     CID フォントでは、各サブセットにはビットマップは存在しません。その代りに、サブフォントの複合体全体がビットマップを共有します。<BR Clear=Right>
     <P>
-    <IMG SRC="greymapsavail.png" WIDTH="263" HEIGHT="366" ALIGN="Right"><!--FontForge
+    <IMG SRC="../greymapsavail.png" WIDTH="263" HEIGHT="366" ALIGN="Right"><!--FontForge
     also supports anti-aliased bitmap fonts, and you can use this dialog to generate
     them. If you want to generate a 12 point anti-aliased font with 8 bits per
     pixel you would type 12@8 into the dialog above. FontForge supports 1, 2,
@@ -599,12 +599,12 @@ compiling FontForge. -->
     have at least one point selected (or if no points are selected then it applies
     to all paths).<BR> -->
     ビットマップビューでは使用できません。フォントビューでは選択されたすべてのグリフの前面にあるすべてのスプラインに対して太め処理を適用します。アウトラインビューでは、最低 1 個の点が選択されているすべてのパスに適用します (点が選択されていないときには、すべてのパスに適用します)。<BR>
-    <IMG SRC="twolines.png" WIDTH="247" HEIGHT="247">
-    <IMG SRC="expandedlines.png" WIDTH="247" HEIGHT="247"><BR>
+    <IMG SRC="../twolines.png" WIDTH="247" HEIGHT="247">
+    <IMG SRC="../expandedlines.png" WIDTH="247" HEIGHT="247"><BR>
 <!--Above is a simple example of what expand stroke can do. It takes the two
     open paths above left and turns them into the two closed paths right.<BR> -->
     上図は、ストロークの太め処理が何を行うかの簡単な例です。左上にある 2 本の開いたパスを元に、それらを右の 2 本の閉じたパスに変換します。
-    <IMG SRC="expandstroke.png" WIDTH="323" HEIGHT="488" ALIGN="Left"><BR>
+    <IMG SRC="../expandstroke.png" WIDTH="323" HEIGHT="488" ALIGN="Left"><BR>
 <!--The Expand Stroke dialog gives you control over various aspects of the expansion
     process. You can chose a stroke width, how the ends of an open path should
     be drawn, and how the path should look when two splines (or lines) join which
@@ -644,8 +644,8 @@ compiling FontForge. -->
     orientations.-->
     パスの向きが正しいことを確かめておいてください。2 本の輪郭をもつ文字 "O" を考えましょう。2 本の輪郭が同じ方向を向いている場合、内側のものが削除されます (外側のパスが全体に重なり合っているからです) が、輪郭同士が逆向きになっている場合、内側のパスは保持されます。交差するパスが逆向きになっているときは非常に奇妙なことが起こります。
     <P>
-    <IMG SRC="expandedlines.png" WIDTH="247" HEIGHT="247">
-    <IMG SRC="overlappedlines.png" WIDTH="247" HEIGHT="247"><BR>
+    <IMG SRC="../expandedlines.png" WIDTH="247" HEIGHT="247">
+    <IMG SRC="../overlappedlines.png" WIDTH="247" HEIGHT="247"><BR>
 <!--This command is probably the buggiest in FontForge. So before FontForge invokes
     the command it will save the state to the error recovery file.<BR>
     Warning: Splines which are tangent (or nearly so) cause problems. Points
@@ -658,8 +658,8 @@ compiling FontForge. -->
   <DD>
     <TABLE CELLPADDING="2">
       <TR>
-	<TD><IMG SRC="exclude-pre.png" WIDTH="174" HEIGHT="174"></TD>
-	<TD><IMG SRC="intersect-post.png" WIDTH="174" HEIGHT="174"></TD>
+	<TD><IMG SRC="../exclude-pre.png" WIDTH="174" HEIGHT="174"></TD>
+	<TD><IMG SRC="../intersect-post.png" WIDTH="174" HEIGHT="174"></TD>
       </TR>
     </TABLE>
     <P>
@@ -671,8 +671,8 @@ compiling FontForge. -->
   <DD>
     <TABLE CELLPADDING="2">
       <TR>
-	<TD><IMG SRC="exclude-pre.png" WIDTH="174" HEIGHT="174"></TD>
-	<TD><IMG SRC="exclude-post.png" WIDTH="174" HEIGHT="174"></TD>
+	<TD><IMG SRC="../exclude-pre.png" WIDTH="174" HEIGHT="174"></TD>
+	<TD><IMG SRC="../exclude-post.png" WIDTH="174" HEIGHT="174"></TD>
       </TR>
     </TABLE>
     <P>
@@ -763,7 +763,7 @@ compiling FontForge. -->
 <!--	<A NAME="Outline">Outline</A> -->
 	<A NAME="Outline">アウトライン(O)</A>
       <DD>
-	<IMG SRC="OutlineInline.png" WIDTH="146" HEIGHT="70" ALIGN="Right"><!--Changes
+	<IMG SRC="../OutlineInline.png" WIDTH="146" HEIGHT="70" ALIGN="Right"><!--Changes
 	the selected glyphs so that instead of being a solid block, only the outline
 	of the glyph is visible. The glyphs' bounding box will not change. -->
 	選択されたグリフを中身の詰まった塊ではなく、グリフの輪郭だけが見えるように変形します。グリフのバウンディングボックスは変更しません。
@@ -781,7 +781,7 @@ compiling FontForge. -->
 <!--	Changes the selected glyphs to give them each a
 	shadow.<IMG SRC="ShadowWireframe.png" WIDTH="171" HEIGHT="69" ALIGN="Right">
 	The user has control over the shadow size and angle. -->
-    選択中の各文字に影をつけます。<IMG SRC="ShadowWireframe.png" WIDTH="171" HEIGHT="69" ALIGN="Right">
+    選択中の各文字に影をつけます。<IMG SRC="../ShadowWireframe.png" WIDTH="171" HEIGHT="69" ALIGN="Right">
     ユーザは影の長さと角度を調節することができます。
   <DT>
 <!--	<A NAME="Wireframe">Wireframe</A>-->
@@ -831,8 +831,8 @@ compiling FontForge. -->
 	and apply this command it will be horizontal.<BR>-->
 	ですから、ほとんど水平に並んでいる線がある場合、その端点を選択してこのコマンドを適用するとその線は水平になります。<BR>
 	&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-	<IMG SRC="Constrain2_1.png" WIDTH="122" HEIGHT="90">&nbsp; &nbsp; &nbsp;
-	&nbsp; <IMG SRC="Constrain2_2.png" WIDTH="122" HEIGHT="90"><BR>
+	<IMG SRC="../Constrain2_1.png" WIDTH="122" HEIGHT="90">&nbsp; &nbsp; &nbsp;
+	&nbsp; <IMG SRC="../Constrain2_2.png" WIDTH="122" HEIGHT="90"><BR>
 <!--	(if you select exactly two points, and they lie close to a 45 diagonal, then
 	they will be forced to the diagonal rather than to horizontal/vertical) -->
 	(選択した点がちょうど 2 個で、それらが 45°に近い斜めの関係にある場合は、水平・垂直ではなく斜め方向に揃えられます。)
@@ -857,8 +857,8 @@ compiling FontForge. -->
 	unchanged.<BR> -->
 	これは非常に複雑な説明方法です: 水平な線上に置かれた 2 個の点の両方に接続した 1 個の点を選択した場合、選択した点の x 座標は 2 個の点の中間になり、それに対して y 座標は変更されません。<BR>
 	&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-	<IMG SRC="Constrain1_1.png" WIDTH="122" HEIGHT="90">&nbsp; &nbsp; &nbsp;
-	&nbsp; <IMG SRC="Constrain1_2.png" WIDTH="122" HEIGHT="90">
+	<IMG SRC="../Constrain1_1.png" WIDTH="122" HEIGHT="90">&nbsp; &nbsp; &nbsp;
+	&nbsp; <IMG SRC="../Constrain1_2.png" WIDTH="122" HEIGHT="90">
       <DT>
 <!--	<A NAME="Space-Regions">Space Regions</A>-->
 	<A NAME="Space-Regions">グループ間を均等に(R)</A>
@@ -874,8 +874,8 @@ compiling FontForge. -->
 	to their respective stems.<BR> -->
 	これは上のコマンドと似ていますが、相対位置を保ちつつ移動したい点のグループをとても簡単に定義することができる点が異なります。このコマンドは、それらのグループごとの間隔を、選択した座標軸に沿って均等に配置します。1 個のグループは、その中の点同士がすべてグループ内の他の 1 個以上の点と、所定の最大距離以内にある点の集まりとして定義されます。このコマンドの目的は、文字 "m" のステム同士を横方向に均等に配置するような操作を可能にすることです。残念ながら、これが役に立たない場合は非常に多くあります (セリフつき書体では、しばしばあるセリフと他のセリフとの間隔のほうがセリフの属するステムとの間よりも狭くなります)。<BR>
 	&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-	<IMG SRC="Spacem_1.png" WIDTH="140" HEIGHT="108"> &nbsp; &nbsp; &nbsp; &nbsp;
-	<IMG SRC="Spacem_2.png" WIDTH="145" HEIGHT="108">
+	<IMG SRC="../Spacem_1.png" WIDTH="140" HEIGHT="108"> &nbsp; &nbsp; &nbsp; &nbsp;
+	<IMG SRC="../Spacem_2.png" WIDTH="145" HEIGHT="108">
       <DT>
 <!--	Make <A NAME="Parallel">Parallel</A> -->
 	<A NAME="Parallel">平行に(P)</A>

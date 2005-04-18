@@ -220,20 +220,20 @@ pretty closely to the process described above. I will first show the sequence
 for Adobe's fonts, and then explain Apple's fonts. -->
 このダイアログはマルチプルマスターフォントの作成と修正に用いられます。このダイアログは、順番に処理しなければならないいくつかのサブダイアログを含み、上で説明したプロセスに非常に密接に対応しています。まず最初に Adobe のフォントに対する手順を示し、次に Apple のフォントを説明します。
 <P>
-<IMG SRC="mmcounts.png" WIDTH="476" HEIGHT="448" ALIGN="Right"><!--The first
+<IMG SRC="../mmcounts.png" WIDTH="476" HEIGHT="448" ALIGN="Right"><!--The first
 screen allows you to choose the type of distortable font you wish to generate
 (Adobe Multiple Master, or Apple), the number of axes in your font, and the
 number of master designs, and a family name (which will be used for creating
 new fonts, if you need any new ones).<BR CLEAR=ALL> -->
 最初の画面では、作成したい変形可能フォントのタイプ (Adobe マルチプルマスターまたは Apple)、フォントに含まれる軸の数、マスターデザインの個数およびファミリー名 (これは、新しいフォントが必要なときにそれを作成するのに用いられます) を選択することができます。<BR CLEAR=ALL>
 <P>
-<IMG SRC="mmaxes.png" WIDTH="476" HEIGHT="448" ALIGN="Right"><!--The second screen
+<IMG SRC="../mmaxes.png" WIDTH="476" HEIGHT="448" ALIGN="Right"><!--The second screen
 gives you control of each axis. There are a few standard axis types defined
 by Adobe (and by Apple), but you could define your own. Note that there are
 fields which are disabled here, they only apply to Apple's fonts.<BR CLEAR=ALL> -->
 2 番目の画面では、各軸の制御を行うことができます。Adobe (と Apple) によって定義された軸のタイプは 2, 3 種類しかありませんが、独自の軸を新しく定義することもできます。ここでは使用不可能になっている欄があることにご注意ください。それらは Apple のフォントでしか使用できません。<BR CLEAR=ALL>
 <P>
-<IMG SRC="mmdesigns.png" WIDTH="476" HEIGHT="448" ALIGN="Right"><!-- Then you
+<IMG SRC="../mmdesigns.png" WIDTH="476" HEIGHT="448" ALIGN="Right"><!-- Then you
 must assign a font to each of the master designs. You can either have FontForge
 create a new font for you (as here), or use an already loaded font, or browse
 your disk for a font (don't try to use the same font twice). -->
@@ -246,7 +246,7 @@ values will be either 0 or 1. Unless you are working with intermediate designs
 it is best to let FontForge initialize this field for you.<BR CLEAR=ALL> -->
 このデザインの軸上での座標値を指定することもできます。もしデザインの個数を最少に抑えるならば、それらはすべて極値でとなり、座標値は 0 か 1 のどちらかになります。中間デザインの作業をするのでなければ、FontForge がこのフィールドを初期化するのに任せるのが最善です。<BR CLEAR=ALL>
 <P>
-<IMG SRC="mmfuncs.png" WIDTH="476" HEIGHT="448" ALIGN="Right"><!--This screen
+<IMG SRC="../mmfuncs.png" WIDTH="476" HEIGHT="448" ALIGN="Right"><!--This screen
 shows the postscript functions needed to map a design vector to a weight
 vector (ie. given positions on each of the design axes, these produce blending
 coefficients for each master design). In most useful case FontForge is able
@@ -255,7 +255,7 @@ things get too complicated for FontForge and you must enter the functions
 manually.<BR CLEAR=ALL> -->
 この画面に表示されているのは、デザインベクトルを重みベクトルに対応づけるのに必要な PostScript 関数です (言い替えれば、各デザイン軸での位置を指定したとき、これらは各マスターデザインからの混ぜ合わせの比率を生成します)。ほとんどの有益な場合では、FontForge はこれらの関数を自動生成しますが、中間デザインを使用したときには、FontForge で扱うには非常に複雑になるので、関数を手動で入力しなければなりません。<BR CLEAR=ALL>
 <P>
-<IMG SRC="mmfinal.png" WIDTH="476" HEIGHT="448" ALIGN="Right"><!--The last screen
+<IMG SRC="../mmfinal.png" WIDTH="476" HEIGHT="448" ALIGN="Right"><!--The last screen
 shows the default weights (which you may either enter directly or as coordinates
 along the design axes), the ForceBoldThreshold private dictionary
 entry).<BR CLEAR=ALL> -->
@@ -265,19 +265,19 @@ entry).<BR CLEAR=ALL> -->
     Apple 変形可能フォント
 </H3>
 <P>
-<IMG SRC="mmappleaxes.png" WIDTH="476" HEIGHT="448" ALIGN="Right"><!--The dialog
+<IMG SRC="../mmappleaxes.png" WIDTH="476" HEIGHT="448" ALIGN="Right"><!--The dialog
 looks very similar, but there are a few differences. In the Axis pane of
 the dlg, you must also specify a default value for the axis, and a translatable
 name.<BR Clear=ALL>-->
 ダイアログの見かけは非常によく似ていますが、2,3 の相違点があります。ダイアログの「軸」ペインで、その軸のデフォルト値と変換可能な名前を指定しなければなりません。<BR CLEAR=ALL>
 <P>
-<IMG SRC="mmnamedstyles.png" WIDTH="476" HEIGHT="448" ALIGN="Right"><!--Apple
+<IMG SRC="../mmnamedstyles.png" WIDTH="476" HEIGHT="448" ALIGN="Right"><!--Apple
 allows coordinates in design space to be named. Here the name "Black" is
 given to the location where Weight=3.2 (the darkest value) and
 <IMG SRC="mmnamingastyle.png" WIDTH="368" HEIGHT="470" ALIGN="Left">Width=1
 (the default value). Again these names can be translated into multiple
 languages.<BR Clear=ALL>
-Apple フォントではデザイン空間における座標位置に名前をつけることができます。ここでは名前 "Black" は、Weight=3.2 (最も黒みの強い値) かつ <IMG SRC="mmnamingastyle.png" WIDTH="368" HEIGHT="470" ALIGN="Left">Width=1 (デフォルト値) につけた名前です。ここでもこれらの名前は複数の言語に翻訳することができます。<BR Clear=ALL>
+Apple フォントではデザイン空間における座標位置に名前をつけることができます。ここでは名前 "Black" は、Weight=3.2 (最も黒みの強い値) かつ <IMG SRC="../mmnamingastyle.png" WIDTH="368" HEIGHT="470" ALIGN="Left">Width=1 (デフォルト値) につけた名前です。ここでもこれらの名前は複数の言語に翻訳することができます。<BR Clear=ALL>
 <H2>
 <!--A suggestion-->
     提言
@@ -301,7 +301,7 @@ Call these designs 0, 1 and 2. We wish to produce a design, 3, with Weight=900,
 Width=1000. -->
 私は、2 軸の場合のみを詳しく説明するつもりです (視覚化が簡単なので): Weight 軸が 50～900, Width 軸が 100～1000 の範囲で変動するフォントがあるとします。そして、Weight=50,Width=100, Weight=50,Width=1000 と Weight=900,Width=100 のフォントが作成済みだとします。それらをデザイン 0, 1, 2 と呼びましょう。ここで作成したいのは Weight = 900, Width=1000 のデザイン 3 です。
 <P ALIGN=Center>
-<IMG SRC="mmextrapolate2.png" WIDTH="132" HEIGHT="132">
+<IMG SRC="../mmextrapolate2.png" WIDTH="132" HEIGHT="132">
 <P>
 <!--
 First we must produce an intermediate design (which we will delete later),

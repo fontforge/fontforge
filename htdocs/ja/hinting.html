@@ -27,7 +27,7 @@ stem should be active. And it needs to know what stems overlap which other
 stems. -->
 そのため、ヒント置換を伴うヒントづけ処理を実装するためには、FontForge はヒントづけを行なうステムの位置と幅を知るだけでなく、どこで有効化するかを知る必要があります。また、どのステムが他のステムと重なり合うかも知る必要があります。
 <P>
-<IMG SRC="Hints.png" WIDTH="406" HEIGHT="399" ALIGN="Left"> <!--The horizontal
+<IMG SRC="../Hints.png" WIDTH="406" HEIGHT="399" ALIGN="Left"> <!--The horizontal
 stems are drawn in light green. The vertical stems are drawn in light blue.
 The areas where the stems are active are filled in as rectangles, outside
 of that area the stems' outlines are drawn with dotted lines. Most of these
@@ -57,13 +57,13 @@ would output one counter group for the vertical stems. -->
     セリフ
 </H2>
 <P>
-<IMG SRC="serif.png" WIDTH="248" HEIGHT="227" ALIGN="Right"><!--One of the major
+<IMG SRC="../serif.png" WIDTH="248" HEIGHT="227" ALIGN="Right"><!--One of the major
 advantages of hint substitution is that it allows certain standard serif
 situations to be described. In the example at right, the serif one the left
 is smaller than the stem a bit further right. -->
 ヒント置換の大きな利点の一つは、いくつかの標準的なセリフの状態を記述することができることです。右の例では、左側に突き出たセリフは右側のセリフよりもわずかに薄くなっています。
 <P>
-<IMG SRC="serif2.png" WIDTH="158" HEIGHT="110" ALIGN="Left"><!--But it doesn't
+<IMG SRC="../serif2.png" WIDTH="158" HEIGHT="110" ALIGN="Left"><!--But it doesn't
 solve all problems (or I don't know how to use it to do so). Consider the
 serif on the right. Hint substitution would allow us to define a hint for
 the main vertical stem and for the short vertical stem that corresponds to
@@ -206,7 +206,7 @@ selected point (on left) has the highlit hints active at it, In the glyph
 view the currently active stems are drawn much darker than the inactive ones.
 Points with hintmasks attached to them have circles drawn around them. -->
 ヒントマスクは、その点の位置を設定するときに、どのヒントが有効化されているべきかを指定し、それ以降・新しいヒントマスクが設定されるまでのすべての点を制御します。
-例えば、以下の<IMG SRC="charwithhintmask.png" WIDTH="309" HEIGHT="322" ALIGN="Left"><IMG SRC="hintmaskinfo.png" WIDTH="321" HEIGHT="459" ALIGN="Right"> 例では、(左の) 選択された点は、そこで有効になっている点がハイライト表示されています。グリフビューでは現在有効なステムは無効になっているステムに比べて歴然と暗い色で表示されています。
+例えば、以下の<IMG SRC="../charwithhintmask.png" WIDTH="309" HEIGHT="322" ALIGN="Left"><IMG SRC="../hintmaskinfo.png" WIDTH="321" HEIGHT="459" ALIGN="Right"> 例では、(左の) 選択された点は、そこで有効になっている点がハイライト表示されています。グリフビューでは現在有効なステムは無効になっているステムに比べて歴然と暗い色で表示されています。
 所属するヒントマスクがある点は、丸で囲って表示されています。
 <P>
 <!--
@@ -302,8 +302,8 @@ TrueType フォントのヒントづけには、ずっと広い範囲の可能性が開けています。私は Tr
 <P>
 <TABLE BORDER CELLPADDING="2">
   <TR>
-    <TD><IMG SRC="Ehinted.png" WIDTH="189" HEIGHT="208"></TD>
-    <TD><IMG SRC="EhintedTtf.png" WIDTH="127" HEIGHT="145"><BR>
+    <TD><IMG SRC="../Ehinted.png" WIDTH="189" HEIGHT="208"></TD>
+    <TD><IMG SRC="../EhintedTtf.png" WIDTH="127" HEIGHT="145"><BR>
 <!--  <SMALL>A fully hinted glyph is<BR>
       completely grid fit, but<BR>
       the difference between<BR>
@@ -315,8 +315,8 @@ TrueType フォントのヒントづけには、ずっと広い範囲の可能性が開けています。私は Tr
       失われてしまいます。</SMALL></TD>
   </TR>
   <TR>
-    <TD><IMG SRC="Efore.png" WIDTH="188" HEIGHT="208"></TD>
-    <TD><IMG SRC="EforeTtf.png" WIDTH="127" HEIGHT="145"><SMALL><BR>
+    <TD><IMG SRC="../Efore.png" WIDTH="188" HEIGHT="208"></TD>
+    <TD><IMG SRC="../EforeTtf.png" WIDTH="127" HEIGHT="145"><SMALL><BR>
 <!--  One attempt to solve the<BR>
       above problem, compare<BR>
       to below.</SMALL></TD> -->
@@ -325,8 +325,8 @@ TrueType フォントのヒントづけには、ずっと広い範囲の可能性が開けています。私は Tr
       みてください。</SMALL></TD>
   </TR>
   <TR>
-    <TD><IMG SRC="Eback.png" WIDTH="189" HEIGHT="208"></TD>
-    <TD><IMG SRC="EbackTtf.png" WIDTH="127" HEIGHT="145"><SMALL><BR>
+    <TD><IMG SRC="../Eback.png" WIDTH="189" HEIGHT="208"></TD>
+    <TD><IMG SRC="../EbackTtf.png" WIDTH="127" HEIGHT="145"><SMALL><BR>
 <!--  Note how the different<BR>
       directions in the md hint<BR>
       change the rasterization</SMALL></TD>-->
@@ -358,7 +358,7 @@ I find the hint documentation inadequate for me to do a good job at hinting. -->
     letters? -->
     <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5177.Type2.pdf">Type2</A> で、LanguageGroup が 1 でなく、ステムが *stem3 パターンに当てはまらないときにカウンタマスクを使ってもいいのか? それとも cntrmask はラテン文字では *stem3 にしか使えないのか?
   <LI>
-    <IMG SRC="NoPointHint.png" WIDTH="194" HEIGHT="232" ALIGN="Right"><!--How do
+    <IMG SRC="../NoPointHint.png" WIDTH="194" HEIGHT="232" ALIGN="Right"><!--How do
     hints work? Is a hint meaningful if there are no points associated with it?
     As in the "O" at right, where the two vertical stems have no points associated
     with them. -->

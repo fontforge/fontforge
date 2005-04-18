@@ -99,7 +99,7 @@ First create a new font with the <CODE>New</CODE> command in the
 -->
 まず、フォントを <CODE>ファイル(<U>F</U>)</CODE> メニューの <CODE>新規(<U>N</U>)</CODE> コマンドで (または、起動時に引数 <KBD>-new</KBD> を指定して) 作成します。
 <P>
-<IMG SRC="newfont.png" WIDTH="419" HEIGHT="189">
+<IMG SRC="../newfont.png" WIDTH="419" HEIGHT="189">
 <P>
 <!--
 Give the font a name with the <CODE><A HREF="fontinfo.html">Font
@@ -118,7 +118,7 @@ difficult in this mode though)</SMALL> -->
 <SMALL>(もし TrueType を作る予定ならば、「2 次スプライン(Q)」チェックボックスをオンにして、TrueType フォーマットそのもので編集した方がいいかもしれません。
 ただし、このモードでは編集が少し難しくなります)</SMALL>
 <P>
-<IMG SRC="fontinfo.png" WIDTH="376" HEIGHT="544">
+<IMG SRC="../fontinfo.png" WIDTH="376" HEIGHT="544">
 <H2>
 <!--<A NAME="CharCreate">Creating a glyph</A>-->
     <A NAME="CharCreate">グリフの作成法</A>
@@ -130,7 +130,7 @@ click on the entry for "C" in the font view above. You should now have an
 empty Outline Character window: -->
 それが終わったら、文字の編集を始める用意ができています。上のフォントビューの“C”の項目をダブルクリックして下さい。空の文字アウトラインウィンドウが表示されます。
 <P>
-<IMG SRC="C1.png" WIDTH="272" HEIGHT="283">
+<IMG SRC="../C1.png" WIDTH="272" HEIGHT="283">
 <P>
 <!--
 The outline glyph window contains two palettes snuggled up on the left side
@@ -168,7 +168,7 @@ you are creating. It will be scaled so that it is as high as the em-square.
 ファイル(<U>F</U>) メニューから 取り込み(<U>I</U>) コマンドを選び、あなたが作成した文字の画像を取り込んでください。
 文字の高さが全角正方形 (em-square) に一致するように拡大/縮小されます。
 <P>
-<IMG SRC="C2.png" WIDTH="272" HEIGHT="283">
+<IMG SRC="../C2.png" WIDTH="272" HEIGHT="283">
 <P>
 <!--
 Select the background layer as editable from the layers palette, move the
@@ -180,7 +180,7 @@ the image is properly positioned. -->
 マウスポインタを画像の端のどこかに合わせ、シフトキーを押しながら隅をクリックし、画像が適切なサイズになるまでドラッグします。
 そののち、ポインタを画像の暗色の部分に載せてマウスボタンを押下し、画像が適切な位置に来るまでドラッグします。
 <P>
-<IMG SRC="C3.png" WIDTH="272" HEIGHT="283">
+<IMG SRC="../C3.png" WIDTH="272" HEIGHT="283">
 <P>
 <!--
 If you have downloaded the
@@ -203,7 +203,7 @@ these rules hinting will work better. -->
 私の経験では、曲線が水平または垂直になっている点や、角、そして変曲点 (曲率方向の変化は、S 字形の曲線が、右側に開いた部分から左側から開いた部分へ移るところで起こります) に点を追加するのが最良です。
 この方針に従えば、ヒント処理がより適切に働くようになるでしょう。
 <P>
-<IMG SRC="C4.png" WIDTH="272" HEIGHT="283">
+<IMG SRC="../C4.png" WIDTH="272" HEIGHT="283">
 <P>
 <!--
 It is best to enter a curve in a clockwise fashion, so the next point should
@@ -218,7 +218,7 @@ the point with the same slope the line had when it entered. -->
 接点は曲線から直線への美しい移り変わりを形づくります。
 これは、その点における曲線の傾きが、引き続く直線が入力された時の傾きと同じに保たれるからです。
 <P>
-<IMG SRC="C5.png" WIDTH="272" HEIGHT="283">
+<IMG SRC="../C5.png" WIDTH="272" HEIGHT="283">
 <P>
 <!--
 At the moment this "curve" doesn't match the image at all, don't worry about
@@ -234,7 +234,7 @@ we must use a corner point (one of the little squares on the tools palette).
 画像で方向が突然変化している箇所に次の点を置かなければなりません。
 曲線上の点も接点も不適切ですから、角の点 (ツールパレット上の小さな四角の一つ) を使用しなくてはなりません。
 <P>
-<IMG SRC="C6.png" WIDTH="272" HEIGHT="283">
+<IMG SRC="../C6.png" WIDTH="272" HEIGHT="283">
 <P>
 <!--
 As you see the old curve now follows the image a bit more closely. We continue
@@ -242,14 +242,14 @@ adding points until we are ready to close the path. -->
 図に見るように、先ほどの曲線はわずかながら前より密接に画像に沿っています。
 パスが閉じる直前のところまで、点の追加を続けましょう。
 <P>
-<IMG SRC="C7.png" WIDTH="272" HEIGHT="283">
+<IMG SRC="../C7.png" WIDTH="272" HEIGHT="283">
 <P>
 <!--
 Then we close the path just by adding a new point on top of the old start
 point -->
 その後、以前の開始点の上に重ねて新しく点を追加すれば、それでパスは閉じます。
 <P>
-<IMG SRC="C8.png" WIDTH="272" HEIGHT="283">
+<IMG SRC="../C8.png" WIDTH="272" HEIGHT="283">
 <P>
 <!--
 Now we must make the curve track the image more closely, to do this we must
@@ -259,7 +259,7 @@ the control points around until the curve looks right. -->
 ここで、曲線が画像をより正確にたどるようにする必要がありますが、そのためには制御点 (青い×印) を調整する必要があります。
 全ての制御点が見えるようにするため、ポインタツールを選んで曲線上でダブルクリックし、それから曲線が画像と同じ形になるように制御点を動かします。
 <P>
-<IMG SRC="C9.png" WIDTH="266" HEIGHT="279">
+<IMG SRC="../C9.png" WIDTH="266" HEIGHT="279">
 <P>
 <!--
 Finally we set width. Again with the pointer tool, move the mouse to the
@@ -267,7 +267,7 @@ width line on the right edge of the screen, depress and drag the line back
 to a reasonable location. -->
 最後に幅を設定します。ポインタツールに戻り、マウスを画面の右端にある字幅線に合わせてクリックし、文字幅が適切な位置に来るまでドラッグして戻します。
 <P>
-<IMG SRC="C10.png" WIDTH="266" HEIGHT="279">
+<IMG SRC="../C10.png" WIDTH="266" HEIGHT="279">
 <P>
 <!-- And we are done with this glyph.
 -->
