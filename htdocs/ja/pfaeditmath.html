@@ -36,8 +36,8 @@ original two: -->
 FontForge の多くのコマンドで、点の列をスプラインに当てはめる必要が生じます。それらのうち最も自明なのは 編集(E)→合併(M) と エレメント(L)→単純化(S) コマンドですが、しかし同種の技法に依存しているコマンドは他にも多数あります。合併(M) コマンドの場合を検討することにします。以下のスプラインがあったとして、中央の点を削除して、オリジナルの 2 本のスプラインを近似する新しい 1 本のスプラインを生成したいのだとしましょう。
 <P>
 &nbsp; &nbsp; &nbsp;
-<IMG SRC="mergepre.png" WIDTH="192" HEIGHT="120" ALIGN="Middle"> =&gt;
-<IMG SRC="mergepost.png" WIDTH="192" HEIGHT="120" ALIGN="Middle">
+<IMG SRC="../mergepre.png" WIDTH="192" HEIGHT="120" ALIGN="Middle"> =&gt;
+<IMG SRC="../mergepost.png" WIDTH="192" HEIGHT="120" ALIGN="Middle">
 <P>
 <!--
 FontForge uses a least squares approximation to determine the new spline.
@@ -74,40 +74,40 @@ From least squares we know: -->
 最小自乗近似から、我々は以下の事を知ることができます:
 <TABLE CELLPADDING="2">
   <TR>
-    <TD ROWSPAN=4><IMG SRC="lparen-174.png" WIDTH="22" HEIGHT="174" ALIGN="Middle"></TD>
-    <TD><IMG SRC="Sxiti3.png" WIDTH="50" HEIGHT="35"></TD>
-    <TD ROWSPAN=4><IMG SRC="rparen-174.png" WIDTH="22" HEIGHT="174" ALIGN="Middle">=<IMG
-	  SRC="lparen-174.png" WIDTH="22" HEIGHT="174" ALIGN="Middle"></TD>
-    <TD><IMG SRC="Sti6.png" WIDTH="32" HEIGHT="35"></TD>
-    <TD><IMG SRC="Sti5.png" WIDTH="32" HEIGHT="35"></TD>
-    <TD><IMG SRC="Sti4.png" WIDTH="32" HEIGHT="35"></TD>
-    <TD><IMG SRC="Sti3.png" WIDTH="32" HEIGHT="35"></TD>
-    <TD ROWSPAN=4><IMG SRC="rparen-174.png" WIDTH="22" HEIGHT="174" ALIGN="Middle">*<IMG
-	  SRC="lparen-174.png" WIDTH="22" HEIGHT="174" ALIGN="Middle"></TD>
+    <TD ROWSPAN=4><IMG SRC="../lparen-174.png" WIDTH="22" HEIGHT="174" ALIGN="Middle"></TD>
+    <TD><IMG SRC="../Sxiti3.png" WIDTH="50" HEIGHT="35"></TD>
+    <TD ROWSPAN=4><IMG SRC="../rparen-174.png" WIDTH="22" HEIGHT="174" ALIGN="Middle">=<IMG
+	  SRC="../lparen-174.png" WIDTH="22" HEIGHT="174" ALIGN="Middle"></TD>
+    <TD><IMG SRC="../Sti6.png" WIDTH="32" HEIGHT="35"></TD>
+    <TD><IMG SRC="../Sti5.png" WIDTH="32" HEIGHT="35"></TD>
+    <TD><IMG SRC="../Sti4.png" WIDTH="32" HEIGHT="35"></TD>
+    <TD><IMG SRC="../Sti3.png" WIDTH="32" HEIGHT="35"></TD>
+    <TD ROWSPAN=4><IMG SRC="../rparen-174.png" WIDTH="22" HEIGHT="174" ALIGN="Middle">*<IMG
+	  SRC="../lparen-174.png" WIDTH="22" HEIGHT="174" ALIGN="Middle"></TD>
     <TD>a<SUB>x</SUB></TD>
-    <TD ROWSPAN=4><IMG SRC="rparen-174.png" WIDTH="22" HEIGHT="174" ALIGN="Middle"></TD>
+    <TD ROWSPAN=4><IMG SRC="../rparen-174.png" WIDTH="22" HEIGHT="174" ALIGN="Middle"></TD>
   </TR>
   <TR>
-    <TD><IMG SRC="Sxiti2.png" WIDTH="50" HEIGHT="35"></TD>
-    <TD><IMG SRC="Sti5.png" WIDTH="32" HEIGHT="35"></TD>
-    <TD><IMG SRC="Sti4.png" WIDTH="32" HEIGHT="35"></TD>
-    <TD><IMG SRC="Sti3.png" WIDTH="32" HEIGHT="35"></TD>
-    <TD><IMG SRC="Sti2.png" WIDTH="32" HEIGHT="35"></TD>
+    <TD><IMG SRC="../Sxiti2.png" WIDTH="50" HEIGHT="35"></TD>
+    <TD><IMG SRC="../Sti5.png" WIDTH="32" HEIGHT="35"></TD>
+    <TD><IMG SRC="../Sti4.png" WIDTH="32" HEIGHT="35"></TD>
+    <TD><IMG SRC="../Sti3.png" WIDTH="32" HEIGHT="35"></TD>
+    <TD><IMG SRC="../Sti2.png" WIDTH="32" HEIGHT="35"></TD>
     <TD>b<SUB>x</SUB></TD>
   </TR>
   <TR>
-    <TD><IMG SRC="Sxiti.png" WIDTH="50" HEIGHT="35"></TD>
-    <TD><IMG SRC="Sti4.png" WIDTH="32" HEIGHT="35"></TD>
-    <TD><IMG SRC="Sti3.png" WIDTH="32" HEIGHT="35"></TD>
-    <TD><IMG SRC="Sti2.png" WIDTH="32" HEIGHT="35"></TD>
-    <TD><IMG SRC="Sti.png" WIDTH="32" HEIGHT="35"></TD>
+    <TD><IMG SRC="../Sxiti.png" WIDTH="50" HEIGHT="35"></TD>
+    <TD><IMG SRC="../Sti4.png" WIDTH="32" HEIGHT="35"></TD>
+    <TD><IMG SRC="../Sti3.png" WIDTH="32" HEIGHT="35"></TD>
+    <TD><IMG SRC="../Sti2.png" WIDTH="32" HEIGHT="35"></TD>
+    <TD><IMG SRC="../Sti.png" WIDTH="32" HEIGHT="35"></TD>
     <TD>c<SUB>x</SUB></TD>
   </TR>
   <TR>
-    <TD><IMG SRC="Sxi.png" WIDTH="50" HEIGHT="35"></TD>
-    <TD><IMG SRC="Sti3.png" WIDTH="32" HEIGHT="35"></TD>
-    <TD><IMG SRC="Sti2.png" WIDTH="32" HEIGHT="35"></TD>
-    <TD><IMG SRC="Sti.png" WIDTH="32" HEIGHT="35"></TD>
+    <TD><IMG SRC="../Sxi.png" WIDTH="50" HEIGHT="35"></TD>
+    <TD><IMG SRC="../Sti3.png" WIDTH="32" HEIGHT="35"></TD>
+    <TD><IMG SRC="../Sti2.png" WIDTH="32" HEIGHT="35"></TD>
+    <TD><IMG SRC="../Sti.png" WIDTH="32" HEIGHT="35"></TD>
     <TD><P ALIGN=Center>
       n</TD>
     <TD>d<SUB>x</SUB></TD>
@@ -290,8 +290,8 @@ slopes are not continuous. PostScript allows the user to specify the behavior
 at joints and at end-points. -->
 これが、円形のペンが行うことの本質的な記述です。唯一の逸脱は、輪郭の端点または 2 本のスプラインが接合するものの、その傾きが連続的でない場合においてのみ起こります。PostScript では、ユーザが接合部と端点におけるふるまいを指定することができます。
 <P>
-&nbsp; &nbsp; <IMG SRC="expand-pre.png" WIDTH="126" HEIGHT="86" ALIGN="Middle">
-=&gt; <IMG SRC="expand-post.png" WIDTH="131" HEIGHT="91" ALIGN="Middle">
+&nbsp; &nbsp; <IMG SRC="../expand-pre.png" WIDTH="126" HEIGHT="86" ALIGN="Middle">
+=&gt; <IMG SRC="../expand-post.png" WIDTH="131" HEIGHT="91" ALIGN="Middle">
 <P>
 <!--
 For the main body of the spline we can use the above method to generate two
@@ -335,8 +335,8 @@ PostScript のペンは以下のいずれかで終わることができます:
 <!--
 Things are a bit more complex at a joint -->
 接合箇所においては事情はより複雑になります。
-<IMG SRC="expand-joint-pre.png" WIDTH="61" HEIGHT="78" ALIGN="Middle"> =&gt;
-<IMG SRC="expand-joint-post.png" WIDTH="69" HEIGHT="80" ALIGN="Middle">,
+<IMG SRC="../expand-joint-pre.png" WIDTH="61" HEIGHT="78" ALIGN="Middle"> =&gt;
+<IMG SRC="../expand-joint-post.png" WIDTH="69" HEIGHT="80" ALIGN="Middle">,
 <!--
 the green lines in the right image show where the path would have gone had
 it not been constrained by a joint, so on the inside of the joint FontForge

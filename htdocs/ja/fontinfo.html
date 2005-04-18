@@ -14,7 +14,7 @@
     フォント情報
 </H1>
 <P>
-<IMG SRC="fontinfo.png" WIDTH="376" HEIGHT="608" ALIGN="Right">
+<IMG SRC="../fontinfo.png" WIDTH="376" HEIGHT="608" ALIGN="Right">
 <P>
 <!--
 The Font Info dialog is available from all views. It allows you to name your
@@ -101,7 +101,7 @@ If nothing is specified in that section then the names specified here will
 be used by default in ttf files.<BR Clear=ALL> -->
 これらの名前の多くは TTF 名セクションの英語名に似ています。そのセクションで何も選択しなかった場合には、ここで指定した名前が TTF ファイルのデフォルトとして使用されます。<BR Clear=ALL>
 <H2>
-  <IMG SRC="fontinfo-encoding.png" WIDTH="369" HEIGHT="472" ALIGN="Right"><!--<A
+  <IMG SRC="../fontinfo-encoding.png" WIDTH="369" HEIGHT="472" ALIGN="Right"><!--<A
       NAME="Encoding">Encoding</A>-->
    <A NAME="Encoding">エンコーディング</A>
 </H2>
@@ -211,7 +211,7 @@ FontForge は、デフォルトで以下のエンコーディングについて知っています。
     Greenlandic, Lappish) -->
     ISO-8859-4 (Latin4) -- 北ヨーロッパ (エストニア語、ラトビア語、リトアニア語、グリーンランド語、ラップ語)
   <LI>
-    <IMG SRC="fontinfo-cid.png" WIDTH="369" HEIGHT="472" ALIGN="Right">ISO-8859-9
+    <IMG SRC="../fontinfo-cid.png" WIDTH="369" HEIGHT="472" ALIGN="Right">ISO-8859-9
 <!--    (Latin5) -- Turkish-->
     (Latin5) -- トルコ語
   <LI>
@@ -447,7 +447,7 @@ It contains:-->
     US-ASCII -- それ自身ではもはや本当に役立つわけではありませんが、その他ほとんどすべてのエンコーディングの最初の 128 文字を提供します。
 </UL>
 <H2>
-  <IMG SRC="fontinfo-ps.png" WIDTH="376" HEIGHT="600" ALIGN="Right"><!--<A NAME="PS-General">General</A>-->
+  <IMG SRC="../fontinfo-ps.png" WIDTH="376" HEIGHT="600" ALIGN="Right"><!--<A NAME="PS-General">General</A>-->
   <A NAME="PS-General">一般</A>
 </H2>
 <P>
@@ -547,7 +547,7 @@ is stroked with a circular pen of the given width.<BR Clear=ALL> -->
     <A NAME="Private">PostScript Private 辞書</A> -- <SMALL>(フォント全体に適用される PostScript のヒント)</SMALL>
 </H2>
 <P>
-<IMG SRC="fontinfo-private.png" WIDTH="376" HEIGHT="544" ALIGN="Right"><!--This
+<IMG SRC="../fontinfo-private.png" WIDTH="376" HEIGHT="544" ALIGN="Right"><!--This
 sub-dialog shows most entries in the font's Private dictionary. The interesting
 things in this dictionary are mostly concerned with hints appropriate for
 the entire font. I shall not go into detail about the meanings of the various
@@ -601,7 +601,7 @@ will simply guess at a reasonable value when it needs to generate the
 font.<BR Clear=Right>-->
 また、<CODE>[削除(R)]</CODE> ボタンを押せば辞書から項目を削除できます。いくつかの項目 (<CODE>BlueValues</CODE> など) はすべての Type1 フォントで設定する必要がある項目ですが、それらの項目も削除することができます。FontForge はフォントを出力するために値が必要になったときに妥当な値を単純に推測します。
 <P>
-<IMG SRC="privatekey.png" WIDTH="208" HEIGHT="146" ALIGN="Left"><IMG SRC="privatekeymenu.png"
+<IMG SRC="../privatekey.png" WIDTH="208" HEIGHT="146" ALIGN="Left"><IMG SRC="../privatekeymenu.png"
     WIDTH="208" HEIGHT="202" ALIGN="Right"><!--The <CODE>[Add]</CODE> button allows
 you to add new keys to the dictionary. Every key will be added with a blank
 value, and you will almost certainly need to provide an appropriate value
@@ -626,7 +626,7 @@ They perform the same function but are formatted differently). -->
 These entries are only meaningful for PostScript fonts.<BR CLEAR=ALL> -->
 これらの項目は PostScript フォントでのみ意味をもちます。<BR CLEAR=ALL>
 <H2>
-  <IMG SRC="fontinfo-ttfvals.png" WIDTH="376" HEIGHT="608" ALIGN="Right"><!--<A
+  <IMG SRC="../fontinfo-ttfvals.png" WIDTH="376" HEIGHT="608" ALIGN="Right"><!--<A
       NAME="TTF-Values">TTF Values</A>-->
    <A NAME="TTF-Values">TTF の設定値</A>
 </H2>
@@ -712,9 +712,9 @@ the Embeddable entry (generally called FSType) will be set on CID keyed fonts
 even if they are not in an OpenType wrapper.<BR Clear=ALL> -->
 これらの項目は TrueType および OpenType フォントでのみ意味をもちます (項目 Embeddable (一般に FSType と呼ばれます) は CID キー指定フォントでも設定されます (たとえ OpenType ラッパで囲まれていなくとも)。
 <H3>
-<!--<CODE><A NAME="Order"><IMG SRC="GSUB-Order.png" WIDTH="185" HEIGHT="294"
+<!--<CODE><A NAME="Order"><IMG SRC="../GSUB-Order.png" WIDTH="185" HEIGHT="294"
       ALIGN="Right">GSUB/morx</A></CODE> Ordering-->
-    <CODE><A NAME="Order"><IMG SRC="GSUB-Order.png" WIDTH="185" HEIGHT="294"
+    <CODE><A NAME="Order"><IMG SRC="../GSUB-Order.png" WIDTH="185" HEIGHT="294"
       ALIGN="Right">GSUB/morx</A></CODE> の順序指定
 </H3>
 <P>
@@ -736,7 +736,7 @@ apply features in the order that they think best. So the order specified
 in the font may be ignored.<BR CLEAR=ALL> -->
 <FONT COLOR="Red"><STRONG>警告: </STRONG></FONT>OpenType 仕様書では機能の実行 (実際には照合) は、照合テーブルの中の出現順に並べられると主張していますが、Microsoft は、彼らが最良だと考える順番で機能を適用すると主張しています。ですからフォント内で指定された順序は無視される可能性があります。<BR CLEAR=ALL>
 <H2>
-  <IMG SRC="fontinfo-ttfname.png" WIDTH="369" HEIGHT="472" ALIGN="Right"><!--<A
+  <IMG SRC="../fontinfo-ttfname.png" WIDTH="369" HEIGHT="472" ALIGN="Right"><!--<A
       NAME="TTF-Names">TTF Names</A>-->
    <A NAME="TTF-Names">TTF 名</A>
 </H2>
@@ -1090,7 +1090,7 @@ for Russian and "NigritaCursiva" for Spanish. -->
 These names are only meaningful for TrueType and OpenType fonts. -->
 これらの名前は TrueType および OpenType フォントでのみ意味をもちます。
 <H2>
-  <IMG SRC="fontinfo-panose.png" WIDTH="369" HEIGHT="472" ALIGN="Right"><A
+  <IMG SRC="../fontinfo-panose.png" WIDTH="369" HEIGHT="472" ALIGN="Right"><A
       NAME="Panose">Panose</A>
 </H2>
 <P>
@@ -1110,7 +1110,7 @@ These entries are only meaningful for TrueType, OpenType and SVG
 fonts.<BR Clear=All> -->
 これらは TrueType, OpenType および SVG フォントでのみ有効です <BR Clear=All>
 <H2>
-  <IMG SRC="fontinfo-tex.png" WIDTH="376" HEIGHT="600" ALIGN="Right"><A NAME="TeX">TeX</A>
+  <IMG SRC="../fontinfo-tex.png" WIDTH="376" HEIGHT="600" ALIGN="Right"><A NAME="TeX">TeX</A>
 </H2>
 <P>
 <!--
@@ -1129,7 +1129,7 @@ These values are stored in tfm files (should you generate a tfm file with
 your font).<BR Clear=All> -->
 これらの値は TFM ファイルに格納されます (フォントと一緒に TFM ファイルを出力する必要があります)。<BR Clear=All>
 <H2>
-  <IMG SRC="fontinfo-size.png" ALIGN="Right" WIDTH="376" HEIGHT="601"><!--<A NAME="Size">Size</A>-->
+  <IMG SRC="../fontinfo-size.png" ALIGN="Right" WIDTH="376" HEIGHT="601"><!--<A NAME="Size">Size</A>-->
   <A NAME="Size">サイズ(S)</A>
 </H2>
 <P>
@@ -1190,7 +1190,7 @@ complication, as far as s/he is concerned there is just a font called
 it. So the Style Name of all four fonts above should be "Regular"<BR Clear=All> -->
 上の例では、すべての異なるフォントが同じ "スタイル ID" という数値をもっています。この数値は任意の値を撮り、その ID をもつすべてのフォントを結びつけます (つまり、すべてのフォントが同じファミリーに属するようになります)。ただし、Ambrosia-Italic-Text はこれらと異なるスタイル ID をもつでしょう。同じスタイル ID をもつすべてのフォントは同じスタイル名をもつはずです。ここで、フォント名は例えば "Ambrosia-Regular-Heading" というような物ですが、ユーザはこんな複雑な名前に悩まされるべきではありません。ユーザの立場からは "Ambrosia-Regular" という 1 個のフォントがあるだけで、上の 4 つのフォントはどれもその具体例でしかありません。ですから、4 つのフォントのスタイル名はすべて "Regular" にすべきです <BR Clear=All>
 <H2>
-  <IMG SRC="fontinfo-comment.png" WIDTH="369" HEIGHT="506" ALIGN="Right"><!--<A
+  <IMG SRC="../fontinfo-comment.png" WIDTH="369" HEIGHT="506" ALIGN="Right"><!--<A
       NAME="Comment">Comment</A>-->
    <A NAME="Comment">コメント</A>
 </H2>
@@ -1213,7 +1213,7 @@ The comment should be in ISO Latin1. -->
     <A NAME="Anchors">アンカークラス</A>
 </H2>
 <P>
-<IMG SRC="fontinfo-anchors.png" WIDTH="376" HEIGHT="544" ALIGN="Right" ALT="Font Info Anchors">
+<IMG SRC="../fontinfo-anchors.png" WIDTH="376" HEIGHT="544" ALIGN="Right" ALT="Font Info Anchors">
 <!--
 This sub-dialog allows you to control the
 <A HREF="overview.html#Anchors">Anchor Classes</A> used in your font. Anchor
@@ -1228,7 +1228,7 @@ may also bring up outline glyph views looking at the glyphs which use these
 classes. -->
 ここで新しいクラスの追加、既存のクラスの削除と名前変更ができます。また、それらのクラスを使用するグリフを目で見てアウトライングリフビューを呼び出すこともできます。
 <P>
-<IMG SRC="newanchor.png" WIDTH="226" HEIGHT="391" ALIGN="Left"><!-- The dialog
+<IMG SRC="../newanchor.png" WIDTH="226" HEIGHT="391" ALIGN="Left"><!-- The dialog
 for creating a new (or modifying an old) anchor class allows you to give
 that class a name and requires that you associate it with a set of
 <A HREF="charinfo.html#Feature-Tag">scripts and languages</A>. You may also
@@ -1276,7 +1276,7 @@ Anchor classes are only meaningful when generating a truetype (ttf or otf)
 like font with OpenType tables.<BR Clear=ALL> －－＞
 アンカークラスは TrueType (TTF または OTF) 類似のフォントで、OpenType テーブルを出力したときのみに意味があります。
 <H2>
-  <IMG SRC="fontinfo-context.png" WIDTH="376" HEIGHT="544" ALIGN="Right" ALT="Font Info Contextual Tables">
+  <IMG SRC="../fontinfo-context.png" WIDTH="376" HEIGHT="544" ALIGN="Right" ALT="Font Info Contextual Tables">
 <!--<A NAME="Contextual">Contextual</A>-->
     <A NAME="Contextual">文脈依存</A>
 </H2>
@@ -1319,7 +1319,7 @@ to make sure a feature will be turned on before investing time in
 it.<BR CLEAR=ALL> -->
 <FONT COLOR="Red"><STRONG>警告: </STRONG></FONT><A HREF="http://www.microsoft.com/typography/specs/default.htm">Uniscribe</A> は任意の指定されたスクリプトに対して、ある限定された機能のセットしか実装していません。時間を費す前に、その機能がオンになっているかを確認してください。<BR CLEAR=ALL>
 <H2>
-  <IMG SRC="fontinfo-macstyle.png" WIDTH="376" HEIGHT="608" ALIGN="Right" ALT="Font Info Mac Styles">
+  <IMG SRC="../fontinfo-macstyle.png" WIDTH="376" HEIGHT="608" ALIGN="Right" ALT="Font Info Mac Styles">
 <!--<A NAME="Mac-Style">Mac Style</A> &amp; FOND-->
     <A NAME="Mac-Style">Mac スタイル情報</A> と FOND
 </H2>
@@ -1355,7 +1355,7 @@ It is a grouping level underneath the family level. See the
 this.<BR Clear=ALL> -->
 <A NAME="FONDName">FOND</A> 名は Mac ファミリーを生成する時にのみ使用されます。これはファミリーレベルの下にあるグループ化のレベルです。これをいつ使用するべきかに関する議論は <A HREF="faq.html#How-family">FAQ</A> を参照してください。<BR Clear=ALL>
 <H2>
-  <IMG SRC="fontinfo-macfeat.png" WIDTH="376" HEIGHT="600" ALIGN="Right" ALT="Font Info Mac Features">
+  <IMG SRC="../fontinfo-macfeat.png" WIDTH="376" HEIGHT="600" ALIGN="Right" ALT="Font Info Mac Features">
 <!--<A NAME="Mac-Features">Mac Features</A>-->
     <A NAME="Mac-Features">Mac の機能</A>
 </H2>
@@ -1368,9 +1368,10 @@ This will override the Mac features specified in the
 setting).<BR Clear=ALL> -->
 このサブダイアログでは、Mac 方式の機能をフォント内に作成したり削除したりすることができます。ここの設定は、このフォントに限って<A HREF="prefs.html#Mac">環境設定ダイアログ</A>で指定された設定より優先的に使用されます （例えば、ある機能設定に対してこのフォント限定でより適切な名前をつけることができます)。
 <H2>
-  <IMG SRC="fontinfo-statemach.png" WIDTH="376" HEIGHT="608" ALIGN="Right"
-      ALT="Font Info State Machines"> <!--<A NAME="Mac-SM">Mac State Machines</A>-->
-    <A NAME="Mac-SM">Mac 状態機械</A>
+<!-- <IMG SRC="fontinfo-statemach.png" WIDTH="376" HEIGHT="608" ALIGN="Right"
+      ALT="Font Info State Machines"> <A NAME="Mac-SM">Mac State Machines</A>-->
+     <IMG SRC="../fontinfo-statemach.png" WIDTH="376" HEIGHT="608" ALIGN="Right"
+      ALT="フォント情報状態機械"> <A NAME="Mac-SM">Mac 状態機械</A>
 </H2>
 <P>
 <!--

@@ -95,7 +95,7 @@ some more obscure behaviors). I am going to provide an example here of a
 contextual substitution. -->
 条件つき機能には置換・合字またはカーニング (およびさらに不明瞭なふるまい) を含めることができます。ここでは条件つき置換の一例を示したいと思います。
 <P>
-<IMG SRC="bed-script.png" WIDTH="259" HEIGHT="81" ALIGN="Right"><!-- Instead of
+<IMG SRC="../bed-script.png" WIDTH="259" HEIGHT="81" ALIGN="Right"><!-- Instead of
 an Indic or Arabic example, let us take something I'm more familiar with,
 the problem of typesetting a latin script font where the letters ``b,'' ``o,''
 ``v'' and ``w'' join their following letter near the x-height, while all
@@ -127,7 +127,7 @@ except that here we use the special ``script / language'' called ``- - - Nested
 - - -'' (an option in the pulldown menu). -->
 まず最初に、各 "低い" 文字に、"高い" 異字形を対応づける単純置換を作成する必要があります。この置換を、"high" という 4 文字の OpenType タグで呼ぶことにしましょう。置換を定義するには、<A HREF="charinfo.html#substitution">エレメント(L)→グリフ情報(I)</A>を先ほどと同じように使用しますが、"用字系/言語" の組合せとして "― 入れ子 ―" という特殊な値を使用します (プルダウンメニューの選択肢の 1 つとして存在します)。
 <P>
-<IMG SRC="ott1.png" WIDTH="261" HEIGHT="328" ALIGN="Right"><!--The tricky part
+<IMG SRC="../ott1.png" WIDTH="261" HEIGHT="328" ALIGN="Right"><!--The tricky part
 is defining the context. This is done with the Contextual tab in the
 <A HREF="fontinfo.html#Contextual">Element -&gt; Font Info</A> dialog, revealing
 five different types of contextual behavior, we are interested in contextual
@@ -151,13 +151,13 @@ things, and then to find that
 doesn't let that happen in Latin. -->
 この例では、我々は 'calt' を使います。これは適切なタグに見えますが、これがラテン文字では実装されていないことに気づくまでの話です。実際、ラテン文字で実装されている適切な機能は存在しないようです。この例でフォントを出力することはでき、それは構文的には正しいのですが、まったく何の効果もありません。素晴らしいことを行うのに必要な能力を OpenType が提供しているのに、<A HREF="http://www.microsoft.com/typography/OpenType%20Dev/standard/shaping.mspx">Microsoft</A> がラテン文字ではそれを使わせないということを知ると不満が溜まります。
 <P>
-<IMG SRC="ott2_5.png" WIDTH="329" HEIGHT="263" ALIGN="Left"><!-- The next dialog
+<IMG SRC="../ott2_5.png" WIDTH="329" HEIGHT="263" ALIGN="Left"><!-- The next dialog
 allows you to specify the overall format of the substitution. We want a class
 based system - - we've already mentioned what the glyph classes will be
 above.<BR CLEAR=ALL> -->
 次のダイアログでは、置換の全体的なフォーマットを指定することができます。私達が使いたいのはクラスベースのシステムです――どのようなグリフクラスを用いるかは、既に述べたとおりです。<BR CLEAR=ALL>
 <P>
-<IMG SRC="ott3.png" WIDTH="330" HEIGHT="357" ALIGN="Right"><!--The next dialog
+<IMG SRC="../ott3.png" WIDTH="330" HEIGHT="357" ALIGN="Right"><!--The next dialog
 finally shows something interesting. At the top are a series of patterns
 to match and substitutions that will be applied if the string matches. Underneath
 that are the glyph classes that this substitution uses. A contextual chaining
@@ -191,7 +191,7 @@ so these two lines mean that if any letter follows one of ``bovw'' then that
 letter should be converted to its `high' variant. <BR CLEAR=ALL> -->
 2 行目もこれと同様ですが、クラス 1 が合致するところが異なります。クラス定義を見ると、クラス 1 と 2 にすべての英小文字が含まれていることが分かるので、これらの 2 行が意味することは、"bovw" のどれかの後に英小文字が来た場合、その文字は "高い" 異字形に変換しなければならないということです。<BR CLEAR=ALL>
 <P>
-<IMG SRC="ott4.png" WIDTH="330" HEIGHT="357" ALIGN="Left"><!--To edit a glyph
+<IMG SRC="../ott4.png" WIDTH="330" HEIGHT="357" ALIGN="Left"><!--To edit a glyph
 class simply double click on it. To create a new one press the [New] button
 (under the class list). This produces another dialog showing all the names
 of all the glyphs in the current class. Pressing the [Select] button will
@@ -205,15 +205,15 @@ Pressing the [Next] button defines the class and returns to the overview
 dialog. <BR CLEAR=ALL> -->
 [次(N)] ボタンを押すと、クラスが定義され、概要ダイアログに戻ります。<BR CLEAR=ALL>
 <P>
-<IMG SRC="ott3.png" WIDTH="330" HEIGHT="357" ALIGN="Right"><!--To edit a pattern
+<IMG SRC="../ott3.png" WIDTH="330" HEIGHT="357" ALIGN="Right"><!--To edit a pattern
 double click on it, or to create a new one press the [New] button (under
 the List of lists). Again the pattern string is divided into three categories,
-<IMG SRC="ott5.png" WIDTH="330" HEIGHT="357" ALIGN="Left">those glyphs before
+<IMG SRC="../ott5.png" WIDTH="330" HEIGHT="357" ALIGN="Left">those glyphs before
 the current one, the current one itself, and any glyphs after the current
 one. You choose which category of the pattern you are editing with the tabs
 at the top of the dialog. -->
 パターンを編集するにはその上でダブルクリックし、新しいパターンを作成するには (リストのリストの下にある)  [新規(N)] ボタンを押してください。ここでも、パターン文字列は 3 つのカテゴリに分割されています。
-<IMG SRC="ott5.png" WIDTH="330" HEIGHT="357" ALIGN="Left">
+<IMG SRC="../ott5.png" WIDTH="330" HEIGHT="357" ALIGN="Left">
 現在のグリフに先行するグリフ群、現在のグリフそのもの、そして現在のグリフに続くグリフ群です。編集中のパターンのカテゴリーのどれを編集するかはダイアログの上にあるタブで選択できます。
 <P>
 <!--
@@ -253,7 +253,7 @@ a substitution to either the current glyph or a previous one (the ``marked''
 glyph). -->
 Apple は有限状態機械で文脈を指定します。これは、本質的にはグリフのストリームを調べて、どの置換を適用するかを決定する小さなプログラムです。各状態機械には、グリフクラス定義 (OpenType の例で示したのとちょうど同じような) の集合と状態の集合があります。処理は、グリフストリームの先頭から、状態 0 で始まります。計算機は、現在のグリフがどのクラスに含まれるかを決定し、次に現在の状態を参照して、そのクラスからの入力が与えられたときにどのように振舞うかを調べます。振舞いの中には、別の状態への遷移可能性、入力を次のグリフへ進めること、置換を現在のグリフに適用するか以前のグリフ ("マークつき" グリフ) に適用するかが含まれます。
 <P>
-<IMG SRC="sm-picture.png" WIDTH="386" HEIGHT="130" ALIGN="Right"><!-- Using the
+<IMG SRC="../sm-picture.png" WIDTH="386" HEIGHT="130" ALIGN="Right"><!-- Using the
 same example of a latin script font... We again need a simple substitution
 to convert each letter into its high alternate. The process is the same as
 it was for OpenType, and indeed we can use the same substitution. Again we
@@ -265,7 +265,7 @@ state (the base state - - where nothing changes), and the other is the state
 where we've just read a glyph from the ``bovw'' class. <BR CLEAR=ALL> -->
 前と同じ、ラテン文字の筆記体フォントの例を使うことにしましょう……今回も各文字をその "高い" 別字形に置換する単純置換が必要となります。この処理は OpenType で行ったのと同じで、実際に同じ置換を使用することができます。今回もグリフを 3 つのクラスに分類します (Apple は、使用するかしないかにかかわらずいくつかの追加クラスを定義していますが、概念上 OpenType の例と同じ 3 つのクラスを使用します)。この場合、状態機械には 2 つの状態が必要で (これも追加の状態が Apple により定義済みですが、これも無視しましょう)、具体的には開始状態 (基本状態――変更は行いません) と、もう一つ、"bovw" クラスからグリフを読み込んだ直後の状態です。<BR CLEAR=ALL>
 <P>
-<IMG SRC="asm1.png" WIDTH="261" HEIGHT="323" ALIGN="Left"><!-- Again we use the
+<IMG SRC="../asm1.png" WIDTH="261" HEIGHT="323" ALIGN="Left"><!-- Again we use the
 <A HREF="fontinfo.html#Mac-SM">Element -&gt; Font Info </A>dialog and the
 Mac SM tag to look at the contextual substitutions available. Again there
 are several types of contextual behavior, and we are interested in contextual
@@ -273,18 +273,18 @@ substitutions. Double clicking on a state machine, or pressing the [New]
 button provides an overview of the given state machine. -->
 ここでも<A HREF="fontinfo.html#Mac-SM">エレメント(L)→フォント情報(F)</A> ダイアログの [Mac状態機械] タグをクリックして、文脈依存の置換が利用できるようにします。前と同様、文脈依存の振舞いにはいくつかのタイプがあり、ここで興味があるのは文脈依存の置換です。状態機械の上でダブルクリックするか、[新規(N)] ボタンを押すと、指定した状態機械の概要が表示されます。
 <P>
-<IMG SRC="asm2.png" WIDTH="309" HEIGHT="381" ALIGN="Right"><!-- At the top of
+<IMG SRC="../asm2.png" WIDTH="309" HEIGHT="381" ALIGN="Right"><!-- At the top of
 the dialog we see a field specifying the feature / setting of the machine,
 this is Apple's equivalent of the OpenType 4 character feature tag. Under
 this is a set of class definitions, and at the bottom is a representation
 of the state machine itself. <BR CLEAR=Left> -->
 ダイアログのいちばん上には、状態機械の機能/設定を指定するフィールドが表示されています。これは Apple の方式では OpenType の 4 文字の機能タグと等価です。その下にあるのはクラス定義のセットで、いちばん下にあるのは状態機械そのものです。<BR CLEAR=Left>
 <P>
-<IMG SRC="asm3.png" WIDTH="309" HEIGHT="206" ALIGN="Left"><!--Double clicking
+<IMG SRC="../asm3.png" WIDTH="309" HEIGHT="206" ALIGN="Left"><!--Double clicking
 on a class brings up a dialog similar to that used in OpenType<BR CLEAR=Right> -->
 クラスの上でダブルクリックすると、OpenType で使用しているのと似たダイアログが立ち上がります。<BR CLEAR=Right>
 <P>
-<IMG SRC="asm4.png" WIDTH="196" HEIGHT="307" ALIGN="Right"><!-- Clicking on a
+<IMG SRC="../asm4.png" WIDTH="196" HEIGHT="307" ALIGN="Right"><!-- Clicking on a
 transition in the state machine (there is a transition for each state / class
 combination) produces a transition dialog. This controls how the state machine
 behaves when it is in a given state and receives a glyph in a given class.

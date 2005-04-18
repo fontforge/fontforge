@@ -14,7 +14,7 @@
     B&eacute;zier<SUP><SMALL><A HREF="#bezier">1</A></SMALL></SUP> スプライン
 </H1>
 <P>
-<IMG SRC="splines.gif" WIDTH="172" HEIGHT="179" ALIGN="Left"><!-- Technically
+<IMG SRC="../splines.gif" WIDTH="172" HEIGHT="179" ALIGN="Left"><!-- Technically
 PostScript uses cubic B&eacute;zier splines. Each control point determines
 the slope of the spline at the corresponding end point. TrueType uses quadratic
 B&eacute;zier splines, in these there is only one control point between two
@@ -23,7 +23,7 @@ points. Both formats also use lines (which are linear B&eacute;zier splines).
  -->
 技術的には、PostScript は 3 次 B&eacute;zier スプラインを使用します。各制御点は、対応する端点におけるスプラインの傾きを決定します。TrueType が使用している 2 次 B&eacute;zier スプラインでは、2 個の端点の間には 1 個の制御点しかなく、その点が隣接する両方の端点における傾きを決定します。両フォーマットとも直線 (これは線形な B&eacute;zier スプラインです) も併用します。
 <P>
-<IMG SRC="quadbezier.gif" WIDTH="113" HEIGHT="88" ALIGN="Right"><!--It is also
+<IMG SRC="../quadbezier.gif" WIDTH="113" HEIGHT="88" ALIGN="Right"><!--It is also
 possible to have other degree B&eacute;zier splines. For a quartic spline
 there would be 3 control points, for a quintic 4 control points, etc. Of
 these only the linear, quadratic and cubic splines are interesting to us--
@@ -44,7 +44,7 @@ between them is: <IMG SRC="Bezier.gif" WIDTH="137" HEIGHT="56" ALIGN="Middle">.
 If there are two points then this is just the line between the two end points,
 if three then the quadratic spline used by TrueType, if four then the cubic
 spline used by PostScript. -->
-一般的に、P<SUB>0</SUB>, P<SUB>1</SUB>,... P<SUB>n</SUB> というラベルのついた (n+1) 個の点がある場合、P<SUB>0</SUB> と P<SUB>n</SUB> が端点となり (その他はすべて制御点です)、B&eacute;zier スプラインを定義する等式は、<IMG SRC="bezier.gif" WIDTH="137" HEIGHT="56" ALIGN="Middle"> となります。点が 2 個のときは、これは単に 2 個の端点を結ぶ線分となります。点が 3 個のときは TrueType で用いられている 2 次スプラインで、4 個のときは PostScript で用いられている 3 次スプラインです。
+一般的に、P<SUB>0</SUB>, P<SUB>1</SUB>,... P<SUB>n</SUB> というラベルのついた (n+1) 個の点がある場合、P<SUB>0</SUB> と P<SUB>n</SUB> が端点となり (その他はすべて制御点です)、B&eacute;zier スプラインを定義する等式は、<IMG SRC="../bezier.gif" WIDTH="137" HEIGHT="56" ALIGN="Middle"> となります。点が 2 個のときは、これは単に 2 個の端点を結ぶ線分となります。点が 3 個のときは TrueType で用いられている 2 次スプラインで、4 個のときは PostScript で用いられている 3 次スプラインです。
 <P>
 <!--
 A cubic B&eacute;zier curve may be viewed as: -->
