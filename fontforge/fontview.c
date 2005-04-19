@@ -8449,6 +8449,7 @@ return;
 #if defined(FONTFORGE_CONFIG_GTK)
 gboolean FontView_ViewportResize(GtkWidget *widget, GdkEventConfigure *event,
 	gpointer user_data) {
+    extern int default_fv_row_count, default_fv_col_count;
     int cc, rc;
     FontView *fv = (FontView *) g_object_get_data( widget, "data" );
 
@@ -8464,10 +8465,15 @@ return TRUE;
     gtk_widget_set_size_request( lookup_widget(widget,"view"), 1, 1 );
     fv->width = width; fv->height = height;
 
+    default_fv_row_count = rc;
+    default_fv_col_count = cc;
+    SavePrefs();
+
 return TRUE;
 }
 #elif defined(FONTFORGE_CONFIG_GDRAW)
 static void FVResize(FontView *fv,GEvent *event) {
+    extern int default_fv_row_count, default_fv_col_count;
     GRect pos,screensize;
     int topchar;
 
@@ -8526,6 +8532,10 @@ static void FVResize(FontView *fv,GEvent *event) {
     GScrollBarSetPos(fv->vsb,fv->rowoff);
     GDrawRequestExpose(fv->gw,NULL,true);
     GDrawRequestExpose(fv->v,NULL,true);
+
+    default_fv_row_count = fv->rowcnt;
+    default_fv_col_count = fv->colcnt;
+    SavePrefs();
 }
 #endif
 
