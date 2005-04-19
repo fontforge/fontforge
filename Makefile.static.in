@@ -6,6 +6,7 @@ libdir = @libdir@
 mandir = @mandir@
 includedir = @includedir@
 sharedir = $(prefix)/share/fontforge
+docdir = $(prefix)/share/doc/fontforge
 
 srcdir = @srcdir@
 top_builddir = .
@@ -38,6 +39,15 @@ distclean cleaner:
 
 install_libs: libs
 
+install_docs:
+	mkdir -p $(docdir)
+	mkdir $(docdir)/flags
+#explicit use of sh to make sure we don't invoke csh with different "if" syntax
+	-sh -c "if test -d htdocs/ja >/dev/null ; then mkdir -p $(docdir)/ja ; fi"
+	-cp htdocs/*.{html,png,gif,pdf} $(docdir)
+	-cp htdocs/flags/* $(docdir)/flags
+	-cp htdocs/ja/* $(docdir)/ja
+
 install: $(sharedir) all install_libs
 # You may need to be root to do the install
 	mkdir -p $(bindir)
@@ -54,6 +64,8 @@ install: $(sharedir) all install_libs
 	cp $(srcdir)/fontforge/sfddiff.1 $(mandir)/man1
 	mkdir -p $(libdir)/pkgconfig
 	$(LIBTOOL) $(INSTALL) -c fontforge.pc $(libdir)/pkgconfig
+#explicit use of sh to make sure we don't invoke csh with different "if" syntax
+	sh -c "if test -d htdocs >/dev/null ; then $(MAKE) install_docs ; fi"
 
 uninstall:
 	-rm $(bindir)/fontforge
@@ -62,6 +74,7 @@ uninstall:
 	-rm $(mandir)/man1/fontforge.1
 	-rm $(mandir)/man1/sfddiff.1
 	-rm $(sharedir)/*.cidmap
+	-rm -rf $(docdir)/*
 
 $(sharedir):
 	mkdir -p $(sharedir)
