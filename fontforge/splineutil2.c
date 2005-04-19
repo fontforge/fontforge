@@ -2298,13 +2298,14 @@ return( copy(buffer));
 }
 
 SplineFont *SplineFontEmpty(void) {
+    extern int default_fv_row_count, default_fv_col_count;
     SplineFont *sf;
     sf = gcalloc(1,sizeof(SplineFont));
     sf->pfminfo.fstype = -1;
     sf->encoding_name = &custom;
     sf->top_enc = -1;
     sf->macstyle = -1;
-    sf->desired_row_cnt = 4; sf->desired_col_cnt = 16;
+    sf->desired_row_cnt = default_fv_row_count; sf->desired_col_cnt = default_fv_col_count;
     sf->display_antialias = default_fv_antialias;
     sf->display_bbsized = default_fv_bbsized;
     sf->display_size = -default_fv_font_size;
