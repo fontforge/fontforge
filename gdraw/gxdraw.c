@@ -3288,7 +3288,7 @@ return;
 	e.type = et;
 	e.u.drag_drop.x = x;
 	e.u.drag_drop.y = y;
-	e.native_window = NULL;
+	e.native_window = (void *) parent;
 
 	if ( (parent&0xfff00000)==(gw->w&0xfff00000) &&
 		XFindContext(gdisp->display,parent,gdisp->mycontext,(void *) &vd)==0 ) {
