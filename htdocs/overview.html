@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 18-Mar-2005 -->
+  <!-- AP: Last modified: 18-Apr-2005 -->
   <TITLE>FontForge -- An outline font editor for PostScript&reg;, TrueType
   and OpenType fonts</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
@@ -10,8 +10,7 @@
 <BODY>
 <H1 Align=Center>
   FontForge<BR>
-  <SMALL>An Outline Font
-  Editor</SMALL><A HREF="http://khdd.net/fontforge-jman/overview.html"><BR>
+  <SMALL>An Outline Font Editor</SMALL><A HREF="ja/overview.html"><BR>
   <IMG SRC="flags/Nisshoki-Japan.png" WIDTH="39" HEIGHT="26"></A>
 </H1>
 <H2>
@@ -503,21 +502,23 @@ be a slight loss of accuracy in most cases. This means it is easy to convert
 TrueType outlines to PostScript outlines, harder to convert PostScript to
 TrueType.
 <P>
-Within FontForge all spline editing is done on cubic splines. These are converted
-to quadratic when a truetype font is generated.
+Within FontForge a font may contain either cubic or quadratic splines. These
+are converted to the appropriate format when a font is generated.
 <P>
 The other major difference between the two is how they solve the problem
 of drawing nice images at small pointsizes. PostScript calls this "Hinting",
 while TrueType calls it "Instructing" a font.
-<P>
-What's OpenType?
+<H4>
+  What's OpenType?
+</H4>
 <P>
 Open Type is just a postscript font put into a truetype format -- From the
 outside it looks like a truetype font except that the outline descriptions
 are postscript Type2 font descriptions rather than TrueType. (Actually any
 truetype font can be called an OpenType font. OpenType is a superset of TrueType)
-<P>
-What's SVG?
+<H4>
+  What's SVG?
+</H4>
 <P>
 SVG (Scalable Vector Graphics) provides a relatively new font format, written
 in an xml dialect. SVG fonts can be either cubic or quadratic (or can use
@@ -526,8 +527,9 @@ or all quadratic). SVG allows for two different types of fonts, one corresponds
 roughly to PostScript Type1 fonts, and the other, roughly to PostScript Type3
 fonts (except that images are not allowed in svg fonts -- or I haven't figured
 them out if they are).
-<P>
-What are Type3 fonts?
+<H4>
+  What are Type3 fonts?
+</H4>
 <P>
 Back in the early days of PostScript, the Type1 format was proprietary, only
 Adobe could make Type1 fonts, but anyone could make Type3 fonts. Type3 fonts
@@ -536,12 +538,14 @@ a wider range of pictures (multi-colored glyphs, stroked glyphs, glyphs based
 on scaled images, etc.). Most of the time these extensions are unnecessary,
 and the disadvantage of being unhinted is onerous. If you compile FontForge
 with multilayer set you will be able to create type3 fonts.
-<P>
-What are Type1 fonts?
+<H4>
+  What are Type1 fonts?
+</H4>
 <P>
 These are the standard PostScript fonts.
-<P>
-What are Type2 fonts?
+<H4>
+  What are Type2 fonts?
+</H4>
 <P>
 These use a slightly different internal format to express the same information
 as type1.
@@ -869,7 +873,7 @@ font (or all that will fit in the window). Every line has two parts, at the
 top is a label, often small clear letters, underneath that, somewhat larger
 is a 24 pixel rasterization of the font you have designed. As you edit a
 glyph in an <A HREF="#CharView">outline glyph view</A> its small version
-in the font view will change with it.
+in the font view will change as you edit.
 <P>
 Double-clicking on a glyph will bring up an outline glyph view of that glyph
 which will allow you to edit it.

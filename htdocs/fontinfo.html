@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 22-Mar-2005 -->
+  <!-- AP: Last modified: 3-May-2005 -->
   <TITLE>Font Info</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -40,6 +40,8 @@ The dialog is composed of many different sub dialogs.
     <A HREF="#Size">Size</A>
   <LI>
     <A HREF="fontinfo.html#Comment">Comment</A>
+  <LI>
+    <A HREF="#MarkClass">Mark Classes</A>
   <LI>
     <A HREF="fontinfo.html#Anchors">Anchor Classes</A>
   <LI>
@@ -364,8 +366,9 @@ The underline position and height provide a program using this font a hint
 as to where it should place a line if it wants to underline text printed
 in this font.
 <P>
-<FONT COLOR="Red"><SMALL><STRONG>NOTE:</STRONG></SMALL></FONT> Adobe now
-says that both XUID and UniqueID are unnecessary.
+<FONT COLOR="Red"><SMALL><STRONG>NOTE:</STRONG></SMALL></FONT>
+<A HREF="UniqueID.html">Adobe now says</A> that both XUID and UniqueID are
+unnecessary.
 <P>
 The XUID field is a collection of numbers separated by spaces and enclosed
 in brackets. This allows you to specify the extended unique ID of the font.
@@ -621,9 +624,9 @@ The various strings and a brief description of their meanings are:
   <DD>
     A description of the font and its characteristics.
   <DT>
-    VendorURL
+    VenderURL
   <DD>
-    An URL pointing to the font's vendor.
+    An URL pointing to the font's vender.
   <DT>
     DesignerURL
   <DD>
@@ -795,6 +798,21 @@ languages.
     <TD></TD>
   </TR>
   <TR>
+    <TH>Danish</TH>
+    <TH>Normal</TH>
+    <TH>Fed</TH>
+    <TH>Halvfed</TH>
+    <TH>Fin</TH>
+    <TH>Medium</TH>
+    <TH></TH>
+    <TH>Extra fed</TH>
+    <TH>Kursiv</TH>
+    <TH></TH>
+    <TH>Smal</TH>
+    <TH>Bred</TH>
+    <TH>Kontur</TH>
+  </TR>
+  <TR>
     <TH>Hungarian</TH>
     <TD>Norm&agrave;l</TD>
     <TD>K&ouml;v&eacute;r</TD>
@@ -803,7 +821,7 @@ languages.
     <TD>K&ouml;zepes</TD>
     <TD>S&ouml;t&eacute;tes</TD>
     <TD>Fekete</TD>
-    <TD><!--D&amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;#x151;lt-->
+    <TD><!--D&amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;#x151;lt-->
       Do"lt</TD>
     <TD>D&ouml;nt&ouml;tt</TD>
     <TD>Keskeny</TD>
@@ -940,6 +958,25 @@ The comment should be in ISO Latin1.
 <P>
 <BR Clear=ALL>
 <H2>
+  <A NAME="MarkClass">Mark Classes</A>
+</H2>
+<P>
+<IMG SRC="fontinfo-markclasses.png" WIDTH="376" HEIGHT="636" ALIGN="Right"
+    ALT="Font Info Mark Classes"> The various marks in your font may be divided
+into classes. As far as I know the only real use for this is to handle indic
+rearrangement and allow ligatures to be formed which skip over certain glyphs.
+Each class of marks should be named and that name may be used in the
+<A HREF="charinfo.html">Element-&gt;Glyph Info</A>-&gt;Ligature-&gt;New dialog
+to specify which marks should be considered in forming this ligature and
+which should be ignored.
+<P>
+From here you may add new classes, or edit old ones. 
+<P>
+<IMG SRC="markclass.png" ALIGN="Left" WIDTH="351" HEIGHT="323">The dialog
+for creating a new (or modifying an old) mark class allows you to give that
+class a name and requires that you to provide a list of glyphs that make
+up the class.<BR Clear=ALL>
+<H2>
   <A NAME="Anchors">Anchor Classes</A>
 </H2>
 <P>
@@ -1012,13 +1049,7 @@ you to change the contents of the feature.
 <P>
 Contextual/chaining tables are only meaningful when generating a truetype
 (ttf or otf) like font with OpenType tables (in a few cases they can be converted
-into Apple Advanced Typography tables too).
-<P>
-<FONT COLOR="Red"><STRONG>Caveat:
-</STRONG></FONT><A HREF="http://www.microsoft.com/typography/specs/default.htm">Uniscribe</A>
-only implements a limited set of features for any given script, please check
-to make sure a feature will be turned on before investing time in
-it.<BR CLEAR=ALL>
+into Apple Advanced Typography tables too).<BR CLEAR=ALL>
 <H2>
   <IMG SRC="fontinfo-macstyle.png" WIDTH="376" HEIGHT="608" ALIGN="Right" ALT="Font Info Mac Styles">
   <A NAME="Mac-Style">Mac Style</A> &amp; FOND
