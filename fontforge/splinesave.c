@@ -888,6 +888,12 @@ static void _CvtPsSplineSet(GrowBuf *gb, SplinePointList *spl[MmMax], int instan
 		temp[i].first = temp[i].last = spl[i]->first->next->to;
 		spl[i] = &temp[i];
 	    }
+	    if ( spl[0]->first->flexy || spl[0]->first->flexx ) {
+		/* well, well, well. We did have two flexes in a row */
+		for ( i = 0; i<instance_count; ++i ) {
+		    spl[i]->first->flexx = spl[i]->first->flexy = false;
+		}
+	    }
 	}
 	if ( start==NULL || !init )
 	    splmoveto(gb,current,spl,instance_count,false,round,hdb);
@@ -2320,15 +2326,17 @@ static void CvtPsSplineSet2(GrowBuf *gb, SplinePointList *spl,
 	    /* list by one, this is possible because only closed paths have */
 	    /* points marked as flex, and because we can't have two flex mid- */
 	    /* points in a row */
-	    if ( spl->first->hintmask!=NULL && spl->first->next->to->hintmask==NULL )
+	    if ( spl->first->hintmask==NULL || spl->first->next->to->hintmask!=NULL ) {
 		/* But we can't rotate it if we expect it to provide us with */
-		/*  a hintmask. In that case just turn off the flex bits and */
-		/*  ignore them. That's safe too.			     */
-		spl->first->flexx = spl->first->flexy = false;
-	    else {
+		/*  a hintmask.                 			     */
 		temp = *spl;
 		temp.first = temp.last = spl->first->next->to;
 		spl = &temp;
+	    }
+	    if ( spl->first->flexy || spl->first->flexx ) {
+		/* If we couldn't rotate, or if we rotated to something that */
+		/*  also is flexible, then just turn off flex. That's safe   */
+		spl->first->flexx = spl->first->flexy = false;
 	    }
 	}
 	if ( start==NULL || !init ) {
