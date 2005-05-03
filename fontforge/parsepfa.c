@@ -2408,8 +2408,8 @@ static void dodata( struct fontparse *fp, FILE *in, FILE *temp) {
 	    fprintf( stderr, "Failed to parse the StartData command properly\n" );
 	}
 	fontsetname[0] = '\0';
+	while ( (ch=getc(in))!=')' && ch!=EOF );
     }
-    while ( (ch=getc(in))!=')' && ch!=EOF );
     if ( fscanf( in, "%d", &len )!=1 || len<=0 ) {
 	len = 0;
 	fprintf( stderr, "Failed to parse the StartData command properly, bad cnt\n" );
