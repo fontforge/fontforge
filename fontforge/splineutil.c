@@ -4738,6 +4738,12 @@ return;
     ASMFree(sf->sm);
     free(sf->gentags.tagtype);
     OtfNameListFree(sf->fontstyle_name);
+    for ( i=1; i<sf->mark_class_cnt; ++i ) {
+	free( sf->mark_classes[i] );
+	free( sf->mark_class_names[i] );
+    }
+    free( sf->mark_classes );
+    free( sf->mark_class_names );
     free(sf);
 }
 

@@ -3778,7 +3778,7 @@ void FontViewMenu_DisplaySubstitutions(GtkMenuItem *menuitem, gpointer user_data
 	if ( newname==NULL )
 return;
 	DecomposeClassName(newname,&components,&tag,&macfeature,
-		&flags, &sli, NULL,NULL);
+		&flags, &sli, NULL,NULL,fv->sf);
 	fv->cur_feat_tag = tag;
 	fv->cur_sli = sli;
     }

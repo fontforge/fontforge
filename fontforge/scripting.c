@@ -1907,7 +1907,7 @@ return;			/* Glyph hasn't been created yet=>no features */
 	} else {
 	    for ( pst = sc->possub; pst!=NULL; pst=pst->next )
 		if ( pst->tag == tag && pst->type!=pst_lcaret )
-		    CopyPSTAppend(pst->type,PST2Text(pst));
+		    CopyPSTAppend(pst->type,PST2Text(pst,sf));
 	}
     }
 }

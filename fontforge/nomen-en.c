@@ -1245,6 +1245,10 @@ static char *str_BigOpSpace4 = "Big Op Space4:"
 static char *str_BigOpSpace4Popup = "The minimum distance between a limit's baseline and a large displayed\noperator when the limit is below the operator"
 static char *str_BigOpSpace5 = "Big Op Space5:"
 static char *str_BigOpSpace5Popup = "The extra glue place above and below displayed limits";
+  /* Mark classes */
+static char *str_MarkClasses = "Mark Classes";
+static char *str_MarkClassName = "Class Name:";
+
     /* Generate fonts */ /* savefontdlg */
 static char str_Format[] = "Format:";
 static char str_Savefailedtitle[] = "Save Failed";
@@ -2155,7 +2159,7 @@ static char str_OTFChineseSimplified = "Chinese Simplified";
 static char str_OTFChineseTraditional = "Chinese Traditional";
 static char str_OTFZande = "Zande";
 static char str_OTFZulu = "Zulu";
- /* dlg */
+ /* dlg */ /* charinfo glyphinfo */
 static char str_ScriptList = "Script List";
 static char str_LanguageList = "Language List";
 static char str_ScriptMissing = "Script Missing";
@@ -2185,6 +2189,7 @@ static char str_RightToLeft = "Right To Left";
 static char str_IgnoreBaseGlyphs = "Ignore Base Glyphs";
 static char str_IgnoreLigatures = "Ignore Ligatures";
 static char str_IgnoreCombiningMarks = "Ignore Combining Marks";
+static char str_ProcessMarks = "Process Marks:";
 static char str_NoScript = "No Script";
 static char str_NeedsScriptForSubs = "If you specify positioning or substitution information for a glyph, FontForge needs to know its script.";
 static char str_NeedsScriptForSubsGuess = "If you specify positioning or substitution information for a glyph, FontForge needs to know its script.\nWould this one be correct: '%c%c%c%c'?";
@@ -2994,6 +2999,7 @@ static char *str_NoBitmapsInTTF = "No (useable) bitmap strikes in this TTF font:
 static char *str_NotInCollection = "Not in Collection";
 static char *str_FontNotInCollection = "%hs is not in %.100hs";
 static char *str_UntitledAnchor_n = "Anchor-%d";
+static char *str_UntitledMarkClass_n = "MarkClass-%d";
 static char *str_TTFGlyf = "TTF 'glyf'";
 static char *str_OTFCFF = "OTF 'CFF '";
 static char *str_GlyfAndCFF = "This font contains both a TrueType 'glyf' table and an OpenType 'CFF ' table. FontForge can only deal with one at a time, please pick which one you want to use";
@@ -3401,6 +3407,7 @@ static char *str_ListOfClassNumbers = "List of class numbers";
 static char *str_ListOfListsOfClassNumbers = "List of lists of class numbers";
 static char *str_BadClassLong = "A class must contain at least one glyph name, glyph names must be valid postscript names, and no glyphs may appear in any other class";
 static char *str_BadClassName = "No glyphs from another class may appear here, but %.30s does";
+static char *str_BadClassNames = "No glyphs from another class may appear here, but %.30s appears both here and in class %.30s";
 static char *str_MatchClass = "Match Classes";
 static char *str_BacktrackClass = "Back Classes";
 static char *str_LookaheadClass = "Ahead Classes";
