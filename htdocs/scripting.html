@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 13-Mar-2005 -->
+  <!-- AP: Last modified: 17-Apr-2005 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -584,6 +584,15 @@ a[4][0] = "Nested array";
   <DD>
     Converts a real number to the smallest integer larger than the real.
   <DT>
+    Int(real)
+  <DD>
+    Uses standard C conversion from real to integer.
+  <DT>
+    UCodePoint(int)
+  <DD>
+    Converts the argument to a unicode code point (a special type used in several
+    commands).
+  <DT>
     IsNan(real)
   <DD>
     Returns whether the value is a nan.
@@ -1161,8 +1170,13 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
   <DT>
     SelectMore(arg1, arg2, ...)
   <DD>
-    The same as the previous command except that it does not clear the selection,
-    so it extends the current selection.
+    The same as the previous command except that it does not clear the selection
+    initially, so it extends the current selection.
+  <DT>
+    SelectFewer(arg1, arg2, ...)
+  <DD>
+    The same as the previous command except that it clears the selection on the
+    indicated glyphs, so it reduces the current selection.
   <DT>
     SelectIf(arg1,arg2, ...)
   <DD>
@@ -1829,12 +1843,14 @@ ApplySubstitution("*","*","vrt2")
   <DT>
     AddAccent(accent[,pos])
   <DD>
-    There must be exactly one glyph selected. The first argument should be either
-    the glyph-name of an accent, or the unicode code point of that accent (and
-    it should be in the font). The second argument, if present indicates how
-    the accent should be positioned... if omitted a default position will be
-    chosen from the unicode value for the accent, this argument is the or of
-    the following flags:
+    There must be exactly one glyph selected. That glyph must contain at least
+    one reference (and the least recently added reference must be the base glyph
+    -- the letter on which the accent is placed). The first argument should be
+    either the glyph-name of an accent, or the unicode code point of that accent
+    (and it should be in the font). The second argument, if present indicates
+    how the accent should be positioned... if omitted a default position will
+    be chosen from the unicode value for the accent, this argument is the or
+    of the following flags:
     <TABLE BORDER CELLPADDING="2">
       <TR>
 	<TD>0x100</TD>
@@ -2162,15 +2178,16 @@ ApplySubstitution("*","*","vrt2")
     of glyphs in the font. Otherwise if the argument is a unicode code point
     or a postscript glyph name, true is returned if that glyph is in the font.
   <DT>
-    WorthOutputting(arg)
+    WorthOutputting([arg])
   <DD>
-    Arg is as above. This returns true if the glyph contains any splines, references,
-    images or has had its width set.
+    If there is no argument then a single glyph should be selected and the function
+    applies to that glyph, otherwise arg is as above. This returns true if the
+    glyph contains any splines, references, images or has had its width set.
   <DT>
-    DrawsSomething(arg)
+    DrawsSomething([arg])
   <DD>
     Arg is as above. This returns true if the glyph contains any splines, references
-    or references.
+    or images.
   <DT>
     CharInfo(str)<BR>
     CharInfo("Kern",glyph-spec)<BR>

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 15-Mar-2005 -->
+  <!-- AP: Last modified: 18-Apr-2005 -->
   <TITLE>Frequently Asked Questions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -158,6 +158,17 @@
   <LI>
     <A HREF="#quadratic-cubic">How does FontForge convert a quadratic spline
     into a cubic (when reading truetype)?</A>
+</UL>
+<H2>
+  Image file questions
+</H2>
+<UL>
+  <LI>
+    <A HREF="#dynamic-lib">Why does fontforge say "Error loading dynamic library"
+    when trying to import an image file?</A>
+  <LI>
+    <A HREF="#complex-eps">Why does fontforge say "EPS file is too complex to
+    be understood"?</A>
 </UL>
 <H2>
   Random questions
@@ -935,7 +946,7 @@ MANPATH=${MANPATH:-}:/usr/local/man ; export MANPATH
       <LI>
 	Before you do anything else make sure you have either the
 	<A HREF="autotrace.html" TARGET="_top">potrace or autotrace programs
-	</A>installed on your system
+	</A>installed on your system 
 	  <HR>
       <LI>
 	Create a new font
@@ -1295,6 +1306,31 @@ MANPATH=${MANPATH:-}:/usr/local/man ; export MANPATH
   <DD>
     This is easy since any quadratic spline can already be represented as a cubic,
     it will just happen that the cubic term is always 0.
+  <DT>
+    <B><A NAME="dynamic-libs">Why does fontforge say "Error loading dynamic library"
+    when trying to import an image file?</A></B>
+  <DD>
+    FontForge depends on certain dynamic libraries to load images. It does not
+    check for the existance of these libraries until you actually try to load
+    an image. If the library has not been installed on your system it will give
+    the above error (and fail to load the image).<BR>
+    The <A HREF="index.html#Dependencies" TARGET="_top">Dependencies</A> section
+    of the main page describes how to find these libraries.<BR>
+    If the libraries are installed and you still get this message try setting
+    your LD_LIBRARY_PATH variable to the directory containing the library in
+    question (On the mac this is DYLD_LIBRARY_PATH).
+  <DT>
+    <B><A NAME="complex-eps">Why does fontforge say "EPS file is too complex
+    to be understood"?</A></B>
+  <DD>
+    Most programs which load eps files treat them as black boxes. They will read
+    the file into memory and output it, unchanged, to a postscript printer.
+    Unfortunately FontForge cannot do this. FontForge needs to understand and
+    then convert the eps file into a simpler format (fonts can use far fewer
+    operations than an eps file). So unlike most programs FontForge must interpret
+    each eps file -- but interpretting all of PostScript is a huge job and ff
+    is limited in what it understands. Sometimes it will find a file it can't
+    handle.
   <DT>
     <A NAME="default-char"><B>How do I set the default glyph of a font?</B></A>
   <DD>

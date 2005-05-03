@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 22-Mar-2005 -->
+  <!-- AP: Last modified: 3-May-2005 -->
   <TITLE>Char Info</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -159,8 +159,8 @@ cancelled.<BR Clear=Right>
 </H3>
 <TABLE ALIGN=Right>
   <TR>
-    <TD><IMG SRC="feature-tag-sub.png" WIDTH="161" HEIGHT="246" ALIGN="Top">
-      <IMG SRC="feature-tag-pos.png" WIDTH="161" HEIGHT="308" ALIGN="Top"></TD>
+    <TD><IMG SRC="feature-tag-sub.png" WIDTH="226" HEIGHT="399" ALIGN="Top">
+      <IMG SRC="feature-tag-pos.png" WIDTH="226" HEIGHT="489" ALIGN="Top"></TD>
   </TR>
 </TABLE>
 <P>
@@ -198,7 +198,10 @@ In <A NAME="lookup-flags">addition</A> you must specify a set of
 which control the behavior of the feature. If your feature is to be used
 in right to left text then select that flag. If your feature is to be used
 to combine glyphs even if there are intervening mark glyphs (accents and
-such) then select Ignore Combining Marks.
+such) then select Ignore Combining Marks. If you are creating an Indic font
+then you will probably need to create mark classes (with
+<A HREF="fontinfo.html#MarkClass">Element-&gt;Font Info-&gt;Mark Classes</A>)
+which will be used with the Process Marks option to specify indic rearrangement.
 <P>
 And a collection of scripts and languages for which the substitution will
 be active. In the example above the substitution is active for the greek

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 16-Sep-2001 -->
-  <!-- AP: Last modified: 11-Dec-2004 -->
+  <!-- AP: Last modified: 3-May-2005 -->
   <TITLE>Older changes to FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -12,6 +12,520 @@
 <A HREF="pfaeditchangelog.html">Changes to PfaEdit (predecessor to
 FontForge)</A>
 <UL>
+  <LI>
+    31-Dec-2004
+    <UL>
+      <LI>
+	Ah, windows pfm files expect the metrics to be output in win latin encoding
+	order, not in the encoding defined by the pfb file. (Actually there are other
+	posibilities for encoding, but as none is documented, I must ignore them).
+      <LI>
+	ReplaceWithReference broke at some point
+      <LI>
+	Add an argument-pair to the ReplaceWithReference() scripting command to allow
+	the user to specify the amount of error that will be accepted.
+      <LI>
+	When generating a Type1 font, if a glyph had a single reference to a glyph
+	not in adobe encoding, and that glyph itself had a single reference (in adobe
+	enc) and some splines, then ff would make a reference to the ref in adobe
+	enc and ignore the splines.
+      <LI>
+	Upgrade to Adobe-Japan1-6
+      <LI>
+	Various fixes to svg output
+	<UL>
+	  <LI>
+	    export glyph to svg didn't work
+	  <LI>
+	    multilayered generation had problems
+	</UL>
+      <LI>
+	Ghost hints could get outside a glyphs bounding box in a type2 font.
+      <LI>
+	The generated truetype unique id string had an off by one error in the month
+      <LI>
+	Add support for dashed lines in multilayered mode
+      <LI>
+	In Full Page Glyph printing, the glyph was offset slightly from where it
+	should have been.
+      <LI>
+	Pasting a reference into a multi-layered font produced a very odd layer
+      <LI>
+	ff didn't update the metrics view if the user pasted the selection with the
+	middle mouse button.
+      <LI>
+	if a character were not in the current encoding then ff would not display
+	it in the metrics view (even if it were in the font)
+      <LI>
+	Make the behavior of control points at the ends of open paths more reasonable.
+      <LI>
+	The Point-&gt;Curve command did not adust control points correctly.
+      <LI>
+	The View-&gt;Display Substitutions had numerous problems.
+      <LI>
+	Fix several problems from unicode unification of accents. Many characters
+	which are said to be based on cedilla actually use a comma, other characters
+	said to be carons also use comma. Make the n-with-apostrophe character be
+	treated as an accented letter.
+      <LI>
+	Werner points out that straight lines should generally not be simplified
+	(as they will no longer be straight afterwards). Add this knowledge to the
+	simplify command.
+    </UL>
+  <LI>
+    18-Dec-2004
+    <UL>
+      <LI>
+	Added a raster debugger wndow
+      <LI>
+	Each time debugger starts, remember what debug windows were open last time
+	it was used.
+      <LI>
+	Constraining the pen tool did not do what I expected
+      <LI>
+	If a glyph was encoded twice (or more) in a font, and an opentype font (or
+	perhaps a bitmap only sfnt) were generated, then any glyphs after the second
+	encoding would have the wrong width (ie. there would be an extra entry in
+	the horizontal metrics table corresponding to a (non-existant) copy of the
+	doubly encoded glyph)
+      <LI>
+	If a type1 font never defined .notdef but used it at least twice it the Encoding
+	vector, then ff would crash.
+      <LI>
+	Updated Japanese UI (by KANOU)
+      <LI>
+	Werner found some crashes related to calling isalnum (etc.) using an index
+	outside of bmp.
+      <LI>
+	More changes (I hope improvements) to remove overlap
+    </UL>
+  <LI>
+    13-Dec-2004
+    <UL>
+      <LI>
+	Some fixes to the raster display of the debug window
+      <LI>
+	Conversion of cubic to quadratic had a rounding error introduced by -O2.
+	Made it a bit more forgiving about rounding errors.
+      <LI>
+	Added two new buttons to the point info dialog to allow the user to walk
+	around the current contour (Normally the Next button skips to the start of
+	the next contour if you are at the end of the current one, the "Next On Contour"
+	button returns to the first point on the contour)
+      <LI>
+	improve interpretation of some type3 fonts (including those produced by
+	fontographer 4)
+      <LI>
+	patch by Yoshki Hayashi to fix mnemonic crash in layers palette
+      <LI>
+	Added a rand() scripting command
+      <LI>
+	Support backslash newline to break up lines in a scrpt
+      <LI>
+	The internal adobe standard encoding thought it was unicode causing strange
+	effects
+      <LI>
+	Type3 fonts that set colour/grey didn't work
+      <LI>
+	Printing at 140pt tried printing 4 glyphs across although there was only
+	room for 3
+      <LI>
+	At install tell pkg-config the verson of fontforge
+    </UL>
+  <LI>
+    3-Dec-2004
+    <UL>
+      <LI>
+	If a cff file contained unencoded glyphs then ff would crash when loading
+	it.
+      <LI>
+	When converting from cubic to quadratic splines, ff would sometimes produce
+	a line when it should have found a spline
+      <LI>
+	During debugging of a ttf glyph, show what rasterization would produce if
+	the current splines were used (highlight pixels which change)
+      <LI>
+	The debugger windows didn't always say "&lt;empty&gt;" when they should have.
+      <LI>
+	The debugger would often crash the second time we closed its window
+      <LI>
+	Asking for the script (as latin, greek, cyrillic...) of ".notdef" caused
+	us to look at unallocated memory.
+      <LI>
+	We weren't labelling control points in the debugger
+      <LI>
+	debugger and grid fitter for tt fonts showed curved splines as lines
+      <LI>
+	Kerning pairs did not get scaled when changing em-size
+      <LI>
+	Add a preference for turning off automatic gotos as the user types in the
+	glyph window
+      <LI>
+	Add a command to the glyph window to toggle between the two most recent glyphs
+	used in that window (a mini history)
+      <LI>
+	Improved the points debugger window to show
+	<UL>
+	  <LI>
+	    implied points
+	  <LI>
+	    whether a point is on or off the curve (normal or control)
+	  <LI>
+	    added a scroll bar
+	</UL>
+      <LI>
+	Provide info on debugging points as mouse moves over them.
+      <LI>
+	Fix (an innocuous) reference to unallocated memory
+      <LI>
+	Added ability to insert an uninterpreted table into an SFNT
+	<UL>
+	  <LI>
+	    New preference item: PreserveTables which lists a comma seperated set of
+	    table tags which are to be loaded from SFNT files without interpretation
+	    (Note if ff thinks it understands a table it will parse it rather than preserving
+	    it)
+	  <LI>
+	    Scripting command LoadTableFromFile("tag ","filename")
+	  <LI>
+	    Scripting command SaveTableToFile("tag ","filename")
+	  <LI>
+	    Scripting command RemovePreservedTable("tag ")
+	  <LI>
+	    Scripting command HasPreservedTable("tag ")
+	</UL>
+    </UL>
+  <LI>
+    22-Nov-2004
+    <UL>
+      <LI>
+	Kevin Schoedel suggests a new scripting command DrawsSomething()
+      <LI>
+	Kevin Schoedel requests that PrintFont be able to print a string sample (as
+	opposed to a sample file)
+      <LI>
+	Kevin Schoedel points out that type1 fonts stuffed into mac resource forks
+	are to be read in resource order rather than file order (often the two are
+	the same) and provides a patch to fix this.
+      <LI>
+	Change the way the default language/locale is picked in fontinfo-&gt;TTF
+	Names
+      <LI>
+	Remember (across invocations) whether palettes should be hidden or not.
+      <LI>
+	Ignore NUL chars when reading PostScript strings (PS supports NULs in strings,
+	I'm not going to bother, but I don't want to parse incorrectly because of
+	them).
+      <LI>
+	ff lost the ability to Select("U+xxxx") or Select("=") from a script.
+      <LI>
+	Oops, the routine to read PostScript FontNames from a ttf file was broken
+	by the encoding change.
+      <LI>
+	If a ttf file contained an erroneous composite glyph with flags indicating
+	more components after the glyph had run out of data, then ff might attempt
+	to read instructions also and have problems.
+      <LI>
+	If a font contains multiple ttf names for a given string in a language then
+	allow the user to pick which one s/he likes best.
+      <LI>
+	Another case where a bad otf table crashes fontforge
+      <LI>
+	If a ttf/otf font does not contain a postscript FontName string in the name
+	table, then ff's attempt to synthesize one out of fullname/familyname did
+	not check for a valid name.
+    </UL>
+  <LI>
+    15-Nov-2004
+    <UL>
+      <LI>
+	If ff started without a prefs file, then creating a new font would crash
+      <LI>
+	If a copyright string contained a newline then ff would generate bad postscript
+      <LI>
+	If user added a comment to an empty glyph then the comment wasn't saved in
+	the sfd file.
+      <LI>
+	If ff saved a utf7 string to an sfd file (ttf names, etc.) and that string
+	contained a hyphen that followed immediately after something that needed
+	to be encoded in base64, then the hyphen would be lost.
+      <LI>
+	new french UI
+      <LI>
+	ff was (usually) setting the ascent/descent fields of the 'hhea' table to
+	0. When the font was drawn on the mac it was clipped to nothing.
+	<FONT COLOR="Red"><STRONG><BIG>Caveat: Old sfd files are still broken and
+	there is no UI for fixing them. Instead you must edit them manually, and
+	change:</BIG></STRONG></FONT>
+	<PRE>HheadAOffset: 0
+HheadDOffset: 0
+</PRE>
+	<P>
+	to be:
+	<PRE>HheadAOffset: 1
+HheadDOffset: 1
+</PRE>
+    </UL>
+  <LI>
+    12-Nov-2004
+    <UL>
+      <LI>
+	ff would crash on postscript fonts where the encoding included a glyph name
+	not defined in CharStrings (probably broken on 12-Oct)
+      <LI>
+	More remove overlap work
+      <LI>
+	In the glyph window, when the scaled distance between the top and bottom
+	of the window is less than 1 em-unit, then the vertical ruler was drawn with
+	the top and bottom labels reversed.
+      <LI>
+	sfd files used to have a limit of 1023 characters in ttf 'name' table strings.
+    </UL>
+  <LI>
+    6-Nov-2004
+    <UL>
+      <LI>
+	Encoding change broke prefs dialog
+    </UL>
+  <LI>
+    5-Nov-2004
+    <UL>
+      <LI>
+	Encoding change didn't work on libiconv systems
+    </UL>
+  <LI>
+    4-Nov-2004
+    <UL>
+      <LI>
+	Added a new scripting command: AddAccent() to add an arbetrary accent to
+	an arbetrary glyph.
+    </UL>
+  <LI>
+    3-Nov-2004
+    <UL>
+      <LI>
+	KANOU has a <A HREF="http://khdd.net/fontforge-jman/">Japanese version</A>
+	of this reference manual under construction.
+      <LI>
+	In MultiLayered mode, the "New Layer" menu item left a dangling pointer which
+	caused a crash if anyone looked at the background layer.
+      <LI>
+	In MultiLayered mode, if one clicked beyond the last layer in the Layers
+	palette, ff would crash.
+      <LI>
+	KANOU provided a patch to fix another crash in the layers palette.
+      <LI>
+	KANOU has provided a new Japanese UI.
+      <LI>
+	Made an addition to CharInfo() scripting command so user can determine the
+	horizontal extrema of a glyph at a given vertical position. Similar addition
+	for vertical extrema at horizontal pos.
+      <LI>
+	Add a scripting command (PasteWithOffset) to allow user to apply an offset
+	when pasting. For building accented letters by hand.
+      <LI>
+	KANOU provides a patch to fix a problem in the new encoding stuff.
+      <LI>
+	Select(".notdef") usually didn't work.
+    </UL>
+  <LI>
+    28-Oct-2004
+    <UL>
+      <LI>
+	Kanou noticed that ISO 15924 has been updated and provide a patch including
+	new scripts.
+      <LI>
+	I have redone the way ff handles encodings internally. We used to depend
+	on the encodings builtin to gdraw/gunicode. Now we use iconv() (if there
+	is no iconv, then ff will use a dummy iconv which understands the encodings
+	of gdraw/gunicode). Encodings are identified by name rather than by number
+	now.
+      <LI>
+	Further fixes to the extremum detector
+      <LI>
+	Further fixes to remove overlap
+      <LI>
+	Added an extra argument to scripting RoundToInt, so that you can have control
+	over what it rounds to (ie. round to hundredths, tenths, etc.)
+      <LI>
+	Added two new scripting commands NearlyHvCps() and NearlyHvLines() which
+	look for control points or lines that are nearly horizontal or vertical and
+	force them to be horizontal or vertical.
+      <LI>
+	Kanou provided a patch so that the GRadio.Font resource controls the font
+	in the layers palette of the glyph view.
+    </UL>
+  <LI>
+    23-Oct-2004
+    <UL>
+      <LI>
+	Remove overlap had problems with splines which made abrupt turns (ie. tiny
+	splines after we found extrema points and divided the spline into bits between
+	extrema)
+      <LI>
+	Remove overlap could munch memory
+      <LI>
+	The ruler tool showed all tiny splines as having a length of 0
+      <LI>
+	Autorecovery had problems with glyphs containing features (would complain
+	about sli)
+      <LI>
+	KANOU wants to be able to scale greymap fonts
+      <LI>
+	removed routines from fvcomposit.c, metricsview.c that were duplicates of
+	fvfonts.c
+      <LI>
+	Oops, the default mac filesystem isn't case concious either, extend the windows
+	export patch to the mac.
+      <LI>
+	Simplify didn't have a very good extremum detector and would sometimes delete
+	extrema.
+    </UL>
+  <LI>
+    14-Oct-2004
+    <UL>
+      <LI>
+	Remove overlap had problems with tiny splines.
+    </UL>
+  <LI>
+    13-Oct-2004
+    <UL>
+      <LI>
+	I notice (in Fontes &amp; Codages) that the labels in the metrics view aren't
+	translatable
+      <LI>
+	Fontes &amp; Codages suggests that it would be nice if the glyph labels in
+	the fontview could be something other than an image of the glyph (glyph name,
+	unicode code point, encoding, etc.)
+      <LI>
+	Change the word "Character" to "Glyph" where appropriate.
+      <LI>
+	Move the Open Outline/Bitmap/Metrics commands to the Window menu, and change
+	"Open" to "New".
+    </UL>
+  <LI>
+    12-Oct-2004
+    <UL>
+      <LI>
+	We have a Spanish UI now, courtesy of Walter Echarri. Yeah!
+      <LI>
+	Support for loading type3 fonts (that ff produced) was broken. Note: ff is
+	still unable to load many type3 fonts (any that are filtered, or that use
+	images for example), but it should be able to read its own fonts.
+      <LI>
+	(I hope) minor change to the way .notdef is handled when reading postscript
+	files.
+      <LI>
+	Added support for printing to pdf file
+      <LI>
+	(fixed a bug in pdf generation from the export command)
+      <LI>
+	Fixed various problems from turning off the multilayer bit in fontinfo
+      <LI>
+	KANOU needs a couple more strings disambiguated.
+      <LI>
+	Add support for generating type42 and type 11 (type42 cid) fonts, add support
+	for loading type42 (but I'm not bothering with type11s) and use these guys
+	when printing order2 fonts.
+      <LI>
+	Check to make sure the PostScript Fontname is valid when reading in a truetype
+	(or svg) font (syntax doesn't enforce this), and if not warn the user and
+	fix it up.
+      <LI>
+	Add some new scripting commands for handling MM fonts since someone seems
+	to want them.
+      <LI>
+	Used to complain if there were more than one Unique Font ID in the truetype
+	'name' table. (because the OpenType list said there should only be one, else
+	it would not be unique). But both Apple and MS ship with fonts containing
+	multiple Unique Font IDs. God knows what that means, or when you pick one
+	over the other... Anyway I changed my error into a warning.
+    </UL>
+  <LI>
+    30-Sept-2004
+    <UL>
+      <LI>
+	I have rewritten Remove Overlap from scratch. I seems less likely to crash,
+	but I'm not sure that in any other respect it is improved.
+      <LI>
+	In the character view the Remove Overlap (and Intersect and Find Intersections)
+	now only work on selected contours, or, if no contours are selected then
+	on all contours. This change makes these commands consistant with most other
+	commands in the character view, but it is a change from past behavior.
+      <LI>
+	The Import scripting command has been extended to give the user control over
+	the stroking flags (correct direction, remove overlap, handle erasers). And
+	the background flag has been extended a bit to apply to other things than
+	bitmaps.
+      <LI>
+	ff had a pointer dangling to a freed block after loading a font containing
+	multiple versions of some greek letters.
+      <LI>
+	U+1D400-U+1D7FF are stylized variants of the latin and greek alphabets as
+	used in Mathematics. The font view will now display (in the glyph header)
+	the proper variant of the glyph (assuming it can find a font with that style).
+      <LI>
+	The AMS (American Mathematical Society) has their own interpretation of the
+	public use area. FF now understands their glyph names as alternates for those
+	glyphs, and has an AMS interpretation (under FontInfo-&gt;Encoding) that
+	will make ff use those names in new fonts.
+      <LI>
+	Many of code points in the AMS PUA are reencodings of other glyphs. FontForge
+	will automatically generate these reencodings for you.
+      <LI>
+	The AMS also describes how some TeX glyph names map to unicode. So include
+	those names in our alternate list too (so we can map them correctly, not
+	as a way of encouraging people to use them).
+      <LI>
+	Both the AMS defn. of the PUA and the Big5 defn. map characters which are
+	properly in other unicode planes into the BMP. FF now understands this, and
+	converting between a BMP encoding and a full unicode encoding will move things
+	from the PUA to their proper unicode slot in higher planes.
+      <LI>
+	Find Problems thought that adjacent splines intersected at their common
+	end-point. I suppose they do, but it isn't useful information
+      <LI>
+	In the char view, I used to blank out the status line when the mouse moved
+	outside the window. But some of that info is still valid. So only blank out
+	the meaningless bits.
+      <LI>
+	Kanou requests a disambiguation between two strings with the same label in
+	English but different meanings in Japanese. (Vertical/VerticalWriting)
+      <LI>
+	The Point-&gt;Make Line command would crash if either of the the two points
+	was missing a previous or next spline.
+      <LI>
+	Pierre HANSER provides a patch to problems.c (it would crash when dealing
+	with fonts with an encoding with &lt; 32 code points.
+      <LI>
+	Pierre HANSER provides a patch to merge fonts (it would crash when merging
+	bitmap fonts.
+      <LI>
+	Closing a charview window with a docked palette could cause a crash if the
+	cursor was moved quickly into another charview which needed a new cursor.
+      <LI>
+	The perspective icon had the wrong background
+      <LI>
+	Piska keeps complaining about the way ff handles 0 width strokes. He wants
+	it to have zero width (disappear, I guess), but PS says it should be stroked
+	as the thinnest line possible (not clear what this should mean in ff, I interpret
+	it as a 1em-unit stroke). But METAPOST uses a 0 width stroke in cases where
+	it wants no stroking (with a fill) so in the special case of a fill with
+	a 0 width stroke, turn off stroking.
+      <LI>
+	Use a different approach to approximating a set of points with fixed slopes
+	at the end points. Used to do least squares (fixup slopes), least squares
+	again (fixup slopes). Now I do least squares (fixup slopes), perturb the
+	lengths of the slope vectors until we find the best fit.
+      <LI>
+	I was generating flex hints when I should not have done so. Add a heuristic
+	so that ff doesn't add flexes to small circles.
+      <LI>
+	Failed to read long format pk bitmaps.
+      <LI>
+	Patch by Mchael Ghrken to make the Skew scripting command take a
+	numerator/denominator style argument.
+    </UL>
   <LI>
     24-Aug-2004
     <UL>
