@@ -3505,7 +3505,7 @@ static void bAppendAccent(Context *c) {
 	error( c, "Wrong number of arguments");
     else if ( c->a.vals[1].type!=v_str && c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode )
 	error(c,"Bad argument type");
-    else if ( c->a.argc==3 && c->a.vals[1].type!=v_int )
+    else if ( c->a.argc==3 && c->a.vals[2].type!=v_int )
 	error(c,"Bad argument type");
 
     if ( c->a.vals[1].type==v_str )
