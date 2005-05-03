@@ -383,7 +383,7 @@ int SFFindChar(SplineFont *sf, int unienc, const char *name ) {
 	    for ( index=sf->encoding_name->char_cnt; index<sf->charcnt; ++index )
 		if ( sf->chars[index]!=NULL && sf->chars[index]->unicodeenc==unienc )
 	    break;
-	    if ( index>sf->charcnt )
+	    if ( index>=sf->charcnt )
 		index = -1;
 	}
     }
