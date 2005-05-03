@@ -244,6 +244,9 @@ struct ttfinfo {
     struct otfname *fontstyle_name;
     uint16 design_range_bottom, design_range_top;
     struct texdata texdata;
+    int mark_class_cnt;
+    char **mark_classes;		/* glyph name list */
+    unichar_t **mark_class_names;	/* used within ff */
 };
 
 #define MAX_TAB	48

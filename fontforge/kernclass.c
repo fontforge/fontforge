@@ -1543,6 +1543,10 @@ static void KCD_VScroll(KernClassDlg *kcd,struct sbevent *sb) {
     }
 }
 
+static int KCD_Drop(KernClassDlg *kcd, GEvent *event) {
+    DropChars2Text(kcd->gw,GWidgetGetControl(kcd->cw,CID_GlyphList),event);
+}
+
 static int subkern_e_h(GWindow gw, GEvent *event) {
     KernClassDlg *kcd = GDrawGetUserData(gw);
 
@@ -1564,6 +1568,9 @@ return( false );
       break;
       case et_expose:
 	KCD_KernExpose(kcd,gw,event);
+      break;
+      case et_drop:
+	KCD_Drop(kcd,event);
       break;
     }
 return( true );

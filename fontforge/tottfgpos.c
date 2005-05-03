@@ -935,7 +935,7 @@ uint16 *ClassesFromNames(SplineFont *sf,char **classnames,int class_cnt,
 	    ch = *end;
 	    *end = '\0';
 	    sc = SFGetCharDup(sf,-1,pt);
-	    if ( sc!=NULL || sc->ttf_glyph!=-1 ) {
+	    if ( sc!=NULL && sc->ttf_glyph!=-1 ) {
 		class[sc->ttf_glyph] = i;
 		if ( gs!=NULL )
 		    gs[sc->ttf_glyph] = sc;
@@ -3771,6 +3771,8 @@ void otf_dumpgdef(struct alltabs *at, SplineFont *_sf) {
     /*  mark */
     /* All my example fonts ignore the attachment list subtable and the mark */
     /*  attach class def subtable, so I shall too */
+    /* Ah. Some indic fonts need the mark attach class subtable for greater */
+    /*  control of lookup flags */
     /* All my example fonts contain a ligature caret list subtable, which is */
     /*  empty. Odd, but perhaps important */
     PST *pst;
@@ -3812,7 +3814,7 @@ void otf_dumpgdef(struct alltabs *at, SplineFont *_sf) {
 	glyphs = galloc((lcnt+1)*sizeof(SplineChar *));
 	glyphs[lcnt] = NULL;
     }
-    if ( !needsclass && lcnt==0 )
+    if ( !needsclass && lcnt==0 && sf->mark_class_cnt==0 )
 return;					/* No anchor positioning, no ligature carets */
 
     at->gdef = tmpfile();
@@ -3822,6 +3824,7 @@ return;					/* No anchor positioning, no ligature carets */
     putshort(at->gdef, 0 );			/* ligature caret table (come back and fix up later) */
     putshort(at->gdef, 0 );			/* mark attachment class table */
 
+	/* Glyph class subtable */
     if ( needsclass ) {
 	/* Mark shouldn't conflict with anything */
 	/* Ligature is more important than Base */
@@ -3873,6 +3876,7 @@ return;					/* No anchor positioning, no ligature carets */
 #endif
     }
 
+	/* Ligature caret subtable. Always include this if we have a GDEF */
     pos = ftell(at->gdef);
     fseek(at->gdef,8,SEEK_SET);			/* location of lig caret table offset */
     putshort(at->gdef,pos);
@@ -3899,6 +3903,17 @@ return;					/* No anchor positioning, no ligature carets */
 	putshort(at->gdef,offset-pos);
 	fseek(at->gdef,0,SEEK_END);
 	dumpcoveragetable(at->gdef,glyphs);
+    }
+
+	/* Mark Attachment Class Subtable */
+    if ( sf->mark_class_cnt>0 ) {
+	uint16 *mclasses = ClassesFromNames(sf,sf->mark_classes,sf->mark_class_cnt,at->maxp.numGlyphs,NULL);
+	pos = ftell(at->gdef);
+	fseek(at->gdef,10,SEEK_SET);		/* location of mark attach table offset */
+	putshort(at->gdef,pos);
+	fseek(at->gdef,0,SEEK_END);
+	DumpClass(at->gdef,mclasses,at->maxp.numGlyphs);
+	free(mclasses);
     }
 
     at->gdeflen = ftell(at->gdef);

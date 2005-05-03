@@ -1181,6 +1181,17 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	    fprintf( sfd,"\n");
 	}
     }
+    if ( sf->mark_class_cnt!=0 ) {
+	fprintf( sfd, "MarkAttachClasses: %d\n", sf->mark_class_cnt );
+	for ( i=1; i<sf->mark_class_cnt; ++i ) {	/* Class 0 is unused */
+	    SFDDumpUTF7Str(sfd, sf->mark_class_names[i]);
+	    if ( sf->mark_classes[i]!=NULL )
+		fprintf( sfd, "%d %s\n", (int) strlen(sf->mark_classes[i]),
+			sf->mark_classes[i] );
+	    else
+		fprintf( sfd, "0 \n" );
+	}
+    }
     for ( isv=0; isv<2; ++isv ) {
 	for ( kc=isv ? sf->vkerns : sf->kerns; kc!=NULL; kc = kc->next ) {
 	    fprintf( sfd, "%s: %d %d %d %d\n", isv ? "VKernClass" : "KernClass",
@@ -3946,6 +3957,20 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 		    }
 		}
 	    }
+	} else if ( strmatch(tok,"MarkAttachClasses:")==0 ) {
+	    getint(sfd,&sf->mark_class_cnt);
+	    sf->mark_classes = galloc(sf->mark_class_cnt*sizeof(char *));
+	    sf->mark_class_names = galloc(sf->mark_class_cnt*sizeof(unichar_t *));
+	    sf->mark_classes[0] = NULL; sf->mark_class_names[0] = NULL;
+	    for ( i=1; i<sf->mark_class_cnt; ++i ) {	/* Class 0 is unused */
+		int temp;
+		while ( (temp=getc(sfd))=='\n' || temp=='\r' ); ungetc(temp,sfd);
+		sf->mark_class_names[i] = SFDReadUTF7Str(sfd);
+		getint(sfd,&temp);
+		sf->mark_classes[i] = galloc(temp+1); sf->mark_classes[i][temp] = '\0';
+		getc(sfd);	/* skip space */
+		fread(sf->mark_classes[i],1,temp,sfd);
+	    }
 	} else if ( strmatch(tok,"KernClass:")==0 || strmatch(tok,"VKernClass:")==0 ) {
 	    int temp;
 	    int isv = tok[0]=='V';
@@ -4495,7 +4520,10 @@ return( sc );
 
 static int ModSF(FILE *asfd,SplineFont *sf) {
     Encoding *newmap;
-    int cnt, order2=0, multilayer=0;
+    int cnt, order2=0;
+#ifdef FONTFORGE_CONFIG_TYPE3
+    int multilayer=0;
+#endif
     char tok[200];
     int i,k;
     SplineChar *sc;

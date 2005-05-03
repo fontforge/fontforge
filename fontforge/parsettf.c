@@ -4845,6 +4845,10 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 
     sf->texdata = info->texdata;
 
+    sf->mark_class_cnt = info->mark_class_cnt;
+    sf->mark_classes = info->mark_classes;
+    sf->mark_class_names = info->mark_class_names;
+
     if ( info->fd!=NULL ) {		/* Special hack for type42 fonts */
 	sf->fontname = copy(info->fd->fontname);
 	sf->uniqueid = info->fd->uniqueid;

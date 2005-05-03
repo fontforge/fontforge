@@ -2023,22 +2023,7 @@ return;
 	g = GWidgetGetControl(ccd->gw,CID_RplList+100);
     }
 
-    if ( !GDrawSelectionHasType(ccd->gw,sn_drag_and_drop,"STRING"))
-return;
-    cnames = GDrawRequestSelection(ccd->gw,sn_drag_and_drop,"STRING",&len);
-    if ( cnames==NULL )
-return;
-
-    ret = _GGadgetGetTitle(g);
-    unames = galloc((strlen(cnames)+u_strlen(ret)+8)*sizeof(unichar_t));
-    u_strcpy(unames,ret);
-    pt = unames+u_strlen(unames);
-    if ( pt>unames && pt[-1]!=' ' )
-	uc_strcpy(pt," ");
-    uc_strcat(pt,cnames);
-    free(cnames);
-
-    GGadgetSetTitle(g,unames);
+    DropChars2Text(ccd->gw,g,event);
 }
 
 static int subccd_e_h(GWindow gw, GEvent *event) {

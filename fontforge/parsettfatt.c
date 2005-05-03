@@ -2854,7 +2854,7 @@ void readttfgpossub(FILE *ttf,struct ttfinfo *info,int gpos) {
 }
 
 void readttfgdef(FILE *ttf,struct ttfinfo *info) {
-    int lclo, gclass;
+    int lclo, gclass, mac;
     int coverage, cnt, i,j, format;
     uint16 *glyphs, *lc_offsets, *offsets;
     uint32 caret_base;
@@ -2868,7 +2868,7 @@ return;
     gclass = getushort(ttf);
     /* attach list = */ getushort(ttf);
     lclo = getushort(ttf);		/* ligature caret list */
-    /* mark attach class = */ getushort(ttf);
+    mac = getushort(ttf);		/* mark attach class */ 
 
     if ( gclass!=0 ) {
 	uint16 *gclasses = getClassDefTable(ttf,info->gdef_start+gclass,info->glyph_cnt, info->g_bounds);
@@ -2878,56 +2878,70 @@ return;
 	free(gclasses);
     }
 
-    if ( lclo==0 )
-return;
-
-    lclo += info->gdef_start;
-    fseek(ttf,lclo,SEEK_SET);
-    coverage = getushort(ttf);
-    cnt = getushort(ttf);
-    if ( cnt==0 )
-return;
-    lc_offsets = galloc(cnt*sizeof(uint16));
-    for ( i=0; i<cnt; ++i )
-	lc_offsets[i]=getushort(ttf);
-    glyphs = getCoverageTable(ttf,lclo+coverage,info);
-    for ( i=0; i<cnt; ++i ) if ( glyphs[i]<info->glyph_cnt ) {
-	fseek(ttf,lclo+lc_offsets[i],SEEK_SET);
-	sc = info->chars[glyphs[i]];
-	for ( pst=sc->possub; pst!=NULL && pst->type!=pst_lcaret; pst=pst->next );
-	if ( pst==NULL ) {
-	    pst = chunkalloc(sizeof(PST));
-	    pst->next = sc->possub;
-	    sc->possub = pst;
-	    pst->type = pst_lcaret;
-	    pst->script_lang_index = SLI_UNKNOWN;
+    if ( mac!=0 ) {
+	uint16 *mclasses = getClassDefTable(ttf,info->gdef_start+mac,info->glyph_cnt, info->g_bounds);
+	const unichar_t *format_spec = GStringGetResource(_STR_UntitledMarkClass_n,NULL);
+	info->mark_class_cnt = ClassFindCnt(mclasses,info->glyph_cnt);
+	info->mark_classes = ClassToNames(info,info->mark_class_cnt,mclasses,info->glyph_cnt);
+	info->mark_class_names = galloc(info->mark_class_cnt*sizeof(unichar_t *));
+	info->mark_class_names[0] = NULL;
+	for ( i=1; i<info->mark_class_cnt; ++i ) {
+	    info->mark_class_names[i] = galloc((u_strlen(format_spec)+10)*
+		    sizeof(unichar_t));
+	    u_sprintf( info->mark_class_names[i], format_spec, i );
 	}
-	caret_base = ftell(ttf);
-	pst->u.lcaret.cnt = getushort(ttf);
-	if ( pst->u.lcaret.carets!=NULL ) free(pst->u.lcaret.carets);
-	offsets = galloc(pst->u.lcaret.cnt*sizeof(uint16));
-	for ( j=0; j<pst->u.lcaret.cnt; ++j )
-	    offsets[j] = getushort(ttf);
-	pst->u.lcaret.carets = galloc(pst->u.lcaret.cnt*sizeof(int16));
-	for ( j=0; j<pst->u.lcaret.cnt; ++j ) {
-	    fseek(ttf,caret_base+offsets[j],SEEK_SET);
-	    format=getushort(ttf);
-	    if ( format==1 ) {
-		pst->u.lcaret.carets[j] = getushort(ttf);
-	    } else if ( format==2 ) {
-		pst->u.lcaret.carets[j] = 0;
-		/* point = */ getushort(ttf);
-	    } else if ( format==3 ) {
-		pst->u.lcaret.carets[j] = getushort(ttf);
-		/* in device table = */ getushort(ttf);
-	    } else {
-		fprintf( stderr, "!!!! Unknown caret format %d !!!!\n", format );
-	    }
-	}
-	free(offsets);
+	free(mclasses);
     }
-    free(lc_offsets);
-    free(glyphs);
+
+    if ( lclo!=0 ) {
+	lclo += info->gdef_start;
+	fseek(ttf,lclo,SEEK_SET);
+	coverage = getushort(ttf);
+	cnt = getushort(ttf);
+	if ( cnt==0 )
+return;
+	lc_offsets = galloc(cnt*sizeof(uint16));
+	for ( i=0; i<cnt; ++i )
+	    lc_offsets[i]=getushort(ttf);
+	glyphs = getCoverageTable(ttf,lclo+coverage,info);
+	for ( i=0; i<cnt; ++i ) if ( glyphs[i]<info->glyph_cnt ) {
+	    fseek(ttf,lclo+lc_offsets[i],SEEK_SET);
+	    sc = info->chars[glyphs[i]];
+	    for ( pst=sc->possub; pst!=NULL && pst->type!=pst_lcaret; pst=pst->next );
+	    if ( pst==NULL ) {
+		pst = chunkalloc(sizeof(PST));
+		pst->next = sc->possub;
+		sc->possub = pst;
+		pst->type = pst_lcaret;
+		pst->script_lang_index = SLI_UNKNOWN;
+	    }
+	    caret_base = ftell(ttf);
+	    pst->u.lcaret.cnt = getushort(ttf);
+	    if ( pst->u.lcaret.carets!=NULL ) free(pst->u.lcaret.carets);
+	    offsets = galloc(pst->u.lcaret.cnt*sizeof(uint16));
+	    for ( j=0; j<pst->u.lcaret.cnt; ++j )
+		offsets[j] = getushort(ttf);
+	    pst->u.lcaret.carets = galloc(pst->u.lcaret.cnt*sizeof(int16));
+	    for ( j=0; j<pst->u.lcaret.cnt; ++j ) {
+		fseek(ttf,caret_base+offsets[j],SEEK_SET);
+		format=getushort(ttf);
+		if ( format==1 ) {
+		    pst->u.lcaret.carets[j] = getushort(ttf);
+		} else if ( format==2 ) {
+		    pst->u.lcaret.carets[j] = 0;
+		    /* point = */ getushort(ttf);
+		} else if ( format==3 ) {
+		    pst->u.lcaret.carets[j] = getushort(ttf);
+		    /* in device table = */ getushort(ttf);
+		} else {
+		    fprintf( stderr, "!!!! Unknown caret format %d !!!!\n", format );
+		}
+	    }
+	    free(offsets);
+	}
+	free(lc_offsets);
+	free(glyphs);
+    }
     info->g_bounds = 0;
 }
 

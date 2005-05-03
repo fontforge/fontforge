@@ -790,11 +790,13 @@ extern void ScriptPrint(FontView *fv,int type,int32 *pointsizes,char *samplefile
 
 #if defined(FONTFORGE_CONFIG_GTK)
 extern char *Kern2Text(SplineChar *other,KernPair *kp,int isv);
-extern char *PST2Text(PST *pst);
+extern char *PST2Text(PST *pst,SplineFont *sf);
 #else
 extern unichar_t *Kern2Text(SplineChar *other,KernPair *kp,int isv);
-extern unichar_t *PST2Text(PST *pst);
+extern unichar_t *PST2Text(PST *pst,SplineFont *sf);
 #endif
+
+extern void DropChars2Text(GWindow gw, GGadget *glyphs,GEvent *event);
 
 extern void FVStrokeItScript(FontView *fv, StrokeInfo *si);
 
@@ -816,10 +818,11 @@ extern unichar_t *ScriptLangLine(struct script_record *sr);
 extern int  SLICount(SplineFont *sf);
 extern unichar_t *ClassName(const unichar_t *name,uint32 feature_tag,
 	uint16 flags, int script_lang_index, int merge_with, int act_type,
-	int macfeature);
+	int macfeature,SplineFont *sf);
 extern unichar_t *DecomposeClassName(const unichar_t *clsnm, unichar_t **name,
 	uint32 *feature_tag, int *macfeature,
-	uint16 *flags, uint16 *script_lang_index,int *merge_with,int *act_type);
+	uint16 *flags, uint16 *script_lang_index,int *merge_with,int *act_type,
+	SplineFont *sf);
 extern PST *AddSubs(PST *last,uint32 tag,char *name,uint16 flags,
 	uint16 sli,SplineChar *sc);
 

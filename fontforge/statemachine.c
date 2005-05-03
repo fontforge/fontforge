@@ -1270,7 +1270,7 @@ static GTextInfo *ConvertableItems(SplineFont *sf) {
 		memset(ret+max,0,11*sizeof(GTextInfo));
 	    }
 	    ret[cur].text = ClassName(nullstr,fpst->tag,fpst->flags,
-		fpst->script_lang_index, -1, -1,false);
+		fpst->script_lang_index, -1, -1,false,sf);
 	    ret[cur].checked = false;
 	    ret[cur].disabled = !FPSTisMacable(sf,fpst,false);
 	    ret[cur++].userdata = (void *) fpst;
