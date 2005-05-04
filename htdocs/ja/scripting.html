@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 13-Mar-2005 -->
+  <!-- AP: Last modified: 17-Apr-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
 <!--<TITLE>Writing scripts to change fonts in FontForge</TITLE>-->
     <TITLE>FontForge でフォントを変更するためのスクリプトの書き方</TITLE>
@@ -830,6 +830,17 @@ a[4][0] = "Nested array";
 <!--Converts a real number to the smallest integer larger than the real.-->
     real を、それを下回らない最小の整数に変換します。
   <DT>
+    Int(real)
+  <DD>
+<!--Uses standard C conversion from real to integer.-->
+    標準 C の型変換を使用して実数から整数への変換を行います。
+  <DT>
+    UCodePoint(int)
+  <DD>
+<!--Converts the argument to a unicode code point (a special type used in several
+    commands). -->
+    引数を Unicode のコードポイント (いくつかのコマンドで使用される特殊なデータ型) に変換します
+  <DT>
     IsNan(real)
   <DD>
 <!--Returns whether the value is a nan. -->
@@ -1648,9 +1659,17 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
   <DT>
     SelectMore(arg1, arg2, ...)
   <DD>
-<!--The same as the previous command except that it does not clear the selection,
+<!--The same as the previous command except that it does not clear the selection
+    initially, so it extends the current selection -->
     so it extends the current selection. -->
-    上のコマンドと同じですが、このコマンドは選択中の文字を消去せずに、現在選択中の文字に上書きします。
+    上のコマンドと同じですが、このコマンドは選択中の文字を最初に消去しないので、現在選択中の範囲を拡張します。
+    The same as the previous command except that it does not clear the selection
+  <DT>
+    SelectFewer(arg1, arg2, ...)
+  <DD>
+<!--The same as the previous command except that it clears the selection on the
+    indicated glyphs, so it reduces the current selection. -->
+    上のコマンドと同じですが、指定されたグリフの選択を解除する点が異なります。それにより、現在の選択範囲は縮小されます。
   <DT>
     SelectIf(arg1,arg2, ...)
   <DD>
@@ -2554,13 +2573,15 @@ ApplySubstitution("*","*","vrt2")
   <DT>
     AddAccent(accent[,pos])
   <DD>
-<!--There must be exactly one glyph selected. The first argument should be either
-    the glyph-name of an accent, or the unicode code point of that accent (and
-    it should be in the font). The second argument, if present indicates how
-    the accent should be positioned... if omitted a default position will be
-    chosen from the unicode value for the accent, this argument is the or of
-    the following flags: -->
-    ちょうど 1 個のグリフを選択していなければなりません。最初の引数はアクセントのグリフ名、またはそのアクセントの Unicode の符号位置です (そのグリフがフォントに存在しなければなりません)。2 番目の引数が存在する場合は、アクセントをどこに置くかを示します……もし省略した場合、アクセントの Unicode 値が使用されます。この引数は以下のフラグの OR を取ったものです。
+<!--There must be exactly one glyph selected. That glyph must contain at least
+    one reference (and the least recently added reference must be the base glyph
+    - - the letter on which the accent is placed). The first argument should be
+    either the glyph-name of an accent, or the unicode code point of that accent
+    (and it should be in the font). The second argument, if present indicates
+    how the accent should be positioned... if omitted a default position will
+    be chosen from the unicode value for the accent, this argument is the or
+    of the following flags: -->
+    ちょうど 1 個のグリフを選択していなければなりません。そのグリフは最低 1 個の参照を含んでいる必要があります  (そして、いちばん最後に追加された参照は基底グリフ――アクセントを置く土台となる文字――でなければなりません) 。最初の引数はアクセントのグリフ名、またはそのアクセントの Unicode のコードポイントです (そのグリフがフォントに存在しなければなりません)。2 番目の引数が存在する場合は、アクセントをどこに置くかを示します……もし省略した場合、アクセントの Unicode 値が使用されます。この引数は以下のフラグの OR を取ったものです。
     <TABLE BORDER CELLPADDING="2">
       <TR>
 	<TD>0x100</TD>
@@ -3005,19 +3026,19 @@ ApplySubstitution("*","*","vrt2")
     引数が整数の場合、値が &gt;= 0 かつ &lt; フォント内のグリフの総数である場合に真を返します。
     それ以外の場合、引数は Unicode のコードポイントか PostScript 文字名であると解釈され、そのグリフがフォント内に存在する時に真を返します。
   <DT>
-    WorthOutputting(arg)
+    WorthOutputting([arg])
    <DD>
-<!--Arg is as above. This returns true if the glyph contains any splines, references,
-    images or has had its width set. -->
-    引数 arg の意味は InFont と同様です。
-    この関数は、グリフにアウトラインまたは参照が含まれているか、または幅が設定されているときに真を返します。
+<!--If there is no argument then a single glyph should be selected and the function
+    applies to that glyph, otherwise arg is as above. This returns true if the
+    glyph contains any splines, references, images or has had its width set. -->
+    引数が存在しない場合、ちょうど 1 個の引数を選択していなければならず、この関数はそのグリフに適用されます。それ以外の場合、arg は上と同様に解釈されます。この関数は、対象となるグリフが何らかのスプライン、参照、画像を含んでいるか、幅が設定されているときに真を返します。
   <DT>
-    DrawsSomething(arg)
+    DrawsSomething([arg])
   <DD>
 <!--Arg is as above. This returns true if the glyph contains any splines, references
-    or references. -->
-    引数 arg の意味は InFont と同様です。
-    この関数は、グリフにアウトラインまたは参照が含まれているときに真を返します。
+    or images. -->
+    引数 arg の意味は上と同様です。
+    この関数は、グリフにアウトライン、参照または画像が含まれているときに真を返します。
   <DT>
     CharInfo(str)<BR>
     CharInfo("Kern",glyph-spec)<BR>

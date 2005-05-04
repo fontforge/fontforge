@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 22-Mar-2005 -->
+  <!-- AP: Last modified: 3-May-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
 <!--<TITLE>Char Info</TITLE>-->
     <TITLE>グリフ情報</TITLE>
@@ -212,8 +212,8 @@ cancelled.<BR Clear=Right> -->
 </H3>
 <TABLE ALIGN=Right>
   <TR>
-    <TD><IMG SRC="../feature-tag-sub.png" WIDTH="161" HEIGHT="246" ALIGN="Top">
-      <IMG SRC="../feature-tag-pos.png" WIDTH="161" HEIGHT="308" ALIGN="Top"></TD>
+    <TD><IMG SRC="../feature-tag-sub.png" WIDTH="226" HEIGHT="399" ALIGN="Top">
+      <IMG SRC="../feature-tag-pos.png" WIDTH="226" HEIGHT="489" ALIGN="Top"></TD>
   </TR>
 </TABLE>
 <P>
@@ -227,22 +227,17 @@ contextual features. -->
 これらの 2 つのダイアログでは、OTF の機能タグと、それに伴うその他のすべての付属情報を指定することができます。それらは (上記) <A HREF="charinfo.html#Character">グリフ情報</A>で置換・位置および合字を指定するのに用いられるだけでなく、<A HREF="fontinfo.html#Anchors">フォント情報</A>でアンカークラスや文脈依存の機能を指定するのにも用いられます。
 <P>
 <!--
-You must either specify an opentype feature tag (a four glyph tag like 'liga',
-see the section on <A HREF="gposgsub.html">GPOS and GSUB</A> for feature
-tags), or an apple feature/setting value (Something like &lt;2,2&gt; where
-the first number is the feature and the second the setting for that feature). -->
-
-+You must either specify an opentype feature tag (a four glyph tag like 'liga'
-+- - these are defined by
-+<A HREF="http://partners.adobe.com/public/developer/opentype/index_tag3.html">Microsoft
-+&amp; Adobe</A>, see the section on <A HREF="gposgsub.html">GPOS and GSUB</A>
-+for more information), or an apple feature/setting value (Something like
-+&lt;2,2&gt; where the first number is the feature and the second the setting
-+for that feature). These features tell the opentype (or ATSUI) engine what
-+this substitution is supposed to do.
-
+You must either specify an opentype feature tag (a four glyph tag like 'liga'
+- - these are defined by
+<A HREF="http://partners.adobe.com/public/developer/opentype/index_tag3.html">Microsoft
+&amp; Adobe</A>, see the section on <A HREF="gposgsub.html">GPOS and GSUB</A>
+for more information), or an apple feature/setting value (Something like
+&lt;2,2&gt; where the first number is the feature and the second the setting
+for that feature). These features tell the opentype (or ATSUI) engine what
+this substitution is supposed to do. -->
 ここでは、OpenType の機能タグ ('liga' のような 4 文字のタグ――これらは。<A HREF="http://partners.adobe.com/public/developer/opentype/index_tag3.html">Microsoft と Adobe</A>によって定義されています。より詳しい情報については<A HREF="gposgsub.html">GPOS と GSUB</A> に関するセクションを参照してください) か、Apple の機能/設定値 (例えば &lt;2,2&gt; のような形で、ここで最初の数値が機能を表し、2 番目がその機能の設定を表します) のどちらかを指定する必要があります。これらの機能は OpenType (または ATSUI) エンジンに、どの置換を行うことを想定しているかを教えます。
 <P>
+<!--
 <FONT COLOR="Red"><STRONG><BIG>CAVEAT: </BIG></STRONG></FONT>OpenType engines
 will only apply features which they believe are appropriate for the current
 script (in Latin scripts, Uniscribe will apply 'ccmp' and 'liga' (character
@@ -264,8 +259,11 @@ In <A NAME="lookup-flags">addition</A> you must specify a set of
 which control the behavior of the feature. If your feature is to be used
 in right to left text then select that flag. If your feature is to be used
 to combine glyphs even if there are intervening mark glyphs (accents and
-such) then select Ignore Combining Marks. -->
-それに<A NAME="lookup-flags">加えて</A>、機能のふるまいを制御するための一組の<A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats.html">フラグ</A>を指定する必要があります。その機能が右から左に書くテキストで使用される場合、「右から左へ」フラグを指定してください。もし、(アクセントの類の) マークグリフが中間に入るならば「結合型マークを無視する」を選択してください。
+such) then select Ignore Combining Marks. If you are creating an Indic font
+then you will probably need to create mark classes (with
+<A HREF="fontinfo.html#MarkClass">Element-&gt;Font Info-&gt;Mark Classes</A>)
+which will be used with the Process Marks option to specify indic rearrangement. -->
+それに<A NAME="lookup-flags">加えて</A>、機能のふるまいを制御するための一組の<A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats.html">フラグ</A>を指定する必要があります。その機能が右から左に書くテキストで使用される場合、「右から左へ」フラグを指定してください。もし、(アクセントの類の) マークグリフが中間に入るならば「結合型マークを無視する」を選択してください。インド系文字のフォントを作成している場合、おそらく (<A HREF="fontinfo.html#MarkClass">エレメント(L)→フォント情報(F)→マーククラス</A> で) マーククラスを作成し、インド系の再配置を指定するために「マークを処理」オプションを有効にしてそれを使用する必要があるでしょう。
 <P>
 <!--
 And a collection of scripts and languages for which the substitution will

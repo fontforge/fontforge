@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 22-Mar-2005 -->
+  <!-- AP: Last modified: 3-May-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
 <!--<TITLE>Font Info</TITLE>-->
     <TITLE>フォント情報</TITLE>
@@ -53,6 +53,9 @@ The dialog is composed of many different sub dialogs. -->
   <LI>
 <!--<A HREF="fontinfo.html#Comment">Comment</A>-->
     <A HREF="fontinfo.html#Comment">コメント</A>
+  <LI>
+<!--<A HREF="#MarkClass">Mark Classes</A>-->
+    <A HREF="#MarkClass">マーククラス</A>
   <LI>
 <!--<A HREF="fontinfo.html#Anchors">Anchor Classes</A>-->
     <A HREF="fontinfo.html#Anchors">アンカークラス</A>
@@ -484,9 +487,11 @@ as to where it should place a line if it wants to underline text printed
 in this font. -->
 下線の位置(P) と 下線の太さ(H) は、このフォントを使うプログラムが下線つきテキストをこのフォントで印字しようとするときに、線をどこに引くかに関するヒントを提供します。
 <P>
-<FONT COLOR="Red"><SMALL><STRONG>NOTE:</STRONG></SMALL></FONT> Adobe now
-says that both XUID and UniqueID are unnecessary.
-<FONT COLOR="Red"><SMALL><STRONG>注意:</STRONG></SMALL></FONT> Adobe は現在では XUID や UniqueID はどちらも不要だと言っています。
+<!--
+<FONT COLOR="Red"><SMALL><STRONG>NOTE:</STRONG></SMALL></FONT>
+<A HREF="UniqueID.html">Adobe now says</A> that both XUID and UniqueID are
+unnecessary. -->
+<FONT COLOR="Red"><SMALL><STRONG>注意:</STRONG></SMALL></FONT> Adobe は現在では XUID や UniqueID はどちらも<A HREF="UniqueID.html">不要だと言っています</A>。
 <P>
 <!--
 The XUID field is a collection of numbers separated by spaces and enclosed
@@ -830,10 +835,10 @@ The various strings and a brief description of their meanings are: -->
 <!--A description of the font and its characteristics.-->
     フォントとその特性の説明。
   <DT>
-<!--VendorURL-->
+<!--VenderURL-->
     ベンダの URL
   <DD>
-<!--An URL pointing to the font's vendor.-->
+<!--An URL pointing to the font's vender.-->
     フォントのベンダを指し示す URL。
   <DT>
 <!--DesignerURL-->
@@ -1032,6 +1037,22 @@ languages. -->
     <TD></TD>
   </TR>
   <TR>
+<!--<TH>Danish</TH> -->
+    <TH>デンマーク語</TH>
+    <TH>Normal</TH>
+    <TH>Fed</TH>
+    <TH>Halvfed</TH>
+    <TH>Fin</TH>
+    <TH>Medium</TH>
+    <TH></TH>
+    <TH>Extra fed</TH>
+    <TH>Kursiv</TH>
+    <TH></TH>
+    <TH>Smal</TH>
+    <TH>Bred</TH>
+    <TH>Kontur</TH>
+  </TR>
+  <TR>
 <!--<TH>Hungarian</TH>-->
     <TH>ハンガリー語</TH>
     <TD>Norm&agrave;l</TD>
@@ -1041,7 +1062,7 @@ languages. -->
     <TD>K&ouml;zepes</TD>
     <TD>S&ouml;t&eacute;tes</TD>
     <TD>Fekete</TD>
-    <TD><!--D&amp;&amp;&amp;&amp;&amp;&amp;&amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;#x151;lt-->
+    <TD><!--D&amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;#x151;lt-->
       Do"lt</TD>
     <TD>D&ouml;nt&ouml;tt</TD>
     <TD>Keskeny</TD>
@@ -1049,20 +1070,28 @@ languages. -->
     <TD>Kont&uacute;ros</TD>
   </TR>
   <TR>
-<!--<TH>Russian<BR>-->
-    <TH>ロシア語<BR>
-      <SMALL>(koi8r)</SMALL></TH>
+<!--<TH>Russian<BR>
+      <SMALL>(koi8r)</SMALL></TH>-->
+    <TH>ロシア語<BR></TH>
     <TD></TD>
-    <TD>&Ouml;&Eacute;&Ograve;&Icirc;&Ugrave;&Ecirc;</TD>
-    <TD>&ETH;&Iuml;&Igrave;&Otilde;&Ouml;&Eacute;&Ograve;&Icirc;&Ugrave;&Ecirc;</TD>
-    <TD>&oacute;&#215;&Aring;&Ocirc;&Igrave;&Ugrave;&Ecirc;</TD>
+<!--<TD>&Ouml;&Eacute;&Ograve;&Icirc;&Ugrave;&Ecirc;</TD>-->
+    <TD>жирный</TD>
+<!--<TD>&ETH;&Iuml;&Igrave;&Otilde;&Ouml;&Eacute;&Ograve;&Icirc;&Ugrave;&Ecirc;</TD>-->
+    <TD>полужирный</TD>
+<!--<TD>&oacute;&#215;&Aring;&Ocirc;&Igrave;&Ugrave;&Ecirc;</TD>-->
+    <TD>светлый</TD>
     <TD></TD>
     <TD></TD>
     <TD></TD>
-    <TD>&euml;&Otilde;&Ograve;&Oacute;&Eacute;&#215;&Icirc;&Ugrave;&Ecirc;</TD>
-    <TD>&icirc;&Aacute;&Euml;&Igrave;&Iuml;&Icirc;&Icirc;&Ugrave;&Ecirc;</TD>
-    <TD>&oacute;&Ouml;&Aacute;&Ocirc;&Ugrave;&Ecirc;</TD>
-    <TD>&ucirc;&Eacute;&Ograve;&Iuml;&Euml;&Eacute;&Ecirc;</TD>
+<!--<TD>&euml;&Otilde;&Ograve;&Oacute;&Eacute;&#215;&Icirc;&Ugrave;&Ecirc;</TD>-->
+    <TD>Курсивный</TD>
+<!--<TD>&icirc;&Aacute;&Euml;&Igrave;&Iuml;&Icirc;&Icirc;&Ugrave;&Ecirc;</TD>-->
+    <TD>Наклонный</TD>
+</TD>
+<!--<TD>&oacute;&Ouml;&Aacute;&Ocirc;&Ugrave;&Ecirc;</TD>-->
+    <TD>Сжатый</TD>
+<!--<TD>&ucirc;&Eacute;&Ograve;&Iuml;&Euml;&Eacute;&Ecirc;</TD>-->
+    <TD>Шиуокий</TD>
     <TD></TD>
   </TR>
 </TABLE>
@@ -1209,6 +1238,34 @@ The comment should be in ISO Latin1. -->
 <P>
 <BR Clear=ALL>
 <H2>
+<!--<A NAME="MarkClass">Mark Classes</A>-->
+    <A NAME="MarkClass">マーククラス</A>
+</H2>
+<P>
+<!--
+<IMG SRC="fontinfo-markclasses.png" WIDTH="376" HEIGHT="636" ALIGN="Right"
+    ALT="Font Info Mark Classes"> The various marks in your font may be divided
+into classes. As far as I know the only real use for this is to handle indic
+rearrangement and allow ligatures to be formed which skip over certain glyphs.
+Each class of marks should be named and that name may be used in the
+<A HREF="charinfo.html">Element-&gt;Glyph Info</A>-&gt;Ligature-&gt;New dialog
+to specify which marks should be considered in forming this ligature and
+which should be ignored.-->
+<IMG SRC="../fontinfo-markclasses.png" WIDTH="376" HEIGHT="636" ALIGN="Right"
+    ALT="フォント情報のマーククラス">フォント内に含まれる各種のマークはクラス分けを行うことができます。私の知る限り、これが実際に使用されている例としては、インド系文字の再配置といくつかの文字をスキップして構成される合字を使用可能にするという用途があるだけです。
+各マーククラスには名前をつける必要があり、つけた名前は<A HREF="charinfo.html">エレメント(L)→グリフ情報(I)</A>→[合字]→[新規] ダイアログで、その合字の構築時にどのマークが認識され、どれが無視されるかを指定するのに用いることができます。
+<P>
+<!--
+From here you may add new classes, or edit old ones.  -->
+ここでは新しいクラスを追加したり、古いクラスを編集することができます。
+<P>
+<!--
+<IMG SRC="markclass.png" ALIGN="Left" WIDTH="351" HEIGHT="323">The dialog
+for creating a new (or modifying an old) mark class allows you to give that
+class a name and requires that you to provide a list of glyphs that make
+up the class.<BR Clear=ALL> -->
+<IMG SRC="../markclass.png" ALIGN="Left" WIDTH="351" HEIGHT="323">新しいマーククラスを作成 (または古いクラスを変更) するためのダイアログでは、クラスに名前をつけることができ、そのクラスを構成するグリフのリストを指定する必要があります。<BR Clear=ALL>
+<H2>
 <!--<A NAME="Anchors">Anchor Classes</A>-->
     <A NAME="Anchors">アンカークラス</A>
 </H2>
@@ -1308,16 +1365,8 @@ you to change the contents of the feature. -->
 <!--
 Contextual/chaining tables are only meaningful when generating a truetype
 (ttf or otf) like font with OpenType tables (in a few cases they can be converted
-into Apple Advanced Typography tables too). -->
-文脈依存/文脈連鎖依存テーブルは、TrueType (TTF または OTF) 類似のフォントで、OpenType テーブルを出力したときのみに意味があります。
-<P>
-<!--
-<FONT COLOR="Red"><STRONG>Caveat:
-</STRONG></FONT><A HREF="http://www.microsoft.com/typography/specs/default.htm">Uniscribe</A>
-only implements a limited set of features for any given script, please check
-to make sure a feature will be turned on before investing time in
-it.<BR CLEAR=ALL> -->
-<FONT COLOR="Red"><STRONG>警告: </STRONG></FONT><A HREF="http://www.microsoft.com/typography/specs/default.htm">Uniscribe</A> は任意の指定されたスクリプトに対して、ある限定された機能のセットしか実装していません。時間を費す前に、その機能がオンになっているかを確認してください。<BR CLEAR=ALL>
+into Apple Advanced Typography tables too).<BR CLEAR=ALL>-->
+文脈依存/文脈連鎖依存テーブルは、TrueType (TTF または OTF) 類似のフォントで、OpenType テーブルを出力したときのみに意味があります。<BR CLEAR=ALL>
 <H2>
   <IMG SRC="../fontinfo-macstyle.png" WIDTH="376" HEIGHT="608" ALIGN="Right" ALT="Font Info Mac Styles">
 <!--<A NAME="Mac-Style">Mac Style</A> &amp; FOND-->

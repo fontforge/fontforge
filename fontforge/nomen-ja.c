@@ -1245,6 +1245,10 @@ static char *str_BigOpSpace4 = "大型演算子のスペース4:";
 static char *str_BigOpSpace4Popup = "ディスプレイ数式の大型演算子の下に(積分範囲などの)\n下限値が来たとき,そのベースラインと演算子の間に置かれる\n空きの最小量";
 static char *str_BigOpSpace5 = "大型演算子のスペース5:";
 static char *str_BigOpSpace5Popup = "ディスプレイ数式の上限・下限の上下に追加されるグルースペース";
+  /* Mark classes */
+static char *str_MarkClasses = "マーククラス";
+static char *str_MarkClassName = "クラス名:";
+
     /* Generate fonts */ /* savefontdlg */
 static char str_Format[] = "フォーマット:";
 static char str_Savefailedtitle[] = "保存に失敗しました.";
@@ -1303,10 +1307,10 @@ static char *str_BadDrawingOperation = "描画操作が不正です";
 static char *str_Type3NotTrans = "このフォントには最低1個の半透明なレイヤーが含まれていますが,Type3ではサポートされていません(半透明または透明な部分は不透明なものとして扱われます). それでも続けますか?"
 static char *str_SvgNoImages = "このフォントには最低1個の前景画像が含まれていますが,SVGではサポートされていません. それでも続けますか?";
 static char *str_NotdefName = "名前が.notdefです";
-static char *str_NotdefGlyph = "エンコーディング%d のグリフは\".notdef\"という名前がついています. 名前が\".notdef\"になっているために,生成されたフォントにはこのグリフは含まれません. 「エレメント(E)」→「グリフ情報(I)」で新しい名前をつけることができます. (このグリフは出力されませんが)フォントの生成を続けますか?";
+static char *str_NotdefGlyph = "エンコーディング%d のグリフは\".notdef\"という名前がついています. 名前が\".notdef\"になっているために,生成されたフォントにはこのグリフは含まれません. 「エレメント(L)」→「グリフ情報(I)」で新しい名前をつけることができます. (このグリフは出力されませんが)フォントの生成を続けますか?";
 static char *str_EmSizeBad = "非標準のEMサイズ";
-static char *str_PSEmSize1000 = "通例,PostScriptフォントはEMの大きさを1000グリッドに設定することになっていますが,このフォントは%dグリッドとなっています. これはエラーではありませんが,EMサイズを「エレメント(E)」→「フォント情報(I)」→[PS一般]ダイアログで変更することを検討すべきでしょう.\nそれでもフォントをこのまま出力しますか?";
-static char *str_TTFEmSize2 = "通例,PostScriptフォントはEMの大きさを2の冪乗に設定することになっていますが,このフォントは%dグリッドとなっています. これはエラーではありませんが,全角グリッドを「エレメント(E)」→「フォント情報(I)」→[PS一般]ダイアログで変更することを検討すべきでしょう.\nそれでもフォントをこのまま出力しますか?";
+static char *str_PSEmSize1000 = "通例,PostScriptフォントはEMの大きさを1000グリッドに設定することになっていますが,このフォントは%dグリッドとなっています. これはエラーではありませんが,EMサイズを「エレメント(L)」→「フォント情報(F)」→[PS一般]ダイアログで変更することを検討すべきでしょう.\nそれでもフォントをこのまま出力しますか?";
+static char *str_TTFEmSize2 = "通例,PostScriptフォントはEMの大きさを2の冪乗に設定することになっていますが,このフォントは%dグリッドとなっています. これはエラーではありませんが,全角グリッドを「エレメント(L)」→「フォント情報(F)」→[PS一般]ダイアログで変更することを検討すべきでしょう.\nそれでもフォントをこのまま出力しますか?";
 static char *str_NotIntegral = "整数ではありません";
 static char *str_TryRoundToInt = "このフォントには少なくとも1つ非整数の座標が含まれています.\nこれは仕様上全く問題ありませんが,普通ではありませんし\n生成されるフォントのサイズを増加させます.\nフォント全体に対して エレメント(l)→整数値に変換(d) を\n適用することを試してみてはどうでしょうか.";
 static char *str_PostScript = "PostScript�￥"
@@ -1494,7 +1498,7 @@ static char *str_TransformChanged = "変換行列が変更されました.";
 static char *str_TransformChangedApply = "変換行列が変更されました. 新しいバージョンを使いますか?";
 static char *str_TransformPopup = "この変換行列は, 元のグリフに含まれる制御点を,\n現在のグリフの中で描画する前にどう変形するかを指定します.\n x(new) = tm[1,1]*x + tm[2,1]*y + tm[3,1]\n y(new) = tm[1,2]*x + tm[2,2]*y + tm[3,2]";
 static char *str_MakeNewClass = "アンカークラスを新しく作ってください.";
-static char *str_MakeNewAnchorClass = "新しい点を割り当てるための未使用の\nアンカークラスが見つかりませんでした.\n新しいアンカー点を作る場合,「エレメント(E)」→\n「フォント情報(I)」で定義してください.";
+static char *str_MakeNewAnchorClass = "新しい点を割り当てるための未使用の\nアンカークラスが見つかりませんでした.\n新しいアンカー点を作る場合,「エレメント(L)」→\n「フォント情報(F)」で定義してください.";
 static char *str_Mark = "Mark";
 static char *str_MarkGlyph = "マーク";
 static char *str_BaseGlyph = "基底グリフ";
@@ -2147,7 +2151,7 @@ static char str_OTFChineseSimplified = "中国語(簡体字)";
 static char str_OTFChineseTraditional = "中国語(繁体字)";
 static char str_OTFZande = "ザンデ語";
 static char str_OTFZulu = "ズールー語";
- /* dlg */
+ /* dlg */ /* charinfo glyphinfo */
 static char str_ScriptList = "用字系リスト";
 static char str_LanguageList = "言語リスト";
 static char str_ScriptMissing = "その用字系はありません";
@@ -2177,6 +2181,7 @@ static char str_RightToLeft = "右から左へ";
 static char str_IgnoreBaseGlyphs = "基底グリフを無視する";
 static char str_IgnoreLigatures = "合字を無視する";
 static char str_IgnoreCombiningMarks = "結合型マークを無視する";
+static char str_ProcessMarks = "マークを処理する:";
 static char str_NoScript = "スクリプトがありません.";
 static char str_NeedsScriptForSubs = "グリフの位置指定や置換に関する情報を追加する時には, FontForgeは用字系を知っている必要があります";
 static char str_NeedsScriptForSubsGuess = "文字の位置指定や置換に関する情報を追加する時には, FontForgeは用字系を知っている必要があります\n'%c%c%c%c'で合っていますか?";
@@ -2988,6 +2993,7 @@ static char *str_NoBitmapsInTTF = "このTTFフォントには(利用可能な)ビットマップが
 static char *str_NotInCollection = "TTCに含まれません.";
 static char *str_FontNotInCollection = "%hs は %.100hs に含まれません.";
 static char *str_UntitledAnchor_n = "Untitled-%d";
+static char *str_UntitledMarkClass_n = "MarkClass-%d";
 static char *str_TTFGlyf = "TTF 'glyf'";
 static char *str_OTFCFF = "OTF 'CFF '";
 static char *str_GlyfAndCFF = "このフォントはTrueTypeの'glyf'テーブルとOpenTypeの'CFF 'テーブルの両方を含んでいます. FontForge は一度にどちらか片方しか扱えないので,どちらを使うか選んでください.";
@@ -3396,6 +3402,7 @@ static char *str_ListOfClassNumbers = "クラスメンバーのリスト";
 static char *str_ListOfListsOfClassNumbers = "クラスメンバーのリストのリスト";
 static char *str_BadClassLong = "クラスは最低1個のグリフ名を含んでいなければならず,グリフ名は正しいPostScript名であり,どのグリフも他のクラスに現れてはなりません";
 static char *str_BadClassName = "ここには他のクラスに含まれるグリフが出現してはいけないのですが, %.30s があります";
+static char *str_BadClassNames = "ここには他のクラスに含まれるグリフが出現してはいけないのですが, %.30s はこことクラス %.30s の両方に出現しています";
 static char *str_MatchClass = "一致クラス";
 static char *str_BacktrackClass = "試行クラス";
 static char *str_LookaheadClass = "前方クラス";
@@ -3726,4 +3733,4 @@ static char mnemonic_None_fem ='N';
  
 static int num_buttonsize = 80;
 static int num_ScaleFactor = 115;
-/* based on nomen-en.c:1.89 */
+/* based on nomen-en.c:1.90 */
