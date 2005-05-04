@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 15-Mar-2005 -->
+  <!-- AP: Last modified: 18-Apr-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
 <!--<TITLE>Frequently Asked Questions</TITLE>-->
     <TITLE>よくある質問</TITLE>
@@ -206,7 +206,21 @@
 <!--<A HREF="#quadratic-cubic">How does FontForge convert a quadratic spline
     into a cubic (when reading truetype)?</A> -->
     <A HREF="#quadratic-cubic">FontForge は (TrueType を読み込む際に) どのようにして 2 次スプラインを 3 次に変換しているのか?</A>
-+</UL>
+</UL>
+<H2>
+<!--Image file questions-->
+    画像ファイルに関する質問
+</H2>
+<UL>
+  <LI>
+<!--<A HREF="#dynamic-lib">Why does fontforge say "Error loading dynamic library"
+    when trying to import an image file?</A> -->
+    <A HREF="#dynamic-libs">画像ファイルを取り込もうとすると、FontForge が  "Error loading dynamic library" と表示するのはなぜか?</A>
+  <LI>
+<!--<A HREF="#complex-eps">Why does fontforge say "EPS file is too complex to
+    be understood"?</A> -->
+    <A HREF="#complex-eps">FontForge が "EPSファイルが複雑すぎて理解できません" と表示するのはなぜか?</A>
+</UL>
 <H2>
 <!--Random questions -->
     雑多な質問
@@ -1653,6 +1667,37 @@ MANPATH=${MANPATH:-}:/usr/local/man ; export MANPATH
 <!--This is easy since any quadratic spline can already be represented as a cubic,
     it will just happen that the cubic term is always 0. -->
     任意の 2 次スプラインは、3 次の項が常に 0 になっているだけと考えれば、既に 3 次式で表されているものとして扱うことができるので簡単です。
+  <DT>
+<!--<B><A NAME="dynamic-libs">Why does fontforge say "Error loading dynamic library"
+    when trying to import an image file?</A></B> -->
+    <B><A NAME="dynamic-libs">画像ファイルを取り込もうとすると、FontForge が  "Error loading dynamic library" と表示するのはなぜか?</A></B>
+  <DD>
+<!--FontForge depends on certain dynamic libraries to load images. It does not
+    check for the existance of these libraries until you actually try to load
+    an image. If the library has not been installed on your system it will give
+    the above error (and fail to load the image).<BR>
+    The <A HREF="index.html#Dependencies" TARGET="_top">Dependencies</A> section
+    of the main page describes how to find these libraries.<BR>
+    If the libraries are installed and you still get this message try setting
+    your LD_LIBRARY_PATH variable to the directory containing the library in
+    question (On the mac this is DYLD_LIBRARY_PATH). -->
+    FontForge は、画像の読み込みをいくつかの動的ライブラリに頼っています。それらのライブラリの存在は、画像を実際に読み込もうとするまでチェックされません。あなたのシステム上にそのライブラリがインストールされていない場合、上記のエラーが表示されます (そして画像の読み込みは失敗します)。<BR>
+    メインページの <A HREF="index.html#Dependencies" TARGET="_top">依存性</A> のセクションには、それらのライブラリがどこで入手できるかの説明があります。<BR>
+    ライブラリがインストールされていて、それでもそのメッセージが表示される場合、LD_LIBRARY_PATH 環境変数に、問題となるライブラリを含むディレクトリを指定してみてください (Mac では、この環境変数は DYLD_LIBRARY_PATH となります)。
+  <DT>
+<!--<B><A NAME="complex-eps">Why does fontforge say "EPS file is too complex
+    to be understood"?</A></B> -->
+    <B><A NAME="complex-eps">FontForge が "EPSファイルが複雑すぎて理解できません" と表示するのはなぜか?</A></B>
+  <DD>
+<!--Most programs which load eps files treat them as black boxes. They will read
+    the file into memory and output it, unchanged, to a postscript printer.
+    Unfortunately FontForge cannot do this. FontForge needs to understand and
+    then convert the eps file into a simpler format (fonts can use far fewer
+    operations than an eps file). So unlike most programs FontForge must interpret
+    each eps file -- but interpretting all of PostScript is a huge job and ff
+    is limited in what it understands. Sometimes it will find a file it can't
+    handle. -->
+    EPS ファイルを読み込むほとんどのプログラムは、それらをブラックボックスとして扱っています。それらはファイルをメモリに読み込んで、変更を加えずに PostScript プリンタに出力するだけです。残念ながら FontForge はそうするわけにはいきません。FontForge はそれを理解して、EPS ファイルからより単純なフォーマットに変換する必要があるのです (フォントが使用することができるコマンドは EPS ファイルよりはるかに少数です)。そのため、ほとんどのプログラムと異なり、FontForge は各 EPS ファイルを解釈する必要があります――ですが PostScript の全てを解釈するのは莫大な作業を要するので、ff が理解できる PS は限られています。ときどき、扱うことができないファイルに出会うでしょう。
   <DT>
 <!--<A NAME="default-char"><B>How do I set the default glyph of a font?</B></A> -->
     <A NAME="default-char"><B>フォントのデフォルトグリフを設定するにはどうすればいいか?</B></A>

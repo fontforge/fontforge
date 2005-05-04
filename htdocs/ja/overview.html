@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 16-Jan-2005 -->
+  <!-- AP: Last modified: 18-Apr-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
 <!--
   <TITLE>FontForge -- An outline font editor for PostScript&reg;, TrueType
@@ -15,14 +15,13 @@
 <!--
 <H1 Align=Center>
   FontForge<BR>
-  <SMALL>An Outline Font
-  Editor</SMALL><A HREF="http://khdd.net/fontforge-jman/overview.html"><BR>
+  <SMALL>An Outline Font Editor</SMALL><A HREF="ja/overview.html"><BR>
   <IMG SRC="flags/Nisshoki-Japan.png" WIDTH="39" HEIGHT="26"></A>
 </H1>
 -->
 <H1 Align=Center>
   FontForge<BR>
-  <SMALL>アウトラインフォントエディタ</SMALL><A HREF="http://fontforge.sourceforge.net/overview.html"><BR>
+  <SMALL>アウトラインフォントエディタ</SMALL><A HREF="../overview.html"><BR>
   <IMG SRC="../flags/StarsStripes.gif" WIDTH="39" HEIGHT="26"><IMG SRC="../flags/UnionJack.gif" WIDTH="39" HEIGHT="26"></A>
   <A HREF="overview.html">
   <IMG SRC="../flags/Nisshoki-Japan.png" WIDTH="39" HEIGHT="26"></A>
@@ -764,8 +763,9 @@ PostScript は上に述べた <A HREF="bezier.html">3 次スプライン</A> 技術に基づいて�
 <!--
 Within FontForge all spline editing is done on cubic splines. These are converted
 to quadratic when a truetype font is generated. -->
-FontForge の内部では、すべてのスプライン編集は 3 次スプラインに基づいて行われます。
-それらは、TrueType フォントが生成される時に 2 次スプラインに変換されます。
+Within FontForge a font may contain either cubic or quadratic splines. These
+are converted to the appropriate format when a font is generated. -->
+FontForge の内部では、フォントは 3 次または 2 次のスプラインを含むことができます。それらは、TrueType フォントが生成される時に適切なフォーマットに変換されます。
 <P>
 <!--
 The other major difference between the two is how they solve the problem
@@ -773,10 +773,10 @@ of drawing nice images at small pointsizes. PostScript calls this "Hinting",
 while TrueType calls it "Instructing" a font. -->
 これら二つの違いで主なものはほかに、小さなポイントサイズの時に美しい字形を得るという問題の解決方法があります。
 PostScript ではこれを「ヒントづけ」と呼び、TrueType ではフォントへの「命令」と呼びます。
-<P>
-<!-- 
-What's OpenType? -->
-OpenType とは何でしょうか。
+<H4>
+<!--What's OpenType? -->
+    OpenType とは何か?
+</H4>
 <P>
 <!--
 Open Type is just a postscript font put into a truetype format - - From the
@@ -786,10 +786,10 @@ truetype font can be called an OpenType font. OpenType is a superset of TrueType
 OpenType は TrueType フォーマットの中に PostScript フォントを埋め込んだものにすぎません――外部からは、TrueType のフォント記述の代わりに PostScript Type2 フォーマットを使用してアウトラインを表現している点を除いては、TrueType フォントと同じように見えます。
 (実際には、すべての TrueType フォントを OpenType と呼ぶことができます。
 OpenType は TrueType の拡張です。)
-<P>
-<!--
-What's SVG? -->
-SVG とは何でしょうか。
+<H4>
+<!--What's SVG? -->
+    SVG とは何か?
+</H4>
 <P>
 <!--
 SVG (Scalable Vector Graphics) provides a relatively new font format, written
@@ -802,10 +802,10 @@ them out if they are). -->
 SVG (Scalable Vector Graphics) では、XML の一方言で描かれた比較的新しいフォントフォーマットを提供しています。
 SVG フォントでは 3 次か 2 次の曲線を使用することができます (または両方を使用することもできますが、FontForge の機能制限で、フォント全体を 3 次か 2 次のどちらかに揃える必要があります)。
 SVG では 2 種類の異なる型のフォントが可能です。片方はほぼ PostScript Type1 フォントと同じで、もう片方は、ほぼ PostScript Type3 フォントと同じです (SVG フォントでは画像が使用できない点が異なります――使用できるとしても、私にはそうは読み取れませんでした)。
-<P>
-<!--
-What are Type3 fonts? -->
-Type3 フォントとは何でしょうか。
+<H4>
+<!--What are Type3 fonts? -->
+    Type 3 フォントとは何か?
+</H4>
 <P>
 <!--
 Back in the early days of PostScript, the Type1 format was proprietary, only
@@ -819,18 +819,18 @@ PostScript の初期の頃の話ですが、Type1 フォーマットは商用のものであり、Adobe だ�
 Type3 フォントにはヒント機能がありませんでしたが、任意の PostScript コマンドを含めることができたので、より広い範囲の図形 (複数色のグリフ、ストローク表示のグリフ、画像の拡大縮小によるグリフなど) を生成することができました。
 ほとんどの場合はこれらの拡張は不要で、ヒントが無いという欠点は煩わしいものでした。
 FontForge を複数レイヤー機能つきでコンパイルした場合、Type3 フォントを作成することができます。
-<P>
-<!--
-What are Type1 fonts? -->
-Type1 フォントとは何でしょうか。
+<H4>
+<!--What are Type1 fonts? -->
+    Type 1 フォントとは何か?
+</H4>
 <P>
 <!--
 These are the standard PostScript fonts. -->
 それらは標準の PostScript フォントです。
-<P>
-<!--
-What are Type2 fonts? -->
-Type2 フォントとは何でしょうか。
+<H4>
+<!--What are Type2 fonts? -->
+    Type 2 フォントとは何か?
+</H4>
 <P>
 <!--
 These use a slightly different internal format to express the same information
@@ -1297,8 +1297,8 @@ font (or all that will fit in the window). Every line has two parts, at the
 top is a label, often small clear letters, underneath that, somewhat larger
 is a 24 pixel rasterization of the font you have designed. As you edit a
 glyph in an <A HREF="#CharView">outline glyph view</A> its small version
-in the font view will change with it. -->
-フォントビューは、フォント内のすべてのグリフ (またはウィンドウに収まるかぎりのグリフ) を表示します。各行は 2 つの部分からなり、上にくっきりした文字が小さく表示され、その下にあるやや大きな文字は、あなたがデザインしたフォントを 24 ピクセルでラスタライズしたものです。<A HREF="#CharView">アウトライングリフビュー</A>で文字を編集すると、そのグリフのフォントビュー内の小さな表示も同時に変更されます。
+in the font view will change as you edit. -->
+フォントビューは、フォント内のすべてのグリフ (またはウィンドウに収まるかぎりのグリフ) を表示します。各行は 2 つの部分からなり、上にくっきりした文字が小さく表示され、その下にあるやや大きな文字は、あなたがデザインしたフォントを 24 ピクセルでラスタライズしたものです。<A HREF="#CharView">アウトライングリフビュー</A>で文字を編集すると、そのグリフのフォントビュー内の小さな表示も編集を行うにつれて変更されます。
 <P>
 <!--
 Double-clicking on a glyph will bring up an outline glyph view of that glyph
