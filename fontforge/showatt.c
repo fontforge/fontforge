@@ -1381,6 +1381,25 @@ return;
     node->cnt = i;
 }
 
+static void BuildMClass(struct node *node,struct att_dlg *att) {
+    SplineFont *_sf = att->sf;
+    struct node *glyphs;
+    int i;
+    unichar_t *temp;
+
+    node->children = glyphs = gcalloc(_sf->mark_class_cnt,sizeof(struct node));
+    node->cnt = _sf->mark_class_cnt-1;
+    for ( i=1; i<_sf->mark_class_cnt; ++i ) {
+	glyphs[i-1].parent = node;
+	temp = galloc((strlen(_sf->mark_classes[i]) + u_strlen(_sf->mark_class_names[i]) + 4)*
+		sizeof(unichar_t));
+	u_strcpy(temp,_sf->mark_class_names[i]);
+	uc_strcat(temp,": ");
+	uc_strcat(temp,_sf->mark_classes[i]);
+	glyphs[i-1].label = temp;
+    }
+}
+
 static void BuildLCarets(struct node *node,struct att_dlg *att) {
     SplineChar *sc = node->u.sc;
     PST *pst;
@@ -1510,7 +1529,7 @@ static void BuildGDEF(struct node *node,struct att_dlg *att) {
     AnchorClass *ac;
     PST *pst;
     int l,j,i;
-    int gdef, lcar;
+    int gdef, lcar, mclass;
 
     for ( ac = _sf->anchor; ac!=NULL; ac=ac->next ) {
 	if ( ac->type==act_curs )
@@ -1541,9 +1560,11 @@ static void BuildGDEF(struct node *node,struct att_dlg *att) {
 	++l;
     } while ( l<_sf->subfontcnt );
 
-    if ( gdef+lcar!=0 ) {
-	node->children = gcalloc(gdef+lcar+1,sizeof(struct node));
-	node->cnt = gdef+lcar;
+    mclass = _sf->mark_class_cnt!=0;
+
+    if ( gdef+lcar+mclass!=0 ) {
+	node->children = gcalloc(gdef+lcar+mclass+1,sizeof(struct node));
+	node->cnt = gdef+lcar+mclass;
 	if ( gdef ) {
 	    node->children[0].label = uc_copy("Glyph Definition Sub-Table");
 	    node->children[0].build = BuildGdefs;
@@ -1553,6 +1574,11 @@ static void BuildGDEF(struct node *node,struct att_dlg *att) {
 	    node->children[gdef].label = uc_copy("Ligature Caret Sub-Table");
 	    node->children[gdef].build = BuildLcar;
 	    node->children[gdef].parent = node;
+	}
+	if ( mclass ) {
+	    node->children[gdef+lcar].label = uc_copy("Mark Attachment Classes");
+	    node->children[gdef+lcar].build = BuildMClass;
+	    node->children[gdef+lcar].parent = node;
 	}
     }
 }
