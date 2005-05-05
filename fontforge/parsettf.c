@@ -1610,7 +1610,9 @@ return( sc );
 	readttfsimpleglyph(ttf,info,sc,path_cnt);
     else
 	readttfcompositglyph(ttf,info,sc,info->glyph_start+end);
-    if ( ftell(ttf)>info->glyph_start+end )
+    if ( start>end )
+	fprintf(stderr, "Bad glyph (%d), disordered 'loca table (start comes after end)\n", enc );
+    else if ( ftell(ttf)>info->glyph_start+end )
 	fprintf(stderr, "Bad glyph (%d), its definition extends beyond the space allowed for it\n", enc );
     sc->enc = 0;
 return( sc );
