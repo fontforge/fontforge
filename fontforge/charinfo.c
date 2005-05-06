@@ -3511,7 +3511,7 @@ return( true );
 static int UnicodeContainsCombiners(int uni) {
     const unichar_t *alt;
 
-    if ( uni<0 || uni>0xffff )
+    if ( uni<0 || uni>=unicode4_size )
 return( -1 );
     if ( iscombining(uni))
 return( true );
