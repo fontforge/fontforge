@@ -2377,16 +2377,16 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype) {
     }
 	    /* width table */
     for ( i=0; i<widcnt; ++i )
-	putlong(tfm,(widths[i]*(1<<20))/(sf->ascent+sf->descent));
+	putlong(tfm,(int) widths[i]);
 	    /* height table */
     for ( i=0; i<hcnt; ++i )
-	putlong(tfm,(heights[i]*(1<<20))/(sf->ascent+sf->descent));
+	putlong(tfm,(int) heights[i]);
 	    /* depth table */
     for ( i=0; i<dcnt; ++i )
-	putlong(tfm,(depths[i]*(1<<20))/(sf->ascent+sf->descent));
+	putlong(tfm,(int) depths[i]);
 	    /* italic correction table */
     for ( i=0; i<icnt; ++i )
-	putlong(tfm,(italics[i]*(1<<20))/(sf->ascent+sf->descent));
+	putlong(tfm,(int) italics[i]);
 	    /* lig/kern table */
     for ( i=0; i<lkcnt; ++i )
 	putlong(tfm,lkarray[i]);
