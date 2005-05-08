@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Sep-2002 -->
-  <!-- AP: Last modified: 22-Mar-2005 -->
+  <!-- AP: Last modified: 7-May-2005 -->
   <TITLE>Generate Font Dialog</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -213,6 +213,11 @@ Not all are enabled at all times.
     used by OpenType. If both this and [] Apple are checked the font will have
     two sets of tables, Apple will look at one set, and everyone else will look
     at the other.
+    (<FONT COLOR="Red"><STRONG><BIG>CAVEAT</BIG></STRONG></FONT>: The above statement
+    was true up to 10.4 ("Tiger") after 10.4, Apple will use OpenType tables
+    if they are present and ignore AAT tables. Unfortunately Apple doesn't implement
+    all of OpenType so Apple's behavior is likely to be
+    <FONT COLOR="Red"><STRONG>WRONG</STRONG></FONT>).
   <LI>
     [] Save Comments -- I have added my own table
     ('<A HREF="non-standard.html#PfEd">PfEd</A>') in the truetype format in which
