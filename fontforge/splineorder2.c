@@ -1046,8 +1046,8 @@ return( false );		/* Parallel vertical lines */
 	    inter->y = line2_1->y + (inter->x-line2_1->x) * (line2_2->y - line2_1->y)/(line2_2->x - line2_1->x);
 return( true );
     } else if ( line2_1->x == line2_2->x ) {
-	inter->x = line2_1->x;
 	inter->y = line1_1->y + (inter->x-line1_1->x) * (line1_2->y - line1_1->y)/(line1_2->x - line1_1->x);
+	inter->x = line2_1->x;
 return( true );
     } else {
 	s1 = (line1_2->y - line1_1->y)/(line1_2->x - line1_1->x);
