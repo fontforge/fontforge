@@ -1147,8 +1147,13 @@ a[4][0] = "Nested array";
 	テーブルを作成し、グリフの色を格納します。
       <LI>
 <!--	fmflags&amp;0x80 =&gt; generate tables so the font will work on both Apple
-	and MS platforms. -->
-	fmflags&amp;0x80 =&gt; Apple と MS のプラットフォームの両方で動作するようにテーブルを作成します。
+	and MS platforms. 
+	and MS platforms.<BR> -->
+	fmflags&amp;0x80 =&gt; Apple と MS のプラットフォームの両方で動作するようにテーブルを作成します。<BR>
+<!--	Apple has screwed up and in Mac 10.4 (Tigger), if OpenType tables are present
+	in a font then the AAT tables will be ignored. Unfortunately Apple does not
+	implement all of OpenType, so the result is almost certain to be wrong). -->
+	Apple は Mac OS X 10.4 (トラー) でこれをぶち壊しにしてしまいました。OpenType テーブルがフォント内に存在すると、AAT テーブルは無視されるようになりました。残念ながら Apple は OpenType の全機能を実装していないので、ほぼ確実に間違った結果が得られることになるでしょう。
       <LI>
 <!--	fmflags&amp;0x100 =&gt; generate a glyph map file (GID=&gt;glyph name, unicode
 	map) -->

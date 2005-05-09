@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Sep-2002 -->
-  <!-- AP: Last modified: 22-Mar-2005 -->
+  <!-- AP: Last modified: 7-May-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
 <!--<TITLE>Generate Font Dialog</TITLE>-->
     <TITLE>フォント出力ダイアログ</TITLE>
@@ -269,8 +269,14 @@ Not all are enabled at all times.-->
 <!--[] OpenType - - If this is checked the font will be generated with the tables
     used by OpenType. If both this and [] Apple are checked the font will have
     two sets of tables, Apple will look at one set, and everyone else will look
-    at the other. -->
+    at the other.
+    (<FONT COLOR="Red"><STRONG><BIG>CAVEAT</BIG></STRONG></FONT>: The above statement
+    was true up to 10.4 ("Tiger") after 10.4, Apple will use OpenType tables
+    if they are present and ignore AAT tables. Unfortunately Apple doesn't implement
+    all of OpenType so Apple's behavior is likely to be
+    <FONT COLOR="Red"><STRONG>WRONG</STRONG></FONT>). -->
     [] OpenTypeの仕様 -- ここにチェックが入っている場合、フォント内には OpenType で使用されるテーブルが作成されます。ここと [] Apple の仕様 の両方にチェックが入っている場合、フォントには 2 組のテーブルが格納され、Apple は片方のセットを参照し、他の皆はもう片方を参照するでしょう。
+    (<FONT COLOR="Red"><STRONG><BIG>警告</BIG></STRONG></FONT>: 上記の記述が正しいのは、10.4 ("Tiger") より前のバージョンに限られます。OS X 10.4 からは、Apple は OpenType テーブルが存在する時はそれを使用し、AAT テーブルを無視するようになりました。残念ながら Apple は OpenType の善機能を実装していないので、Apple 機上での振舞いはおそらく<FONT COLOR="Red"><STRONG>間違った</STRONG></FONT>)ものとなるでしょう。
   <LI>
 <!--[] Save Comments - - I have added my own table
     ('<A HREF="non-standard.html#PfEd">PfEd</A>') in the truetype format in which
