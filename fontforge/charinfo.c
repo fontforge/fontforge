@@ -4006,7 +4006,7 @@ static int ParseUValue(GWindow gw, int cid, int minusoneok, SplineFont *sf) {
 	val = u_strtoul(ret,&end,16);
     if ( val==-1 && minusoneok )
 return( -1 );
-    if ( *end || val<0 || val>0x1ffff ) {
+    if ( *end || val<0 || val>0x10ffff ) {
 	ProtestR( _STR_UnicodeValue );
 return( -2 );
     } else if ( val>65535 && sf->encoding_name->is_unicodebmp ) {
