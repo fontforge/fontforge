@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 18-Apr-2005 -->
+  <!-- AP: Last modified: 8-May-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
 <!--<TITLE>Frequently Asked Questions</TITLE>-->
     <TITLE>よくある質問</TITLE>
@@ -156,6 +156,14 @@
 <!--<A HREF="faq.html#Open-difference">What's the difference between OpenType
     and PostScript (or TrueType) fonts?</A> -->
     <A HREF="#Open-difference">OpenType と PostScript (や TrueType) フォントはどこが違うのか?</A>
+  <LI>
+<!--<A HREF="faq.html#AAT-Open">What is the difference between AAT (Apple Advanced
+    Typography) and OpenType?</A> -->
+    <A HREF="faq.html#AAT-Open">AAT (Apple Advanced Typography) と OpenType はどこが違うのか?</A>
+  <LI>
+<!--<A HREF="#Tiger-Open">Why does a font, which worked fine under 10.3 fail
+    on Mac 10.4 (Tiger)?</A> -->
+    <A HREF="#Tiger-Open">Mac OS X 10.3 でうまく動いていたフォントが 10.4 (Tiger) で動かないのはなぜか?</A>
   <LI>
 <!--<A HREF="#cidmaps">What on earth are the cidmap files, and should I care
     about them?</A> -->
@@ -1431,8 +1439,48 @@ MANPATH=${MANPATH:-}:/usr/local/man ; export MANPATH
     and .pfb files. pfa/b files are Type1 fonts while OpenType uses Type2 fonts.
     Type2 is almost a superset of Type1 with a few minor changes and many extensions.
     Adobe's subroutine based extensions to Type1 (flex hints, hint substitution,
-    counter hints) have been added to Type2 as direct instructions. -->
-    OpenType で使われている PostScript のグリフフォーマットは、.pfa および .pfb ファイルで使用されている物とはわずかな違いがあります。pfa/b ファイルで使用されているのは Type1 フォントであり、OpenType では Type2 フォントを使用します。Type2 は Type1 のほとんど完全なスーパーセットで、わずかな変更点と多数の拡張を Type1 に加えたものです。Adobe による、Type1 へのサブルーチンをベースとした拡張  (flex ヒント、ヒント置換、カウンタヒント) は、Type2 では直接命令として追加されています。
+    counter hints) have been added to Type2 as direct instructions.<BR> -->
+    OpenType で使われている PostScript のグリフフォーマットは、.pfa および .pfb ファイルで使用されている物とはわずかな違いがあります。pfa/b ファイルで使用されているのは Type1 フォントであり、OpenType では Type2 フォントを使用します。Type2 は Type1 のほとんど完全なスーパーセットで、わずかな変更点と多数の拡張を Type1 に加えたものです。Adobe による、Type1 へのサブルーチンをベースとした拡張  (flex ヒント、ヒント置換、カウンタヒント) は、Type2 では直接命令として追加されています。<BR>
+<!--OpenType can also include additional information (see
+    <A HREF="#AAT-Open">below</A>) that allows for the layout of complex scripts
+    (Arabic, Indic, etc.) as when as support for glyph variants and other aspects
+    of fine typography. -->
+    OpenType もまた、複雑な用字系 (アラビア文字、インド系文字など) の行組版や、洗練されたタイポグラフィのための合字などの要素をサポートするための追加の情報 (<A HREF="#AAT-Open">次項</A>参照) を含むことができます。
+  <DT>
+<!--<A NAME="AAT-Open"><B>What is the difference between AAT (Apple Advanced
+    Typography) and OpenType?</B></A> -->
+    <A NAME="AAT-Open"><B>AAT (Apple Advanced Typography) と OpenType はどこが違うのか?</B></A>
+  <DD>
+<!--Both of these are extensions to the basic TrueType font which can contain
+    information for laying out complex scripts (like Arabic or Indic scripts)
+    as well as support for glyph variants and other aspects of fine typography.
+    They use totally different internal formats for the more complex aspects
+    of this task, formats which have different expressive powers so that neither
+    format can be converted to the other without the possibility for some loss
+    of information. I discuss this in greater detail -->
+    これらは両方とも、(アラビア文字やインド系文字などの) 複雑な用字系の行組版を行ったり、洗練されたタイポグラフィのための異体字などの要素をサポートするために、基本的な TrueType フォントに加えた拡張です。両者は、その複雑な部分に関しては全く異なる内部フォーマットを使用しており、それぞれのフォーマットは表現力に違いがあるため、どちらのフォーマットも情報を失う可能性無しにもう片方のフォーマットに変換することはできません。私はこれに関する非常に詳細な議論を以下で行っています:
+    <UL>
+      <LI>
+<!--	<A HREF="editexample6-5.html#Conditional">In the tutorial</A> -->
+	<A HREF="editexample6-5.html#Conditional">チュートリアルの一節で</A>
+      <LI>
+<!--	<A HREF="gposgsub.html" TARGET="_top">In the section on advanced typography</A> -->
+	<A HREF="gposgsub.html" TARGET="_top">高度組版機能のセクションで</A>
+    </UL>
+  <DT>
+<!--<A NAME="Tiger-Open"><B>Why does a font, which worked fine under 10.3 fail
+    on Mac 10.4 (Tiger)?</B></A> -->
+    <A NAME="Tiger-Open"><B>Mac OS X 10.3 でうまく動いていたフォントが 10.4 (Tiger) で動かないのはなぜか?</B></A>
+  <DD>
+<!--With Tiger (Mac OS/X.4) Apple added some support for OpenType. Some OpenType
+    features are converted (at runtime) into AAT features. This is good, but
+    not all features have corresponding Apple feature/settings, and not all lookups
+    can be converted (conditional lookups cannot be). Unfortunately if a font
+    contains both OpenType and AAT features Apple now ignores the AAT features.
+    The result is that AAT features, which presumably work, will not be used,
+    while OpenType features, which are not completely supported and so won't
+    work, are used instead. -->
+    Tiger (Mac OS X 10.4) で、Apple は OpenType の何らかのサポートを開始しました。OpenType の機能の一部は (実行時に) AAT の機能に変換されます。これはいい考えですが、全ての機能が対応する Apple の機能/設定をもっているわけではなく、全ての照合が変換できるわけではありません (条件つき照合は変換できません)。不幸なことに、あるフォントに OpenType と AAT 機能の両方が含まれている場合、Apple は今度から AAT 機能を無視するようになりました。結果として、動くはずの AAT 機能が使われなくなってしまい、その代わりに、完全にサポートされておらず動作しない OpenType 機能が使用されることになってしまいました。
   <DT>
 <!--<A NAME="save-no-change"><B>After I generate a font and quit, why does FontForge
     ask if I want to save the font? I didn't change anything.</B></A> -->
