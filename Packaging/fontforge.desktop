@@ -1,6 +1,8 @@
 [Desktop Entry]
 Name=FontForge
+Name[zh_TW]=FontForge 字型鑄造場
 Comment=An outline font editor
+Comment[zh_TW]=描邊字型編輯器
 Exec=fontforge
 Icon=ffanvil32.gif
 Terminal=false
