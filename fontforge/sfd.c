@@ -184,7 +184,7 @@ static char *SFDReadUTF7Str(FILE *sfd) {
 static unichar_t *SFDReadUTF7Str(FILE *sfd) {
     unichar_t *buffer = NULL, *pt, *end = NULL;
 #endif
-    int ch1, ch2, ch3, ch4, done;
+    int ch1, ch2, ch3, ch4, done, c;
     int prev_cnt=0, prev=0, in=0;
 
     ch1 = getc(sfd);
@@ -217,9 +217,23 @@ return( NULL );
 		done = true;
 	    } else {
 		ch1 = inbase64[ch1];
-		ch2 = inbase64[getc(sfd)];
-		ch3 = inbase64[getc(sfd)];
-		ch4 = inbase64[getc(sfd)];
+		ch2 = inbase64[c = getc(sfd)];
+		if ( ch2==-1 ) {
+		    ungetc(c, sfd);
+		    ch2 = ch3 = ch4 = 0;
+		} else {
+		    ch3 = inbase64[c = getc(sfd)];
+		    if ( ch3==-1 ) {
+			ungetc(c, sfd);
+			ch3 = ch4 = 0;
+		    } else {
+			ch4 = inbase64[c = getc(sfd)];
+			if ( ch4==-1 ) {
+			    ungetc(c, sfd);
+			    ch4 = 0;
+			}
+		    }
+		}
 		ch1 = (ch1<<18) | (ch2<<12) | (ch3<<6) | ch4;
 		if ( prev_cnt==0 ) {
 		    prev = ch1&0xff;
