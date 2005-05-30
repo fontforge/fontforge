@@ -704,7 +704,7 @@ Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
     BasePoint nextcp;
     int bettern, betterp;
     double offn, offp, incrn, incrp, trylen;
-    int nocnt = 0;
+    int nocnt = 0, totcnt;
     double curdiff, bestdiff;
     int i,j,besti,bestj;
     double fdiff, tdiff;
@@ -833,6 +833,7 @@ return( SplineMake2(from,to));
     offn = flen; offp = tlen;
     nocnt = 0;
     curdiff = SigmaDeltas(spline,mid,cnt);
+    totcnt = 0;
     forever {
 	double fadiff, fsdiff;
 	double tadiff, tsdiff;
@@ -897,6 +898,8 @@ return( SplineMake2(from,to));
 	    incrp /= 2;
 	}
 	if ( incrp<tlen/128 || incrn<tlen/128 )
+    break;
+	if ( ++totcnt>10000 )
     break;
     }
 
