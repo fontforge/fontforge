@@ -511,6 +511,8 @@ return( false );
     for ( start=glyphnames; *start; start = end ) {
 	while ( *start==' ' ) ++start;
 	for ( end = start; *end!=' ' && *end!='\0'; ++end );
+	if ( end==start )
+    break;
 	ch = *end; *end = '\0';
 	ret = SCWorthOutputting(SFGetCharDup(sf,-1,start));
 	*end = ch;
