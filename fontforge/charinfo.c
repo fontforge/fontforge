@@ -2509,7 +2509,7 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	    label[i].text = (unichar_t *) _STR_Default;
 	    label[i].text_in_resource = true;
 	    gcd[i].gd.label = &label[i];
-	    gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[9].gd.pos.y+28;
+	    gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[11].gd.pos.y+28;
 	    gcd[i].gd.flags = gg_enabled|gg_visible;
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    gcd[i].gd.popup_msg = GStringGetResource(_STR_MarkToBaseLig,NULL);
@@ -2542,9 +2542,9 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 #endif
 	    gcd[i++].creator = GRadioCreate;
 
-	    if ( act_type==act_mark ) gcd[10].gd.flags |= gg_cb_on;
-	    else if ( act_type==act_mkmk ) gcd[11].gd.flags |= gg_cb_on;
-	    else gcd[12].gd.flags |= gg_cb_on;
+	    if ( act_type==act_mark ) gcd[12].gd.flags |= gg_cb_on;
+	    else if ( act_type==act_mkmk ) gcd[13].gd.flags |= gg_cb_on;
+	    else gcd[14].gd.flags |= gg_cb_on;
 
 	    label[i].text = (unichar_t *) _STR_MergeWith;
 	    label[i].text_in_resource = true;
@@ -2674,9 +2674,9 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	if ( GGadgetIsChecked(gcd[9].ret) ) flags |= pst_ignorecombiningmarks;
 	flags |= (GGadgetGetFirstListSelectedItem(gcd[11].ret))<<8;
 	if ( merge_with!=-1 ) {
-	    merge_with = (int) (GGadgetGetListItemSelected(gcd[14].ret)->userdata);
-	    act_type = GGadgetIsChecked(gcd[10].ret) ? act_mark :
-			GGadgetIsChecked(gcd[11].ret) ? act_mkmk : act_curs;
+	    merge_with = (int) (GGadgetGetListItemSelected(gcd[16].ret)->userdata);
+	    act_type = GGadgetIsChecked(gcd[12].ret) ? act_mark :
+			GGadgetIsChecked(gcd[13].ret) ? act_mkmk : act_curs;
 	}
 	ret = ClassName(name,tag,flags,script_lang_index,merge_with,act_type,
 		macfeature,sf);
