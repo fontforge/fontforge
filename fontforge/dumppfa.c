@@ -1789,7 +1789,7 @@ static void dumptype42(FILE *out, SplineFont *sf, int format, int flags ) {
 	fprintf( out, "%%%%IncludeResource: ProcSet (CIDInit)\n" );
 	fprintf( out, "%%%%BeginResource: CIDFont %s\n", (cidmaster!=NULL?cidmaster:sf)->fontname );
     } else
-	fprintf( out, "%%!-PS-TrueTypeFont\n" );	/* Ignore the ttf version info */
+	fprintf( out, "%%!PS-TrueTypeFont\n" );	/* Ignore the ttf version info */
 	    /* Too hard to do right, and if done right doesn't mean much to */
 	    /* a human observer */
     dumpfontcomments((DumpChar)fputc,out,cidmaster!=NULL?cidmaster:sf,format);
