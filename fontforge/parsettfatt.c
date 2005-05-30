@@ -1846,6 +1846,8 @@ return;
 		strcat(pt,info->chars[glyph2s[j]]->name);
 		strcat(pt," ");
 	    }
+	    if ( *pt!='\0' && pt[strlen(pt)-1]==' ' )
+		pt[strlen(pt)-1] = '\0';
 	}
     }
     free(glyphs);
