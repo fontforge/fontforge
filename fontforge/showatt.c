@@ -2489,6 +2489,7 @@ static void AttResize(struct att_dlg *att,GEvent *event) {
 
 static int AttChar(struct att_dlg *att,GEvent *event) {
     int depth = 0;
+    int pos;
 
     switch (event->u.chr.keysym) {
       case GK_F1: case GK_Help:
@@ -2502,11 +2503,27 @@ return( true );
 
 	GDrawRequestExpose(att->v,NULL,false);
 return( true );
+      case GK_Page_Down: case GK_KP_Page_Down:
+	pos = att->off_top+(att->lines_page<=1?1:att->lines_page-1);
+	if ( pos >= att->open_cnt-att->lines_page )
+	    pos = att->open_cnt-att->lines_page;
+	if ( pos<0 ) pos = 0;
+	att->off_top = pos;
+	GScrollBarSetPos(att->vsb,pos);
+	GDrawRequestExpose(att->v,NULL,false);
+return( true );
       case GK_Down: case GK_KP_Down:
 	ATTChangeCurrent(att,NodeNext(att->current,&depth));
 return( true );
       case GK_Up: case GK_KP_Up:
 	ATTChangeCurrent(att,NodePrev(att,att->current,&depth));
+return( true );
+      case GK_Page_Up: case GK_KP_Page_Up:
+	pos = att->off_top-(att->lines_page<=1?1:att->lines_page-1);
+	if ( pos<0 ) pos = 0;
+	att->off_top = pos;
+	GScrollBarSetPos(att->vsb,pos);
+	GDrawRequestExpose(att->v,NULL,false);
 return( true );
       case GK_Left: case GK_KP_Left:
 	ATTChangeCurrent(att,att->current->parent);
