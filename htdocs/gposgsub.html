@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 22-Mar-2005 -->
+  <!-- AP: Last modified: 30-May-2005 -->
   <TITLE>Advanced Typography tables</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -829,6 +829,17 @@ capabilities beyond those of AAT. Currently this means:
 FontForge does not even try to convert an AAT contextual glyph substitution
 sub-table, too few of these can be expressed in OpenType to make it worth
 while.
+<P>
+NOTE: It would be possible to convert more lookups to state machines if FontForge
+were willing to:
+<OL>
+  <LI>
+    Use several state machines to represent complicated lookups
+  <LI>
+    Add additional glyphs to the font to be used as temporary state flags.
+</OL>
+<P>
+FontForge will do neither of these.
 <H4>
   <FONT COLOR="Red">BUG</FONT>
 </H4>
