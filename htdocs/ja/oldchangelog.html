@@ -1360,125 +1360,169 @@ HheadDOffset: 1
 	狩野からのパッチ。MS は縦書き用フォントの GSUB のフォーマットに奇妙な制約を課しています。
     </UL>
   <LI>
-    29-Mar-2004
+<!--29-Mar-2004-->
+    2004年3月29日
     <UL>
       <LI>
-	When Type1 output needed to output a reference as inline splines (as opposed
+<!--	When Type1 output needed to output a reference as inline splines (as opposed
 	to a subroutine call or using a seac command) then it would lose any translation
-	applied to that reference.
+	applied to that reference. -->
+	Type1 出力において、参照を (サブルーチンコールや seac コマンドではなく) インラインスプラインとして出力する必要がある場合、その参照に適用されたすべての平行移動が失われていました。
       <LI>
-	Patch to Type3 output from R.L.Horn
+<!--	Patch to Type3 output from R.L.Horn -->
+	R.L.Horn による Type3 出力へのパッチ。
       <LI>
 	FontForge used to crash when reading in a bdf glyph with a bad bounding box.
+	バウンディングボックスが不正な BDF グリフを読み込むと FontForge がクラッシュしていました。
       <LI>
-	Reading a kerning class from an sfd file when that class had more second
+<!--	Reading a kerning class from an sfd file when that class had more second
 	character classes than first character classes would screw up memory and
-	probably cause a crash.
+	probably cause a crash. -->
+	SFD ファイルからのカーニングクラスを読み込んだときに、そのクラスの第 1 文字クラスよりも第 2 文字クラスのほうが多い場合、メモリを使い尽くしておそらくクラッシュしていました。
       <LI>
-	Attempting to edit a 'cvt ' table in a font without one caused a crash.
-	Attempting to edit a 'cvt ' table in a font with one showed an empty table.
+<!--	Attempting to edit a 'cvt ' table in a font without one caused a crash.
+	Attempting to edit a 'cvt ' table in a font with one showed an empty table. -->
+	'cvt ' テーブルが存在しないフォントで、テーブルを編集しようとするとクラッシュを起こしていました。
+	'cvt ' テーブルが 1 個存在するフォントでテーブルを編集しようとすると～のテーブルが表示されていました。
       <LI>
-	Make scaling from the fontview apply to kerning and positioning data.
+<!--	Make scaling from the fontview apply to kerning and positioning data. -->
+	フォントビューからの拡大・縮小をカーニングと位置指定のデータにも適用。
       <LI>
-	Drawing a rectangle by dragging from center out didn't work
+<!--	Drawing a rectangle by dragging from center out didn't work -->
+	中央からのドラッグによる長方形の描画がうまくできませんでした。
       <LI>
-	Display phantom points when debugging. Be prepared to find either 2 (horizontal
+<!--	Display phantom points when debugging. Be prepared to find either 2 (horizontal
 	metrics) or 4 (both horizontal or vertical) depending on what version of
-	freetype we've got.
+	freetype we've got. -->
+	デバッグ時にファントムポイントを表示。インストールされている FreeType のバージョンにより、点を 2 個 (水平メトリック) 探すかまたは 4 個 (水平と垂直の両方) 探すかのどちらにも対応。
       <LI>
-	Bug in both reading and writing encoding format 0 of cff fonts. I forgot
-	to ignore .notdef so everything was off by 1.
+<!--	Bug in both reading and writing encoding format 0 of cff fonts. I forgot
+	to ignore .notdef so everything was off by 1. -->
+	エンコーディングフォーマット 0 の CFF フォントの読み書き両方にバグがありました。.notdef を無視するのを忘れていたので、全部が 1 個ずれていました。
       <LI>
-	If a glyph was used as a reference in another glyph, and we put it in a
+<!--	If a glyph was used as a reference in another glyph, and we put it in a
 	subroutine (type1 output), and it had hint conflicts, then the first group
-	of hints never got output.
+	of hints never got output. -->
+	グリフが他のグリフへの参照として使われており、そのグリフ (の Type1 出力) にサブルーチンを追加した場合、ヒントに衝突があると、最初のヒントグループが全く出力されていませんでした。
       <LI>
-	In multilayered mode, the Revert Glyph command left memory in a potentially
+<!--	In multilayered mode, the Revert Glyph command left memory in a potentially
 	bad state. (If you immediately closed the charview, then nothing bad would
-	happen, but if you tried any editing in it, then nasty things happened.)
+	happen, but if you tried any editing in it, then nasty things happened.) -->
+	マルチレイヤモードでは、「グリフを戻す(Y)」コマンドを実行語に、メモリに潜在的な矛盾のある状態が残っていました。(その直後に文字ビューを閉じれば何も問題は起こりませんが、それを編集しようとすると、不愉快な事が起こります。
     </UL>
   <LI>
-    21-Mar-2004
+<!--21-Mar-2004-->
+    2004年3月21日
     <UL>
       <LI>
-	When flattening a CID file fontforge lost track of the script/lang list (and
-	other things) which caused bugs when dealing with substitutions
+<!--	When flattening a CID file fontforge lost track of the script/lang list (and
+	other things) which caused bugs when dealing with substitutions -->
+	CID ファイルを単一化する時、FontForge は用字系/言語リストの記録 (とその他のデータ) を失っており、それが置換を行うときのバグを誘発していました。
       <LI>
-	When saving multiply, fontforge could free a fonts hash table several times
+<!--	When saving multiply, fontforge could free a fonts hash table several times -->
+	複数保存を行うと、FontForge がハッシュテーブルを何回も free する可能性がありました。
       <LI>
-	When flattening by a CMAP file from a script fontforge could crash
+<!--	When flattening by a CMAP file from a script fontforge could crash -->
+	スクリプトから CMap ファイル指定による単一化を行おうとすると、FontForge がクラッシュする可能性がありました。
       <LI>
-	Added a CIDFlatten command to scripting.
+<!--	Added a CIDFlatten command to scripting. -->
+	スクリプトに CIDFlatten コマンドを追加。
       <LI>
-	The "cleanup of OS/2" on 29-Feb actually broke WinAscent/Descent
+<!--	The "cleanup of OS/2" on 29-Feb actually broke WinAscent/Descent -->
+	2月29日の「OS/2 テーブルのバグ取り」で、実際には WinAscent/Descent が壊れていました。
       <LI>
-	When loading a mac unicode string from the 'name' table, fontforge failed
-	to convert the language correctly.
+<!--	When loading a mac unicode string from the 'name' table, fontforge failed
+	to convert the language correctly. -->
+	'name' テーブルから Mac の Unicode 文字列を読み込むとき、FontForge は言語を正しく変換できていませんでした。
       <LI>
-	When loading a mac contextual substitution statemachine, fontforge made egregious
+<!--	When loading a mac contextual substitution statemachine, fontforge made egregious
 	errors in guessing to what glyphs were usable for a substitution of the marked
-	glyph.
+	glyph. -->
+	Mac の文脈依存置換の状態機械を読み込むとき、FontForge はマークつきグリフの置換にどのグリフが使用できるかを推測するのにとんでもない間違いを犯していました。
       <LI>
-	Added the current encoding to the font's window title (also display a flag
-	to show whether the font has been changed)
+<!--	Added the current encoding to the font's window title (also display a flag
+	to show whether the font has been changed) -->
+	フォントのウィンドウタイトルに現在の符号化方式を追加しました (また、フォントが変更されたかどうかを示すフラグも追加しました)。
       <LI>
-	When moving points around on an order2 contour fontforge could end up with
+<!--	When moving points around on an order2 contour fontforge could end up with
 	bad control points and would then produce annoying internal errors alerting
-	the user to this fact.
+	the user to this fact. -->
+	2 次の輪郭上にある点を動かしているときに、FontForge が算出する制御点が不正な位置に到達することがあり、その事実をユーザに警告する煩わしい内部エラー表示が出ていました。
       <LI>
-	The CID Flatten commands did not work when the view was compacted.
+<!--	The CID Flatten commands did not work when the view was compacted. -->
+	CID の単一化コマンドが、定義済みのグリフのみを表示しているときには動いていませんでした。
       <LI>
-	CharInfo had been deliberately disabled in CID fonts
+<!--	CharInfo had been deliberately disabled in CID fonts -->
+	CID フォントでは文字情報がわざと使用できないようになっていました。
       <LI>
-	Show ATT didn't work with CID keyed fonts
+<!--	Show ATT didn't work with CID keyed fonts -->
+	CID キー指定フォントでは「ATT を表示(S)」が動いていませんでした。
       <LI>
-	The preference mapping between mac and opentype small caps features was wrong.
+<!--	The preference mapping between mac and opentype small caps features was wrong. -->
+	Mac と OpenType のスモールキャップス機能間を対応づける選択肢が誤っていました。
       <LI>
-	Werner found a strange bug in splinefill that I can't reproduce (and can't
-	understand how it could happen) but the fix appears obvious.
+<!--	Werner found a strange bug in splinefill that I can't reproduce (and can't
+	understand how it could happen) but the fix appears obvious. -->
+	Werner は、私が再現できない (し、なぜそれが起こるのか理解できない) splinefill の奇妙なバグを発見しましたが、その修正は自明な物でした。
       <LI>
-	Add a command to show what glyphs use the current glyph in a substitution
+<!--	Add a command to show what glyphs use the current glyph in a substitution
 	(so "A.swash" would show that "A" used it, and "i" would show that "fi" used
-	it).
+	it). -->
+	現在のグリフが置換においてどのグリフを使用するかを表示するコマンドを追加しました (例えば "A.swash" では "A" を表示し、"i" では "fi" がそれを使用する旨を表示するでしょう)。
       <LI>
-	Changed the extension shown in the Generate Fonts dlg for multiple saves
+<!--	Changed the extension shown in the Generate Fonts dlg for multiple saves
 	to ".pfb". Put in a %s to make it obvious that more will be added to the
-	name. Support people who want .pfa fonts too.
+	name. Support people who want .pfa fonts too. -->
+	複数保存
+	".pfb" の複数保存に対してフォント出力ダイアログで表示される拡張子変更しました。名前に何かが追加されることをより明白に示すように %s を挿入しました。.pfa フォントでも、それらのユーザ補助を行うようにしました。
       <LI>
-	The dialog for adding/editing correspondences between mac feature/settings
-	and opentype features never went away.
+<!--	The dialog for adding/editing correspondences between mac feature/settings
+	and opentype features never went away. -->
+	Mac の機能/設定と OpenType の機能の間の対応を追加/編集するためのダイアログが全く消えませんでした。
       <LI>
-	Disable the Default ATT menu if no char is selected in the fontview.
+<!--	Disable the Default ATT menu if no char is selected in the fontview. -->
+	フォントビューで文字が選択されていないときには「デフォルトのATT」メニューを使用不可能にしました。
       <LI>
-	FontForge sometimes had trouble drawing the correct rotated glyph in cid
-	fonts on the display lines of the fontview.
+<!--	FontForge sometimes had trouble drawing the correct rotated glyph in cid
+	fonts on the display lines of the fontview. -->
+	FontForge は、CID フォントで正しく回転されたグリフをフォントビューの表示行で描画するのに問題がありました。
       <LI>
-	Changed the way names used in cidmap files, so there are new cidmap files
-	now.
+<!--	Changed the way names used in cidmap files, so there are new cidmap files
+	now. -->
+	名前が cidmap ファイルで使用される方法を変更したので、cidmap ファイルをこのたび更新しました。
       <LI>
-	The ShowAtt dialog could overwrite itself if there were enough aats in it.
+<!--	The ShowAtt dialog could overwrite itself if there were enough aats in it.
 	(and at one point the vertical scroll bar was set to the bounds of the horizontal
-	scroll bar)
+	scroll bar) -->
+	[ATT を表示] ダイアログは、AAT が多数含まれていると自分自身を上書きする可能性がありました (そして、ある一点において、垂直スクロールバーが水平スクロールバーの境界上に設定されていました)。
       <LI>
-	Still getting the windows ascent/descent wrong. This time in CID keyed fonts.
+<!--	Still getting the windows ascent/descent wrong. This time in CID keyed fonts. -->
+	ウィンドウのアセント/ディセントがまだ間違っていました。今回は CID キー指定フォントです。
       <LI>
-	Add some new language translations for things like "Bold" (dutch, swedish,
-	norwegian)
+<!--	Add some new language translations for things like "Bold" (dutch, swedish,
+	norwegian) -->
+	"Bold" などの単語の翻訳に新たな言語版 (オランダ語、スウェーデン語、ノルウェー語) を追加しました。
       <LI>
-	Dragging and dropping a char from the font view into the char info dlg (to
-	create a substitution) created a crash instead.
+<!--	Dragging and dropping a char from the font view into the char info dlg (to
+	create a substitution) created a crash instead. -->
+	フォントビューから文字ビューダイアログへのドラッグ&amp;ドロップが (置換を作成するために) 行えるようにしたはずが、クラッシュを引き起こしていました。
       <LI>
-	Support more of postscript in the interpreter
+<!--	Support more of postscript in the interpreter -->
+	インタプリタが、より複雑な PostScript をサポート。
       <LI>
-	Our svg fonts pointed to a not-yet-existing dtd file
+<!--	Our svg fonts pointed to a not-yet-existing dtd file -->
+	出力した SVG フォントがまだ存在しない DTD ファイルを指していました。
       <LI>
-	Support for Apple's distortable fonts (sort of like truetype multi-master
-	fonts)
+<!--	Support for Apple's distortable fonts (sort of like truetype multi-master
+	fonts) -->
+	Apple の変形可能フォント (TrueType における一種のマルチプルマスターフォント) のサポート。
       <LI>
-	Depressing the control key now makes popups live longer (until the mouse
-	moves).
+<!--	Depressing the control key now makes popups live longer (until the mouse
+	moves). -->
+	Control キーを押すと、ポップアップが表示される時間を (マウスを動かすまで) 延長するようにしました。
       <LI>
-	new command in MM menu: Blend to new font
+<!--	new command in MM menu: Blend to new font -->
+	MM メニューへの新コマンド: 補間結果を新フォントに(B)
     </UL>
   <LI>
     2-Mar-2004
