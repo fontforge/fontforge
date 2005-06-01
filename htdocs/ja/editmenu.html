@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 10-Mar-2005 -->
+  <!-- AP: Last modified: 30-May-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
 <!--<TITLE>The Edit Menu</TITLE>--> 
     <TITLE>編集メニュー</TITLE>
@@ -60,8 +60,8 @@ in text fields. -->
 <!--<A HREF="#PasteInto">Paste Into</A>-->
     <A HREF="#PasteInto">追加貼り付け</A>
   <LI>
-<!--<A HREF="#PasteAfter"><SMALL>Paste After</SMALL></A>-->
-    <A HREF="#PasteAfter"><SMALL>隣に貼り付け</SMALL></A>
+<!--<A HREF="#PasteAfter">Paste After</A>-->
+    <A HREF="#PasteAfter">隣に貼り付け</A>
   <LI>
 <!--<A HREF="#SameGlyphAs">Same Glyph As</A>-->
     <A HREF="#SameGlyphAs">同じグリフとして設定(M)</A>
@@ -446,6 +446,14 @@ view this menu will be disabled when one of the text fields has the focus. -->
 <!--<A HREF="pfaeditmath.html#Approximating">How is this done?</A>-->
     <A HREF="pfaeditmath.html#Approximating">どうやって処理しているのか?</A>
   <DT>
+<!--<A NAME="Elide">Elide</A>-->
+    <A NAME="Elide">省略(E)</A>
+  <DD>
+<!--This is a variant of the Merge command, obtained by holding down the shift
+    key when bringing down the menu (or by Ctl-Alt-M). Allows the slopes of points
+    to change.-->
+    これは合併コマンドの変種です。Shift キーを押しながらメニューを表示する (または Ctrl-Alt-M を押す) と実行できます。点の傾きが変化することを許します。
+  <DT>
 <!--<A NAME="Join">Join</A>-->
     <A NAME="Join">線の接合(J)</A>
   <DD>
@@ -458,14 +466,6 @@ view this menu will be disabled when one of the text fields has the focus. -->
     selected points on them it will only attempt to join those paths.-->
     このコマンドはビットマップビューでは使用できません。このコマンドは、端点の上に他の端点が重なっているようなパスを探し、それら 2 つをつなぎ合わせます。同時に、あるパスの端点がそのパスの始点と同じ場所にあるならば、そのパスをループに変換します (点を移動するコマンドはこれを自動的に行いますが、貼り付け(P) は行いません)。<BR>
     アウトラインビューでは事情はもう少し複雑です: 選択された点を含むパス以外は処理の対象にしません。
-  <DT>
-<!--<A NAME="Elide">Elide</A>-->
-    <A NAME="Elide">省略(E)</A>
-  <DD>
-<!--This is a variant of the Merge command, obtained by holding down the shift
-    key when bringing down the menu (or by Ctl-Alt-M). Allows the slopes of points
-    to change.-->
-    これは合併コマンドの変種です。Shift キーを押しながらメニューを表示する (または Ctrl-Alt-M を押す) と実行できます。点の傾きが変化することを許します。
   <DT>
 <!--<A NAME="CopyFg">Copy Fg To Bg</A>-->
     <A NAME="CopyFg">背景にコピー(F)</A>
