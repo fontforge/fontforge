@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 22-Mar-2005 -->
+  <!-- AP: Last modified: 30-May-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
 <!--<TITLE>Advanced Typography tables</TITLE> -->
     <TITLE>高度組版機能テーブル (ATT)</TITLE>
@@ -1069,6 +1069,23 @@ FontForge does not even try to convert an AAT contextual glyph substitution
 sub-table, too few of these can be expressed in OpenType to make it worth
 while. -->
 FontForge は、AAT の文脈依存グリフ置換サブテーブルを変換しようと試みることすらありません。OpenType に変換可能な場合があまりにも少なくて、試みる価値がないからです。
+<P>
+<!--
+NOTE: It would be possible to convert more lookups to state machines if FontForge
+were willing to: -->
+注意: もし FontForge が以下の処理を行えば、より多くの照合を状態機械に変換することができるでしょう:
+<OL>
+  <LI>
+<!--Use several state machines to represent complicated lookups -->
+    複雑な照合を表現するためにいくつかの状態機械を使う
+  <LI>
+<!--Add additional glyphs to the font to be used as temporary state flags. -->
+    一時的な状態フラグとして、追加のグリフをフォントに付け加える
+</OL>
+<P>
+<!--
+FontForge will do neither of these. -->
+これらの両方とも、FontForge が実現する予定はありません。
 <H4>
 <!--<FONT COLOR="Red">BUG</FONT>-->
     <FONT COLOR="Red">バグ</FONT>
