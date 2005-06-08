@@ -1544,13 +1544,15 @@ return;
 static void checkrightfont(PI *pi,SplineChar *sc) {
     if ( pi->printtype==pt_pdf ) {
 	if ( (sc->enc>>8)!=pi->lastfont && !pi->iscid ) {
-	    if ( pi->intext ) { fprintf( pi->out, "> Tj"); pi->intext = false; }
+	    if ( pi->intext ) { fprintf( pi->out, ">] TJ"); pi->intext = false; }
 	    fprintf( pi->out, "\n/F%d %d Tf\n", pi->fonts[sc->enc>>8], pi->pointsize );
+	    pi->lastfont = (sc->enc>>8);
 	} else if ( pi->lastfont==-1 && pi->iscid ) {
-	    if ( pi->intext ) { fprintf( pi->out, "> Tj"); pi->intext = false; }
+	    if ( pi->intext ) { fprintf( pi->out, ">] TJ"); pi->intext = false; }
 	    fprintf( pi->out, "\n/F0 %d Tf\n", pi->pointsize );
+	    pi->lastfont = -1;
 	}
-	if ( !pi->intext ) { fprintf( pi->out, "<" ); pi->intext = true; }
+	if ( !pi->intext ) { fprintf( pi->out, "[<" ); pi->intext = true; }
     }
 }
 
@@ -1614,7 +1616,7 @@ return( len );
 static void PIDoCombiners(PI *pi, SplineChar *sc, unichar_t *accents) {
     DBounds bb, rbb;
     SplineChar *asc;
-    real xmove=sc->width*pi->scale, ymove=0;
+    real xmove=sc->width, ymove=0;
     extern int accent_offset;	/* in prefs.c */
     real spacing = (pi->sf->ascent+pi->sf->descent)*accent_offset/100;
     real xoff, yoff;
@@ -1660,21 +1662,27 @@ static void PIDoCombiners(PI *pi, SplineChar *sc, unichar_t *accents) {
 		    xoff = bb.minx - rbb.minx + ((bb.maxx-bb.minx)-(rbb.maxx-rbb.minx))/2;
 	    }
 	    if ( pi->printtype==pt_pdf ) {
-		if ( pi->intext ) { fprintf( pi->out, "> Tj"); pi->intext = false; }
-		fprintf( pi->out, " %g %g Td ",
-			xoff*pi->scale-xmove, yoff*pi->scale-ymove);
+		if ( yoff-ymove!=0 ) {
+		    if ( pi->intext ) { fprintf( pi->out, ">] TJ "); pi->intext = false; }
+		    fprintf( pi->out, " %g Ts ", yoff-ymove );
+		    fprintf( pi->out, "[ %g <", -(xoff-xmove) );
+		} else {
+		    if ( pi->intext )
+			fprintf( pi->out, "> %g <", -(xoff-xmove) );
+		    else
+			fprintf( pi->out, "[%g <", -(xoff-xmove) );
+		}
+		pi->intext = true;
 		checkrightfont(pi,asc);
 		outputchar(pi,asc);
-		fprintf( pi->out, "> Tj " );
-		pi->intext = false;
 	    } else {
 		fprintf( pi->out, "%g %g rmoveto <",
-			xoff*pi->scale-xmove, yoff*pi->scale-ymove);
+			(xoff-xmove)*pi->scale, (yoff-ymove)*pi->scale);
 		outputchar(pi,asc);
 		fprintf( pi->out, "> show " );
 	    }
-	    xmove = (xoff+asc->width)*pi->scale;
-	    ymove = yoff*pi->scale;
+	    xmove = (xoff+asc->width);
+	    ymove = yoff;
 	    if ( bb.maxx<rbb.maxx+xoff ) bb.maxx = rbb.maxx+xoff;
 	    if ( bb.minx>rbb.minx+xoff ) bb.minx = rbb.minx+xoff;
 	    if ( bb.maxy<rbb.maxy+yoff ) bb.maxy = rbb.maxy+yoff;
@@ -1683,10 +1691,20 @@ static void PIDoCombiners(PI *pi, SplineChar *sc, unichar_t *accents) {
 	++accents;
     }
     if ( !first ) {
-	if ( pi->printtype==pt_pdf )
-	    fprintf( pi->out, "%g %g Td ", sc->width*pi->scale-xmove, -ymove );
-	else
-	    fprintf( pi->out, "%g %g rmoveto <", sc->width*pi->scale-xmove, -ymove );
+	if ( pi->printtype==pt_pdf ) {
+	    if ( ymove!=0 ) {
+		if ( pi->intext ) { fprintf( pi->out, ">] TJ "); pi->intext = false; }
+		fprintf( pi->out, " %g Ts ", -ymove );
+		fprintf( pi->out, "[ %g <", -(sc->width-xmove) );
+	    } else {
+		if ( pi->intext )
+		    fprintf( pi->out, "> %g <", sc->width-xmove );
+		else
+		    fprintf( pi->out, "[%g <", sc->width-xmove );
+	    }
+	    pi->intext = true;
+	} else
+	    fprintf( pi->out, "%g %g rmoveto <", (sc->width-xmove)*pi->scale, -ymove*pi->scale );
     }
 }
 
@@ -1788,8 +1806,17 @@ static void PIDrawAnchors(PI *pi,SplineChar *sc, AnchorPos *apos) {
 
     while ( apos->sc != NULL ) {
 	if ( pi->printtype==pt_pdf ) {
-	    if ( pi->intext ) { fprintf( pi->out, "> Tj"); pi->intext = false; }
-	    fprintf(pi->out," %g %g Td ", (xoff+apos->x)*pi->scale, (yoff+apos->y)*pi->scale );
+	    if ( (yoff+apos->y)!=0 ) {
+		if ( pi->intext ) { fprintf( pi->out, ">] TJ "); pi->intext = false; }
+		fprintf( pi->out, " %d Ts ", (yoff+apos->y) );
+		fprintf( pi->out, "[ %d <", -(xoff+apos->x) );
+	    } else {
+		if ( pi->intext )
+		    fprintf( pi->out, "> %d <", -(xoff+apos->x) );
+		else
+		    fprintf( pi->out, "[%d <", -(xoff+apos->x) );
+	    }
+	    pi->intext = true;
 	    checkrightfont(pi,apos->sc);
 	} else
 	    fprintf(pi->out,"> show %g %g rmoveto <", (xoff+apos->x)*pi->scale, (yoff+apos->y)*pi->scale );
@@ -1801,8 +1828,17 @@ static void PIDrawAnchors(PI *pi,SplineChar *sc, AnchorPos *apos) {
     xoff += sc->width;
     if ( xoff!=0 || yoff!=0 ) {
 	if ( pi->printtype==pt_pdf ) {
-	    if ( pi->intext ) { fprintf( pi->out, "> Tj"); pi->intext = false; }
-	    fprintf(pi->out," %g %g Td ", xoff*pi->scale, yoff*pi->scale );
+	    if ( yoff!=0 ) {
+		if ( pi->intext ) { fprintf( pi->out, ">] TJ "); pi->intext = false; }
+		fprintf( pi->out, " %d Ts ", yoff );
+		fprintf( pi->out, "[ %d <", -xoff );
+	    } else {
+		if ( pi->intext )
+		    fprintf( pi->out, "> %d <", -xoff );
+		else
+		    fprintf( pi->out, "[%d <", -xoff );
+	    }
+	    pi->intext = true;
 	} else
 	    fprintf(pi->out,"> show %g %g rmoveto <", xoff*pi->scale, yoff*pi->scale );
     }
@@ -1847,8 +1883,11 @@ static void PIDumpChars(PI *pi, unichar_t *pt, unichar_t *ept, int xstart) {
 	    off = AnyKerns(sc,nsc);
 	    if ( off!=0 ) {
 		if ( pi->printtype==pt_pdf ) {
-		    if ( pi->intext ) { fprintf( pi->out, "> Tj"); pi->intext = false; }
-		    fprintf(pi->out," %g 0 Td ", off*pi->scale );
+		    if ( !pi->intext ) {
+			fprintf( pi->out, "[ %d <", -off);
+			pi->intext = true;
+		    } else
+			fprintf(pi->out,"> %d <", -off );
 		} else
 		    fprintf(pi->out,"> show %g 0 rmoveto <", off*pi->scale );
 	    }
@@ -1856,7 +1895,7 @@ static void PIDumpChars(PI *pi, unichar_t *pt, unichar_t *ept, int xstart) {
 	pt = npt;
     }
     if ( pi->printtype==pt_pdf ) {
-	if ( pi->intext ) { fprintf( pi->out, "> Tj\n"); pi->intext = false; }
+	if ( pi->intext ) { fprintf( pi->out, ">] TJ\n"); pi->intext = false; }
 	fprintf(pi->out, "ET\n" );
     } else
 	fprintf(pi->out, "> show\n" );
@@ -2009,6 +2048,7 @@ return;
 	    fprintf(pi->out,"/F%d %g Tf\n  <", pi->fonts[sc->enc/256], pointsizes[i]);
 	    outputchar(pi,sc);
 	    fprintf( pi->out, "> Tj\n" );
+	    /* Don't need to use TJ here, no possibility of kerning */
 	} else {
 	    if ( sc->enc>0xff )
 		fprintf(pi->out,"/%s-%x findfont %g scalefont setfont\n  <",
