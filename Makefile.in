@@ -53,7 +53,7 @@ install_libs: libs
 
 install_docs:
 	mkdir -p $(docdir)
-	mkdir $(docdir)/flags
+	mkdir -p $(docdir)/flags
 #explicit use of sh to make sure we don't invoke csh with different "if" syntax
 	-sh -c "if test -d htdocs/ja >/dev/null ; then mkdir -p $(docdir)/ja ; fi"
 	-cp htdocs/*.{html,png,gif,pdf} $(docdir)
