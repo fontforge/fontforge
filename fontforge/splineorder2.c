@@ -62,6 +62,8 @@ static int comparespline(Spline *ps, Spline *ttf, real tmin, real tmax, real err
     real d, o;
     real ttf_t, sq, val;
     DBounds bb;
+    double ts[3];
+    int i;
 
     /* Are all points on ttf near points on ps? */
     /* This doesn't answer that question, but rules out gross errors */
@@ -130,6 +132,20 @@ return( false );
 	    if ( val>o-err && val<o+err )
     continue;
 	}
+return( false );
+    }
+
+    /* Are representative points on ttf near points on ps? */
+    for ( t=.125; t<1; t+= .125 ) {
+	d = (ttf->splines[dim].b*t+ttf->splines[dim].c)*t+ttf->splines[dim].d;
+	o = (ttf->splines[other].b*t+ttf->splines[other].c)*t+ttf->splines[other].d;
+	SplineSolveFull(&ps->splines[dim],d,ts);
+	for ( i=0; i<3; ++i ) if ( ts[i]!=-1 ) {
+	    val = ((ps->splines[other].a*ts[i]+ps->splines[other].b)*ts[i]+ps->splines[other].c)*ts[i]+ps->splines[other].d;
+	    if ( val>o-err && val<o+err )
+	break;
+	}
+	if ( i==3 )
 return( false );
     }
 
