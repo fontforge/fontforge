@@ -499,6 +499,36 @@ return( true );
 return( false );
 }
 
+static int SameInstructionSet(DebugView *dv,TT_ExecContext exc) {
+    /* This is a guessing game. It's easy enough to detect when we call a */
+    /*  subroutine, but detecting changing glyphs in a composite glyph is */
+    /*  much harder */
+    int i;
+
+    if ( dv->id.instrs!=(uint8 *) exc->code )
+return( false );	/* We called (or returned from) a subroutine */
+
+    if ( dv->codeSize != exc->codeSize )
+return( false );	/* A glyph with a different number of instrs has been copied into the glyph instr area */
+
+    for ( i=0 ; i<sizeof(dv->initialbytes) && i<dv->codeSize; ++i )
+	if ( dv->initialbytes[i] != ((uint8 *) exc->code)[i] )
+return( false );
+
+return( true );		/* As best we can tell... */
+}
+
+static void ChangeCode(DebugView *dv,TT_ExecContext exc) {
+    int i;
+
+    dv->id.instrs =(uint8 *) exc->code;
+    dv->id.instr_cnt = exc->codeSize;
+    IIReinit(&dv->ii,exc->IP);
+    dv->codeSize = exc->codeSize;
+    for ( i=0 ; i<sizeof(dv->initialbytes) && i<dv->codeSize; ++i )
+	dv->initialbytes[i] = ((uint8 *) exc->code)[i];
+}
+    
 static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
     int range = exc==NULL ? cr_none : exc->curRange;
     CharView *cv = dv->cv;
@@ -508,10 +538,8 @@ static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
 	dv->id.instrs = NULL;
 	dv->id.instr_cnt = 0;
 	IIReinit(&dv->ii,-1);
-    } else if ( dv->id.instrs!=(uint8 *) exc->code ) {
-	dv->id.instrs =(uint8 *) exc->code;
-	dv->id.instr_cnt = exc->codeSize;
-	IIReinit(&dv->ii,exc->IP);
+    } else if ( !SameInstructionSet(dv,exc)) {
+	ChangeCode(dv,exc);
     } else
 	IIScrollTo(&dv->ii,exc->IP,true);
 
