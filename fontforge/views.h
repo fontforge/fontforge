@@ -198,6 +198,9 @@ typedef struct debugview {
     double scale;
     int pts_head, cvt_offtop, gloss_offtop, storage_offtop, stack_offtop, reg_offtop;
     int points_offtop;
+
+    int codeSize;
+    uint8 initialbytes[4];
 } DebugView;
 
 enum dv_coderange { cr_none=0, cr_fpgm, cr_prep, cr_glyph };	/* cleverly chosen to match ttobjs.h */
