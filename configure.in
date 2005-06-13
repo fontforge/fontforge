@@ -157,6 +157,9 @@ if test \( "$gww_hasbytecode" = "yes" \) -a \( "$FreeType2_IncRoot" != "" \); th
  [
     if test "$withval" != "no" >/dev/null 2>&1 ; then
 	FreeType2_TT_BUILD_INC="$withval/src/truetype"
+	if test "${FreeType2_TT_BUILD_INC/ttobjs.h:0:1}" != "/" ; then
+		FreeType2_TT_BUILD_INC=`pwd`/$FreeType2_TT_BUILD_INC
+	fi
 	AC_MSG_CHECKING(for valid freetype tree)
 	if test -f "$FreeType2_TT_BUILD_INC/ttobjs.h"; then
 		AC_MSG_RESULT(ok)
