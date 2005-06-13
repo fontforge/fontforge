@@ -157,6 +157,9 @@ if test \( "$gww_hasbytecode" = "yes" \) -a \( "$FreeType2_IncRoot" != "" \); th
  [
     if test "$withval" != "no" >/dev/null 2>&1 ; then
 	FreeType2_TT_BUILD_INC="$withval/src/truetype"
+	if test "${FreeType2_TT_BUILD_INC/ttobjs.h:0:1}" != "/" ; then
+		FreeType2_TT_BUILD_INC=`pwd`/$FreeType2_TT_BUILD_INC
+	fi
 	AC_MSG_CHECKING(for valid freetype tree)
 	if test -f "$FreeType2_TT_BUILD_INC/ttobjs.h"; then
 		AC_MSG_RESULT(ok)
@@ -214,7 +217,7 @@ else
  dnl /usr/share/doc/XFree86-doc-4.2.0/Xi/lib.PS
 
  AC_CHECK_LIB(Xi, XOpenDevice, X_11LIB="-lXi -lX11" ,AC_DEFINE(_NO_XINPUT), $X_LIBS $X_PRE_LIBS $X_EXTRA_LIBS -lX11 ) 
- AC_CHECK_LIB(xkbui, XkbQueryExtension, X_11LIB="$X_11LIB -lxkbui" ,AC_DEFINE(_NO_XKB), $X_LIBS $X_PRE_LIBS $X_EXTRA_LIBS -lX11 -lm )
+ AC_CHECK_LIB(xkbui, XkbQueryExtension, X_11LIB="$X_11LIB -lxkbui" ,AC_DEFINE(_NO_XKB), $X_LIBS $X_PRE_LIBS $X_EXTRA_LIBS -lX11 -lm ) 
 fi
 
 echo -n checking for long long ...
