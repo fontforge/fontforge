@@ -2830,6 +2830,8 @@ return( 0 );
     formattypes[ff_cid].disabled = sf->cidmaster==NULL;
     formattypes[ff_otfcid].disabled = sf->cidmaster==NULL;
     formattypes[ff_otfciddfont].disabled = sf->cidmaster==NULL;
+    if ( sf->encoding_name->is_unicodefull )
+	formattypes[ff_type42cid].disabled = true;	/* Identity CMap only handles BMP */
     ofs = oldformatstate;
     if (( ofs==ff_ptype0 && formattypes[ff_ptype0].disabled ) ||
 	    ((ofs==ff_mma || ofs==ff_mmb) && sf->mm==NULL) ||
