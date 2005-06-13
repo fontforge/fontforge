@@ -416,6 +416,30 @@ return( true );
 return( false );
 }
 
+static int CheckCodePointsComment(IO *wrapper) {
+    /* Check to see if this encoding includes the special comment we use */
+    /*  to indicate that the encoding is based on unicode code points rather */
+    /*  than glyph names */
+    char commentbuffer[128], *pt;
+    int ch;
+
+    /* Eat whitespace and comments. Comments last to eol (or formfeed) */
+    while ( isspace(ch = nextch(wrapper)) );
+    if ( ch!='%' )
+return( false );
+
+    pt = commentbuffer;
+    while ( (ch=nextch(wrapper))!=EOF && ch!='\r' && ch!='\n' && ch!='\f' ) {
+	if ( pt-commentbuffer < sizeof(commentbuffer)-1 )
+	    *pt++ = ch;
+    }
+    *pt = '\0';
+    if ( strcmp(commentbuffer," Use codepoints.")== 0 )
+return( true );
+
+return( false );
+}
+
 static int nextpstoken(IO *wrapper, real *val, char *tokbuf, int tbsize) {
     int ch, r, i;
     char *pt, *end;
@@ -3028,7 +3052,7 @@ Encoding *PSSlurpEncodings(FILE *file) {
     char tokbuf[200];
     IO wrapper;
     real dval;
-    int i, max, any, enc;
+    int i, max, any, enc, codepointsonly;
     int tok;
 
     wrapper.top = NULL;
@@ -3040,17 +3064,18 @@ Encoding *PSSlurpEncodings(FILE *file) {
 	    encname = copy(tokbuf);
 	    tok = nextpstoken(&wrapper,&dval,tokbuf,sizeof(tokbuf));
 	}
-	if ( tok!=pt_openarray )
+	if ( tok!=pt_openarray && tok!=pt_opencurly )
 return( head );
-	for ( i=0; i<1024; ++i ) {
+	for ( i=0; i<sizeof(names)/sizeof(names[0]); ++i ) {
 	    encs[i] = -1;
 	    names[i]=NULL;
 	}
+	codepointsonly = CheckCodePointsComment(&wrapper);
 
 	max = -1; any = 0; i=0;
 	while ( (tok = nextpstoken(&wrapper,&dval,tokbuf,sizeof(tokbuf)))!=pt_eof &&
-		tok!=pt_closearray ) {
-	    if ( tok==pt_namelit && i<1024 ) {
+		tok!=pt_closearray && tok!=pt_closecurly ) {
+	    if ( tok==pt_namelit && i<sizeof(names)/sizeof(names[0]) ) {
 		max = i;
 		if ( strcmp(tokbuf,".notdef")==0 ) {
 		    encs[i] = 0;
@@ -3062,6 +3087,7 @@ return( head );
 		    /*  for some slots and people get unhappy (rightly) if we */
 		    /*  use the wrong one */
 		    names[i] = copy(tokbuf);
+		    any = 1;
 		} else {
 		    names[i] = copy(tokbuf);
 		    any = 1;
@@ -3081,9 +3107,12 @@ return( head );
 	    item->char_cnt = max;
 	    item->unicode = galloc(max*sizeof(int32));
 	    memcpy(item->unicode,encs,max*sizeof(int32));
-	    if ( any ) {
+	    if ( any && !codepointsonly ) {
 		item->psnames = gcalloc(max,sizeof(char *));
 		memcpy(item->psnames,names,max*sizeof(char *));
+	    } else {
+		for ( i=0; i<max; ++i )
+		    free(names[i]);
 	    }
 	    if ( head==NULL )
 		head = item;

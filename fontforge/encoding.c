@@ -637,6 +637,8 @@ return;
 
     for ( item=enclist; item!=NULL; item = item->next ) if ( !item->builtin ) {
 	fprintf( file, "/%s [\n", item->enc_name );
+	if ( item->psnames==NULL )
+	    fprintf( file, "%% Use codepoints.\n" );
 	for ( i=0; i<item->char_cnt; ++i ) {
 	    if ( item->psnames!=NULL && item->psnames[i]!=NULL )
 		fprintf( file, " /%s", item->psnames[i]);
