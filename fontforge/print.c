@@ -63,6 +63,7 @@ typedef struct printinfo {
     unsigned int iscid: 1;
     unsigned int wastwobyte: 1;
     unsigned int isunicode: 1;
+    unsigned int isunicodefull: 1;
     unsigned int overflow: 1;
     unsigned int done: 1;
     int ypos;
@@ -649,8 +650,8 @@ static void pdf_build_type0(PI *pi) {
 	} else
 	    sc = cidmaster->chars[i];
 	if ( cid2gid!=NULL ) {
-	    if ( sc!=NULL )
-		cid2gid[i] = sc->ttf_glyph;
+	    if ( sc!=NULL && sc->ttf_glyph!=-1 )
+		cid2gid[sc->ttf_glyph] = sc->ttf_glyph;
 	    else
 		cid2gid[i] = 0;
 	}
@@ -1222,7 +1223,7 @@ return(0);
 
     if ( pi->printtype==pt_pdf ) {
 	int lastfont = -1;
-	if ( !pi->overflow ) {
+	if ( !pi->overflow || (line<17*65536 && pi->isunicodefull)) {
 	    fprintf(pi->out, "BT\n  /FTB 12 Tf\n  26.88 %d Td\n", pi->ypos );
 	    if ( pi->iscid && !pi->isunicode)
 		fprintf(pi->out,"(%d) Tj\n", pi->chline );
@@ -1242,7 +1243,9 @@ return(0);
 		    lastfont = (i+pi->chline)/256;
 		    fprintf(pi->out, "  /F%d %d Tf\n", pi->fonts[lastfont], pi->pointsize );
 		}
-		if ( pi->iscid )
+		if ( pi->istype42cid )
+		    fprintf( pi->out, "  <%04x> Tj\n", pi->sf->chars[pi->chline+i]->ttf_glyph );
+		else if ( pi->iscid )
 		    fprintf( pi->out, "  <%04x> Tj\n", pi->chline+i );
 		else
 		    fprintf( pi->out, "  <%02x> Tj\n", (pi->chline+i)%256 );
@@ -1250,7 +1253,7 @@ return(0);
 	}
 	fprintf(pi->out, "ET\n" );
     } else {
-	if ( !pi->overflow ) {
+	if ( !pi->overflow || (line<17*65536 && pi->isunicodefull)) {
 	    fprintf(pi->out,"MyFontDict /Times-Bold__12 get setfont\n" );
 	    if ( pi->iscid )
 		fprintf(pi->out,"(%d) 26.88 %d n_show\n", pi->chline, pi->ypos );
@@ -1532,7 +1535,9 @@ static void outputchar(PI *pi, SplineChar *sc) {
 
     if ( sc==NULL )
 return;
-    if ( pi->iscid ) {
+    if ( pi->istype42cid ) {
+	fprintf( pi->out, "%04X", sc->ttf_glyph );
+    } else if ( pi->iscid ) {
 	fprintf( pi->out, "%04X", sc->enc );
     } else if ( pi->twobyte ) {
 	fprintf( pi->out, "%04X", sc->enc );
@@ -3881,6 +3886,7 @@ static void PIInit(PI *pi,FontView *fv,SplineChar *sc,void *mv) {
     pi->twobyte = pi->sf->encoding_name->has_2byte;
     pi->wastwobyte = pi->twobyte;
     pi->isunicode = pi->sf->encoding_name->is_unicodebmp;
+    pi->isunicodefull = pi->sf->encoding_name->is_unicodefull;
     pi->istype42cid = pi->sf->order2 && pi->isunicode;
     pi->iscid = pi->sf->subfontcnt!=0 || pi->istype42cid;
     pi->pointsize = pdefs[di].pointsize;
