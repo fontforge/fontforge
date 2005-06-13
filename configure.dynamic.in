@@ -214,7 +214,7 @@ else
  dnl /usr/share/doc/XFree86-doc-4.2.0/Xi/lib.PS
 
  AC_CHECK_LIB(Xi, XOpenDevice, X_11LIB="-lXi -lX11" ,AC_DEFINE(_NO_XINPUT), $X_LIBS $X_PRE_LIBS $X_EXTRA_LIBS -lX11 ) 
- AC_CHECK_LIB(xkbui, XkbQueryExtension, X_11LIB="$X_11LIB -lxkbui" ,AC_DEFINE(_NO_XKB), $X_LIBS $X_PRE_LIBS $X_EXTRA_LIBS -lX11 ) 
+ AC_CHECK_LIB(xkbui, XkbQueryExtension, X_11LIB="$X_11LIB -lxkbui" ,AC_DEFINE(_NO_XKB), $X_LIBS $X_PRE_LIBS $X_EXTRA_LIBS -lX11 -lm )
 fi
 
 echo -n checking for long long ...
