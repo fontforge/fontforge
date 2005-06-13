@@ -2591,11 +2591,10 @@ return( 1 );
 
     SCPreserveState(sc,true);
 
-    if ( glyph_name!=NULL ) {
-	asc = SFGetCharDup(sf,-1,glyph_name);
-	if ( asc!=NULL )
-	    uni = asc->unicodeenc;
-    } else
+    asc = SFGetCharDup(sf,uni,glyph_name);
+    if ( asc!=NULL && uni==-1 )
+	uni = asc->unicodeenc;
+    else if ( asc==NULL && uni!=-1 )
 	asc = GetGoodAccentGlyph(sf,uni,basech,&invert,ia);
     if ( asc==NULL )
 return( 2 );
