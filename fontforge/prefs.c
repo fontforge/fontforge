@@ -808,74 +808,73 @@ void LoadPrefs(void) {
 
     LoadPfaEditEncodings();
 
-    if ( prefs==NULL || (p=fopen(prefs,"r"))==NULL )
-return;
-
-    while ( fgets(line,sizeof(line),p)!=NULL ) {
-	if ( *line=='#' )
-    continue;
-	pt = strchr(line,':');
-	if ( pt==NULL )
-    continue;
-	for ( j=0; load_prefs_list[j]!=NULL; ++j ) {
-	    for ( i=0; load_prefs_list[j][i].name!=NULL; ++i )
-		if ( strncmp(line,load_prefs_list[j][i].name,pt-line)==0 )
+    if ( prefs!=NULL && (p=fopen(prefs,"r"))!=NULL ) {
+	while ( fgets(line,sizeof(line),p)!=NULL ) {
+	    if ( *line=='#' )
+	continue;
+	    pt = strchr(line,':');
+	    if ( pt==NULL )
+	continue;
+	    for ( j=0; load_prefs_list[j]!=NULL; ++j ) {
+		for ( i=0; load_prefs_list[j][i].name!=NULL; ++i )
+		    if ( strncmp(line,load_prefs_list[j][i].name,pt-line)==0 )
+		break;
+		if ( load_prefs_list[j][i].name!=NULL )
 	    break;
-	    if ( load_prefs_list[j][i].name!=NULL )
-	break;
-	}
-	pl = NULL;
-	if ( load_prefs_list[j]!=NULL )
-	    pl = &load_prefs_list[j][i];
-	for ( ++pt; *pt=='\t'; ++pt );
-	if ( line[strlen(line)-1]=='\n' )
-	    line[strlen(line)-1] = '\0';
-	if ( line[strlen(line)-1]=='\r' )
-	    line[strlen(line)-1] = '\0';
-	if ( pl==NULL ) {
-	    if ( strncmp(line,"Recent:",strlen("Recent:"))==0 && ri<RECENT_MAX )
-		RecentFiles[ri++] = copy(pt);
-	    else if ( strncmp(line,"MenuScript:",strlen("MenuScript:"))==0 && ms<SCRIPT_MENU_MAX )
-		script_filenames[ms++] = copy(pt);
-	    else if ( strncmp(line,"MenuName:",strlen("MenuName:"))==0 && mn<SCRIPT_MENU_MAX )
-		script_menu_names[mn++] = utf82u_copy(pt);
-	    else if ( strncmp(line,"MacMapCnt:",strlen("MacSetCnt:"))==0 ) {
-		sscanf( pt, "%d", &msc );
-		msp = 0;
-		user_macfeat_otftag = gcalloc(msc+1,sizeof(struct macsettingname));
-	    } else if ( strncmp(line,"MacMapping:",strlen("MacMapping:"))==0 && msp<msc ) {
-		ParseMacMapping(pt,&user_macfeat_otftag[msp++]);
-	    } else if ( strncmp(line,"MacFeat:",strlen("MacFeat:"))==0 ) {
-		ParseNewMacFeature(p,line);
 	    }
-    continue;
-	}
-	switch ( pl->type ) {
-	  case pr_encoding:
-	    { Encoding *enc = FindOrMakeEncoding(pt);
-		if ( enc==NULL )
-		    enc = FindOrMakeEncoding("ISO8859-1");
-		if ( enc==NULL )
-		    enc = &custom;
-		*((Encoding **) (pl->val)) = enc;
+	    pl = NULL;
+	    if ( load_prefs_list[j]!=NULL )
+		pl = &load_prefs_list[j][i];
+	    for ( ++pt; *pt=='\t'; ++pt );
+	    if ( line[strlen(line)-1]=='\n' )
+		line[strlen(line)-1] = '\0';
+	    if ( line[strlen(line)-1]=='\r' )
+		line[strlen(line)-1] = '\0';
+	    if ( pl==NULL ) {
+		if ( strncmp(line,"Recent:",strlen("Recent:"))==0 && ri<RECENT_MAX )
+		    RecentFiles[ri++] = copy(pt);
+		else if ( strncmp(line,"MenuScript:",strlen("MenuScript:"))==0 && ms<SCRIPT_MENU_MAX )
+		    script_filenames[ms++] = copy(pt);
+		else if ( strncmp(line,"MenuName:",strlen("MenuName:"))==0 && mn<SCRIPT_MENU_MAX )
+		    script_menu_names[mn++] = utf82u_copy(pt);
+		else if ( strncmp(line,"MacMapCnt:",strlen("MacSetCnt:"))==0 ) {
+		    sscanf( pt, "%d", &msc );
+		    msp = 0;
+		    user_macfeat_otftag = gcalloc(msc+1,sizeof(struct macsettingname));
+		} else if ( strncmp(line,"MacMapping:",strlen("MacMapping:"))==0 && msp<msc ) {
+		    ParseMacMapping(pt,&user_macfeat_otftag[msp++]);
+		} else if ( strncmp(line,"MacFeat:",strlen("MacFeat:"))==0 ) {
+		    ParseNewMacFeature(p,line);
+		}
+	continue;
 	    }
-	  break;
-	  case pr_bool: case pr_int:
-	    sscanf( pt, "%d", (int *) pl->val );
-	  break;
-	  case pr_real:
-	    sscanf( pt, "%f", (float *) pl->val );
-	  break;
-	  case pr_string: case pr_file:
-	    if ( *pt=='\0' ) pt=NULL;
-	    if ( pl->val!=NULL )
-		*((char **) (pl->val)) = copy(pt);
-	    else
-		(pl->set)(copy(pt));
-	  break;
+	    switch ( pl->type ) {
+	      case pr_encoding:
+		{ Encoding *enc = FindOrMakeEncoding(pt);
+		    if ( enc==NULL )
+			enc = FindOrMakeEncoding("ISO8859-1");
+		    if ( enc==NULL )
+			enc = &custom;
+		    *((Encoding **) (pl->val)) = enc;
+		}
+	      break;
+	      case pr_bool: case pr_int:
+		sscanf( pt, "%d", (int *) pl->val );
+	      break;
+	      case pr_real:
+		sscanf( pt, "%f", (float *) pl->val );
+	      break;
+	      case pr_string: case pr_file:
+		if ( *pt=='\0' ) pt=NULL;
+		if ( pl->val!=NULL )
+		    *((char **) (pl->val)) = copy(pt);
+		else
+		    (pl->set)(copy(pt));
+	      break;
+	    }
 	}
+	fclose(p);
     }
-    fclose(p);
 #if defined(FONTFORGE_CONFIG_GTK)
     /* Nothing */;
 #else
@@ -892,6 +891,10 @@ return;
 	old_ttf_flags |= ttf_flag_glyphmap;
 	old_otf_flags |= ttf_flag_glyphmap;
     }
+}
+
+void PrefDefaultEncoding(void) {
+    local_encoding = DefaultEncoding();
 }
 
 void _SavePrefs(void) {

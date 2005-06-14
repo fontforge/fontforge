@@ -763,6 +763,7 @@ extern void FVShadow(FontView *fv,real angle, real outline_width,
 extern void SetDefaults(void);
 extern char *getPfaEditShareDir(void);
 extern void LoadPrefs(void);
+extern void PrefDefaultEncoding(void);
 extern void _SavePrefs(void);
 extern void SavePrefs(void);
 extern void PfaEditSetFallback(void);

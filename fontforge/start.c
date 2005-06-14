@@ -547,6 +547,8 @@ int main( int argc, char **argv ) {
     SetDefaults();
     if ( load_prefs!=NULL && strcasecmp(load_prefs,"Always")==0 )
 	LoadPrefs();
+    else
+	PrefDefaultEncoding();
     if ( default_encoding==NULL )
 	default_encoding=FindOrMakeEncoding("ISO8859-1");
     if ( default_encoding==NULL )
