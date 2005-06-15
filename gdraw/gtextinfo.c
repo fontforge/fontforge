@@ -273,6 +273,9 @@ void GTextInfoFree(GTextInfo *ti) {
 void GTextInfoListFree(GTextInfo *ti) {
     int i;
 
+    if ( ti==NULL )
+return;
+
     for ( i=0; ti[i].text!=NULL || ti[i].image!=NULL || ti[i].line; ++i )
 	if ( !ti[i].text_in_resource )
 	    gfree(ti[i].text);
