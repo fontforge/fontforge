@@ -2560,6 +2560,7 @@ static SplineChar *SFDGetChar(FILE *sfd,SplineFont *sf) {
     uint32 script = 0;
     int current_layer = ly_fore;
     int multilayer = sf->multilayer;
+    SplineFont *sli_sf = sf->cidmaster ? sf->cidmaster : sf;
 
     if ( getname(sfd,tok)!=1 )
 return( NULL );
@@ -2766,7 +2767,7 @@ return( NULL );
 		if ( !hassli )
 		    sli = SFAddScriptLangIndex(sf,
 			    script!=0?script:SCScriptFromUnicode(sc),DEFAULT_LANG);
-		if ( sli>=sf->sli_cnt && sli!=SLI_NESTED) {
+		if ( sli>=sli_sf->sli_cnt && sli!=SLI_NESTED) {
 		    static int complained=false;
 		    if ( !complained )
 			IError("'%s' in %s has a script index out of bounds: %d",
@@ -2776,7 +2777,7 @@ return( NULL );
 			fprintf( stderr, "Internal Error: '%s' in %s has a script index out of bounds: %d",
 				isv ? "vkrn" : "kern",
 				sc->name, sli );
-		    sli = SFAddScriptLangIndex(sf,
+		    sli = SFAddScriptLangIndex(sli_sf,
 			    SCScriptFromUnicode(sc),DEFAULT_LANG);
 		    complained = true;
 		}
@@ -2862,7 +2863,7 @@ return( NULL );
 		/* These are meaningless for lcarets, set them to innocuous values */
 		liga->script_lang_index = SLI_UNKNOWN;
 		liga->tag = CHR(' ',' ',' ',' ');
-	    } else if ( liga->script_lang_index>=sf->sli_cnt && liga->script_lang_index!=SLI_NESTED ) {
+	    } else if ( liga->script_lang_index>=sli_sf->sli_cnt && liga->script_lang_index!=SLI_NESTED ) {
 		static int complained=false;
 		if ( !complained )
 		    IError("'%c%c%c%c' in %s has a script index out of bounds: %d",
@@ -2872,7 +2873,7 @@ return( NULL );
 		    fprintf( stderr, "Internal Error: '%c%c%c%c' in %s has a script index out of bounds: %d\n",
 			    (liga->tag>>24), (liga->tag>>16)&0xff, (liga->tag>>8)&0xff, liga->tag&0xff,
 			    sc->name, liga->script_lang_index );
-		liga->script_lang_index = SFAddScriptLangIndex(sf,
+		liga->script_lang_index = SFAddScriptLangIndex(sli_sf,
 			SCScriptFromUnicode(sc),DEFAULT_LANG);
 		complained = true;
 	    }
@@ -3307,6 +3308,7 @@ return( i );
 
 static void SFDParseChainContext(FILE *sfd,SplineFont *sf,FPST *fpst, char *tok) {
     int ch, i, j, k, temp;
+    SplineFont *sli_sf = sf->cidmaster ? sf->cidmaster : sf;
 
     fpst->type = strmatch(tok,"ContextPos:")==0 ? pst_contextpos :
 		strmatch(tok,"ContextSub:")==0 ? pst_contextsub :
@@ -3317,9 +3319,9 @@ static void SFDParseChainContext(FILE *sfd,SplineFont *sf,FPST *fpst, char *tok)
 		    strmatch(tok,"class")==0 ? pst_class :
 		    strmatch(tok,"coverage")==0 ? pst_coverage : pst_reversecoverage;
     fscanf(sfd, "%hu %hu", &fpst->flags, &fpst->script_lang_index );
-    if ( fpst->script_lang_index>=sf->sli_cnt && fpst->script_lang_index!=SLI_NESTED ) {
+    if ( fpst->script_lang_index>=sli_sf->sli_cnt && fpst->script_lang_index!=SLI_NESTED ) {
 	static int complained=false;
-	if ( sf->sli_cnt==0 )
+	if ( sli_sf->sli_cnt==0 )
 	    IError("'%c%c%c%c' has a script index out of bounds: %d\nYou MUST fix this manually",
 		    (fpst->tag>>24), (fpst->tag>>16)&0xff, (fpst->tag>>8)&0xff, fpst->tag&0xff,
 		    fpst->script_lang_index );
@@ -3331,8 +3333,8 @@ static void SFDParseChainContext(FILE *sfd,SplineFont *sf,FPST *fpst, char *tok)
 	    fprintf( stderr, "Internal Error: '%c%c%c%c' has a script index out of bounds: %d\n",
 		    (fpst->tag>>24), (fpst->tag>>16)&0xff, (fpst->tag>>8)&0xff, fpst->tag&0xff,
 		    fpst->script_lang_index );
-	if ( sf->sli_cnt!=0 )
-	    fpst->script_lang_index = sf->sli_cnt-1;
+	if ( sli_sf->sli_cnt!=0 )
+	    fpst->script_lang_index = sli_sf->sli_cnt-1;
 	complained = true;
     }
     while ( (ch=getc(sfd))==' ' || ch=='\t' );
