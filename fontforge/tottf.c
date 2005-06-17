@@ -2458,7 +2458,7 @@ static int dumpcffhmtx(struct alltabs *at,SplineFont *sf,int bitmaps) {
 	    SplineCharFindBounds(sc,&b);
 	    putshort(at->gi.hmtx,b.minx);
 	    if ( dovmetrics ) {
-		if ( i<=at->gi.lasthwidth )
+		if ( i<=at->gi.lastvwidth )
 		    putshort(at->gi.vmtx,sc->vwidth);
 		putshort(at->gi.vmtx,sf->vertical_origin-b.maxy);
 	    }
@@ -2509,14 +2509,14 @@ static void dumpcffcidhmtx(struct alltabs *at,SplineFont *_sf) {
 	    SplineCharFindBounds(sc,&b);
 	    putshort(at->gi.hmtx,b.minx);
 	    if ( dovmetrics ) {
-		if ( cid<=at->gi.lasthwidth )
+		if ( cid<=at->gi.lastvwidth )
 		    putshort(at->gi.vmtx,sc->vwidth);
 		putshort(at->gi.vmtx,sf->vertical_origin-b.maxy);
 	    }
 	    ++cnt;
-	    if ( cid==at->gi.lasthwidth )
+	    if ( sc->ttf_glyph==at->gi.lasthwidth )
 		at->gi.hfullcnt = cnt;
-	    if ( cid==at->gi.lastvwidth )
+	    if ( sc->ttf_glyph==at->gi.lastvwidth )
 		at->gi.vfullcnt = cnt;
 	} else if ( cid==0 /*&& i==_sf->subfontcnt*/ ) {
 	    /* Create a dummy entry for .notdef */
