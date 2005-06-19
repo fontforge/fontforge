@@ -8899,7 +8899,6 @@ FontView *FontViewCreate(SplineFont *sf) {
 #else
 	icon = GDrawCreateBitmap(NULL,fontview2_width,fontview2_height,fontview2_bits);
 #endif
-	default_background = GDrawGetDefaultBackground(screen_display);
     }
 
     GDrawGetSize(GDrawGetRoot(NULL),&size);

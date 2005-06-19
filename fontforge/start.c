@@ -616,6 +616,7 @@ int main( int argc, char **argv ) {
 
 # ifdef FONTFORGE_CONFIG_GDRAW
     GDrawCreateDisplays(display,argv[0]);
+    default_background = GDrawGetDefaultBackground(screen_display);
 # endif
     InitCursors();
 
