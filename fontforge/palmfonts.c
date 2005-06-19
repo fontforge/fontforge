@@ -594,7 +594,7 @@ return( NULL );
 	    image[j*rw+(rbits>>4)] |= (0x8000>>(rbits&0xf));
 	    image[j*rw+((rbits+wid-1)>>4)] |= (0x8000>>((rbits+wid-1)&0xf));
 	}
-	for ( j=rbits; j<=rbits+wid; ++j ) {
+	for ( j=rbits; j<rbits+wid; ++j ) {
 	    image[down*rw+(j>>4)] |= (0x8000>>(j&0xf));
 	    image[(down+height-1)*rw+(j>>4)] |= (0x8000>>(j&0xf));
 	}
