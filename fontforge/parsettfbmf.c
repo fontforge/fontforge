@@ -235,6 +235,11 @@ static void readttfbitmapfont(FILE *ttf,struct ttfinfo *info,
 	first = getushort(ttf);
 	last =  getushort(ttf);
 	moreoff = getlong(ttf);
+	if ( last<first ) {
+	    fprintf( stderr, "Bad format of subtable %d (of %d) in strike %d. First=%d, last=%d.\n",
+		    j, head->numIndexSubTables, bdf->pixelsize, first, last );
+    continue;
+	}
 	loc = ftell(ttf);
 	fseek(ttf,info->bitmaploc_start+head->indexSubTableArrayOffset+moreoff,SEEK_SET);
 
@@ -327,7 +332,6 @@ static void readttfbitmapfont(FILE *ttf,struct ttfinfo *info,
 	}
 	fseek(ttf,loc,SEEK_SET);
     }
- fflush(stdout);
 }
 
 void TTFLoadBitmaps(FILE *ttf,struct ttfinfo *info,int onlyone) {
