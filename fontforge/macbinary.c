@@ -384,7 +384,7 @@ static uint32 BDFToNFNT(FILE *res, BDFFont *bdf) {
     /* Now for the "undefined character", just a simple vertical bar */
     locs[i] = width;
     lbearings[i] = 1;
-    widths[i] = 3;
+    widths[i++] = 3;
     /*idealwidths[i++] = (3<<12)/bdf->pixelsize;*/
     for ( k = 1; k<bdf->pixelsize-1; ++k )
 	rows[k][width>>3] |= (1<<(7-(width&7)));
