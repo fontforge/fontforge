@@ -2374,6 +2374,8 @@ static BDFChar *NFNTCvtBitmap(struct MacFontRec *font,int index,SplineFont *sf) 
     bdfc = chunkalloc(sizeof(BDFChar));
     bdfc->xmin = (font->offsetWidths[index]>>8)+font->kernMax;
     bdfc->xmax = bdfc->xmin + font->locs[index+1]-font->locs[index]-1;
+    if ( bdfc->xmax<bdfc->xmin )
+	bdfc->xmax = bdfc->xmin;		/* Empty glyph mark */
     bdfc->ymin = -font->descent;
     bdfc->ymax = font->ascent-1;
     bdfc->width = font->offsetWidths[index]&0xff;
