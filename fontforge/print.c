@@ -1536,7 +1536,7 @@ static void outputchar(PI *pi, SplineChar *sc) {
 
     if ( sc==NULL )
 return;
-    if ( pi->istype42cid ) {
+    if ( pi->istype42cid && pi->printtype==pt_pdf) {
 	fprintf( pi->out, "%04X", sc->ttf_glyph );
     } else if ( pi->iscid ) {
 	fprintf( pi->out, "%04X", sc->enc );
