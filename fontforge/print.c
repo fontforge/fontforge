@@ -908,6 +908,7 @@ static void DumpIdentCMap(PI *pi) {
     fprintf( pi->out, "end\nend\n" );
 
     fprintf( pi->out, "%%%%EndResource\n" );
+    fprintf( pi->out, "%%%%EndResource\n" );
     fprintf( pi->out, "%%%%EOF\n" );
     fprintf( pi->out, "%%%%EndResource\n" );
 }
