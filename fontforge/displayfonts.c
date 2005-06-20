@@ -92,7 +92,8 @@ static BDFFont *DSP_BestMatch(SplineFont *sf,int aa,int size) {
 		a = 3;
 	    else
 		a = 2;
-	}
+	} else
+	    a = 1;
 	if ( bdf->pixelsize==size && a==4 )
 return( bdf );
 	if ( sizem==NULL )
@@ -114,7 +115,8 @@ return( bdf );
 			olda = 3;
 		    else
 			olda = 2;
-		}
+		} else
+		    olda = 1;
 		if ( a>olda )
 		    sizem = bdf;
 	    }
