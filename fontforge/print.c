@@ -1067,7 +1067,8 @@ return(false);
 	/* I leave fontfile open as a flag, even though we don't use it */
     } else if ( pi->printtype==pt_pdf && pi->iscid ) {
 	if ( !_WriteTTFFont(pi->fontfile,pi->sf,
-		pi->istype42cid?ff_type42cid:ff_cffcid,NULL,bf_none,0))
+		pi->istype42cid?ff_type42cid:ff_cffcid,NULL,bf_none,
+		ps_flag_nocffsugar))
 	    error = true;
     } else if ( !_WritePSFont(pi->fontfile,pi->sf,
 		pi->printtype==pt_pdf ? ff_pfb :

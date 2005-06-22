@@ -1121,6 +1121,9 @@ enum ps_flags { ps_flag_nohintsubs = 0x10000, ps_flag_noflex=0x20000,
 		    ps_flag_afm = 0x100000, ps_flag_pfm = 0x200000,
 		    ps_flag_tfm = 0x400000,
 		    ps_flag_round = 0x800000,
+/* CFF fonts are wrapped up in some postscript sugar -- unless they are to */
+/*  go into a pdf file or an otf font */
+		    ps_flag_nocffsugar = 0x1000000,
 		    ps_flag_mask = (ps_flag_nohintsubs|ps_flag_noflex|
 			ps_flag_afm|ps_flag_pfm|ps_flag_tfm|ps_flag_round)
 		};
