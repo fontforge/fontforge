@@ -2246,8 +2246,16 @@ static void dumpcffcidtopdict(SplineFont *sf,struct alltabs *at) {
 	if ( sf->changed_since_xuidchanged )
 	    SFIncrementXUID(sf);
     }
+#if 0
+    /* Acrobat doesn't seem to care about a private dict here. Ghostscript */
+    /*  dies.  Tech Note: 5176.CFF.PDF, top of page 23 says:		   */
+    /*		A Private DICT is required, but may be specified as having */
+    /*		a length of 0 if there are no non-default values to be stored*/
+    /* No indication >where< it is required. I assumed everywhere. Perhaps */
+    /*  just in basefonts? 						   */
     dumpint(cfff,0);			/* Docs say a private dict is required and they don't specifically omit CID top dicts */
     dumpintoper(cfff,0,18);		/* But they do say it can be zero */
+#endif
     /* Offset to charset (oper=15) needed here */
     /* Offset to charstrings (oper=17) needed here */
     /* Offset to FDArray (oper=12,36) needed here */
