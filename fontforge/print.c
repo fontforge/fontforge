@@ -585,7 +585,7 @@ static void pdf_build_type0(PI *pi) {
     int ch, cidmax, i,j;
     struct fontdesc fd;
     SplineFont *cidmaster = pi->sf->cidmaster!=NULL?pi->sf->cidmaster:pi->sf;
-    uint16 *cid2gid, *widths;
+    uint16 *widths;
     int defwidth = pi->sf->ascent+pi->sf->descent;
 
     fseek( pi->fontfile,0,SEEK_END);
@@ -621,7 +621,7 @@ static void pdf_build_type0(PI *pi) {
     fprintf( pi->out, "    /W %d 0 R\n", pi->next_object );
     fprintf( pi->out, "    /FontDescriptor %d 0 R\n", fd_obj );
     if ( pi->istype42cid )
-	fprintf( pi->out, "    /CIDToGIDMap %d 0 R\n", pi->next_object+1 );
+	fprintf( pi->out, "    /CIDToGIDMap /Identity\n" );
     fprintf( pi->out, "  >>\n" );
     fprintf( pi->out, "endobj\n" );
 
@@ -633,9 +633,6 @@ static void pdf_build_type0(PI *pi) {
     } else
 	cidmax = cidmaster->charcnt;
 
-    cid2gid = NULL;
-    if ( pi->istype42cid )
-	cid2gid = galloc(cidmax*sizeof(uint16));
     widths = galloc(cidmax*sizeof(uint16));
 
     for ( i=0; i<cidmax; ++i ) {
@@ -649,12 +646,6 @@ static void pdf_build_type0(PI *pi) {
 		}
 	} else
 	    sc = cidmaster->chars[i];
-	if ( cid2gid!=NULL ) {
-	    if ( sc!=NULL && sc->ttf_glyph!=-1 )
-		cid2gid[sc->ttf_glyph] = sc->ttf_glyph;
-	    else
-		cid2gid[i] = 0;
-	}
 	if ( sc!=NULL )
 	    widths[i] = sc->width;
 	else
@@ -689,17 +680,6 @@ static void pdf_build_type0(PI *pi) {
     fprintf( pi->out, "endobj\n" );
     free(widths);
 
-    /* cid2gid */
-    if ( pi->istype42cid ) {
-	pdf_addobject(pi);
-	fprintf( pi->out, "<< /Length %d >>\n", 2*cidmax );
-	fprintf( pi->out, "stream\n" );
-	for ( i=0; i<cidmax; ++i )
-	    fprintf( pi->out, "%c%c", cid2gid[i]>>8, cid2gid[i]&0xff);
-	fprintf( pi->out, "\nendstream\n" );
-	fprintf( pi->out, "endobj\n" );
-	free(cid2gid);
-    }
     fprintf( pi->out, "\n" );
 
     /* OK, now we've dumped up the CID part, we need to create a Type0 Font */
