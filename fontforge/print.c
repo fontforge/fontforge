@@ -2727,7 +2727,7 @@ return(true);
 return(true);
 
 	if ( pi->printtype == pt_pdf && pi->sf->order2 && pi->isunicodefull )
-	    pi->istype42cid = true;	/* Can't do this for ps output because ps type42s already have a unicode encoding. in pdf files we have CIDToGID to play with */
+	    pi->istype42cid = pi->iscid = true;	/* Can't do this for ps output because ps type42s already have a unicode encoding. in pdf files we have CIDToGID to play with */
 
 	if ( pi->printtype==pt_file || pi->printtype==pt_pdf ) {
 	    sprintf(buf,"pr-%.90s.%s", pi->sf->fontname,
