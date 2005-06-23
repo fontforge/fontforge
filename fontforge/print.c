@@ -2726,6 +2726,9 @@ return(true);
 	    if ( !PageSetup(pi))
 return(true);
 
+	if ( pi->printtype == pt_pdf && pi->sf->order2 && pi->isunicodefull )
+	    pi->istype42cid = true;	/* Can't do this for ps output because ps type42s already have a unicode encoding. in pdf files we have CIDToGID to play with */
+
 	if ( pi->printtype==pt_file || pi->printtype==pt_pdf ) {
 	    sprintf(buf,"pr-%.90s.%s", pi->sf->fontname,
 		    pi->printtype==pt_file?"ps":"pdf");
@@ -3869,7 +3872,7 @@ static void PIInit(PI *pi,FontView *fv,SplineChar *sc,void *mv) {
     pi->wastwobyte = pi->twobyte;
     pi->isunicode = pi->sf->encoding_name->is_unicodebmp;
     pi->isunicodefull = pi->sf->encoding_name->is_unicodefull;
-    pi->istype42cid = pi->sf->order2 && pi->isunicode;
+    pi->istype42cid = pi->sf->order2 && pi->isunicode;			/* we may fiddle with this later */
     pi->iscid = pi->sf->subfontcnt!=0 || pi->istype42cid;
     pi->pointsize = pdefs[di].pointsize;
     if ( pi->pointsize==0 )
