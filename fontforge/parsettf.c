@@ -4547,7 +4547,7 @@ static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
     struct dup *dup;
     BDFFont *bdf;
     BDFChar **obc;
-    RefChar *rf;
+    RefChar *rf, *prev, *next;
     int newcharcnt;
 
     if ( oldcnt>1 && oldchars[1]!=NULL && oldchars[1]->enc==0 ) {
@@ -4615,9 +4615,17 @@ static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
     }
 
     for ( i=0; i<newcharcnt; ++i ) if ( newchars[i]!=NULL ) {
-	for ( rf = newchars[i]->layers[ly_fore].refs; rf!=NULL; rf = rf->next ) {
-	    rf->local_enc = rf->sc->enc;
-	    rf->unicode_enc = rf->sc->unicodeenc;
+	for ( rf = newchars[i]->layers[ly_fore].refs, prev=NULL; rf!=NULL; rf = next ) {
+	    next = rf->next;
+	    if ( rf->sc==NULL ) {
+		if ( prev==NULL ) newchars[i]->layers[ly_fore].refs = next;
+		else prev->next = next;
+		RefCharFree(rf);
+	    } else {
+		rf->local_enc = rf->sc->enc;
+		rf->unicode_enc = rf->sc->unicodeenc;
+		prev = rf;
+	    }
 	}
     }
 
