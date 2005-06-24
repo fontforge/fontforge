@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 31-Dec-2004 -->
+  <!-- AP: Last modified: 16-Jun-2005 -->
   <TITLE>Spline Font Database File Format</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -513,9 +513,9 @@ Then for non-CID fonts you should find a line like:
 </PRE>
 </BLOCKQUOTE>
 <P>
-This means that the font has room for 285 characters and that there are a
-total of 253 defined (usually control characters are not defined). A character
-looks like:
+This means that the font's encoding has room for 285 characters and that
+there are a total of 253 glyphs defined (usually control characters are not
+defined). A character looks like:
 <BLOCKQUOTE>
   <PRE>StartChar: exclam
 Encoding: 33 33
@@ -659,6 +659,9 @@ compressed using rle and then output as above, only now there is one more
 parameter on the "Image:" line which gives the number of bytes to be read
 from the data stream.
 <P>
+In multilayered fonts the foreground layers may contain images too. They
+are stored in the same way.
+<P>
 A character need not contain any splines:
 <BLOCKQUOTE>
   <PRE>StartChar: semicolon
@@ -667,18 +670,29 @@ Width: 264
 Flags: 
 HStem: 
 VStem: 
-Ref: 44 N 1 0 0 1 0 0
-Ref: 46 N 1 0 0 1 0 414
+Refer: 33 44 N 1 0 0 1 0 0
+Refer: 35 46 N 1 0 0 1 0 414
 EndChar
 </PRE>
 </BLOCKQUOTE>
 <P>
 Above is one with just references to other characters (a semi-colon is drawn
 here by drawing a comma and stacking a period on top of it). The first number
-is the local encoding of the character being refered to, the N says the reference
-is not selected, the remaining 6 numbers are a postscript transformation
-matrix, the one for comma (44) is the identity matrix, while the one for
-period (46) just translates it vertically 414 units.
+is the glyph index of the character being refered to (in the current font
+of course), the next number is the unicode code point, the N says the reference
+is not selected (An "S" indicates it is selected), the remaining 6 numbers
+are a postscript transformation matrix, the one for comma (unicode 44) is
+the identity matrix, while the one for period (unicode 46) just translates
+it vertically 414 units.
+<P>
+Old versions of sfd files will use the format:
+<BLOCKQUOTE>
+  <PRE>Ref: 44 44 N 1 0 0 1 0 0
+Ref: 46 46 N 1 0 0 1 0 414
+</PRE>
+</BLOCKQUOTE>
+<P>
+Where the first number gives the refered components' encoding.
 <P>
 A postscript glyph may also contain countermasks:
 <BLOCKQUOTE>
