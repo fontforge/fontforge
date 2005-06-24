@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 7-May-2005 -->
+  <!-- AP: Last modified: 14-Jun-2005 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -702,7 +702,11 @@ a[4][0] = "Nested array";
 	recognize your postscript font.
       <LI>
 	%s.pfb/%s.pfa (splits a big font up into multiple pfb fonts each with 256
-	characters)
+	characters, making use of the fifth argument to determine how this is done).
+	The "%s" is required somewhere in the filename (to disambiguate from a normal
+	type1 output) but it may be anywhere. "foobar%s.pfb", "foo%sbar.pfa",
+	"foobar.%s.pfb" are all valid. The "%s" will be replaced by the fontnumber
+	specified in the mult-sfd-file.
       <LI>
 	mm.pfa (multiple master font in ascii format)
       <LI>
@@ -768,8 +772,13 @@ a[4][0] = "Nested array";
 	"" for no bitmaps
     </UL>
     <P>
-    If you do not wish to generate an outline font then give the filename the
-    extension of ".bdf".<BR>
+    Note: If you request bitmap output then all strikes in the current font database
+    will be output, but this command will not create bitmaps, so if there are
+    no strikes in your font database, no strikes will be output (even if you
+    ask for them). If you wish to output bitmaps you must first create them with
+    the <A HREF="#BitmapsAvail">BitmapsAvail</A> scripting command or
+    <A HREF="elementmenu.html#Bitmaps">Element-&gt;Bitmaps Avail</A>.
+    <P>
     fmflags controls
     <UL>
       <LI>
@@ -1168,7 +1177,9 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
 	If Select is given exactly one argument and that argument is an array then
 	the selection will be set to that specified in the array. So array[0] would
 	set the selection of the glyph at encoding 0 and so forth. The array may
-	have a different number of elements from that number of glyphs in the font.
+	have a different number of elements from that number of glyphs in the font
+	but should otherwise be in the same format as that returned by the $selection
+	psuedo-variable.
     </UL>
   <DT>
     SelectMore(arg1, arg2, ...)
@@ -1267,7 +1278,17 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     jis212, jisx0212, sjis, gh2312, gb2312packed, unicode, iso10646-1,
     TeX-Base-Encoding, one of the user defined encodings.<BR>
     You may also specify that you want to force the encoding to be the given
-    one.
+    one.<BR>
+    Note: some encodings are specified by glyph names (ie. user defined encodings
+    specified as postscript encoding arrays) others are specified as lists of
+    unicode code points (most built in encodings except for AdobeStandard and
+    TeX, user defined encodings specified by codepoints). If you reencode to
+    an encoding defined by glyph names, then ff will first move glyphs to the
+    appropriate slots, and then force any glyphs with the wrong name to have
+    the correct one. The most obvious example of this is the fi ligature:
+    AdobeStandard says it should be named "fi", modern fonts tend to call it
+    "f_i". Reencoding to AdobeStandard will move this glyph to the right slot,
+    and then name it "fi".
   <DT>
     SetCharCnt(cnt)
   <DD>
@@ -1436,7 +1457,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     Sets the currently selected glyph to have the given comment. The comment
     is converted via the current encoding to unicode.
   <DT>
-    <A HREF="elementmenu.html#Bitmaps">BitmapsAvail</A>(sizes)
+    <A HREF="elementmenu.html#Bitmaps" NAME="BitmapsAvail">BitmapsAvail</A>(sizes)
   <DD>
     Controls what bitmap sizes are stored in the font's database. It is passed
     an array of sizes. If a size is specified which is not in the font database
