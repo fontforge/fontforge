@@ -842,9 +842,9 @@ static void DumpIdentCMap(PI *pi) {
 	for ( i=0; i<sf->subfontcnt; ++i )
 	    if ( sf->subfonts[i]->charcnt>max ) max = sf->subfonts[i]->charcnt;
     }
-    if ( max>65535 )
-	max = 65535;
     pi->cidcnt = max;
+
+    if ( max>65535 ) max = 65535;
 
     fprintf( pi->out, "%%%%BeginResource: CMap (Noop)\n" );
     fprintf( pi->out, "%%!PS-Adobe-3.0 Resource-CMap\n" );
@@ -1057,7 +1057,7 @@ return(false);
 		pi->istype42cid?ff_type42cid:
 		pi->iscid?ff_cid:
 		pi->twobyte?ff_ptype0:
-		ff_pfa,0))
+		ff_pfa,ps_flag_identitycidmap))
 	error = true;
 
 #if defined(FONTFORGE_CONFIG_GDRAW)
@@ -1119,7 +1119,7 @@ static void startpage(PI *pi ) {
 	pdf_addpage(pi);
 	fprintf(pi->out,"q 1 0 0 1 40 %d cm\n", pi->pageheight-54 );
 	fprintf( pi->out, "BT\n  /FTB 12 Tf\n  34 -54.84 Td\n" );
-	if ( pi->iscid && !pi->isunicode)
+	if ( pi->iscid && !pi->istype42cid)
 	    for ( i=0; i<pi->max; ++i )
 		fprintf(pi->out,"%d 0 TD (%d) Tj\n", (pi->pointsize+pi->extrahspace), i );
 	else
@@ -1136,7 +1136,7 @@ return;
     fprintf(pi->out,"MyFontDict /Times-Bold__12 get setfont\n" );
     fprintf(pi->out,"(Font Display for %s) 193.2 -10.92 n_show\n", pi->sf->fontname);
 
-    if ( pi->iscid )
+    if ( pi->iscid && !pi->istype42cid )
 	for ( i=0; i<pi->max; ++i )
 	    fprintf(pi->out,"(%d) %d -54.84 n_show\n", i, 60+(pi->pointsize+pi->extrahspace)*i );
     else
@@ -1207,7 +1207,7 @@ return(0);
 	int lastfont = -1;
 	if ( !pi->overflow || (line<17*65536 && pi->isunicodefull)) {
 	    fprintf(pi->out, "BT\n  /FTB 12 Tf\n  26.88 %d Td\n", pi->ypos );
-	    if ( pi->iscid && !pi->isunicode)
+	    if ( pi->iscid && !pi->istype42cid )
 		fprintf(pi->out,"(%d) Tj\n", pi->chline );
 	    else
 		fprintf(pi->out,"(%04X) Tj\n", pi->chline );
@@ -1237,7 +1237,7 @@ return(0);
     } else {
 	if ( !pi->overflow || (line<17*65536 && pi->isunicodefull)) {
 	    fprintf(pi->out,"MyFontDict /Times-Bold__12 get setfont\n" );
-	    if ( pi->iscid )
+	    if ( pi->iscid && !pi->istype42cid )
 		fprintf(pi->out,"(%d) 26.88 %d n_show\n", pi->chline, pi->ypos );
 	    else
 		fprintf(pi->out,"(%04X) 26.88 %d n_show\n", pi->chline, pi->ypos );
@@ -1247,7 +1247,11 @@ return(0);
 	    if ( i+pi->chline<pi->cidcnt &&
 			CIDWorthOutputting(pi->sf,i+pi->chline)!=-1) {
 		int x = 58 + i*(pi->pointsize+pi->extrahspace);
-		if ( pi->overflow ) {
+		if ( pi->istype42cid ) {
+		    int gid = pi->sf->chars[pi->chline+i]->ttf_glyph;
+		    fprintf( pi->out, "<%04x> %d %d n_show\n", gid==-1?0:gid,
+			    x, pi->ypos );
+		} else if ( pi->overflow ) {
 		    fprintf( pi->out, "<%02x> %d %d n_show\n", pi->chline +i-(pi->lastbase<<8),
 			    x, pi->ypos );
 		} else if ( pi->iscid ) {
@@ -1283,7 +1287,7 @@ static void PIFontDisplay(PI *pi) {
 	pi->cidcnt = max;
     }
 
-    if ( pi->iscid && !pi->isunicode ) {
+    if ( pi->iscid && !pi->istype42cid ) {
 	if ( pi->max>=20 ) pi->max = 20;
 	else if ( pi->max>=10 ) pi->max = 10;
 	else if ( pi->max >= 5 ) pi->max = 5;
@@ -1485,7 +1489,7 @@ return(NULL);
 return( sf->chars[ch]);
     } else if ( ch>=65536 ) {
 return( NULL );
-    } else if ( !pi->iscid ) {
+    } else if ( !pi->iscid || pi->istype42cid ) {
 	max = 256;
 	for ( i=0 ; i<sf->charcnt && i<max; ++i )
 	    if ( sf->chars[i]!=NULL && sf->chars[i]->unicodeenc==ch ) {
@@ -1517,7 +1521,7 @@ static void outputchar(PI *pi, SplineChar *sc) {
 
     if ( sc==NULL )
 return;
-    if ( pi->istype42cid && pi->printtype==pt_pdf) {
+    if ( pi->istype42cid ) {    /* type42cid output uses a CIDMap indexed by GID */
 	fprintf( pi->out, "%04X", sc->ttf_glyph );
     } else if ( pi->iscid ) {
 	fprintf( pi->out, "%04X", sc->enc );
@@ -2726,9 +2730,6 @@ return(true);
 	    if ( !PageSetup(pi))
 return(true);
 
-	if ( pi->printtype == pt_pdf && pi->sf->order2 && pi->isunicodefull )
-	    pi->istype42cid = pi->iscid = true;	/* Can't do this for ps output because ps type42s already have a unicode encoding. in pdf files we have CIDToGID to play with */
-
 	if ( pi->printtype==pt_file || pi->printtype==pt_pdf ) {
 	    sprintf(buf,"pr-%.90s.%s", pi->sf->fontname,
 		    pi->printtype==pt_file?"ps":"pdf");
@@ -3872,11 +3873,11 @@ static void PIInit(PI *pi,FontView *fv,SplineChar *sc,void *mv) {
     pi->wastwobyte = pi->twobyte;
     pi->isunicode = pi->sf->encoding_name->is_unicodebmp;
     pi->isunicodefull = pi->sf->encoding_name->is_unicodefull;
-    pi->istype42cid = pi->sf->order2 && pi->isunicode;			/* we may fiddle with this later */
+    pi->istype42cid = pi->sf->order2;
     pi->iscid = pi->sf->subfontcnt!=0 || pi->istype42cid;
     pi->pointsize = pdefs[di].pointsize;
     if ( pi->pointsize==0 )
-	pi->pointsize = pi->iscid && !pi->isunicode?18:20;		/* 18 fits 20 across, 20 fits 16 */
+	pi->pointsize = pi->iscid && !pi->istype42cid?18:20;		/* 18 fits 20 across, 20 fits 16 */
     PIGetPrinterDefs(pi);
 }
 
