@@ -1889,6 +1889,14 @@ static void dumptype42(FILE *out, SplineFont *sf, int format, int flags ) {
 		    fprintf( out, "    %d %d def\n", i, SCDuplicate(sf->chars[i])->ttf_glyph );
 	    fprintf( out, "  end readonly def\n" );
 	    fprintf( out, "  /CIDCount %d def\n", sf->charcnt );
+	    fprintf( out, "  /GDBytes %d def\n", sf->charcnt>65535?3:2 );
+	} else if ( flags & ps_flag_identitycidmap ) {
+	    for ( i=cnt=0; i<sf->charcnt; ++i )
+		if ( sf->chars[i]!=NULL && cnt<sf->chars[i]->ttf_glyph )
+		    cnt = sf->chars[i]->ttf_glyph;
+	    fprintf( out, "  /CIDCount %d def\n", cnt+1 );
+	    fprintf( out, "  /GDBytes %d def\n", cnt+1>65535?3:2 );
+	    fprintf( out, "  /CIDMap 0 def\n" );
 	} else {	/* Use unicode */
 	    int maxu = 0;
 	    for ( i=cnt=0; i<sf->charcnt; ++i )
