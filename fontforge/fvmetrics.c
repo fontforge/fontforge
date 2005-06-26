@@ -317,8 +317,8 @@ static void DoChar(SplineChar *sc,CreateWidthData *wd, FontView *fv,
 	if ( transform[4]!=0 ) {
 	    FVTrans(fv,sc,transform,NULL,fvt_dontmovewidth);
 	    bvts[0].x = transform[4];
-	    for ( bdf = fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next ) if ( bdf->chars[sc->enc]!=NULL )
-		BCTrans(bdf,bdf->chars[sc->enc],bvts,fv);
+	    for ( bdf = fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next ) if ( bdf->glyphs[sc->orig_pos]!=NULL )
+		BCTrans(bdf,bdf->glyphs[sc->orig_pos],bvts,fv);
 	}
 return;
     } else if ( wd->wtype == wt_rbearing ) {
@@ -371,18 +371,17 @@ static void FVDoit(CreateWidthData *wd) {
 	wd->increment *= scale;
     }
     bc = NULL;
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
-	SplineChar *sc = fv->sf->chars[i];
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] ) {
+	SplineChar *sc;
 
-	if ( sc==NULL )
-	    sc = SFMakeChar(fv->sf,i);
+	sc = SFMakeChar(fv->sf,fv->map,i);
 	if ( fv->sf->onlybitmaps ) {
 	    if ( fv->show!=NULL )
-		bc = BDFMakeChar(fv->show,i);
+		bc = BDFMakeChar(fv->show,fv->map,i);
 	    else {
 		BDFFont *bdf;
 		for ( bdf=fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
-		    bc = BDFMakeChar(bdf,i);
+		    bc = BDFMakeChar(bdf,fv->map,i);
 	    }
 	}
 	DoChar(sc,wd,fv,bc);
@@ -433,17 +432,17 @@ static void SCDefWidthVal(char *buf,SplineChar *sc, enum widthtype wtype) {
 void FVSetWidth(FontView *fv,enum widthtype wtype) {
     char buffer[12];
     int em = fv->sf->ascent + fv->sf->descent;
-    int i;
+    int i, gid;
 
     if ( !fv->sf->onlybitmaps ) {
 	sprintf(buffer,"%d",wtype==wt_width?6*em/10:wtype==wt_vwidth?em: em/10 );
-	for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] && fv->sf->chars[i]!=NULL ) {
-	    SCDefWidthVal(buffer,fv->sf->chars[i],wtype);
+	for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] && (gid=fv->map->map[i])!=-1 && fv->sf->glyphs[gid]!=NULL ) {
+	    SCDefWidthVal(buffer,fv->sf->glyphs[gid],wtype);
 	break;
 	}
     } else {
-	for ( i=0; i<fv->show->charcnt; ++i ) if ( fv->selected[i] && fv->show->chars[i]!=NULL ) {
-	    BCDefWidthVal(buffer,fv->show->chars[i],fv,wtype);
+	for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] && (gid=fv->map->map[i])!=-1 && fv->show->glyphs[gid]!=NULL ) {
+	    BCDefWidthVal(buffer,fv->show->glyphs[gid],fv,wtype);
 	break;
 	}
     }

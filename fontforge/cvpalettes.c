@@ -2088,7 +2088,7 @@ static void CVPopupSelectInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
       break;
       case 1:
 	if ( cv->p.ref!=NULL )
-	    CharViewCreate(cv->p.ref->sc,cv->fv);
+	    CharViewCreate(cv->p.ref->sc,cv->fv,-1);
       break;
       case 2:
 	CVAddAnchor(cv);
@@ -2287,8 +2287,8 @@ void SFLayerChange(SplineFont *sf) {
     CharView *old, *cv;
     int i;
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	SplineChar *sc = sf->chars[i];
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	SplineChar *sc = sf->glyphs[i];
 	for ( cv=sc->views; cv!=NULL; cv=cv->next ) {
 	    cv->layerheads[dm_back] = &sc->layers[ly_back];
 	    cv->layerheads[dm_fore] = &sc->layers[ly_fore];

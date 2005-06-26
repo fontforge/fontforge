@@ -103,64 +103,65 @@ return;
     if ( fv->v==NULL || fv->colcnt==0 )	/* Can happen in scripts */
 return;
     for ( ; fv!=NULL ; fv = fv->nextsame ) {
-	pos = sc->enc;
-	if ( fv->mapping!=NULL ) {
-	    for ( i=0; i<fv->mapcnt; ++i )
-		if ( fv->mapping[i]==pos )
-	    break;
-	    if ( i==fv->mapcnt )		/* Not currently displayed */
-    continue;
-	    pos = i;
-	}
-	i = pos / fv->colcnt;
-	j = pos - i*fv->colcnt;
-	i -= fv->rowoff;
+	for ( pos=0; pos<fv->map->enccount; ++pos ) if ( fv->map->map[pos]==sc->orig_pos ) {
+	    if ( fv->mapping!=NULL ) {
+		for ( i=0; i<fv->mapcnt; ++i )
+		    if ( fv->mapping[i]==pos )
+		break;
+		if ( i==fv->mapcnt )		/* Not currently displayed */
+	continue;
+		pos = i;
+	    }
+	    i = pos / fv->colcnt;
+	    j = pos - i*fv->colcnt;
+	    i -= fv->rowoff;
  /* Normally we should be checking against fv->rowcnt (rather than <=rowcnt) */
  /*  but every now and then the WM forces us to use a window size which doesn't */
  /*  fit our expectations (maximized view) and we must be prepared for half */
  /*  lines */
-	if ( i>=0 && i<=fv->rowcnt ) {
+	    if ( i>=0 && i<=fv->rowcnt ) {
 # ifdef FONTFORGE_CONFIG_GDRAW
-	    GRect r;
-	    Color bg;
-	    if ( sc->color!=COLOR_DEFAULT )
-		bg = sc->color;
-	    else if ( sc->layers[ly_back].splines!=NULL || sc->layers[ly_back].images!=NULL )
-		bg = 0x808080;
-	    else
-		bg = GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(fv->v));
-	    r.x = j*fv->cbw+1; r.width = fv->cbw-1;
-	    r.y = i*fv->cbh+1; r.height = FV_LAB_HEIGHT-1;
-	    GDrawSetXORBase(fv->v,bg);
-	    GDrawSetXORMode(fv->v);
-	    GDrawFillRect(fv->v,&r,0x000000);
-	    GDrawSetCopyMode(fv->v);
+		GRect r;
+		Color bg;
+		if ( sc->color!=COLOR_DEFAULT )
+		    bg = sc->color;
+		else if ( sc->layers[ly_back].splines!=NULL || sc->layers[ly_back].images!=NULL )
+		    bg = 0x808080;
+		else
+		    bg = GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(fv->v));
+		r.x = j*fv->cbw+1; r.width = fv->cbw-1;
+		r.y = i*fv->cbh+1; r.height = FV_LAB_HEIGHT-1;
+		GDrawSetXORBase(fv->v,bg);
+		GDrawSetXORMode(fv->v);
+		GDrawFillRect(fv->v,&r,0x000000);
+		GDrawSetCopyMode(fv->v);
 # elif defined(FONTFORGE_CONFIG_GTK)
-	    GdkGC *gc = fv->v->style->fg_gc[fv->v->state];
-	    GdkGCValues values;
-	    struct GdkColor bg;
-	    gdk_gc_get_values(gc,&values);
-	    bg.pixel = -1;
-	    if ( sc->color!=COLOR_DEFAULT ) {
-		bg.red   = ((sc->color>>16)&0xff)<<8;
-		bg.green = ((sc->color>>8 )&0xff)<<8;
-		bg.blue  = ((sc->color    )&0xff)<<8;
-	    } else if ( sc->layers[ly_back].splines!=NULL || sc->layers[ly_back].images!=NULL )
-		bg.red = bg.green = bg.blue = 0x8000;
-	    else
-		bg = values.background;
-	    /* Bug!!! This only works on RealColor */
-	    bg.red ^= values.foreground.red;
-	    bg.green ^= values.foreground.green;
-	    bg.blue ^= values.foreground.blue;
-	    /* End bug */
-	    gdk_gc_set_function(gc,GDK_XOR);
-	    gdk_gc_set_foreground(gc, &bg);
-	    gdk_draw_rectangle(fv->v->window, gc, TRUE,
-		    j*fv->cbw+1, i*fv->cbh+1,  fv->cbw-1, fv->lab_height);
-	    gdk_gc_set_values(gc,&values,
-		    GDK_GC_FOREGROUND | GDK_GC_FUNCTION );
+		GdkGC *gc = fv->v->style->fg_gc[fv->v->state];
+		GdkGCValues values;
+		struct GdkColor bg;
+		gdk_gc_get_values(gc,&values);
+		bg.pixel = -1;
+		if ( sc->color!=COLOR_DEFAULT ) {
+		    bg.red   = ((sc->color>>16)&0xff)<<8;
+		    bg.green = ((sc->color>>8 )&0xff)<<8;
+		    bg.blue  = ((sc->color    )&0xff)<<8;
+		} else if ( sc->layers[ly_back].splines!=NULL || sc->layers[ly_back].images!=NULL )
+		    bg.red = bg.green = bg.blue = 0x8000;
+		else
+		    bg = values.background;
+		/* Bug!!! This only works on RealColor */
+		bg.red ^= values.foreground.red;
+		bg.green ^= values.foreground.green;
+		bg.blue ^= values.foreground.blue;
+		/* End bug */
+		gdk_gc_set_function(gc,GDK_XOR);
+		gdk_gc_set_foreground(gc, &bg);
+		gdk_draw_rectangle(fv->v->window, gc, TRUE,
+			j*fv->cbw+1, i*fv->cbh+1,  fv->cbw-1, fv->lab_height);
+		gdk_gc_set_values(gc,&values,
+			GDK_GC_FOREGROUND | GDK_GC_FUNCTION );
 # endif
+	    }
 	}
     }
 #endif
@@ -204,10 +205,17 @@ return;
 #endif
 }
 
+void SFUntickAll(SplineFont *sf) {
+    int i;
+
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
+	sf->glyphs[i]->ticked = false;
+}
+
 void FVDeselectAll(FontView *fv) {
     int i;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) {
+    for ( i=0; i<fv->map->enccount; ++i ) {
 	if ( fv->selected[i] ) {
 	    fv->selected[i] = false;
 	    FVToggleCharSelected(fv,i);
@@ -219,7 +227,7 @@ void FVDeselectAll(FontView *fv) {
 static void FVInvertSelection(FontView *fv) {
     int i;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) {
+    for ( i=0; i<fv->map->enccount; ++i ) {
 	fv->selected[i] = !fv->selected[i];
 	FVToggleCharSelected(fv,i);
     }
@@ -230,7 +238,7 @@ static void FVInvertSelection(FontView *fv) {
 static void FVSelectAll(FontView *fv) {
     int i;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) {
+    for ( i=0; i<fv->map->enccount; ++i ) {
 	if ( !fv->selected[i] ) {
 	    fv->selected[i] = true;
 	    FVToggleCharSelected(fv,i);
@@ -242,10 +250,11 @@ static void FVSelectAll(FontView *fv) {
 static void FVSelectColor(FontView *fv, uint32 col, int door) {
     int i, any=0;
     uint32 sccol;
-    SplineChar **chars = fv->sf->chars;
+    SplineChar **glyphs = fv->sf->glyphs;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) {
-	sccol =  ( chars[i]==NULL ) ? COLOR_DEFAULT : chars[i]->color;
+    for ( i=0; i<fv->map->enccount; ++i ) {
+	int enc = fv->map->map[i];
+	sccol =  ( enc==-1 || glyphs[enc]==NULL ) ? COLOR_DEFAULT : glyphs[enc]->color;
 	if ( (door && !fv->selected[i] && sccol==col) ||
 		(!door && fv->selected[i]!=(sccol==col)) ) {
 	    fv->selected[i] = !fv->selected[i];
@@ -260,7 +269,7 @@ static void FVReselect(FontView *fv, int newpos) {
     int i, start, end;
 
     if ( newpos<0 ) newpos = 0;
-    else if ( newpos>=fv->sf->charcnt ) newpos = fv->sf->charcnt-1;
+    else if ( newpos>=fv->map->enccount ) newpos = fv->map->enccount-1;
 
     start = fv->pressed_pos; end = fv->end_pos;
 
@@ -309,9 +318,10 @@ static void FVReselect(FontView *fv, int newpos) {
     }
     fv->end_pos = newpos;
 # ifdef FONTFORGE_CONFIG_GDRAW
-    if ( newpos>=0 && newpos<fv->sf->charcnt && fv->sf->chars[newpos]!=NULL &&
-	    fv->sf->chars[newpos]->unicodeenc>=0 && fv->sf->chars[newpos]->unicodeenc<0x10000 )
-	GInsCharSetChar(fv->sf->chars[newpos]->unicodeenc);
+    if ( newpos>=0 && newpos<fv->map->enccount && (i = fv->map->map[newpos])!=-1 &&
+	    fv->sf->glyphs[i]!=NULL &&
+	    fv->sf->glyphs[i]->unicodeenc>=0 && fv->sf->glyphs[i]->unicodeenc<0x10000 )
+	GInsCharSetChar(fv->sf->glyphs[i]->unicodeenc);
 # endif
 }
 #endif
@@ -325,16 +335,16 @@ static void _SplineFontSetUnChanged(SplineFont *sf) {
 
     sf->changed = false;
     SFClearAutoSave(sf);
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
-	if ( sf->chars[i]->changed ) {
-	    sf->chars[i]->changed = false;
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
+	if ( sf->glyphs[i]->changed ) {
+	    sf->glyphs[i]->changed = false;
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	    SCRefreshTitles(sf->chars[i]);
+	    SCRefreshTitles(sf->glyphs[i]);
 #endif
 	}
     for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next )
-	for ( i=0; i<bdf->charcnt; ++i ) if ( bdf->chars[i]!=NULL )
-	    bdf->chars[i]->changed = false;
+	for ( i=0; i<bdf->glyphcnt; ++i ) if ( bdf->glyphs[i]!=NULL )
+	    bdf->glyphs[i]->changed = false;
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( was && sf->fv!=NULL && sf->fv->v!=NULL )
 # ifdef FONTFORGE_CONFIG_GDRAW
@@ -364,9 +374,9 @@ static void FVFlattenAllBitmapSelections(FontView *fv) {
     int i;
 
     for ( bdf = fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
-	for ( i=0; i<bdf->charcnt; ++i )
-	    if ( bdf->chars[i]!=NULL && bdf->chars[i]->selection!=NULL )
-		BCFlattenFloat(bdf->chars[i]);
+	for ( i=0; i<bdf->glyphcnt; ++i )
+	    if ( bdf->glyphs[i]!=NULL && bdf->glyphs[i]->selection!=NULL )
+		BCFlattenFloat(bdf->glyphs[i]);
     }
 }
 
@@ -427,7 +437,7 @@ return( ret==0 );
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 int _FVMenuGenerate(FontView *fv,int family) {
     FVFlattenAllBitmapSelections(fv);
-return( SFGenerateFont(fv->sf,family) );
+return( SFGenerateFont(fv->sf,family,fv->map) );
 }
 
 # ifdef FONTFORGE_CONFIG_GDRAW
@@ -494,7 +504,7 @@ return( 0 );
     filename = u2def_copy(ret);
     free(ret);
     FVFlattenAllBitmapSelections(fv);
-    ok = SFDWrite(filename,fv->sf);
+    ok = SFDWrite(filename,fv->sf,fv->map);
     if ( ok ) {
 	SplineFont *sf = fv->cidmaster?fv->cidmaster:fv->sf->mm!=NULL?fv->sf->mm->normal:fv->sf;
 	free(sf->filename);
@@ -553,7 +563,7 @@ int _FVMenuSave(FontView *fv) {
 	ret = _FVMenuSaveAs(fv);
     else {
 	FVFlattenAllBitmapSelections(fv);
-	if ( !SFDWriteBak(sf) )
+	if ( !SFDWriteBak(sf,fv->map) )
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_SaveFailed,_STR_SaveFailed);
 #elif defined(FONTFORGE_CONFIG_GTK)
@@ -593,9 +603,9 @@ void _FVCloseWindows(FontView *fv) {
     if ( fv->nextsame==NULL && fv->sf->fv==fv && fv->sf->vkcld!=NULL )
 	KCLD_End(fv->sf->vkcld);
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
 	CharView *cv, *next;
-	for ( cv = sf->chars[i]->views; cv!=NULL; cv = next ) {
+	for ( cv = sf->glyphs[i]->views; cv!=NULL; cv = next ) {
 	    next = cv->next;
 # ifdef FONTFORGE_CONFIG_GDRAW
 	    GDrawDestroyWindow(cv->gw);
@@ -603,16 +613,16 @@ void _FVCloseWindows(FontView *fv) {
 	    gtk_widget_destroy(cv->gw);
 # endif
 	}
-	if ( sf->chars[i]->charinfo )
-	    CharInfoDestroy(sf->chars[i]->charinfo);
+	if ( sf->glyphs[i]->charinfo )
+	    CharInfoDestroy(sf->glyphs[i]->charinfo);
     }
     if ( sf->mm!=NULL ) {
 	MMSet *mm = sf->mm;
 	for ( j=0; j<mm->instance_count; ++j ) {
 	    SplineFont *sf = mm->instances[j];
-	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
 		CharView *cv, *next;
-		for ( cv = sf->chars[i]->views; cv!=NULL; cv = next ) {
+		for ( cv = sf->glyphs[i]->views; cv!=NULL; cv = next ) {
 		    next = cv->next;
 # ifdef FONTFORGE_CONFIG_GDRAW
 		    GDrawDestroyWindow(cv->gw);
@@ -620,29 +630,31 @@ void _FVCloseWindows(FontView *fv) {
 		    gtk_widget_destroy(cv->gw);
 # endif
 		}
-		if ( sf->chars[i]->charinfo )
-		    CharInfoDestroy(sf->chars[i]->charinfo);
+		if ( sf->glyphs[i]->charinfo )
+		    CharInfoDestroy(sf->glyphs[i]->charinfo);
 	    }
 	}
     } else if ( sf->subfontcnt!=0 ) {
 	for ( j=0; j<sf->subfontcnt; ++j ) {
-	    for ( i=0; i<sf->subfonts[j]->charcnt; ++i ) if ( sf->subfonts[j]->chars[i]!=NULL ) {
+	    for ( i=0; i<sf->subfonts[j]->glyphcnt; ++i ) if ( sf->subfonts[j]->glyphs[i]!=NULL ) {
 		CharView *cv, *next;
-		for ( cv = sf->subfonts[j]->chars[i]->views; cv!=NULL; cv = next ) {
+		for ( cv = sf->subfonts[j]->glyphs[i]->views; cv!=NULL; cv = next ) {
 		    next = cv->next;
 # ifdef FONTFORGE_CONFIG_GDRAW
 		    GDrawDestroyWindow(cv->gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
 		    gtk_widget_destroy(cv->gw);
 # endif
+		if ( sf->subfonts[j]->glyphs[i]->charinfo )
+		    CharInfoDestroy(sf->subfonts[j]->glyphs[i]->charinfo);
 		}
 	    }
 	}
     }
     for ( bdf = sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
-	for ( i=0; i<bdf->charcnt; ++i ) if ( bdf->chars[i]!=NULL ) {
+	for ( i=0; i<bdf->glyphcnt; ++i ) if ( bdf->glyphs[i]!=NULL ) {
 	    BitmapView *bv, *next;
-	    for ( bv = bdf->chars[i]->views; bv!=NULL; bv = next ) {
+	    for ( bv = bdf->glyphs[i]->views; bv!=NULL; bv = next ) {
 		next = bv->next;
 # ifdef FONTFORGE_CONFIG_GDRAW
 		GDrawDestroyWindow(bv->gw);
@@ -744,24 +756,24 @@ gboolean FontView_RequestClose(GtkWidget *widget, GdkEvent *event,
 # endif
 
 static void FVReattachCVs(SplineFont *old,SplineFont *new) {
-    int i, j, enc;
+    int i, j, pos;
     CharView *cv, *cvnext;
     SplineFont *sub;
 
-    for ( i=0; i<old->charcnt; ++i ) {
-	if ( old->chars[i]!=NULL && old->chars[i]->views!=NULL ) {
+    for ( i=0; i<old->glyphcnt; ++i ) {
+	if ( old->glyphs[i]!=NULL && old->glyphs[i]->views!=NULL ) {
 	    if ( new->subfontcnt==0 ) {
-		enc = SFFindExistingChar(new,old->chars[i]->unicodeenc,old->chars[i]->name);
+		pos = SFFindExistingSlot(new,old->glyphs[i]->unicodeenc,old->glyphs[i]->name);
 		sub = new;
 	    } else {
-		enc = -1;
-		for ( j=0; j<new->subfontcnt && enc==-1 ; ++j ) {
+		pos = -1;
+		for ( j=0; j<new->subfontcnt && pos==-1 ; ++j ) {
 		    sub = new->subfonts[j];
-		    enc = SFFindExistingChar(sub,old->chars[i]->unicodeenc,old->chars[i]->name);
+		    pos = SFFindExistingSlot(sub,old->glyphs[i]->unicodeenc,old->glyphs[i]->name);
 		}
 	    }
-	    if ( enc==-1 ) {
-		for ( cv=old->chars[i]->views; cv!=NULL; cv = cvnext ) {
+	    if ( pos==-1 ) {
+		for ( cv=old->glyphs[i]->views; cv!=NULL; cv = cvnext ) {
 		    cvnext = cv->next;
 # ifdef FONTFORGE_CONFIG_GDRAW
 		    GDrawDestroyWindow(cv->gw);
@@ -770,9 +782,9 @@ static void FVReattachCVs(SplineFont *old,SplineFont *new) {
 # endif
 		}
 	    } else {
-		for ( cv=old->chars[i]->views; cv!=NULL; cv = cvnext ) {
+		for ( cv=old->glyphs[i]->views; cv!=NULL; cv = cvnext ) {
 		    cvnext = cv->next;
-		    CVChangeSC(cv,sub->chars[enc]);
+		    CVChangeSC(cv,sub->glyphs[pos]);
 		    cv->layerheads[dm_grid] = &new->grid;
 		}
 	    }
@@ -789,7 +801,6 @@ void FVRevert(FontView *fv) {
     BDFChar *bc;
     BitmapView *bv, *bvnext;
     MetricsView *mv, *mvnext;
-    int enc;
     int i;
     FontView *fvs;
 
@@ -810,12 +821,12 @@ return;
 	for ( tbdf=temp->bitmaps; tbdf!=NULL; tbdf=tbdf->next )
 	    if ( tbdf->pixelsize==fbdf->pixelsize )
 	break;
-	for ( i=0; i<fv->sf->charcnt; ++i ) {
-	    if ( fbdf->chars[i]!=NULL && fbdf->chars[i]->views!=NULL ) {
-		enc = SFFindChar(temp,fv->sf->chars[i]->unicodeenc,fv->sf->chars[i]->name);
-		bc = enc==-1 || tbdf==NULL?NULL:tbdf->chars[enc];
+	for ( i=0; i<fv->sf->glyphcnt; ++i ) {
+	    if ( i<fbdf->glyphcnt && fbdf->glyphs[i]!=NULL && fbdf->glyphs[i]->views!=NULL ) {
+		int pos = SFFindExistingSlot(temp,fv->sf->glyphs[i]->unicodeenc,fv->sf->glyphs[i]->name);
+		bc = pos==-1 || tbdf==NULL?NULL:tbdf->glyphs[pos];
 		if ( bc==NULL ) {
-		    for ( bv=fbdf->chars[i]->views; bv!=NULL; bv = bvnext ) {
+		    for ( bv=fbdf->glyphs[i]->views; bv!=NULL; bv = bvnext ) {
 			bvnext = bv->next;
 # ifdef FONTFORGE_CONFIG_GDRAW
 			GDrawDestroyWindow(bv->gw);
@@ -824,7 +835,7 @@ return;
 # endif
 		    }
 		} else {
-		    for ( bv=fbdf->chars[i]->views; bv!=NULL; bv = bvnext ) {
+		    for ( bv=fbdf->glyphs[i]->views; bv!=NULL; bv = bvnext ) {
 			bvnext = bv->next;
 			BVChangeBC(bv,bc,true);
 		    }
@@ -857,10 +868,9 @@ return;
     GDrawProcessPendingEvents(NULL);
 # endif
 #endif
-    if ( temp->charcnt>fv->sf->charcnt ) {
-	fv->selected = grealloc(fv->selected,temp->charcnt);
-	for ( i=fv->sf->charcnt; i<temp->charcnt; ++i )
-	    fv->selected[i] = false;
+    if ( temp->glyphcnt>fv->sf->glyphcnt ) {
+	fv->selected = grealloc(fv->selected,temp->glyphcnt);
+	memset(fv->selected+fv->sf->glyphcnt,0,temp->glyphcnt-fv->sf->glyphcnt);
     }
     SFClearAutoSave(old);
     temp->fv = fv->sf->fv;
@@ -888,13 +898,13 @@ void FontViewMenu_RevertGlyph(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     int i;
-    int nc_state = -1, refs_state=-1, ret;
+    int nc_state = -1;
     SplineFont *sf = fv->sf;
     SplineChar *sc, *tsc;
     SplineChar temp;
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( fv->selected[i] && sf->chars[i]!=NULL ) {
-	tsc = sf->chars[i];
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( fv->selected[i] && sf->glyphs[i]!=NULL ) {
+	tsc = sf->glyphs[i];
 	if ( tsc->namechanged ) {
 	    if ( nc_state==-1 ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
@@ -914,50 +924,23 @@ void FontViewMenu_RevertGlyph(GtkMenuItem *menuitem, gpointer user_data) {
 #endif
 		tsc->namechanged = true;
 	    } else {
-		if ( sc->layers[ly_fore].refs!=NULL && sf->encodingchanged ) {
-		    if ( refs_state==-1 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-			static int buts[] = { _STR_Yes, _STR_YesToAll,
-					_STR_NoToAll, _STR_No, _STR_Cancel, 0 };
-			ret = GWidgetAskR(_STR_GlyphHasRefs,buts,0,4,_STR_GlyphHasRefsQuestion,tsc->name);
-#elif defined(FONTFORGE_CONFIG_GTK)
-			char *buts[5];
-			buts[0] = GTK_STOCK_YES;
-			buts[1] = _("Yes to All");
-			buts[2] = _("No to All");
-			buts[3] = GTK_STOCK_NO;
-			buts[4] = GTK_STOCK_CANCEL;
-			ret = gwwv_ask(_("Problems With References"),buts,0,1,_("The character, %.40s, contained references, but the font's encoding has changed. I will probably not be able to map those references to the correct locations. If I proceed some references may be lost and others may link to incorrect characters. Do you want to proceed anyway?"),tsc->name);
-#endif
-			if ( ret == 1 || ret == 2 )
-			    refs_state = ret;
-		    } else
-			ret = refs_state;
-		    if ( ret >= 2 ) 	/* No, No to All, Cancel */
-			SplineCharFree(sc);
-		    if ( ret==4 )		/* Cancel */
-return;
-		} else
-		    ret = 0;
-		if ( ret==0 || ret==1 ) {
-		    SCPreserveState(tsc,true);
-		    SCPreserveBackground(tsc);
-		    temp = *tsc;
-		    tsc->dependents = NULL;
-		    tsc->layers[ly_back].undoes = tsc->layers[ly_fore].undoes = NULL;
-		    SplineCharFreeContents(tsc);
-		    *tsc = *sc;
-		    chunkfree(sc,sizeof(SplineChar));
-		    tsc->parent = sf;
-		    tsc->dependents = temp.dependents;
-		    tsc->layers[ly_fore].undoes = temp.layers[ly_fore].undoes;
-		    tsc->layers[ly_back].undoes = temp.layers[ly_back].undoes;
-		    tsc->views = temp.views;
-		    tsc->changed = temp.changed;
-		    tsc->enc = temp.enc;
-		    RevertedGlyphReferenceFixup(tsc, sf);
-		    _SCCharChangedUpdate(tsc,false);
-		}
+		SCPreserveState(tsc,true);
+		SCPreserveBackground(tsc);
+		temp = *tsc;
+		tsc->dependents = NULL;
+		tsc->layers[ly_back].undoes = tsc->layers[ly_fore].undoes = NULL;
+		SplineCharFreeContents(tsc);
+		*tsc = *sc;
+		chunkfree(sc,sizeof(SplineChar));
+		tsc->parent = sf;
+		tsc->dependents = temp.dependents;
+		tsc->layers[ly_fore].undoes = temp.layers[ly_fore].undoes;
+		tsc->layers[ly_back].undoes = temp.layers[ly_back].undoes;
+		tsc->views = temp.views;
+		tsc->changed = temp.changed;
+		tsc->orig_pos = temp.orig_pos;
+		RevertedGlyphReferenceFixup(tsc, sf);
+		_SCCharChangedUpdate(tsc,false);
 	    }
 	}
     }
@@ -1042,7 +1025,7 @@ char *GetPostscriptFontName(char *dir, int mult) {
 return( FVOpenFont(_("Open Postscript Font"), dir,wild,mult));
 }
 
-void MergeKernInfo(SplineFont *sf) {
+void MergeKernInfo(SplineFont *sf,EncMap *map) {
 #ifndef __Mac
     static char wild = "*.{afm,tfm,pfm,bin,hqx,dfont}";
     static char wild2[] = "*.{afm,amfm,tfm,pfm,bin,hqx,dfont}";
@@ -1056,7 +1039,7 @@ void MergeKernInfo(SplineFont *sf) {
     if ( ret==NULL )		/* Cancelled */
 return;
 
-    if ( !LoadKerningDataFromMetricsFile(sf,ret))
+    if ( !LoadKerningDataFromMetricsFile(sf,ret,map))
 	gwwv_post_error( _("Failed to load kern data from %s"), ret);
     free(ret);
 }
@@ -1115,7 +1098,7 @@ char *GetPostscriptFontName(char *dir, int mult) {
 return( temp );
 }
 
-void MergeKernInfo(SplineFont *sf) {
+void MergeKernInfo(SplineFont *sf,EncMap *map) {
 #ifndef __Mac
     static unichar_t wild[] = { '*', '.', '{','a','f','m',',','t','f','m',',','p','f','m',',','b','i','n',',','h','q','x',',','d','f','o','n','t','}',  '\0' };
     static unichar_t wild2[] = { '*', '.', '{','a','f','m',',','a','m','f','m',',','t','f','m',',','p','f','m',',','b','i','n',',','h','q','x',',','d','f','o','n','t','}',  '\0' };
@@ -1130,7 +1113,7 @@ void MergeKernInfo(SplineFont *sf) {
     if ( temp==NULL )		/* Cancelled */
 return;
 
-    if ( !LoadKerningDataFromMetricsFile(sf,temp))
+    if ( !LoadKerningDataFromMetricsFile(sf,temp,map))
 #if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Load of Kerning Metrics Failed"),_("Failed to load kern data from %s"), temp);
 #else
@@ -1149,7 +1132,7 @@ static void FVMenuMergeKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 void FontViewMenu_MergeKern(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
-    MergeKernInfo(fv->sf);
+    MergeKernInfo(fv->sf,fv->map);
 }
 
 # ifdef FONTFORGE_CONFIG_GDRAW
@@ -1234,7 +1217,7 @@ void FontViewMenu_Import(GtkMenuItem *menuitem, gpointer user_data) {
 static int FVSelCount(FontView *fv) {
     int i, cnt=0;
 
-    for ( i=0; i<fv->sf->charcnt; ++i )
+    for ( i=0; i<fv->map->enccount; ++i )
 	if ( fv->selected[i] ) ++cnt;
     if ( cnt>10 ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
@@ -1261,10 +1244,10 @@ void FontViewMenu_OpenOutline(GtkMenuItem *menuitem, gpointer user_data) {
 
     if ( !FVSelCount(fv))
 return;
-    for ( i=0; i<fv->sf->charcnt; ++i )
+    for ( i=0; i<fv->map->enccount; ++i )
 	if ( fv->selected[i] ) {
 	    sc = FVMakeChar(fv,i);
-	    CharViewCreate(sc,fv);
+	    CharViewCreate(sc,fv,i);
 	}
 }
 
@@ -1282,11 +1265,11 @@ void FontViewMenu_OpenBitmap(GtkMenuItem *menuitem, gpointer user_data) {
 return;
     if ( !FVSelCount(fv))
 return;
-    for ( i=0; i<fv->sf->charcnt; ++i )
+    for ( i=0; i<fv->map->enccount; ++i )
 	if ( fv->selected[i] ) {
 	    sc = FVMakeChar(fv,i);
 	    if ( sc!=NULL )
-		BitmapViewCreatePick(sc->enc,fv);
+		BitmapViewCreatePick(i,fv);
 	}
 }
 
@@ -1376,8 +1359,6 @@ void FontViewMenu_MetaFont(GtkMenuItem *menuitem, gpointer user_data) {
 #define MID_PrevDef	2013
 #define MID_ShowHMetrics 2016
 #define MID_ShowVMetrics 2017
-#define MID_CompactedView 2018
-#define MID_EncodedView 2019
 #define MID_Ligatures	2020
 #define MID_KernPairs	2021
 #define MID_AnchorPairs	2022
@@ -1479,6 +1460,16 @@ void FontViewMenu_MetaFont(GtkMenuItem *menuitem, gpointer user_data) {
 #define MID_RemoveFromCID 2805
 #define MID_ConvertByCMap	2806
 #define MID_FlattenByCMap	2807
+#define MID_ChangeSupplement	2808
+#define MID_Reencode		2830
+#define MID_ForceReencode	2831
+#define MID_AddUnencoded	2832
+#define MID_RemoveUnused	2833
+#define MID_DetachGlyphs	2834
+#define MID_DetachAndRemoveGlyphs	2835
+#define MID_LoadEncoding	2836
+#define MID_MakeFromFont	2837
+#define MID_RemoveEncoding	2838
 #define MID_CreateMM	2900
 #define MID_MMInfo	2901
 #define MID_MMValid	2902
@@ -1493,7 +1484,7 @@ void FontViewMenu_MetaFont(GtkMenuItem *menuitem, gpointer user_data) {
 static int FVAnyCharSelected(FontView *fv) {
     int i, val=-1;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) {
+    for ( i=0; i<fv->map->enccount; ++i ) {
 	if ( fv->selected[i]) {
 	    if ( val==-1 )
 		val = i;
@@ -1509,8 +1500,8 @@ static int FVAllSelected(FontView *fv) {
     int i, any = false;
     /* Is everything real selected? */
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( SCWorthOutputting(fv->sf->chars[i])) {
-	if ( !fv->selected[i] )
+    for ( i=0; i<fv->sf->glyphcnt; ++i ) if ( SCWorthOutputting(fv->sf->glyphs[i])) {
+	if ( !fv->selected[fv->map->backmap[i]] )
 return( false );
 	any = true;
     }
@@ -1625,9 +1616,9 @@ void FontViewMenu_CopyFeatures(GtkMenuItem *menuitem, gpointer user_data) {
 # endif
     int ch = FVAnyCharSelected(fv);
 
-    if ( ch<0 || fv->sf->chars[ch]==NULL )
+    if ( ch<0 || fv->sf->glyphs[ch]==NULL )
 return;
-    SCCopyFeatures(fv->sf->chars[ch]);
+    SCCopyFeatures(fv->sf->glyphs[ch]);
 }
 
 # ifdef FONTFORGE_CONFIG_GDRAW
@@ -1673,18 +1664,43 @@ void FontViewMenu_PasteAfter(GtkMenuItem *menuitem, gpointer user_data) {
 #endif
 #endif
 
+static void LinkEncToGid(FontView *fv,int enc, int gid) {
+    EncMap *map = fv->map;
+    int old_gid;
+    int flags = -1;
+    int j;
+
+    if ( map->map[enc]!=-1 && map->map[enc]!=gid ) {
+	SplineFont *sf = fv->sf;
+	old_gid = map->map[enc];
+	for ( j=0; j<map->enccount; ++j )
+	    if ( j!=enc && map->map[j]==old_gid )
+	break;
+	/* If the glyph is used elsewhere in the encoding then reusing this */
+	/* slot causes no problems */
+	if ( j==map->enccount ) {
+	    /* However if this is the only use and the glyph is interesting */
+	    /*  then add it to the unencoded area. If it is uninteresting we*/
+	    /*  can just get rid of it */
+	    if ( SCWorthOutputting(sf->glyphs[old_gid]) )
+		SFAddEncodingSlot(sf,old_gid);
+	    else
+		SFRemoveGlyph(sf,sf->glyphs[old_gid],&flags);
+	}
+    }
+    map->map[enc] = gid;
+}
+
 static void FVSameGlyphAs(FontView *fv) {
     SplineFont *sf = fv->sf;
     RefChar *base = CopyContainsRef(sf);
     int i;
+    EncMap *map = fv->map;
 
-    if ( FVAnyCharSelected(fv)==-1 || base==NULL || fv->cidmaster!=NULL )
+    if ( base==NULL || fv->cidmaster!=NULL )
 return;
-    PasteIntoFV(fv,false,NULL);
-    for ( i=0; i<sf->charcnt; ++i )
-	    if ( sf->chars[i]!=NULL && fv->selected[i] && base->local_enc!=i) {
-	free(sf->chars[i]->name);
-	sf->chars[i]->name = copy(sf->chars[base->local_enc]->name);
+    for ( i=0; i<map->enccount; ++i ) if ( fv->selected[i] ) {
+	LinkEncToGid(fv,i,base->orig_pos);
     }
 }
 
@@ -1701,11 +1717,12 @@ void FontViewMenu_SameGlyphAs(GtkMenuItem *menuitem, gpointer user_data) {
 #endif
 
 static void FVCopyFgtoBg(FontView *fv) {
-    int i;
+    int i, gid;
 
-    for ( i=0; i<fv->sf->charcnt; ++i )
-	if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->layers[1].splines!=NULL )
-	    SCCopyFgToBg(fv->sf->chars[i],true);
+    for ( i=0; i<fv->map->enccount; ++i )
+	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
+		fv->sf->glyphs[gid]->layers[1].splines!=NULL )
+	    SCCopyFgToBg(fv->sf->glyphs[gid],true);
 }
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -1801,7 +1818,7 @@ static int UnselectedDependents(FontView *fv, SplineChar *sc) {
     struct splinecharlist *dep;
 
     for ( dep=sc->dependents; dep!=NULL; dep=dep->next ) {
-	if ( !fv->selected[dep->sc->enc] )
+	if ( !fv->selected[fv->map->backmap[dep->sc->orig_pos]] )
 return( true );
 	if ( UnselectedDependents(fv,dep->sc))
 return( true );
@@ -1818,7 +1835,7 @@ void UnlinkThisReference(FontView *fv,SplineChar *sc) {
 
     for ( dep=sc->dependents; dep!=NULL; dep=dnext ) {
 	dnext = dep->next;
-	if ( fv==NULL || !fv->selected[dep->sc->enc]) {
+	if ( fv==NULL || !fv->selected[fv->map->backmap[dep->sc->orig_pos]]) {
 	    SplineChar *dsc = dep->sc;
 	    RefChar *rf, *rnext;
 	    /* May be more than one reference to us, colon has two refs to period */
@@ -1845,22 +1862,22 @@ static void FVClear(FontView *fv) {
 #elif defined(FONTFORGE_CONFIG_GTK)
     char *buts[6];
 #endif
-    int yes, unsel;
+    int yes, unsel, gid;
     /* refstate==0 => ask, refstate==1 => clearall, refstate==-1 => skip all */
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] && (gid=fv->map->map[i])!=-1 ) {
 	if ( !onlycopydisplayed || fv->filled==fv->show ) {
 	    /* If we are messing with the outline character, check for dependencies */
-	    if ( refstate<=0 && fv->sf->chars[i]!=NULL &&
-		    fv->sf->chars[i]->dependents!=NULL ) {
-		unsel = UnselectedDependents(fv,fv->sf->chars[i]);
+	    if ( refstate<=0 && fv->sf->glyphs[gid]!=NULL &&
+		    fv->sf->glyphs[gid]->dependents!=NULL ) {
+		unsel = UnselectedDependents(fv,fv->sf->glyphs[gid]);
 		if ( refstate==-2 && unsel ) {
-		    UnlinkThisReference(fv,fv->sf->chars[i]);
+		    UnlinkThisReference(fv,fv->sf->glyphs[gid]);
 		} else if ( unsel ) {
 		    if ( refstate<0 )
     continue;
 #if defined(FONTFORGE_CONFIG_GDRAW)
-		    yes = GWidgetAskCenteredR(_STR_BadReference,buts,2,4,_STR_ClearDependent,fv->sf->chars[i]->name);
+		    yes = GWidgetAskCenteredR(_STR_BadReference,buts,2,4,_STR_ClearDependent,fv->sf->glyphs[gid]->name);
 #elif defined(FONTFORGE_CONFIG_GTK)
 		    buts[0] = GTK_STOCK_YES;
 		    buts[1] = _("Yes to All");
@@ -1868,12 +1885,12 @@ static void FVClear(FontView *fv) {
 		    buts[3] = _("No to All");
 		    buts[4] = GTK_STOCK_NO;
 		    buts[5] = NULL;
-		    yes = gwwv_ask(_("Bad Reference"),buts,2,4,_("You are attempting to clear %.30s which is refered to by\nanother character. Are you sure you want to clear it?"),fv->sf->chars[i]->name);
+		    yes = gwwv_ask(_("Bad Reference"),buts,2,4,_("You are attempting to clear %.30s which is refered to by\nanother character. Are you sure you want to clear it?"),fv->sf->glyphs[gid]->name);
 #endif
 		    if ( yes==1 )
 			refstate = 1;
 		    else if ( yes==2 ) {
-			UnlinkThisReference(fv,fv->sf->chars[i]);
+			UnlinkThisReference(fv,fv->sf->glyphs[gid]);
 			refstate = -2;
 		    } else if ( yes==3 )
 			refstate = -1;
@@ -1884,13 +1901,13 @@ static void FVClear(FontView *fv) {
 	}
 
 	if ( onlycopydisplayed && fv->filled==fv->show ) {
-	    SCClearAll(fv->sf->chars[i]);
+	    SCClearAll(fv->sf->glyphs[gid]);
 	} else if ( onlycopydisplayed ) {
-	    BCClearAll(fv->show->chars[i]);
+	    BCClearAll(fv->show->glyphs[gid]);
 	} else {
-	    SCClearAll(fv->sf->chars[i]);
+	    SCClearAll(fv->sf->glyphs[gid]);
 	    for ( bdf=fv->sf->bitmaps; bdf!=NULL; bdf = bdf->next )
-		BCClearAll(bdf->chars[i]);
+		BCClearAll(bdf->glyphs[gid]);
 	}
     }
 }
@@ -1909,13 +1926,14 @@ void FontViewMenu_Clear(GtkMenuItem *menuitem, gpointer user_data) {
 
 static void FVClearBackground(FontView *fv) {
     SplineFont *sf = fv->sf;
-    int i;
+    int i, gid;
 
     if ( onlycopydisplayed && fv->filled!=fv->show )
 return;
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( fv->selected[i] && sf->chars[i]!=NULL ) {
-	SCClearBackground(sf->chars[i]);
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
+	    (gid = fv->map->map[i])!=-1 && sf->glyphs[gid]!=NULL ) {
+	SCClearBackground(sf->glyphs[i]);
     }
 }
 
@@ -1933,17 +1951,18 @@ void FontViewMenu_ClearBackground(GtkMenuItem *menuitem, gpointer user_data) {
 
 static void FVJoin(FontView *fv) {
     SplineFont *sf = fv->sf;
-    int i,changed;
+    int i,changed,gid;
     extern float joinsnap;
 
     if ( onlycopydisplayed && fv->filled!=fv->show )
 return;
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( fv->selected[i] && sf->chars[i]!=NULL ) {
-	SCPreserveState(sf->chars[i],false);
-	sf->chars[i]->layers[ly_fore].splines = SplineSetJoin(sf->chars[i]->layers[ly_fore].splines,true,joinsnap,&changed);
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
+	    (gid = fv->map->map[i])!=-1 && sf->glyphs[gid]!=NULL ) {
+	SCPreserveState(sf->glyphs[gid],false);
+	sf->glyphs[gid]->layers[ly_fore].splines = SplineSetJoin(sf->glyphs[gid]->layers[ly_fore].splines,true,joinsnap,&changed);
 	if ( changed )
-	    SCCharChangedUpdate(sf->chars[i]);
+	    SCCharChangedUpdate(sf->glyphs[gid]);
     }
 }
 
@@ -1960,12 +1979,13 @@ void FontViewMenu_Join(GtkMenuItem *menuitem, gpointer user_data) {
 #endif
 
 static void FVUnlinkRef(FontView *fv) {
-    int i,layer;
+    int i,layer, gid;
     SplineChar *sc;
     RefChar *rf, *next;
 
-    for ( i=0; i<fv->sf->charcnt; ++i )
-	    if ( fv->selected[i] && (sc=fv->sf->chars[i])!=NULL && sc->layers[ly_fore].refs!=NULL ) {
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
+	    (gid = fv->map->map[i])!=-1 && (sc = fv->sf->glyphs[gid])!=NULL &&
+	     sc->layers[ly_fore].refs!=NULL ) {
 	SCPreserveState(sc,false);
 	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
 	    for ( rf=sc->layers[ly_fore].refs; rf!=NULL ; rf=next ) {
@@ -1996,24 +2016,24 @@ void SFRemoveUndoes(SplineFont *sf,uint8 *selected) {
     BDFFont *bdf;
 
     if ( selected!=NULL || main->subfontcnt==0 )
-	max = sf->charcnt;
+	max = sf->glyphcnt;
     else {
 	max = 0;
 	for ( k=0; k<main->subfontcnt; ++k )
-	    if ( main->subfonts[k]->charcnt>max ) max = main->subfonts[k]->charcnt;
+	    if ( main->subfonts[k]->glyphcnt>max ) max = main->subfonts[k]->glyphcnt;
     }
-    for ( i=0; i<max; ++i ) if ( selected==NULL || selected[i] ) {
+    for ( i=0; i<max && i<bdf->glyphcnt; ++i ) if ( selected==NULL || selected[i] ) {
 	for ( bdf=main->bitmaps; bdf!=NULL; bdf=bdf->next ) {
-	    if ( bdf->chars[i]!=NULL ) {
-		UndoesFree(bdf->chars[i]->undoes); bdf->chars[i]->undoes = NULL;
-		UndoesFree(bdf->chars[i]->redoes); bdf->chars[i]->redoes = NULL;
+	    if ( bdf->glyphs[i]!=NULL ) {
+		UndoesFree(bdf->glyphs[i]->undoes); bdf->glyphs[i]->undoes = NULL;
+		UndoesFree(bdf->glyphs[i]->redoes); bdf->glyphs[i]->redoes = NULL;
 	    }
 	}
 	k = 0;
 	do {
 	    ssf = main->subfontcnt==0? main: main->subfonts[k];
-	    if ( i<ssf->charcnt && ssf->chars[i]!=NULL ) {
-		sc = ssf->chars[i];
+	    if ( i<ssf->glyphcnt && ssf->glyphs[i]!=NULL ) {
+		sc = ssf->glyphs[i];
 		for ( layer = 0; layer<sc->layer_cnt; ++layer ) {
 		    UndoesFree(sc->layers[layer].undoes); sc->layers[layer].undoes = NULL;
 		    UndoesFree(sc->layers[layer].redoes); sc->layers[layer].redoes = NULL;
@@ -2042,22 +2062,25 @@ static void FVMenuUndo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 void FontViewMenu_Undo(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
-    int i,j,layer;
+    int i,j,layer, gid;
     MMSet *mm = fv->sf->mm;
     int was_blended = mm!=NULL && mm->normal==fv->sf;
 
-    for ( i=0; i<fv->sf->charcnt; ++i )
-	if ( fv->selected[i] && fv->sf->chars[i]!=NULL ) {
-	    SplineChar *sc = fv->sf->chars[i];
+    SFUntickAll(fv->sf);
+    for ( i=0; i<fv->map->enccount; ++i )
+	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
+		fv->sf->glyphs[gid]!=NULL && !fv->sf->glyphs[gid]->ticked) {
+	    SplineChar *sc = fv->sf->glyphs[gid];
 	    for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
 		if ( sc->layers[layer].undoes!=NULL ) {
 		    SCDoUndo(sc,layer);
 		    if ( was_blended ) {
 			for ( j=0; j<mm->instance_count; ++j )
-			    SCDoUndo(mm->instances[j]->chars[i],layer);
+			    SCDoUndo(mm->instances[j]->glyphs[gid],layer);
 		    }
 		}
 	    }
+	    sc->ticked = true;
 	}
 }
 
@@ -2068,22 +2091,25 @@ static void FVMenuRedo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 void FontViewMenu_Redo(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
-    int i,j,layer;
+    int i,j,layer, gid;
     MMSet *mm = fv->sf->mm;
     int was_blended = mm!=NULL && mm->normal==fv->sf;
 
-    for ( i=0; i<fv->sf->charcnt; ++i )
-	if ( fv->selected[i] && fv->sf->chars[i]!=NULL ) {
-	    SplineChar *sc = fv->sf->chars[i];
+    SFUntickAll(fv->sf);
+    for ( i=0; i<fv->map->enccount; ++i )
+	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
+		fv->sf->glyphs[gid]!=NULL && !fv->sf->glyphs[gid]->ticked) {
+	    SplineChar *sc = fv->sf->glyphs[gid];
 	    for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
 		if ( sc->layers[layer].redoes!=NULL ) {
 		    SCDoRedo(sc,layer);
 		    if ( was_blended ) {
 			for ( j=0; j<mm->instance_count; ++j )
-			    SCDoRedo(mm->instances[j]->chars[i],layer);
+			    SCDoRedo(mm->instances[j]->glyphs[gid],layer);
 		    }
 		}
 	    }
+	    sc->ticked = true;
 	}
 }
 
@@ -2246,20 +2272,20 @@ void FontViewMenu_CharInfo(GtkMenuItem *menuitem, gpointer user_data) {
     int pos = FVAnyCharSelected(fv);
     if ( pos<0 )
 return;
-    if ( fv->cidmaster!=NULL && fv->sf->chars[pos]==NULL )
+    if ( fv->cidmaster!=NULL &&
+	    (fv->map->map[pos]==-1 || fv->sf->glyphs[fv->map->map[pos]]==NULL ))
 return;
-    SFMakeChar(fv->sf,pos);
-    SCCharInfo(fv->sf->chars[pos]);
+    SCCharInfo(SFMakeChar(fv->sf,fv->map,pos),fv->map,pos);
 }
 
 # if defined(FONTFORGE_CONFIG_GDRAW)
 static void FVMenuAAT(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    int i;
+    int i,gid;
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     uint32 tag = (uint32) (mi->ti.userdata);
 # elif defined(FONTFORGE_CONFIG_GTK)
 void FontViewMenu_AAT(GtkMenuItem *menuitem, gpointer user_data) {
-    int i;
+    int i, gid;
     FontView *fv = FV_From_MI(menuitem);
     guint32 tag;
     G_CONST_RETURN gchar *name = gtk_widget_get_name(menuitem);
@@ -2316,9 +2342,10 @@ void FontViewMenu_AAT(GtkMenuItem *menuitem, gpointer user_data) {
 	tag = CHR('r','t','b','d');
 # endif
 
-    for ( i=0; i<fv->sf->charcnt; ++i )
-	if ( fv->sf->chars[i]!=NULL && fv->selected[i])
-	    SCTagDefault(SCDuplicate(fv->sf->chars[i]),tag);
+    for ( i=0; i<fv->map->enccount; ++i )
+	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
+		fv->sf->glyphs[gid]!=NULL )
+	    SCTagDefault(fv->sf->glyphs[gid],tag);
 }
 
 # if defined(FONTFORGE_CONFIG_GDRAW)
@@ -2331,13 +2358,13 @@ void FontViewMenu_AATSuffix(GtkMenuItem *menuitem, gpointer user_data) {
     uint32 tag;
     char *suffix;
     unichar_t *usuffix, *upt, *end;
-    int i;
+    int i, gid;
     uint16 flags, sli;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i])
-	if ( SCScriptFromUnicode(fv->sf->chars[i])!=DEFAULT_SCRIPT )
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] && (gid=fv->map->map[i])!=-1 && fv->sf->glyphs[gid]!=NULL )
+	if ( SCScriptFromUnicode(fv->sf->glyphs[gid])!=DEFAULT_SCRIPT )
     break;
-    usuffix = AskNameTag(_STR_SuffixToTag,NULL,0,0,-1,pst_substitution,fv->sf,fv->sf->chars[i],-1,-1);
+    usuffix = AskNameTag(_STR_SuffixToTag,NULL,0,0,-1,pst_substitution,fv->sf,fv->sf->glyphs[gid],-1,-1);
     if ( usuffix==NULL )
 return;
 
@@ -2365,8 +2392,10 @@ return;
     if ( *end=='.' ) ++end;
     suffix = cu_copy(end);
     free(usuffix);
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i])
-	SCSuffixDefault(SCDuplicate(fv->sf->chars[i]),tag,suffix,flags,sli);
+    for ( i=0; i<fv->map->enccount; ++i )
+	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
+		fv->sf->glyphs[gid]!=NULL )
+	    SCSuffixDefault(fv->sf->glyphs[gid],tag,suffix,flags,sli);
     free(suffix);
 }
 
@@ -2438,11 +2467,14 @@ void FontViewMenu_ShowDependentRefs(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     int pos = FVAnyCharSelected(fv);
-    if ( pos<0 )
+    SplineChar *sc;
+
+    if ( pos<0 || fv->map->map[pos]==-1 )
 return;
-    if ( fv->sf->chars[pos]==NULL || fv->sf->chars[pos]->dependents==NULL )
+    sc = fv->sf->glyphs[fv->map->map[pos]];
+    if ( sc==NULL || sc->dependents==NULL )
 return;
-    SCRefBy(fv->sf->chars[pos]);
+    SCRefBy(sc);
 }
 
 # if defined(FONTFORGE_CONFIG_GDRAW)
@@ -2453,11 +2485,14 @@ void FontViewMenu_ShowDependentSubs(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     int pos = FVAnyCharSelected(fv);
-    if ( pos<0 )
+    SplineChar *sc;
+
+    if ( pos<0 || fv->map->map[pos]==-1 )
 return;
-    if ( fv->sf->chars[pos]==NULL )
+    sc = fv->sf->glyphs[fv->map->map[pos]];
+    if ( sc==NULL )
 return;
-    SCSubBy(fv->sf->chars[pos]);
+    SCSubBy(sc);
 }
 #endif
 
@@ -2536,7 +2571,7 @@ void FVTrans(FontView *fv,SplineChar *sc,real transform[6], uint8 *sel,
 	int j;
 	MMSet *mm = sc->parent->mm;
 	for ( j=0; j<mm->instance_count; ++j )
-	    FVTrans(fv,mm->instances[j]->chars[sc->enc],transform,sel,flags);
+	    FVTrans(fv,mm->instances[j]->glyphs[sc->orig_pos],transform,sel,flags);
     }
 
     SCPreserveState(sc,true);
@@ -2565,7 +2600,7 @@ void FVTrans(FontView *fv,SplineChar *sc,real transform[6], uint8 *sel,
     for ( i=ly_fore; i<sc->layer_cnt; ++i ) {
 	SplinePointListTransform(sc->layers[i].splines,transform,true);
 	for ( refs = sc->layers[i].refs; refs!=NULL; refs=refs->next ) {
-	    if ( sel!=NULL && sel[refs->sc->enc] ) {
+	    if ( sel!=NULL && sel[fv->map->backmap[refs->sc->orig_pos]] ) {
 		/* if the character referred to is selected then it's going to */
 		/*  be scaled too (or will have been) so we don't want to scale */
 		/*  it twice */
@@ -2618,7 +2653,7 @@ void FVTrans(FontView *fv,SplineChar *sc,real transform[6], uint8 *sel,
 	    transform[4]!=0 && 
 	    sc->unicodeenc!=-1 && isalpha(sc->unicodeenc)) {
 	SCUndoSetLBearingChange(sc,(int) rint(transform[4]));
-	SCSynchronizeLBearing(sc,NULL,transform[4]);
+	SCSynchronizeLBearing(sc,transform[4]);
     }
     if ( flags&fvt_dobackground ) {
 	ImageList *img;
@@ -2636,13 +2671,15 @@ void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
     real transx = transform[4], transy=transform[5];
     DBounds bb;
     BasePoint base;
-    int i, cnt=0;
+    int i, cnt=0, gid;
     BDFFont *bdf;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( SCWorthOutputting(fv->sf->chars[i]) && fv->selected[i] )
-	++cnt;
+    for ( i=0; i<fv->map->enccount; ++i )
+	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
+		SCWorthOutputting(fv->sf->glyphs[gid]) )
+	    ++cnt;
 
-    if ( cnt>10 || cnt>fv->sf->charcnt/2 ) {
+    if ( cnt>10 || cnt>fv->sf->glyphcnt/2 ) {
 	if ( transform[3]!=1.0 ) {
 	    fv->sf->pfminfo.os2_typoascent = 0;		/* Value won't be valid after a masive scale */
 	    if ( transform[2]==0 )
@@ -2658,12 +2695,16 @@ void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
     gwwv_progress_start_indicator(10,_("Transforming..."),_("Transforming..."),0,cnt,1);
 # endif
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( SCWorthOutputting(fv->sf->chars[i]) && fv->selected[i] ) {
-	SplineChar *sc = fv->sf->chars[i];
+    SFUntickAll(fv->sf);
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
+	    (gid = fv->map->map[i])!=-1 &&
+	    SCWorthOutputting(fv->sf->glyphs[gid]) &&
+	    !fv->sf->glyphs[gid]->ticked ) {
+	SplineChar *sc = fv->sf->glyphs[gid];
 
 	if ( onlycopydisplayed && fv->show!=fv->filled ) {
-	    if ( fv->show->chars[i]!=NULL )
-		BCTrans(bdf,fv->show->chars[i],bvts,fv);
+	    if ( fv->show->glyphs[gid]!=NULL )
+		BCTrans(bdf,fv->show->glyphs[gid],bvts,fv);
 	} else {
 	    if ( otype==1 ) {
 		SplineCharFindBounds(sc,&bb);
@@ -2676,10 +2717,12 @@ void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
 	    }
 	    FVTrans(fv,sc,transform,fv->selected,flags);
 	    if ( !onlycopydisplayed ) {
-		for ( bdf = fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next ) if ( bdf->chars[i]!=NULL )
-		    BCTrans(bdf,bdf->chars[i],bvts,fv);
+		for ( bdf = fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
+		    if ( gid<bdf->glyphcnt && bdf->glyphs[gid]!=NULL )
+			BCTrans(bdf,bdf->glyphs[gid],bvts,fv);
 	    }
 	}
+	sc->ticked = true;
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 # ifdef FONTFORGE_CONFIG_GDRAW
 	if ( !GProgressNext())
@@ -2748,8 +2791,8 @@ return( false );
     transform[0] = transform[3] = scale;
     transform[1] = transform[2] = transform[4] = transform[5] = 0;
     bvts.func = bvt_none;
-    sf->fv->selected = galloc(sf->charcnt);
-    memset(sf->fv->selected,1,sf->charcnt);
+    sf->fv->selected = galloc(sf->fv->map->enccount);
+    memset(sf->fv->selected,1,sf->fv->map->enccount);
 
     sf->ascent = as; sf->descent = des;
 
@@ -2758,7 +2801,13 @@ return( false );
     free(sf->fv->selected);
     sf->fv->selected = oldselected;
 
-    sf->changed = true;
+    if ( !sf->changed ) {
+	sf->changed = true;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+	FVSetTitle(sf->fv);
+#endif
+    }
+	
 return( true );
 }
 
@@ -2859,22 +2908,30 @@ void FontViewMenu_TilePath(GtkMenuItem *menuitem, gpointer user_data) {
 #endif
 
 static void FVOverlap(FontView *fv,enum overlap_type ot) {
-    int i, cnt=0, layer;
+    int i, cnt=0, layer, gid;
+    SplineChar *sc;
 
     /* We know it's more likely that we'll find a problem in the overlap code */
     /*  than anywhere else, so let's save the current state against a crash */
     DoAutoSaves();
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
-	++cnt;
+    for ( i=0; i<fv->map->enccount; ++i )
+	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
+		SCWorthOutputting(fv->sf->glyphs[gid]) )
+	    ++cnt;
+
 # ifdef FONTFORGE_CONFIG_GDRAW
     GProgressStartIndicatorR(10,_STR_RemovingOverlap,_STR_RemovingOverlap,0,cnt,1);
 # elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_start_indicator(10,_("Removing overlaps..."),_("Removing overlaps..."),0,cnt,1);
 # endif
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
-	SplineChar *sc = fv->sf->chars[i];
+    SFUntickAll(fv->sf);
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
+	    (gid = fv->map->map[i])!=-1 &&
+	    SCWorthOutputting((sc=fv->sf->glyphs[gid])) &&
+	    !sc->ticked ) {
+	sc->ticked = true;
 	if ( !SCRoundToCluster(sc,-2,false,.03,.12))
 	    SCPreserveState(sc,false);
 	MinimumDistancesFree(sc->md);
@@ -2981,31 +3038,37 @@ void FontViewMenu_Wireframe(GtkMenuItem *menuitem, gpointer user_data) {
 #endif
 
 void _FVSimplify(FontView *fv,struct simplifyinfo *smpl) {
-    int i, cnt=0, layer;
+    int i, cnt=0, layer, gid;
+    SplineChar *sc;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
-	++cnt;
+    for ( i=0; i<fv->map->enccount; ++i )
+	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
+		SCWorthOutputting(fv->sf->glyphs[gid]) )
+	    ++cnt;
 # ifdef FONTFORGE_CONFIG_GDRAW
     GProgressStartIndicatorR(10,_STR_Simplifying,_STR_Simplifying,0,cnt,1);
 # elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_start_indicator(10,_("Simplifying..."),_("Simplifying..."),0,cnt,1);
 # endif
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
-	SplineChar *sc = fv->sf->chars[i];
-	SCPreserveState(sc,false);
-	for ( layer = ly_fore; layer<sc->layer_cnt; ++layer )
-	    sc->layers[layer].splines = SplineCharSimplify(sc,sc->layers[layer].splines,smpl);
-	SCCharChangedUpdate(sc);
+    SFUntickAll(fv->sf);
+    for ( i=0; i<fv->map->enccount; ++i )
+	if ( (gid=fv->map->map[i])!=-1 && SCWorthOutputting((sc=fv->sf->glyphs[gid])) &&
+		fv->selected[i] && !sc->ticked ) {
+	    sc->ticked = true;
+	    SCPreserveState(sc,false);
+	    for ( layer = ly_fore; layer<sc->layer_cnt; ++layer )
+		sc->layers[layer].splines = SplineCharSimplify(sc,sc->layers[layer].splines,smpl);
+	    SCCharChangedUpdate(sc);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 # ifdef FONTFORGE_CONFIG_GDRAW
-	if ( !GProgressNext())
+	    if ( !GProgressNext())
 # elif defined(FONTFORGE_CONFIG_GTK)
-	if ( !gwwv_progress_next())
+	    if ( !gwwv_progress_next())
 # endif
     break;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-    }
+	}
 # ifdef FONTFORGE_CONFIG_GDRAW
     GProgressEndIndicator();
 # elif defined(FONTFORGE_CONFIG_GTK)
@@ -3063,18 +3126,25 @@ void FontViewMenu_Cleanup(GtkMenuItem *menuitem, gpointer user_data) {
 #endif
 
 static void FVAddExtrema(FontView *fv) {
-    int i, cnt=0, layer;
+    int i, cnt=0, layer, gid;
+    SplineChar *sc;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
-	++cnt;
+    for ( i=0; i<fv->map->enccount; ++i )
+	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
+		SCWorthOutputting(fv->sf->glyphs[gid]) )
+	    ++cnt;
 # ifdef FONTFORGE_CONFIG_GDRAW
     GProgressStartIndicatorR(10,_STR_AddingExtrema,_STR_AddingExtrema,0,cnt,1);
 # elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_start_indicator(10,_("Adding points at Extrema..."),_("Adding points at Extrema..."),0,cnt,1);
 # endif
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
-	SplineChar *sc = fv->sf->chars[i];
+    SFUntickAll(fv->sf);
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
+	    (gid = fv->map->map[i])!=-1 &&
+	    SCWorthOutputting((sc = fv->sf->glyphs[gid])) &&
+	    !sc->ticked) {
+	sc->ticked = true;
 	SCPreserveState(sc,false);
 	for ( layer = ly_fore; layer<sc->layer_cnt; ++layer )
 	    SplineCharAddExtrema(sc->layers[layer].splines,ae_only_good,sc->parent);
@@ -3112,21 +3182,26 @@ static void FVMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 void FontViewMenu_CorrectDir(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
-    int i, cnt=0, changed, refchanged, preserved, layer;
+    int i, cnt=0, changed, refchanged, preserved, layer, gid;
     int askedall=-1, asked;
     RefChar *ref, *next;
+    SplineChar *sc;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
-	++cnt;
+    for ( i=0; i<fv->map->enccount; ++i )
+	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
+		SCWorthOutputting(fv->sf->glyphs[gid]) )
+	    ++cnt;
 # ifdef FONTFORGE_CONFIG_GDRAW
     GProgressStartIndicatorR(10,_STR_CorrectingDirection,_STR_CorrectingDirection,0,cnt,1);
 # elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_start_indicator(10,_("Correcting Direction..."),_("Correcting Direction..."),0,cnt,1);
 # endif
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
-	SplineChar *sc = fv->sf->chars[i];
-
+    SFUntickAll(fv->sf);
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
+	    (gid = fv->map->map[i])!=-1 && SCWorthOutputting((sc=fv->sf->glyphs[gid])) &&
+	    !sc->ticked ) {
+	sc->ticked = true;
 	changed = refchanged = preserved = false;
 	asked = askedall;
 	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
@@ -3189,19 +3264,24 @@ return;
 #endif
 
 static void FVRound2Int(FontView *fv,real factor) {
-    int i, cnt=0;
+    int i, cnt=0, gid;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
-	++cnt;
+    for ( i=0; i<fv->map->enccount; ++i )
+	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
+		SCWorthOutputting(fv->sf->glyphs[gid]) )
+	    ++cnt;
 # ifdef FONTFORGE_CONFIG_GDRAW
     GProgressStartIndicatorR(10,_STR_Rounding,_STR_Rounding,0,cnt,1);
 # elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_start_indicator(10,_("Rounding to integer..."),_("Rounding to integer..."),0,cnt,1);
 # endif
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
-	SCPreserveState(fv->sf->chars[i],false);
-	SCRound2Int( fv->sf->chars[i],factor);
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
+	    (gid = fv->map->map[i])!=-1 && SCWorthOutputting(fv->sf->glyphs[gid]) ) {
+	SplineChar *sc = fv->sf->glyphs[gid];
+
+	SCPreserveState(sc,false);
+	SCRound2Int( sc,factor);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 # ifdef FONTFORGE_CONFIG_GDRAW
 	if ( !GProgressNext())
@@ -3238,18 +3318,21 @@ void FontViewMenu_Round2Hundredths(GtkMenuItem *menuitem, gpointer user_data) {
 }
 
 static void FVCluster(FontView *fv) {
-    int i, cnt=0;
+    int i, cnt=0, gid;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
-	++cnt;
+    for ( i=0; i<fv->map->enccount; ++i )
+	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
+		SCWorthOutputting(fv->sf->glyphs[gid]) )
+	    ++cnt;
 # ifdef FONTFORGE_CONFIG_GDRAW
     GProgressStartIndicatorR(10,_STR_Rounding,_STR_Rounding,0,cnt,1);
 # elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_start_indicator(10,_("Rounding to integer..."),_("Rounding to integer..."),0,cnt,1);
 # endif
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
-	SCRoundToCluster(fv->sf->chars[i],-2,false,.1,.5);
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
+	    (gid = fv->map->map[i])!=-1 && SCWorthOutputting(fv->sf->glyphs[gid]) ) {
+	SCRoundToCluster(fv->sf->glyphs[gid],-2,false,.1,.5);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 # ifdef FONTFORGE_CONFIG_GDRAW
 	if ( !GProgressNext())
@@ -3287,21 +3370,31 @@ void FontViewMenu_Autotrace(GtkMenuItem *menuitem, gpointer user_data) {
 #endif
 
 void FVBuildAccent(FontView *fv,int onlyaccents) {
-    int i, cnt=0;
+    int i, cnt=0, gid;
     SplineChar dummy;
+    SplineChar *sc;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] )
-	++cnt;
+    for ( i=0; i<fv->map->enccount; ++i )
+	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
+		SCWorthOutputting(fv->sf->glyphs[gid]) )
+	    ++cnt;
 # ifdef FONTFORGE_CONFIG_GDRAW
     GProgressStartIndicatorR(10,_STR_Buildingaccented,_STR_Buildingaccented,_STR_NULL,cnt,1);
 # elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_start_indicator(10,_("Building accented letters"),_("Building accented letters"),_(),cnt,1);
 # endif
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
-	SplineChar *sc = fv->sf->chars[i];
+    SFUntickAll(fv->sf);
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] ) {
+	gid = fv->map->map[i];
+	sc = NULL;
+	if ( gid!=-1 ) {
+	    sc = fv->sf->glyphs[gid];
+	    if ( sc->ticked )
+    continue;
+	}
 	if ( sc==NULL )
-	    sc = SCBuildDummy(&dummy,fv->sf,i);
+	    sc = SCBuildDummy(&dummy,fv->sf,fv->map,i);
 	else if ( !no_windowing_ui && sc->unicodeenc == 0x00c5 /* Aring */ &&
 		sc->layers[ly_fore].splines!=NULL ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
@@ -3314,7 +3407,8 @@ void FVBuildAccent(FontView *fv,int onlyaccents) {
     continue;
 	}
 	if ( SFIsSomethingBuildable(fv->sf,sc,onlyaccents) ) {
-	    sc = SFMakeChar(fv->sf,i);
+	    sc = SFMakeChar(fv->sf,fv->map,i);
+	    sc->ticked = true;
 	    SCBuildComposit(fv->sf,sc,!onlycopydisplayed,fv);
 	}
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -3364,7 +3458,7 @@ static int SFIsDuplicatable(SplineFont *sf, SplineChar *sc) {
     if ( baseuni==0 && ( pt = SFGetAlternate(sf,sc->unicodeenc,sc,false))!=NULL &&
 	    pt[0]!='\0' && pt[1]=='\0' )
 	baseuni = pt[0];
-    if ( baseuni!=0 && SFGetCharDup(sf,baseuni,NULL)!=NULL )
+    if ( baseuni!=0 && SFGetChar(sf,baseuni,NULL)!=NULL )
 return( true );
 
 return( false );
@@ -3373,12 +3467,11 @@ return( false );
 void FVBuildDuplicate(FontView *fv) {
     extern const int cns14pua[], amspua[];
     const int *pua = fv->sf->uni_interp==ui_trad_chinese ? cns14pua : fv->sf->uni_interp==ui_ams ? amspua : NULL;
-    int i, cnt=0;
+    int i, cnt=0, gid;
     SplineChar dummy;
     const unichar_t *pt;
-    RefChar *ref;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] )
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] )
 	++cnt;
 # ifdef FONTFORGE_CONFIG_GDRAW
     GProgressStartIndicatorR(10,_STR_BuildingDuplicates,_STR_BuildingDuplicates,_STR_NULL,cnt,1);
@@ -3386,37 +3479,19 @@ void FVBuildDuplicate(FontView *fv) {
     gwwv_progress_start_indicator(10,_("Building duplicate encodings"),_("Building duplicate encodings"),NULL,cnt,1);
 # endif
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
-	SplineChar *sc = fv->sf->chars[i], *basesc;
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] ) {
+	SplineChar *sc;
 	int baseuni = 0;
-	if ( sc==NULL )
-	    sc = SCBuildDummy(&dummy,fv->sf,i);
+	if ( (gid = fv->map->map[i])==-1 || (sc = fv->sf->glyphs[gid])==NULL )
+	    sc = SCBuildDummy(&dummy,fv->sf,fv->map,i);
 	if ( pua!=NULL && sc->unicodeenc>=0xe000 && sc->unicodeenc<=0xf8ff )
 	    baseuni = pua[sc->unicodeenc-0xe000];
 	if ( baseuni==0 && ( pt = SFGetAlternate(fv->sf,sc->unicodeenc,sc,false))!=NULL &&
 		pt[0]!='\0' && pt[1]=='\0' )
 	    baseuni = pt[0];
-	if ( baseuni!=0 && (basesc = SFGetCharDup(fv->sf,baseuni,NULL))!=NULL ) {
-	    if ( fv->sf->chars[i]==NULL )
-		fv->sf->chars[i] = MakeDupRef(basesc,i,sc->unicodeenc);
-	    else {
-		SCPreserveState(sc,2);
-		SCClearContents(sc);
-		free(sc->name);
-		sc->name = basesc->name;
-		sc->width = basesc->width; sc->vwidth = basesc->vwidth;
-		ref = RefCharCreate();
-		sc->layers[ly_fore].refs = ref;
-		ref->sc = basesc;
-		ref->local_enc = basesc->enc;
-		ref->unicode_enc = basesc->unicodeenc;
-		ref->adobe_enc = getAdobeEnc(basesc->name);
-		ref->transform[0] = ref->transform[3] = 1;
-		SCReinstanciateRefChar(sc,ref);
-		SCMakeDependent(sc,basesc);
-	    }
-	    SCCharChangedUpdate(fv->sf->chars[i]);
-	}
+	
+	if ( baseuni!=0 && (gid = SFFindExistingSlot(fv->sf,baseuni,NULL))!=-1 )
+	    LinkEncToGid(fv,i,gid);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 # ifdef FONTFORGE_CONFIG_GDRAW
 	if ( !GProgressNext())
@@ -3476,7 +3551,7 @@ return( false );
 }
 
 static void SCReplaceWith(SplineChar *dest, SplineChar *src) {
-    int enc=dest->enc, uenc=dest->unicodeenc, oenc = dest->old_enc;
+    int opos=dest->orig_pos, uenc=dest->unicodeenc;
     Undoes *u[2], *r1;
     SplineSet *back = dest->layers[ly_back].splines;
     ImageList *images = dest->layers[ly_back].images;
@@ -3506,7 +3581,7 @@ return;
     dest->layers[ly_back].images = images;
     dest->layers[ly_back].splines = back;
     dest->layers[ly_fore].undoes = u[0]; dest->layers[ly_back].undoes = u[1]; dest->layers[ly_fore].redoes = NULL; dest->layers[ly_back].redoes = r1;
-    dest->enc = enc; dest->unicodeenc = uenc; dest->old_enc = oenc;
+    dest->orig_pos = opos; dest->unicodeenc = uenc;
     dest->dependents = scl;
     dest->namechanged = true;
 
@@ -3539,18 +3614,20 @@ void FVApplySubstitution(FontView *fv,uint32 script, uint32 lang, uint32 tag) {
     SplineFont *sf = fv->sf, *sf_sl=sf;
     SplineChar *sc, *replacement;
     PST *pst;
-    int i;
+    EncMap *map = fv->map;
+    int i, gid;
 
     if ( sf_sl->cidmaster!=NULL ) sf_sl = sf_sl->cidmaster;
     else if ( sf_sl->mm!=NULL ) sf_sl = sf_sl->mm->normal;
-    for ( i=0; i<sf->charcnt; ++i ) if ( fv->selected[i] && (sc=sf->chars[i])!=NULL ) {
+    for ( i=0; i<map->enccount; ++i ) if ( fv->selected[i] &&
+	    (gid=map->map[i])!=-1 && (sc=sf->glyphs[gid])!=NULL ) {
 	for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
 	    if ( pst->type==pst_substitution && pst->tag==tag &&
 		    ScriptLangMatch(sf_sl->script_lang[pst->script_lang_index],script,lang))
 	break;
 	}
 	if ( pst!=NULL ) {
-	    replacement = SFGetCharDup(sf,-1,pst->u.subs.variant);
+	    replacement = SFGetChar(sf,-1,pst->u.subs.variant);
 	    if ( replacement!=NULL )
 		SCReplaceWith(sc,replacement);
 	}
@@ -3647,6 +3724,7 @@ void FontViewMenu_ChangeChar(GtkMenuItem *menuitem, gpointer user_data) {
 #  define _CC_ISPrevDef (strcmp(name,"prev_defined_char1")==0)
 # endif
     SplineFont *sf = fv->sf;
+    EncMap *map = fv->map;
     int pos = FVAnyCharSelected(fv);
     if ( pos>=0 ) {
 	if ( _CC_ISNext )
@@ -3654,22 +3732,24 @@ void FontViewMenu_ChangeChar(GtkMenuItem *menuitem, gpointer user_data) {
 	else if ( _CC_ISPrev )
 	    --pos;
 	else if ( _CC_ISNextDef ) {
-	    for ( ++pos; pos<sf->charcnt && sf->chars[pos]==NULL; ++pos );
-	    if ( pos>=sf->charcnt ) {
+	    for ( ++pos; pos<map->enccount &&
+		    (map->map[pos]==-1 || !SCWorthOutputting(sf->glyphs[map->map[pos]]));
+		    ++pos );
+	    if ( pos>=map->enccount ) {
 		int selpos = FVAnyCharSelected(fv);
-		char *iconv_name = sf->encoding_name->iconv_name ? sf->encoding_name->iconv_name :
-			sf->encoding_name->enc_name;
+		char *iconv_name = map->enc->iconv_name ? map->enc->iconv_name :
+			map->enc->enc_name;
 		if ( strstr(iconv_name,"2022")!=NULL && selpos<0x2121 )
 		    pos = 0x2121;
 		else if ( strstr(iconv_name,"EUC")!=NULL && selpos<0xa1a1 )
 		    pos = 0xa1a1;
-		else if ( sf->encoding_name->is_tradchinese ) {
-		    if ( strstrmatch(sf->encoding_name->enc_name,"HK")!=NULL &&
+		else if ( map->enc->is_tradchinese ) {
+		    if ( strstrmatch(map->enc->enc_name,"HK")!=NULL &&
 			    selpos<0x8140 )
 			pos = 0x8140;
 		    else
 			pos = 0xa140;
-		} else if ( sf->encoding_name->is_japanese ) {
+		} else if ( map->enc->is_japanese ) {
 		    if ( strstrmatch(iconv_name,"SJIS")!=NULL ||
 			    (strstrmatch(iconv_name,"JIS")!=NULL && strstrmatch(iconv_name,"SHIFT")!=NULL )) {
 			if ( selpos<0x8100 )
@@ -3677,7 +3757,7 @@ void FontViewMenu_ChangeChar(GtkMenuItem *menuitem, gpointer user_data) {
 			else if ( selpos<0xb000 )
 			    pos = 0xb000;
 		    }
-		} else if ( sf->encoding_name->is_korean ) {
+		} else if ( map->enc->is_korean ) {
 		    if ( strstrmatch(iconv_name,"JOHAB")!=NULL ) {
 			if ( selpos<0x8431 )
 			    pos = 0x8431;
@@ -3685,22 +3765,24 @@ void FontViewMenu_ChangeChar(GtkMenuItem *menuitem, gpointer user_data) {
 			if ( selpos<0xa1a1 )
 			    pos = 0xa1a1;
 		    }
-		} else if ( sf->encoding_name->is_simplechinese ) {
+		} else if ( map->enc->is_simplechinese ) {
 		    if ( strmatch(iconv_name,"EUC-CN")==0 && selpos<0xa1a1 )
-			selpos = 0xa1a1;
+			pos = 0xa1a1;
 		}
-		if ( pos>=sf->charcnt )
+		if ( pos>=map->enccount )
 return;
 	    }
 	} else if ( _CC_ISPrevDef ) {
-	    for ( --pos; pos>=0 && sf->chars[pos]==NULL; --pos );
+	    for ( --pos; pos>=0 &&
+		    (map->map[pos]==-1 || !SCWorthOutputting(sf->glyphs[map->map[pos]]));
+		    --pos );
 	    if ( pos<0 )
 return;
 	}
     }
-    if ( pos<0 ) pos = sf->charcnt-1;
-    else if ( pos>= sf->charcnt ) pos = 0;
-    if ( pos>=0 && pos<sf->charcnt )
+    if ( pos<0 ) pos = map->enccount-1;
+    else if ( pos>= map->enccount ) pos = 0;
+    if ( pos>=0 && pos<map->enccount )
 	FVChangeChar(fv,pos);
 }
 
@@ -3711,7 +3793,7 @@ static void FVMenuGotoChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 void FontViewMenu_Goto(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
-    int pos = GotoChar(fv->sf);
+    int pos = GotoChar(fv->sf,fv->map);
     FVChangeChar(fv,pos);
 }
 
@@ -3783,35 +3865,6 @@ return;
 	fv->cur_sli = sli;
     }
     GDrawRequestExpose(fv->v,NULL,false);
-}
-
-# if defined(FONTFORGE_CONFIG_GDRAW)
-static void FVMenuCompact(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    int to_compact = (mi->mid==MID_CompactedView);
-# elif defined(FONTFORGE_CONFIG_GTK)
-void FontViewMenu_Compact(GtkMenuItem *menuitem, gpointer user_data) {
-    FontView *fv = FV_From_MI(menuitem);
-    int to_compact = strcmp(gtk_widget_get_name(menuitem),"compacted_view1")==0;
-# endif
-    FontView *fvs;
-    int fv_reformat;
-
-    for ( fvs=fv->sf->fv; fvs!=NULL; fvs = fvs->nextsame )
-	if ( fvs->fontinfo )
-	    FontInfoDestroy(fvs);
-
-    if ( to_compact )
-	fv_reformat = SFCompactFont(fv->sf);
-    else
-	fv_reformat = SFUncompactFont(fv->sf);
-    if ( !fv_reformat )
-return;
-    for ( fvs=fv->sf->fv; fvs!=NULL; fvs = fvs->nextsame ) {
-	free(fvs->selected);
-	fvs->selected = gcalloc(fv->sf->charcnt,sizeof(char));
-    }
-    FontViewReformatAll(fv->sf);
 }
 
 static void FVChangeDisplayFont(FontView *fv,BDFFont *bdf) {
@@ -4190,7 +4243,8 @@ void FVShowFilled(FontView *fv) {
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 void FVMetricsCenter(FontView *fv,int docenter) {
-    int i;
+    int i, gid;
+    SplineChar *sc;
     DBounds bb;
     IBounds ib;
     real transform[6];
@@ -4202,35 +4256,42 @@ void FVMetricsCenter(FontView *fv,int docenter) {
     bvts[1].func = bvt_none;
     bvts[0].func = bvt_transmove; bvts[0].y = 0;
     if ( !fv->sf->onlybitmaps ) {
-	for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
-	    SplineChar *sc = fv->sf->chars[i];
-	    SplineCharFindBounds(sc,&bb);
-	    if ( docenter )
-		transform[4] = (sc->width-(bb.maxx-bb.minx))/2 - bb.minx;
-	    else
-		transform[4] = (sc->width-(bb.maxx-bb.minx))/3 - bb.minx;
-	    if ( transform[4]!=0 ) {
-		FVTrans(fv,sc,transform,NULL,fvt_dontmovewidth);
-		bvts[0].x = transform[4];
-		for ( bdf = fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next ) if ( bdf->chars[i]!=NULL )
-		    BCTrans(bdf,bdf->chars[i],bvts,fv);
+	for ( i=0; i<fv->map->enccount; ++i ) {
+	    if ( fv->selected[i] && (gid=fv->map->map[i])!=-1 &&
+		    (sc = fv->sf->glyphs[gid])!=NULL ) {
+		SplineCharFindBounds(sc,&bb);
+		if ( docenter )
+		    transform[4] = (sc->width-(bb.maxx-bb.minx))/2 - bb.minx;
+		else
+		    transform[4] = (sc->width-(bb.maxx-bb.minx))/3 - bb.minx;
+		if ( transform[4]!=0 ) {
+		    FVTrans(fv,sc,transform,NULL,fvt_dontmovewidth);
+		    bvts[0].x = transform[4];
+		    for ( bdf = fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
+			if ( gid<bdf->glyphcnt && bdf->glyphs[gid]!=NULL )
+			    BCTrans(bdf,bdf->glyphs[gid],bvts,fv);
+		}
 	    }
 	}
     } else {
 	double scale = (fv->sf->ascent+fv->sf->descent)/(double) (fv->show->pixelsize);
-	for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
-	    BDFChar *bc = fv->show->chars[i];
-	    if ( bc==NULL ) bc = BDFMakeChar(fv->show,i);
-	    BDFCharFindBounds(bc,&ib);
-	    if ( docenter )
-		transform[4] = scale * ((bc->width-(ib.maxx-ib.minx))/2 - ib.minx);
-	    else
-		transform[4] = scale * ((bc->width-(ib.maxx-ib.minx))/3 - ib.minx);
-	    if ( transform[4]!=0 ) {
-		FVTrans(fv,fv->sf->chars[i],transform,NULL,fvt_dontmovewidth);
-		bvts[0].x = transform[4];
-		for ( bdf = fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next ) if ( bdf->chars[i]!=NULL )
-		    BCTrans(bdf,bdf->chars[i],bvts,fv);
+	for ( i=0; i<fv->map->enccount; ++i ) {
+	    if ( fv->selected[i] && (gid=fv->map->map[i])!=-1 &&
+		    fv->sf->glyphs[gid]!=NULL ) {
+		BDFChar *bc = fv->show->glyphs[gid];
+		if ( bc==NULL ) bc = BDFMakeChar(fv->show,fv->map,i);
+		BDFCharFindBounds(bc,&ib);
+		if ( docenter )
+		    transform[4] = scale * ((bc->width-(ib.maxx-ib.minx))/2 - ib.minx);
+		else
+		    transform[4] = scale * ((bc->width-(ib.maxx-ib.minx))/3 - ib.minx);
+		if ( transform[4]!=0 ) {
+		    FVTrans(fv,fv->sf->glyphs[gid],transform,NULL,fvt_dontmovewidth);
+		    bvts[0].x = transform[4];
+		    for ( bdf = fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
+			if ( gid<bdf->glyphcnt && bdf->glyphs[gid]!=NULL )
+			    BCTrans(bdf,bdf->glyphs[gid],bvts,fv);
+		}
 	    }
 	}
     }
@@ -4345,15 +4406,17 @@ void FontViewMenu_RemoveVKP(GtkMenuItem *menuitem, gpointer user_data) {
 static void FVMenuKPCloseup(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
-void FontViewMenu_RemoveVKP(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_KernPairCloseup(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     int i;
 
-    for ( i=0; i<fv->sf->charcnt; ++i )
+    for ( i=0; i<fv->map->enccount; ++i )
 	if ( fv->selected[i] )
     break;
-    KernPairD(fv->sf,i==fv->sf->charcnt?NULL:fv->sf->chars[i],NULL,false);
+    KernPairD(fv->sf,i==fv->map->enccount?NULL:
+		    fv->map->map[i]==-1?NULL:
+		    fv->sf->glyphs[fv->map->map[i]],NULL,false);
 }
 
 # if defined(FONTFORGE_CONFIG_GDRAW)
@@ -4369,7 +4432,7 @@ void FontViewMenu_VKernFromH(GtkMenuItem *menuitem, gpointer user_data) {
 #endif
 
 static void FVAutoHint(FontView *fv) {
-    int i, cnt=0;
+    int i, cnt=0, gid;
     BlueData *bd = NULL, _bd;
 
     if ( fv->sf->mm==NULL ) {
@@ -4377,16 +4440,19 @@ static void FVAutoHint(FontView *fv) {
 	bd = &_bd;
     }
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
-	++cnt;
+    for ( i=0; i<fv->map->enccount; ++i )
+	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
+		SCWorthOutputting(fv->sf->glyphs[gid]) )
+	    ++cnt;
 # ifdef FONTFORGE_CONFIG_GDRAW
     GProgressStartIndicatorR(10,_STR_AutoHintingFont,_STR_AutoHintingFont,0,cnt,1);
 # elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_start_indicator(10,_("Auto Hinting Font..."),_("Auto Hinting Font..."),0,cnt,1);
 # endif
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
-	SplineChar *sc = fv->sf->chars[i];
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
+	    (gid = fv->map->map[i])!=-1 && SCWorthOutputting(fv->sf->glyphs[gid]) ) {
+	SplineChar *sc = fv->sf->glyphs[gid];
 	sc->manualhints = false;
 	SplineCharAutoHint(sc,bd);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -4417,20 +4483,23 @@ void FontViewMenu_AutoHint(GtkMenuItem *menuitem, gpointer user_data) {
 #endif
 
 static void FVAutoHintSubs(FontView *fv) {
-    int i, cnt=0;
+    int i, cnt=0, gid;
 
     if ( fv->sf->mm!=NULL && fv->sf->mm->apple )
 return;
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
-	++cnt;
+    for ( i=0; i<fv->map->enccount; ++i )
+	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
+		SCWorthOutputting(fv->sf->glyphs[gid]) )
+	    ++cnt;
 # ifdef FONTFORGE_CONFIG_GDRAW
     GProgressStartIndicatorR(10,_STR_FindingSubstitutionPts,_STR_FindingSubstitutionPts,0,cnt,1);
 # elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_start_indicator(10,_("Finding Substitution Points..."),_("Finding Substitution Points..."),0,cnt,1);
 # endif
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
-	SplineChar *sc = fv->sf->chars[i];
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
+	    (gid = fv->map->map[i])!=-1 && SCWorthOutputting(fv->sf->glyphs[gid]) ) {
+	SplineChar *sc = fv->sf->glyphs[gid];
 	SCFigureHintMasks(sc);
 	SCUpdateAll(sc);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -4462,18 +4531,21 @@ void FontViewMenu_AutoHintSubs(GtkMenuItem *menuitem, gpointer user_data) {
 #endif
 
 static void FVAutoCounter(FontView *fv) {
-    int i, cnt=0;
+    int i, cnt=0, gid;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
-	++cnt;
+    for ( i=0; i<fv->map->enccount; ++i )
+	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
+		SCWorthOutputting(fv->sf->glyphs[gid]) )
+	    ++cnt;
 # ifdef FONTFORGE_CONFIG_GDRAW
     GProgressStartIndicatorR(10,_STR_FindingCounterMasks,_STR_FindingCounterMasks,0,cnt,1);
 # elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_start_indicator(10,_("Finding Counter Masks..."),_("Finding Counter Masks..."),0,cnt,1);
 # endif
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
-	SplineChar *sc = fv->sf->chars[i];
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
+	    (gid = fv->map->map[i])!=-1 && SCWorthOutputting(fv->sf->glyphs[gid]) ) {
+	SplineChar *sc = fv->sf->glyphs[gid];
 	SCFigureCounterMasks(sc);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 # ifdef FONTFORGE_CONFIG_GDRAW
@@ -4504,10 +4576,11 @@ void FontViewMenu_AutoCounter(GtkMenuItem *menuitem, gpointer user_data) {
 #endif
 
 static void FVDontAutoHint(FontView *fv) {
-    int i;
+    int i, gid;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
-	SplineChar *sc = fv->sf->chars[i];
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
+	    (gid = fv->map->map[i])!=-1 && SCWorthOutputting(fv->sf->glyphs[gid]) ) {
+	SplineChar *sc = fv->sf->glyphs[gid];
 	sc->manualhints = true;
     }
 }
@@ -4526,19 +4599,22 @@ void FontViewMenu_DontAutoHint(GtkMenuItem *menuitem, gpointer user_data) {
 
 static void FVAutoInstr(FontView *fv) {
     BlueData bd;
-    int i, cnt=0;
+    int i, cnt=0, gid;
 
     QuickBlues(fv->sf,&bd);
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
-	++cnt;
+    for ( i=0; i<fv->map->enccount; ++i )
+	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
+		SCWorthOutputting(fv->sf->glyphs[gid]) )
+	    ++cnt;
 # ifdef FONTFORGE_CONFIG_GDRAW
     GProgressStartIndicatorR(10,_STR_AutoInstructingFont,_STR_AutoInstructingFont,0,cnt,1);
 # elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_start_indicator(10,_("Auto Instructing Font..."),_("Auto Instructing Font..."),0,cnt,1);
 # endif
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
-	SplineChar *sc = fv->sf->chars[i];
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
+	    (gid = fv->map->map[i])!=-1 && SCWorthOutputting(fv->sf->glyphs[gid]) ) {
+	SplineChar *sc = fv->sf->glyphs[gid];
 	SCAutoInstr(sc,&bd);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 # ifdef FONTFORGE_CONFIG_GDRAW
@@ -4578,7 +4654,7 @@ void FontViewMenu_EditInstrs(GtkMenuItem *menuitem, gpointer user_data) {
     SplineChar *sc;
     if ( index<0 )
 return;
-    sc = SFMakeChar(fv->sf,index);
+    sc = SFMakeChar(fv->sf,fv->map,index);
     SCEditInstructions(sc);
 }
 
@@ -4609,12 +4685,13 @@ void FontViewMenu_ClearInstrs(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     SplineChar *sc;
-    int i;
+    int i, gid;
 
     if ( !SFCloseAllInstrs(fv->sf))
 return;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( (sc = fv->sf->chars[i])!=NULL ) {
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
+	    (gid = fv->map->map[i])!=-1 && SCWorthOutputting((sc = fv->sf->glyphs[gid])) ) {
 	if ( sc->ttf_instrs_len!=0 ) {
 	    free(sc->ttf_instrs);
 	    sc->ttf_instrs = NULL;
@@ -4626,10 +4703,11 @@ return;
 #endif
 
 static void FVClearHints(FontView *fv) {
-    int i;
+    int i, gid;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
-	SplineChar *sc = fv->sf->chars[i];
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
+	    (gid = fv->map->map[i])!=-1 && SCWorthOutputting(fv->sf->glyphs[gid]) ) {
+	SplineChar *sc = fv->sf->glyphs[gid];
 	sc->manualhints = true;
 	SCClearHintMasks(sc,true);
 	StemInfosFree(sc->hstem);
@@ -4671,11 +4749,12 @@ static void FVMenuClearWidthMD(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 void FontViewMenu_ClearWidthMD(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
-    int i, changed;
+    int i, changed, gid;
     MinimumDistance *md, *prev, *next;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
-	SplineChar *sc = fv->sf->chars[i];
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
+	    (gid = fv->map->map[i])!=-1 && SCWorthOutputting(fv->sf->glyphs[gid]) ) {
+	SplineChar *sc = fv->sf->glyphs[gid];
 	prev=NULL; changed = false;
 	for ( md=sc->md; md!=NULL; md=next ) {
 	    next = md->next;
@@ -4725,10 +4804,15 @@ void FVSetTitle(FontView *fv) {
     if ( fv->gw==NULL )		/* In scripting */
 return;
 
-    enc = SFEncodingName(fv->sf);
+    enc = SFEncodingName(fv->sf,fv->map);
     len = strlen(fv->sf->fontname)+1 + strlen(enc)+4;
-    if ( (file = fv->sf->filename)==NULL )
-	file = fv->sf->origname;
+    if ( fv->cidmaster!=NULL ) {
+	if ( (file = fv->cidmaster->filename)==NULL )
+	    file = fv->cidmaster->origname;
+    } else {
+	if ( (file = fv->sf->filename)==NULL )
+	    file = fv->sf->origname;
+    }
     if ( file!=NULL )
 	len += 2+strlen(file);
     title = galloc((len+1)*sizeof(unichar_t));
@@ -4759,10 +4843,15 @@ return;
     if ( fv->gw==NULL )		/* In scripting */
 return;
 
-    enc = SFEncodingName(fv->sf);
+    enc = SFEncodingName(fv->sf,fv->map);
     len = strlen(fv->sf->fontname)+1 + strlen(enc)+4;
-    if ( (file = fv->sf->filename)==NULL )
-	file = fv->sf->origname;
+    if ( fv->cidmaster!=NULL ) {
+	if ( (file = fv->cidmaster->filename)==NULL )
+	    file = fv->cidmaster->origname;
+    } else {
+	if ( (file = fv->sf->filename)==NULL )
+	    file = fv->sf->origname;
+    }
     if ( file!=NULL )
 	len += 2+strlen(file);
     title = galloc((len+1));
@@ -4784,6 +4873,34 @@ return;
 # endif
 }
 
+static void CIDSetEncMap(FontView *fv, SplineFont *new ) {
+    int gcnt = new->glyphcnt;
+
+    if ( gcnt!=fv->sf->glyphcnt ) {
+	int i;
+	if ( fv->map->encmax<gcnt ) {
+	    fv->map->map = grealloc(fv->map->map,gcnt*sizeof(int));
+	    fv->map->backmap = grealloc(fv->map->backmap,gcnt*sizeof(int));
+	    fv->map->backmax = fv->map->encmax = gcnt;
+	}
+	for ( i=0; i<gcnt; ++i )
+	    fv->map->map[i] = fv->map->backmap[i] = i;
+	if ( gcnt<fv->map->enccount )
+	    memset(fv->selected+gcnt,0,fv->map->enccount-gcnt);
+	else {
+	    free(fv->selected);
+	    fv->selected = gcalloc(gcnt,sizeof(char));
+	}
+	fv->map->enccount = gcnt;
+    }
+    fv->sf = new;
+    new->fv = fv;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    FVSetTitle(fv);
+    FontViewReformatOne(fv);
+#endif
+}
+
 # ifdef FONTFORGE_CONFIG_GDRAW
 static void FVMenuShowSubFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
@@ -4801,13 +4918,7 @@ static void FontViewMenu_ShowSubFont(GtkMenuItem *menuitem, gpointer user_data) 
     }
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);
-    if ( fv->sf->charcnt!=new->charcnt ) {
-	free(fv->selected);
-	fv->selected = gcalloc(new->charcnt,sizeof(char));
-    }
-    fv->sf = new;
-    FVSetTitle(fv);
-    FontViewReformatOne(fv);
+    CIDSetEncMap(fv,new);
 }
 
 # ifdef FONTFORGE_CONFIG_GDRAW
@@ -4821,7 +4932,7 @@ void FontViewMenu_Convert2CID(GtkMenuItem *menuitem, gpointer user_data) {
 
     if ( cidmaster!=NULL )
 return;
-    MakeCIDMaster(fv->sf,false,NULL,NULL);
+    MakeCIDMaster(fv->sf,fv->map,false,NULL,NULL);
 }
 
 # ifdef FONTFORGE_CONFIG_GDRAW
@@ -4835,7 +4946,7 @@ void FontViewMenu_ConvertByCMap(GtkMenuItem *menuitem, gpointer user_data) {
 
     if ( cidmaster!=NULL )
 return;
-    MakeCIDMaster(fv->sf,true,NULL,NULL);
+    MakeCIDMaster(fv->sf,fv->map,true,NULL,NULL);
 }
 
 # ifdef FONTFORGE_CONFIG_GDRAW
@@ -4877,6 +4988,8 @@ static void FVInsertInCID(FontView *fv,SplineFont *sf) {
     for ( i=0; i<cidmaster->subfontcnt && cidmaster->subfonts[i]!=fv->sf; ++i )
 	subs[i] = cidmaster->subfonts[i];
     subs[i] = sf;
+    if ( sf->uni_interp == ui_none || sf->uni_interp == ui_unset )
+	sf->uni_interp = cidmaster->uni_interp;
     for ( ; i<cidmaster->subfontcnt ; ++i )
 	subs[i+1] = cidmaster->subfonts[i];
     ++cidmaster->subfontcnt;
@@ -4885,16 +4998,7 @@ static void FVInsertInCID(FontView *fv,SplineFont *sf) {
     cidmaster->changed = true;
     sf->cidmaster = cidmaster;
 
-    if ( fv->sf->charcnt!=sf->charcnt ) {
-	free(fv->selected);
-	fv->selected = gcalloc(sf->charcnt,sizeof(char));
-    }
-    fv->sf = sf;
-    sf->fv = fv;
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    FontViewReformatOne(fv);
-    FVSetTitle(fv);
-#endif
+    CIDSetEncMap(fv,sf);
 }
 
 # ifdef FONTFORGE_CONFIG_GDRAW
@@ -4955,7 +5059,8 @@ void FontViewMenu_InsertBlank(GtkMenuItem *menuitem, gpointer user_data) {
     if ( cidmaster==NULL || cidmaster->subfontcnt>=255 )	/* Open type allows 1 byte to specify the fdselect */
 return;
     map = FindCidMap(cidmaster->cidregistry,cidmaster->ordering,cidmaster->supplement,cidmaster);
-    sf = SplineFontBlank(&custom,MaxCID(map));
+    sf = SplineFontBlank(MaxCID(map));
+    sf->glyphcnt = sf->glyphmax;
     sf->cidmaster = cidmaster;
     sf->display_antialias = fv->sf->display_antialias;
     sf->display_bbsized = fv->sf->display_bbsized;
@@ -4989,9 +5094,9 @@ return;
 	    sf->fontname,cidmaster->fontname)==1 )
 return;
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
 	CharView *cv, *next;
-	for ( cv = sf->chars[i]->views; cv!=NULL; cv = next ) {
+	for ( cv = sf->glyphs[i]->views; cv!=NULL; cv = next ) {
 	    next = cv->next;
 	    GDrawDestroyWindow(cv->gw);
 	}
@@ -5018,14 +5123,8 @@ return;
     --cidmaster->subfontcnt;
 
     for ( fvs=fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
-	if ( fvs->sf==sf ) {
-	    fvs->sf = replace;
-	    if ( replace->charcnt!=sf->charcnt ) {
-		free(fvs->selected);
-		fvs->selected = gcalloc(replace->charcnt,sizeof(char));
-	    }
-	    FVSetTitle(fv);
-	}
+	if ( fvs->sf==sf )
+	    FVInsertInCID(fvs,replace);
     }
     FontViewReformatAll(fv->sf);
     SplineFontFree(sf);
@@ -5044,6 +5143,75 @@ void FontViewMenu_CIDFontInfo(GtkMenuItem *menuitem, gpointer user_data) {
 return;
     FontInfo(cidmaster,-1,false);
 }
+
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuChangeSupplement(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_ChangeSupplement(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+    SplineFont *cidmaster = fv->cidmaster;
+    struct cidmap *cidmap;
+    char buffer[20];
+    unichar_t ubuffer[20];
+    unichar_t *ret, *end;
+    int supple;
+
+    if ( cidmaster==NULL )
+return;
+    sprintf(buffer,"%d",cidmaster->supplement);
+    uc_strcpy(ubuffer,buffer);
+    ret = GWidgetAskStringR(_STR_ChangeSupplement,ubuffer,_STR_ChangeSupplementOfFont,
+	    cidmaster->cidregistry,cidmaster->ordering);
+    if ( ret==NULL )
+return;
+    supple = u_strtol(ret,&end,10);
+    if ( *end!='\0' || supple<=0 ) {
+	free(ret);
+	GWidgetErrorR( _STR_BadNumber,_STR_BadNumber );
+return;
+    }
+    free(ret);
+    if ( supple!=cidmaster->supplement ) {
+	    /* this will make noises if it can't find an appropriate cidmap */
+	cidmap = FindCidMap(cidmaster->cidregistry,cidmaster->ordering,supple,cidmaster);
+	cidmaster->supplement = supple;
+	FVSetTitle(fv);
+    }
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuReencode(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    Encoding *enc = NULL;
+    EncMap *map;
+
+    enc = FindOrMakeEncoding(mi->ti.userdata);
+    map = EncMapFromEncoding(fv->sf,enc);
+    fv->selected = grealloc(fv->selected,map->enccount);
+    memset(fv->selected,0,map->enccount);
+    EncMapFree(fv->map);
+    fv->map = map;
+    FVSetTitle(fv);
+    FontViewReformatOne(fv);
+}
+
+static void FVMenuForceEncode(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    Encoding *enc = NULL;
+
+    enc = FindOrMakeEncoding(mi->ti.userdata);
+    SFForceEncoding(fv->sf,fv->map,enc);
+    FVSetTitle(fv);
+    FontViewReformatOne(fv);
+}
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_Reencode(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+void FontViewMenu_ForceEncode(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
 
 # ifdef FONTFORGE_CONFIG_GDRAW
 static void FVMenuMMValid(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -5202,7 +5370,7 @@ static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    int pos = FVAnyCharSelected(fv), i;
+    int pos = FVAnyCharSelected(fv), i, gid;
     int not_pasteable = pos==-1 ||
 		    (!CopyContainsSomething() &&
 #ifndef _NO_LIBPNG
@@ -5211,6 +5379,7 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/bmp") &&
 		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/eps"));
     RefChar *base = CopyContainsRef(fv->sf);
+    int base_enc = base!=NULL ? fv->map->map[base->orig_pos] : -1;
 
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
@@ -5225,10 +5394,12 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #endif
 	  case MID_SameGlyphAs:
 	    mi->ti.disabled = not_pasteable || base==NULL || fv->cidmaster!=NULL ||
-		    fv->selected[base->local_enc];	/* Can't be self-referential */
+		    base_enc==-1 ||
+		    fv->selected[base_enc];	/* Can't be self-referential */
 	  break;
 	  case MID_CopyFeatures:
-	    mi->ti.disabled = pos<0 || !SCAnyFeatures(fv->sf->chars[pos]);
+	    mi->ti.disabled = pos<0 || fv->map->map[pos]==-1 ||
+		    !SCAnyFeatures(fv->sf->glyphs[fv->map->map[pos]]);
 	  break;
 	  case MID_Join:
 	  case MID_Cut: case MID_Copy: case MID_Clear:
@@ -5244,28 +5415,31 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_ClearBackground:
 	    mi->ti.disabled = true;
 	    if ( pos!=-1 && !( onlycopydisplayed && fv->filled!=fv->show )) {
-		for ( i=0; i<fv->sf->charcnt; ++i )
-		    if ( fv->selected[i] && fv->sf->chars[i]!=NULL )
-			if ( fv->sf->chars[i]->layers[ly_back].images!=NULL ||
-				fv->sf->chars[i]->layers[ly_back].splines!=NULL ) {
+		for ( i=0; i<fv->map->enccount; ++i )
+		    if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
+			    fv->sf->glyphs[gid]!=NULL )
+			if ( fv->sf->glyphs[gid]->layers[ly_back].images!=NULL ||
+				fv->sf->glyphs[gid]->layers[ly_back].splines!=NULL ) {
 			    mi->ti.disabled = false;
 		break;
 			}
 	    }
 	  break;
 	  case MID_Undo:
-	    for ( i=0; i<fv->sf->charcnt; ++i )
-		if ( fv->selected[i] && fv->sf->chars[i]!=NULL )
-		    if ( fv->sf->chars[i]->layers[ly_fore].undoes!=NULL )
+	    for ( i=0; i<fv->map->enccount; ++i )
+		if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
+			fv->sf->glyphs[gid]!=NULL )
+		    if ( fv->sf->glyphs[gid]->layers[ly_fore].undoes!=NULL )
 	    break;
-	    mi->ti.disabled = i==fv->sf->charcnt;
+	    mi->ti.disabled = i==fv->map->enccount;
 	  break;
 	  case MID_Redo:
-	    for ( i=0; i<fv->sf->charcnt; ++i )
-		if ( fv->selected[i] && fv->sf->chars[i]!=NULL )
-		    if ( fv->sf->chars[i]->layers[ly_fore].redoes!=NULL )
+	    for ( i=0; i<fv->map->enccount; ++i )
+		if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
+			fv->sf->glyphs[gid]!=NULL )
+		    if ( fv->sf->glyphs[gid]->layers[ly_fore].redoes!=NULL )
 	    break;
-	    mi->ti.disabled = i==fv->sf->charcnt;
+	    mi->ti.disabled = i==fv->map->enccount;
 	  break;
 	}
     }
@@ -5289,15 +5463,15 @@ static void trlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    int anychars = FVAnyCharSelected(fv);
+    int anychars = FVAnyCharSelected(fv), gid;
     int anybuildable, anytraceable;
     int order2 = fv->sf->order2;
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_CharInfo:
-	    mi->ti.disabled = anychars<0 ||
-		    (fv->cidmaster!=NULL && fv->sf->chars[anychars]==NULL);
+	    mi->ti.disabled = anychars<0 || (gid = fv->map->map[anychars])==-1 ||
+		    (fv->cidmaster!=NULL && fv->sf->glyphs[gid]==NULL);
 	  break;
 	  case MID_FindProblems:
 	    mi->ti.disabled = anychars==-1;
@@ -5335,11 +5509,12 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    anybuildable = false;
 	    if ( anychars!=-1 ) {
 		int i;
-		for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
+		for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
+			(gid = fv->map->map[i])!=-1 ) {
 		    SplineChar *sc, dummy;
-		    sc = fv->sf->chars[i];
+		    sc = fv->sf->glyphs[gid];
 		    if ( sc==NULL )
-			sc = SCBuildDummy(&dummy,fv->sf,i);
+			sc = SCBuildDummy(&dummy,fv->sf,fv->map,i);
 		    if ( SFIsSomethingBuildable(fv->sf,sc,false) ||
 			    SFIsDuplicatable(fv->sf,sc)) {
 			anybuildable = true;
@@ -5353,9 +5528,10 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    anytraceable = false;
 	    if ( FindAutoTraceName()!=NULL && anychars!=-1 ) {
 		int i;
-		for ( i=0; i<fv->sf->charcnt; ++i )
-		    if ( fv->selected[i] && fv->sf->chars[i]!=NULL &&
-			    fv->sf->chars[i]->layers[ly_back].images!=NULL ) {
+		for ( i=0; i<fv->map->enccount; ++i )
+		    if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
+			    fv->sf->glyphs[gid]!=NULL &&
+			    fv->sf->glyphs[gid]->layers[ly_back].images!=NULL ) {
 			anytraceable = true;
 		break;
 		    }
@@ -5420,12 +5596,12 @@ static void balistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
         if ( mi->mid==MID_BuildAccent || mi->mid==MID_BuildComposite ) {
 	    int anybuildable = false;
 	    int onlyaccents = mi->mid==MID_BuildAccent;
-	    int i;
-	    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
+	    int i, gid;
+	    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] && (gid=fv->map->map[i])!=-1 ) {
 		SplineChar *sc, dummy;
-		sc = fv->sf->chars[i];
+		sc = fv->sf->glyphs[gid];
 		if ( sc==NULL )
-		    sc = SCBuildDummy(&dummy,fv->sf,i);
+		    sc = SCBuildDummy(&dummy,fv->sf,fv->map,i);
 		if ( SFIsSomethingBuildable(fv->sf,sc,onlyaccents)) {
 		    anybuildable = true;
 	    break;
@@ -5434,12 +5610,12 @@ static void balistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = !anybuildable;
         } else if ( mi->mid==MID_BuildDuplicates ) {
 	    int anybuildable = false;
-	    int i;
-	    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
+	    int i, gid;
+	    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] && (gid=fv->map->map[i])!=-1 ) {
 		SplineChar *sc, dummy;
-		sc = fv->sf->chars[i];
+		sc = fv->sf->glyphs[gid];
 		if ( sc==NULL )
-		    sc = SCBuildDummy(&dummy,fv->sf,i);
+		    sc = SCBuildDummy(&dummy,fv->sf,fv->map,i);
 		if ( SFIsDuplicatable(fv->sf,sc)) {
 		    anybuildable = true;
 	    break;
@@ -5452,17 +5628,17 @@ static void balistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void delistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    int anychars = FVAnyCharSelected(fv);
+    int gid = fv->map->map[gid];
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_ShowDependentRefs:
-	    mi->ti.disabled = anychars<0 || fv->sf->chars[anychars]==NULL ||
-		    fv->sf->chars[anychars]->dependents == NULL;
+	    mi->ti.disabled = gid<0 || fv->sf->glyphs[gid]==NULL ||
+		    fv->sf->glyphs[gid]->dependents == NULL;
 	  break;
 	  case MID_ShowDependentSubs:
-	    mi->ti.disabled = anychars<0 || fv->sf->chars[anychars]==NULL ||
-		    !SCUsedBySubs(fv->sf->chars[anychars]);
+	    mi->ti.disabled = gid<0 || fv->sf->glyphs[gid]==NULL ||
+		    !SCUsedBySubs(fv->sf->glyphs[gid]);
 	  break;
 	}
     }
@@ -5743,19 +5919,20 @@ static GMenuItem cblist[] = {
 static void cblistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     SplineFont *sf = fv->sf;
-    int i, anyligs=0, anykerns=0;
+    int i, anyligs=0, anykerns=0, gid;
     PST *pst;
 
     if ( sf->kerns ) anykerns=true;
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	for ( pst=sf->chars[i]->possub; pst!=NULL; pst=pst->next ) {
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
+	    (gid = fv->map->map[i])!=-1 && sf->glyphs[gid]!=NULL ) {
+	for ( pst=sf->glyphs[gid]->possub; pst!=NULL; pst=pst->next ) {
 	    if ( pst->type==pst_ligature ) {
 		anyligs = true;
 		if ( anykerns )
     break;
 	    }
 	}
-	if ( sf->chars[i]->kerns!=NULL ) {
+	if ( sf->glyphs[gid]->kerns!=NULL ) {
 	    anykerns = true;
 	    if ( anyligs )
     break;
@@ -5794,15 +5971,253 @@ static void gllistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     }
 }
 
+static GMenuItem emptymenu[] = {
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { NULL }
+};
+
+static void FVEncodingMenuBuild(GWindow gw,struct gmenuitem *mi, GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    extern void GMenuItemArrayFree(GMenuItem *mi);
+
+    if ( mi->sub!=NULL ) {
+	GMenuItemArrayFree(mi->sub);
+	mi->sub = NULL;
+    }
+    mi->sub = GetEncodingMenu(FVMenuReencode,fv->map->enc);
+}
+
+static void FVForceEncodingMenuBuild(GWindow gw,struct gmenuitem *mi, GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    extern void GMenuItemArrayFree(GMenuItem *mi);
+
+    if ( mi->sub!=NULL ) {
+	GMenuItemArrayFree(mi->sub);
+	mi->sub = NULL;
+    }
+    mi->sub = GetEncodingMenu(FVMenuForceEncode,fv->map->enc);
+}
+
+static void FVMenuAddUnencoded(GWindow gw,struct gmenuitem *mi, GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    unichar_t *ret, *end;
+    static unichar_t def[] = { '1', 0 };
+    int cnt, i;
+    EncMap *map = fv->map;
+
+    /* Add unused unencoded slots in the map */
+    ret = GWidgetAskStringR(_STR_AddEncodingSlots,def,fv->cidmaster?_STR_HowManyCIDsToAdd:_STR_HowManySlotsToAdd);
+    if ( ret==NULL )
+return;
+    cnt = u_strtol(ret,&end,10);
+    if ( *end!='\0' || cnt<=0 ) {
+	free(ret);
+	GWidgetErrorR( _STR_BadNumber,_STR_BadNumber );
+return;
+    }
+    free(ret);
+    if ( fv->cidmaster ) {
+	SplineFont *sf = fv->sf;
+	FontView *fvs;
+	if ( sf->glyphcnt+cnt<sf->glyphmax )
+	    sf->glyphs = grealloc(sf->glyphs,(sf->glyphmax = sf->glyphcnt+cnt+10)*sizeof(SplineChar *));
+	memset(sf->glyphs+sf->glyphcnt,0,cnt*sizeof(SplineChar *));
+	for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
+	    EncMap *map = fvs->map;
+	    if ( map->enccount+cnt>=map->encmax )
+		map->map = grealloc(map->map,(map->encmax += cnt+10)*sizeof(int));
+	    if ( sf->glyphcnt+cnt<map->backmax )
+		map->backmap = grealloc(map->map,(map->backmax += cnt+10)*sizeof(int));
+	    for ( i=map->enccount; i<map->enccount+cnt; ++i )
+		map->map[i] = map->backmap[i] = i;
+	    fv->selected = grealloc(fv->selected,(map->enccount+cnt));
+	    memset(fv->selected+map->enccount,0,cnt);
+	    map->enccount += cnt;
+	    if ( fv->filled!=NULL ) {
+		if ( fv->filled->glyphmax<sf->glyphmax )
+		    fv->filled->glyphs = grealloc(fv->filled->glyphs,(sf->glyphmax = sf->glyphcnt+cnt+10)*sizeof(BDFChar *));
+		memset(fv->filled->glyphs+fv->filled->glyphcnt,0,cnt*sizeof(BDFChar *));
+		fv->filled->glyphcnt = sf->glyphcnt+cnt;
+	    }
+	}
+	sf->glyphcnt += cnt;
+	FontViewReformatAll(fv->sf);
+    } else {
+	if ( map->enccount+cnt>=map->encmax )
+	    map->map = grealloc(map->map,(map->encmax += cnt+10)*sizeof(int));
+	for ( i=map->enccount; i<map->enccount+cnt; ++i )
+	    map->map[i] = -1;
+	fv->selected = grealloc(fv->selected,(map->enccount+cnt));
+	memset(fv->selected+map->enccount,0,cnt);
+	map->enccount += cnt;
+	FontViewReformatOne(fv);
+    }
+}
+
+static void FVMenuRemoveUnused(GWindow gw,struct gmenuitem *mi, GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    SplineFont *sf = fv->sf;
+    EncMap *map = fv->map;
+    int oldcount = map->enccount;
+    int gid, i;
+    int flags = -1;
+
+    for ( i=map->enccount-1; (gid=map->map[i])==-1 || !SCWorthOutputting(sf->glyphs[gid]);
+	    --i ) {
+	if ( gid!=-1 )
+	    SFRemoveGlyph(sf,sf->glyphs[gid],&flags);
+	map->enccount = i;
+    }
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    /* We reduced the encoding, so don't really need to reallocate the selection */
+    /*  array. It's just bigger than it needs to be. */
+    if ( oldcount!=map->enccount )
+	FontViewReformatOne(fv);
+#endif
+}
+
+static void FVMenuDetachGlyphs(GWindow gw,struct gmenuitem *mi, GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    int i, j, gid;
+    EncMap *map = fv->map;
+    int altered = false;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    FontView *fvs;
+#endif
+
+    for ( i=0; i<map->enccount; ++i ) if ( fv->selected[i] && (gid=map->map[i])!=-1 ) {
+	altered = true;
+	map->map[i] = -1;
+	if ( map->backmap[gid]==i ) {
+	    for ( j=map->enccount-1; j>=0 && map->map[j]!=gid; --j );
+	    map->backmap[gid] = j;
+	}
+    }
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    if ( altered )
+	for ( fvs = fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame )
+	    GDrawRequestExpose(fvs->v,NULL,false);
+#endif
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuDetachAndRemoveGlyphs(GWindow gw,struct gmenuitem *mi, GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    static int buts[] = { _STR_Remove, _STR_Cancel, 0 };
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_DetachAndRemoveGlyphs(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+    static char *buts[] = { GTK_STOCK_REMOVE, GTK_STOCK_CANCEL, NULL };
+# endif
+    int i, j, gid;
+    EncMap *map = fv->map;
+    SplineFont *sf = fv->sf;
+    int flags = -1;
+    int changed = false, altered = false;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    FontView *fvs;
+#endif
+
+#if defined(FONTFORGE_CONFIG_GDRAW)
+    if ( GWidgetAskR(_STR_DetachAndRemoveGlyphs,buts,0,1,_STR_AreYouSureRemoveGlyphs)==1 )
+#elif defined(FONTFORGE_CONFIG_GTK)
+    if ( gwwv_ask(_("Remove Glyphs"),buts,0,1,_("Are you sure you wish to remove these glyphs? This operation cannot be undone.")==1 )
+#endif
+return;
+
+    for ( i=0; i<map->enccount; ++i ) if ( fv->selected[i] && (gid=map->map[i])!=-1 ) {
+	altered = true;
+	map->map[i] = -1;
+	if ( map->backmap[gid]==i ) {
+	    for ( j=map->enccount-1; j>=0 && map->map[j]!=gid; --j );
+	    map->backmap[gid] = j;
+	    if ( j==-1 ) {
+		SFRemoveGlyph(sf,sf->glyphs[gid],&flags);
+		changed = true;
+	    }
+	}
+    }
+    if ( changed && !fv->sf->changed ) {
+	fv->sf->changed = true;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+	for ( fvs = sf->fv; fvs!=NULL; fvs=fvs->nextsame )
+	    FVSetTitle(fvs);
+#endif
+    }
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    if ( altered )
+	for ( fvs = sf->fv; fvs!=NULL; fvs=fvs->nextsame )
+	    GDrawRequestExpose(fvs->v,NULL,false);
+#endif
+}
+
+static void FVMenuLoadEncoding(GWindow gw,struct gmenuitem *mi, GEvent *e) {
+    LoadEncodingFile();
+}
+
+static void FVMenuMakeFromFont(GWindow gw,struct gmenuitem *mi, GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    (void) MakeEncoding(fv->sf,fv->map);
+}
+
+static void FVMenuRemoveEncoding(GWindow gw,struct gmenuitem *mi, GEvent *e) {
+    RemoveEncoding();
+}
+
+static GMenuItem enlist[] = {
+    { { (unichar_t *) _STR_Reencode, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'E' }, '\0', ksm_shift|ksm_control, emptymenu, FVEncodingMenuBuild, NULL, MID_Reencode },
+    { { (unichar_t *) _STR_ForceEncoding, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, emptymenu, FVForceEncodingMenuBuild, NULL, MID_ForceReencode },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_AddEncodingSlots, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuAddUnencoded, MID_AddUnencoded },
+    { { (unichar_t *) _STR_RemoveUnusedSlots, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuRemoveUnused, MID_RemoveUnused },
+    { { (unichar_t *) _STR_DetachGlyphs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuDetachGlyphs, MID_DetachGlyphs },
+    { { (unichar_t *) _STR_DetachAndRemoveGlyphs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuDetachAndRemoveGlyphs, MID_DetachAndRemoveGlyphs },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_LoadEncoding, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuLoadEncoding, MID_LoadEncoding },
+    { { (unichar_t *) _STR_Makefromfont, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuMakeFromFont, MID_MakeFromFont },
+    { { (unichar_t *) _STR_RemoveEncoding, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuRemoveEncoding, MID_RemoveEncoding },
+    { NULL }
+};
+
+static void enlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    int i, gid;
+    SplineFont *sf = fv->sf;
+    EncMap *map = fv->map;
+    int anyglyphs = false;
+
+    for ( i=map->enccount-1; i>=0 ; --i )
+	if ( fv->selected[i] && (gid=map->map[i])!=-1 && SCWorthOutputting(sf->glyphs[gid]))
+	    anyglyphs = true;
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	switch ( mi->mid ) {
+	  case MID_Reencode: case MID_ForceReencode:
+	    mi->ti.disabled = fv->cidmaster!=NULL;
+	  break;
+	  case MID_DetachGlyphs: case MID_DetachAndRemoveGlyphs:
+	    mi->ti.disabled = anyglyphs==false;
+	  break;
+	  case MID_RemoveUnused:
+	    gid = map->map[map->enccount-1];
+	    mi->ti.disabled = gid!=-1 && SCWorthOutputting(sf->glyphs[gid]);
+	  break;
+	  case MID_MakeFromFont:
+	    mi->ti.disabled = fv->cidmaster!=NULL || map->enccount>1024;
+	  break;
+	  case MID_RemoveEncoding:
+	    mi->ti.disabled = map->enc->builtin;
+	  break;
+	}
+    }
+}
+
 static GMenuItem vwlist[] = {
     { { (unichar_t *) _STR_NextGlyph, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'N' }, ']', ksm_control, NULL, NULL, FVMenuChangeChar, MID_Next },
     { { (unichar_t *) _STR_PrevGlyph, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '[', ksm_control, NULL, NULL, FVMenuChangeChar, MID_Prev },
     { { (unichar_t *) _STR_NextDefGlyph, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, ']', ksm_control|ksm_meta, NULL, NULL, FVMenuChangeChar, MID_NextDef },
     { { (unichar_t *) _STR_PrevDefGlyph, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'a' }, '[', ksm_control|ksm_meta, NULL, NULL, FVMenuChangeChar, MID_PrevDef },
     { { (unichar_t *) _STR_Goto, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'G' }, '>', ksm_shift|ksm_control, NULL, NULL, FVMenuGotoChar },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_EncodedView, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'E' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuCompact, MID_EncodedView },
-    { { (unichar_t *) _STR_CompactedView, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuCompact, MID_CompactedView },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_ShowAtt, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuShowAtt },
     { { (unichar_t *) _STR_DisplaySubstitutions, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'u' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuDisplaySubs, MID_DisplaySubs },
@@ -5837,9 +6252,10 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     extern GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt);
     int pos;
     SplineFont *sf = fv->sf;
+    EncMap *map = fv->map;
     int anyglyphs = false;
 
-    for ( i=fv->sf->charcnt-1; i>=0 ; --i ) if ( SCWorthOutputting(fv->sf->chars[i])) {
+    for ( i=sf->glyphcnt-1; i>=0 ; --i ) if ( SCWorthOutputting(sf->glyphs[i])) {
 	anyglyphs = true;
     break;
     }
@@ -5852,11 +6268,11 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     }
 
     vwlist[base-1].ti.fg = vwlist[base-1].ti.bg = COLOR_DEFAULT;
-    if ( fv->sf->bitmaps==NULL ) {
+    if ( sf->bitmaps==NULL ) {
 	vwlist[base-1].ti.line = false;
     } else {
 	vwlist[base-1].ti.line = true;
-	for ( bdf = fv->sf->bitmaps, i=base;
+	for ( bdf = sf->bitmaps, i=base;
 		i<sizeof(vwlist)/sizeof(vwlist[0])-1 && bdf!=NULL;
 		++i, bdf = bdf->next ) {
 	    if ( BDFDepth(bdf)==1 )
@@ -5881,21 +6297,17 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	    mi->ti.disabled = anychars<0;
 	  break;
 	  case MID_NextDef:
-	    if ( anychars<0 ) pos = sf->charcnt;
-	    else for ( pos = anychars+1; pos<sf->charcnt && sf->chars[pos]==NULL; ++pos );
-	    mi->ti.disabled = pos==sf->charcnt;
+	    if ( anychars<0 ) pos = map->enccount;
+	    for ( pos = anychars+1; pos<map->enccount &&
+		    (map->map[pos]==-1 || !SCWorthOutputting(sf->glyphs[map->map[pos]]));
+		    ++pos );
+	    mi->ti.disabled = pos==map->enccount;
 	  break;
 	  case MID_PrevDef:
-	    for ( pos = anychars-1; pos>=0 && sf->chars[pos]==NULL; --pos );
+	    for ( pos = anychars-1; pos>=0 &&
+		    (map->map[pos]==-1 || !SCWorthOutputting(sf->glyphs[map->map[pos]]));
+		    --pos );
 	    mi->ti.disabled = pos<0;
-	  break;
-	  case MID_EncodedView:
-	    mi->ti.checked = !fv->sf->compacted;
-	    mi->ti.disabled = !anyglyphs;
-	  break;
-	  case MID_CompactedView:
-	    mi->ti.checked = fv->sf->compacted;
-	    mi->ti.disabled = !anyglyphs;
 	  break;
 	  case MID_DisplaySubs:
 	    mi->ti.checked = fv->cur_feat_tag!=0;
@@ -5905,35 +6317,35 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	  break;
 	  case MID_ShowVMetrics:
 	    /*mi->ti.checked = fv->showvmetrics;*/
-	    mi->ti.disabled = !fv->sf->hasvmetrics;
+	    mi->ti.disabled = !sf->hasvmetrics;
 	  break;
 	  case MID_24:
 	    mi->ti.checked = (fv->show!=NULL && fv->show==fv->filled && fv->show->pixelsize==24);
-	    mi->ti.disabled = fv->sf->onlybitmaps && fv->show!=fv->filled;
+	    mi->ti.disabled = sf->onlybitmaps && fv->show!=fv->filled;
 	  break;
 	  case MID_36:
 	    mi->ti.checked = (fv->show!=NULL && fv->show==fv->filled && fv->show->pixelsize==36);
-	    mi->ti.disabled = fv->sf->onlybitmaps && fv->show!=fv->filled;
+	    mi->ti.disabled = sf->onlybitmaps && fv->show!=fv->filled;
 	  break;
 	  case MID_48:
 	    mi->ti.checked = (fv->show!=NULL && fv->show==fv->filled && fv->show->pixelsize==48);
-	    mi->ti.disabled = fv->sf->onlybitmaps && fv->show!=fv->filled;
+	    mi->ti.disabled = sf->onlybitmaps && fv->show!=fv->filled;
 	  break;
 	  case MID_72:
 	    mi->ti.checked = (fv->show!=NULL && fv->show==fv->filled && fv->show->pixelsize==72);
-	    mi->ti.disabled = fv->sf->onlybitmaps && fv->show!=fv->filled;
+	    mi->ti.disabled = sf->onlybitmaps && fv->show!=fv->filled;
 	  break;
 	  case MID_96:
 	    mi->ti.checked = (fv->show!=NULL && fv->show==fv->filled && fv->show->pixelsize==96);
-	    mi->ti.disabled = fv->sf->onlybitmaps && fv->show!=fv->filled;
+	    mi->ti.disabled = sf->onlybitmaps && fv->show!=fv->filled;
 	  break;
 	  case MID_AntiAlias:
 	    mi->ti.checked = (fv->show!=NULL && fv->show->clut!=NULL);
-	    mi->ti.disabled = fv->sf->onlybitmaps && fv->show!=fv->filled;
+	    mi->ti.disabled = sf->onlybitmaps && fv->show!=fv->filled;
 	  break;
 	  case MID_FitToEm:
 	    mi->ti.checked = (fv->show!=NULL && !fv->show->bbsized);
-	    mi->ti.disabled = fv->sf->onlybitmaps && fv->show!=fv->filled;
+	    mi->ti.disabled = sf->onlybitmaps && fv->show!=fv->filled;
 	  break;
 	}
     }
@@ -5990,11 +6402,15 @@ static GMenuItem mtlist[] = {
 static GMenuItem cdlist[] = {
     { { (unichar_t *) _STR_Convert2CID, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_control, NULL, NULL, FVMenuConvert2CID, MID_Convert2CID },
     { { (unichar_t *) _STR_ConvertByCMap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_control, NULL, NULL, FVMenuConvertByCMap, MID_ConvertByCMap },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_Flatten, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, '\0', ksm_control, NULL, NULL, FVMenuFlatten, MID_Flatten },
     { { (unichar_t *) _STR_FlattenByCMap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, '\0', ksm_control, NULL, NULL, FVMenuFlattenByCMap, MID_FlattenByCMap },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_InsertFont, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuInsertFont, MID_InsertFont },
     { { (unichar_t *) _STR_InsertBlank, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, '\0', ksm_control, NULL, NULL, FVMenuInsertBlank, MID_InsertBlank },
     { { (unichar_t *) _STR_RemoveFont, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'R' }, '\0', ksm_control, NULL, NULL, FVMenuRemoveFontFromCID, MID_RemoveFromCID },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_ChangeSupplement, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuChangeSupplement, MID_ChangeSupplement },
     { { (unichar_t *) _STR_CIDFontInfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuCIDFontInfo, MID_CIDFontInfo },
     { NULL },				/* Extra room to show sub-font names */
     { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
@@ -6053,6 +6469,7 @@ static void cdlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	    mi->ti.disabled = cidmaster==NULL || cidmaster->subfontcnt<=1;
 	  break;
 	  case MID_Flatten: case MID_FlattenByCMap: case MID_CIDFontInfo:
+	  case MID_ChangeSupplement:
 	    mi->ti.disabled = cidmaster==NULL;
 	  break;
 	}
@@ -6188,6 +6605,7 @@ static GMenuItem mblist[] = {
     { { (unichar_t *) _STR_Edit, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'E' }, 0, 0, edlist, edlistcheck },
     { { (unichar_t *) _STR_Element, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, 0, 0, ellist, ellistcheck },
     { { (unichar_t *) _STR_Hints, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'i' }, 0, 0, htlist, htlistcheck },
+    { { (unichar_t *) _STR_EncodingNoC, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, 0, 0, enlist, enlistcheck },
     { { (unichar_t *) _STR_View, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, 0, 0, vwlist, vwlistcheck },
     { { (unichar_t *) _STR_Metric, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, 0, 0, mtlist, mtlistcheck },
     { { (unichar_t *) _STR_CID, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, 0, 0, cdlist, cdlistcheck },
@@ -6264,6 +6682,7 @@ void FontViewMenu_ActivateEdit(GtkMenuItem *menuitem, gpointer user_data) {
 #endif
     RefChar *base = CopyContainsRef(fv->sf);
     GtkWidget *w;
+    int gid;
     static char *poslist[] = { "cut2", "copy2", "copy_reference1", "copy_width1",
 	    "copy_lbearing1", "copy_rbearing1", "paste2", "paste_into1",
 	    "paste_after1", "same_glyph_as1", "clear2", "clear_background1",
@@ -6271,18 +6690,20 @@ void FontViewMenu_ActivateEdit(GtkMenuItem *menuitem, gpointer user_data) {
 	    "unlink_reference1", "remove_undoes1", NULL };
 
     w = lookup_widget( menuitem, "undo2" );
-    for ( i=0; i<fv->sf->charcnt; ++i )
-	if ( fv->selected[i] && fv->sf->chars[i]!=NULL )
-	    if ( fv->sf->chars[i]->layers[ly_fore].undoes!=NULL )
+    for ( i=0; i<fv->map->enccount; ++i )
+	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
+		fv->sf->glyphs[gid]!=NULL ) {
+	    if ( fv->sf->glyphs[gid]->layers[ly_fore].undoes!=NULL )
     break;
-    gtk_widget_set_sensitive(w,i!=fv->sf->charcnt);
+    gtk_widget_set_sensitive(w,i!=fv->map->enccount);
 
     w = lookup_widget( menuitem, "redo2" );
-    for ( i=0; i<fv->sf->charcnt; ++i )
-	if ( fv->selected[i] && fv->sf->chars[i]!=NULL )
-	    if ( fv->sf->chars[i]->layers[ly_fore].redoes!=NULL )
+    for ( i=0; i<fv->map->enccount; ++i )
+	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
+		fv->sf->glyphs[gid]!=NULL ) {
+	    if ( fv->sf->glyphs[gid]->layers[ly_fore].redoes!=NULL )
     break;
-    gtk_widget_set_sensitive(w,i!=fv->sf->charcnt);
+    gtk_widget_set_sensitive(w,i!=fv->map->enccount);
 
     for ( i=0; poslist[i]!=NULL; ++i ) {
 	w = lookup_widget( menuitem, poslist[i] );
@@ -6296,7 +6717,8 @@ void FontViewMenu_ActivateEdit(GtkMenuItem *menuitem, gpointer user_data) {
 
     w = lookup_widget( menuitem, "copy_glyph_features1" );
     if ( w!=NULL )
-	gtk_widget_set_sensitive(w,pos!=-1 && SCAnyFeatures(fv->sf->chars[pos]);
+	gtk_widget_set_sensitive(w,pos!=-1 && (gid = fv->map->map[pos])!=-1 &&
+		SCAnyFeatures(fv->sf->glyphs[gid]);
 
 #  ifndef FONTFORGE_CONFIG_PASTEAFTER
     w = lookup_widget( menuitem, "paste_after1" );
@@ -6307,24 +6729,26 @@ void FontViewMenu_ActivateEdit(GtkMenuItem *menuitem, gpointer user_data) {
 void FontViewMenu_ActivateDependents(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
     int anychars = FVAnyCharSelected(fv);
+    int anygid = anychars<0 ? -1 : fv->map->map[anychars];
 
     gtk_widget_set_sensitive(lookup_widget( menuitem, "references1" ),
-	    anychars>=0 &&
-		    fv->sf->chars[anychars]!=NULL &&
-		    fv->sf->chars[anychars]->dependents != NULL);
+	    anygid>=0 &&
+		    fv->sf->glyphs[anygid]!=NULL &&
+		    fv->sf->glyphs[anygid]->dependents != NULL);
     gtk_widget_set_sensitive(lookup_widget( menuitem, "substitutions1" ),
-	    anychars>=0 &&
-		    fv->sf->chars[anychars]!=NULL &&
-		    SCUsedBySubs(fv->sf->chars[anychars]));
+	    anygid>=0 &&
+		    fv->sf->glyphs[anygid]!=NULL &&
+		    SCUsedBySubs(fv->sf->glyphs[anygid]));
 }
 
 void FontViewMenu_ActivateAAT(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
     FontView *ofv;
     int anychars = FVAnyCharSelected(fv);
+    int anygid = anychars<0 ? -1 : fv->map->map[anychars];
 
     gtk_widget_set_sensitive(lookup_widget( menuitem, "default_att1" ),
-	    anychars>=0 );
+	    anygid>=0 );
     for ( ofv=fv_list; ofv!=NULL && ofv->sf==fv->sf; ofv = ofv->next );
     gtk_widget_set_sensitive(lookup_widget( menuitem, "copy_features_to_font1" ),
 	    ofv!=NULL );
@@ -6334,13 +6758,13 @@ void FontViewMenu_ActivateBuild(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
     int anybuildable = false;
     int anybuildableaccents = false;
-    int i;
+    int i, gid;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] && (gid=fv->map->map[i])!=-1 ) {
 	SplineChar *sc, dummy;
-	sc = fv->sf->chars[i];
+	sc = fv->sf->glyphs[gid];
 	if ( sc==NULL )
-	    sc = SCBuildDummy(&dummy,fv->sf,i);
+	    sc = SCBuildDummy(&dummy,fv->sf,fv->map,i);
 	if ( SFIsSomethingBuildable(fv->sf,sc,true)) {
 	    anybuildableaccents = anybuildable = true;
     break;
@@ -6357,41 +6781,42 @@ void FontViewMenu_ActivateBuild(GtkMenuItem *menuitem, gpointer user_data) {
 void FontViewMenu_ActivateElement(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
     int anychars = FVAnyCharSelected(fv);
+    int anygid = anychars<0 ? -1 : fv->map->map[anychars];
     int anybuildable, anytraceable;
     int order2 = fv->sf->order2;
 
     gtk_widget_set_sensitive(lookup_widget( menuitem, "char_info1" ),
-	    anychars>=0 &&
-		    (fv->cidmaster==NULL || fv->sf->chars[anychars]!=NULL));
+	    anygid>=0 &&
+		    (fv->cidmaster==NULL || fv->sf->glyphs[anygid]!=NULL));
 
     gtk_widget_set_sensitive(lookup_widget( menuitem, "find_problems1" ),
-	    anychars!=-1);
+	    anygid!=-1);
 
     gtk_widget_set_sensitive(lookup_widget( menuitem, "transform1" ),
-	    anychars!=-1);
+	    anygid!=-1);
     gtk_widget_set_sensitive(lookup_widget( menuitem, "non_linear_transform1" ),
-	    anychars!=-1);
+	    anygid!=-1);
 
     gtk_widget_set_sensitive(lookup_widget( menuitem, "add_extrema1" ),
-	    anychars!=-1 && !fv->sf->onlybitmaps );
+	    anygid!=-1 && !fv->sf->onlybitmaps );
     gtk_widget_set_sensitive(lookup_widget( menuitem, "round_to_int1" ),
-	    anychars!=-1 && !fv->sf->onlybitmaps );
+	    anygid!=-1 && !fv->sf->onlybitmaps );
     gtk_widget_set_sensitive(lookup_widget( menuitem, "correct_direction1" ),
-	    anychars!=-1 && !fv->sf->onlybitmaps );
+	    anygid!=-1 && !fv->sf->onlybitmaps );
 
     gtk_widget_set_sensitive(lookup_widget( menuitem, "simplify3" ),
-	    anychars!=-1 && !fv->sf->onlybitmaps );
+	    anygid!=-1 && !fv->sf->onlybitmaps );
 
     gtk_widget_set_sensitive(lookup_widget( menuitem, "meta_font1" ),
-	    anychars!=-1 && !fv->sf->onlybitmaps && !order2 );
+	    anygid!=-1 && !fv->sf->onlybitmaps && !order2 );
     gtk_widget_set_sensitive(lookup_widget( menuitem, "expand_stroke1" ),
-	    anychars!=-1 && !fv->sf->onlybitmaps && !order2 );
+	    anygid!=-1 && !fv->sf->onlybitmaps && !order2 );
     gtk_widget_set_sensitive(lookup_widget( menuitem, "overlap1" ),
-	    anychars!=-1 && !fv->sf->onlybitmaps && !order2 );
+	    anygid!=-1 && !fv->sf->onlybitmaps && !order2 );
     gtk_widget_set_sensitive(lookup_widget( menuitem, "effects1" ),
-	    anychars!=-1 && !fv->sf->onlybitmaps && !order2 );
+	    anygid!=-1 && !fv->sf->onlybitmaps && !order2 );
     gtk_widget_set_sensitive(lookup_widget( menuitem, "tilepath1" ),
-	    anychars!=-1 && !fv->sf->onlybitmaps && !order2 );
+	    anygid!=-1 && !fv->sf->onlybitmaps && !order2 );
 
     gtk_widget_set_sensitive(lookup_widget( menuitem, "bitmaps_available1" ),
 	    fv->mm==NULL );
@@ -6399,13 +6824,13 @@ void FontViewMenu_ActivateElement(GtkMenuItem *menuitem, gpointer user_data) {
 	    fv->mm==NULL && fv->sf->bitmaps!=NULL && !fv->sf->onlybitmaps );
 
     anybuildable = false;
-    if ( anychars!=-1 ) {
-	int i;
-	for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
+    if ( anygid!=-1 ) {
+	int i, gid;
+	for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] && (gid=fv->map->map[i])!=-1 ) {
 	    SplineChar *sc, dummy;
-	    sc = fv->sf->chars[i];
+	    sc = fv->sf->glyphs[gid];
 	    if ( sc==NULL )
-		sc = SCBuildDummy(&dummy,fv->sf,i);
+		sc = SCBuildDummy(&dummy,fv->sf,fv->map,i);
 	    if ( SFIsSomethingBuildable(fv->sf,sc,false)) {
 		anybuildable = true;
 	break;
@@ -6418,9 +6843,10 @@ void FontViewMenu_ActivateElement(GtkMenuItem *menuitem, gpointer user_data) {
     anytraceable = false;
     if ( FindAutoTraceName()!=NULL && anychars!=-1 ) {
 	int i;
-	for ( i=0; i<fv->sf->charcnt; ++i )
-	    if ( fv->selected[i] && fv->sf->chars[i]!=NULL &&
-		    fv->sf->chars[i]->layers[ly_back].images!=NULL ) {
+	for ( i=0; i<fv->map->enccount; ++i )
+	    if ( fv->selected[i] && (gid=fv->map->map[i])!=-1 &&
+		    fv->sf->glyphs[gid]!=NULL &&
+		    fv->sf->glyphs[gid]->layers[ly_back].images!=NULL ) {
 		anytraceable = true;
 	break;
 	    }
@@ -6444,24 +6870,25 @@ void FontViewMenu_ActivateElement(GtkMenuItem *menuitem, gpointer user_data) {
 void FontViewMenu_ActivateHints(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
     int anychars = FVAnyCharSelected(fv);
+    int anygid = anychars<0 ? -1 : fv->map->map[anychars];
     int multilayer = fv->sf->multilayer;
 
     gtk_widget_set_sensitive(lookup_widget( menuitem, "autohint1" ),
-	    anychars!=-1 && !multilayer );
+	    anygid!=-1 && !multilayer );
     gtk_widget_set_sensitive(lookup_widget( menuitem, "hint_subsitution_pts1" ),
-	    !fv->sf->order2 && anychars!=-1 && !multilayer );
+	    !fv->sf->order2 && anygid!=-1 && !multilayer );
     if ( fv->sf->mm!=NULL && fv->sf->mm->apple )
 	gtk_widget_set_sensitive(lookup_widget( menuitem, "hint_subsitution_pts1" ),
 		false);
     gtk_widget_set_sensitive(lookup_widget( menuitem, "auto_counter_hint1" ),
-	    !fv->sf->order2 && anychars!=-1 && !multilayer );
+	    !fv->sf->order2 && anygid!=-1 && !multilayer );
     gtk_widget_set_sensitive(lookup_widget( menuitem, "dont_autohint1" ),
-	    !fv->sf->order2 && anychars!=-1 && !multilayer );
+	    !fv->sf->order2 && anygid!=-1 && !multilayer );
 
     gtk_widget_set_sensitive(lookup_widget( menuitem, "autoinstr1" ),
-	    fv->sf->order2 && anychars!=-1 && !multilayer );
+	    fv->sf->order2 && anygid!=-1 && !multilayer );
     gtk_widget_set_sensitive(lookup_widget( menuitem, "edit_instructions1" ),
-	    fv->sf->order2 && anychars>=0 && !multilayer );
+	    fv->sf->order2 && anygid>=0 && !multilayer );
 
     gtk_widget_set_sensitive(lookup_widget( menuitem, "edit_fpgm1" ),
 	    fv->sf->order2 && !multilayer );
@@ -6471,11 +6898,11 @@ void FontViewMenu_ActivateHints(GtkMenuItem *menuitem, gpointer user_data) {
 	    fv->sf->order2 && !multilayer );
 
     gtk_widget_set_sensitive(lookup_widget( menuitem, "clear_hints1" ),
-	    anychars!=-1 );
+	    anygid!=-1 );
     gtk_widget_set_sensitive(lookup_widget( menuitem, "clear_width_md1" ),
-	    anychars!=-1 );
+	    anygid!=-1 );
     gtk_widget_set_sensitive(lookup_widget( menuitem, "clear_instructions1" ),
-	    fv->sf->order2 && anychars!=-1 );
+	    fv->sf->order2 && anygid!=-1 );
 }
 
 /* Builds up a menu containing all the anchor classes */
@@ -6488,19 +6915,19 @@ void FontViewMenu_ActivateAnchoredPairs(GtkMenuItem *menuitem, gpointer user_dat
 void FontViewMenu_ActivateCombinations(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
     SplineFont *sf = fv->sf;
-    int i, anyligs=0, anykerns=0;
+    int i, gid, anyligs=0, anykerns=0;
     PST *pst;
 
     if ( sf->kerns ) anykerns=true;
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	for ( pst=sf->chars[i]->possub; pst!=NULL; pst=pst->next ) {
+    for ( i=0; i<map->enccount; ++i ) if ( (gid=fv->map->map[i]!=-1 && sf->glyphs[gid]!=NULL ) {
+	for ( pst=sf->glyphs[gid]->possub; pst!=NULL; pst=pst->next ) {
 	    if ( pst->type==pst_ligature ) {
 		anyligs = true;
 		if ( anykerns )
     break;
 	    }
 	}
-	if ( sf->chars[i]->kerns!=NULL ) {
+	if ( sf->glyphs[gid]->kerns!=NULL ) {
 	    anykerns = true;
 	    if ( anyligs )
     break;
@@ -6518,10 +6945,11 @@ void FontViewMenu_ActivateCombinations(GtkMenuItem *menuitem, gpointer user_data
 void FontViewMenu_ActivateView(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
     int anychars = FVAnyCharSelected(fv);
-    int i;
+    int i,gid;
     BDFFont *bdf;
     int pos;
     SplineFont *sf = fv->sf;
+    EncMap *map = fv->map;
     GtkWidget *menu = gtk_menu_item_get_submenu(menuitem);
     GList *kids, *next;
     static int sizes[] = { 24, 36, 48, 72, 96, 0 };
@@ -6564,11 +6992,15 @@ void FontViewMenu_ActivateView(GtkMenuItem *menuitem, gpointer user_data) {
 	    anychars>=0 );
     gtk_widget_set_sensitive(lookup_widget( menuitem, "prev_char1" ),
 	    anychars>=0 );
-    if ( anychars<0 ) pos = sf->charcnt;
-    else for ( pos = anychars+1; pos<sf->charcnt && sf->chars[pos]==NULL; ++pos );
+    if ( anychars<0 ) pos = map->enccount;
+    else for ( pos = anychars+1; pos<map->enccount &&
+	    (map->map[pos]==-1 || !SCWorthOutputting(sf->glyphs[map->map[pos]]));
+	    ++pos );
     gtk_widget_set_sensitive(lookup_widget( menuitem, "prev_char1" ),
-	    pos!=sf->charcnt );
-    for ( pos = anychars-1; pos>=0 && sf->chars[pos]==NULL; --pos );
+	    pos!=map->enccount );
+    for ( pos=anychars-1; pos>=0 &&
+	    (map->map[pos]==-1 || !SCWorthOutputting(sf->glyphs[map->map[pos]]));
+	    --pos );
     gtk_widget_set_sensitive(lookup_widget( menuitem, "prev_char1" ),
 	    pos>=0 );
     gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(
@@ -6742,9 +7174,9 @@ static int FeatureTrans(FontView *fv, int enc) {
 
     if ( fv->cur_feat_tag==0 )
 return( enc );
-    if ( enc<0 || enc>=fv->sf->charcnt )
+    if ( enc<0 || enc>=fv->map->enccount || fv->map->map[enc]==-1 )
 return( -1 );
-    sc = fv->sf->chars[enc];
+    sc = fv->sf->glyphs[fv->map->map[enc]];
     if ( sc==NULL )
 return( -1 );
     for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
@@ -6757,93 +7189,88 @@ return( -1 );
     pt = strchr(pst->u.subs.variant,' ');
     if ( pt!=NULL )
 	*pt = '\0';
-    sc = SFGetCharDup(fv->sf, -1, pst->u.subs.variant );
-    if ( pt!=NULL )
-	*pt = ' ';
-    if ( sc==NULL )
-return( -1 );
-
-return( sc->enc );
+return( SFFindExistingSlot(fv->sf, -1, pst->u.subs.variant ));
 }
 
-void FVRefreshChar(FontView *fv,BDFFont *bdf,int enc) {
-    int feat_enc = enc;
-    BDFChar *bdfc = bdf->chars[enc];
-    int i, j;
+void FVRefreshChar(FontView *fv,int gid) {
+    BDFChar *bdfc;
+    int i, j, enc;
     MetricsView *mv;
 
     if ( fv->v==NULL || fv->colcnt==0 )	/* Can happen in scripts */
 return;
-    if ( fv->cur_feat_tag!=0 && strchr(fv->sf->chars[enc]->name,'.')!=NULL ) {
-	char *temp = copy(fv->sf->chars[enc]->name);
+    if ( fv->cur_feat_tag!=0 && strchr(fv->sf->glyphs[gid]->name,'.')!=NULL ) {
+	char *temp = copy(fv->sf->glyphs[gid]->name);
 	SplineChar *sc2;
 	*strchr(temp,'.') = '\0';
 	sc2 = SFGetChar(fv->sf,-1,temp);
-	if ( sc2!=NULL && sc2->enc!=enc )
-	    enc = sc2->enc;
+	if ( sc2!=NULL && sc2->orig_pos!=gid )
+	    gid = sc2->orig_pos;
 	free(temp);
     }
 
     for ( fv=fv->sf->fv; fv!=NULL; fv = fv->nextsame ) {
 	for ( mv=fv->metrics; mv!=NULL; mv=mv->next )
-	    MVRefreshChar(mv,fv->sf->chars[enc]);
-	if ( fv->show != bdf )
-    continue;
-	i = enc / fv->colcnt;
-	j = enc - i*fv->colcnt;
-	i -= fv->rowoff;
-	if ( i>=0 && i<fv->rowcnt ) {
-	    struct _GImage base;
-	    GImage gi;
-	    GClut clut;
-	    GRect old, box;
+	    MVRefreshChar(mv,fv->sf->glyphs[gid]);
+	bdfc = fv->show->glyphs[gid];
+	/* A glyph may be encoded in several places, all need updating */
+	for ( enc = 0; enc<fv->map->enccount; ++enc ) if ( fv->map->map[enc]==gid ) {
+	    i = enc / fv->colcnt;
+	    j = enc - i*fv->colcnt;
+	    i -= fv->rowoff;
+	    if ( i>=0 && i<fv->rowcnt ) {
+		struct _GImage base;
+		GImage gi;
+		GClut clut;
+		GRect old, box;
 
-	    if ( bdfc==NULL )
-		bdfc = BDFPieceMeal(bdf,feat_enc);
+		if ( bdfc==NULL )
+		    bdfc = BDFPieceMeal(fv->show,gid);
 
-	    memset(&gi,'\0',sizeof(gi));
-	    memset(&base,'\0',sizeof(base));
-	    if ( bdfc->byte_data ) {
-		gi.u.image = &base;
-		base.image_type = it_index;
-		base.clut = bdf->clut;
-		GDrawSetDither(NULL, false);	/* on 8 bit displays we don't want any dithering */
-		base.trans = -1;
-		/*base.clut->trans_index = 0;*/
-	    } else {
-		memset(&clut,'\0',sizeof(clut));
-		gi.u.image = &base;
-		base.image_type = it_mono;
-		base.clut = &clut;
-		clut.clut_len = 2;
-		clut.clut[0] = GDrawGetDefaultBackground(NULL);
+		memset(&gi,'\0',sizeof(gi));
+		memset(&base,'\0',sizeof(base));
+		if ( bdfc->byte_data ) {
+		    gi.u.image = &base;
+		    base.image_type = it_index;
+		    base.clut = fv->show->clut;
+		    GDrawSetDither(NULL, false);	/* on 8 bit displays we don't want any dithering */
+		    base.trans = -1;
+		    /*base.clut->trans_index = 0;*/
+		} else {
+		    memset(&clut,'\0',sizeof(clut));
+		    gi.u.image = &base;
+		    base.image_type = it_mono;
+		    base.clut = &clut;
+		    clut.clut_len = 2;
+		    clut.clut[0] = GDrawGetDefaultBackground(NULL);
+		}
+
+		base.data = bdfc->bitmap;
+		base.bytes_per_line = bdfc->bytes_per_line;
+		base.width = bdfc->xmax-bdfc->xmin+1;
+		base.height = bdfc->ymax-bdfc->ymin+1;
+		box.x = j*fv->cbw+1; box.width = fv->cbw-1;
+		box.y = i*fv->cbh+fv->lab_height+1; box.height = fv->cbw;
+		GDrawPushClip(fv->v,&box,&old);
+		GDrawFillRect(fv->v,&box,GDrawGetDefaultBackground(NULL));
+		if ( fv->magnify>1 ) {
+		    GDrawDrawImageMagnified(fv->v,&gi,NULL,
+			    j*fv->cbw+(fv->cbw-1-fv->magnify*base.width)/2,
+			    i*fv->cbh+fv->lab_height+1+fv->magnify*(fv->show->ascent-bdfc->ymax),
+			    fv->magnify*base.width,fv->magnify*base.height);
+		} else
+		    GDrawDrawImage(fv->v,&gi,NULL,
+			    j*fv->cbw+(fv->cbw-1-base.width)/2,
+			    i*fv->cbh+fv->lab_height+1+fv->show->ascent-bdfc->ymax);
+		GDrawPopClip(fv->v,&old);
+		if ( fv->selected[enc] ) {
+		    GDrawSetXORBase(fv->v,GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(fv->v)));
+		    GDrawSetXORMode(fv->v);
+		    GDrawFillRect(fv->v,&box,XOR_COLOR);
+		    GDrawSetCopyMode(fv->v);
+		}
+		GDrawSetDither(NULL, true);
 	    }
-
-	    base.data = bdfc->bitmap;
-	    base.bytes_per_line = bdfc->bytes_per_line;
-	    base.width = bdfc->xmax-bdfc->xmin+1;
-	    base.height = bdfc->ymax-bdfc->ymin+1;
-	    box.x = j*fv->cbw+1; box.width = fv->cbw-1;
-	    box.y = i*fv->cbh+fv->lab_height+1; box.height = fv->cbw;
-	    GDrawPushClip(fv->v,&box,&old);
-	    GDrawFillRect(fv->v,&box,GDrawGetDefaultBackground(NULL));
-	    if ( fv->magnify>1 ) {
-		GDrawDrawImageMagnified(fv->v,&gi,NULL,
-			j*fv->cbw+(fv->cbw-1-fv->magnify*base.width)/2,
-			i*fv->cbh+fv->lab_height+1+fv->magnify*(fv->show->ascent-bdfc->ymax),
-			fv->magnify*base.width,fv->magnify*base.height);
-	    } else
-		GDrawDrawImage(fv->v,&gi,NULL,
-			j*fv->cbw+(fv->cbw-1-base.width)/2,
-			i*fv->cbh+fv->lab_height+1+fv->show->ascent-bdfc->ymax);
-	    GDrawPopClip(fv->v,&old);
-	    if ( fv->selected[enc] ) {
-		GDrawSetXORBase(fv->v,GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(fv->v)));
-		GDrawSetXORMode(fv->v);
-		GDrawFillRect(fv->v,&box,XOR_COLOR);
-		GDrawSetCopyMode(fv->v);
-	    }
-	    GDrawSetDither(NULL, true);
 	}
     }
 }
@@ -6856,16 +7283,16 @@ void FVRegenChar(FontView *fv,SplineChar *sc) {
 return;
 
     sc->changedsincelasthinted = true;
-    if ( sc->enc>=fv->filled->charcnt )
-	IError("Character out of bounds in bitmap font %d>=%d", sc->enc, fv->filled->charcnt );
+    if ( sc->orig_pos>=fv->filled->glyphcnt )
+	IError("Character out of bounds in bitmap font %d>=%d", sc->orig_pos, fv->filled->glyphcnt );
     else
-	BDFCharFree(fv->filled->chars[sc->enc]);
-    fv->filled->chars[sc->enc] = NULL;
+	BDFCharFree(fv->filled->glyphs[sc->orig_pos]);
+    fv->filled->glyphs[sc->orig_pos] = NULL;
 		/* FVRefreshChar does NOT do this for us */
     for ( mv=fv->metrics; mv!=NULL; mv=mv->next )
 	MVRegenChar(mv,sc);
 
-    FVRefreshChar(fv,fv->filled,sc->enc);
+    FVRefreshChar(fv,sc->orig_pos);
 #if HANYANG
     if ( sc->compositionunit && fv->sf->rules!=NULL )
 	Disp_RefreshChar(fv->sf,sc);
@@ -6960,26 +7387,6 @@ return( (to[0]<<8) | to[1] );
 return( -1 );
 }
 
-int32 EncFromSF(int32 uni, SplineFont *sf) {
-    int enc = EncFromUni(uni,sf->encoding_name);
-    int i;
-
-    if ( enc!=-1 )
-return( enc );
-    if ( sf->cidmaster!=NULL || sf->subfontcnt!=0 ) {
-	struct cidmap *map;
-	if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
-	map=FindCidMap(sf->cidregistry,sf->ordering,sf->supplement,sf);
-return( NameEnc2CID(map,uni,NULL));
-    } else {
-	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	    if ( sf->chars[i]->unicodeenc==uni )
-return( i );
-	}
-    }
-return( -1 );
-}
-
 char *StdGlyphName(char *buffer, int uni,enum uni_interp interp) {
     char *name = NULL;
     int j;
@@ -7040,12 +7447,11 @@ char *StdGlyphName(char *buffer, int uni,enum uni_interp interp) {
 return( name );
 }
 
-SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
+SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,EncMap *map,int i) {
     static char namebuf[100];
 #ifdef FONTFORGE_CONFIG_TYPE3
     static Layer layers[2];
 #endif
-    int j;
 
     memset(dummy,'\0',sizeof(*dummy));
     dummy->color = COLOR_DEFAULT;
@@ -7053,40 +7459,30 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
 #ifdef FONTFORGE_CONFIG_TYPE3
     dummy->layers = layers;
 #endif
-    dummy->enc = i;
-    if ( sf->compacted ) {
-	for ( j=i-1; j>=0; --j )
-	    if ( j<sf->charcnt && sf->chars[j]!=NULL )
-	break;
-	if ( j>0 )
-	    dummy->old_enc = sf->chars[j]->old_enc+(i-j);
-	else
-	    dummy->old_enc = i;
-    }
     if ( sf->cidmaster!=NULL ) {
 	/* CID fonts don't have encodings, instead we must look up the cid */
 	if ( sf->cidmaster->loading_cid_map )
 	    dummy->unicodeenc = -1;
 	else
-	    dummy->unicodeenc = CID2NameEnc(FindCidMap(sf->cidmaster->cidregistry,sf->cidmaster->ordering,sf->cidmaster->supplement,sf->cidmaster),
+	    dummy->unicodeenc = CID2NameUni(FindCidMap(sf->cidmaster->cidregistry,sf->cidmaster->ordering,sf->cidmaster->supplement,sf->cidmaster),
 		    i,namebuf,sizeof(namebuf));
     } else
-	dummy->unicodeenc = UniFromEnc(i,sf->encoding_name);
+	dummy->unicodeenc = UniFromEnc(i,map->enc);
 
     if ( sf->cidmaster!=NULL )
 	dummy->name = namebuf;
-    else if ( sf->encoding_name->psnames!=NULL && sf->encoding_name->psnames[i]!=NULL )
-	dummy->name = sf->encoding_name->psnames[i];
+    else if ( map->enc->psnames!=NULL && map->enc->psnames[i]!=NULL )
+	dummy->name = map->enc->psnames[i];
     else
 	dummy->name = StdGlyphName(namebuf,dummy->unicodeenc,sf->uni_interp);
     if ( dummy->name==NULL ) {
-	if ( dummy->unicodeenc!=-1 || i<256 )
+	/*if ( dummy->unicodeenc!=-1 || i<256 )
 	    dummy->name = ".notdef";
-	else {
+	else*/ {
 	    int j;
 	    sprintf( namebuf, "NameMe-%d", i);
 	    j=0;
-	    while ( SFGetChar(sf,-1,namebuf)!=NULL )
+	    while ( SFFindExistingSlot(sf,-1,namebuf)!=-1 )
 		sprintf( namebuf, "NameMe-%d.%d", i, ++j);
 	    dummy->name = namebuf;
 	}
@@ -7100,43 +7496,46 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i) {
 return( dummy );
 }
 
-static SplineChar *_SFMakeChar(SplineFont *sf,int i) {
+static SplineChar *_SFMakeChar(SplineFont *sf,EncMap *map,int enc) {
     SplineChar dummy, *sc;
     SplineFont *ssf;
-    int j, real_uni;
+    int j, real_uni, gid;
 #ifdef FONTFORGE_CONFIG_TYPE3
     Layer *l;
 #endif
     extern const int cns14pua[], amspua[];
 
+    gid = map->map[enc];
     if ( sf->subfontcnt!=0 ) {
 	ssf = NULL;
 	for ( j=0; j<sf->subfontcnt; ++j )
-	    if ( i<sf->subfonts[j]->charcnt ) {
+	    if ( gid<sf->subfonts[j]->glyphcnt ) {
 		ssf = sf->subfonts[j];
-		if ( ssf->chars[i]!=NULL ) {
-return( ssf->chars[i] );
+		if ( ssf->glyphs[gid]!=NULL ) {
+return( ssf->glyphs[gid] );
 		}
 	    }
 	sf = ssf;
     }
 
-    if ( (sc = sf->chars[i])==NULL ) {
-	if (( sf->encoding_name->is_unicodebmp || sf->encoding_name->is_unicodefull ) &&
-		( i>=0xe000 && i<=0xf8ff ) &&
+    if ( gid==-1 || (sc = sf->glyphs[gid])==NULL ) {
+	if (( map->enc->is_unicodebmp || map->enc->is_unicodefull ) &&
+		( enc>=0xe000 && enc<=0xf8ff ) &&
 		( sf->uni_interp==ui_ams || sf->uni_interp==ui_trad_chinese ) &&
-		( real_uni = (sf->uni_interp==ui_ams ? amspua : cns14pua)[i-0xe000])!=0 ) {
-	    if ( real_uni<sf->charcnt ) {
+		( real_uni = (sf->uni_interp==ui_ams ? amspua : cns14pua)[enc-0xe000])!=0 ) {
+	    if ( real_uni<map->enccount ) {
+		SplineChar *sc;
 		/* if necessary, create the real unicode code point */
 		/*  and then make us be a duplicate of it */
-		sf->chars[i] = MakeDupRef(_SFMakeChar(sf,real_uni),i,i);
-		SCCharChangedUpdate(sf->chars[i]);
-return( sf->chars[i] );
+		sc = _SFMakeChar(sf,map,real_uni);
+		map->map[enc] = gid = sc->orig_pos;
+		SCCharChangedUpdate(sc);
+return( sc );
 	    }
 	}
 
-	SCBuildDummy(&dummy,sf,i);
-	sf->chars[i] = sc = SplineCharCreate();
+	SCBuildDummy(&dummy,sf,map,enc);
+	sc = SplineCharCreate();
 #ifdef FONTFORGE_CONFIG_TYPE3
 	l = sc->layers;
 	*sc = dummy;
@@ -7150,29 +7549,31 @@ return( sf->chars[i] );
 #endif
 	sc->name = copy(sc->name);
 	SCLigDefault(sc);
-	sc->parent = sf;
-	GlyphHashFree(sf);
+	SFAddGlyphAndEncode(sf,sc,map,enc);
     }
 return( sc );
 }
 
-SplineChar *SFMakeChar(SplineFont *sf,int i) {
-    if ( sf->mm!=NULL && sf->chars[i]==NULL ) {
+SplineChar *SFMakeChar(SplineFont *sf,EncMap *map, int enc) {
+    int gid;
+
+    if ( enc==-1 )
+return( NULL );
+    gid = map->map[enc];
+    if ( sf->mm!=NULL && (gid==-1 || sf->glyphs[gid]==NULL) ) {
 	int j;
-	_SFMakeChar(sf->mm->normal,i);
+	_SFMakeChar(sf->mm->normal,map,enc);
 	for ( j=0; j<sf->mm->instance_count; ++j )
-	    _SFMakeChar(sf->mm->instances[j],i);
+	    _SFMakeChar(sf->mm->instances[j],map,enc);
     }
-return( _SFMakeChar(sf,i));
+return( _SFMakeChar(sf,map,enc));
 }
 
 #if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
-SplineChar *FVMakeChar(FontView *fv,int i) {
+SplineChar *FVMakeChar(FontView *fv,int enc) {
     SplineFont *sf = fv->sf;
-    SplineChar *base_sc = SFMakeChar(sf,i), *feat_sc = NULL;
-    int feat_i = FeatureTrans(fv,i);
-    BDFFont *bdf;
-    FontView *fvs;
+    SplineChar *base_sc = SFMakeChar(sf,fv->map,enc), *feat_sc = NULL;
+    int feat_i = FeatureTrans(fv,enc);
 
     if ( fv->cur_feat_tag==0 )
 return( base_sc );
@@ -7189,40 +7590,13 @@ return( base_sc );
 		  fv->cur_feat_tag == CHR('f','i','n','a') ? ArabicForms[base_sc->unicodeenc-0x600].final    :
 		  fv->cur_feat_tag == CHR('i','s','o','l') ? ArabicForms[base_sc->unicodeenc-0x600].isolated :
 		  -1;
-	    feat_sc = SFGetCharDup(sf,uni,NULL);
+	    feat_sc = SFGetChar(sf,uni,NULL);
 	    if ( feat_sc!=NULL )
 return( feat_sc );
 	}
-	feat_i = sf->charcnt ++;
-	sf->chars = grealloc(sf->chars,sf->charcnt*sizeof(SplineChar *));
-	sf->chars[feat_i] = NULL;
-	for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
-	    if ( bdf->charcnt<sf->charcnt ) {
-		int old = bdf->charcnt;
-		bdf->charcnt = sf->charcnt;
-		bdf->chars = grealloc(bdf->chars,sf->charcnt*sizeof(BDFChar *));
-		for ( ; old<sf->charcnt; ++old )
-		    bdf->chars[old] = NULL;
-	    }
-	}
-	if ( fv->filled!=NULL ) {
-	    bdf = fv->filled;
-	    if ( bdf->charcnt<sf->charcnt ) {
-		int old = bdf->charcnt;
-		bdf->charcnt = sf->charcnt;
-		bdf->chars = grealloc(bdf->chars,sf->charcnt*sizeof(BDFChar *));
-		for ( ; old<sf->charcnt; ++old )
-		    bdf->chars[old] = NULL;
-	    }
-	}
-	for ( fvs = sf->fv; fvs!=NULL; fvs=fvs->next ) {
-	    fvs->selected = grealloc(fvs->selected,sf->charcnt);
-	    fvs->selected[sf->charcnt-1] = 0;
-	    fvs->rowltot = (fvs->sf->charcnt+fvs->colcnt-1)/fvs->colcnt;
-	    GScrollBarSetBounds(fvs->vsb,0,fvs->rowltot,fvs->rowcnt);
-	}
-	feat_sc = SFMakeChar(sf,feat_i);
-	free(feat_sc->name);
+	feat_sc = SplineCharCreate();
+	feat_sc->parent = sf;
+	feat_sc->unicodeenc = uni;
 	if ( uni!=-1 ) {
 	    feat_sc->name = galloc(8);
 	    feat_sc->unicodeenc = uni;
@@ -7242,15 +7616,17 @@ return( feat_sc );
 		    fv->cur_feat_tag>>16,
 		    (fv->cur_feat_tag)&0xffff );
 	}
+	SFAddGlyphAndEncode(sf,feat_sc,fv->map,enc);
 	base_sc->possub = AddSubs(base_sc->possub,fv->cur_feat_tag,feat_sc->name,
 		0/* No flags */,fv->cur_sli,base_sc);
-    }
-return( sf->chars[feat_i] );
+return( feat_sc );
+    } else
+return( base_sc );
 }
 #else
-SplineChar *FVMakeChar(FontView *fv,int i) {
+SplineChar *FVMakeChar(FontView *fv,int enc) {
     SplineFont *sf = fv->sf;
-return( SFMakeChar(sf,i) );
+return( SFMakeChar(sf,fv->map,enc) );
 }
 #endif
 
@@ -7339,7 +7715,7 @@ return( rot );
 #if 0
 static int Use2ByteEnc(FontView *fv,SplineChar *sc, unichar_t *buf,FontMods *mods) {
     int ch1 = sc->enc>>8, ch2 = sc->enc&0xff, newch;
-    int enc = fv->sf->encoding_name;
+    Encoding *enc = fv->map->enc;
     unsigned short *subtable;
 
  retry:
@@ -7584,7 +7960,7 @@ static void do_Adobe_Pua(unichar_t *buf,int sob,int uni) {
 }
 
 static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
-    int i, j, width;
+    int i, j, width, gid;
     int changed;
     GRect old, old2, box;
     GClut clut;
@@ -7631,19 +8007,30 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 	int feat_index;
 	styles = 0;
 	if ( fv->mapping!=NULL ) {
-	    if ( index>=fv->mapcnt ) index = fv->sf->charcnt;
+	    if ( index>=fv->mapcnt ) index = fv->map->enccount;
 	    else
 		index = fv->mapping[index];
 	}
-	if ( index < fv->sf->charcnt && index!=-1 ) {
-	    SplineChar *sc = fv->sf->chars[index];
+	if ( index < fv->map->enccount && index!=-1 ) {
+	    SplineChar *sc = (gid=fv->map->map[index])!=-1 ? fv->sf->glyphs[gid]: NULL;
 	    unichar_t buf[60]; char cbuf[8];
-	    Color fg = 0;
+	    Color fg;
 	    FontMods *mods=NULL;
 	    extern const int amspua[];
 	    int uni;
+	    struct cidmap *cidmap = NULL;
+
+	    if ( fv->cidmaster!=NULL )
+		cidmap = FindCidMap(fv->cidmaster->cidregistry,fv->cidmaster->ordering,fv->cidmaster->supplement,fv->cidmaster);
+
+	    if ( ( fv->map->enc==&custom && index<256 ) ||
+		 ( fv->map->enc!=&custom && index<fv->map->enc->char_cnt ) ||
+		 ( cidmap!=NULL && index<MaxCID(cidmap) ))
+		fg = 0x000000;
+	    else
+		fg = 0x505050;
 	    if ( sc==NULL )
-		sc = SCBuildDummy(&dummy,fv->sf,index);
+		sc = SCBuildDummy(&dummy,fv->sf,fv->map,index);
 	    uni = sc->unicodeenc;
 	    buf[0] = buf[1] = 0;
 	    if ( fv->sf->uni_interp==ui_ams && uni>=0xe000 && uni<=0xf8ff &&
@@ -7663,8 +8050,8 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		styles = _uni_sans;
 	      break;
 	      case gl_encoding:
-		if ( fv->sf->encoding_name->only_1byte ||
-			(fv->sf->encoding_name->has_1byte && index<256))
+		if ( fv->map->enc->only_1byte ||
+			(fv->map->enc->has_1byte && index<256))
 		    sprintf(cbuf,"%02x",index);
 		else
 		    sprintf(cbuf,"%04x",index);
@@ -7787,7 +8174,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 	    }
 	    changed = sc->changed;
 	    if ( fv->sf->onlybitmaps )
-		changed = fv->show->chars[index]==NULL? false : fv->show->chars[index]->changed;
+		changed = gid==-1 || fv->show->glyphs[gid]==NULL? false : fv->show->glyphs[gid]->changed;
 	    if ( changed ) {
 		GRect r;
 		r.x = j*fv->cbw+1; r.width = fv->cbw-1;
@@ -7802,27 +8189,28 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 	}
 
 	feat_index = FeatureTrans(fv,index);
-	if ( feat_index < fv->sf->charcnt && feat_index!=-1 ) {
-	    SplineChar *sc = fv->sf->chars[feat_index];
+	if ( feat_index < fv->map->enccount && feat_index!=-1 ) {
+	    SplineChar *sc = (gid=fv->map->map[feat_index])!=-1 ? fv->sf->glyphs[gid]: NULL;
 	    BDFChar *bdfc;
 
 	    if ( sc==NULL )
-		sc = SCBuildDummy(&dummy,fv->sf,index);
+		sc = SCBuildDummy(&dummy,fv->sf,fv->map,feat_index);
 
 	    if ( fv->show!=NULL && fv->show->piecemeal &&
-		    fv->show->chars[feat_index]==NULL && fv->sf->chars[feat_index]!=NULL )
-		BDFPieceMeal(fv->show,feat_index);
+		    gid!=-1 && fv->show->glyphs[gid]==NULL &&
+		    fv->sf->glyphs[gid]!=NULL )
+		BDFPieceMeal(fv->show,gid);
 
-	    if ( !SCWorthOutputting(fv->sf->chars[feat_index]) ) {
+	    if ( gid==-1 || !SCWorthOutputting(fv->sf->glyphs[gid]) ) {
 		int x = j*fv->cbw+1, xend = x+fv->cbw-2;
 		int y = i*fv->cbh+14+2, yend = y+fv->cbw-1;
 		GDrawDrawLine(pixmap,x,y,xend,yend,0xd08080);
 		GDrawDrawLine(pixmap,x,yend,xend,y,0xd08080);
 	    }
-	    if ( fv->show!=NULL &&
-		    feat_index < fv->show->charcnt &&
-		    fv->show->chars[feat_index]==NULL &&
-		    SCWorthOutputting(fv->sf->chars[feat_index]) ) {
+	    if ( fv->show!=NULL && gid!=-1 &&
+		    gid < fv->show->glyphcnt &&
+		    fv->show->glyphs[gid]==NULL &&
+		    SCWorthOutputting(fv->sf->glyphs[gid]) ) {
 		/* If we have an outline but no bitmap for this slot */
 		box.x = j*fv->cbw+1; box.width = fv->cbw-2;
 		box.y = i*fv->cbh+14+2; box.height = box.width+1;
@@ -7830,9 +8218,9 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		++box.x; ++box.y; box.width -= 2; box.height -= 2;
 		GDrawDrawRect(pixmap,&box,0xff0000);
 /* When reencoding a font we can find times where index>=show->charcnt */
-	    } else if ( fv->show!=NULL && feat_index<fv->show->charcnt &&
-		    fv->show->chars[feat_index]!=NULL ) {
-		bdfc = fv->show->chars[feat_index];
+	    } else if ( fv->show!=NULL && gid<fv->show->glyphcnt && gid!=-1 &&
+		    fv->show->glyphs[gid]!=NULL ) {
+		bdfc = fv->show->glyphs[gid];
 		base.data = bdfc->bitmap;
 		base.bytes_per_line = bdfc->bytes_per_line;
 		base.width = bdfc->xmax-bdfc->xmin+1;
@@ -7926,6 +8314,8 @@ static void FVDrawInfo(FontView *fv,GWindow pixmap,GEvent *event) {
     Color bg = GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(pixmap));
     SplineChar *sc, dummy;
     SplineFont *sf = fv->sf;
+    EncMap *map = fv->map;
+    int gid;
 
     if ( event->u.expose.rect.y+event->u.expose.rect.height<=fv->mbh )
 return;
@@ -7935,31 +8325,31 @@ return;
 
     r.x = 0; r.width = fv->width; r.y = fv->mbh; r.height = fv->infoh;
     GDrawFillRect(pixmap,&r,bg);
-    if ( fv->end_pos>=sf->charcnt || fv->pressed_pos>=sf->charcnt ||
+    if ( fv->end_pos>=map->enccount || fv->pressed_pos>=map->enccount ||
 	    fv->end_pos<0 || fv->pressed_pos<0 )
 	fv->end_pos = fv->pressed_pos = -1;	/* Can happen after reencoding */
     if ( fv->end_pos == -1 )
 return;
 
-    if ( sf->remap!=NULL ) {
+    if ( map->remap!=NULL ) {
 	int localenc = fv->end_pos;
-	struct remap *map = sf->remap;
-	while ( map->infont!=-1 ) {
-	    if ( localenc>=map->infont && localenc<=map->infont+(map->lastenc-map->firstenc) ) {
-		localenc += map->firstenc-map->infont;
+	struct remap *remap = map->remap;
+	while ( remap->infont!=-1 ) {
+	    if ( localenc>=remap->infont && localenc<=remap->infont+(remap->lastenc-remap->firstenc) ) {
+		localenc += remap->firstenc-remap->infont;
 	break;
 	    }
-	    ++map;
+	    ++remap;
 	}
 	sprintf( buffer, "%-5u (0x%04x) ", localenc, localenc );
-    } else if ( sf->encoding_name->only_1byte ||
-	    (sf->encoding_name->has_1byte && fv->end_pos<256))
+    } else if ( map->enc->only_1byte ||
+	    (map->enc->has_1byte && fv->end_pos<256))
 	sprintf( buffer, "%-3d (0x%02x) ", fv->end_pos, fv->end_pos );
     else
 	sprintf( buffer, "%-5d (0x%04x) ", fv->end_pos, fv->end_pos );
-    sc = sf->chars[fv->end_pos];
+    sc = (gid=fv->map->map[fv->end_pos])!=-1 ? sf->glyphs[gid] : NULL;
     if ( sc==NULL )
-	sc = SCBuildDummy(&dummy,sf,fv->end_pos);
+	sc = SCBuildDummy(&dummy,sf,fv->map,fv->end_pos);
     if ( sc->unicodeenc!=-1 )
 	sprintf( buffer+strlen(buffer), "U+%04X", sc->unicodeenc );
     else
@@ -7997,7 +8387,7 @@ return;
 }
 
 static void FVChar(FontView *fv,GEvent *event) {
-    int i,pos, cnt;
+    int i,pos, cnt, gid;
 
 #if MyMemory
     if ( event->u.chr.keysym == GK_F2 ) {
@@ -8036,9 +8426,9 @@ static void FVChar(FontView *fv,GEvent *event) {
 		--pos;
 	    else
 		++pos;
-	    if ( pos<0 ) pos = fv->sf->charcnt-1;
-	    else if ( pos>= fv->sf->charcnt ) pos = 0;
-	    if ( pos>=0 && pos<fv->sf->charcnt )
+	    if ( pos<0 ) pos = fv->map->enccount-1;
+	    else if ( pos>= fv->map->enccount ) pos = 0;
+	    if ( pos>=0 && pos<fv->map->enccount )
 		FVChangeChar(fv,pos);
 	}
     } else if ( isdigit(event->u.chr.keysym) && (event->u.chr.state&ksm_control) &&
@@ -8082,26 +8472,23 @@ static void FVChar(FontView *fv,GEvent *event) {
 		    --pos;
 		else
 		    ++pos;
-		if ( pos>=fv->sf->charcnt ) pos = 0;
-		else if ( pos<0 ) pos = fv->sf->charcnt-1;
-	    } while ( pos!=end_pos && !SCWorthOutputting(fv->sf->chars[pos]));
+		if ( pos>=fv->map->enccount ) pos = 0;
+		else if ( pos<0 ) pos = fv->map->enccount-1;
+	    } while ( pos!=end_pos &&
+		    ((gid=fv->map->map[pos])==-1 || !SCWorthOutputting(fv->sf->glyphs[gid])));
 	    if ( pos==end_pos ) ++pos;
-	    if ( pos>=fv->sf->charcnt ) pos = 0;
+	    if ( pos>=fv->map->enccount ) pos = 0;
 	  break;
 #if GK_Tab!=GK_BackTab
 	  case GK_BackTab:
 	    pos = end_pos;
 	    do {
 		--pos;
-		if ( pos<0 ) pos = fv->sf->charcnt-1;
-	    } while ( pos!=end_pos && !SCWorthOutputting(fv->sf->chars[pos]));
+		if ( pos<0 ) pos = fv->map->enccount-1;
+	    } while ( pos!=end_pos &&
+		    ((gid=fv->map->map[pos])==-1 || !SCWorthOutputting(fv->sf->glyphs[gid])));
 	    if ( pos==end_pos ) --pos;
-	    if ( pos<0 ) {
-		if ( SCWorthOutputting(fv->sf->chars[fv->sf->charcnt-1]))
-		    pos = fv->sf->charcnt-1;
-		else
-		    pos = 0;
-	    }
+	    if ( pos<0 ) pos = 0;
 	  break;
 #endif
 	  case GK_Left: case GK_KP_Left:
@@ -8117,14 +8504,14 @@ static void FVChar(FontView *fv,GEvent *event) {
 	    pos = end_pos+fv->colcnt;
 	  break;
 	  case GK_End: case GK_KP_End:
-	    pos = fv->sf->charcnt;
+	    pos = fv->map->enccount;
 	  break;
 	  case GK_Home: case GK_KP_Home:
 	    pos = 0;
-	    if ( fv->sf->top_enc!=-1 && fv->sf->top_enc<fv->sf->charcnt )
+	    if ( fv->sf->top_enc!=-1 && fv->sf->top_enc<fv->map->enccount )
 		pos = fv->sf->top_enc;
 	    else {
-		pos = SFFindChar(fv->sf,'A',NULL);
+		pos = SFFindSlot(fv->sf,fv->map,'A',NULL);
 		if ( pos==-1 ) pos = 0;
 	    }
 	  break;
@@ -8142,7 +8529,7 @@ static void FVChar(FontView *fv,GEvent *event) {
 	  break;
 	}
 	if ( pos<0 ) pos = 0;
-	if ( pos>=fv->sf->charcnt ) pos = fv->sf->charcnt-1;
+	if ( pos>=fv->map->enccount ) pos = fv->map->enccount-1;
 	if ( event->u.chr.state&ksm_shift && event->u.chr.keysym!=GK_Tab && event->u.chr.keysym!=GK_BackTab ) {
 	    FVReselect(fv,pos);
 	} else {
@@ -8160,15 +8547,13 @@ static void FVChar(FontView *fv,GEvent *event) {
     } else if ( event->u.chr.keysym == GK_Escape ) {
 	FVDeselectAll(fv);
     } else if ( event->u.chr.chars[0]=='\r' || event->u.chr.chars[0]=='\n' ) {
-	for ( i=cnt=0; i<fv->sf->charcnt && cnt<10; ++i ) if ( fv->selected[i] ) {
-	    SplineChar *sc = SFMakeChar(fv->sf,i);
+	for ( i=cnt=0; i<fv->map->enccount && cnt<10; ++i ) if ( fv->selected[i] ) {
+	    SplineChar *sc = SFMakeChar(fv->sf,fv->map,i);
 	    if ( fv->show==fv->filled ) {
-		CharViewCreate(sc,fv);
+		CharViewCreate(sc,fv,i);
 	    } else {
 		BDFFont *bdf = fv->show;
-		if ( bdf->chars[i]==NULL )
-		    bdf->chars[i] = SplineCharRasterize(sc,bdf->pixelsize);
-		BitmapViewCreate(bdf->chars[i],bdf,fv);
+		BitmapViewCreate(BDFMakeGID(bdf,sc->orig_pos),bdf,fv,i);
 	    }
 	    ++cnt;
 	}
@@ -8176,17 +8561,21 @@ static void FVChar(FontView *fv,GEvent *event) {
 	/* Do Nothing */;
     } else {
 	SplineFont *sf = fv->sf;
-	for ( i=0; i<sf->charcnt; ++i )
-	    if ( sf->chars[i]!=NULL )
-		if ( sf->chars[i]->unicodeenc==event->u.chr.chars[0] )
-	break;
-	if ( i==sf->charcnt ) for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]==NULL ) {
-	    SplineChar dummy;
-	    SCBuildDummy(&dummy,sf,i);
-	    if ( dummy.unicodeenc==event->u.chr.chars[0] )
+	for ( i=0; i<sf->glyphcnt; ++i ) {
+	    if ( sf->glyphs[i]!=NULL )
+		if ( sf->glyphs[i]->unicodeenc==event->u.chr.chars[0] )
 	break;
 	}
-	if ( i!=sf->charcnt )
+	if ( i==sf->glyphcnt ) {
+	    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->map->map[i]==-1 ) {
+		SplineChar dummy;
+		SCBuildDummy(&dummy,sf,fv->map,i);
+		if ( dummy.unicodeenc==event->u.chr.chars[0] )
+	    break;
+	    }
+	} else
+	    i = fv->map->backmap[i];
+	if ( i!=fv->map->enccount && i!=-1 )
 	    FVChangeChar(fv,i);
     }
 }
@@ -8210,21 +8599,19 @@ static void uc_annot_strncat(unichar_t *to, const char *from, int len) {
     *to = 0;
 }
 
-void SCPreparePopup(GWindow gw,SplineChar *sc) {
+void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc) {
     static unichar_t space[810];
     char cspace[162];
     int upos=-1;
     int done = false;
-    int localenc = sc->enc;
-    struct remap *map = sc->parent->remap;
 
-    if ( map!=NULL ) {
-	while ( map->infont!=-1 ) {
-	    if ( localenc>=map->infont && localenc<=map->infont+(map->lastenc-map->firstenc) ) {
-		localenc += map->firstenc-map->infont;
+    if ( remap!=NULL ) {
+	while ( remap->infont!=-1 ) {
+	    if ( localenc>=remap->infont && localenc<=remap->infont+(remap->lastenc-remap->firstenc) ) {
+		localenc += remap->firstenc-remap->infont;
 	break;
 	    }
-	    ++map;
+	    ++remap;
 	}
     }
 
@@ -8308,19 +8695,20 @@ static void noop(void *_fv) {
 }
 
 static void *ddgencharlist(void *_fv,int *len) {
-    int i,j,cnt;
+    int i,j,cnt, gid;
     FontView *fv = (FontView *) _fv;
     SplineFont *sf = fv->sf;
+    EncMap *map = fv->map;
     char *data;
 
-    for ( i=cnt=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && fv->selected[i])
-	cnt += strlen(sf->chars[i]->name)+1;
+    for ( i=cnt=0; i<map->enccount; ++i ) if ( fv->selected[i] && (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL )
+	cnt += strlen(sf->glyphs[gid]->name)+1;
     data = galloc(cnt+1); data[0] = '\0';
     for ( cnt=0, j=1 ; j<=fv->sel_index; ++j ) {
-	for ( i=0; i<sf->charcnt; ++i )
-	    if ( sf->chars[i]!=NULL && fv->selected[i]==j ) {
-		strcpy(data+cnt,sf->chars[i]->name);
-		cnt += strlen(sf->chars[i]->name);
+	for ( i=cnt=0; i<map->enccount; ++i )
+	    if ( fv->selected[i] && (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL ) {
+		strcpy(data+cnt,sf->glyphs[gid]->name);
+		cnt += strlen(sf->glyphs[gid]->name);
 		strcpy(data+cnt++," ");
 	    }
     }
@@ -8332,6 +8720,7 @@ return( data );
 
 static void FVMouse(FontView *fv,GEvent *event) {
     int pos = (event->u.mouse.y/fv->cbh + fv->rowoff)*fv->colcnt + event->u.mouse.x/fv->cbw;
+    int gid;
     int realpos = pos;
     SplineChar *sc, dummy;
     int dopopup = true;
@@ -8341,34 +8730,34 @@ static void FVMouse(FontView *fv,GEvent *event) {
     if ( pos<0 ) {
 	pos = 0;
 	dopopup = false;
-    } else if ( pos>=fv->sf->charcnt ) {
-	pos = fv->sf->charcnt-1;
+    } else if ( pos>=fv->map->enccount ) {
+	pos = fv->map->enccount-1;
 	if ( pos<0 )		/* No glyph slots in font */
 return;
 	dopopup = false;
     }
 
-    sc = fv->sf->chars[pos];
+    sc = (gid=fv->map->map[pos])!=-1 ? fv->sf->glyphs[gid] : NULL;
     if ( sc==NULL )
-	sc = SCBuildDummy(&dummy,fv->sf,pos);
+	sc = SCBuildDummy(&dummy,fv->sf,fv->map,pos);
     if ( event->type == et_mouseup && event->u.mouse.clicks==2 ) {
 	if ( fv->cur_feat_tag!=0 ) {
 	    sc = FVMakeChar(fv,pos);
-	    pos = sc->enc;
+	    pos = fv->map->backmap[sc->orig_pos];
 	}
-	if ( sc==&dummy )	/* I got a crash here once. Stack was corrupted, no idea how */
-	    sc = SFMakeChar(fv->sf,pos);
+	if ( sc==&dummy ) {
+	    sc = SFMakeChar(fv->sf,fv->map,pos);
+	    gid = fv->map->map[pos];
+	}
 	if ( fv->show==fv->filled ) {
-	    CharViewCreate(sc,fv);
+	    CharViewCreate(sc,fv,pos);
 	} else {
 	    BDFFont *bdf = fv->show;
-	    if ( bdf->chars[pos]==NULL )
-		bdf->chars[pos] = BDFMakeChar(bdf,pos);
-	    BitmapViewCreate(bdf->chars[pos],bdf,fv);
+	    BitmapViewCreate(BDFMakeGID(bdf,gid),bdf,fv,pos);
 	}
     } else if ( event->type == et_mousemove ) {
 	if ( dopopup )
-	    SCPreparePopup(fv->v,sc);
+	    SCPreparePopup(fv->v,sc,fv->map->remap,pos);
     }
     if ( event->type == et_mousedown ) {
 	if ( fv->drag_and_drop ) {
@@ -8441,7 +8830,7 @@ return;
 	}
     }
     if ( event->type==et_mouseup && dopopup )
-	SCPreparePopup(fv->v,sc);
+	SCPreparePopup(fv->v,sc,fv->map->remap,pos);
     if ( event->type==et_mouseup )
 	SVAttachFV(fv,2);
 }
@@ -8479,11 +8868,11 @@ static void FVResize(FontView *fv,GEvent *event) {
 
     if ( fv->colcnt!=0 )
 	topchar = fv->rowoff*fv->colcnt;
-    else if ( fv->sf->top_enc!=-1 && fv->sf->top_enc<fv->sf->charcnt )
+    else if ( fv->sf->top_enc!=-1 && fv->sf->top_enc<fv->map->enccount )
 	topchar = fv->sf->top_enc;
     else {
 	/* Position on 'A' if it exists */
-	topchar = SFFindChar(fv->sf,'A',NULL);
+	topchar = SFFindSlot(fv->sf,fv->map,'A',NULL);
 	if ( topchar==-1 ) topchar = 0;
     }
     if ( !event->u.resize.sized )
@@ -8522,7 +8911,7 @@ static void FVResize(FontView *fv,GEvent *event) {
     if ( fv->colcnt<1 ) fv->colcnt = 1;
     fv->rowcnt = (fv->height-1)/fv->cbh;
     if ( fv->rowcnt<1 ) fv->rowcnt = 1;
-    fv->rowltot = (fv->sf->charcnt+fv->colcnt-1)/fv->colcnt;
+    fv->rowltot = (fv->map->enccount+fv->colcnt-1)/fv->colcnt;
 
     GScrollBarSetBounds(fv->vsb,0,fv->rowltot,fv->rowcnt);
     fv->rowoff = topchar/fv->colcnt;
@@ -8658,7 +9047,7 @@ void FontViewReformatOne(FontView *fv) {
 return;
 
     GDrawSetCursor(fv->v,ct_watch);
-    fv->rowltot = (fv->sf->charcnt+fv->colcnt-1)/fv->colcnt;
+    fv->rowltot = (fv->map->enccount+fv->colcnt-1)/fv->colcnt;
     GScrollBarSetBounds(fv->vsb,0,fv->rowltot,fv->rowcnt);
     if ( fv->rowoff>fv->rowltot-fv->rowcnt ) {
         fv->rowoff = fv->rowltot-fv->rowcnt;
@@ -8711,7 +9100,7 @@ return;
     }
     for ( fv=sf->fv; fv!=NULL; fv=fv->nextsame ) {
 	GDrawSetCursor(fv->v,ct_watch);
-	fv->rowltot = (fv->sf->charcnt+fv->colcnt-1)/fv->colcnt;
+	fv->rowltot = (fv->map->enccount+fv->colcnt-1)/fv->colcnt;
 	GScrollBarSetBounds(fv->vsb,0,fv->rowltot,fv->rowcnt);
 	if ( fv->rowoff>fv->rowltot-fv->rowcnt ) {
 	    fv->rowoff = fv->rowltot-fv->rowcnt;
@@ -8794,10 +9183,10 @@ static void FontViewOpenKids(FontView *fv) {
     k=0;
     do {
 	_sf = sf->subfontcnt==0 ? sf : sf->subfonts[k];
-	for ( i=0; i<_sf->charcnt; ++i )
-	    if ( _sf->chars[i]!=NULL && _sf->chars[i]->wasopen ) {
-		_sf->chars[i]->wasopen = false;
-		CharViewCreate(_sf->chars[i],fv);
+	for ( i=0; i<_sf->glyphcnt; ++i )
+	    if ( _sf->glyphs[i]!=NULL && _sf->glyphs[i]->wasopen ) {
+		_sf->glyphs[i]->wasopen = false;
+		CharViewCreate(_sf->glyphs[i],fv,-1);
 	    }
 	++k;
     } while ( k<sf->subfontcnt );
@@ -8817,15 +9206,18 @@ FontView *_FontViewCreate(SplineFont *sf) {
 	for ( i = 0; i<sf->mm->instance_count; ++i )
 	    sf->mm->instances[i]->fv = fv;
     }
-    if ( sf->subfontcnt==0 )
+    if ( sf->subfontcnt==0 ) {
 	fv->sf = sf;
-    else {
+	fv->map = fv->nextsame==NULL ? sf->map : EncMapCopy(fv->nextsame->map);
+    } else {
 	fv->cidmaster = sf;
 	for ( i=0; i<sf->subfontcnt; ++i )
 	    sf->subfonts[i]->fv = fv;
 	fv->sf = sf = sf->subfonts[0];
+	if ( fv->nextsame==NULL ) EncMapFree(sf->map);
+	fv->map = EncMap1to1(sf->glyphcnt);
     }
-    fv->selected = gcalloc(sf->charcnt,sizeof(char));
+    fv->selected = gcalloc(fv->map->enccount,sizeof(char));
     fv->magnify = (ps<=9)? 3 : (ps<20) ? 2 : 1;
     fv->cbw = (ps*fv->magnify)+1;
     fv->cbh = (ps*fv->magnify)+1+fv->lab_height+1;
@@ -9008,7 +9400,7 @@ static SplineFont *SFReadPostscript(char *filename) {
 	sf = SplineFontFromPSFont(fd);
 	PSFontFree(fd);
 	if ( sf!=NULL )
-	    CheckAfmOfPostscript(sf,filename);
+	    CheckAfmOfPostscript(sf,filename,sf->map);
     }
 return( sf );
 }
@@ -9419,9 +9811,11 @@ void FontViewFree(FontView *fv) {
     if ( fv->sf == NULL )	/* Happens when usurping a font to put it into an MM */
 	BDFFontFree(fv->filled);
     else if ( fv->nextsame==NULL && fv->sf->fv==fv ) {
+	EncMapFree(fv->map);
 	SplineFontFree(fv->cidmaster?fv->cidmaster:fv->sf);
 	BDFFontFree(fv->filled);
     } else {
+	EncMapFree(fv->map);
 	for ( fvs=fv->sf->fv, i=0 ; fvs!=NULL; fvs = fvs->nextsame )
 	    if ( fvs->filled==fv->filled ) ++i;
 	if ( i==1 )

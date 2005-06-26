@@ -540,14 +540,14 @@ return;
 	if ( sc->views!=NULL )
 	    GDrawRaise(sc->views->gw);
 	else
-	    p->cvopened = CharViewCreate(sc,p->fv);
+	    p->cvopened = CharViewCreate(sc,p->fv,-1);
 	GDrawSync(NULL);
 	GDrawProcessPendingEvents(NULL);
 	GDrawProcessPendingEvents(NULL);
 	p->lastcharopened = sc;
     }
     if ( explain==_STR_ProbBadSubs ) {
-	SCCharInfo(sc);
+	SCCharInfo(sc,p->fv->map,-1);
 	GDrawSync(NULL);
 	GDrawProcessPendingEvents(NULL);
 	GDrawProcessPendingEvents(NULL);
@@ -578,7 +578,7 @@ return;
 
 static void _ExplainIt(struct problems *p, int enc, int explain,
 	real found, real expected ) {
-    ExplainIt(p,p->sc=SFMakeChar(p->fv->sf,enc),explain,found,expected);
+    ExplainIt(p,p->sc=SFMakeChar(p->fv->sf,p->fv->map,enc),explain,found,expected);
 }
 
 /* if they deleted a point or a splineset while we were explaining then we */
@@ -1479,7 +1479,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	BDFFont *bdf;
 
 	for ( bdf=sc->parent->bitmaps; bdf!=NULL; bdf=bdf->next ) {
-	    if ( sc->enc>=bdf->charcnt || bdf->chars[sc->enc]==NULL ) {
+	    if ( sc->orig_pos>=bdf->glyphcnt || bdf->glyphs[sc->orig_pos]==NULL ) {
 		changed = true;
 		ExplainIt(p,sc,_STR_ProbMissingBitmap,0,0);
 		if ( p->ignorethis )
@@ -1518,7 +1518,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		    if ( end==NULL ) end=pt+strlen(pt);
 		    ch = *end;
 		    *end = '\0';
-		    if ( !SCWorthOutputting(SFGetCharDup(sc->parent,-1,pt)) ) {
+		    if ( !SCWorthOutputting(SFGetChar(sc->parent,-1,pt)) ) {
 			changed = true;
 			p->badsubsname = copy(pt);
 			*end = ch;
@@ -1542,12 +1542,11 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
     if ( p->multuni && !p->finish && strcmp(sc->name,".notdef")!=0 && sc->unicodeenc!=-1 ) {
 	SplineFont *sf = sc->parent;
 	int i;
-	for ( i=0; i<sf->charcnt; ++i )
-		if ( sf->chars[i]!=NULL && sf->chars[i]!=sc &&
-			SCDuplicate(sf->chars[i])==sf->chars[i]) {
-	    if ( sf->chars[i]->unicodeenc == sc->unicodeenc ) {
+	for ( i=0; i<sf->glyphcnt; ++i )
+		if ( sf->glyphs[i]!=NULL && sf->glyphs[i]!=sc ) {
+	    if ( sf->glyphs[i]->unicodeenc == sc->unicodeenc ) {
 		changed = true;
-		p->glyphname = sf->chars[i]->name;
+		p->glyphname = sf->glyphs[i]->name;
 		ExplainIt(p,sc,_STR_ProbMultiUni,0,0);
 		if ( p->ignorethis )
 		    p->multuni = false;
@@ -1558,10 +1557,9 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
     if ( p->multname && !p->finish && strcmp(sc->name,".notdef")!=0 ) {
 	SplineFont *sf = sc->parent;
 	int i;
-	for ( i=0; i<sf->charcnt; ++i )
-		if ( sf->chars[i]!=NULL && sf->chars[i]!=sc &&
-			SCDuplicate(sf->chars[i])==sf->chars[i]) {
-	    if ( strcmp(sf->chars[i]->name, sc->name)==0 ) {
+	for ( i=0; i<sf->glyphcnt; ++i )
+		if ( sf->glyphs[i]!=NULL && sf->glyphs[i]!=sc ) {
+	    if ( strcmp(sf->glyphs[i]->name, sc->name)==0 ) {
 		changed = true;
 		p->glyphenc = i;
 		ExplainIt(p,sc,_STR_ProbMultiName,0,0);
@@ -1584,8 +1582,8 @@ static int CIDCheck(struct problems *p,int cid) {
 	SplineFont *csf = p->fv->cidmaster;
 	int i, cnt;
 	for ( i=cnt=0; i<csf->subfontcnt; ++i )
-	    if ( cid<csf->subfonts[i]->charcnt &&
-		    SCWorthOutputting(csf->subfonts[i]->chars[cid]) )
+	    if ( cid<csf->subfonts[i]->glyphcnt &&
+		    SCWorthOutputting(csf->subfonts[i]->glyphs[cid]) )
 		++cnt;
 	if ( cnt>1 && p->cidmultiple ) {
 	    _ExplainIt(p,cid,_STR_ProbCIDMult,cnt,1);
@@ -2255,8 +2253,8 @@ static int CheckForATT(struct problems *p) {
 	    do {
 		if ( _sf->subfonts==NULL ) sf = _sf;
 		else sf = _sf->subfonts[k++];
-		for ( i=0; i<sf->charcnt && !p->finish; ++i ) if ( sf->chars[i]!=NULL )
-		    found |= SCMissingGlyph(p,sf->chars[i]);
+		for ( i=0; i<sf->glyphcnt && !p->finish; ++i ) if ( sf->glyphs[i]!=NULL )
+		    found |= SCMissingGlyph(p,sf->glyphs[i]);
 	    } while ( k<_sf->subfontcnt && !p->finish );
 	    for ( kc=_sf->kerns; kc!=NULL && !p->finish; kc=kc->next )
 		found |= KCMissingGlyph(p,kc,false);
@@ -2281,7 +2279,7 @@ return( found );
 }
 
 static void DoProbs(struct problems *p) {
-    int i, ret=false;
+    int i, ret=false, gid;
     SplineChar *sc;
     BDFFont *bdf;
 
@@ -2289,20 +2287,20 @@ static void DoProbs(struct problems *p) {
 	ret = CheckForATT(p);
     if ( p->cv!=NULL ) {
 	ret |= SCProblems(p->cv,NULL,p);
-	ret |= CIDCheck(p,p->cv->sc->enc);
+	ret |= CIDCheck(p,p->cv->sc->orig_pos);
     } else if ( p->msc!=NULL ) {
 	ret |= SCProblems(NULL,p->msc,p);
-	ret |= CIDCheck(p,p->msc->enc);
+	ret |= CIDCheck(p,p->msc->orig_pos);
     } else {
-	for ( i=0; i<p->fv->sf->charcnt && !p->finish; ++i )
+	for ( i=0; i<p->fv->map->enccount && !p->finish; ++i )
 	    if ( p->fv->selected[i] ) {
-		if ( (sc = p->fv->sf->chars[i])!=NULL ) {
+		if ( (gid=p->fv->map->map[i])!=-1 && (sc = p->fv->sf->glyphs[gid])!=NULL ) {
 		    if ( SCProblems(NULL,sc,p)) {
 			if ( sc!=p->lastcharopened ) {
 			    if ( sc->views!=NULL )
 				GDrawRaise(sc->views->gw);
 			    else
-				CharViewCreate(sc,p->fv);
+				CharViewCreate(sc,p->fv,-1);
 			    p->lastcharopened = sc;
 			}
 			ret = true;
@@ -2310,8 +2308,8 @@ static void DoProbs(struct problems *p) {
 		}
 		if ( !p->finish && p->bitmaps && !SCWorthOutputting(sc)) {
 		    for ( bdf=p->fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
-			if ( i<bdf->charcnt && bdf->chars[i]!=NULL ) {
-			    sc = SFMakeChar(p->fv->sf,i);
+			if ( i<bdf->glyphcnt && bdf->glyphs[i]!=NULL ) {
+			    sc = SFMakeChar(p->fv->sf,p->fv->map,i);
 			    ExplainIt(p,sc,_STR_ProbMissingOutline,0,0);
 			    ret = true;
 			}
@@ -2491,6 +2489,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     struct problems p;
     char xnbuf[20], ynbuf[20], widthbuf[20], nearbuf[20], awidthbuf[20],
 	    vawidthbuf[20], irrel[20], pmax[20], hmax[20], rmax[20];
+    SplineChar *ssc;
     int i;
     SplineFont *sf;
     /*static GBox smallbox = { bt_raised, bs_rect, 2, 1, 0, 0, 0,0,0,0, COLOR_DEFAULT,COLOR_DEFAULT };*/
@@ -2989,8 +2988,8 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
 
     sf = p.fv->sf;
 
-    if ( advancewidthval==0 && sf->charcnt >= ' ' && sf->chars[' ']!=NULL )
-	advancewidthval = sf->chars[' ']->width;
+    if ( ( ssc = SFGetChar(sf,' ',NULL))!=NULL )
+	advancewidthval = ssc->width;
     sprintf(awidthbuf,"%g",advancewidthval);
     rlabel[2].text = (unichar_t *) awidthbuf;
     rlabel[2].text_is_1byte = true;

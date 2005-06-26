@@ -737,12 +737,19 @@ return;
 static void _SFNLTrans(FontView *fv,struct context *c) {
     SplineChar *sc;
     RefChar *ref;
-    int i;
+    int i, gid;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] && fv->sf->chars[i]!=NULL )
-	SCNLTrans(fv->sf->chars[i],c);
-    for ( i=0; i<fv->sf->charcnt; ++i )
-	if ( fv->selected[i] && (sc=fv->sf->chars[i])!=NULL &&
+    SFUntickAll(fv->sf);
+
+    for ( i=0; i<fv->map->enccount; ++i )
+	if ( fv->selected[i] && (gid=fv->map->map[i])!=-1 &&
+		(sc = fv->sf->glyphs[gid])!=NULL && !sc->ticked ) {
+	    SCNLTrans(sc,c);
+	    sc->ticked = true;
+	}
+    for ( i=0; i<fv->map->enccount; ++i )
+	if ( fv->selected[i] && (gid=fv->map->map[i])!=-1 &&
+		(sc=fv->sf->glyphs[gid])!=NULL &&
 		(sc->layers[ly_fore].splines!=NULL || sc->layers[ly_fore].refs!=NULL)) {
 	    /* A reference doesn't really work after a non-linear transform */
 	    /*  but let's do the obvious thing */
@@ -1361,10 +1368,13 @@ static void SCFindCenter(SplineChar *sc,BasePoint *center) {
 
 void FVPointOfView(FontView *fv,struct pov_data *pov) {
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    int i, cnt=0, layer;
+    int i, cnt=0, layer, gid;
     BasePoint origin;
+    SplineChar *sc;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
+    for ( i=0; i<fv->map->enccount; ++i )
+	if ( (gid=fv->map->map[i])!=-1 && fv->sf->glyphs[gid]!=NULL &&
+		fv->selected[i] )
 	++cnt;
 # ifdef FONTFORGE_CONFIG_GDRAW
     GProgressStartIndicatorR(10,_STR_Projecting,_STR_Projecting,0,cnt,1);
@@ -1376,22 +1386,26 @@ void FVPointOfView(FontView *fv,struct pov_data *pov) {
     BasePoint origin;
 #endif	/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
-	SplineChar *sc = fv->sf->chars[i];
-	SCPreserveState(sc,false);
+    SFUntickAll(fv->sf);
+    for ( i=0; i<fv->map->enccount; ++i ) {
+	if ( (gid = fv->map->map[i])!=-1 && fv->selected[i] &&
+		(sc = fv->sf->glyphs[gid])!=NULL && !sc->ticked ) {
+	    sc->ticked = true;
+	    SCPreserveState(sc,false);
 
-	origin.x = origin.y = 0;
-	if ( pov->xorigin==or_center || pov->yorigin==or_center )
-	    SCFindCenter(sc,&origin);
-	if ( pov->xorigin!=or_value )
-	    pov->x = origin.x;
-	if ( pov->yorigin!=or_value )
-	    pov->y = origin.y;
+	    origin.x = origin.y = 0;
+	    if ( pov->xorigin==or_center || pov->yorigin==or_center )
+		SCFindCenter(sc,&origin);
+	    if ( pov->xorigin!=or_value )
+		pov->x = origin.x;
+	    if ( pov->yorigin!=or_value )
+		pov->y = origin.y;
 
-	MinimumDistancesFree(sc->md); sc->md = NULL;
-	for ( layer = ly_fore; layer<sc->layer_cnt; ++layer )
-	    SPLPoV(sc->layers[layer].splines,pov,false);
-	SCCharChangedUpdate(sc);
+	    MinimumDistancesFree(sc->md); sc->md = NULL;
+	    for ( layer = ly_fore; layer<sc->layer_cnt; ++layer )
+		SPLPoV(sc->layers[layer].splines,pov,false);
+	    SCCharChangedUpdate(sc);
+	}
     }
 }
 

@@ -728,7 +728,7 @@ static void SCUndoAct(SplineChar *sc,int layer, Undoes *undo) {
 	undo->u.state.splines = spl;
 	if ( undo->u.state.lbearingchange ) {
 	    undo->u.state.lbearingchange = -undo->u.state.lbearingchange;
-	    SCSynchronizeLBearing(sc,NULL,undo->u.state.lbearingchange);
+	    SCSynchronizeLBearing(sc,undo->u.state.lbearingchange);
 	}
 	if ( layer==ly_fore && undo->undotype==ut_statename ) {
 	    char *temp = sc->name;
@@ -1278,7 +1278,7 @@ void CopyReference(SplineChar *sc) {
     }
 #endif
     ref->unicode_enc = sc->unicodeenc;
-    ref->local_enc = sc->enc;
+    ref->orig_pos = sc->orig_pos;
     ref->adobe_enc = getAdobeEnc(sc->name);
     ref->transform[0] = ref->transform[3] = 1.0;
 
@@ -1308,7 +1308,7 @@ void CopySelected(CharView *cv) {
 #else
 	    new->layers[0].splines = NULL;
 #endif
-	    new->local_enc = new->sc->enc;
+	    new->orig_pos = new->sc->orig_pos;
 	    new->sc = NULL;
 	    new->next = copybuffer.u.state.refs;
 	    copybuffer.u.state.refs = new;
@@ -1402,11 +1402,10 @@ static Undoes *SCCopyAll(SplineChar *sc,int full) {
 		cur->u.state.possub = NULL;
 	    }
 	} else {		/* Or just make a reference */
-	    sc = SCDuplicate(sc);
 	    cur->undotype = ut_state;
 	    cur->u.state.refs = ref = RefCharCreate();
 	    ref->unicode_enc = sc->unicodeenc;
-	    ref->local_enc = sc->enc;
+	    ref->orig_pos = sc->orig_pos;
 	    ref->adobe_enc = getAdobeEnc(sc->name);
 	    ref->transform[0] = ref->transform[3] = 1.0;
 	}
@@ -1486,23 +1485,23 @@ static SplineChar *FindCharacter(SplineFont *sf,RefChar *rf) {
     extern char *AdobeStandardEncoding[256];
     int i;
 
-    if ( rf->local_enc<sf->charcnt && sf->chars[rf->local_enc]!=NULL &&
-	    sf->chars[rf->local_enc]->unicodeenc == rf->unicode_enc )
-return( sf->chars[rf->local_enc] );
+    if ( rf->orig_pos<sf->glyphcnt && sf->glyphs[rf->orig_pos]!=NULL &&
+	    sf->glyphs[rf->orig_pos]->unicodeenc == rf->unicode_enc )
+return( sf->glyphs[rf->orig_pos] );
 
     if ( rf->unicode_enc!=-1 ) {
-	for ( i=0; i<sf->charcnt; ++i )
-	    if ( sf->chars[i]!=NULL && sf->chars[i]->unicodeenc == rf->unicode_enc )
-return( sf->chars[i] );
+	for ( i=0; i<sf->glyphcnt; ++i )
+	    if ( sf->glyphs[i]!=NULL && sf->glyphs[i]->unicodeenc == rf->unicode_enc )
+return( sf->glyphs[i] );
     }
     if ( rf->adobe_enc!=-1 ) {
-	for ( i=0; i<sf->charcnt; ++i )
-	    if ( sf->chars[i]!=NULL &&
-		    strcmp(sf->chars[i]->name,AdobeStandardEncoding[rf->adobe_enc])==0 )
-return( sf->chars[i] );
+	for ( i=0; i<sf->glyphcnt; ++i )
+	    if ( sf->glyphs[i]!=NULL &&
+		    strcmp(sf->glyphs[i]->name,AdobeStandardEncoding[rf->adobe_enc])==0 )
+return( sf->glyphs[i] );
     }
-    if ( rf->local_enc<sf->charcnt )
-return( sf->chars[rf->local_enc] );
+    if ( rf->orig_pos<sf->glyphcnt )
+return( sf->glyphs[rf->orig_pos] );
 
 return( NULL );
 }
@@ -2201,10 +2200,10 @@ return;
 void PasteToCV(CharView *cv) {
     _PasteToCV(cv,cv->sc,&copybuffer);
     if ( cv->sc->blended && cv->drawmode==dm_fore ) {
-	int j, enc = cv->sc->enc;
+	int j, gid = cv->sc->orig_pos;
 	MMSet *mm = cv->sc->parent->mm;
 	for ( j=0; j<mm->instance_count; ++j )
-	    _PasteToCV(cv,mm->instances[j]->chars[enc],&copybuffer);
+	    _PasteToCV(cv,mm->instances[j]->glyphs[gid],&copybuffer);
     }
 }
 /* See comment at _PasteToCV */
@@ -2344,23 +2343,23 @@ void PasteToBC(BDFChar *bc,int pixelsize,int depth,FontView *fv) {
 
 void FVCopyWidth(FontView *fv,enum undotype ut) {
     Undoes *head=NULL, *last=NULL, *cur;
-    int i, any=false;
+    int i, any=false, gid;
     SplineChar *sc;
     DBounds bb;
 
     CopyBufferFreeGrab();
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] ) {
 	any = true;
 	cur = chunkalloc(sizeof(Undoes));
 	cur->undotype = ut;
-	if ( (sc=fv->sf->chars[i])!=NULL ) {
+	if ( (gid=fv->map->map[i])!=-1 && (sc=fv->sf->glyphs[gid])!=NULL ) {
 	    switch ( ut ) {
 	      case ut_width:
 		cur->u.width = sc->width;
 	      break;
 	      case ut_vwidth:
-		cur->u.width = sc->width;
+		cur->u.width = sc->vwidth;
 	      break;
 	      case ut_lbearing:
 		SplineCharFindBounds(sc,&bb);
@@ -2392,18 +2391,22 @@ void FVCopy(FontView *fv, int fullcopy) {
     Undoes *bhead=NULL, *blast=NULL, *bcur;
     Undoes *state;
     extern int onlycopydisplayed;
+    int gid;
+    SplineChar *sc;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i] ) {
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] ) {
 	any = true;
+	sc = (gid = fv->map->map[i])==-1 ? NULL : fv->sf->glyphs[gid];
 	if ( onlycopydisplayed && fv->filled==fv->show ) {
-	    cur = SCCopyAll(fv->sf->chars[i],fullcopy);
+	    cur = SCCopyAll(sc,fullcopy);
 	} else if ( onlycopydisplayed ) {
-	    cur = BCCopyAll(fv->show->chars[i],fv->show->pixelsize,BDFDepth(fv->show));
+	    cur = BCCopyAll(gid==-1?NULL:fv->show->glyphs[gid],fv->show->pixelsize,BDFDepth(fv->show));
 	} else {
-	    state = SCCopyAll(fv->sf->chars[i],fullcopy);
+	    state = SCCopyAll(sc,fullcopy);
 	    bhead = NULL;
 	    for ( bdf=fv->sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
-		bcur = BCCopyAll(bdf->chars[i],bdf->pixelsize,BDFDepth(bdf));
+		BDFChar *bdfc = gid==-1 || gid>=bdf->glyphcnt? NULL : bdf->glyphs[gid];
+		bcur = BCCopyAll(bdfc,bdf->pixelsize,BDFDepth(bdf));
 		if ( bhead==NULL )
 		    bhead = bcur;
 		else
@@ -2452,12 +2455,12 @@ void MVCopyChar(MetricsView *mv, SplineChar *sc, int fullcopy) {
     if ( onlycopydisplayed && mv->bdf==NULL ) {
 	cur = SCCopyAll(sc,fullcopy);
     } else if ( onlycopydisplayed ) {
-	cur = BCCopyAll(mv->bdf->chars[sc->enc],mv->bdf->pixelsize,BDFDepth(mv->bdf));
+	cur = BCCopyAll(BDFMakeGID(mv->bdf,sc->orig_pos),mv->bdf->pixelsize,BDFDepth(mv->bdf));
     } else {
 	state = SCCopyAll(sc,fullcopy);
 	bhead = NULL;
 	for ( bdf=mv->fv->sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
-	    bcur = BCCopyAll(bdf->chars[sc->enc],bdf->pixelsize,BDFDepth(bdf));
+	    bcur = BCCopyAll(BDFMakeGID(bdf,sc->orig_pos),bdf->pixelsize,BDFDepth(bdf));
 	    if ( bhead==NULL )
 		bhead = bcur;
 	    else
@@ -2532,7 +2535,7 @@ return( bdf );
 void PasteIntoFV(FontView *fv,int pasteinto,real trans[6]) {
     Undoes *cur=NULL, *bmp;
     BDFFont *bdf;
-    int i, j, cnt=0;
+    int i, j, cnt=0, gid;
     int yestoall=0, first=true;
     uint8 *oldsel = fv->selected;
     extern int onlycopydisplayed;
@@ -2542,7 +2545,7 @@ void PasteIntoFV(FontView *fv,int pasteinto,real trans[6]) {
     fv->refstate = 0;
 
     cur = &copybuffer;
-    for ( i=0; i<sf->charcnt; ++i ) if ( fv->selected[i] )
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] )
 	++cnt;
     if ( cnt==0 ) {
 	fprintf( stderr, "No Selection\n" );
@@ -2553,8 +2556,8 @@ return;
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	j = -1;
 	forever {
-	    for ( i=0; i<sf->charcnt; ++i ) if ( fv->selected[i] )
-		SCCheckXClipboard(fv->gw,SFMakeChar(sf,i),dm_fore,!pasteinto);
+	    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] )
+		SCCheckXClipboard(fv->gw,SFMakeChar(sf,fv->map,i),dm_fore,!pasteinto);
 	    ++j;
 	    if ( mm==NULL || mm->normal!=origsf || j>=mm->instance_count )
 	break;
@@ -2571,10 +2574,10 @@ return;
     if ( cnt==1 && cur->undotype==ut_multiple && cur->u.multiple.mult->next!=NULL ) {
 	Undoes *tot; int j;
 	for ( cnt=0, tot=cur->u.multiple.mult; tot!=NULL; ++cnt, tot=tot->next );
-	fv->selected = galloc(sf->charcnt);
-	memcpy(fv->selected,oldsel,sf->charcnt);
-	for ( i=0; i<sf->charcnt && !fv->selected[i]; ++i );
-	for ( j=0; j<cnt && i+j<sf->charcnt; ++j )
+	fv->selected = galloc(fv->map->enccount);
+	memcpy(fv->selected,oldsel,fv->map->enccount);
+	for ( i=0; i<fv->map->enccount && !fv->selected[i]; ++i );
+	for ( j=0; j<cnt && i+j<fv->map->enccount; ++j )
 	    fv->selected[i+j] = 1;
 	cnt = j;
     }
@@ -2594,13 +2597,13 @@ return;
     /*  search for dotlessi, not find it and ignore the reference */
     if ( cur->undotype==ut_state || cur->undotype==ut_statehint || cur->undotype==ut_statename ||
 	    (cur->undotype==ut_composit && cur->u.composit.state!=NULL)) {
-	for ( i=0; i<sf->charcnt; ++i )
-	    if ( fv->selected[i] && sf->chars[i]==NULL )
-		SFMakeChar(sf,i);
+	for ( i=0; i<fv->map->enccount; ++i )
+	    if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 && sf->glyphs[gid]==NULL )
+		SFMakeChar(sf,fv->map,i);
     }
     cur = NULL;
 
-    for ( i=0; i<origsf->charcnt; ++i ) if ( fv->selected[i] ) {
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] ) {
 	j=-1;
 	if ( cur==NULL ) {
 	    cur = &copybuffer;
@@ -2623,11 +2626,11 @@ return;
 #endif
  goto err;
 		}
-		PasteToSC(SFMakeChar(sf,i),cur,fv,pasteinto,trans);
+		PasteToSC(SFMakeChar(sf,fv->map,i),cur,fv,pasteinto,trans);
 	      break;
 	      case ut_bitmapsel: case ut_bitmap:
 		if ( onlycopydisplayed && fv->show!=fv->filled )
-		    _PasteToBC(BDFMakeChar(fv->show,i),fv->show->pixelsize,BDFDepth(fv->show),cur,!pasteinto,fv);
+		    _PasteToBC(BDFMakeChar(fv->show,fv->map,i),fv->show->pixelsize,BDFDepth(fv->show),cur,!pasteinto,fv);
 		else {
 		    for ( bdf=sf->bitmaps; bdf!=NULL && (bdf->pixelsize!=cur->u.bmpstate.pixelsize || BDFDepth(bdf)!=cur->u.bmpstate.depth); bdf=bdf->next );
 		    if ( bdf==NULL ) {
@@ -2635,12 +2638,12 @@ return;
 			first = false;
 		    }
 		    if ( bdf!=NULL )
-			_PasteToBC(BDFMakeChar(bdf,i),bdf->pixelsize,BDFDepth(bdf),cur,!pasteinto,fv);
+			_PasteToBC(BDFMakeChar(bdf,fv->map,i),bdf->pixelsize,BDFDepth(bdf),cur,!pasteinto,fv);
 		}
 	      break;
 	      case ut_composit:
 		if ( cur->u.composit.state!=NULL )
-		    PasteToSC(SFMakeChar(sf,i),cur->u.composit.state,fv,pasteinto,trans);
+		    PasteToSC(SFMakeChar(sf,fv->map,i),cur->u.composit.state,fv,pasteinto,trans);
 		for ( bmp=cur->u.composit.bitmaps; bmp!=NULL; bmp = bmp->next ) {
 		    for ( bdf=sf->bitmaps; bdf!=NULL &&
 			    (bdf->pixelsize!=bmp->u.bmpstate.pixelsize || BDFDepth(bdf)!=bmp->u.bmpstate.depth);
@@ -2648,7 +2651,7 @@ return;
 		    if ( bdf==NULL )
 			bdf = BitmapCreateCheck(fv,&yestoall,first,bmp->u.bmpstate.pixelsize,bmp->u.bmpstate.depth);
 		    if ( bdf!=NULL )
-			_PasteToBC(BDFMakeChar(bdf,i),bdf->pixelsize,BDFDepth(bdf),bmp,!pasteinto,fv);
+			_PasteToBC(BDFMakeChar(bdf,fv->map,i),bdf->pixelsize,BDFDepth(bdf),bmp,!pasteinto,fv);
 		}
 		first = false;
 	      break;
@@ -2711,7 +2714,7 @@ return;
       break;
       case ut_bitmapsel: case ut_bitmap:
 	if ( onlycopydisplayed && mv->bdf!=NULL )
-	    _PasteToBC(BDFMakeChar(mv->bdf,sc->enc),mv->bdf->pixelsize,BDFDepth(mv->bdf),cur,doclear,mv->fv);
+	    _PasteToBC(BDFMakeChar(mv->bdf,mv->fv->map,mv->fv->map->backmap[sc->orig_pos]),mv->bdf->pixelsize,BDFDepth(mv->bdf),cur,doclear,mv->fv);
 	else {
 	    for ( bdf=mv->fv->sf->bitmaps; bdf!=NULL &&
 		    (bdf->pixelsize!=cur->u.bmpstate.pixelsize || BDFDepth(bdf)!=cur->u.bmpstate.depth);
@@ -2721,7 +2724,7 @@ return;
 		first = false;
 	    }
 	    if ( bdf!=NULL )
-		_PasteToBC(BDFMakeChar(bdf,sc->enc),bdf->pixelsize,BDFDepth(bdf),cur,doclear,mv->fv);
+		_PasteToBC(BDFMakeChar(bdf,mv->fv->map,mv->fv->map->backmap[sc->orig_pos]),bdf->pixelsize,BDFDepth(bdf),cur,doclear,mv->fv);
 	}
       break;
       case ut_composit:
@@ -2734,7 +2737,7 @@ return;
 	    if ( bdf==NULL )
 		bdf = BitmapCreateCheck(mv->fv,&yestoall,first,bmp->u.bmpstate.pixelsize,bmp->u.bmpstate.depth);
 	    if ( bdf!=NULL )
-		_PasteToBC(BDFMakeChar(bdf,sc->enc),bdf->pixelsize,BDFDepth(bdf),bmp,doclear,mv->fv);
+		_PasteToBC(BDFMakeChar(bdf,mv->fv->map,mv->fv->map->backmap[sc->orig_pos]),bdf->pixelsize,BDFDepth(bdf),bmp,doclear,mv->fv);
 	}
 	first = false;
       break;

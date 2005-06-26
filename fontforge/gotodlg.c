@@ -298,13 +298,13 @@ static int alpha(const void *_t1, const void *_t2) {
 return( strcmp((char *) (t1->text),(char *) (t2->text)));
 }
 
-static GTextInfo *AvailableRanges(SplineFont *sf) {
+static GTextInfo *AvailableRanges(SplineFont *sf,EncMap *map) {
     GTextInfo *ret = gcalloc(sizeof(unicoderange)/sizeof(unicoderange[0])+2,sizeof(GTextInfo));
     int i, cnt, ch, pos;
 
     for ( i=cnt=0; unicoderange[i].name!=NULL; ++i ) {
 	ch = unicoderange[i].defined==-1 ? unicoderange[i].first : unicoderange[i].defined;
-	pos = SFFindChar(sf,ch,NULL);
+	pos = SFFindSlot(sf,map,ch,NULL);
 	if ( pos!=-1 ) {
 	    ret[cnt].text = (unichar_t *) unicoderange[i].name;
 	    ret[cnt].text_is_1byte = true;
@@ -316,19 +316,19 @@ return( ret );
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-int NameToEncoding(SplineFont *sf,const unichar_t *uname) {
+int NameToEncoding(SplineFont *sf,EncMap *map,const unichar_t *uname) {
     int enc, uni, i;
     char *end, *dot=NULL, *freeme=NULL;
     char *name;
 
     if ( uname[1]==0 && uname[0]>=256 )
-return( SFFindChar(sf,uname[0],NULL));
+return( SFFindSlot(sf,map,uname[0],NULL));
 
     name = cu_copy(uname);
     enc = uni = -1;
 	
     while ( 1 ) {
-	enc = SFFindChar(sf,-1,name);
+	enc = SFFindSlot(sf,map,-1,name);
 	if ( enc!=-1 ) {
 	    free(name);
 return( enc );
@@ -345,28 +345,25 @@ return( enc );
 	    int orig = strtol(name+5,&end,10);
 	    if ( *end!='\0' )
 		orig = -1;
-	    if ( orig!=-1 ) {
-		for ( enc=sf->charcnt-1; enc>=0; --enc )
-		    if ( sf->chars[enc]!=NULL && sf->chars[enc]->orig_pos==orig )
-		break;
-	    }
+	    if ( orig!=-1 )
+		enc = map->backmap[orig];
 	} else if ( isdigit(*name)) {
 	    enc = strtoul(name,&end,0);
 	    if ( *end!='\0' )
 		enc = -1;
-	    if ( sf->remap!=NULL && enc!=-1 ) {
-		struct remap *map = sf->remap;
-		while ( map->infont!=-1 ) {
-		    if ( enc>=map->firstenc && enc<=map->lastenc ) {
-			enc += map->infont-map->firstenc;
+	    if ( map->remap!=NULL && enc!=-1 ) {
+		struct remap *remap = map->remap;
+		while ( remap->infont!=-1 ) {
+		    if ( enc>=remap->firstenc && enc<=remap->lastenc ) {
+			enc += remap->infont-remap->firstenc;
 		break;
 		    }
-		    ++map;
+		    ++remap;
 		}
 	    }
 	} else {
 	    if ( enc==-1 ) {
-		uni = UniFromName(name,sf->uni_interp,sf->encoding_name);
+		uni = UniFromName(name,sf->uni_interp,map->enc);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 		if ( uni<0 ) {
 		    for ( i=0; specialnames[i].name!=NULL; ++i )
@@ -380,14 +377,15 @@ return( enc );
 		    uni = name[0];
 	    }
 	}
-	if ( enc>=sf->charcnt || enc<0 )
+	if ( enc>=map->enccount || enc<0 )
 	    enc = -1;
 	if ( enc==-1 && uni!=-1 )
-	    enc = SFFindChar(sf,uni,NULL);
+	    enc = SFFindSlot(sf,map,uni,NULL);
 	if ( enc!=-1 && uni==-1 ) {
-	    if ( sf->chars[enc]!=NULL )
-		uni = sf->chars[enc]->unicodeenc;
-	    else if ( sf->encoding_name->is_unicodebmp || sf->encoding_name->is_unicodefull )
+	    int gid = map->map[enc];
+	    if ( gid!=-1 && sf->glyphs[gid]!=NULL )
+		uni = sf->glyphs[gid]->unicodeenc;
+	    else if ( map->enc->is_unicodebmp || map->enc->is_unicodefull )
 		uni = enc;
 	}
 	if ( dot!=NULL ) {
@@ -406,7 +404,7 @@ return( -1 );
 		uni = ArabicForms[uni-0x600].isolated;
 	    else
 return( -1 );
-return( SFFindChar(sf,uni,NULL) );
+return( SFFindSlot(sf,map,uni,NULL) );
 	} else 	if ( enc!=-1 ) {
 	    free(name);
 return( enc );
@@ -423,6 +421,7 @@ return( -1 );
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 typedef struct gotodata {
     SplineFont *sf;
+    EncMap *map;
     GWindow gw;
     int ret, done;
     GTextInfo *ranges;
@@ -459,8 +458,8 @@ static int Goto_OK(GGadget *g, GEvent *e) {
 	    }
 	}
 	if ( d->ret==-1 ) {
-	    d->ret = NameToEncoding(d->sf,ret);
-	    if ( d->ret<0 || d->ret>=d->sf->charcnt )
+	    d->ret = NameToEncoding(d->sf,d->map,ret);
+	    if ( d->ret<0 || d->ret>=d->map->enccount )
 		d->ret = -1;
 	    if ( d->ret==-1 ) {
 		char *temp=cu_copy(ret);
@@ -488,18 +487,18 @@ return( false );
 return( true );
 }
 
-int GotoChar(SplineFont *sf) {
+int GotoChar(SplineFont *sf,EncMap *map) {
     int enc = -1;
     unichar_t *ret;
 
-    if ( sf->encoding_name->only_1byte ) {
+    if ( map->enc->only_1byte ) {
 	/* In one byte encodings don't bother with the range list. It won't */
 	/*  have enough entries to be useful */
 	ret = GWidgetAskStringR(_STR_Goto,NULL,_STR_EnternameofGlyph);
 	if ( ret==NULL )
 return(-1);
-	enc = NameToEncoding(sf,ret);
-	if ( enc<0 || enc>=sf->charcnt )
+	enc = NameToEncoding(sf,map,ret);
+	if ( enc<0 || enc>=map->enccount )
 	    enc = -1;
 	if ( enc==-1 )
 #if defined(FONTFORGE_CONFIG_GDRAW)
@@ -516,12 +515,13 @@ return( enc );
 	GGadgetCreateData gcd[9];
 	GTextInfo label[9];
 	static GotoData gd;
-	GTextInfo *ranges = AvailableRanges(sf);
+	GTextInfo *ranges = AvailableRanges(sf,map);
 	int i, wid, temp;
 	unichar_t ubuf[100];
 
 	memset(&gd,0,sizeof(gd));
 	gd.sf = sf;
+	gd.map = map;
 	gd.ret = -1;
 	gd.ranges = ranges;
 

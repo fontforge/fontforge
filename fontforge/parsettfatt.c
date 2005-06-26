@@ -3240,6 +3240,13 @@ return;				/*  indicated by points */
 	    opbd_apply_values,opbd_apply_value,NULL,NULL);
 }
 
+/* Interesting. The mac allows the creation of temporary gids beyond the */
+/*  range specified by the font, as long as the user never sees them. So */
+/*  it seems perfectly legal for one substitution to use a gid of 1111   */
+/*  if that gid never reach output but will be converted into a real gid */
+/*  by a subsequent substitution. I saw this used in a conditional situation */
+/*  to provide a temporary context for a later match. FontForge does not */
+/*  support this. All gids must refer to real glyphs */
 static void TTF_SetMortSubs(struct ttfinfo *info, int gnum, int gsubs) {
     PST *pst;
     SplineChar *sc, *ssc;

@@ -1236,13 +1236,13 @@ static void bSave(Context *c) {
 	    error(c,"If an argument is given to Save it must be a filename");
 	t = script2u_copy(c->a.vals[1].u.sval);
 	locfilename = u2def_copy(t);
-	if ( !SFDWrite(locfilename,sf))
+	if ( !SFDWrite(locfilename,sf,c->curfv->map))
 	    error(c,"Save As failed" );
 	free(t); free(locfilename);
     } else {
 	if ( sf->filename==NULL )
 	    error(c,"This font has no associated sfd file yet, you must specify a filename" );
-	if ( !SFDWriteBak(sf) )
+	if ( !SFDWriteBak(sf,c->curfv->map) )
 	    error(c,"Save failed" );
     }
 }
@@ -1253,7 +1253,6 @@ static void bGenerate(Context *c) {
     int fmflags = -1;
     int res = -1;
     char *subfontdirectory = NULL;
-    int wascompacted = sf->compacted;
     unichar_t *t;
     char *locfilename;
 
@@ -1273,15 +1272,12 @@ static void bGenerate(Context *c) {
 	res = c->a.vals[4].u.ival;
     if ( c->a.argc>=6 )
 	subfontdirectory = c->a.vals[5].u.sval;
-    if ( wascompacted )
-	SFUncompactFont(sf);
     t = script2u_copy(c->a.vals[1].u.sval);
     locfilename = u2def_copy(t);
-    if ( !GenerateScript(sf,locfilename,bitmaptype,fmflags,res,subfontdirectory,NULL) )
+    if ( !GenerateScript(sf,locfilename,bitmaptype,fmflags,res,subfontdirectory,
+	    NULL,c->curfv->map) )
 	error(c,"Save failed");
     free(t); free(locfilename);
-    if ( wascompacted )
-	SFCompactFont(sf);
 }
 
 static int strtailcmp(char *needle, char *haystack) {
@@ -1341,10 +1337,6 @@ static void bGenerateFamily(Context *c) {
 	}
 	if ( sf==NULL )
 	    sf = fv->sf;
-	if ( fv->sf->encoding_name!=sf->encoding_name ) {
-	    fprintf( stderr, "%s and %s\n", fv->sf->filename, sf->filename );
-	    error( c, "The above fonts have different encodings" );
-	}
 	if ( strcmp(fv->sf->familyname,sf->familyname)!=0 )
 	    fprintf( stderr, "Warning: %s has a different family name than does %s (GenerateFamily)\n",
 		    fv->sf->fontname, sf->fontname );
@@ -1362,6 +1354,7 @@ static void bGenerateFamily(Context *c) {
 		if ( familysfs[0][j]->fondname==NULL ) {
 		    if ( familysfs[0][psstyle]==NULL || familysfs[0][psstyle]==fv->sf ) {
 			familysfs[0][psstyle] = fv->sf;
+			fv->sf->map = fv->map;
 			added = true;
 		    }
 		}
@@ -1407,13 +1400,15 @@ static void bGenerateFamily(Context *c) {
 	    else lastsfs->next = cur;
 	    lastsfs = cur;
 	    cur->sf = familysfs[fc][j];
+	    cur->map = cur->sf->map;
 	}
     }
     free(familysfs);
 
     t = script2u_copy(c->a.vals[1].u.sval);
     locfilename = u2def_copy(t);
-    if ( !GenerateScript(sf,locfilename,bitmaptype,fmflags,-1,NULL,sfs) )
+    if ( !GenerateScript(sf,locfilename,bitmaptype,fmflags,-1,NULL,sfs,
+	    c->curfv->map) )
 	error(c,"Save failed");
     free(t); free(locfilename);
     for ( cur=sfs; cur!=NULL; cur=sfs ) {
@@ -1618,7 +1613,7 @@ static void bWritePfm(Context *c) {
 
     t = script2u_copy(c->a.vals[1].u.sval);
     locfilename = u2def_copy(t);
-    if ( !WritePfmFile(c->a.vals[1].u.sval,sf,0) )
+    if ( !WritePfmFile(c->a.vals[1].u.sval,sf,0,c->curfv->map) )
 	error(c,"Save failed");
     free(locfilename); free(t);
 }
@@ -1677,9 +1672,9 @@ static void bExport(Context *c) {
 	if ( bdf==NULL )
 	    error(c, "No bitmap font matches the specified size");
     }
-    for ( i=0; i<c->curfv->sf->charcnt; ++i )
-	if ( SCWorthOutputting(c->curfv->sf->chars[i]) )
-	    ScriptExport(c->curfv->sf,bdf,format,i,format_spec);
+    for ( i=0; i<c->curfv->sf->glyphcnt; ++i )
+	if ( SCWorthOutputting(c->curfv->sf->glyphs[i]) )
+	    ScriptExport(c->curfv->sf,bdf,format,i,format_spec,c->curfv->map);
     if ( format_spec!=buffer )
 	free(format_spec);
 }
@@ -1694,7 +1689,7 @@ static void bMergeKern(Context *c) {
 
     t = script2u_copy(c->a.vals[1].u.sval);
     locfilename = u2def_copy(t);
-    if ( !LoadKerningDataFromMetricsFile(c->curfv->sf,locfilename))
+    if ( !LoadKerningDataFromMetricsFile(c->curfv->sf,locfilename,c->curfv->map))
 	error( c, "Failed to find kern info in file" );
     free(locfilename); free(t);
 }
@@ -1822,10 +1817,31 @@ static void bCopyRBearing(Context *c) {
     doEdit(c,12);
 }
 
+static int GetOneSelCharIndex(Context *c) {
+    FontView *fv = c->curfv;
+    EncMap *map = fv->map;
+    int i, found = -1;
+
+    for ( i=0; i<map->enccount; ++i ) if ( fv->selected[i] ) {
+	if ( found==-1 )
+	    found = i;
+	else
+	    error(c,"More than one character selected" );
+    }
+    if ( found==-1 )
+	error(c,"No characters selected" );
+return( found );
+}
+
+static SplineChar *GetOneSelChar(Context *c) {
+    int found = GetOneSelCharIndex(c);
+return( SFMakeChar(c->curfv->sf,c->curfv->map,found));
+}
+
 static void bCopyGlyphFeatures(Context *c) {
     Array *a;
     uint32 tag;
-    int i, j, pos = -1, start;
+    int i, j, pos = -1, start, gid;
     unsigned char *pt;
     FontView *fv = c->curfv;
     SplineFont *sf = fv->sf;
@@ -1847,15 +1863,9 @@ static void bCopyGlyphFeatures(Context *c) {
 	start = 0;
     }
 
-    for ( i=sf->charcnt-1; i>=0 ; --i ) if ( fv->selected[i] ) {
-	if ( pos==-1 )
-	    pos = i;
-	else
-	    error( c, "More than one glyph selected");
-    }
-    if ( pos==-1 )
-	error( c, "No characters selected");
-    sc = sf->chars[pos];
+    pos = GetOneSelCharIndex(c);
+    gid = fv->map->map[pos];
+    sc = gid==-1 ? NULL : sf->glyphs[gid];
 
     CopyPSTStart(sf);
     if ( sc==NULL )
@@ -1895,15 +1905,15 @@ return;			/* Glyph hasn't been created yet=>no features */
 	    for ( kp=sc->vkerns; kp!=NULL; kp=kp->next ) if ( kp->off!=0 )
 		CopyPSTAppend(pst_vkerning,Kern2Text(kp->sc,kp,false));
 	} else if ( tag==CHR('_','k','r','n') ) {
-	    for ( j=0; j<sf->charcnt; ++j ) if ( sf->chars[j]!=NULL )
-		for ( kp=sf->chars[j]->kerns; kp!=NULL; kp=kp->next )
+	    for ( j=0; j<sf->glyphcnt; ++j ) if ( sf->glyphs[j]!=NULL )
+		for ( kp=sf->glyphs[j]->kerns; kp!=NULL; kp=kp->next )
 		    if ( kp->off!=0 && kp->sc==sc )
-			CopyPSTAppend(pst_kernback,Kern2Text(sf->chars[j],kp,false));
+			CopyPSTAppend(pst_kernback,Kern2Text(sf->glyphs[j],kp,false));
 	} else if ( tag==CHR('_','v','k','n') ) {
-	    for ( j=0; j<sf->charcnt; ++j ) if ( sf->chars[j]!=NULL )
-		for ( kp=sf->chars[j]->vkerns; kp!=NULL; kp=kp->next )
+	    for ( j=0; j<sf->glyphcnt; ++j ) if ( sf->glyphs[j]!=NULL )
+		for ( kp=sf->glyphs[j]->vkerns; kp!=NULL; kp=kp->next )
 		    if ( kp->off!=0 && kp->sc==sc )
-			CopyPSTAppend(pst_vkernback,Kern2Text(sf->chars[j],kp,true));
+			CopyPSTAppend(pst_vkernback,Kern2Text(sf->glyphs[j],kp,true));
 	} else {
 	    for ( pst = sc->possub; pst!=NULL; pst=pst->next )
 		if ( pst->tag == tag && pst->type!=pst_lcaret )
@@ -1968,26 +1978,27 @@ static void bSameGlyphAs(Context *c) {
 static void bSelectAll(Context *c) {
     if ( c->a.argc!=1 )
 	error( c, "Wrong number of arguments");
-    memset(c->curfv->selected,1,c->curfv->sf->charcnt);
+    memset(c->curfv->selected,1,c->curfv->map->enccount);
 }
 
 static void bSelectNone(Context *c) {
     if ( c->a.argc!=1 )
 	error( c, "Wrong number of arguments");
-    memset(c->curfv->selected,0,c->curfv->sf->charcnt);
+    memset(c->curfv->selected,0,c->curfv->map->enccount);
 }
 
 static int ParseCharIdent(Context *c, Val *val, int signal_error) {
     SplineFont *sf = c->curfv->sf;
+    EncMap *map = c->curfv->map;
     int bottom = -1;
 
     if ( val->type==v_int )
 	bottom = val->u.ival;
     else if ( val->type==v_unicode || val->type==v_str ) {
 	if ( val->type==v_unicode )
-	    bottom = SFFindChar(sf,val->u.ival,NULL);
+	    bottom = SFFindSlot(sf,map,val->u.ival,NULL);
 	else {
-	    bottom = SFFindChar(sf,-1,val->u.sval);
+	    bottom = SFFindSlot(sf,map,-1,val->u.sval);
 	}
     } else {
 	if ( signal_error )
@@ -1999,7 +2010,7 @@ return( -1 );
 	if ( signal_error )
 	    error( c, "Character not found" );
 return( -1 );
-    } else if ( bottom<0 || bottom>=sf->charcnt ) {
+    } else if ( bottom<0 || bottom>=map->enccount ) {
 	if ( signal_error )
 	    error( c, "Character is not in font" );
 return( -1 );
@@ -2013,14 +2024,14 @@ static int bDoSelect(Context *c, int signal_error, int select) {
 
     if ( c->a.argc==2 && (c->a.vals[1].type==v_arr || c->a.vals[1].type==v_arrfree)) {
 	struct array *arr = c->a.vals[1].u.aval;
-	for ( i=0; i<arr->argc && i<c->curfv->sf->charcnt; ++i ) {
+	for ( i=0; i<arr->argc && i<c->curfv->map->enccount; ++i ) {
 	    if ( arr->vals[i].type!=v_int ) {
 		if ( signal_error )
 		    error(c,"Bad type within selection array");
 		else
 return( any ? -1 : -2 );
-	    } else if ( arr->vals[i].u.ival ) {
-		c->curfv->selected[i] = true;
+	    } else {
+		c->curfv->selected[i] = (arr->vals[i].u.ival!=0);
 		++any;
 	    }
 	}
@@ -2059,12 +2070,12 @@ static void bSelectFewer(Context *c) {
 }
 
 static void bSelect(Context *c) {
-    memset(c->curfv->selected,0,c->curfv->sf->charcnt);
+    memset(c->curfv->selected,0,c->curfv->map->enccount);
     bDoSelect(c,true,true);
 }
 
 static void bSelectIf(Context *c) {
-    memset(c->curfv->selected,0,c->curfv->sf->charcnt);
+    memset(c->curfv->selected,0,c->curfv->map->enccount);
     c->return_val.type = v_int;
     c->return_val.u.ival = bDoSelect(c,false,true);
 }
@@ -2117,7 +2128,8 @@ static void bSelectByATT(Context *c) {
 static void bSelectByColor(Context *c) {
     int col, sccol;
     int i, any=0;
-    SplineChar **chars = c->curfv->sf->chars;
+    EncMap *map = c->curfv->map;
+    SplineFont *sf = c->curfv->sf;
 
     if ( c->a.argc!=2 )
 	error( c, "Wrong number of arguments");
@@ -2147,11 +2159,14 @@ static void bSelectByColor(Context *c) {
 	    errors(c,"Unknown color", c->a.vals[1].u.sval);
     }
 
-    for ( i=0; i<c->curfv->sf->charcnt; ++i ) {
-	sccol =  ( chars[i]==NULL ) ? COLOR_DEFAULT : chars[i]->color;
-	if ( c->curfv->selected[i]!=(sccol==col) ) {
-	    c->curfv->selected[i] = !c->curfv->selected[i];
-	    if ( c->curfv->selected[i] ) any = true;
+    for ( i=0; i<map->enccount; ++i ) {
+	int gid = map->map[i];
+	if ( gid!=-1 ) {
+	    sccol =  ( sf->glyphs[gid]==NULL ) ? COLOR_DEFAULT : sf->glyphs[gid]->color;
+	    if ( c->curfv->selected[i]!=(sccol==col) ) {
+		c->curfv->selected[i] = !c->curfv->selected[i];
+		if ( c->curfv->selected[i] ) any = true;
+	    }
 	}
     }
     c->curfv->sel_index = any;
@@ -2160,7 +2175,6 @@ static void bSelectByColor(Context *c) {
 /* **** Element Menu **** */
 static void bReencode(Context *c) {
     Encoding *new_map;
-    FontView *fvs;
     int force = 0;
 
     if ( c->a.argc!=2 && c->a.argc!=3 )
@@ -2173,12 +2187,15 @@ static void bReencode(Context *c) {
     if ( new_map==NULL )
 	errors(c,"Unknown encoding", c->a.vals[1].u.sval);
     if ( force )
-	SFForceEncoding(c->curfv->sf,new_map);
-    else
-	SFReencodeFont(c->curfv->sf,new_map);
-    for ( fvs=c->curfv->sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
-	free( fvs->selected );
-	fvs->selected = gcalloc(fvs->sf->charcnt,1);
+	SFForceEncoding(c->curfv->sf,c->curfv->map,new_map);
+    else {
+	EncMap *map = EncMapFromEncoding(c->curfv->sf,new_map);
+	EncMapFree(c->curfv->map);
+	c->curfv->map = map;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+	if ( !no_windowing_ui )
+	    FVSetTitle(c->curfv);
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( !no_windowing_ui )
@@ -2190,8 +2207,8 @@ static void bReencode(Context *c) {
 }
 
 static void bSetCharCnt(Context *c) {
-    int oldcnt = c->curfv->sf->charcnt, i;
-    FontView *fvs;
+    EncMap *map = c->curfv->map;
+    int newcnt;
 
     if ( c->a.argc!=2 )
 	error( c, "Wrong number of arguments");
@@ -2200,18 +2217,23 @@ static void bSetCharCnt(Context *c) {
     else if ( c->a.vals[1].u.ival<=0 && c->a.vals[1].u.ival>10*65536 )
 	error(c,"Argument out of bounds");
 
-    if ( c->curfv->sf->charcnt==c->a.vals[1].u.ival )
+    newcnt = c->a.vals[1].u.ival;
+    if ( map->enccount==newcnt )
 return;
-
-    SFAddDelChars(c->curfv->sf,c->a.vals[1].u.ival);
-    for ( fvs=c->curfv->sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
-	fvs->selected = grealloc(fvs->selected,c->a.vals[1].u.ival);
-	for ( i=oldcnt; i<c->a.vals[1].u.ival; ++i )
-	    fvs->selected[i] = false;
+    if ( newcnt<map->enc->char_cnt ) {
+	map->enc = &custom;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+	if ( !no_windowing_ui )
+	    FVSetTitle(c->curfv);
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
+    c->curfv->selected = grealloc(c->curfv->selected,newcnt);
+    if ( newcnt>map->enccount )
+	memset(c->curfv->selected+map->enccount,0,newcnt-map->enccount);
+    map->enccount = newcnt;
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( !no_windowing_ui )
-	FontViewReformatAll(c->curfv->sf);
+	FontViewReformatOne(c->curfv);
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     c->curfv->sf->changed = true;
     c->curfv->sf->changed_since_autosave = true;
@@ -2636,26 +2658,6 @@ static void bSetTeXParams(Context *c) {
 		(c->curfv->sf->ascent+c->curfv->sf->descent);
 }
 
-static int GetOneSelCharIndex(Context *c) {
-    SplineFont *sf = c->curfv->sf;
-    int i, found = -1;
-
-    for ( i=0; i<sf->charcnt; ++i ) if ( c->curfv->selected[i] ) {
-	if ( found==-1 )
-	    found = i;
-	else
-	    error(c,"More than one character selected" );
-    }
-    if ( found==-1 )
-	error(c,"No characters selected" );
-return( found );
-}
-
-static SplineChar *GetOneSelChar(Context *c) {
-    int found = GetOneSelCharIndex(c);
-return( SFMakeChar(c->curfv->sf,found));
-}
-
 static void bSetCharName(Context *c) {
     SplineChar *sc;
     char *name, *end;
@@ -2724,6 +2726,7 @@ static void bSetUnicodeValue(Context *c) {
 
 static void bSetCharColor(Context *c) {
     SplineFont *sf = c->curfv->sf;
+    EncMap *map = c->curfv->map;
     SplineChar *sc;
     int i;
 
@@ -2731,8 +2734,8 @@ static void bSetCharColor(Context *c) {
 	error( c, "Wrong number of arguments");
     else if ( c->a.vals[1].type!=v_int )
 	error(c,"Bad argument type");
-    for ( i=0; i<sf->charcnt; ++i ) if ( c->curfv->selected[i] ) {
-	sc = SFMakeChar(sf,i);
+    for ( i=0; i<map->enccount; ++i ) if ( c->curfv->selected[i] ) {
+	sc = SFMakeChar(sf,map,i);
 	sc->color = c->a.vals[1].u.ival;
     }
     c->curfv->sf->changed = true;
@@ -3261,7 +3264,9 @@ static void bNearlyHvCps(Context *c) {
     int i, layer;
     SplineSet *spl;
     SplineFont *sf = fv->sf;
+    EncMap *map = fv->map;
     real err = .1;
+    int gid;
 
     if ( c->a.argc>3 )
 	error( c, "Too many arguments" );
@@ -3278,8 +3283,8 @@ static void bNearlyHvCps(Context *c) {
 	    err /= (real) c->a.vals[2].u.ival;
 	}
     }
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && fv->selected[i] ) {
-	SplineChar *sc = sf->chars[i];
+    for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && fv->selected[i] ) {
+	SplineChar *sc = sf->glyphs[gid];
 	SCPreserveState(sc,false);
 	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
 	    for ( spl = sc->layers[layer].splines; spl!=NULL; spl=spl->next )
@@ -3290,7 +3295,7 @@ static void bNearlyHvCps(Context *c) {
 
 static void bNearlyHvLines(Context *c) {
     FontView *fv = c->curfv;
-    int i, layer;
+    int i, layer, gid;
     SplineSet *spl;
     SplineFont *sf = fv->sf;
     real err = .1;
@@ -3310,8 +3315,8 @@ static void bNearlyHvLines(Context *c) {
 	    err /= (real) c->a.vals[2].u.ival;
 	}
     }
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && fv->selected[i] ) {
-	SplineChar *sc = sf->chars[i];
+    for ( i=0; i<c->curfv->map->enccount; ++i ) if ( (gid=c->curfv->map->map[i])!=-1 && sf->glyphs[gid]!=NULL && fv->selected[i] ) {
+	SplineChar *sc = sf->glyphs[gid];
 	SCPreserveState(sc,false);
 	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
 	    for ( spl = sc->layers[layer].splines; spl!=NULL; spl=spl->next )
@@ -3363,18 +3368,23 @@ static void SCMakeLine(SplineChar *sc) {
 }
 
 static void bMakeLine(Context *c) {
-    int i;
-    SplineFont *sf = c->curfv->sf;
+    int i, gid;
+    FontView *fv = c->curfv;
+    SplineFont *sf = fv->sf;
+    EncMap *map = fv->map;
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && c->curfv->selected[i] ) {
-	SCMakeLine( sf->chars[i] );
+    for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && fv->selected[i] ) {
+	SplineChar *sc = sf->glyphs[gid];
+	SCMakeLine( sc );
     }
 }
 
 static void bRoundToInt(Context *c) {
     real factor = 1.0;
-    int i;
-    SplineFont *sf = c->curfv->sf;
+    int i, gid;
+    FontView *fv = c->curfv;
+    SplineFont *sf = fv->sf;
+    EncMap *map = fv->map;
 
     if ( c->a.argc!=1 && c->a.argc!=2 )
 	error( c, "Wrong number of arguments");
@@ -3386,16 +3396,19 @@ static void bRoundToInt(Context *c) {
 	else
 	    error( c, "Bad type for argument" );
     }
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && c->curfv->selected[i] ) {
-	SCPreserveState(sf->chars[i],false);
-	SCRound2Int( sf->chars[i],factor);
+    for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && fv->selected[i] ) {
+	SplineChar *sc = sf->glyphs[gid];
+	SCPreserveState(sc,false);
+	SCRound2Int( sc,factor);
     }
 }
 
 static void bRoundToCluster(Context *c) {
     real within = .1, max = .5;
-    int i;
-    SplineFont *sf = c->curfv->sf;
+    int i, gid;
+    FontView *fv = c->curfv;
+    SplineFont *sf = fv->sf;
+    EncMap *map = fv->map;
 
     if ( c->a.argc>3 )
 	error( c, "Wrong number of arguments");
@@ -3417,8 +3430,10 @@ static void bRoundToCluster(Context *c) {
 	    max *= within;
 	}
     }
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && c->curfv->selected[i] )
-	SCRoundToCluster( sf->chars[i],-2,false,within,max);
+    for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && fv->selected[i] ) {
+	SplineChar *sc = sf->glyphs[gid];
+	SCRoundToCluster( sc,-2,false,within,max);
+    }
 }
 
 static void bAutotrace(Context *c) {
@@ -3428,8 +3443,10 @@ static void bAutotrace(Context *c) {
 }
 
 static void bCorrectDirection(Context *c) {
-    int i;
-    SplineFont *sf = c->curfv->sf;
+    int i, gid;
+    FontView *fv = c->curfv;
+    SplineFont *sf = fv->sf;
+    EncMap *map = fv->map;
     int changed, refchanged;
     int checkrefs = true;
     RefChar *ref;
@@ -3441,8 +3458,7 @@ static void bCorrectDirection(Context *c) {
 	error(c,"Bad argument type");
     else if ( c->a.argc==2 )
 	checkrefs = c->a.vals[1].u.ival;
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && c->curfv->selected[i] ) {
-	sc = sf->chars[i];
+    for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && (sc=sf->glyphs[gid])!=NULL && fv->selected[i] ) {
 	changed = refchanged = false;
 	if ( checkrefs ) {
 	    for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
@@ -3619,9 +3635,12 @@ static void bClearHints(Context *c) {
 }
 
 static void _AddHint(Context *c,int ish) {
-    int i, any;
+    int i, any, gid;
     int start, width;
-    SplineFont *sf = c->curfv->sf;
+    FontView *fv = c->curfv;
+    SplineFont *sf = fv->sf;
+    EncMap *map = fv->map;
+    SplineChar *sc;
     StemInfo *h;
 
     if ( c->a.argc!=3 )
@@ -3641,9 +3660,7 @@ static void _AddHint(Context *c,int ish) {
     if ( width<=0 && width!=-20 && width!=-21 )
 	error( c, "Bad hint width" );
     any = false;
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && c->curfv->selected[i] ) {
-	SplineChar *sc = sf->chars[i];
-
+    for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && (sc=sf->glyphs[gid])!=NULL && fv->selected[i] ) {
 	h = chunkalloc(sizeof(StemInfo));
 	h->start = start;
 	h->width = width;
@@ -3834,25 +3851,23 @@ static void bSetRBearing(Context *c) {
 }
 
 static void bAutoWidth(Context *c) {
-    SplineFont *sf = c->curfv->sf;
 
     if ( c->a.argc != 2 )
 	error( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_int )
 	error(c,"Bad argument type in AutoWidth");
-    if ( !AutoWidthScript(sf,c->a.vals[1].u.ival))
+    if ( !AutoWidthScript(c->curfv,c->a.vals[1].u.ival))
 	error(c,"No characters selected.");
 }
 
 static void bAutoKern(Context *c) {
-    SplineFont *sf = c->curfv->sf;
 
     if ( c->a.argc != 3 && c->a.argc != 4 )
 	error( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int ||
 	    (c->a.argc==4 && c->a.vals[3].type!=v_str))
 	error(c,"Bad argument type");
-    if ( !AutoKernScript(sf,c->a.vals[1].u.ival,c->a.vals[2].u.ival,
+    if ( !AutoKernScript(c->curfv,c->a.vals[1].u.ival,c->a.vals[2].u.ival,
 	    c->a.argc==4?c->a.vals[3].u.sval:NULL) )
 	error(c,"No characters selected.");
 }
@@ -3864,9 +3879,11 @@ static void bCenterInWidth(Context *c) {
 }
 
 static void _SetKern(Context *c,int isv) {
-    SplineFont *sf = c->curfv->sf;
+    FontView *fv = c->curfv;
+    SplineFont *sf = fv->sf;
+    EncMap *map = fv->map;
     SplineChar *sc1, *sc2;
-    int i, kern, ch2, sli;
+    int i, gid, kern, ch2, sli;
     KernPair *kp;
 
     if ( c->a.argc!=3 && c->a.argc!=4 )
@@ -3883,18 +3900,20 @@ static void _SetKern(Context *c,int isv) {
     }
     kern = c->a.vals[2].u.ival;
     if ( kern!=0 )
-	sc2 = SFMakeChar(sf,ch2);
+	sc2 = SFMakeChar(sf,map,ch2);
     else {
-	sc2 = sf->chars[ch2];
+	gid = map->map[ch2];
+	sc2 = gid==-1 ? NULL : sf->glyphs[gid];
 	if ( sc2==NULL )
 return;		/* It already has a kern==0 with everything */
     }
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( c->curfv->selected[i] ) {
+    for ( i=0; i<map->enccount; ++i ) if ( c->curfv->selected[i] ) {
 	if ( kern!=0 )
-	    sc1 = SFMakeChar(sf,i);
+	    sc1 = SFMakeChar(sf,map,i);
 	else {
-	    if ( (sc1 = sf->chars[i])==NULL )
+	    gid = map->map[i];
+	    if ( gid==-1 || (sc1 = sf->glyphs[gid])==NULL )
     continue;
 	}
 	for ( kp = isv ? sc1->vkerns : sc1->kerns; kp!=NULL && kp->sc!=sc2; kp = kp->next );
@@ -4113,7 +4132,7 @@ static void bConvertToCID(Context *c) {
     map = FindCidMap( c->a.vals[1].u.sval, c->a.vals[2].u.sval, c->a.vals[3].u.ival, sf);
     if ( map == NULL )
 	error( c, "No cidmap matching given ROS" );
-    MakeCIDMaster(sf, false, NULL, map);
+    MakeCIDMaster(sf, c->curfv->map, false, NULL, map);
 }
 
 static void bConvertByCMap(Context *c) {
@@ -4128,12 +4147,13 @@ static void bConvertByCMap(Context *c) {
 	errors( c, "Already a cid-keyed font", sf->cidmaster->fontname );
     t = script2u_copy(c->a.vals[1].u.sval);
     locfilename = u2def_copy(t);
-    MakeCIDMaster(sf, true, locfilename, NULL);
+    MakeCIDMaster(sf, c->curfv->map, true, locfilename, NULL);
     free(t); free(locfilename);
 }
 
 static void bCIDChangeSubFont(Context *c) {
     SplineFont *sf = c->curfv->sf, *new;
+    EncMap *map = c->curfv->map;
     int i;
 
     if ( c->a.argc!=2 )
@@ -4161,18 +4181,22 @@ static void bCIDChangeSubFont(Context *c) {
 	GDrawProcessPendingEvents(NULL);
     }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-    if ( sf->charcnt!=new->charcnt ) {
-	FontView *fvs;
-	for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
-	    free(fvs->selected);
-	    fvs->selected = gcalloc(new->charcnt,sizeof(char));
-	}
+    if ( new->glyphcnt>sf->glyphcnt ) {
+	free(c->curfv->selected);
+	c->curfv->selected = gcalloc(new->glyphcnt,sizeof(char));
+	if ( new->glyphcnt>map->encmax )
+	    map->map = grealloc(map->map,(map->encmax = new->glyphcnt)*sizeof(int));
+	if ( new->glyphcnt>map->backmax )
+	    map->backmap = grealloc(map->map,(map->backmax = new->glyphcnt)*sizeof(int));
+	for ( i=0; i<new->glyphcnt; ++i )
+	    map->map[i] = map->backmap[i] = i;
+	map->enccount = new->glyphcnt;
     }
     c->curfv->sf = new;
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( !no_windowing_ui ) {
 	FVSetTitle(c->curfv);
-	FontViewReformatAll(c->curfv->sf);
+	FontViewReformatOne(c->curfv);
     }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 }
@@ -4220,23 +4244,25 @@ static void bCharCnt(Context *c) {
     if ( c->a.argc!=1 )
 	error( c, "Wrong number of arguments");
     c->return_val.type = v_int;
-    c->return_val.u.ival = c->curfv->sf->charcnt;
+    c->return_val.u.ival = c->curfv->map->enccount;
 }
 
 static void bInFont(Context *c) {
     SplineFont *sf = c->curfv->sf;
+    EncMap *map = c->curfv->map;
+
     if ( c->a.argc>2 )
 	error( c, "Wrong number of arguments");
     c->return_val.type = v_int;
     if ( c->a.vals[1].type==v_int )
-	c->return_val.u.ival = c->a.vals[1].u.ival>=0 && c->a.vals[1].u.ival<sf->charcnt;
+	c->return_val.u.ival = c->a.vals[1].u.ival>=0 && c->a.vals[1].u.ival<map->enccount;
     else if ( c->a.vals[1].type==v_unicode || c->a.vals[1].type==v_str ) {
 	int enc;
 	if ( c->a.vals[1].type==v_unicode )
-	    enc = SFFindChar(sf,c->a.vals[1].u.ival,NULL);
+	    enc = SFFindSlot(sf,map,c->a.vals[1].u.ival,NULL);
 	else {
 	    unichar_t *temp = uc_copy(c->a.vals[1].u.sval);
-	    enc = NameToEncoding(sf,temp);
+	    enc = NameToEncoding(sf,map,temp);
 	    free(temp);
 	}
 	c->return_val.u.ival = (enc!=-1);
@@ -4246,60 +4272,68 @@ static void bInFont(Context *c) {
 
 static void bWorthOutputting(Context *c) {
     SplineFont *sf = c->curfv->sf;
-    if ( c->a.argc>2 )
+    EncMap *map = c->curfv->map;
+    int gid;
+
+    if ( c->a.argc!=2 )
 	error( c, "Wrong number of arguments");
     c->return_val.type = v_int;
-    if ( c->a.argc==1 )
-	c->return_val.u.ival = SCWorthOutputting(sf->chars[GetOneSelCharIndex(c)]);
-    else if ( c->a.vals[1].type==v_int )
-	c->return_val.u.ival = c->a.vals[1].u.ival>=0 &&
-		c->a.vals[1].u.ival<sf->charcnt &&
-		SCWorthOutputting(sf->chars[c->a.vals[1].u.ival]);
-    else if ( c->a.vals[1].type==v_unicode || c->a.vals[1].type==v_str ) {
+    if ( c->a.argc==1 ) {
+	gid = map->map[GetOneSelCharIndex(c)];
+    } else if ( c->a.vals[1].type==v_int ) {
+	gid = c->a.vals[1].u.ival>=0 && c->a.vals[1].u.ival<map->enccount ?
+		map->map[c->a.vals[1].u.ival] : -1;
+    } else if ( c->a.vals[1].type==v_unicode || c->a.vals[1].type==v_str ) {
 	int enc;
 	if ( c->a.vals[1].type==v_unicode )
-	    enc = SFFindChar(sf,c->a.vals[1].u.ival,NULL);
+	    enc = SFFindSlot(sf,map,c->a.vals[1].u.ival,NULL);
 	else {
 	    unichar_t *temp = uc_copy(c->a.vals[1].u.sval);
-	    enc = NameToEncoding(sf,temp);
+	    enc = NameToEncoding(sf,map,temp);
 	    free(temp);
 	}
-	c->return_val.u.ival = enc!=-1 && SCWorthOutputting(sf->chars[enc]);
+	gid = enc==-1 ? -1 : map->map[enc];
     } else
 	error( c, "Bad type of argument");
+    c->return_val.u.ival = gid!=-1 && SCWorthOutputting(sf->glyphs[gid]);
 }
 
 static void bDrawsSomething(Context *c) {
     SplineFont *sf = c->curfv->sf;
+    EncMap *map = c->curfv->map;
+    int gid;
+
     if ( c->a.argc!=2 )
 	error( c, "Wrong number of arguments");
     c->return_val.type = v_int;
-    if ( c->a.argc==1 )
-	c->return_val.u.ival = SCDrawsSomething(sf->chars[GetOneSelCharIndex(c)]);
-    else if ( c->a.vals[1].type==v_int )
-	c->return_val.u.ival = c->a.vals[1].u.ival>=0 &&
-		c->a.vals[1].u.ival<sf->charcnt &&
-		SCDrawsSomething(sf->chars[c->a.vals[1].u.ival]);
-    else if ( c->a.vals[1].type==v_unicode || c->a.vals[1].type==v_str ) {
+    if ( c->a.argc==1 ) {
+	gid = map->map[GetOneSelCharIndex(c)];
+    } else if ( c->a.vals[1].type==v_int ) {
+	gid = c->a.vals[1].u.ival>=0 && c->a.vals[1].u.ival<map->enccount ?
+		map->map[c->a.vals[1].u.ival] : -1;
+    } else if ( c->a.vals[1].type==v_unicode || c->a.vals[1].type==v_str ) {
 	int enc;
 	if ( c->a.vals[1].type==v_unicode )
-	    enc = SFFindChar(sf,c->a.vals[1].u.ival,NULL);
+	    enc = SFFindSlot(sf,map,c->a.vals[1].u.ival,NULL);
 	else {
 	    unichar_t *temp = uc_copy(c->a.vals[1].u.sval);
-	    enc = NameToEncoding(sf,temp);
+	    enc = NameToEncoding(sf,map,temp);
 	    free(temp);
 	}
-	c->return_val.u.ival = enc!=-1 && SCDrawsSomething(sf->chars[enc]);
+	gid = enc==-1 ? -1 : map->map[enc];
     } else
 	error( c, "Bad type of argument");
+    c->return_val.u.ival = gid!=-1 && SCDrawsSomething(sf->glyphs[gid]);
 }
 
 static void bDefaultATT(Context *c) {
-    SplineFont *sf = c->curfv->sf;
     char tag[4];
     char *str;
     uint32 ftag;
-    int i;
+    int i, gid;
+    FontView *fv = c->curfv;
+    SplineFont *sf = fv->sf;
+    EncMap *map = fv->map;
 
     if ( c->a.argc!=2 )
 	error( c, "Wrong number of arguments");
@@ -4326,8 +4360,8 @@ static void bDefaultATT(Context *c) {
     if ( strcmp(str,"*"))
 	ftag = 0;			/* Everything */
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && c->curfv->selected[i])
-	SCTagDefault(sf->chars[i],ftag);
+    for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && fv->selected[i] )
+	SCTagDefault(sf->glyphs[gid],ftag);
 }
 
 static int32 ParseTag(Context *c,Val *tagstr) {
@@ -4626,11 +4660,13 @@ static void bAddATT(Context *c) {
 }
 
 static void bRemoveATT(Context *c) {
-    SplineFont *sf = c->curfv->sf;
     char tag[4];
     char *str;
     uint32 ftag;
-    int i;
+    int i, gid;
+    FontView *fv = c->curfv;
+    SplineFont *sf = fv->sf;
+    EncMap *map = fv->map;
     int type, sli;
     struct script_record *sr;
     PST *pst, *prev, *next;
@@ -4689,14 +4725,14 @@ return;
     if ( strcmp(str,"*")==0 )
 	ftag = 0;			/* Everything */
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && c->curfv->selected[i]) {
-	for ( prev=NULL, pst = sf->chars[i]->possub; pst!=NULL; pst = next ) {
+    for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && fv->selected[i] ) {
+	for ( prev=NULL, pst = sf->glyphs[gid]->possub; pst!=NULL; pst = next ) {
 	    next = pst->next;
 	    if ( (pst->type==type || type==-1 ) &&
 		    (pst->script_lang_index==sli || sli==-1 ) &&
 		    (pst->tag==ftag || ftag==0)) {
 		if ( prev==NULL )
-		    sf->chars[i]->possub = next;
+		    sf->glyphs[gid]->possub = next;
 		else
 		    prev->next = next;
 		pst->next = NULL;
@@ -4844,10 +4880,11 @@ static void PosSubInfo(SplineChar *sc,Context *c) {
 
 static void bCharInfo(Context *c) {
     SplineFont *sf = c->curfv->sf;
+    EncMap *map = c->curfv->map;
     SplineChar *sc;
     DBounds b;
     KernClass *kc;
-    int i, found;
+    int i, found, gid, gid2;
     SplineChar dummy;
 
     if ( c->a.argc!=2 && c->a.argc!=3 && c->a.argc!=5 )
@@ -4856,9 +4893,10 @@ static void bCharInfo(Context *c) {
 	error( c, "Bad type for argument");
 
     found = GetOneSelCharIndex(c);
-    sc = sf->chars[found];
+    gid = map->map[found];
+    sc = gid==-1 ? NULL : sf->glyphs[gid];
     if ( sc==NULL )
-	sc = SCBuildDummy(&dummy,sf,found);
+	sc = SCBuildDummy(&dummy,sf,map,found);
 
     c->return_val.type = v_int;
     if ( c->a.argc==5 ) {
@@ -4873,28 +4911,31 @@ static void bCharInfo(Context *c) {
 return;
 	}
 	ch2 = ParseCharIdent(c,&c->a.vals[2],true);
-	if ( strmatch( c->a.vals[1].u.sval,"Kern")==0 ) {
+	gid2 = ch2==-1 ? -1 : map->map[ch2];
+	if ( gid2==-1 )
+	    /* Do Nothing */;
+	else if ( strmatch( c->a.vals[1].u.sval,"Kern")==0 ) {
 	    c->return_val.u.ival = 0;
-	    if ( sf->chars[ch2]!=NULL ) { KernPair *kp; KernClass *kc;
-		for ( kp = sc->kerns; kp!=NULL && kp->sc!=sf->chars[ch2]; kp=kp->next );
+	    if ( sf->glyphs[gid2]!=NULL ) { KernPair *kp; KernClass *kc;
+		for ( kp = sc->kerns; kp!=NULL && kp->sc!=sf->glyphs[gid2]; kp=kp->next );
 		if ( kp!=NULL )
 		    c->return_val.u.ival = kp->off;
 		else {
 		    for ( kc = sf->kerns; kc!=NULL; kc=kc->next ) {
-			if (( c->return_val.u.ival = KernClassContains(kc,sc->name,sf->chars[ch2]->name,true))!=0 )
+			if (( c->return_val.u.ival = KernClassContains(kc,sc->name,sf->glyphs[gid2]->name,true))!=0 )
 		    break;
 		    }
 		}
 	    }
 	} else if ( strmatch( c->a.vals[1].u.sval,"VKern")==0 ) {
 	    c->return_val.u.ival = 0;
-	    if ( sf->chars[ch2]!=NULL ) { KernPair *kp;
-		for ( kp = sc->vkerns; kp!=NULL && kp->sc!=sf->chars[ch2]; kp=kp->next );
+	    if ( sf->glyphs[gid2]!=NULL ) { KernPair *kp;
+		for ( kp = sc->vkerns; kp!=NULL && kp->sc!=sf->glyphs[gid2]; kp=kp->next );
 		if ( kp!=NULL )
 		    c->return_val.u.ival = kp->off;
 		else {
 		    for ( kc = sf->vkerns; kc!=NULL; kc=kc->next ) {
-			if (( c->return_val.u.ival = KernClassContains(kc,sc->name,sf->chars[ch2]->name,true))!=0 )
+			if (( c->return_val.u.ival = KernClassContains(kc,sc->name,sf->glyphs[gid2]->name,true))!=0 )
 		    break;
 		    }
 		}
@@ -4908,7 +4949,7 @@ return;
 	} else if ( strmatch( c->a.vals[1].u.sval,"Unicode")==0 )
 	    c->return_val.u.ival = sc->unicodeenc;
 	else if ( strmatch( c->a.vals[1].u.sval,"Encoding")==0 )
-	    c->return_val.u.ival = sc->enc;
+	    c->return_val.u.ival = c->curfv->map->backmap[sc->orig_pos];
 	else if ( strmatch( c->a.vals[1].u.sval,"Width")==0 )
 	    c->return_val.u.ival = sc->width;
 	else if ( strmatch( c->a.vals[1].u.sval,"VWidth")==0 )
@@ -5175,9 +5216,10 @@ static int _cgetc(Context *c) {
 	int nch = getc(c->script);
 	if ( nch!='\n' )
 	    ungetc(nch,c->script);
-	else if ( verbose>0 )
+	else if ( verbose>0 ) {
 	    putchar('\n');
-	ch = '\n';
+	    ch = '\n';
+	}
 	++c->lineno;
     } else if ( ch=='\n' )
 	++c->lineno;
@@ -5792,14 +5834,16 @@ static void handlename(Context *c,Val *val) {
 		}
 	    } else if ( strcmp(name,"$selection")==0 ) {
 		SplineFont *sf;
+		EncMap *map;
 		int i;
 		if ( c->curfv==NULL ) error(c,"No current font");
 		sf = c->curfv->sf;
+		map = c->curfv->map;
 		val->type = v_arrfree;
 		val->u.aval = galloc(sizeof(Array));
-		val->u.aval->argc = sf->charcnt;
-		val->u.aval->vals = galloc((sf->charcnt+1)*sizeof(Val));
-		for ( i=0; i<sf->charcnt; ++i) {
+		val->u.aval->argc = map->enccount;
+		val->u.aval->vals = galloc((map->enccount+1)*sizeof(Val));
+		for ( i=0; i<map->enccount; ++i) {
 		    val->u.aval->vals[i].type = v_int;
 		    val->u.aval->vals[i].u.ival = c->curfv->selected[i];
 		}
@@ -6293,15 +6337,15 @@ static void doforeach(Context *c) {
 
     if ( c->curfv==NULL )
 	error(c,"foreach requires an active font");
-    selsize = c->curfv->sf->charcnt;
+    selsize = c->curfv->map->enccount;
     sel = galloc(selsize);
     memcpy(sel,c->curfv->selected,selsize);
     memset(c->curfv->selected,0,selsize);
     i = 0;
 
     while ( 1 ) {
-	while ( i<selsize && i<c->curfv->sf->charcnt && !sel[i]) ++i;
-	if ( i>=selsize || i>=c->curfv->sf->charcnt )
+	while ( i<selsize && i<c->curfv->map->enccount && !sel[i]) ++i;
+	if ( i>=selsize || i>=c->curfv->map->enccount )
     break;
 	c->curfv->selected[i] = true;
 	while ( (tok=NextToken(c))!=tt_endloop && tok!=tt_eof && !c->returned ) {
@@ -6324,7 +6368,7 @@ static void doforeach(Context *c) {
 	else if ( tok==tt_foreach ) ++nest;
 	else if ( tok==tt_endloop ) --nest;
     }
-    if ( selsize==c->curfv->sf->charcnt )
+    if ( selsize==c->curfv->map->enccount )
 	memcpy(c->curfv->selected,sel,selsize);
     free(sel);
 }

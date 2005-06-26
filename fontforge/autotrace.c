@@ -448,7 +448,7 @@ return( args );
 
 void FVAutoTrace(FontView *fv,int ask) {
     char **args;
-    int i,cnt;
+    int i,cnt,gid;
 #if defined(FONTFORGE_CONFIG_GDRAW)
     GCursor ct=0;
 #endif
@@ -465,6 +465,11 @@ return;
     args = AutoTraceArgs(ask);
     if ( args==(char **) -1 )
 return;
+    for ( i=cnt=0; i<fv->map->enccount; ++i )
+	if ( fv->selected[i] && (gid=fv->map->map[i])!=-1 &&
+		fv->sf->glyphs[gid]!=NULL &&
+		fv->sf->glyphs[gid]->layers[ly_back].images )
+	    ++cnt;
 #if defined(FONTFORGE_CONFIG_GDRAW)
     if ( fv->v!=NULL ) {
 	ct = GDrawGetCursor(fv->v);
@@ -473,9 +478,6 @@ return;
 	GDrawProcessPendingEvents(NULL);
     }
 
-    for ( i=cnt=0; i<fv->sf->charcnt; ++i )
-	if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->layers[ly_back].images )
-	    ++cnt;
     GProgressStartIndicatorR(10,_STR_Autotracing,_STR_Autotracing,0,cnt,1);
 #elif defined(FONTFORGE_CONFIG_GTK)
     if ( fv->v!=NULL ) {
@@ -485,15 +487,16 @@ return;
 	GDrawSync(NULL);
 	GDrawProcessPendingEvents(NULL);
     }
-    for ( i=cnt=0; i<fv->sf->charcnt; ++i )
-	if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->layers[ly_back].images )
-	    ++cnt;
     gwwv_progress_start_indicator(10,_("Autotracing..."),_("Autotracing..."),0,cnt,1);
 #endif
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) {
-	if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->layers[ly_back].images ) {
-	    _SCAutoTrace(fv->sf->chars[i], args);
+    SFUntickAll(fv->sf);
+    for ( i=cnt=0; i<fv->map->enccount; ++i ) {
+	if ( fv->selected[i] && (gid=fv->map->map[i])!=-1 &&
+		fv->sf->glyphs[gid]!=NULL &&
+		fv->sf->glyphs[gid]->layers[ly_back].images &&
+		!fv->sf->glyphs[gid]->ticked ) {
+	    _SCAutoTrace(fv->sf->glyphs[gid], args);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    if ( !GProgressNext())
@@ -783,13 +786,13 @@ return( NULL );
 		if ( sf!=NULL ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 		    GProgressChangeLine1R(_STR_Autotracing);
-		    GProgressChangeTotal(sf->charcnt);
+		    GProgressChangeTotal(sf->glyphcnt);
 #elif defined(FONTFORGE_CONFIG_GTK)
 		    gwwv_progress_change_line1(_("Autotracing..."));
-		    gwwv_progress_change_total(sf->charcnt);
+		    gwwv_progress_change_total(sf->glyphcnt);
 #endif
-		    for ( i=0; i<sf->charcnt; ++i ) {
-			if ( (sc = sf->chars[i])!=NULL && sc->layers[ly_back].images ) {
+		    for ( i=0; i<sf->glyphcnt; ++i ) {
+			if ( (sc = sf->glyphs[i])!=NULL && sc->layers[ly_back].images ) {
 			    _SCAutoTrace(sc, args);
 			    if ( mf_clearbackgrounds ) {
 				GImageDestroy(sc->layers[ly_back].images->image);

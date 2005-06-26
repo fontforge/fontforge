@@ -68,13 +68,13 @@ void WindowMenuBuild(GWindow basew,struct gmenuitem *mi,GEvent *e, struct gmenui
 
     for ( fv = fv_list; fv!=NULL; fv = fv->next ) {
 	++cnt;		/* for the font */
-	for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL ) {
-	    for ( cv = fv->sf->chars[i]->views; cv!=NULL; cv=cv->next )
+	for ( i=0; i<fv->sf->glyphcnt; ++i ) if ( fv->sf->glyphs[i]!=NULL ) {
+	    for ( cv = fv->sf->glyphs[i]->views; cv!=NULL; cv=cv->next )
 		++cnt;		/* for each char view in the font */
 	}
 	for ( bdf= fv->sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
-	    for ( i=0; i<bdf->charcnt; ++i ) if ( bdf->chars[i]!=NULL ) {
-		for ( bv = bdf->chars[i]->views; bv!=NULL; bv=bv->next )
+	    for ( i=0; i<bdf->glyphcnt; ++i ) if ( bdf->glyphs[i]!=NULL ) {
+		for ( bv = bdf->glyphs[i]->views; bv!=NULL; bv=bv->next )
 		    ++cnt;
 	    }
 	}
@@ -96,13 +96,13 @@ return;
     cnt = precnt;
     for ( fv = fv_list; fv!=NULL; fv = fv->next ) {
 	AddMI(&sub[cnt++],fv->gw,fv->sf->changed,true);
-	for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL ) {
-	    for ( cv = fv->sf->chars[i]->views; cv!=NULL; cv=cv->next )
+	for ( i=0; i<fv->sf->glyphcnt; ++i ) if ( fv->sf->glyphs[i]!=NULL ) {
+	    for ( cv = fv->sf->glyphs[i]->views; cv!=NULL; cv=cv->next )
 		AddMI(&sub[cnt++],cv->gw,cv->sc->changed,false);
 	}
 	for ( bdf= fv->sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
-	    for ( i=0; i<bdf->charcnt; ++i ) if ( bdf->chars[i]!=NULL ) {
-		for ( bv = bdf->chars[i]->views; bv!=NULL; bv=bv->next )
+	    for ( i=0; i<bdf->glyphcnt; ++i ) if ( bdf->glyphs[i]!=NULL ) {
+		for ( bv = bdf->glyphs[i]->views; bv!=NULL; bv=bv->next )
 		    AddMI(&sub[cnt++],bv->gw,bv->bc->changed,false);
 	    }
 	}
@@ -303,14 +303,14 @@ return;
 
     for ( fv = fv_list; fv!=NULL; fv = fv->next ) {
 	AddMI(shell,current, fv->gw,fv->sf->fontname, fv->sf->changed,true);
-	for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL ) {
-	    for ( cv = fv->sf->chars[i]->views; cv!=NULL; cv=cv->next )
+	for ( i=0; i<fv->sf->glyphcnt; ++i ) if ( fv->sf->glyphs[i]!=NULL ) {
+	    for ( cv = fv->sf->glyphs[i]->views; cv!=NULL; cv=cv->next )
 		AddMI(shell,current,cv->gw,cv->sc->name,cv->sc->changed,false);
 	}
 	for ( bdf= fv->sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
-	    for ( i=0; i<bdf->charcnt; ++i ) if ( bdf->chars[i]!=NULL ) {
-		for ( bv = bdf->chars[i]->views; bv!=NULL; bv=bv->next )
-		    AddMI(shell,current,bv->gw,fv->sf->chars[i]->name,
+	    for ( i=0; i<bdf->glyphcnt; ++i ) if ( bdf->glyphs[i]!=NULL ) {
+		for ( bv = bdf->glyphs[i]->views; bv!=NULL; bv=bv->next )
+		    AddMI(shell,current,bv->gw,fv->sf->glyphs[i]->name,
 			    bv->bc->changed,false);
 	    }
 	}

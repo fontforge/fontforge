@@ -2305,7 +2305,6 @@ SplineFont *SplineFontEmpty(void) {
     SplineFont *sf;
     sf = gcalloc(1,sizeof(SplineFont));
     sf->pfminfo.fstype = -1;
-    sf->encoding_name = &custom;
     sf->top_enc = -1;
     sf->macstyle = -1;
     sf->desired_row_cnt = default_fv_row_count; sf->desired_col_cnt = default_fv_col_count;
@@ -2321,12 +2320,11 @@ SplineFont *SplineFontEmpty(void) {
 return( sf );
 }
 
-SplineFont *SplineFontBlank(Encoding *encoding_name,int charcnt) {
+SplineFont *SplineFontBlank(int charcnt) {
     SplineFont *sf;
     char buffer[200];
     time_t now;
     struct tm *tm;
-    extern int greeknames;
     const char *author = GetAuthor();
 
     sf = SplineFontEmpty();
@@ -2352,12 +2350,9 @@ SplineFont *SplineFontBlank(Encoding *encoding_name,int charcnt) {
     sf->version = copy("001.000");
     sf->ascent = rint(new_em_size*.8); sf->descent = new_em_size-sf->ascent;
     sf->upos = -rint(new_em_size*.1); sf->uwidth = rint(new_em_size*.05);		/* defaults for cff */
-    sf->charcnt = charcnt;
-    sf->chars = gcalloc(charcnt,sizeof(SplineChar *));
-    if ( encoding_name==NULL )
-	encoding_name = &custom;
-    sf->encoding_name = encoding_name;
-    sf->uni_interp = interp_from_encoding(encoding_name,greeknames ? ui_greek : ui_none);
+    sf->glyphcnt = 0;
+    sf->glyphmax = charcnt;
+    sf->glyphs = gcalloc(charcnt,sizeof(SplineChar *));
     sf->pfminfo.fstype = -1;
     sf->order2 = false;
 return( sf );
@@ -2366,14 +2361,14 @@ return( sf );
 /* see also SFReencodeFont in fontinfo.c */
 SplineFont *SplineFontNew(void) {
     SplineFont *sf;
-    /* Create an ISO 8859-1 (Latin1) font, actually whatever default_encoding is */
-    int enclen=256;
-    enclen = default_encoding->char_cnt;
+    int enclen = default_encoding->char_cnt;
 
-    sf = SplineFontBlank(default_encoding,enclen);
+    sf = SplineFontBlank(enclen);
     sf->onlybitmaps = true;
     sf->new = true;
     sf->order2 = new_fonts_are_order2;
+
+    sf->map = EncMapNew(enclen,enclen,default_encoding);
 return( sf );
 }
 

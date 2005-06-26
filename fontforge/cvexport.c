@@ -559,7 +559,7 @@ return( 0 );
 	if ( (freetypecontext = FreeTypeFontContext(sc->parent,sc,NULL))==NULL )
 	    bdfc = SplineCharRasterize(sc,pixelsize);
 	else {
-	    bdfc = SplineCharFreeTypeRasterize(freetypecontext,sc->enc,pixelsize,1);
+	    bdfc = SplineCharFreeTypeRasterize(freetypecontext,sc->orig_pos,pixelsize,1);
 	    FreeTypeFreeContext(freetypecontext);
 	}
 	BCRegularizeBitmap(bdfc);
@@ -586,7 +586,7 @@ return( 0 );
 	if ( (freetypecontext = FreeTypeFontContext(sc->parent,sc,NULL))==NULL )
 	    bdfc = SplineCharAntiAlias(sc,pixelsize,(1<<(bitsperpixel/2)));
 	else {
-	    bdfc = SplineCharFreeTypeRasterize(freetypecontext,sc->enc,pixelsize,bitsperpixel);
+	    bdfc = SplineCharFreeTypeRasterize(freetypecontext,sc->orig_pos,pixelsize,bitsperpixel);
 	    FreeTypeFreeContext(freetypecontext);
 	}
 	BCRegularizeGreymap(bdfc);
@@ -676,7 +676,8 @@ static int BCExportXBM(char *filename,BDFChar *bdfc, int format) {
 return( ret );
 }
 
-static void MakeExportName(char *buffer, int blen,char *format_spec,SplineChar *sc) {
+static void MakeExportName(char *buffer, int blen,char *format_spec,
+	SplineChar *sc, EncMap *map) {
     char *end = buffer+blen-3;
     char *pt, *bend;
     char unicode[8];
@@ -713,7 +714,7 @@ static void MakeExportName(char *buffer, int blen,char *format_spec,SplineChar *
 		for ( pt=unicode; *pt!='\0' && buffer<bend; )
 		    *buffer++ = *pt++;
 	    } else if ( ch=='e' ) {
-		sprintf( unicode,"%d", sc->enc );
+		sprintf( unicode,"%d", map->backmap[sc->orig_pos] );
 		for ( pt=unicode; *pt!='\0' && buffer<bend; )
 		    *buffer++ = *pt++;
 	    } else
@@ -723,17 +724,17 @@ static void MakeExportName(char *buffer, int blen,char *format_spec,SplineChar *
     *buffer = '\0';
 }
 
-void ScriptExport(SplineFont *sf, BDFFont *bdf, int format, int enc,
-	char *format_spec) {
+void ScriptExport(SplineFont *sf, BDFFont *bdf, int format, int gid,
+	char *format_spec,EncMap *map) {
     char buffer[100];
-    SplineChar *sc = sf->chars[enc];
-    BDFChar *bc = bdf!=NULL ? bdf->chars[enc] : NULL;
+    SplineChar *sc = sf->glyphs[gid];
+    BDFChar *bc = bdf!=NULL ? bdf->glyphs[gid] : NULL;
     int good=true;
 
     if ( sc==NULL )
 return;
 
-    MakeExportName(buffer,sizeof(buffer),format_spec,sc);
+    MakeExportName(buffer,sizeof(buffer),format_spec,sc,map);
 
     if ( format==0 )
 	good = ExportEPS(buffer,sc);

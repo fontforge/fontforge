@@ -44,7 +44,7 @@ return( true );
 return( false );
 }
 
-static int AssignPtNumbers(MMSet *mm,int enc) {
+static int AssignPtNumbers(MMSet *mm,int gid) {
     /* None of the instances has fixed point numbers. Make them match */
     int cnt=0;
     SplineSet **ss;
@@ -55,8 +55,8 @@ static int AssignPtNumbers(MMSet *mm,int enc) {
     ss = galloc((mm->instance_count+1)*sizeof(SplineSet *));
     sp = galloc((mm->instance_count+1)*sizeof(SplinePoint *));
     for ( i=0; i<mm->instance_count; ++i )
-	ss[i] = mm->instances[i]->chars[enc]->layers[ly_fore].splines;
-    ss[i] = mm->normal->chars[enc]->layers[ly_fore].splines;
+	ss[i] = mm->instances[i]->glyphs[gid]->layers[ly_fore].splines;
+    ss[i] = mm->normal->glyphs[gid]->layers[ly_fore].splines;
 
     if ( ss[0]==NULL ) {
 	stillmore = false;
@@ -168,12 +168,12 @@ return( false );
 return( ret );
 }
 
-static int MatchPoints(SplineFont *sffixed, SplineFont *sfother, int enc) {
+static int MatchPoints(SplineFont *sffixed, SplineFont *sfother, int gid) {
     SplineChar *fixed, *other;
     SplineSet *ss1, *ss2;
     SplinePoint *sp1, *sp2;
 
-    fixed = sffixed->chars[enc]; other = sfother->chars[enc];
+    fixed = sffixed->glyphs[gid]; other = sfother->glyphs[gid];
 
     if ( PtNumbersAreSet(other)) {
 	/* Point numbers must match exactly, both are fixed */
@@ -235,46 +235,46 @@ return( ss1==NULL && ss2==NULL );
     }
 }
 
-int ContourPtNumMatch(MMSet *mm, int enc) {
+int ContourPtNumMatch(MMSet *mm, int gid) {
     SplineFont *sf;
     int i;
 
     if ( !mm->apple )
 return( false );
 
-    if ( enc>=mm->normal->charcnt )
+    if ( gid>=mm->normal->glyphcnt )
 return( false );
-    if ( !SCWorthOutputting(mm->normal->chars[enc] ) ) {
+    if ( !SCWorthOutputting(mm->normal->glyphs[gid] ) ) {
 	for ( i=0; i<mm->instance_count; ++i ) {
-	    if ( enc>=mm->instances[i]->charcnt )
+	    if ( gid>=mm->instances[i]->glyphcnt )
 return( false );
-	    if ( SCWorthOutputting(mm->instances[i]->chars[enc]))
+	    if ( SCWorthOutputting(mm->instances[i]->glyphs[gid]))
 return( false );
 	}
 return( true );		/* None is not worth outputting, and that's ok, they match */
     } else {
 	for ( i=0; i<mm->instance_count; ++i ) {
-	    if ( enc>=mm->instances[i]->charcnt )
+	    if ( gid>=mm->instances[i]->glyphcnt )
 return( false );
-	    if ( !SCWorthOutputting(mm->instances[i]->chars[enc]))
+	    if ( !SCWorthOutputting(mm->instances[i]->glyphs[gid]))
 return( false );
 	}
 	    /* All are worth outputting */
     }
 
-    if ( mm->normal->chars[enc]->layers[ly_fore].refs!=NULL && mm->normal->chars[enc]->layers[ly_fore].splines!=NULL )
+    if ( mm->normal->glyphs[gid]->layers[ly_fore].refs!=NULL && mm->normal->glyphs[gid]->layers[ly_fore].splines!=NULL )
 return( false );
     for ( i=0; i<mm->instance_count; ++i ) {
-	if ( mm->instances[i]->chars[enc]->layers[ly_fore].refs!=NULL && mm->instances[i]->chars[enc]->layers[ly_fore].splines!=NULL )
+	if ( mm->instances[i]->glyphs[gid]->layers[ly_fore].refs!=NULL && mm->instances[i]->glyphs[gid]->layers[ly_fore].splines!=NULL )
 return( false );
     }
-    if ( mm->normal->chars[enc]->layers[ly_fore].refs!=NULL ) {
+    if ( mm->normal->glyphs[gid]->layers[ly_fore].refs!=NULL ) {
 	RefChar *r;
 	int cnt, c;
-	for ( r=mm->normal->chars[enc]->layers[ly_fore].refs, cnt=0; r!=NULL; r=r->next )
+	for ( r=mm->normal->glyphs[gid]->layers[ly_fore].refs, cnt=0; r!=NULL; r=r->next )
 	    ++cnt;
 	for ( i=0; i<mm->instance_count; ++i ) {
-	    for ( r=mm->instances[i]->chars[enc]->layers[ly_fore].refs, c=0; r!=NULL; r=r->next )
+	    for ( r=mm->instances[i]->glyphs[gid]->layers[ly_fore].refs, c=0; r!=NULL; r=r->next )
 		++c;
 	    if ( c!=cnt )
 return( false );
@@ -282,11 +282,11 @@ return( false );
     }
 
     sf = NULL;
-    if ( PtNumbersAreSet(mm->normal->chars[enc]) )
+    if ( PtNumbersAreSet(mm->normal->glyphs[gid]) )
 	sf = mm->normal;
     else {
 	for ( i=0; i<mm->instance_count; ++i ) {
-	    if ( PtNumbersAreSet(mm->instances[i]->chars[enc])) {
+	    if ( PtNumbersAreSet(mm->instances[i]->glyphs[gid])) {
 		sf = mm->instances[i];
 	break;
 	    }
@@ -294,12 +294,12 @@ return( false );
     }
     if ( sf==NULL )
 	/* No instance has fixed points. Make sure all fonts are consistent */
-return( AssignPtNumbers(mm,enc));
+return( AssignPtNumbers(mm,gid));
 
-    if ( sf!=mm->normal && !MatchPoints(sf,mm->normal,enc))
+    if ( sf!=mm->normal && !MatchPoints(sf,mm->normal,gid))
 return( false );
     for ( i=0; i<mm->instance_count; ++i ) if ( sf!=mm->instances[i] ) {
-	if ( !MatchPoints(sf, mm->instances[i],enc) )
+	if ( !MatchPoints(sf, mm->instances[i],gid) )
 return( false );
     }
 return( true );
@@ -317,7 +317,7 @@ static int SCPointCount(SplineChar *sc) {
 return( ptcnt );
 }
 
-int16 **SCFindDeltas(MMSet *mm, int enc, int *_ptcnt) {
+int16 **SCFindDeltas(MMSet *mm, int gid, int *_ptcnt) {
     /* When figuring out the deltas the first thing we must do is figure */
     /*  out each point's number */
     int i, j, k, l, cnt, ptcnt;
@@ -326,20 +326,18 @@ int16 **SCFindDeltas(MMSet *mm, int enc, int *_ptcnt) {
     SplinePoint *sp1, *sp2;
     RefChar *r1, *r2;
 
-    if ( !ContourPtNumMatch(mm,enc))
+    if ( !ContourPtNumMatch(mm,gid))
 return( NULL );
-    if ( !SCWorthOutputting(mm->normal->chars[enc]))
-return( NULL );
-    if ( SCDuplicate(mm->normal->chars[enc])!=mm->normal->chars[enc] )
+    if ( !SCWorthOutputting(mm->normal->glyphs[gid]))
 return( NULL );
 
-    *_ptcnt = ptcnt = SCPointCount(mm->normal->chars[enc])+4;
+    *_ptcnt = ptcnt = SCPointCount(mm->normal->glyphs[gid])+4;
     deltas = galloc(2*mm->instance_count*sizeof(int16 *));
     for ( i=0; i<2*mm->instance_count; ++i )
 	deltas[i] = gcalloc(ptcnt,sizeof(int16));
     for ( i=0; i<mm->instance_count; ++i ) {
-	for ( ss1=mm->normal->chars[enc]->layers[ly_fore].splines,
-		  ss2=mm->instances[i]->chars[enc]->layers[ly_fore].splines;
+	for ( ss1=mm->normal->glyphs[gid]->layers[ly_fore].splines,
+		  ss2=mm->instances[i]->glyphs[gid]->layers[ly_fore].splines;
 		ss1!=NULL && ss2!=NULL ;
 		ss1 = ss1->next, ss2=ss2->next ) {
 	    for ( sp1=ss1->first, sp2=ss2->first; ; ) {
@@ -359,8 +357,8 @@ return( NULL );
 	    }
 	}
 	for ( cnt=0,
-		r1=mm->normal->chars[enc]->layers[ly_fore].refs,
-		r2=mm->instances[i]->chars[enc]->layers[ly_fore].refs;
+		r1=mm->normal->glyphs[gid]->layers[ly_fore].refs,
+		r2=mm->instances[i]->glyphs[gid]->layers[ly_fore].refs;
 		r1!=NULL && r2!=NULL;
 		r1=r1->next, r2=r2->next, ++cnt ) {
 	    deltas[2*i][cnt] = r2->transform[4]-r1->transform[4];
@@ -368,11 +366,11 @@ return( NULL );
 	}
 	/* Phantom points */
 	deltas[2*i][ptcnt-4] = 0; deltas[2*i+1][ptcnt-4] = 0;	/* lbearing */
-	deltas[2*i][ptcnt-3] = mm->instances[i]->chars[enc]->width -mm->normal->chars[enc]->width;
+	deltas[2*i][ptcnt-3] = mm->instances[i]->glyphs[gid]->width -mm->normal->glyphs[gid]->width;
 		deltas[2*i+1][ptcnt-3] = 0;			/* horizontal advance */
 	deltas[2*i][ptcnt-2] = 0; deltas[2*i+1][ptcnt-2] = 0;	/* top bearing */
 	deltas[2*i][ptcnt-1] = 0;				/* vertical advance */
-		deltas[2*i+1][ptcnt-1] = mm->instances[i]->chars[enc]->vwidth -mm->normal->chars[enc]->vwidth;	/* horizontal advance */
+		deltas[2*i+1][ptcnt-1] = mm->instances[i]->glyphs[gid]->vwidth -mm->normal->glyphs[gid]->vwidth;	/* horizontal advance */
     }
 
     /* Ok, each delta now contains the difference between the instance[i] points */
@@ -657,13 +655,13 @@ static void ttf_dumpgvar(struct alltabs *at, MMSet *mm) {
     start = ftell( at->gvar );
     last = -1;
     sf = mm->normal;
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 ) {
-	deltas = SCFindDeltas(mm,i,&ptcnt);
+    for ( i=0; i<at->gi.gcnt; ++i ) if ( at->gi.bygid[i]!=-1 ) {
+	deltas = SCFindDeltas(mm,at->gi.bygid[i],&ptcnt);
 	if ( deltas==NULL )
     continue;
 	here = ftell(at->gvar);
 	fseek(at->gvar,glyphoffs+(last+1)*4,SEEK_SET);
-	for ( ; last< sf->chars[i]->ttf_glyph; ++last )
+	for ( ; last< i; ++last )
 	    putlong(at->gvar,here-start);
 	fseek(at->gvar,here,SEEK_SET);
 	putshort(at->gvar,mm->instance_count);
@@ -808,9 +806,9 @@ void ttf_dumpvariations(struct alltabs *at, SplineFont *sf) {
     MMSet *mm = sf->mm;
     int i,j;
 
-    for ( j=0; j<sf->charcnt; ++j ) if ( sf->chars[j]!=NULL ) {
-	for ( i=0; i<mm->instance_count; ++i ) if ( mm->instances[i]->chars[j]!=NULL )
-	    mm->instances[i]->chars[j]->ttf_glyph = sf->chars[j]->ttf_glyph;
+    for ( j=0; j<sf->glyphcnt; ++j ) if ( sf->glyphs[j]!=NULL ) {
+	for ( i=0; i<mm->instance_count; ++i ) if ( mm->instances[i]->glyphs[j]!=NULL )
+	    mm->instances[i]->glyphs[j]->ttf_glyph = sf->glyphs[j]->ttf_glyph;
     }
 
     ttf_dumpfvar(at,mm);

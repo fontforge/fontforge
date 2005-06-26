@@ -720,26 +720,22 @@ return( false );
     }
     if ( sc->parent->onlybitmaps ) {
 	for ( bdf = sc->parent->bitmaps; bdf!=NULL; bdf=bdf->next ) {
-	    if ( sc->enc<bdf->charcnt && bdf->chars[sc->enc]!=NULL )
+	    if ( sc->orig_pos<bdf->glyphcnt && bdf->glyphs[sc->orig_pos]!=NULL )
 return( false );
 	}
     }
-    if ( strcmp(sc->name,".null")==0 || strcmp(sc->name,"nonmarkingreturn")==0 )
-return(true);
-    if ( !sc->widthset &&
-	    (strcmp(sc->name,".notdef")==0 || sc->enc==sc->unicodeenc ||
-	     strcmp(sc->name,".null")==0 || strcmp(sc->name,"nonmarkingreturn")==0 ))
+    if ( !sc->widthset )
 return(true);
 
 return( false );
 }
 
-static void SFDDumpRefs(FILE *sfd,RefChar *refs, char *name) {
+static void SFDDumpRefs(FILE *sfd,RefChar *refs, char *name,EncMap *map) {
     RefChar *ref;
 
     for ( ref=refs; ref!=NULL; ref=ref->next ) if ( ref->sc!=NULL ) {
-	fprintf(sfd, "Ref: %d %d %c %g %g %g %g %g %g\n",
-		    ref->sc->enc, ref->sc->unicodeenc,
+	fprintf(sfd, "Refer: %d %d %c %g %g %g %g %g %g\n",
+		    ref->sc->orig_pos, ref->sc->unicodeenc,
 		    ref->selected?'S':'N',
 		    ref->transform[0], ref->transform[1], ref->transform[2],
 		    ref->transform[3], ref->transform[4], ref->transform[5]);
@@ -751,16 +747,14 @@ static char *joins[] = { "miter", "round", "bevel", "inher", NULL };
 static char *caps[] = { "butt", "round", "square", "inher", NULL };
 #endif
 
-static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
+static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map) {
     ImageList *img;
     KernPair *kp;
     PST *liga;
     int i;
 
     fprintf(sfd, "StartChar: %s\n", sc->name );
-    fprintf(sfd, "Encoding: %d %d %d\n", sc->enc, sc->unicodeenc, sc->orig_pos);
-    if ( sc->parent->compacted )
-	fprintf(sfd, "OldEncoding: %d\n", sc->old_enc);
+    fprintf(sfd, "Encoding: %d %d %d\n", map->backmap[sc->orig_pos], sc->unicodeenc, sc->orig_pos);
     fprintf(sfd, "Width: %d\n", sc->width );
     if ( sc->vwidth!=sc->parent->ascent+sc->parent->descent )
 	fprintf(sfd, "VWidth: %d\n", sc->vwidth );
@@ -825,7 +819,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
 		fprintf(sfd, "SplineSet\n" );
 		SFDDumpSplineSet(sfd,sc->layers[i].splines);
 	    }
-	    SFDDumpRefs(sfd,sc->layers[i].refs,sc->name);
+	    SFDDumpRefs(sfd,sc->layers[i].refs,sc->name,map);
 	}
     } else
 #endif
@@ -835,28 +829,28 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
 	    SFDDumpSplineSet(sfd,sc->layers[ly_fore].splines);
 	    SFDDumpMinimumDistances(sfd,sc);
 	}
-	SFDDumpRefs(sfd,sc->layers[ly_fore].refs,sc->name);
+	SFDDumpRefs(sfd,sc->layers[ly_fore].refs,sc->name,map);
     }
     if ( sc->kerns!=NULL ) {
-	fprintf( sfd, "KernsSLIF:" );
+	fprintf( sfd, "KernsSLIFO:" );
 	for ( kp = sc->kerns; kp!=NULL; kp=kp->next )
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    if ( (kp->off!=0 || kp->adjust!=NULL) && !SFDOmit(kp->sc)) {
-		fprintf( sfd, " %d %d %d %d", kp->sc->enc, kp->off, kp->sli, kp->flags );
+		fprintf( sfd, " %d %d %d %d", kp->sc->orig_pos, kp->off, kp->sli, kp->flags );
 		if ( kp->adjust!=NULL ) putc(' ',sfd);
 		SFDDumpDeviceTable(sfd,kp->adjust);
 	    }
 #else
 	    if ( kp->off!=0 && !SFDOmit(kp->sc))
-		fprintf( sfd, " %d %d %d %d", kp->sc->enc, kp->off, kp->sli, kp->flags );
+		fprintf( sfd, " %d %d %d %d", kp->sc->orig_pos, kp->off, kp->sli, kp->flags );
 #endif
 	fprintf(sfd, "\n" );
     }
     if ( sc->vkerns!=NULL ) {
-	fprintf( sfd, "VKernsSLIF:" );
+	fprintf( sfd, "VKernsSLIFO:" );
 	for ( kp = sc->vkerns; kp!=NULL; kp=kp->next )
 	    if ( kp->off!=0 && !SFDOmit(kp->sc))
-		fprintf( sfd, " %d %d %d %d", kp->sc->enc, kp->off, kp->sli, kp->flags );
+		fprintf( sfd, " %d %d %d %d", kp->sc->orig_pos, kp->off, kp->sli, kp->flags );
 	fprintf(sfd, "\n" );
     }
     for ( liga=sc->possub; liga!=NULL; liga=liga->next ) {
@@ -922,23 +916,23 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc) {
     fprintf(sfd,"EndChar\n" );
 }
 
-static void SFDDumpBitmapChar(FILE *sfd,BDFChar *bfc) {
-    struct enc85 enc;
+static void SFDDumpBitmapChar(FILE *sfd,BDFChar *bfc, int enc) {
+    struct enc85 encrypt;
     int i;
 
-    fprintf(sfd, "BDFChar: %d %d %d %d %d %d\n",
-	    bfc->enc, bfc->width, bfc->xmin, bfc->xmax, bfc->ymin, bfc->ymax );
-    memset(&enc,'\0',sizeof(enc));
-    enc.sfd = sfd;
+    fprintf(sfd, "BDFChar: %d %d %d %d %d %d %d\n",
+	    bfc->orig_pos, enc, bfc->width, bfc->xmin, bfc->xmax, bfc->ymin, bfc->ymax );
+    memset(&encrypt,'\0',sizeof(encrypt));
+    encrypt.sfd = sfd;
     for ( i=0; i<=bfc->ymax-bfc->ymin; ++i ) {
 	uint8 *pt = (uint8 *) (bfc->bitmap + i*bfc->bytes_per_line);
 	uint8 *end = pt + bfc->bytes_per_line;
 	while ( pt<end ) {
-	    SFDEnc85(&enc,*pt);
+	    SFDEnc85(&encrypt,*pt);
 	    ++pt;
 	}
     }
-    SFDEnc85EndEnc(&enc);
+    SFDEnc85EndEnc(&encrypt);
 #if 0
     fprintf(sfd,"\nEndBitmapChar\n" );
 #else
@@ -946,7 +940,7 @@ static void SFDDumpBitmapChar(FILE *sfd,BDFChar *bfc) {
 #endif
 }
 
-static void SFDDumpBitmapFont(FILE *sfd,BDFFont *bdf) {
+static void SFDDumpBitmapFont(FILE *sfd,BDFFont *bdf,EncMap *encm) {
     int i;
 
 #if defined(FONTFORGE_CONFIG_GDRAW)
@@ -954,11 +948,11 @@ static void SFDDumpBitmapFont(FILE *sfd,BDFFont *bdf) {
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_next_stage();
 #endif
-    fprintf( sfd, "BitmapFont: %d %d %d %d %d %s\n", bdf->pixelsize, bdf->charcnt,
+    fprintf( sfd, "BitmapFont: %d %d %d %d %d %s\n", bdf->pixelsize, bdf->glyphcnt,
 	    bdf->ascent, bdf->descent, BDFDepth(bdf), bdf->foundry?bdf->foundry:"" );
-    for ( i=0; i<bdf->charcnt; ++i ) {
-	if ( bdf->chars[i]!=NULL )
-	    SFDDumpBitmapChar(sfd,bdf->chars[i]);
+    for ( i=0; i<bdf->glyphcnt; ++i ) {
+	if ( bdf->glyphs[i]!=NULL )
+	    SFDDumpBitmapChar(sfd,bdf->glyphs[i],encm->backmap[i]);
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressNext();
 #elif defined(FONTFORGE_CONFIG_GTK)
@@ -1078,7 +1072,7 @@ return;
     fprintf( sfd,"EndMacFeatures\n" );
 }
 
-static void SFD_Dump(FILE *sfd,SplineFont *sf) {
+static void SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map) {
     int i, j, realcnt;
     BDFFont *bdf;
     struct ttflangname *ln;
@@ -1423,20 +1417,17 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	fprintf(sfd, "Ordering: %s\n", sf->ordering );
 	fprintf(sfd, "Supplement: %d\n", sf->supplement );
 	fprintf(sfd, "CIDVersion: %g\n", sf->cidversion );	/* This is a number whereas "version" is a string */
-    } else if ( sf->compacted ) {
-	fprintf(sfd, "Encoding: compacted\n" );
-	SFDDumpEncoding(sfd,sf->old_encname,"OldEncoding");
     } else
-	SFDDumpEncoding(sfd,sf->encoding_name,"Encoding");
+	SFDDumpEncoding(sfd,map->enc,"Encoding");
     fprintf( sfd, "UnicodeInterp: %s\n", unicode_interp_names[sf->uni_interp]);
 	
-    if ( sf->remap!=NULL ) {
-	struct remap *map;
+    if ( map->remap!=NULL ) {
+	struct remap *remap;
 	int n;
-	for ( n=0,map = sf->remap; map->infont!=-1; ++n, ++map );
+	for ( n=0,remap = map->remap; remap->infont!=-1; ++n, ++remap );
 	fprintf( sfd, "RemapN: %d\n", n );
-	for ( map = sf->remap; map->infont!=-1; ++map )
-	    fprintf(sfd, "Remap: %x %x %d\n", map->firstenc, map->lastenc, map->infont );
+	for ( remap = map->remap; remap->infont!=-1; ++remap )
+	    fprintf(sfd, "Remap: %x %x %d\n", remap->firstenc, remap->lastenc, remap->infont );
     }
     if ( sf->display_size!=0 )
 	fprintf( sfd, "DisplaySize: %d\n", sf->display_size );
@@ -1488,24 +1479,26 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
     if ( sf->subfontcnt!=0 ) {
 	int max;
 	for ( i=max=0; i<sf->subfontcnt; ++i )
-	    if ( max<sf->subfonts[i]->charcnt )
-		max = sf->subfonts[i]->charcnt;
+	    if ( max<sf->subfonts[i]->glyphcnt )
+		max = sf->subfonts[i]->glyphcnt;
 	fprintf(sfd, "BeginSubFonts: %d %d\n", sf->subfontcnt, max );
 	for ( i=0; i<sf->subfontcnt; ++i )
-	    SFD_Dump(sfd,sf->subfonts[i]);
+	    SFD_Dump(sfd,sf->subfonts[i],map);
 	fprintf(sfd, "EndSubFonts\n" );
     } else {
-	if ( sf->cidmaster!=NULL )
+	int enccount = map->enccount;
+	if ( sf->cidmaster!=NULL ) {
 	    realcnt = -1;
-	else {
+	    enccount = sf->glyphcnt;
+	} else {
 	    realcnt = 0;
-	    for ( i=0; i<sf->charcnt; ++i ) if ( !SFDOmit(sf->chars[i]) )
+	    for ( i=0; i<sf->glyphcnt; ++i ) if ( !SFDOmit(sf->glyphs[i]) )
 		++realcnt;
 	}
-	fprintf(sfd, "BeginChars: %d %d\n", sf->charcnt, realcnt );
-	for ( i=0; i<sf->charcnt; ++i ) {
-	    if ( !SFDOmit(sf->chars[i]) )
-		SFDDumpChar(sfd,sf->chars[i]);
+	fprintf(sfd, "BeginChars: %d %d\n", enccount, realcnt );
+	for ( i=0; i<sf->glyphcnt; ++i ) {
+	    if ( !SFDOmit(sf->glyphs[i]) )
+		SFDDumpChar(sfd,sf->glyphs[i],map);
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    GProgressNext();
 #elif defined(FONTFORGE_CONFIG_GTK)
@@ -1513,8 +1506,12 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 #endif
 	}
 	fprintf(sfd, "EndChars\n" );
+	for ( i=0; i<map->enccount; ++i ) {
+	    if ( map->map[i]!=-1 && map->backmap[map->map[i]]!=i )
+		fprintf( sfd, "DupEnc: %d %d\n", i, map->map[i]);
+	}
     }
-	
+
     if ( sf->bitmaps!=NULL )
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressChangeLine2R(_STR_SavingBitmaps);
@@ -1522,11 +1519,11 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf) {
 	gwwv_progress_change_line2(_("Saving Bitmaps"));
 #endif
     for ( bdf = sf->bitmaps; bdf!=NULL; bdf=bdf->next )
-	SFDDumpBitmapFont(sfd,bdf);
+	SFDDumpBitmapFont(sfd,bdf,map);
     fprintf(sfd, sf->cidmaster==NULL?"EndSplineFont\n":"EndSubSplineFont\n" );
 }
 
-static void SFD_MMDump(FILE *sfd,SplineFont *sf) {
+static void SFD_MMDump(FILE *sfd,SplineFont *sf,EncMap *map) {
     MMSet *mm = sf->mm;
     int max, i, j;
 
@@ -1570,24 +1567,24 @@ static void SFD_MMDump(FILE *sfd,SplineFont *sf) {
     }
 
     for ( i=max=0; i<mm->instance_count; ++i )
-	if ( max<mm->instances[i]->charcnt )
-	    max = mm->instances[i]->charcnt;
+	if ( max<mm->instances[i]->glyphcnt )
+	    max = mm->instances[i]->glyphcnt;
     fprintf(sfd, "BeginMMFonts: %d %d\n", mm->instance_count+1, max );
     for ( i=0; i<mm->instance_count; ++i )
-	SFD_Dump(sfd,mm->instances[i]);
-    SFD_Dump(sfd,mm->normal);
+	SFD_Dump(sfd,mm->instances[i],map);
+    SFD_Dump(sfd,mm->normal,map);
     fprintf(sfd, "EndMMFonts\n" );
 }
 
-static void SFDDump(FILE *sfd,SplineFont *sf) {
+static void SFDDump(FILE *sfd,SplineFont *sf,EncMap *map) {
     int i, realcnt;
     BDFFont *bdf;
 
-    realcnt = sf->charcnt;
+    realcnt = sf->glyphcnt;
     if ( sf->subfontcnt!=0 ) {
 	for ( i=0; i<sf->subfontcnt; ++i )
-	    if ( realcnt<sf->subfonts[i]->charcnt )
-		realcnt = sf->subfonts[i]->charcnt;
+	    if ( realcnt<sf->subfonts[i]->glyphcnt )
+		realcnt = sf->subfonts[i]->glyphcnt;
     }
     for ( i=0, bdf = sf->bitmaps; bdf!=NULL; bdf=bdf->next, ++i );
 #if defined(FONTFORGE_CONFIG_GDRAW)
@@ -1601,9 +1598,9 @@ static void SFDDump(FILE *sfd,SplineFont *sf) {
 #endif
     fprintf(sfd, "SplineFontDB: %.1f\n", 1.0 );
     if ( sf->mm != NULL )
-	SFD_MMDump(sfd,sf->mm->normal);
+	SFD_MMDump(sfd,sf->mm->normal,map);
     else
-	SFD_Dump(sfd,sf);
+	SFD_Dump(sfd,sf,map);
 #if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressEndIndicator();
 #elif defined(FONTFORGE_CONFIG_GTK)
@@ -1611,7 +1608,7 @@ static void SFDDump(FILE *sfd,SplineFont *sf) {
 #endif
 }
 
-int SFDWrite(char *filename,SplineFont *sf) {
+int SFDWrite(char *filename,SplineFont *sf,EncMap *map) {
     FILE *sfd = fopen(filename,"w");
     char *oldloc;
 
@@ -1620,12 +1617,12 @@ return( 0 );
     oldloc = setlocale(LC_NUMERIC,"C");
     if ( sf->cidmaster!=NULL )
 	sf=sf->cidmaster;
-    SFDDump(sfd,sf);
+    SFDDump(sfd,sf,map);
     setlocale(LC_NUMERIC,oldloc);
 return( !ferror(sfd) && fclose(sfd)==0 );
 }
 
-int SFDWriteBak(SplineFont *sf) {
+int SFDWriteBak(SplineFont *sf,EncMap *map) {
     char *buf/*, *pt, *bpt*/;
 
     if ( sf->cidmaster!=NULL )
@@ -1646,7 +1643,7 @@ int SFDWriteBak(SplineFont *sf) {
     rename(sf->filename,buf);
     free(buf);
 
-return( SFDWrite(sf->filename,sf));
+return( SFDWrite(sf->filename,sf,map));
 }
 
 /* ********************************* INPUT ********************************** */
@@ -2479,15 +2476,16 @@ return( lastap );
 return( ap );
 }
 
-static RefChar *SFDGetRef(FILE *sfd) {
+static RefChar *SFDGetRef(FILE *sfd, int was_enc) {
     RefChar *rf;
-    int enc=0, ch;
+    int orig=0, ch;
 
     rf = RefCharCreate();
-    getint(sfd,&enc);
-    rf->local_enc = enc;
-    if ( getint(sfd,&enc))
-	rf->unicode_enc = enc;
+    getint(sfd,&orig);
+    rf->orig_pos = orig;
+    rf->encoded = was_enc;
+    if ( getint(sfd,&orig))
+	rf->unicode_enc = orig;
     while ( isspace(ch=getc(sfd)));
     if ( ch=='S' ) rf->selected = true;
     getreal(sfd,&rf->transform[0]);
@@ -2549,6 +2547,33 @@ return;
 }
 #endif
 
+static void SFDSetEncMap(SplineFont *sf,int orig_pos,int enc) {
+    EncMap *map = sf->map;
+
+    if ( map==NULL )
+return;
+
+    if ( orig_pos>=map->backmax ) {
+	int old = map->backmax;
+	map->backmax = orig_pos+10;
+	map->backmap = grealloc(map->backmap,map->backmax*sizeof(int));
+	memset(map->backmap+old,-1,(map->backmax-old)*sizeof(int));
+    }
+    if ( map->backmap[orig_pos] == -1 )		/* backmap will not be unique if multiple encodings come from same glyph */
+	map->backmap[orig_pos] = enc;
+    if ( enc>=map->encmax ) {
+	int old = map->encmax;
+	map->encmax = orig_pos+10;
+	map->map = grealloc(map->map,map->encmax*sizeof(int));
+	memset(map->map+old,-1,(map->encmax-old)*sizeof(int));
+    }
+    if ( enc>=map->enccount )
+	map->enccount = enc+1;
+    map->map[enc] = orig_pos;
+}
+
+static int orig_pos;
+
 static SplineChar *SFDGetChar(FILE *sfd,SplineFont *sf) {
     SplineChar *sc;
     char tok[2000], ch;
@@ -2579,15 +2604,27 @@ return( NULL );
 return( NULL );
 	}
 	if ( strmatch(tok,"Encoding:")==0 ) {
-	    getint(sfd,&sc->enc);
+	    int enc;
+	    getint(sfd,&enc);
 	    getint(sfd,&sc->unicodeenc);
 	    while ( (ch=getc(sfd))==' ' || ch=='\t' );
 	    ungetc(ch,sfd);
 	    if ( ch!='\n' && ch!='\r' ) {
-		getusint(sfd,&sc->orig_pos);
+		getint(sfd,&sc->orig_pos);
+		if ( sc->orig_pos==65535 )
+		    sc->orig_pos = orig_pos++;
+		    /* An old mark meaning: "I don't know" */
+		else if ( sc->orig_pos+1 > orig_pos )
+		    orig_pos = sc->orig_pos+1;
+	    } else if ( sf->cidmaster!=NULL ) {		/* In cid fonts the orig_pos is just the cid */
+		sc->orig_pos = enc;
+	    } else {
+		sc->orig_pos = orig_pos++;
 	    }
+	    SFDSetEncMap(sf,sc->orig_pos,enc);
 	} else if ( strmatch(tok,"OldEncoding:")==0 ) {
-	    getint(sfd,&sc->old_enc);
+	    int old_enc;		/* Obsolete info */
+	    getint(sfd,&old_enc);
         } else if ( strmatch(tok,"Script:")==0 ) {
 	    /* Obsolete. But still used for parsing obsolete ligature/subs tags */
             while ( (ch=getc(sfd))==' ' || ch=='\t' );
@@ -2731,9 +2768,9 @@ return( NULL );
 	} else if ( strmatch(tok,"SplineSet")==0 ) {
 	    sc->layers[current_layer].splines = SFDGetSplineSet(sf,sfd);
 #endif
-	} else if ( strmatch(tok,"Ref:")==0 ) {
+	} else if ( strmatch(tok,"Ref:")==0 || strmatch(tok,"Refer:")==0 ) {
 	    if ( !multilayer ) current_layer = ly_fore;
-	    ref = SFDGetRef(sfd);
+	    ref = SFDGetRef(sfd,strmatch(tok,"Ref:")==0);
 	    if ( sc->layers[current_layer].refs==NULL )
 		sc->layers[current_layer].refs = ref;
 	    else
@@ -2754,11 +2791,14 @@ return( NULL );
 	} else if ( strmatch(tok,"Kerns:")==0 ||
 		strmatch(tok,"KernsSLI:")==0 ||
 		strmatch(tok,"KernsSLIF:")==0 ||
-		strmatch(tok,"VKernsSLIF:")==0 ) {
+		strmatch(tok,"VKernsSLIF:")==0 ||
+		strmatch(tok,"KernsSLIFO:")==0 ||
+		strmatch(tok,"VKernsSLIFO:")==0 ) {
 	    KernPair *kp, *last=NULL;
 	    int index, off, sli, flags=0;
 	    int hassli = (strmatch(tok,"KernsSLI:")==0);
 	    int isv = *tok=='V';
+	    int has_orig = strstr(tok,"SLIFO:")!=NULL;
 	    if ( strmatch(tok,"KernsSLIF:")==0 ) hassli=2;
 	    if ( strmatch(tok,"VKernsSLIF:")==0 ) hassli=2;
 	    while ( (hassli==1 && fscanf(sfd,"%d %d %d", &index, &off, &sli )==3) ||
@@ -2783,6 +2823,7 @@ return( NULL );
 		}
 		kp = chunkalloc(sizeof(KernPair));
 		kp->sc = (SplineChar *) index;
+		kp->kcid = has_orig;
 		kp->off = off;
 		kp->sli = sli;
 		kp->flags = flags;
@@ -2933,8 +2974,8 @@ return( NULL );
 	} else if ( strmatch(tok,"Comment:")==0 ) {
 	    sc->comment = SFDReadUTF7Str(sfd);
 	} else if ( strmatch(tok,"EndChar")==0 ) {
-	    if ( sc->enc<sf->charcnt )
-		sf->chars[sc->enc] = sc;
+	    if ( sc->orig_pos<sf->glyphcnt )
+		sf->glyphs[sc->orig_pos] = sc;
 #if 0		/* Auto recovery fails if we do this */
 	    else {
 		SplineCharFree(sc);
@@ -2951,25 +2992,47 @@ return( sc );
 static int SFDGetBitmapChar(FILE *sfd,BDFFont *bdf) {
     BDFChar *bfc;
     struct enc85 dec;
-    int i;
+    int i, enc, orig;
+    int width,xmax,xmin,ymax,ymin;
+    EncMap *map;
+    int ch;
 
     bfc = chunkalloc(sizeof(BDFChar));
+    map = bdf->sf->map;
     
-    if ( getint(sfd,&bfc->enc)!=1 || bfc->enc<0 )
+    if ( getint(sfd,&orig)!=1 || orig<0 )
 return( 0 );
-    if ( getsint(sfd,&bfc->width)!=1 )
+    if ( getint(sfd,&enc)!=1 )
 return( 0 );
-    if ( getsint(sfd,&bfc->xmin)!=1 )
+    if ( getint(sfd,&width)!=1 )
 return( 0 );
-    if ( getsint(sfd,&bfc->xmax)!=1 || bfc->xmax<bfc->xmin )
+    if ( getint(sfd,&xmin)!=1 )
 return( 0 );
-    if ( getsint(sfd,&bfc->ymin)!=1 )
+    if ( getint(sfd,&xmax)!=1 )
 return( 0 );
-    if ( getsint(sfd,&bfc->ymax)!=1 || bfc->ymax<bfc->ymin )
+    if ( getint(sfd,&ymin)!=1 )
+return( 0 );
+    while ( (ch=getc(sfd))==' ');
+    ungetc(ch,sfd);
+    if ( ch=='\n' || ch=='\r' || getint(sfd,&ymax)!=1 ) {
+	/* Old style format, no orig_pos given, shift everything by 1 */
+	ymax = ymin;
+	ymin = xmax;
+	xmax = xmin;
+	xmin = width;
+	width = enc;
+	enc = orig;
+	orig = map->map[enc];
+    }
+    if ( enc<0 ||xmax<xmin || ymax<ymin )
 return( 0 );
 
-    bdf->chars[bfc->enc] = bfc;
-    bfc->sc = bdf->sf->chars[bfc->enc];
+    bfc->orig_pos = orig;
+    bfc->width = width;
+    bfc->ymax = ymax; bfc->ymin = ymin;
+    bfc->xmax = xmax; bfc->xmin = xmin;
+    bdf->glyphs[orig] = bfc;
+    bfc->sc = bdf->sf->glyphs[orig];
     if ( bdf->clut==NULL ) {
 	bfc->bytes_per_line = (bfc->xmax-bfc->xmin)/8 +1;
 	bfc->depth = 1;
@@ -2990,7 +3053,7 @@ return( 0 );
 	}
     }
     if ( bfc->sc==NULL ) {
-	bdf->chars[bfc->enc] = NULL;
+	bdf->glyphs[bfc->orig_pos] = NULL;
 	BDFCharFree(bfc);
     }
 return( 1 );
@@ -3000,14 +3063,13 @@ static int SFDGetBitmapFont(FILE *sfd,SplineFont *sf) {
     BDFFont *bdf, *prev;
     char tok[200];
     int pixelsize, ascent, descent, depth=1;
-    int ch;
+    int ch, enccount;
 
     bdf = gcalloc(1,sizeof(BDFFont));
-    bdf->encoding_name = sf->encoding_name;
 
     if ( getint(sfd,&pixelsize)!=1 || pixelsize<=0 )
 return( 0 );
-    if ( getint(sfd,&bdf->charcnt)!=1 || bdf->charcnt<0 )
+    if ( getint(sfd,&enccount)!=1 || enccount<0 )
 return( 0 );
     if ( getint(sfd,&ascent)!=1 || ascent<0 )
 return( 0 );
@@ -3036,7 +3098,8 @@ return( 0 );
 	prev->next = bdf;
     }
     bdf->sf = sf;
-    bdf->chars = gcalloc(bdf->charcnt,sizeof(BDFChar *));
+    bdf->glyphcnt = sf->glyphcnt;
+    bdf->glyphs = gcalloc(bdf->glyphcnt,sizeof(BDFChar *));
 
     while ( getname(sfd,tok)==1 ) {
 	if ( strcmp(tok,"BDFChar:")==0 )
@@ -3062,65 +3125,123 @@ static void SFDFixupRef(SplineChar *sc,RefChar *ref) {
     SCMakeDependent(sc,ref->sc);
 }
 
+/* Look for character duplicates, such as might be generated by having the same */
+/*  glyph at two encoding slots */
+/* This is an obsolete convention, supported now only in sfd files */
+/* I think it is ok if something depends on this character, because the */
+/*  code that handles references will automatically unwrap it down to be base */
+static SplineChar *SCDuplicate(SplineChar *sc) {
+    SplineChar *matched = sc;
+
+    if ( sc==NULL || sc->parent==NULL || sc->parent->cidmaster!=NULL )
+return( sc );		/* Can't do this in CID keyed fonts */
+
+    if ( sc->layer_cnt!=2 )
+return( sc );
+
+    while ( sc->layers[ly_fore].refs!=NULL &&
+	    sc->layers[ly_fore].refs->sc!=NULL &&	/* Can happen if we are called during font loading before references are fixed up */
+	    sc->layers[ly_fore].refs->next==NULL && 
+	    sc->layers[ly_fore].refs->transform[0]==1 && sc->layers[ly_fore].refs->transform[1]==0 &&
+	    sc->layers[ly_fore].refs->transform[2]==0 && sc->layers[ly_fore].refs->transform[3]==1 &&
+	    sc->layers[ly_fore].refs->transform[4]==0 && sc->layers[ly_fore].refs->transform[5]==0 ) {
+	char *basename = sc->layers[ly_fore].refs->sc->name;
+	int len = strlen(basename);
+	if ( strncmp(sc->name,basename,len)==0 &&
+		(sc->name[len]=='.' || sc->name[len]=='\0'))
+	    matched = sc->layers[ly_fore].refs->sc;
+	sc = sc->layers[ly_fore].refs->sc;
+    }
+return( matched );
+}
+
 static void SFDFixupRefs(SplineFont *sf) {
     int i, isv;
     RefChar *refs, *rnext, *rprev;
     /*int isautorecovery = sf->changed;*/
     KernPair *kp, *prev, *next;
+    EncMap *map = sf->map;
+    int layer;
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	SplineChar *sc = sf->glyphs[i];
 	/* A changed character is one that has just been recovered */
 	/*  unchanged characters will already have been fixed up */
 	/* Er... maybe not. If the character being recovered is refered to */
 	/*  by another character then we need to fix up that other char too*/
-	/*if ( isautorecovery && !sf->chars[i]->changed )*/
+	/*if ( isautorecovery && !sc->changed )*/
     /*continue;*/
-	rprev = NULL;
-	for ( refs = sf->chars[i]->layers[ly_fore].refs; refs!=NULL; refs=rnext ) {
-	    rnext = refs->next;
-	    if ( refs->local_enc<sf->charcnt )
-		refs->sc = sf->chars[refs->local_enc];
-	    if ( refs->sc==NULL )
-		refs->sc = SFMakeChar(sf,refs->local_enc);
-	    if ( refs->sc!=NULL ) {
-		refs->unicode_enc = refs->sc->unicodeenc;
-		refs->adobe_enc = getAdobeEnc(refs->sc->name);
-		rprev = refs;
-	    } else {
-		RefCharFree(refs);
-		if ( rprev!=NULL )
-		    rprev->next = rnext;
-		else
-		    sf->chars[i]->layers[ly_fore].refs = rnext;
+	for ( layer = ly_fore; layer<sc->layer_cnt; ++layer ) {
+	    rprev = NULL;
+	    for ( refs = sc->layers[layer].refs; refs!=NULL; refs=rnext ) {
+		rnext = refs->next;
+		if ( refs->encoded ) {		/* Old sfd format */
+		    if ( refs->orig_pos<map->encmax && map->map[refs->orig_pos]!=-1 )
+			refs->orig_pos = map->map[refs->orig_pos];
+		    else
+			refs->orig_pos = sf->glyphcnt;
+		    refs->encoded = false;
+		}
+		if ( refs->orig_pos<sf->glyphcnt )
+		    refs->sc = sf->glyphs[refs->orig_pos];
+		if ( refs->sc!=NULL ) {
+		    refs->unicode_enc = refs->sc->unicodeenc;
+		    refs->adobe_enc = getAdobeEnc(refs->sc->name);
+		    rprev = refs;
+		} else {
+		    RefCharFree(refs);
+		    if ( rprev!=NULL )
+			rprev->next = rnext;
+		    else
+			sc->layers[layer].refs = rnext;
+		}
 	    }
 	}
-	/*if ( isautorecovery && !sf->chars[i]->changed )*/
+	/* In old sfd files we used a peculiar idiom to represent a multiply */
+	/*  encoded glyph. Fix it up now. Remove the fake glyph and adjust the*/
+	/*  map */
+	/*if ( isautorecovery && !sc->changed )*/
     /*continue;*/
 	for ( isv=0; isv<2; ++isv ) {
-	    for ( prev = NULL, kp=isv?sf->chars[i]->vkerns : sf->chars[i]->kerns; kp!=NULL; kp=next ) {
+	    for ( prev = NULL, kp=isv?sc->vkerns : sc->kerns; kp!=NULL; kp=next ) {
+		int index = (int) (kp->sc);
 		next = kp->next;
-		if ( ((int) (kp->sc))>=sf->charcnt ) {
-		    fprintf( stderr, "Warning: Bad kerning information in glyph %s\n", sf->chars[i]->name );
+		if ( !kp->kcid ) {	/* It's encoded (old sfds), else orig */
+		    if ( ((int) (kp->sc))>=map->encmax || map->map[(int) (kp->sc)]==-1 )
+			index = sf->glyphcnt;
+		    else
+			index = map->map[(int) (kp->sc)];
+		}
+		if ( index>=sf->glyphcnt ) {
+		    fprintf( stderr, "Warning: Bad kerning information in glyph %s\n", sc->name );
 		    kp->sc = NULL;
 		} else
-		    kp->sc = sf->chars[(int) (kp->sc)];
+		    kp->sc = sf->glyphs[index];
 		if ( kp->sc!=NULL )
 		    prev = kp;
 		else{
 		    if ( prev!=NULL )
 			prev->next = next;
 		    else if ( isv )
-			sf->chars[i]->vkerns = next;
+			sc->vkerns = next;
 		    else
-			sf->chars[i]->kerns = next;
+			sc->kerns = next;
 		    chunkfree(kp,sizeof(KernPair));
 		}
 	    }
 	}
+	if ( SCDuplicate(sc)!=sc ) {
+	    SplineChar *base = SCDuplicate(sc);
+	    int orig = sc->orig_pos, enc = sf->map->backmap[orig];
+	    SplineCharFree(sc);
+	    sf->glyphs[i]=NULL;
+	    sf->map->backmap[orig] = -1;
+	    sf->map->map[enc] = base->orig_pos;
+	}
     }
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	for ( refs = sf->chars[i]->layers[ly_fore].refs; refs!=NULL; refs=refs->next ) {
-	    SFDFixupRef(sf->chars[i],refs);
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	for ( refs = sf->glyphs[i]->layers[ly_fore].refs; refs!=NULL; refs=refs->next ) {
+	    SFDFixupRef(sf->glyphs[i],refs);
 	}
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressNext();
@@ -3128,6 +3249,9 @@ static void SFDFixupRefs(SplineFont *sf) {
 	gwwv_progress_next();
 #endif
     }
+    if ( sf->cidmaster==NULL )
+	for ( i=sf->glyphcnt-1; i>=0 && sf->glyphs[i]==NULL; --i )
+	    sf->glyphcnt = i;
 }
 
 /* When we recover from an autosaved file we must be careful. If that file */
@@ -3135,23 +3259,27 @@ static void SFDFixupRefs(SplineFont *sf) {
 /*  dependent list will contain a dead pointer without this routine. Similarly*/
 /*  for kerning */
 /* We might have needed to do something for references except they've already */
-/*  got a local encoding field and passing through SFDFixupRefs will much their*/
+/*  got a orig_pos field and passing through SFDFixupRefs will munch their*/
 /*  SplineChar pointer */
 static void SFRemoveDependencies(SplineFont *sf) {
     int i;
     struct splinecharlist *dlist, *dnext;
     KernPair *kp;
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	for ( dlist = sf->chars[i]->dependents; dlist!=NULL; dlist = dnext ) {
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	for ( dlist = sf->glyphs[i]->dependents; dlist!=NULL; dlist = dnext ) {
 	    dnext = dlist->next;
 	    chunkfree(dlist,sizeof(*dlist));
 	}
-	sf->chars[i]->dependents = NULL;
-	for ( kp=sf->chars[i]->kerns; kp!=NULL; kp=kp->next )
-	    kp->sc = (SplineChar *) (kp->sc->enc);
-	for ( kp=sf->chars[i]->vkerns; kp!=NULL; kp=kp->next )
-	    kp->sc = (SplineChar *) (kp->sc->enc);
+	sf->glyphs[i]->dependents = NULL;
+	for ( kp=sf->glyphs[i]->kerns; kp!=NULL; kp=kp->next ) {
+	    kp->sc = (SplineChar *) (kp->sc->orig_pos);
+	    kp->kcid = true;		/* flag */
+	}
+	for ( kp=sf->glyphs[i]->vkerns; kp!=NULL; kp=kp->next ) {
+	    kp->sc = (SplineChar *) (kp->sc->orig_pos);
+	    kp->kcid = true;
+	}
     }
 }
 
@@ -3250,8 +3378,10 @@ static Encoding *SFDGetEncoding(FILE *sfd, char *tok, SplineFont *sf) {
     }
     if ( enc==NULL )
 	enc = &custom;
+#if 0
     if ( enc->is_compact )
 	sf->compacted = true;
+#endif
 return( enc );
 }
 
@@ -3628,10 +3758,10 @@ static void SFDCleanupAnchorClasses(SplineFont *sf) {
     for ( ac = sf->anchor; ac!=NULL; ac=ac->next ) {
 	if ( ac->script_lang_index==0xffff ) {
 	    scnt = 0;
-	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-		for ( ap = sf->chars[i]->anchor; ap!=NULL && ap->anchor!=ac; ap=ap->next );
+	    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+		for ( ap = sf->glyphs[i]->anchor; ap!=NULL && ap->anchor!=ac; ap=ap->next );
 		if ( ap!=NULL && scnt<S_MAX ) {
-		    uint32 script = SCScriptFromUnicode(sf->chars[i]);
+		    uint32 script = SCScriptFromUnicode(sf->glyphs[i]);
 		    if ( script==0 )
 	    continue;
 		    for ( j=0; j<scnt; ++j )
@@ -3668,7 +3798,7 @@ return( interp );
 static void SFDCleanupFont(SplineFont *sf) {
     SFDCleanupAnchorClasses(sf);
     if ( sf->uni_interp==ui_unset )
-	sf->uni_interp = interp_from_encoding(sf->encoding_name,ui_none);
+	sf->uni_interp = interp_from_encoding(sf->map->enc,ui_none);
 
     /* Fixup for an old bug */
     if ( sf->pfminfo.os2_winascent < sf->ascent/4 && !sf->pfminfo.winascent_add ) {
@@ -3699,10 +3829,23 @@ return;
     }
 }
 
+static void SFDSizeMap(EncMap *map,int glyphcnt,int enccnt) {
+    if ( glyphcnt>map->backmax ) {
+	map->backmap = grealloc(map->backmap,glyphcnt*sizeof(int));
+	memset(map->backmap+map->backmax,-1,(glyphcnt-map->backmax)*sizeof(int));
+	map->backmax = glyphcnt;
+    }
+    if ( enccnt>map->encmax ) {
+	map->map = grealloc(map->map,enccnt*sizeof(int));
+	memset(map->map+map->backmax,-1,(enccnt-map->encmax)*sizeof(int));
+	map->encmax = map->enccount = enccnt;
+    }
+}
+
 static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
     SplineFont *sf;
     SplineChar *sc;
-    int realcnt, i, eof, mappos=-1, ch, ch2, glyph;
+    int realcnt, i, eof, mappos=-1, ch, ch2;
     struct table_ordering *lastord = NULL;
     struct ttf_table *lastttf[2];
     KernClass *lastkc=NULL, *kc, *lastvkc=NULL;
@@ -3711,6 +3854,10 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
     struct axismap *lastaxismap = NULL;
     struct named_instance *lastnamedinstance = NULL;
     int pushedbacktok = false;
+    Encoding *enc = &custom;
+    struct remap *remap = NULL;
+
+    orig_pos = 0;		/* Only used for compatibility with extremely old sfd files */
 
     lastttf[0] = lastttf[1] = NULL;
 
@@ -3908,9 +4055,10 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    geteol(sfd,tok);
 	    sf->xuid = copy(tok);
 	} else if ( strmatch(tok,"Encoding:")==0 ) {
-	    sf->encoding_name = SFDGetEncoding(sfd,tok,sf);
+	    enc = SFDGetEncoding(sfd,tok,sf);
+	    if ( sf->map!=NULL ) sf->map->enc = enc;
 	} else if ( strmatch(tok,"OldEncoding:")==0 ) {
-	    sf->old_encname = SFDGetEncoding(sfd,tok,sf);
+	    /* old_encname =*/ (void) SFDGetEncoding(sfd,tok,sf);
 	} else if ( strmatch(tok,"UnicodeInterp:")==0 ) {
 	    sf->uni_interp = SFDGetUniInterp(sfd,tok,sf);
 	} else if ( strmatch(tok,"Registry:")==0 ) {
@@ -3924,18 +4072,19 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	} else if ( strmatch(tok,"RemapN:")==0 ) {
 	    int n;
 	    getint(sfd,&n);
-	    sf->remap = gcalloc(n+1,sizeof(struct remap));
-	    sf->remap[n].infont = -1;
+	    remap = gcalloc(n+1,sizeof(struct remap));
+	    remap[n].infont = -1;
 	    mappos = 0;
+	    if ( sf->map!=NULL ) sf->map->remap = remap;
 	} else if ( strmatch(tok,"Remap:")==0 ) {
 	    int f, l, p;
 	    gethex(sfd,&f);
 	    gethex(sfd,&l);
 	    getint(sfd,&p);
-	    if ( sf->remap!=NULL && sf->remap[mappos].infont!=-1 ) {
-		sf->remap[mappos].firstenc = f;
-		sf->remap[mappos].lastenc = l;
-		sf->remap[mappos].infont = p;
+	    if ( remap!=NULL && remap[mappos].infont!=-1 ) {
+		remap[mappos].firstenc = f;
+		remap[mappos].lastenc = l;
+		remap[mappos].infont = p;
 		mappos++;
 	    }
 	} else if ( strmatch(tok,"CIDVersion:")==0 ) {
@@ -4311,6 +4460,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    getint(sfd,&sf->subfontcnt);
 	    sf->subfonts = gcalloc(sf->subfontcnt,sizeof(SplineFont *));
 	    getint(sfd,&realcnt);
+	    sf->map = EncMap1to1(realcnt);
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    GProgressChangeStages(2);
 #elif defined(FONTFORGE_CONFIG_GTK)
@@ -4323,21 +4473,26 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 #endif
     break;
 	} else if ( strmatch(tok,"BeginChars:")==0 ) {
-	    getint(sfd,&sf->charcnt);
-	    if ( getint(sfd,&realcnt)!=1 ) {
+	    int charcnt;
+	    getint(sfd,&charcnt);
+	    if ( getint(sfd,&realcnt)!=1 || realcnt==-1 )
+		realcnt = charcnt;
+	    else
+		++realcnt;		/* value saved is max glyph, not glyph cnt */
 #if defined(FONTFORGE_CONFIG_GDRAW)
-		GProgressChangeTotal(sf->charcnt);
+	    GProgressChangeTotal(realcnt);
 #elif defined(FONTFORGE_CONFIG_GTK)
-		gwwv_progress_change_total(sf->charcnt);
+	    gwwv_progress_change_total(realcnt);
 #endif
-	    } else if ( realcnt!=-1 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GProgressChangeTotal(realcnt);
-#elif defined(FONTFORGE_CONFIG_GTK)
-		gwwv_progress_change_total(realcnt);
-#endif
+	    sf->glyphcnt = sf->glyphmax = realcnt;
+	    sf->glyphs = gcalloc(realcnt,sizeof(SplineChar *));
+	    if ( cidmaster!=NULL ) {
+		sf->map = cidmaster->map;
+	    } else {
+		sf->map = EncMapNew(charcnt,realcnt,enc);
+		sf->map->remap = remap;
 	    }
-	    sf->chars = gcalloc(sf->charcnt,sizeof(SplineChar *));
+	    SFDSizeMap(sf->map,sf->glyphcnt,charcnt);
     break;
 #if HANYANG
 	} else if ( strmatch(tok,"BeginCompositionRules")==0 ) {
@@ -4350,7 +4505,6 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
     }
 
     if ( sf->subfontcnt!=0 ) {
-	int max,k;
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressChangeStages(2*sf->subfontcnt);
 #elif defined(FONTFORGE_CONFIG_GTK)
@@ -4364,17 +4518,6 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 		gwwv_progress_next_stage();
 #endif
 	    sf->subfonts[i] = SFD_GetFont(sfd,sf,tok);
-	}
-	max = 0;
-	for ( i=0; i<sf->subfontcnt; ++i )
-	    if ( sf->subfonts[i]->charcnt>max ) max = sf->subfonts[i]->charcnt;
-	for ( k=0; k<max; ++k ) {
-	    for ( i=0; i<sf->subfontcnt; ++i )
-		if ( k<sf->subfonts[i]->charcnt &&
-			sf->subfonts[i]->chars[k]!=NULL ) {
-		    sf->subfonts[i]->chars[k]->orig_pos = k;
-	    break;
-		}
 	}
     } else if ( sf->mm!=NULL ) {
 	MMSet *mm = sf->mm;
@@ -4405,12 +4548,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	SplineFontFree(sf);
 	sf = mm->normal;
     } else {
-	glyph = 0;
 	while ( (sc = SFDGetChar(sfd,sf))!=NULL ) {
-	    if ( sc->orig_pos==0xffff )
-		sc->orig_pos = glyph++;
-	    else
-		glyph = sc->orig_pos+1;
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    GProgressNext();
 #elif defined(FONTFORGE_CONFIG_GTK)
@@ -4434,6 +4572,12 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
     break;
 	else if ( strcmp(tok,"BitmapFont:")==0 )
 	    SFDGetBitmapFont(sfd,sf);
+	else if ( strmatch(tok,"DupEnc:")==0 ) {
+	    int enc, orig;
+	    if ( getint(sfd,&enc) && getint(sfd,&orig) && sf->map!=NULL ) {
+		SFDSetEncMap(sf,orig,enc);
+	    }
+	}
     }
     SFDCleanupFont(sf);
 return( sf );
@@ -4461,6 +4605,7 @@ SplineFont *SFDRead(char *filename) {
     SplineFont *sf=NULL;
     char *oldloc;
     char tok[2000];
+    int version;
 
     if ( sfd==NULL )
 return( NULL );
@@ -4470,7 +4615,7 @@ return( NULL );
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_change_stages(2);
 #endif
-    if ( SFDStartsCorrectly(sfd,tok) )
+    if ( (version = SFDStartsCorrectly(sfd,tok)) )
 	sf = SFD_GetFont(sfd,NULL,tok);
     setlocale(LC_NUMERIC,oldloc);
     if ( sf!=NULL ) {
@@ -4563,8 +4708,12 @@ return( false );
 	if ( getname(asfd,tok)!=1 )
 return( false );
     }
-    if ( sf->encoding_name!=newmap )
-	SFReencodeFont(sf,newmap);
+    if ( sf->map->enc!=newmap ) {
+	EncMap *map = EncMapFromEncoding(sf,newmap);
+	EncMapFree(sf->map);
+	sf->map = map;
+    }
+    temp.map = sf->map;
     if ( strcmp(tok,"Order2:")==0 ) {
 	getint(asfd,&order2);
 	if ( getname(asfd,tok)!=1 )
@@ -4594,24 +4743,24 @@ return(false);
     SFRemoveDependencies(sf);
 
     getint(asfd,&cnt);
-    if ( cnt>sf->charcnt ) {
-	sf->chars = grealloc(sf->chars,cnt*sizeof(SplineChar *));
-	for ( i=sf->charcnt; i<cnt; ++i )
-	    sf->chars[i] = NULL;
+    if ( cnt>sf->glyphcnt ) {
+	sf->glyphs = grealloc(sf->glyphs,cnt*sizeof(SplineChar *));
+	for ( i=sf->glyphcnt; i<cnt; ++i )
+	    sf->glyphs[i] = NULL;
     }
     while ( (sc = SFDGetChar(asfd,&temp))!=NULL ) {
 	ssf = sf;
 	for ( k=0; k<sf->subfontcnt; ++k ) {
-	    if ( sc->enc<sf->subfonts[k]->charcnt ) {
+	    if ( sc->orig_pos<sf->subfonts[k]->glyphcnt ) {
 		ssf = sf->subfonts[k];
-		if ( SCWorthOutputting(ssf->chars[sc->enc]))
+		if ( SCWorthOutputting(ssf->glyphs[sc->orig_pos]))
 	break;
 	    }
 	}
-	if ( sc->enc<ssf->charcnt ) {
-	    if ( ssf->chars[sc->enc]!=NULL )
-		SplineCharFree(ssf->chars[sc->enc]);
-	    ssf->chars[sc->enc] = sc;
+	if ( sc->orig_pos<ssf->glyphcnt ) {
+	    if ( ssf->glyphs[sc->orig_pos]!=NULL )
+		SplineCharFree(ssf->glyphs[sc->orig_pos]);
+	    ssf->glyphs[sc->orig_pos] = sc;
 	    sc->parent = ssf;
 	    sc->changed = true;
 	}
@@ -4683,7 +4832,7 @@ return(NULL);
 return( ret );
 }
 
-void SFAutoSave(SplineFont *sf) {
+void SFAutoSave(SplineFont *sf,EncMap *map) {
     int i, k, max;
     FILE *asfd;
     char *oldloc;
@@ -4697,14 +4846,14 @@ return;
     if ( asfd==NULL )
 return;
 
-    max = sf->charcnt;
+    max = sf->glyphcnt;
     for ( i=0; i<sf->subfontcnt; ++i )
-	if ( sf->subfonts[i]->charcnt>max ) max = sf->subfonts[i]->charcnt;
+	if ( sf->subfonts[i]->glyphcnt>max ) max = sf->subfonts[i]->glyphcnt;
 
     oldloc = setlocale(LC_NUMERIC,"C");
     if ( !sf->new && sf->origname!=NULL )	/* might be a new file */
 	fprintf( asfd, "Base: %s\n", sf->origname );
-    fprintf( asfd, "Encoding: %s\n", sf->encoding_name->enc_name );
+    fprintf( asfd, "Encoding: %s\n", map->enc->enc_name );
     fprintf( asfd, "UnicodeInterp: %s\n", unicode_interp_names[sf->uni_interp]);
     if ( sf->order2 )
 	fprintf( asfd, "Order2: %d\n", sf->order2 );
@@ -4714,14 +4863,14 @@ return;
     for ( i=0; i<max; ++i ) {
 	ssf = sf;
 	for ( k=0; k<sf->subfontcnt; ++k ) {
-	    if ( i<sf->subfonts[k]->charcnt ) {
+	    if ( i<sf->subfonts[k]->glyphcnt ) {
 		ssf = sf->subfonts[k];
-		if ( SCWorthOutputting(ssf->chars[i]))
+		if ( SCWorthOutputting(ssf->glyphs[i]))
 	break;
 	    }
 	}
-	if ( ssf->chars[i]!=NULL && ssf->chars[i]->changed )
-	    SFDDumpChar( asfd,ssf->chars[i]);
+	if ( ssf->glyphs[i]!=NULL && ssf->glyphs[i]->changed )
+	    SFDDumpChar( asfd,ssf->glyphs[i],map);
     }
     fprintf( asfd, "EndChars\n" );
     fprintf( asfd, "EndSplineFont\n" );
@@ -4756,7 +4905,7 @@ char **NamesReadSFD(char *filename) {
     FILE *sfd = fopen(filename,"r");
     char *oldloc;
     char tok[2000];
-    char **ret;
+    char **ret = NULL;
     int eof;
 
     if ( sfd==NULL )

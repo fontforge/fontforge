@@ -73,8 +73,8 @@ void SFShowLigatures(SplineFont *sf,SplineChar *searchfor) {
     PST *pst;
 
     while ( 1 ) {
-	for ( i=cnt=0; i<sf->charcnt; ++i ) {
-	    if ( (sc=sf->chars[i])!=NULL && (sc->layers[ly_fore].splines!=NULL || sc->layers[ly_fore].refs!=NULL) ) {
+	for ( i=cnt=0; i<sf->glyphcnt; ++i ) {
+	    if ( (sc=sf->glyphs[i])!=NULL && (sc->layers[ly_fore].splines!=NULL || sc->layers[ly_fore].refs!=NULL) ) {
 		for ( pst=sc->possub; pst!=NULL; pst=pst->next )
 			if ( pst->type==pst_ligature &&
 				(searchfor==NULL || PSTContains(pst->u.lig.components,searchfor->name))) {
@@ -134,7 +134,7 @@ void SFShowLigatures(SplineFont *sf,SplineChar *searchfor) {
     i = gwwv_choose(_("Ligatures"),(const unichar_t **) choices,cnt,0,_("Select a ligature to view"));
 #endif
     if ( i!=-1 && where[i]!=-1 )
-	CharViewCreate(sf->chars[where[i]],sf->fv);
+	CharViewCreate(sf->glyphs[where[i]],sf->fv,-1);
     free(where);
     for ( i=0; i<cnt; ++i )
 	free(choices[i]);
@@ -184,18 +184,18 @@ static int firstcmpr(const void *_k1, const void *_k2) {
     const struct kerns *k1 = _k1, *k2 = _k2;
 
     if ( k1->first==k2->first )		/* If same first char, use second char as tie breaker */
-return( k1->second->enc-k2->second->enc );
+return( k1->second->unicodeenc-k2->second->unicodeenc );
 
-return( k1->first->enc-k2->first->enc );
+return( k1->first->unicodeenc-k2->first->unicodeenc );
 }
 
 static int secondcmpr(const void *_k1, const void *_k2) {
     const struct kerns *k1 = _k1, *k2 = _k2;
 
     if ( k1->second==k2->second )		/* If same second char, use first char as tie breaker */
-return( k1->first->enc-k2->first->enc );
+return( k1->first->unicodeenc-k2->first->unicodeenc );
 
-return( k1->second->enc-k2->second->enc );
+return( k1->second->unicodeenc-k2->second->unicodeenc );
 }
 
 static int offcmpr(const void *_k1, const void *_k2) {
@@ -209,9 +209,9 @@ static int offcmpr(const void *_k1, const void *_k2) {
 return( off1-off2 );
 
     if ( k1->first!=k2->first )		/* If same first char, use second char as tie breaker */
-return( k1->first->enc-k2->first->enc );
+return( k1->first->unicodeenc-k2->first->unicodeenc );
 
-return( k1->second->enc-k2->second->enc );
+return( k1->second->unicodeenc-k2->second->unicodeenc );
 }
 
 static void KPSortEm(KPData *kpd,enum sortby sort_func) {
@@ -219,13 +219,13 @@ static void KPSortEm(KPData *kpd,enum sortby sort_func) {
 
     if ( sort_func==sb_first || sort_func==sb_second ) {
 	if ( kpd->sc!=NULL ) {
-	    oldenc = kpd->sc->enc;
-	    kpd->sc->enc = -1;
+	    oldenc = kpd->sc->unicodeenc;
+	    kpd->sc->unicodeenc = -1;
 	}
 	qsort(kpd->kerns,kpd->kcnt,sizeof(struct kerns),
 		sort_func==sb_first ? firstcmpr : secondcmpr );
 	if ( kpd->sc!=NULL )
-	    kpd->sc->enc = oldenc;
+	    kpd->sc->unicodeenc = oldenc;
     } else
 	qsort(kpd->kerns,kpd->kcnt,sizeof(struct kerns), offcmpr );
 
@@ -267,11 +267,11 @@ static void KPBuildKernList(KPData *kpd) {
 		}
 		++cnt;
 	    }
-	    for ( i=0; i<kpd->sf->charcnt; ++i ) if ( kpd->sf->chars[i]!=NULL ) {
-		for ( kp = kpd->sf->chars[i]->kerns; kp!=NULL; kp=kp->next ) {
+	    for ( i=0; i<kpd->sf->glyphcnt; ++i ) if ( kpd->sf->glyphs[i]!=NULL ) {
+		for ( kp = kpd->sf->glyphs[i]->kerns; kp!=NULL; kp=kp->next ) {
 		    if ( kp->sc == kpd->sc ) {
 			if ( kpd->kerns!=NULL ) {
-			    kpd->kerns[cnt].first = kpd->sf->chars[i];
+			    kpd->kerns[cnt].first = kpd->sf->glyphs[i];
 			    kpd->kerns[cnt].second = kp->sc;
 			    kpd->kerns[cnt].newoff = kp->off;
 			    kpd->kerns[cnt].newyoff = 0;
@@ -293,10 +293,10 @@ return;
 	}
     } else {
 	while ( 1 ) {
-	    for ( cnt=i=0; i<kpd->sf->charcnt; ++i ) if ( kpd->sf->chars[i]!=NULL ) {
-		for ( kp = kpd->sf->chars[i]->kerns; kp!=NULL; kp=kp->next ) {
+	    for ( cnt=i=0; i<kpd->sf->glyphcnt; ++i ) if ( kpd->sf->glyphs[i]!=NULL ) {
+		for ( kp = kpd->sf->glyphs[i]->kerns; kp!=NULL; kp=kp->next ) {
 		    if ( kpd->kerns!=NULL ) {
-			kpd->kerns[cnt].first = kpd->sf->chars[i];
+			kpd->kerns[cnt].first = kpd->sf->glyphs[i];
 			kpd->kerns[cnt].second = kp->sc;
 			kpd->kerns[cnt].newoff = kp->off;
 			kpd->kerns[cnt].newyoff = 0;
@@ -389,18 +389,18 @@ static void KPBuildAnchorList(KPData *kpd) {
     if ( kpd->sc!=NULL ) {
 	while ( 1 ) {
 	    cnt = 0;
-	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-		if ( (ac = AnchorClassMatch(kpd->sc,sf->chars[i],kpd->ac,&ap1,&ap2)) ||
-			(ac = AnchorClassMatch(sf->chars[i],kpd->sc,kpd->ac,&ap1,&ap2)) ) {
+	    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+		if ( (ac = AnchorClassMatch(kpd->sc,sf->glyphs[i],kpd->ac,&ap1,&ap2)) ||
+			(ac = AnchorClassMatch(sf->glyphs[i],kpd->sc,kpd->ac,&ap1,&ap2)) ) {
 		    if ( kpd->kerns!=NULL ) {
 			struct kerns *k = &kpd->kerns[cnt];
 			switch ( ap1->type ) {
 			  case at_cexit: case at_basechar: case at_baselig: case at_basemark:
 			    k->first = kpd->sc;
-			    k->second = sf->chars[i];
+			    k->second = sf->glyphs[i];
 			  break;
 			  case at_centry: case at_mark:
-			    k->first = sf->chars[i];
+			    k->first = sf->glyphs[i];
 			    k->second = kpd->sc;
 			    temp = ap1; ap1=ap2; ap2=temp;
 			  break;
@@ -428,18 +428,18 @@ return;
     } else {
 	while ( 1 ) {
 	    cnt = 0;
-	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->anchor ) {
+	    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL && sf->glyphs[i]->anchor ) {
 		if ( kpd->ac!=(AnchorClass *) -1 ) {
-		    for ( temp = sf->chars[i]->anchor; temp!=NULL && temp->anchor!=kpd->ac; temp=temp->next );
+		    for ( temp = sf->glyphs[i]->anchor; temp!=NULL && temp->anchor!=kpd->ac; temp=temp->next );
 		    if ( temp==NULL )
 	    continue;
 		}
-		for ( j=0; j<sf->charcnt; ++j ) if ( sf->chars[j]!=NULL ) {
-		    if ( (ac = AnchorClassMatch(sf->chars[i],sf->chars[j],kpd->ac,&ap1,&ap2)) ) {
+		for ( j=0; j<sf->glyphcnt; ++j ) if ( sf->glyphs[j]!=NULL ) {
+		    if ( (ac = AnchorClassMatch(sf->glyphs[i],sf->glyphs[j],kpd->ac,&ap1,&ap2)) ) {
 			if ( kpd->kerns!=NULL ) {
 			    struct kerns *k = &kpd->kerns[cnt];
-			    k->first = sf->chars[i];
-			    k->second = sf->chars[j];
+			    k->first = sf->glyphs[i];
+			    k->second = sf->glyphs[j];
 			    CheckLeftRight(k);
 			    if ( k->r2l ) {
 				SplineCharQuickBounds(k->second,&bb);
@@ -466,18 +466,12 @@ return;
 }
 
 static void KPScrollTo(KPData *kpd, unichar_t uch, enum sortby sort) {
-    int enc,i;
-
-    enc = SFFindChar(kpd->sf,uch,NULL);
-    if ( enc==-1 ) {
-	GDrawBeep(NULL);
-return;
-    }
+    int i;
 
     if ( sort==sb_first ) {
-	for ( i=0; i<kpd->kcnt && kpd->kerns[i].first->enc<enc; ++i );
+	for ( i=0; i<kpd->kcnt && kpd->kerns[i].first->unicodeenc<uch; ++i );
     } else {
-	for ( i=0; i<kpd->kcnt && kpd->kerns[i].second->enc<enc; ++i );
+	for ( i=0; i<kpd->kcnt && kpd->kerns[i].second->unicodeenc<uch; ++i );
     }
     if ( kpd->wh<=2 )
 	/* As is */;
@@ -574,11 +568,11 @@ static void KP_ExposeKerns(KPData *kpd,GWindow pixmap,GRect *rect) {
 
     for ( i=first; i<=last && i+kpd->off_top<kpd->kcnt; ++i ) {
 	kern = &kpd->kerns[i+kpd->off_top];
-	index1 = kern->first->enc;
-	if ( kpd->bdf->chars[index1]==NULL )
+	index1 = kern->first->orig_pos;
+	if ( kpd->bdf->glyphs[index1]==NULL )
 	    BDFPieceMeal(kpd->bdf,index1);
-	index2 = kern->second->enc;
-	if ( kpd->bdf->chars[index2]==NULL )
+	index2 = kern->second->orig_pos;
+	if ( kpd->bdf->glyphs[index2]==NULL )
 	    BDFPieceMeal(kpd->bdf,index2);
     }
 
@@ -601,10 +595,10 @@ static void KP_ExposeKerns(KPData *kpd,GWindow pixmap,GRect *rect) {
 	GDrawPushClip(pixmap,&subclip,&subold);
 
 	kern = &kpd->kerns[i+kpd->off_top];
-	index1 = kern->first->enc;
-	index2 = kern->second->enc;
-	bdfc1 = kpd->bdf->chars[index1];
-	bdfc2 = kpd->bdf->chars[index2];
+	index1 = kern->first->orig_pos;
+	index2 = kern->second->orig_pos;
+	bdfc1 = kpd->bdf->glyphs[index1];
+	bdfc2 = kpd->bdf->glyphs[index2];
 
 	BaseFillFromBDFC(&base,bdfc1);
 	base.trans = base.clut->trans_index = -1;
@@ -705,10 +699,10 @@ static BDFChar *KP_Inside(KPData *kpd, GEvent *e) {
 return( NULL );
 
     kern = &kpd->kerns[i];
-    index1 = kern->first->enc;
-    index2 = kern->second->enc;
-    bdfc1 = kpd->bdf->chars[index1];
-    bdfc2 = kpd->bdf->chars[index2];
+    index1 = kern->first->orig_pos;
+    index2 = kern->second->orig_pos;
+    bdfc1 = kpd->bdf->glyphs[index1];
+    bdfc2 = kpd->bdf->glyphs[index2];
     if ( bdfc1 ==NULL || bdfc2==NULL )
 return( NULL );
     if ( !kern->r2l )
@@ -996,13 +990,13 @@ return( true );
 	if ( !kpd->pressed && index<kpd->kcnt ) {
 	    sprintf( buffer, "%.20s %d U+%04x",
 		    kpd->kerns[index].first->name,
-		    kpd->kerns[index].first->enc,
+		    kpd->kerns[index].first->orig_pos,
 		    kpd->kerns[index].first->unicodeenc );
 	    if ( kpd->kerns[index].first->unicodeenc==-1 )
 		strcpy(buffer+strlen(buffer)-4, "????");
 	    sprintf( buffer+strlen(buffer), " + %.20s %d U+%04x",
 		    kpd->kerns[index].second->name,
-		    kpd->kerns[index].second->enc,
+		    kpd->kerns[index].second->orig_pos,
 		    kpd->kerns[index].second->unicodeenc );
 	    if ( kpd->kerns[index].second->unicodeenc==-1 )
 		strcpy(buffer+strlen(buffer)-4, "????");

@@ -92,7 +92,7 @@ static void MVVExpose(MetricsView *mv, GWindow pixmap, GEvent *event) {
 	}
 	y += mv->perchar[i].yoff;
 	bdfc = mv->bdf==NULL ?	mv->perchar[i].show :
-				mv->bdf->chars[mv->perchar[i].sc->enc];
+				mv->bdf->glyphs[mv->perchar[i].sc->orig_pos];
 	if ( bdfc==NULL )
     continue;
 	y += as-bdfc->ymax;
@@ -224,7 +224,7 @@ return;
 	else
 	    x += mv->perchar[i].xoff;
 	bdfc = mv->bdf==NULL ?	mv->perchar[i].show :
-				mv->bdf->chars[mv->perchar[i].sc->enc];
+				mv->bdf->glyphs[mv->perchar[i].sc->orig_pos];
 	if ( bdfc==NULL )
     continue;
 	x += bdfc->xmin;
@@ -316,7 +316,7 @@ return;
     } else
 	r.width += mv->perchar[i].xoff;
     bdfc = mv->bdf==NULL ? mv->perchar[i].show :
-			   mv->bdf->chars[mv->perchar[i].sc->enc];
+			   mv->bdf->glyphs[mv->perchar[i].sc->orig_pos];
     if ( bdfc==NULL )
 return;
     if ( bdfc->xmax+off+1>r.width ) r.width = bdfc->xmax+off+1;
@@ -698,7 +698,7 @@ return;
     }
     mv->bdf = bdf;
     for ( i=0; i<mv->charcnt; ++i ) {
-	bc = bdf==NULL?mv->perchar[i].show:bdf->chars[mv->perchar[i].sc->enc];
+	bc = bdf==NULL?mv->perchar[i].show:bdf->glyphs[mv->perchar[i].sc->orig_pos];
 	mv->perchar[i].dwidth = bc->width;
 	if ( i+1<mv->charcnt )
 	    mv->perchar[i+1].dx = mv->perchar[i].dx+bc->width+mv->perchar[i].kernafter;
@@ -1052,7 +1052,7 @@ static void MVSetPos(MetricsView *mv,int i,SplineChar *sc) {
 	BDFCharFree(mv->perchar[i].show);
 	mv->perchar[i].show = bdfc;
     } else
-	bdfc = mv->bdf->chars[mv->perchar[i].sc->enc];
+	bdfc = mv->bdf->glyphs[mv->perchar[i].sc->orig_pos];
     mv->perchar[i].dwidth = bdfc->width;
     if ( mv->vertical )
 	mv->perchar[i].dheight = rint(bdfc->sc->vwidth*mv->pixelsize/(double) (mv->fv->sf->ascent+mv->fv->sf->descent));
@@ -1115,16 +1115,14 @@ static void MVToggleVertical(MetricsView *mv) {
     MVSetAnchor(mv);
 }
 
-static SplineChar *SCFromUnicode(SplineFont *sf, int ch) {
-    int i = SFFindChar(sf,ch,NULL);
+static SplineChar *SCFromUnicode(SplineFont *sf, EncMap *map, int ch) {
+    int i = SFFindSlot(sf,map,ch,NULL);
 
     if ( i==-1 )
 return( NULL );
     else
-return( SFMakeChar(sf,i) );
+return( SFMakeChar(sf,map,i) );
 }
-
-#define SFContainsChar(sf,ch) (SFFindChar(sf,ch,NULL)!=-1)
 
 static void MVMoveFieldsBy(MetricsView *mv,int diff) {
     int i;
@@ -1191,7 +1189,7 @@ static int MVSetVSb(MetricsView *mv) {
 	min = -ybase;
 	max = mv->displayend-mv->topend-ybase;
 	for ( i=0; i<mv->charcnt; ++i ) {
-	    BDFChar *bdfc = mv->bdf==NULL ? mv->perchar[i].show : mv->bdf->chars[mv->perchar[i].sc->enc];
+	    BDFChar *bdfc = mv->bdf==NULL ? mv->perchar[i].show : mv->bdf->glyphs[mv->perchar[i].sc->orig_pos];
 	    if ( bdfc!=NULL ) {
 		if ( min>-bdfc->ymax ) min = -bdfc->ymax;
 		if ( max<-bdfc->ymin ) max = -bdfc->ymin;
@@ -1397,7 +1395,7 @@ return;					/* Nothing changed */
 
     missing = 0;
     for ( tpt=pt; tpt<ept; ++tpt )
-	if ( !SFContainsChar(mv->fv->sf,*tpt))
+	if ( SFFindSlot(mv->fv->sf,mv->fv->map,*tpt,NULL)==-1 )
 	    ++missing;
 
     if ( ept-pt-missing > ei-i ) {
@@ -1426,7 +1424,7 @@ return;					/* Nothing changed */
 	mv->charcnt += diff;
     }
     for ( j=i; pt<ept; ++pt ) {
-	SplineChar *sc = SCFromUnicode(mv->fv->sf,*pt);
+	SplineChar *sc = SCFromUnicode(mv->fv->sf,mv->fv->map,*pt);
 	if ( sc!=NULL )
 	    MVSetPos(mv,j++,sc);
     }
@@ -1576,6 +1574,7 @@ static void MVMenuClose(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void MVMenuOpenBitmap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    EncMap *map;
     int i;
 
     if ( mv->fv->sf->bitmaps==NULL )
@@ -1583,13 +1582,14 @@ return;
     for ( i=0; i<mv->charcnt; ++i )
 	if ( mv->perchar[i].selected )
     break;
+    map = mv->fv->map;
     if ( i!=mv->charcnt )
-	BitmapViewCreatePick(mv->perchar[i].sc->enc,mv->fv);
+	BitmapViewCreatePick(map->backmap[mv->perchar[i].sc->orig_pos],mv->fv);
 }
 
 static void MVMenuMergeKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
-    MergeKernInfo(mv->fv->sf);
+    MergeKernInfo(mv->fv->sf,mv->fv->map);
 }
 
 static void MVMenuOpenOutline(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -1600,7 +1600,7 @@ static void MVMenuOpenOutline(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	if ( mv->perchar[i].selected )
     break;
     if ( i!=mv->charcnt )
-	CharViewCreate(mv->perchar[i].sc,mv->fv);
+	CharViewCreate(mv->perchar[i].sc,mv->fv,-1);
 }
 
 static void MVMenuSave(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -1706,11 +1706,11 @@ return;
 	if ( onlycopydisplayed && mv->bdf==NULL ) {
 	    SCClearAll(sc);
 	} else if ( onlycopydisplayed ) {
-	    BCClearAll(mv->bdf->chars[i]);
+	    BCClearAll(mv->bdf->glyphs[sc->orig_pos]);
 	} else {
 	    SCClearAll(sc);
 	    for ( bdf=mv->fv->sf->bitmaps; bdf!=NULL; bdf = bdf->next )
-		BCClearAll(bdf->chars[i]);
+		BCClearAll(bdf->glyphs[sc->orig_pos]);
 	}
     }
 }
@@ -1853,7 +1853,7 @@ static void MVMenuCharInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	if ( mv->perchar[i].selected )
     break;
     if ( i!=-1 )
-	SCCharInfo(mv->perchar[i].sc);
+	SCCharInfo(mv->perchar[i].sc,mv->fv->map,-1);
 }
 
 static void MVMenuShowDependents(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -2227,9 +2227,9 @@ static void MVMenuScale(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void MVMenuInsertChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     SplineFont *sf = mv->fv->sf;
-    int i, j, pos = GotoChar(sf);
+    int i, j, pos = GotoChar(sf,mv->fv->map);
 
-    if ( pos==-1 || pos>=sf->charcnt )
+    if ( pos==-1 || pos>=mv->fv->map->enccount )
 return;
 
     for ( i=0; i<mv->charcnt; ++i )
@@ -2251,7 +2251,7 @@ return;
     }
     for ( j=mv->charcnt; j>i; --j )
 	MVSetPos(mv,j,mv->perchar[j-1].sc);
-    MVSetPos(mv,i,SFMakeChar(sf,pos));
+    MVSetPos(mv,i,SFMakeChar(sf,mv->fv->map,pos));
     MVDoSelect(mv,i);
     for ( ; i<mv->charcnt; ++i )
 	if ( i!=0 )
@@ -2264,31 +2264,34 @@ return;
 static void MVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     SplineFont *sf = mv->fv->sf;
-    int i, pos;
+    EncMap *map = mv->fv->map;
+    int i, pos, gid;
 
     for ( i=0; i<mv->charcnt; ++i )
 	if ( mv->perchar[i].selected )
     break;
     if ( i!=mv->charcnt ) {
 	if ( mi->mid == MID_Next ) {
-	    pos = mv->perchar[i].sc->enc+1;
+	    pos = map->backmap[mv->perchar[i].sc->orig_pos]+1;
 	} else if ( mi->mid==MID_Prev ) {
-	    pos = mv->perchar[i].sc->enc-1;
+	    pos = map->backmap[mv->perchar[i].sc->orig_pos]-1;
 	} else if ( mi->mid==MID_NextDef ) {
-	    for ( pos = mv->perchar[i].sc->enc+1; pos<sf->charcnt && sf->chars[pos]==NULL; ++pos );
-	    if ( pos>=sf->charcnt )
+	    for ( pos = map->backmap[mv->perchar[i].sc->orig_pos]+1;
+		    pos<map->enccount && ((gid=map->map[pos])==-1 || sf->glyphs[gid]==NULL); ++pos );
+	    if ( pos>=map->enccount )
 return;
 	} else if ( mi->mid==MID_PrevDef ) {
-	    for ( pos = mv->perchar[i].sc->enc-1; pos>=0 && sf->chars[pos]==NULL; --pos );
+	    for ( pos = map->backmap[mv->perchar[i].sc->orig_pos]-1;
+		    pos<map->enccount && ((gid=map->map[pos])==-1 || sf->glyphs[gid]==NULL); --pos );
 	    if ( pos<0 )
 return;
 	} else if ( mi->mid==MID_ReplaceChar ) {
-	    pos = GotoChar(sf);
+	    pos = GotoChar(sf,mv->fv->map);
 	    if ( pos<0 )
 return;
 	}
-	if ( pos>=0 && pos<mv->fv->sf->charcnt ) {
-	    MVSetPos(mv,i,SFMakeChar(sf,pos));
+	if ( pos>=0 && pos<map->enccount ) {
+	    MVSetPos(mv,i,SFMakeChar(sf,mv->fv->map,pos));
 	    /* May need to adjust start of current char if kerning changed */
 	    for ( ; i<mv->charcnt; ++i )
 		if ( i!=0 )
@@ -2306,7 +2309,7 @@ static void MVMenuFindInFontView(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     for ( i=0; i<mv->charcnt; ++i ) {
 	if ( mv->perchar[i].selected ) {
-	    FVChangeChar(mv->fv,mv->perchar[i].sc->enc);
+	    FVChangeChar(mv->fv,mv->fv->map->backmap[mv->perchar[i].sc->orig_pos]);
 	    GDrawSetVisible(mv->fv->gw,true);
 	    GDrawRaise(mv->fv->gw);
     break;
@@ -2785,15 +2788,15 @@ static void cblistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     int i, anyligs=0, anykerns=0;
     PST *pst;
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	for ( pst=sf->chars[i]->possub; pst!=NULL; pst=pst->next ) {
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	for ( pst=sf->glyphs[i]->possub; pst!=NULL; pst=pst->next ) {
 	    if ( pst->type==pst_ligature ) {
 		anyligs = true;
 		if ( anykerns )
     break;
 	    }
 	}
-	if ( (mv->vertical ? sf->chars[i]->vkerns : sf->chars[i]->kerns)!=NULL ) {
+	if ( (mv->vertical ? sf->glyphs[i]->vkerns : sf->glyphs[i]->kerns)!=NULL ) {
 	    anykerns = true;
 	    if ( anyligs )
     break;
@@ -3292,7 +3295,7 @@ static void _MVVMouse(MetricsView *mv,GEvent *event) {
 	if ( sc==NULL && within!=-1 )
 	    sc = mv->perchar[within].sc;
 	if ( sc!=NULL ) 
-	    SCPreparePopup(mv->gw,sc);
+	    SCPreparePopup(mv->gw,sc,mv->fv->map->remap,mv->fv->map->backmap[sc->orig_pos]);
 /* Don't allow any editing when displaying a bitmap font */
     } else if ( event->type == et_mousedown && mv->bdf==NULL ) {
 	CVPaletteDeactivate();
@@ -3370,9 +3373,9 @@ static void _MVVMouse(MetricsView *mv,GEvent *event) {
 	mv->pressedwidth = mv->pressedkern = false;
 	if ( within==-1 ) within = i;
 	if ( mv->bdf==NULL )
-	    CharViewCreate(mv->perchar[within].sc,mv->fv);
+	    CharViewCreate(mv->perchar[within].sc,mv->fv,-1);
 	else
-	    BitmapViewCreate(mv->bdf->chars[mv->perchar[within].sc->enc],mv->bdf,mv->fv);
+	    BitmapViewCreate(mv->bdf->glyphs[mv->perchar[within].sc->orig_pos],mv->bdf,mv->fv,-1);
     } else if ( event->type == et_mouseup && mv->pressed ) {
 	for ( i=0; i<mv->charcnt && !mv->perchar[i].selected; ++i );
 	mv->pressed = false;
@@ -3461,7 +3464,7 @@ static void MVMouse(MetricsView *mv,GEvent *event) {
 	    break;
 	    }
 	    if ( i<mv->charcnt )
-		SCPreparePopup(mv->gw,mv->perchar[i].sc);
+		SCPreparePopup(mv->gw,mv->perchar[i].sc,mv->fv->map->remap,mv->fv->map->backmap[mv->perchar[i].sc->orig_pos]);
 	}
 	if ( mv->cursor!=ct_mypointer ) {
 	    GDrawSetCursor(mv->gw,ct_mypointer);
@@ -3584,7 +3587,7 @@ return;
 	if ( sc==NULL && within!=-1 )
 	    sc = mv->perchar[within].sc;
 	if ( sc!=NULL ) 
-	    SCPreparePopup(mv->gw,sc);
+	    SCPreparePopup(mv->gw,sc,mv->fv->map->remap,mv->fv->map->backmap[sc->orig_pos]);
 /* Don't allow any editing when displaying a bitmap font */
     } else if ( event->type == et_mousedown && mv->bdf==NULL ) {
 	CVPaletteDeactivate();
@@ -3687,9 +3690,9 @@ return;
 	}
 	if ( within==-1 ) within = i;
 	if ( mv->bdf==NULL )
-	    CharViewCreate(mv->perchar[within].sc,mv->fv);
+	    CharViewCreate(mv->perchar[within].sc,mv->fv,-1);
 	else
-	    BitmapViewCreate(mv->bdf->chars[mv->perchar[within].sc->enc],mv->bdf,mv->fv);
+	    BitmapViewCreate(mv->bdf->glyphs[mv->perchar[within].sc->orig_pos],mv->bdf,mv->fv,-1);
     } else if ( event->type == et_mouseup && mv->pressed ) {
 	for ( i=0; i<mv->charcnt && !mv->perchar[i].selected; ++i );
 	mv->pressed = false;
@@ -4016,12 +4019,14 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
 	mv->perchar[0].sc = sc;
 	cnt = 1;
     } else {
+	EncMap *map = fv->map;
 	for ( cnt=0, j=1; (j<=fv->sel_index || j<1) && cnt<15; ++j ) {
-	    for ( i=0; i<fv->sf->charcnt && cnt<15; ++i ) {
-		if ( fv->selected[i]==j && fv->sf->chars[i]!=NULL ) {
-		    mv->perchar[cnt].sc = fv->sf->chars[i];
-		    ubuf[cnt++] = fv->sf->chars[i]->unicodeenc==-1 || fv->sf->chars[i]->unicodeenc>=0x10000?
-			    0xfffd: fv->sf->chars[i]->unicodeenc;
+	    for ( i=0; i<map->enccount && cnt<15; ++i ) {
+		int gid = map->map[i];
+		if ( gid!=-1 && fv->selected[i]==j && fv->sf->glyphs[gid]!=NULL ) {
+		    mv->perchar[cnt].sc = fv->sf->glyphs[gid];
+		    ubuf[cnt++] = fv->sf->glyphs[gid]->unicodeenc==-1 || fv->sf->glyphs[gid]->unicodeenc>=0x10000?
+			    0xfffd: fv->sf->glyphs[gid]->unicodeenc;
 		}
 	    }
 	}
@@ -4055,10 +4060,10 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     }
     if ( goodsc==NULL ) {
 	SplineFont *sf = mv->fv->sf;
-	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	    if ( anysc==NULL ) anysc = sf->chars[i];
-	    if ( SCScriptFromUnicode(sf->chars[i])!=DEFAULT_SCRIPT ) {
-		goodsc = sf->chars[i];
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	    if ( anysc==NULL ) anysc = sf->glyphs[i];
+	    if ( SCScriptFromUnicode(sf->glyphs[i])!=DEFAULT_SCRIPT ) {
+		goodsc = sf->glyphs[i];
 	break;
 	    }
 	}
@@ -4080,10 +4085,12 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     if ( sc!=NULL ) {
 	MVSetPos(mv,0,sc);
     } else {
+	EncMap *map = fv->map;
 	for ( cnt=0, j=1; j<=fv->sel_index && cnt<15; ++j ) {
-	    for ( i=0; i<fv->sf->charcnt && cnt<15; ++i ) {
-		if ( fv->selected[i]==j && fv->sf->chars[i]!=NULL ) {
-		    MVSetPos(mv,cnt++,fv->sf->chars[i]);
+	    for ( i=0; i<fv->map->enccount && cnt<15; ++i ) {
+		int gid = map->map[i];
+		if ( gid!=-1 && fv->selected[i]==j && fv->sf->glyphs[gid]!=NULL ) {
+		    MVSetPos(mv,cnt++,fv->sf->glyphs[gid]);
 		}
 	    }
 	}

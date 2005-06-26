@@ -122,28 +122,19 @@ static int gettoken(FILE *bdf, char *tokbuf, int size) {
 return( pt!=tokbuf?1:ch==EOF?-1: 0 );
 }
 
-static void ExtendSF(SplineFont *sf, int enc, int set) {
-    BDFFont *b;
+static void ExtendSF(SplineFont *sf, EncMap *map, int enc, int set) {
     FontView *fvs;
 
-    if ( enc>=sf->charcnt ) {
-	int i,n = enc;
-	if ( !set )
-	    n += 100;
-	sf->chars = grealloc(sf->chars,n*sizeof(SplineChar *));
-	for ( i=sf->charcnt; i<n; ++i )
-	    sf->chars[i] = NULL;
-	sf->charcnt = n;
-	for ( b=sf->bitmaps; b!=NULL; b=b->next ) if ( b->charcnt<n ) {
-	    b->chars = grealloc(b->chars,n*sizeof(BDFChar *));
-	    for ( i=b->charcnt; i<n; ++i )
-		b->chars[i] = NULL;
-	    b->charcnt = n;
-	}
+    if ( enc>=map->enccount ) {
+	int n = enc;
+	if ( enc>=map->encmax )
+	    map->map = grealloc(map->map,(map->encmax = n+100)*sizeof(int));
+	memset(map->map+map->enccount,-1,(enc-map->enccount+1)*sizeof(int));
+	map->enccount = n+1;
 	if ( sf->fv!=NULL ) {
 	    for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
 		free(fvs->selected);
-		fvs->selected = gcalloc(sf->charcnt,1);
+		fvs->selected = gcalloc(map->enccount,1);
 	    }
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	    FontViewReformatAll(sf);
@@ -152,100 +143,101 @@ static void ExtendSF(SplineFont *sf, int enc, int set) {
     }
 }
 
-static void MakeEncChar(SplineFont *sf,int enc,char *name) {
+static void MakeEncChar(SplineFont *sf,EncMap *map, int enc,char *name) {
     int uni;
+    SplineChar *sc;
+    int gid;
 
-    ExtendSF(sf,enc,false);
+    ExtendSF(sf,map,enc,false);
 
-    if ( sf->chars[enc]==NULL )
-	SFMakeChar(sf,enc);
-    free(sf->chars[enc]->name);
-    sf->chars[enc]->name = cleancopy(name);
+    sc = SFMakeChar(sf,map,enc);
+    gid = sc->orig_pos;
+    free(sf->glyphs[gid]->name);
+    sf->glyphs[gid]->name = cleancopy(name);
 
-    uni = UniFromName(name,sf->uni_interp,sf->encoding_name);
+    uni = UniFromName(name,sf->uni_interp,map->enc);
     if ( uni!=-1 )
-	sf->chars[enc]->unicodeenc = uni;
-    sf->chars[enc]->enc = enc;
-    /*sf->encoding_name = em_none;*/
+	sf->glyphs[gid]->unicodeenc = uni;
 }
 
-static int figureProperEncoding(SplineFont *sf,BDFFont *b, int enc,char *name,
-	int swidth, int swidth1, Encoding *encname) {
-    int i = -1;
+static int figureProperEncoding(SplineFont *sf,EncMap *map, BDFFont *b, int enc,
+	char *name, int swidth, int swidth1, Encoding *encname) {
+    int i = -1, gid;
 
     if ( strcmp(name,".notdef")==0 ) {
 	if ( enc<32 || (enc>=127 && enc<0xa0)) i=enc;
-	else if ( sf->encoding_name==&custom ) i = enc;
+	else if ( map->enc==&custom ) i = enc;
 	else if ( sf->onlybitmaps && ((sf->bitmaps==b && b->next==NULL) || sf->bitmaps==NULL) ) i = enc;
-	if ( i>=sf->charcnt ) i = -1;
-	if ( i!=-1 && (sf->chars[i]==NULL || strcmp(sf->chars[i]->name,name)!=0 )) {
-	    SFMakeChar(sf,enc);
-	    if ( sf->onlybitmaps ) {
-		sf->chars[enc]->width = swidth;
-		sf->chars[enc]->widthset = true;
+	gid = ( i>=map->enccount || i<0 ) ? -1 : map->map[i];
+	if ( gid==-1 || sf->glyphs[gid]==NULL || strcmp(sf->glyphs[gid]->name,name)!=0 ) {
+	    SplineChar *sc = SFMakeChar(sf,map,enc);
+	    if ( sf->onlybitmaps || !sc->widthset ) {
+		sc->width = swidth;
+		sc->widthset = true;
 		if ( swidth1!=-1 )
-		    sf->chars[enc]->vwidth = swidth1;
+		    sc->vwidth = swidth1;
 	    }
 	}
-    } else if ( sf->encoding_name==encname ||
-	    (sf->encoding_name==&custom && sf->onlybitmaps)) {
+    } else if ( map->enc==encname ||
+	    (map->enc==&custom && sf->onlybitmaps)) {
 	i = enc;
-	if ( i>sf->charcnt )
-	    MakeEncChar(sf,enc,name);
+	if ( i==-1 ) i = map->enccount;
+	if ( i>=map->enccount || map->map[i]==-1 )
+	    MakeEncChar(sf,map,i,name);
     } else {
 	int32 uni = UniFromEnc(enc,encname);
 	if ( uni==-1 )
-	    uni = UniFromName(name,sf->uni_interp,sf->encoding_name);
-	i = EncFromSF(uni,sf);
+	    uni = UniFromName(name,sf->uni_interp,map->enc);
+	i = EncFromUni(uni,map->enc);
 #if 0
 	if ( uni!=-1 && i>=sf->charcnt &&
 		(sf->encoding_name==em_iso8859_1 || sf->encoding_name==em_unicode))
 	    SFReencodeFont(sf,uni>0xffff ? em_unicode4 : em_unicode);
 #endif
 	if ( i==-1 ) {
-	    for ( i=sf->charcnt-1; i>=0 ; --i ) if ( sf->chars[i]!=NULL ) {
-		if ( strcmp(name,sf->chars[i]->name)==0 )
-	    break;
-	    }
+	    i = SFFindSlot(sf,map,uni,name);
 	    if ( i==-1 && sf->onlybitmaps && enc!=-1 &&
 		    ((sf->bitmaps==b && b->next==NULL) || sf->bitmaps==NULL) ) {
-		MakeEncChar(sf,enc,name);
+		MakeEncChar(sf,map,enc,name);
 		i = enc;
 	    }
 	}
     }
-    if ( i==-1 || i>=sf->charcnt ) {
+    if ( i==-1 || i>=map->enccount ) {
 	/* try adding it to the end of the font */
 	int j;
-	int encmax = CountOfEncoding(sf->encoding_name);
-	for ( j=sf->charcnt-1; j>=encmax && sf->chars[j]==NULL; --j );
+	int encmax = map->enc->char_cnt;
+	for ( j=map->enccount-1; j>=encmax &&
+		((gid=map->map[j])==-1 || sf->glyphs[gid]==NULL); --j );
 	++j;
 	if ( i<j )
 	    i = j;
-	MakeEncChar(sf,i,name);
+	MakeEncChar(sf,map,i,name);
     }
 
-    if ( i!=-1 && i<sf->charcnt && sf->chars[i]==NULL ) {
-	SFMakeChar(sf,i);
+    if ( i!=-1 && i<map->enccount && ((gid=map->map[i])==-1 || sf->glyphs[gid]==NULL )) {
+	SplineChar *sc = SFMakeChar(sf,map,i);
 	if ( sf->onlybitmaps && ((sf->bitmaps==b && b->next==NULL) || sf->bitmaps==NULL) ) {
-	    free(sf->chars[i]->name);
-	    sf->chars[i]->name = cleancopy(name);
+	    free(sc->name);
+	    sc->name = cleancopy(name);
 	}
     }
-    if ( i!=-1 && swidth!=-1 &&
+    if ( i!=-1 && swidth!=-1 && (gid=map->map[i])!=-1 &&
 	    ((sf->onlybitmaps && ((sf->bitmaps==b && b->next==NULL) || sf->bitmaps==NULL) ) ||
-	     (sf->chars[i]!=NULL && sf->chars[i]->layers[ly_fore].splines==NULL && sf->chars[i]->layers[ly_fore].refs==NULL &&
-	       !sf->chars[i]->widthset)) ) {
-	sf->chars[i]->width = swidth;
-	sf->chars[i]->widthset = true;
+	     (sf->glyphs[gid]!=NULL && sf->glyphs[gid]->layers[ly_fore].splines==NULL && sf->glyphs[gid]->layers[ly_fore].refs==NULL &&
+	       !sf->glyphs[gid]->widthset)) ) {
+	sf->glyphs[gid]->width = swidth;
+	sf->glyphs[gid]->widthset = true;
 	if ( swidth1!=-1 )
-	    sf->chars[i]->vwidth = swidth1;
+	    sf->glyphs[gid]->vwidth = swidth1;
     }
-    if ( i!=enc && enc!=-1 && sf->onlybitmaps && sf->chars[enc]!=NULL &&
-	    ((sf->bitmaps==b && b->next==NULL) || sf->bitmaps==NULL) ) {
-	free(sf->chars[enc]->name);
-	sf->chars[enc]->name = copy( ".notdef" );
-	sf->chars[enc]->unicodeenc = -1;
+    if ( i!=-1 && (gid=map->map[i])!=-1 ) {
+	if ( gid>=b->glyphcnt ) {
+	    if ( gid>=b->glyphmax )
+		b->glyphs = grealloc(b->glyphs,(b->glyphmax = sf->glyphmax)*sizeof(BDFChar *));
+	    memset(b->glyphs+b->glyphcnt,0,(gid+1-b->glyphcnt)*sizeof(BDFChar *));
+	    b->glyphcnt = gid+1;
+	}
     }
 return( i );
 }
@@ -256,7 +248,7 @@ struct metrics {
     int res;
 };
 
-static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b,int depth,
+static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b,EncMap *map,int depth,
 	struct metrics *defs, Encoding *encname) {
     BDFChar *bc;
     char name[40], tok[100];
@@ -298,15 +290,16 @@ static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b,int depth,
 	fprintf( stderr, "Bad bounding box for %s.\n", name );
 return;
     }
-    i = figureProperEncoding(sf,b,enc,name,swidth,swidth1,encname);
+    i = figureProperEncoding(sf,map,b,enc,name,swidth,swidth1,encname);
     if ( i!=-1 ) {
-	if ( (bc=b->chars[i])!=NULL ) {
+	int gid = map->map[i];
+	if ( (bc=b->glyphs[gid])!=NULL ) {
 	    free(bc->bitmap);
 	    BDFFloatFree(bc->selection);
 	} else {
-	    b->chars[i] = bc = chunkalloc(sizeof(BDFChar));
-	    bc->sc = sf->chars[i];
-	    bc->enc = i;
+	    b->glyphs[gid] = bc = chunkalloc(sizeof(BDFChar));
+	    bc->sc = sf->glyphs[gid];
+	    bc->orig_pos = gid;
 	}
 	bc->xmin = xmin;
 	bc->ymin = ymin;
@@ -593,38 +586,42 @@ enum gf_cmd { gf_paint_0=0, gf_paint_1=1, gf_paint_63=63,
 /* Then a post_post with a back pointer to start of postamble + gf_version */
 /* Then 4-7 bytes of 0xdf */
 
-static BDFChar *SFGrowTo(SplineFont *sf,BDFFont *b, int cc) {
+static BDFChar *SFGrowTo(SplineFont *sf,BDFFont *b, int cc, EncMap *map) {
     char buf[20];
-    int i;
+    int gid;
     BDFChar *bc;
 
-    if ( cc >= sf->charcnt ) {
-	int new = ((sf->charcnt+255)>>8)<<8;
-	sf->chars = grealloc(sf->chars,new*sizeof(SplineChar *));
-	b->chars = grealloc(b->chars,new*sizeof(BDFChar *));
-	for ( i=sf->charcnt; i<new; ++i ) {
-	    sf->chars[i] = NULL;
-	    b->chars[i] = NULL;
+    if ( cc >= map->enccount ) {
+	if ( cc>=map->encmax ) {
+	    int new = ((map->enccount+256)>>8)<<8;
+	    if ( new<cc+1 ) new = cc+1;
+	    map->map = grealloc(map->map,new*sizeof(int));
+	    map->encmax = new;
 	}
-	sf->charcnt = b->charcnt = new;
+	memset(map->map+map->enccount,-1,(cc+1-map->enccount)*sizeof(int));
+	map->enccount = cc+1;
     }
-    if ( sf->chars[cc]==NULL )
-	SFMakeChar(sf,cc);
+    if ( (gid = map->map[cc])==-1 || sf->glyphs[gid]==NULL )
+	gid = SFMakeChar(sf,map,cc)->orig_pos;
     if ( sf->onlybitmaps && ((sf->bitmaps==b && b->next==NULL) || sf->bitmaps==NULL) ) {
-	free(sf->chars[cc]->name);
+	free(sf->glyphs[gid]->name);
 	sprintf( buf, "enc-%d", cc);
-	sf->chars[cc]->name = cleancopy( buf );
-	sf->chars[cc]->unicodeenc = -1;
+	sf->glyphs[gid]->name = cleancopy( buf );
+	sf->glyphs[gid]->unicodeenc = -1;
     }
-    if ( cc>=b->charcnt )
-	bc = chunkalloc(sizeof(BDFChar));
-    else if ( (bc=b->chars[cc])!=NULL ) {
+    if ( b->glyphcnt<sf->glyphcnt ) {
+	if ( b->glyphmax<sf->glyphcnt )
+	    b->glyphs = grealloc(b->glyphs,(b->glyphmax = sf->glyphmax)*sizeof(BDFChar *));
+	memset(b->glyphs+b->glyphcnt,0,(sf->glyphcnt-b->glyphcnt)*sizeof(BDFChar *));
+	b->glyphcnt = sf->glyphcnt;
+    }
+    if ( (bc=b->glyphs[gid])!=NULL ) {
 	free(bc->bitmap);
 	BDFFloatFree(bc->selection);
     } else {
-	b->chars[cc] = bc = chunkalloc(sizeof(BDFChar));
-	bc->sc = sf->chars[cc];
-	bc->enc = cc;
+	b->glyphs[gid] = bc = chunkalloc(sizeof(BDFChar));
+	bc->sc = sf->glyphs[gid];
+	bc->orig_pos = gid;
     }
 return(bc);
 }
@@ -741,11 +738,12 @@ return( -2 );
 return( pixelsize );
 }
 
-static int gf_char(FILE *gf, SplineFont *sf, BDFFont *b) {
+static int gf_char(FILE *gf, SplineFont *sf, BDFFont *b,EncMap *map) {
     int32 pos, to;
     int ch, enc, dx, dy, aw;
     int min_c, max_c, min_r, max_r, w;
     int r,c, col,cnt,i;
+    int gid;
     BDFChar *bc;
     char charname[256];
 
@@ -788,12 +786,13 @@ return( false );
     } else
 return( false );
 
-    bc = SFGrowTo(sf,b,enc);
+    bc = SFGrowTo(sf,b,enc,map);
+    gid = map->map[enc];
     if ( charname[0]!='\0' && sf->onlybitmaps && (sf->bitmaps==NULL ||
 	    (sf->bitmaps==b && b->next==NULL )) ) {
-	free(sf->chars[enc]->name);
-	sf->chars[enc]->name = cleancopy(charname);
-	sf->chars[enc]->unicodeenc = -1;
+	free(sf->glyphs[gid]->name);
+	sf->glyphs[gid]->name = cleancopy(charname);
+	sf->glyphs[gid]->unicodeenc = -1;
     }
     bc->xmin = min_c;
     bc->xmax = max_c>min_c? max_c : min_c;
@@ -803,10 +802,10 @@ return( false );
     bc->bytes_per_line = ((bc->xmax-bc->xmin+8)>>3);
     bc->bitmap = gcalloc(bc->bytes_per_line*(bc->ymax-bc->ymin+1),1);
 
-    if ( sf->chars[enc]->layers[ly_fore].splines==NULL && sf->chars[enc]->layers[ly_fore].refs==NULL &&
-	    !sf->chars[enc]->widthset ) {
-	sf->chars[enc]->width = aw;
-	sf->chars[enc]->widthset = true;
+    if ( sf->glyphs[gid]->layers[ly_fore].splines==NULL && sf->glyphs[gid]->layers[ly_fore].refs==NULL &&
+	    !sf->glyphs[gid]->widthset ) {
+	sf->glyphs[gid]->width = aw;
+	sf->glyphs[gid]->widthset = true;
     }
 
     for ( r=min_r, c=min_c, col=0; r<=max_r; ) {
@@ -977,11 +976,12 @@ return( (i-st->dyn_f-1)*16 + getnibble(pk,st) + st->dyn_f + 1 );
     }
 }
 
-static int pk_char(FILE *pk, SplineFont *sf, BDFFont *b) {
+static int pk_char(FILE *pk, SplineFont *sf, BDFFont *b, EncMap *map) {
     int flag = getc(pk);
     int black, size_is_2;
     int pl, cc, tfm, w, h, hoff, voff, dm, dx, dy;
     int i, ch, j,r,c,cnt;
+    int gid;
     BDFChar *bc;
     struct pkstate st;
     int32 char_end;
@@ -1039,7 +1039,8 @@ return( 0 );
     /* tfm is the advance width as a fraction of an em/2^20 so multiply by 1000/2^20 to get postscript values */
     /* dy is the advance height for vertical text? */
 
-    bc = SFGrowTo(sf,b,cc);
+    bc = SFGrowTo(sf,b,cc,map);
+    gid = map->map[cc];
 
     bc->xmin = -hoff;
     bc->ymax = voff;
@@ -1049,10 +1050,10 @@ return( 0 );
     bc->bytes_per_line = ((w+7)>>3);
     bc->bitmap = gcalloc(bc->bytes_per_line*h,1);
 
-    if ( sf->chars[cc]->layers[ly_fore].splines==NULL && sf->chars[cc]->layers[ly_fore].refs==NULL &&
-	    !sf->chars[cc]->widthset ) {
-	sf->chars[cc]->width = (sf->ascent+sf->descent)*(double) tfm/(0x100000);
-	sf->chars[cc]->widthset = true;
+    if ( sf->glyphs[gid]->layers[ly_fore].splines==NULL && sf->glyphs[gid]->layers[ly_fore].refs==NULL &&
+	    !sf->glyphs[gid]->widthset ) {
+	sf->glyphs[gid]->width = (sf->ascent+sf->descent)*(double) tfm/(0x100000);
+	sf->glyphs[gid]->widthset = true;
     }
 
     if ( w==0 && h==0 )
@@ -1110,8 +1111,6 @@ return( 0 );
 	break;
 	}
     }
-    if ( cc>=b->charcnt )
-	BDFCharFree(bc);
     if ( ftell(pk)!=char_end ) {
 	fprintf( stderr, "The character, %d, was not read properly (or pk file is in bad format)\n At %ld should be %d, off by %ld\n", cc, ftell(pk), char_end, ftell(pk)-char_end );
 	fseek(pk,char_end,SEEK_SET);
@@ -1518,7 +1517,7 @@ return(false);
 return(false);
 
     cnt = getformint32(file,format);
-    if ( cnt!=b->charcnt )
+    if ( cnt!=b->glyphcnt )
 return( false );
     offsets = galloc(cnt*sizeof(int));
     for ( i=0; i<cnt; ++i )
@@ -1540,7 +1539,7 @@ return( false );
 	FourByteSwap(bitmap, sizebitmaps);
     if ( PCF_GLYPH_PAD(format)==1 ) {
 	for ( i=0; i<cnt; ++i ) {
-	    BDFChar *bc = b->chars[i];
+	    BDFChar *bc = b->glyphs[i];
 	    if ( i<cnt-1 && offsets[i+1]-offsets[i]!=bc->bytes_per_line * (bc->ymax-bc->ymin+1))
 		IError("Bad PCF glyph bitmap size");
 	    memcpy(bc->bitmap,bitmap+offsets[i],
@@ -1554,7 +1553,7 @@ return( false );
     } else {
 	int pad = PCF_GLYPH_PAD(format);
 	for ( i=0; i<cnt; ++i ) {
-	    BDFChar *bc = b->chars[i];
+	    BDFChar *bc = b->glyphs[i];
 	    int bpl = ((bc->bytes_per_line+pad-1)/pad)*pad;
 	    for ( j=bc->ymin; j<=bc->ymax; ++j )
 		memcpy(bc->bitmap+(j-bc->ymin)*bc->bytes_per_line,
@@ -1573,14 +1572,18 @@ return( true );
 }
 
 static void PcfReadEncodingsNames(FILE *file,struct toc *toc,SplineFont *sf,
-	BDFFont *b, Encoding *encname) {
+	EncMap *map, BDFFont *b, Encoding *encname) {
     int format, cnt, i, stringsize;
     int *offsets=NULL;
     char *string=NULL;
+    int *encs;
+
+    encs = galloc(b->glyphcnt*sizeof(int));
+    memset(encs,-1,b->glyphcnt*sizeof(int));
 
     if ( pcfSeekToType(file,toc,PCF_GLYPH_NAMES) &&
 	    ((format = getint32(file))&PCF_FORMAT_MASK)==PCF_DEFAULT_FORMAT &&
-	    (cnt = getformint32(file,format))==b->charcnt ) {
+	    (cnt = getformint32(file,format))==b->glyphcnt ) {
 	offsets = galloc(cnt*sizeof(int));
 	for ( i=0; i<cnt; ++i )
 	    offsets[i] = getformint32(file,format);
@@ -1597,28 +1600,29 @@ static void PcfReadEncodingsNames(FILE *file,struct toc *toc,SplineFont *sf,
 	max1 = getformint16(file,format);
 	def = getformint16(file,format);
 	tot = (max2-min2+1)*(max1-min1+1);
-	for ( i=0; i<b->charcnt; ++i )
-	    b->chars[i]->enc = -1;
 	for ( i=0; i<tot; ++i ) {
 	    glyph = getformint16(file,format);
-	    if ( glyph!=0xffff && glyph<b->charcnt ) {
-		b->chars[glyph]->enc = (i/(max2-min2+1) + min2)*256 +
+	    if ( glyph!=0xffff && glyph<b->glyphcnt ) {
+		encs[glyph] = (i/(max2-min2+1) + min2)*256 +
 					(i%(max2-min2+1) + min1);
 	    }
 	}
-	if ( def<b->charcnt && def!=0xffff )
-	    b->chars[def]->enc = 0;		/* my standard location for .notdef */
     }
-    cnt = b->charcnt;
+    cnt = b->glyphcnt;
     for ( i=0; i<cnt; ++i ) {
 	char *name;
 	if ( string!=NULL ) name = string+offsets[i];
 	else name = ".notdef";
-	b->chars[i]->enc = figureProperEncoding(sf,b,b->chars[i]->enc,name,-1,-1,encname);
-	if ( b->chars[i]->enc!=-1 )
-	    b->chars[i]->sc = sf->chars[b->chars[i]->enc];
+	encs[i] = figureProperEncoding(sf,map,b,encs[i],name,-1,-1,encname);
+	if ( encs[i]!=-1 ) {
+	    int gid = map->map[encs[i]];
+	    if ( gid!=-1 ) {
+		b->glyphs[i]->sc = sf->glyphs[gid];
+		b->glyphs[i]->orig_pos = gid;
+	    }
+	}
     }
-    free(string); free(offsets);
+    free(string); free(offsets); free(encs);
 }
 
 static int PcfReadSWidths(FILE *file,struct toc *toc,BDFFont *b) {
@@ -1631,17 +1635,17 @@ return(false);
 return(false);
 
     cnt = getformint32(file,format);
-    if ( cnt>b->charcnt )
+    if ( cnt>b->glyphcnt )
 return( false );
     for ( i=0; i<cnt; ++i ) {
 	int swidth = getformint32(file,format);
-	if ( b->chars[i]->sc!=NULL )
-	    b->chars[i]->sc->width = swidth;
+	if ( b->glyphs[i]->sc!=NULL )
+	    b->glyphs[i]->sc->width = swidth;
     }
 return( true );
 }
 
-static int PcfParse(FILE *file,struct toc *toc,SplineFont *sf,BDFFont *b,
+static int PcfParse(FILE *file,struct toc *toc,SplineFont *sf,EncMap *map, BDFFont *b,
 	Encoding *encname) {
     int metrics_cnt;
     struct pcfmetrics *metrics = pcfGetMetricsTable(file,toc,PCF_METRICS,&metrics_cnt);
@@ -1651,54 +1655,52 @@ static int PcfParse(FILE *file,struct toc *toc,SplineFont *sf,BDFFont *b,
 
     if ( metrics==NULL )
 return( false );
-    b->charcnt = mcnt;
-    b->chars = gcalloc(mcnt,sizeof(BDFChar *));
+    b->glyphcnt = mcnt;
+    b->glyphs = gcalloc(mcnt,sizeof(BDFChar *));
     for ( i=0; i<mcnt; ++i ) {
-	b->chars[i] = chunkalloc(sizeof(BDFChar));
-	b->chars[i]->xmin = metrics[i].lsb;
-	b->chars[i]->xmax = metrics[i].rsb-1;
-	if ( metrics[i].rsb==0 ) b->chars[i]->xmax = 0;
-	b->chars[i]->ymin = -metrics[i].descent;
-	b->chars[i]->ymax = metrics[i].ascent-1;
-	/*if ( metrics[i].ascent==0 ) b->chars[i]->ymax = 0;*/ /*??*/
-	b->chars[i]->width = metrics[i].width;
-	b->chars[i]->bytes_per_line = ((b->chars[i]->xmax-b->chars[i]->xmin)>>3) + 1;
-	b->chars[i]->bitmap = galloc(b->chars[i]->bytes_per_line*(b->chars[i]->ymax-b->chars[i]->ymin+1));
-	b->chars[i]->enc = i;
+	b->glyphs[i] = chunkalloc(sizeof(BDFChar));
+	b->glyphs[i]->xmin = metrics[i].lsb;
+	b->glyphs[i]->xmax = metrics[i].rsb-1;
+	if ( metrics[i].rsb==0 ) b->glyphs[i]->xmax = 0;
+	b->glyphs[i]->ymin = -metrics[i].descent;
+	b->glyphs[i]->ymax = metrics[i].ascent-1;
+	/*if ( metrics[i].ascent==0 ) b->glyphs[i]->ymax = 0;*/ /*??*/
+	b->glyphs[i]->width = metrics[i].width;
+	b->glyphs[i]->bytes_per_line = ((b->glyphs[i]->xmax-b->glyphs[i]->xmin)>>3) + 1;
+	b->glyphs[i]->bitmap = galloc(b->glyphs[i]->bytes_per_line*(b->glyphs[i]->ymax-b->glyphs[i]->ymin+1));
+	b->glyphs[i]->orig_pos = -1;
     }
     free(metrics);
 
     if ( !PcfReadBitmaps(file,toc,b))
 return( false );
-    PcfReadEncodingsNames(file,toc,sf,b,encname);
+    PcfReadEncodingsNames(file,toc,sf,map,b,encname);
     if ( sf->onlybitmaps )
 	PcfReadSWidths(file,toc,b);
-    new = gcalloc(sf->charcnt,sizeof(BDFChar *));
+    new = gcalloc(sf->glyphcnt,sizeof(BDFChar *));
     mult = gcalloc(mcnt+1,sizeof(BDFChar *)); multcnt=0;
     for ( i=0; i<mcnt; ++i ) {
-	BDFChar *bc = b->chars[i];
- int j; if ( bc->enc!=-1 ) for ( j=i+1; j<mcnt; ++j ) if ( b->chars[j]!=NULL && b->chars[j]->enc==bc->enc )
-  printf( "Duplicate encoding. Both %d and %d map to %d\n", i, j, bc->enc );
-	if ( bc->enc==-1 || bc->enc>=sf->charcnt )
+	BDFChar *bc = b->glyphs[i];
+	if ( bc->orig_pos==-1 || bc->orig_pos>=sf->glyphcnt )
 	    BDFCharFree(bc);
-	else if ( new[bc->enc]==NULL )
-	    new[bc->enc] = bc;
+	else if ( new[bc->orig_pos]==NULL )
+	    new[bc->orig_pos] = bc;
 	else
 	    mult[multcnt++] = bc;
     }
     if ( multcnt!=0 ) {
 	for ( multcnt=0; mult[multcnt]!=NULL; multcnt++ ) {
-	    for ( i=0; i<sf->charcnt; ++i )
+	    for ( i=0; i<sf->glyphcnt; ++i )
 		if ( new[i]==NULL ) {
 		    new[i] = mult[multcnt];
 	    break;
 		}
 	}
     }
-    free( b->chars );
+    free( b->glyphs );
     free( mult );
-    b->chars = new;
-    b->charcnt = sf->charcnt;
+    b->glyphs = new;
+    b->glyphcnt = sf->glyphcnt;
 return( true );
 }
 
@@ -1759,7 +1761,8 @@ return( ret );
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-BDFFont *SFImportBDF(SplineFont *sf, char *filename,int ispk, int toback) {
+static BDFFont *SFImportBDF(SplineFont *sf, char *filename,int ispk, int toback,
+	EncMap *map) {
     FILE *bdf;
     char tok[100];
     int pixelsize, ascent, descent;
@@ -1859,7 +1862,7 @@ return( NULL );
 	    free(sf->fontname);
 	    sf->fontname = copy(fontname);
 	}
-	SFReencodeFont(sf,enc);
+	map->enc = enc;
 	if ( defs.metricsset!=0 ) {
 	    sf->hasvmetrics = true;
 	    sf->vertical_origin = defs.vertical_origin==0?sf->ascent:defs.vertical_origin;
@@ -1893,12 +1896,11 @@ return( NULL );
 	    descent = pixelsize -ascent;
 	b = gcalloc(1,sizeof(BDFFont));
 	b->sf = sf;
-	b->charcnt = sf->charcnt;
+	b->glyphcnt = sf->glyphcnt;
 	b->pixelsize = pixelsize;
-	b->chars = gcalloc(sf->charcnt,sizeof(BDFChar *));
+	b->glyphs = gcalloc(sf->glyphcnt,sizeof(BDFChar *));
 	b->ascent = ascent;
 	b->descent = pixelsize-b->ascent;
-	b->encoding_name = sf->encoding_name;
 	b->res = defs.res;
 	if ( depth!=1 )
 	    BDFClut(b,(1<<(depth/2)));
@@ -1911,11 +1913,11 @@ return( NULL );
     free(b->foundry);
     b->foundry = ( foundry[0]=='\0' ) ? NULL : copy(foundry);
     if ( ispk==1 ) {
-	while ( pk_char(bdf,sf,b));
+	while ( pk_char(bdf,sf,b,map));
     } else if ( ispk==3 ) {
-	while ( gf_char(bdf,sf,b));
+	while ( gf_char(bdf,sf,b,map));
     } else if ( ispk==2 ) {
-	if ( !PcfParse(bdf,toc,sf,b,enc) ) {
+	if ( !PcfParse(bdf,toc,sf,map,b,enc) ) {
 #if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Not a pcf file"), _("Not an X11 pcf file %.200s"), filename );
 #else
@@ -1925,7 +1927,7 @@ return( NULL );
     } else {
 	while ( gettoken(bdf,tok,sizeof(tok))!=-1 ) {
 	    if ( strcmp(tok,"STARTCHAR")==0 ) {
-		AddBDFChar(bdf,sf,b,depth,&defs,enc);
+		AddBDFChar(bdf,sf,b,map,depth,&defs,enc);
 #if defined(FONTFORGE_CONFIG_GDRAW)
 		GProgressNext();
 #elif defined(FONTFORGE_CONFIG_GTK)
@@ -1939,7 +1941,7 @@ return( NULL );
 return( b );
 }
 
-static BDFFont *_SFImportBDF(SplineFont *sf, char *filename,int ispk, int toback) {
+static BDFFont *_SFImportBDF(SplineFont *sf, char *filename,int ispk, int toback, EncMap *map) {
     static struct { char *ext, *decomp, *recomp; } compressors[] = {
 	{ "gz", "gunzip", "gzip" },
 	{ "bz2", "bunzip2", "bzip2" },
@@ -1984,7 +1986,7 @@ return( NULL );
 	    }
 	}
     }
-    ret = SFImportBDF(sf, filename,ispk, toback);
+    ret = SFImportBDF(sf, filename,ispk, toback, map);
     if ( temp!=NULL ) {
 	unlink(temp);
 	free(temp);
@@ -1995,20 +1997,20 @@ return( NULL );
 return( ret );
 }
 
-static void SFSetupBitmap(SplineFont *sf,BDFFont *strike) {
+static void SFSetupBitmap(SplineFont *sf,BDFFont *strike,EncMap *map) {
     int i;
 
     strike->sf = sf;
-    if ( strike->charcnt>sf->charcnt )
-	ExtendSF(sf,strike->charcnt,true);
-    for ( i=0; i<strike->charcnt; ++i ) if ( strike->chars[i]!=NULL ) {
-	if ( sf->chars[i]==NULL )
-	    MakeEncChar(sf,i,strike->chars[i]->sc->name);
-	strike->chars[i]->sc = sf->chars[i];
+    if ( strike->glyphcnt>sf->glyphcnt )
+	ExtendSF(sf,map,strike->glyphcnt,true);
+    for ( i=0; i<strike->glyphcnt; ++i ) if ( strike->glyphs[i]!=NULL ) {
+	if ( sf->glyphs[i]==NULL )
+	    MakeEncChar(sf,map,i,strike->glyphs[i]->sc->name);
+	strike->glyphs[i]->sc = sf->glyphs[i];
     }
 }
 
-static void SFMergeBitmaps(SplineFont *sf,BDFFont *strikes) {
+static void SFMergeBitmaps(SplineFont *sf,BDFFont *strikes,EncMap *map) {
     BDFFont *b, *prev, *snext;
 
     while ( strikes ) {
@@ -2020,7 +2022,7 @@ static void SFMergeBitmaps(SplineFont *sf,BDFFont *strikes) {
 	if ( b==NULL ) {
 	    strikes->next = sf->bitmaps;
 	    sf->bitmaps = strikes;
-	    SFSetupBitmap(sf,strikes);
+	    SFSetupBitmap(sf,strikes,map);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	} else if ( !alreadyexists(strikes->pixelsize)) {
 	    BDFFontFree(strikes);
@@ -2032,7 +2034,7 @@ static void SFMergeBitmaps(SplineFont *sf,BDFFont *strikes) {
 	    else
 		prev->next = strikes;
 	    BDFFontFree(b);
-	    SFSetupBitmap(sf,strikes);
+	    SFSetupBitmap(sf,strikes,map);
 	}
 	strikes = snext;
     }
@@ -2050,7 +2052,7 @@ int FVImportBDF(FontView *fv, char *filename, int ispk, int toback) {
 #endif
     char *eod, *fpt, *file, *full;
     int fcnt, any = 0;
-    int oldcharcnt = fv->sf->charcnt;
+    int oldenccnt = fv->map->enccount;
 
     eod = strrchr(filename,'/');
     *eod = '\0';
@@ -2082,7 +2084,7 @@ int FVImportBDF(FontView *fv, char *filename, int ispk, int toback) {
 	sprintf(buf, _("Loading font from %.100s"), filename);
 	gwwv_progress_change_line1(buf);
 #endif
-	b = _SFImportBDF(fv->sf,full,ispk,toback);
+	b = _SFImportBDF(fv->sf,full,ispk,toback, fv->map);
 	free(full);
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( fpt!=NULL ) GProgressNextStage();
@@ -2104,11 +2106,11 @@ int FVImportBDF(FontView *fv, char *filename, int ispk, int toback) {
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_end_indicator();
 #endif
-    if ( oldcharcnt != fv->sf->charcnt ) {
+    if ( oldenccnt != fv->map->enccount ) {
 	FontView *fvs;
 	for ( fvs=fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
 	    free(fvs->selected);
-	    fvs->selected = gcalloc(fvs->sf->charcnt,sizeof(char));
+	    fvs->selected = gcalloc(fvs->map->enccount,sizeof(char));
 	}
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	FontViewReformatAll(fv->sf);
@@ -2125,6 +2127,7 @@ int FVImportBDF(FontView *fv, char *filename, int ispk, int toback) {
 return( any );
 }
 
+/* sf and bdf are assumed to have the same gids */
 static void SFAddToBackground(SplineFont *sf,BDFFont *bdf) {
     struct _GImage *base;
     GClut *clut;
@@ -2134,12 +2137,15 @@ static void SFAddToBackground(SplineFont *sf,BDFFont *bdf) {
     real scale = (sf->ascent+sf->descent)/(double) (bdf->ascent+bdf->descent);
     real yoff = sf->ascent-bdf->ascent*scale;
 
-    for ( i=0; i<sf->charcnt && i<bdf->charcnt; ++i ) {
-	if ( bdf->chars[i]!=NULL ) {
-	    if ( sf->chars[i]==NULL )
-		SFMakeChar(sf,i);
-	    sc = sf->chars[i];
-	    bdfc = bdf->chars[i];
+    for ( i=0; i<sf->glyphcnt && i<bdf->glyphcnt; ++i ) {
+	if ( bdf->glyphs[i]!=NULL ) {
+	    if ( (sc = sf->glyphs[i])==NULL ) {
+		sc = sf->glyphs[i] = SplineCharCreate();
+		sc->name = copy(bdf->glyphs[i]->sc->name);
+		sc->orig_pos = i;
+		sc->unicodeenc = bdf->glyphs[i]->sc->unicodeenc;
+	    }
+	    bdfc = bdf->glyphs[i];
 
 	    base = gcalloc(1,sizeof(struct _GImage));
 	    base->image_type = it_mono;
@@ -2202,11 +2208,11 @@ int FVImportMult(FontView *fv, char *filename, int toback, int bf) {
 #endif
 return( false );
     }
-    SFMatchEncoding(strikeholder,sf);
+    SFMatchGlyphs(strikeholder,sf);
     if ( toback )
 	SFAddToBackground(sf,strikes);
     else
-	SFMergeBitmaps(sf,strikes);
+	SFMergeBitmaps(sf,strikes,fv->map);
 
     strikeholder->bitmaps =NULL;
     SplineFontFree(strikeholder);
@@ -2219,8 +2225,13 @@ return( true );
 }
 
 SplineFont *SFFromBDF(char *filename,int ispk,int toback) {
-    SplineFont *sf = SplineFontNew();
-    BDFFont *bdf = SFImportBDF(sf,filename,ispk,toback);
+    SplineFont *sf = SplineFontBlank(256);
+    EncMap *map = EncMapNew(256,256,&custom);
+    BDFFont *bdf;
+
+    sf->onlybitmaps = true;
+    bdf = SFImportBDF(sf,filename,ispk,toback, map);
+    sf->map = map;
 
     if ( toback )
 	SFAddToBackground(sf,bdf);

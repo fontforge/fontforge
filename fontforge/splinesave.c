@@ -1190,7 +1190,7 @@ static RefChar *RefFindAdobe(RefChar *r, RefChar *t) {
 	t->transform[4] += t->sc->layers[ly_fore].refs->transform[4];
 	t->transform[5] += t->sc->layers[ly_fore].refs->transform[5];
 	t->adobe_enc = t->sc->layers[ly_fore].refs->adobe_enc;
-	t->local_enc = t->sc->layers[ly_fore].refs->local_enc;
+	t->orig_pos = t->sc->layers[ly_fore].refs->orig_pos;
 	t->sc = t->sc->layers[ly_fore].refs->sc;
     }
 return( t );
@@ -1232,14 +1232,14 @@ return( false );
 	memset(r2,'\0',sizeof(space));
 	space.adobe_enc = ' ';
 	space.transform[0] = space.transform[3] = 1.0;
-	for ( i=0; i<scs[0]->parent->charcnt; ++i )
-	    if ( scs[0]->parent->chars[i]!=NULL &&
-		    strcmp(scs[0]->parent->chars[i]->name,"space")==0 )
+	for ( i=0; i<scs[0]->parent->glyphcnt; ++i )
+	    if ( scs[0]->parent->glyphs[i]!=NULL &&
+		    strcmp(scs[0]->parent->glyphs[i]->name,"space")==0 )
 	break;
-	if ( i==scs[0]->parent->charcnt )
+	if ( i==scs[0]->parent->glyphcnt )
 	    r2 = NULL;			/* No space???? */
 	else {
-	    space.sc = scs[0]->parent->chars[i];
+	    space.sc = scs[0]->parent->glyphs[i];
 	    if ( space.sc->layers[ly_fore].splines!=NULL || space.sc->layers[ly_fore].refs!=NULL )
 		r2 = NULL;
 	}
@@ -1279,7 +1279,7 @@ return( TrySubrRefs(gb,subrs,scs,instance_count,round,false));
 return( false );
 
     for ( j=0; j<instance_count; ++j ) {
-	SplineChar *r2sc = scs[j]->parent->chars[r2->sc->enc];
+	SplineChar *r2sc = scs[j]->parent->glyphs[r2->sc->orig_pos];
 	RefChar *r3, t3;
 
 	SplineCharFindBounds(r2sc,&b);
@@ -1330,8 +1330,8 @@ return( _SCNeedsSubsPts(sc));
     } else {
 	MMSet *mm = sc->parent->mm;
 	int i;
-	for ( i=0; i<mm->instance_count; ++i ) if ( sc->enc<mm->instances[i]->charcnt ) {
-	    if ( _SCNeedsSubsPts(mm->instances[i]->chars[sc->enc]) )
+	for ( i=0; i<mm->instance_count; ++i ) if ( sc->orig_pos<mm->instances[i]->glyphcnt ) {
+	    if ( _SCNeedsSubsPts(mm->instances[i]->glyphs[sc->orig_pos]) )
 return( true );
 	}
 return( false );
@@ -1362,7 +1362,7 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
 	if ( instance_count>16 )
 	    instance_count = 16;
 	for ( i=0; i<instance_count; ++i )
-	    scs[i] = mm->instances[i]->chars[sc->enc];
+	    scs[i] = mm->instances[i]->glyphs[sc->orig_pos];
     } else {
 	instance_count = 1;
 	scs[0] = sc;
@@ -1469,7 +1469,7 @@ static void CvtSimpleHints(GrowBuf *gb, SplineChar *sc,BasePoint *startend,
 	if ( instance_count>16 )
 	    instance_count = 16;
 	for ( i=0; i<instance_count; ++i )
-	    scs[i] = mm->instances[i]->chars[sc->enc];
+	    scs[i] = mm->instances[i]->glyphs[sc->orig_pos];
     } else {
 	instance_count = 1;
 	scs[0] = sc;
@@ -1517,7 +1517,7 @@ return( false );			/* not seacable, but could go in subr */
 	}
 	r = d->sc->layers[ly_fore].refs;
 	if ( r->next!=NULL && r->next->next!=NULL )
-return( false );		/* seac only takes 2 chars */
+return( false );		/* seac only takes 2 glyphs */
 	if ( r->next!=NULL &&
 		((r->transform[4]!=0 || r->transform[5]!=0 || r->sc->width!=d->sc->width) &&
 		 (r->next->transform[4]!=0 || r->next->transform[5]!=0 || r->next->sc->width!=d->sc->width)))
@@ -1567,13 +1567,13 @@ static void SplineFont2Subrs1(SplineFont *sf,int round, int iscjk,
     MMSet *mm = (format==ff_mma || format==ff_mmb) ? sf->mm : NULL;
     int instance_count = mm!=NULL ? mm->instance_count : 1;
 
-    for ( i=cnt=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL )
+    for ( i=cnt=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL )
 	sc->ttf_glyph = 0x7fff;
     anydone = true;
     while ( anydone ) {
 	anydone = false;
-	for ( i=cnt=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
-	    if ( !SCWorthOutputting(sc) || sc!=SCDuplicate(sc) || sc->ttf_glyph!=0x7fff )
+	for ( i=cnt=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
+	    if ( !SCWorthOutputting(sc) || sc->ttf_glyph!=0x7fff )
 	continue;
 	    /* Put the */
 	    /*  character into a subr if it is referenced by other characters */
@@ -1628,12 +1628,12 @@ int SFOneWidth(SplineFont *sf) {
     int width, i;
 
     width = -2;
-    for ( i=0; i<sf->charcnt; ++i ) if ( SCWorthOutputting(sf->chars[i]) &&
-	    (strcmp(sf->chars[i]->name,".notdef")!=0 || sf->chars[i]->layers[ly_fore].splines!=NULL)) {
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sf->glyphs[i]) &&
+	    (strcmp(sf->glyphs[i]->name,".notdef")!=0 || sf->glyphs[i]->layers[ly_fore].splines!=NULL)) {
 	/* Only trust the width of notdef if it's got some content */
 	/* (at least as far as fixed pitch determination goes) */
-	if ( width==-2 ) width = sf->chars[i]->width;
-	else if ( width!=sf->chars[i]->width ) {
+	if ( width==-2 ) width = sf->glyphs[i]->width;
+	else if ( width!=sf->glyphs[i]->width ) {
 	    width = -1;
     break;
 	}
@@ -1651,12 +1651,12 @@ int CIDOneWidth(SplineFont *_sf) {
     k=0;
     do {
 	sf = _sf->subfonts==NULL? _sf : _sf->subfonts[k];
-	for ( i=0; i<sf->charcnt; ++i ) if ( SCWorthOutputting(sf->chars[i]) &&
-		(strcmp(sf->chars[i]->name,".notdef")!=0 || sf->chars[i]->layers[ly_fore].splines!=NULL)) {
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sf->glyphs[i]) &&
+		(strcmp(sf->glyphs[i]->name,".notdef")!=0 || sf->glyphs[i]->layers[ly_fore].splines!=NULL)) {
 	    /* Only trust the width of notdef if it's got some content */
 	    /* (at least as far as fixed pitch determination goes) */
-	    if ( width==-2 ) width = sf->chars[i]->width;
-	    else if ( width!=sf->chars[i]->width ) {
+	    if ( width==-2 ) width = sf->glyphs[i]->width;
+	    else if ( width!=sf->glyphs[i]->width ) {
 		width = -1;
 	break;
 	    }
@@ -1673,12 +1673,12 @@ int SFOneHeight(SplineFont *sf) {
 return( sf->ascent+sf->descent );
 
     width = -2;
-    for ( i=0; i<sf->charcnt; ++i ) if ( SCWorthOutputting(sf->chars[i]) &&
-	    (strcmp(sf->chars[i]->name,".notdef")!=0 || sf->chars[i]->layers[ly_fore].splines!=NULL)) {
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sf->glyphs[i]) &&
+	    (strcmp(sf->glyphs[i]->name,".notdef")!=0 || sf->glyphs[i]->layers[ly_fore].splines!=NULL)) {
 	/* Only trust the width of notdef if it's got some content */
 	/* (at least as far as fixed pitch determination goes) */
-	if ( width==-2 ) width = sf->chars[i]->vwidth;
-	else if ( width!=sf->chars[i]->vwidth ) {
+	if ( width==-2 ) width = sf->glyphs[i]->vwidth;
+	else if ( width!=sf->glyphs[i]->vwidth ) {
 	    width = -1;
     break;
 	}
@@ -1686,21 +1686,21 @@ return( sf->ascent+sf->descent );
 return(width);
 }
 
-int SFIsCJK(SplineFont *sf) {
+int SFIsCJK(SplineFont *sf,EncMap *map) {
     char *val;
 
     if ( (val = PSDictHasEntry(sf->private,"LanguageGroup"))!=NULL )
 return( strtol(val,NULL,10));
 
-    if ( sf->encoding_name->is_japanese || sf->encoding_name->is_korean ||
-	    sf->encoding_name->is_tradchinese || sf->encoding_name->is_simplechinese )
+    if ( map->enc->is_japanese || map->enc->is_korean ||
+	    map->enc->is_tradchinese || map->enc->is_simplechinese )
 return( true );
-    if ( (sf->encoding_name->is_unicodebmp || sf->encoding_name->is_unicodefull) &&
-	    sf->charcnt>0x3000 &&
-	    SCWorthOutputting(sf->chars[0x3000]) &&
-	    !SCWorthOutputting(sf->chars['A']) )
+    if ( (map->enc->is_unicodebmp || map->enc->is_unicodefull) &&
+	    sf->glyphcnt>0x3000 &&
+	    SCWorthOutputting(sf->glyphs[0x3000]) &&
+	    !SCWorthOutputting(sf->glyphs['A']) )
 return( true );
-    if ( sf->encoding_name==&custom ) {
+    if ( map->enc==&custom ) {
 	/* If it's in a CID font and it doesn't contain alphabetics, then */
 	/*  it's assumed to be CJK */
 	if ( sf->cidmaster!=NULL )
@@ -1718,7 +1718,7 @@ struct pschars *SplineFont2Chrs(SplineFont *sf, int iscjk,
     struct pschars *chrs = gcalloc(1,sizeof(struct pschars));
     int i, cnt, instance_count;
     int fixed;
-    int zero_is_notdef;
+    int notdef_pos;
     MMSet *mm = sf->mm;
     real data[MmMax][6];
     GrowBuf gb;
@@ -1744,18 +1744,19 @@ struct pschars *SplineFont2Chrs(SplineFont *sf, int iscjk,
 	instance_count = 1;
     }
 
+    notdef_pos = SFFindNotdef(sf,fixed);
     cnt = 0;
-    for ( i=0; i<sf->charcnt; ++i )
+    for ( i=0; i<sf->glyphcnt; ++i )
 #if HANYANG
-	if ( sf->chars[i]!=NULL && sf->chars[i]->compositionunit )
+	if ( sf->glyphs[i]!=NULL && sf->glyphs[i]->compositionunit )
 	    /* Don't count it */;
 	else
 #endif
-	if ( SCWorthOutputting(sf->chars[i]) && sf->chars[i]==SCDuplicate(sf->chars[i]))
+	if ( SCWorthOutputting(sf->glyphs[i]) &&
+		( i==notdef_pos || strcmp(sf->glyphs[i]->name,".notdef")!=0))
 	    ++cnt;
 /* only honor the width on .notdef in non-fixed pitch fonts (or ones where there is an actual outline in notdef) */
-    zero_is_notdef = SCIsNotdef(sf->chars[0],fixed);
-    if ( !zero_is_notdef )
+    if ( notdef_pos==-1 )
 	++cnt;		/* one notdef entry */
 
     chrs->cnt = cnt;
@@ -1765,13 +1766,9 @@ struct pschars *SplineFont2Chrs(SplineFont *sf, int iscjk,
 
     SplineFont2Subrs1(sf,round,iscjk,subrs,flags,format);
 
-    i = cnt = 0;
+    cnt = 0;
     chrs->keys[0] = copy(".notdef");
-    if ( zero_is_notdef ) {
-	chrs->values[0] = SplineChar2PS(sf->chars[0],&chrs->lens[0],round,iscjk,
-		subrs,NULL,flags,format);
-	i = 1;
-    } else {
+    if ( notdef_pos==-1 ) {
 	memset(&gb,'\0',sizeof(gb));
 	GrowBuffer(&gb);
 	*gb.pt++ = '\213';		/* 0 */	/* left side bearing */
@@ -1783,20 +1780,18 @@ struct pschars *SplineFont2Chrs(SplineFont *sf, int iscjk,
 	*gb.pt = '\0';
 	chrs->values[0] = (unsigned char *) copyn((char *) gb.base,gb.pt-gb.base);	/* 0 <w> hsbw endchar */
 	chrs->lens[0] = gb.pt-gb.base;
-	i = 0;
-	if ( sf->chars[0]!=NULL && strcmp(sf->chars[0]->name,".notdef")==0 )
-	    i = 1;
+	cnt = 1;
     }
-    cnt = 1;
-    for ( ; i<sf->charcnt; ++i ) {
+    for ( i=0 ; i<sf->glyphcnt; ++i ) {
 #if HANYANG
-	if ( sf->chars[i]!=NULL && sf->chars[i]->compositionunit )
+	if ( sf->glyphs[i]!=NULL && sf->glyphs[i]->compositionunit )
 	    /* don't output it, should be in a subroutine */;
 	else
 #endif
-	if ( SCWorthOutputting(sf->chars[i]) && sf->chars[i]==SCDuplicate(sf->chars[i])) {
-	    chrs->keys[cnt] = copy(sf->chars[i]->name);
-	    chrs->values[cnt] = SplineChar2PS(sf->chars[i],&chrs->lens[cnt],
+	if ( SCWorthOutputting(sf->glyphs[i]) &&
+		( i==notdef_pos || strcmp(sf->glyphs[i]->name,".notdef")!=0)) {
+	    chrs->keys[cnt] = copy(sf->glyphs[i]->name);
+	    chrs->values[cnt] = SplineChar2PS(sf->glyphs[i],&chrs->lens[cnt],
 		    round,iscjk,subrs,NULL,flags,format);
 	    ++cnt;
 	}
@@ -1828,8 +1823,8 @@ struct pschars *CID2Chrs(SplineFont *cidmaster,struct cidbytes *cidbytes,int fla
 
     cnt = 0;
     for ( i=0; i<cidmaster->subfontcnt; ++i )
-	if ( cnt<cidmaster->subfonts[i]->charcnt )
-	    cnt = cidmaster->subfonts[i]->charcnt;
+	if ( cnt<cidmaster->subfonts[i]->glyphcnt )
+	    cnt = cidmaster->subfonts[i]->glyphcnt;
     cidbytes->cidcnt = cnt;
 
     for ( i=0; i<cidmaster->subfontcnt; ++i ) {
@@ -1847,7 +1842,7 @@ struct pschars *CID2Chrs(SplineFont *cidmaster,struct cidbytes *cidbytes,int fla
 	sf = NULL;
 	for ( i=0; i<cidmaster->subfontcnt; ++i ) {
 	    sf = cidmaster->subfonts[i];
-	    if ( cid<sf->charcnt && SCWorthOutputting(sf->chars[cid]) )
+	    if ( cid<sf->glyphcnt && SCWorthOutputting(sf->glyphs[cid]) )
 	break;
 	}
 	if ( cid!=0 && i==cidmaster->subfontcnt ) {
@@ -1886,7 +1881,7 @@ struct pschars *CID2Chrs(SplineFont *cidmaster,struct cidbytes *cidbytes,int fla
 	} else {
 	    fd = &cidbytes->fds[i];
 	    cidbytes->fdind[cid] = i;
-	    chrs->values[cid] = SplineChar2PS(sf->chars[cid],&chrs->lens[cid],
+	    chrs->values[cid] = SplineChar2PS(sf->glyphs[cid],&chrs->lens[cid],
 		    round,fd->iscjk|0x100,fd->subrs,NULL,flags,ff_cid);
 	}
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -2721,13 +2716,13 @@ struct pschars *SplineFont2Subrs2(SplineFont *sf,int flags) {
 
     /* We don't allow refs to refs. It confuses the hintmask operators */
     /*  instead we track down to the base ref */
-    for ( i=cnt=0; i<sf->charcnt; ++i ) {
-	sc = sf->chars[i];
+    for ( i=cnt=0; i<sf->glyphcnt; ++i ) {
+	sc = sf->glyphs[i];
 	if ( autohint_before_generate && sc!=NULL &&
 		sc->changedsincelasthinted && !sc->manualhints &&
 		!(flags&ps_flag_nohints))
 	    SplineCharAutoHint(sc,NULL);
-	if ( sc==NULL || sc!=SCDuplicate(sc))
+	if ( sc==NULL )
 	    /* Do Nothing */;
 	else if ( SCWorthOutputting(sc) &&
 	    (( sc->layers[ly_fore].refs==NULL && sc->dependents!=NULL &&
@@ -2750,9 +2745,9 @@ return( subrs);
     subrs->bias = cnt<1240 ? 107 :
 		  cnt<33900 ? 1131 : 32768;
 
-    for ( i=cnt=0; i<sf->charcnt; ++i ) {
-	sc = sf->chars[i];
-	if ( sc==NULL || sc!=SCDuplicate(sc))
+    for ( i=cnt=0; i<sf->glyphcnt; ++i ) {
+	sc = sf->glyphs[i];
+	if ( sc==NULL )
 	    /* Do Nothing */;
 	else if ( sc->lsidebearing!=0x7fff ) {
 	    subrs->keys[cnt] = gcalloc(2,sizeof(BasePoint));
@@ -2780,45 +2775,26 @@ return( subrs );
 }
     
 struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
-	struct pschars *subrs,int flags) {
+	struct pschars *subrs,int flags,const int *bygid, int cnt) {
     struct pschars *chrs = gcalloc(1,sizeof(struct pschars));
-    int i, cnt;
+    int i;
     char notdefentry[20];
     SplineChar *sc;
     int fixed = SFOneWidth(sf), notdefwidth;
-    int zero_is_notdef;
 
     /* real_warn = false; */ /* Should have been done by SplineFont2Subrs2 */
 
     notdefwidth = fixed;
     if ( notdefwidth==-1 ) notdefwidth = sf->ascent+sf->descent;
 
-    cnt = 0;
-    for ( i=0; i<sf->charcnt; ++i ) {
-	sc = sf->chars[i];
-#if HANYANG
-	if ( sc!=NULL && sc->compositionunit )
-	    /* don't output it, should be in a subroutine */;
-	else
-#endif
-	if ( SCWorthOutputting(sc) && sc==SCDuplicate(sc))
-	    ++cnt;
-    }
 /* only honor the width on .notdef in non-fixed pitch fonts (or ones where there is an actual outline in notdef) */
-    zero_is_notdef = SCIsNotdef(sf->chars[0],fixed);
-    if ( !zero_is_notdef )
-	++cnt;		/* one notdef entry */
     chrs->cnt = cnt;
     chrs->lens = galloc(cnt*sizeof(int));
     chrs->values = galloc(cnt*sizeof(unsigned char *));
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
-	sf->chars[i]->ttf_glyph = -1;
-/* only honour the width on .notdef in non-fixed pitch fonts (or ones where there is an actual outline in notdef) */
-    if ( zero_is_notdef ) {
-	chrs->values[0] = SplineChar2PS2(sf->chars[0],&chrs->lens[0],nomwid,defwid,subrs,NULL,flags);
-	sf->chars[0]->ttf_glyph = 0;
-	i = 1;
+    /* notdef needs to be glyph 0 in an sfnt */
+    if ( bygid[0]!=-1 ) {
+	chrs->values[0] = SplineChar2PS2(sf->glyphs[bygid[0]],&chrs->lens[0],nomwid,defwid,subrs,NULL,flags);
     } else {
 	char *pt = notdefentry;
 	if ( notdefwidth==defwid )
@@ -2846,22 +2822,10 @@ struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
 	*pt = '\0';
 	chrs->values[0] = (unsigned char *) copyn(notdefentry,pt-notdefentry);	/* 0 <w> hsbw endchar */
 	chrs->lens[0] = pt-notdefentry;
-	i = 0;
-	if ( sf->chars[0]!=NULL && strcmp(sf->chars[0]->name,".notdef")==0 )
-	    i=1;
     }
-    cnt = 1;
-    for ( ; i<sf->charcnt; ++i ) {
-	sc = sf->chars[i];
-#if 0 && HANYANG			/* Too many places know the glyph cnt, can't refigure it here at the end */
-	if ( sc!=NULL && sc->compositionunit )
-	    /* don't output it, should be in a subroutine */;
-	else
-#endif
-	if ( SCWorthOutputting(sc) && sc==SCDuplicate(sc)) {
-	    chrs->values[cnt] = SplineChar2PS2(sc,&chrs->lens[cnt],nomwid,defwid,subrs,NULL,flags);
-	    sf->chars[i]->ttf_glyph = cnt++;
-	}
+    for ( i=1 ; i<cnt; ++i ) {
+	sc = sf->glyphs[bygid[i]];
+	chrs->values[i] = SplineChar2PS2(sc,&chrs->lens[i],nomwid,defwid,subrs,NULL,flags);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !GProgressNext()) {
@@ -2891,13 +2855,13 @@ struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds,int flags) {
 
     max = 0;
     for ( i=0; i<cidmaster->subfontcnt; ++i )
-	if ( max<cidmaster->subfonts[i]->charcnt )
-	    max = cidmaster->subfonts[i]->charcnt;
+	if ( max<cidmaster->subfonts[i]->glyphcnt )
+	    max = cidmaster->subfonts[i]->glyphcnt;
     cnt = 1;			/* for .notdef */
     for ( cid = 1; cid<max; ++cid ) {
 	for ( i=0; i<cidmaster->subfontcnt; ++i ) {
 	    sf = cidmaster->subfonts[i];
-	    if ( cid<sf->charcnt && SCWorthOutputting(sf->chars[cid])) {
+	    if ( cid<sf->glyphcnt && SCWorthOutputting(sf->glyphs[cid])) {
 		++cnt;
 	break;
 	    }
@@ -2910,15 +2874,15 @@ struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds,int flags) {
 
     for ( i=0; i<cidmaster->subfontcnt; ++i ) {
 	sf = cidmaster->subfonts[i];
-	for ( cid=0; cid<sf->charcnt; ++cid ) if ( sf->chars[cid]!=NULL )
-	    sf->chars[cid]->ttf_glyph = -1;
+	for ( cid=0; cid<sf->glyphcnt; ++cid ) if ( sf->glyphs[cid]!=NULL )
+	    sf->glyphs[cid]->ttf_glyph = -1;
     }
 
     for ( cid = cnt = 0; cid<max; ++cid ) {
 	sf = NULL;
 	for ( i=0; i<cidmaster->subfontcnt; ++i ) {
 	    sf = cidmaster->subfonts[i];
-	    if ( cid<sf->charcnt && SCWorthOutputting(sf->chars[cid]) )
+	    if ( cid<sf->glyphcnt && SCWorthOutputting(sf->glyphs[cid]) )
 	break;
 	}
 	if ( cid!=0 && i==cidmaster->subfontcnt ) {
@@ -2955,11 +2919,11 @@ struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds,int flags) {
 	    chrs->lens[0] = pt-notdefentry;
 	    ++cnt;
 #if 0 && HANYANG			/* Too much stuff knows the glyph cnt, can't refigure it here at the end */
-	} else if ( sf->chars[cid]->compositionunit ) {
+	} else if ( sf->glyphs[cid]->compositionunit ) {
 	    /* don't output it, should be in a subroutine */;
 #endif
 	} else {
-	    sc = sf->chars[cid];
+	    sc = sf->glyphs[cid];
 	    chrs->values[cnt] = SplineChar2PS2(sc,&chrs->lens[cnt],
 		    fds[i].nomwid,fds[i].defwid,fds[i].subrs,NULL,flags);
 	    sc->ttf_glyph = cnt++;

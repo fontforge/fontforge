@@ -110,8 +110,7 @@ static int32 unicode_from_MacSymbol[] = {
 static Encoding texbase = { "TeX-Base-Encoding", 256, tex_base_encoding, NULL, NULL, 1, 1, 1, 1 };
        Encoding custom = { "Custom", 0, NULL, NULL, &texbase,			  1, 1, 0, 0, 0, 0, 0, 1, 0, 0 };
 static Encoding original = { "Original", 0, NULL, NULL, &custom,		  1, 1, 0, 0, 0, 0, 0, 0, 1, 0 };
-static Encoding compact = { "Compacted", 0, NULL, NULL, &original,		  1, 1, 0, 0, 0, 0, 0, 0, 0, 1 };
-static Encoding unicodebmp = { "UnicodeBmp", 65536, NULL, NULL, &compact, 	  1, 1, 0, 0, 1, 1, 0, 0, 0, 0 };
+static Encoding unicodebmp = { "UnicodeBmp", 65536, NULL, NULL, &original, 	  1, 1, 0, 0, 1, 1, 0, 0, 0, 0 };
 static Encoding unicodefull = { "UnicodeFull", 17*65536, NULL, NULL, &unicodebmp, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0 };
 static Encoding adobestd = { "AdobeStandard", 256, unicode_from_adobestd, AdobeStandardEncoding, &unicodefull,
 										  1, 1, 1, 1, 0, 0, 0, 0, 0, 0 };
@@ -663,17 +662,13 @@ return;
 static void DeleteEncoding(Encoding *me) {
     FontView *fv;
     Encoding *prev;
-    BDFFont *bdf;
 
     if ( me->builtin )
 return;
 
     for ( fv = fv_list; fv!=NULL; fv = fv->next ) {
-	if ( fv->sf->encoding_name==me ) {
-	    fv->sf->encoding_name = &custom;
-	    for ( bdf=fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
-		bdf->encoding_name = &custom;
-	}
+	if ( fv->map->enc==me )
+	    fv->map->enc = &custom;
     }
     if ( me==enclist )
 	enclist = me->next;
@@ -837,12 +832,13 @@ return;
     GDrawDestroyWindow(gw);
 }
 
-Encoding *MakeEncoding(SplineFont *sf) {
+Encoding *MakeEncoding(SplineFont *sf,EncMap *map) {
     unichar_t *name;
-    int i;
+    int i, gid;
     Encoding *item, *temp;
+    SplineChar *sc;
 
-    if ( sf->encoding_name!=&custom || sf->charcnt>=1500 )
+    if ( map->enc!=&custom )
 return(NULL);
 
     name = GWidgetAskStringR(_STR_PleaseNameEnc,NULL,_STR_PleaseNameEnc);
@@ -852,15 +848,15 @@ return(NULL);
     item->enc_name = cu_copy(name);
     item->only_1byte = item->has_1byte = true;
     free(name);
-    item->char_cnt = sf->charcnt;
-    item->unicode = gcalloc(sf->charcnt,sizeof(int32));
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	if ( sf->chars[i]->unicodeenc!=-1 )
-	    item->unicode[i] = sf->chars[i]->unicodeenc;
-	else if ( strcmp(sf->chars[i]->name,".notdef")!=0 ) {
+    item->char_cnt = map->enccount;
+    item->unicode = gcalloc(map->enccount,sizeof(int32));
+    for ( i=0; i<map->enccount; ++i ) if ( (gid = map->map[i])!=-1 && (sc=sf->glyphs[gid])!=NULL ) {
+	if ( sc->unicodeenc!=-1 )
+	    item->unicode[i] = sc->unicodeenc;
+	else if ( strcmp(sc->name,".notdef")!=0 ) {
 	    if ( item->psnames==NULL )
-		item->psnames = gcalloc(sf->charcnt,sizeof(unichar_t *));
-	    item->psnames[i] = copy(sf->chars[i]->name);
+		item->psnames = gcalloc(map->enccount,sizeof(unichar_t *));
+	    item->psnames[i] = copy(sc->name);
 	}
     }
     RemoveMultiples(item);
@@ -893,6 +889,57 @@ return;
     DumpPfaEditEncodings();
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+
+void SFFindNearTop(SplineFont *sf) {
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    FontView *fv;
+    EncMap *map;
+    int i,k,gid;
+
+    if ( sf->cidmaster!=NULL )
+	sf = sf->cidmaster;
+    if ( sf->subfontcnt==0 ) {
+	for ( fv=sf->fv; fv!=NULL; fv=fv->nextsame ) {
+	    map = fv->map;
+	    fv->sc_near_top = NULL;
+	    for ( i=fv->rowoff*fv->colcnt; i<map->enccount && i<(fv->rowoff+fv->rowcnt)*fv->colcnt; ++i )
+		if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL ) {
+		    fv->sc_near_top = sf->glyphs[gid];
+	    break;
+		}
+	}
+    } else {
+	for ( fv=sf->fv; fv!=NULL; fv=fv->nextsame ) {
+	    map = fv->map;
+	    fv->sc_near_top = NULL;
+	    for ( i=fv->rowoff*fv->colcnt; i<map->enccount && i<(fv->rowoff+fv->rowcnt)*fv->colcnt; ++i ) {
+		for ( k=0; k<sf->subfontcnt; ++k )
+		    if ( (gid=map->map[i])!=-1 &&
+			    gid<sf->subfonts[k]->glyphcnt &&
+			    sf->subfonts[k]->glyphs[gid]!=NULL )
+			fv->sc_near_top = sf->subfonts[k]->glyphs[gid];
+	    }
+	}
+    }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+}
+
+void SFRestoreNearTop(SplineFont *sf) {
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    FontView *fv;
+
+    for ( fv=sf->fv; fv!=NULL; fv=fv->nextsame ) if ( fv->sc_near_top!=NULL ) {
+	/* Note: For CID keyed fonts, we don't care if sc is in the currenly */
+	/*  displayed font, all we care about is the CID */
+	int enc = fv->map->backmap[fv->sc_near_top->orig_pos];
+	if ( enc!=-1 ) {
+	    fv->rowoff = enc/fv->colcnt;
+	    GScrollBarSetPos(fv->vsb,fv->rowoff);
+	    /* Don't ask for an expose event yet. We'll get one soon enough */
+	}
+    }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+}
 
 /* ************************************************************************** */
 /* ****************************** CID Encodings ***************************** */
@@ -951,7 +998,7 @@ return( uni );
 return( -1 );
 }
 
-int CID2NameEnc(struct cidmap *map,int cid, char *buffer, int len) {
+int CID2NameUni(struct cidmap *map,int cid, char *buffer, int len) {
     int enc = -1;
 
 #if defined( _NO_SNPRINTF ) || defined( __VMS )
@@ -991,14 +1038,14 @@ int CID2NameEnc(struct cidmap *map,int cid, char *buffer, int len) {
 return( enc );
 }
 
-int NameEnc2CID(struct cidmap *map,int enc, char *name) {
+int NameUni2CID(struct cidmap *map,int uni, const char *name) {
     int i;
 
     if ( map==NULL )
 return( -1 );
-    if ( enc!=-1 ) {
+    if ( uni!=-1 ) {
 	for ( i=0; i<map->namemax; ++i )
-	    if ( map->unicode[i]==enc )
+	    if ( map->unicode[i]==uni )
 return( i );
     } else {
 	for ( i=0; i<map->namemax; ++i )
@@ -1328,18 +1375,18 @@ return( LoadMapFromFile(file,registry,ordering,supplement));
 return( MakeDummyMap(registry,ordering,supplement));
 }
 
-static void SFApplyEnc(SplineFont *sf, int charcnt) {
-    SplineChar **chars, *sc;
+static void SFApplyOrdering(SplineFont *sf, int glyphcnt) {
+    SplineChar **glyphs, *sc;
     int i;
     RefChar *refs, *rnext, *rprev;
     SplineSet *new, *spl;
 
     /* Remove references to characters which aren't in the new map (if any) */
     /* Don't need to fix up dependencies, because we throw the char away */
-    for ( i=0; i<sf->charcnt; ++i ) if ( (sc = sf->chars[i])!=NULL ) {
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc = sf->glyphs[i])!=NULL ) {
 	for ( rprev = NULL, refs=sc->layers[ly_fore].refs; refs!=NULL; refs=rnext ) {
 	    rnext = refs->next;
-	    if ( refs->sc->enc==-1 ) {
+	    if ( refs->sc->orig_pos==-1 ) {
 		new = refs->layers[0].splines;
 		if ( new!=NULL ) {
 		    for ( spl = new; spl->next!=NULL; spl = spl->next );
@@ -1357,29 +1404,30 @@ static void SFApplyEnc(SplineFont *sf, int charcnt) {
 	}
     }
 
-    chars = gcalloc(charcnt+1,sizeof(SplineChar *));
-    for ( i=0; i<sf->charcnt; ++i ) if ( (sc = sf->chars[i])!=NULL ) {
-	if ( sc->enc==-1 )
+    glyphs = gcalloc(glyphcnt+1,sizeof(SplineChar *));
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc = sf->glyphs[i])!=NULL ) {
+	if ( sc->orig_pos==-1 )
 	    SplineCharFree(sc);
 	else
-	    chars[sc->enc] = sc;
+	    glyphs[sc->orig_pos] = sc;
     }
 
-    free(sf->chars);
-    sf->charcnt = charcnt;
-    sf->chars = chars;
+    free(sf->glyphs);
+    sf->glyphcnt = sf->glyphmax = glyphcnt;
+    sf->glyphs = glyphs;
 }
 
+/* Convert a normal font to a cid font, rearranging glyphs into cid order */
 void SFEncodeToMap(SplineFont *sf,struct cidmap *map) {
     SplineChar *sc;
     int i,max=0, anyextras=0;
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( SCWorthOutputting(sc = sf->chars[i]) ) {
-	sc->enc = NameEnc2CID(map,sc->unicodeenc,sc->name);
-	if ( sc->enc>max ) max = sc->enc;
-	else if ( sc->enc==-1 ) ++anyextras;
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sc = sf->glyphs[i]) ) {
+	sc->orig_pos = NameUni2CID(map,sc->unicodeenc,sc->name);
+	if ( sc->orig_pos>max ) max = sc->orig_pos;
+	else if ( sc->orig_pos==-1 ) ++anyextras;
     } else if ( sc!=NULL )
-	sc->enc = -1;
+	sc->orig_pos = -1;
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( anyextras ) {
@@ -1392,14 +1440,14 @@ void SFEncodeToMap(SplineFont *sf,struct cidmap *map) {
 #endif
 	    if ( map!=NULL && max<map->cidmax ) max = map->cidmax;
 	    anyextras = 0;
-	    for ( i=0; i<sf->charcnt; ++i ) if ( SCWorthOutputting(sc = sf->chars[i]) ) {
-		if ( sc->enc == -1 ) sc->enc = max + anyextras++;
+	    for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sc = sf->glyphs[i]) ) {
+		if ( sc->orig_pos == -1 ) sc->orig_pos = max + anyextras++;
 	    }
 	    max += anyextras;
 	}
     }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-    SFApplyEnc(sf, max+1);
+    SFApplyOrdering(sf, max+1);
 }
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -1783,7 +1831,7 @@ return;
     }
 }
 
-SplineFont *CIDFlatten(SplineFont *cidmaster,SplineChar **chars,int charcnt) {
+SplineFont *CIDFlatten(SplineFont *cidmaster,SplineChar **glyphs,int charcnt) {
     FontView *fvs;
     SplineFont *new;
     char buffer[20];
@@ -1808,7 +1856,6 @@ return(NULL);
     new->changed = new->changed_since_autosave = true;
     new->display_antialias = cidmaster->display_antialias;
     new->fv = cidmaster->fv;
-    new->encoding_name = &custom;
     /* Don't copy the grid splines, there won't be anything meaningfull at top level */
     /*  and won't know which font to copy from below */
     new->bitmaps = cidmaster->bitmaps;		/* should already be flattened */
@@ -1834,17 +1881,24 @@ return(NULL);
     new->display_size = cidmaster->display_size;
     /* Don't copy private */
     new->xuid = copy(cidmaster->xuid);
-    new->chars = chars;
-    new->charcnt = charcnt;
-    for ( j=0; j<charcnt; ++j ) if ( chars[j]!=NULL ) {
-	chars[j]->parent = new;
-	chars[j]->enc = j;
+    new->glyphs = glyphs;
+    new->glyphcnt = charcnt;
+    for ( j=0; j<charcnt; ++j ) if ( glyphs[j]!=NULL ) {
+	glyphs[j]->parent = new;
+	glyphs[j]->orig_pos = j;
     }
     for ( fvs=new->fv; fvs!=NULL; fvs=fvs->nextsame ) {
 	fvs->cidmaster = NULL;
-	if ( fvs->sf->charcnt!=new->charcnt ) {
+	if ( fvs->sf->glyphcnt!=new->glyphcnt ) {
 	    free(fvs->selected);
-	    fvs->selected = gcalloc(new->charcnt,sizeof(char));
+	    fvs->selected = gcalloc(new->glyphcnt,sizeof(char));
+	    if ( fvs->map->encmax < new->glyphcnt )
+		fvs->map->map = grealloc(fvs->map->map,(fvs->map->encmax = new->glyphcnt)*sizeof(int));
+	    fvs->map->enccount = new->glyphcnt;
+	    if ( fvs->map->backmax < new->glyphcnt )
+		fvs->map->backmap = grealloc(fvs->map->backmap,(fvs->map->backmax = new->glyphcnt)*sizeof(int));
+	    for ( j=0; j<new->glyphcnt; ++j )
+		fvs->map->map[j] = fvs->map->backmap[j] = j;
 	}
 	fvs->sf = new;
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -1859,7 +1913,7 @@ return( new );
 }
 
 void SFFlatten(SplineFont *cidmaster) {
-    SplineChar **chars;
+    SplineChar **glyphs;
     int i,j,max;
 
     if ( cidmaster==NULL )
@@ -1869,29 +1923,28 @@ return;
     /* This doesn't change the ordering, so no need for special tricks to */
     /*  preserve scrolling location. */
     for ( i=max=0; i<cidmaster->subfontcnt; ++i ) {
-	if (cidmaster->subfonts[i]->compacted )
-	    SFUncompactFont(cidmaster->subfonts[i]);
-	if ( max<cidmaster->subfonts[i]->charcnt )
-	    max = cidmaster->subfonts[i]->charcnt;
+	if ( max<cidmaster->subfonts[i]->glyphcnt )
+	    max = cidmaster->subfonts[i]->glyphcnt;
     }
-    chars = gcalloc(max,sizeof(SplineChar *));
+    glyphs = gcalloc(max,sizeof(SplineChar *));
     for ( j=0; j<max; ++j ) {
 	for ( i=0; i<cidmaster->subfontcnt; ++i ) {
-	    if ( j<cidmaster->subfonts[i]->charcnt && cidmaster->subfonts[i]->chars[j]!=NULL ) {
-		chars[j] = cidmaster->subfonts[i]->chars[j];
-		cidmaster->subfonts[i]->chars[j] = NULL;
+	    if ( j<cidmaster->subfonts[i]->glyphcnt && cidmaster->subfonts[i]->glyphs[j]!=NULL ) {
+		glyphs[j] = cidmaster->subfonts[i]->glyphs[j];
+		cidmaster->subfonts[i]->glyphs[j] = NULL;
 	break;
 	    }
 	}
     }
-    CIDFlatten(cidmaster,chars,max);
+    CIDFlatten(cidmaster,glyphs,max);
 }
 
 int SFFlattenByCMap(SplineFont *sf,char *cmapname) {
     struct cmap *cmap;
     int i,j,k,l,m, extras, max, curmax, warned;
     int found[4];
-    SplineChar **chars = NULL, *sc;
+    SplineChar **glyphs = NULL, *sc;
+    FontView *fvs;
 
     if ( sf->cidmaster!=NULL )
 	sf = sf->cidmaster;
@@ -1901,7 +1954,7 @@ int SFFlattenByCMap(SplineFont *sf,char *cmapname) {
 #elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Not a CID-keyed font"),_("Not a CID-keyed font"));
 #endif
-return(false);
+return( false );
     }
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( cmapname==NULL ) {
@@ -1915,10 +1968,10 @@ return(false);
     }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     if ( cmapname==NULL )
-return(true);
+return( false );
     cmap = ParseCMap(cmapname);
     if ( cmap==NULL )
-return(false);
+return( false );
     CompressCMap(cmap);
     max = 0;
     for ( i=0; i<cmap->groups[cmt_cid].n; ++i ) {
@@ -1931,83 +1984,94 @@ return(false);
 	    gwwv_post_error(_("Encoding Too Large"),_("Encoding Too Large"));
 #endif
 	    cmapfree(cmap);
-return(false);
+return( false );
 	}
     }
 
     SFFindNearTop(sf);
     curmax = 0;
     for ( k=0; k<sf->subfontcnt; ++k ) {
-	if (sf->subfonts[k]->compacted )
-	    SFUncompactFont(sf->subfonts[k]);
-	if ( curmax < sf->subfonts[k]->charcnt )
-	    curmax = sf->subfonts[k]->charcnt;
+	if ( curmax < sf->subfonts[k]->glyphcnt )
+	    curmax = sf->subfonts[k]->glyphcnt;
     }
 
-    chars = NULL;
-    warned = false;
-    for ( j=0; j<2; ++j ) {
-	extras = 0;
-	for ( i=0; i<curmax; ++i ) {
-	    sc = NULL;
-	    for ( k=0; k<sf->subfontcnt; ++k )
-		if ( i<sf->subfonts[k]->charcnt && sf->subfonts[k]->chars[i]!=NULL ) {
-		    sc = sf->subfonts[k]->chars[i];
-		    if ( chars!=NULL )
-			sf->subfonts[k]->chars[i] = NULL;
-	    break;
-		}
-	    if ( sc!=NULL ) {
-		m = 0;
-		for ( l=0; l<cmap->groups[cmt_cid].n; ++l ) {
-		    if ( i>=cmap->groups[cmt_cid].ranges[l].cid &&
-			    i<=cmap->groups[cmt_cid].ranges[l].cid +
-			       cmap->groups[cmt_cid].ranges[l].last -
-				cmap->groups[cmt_cid].ranges[l].first ) {
-			if ( m<sizeof(found)/sizeof(found[0]) )
-			    found[m++] = l;
-			else if ( !warned ) {
+    glyphs = gcalloc(curmax,sizeof(SplineChar *));
+    for ( i=0; i<curmax; ++i ) {
+	for ( k=0; k<sf->subfontcnt; ++k )
+	    if ( i<sf->subfonts[k]->glyphcnt && sf->subfonts[k]->glyphs[i]!=NULL ) {
+		glyphs[i] = sf->subfonts[k]->glyphs[i];
+		sf->subfonts[k]->glyphs[i] = NULL;
+	break;
+	    }
+    }
+    sf = CIDFlatten(sf,glyphs,curmax);
+
+    warned = true;
+    for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
+	EncMap *map = fvs->map;
+	for ( j=0; j<2; ++j ) {
+	    extras = 0;
+	    for ( i=0; i<curmax; ++i ) {
+		sc = glyphs[i];
+		if ( sc!=NULL ) {
+		    m = 0;
+		    for ( l=0; l<cmap->groups[cmt_cid].n; ++l ) {
+			if ( i>=cmap->groups[cmt_cid].ranges[l].cid &&
+				i<=cmap->groups[cmt_cid].ranges[l].cid +
+				   cmap->groups[cmt_cid].ranges[l].last -
+				    cmap->groups[cmt_cid].ranges[l].first ) {
+			    if ( m<sizeof(found)/sizeof(found[0]) )
+				found[m++] = l;
+			    else if ( !warned ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-			    GWidgetPostNoticeR(_STR_MultipleEncodingIgnored,
-				    _STR_CIDGlyphMultEncoded, i,
-			            sizeof(found)/sizeof(found[0]),
-			            sizeof(found)/sizeof(found[0]));
+				GWidgetPostNoticeR(_STR_MultipleEncodingIgnored,
+					_STR_CIDGlyphMultEncoded, i,
+					sizeof(found)/sizeof(found[0]),
+					sizeof(found)/sizeof(found[0]));
 #elif defined(FONTFORGE_CONFIG_GTK)
-			    gwwv_post_notice(_("MultipleEncodingIgnored"),
-				    _STR_CIDGlyphMultEncoded, i,
-			            sizeof(found)/sizeof(found[0]),
-			            sizeof(found)/sizeof(found[0]));
+				gwwv_post_notice(_("MultipleEncodingIgnored"),
+					_STR_CIDGlyphMultEncoded, i,
+					sizeof(found)/sizeof(found[0]),
+					sizeof(found)/sizeof(found[0]));
 #endif
-			    warned = true;
+				warned = true;
+			    }
 			}
 		    }
-		}
-		if ( m==0 ) {
-		    if ( chars!=NULL )
-			chars[max+extras] = sc;
-		    ++extras;
-		} else {
-		    if ( chars!=NULL ) {
-			int p = cmap->groups[cmt_cid].ranges[found[0]].first +
-				i-cmap->groups[cmt_cid].ranges[found[0]].cid;
-			chars[p] = sc;
-			sc->enc = p;
-			for ( l=1; l<m; ++l ) {
-			    int pos = cmap->groups[cmt_cid].ranges[found[l]].first +
-				    i-cmap->groups[cmt_cid].ranges[found[l]].cid;
-			    chars[pos] = MakeDupRef(sc,pos,-1);
+		    if ( m==0 ) {
+			if ( j ) {
+			    map->map[max+extras] = sc->orig_pos;
+			    map->backmap[sc->orig_pos] = max+extras;
+			}
+			++extras;
+		    } else {
+			if ( j ) {
+			    int p = cmap->groups[cmt_cid].ranges[found[0]].first +
+				    i-cmap->groups[cmt_cid].ranges[found[0]].cid;
+			    map->map[p] = sc->orig_pos;
+			    map->backmap[sc->orig_pos] = p;
+			    for ( l=1; l<m; ++l ) {
+				int pos = cmap->groups[cmt_cid].ranges[found[l]].first +
+					i-cmap->groups[cmt_cid].ranges[found[l]].cid;
+				map->map[pos] = sc->orig_pos;
+			    }
 			}
 		    }
 		}
 	    }
+	    if ( !j ) {
+		map->map = grealloc(map->map,(map->encmax = map->enccount = max+extras)*sizeof(int));
+		memset(map->map,-1,map->enccount*sizeof(int));
+		memset(map->backmap,-1,sf->glyphcnt*sizeof(int));
+		map->remap = cmap->remap; cmap->remap = NULL;
+	    }
+	    warned = true;
 	}
-	if ( chars==NULL )
-	    chars = gcalloc(max+extras,sizeof(SplineChar *));
-	warned = true;
     }
-    sf = CIDFlatten(sf,chars,max+extras);
-    sf->remap = cmap->remap; cmap->remap = NULL;
     cmapfree(cmap);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    FontViewReformatAll(sf);
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     SFRestoreNearTop(sf);
 return( true );
 }
@@ -2024,7 +2088,7 @@ return( enc-cmap->groups[cmt_cid].ranges[i].first+
 return( -1 );
 }
 
-static void SFEncodeToCMap(SplineFont *cidmaster,SplineFont *sf,struct cmap *cmap) {
+static void SFEncodeToCMap(SplineFont *cidmaster,SplineFont *sf,EncMap *oldmap, struct cmap *cmap) {
     SplineChar *sc;
     int i,max=0, anyextras=0;
 
@@ -2032,10 +2096,17 @@ static void SFEncodeToCMap(SplineFont *cidmaster,SplineFont *sf,struct cmap *cma
     cidmaster->ordering = cmap->ordering; cmap->ordering = NULL;
     cidmaster->supplement = cmap->supplement;
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( (sc = sf->chars[i])!=NULL ) {
-	sc->enc = Enc2CMap(cmap,sc->enc);
-	if ( sc->enc>max ) max = sc->enc;
-	else if ( sc->enc==-1 ) ++anyextras;
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc = sf->glyphs[i])!=NULL ) {
+	if ( strcmp(sc->name,".notdef")==0 )
+	    sc->orig_pos = 0;
+	else if ( oldmap->backmap[i]==-1 )
+	    sc->orig_pos = -1;
+	else {
+	    sc->orig_pos = Enc2CMap(cmap,oldmap->backmap[i]);
+	    if ( sc->orig_pos==0 ) sc->orig_pos = -1;
+	}
+	if ( sc->orig_pos>max ) max = sc->orig_pos;
+	else if ( sc->orig_pos==-1 ) ++anyextras;
     }
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -2049,17 +2120,17 @@ static void SFEncodeToCMap(SplineFont *cidmaster,SplineFont *sf,struct cmap *cma
 #endif
 	    if ( cmap!=NULL && max<cmap->total ) max = cmap->total;
 	    anyextras = 0;
-	    for ( i=0; i<sf->charcnt; ++i ) if ( (sc = sf->chars[i])!=NULL ) {
-		if ( sc->enc == -1 ) sc->enc = max + anyextras++;
+	    for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc = sf->glyphs[i])!=NULL ) {
+		if ( sc->orig_pos == -1 ) sc->orig_pos = max + anyextras++;
 	    }
 	    max += anyextras;
 	}
     }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-    SFApplyEnc(sf, max);
+    SFApplyOrdering(sf, max);
 }
 
-SplineFont *MakeCIDMaster(SplineFont *sf,int bycmap,char *cmapfilename, struct cidmap *cidmap) {
+SplineFont *MakeCIDMaster(SplineFont *sf,EncMap *oldmap,int bycmap,char *cmapfilename, struct cidmap *cidmap) {
     SplineFont *cidmaster;
     struct cidmap *map;
     struct cmap *cmap;
@@ -2094,7 +2165,7 @@ return(NULL);
 return(NULL);
 	}
 	CompressCMap(cmap);
-	SFEncodeToCMap(cidmaster,sf,cmap);
+	SFEncodeToCMap(cidmaster,sf,oldmap,cmap);
 	cmapfree(cmap);
     } else {
 	map = cidmap;
@@ -2113,6 +2184,17 @@ return(NULL);
 	}
 	SFEncodeToMap(sf,map);
     }
+    if ( sf->uni_interp!=ui_none && sf->uni_interp!=ui_unset )
+	cidmaster->uni_interp = sf->uni_interp;
+    else if ( strstrmatch(cidmaster->ordering,"japan")!=NULL )
+	cidmaster->uni_interp = ui_japanese;
+    else if ( strstrmatch(cidmaster->ordering,"CNS")!=NULL )
+	cidmaster->uni_interp = ui_trad_chinese;
+    else if ( strstrmatch(cidmaster->ordering,"GB")!=NULL )
+	cidmaster->uni_interp = ui_simp_chinese;
+    else if ( strstrmatch(cidmaster->ordering,"Korea")!=NULL )
+	cidmaster->uni_interp = ui_korean;
+    sf->uni_interp = cidmaster->uni_interp;
     cidmaster->fontname = copy(sf->fontname);
     cidmaster->fullname = copy(sf->fullname);
     cidmaster->familyname = copy(sf->familyname);
@@ -2128,17 +2210,23 @@ return(NULL);
 	fvs->cidmaster = cidmaster;
     cidmaster->fv = sf->fv;
     sf->cidmaster = cidmaster;
-    sf->compacted = false;
     cidmaster->subfontcnt = 1;
     cidmaster->subfonts = gcalloc(2,sizeof(SplineFont *));
     cidmaster->subfonts[0] = sf;
+    cidmaster->sli_cnt = sf->sli_cnt; sf->sli_cnt = 0;
+    cidmaster->script_lang = sf->script_lang; sf->script_lang = NULL;
+    cidmaster->possub = sf->possub; sf->possub = NULL;
+    cidmaster->kerns = sf->kerns; sf->kerns = NULL;
+    cidmaster->vkerns = sf->vkerns; sf->vkerns = NULL;
     if ( sf->private==NULL )
 	sf->private = gcalloc(1,sizeof(struct psdict));
     if ( !PSDictHasEntry(sf->private,"lenIV"))
 	PSDictChangeEntry(sf->private,"lenIV","1");		/* It's 4 by default, in CIDs the convention seems to be 1 */
     for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
 	free(fvs->selected);
-	fvs->selected = gcalloc(fvs->sf->charcnt,sizeof(char));
+	fvs->selected = gcalloc(fvs->sf->glyphcnt,sizeof(char));
+	EncMapFree(fvs->map);
+	fvs->map = EncMap1to1(fvs->sf->glyphcnt);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	FVSetTitle(fvs);
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
@@ -2154,134 +2242,7 @@ int CountOfEncoding(Encoding *encoding_name) {
 return( encoding_name->char_cnt );
 }
 
-static void BDFsToo(SplineFont *sf,int cnt) {
-    BDFFont *bdf;
-    BDFChar **newbc;
-    int i;
-
-    for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
-	newbc = gcalloc(cnt,sizeof(BDFChar *));
-	for ( i=0; i<bdf->charcnt; ++i ) if ( bdf->chars[i]!=NULL ) {
-	    int pos = bdf->chars[i]->sc->enc;
-	    newbc[pos] = bdf->chars[i];
-	    newbc[pos]->enc = pos;
-	}
-	free(bdf->chars);
-	bdf->chars = newbc;
-	bdf->charcnt = cnt;
-	bdf->encoding_name = sf->encoding_name;
-    }
-}
-
-static void _SFCompactFont(SplineFont *sf) {
-    int i, cnt;
-    SplineChar **newchars;
- 
-    for ( i=cnt=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	sf->chars[i]->old_enc = i;
-	++cnt;
-    }
-    newchars = galloc(cnt*sizeof(SplineChar *));
-    for ( i=cnt=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	newchars[cnt] = sf->chars[i];
-	newchars[cnt]->enc = cnt;
-	++cnt;
-    }
-    free(sf->chars);
-    sf->chars = newchars;
-    sf->charcnt = cnt;
-    sf->old_encname = sf->encoding_name;
-    sf->encoding_name = &compact;
-    sf->compacted = true;
-    sf->encodingchanged = true;
-    BDFsToo(sf,cnt);
-}
-
-int SFCompactFont(SplineFont *sf) {
-    MMSet *mm = sf->mm;
-    int i;
-
-    if ( sf->compacted )
-return( false );
-
-    SFFindNearTop(sf);
-
-    if ( mm==NULL )
-	_SFCompactFont(sf);
-    else {
-	for ( i=0; i<mm->instance_count; ++i )
-	    _SFCompactFont(mm->instances[i]);
-	_SFCompactFont(mm->normal);
-    }
-
-    SFRestoreNearTop(sf);
-return( true );
-}
-
-static void _SFUncompactFont(SplineFont *sf) {
-    int i,cnt;
-    SplineChar **newchars;
-
-    cnt = 0;
-    for ( i=sf->charcnt-1; i>=0; --i ) if ( sf->chars[i]!=NULL ) {
-	cnt = sf->chars[i]->old_enc+1;
-    break;
-    }
-    if ( (i=CountOfEncoding(sf->old_encname))>cnt )
-	cnt = i;
-    if ( cnt==0 )
-return;
-
-    newchars = gcalloc(cnt,sizeof(SplineChar *));
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	int enc = sf->chars[i]->old_enc;
-	if ( enc>=cnt ) {
-	    IError("Compacted font isn't" );
-	    free( newchars );
-return;
-	}
-	newchars[enc] = sf->chars[i];
-	newchars[enc]->enc = enc;
-    }
-    free(sf->chars);
-    sf->chars = newchars;
-    sf->charcnt = cnt;
-    sf->encoding_name = sf->old_encname;
-    sf->compacted = false;
-    sf->encodingchanged = true;
-
-    BDFsToo(sf,cnt);
-}
-
-int SFUncompactFont(SplineFont *sf) {
-    int i, cnt;
-    MMSet *mm = sf->mm;
-
-    if ( !sf->compacted )
-return( false );
-    cnt = 0;
-    for ( i=sf->charcnt-1; i>=0; --i ) if ( sf->chars[i]!=NULL ) {
-	cnt = sf->chars[i]->old_enc+1;
-    break;
-    }
-    if ( cnt==0 )
-return( false );
-
-    SFFindNearTop(sf);
-
-    if ( mm==NULL )
-	_SFUncompactFont(sf);
-    else {
-	for ( i=0; i<mm->instance_count; ++i )
-	    _SFUncompactFont(mm->instances[i]);
-	_SFUncompactFont(mm->normal);
-    }
-
-    SFRestoreNearTop(sf);
-return( true );
-}
-
-char *SFEncodingName(SplineFont *sf) {
+char *SFEncodingName(SplineFont *sf,EncMap *map) {
     char buffer[130];
 
     if ( sf->cidmaster!=NULL )
@@ -2290,5 +2251,599 @@ char *SFEncodingName(SplineFont *sf) {
 	sprintf( buffer, "%.50s-%.50s-%d", sf->cidregistry, sf->ordering, sf->supplement );
 return( copy( buffer ));
     }
-return( copy( sf->encoding_name->enc_name ));
+return( copy( map->enc->enc_name ));
 }
+
+/* ************************** Reencoding  routines ************************** */
+
+static void BDFOrigFixup(BDFFont *bdf,int orig_cnt,SplineFont *sf) {
+    BDFChar **glyphs = gcalloc(orig_cnt,sizeof(BDFChar *));
+    int i;
+
+    for ( i=0; i<bdf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	glyphs[sf->glyphs[i]->orig_pos] = bdf->glyphs[i];
+	bdf->glyphs[i]->orig_pos = sf->glyphs[i]->orig_pos;
+    }
+    free(bdf->glyphs);
+    bdf->glyphs = glyphs;
+    bdf->glyphcnt = orig_cnt;
+    bdf->ticked = true;
+}
+
+static int _SFForceEncoding(SplineFont *sf,EncMap *old, Encoding *new_enc) {
+    int enc_cnt,i;
+    BDFFont *bdf;
+    FontView *fvs;
+
+    /* Normally we base our encoding process on unicode code points. */
+    /*  but encodings like AdobeStandard are more interested in names than */
+    /*  code points. It is perfectly possible to have a font properly */
+    /*  encoded by code point which is not properly encoded by name */
+    /*  (might have f_i where it should have fi). So even if it's got */
+    /*  the right encoding, we still may want to force the names */
+    if ( new_enc->is_custom )
+return(false);			/* Custom, it's whatever's there */
+
+    if ( new_enc->is_original ) {
+	SplineChar **glyphs;
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
+	    sf->glyphs[i]->orig_pos = -1;
+	for ( i=enc_cnt=0; i<old->enccount; ++i )
+	    if ( old->map[i]!=-1 && sf->glyphs[old->map[i]]!=NULL &&
+		    sf->glyphs[old->map[i]]->orig_pos == -1 )
+		sf->glyphs[old->map[i]]->orig_pos = enc_cnt++;
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
+	    if ( sf->glyphs[i]->orig_pos==-1 )
+		sf->glyphs[i]->orig_pos = enc_cnt++;
+	for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
+	    fvs->map->ticked = false;
+	    if ( fvs->filled!=NULL ) fvs->filled->ticked = false;
+	}
+	for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) if ( !fvs->map->ticked ) {
+	    EncMap *map = fvs->map;
+	    for ( i=0; i<map->enccount; ++i ) if ( map->map[i]!=-1 )
+		map->map[i] = sf->glyphs[map->map[i]]->orig_pos;
+	    if ( enc_cnt>map->backmax ) {
+		free(map->backmap);
+		map->backmax = enc_cnt;
+		map->backmap = galloc(enc_cnt*sizeof(int));
+	    }
+	    memset(map->backmap,-1,enc_cnt*sizeof(int));
+	    for ( i=0; i<map->enccount; ++i ) if ( map->map[i]!=-1 )
+		if ( map->backmap[map->map[i]]==-1 )
+		    map->backmap[map->map[i]] = i;
+	    map->ticked = true;
+	}
+	if ( !old->ticked )
+	    IError( "Unticked encmap" );
+	for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next )
+	    BDFOrigFixup(bdf,enc_cnt,sf);
+	for ( fvs=sf->fv; fvs!=NULL ; fvs=fvs->nextsame ) {
+	    if ( fvs->filled!=NULL && !fvs->filled->ticked )
+		BDFOrigFixup(sf->fv->filled,enc_cnt,sf);
+	}
+	glyphs = gcalloc(enc_cnt,sizeof(SplineChar *));
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
+	    glyphs[sf->glyphs[i]->orig_pos] = sf->glyphs[i];
+	free(sf->glyphs);
+	sf->glyphs = glyphs;
+	sf->glyphcnt = enc_cnt;
+return( true );
+    }
+
+    enc_cnt = new_enc->char_cnt;
+
+    if ( old->enccount<enc_cnt ) {
+	if ( old->encmax<enc_cnt ) {
+	    old->map = grealloc(old->map,enc_cnt*sizeof(int));
+	    old->encmax = enc_cnt;
+	}
+	memset(old->map+old->enccount,-1,(enc_cnt-old->enccount)*sizeof(int));
+	old->enccount = enc_cnt;
+    }
+    old->enc = new_enc;
+    for ( i=0; i<old->enccount && i<enc_cnt; ++i ) if ( old->map[i]!=-1 && sf->glyphs[old->map[i]]!=NULL ) {
+	SplineChar dummy;
+	int j = old->map[i];
+	SCBuildDummy(&dummy,sf,old,i);
+	sf->glyphs[j]->unicodeenc = dummy.unicodeenc;
+	free(sf->glyphs[j]->name);
+	sf->glyphs[j]->name = copy(dummy.name);
+    }
+return( true );
+}
+
+int SFForceEncoding(SplineFont *sf,EncMap *old, Encoding *new_enc) {
+    if ( sf->mm!=NULL ) {
+	MMSet *mm = sf->mm;
+	int i;
+	for ( i=0; i<mm->instance_count; ++i )
+	    _SFForceEncoding(mm->instances[i],old,new_enc);
+	_SFForceEncoding(mm->normal,old,new_enc);
+    } else
+return( _SFForceEncoding(sf,old,new_enc));
+
+return( true );
+}
+
+EncMap *EncMapFromEncoding(SplineFont *sf,Encoding *enc) {
+    int i,j, extras;
+    int *encoded, *unencoded;
+    EncMap *map;
+
+    if ( enc==NULL )
+return( NULL );
+
+    encoded = galloc(enc->char_cnt*sizeof(int));
+    memset(encoded,-1,enc->char_cnt*sizeof(int));
+    unencoded = galloc(sf->glyphcnt*sizeof(int));
+
+    for ( i=extras=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	j = -1;
+	if ( enc->psnames!=NULL ) {
+	    for ( j=enc->char_cnt-1; j>=0; --j ) {
+		if ( strcmp(enc->psnames[j],sf->glyphs[i]->name)==0 )
+	    break;
+	    }
+	}
+	if ( j!=-1 ||
+		(sf->glyphs[i]->unicodeenc!=-1 &&
+		 sf->glyphs[i]->unicodeenc<unicode4_size &&
+		 (j = EncFromUni(sf->glyphs[i]->unicodeenc,enc))!= -1 ))
+	    encoded[j] = i;
+	else
+	    unencoded[extras++] = i;
+    }
+
+    /* Some glyphs have both a pua encoding and an encoding in a non-bmp */
+    /*  plane. Big5HK does and the AMS glyphs do */
+    if ( enc->is_unicodefull && (sf->uni_interp == ui_trad_chinese ||
+				 sf->uni_interp == ui_ams )) {
+	extern const int cns14pua[], amspua[];
+	const int *pua = sf->uni_interp == ui_ams? amspua : cns14pua;
+	for ( i=0xe000; i<0xf8ff; ++i ) {
+	    if ( pua[i-0xe000]!=0 )
+		encoded[pua[i-0xe000]] = encoded[i];
+	}
+    }
+
+    if ( enc->psnames != NULL ) {
+	/* Names are more important than unicode code points for some encodings */
+	/*  AdobeStandard for instance which won't work if you have a glyph  */
+	/*  named "f_i" (must be "fi") even though the code point is correct */
+	/* The code above would match f_i where AS requires fi, so force the */
+	/*  names to be correct. */
+	for ( j=0; j<enc->char_cnt; ++j ) {
+	    if ( encoded[j]!=-1 && enc->psnames[j]!=NULL &&
+		    strcmp(sf->glyphs[encoded[j]]->name,enc->psnames[j])!=0 ) {
+		free(sf->glyphs[encoded[j]]->name);
+		sf->glyphs[encoded[j]]->name = copy(enc->psnames[j]);
+	    }
+	}
+    }
+
+    map = chunkalloc(sizeof(EncMap));
+    map->enccount = map->encmax = enc->char_cnt + extras;
+    map->map = galloc(map->enccount*sizeof(int));
+    memcpy(map->map,encoded,enc->char_cnt*sizeof(int));
+    memcpy(map->map+enc->char_cnt,unencoded,extras*sizeof(int));
+    map->backmax = sf->glyphcnt;
+    map->backmap = galloc(sf->glyphcnt*sizeof(int));
+    for ( i = map->enccount-1; i>=0; --i ) if ( map->map[i]!=-1 )
+	map->backmap[map->map[i]] = i;
+    map->enc = enc;
+
+    free(encoded);
+    free(unencoded);
+
+return( map );
+}
+
+void SFRemoveGlyph(SplineFont *sf,SplineChar *sc, int *flags) {
+    struct splinecharlist *dep, *dnext;
+    BDFFont *bdf;
+    BDFChar *bfc;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    CharView *cv, *next;
+    BitmapView *bv, *bvnext;
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+    RefChar *refs, *rnext;
+    FontView *fvs;
+    KernPair *kp, *kprev;
+    int i;
+
+    if ( sc==NULL )
+return;
+
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    /* Close any open windows */
+    if ( sc->views ) {
+	for ( cv = sc->views; cv!=NULL; cv=next ) {
+	    next = cv->next;
+	    GDrawDestroyWindow(cv->gw);
+	}
+	GDrawSync(NULL);
+	GDrawProcessPendingEvents(NULL);
+	GDrawSync(NULL);
+	GDrawProcessPendingEvents(NULL);
+    }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+
+    for ( bdf=sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
+	if ( sc->orig_pos<bdf->glyphcnt && (bfc = bdf->glyphs[sc->orig_pos])!= NULL ) {
+	    bdf->glyphs[sc->orig_pos] = NULL;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+	    if ( bfc->views!=NULL ) {
+		for ( bv= bfc->views; bv!=NULL; bv=bvnext ) {
+		    bvnext = bv->next;
+		    GDrawDestroyWindow(bv->gw);
+		}
+		GDrawSync(NULL);
+		GDrawProcessPendingEvents(NULL);
+		GDrawSync(NULL);
+		GDrawProcessPendingEvents(NULL);
+	    }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+	    BDFCharFree(bfc);
+	}
+    }
+
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    /* Turn any searcher references to this glyph into inline copies of it */
+    for ( fvs=sc->parent->fv; fvs!=NULL; fvs=fvs->nextsame ) {
+	if ( fvs->sv!=NULL ) {
+	    RefChar *rf, *rnext;
+	    for ( rf = fvs->sv->sc_srch.layers[ly_fore].refs; rf!=NULL; rf=rnext ) {
+		rnext = rf->next;
+		if ( rf->sc==sc )
+		    SCRefToSplines(&fvs->sv->sc_srch,rf);
+	    }
+	    for ( rf = fvs->sv->sc_rpl.layers[ly_fore].refs; rf!=NULL; rf=rnext ) {
+		rnext = rf->next;
+		if ( rf->sc==sc )
+		    SCRefToSplines(&fvs->sv->sc_rpl,rf);
+	    }
+	}
+    }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+
+    /* Turn any references to this glyph into inline copies of it */
+    for ( dep=sc->dependents; dep!=NULL; dep=dnext ) {
+	SplineChar *dsc = dep->sc;
+	RefChar *rf, *rnext;
+	dnext = dep->next;
+	/* May be more than one reference to us, colon has two refs to period */
+	/*  but only one dlist entry */
+	for ( rf = dsc->layers[ly_fore].refs; rf!=NULL; rf=rnext ) {
+	    rnext = rf->next;
+	    if ( rf->sc==sc )
+		SCRefToSplines(dsc,rf);
+	}
+    }
+
+    for ( refs=sc->layers[ly_fore].refs; refs!=NULL; refs = rnext ) {
+	rnext = refs->next;
+	SCRemoveDependent(sc,refs);
+    }
+
+    /* Remove any kerning pairs that look at this character */
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	for ( kprev=NULL, kp=sf->glyphs[i]->kerns; kp!=NULL; kprev = kp, kp=kp->next ) {
+	    if ( kp->sc==sc ) {
+		if ( kprev==NULL )
+		    sf->glyphs[i]->kerns = kp->next;
+		else
+		    kprev->next = kp->next;
+		kp->next = NULL;
+		KernPairsFree(kp);
+	break;
+	    }
+	}
+    }
+
+    sf->glyphs[sc->orig_pos] = NULL;
+    SplineCharFree(sc);
+}
+
+void FVAddEncodingSlot(FontView *fv,int gid) {
+    EncMap *map = fv->map;
+    int enc;
+
+    if ( map->enccount>=map->encmax )
+	map->map = grealloc(map->map,(map->encmax+=10)*sizeof(int));
+    enc = map->enccount++;
+    map->map[enc] = gid;
+    map->backmap[gid] = enc;
+
+    fv->selected = grealloc(fv->selected,map->enccount);
+    fv->selected[enc] = 0;
+    fv->rowltot = (enc+1+fv->colcnt-1)/fv->colcnt;
+    GScrollBarSetBounds(fv->vsb,0,fv->rowltot,fv->rowcnt);
+}
+
+void SFAddEncodingSlot(SplineFont *sf,int gid) {
+    FontView *fv;
+    for ( fv=sf->fv; fv!=NULL; fv = fv->nextsame )
+	FVAddEncodingSlot(fv,gid);
+}
+
+static int MapAddEnc(SplineFont *sf,SplineChar *sc,EncMap *basemap, EncMap *map,int baseenc, int gid) {
+    int any = false, enc;
+
+    if ( gid>=map->backmax )
+	map->backmap = grealloc(map->backmap,(map->backmax+=10)*sizeof(int));
+    if ( map->enc->psnames!=NULL ) {
+	/* Check for multiple encodings */
+	for ( enc = map->enc->char_cnt; enc>=0; --enc ) {
+	    if ( strcmp(sc->name,map->enc->psnames[enc])==0 ) {
+		if ( !any ) {
+		    map->backmap[gid] = enc;
+		    any = true;
+		}
+		map->map[enc] = gid;
+	    }
+	}
+    } else {
+	enc = SFFindSlot(sf,map,sc->unicodeenc,sc->name);
+	if ( enc!=-1 ) {
+	    map->map[enc] = gid;
+	    map->backmap[gid] = enc;
+	    any = true;
+	}
+    }
+    if ( basemap!=NULL && map->enc==basemap->enc && baseenc!=-1 ) {
+	map->map[baseenc] = gid;
+	if ( map->backmap[gid]==-1 )
+	    map->backmap[gid] = baseenc;
+	any = true;
+    }
+return( any );
+}
+
+void SFAddGlyphAndEncode(SplineFont *sf,SplineChar *sc,EncMap *basemap, int baseenc) {
+    int gid, mapfound = false;
+    FontView *fv;
+
+    if ( sf->cidmaster==NULL ) {
+	if ( sf->glyphcnt+1>=sf->glyphmax )
+	    sf->glyphs = grealloc(sf->glyphs,(sf->glyphmax+=10)*sizeof(SplineChar *));
+	gid = sf->glyphcnt++;
+    } else {
+	gid = baseenc;
+	if ( baseenc+1>=sf->glyphmax )
+	    sf->glyphs = grealloc(sf->glyphs,(sf->glyphmax = baseenc+10)*sizeof(SplineChar *));
+	if ( baseenc>=sf->glyphcnt ) {
+	    memset(sf->glyphs+sf->glyphcnt,0,(baseenc+1-sf->glyphcnt)*sizeof(SplineChar *));
+	    sf->glyphcnt = baseenc+1;
+	}
+    }
+    sf->glyphs[gid] = NULL;
+    for ( fv=sf->fv; fv!=NULL; fv = fv->nextsame ) {
+	EncMap *map = fv->map;
+	BDFFont *bdf = fv->filled;
+
+	if ( bdf!=NULL ) {
+	    if ( gid>=bdf->glyphmax )
+		bdf->glyphs = grealloc(bdf->glyphs,sf->glyphmax*sizeof(BDFChar *));
+	    if ( gid>=bdf->glyphcnt ) {
+		memset(bdf->glyphs+bdf->glyphcnt,0,(gid+1-bdf->glyphcnt)*sizeof(BDFChar *));
+		bdf->glyphcnt = gid+1;
+	    }
+	}
+	if ( !MapAddEnc(sf,sc,basemap,map,baseenc,gid) )
+	    FVAddEncodingSlot(fv,gid);
+	if ( map==basemap ) mapfound = true;
+    }
+    if ( !mapfound )
+	MapAddEnc(sf,sc,basemap,basemap,baseenc,gid);
+    sf->glyphs[gid] = sc;
+    sc->orig_pos = gid;
+    sc->parent = sf;
+    GlyphHashFree(sf);
+}
+
+void SFMatchGlyphs(SplineFont *sf,SplineFont *target) {
+    /* reorder sf so that its glyphs array is the same as that in target */
+    int i, j, cnt, cnt2;
+    SplineChar **glyphs;
+
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
+	sf->glyphs[i]->ticked = false;
+    if (( cnt = target->glyphcnt )<sf->glyphcnt ) cnt = sf->glyphcnt;
+    glyphs = gcalloc(cnt,sizeof(SplineChar *));
+    for ( i=0; i<target->glyphcnt; ++i ) if ( target->glyphs[i]!=NULL ) {
+	SplineChar *sc = SFGetChar(sf,target->glyphs[i]->unicodeenc,target->glyphs[i]->name );
+	if ( sc!=NULL ) {
+	    glyphs[i] = sc;
+	    sc->ticked = true;
+	}
+    }
+    for ( i=cnt2=0; i<sf->glyphcnt; ++i )
+	if ( sf->glyphs[i]!=NULL && !sf->glyphs[i]->ticked )
+	    ++cnt2;
+    if ( target->glyphcnt+cnt2>cnt ) {
+	glyphs = grealloc(glyphs,(target->glyphcnt+cnt2)*sizeof(SplineChar *));
+	memset(glyphs+cnt,0,(target->glyphcnt+cnt2-cnt)*sizeof(SplineChar *));
+	cnt = target->glyphcnt+cnt2;
+    }
+    j = target->glyphcnt;
+    for ( i=0; i<sf->glyphcnt; ++i )
+	if ( sf->glyphs[i]!=NULL && !sf->glyphs[i]->ticked )
+	    glyphs[j++] = sf->glyphs[i];
+    free(sf->glyphs);
+    sf->glyphs = glyphs;
+    sf->glyphcnt = cnt;
+}
+
+GTextInfo encodingtypes[] = {
+    { (unichar_t *) _STR_Custom, NULL, 0, 0, (void *) "Custom", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Original, NULL, 0, 0, (void *) "Original", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { NULL, NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 1, 0 },
+    { (unichar_t *) _STR_Isolatin1, NULL, 0, 0, (void *) "iso8859-1", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Isolatin0, NULL, 0, 0, (void *) "iso8859-15", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Isolatin2, NULL, 0, 0, (void *) "iso8859-2", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Isolatin3, NULL, 0, 0, (void *) "iso8859-3", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Isolatin4, NULL, 0, 0, (void *) "iso8859-4", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Isolatin5, NULL, 0, 0, (void *) "iso8859-9", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Isolatin6, NULL, 0, 0, (void *) "iso8859-10", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Isolatin7, NULL, 0, 0, (void *) "iso8859-13", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Isolatin8, NULL, 0, 0, (void *) "iso8859-14", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { NULL, NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 1, 0 },
+    { (unichar_t *) _STR_Isocyrillic, NULL, 0, 0, (void *) "iso8859-5", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Koi8cyrillic, NULL, 0, 0, (void *) "koi8-r", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Isoarabic, NULL, 0, 0, (void *) "iso8859-6", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Isogreek, NULL, 0, 0, (void *) "iso8859-7", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Isohebrew, NULL, 0, 0, (void *) "iso8859-8", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Isothai, NULL, 0, 0, (void *) "iso8859-11", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { NULL, NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 1, 0 },
+    { (unichar_t *) _STR_MacLatin, NULL, 0, 0, (void *) "mac", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Win, NULL, 0, 0, (void *) "win", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Adobestd, NULL, 0, 0, (void *) "AdobeStandard", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Symbol, NULL, 0, 0, (void *) "Symbol", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Texbase, NULL, 0, 0, (void *) "TeX-Base-Encoding", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { NULL, NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 1, 0 },
+    { (unichar_t *) _STR_Unicode, NULL, 0, 0, (void *) "UnicodeBmp", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Unicode4, NULL, 0, 0, (void *) "UnicodeFull", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    /*{ (unichar_t *) _STR_UnicodePlanes, NULL, 0, 0, (void *) em_unicodeplanes, NULL, 0, 0, 0, 0, 0, 0, 0, 1}*/
+    { NULL, NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 1, 0 },
+    { (unichar_t *) _STR_SJIS, NULL, 0, 0, (void *) "sjis", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Jis208, NULL, 0, 0, (void *) "jis208", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Jis212, NULL, 0, 0, (void *) "jis212", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_KoreanWansung, NULL, 0, 0, (void *) "wansung", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Korean, NULL, 0, 0, (void *) "ksc5601", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_KoreanJohab, NULL, 0, 0, (void *) "johab", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Chinese, NULL, 0, 0, (void *) "gb2312", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_ChinesePacked, NULL, 0, 0, (void *) "gb2312pk", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_ChineseTrad, NULL, 0, 0, (void *) "big5", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_ChineseTradHKSCS, NULL, 0, 0, (void *) "big5hkscs", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { NULL }};
+
+GMenuItem *GetEncodingMenu(void (*func)(GWindow,GMenuItem *,GEvent *),
+	Encoding *current) {
+    GMenuItem *mi;
+    int i, cnt;
+    Encoding *item;
+
+    cnt = 0;
+    for ( item=enclist; item!=NULL ; item=item->next )
+	if ( !item->hidden )
+	    ++cnt;
+    i = cnt+1;
+    i += sizeof(encodingtypes)/sizeof(encodingtypes[0]);
+    mi = gcalloc(i+1,sizeof(GMenuItem));
+    for ( i=0; i<sizeof(encodingtypes)/sizeof(encodingtypes[0])-1; ++i ) {
+	mi[i].ti = encodingtypes[i];
+	if ( !mi[i].ti.line ) {
+	    mi[i].ti.text = u_copy(GStringGetResource((intpt) (mi[i].ti.text),NULL));
+	    mi[i].ti.checkable = true;
+	    if ( uc_strmatch(mi[i].ti.text,current->enc_name)==0 ||
+		    (current->iconv_name!=NULL && uc_strmatch(mi[i].ti.text,current->iconv_name)==0))
+		mi[i].ti.checked = true;
+	}
+	mi[i].ti.text_in_resource = false;
+	mi[i].ti.fg = mi[i].ti.bg = COLOR_DEFAULT;
+	mi[i].invoke = func;
+    }
+    if ( cnt!=0 ) {
+	mi[i].ti.fg = mi[i].ti.bg = COLOR_DEFAULT;
+	mi[i++].ti.line = true;
+	for ( item=enclist; item!=NULL ; item=item->next )
+	    if ( !item->hidden ) {
+		mi[i].ti.text = uc_copy(item->enc_name);
+		mi[i].ti.userdata = (void *) item->enc_name;
+		mi[i].ti.fg = mi[i].ti.bg = COLOR_DEFAULT;
+		mi[i].ti.checkable = true;
+		if ( item==current )
+		    mi[i].ti.checked = true;
+		mi[i++].invoke = func;
+	    }
+    }
+return( mi );
+}
+
+GTextInfo *GetEncodingTypes(void) {
+    GTextInfo *ti;
+    int i, cnt;
+    Encoding *item;
+
+    cnt = 0;
+    for ( item=enclist; item!=NULL ; item=item->next )
+	if ( !item->hidden )
+	    ++cnt;
+    i = cnt + sizeof(encodingtypes)/sizeof(encodingtypes[0]);
+    ti = gcalloc(i+1,sizeof(GTextInfo));
+    memcpy(ti,encodingtypes,sizeof(encodingtypes)-sizeof(encodingtypes[0]));
+    for ( i=0; i<sizeof(encodingtypes)/sizeof(encodingtypes[0])-1; ++i ) {
+	if ( ti[i].text_is_1byte ) {
+	    ti[i].text = uc_copy((char *) ti[i].text);
+	    ti[i].text_is_1byte = false;
+	} else if ( ti[i].text_in_resource ) {
+	    ti[i].text = u_copy(GStringGetResource( (int) ti[i].text,NULL));
+	    ti[i].text_in_resource = false;
+	} else
+	    ti[i].text = u_copy(ti[i].text);
+    }
+    if ( cnt!=0 ) {
+	ti[i++].line = true;
+	for ( item=enclist; item!=NULL ; item=item->next )
+	    if ( !item->hidden ) {
+		ti[i].text = uc_copy(item->enc_name);
+		ti[i++].userdata = (void *) item->enc_name;
+	    }
+    }
+return( ti );
+}
+
+GTextInfo *EncodingTypesFindEnc(GTextInfo *encodingtypes, int compacted, Encoding *enc) {
+    int i;
+    char *name;
+    Encoding *new_enc;
+
+    for ( i=0; encodingtypes[i].text!=NULL || encodingtypes[i].line; ++i ) {
+	if ( encodingtypes[i].text==NULL )
+    continue;
+	name = encodingtypes[i].userdata;
+	new_enc = FindOrMakeEncoding(name);
+	if ( new_enc==NULL )
+    continue;
+	if (( compacted && new_enc->is_compact ) ||
+		(!compacted && enc==new_enc))
+return( &encodingtypes[i] );
+    }
+return( NULL );
+}
+
+Encoding *ParseEncodingNameFromList(GGadget *listfield) {
+    const unichar_t *name = _GGadgetGetTitle(listfield);
+    int32 len;
+    GTextInfo **ti = GGadgetGetList(listfield,&len);
+    int i;
+    Encoding *enc = NULL;
+
+    for ( i=0; i<len; ++i ) if ( ti[i]->text!=NULL ) {
+	if ( u_strcmp(name,ti[i]->text)==0 ) {
+	    enc = FindOrMakeEncoding(ti[i]->userdata);
+    break;
+	}
+    }
+
+    if ( enc == NULL ) {
+	char *cname = cu_copy(name);
+	enc = FindOrMakeEncoding(cname);
+	free(cname);
+    }
+    if ( enc==NULL )
+	GWidgetErrorR(_STR_BadEncoding,_STR_BadEncoding);
+return( enc );
+}
+
+/*
+    Reencode <encoding list>
+	Load
+	Make from font
+	Remove
+    Force Encoding <encoding list>
+    Add glyph slots
+    Interpretation remains in fontinfo
+    CID Supplement (or in CID menu?)
+*/

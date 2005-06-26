@@ -44,7 +44,7 @@ void SCSynchronizeWidth(SplineChar *sc,real newwidth, real oldwidth, FontView *f
 return;
     sc->width = newwidth;
     for ( bdf=sc->parent->bitmaps; bdf!=NULL; bdf=bdf->next ) {
-	BDFChar *bc = bdf->chars[sc->enc];
+	BDFChar *bc = bdf->glyphs[sc->orig_pos];
 	if ( bc!=NULL ) {
 	    int width = rint(sc->width*bdf->pixelsize / (real) (sc->parent->ascent+sc->parent->descent));
 	    if ( bc->width!=width ) {
@@ -63,7 +63,7 @@ return;
 return;
     for ( dlist=sc->dependents; dlist!=NULL; dlist=dlist->next ) {
 	if ( dlist->sc->width==oldwidth &&
-		(flagfv==NULL || !flagfv->selected[dlist->sc->enc])) {
+		(flagfv==NULL || !flagfv->selected[flagfv->map->backmap[dlist->sc->orig_pos]])) {
 	    SCSynchronizeWidth(dlist->sc,newwidth,oldwidth,fv);
 	    if ( !dlist->sc->changed ) {
 		dlist->sc->changed = true;
@@ -80,7 +80,7 @@ return;
 /* Also all vstem hints */
 /* I deliberately don't set undoes in the dependants. The change is not */
 /*  in them, after all */
-void SCSynchronizeLBearing(SplineChar *sc,char *selected,real off) {
+void SCSynchronizeLBearing(SplineChar *sc,real off) {
     struct splinecharlist *dlist;
     RefChar *ref;
     DStemInfo *d;
@@ -111,18 +111,16 @@ return;
     for ( dlist=sc->dependents; dlist!=NULL; dlist=dlist->next ) {
 	if ( sc->width!=dlist->sc->width )
     continue;
-	if ( selected==NULL || !selected[dlist->sc->enc] ) {
-	    SCPreserveState(dlist->sc,false);
-	    SplinePointListShift(dlist->sc->layers[ly_fore].splines,off,true);
-	    for ( ref = dlist->sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
-		    if ( ref->sc!=sc && (selected==NULL || !selected[ref->sc->enc] )) {
-		SplinePointListShift(ref->layers[0].splines,off,true);
-		ref->transform[4] += off;
-		ref->bb.minx += off; ref->bb.maxx += off;
-	    }
-	    SCUpdateAll(dlist->sc);
-	    SCSynchronizeLBearing(dlist->sc,selected,off);
+	SCPreserveState(dlist->sc,false);
+	SplinePointListShift(dlist->sc->layers[ly_fore].splines,off,true);
+	for ( ref = dlist->sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
+		if ( ref->sc!=sc ) {
+	    SplinePointListShift(ref->layers[0].splines,off,true);
+	    ref->transform[4] += off;
+	    ref->bb.minx += off; ref->bb.maxx += off;
 	}
+	SCUpdateAll(dlist->sc);
+	SCSynchronizeLBearing(dlist->sc,off);
     }
 }
 
@@ -1101,7 +1099,7 @@ void CVMouseUpPointer(CharView *cv ) {
     } else if ( CVAllSelected(cv) && cv->drawmode==dm_fore && cv->p.spline==NULL &&
 	    !cv->p.prevcp && !cv->p.nextcp && cv->info.y==cv->p.cy ) {
 	SCUndoSetLBearingChange(cv->sc,(int) rint(cv->info.x-cv->p.cx));
-	SCSynchronizeLBearing(cv->sc,NULL,cv->info.x-cv->p.cx);
+	SCSynchronizeLBearing(cv->sc,cv->info.x-cv->p.cx);
     }
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

@@ -1238,7 +1238,7 @@ return( NULL );
     bdfc->ymax = es.mmax;
     if ( sc!=NULL ) {
 	bdfc->width = rint(sc->width*pixelsize / (real) (sc->parent->ascent+sc->parent->descent));
-	bdfc->enc = sc->enc;
+	bdfc->orig_pos = sc->orig_pos;
     }
     bdfc->bitmap = es.bitmap;
     bdfc->depth = depth;
@@ -1268,10 +1268,10 @@ BDFFont *SplineFontToBDFHeader(SplineFont *_sf, int pixelsize, int indicate) {
     SplineFont *sf;	/* The complexity here is to pick the appropriate subfont of a CID font */
 
     sf = _sf;
-    max = sf->charcnt;
+    max = sf->glyphcnt;
     for ( i=0; i<_sf->subfontcnt; ++i ) {
 	sf = _sf->subfonts[i];
-	if ( sf->charcnt>max ) max = sf->charcnt;
+	if ( sf->glyphcnt>max ) max = sf->glyphcnt;
     }
     scale = pixelsize / (real) (sf->ascent+sf->descent);
 
@@ -1295,21 +1295,20 @@ BDFFont *SplineFontToBDFHeader(SplineFont *_sf, int pixelsize, int indicate) {
 	}
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressStartIndicator(10,GStringGetResource(_STR_Rasterizing,NULL),
-		aa,size,sf->charcnt,1);
+		aa,size,sf->glyphcnt,1);
 	GProgressEnableStop(0);
 #elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_progress_start_indicator(10,_("Rasterizing..."),
-		aa,size,sf->charcnt,1);
+		aa,size,sf->glyphcnt,1);
 	gwwv_progress_enable_stop(0);
 #endif
     }
     bdf->sf = _sf;
-    bdf->charcnt = max;
+    bdf->glyphcnt = max;
     bdf->pixelsize = pixelsize;
-    bdf->chars = galloc(max*sizeof(BDFChar *));
+    bdf->glyphs = galloc(max*sizeof(BDFChar *));
     bdf->ascent = rint(sf->ascent*scale);
     bdf->descent = pixelsize-bdf->ascent;
-    bdf->encoding_name = sf->encoding_name;
     bdf->res = -1;
 return( bdf );
 }
@@ -1541,20 +1540,20 @@ BDFFont *SplineFontRasterize(SplineFont *_sf, int pixelsize, int indicate) {
     real scale;
     SplineFont *sf=_sf;	/* The complexity here is to pick the appropriate subfont of a CID font */
 
-    for ( i=0; i<bdf->charcnt; ++i ) {
+    for ( i=0; i<bdf->glyphcnt; ++i ) {
 	if ( _sf->subfontcnt!=0 ) {
-	    for ( k=0; k<_sf->subfontcnt; ++k ) if ( _sf->subfonts[k]->charcnt>i ) {
+	    for ( k=0; k<_sf->subfontcnt; ++k ) if ( _sf->subfonts[k]->glyphcnt>i ) {
 		sf = _sf->subfonts[k];
-		if ( SCWorthOutputting(sf->chars[i]))
+		if ( SCWorthOutputting(sf->glyphs[i]))
 	    break;
 	    }
 	    scale = pixelsize / (real) (sf->ascent+sf->descent);
 	}
 #if 0
-	bdf->chars[i] = slower ? SplineCharSlowerRasterize(sf->chars[i],pixelsize):
-				SplineCharRasterize(sf->chars[i],pixelsize);
+	bdf->glyphs[i] = slower ? SplineCharSlowerRasterize(sf->glyphs[i],pixelsize):
+				SplineCharRasterize(sf->glyphs[i],pixelsize);
 #else
-	bdf->chars[i] = SplineCharRasterize(sf->chars[i],pixelsize);
+	bdf->glyphs[i] = SplineCharRasterize(sf->glyphs[i],pixelsize);
 #endif
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( indicate ) GProgressNext();
@@ -1586,7 +1585,7 @@ return;
     new.width = rint( ((real) bc->width)/linear_scale );
 
     new.bytes_per_line = (new.xmax-new.xmin+1);
-    new.enc = bc->enc;
+    new.orig_pos = bc->orig_pos;
     new.sc = bc->sc;
     new.byte_data = true;
     new.depth = max==3 ? 2 : max==15 ? 4 : 8;
@@ -1684,10 +1683,10 @@ return( SplineFontRasterize(_sf,pixelsize,true));
 
     bdf = gcalloc(1,sizeof(BDFFont));
     sf = _sf;
-    max = sf->charcnt;
+    max = sf->glyphcnt;
     for ( i=0; i<_sf->subfontcnt; ++i ) {
 	sf = _sf->subfonts[i];
-	if ( sf->charcnt>max ) max = sf->charcnt;
+	if ( sf->glyphcnt>max ) max = sf->glyphcnt;
     }
     scale = pixelsize / (real) (sf->ascent+sf->descent);
 
@@ -1710,35 +1709,34 @@ return( SplineFontRasterize(_sf,pixelsize,true));
     }
 #if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressStartIndicator(10,GStringGetResource(_STR_Rasterizing,NULL),
-	    aa,size,sf->charcnt,1);
+	    aa,size,sf->glyphcnt,1);
     GProgressEnableStop(0);
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_start_indicator(10,_("Rasterizing..."),
-	    aa,size,sf->charcnt,1);
+	    aa,size,sf->glyphcnt,1);
     gwwv_progress_enable_stop(0);
 #endif
 
     if ( linear_scale>16 ) linear_scale = 16;	/* can't deal with more than 256 levels of grey */
     if ( linear_scale<=1 ) linear_scale = 2;
     bdf->sf = _sf;
-    bdf->charcnt = max;
+    bdf->glyphcnt = max;
     bdf->pixelsize = pixelsize;
-    bdf->chars = galloc(max*sizeof(BDFChar *));
+    bdf->glyphs = galloc(max*sizeof(BDFChar *));
     bdf->ascent = rint(sf->ascent*scale);
     bdf->descent = pixelsize-bdf->ascent;
-    bdf->encoding_name = sf->encoding_name;
     bdf->res = -1;
     for ( i=0; i<max; ++i ) {
 	if ( _sf->subfontcnt!=0 ) {
-	    for ( k=0; k<_sf->subfontcnt; ++k ) if ( _sf->subfonts[k]->charcnt>i ) {
+	    for ( k=0; k<_sf->subfontcnt; ++k ) if ( _sf->subfonts[k]->glyphcnt>i ) {
 		sf = _sf->subfonts[k];
-		if ( SCWorthOutputting(sf->chars[i]))
+		if ( SCWorthOutputting(sf->glyphs[i]))
 	    break;
 	    }
 	    scale = pixelsize / (real) (sf->ascent+sf->descent);
 	}
-	bdf->chars[i] = SplineCharRasterize(sf->chars[i],pixelsize*linear_scale);
-	BDFCAntiAlias(bdf->chars[i],linear_scale);
+	bdf->glyphs[i] = SplineCharRasterize(sf->glyphs[i],pixelsize*linear_scale);
+	BDFCAntiAlias(bdf->glyphs[i],linear_scale);
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressNext();
 #elif defined(FONTFORGE_CONFIG_GTK)
@@ -1760,27 +1758,27 @@ BDFChar *BDFPieceMeal(BDFFont *bdf, int index) {
 
     if ( index==-1 )
 return( NULL );
-    sc = bdf->sf->chars[index];
+    sc = bdf->sf->glyphs[index];
     if ( sc==NULL )
 return(NULL);
     if ( bdf->freetype_context )
-	bdf->chars[index] = SplineCharFreeTypeRasterize(bdf->freetype_context,
-		sc->enc,bdf->truesize,bdf->clut?8:1);
+	bdf->glyphs[index] = SplineCharFreeTypeRasterize(bdf->freetype_context,
+		sc->orig_pos,bdf->truesize,bdf->clut?8:1);
     else {
 	if ( use_freetype_to_rasterize_fv && !sc->parent->multilayer &&
 		!sc->parent->strokedfont )
-	    bdf->chars[index] = SplineCharFreeTypeRasterizeNoHints(sc,
+	    bdf->glyphs[index] = SplineCharFreeTypeRasterizeNoHints(sc,
 		    bdf->truesize,bdf->clut?4:1);
 	else
-	    bdf->chars[index] = NULL;
-	if ( bdf->chars[index]==NULL ) {
+	    bdf->glyphs[index] = NULL;
+	if ( bdf->glyphs[index]==NULL ) {
 	    if ( bdf->clut )
-		bdf->chars[index] = SplineCharAntiAlias(sc,bdf->truesize,4);
+		bdf->glyphs[index] = SplineCharAntiAlias(sc,bdf->truesize,4);
 	    else
-		bdf->chars[index] = SplineCharRasterize(sc,bdf->truesize);
+		bdf->glyphs[index] = SplineCharRasterize(sc,bdf->truesize);
 	}
     }
-return( bdf->chars[index] );
+return( bdf->glyphs[index] );
 }
 
 /* Piecemeal fonts are only used as the display font in the fontview */
@@ -1809,11 +1807,10 @@ BDFFont *SplineFontPieceMeal(SplineFont *sf,int pixelsize,int flags,void *ftc) {
     }
 
     bdf->sf = sf;
-    bdf->charcnt = sf->charcnt;
+    bdf->glyphcnt = sf->glyphcnt;
     bdf->pixelsize = pixelsize;
-    bdf->chars = gcalloc(sf->charcnt,sizeof(BDFChar *));
+    bdf->glyphs = gcalloc(sf->glyphcnt,sizeof(BDFChar *));
     bdf->descent = pixelsize-bdf->ascent;
-    bdf->encoding_name = sf->encoding_name;
     bdf->piecemeal = true;
     bdf->bbsized = (flags&pf_bbsized)?1:0;
     bdf->res = -1;
@@ -1838,9 +1835,9 @@ void BDFFontFree(BDFFont *bdf) {
 
     if ( bdf==NULL )
 return;
-    for ( i=0; i<bdf->charcnt; ++i )
-	BDFCharFree(bdf->chars[i]);
-    free(bdf->chars);
+    for ( i=0; i<bdf->glyphcnt; ++i )
+	BDFCharFree(bdf->glyphs[i]);
+    free(bdf->glyphs);
     if ( bdf->clut!=NULL )
 	free(bdf->clut);
     if ( bdf->freetype_context!=NULL )

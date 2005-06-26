@@ -226,8 +226,8 @@ static int ValidSubs(SplineFont *sf,uint32 tag ) {
     int i, any=false;
     PST *pst;
 
-    for ( i = 0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	for ( pst=sf->chars[i]->possub; pst!=NULL && pst->tag!=tag; pst=pst->next );
+    for ( i = 0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	for ( pst=sf->glyphs[i]->possub; pst!=NULL && pst->tag!=tag; pst=pst->next );
 	if ( pst!=NULL && pst->script_lang_index==SLI_NESTED ) {
 	    if ( pst->type==pst_substitution )
 		any = true;
@@ -580,8 +580,8 @@ static char *BuildMarkClass(SplineFont *sf) {
     char *ret;
 
     mg = 0;
-    markglyphs = galloc(sf->charcnt*sizeof(SplineChar *));
-    for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+    markglyphs = galloc(sf->glyphcnt*sizeof(SplineChar *));
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
 	if ( IsMarkChar(sc)) {
 	    markglyphs[mg++] = sc;
 	}
@@ -658,16 +658,16 @@ ASM *ASMFromOpenTypeForms(SplineFont *sf,int sli,int flags) {
     int found;
     ASM *sm;
 
-    glyphs = galloc(sf->charcnt*sizeof(SplineChar *));
-    classglyphs = galloc(sf->charcnt*sizeof(SplineChar *));
-    markglyphs = galloc(sf->charcnt*sizeof(SplineChar *));
+    glyphs = galloc(sf->glyphcnt*sizeof(SplineChar *));
+    classglyphs = galloc(sf->glyphcnt*sizeof(SplineChar *));
+    markglyphs = galloc(sf->glyphcnt*sizeof(SplineChar *));
     for ( i=0; i<4; ++i )
-	forms[i] = gcalloc(sf->charcnt,sizeof(SplineChar *));
+	forms[i] = gcalloc(sf->glyphcnt,sizeof(SplineChar *));
 
     gcnt = 0;
     for ( f=0; f<4; ++f) forms[f][gcnt] = NULL;
     found = 0;
-    for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
 	any = false;
 	for ( pst = sc->possub; pst!=NULL; pst=pst->next ) if ( pst->script_lang_index==sli && pst->flags==flags ) {
 	    if ( pst->tag==CHR('i','n','i','t')) which = 0;
@@ -677,7 +677,7 @@ ASM *ASMFromOpenTypeForms(SplineFont *sf,int sli,int flags) {
 	    else
 	continue;
 	    found |= 1<<which;
-	    rsc = SFGetCharDup(sf,-1,pst->u.subs.variant);
+	    rsc = SFGetChar(sf,-1,pst->u.subs.variant);
 	    forms[which][gcnt] = rsc;
 	    any = true;
 	}
@@ -712,7 +712,7 @@ return( NULL );
     sm->classes = gcalloc(sm->class_cnt,sizeof(char *));
 
     cg = mg = ng = 0;
-    for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
 	if ( (flags&pst_ignorecombiningmarks) && IsMarkChar(sc)) {
 	    markglyphs[mg++] = sc;
 	    if ( sc==glyphs[ng]) ++ng;
@@ -794,12 +794,12 @@ static SplineChar **morx_cg_FigureClasses(SplineChar ***tables,int match_len,
 return( NULL );
 
     gtot = 0;
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	sf->chars[i]->lsidebearing = 1;
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	sf->glyphs[i]->lsidebearing = 1;
 	if ( !ordered )
-	    sf->chars[i]->ttf_glyph = gtot++;
+	    sf->glyphs[i]->ttf_glyph = gtot++;
 	else
-	    gtot = sf->chars[i]->ttf_glyph+1;
+	    gtot = sf->glyphs[i]->ttf_glyph+1;
     }
 
     max=0;
@@ -810,9 +810,9 @@ return( NULL );
     next = gcalloc(1<<match_len,sizeof(int));
     temp = galloc((1<<match_len)*sizeof(SplineChar **));
 
-    for ( i=0; i<gtot; ++i ) if ( sf->chars[i]!=NULL ) {
-	sf->chars[i]->lsidebearing = 0;
-	sf->chars[i]->ticked = false;
+    for ( i=0; i<gtot; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	sf->glyphs[i]->lsidebearing = 0;
+	sf->glyphs[i]->ticked = false;
     }
     for ( i=0; i<match_len; ++i ) {
 	for ( j=0; tables[i][j]!=NULL ; ++j )
@@ -843,9 +843,9 @@ return( NULL );
 	}
     }
     if ( fpst->flags & pst_ignorecombiningmarks ) {
-	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 ) {
-	    if ( sf->chars[i]->lsidebearing==0 && IsMarkChar(sf->chars[i])) {
-		sf->chars[i]->lsidebearing = class_cnt;
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL && sf->glyphs[i]->ttf_glyph!=-1 ) {
+	    if ( sf->glyphs[i]->lsidebearing==0 && IsMarkChar(sf->glyphs[i])) {
+		sf->glyphs[i]->lsidebearing = class_cnt;
 		++gcnt;
 	    }
 	}
@@ -1156,7 +1156,7 @@ struct sliflag *SFGetFormsList(SplineFont *sf,int test_dflt) {
     k = 0;
     do {
 	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
-	for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
 	    for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
 		if ( pst->type == pst_lcaret )
 	    continue;
@@ -1211,7 +1211,7 @@ return( true );
     k = 0;
     do {
 	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
-	for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
 	    for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
 		if ( pst->script_lang_index==SLI_NESTED )
 	    continue;
@@ -2192,13 +2192,13 @@ static int SMD_ToSelection(GGadget *g, GEvent *e) {
 
 	GDrawSetVisible(fv->gw,true);
 	GDrawRaise(fv->gw);
-	memset(fv->selected,0,sf->charcnt);
+	memset(fv->selected,0,fv->map->enccount);
 	while ( *ret ) {
 	    end = u_strchr(ret,' ');
 	    if ( end==NULL ) end = ret+u_strlen(ret);
 	    nm = cu_copybetween(ret,end);
 	    for ( ret = end; isspace(*ret); ++ret);
-	    if (( pos = SFFindChar(sf,-1,nm))!=-1 ) {
+	    if (( pos = SFFindSlot(sf,fv->map,-1,nm))!=-1 ) {
 		if ( found==-1 ) found = pos;
 		fv->selected[pos] = true;
 	    }
@@ -2221,18 +2221,21 @@ static int SMD_FromSelection(GGadget *g, GEvent *e) {
 	int i, len, max;
 	SplineChar *sc;
     
-	for ( i=len=max=0; i<sf->charcnt; ++i ) if ( fv->selected[i]) {
-	    sc = SFMakeChar(sf,i);
+	for ( i=len=max=0; i<fv->map->enccount; ++i ) if ( fv->selected[i]) {
+	    sc = SFMakeChar(sf,fv->map,i);
 	    len += strlen(sc->name)+1;
 	    if ( fv->selected[i]>max ) max = fv->selected[i];
 	}
 	pt = vals = galloc((len+1)*sizeof(unichar_t));
 	*pt = '\0';
 	/* in a class the order of selection is irrelevant */
-	for ( i=0; i<sf->charcnt; ++i ) if ( fv->selected[i] ) {
-	    uc_strcpy(pt,sf->chars[i]->name);
-	    pt += u_strlen(pt);
-	    *pt++ = ' ';
+	for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] ) {
+	    int gid = fv->map->map[i];
+	    if ( gid!=-1 ) {
+		uc_strcpy(pt,sf->glyphs[gid]->name);
+		pt += u_strlen(pt);
+		*pt++ = ' ';
+	    }
 	}
 	if ( pt>vals ) pt[-1]='\0';
     

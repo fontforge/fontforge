@@ -96,40 +96,22 @@ return;
     if ( ftell(fcmt)&2 ) putshort(fcmt,0);
 }
 
-static SplineChar *SCFromCID(SplineFont *_sf,int cid) {
-    int k;
-
-    if ( _sf->subfonts==NULL )
-return( _sf->chars[cid] );
-
-    for ( k=0; k<_sf->subfontcnt; ++k )
-	if ( _sf->subfonts[k]->chars[cid]!=NULL )
-return( _sf->subfonts[k]->chars[cid] );
-
-return( NULL );
-}
-
-static void PfEd_GlyphComments(SplineFont *_sf, struct PfEd_subtabs *pfed ) {
-    int i, j, k, any, max, cnt, last, skipped, subcnt;
+static void PfEd_GlyphComments(SplineFont *sf, struct PfEd_subtabs *pfed,
+	struct glyphinfo *gi ) {
+    int i, j, k, any, cnt, last, skipped, subcnt;
     uint32 offset;
-    SplineFont *sf;
-    SplineChar *sc, *sc2, *sclast;
+    SplineChar *sc, *sc2;
     FILE *cmnt;
     unichar_t *upt;
 
-    max = any = k = 0;
-    do {
-	sf = _sf->subfontcnt==0 ? _sf : _sf->subfonts[k++];
-	if ( !any ) {
-	    for ( i=0; i<sf->charcnt; ++i )
-		if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 &&
-			sf->chars[i]->comment!=NULL ) {
-		    any = true;
-	    break;
-		}
+    any = 0;
+    for ( i=0; i<sf->glyphcnt; ++i ) {
+	if ( sf->glyphs[i]!=NULL && sf->glyphs[i]->ttf_glyph!=-1 &&
+		sf->glyphs[i]->comment!=NULL ) {
+	    any = true;
+    break;
 	}
-	if ( sf->charcnt>max ) max = sf->charcnt;
-    } while ( k<_sf->subfontcnt );
+    }
 
     if ( !any )
 return;
@@ -142,20 +124,18 @@ return;
     offset = 0;
     for ( j=0; j<4; ++j ) {
 	cnt = 0;
-	for ( i=0; i<max; ++i ) {
-	    sc=SCFromCID(_sf,i);
+	for ( i=0; i<gi->gcnt; ++i ) if ( gi->bygid[i]!=-1 ) {
+	    sc=sf->glyphs[gi->bygid[i]];
 	    if ( sc!=NULL && sc->comment!=NULL ) {
-		last = i; skipped = false; sclast = sc;
+		last = i; skipped = false;
 		subcnt = 1;
-		for ( k=i+1; k<max; ++k ) {
-		    sc2 = SCFromCID(_sf,k);
-		    if ( sc2==NULL || sc2->ttf_glyph==-1 )
-		continue;
-		    if ( sc2->comment==NULL && skipped )
+		for ( k=i+1; k<gi->gcnt; ++k ) {
+		    if ( gi->bygid[k]!=-1 )
+			sc2 = sf->glyphs[gi->bygid[i]];
+		    if ( (gi->bygid[k]==-1 || sc2->comment==NULL) && skipped )
 		break;
-		    if ( sc2->comment!=NULL ) {
+		    if ( gi->bygid[k]!=-1 && sc2->comment!=NULL ) {
 			last = k;
-			sclast = sc2;
 			skipped = false;
 		    } else
 			skipped = true;
@@ -163,16 +143,13 @@ return;
 		}
 		++cnt;
 		if ( j==1 ) {
-		    putshort(cmnt,sc->ttf_glyph);
-		    putshort(cmnt,sclast->ttf_glyph);
+		    putshort(cmnt,i);
+		    putshort(cmnt,last);
 		    putlong(cmnt,offset);
 		    offset += sizeof(uint32)*(subcnt+1);
 		} else if ( j==2 ) {
 		    for ( ; i<=last; ++i ) {
-			sc = SCFromCID(_sf,i);
-			if ( sc==NULL || sc->ttf_glyph==-1 )
-		    continue;
-			if ( sc->comment==NULL )
+			if ( gi->bygid[i]==-1 || (sc=sf->glyphs[gi->bygid[i]])->comment==NULL )
 			    putlong(cmnt,0);
 			else {
 			    putlong(cmnt,offset);
@@ -182,8 +159,7 @@ return;
 		    putlong(cmnt,offset);	/* Guard data, to let us calculate the string lengths */
 		} else if ( j==3 ) {
 		    for ( ; i<=last; ++i ) {
-			sc = SCFromCID(_sf,i);
-			if ( sc==NULL || sc->ttf_glyph==-1 || sc->comment==NULL )
+			if ( gi->bygid[i]==-1 || (sc=sf->glyphs[gi->bygid[i]])->comment==NULL )
 		    continue;
 			for ( upt = sc->comment; *upt; ++upt )
 			    putshort(cmnt,*upt);
@@ -202,25 +178,19 @@ return;
 	putshort(cmnt,0);
 }
 
-static void PfEd_Colours(SplineFont *_sf, struct PfEd_subtabs *pfed ) {
-    int i, j, k, any, max, cnt, last;
-    SplineFont *sf;
-    SplineChar *sc, *sc2, *sclast;
+static void PfEd_Colours(SplineFont *sf, struct PfEd_subtabs *pfed, struct glyphinfo *gi ) {
+    int i, j, k, any, cnt, last;
+    SplineChar *sc, *sc2;
     FILE *colr;
 
-    max = any = k = 0;
-    do {
-	sf = _sf->subfontcnt==0 ? _sf : _sf->subfonts[k++];
-	if ( !any ) {
-	    for ( i=0; i<sf->charcnt; ++i )
-		if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 &&
-			sf->chars[i]->color!=COLOR_DEFAULT ) {
-		    any = true;
-	    break;
-		}
+    any = 0;
+    for ( i=0; i<sf->glyphcnt; ++i ) {
+	if ( sf->glyphs[i]!=NULL && sf->glyphs[i]->ttf_glyph!=-1 &&
+		sf->glyphs[i]->color!=COLOR_DEFAULT ) {
+	    any = true;
+    break;
 	}
-	if ( sf->charcnt>max ) max = sf->charcnt;
-    } while ( k<_sf->subfontcnt );
+    }
 
     if ( !any )
 return;
@@ -231,23 +201,22 @@ return;
     putshort(colr,0);			/* sub-table version number */
     for ( j=0; j<2; ++j ) {
 	cnt = 0;
-	for ( i=0; i<max; ++i ) {
-	    sc=SCFromCID(_sf,i);
+	for ( i=0; i<gi->gcnt; ++i ) if ( gi->bygid[i]!=-1 ) {
+	    sc = sf->glyphs[gi->bygid[i]];
 	    if ( sc!=NULL && sc->color!=COLOR_DEFAULT ) {
-		last = i; sclast = sc;
-		for ( k=i+1; k<max; ++k ) {
-		    sc2 = SCFromCID(_sf,k);
-		    if ( sc2==NULL || sc2->ttf_glyph==-1 )
-		continue;
+		last = i;
+		for ( k=i+1; k<gi->gcnt; ++k ) {
+		    if ( gi->bygid[k]==-1 )
+		break;
+		    sc2 = sf->glyphs[gi->bygid[k]];
 		    if ( sc2->color != sc->color )
 		break;
 		    last = k;
-		    sclast = sc2;
 		}
 		++cnt;
 		if ( j==1 ) {
-		    putshort(colr,sc->ttf_glyph);
-		    putshort(colr,sclast->ttf_glyph);
+		    putshort(colr,i);
+		    putshort(colr,last);
 		    putlong(colr,sc->color);
 		}
 		i = last;
@@ -269,10 +238,10 @@ void pfed_dump(struct alltabs *at, SplineFont *sf) {
     memset(&pfed,0,sizeof(pfed));
     if ( at->gi.flags & ttf_flag_pfed_comments ) {
 	PfEd_FontComment(sf, &pfed );
-	PfEd_GlyphComments(sf, &pfed );
+	PfEd_GlyphComments(sf, &pfed, &at->gi );
     }
     if ( at->gi.flags & ttf_flag_pfed_colors )
-	PfEd_Colours(sf, &pfed );
+	PfEd_Colours(sf, &pfed, &at->gi );
 
     if ( pfed.next==0 )
 return;		/* No subtables */
@@ -526,9 +495,9 @@ static void TeX_dumpHeightDepth(SplineFont *sf, struct TeX_subtabs *tex ) {
     int i,j,k,last_g;
     DBounds b;
 
-    for ( i=sf->charcnt-1; i>=0; --i )
-	if ( sf->chars[i]!=NULL &&
-		(sf->chars[i]->tex_height!=TEX_UNDEF || sf->chars[i]->tex_depth!=TEX_UNDEF))
+    for ( i=sf->glyphcnt-1; i>=0; --i )
+	if ( sf->glyphs[i]!=NULL &&
+		(sf->glyphs[i]->tex_height!=TEX_UNDEF || sf->glyphs[i]->tex_depth!=TEX_UNDEF))
     break;
     if ( i<0 )		/* No height/depth info */
 return;
@@ -537,11 +506,11 @@ return;
     tex->subtabs[tex->next++].data = htdp = tmpfile();
 
     putshort(htdp,0);				/* sub-table version number */
-    putshort(htdp,sf->chars[i]->ttf_glyph+1);	/* data for this many glyphs */
+    putshort(htdp,sf->glyphs[i]->ttf_glyph+1);	/* data for this many glyphs */
 
     last_g = -1;
-    for ( j=0; j<=i; ++j ) if ( sf->chars[j]!=NULL ) {
-	SplineChar *sc = sf->chars[j];
+    for ( j=0; j<=i; ++j ) if ( sf->glyphs[j]!=NULL ) {
+	SplineChar *sc = sf->glyphs[j];
 	for ( k=last_g+1; k<sc->ttf_glyph; ++k ) {
 	    putshort(htdp,0);
 	    putshort(htdp,0);
@@ -559,9 +528,9 @@ static void TeX_dumpSubSuper(SplineFont *sf, struct TeX_subtabs *tex ) {
     FILE *sbsp;
     int i,j,k,last_g;
 
-    for ( i=sf->charcnt-1; i>=0; --i )
-	if ( sf->chars[i]!=NULL &&
-		(sf->chars[i]->tex_sub_pos!=TEX_UNDEF || sf->chars[i]->tex_super_pos!=TEX_UNDEF))
+    for ( i=sf->glyphcnt-1; i>=0; --i )
+	if ( sf->glyphs[i]!=NULL &&
+		(sf->glyphs[i]->tex_sub_pos!=TEX_UNDEF || sf->glyphs[i]->tex_super_pos!=TEX_UNDEF))
     break;
     if ( i<0 )		/* No sub/super info */
 return;
@@ -570,11 +539,11 @@ return;
     tex->subtabs[tex->next++].data = sbsp = tmpfile();
 
     putshort(sbsp,0);				/* sub-table version number */
-    putshort(sbsp,sf->chars[i]->ttf_glyph+1);	/* data for this many glyphs */
+    putshort(sbsp,sf->glyphs[i]->ttf_glyph+1);	/* data for this many glyphs */
 
     last_g = -1;
-    for ( j=0; j<=i; ++j ) if ( sf->chars[j]!=NULL ) {
-	SplineChar *sc = sf->chars[j];
+    for ( j=0; j<=i; ++j ) if ( sf->glyphs[j]!=NULL ) {
+	SplineChar *sc = sf->glyphs[j];
 	for ( k=last_g+1; k<sc->ttf_glyph; ++k ) {
 	    putshort(sbsp,0);
 	    putshort(sbsp,0);

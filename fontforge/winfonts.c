@@ -317,17 +317,24 @@ return( false );
 
     bdf = gcalloc(1,sizeof(BDFFont));
     bdf->sf = sf;
-    bdf->charcnt = sf->charcnt;
+    bdf->glyphcnt = sf->glyphcnt;
+    bdf->glyphmax = sf->glyphmax;
     bdf->res = fntheader.vertres;
     bdf->pixelsize = rint(fntheader.pointsize*fntheader.vertres/72.27);
-    bdf->chars = gcalloc(sf->charcnt,sizeof(BDFChar *));
+    bdf->glyphs = gcalloc(sf->glyphmax,sizeof(BDFChar *));
     bdf->ascent = rint(.8*bdf->pixelsize);		/* shouldn't use typographical ascent */
     bdf->descent = bdf->pixelsize-bdf->ascent;
-    bdf->encoding_name = sf->encoding_name;
     for ( i=fntheader.firstchar; i<=fntheader.lastchar; ++i ) if ( charinfo[i].width!=0 ) {
-	sf->chars[i] = SFMakeChar(sf,i);
+	int gid = SFMakeChar(sf,sf->map,i)->orig_pos;
 
-	bdf->chars[i] = bdfc = chunkalloc(sizeof(BDFChar));
+	if ( gid>=bdf->glyphcnt ) {
+	    if ( gid>=bdf->glyphmax )
+		bdf->glyphs = grealloc(bdf->glyphs,(bdf->glyphmax=sf->glyphmax)*sizeof(BDFChar *));
+	    memset(bdf->glyphs+bdf->glyphcnt,0,(sf->glyphcnt-bdf->glyphcnt)*sizeof(BDFChar *));
+	    bdf->glyphcnt = sf->glyphcnt;
+	}
+
+	bdf->glyphs[gid] = bdfc = chunkalloc(sizeof(BDFChar));
 	bdfc->xmin = 0;
 	bdfc->xmax = charinfo[i].width-1;
 	bdfc->ymin = fntheader.ascent-fntheader.height;
@@ -335,8 +342,8 @@ return( false );
 	bdfc->width = charinfo[i].width;
 	bdfc->bytes_per_line = (bdfc->xmax>>3)+1;
 	bdfc->bitmap = gcalloc(bdfc->bytes_per_line*fntheader.height,sizeof(uint8));
-	bdfc->enc = i;
-	bdfc->sc = sf->chars[i];
+	bdfc->orig_pos = gid;
+	bdfc->sc = sf->glyphs[gid];
 	bdfc->sc->widthset = true;
 
 	fseek(fnt,base+charinfo[i].offset,SEEK_SET);
@@ -374,7 +381,8 @@ return( NULL );
 	fclose(fon);
 return( NULL );
     }
-    sf = SplineFontBlank(FindOrMakeEncoding("win"),256);
+    sf = SplineFontBlank(256);
+    sf->map = EncMapNew(256,256,FindOrMakeEncoding("win"));
 
     if ( magic == 0x200 || magic==0x300 )
 	FNT_Load(fon,sf);
@@ -385,6 +393,7 @@ return( NULL );
 	neoffset = lgetlong(fon);
 	fseek(fon,neoffset,SEEK_SET);
 	if ( lgetushort(fon)!=FON_NE_MAGIC ) {
+	    EncMapFree(sf->map);
 	    SplineFontFree(sf);
 	    fclose(fon);
 return( NULL );
@@ -421,6 +430,7 @@ return( NULL );
     }
     fclose(fon);
     if ( sf->bitmaps==NULL ) {
+	EncMapFree(sf->map);
 	SplineFontFree(sf);
 return( NULL );
     }
@@ -435,13 +445,13 @@ return( NULL );
     }
     /* Find the biggest font, and adjust the metrics to match */
     for ( bdf = sf->bitmaps; bdf->next!=NULL; bdf = bdf->next );
-    for ( i=0; i<sf->charcnt ; ++i ) if ( sf->chars[i]!=NULL && bdf->chars[i]!=NULL )
-	sf->chars[i]->width = rint(bdf->chars[i]->width*1000.0/bdf->pixelsize);
+    for ( i=0; i<sf->glyphcnt ; ++i ) if ( sf->glyphs[i]!=NULL && bdf->glyphs[i]!=NULL )
+	sf->glyphs[i]->width = rint(bdf->glyphs[i]->width*1000.0/bdf->pixelsize);
     sf->onlybitmaps = true;
 return( sf );
 }
 
-static int _FONFontDump(FILE *file,BDFFont *font, int res) {
+static int _FONFontDump(FILE *file,BDFFont *font, EncMap *map, int res) {
     uint32 startpos, endpos, namelocpos, datapos, namepos;
     int i, j, k, l;
     int ch;
@@ -449,6 +459,7 @@ static int _FONFontDump(FILE *file,BDFFont *font, int res) {
     int first, last, avgwid, maxwid, samewid, maxy, miny, widbytes, spacesize;
     struct pfminfo pfminfo;
     int complained=false;
+    int gid;
 
     if ( font->clut!=NULL )
 return( false );
@@ -458,35 +469,37 @@ return( false );
     samewid = -1;
     badch = -1;
     defch = -1;
-    for ( i=0; i<font->charcnt && i<256; ++i ) if ( font->chars[i]!=NULL && font->chars[i]->width>0 ) {
+    for ( i=0; i<map->enccount && i<256; ++i ) if ( (gid=map->map[i])!=-1 && font->glyphs[gid]!=NULL && font->glyphs[gid]->width>0 ) {
 	if ( i==0 || (i==0x80 && defch!=0) ) defch=i;
 	else if ( i!=' ' ) defch = i;
 	if ( i<first ) first = i;
 	last = i;
 	++cnt;
-	avgwid += font->chars[i]->width;
-	widbytes += (font->chars[i]->width+7)>>3;
-	if ( font->chars[i]->ymax>maxy ) maxy = font->chars[i]->ymax;
-	if ( font->chars[i]->ymin<miny ) miny = font->chars[i]->ymin;
-	if ( font->chars[i]->width>maxy ) maxwid = font->chars[i]->width;
-	if ( font->chars[i]->width<font->chars[i]->xmax || font->chars[i]->xmin<0 )
-	    badch = i;
-	if ( samewid==-1 ) samewid = font->chars[i]->width;
-	else if ( samewid!=font->chars[i]->width ) samewid = -2;
+	avgwid += font->glyphs[gid]->width;
+	widbytes += (font->glyphs[gid]->width+7)>>3;
+	if ( font->glyphs[gid]->ymax>maxy ) maxy = font->glyphs[gid]->ymax;
+	if ( font->glyphs[gid]->ymin<miny ) miny = font->glyphs[gid]->ymin;
+	if ( font->glyphs[gid]->width>maxy ) maxwid = font->glyphs[gid]->width;
+	if ( font->glyphs[gid]->width<font->glyphs[gid]->xmax || font->glyphs[gid]->xmin<0 )
+	    badch = gid;
+	if ( samewid==-1 ) samewid = font->glyphs[gid]->width;
+	else if ( samewid!=font->glyphs[gid]->width ) samewid = -2;
     }
     if (( spacesize = font->pixelsize/4 )==0 ) spacesize=1;
-    if ( font->chars[' ']!=NULL && font->chars[' ']->sc!=NULL &&
-	    font->chars[' ']->sc->unicodeenc == ' ' )
-	spacesize = font->chars[' ']->width;
+    gid = map->map[' '];
+    if ( gid!=-1 && font->glyphs[gid]!=NULL && font->glyphs[gid]->sc!=NULL &&
+	    font->glyphs[gid]->sc->unicodeenc == ' ' )
+	spacesize = font->glyphs[gid]->width;
     if ( badch!=-1 )
 	fprintf( stderr, "At pixelsize %d the character %s either starts before the origin or extends beyond the advance width.\n",
-		font->pixelsize, font->chars[badch]->sc->name );
+		font->pixelsize, font->glyphs[badch]->sc->name );
     SFDefaultOS2Info(&pfminfo,font->sf,font->sf->fontname);
     widbytes = avgwid+spacesize;
     if ( cnt!=0 ) avgwid = rint(avgwid/(double) cnt);
-    if ( font->chars['X']!=NULL && font->chars['X']->sc!=NULL &&
-	    font->chars['X']->sc->unicodeenc == 'X' )
-	avgwid = font->chars['X']->width;
+    gid = map->map['X'];
+    if ( font->glyphs[gid]!=NULL && font->glyphs[gid]->sc!=NULL &&
+	    font->glyphs[gid]->sc->unicodeenc == 'X' )
+	avgwid = font->glyphs[gid]->width;
 
     if ( res<0 ) {
 	switch ( font->pixelsize ) {
@@ -551,13 +564,13 @@ return( false );
 
     widbytes = 0;
     for ( i=first; i<=last; ++i ) {
-	if ( font->chars[i]!=NULL && font->chars[i]->width>0 )
-	    lputshort(file,font->chars[i]->width);
+	if ( (gid=map->map[i])!=-1 && font->glyphs[gid]!=NULL && font->glyphs[gid]->width>0 )
+	    lputshort(file,font->glyphs[gid]->width);
 	else
 	    lputshort(file,0);
 	lputshort(file,datapos+widbytes);
-	if ( font->chars[i]!=NULL && font->chars[i]->width>0 )
-	    widbytes += ((font->chars[i]->width+7)>>3) * (maxy-miny+1);
+	if ( gid!=-1 && font->glyphs[gid]!=NULL && font->glyphs[gid]->width>0 )
+	    widbytes += ((font->glyphs[gid]->width+7)>>3) * (maxy-miny+1);
     }
     /* And a space */
     lputshort(file,spacesize );
@@ -575,7 +588,8 @@ return( false );
     /* And finally the character data */
     widbytes = 0;
     for ( i=first; i<=last; ++i ) {
-	BDFChar *bdfc = font->chars[i];
+	int gid = map->map[i];
+	BDFChar *bdfc = gid==-1 ? NULL : font->glyphs[gid];
 	if ( bdfc!=NULL && bdfc->width>0 ) {
 	    widbytes += ((bdfc->width+7)>>3) * (maxy-miny+1);
 	    for ( k=0 ; k< bdfc->width; k+= 8 ) {
@@ -619,7 +633,7 @@ return( false );
 return( true );
 }
 
-int FONFontDump(char *filename,BDFFont *font, int res) {
+int FONFontDump(char *filename,BDFFont *font, EncMap *map, int res) {
     FILE *file;
     int ret;
 
@@ -628,7 +642,7 @@ int FONFontDump(char *filename,BDFFont *font, int res) {
 	fprintf( stderr, "Can't open %s\n", filename );
 return( 0 );
     }
-    ret = _FONFontDump(file,font,res);
+    ret = _FONFontDump(file,font,map,res);
     if ( ferror(file))
 	ret = 0;
     if ( fclose(file)!=0 )

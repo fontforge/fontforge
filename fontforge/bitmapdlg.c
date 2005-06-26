@@ -62,8 +62,8 @@ static void RemoveBDFWindows(BDFFont *bdf) {
     int i;
     BitmapView *bv, *next;
 
-    for ( i=0; i<bdf->charcnt; ++i ) if ( bdf->chars[i]!=NULL ) {
-	for ( bv = bdf->chars[i]->views; bv!=NULL; bv=next ) {
+    for ( i=0; i<bdf->glyphcnt; ++i ) if ( bdf->glyphs[i]!=NULL ) {
+	for ( bv = bdf->glyphs[i]->views; bv!=NULL; bv=next ) {
 	    next = bv->next;
 	    GDrawDestroyWindow(bv->gw);
 	}
@@ -230,7 +230,7 @@ static void FVScaleBitmaps(FontView *fv,int32 *sizes) {
     SFRemoveUnwantedBitmaps(fv->sf,sizes);
 }
 
-static void ReplaceBDFC(SplineFont *sf,int32 *sizes,int enc,
+static void ReplaceBDFC(SplineFont *sf,int32 *sizes,int gid,
 	void *freetypecontext, int usefreetype) {
     BDFFont *bdf;
     BDFChar *bdfc, temp;
@@ -239,7 +239,7 @@ static void ReplaceBDFC(SplineFont *sf,int32 *sizes,int enc,
     BitmapView *bv;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-    if ( enc>=sf->charcnt || sf->chars[enc]==NULL )
+    if ( gid==-1 || gid>=sf->glyphcnt || sf->glyphs[gid]==NULL )
 return;
 
     for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
@@ -247,27 +247,27 @@ return;
 	if ( sizes[i]!=0 ) {
 	    bdfc = NULL;
 	    if ( freetypecontext )
-		bdfc = SplineCharFreeTypeRasterize(freetypecontext,enc,bdf->pixelsize,BDFDepth(bdf));
+		bdfc = SplineCharFreeTypeRasterize(freetypecontext,gid,bdf->pixelsize,BDFDepth(bdf));
 	    else if ( usefreetype )
-		bdfc = SplineCharFreeTypeRasterizeNoHints(sf->chars[enc],bdf->pixelsize,BDFDepth(bdf));
+		bdfc = SplineCharFreeTypeRasterizeNoHints(sf->glyphs[gid],bdf->pixelsize,BDFDepth(bdf));
 	    if ( bdfc==NULL ) {
 		if ( autohint_before_rasterize && 
-			sf->chars[enc]->changedsincelasthinted &&
-			!sf->chars[enc]->manualhints )
-		    SplineCharAutoHint(sf->chars[enc],NULL);
-		bdfc = SplineCharAntiAlias(sf->chars[enc],bdf->pixelsize,(1<<(BDFDepth(bdf)/2)));
+			sf->glyphs[gid]->changedsincelasthinted &&
+			!sf->glyphs[gid]->manualhints )
+		    SplineCharAutoHint(sf->glyphs[gid],NULL);
+		bdfc = SplineCharAntiAlias(sf->glyphs[gid],bdf->pixelsize,(1<<(BDFDepth(bdf)/2)));
 	    }
-	    if ( bdf->chars[enc]==NULL )
-		bdf->chars[enc] = bdfc;
+	    if ( bdf->glyphs[gid]==NULL )
+		bdf->glyphs[gid] = bdfc;
 	    else {
-		temp = *(bdf->chars[enc]);
-		*bdf->chars[enc] = *bdfc;
+		temp = *(bdf->glyphs[gid]);
+		*bdf->glyphs[gid] = *bdfc;
 		*bdfc = temp;
-		bdf->chars[enc]->views = bdfc->views;
+		bdf->glyphs[gid]->views = bdfc->views;
 		bdfc->views = NULL;
 		BDFCharFree(bdfc);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-		for ( bv = bdf->chars[enc]->views; bv!=NULL; bv=bv->next ) {
+		for ( bv = bdf->glyphs[gid]->views; bv!=NULL; bv=bv->next ) {
 		    GDrawRequestExpose(bv->v,NULL,false);
 		    /* Mess with selection?????!!!!! */
 		}
@@ -302,16 +302,16 @@ return( false );
     if ( bd->which==bd_current && bd->sc!=NULL ) {
 	if ( usefreetype )
 	    freetypecontext = FreeTypeFontContext(bd->sc->parent,bd->sc,fv);
-	ReplaceBDFC(bd->sc->parent,sizes,bd->sc->enc,freetypecontext,usefreetype);
+	ReplaceBDFC(bd->sc->parent,sizes,bd->sc->orig_pos,freetypecontext,usefreetype);
 	if ( freetypecontext )
 	    FreeTypeFreeContext(freetypecontext);
     } else {
 	if ( sf->subfontcnt!=0 ) {
 	    for ( j=0 ; j<sf->subfontcnt; ++j ) {
 		subsf = sf->subfonts[j];
-		for ( i=0; i<subsf->charcnt; ++i ) {
+		for ( i=0; i<subsf->glyphcnt; ++i ) {
 		    if (( fv->selected[i] || bd->which == bd_all ) &&
-			    SCWorthOutputting(subsf->chars[i])) {
+			    SCWorthOutputting(subsf->glyphs[i])) {
 			if ( usefreetype && freetypecontext==NULL )
 			    freetypecontext = FreeTypeFontContext(subsf,NULL,fv);
 			ReplaceBDFC(subsf,sizes,i,freetypecontext,usefreetype);
@@ -322,11 +322,11 @@ return( false );
 		freetypecontext = NULL;
 	    }
 	} else {
-	    for ( i=0; i<sf->charcnt; ++i ) {
+	    for ( i=0; i<fv->map->enccount; ++i ) {
 		if ( fv->selected[i] || bd->which == bd_all ) {
 		    if ( usefreetype && freetypecontext==NULL )
 			freetypecontext = FreeTypeFontContext(sf,NULL,fv);
-		    ReplaceBDFC(sf,sizes,i,freetypecontext,usefreetype);
+		    ReplaceBDFC(sf,sizes,fv->map->map[i],freetypecontext,usefreetype);
 		}
 	    }
 	    if ( freetypecontext )

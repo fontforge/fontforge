@@ -1345,7 +1345,7 @@ static void readttfsimpleglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, in
 	endpt[i] = getushort(ttf);
 	if ( i!=0 && endpt[i]<endpt[i-1] ) {
 	    fprintf( stderr, "Bad tt font: contour ends make no sense in glyph %d.\n",
-		    sc->enc );
+		    sc->orig_pos );
 return;
 	}
     }
@@ -1379,7 +1379,7 @@ return;
     break;
     }
     if ( i!=tot )
-	IError("Flag count is wrong (or total is): %d %d in glyph %d", i, tot, sc->enc );
+	IError("Flag count is wrong (or total is): %d %d in glyph %d", i, tot, sc->orig_pos );
 
     last_pos = 0;
     for ( i=0; i<tot; ++i ) {
@@ -1446,24 +1446,24 @@ static void readttfcompositglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, 
     int flags=0, arg1, arg2;
 
     if ( ftell(ttf)>=end ) {
-	fprintf( stderr, "Empty composite %d\n", sc->enc );
+	fprintf( stderr, "Empty composite %d\n", sc->orig_pos );
 return;
     }
 
     do {
 	if ( ftell(ttf)>=end ) {
-	    fprintf( stderr, "Bad flags value, implied MORE components at end of glyph %d\n", sc->enc );
+	    fprintf( stderr, "Bad flags value, implied MORE components at end of glyph %d\n", sc->orig_pos );
     break;
 	}
 	cur = RefCharCreate();
 	flags = getushort(ttf);
-	cur->local_enc = getushort(ttf);
-	if ( feof(ttf) || cur->local_enc>=info->glyph_cnt ) {
-	    fprintf(stderr, "Reference to glyph %d out of bounds when parsing 'glyf' table.\n", cur->local_enc );
-	    cur->local_enc = 0;
+	cur->orig_pos = getushort(ttf);
+	if ( feof(ttf) || cur->orig_pos>=info->glyph_cnt ) {
+	    fprintf(stderr, "Reference to glyph %d out of bounds when parsing 'glyf' table.\n", cur->orig_pos );
+	    cur->orig_pos = 0;
 	}
 	if ( info->inuse!=NULL )
-	    info->inuse[cur->local_enc] = true;
+	    info->inuse[cur->orig_pos] = true;
 	if ( flags&_ARGS_ARE_WORDS ) {
 	    arg1 = (short) getushort(ttf);
 	    arg2 = (short) getushort(ttf);
@@ -1546,8 +1546,8 @@ return;
 #endif
 	}
 	}
-	if ( cur->local_enc>=info->glyph_cnt ) {
-	    fprintf(stderr, "Glyph %d attempts to reference glyph %d which is outside the font\n", sc->enc, cur->local_enc );
+	if ( cur->orig_pos>=info->glyph_cnt ) {
+	    fprintf(stderr, "Glyph %d attempts to reference glyph %d which is outside the font\n", sc->orig_pos, cur->orig_pos );
 	    chunkfree(cur,sizeof(*cur));
 	} else {
 	    if ( head==NULL )
@@ -1579,7 +1579,7 @@ return;
     sc->layers[ly_fore].refs = head;
 }
 
-static SplineChar *readttfglyph(FILE *ttf,struct ttfinfo *info,int start, int end,int enc) {
+static SplineChar *readttfglyph(FILE *ttf,struct ttfinfo *info,int start, int end,int gid) {
     int path_cnt;
     SplineChar *sc = SplineCharCreate();
 
@@ -1589,7 +1589,7 @@ static SplineChar *readttfglyph(FILE *ttf,struct ttfinfo *info,int start, int en
 
     if ( end>info->glyph_length ) {
 	if ( !info->complainedbeyondglyfend )
-	    fprintf(stderr, "Bad glyph (%d), its definition extends beyond the end of the glyf table\n", enc );
+	    fprintf(stderr, "Bad glyph (%d), its definition extends beyond the end of the glyf table\n", gid );
 	info->complainedbeyondglyfend = true;
 	SplineCharFree(sc);
 return( NULL );
@@ -1605,16 +1605,15 @@ return( sc );
     /* ymin = */ getushort(ttf);
     /* xmax = */ getushort(ttf);
     /* ymax = */ sc->lsidebearing = getushort(ttf);
-    sc->enc = enc;
+    sc->orig_pos = gid;
     if ( path_cnt>=0 )
 	readttfsimpleglyph(ttf,info,sc,path_cnt);
     else
 	readttfcompositglyph(ttf,info,sc,info->glyph_start+end);
     if ( start>end )
-	fprintf(stderr, "Bad glyph (%d), disordered 'loca table (start comes after end)\n", enc );
+	fprintf(stderr, "Bad glyph (%d), disordered 'loca table (start comes after end)\n", gid );
     else if ( ftell(ttf)>info->glyph_start+end )
-	fprintf(stderr, "Bad glyph (%d), its definition extends beyond the space allowed for it\n", enc );
-    sc->enc = 0;
+	fprintf(stderr, "Bad glyph (%d), its definition extends beyond the space allowed for it\n", gid );
 return( sc );
 }
 
@@ -2674,23 +2673,14 @@ return( NULL );
 return( strings[sid-nStdStrings]);
 }
 
-static struct dup *makedup(SplineChar *sc, int uni, int enc, struct dup *prev) {
-    struct dup *d = gcalloc(1,sizeof(struct dup));
-
-    d->sc = sc;
-    d->uni = uni;
-    d->enc = enc;
-    d->prev = prev;
-return( d );
-}
-
 /* I really expect to deal with encodings in ttf cmap, but ocasionally we */
 /*  get a bare cff */
 static void readcffenc(FILE *ttf,struct topdicts *dict,struct ttfinfo *info,
 	char **strings, int scnt) {
-    int format, cnt, i, j, pos, first, last, dupenc, sid, next;
+    int format, cnt, i, j, pos, first, last, dupenc, sid;
     extern char *AdobeStandardEncoding[], *AdobeExpertEncoding[];
     const char *name;
+    EncMap *map;
 
     if ( info->encoding_start!=0 )		/* Use the cmap instead */
 return;
@@ -2699,57 +2689,46 @@ return;						/* Use cids instead */
 
     for ( i=0; i<info->glyph_cnt; ++i ) {
 	if ( info->chars[i]->unicodeenc==-1 )
-	    info->chars[i]->unicodeenc = UniFromName(info->chars[i]->name,info->uni_interp,info->encoding_name);
+	    info->chars[i]->unicodeenc = UniFromName(info->chars[i]->name,ui_none,&custom);
     }
 
+    map = EncMapNew(256,256,&custom);
     if ( dict->encodingoff==0 || dict->encodingoff==1 ) {
 	/* Standard Encodings */
 	char **enc = dict->encodingoff==0 ? AdobeStandardEncoding : AdobeExpertEncoding;
-	info->encoding_name = FindOrMakeEncoding( dict->encodingoff==0 ?
+	map->enc = FindOrMakeEncoding( dict->encodingoff==0 ?
 		"AdobeStandard" : "Custom" );
-	if ( info->encoding_name==NULL )
-	    info->encoding_name = &custom;
-	next = 256;
+	if ( map->enc==NULL )
+	    map->enc = &custom;
 	for ( i=0; i<info->glyph_cnt; ++i ) {
 	    for ( pos=0; pos<256; ++pos )
 		if ( strcmp(info->chars[i]->name,enc[pos])==0 )
 	    break;
 	    if ( pos<256 )
-		info->chars[i]->enc = pos;
-	    else
-		info->chars[i]->enc = next++;
+		map->map[pos] = i;
 	}
     } else {
-	for ( i=0; i<info->glyph_cnt; ++i )
-	    info->chars[i]->enc = -1;
-	info->encoding_name = &custom;
 	fseek(ttf,dict->cff_start+dict->encodingoff,SEEK_SET);
 	format = getc(ttf);
 	if ( (format&0x7f)==0 ) {
 	    cnt = getc(ttf);
 	    for ( i=1; i<=cnt && i<info->glyph_cnt; ++i )
-		info->chars[i]->enc = getc(ttf);
+		map->map[getc(ttf)] = i;
 	} else if ( (format&0x7f)==1 ) {
 	    cnt = getc(ttf);
 	    pos = 0;
-	    for ( i=1; i<info->glyph_cnt; ++i )
-		info->chars[i]->enc = -1;
 	    for ( i=0; i<cnt ; ++i ) {
 		first = getc(ttf);
 		last = first + getc(ttf)-1;
-		while ( first<=last ) {
+		while ( first<=last && first<256 ) {
 		    if ( pos<info->glyph_cnt )
-			info->chars[pos]->enc = first;
+			map->map[first] = pos;
 		    ++pos;
 		    ++first;
 		}
 	    }
 	} else
 	    fprintf( stderr, "Unexpected encoding format in cff: %d\n", format );
-	next = 256;
-	for ( i=0; i<info->glyph_cnt; ++i )
-	    if ( info->chars[i]->enc==-1 )
-		info->chars[i]->enc = next++;
 	if ( format&0x80 ) {
 	    cnt = getc(ttf);
 	    for ( i=0; i<cnt; ++i ) {
@@ -2762,10 +2741,11 @@ return;						/* Use cids instead */
 		    if ( strcmp(name,info->chars[j]->name)==0 )
 		break;
 		if ( j!=info->glyph_cnt )
-		    info->dups = makedup(info->chars[j],-1,dupenc,info->dups);
+		    map->map[dupenc] = j;
 	    }
 	}
     }
+    info->map = map;
 }
 
 static void readcffset(FILE *ttf,struct topdicts *dict) {
@@ -3009,7 +2989,6 @@ static SplineFont *cffsffillup(struct topdicts *subdict, char **strings,
 	sprintf(buffer,"UntitledSubFont_%d", ++nameless );
 	sf->fontname = copy(buffer);
     }
-    sf->encoding_name = &custom;
 
     if ( subdict->fontmatrix[0]==0 )
 	emsize = 1000;
@@ -3153,29 +3132,38 @@ static void cidfigure(struct ttfinfo *info, struct topdicts *dict,
     struct cidmap *map;
     char buffer[100];
     struct pscontext pscontext;
+    EncMap *encmap;
 
     memset(&pscontext,0,sizeof(pscontext));
 
     cffinfofillup(info, dict, strings, scnt );
 
+    info->map = encmap = EncMapNew(info->glyph_cnt,info->glyph_cnt,&custom);
+
     for ( j=0; subdicts[j]!=NULL; ++j );
     info->subfontcnt = j;
     info->subfonts = gcalloc(j+1,sizeof(SplineFont *));
-    for ( j=0; subdicts[j]!=NULL; ++j ) 
+    for ( j=0; subdicts[j]!=NULL; ++j )  {
 	info->subfonts[j] = cffsffillup(subdicts[j],strings,scnt);
+	info->subfonts[j]->map = encmap;
+    }
     for ( i=0; i<info->glyph_cnt; ++i ) {
 	sf = info->subfonts[ fdselect[i] ];
 	cid = dict->charset[i];
-	if ( cid>=sf->charcnt ) sf->charcnt = cid+1;
+	if ( cid>=sf->glyphcnt ) sf->glyphcnt = cid+1;
+	if ( cid>=encmap->enccount ) encmap->enccount = cid+1;
     }
     for ( j=0; subdicts[j]!=NULL; ++j )
-	info->subfonts[j]->chars = gcalloc(info->subfonts[j]->charcnt,sizeof(SplineChar *));
+	info->subfonts[j]->glyphs = gcalloc(info->subfonts[j]->glyphcnt,sizeof(SplineChar *));
+    encmap->encmax = encmap->enccount;
+    encmap->map = galloc(encmap->enccount*sizeof(int));
+    memset(encmap->map,-1,encmap->enccount*sizeof(int));
 
     info->chars = gcalloc(info->glyph_cnt,sizeof(SplineChar *));
 
     /* info->chars provides access to the chars ordered by glyph, which the */
     /*  ttf routines care about */
-    /* sf->chars provides access to the chars ordered by CID. Not sure what */
+    /* sf->glyphs provides access to the chars ordered by CID. Not sure what */
     /*  would happen to a kern from one font to another... */
 
     map = FindCidMap(info->cidregistry,info->ordering,info->supplement,NULL);
@@ -3199,22 +3187,23 @@ static void cidfigure(struct ttfinfo *info, struct topdicts *dict,
 		subrs->cnt <33900 ? 1131 : 32768;
 
 	cid = dict->charset[i];
-	uni = CID2NameEnc(map,cid,buffer,sizeof(buffer));
+	encmap->map[cid] = cid;
+	uni = CID2NameUni(map,cid,buffer,sizeof(buffer));
 	info->chars[i] = PSCharStringToSplines(
 		dict->glyphs.values[i], dict->glyphs.lens[i],&pscontext,
 		subrs,gsubrs,buffer);
 	info->chars[i]->vwidth = sf->ascent+sf->descent;
 	info->chars[i]->unicodeenc = uni;
-	sf->chars[cid] = info->chars[i];
-	sf->chars[cid]->parent = sf;
-	sf->chars[cid]->enc = cid;
-	if ( sf->chars[cid]->layers[ly_fore].refs!=NULL )
+	sf->glyphs[cid] = info->chars[i];
+	sf->glyphs[cid]->parent = sf;
+	sf->glyphs[cid]->orig_pos = cid;		/* Bug! should be i, but I assume sf->chars[orig_pos]->orig_pos==orig_pos */
+	if ( sf->glyphs[cid]->layers[ly_fore].refs!=NULL )
 	    IError( "Reference found in CID font. Can't fix it up");
 	if ( cstype==2 ) {
-	    if ( sf->chars[cid]->width == (int16) 0x8000 )
-		sf->chars[cid]->width = dict->defaultwidthx;
+	    if ( sf->glyphs[cid]->width == (int16) 0x8000 )
+		sf->glyphs[cid]->width = dict->defaultwidthx;
 	    else
-		sf->chars[cid]->width += dict->nominalwidthx;
+		sf->glyphs[cid]->width += dict->nominalwidthx;
 	}
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressNext();
@@ -3262,34 +3251,40 @@ return( 0 );
     strings = readcfffontnames(ttf,&scnt);
     readcffsubrs(ttf,&gsubs );
     /* Can be many fonts here. Only decompose the one */
-	if ( dicts[which]->charstringsoff!=-1 ) {
-	    fseek(ttf,info->cff_start+dicts[which]->charstringsoff,SEEK_SET);
-	    readcffsubrs(ttf,&dicts[which]->glyphs);
+    if ( dicts[which]->charstringsoff!=-1 ) {
+	fseek(ttf,info->cff_start+dicts[which]->charstringsoff,SEEK_SET);
+	readcffsubrs(ttf,&dicts[which]->glyphs);
+    }
+    if ( dicts[which]->private_offset!=-1 )
+	readcffprivate(ttf,dicts[which]);
+    if ( dicts[which]->charsetoff!=-1 )
+	readcffset(ttf,dicts[which]);
+    if ( dicts[which]->fdarrayoff==-1 )
+	cfffigure(info,dicts[which],strings,scnt,&gsubs);
+    else {
+	fseek(ttf,info->cff_start+dicts[which]->fdarrayoff,SEEK_SET);
+	subdicts = readcfftopdicts(ttf,NULL,info->cff_start);
+	fseek(ttf,info->cff_start+dicts[which]->fdselectoff,SEEK_SET);
+	fdselect = readfdselect(ttf,dicts[which]->glyphs.cnt);
+	for ( j=0; subdicts[j]!=NULL; ++j ) {
+	    if ( subdicts[j]->private_offset!=-1 )
+		readcffprivate(ttf,subdicts[j]);
+	    if ( subdicts[j]->charsetoff!=-1 )
+		readcffset(ttf,subdicts[j]);
 	}
-	if ( dicts[which]->private_offset!=-1 )
-	    readcffprivate(ttf,dicts[which]);
-	if ( dicts[which]->charsetoff!=-1 )
-	    readcffset(ttf,dicts[which]);
-	if ( dicts[which]->fdarrayoff==-1 )
-	    cfffigure(info,dicts[which],strings,scnt,&gsubs);
-	else {
-	    fseek(ttf,info->cff_start+dicts[which]->fdarrayoff,SEEK_SET);
-	    subdicts = readcfftopdicts(ttf,NULL,info->cff_start);
-	    fseek(ttf,info->cff_start+dicts[which]->fdselectoff,SEEK_SET);
-	    fdselect = readfdselect(ttf,dicts[which]->glyphs.cnt);
-	    for ( j=0; subdicts[j]!=NULL; ++j ) {
-		if ( subdicts[j]->private_offset!=-1 )
-		    readcffprivate(ttf,subdicts[j]);
-		if ( subdicts[j]->charsetoff!=-1 )
-		    readcffset(ttf,subdicts[j]);
-	    }
-	    cidfigure(info,dicts[which],strings,scnt,&gsubs,subdicts,fdselect);
-	    for ( j=0; subdicts[j]!=NULL; ++j )
-		TopDictFree(subdicts[j]);
-	    free(subdicts); free(fdselect);
-	}
-	if ( dicts[which]->encodingoff!=-1 )
-	    readcffenc(ttf,dicts[which],info,strings,scnt);
+	cidfigure(info,dicts[which],strings,scnt,&gsubs,subdicts,fdselect);
+	for ( j=0; subdicts[j]!=NULL; ++j )
+	    TopDictFree(subdicts[j]);
+	free(subdicts); free(fdselect);
+    }
+    if ( dicts[which]->encodingoff!=-1 )
+	readcffenc(ttf,dicts[which],info,strings,scnt);
+
+    if ( dicts[which]->fdarrayoff==-1 ) {
+	for ( i=0; i<info->glyph_cnt ; ++i )
+	    if ( info->chars[i]!=NULL )
+		info->chars[i]->orig_pos = i;
+    }
 
     if ( info->to_order2 ) {
 	for ( i=0; i<info->glyph_cnt; ++i )
@@ -3309,10 +3304,6 @@ return( 0 );
     for ( i=0; i<gsubs.cnt; ++i )
 	free(gsubs.values[i]);
     free(gsubs.values); free(gsubs.lens);
-
-    for ( i=0; i<info->glyph_cnt ; ++i )
-	if ( info->chars[i]!=NULL )
-	    info->chars[i]->orig_pos = i;
 
 return( 1 );
 }
@@ -3388,16 +3379,6 @@ static void readttfvwidths(FILE *ttf,struct ttfinfo *info) {
     if ( info->vorg_start!=0 ) {
 	fseek(ttf,info->vorg_start+4,SEEK_SET);
 	info->vertical_origin = (short) getushort(ttf);
-    }
-}
-
-static void dupfree(struct dup *dups) {
-    struct dup *next;
-
-    while ( dups!=NULL ) {
-	next = dups->prev;
-	free(dups);
-	dups = next;
     }
 }
 
@@ -3495,19 +3476,28 @@ static int SubtableIsntSupported(FILE *ttf,uint32 offset,int platform,int specif
 return( ret );
 }
 
-static enum uni_interp amscheck(struct dup *dups) {
+static enum uni_interp amscheck(struct ttfinfo *info, EncMap *map) {
     int cnt = 0;
     /* Try to guess if the font uses the AMS math PUA assignments */
 
-    while ( dups!=NULL ) {
-	if (( dups->sc->unicodeenc == 'b' && dups->uni==0xe668 ) ||
-		( dups->sc->unicodeenc == 0x00b7 && dups->uni==0xe626 ) ||
-		( dups->sc->unicodeenc == 0x29e1 && dups->uni==0xe3c8 ) ||
-		( dups->sc->unicodeenc == 0x2A7C && dups->uni==0xE32A ) ||
-		( dups->sc->unicodeenc == 0x2920 && dups->uni==0xE221 ))
-	    ++cnt;
-	dups = dups->prev;
-    }
+    if ( map==NULL )
+return( ui_none );
+
+    if ( 0xe668<map->enccount && map->map[0xe668]!=-1 &&
+	    info->chars[map->map[0xe668]]->unicodeenc=='b' )
+	++cnt;
+    if ( 0xe3c8<map->enccount && map->map[0xe626]!=-1 &&
+	    info->chars[map->map[0xe626]]->unicodeenc==0xe626 )
+	++cnt;
+    if ( 0xe3c8<map->enccount && map->map[0xe3c8]!=-1 &&
+	    info->chars[map->map[0xe3c8]]->unicodeenc==0x29e1 )
+	++cnt;
+    if ( 0x2A7C<map->enccount && map->map[0x2A7C]!=-1 &&
+	    info->chars[map->map[0x2A7C]]->unicodeenc==0xE32A )
+	++cnt;
+    if ( 0x2920<map->enccount && map->map[0x2920]!=-1 &&
+	    info->chars[map->map[0x2920]]->unicodeenc==0xE221 )
+	++cnt;
 return( cnt>=2 ? ui_ams : ui_none );
 }
 
@@ -3530,6 +3520,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
     int badencwarned=false;
     int glyph_tot;
     Encoding *temp;
+    EncMap *map;
 
     fseek(ttf,info->encoding_start,SEEK_SET);
     version = getushort(ttf);
@@ -3596,6 +3587,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	if ( enc==NULL )
 	    enc = &custom;
     }
+
     if ( !enc->is_custom ) {
 	fseek(ttf,info->encoding_start+encoff,SEEK_SET);
 	format = getushort(ttf);
@@ -3607,14 +3599,29 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    len = getlong(ttf);
 	    /* language = */ getlong(ttf);
 	}
+	if ( enc->is_unicodebmp && (format==8 || format==10 || format==12))
+	    enc = FindOrMakeEncoding("UnicodeFull");
+    }
+    if ( justinuse )
+	map = NULL;
+    else {
+	info->map = map = EncMapNew(enc->char_cnt,info->glyph_cnt,enc);
+	info->uni_interp = interp;
+    }
+    if ( !enc->is_custom ) {
 	if ( format==0 ) {
+	    if ( !justinuse && map->enccount<256 ) {
+		map->map = grealloc(map->map,256*sizeof(int));
+		memset(map->map,-1,(256-map->enccount)*sizeof(int));
+		map->enccount = map->encmax = 256;
+	    }
 	    for ( i=0; i<len-6; ++i )
 		table[i] = getc(ttf);
 	    trans = enc->unicode;
 	    for ( i=0; i<256 && i<info->glyph_cnt && i<len-6; ++i )
 		if ( !justinuse ) {
 		    if ( table[i]<info->glyph_cnt && info->chars[table[i]]!=NULL ) {
-			info->chars[table[i]]->enc = i;
+			map->map[i] = table[i];
 			if ( trans!=NULL )
 			    info->chars[table[i]]->unicodeenc = trans[i];
 		    }
@@ -3666,8 +3673,9 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 			else if ( (uint16) (j+delta[i])>=info->glyph_cnt || info->chars[(uint16) (j+delta[i])]==NULL )
 			    fprintf( stderr, "Attempt to encode missing glyph %d to %d (0x%x)\n",
 				    (uint16) (j+delta[i]), modenc(j,mod), modenc(j,mod));
-			else if ( info->chars[(uint16) (j+delta[i])]->unicodeenc==-1 ) {
+			else {
 			    int uenc = umodenc(j,mod);
+			    int lenc = modenc(j,mod);
 			    if ( uenc!=-1 && used[uenc] ) {
 				if ( !badencwarned ) {
 				    fprintf( stderr, "Multiple glyphs map to the same unicode encoding U+%04X, only one will be used\n", uenc );
@@ -3675,15 +3683,16 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 				}
 			    } else {
 				if ( uenc!=-1 ) used[uenc] = true;
-				info->chars[(uint16) (j+delta[i])]->unicodeenc = uenc;
-				info->chars[(uint16) (j+delta[i])]->enc = modenc(j,mod);
+				if ( info->chars[(uint16) (j+delta[i])]->unicodeenc==-1 )
+				    info->chars[(uint16) (j+delta[i])]->unicodeenc = uenc;
+			        if ( lenc<map->enccount )
+				    map->map[lenc] = (uint16) (j+delta[i]);
 			    }
-			} else
-			    info->dups = makedup(info->chars[(uint16) (j+delta[i])],umodenc(j,mod),modenc(j,mod),info->dups);
+			}
 		    }
 		} else if ( rangeOffset[i]!=0xffff ) {
-		    /* It isn't explicitly mentioned by a rangeOffset of 0xffff*/
-		    /*  means no glyph */
+		    /* Apple says a rangeOffset of 0xffff means no glyph */
+		    /*  OpenType doesn't mention this */
 		    for ( j=startchars[i]; j<=endchars[i]; ++j ) {
 			int temp = (i-segCount+rangeOffset[i]/2) + j-startchars[i];
 			if ( temp<glyph_tot )
@@ -3709,8 +3718,9 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 			    else if ( info->chars[index]==NULL )
 				fprintf( stderr, "Attempt to encode missing glyph %d to %d (0x%x)\n",
 					index, modenc(j,mod), modenc(j,mod));
-			    else if ( info->chars[index]->unicodeenc==-1 ) {
+			    else {
 				int uenc = umodenc(j,mod);
+				int lenc = modenc(j,mod);
 				if ( uenc!=-1 && used[uenc] ) {
 				    if ( !badencwarned ) {
 					fprintf( stderr, "Multiple glyphs map to the same unicode encoding U+%04X, only one will be used\n", uenc );
@@ -3718,11 +3728,12 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 				    }
 				} else {
 				    if ( uenc!=-1 ) used[uenc] = true;
-				    info->chars[index]->unicodeenc = uenc;
-				    info->chars[index]->enc = modenc(j,mod);
+				    if ( info->chars[index]->unicodeenc==-1 )
+					info->chars[index]->unicodeenc = uenc;
+				    if ( lenc<map->enccount )
+					map->map[lenc] = index;
 				}
-			    } else
-				info->dups = makedup(info->chars[index],umodenc(j,mod),modenc(j,mod),info->dups);
+			    }
 			}
 		    }
 		} else
@@ -3749,9 +3760,14 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    if ( justinuse )
 		for ( i=0; i<count; ++i )
 		    info->inuse[getushort(ttf)]= 1;
-	    else
-		for ( i=0; i<count; ++i )
-		    info->chars[getushort(ttf)]->unicodeenc = first+i;
+	    else {
+		for ( i=0; i<count; ++i ) {
+		    int gid = getushort(ttf);
+		    info->chars[gid]->unicodeenc = first+i;
+		    if ( first+i < map->enccount )
+			map->map[first+i] = gid;
+		}
+	    }
 	} else if ( format==2 ) {
 	    int max_sub_head_key = 0, cnt, max_pos= -1;
 	    struct subhead *subheads;
@@ -3800,30 +3816,34 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 			else if ( info->chars[index]==NULL )
 			    /* Do Nothing */;
 			else if ( info->chars[index]->unicodeenc==-1 ) {
-			    info->chars[index]->unicodeenc = i;
-			    info->chars[index]->enc = modenc(i,mod);
-			} else
-			    info->dups = makedup(info->chars[index],i,i,info->dups);
+			    int lenc = modenc(i,mod);
+			    if ( info->chars[index]->unicodeenc==-1 )
+				info->chars[index]->unicodeenc = i;
+			    if ( lenc<map->enccount )
+				map->map[lenc] = index;
+			}
 		    }
 		} else {
 		    int k = table[i];
 		    for ( j=0; j<subheads[k].cnt; ++j ) {
-			int enc;
+			int enc, lenc;
 			if ( subheads[k].rangeoff+j>=cnt )
 			    index = 0;
 			else if ( (index = glyphs[subheads[k].rangeoff+j])!= 0 )
 			    index = (uint16) (index+subheads[k].delta);
 			if ( index!=0 && index<info->glyph_cnt ) {
 			    enc = (i<<8)|(j+subheads[k].first);
+			    lenc = modenc(enc,mod);
 			    if ( justinuse )
 				info->inuse[index] = 1;
 			    else if ( info->chars[index]==NULL )
 				/* Do Nothing */;
-			    else if ( info->chars[index]->unicodeenc==-1 ) {
-				info->chars[index]->unicodeenc = umodenc(enc,mod);
-				info->chars[index]->enc = modenc(enc,mod);
-			    } else
-				info->dups = makedup(info->chars[index],umodenc(enc,mod),modenc(enc,mod),info->dups);
+			    else {
+				if ( info->chars[index]->unicodeenc==-1 )
+				    info->chars[index]->unicodeenc = umodenc(enc,mod);
+				if ( lenc<map->enccount )
+				    map->map[lenc] = index;
+			    }
 			}
 		    }
 		    /*if ( last==-1 ) last = i;*/
@@ -3853,7 +3873,8 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 		    for ( i=start; i<=end; ++i ) {
 			(sc = info->chars[startglyph+i-start])->unicodeenc =
 				((i>>16)-0xd800)*0x400 + (i&0xffff)-0xdc00 + 0x10000;
-			sc->enc = sc->unicodeenc;
+			if ( sc->unicodeenc < map->enccount )
+			    map->map[sc->unicodeenc] = startglyph+i-start;
 		    }
 	    }
 	} else if ( format==10 ) {
@@ -3870,8 +3891,10 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 		    info->inuse[getushort(ttf)]= 1;
 	    else
 		for ( i=0; i<count; ++i ) {
-		    (sc = info->chars[getushort(ttf)])->unicodeenc = first+i;
-		    sc->enc = first+i;
+		    int gid = getushort(ttf);
+		    info->chars[gid]->unicodeenc = first+i;
+		    if ( first+i < map->enccount )
+			map->map[first+i] = gid;
 		}
 	} else if ( format==12 ) {
 	    uint32 ngroups, start, end, startglyph;
@@ -3897,20 +3920,23 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 			    fprintf( stderr, "Bad font: Encoding data out of range.\n" );
 		    break;
 			} else {
-			    (sc = info->chars[startglyph+i-start])->unicodeenc = i;
-			    sc->enc = i;
+			    info->chars[startglyph+i-start]->unicodeenc = i;
+			    if ( i < map->enccount )
+				map->map[i] = startglyph+i-start;
 			}
 		    }
 	    }
 	}
     }
-    if ( interp==ui_none )
-	interp = amscheck(info->dups);
-    if ( info->chars!=NULL && info->glyph_cnt>0 && info->chars[0]!=NULL && info->chars[0]->unicodeenc==0xffff &&
-	    info->chars[0]->name!=NULL && strcmp(info->chars[0]->name,".notdef")==0 )
-	info->chars[0]->unicodeenc = -1;
-    info->encoding_name = enc;
-    info->uni_interp = interp;
+    if ( info->chars!=NULL )
+	for ( i=0; i<info->glyph_cnt; ++i )
+	    if ( info->chars[i]->unicodeenc==0xffff ) info->chars[i]->unicodeenc = -1;
+    if ( !justinuse ) {
+	if ( interp==ui_none )
+	    info->uni_interp = amscheck(info,map);
+	map->enc = enc;		/* This can be changed from the initial value */
+    }
+    info->map = map;
 }
 
 static int EncFromName(const char *name,enum uni_interp interp,Encoding *encname) {
@@ -3981,9 +4007,13 @@ static void readttfos2metrics(FILE *ttf,struct ttfinfo *info) {
 }
 
 static int cmapEncFromName(struct ttfinfo *info,const char *nm, int glyphid) {
-    int uni = EncFromName(nm,info->uni_interp,info->encoding_name);
+    int uni;
     int i;
 
+    if ( info->map!=NULL )
+	uni = EncFromName(nm,info->uni_interp,info->map->enc);
+    else
+	uni = EncFromName(nm,ui_none,&custom);
     if ( uni==-1 )
 return( -1 );
 
@@ -4074,15 +4104,20 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
     }
 
     if ( info->fd!=NULL && info->fd->chars!=NULL) {
-	/* In type42 fonts the names are stored in a postscript /CharStrings dictionary */
+	EncMap *map = NULL;
 	struct pschars *chars = info->fd->chars;
+	if ( info->map==NULL )
+	    info->map = map = EncMapNew(65536,65536,FindOrMakeEncoding("UnicodeBmp"));
+	/* In type42 fonts the names are stored in a postscript /CharStrings dictionary */
 	for ( i=0; i<chars->next; ++i ) {
 	    int gid = (intpt) (chars->values[i]);
 	    if ( gid>=0 && gid<info->glyph_cnt && chars->keys[i]!=NULL ) {
 		free(info->chars[gid]->name);
 		info->chars[gid]->name = chars->keys[i];
-		info->chars[gid]->unicodeenc = UniFromName(chars->keys[i],info->uni_interp,info->encoding_name);
-		info->chars[gid]->enc = info->chars[gid]->unicodeenc;
+		info->chars[gid]->unicodeenc = UniFromName(chars->keys[i],info->uni_interp,info->map->enc);
+		if ( map!=NULL && info->chars[gid]->unicodeenc!=-1 &&
+			info->chars[gid]->unicodeenc<map->enccount)
+		    map->map[ info->chars[gid]->unicodeenc ] = gid;
 		chars->keys[i] = NULL;
 		chars->values[i] = NULL;
 	    } else
@@ -4146,9 +4181,9 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
     continue;
 	if ( info->ordering!=NULL )
 	    sprintf(buffer, "%.20s-%d", info->ordering, i );
-	else if ( info->chars[i]->enc!=0 )
+	else if ( info->map!=NULL && info->map->map[i]!=-1 )
 	    sprintf(buffer, "nounicode-%d-%d-%x", info->platform, info->specific,
-		    info->chars[i]->enc );
+		    info->map->map[i] );
 	else
 	    sprintf( buffer, "glyph%d", i );
 	info->chars[i]->name = copy(buffer);
@@ -4243,14 +4278,14 @@ return( false );
 	if ( ref->sc!=NULL )
     break;				/* Already done */
 	next = ref->next;
-	if ( !ttfFixupRef(chars,ref->local_enc)) {
+	if ( !ttfFixupRef(chars,ref->orig_pos)) {
 	    if ( prev==NULL )
 		chars[i]->layers[ly_fore].refs = next;
 	    else
 		prev->next = next;
 	    chunkfree(ref,sizeof(RefChar));
 	} else {
-	    ref->sc = chars[ref->local_enc];
+	    ref->sc = chars[ref->orig_pos];
 	    ref->adobe_enc = getAdobeEnc(ref->sc->name);
 	    if ( ref->point_match )
 		ttfPointMatch(chars[i],ref);
@@ -4392,6 +4427,8 @@ return( 0 );
 	readttfwidths(ttf,info);
     if ( info->vmetrics_start!=0 && info->vhea_start!=0 )
 	readttfvwidths(ttf,info);
+    /* 'cmap' is not meaningful for cid keyed fonts, and not supplied for */
+    /*  type42 fonts */
     if ( info->cidregistry==NULL && info->encoding_start!=0 )
 	readttfencodings(ttf,info,false);
     if ( info->os2_start!=0 )
@@ -4444,215 +4481,52 @@ return( 0 );
 return( true );
 }
 
-static SplineChar *SFMakeDupRef(SplineFont *sf, int local_enc, struct dup *dup) {
-    SplineChar *sc;
-
-    sc = MakeDupRef(dup->sc,local_enc,dup->uni);
-    sc->parent = sf;
-return( sc );
-}
-
 static void SymbolFixup(struct ttfinfo *info) {
-    SplineChar *lo[256], *hi[256], *sc, **chars;
-    int extras=0, i, uenc;
-    struct dup *dup;
+    /* convert a two-byte symbol encoding (one using PUA) into expected */
+    /*  one-byte encoding. */
+    int i, max;
+    EncMap *map = info->map;
 
-    memset(lo,0,sizeof(lo));
-    memset(hi,0,sizeof(hi));
-    if ( info->chars[0]!=NULL && info->chars[0]->enc==0 )
-	lo[0] = info->chars[0];
-    for ( i=0; i<info->glyph_cnt; ++i ) if ( (sc = info->chars[i])!=NULL ) {
-	if ( sc->enc>0 && sc->enc<=0xff )
-	    lo[sc->enc] = sc;
-	else if ( sc->enc>=0xf000 && sc->enc<=0xf0ff )
-	    hi[sc->enc-0xf000] = sc;
-	else if ( sc->enc!=0 )
-return;		/* Leave it as it is, it isn't a real symbol encoding */
+    max = -1;
+    for ( i=map->enccount-1; i>=0; --i ) {
+	if ( map->map[i]==-1 )
+    continue;
+	if ( i>=0xf000 && i<=0xf0ff ) {
+	    map->map[i-0xf000] = map->map[i];
+	    map->map[i] = -1;
+    continue;
+	}
+	if ( i>max ) max = i;
     }
-    for ( dup=info->dups; dup!=NULL; dup=dup->prev ) {
-	if ( !((dup->enc>0 && dup->enc<=0xff ) || ( dup->enc>=0xf000 && dup->enc<=0xf0ff )) )
-return;
-    }
-    extras = 0;
-    for ( i=1; i<info->glyph_cnt; ++i ) if ( (sc = info->chars[i])!=NULL ) {
-	if ( sc->enc==0 )
-	    sc->enc = 256 + extras++;
-    }
-    for ( dup=info->dups; dup!=NULL; dup=dup->prev ) {
-	if ( dup->enc>0 && dup->enc<=0xff )
-	    lo[dup->enc] = MakeDupRef(dup->sc,dup->enc,dup->uni);
-	else
-	    hi[dup->enc-0xf000] = MakeDupRef(dup->sc,dup->enc,dup->uni);
-    }
-    for ( i=0; i<256; ++i ) {
-	if ( hi[i]!=NULL && lo[i]!=NULL ) {
-	    lo[i]->enc = 256+extras++;
-	    hi[i]->enc -= 0xf000;
-	} else if ( hi[i]!=NULL )
-	    hi[i]->enc -= 0xf000;
-    }
-    chars = gcalloc(256+extras,sizeof(SplineChar *));
-    for ( i=0; i<info->glyph_cnt; ++i ) if ( (sc = info->chars[i])!=NULL )
-	chars[sc->enc] = sc;
-    for ( i=0; i<256; ++i ) if ( (sc = lo[i])!=NULL )
-	chars[sc->enc] = sc;
-    for ( i=0; i<256; ++i ) if ( (sc = hi[i])!=NULL )
-	chars[sc->enc] = sc;
-    for ( i=0; i<256+extras; ++i ) if ( (sc=chars[i])!=NULL ) {
-	uenc = UniFromName(sc->name,info->uni_interp,info->encoding_name);
-	if ( uenc!=-1 )
-	    sc->unicodeenc = uenc;
-    }
-    info->encoding_name = &custom;
-    free(info->chars);
-    info->chars = chars;
-    info->glyph_cnt = 256+extras;
-    info->is_onebyte = true;
-
-    dupfree(info->dups);
-    info->dups = NULL;
-}
-
-static void CheckEncoding(struct ttfinfo *info) {
-    int j, extras;
-    SplineChar **chars;
-
-    extras = 0;
-    for ( j=0; j<info->glyph_cnt; ++j )
-	if ( info->chars[j]!=NULL &&
-		((info->chars[j]->enc==0 && j!=0) || info->chars[j]->enc>=256 ))
-	    ++extras;
-    chars = gcalloc(256+extras,sizeof(SplineChar *));
-    extras = 0;
-    for ( j=0; j<info->glyph_cnt; ++j ) {
-	if ( info->chars[j]==NULL )
-	    /* Do Nothing */;
-	else if (( info->chars[j]->enc==0 && j!=0) || info->chars[j]->enc>=256 ) {
-	    chars[256+extras] = info->chars[j];
-	    info->chars[j]->enc = 256+extras++;
-	} else
-	    chars[info->chars[j]->enc] = info->chars[j];
-    }
-
-    info->encoding_name = &custom;
-    free(info->chars);
-    info->chars = chars;
-    info->glyph_cnt = 256+extras;
-    info->is_onebyte = true;
+    map->enccount = max;
 }
 
 static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
-    int istwobyte = false, i, oldcnt = info->glyph_cnt, extras=0, epos, max=96*94;
-    SplineChar **oldchars = info->chars, **newchars;
-    struct dup *dup;
-    BDFFont *bdf;
-    BDFChar **obc;
+    int i;
     RefChar *rf, *prev, *next;
-    int newcharcnt;
 
-    if ( oldcnt>1 && oldchars[1]!=NULL && oldchars[1]->enc==0 ) {
-	for ( i=0; i<oldcnt; ++i )
-	    if ( oldchars[i]!=NULL && oldchars[i]->enc==1 )
-	break;
-	if ( i==oldcnt ) {
-	    for ( dup=info->dups; dup!=NULL && !istwobyte; dup=dup->prev )
-		if ( dup->enc==1 )
-	    break;
-	    if ( dup==NULL )
-		info->chars[1]->enc = 1;
-	}
-    }
+    sf->glyphs = info->chars;
+    sf->glyphcnt = info->glyph_cnt;
+    for ( i=0; i<sf->glyphcnt; ++i )
+	if ( sf->glyphs[i]!=NULL )
+	    sf->glyphs[i]->parent = sf;
 
-    if ( info->barecff ) {
-	max = 256;
-	if ( oldcnt>1 && oldchars[0]!=NULL && oldchars[1]!=NULL &&
-		oldchars[0]->enc==0 && oldchars[1]->enc==0 ) {
-	    extras++;
-	    oldchars[0]->enc = 256;
-	}
-	for ( i=0; i<oldcnt; ++i ) if ( oldchars[i]!=NULL ) {
-	    if ( oldchars[i]->enc>=256 || (oldchars[i]->enc==0 && i>1 ))
-		++extras;
-	    oldchars[i]->parent = sf;
-	}
-    } else if ( info->is_onebyte ) {
-	/* We did most of this in CheckEncoding */
-	max = 256;
-	for ( i=0; i<oldcnt; ++i ) if ( oldchars[i]!=NULL ) {
-	    if ( oldchars[i]->enc>=256 )
-		++extras;
-	    oldchars[i]->parent = sf;
-	}
-    } else {
-	istwobyte = true;
-	for ( i=0; i<oldcnt; ++i ) if ( oldchars[i]!=NULL ) {
-	    if ( oldchars[i]->enc>=256 ) {
-		istwobyte = true;
-		if ( oldchars[i]->enc>max ) max = oldchars[i]->enc;
-	    } else if ( oldchars[i]->enc==0 && i!=0 )
-		++extras;
-	    oldchars[i]->parent = sf;
-	}
-    }
-    for ( dup=info->dups; dup!=NULL && !istwobyte; dup=dup->prev )
-	if ( dup->enc>=256 ) {
-	    istwobyte = true;
-	    if ( dup->enc>max ) max = dup->enc;
-	}
-
-    epos = info->encoding_name->char_cnt;
-    if ( epos==0 )
-	epos = istwobyte?65536:256;
-    newcharcnt = epos+extras;
-    newchars = gcalloc(newcharcnt,sizeof(SplineChar *));
-    for ( i=0; i<oldcnt; ++i ) if ( oldchars[i]!=NULL ) {
-	if (( oldchars[i]->enc!=0 || i==0 || (i==1 && info->barecff)) && oldchars[i]->enc<epos )
-	    newchars[oldchars[i]->enc] = oldchars[i];
-	else {
-	    oldchars[i]->enc = epos;
-	    newchars[epos++] = oldchars[i];
-	}
-    }
-
-    for ( i=0; i<newcharcnt; ++i ) if ( newchars[i]!=NULL ) {
-	for ( rf = newchars[i]->layers[ly_fore].refs, prev=NULL; rf!=NULL; rf = next ) {
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	for ( rf = sf->glyphs[i]->layers[ly_fore].refs, prev=NULL; rf!=NULL; rf = next ) {
 	    next = rf->next;
 	    if ( rf->sc==NULL ) {
-		if ( prev==NULL ) newchars[i]->layers[ly_fore].refs = next;
+		if ( prev==NULL ) sf->glyphs[i]->layers[ly_fore].refs = next;
 		else prev->next = next;
 		RefCharFree(rf);
 	    } else {
-		rf->local_enc = rf->sc->enc;
+		rf->orig_pos = rf->sc->orig_pos;
 		rf->unicode_enc = rf->sc->unicodeenc;
 		prev = rf;
 	    }
 	}
     }
-
-    sf->chars = oldchars;
-    for ( dup=info->dups; dup!=NULL; dup=dup->prev )
-	if ( newchars[dup->enc]==NULL )
-	    newchars[dup->enc] = SFMakeDupRef(sf,dup->enc,dup);
-    sf->chars = newchars; sf->charcnt = newcharcnt;
-    free(oldchars);
-
-    sf->encoding_name = info->encoding_name;
+    sf->map = info->map;
     sf->uni_interp = info->uni_interp;
-
-    for ( bdf=sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
-	bdf->encoding_name = sf->encoding_name;
-	obc = bdf->chars;
-	bdf->chars = gcalloc(sf->charcnt,sizeof(BDFChar *));
-	for ( i=0; i<bdf->charcnt; ++i ) if ( obc[i]!=NULL ) {
-	    bdf->chars[obc[i]->sc->enc] = obc[i];
-	    obc[i]->enc = obc[i]->sc->enc;
-	}
-	bdf->charcnt = sf->charcnt;
-	free(obc);
-    }
-
-    dupfree(info->dups);
-    info->dups = NULL;
 }
 
 static char *AxisNameConvert(uint32 tag) {
@@ -4709,30 +4583,22 @@ static SplineFont *SFFromTuple(SplineFont *basesf,struct variations *v,int tuple
     sf->descent = basesf->descent;
     sf->kerns = v->tuples[tuple].khead;
     sf->vkerns = v->tuples[tuple].vkhead;
-    sf->encoding_name = basesf->encoding_name;
+    sf->map = basesf->map;
     sf->mm = mm;
-    sf->charcnt = basesf->charcnt;
-    sf->chars = gcalloc(sf->charcnt,sizeof(SplineChar *));
+    sf->glyphcnt = basesf->glyphcnt;
+    sf->glyphs = v->tuples[tuple].chars;
     sf->order2 = true;
-    for ( i=0; i<sf->charcnt; ++i ) if ( basesf->chars[i]!=NULL ) {
-	if ( SCDuplicate(basesf->chars[i])!=basesf->chars[i] ) {
-	    SplineChar *dsc = SCDuplicate(basesf->chars[i]);
-	    sf->chars[i] = MakeDupRef(v->tuples[tuple].chars[dsc->orig_pos],i,basesf->chars[i]->unicodeenc);
-	    sf->chars[i]->parent = sf;
-	} else if ( basesf->chars[i]->orig_pos<info->glyph_cnt ) {
-	    sf->chars[i] = v->tuples[tuple].chars[basesf->chars[i]->orig_pos];
-	    sf->chars[i]->enc = i;
-	    sf->chars[i]->parent = sf;
-	}
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( basesf->glyphs[i]!=NULL ) {
+	sf->glyphs[i]->orig_pos = i;
+	sf->glyphs[i]->parent = sf;
     }
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	for ( r=sf->chars[i]->layers[ly_fore].refs; r!=NULL; r=r->next )
-	    SCReinstanciateRefChar(sf->chars[i],r);
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	for ( r=sf->glyphs[i]->layers[ly_fore].refs; r!=NULL; r=r->next )
+	    SCReinstanciateRefChar(sf->glyphs[i],r);
     }
 
     sf->ttf_tables = v->tuples[tuple].cvt;
 
-    free(v->tuples[tuple].chars);
     v->tuples[tuple].chars = NULL;
     v->tuples[tuple].khead = NULL;
     v->tuples[tuple].vkhead = NULL;
@@ -4825,6 +4691,53 @@ static void SFRelativeWinAsDs(SplineFont *sf) {
 	    sf->pfminfo.hhead_descent -= b.miny;
 	}
     }
+}
+
+static void PsuedoEncodeUnencoded(EncMap *map,struct ttfinfo *info) {
+    int extras, base;
+    int i;
+
+    for ( i=0; i<info->glyph_cnt; ++i )
+	info->chars[i]->ticked = false;
+    for ( i=0; i<map->enccount; ++i )
+	if ( map->map[i]!=-1 )
+	    info->chars[map->map[i]]->ticked = true;
+    extras = 0;
+    for ( i=0; i<info->glyph_cnt; ++i )
+	if ( !info->chars[i]->ticked )
+	    ++extras;
+    if ( extras!=0 ) {
+	if ( map->enccount<=256 )
+	    base = 256;
+	else if ( map->enccount<=65536 )
+	    base = 65536;
+	else if ( map->enccount<=17*65536 )
+	    base = 17*65536;
+	else
+	    base = map->enccount;
+	if ( base+extras>map->encmax ) {
+	    map->map = grealloc(map->map,(base+extras)*sizeof(int));
+	    memset(map->map+map->enccount,-1,(base+extras-map->enccount)*sizeof(int));
+	    map->encmax = base+extras;
+	}
+	map->enccount = base+extras;
+	extras = 0;
+	for ( i=0; i<info->glyph_cnt; ++i )
+	    if ( !info->chars[i]->ticked )
+		map->map[base+extras++] = i;
+    }
+}
+
+static void MapDoBack(EncMap *map,struct ttfinfo *info) {
+    int i;
+
+    map->backmax = info->glyph_cnt;
+    map->backmap = galloc(info->glyph_cnt*sizeof(int));
+    memset(map->backmap,-1,info->glyph_cnt*sizeof(int));
+    for ( i = map->enccount-1; i>=0; --i )
+	if ( map->map[i]>=0 && map->map[i]<info->glyph_cnt )
+	    if ( map->backmap[map->map[i]]==-1 )
+		map->backmap[map->map[i]] = i;
 }
 
 static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
@@ -4940,22 +4853,19 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 	}
     }
 
-    if ( info->encoding_name==NULL )
-	info->encoding_name = &custom;		/* Can happen in a type42 */
-    if ( info->encoding_name->only_1byte && info->subfontcnt == 0 )
-	/* Don't trust those encodings */
-	CheckEncoding(info);
     if ( info->twobytesymbol )
 	/* rework ms symbol encodings */
 	SymbolFixup(info);
-    sf->encoding_name = &custom;
+    if ( info->subfontcnt==0 )
+	PsuedoEncodeUnencoded(info->map,info);
+    MapDoBack(info->map,info);
+    sf->map = info->map;
     sf->cidregistry = info->cidregistry;
     sf->ordering = info->ordering;
     sf->supplement = info->supplement;
     sf->cidversion = info->cidfontversion;
     sf->bitmaps = info->bitmaps;
     for ( bdf = info->bitmaps; bdf!=NULL; bdf = bdf->next ) {
-	bdf->encoding_name = info->encoding_name;
 	bdf->sf = sf;
     }
 
@@ -4981,9 +4891,9 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 	k=0;
 	do {
 	    _sf = k<sf->subfontcnt?sf->subfonts[k]:sf;
-	    for ( i=0; i<sf->charcnt; ++i ) {
-		if ( _sf->chars[i]!=NULL )		/* Might be null in ttc files */
-		    SCLigDefault(_sf->chars[i]);
+	    for ( i=0; i<sf->glyphcnt; ++i ) {
+		if ( _sf->glyphs[i]!=NULL )		/* Might be null in ttc files */
+		    SCLigDefault(_sf->glyphs[i]);
 	    }
 	    ++k;
 	} while ( k<sf->subfontcnt );
@@ -5014,8 +4924,8 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 	k=0;
 	do {
 	    _sf = k<sf->subfontcnt?sf->subfonts[k]:sf;
-	    for ( i=0; i<sf->charcnt; ++i ) {
-		if ( (sc = _sf->chars[i])!=NULL && !sc->hconflicts && !sc->vconflicts &&
+	    for ( i=0; i<sf->glyphcnt; ++i ) {
+		if ( (sc = _sf->glyphs[i])!=NULL && !sc->hconflicts && !sc->vconflicts &&
 			sc->layers[ly_fore].splines!=NULL ) {
 		    chunkfree( sc->layers[ly_fore].splines->first->hintmask,sizeof(HintMask) );
 		    sc->layers[ly_fore].splines->first->hintmask = NULL;
@@ -5036,7 +4946,6 @@ SplineFont *_SFReadTTF(FILE *ttf, int flags,char *filename,struct fontdict *fd) 
     memset(&info,'\0',sizeof(struct ttfinfo));
     info.onlystrikes = (flags&ttf_onlystrikes)?1:0;
     info.onlyonestrike = (flags&ttf_onlyonestrike)?1:0;
-    info.uni_interp = ui_unset;
     info.fd = fd;
     ret = readttf(ttf,&info,filename);
     if ( !ret )

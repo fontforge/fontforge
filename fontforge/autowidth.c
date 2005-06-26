@@ -146,6 +146,7 @@ typedef struct widthinfo {
     int space_guess;
     int threshold;
     SplineFont *sf;
+    FontView *fv;
     int done: 1;
     int autokern: 1;
 } WidthInfo;
@@ -333,14 +334,18 @@ static void CheckOutOfBounds(WidthInfo *wi) {
 }
 
 static void ApplyChanges(WidthInfo *wi) {
-    uint8 *rsel = gcalloc(wi->sf->charcnt,sizeof(char));
+    EncMap *map = wi->fv->map;
+    uint8 *rsel = gcalloc(map->enccount,sizeof(char));
     int i, width;
     real transform[6];
     struct charone *ch;
     DBounds bb;
 
-    for ( i=0; i<wi->real_rcnt; ++i )
-	rsel[wi->right[i]->sc->enc] = true;
+    for ( i=0; i<wi->real_rcnt; ++i ) {
+	int gid = map->map[wi->right[i]->sc->orig_pos];
+	if ( gid!=-1 )
+	    rsel[gid] = true;
+    }
     transform[0] = transform[3] = 1.0;
     transform[1] = transform[2] = transform[5] = 0;
 
@@ -348,7 +353,7 @@ static void ApplyChanges(WidthInfo *wi) {
 	ch = wi->right[i];
 	transform[4] = ch->newl-ch->lbearing;
 	if ( transform[4]!=0 ) {
-	    FVTrans(wi->sf->fv,ch->sc,transform,rsel,false);
+	    FVTrans(wi->fv,ch->sc,transform,rsel,false);
 	    SCCharChangedUpdate(ch->sc);
 	}
     }
@@ -360,7 +365,7 @@ static void ApplyChanges(WidthInfo *wi) {
 	width = rint(bb.maxx + ch->newr);
 	if ( width!=ch->sc->width ) {
 	    SCPreserveWidth(ch->sc);
-	    SCSynchronizeWidth(ch->sc,width,ch->sc->width,wi->sf->fv);
+	    SCSynchronizeWidth(ch->sc,width,ch->sc->width,wi->fv);
 	    SCCharChangedUpdate(ch->sc);
 	}
     }
@@ -405,7 +410,7 @@ static void AutoKern(WidthInfo *wi) {
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     {
     MetricsView *mv;
-    for ( mv=wi->sf->fv->metrics; mv!=NULL; mv=mv->next )
+    for ( mv=wi->fv->metrics; mv!=NULL; mv=mv->next )
 	MVReKern(mv);
     }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
@@ -725,8 +730,8 @@ static void FindFontParameters(WidthInfo *wi) {
     caph = 0; cnt = 0;
     for ( i=0; caps[i]!='\0' && cnt<5; i+=2 )
 	for ( j=caps[i]; j<=caps[i+1] && cnt<5; ++j )
-	    if ( (si=SFFindExistingChar(sf,j,NULL))!=-1 && sf->chars[si]!=NULL ) {
-		SplineCharQuickBounds(sf->chars[si],&bb);
+	    if ( (si=SFFindExistingSlot(sf,j,NULL))!=-1 && sf->glyphs[si]!=NULL ) {
+		SplineCharQuickBounds(sf->glyphs[si],&bb);
 		caph += bb.maxy;
 		++cnt;
 	    }
@@ -736,18 +741,18 @@ static void FindFontParameters(WidthInfo *wi) {
 	caph = sf->ascent;
 
     for ( i=0; descent[i]!='\0'; ++i )
-	if ( (si=SFFindExistingChar(sf,descent[i],NULL))!=-1 && sf->chars[si]!=NULL )
+	if ( (si=SFFindExistingSlot(sf,descent[i],NULL))!=-1 && sf->glyphs[si]!=NULL )
     break;
     if ( descent[i]!='\0' ) {
-	SplineCharQuickBounds(sf->chars[si],&bb);
+	SplineCharQuickBounds(sf->glyphs[si],&bb);
 	ds = bb.miny;
     } else
 	ds = -sf->descent;
 
     cnt = 0; xh = 0;
     for ( i=0; xheight[i]!='\0' && cnt<5; ++i )
-	if ( (si=SFFindExistingChar(sf,xheight[i],NULL))!=-1 && sf->chars[si]!=NULL ) {
-	    SplineCharQuickBounds(sf->chars[si],&bb);
+	if ( (si=SFFindExistingSlot(sf,xheight[i],NULL))!=-1 && sf->glyphs[si]!=NULL ) {
+	    SplineCharQuickBounds(sf->glyphs[si],&bb);
 	    xh += bb.maxy;
 	    ++cnt;
 	}
@@ -757,21 +762,21 @@ static void FindFontParameters(WidthInfo *wi) {
 	xh = 3*caph/4;
 
     for ( i=0; easyserif[i]!='\0'; ++i )
-	if ( (si=SFFindExistingChar(sf,easyserif[i],NULL))!=-1 && sf->chars[si]!=NULL )
+	if ( (si=SFFindExistingSlot(sf,easyserif[i],NULL))!=-1 && sf->glyphs[si]!=NULL )
     break;
     if ( si!=-1 ) {
-	topx = SCFindMinXAtY(sf->chars[si],2*caph/3);
-	bottomx = SCFindMinXAtY(sf->chars[si],caph/3);
+	topx = SCFindMinXAtY(sf->glyphs[si],2*caph/3);
+	bottomx = SCFindMinXAtY(sf->glyphs[si],caph/3);
 	/* Some fonts don't sit on the baseline... */
-	SplineCharQuickBounds(sf->chars[si],&bb);
+	SplineCharQuickBounds(sf->glyphs[si],&bb);
 	/* beware of slanted (italic, oblique) fonts */
 	ytop = caph/2; ybottom=bb.miny;
-	stemx = SCFindMinXAtY(sf->chars[si],ytop);
+	stemx = SCFindMinXAtY(sf->glyphs[si],ytop);
 	if ( topx==bottomx ) {
 	    ca = 0;
 	    while ( ytop-ybottom>=.5 ) {
 		y = (ytop+ybottom)/2;
-		testx = SCFindMinXAtY(sf->chars[si],y);
+		testx = SCFindMinXAtY(sf->glyphs[si],y);
 		if ( testx+1>=stemx )
 		    ytop = y;
 		else
@@ -783,7 +788,7 @@ static void FindFontParameters(WidthInfo *wi) {
 	    yorig = ytop;
 	    while ( ytop-ybottom>=.5 ) {
 		y = (ytop+ybottom)/2;
-		testx = SCFindMinXAtY(sf->chars[si],y)+
+		testx = SCFindMinXAtY(sf->glyphs[si],y)+
 		    (yorig-y)*ca;
 		if ( testx+4>=stemx )		/* the +4 is to counteract rounding */
 		    ytop = y;
@@ -793,7 +798,7 @@ static void FindFontParameters(WidthInfo *wi) {
 	}
 	/* If "I" has a curved stem then it's probably in a script style and */
 	/*  serifs don't really make sense (or not the simplistic ones I deal with) */
-	if ( ytop<=bb.miny+.5 || SCIsMinXAtYCurved(sf->chars[si],caph/2) )
+	if ( ytop<=bb.miny+.5 || SCIsMinXAtYCurved(sf->glyphs[si],caph/2) )
 	    serifsize = 0;
 	else if ( ytop>caph/4 )
 	    serifsize = /*.06*(sf->ascent+sf->descent)*/ 0;
@@ -802,7 +807,7 @@ static void FindFontParameters(WidthInfo *wi) {
 
 	if ( serifsize!=0 ) {
 	    y = serifsize/4 + bb.miny;
-	    testx = SCFindMinXAtY(sf->chars[si],y);
+	    testx = SCFindMinXAtY(sf->glyphs[si],y);
 	    if ( testx==NOTREACHED )
 		serifsize=0;
 	    else {
@@ -820,8 +825,8 @@ static void FindFontParameters(WidthInfo *wi) {
 	serifsize = 0;
     }
 
-    if ( (si=SFFindExistingChar(sf,'n',"n"))!=-1 && sf->chars[si]!=NULL ) {
-	SplineChar *sc = sf->chars[si];
+    if ( (si=SFFindExistingSlot(sf,'n',"n"))!=-1 && sf->glyphs[si]!=NULL ) {
+	SplineChar *sc = sf->glyphs[si];
 	if ( sc->changedsincelasthinted && !sc->manualhints )
 	    SplineCharAutoHint(sc,NULL);
 	SplineCharQuickBounds(sc,&bb);
@@ -841,10 +846,10 @@ static void FindFontParameters(WidthInfo *wi) {
 		    wi->n_stem_exterior_width/4;
 	}
     }
-    if ( ((si=SFFindExistingChar(sf,'I',"I"))!=-1 && sf->chars[si]!=NULL ) ||
-	    ((si=SFFindExistingChar(sf,0x399,"Iota"))!=-1 && sf->chars[si]!=NULL ) ||
-	    ((si=SFFindExistingChar(sf,0x406,"afii10055"))!=-1 && sf->chars[si]!=NULL ) ) {
-	SplineChar *sc = sf->chars[si];
+    if ( ((si=SFFindExistingSlot(sf,'I',"I"))!=-1 && sf->glyphs[si]!=NULL ) ||
+	    ((si=SFFindExistingSlot(sf,0x399,"Iota"))!=-1 && sf->glyphs[si]!=NULL ) ||
+	    ((si=SFFindExistingSlot(sf,0x406,"afii10055"))!=-1 && sf->glyphs[si]!=NULL ) ) {
+	SplineChar *sc = sf->glyphs[si];
 	SplineCharQuickBounds(sc,&bb);
 	wi->current_I_spacing = sc->width - (bb.maxx-bb.minx);
     }
@@ -890,16 +895,16 @@ real SFGuessItalicAngle(SplineFont *sf) {
     double angle;
 
     for ( i=0; easyserif[i]!='\0'; ++i )
-	if ( (si=SFFindExistingChar(sf,easyserif[i],NULL))!=-1 && sf->chars[si]!=NULL )
+	if ( (si=SFFindExistingSlot(sf,easyserif[i],NULL))!=-1 && sf->glyphs[si]!=NULL )
     break;
     if ( easyserif[i]=='\0' )		/* can't guess */
 return( 0 );
 
-    SplineCharFindBounds(sf->chars[si],&bb);
+    SplineCharFindBounds(sf->glyphs[si],&bb);
     as = bb.maxy-bb.miny;
 
-    topx = SCFindMinXAtY(sf->chars[si],2*as/3+bb.miny);
-    bottomx = SCFindMinXAtY(sf->chars[si],as/3+bb.miny);
+    topx = SCFindMinXAtY(sf->glyphs[si],2*as/3+bb.miny);
+    bottomx = SCFindMinXAtY(sf->glyphs[si],as/3+bb.miny);
     if ( topx==bottomx )
 return( 0 );
 
@@ -918,20 +923,20 @@ void SFHasSerifs(SplineFont *sf) {
     DBounds bb;
 
     for ( i=0; easyserif[i]!='\0'; ++i )
-	if ( (si=SFFindExistingChar(sf,easyserif[i],NULL))!=-1 && sf->chars[si]!=NULL )
+	if ( (si=SFFindExistingSlot(sf,easyserif[i],NULL))!=-1 && sf->glyphs[si]!=NULL )
     break;
     if ( easyserif[i]=='\0' )		/* Can't guess */
 return;
 
     sf->serifcheck = true;
 
-    SplineCharFindBounds(sf->chars[si],&bb);
+    SplineCharFindBounds(sf->glyphs[si],&bb);
     as = bb.maxy-bb.miny;
 
-    topx = SCFindMinXAtY(sf->chars[si],2*as/3+bb.miny);
-    bottomx = SCFindMinXAtY(sf->chars[si],as/3+bb.miny);
-    serifbottomx = SCFindMinXAtY(sf->chars[si],1+bb.miny);
-    seriftopx = SCFindMinXAtY(sf->chars[si],bb.maxy-1);
+    topx = SCFindMinXAtY(sf->glyphs[si],2*as/3+bb.miny);
+    bottomx = SCFindMinXAtY(sf->glyphs[si],as/3+bb.miny);
+    serifbottomx = SCFindMinXAtY(sf->glyphs[si],1+bb.miny);
+    seriftopx = SCFindMinXAtY(sf->glyphs[si],bb.maxy-1);
     if ( RealNear(topx,bottomx) ) {
 	if ( RealNear(serifbottomx,bottomx) && RealNear(seriftopx,topx))
 	    sf->issans = true;
@@ -1010,8 +1015,8 @@ return(0);
     high = sf->ascent + sf->descent;
     totals = gcalloc(high+1,sizeof(int));
     tot=0;
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	for ( kp = sf->chars[i]->kerns; kp!=NULL; kp = kp->next ) {
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	for ( kp = sf->glyphs[i]->kerns; kp!=NULL; kp = kp->next ) {
 	    val = kp->off;
 	    if ( val!=0 ) {
 		if ( val<0 ) val = -val;
@@ -1036,21 +1041,22 @@ static void KernRemoveBelowThreshold(SplineFont *sf,int threshold) {
     int i;
     KernPair *kp, *prev, *next;
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    FontView *fvs;
     MetricsView *mv;
 #endif
 
     if ( threshold==0 )
 return;
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
 	prev = NULL;
-	for ( kp = sf->chars[i]->kerns; kp!=NULL; kp = next ) {
+	for ( kp = sf->glyphs[i]->kerns; kp!=NULL; kp = next ) {
 	    next = kp->next;
 	    if ( kp->off>=threshold || kp->off<=-threshold )
 		prev = kp;
 	    else {
 		if ( prev==NULL )
-		    sf->chars[i]->kerns = next;
+		    sf->glyphs[i]->kerns = next;
 		else
 		    prev->next = next;
 		chunkfree(kp,sizeof(KernPair));
@@ -1058,8 +1064,9 @@ return;
 	}
     }
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    for ( mv=sf->fv->metrics; mv!=NULL; mv=mv->next )
-	MVReKern(mv);
+    for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame )
+	for ( mv=fvs->metrics; mv!=NULL; mv=mv->next )
+	    MVReKern(mv);
 #endif
 }
 
@@ -1088,8 +1095,8 @@ static void ReplaceGlyphWith(SplineFont *sf, struct charone **ret, int cnt, int 
     for ( s=0; s<cnt; ++s )
 	if ( ret[s]->sc->unicodeenc==ch1 )
     break;
-    if ( s!=cnt && ( j=SFFindExistingChar(sf,ch2,NULL))!=-1 &&
-	    sf->chars[j]->width==ret[s]->sc->width &&	/* without this, they won't sync up */
+    if ( s!=cnt && ( j=SFFindExistingSlot(sf,ch2,NULL))!=-1 &&
+	    sf->glyphs[j]->width==ret[s]->sc->width &&	/* without this, they won't sync up */
 	    ret[s]->sc->layers[ly_fore].refs!=NULL &&
 		    (ret[s]->sc->layers[ly_fore].refs->sc->unicodeenc==ch2 ||
 		     (ret[s]->sc->layers[ly_fore].refs->next!=NULL &&
@@ -1098,16 +1105,17 @@ static void ReplaceGlyphWith(SplineFont *sf, struct charone **ret, int cnt, int 
 	    if ( ret[e]->sc->unicodeenc==ch2 )
 	break;
 	if ( e==cnt )
-	    ret[s]->sc = sf->chars[j];
+	    ret[s]->sc = sf->glyphs[j];
     }
 }
 
-static struct charone **BuildCharList(SplineFont *sf,GWindow gw, int base,
-	int *tot, int *rtot, int *ipos, int iswidth) {
+static struct charone **BuildCharList(FontView *fv, SplineFont *sf,GWindow gw,
+	int base, int *tot, int *rtot, int *ipos, int iswidth) {
     int i, cnt, rcnt=0, doit, s, e;
     struct charone **ret=NULL;
     int all, sel, parse=false;
     const unichar_t *str, *pt;
+    int gid;
 
     str = _GGadgetGetTitle(GWidgetGetControl(gw,base));
 #if defined(FONTFORGE_CONFIG_GDRAW)
@@ -1125,21 +1133,20 @@ static struct charone **BuildCharList(SplineFont *sf,GWindow gw, int base,
 
     for ( doit=0; doit<2; ++doit ) {
 	if ( all ) {
-	    for ( i=cnt=0; i<sf->charcnt && cnt<300; ++i ) {
-		if ( sf->chars[i]!=NULL &&
-			(sf->chars[i]->layers[ly_fore].splines!=NULL || sf->chars[i]->layers[ly_fore].refs!=NULL )) {
+	    for ( i=cnt=0; i<sf->glyphcnt && cnt<300; ++i ) {
+		if ( SCWorthOutputting(sf->glyphs[i]) ) {
 		    if ( doit )
-			ret[cnt++] = MakeCharOne(sf->chars[i]);
+			ret[cnt++] = MakeCharOne(sf->glyphs[i]);
 		    else
 			++cnt;
 		}
 	    }
 	} else if ( sel ) {
-	    for ( i=cnt=0; i<sf->charcnt && cnt<300; ++i ) {
-		if ( sf->fv->selected[i] && sf->chars[i]!=NULL &&
-			(sf->chars[i]->layers[ly_fore].splines!=NULL || sf->chars[i]->layers[ly_fore].refs!=NULL )) {
+	    EncMap *map = fv->map;
+	    for ( i=cnt=0; i<map->enccount && cnt<300; ++i ) {
+		if ( fv->selected[i] && (gid=map->map[i])!=-1 && SCWorthOutputting(sf->glyphs[gid]) ) {
 		    if ( doit )
-			ret[cnt++] = MakeCharOne(sf->chars[i]);
+			ret[cnt++] = MakeCharOne(sf->glyphs[i]);
 		    else
 			++cnt;
 		}
@@ -1154,11 +1161,11 @@ static struct charone **BuildCharList(SplineFont *sf,GWindow gw, int base,
 		    ++pt;
 		}
 		for ( ; s<=e && cnt<300 ; ++s ) {
-		    i = SFFindExistingChar(sf,s,NULL);
-		    if ( i!=-1 && sf->chars[i]!=NULL &&
-			    (sf->chars[i]->layers[ly_fore].splines!=NULL || sf->chars[i]->layers[ly_fore].refs!=NULL )) {
+		    i = SFFindExistingSlot(sf,s,NULL);
+		    if ( i!=-1 && sf->glyphs[i]!=NULL &&
+			    (sf->glyphs[i]->layers[ly_fore].splines!=NULL || sf->glyphs[i]->layers[ly_fore].refs!=NULL )) {
 			if ( doit )
-			    ret[cnt++] = MakeCharOne(sf->chars[i]);
+			    ret[cnt++] = MakeCharOne(sf->glyphs[i]);
 			else
 			    ++cnt;
 		    }
@@ -1188,10 +1195,10 @@ static struct charone **BuildCharList(SplineFont *sf,GWindow gw, int base,
 		    if ( ret[s]->sc->unicodeenc=='I' )
 		break;
 		if ( s==cnt ) {
-		    i = SFFindExistingChar(sf,'I',NULL);
-		    if ( i!=-1 && sf->chars[i]!=NULL &&
-			    (sf->chars[i]->layers[ly_fore].splines!=NULL || sf->chars[i]->layers[ly_fore].refs!=NULL ))
-			ret[cnt++] = MakeCharOne(sf->chars[i]);
+		    i = SFFindExistingSlot(sf,'I',NULL);
+		    if ( i!=-1 && sf->glyphs[i]!=NULL &&
+			    (sf->glyphs[i]->layers[ly_fore].splines!=NULL || sf->glyphs[i]->layers[ly_fore].refs!=NULL ))
+			ret[cnt++] = MakeCharOne(sf->glyphs[i]);
 		    else
 			s = -1;
 		}
@@ -1339,10 +1346,10 @@ return( false );
 
     wi->left = galloc((ks->cur+1)*sizeof(struct charone *));
     for ( i=cnt=0; i<ks->cur; ++i ) {
-	j = SFFindExistingChar(sf,ks->ch1[i],NULL);
-	if ( j!=-1 && sf->chars[j]!=NULL &&
-		(sf->chars[j]->layers[ly_fore].splines!=NULL || sf->chars[j]->layers[ly_fore].refs!=NULL ))
-	    wi->left[cnt++] = MakeCharOne(sf->chars[j]);
+	j = SFFindExistingSlot(sf,ks->ch1[i],NULL);
+	if ( j!=-1 && sf->glyphs[j]!=NULL &&
+		(sf->glyphs[j]->layers[ly_fore].splines!=NULL || sf->glyphs[j]->layers[ly_fore].refs!=NULL ))
+	    wi->left[cnt++] = MakeCharOne(sf->glyphs[j]);
 	else
 	    ks->ch1[i] = '\0';
     }
@@ -1372,10 +1379,10 @@ return( false );
 
     wi->right = galloc((u_strlen(ch2s)+1)*sizeof(struct charone *));
     for ( cnt=0,cpt=ch2s; *cpt ; ++cpt ) {
-	j = SFFindExistingChar(sf,*cpt,NULL);
-	if ( j!=-1 && sf->chars[j]!=NULL &&
-		(sf->chars[j]->layers[ly_fore].splines!=NULL || sf->chars[j]->layers[ly_fore].refs!=NULL ))
-	    wi->right[cnt++] = MakeCharOne(sf->chars[j]);
+	j = SFFindExistingSlot(sf,*cpt,NULL);
+	if ( j!=-1 && sf->glyphs[j]!=NULL &&
+		(sf->glyphs[j]->layers[ly_fore].splines!=NULL || sf->glyphs[j]->layers[ly_fore].refs!=NULL ))
+	    wi->right[cnt++] = MakeCharOne(sf->glyphs[j]);
     }
     wi->rcnt = cnt;
     wi->right[cnt] = NULL;
@@ -1494,8 +1501,8 @@ return( true );
 	GDrawProcessPendingEvents(NULL);
 
 	if ( GGadgetGetCid(g)==CID_OK ) {
-	    wi->left = BuildCharList(wi->sf,gw,CID_Left, &wi->lcnt, &wi->real_lcnt, &wi->l_Ipos, !wi->autokern );
-	    wi->right = BuildCharList(wi->sf,gw,CID_Right, &wi->rcnt, &wi->real_rcnt, &wi->r_Ipos, !wi->autokern );
+	    wi->left = BuildCharList(wi->fv, wi->sf,gw,CID_Left, &wi->lcnt, &wi->real_lcnt, &wi->l_Ipos, !wi->autokern );
+	    wi->right = BuildCharList(wi->fv, wi->sf,gw,CID_Right, &wi->rcnt, &wi->real_rcnt, &wi->r_Ipos, !wi->autokern );
 	    if ( wi->real_lcnt==0 || wi->real_rcnt==0 ) {
 		FreeCharList(wi->left);
 		FreeCharList(wi->right);
@@ -1597,25 +1604,26 @@ return( i );
 static int SFCount(SplineFont *sf) {
     int i, cnt;
 
-    for ( i=cnt=0; i<sf->charcnt; ++i )
-	if ( sf->chars[i]!=NULL &&
-		(sf->chars[i]->layers[ly_fore].splines!=NULL || sf->chars[i]->layers[ly_fore].refs!=NULL ))
+    for ( i=cnt=0; i<sf->glyphcnt; ++i )
+	if ( SCWorthOutputting(sf->glyphs[i]) )
 	    ++cnt;
 return( cnt );
 }
 
-static int SFCountSel(SplineFont *sf) {
+static int SFCountSel(FontView *fv, SplineFont *sf) {
     int i, cnt;
-    uint8 *sel = sf->fv->selected;
+    uint8 *sel = fv->selected;
+    EncMap *map = fv->map;
 
-    for ( i=cnt=0; i<sf->charcnt; ++i )
-	if ( sel[i] && sf->chars[i]!=NULL &&
-		(sf->chars[i]->layers[ly_fore].splines!=NULL || sf->chars[i]->layers[ly_fore].refs!=NULL ))
+    for ( i=cnt=0; i<map->enccount; ++i ) if ( sel[i] ) {
+	int gid = map->map[i];
+	if ( gid!=-1 && SCWorthOutputting(sf->glyphs[gid]))
 	    ++cnt;
+    }
 return( cnt );
 }
 
-static void AutoWKDlg(SplineFont *sf,int autokern) {
+static void AutoWKDlg(FontView *fv,int autokern) {
     WidthInfo wi;
     GWindow gw;
     GWindowAttrs wattrs;
@@ -1624,12 +1632,14 @@ static void AutoWKDlg(SplineFont *sf,int autokern) {
     GTextInfo label[29];
     int i, y, selfield;
     char buffer[30], buffer2[30];
-    int selcnt = SFCountSel(sf);
+    SplineFont *sf = fv->sf;
+    int selcnt = SFCountSel(fv,sf);
     int toomany = ((SFCount(sf)>=300)?1:0) | ((selcnt==0 || selcnt>=300)?2:0);
 
     memset(&wi,'\0',sizeof(wi));
     wi.autokern = autokern;
     wi.sf = sf;
+    wi.fv = fv;
     FindFontParameters(&wi);
 
     memset(&wattrs,0,sizeof(wattrs));
@@ -1726,9 +1736,7 @@ static void AutoWKDlg(SplineFont *sf,int autokern) {
 	gcd[i].gd.cid = CID_Threshold;
 	gcd[i++].creator = GTextFieldCreate;
 	y += 32;
-    }
 
-    if ( autokern ) {
 	gcd[i].gd.pos.width = 80; gcd[i].gd.pos.height = 0;
 	gcd[i].gd.pos.x = (200-gcd[i].gd.pos.width)/2; gcd[i].gd.pos.y = y;
 	gcd[i].gd.flags = gg_visible | gg_enabled;
@@ -1785,11 +1793,11 @@ static void AutoWKDlg(SplineFont *sf,int autokern) {
 }
 
 void FVAutoKern(FontView *fv) {
-    AutoWKDlg(fv->sf,true);
+    AutoWKDlg(fv,true);
 }
 
 void FVAutoWidth(FontView *fv) {
-    AutoWKDlg(fv->sf,false);
+    AutoWKDlg(fv,false);
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
@@ -1800,7 +1808,7 @@ void FVRemoveKerns(FontView *fv) {
 
     KernClassListFree(fv->sf->kerns); fv->sf->kerns = NULL;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( (sc = fv->sf->chars[i])!=NULL ) {
+    for ( i=0; i<fv->sf->glyphcnt; ++i ) if ( (sc = fv->sf->glyphs[i])!=NULL ) {
 	if ( sc->kerns!=NULL ) {
 	    changed = true;
 	    KernPairsFree(sc->kerns);
@@ -1826,7 +1834,7 @@ void FVRemoveVKerns(FontView *fv) {
 
     KernClassListFree(fv->sf->vkerns); fv->sf->vkerns = NULL;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( (sc = fv->sf->chars[i])!=NULL ) {
+    for ( i=0; i<fv->sf->glyphcnt; ++i ) if ( (sc = fv->sf->glyphs[i])!=NULL ) {
 	if ( sc->vkerns!=NULL ) {
 	    changed = true;
 	    KernPairsFree(sc->vkerns);
@@ -1854,7 +1862,7 @@ return( NULL );
     for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
 	if ( pst->type==pst_substitution &&
 		(pst->tag==CHR('v','e','r','t') || pst->tag==CHR('v','r','t','2'))) {
-return( SFGetCharDup(sc->parent,-1,pst->u.subs.variant));
+return( SFGetChar(sc->parent,-1,pst->u.subs.variant));
 	}
     }
 return( NULL );
@@ -1923,9 +1931,9 @@ void FVVKernFromHKern(FontView *fv) {
     if ( !sf->hasvmetrics )
 return;
 
-    for ( i=0; i<sf->charcnt; ++i ) {
-	if ( (sc1 = SCHasVertVariant(sf->chars[i]))!=NULL ) {
-	    for ( kp = sf->chars[i]->kerns; kp!=NULL; kp=kp->next ) {
+    for ( i=0; i<sf->glyphcnt; ++i ) {
+	if ( (sc1 = SCHasVertVariant(sf->glyphs[i]))!=NULL ) {
+	    for ( kp = sf->glyphs[i]->kerns; kp!=NULL; kp=kp->next ) {
 		if ( (sc2 = SCHasVertVariant(kp->sc))!=NULL ) {
 		    vkp = chunkalloc(sizeof(KernPair));
 		    *vkp = *kp;
@@ -2000,17 +2008,18 @@ return;
 
 /* Scripting hooks */
 
-static struct charone **autowidthBuildCharList(SplineFont *sf,
+static struct charone **autowidthBuildCharList(FontView *fv, SplineFont *sf,
 	int *tot, int *rtot, int *ipos, int iswidth) {
     int i, cnt, doit, s;
     struct charone **ret=NULL;
+    EncMap *map = fv->map;
+    int gid;
 
     for ( doit=0; doit<2; ++doit ) {
-      for ( i=cnt=0; i<sf->charcnt && cnt<300; ++i ) {
-	if ( sf->fv->selected[i] && sf->chars[i]!=NULL &&
-	     (sf->chars[i]->layers[ly_fore].splines!=NULL || sf->chars[i]->layers[ly_fore].refs!=NULL )) {
+      for ( i=cnt=0; i<map->enccount && cnt<300; ++i ) {
+	if ( fv->selected[i] && (gid=map->map[i])!=-1 && SCWorthOutputting(sf->glyphs[gid])) {
 	  if ( doit )
-	    ret[cnt++] = MakeCharOne(sf->chars[i]);
+	    ret[cnt++] = MakeCharOne(sf->glyphs[gid]);
 	  else
 	    ++cnt;
 	}
@@ -2029,10 +2038,9 @@ static struct charone **autowidthBuildCharList(SplineFont *sf,
 		if ( ret[s]->sc->unicodeenc=='I' )
 	    break;
 	    if ( s==cnt ) {
-		i = SFFindExistingChar(sf,'I',NULL);
-		if ( i!=-1 && sf->chars[i]!=NULL &&
-			(sf->chars[i]->layers[ly_fore].splines!=NULL || sf->chars[i]->layers[ly_fore].refs!=NULL ))
-		    ret[cnt++] = MakeCharOne(sf->chars[i]);
+		i = SFFindExistingSlot(sf,'I',NULL);
+		if ( i!=-1 )
+		    ret[cnt++] = MakeCharOne(sf->glyphs[i]);
 		else
 		    s = -1;
 	    }
@@ -2045,18 +2053,20 @@ static struct charone **autowidthBuildCharList(SplineFont *sf,
     return( ret );
 }
 
-int AutoWidthScript(SplineFont *sf,int spacing) {
+int AutoWidthScript(FontView *fv,int spacing) {
     WidthInfo wi;
+    SplineFont *sf = fv->sf;
 
     memset(&wi,'\0',sizeof(wi));
     wi.autokern = 0;
     wi.sf = sf;
+    wi.fv = fv;
     FindFontParameters(&wi);
     if ( spacing>-(sf->ascent+sf->descent) )
 	wi.spacing = spacing;
 
-    wi.left = autowidthBuildCharList(wi.sf, &wi.lcnt, &wi.real_lcnt, &wi.l_Ipos, true );
-    wi.right = autowidthBuildCharList(wi.sf, &wi.rcnt, &wi.real_rcnt, &wi.r_Ipos, true );
+    wi.left = autowidthBuildCharList(wi.fv, wi.sf, &wi.lcnt, &wi.real_lcnt, &wi.l_Ipos, true );
+    wi.right = autowidthBuildCharList(wi.fv, wi.sf, &wi.rcnt, &wi.real_rcnt, &wi.r_Ipos, true );
     if ( wi.real_lcnt==0 || wi.real_rcnt==0 ) {
 	FreeCharList(wi.left);
 	FreeCharList(wi.right);
@@ -2073,20 +2083,22 @@ return( 0 );
 return( true );
 }
 
-int AutoKernScript(SplineFont *sf,int spacing, int threshold,char *kernfile) {
+int AutoKernScript(FontView *fv,int spacing, int threshold,char *kernfile) {
     WidthInfo wi;
+    SplineFont *sf = fv->sf;
 
     memset(&wi,'\0',sizeof(wi));
     wi.autokern = 1;
     wi.sf = sf;
+    wi.fv = fv;
     FindFontParameters(&wi);
     if ( spacing>-(sf->ascent+sf->descent) )
 	wi.spacing = spacing;    
     wi.threshold = threshold;    
 
     if ( kernfile==NULL ) {
-	wi.left = autowidthBuildCharList(wi.sf, &wi.lcnt, &wi.real_lcnt, &wi.l_Ipos, false );
-	wi.right = autowidthBuildCharList(wi.sf, &wi.rcnt, &wi.real_rcnt, &wi.r_Ipos, false );
+	wi.left = autowidthBuildCharList(wi.fv, wi.sf, &wi.lcnt, &wi.real_lcnt, &wi.l_Ipos, false );
+	wi.right = autowidthBuildCharList(wi.fv, wi.sf, &wi.rcnt, &wi.real_rcnt, &wi.r_Ipos, false );
 	if ( wi.lcnt==0 || wi.rcnt==0 ) {
 	    FreeCharList(wi.left);
 	    FreeCharList(wi.right);

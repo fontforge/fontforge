@@ -510,7 +510,7 @@ typedef struct bdfchar {
     int16 width;
     int16 bytes_per_line;
     uint8 *bitmap;
-    int enc;
+    int orig_pos;
     struct bitmapview *views;
     Undoes *undoes;
     Undoes *redoes;
@@ -549,16 +549,35 @@ typedef struct enc {
     iconv_t *fromunicode;
 } Encoding;
 
+enum uni_interp { ui_unset= -1, ui_none, ui_adobe, ui_greek, ui_japanese,
+	ui_trad_chinese, ui_simp_chinese, ui_korean, ui_ams };
+
+struct remap { uint32 firstenc, lastenc; int32 infont; };
+
+typedef struct encmap {		/* A per-font map of encoding to glyph id */
+    int *map;			/* Map from encoding to glyphid */
+    int *backmap;		/* Map from glyphid to encoding */
+    int enccount;		/* used size of the map array */
+    				/*  strictly speaking this might include */
+			        /*  glyphs that are not encoded, but which */
+			        /*  are displayed after the proper encoding */
+    int encmax;			/* allocated size of the map array */
+    int backmax;		/* allocated size of the backmap array */
+    struct remap *remap;
+    Encoding *enc;
+    unsigned int ticked: 1;
+} EncMap;
+
 typedef struct bdffont {
     struct splinefont *sf;
-    int charcnt;
-    BDFChar **chars;		/* an array of charcnt entries */
+    int glyphcnt, glyphmax;	/* used & allocated sizes of glyphs array */
+    BDFChar **glyphs;		/* an array of charcnt entries */
     BDFChar **temp;		/* Used by ReencodeFont routine */
     int16 pixelsize;
     int16 ascent, descent;
     unsigned int piecemeal: 1;
     unsigned int bbsized: 1;
-    Encoding *encoding_name;
+    unsigned int ticked: 1;
     struct bdffont *next;
     struct clut *clut;
     char *foundry;
@@ -670,8 +689,9 @@ typedef struct refchar {
     unsigned int point_match: 1;	/* transform[4:5] are point indexes */
 					/*  and need to be converted to offsets*/
 			                /*  after truetype readin */
+    unsigned int encoded: 1;		/* orig_pos is actually an encoded value, used for old sfd files */
     int16 adobe_enc;
-    int local_enc;
+    int orig_pos;
     int unicode_enc;		/* used by paste */
     real transform[6];		/* transformation matrix (first 2 rows of a 3x3 matrix, missing row is 0,0,1) */
 #ifdef FONTFORGE_CONFIG_TYPE3
@@ -700,7 +720,7 @@ typedef struct kernpair {
     struct splinechar *sc;
     int16 off;
     uint16 sli, flags;
-    uint16 kcid;
+    uint16 kcid;			/* temporary value */
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
     DeviceTable *adjust;		/* Only adjustment in one dimen, if more needed use pst */
 #endif
@@ -821,14 +841,14 @@ enum layer_type { ly_grid= -1, ly_back=0, ly_fore=1 /* Possibly other foreground
     
 typedef struct splinechar {
     char *name;
-    int enc, unicodeenc, old_enc;
+    int unicodeenc;
+    int orig_pos;		/* Original position in the glyph list */
     int16 width, vwidth;
     int16 lsidebearing;		/* only used when reading in a type1 font */
 				/*  Or an otf font where it is the subr number of a refered character */
 			        /*  or a ttf font with vert metrics where it is the ymax value */
 			        /*  or when generating morx where it is the mask of tables in which the glyph occurs */
 				/* Always a temporary value */
-    uint16 orig_pos;		/* Original position in the glyph list */
     int ttf_glyph;		/* only used when writing out a ttf or otf font */
 #ifdef FONTFORGE_CONFIG_TYPE3
     Layer *layers;		/* layer[0] is background, layer[1-n] foreground */
@@ -847,6 +867,7 @@ typedef struct splinechar {
     unsigned int changedsincelasthinted: 1;
     unsigned int manualhints: 1;
     unsigned int ticked: 1;	/* For reference character processing */
+				/* And fontview processing */
     unsigned int changed_since_autosave: 1;
     unsigned int widthset: 1;	/* needed so an emspace char doesn't disappear */
     unsigned int vconflicts: 1;	/* Any hint overlaps in the vstem list? */
@@ -906,10 +927,6 @@ struct ttflangname {
     struct ttflangname *next;
 };
 
-struct remap { uint32 firstenc, lastenc; int32 infont; };
-enum uni_interp { ui_unset= -1, ui_none, ui_adobe, ui_greek, ui_japanese,
-	ui_trad_chinese, ui_simp_chinese, ui_korean, ui_ams };
-
 typedef struct splinefont {
     char *fontname, *fullname, *familyname, *weight;
     char *copyright;
@@ -919,8 +936,8 @@ typedef struct splinefont {
     int ascent, descent;
     int vertical_origin;			/* height of vertical origin in character coordinate system */
     int uniqueid;				/* Not copied when reading in!!!! */
-    int charcnt;
-    SplineChar **chars;
+    int glyphcnt, glyphmax;			/* allocated size of glyphs array */
+    SplineChar **glyphs;
     unsigned int changed: 1;
     unsigned int changed_since_autosave: 1;
     unsigned int changed_since_xuidchanged: 1;
@@ -934,7 +951,6 @@ typedef struct splinefont {
     unsigned int hasvmetrics: 1;		/* We've got vertical metric data and should output vhea/vmtx/VORG tables */
     unsigned int loading_cid_map: 1;
     unsigned int dupnamewarn: 1;		/* Warn about duplicate names when loading bdf font */
-    unsigned int compacted: 1;			/* Font is in a compacted glyph list */
     unsigned int encodingchanged: 1;		/* Font's encoding has changed since it was loaded */
     unsigned int order2: 1;			/* Font's data are order 2 bezier splines (truetype) rather than order 3 (postscript) */
     unsigned int multilayer: 1;			/* only applies if TYPE3 is set, means this font can contain strokes & fills */
@@ -942,8 +958,8 @@ typedef struct splinefont {
     unsigned int strokedfont: 1;
     unsigned int new: 1;			/* A new and unsaved font */
     struct fontview *fv;
-    Encoding *encoding_name, *old_encname;
     enum uni_interp uni_interp;
+    EncMap *map;		/* only used when opening a font to provide original default encoding */
     Layer grid;
     BDFFont *bitmaps;
     char *origname;		/* filename of font file (ie. if not an sfd) */
@@ -985,7 +1001,6 @@ typedef struct splinefont {
     struct compositionrules *rules;
 #endif
     char *comments;
-    struct remap *remap;
     int tempuniqueid;
     int top_enc;
     uint16 desired_row_cnt, desired_col_cnt;
@@ -1095,6 +1110,7 @@ struct sflist {
     int id;			/* For ttf */
     int* ids;			/* One for each size */
     BDFFont **bdfs;		/* Ditto */
+    EncMap *map;
     struct sflist *next;
 };
 
@@ -1141,17 +1157,17 @@ extern void chunkfree(void *, int size);
 
 extern char *XUIDFromFD(int xuid[20]);
 extern SplineFont *SplineFontFromPSFont(struct fontdict *fd);
-extern int CheckAfmOfPostscript(SplineFont *sf,char *psname);
-extern int LoadKerningDataFromAmfm(SplineFont *sf, char *filename);
-extern int LoadKerningDataFromAfm(SplineFont *sf, char *filename);
-extern int LoadKerningDataFromTfm(SplineFont *sf, char *filename);
-extern int LoadKerningDataFromPfm(SplineFont *sf, char *filename);
-extern int LoadKerningDataFromMacFOND(SplineFont *sf, char *filename);
-extern int LoadKerningDataFromMetricsFile(SplineFont *sf, char *filename);
+extern int CheckAfmOfPostscript(SplineFont *sf,char *psname,EncMap *map);
+extern int LoadKerningDataFromAmfm(SplineFont *sf, char *filename, EncMap *map);
+extern int LoadKerningDataFromAfm(SplineFont *sf, char *filename, EncMap *map);
+extern int LoadKerningDataFromTfm(SplineFont *sf, char *filename, EncMap *map);
+extern int LoadKerningDataFromPfm(SplineFont *sf, char *filename, EncMap *map);
+extern int LoadKerningDataFromMacFOND(SplineFont *sf, char *filename, EncMap *map);
+extern int LoadKerningDataFromMetricsFile(SplineFont *sf, char *filename, EncMap *map);
 extern int SFOneWidth(SplineFont *sf);
 extern int CIDOneWidth(SplineFont *sf);
 extern int SFOneHeight(SplineFont *sf);
-extern int SFIsCJK(SplineFont *sf);
+extern int SFIsCJK(SplineFont *sf,EncMap *map);
 enum fontformat { ff_pfa, ff_pfb, ff_pfbmacbin, ff_multiple, ff_mma, ff_mmb,
 	ff_ptype3, ff_ptype0, ff_cid, ff_cff, ff_cffcid,
 	ff_type42, ff_type42cid,
@@ -1170,32 +1186,35 @@ extern int CvtPsStem3(struct growbuf *gb, SplineChar *scs[MmMax], int instance_c
 extern struct pschars *CID2Chrs(SplineFont *cidmaster,struct cidbytes *cidbytes,int flags);
 extern struct pschars *SplineFont2Subrs2(SplineFont *sf,int flags);
 extern struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
-	struct pschars *subrs,int flags/*, enum fontformat format*/);
+	struct pschars *subrs,int flags/*, enum fontformat format*/,
+	const int *bygids,int gcnt);
 extern struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds,int flags);
 enum bitmapformat { bf_bdf, bf_ttf, bf_sfnt_dfont, 
 	bf_nfntmacbin, /*bf_nfntdfont, */bf_fon, bf_otb, bf_palm,
 	bf_none };
 extern const char *GetAuthor(void);
-extern SplineChar *SFFindExistingCharMac(SplineFont *,int unienc);
+extern SplineChar *SFFindExistingCharMac(SplineFont *,EncMap *map, int unienc);
 extern void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
 	SplineChar *sc, int refs_to_splines, int pdfopers );
-extern int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format,int flags);
-extern int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format,int flags);
-extern int WriteMacPSFont(char *fontname,SplineFont *sf,enum fontformat format,int flags);
+extern int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format,int flags,EncMap *enc);
+extern int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format,int flags,EncMap *enc);
+extern int WriteMacPSFont(char *fontname,SplineFont *sf,enum fontformat format,
+	int flags,EncMap *enc);
 extern int _WriteTTFFont(FILE *ttf,SplineFont *sf, enum fontformat format,
-	int32 *bsizes, enum bitmapformat bf,int flags);
+	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *enc);
 extern int WriteTTFFont(char *fontname,SplineFont *sf, enum fontformat format,
-	int32 *bsizes, enum bitmapformat bf,int flags);
+	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *enc);
 extern int _WriteType42SFNTS(FILE *type42,SplineFont *sf,enum fontformat format,
-	int flags);
+	int flags,EncMap *enc);
 extern int WriteMacTTFFont(char *fontname,SplineFont *sf, enum fontformat format,
-	int32 *bsizes, enum bitmapformat bf,int flags);
-extern int WriteMacBitmaps(char *filename,SplineFont *sf, int32 *sizes,int is_dfont);
-extern int WritePalmBitmaps(char *filename,SplineFont *sf, int32 *sizes);
+	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *enc);
+extern int WriteMacBitmaps(char *filename,SplineFont *sf, int32 *sizes,
+	int is_dfont,EncMap *enc);
+extern int WritePalmBitmaps(char *filename,SplineFont *sf, int32 *sizes,EncMap *enc);
 extern int WriteMacFamily(char *filename,struct sflist *sfs,enum fontformat format,
-	enum bitmapformat bf,int flags);
+	enum bitmapformat bf,int flags,EncMap *enc);
 extern long mactime(void);
-extern int WriteSVGFont(char *fontname,SplineFont *sf,enum fontformat format,int flags);
+extern int WriteSVGFont(char *fontname,SplineFont *sf,enum fontformat format,int flags,EncMap *enc);
 extern void SfListFree(struct sflist *sfs);
 extern struct ttflangname *TTFLangNamesCopy(struct ttflangname *old);
 extern void TTF_PSDupsDefault(SplineFont *sf);
@@ -1211,14 +1230,9 @@ extern int SCRightToLeft(SplineChar *sc);
 extern int SLIContainsR2L(SplineFont *sf,int sli);
 extern void SFFindNearTop(SplineFont *);
 extern void SFRestoreNearTop(SplineFont *);
-extern int SFAddDelChars(SplineFont *sf, int nchars);
-extern int FontEncodingByName(char *name);
-extern int SFForceEncoding(SplineFont *sf,Encoding *new_map);
-extern int SFReencodeFont(SplineFont *sf,Encoding *new_map);
-extern int SFCompactFont(SplineFont *sf);
-extern int SFUncompactFont(SplineFont *sf);
+extern int SFForceEncoding(SplineFont *sf,EncMap *old,Encoding *new_map);
 extern int CountOfEncoding(Encoding *encoding_name);
-extern int SFMatchEncoding(SplineFont *sf,SplineFont *target);
+extern void SFMatchGlyphs(SplineFont *sf,SplineFont *target);
 extern char *_GetModifiers(char *fontname, char *familyname,char *weight);
 extern char *SFGetModifiers(SplineFont *sf);
 extern void SFSetFontName(SplineFont *sf, char *family, char *mods, char *full);
@@ -1311,6 +1325,11 @@ extern void MacFeatListFree(MacFeat *mf);
 extern void SplineCharListsFree(struct splinecharlist *dlist);
 extern void SplineCharFreeContents(SplineChar *sc);
 extern void SplineCharFree(SplineChar *sc);
+extern void EncMapFree(EncMap *map);
+extern EncMap *EncMapFromEncoding(SplineFont *sf,Encoding *enc);
+extern EncMap *EncMapNew(int encmax, int backmax, Encoding *enc);
+extern EncMap *EncMap1to1(int enccount);
+extern EncMap *EncMapCopy(EncMap *map);
 extern void SplineFontFree(SplineFont *sf);
 extern void OtfNameListFree(struct otfname *on);
 extern void MMSetFreeContents(MMSet *mm);
@@ -1377,8 +1396,8 @@ extern void BDFCharFindBounds(BDFChar *bc,IBounds *bb);
 extern BDFFont *BitmapFontScaleTo(BDFFont *old, int to);
 extern void BDFCharFree(BDFChar *bdfc);
 extern void BDFFontFree(BDFFont *bdf);
-extern int  BDFFontDump(char *filename,BDFFont *font, char *encodingname,int res);
-extern int  FONFontDump(char *filename,BDFFont *font, int res);
+extern int  BDFFontDump(char *filename,BDFFont *font, EncMap *map, int res);
+extern int  FONFontDump(char *filename,BDFFont *font, EncMap *map, int res);
 /* Two lines intersect in at most 1 point */
 /* Two quadratics intersect in at most 4 points */
 /* Two cubics intersect in at most 9 points */ /* Plus an extra space for a trailing -1 */
@@ -1426,7 +1445,7 @@ extern SplineSet *SplineCharRemoveTiny(SplineChar *sc,SplineSet *head);
 extern SplineFont *SplineFontNew(void);
 extern char *GetNextUntitledName(void);
 extern SplineFont *SplineFontEmpty(void);
-extern SplineFont *SplineFontBlank(Encoding *enc,int charcnt);
+extern SplineFont *SplineFontBlank(int charcnt);
 extern void SFIncrementXUID(SplineFont *sf);
 extern void SFRandomChangeXUID(SplineFont *sf);
 extern SplineSet *SplineSetReverse(SplineSet *spl);
@@ -1510,16 +1529,15 @@ extern StemInfo *HintCleanup(StemInfo *stem,int dosort,int instance_count);
 extern int SplineFontIsFlexible(SplineFont *sf,int flags);
 extern int SCDrawsSomething(SplineChar *sc);
 extern int SCWorthOutputting(SplineChar *sc);
-extern SplineChar *SCDuplicate(SplineChar *sc);
-extern int SCIsNotdef(SplineChar *sc,int isfixed);
+extern int SFFindNotdef(SplineFont *sf, int fixed);
 extern int IsntBDFChar(BDFChar *bdfc);
 extern int CIDWorthOutputting(SplineFont *cidmaster, int enc); /* Returns -1 on failure, font number on success */
-extern int AmfmSplineFont(FILE *afm, MMSet *mm,int formattype);
-extern int AfmSplineFont(FILE *afm, SplineFont *sf,int formattype);
-extern int PfmSplineFont(FILE *pfm, SplineFont *sf,int type0);
-extern int TfmSplineFont(FILE *afm, SplineFont *sf,int formattype);
+extern int AmfmSplineFont(FILE *afm, MMSet *mm,int formattype,EncMap *map);
+extern int AfmSplineFont(FILE *afm, SplineFont *sf,int formattype,EncMap *map);
+extern int PfmSplineFont(FILE *pfm, SplineFont *sf,int type0,EncMap *map);
+extern int TfmSplineFont(FILE *afm, SplineFont *sf,int formattype,EncMap *map);
 extern char *EncodingName(Encoding *map);
-extern char *SFEncodingName(SplineFont *sf);
+extern char *SFEncodingName(SplineFont *sf,EncMap *map);
 extern void SFLigaturePrepare(SplineFont *sf);
 extern void SFLigatureCleanup(SplineFont *sf);
 extern void SFKernPrepare(SplineFont *sf,int isv);
@@ -1542,8 +1560,8 @@ extern Encoding *_FindOrMakeEncoding(const char *name,int make_it);
 extern Encoding *FindOrMakeEncoding(const char *name);
 extern void SFDDumpMacFeat(FILE *sfd,MacFeat *mf);
 extern MacFeat *SFDParseMacFeatures(FILE *sfd, char *tok);
-extern int SFDWrite(char *filename,SplineFont *sf);
-extern int SFDWriteBak(SplineFont *sf);
+extern int SFDWrite(char *filename,SplineFont *sf,EncMap *map);
+extern int SFDWriteBak(SplineFont *sf,EncMap *map);
 extern SplineFont *SFDRead(char *filename);
 extern SplineChar *SFDReadOneChar(char *filename,const char *name);
 #ifdef FONTFORGE_CONFIG_GTK
@@ -1565,7 +1583,6 @@ extern SplineFont *LoadSplineFont(char *filename,enum openflags);
 extern SplineFont *ReadSplineFont(char *filename,enum openflags);	/* Don't use this, use LoadSF instead */
 extern SplineFont *SFFromBDF(char *filename,int ispk,int toback);
 extern SplineFont *SFFromMF(char *filename);
-extern BDFFont *SFImportBDF(SplineFont *sf, char *filename, int ispk, int toback);
 extern uint16 _MacStyleCode( char *styles, SplineFont *sf, uint16 *psstyle );
 extern uint16 MacStyleCode( SplineFont *sf, uint16 *psstyle );
 extern SplineFont *SFReadIkarus(char *fontname);
@@ -1579,15 +1596,16 @@ extern char **NamesReadSVG(char *filename);
 extern char **NamesReadMacBinary(char *filename);
 
 extern const char *UnicodeRange(int unienc);
-extern SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i);
-extern SplineChar *SFMakeChar(SplineFont *sf,int i);
+extern SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,EncMap *map,int i);
+extern SplineChar *SFMakeChar(SplineFont *sf,EncMap *map,int i);
 extern char *AdobeLigatureFormat(char *name);
 extern uint32 LigTagFromUnicode(int uni);
 extern void SCLigDefault(SplineChar *sc);
 extern void SCTagDefault(SplineChar *sc,uint32 tag);
 extern void SCSuffixDefault(SplineChar *sc,uint32 tag,char *suffix,uint16 flags,uint16 sli);
 extern void SCLigCaretCheck(SplineChar *sc,int clean);
-extern BDFChar *BDFMakeChar(BDFFont *bdf,int i);
+extern BDFChar *BDFMakeGID(BDFFont *bdf,int gid);
+extern BDFChar *BDFMakeChar(BDFFont *bdf,EncMap *map,int enc);
 
 extern void SCUndoSetLBearingChange(SplineChar *sc,int lb);
 extern Undoes *SCPreserveLayer(SplineChar *sc,int layer,int dohints);
@@ -1634,17 +1652,16 @@ extern SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext
 extern void MatMultiply(real m1[6], real m2[6], real to[6]);
 
 #ifdef FONTFORGE_CONFIG_GTK
-extern int NameToEncoding(SplineFont *sf,const char *uname);
+extern int NameToEncoding(SplineFont *sf,EncMap *map,const char *uname);
 #else
-extern int NameToEncoding(SplineFont *sf,const unichar_t *uname);
+extern int NameToEncoding(SplineFont *sf,EncMap *map,const unichar_t *uname);
 #endif
 extern void GlyphHashFree(SplineFont *sf);
-extern int SFFindChar(SplineFont *sf, int unienc, const char *name );
-extern int SFCIDFindChar(SplineFont *sf, int unienc, const char *name );
+extern int SFFindSlot(SplineFont *sf, EncMap *map, int unienc, const char *name );
+extern int SFCIDFindCID(SplineFont *sf, int unienc, const char *name );
 extern SplineChar *SFGetChar(SplineFont *sf, int unienc, const char *name );
-extern SplineChar *SFGetCharDup(SplineFont *sf, int unienc, const char *name );
 extern SplineChar *SFGetOrMakeChar(SplineFont *sf, int unienc, const char *name );
-extern int SFFindExistingChar(SplineFont *sf, int unienc, const char *name );
+extern int SFFindExistingSlot(SplineFont *sf, int unienc, const char *name );
 extern int SFCIDFindExistingChar(SplineFont *sf, int unienc, const char *name );
 extern int SFHasCID(SplineFont *sf, int cid);
 
@@ -1653,7 +1670,7 @@ extern void DoAutoSaves(void);
 extern void CleanAutoRecovery(void);
 extern int DoAutoRecovery(void);
 extern SplineFont *SFRecoverFile(char *autosavename);
-extern void SFAutoSave(SplineFont *sf);
+extern void SFAutoSave(SplineFont *sf,EncMap *map);
 extern void SFClearAutoSave(SplineFont *sf);
 
 extern void PSCharsFree(struct pschars *chrs);
@@ -1690,8 +1707,8 @@ extern int SFConvertSLI(SplineFont *fromsf,int sli,SplineFont *tosf,
 struct cidmap;			/* private structure to encoding.c */
 extern int CIDFromName(char *name,SplineFont *cidmaster);
 extern int CID2Uni(struct cidmap *map,int cid);
-extern int CID2NameEnc(struct cidmap *map,int cid, char *buffer, int len);
-extern int NameEnc2CID(struct cidmap *map,int enc, char *name);
+extern int CID2NameUni(struct cidmap *map,int cid, char *buffer, int len);
+extern int NameUni2CID(struct cidmap *map,int uni, const char *name);
 extern int MaxCID(struct cidmap *map);
 extern struct cidmap *FindCidMap(char *registry,char *ordering,int supplement,
 	SplineFont *sf);
@@ -1700,7 +1717,7 @@ extern struct cidmap *AskUserForCIDMap(SplineFont *sf);
 extern SplineFont *CIDFlatten(SplineFont *cidmaster,SplineChar **chars,int charcnt);
 extern void SFFlatten(SplineFont *cidmaster);
 extern int  SFFlattenByCMap(SplineFont *sf,char *cmapname);
-extern SplineFont *MakeCIDMaster(SplineFont *sf,int bycmap,char *cmapfilename,struct cidmap *cidmap);
+extern SplineFont *MakeCIDMaster(SplineFont *sf,EncMap *oldmap,int bycmap,char *cmapfilename,struct cidmap *cidmap);
 
 int getushort(FILE *ttf);
 int32 getlong(FILE *ttf);
@@ -1723,7 +1740,7 @@ extern void *_FreeTypeFontContext(SplineFont *sf,SplineChar *sc,struct fontview 
 	enum fontformat ff,int flags,void *shared_ftc);
 extern void *FreeTypeFontContext(SplineFont *sf,SplineChar *sc,struct fontview *fv);
 extern BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int depth);
-extern BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int enc,
+extern BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int gid,
 	int pixelsize,int depth);
 extern void FreeTypeFreeContext(void *freetypecontext);
 extern SplineSet *FreeType_GridFitChar(void *single_glyph_context,
@@ -1767,8 +1784,6 @@ extern int SFRemoveThisFeatureTag(SplineFont *sf, uint32 tag, int sli, int flags
 extern void RemoveGeneratedTagsAbove(SplineFont *sf, int old_top);
 extern int SFRenameTheseFeatureTags(SplineFont *sf, uint32 tag, int sli, int flags,
 	uint32 totag, int tosli, int toflags, int ismac);
-extern int SFCopyTheseFeaturesToSF(SplineFont *sf, uint32 tag, int sli, int flags,
-	SplineFont *tosf);
 extern int SFRemoveUnusedNestedFeatures(SplineFont *sf);
 extern int SFHasNestedLookupWithTag(SplineFont *sf,uint32 tag,int ispos);
 extern int ClassesMatch(int cnt1,char **classes1,int cnt2,char **classes2);
@@ -1804,7 +1819,6 @@ extern struct macname *FindMacSettingName(SplineFont *sf, int feat, int set);
 
 extern int32 UniFromEnc(int enc, Encoding *encname);
 extern int32 EncFromUni(int32 uni, Encoding *encname);
-extern int32 EncFromSF(int32 uni, SplineFont *sf);
 
 extern void MatInverse(real into[6], real orig[6]);
 
@@ -1822,7 +1836,7 @@ extern char *MMExtractArrayNth(char *pt,int ipos);
 extern int MMValid(MMSet *mm,int complain);
 extern void MMKern(SplineFont *sf,SplineChar *first,SplineChar *second,int diff,
 	int sli,KernPair *oldkp);
-extern int MMBlendChar(MMSet *mm, int enc);
+extern int MMBlendChar(MMSet *mm, int gid);
 extern int MMReblend(struct fontview *fv, MMSet *mm);
 struct fontview *MMCreateBlendedFont(MMSet *mm,struct fontview *fv,real blends[MmMax],int tonew );
 

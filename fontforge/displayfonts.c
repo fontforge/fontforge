@@ -685,7 +685,7 @@ void DisplayDlg(SplineFont *sf) {
     else if ( sf->onlybitmaps ) gcd[9].gd.flags = gg_visible;
 
 
-    twobyte = sf->encoding_name->has_2byte;
+    twobyte = sf->fv->map->enc->has_2byte;
     label[10].text = PrtBuildDef(sf,twobyte);
     gcd[10].gd.label = &label[10];
     gcd[10].gd.mnemonic = 'T';

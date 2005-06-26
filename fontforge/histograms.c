@@ -67,8 +67,8 @@ static HistData *HistFindBlues(SplineFont *sf,uint8 *selected) {
     hist->low = sf->ascent; hist->high = -sf->descent;
     low = -sf->descent; high = sf->ascent;
 
-    for ( i=0; i<sf->charcnt; ++i ) {
-	if ( (sc = sf->chars[i])!=NULL && sc->layers[ly_fore].splines!=NULL && sc->layers[ly_fore].refs==NULL &&
+    for ( i=0; i<sf->glyphcnt; ++i ) {
+	if ( (sc = sf->glyphs[i])!=NULL && sc->layers[ly_fore].splines!=NULL && sc->layers[ly_fore].refs==NULL &&
 		(selected==NULL || selected[i])) {
 	    SplineCharFindBounds(sc,&b);
 	    bottom = rint(b.miny);
@@ -139,8 +139,8 @@ static HistData *HistFindStemWidths(SplineFont *sf,uint8 *selected,int hor) {
     hist->low = sf->ascent+sf->descent;
     low = 0; high = sf->ascent+sf->descent;
 
-    for ( i=0; i<sf->charcnt; ++i ) {
-	if ( (sc = sf->chars[i])!=NULL && sc->layers[ly_fore].splines!=NULL && sc->layers[ly_fore].refs==NULL &&
+    for ( i=0; i<sf->glyphcnt; ++i ) {
+	if ( (sc = sf->glyphs[i])!=NULL && sc->layers[ly_fore].splines!=NULL && sc->layers[ly_fore].refs==NULL &&
 		(selected==NULL || selected[i])) {
 	    if ( autohint_before_generate && sc->changedsincelasthinted && !sc->manualhints )
 		SplineCharAutoHint(sc,NULL);
@@ -698,8 +698,8 @@ return( true );
 static void CheckSmallSelection(uint8 *selected,SplineFont *sf) {
     int i, cnt, tot;
 
-    for ( i=cnt=tot=0; i<sf->charcnt; ++i )
-	if ( sf->chars[i]!=NULL ) {
+    for ( i=cnt=tot=0; i<sf->glyphcnt; ++i )
+	if ( sf->glyphs[i]!=NULL ) {
 	    ++tot;
 	    if ( selected[i] )
 		++cnt;

@@ -185,13 +185,13 @@ static int KCD_ToSelection(GGadget *g, GEvent *e) {
 
 	GDrawSetVisible(fv->gw,true);
 	GDrawRaise(fv->gw);
-	memset(fv->selected,0,sf->charcnt);
+	memset(fv->selected,0,fv->map->enccount);
 	while ( *ret ) {
 	    end = u_strchr(ret,' ');
 	    if ( end==NULL ) end = ret+u_strlen(ret);
 	    nm = cu_copybetween(ret,end);
 	    for ( ret = end; isspace(*ret); ++ret);
-	    if (( pos = SFFindChar(sf,-1,nm))!=-1 ) {
+	    if (( pos = SFFindSlot(sf,fv->map,-1,nm))!=-1 ) {
 		if ( found==-1 ) found = pos;
 		fv->selected[pos] = true;
 	    }
@@ -211,19 +211,19 @@ static int KCD_FromSelection(GGadget *g, GEvent *e) {
 	SplineFont *sf = kcd->sf;
 	FontView *fv = sf->fv;
 	unichar_t *vals, *pt;
-	int i, len, max;
+	int i, len, max, gid;
 	SplineChar *sc;
     
-	for ( i=len=max=0; i<sf->charcnt; ++i ) if ( fv->selected[i]) {
-	    sc = SFMakeChar(sf,i);
+	for ( i=len=max=0; i<fv->map->enccount; ++i ) if ( fv->selected[i]) {
+	    sc = SFMakeChar(sf,fv->map,i);
 	    len += strlen(sc->name)+1;
 	    if ( fv->selected[i]>max ) max = fv->selected[i];
 	}
 	pt = vals = galloc((len+1)*sizeof(unichar_t));
 	*pt = '\0';
 	/* in a class the order of selection is irrelevant */
-	for ( i=0; i<sf->charcnt; ++i ) if ( fv->selected[i] ) {
-	    uc_strcpy(pt,sf->chars[i]->name);
+	for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] && (gid=fv->map->map[i])!=-1) {
+	    uc_strcpy(pt,sf->glyphs[gid]->name);
 	    pt += u_strlen(pt);
 	    *pt++ = ' ';
 	}
@@ -673,14 +673,14 @@ return;
 	temp = cu_copy(sel->text);
     }
 
-    *possc = sc = SFGetCharDup(kcd->sf,-1,temp);
+    *possc = sc = SFGetChar(kcd->sf,-1,temp);
     free(temp);
     if ( sc==NULL )
 return;
     if ( GGadgetIsChecked(GWidgetGetControl(kcd->gw,CID_FreeType)) )
 	freetypecontext = FreeTypeFontContext(sc->parent,sc,sc->parent->fv);
     if ( freetypecontext ) {
-	*scpos = SplineCharFreeTypeRasterize(freetypecontext,sc->enc,kcd->pixelsize,8);
+	*scpos = SplineCharFreeTypeRasterize(freetypecontext,sc->orig_pos,kcd->pixelsize,8);
 	FreeTypeFreeContext(freetypecontext);
     } else
 	*scpos = SplineCharAntiAlias(sc,kcd->pixelsize,4);
@@ -1543,7 +1543,7 @@ static void KCD_VScroll(KernClassDlg *kcd,struct sbevent *sb) {
     }
 }
 
-static int KCD_Drop(KernClassDlg *kcd, GEvent *event) {
+static void KCD_Drop(KernClassDlg *kcd, GEvent *event) {
     DropChars2Text(kcd->gw,GWidgetGetControl(kcd->cw,CID_GlyphList),event);
 }
 
@@ -2477,33 +2477,34 @@ void KernPairD(SplineFont *sf,SplineChar *sc1,SplineChar *sc2,int isv) {
     GWindowAttrs wattrs;
     KernClassDlg kcd;
     GWindow gw;
+    int gid;
 
     if ( sc1==NULL ) {
 	FontView *fv = sf->fv;
 	int start = fv->rowoff*fv->colcnt, end = start+fv->rowcnt*fv->colcnt;
 	int i;
-	for ( i=start; i<end && i<sf->charcnt; ++i )
-	    if ( sf->chars[i]!=NULL &&
-		    (isv ? sf->chars[i]->vkerns : sf->chars[i]->kerns)!=NULL )
+	for ( i=start; i<end && i<fv->map->enccount; ++i )
+	    if ( (gid=fv->map->map[i])!=-1 && sf->glyphs[gid]!=NULL &&
+		    (isv ? sf->glyphs[gid]->vkerns : sf->glyphs[gid]->kerns)!=NULL )
 	break;
-	if ( i==end || i==sf->charcnt ) {
-	    for ( i=0; i<sf->charcnt; ++i )
-		if ( sf->chars[i]!=NULL &&
-			(isv ? sf->chars[i]->vkerns : sf->chars[i]->kerns)!=NULL )
+	if ( i==end || i==fv->map->enccount ) {
+	    for ( i=0; i<fv->map->enccount; ++i )
+		if ( (gid=fv->map->map[i])!=-1 && sf->glyphs[gid]!=NULL &&
+			(isv ? sf->glyphs[gid]->vkerns : sf->glyphs[gid]->kerns)!=NULL )
 	    break;
 	}
-	if ( i==sf->charcnt ) {
-	    for ( i=start; i<end && i<sf->charcnt; ++i )
-		if ( sf->chars[i]!=NULL )
+	if ( i==fv->map->enccount ) {
+	    for ( i=start; i<end && i<fv->map->enccount; ++i )
+		if ( (gid=fv->map->map[i])!=-1 && sf->glyphs[gid]!=NULL )
 	    break;
+	    if ( i==end || i==fv->map->enccount ) {
+		for ( i=0; i<fv->map->enccount; ++i )
+		    if ( (gid=fv->map->map[i])!=-1 && sf->glyphs[gid]!=NULL )
+		break;
+	    }
 	}
-	if ( i==end || i==sf->charcnt ) {
-	    for ( i=0; i<sf->charcnt; ++i )
-		if ( sf->chars[i]!=NULL )
-	    break;
-	}
-	if ( i!=sf->charcnt )
-	    sc1 = sf->chars[i];
+	if ( i!=fv->map->enccount )
+	    sc1 = sf->glyphs[gid];
     }
     if ( sc2==NULL && sc1!=NULL && (isv ? sc1->vkerns : sc1->kerns)!=NULL )
 	sc2 = (isv ? sc1->vkerns : sc1->kerns)->sc;

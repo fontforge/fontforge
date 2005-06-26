@@ -48,6 +48,7 @@ typedef struct printinfo {
     MetricsView *mv;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     SplineFont *sf;
+    EncMap *map;
     SplineChar *sc;
     enum printtype { pt_fontdisplay, pt_chars, pt_multisize, pt_fontsample } pt;
     int pointsize;
@@ -148,7 +149,7 @@ static void pdf_finishpage(PI *pi) {
 
     fprintf( pi->out, "Q\n" );
     streamlength = ftell(pi->out)-pi->start_cur_page;
-    fprintf( pi->out, " endstream\n" );
+    fprintf( pi->out, "\nendstream\n" );
     fprintf( pi->out, "endobj\n" );
 
     pdf_addobject(pi);
@@ -199,34 +200,38 @@ struct fontdesc {
 static int figure_fontdesc(PI *pi, struct fontdesc *fd, int fonttype, int fontstream) {
     int i, j, first = true;
     SplineFont *sf = pi->sf;
+    EncMap *map = pi->map;
     DBounds b;
     int capcnt=0, xhcnt=0, wcnt=0;
     double samewidth;
     int beyond_std = false;
     int fd_num = pi->next_object;
     int cidmax;
+    char *stemv;
 
     memset(fd,0,sizeof(*fd));
 
     cidmax = 0;
     if ( sf->subfonts!=0 ) {
 	for ( i=0; i<sf->subfontcnt; ++i )
-	    if ( cidmax<sf->subfonts[i]->charcnt )
-		cidmax = sf->subfonts[i]->charcnt;
+	    if ( cidmax<sf->subfonts[i]->glyphcnt )
+		cidmax = sf->subfonts[i]->glyphcnt;
     } else
-	cidmax = sf->charcnt;
+	cidmax = map->enccount;
 
     for ( i=0; i<cidmax; ++i ) {
 	SplineChar *sc = NULL;
 	if ( sf->subfonts!=0 ) {
 	    for ( j=0; j<sf->subfontcnt; ++j )
-		if ( i<sf->subfonts[j]->charcnt &&
-			SCWorthOutputting(sf->subfonts[j]->chars[i]) ) {
-		    sc = sf->subfonts[j]->chars[i];
+		if ( i<sf->subfonts[j]->glyphcnt &&
+			SCWorthOutputting(sf->subfonts[j]->glyphs[i]) ) {
+		    sc = sf->subfonts[j]->glyphs[i];
 	    break;
 		}
-	} else
-	    sc = sf->chars[i];
+	} else if ( map->map[i]==-1 )
+	    sc = NULL;
+	else
+	    sc = sf->glyphs[map->map[i]];
 	if ( SCWorthOutputting(sc)) {
 	    int uni = sc->unicodeenc;
 
@@ -292,7 +297,7 @@ static int figure_fontdesc(PI *pi, struct fontdesc *fd, int fonttype, int fontst
     if ( xhcnt!=0 ) fd->xheight /= xhcnt;
     if ( wcnt!=0 ) fd->avgwidth /= wcnt;
 
-    if ( samewidth ) fd->flags = 1;
+    if ( samewidth!=-1 ) fd->flags = 1;
     /* I can't tell whether it's serifed (flag=2) */
     if ( !beyond_std ) fd->flags |= 4;
     else fd->flags |= 1<<(6-1);
@@ -312,6 +317,14 @@ static int figure_fontdesc(PI *pi, struct fontdesc *fd, int fonttype, int fontst
     fprintf( pi->out, "    /Flags %d\n", fd->flags );
     fprintf( pi->out, "    /FontBBox [%g %g %g %g]\n",
 	    fd->bb.minx, fd->bb.miny, fd->bb.maxx, fd->bb.maxy );
+    stemv = PSDictHasEntry(sf->private,"StdVW");
+    if ( stemv!=NULL )		/* Said to be required, but meaningless for cid fonts where there should be multiple values */
+	fprintf( pi->out, "    /StemV %s\n", stemv );
+    else
+	fprintf( pi->out, "    /StemV 0\n" );
+    stemv = PSDictHasEntry(sf->private,"StdHW");
+    if ( stemv!=NULL )
+	fprintf( pi->out, "    /StemH %s\n", stemv );
     fprintf( pi->out, "    /ItalicAngle %g\n", sf->italicangle );
     fprintf( pi->out, "    /Ascent %g\n", fd->ascent );
     fprintf( pi->out, "    /Descent %g\n", fd->descent );
@@ -333,11 +346,13 @@ return( fd_num );
 }
 
 static void dump_pfb_encoding(PI *pi,int base,int font_d_ref) {
-    int i, first=-1, last;
+    int i, first=-1, last, gid;
     SplineFont *sf = pi->sf;
+    EncMap *map = pi->map;
 
-    for ( i=base; i<base+256 && i<sf->charcnt; ++i ) {
-	if ( SCWorthOutputting(sf->chars[i])) {
+    for ( i=base; i<base+256 && i<map->enccount; ++i ) {
+	gid = map->map[i];
+	if ( gid!=-1 && SCWorthOutputting(sf->glyphs[gid])) {
 	    if ( first==-1 ) first = i-base;
 	    last = i-base;
 	}
@@ -363,8 +378,8 @@ return;			/* Nothing in this range */
     /* The width vector is normalized to 1000 unit em from whatever the font really uses */
     pdf_addobject(pi);
     fprintf( pi->out, "  [\n" );
-    for ( i=base+first; i<=base+last; ++i ) if ( SCWorthOutputting(sf->chars[i]))
-	fprintf( pi->out, "    %g\n", sf->chars[i]->width*1000.0/(sf->ascent+sf->descent) );
+    for ( i=base+first; i<=base+last; ++i ) if ( (gid=map->map[i])!=-1 && SCWorthOutputting(sf->glyphs[gid]))
+	fprintf( pi->out, "    %g\n", sf->glyphs[gid]->width*1000.0/(sf->ascent+sf->descent) );
     else
 	fprintf( pi->out, "    0\n" );
     fprintf( pi->out, "  ]\n" );
@@ -375,8 +390,8 @@ return;			/* Nothing in this range */
 	fprintf( pi->out, "    /Type /Encoding\n" );
 	fprintf( pi->out, "    /Differences [ %d\n", first );
 	for ( i=base+first; i<=base+last; ++i )
-	    if ( SCWorthOutputting( sf->chars[i] ))
-		fprintf( pi->out, "\t/%s\n", sf->chars[i]->name );
+	    if ( (gid=map->map[i])!=-1 && SCWorthOutputting( sf->glyphs[gid] ))
+		fprintf( pi->out, "\t/%s\n", sf->glyphs[gid]->name );
 	    else
 		fprintf( pi->out, "\t/.notdef\n" );
 	fprintf( pi->out, "    ]\n" );
@@ -421,9 +436,9 @@ static void pdf_dump_type1(PI *pi) {
 
     fd_obj = figure_fontdesc(pi, &fd,1,font_stream);
 
-    pi->our_font_objs = galloc((pi->sf->charcnt/256+1)*sizeof(int *));
-    pi->fonts = galloc((pi->sf->charcnt/256+1)*sizeof(int *));
-    for ( i=0; i<pi->sf->charcnt; i += 256 ) {
+    pi->our_font_objs = galloc((pi->map->enccount/256+1)*sizeof(int *));
+    pi->fonts = galloc((pi->map->enccount/256+1)*sizeof(int *));
+    for ( i=0; i<pi->map->enccount; i += 256 ) {
 	pi->fonts[i/256] = -1;
 	dump_pfb_encoding(pi,i,fd_obj);
     }
@@ -459,7 +474,7 @@ static int pdf_charproc(PI *pi, SplineChar *sc) {
     SC_PSDump((void (*)(int,void *)) fputc,pi->out,sc,true,true);
 
     streamlength = ftell(pi->out)-streamstart;
-    fprintf( pi->out, " endstream\n" );
+    fprintf( pi->out, "\nendstream\n" );
     fprintf( pi->out, "endobj\n" );
 
     pdf_addobject(pi);
@@ -472,12 +487,13 @@ return( ret );
 }
 
 static void dump_pdf3_encoding(PI *pi,int base,DBounds *bb, int notdefproc) {
-    int i, first=-1, last;
+    int i, first=-1, last, gid;
     int charprocs[256];
     SplineFont *sf = pi->sf;
+    EncMap *map = pi->map;
 
-    for ( i=base; i<base+256 && i<sf->charcnt; ++i ) {
-	if ( SCWorthOutputting(sf->chars[i]) && strcmp(sf->chars[i]->name,".notdef")!=0 ) {
+    for ( i=base; i<base+256 && i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 ) {
+	if ( SCWorthOutputting(sf->glyphs[gid]) && strcmp(sf->glyphs[gid]->name,".notdef")!=0 ) {
 	    if ( first==-1 ) first = i-base;
 	    last = i-base;
 	}
@@ -486,9 +502,9 @@ static void dump_pdf3_encoding(PI *pi,int base,DBounds *bb, int notdefproc) {
 return;			/* Nothing in this range */
 
     memset(charprocs,0,sizeof(charprocs));
-    for ( i=base; i<base+256 && i<sf->charcnt; ++i ) {
-	if ( SCWorthOutputting(sf->chars[i]) && strcmp(sf->chars[i]->name,".notdef")!=0 )
-	    charprocs[i-base] = pdf_charproc(pi,sf->chars[i]);
+    for ( i=base; i<base+256 && i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 ) {
+	if ( SCWorthOutputting(sf->glyphs[gid]) && strcmp(sf->glyphs[gid]->name,".notdef")!=0 )
+	    charprocs[i-base] = pdf_charproc(pi,sf->glyphs[gid]);
     }
 
     pi->our_font_objs[pi->next_font] = pi->next_object;
@@ -513,10 +529,11 @@ return;			/* Nothing in this range */
     /* Widths array */
     pdf_addobject(pi);
     fprintf( pi->out, "  [\n" );
-    for ( i=base+first; i<=base+last; ++i ) if ( SCWorthOutputting(sf->chars[i]))
-	fprintf( pi->out, "    %d\n", sf->chars[i]->width );
-    else
-	fprintf( pi->out, "    0\n" );
+    for ( i=base+first; i<base+last; ++i )
+	if ( (gid=map->map[i])!=-1 && SCWorthOutputting(sf->glyphs[gid]))
+	    fprintf( pi->out, "    %d\n", sf->glyphs[gid]->width );
+	else
+	    fprintf( pi->out, "    0\n" );
     fprintf( pi->out, "  ]\n" );
     fprintf( pi->out, "endobj\n" );
 
@@ -525,9 +542,9 @@ return;			/* Nothing in this range */
     fprintf( pi->out, "  <<\n" );
     fprintf( pi->out, "    /Type /Encoding\n" );
     fprintf( pi->out, "    /Differences [ %d\n", first );
-    for ( i=base+first; i<=base+last; ++i )
-	if ( SCWorthOutputting( sf->chars[i] ))
-	    fprintf( pi->out, "\t/%s\n", sf->chars[i]->name );
+    for ( i=base+first; i<base+last; ++i )
+	if ( (gid=map->map[i])!=-1 && SCWorthOutputting(sf->glyphs[gid]))
+	    fprintf( pi->out, "\t/%s\n", sf->glyphs[gid]->name );
 	else
 	    fprintf( pi->out, "\t/.notdef\n" );
     fprintf( pi->out, "    ]\n" );
@@ -538,9 +555,9 @@ return;			/* Nothing in this range */
     pdf_addobject(pi);
     fprintf( pi->out, "  <<\n" );
     fprintf( pi->out, "\t/.notdef %d 0 R\n", notdefproc );
-    for ( i=base+first; i<=base+last; ++i )
-	if ( SCWorthOutputting( sf->chars[i] ))
-	    fprintf( pi->out, "\t/%s %d 0 R\n", sf->chars[i]->name, charprocs[i-base] );
+    for ( i=base+first; i<base+last; ++i )
+	if ( (gid=map->map[i])!=-1 && SCWorthOutputting(sf->glyphs[gid]))
+	    fprintf( pi->out, "\t/%s %d 0 R\n", sf->glyphs[gid]->name, charprocs[i-base] );
     fprintf( pi->out, "  >>\n" );
     fprintf( pi->out, "endobj\n" );
 }
@@ -553,9 +570,11 @@ static void pdf_gen_type3(PI *pi) {
     Layer layers[2];
 #endif
     SplineFont *sf = pi->sf;
+    EncMap *map = pi->map;
+    int notdefpos = SFFindNotdef(sf,-2);
 
-    if ( SCIsNotdef(sf->chars[0],false) && SCWorthOutputting(sf->chars[0]) )
-	notdefproc = pdf_charproc(pi,sf->chars[0]);
+    if ( notdefpos!=-1 )
+	notdefproc = pdf_charproc(pi,sf->glyphs[notdefpos]);
     else {
 	memset(&sc,0,sizeof(sc));
 	sc.name = ".notdef";
@@ -570,9 +589,9 @@ static void pdf_gen_type3(PI *pi) {
     }
 
     SplineFontFindBounds(sf,&bb);
-    pi->our_font_objs = galloc((pi->sf->charcnt/256+1)*sizeof(int *));
-    pi->fonts = galloc((sf->charcnt/256+1)*sizeof(int *));
-    for ( i=0; i<sf->charcnt; i += 256 ) {
+    pi->our_font_objs = galloc((map->enccount/256+1)*sizeof(int *));
+    pi->fonts = galloc((map->enccount/256+1)*sizeof(int *));
+    for ( i=0; i<map->enccount; i += 256 ) {
 	pi->fonts[i/256] = -1;
 	dump_pdf3_encoding(pi,i,&bb,notdefproc);
     }
@@ -601,7 +620,7 @@ static void pdf_build_type0(PI *pi) {
     rewind(pi->fontfile);
     while ( (ch=getc(pi->fontfile))!=EOF )
 	putc(ch,pi->out);
-    fprintf( pi->out, " endstream\n" );
+    fprintf( pi->out, "\nendstream\n" );
     fprintf( pi->out, "endobj\n\n" );
 
     fd_obj = figure_fontdesc(pi, &fd,pi->istype42cid?2:3,font_stream);
@@ -628,10 +647,10 @@ static void pdf_build_type0(PI *pi) {
     cidmax = 0;
     if ( cidmaster->subfonts!=0 ) {
 	for ( i=0; i<cidmaster->subfontcnt; ++i )
-	    if ( cidmax<cidmaster->subfonts[i]->charcnt )
-		cidmax = cidmaster->subfonts[i]->charcnt;
+	    if ( cidmax<cidmaster->subfonts[i]->glyphcnt )
+		cidmax = cidmaster->subfonts[i]->glyphcnt;
     } else
-	cidmax = cidmaster->charcnt;
+	cidmax = cidmaster->glyphcnt + 2;	/* two extra useless glyphs in ttf */
 
     widths = galloc(cidmax*sizeof(uint16));
 
@@ -639,13 +658,13 @@ static void pdf_build_type0(PI *pi) {
 	SplineChar *sc = NULL;
 	if ( cidmaster->subfonts!=0 ) {
 	    for ( j=0; j<cidmaster->subfontcnt; ++j )
-		if ( i<cidmaster->subfonts[j]->charcnt &&
-			SCWorthOutputting(cidmaster->subfonts[j]->chars[i]) ) {
-		    sc = cidmaster->subfonts[j]->chars[i];
+		if ( i<cidmaster->subfonts[j]->glyphcnt &&
+			SCWorthOutputting(cidmaster->subfonts[j]->glyphs[i]) ) {
+		    sc = cidmaster->subfonts[j]->glyphs[i];
 	    break;
 		}
-	} else
-	    sc = cidmaster->chars[i];
+	} else if ( i<cidmaster->glyphcnt )
+	    sc = cidmaster->glyphs[i];
 	if ( sc!=NULL )
 	    widths[i] = sc->width;
 	else
@@ -837,10 +856,10 @@ static void DumpIdentCMap(PI *pi) {
 
     max = 0;
     if ( pi->istype42cid )
-	max = sf->charcnt;
+	max = pi->map->enccount;
     else {
 	for ( i=0; i<sf->subfontcnt; ++i )
-	    if ( sf->subfonts[i]->charcnt>max ) max = sf->subfonts[i]->charcnt;
+	    if ( sf->subfonts[i]->glyphcnt>max ) max = sf->subfonts[i]->glyphcnt;
     }
     pi->cidcnt = max;
 
@@ -927,7 +946,7 @@ return;
     else
 	fprintf( pi->out, "%%%%Title: Character Displays from %s\n", pi->sf->fullname );
     fprintf( pi->out, "%%%%DocumentNeededResources: font Times-Bold\n" );
-    if ( pi->sf->encoding_name->is_unicodebmp || pi->sf->encoding_name->is_unicodefull )
+    if ( pi->map->enc->is_unicodebmp || pi->map->enc->is_unicodefull )
 	fprintf( pi->out, "%%%%DocumentNeededResources: font ZapfDingbats\n" );
     if ( pi->iscid && pi->fontfile!=NULL )
 	fprintf( pi->out, "%%%%DocumentNeededResources: ProcSet (CIDInit)\n" );
@@ -995,18 +1014,21 @@ return;
 		i = 65536;
 	    else
 		i = 256;
-	    for ( ; i<pi->sf->charcnt; ++i ) {
-		if ( SCWorthOutputting(pi->sf->chars[i]) ) {
+	    for ( ; i<pi->map->enccount; ++i ) {
+		int gid = pi->map->map[i];
+		if ( gid!=-1 && SCWorthOutputting(pi->sf->glyphs[gid]) ) {
 		    base = i&~0xff;
 		    fprintf( pi->out, "MyFontDict /%s-%x__%d /%s-%x /%s%s findfont [\n",
 			    pi->sf->fontname, base>>8, pi->pointsize,
 			    pi->sf->fontname, base>>8,
 			    pi->sf->fontname, pi->twobyte?"Base":"" );
-		    for ( j=0; j<0x100 && base+j<pi->sf->charcnt; ++j )
-			if ( SCWorthOutputting(pi->sf->chars[base+j]))
-			    fprintf( pi->out, "\t/%s\n", pi->sf->chars[base+j]->name );
+		    for ( j=0; j<0x100 && base+j<pi->map->enccount; ++j ) {
+			int gid2 = pi->map->map[base+j];
+			if ( gid2!=-1 && SCWorthOutputting(pi->sf->glyphs[gid2]))
+			    fprintf( pi->out, "\t/%s\n", pi->sf->glyphs[gid2]->name );
 			else
 			    fprintf( pi->out, "\t/.notdef\n" );
+		    }
 		    for ( ;j<0x100; ++j )
 			fprintf( pi->out, "\t/.notdef\n" );
 		    fprintf( pi->out, " ] font_remap definefont %d scalefont put\n",
@@ -1035,11 +1057,11 @@ return(false);
     }
 #if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressStartIndicatorR(10,_STR_PrintingFont,_STR_PrintingFont,
-	    _STR_GeneratingPostscriptFont,pi->sf->charcnt,1);
+	    _STR_GeneratingPostscriptFont,pi->sf->glyphcnt,1);
     GProgressEnableStop(false);
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_start_indicator(10,_("Printing Font"),_("Printing Font"),
-	    _("Generating Postscript Font"),pi->sf->charcnt,1);
+	    _("Generating Postscript Font"),pi->sf->glyphcnt,1);
     gwwv_progress_enable_stop(false);
 #endif
     if ( pi->printtype==pt_pdf && pi->sf->multilayer ) {
@@ -1048,7 +1070,7 @@ return(false);
     } else if ( pi->printtype==pt_pdf && pi->iscid ) {
 	if ( !_WriteTTFFont(pi->fontfile,pi->sf,
 		pi->istype42cid?ff_type42cid:ff_cffcid,NULL,bf_none,
-		ps_flag_nocffsugar))
+		ps_flag_nocffsugar,pi->map))
 	    error = true;
     } else if ( !_WritePSFont(pi->fontfile,pi->sf,
 		pi->printtype==pt_pdf ? ff_pfb :
@@ -1057,7 +1079,7 @@ return(false);
 		pi->istype42cid?ff_type42cid:
 		pi->iscid?ff_cid:
 		pi->twobyte?ff_ptype0:
-		ff_pfa,ps_flag_identitycidmap))
+		ff_pfa,ps_flag_identitycidmap,pi->map))
 	error = true;
 
 #if defined(FONTFORGE_CONFIG_GDRAW)
@@ -1145,13 +1167,14 @@ return;
 }
 
 static int DumpLine(PI *pi) {
-    int i=0, line;
+    int i=0, line, gid;
 
     /* First find the next line with stuff on it */
     if ( !pi->iscid || pi->istype42cid ) {
-	for ( line = pi->chline ; line<pi->sf->charcnt; line += pi->max ) {
-	    for ( i=0; i<pi->max && line+i<pi->sf->charcnt; ++i )
-		if ( SCWorthOutputting(pi->sf->chars[line+i]) )
+	for ( line = pi->chline ; line<pi->map->enccount; line += pi->max ) {
+	    for ( i=0; i<pi->max && line+i<pi->map->enccount; ++i )
+		if ( (gid=pi->map->map[line+i])!=-1 )
+		    if ( SCWorthOutputting(pi->sf->glyphs[gid]) )
 	    break;
 	    if ( i!=pi->max )
 	break;
@@ -1219,15 +1242,18 @@ return(0);
 	for ( i=0; i<pi->max ; ++i ) {
 	    fprintf( pi->out, "  %d 0 TD\n", pi->pointsize+pi->extrahspace );
 	    if ( i+pi->chline<pi->cidcnt &&
-			CIDWorthOutputting(pi->sf,i+pi->chline)!=-1) {
+			((pi->iscid && !pi->istype42cid && CIDWorthOutputting(pi->sf,i+pi->chline)!=-1) ||
+			 ((!pi->iscid || pi->istype42cid) && (gid=pi->map->map[i+pi->chline])!=-1 &&
+				 SCWorthOutputting(pi->sf->glyphs[gid]))) ) {
 		/*int x = 58 + i*(pi->pointsize+pi->extrahspace);*/
 		if ( !pi->iscid && (i+pi->chline)/256 != lastfont ) {
 		    lastfont = (i+pi->chline)/256;
 		    fprintf(pi->out, "  /F%d %d Tf\n", pi->fonts[lastfont], pi->pointsize );
 		}
-		if ( pi->istype42cid )
-		    fprintf( pi->out, "  <%04x> Tj\n", pi->sf->chars[pi->chline+i]->ttf_glyph );
-		else if ( pi->iscid )
+		if ( pi->istype42cid ) {
+		    int gid = pi->map->map[pi->chline+i];
+		    fprintf( pi->out, "  <%04x> Tj\n", gid==-1?0:gid );
+		} else if ( pi->iscid )
 		    fprintf( pi->out, "  <%04x> Tj\n", pi->chline+i );
 		else
 		    fprintf( pi->out, "  <%02x> Tj\n", (pi->chline+i)%256 );
@@ -1245,10 +1271,13 @@ return(0);
 	fprintf(pi->out,"MyFontDict /%s get setfont\n", pi->psfontname );
 	for ( i=0; i<pi->max ; ++i ) {
 	    if ( i+pi->chline<pi->cidcnt &&
-			CIDWorthOutputting(pi->sf,i+pi->chline)!=-1) {
+			((pi->iscid && !pi->istype42cid && CIDWorthOutputting(pi->sf,i+pi->chline)!=-1) ||
+			 ((!pi->iscid || pi->istype42cid) && (gid=pi->map->map[i+pi->chline])!=-1 &&
+				 SCWorthOutputting(pi->sf->glyphs[gid]))) ) {
 		int x = 58 + i*(pi->pointsize+pi->extrahspace);
 		if ( pi->istype42cid ) {
-		    int gid = pi->sf->chars[pi->chline+i]->ttf_glyph;
+		    int gid = pi->map->map[pi->chline+i];
+		    if ( gid!=-1 ) gid = pi->sf->glyphs[gid]->ttf_glyph;
 		    fprintf( pi->out, "<%04x> %d %d n_show\n", gid==-1?0:gid,
 			    x, pi->ypos );
 		} else if ( pi->overflow ) {
@@ -1273,17 +1302,16 @@ return(true);
 }
 
 static void PIFontDisplay(PI *pi) {
-    int wascompacted = pi->sf->compacted;
 
     pi->extravspace = pi->pointsize/6;
     pi->extrahspace = pi->pointsize/3;
     pi->max = (pi->pagewidth-100)/(pi->extrahspace+pi->pointsize);
-    pi->cidcnt = pi->sf->charcnt;
+    pi->cidcnt = pi->map->enccount;
     if ( pi->sf->subfontcnt!=0 && pi->iscid ) {
 	int i,max=0;
 	for ( i=0; i<pi->sf->subfontcnt; ++i )
-	    if ( pi->sf->subfonts[i]->charcnt>max )
-		max = pi->sf->subfonts[i]->charcnt;
+	    if ( pi->sf->subfonts[i]->glyphcnt>max )
+		max = pi->sf->subfonts[i]->glyphcnt;
 	pi->cidcnt = max;
     }
 
@@ -1300,9 +1328,6 @@ static void PIFontDisplay(PI *pi) {
 	else if ( pi->max >= 2 ) pi->max = 2;
     }
 
-    if ( wascompacted )
-	SFUncompactFont(pi->sf);
-
     if ( PIDownloadFont(pi)) {
 	while ( DumpLine(pi))
 	    ;
@@ -1315,20 +1340,6 @@ static void PIFontDisplay(PI *pi) {
 #endif
 	else
 	    dump_trailer(pi);
-    }
-
-    if ( wascompacted ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	FontView *fvs;
-	SFCompactFont(pi->sf);
-	for ( fvs=pi->sf->fv; fvs!=NULL; fvs=fvs->nextsame )
-	    GDrawRequestExpose(fvs->v,NULL,false);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	SFCompactFont(pi->sf);
-	/* !!!! */
-#else
-	SFCompactFont(pi->sf);
-#endif
     }
 }
 
@@ -1424,9 +1435,9 @@ static void PIChars(PI *pi) {
 
     dump_prologue(pi);
     if ( pi->fv!=NULL ) {
-	for ( i=0; i<pi->sf->charcnt; ++i )
-	    if ( pi->fv->selected[i] && SCWorthOutputting(pi->sf->chars[i]) )
-		SCPrintPage(pi,pi->sf->chars[i]);
+	for ( i=0; i<pi->sf->glyphcnt; ++i )
+	    if ( pi->fv->selected[i] && SCWorthOutputting(pi->sf->glyphs[i]) )
+		SCPrintPage(pi,pi->sf->glyphs[i]);
     } else if ( pi->sc!=NULL )
 	SCPrintPage(pi,pi->sc);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -1457,6 +1468,7 @@ static void samplestartpage(PI *pi ) {
 	    fprintf(pi->out,"(Sample Sizes of %s) Tj\n", pi->sf->fullname );
 	fprintf(pi->out,"ET\nq 1 0 0 1 40 %d cm\n", pi->pageheight-34-
 		pi->pointsize*pi->sf->ascent/(pi->sf->ascent+pi->sf->descent) );
+	pi->lastfont = -1;
     } else {
 	fprintf(pi->out,"%%%%Page: %d %d\n", pi->page, pi->page );
 	fprintf(pi->out,"%%%%PageResources: font %s\n", pi->sf->fontname );
@@ -1480,64 +1492,77 @@ static void samplestartpage(PI *pi ) {
 
 static SplineChar *findchar(PI *pi, int ch) {
     SplineFont *sf = pi->sf;
-    int i, max;
+    EncMap *map = pi->map;
+    int i, max, gid;
 
     if ( ch<0 )
 return(NULL);
-    if ( sf->encoding_name->is_unicodebmp || sf->encoding_name->is_unicodefull) {
-	if ( SCWorthOutputting(sf->chars[ch]))
-return( sf->chars[ch]);
+    if ( map->enc->is_unicodebmp || map->enc->is_unicodefull) {
+	if ( (gid=map->map[ch])!=-1 && SCWorthOutputting(sf->glyphs[gid]))
+return( sf->glyphs[gid]);
     } else if ( ch>=65536 ) {
 return( NULL );
     } else if ( !pi->iscid || pi->istype42cid ) {
 	max = 256;
-	for ( i=0 ; i<sf->charcnt && i<max; ++i )
-	    if ( sf->chars[i]!=NULL && sf->chars[i]->unicodeenc==ch ) {
-		if ( SCWorthOutputting(sf->chars[i]))
-return( sf->chars[i]);
+	for ( i=0 ; i<sf->glyphcnt && i<max; ++i )
+	    if ( sf->glyphs[i]!=NULL && sf->glyphs[i]->unicodeenc==ch ) {
+		if ( SCWorthOutputting(sf->glyphs[i]))
+return( sf->glyphs[i]);
 		else
 return( NULL );
 	    }
     } else {
 	int j;
 	for ( i=max=0; i<sf->subfontcnt; ++i )
-	    if ( sf->subfonts[i]->charcnt>max ) max = sf->subfonts[i]->charcnt;
+	    if ( sf->subfonts[i]->glyphcnt>max ) max = sf->subfonts[i]->glyphcnt;
 	for ( i=0; i<max; ++i ) {
 	    for ( j=0; j<sf->subfontcnt; ++j )
-		if ( i<sf->subfonts[j]->charcnt && sf->subfonts[j]->chars[i]!=NULL )
+		if ( i<sf->subfonts[j]->glyphcnt && sf->subfonts[j]->glyphs[i]!=NULL )
 	    break;
 	    if ( j!=sf->subfontcnt )
-		if ( sf->subfonts[j]->chars[i]->unicodeenc == ch )
+		if ( sf->subfonts[j]->glyphs[i]->unicodeenc == ch )
 	break;
 	}
-	if ( i!=max && SCWorthOutputting(sf->subfonts[j]->chars[i]))
-return( sf->subfonts[j]->chars[i] );
+	if ( i!=max && SCWorthOutputting(sf->subfonts[j]->glyphs[i]))
+return( sf->subfonts[j]->glyphs[i] );
     }
 
 return( NULL );
 }
 
 static void outputchar(PI *pi, SplineChar *sc) {
+    int enc;
 
     if ( sc==NULL )
 return;
-    if ( pi->istype42cid ) {    /* type42cid output uses a CIDMap indexed by GID */
-	fprintf( pi->out, "%04X", sc->ttf_glyph );
-    } else if ( pi->iscid ) {
-	fprintf( pi->out, "%04X", sc->enc );
-    } else if ( pi->twobyte ) {
-	fprintf( pi->out, "%04X", sc->enc );
+    /* type42cid output uses a CIDMap indexed by GID */
+    if ( pi->istype42cid ) {
+ 	fprintf( pi->out, "%04X", sc->ttf_glyph );
     } else {
-	fprintf( pi->out, "%02X", sc->enc&0xff );
+	enc = pi->map->backmap[sc->orig_pos];
+	if ( enc==-1 )
+return;
+	if ( pi->iscid ) {
+	    fprintf( pi->out, "%04X", enc );
+	} else if ( pi->twobyte ) {
+	    fprintf( pi->out, "%04X", enc );
+	} else {
+	    fprintf( pi->out, "%02X", enc&0xff );
+	}
     }
 }
 
 static void checkrightfont(PI *pi,SplineChar *sc) {
+    int enc = pi->map->backmap[sc->orig_pos];
+
+    if ( enc==-1 )
+return;
+
     if ( pi->printtype==pt_pdf ) {
-	if ( (sc->enc>>8)!=pi->lastfont && !pi->iscid ) {
+	if ( (enc>>8)!=pi->lastfont && !pi->iscid ) {
 	    if ( pi->intext ) { fprintf( pi->out, ">] TJ"); pi->intext = false; }
-	    fprintf( pi->out, "\n/F%d %d Tf\n", pi->fonts[sc->enc>>8], pi->pointsize );
-	    pi->lastfont = (sc->enc>>8);
+	    fprintf( pi->out, "\n/F%d %d Tf\n", pi->fonts[enc>>8], pi->pointsize );
+	    pi->lastfont = (enc>>8);
 	} else if ( pi->lastfont==-1 && pi->iscid ) {
 	    if ( pi->intext ) { fprintf( pi->out, ">] TJ"); pi->intext = false; }
 	    fprintf( pi->out, "\n/F0 %d Tf\n", pi->pointsize );
@@ -2023,9 +2048,11 @@ static double pointsizes[] = { 72, 48, 36, 24, 20, 18, 16, 15, 14, 13, 12, 11, 1
 
 static void SCPrintSizes(PI *pi,SplineChar *sc) {
     int xstart = 10, i;
+    int enc;
 
     if ( !SCWorthOutputting(sc))
 return;
+    enc = pi->map->backmap[sc->orig_pos];
     if ( pi->ypos - pi->pointsize < -(pi->pageheight-90) && pi->ypos!=-30 ) {
 	samplestartpage(pi);
     }
@@ -2036,14 +2063,14 @@ return;
     }
     for ( i=0; pointsizes[i]!=0; ++i ) {
 	if ( pi->printtype==pt_pdf ) {
-	    fprintf(pi->out,"/F%d %g Tf\n  <", pi->fonts[sc->enc/256], pointsizes[i]);
+	    fprintf(pi->out,"/F%d %g Tf\n  <", pi->fonts[enc/256], pointsizes[i]);
 	    outputchar(pi,sc);
 	    fprintf( pi->out, "> Tj\n" );
 	    /* Don't need to use TJ here, no possibility of kerning */
 	} else {
-	    if ( sc->enc>0xff )
+	    if ( enc>0xff )
 		fprintf(pi->out,"/%s-%x findfont %g scalefont setfont\n  <",
-			pi->sf->fontname, sc->enc>>8,
+			pi->sf->fontname, enc>>8,
 			pointsizes[i]);
 	    else
 		fprintf(pi->out,"/%s findfont %g scalefont setfont\n  <", pi->sf->fontname,
@@ -2068,9 +2095,9 @@ return;
     samplestartpage(pi);
 
     if ( pi->fv!=NULL ) {
-	for ( i=0; i<pi->sf->charcnt; ++i )
-	    if ( pi->fv->selected[i] && SCWorthOutputting(pi->sf->chars[i]) )
-		SCPrintSizes(pi,pi->sf->chars[i]);
+	for ( i=0; i<pi->sf->glyphcnt; ++i )
+	    if ( pi->fv->selected[i] && SCWorthOutputting(pi->sf->glyphs[i]) )
+		SCPrintSizes(pi,pi->sf->glyphs[i]);
     } else if ( pi->sc!=NULL )
 	SCPrintSizes(pi,pi->sc);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -2536,8 +2563,8 @@ return( pi->printtype!=pt_unknown );
 /* Slightly different from one in fontview */
 static int FVSelCount(FontView *fv) {
     int i, cnt=0;
-    for ( i=0; i<fv->sf->charcnt; ++i )
-	if ( fv->selected[i] && SCWorthOutputting(fv->sf->chars[i])) ++cnt;
+    for ( i=0; i<fv->sf->glyphcnt; ++i )
+	if ( fv->selected[i] && SCWorthOutputting(fv->sf->glyphs[i])) ++cnt;
 return( cnt);
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
@@ -2770,7 +2797,7 @@ return(true);
 	sample = NULL;
 	if ( pi->pt==pt_fontsample )
 	    sample = GGadgetGetTitle(GWidgetGetControl(pi->gw,CID_SampleText));
-	pdefs[di].last_cs = pi->sf->encoding_name;
+	pdefs[di].last_cs = pi->map->enc;
 	pdefs[di].pt = pi->pt;
 	pdefs[di].pointsize = pi->pointsize;
 	free( pdefs[di].text );
@@ -3719,19 +3746,13 @@ return;
 static int AllChars( SplineFont *sf, unichar_t *str, int istwobyte) {
     int i, ch;
 
-    if ( sf->encoding_name->is_unicodebmp || sf->encoding_name->is_unicodefull ) {
+    if ( sf->subfontcnt==0 ) {
 	while ( (ch = *str)!='\0' ) {
-	    if ( !SCWorthOutputting(sf->chars[ch]))
-return( false );
-	    ++str;
-	}
-    } else if ( sf->subfontcnt==0 ) {
-	while ( (ch = *str)!='\0' ) {
-	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-		if ( sf->chars[i]->unicodeenc == ch )
+	    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+		if ( sf->glyphs[i]->unicodeenc == ch )
 	    break;
 	    }
-	    if ( i==sf->charcnt || !SCWorthOutputting(sf->chars[i]) ||
+	    if ( i==sf->glyphcnt || !SCWorthOutputting(sf->glyphs[i]) ||
 		    (i>256 && !istwobyte) )
 return( false );
 	    ++str;
@@ -3739,17 +3760,17 @@ return( false );
     } else {
 	int max = 0, j;
 	for ( i=0; i<sf->subfontcnt; ++i )
-	    if ( sf->subfonts[i]->charcnt>max ) max = sf->subfonts[i]->charcnt;
+	    if ( sf->subfonts[i]->glyphcnt>max ) max = sf->subfonts[i]->glyphcnt;
 	while ( (ch = *str)!='\0' ) {
 	    for ( i=0; i<max; ++i ) {
 		for ( j=0; j<sf->subfontcnt; ++j )
-		    if ( i<sf->subfonts[j]->charcnt && sf->subfonts[j]->chars[i]!=NULL )
+		    if ( i<sf->subfonts[j]->glyphcnt && sf->subfonts[j]->glyphs[i]!=NULL )
 		break;
 		if ( j!=sf->subfontcnt )
-		    if ( sf->subfonts[j]->chars[i]->unicodeenc == ch )
+		    if ( sf->subfonts[j]->glyphs[i]->unicodeenc == ch )
 	    break;
 	    }
-	    if ( i==max || !SCWorthOutputting(sf->subfonts[j]->chars[i]))
+	    if ( i==max || !SCWorthOutputting(sf->subfonts[j]->glyphs[i]))
 return( false );
 	    ++str;
 	}
@@ -3860,19 +3881,23 @@ static void PIInit(PI *pi,FontView *fv,SplineChar *sc,void *mv) {
     pi->mv = mv;
 #endif
     pi->sc = sc;
-    if ( fv!=NULL )
+    if ( fv!=NULL ) {
 	pi->sf = fv->sf;
-    else if ( sc!=NULL )
+	pi->map = fv->map;
+    } else if ( sc!=NULL ) {
 	pi->sf = sc->parent;
+	pi->map = pi->sf->fv->map;
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    else
+    } else {
 	pi->sf = mv->fv->sf;
+	pi->map = mv->fv->map;
 #endif
+    }
     if ( pi->sf->cidmaster!=NULL ) pi->sf = pi->sf->cidmaster;
-    pi->twobyte = pi->sf->encoding_name->has_2byte;
+    pi->twobyte = pi->map->enc->has_2byte;
     pi->wastwobyte = pi->twobyte;
-    pi->isunicode = pi->sf->encoding_name->is_unicodebmp;
-    pi->isunicodefull = pi->sf->encoding_name->is_unicodefull;
+    pi->isunicode = pi->map->enc->is_unicodebmp;
+    pi->isunicodefull = pi->map->enc->is_unicodefull;
     pi->istype42cid = pi->sf->order2;
     pi->iscid = pi->sf->subfontcnt!=0 || pi->istype42cid;
     pi->pointsize = pdefs[di].pointsize;
@@ -4015,7 +4040,7 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     gcd[6].creator = GLabelCreate;
 
     label[7].text = pdefs[di].text;
-    if ( label[7].text==NULL || pi.sf->encoding_name!=pdefs[di].last_cs )
+    if ( label[7].text==NULL || pi.map->enc!=pdefs[di].last_cs )
 	label[7].text = PrtBuildDef(pi.sf,pi.twobyte);
     gcd[7].gd.label = &label[7];
     gcd[7].gd.mnemonic = 'T';

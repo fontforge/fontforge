@@ -90,8 +90,7 @@ typedef struct sftextarea {
     } *fontlist, *oldfontlist;
     struct sfmaps {
 	SplineFont *sf;
-	int umax;
-	int *map;
+	EncMap *map;
 	struct sfmaps *next;
     } *sfmaps;
     FontData *generated;
@@ -193,25 +192,26 @@ static void SFTextAreaProcessBi(SFTextArea *st, int start_of_change) {
 	}
     }
 }
+
 static int FDMap(FontData *fd,int uenc) {
     /* given a unicode code point, find the encoding in this font */
-    if ( fd->sf->encoding_name->is_unicodebmp || fd->sf->encoding_name->is_unicodefull ) {
-	if ( fd->sf->chars[uenc]==NULL )
-return( -1 );
-return( uenc );
-    }
+    int gid;
 
-    if ( uenc>fd->sfmap->umax )
+    if ( uenc>=fd->sfmap->map->enccount )
 return( -1 );
-return( fd->sfmap->map[uenc] );
+    gid = fd->sfmap->map->map[uenc];
+    if ( gid==-1 || fd->sf->glyphs[gid]==NULL )
+return( -1 );
+
+return( gid );
 }
 
-static int FDDrawChar(GWindow pixmap,FontData *fd,int enc,int x,int y,Color col) {
+static int FDDrawChar(GWindow pixmap,FontData *fd,int gid,int x,int y,Color col) {
     BDFChar *bdfc;
 
-    if ( enc!=-1 && fd->bdf->chars[enc]==NULL )
-	BDFPieceMeal(fd->bdf,enc);
-    if ( enc==-1 || (bdfc=fd->bdf->chars[enc])==NULL ) {
+    if ( gid!=-1 && fd->bdf->glyphs[gid]==NULL )
+	BDFPieceMeal(fd->bdf,gid);
+    if ( gid==-1 || (bdfc=fd->bdf->glyphs[gid])==NULL ) {
 	if ( col!=-1 ) {
 	    GRect r;
 	    r.x = x+1; r.width= fd->bdf->ascent/2-2;
@@ -238,7 +238,7 @@ return( x );
 static int STDrawText(SFTextArea *st,GWindow pixmap,int x,int y,
 	int pos, int len, Color col ) {
     struct fontlist *fl, *sub;
-    int ch, npos;
+    int gid, npos;
 
     if ( len==-1 )
 	len = u_strlen(st->text)-pos;
@@ -255,8 +255,8 @@ return(x);
 	    if ( fl==NULL )
 	break;
 	    if ( st->text[pos]!='\n' ) {
-		ch = FDMap(fl->fd,st->text[pos]);
-		x = FDDrawChar(pixmap,fl->fd,ch,x,y,col);
+		gid = FDMap(fl->fd,st->text[pos]);
+		x = FDDrawChar(pixmap,fl->fd,gid,x,y,col);
 	    }
 	    ++pos;
 	    --len;
@@ -268,8 +268,8 @@ return(x);
 		if ( sub->start<=pos && sub->end>pos )
 	    break;
 	    if ( sub!=NULL && st->bidata.text[pos]!='\n') {
-		ch = FDMap(sub->fd,st->bidata.text[pos]);
-		x = FDDrawChar(pixmap,sub->fd,ch,x,y,col);
+		gid = FDMap(sub->fd,st->bidata.text[pos]);
+		x = FDDrawChar(pixmap,sub->fd,gid,x,y,col);
 	    }
 	    ++pos;
 	    --len;
@@ -1994,7 +1994,7 @@ return;
     fontlistfree(st->oldfontlist);
     for ( m=st->sfmaps; m!=NULL; m=n ) {
 	n = m->next;
-	free(m->map);
+	EncMapFree(m->map);
 	chunkfree(m,sizeof(struct sfmaps));
     }
     for ( fd=st->generated ; fd!=NULL; fd = nfd ) {
@@ -2434,11 +2434,7 @@ return( &st->g );
 }
 
 static struct sfmaps *SFMapOfSF(SFTextArea *st,SplineFont *sf) {
-    int i, umax;
     struct sfmaps *sfmaps;
-
-    if ( sf->encoding_name->is_unicodebmp || sf->encoding_name->is_unicodefull )
-return( NULL );
 
     for ( sfmaps=st->sfmaps; sfmaps!=NULL; sfmaps=sfmaps->next )
 	if ( sfmaps->sf==sf )
@@ -2448,16 +2444,7 @@ return( sfmaps );
     sfmaps->sf = sf;
     sfmaps->next = st->sfmaps;
     st->sfmaps = sfmaps;
-    umax = -1;
-    for ( i=0; i<sf->charcnt; ++i ) if ( SCWorthOutputting(sf->chars[i]) && sf->chars[i]->unicodeenc>umax )
-	umax = sf->chars[i]->unicodeenc;
-    sfmaps->umax = umax;
-    if ( umax>=0 ) {
-	sfmaps->map = galloc((umax+1)*sizeof(int));
-	memset(sfmaps->map,-1,(umax+1)*sizeof(int));
-    }
-    for ( i=0; i<sf->charcnt; ++i ) if ( SCWorthOutputting(sf->chars[i]) && sf->chars[i]->unicodeenc!=-1 )
-	sfmaps->map[sf->chars[i]->unicodeenc] = i;
+    sfmaps->map = EncMapFromEncoding(sf,FindOrMakeEncoding("Unicode"));
 return( sfmaps );
 }
 

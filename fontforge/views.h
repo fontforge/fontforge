@@ -283,6 +283,9 @@ typedef struct charview {
 #endif
     struct charview *next;
     struct fontview *fv;
+    int enc;
+    EncMap *map_of_enc;				/* Only use for comparison against fontview's map to see if our enc be valid */
+						/*  Will not be updated when fontview is reencoded */
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     PressedOn p;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
@@ -343,6 +346,8 @@ typedef struct bitmapview {
     BDFChar *bc;
     BDFFont *bdf;
     struct fontview *fv;
+    EncMap *map_of_enc;
+    int enc;
 #if defined(FONTFORGE_CONFIG_GTK)
     GtkWidget *v;
     GtkWidget *gw;
@@ -451,6 +456,7 @@ typedef struct metricsview {
 
 enum fv_metrics { fvm_baseline=1, fvm_origin=2, fvm_advanceat=4, fvm_advanceto=8 };
 typedef struct fontview {
+    EncMap *map;
     SplineFont *sf;
     BDFFont *show, *filled;
 #if defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
@@ -533,6 +539,8 @@ typedef struct searchview {
     SplineFont dummy_sf;
     SplineChar sc_srch, sc_rpl;
     SplineChar *chars[2];
+    EncMap dummy_map;
+    int map[2], backmap[2];
     uint8 sel[2];
     CharView cv_srch, cv_rpl;
     CharView *lastcv;
@@ -616,21 +624,21 @@ extern FontView *FontViewCreate(SplineFont *sf);
 extern void SplineFontSetUnChanged(SplineFont *sf);
 extern void FontViewFree(FontView *fv);
 extern void FVToggleCharChanged(SplineChar *sc);
-extern void FVRefreshChar(FontView *fv,BDFFont *bdf,int enc);
+extern void FVRefreshChar(FontView *fv,int gid);
 extern int _FVMenuSave(FontView *fv);
 extern int _FVMenuSaveAs(FontView *fv);
 extern int _FVMenuGenerate(FontView *fv,int family);
 extern void _FVCloseWindows(FontView *fv);
 extern void SCClearBackground(SplineChar *sc);
 extern char *GetPostscriptFontName(char *defdir,int mult);
-extern void MergeKernInfo(SplineFont *sf);
+extern void MergeKernInfo(SplineFont *sf,EncMap *map);
 extern void _FVSimplify(FontView *fv,struct simplifyinfo *smpl);
 #ifdef FONTFORGE_CONFIG_WRITE_PFM
-extern int WritePfmFile(char *filename,SplineFont *sf, int type0);
+extern int WritePfmFile(char *filename,SplineFont *sf, int type0, EncMap *map);
 #endif
 extern int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype,
-	int fmflags,int res, char *subfontdirectory,struct sflist *sfs);
-extern int SFGenerateFont(SplineFont *sf,int family);
+	int fmflags,int res, char *subfontdirectory,struct sflist *sfs,EncMap *map);
+extern int SFGenerateFont(SplineFont *sf,int family,EncMap *map);
 
 extern int SFScaleToEm(SplineFont *sf, int ascent, int descent);
 extern void TransHints(StemInfo *stem,real mul1, real off1, real mul2, real off2, int round_to_int );
@@ -665,8 +673,8 @@ extern void FVAutoWidth(FontView *fv);
 extern void FVRemoveKerns(FontView *fv);
 extern void FVRemoveVKerns(FontView *fv);
 extern void FVVKernFromHKern(FontView *fv);
-extern int AutoWidthScript(SplineFont *sf,int spacing);
-extern int AutoKernScript(SplineFont *sf,int spacing, int threshold,char *kernfile);
+extern int AutoWidthScript(FontView *fv,int spacing);
+extern int AutoKernScript(FontView *fv,int spacing, int threshold,char *kernfile);
 
 enum fvformats { fv_bdf, fv_ttf, fv_pk, fv_pcf, fv_mac, fv_win, fv_palm,
 	fv_image, fv_imgtemplate, fv_eps, fv_epstemplate,
@@ -682,8 +690,8 @@ extern int FVImportImageTemplate(FontView *fv,char *path,int isimage,int toback,
 extern int _ExportPDF(FILE *pdf,SplineChar *sc);
 extern int _ExportEPS(FILE *eps,SplineChar *sc);
 extern int _ExportSVG(FILE *svg,SplineChar *sc);
-extern void ScriptExport(SplineFont *sf, BDFFont *bdf, int format, int enc,
-	char *format_spec);
+extern void ScriptExport(SplineFont *sf, BDFFont *bdf, int format, int gid,
+	char *format_spec, EncMap *map);
 
 extern void BCFlattenFloat(BDFChar *bc);
 extern void BCTrans(BDFFont *bdf,BDFChar *bc,BVTFunc *bvts,FontView *fv );
@@ -715,7 +723,7 @@ extern void SCClearSelPt(SplineChar *sc);
 extern void _SCCharChangedUpdate(SplineChar *sc,int changed);
 extern void SCCharChangedUpdate(SplineChar *sc);
 extern void SCSynchronizeWidth(SplineChar *sc,real newwidth, real oldwidth,FontView *fv);
-extern void SCSynchronizeLBearing(SplineChar *sc,char *selected,real off);
+extern void SCSynchronizeLBearing(SplineChar *sc,real off);
 extern void BackgroundImageTransform(SplineChar *sc, ImageList *img,real transform[6]);
 extern void SCClearRounds(SplineChar *sc);
 extern void SCMoreLayers(SplineChar *,Layer *old);
@@ -880,7 +888,7 @@ extern void FontMenuFontInfo(void *fv);
 extern void GFI_FinishContextNew(struct gfi_data *d,FPST *fpst, unichar_t *newname,
 	int success);
 extern void GFI_CCDEnd(struct gfi_data *d);
-extern struct enc *MakeEncoding(SplineFont *sf);
+extern struct enc *MakeEncoding(SplineFont *sf, EncMap *map);
 extern void LoadEncodingFile(void);
 extern void RemoveEncoding(void);
 extern void SFPrivateInfo(SplineFont *sf);
@@ -891,7 +899,7 @@ extern void FVShowFilled(FontView *fv);
 extern void FVChangeDisplayBitmap(FontView *fv,BDFFont *bdf);
 extern void FVDelay(FontView *fv,void (*func)(FontView *));
 #ifdef FONTFORGE_CONFIG_GDRAW
-extern void SCPreparePopup(GWindow gw,SplineChar *sc);
+extern void SCPreparePopup(GWindow gw,SplineChar *sc, struct remap *remap, int enc);
 #endif
 #if defined(FONTFORGE_CONFIG_GTK)
 #elif defined(FONTFORGE_CONFIG_GDRAW)
@@ -958,7 +966,7 @@ extern void CVDrawRubberRect(GWindow pixmap, CharView *cv);
 extern void CVInfoDraw(CharView *cv, GWindow pixmap );
 #endif
 extern void CVResize(CharView *cv );
-extern CharView *CharViewCreate(SplineChar *sc,FontView *fv);
+extern CharView *CharViewCreate(SplineChar *sc,FontView *fv,int enc);
 extern void CharViewFree(CharView *cv);
 extern int CVValid(SplineFont *sf, SplineChar *sc, CharView *cv);
 extern void CVSetCharChanged(CharView *cv,int changed);
@@ -989,7 +997,7 @@ extern void OutlineDlg(FontView *fv, CharView *cv,MetricsView *mv,int isinline);
 extern void ShadowDlg(FontView *fv, CharView *cv,MetricsView *mv,int wireframe);
 extern void CVTile(CharView *cv);
 extern void FVTile(FontView *fv);
-extern void SCCharInfo(SplineChar *sc);
+extern void SCCharInfo(SplineChar *sc,EncMap *map,int enc);
 extern void CharInfoDestroy(struct charinfo *ci);
 extern void PI_ShowHints(SplineChar *sc, GGadget *list, int set);
 extern GTextInfo *SCHintList(SplineChar *sc,HintMask *);
@@ -1045,7 +1053,7 @@ extern void LogoExpose(GWindow pixmap,GEvent *event, GRect *r,enum drawmode dm);
 #endif
 extern void CVDebugPointPopup(CharView *cv);
 
-extern int GotoChar(SplineFont *sf);
+extern int GotoChar(SplineFont *sf,EncMap *map);
 
 extern int CVLayer(CharView *cv);
 extern Undoes *CVPreserveState(CharView *cv);
@@ -1065,7 +1073,7 @@ extern void PasteIntoMV(MetricsView *mv,SplineChar *sc, int doclear);
 
 extern void CVShowPoint(CharView *cv, SplinePoint *sp);
 
-extern BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv);
+extern BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv,int enc);
 extern BitmapView *BitmapViewCreatePick(int enc, FontView *fv);
 extern void BitmapViewFree(BitmapView *bv);
 #ifdef FONTFORGE_CONFIG_GDRAW
@@ -1181,6 +1189,7 @@ extern void KCD_DrawGlyph(GWindow pixmap,int x,int baseline,BDFChar *bdfc,int ma
 extern void AnchorControl(SplineChar *sc,AnchorPoint *ap);
 
 extern void FVSelectByPST(FontView *fv);
+extern void SFUntickAll(SplineFont *sf);
 
 enum hist_type { hist_hstem, hist_vstem, hist_blues };
 struct psdict;
@@ -1223,6 +1232,14 @@ extern SplineChar *FVMakeChar(FontView *fv,int i);
 extern void CVYPerspective(CharView *cv,double x_vanish, double y_vanish);
 
 extern void DVCreateGloss(DebugView *dv);
+
+extern EncMap *EncMapFromEncoding(SplineFont *sf,Encoding *enc);
+extern void SFRemoveGlyph(SplineFont *sf,SplineChar *sc, int *flags);
+extern void FVAddEncodingSlot(FontView *fv,int gid);
+extern void SFAddEncodingSlot(SplineFont *sf,int gid);
+extern void SFAddGlyphAndEncode(SplineFont *sf,SplineChar *sc,EncMap *basemap, int baseenc);
+extern GMenuItem *GetEncodingMenu(void (*func)(GWindow,GMenuItem *,GEvent *),
+	Encoding *current);
 
 #ifdef FONTFORGE_CONFIG_GDRAW
 extern GMenuItem helplist[];

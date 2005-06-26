@@ -63,8 +63,10 @@ static SplineFont *MakeContainer(struct font *fn, char *family, char *style) {
     SplineFont *sf;
     int em;
     int i;
+    EncMap *map;
+    SplineChar *sc;
 
-    sf = SplineFontBlank(FindOrMakeEncoding("win"),256);
+    sf = SplineFontBlank(256);
     free(sf->familyname); free(sf->fontname); free(sf->fullname);
     sf->familyname = copy(family);
     sf->fontname = galloc(strlen(family)+strlen(style)+2);
@@ -77,19 +79,20 @@ static SplineFont *MakeContainer(struct font *fn, char *family, char *style) {
 
     free(sf->copyright); sf->copyright = NULL;
 
+    sf->map = map = EncMapNew(257,257,FindOrMakeEncoding("win"));
+
     em = sf->ascent+sf->descent;
     sf->ascent = fn->ascent*em/fn->frectheight;
     sf->descent = em - sf->ascent;
     sf->onlybitmaps = true;
 
     for ( i=fn->first; i<=fn->last; ++i ) if ( fn->chars[i].width!=-1 ) {
-	SplineChar *sc = SFMakeChar(sf,i);
+	sc = SFMakeChar(sf,map,i);
 	sc->width = fn->chars[i].width*em/fn->frectheight;
     }
-    if ( fn->first!=0 ) {		/* .notdef */
-	SplineChar *sc = SFMakeChar(sf,0);
-	sc->width = fn->chars[i].width*em/fn->frectheight;
-    }
+    sc = SFMakeChar(sf,map,256);
+    free(sc->name); sc->name = copy(".notdef");
+    sc->width = fn->chars[i].width*em/fn->frectheight;
 return( sf );
 }
 
@@ -100,6 +103,8 @@ static void PalmReadBitmaps(SplineFont *sf,FILE *file,int imagepos,
     BDFFont *bdf;
     uint16 *fontImage;
     int imagesize, index, i;
+    int gid;
+    EncMap *map = sf->map;
 
     for ( bdf = sf->bitmaps; bdf!=NULL && bdf->pixelsize!=pixelsize; bdf=bdf->next );
     if ( bdf!=NULL )
@@ -119,47 +124,43 @@ return;
     bdf->sf = sf;
     bdf->next = sf->bitmaps;
     sf->bitmaps = bdf;
-    bdf->charcnt = sf->charcnt;
+    bdf->glyphcnt = sf->glyphcnt;
+    bdf->glyphmax = sf->glyphmax;
     bdf->pixelsize = pixelsize;
-    bdf->chars = gcalloc(sf->charcnt,sizeof(BDFChar *));
+    bdf->glyphs = gcalloc(sf->glyphmax,sizeof(BDFChar *));
     bdf->ascent = density*fn->ascent/72;
     bdf->descent = pixelsize - bdf->ascent;
-    bdf->encoding_name = sf->encoding_name;
     bdf->res = 72;
 
-    for ( index=fn->first; index<=fn->last+1; ++index ) if ( fn->chars[index].width!=-1 ) {
-	BDFChar *bdfc;
-	int i,j, bits, bite, bit;
-	int enc = index;
+    for ( index=fn->first; index<=fn->last+1; ++index ) {
+	int enc = index==fn->last+1 ? 256 : index;
+	if ( (gid=map->map[enc])!=-1 && fn->chars[index].width!=-1 ) {
+	    BDFChar *bdfc;
+	    int i,j, bits, bite, bit;
 
-	if ( index==fn->last+1 ) {
-	    enc=0;
-	    if ( fn->first==0 )
-	break;
-	}
+	    bdfc = chunkalloc(sizeof(BDFChar));
+	    bdfc->xmin = 0;
+	    bdfc->xmax = density*(fn->chars[index+1].start-fn->chars[index].start)/72-1;
+	    bdfc->ymin = -bdf->descent;
+	    bdfc->ymax = bdf->ascent-1;
+	    bdfc->width = density*fn->chars[index].width/72;
+	    bdfc->bytes_per_line = ((bdfc->xmax-bdfc->xmin)>>3) + 1;
+	    bdfc->bitmap = gcalloc(bdfc->bytes_per_line*(density*fn->frectheight)/72,sizeof(uint8));
+	    bdfc->orig_pos = gid;
+	    bdfc->sc = sf->glyphs[gid];
+	    bdf->glyphs[gid] = bdfc;
 
-	bdfc = chunkalloc(sizeof(BDFChar));
-	bdfc->xmin = 0;
-	bdfc->xmax = density*(fn->chars[index+1].start-fn->chars[index].start)/72-1;
-	bdfc->ymin = -bdf->descent;
-	bdfc->ymax = bdf->ascent-1;
-	bdfc->width = density*fn->chars[index].width/72;
-	bdfc->bytes_per_line = ((bdfc->xmax-bdfc->xmin)>>3) + 1;
-	bdfc->bitmap = gcalloc(bdfc->bytes_per_line*(density*fn->frectheight)/72,sizeof(uint8));
-	bdfc->enc = enc;
-	bdfc->sc = sf->chars[enc];
-	bdf->chars[enc] = bdfc;
-
-	bits = density*fn->chars[index].start/72; bite = density*fn->chars[index+1].start/72;
-	for ( i=0; i<density*fn->frectheight/72; ++i ) {
-	    uint16 *test = fontImage + i*density*fn->rowwords/72;
-	    uint8 *bpt = bdfc->bitmap + i*bdfc->bytes_per_line;
-	    for ( bit=bits, j=0; bit<bite; ++bit, ++j ) {
-		if ( test[bit>>4]&(0x8000>>(bit&0xf)) )
-		    bpt[j>>3] |= (0x80>>(j&7));
+	    bits = density*fn->chars[index].start/72; bite = density*fn->chars[index+1].start/72;
+	    for ( i=0; i<density*fn->frectheight/72; ++i ) {
+		uint16 *test = fontImage + i*density*fn->rowwords/72;
+		uint8 *bpt = bdfc->bitmap + i*bdfc->bytes_per_line;
+		for ( bit=bits, j=0; bit<bite; ++bit, ++j ) {
+		    if ( test[bit>>4]&(0x8000>>(bit&0xf)) )
+			bpt[j>>3] |= (0x80>>(j&7));
+		}
 	    }
+	    BCCompressBitmap(bdfc);
 	}
-	BCCompressBitmap(bdfc);
     }
 }
 
@@ -452,24 +453,24 @@ struct FontTag {
   int16 rowWords;
 };
 
-static int ValidMetrics(BDFFont *test,BDFFont *base,int den) {
+static int ValidMetrics(BDFFont *test,BDFFont *base,EncMap *map,int den) {
     /* All glyphs must fit within 0,advance-width */
     /* All advance widths must be den*base->advance_width */
-    int i;
+    int i, gid;
     int warned=false, wwarned = false;
 
     if ( test==NULL )
 return( true );
 
-    if ( test==base && base->charcnt>=256 )
+    if ( test==base && map->enc->char_cnt>=256 )
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetPostNoticeR(_STR_BadMetrics,_STR_OnlyFirst256);
 #elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_notice(_("Bad Metrics"),_("Only the first 256 glyphs in the encoding will be used"));
 #endif
 
-    for ( i=0; i<base->charcnt && i<256; ++i ) if ( test->chars[i]!=NULL || base->chars[i]!=NULL ) {
-	if ( base->chars[i]==NULL || test->chars[i]==NULL ) {
+    for ( i=0; i<map->enccount && i<256; ++i ) if ( (gid=map->map[i])!=-1 && (test->glyphs[gid]!=NULL || base->glyphs[gid]!=NULL )) {
+	if ( base->glyphs[gid]==NULL || test->glyphs[gid]==NULL ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadMetrics,_STR_NoCorrespondingGlyph,
 		    test->pixelsize,base->pixelsize, i);
@@ -480,36 +481,36 @@ return( true );
 return( false );
 	}
 	if ( !warned &&
-		(test->chars[i]->xmin<0 ||
-		 test->chars[i]->xmax>test->chars[i]->width ||
-		 test->chars[i]->ymax>=test->ascent ||
-		 test->chars[i]->ymin<-test->descent)) {
+		(test->glyphs[gid]->xmin<0 ||
+		 test->glyphs[gid]->xmax>test->glyphs[gid]->width ||
+		 test->glyphs[gid]->ymax>=test->ascent ||
+		 test->glyphs[gid]->ymin<-test->descent)) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetPostNoticeR(_STR_BadMetrics,_STR_GlyphKernsBadly,
-		    test->pixelsize,test->chars[i]->sc->name);
+		    test->pixelsize,test->glyphs[gid]->sc->name);
 #elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Bad Metrics"),_("In font %d the glyph %.30s either starts before 0, or extends after the advance width or is above the ascent or below the descent"),
-		    temp->pixelsize,test->chars[i]->sc->name);
+		    temp->pixelsize,test->glyphs[gid]->sc->name);
 #endif
 	    warned = true;
 	}
-	if ( !wwarned && test->chars[i]->width!=den*base->chars[i]->width ) {
+	if ( !wwarned && test->glyphs[gid]->width!=den*base->glyphs[gid]->width ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetPostNoticeR(_STR_BadMetrics,_STR_AdvanceWidthBad,
-		    test->pixelsize,test->chars[i]->sc->name);
+		    test->pixelsize,test->glyphs[gid]->sc->name);
 #elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_notice(_("Bad Metrics"),_("In font %d the advance width of glyph %.30s does not scale the base advance width properly, it shall be forced to the proper value"),
-		    temp->pixelsize,test->chars[i]->sc->name);
+		    temp->pixelsize,test->glyphs[gid]->sc->name);
 #endif
 	    wwarned = true;
 	}
-	if ( base->chars[i]->width>127 ) {
+	if ( base->glyphs[gid]->width>127 ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadMetrics,_STR_AdvanceWidthTooBig,
-		    test->pixelsize,test->chars[i]->sc->name);
+		    test->pixelsize,test->glyphs[gid]->sc->name);
 #elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Bad Metrics"),_("Advance width of glyph %.30s must be less than 127"),
-		    temp->pixelsize,test->chars[i]->sc->name);
+		    temp->pixelsize,test->glyphs[gid]->sc->name);
 #endif
 return( false );
 	}
@@ -534,10 +535,10 @@ static void PalmAddChar(uint16 *image,int rw,int rbits,
     }
 }
 
-static uint16 *BDF2Image(struct FontTag *fn, BDFFont *bdf, int **offsets, int **widths, int16 *rowWords, BDFFont *base) {
+static uint16 *BDF2Image(struct FontTag *fn, BDFFont *bdf, int **offsets,
+	int **widths, int16 *rowWords, BDFFont *base,EncMap *map,int notdefpos) {
     int rbits, rw;
-    int hasnotdef = false;
-    int i,j;
+    int i,j, gid;
     uint16 *image;
     int den;
 
@@ -546,13 +547,12 @@ return( NULL );
 
     den = bdf->pixelsize/fn->fRectHeight;
 
-    if ( bdf->chars[0]!=NULL && strcmp(bdf->chars[0]->sc->name,".notdef")==0 )
-	hasnotdef = true;
     rbits = 0;
-    for ( i=fn->firstChar; i<=fn->lastChar; ++i ) if ( bdf->chars[i]!=NULL )
-	rbits += base->chars[i]->width;
-    if ( hasnotdef )
-	rbits += base->chars[0]->width;
+    for ( i=fn->firstChar; i<=fn->lastChar; ++i )
+	if ( (gid=map->map[i])!=-1 && gid!=notdefpos && base->glyphs[gid]!=NULL )
+	    rbits += base->glyphs[gid]->width;
+    if ( notdefpos!=-1 )
+	rbits += base->glyphs[notdefpos]->width;
     else
 	rbits += (fn->fRectHeight/2)+1;
     rw = den * ((rbits+15)/16);
@@ -567,21 +567,21 @@ return( NULL );
     for ( i=fn->firstChar; i<=fn->lastChar; ++i ) {
 	if ( offsets!=NULL )
 	    (*offsets)[i-fn->firstChar] = rbits;
-	if ( bdf->chars[i]!=NULL ) {
+	if ( (gid=map->map[i])!=-1 && gid!=notdefpos && base->glyphs[gid]!=NULL ) {
 	    if ( widths!=NULL )
-		(*widths)[i-fn->firstChar] = den*base->chars[i]->width;
-	    PalmAddChar(image,rw,rbits,bdf,bdf->chars[i],den*base->chars[i]->width);
-	    rbits += den*base->chars[i]->width;
+		(*widths)[i-fn->firstChar] = den*base->glyphs[gid]->width;
+	    PalmAddChar(image,rw,rbits,bdf,bdf->glyphs[gid],den*base->glyphs[gid]->width);
+	    rbits += den*base->glyphs[gid]->width;
 	} else if ( widths!=NULL )
 	    (*widths)[i-fn->firstChar] = -1;
     }
     if ( offsets!=NULL )
 	(*offsets)[i-fn->firstChar] = rbits;
-    if ( hasnotdef ) {
-	PalmAddChar(image,rw,rbits,bdf,bdf->chars[0],den*base->chars[0]->width);
+    if ( notdefpos!=-1 ) {
+	PalmAddChar(image,rw,rbits,bdf,bdf->glyphs[notdefpos],den*base->glyphs[notdefpos]->width);
 	if ( widths!=NULL )
-	    (*widths)[i-fn->firstChar] = den*base->chars[0]->width;
-	rbits += bdf->chars[0]->width;
+	    (*widths)[i-fn->firstChar] = den*base->glyphs[notdefpos]->width;
+	rbits += bdf->glyphs[notdefpos]->width;
     } else {
 	int wid, down, height;
 	wid = (fn->fRectHeight/2)*(bdf->pixelsize/fn->fRectHeight)-1;
@@ -605,17 +605,18 @@ return( NULL );
 return( image );    
 }
 
-int WritePalmBitmaps(char *filename,SplineFont *sf, int32 *sizes) {
+int WritePalmBitmaps(char *filename,SplineFont *sf, int32 *sizes,EncMap *map) {
     BDFFont *base=NULL, *temp;
     BDFFont *densities[4];	/* Be prepared for up to quad density */
     				/* Ignore 1.5 density. No docs on how odd metrics get rounded */
-    int i, j, k, f, den, dencnt;
+    int i, j, k, f, den, dencnt, gid;
     struct FontTag fn;
     uint16 *images[4];
     int *offsets, *widths;
     int owbase, owpos, font_start, density_starts;
     FILE *file;
     int fontcnt, fonttype;
+    int notdefpos = -1;
 
     if ( sizes==NULL || sizes[0]==0 )
 return(false);
@@ -645,7 +646,7 @@ return( false );
 
     dencnt = 0;
     for ( i=0; i<4; ++i ) {
-	if ( !ValidMetrics(densities[i],base,i+1))
+	if ( !ValidMetrics(densities[i],base,map,i+1))
 return( false );
 	if ( densities[i]) ++dencnt;
     }
@@ -684,26 +685,26 @@ return( false );
     fn.fRectHeight = base->pixelsize;
     fn.ascent = base->ascent;
     fn.descent = base->descent;
-    for ( i=0; i<base->charcnt && i<256; ++i ) {
-	if ( base->chars[i]!=NULL && (i!=0 || strcmp(sf->chars[i]->name,".notdef")!=0 )) {
-	    if ( fn.firstChar==-1 ) fn.firstChar = i;
-	    fn.lastChar = i;
-	    if ( base->chars[i]->width > fn.maxWidth )
-		fn.maxWidth = fn.fRectWidth = base->chars[i]->width;
-	}
-	if ( base->chars[i]!=NULL ) {
-	    if ( base->chars[i]->width > fn.maxWidth )
-		fn.maxWidth = fn.fRectWidth = base->chars[i]->width;
+    for ( i=0; i<map->enccount && i<256; ++i ) {
+	gid = map->map[i];
+	if ( gid!=-1 && base->glyphs[gid]!=NULL ) {
+	    if ( strcmp(sf->glyphs[gid]->name,".notdef")!=0 ) {
+		if ( fn.firstChar==-1 ) fn.firstChar = i;
+		fn.lastChar = i;
+	    }
+	    if ( base->glyphs[gid]->width > fn.maxWidth )
+		fn.maxWidth = fn.fRectWidth = base->glyphs[gid]->width;
 	}
     }
+    notdefpos = SFFindNotdef(sf,-2);
 	    
     file = MakeFewRecordPdb(filename,fontcnt);
     if ( file==NULL )
 return( false );
 
-    images[0] = BDF2Image(&fn,base,&offsets,&widths,&fn.rowWords,base);
+    images[0] = BDF2Image(&fn,base,&offsets,&widths,&fn.rowWords,base,map,notdefpos);
     for ( i=1; i<4; ++i )
-	images[i] = BDF2Image(&fn,densities[i],NULL,NULL,NULL,base);
+	images[i] = BDF2Image(&fn,densities[i],NULL,NULL,NULL,base,map,notdefpos);
 
     for ( f=0; f<2; ++f ) if (( f==0 && fonttype>=2 ) || (f==1 && fonttype!=4)) {
 	font_start = ftell(file);
@@ -745,12 +746,12 @@ return( false );
 	putshort(file,(owpos-owbase)/2);
 	fseek(file,owpos,SEEK_SET);
 	for ( i=fn.firstChar; i<=fn.lastChar; ++i ) {
-	    if ( base->chars[i]==NULL ) {
+	    if ( (gid=map->map[i])==-1 || base->glyphs[gid]==NULL ) {
 		putc(-1,file);
 		putc(-1,file);
 	    } else {
 		putc(0,file);
-		putc(base->chars[i]->width,file);
+		putc(base->glyphs[gid]->width,file);
 	    }
 	}
 	putc(0,file);		/* offset/width for notdef */
