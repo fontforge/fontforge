@@ -911,27 +911,30 @@ static void dumpproc(void (*dumpchar)(int ch,void *data), void *data, SplineChar
 
 static int dumpcharprocs(void (*dumpchar)(int ch,void *data), void *data, SplineFont *sf ) {
     /* for type 3 fonts */
-    int cnt, i;
+    int cnt, i, notdefpos = -1;
 
     cnt = 0;
-    for ( i=0; i<sf->charcnt; ++i )
-	if ( sf->chars[i]!=NULL && strcmp(sf->chars[i]->name,".notdef")!=0 )
-	    ++cnt;
+    notdefpos = SFFindNotdef(sf,-2);
+    for ( i=0; i<sf->glyphcnt; ++i )
+	if ( sf->glyphs[i]!=NULL ) {
+	    if ( strcmp(sf->glyphs[i]->name,".notdef")!=0 )
+		++cnt;
+	}
     ++cnt;		/* one notdef entry */
 
     dumpf(dumpchar,data,"/CharProcs %d dict def\nCharProcs begin\n", cnt );
     i = 0;
-    if ( SCWorthOutputting(sf->chars[0]) && SCIsNotdef(sf->chars[0],-1 ))
-	dumpproc(dumpchar,data,sf->chars[i++]);
+    if ( notdefpos!=-1 )
+	dumpproc(dumpchar,data,sf->glyphs[notdefpos]);
     else {
 	dumpf(dumpchar, data, "  /.notdef { %d 0 0 0 0 0 setcachedevice } bind def\n",
 	    sf->ascent+sf->descent );
-	if ( sf->chars[0]!=NULL && strcmp(sf->chars[0]->name,".notdef")==0 )
+	if ( sf->glyphs[0]!=NULL && strcmp(sf->glyphs[0]->name,".notdef")==0 )
 	    ++i;
     }
-    for ( ; i<sf->charcnt; ++i ) {
-	if ( SCWorthOutputting(sf->chars[i]) && SCDuplicate(sf->chars[i])==sf->chars[i])
-	    dumpproc(dumpchar,data,sf->chars[i]);
+    for ( ; i<sf->glyphcnt; ++i ) if ( i!=notdefpos ) {
+	if ( SCWorthOutputting(sf->glyphs[i]) )
+	    dumpproc(dumpchar,data,sf->glyphs[i]);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !GProgressNext())
@@ -1125,7 +1128,8 @@ return;
 }
 
 static int dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data,
-	SplineFont *sf, struct fddata *incid, int flags, enum fontformat format ) {
+	SplineFont *sf, struct fddata *incid, int flags, enum fontformat format,
+	EncMap *map ) {
     int cnt, mi;
     real bluevalues[14], otherblues[10];
     real snapcnt[12];
@@ -1144,7 +1148,7 @@ static int dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data,
 	flex_max = SplineFontIsFlexible(sf,flags);
 	if ( (subrs = initsubrs(flex_max>0,mm))==NULL )
 return( false );
-	iscjk = SFIsCJK(sf);
+	iscjk = SFIsCJK(sf,map);
     } else {
 	flex_max = incid->flexmax;
 	iscjk = incid->iscjk;
@@ -1543,7 +1547,7 @@ static void dumpfontcomments(void (*dumpchar)(int ch,void *data), void *data,
 }
 
 static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data,
-	SplineFont *sf, int format ) {
+	SplineFont *sf, int format, EncMap *map ) {
     int cnt, i;
     double fm[6];
     char *encoding[256];
@@ -1552,7 +1556,7 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
     char buffer[50];
 
     dumpf(dumpchar,data,"%%!PS-AdobeFont-1.0: %s %s\n", sf->fontname, sf->version?sf->version:"" );
-    if ( format==ff_ptype0 && (sf->encoding_name->is_unicodebmp || sf->encoding_name->is_unicodefull))
+    if ( format==ff_ptype0 && (map->enc->is_unicodebmp || map->enc->is_unicodefull))
 	dumpf(dumpchar,data,"%%%%DocumentNeededResources: font ZapfDingbats\n" );
     dumpf(dumpchar,data, "%%%%DocumentSuppliedResources: font %s\n", sf->fontname );
     dumpfontcomments(dumpchar,data,sf,format);
@@ -1677,9 +1681,9 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
 	}
     }
 
-    for ( i=0; i<256 && i<sf->charcnt; ++i )
-	if ( SCWorthOutputting(sf->chars[i]) )
-	    encoding[i] = SCDuplicate(sf->chars[i])->name;
+    for ( i=0; i<256 && i<map->enccount; ++i )
+	if ( map->map[i]!=-1 && SCWorthOutputting(sf->glyphs[map->map[i]]) )
+	    encoding[i] = sf->glyphs[map->map[i]]->name;
 	else
 	    encoding[i] = ".notdef";
     for ( ; i<256; ++i )
@@ -1715,18 +1719,18 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
 }
 
 static void dumpinitialascii(void (*dumpchar)(int ch,void *data), void *data,
-	SplineFont *sf, int format ) {
-    dumprequiredfontinfo(dumpchar,data,sf,format);
+	SplineFont *sf, int format, EncMap *map ) {
+    dumprequiredfontinfo(dumpchar,data,sf,format,map);
     dumpstr(dumpchar,data,"currentdict end\ncurrentfile eexec\n" );
 }
 
 static void dumpencodedstuff(void (*dumpchar)(int ch,void *data), void *data,
-	SplineFont *sf, int format, int flags ) {
+	SplineFont *sf, int format, int flags, EncMap *map ) {
     struct fileencryptdata fed;
     void (*func)(int ch,void *data);
 
     func = startfileencoding(dumpchar,data,&fed,format==ff_pfb || format==ff_mmb);
-    dumpprivatestuff(func,&fed,sf,NULL,flags,format);
+    dumpprivatestuff(func,&fed,sf,NULL,flags,format,map);
     if ( format==ff_ptype0 ) {
 	dumpstr(func,&fed, "/" );
 	dumpstr(func,&fed, sf->fontname );
@@ -1768,11 +1772,12 @@ static void mkheadercopyfile(FILE *temp,FILE *out,int headertype) {
     fclose(temp);		/* deletes the temporary file */
 }
 
-static void dumptype42(FILE *out, SplineFont *sf, int format, int flags ) {
+static void dumptype42(FILE *out, SplineFont *sf, int format, int flags,
+	EncMap *map) {
     double fm[6];
     DBounds b;
     int uniqueid;
-    int i,cnt;
+    int i,cnt,gid;
     SplineFont *cidmaster;
 
     cidmaster = sf->cidmaster;
@@ -1853,65 +1858,68 @@ static void dumptype42(FILE *out, SplineFont *sf, int format, int flags ) {
 	    /* older versions of dvipdfm assume the following line is present.*/
 	    /*  Perhaps others do too? */
 	fprintf(out,"   0 1 255 { 1 index exch /.notdef put} for\n" );
-	for ( i=0; i<256 && i<sf->charcnt; ++i )
-	    if ( SCWorthOutputting(sf->chars[i]) )
-		fprintf( out, "    dup %d/%s put\n", i, SCDuplicate(sf->chars[i])->name);
+	for ( i=0; i<256 && i<map->enccount; ++i ) if ( (gid = map->map[i])!=-1 )
+	    if ( SCWorthOutputting(sf->glyphs[gid]) )
+		fprintf( out, "    dup %d/%s put\n", i, sf->glyphs[gid]->name);
 	fprintf( out, "  readonly def\n" );
     }
     fprintf( out, "  /sfnts [\n" );
-    _WriteType42SFNTS(out,sf,format,flags);
+    _WriteType42SFNTS(out,sf,format,flags,map);
     fprintf( out, "  ] def\n" );
     if ( format==ff_type42 ) {
-	for ( i=cnt=0; i<sf->charcnt; ++i )
-	    if ( sf->chars[i]!=NULL && sf->chars[i]==SCDuplicate(sf->chars[i]) &&
-		    SCWorthOutputting(sf->chars[i]))
+	for ( i=cnt=0; i<sf->glyphcnt; ++i )
+	    if ( sf->glyphs[i]!=NULL && SCWorthOutputting(sf->glyphs[i]))
 		++cnt;
 	fprintf( out, "  /CharStrings %d dict dup begin\n", cnt+1 );
 	/* Why check to see if there's a not def char in the font? If there is*/
 	/*  we can define the dictionary entry twice */
 	fprintf( out, "    /.notdef 0 def\n" );
-	for ( i=0; i<sf->charcnt; ++i )
-	    if ( sf->chars[i]!=NULL && sf->chars[i]==SCDuplicate(sf->chars[i]) &&
-		    SCWorthOutputting(sf->chars[i]))
-		fprintf( out, "    /%s %d def\n", sf->chars[i]->name, sf->chars[i]->ttf_glyph );
+	for ( i=0; i<sf->glyphcnt; ++i )
+	    if ( sf->glyphs[i]!=NULL && SCWorthOutputting(sf->glyphs[i]))
+		fprintf( out, "    /%s %d def\n", sf->glyphs[i]->name, sf->glyphs[i]->ttf_glyph );
 	fprintf( out, "  end readonly def\n" );
 	fprintf( out, "FontName currentdict end definefont pop\n" );
     } else {
-	/* Used to check for SCDuplicate, but I do want multiple CIDs for */
-	/*  single GIDs if that's what the encoding says		  */
 	if ( cidmaster!=NULL ) {
-	    for ( i=cnt=0; i<sf->charcnt; ++i )
-		if ( sf->chars[i]!=NULL && SCWorthOutputting(sf->chars[i]))
+	    for ( i=cnt=0; i<sf->glyphcnt; ++i )
+		if ( sf->glyphs[i]!=NULL && SCWorthOutputting(sf->glyphs[i]))
 		    ++cnt;
 	    fprintf( out, "  /CIDMap %d dict dup begin\n", cnt );
-	    for ( i=0; i<sf->charcnt; ++i )
-		if ( sf->chars[i]!=NULL && SCWorthOutputting(sf->chars[i]))
-		    fprintf( out, "    %d %d def\n", i, SCDuplicate(sf->chars[i])->ttf_glyph );
+	    for ( i=0; i<sf->glyphcnt; ++i )
+		if ( sf->glyphs[i]!=NULL && SCWorthOutputting(sf->glyphs[i]))
+		    fprintf( out, "    %d %d def\n", i, sf->glyphs[i]->ttf_glyph );
 	    fprintf( out, "  end readonly def\n" );
-	    fprintf( out, "  /CIDCount %d def\n", sf->charcnt );
-	    fprintf( out, "  /GDBytes %d def\n", sf->charcnt>65535?3:2 );
+	    fprintf( out, "  /CIDCount %d def\n", sf->glyphcnt );
+	    fprintf( out, "  /GDBytes %d def\n", sf->glyphcnt>65535?3:2 );
 	} else if ( flags & ps_flag_identitycidmap ) {
-	    for ( i=cnt=0; i<sf->charcnt; ++i )
-		if ( sf->chars[i]!=NULL && cnt<sf->chars[i]->ttf_glyph )
-		    cnt = sf->chars[i]->ttf_glyph;
+	    for ( i=cnt=0; i<sf->glyphcnt; ++i )
+		if ( sf->glyphs[i]!=NULL && cnt<sf->glyphs[i]->ttf_glyph )
+		    cnt = sf->glyphs[i]->ttf_glyph;
 	    fprintf( out, "  /CIDCount %d def\n", cnt+1 );
 	    fprintf( out, "  /GDBytes %d def\n", cnt+1>65535?3:2 );
 	    fprintf( out, "  /CIDMap 0 def\n" );
 	} else {	/* Use unicode */
 	    int maxu = 0;
-	    for ( i=cnt=0; i<sf->charcnt; ++i )
-		if ( sf->chars[i]!=NULL && SCWorthOutputting(sf->chars[i]) &&
-			sf->chars[i]->unicodeenc!=-1 && sf->chars[i]->unicodeenc<0x10000 ) {
+	    for ( i=cnt=0; i<sf->glyphcnt; ++i )
+		if ( sf->glyphs[i]!=NULL && SCWorthOutputting(sf->glyphs[i]) &&
+			sf->glyphs[i]->unicodeenc!=-1 && sf->glyphs[i]->unicodeenc<0x10000 ) {
 		    ++cnt;
-		    if ( sf->chars[i]->unicodeenc > maxu )
-			maxu = sf->chars[i]->unicodeenc;
+		    if ( sf->glyphs[i]->unicodeenc > maxu )
+			maxu = sf->glyphs[i]->unicodeenc;
 		}
 	    fprintf( out, "  /CIDMap %d dict dup begin\n", cnt );
 	    fprintf( out, "    0 0 def\n" );		/* .notdef doesn't have a unicode enc, will be missed. Needed */
-	    for ( i=0; i<sf->charcnt; ++i )
-		if ( sf->chars[i]!=NULL && SCWorthOutputting(sf->chars[i]) &&
-			sf->chars[i]->unicodeenc!=-1 && sf->chars[i]->unicodeenc<0x10000 )
-		    fprintf( out, "    %d %d def\n", sf->chars[i]->unicodeenc, SCDuplicate(sf->chars[i])->ttf_glyph );
+	    if ( map->enc->is_unicodebmp || map->enc->is_unicodefull ) {
+		for ( i=0; i<map->enccount && i<0x10000; ++i ) if ( (gid = map->map[i])!=-1 ) {
+		    if ( SCWorthOutputting(sf->glyphs[gid]))
+			fprintf( out, "    %d %d def\n", i, sf->glyphs[gid]->ttf_glyph );
+		}
+	    } else {
+		for ( i=0; i<sf->glyphcnt; ++i )
+		    if ( sf->glyphs[i]!=NULL && SCWorthOutputting(sf->glyphs[i]) &&
+			    sf->glyphs[i]->unicodeenc!=-1 && sf->glyphs[i]->unicodeenc<0x10000 )
+			fprintf( out, "    %d %d def\n", sf->glyphs[i]->unicodeenc, sf->glyphs[i]->ttf_glyph );
+	    }
 	    fprintf( out, "  end readonly def\n" );
 	    fprintf( out, "  /GDBytes %d def\n", maxu>65535?3:2 );
 	    fprintf( out, "  /CIDCount %d def\n", maxu+1 );
@@ -1922,7 +1930,8 @@ static void dumptype42(FILE *out, SplineFont *sf, int format, int flags ) {
     }
 }
 
-static void dumpfontdict(FILE *out, SplineFont *sf, int format, int flags ) {
+static void dumpfontdict(FILE *out, SplineFont *sf, int format, int flags,
+	EncMap *map ) {
 
 /* a pfb header consists of 6 bytes, the first is 0200, the second is a */
 /*  binary/ascii flag where 1=>ascii, 2=>binary, 3=>eof??, the next four */
@@ -1931,10 +1940,10 @@ static void dumpfontdict(FILE *out, SplineFont *sf, int format, int flags ) {
     if ( format==ff_pfb || format==ff_mmb ) {
 	FILE *temp;
 	temp = tmpfile();
-	dumpinitialascii((DumpChar) fputc,temp,sf,format );
+	dumpinitialascii((DumpChar) fputc,temp,sf,format,map );
 	mkheadercopyfile(temp,out,1);
 	temp = tmpfile();
-	dumpencodedstuff((DumpChar) fputc,temp,sf,format,flags);
+	dumpencodedstuff((DumpChar) fputc,temp,sf,format,flags,map);
 	mkheadercopyfile(temp,out,2);
 	temp = tmpfile();
 	dumpfinalascii((DumpChar) fputc,temp,sf,format);
@@ -1942,13 +1951,13 @@ static void dumpfontdict(FILE *out, SplineFont *sf, int format, int flags ) {
 /* final header, 3=>eof??? */
 	dumpstrn((DumpChar) fputc,out,"\200\003",2);
     } else if ( format==ff_ptype3 ) {
-	dumprequiredfontinfo((DumpChar) fputc,out,sf,ff_ptype3);
+	dumprequiredfontinfo((DumpChar) fputc,out,sf,ff_ptype3,map);
 	dumpcharprocs((DumpChar) fputc,out,sf);
     } else if ( format==ff_type42 || format==ff_type42cid ) {
-	dumptype42(out,sf,format,flags);
+	dumptype42(out,sf,format,flags,map);
     } else {
-	dumpinitialascii((DumpChar) (fputc),out,sf,format );
-	dumpencodedstuff((DumpChar) (fputc),out,sf,format,flags);
+	dumpinitialascii((DumpChar) (fputc),out,sf,format,map );
+	dumpencodedstuff((DumpChar) (fputc),out,sf,format,flags,map);
 	dumpfinalascii((DumpChar) (fputc),out,sf,format);
     }
 }
@@ -1980,9 +1989,13 @@ static char *dumpnotdefenc(FILE *out,SplineFont *sf) {
     char *notdefname;
     int i;
 
-    if ( 0xfffd<sf->charcnt && sf->chars[0xfffd]!=NULL )
-	notdefname = sf->chars[0xfffd]->name;
+#if 0		/* At one point I thought the unicode replacement char 0xfffd */
+		/*  was a good replacement for notdef if the font contained */
+		/*  no notdef. Probably not a good idea for a PS font */
+    if ( 0xfffd<sf->glyphcnt && sf->glyphs[0xfffd]!=NULL )
+	notdefname = sf->glyphs[0xfffd]->name;
     else
+#endif
 	notdefname = ".notdef";
     fprintf( out, "/%sBase /%sNotDef [\n", sf->fontname, sf->fontname );
     for ( i=0; i<256; ++i )
@@ -1991,17 +2004,17 @@ static char *dumpnotdefenc(FILE *out,SplineFont *sf) {
 return( notdefname );
 }
 
-static int somecharsused(SplineFont *sf, int bottom, int top) {
+static int somecharsused(SplineFont *sf, int bottom, int top, EncMap *map) {
     int i;
 
-    for ( i=bottom; i<=top && i<sf->charcnt; ++i ) {
-	if ( SCWorthOutputting(sf->chars[i]) )
+    for ( i=bottom; i<=top && i<map->enccount; ++i ) {
+	if ( map->map[i]!=-1 && SCWorthOutputting(sf->glyphs[map->map[i]]) )
 return( true );
     }
 return( false );
 }
 
-static void dumptype0stuff(FILE *out,SplineFont *sf) {
+static void dumptype0stuff(FILE *out,SplineFont *sf, EncMap *map) {
     char *notdefname;
     int i,j;
     extern char *zapfnomen[];
@@ -2010,16 +2023,17 @@ static void dumptype0stuff(FILE *out,SplineFont *sf) {
     dumpreencodeproc(out);
     notdefname = dumpnotdefenc(out,sf);
     for ( i=1; i<256; ++i ) {
-	if ( somecharsused(sf,i<<8, (i<<8)+0xff)) {
+	if ( somecharsused(sf,i<<8, (i<<8)+0xff, map)) {
 	    fprintf( out, "/%sBase /%s%d [\n", sf->fontname, sf->fontname, i );
-	    for ( j=0; j<256 && (i<<8)+j<sf->charcnt; ++j )
-		fprintf( out, " /%s\n",
-			sf->chars[(i<<8)+j]!=NULL?sf->chars[(i<<8)+j]->name:
-			notdefname );
+	    for ( j=0; j<256 && (i<<8)+j<map->enccount; ++j )
+		if ( map->map[(i<<8)+j]!=-1 && SCWorthOutputting(sf->glyphs[map->map[(i<<8)+j]]) )
+		    fprintf( out, " /%s\n", sf->glyphs[map->map[(i<<8)+j]]->name );
+		else
+		    fprintf( out, "/%s\n", notdefname );
 	    for ( ; j<256; ++j )
 		fprintf( out, " /%s\n", notdefname );
 	    fprintf( out, "] ReEncode\n\n" );
-	} else if ( i==0x27 && (sf->encoding_name->is_unicodebmp || sf->encoding_name->is_unicodefull)) {
+	} else if ( i==0x27 && (map->enc->is_unicodebmp || map->enc->is_unicodefull)) {
 	    fprintf( out, "%% Add Zapf Dingbats to unicode font at 0x2700\n" );
 	    fprintf( out, "%%  But only if on the printer, else use notdef\n" );
 	    fprintf( out, "%%  gv, which has no Zapf, maps courier to the name\n" );
@@ -2064,8 +2078,8 @@ static void dumptype0stuff(FILE *out,SplineFont *sf) {
     fprintf( out, "/FDepVector [\n" );
     fprintf( out, " /%sBase findfont\n", sf->fontname );
     for ( i=1; i<256; ++i )
-	if ( somecharsused(sf,i<<8, (i<<8)+0xff) ||
-		(i==0x27 && (sf->encoding_name->is_unicodebmp || sf->encoding_name->is_unicodefull)) )
+	if ( somecharsused(sf,i<<8, (i<<8)+0xff, map) ||
+		(i==0x27 && (map->enc->is_unicodebmp || map->enc->is_unicodefull)) )
 	    fprintf( out, " /%s%d findfont\n", sf->fontname, i );
 	else
 	    fprintf( out, " /%sNotDef findfont\n", sf->fontname );
@@ -2093,7 +2107,8 @@ static void dump_index(FILE *binary,int size,int val) {
 	putc((val)&0xff,binary);
 }
 
-static FILE *gencidbinarydata(SplineFont *cidmaster,struct cidbytes *cidbytes,int flags) {
+static FILE *gencidbinarydata(SplineFont *cidmaster,struct cidbytes *cidbytes,
+	int flags,EncMap *map) {
     int i,j, leniv, subrtot;
     SplineFont *sf;
     struct fddata *fd;
@@ -2119,7 +2134,7 @@ static FILE *gencidbinarydata(SplineFont *cidmaster,struct cidbytes *cidbytes,in
 	    free( cidbytes->fds );
 return( NULL );
 	}
-	fd->iscjk = SFIsCJK(sf);
+	fd->iscjk = SFIsCJK(sf,map);
 	pt = PSDictHasEntry(sf->private,"lenIV");
 	if ( pt!=NULL )
 	    fd->leniv = strtol(pt,NULL,10);
@@ -2236,7 +2251,7 @@ return( NULL );
 return( binary );
 }
 
-static int dumpcidstuff(FILE *out,SplineFont *cidmaster,int flags) {
+static int dumpcidstuff(FILE *out,SplineFont *cidmaster,int flags,EncMap *map) {
     int i;
     DBounds res;
     FILE *binary;
@@ -2279,7 +2294,7 @@ static int dumpcidstuff(FILE *out,SplineFont *cidmaster,int flags) {
 
     dumpfontinfo((DumpChar) fputc,out,cidmaster,ff_cid);
 
-    if ((binary = gencidbinarydata(cidmaster,&cidbytes,flags))==NULL )
+    if ((binary = gencidbinarydata(cidmaster,&cidbytes,flags,map))==NULL )
 return( 0 );
 
     fprintf( out, "\n/CIDMapOffset %d def\n", cidbytes.cidmapoffset );
@@ -2306,7 +2321,7 @@ return( 0 );
 	if ( sf->strokedfont )
 	    fprintf( out, "/StrokeWidth %g def\n", sf->strokewidth );
 	fprintf( out, "\n  %%ADOBeginPrivateDict\n" );
-	dumpprivatestuff((DumpChar) fputc,out,sf,&cidbytes.fds[i],flags,ff_cid);
+	dumpprivatestuff((DumpChar) fputc,out,sf,&cidbytes.fds[i],flags,ff_cid,map);
 	fprintf( out, "\n  %%ADOEndPrivateDict\n" );
 	fprintf( out, "  currentdict end\n%%ADOEndFontDict\n put\n\n" );
     }
@@ -2329,7 +2344,7 @@ return( 0 );
 return( !cidbytes.errors );
 }
 
-int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format,int flags) {
+int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format,int flags,EncMap *map) {
     char *oldloc;
     int err = false;
     extern const char **othersubrs[];
@@ -2344,11 +2359,11 @@ int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format,int flags) {
     if ( (format==ff_mma || format==ff_mmb) && sf->mm!=NULL )
 	sf = sf->mm->normal;
     if ( format==ff_cid )
-	err = !dumpcidstuff(out,sf->subfontcnt>0?sf:sf->cidmaster,flags);
+	err = !dumpcidstuff(out,sf->subfontcnt>0?sf:sf->cidmaster,flags,map);
     else {
-	dumpfontdict(out,sf,format,flags);
+	dumpfontdict(out,sf,format,flags,map);
 	if ( format==ff_ptype0 )
-	    dumptype0stuff(out,sf);
+	    dumptype0stuff(out,sf,map);
     }
     setlocale(LC_NUMERIC,oldloc);
     if ( ferror(out) || err)
@@ -2357,6 +2372,8 @@ return( 0 );
 #ifdef __CygWin
     /* Modern versions of windows want the execute bit set on a ttf file */
     /*  It might also be needed for a postscript font, but I haven't checked */
+    /* It isn't needed on the pfb file, but is on the pfm, so this code */
+    /*  isn't really useful */
     /* I've no idea what this corresponds to in windows, nor any idea on */
     /*  how to set it from the windows UI, but this seems to work */
     {
@@ -2369,13 +2386,13 @@ return( 0 );
 return( true );
 }
 
-int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format,int flags) {
+int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format,int flags,EncMap *map) {
     FILE *out;
     int ret;
 
     if (( out=fopen(fontname,"wb"))==NULL )
 return( 0 );
-    ret = _WritePSFont(out,sf,format,flags);
+    ret = _WritePSFont(out,sf,format,flags,map);
     if ( fclose(out)==-1 )
 	ret = 0;
 return( ret );

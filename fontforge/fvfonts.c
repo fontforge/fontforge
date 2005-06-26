@@ -51,7 +51,7 @@ static RefChar *RefCharsCopy(RefChar *ref) {
 	cur->layers[0].splines = NULL;	/* Leave the old sc, we'll fix it later */
 #endif
 	if ( cur->sc!=NULL )
-	    cur->local_enc = cur->sc->enc;
+	    cur->orig_pos = cur->sc->orig_pos;
 	cur->next = NULL;
 	if ( rhead==NULL )
 	    rhead = cur;
@@ -102,8 +102,8 @@ return( i );
 	to->script_lang = galloc(2*sizeof(struct script_record *));
     else
 	to->script_lang = grealloc(to->script_lang,(i+2)*sizeof(struct script_record *));
-    to->script_lang[i+1] = NULL;
     to->sli_cnt = i+1;
+    to->script_lang[i+1] = NULL;
     for ( j=0; from->script_lang[sli][j].script!=0; ++j );
     to->script_lang[i] = galloc((j+1)*sizeof(struct script_record));
     for ( j=0; from->script_lang[sli][j].script!=0; ++j ) {
@@ -167,7 +167,7 @@ SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into) {
     nsc->layers[ly_fore].refs = RefCharsCopy(nsc->layers[ly_fore].refs);
 #endif
     nsc->parent = into;
-    nsc->enc = -2;
+    nsc->orig_pos = -2;
     nsc->name = copy(sc->name);
     nsc->hstem = StemInfoCopy(nsc->hstem);
     nsc->vstem = StemInfoCopy(nsc->vstem);
@@ -196,12 +196,12 @@ static KernPair *KernsCopy(KernPair *kp,int *mapping,SplineFont *into,SplineFont
     int index;
 
     while ( kp!=NULL ) {
-	if ( (index=mapping[kp->sc->enc])>=0 && index<into->charcnt &&
-		into->chars[index]!=NULL ) {
+	if ( (index=mapping[kp->sc->orig_pos])>=0 && index<into->glyphcnt &&
+		into->glyphs[index]!=NULL ) {
 	    new = chunkalloc(sizeof(KernPair));
 	    new->off = kp->off;
 	    new->sli = kp->sli;
-	    new->sc = into->chars[index];
+	    new->sc = into->glyphs[index];
 	    if ( head==NULL )
 		head = new;
 	    else
@@ -232,11 +232,11 @@ void BitmapsCopy(SplineFont *to, SplineFont *from, int to_index, int from_index 
     /* We assume that the bitmaps are ordered. They should be */
     for ( t_bdf=to->bitmaps, f_bdf=from->bitmaps; t_bdf!=NULL && f_bdf!=NULL; ) {
 	if ( t_bdf->pixelsize == f_bdf->pixelsize ) {
-	    if ( f_bdf->chars[from_index]!=NULL ) {
-		BDFCharFree(t_bdf->chars[to_index]);
-		t_bdf->chars[to_index] = BDFCharCopy(f_bdf->chars[from_index]);
-		t_bdf->chars[to_index]->sc = to->chars[to_index];
-		t_bdf->chars[to_index]->enc = to_index;
+	    if ( f_bdf->glyphs[from_index]!=NULL ) {
+		BDFCharFree(t_bdf->glyphs[to_index]);
+		t_bdf->glyphs[to_index] = BDFCharCopy(f_bdf->glyphs[from_index]);
+		t_bdf->glyphs[to_index]->sc = to->glyphs[to_index];
+		t_bdf->glyphs[to_index]->orig_pos = to_index;
 	    }
 	    t_bdf = t_bdf->next;
 	    f_bdf = f_bdf->next;
@@ -310,9 +310,9 @@ return;
 	/*  has an encoding. That's the one we want. It will be earlier in the */
 	/*  font than the others. If we build the list backwards then it will */
 	/*  be the top name in the bucket, and will be the one we return */
-	for ( i=_sf->charcnt-1; i>=0; --i ) if ( _sf->chars[i]!=NULL ) {
+	for ( i=_sf->glyphcnt-1; i>=0; --i ) if ( _sf->glyphs[i]!=NULL ) {
 	    new = chunkalloc(sizeof(struct glyphnamebucket));
-	    new->sc = _sf->chars[i];
+	    new->sc = _sf->glyphs[i];
 	    hash = hashname(new->sc->name);
 	    new->next = gnh->table[hash];
 	    gnh->table[hash] = new;
@@ -334,63 +334,39 @@ return( test->sc );
 return( NULL );
 }
 
-static int _SFFindChar(SplineFont *sf, int unienc, const char *name ) {
-    int index= -1;
-    if ( (sf->encoding_name->is_custom || sf->encoding_name->is_compact ||
-	    sf->encoding_name->is_original) && unienc!=-1 ) {
-	if ( unienc<sf->charcnt && sf->chars[unienc]!=NULL &&
-		sf->chars[unienc]->unicodeenc==unienc )
-	    index = unienc;
-	else for ( index = sf->charcnt-1; index>=0; --index ) if ( sf->chars[index]!=NULL ) {
-	    if ( sf->chars[index]->unicodeenc==unienc )
-	break;
-	}
-    } else if ( unienc!=-1 ) {
-	index = EncFromUni(unienc,sf->encoding_name);
-	if ( index<0 || index>=sf->charcnt || sf->chars[index]==NULL )
-	    index = -1;
-    } else {
-	SplineChar *sc = SFHashName(sf,name);
-	if ( sc==NULL )
-	    /* Do nothing */;
-	else if ( sc->enc!=-2 )
-	    index = sc->enc;
-	else {
-	    for ( index = sf->charcnt-1; index>=0; --index )
-		if ( sf->chars[index]==sc )
-	    break;
-	}
-    }
-return( index );
-}
-
-int SFFindChar(SplineFont *sf, int unienc, const char *name ) {
-    int index=-1, i;
+/* Find the position in the current encoding where this code point/name should*/
+/*  be found. (or for unencoded glyphs where it is found). Returns -1 else */
+int SFFindSlot(SplineFont *sf, EncMap *map, int unienc, const char *name ) {
+    int index=-1, i, pos;
     char *end;
 
-    if ( (sf->encoding_name->is_custom || sf->encoding_name->is_compact ||
-	    sf->encoding_name->is_original) && unienc!=-1 ) {
-	if ( unienc<sf->charcnt && sf->chars[unienc]!=NULL &&
-		sf->chars[unienc]->unicodeenc==unienc )
+    if ( (map->enc->is_custom || map->enc->is_compact ||
+	    map->enc->is_original) && unienc!=-1 ) {
+	if ( unienc<map->enccount && map->map[unienc]!=-1 &&
+		sf->glyphs[map->map[unienc]]!=NULL &&
+		sf->glyphs[map->map[unienc]]->unicodeenc==unienc )
 	    index = unienc;
-	else for ( index = sf->charcnt-1; index>=0; --index ) if ( sf->chars[index]!=NULL ) {
-	    if ( sf->chars[index]->unicodeenc==unienc )
+	else for ( index = map->enccount-1; index>=0; --index ) {
+	    if ( (pos = map->map[index])!=-1 && sf->glyphs[pos]!=NULL &&
+		    sf->glyphs[pos]->unicodeenc==unienc )
 	break;
 	}
     } else if ( unienc!=-1 ) {
-	index = EncFromUni(unienc,sf->encoding_name);
-	if ( index<0 || index>=sf->charcnt ) {
-	    for ( index=sf->encoding_name->char_cnt; index<sf->charcnt; ++index )
-		if ( sf->chars[index]!=NULL && sf->chars[index]->unicodeenc==unienc )
+	index = EncFromUni(unienc,map->enc);
+	if ( index<0 || index>=map->enccount ) {
+	    for ( index=map->enc->char_cnt; index<map->enccount; ++index )
+		if ( (pos = map->map[index])!=-1 && sf->glyphs[pos]!=NULL &&
+			sf->glyphs[pos]->unicodeenc==unienc )
 	    break;
-	    if ( index>=sf->charcnt )
+	    if ( index>=map->enccount )
 		index = -1;
 	}
     }
     if ( index==-1 && name!=NULL ) {
 	SplineChar *sc = SFHashName(sf,name);
-	if ( sc!=NULL ) index = sc->enc;
+	if ( sc!=NULL ) index = map->backmap[sc->orig_pos];
 	if ( index==-1 ) {
+	    unienc = -1;
 	    if ( name[0]=='u' && name[1]=='n' && name[2]=='i' && strlen(name)==7 ) {
 		if ( unienc=strtol(name+3,&end,16), *end!='\0' )
 		    unienc = -1;
@@ -404,46 +380,40 @@ int SFFindChar(SplineFont *sf, int unienc, const char *name ) {
 		unienc = ((unsigned char *) name)[0];
 	    }
 	    if ( unienc!=-1 )
-return( SFFindChar(sf,unienc,NULL));
-	    if ( sf->encoding_name->psnames!=NULL ) {
-		for ( index = sf->encoding_name->char_cnt-1; index>=0; --index )
-		    if ( sf->encoding_name->psnames[index]!=NULL &&
-			    strcmp(sf->encoding_name->psnames[index],name)==0 )
+return( SFFindSlot(sf,map,unienc,NULL));
+	    if ( map->enc->psnames!=NULL ) {
+		for ( index = map->enc->char_cnt-1; index>=0; --index )
+		    if ( map->enc->psnames[index]!=NULL &&
+			    strcmp(map->enc->psnames[index],name)==0 )
 return( index );
 	    }
 	    for ( unienc=psunicodenames_cnt-1; unienc>=0; --unienc )
 		if ( psunicodenames[unienc]!=NULL &&
 			strcmp(psunicodenames[unienc],name)==0 )
-return( SFFindChar(sf,unienc,NULL));
+return( SFFindSlot(sf,map,unienc,NULL));
 	    for ( i=0; psaltuninames[i].name!=NULL; ++i )
 		if ( strcmp(psaltuninames[i].name,name)==0 )
-return( SFFindChar(sf,psaltuninames[i].unicode,NULL));
-	    if ( strcmp(name,".notdef")==0 )
-return( SFFindChar(sf,0,NULL));
+return( SFFindSlot(sf,map,psaltuninames[i].unicode,NULL));
 	}
     }
 
 return( index );
 }
 
-int SFCIDFindChar(SplineFont *sf, int unienc, const char *name ) {
-    int j,ret;
+int SFCIDFindCID(SplineFont *sf, int unienc, const char *name ) {
+    int ret;
+    struct cidmap *cidmap;
 
-    if ( sf->cidmaster!=NULL )
-	sf=sf->cidmaster;
-
-    if ( unienc==-1 && name!=NULL ) {
-	SplineChar *sc = SFHashName(sf,name);
-	if ( sc!=NULL )
-return( sc->enc );
+    if ( sf->cidmaster!=NULL || sf->subfontcnt!=0 ) {
+	if ( sf->cidmaster!=NULL )
+	    sf=sf->cidmaster;
+	cidmap = FindCidMap(sf->cidregistry,sf->ordering,sf->supplement,sf);
+	ret = NameUni2CID(cidmap,unienc,name);
+	if ( ret!=-1 )
+return( ret );
     }
 
-    if ( sf->subfonts==NULL )
-return( _SFFindChar(sf,unienc,name));
-    for ( j=0; j<sf->subfontcnt; ++j )
-	if (( ret = _SFFindChar(sf->subfonts[j],unienc,name))!=-1 )
-return( ret );
-return( -1 );
+return( SFCIDFindExistingChar(sf,unienc,name));
 }
 
 int SFHasCID(SplineFont *sf,int cid) {
@@ -452,7 +422,11 @@ int SFHasCID(SplineFont *sf,int cid) {
     if ( sf->cidmaster!=NULL )
 	sf=sf->cidmaster;
     for ( i=0; i<sf->subfontcnt; ++i )
-	if ( cid<sf->subfonts[i]->charcnt && sf->subfonts[i]->chars[cid]!=NULL )
+	if ( cid<sf->subfonts[i]->glyphcnt &&
+		SCWorthOutputting(sf->subfonts[i]->glyphs[cid]) )
+return( i );
+    for ( i=0; i<sf->subfontcnt; ++i )
+	if ( cid<sf->subfonts[i]->glyphcnt && sf->subfonts[i]->glyphs[cid]!=NULL )
 return( i );
 
 return( -1 );
@@ -465,57 +439,89 @@ SplineChar *SFGetChar(SplineFont *sf, int unienc, const char *name ) {
     if ( unienc==-1 && name!=NULL )
 return( SFHashName(sf,name));
 
-    ind = SFCIDFindChar(sf,unienc,name);
+    ind = SFCIDFindCID(sf,unienc,name);
     if ( ind==-1 )
 return( NULL );
 
     if ( sf->subfonts==NULL && sf->cidmaster==NULL )
-return( sf->chars[ind]);
+return( sf->glyphs[ind]);
 
     if ( sf->cidmaster!=NULL )
 	sf=sf->cidmaster;
-    for ( j=0; j<sf->subfontcnt; ++j )
-	if ( ind<sf->subfonts[j]->charcnt && sf->subfonts[j]->chars[ind]!=NULL )
-return( sf->subfonts[j]->chars[ind] );
 
+    j = SFHasCID(sf,ind);
+    if ( j==-1 )
 return( NULL );
-}
 
-SplineChar *SFGetCharDup(SplineFont *sf, int unienc, const char *name ) {
-return( SCDuplicate(SFGetChar(sf,unienc,name)) );
+return( sf->subfonts[j]->glyphs[ind] );
 }
 
 SplineChar *SFGetOrMakeChar(SplineFont *sf, int unienc, const char *name ) {
-    int ind = SFFindChar(sf,unienc,name);
+    SplineChar *sc;
 
-    if ( ind==-1 )
-return( NULL );
-
-return( SFMakeChar(sf,ind));
+    if ( sf->fv!=NULL ) {
+	int ind = SFFindSlot(sf,sf->fv->map,unienc,name);
+	if ( ind!=-1 )
+	    sc = SFMakeChar(sf,sf->fv->map,ind);
+    } else
+	sc = SFGetChar(sf,unienc,name);
+    if ( sc==NULL && (unienc!=-1 || name!=NULL)) {
+	sc = SplineCharCreate();
+#ifdef FONTFORGE_CONFIG_TYPE3
+	if ( sf->strokedfont ) {
+	    sc->layers[ly_fore].dostroke = true;
+	    sc->layers[ly_fore].dofill = false;
+	}
+#endif
+	sc->unicodeenc = unienc;
+	if ( name!=NULL )
+	    sc->name = copy(name);
+	else {
+	    char buffer[40];
+	    sprintf(buffer,"glyph%d", sf->glyphcnt);
+	    sc->name = copy(buffer);
+	}
+	SFAddGlyphAndEncode(sf,sc,NULL,-1);
+	SCLigDefault(sc);
+    }
+return( sc );
 }
 
-int SFFindExistingChar(SplineFont *sf, int unienc, const char *name ) {
-    int i = _SFFindChar(sf,unienc,name);
+static int _SFFindExistingSlot(SplineFont *sf, int unienc, const char *name ) {
+    int gid = -1;
 
-    if ( i==-1 || sf->chars[i]==NULL )
+    if ( unienc!=-1 ) {
+	for ( gid=sf->glyphcnt-1; gid>=0; --gid )
+	    if ( sf->glyphs[gid]!=NULL && sf->glyphs[gid]->unicodeenc==unienc )
+	break;
+    }
+    if ( gid==-1 && name!=NULL ) {
+	SplineChar *sc = SFHashName(sf,name);
+	if ( sc==NULL )
 return( -1 );
-    if ( sf->chars[i]->layers[ly_fore].splines!=NULL || sf->chars[i]->layers[ly_fore].refs!=NULL ||
-	    sf->chars[i]->widthset )
-return( i );
+	gid = sc->orig_pos;
+    }
+return( gid );
+}
 
+int SFFindExistingSlot(SplineFont *sf, int unienc, const char *name ) {
+    int gid = _SFFindExistingSlot(sf,unienc,name);
+
+    if ( gid==-1 || !SCWorthOutputting(sf->glyphs[gid]) )
 return( -1 );
+
+return( gid );
 }
 
 int SFCIDFindExistingChar(SplineFont *sf, int unienc, const char *name ) {
     int j,ret;
 
     if ( sf->subfonts==NULL && sf->cidmaster==NULL )
-return( SFFindExistingChar(sf,unienc,name));
+return( SFFindExistingSlot(sf,unienc,name));
     if ( sf->cidmaster!=NULL )
 	sf=sf->cidmaster;
     for ( j=0; j<sf->subfontcnt; ++j )
-	if (( ret = _SFFindChar(sf->subfonts[j],unienc,name))!=-1 &&
-		sf->subfonts[j]->chars[ret]!=NULL )
+	if (( ret = SFFindExistingSlot(sf,unienc,name))!=-1 )
 return( ret );
 return( -1 );
 }
@@ -524,14 +530,14 @@ static void MFixupSC(SplineFont *sf, SplineChar *sc,int i) {
     RefChar *ref, *prev;
     FontView *fvs;
 
-    sc->enc = i;
+    sc->orig_pos = i;
     sc->parent = sf;
  retry:
     for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
 	/* The sc in the ref is from the old font. It's got to be in the */
 	/*  new font too (was either already there or just got copied) */
-	ref->local_enc =  _SFFindChar(sf,ref->sc->unicodeenc,ref->sc->name);
-	if ( ref->local_enc==-1 ) {
+	ref->orig_pos =  SFFindExistingSlot(sf,ref->sc->unicodeenc,ref->sc->name);
+	if ( ref->orig_pos==-1 ) {
 	    IError("Bad reference, can't fix it up");
 	    if ( ref==sc->layers[ly_fore].refs ) {
 		sc->layers[ly_fore].refs = ref->next;
@@ -543,9 +549,9 @@ static void MFixupSC(SplineFont *sf, SplineChar *sc,int i) {
 		ref = prev;
 	    }
 	} else {
-	    ref->sc = sf->chars[ref->local_enc];
-	    if ( ref->sc->enc==-2 )
-		MFixupSC(sf,ref->sc,ref->local_enc);
+	    ref->sc = sf->glyphs[ref->orig_pos];
+	    if ( ref->sc->orig_pos==-2 )
+		MFixupSC(sf,ref->sc,ref->orig_pos);
 	    SCReinstanciateRefChar(sc,ref);
 	    SCMakeDependent(sc,ref->sc);
 	}
@@ -553,64 +559,75 @@ static void MFixupSC(SplineFont *sf, SplineChar *sc,int i) {
     /* I shan't automagically generate bitmaps for any bdf fonts */
     /*  but I have copied over the ones which match */
     for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) if ( fvs->filled!=NULL )
-	fvs->filled->chars[i] = SplineCharRasterize(sc,fvs->filled->pixelsize);
+	fvs->filled->glyphs[i] = SplineCharRasterize(sc,fvs->filled->pixelsize);
 }
 
 static void MergeFixupRefChars(SplineFont *sf) {
     int i;
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->enc==-2 ) {
-	MFixupSC(sf,sf->chars[i], i);
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL && sf->glyphs[i]->orig_pos==-2 ) {
+	MFixupSC(sf,sf->glyphs[i], i);
     }
 }
 
 static int SFHasChar(SplineFont *sf, int unienc, char *name ) {
-    int index;
+    SplineChar *sc = SFGetChar(sf,unienc,name);
 
-    index = _SFFindChar(sf,unienc,name);
-    if ( index>=0 && index<sf->charcnt && sf->chars[index]!=NULL ) {
-	if ( sf->chars[index]->layers[ly_fore].refs!=NULL ||
-		sf->chars[index]->layers[ly_fore].splines!=NULL ||
-		sf->chars[index]->width!=sf->ascent+sf->descent ||
-		sf->chars[index]->widthset ||
-		sf->chars[index]->layers[ly_back].images != NULL ||
-		sf->chars[index]->layers[ly_back].splines != NULL )
-return( true );
-    }
-return( false );
+return( SCWorthOutputting(sc) );
 }
 
-static int SFHasName(SplineFont *sf, char *name ) {
-    int index;
+static void FVMergeRefigureMapSel(FontView *fv,SplineFont *into,SplineFont *o_sf,
+	int *mapping, int emptypos, int cnt) {
+    int extras, doit, i;
+    EncMap *map = fv->map;
+    int base = map->enccount;
 
-    for ( index = sf->charcnt-1; index>=0; --index ) if ( sf->chars[index]!=NULL ) {
-	if ( strcmp(sf->chars[index]->name,name)==0 )
-    break;
+    base = map->enccount;
+
+    for ( doit=0; doit<2; ++doit ) {
+	extras = 0;
+	for ( i=0; i<o_sf->glyphcnt; ++i ) if ( mapping[i]>=emptypos ) {
+	    int index = SFFindSlot(into,map,o_sf->glyphs[i]->unicodeenc,o_sf->glyphs[i]->name);
+	    if ( !doit ) {
+		if ( index==-1 )
+		    ++extras;
+	    } else {
+		if ( index==-1 )
+		    index = base+ extras++;
+		map->map[index] = mapping[i];
+		map->backmap[mapping[i]] = index;
+	    }
+	}
+	if ( !doit ) {
+	    if ( into->glyphcnt+cnt>map->backmax ) {
+		map->backmap = grealloc(map->backmap,(into->glyphcnt+cnt)*sizeof(int));
+		map->backmax = into->glyphcnt+cnt;
+	    }
+	    memset(map->backmap+into->glyphcnt,-1,cnt*sizeof(int));
+	    if ( map->enccount+extras>map->encmax ) {
+		map->map = grealloc(map->map,(map->enccount+extras)*sizeof(int));
+		map->encmax = map->enccount+extras;
+	    }
+	    memset(map->map+map->enccount,-1,extras*sizeof(int));
+	    map->enccount += extras;
+	}
     }
-return( index );
-}
-
-static int SFEncodingCnt(SplineFont *sf) {
-    int cnt = CountOfEncoding(sf->encoding_name);
-    if ( sf->encoding_name->is_custom || sf->encoding_name->is_original || sf->encoding_name->is_compact )
-return( sf->charcnt );
-    if ( cnt==0 )
-return( sf->charcnt );
-return( cnt );
+    if ( extras!=0 ) {
+	fv->selected = grealloc(fv->selected,map->enccount);
+	memset(fv->selected+map->enccount-extras,0,extras);
+    }
 }
 
 static void _MergeFont(SplineFont *into,SplineFont *other) {
-    int i,cnt, doit, emptypos, index, enc_cnt, k;
+    int i,cnt, doit, emptypos, index, k;
     SplineFont *o_sf, *bitmap_into;
     BDFFont *bdf;
     FontView *fvs;
     int *mapping;
 
-    enc_cnt = SFEncodingCnt(into);
-    for ( i=into->charcnt-1; i>=enc_cnt && into->chars[i]==NULL; --i );
-    emptypos = i+1;
-    mapping = galloc(other->charcnt*sizeof(int));
-    memset(mapping,-1,other->charcnt*sizeof(int));
+    emptypos = into->glyphcnt;
+    mapping = galloc(other->glyphcnt*sizeof(int));
+    memset(mapping,-1,other->glyphcnt*sizeof(int));
 
     bitmap_into = into->cidmaster!=NULL? into->cidmaster : into;
 
@@ -619,68 +636,52 @@ static void _MergeFont(SplineFont *into,SplineFont *other) {
 	k = 0;
 	do {
 	    o_sf = ( other->subfonts==NULL ) ? other : other->subfonts[k];
-	    for ( i=0; i<o_sf->charcnt; ++i ) if ( o_sf->chars[i]!=NULL ) {
+	    for ( i=0; i<o_sf->glyphcnt; ++i ) if ( o_sf->glyphs[i]!=NULL ) {
 		if ( doit && (index = mapping[i])!=-1 ) {
 		    /* Bug here. Suppose someone has a reference to our empty */
 		    /*  char */
-		    SplineCharFree(into->chars[index]);
-		    into->chars[index] = SplineCharCopy(o_sf->chars[i],into);
+		    SplineCharFree(into->glyphs[index]);
+		    into->glyphs[index] = SplineCharCopy(o_sf->glyphs[i],into);
 		    if ( into->bitmaps!=NULL && other->bitmaps!=NULL )
 			BitmapsCopy(bitmap_into,other,index,i);
 		} else if ( !doit ) {
-		    if ( o_sf->chars[i]->layers[ly_fore].splines==NULL && o_sf->chars[i]->layers[ly_fore].refs==NULL &&
-			    !o_sf->chars[i]->widthset )
+		    if ( !SCWorthOutputting(o_sf->glyphs[i] ))
 			/* Don't bother to copy it */;
-		    else if ( SCDuplicate(o_sf->chars[i])!=o_sf->chars[i] )
-			/* Don't bother to copy it */;
-		    else if ( !SFHasChar(into,o_sf->chars[i]->unicodeenc,o_sf->chars[i]->name)) {
-			if ( o_sf->chars[i]->unicodeenc==-1 ) {
-			    if ( (index=SFHasName(into,o_sf->chars[i]->name))== -1 )
-				index = emptypos+cnt++;
-			} else if ( (index = SFFindChar(into,o_sf->chars[i]->unicodeenc,NULL))==-1 )
+		    else if ( !SFHasChar(into,o_sf->glyphs[i]->unicodeenc,o_sf->glyphs[i]->name)) {
+			/* Possible for a font to contain a glyph not worth outputting */
+			if ( (index = _SFFindExistingSlot(into,o_sf->glyphs[i]->unicodeenc,o_sf->glyphs[i]->name))==-1 )
 			    index = emptypos+cnt++;
 			mapping[i] = index;
 		    }
 		}
 	    }
 	    if ( !doit ) {
-		if ( emptypos+cnt >= into->charcnt ) {
-		    into->chars = grealloc(into->chars,(emptypos+cnt)*sizeof(SplineChar *));
+		if ( emptypos+cnt >= into->glyphcnt ) {
+		    into->glyphs = grealloc(into->glyphs,(emptypos+cnt)*sizeof(SplineChar *));
+		    memset(into->glyphs+emptypos,0,cnt*sizeof(SplineChar *));
+		    for ( bdf = bitmap_into->bitmaps; bdf!=NULL; bdf=bdf->next )
+			if ( emptypos+cnt > bdf->glyphcnt ) {
+			    bdf->glyphs = grealloc(bdf->glyphs,(emptypos+cnt)*sizeof(SplineChar *));
+			    memset(bdf->glyphs+emptypos,0,cnt*sizeof(BDFChar *));
+			    bdf->glyphcnt = emptypos+cnt;
+			}
+		    for ( fvs = into->fv; fvs!=NULL; fvs=fvs->nextsame )
+			if ( fvs->filled!=NULL ) {
+			    fvs->filled->glyphs = grealloc(fvs->filled->glyphs,(emptypos+cnt)*sizeof(SplineChar *));
+			    memset(fvs->filled+emptypos,0,cnt*sizeof(BDFChar *));
+			    fvs->filled->glyphcnt = emptypos+cnt;
+			}
 		    for ( fvs = into->fv; fvs!=NULL; fvs=fvs->nextsame )
 			if ( fvs->sf == into )
-			    fvs->selected = grealloc(fvs->selected,emptypos+cnt);
-		    for ( bdf = bitmap_into->bitmaps; bdf!=NULL; bdf=bdf->next )
-			if ( emptypos+cnt > bdf->charcnt )
-			    bdf->chars = grealloc(bdf->chars,(emptypos+cnt)*sizeof(SplineChar *));
-		    for ( fvs = into->fv; fvs!=NULL; fvs=fvs->nextsame )
-			if ( fvs->filled!=NULL )
-			    fvs->filled->chars = grealloc(fvs->filled->chars,(emptypos+cnt)*sizeof(SplineChar *));
-		    for ( i=into->charcnt; i<emptypos+cnt; ++i ) {
-			into->chars[i] = NULL;
-			for ( fvs = into->fv; fvs!=NULL; fvs=fvs->nextsame )
-			    if ( fvs->filled!=NULL )
-				fvs->selected[i] = false;
-			for ( bdf = bitmap_into->bitmaps; bdf!=NULL; bdf=bdf->next )
-			    if ( emptypos+cnt > bdf->charcnt )
-				bdf->chars[i] = NULL;
-			for ( fvs = into->fv; fvs!=NULL; fvs=fvs->nextsame )
-			    if ( fvs->filled!=NULL )
-				fvs->filled->chars[i] = NULL;
-		    }
-		    into->charcnt = emptypos+cnt;
-		    for ( fvs = into->fv; fvs!=NULL; fvs=fvs->nextsame )
-			if ( fvs->filled!=NULL )
-			    fvs->filled->charcnt = emptypos+cnt;
-		    for ( bdf = bitmap_into->bitmaps; bdf!=NULL; bdf=bdf->next )
-			if ( emptypos+cnt > bdf->charcnt )
-			    bdf->charcnt = emptypos+cnt;
+			    FVMergeRefigureMapSel(fvs,into,o_sf,mapping,emptypos,cnt);
+		    into->glyphcnt = emptypos+cnt;
 		}
 	    }
 	    ++k;
 	} while ( k<other->subfontcnt );
     }
-    for ( i=0; i<other->charcnt; ++i ) if ( (index=mapping[i])!=-1 )
-	into->chars[index]->kerns = KernsCopy(other->chars[i]->kerns,mapping,into,other);
+    for ( i=0; i<other->glyphcnt; ++i ) if ( (index=mapping[i])!=-1 )
+	into->glyphs[index]->kerns = KernsCopy(other->glyphs[i]->kerns,mapping,into,other);
     free(mapping);
     GlyphHashFree(into);
     MergeFixupRefChars(into);
@@ -702,26 +703,26 @@ static void CIDMergeFont(SplineFont *into,SplineFont *other) {
     do {
 	o_sf = other->subfonts[k];
 	i_sf = into->subfonts[k];
-	for ( i=o_sf->charcnt-1; i>=0 && o_sf->chars[i]==NULL; --i );
-	if ( i>=i_sf->charcnt ) {
-	    i_sf->chars = grealloc(i_sf->chars,(i+1)*sizeof(SplineChar *));
-	    for ( j=i_sf->charcnt; j<=i; ++j )
-		i_sf->chars[j] = NULL;
+	for ( i=o_sf->glyphcnt-1; i>=0 && o_sf->glyphs[i]==NULL; --i );
+	if ( i>=i_sf->glyphcnt ) {
+	    i_sf->glyphs = grealloc(i_sf->glyphs,(i+1)*sizeof(SplineChar *));
+	    for ( j=i_sf->glyphcnt; j<=i; ++j )
+		i_sf->glyphs[j] = NULL;
 	    for ( fvs = i_sf->fv; fvs!=NULL; fvs=fvs->nextsame )
 		if ( fvs->sf==i_sf ) {
 		    fvs->selected = grealloc(fvs->selected,i+1);
-		    for ( j=i_sf->charcnt; j<=i; ++j )
+		    for ( j=i_sf->glyphcnt; j<=i; ++j )
 			fvs->selected[j] = false;
 		}
-	    i_sf->charcnt = i+1;
+	    i_sf->glyphcnt = i+1;
 	}
-	for ( i=0; i<o_sf->charcnt; ++i ) if ( o_sf->chars[i]!=NULL ) {
-	    if ( o_sf->chars[i]->layers[ly_fore].splines==NULL && o_sf->chars[i]->layers[ly_fore].refs==NULL &&
-		    !o_sf->chars[i]->widthset )
+	for ( i=0; i<o_sf->glyphcnt; ++i ) if ( o_sf->glyphs[i]!=NULL ) {
+	    if ( o_sf->glyphs[i]->layers[ly_fore].splines==NULL && o_sf->glyphs[i]->layers[ly_fore].refs==NULL &&
+		    !o_sf->glyphs[i]->widthset )
 		/* Don't bother to copy it */;
 	    else if ( SFHasCID(into,i)==-1 ) {
-		SplineCharFree(i_sf->chars[i]);
-		i_sf->chars[i] = SplineCharCopy(o_sf->chars[i],i_sf);
+		SplineCharFree(i_sf->glyphs[i]);
+		i_sf->glyphs[i] = SplineCharCopy(o_sf->glyphs[i],i_sf);
 		if ( into->bitmaps!=NULL && other->bitmaps!=NULL )
 		    BitmapsCopy(into,other,i,i);
 	    }
@@ -987,7 +988,7 @@ static RefChar *InterpRefs(RefChar *base, RefChar *other, real amount, SplineCha
 	    test->checked = true;
 	    cur = RefCharCreate();
 	    *cur = *base;
-	    cur->local_enc = cur->sc->enc;
+	    cur->orig_pos = cur->sc->orig_pos;
 	    for ( i=0; i<6; ++i )
 		cur->transform[i] = base->transform[i] + amount*(other->transform[i]-base->transform[i]);
 	    cur->layers[0].splines = NULL;
@@ -1112,17 +1113,24 @@ static SplineSet *InterpSplineSets(SplineSet *base, SplineSet *other, real amoun
 return( head );
 }
 
+static int SCSameChar(SplineChar *sc1,SplineChar *sc2) {
+    if ( sc1->unicodeenc!=-1 )
+return( sc1->unicodeenc==sc2->unicodeenc );
+
+return( strcmp(sc1->name,sc2->name)==0 );
+}
+
 static KernPair *InterpKerns(KernPair *kp1, KernPair *kp2, real amount, SplineFont *new) {
     KernPair *head=NULL, *last, *nkp, *k;
 
     if ( kp1==NULL || kp2==NULL )
 return( NULL );
     while ( kp1!=NULL ) {
-	for ( k=kp2; k!=NULL && k->sc->enc!=kp1->sc->enc; k=k->next );
+	for ( k=kp2; k!=NULL && !SCSameChar(k->sc,kp1->sc); k=k->next );
 	if ( k!=NULL ) {
 	    if ( k==kp2 ) kp2 = kp2->next;
 	    nkp = chunkalloc(sizeof(KernPair));
-	    nkp->sc = new->chars[k->sc->enc];
+	    nkp->sc = new->glyphs[kp1->sc->orig_pos];
 	    nkp->off = kp1->off + amount*(k->off-kp1->off);
 	    nkp->sli = kp1->sli;
 	    if ( head==NULL )
@@ -1210,17 +1218,15 @@ static void LayerInterpolate(Layer *to,Layer *base,Layer *other,real amount,Spli
 }
 #endif
 
-static void InterpolateChar(SplineFont *new, int enc, SplineChar *base, SplineChar *other, real amount) {
+static void InterpolateChar(SplineFont *new, int orig_pos, SplineChar *base, SplineChar *other, real amount) {
     SplineChar *sc;
 
     if ( base==NULL || other==NULL )
 return;
     sc = SplineCharCreate();
-    sc->enc = enc;
+    sc->orig_pos = orig_pos;
     sc->unicodeenc = base->unicodeenc;
-    sc->old_enc = base->old_enc;
-    sc->orig_pos = base->orig_pos;
-    new->chars[enc] = sc;
+    new->glyphs[orig_pos] = sc;
     sc->parent = new;
     sc->changed = true;
     sc->views = NULL;
@@ -1266,9 +1272,9 @@ static void IFixupSC(SplineFont *sf, SplineChar *sc,int i) {
 	/* The sc in the ref is from the base font. It's got to be in the */
 	/*  new font too (the ref only gets created if it's present in both fonts)*/
 	ref->checked = true;
-	ref->local_enc = _SFFindChar(sf,ref->sc->unicodeenc,ref->sc->name);
-	ref->sc = sf->chars[ref->local_enc];
-	IFixupSC(sf,ref->sc,ref->local_enc);
+	ref->orig_pos = SFFindExistingSlot(sf,ref->sc->unicodeenc,ref->sc->name);
+	ref->sc = sf->glyphs[ref->orig_pos];
+	IFixupSC(sf,ref->sc,ref->orig_pos);
 	SCReinstanciateRefChar(sc,ref);
 	SCMakeDependent(sc,ref->sc);
     }
@@ -1277,8 +1283,8 @@ static void IFixupSC(SplineFont *sf, SplineChar *sc,int i) {
 static void InterpFixupRefChars(SplineFont *sf) {
     int i;
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	IFixupSC(sf,sf->chars[i], i);
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	IFixupSC(sf,sf->glyphs[i], i);
     }
 }
 
@@ -1311,24 +1317,17 @@ return( NULL );
 return( NULL );
     }
 #endif
-    new = SplineFontBlank(base->encoding_name,base->charcnt);
+    new = SplineFontBlank(base->glyphcnt);
     new->ascent = base->ascent + amount*(other->ascent-base->ascent);
     new->descent = base->descent + amount*(other->descent-base->descent);
-    if ( base->encoding_name==other->encoding_name ) {
-	for ( i=0; i<base->charcnt && i<other->charcnt; ++i )
-	    InterpolateChar(new,i,base->chars[i],other->chars[i],amount);
-    } else {
-	for ( i=0; i<base->charcnt; ++i ) if ( base->chars[i]!=NULL ) {
-	    index = _SFFindChar(other,base->chars[i]->unicodeenc,base->chars[i]->name);
-	    if ( other->chars[index]!=NULL )
-		InterpolateChar(new,i,base->chars[i],other->chars[index],amount);
+    for ( i=0; i<base->glyphcnt; ++i ) if ( base->glyphs[i]!=NULL ) {
+	index = SFFindExistingSlot(other,base->glyphs[i]->unicodeenc,base->glyphs[i]->name);
+	if ( other->glyphs[index]!=NULL ) {
+	    InterpolateChar(new,i,base->glyphs[i],other->glyphs[index],amount);
+	    if ( new->glyphs[i]!=NULL )
+		new->glyphs[i]->kerns = InterpKerns(base->glyphs[i]->kerns,
+			other->glyphs[index]->kerns,amount,new);
 	}
-    }
-    /* Only do kerns if the encodings match. Too hard otherwise */
-    if ( base->encoding_name==other->encoding_name ) {
-	for ( i=0; i<base->charcnt && i<other->charcnt; ++i )
-	    if ( new->chars[i]!=NULL )
-		new->chars[i]->kerns = InterpKerns(base->chars[i]->kerns,other->chars[i]->kerns,amount,new);
     }
     InterpFixupRefChars(new);
     new->changed = true;

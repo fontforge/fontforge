@@ -1313,8 +1313,8 @@ return;
 	    sub = mm->instances[j-1];
 	sc = NULL;
 	if ( cv->sc->parent!=sub && (cv->mmvisible & (1<<j)) &&
-		cv->sc->enc<sub->charcnt )
-	    sc = sub->chars[cv->sc->enc];
+		cv->sc->orig_pos<sub->glyphcnt )
+	    sc = sub->glyphs[cv->sc->orig_pos];
 	if ( sc!=NULL ) {
 	    for ( rf=sc->layers[ly_fore].refs; rf!=NULL; rf = rf->next )
 		CVDrawSplineSet(cv,pixmap,rf->layers[0].splines,backoutlinecol,false,clip);
@@ -1585,8 +1585,8 @@ static void FVRedrawAllCharViews(FontView *fv) {
     int i;
     CharView *cv;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL )
-	for ( cv = fv->sf->chars[i]->views; cv!=NULL; cv=cv->next )
+    for ( i=0; i<fv->sf->glyphcnt; ++i ) if ( fv->sf->glyphs[i]!=NULL )
+	for ( cv = fv->sf->glyphs[i]->views; cv!=NULL; cv=cv->next )
 	    GDrawRequestExpose(cv->v,NULL,false);
 }
 
@@ -1716,9 +1716,9 @@ static GWindow CharIcon(CharView *cv, FontView *fv) {
     bdf = NULL; bdfc = NULL;
     if ( sc->layers[ly_fore].refs!=NULL || sc->layers[ly_fore].splines!=NULL ) {
 	bdf = fv->show;
-	if ( bdf->chars[sc->enc]==NULL )
+	if ( bdf->glyphs[sc->orig_pos]==NULL )
 	    bdf = fv->filled;
-	if ( bdf->chars[sc->enc]==NULL ) {
+	if ( bdf->glyphs[sc->orig_pos]==NULL ) {
 	    bdf2 = NULL; bdfc = NULL;
 	    for ( bdf=fv->sf->bitmaps; bdf!=NULL && bdf->pixelsize<24 ; bdf=bdf->next )
 		bdf2 = bdf;
@@ -1729,7 +1729,7 @@ static GWindow CharIcon(CharView *cv, FontView *fv) {
 		bdf = bdf2;
 	}
 	if ( bdf!=NULL )
-	    bdfc = bdf->chars[sc->enc];
+	    bdfc = bdf->glyphs[sc->orig_pos];
     }
 
     if ( bdfc!=NULL ) {
@@ -1783,6 +1783,13 @@ static GWindow CharIcon(CharView *cv, FontView *fv) {
 return( icon );
 }
 
+static int CVCurEnc(CharView *cv) {
+    if ( cv->map_of_enc == cv->fv->map && cv->enc!=-1 )
+return( cv->enc );
+
+return( cv->fv->map->backmap[cv->sc->orig_pos] );
+}
+
 static unichar_t *CVMakeTitles(CharView *cv,unichar_t *ubuf) {
     unichar_t *title;
     SplineChar *sc = cv->sc;
@@ -1792,7 +1799,7 @@ static unichar_t *CVMakeTitles(CharView *cv,unichar_t *ubuf) {
 #elif defined(FONTFORGE_CONFIG_GTK)
     u_sprintf(ubuf,_("%1$.80s at %2$d from %3$.90s"),
 #endif
-	    sc->name, sc->enc, sc->parent->fontname);
+	    sc->name, CVCurEnc(cv), sc->parent->fontname);
     if ( sc->changed )
 	uc_strcat(ubuf," *");
     title = u_copy(ubuf);
@@ -1872,15 +1879,18 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
 static void CVChangeChar(CharView *cv, int i ) {
     SplineChar *sc;
     SplineFont *sf = cv->sc->parent;
+    EncMap *map = cv->fv->map;
+    int gid = i<0 || i>= map->enccount ? -1 : map->map[i];
 
-    if ( i<0 || i>=sf->charcnt )
+    if ( gid < 0 )
 return;
-    if ( (sc = sf->chars[i])==NULL )
-	sc = SFMakeChar(sf,i);
-    sc = SCDuplicate(sc);
+    if ( (sc = sf->glyphs[gid])==NULL )
+	sc = SFMakeChar(sf,map,i);
 
     if ( sc==NULL || cv->sc == sc )
 return;
+    cv->map_of_enc = map;
+    cv->enc = i;
     CVChangeSC(cv,sc);
 }
 
@@ -1919,7 +1929,7 @@ static void CVFakeMove(CharView *cv, GEvent *event) {
     e.u.mouse.device = NULL;
     CVMouseMove(cv,&e);
 }
-
+	
 void CVChar(CharView *cv, GEvent *event ) {
     extern float arrowAmount;
 
@@ -1990,19 +2000,16 @@ return;
 	    (event->u.chr.state&ksm_control) ) {
 	/* some people have remapped keyboards so that shift is needed to get [] */
 	int pos;
-	SplineFont *sf = cv->sc->parent;
 	if ( event->u.chr.keysym=='[' ) {
-	    for ( pos = cv->sc->enc-1; pos>=0 &&
-		    sf->chars[pos]!=SCDuplicate(sf->chars[pos]); --pos );
+	    pos = CVCurEnc(cv)-1;
 	} else {
-	    for ( pos = cv->sc->enc+1; pos<sf->charcnt &&
-		    sf->chars[pos]!=SCDuplicate(sf->chars[pos]); ++pos );
+	    pos = CVCurEnc(cv)+1;
 	}
 #if 0		/* Werner doesn't want it to wrap */
-	if ( pos<0 ) pos = cv->sc->parent->charcnt-1;
-	else if ( pos>= cv->sc->parent->charcnt ) pos = 0;
+	if ( pos<0 ) pos = cv->fv->map->enccount-1;
+	else if ( pos>= cv->fv->map->enccount ) pos = 0;
 #endif
-	if ( pos>=0 && pos<cv->sc->parent->charcnt )
+	if ( pos>=0 && pos<cv->fv->map->enccount )
 	    CVChangeChar(cv,pos);
     } else if ( event->u.chr.keysym == GK_Left ||
 	    event->u.chr.keysym == GK_Up ||
@@ -2084,22 +2091,12 @@ return;
 	    event->u.chr.chars[0]>=' ' && event->u.chr.chars[1]=='\0' ) {
 	SplineFont *sf = cv->sc->parent;
 	int i;
+	EncMap *map = cv->fv->map;
 	extern int cv_auto_goto;
 	if ( cv_auto_goto ) {
-	    for ( i=0; i<sf->charcnt; ++i )
-		if ( sf->chars[i]!=NULL )
-		    if ( sf->chars[i]->unicodeenc==event->u.chr.chars[0] ) {
-			CVChangeChar(cv,i);
-	    break;
-		    }
-	    if ( i==sf->charcnt ) for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]==NULL ) {
-		SplineChar dummy;
-		SCBuildDummy(&dummy,sf,i);
-		if ( dummy.unicodeenc==event->u.chr.chars[0] ) {
-		    CVChangeChar(cv,i);
-	    break;
-		}
-	    }
+	    i = SFFindSlot(sf,map,event->u.chr.chars[0],NULL);
+	    if ( i!=-1 )
+		CVChangeChar(cv,i);
 	}
     }
 }
@@ -2686,7 +2683,7 @@ int SCNumberPoints(SplineChar *sc) {
     SplinePoint *sp;
     int starts_with_cp, startcnt;
     uint8 *instrs = sc->ttf_instrs==NULL && sc->parent->mm!=NULL && sc->parent->mm->apple ?
-		sc->parent->mm->normal->chars[sc->enc]->ttf_instrs : sc->ttf_instrs;
+		sc->parent->mm->normal->glyphs[sc->orig_pos]->ttf_instrs : sc->ttf_instrs;
 
     if ( sc->parent->order2 ) {		/* TrueType and its complexities. I ignore svg here */
 	for ( ss = sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
@@ -2792,7 +2789,7 @@ return( true );
 
 static void instrcheck(SplineChar *sc) {
     uint8 *instrs = sc->ttf_instrs==NULL && sc->parent->mm!=NULL && sc->parent->mm->apple ?
-		sc->parent->mm->normal->chars[sc->enc]->ttf_instrs : sc->ttf_instrs;
+		sc->parent->mm->normal->glyphs[sc->orig_pos]->ttf_instrs : sc->ttf_instrs;
 
     if ( instrs==NULL )
 return;
@@ -2881,6 +2878,7 @@ void SCClearSelPt(SplineChar *sc) {
 void _SCCharChangedUpdate(SplineChar *sc,int changed) {
     SplineFont *sf = sc->parent;
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    FontView *fv;
     extern int updateflex;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
@@ -2923,8 +2921,8 @@ void _SCCharChangedUpdate(SplineChar *sc,int changed) {
     SCLayersChange(sc);
 # endif
     SCRegenFills(sc);
-    if ( sf->fv!=NULL )
-	FVRegenChar(sf->fv,sc);
+    for ( fv = sf->fv; fv!=NULL; fv=fv->nextsame )
+	FVRegenChar(fv,sc);
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 }
 
@@ -2935,6 +2933,7 @@ void SCCharChangedUpdate(SplineChar *sc) {
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 void _CVCharChangedUpdate(CharView *cv,int changed) {
     extern int updateflex;
+    FontView *fv;
 
     CVSetCharChanged(cv,changed);
 #ifdef FONTFORGE_CONFIG_TYPE3
@@ -2946,7 +2945,8 @@ void _CVCharChangedUpdate(CharView *cv,int changed) {
 	    SplineCharIsFlexible(cv->sc);
 	SCUpdateAll(cv->sc);
 	SCRegenFills(cv->sc);
-	FVRegenChar(cv->fv,cv->sc);
+	for ( fv = cv->sc->parent->fv; fv!=NULL; fv=fv->nextsame )
+	    FVRegenChar(fv,cv->sc);
 	cv->needsrasterize = false;
     } else if ( cv->drawmode==dm_back ) {
 	/* If we changed the background then only views of this character */
@@ -3842,7 +3842,7 @@ return( GGadgetDispatchEvent(cv->vsb,event));
       break;
       case et_mousemove:
 	if ( event->u.mouse.y>cv->mbh )
-	    SCPreparePopup(cv->gw,cv->sc);
+	    SCPreparePopup(cv->gw,cv->sc,cv->fv->map->remap,CVCurEnc(cv));
       break;
       case et_drop:
 	CVDrop(cv,event);
@@ -4004,7 +4004,7 @@ static void CVMenuOpenBitmap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     if ( cv->fv->sf->bitmaps==NULL )
 return;
-    BitmapViewCreatePick(cv->sc->enc,cv->fv);
+    BitmapViewCreatePick(CVCurEnc(cv),cv->fv);
 }
 
 static void CVMenuOpenMetrics(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -4051,29 +4051,13 @@ static void CVMenuRevert(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 void RevertedGlyphReferenceFixup(SplineChar *sc, SplineFont *sf) {
-    int i;
     RefChar *refs, *prev, *next;
 
     for ( prev=NULL, refs = sc->layers[ly_fore].refs ; refs!=NULL; refs = next ) {
 	next = refs->next;
-	if ( sf->encodingchanged && refs->unicode_enc>0 ) {
-	    /* Well, try to fix things up based on the unicode encoding */
-	    /*  Old sfd files won't have this */
-	    if ( refs->local_enc<sf->charcnt &&
-		    sf->chars[refs->local_enc]!=NULL &&
-		    sf->chars[refs->local_enc]->unicodeenc == refs->unicode_enc )
-		/* Well, this character seems to be in the right place */;
-	    else {
-		for ( i=0 ; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
-		    if ( sf->chars[i]->unicodeenc==refs->unicode_enc ) {
-			refs->local_enc = i;
-		break;
-		    }
-	    }
-	}
-	if ( refs->local_enc<sf->charcnt && sf->chars[refs->local_enc]!=NULL ) {
+	if ( refs->orig_pos<sf->glyphcnt && sf->glyphs[refs->orig_pos]!=NULL ) {
 	    prev = refs;
-	    refs->sc = sf->chars[refs->local_enc];
+	    refs->sc = sf->glyphs[refs->orig_pos];
 	    refs->unicode_enc = refs->sc->unicodeenc;
 	    SCReinstanciateRefChar(sc,refs);
 	    SCMakeDependent(sc,refs->sc);
@@ -4090,11 +4074,6 @@ void RevertedGlyphReferenceFixup(SplineChar *sc, SplineFont *sf) {
 static void CVMenuRevertGlyph(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     SplineChar *sc, temp;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    static int buts[] = { _STR_OK, _STR_Cancel, 0 };
-#elif defined(FONTFORGE_CONFIG_GTK)
-    static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_CANCEL, NULL };
-#endif
 
     if ( cv->sc->parent->filename==NULL || cv->sc->namechanged || cv->sc->parent->mm!=NULL )
 return;
@@ -4106,13 +4085,6 @@ return;
 	gwwv_post_error(_("Can't Find Glyph"),_("The glyph, %.80s, can't be found in the sfd file"),cv->sc->name);
 #endif
 	cv->sc->namechanged = true;
-    } else if ( sc->layers[ly_fore].refs!=NULL && cv->sc->parent->encodingchanged &&
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetAskR(_STR_GlyphHasRefs,buts,0,1,_STR_GlyphHasRefsQuestion,cv->sc->name)==1 ) {
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_ask(_("Problems With References"),buts,0,1,_("The character, %.40s, contained references, but the font's encoding has changed. I will probably not be able to map those references to the correct locations. If I proceed some references may be lost and others may link to incorrect characters. Do you want to proceed anyway?"),cv->sc->name)==1 ) {
-#endif
-	SplineCharFree(sc);
     } else {
 	SCPreserveState(cv->sc,true);
 	SCPreserveBackground(cv->sc);
@@ -4128,7 +4100,6 @@ return;
 	cv->sc->layers[ly_back].undoes = temp.layers[ly_back].undoes;
 	cv->sc->views = temp.views;
 	cv->sc->changed = temp.changed;
-	cv->sc->enc = temp.enc;
 	cv->layerheads[dm_back] = &cv->sc->layers[ly_back];
 	cv->layerheads[dm_fore] = &cv->sc->layers[ly_fore];
 	RevertedGlyphReferenceFixup(cv->sc, temp.parent);
@@ -4357,58 +4328,60 @@ static void CVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     SplineFont *sf = cv->sc->parent;
     int pos = -1;
+    int gid;
+    EncMap *map = cv->fv->map;
+    Encoding *enc = map->enc;
 
     if ( cv->searcher!=NULL )
 return;
     if ( mi->mid == MID_Next ) {
-	for ( pos = cv->sc->enc+1; pos<sf->charcnt &&
-		sf->chars[pos]!=SCDuplicate(sf->chars[pos]); ++pos );
+	pos = CVCurEnc(cv)+1;
     } else if ( mi->mid == MID_Prev ) {
-	for ( pos = cv->sc->enc-1; pos>=0 &&
-		sf->chars[pos]!=SCDuplicate(sf->chars[pos]); --pos );
+	pos = CVCurEnc(cv)-1;
     } else if ( mi->mid == MID_NextDef ) {
-	for ( pos = cv->sc->enc+1; pos<sf->charcnt &&
-		(sf->chars[pos]==NULL || sf->chars[pos]!=SCDuplicate(sf->chars[pos])); ++pos );
-	if ( pos>=sf->charcnt ) {
-	    if ( sf->encoding_name->is_tradchinese ) {
-		if ( strstrmatch(sf->encoding_name->enc_name,"hkscs")!=NULL ) {
-		    if ( cv->sc->enc<0x8140 )
+	for ( pos = CVCurEnc(cv)+1; pos<map->enccount &&
+		((gid=map->map[pos])==-1 || sf->glyphs[gid]==NULL); ++pos );
+	if ( pos>=map->enccount ) {
+	    if ( enc->is_tradchinese ) {
+		if ( strstrmatch(enc->enc_name,"hkscs")!=NULL ) {
+		    if ( CVCurEnc(cv)<0x8140 )
 			pos = 0x8140;
 		} else {
-		    if ( cv->sc->enc<0xa140 )
+		    if ( CVCurEnc(cv)<0xa140 )
 			pos = 0xa140;
 		}
-	    } else if ( cv->sc->enc<0x8431 && strstrmatch(sf->encoding_name->enc_name,"johab")!=NULL )
+	    } else if ( CVCurEnc(cv)<0x8431 && strstrmatch(enc->enc_name,"johab")!=NULL )
 		pos = 0x8431;
-	    else if ( cv->sc->enc<0xa1a1 && strstrmatch(sf->encoding_name->iconv_name?sf->encoding_name->iconv_name:sf->encoding_name->enc_name,"EUC")!=NULL )
+	    else if ( CVCurEnc(cv)<0xa1a1 && strstrmatch(enc->iconv_name?enc->iconv_name:enc->enc_name,"EUC")!=NULL )
 		pos = 0xa1a1;
-	    else if ( cv->sc->enc<0x8140 && strstrmatch(sf->encoding_name->enc_name,"sjis")!=NULL )
+	    else if ( CVCurEnc(cv)<0x8140 && strstrmatch(enc->enc_name,"sjis")!=NULL )
 		pos = 0x8140;
-	    else if ( cv->sc->enc<0xe040 && strstrmatch(sf->encoding_name->enc_name,"sjis")!=NULL )
+	    else if ( CVCurEnc(cv)<0xe040 && strstrmatch(enc->enc_name,"sjis")!=NULL )
 		pos = 0xe040;
-	    if ( pos>=sf->charcnt )
+	    if ( pos>=map->enccount )
 return;
 	}
     } else if ( mi->mid == MID_PrevDef ) {
-	for ( pos = cv->sc->enc-1; pos>=0 &&
-		(sf->chars[pos]==NULL || sf->chars[pos]!=SCDuplicate(sf->chars[pos])); --pos );
+	for ( pos = CVCurEnc(cv)-1; pos>=0 &&
+		((gid=map->map[pos])==-1 || sf->glyphs[gid]==NULL); --pos );
 	if ( pos<0 )
 return;
     } else if ( mi->mid == MID_Former ) {
 	if ( cv->former_name==NULL )
 return;
-	for ( pos=sf->charcnt-1; pos>=0; --pos )
-	    if ( sf->chars[pos]!=NULL && sf->chars[pos]->name==cv->former_name )
+	for ( gid=sf->glyphcnt-1; gid>=0; --gid )
+	    if ( sf->glyphs[gid]!=NULL && sf->glyphs[gid]->name==cv->former_name )
 	break;
-	if ( pos<0 )
+	if ( gid<0 )
 return;
+	pos = map->backmap[gid];
     }
     /* Werner doesn't think it should wrap */
-    if ( pos<0 ) /* pos = cv->sc->parent->charcnt-1; */
+    if ( pos<0 ) /* pos = map->enccount-1; */
 return;
-    else if ( pos>= cv->sc->parent->charcnt ) /* pos = 0; */
+    else if ( pos>= map->enccount ) /* pos = 0; */
 return;
-    if ( pos>=0 && pos<cv->sc->parent->charcnt )
+    if ( pos>=0 && pos<map->enccount )
 	CVChangeChar(cv,pos);
 }
 
@@ -4554,7 +4527,7 @@ static void CVMenuNextPrevCPt(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void CVMenuGotoChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    int pos = GotoChar(cv->sc->parent);
+    int pos = GotoChar(cv->fv->sf,cv->fv->map);
 
     if ( pos!=-1 )
 	CVChangeChar(cv,pos);
@@ -4563,7 +4536,7 @@ static void CVMenuGotoChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void CVMenuFindInFontView(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
-    FVChangeChar(cv->fv,cv->sc->enc);
+    FVChangeChar(cv->fv,CVCurEnc(cv));
     GDrawSetVisible(cv->fv->gw,true);
     GDrawRaise(cv->fv->gw);
 }
@@ -5310,7 +5283,7 @@ void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
 		transform[4]!=0 && CVAllSelected(cv) &&
 		cv->sc->unicodeenc!=-1 && isalpha(cv->sc->unicodeenc)) {
 	    SCUndoSetLBearingChange(cv->sc,(int) rint(transform[4]));
-	    SCSynchronizeLBearing(cv->sc,NULL,transform[4]);
+	    SCSynchronizeLBearing(cv->sc,transform[4]);
 	}
 	if ( !(flags&fvt_dontmovewidth) && (cv->widthsel || !anysel))
 	    if ( transform[0]>0 && transform[3]>0 && transform[1]==0 &&
@@ -5979,7 +5952,7 @@ static void CVMenuGetInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void CVMenuCharInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    SCCharInfo(cv->sc);
+    SCCharInfo(cv->sc,cv->fv->map,CVCurEnc(cv));
 }
 
 static void CVMenuShowDependentRefs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -6467,8 +6440,8 @@ static void cv_cblistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	  case MID_KernPairs:
 	    mi->ti.disabled = sc->kerns==NULL;
 	    if ( sc->kerns==NULL ) {
-		for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-		    for ( kp = sf->chars[i]->kerns; kp!=NULL; kp=kp->next ) {
+		for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+		    for ( kp = sf->glyphs[i]->kerns; kp!=NULL; kp=kp->next ) {
 			if ( kp->sc == sc ) {
 			    mi->ti.disabled = false;
 		goto out;
@@ -6480,8 +6453,8 @@ static void cv_cblistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_Ligatures:
 	    name = sc->name;
-	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-		for ( pst=sf->chars[i]->possub; pst!=NULL; pst=pst->next ) {
+	    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+		for ( pst=sf->glyphs[i]->possub; pst!=NULL; pst=pst->next ) {
 		    if ( pst->type==pst_ligature &&
 			    PSTContains(pst->u.lig.components,name)) {
 			mi->ti.disabled = false;
@@ -6522,30 +6495,31 @@ static void cv_nplistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 }
 
 static void cv_vwlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
-    int pos;
+    int pos, gid;
     SplineFont *sf = cv->sc->parent;
+    EncMap *map = cv->fv->map;
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_NextDef:
-	    for ( pos = cv->sc->enc+1; pos<sf->charcnt && sf->chars[pos]==NULL; ++pos );
-	    mi->ti.disabled = pos==sf->charcnt || cv->searcher!=NULL;
+	    for ( pos = CVCurEnc(cv)+1; pos<map->enccount && ((gid=map->map[pos])==-1 || sf->glyphs[gid]==NULL); ++pos );
+	    mi->ti.disabled = pos==map->enccount || cv->searcher!=NULL;
 	  break;
 	  case MID_PrevDef:
-	    for ( pos = cv->sc->enc-1; pos>=0 && sf->chars[pos]==NULL; --pos );
-	    mi->ti.disabled = pos==-1 || cv->searcher!=NULL;
+	    for ( pos = CVCurEnc(cv)-1; pos>=0 && ((gid=map->map[pos])==-1 || sf->glyphs[gid]==NULL); --pos );
+	    mi->ti.disabled = pos<0 || cv->searcher!=NULL;
 	  break;
 	  case MID_Next:
-	    mi->ti.disabled = cv->searcher!=NULL || cv->sc->enc==cv->sc->parent->charcnt-1;
+	    mi->ti.disabled = cv->searcher!=NULL || CVCurEnc(cv)==map->enccount-1;
 	  break;
 	  case MID_Prev:
-	    mi->ti.disabled = cv->searcher!=NULL || cv->sc->enc==0;
+	    mi->ti.disabled = cv->searcher!=NULL || CVCurEnc(cv)==0;
 	  break;
 	  case MID_Former:
 	    if ( cv->former_name==NULL )
 		pos = -1;
-	    else for ( pos = sf->charcnt-1; pos>=0 ; --pos )
-		if ( sf->chars[pos]!=NULL && sf->chars[pos]->name==cv->former_name )
+	    else for ( pos = sf->glyphcnt-1; pos>=0 ; --pos )
+		if ( sf->glyphs[pos]!=NULL && sf->glyphs[pos]->name==cv->former_name )
 	    break;
 	    mi->ti.disabled = pos==-1 || cv->searcher!=NULL;
 	  break;
@@ -7130,9 +7104,9 @@ static void CVMenuReblend(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     if ( mm==NULL || mm->apple || cv->sc->parent!=mm->normal )
 return;
-    err = MMBlendChar(mm,cv->sc->enc);
-    if ( mm->normal->chars[cv->sc->enc]!=NULL )
-	_SCCharChangedUpdate(mm->normal->chars[cv->sc->enc],-1);
+    err = MMBlendChar(mm,cv->sc->orig_pos);
+    if ( mm->normal->glyphs[cv->sc->orig_pos]!=NULL )
+	_SCCharChangedUpdate(mm->normal->glyphs[cv->sc->orig_pos],-1);
     if ( err!=0 )
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_BadMM,err);
@@ -7153,7 +7127,7 @@ static void CVMenuShowSubChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SplineFont *new = mi->ti.userdata;
     /* Change to the same char in a different instance font of the mm */
 
-    CVChangeSC(cv,SFMakeChar(new,cv->sc->enc));
+    CVChangeSC(cv,SFMakeChar(new,cv->fv->map,CVCurEnc(cv)));
     cv->layerheads[dm_grid] = &new->grid;
 }
 
@@ -7224,7 +7198,7 @@ static GMenuItem mblist_nomm[] = {
     { NULL }
 };
 
-static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv) {
+static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) {
     GRect pos;
     GWindowAttrs wattrs;
     GGadgetData gd;
@@ -7247,6 +7221,8 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv) {
     cv->next = sc->views;
     sc->views = cv;
     cv->fv = fv;
+    cv->map_of_enc = fv->map;
+    cv->enc = enc;
 
     cv->drawmode = dm_fore;
 
@@ -7370,15 +7346,15 @@ void DefaultY(GRect *pos) {
 	BDFFont *bdf;
 	/* are there any open cv/bv windows? */
 	for ( fv = fv_list; fv!=NULL && !any; fv = fv->next ) {
-	    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL ) {
-		if ( fv->sf->chars[i]->views!=NULL ) {
+	    for ( i=0; i<fv->sf->glyphcnt; ++i ) if ( fv->sf->glyphs[i]!=NULL ) {
+		if ( fv->sf->glyphs[i]->views!=NULL ) {
 		    any = true;
 	    break;
 		}
 	    }
 	    for ( bdf = fv->sf->bitmaps; bdf!=NULL && !any; bdf=bdf->next ) {
-		for ( i=0; i<bdf->charcnt; ++i ) if ( bdf->chars[i]!=NULL ) {
-		    if ( bdf->chars[i]->views!=NULL ) {
+		for ( i=0; i<bdf->glyphcnt; ++i ) if ( bdf->glyphs[i]!=NULL ) {
+		    if ( bdf->glyphs[i]->views!=NULL ) {
 			any = true;
 		break;
 		    }
@@ -7393,7 +7369,7 @@ void DefaultY(GRect *pos) {
 	nexty = 0;
 }
 
-CharView *CharViewCreate(SplineChar *sc, FontView *fv) {
+CharView *CharViewCreate(SplineChar *sc, FontView *fv,int enc) {
     CharView *cv = gcalloc(1,sizeof(CharView));
     GWindowAttrs wattrs;
     GRect pos, zoom;
@@ -7402,9 +7378,11 @@ CharView *CharViewCreate(SplineChar *sc, FontView *fv) {
     GRect gsize;
     unichar_t ubuf[300];
 
-    sc = SCDuplicate(sc);	/* If they open a duplicate encoding point they should go to the real glyph */
-
     cv->sc = sc;
+    cv->fv = fv;
+    cv->enc = enc;
+    cv->map_of_enc = fv->map;		/* I know this is done again in _CharViewCreate, but it needs to be done before creating the title */
+
     SCLigCaretCheck(sc,false);
 
     memset(&wattrs,0,sizeof(wattrs));
@@ -7434,7 +7412,7 @@ CharView *CharViewCreate(SplineChar *sc, FontView *fv) {
     GGadgetGetSize(cv->mb,&gsize);
     cv->mbh = gsize.height;
 
-    _CharViewCreate(cv,sc,fv);
+    _CharViewCreate(cv,sc,fv,enc);
 return( cv );
 }
 
@@ -7469,9 +7447,9 @@ int CVValid(SplineFont *sf, SplineChar *sc, CharView *cv) {
 
     if ( cv->sc!=sc || sc->parent!=sf )
 return( false );
-    if ( sc->enc<0 || sc->enc>sf->charcnt )
+    if ( sc->orig_pos<0 || sc->orig_pos>sf->glyphcnt )
 return( false );
-    if ( sf->chars[sc->enc]!=sc )
+    if ( sf->glyphs[sc->orig_pos]!=sc )
 return( false );
     for ( test=sc->views; test!=NULL; test=test->next )
 	if ( test==cv )
@@ -7964,7 +7942,7 @@ static int sv_cv_e_h(GWindow gw, GEvent *event) {
       break;
       case et_mousemove:
 	if ( event->u.mouse.y>cv->mbh )
-	    SCPreparePopup(cv->gw,cv->sc);
+	    SCPreparePopup(cv->gw,cv->sc,cv->fv->map->remap,CVCurEnc(cv));
       break;
     }
 return( true );
@@ -7986,6 +7964,12 @@ void SVCharViewInits(SearchView *sv) {
     GGadgetGetSize(sv->mb,&gsize);
     sv->mbh = gsize.height;
 
+    sv->dummy_fv.map = &sv->dummy_map;
+    sv->dummy_map.map = sv->map;
+    sv->dummy_map.backmap = sv->backmap;
+    sv->dummy_map.enccount = sv->dummy_map.encmax = sv->dummy_map.backmax = 2;
+    sv->dummy_map.enc = &custom;
+
     pos.y = sv->mbh+sv->fh+10; pos.height = 220;
     pos.width = pos.height; pos.x = 10+pos.width+20;	/* Do replace first so palettes appear propperly */
     sv->rpl_x = pos.x; sv->cv_y = pos.y;
@@ -7995,10 +7979,10 @@ void SVCharViewInits(SearchView *sv) {
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
     sv->cv_rpl.gw = GWidgetCreateSubWindow(sv->gw,&pos,sv_cv_e_h,&sv->cv_rpl,&wattrs);
-    _CharViewCreate(&sv->cv_rpl, &sv->sc_rpl, &sv->dummy_fv);
+    _CharViewCreate(&sv->cv_rpl, &sv->sc_rpl, &sv->dummy_fv, 1);
 
     pos.x = 10;
     sv->cv_srch.gw = GWidgetCreateSubWindow(sv->gw,&pos,sv_cv_e_h,&sv->cv_srch,&wattrs);
-    _CharViewCreate(&sv->cv_srch, &sv->sc_srch, &sv->dummy_fv);
+    _CharViewCreate(&sv->cv_srch, &sv->sc_srch, &sv->dummy_fv, 0);
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

@@ -1892,7 +1892,7 @@ static GTextInfo simplefuncs[] = {
 static int MT_OK(GGadget *g, GEvent *e) {
     int type, func;
     MetaFontDlg *meta;
-    int i, cnt;
+    int i, cnt, gid;
     real stems, counters, xh=0;
     int err;
 
@@ -1934,17 +1934,21 @@ return( true );
 	    else if ( meta->sc!=NULL )
 		_MetaFont(meta,meta->sc);
 	    else {
-		for ( cnt=i=0; i<meta->fv->sf->charcnt; ++i )
-		    if ( meta->fv->sf->chars[i]!=NULL && meta->fv->selected[i] )
+		for ( cnt=i=0; i<meta->fv->map->enccount; ++i )
+		    if ( meta->fv->selected[i] && (gid=meta->fv->map->map[i])!=-1 &&
+			    meta->fv->sf->glyphs[gid]!=NULL )
 			++cnt;
 #if defined(FONTFORGE_CONFIG_GDRAW)
 		GProgressStartIndicatorR(10,_STR_MetamorphosingFont,_STR_MetamorphosingFont,0,cnt,1);
 #elif defined(FONTFORGE_CONFIG_GTK)
 		gwwv_progress_start_indicator(10,_("Metamorphosing Font..."),_("Metamorphosing Font..."),0,cnt,1);
 #endif
-		for ( i=0; i<meta->fv->sf->charcnt; ++i )
-		    if ( meta->fv->sf->chars[i]!=NULL && meta->fv->selected[i] ) {
-			_MetaFont(meta,meta->fv->sf->chars[i]);
+		SFUntickAll(meta->fv->sf);
+		for ( i=0; i<meta->fv->map->enccount; ++i )
+		    if ( meta->fv->selected[i] && (gid=meta->fv->map->map[i])!=-1 &&
+			    meta->fv->sf->glyphs[gid]!=NULL &&
+			    !meta->fv->sf->glyphs[gid]->ticked ) {
+			_MetaFont(meta,meta->fv->sf->glyphs[i]);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
 			if ( !GProgressNext())

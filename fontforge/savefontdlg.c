@@ -81,6 +81,7 @@ struct gfc_data {
     int psotb_flags;
     uint8 optset[3];
     SplineFont *sf;
+    EncMap *map;
 };
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
@@ -214,7 +215,7 @@ return( sizes );
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-static int WriteAfmFile(char *filename,SplineFont *sf, int formattype) {
+static int WriteAfmFile(char *filename,SplineFont *sf, int formattype, EncMap *map) {
     char *buf = galloc(strlen(filename)+6), *pt, *pt2;
     FILE *afm;
     int ret;
@@ -247,7 +248,7 @@ static int WriteAfmFile(char *filename,SplineFont *sf, int formattype) {
     free(buf);
     if ( afm==NULL )
 return( false );
-    ret = AfmSplineFont(afm,sf,subtype);
+    ret = AfmSplineFont(afm,sf,subtype,map);
     if ( fclose(afm)==-1 )
 return( false );
     if ( !ret )
@@ -274,7 +275,7 @@ return( false );
 	    free(buf);
 	    if ( afm==NULL )
 return( false );
-	    ret = AfmSplineFont(afm,sf,subtype);
+	    ret = AfmSplineFont(afm,sf,subtype,map);
 	    if ( fclose(afm)==-1 )
 return( false );
 	    if ( !ret )
@@ -299,14 +300,14 @@ return( false );
 	free(buf);
 	if ( afm==NULL )
 return( false );
-	ret = AmfmSplineFont(afm,mm,formattype);
+	ret = AmfmSplineFont(afm,mm,formattype,map);
 	if ( fclose(afm)==-1 )
 return( false );
     }
 return( ret );
 }
 
-static int WriteTfmFile(char *filename,SplineFont *sf, int formattype) {
+static int WriteTfmFile(char *filename,SplineFont *sf, int formattype, EncMap *map) {
     char *buf = galloc(strlen(filename)+6), *pt, *pt2;
     FILE *tfm, *enc;
     int ret;
@@ -334,7 +335,7 @@ static int WriteTfmFile(char *filename,SplineFont *sf, int formattype) {
     tfm = fopen(buf,"wb");
     if ( tfm==NULL )
 return( false );
-    ret = TfmSplineFont(tfm,sf,formattype);
+    ret = TfmSplineFont(tfm,sf,formattype,map);
     if ( fclose(tfm)==-1 )
 	ret = 0;
 
@@ -346,17 +347,17 @@ return( false );
 return( false );
 
     encname=NULL;
-    if ( sf->subfontcnt==0 && sf->encoding_name!=&custom && !sf->compacted )
-	encname = EncodingName(sf->encoding_name );
+    if ( sf->subfontcnt==0 && map->enc!=&custom )
+	encname = EncodingName(map->enc );
     if ( encname==NULL )
 	fprintf( enc, "/%s-Enc [\n", sf->fontname );
     else
 	fprintf( enc, "/%s [\n", encname );
-    for ( i=0; i<sf->charcnt && i<256; ++i ) {
-	if ( sf->chars[i]==NULL )
+    for ( i=0; i<map->enccount && i<256; ++i ) {
+	if ( map->map[i]==-1 || !SCWorthOutputting(sf->glyphs[map->map[i]]) )
 	    fprintf( enc, " /.notdef" );
 	else
-	    fprintf( enc, " /%s", sf->chars[i]->name );
+	    fprintf( enc, " /%s", sf->glyphs[map->map[i]]->name );
 	if ( (i&0xf)==0 )
 	    fprintf( enc, "\t\t%% 0x%02x", i );
 	putc('\n',enc);
@@ -378,7 +379,7 @@ return( ret );
 #ifndef FONTFORGE_CONFIG_WRITE_PFM
 static
 #endif
-int WritePfmFile(char *filename,SplineFont *sf, int type0) {
+int WritePfmFile(char *filename,SplineFont *sf, int type0, EncMap *map) {
     char *buf = galloc(strlen(filename)+6), *pt, *pt2;
     FILE *pfm;
     int ret;
@@ -403,7 +404,7 @@ int WritePfmFile(char *filename,SplineFont *sf, int type0) {
     free(buf);
     if ( pfm==NULL )
 return( false );
-    ret = PfmSplineFont(pfm,sf,type0);
+    ret = PfmSplineFont(pfm,sf,type0,map);
     if ( fclose(pfm)==-1 )
 return( 0 );
 return( ret );
@@ -1034,7 +1035,8 @@ return( -1 );
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-static int WriteBitmaps(char *filename,SplineFont *sf, int32 *sizes,int res, int bf) {
+static int WriteBitmaps(char *filename,SplineFont *sf, int32 *sizes,int res,
+	int bf, EncMap *map) {
     char *buf = galloc(strlen(filename)+30), *pt, *pt2;
     int i;
     BDFFont *bdf;
@@ -1102,9 +1104,9 @@ return( false );
 	gwwv_progress_change_line2(buf);
 #endif
 	if ( bf==bf_bdf ) 
-	    BDFFontDump(buf,bdf,EncodingName(sf->encoding_name),res);
+	    BDFFontDump(buf,bdf,map,res);
 	else
-	    FONFontDump(buf,bdf,res);
+	    FONFontDump(buf,bdf,map,res);
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressNextStage();
 #elif defined(FONTFORGE_CONFIG_GTK)
@@ -1125,8 +1127,8 @@ static int CheckIfTransparent(SplineFont *sf) {
     static char *buts[3] = { GTK_STOCK_YES, GTK_STOCK_CANCEL, NULL };
 #endif
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	SplineChar *sc = sf->chars[i];
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	SplineChar *sc = sf->glyphs[i];
 	for ( j=ly_fore; j<sc->layer_cnt; ++j ) {
 	    if ( sc->layers[j].fill_brush.opacity!=1 || sc->layers[j].stroke_pen.brush.opacity!=1 ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
@@ -1152,8 +1154,8 @@ static int CheckIfImages(SplineFont *sf) {
     static char *buts[3] = { GTK_STOCK_YES, GTK_STOCK_CANCEL, NULL };
 #endif
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	SplineChar *sc = sf->chars[i];
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	SplineChar *sc = sf->glyphs[i];
 	for ( j=ly_fore; j<sc->layer_cnt; ++j ) {
 	    if ( sc->layers[j].images!=NULL ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
@@ -1236,7 +1238,7 @@ return( ret );
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-static char *GetWernerSFDFile(SplineFont *sf) {
+static char *GetWernerSFDFile(SplineFont *sf,EncMap *map) {
     char *def=NULL, *ret;
     char buffer[100];
     unichar_t ubuf[100], *uret;
@@ -1247,20 +1249,20 @@ static char *GetWernerSFDFile(SplineFont *sf) {
 	    if ( sf->subfontcnt!=0 ) {
 		sprintf(buffer,"%.40s-%.40s-%d.sfd", sf->cidregistry,sf->ordering,supl);
 		def = buffer;
-	    } else if ( strstrmatch(sf->encoding_name->enc_name,"big")!=NULL &&
-		    strchr(sf->encoding_name->enc_name,'5')!=NULL ) {
-		if (strstrmatch(sf->encoding_name->enc_name,"hkscs")!=NULL )
+	    } else if ( strstrmatch(map->enc->enc_name,"big")!=NULL &&
+		    strchr(map->enc->enc_name,'5')!=NULL ) {
+		if (strstrmatch(map->enc->enc_name,"hkscs")!=NULL )
 		    def = "Big5HKSCS.sfd";
 		else
 		    def = "Big5.sfd";
-	    } else if ( strstrmatch(sf->encoding_name->enc_name,"sjis")!=NULL )
+	    } else if ( strstrmatch(map->enc->enc_name,"sjis")!=NULL )
 		def = "Sjis.sfd";
-	    else if ( strstrmatch(sf->encoding_name->enc_name,"Wansung")!=NULL ||
-		    strstrmatch(sf->encoding_name->enc_name,"EUC-KR")!=NULL )
+	    else if ( strstrmatch(map->enc->enc_name,"Wansung")!=NULL ||
+		    strstrmatch(map->enc->enc_name,"EUC-KR")!=NULL )
 		def = "Wansung.sfd";
-	    else if ( strstrmatch(sf->encoding_name->enc_name,"johab")!=NULL )
+	    else if ( strstrmatch(map->enc->enc_name,"johab")!=NULL )
 		def = "Johab.sfd";
-	    else if ( sf->encoding_name->is_unicodebmp || sf->encoding_name->is_unicodefull )
+	    else if ( map->enc->is_unicodebmp || map->enc->is_unicodefull )
 		def = "Unicode.sfd";
 	}
 	if ( def!=NULL ) {
@@ -1300,7 +1302,8 @@ return( NULL );
 return( ret );
 }
 
-static int32 *ParseWernerSFDFile(char *wernerfilename,SplineFont *sf,int *max,char ***_names) {
+static int32 *ParseWernerSFDFile(char *wernerfilename,SplineFont *sf,int *max,
+	char ***_names, EncMap *map) {
     /* one entry for each char, >=1 => that subfont, 0=>not mapped, -1 => end of char mark */
     int cnt=0, subfilecnt=0, thusfar;
     int k, warned = false;
@@ -1311,7 +1314,7 @@ static int32 *ParseWernerSFDFile(char *wernerfilename,SplineFont *sf,int *max,ch
     char buffer[200], *bpt;
     char *end, *pt;
     char *orig;
-    struct remap *map;
+    struct remap *remap;
     char **names;
     int loop;
 
@@ -1328,7 +1331,7 @@ return( NULL );
     k = 0;
     do {
 	_sf = sf->subfontcnt==0 ? sf : sf->subfonts[k++];
-	if ( _sf->charcnt>cnt ) cnt = _sf->charcnt;
+	if ( _sf->glyphcnt>cnt ) cnt = _sf->glyphcnt;
     } while ( k<sf->subfontcnt );
 
     mapping = gcalloc(cnt+1,sizeof(int32));
@@ -1408,18 +1411,24 @@ return( NULL );
 		r2 = r1;
 	    for ( i=r1; i<=r2; ++i ) {
 		modi = i;
-		if ( sf->remap!=NULL ) {
-		    for ( map = sf->remap; map->infont!=-1; ++map ) {
-			if ( i>=map->firstenc && i<=map->lastenc ) {
-			    modi = i-map->firstenc + map->infont;
+		if ( map->remap!=NULL ) {
+		    for ( remap = map->remap; remap->infont!=-1; ++remap ) {
+			if ( i>=remap->firstenc && i<=remap->lastenc ) {
+			    modi = i-remap->firstenc + remap->infont;
 		    break;
 			}
 		    }
 		}
-		if ( modi<cnt ) {
+		if ( modi<map->enccount )
+		    modi = map->map[modi];
+		else if ( sf->subfontcnt!=0 )
+		    modi = modi;
+		else
+		    modi = -1;
+		if ( modi<cnt && modi!=-1 ) {
 		    if ( mapping[modi]!=-1 && !warned ) {
 			if (( i==0xffff || i==0xfffe ) &&
-				(sf->encoding_name->is_unicodebmp || sf->encoding_name->is_unicodefull))
+				(map->enc->is_unicodebmp || map->enc->is_unicodefull))
 			    /* Not a character anyway. just ignore it */;
 			else {
 			    fprintf( stderr, "Warning: Encoding %d (%x) is mapped to at least two locations (%s@0x%02x and %s@0x%02x)\n Only one will be used here.\n",
@@ -1427,8 +1436,9 @@ return( NULL );
 			    warned = true;
 			}
 		    }
-		    mapping[modi] = (subfilecnt<<8) | thusfar++;
+		    mapping[modi] = (subfilecnt<<8) | thusfar;
 		}
+		thusfar++;
 	    }
 	}
 	if ( thusfar>256 )
@@ -1444,7 +1454,7 @@ return( mapping );
 }
 
 static int SaveSubFont(SplineFont *sf,char *newname,int32 *sizes,int res,
-	int32 *mapping, int subfont, char **names) {
+	int32 *mapping, int subfont, char **names,EncMap *map) {
     SplineFont temp;
     SplineChar *chars[256], **newchars;
     SplineFont *_sf;
@@ -1456,13 +1466,20 @@ static int SaveSubFont(SplineFont *sf,char *newname,int32 *sizes,int res,
 #if defined(FONTFORGE_CONFIG_GDRAW)
     unichar_t *ufile;
 #endif
-    SplineFont *parents[256];
     enum fontformat subtype = strstr(newname,".pfa")!=NULL ? ff_pfa : ff_pfb ;
+    EncMap encmap;
+    int _mapping[256], _backmap[256];
+
+    memset(&encmap,0,sizeof(encmap));
+    encmap.enccount = encmap.encmax = encmap.backmax = 256;
+    encmap.map = _mapping; encmap.backmap = _backmap;
+    memset(_mapping,-1,sizeof(_mapping));
+    memset(_backmap,-1,sizeof(_backmap));
+    encmap.enc = &custom;
 
     temp = *sf;
-    temp.encoding_name = &custom;
-    temp.charcnt = 256;
-    temp.chars = chars;
+    temp.glyphcnt = 256;
+    temp.glyphs = chars;
     temp.bitmaps = NULL;
     temp.subfonts = NULL;
     temp.subfontcnt = 0;
@@ -1474,17 +1491,17 @@ static int SaveSubFont(SplineFont *sf,char *newname,int32 *sizes,int res,
 	k = 0;
 	do {
 	    _sf = sf->subfontcnt==0 ? sf : sf->subfonts[k++];
-	    if ( i<_sf->charcnt && _sf->chars[i]!=NULL )
+	    if ( i<_sf->glyphcnt && _sf->glyphs[i]!=NULL )
 	break;
 	} while ( k<sf->subfontcnt );
-	if ( i<_sf->charcnt ) {
-	    if ( _sf->chars[i]!=NULL ) {
-		parents[mapping[i]&0xff] = _sf;
-		_sf->chars[i]->parent = &temp;
-		_sf->chars[i]->enc = mapping[i]&0xff;
+	if ( i<_sf->glyphcnt ) {
+	    if ( _sf->glyphs[i]!=NULL ) {
+		_sf->glyphs[i]->parent = &temp;
+		_sf->glyphs[i]->orig_pos = mapping[i]&0xff;
+		_mapping[i] = _backmap[i] = i;
 		++used;
 	    }
-	    chars[mapping[i]&0xff] = _sf->chars[i];
+	    chars[mapping[i]&0xff] = _sf->glyphs[i];
 	} else
 	    chars[mapping[i]&0xff] = NULL;
     }
@@ -1497,28 +1514,28 @@ return( 0 );
     /*  korean fonts huge */
     forever {
 	extras = 0;
-	for ( i=0; i<temp.charcnt; ++i ) if ( temp.chars[i]!=NULL ) {
-	    for ( ref=temp.chars[i]->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
+	for ( i=0; i<temp.glyphcnt; ++i ) if ( temp.glyphs[i]!=NULL ) {
+	    for ( ref=temp.glyphs[i]->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
 		if ( ref->sc->parent!=&temp )
 		    ++extras;
 	}
 	if ( extras == 0 )
     break;
-	newchars = gcalloc(temp.charcnt+extras,sizeof(SplineChar *));
-	memcpy(newchars,temp.chars,temp.charcnt*sizeof(SplineChar *));
-	if ( temp.chars!=chars ) free(temp.chars );
-	base = temp.charcnt;
-	temp.chars = newchars;
+	newchars = gcalloc(temp.glyphcnt+extras,sizeof(SplineChar *));
+	memcpy(newchars,temp.glyphs,temp.glyphcnt*sizeof(SplineChar *));
+	if ( temp.glyphs!=chars ) free(temp.glyphs );
+	base = temp.glyphcnt;
+	temp.glyphs = newchars;
 	extras = 0;
-	for ( i=0; i<base; ++i ) if ( temp.chars[i]!=NULL ) {
-	    for ( ref=temp.chars[i]->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
+	for ( i=0; i<base; ++i ) if ( temp.glyphs[i]!=NULL ) {
+	    for ( ref=temp.glyphs[i]->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
 		if ( ref->sc->parent!=&temp ) {
-		    temp.chars[base+extras] = ref->sc;
+		    temp.glyphs[base+extras] = ref->sc;
 		    ref->sc->parent = &temp;
-		    ref->sc->enc = base+extras++;
+		    ref->sc->orig_pos = base+extras++;
 		}
 	}
-	temp.charcnt += extras;	/* this might be a slightly different value from that found before if some references get reused. N'importe */
+	temp.glyphcnt += extras;	/* this might be a slightly different value from that found before if some references get reused. N'importe */
     }
 
     filename = galloc(strlen(newname)+2+10);
@@ -1567,7 +1584,7 @@ return( 0 );
 	strcat(pt,"]");
     }
 
-    err = !WritePSFont(filename,&temp,subtype,old_ps_flags);
+    err = !WritePSFont(filename,&temp,subtype,old_ps_flags,map);
     if ( err )
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_Savefailedtitle,_STR_Savefailedtitle);
@@ -1581,7 +1598,7 @@ return( 0 );
 #else
     if ( !err && (old_ps_flags&ps_flag_afm)) {
 #endif
-	if ( !WriteAfmFile(filename,&temp,oldformatstate)) {
+	if ( !WriteAfmFile(filename,&temp,oldformatstate,map)) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_Afmfailedtitle,_STR_Afmfailedtitle);
 #elif defined(FONTFORGE_CONFIG_GTK)
@@ -1591,7 +1608,7 @@ return( 0 );
 	}
     }
     if ( !err && (old_ps_flags&ps_flag_tfm) ) {
-	if ( !WriteTfmFile(filename,&temp,oldformatstate)) {
+	if ( !WriteTfmFile(filename,&temp,oldformatstate,map)) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_Tfmfailedtitle,_STR_Tfmfailedtitle);
 #elif defined(FONTFORGE_CONFIG_GTK)
@@ -1610,11 +1627,8 @@ return( 0 );
 	err = -1;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-    /* restore the parent pointers */
-    for ( i=0; i<temp.charcnt; ++i ) if ( temp.chars[i]!=NULL )
-	temp.chars[i]->parent = parents[i];
-    if ( temp.chars!=chars )
-	free(temp.chars);
+    if ( temp.glyphs!=chars )
+	free(temp.glyphs);
     GlyphHashFree( &temp );
     free( temp.xuid );
     free( temp.fontname );
@@ -1625,13 +1639,14 @@ return( err );
 
 /* ttf2tfm supports multiple sfd files. I do not. */
 static int WriteMultiplePSFont(SplineFont *sf,char *newname,int32 *sizes,
-	int res, char *wernerfilename) {
+	int res, char *wernerfilename,EncMap *map) {
     int err=0, tofree=false, max, filecnt;
     int32 *mapping;
     unichar_t *path;
-    int i;
+    int i,k;
     char **names;
     char *pt;
+    SplineFont *_sf;
 
     pt = strrchr(newname,'.');
     if ( pt==NULL ||
@@ -1645,12 +1660,12 @@ return( 0 );
     }
 
     if ( wernerfilename==NULL ) {
-	wernerfilename = GetWernerSFDFile(sf);
+	wernerfilename = GetWernerSFDFile(sf,map);
 	tofree = true;
     }
     if ( wernerfilename==NULL )
 return( 0 );
-    mapping = ParseWernerSFDFile(wernerfilename,sf,&max,&names);
+    mapping = ParseWernerSFDFile(wernerfilename,sf,&max,&names,map);
     if ( tofree ) free(wernerfilename);
     if ( mapping==NULL )
 return( 1 );
@@ -1680,7 +1695,18 @@ return( 1 );
     free(path);
 
     for ( i=0; i<=max && !err; ++i )
-	err = SaveSubFont(sf,newname,sizes,res,mapping,i,names);
+	err = SaveSubFont(sf,newname,sizes,res,mapping,i,names,map);
+
+    /* SaveSubFont messes up the parent and orig_pos fields. Fix 'em up */
+    k = 0;
+    do {
+	_sf = sf->subfontcnt==0 ? sf : sf->subfonts[k++];
+	for ( i=0; i<_sf->glyphcnt; ++i ) if ( _sf->glyphs[i]!=NULL ) {
+	    _sf->glyphs[i]->parent = _sf;
+	    _sf->glyphs[i]->orig_pos = i;
+	}
+    } while ( k<sf->subfontcnt );
+
     free(mapping);
     for ( i=0; names[i]!=NULL; ++i ) free(names[i]);
     free(names);
@@ -1695,7 +1721,7 @@ return( 1 );
 return( err );
 }
 
-static int _DoSave(SplineFont *sf,char *newname,int32 *sizes,int res) {
+static int _DoSave(SplineFont *sf,char *newname,int32 *sizes,int res,EncMap *map) {
     unichar_t *path;
     int err=false;
     int iscid = oldformatstate==ff_cid || oldformatstate==ff_cffcid ||
@@ -1703,7 +1729,7 @@ static int _DoSave(SplineFont *sf,char *newname,int32 *sizes,int res) {
     int flags = 0;
 
     if ( oldformatstate == ff_multiple )
-return( WriteMultiplePSFont(sf,newname,sizes,res,NULL));
+return( WriteMultiplePSFont(sf,newname,sizes,res,NULL,map));
 
     if ( oldformatstate<=ff_cffcid )
 	flags = old_ps_flags;
@@ -1725,7 +1751,7 @@ return( WriteMultiplePSFont(sf,newname,sizes,res,NULL));
 		 oldformatstate==ff_cid || oldformatstate==ff_cffcid ||
 		  oldformatstate==ff_otfcid || oldformatstate==ff_otfciddfont ?_STR_SavingCIDFont:
 		 _STR_SavingPSFont,NULL),
-	    path,sf->charcnt,1);
+	    path,sf->glyphcnt,1);
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_start_indicator(10,_("Saving font"),
 		GStringGetResource(oldformatstate==ff_ttf || oldformatstate==ff_ttfsym ||
@@ -1734,7 +1760,7 @@ return( WriteMultiplePSFont(sf,newname,sizes,res,NULL));
 		 oldformatstate==ff_cid || oldformatstate==ff_cffcid ||
 		  oldformatstate==ff_otfcid || oldformatstate==ff_otfciddfont ?_("Saving CID keyed font") :
 		 _("Saving PostScript Font"),NULL),
-	    path,sf->charcnt,1);
+	    path,sf->glyphcnt,1);
 #endif
     free(path);
     if ( oldformatstate!=ff_none ||
@@ -1753,34 +1779,34 @@ return( WriteMultiplePSFont(sf,newname,sizes,res,NULL));
 	    if ( sf->multilayer && CheckIfTransparent(sf))
 return( true );
 #endif
-	    oerr = !WritePSFont(newname,sf,oldformatstate,flags);
+	    oerr = !WritePSFont(newname,sf,oldformatstate,flags,map);
 	  break;
 	  case ff_ttf: case ff_ttfsym: case ff_otf: case ff_otfcid:
 	  case ff_cff: case ff_cffcid:
 	    oerr = !WriteTTFFont(newname,sf,oldformatstate,sizes,bmap,
-		flags);
+		flags,map);
 	  break;
 	  case ff_pfbmacbin:
-	    oerr = !WriteMacPSFont(newname,sf,oldformatstate,flags);
+	    oerr = !WriteMacPSFont(newname,sf,oldformatstate,flags,map);
 	  break;
 	  case ff_ttfmacbin: case ff_ttfdfont: case ff_otfdfont: case ff_otfciddfont:
 	    oerr = !WriteMacTTFFont(newname,sf,oldformatstate,sizes,
-		    bmap,flags);
+		    bmap,flags,map);
 	  break;
 	  case ff_svg:
 #ifdef FONTFORGE_CONFIG_TYPE3
 	    if ( sf->multilayer && CheckIfImages(sf))
 return( true );
 #endif
-	    oerr = !WriteSVGFont(newname,sf,oldformatstate,flags);
+	    oerr = !WriteSVGFont(newname,sf,oldformatstate,flags,map);
 	  break;
 	  case ff_none:		/* only if bitmaps, an sfnt wrapper for bitmaps */
 	    if ( bmap==bf_sfnt_dfont )
 		oerr = !WriteMacTTFFont(newname,sf,oldformatstate,sizes,
-			bmap,flags);
+			bmap,flags,map);
 	    else if ( bmap==bf_ttf )
 		oerr = !WriteTTFFont(newname,sf,oldformatstate,sizes,bmap,
-		    flags);
+		    flags,map);
 	  break;
 	}
 	if ( oerr ) {
@@ -1793,7 +1819,7 @@ return( true );
 	}
     }
     if ( !err && (flags&ps_flag_tfm) ) {
-	if ( !WriteTfmFile(newname,sf,oldformatstate)) {
+	if ( !WriteTfmFile(newname,sf,oldformatstate,map)) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_Tfmfailedtitle,_STR_Tfmfailedtitle);
 #elif defined(FONTFORGE_CONFIG_GTK)
@@ -1804,11 +1830,11 @@ return( true );
     }
     if ( !err && (flags&ps_flag_afm) ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	GProgressIncrementBy(-sf->charcnt);
+	GProgressIncrementBy(-sf->glyphcnt);
 #elif defined(FONTFORGE_CONFIG_GTK)
-	gwwv_progress_increment(-sf->charcnt);
+	gwwv_progress_increment(-sf->glyphcnt);
 #endif
-	if ( !WriteAfmFile(newname,sf,oldformatstate)) {
+	if ( !WriteAfmFile(newname,sf,oldformatstate,map)) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_Afmfailedtitle,_STR_Afmfailedtitle);
 #elif defined(FONTFORGE_CONFIG_GTK)
@@ -1820,12 +1846,12 @@ return( true );
     if ( !err && (flags&ps_flag_pfm) && !iscid ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressChangeLine1R(_STR_SavingPFM);
-	GProgressIncrementBy(-sf->charcnt);
+	GProgressIncrementBy(-sf->glyphcnt);
 #elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_progress_change_line1(_("Saving PFM File"));
-	gwwv_progress_increment(-sf->charcnt);
+	gwwv_progress_increment(-sf->glyphcnt);
 #endif
-	if ( !WritePfmFile(newname,sf,oldformatstate==ff_ptype0)) {
+	if ( !WritePfmFile(newname,sf,oldformatstate==ff_ptype0,map)) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_Pfmfailedtitle,_STR_Pfmfailedtitle);
 #elif defined(FONTFORGE_CONFIG_GTK)
@@ -1841,26 +1867,26 @@ return( true );
 	    strcpy(temp,newname);
 	    strcat(temp,"otb");
 	}
-	if ( !WriteTTFFont(temp,sf,ff_none,sizes,bf_otb,flags) )
+	if ( !WriteTTFFont(temp,sf,ff_none,sizes,bf_otb,flags,map) )
 	    err = true;
 	if ( temp!=newname )
 	    free(temp);
     } else if ( (oldbitmapstate==bf_bdf || oldbitmapstate==bf_fon) && !err ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressChangeLine1R(_STR_SavingBitmapFonts);
-	GProgressIncrementBy(-sf->charcnt);
+	GProgressIncrementBy(-sf->glyphcnt);
 #elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_progress_change_line1(_("Saving Bitmap Font(s)"));
-	gwwv_progress_increment(-sf->charcnt);
+	gwwv_progress_increment(-sf->glyphcnt);
 #endif
-	if ( !WriteBitmaps(newname,sf,sizes,res,oldbitmapstate))
+	if ( !WriteBitmaps(newname,sf,sizes,res,oldbitmapstate,map))
 	    err = true;
     } else if ( oldbitmapstate==bf_palm && !err ) {
-	if ( !WritePalmBitmaps(newname,sf,sizes))
+	if ( !WritePalmBitmaps(newname,sf,sizes,map))
 	    err = true;
     } else if ( (oldbitmapstate==bf_nfntmacbin /*|| oldbitmapstate==bf_nfntdfont*/) &&
 	    !err ) {
-	if ( !WriteMacBitmaps(newname,sf,sizes,false/*oldbitmapstate==bf_nfntdfont*/))
+	if ( !WriteMacBitmaps(newname,sf,sizes,false/*oldbitmapstate==bf_nfntdfont*/,map))
 	    err = true;
     }
     free( sizes );
@@ -1895,7 +1921,7 @@ return( sizes );
 }
 
 int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
-	int res, char *subfontdefinition, struct sflist *sfs) {
+	int res, char *subfontdefinition, struct sflist *sfs,EncMap *map) {
     int i;
     static char *bitmaps[] = {"bdf", "ttf", "sbit", "bin", /*"dfont", */"fnt", "otb", "pdb", NULL };
     int32 *sizes=NULL;
@@ -1956,7 +1982,7 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	    i = ff_none;
 	}
     }
-    if ( i==ff_ptype3 && sf->encoding_name->has_2byte )
+    if ( i==ff_ptype3 && map->enc->has_2byte )
 	i = ff_ptype0;
     else if ( i==ff_ttfdfont && strmatch(end-strlen(".otf.dfont"),".otf.dfont")==0 )
 	i = ff_otfdfont;
@@ -2060,13 +2086,13 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	    flags = old_ttf_flags;
 	else
 	    flags = old_otf_flags;
-return( WriteMacFamily(filename,sfs,oldformatstate,oldbitmapstate,flags));
+return( WriteMacFamily(filename,sfs,oldformatstate,oldbitmapstate,flags,map));
     }
 
     if ( oldformatstate == ff_multiple )
-return( !WriteMultiplePSFont(sf,filename,sizes,res,subfontdefinition));
+return( !WriteMultiplePSFont(sf,filename,sizes,res,subfontdefinition,map));
 
-return( !_DoSave(sf,filename,sizes,res));
+return( !_DoSave(sf,filename,sizes,res,map));
 }
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -2095,9 +2121,9 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
     static int psscalewarned=0, ttfscalewarned=0;
     int flags;
 
-    for ( i=d->sf->charcnt-1; i>=1; --i )
-	if ( d->sf->chars[i]!=NULL && strcmp(d->sf->chars[i]->name,".notdef")==0 &&
-		(d->sf->chars[i]->layers[ly_fore].splines!=NULL || AnyRefs(d->sf->chars[i]->layers[ly_fore].refs )))
+    for ( i=d->sf->glyphcnt-1; i>=1; --i )
+	if ( d->sf->glyphs[i]!=NULL && strcmp(d->sf->glyphs[i]->name,".notdef")==0 &&
+		(d->sf->glyphs[i]->layers[ly_fore].splines!=NULL || AnyRefs(d->sf->glyphs[i]->layers[ly_fore].refs )))
     break;
     if ( i!=0 ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
@@ -2151,7 +2177,7 @@ return;
 
     if ( ((oldformatstate<ff_ptype0 && oldformatstate!=ff_multiple) ||
 		oldformatstate==ff_ttfsym || oldformatstate==ff_cff ) &&
-		d->sf->encoding_name->has_2byte ) {
+		d->map->enc->has_2byte ) {
 	static int buts[3] = { _STR_Yes, _STR_Cancel, 0 };
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( GWidgetAskR(_STR_EncodingTooLarge,buts,0,1,_STR_TwoBEncIn1BFont)==1 )
@@ -2195,6 +2221,7 @@ return;
 	cur->next = NULL;
 	sfs = last = cur;
 	cur->sf = d->sf;
+	cur->map = EncMapCopy(d->map);
 	cur->sizes = sizes;
 	for ( i=0; i<d->familycnt; ++i ) {
 	    if ( GGadgetIsChecked(GWidgetGetControl(d->gw,CID_Family+10*i)) ) {
@@ -2208,6 +2235,7 @@ return;
 		    SfListFree(sfs);
 return;
 		}
+		cur->map = EncMapFromEncoding(cur->sf,d->map->enc);
 	    }
 	}
     }
@@ -2239,9 +2267,9 @@ return;
     }
 
     if ( !d->family )
-	err = _DoSave(d->sf,temp,sizes,0x80000000);
+	err = _DoSave(d->sf,temp,sizes,0x80000000,d->map);
     else
-	err = !WriteMacFamily(temp,sfs,oldformatstate,oldbitmapstate,flags);
+	err = !WriteMacFamily(temp,sfs,oldformatstate,oldbitmapstate,flags,d->map);
 
     free(temp);
     d->done = !err;
@@ -2609,7 +2637,7 @@ return( uc_copy(buffer+1));
 
 typedef SplineFont *SFArray[48];
 
-int SFGenerateFont(SplineFont *sf,int family) {
+int SFGenerateFont(SplineFont *sf,int family,EncMap *map) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
@@ -2620,7 +2648,6 @@ int SFGenerateFont(SplineFont *sf,int family) {
     int i, j, k, old, ofs, y, fc, dupfc, dupstyle;
     int bs = GIntGetResource(_NUM_Buttonsize), bsbigger, totwid, spacing;
     SplineFont *temp;
-    int wascompacted = sf->compacted;
     int familycnt=0;
     int fondcnt = 0, fondmax = 10;
     SFArray *familysfs=NULL;
@@ -2645,7 +2672,7 @@ int SFGenerateFont(SplineFont *sf,int family) {
 	/* I could just disable the menu item, but I think it's a bit confusing*/
 	/*  and I want people to know why they can't generate a family */
 	FontView *fv;
-	SplineFont *dup=NULL, *badenc=NULL;
+	SplineFont *dup=NULL/*, *badenc=NULL*/;
 	familysfs = galloc((fondmax=10)*sizeof(SFArray));
 	memset(familysfs[0],0,sizeof(familysfs[0]));
 	familysfs[0][0] = sf;
@@ -2698,8 +2725,10 @@ int SFGenerateFont(SplineFont *sf,int family) {
 	for ( fc=0; fc<fondcnt; ++fc ) for ( i=0; i<48; ++i ) {
 	    if ( familysfs[fc][i]!=NULL ) {
 		++familycnt;
-		if ( familysfs[fc][i]->encoding_name!=sf->encoding_name )
+#if 0
+		if ( familysfs[fc][i]->encoding_name!=map->enc )
 		    badenc = fv->sf;
+#endif
 	    }
 	}
 	if ( MacStyleCode(sf,NULL)!=0 || familycnt==0 || sf->multilayer ) {
@@ -2718,6 +2747,7 @@ return( 0 );
 #endif
 		dup->fontname, familysfs[dupfc][dupstyle]->fontname);
 return( 0 );
+#if 0
 	} else if ( badenc ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_BadFamilyForMac,_STR_DifferentEncodings,
@@ -2726,11 +2756,9 @@ return( 0 );
 #endif
 		badenc->fontname, sf->fontname );
 return( 0 );
+#endif
 	}
     }
-
-    if ( wascompacted )
-	SFUncompactFont(sf);
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
@@ -2823,14 +2851,14 @@ return( 0 );
     gcd[6].creator = GListButtonCreate;
     for ( i=0; i<sizeof(formattypes)/sizeof(formattypes[0])-1; ++i )
 	formattypes[i].disabled = sf->onlybitmaps;
-    formattypes[ff_ptype0].disabled = sf->onlybitmaps || sf->encoding_name->only_1byte;
+    formattypes[ff_ptype0].disabled = sf->onlybitmaps || map->enc->only_1byte;
     formattypes[ff_mma].disabled = formattypes[ff_mmb].disabled =
 	     sf->mm==NULL || sf->mm->apple || !MMValid(sf->mm,false);
     formattypes[ff_cffcid].disabled = sf->cidmaster==NULL;
     formattypes[ff_cid].disabled = sf->cidmaster==NULL;
     formattypes[ff_otfcid].disabled = sf->cidmaster==NULL;
     formattypes[ff_otfciddfont].disabled = sf->cidmaster==NULL;
-    if ( sf->encoding_name->is_unicodefull )
+    if ( map->enc->is_unicodefull )
 	formattypes[ff_type42cid].disabled = true;	/* Identity CMap only handles BMP */
     ofs = oldformatstate;
     if (( ofs==ff_ptype0 && formattypes[ff_ptype0].disabled ) ||
@@ -3036,6 +3064,7 @@ return( 0 );
 
     memset(&d,'\0',sizeof(d));
     d.sf = sf;
+    d.map = map;
     d.family = family;
     d.familycnt = familycnt-1;		/* Don't include the "normal" instance */
     d.gfc = gcd[0].ret;
@@ -3053,12 +3082,6 @@ return( 0 );
     GDrawSetVisible(gw,true);
     while ( !d.done )
 	GDrawProcessOneEvent(NULL);
-    if ( wascompacted ) {
-	FontView *fvs;
-	SFCompactFont(sf);
-	for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame )
-	    GDrawRequestExpose(fvs->v,NULL,false);
-    }
     GDrawDestroyWindow(gw);
 return(d.ret);
 }

@@ -709,12 +709,12 @@ void SFConvertToOrder2(SplineFont *_sf) {
     k = 0;
     do {
 	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
-	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	    SCConvertToOrder2(sf->chars[i]);
-	    sf->chars[i]->ticked = false;
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	    SCConvertToOrder2(sf->glyphs[i]);
+	    sf->glyphs[i]->ticked = false;
 	}
-	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && !sf->chars[i]->ticked )
-	    SCConvertRefs(sf->chars[i]);
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL && !sf->glyphs[i]->ticked )
+	    SCConvertRefs(sf->glyphs[i]);
 
 	new = SplineSetsTTFApprox(sf->grid.splines);
 	SplinePointListsFree(sf->grid.splines);
@@ -767,12 +767,12 @@ void SFConvertToOrder3(SplineFont *_sf) {
     k = 0;
     do {
 	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
-	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	    SCConvertToOrder3(sf->chars[i]);
-	    sf->chars[i]->ticked = false;
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	    SCConvertToOrder3(sf->glyphs[i]);
+	    sf->glyphs[i]->ticked = false;
 	}
-	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && !sf->chars[i]->ticked )
-	    SCConvertRefs(sf->chars[i]);
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL && !sf->glyphs[i]->ticked )
+	    SCConvertRefs(sf->glyphs[i]);
 
 	new = SplineSetsPSApprox(sf->grid.splines);
 	SplinePointListsFree(sf->grid.splines);
@@ -817,14 +817,8 @@ void SplineRefigure2(Spline *spline) {
 		RealNear(from->nextcp.y,to->prevcp.y)) {
 	    from->nextcp.x = to->prevcp.x = (from->nextcp.x+to->prevcp.x)/2;
 	    from->nextcp.y = to->prevcp.y = (from->nextcp.y+to->prevcp.y)/2;
-	} else {
+	} else
 	    IError("Invalid 2nd order spline in SplineRefigure2" );
-#ifndef DEBUG		/* When debugging leave errors in so we can find them */
-	    from->nextcp.x = (from->nextcp.x + to->prevcp.x)/2;
-	    from->nextcp.y = (from->nextcp.y + to->prevcp.y)/2;
-	    to->prevcp = from->nextcp;
-#endif
-	}
     }
 
     xsp->d = from->me.x; ysp->d = from->me.y;
@@ -1068,8 +1062,8 @@ return( false );		/* Parallel vertical lines */
 	    inter->y = line2_1->y + (inter->x-line2_1->x) * (line2_2->y - line2_1->y)/(line2_2->x - line2_1->x);
 return( true );
     } else if ( line2_1->x == line2_2->x ) {
-	inter->y = line1_1->y + (inter->x-line1_1->x) * (line1_2->y - line1_1->y)/(line1_2->x - line1_1->x);
 	inter->x = line2_1->x;
+	inter->y = line1_1->y + (inter->x-line1_1->x) * (line1_2->y - line1_1->y)/(line1_2->x - line1_1->x);
 return( true );
     } else {
 	s1 = (line1_2->y - line1_1->y)/(line1_2->x - line1_1->x);

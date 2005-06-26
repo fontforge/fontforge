@@ -113,6 +113,8 @@ static void AnchorD_FindComplements(AnchorDlg *a) {
     int i, k, j, cnt;
     SplineFont *_sf = a->sc->parent, *sf;
     uint8 *sel, *oldsel;
+    FontView *fv = _sf->fv;
+    EncMap *map = fv->map;
 
     switch ( a->ap->type ) {
       case at_mark:
@@ -139,12 +141,12 @@ static void AnchorD_FindComplements(AnchorDlg *a) {
 	k = cnt = 0;
 	do {
 	    sf = _sf->subfontcnt==0 ? _sf : _sf->subfonts[k];
-	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-		for ( ap= sf->chars[i]->anchor; ap!=NULL; ap=ap->next ) {
+	    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+		for ( ap= sf->glyphs[i]->anchor; ap!=NULL; ap=ap->next ) {
 		    if ( ap->anchor == ac && ( ap->type==match || ap->type==match2 )) {
 			if ( j ) {
 			    a->apmatch[cnt].ap = ap;
-			    a->apmatch[cnt++].sc = sf->chars[i];
+			    a->apmatch[cnt++].sc = sf->glyphs[i];
 			} else
 			    ++cnt;
 			/* Don't break out of the loop as ligatures can have multiple locations */
@@ -161,21 +163,27 @@ static void AnchorD_FindComplements(AnchorDlg *a) {
     }
 
     if ( hasFreeType() && _sf->subfontcnt==0 ) {
-	sel = gcalloc(_sf->charcnt,1);
-	sel[a->sc->enc] = true;
-	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	    for ( ap= sf->chars[i]->anchor; ap!=NULL; ap=ap->next ) {
-		if ( ap->anchor == ac && ( ap->type==match || ap->type==match2 )) {
-		    sel[i] = true;
-	    break;
+	int enc = map->backmap[a->sc->orig_pos];
+	if ( enc!=-1 ) {
+	    sel = gcalloc(_sf->glyphcnt,1);
+	    sel[enc] = true;
+	    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+		enc = map->backmap[i];
+		if ( enc!=-1 ) {
+		    for ( ap= sf->glyphs[i]->anchor; ap!=NULL; ap=ap->next ) {
+			if ( ap->anchor == ac && ( ap->type==match || ap->type==match2 )) {
+			    sel[enc] = true;
+		    break;
+			}
+		    }
 		}
 	    }
+	    oldsel = fv->selected;
+	    fv->selected = sel;
+	    a->freetypecontext = FreeTypeFontContext(_sf,NULL,fv);
+	    fv->selected = oldsel;
+	    free(sel);
 	}
-	oldsel = _sf->fv->selected;
-	_sf->fv->selected = sel;
-	a->freetypecontext = FreeTypeFontContext(_sf,NULL,_sf->fv);
-	_sf->fv->selected = oldsel;
-	free(sel);
     }
 }
 
@@ -183,7 +191,7 @@ static BDFChar *APRasterize(void *freetypecontext, SplineChar *sc,int *off,int *
     BDFChar *bdfc;
 
     if ( freetypecontext ) {
-	bdfc = SplineCharFreeTypeRasterize(freetypecontext,sc->enc,pixelsize,8);
+	bdfc = SplineCharFreeTypeRasterize(freetypecontext,sc->orig_pos,pixelsize,8);
     } else
 	bdfc = SplineCharAntiAlias(sc,pixelsize,4);
 

@@ -132,9 +132,10 @@ static void SCStrokeIt(void *_sc, StrokeInfo *si) {
 static void FVStrokeIt(void *_fv, StrokeInfo *si) {
     FontView *fv = _fv;
     SplineSet *temp;
-    int i, cnt=0, layer;
+    int i, cnt=0, layer, gid;
+    SplineChar *sc;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] )
+    for ( i=0; i<fv->map->enccount; ++i ) if ( (gid=fv->map->map[i])!=-1 && fv->sf->glyphs[gid]!=NULL && fv->selected[i] )
 	++cnt;
 #if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressStartIndicatorR(10,_STR_Stroking,_STR_Stroking,0,cnt,1);
@@ -142,23 +143,27 @@ static void FVStrokeIt(void *_fv, StrokeInfo *si) {
     gwwv_progress_start_indicator(10,_("Stroking..."),_("Stroking..."),0,cnt,1);
 #endif
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] ) {
-	SplineChar *sc = fv->sf->chars[i];
-	SCPreserveState(sc,false);
-	for ( layer = ly_fore; layer<sc->layer_cnt; ++layer ) {
-	    temp = SSStroke(sc->layers[layer].splines,si,sc);
-	    SplinePointListsFree( sc->layers[layer].splines );
-	    sc->layers[layer].splines = temp;
-	}
-	SCCharChangedUpdate(sc);
+    SFUntickAll(fv->sf);
+    for ( i=0; i<fv->map->enccount; ++i ) {
+	if ( (gid=fv->map->map[i])!=-1 && (sc = fv->sf->glyphs[gid])!=NULL &&
+		!sc->ticked && fv->selected[i] ) {
+	    sc->ticked = true;
+	    SCPreserveState(sc,false);
+	    for ( layer = ly_fore; layer<sc->layer_cnt; ++layer ) {
+		temp = SSStroke(sc->layers[layer].splines,si,sc);
+		SplinePointListsFree( sc->layers[layer].splines );
+		sc->layers[layer].splines = temp;
+	    }
+	    SCCharChangedUpdate(sc);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	if ( !GProgressNext())
+	    if ( !GProgressNext())
 #elif defined(FONTFORGE_CONFIG_GTK)
-	if ( !gwwv_progress_next())
+	    if ( !gwwv_progress_next())
 #endif
     break;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+	}
     }
 #if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressEndIndicator();

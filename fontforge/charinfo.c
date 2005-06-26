@@ -36,8 +36,10 @@
 
 typedef struct charinfo {
     CharView *cv;
+    EncMap *map;
     SplineChar *sc;
     SplineChar *oldsc;		/* oldsc->charinfo will point to us. Used to keep track of that pointer */
+    int enc;
     GWindow gw;
     int done, first, changed;
 } CharInfo;
@@ -840,8 +842,8 @@ static void SFGuessScriptList(SplineFont *sf) {
     uint32 scripts[32], script;
     int i, scnt=0, j;
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	script = SCScriptFromUnicode(sf->chars[i]);
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	script = SCScriptFromUnicode(sf->glyphs[i]);
 	if ( script!=0 && script!=DEFAULT_SCRIPT ) {
 	    for ( j=scnt-1; j>=0 ; --j )
 		if ( scripts[j]==script )
@@ -3137,7 +3139,7 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
 		gwwv_post_error(_("Missing paired character"),_("You must specify a name by which to identify the paired character"));
 #endif
 		err = true;
-	    } else if ( SFGetCharDup(sf,-1,other)==NULL ) {
+	    } else if ( SFGetChar(sf,-1,other)==NULL ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 		if ( GWidgetAskR(_STR_MissingPaired,buts,0,1,_STR_PairedNotInFont,other)==1 )
 #elif defined(FONTFORGE_CONFIG_GTK)
@@ -3456,15 +3458,15 @@ static int LigCheck(SplineChar *sc,enum possub_type type,
 return( true );
 
     if ( type==pst_ligature ) {
-	for ( i=0; i<sf->charcnt; ++i )
-	    if ( sf->chars[i]!=sc && sf->chars[i]!=NULL && sf->chars[i]->possub!=NULL ) {
-		for ( pst=sf->chars[i]->possub; pst!=NULL; pst=pst->next )
+	for ( i=0; i<sf->glyphcnt; ++i )
+	    if ( sf->glyphs[i]!=sc && sf->glyphs[i]!=NULL && sf->glyphs[i]->possub!=NULL ) {
+		for ( pst=sf->glyphs[i]->possub; pst!=NULL; pst=pst->next )
 			if ( pst->type==pst_ligature && pst->tag==tag &&
 			    uc_strcmp(components,pst->u.lig.components)==0 ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-return( GWidgetAskR(_STR_Multiple,buts,0,1,_STR_AlreadyLigature,sf->chars[i]->name,i)==0 );
+return( GWidgetAskR(_STR_Multiple,buts,0,1,_STR_AlreadyLigature,sf->glyphs[i]->name,i)==0 );
 #elif defined(FONTFORGE_CONFIG_GTK)
-return( gwwv_ask(_("Multiple"),buts,0,1,_("There is already a ligature made from these components,\n(named %1$.40s, at local encoding %2$d)\nIs that what you want?"),sf->chars[i]->name,i)==0 );
+return( gwwv_ask(_("Multiple"),buts,0,1,_("There is already a ligature made from these components,\n(named %1$.40s, at local encoding %2$d)\nIs that what you want?"),sf->glyphs[i]->name,i)==0 );
 #endif
 		}
 	    }
@@ -4009,15 +4011,17 @@ return( -1 );
     if ( *end || val<0 || val>0x10ffff ) {
 	ProtestR( _STR_UnicodeValue );
 return( -2 );
+#if 0
     } else if ( val>65535 && sf->encoding_name->is_unicodebmp ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
+# if defined(FONTFORGE_CONFIG_GDRAW)
 	static int buts[] = { _STR_Yes, _STR_No, 0 };
 	if ( GWidgetAskR(_STR_PossiblyTooBig,buts,1,1,_STR_NotUnicodeBMP)==1 )
-#elif defined(FONTFORGE_CONFIG_GTK)
+# elif defined(FONTFORGE_CONFIG_GTK)
 	static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_NO, NULL };
 	if ( gwwv_ask(_("Value possibly out of range"),buts,1,1,_("Warning: This value is outside of the Unicode BMP.\nIs that really what you want?"))==1 )
-#endif
+# endif
 return(-2);
+#endif
     }
 return( val );
 }
@@ -4124,7 +4128,7 @@ static void SCAppendKernPST(SplineChar *sc,char *data,enum possub_type type,Spli
     if ( sscanf( pt+5, "%d %s offset=%d", &sli, name, &offset )!=3 )
 return;
     sli = SFConvertSLI(copied_from,sli,sc->parent,sc);
-    other = SFGetCharDup(sf,-1,name);
+    other = SFGetChar(sf,-1,name);
     if ( other==NULL )
 return;
     if ( type==pst_kerning || type==pst_vkerning ) {
@@ -4279,28 +4283,27 @@ int SCSetMetaData(SplineChar *sc,char *name,int unienc,const unichar_t *comment)
 	samename = true;	/* No change, it must be good */
     } else {
 	isnotdef = strcmp(name,".notdef")==0;
-	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]!=sc ) {
-	    if ( unienc!=-1 && sf->chars[i]->unicodeenc==unienc ) {
-		if ( !mv && !MultipleValues(sf->chars[i]->name,i)) {
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL && sf->glyphs[i]!=sc ) {
+	    if ( unienc!=-1 && sf->glyphs[i]->unicodeenc==unienc ) {
+		if ( !mv && !MultipleValues(sf->glyphs[i]->name,i)) {
 return( false );
 		}
 		mv = 1;
-	    } else if ( !isnotdef && strcmp(name,sf->chars[i]->name)==0 &&
-		    SCDuplicate(sc)!=SCDuplicate(sf->chars[i]) ) {
+	    } else if ( !isnotdef && strcmp(name,sf->glyphs[i]->name)==0 ) {
 		if ( !MultipleNames()) {
 return( false );
 		}
-		free(sf->chars[i]->name);
-		sf->chars[i]->namechanged = true;
-		if ( strncmp(sc->name,"uni",3)==0 && sf->chars[i]->unicodeenc!=-1) {
+		free(sf->glyphs[i]->name);
+		sf->glyphs[i]->namechanged = true;
+		if ( strncmp(sc->name,"uni",3)==0 && sf->glyphs[i]->unicodeenc!=-1) {
 		    char buffer[12];
-		    if ( sf->chars[i]->unicodeenc<0x10000 )
-			sprintf( buffer,"uni%04X", sf->chars[i]->unicodeenc);
+		    if ( sf->glyphs[i]->unicodeenc<0x10000 )
+			sprintf( buffer,"uni%04X", sf->glyphs[i]->unicodeenc);
 		    else
-			sprintf( buffer,"u%04X", sf->chars[i]->unicodeenc);
-		    sf->chars[i]->name = copy(buffer);
+			sprintf( buffer,"u%04X", sf->glyphs[i]->unicodeenc);
+		    sf->glyphs[i]->name = copy(buffer);
 		} else {
-		    sf->chars[i]->name = sc->name;
+		    sf->glyphs[i]->name = sc->name;
 		    sc->name = NULL;
 		}
 	    break;
@@ -4315,15 +4318,23 @@ return( false );
 	GlyphHashFree(sf);
     }
     sf->changed = true;
-    if ( (sf->encoding_name->is_unicodebmp || sf->encoding_name->is_unicodefull) &&
-	    unienc==sc->enc && unienc>=0xe000 && unienc<=0xf8ff )
+    if ( unienc>=0xe000 && unienc<=0xf8ff )
 	/* Ok to name things in the private use area */;
     else if ( samename )
 	/* Ok to name it itself */;
-    else if ( (sf->encoding_name->only_1byte && sc->enc<256) ||
-	    (sf->encoding_name->has_2byte && sc->enc<65535 ))
-	sf->encoding_name = &custom;
-
+    else {
+	FontView *fvs;
+	for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
+	    int enc = fvs->map->backmap[sc->orig_pos];
+	    if ( enc!=-1 && ((fvs->map->enc->only_1byte && enc<256) ||
+			(fvs->map->enc->has_2byte && enc<65535 ))) {
+		fvs->map->enc = &custom;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+		FVSetTitle(fvs);
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+	    }
+	}
+    }
     free(sc->comment); sc->comment = NULL;
     if ( comment!=NULL && *comment!='\0' )
 	sc->comment = u_copy(comment);
@@ -4865,15 +4876,19 @@ static SplineChar *SuffixCheck(SplineChar *sc,char *suffix) {
 
     if ( *suffix=='.' ) ++suffix;
     if ( sf->cidmaster!=NULL ) {
-	sprintf( namebuf, "%s.%d.%s", sf->cidmaster->ordering, sc->enc, suffix );
+	sprintf( namebuf, "%.20s.%d.%s", sf->cidmaster->ordering, sc->orig_pos, suffix );
 	alt = SFGetChar(sf,-1,namebuf);
 	if ( alt==NULL ) {
-	    sprintf( namebuf, "cid-%d.%s", sc->enc, suffix );
+	    sprintf( namebuf, "cid-%d.%s", sc->orig_pos, suffix );
 	    alt = SFGetChar(sf,-1,namebuf);
 	}
     }
     if ( alt==NULL && sc->unicodeenc!=-1 ) {
 	sprintf( namebuf, "uni%04X.%s", sc->unicodeenc, suffix );
+	alt = SFGetChar(sf,-1,namebuf);
+    }
+    if ( alt==NULL ) {
+	sprintf( namebuf, "glyph%d.%s", sc->orig_pos, suffix );
 	alt = SFGetChar(sf,-1,namebuf);
     }
     if ( alt==NULL ) {
@@ -5550,7 +5565,7 @@ static void CIFillup(CharInfo *ci) {
     char buffer[400];
     unichar_t ubuf[200];
     const unichar_t *bits;
-    int i,j;
+    int i,j,gid;
     GTextInfo **arrays[pst_max], **ti;
     int cnts[pst_max];
     PST *pst;
@@ -5573,10 +5588,12 @@ static void CIFillup(CharInfo *ci) {
 
     CI_CanPaste(ci);
 
-    GGadgetSetEnabled(GWidgetGetControl(ci->gw,-1), sc->enc>0 &&
-	    (sf->chars[sc->enc-1]==NULL || sf->chars[sc->enc-1]->charinfo==NULL));
-    GGadgetSetEnabled(GWidgetGetControl(ci->gw,1), sc->enc<sf->charcnt-1 &&
-	    (sf->chars[sc->enc+1]==NULL || sf->chars[sc->enc+1]->charinfo==NULL));
+    GGadgetSetEnabled(GWidgetGetControl(ci->gw,-1), ci->enc>0 &&
+	    ((gid=ci->map->map[ci->enc-1])==-1 ||
+	     sf->glyphs[gid]==NULL || sf->glyphs[gid]->charinfo==NULL));
+    GGadgetSetEnabled(GWidgetGetControl(ci->gw,1), ci->enc<ci->map->enccount-1 &&
+	    ((gid=ci->map->map[ci->enc+1])==-1 ||
+	     sf->glyphs[gid]==NULL || sf->glyphs[gid]->charinfo==NULL));
 
     temp = uc_copy(sc->name);
     GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_UName),temp);
@@ -5689,16 +5706,16 @@ static void CIFillup(CharInfo *ci) {
 static int CI_NextPrev(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	CharInfo *ci = GDrawGetUserData(GGadgetGetWindow(g));
-	int enc = ci->sc->enc + GGadgetGetCid(g);	/* cid is 1 for next, -1 for prev */
+	int enc = ci->enc + GGadgetGetCid(g);	/* cid is 1 for next, -1 for prev */
 	SplineChar *new;
 
-	if ( enc<0 || enc>=ci->sc->parent->charcnt ) {
+	if ( enc<0 || enc>=ci->map->enccount ) {
 	    GGadgetSetEnabled(g,false);
 return( true );
 	}
 	if ( !_CI_OK(ci))
 return( true );
-	new = SFMakeChar(ci->sc->parent,enc);
+	new = SFMakeChar(ci->sc->parent,ci->map,enc);
 	if ( new->charinfo!=NULL && new->charinfo!=ci ) {
 	    GGadgetSetEnabled(g,false);
 return( true );
@@ -5762,7 +5779,7 @@ return( false );
 return( true );
 }
 
-void SCCharInfo(SplineChar *sc) {
+void SCCharInfo(SplineChar *sc,EncMap *map,int enc) {
     CharInfo *ci;
     GRect pos;
     GWindowAttrs wattrs;
@@ -5784,6 +5801,10 @@ return;
     ci = gcalloc(1,sizeof(CharInfo));
     ci->sc = sc;
     ci->done = false;
+    ci->map = map;
+    if ( enc==-1 )
+	enc = map->backmap[sc->orig_pos];
+    ci->enc = enc;
 
     if ( !boxset ) {
 	extern GBox _ggadget_Default_Box;
@@ -6297,8 +6318,8 @@ return( false );
 	/* Is the current character involved in ANY kerning */
 	if ( head!=NULL )
 return( true );
-	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	    for ( kp = isv ? sf->chars[i]->vkerns : sf->chars[i]->kerns; kp!=NULL; kp = kp->next ) {
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	    for ( kp = isv ? sf->glyphs[i]->vkerns : sf->glyphs[i]->kerns; kp!=NULL; kp = kp->next ) {
 		if ( kp->sc == sc )
 return( true );
 	    }
@@ -6347,6 +6368,7 @@ int FVParseSelectByPST(FontView *fv,int type,
     SplineFont *sf;
     AnchorClass *ac;
     int first;
+    int gid;
 
     memset(&md,0,sizeof(md));
     md.sf = fv->sf;
@@ -6359,7 +6381,7 @@ int FVParseSelectByPST(FontView *fv,int type,
 	}
 	if (( type==pst_kerning || type==pst_vkerning ) &&
 		md.contains!=NULL ) {
-	    md.kernwith = SFGetCharDup(md.sf,-1,md.contains);
+	    md.kernwith = SFGetChar(md.sf,-1,md.contains);
 	    if ( md.kernwith==NULL )
 #if defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Select By ATT..."),_("Could not find the glyph: %.70s"),md.contains);
@@ -6424,17 +6446,23 @@ return( false );
     sf = fv->sf;
     first = -1;
     if ( search_type==1 ) {	/* Select results */
-	for ( i=0; i<sf->charcnt; ++i )
-	    if ( (fv->selected[i] = tester(sf->chars[i],&md)) && first==-1 )
+	for ( i=0; i<fv->map->enccount; ++i ) {
+	    gid=fv->map->map[i];
+	    if ( (fv->selected[i] = tester(gid==-1?NULL:sf->glyphs[gid],&md)) && first==-1 )
 		first = i;
+	}
     } else if ( search_type==2) {/* merge results */
-	for ( i=0; i<sf->charcnt; ++i ) if ( !fv->selected[i] )
-	    if ( (fv->selected[i] = tester(sf->chars[i],&md)) && first==-1 )
+	for ( i=0; i<fv->map->enccount; ++i ) if ( !fv->selected[i] ) {
+	    gid=fv->map->map[i];
+	    if ( (fv->selected[i] = tester(gid==-1?NULL:sf->glyphs[gid],&md)) && first==-1 )
 		first = i;
+	}
     } else {			/* restrict selection */
-	for ( i=0; i<sf->charcnt; ++i ) if ( fv->selected[i] )
-	    if ( (fv->selected[i] = tester(sf->chars[i],&md)) && first==-1 )
+	for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] ) {
+	    gid=fv->map->map[i];
+	    if ( (fv->selected[i] = tester(gid==-1?NULL:sf->glyphs[gid],&md)) && first==-1 )
 		first = i;
+	}
     }
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( first!=-1 )
@@ -6730,11 +6758,11 @@ return( true );
 return( true );
 
     sf = sc->parent;
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	for ( kp = sf->chars[i]->kerns; kp!=NULL; kp=kp->next )
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	for ( kp = sf->glyphs[i]->kerns; kp!=NULL; kp=kp->next )
 	    if ( kp->sc == sc && kp->off!=0 )
 return( true );
-	for ( kp = sf->chars[i]->kerns; kp!=NULL; kp=kp->next )
+	for ( kp = sf->glyphs[i]->kerns; kp!=NULL; kp=kp->next )
 	    if ( kp->sc == sc && kp->off!=0 )
 return( true );
     }
@@ -6779,10 +6807,10 @@ return;
 
     sf = sc->parent;
     hask = hasv = false;
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	for ( kp = sf->chars[i]->kerns; kp!=NULL; kp=kp->next )
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	for ( kp = sf->glyphs[i]->kerns; kp!=NULL; kp=kp->next )
 	    if ( kp->sc == sc && kp->off!=0 ) hask = true;
-	for ( kp = sf->chars[i]->kerns; kp!=NULL; kp=kp->next )
+	for ( kp = sf->glyphs[i]->kerns; kp!=NULL; kp=kp->next )
 	    if ( kp->sc == sc && kp->off!=0 ) hasv = true;
     }
     cnt += hask + hasv;
@@ -6854,19 +6882,19 @@ return;
     }
     if ( hask ) {
 	if ( sel[i] ) {
-	    for ( j=0; j<sf->charcnt; ++j ) if ( sf->chars[j]!=NULL )
-		for ( kp=sf->chars[j]->kerns; kp!=NULL; kp=kp->next )
+	    for ( j=0; j<sf->glyphcnt; ++j ) if ( sf->glyphs[j]!=NULL )
+		for ( kp=sf->glyphs[j]->kerns; kp!=NULL; kp=kp->next )
 		    if ( kp->off!=0 && kp->sc==sc )
-			CopyPSTAppend(pst_kernback,Kern2Text(sf->chars[j],kp,false));
+			CopyPSTAppend(pst_kernback,Kern2Text(sf->glyphs[j],kp,false));
 	}
 	++i;
     }
     if ( hasv ) {
 	if ( sel[i] ) {
-	    for ( j=0; j<sf->charcnt; ++j ) if ( sf->chars[j]!=NULL )
-		for ( kp=sf->chars[j]->vkerns; kp!=NULL; kp=kp->next )
+	    for ( j=0; j<sf->glyphcnt; ++j ) if ( sf->glyphs[j]!=NULL )
+		for ( kp=sf->glyphs[j]->vkerns; kp!=NULL; kp=kp->next )
 		    if ( kp->off!=0 && kp->sc==sc )
-			CopyPSTAppend(pst_vkernback,Kern2Text(sf->chars[j],kp,true));
+			CopyPSTAppend(pst_vkernback,Kern2Text(sf->glyphs[j],kp,true));
 	}
 	++i;
     }

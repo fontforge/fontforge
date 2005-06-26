@@ -464,8 +464,8 @@ static void IkarusReadChar(SplineChar *sc,FILE *file) {
     IkarusNameFromURWNumber(sc,number);
     following = getushort(file);
     if ( following!=0 )
-	fprintf( stderr, "This character (%d) has a following part (%d). I'm not sure what that means, please send me (gww@silcom.com) a copy of this font so I can test with it.\n",
-		sc->enc, following );
+	fprintf( stderr, "This character (gid=%d) has a following part (%d). I'm not sure what that means, please send me (gww@silcom.com) a copy of this font so I can test with it.\n",
+		sc->orig_pos, following );
     for ( i=3; i<n ; ++i )
 	getushort(file);	/* Just in case the name section is bigger now */
 
@@ -689,16 +689,17 @@ return( NULL );
 	offsets[i] = (rpos-1)*4096 + 2*(wpos-1);
     }
 
-    sf = SplineFontBlank(&custom,numchars/*maxnum+1*/);
+    sf = SplineFontBlank(numchars/*maxnum+1*/);
     IkarusFontname(sf,fullname,fnam);
     sf->italicangle = italic_angle;
     sf->ascent = 12000; sf->descent = 3000;	/* Ikarus fonts live in a 15,000 em world */
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
-	sf->chars[i]->width = sf->chars[i]->vwidth = 15000;
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
+	sf->glyphs[i]->width = sf->glyphs[i]->vwidth = 15000;
+    sf->map = EncMapNew(numchars,numchars,&custom);
 
     for ( i=0; i<numchars; ++i ) {
 	fseek(file,offsets[i],SEEK_SET);
-	IkarusReadChar(SFMakeChar(sf,i),file);
+	IkarusReadChar(SFMakeChar(sf,sf->map,i),file);
     }
     if ( loaded_fonts_same_as_new && new_fonts_are_order2 )
 	SFConvertToOrder2(sf);

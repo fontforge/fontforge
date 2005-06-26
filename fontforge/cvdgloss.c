@@ -877,7 +877,7 @@ return(1);
 	cnt = exc->stack[exc->top-1];
 	scrprintf(&scr,"Pops: %d (count)", cnt ); 
 	for ( i=0; i<cnt; ++i ) {
-	    if ( 2*i+3 > exc->top ) {
+	    if ( 2*cnt+3 > exc->top ) {
 		scrprintf(&scr,"*** Stack underflow ***"); 
 	break;
 	    }

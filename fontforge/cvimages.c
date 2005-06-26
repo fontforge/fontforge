@@ -1094,8 +1094,8 @@ int FVImportImages(FontView *fv,char *path,int format,int toback, int flags) {
     SplineChar *sc;
 
     tot = 0;
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->selected[i]) {
-	sc = SFMakeChar(fv->sf,i);
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i]) {
+	sc = SFMakeChar(fv->sf,fv->map,i);
 	endpath = strchr(start,';');
 	if ( endpath!=NULL ) *endpath = '\0';
 	if ( format==fv_image ) {
@@ -1164,7 +1164,6 @@ int FVImportImageTemplate(FontView *fv,char *path,int format,int toback, int fla
     DIR *dir;
     struct dirent *entry;
     SplineChar *sc;
-    BDFFont *bdf;
     char start [1025];
 
     ext = strrchr(path,'.');
@@ -1220,7 +1219,7 @@ return( false );
     continue;
 	sprintf (start, "%s/%s", dirname, entry->d_name);
 	if ( isu ) {
-	    i = SFFindChar(fv->sf,val,NULL);
+	    i = SFFindSlot(fv->sf,fv->map,val,NULL);
 	    if ( i==-1 ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_UnicodeNotInFont,_STR_UnicodeValueNotInFont,val);
@@ -1229,22 +1228,10 @@ return( false );
 #endif
     continue;
 	    }
-	    sc = SFMakeChar(fv->sf,i);
+	    sc = SFMakeChar(fv->sf,fv->map,i);
 	} else {
-	    if ( val<fv->sf->charcnt )
+	    if ( val<fv->map->enccount ) {
 		/* It's there */;
-	    else if ( val<10*65536 ) {
-		fv->sf->chars = grealloc(fv->sf->chars,val*sizeof(SplineChar *));
-		fv->selected = grealloc(fv->selected,val);
-		for ( i=fv->sf->charcnt; i<val; ++i ) {
-		    fv->sf->chars[i] = NULL;
-		    fv->selected[i] = false;
-		}
-		for ( bdf=fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
-		    bdf->chars = grealloc(bdf->chars,val*sizeof(BDFChar *));
-		    for ( i=bdf->charcnt; i<val; ++i )
-			bdf->chars[i] = NULL;
-		}
 	    } else {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_EncodingNotInFont,_STR_EncodingValueNotInFont,val);
@@ -1253,7 +1240,7 @@ return( false );
 #endif
     continue;
 	    }
-	    sc = SFMakeChar(fv->sf,val);
+	    sc = SFMakeChar(fv->sf,fv->map,val);
 	}
 	if ( format==fv_imgtemplate ) {
 	    image = GImageRead(start);

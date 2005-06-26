@@ -1277,7 +1277,7 @@ void SCEditInstructions(SplineChar *sc) {
     /*  the "normal" instance of the font. The instructions are the same for */
     /*  all instances (the cvt table might be different) */
     if ( sc->parent->mm!=NULL && sc->parent->mm->apple )
-	sc = sc->parent->mm->normal->chars[sc->enc];
+	sc = sc->parent->mm->normal->glyphs[sc->orig_pos];
 
     for ( id = sc->parent->instr_dlgs; id!=NULL && id->sc!=sc; id=id->next );
     if ( id!=NULL ) {

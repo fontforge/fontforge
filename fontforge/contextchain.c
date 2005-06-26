@@ -1237,14 +1237,14 @@ static void _CCD_ToSelection(struct contextchaindlg *ccd,int cid,int order_matte
 
     GDrawRaise(fv->gw);
     GDrawSetVisible(fv->gw,true);
-    memset(fv->selected,0,sf->charcnt);
+    memset(fv->selected,0,fv->map->enccount);
     i=1;
     while ( *ret ) {
 	end = u_strchr(ret,' ');
 	if ( end==NULL ) end = ret+u_strlen(ret);
 	nm = cu_copybetween(ret,end);
 	for ( ret = end; isspace(*ret); ++ret);
-	if (( pos = SFFindChar(sf,-1,nm))!=-1 ) {
+	if (( pos = SFFindSlot(sf,fv->map,-1,nm))!=-1 ) {
 	    if ( found==-1 ) found = pos;
 	    fv->selected[pos] = i;
 	    if ( order_matters && i<255 ) ++i;
@@ -1285,8 +1285,8 @@ static void _CCD_FromSelection(struct contextchaindlg *ccd,int cid,int order_mat
     int i, j, len, max;
     SplineChar *sc;
 
-    for ( i=len=max=0; i<sf->charcnt; ++i ) if ( fv->selected[i]) {
-	sc = SFMakeChar(sf,i);
+    for ( i=len=max=0; i<fv->map->enccount; ++i ) if ( fv->selected[i]) {
+	sc = SFMakeChar(sf,fv->map,i);
 	len += strlen(sc->name)+1;
 	if ( fv->selected[i]>max ) max = fv->selected[i];
     }
@@ -1296,16 +1296,16 @@ static void _CCD_FromSelection(struct contextchaindlg *ccd,int cid,int order_mat
 	/* in a glyph string the order of selection is important */
 	/* also in replacement list */
 	for ( j=1; j<=max; ++j ) {
-	    for ( i=0; i<sf->charcnt; ++i ) if ( fv->selected[i]==j ) {
-		uc_strcpy(pt,sf->chars[i]->name);
+	    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i]==j ) {
+		uc_strcpy(pt,sf->glyphs[i]->name);
 		pt += u_strlen(pt);
 		*pt++ = ' ';
 	    }
 	}
     } else {
 	/* in a coverage table (or class) the order of selection is irrelevant */
-	for ( i=0; i<sf->charcnt; ++i ) if ( fv->selected[i] ) {
-	    uc_strcpy(pt,sf->chars[i]->name);
+	for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] ) {
+	    uc_strcpy(pt,sf->glyphs[i]->name);
 	    pt += u_strlen(pt);
 	    *pt++ = ' ';
 	}
@@ -2023,7 +2023,22 @@ return;
 	g = GWidgetGetControl(ccd->gw,CID_RplList+100);
     }
 
-    DropChars2Text(ccd->gw,g,event);
+    if ( !GDrawSelectionHasType(ccd->gw,sn_drag_and_drop,"STRING"))
+return;
+    cnames = GDrawRequestSelection(ccd->gw,sn_drag_and_drop,"STRING",&len);
+    if ( cnames==NULL )
+return;
+
+    ret = _GGadgetGetTitle(g);
+    unames = galloc((strlen(cnames)+u_strlen(ret)+8)*sizeof(unichar_t));
+    u_strcpy(unames,ret);
+    pt = unames+u_strlen(unames);
+    if ( pt>unames && pt[-1]!=' ' )
+	uc_strcpy(pt," ");
+    uc_strcat(pt,cnames);
+    free(cnames);
+
+    GGadgetSetTitle(g,unames);
 }
 
 static int subccd_e_h(GWindow gw, GEvent *event) {

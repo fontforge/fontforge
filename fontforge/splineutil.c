@@ -719,8 +719,8 @@ void SplineFontFindBounds(SplineFont *sf,DBounds *bounds) {
     bounds->minx = bounds->maxx = 0;
     bounds->miny = bounds->maxy = 0;
 
-    for ( i = 0; i<sf->charcnt; ++i ) {
-	SplineChar *sc = sf->chars[i];
+    for ( i = 0; i<sf->glyphcnt; ++i ) {
+	SplineChar *sc = sf->glyphs[i];
 	if ( sc!=NULL ) {
 	    for ( k=ly_fore; k<sc->layer_cnt; ++k ) {
 		for ( rf=sc->layers[k].refs; rf!=NULL; rf = rf->next ) {
@@ -968,8 +968,8 @@ void SplineFontQuickConservativeBounds(SplineFont *sf,DBounds *b) {
 
     b->minx = b->miny = 1e10;
     b->maxx = b->maxy = -1e10;
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	SplineCharQuickConservativeBounds(sf->chars[i],&bb);
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	SplineCharQuickConservativeBounds(sf->glyphs[i],&bb);
 	if ( bb.minx < b->minx ) b->minx = bb.minx;
 	if ( bb.miny < b->miny ) b->miny = bb.miny;
 	if ( bb.maxx > b->maxx ) b->maxx = bb.maxx;
@@ -1518,14 +1518,14 @@ static void InstanciateReference(SplineFont *sf, RefChar *topref, RefChar *refs,
 
     if ( !refs->checked ) {
 	if ( refs->sc!=NULL )
-	    i = refs->sc->enc;		/* Can happen in type3 fonts */
-	else for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
-	    if ( strcmp(sf->chars[i]->name,AdobeStandardEncoding[refs->adobe_enc])==0 )
+	    i = refs->sc->orig_pos;		/* Can happen in type3 fonts */
+	else for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
+	    if ( strcmp(sf->glyphs[i]->name,AdobeStandardEncoding[refs->adobe_enc])==0 )
 	break;
-	if ( i!=sf->charcnt && !sf->chars[i]->ticked ) {
+	if ( i!=sf->glyphcnt && !sf->glyphs[i]->ticked ) {
 	    refs->checked = true;
-	    refs->sc = rsc = sf->chars[i];
-	    refs->local_enc = rsc->enc;
+	    refs->sc = rsc = sf->glyphs[i];
+	    refs->orig_pos = rsc->orig_pos;
 	    SCMakeDependent(dsc,rsc);
 	} else {
 	    fprintf( stderr, "Couldn't find referenced character \"%s\" in %s\n",
@@ -1679,7 +1679,6 @@ static void SplineFontMetaData(SplineFont *sf,struct fontdict *fd) {
     sf->cidversion = fd->cidversion;
     sf->xuid = XUIDFromFD(fd->xuid);
     /*sf->wasbinary = fd->wasbinary;*/
-    sf->encoding_name = fd->encoding_name;
     if ( fd->fontmatrix[0]==0 )
 	em = 1000;
     else
@@ -1712,50 +1711,6 @@ static void SplineFontMetaData(SplineFont *sf,struct fontdict *fd) {
     }
 }
 
-SplineChar *MakeDupRef(SplineChar *base, int local_enc, int uni_enc) {
-    SplineChar *sc = SplineCharCreate();
-
-    sc->enc = local_enc;
-    sc->unicodeenc = uni_enc;
-    sc->width = base->width;
-    sc->vwidth = base->vwidth;
-    sc->name = copy(base->name);
-    sc->parent = base->parent;
-
-    /* Used not to bother for spaces, but SCDuplicate depends on the ref */
-    /*if ( dup->sc->layers[ly_fore].refs!=NULL || dup->sc->layers[ly_fore].splines!=NULL )*/ {
-	RefChar *ref = RefCharCreate();
-	sc->layers[ly_fore].refs = ref;
-	ref->sc = base;
-	ref->local_enc = base->enc;
-	ref->unicode_enc = base->unicodeenc;
-	ref->adobe_enc = getAdobeEnc(base->name);
-	ref->transform[0] = ref->transform[3] = 1;
-	SCReinstanciateRefChar(sc,ref);
-	SCMakeDependent(sc,base);
-	ref->checked = true;
-    }
-return( sc );
-}
-
-static SplineChar *DuplicateNameReference(SplineFont *sf,char **encoding,int encindex) {
-    SplineChar *sc = NULL;
-    int i;
-
-    for ( i=0; i<encindex; ++i )
-	if ( i!=encindex && strcmp(encoding[i],encoding[encindex])==0 )
-    break;
-    /* Encoding calls for a glyph which did not exist. Try .notdef instead */
-    if ( i<encindex )
-	for ( i=0; i<encindex; ++i )
-	    if ( i!=encindex && strcmp(encoding[i],".notdef")==0 )
-	break;
-
-    if ( i<encindex && sf->chars[i]!=NULL )
-	sc = MakeDupRef(sf->chars[i],encindex,-1);
-return( sc );
-}
-
 static void TransByFontMatrix(SplineFont *sf,real fontmatrix[6]) {
     real trans[6];
     int em = sf->ascent+sf->descent, i;
@@ -1775,7 +1730,7 @@ return;		/* It's just the expected matrix */
     trans[4] = rint(fontmatrix[4]*em);
     trans[5] = rint(fontmatrix[5]*em);
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
 	SplinePointListTransform(sc->layers[ly_fore].splines,trans,true);
 	for ( refs=sc->layers[ly_fore].refs; refs!=NULL; refs=refs->next ) {
 	    /* Just scale the offsets. we'll do all the base characters */
@@ -1790,7 +1745,7 @@ return;		/* It's just the expected matrix */
 	sc->changedsincelasthinted = true;
 	sc->manualhints = false;
     }
-    for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
 	for ( refs=sc->layers[ly_fore].refs; refs!=NULL; refs=refs->next )
 	    SCReinstanciateRefChar(sc,refs);
     }
@@ -1800,11 +1755,11 @@ static void SFInstanciateRefs(SplineFont *sf) {
     int i, layer;
     RefChar *refs, *next, *pr;
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
-	sf->chars[i]->ticked = false;
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
+	sf->glyphs[i]->ticked = false;
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	SplineChar *sc = sf->chars[i];
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	SplineChar *sc = sf->glyphs[i];
 
 	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
 	    for ( pr=NULL, refs = sc->layers[layer].refs; refs!=NULL; refs=next ) {
@@ -1829,100 +1784,43 @@ static void SFInstanciateRefs(SplineFont *sf) {
     }
 }
 
-static void GreekUnicodeCheck(SplineFont *sf) {
-#if 0
-    int i, changed, j, fixup;
-
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	SplineChar *sc = sf->chars[i];
-	changed = false;
-	if ( sc->unicodeenc==0x2206 && sf->chars[i-1]!=NULL &&
-		sf->chars[i-1]->unicodeenc==0x0393 ) {
-	    fixup = 0x394;		/* Delta should be Greek letter, not increment here */
-	    changed = 0x2206;
-	} else if ( sc->unicodeenc==0x2126 && sf->chars[i-1]!=NULL &&
-		sf->chars[i-1]->unicodeenc==0x03a8 ) {
-	    fixup = 0x3a9;		/* Omega should be Greek letter, not Ohm sign here */
-	    changed = 0x2126;
-	} else if ( sc->unicodeenc==0xb5 && sf->chars[i-1]!=NULL &&
-		sf->chars[i-1]->unicodeenc==0x03bb ) {
-	    fixup = 0x3bc;		/* mu should be Greek letter, not micro sign here */
-	    changed = 0xb5;
-	}
-	if ( changed ) {
-	    int o1pos = -1, rm1pos = -1, rm2pos = -1;
-	    /* if the glyph is in the encoding then we should leave it. Otherwise  */
-	    /*  it is probably one of our useless specials and we should remove it */
-	    /* Many TeX fonts actually have Delta encoded twice. God knows why     */
-	    for ( j=256; j<sf->charcnt; ++j ) if ( i!=j && sf->chars[j]!=NULL ) {
-		if ( sf->chars[j]->unicodeenc == changed ) {
-		    if ( o1pos==-1 ) o1pos = j;
-		    else rm1pos = j;
-		} else if ( sf->chars[j]->unicodeenc == fixup )
-		    rm2pos = j;
-	    }
-	    if ( rm2pos!=-1 && o1pos==-1 ) {
-		sf->chars[rm2pos]->unicodeenc = changed;
-		sc->unicodeenc = fixup;
-		rm2pos = -1;
-	    }
-	    if ( rm2pos!=-1 && sf->chars[rm2pos]->dependents==NULL ) {
-		SCClearContents(sf->chars[rm2pos]);
-		SplineCharFree(sf->chars[rm2pos]);
-		sf->chars[rm2pos] = NULL;
-	    } else
-		sc->unicodeenc = fixup;
-	    if ( rm1pos!=-1 && sf->chars[rm1pos]->dependents==NULL ) {
-		SCClearContents(sf->chars[rm1pos]);
-		SplineCharFree(sf->chars[rm1pos]);
-		sf->chars[rm1pos] = NULL;
-	    }
-	} else if ( strcmp(sc->name,"uni00B5")==0 ) {
-	    int o1pos = -1, rm1pos = -1, o2pos=-1, rm2pos = -1;
-	    for ( j=0; j<sf->charcnt; ++j ) if ( i!=j && sf->chars[j]!=NULL ) {
-		if ( sf->chars[j]->unicodeenc == 0x3bc ) {
-		    if ( o1pos==-1 ) o1pos = j;
-		    else rm1pos = j;
-		} else if ( sf->chars[j]->unicodeenc == 0xb5 ) {
-		    if ( o2pos==-1 ) o2pos = j;
-		    else rm2pos = j;
-		}
-	    }
-	    if ( o2pos!=-1 )
-		rm2pos = i;
-	    if ( rm2pos!=-1 ) {
-		SplineCharFree(sf->chars[rm2pos]);
-		sf->chars[rm2pos] = NULL;
-	    }
-	    if ( rm1pos!=-1 ) {
-		SplineCharFree(sf->chars[rm1pos]);
-		sf->chars[rm1pos] = NULL;
-	    }
-	}
-    }
-#endif
-}
-
 static void _SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext *pscontext) {
-    int i, j, isnotdef;
+    int i, j, notdefpos;
     RefChar *refs, *next;
-    char **encoding;
     int istype2 = fd->fonttype==2;		/* Easy enough to deal with even though it will never happen... */
-    uint8 *used = gcalloc(fd->charprocs->next!=0?fd->charprocs->next:fd->chars->next,sizeof(uint8));
+    int istype3 = fd->charprocs->next!=0;
+    EncMap *map;
 
     if ( istype2 )
 	fd->private->subrs->bias = fd->private->subrs->cnt<1240 ? 107 :
 	    fd->private->subrs->cnt<33900 ? 1131 : 32768;
-    sf->charcnt = 256+CharsNotInEncoding(fd);
-    encoding = gcalloc(sf->charcnt,sizeof(char *));
-    sf->chars = gcalloc(sf->charcnt,sizeof(SplineChar *));
+    sf->glyphcnt = istype3 ? fd->charprocs->next : fd->chars->next;
+    if ( sf->map==NULL ) {
+	sf->map = map = EncMapNew(256+CharsNotInEncoding(fd),sf->glyphcnt,fd->encoding_name);
+    } else
+	map = sf->map;
+    sf->glyphs = gcalloc(map->backmax,sizeof(SplineChar *));
 #ifdef FONTFORGE_CONFIG_TYPE3
-    if ( fd->charprocs!=NULL && fd->charprocs->next!=0 )	/* We read a type3 */
+    if ( istype3 )	/* We read a type3 */
 	sf->multilayer = true;
 #endif
-    for ( i=0; i<256; ++i )
-	encoding[i] = copy(fd->encoding[i]);
-    if ( sf->charcnt>256 ) {
+    if ( istype3 )
+	notdefpos = LookupCharString(".notdef",(struct pschars *) (fd->charprocs));
+    else
+	notdefpos = LookupCharString(".notdef",fd->chars);
+    for ( i=0; i<256; ++i ) {
+	int k;
+	if ( istype3 ) {
+	    k = LookupCharString(fd->encoding[i],(struct pschars *) (fd->charprocs));
+	} else {
+	    k = LookupCharString(fd->encoding[i],fd->chars);
+	}
+	if ( k==-1 ) k = notdefpos;
+	map->map[i] = k;
+	if ( k!=-1 && map->backmap[k]==-1 )
+	    map->backmap[k] = i;
+    }
+    if ( map->enccount>256 ) {
 	int k, j;
 	for ( k=0; k<fd->chars->cnt; ++k ) {
 	    if ( fd->chars->keys[k]!=NULL ) {
@@ -1930,8 +1828,12 @@ static void _SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext 
 		    if ( fd->encoding[j]!=NULL &&
 			    strcmp(fd->encoding[j],fd->chars->keys[k])==0 )
 		break;
-		if ( j==256 )
-		    encoding[i++] = copy(fd->chars->keys[k]);
+		if ( j==256 ) {
+		    map->map[i] = k;
+		    if ( map->backmap[k]==-1 )
+			map->backmap[k] = i;
+		    ++i;
+		}
 	    }
 	}
 	/* And for type3s */
@@ -1941,48 +1843,32 @@ static void _SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext 
 		    if ( fd->encoding[j]!=NULL &&
 			    strcmp(fd->encoding[j],fd->charprocs->keys[k])==0 )
 		break;
-		if ( j==256 )
-		    encoding[i++] = copy(fd->charprocs->keys[k]);
+		if ( j==256 ) {
+		    map->map[i] = k;
+		    if ( map->backmap[k]==-1 )
+			map->backmap[k] = i;
+		    ++i;
+		}
 	    }
 	}
     }
-    for ( i=0; i<sf->charcnt; ++i ) if ( encoding[i]==NULL )
-	encoding[i] = copy(".notdef");
-    for ( i=0; i<sf->charcnt; ++i ) {
-	int k= -1, k2=-1;
-	k = LookupCharString(encoding[i],fd->chars);
-	isnotdef = false;
-	if ( k==-1 ) {
-	    k = k2 = LookupCharString(encoding[i],(struct pschars *) (fd->charprocs));
-	    isnotdef = (k==-1);
-	    if ( k==-1 )
-		k = LookupCharString(".notdef",fd->chars);
-	    if ( k==-1 )
-		k = k2 = LookupCharString(".notdef",(struct pschars *) (fd->charprocs));
-	}
-	if ( k==-1 ) {
-	    /* 0 500 hsbw endchar */
-	    sf->chars[i] = PSCharStringToSplines((uint8 *) "\213\370\210\015\016",5,pscontext,fd->private->subrs,NULL,".notdef");
-	    sf->chars[i]->width = sf->ascent+sf->descent;
-	} else if ( used[k] /*&& !isnotdef && strcmp(encoding[i],".notdef")!=0*/ ) {
-	    sf->chars[i] = DuplicateNameReference(sf,encoding,i);
-	} else if ( k2==-1 ) {
-	    sf->chars[i] = PSCharStringToSplines(fd->chars->values[k],fd->chars->lens[k],
-		    pscontext,fd->private->subrs,NULL,encoding[i]);
-	    used[k] = true;
-	} else {
-	    sf->chars[i] = fd->charprocs->values[k];
-	    if ( sf->chars[i]!=NULL )
-		sf->chars[i]->changed = false;
-	    used[k] = true;
-	}
-	if ( sf->chars[i]!=NULL ) {
-	    sf->chars[i]->orig_pos = k;
-	    sf->chars[i]->vwidth = sf->ascent+sf->descent;
-	    sf->chars[i]->enc = i;
-	    sf->chars[i]->unicodeenc = UniFromName(encoding[i],sf->uni_interp,sf->encoding_name);
-	    sf->chars[i]->parent = sf;
-	    SCLigDefault(sf->chars[i]);		/* Also reads from AFM file, but it probably doesn't exist */
+    for ( i=0; i<map->enccount; ++i ) if ( map->map[i]==-1 )
+	map->map[i] = notdefpos;
+
+    if ( !istype3 ) {
+	for ( i=0; i<sf->glyphcnt; ++i ) {
+	    if ( !istype3 )
+		sf->glyphs[i] = PSCharStringToSplines(fd->chars->values[i],fd->chars->lens[i],
+			pscontext,fd->private->subrs,NULL,fd->chars->keys[i]);
+	    else
+		sf->glyphs[i] = fd->charprocs->values[i];
+	    if ( sf->glyphs[i]!=NULL ) {
+		sf->glyphs[i]->orig_pos = i;
+		sf->glyphs[i]->vwidth = sf->ascent+sf->descent;
+		sf->glyphs[i]->unicodeenc = UniFromName(sf->glyphs[i]->name,sf->uni_interp,map->enc);
+		sf->glyphs[i]->parent = sf;
+		SCLigDefault(sf->glyphs[i]);		/* Also reads from AFM file, but it probably doesn't exist */
+	    }
 	}
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressNext();
@@ -1990,43 +1876,34 @@ static void _SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext 
 	gwwv_progress_next();
 #endif
     }
-    GreekUnicodeCheck(sf);
     SFInstanciateRefs(sf);
     if ( fd->metrics!=NULL ) {
 	for ( i=0; i<fd->metrics->next; ++i ) {
 	    int width = strtol(fd->metrics->values[i],NULL,10);
-	    for ( j=sf->charcnt-1; j>=0; --j ) {
-		if ( sf->chars[j]!=NULL && sf->chars[j]->name!=NULL &&
-			strcmp(fd->metrics->keys[i],sf->chars[j]->name)==0 ) {
-		    sf->chars[j]->width = width;
+	    for ( j=sf->glyphcnt-1; j>=0; --j ) {
+		if ( sf->glyphs[j]!=NULL && sf->glyphs[j]->name!=NULL &&
+			strcmp(fd->metrics->keys[i],sf->glyphs[j]->name)==0 ) {
+		    sf->glyphs[j]->width = width;
 	    break;
 		}
 	    }
 	}
     }
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
-	    for ( refs = sf->chars[i]->layers[ly_fore].refs; refs!=NULL; refs=next ) {
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
+	    for ( refs = sf->glyphs[i]->layers[ly_fore].refs; refs!=NULL; refs=next ) {
 	next = refs->next;
 	if ( refs->adobe_enc==' ' && refs->layers[0].splines==NULL ) {
 	    /* When I have a link to a single character I will save out a */
 	    /*  seac to that character and a space (since I can only make */
 	    /*  real char links), so if we find a space link, get rid of*/
 	    /*  it. It's an artifact */
-	    SCRefToSplines(sf->chars[i],refs);
+	    SCRefToSplines(sf->glyphs[i],refs);
 	}
     }
-    for( i=0; i<sf->charcnt; ++i )
-        free(encoding[i]);
-    free(encoding);
-    free(used);
     /* sometimes (some apple oblique fonts) the fontmatrix is not just a */
     /*  formality, it acutally contains a skew. So be ready */
     if ( fd->fontmatrix[0]!=0 )
 	TransByFontMatrix(sf,fd->fontmatrix);
-#ifdef FONTFORGE_CONFIG_TYPE3
-    if ( fd->charprocs->cnt!=0 )
-	sf->multilayer = true;
-#endif
 }
 
 static void SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext *pscontext) {
@@ -2037,8 +1914,8 @@ static void SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext *
 
     /* Clean up the hint masks, We create an initial hintmask whether we need */
     /*  it or not */
-    for ( i=0; i<sf->charcnt; ++i ) {
-	if ( (sc = sf->chars[i])!=NULL && !sc->hconflicts && !sc->vconflicts &&
+    for ( i=0; i<sf->glyphcnt; ++i ) {
+	if ( (sc = sf->glyphs[i])!=NULL && !sc->hconflicts && !sc->vconflicts &&
 		sc->layers[ly_fore].splines!=NULL ) {
 	    chunkfree( sc->layers[ly_fore].splines->first->hintmask,sizeof(HintMask) );
 	    sc->layers[ly_fore].splines->first->hintmask = NULL;
@@ -2052,6 +1929,7 @@ static SplineFont *SplineFontFromMMType1(SplineFont *sf, FontDict *fd, struct ps
     int ipos, apos, ppos, item, i;
     real blends[12];	/* At most twelve points/axis in a blenddesignmap */
     real designs[12];
+    EncMap *map;
 
     if ( fd->weightvector==NULL || fd->fontinfo->blenddesignpositions==NULL ||
 	    fd->fontinfo->blenddesignmap==NULL || fd->fontinfo->blendaxistypes==NULL ) {
@@ -2087,8 +1965,9 @@ return( NULL );
     memcpy(mm->defweights,pscontext->blend_values,mm->instance_count*sizeof(real));
     mm->normal = sf;
     _SplineFontFromType1(mm->normal,fd,pscontext);
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
-	sf->chars[i]->blended = true;
+    map = sf->map;
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
+	sf->glyphs[i]->blended = true;
     sf->mm = mm;
 
     pt = fd->fontinfo->blendaxistypes;
@@ -2257,6 +2136,7 @@ return( NULL );
 
 	mm->instances[ipos] = SplineFontEmpty();
 	SplineFontMetaData(mm->instances[ipos],fd);
+	mm->instances[ipos]->map = map;
 	_SplineFontFromType1(mm->instances[ipos],fd,pscontext);
 	mm->instances[ipos]->mm = mm;
     }
@@ -2264,20 +2144,20 @@ return( NULL );
 
     /* Clean up hintmasks. We always create a hintmask on the first point */
     /*  only keep them if we actually have conflicts.			  */
-    for ( i=0; i<mm->normal->charcnt; ++i )
-	    if ( mm->normal->chars[i]!=NULL &&
-		    mm->normal->chars[i]->layers[ly_fore].splines != NULL ) {
+    for ( i=0; i<mm->normal->glyphcnt; ++i )
+	    if ( mm->normal->glyphs[i]!=NULL &&
+		    mm->normal->glyphs[i]->layers[ly_fore].splines != NULL ) {
 	for ( item=0; item<mm->instance_count; ++item )
-	    if ( mm->instances[item]->chars[i]->vconflicts ||
-		    mm->instances[item]->chars[i]->hconflicts )
+	    if ( mm->instances[item]->glyphs[i]->vconflicts ||
+		    mm->instances[item]->glyphs[i]->hconflicts )
 	break;
 	if ( item==mm->instance_count ) {	/* No conflicts */
 	    for ( item=0; item<mm->instance_count; ++item ) {
-		chunkfree( mm->instances[item]->chars[i]->layers[ly_fore].splines->first->hintmask, sizeof(HintMask) );
-		mm->instances[item]->chars[i]->layers[ly_fore].splines->first->hintmask = NULL;
+		chunkfree( mm->instances[item]->glyphs[i]->layers[ly_fore].splines->first->hintmask, sizeof(HintMask) );
+		mm->instances[item]->glyphs[i]->layers[ly_fore].splines->first->hintmask = NULL;
 	    }
-	    chunkfree( mm->normal->chars[i]->layers[ly_fore].splines->first->hintmask, sizeof(HintMask) );
-	    mm->normal->chars[i]->layers[ly_fore].splines->first->hintmask = NULL;
+	    chunkfree( mm->normal->glyphs[i]->layers[ly_fore].splines->first->hintmask, sizeof(HintMask) );
+	    mm->normal->glyphs[i]->layers[ly_fore].splines->first->hintmask = NULL;
 	}
     }
 
@@ -2292,6 +2172,7 @@ static SplineFont *SplineFontFromCIDType1(SplineFont *sf, FontDict *fd,
     struct cidmap *map;
     SplineFont *_sf;
     SplineChar *sc;
+    EncMap *encmap;
 
     bad = 0x80000000;
     for ( i=0; i<fd->fdcnt; ++i )
@@ -2313,6 +2194,8 @@ return( NULL );
 return( NULL );
     }
 
+    encmap = EncMap1to1(fd->cidcnt);
+
     sf->subfontcnt = fd->fdcnt;
     sf->subfonts = galloc((sf->subfontcnt+1)*sizeof(SplineFont *));
     for ( i=0; i<fd->fdcnt; ++i ) {
@@ -2320,6 +2203,7 @@ return( NULL );
 	SplineFontMetaData(sf->subfonts[i],fd->fds[i]);
 	sf->subfonts[i]->cidmaster = sf;
 	sf->subfonts[i]->uni_interp = sf->uni_interp;
+	sf->subfonts[i]->map = encmap;
 	if ( fd->fds[i]->fonttype==2 )
 	    fd->fds[i]->private->subrs->bias =
 		    fd->fds[i]->private->subrs->cnt<1240 ? 107 :
@@ -2331,21 +2215,19 @@ return( NULL );
     chars = gcalloc(fd->cidcnt,sizeof(SplineChar *));
     for ( i=0; i<fd->cidcnt; ++i ) if ( fd->cidlens[i]>0 ) {
 	j = fd->cidfds[i];		/* We get font indexes of 255 for non-existant chars */
-	uni = CID2NameEnc(map,i,buffer,sizeof(buffer));
+	uni = CID2NameUni(map,i,buffer,sizeof(buffer));
 	pscontext->is_type2 = fd->fds[j]->fonttype==2;
 	chars[i] = PSCharStringToSplines(fd->cidstrs[i],fd->cidlens[i],
 		    pscontext,fd->fds[j]->private->subrs,
 		    NULL,buffer);
 	chars[i]->vwidth = sf->subfonts[j]->ascent+sf->subfonts[j]->descent;
 	chars[i]->unicodeenc = uni;
-	chars[i]->enc = i;
 	chars[i]->orig_pos = i;
 	/* There better not be any references (seac's) because we have no */
 	/*  encoding on which to base any fixups */
 	if ( chars[i]->layers[ly_fore].refs!=NULL )
 	    IError( "Reference found in CID font. Can't fix it up");
-	chars[i]->enc = i;
-	sf->subfonts[j]->charcnt = i+1;
+	sf->subfonts[j]->glyphcnt = i+1;
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressNext();
 #elif defined(FONTFORGE_CONFIG_GTK)
@@ -2353,11 +2235,11 @@ return( NULL );
 #endif
     }
     for ( i=0; i<fd->fdcnt; ++i )
-	sf->subfonts[i]->chars = gcalloc(sf->subfonts[i]->charcnt,sizeof(SplineChar *));
+	sf->subfonts[i]->glyphs = gcalloc(sf->subfonts[i]->glyphcnt,sizeof(SplineChar *));
     for ( i=0; i<fd->cidcnt; ++i ) if ( chars[i]!=NULL ) {
 	j = fd->cidfds[i];
 	if ( j<sf->subfontcnt ) {
-	    sf->subfonts[j]->chars[i] = chars[i];
+	    sf->subfonts[j]->glyphs[i] = chars[i];
 	    chars[i]->parent = sf->subfonts[j];
 	}
     }
@@ -2368,8 +2250,8 @@ return( NULL );
     k=0;
     do {
 	_sf = k<sf->subfontcnt?sf->subfonts[k]:sf;
-	for ( i=0; i<sf->charcnt; ++i ) {
-	    if ( (sc = sf->chars[i])!=NULL && !sc->hconflicts && !sc->vconflicts &&
+	for ( i=0; i<sf->glyphcnt; ++i ) {
+	    if ( (sc = sf->glyphs[i])!=NULL && !sc->hconflicts && !sc->vconflicts &&
 		    sc->layers[ly_fore].splines!=NULL ) {
 		chunkfree( sc->layers[ly_fore].splines->first->hintmask,sizeof(HintMask) );
 		sc->layers[ly_fore].splines->first->hintmask = NULL;
@@ -2551,17 +2433,17 @@ static void _SFReinstanciateRefs(SplineFont *sf) {
     int i, undone, undoable, j, cnt;
     RefChar *ref;
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
-	sf->chars[i]->ticked = false;
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
+	sf->glyphs[i]->ticked = false;
 
     undone = true;
     cnt = 0;
     while ( undone && cnt<200) {
 	undone = false;
-	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
 	    undoable = false;
-	    for ( j=0; j<sf->chars[i]->layer_cnt; ++j ) {
-		for ( ref=sf->chars[i]->layers[j].refs; ref!=NULL; ref=ref->next ) {
+	    for ( j=0; j<sf->glyphs[i]->layer_cnt; ++j ) {
+		for ( ref=sf->glyphs[i]->layers[j].refs; ref!=NULL; ref=ref->next ) {
 		    if ( !ref->sc->ticked )
 			undoable = true;
 		}
@@ -2569,11 +2451,11 @@ static void _SFReinstanciateRefs(SplineFont *sf) {
 	    if ( undoable )
 		undone = true;
 	    else {
-		for ( j=0; j<sf->chars[i]->layer_cnt; ++j ) {
-		    for ( ref=sf->chars[i]->layers[j].refs; ref!=NULL; ref=ref->next )
-			SCReinstanciateRefChar(sf->chars[i],ref);
+		for ( j=0; j<sf->glyphs[i]->layer_cnt; ++j ) {
+		    for ( ref=sf->glyphs[i]->layers[j].refs; ref!=NULL; ref=ref->next )
+			SCReinstanciateRefChar(sf->glyphs[i],ref);
 		}
-		sf->chars[i]->ticked = true;
+		sf->glyphs[i]->ticked = true;
 	    }
 	}
 	++cnt;
@@ -4190,8 +4072,8 @@ void SFRemoveAnchorClass(SplineFont *sf,AnchorClass *an) {
 
     PasteRemoveAnchorClass(sf,an);
 
-    for ( i=0; i<sf->charcnt; ++i )
-	SCRemoveAnchorClass(sf->chars[i],an);
+    for ( i=0; i<sf->glyphcnt; ++i )
+	SCRemoveAnchorClass(sf->glyphs[i],an);
     prev = NULL;
     for ( test=sf->anchor; test!=NULL; test=test->next ) {
 	if ( test==an ) {
@@ -4241,8 +4123,8 @@ void AnchorClassMerge(SplineFont *sf,AnchorClass *into,AnchorClass *from) {
     if ( into==from )
 return;
     PasteAnchorClassMerge(sf,into,from);
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	SplineChar *sc = sf->chars[i];
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	SplineChar *sc = sf->glyphs[i];
 
 	sc->anchor = APAnchorClassMerge(sc->anchor,into,from);
     }
@@ -4688,6 +4570,61 @@ void OtfNameListFree(struct otfname *on) {
     }
 }
 
+EncMap *EncMapNew(int enccount,int backmax,Encoding *enc) {
+    EncMap *map = chunkalloc(sizeof(EncMap));
+    
+    map->enccount = map->encmax = enccount;
+    map->backmax = backmax;
+    map->map = galloc(enccount*sizeof(int));
+    memset(map->map,-1,enccount*sizeof(int));
+    map->backmap = galloc(backmax*sizeof(int));
+    memset(map->backmap,-1,backmax*sizeof(int));
+    map->enc = enc;
+return(map);
+}
+
+EncMap *EncMap1to1(int enccount) {
+    EncMap *map = chunkalloc(sizeof(EncMap));
+    /* Used for CID fonts where CID is same as orig_pos */
+    int i;
+    
+    map->enccount = map->encmax = map->backmax = enccount;
+    map->map = galloc(enccount*sizeof(int));
+    map->backmap = galloc(enccount*sizeof(int));
+    for ( i=0; i<enccount; ++i )
+	map->map[i] = map->backmap[i] = i;
+    map->enc = &custom;
+return(map);
+}
+
+void EncMapFree(EncMap *map) {
+    if ( map==NULL )
+return;
+
+    free(map->map);
+    free(map->backmap);
+    free(map->remap);
+    chunkfree(map,sizeof(EncMap));
+}
+
+EncMap *EncMapCopy(EncMap *map) {
+    EncMap *new;
+
+    new = chunkalloc(sizeof(EncMap));
+    *new = *map;
+    new->map = galloc(new->encmax*sizeof(int));
+    new->backmap = galloc(new->backmax*sizeof(int));
+    memcpy(new->map,map->map,new->enccount*sizeof(int));
+    memcpy(new->backmap,map->backmap,new->backmax*sizeof(int));
+    if ( map->remap ) {
+	int n;
+	for ( n=0; map->remap[n].infont!=-1; ++n );
+	new->remap = galloc(n*sizeof(struct remap));
+	memcpy(new->remap,map->remap,n*sizeof(struct remap));
+    }
+return( new );
+}
+
 void SplineFontFree(SplineFont *sf) {
     int i;
     BDFFont *bdf, *bnext;
@@ -4703,9 +4640,9 @@ return;
 	bnext = bdf->next;
 	BDFFontFree(bdf);
     }
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
-	SplineCharFree(sf->chars[i]);
-    free(sf->chars);
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
+	SplineCharFree(sf->glyphs[i]);
+    free(sf->glyphs);
     free(sf->fontname);
     free(sf->fullname);
     free(sf->familyname);
@@ -4718,6 +4655,7 @@ return;
     free(sf->xuid);
     free(sf->cidregistry);
     free(sf->ordering);
+    /* We don't free the EncMap. That field is only a temporary pointer. Let the FontView free it, that's where it really lives */
     SplinePointListsFree(sf->grid.splines);
     AnchorClassesFree(sf->anchor);
     TableOrdersFree(sf->orders);
@@ -4729,7 +4667,6 @@ return;
     for ( i=0; i<sf->subfontcnt; ++i )
 	SplineFontFree(sf->subfonts[i]);
     free(sf->subfonts);
-    free(sf->remap);
     GlyphHashFree(sf);
     ScriptRecordListFree(sf->script_lang);
     KernClassListFree(sf->kerns);
@@ -4776,10 +4713,11 @@ void MMSetFree(MMSet *mm) {
 
     for ( i=0; i<mm->instance_count; ++i ) {
 	mm->instances[i]->mm = NULL;
+	mm->instances[i]->map = NULL;
 	SplineFontFree(mm->instances[i]);
     }
     mm->normal->mm = NULL;
-    SplineFontFree(mm->normal);
+    SplineFontFree(mm->normal);		/* EncMap gets freed here */
     MMSetFreeContents(mm);
 
     chunkfree(mm,sizeof(*mm));

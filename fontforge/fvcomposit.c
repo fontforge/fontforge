@@ -973,10 +973,8 @@ static const unichar_t *SFAlternateFromLigature(SplineFont *sf, int base,SplineC
     int j;
     PST *pst;
 
-    if ( sc==NULL && base>=0 ) {
-	int pos = SFFindExistingChar(sf,base,NULL);
-	if ( pos==-1 ) sc = NULL; else sc = sf->chars[pos];
-    }
+    if ( sc==NULL && base>=0 )
+	sc = SFGetChar(sf,base,NULL);
     pst = NULL;
     if ( sc!=NULL )
 	for ( pst=sc->possub; pst!=NULL && pst->type!=pst_ligature; pst = pst->next );
@@ -992,22 +990,22 @@ return( NULL );
 	char *start = pt; dpt=NULL;
 	for ( ; *pt!='\0' && *pt!=' '; ++pt );
 	ch = *pt; *pt = '\0';
-	for ( j=0; j<sf->charcnt; ++j )
-	    if ( sf->chars[j]!=NULL && strcmp(sf->chars[j]->name,start)==0 )
+	for ( j=0; j<sf->glyphcnt; ++j )
+	    if ( sf->glyphs[j]!=NULL && strcmp(sf->glyphs[j]->name,start)==0 )
 	break;
 	*pt = ch;
-	if ( j==sf->charcnt && (dpt=strchr(start,'.'))!=NULL && dpt<pt ) {
+	if ( j==sf->glyphcnt && (dpt=strchr(start,'.'))!=NULL && dpt<pt ) {
 	    int dch = *dpt; *dpt='\0';
-	    for ( j=0; j<sf->charcnt; ++j )
-		if ( sf->chars[j]!=NULL && strcmp(sf->chars[j]->name,start)==0 )
+	    for ( j=0; j<sf->glyphcnt; ++j )
+		if ( sf->glyphs[j]!=NULL && strcmp(sf->glyphs[j]->name,start)==0 )
 	    break;
 	    *dpt = dch;
 	}
-	if ( j>=sf->charcnt || sf->chars[j]->unicodeenc==-1 || spt>=send ) {
+	if ( j>=sf->glyphcnt || sf->glyphs[j]->unicodeenc==-1 || spt>=send ) {
 	    *semi = sch;
 return( NULL );
 	}
-	*spt++ = sf->chars[j]->unicodeenc;
+	*spt++ = sf->glyphs[j]->unicodeenc;
 	if ( ch!='\0' ) ++pt;
     }
     *spt ='\0';
@@ -1209,7 +1207,7 @@ return( true );
 	char *temp;
 	end = strchr(sc->name,'.');
 	temp = copyn(sc->name,end-sc->name);
-	ret = SFFindExistingChar(sf,-1,temp)!=-1;
+	ret = SFFindExistingSlot(sf,-1,temp)!=-1;
 	free(temp);
 return( ret );
     }
@@ -1504,7 +1502,7 @@ static void _SCAddRef(SplineChar *sc,SplineChar *rsc,real transform[6]) {
 
     ref->sc = rsc;
     ref->unicode_enc = rsc->unicodeenc;
-    ref->local_enc = rsc->enc;
+    ref->orig_pos = rsc->orig_pos;
     ref->adobe_enc = getAdobeEnc(rsc->name);
     ref->next = sc->layers[ly_fore].refs;
     sc->layers[ly_fore].refs = ref;
@@ -1521,15 +1519,15 @@ static void SCAddRef(SplineChar *sc,SplineChar *rsc,real xoff, real yoff) {
     _SCAddRef(sc,rsc,transform);
 }
 
-static void BCClearAndCopy(BDFFont *bdf,int toenc,int fromenc) {
+static void BCClearAndCopy(BDFFont *bdf,int togid,int fromgid) {
     BDFChar *bc, *rbc;
 
-    bc = BDFMakeChar(bdf,toenc);
+    bc = BDFMakeGID(bdf,togid);
     BCPreserveState(bc);
     BCFlattenFloat(bc);
     BCCompressBitmap(bc);
-    if ( bdf->chars[fromenc]!=NULL ) {
-	rbc = bdf->chars[fromenc];
+    if ( bdf->glyphs[fromgid]!=NULL ) {
+	rbc = bdf->glyphs[fromgid];
 	free(bc->bitmap);
 	bc->xmin = rbc->xmin;
 	bc->xmax = rbc->xmax;
@@ -1542,15 +1540,15 @@ static void BCClearAndCopy(BDFFont *bdf,int toenc,int fromenc) {
     }
 }
 
-static void BCClearAndCopyBelow(BDFFont *bdf,int toenc,int fromenc, int ymax) {
+static void BCClearAndCopyBelow(BDFFont *bdf,int togid,int fromgid, int ymax) {
     BDFChar *bc, *rbc;
 
-    bc = BDFMakeChar(bdf,toenc);
+    bc = BDFMakeGID(bdf,togid);
     BCPreserveState(bc);
     BCFlattenFloat(bc);
     BCCompressBitmap(bc);
-    if ( bdf->chars[fromenc]!=NULL ) {
-	rbc = bdf->chars[fromenc];
+    if ( bdf->glyphs[fromgid]!=NULL ) {
+	rbc = bdf->glyphs[fromgid];
 	free(bc->bitmap);
 	bc->xmin = rbc->xmin;
 	bc->xmax = rbc->xmax;
@@ -1603,7 +1601,7 @@ return( 0 );
     sc->width = rsc->width;
     if ( copybmp ) {
 	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
-	    BCClearAndCopy(bdf,sc->enc,rsc->enc);
+	    BCClearAndCopy(bdf,sc->orig_pos,rsc->orig_pos);
 	}
     }
     if ( ch!=' ' )		/* Some accents are built by combining with space. Don't. The reference won't be displayed or selectable but will be there and might cause confusion... */
@@ -1955,12 +1953,12 @@ static void _SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, SplineChar *rs
 
     if ( copybmp ) {
 	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
-	    if ( bdf->chars[rsc->enc]!=NULL && bdf->chars[sc->enc]!=NULL ) {
+	    if ( bdf->glyphs[rsc->orig_pos]!=NULL && bdf->glyphs[sc->orig_pos]!=NULL ) {
 		if ( (ispacing = (bdf->pixelsize*accent_offset+50)/100)<=1 ) ispacing = 2;
-		rbc = bdf->chars[rsc->enc];
+		rbc = bdf->glyphs[rsc->orig_pos];
 		BCFlattenFloat(rbc);
 		BCCompressBitmap(rbc);
-		bc = bdf->chars[sc->enc];
+		bc = bdf->glyphs[sc->orig_pos];
 		BCCompressBitmap(bc);
 		if ( (pos&____ABOVE) && (pos&(____LEFT|____RIGHT)) )
 		    iyoff = bc->ymax - rbc->ymax;
@@ -2050,9 +2048,9 @@ static void SCPutRefAfter(SplineChar *sc,SplineFont *sf,int ch, int copybmp) {
     }
     if ( copybmp ) {
 	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
-	    if ( bdf->chars[rsc->enc]!=NULL && bdf->chars[sc->enc]!=NULL ) {
-		rbc = bdf->chars[rsc->enc];
-		bc = bdf->chars[sc->enc];
+	    if ( bdf->glyphs[rsc->orig_pos]!=NULL && bdf->glyphs[sc->orig_pos]!=NULL ) {
+		rbc = bdf->glyphs[rsc->orig_pos];
+		bc = bdf->glyphs[sc->orig_pos];
 		BCFlattenFloat(rbc);
 		BCCompressBitmap(rbc);
 		BCCompressBitmap(bc);
@@ -2077,15 +2075,15 @@ static void SCPutRefAfter(SplineChar *sc,SplineFont *sf,int ch, int copybmp) {
 
 static void DoSpaces(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
     int width;
-    int enc = sc->unicodeenc;
+    int uni = sc->unicodeenc;
     int em = sf->ascent+sf->descent;
     SplineChar *tempsc;
     BDFChar *bc;
     BDFFont *bdf;
 
-    if ( iszerowidth(enc))
+    if ( iszerowidth(uni))
 	width = 0;
-    else switch ( enc ) {
+    else switch ( uni ) {
       case 0x2000: case 0x2002:
 	width = em/2;
       break;
@@ -2131,8 +2129,8 @@ static void DoSpaces(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
     sc->widthset = true;
     if ( copybmp ) {
 	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
-	    if ( (bc = bdf->chars[sc->enc])==NULL ) {
-		BDFMakeChar(bdf,sc->enc);
+	    if ( (bc = bdf->glyphs[sc->orig_pos])==NULL ) {
+		BDFMakeGID(bdf,sc->orig_pos);
 	    } else {
 		BCPreserveState(bc);
 		BCFlattenFloat(bc);
@@ -2151,8 +2149,8 @@ static void DoSpaces(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
     SCCharChangedUpdate(sc);
     if ( copybmp ) {
 	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next )
-	    if ( bdf->chars[sc->enc]!=NULL )
-		BCCharChangedUpdate(bdf->chars[sc->enc]);
+	    if ( bdf->glyphs[sc->orig_pos]!=NULL )
+		BCCharChangedUpdate(bdf->glyphs[sc->orig_pos]);
     }
 }
 
@@ -2170,7 +2168,7 @@ return( new );
 
 static void DoRules(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
     int width;
-    int enc = sc->unicodeenc;
+    int uni = sc->unicodeenc;
     int em = sf->ascent+sf->descent;
     SplineChar *tempsc;
     BDFChar *bc, *tempbc;
@@ -2179,7 +2177,7 @@ static void DoRules(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
     real lbearing, rbearing, height, ypos;
     SplinePoint *first, *sp;
 
-    switch ( enc ) {
+    switch ( uni ) {
       case '-':
 	width = em/3;
       break;
@@ -2233,8 +2231,8 @@ static void DoRules(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
 
     if ( copybmp ) {
 	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
-	    if ( (bc = bdf->chars[sc->enc])==NULL ) {
-		BDFMakeChar(bdf,sc->enc);
+	    if ( (bc = bdf->glyphs[sc->orig_pos])==NULL ) {
+		BDFMakeGID(bdf,sc->orig_pos);
 	    } else {
 		BCPreserveState(bc);
 		BCFlattenFloat(bc);
@@ -2255,8 +2253,8 @@ static void DoRules(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
     SCCharChangedUpdate(sc);
     if ( copybmp ) {
 	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next )
-	    if ( bdf->chars[sc->enc]!=NULL )
-		BCCharChangedUpdate(bdf->chars[sc->enc]);
+	    if ( bdf->glyphs[sc->orig_pos]!=NULL )
+		BCCharChangedUpdate(bdf->glyphs[sc->orig_pos]);
     }
 }
 
@@ -2278,12 +2276,12 @@ static void DoRotation(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
 	cid = strtol(sc->name+8,&end,10), j;
 	if ( *end!='\0' || (j=SFHasCID(sf,cid))==-1)
 return;		/* Can't happen */
-	scbase = sf->cidmaster->subfonts[j]->chars[cid];
+	scbase = sf->cidmaster->subfonts[j]->glyphs[cid];
     } else if ( sf->cidmaster!=NULL && strstr(sc->name,".vert")!=NULL &&
 	    (cid = CIDFromName(sc->name,sf->cidmaster))!= -1 ) {
 	if ( (j=SFHasCID(sf,cid))==-1)
 return;		/* Can't happen */
-	scbase = sf->cidmaster->subfonts[j]->chars[cid];
+	scbase = sf->cidmaster->subfonts[j]->glyphs[cid];
     } else {
 	if ( strncmp(sc->name,"vertuni",7)==0 && strlen(sc->name)==11 ) {
 	    char *end;
@@ -2302,15 +2300,15 @@ return;
 	    char *temp;
 	    end = strchr(sc->name,'.');
 	    temp = copyn(sc->name,end-sc->name);
-	    cid = SFFindExistingChar(sf,-1,temp);
+	    cid = SFFindExistingSlot(sf,-1,temp);
 	    free(temp);
 	    if ( cid==-1 )
 return;
 	}
 	if ( sf->cidmaster==NULL )
-	    scbase = sf->chars[cid];
+	    scbase = sf->glyphs[cid];
 	else
-	    scbase = sf->cidmaster->subfonts[SFHasCID(sf,cid)]->chars[cid];
+	    scbase = sf->cidmaster->subfonts[SFHasCID(sf,cid)]->glyphs[cid];
     }
 
     if ( scbase->parent->vertical_origin==0 )
@@ -2339,11 +2337,11 @@ return;
     if ( copybmp ) {
 	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
 	    BDFChar *from, *to;
-	    if ( scbase->enc>=bdf->charcnt || sc->enc>=bdf->charcnt ||
-		    bdf->chars[scbase->enc]==NULL )
+	    if ( scbase->orig_pos>=bdf->glyphcnt || sc->orig_pos>=bdf->glyphcnt ||
+		    bdf->glyphs[scbase->orig_pos]==NULL )
 	continue;
-	    from = bdf->chars[scbase->enc];
-	    to = BDFMakeChar(bdf,sc->enc);
+	    from = bdf->glyphs[scbase->orig_pos];
+	    to = BDFMakeGID(bdf,sc->orig_pos);
 	    BCRotateCharForVert(to,from,bdf);
 	    BCCharChangedUpdate(to);
 	}
@@ -2435,9 +2433,9 @@ static void SCBuildHangul(SplineFont *sf,SplineChar *sc, const unichar_t *pt, in
 	    if ( copybmp ) {
 		for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
 		    if ( first )
-			BCClearAndCopy(bdf,sc->enc,rsc->enc);
-		    else if ( bdf->chars[rsc->enc]!=NULL )
-			BCPasteInto(BDFMakeChar(bdf,sc->enc),bdf->chars[rsc->enc],
+			BCClearAndCopy(bdf,sc->orig_pos,rsc->orig_pos);
+		    else if ( bdf->glyphs[rsc->orig_pos]!=NULL )
+			BCPasteInto(BDFMakeGID(bdf,sc->orig_pos),bdf->glyphs[rsc->orig_pos],
 				0,0, false, false);
 		}
 	    }
@@ -2491,8 +2489,8 @@ return( 0 );
     dotless->layers[ly_fore].splines = head;
     SCCharChangedUpdate(dotless);
     for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
-	if (( bc = bdf->chars[sc->enc])!=NULL ) {
-	    BCClearAndCopyBelow(bdf,dotless->enc,sc->enc,BCFindGap(bc));
+	if (( bc = bdf->glyphs[sc->orig_pos])!=NULL ) {
+	    BCClearAndCopyBelow(bdf,dotless->orig_pos,sc->orig_pos,BCFindGap(bc));
 	}
     }
 	    
@@ -2562,8 +2560,8 @@ return;
     SCCharChangedUpdate(sc);
     if ( copybmp ) {
 	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next )
-	    if ( bdf->chars[sc->enc]!=NULL )
-		BCCharChangedUpdate(bdf->chars[sc->enc]);
+	    if ( bdf->glyphs[sc->orig_pos]!=NULL )
+		BCCharChangedUpdate(bdf->glyphs[sc->orig_pos]);
     }
 return;
 }
@@ -2591,7 +2589,7 @@ return( 1 );
 
     SCPreserveState(sc,true);
 
-    asc = SFGetCharDup(sf,uni,glyph_name);
+    asc = SFGetChar(sf,uni,glyph_name);
     if ( asc!=NULL && uni==-1 )
 	uni = asc->unicodeenc;
     else if ( asc==NULL && uni!=-1 )

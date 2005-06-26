@@ -180,7 +180,7 @@ void DoAutoSaves(void) {
 	    if ( sf->autosavename==NULL )
 		MakeAutoSaveName(sf);
 	    if ( sf->autosavename!=NULL )
-		SFAutoSave(sf);
+		SFAutoSave(sf,fv->map);
 	}
     }
 }

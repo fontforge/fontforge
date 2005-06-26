@@ -149,43 +149,79 @@ void BCCharChangedUpdate(BDFChar *bc) {
     fv = bc->sc->parent->fv;
     fv->sf->changed = true;
     if ( fv->show!=fv->filled ) {
-	for ( bdf=fv->sf->bitmaps; bdf!=NULL && bdf->chars[bc->enc]!=bc; bdf=bdf->next );
+	for ( bdf=fv->sf->bitmaps; bdf!=NULL && bdf->glyphs[bc->orig_pos]!=bc; bdf=bdf->next );
 	if ( bdf!=NULL ) {
-	    FVRefreshChar(fv,bdf,bc->enc);
+	    FVRefreshChar(fv,bc->orig_pos);
 	    if ( fv->sf->onlybitmaps && !waschanged )
-		FVToggleCharChanged(fv->sf->chars[bc->enc]);
+		FVToggleCharChanged(fv->sf->glyphs[bc->orig_pos]);
 	}
     }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 }
 
-BDFChar *BDFMakeChar(BDFFont *bdf,int i) {
+BDFChar *BDFMakeGID(BDFFont *bdf,int gid) {
     SplineFont *sf=bdf->sf;
     SplineChar *sc;
     BDFChar *bc;
+    int i;
+
+    if ( gid==-1 )
+return( NULL );
 
     if ( sf->cidmaster!=NULL ) {
-	int j = SFHasCID(sf,i);
+	int j = SFHasCID(sf,gid);
 	sf = sf->cidmaster;
 	if ( j==-1 ) {
 	    for ( j=0; j<sf->subfontcnt; ++j )
-		if ( i<sf->subfonts[j]->charcnt )
+		if ( gid<sf->subfonts[j]->glyphcnt )
 	    break;
 	    if ( j==sf->subfontcnt )
 return( NULL );
 	}
 	sf = sf->subfonts[j];
     }
-    sc = SFMakeChar(sf,i);
-    if ( (bc = bdf->chars[i])==NULL ) {
+    if ( (sc = sf->glyphs[gid])==NULL )
+return( NULL );
+
+    if ( gid>=bdf->glyphcnt ) {
+	if ( gid>=bdf->glyphmax )
+	    bdf->glyphs = grealloc(bdf->glyphs,(bdf->glyphmax=sf->glyphmax)*sizeof(BDFChar *));
+	for ( i=bdf->glyphcnt; i<=gid; ++i )
+	    bdf->glyphs[i] = NULL;
+	bdf->glyphcnt = sf->glyphcnt;
+    }
+    if ( (bc = bdf->glyphs[gid])==NULL ) {
 	if ( bdf->clut==NULL )
 	    bc = SplineCharRasterize(sc,bdf->pixelsize);
 	else
 	    bc = SplineCharAntiAlias(sc,bdf->pixelsize,BDFDepth(bdf));
-	bdf->chars[i] = bc;
-	bc->enc = i;
+	bdf->glyphs[gid] = bc;
+	bc->orig_pos = gid;
     }
 return( bc );
+}
+
+BDFChar *BDFMakeChar(BDFFont *bdf,EncMap *map,int enc) {
+    SplineFont *sf=bdf->sf;
+    SplineChar *sc;
+
+    if ( enc==-1 )
+return( NULL );
+
+    if ( sf->cidmaster!=NULL ) {
+	int j = SFHasCID(sf,enc);
+	sf = sf->cidmaster;
+	if ( j==-1 ) {
+	    for ( j=0; j<sf->subfontcnt; ++j )
+		if ( enc<sf->subfonts[j]->glyphcnt )
+	    break;
+	    if ( j==sf->subfontcnt )
+return( NULL );
+	}
+	sf = sf->subfonts[j];
+    }
+    sc = SFMakeChar(sf,map,enc);
+return( BDFMakeGID(bdf,map->map[enc]));
 }
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -200,7 +236,7 @@ static unichar_t *BVMakeTitles(BitmapView *bv, BDFChar *bc,unichar_t *ubuf) {
 #elif defined(FONTFORGE_CONFIG_GTK)
     u_sprintf(ubuf,_("%1$.80s at %2$d size %3$d from %4$.80s"),
 #endif
-	    sc!=NULL ? sc->name : "<Nameless>", bc->enc, bdf->pixelsize, sc==NULL ? "" : sc->parent->fontname);
+	    sc!=NULL ? sc->name : "<Nameless>", bv->enc, bdf->pixelsize, sc==NULL ? "" : sc->parent->fontname);
     title = u_copy(ubuf);
     if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x110000 && _UnicodeNameAnnot!=NULL &&
 	    _UnicodeNameAnnot[sc->unicodeenc>>16][(sc->unicodeenc>>8)&0xff][sc->unicodeenc&0xff].name!=NULL ) {
@@ -235,13 +271,17 @@ void BVChangeBC(BitmapView *bv, BDFChar *bc, int fitit ) {
 static void BVChangeChar(BitmapView *bv, int i, int fitit ) {
     BDFChar *bc;
     BDFFont *bdf = bv->bdf;
+    EncMap *map = bv->fv->map;
 
-    if ( i<0 || i>=bdf->charcnt )
+    if ( i<0 || i>=map->enccount )
 return;
-    bc = BDFMakeChar(bdf,i);
+    bc = BDFMakeChar(bdf,map,i);
 
     if ( bc==NULL || bv->bc == bc )
 return;
+    bv->map_of_enc = map;
+    bv->enc = i;
+
     BVChangeBC(bv,bc,fitit);
 }
 
@@ -324,26 +364,28 @@ return;
 	    event->u.chr.chars[0]!='\0' && event->u.chr.chars[1]=='\0' ) {
 	SplineFont *sf = bv->bc->sc->parent;
 	int i;
-	for ( i=0; i<sf->charcnt; ++i )
-	    if ( sf->chars[i]!=NULL )
-		if ( sf->chars[i]->unicodeenc==event->u.chr.chars[0] )
-	break;
-	if ( i==sf->charcnt ) for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]==NULL ) {
-	    SplineChar dummy;
-	    SCBuildDummy(&dummy,sf,i);
-	    if ( dummy.unicodeenc==event->u.chr.chars[0] )
-	break;
+	EncMap *map = bv->fv->map;
+	extern int cv_auto_goto;
+	if ( cv_auto_goto ) {
+	    i = SFFindSlot(sf,map,event->u.chr.chars[0],NULL);
+	    if ( i!=-1 )
+		BVChangeChar(bv,i,false);
 	}
-	if ( i!=sf->charcnt )
-	    BVChangeChar(bv,i,false);
     }
+}
+
+static int BVCurEnc(BitmapView *bv) {
+    if ( bv->map_of_enc == bv->fv->map && bv->enc!=-1 )
+return( bv->enc );
+
+return( bv->fv->map->backmap[bv->bc->orig_pos] );
 }
 
 static void BVCharUp(BitmapView *bv, GEvent *event ) {
     if ( event->u.chr.keysym=='I' &&
 	    (event->u.chr.state&ksm_shift) &&
 	    (event->u.chr.state&ksm_meta) )
-	SCCharInfo(bv->bc->sc);
+	SCCharInfo(bv->bc->sc,bv->fv->map,BVCurEnc(bv));
 #if _ModKeysAutoRepeat
     /* Under cygwin these keys auto repeat, they don't under normal X */
     else if ( event->u.chr.keysym == GK_Shift_L || event->u.chr.keysym == GK_Shift_R ||
@@ -723,7 +765,7 @@ static int BVRecalc(GGadget *g, GEvent *e) {
 	BCFlattenFloat(bv->bc);
 	freetypecontext = FreeTypeFontContext(bv->bc->sc->parent,bv->bc->sc,false);
 	if ( freetypecontext!=NULL ) {
-	    bdfc = SplineCharFreeTypeRasterize(freetypecontext,bv->bc->sc->enc,bv->bdf->pixelsize,BDFDepth(bv->bdf));
+	    bdfc = SplineCharFreeTypeRasterize(freetypecontext,bv->bc->sc->orig_pos,bv->bdf->pixelsize,BDFDepth(bv->bdf));
 	    FreeTypeFreeContext(freetypecontext);
 	} else
 	    bdfc = SplineCharAntiAlias(bv->bc->sc,bv->bdf->pixelsize,(1<<(BDFDepth(bv->bdf)/2)));
@@ -750,12 +792,12 @@ static void BVSetWidth(BitmapView *bv, int x) {
 	bc->width = x;
 	tot=0; cnt=0;
 	for ( bdf = bv->fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
-	    if ( bdf->chars[bc->enc]) {
-		tot += bdf->chars[bc->enc]->width*1000/(bdf->ascent+bdf->descent);
+	    if ( bdf->glyphs[bc->orig_pos]) {
+		tot += bdf->glyphs[bc->orig_pos]->width*1000/(bdf->ascent+bdf->descent);
 		++cnt;
 	    }
 	if ( cnt!=0 )
-	    bv->fv->sf->chars[bc->enc]->width = tot/cnt;
+	    bv->fv->sf->glyphs[bc->orig_pos]->width = tot/cnt;
 	BCCharChangedUpdate(bc);
     }
 }
@@ -1091,7 +1133,7 @@ return( GGadgetDispatchEvent(bv->vsb,event));
 	BVPaletteActivate(bv);
       break;
       case et_mousemove:
-	SCPreparePopup(bv->gw,bv->bc->sc);
+	SCPreparePopup(bv->gw,bv->bc->sc,bv->fv->map->remap,BVCurEnc(bv));
       break;
       case et_focus:
 #if 0
@@ -1138,7 +1180,7 @@ static void BVMenuClose(GWindow gw,struct gmenuitem *mi,GEvent *g) {
 static void BVMenuOpenOutline(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
 
-    CharViewCreate(bv->bc->sc,bv->fv);
+    CharViewCreate(bv->bc->sc,bv->fv,bv->map_of_enc==bv->fv->map?bv->enc:-1);
 }
 
 static void BVMenuOpenMetrics(GWindow gw,struct gmenuitem *mi,GEvent *g) {
@@ -1228,22 +1270,25 @@ static void BVMenuScale(GWindow gw,struct gmenuitem *mi,GEvent *g) {
 static void BVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
     SplineFont *sf = bv->bc->sc->parent;
-    int pos = -1;
+    EncMap *map = bv->fv->map;
+    int pos = -1, gid;
 
     if ( mi->mid == MID_Next ) {
-	pos = bv->bc->enc+1;
+	pos = BVCurEnc(bv)+1;
     } else if ( mi->mid == MID_Prev ) {
-	pos = bv->bc->enc-1;
+	pos = BVCurEnc(bv)-1;
     } else if ( mi->mid == MID_NextDef ) {
-	for ( pos = bv->bc->enc+1; pos<sf->charcnt && sf->chars[pos]==NULL; ++pos );
-	if ( pos==sf->charcnt )
+	for ( pos = BVCurEnc(bv)+1; pos<map->enccount &&
+		((gid=map->map[pos])==-1 || sf->glyphs[gid]==NULL); ++pos );
+	if ( pos==map->enccount )
 return;
     } else if ( mi->mid == MID_PrevDef ) {
-	for ( pos = bv->bc->enc-1; pos>=0 && sf->chars[pos]==NULL; --pos );
+	for ( pos = BVCurEnc(bv)-1; pos>=0 &&
+		((gid=map->map[pos])==-1 || sf->glyphs[gid]==NULL); --pos );
 	if ( pos<0 )
 return;
     }
-    if ( pos>=0 && pos<bv->fv->sf->charcnt )
+    if ( pos>=0 && pos<map->enccount )
 	BVChangeChar(bv,pos,false);
 }
 
@@ -1261,14 +1306,14 @@ static void BVMenuChangePixelSize(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     if ( best!=NULL && bv->bdf!=best ) {
 	bv->bdf = best;
 	bv->scscale = ((real) (best->pixelsize))/(best->sf->ascent+best->sf->descent);
-	BVChangeChar(bv,bv->bc->enc,true);
+	BVChangeChar(bv,bv->enc,true);
 	BVShows.lastpixelsize = best->pixelsize;
     }
 }
 
 static void BVMenuGotoChar(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
-    int pos = GotoChar(bv->fv->sf);
+    int pos = GotoChar(bv->fv->sf,bv->fv->map);
 
     if ( pos!=-1 )
 	BVChangeChar(bv,pos,false);
@@ -1277,7 +1322,7 @@ static void BVMenuGotoChar(GWindow gw,struct gmenuitem *mi,GEvent *g) {
 static void BVMenuFindInFontView(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
 
-    FVChangeChar(bv->fv,bv->bc->sc->enc);
+    FVChangeChar(bv->fv,bv->bc->sc->orig_pos);
     GDrawSetVisible(bv->fv->gw,true);
     GDrawRaise(bv->fv->gw);
 }
@@ -1324,7 +1369,7 @@ return;
     for ( bdf=bv->fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 	if ( bdf->pixelsize > mysize )
 return;
-    if ( (sc=bv->fv->sf->chars[bv->bc->enc])!=NULL ) {
+    if ( (sc=bv->fv->sf->glyphs[bv->bc->orig_pos])!=NULL ) {
 	sc->width = val*(sc->parent->ascent+sc->parent->descent)/mysize;
 	SCCharChangedUpdate(sc);
     }
@@ -1391,7 +1436,7 @@ static void BVMenuFontInfo(GWindow gw,struct gmenuitem *mi,GEvent *g) {
 
 static void BVMenuGetInfo(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
-    SCCharInfo(bv->bc->sc);
+    SCCharInfo(bv->bc->sc,bv->fv->map,BVCurEnc(bv));
 }
 
 static void BVMenuBitmaps(GWindow gw,struct gmenuitem *mi,GEvent *g) {
@@ -1623,7 +1668,7 @@ static unsigned char bitmap_bits[] = {
    0x30, 0x0c, 0xf0, 0x03, 0xf0, 0x03, 0x30, 0x0c, 0x30, 0x0c, 0x30, 0x0c,
    0x30, 0x0c, 0xfc, 0x03, 0xfc, 0x03, 0x00, 0x00};
 
-BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv) {
+BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv, int enc) {
     BitmapView *bv = gcalloc(1,sizeof(BitmapView));
     GRect pos, zoom;
     GWindow gw;
@@ -1650,6 +1695,8 @@ BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv) {
     bv->next = bc->views;
     bc->views = bv;
     bv->fv = fv;
+    bv->enc = enc;
+    bv->map_of_enc = fv->map;
     bv->bdf = bdf;
     bv->color = 255;
     bv->shades_hidden = bdf->clut==NULL;
@@ -1755,8 +1802,10 @@ return( bv );
 BitmapView *BitmapViewCreatePick(int enc, FontView *fv) {
     BDFFont *bdf;
     SplineFont *sf;
+    EncMap *map;
 
     sf = fv->cidmaster ? fv->cidmaster : fv->sf;
+    map = fv->map;
 
     if ( fv->show!=fv->filled )
 	bdf = fv->show;
@@ -1765,8 +1814,7 @@ BitmapView *BitmapViewCreatePick(int enc, FontView *fv) {
     if ( bdf==NULL )
 	bdf = sf->bitmaps;
 
-    BDFMakeChar(bdf,enc);
-return( BitmapViewCreate(bdf->chars[enc],bdf,fv));
+return( BitmapViewCreate(BDFMakeChar(bdf,map,enc),bdf,fv,enc));
 }
 
 void BitmapViewFree(BitmapView *bv) {

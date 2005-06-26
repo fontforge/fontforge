@@ -91,9 +91,9 @@ void FindBlues( SplineFont *sf, real blues[14], real otherblues[10]) {
     ascenth[0] = ascenth[1] = ascenth[2] = digith[0] = digith[1] = digith[2] = 0;
     descenth[0] = descenth[1] = descenth[2] = base[0] = base[1] = base[2] = 0;
     otherdigits[0] = otherdigits[1] = otherdigits[2] = 0;
-    for ( i=0; i<sf->charcnt; ++i ) {
-	if ( sf->chars[i]!=NULL && sf->chars[i]->layers[ly_fore].splines!=NULL ) {
-	    int enc = sf->chars[i]->unicodeenc;
+    for ( i=0; i<sf->glyphcnt; ++i ) {
+	if ( sf->glyphs[i]!=NULL && sf->glyphs[i]->layers[ly_fore].splines!=NULL ) {
+	    int enc = sf->glyphs[i]->unicodeenc;
 	    const unichar_t *upt;
 	    if ( enc<0x10000 && isalnum(enc) &&
 		    ((enc>=32 && enc<128 ) || enc == 0xfe || enc==0xf0 || enc==0xdf ||
@@ -106,7 +106,7 @@ void FindBlues( SplineFont *sf, real blues[14], real otherblues[10]) {
 			upt[1]!='\0' )
     continue;
 		any = true;
-		SplineCharFindBounds(sf->chars[i],&b);
+		SplineCharFindBounds(sf->glyphs[i],&b);
 		if ( b.miny==0 && b.maxy==0 )
     continue;
 		if ( enc=='g' || enc=='j' || enc=='p' || enc=='q' || enc=='y' ||
@@ -260,8 +260,8 @@ void FindBlues( SplineFont *sf, real blues[14], real otherblues[10]) {
     digith[3] = digith[4] = 0;
     descenth[3] = descenth[4] = 0;
     base[3] = base[4] = 0;
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	int enc = sf->chars[i]->unicodeenc;
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	int enc = sf->glyphs[i]->unicodeenc;
 	const unichar_t *upt;
 	if ( enc<0x10000 && isalnum(enc) &&
 		((enc>=32 && enc<128 ) || enc == 0xfe || enc==0xf0 || enc==0xdf ||
@@ -273,7 +273,7 @@ void FindBlues( SplineFont *sf, real blues[14], real otherblues[10]) {
 		    upt[1]!='\0' )
     continue;
 	    any = true;
-	    SplineCharFindBounds(sf->chars[i],&b);
+	    SplineCharFindBounds(sf->glyphs[i],&b);
 	    if ( b.miny==0 && b.maxy==0 )
     continue;
 	    if ( enc=='g' || enc=='j' || enc=='p' || enc=='q' || enc=='y' ||
@@ -453,8 +453,8 @@ void QuickBlues(SplineFont *_sf, BlueData *bd) {
     j=0;
     do {
 	sf = ( _sf->subfontcnt==0 )? _sf : _sf->subfonts[j];
-	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	    int enc = sf->chars[i]->unicodeenc;
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	    int enc = sf->glyphs[i]->unicodeenc;
 	    if ( enc=='I' || enc=='O' || enc=='x' || enc=='o' || enc=='p' || enc=='l' ||
 /* Jean-Christophe Dubacq points out that x-height should be calculated from */
 /*  various characters and not just x and o. Italic "x"s often have strange */
@@ -465,7 +465,7 @@ void QuickBlues(SplineFont *_sf, BlueData *bd) {
 		    enc=='7' || enc=='8' ||	/* numbers with ascenders */
 		    enc==0x399 || enc==0x39f || enc==0x3ba || enc==0x3bf || enc==0x3c1 || enc==0x3be || enc==0x3c7 ||
 		    enc==0x41f || enc==0x41e || enc==0x43e || enc==0x43f || enc==0x440 || enc==0x452 || enc==0x445 ) {
-		t = sf->chars[i];
+		t = sf->glyphs[i];
 		while ( t->layers[ly_fore].splines==NULL && t->layers[ly_fore].refs!=NULL )
 		    t = t->layers[ly_fore].refs->sc;
 		max = -1e10; min = 1e10;
@@ -2089,11 +2089,11 @@ void SCClearHintMasks(SplineChar *sc,int counterstoo) {
 	_SCClearHintMasks(sc,counterstoo);
     else {
 	for ( i=0; i<mm->instance_count; ++i ) {
-	    if ( sc->enc<mm->instances[i]->charcnt )
-		_SCClearHintMasks(mm->instances[i]->chars[sc->enc],counterstoo);
+	    if ( sc->orig_pos<mm->instances[i]->glyphcnt )
+		_SCClearHintMasks(mm->instances[i]->glyphs[sc->orig_pos],counterstoo);
 	}
-	if ( sc->enc<mm->normal->charcnt )
-	    _SCClearHintMasks(mm->normal->chars[sc->enc],counterstoo);
+	if ( sc->orig_pos<mm->normal->glyphcnt )
+	    _SCClearHintMasks(mm->normal->glyphs[sc->orig_pos],counterstoo);
     }
 }
 
@@ -2661,8 +2661,8 @@ void SCFigureHintMasks(SplineChar *sc) {
 return;
 	instance_count = mm->instance_count;
 	for ( i=0; i<instance_count; ++i )
-	    if ( sc->enc < mm->instances[i]->charcnt ) {
-		scs[i] = mm->instances[i]->chars[sc->enc];
+	    if ( sc->orig_pos < mm->instances[i]->glyphcnt ) {
+		scs[i] = mm->instances[i]->glyphs[sc->orig_pos];
 		SCClearHintMasks(scs[i],false);
 	    }
 	ResolveSplitHints(scs,instance_count);
@@ -2903,10 +2903,10 @@ void SplineCharAutoHint( SplineChar *sc, BlueData *bd ) {
 	_SplineCharAutoHint(sc,bd,NULL);
     else {
 	for ( i=0; i<mm->instance_count; ++i )
-	    if ( sc->enc < mm->instances[i]->charcnt )
-		_SplineCharAutoHint(mm->instances[i]->chars[sc->enc],NULL,NULL);
-	if ( sc->enc < mm->normal->charcnt )
-	    _SplineCharAutoHint(mm->normal->chars[sc->enc],NULL,NULL);
+	    if ( sc->orig_pos < mm->instances[i]->glyphcnt )
+		_SplineCharAutoHint(mm->instances[i]->glyphs[sc->orig_pos],NULL,NULL);
+	if ( sc->orig_pos < mm->normal->glyphcnt )
+	    _SplineCharAutoHint(mm->normal->glyphs[sc->orig_pos],NULL,NULL);
     }
     SCFigureHintMasks(sc);
     SCUpdateAll(sc);
@@ -2919,9 +2919,9 @@ int SFNeedsAutoHint( SplineFont *_sf) {
     k=0;
     do {
 	sf = _sf->subfontcnt==0 ? _sf : _sf->subfonts[k];
-	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	    if ( sf->chars[i]->changedsincelasthinted &&
-		    !sf->chars[i]->manualhints )
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	    if ( sf->glyphs[i]->changedsincelasthinted &&
+		    !sf->glyphs[i]->manualhints )
 return( true );
 	}
 	++k;
@@ -2942,10 +2942,10 @@ void SplineFontAutoHint( SplineFont *_sf) {
     k=0;
     do {
 	sf = _sf->subfontcnt==0 ? _sf : _sf->subfonts[k];
-	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	    if ( sf->chars[i]->changedsincelasthinted &&
-		    !sf->chars[i]->manualhints )
-		SplineCharAutoHint(sf->chars[i],bd);
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	    if ( sf->glyphs[i]->changedsincelasthinted &&
+		    !sf->glyphs[i]->manualhints )
+		SplineCharAutoHint(sf->glyphs[i],bd);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    if ( !GProgressNext()) {
@@ -2971,8 +2971,8 @@ static void FigureStems( SplineFont *sf, real snaps[12], real cnts[12],
 
     memset(stemwidths,'\0',sizeof(stemwidths));
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	stems = which?sf->chars[i]->hstem:sf->chars[i]->vstem;
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	stems = which?sf->glyphs[i]->hstem:sf->glyphs[i]->vstem;
 	for ( test=stems; test!=NULL; test = test->next ) if ( !test->ghost ) {
 	    if ( (j=test->width)<0 ) j= -j;
 	    if ( j<2000 ) {
@@ -3186,15 +3186,15 @@ return(false);
 return( max );
 }
 
-static int MatchFlexes(MMSet *mm,int enc) {
+static int MatchFlexes(MMSet *mm,int opos) {
     int any=false, i;
     SplineSet *spl[16];
     SplinePoint *sp[16];
     int mismatchx, mismatchy;
 
     for ( i=0; i<mm->instance_count; ++i )
-	if ( enc<mm->instances[i]->charcnt && mm->instances[i]->chars[enc]!=NULL )
-	    spl[i] = mm->instances[i]->chars[enc]->layers[ly_fore].splines;
+	if ( opos<mm->instances[i]->glyphcnt && mm->instances[i]->glyphs[opos]!=NULL )
+	    spl[i] = mm->instances[i]->glyphs[opos]->layers[ly_fore].splines;
 	else
 	    spl[i] = NULL;
     while ( spl[0]!=NULL ) {
@@ -3255,9 +3255,9 @@ return( _SplineCharIsFlexible(sc,blueshift));
 
     mm = sc->parent->mm;
     for ( i = 0; i<mm->instance_count; ++i )
-	if ( sc->enc<mm->instances[i]->charcnt && mm->instances[i]->chars[sc->enc]!=NULL )
-	    _SplineCharIsFlexible(mm->instances[i]->chars[sc->enc],blueshift);
-return( MatchFlexes(mm,sc->enc));	
+	if ( sc->orig_pos<mm->instances[i]->glyphcnt && mm->instances[i]->glyphs[sc->orig_pos]!=NULL )
+	    _SplineCharIsFlexible(mm->instances[i]->glyphs[sc->orig_pos],blueshift);
+return( MatchFlexes(mm,sc->orig_pos));	
 }
 
 static void SCUnflex(SplineChar *sc) {
@@ -3290,8 +3290,8 @@ int SplineFontIsFlexible(SplineFont *sf,int flags) {
     /*  the splineset */
 
     if ( flags&(ps_flag_nohints|ps_flag_noflex)) {
-	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
-	    SCUnflex(sf->chars[i]);
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
+	    SCUnflex(sf->glyphs[i]);
 return( 0 );
     }
 	
@@ -3303,9 +3303,9 @@ return( 0 );
     } else if ( PSDictHasEntry(sf->private,"BlueValues")!=NULL )
 	blueshift = 7;	/* The BlueValues array may depend on BlueShift having its default value */
 
-    for ( i=0; i<sf->charcnt; ++i )
-	if ( sf->chars[i]!=NULL ) {
-	    val = _SplineCharIsFlexible(sf->chars[i],blueshift);
+    for ( i=0; i<sf->glyphcnt; ++i )
+	if ( sf->glyphs[i]!=NULL ) {
+	    val = _SplineCharIsFlexible(sf->glyphs[i],blueshift);
 	    if ( val>max ) max = val;
 	}
 return( max );

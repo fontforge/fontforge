@@ -347,27 +347,34 @@ void MMKern(SplineFont *sf,SplineChar *first,SplineChar *second,int diff,
 
     if ( mm==NULL )
 return;
-    if ( sf==mm->normal || kp==NULL ) {
+    if ( sf==mm->normal || oldkp==NULL ) {
 	for ( i= -1; i<mm->instance_count; ++i ) {
 	    SplineFont *cur = i==-1 ? mm->normal : mm->instances[i];
 	    SplineChar *psc, *ssc;
 	    if ( cur==sf )	/* Done in caller */
 	continue;
-	    psc = SFMakeChar(cur,first->enc);
-	    ssc = SFMakeChar(cur,second->enc);
+	    psc = cur->glyphs[first->orig_pos];
+	    ssc = cur->glyphs[second->orig_pos];
+	    if ( psc==NULL || ssc==NULL )		/* Should never happen*/
+	continue;
 	    for ( kp = psc->kerns; kp!=NULL && kp->sc!=ssc; kp = kp->next );
 	    /* No mm support for vertical kerns */
 	    if ( kp==NULL ) {
 		kp = chunkalloc(sizeof(KernPair));
+		if ( oldkp!=NULL )
+		    *kp = *oldkp;
+		else {
+		    kp->off = diff;
+		    if ( sli==-1 )
+			sli = SFAddScriptLangIndex(cur,
+				    SCScriptFromUnicode(psc),DEFAULT_LANG);
+		    kp->sli = sli;
+		}
 		kp->sc = ssc;
 		kp->next = psc->kerns;
 		psc->kerns = kp;
-	    }
-	    kp->off += diff;
-	    if ( sli==-1 )
-		sli = SFAddScriptLangIndex(cur,
-			    SCScriptFromUnicode(psc),DEFAULT_LANG);
-	    kp->sli = sli;
+	    } else
+		kp->off += diff;
 	}
     }
 }
@@ -451,7 +458,7 @@ return( false );
 
     for ( ref1=sc1->layers[ly_fore].refs; ref1!=NULL ; ref1=ref1->next ) {
 	for ( ref2=sc2->layers[ly_fore].refs; ref2!=NULL ; ref2=ref2->next ) {
-	    if ( ref2->sc->enc==ref1->sc->enc && !ref2->checked )
+	    if ( ref2->sc->orig_pos==ref1->sc->orig_pos && !ref2->checked )
 	break;
 	}
 	if ( ref2==NULL )
@@ -508,7 +515,7 @@ return( false );
 
     for ( k1=sc1->kerns; k1!=NULL ; k1=k1->next ) {
 	for ( k2=sc2->kerns; k2!=NULL ; k2=k2->next ) {
-	    if ( k2->sc->enc==k1->sc->enc && !k2->kcid )
+	    if ( k2->sc->orig_pos==k1->sc->orig_pos && !k2->kcid )
 	break;
 	}
 	if ( k2==NULL )
@@ -582,8 +589,7 @@ return( false );
     }
 
     for ( j=mm->apple ? 0 : 1; j<mm->instance_count; ++j ) {
-	if ( sf->charcnt!=mm->instances[j]->charcnt ||
-		sf->encoding_name!=mm->instances[j]->encoding_name ) {
+	if ( sf->glyphcnt!=mm->instances[j]->glyphcnt ) {
 	    if ( complain )
 #if defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Bad Multiple Master Font"),_("The fonts %1$.30s and %2$.30s have a different number of glyphs or different encodings"),
@@ -630,31 +636,31 @@ return( false );
 	}
     }
 
-    for ( i=0; i<sf->charcnt; ++i ) {
+    for ( i=0; i<sf->glyphcnt; ++i ) {
 	for ( j=mm->apple?0:1; j<mm->instance_count; ++j ) {
-	    if ( SCWorthOutputting(sf->chars[i])!=SCWorthOutputting(mm->instances[j]->chars[i]) ) {
+	    if ( SCWorthOutputting(sf->glyphs[i])!=SCWorthOutputting(mm->instances[j]->glyphs[i]) ) {
 		if ( complain ) {
 		    FVChangeChar(sf->fv,i);
-		    if ( SCWorthOutputting(sf->chars[i]) )
+		    if ( SCWorthOutputting(sf->glyphs[i]) )
 #if defined(FONTFORGE_CONFIG_GTK)
 			gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s is defined in font %2$.30s but not in %3$.30s"),
 #else
 			GWidgetErrorR(_STR_BadMM,_STR_MMUndefGlyph,
 #endif
-				sf->chars[i]->name,sf->fontname, mm->instances[j]->fontname);
+				sf->glyphs[i]->name,sf->fontname, mm->instances[j]->fontname);
 		    else
 #if defined(FONTFORGE_CONFIG_GTK)
 			gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s is defined in font %2$.30s but not in %3$.30s"),
 #else
 			GWidgetErrorR(_STR_BadMM,_STR_MMUndefGlyph,
 #endif
-				mm->instances[j]->chars[i]->name, mm->instances[j]->fontname,sf->fontname);
+				mm->instances[j]->glyphs[i]->name, mm->instances[j]->fontname,sf->fontname);
 		}
 return( false );
 	    }
 	}
-	if ( SCWorthOutputting(sf->chars[i]) ) {
-	    if ( mm->apple && sf->chars[i]->layers[ly_fore].refs!=NULL && sf->chars[i]->layers[ly_fore].splines!=NULL ) {
+	if ( SCWorthOutputting(sf->glyphs[i]) ) {
+	    if ( mm->apple && sf->glyphs[i]->layers[ly_fore].refs!=NULL && sf->glyphs[i]->layers[ly_fore].splines!=NULL ) {
 		if ( complain ) {
 		    FVChangeChar(sf->fv,i);
 #if defined(FONTFORGE_CONFIG_GTK)
@@ -662,13 +668,13 @@ return( false );
 #else
 		    GWidgetErrorR(_STR_BadMM,_STR_MMBothRefSplines,
 #endif
-			    sf->chars[i]->name,sf->fontname);
+			    sf->glyphs[i]->name,sf->fontname);
 		}
 return( false );
 	    }
 	    for ( j=mm->apple?0:1; j<mm->instance_count; ++j ) {
-		if ( mm->apple && mm->instances[j]->chars[i]->layers[ly_fore].refs!=NULL &&
-			mm->instances[j]->chars[i]->layers[ly_fore].splines!=NULL ) {
+		if ( mm->apple && mm->instances[j]->glyphs[i]->layers[ly_fore].refs!=NULL &&
+			mm->instances[j]->glyphs[i]->layers[ly_fore].splines!=NULL ) {
 		    if ( complain ) {
 			FVChangeChar(sf->fv,i);
 #if defined(FONTFORGE_CONFIG_GTK)
@@ -676,11 +682,11 @@ return( false );
 #else
 			GWidgetErrorR(_STR_BadMM,_STR_MMBothRefSplines,
 #endif
-				sf->chars[i]->name,mm->instances[j]->fontname);
+				sf->glyphs[i]->name,mm->instances[j]->fontname);
 		    }
 return( false );
 		}
-		if ( ContourCount(sf->chars[i])!=ContourCount(mm->instances[j]->chars[i])) {
+		if ( ContourCount(sf->glyphs[i])!=ContourCount(mm->instances[j]->glyphs[i])) {
 		    if ( complain ) {
 			FVChangeChar(sf->fv,i);
 #if defined(FONTFORGE_CONFIG_GTK)
@@ -688,10 +694,10 @@ return( false );
 #else
 			GWidgetErrorR(_STR_BadMM,_STR_MMWrongContourCount,
 #endif
-				sf->chars[i]->name,sf->fontname, mm->instances[j]->fontname);
+				sf->glyphs[i]->name,sf->fontname, mm->instances[j]->fontname);
 		    }
 return( false );
-		} else if ( !mm->apple && !ContourPtMatch(sf->chars[i],mm->instances[j]->chars[i])) {
+		} else if ( !mm->apple && !ContourPtMatch(sf->glyphs[i],mm->instances[j]->glyphs[i])) {
 		    if ( complain ) {
 			FVChangeChar(sf->fv,i);
 #if defined(FONTFORGE_CONFIG_GTK)
@@ -699,10 +705,10 @@ return( false );
 #else
 			GWidgetErrorR(_STR_BadMM,_STR_MMMismatchContoursPt,
 #endif
-				sf->chars[i]->name,sf->fontname, mm->instances[j]->fontname);
+				sf->glyphs[i]->name,sf->fontname, mm->instances[j]->fontname);
 		    }
 return( false );
-		} else if ( !ContourDirMatch(sf->chars[i],mm->instances[j]->chars[i])) {
+		} else if ( !ContourDirMatch(sf->glyphs[i],mm->instances[j]->glyphs[i])) {
 		    if ( complain ) {
 			FVChangeChar(sf->fv,i);
 #if defined(FONTFORGE_CONFIG_GTK)
@@ -710,10 +716,10 @@ return( false );
 #else
 			GWidgetErrorR(_STR_BadMM,_STR_MMMismatchContoursDir,
 #endif
-				sf->chars[i]->name,sf->fontname, mm->instances[j]->fontname);
+				sf->glyphs[i]->name,sf->fontname, mm->instances[j]->fontname);
 		    }
 return( false );
-		} else if ( !RefMatch(sf->chars[i],mm->instances[j]->chars[i])) {
+		} else if ( !RefMatch(sf->glyphs[i],mm->instances[j]->glyphs[i])) {
 		    if ( complain ) {
 			FVChangeChar(sf->fv,i);
 #if defined(FONTFORGE_CONFIG_GTK)
@@ -721,10 +727,10 @@ return( false );
 #else
 			GWidgetErrorR(_STR_BadMM,_STR_MMMismatchRefs,
 #endif
-				sf->chars[i]->name,sf->fontname, mm->instances[j]->fontname);
+				sf->glyphs[i]->name,sf->fontname, mm->instances[j]->fontname);
 		    }
 return( false );
-		} else if ( mm->apple && !RefTransformsMatch(sf->chars[i],mm->instances[j]->chars[i])) {
+		} else if ( mm->apple && !RefTransformsMatch(sf->glyphs[i],mm->instances[j]->glyphs[i])) {
 		    if ( complain ) {
 			FVChangeChar(sf->fv,i);
 #if defined(FONTFORGE_CONFIG_GTK)
@@ -732,10 +738,10 @@ return( false );
 #else
 			GWidgetErrorR(_STR_BadMM,_STR_MMMismatchRefTrans,
 #endif
-				sf->chars[i]->name,sf->fontname, mm->instances[j]->fontname);
+				sf->glyphs[i]->name,sf->fontname, mm->instances[j]->fontname);
 		    }
 return( false );
-		} else if ( !mm->apple && !KernsMatch(sf->chars[i],mm->instances[j]->chars[i])) {
+		} else if ( !mm->apple && !KernsMatch(sf->glyphs[i],mm->instances[j]->glyphs[i])) {
 		    if ( complain ) {
 			FVChangeChar(sf->fv,i);
 #if defined(FONTFORGE_CONFIG_GTK)
@@ -743,7 +749,7 @@ return( false );
 #else
 			GWidgetErrorR(_STR_BadMM,_STR_MMMismatchKerns,
 #endif
-				"vertical", sf->chars[i]->name,sf->fontname, mm->instances[j]->fontname);
+				"vertical", sf->glyphs[i]->name,sf->fontname, mm->instances[j]->fontname);
 		    }
 return( false );
 		}
@@ -756,13 +762,13 @@ return( false );
 #else
 		    GWidgetErrorR(_STR_BadMM,_STR_MMMismatchContoursPtNum,
 #endif
-			    sf->chars[i]->name);
+			    sf->glyphs[i]->name);
 		}
 return( false );
 	    }
 	    if ( !mm->apple ) {
 		for ( j=1; j<mm->instance_count; ++j ) {
-		    if ( !HintsMatch(sf->chars[i]->hstem,mm->instances[j]->chars[i]->hstem)) {
+		    if ( !HintsMatch(sf->glyphs[i]->hstem,mm->instances[j]->glyphs[i]->hstem)) {
 			if ( complain ) {
 			    FVChangeChar(sf->fv,i);
 #if defined(FONTFORGE_CONFIG_GTK)
@@ -770,10 +776,10 @@ return( false );
 #else
 			    GWidgetErrorR(_STR_BadMM,_STR_MMMismatchHints,
 #endif
-				    "horizontal", sf->chars[i]->name,sf->fontname, mm->instances[j]->fontname);
+				    "horizontal", sf->glyphs[i]->name,sf->fontname, mm->instances[j]->fontname);
 			}
 return( false );
-		    } else if ( !HintsMatch(sf->chars[i]->vstem,mm->instances[j]->chars[i]->vstem)) {
+		    } else if ( !HintsMatch(sf->glyphs[i]->vstem,mm->instances[j]->glyphs[i]->vstem)) {
 			if ( complain ) {
 			    FVChangeChar(sf->fv,i);
 #if defined(FONTFORGE_CONFIG_GTK)
@@ -781,13 +787,13 @@ return( false );
 #else
 			    GWidgetErrorR(_STR_BadMM,_STR_MMMismatchHints,
 #endif
-				    "vertical", sf->chars[i]->name,sf->fontname, mm->instances[j]->fontname);
+				    "vertical", sf->glyphs[i]->name,sf->fontname, mm->instances[j]->fontname);
 			}
 return( false );
 		    }
 		}
 		for ( j=1; j<mm->instance_count; ++j ) {
-		    if ( !ContourHintMaskMatch(sf->chars[i],mm->instances[j]->chars[i])) {
+		    if ( !ContourHintMaskMatch(sf->glyphs[i],mm->instances[j]->glyphs[i])) {
 			if ( complain ) {
 			    FVChangeChar(sf->fv,i);
 #if defined(FONTFORGE_CONFIG_GTK)
@@ -795,7 +801,7 @@ return( false );
 #else
 			    GWidgetErrorR(_STR_BadMM,_STR_MMMismatchHintMask,
 #endif
-				    sf->chars[i]->name,sf->fontname, mm->instances[j]->fontname);
+				    sf->glyphs[i]->name,sf->fontname, mm->instances[j]->fontname);
 			}
 return( false );
 		    }
@@ -859,7 +865,19 @@ return( false );
 return( true );
 }
 
-static int _MMBlendChar(MMSet *mm, int enc) {
+static SplineChar *SFMakeGlyphLike(SplineFont *sf, int gid, SplineFont *base) {
+    SplineChar *sc = SplineCharCreate(), *bsc = base->glyphs[gid];
+    sc->orig_pos = gid;
+    sf->glyphs[gid] = sc;
+    sc->parent = sf;
+
+    sc->width = bsc->width; sc->widthset = true; sc->vwidth = bsc->vwidth;
+    free(sc->name); sc->name = copy(bsc->name);
+    sc->unicodeenc = bsc->unicodeenc;
+return( bsc );
+}
+
+static int _MMBlendChar(MMSet *mm, int gid) {
     int i, j, worthit = -1;
     int all, any, any2, all2, anyend, allend, diff;
     SplineChar *sc;
@@ -873,9 +891,9 @@ static int _MMBlendChar(MMSet *mm, int enc) {
     for ( i=0; i<mm->instance_count; ++i ) {
 	if ( mm->instances[i]->order2 )
 return( _STR_MMOrder2NoName );
-	if ( enc>=mm->instances[i]->charcnt )
+	if ( gid>=mm->instances[i]->glyphcnt )
 return( _STR_MMDifferentNumGlyphsNoName );
-	if ( SCWorthOutputting(mm->instances[i]->chars[enc]) ) {
+	if ( SCWorthOutputting(mm->instances[i]->glyphs[gid]) ) {
 	    if ( worthit == -1 ) worthit = true;
 	    else if ( worthit != true )
 return( _STR_MMUndefGlyphNoName );
@@ -886,7 +904,7 @@ return( _STR_MMUndefGlyphNoName );
 	}
     }
 
-    sc = mm->normal->chars[enc];
+    sc = mm->normal->glyphs[gid];
     if ( sc!=NULL ) {
 	SCClearContents(sc);
 	KernPairsFree(sc->kerns);
@@ -899,13 +917,13 @@ return( _STR_MMUndefGlyphNoName );
 return( 0 );
 
     if ( sc==NULL )
-	sc = SFMakeChar(mm->normal,enc);
+	sc = SFMakeGlyphLike(mm->normal,gid,mm->instances[0]);
 
 	/* Blend references => blend transformation matrices */
     diff = false;
     any = false; all = true;
     for ( i=0; i<mm->instance_count; ++i ) {
-	refs[i] = mm->instances[i]->chars[enc]->layers[ly_fore].refs;
+	refs[i] = mm->instances[i]->glyphs[gid]->layers[ly_fore].refs;
 	if ( refs[i]!=NULL ) any = true;
 	else all = false;
     }
@@ -916,9 +934,9 @@ return( 0 );
 	ref->layers[0].splines = NULL;
 	ref->next = NULL;
 	memset(ref->transform,0,sizeof(ref->transform));
-	ref->sc = mm->normal->chars[refs[0]->sc->enc];
+	ref->sc = mm->normal->glyphs[refs[0]->sc->orig_pos];
 	for ( i=0; i<mm->instance_count; ++i ) {
-	    if ( ref->sc->enc!=refs[i]->sc->enc )
+	    if ( ref->sc->orig_pos!=refs[i]->sc->orig_pos )
 		diff = true;
 	    for ( j=0; j<6; ++j )
 		ref->transform[j] += refs[i]->transform[j]*mm->defweights[i];
@@ -943,17 +961,17 @@ return( _STR_MMDiffRefEncodings );
 	/* Blend Width */
     width = 0;
     for ( i=0; i<mm->instance_count; ++i )
-	width += mm->instances[i]->chars[enc]->width*mm->defweights[i];
+	width += mm->instances[i]->glyphs[gid]->width*mm->defweights[i];
     sc->width = width;
     width = 0;
     for ( i=0; i<mm->instance_count; ++i )
-	width += mm->instances[i]->chars[enc]->vwidth*mm->defweights[i];
+	width += mm->instances[i]->glyphs[gid]->vwidth*mm->defweights[i];
     sc->vwidth = width;
 
 	/* Blend Splines */
     any = false; all = true;
     for ( i=0; i<mm->instance_count; ++i ) {
-	spls[i] = mm->instances[i]->chars[enc]->layers[ly_fore].splines;
+	spls[i] = mm->instances[i]->glyphs[gid]->layers[ly_fore].splines;
 	if ( spls[i]!=NULL ) any = true;
 	else all = false;
     }
@@ -1029,7 +1047,7 @@ return( _STR_MMContourMismatch );
     for ( j=0; j<2; ++j ) {
 	any = false; all = true;
 	for ( i=0; i<mm->instance_count; ++i ) {
-	    hs[i] = j ? mm->instances[i]->chars[enc]->hstem : mm->instances[i]->chars[enc]->vstem;
+	    hs[i] = j ? mm->instances[i]->glyphs[gid]->hstem : mm->instances[i]->glyphs[gid]->vstem;
 	    if ( hs[i]!=NULL ) any = true;
 	    else all = false;
 	}
@@ -1065,20 +1083,20 @@ return( _STR_MMDiffNumHints );
 	/* Blend kernpairs */
     /* I'm not requiring ordered kerning pairs */
     /* I'm not bothering with vertical kerning */
-    kp0 = mm->instances[0]->chars[enc]->kerns;
+    kp0 = mm->instances[0]->glyphs[gid]->kerns;
     kplast = NULL;
     while ( kp0!=NULL ) {
 	int off = kp0->off*mm->defweights[0];
 	for ( i=1; i<mm->instance_count; ++i ) {
-	    for ( kptest=mm->instances[i]->chars[enc]->kerns; kptest!=NULL; kptest=kptest->next )
-		if ( kptest->sc->enc==kp0->sc->enc )
+	    for ( kptest=mm->instances[i]->glyphs[gid]->kerns; kptest!=NULL; kptest=kptest->next )
+		if ( kptest->sc->orig_pos==kp0->sc->orig_pos )
 	    break;
 	    if ( kptest==NULL )
 return( _STR_MMDiffKerns );
 	    off += kptest->off*mm->defweights[i];
 	}
 	kp = chunkalloc(sizeof(KernPair));
-	kp->sc = mm->normal->chars[kp0->sc->enc];
+	kp->sc = mm->normal->glyphs[kp0->sc->orig_pos];
 	kp->off = off;
 	kp->sli = kp0->sli;
 	kp->flags = kp0->flags;
@@ -1092,15 +1110,15 @@ return( _STR_MMDiffKerns );
 return( 0 );
 }
 
-int MMBlendChar(MMSet *mm, int enc) {
+int MMBlendChar(MMSet *mm, int gid) {
     int ret;
     RefChar *ref;
 
-    if ( enc>=mm->normal->charcnt )
+    if ( gid>=mm->normal->glyphcnt )
 return( _STR_MMDifferentNumGlyphsNoName );
-    ret = _MMBlendChar(mm,enc);
-    if ( mm->normal->chars[enc]!=NULL ) {
-	SplineChar *sc = mm->normal->chars[enc];
+    ret = _MMBlendChar(mm,gid);
+    if ( mm->normal->glyphs[gid]!=NULL ) {
+	SplineChar *sc = mm->normal->glyphs[gid];
 	for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
 	    SCReinstanciateRefChar(sc,ref);
 	    SCMakeDependent(sc,ref->sc);
@@ -1200,12 +1218,12 @@ int MMReblend(FontView *fv, MMSet *mm) {
     RefChar *ref;
 
     olderr = 0;
-    for ( i=0; i<sf->charcnt; ++i ) {
-	if ( i>=mm->normal->charcnt )
+    for ( i=0; i<sf->glyphcnt; ++i ) {
+	if ( i>=mm->normal->glyphcnt )
     break;
 	err = MMBlendChar(mm,i);
-	if ( mm->normal->chars[i]!=NULL )
-	    _SCCharChangedUpdate(mm->normal->chars[i],-1);
+	if ( mm->normal->glyphs[i]!=NULL )
+	    _SCCharChangedUpdate(mm->normal->glyphs[i],-1);
 	if ( err==0 )
     continue;
 	if ( olderr==0 ) {
@@ -1217,15 +1235,18 @@ int MMReblend(FontView *fv, MMSet *mm) {
 	    olderr = err;
 	else
 	    olderr = -1;
-	if ( fv!=NULL )
-	    fv->selected[i] = true;
+	if ( fv!=NULL ) {
+	    int enc = fv->map->backmap[i];
+	    if ( enc!=-1 )
+		fv->selected[enc] = true;
+	}
     }
 
     sf = mm->normal;
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	for ( ref=sf->chars[i]->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
-	    SCReinstanciateRefChar(sf->chars[i],ref);
-	    SCMakeDependent(sf->chars[i],ref->sc);
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	for ( ref=sf->glyphs[i]->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
+	    SCReinstanciateRefChar(sf->glyphs[i],ref);
+	    SCMakeDependent(sf->glyphs[i],ref->sc);
 	}
     }
     sf->private = BlendPrivate(sf->private,mm);
@@ -1410,10 +1431,9 @@ static SplineFont *_MMNewFont(MMSet *mm,int index,char *familyname,real *normali
     if ( base!=NULL ) {
 	free(sf->xuid);
 	sf->xuid = copy(base->xuid);
-	sf->encoding_name = base->encoding_name;
-	free(sf->chars);
-	sf->chars = gcalloc(base->charcnt,sizeof(SplineChar *));
-	sf->charcnt = base->charcnt;
+	free(sf->glyphs);
+	sf->glyphs = gcalloc(base->glyphcnt,sizeof(SplineChar *));
+	sf->glyphcnt = base->glyphcnt;
 	sf->new = base->new;
 	sf->ascent = base->ascent;
 	sf->descent = base->descent;
@@ -1424,12 +1444,8 @@ static SplineFont *_MMNewFont(MMSet *mm,int index,char *familyname,real *normali
 	    sf->copyright = copy(base->copyright);
 	}
 	/* Make sure we get the encoding exactly right */
-	for ( i=0; i<base->charcnt; ++i ) if ( base->chars[i]!=NULL ) {
-	    SplineChar *sc = SFMakeChar(sf,i), *bsc = base->chars[i];
-	    sc->width = bsc->width; sc->widthset = true;
-	    free(sc->name); sc->name = copy(bsc->name);
-	    sc->unicodeenc = bsc->unicodeenc;
-	}
+	for ( i=0; i<base->glyphcnt; ++i ) if ( base->glyphs[i]!=NULL )
+	    SFMakeGlyphLike(sf,i,base);
     }
     sf->onlybitmaps = false;
     sf->mm = mm;
@@ -1451,18 +1467,18 @@ static real DoDelta(int16 **deltas,int pt,int is_y,real *blends,int instance_cou
 return( diff );
 }
 
-static void DistortChar(SplineFont *sf,MMSet *mm,int enc,real *blends) {
+static void DistortChar(SplineFont *sf,MMSet *mm,int gid,real *blends) {
     int i,j,ptcnt;
     int16 **deltas;
     SplineSet *ss;
     SplinePoint *sp;
     RefChar *ref;
-    SplineChar *sc = sf->chars[enc];
+    SplineChar *sc = sf->glyphs[gid];
     Spline *s, *first;
 
     if ( sc==NULL )
 return;
-    deltas = SCFindDeltas(mm,enc,&ptcnt);
+    deltas = SCFindDeltas(mm,gid,&ptcnt);
     if ( deltas==NULL )
 return;
     /* I never delta the left side bearing or top */
@@ -1545,15 +1561,15 @@ static void MakeAppleBlend(MMSet *mm,real *blends,real *normalized) {
     RefChar *ref;
 
     sf->mm = NULL;
-    for ( i=0; i<base->charcnt && i<sf->charcnt; ++i ) if ( base->chars[i]!=NULL ) {
-	sf->chars[i] = SplineCharCopy(base->chars[i],base);
-	for ( ref=sf->chars[i]->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
+    for ( i=0; i<base->glyphcnt && i<sf->glyphcnt; ++i ) if ( base->glyphs[i]!=NULL ) {
+	sf->glyphs[i] = SplineCharCopy(base->glyphs[i],base);
+	for ( ref=sf->glyphs[i]->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
 	    ref->sc = NULL;
-	sf->chars[i]->enc = i;
+	sf->glyphs[i]->orig_pos = i;
 	DistortChar(sf,mm,i,blends);
     }
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL )
-	ttfFixupRef(sf->chars,i);
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
+	ttfFixupRef(sf->glyphs,i);
     for ( tab=base->ttf_tables; tab!=NULL; tab=tab->next ) {
 	cur = chunkalloc(sizeof(struct ttf_table));
 	cur->tag = tab->tag;

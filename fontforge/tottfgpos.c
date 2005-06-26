@@ -189,7 +189,6 @@ uint32 SCScriptFromUnicode(SplineChar *sc) {
 
     if ( sc==NULL )
 return( DEFAULT_SCRIPT );
-    /*sc = SCDuplicate(sc);*/	/* No... If the encoding says we are cyrillic A, then better to be cyrillic A rather than latin A */
 
     sf = sc->parent;
     if ( sc->unicodeenc!=-1 )
@@ -199,8 +198,8 @@ return( ScriptFromUnicode( sc->unicodeenc,sf ));
     if ( *pt ) for ( ++pt; *pt!='\0' && *pt!='_' && *pt!='.'; ++pt );
     if ( *pt!='\0' ) {
 	char *str = copyn(sc->name,pt-sc->name);
-	int uni = sf==NULL ? UniFromName(str,ui_none,&custom) :
-			    UniFromName(str,sf->uni_interp,sf->encoding_name);
+	int uni = sf==NULL || sf->fv==NULL ? UniFromName(str,ui_none,&custom) :
+			    UniFromName(str,sf->uni_interp,sf->fv->map->enc);
 	free(str);
 	if ( uni!=-1 )
 return( ScriptFromUnicode( uni,sf ));
@@ -314,7 +313,7 @@ static SplineChar **FindSubs(SplineChar *sc,struct tagflaglang *tfl, enum possub
 		pt = strchr(start,' ');
 		if ( pt!=NULL )
 		    *pt = '\0';
-		subssc = SFGetCharDup(sc->parent,-1,start);
+		subssc = SFGetChar(sc->parent,-1,start);
 		if ( subssc!=NULL && subssc->ttf_glyph!=-1 &&
 			cnt<sizeof(space)/sizeof(space[0]) )
 		    space[cnt++] = subssc;
@@ -333,29 +332,25 @@ return( ret );
 }
 
 static SplineChar **generateGlyphList(SplineFont *sf, int iskern, int sli,
-	struct tagflaglang *ligtag) {
+	struct tagflaglang *ligtag,struct glyphinfo *gi) {
     int cnt;
-    SplineFont *sub;
     SplineChar *sc;
-    int k,i,j;
+    int i,j;
     SplineChar **glyphs=NULL;
 
     for ( j=0; j<2; ++j ) {
-	k = 0;
 	cnt = 0;
-	do {
-	    sub = ( sf->subfontcnt==0 ) ? sf : sf->subfonts[k];
-	    for ( i=0; i<sub->charcnt; ++i )
-		    if ( SCWorthOutputting(sc=sub->chars[i]) &&
-			    SCDuplicate(sc)==sc && sc->ttf_glyph!=-1 &&
-			    ((iskern==1 && KernListMatch(sc->kerns,sli)) ||
-			     (iskern==2 && KernListMatch(sc->vkerns,sli)) ||
-			     (!iskern && LigListMatchTag(sc->ligofme,ligtag) && AllToBeOutput(sc->ligofme)) )) {
+	for ( i=0; i<gi->gcnt; ++i ) {
+	    if ( gi->bygid[i]!=-1 && SCWorthOutputting(sc=sf->glyphs[gi->bygid[i]]) &&
+		    sc->ttf_glyph!=-1 &&
+		    ((iskern==1 && KernListMatch(sc->kerns,sli)) ||
+		     (iskern==2 && KernListMatch(sc->vkerns,sli)) ||
+		     (!iskern && LigListMatchTag(sc->ligofme,ligtag) &&
+			 AllToBeOutput(sc->ligofme)) )) {
 		if ( glyphs!=NULL ) glyphs[cnt] = sc;
 		++cnt;
 	    }
-	    ++k;
-	} while ( k<sf->subfontcnt );
+	}
 	if ( glyphs==NULL ) {
 	    if ( cnt==0 )
 return( NULL );
@@ -363,26 +358,31 @@ return( NULL );
 	}
     }
     glyphs[cnt] = NULL;
+
+    /* Make sure it is ordered by ttf_glyph */
+    for ( i=0; i<cnt-1; ++i ) {
+	for ( j=i+1; j<cnt; ++j )
+	    if ( glyphs[i]->ttf_glyph > glyphs[j]->ttf_glyph ) {
+		SplineChar *sc = glyphs[i];
+		glyphs[i] = glyphs[j];
+		glyphs[j] = sc;
+	    }
+    }
 return( glyphs );
 }
 
 static SplineChar **generateGlyphTypeList(SplineFont *sf, enum possub_type type,
-	struct tagflaglang *tfl, SplineChar ****map) {
+	struct tagflaglang *tfl, SplineChar ****map,struct glyphinfo *gi) {
     int cnt;
-    SplineFont *sub;
     SplineChar *sc;
-    int k,i,j;
+    int i,j;
     SplineChar **glyphs=NULL, ***maps=NULL;
 
     for ( j=0; j<2; ++j ) {
-	k = 0;
 	cnt = 0;
-	do {
-	    sub = ( sf->subfontcnt==0 ) ? sf : sf->subfonts[k];
-	    for ( i=0; i<sub->charcnt; ++i )
-		    if ( SCWorthOutputting(sc=sub->chars[i]) &&
-			    SCDuplicate(sc)==sc &&
-			    PosSubMatchTag(sc->possub,tfl,type) ) {
+	for ( i=0; i<gi->gcnt; ++i ) {
+	    if ( gi->bygid[i]!=-1 && SCWorthOutputting(sc=sf->glyphs[gi->bygid[i]]) &&
+		    PosSubMatchTag(sc->possub,tfl,type) ) {
 		if ( glyphs!=NULL ) {
 		    glyphs[cnt] = sc;
 		    if ( type==pst_substitution || type==pst_alternate || type==pst_multiple ) {
@@ -394,8 +394,7 @@ static SplineChar **generateGlyphTypeList(SplineFont *sf, enum possub_type type,
 		++cnt;
 		sc->ticked = true;
 	    }
-	    ++k;
-	} while ( k<sf->subfontcnt );
+	}
 	if ( glyphs==NULL ) {
 	    if ( cnt==0 )
 return( NULL );
@@ -418,11 +417,12 @@ return( glyphs );
 
 void AnchorClassDecompose(SplineFont *sf,AnchorClass *_ac, int classcnt, int *subcnts,
 	SplineChar ***marks,SplineChar ***base,
-	SplineChar ***lig,SplineChar ***mkmk) {
+	SplineChar ***lig,SplineChar ***mkmk,
+	struct glyphinfo *gi) {
     /* Run through the font finding all characters with this anchor class */
     /*  (and the cnt-1 classes after it) */
     /*  and distributing in the four possible anchor types */
-    int i,j,k;
+    int i,j,k,gid, gmax;
     struct sclist { int cnt; SplineChar **glyphs; } heads[at_max];
     AnchorPoint *test;
     AnchorClass *ac;
@@ -430,20 +430,21 @@ void AnchorClassDecompose(SplineFont *sf,AnchorClass *_ac, int classcnt, int *su
     memset(heads,0,sizeof(heads));
     memset(subcnts,0,classcnt*sizeof(int));
     memset(marks,0,classcnt*sizeof(SplineChar **));
+    gmax = gi==NULL ? sf->glyphcnt : gi->gcnt;
     for ( j=0; j<2; ++j ) {
-	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
+	for ( i=0; i<gmax; ++i ) if ( (gid = gi==NULL ? i : gi->bygid[i])!=-1 && sf->glyphs[gid]!=NULL ) {
 	    for ( ac = _ac, k=0; k<classcnt; ac=ac->next ) if ( ac->matches ) {
-		for ( test=sf->chars[i]->anchor; test!=NULL && test->anchor!=ac; test=test->next );
+		for ( test=sf->glyphs[gid]->anchor; test!=NULL && test->anchor!=ac; test=test->next );
 		if ( test==NULL )
 		    /* Do Nothing */;
 		else if ( test->type==at_mark ) {
 		    if ( j )
-			marks[k][subcnts[k]] = sf->chars[i];
+			marks[k][subcnts[k]] = sf->glyphs[gid];
 		    ++subcnts[k];
 	    break;
 		} else if ( test->type!=at_centry && test->type!=at_cexit ) {
 		    if ( heads[test->type].glyphs!=NULL )
-			heads[test->type].glyphs[heads[test->type].cnt] = sf->chars[i];
+			heads[test->type].glyphs[heads[test->type].cnt] = sf->glyphs[gid];
 		    ++heads[test->type].cnt;
 	    break;
 		}
@@ -470,20 +471,21 @@ void AnchorClassDecompose(SplineFont *sf,AnchorClass *_ac, int classcnt, int *su
     *mkmk = heads[at_basemark].glyphs;
 }
 
-SplineChar **EntryExitDecompose(SplineFont *sf,AnchorClass *ac) {
+SplineChar **EntryExitDecompose(SplineFont *sf,AnchorClass *ac,struct glyphinfo *gi) {
     /* Run through the font finding all characters with this anchor class */
-    int i,j, cnt;
+    int i,j, cnt, gmax, gid;
     SplineChar **array;
     AnchorPoint *test;
 
     array=NULL;
+    gmax = gi==NULL ? sf->glyphcnt : gi->gcnt;
     for ( j=0; j<2; ++j ) {
 	cnt = 0;
-	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	    for ( test=sf->chars[i]->anchor; test!=NULL && test->anchor!=ac; test=test->next );
+	for ( i=0; i<gmax; ++i ) if ( (gid = gi==NULL ? i : gi->bygid[i])!=-1 && sf->glyphs[gid]!=NULL ) {
+	    for ( test=sf->glyphs[gid]->anchor; test!=NULL && test->anchor!=ac; test=test->next );
 	    if ( test!=NULL && (test->type==at_centry || test->type==at_cexit )) {
 		if ( array!=NULL )
-		    array[cnt] = sf->chars[i];
+		    array[cnt] = sf->glyphs[gid];
 		++cnt;
 	    }
 	}
@@ -527,9 +529,11 @@ static void AnchorGuessContext(SplineFont *sf,struct alltabs *at) {
     AnchorPoint *ap;
     int hascursive = 0;
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i] ) {
+    /* the order in which we examine the glyphs does not matter here, so */
+    /*  we needn't add the complexity running though in gid order */
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i] ) {
 	basec = markc = 0;
-	for ( ap = sf->chars[i]->anchor; ap!=NULL; ap=ap->next )
+	for ( ap = sf->glyphs[i]->anchor; ap!=NULL; ap=ap->next )
 	    if ( ap->type==at_basemark )
 		++markc;
 	    else if ( ap->type==at_basechar || ap->type==at_baselig )
@@ -610,7 +614,7 @@ SplineChar **SFGlyphsFromNames(SplineFont *sf,char *names) {
 	    end = pt+strlen(pt);
 	ch = *end;
 	*end = '\0';
-	sc = SFGetCharDup(sf,-1,pt);
+	sc = SFGetChar(sf,-1,pt);
 	if ( sc!=NULL && sc->ttf_glyph!=-1 )
 	    glyphs[cnt++] = sc;
 	*end = ch;
@@ -803,7 +807,7 @@ static void dumpgposkerndata(FILE *gpos,SplineFont *sf,int sli,
     int isr2l = ScriptIsRightToLeft(script);
     int anydevtab = false;
 
-    glyphs = generateGlyphList(sf,isv+1,sli,NULL);
+    glyphs = generateGlyphList(sf,isv+1,sli,NULL,&at->gi);
     cnt=0;
     if ( glyphs!=NULL ) {
 	for ( ; glyphs[cnt]!=NULL; ++cnt );
@@ -934,7 +938,7 @@ uint16 *ClassesFromNames(SplineFont *sf,char **classnames,int class_cnt,
 		end = pt+strlen(pt);
 	    ch = *end;
 	    *end = '\0';
-	    sc = SFGetCharDup(sf,-1,pt);
+	    sc = SFGetChar(sf,-1,pt);
 	    if ( sc!=NULL && sc->ttf_glyph!=-1 ) {
 		class[sc->ttf_glyph] = i;
 		if ( gs!=NULL )
@@ -1135,9 +1139,9 @@ static void dumpanchor(FILE *gpos,AnchorPoint *ap) {
 }
 
 static struct lookup *dumpgposCursiveAttach(FILE *gpos,AnchorClass *ac,
-	SplineFont *sf, struct lookup *lookups) {
+	SplineFont *sf, struct lookup *lookups,struct glyphinfo *gi) {
     struct lookup *new;
-    SplineChar **entryexit = EntryExitDecompose(sf,ac), **glyphs;
+    SplineChar **entryexit = EntryExitDecompose(sf,ac,gi), **glyphs;
     int i,cnt, offset,j;
     AnchorPoint *ap, *entry, *exit;
     uint32 coverage_offset;
@@ -1627,7 +1631,7 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,SplineChar **glyphs,
 	    if ( pst->tag==tfl->tag && pst->flags==tfl->flags &&
 		    pst->script_lang_index == tfl->script_lang_index &&
 		    pst->type==pst_pair ) {
-		sc = SFGetCharDup(sf,-1,pst->u.pair.paired);
+		sc = SFGetChar(sf,-1,pst->u.pair.paired);
 		if ( sc==NULL || sc->ttf_glyph==-1 )
 		    putshort(gpos,0);
 		else
@@ -1668,7 +1672,7 @@ static void dumpgsubligdata(FILE *gsub,SplineFont *sf,
     LigList *ll;
     struct splinecharlist *scl;
 
-    glyphs = generateGlyphList(sf,false,0,ligtag);
+    glyphs = generateGlyphList(sf,false,0,ligtag,&at->gi);
     cnt=0;
     if ( glyphs!=NULL ) for ( ; glyphs[cnt]!=NULL; ++cnt );
 
@@ -1836,8 +1840,8 @@ static int AnchorHasMark(SplineFont *sf,AnchorClass *ac) {
     int i;
     AnchorPoint *ap;
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	for ( ap=sf->chars[i]->anchor; ap!=NULL ; ap=ap->next ) {
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	for ( ap=sf->glyphs[i]->anchor; ap!=NULL ; ap=ap->next ) {
 	    if ( ap->anchor==ac && ap->type==at_mark )
 return( true );
 	}
@@ -1871,7 +1875,7 @@ static SplineChar **OrderedInitialGlyphs(SplineFont *sf,FPST *fpst) {
 	pt = strchr(names,' ');
 	if ( pt==NULL ) pt = names+strlen(names);
 	ch = *pt; *pt = '\0';
-	sc = SFGetCharDup(sf,-1,names);
+	sc = SFGetChar(sf,-1,names);
 	*pt = ch;
 	for ( j=0; j<cnt; ++j )
 	    if ( glyphs[j]==sc )
@@ -2328,7 +2332,7 @@ return( lookups );
 }
 
 static struct lookup *AnchorsAway(FILE *lfile,SplineFont *sf,struct lookup *lookups,
-	uint32 tag ) {
+	uint32 tag, struct glyphinfo *gi ) {
     SplineChar **base, **lig, **mkmk;
     AnchorClass *ac, *ac2;
     SplineChar ***marks;
@@ -2344,7 +2348,7 @@ static struct lookup *AnchorsAway(FILE *lfile,SplineFont *sf,struct lookup *look
 		((tag==0 && ac->script_lang_index!=SLI_NESTED) ||
 		 (tag!=0 && ac->script_lang_index==SLI_NESTED && ac->feature_tag == tag))) {
 	    if ( ac->type==act_curs )
-		lookups = dumpgposCursiveAttach(lfile,ac,sf,lookups);
+		lookups = dumpgposCursiveAttach(lfile,ac,sf,lookups,gi);
 	    else if ( ac->has_mark ) {
 		ac->matches = ac->processed = true;
 		for ( ac2 = ac->next, classcnt=1; ac2!=NULL ; ac2 = ac2->next ) {
@@ -2362,7 +2366,7 @@ static struct lookup *AnchorsAway(FILE *lfile,SplineFont *sf,struct lookup *look
 		    marks = grealloc(marks,(cmax=classcnt+10)*sizeof(SplineChar **));
 		    subcnts = grealloc(subcnts,cmax*sizeof(int));
 		}
-		AnchorClassDecompose(sf,ac,classcnt,subcnts,marks,&base,&lig,&mkmk);
+		AnchorClassDecompose(sf,ac,classcnt,subcnts,marks,&base,&lig,&mkmk,gi);
 		if ( marks[0]!=NULL && base!=NULL )
 		    lookups = dumpgposAnchorData(lfile,ac,at_basechar,marks,base,lookups,classcnt);
 		if ( marks[0]!=NULL && lig!=NULL )
@@ -2416,13 +2420,13 @@ static void g___HandleNested(FILE *lfile,SplineFont *sf,int gpos,
 	if ( new==NULL && gpos ) {
 	    for ( ac=sf->anchor; ac!=NULL; ac=ac->next )
 		if ( ac->feature_tag==pp->feature_tag && ac->script_lang_index==SLI_NESTED ) {
-		    new = AnchorsAway(lfile,sf,NULL,pp->feature_tag);
+		    new = AnchorsAway(lfile,sf,NULL,pp->feature_tag,&at->gi);
 	    break;
 		}
 	}
 	if ( new==NULL && !gpos ) {
-	    for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL ) {
-		for ( ll = sf->chars[i]->ligofme; ll!=NULL; ll=ll->next ) {
+	    for ( i=0; i<sf->glyphcnt; i++ ) if ( sf->glyphs[i]!=NULL ) {
+		for ( ll = sf->glyphs[i]->ligofme; ll!=NULL; ll=ll->next ) {
 		    if ( ll->lig->script_lang_index==SLI_NESTED &&
 			    ll->lig->tag == pp->feature_tag ) {
 			ligtags.script_lang_index = SLI_NESTED;
@@ -2449,15 +2453,15 @@ static void g___HandleNested(FILE *lfile,SplineFont *sf,int gpos,
 		end = pst_ligature;
 	    }
 	    for ( type=start; type<=end; ++type ) {
-		for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL ) {
-		    for ( pst = sf->chars[i]->possub; pst!=NULL; pst=pst->next ) {
+		for ( i=0; i<sf->glyphcnt; i++ ) if ( sf->glyphs[i]!=NULL ) {
+		    for ( pst = sf->glyphs[i]->possub; pst!=NULL; pst=pst->next ) {
 			if ( pst->type==type &&
 				pst->script_lang_index == SLI_NESTED &&
 			        pst->tag == pp->feature_tag ) {
 			    ligtags.script_lang_index = SLI_NESTED;
 			    ligtags.flags = pst->flags;
 			    ligtags.tag = pp->feature_tag;
-			    glyphs = generateGlyphTypeList(sf,type,&ligtags,&map);
+			    glyphs = generateGlyphTypeList(sf,type,&ligtags,&map,&at->gi);
 			    if ( glyphs==NULL )
  goto failure;
 			    new = LookupFromTagFlagLang(&ligtags);
@@ -2539,8 +2543,8 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 
     for ( type = pst_position; type<=pst_pair; ++type ) {
 	cnt = 0;
-	for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL ) {
-	    for ( pst = sf->chars[i]->possub; pst!=NULL; pst=pst->next ) if ( pst->type==type && pst->script_lang_index!=SLI_NESTED ) {
+	for ( i=0; i<sf->glyphcnt; i++ ) if ( sf->glyphs[i]!=NULL ) {
+	    for ( pst = sf->glyphs[i]->possub; pst!=NULL; pst=pst->next ) if ( pst->type==type && pst->script_lang_index!=SLI_NESTED ) {
 		for ( j=0; j<cnt; ++j )
 		    if ( ligtags[j].tag==pst->tag && pst->flags==ligtags[j].flags &&
 			    pst->script_lang_index == ligtags[j].script_lang_index )
@@ -2557,7 +2561,7 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 
 	/* Look for positions matching these tags */
 	for ( j=0; j<cnt; ++j ) {
-	    glyphs = generateGlyphTypeList(sf,type,&ligtags[j],&map);
+	    glyphs = generateGlyphTypeList(sf,type,&ligtags[j],&map,&at->gi);
 	    if ( glyphs!=NULL && glyphs[0]!=NULL ) {
 		new = LookupFromTagFlagLang(&ligtags[j]);
 		new->offset = ftell(lfile);
@@ -2579,8 +2583,8 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
     for ( isv=0; isv<2; ++isv ) {
 	/* Look for kerns */ /* kerns now store langs but not flags */
 	cnt = 0;
-	for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL ) {
-	    for ( kp = isv ? sf->chars[i]->vkerns : sf->chars[i]->kerns; kp!=NULL; kp=kp->next ) {
+	for ( i=0; i<sf->glyphcnt; i++ ) if ( sf->glyphs[i]!=NULL ) {
+	    for ( kp = isv ? sf->glyphs[i]->vkerns : sf->glyphs[i]->kerns; kp!=NULL; kp=kp->next ) {
 		for ( j=0; j<cnt; ++j )
 		    if ( kp->sli == ligtags[j].script_lang_index )
 		break;
@@ -2630,7 +2634,7 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 	    if ( ac->type!=act_curs )
 		ac->has_mark = AnchorHasMark(sf,ac);
 	}
-	lookups = AnchorsAway(lfile,sf,lookups,0);
+	lookups = AnchorsAway(lfile,sf,lookups,0,&at->gi);
 	AnchorGuessContext(sf,at);
     }
 
@@ -2663,8 +2667,8 @@ static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
     /* Look for ligature tags used in the font */
     max = 30; cnt = 0;
     ligtags = galloc(max*sizeof(struct tagflaglang));
-    for ( i=0; i<sf->charcnt; i++ ) if ( SCWorthOutputting(sf->chars[i]) ) {
-	for ( ll = sf->chars[i]->ligofme; ll!=NULL; ll=ll->next ) {
+    for ( i=0; i<sf->glyphcnt; i++ ) if ( SCWorthOutputting(sf->glyphs[i]) ) {
+	for ( ll = sf->glyphs[i]->ligofme; ll!=NULL; ll=ll->next ) {
 	    if ( !ll->lig->macfeature &&
 		    ll->lig->script_lang_index!=SLI_NESTED &&
 		    SCWorthOutputting(ll->lig->u.lig.lig) ) {
@@ -2697,8 +2701,8 @@ static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
     /* Now do something very similar for substitution simple, mult & alt tags */
     for ( type = pst_substitution; type<=pst_multiple; ++type ) {
 	cnt = 0;
-	for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL ) {
-	    for ( subs = sf->chars[i]->possub; subs!=NULL; subs=subs->next ) if ( subs->type==type && !subs->macfeature && subs->script_lang_index!=SLI_NESTED ) {
+	for ( i=0; i<sf->glyphcnt; i++ ) if ( sf->glyphs[i]!=NULL ) {
+	    for ( subs = sf->glyphs[i]->possub; subs!=NULL; subs=subs->next ) if ( subs->type==type && !subs->macfeature && subs->script_lang_index!=SLI_NESTED ) {
 		for ( j=0; j<cnt; ++j )
 		    if ( ligtags[j].tag==subs->tag && subs->flags==ligtags[j].flags &&
 			    subs->script_lang_index == ligtags[j].script_lang_index )
@@ -2715,7 +2719,7 @@ static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
 
 	/* Look for substitutions/decompositions matching these tags */
 	for ( j=0; j<cnt; ++j ) {
-	    glyphs = generateGlyphTypeList(sf,type,&ligtags[j],&map);
+	    glyphs = generateGlyphTypeList(sf,type,&ligtags[j],&map,&at->gi);
 	    if ( glyphs!=NULL && glyphs[0]!=NULL ) {
 		new = LookupFromTagFlagLang(&ligtags[j]);
 		new->lookup_type = type==pst_substitution?1:type==pst_multiple?2:3;
@@ -2762,7 +2766,7 @@ return( i );
 /* GSUB ordering */
       case CHR('c','c','m','p'):	/* Must be first? */
 return( -2 );
-      case CHR('l','o','c','l'):	/* Dunno what this is, but needs to be done early */
+      case CHR('l','o','c','l'):	/* Language dependent letter forms (serbian uses some different glyphs than russian) */
 return( -1 );
       case CHR('i','s','o','l'):
 return( 0 );
@@ -3761,7 +3765,7 @@ return( 1 );
     /* Anyway I never return class 4 */ /* (I've never seen it used by others) */
 }
 
-void otf_dumpgdef(struct alltabs *at, SplineFont *_sf) {
+void otf_dumpgdef(struct alltabs *at, SplineFont *sf) {
     /* In spite of what the open type docs say, this table does appear to be */
     /*  required (at least the glyph class def table) if we do mark to base */
     /*  positioning */
@@ -3776,24 +3780,23 @@ void otf_dumpgdef(struct alltabs *at, SplineFont *_sf) {
     /* All my example fonts contain a ligature caret list subtable, which is */
     /*  empty. Odd, but perhaps important */
     PST *pst;
-    int i,j,k, lcnt,cmax, needsclass;
+    int i,j,k, lcnt, needsclass;
     int pos, offset;
     int cnt, start, last, lastval;
     SplineChar **glyphs, *sc;
-    SplineFont *sf;
 
-    if ( _sf->cidmaster ) _sf = _sf->cidmaster;
-    else if ( _sf->mm!=NULL ) _sf=_sf->mm->normal;
+    if ( sf->cidmaster ) sf = sf->cidmaster;
+    else if ( sf->mm!=NULL ) sf=sf->mm->normal;
 
     glyphs = NULL;
     for ( k=0; k<2; ++k ) {
 	lcnt = 0;
 	needsclass = false;
-	sf = _sf;
-	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 ) {
-	    if ( sf->chars[i]->glyph_class!=0 || gdefclass(sf->chars[i])!=1 )
+	for ( i=0; i<at->gi.gcnt; ++i ) if ( at->gi.bygid[i]!=-1 ) {
+	    SplineChar *sc = sf->glyphs[at->gi.bygid[i]];
+	    if ( sc->glyph_class!=0 || gdefclass(sc)!=1 )
 		needsclass = true;
-	    for ( pst=sf->chars[i]->possub; pst!=NULL; pst=pst->next ) {
+	    for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
 		if ( pst->type == pst_lcaret ) {
 		    for ( j=pst->u.lcaret.cnt-1; j>=0; --j )
 			if ( pst->u.lcaret.carets[j]!=0 )
@@ -3803,7 +3806,7 @@ void otf_dumpgdef(struct alltabs *at, SplineFont *_sf) {
 		}
 	    }
 	    if ( pst!=NULL ) {
-		if ( glyphs!=NULL ) glyphs[lcnt] = sf->chars[i];
+		if ( glyphs!=NULL ) glyphs[lcnt] = sc;
 		++lcnt;
 	    }
 	}
@@ -3829,28 +3832,25 @@ return;					/* No anchor positioning, no ligature carets */
 	/* Mark shouldn't conflict with anything */
 	/* Ligature is more important than Base */
 	/* Component is not used */
-	cmax = _sf->charcnt;
 #if 1		/* ttx can't seem to support class format type 1 so let's output type 2 */
 	for ( j=0; j<2; ++j ) {
 	    cnt = 0;
-	    for ( i=0; i<cmax; ++i ) {
-		sc = _sf->chars[i];
+	    for ( i=0; i<at->gi.gcnt; ++i ) if ( at->gi.bygid[i]!=-1 ) {
+		sc = sf->glyphs[at->gi.bygid[i]];
 		if ( sc!=NULL && sc->ttf_glyph!=-1 ) {
 		    lastval = gdefclass(sc);
 		    start = last = i;
-		    for ( ; i<cmax; ++i ) {
-			sc = _sf->chars[i];
-			if (sc!=NULL && sc->ttf_glyph!=-1 ) {
-			    if ( gdefclass(sc)!=lastval )
+		    for ( ; i<at->gi.gcnt; ++i ) if ( at->gi.bygid[i]!=-1 ) {
+			sc = sf->glyphs[at->gi.bygid[i]];
+			if ( gdefclass(sc)!=lastval )
 		    break;
-			    last = i;
-			}
+			last = i;
 		    }
 		    --i;
 		    if ( lastval!=0 ) {
 			if ( j==1 ) {
-			    putshort(at->gdef,_sf->chars[start]->ttf_glyph);
-			    putshort(at->gdef,_sf->chars[last]->ttf_glyph);
+			    putshort(at->gdef,start);
+			    putshort(at->gdef,last);
 			    putshort(at->gdef,lastval);
 			}
 			++cnt;
@@ -3867,10 +3867,10 @@ return;					/* No anchor positioning, no ligature carets */
 	putshort(at->gdef,0);	/* First glyph */
 	putshort(at->gdef,at->maxp.numGlyphs );
 	j=0;
-	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 ) {
-	    for ( ; j<sf->chars[i]->ttf_glyph; ++j )
+	for ( i=0; i<at->gi.gcnt; ++i ) if ( at->gi.bygid[i]!=-1 ) {
+	    for ( ; j<i; ++j )
 		putshort(at->gdef,1);	/* Any hidden characters (like notdef) default to base */
-	    putshort(at->gdef,gdefclass(sf->chars[i]));
+	    putshort(at->gdef,gdefclass(sf->glyphs[at->gi.bygid[i]]));
 	    ++j;
 	}
 #endif
@@ -3949,8 +3949,8 @@ static uint32 *GetTags(SplineFont *sf, int isgsub) {
 
     max = 30; cnt = 0;
     tags = galloc((max+1)*sizeof(uint32));
-    for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL ) {
-	for ( pst = sf->chars[i]->possub; pst!=NULL; pst=pst->next ) {
+    for ( i=0; i<sf->glyphcnt; i++ ) if ( sf->glyphs[i]!=NULL ) {
+	for ( pst = sf->glyphs[i]->possub; pst!=NULL; pst=pst->next ) {
 	    if ( pst->type==pst_substitution || pst->type==pst_alternate ||
 		    pst->type == pst_multiple || pst->type==pst_ligature ) {
 		for ( j=0; j<cnt; ++j )
@@ -4274,15 +4274,15 @@ a GPOS, but he says the GPOS won't work without a GSUB.)
     /* have a feature attached to them. */
 
     used = gcalloc(sf->sli_cnt,sizeof(uint8));
-    for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL ) {
-	for ( pst = sf->chars[i]->possub; pst!=NULL; pst=pst->next )
+    for ( i=0; i<sf->glyphcnt; i++ ) if ( sf->glyphs[i]!=NULL ) {
+	for ( pst = sf->glyphs[i]->possub; pst!=NULL; pst=pst->next )
 	    if ( pst->type<=pst_ligature && /*pst->script_lang_index>=0 &&*/
 		    pst->script_lang_index<sf->sli_cnt )
 		used[pst->script_lang_index] = true;
-	for ( kp = sf->chars[i]->kerns; kp!=NULL; kp = kp->next )
+	for ( kp = sf->glyphs[i]->kerns; kp!=NULL; kp = kp->next )
 	    if ( /*kp->sli>=0 &&*/ kp->sli<sf->sli_cnt )
 		used[kp->sli] = true;
-	for ( kp = sf->chars[i]->vkerns; kp!=NULL; kp = kp->next )
+	for ( kp = sf->glyphs[i]->vkerns; kp!=NULL; kp = kp->next )
 	    if ( /*kp->sli>=0 &&*/ kp->sli<sf->sli_cnt )
 		used[kp->sli] = true;
     }

@@ -761,9 +761,9 @@ static void SVResetPaths(SearchView *sv) {
     }
 }
 
-static int SearchChar(SearchView *sv, int enc,int startafter) {
+static int SearchChar(SearchView *sv, int gid,int startafter) {
 
-    sv->curchar = sv->fv->sf->chars[enc];
+    sv->curchar = sv->fv->sf->glyphs[gid];
 
     sv->wasreversed = false;
     sv->matched_rot = 0; sv->matched_scale = 1;
@@ -801,19 +801,20 @@ return( true );
 }
 
 static int _DoFindAll(SearchView *sv) {
-    int i, any=0;
+    int i, any=0, gid;
     SplineChar *startcur = sv->curchar;
 
-    for ( i=0; i<sv->fv->sf->charcnt; ++i ) {
-	if (( !sv->onlyselected || sv->fv->selected[i]) && sv->fv->sf->chars[i]!=NULL ) {
-	    if ( (sv->fv->selected[i] = SearchChar(sv,i,false)) ) {
+    for ( i=0; i<sv->fv->map->enccount; ++i ) {
+	if (( !sv->onlyselected || sv->fv->selected[i]) && (gid=sv->fv->map->map[i])!=-1 &&
+		sv->fv->sf->glyphs[gid]!=NULL ) {
+	    if ( (sv->fv->selected[i] = SearchChar(sv,gid,false)) ) {
 		any = true;
 		if ( sv->replaceall ) {
 		    do {
 			if ( !DoRpl(sv))
 		    break;
 		    } while ( (sv->subpatternsearch || sv->replacewithref) &&
-			    SearchChar(sv,i,true));
+			    SearchChar(sv,gid,true));
 		}
 	    }
 	} else
@@ -876,15 +877,15 @@ static void SVSelectSC(SearchView *sv) {
 }
 
 static int DoFindOne(SearchView *sv,int startafter) {
-    int i;
+    int i, gid;
     SplineChar *startcur = sv->curchar;
 
     /* It is possible that some idiot deleted the current character since */
     /*  the last search... do some mild checks */
     if ( sv->curchar!=NULL &&
 	    sv->curchar->parent == sv->fv->sf &&
-	    sv->curchar->enc>=0 && sv->curchar->enc<sv->fv->sf->charcnt &&
-	    sv->curchar==sv->fv->sf->chars[sv->curchar->enc] )
+	    sv->curchar->orig_pos>=0 && sv->curchar->orig_pos<sv->fv->sf->glyphcnt &&
+	    sv->curchar==sv->fv->sf->glyphs[sv->curchar->orig_pos] )
 	/* Looks ok */;
     else
 	sv->curchar=startcur=NULL;
@@ -892,25 +893,27 @@ static int DoFindOne(SearchView *sv,int startafter) {
     if ( !sv->subpatternsearch ) startafter = false;
 
     if ( sv->showsfindnext && sv->curchar!=NULL )
-	i = sv->curchar->enc+1-startafter;
+	i = sv->fv->map->backmap[sv->curchar->orig_pos]+1-startafter;
     else {
 	startafter = false;
 	if ( !sv->onlyselected )
 	    i = 0;
 	else {
-	    for ( i=0; i<sv->fv->sf->charcnt; ++i )
-		if ( sv->fv->selected[i] && sv->fv->sf->chars[i]!=NULL )
+	    for ( i=0; i<sv->fv->map->enccount; ++i )
+		if ( sv->fv->selected[i] && (gid=sv->fv->map->map[i])!=-1 &&
+			sv->fv->sf->glyphs[gid]!=NULL )
 	    break;
 	}
     }
  
-    for ( ; i<sv->fv->sf->charcnt; ++i ) {
-	if (( !sv->onlyselected || sv->fv->selected[i]) && sv->fv->sf->chars[i]!=NULL )
-	    if ( SearchChar(sv,i,startafter) )
+    for ( ; i<sv->fv->map->enccount; ++i ) {
+	if (( !sv->onlyselected || sv->fv->selected[i]) && (gid=sv->fv->map->map[i])!=-1 &&
+		sv->fv->sf->glyphs[gid]!=NULL )
+	    if ( SearchChar(sv,gid,startafter) )
     break;
 	startafter = false;
     }
-    if ( i>=sv->fv->sf->charcnt ) {
+    if ( i>=sv->fv->map->enccount ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetPostNoticeR(_STR_NotFound,sv->showsfindnext?_STR_PatternNotFoundAgain:_STR_PatternNotFound,sv->fv->sf->fontname);
 #elif defined(FONTFORGE_CONFIG_GTK)
@@ -931,7 +934,7 @@ return( false );
 	GDrawSetVisible(sv->lastcv->gw,true);
 	GDrawRaise(sv->lastcv->gw);
     } else
-	sv->lastcv = CharViewCreate(sv->curchar,sv->fv);
+	sv->lastcv = CharViewCreate(sv->curchar,sv->fv,-1);
 #if defined(FONTFORGE_CONFIG_GDRAW)
     GGadgetSetTitle(GWidgetGetControl(sv->gw,CID_Find),GStringGetResource(_STR_FindNext,NULL));
 #elif defined(FONTFORGE_CONFIG_GTK)
@@ -1187,8 +1190,8 @@ static void SVCheck(SearchView *sv) {
     }
     showrpl = showrplall;
     if ( !sv->showsfindnext || sv->curchar==NULL || sv->curchar->parent!=sv->fv->sf ||
-	    sv->curchar->enc<0 || sv->curchar->enc>=sv->fv->sf->charcnt ||
-	    sv->curchar!=sv->fv->sf->chars[sv->curchar->enc] ||
+	    sv->curchar->orig_pos<0 || sv->curchar->orig_pos>=sv->fv->sf->glyphcnt ||
+	    sv->curchar!=sv->fv->sf->glyphs[sv->curchar->orig_pos] ||
 	    sv->curchar->changed_since_search )
 	showrpl = false;
 
@@ -1266,7 +1269,7 @@ static void SVSetTitle(SearchView *sv) {
 }
 
 int SVAttachFV(FontView *fv,int ask_if_difficult) {
-    int i, doit, pos, any=0;
+    int i, doit, pos, any=0, gid;
     RefChar *r, *rnext, *rprev;
 
     if ( searcher==NULL )
@@ -1297,7 +1300,7 @@ return( true );
 	    rprev = NULL;
 	    for ( r = searcher->chars[i]->layers[ly_fore].refs; r!=NULL; r=rnext ) {
 		rnext = r->next;
-		pos = SFFindChar(fv->sf,r->sc->unicodeenc,r->sc->name);
+		pos = SFFindSlot(fv->sf,fv->map,r->sc->unicodeenc,r->sc->name);
 		if ( pos==-1 && !doit ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 		    static int buttons[] = { _STR_Yes, _STR_Cancel, 0 };
@@ -1329,8 +1332,9 @@ return( false );
 		    any = true;
 		} else {
 		    /*SplinePointListsFree(r->layers[0].splines); r->layers[0].splines = NULL;*/
-		    r->local_enc = pos;
-		    r->sc = fv->sf->chars[pos];
+		    gid = fv->map->map[pos];
+		    r->sc = fv->sf->glyphs[gid];
+		    r->orig_pos = gid;
 		    SCReinstanciateRefChar(searcher->chars[i],r);
 		    any = true;
 		    rprev = r;
@@ -1367,8 +1371,8 @@ return;
 
 static SearchView *SVFillup(SearchView *sv, FontView *fv) {
 
-    sv->sc_srch.enc = 0; sv->sc_srch.unicodeenc = -1; sv->sc_srch.name = "Search";
-    sv->sc_rpl.enc = 1; sv->sc_rpl.unicodeenc = -1; sv->sc_rpl.name = "Replace";
+    sv->sc_srch.orig_pos = 0; sv->sc_srch.unicodeenc = -1; sv->sc_srch.name = "Search";
+    sv->sc_rpl.orig_pos = 1; sv->sc_rpl.unicodeenc = -1; sv->sc_rpl.name = "Replace";
     sv->sc_srch.layer_cnt = sv->sc_rpl.layer_cnt = 2;
 #ifdef FONTFORGE_CONFIG_TYPE3
     sv->sc_srch.layers = gcalloc(2,sizeof(Layer));
@@ -1380,10 +1384,9 @@ static SearchView *SVFillup(SearchView *sv, FontView *fv) {
 #endif
     sv->chars[0] = &sv->sc_srch;
     sv->chars[1] = &sv->sc_rpl;
-    sv->dummy_sf.chars = sv->chars;
-    sv->dummy_sf.charcnt = 2;
+    sv->dummy_sf.glyphs = sv->chars;
+    sv->dummy_sf.glyphcnt = 2;
     sv->dummy_sf.pfminfo.fstype = -1;
-    sv->dummy_sf.encoding_name = &custom;
     sv->dummy_sf.fontname = sv->dummy_sf.fullname = sv->dummy_sf.familyname = "dummy";
     sv->dummy_sf.weight = "Medium";
     sv->dummy_sf.origname = "dummy";
@@ -1633,7 +1636,7 @@ void FVReplaceOutlineWithReference( FontView *fv, double fudge ) {
     SearchView *sv;
     uint8 *selected, *changed;
     SplineFont *sf = fv->sf;
-    int i, j, selcnt = 0;
+    int i, j, selcnt = 0, gid;
     SearchView *oldsv = fv->sv;
 
 #if defined(FONTFORGE_CONFIG_GDRAW)
@@ -1651,12 +1654,13 @@ void FVReplaceOutlineWithReference( FontView *fv, double fudge ) {
     sv->replaceall = true;
     sv->replacewithref = true;
 
-    selected = galloc(sf->charcnt);
-    memcpy(selected,fv->selected,sf->charcnt);
-    changed = gcalloc(sf->charcnt,1);
+    selected = galloc(fv->map->enccount);
+    memcpy(selected,fv->selected,fv->map->enccount);
+    changed = gcalloc(fv->map->enccount,1);
 
     selcnt = 0;
-    for ( i=0; i<sf->charcnt; ++i ) if ( selected[i] && sf->chars[i]!=NULL )
+    for ( i=0; i<fv->map->enccount; ++i ) if ( selected[i] && (gid=fv->map->map[i])!=-1 &&
+	    sf->glyphs[gid]!=NULL )
 	++selcnt;
 #if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressStartIndicatorR(10,_STR_ReplaceOutlineWithReference,
@@ -1666,10 +1670,11 @@ void FVReplaceOutlineWithReference( FontView *fv, double fudge ) {
 	    _("Replace Outline with Reference",0,selcnt,1);
 #endif
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( selected[i] && sf->chars[i]!=NULL ) {
-	if ( IsASingleReferenceOrEmpty(sf->chars[i]))
+    for ( i=0; i<fv->map->enccount; ++i ) if ( selected[i] && (gid=fv->map->map[i])!=-1 &&
+	    sf->glyphs[gid]!=NULL ) {
+	if ( IsASingleReferenceOrEmpty(sf->glyphs[gid]))
     continue;		/* No point in replacing something which is itself a ref with a ref to a ref */
-	memset(fv->selected,0,sf->charcnt);
+	memset(fv->selected,0,fv->map->enccount);
 	SVCopyToCV(fv,i,&sv->cv_srch,true);
 	SVCopyToCV(fv,i,&sv->cv_rpl,false);
 	sv->sc_srch.changed_since_autosave = sv->sc_rpl.changed_since_autosave = true;
@@ -1677,12 +1682,12 @@ void FVReplaceOutlineWithReference( FontView *fv, double fudge ) {
 	if ( !_DoFindAll(sv) && selcnt==1 )
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetPostNoticeR(_STR_NotFound,_STR_GlyphNotFound,
-		    sf->fontname,sf->chars[i]->name);
+		    sf->fontname,sf->glyphs[gid]->name);
 #elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_notice(_("Not Found"),_("The outlines of glyph %2$.30s were not found in the font %1$.60s"),
-		    sf->fontname,sf->chars[i]->name);
+		    sf->fontname,sf->glyphs[gid]->name);
 #endif
-	for ( j=0; j<sf->charcnt; ++j )
+	for ( j=0; j<fv->map->enccount; ++j )
 	    if ( fv->selected[j] )
 		changed[j] = 1;
 	CopyBufferFree();
@@ -1716,7 +1721,7 @@ void FVReplaceOutlineWithReference( FontView *fv, double fudge ) {
     free(sv);
 
     free(selected);
-    memcpy(fv->selected,changed,sf->charcnt);
+    memcpy(fv->selected,changed,fv->map->enccount);
     free(changed);
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI

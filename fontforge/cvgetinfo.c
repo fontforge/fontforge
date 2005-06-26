@@ -199,7 +199,7 @@ return( true );
 	    }
 	}
 	ci->done = true;
-	CharViewCreate(ci->rf->sc,ci->cv->fv);
+	CharViewCreate(ci->rf->sc,ci->cv->fv,-1);
     }
 return( true );
 }
@@ -258,7 +258,7 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	memset(&gcd,0,sizeof(gcd));
 	memset(&label,0,sizeof(label));
 
-	sprintf( namebuf, "Reference to character %.20s at %d", ref->sc->name, ref->sc->enc);
+	sprintf( namebuf, "Reference to character %.20s at %d", ref->sc->name, cv->fv->map->backmap[ref->sc->orig_pos]);
 	label[0].text = (unichar_t *) namebuf;
 	label[0].text_is_1byte = true;
 	gcd[0].gd.label = &label[0];
@@ -2398,7 +2398,7 @@ void CVGetInfo(CharView *cv) {
     if ( !CVOneThingSel(cv,&sp,&spl,&ref,&img,&ap)) {
 #if 0
 	if ( cv->fv->cidmaster==NULL )
-	    SCCharInfo(cv->sc);
+	    SCCharInfo(cv->sc,cv->fv->map,CVCurEnc(cv));
 #endif
     } else if ( ref!=NULL )
 	RefGetInfo(cv,ref);
@@ -2457,7 +2457,7 @@ return;
     if ( i!=-1 ) {
 	i = tot-i;
 	for ( d = sc->dependents, cnt=0; d!=NULL && cnt<i; d=d->next, ++cnt );
-	CharViewCreate(d->sc,sc->parent->fv);
+	CharViewCreate(d->sc,sc->parent->fv,-1);
     }
     for ( i=0; i<=tot; ++i )
 	free( deps[i] );
@@ -2488,8 +2488,8 @@ return( false );
     k=0;
     do {
 	sf = _sf->subfontcnt==0 ? _sf : _sf->subfonts[k];
-	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	    for ( pst=sf->chars[i]->possub; pst!=NULL; pst=pst->next ) {
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	    for ( pst=sf->glyphs[i]->possub; pst!=NULL; pst=pst->next ) {
 		if ( pst->type==pst_substitution || pst->type==pst_alternate ||
 			pst->type==pst_multiple || pst->type==pst_ligature )
 		    if ( UsedIn(sc->name,pst->u.mult.components))
@@ -2527,8 +2527,8 @@ return;
 	k=0;
 	do {
 	    sf = _sf->subfontcnt==0 ? _sf : _sf->subfonts[k];
-	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-		for ( pst=sf->chars[i]->possub; pst!=NULL; pst=pst->next ) {
+	    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+		for ( pst=sf->glyphs[i]->possub; pst!=NULL; pst=pst->next ) {
 		    if ( pst->type==pst_substitution || pst->type==pst_alternate ||
 			    pst->type==pst_multiple || pst->type==pst_ligature )
 			if ( UsedIn(sc->name,pst->u.mult.components)) {
@@ -2541,9 +2541,9 @@ return;
 #endif
 			                pst->tag>>24, (pst->tag>>16)&0xff,
 			                (pst->tag>>8)&0xff, pst->tag&0xff,
-			                sf->chars[i]->name);
+			                sf->glyphs[i]->name);
 				deps[tot] = u_copy(ubuf);
-			        depsc[tot] = sf->chars[i];
+			        depsc[tot] = sf->glyphs[i];
 			    }
 			    ++tot;
 			}
@@ -2565,7 +2565,7 @@ return;
     i = gwwv_choose_with_buttons(_("Dependent Substitutions",(const char **) deps, tot, 0, buts, _("Dependent Substitutions") );
 #endif
     if ( i>-1 ) {
-	CharViewCreate(depsc[i],sc->parent->fv);
+	CharViewCreate(depsc[i],sc->parent->fv,-1);
     }
     for ( i=0; i<=tot; ++i )
 	free( deps[i] );

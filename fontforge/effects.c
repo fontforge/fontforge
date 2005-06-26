@@ -34,10 +34,13 @@
 void FVOutline(FontView *fv, real width) {
     StrokeInfo si;
     SplineSet *temp, *spl;
-    int i, cnt=0, changed;
+    int i, cnt=0, changed, gid;
+    SplineChar *sc;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->layers[ly_fore].splines )
-	++cnt;
+    for ( i=0; i<fv->map->enccount; ++i )
+	if ( (gid=fv->map->map[i])!=-1 && (sc=fv->sf->glyphs[gid])!=NULL &&
+		fv->selected[i] && sc->layers[ly_fore].splines )
+	    ++cnt;
 #if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressStartIndicatorR(10,_STR_Outlining,_STR_Outlining,0,cnt,1);
 #elif defined(FONTFORGE_CONFIG_GTK)
@@ -49,23 +52,26 @@ void FVOutline(FontView *fv, real width) {
     si.radius = width;
     si.removeoverlapifneeded = true;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->layers[ly_fore].splines ) {
-	SplineChar *sc = fv->sf->chars[i];
-	SCPreserveState(sc,false);
-	temp = SSStroke(sc->layers[ly_fore].splines,&si,sc);
-	for ( spl=sc->layers[ly_fore].splines; spl->next!=NULL; spl=spl->next );
-	spl->next = temp;
-	SplineSetsCorrect(sc->layers[ly_fore].splines,&changed);
-	SCCharChangedUpdate(sc);
+    SFUntickAll(fv->sf);
+    for ( i=0; i<fv->map->enccount; ++i )
+	if ( (gid=fv->map->map[i])!=-1 && (sc=fv->sf->glyphs[gid])!=NULL && fv->selected[i] &&
+		sc->layers[ly_fore].splines && !sc->ticked ) {
+	    sc->ticked = true;
+	    SCPreserveState(sc,false);
+	    temp = SSStroke(sc->layers[ly_fore].splines,&si,sc);
+	    for ( spl=sc->layers[ly_fore].splines; spl->next!=NULL; spl=spl->next );
+	    spl->next = temp;
+	    SplineSetsCorrect(sc->layers[ly_fore].splines,&changed);
+	    SCCharChangedUpdate(sc);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	if ( !GProgressNext())
+	    if ( !GProgressNext())
 #elif defined(FONTFORGE_CONFIG_GTK)
-	if ( !gwwv_progress_next())
+	    if ( !gwwv_progress_next())
 #endif
     break;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-    }
+	}
 #if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressEndIndicator();
 #elif defined(FONTFORGE_CONFIG_GTK)
@@ -120,10 +126,13 @@ static void MVOutline(MetricsView *mv, real width) {
 void FVInline(FontView *fv, real width, real inset) {
     StrokeInfo si;
     SplineSet *temp, *spl, *temp2;
-    int i, cnt=0, changed;
+    int i, cnt=0, changed, gid;
+    SplineChar *sc;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->layers[ly_fore].splines )
-	++cnt;
+    for ( i=0; i<fv->map->enccount; ++i )
+	if ( (gid=fv->map->map[i])!=-1 && (sc=fv->sf->glyphs[gid])!=NULL && fv->selected[i] &&
+		sc->layers[ly_fore].splines )
+	    ++cnt;
 #if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressStartIndicatorR(10,_STR_Inlining,_STR_Inlining,0,cnt,1);
 #elif defined(FONTFORGE_CONFIG_GTK)
@@ -134,28 +143,31 @@ void FVInline(FontView *fv, real width, real inset) {
     si.removeexternal = true;
     si.removeoverlapifneeded = true;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->layers[ly_fore].splines ) {
-	SplineChar *sc = fv->sf->chars[i];
-	SCPreserveState(sc,false);
-	si.radius = width;
-	temp = SSStroke(sc->layers[ly_fore].splines,&si,sc);
-	si.radius = width+inset;
-	temp2 = SSStroke(sc->layers[ly_fore].splines,&si,sc);
-	for ( spl=sc->layers[ly_fore].splines; spl->next!=NULL; spl=spl->next );
-	spl->next = temp;
-	for ( ; spl->next!=NULL; spl=spl->next );
-	spl->next = temp2;
-	SplineSetsCorrect(sc->layers[ly_fore].splines,&changed);
-	SCCharChangedUpdate(sc);
+    SFUntickAll(fv->sf);
+    for ( i=0; i<fv->map->enccount; ++i )
+	if ( (gid=fv->map->map[i])!=-1 && (sc=fv->sf->glyphs[gid])!=NULL && fv->selected[i] &&
+		sc->layers[ly_fore].splines && !sc->ticked ) {
+	    sc->ticked = true;
+	    SCPreserveState(sc,false);
+	    si.radius = width;
+	    temp = SSStroke(sc->layers[ly_fore].splines,&si,sc);
+	    si.radius = width+inset;
+	    temp2 = SSStroke(sc->layers[ly_fore].splines,&si,sc);
+	    for ( spl=sc->layers[ly_fore].splines; spl->next!=NULL; spl=spl->next );
+	    spl->next = temp;
+	    for ( ; spl->next!=NULL; spl=spl->next );
+	    spl->next = temp2;
+	    SplineSetsCorrect(sc->layers[ly_fore].splines,&changed);
+	    SCCharChangedUpdate(sc);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	if ( !GProgressNext())
+	    if ( !GProgressNext())
 #elif defined(FONTFORGE_CONFIG_GTK)
-	if ( !gwwv_progress_next())
+	    if ( !gwwv_progress_next())
 #endif
     break;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-    }
+	}
 #if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressEndIndicator();
 #elif defined(FONTFORGE_CONFIG_GTK)
@@ -1053,31 +1065,36 @@ return( spl );
 
 void FVShadow(FontView *fv,real angle, real outline_width,
 	real shadow_length, int wireframe) {
-    int i, cnt=0;
+    int i, cnt=0, gid;
+    SplineChar *sc;
 
-    for ( i=0; i<fv->sf->charcnt; ++i ) if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->layers[ly_fore].splines )
-	++cnt;
+    for ( i=0; i<fv->map->enccount; ++i )
+	if ( (gid=fv->map->map[i])!=-1 && (sc=fv->sf->glyphs[gid])!=NULL && fv->selected[i] &&
+		sc->layers[ly_fore].splines )
+	    ++cnt;
 #if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressStartIndicatorR(10,_STR_Shadowing,_STR_Shadowing,0,cnt,1);
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_start_indicator(10,_("Shadowing characters"),_("Shadowing characters"),0,cnt,1);
 #endif
 
-    for ( i=0; i<fv->sf->charcnt; ++i )
-	    if ( fv->sf->chars[i]!=NULL && fv->selected[i] && fv->sf->chars[i]->layers[ly_fore].splines ) {
-	SplineChar *sc = fv->sf->chars[i];
-	SCPreserveState(sc,false);
-	sc->layers[ly_fore].splines = SSShadow(sc->layers[ly_fore].splines,angle,outline_width,shadow_length,sc,wireframe);
-	SCCharChangedUpdate(sc);
+    SFUntickAll(fv->sf);
+    for ( i=0; i<fv->map->enccount; ++i )
+	if ( (gid=fv->map->map[i])!=-1 && (sc=fv->sf->glyphs[gid])!=NULL && fv->selected[i] &&
+		sc->layers[ly_fore].splines && !sc->ticked ) {
+	    sc->ticked = true;
+	    SCPreserveState(sc,false);
+	    sc->layers[ly_fore].splines = SSShadow(sc->layers[ly_fore].splines,angle,outline_width,shadow_length,sc,wireframe);
+	    SCCharChangedUpdate(sc);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	if ( !GProgressNext())
+	    if ( !GProgressNext())
 #elif defined(FONTFORGE_CONFIG_GTK)
-	if ( !gwwv_progress_next())
+	    if ( !gwwv_progress_next())
 #endif
     break;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-    }
+	}
 #if defined(FONTFORGE_CONFIG_GDRAW)
     GProgressEndIndicator();
 #elif defined(FONTFORGE_CONFIG_GTK)

@@ -60,7 +60,7 @@ BDFFont *SplineFontFreeTypeRasterizeNoHints(SplineFont *sf,int pixelsize,int dep
 return( NULL );
 }
 
-BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int enc,int pixelsize,int depth) {
+BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int gid,int pixelsize,int depth) {
 return( NULL );
 }
 
@@ -111,8 +111,6 @@ static FT_Library context;
 #define _FT_Outline_Get_Bitmap FT_Outline_Get_Bitmap
 
 # if FREETYPE_HAS_DEBUGGER
-#  include "ttobjs.h"
-#  include "ttdriver.h"
 #  include "ttinterp.h"
 
 #  define _FT_Set_Debug_Hook FT_Set_Debug_Hook
@@ -278,9 +276,9 @@ typedef struct freetypecontext {
 static void TransitiveClosureAdd(SplineChar **new,SplineChar **old,SplineChar *sc) {
     RefChar *ref;
 
-    if ( new[sc->enc]!=NULL )	/* already done */
+    if ( new[sc->orig_pos]!=NULL )	/* already done */
 return;
-    new[sc->enc] = sc;
+    new[sc->orig_pos] = sc;
     for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref = ref->next )
 	TransitiveClosureAdd(new,old,ref->sc);
 }
@@ -322,7 +320,8 @@ static void *__FreeTypeFontContext(FT_Library context,
     FTC *ftc;
     SplineChar **old, **new;
     uint8 *selected = fv!=NULL ? fv->selected : NULL;
-    int i,cnt;
+    EncMap *map = fv!=NULL ? fv->map : sf->fv->map;
+    int i,cnt, notdefpos;
 
     if ( !hasFreeType())
 return( NULL );
@@ -346,13 +345,13 @@ return( NULL );
 return( NULL );
 	}
 
-	old = sf->chars;
+	old = sf->glyphs;
 	if ( sc!=NULL || selected!=NULL ) {
 	    /* Build up a font consisting of those characters we actually use */
-	    new = gcalloc(sf->charcnt,sizeof(SplineChar *));
+	    new = gcalloc(sf->glyphcnt,sizeof(SplineChar *));
 	    if ( sc!=NULL )
 		TransitiveClosureAdd(new,old,sc);
-	    else for ( i=0; i<sf->charcnt; ++i )
+	    else for ( i=0; i<sf->glyphcnt; ++i )
 		if ( selected[i] && SCWorthOutputting(old[i]))
 		    TransitiveClosureAdd(new,old,old[i]);
 	    /* Add these guys so we'll get reasonable blue values */
@@ -363,19 +362,21 @@ return( NULL );
 		AddIf(sf,new,old,'x');
 		AddIf(sf,new,old,'o');
 	    }
-	    AddIf(sf,new,old,0);	/* If there's a .notdef use it so that we don't generate our own .notdef (which can add cvt entries) */
-	    sf->chars = new;
+	    if ((notdefpos = SFFindNotdef(sf,-2))!=-1 )
+		TransitiveClosureAdd(new,old,sf->glyphs[notdefpos]);
+		/* If there's a .notdef use it so that we don't generate our own .notdef (which can add cvt entries) */
+	    sf->glyphs = new;
 	}
 	switch ( ff ) {
 	  case ff_pfb: case ff_pfa:
-	    if ( !_WritePSFont(ftc->file,sf,ff,0))
+	    if ( !_WritePSFont(ftc->file,sf,ff,0,map))
  goto fail;
 	  break;
 	  case ff_ttf: case ff_ttfsym:
 	    ftc->isttf = true;
 	    /* Fall through.... */
 	  case ff_otf: case ff_otfcid:
-	    if ( !_WriteTTFFont(ftc->file,sf,ff,NULL,bf_none,flags))
+	    if ( !_WriteTTFFont(ftc->file,sf,ff,NULL,bf_none,flags,map))
  goto fail;
 	  break;
 	  default:
@@ -386,38 +387,35 @@ return( NULL );
 	    /* can only be an otfcid */
 	    int k, max=0;
 	    for ( k=0; k<sf->subfontcnt; ++k )
-		if ( sf->subfonts[k]->charcnt>max )
-		    max = sf->subfonts[k]->charcnt;
+		if ( sf->subfonts[k]->glyphcnt>max )
+		    max = sf->subfonts[k]->glyphcnt;
 	    ftc->glyph_indeces = galloc(max*sizeof(int));
 	    memset(ftc->glyph_indeces,-1,max*sizeof(int));
 	    for ( i=0; i<max; ++i ) {
 		for ( k=0; k<sf->subfontcnt; ++k ) {
-		    if ( SCWorthOutputting(sf->subfonts[k]->chars[i]) ) {
-			ftc->glyph_indeces[i] = sf->subfonts[k]->chars[i]->ttf_glyph;
+		    if ( SCWorthOutputting(sf->subfonts[k]->glyphs[i]) ) {
+			ftc->glyph_indeces[i] = sf->subfonts[k]->glyphs[i]->ttf_glyph;
 		break;
 		    }
 		}
 	    }
 	} else {
-	    ftc->glyph_indeces = galloc(sf->charcnt*sizeof(int));
-	    memset(ftc->glyph_indeces,-1,sf->charcnt*sizeof(int));
-	    cnt = 1; i = 0;
-	    if ( SCIsNotdef(sf->chars[0], -1)) {
-		ftc->glyph_indeces[0] = 0;
-		i = 1;
-	    }
-	    for ( ; i<sf->charcnt; ++i ) {
-		if ( SCWorthOutputting(sf->chars[i]) && SCDuplicate(sf->chars[i])==sf->chars[i] ) {
-		    if ( ff==ff_pfa || ff==ff_pfb )
+	    ftc->glyph_indeces = galloc(sf->glyphcnt*sizeof(int));
+	    memset(ftc->glyph_indeces,-1,sf->glyphcnt*sizeof(int));
+	    cnt = 1;
+	    notdefpos = SFFindNotdef(sf,-2);
+	    if ( notdefpos!=-1 )
+		ftc->glyph_indeces[notdefpos] = 0;
+	    if ( ff==ff_pfa || ff==ff_pfb ) {
+		for ( i=0 ; i<sf->glyphcnt; ++i ) {
+		    if ( SCWorthOutputting(sf->glyphs[i]))
 			ftc->glyph_indeces[i] = cnt++;
-		    else
-			ftc->glyph_indeces[i] = sf->chars[i]->ttf_glyph;
 		}
-	    }
-	    for ( i=1 ; i<sf->charcnt; ++i ) {
-		if ( SCWorthOutputting(sf->chars[i]) && SCDuplicate(sf->chars[i])!=sf->chars[i] ) {
-		    SplineChar *sc = SCDuplicate(sf->chars[i]);
-		    ftc->glyph_indeces[i] = ftc->glyph_indeces[sc->enc];
+	    } else {
+		for ( i=0 ; i<sf->glyphcnt; ++i ) {
+		    if ( SCWorthOutputting(sf->glyphs[i]) ) {
+			ftc->glyph_indeces[i] = sf->glyphs[i]->ttf_glyph;
+		    }
 		}
 	    }
 	}
@@ -427,9 +425,9 @@ return( NULL );
 	ftc->mappedfile = mmap(NULL,ftc->len,PROT_READ,MAP_PRIVATE,fileno(ftc->file),0);
 	if ( ftc->mappedfile==MAP_FAILED )
  goto fail;
-	if ( sf->chars!=old ) {
-	    free(sf->chars);
-	    sf->chars = old;
+	if ( sf->glyphs!=old ) {
+	    free(sf->glyphs);
+	    sf->glyphs = old;
 	}
     }
 
@@ -440,9 +438,9 @@ return( ftc );
 
  fail:
     FreeTypeFreeContext(ftc);
-    if ( sf->chars!=old ) {
-	free(sf->chars);
-	sf->chars = old;
+    if ( sf->glyphs!=old ) {
+	free(sf->glyphs);
+	sf->glyphs = old;
     }
 return( NULL );
 }
@@ -482,7 +480,7 @@ static BDFChar *BdfCFromBitmap(FT_Bitmap *bitmap, int bitmap_left,
     bdfc->depth = depth;
     if ( sc!=NULL ) {
 	bdfc->width = rint(sc->width*pixelsize / (real) (sc->parent->ascent+sc->parent->descent));
-	bdfc->enc = sc->enc;
+	bdfc->orig_pos = sc->orig_pos;
     }
     bdfc->bytes_per_line = bitmap->pitch;
     if ( bdfc->bytes_per_line==0 ) bdfc->bytes_per_line = 1;
@@ -497,29 +495,29 @@ static BDFChar *BdfCFromBitmap(FT_Bitmap *bitmap, int bitmap_left,
 return( bdfc );
 }
 
-BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int enc,
+BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int gid,
 	int pixelsize,int depth) {
     FTC *ftc = freetypecontext;
     BDFChar *bdfc;
     SplineChar *sc;
     FT_GlyphSlot slot;
 
-    if ( ftc->glyph_indeces[enc]==-1 )
+    if ( ftc->glyph_indeces[gid]==-1 )
  goto fail;
     if ( _FT_Set_Pixel_Sizes(ftc->face,0,pixelsize))
  goto fail;
-    if ( _FT_Load_Glyph(ftc->face,ftc->glyph_indeces[enc],
+    if ( _FT_Load_Glyph(ftc->face,ftc->glyph_indeces[gid],
 	    depth==1?(FT_LOAD_RENDER|FT_LOAD_MONOCHROME):FT_LOAD_RENDER))
  goto fail;
 
     slot = ftc->face->glyph;
-    sc = ftc->sf->chars[enc];
+    sc = ftc->sf->glyphs[gid];
     bdfc = BdfCFromBitmap(&slot->bitmap, slot->bitmap_left, slot->bitmap_top,
 	    pixelsize, depth, sc);
 return( bdfc );
 
  fail:
-return( SplineCharRasterize(ftc->sf->chars[enc],pixelsize) );
+return( SplineCharRasterize(ftc->sf->glyphs[gid],pixelsize) );
 }
 
 BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int depth) {
@@ -540,23 +538,23 @@ BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int dep
 	    subsf = sf->subfonts[k];
 	    subftc = FreeTypeFontContext(subsf,NULL,NULL);
 	}
-	for ( i=0; i<subsf->charcnt; ++i )
-	    if ( SCWorthOutputting(subsf->chars[i] ) ) {
+	for ( i=0; i<subsf->glyphcnt; ++i )
+	    if ( SCWorthOutputting(subsf->glyphs[i] ) ) {
 		/* If we could not allocate an ftc for this subfont, the revert to*/
 		/*  our own rasterizer */
 		if ( subftc!=NULL )
-		    bdf->chars[i] = SplineCharFreeTypeRasterize(subftc,i,pixelsize,depth);
+		    bdf->glyphs[i] = SplineCharFreeTypeRasterize(subftc,i,pixelsize,depth);
 		else if ( depth==1 )
-		    bdf->chars[i] = SplineCharRasterize(subsf->chars[i],pixelsize);
+		    bdf->glyphs[i] = SplineCharRasterize(subsf->glyphs[i],pixelsize);
 		else
-		    bdf->chars[i] = SplineCharAntiAlias(subsf->chars[i],pixelsize,(1<<(depth/2)));
+		    bdf->glyphs[i] = SplineCharAntiAlias(subsf->glyphs[i],pixelsize,(1<<(depth/2)));
 #if defined(FONTFORGE_CONFIG_GDRAW)
 		GProgressNext();
 #elif defined(FONTFORGE_CONFIG_GTK)
 		gwwv_progress_next();
 #endif
 	    } else
-		bdf->chars[i] = NULL;
+		bdf->glyphs[i] = NULL;
 	if ( subftc!=NULL && subftc!=ftc )
 	    FreeTypeFreeContext(subftc);
 	subftc = NULL;
@@ -1153,22 +1151,22 @@ BDFFont *SplineFontFreeTypeRasterizeNoHints(SplineFont *sf,int pixelsize,int dep
 	} else {
 	    subsf = sf->subfonts[k];
 	}
-	for ( i=0; i<subsf->charcnt; ++i )
-	    if ( SCWorthOutputting(subsf->chars[i] ) ) {
-		bdf->chars[i] = SplineCharFreeTypeRasterizeNoHints(subsf->chars[i],pixelsize,depth);
-		if ( bdf->chars[i]!=NULL )
+	for ( i=0; i<subsf->glyphcnt; ++i )
+	    if ( SCWorthOutputting(subsf->glyphs[i] ) ) {
+		bdf->glyphs[i] = SplineCharFreeTypeRasterizeNoHints(subsf->glyphs[i],pixelsize,depth);
+		if ( bdf->glyphs[i]!=NULL )
 		    /* Done */;
 		else if ( depth==1 )
-		    bdf->chars[i] = SplineCharRasterize(subsf->chars[i],pixelsize);
+		    bdf->glyphs[i] = SplineCharRasterize(subsf->glyphs[i],pixelsize);
 		else
-		    bdf->chars[i] = SplineCharAntiAlias(subsf->chars[i],pixelsize,(1<<(depth/2)));
+		    bdf->glyphs[i] = SplineCharAntiAlias(subsf->glyphs[i],pixelsize,(1<<(depth/2)));
 #if defined(FONTFORGE_CONFIG_GDRAW)
 		GProgressNext();
 #elif defined(FONTFORGE_CONFIG_GTK)
 		gwwv_progress_next();
 #endif
 	    } else
-		bdf->chars[i] = NULL;
+		bdf->glyphs[i] = NULL;
 	++k;
     } while ( k<sf->subfontcnt );
 #if defined(FONTFORGE_CONFIG_GDRAW)
@@ -1350,7 +1348,7 @@ static void *StartChar(void *_dc) {
  goto finish;
 
     massive_kludge = dc;
-    _FT_Load_Glyph(dc->ftc->face,dc->ftc->glyph_indeces[dc->sc->enc],FT_LOAD_NO_BITMAP);
+    _FT_Load_Glyph(dc->ftc->face,dc->ftc->glyph_indeces[dc->sc->orig_pos],FT_LOAD_NO_BITMAP);
 
  finish:
     dc->has_finished = true;

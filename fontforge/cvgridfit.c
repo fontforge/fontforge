@@ -57,9 +57,9 @@ void CVGridFitChar(CharView *cv) {
 return;
     }
 
-    cv->raster = FreeType_GetRaster(single_glyph_context,cv->sc->enc,
+    cv->raster = FreeType_GetRaster(single_glyph_context,cv->sc->orig_pos,
 	    cv->ft_pointsize, cv->ft_dpi );
-    cv->gridfit = FreeType_GridFitChar(single_glyph_context,cv->sc->enc,
+    cv->gridfit = FreeType_GridFitChar(single_glyph_context,cv->sc->orig_pos,
 	    cv->ft_pointsize, cv->ft_dpi, &cv->ft_gridfitwidth,
 	    cv->sc->layers[ly_fore].splines );
 

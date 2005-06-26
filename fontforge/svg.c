@@ -133,9 +133,9 @@ static int svg_outfontheader(FILE *file, SplineFont *sf) {
 	if ( ch==']' ) hasv[strlen(hasv)] = ch;
     }
     minu = 0x7fffff; maxu = 0;
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->unicodeenc>0 ) {
-	if ( sf->chars[i]->unicodeenc<minu ) minu = sf->chars[i]->unicodeenc;
-	if ( sf->chars[i]->unicodeenc>maxu ) maxu = sf->chars[i]->unicodeenc;
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL && sf->glyphs[i]->unicodeenc>0 ) {
+	if ( sf->glyphs[i]->unicodeenc<minu ) minu = sf->glyphs[i]->unicodeenc;
+	if ( sf->glyphs[i]->unicodeenc>maxu ) maxu = sf->glyphs[i]->unicodeenc;
     }
     if ( maxu!=0 )
 	fprintf(file, "    unicode-range=\"U+%04X-U+%04X\"\n", minu, maxu );
@@ -401,7 +401,7 @@ return( 0 );
     forever {
 	end = strchr(pt,' ');
 	if ( end!=NULL ) *end='\0';
-	sc = SFGetCharDup(sf,-1,pt);
+	sc = SFGetChar(sf,-1,pt);
 	if ( end!=NULL ) *end=' ';
 	if ( sc==NULL || sc->unicodeenc==-1 )
 return( 0 );
@@ -503,9 +503,12 @@ static void svg_scdump(FILE *file, SplineChar *sc,int defwid) {
 }
 
 static void svg_notdefdump(FILE *file, SplineFont *sf,int defwid) {
+    int notdefpos;
+
+    notdefpos = SFFindNotdef(sf,-2);
     
-    if ( SCWorthOutputting(sf->chars[0]) && SCIsNotdef(sf->chars[0],-1 )) {
-	SplineChar *sc = sf->chars[0];
+    if ( notdefpos!=-1 ) {
+	SplineChar *sc = sf->glyphs[notdefpos];
 
 	fprintf(file, "<missing-glyph ");
 	if ( sc->width!=defwid )
@@ -538,17 +541,17 @@ static void svg_dumpkerns(FILE *file,SplineFont *sf,int isv) {
     KernPair *kp;
     KernClass *kc;
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( SCWorthOutputting(sf->chars[i]) ) {
-	for ( kp = isv ? sf->chars[i]->vkerns : sf->chars[i]->kerns;
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sf->glyphs[i]) ) {
+	for ( kp = isv ? sf->glyphs[i]->vkerns : sf->glyphs[i]->kerns;
 		kp!=NULL; kp = kp->next )
 	    if ( kp->off!=0 && SCWorthOutputting(kp->sc)) {
 		fprintf( file, isv ? "    <vkern " : "    <hkern " );
-		if ( sf->chars[i]->unicodeenc==-1 || HasLigature(sf->chars[i]))
-		    fprintf( file, "g1=\"%s\" ", sf->chars[i]->name );
-		else if ( sf->chars[i]->unicodeenc>='A' && sf->chars[i]->unicodeenc<='z' )
-		    fprintf( file, "u1=\"%c\" ", sf->chars[i]->unicodeenc );
+		if ( sf->glyphs[i]->unicodeenc==-1 || HasLigature(sf->glyphs[i]))
+		    fprintf( file, "g1=\"%s\" ", sf->glyphs[i]->name );
+		else if ( sf->glyphs[i]->unicodeenc>='A' && sf->glyphs[i]->unicodeenc<='z' )
+		    fprintf( file, "u1=\"%c\" ", sf->glyphs[i]->unicodeenc );
 		else
-		    fprintf( file, "u1=\"&#x%x;\" ", sf->chars[i]->unicodeenc );
+		    fprintf( file, "u1=\"&#x%x;\" ", sf->glyphs[i]->unicodeenc );
 		if ( kp->sc->unicodeenc==-1 || HasLigature(kp->sc))
 		    fprintf( file, "g2=\"%s\" ", kp->sc->name );
 		else if ( kp->sc->unicodeenc>='A' && kp->sc->unicodeenc<='z' )
@@ -588,30 +591,31 @@ static void svg_sfdump(FILE *file,SplineFont *sf) {
     svg_notdefdump(file,sf,defwid);
 
     /* Ligatures must be output before their initial components */
-    for ( i=0; i<sf->charcnt; ++i ) {
-	if ( SCWorthOutputting(sf->chars[i]) && HasLigature(sf->chars[i]))
-	    svg_scdump(file, sf->chars[i],defwid);
+    for ( i=0; i<sf->glyphcnt; ++i ) {
+	if ( SCWorthOutputting(sf->glyphs[i]) && HasLigature(sf->glyphs[i]))
+	    svg_scdump(file, sf->glyphs[i],defwid);
     }
     /* And formed arabic before unformed */
-    for ( i=0; i<sf->charcnt; ++i ) {
-	if ( SCWorthOutputting(sf->chars[i]) && !HasLigature(sf->chars[i]) &&
-		sf->chars[i]->unicodeenc!=-1 && sf->chars[i]->unicodeenc<0x10000 &&
-		(isarabinitial(sf->chars[i]->unicodeenc) ||
-		 isarabmedial(sf->chars[i]->unicodeenc) ||
-		 isarabfinal(sf->chars[i]->unicodeenc) ||
-		 isarabisolated(sf->chars[i]->unicodeenc)))
-	    svg_scdump(file, sf->chars[i],defwid);
+    for ( i=0; i<sf->glyphcnt; ++i ) {
+	if ( SCWorthOutputting(sf->glyphs[i]) && !HasLigature(sf->glyphs[i]) &&
+		sf->glyphs[i]->unicodeenc!=-1 && sf->glyphs[i]->unicodeenc<0x10000 &&
+		(isarabinitial(sf->glyphs[i]->unicodeenc) ||
+		 isarabmedial(sf->glyphs[i]->unicodeenc) ||
+		 isarabfinal(sf->glyphs[i]->unicodeenc) ||
+		 isarabisolated(sf->glyphs[i]->unicodeenc)))
+	    svg_scdump(file, sf->glyphs[i],defwid);
     }
-    for ( i=0; i<sf->charcnt; ++i ) {
-	if ( i==0 && sf->chars[i]!=NULL && strcmp(sf->chars[i]->name,".notdef")==0 )
+    for ( i=0; i<sf->glyphcnt; ++i ) {
+	if ( sf->glyphs[i]!=NULL && strcmp(sf->glyphs[i]->name,".notdef")==0 )
     continue;
-	if ( SCWorthOutputting(sf->chars[i]) && !HasLigature(sf->chars[i]) &&
-		(sf->chars[i]->unicodeenc==-1 || sf->chars[i]->unicodeenc>=0x10000 ||
-		!(isarabinitial(sf->chars[i]->unicodeenc) ||
-		 isarabmedial(sf->chars[i]->unicodeenc) ||
-		 isarabfinal(sf->chars[i]->unicodeenc) ||
-		 isarabisolated(sf->chars[i]->unicodeenc))))
-	    svg_scdump(file, sf->chars[i],defwid);
+	if ( SCWorthOutputting(sf->glyphs[i]) && !HasLigature(sf->glyphs[i]) &&
+		strcmp(sf->glyphs[i]->name,".notdef")!=0 &&
+		(sf->glyphs[i]->unicodeenc==-1 || sf->glyphs[i]->unicodeenc>=0x10000 ||
+		!(isarabinitial(sf->glyphs[i]->unicodeenc) ||
+		 isarabmedial(sf->glyphs[i]->unicodeenc) ||
+		 isarabfinal(sf->glyphs[i]->unicodeenc) ||
+		 isarabisolated(sf->glyphs[i]->unicodeenc))))
+	    svg_scdump(file, sf->glyphs[i],defwid);
     }
     svg_dumpkerns(file,sf,false);
     svg_dumpkerns(file,sf,true);
@@ -619,7 +623,8 @@ static void svg_sfdump(FILE *file,SplineFont *sf) {
     setlocale(LC_NUMERIC,oldloc);
 }
 
-int WriteSVGFont(char *fontname,SplineFont *sf,enum fontformat format,int flags) {
+int WriteSVGFont(char *fontname,SplineFont *sf,enum fontformat format,int flags,
+	EncMap *map) {
     FILE *file;
     int ret;
 
@@ -1865,6 +1870,7 @@ return( NULL );
 
     if ( (treat_symbol_as_g && _xmlStrcmp(svg->name,(xmlChar *) "symbol")==0) ||
 	    _xmlStrcmp(svg->name,(xmlChar *) "svg")==0 ||
+	    _xmlStrcmp(svg->name,(xmlChar *) "glyph")==0 ||
 	    _xmlStrcmp(svg->name,(xmlChar *) "g")==0 ) {
 	ehead = elast = NULL;
 	for ( kid = svg->children; kid!=NULL; kid=kid->next ) {
@@ -1991,7 +1997,7 @@ static void SVGParseGlyphBody(SplineChar *sc, xmlNodePtr glyph,int *flags) {
 	sc->layer_cnt = 1;
 	SCAppendEntityLayers(sc,ent);
 	if ( sc->layer_cnt==1 ) ++sc->layer_cnt;
-	sc->parent->multilayer = true;
+	else sc->parent->multilayer = true;
 #else
 	sc->layers[ly_fore].splines = SplinesFromEntities(ent,flags,false);
 #endif
@@ -2067,7 +2073,7 @@ return( sc );
 
 static SplineChar *SVGParseMissing(SplineFont *sf,xmlNodePtr notdef,int defh, int defv, int enc, int *flags) {
     SplineChar *sc = SVGParseGlyphArgs(notdef,defh,defv);
-    sc->parent = sf; sc->enc = enc;
+    sc->parent = sf;
     sc->name = copy(".notdef");
     sc->unicodeenc = 0;
     SVGParseGlyphBody(sc,notdef,flags);
@@ -2077,7 +2083,7 @@ return( sc );
 static SplineChar *SVGParseGlyph(SplineFont *sf,xmlNodePtr glyph,int defh, int defv, int enc, int *flags) {
     char buffer[40];
     SplineChar *sc = SVGParseGlyphArgs(glyph,defh,defv);
-    sc->parent = sf; sc->enc = enc;
+    sc->parent = sf;
     if ( sc->name==NULL ) {
 	if ( sc->unicodeenc==-1 )
 	    sprintf( buffer, "glyph%d", enc);
@@ -2296,6 +2302,8 @@ static SplineFont *SVGParseFont(xmlNodePtr font) {
     int defh=0, defv=0;
     xmlChar *name;
     SplineFont *sf;
+    EncMap *map;
+    int i;
 
     sf = SplineFontEmpty();
     name = _xmlGetProp(font,(xmlChar *) "horiz-adv-x");
@@ -2484,23 +2492,28 @@ return( NULL );
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_change_total(cnt);
 #endif
-    sf->charcnt = cnt;
-    sf->chars = galloc(cnt*sizeof(SplineChar *));
-    sf->encoding_name = FindOrMakeEncoding("Original");
+    sf->glyphcnt = cnt;
+    sf->glyphs = galloc(cnt*sizeof(SplineChar *));
 
     cnt = 0;
     for ( kids = font->children; kids!=NULL; kids=kids->next ) {
 	if ( _xmlStrcmp(kids->name,(const xmlChar *) "missing-glyph")==0 ) {
-	    sf->chars[cnt] = SVGParseMissing(sf,kids,defh,defv,cnt,&flags);
-	    cnt++;
+	    sf->glyphs[cnt] = SVGParseMissing(sf,kids,defh,defv,cnt,&flags);
+	    if ( sf->glyphs[cnt]!=NULL ) {
+		sf->glyphs[cnt]->orig_pos = cnt;
+		cnt++;
+	    }
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    GProgressNext();
 #elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_progress_next();
 #endif
 	} else if ( _xmlStrcmp(kids->name,(const xmlChar *) "glyph")==0 ) {
-	    sf->chars[cnt] = SVGParseGlyph(sf,kids,defh,defv,cnt,&flags);
-	    cnt++;
+	    sf->glyphs[cnt] = SVGParseGlyph(sf,kids,defh,defv,cnt,&flags);
+	    if ( sf->glyphs[cnt]!=NULL ) {
+		sf->glyphs[cnt]->orig_pos = cnt;
+		cnt++;
+	    }
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    GProgressNext();
 #elif defined(FONTFORGE_CONFIG_GTK)
@@ -2515,11 +2528,20 @@ return( NULL );
 	} else if ( _xmlStrcmp(kids->name,(const xmlChar *) "vkern")==0 ) {
 	    SVGParseKern(sf,kids,true);
 	} else if ( _xmlStrcmp(kids->name,(const xmlChar *) "glyph")==0 ) {
-	    SVGLigatureFixupCheck(sf->chars[cnt++],kids);
+	    SVGLigatureFixupCheck(sf->glyphs[cnt++],kids);
 	} else if ( _xmlStrcmp(kids->name,(const xmlChar *) "missing-glyph")==0 ) {
 	    ++cnt;
 	}
     }
+
+    map = chunkalloc(sizeof(EncMap));
+    map->enccount = map->encmax = map->backmax = sf->glyphcnt;
+    map->enc = FindOrMakeEncoding("Original");
+    map->map = galloc(sf->glyphcnt*sizeof(int));
+    map->backmap = galloc(sf->glyphcnt*sizeof(int));
+    for ( i=0; i<sf->glyphcnt; ++i )
+	map->map[i] = map->backmap[i] = i;
+    sf->map = map;
     
 return( sf );
 }
@@ -2554,8 +2576,8 @@ return( -1 );
 static int SFFindOrder(SplineFont *sf) {
     int i, ret;
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	ret = SPLFindOrder(sf->chars[i]->layers[ly_fore].splines);
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	ret = SPLFindOrder(sf->glyphs[i]->layers[ly_fore].splines);
 	if ( ret!=-1 )
 return( ret );
     }
@@ -2618,9 +2640,9 @@ static void EntSetOrder(Entity *ent,int order2) {
 static void SFSetOrder(SplineFont *sf,int order2) {
     int i,j;
 
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	for ( j=ly_fore; j<sf->chars[i]->layer_cnt; ++j )
-	    SPLSetOrder(sf->chars[i]->layers[j].splines,order2);
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	for ( j=ly_fore; j<sf->glyphs[i]->layer_cnt; ++j )
+	    SPLSetOrder(sf->glyphs[i]->layers[j].splines,order2);
     }
 }
 

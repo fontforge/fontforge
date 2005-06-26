@@ -115,7 +115,7 @@ int SFRemoveThisFeatureTag(SplineFont *sf, uint32 tag, int sli, int flags) {
     k = 0;
     do {
 	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
-	for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
 	    for ( prev= NULL, pst = sc->possub; pst!=NULL; pst=next ) {
 		next = pst->next;
 		if ( ( tag==0xffffffff || tag==pst->tag ) &&
@@ -142,7 +142,7 @@ int SFRemoveThisFeatureTag(SplineFont *sf, uint32 tag, int sli, int flags) {
 	    k = 0;
 	    do {
 		sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
-		for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+		for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
 		    for ( kprev=NULL, kp = j==0 ? sc->kerns : sc->vkerns ; kp!=NULL; kp = knext ) {
 			knext = kp->next;
 			if ( ( sli==SLI_UNKNOWN || sli==kp->sli ) &&
@@ -262,7 +262,7 @@ int SFRenameTheseFeatureTags(SplineFont *sf, uint32 tag, int sli, int flags,
     k = 0;
     do {
 	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
-	for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
 	    for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
 		if ( ( tag==0xffffffff || tag==pst->tag ) &&
 			( sli==SLI_UNKNOWN || sli==pst->script_lang_index ) &&
@@ -344,6 +344,7 @@ struct copycontext {
     int *from_merge;
     int *to_merge;
     int mcur;
+    EncMap *tomap;
 };
 
 int SFConvertSLI(SplineFont *fromsf,int sli,SplineFont *tosf,
@@ -416,7 +417,6 @@ return( i );
 	    to_sr[j].langs[k] = from_sr[j].langs[k];
 	to_sr[j].langs[k] = 0;
     }
-    tosf->sli_cnt = i+1;
 return( i );
 }
 
@@ -461,12 +461,12 @@ static int _SFCopyTheseFeaturesToSF(SplineFont *_sf, uint32 tag, int sli, int fl
 static int SF_SCAddPST(SplineFont *tosf,SplineChar *sc,PST *pst,
 	struct copycontext *cc, SplineFont *fromsf) {
     SplineChar *tosc;
-    int to_index = SFFindChar(tosf,sc->unicodeenc,sc->name);
+    int to_index = SFFindSlot(tosf,cc->tomap,sc->unicodeenc,sc->name);
     PST *newpst;
 
     if ( to_index==-1 )
 return( false );
-    tosc = SCDuplicate(SFMakeChar(tosf,to_index));
+    tosc = SFMakeChar(tosf,cc->tomap,to_index);
     if ( tosc==NULL )
 return( false );
 
@@ -498,14 +498,14 @@ return( true );
 }
 
 static void SF_SCAddAP(SplineFont *tosf,SplineChar *sc,AnchorPoint *ap,
-	SplineFont *fromsf, AnchorClass *newac) {
+	SplineFont *fromsf, AnchorClass *newac, struct copycontext *cc) {
     SplineChar *tosc;
-    int to_index = SFFindChar(tosf,sc->unicodeenc,sc->name);
+    int to_index = SFFindSlot(tosf,cc->tomap,sc->unicodeenc,sc->name);
     AnchorPoint *newap;
 
     if ( to_index==-1 )
 return;
-    tosc = SCDuplicate(SFMakeChar(tosf,to_index));
+    tosc = SFMakeChar(tosf,cc->tomap,to_index);
     if ( tosc==NULL )
 return;
 
@@ -517,16 +517,16 @@ return;
 }
 
 static int SF_SCAddKP(SplineFont *tosf,SplineChar *sc,KernPair *kp,
-	SplineFont *fromsf, int isvkern) {
+	SplineFont *fromsf, int isvkern, struct copycontext *cc) {
     SplineChar *tosc, *tosecond;
-    int to_index = SFFindChar(tosf,sc->unicodeenc,sc->name);
-    int second_index = SFFindChar(tosf,kp->sc->unicodeenc,kp->sc->name);
+    int to_index = SFFindSlot(tosf,cc->tomap,sc->unicodeenc,sc->name);
+    int second_index = SFFindSlot(tosf,cc->tomap,kp->sc->unicodeenc,kp->sc->name);
     KernPair *newkp;
 
     if ( to_index==-1 || second_index==-1 )
 return(false);
-    tosc = SCDuplicate(SFMakeChar(tosf,to_index));
-    tosecond = SCDuplicate(SFMakeChar(tosf,second_index));
+    tosc = SFMakeChar(tosf,cc->tomap,to_index);
+    tosecond = SFMakeChar(tosf,cc->tomap,second_index);
     if ( tosc==NULL || tosecond==NULL )
 return(false);
 
@@ -578,10 +578,10 @@ static void SF_AddAnchor(SplineFont *tosf,AnchorClass *ac, struct copycontext *c
     k = 0;
     do {
 	sf = fromsf->subfonts==NULL ? fromsf : fromsf->subfonts[k];
-	for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
 	    for ( ap = sc->anchor; ap!=NULL; ap=ap->next ) {
 		if ( ap->anchor==ac ) {
-		    SF_SCAddAP(tosf,sc,ap, fromsf,newac);
+		    SF_SCAddAP(tosf,sc,ap, fromsf,newac,cc);
 		}
 	    }
 	}
@@ -748,7 +748,7 @@ static int _SFCopyTheseFeaturesToSF(SplineFont *_sf, uint32 tag, int sli, int fl
     k = 0;
     do {
 	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
-	for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
 	    for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
 		if ( ( tag==0xffffffff || tag==pst->tag ) &&
 			( sli==SLI_UNKNOWN || sli==pst->script_lang_index ) &&
@@ -777,11 +777,11 @@ static int _SFCopyTheseFeaturesToSF(SplineFont *_sf, uint32 tag, int sli, int fl
 	    k = 0;
 	    do {
 		sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
-		for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+		for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
 		    for ( kp = j==0 ? sc->kerns : sc->vkerns ; kp!=NULL; kp = kp->next ) {
 			if ( ( sli==SLI_UNKNOWN || sli==kp->sli ) &&
 				( flags==-1 || flags==kp->flags )) {
-			    if ( SF_SCAddKP(tosf,sc,kp,_sf,j) )
+			    if ( SF_SCAddKP(tosf,sc,kp,_sf,j,cc) )
 				any = true;
 			}
 		    }
@@ -823,8 +823,8 @@ static int _SFCopyTheseFeaturesToSF(SplineFont *_sf, uint32 tag, int sli, int fl
 return( any );
 }
 
-int SFCopyTheseFeaturesToSF(SplineFont *sf, uint32 tag, int sli, int flags,
-	SplineFont *tosf) {
+static int SFCopyTheseFeaturesToFV(SplineFont *sf, uint32 tag, int sli, int flags,
+	FontView *tofv) {
     /* if tag==0xffffffff treat as a wildcard (will match any tag) */
     /* if sli==SLI_UNKNOWN treat as a wildcard */
     /* if flags==-1 treat as a wildcard */
@@ -832,6 +832,7 @@ int SFCopyTheseFeaturesToSF(SplineFont *sf, uint32 tag, int sli, int flags,
     int any;
     int i;
     AnchorClass *ac;
+    SplineFont *tosf = tofv->sf;
 
     if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
     if ( tosf->cidmaster!=NULL ) tosf = tosf->cidmaster;
@@ -839,6 +840,7 @@ int SFCopyTheseFeaturesToSF(SplineFont *sf, uint32 tag, int sli, int flags,
     cc.nested_map = gcalloc(sf->gentags.tt_cur,sizeof(uint32));
     cc.from_merge = galloc(i*sizeof(int));
     cc.to_merge = galloc(i*sizeof(int));
+    cc.tomap = tofv->map;
     cc.mcur = i;
     any = _SFCopyTheseFeaturesToSF(sf,tag,sli,flags,tosf,&cc);
     free(cc.nested_map); free(cc.from_merge); free(cc.to_merge);
@@ -922,8 +924,8 @@ return( true );
 	end = pst_ligature;
     }
     for ( type=start; type<=end; ++type ) {
-	for ( i=0; i<sf->charcnt; i++ ) if ( sf->chars[i]!=NULL ) {
-	    for ( pst = sf->chars[i]->possub; pst!=NULL; pst=pst->next ) {
+	for ( i=0; i<sf->glyphcnt; i++ ) if ( sf->glyphs[i]!=NULL ) {
+	    for ( pst = sf->glyphs[i]->possub; pst!=NULL; pst=pst->next ) {
 		if ( pst->type==type &&
 			pst->script_lang_index == SLI_NESTED &&
 			pst->tag == tag )
@@ -1306,7 +1308,7 @@ static GTextInfo *SFD_FontList(SplineFont *notme) {
     for ( i=0, fv=fv_list; fv!=NULL; fv=fv->next ) if ( fv->sf!=notme ) {
 	ti[i].text = uc_copy(fv->sf->fontname);
 	ti[i].fg = ti[i].bg = COLOR_DEFAULT;
-	ti[i].userdata = fv->sf;
+	ti[i].userdata = fv;
 	++i;
     }
 return( ti );
@@ -1359,8 +1361,8 @@ static int SelectFeatureDlg(SplineFont *sf,enum selectfeaturedlg_type type) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[30];
-    GTextInfo label[30];
+    GGadgetCreateData gcd[31];
+    GTextInfo label[31];
     int i, k, y;
     struct select_res res1, res2;
     int ret;
@@ -1380,7 +1382,7 @@ static int SelectFeatureDlg(SplineFont *sf,enum selectfeaturedlg_type type) {
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,GGadgetScale(200));
     pos.height = GDrawPointsToPixels(NULL,type==sfd_remove ? 225 :
-	    type==sfd_retag ? 425 : 340 );
+	    type==sfd_retag ? 425 : 355 );
     d.gw = gw = GDrawCreateTopWindow(NULL,&pos,sfd_e_h,&d,&wattrs);
 
     memset(gcd,0,sizeof(gcd));
@@ -1408,8 +1410,15 @@ static int SelectFeatureDlg(SplineFont *sf,enum selectfeaturedlg_type type) {
 	gcd[k].gd.flags = gg_visible | gg_enabled;
 	gcd[k++].creator = GLineCreate;
 
+	label[k].text = (unichar_t *) _STR_ToFont;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+5;
-	gcd[k].gd.pos.width = gcd[k-1].gd.pos.width+10;
+	gcd[k].gd.flags = gg_enabled|gg_visible;
+	gcd[k++].creator = GLabelCreate;
+
+	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
+	gcd[k].gd.pos.width = gcd[k-2].gd.pos.width+10;
 	gcd[k].gd.pos.height = 8*12+10;
 	gcd[k].gd.flags = gg_visible | gg_enabled | gg_list_alphabetic;
 	gcd[k].gd.handle_controlevent = SFD_FontSelected;
@@ -1479,8 +1488,8 @@ static int SelectFeatureDlg(SplineFont *sf,enum selectfeaturedlg_type type) {
 #endif
  goto retry;
 	    }
-	    ret = SFCopyTheseFeaturesToSF(sf,res1.tag,res1.sli,res1.flags,
-		    (SplineFont *) (sel->userdata));
+	    ret = SFCopyTheseFeaturesToFV(sf,res1.tag,res1.sli,res1.flags,
+		    (FontView *) (sel->userdata));
 	}
     }
     GDrawDestroyWindow(gw);

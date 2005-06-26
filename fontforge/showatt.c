@@ -242,7 +242,7 @@ static void BuildAnchorLists(struct node *node,struct att_dlg *att,uint32 script
     if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
 
     if ( ac->type==act_curs ) {
-	entryexit = EntryExitDecompose(sf,ac);
+	entryexit = EntryExitDecompose(sf,ac,NULL);
 	if ( entryexit==NULL ) {
 	    node->children = gcalloc(2,sizeof(struct node));
 	    node->cnt = 1;
@@ -310,7 +310,7 @@ static void BuildAnchorLists(struct node *node,struct att_dlg *att,uint32 script
 
 	marks = galloc(classcnt*sizeof(SplineChar **));
 	subcnts = galloc(classcnt*sizeof(int));
-	AnchorClassDecompose(sf,ac,classcnt,subcnts,marks,&base,&lig,&mkmk);
+	AnchorClassDecompose(sf,ac,classcnt,subcnts,marks,&base,&lig,&mkmk,NULL);
 	node->cnt = classcnt+(base!=NULL)+(lig!=NULL)+(mkmk!=NULL);
 	node->children = gcalloc(node->cnt+1,sizeof(struct node));
 	i=0;
@@ -469,12 +469,12 @@ static void BuildKerns(struct node *node,struct att_dlg *att,uint32 script,uint3
 	k=0;
 	do {
 	    sf = _sf->subfontcnt==0 ? _sf : _sf->subfonts[k++];
-	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-		for ( kp=isv ? sf->chars[i]->vkerns:sf->chars[i]->kerns; kp!=NULL; kp=kp->next ) {
+	    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+		for ( kp=isv ? sf->glyphs[i]->vkerns:sf->glyphs[i]->kerns; kp!=NULL; kp=kp->next ) {
 		    if ( SLIMatches(_sf,kp->sli,script,lang) ) {
 			if ( j ) {
-			    chars[tot].u.sc = sf->chars[i];
-			    chars[tot].label = uc_copy(sf->chars[i]->name);
+			    chars[tot].u.sc = sf->glyphs[i];
+			    chars[tot].label = uc_copy(sf->glyphs[i]->name);
 			    chars[tot].build = build;
 			    chars[tot].parent = node;
 			}
@@ -514,7 +514,7 @@ return( false );
 	if ( end==start )
     break;
 	ch = *end; *end = '\0';
-	ret = SCWorthOutputting(SFGetCharDup(sf,-1,start));
+	ret = SCWorthOutputting(SFGetChar(sf,-1,start));
 	*end = ch;
 	if ( !ret )
 return( false );
@@ -536,7 +536,7 @@ static void BuildFeatures(struct node *node,struct att_dlg *att,
     k=maxc=0;
     do {
 	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
-	if ( sf->charcnt>maxc ) maxc = sf->charcnt;
+	if ( sf->glyphcnt>maxc ) maxc = sf->glyphcnt;
 	++k;
     } while ( k<_sf->subfontcnt );
 
@@ -548,8 +548,8 @@ static void BuildFeatures(struct node *node,struct att_dlg *att,
 	    sc = NULL;
 	    do {
 		sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
-		if ( i<sf->charcnt && sf->chars[i]!=NULL ) {
-		    sc = sf->chars[i];
+		if ( i<sf->glyphcnt && sf->glyphs[i]!=NULL ) {
+		    sc = sf->glyphs[i];
 	    break;
 		}
 		++k;
@@ -638,8 +638,8 @@ unichar_t *TagFullName(SplineFont *sf,uint32 tag, int ismac) {
 	}
     } else {
 	int stag = tag;
-	if ( tag==CHR('n','u','t','f') )
-	    stag = CHR('a','f','r','c');
+	if ( tag==CHR('n','u','t','f') )	/* early name that was standardize later as... */
+	    stag = CHR('a','f','r','c');	/*  Stood for nut fractions. "nut" meaning "fits in an en" in old typography-speak => vertical fractions rather than diagonal ones */
 	if ( tag==REQUIRED_FEATURE ) {
 	    u_strcpy(ubuf,GStringGetResource(_STR_RequiredFeature,NULL));
 	} else {
@@ -687,7 +687,7 @@ static void BuildMorxScript(struct node *node,struct att_dlg *att) {
     feats = galloc(max*sizeof(uint32));
     do {
 	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
-	for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
 	    for ( pst=sc->possub; pst!=NULL; pst=pst->next )
 		    if ( pst->type!=pst_position && pst->type!=pst_lcaret &&
 			    pst->type!=pst_pair &&
@@ -1198,7 +1198,7 @@ static void BuildGSUBlang(struct node *node,struct att_dlg *att) {
     f = gcalloc(max,sizeof(struct f));
     do {
 	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
-	for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
 	    for ( pst=sc->possub; pst!=NULL; pst=pst->next )
 		    if ((isgsub && pst->type!=pst_position && pst->type!=pst_lcaret &&
 			    pst->type!=pst_pair) ||
@@ -1442,8 +1442,8 @@ static void BuildLcar(struct node *node,struct att_dlg *att) {
 	l = 0;
 	do {
 	    sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[l];
-	    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 ) {
-		for ( pst=sf->chars[i]->possub; pst!=NULL; pst=pst->next ) {
+	    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL && sf->glyphs[i]->ttf_glyph!=-1 ) {
+		for ( pst=sf->glyphs[i]->possub; pst!=NULL; pst=pst->next ) {
 		    if ( pst->type == pst_lcaret ) {
 			for ( j=pst->u.lcaret.cnt-1; j>=0; --j )
 			    if ( pst->u.lcaret.carets[j]!=0 )
@@ -1456,8 +1456,8 @@ static void BuildLcar(struct node *node,struct att_dlg *att) {
 		    if ( glyphs!=NULL ) {
 			glyphs[lcnt].parent = node;
 			glyphs[lcnt].build = BuildLCarets;
-			glyphs[lcnt].u.sc = sf->chars[i];
-			glyphs[lcnt].label = uc_copy(sf->chars[i]->name);
+			glyphs[lcnt].u.sc = sf->glyphs[i];
+			glyphs[lcnt].label = uc_copy(sf->glyphs[i]->name);
 		    }
 		    ++lcnt;
 		}
@@ -1484,7 +1484,7 @@ static void BuildGdefs(struct node *node,struct att_dlg *att) {
     l = 0;
     do {
 	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[l];
-	if ( cmax<sf->charcnt ) cmax = sf->charcnt;
+	if ( cmax<sf->glyphcnt ) cmax = sf->glyphcnt;
 	++l;
     } while ( l<_sf->subfontcnt );
 
@@ -1496,8 +1496,8 @@ static void BuildGdefs(struct node *node,struct att_dlg *att) {
 	    sc = NULL;
 	    do {
 		sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[l];
-		if ( l<sf->charcnt && sf->chars[i]!=NULL ) {
-		    sc = sf->chars[i];
+		if ( l<sf->glyphcnt && sf->glyphs[i]!=NULL ) {
+		    sc = sf->glyphs[i];
 	    break;
 		}
 		++l;
@@ -1544,8 +1544,8 @@ static void BuildGDEF(struct node *node,struct att_dlg *att) {
     pst = NULL;
     do {
 	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[l];
-	for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL && sf->chars[i]->ttf_glyph!=-1 ) {
-	    for ( pst=sf->chars[i]->possub; pst!=NULL; pst=pst->next ) {
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL && sf->glyphs[i]->ttf_glyph!=-1 ) {
+	    for ( pst=sf->glyphs[i]->possub; pst!=NULL; pst=pst->next ) {
 		if ( pst->type == pst_lcaret ) {
 		    for ( j=pst->u.lcaret.cnt-1; j>=0; --j )
 			if ( pst->u.lcaret.carets[j]!=0 ) {
@@ -1556,7 +1556,7 @@ static void BuildGDEF(struct node *node,struct att_dlg *att) {
 	    break;
 		}
 	    }
-	    if ( sf->chars[i]->glyph_class!=0 )
+	    if ( sf->glyphs[i]->glyph_class!=0 )
 		gdef = 1;
 	}
 	++l;
@@ -1597,7 +1597,7 @@ static void BuildOpticalBounds(struct node *node,struct att_dlg *att) {
     l = 0;
     do {
 	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[l];
-	if ( cmax<sf->charcnt ) cmax = sf->charcnt;
+	if ( cmax<sf->glyphcnt ) cmax = sf->glyphcnt;
 	++l;
     } while ( l<_sf->subfontcnt );
 
@@ -1609,8 +1609,8 @@ static void BuildOpticalBounds(struct node *node,struct att_dlg *att) {
 	    sc = NULL;
 	    do {
 		sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[l];
-		if ( i<sf->charcnt && sf->chars[i]!=NULL ) {
-		    sc = sf->chars[i];
+		if ( i<sf->glyphcnt && sf->glyphs[i]!=NULL ) {
+		    sc = sf->glyphs[i];
 	    break;
 		}
 		++l;
@@ -1652,7 +1652,7 @@ static void BuildProperties(struct node *node,struct att_dlg *att) {
     l = 0;
     do {
 	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[l];
-	if ( cmax<sf->charcnt ) cmax = sf->charcnt;
+	if ( cmax<sf->glyphcnt ) cmax = sf->glyphcnt;
 	++l;
     } while ( l<_sf->subfontcnt );
 
@@ -1664,8 +1664,8 @@ static void BuildProperties(struct node *node,struct att_dlg *att) {
 	    sc = NULL;
 	    do {
 		sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[l];
-		if ( i<sf->charcnt && sf->chars[i]!=NULL ) {
-		    sc = sf->chars[i];
+		if ( i<sf->glyphcnt && sf->glyphs[i]!=NULL ) {
+		    sc = sf->glyphs[i];
 	    break;
 		}
 		++l;
@@ -1705,15 +1705,15 @@ static void BuildProperties(struct node *node,struct att_dlg *att) {
 			if ( offset&0x8 )
 			    offset |= 0xfffffff0;
 			if ( offset>0 ) {
-			    for ( k=i+offset; k<sf->charcnt; ++k )
-				if ( sf->chars[k]!=NULL && sf->chars[k]->ttf_glyph==sc->ttf_glyph+offset ) {
-				    sprintf( buffer+strlen(buffer), "  Mirror=%.30s", sf->chars[k]->name );
+			    for ( k=i+offset; k<sf->glyphcnt; ++k )
+				if ( sf->glyphs[k]!=NULL && sf->glyphs[k]->ttf_glyph==sc->ttf_glyph+offset ) {
+				    sprintf( buffer+strlen(buffer), "  Mirror=%.30s", sf->glyphs[k]->name );
 			    break;
 				}
 			} else {
 			    for ( k=i+offset; k>=0; --k )
-				if ( sf->chars[k]!=NULL && sf->chars[k]->ttf_glyph==sc->ttf_glyph+offset ) {
-				    sprintf( buffer+strlen(buffer), "  Mirror=%.30s", sf->chars[k]->name );
+				if ( sf->glyphs[k]!=NULL && sf->glyphs[k]->ttf_glyph==sc->ttf_glyph+offset ) {
+				    sprintf( buffer+strlen(buffer), "  Mirror=%.30s", sf->glyphs[k]->name );
 			    break;
 				}
 			}
@@ -1724,7 +1724,9 @@ static void BuildProperties(struct node *node,struct att_dlg *att) {
 	    }
 	}
 	if ( chars==NULL ) {
-	    props = props_array(_sf,ccnt);
+	    struct glyphinfo gi;
+	    memset(&gi,0,sizeof(gi)); gi.gcnt = _sf->glyphcnt;
+	    props = props_array(_sf,&gi);
 	    if ( props==NULL )
 return;
 	    node->children = chars = gcalloc(ccnt+1,sizeof(struct node));
@@ -1788,7 +1790,7 @@ return;
     k=0;
     do {
 	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
-	for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
 	    for ( pst=sc->possub; pst!=NULL; pst=pst->next ) if ( pst->type!=pst_lcaret ) {
 		int relevant = false;
 		if ( pst->type == pst_position || pst->type==pst_pair )
@@ -1960,7 +1962,7 @@ static void BuildTop(struct att_dlg *att) {
     k=0;
     do {
 	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
-	for ( i=0; i<sf->charcnt; ++i ) if ( (sc=sf->chars[i])!=NULL ) {
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
 	    if (( sc->unicodeenc>=0x10800 && sc->unicodeenc<=0x103ff ) ||
 		    ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10fff &&
 			isrighttoleft(sc->unicodeenc)) ||

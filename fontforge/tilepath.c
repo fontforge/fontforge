@@ -901,23 +901,28 @@ return;
 void FVTile(FontView *fv) {
     SplineSet *tile = ClipBoardToSplineSet();
     SplineChar *sc;
-    int i;
+    int i, gid;
 
     if ( tile==NULL )
 return;
 
-    for ( i=0; i<fv->sf->charcnt; ++i )
-	if ( fv->selected[i] && (sc=fv->sf->chars[i])!=NULL && sc->layers[ly_fore].splines!=NULL )
+    for ( i=0; i<fv->map->enccount; ++i )
+	if ( fv->selected[i] && (gid=fv->map->map[i])!=-1 &&
+		(sc=fv->sf->glyphs[gid])!=NULL && sc->layers[ly_fore].splines!=NULL )
     break;
-    if ( i==fv->sf->charcnt )
+    if ( i==fv->map->enccount )
 return;
 
     if ( !TileAsk())
 return;
 
     tile = SplinePointListCopy(tile);
-    for ( i=0; i<fv->sf->charcnt; ++i )
-	if ( fv->selected[i] && (sc=fv->sf->chars[i])!=NULL && sc->layers[ly_fore].splines!=NULL ) {
+    SFUntickAll(fv->sf);
+    for ( i=0; i<fv->map->enccount; ++i )
+	if ( fv->selected[i] && (gid=fv->map->map[i])!=-1 &&
+		(sc=fv->sf->glyphs[gid])!=NULL && !sc->ticked &&
+		sc->layers[ly_fore].splines!=NULL ) {
+	    sc->ticked = true;
 	    SCPreserveState(sc,false);
 	    TileIt(&sc->layers[ly_fore].splines,tile, tilepos,tilescale, true, fv->sf->order2);
 	    SCCharChangedUpdate(sc);

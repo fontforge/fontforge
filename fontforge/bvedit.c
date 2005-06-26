@@ -756,7 +756,7 @@ return( NULL );
 	new->width = rint(old->width*dto/from+.5);
     new->bytes_per_line = (new->xmax-new->xmin)/8+1;
     new->bitmap = gcalloc((new->ymax-new->ymin+1)*new->bytes_per_line,sizeof(char));
-    new->enc = old->enc;
+    new->orig_pos = old->orig_pos;
 
     scale = from/dto;
     scale *= scale;
@@ -823,7 +823,7 @@ return( NULL );
 	new->bitmap = gcalloc((new->ymax-new->ymin+1)*new->bytes_per_line,sizeof(char));
 	new->byte_data = true;
     }
-    new->enc = old->enc;
+    new->orig_pos = old->orig_pos;
 
     scale = from/dto;
     scale *= scale;
@@ -878,21 +878,20 @@ BDFFont *BitmapFontScaleTo(BDFFont *old, int to) {
 	old_depth = BDFDepth(old);
 
     new->sf = old->sf;
-    new->charcnt = old->charcnt;
-    new->chars = galloc(new->charcnt*sizeof(BDFChar *));
+    new->glyphcnt = old->glyphcnt;
+    new->glyphs = galloc(new->glyphcnt*sizeof(BDFChar *));
     new->pixelsize = to;
     new->ascent = (old->ascent*to+.5)/old->pixelsize;
     new->descent = to-new->ascent;
-    new->encoding_name = old->encoding_name;
     new->foundry = copy(old->foundry);
     new->res = -1;
-    for ( i=0; i<old->charcnt; ++i ) {
+    for ( i=0; i<old->glyphcnt; ++i ) {
 	if ( old->clut==NULL ) {
-	    new->chars[i] = BCScale(old->chars[i],old->pixelsize,to*linear_scale);
+	    new->glyphs[i] = BCScale(old->glyphs[i],old->pixelsize,to*linear_scale);
 	    if ( linear_scale!=1 )
-		BDFCAntiAlias(new->chars[i],linear_scale);
+		BDFCAntiAlias(new->glyphs[i],linear_scale);
 	} else {
-	    new->chars[i] = BCScaleGrey(old->chars[i],old->pixelsize,old_depth,to,to_depth);
+	    new->glyphs[i] = BCScaleGrey(old->glyphs[i],old->pixelsize,old_depth,to,to_depth);
 	}
     }
     if ( linear_scale!=1 )

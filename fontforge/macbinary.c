@@ -106,11 +106,11 @@ extern unsigned long binhex_crc(unsigned char *buffer,int size);
 
 /* ******************************** Creation ******************************** */
 
-static uint16 HashToId(char *fontname,SplineFont *sf) {
+static uint16 HashToId(char *fontname,SplineFont *sf,EncMap *map) {
     int low = 128, high = 0x3fff;
     /* A FOND ID should be between these two numbers for roman script (I think) */
     uint32 hash = 0;
-    int i;
+    int i, gid;
     SplineChar *sc;
 
     /* Figure out what language we've got */
@@ -129,15 +129,15 @@ static uint16 HashToId(char *fontname,SplineFont *sf) {
 		low = 0x7200; high = 0x73ff;
 	    }
 	}
-    } else if ( sf->encoding_name->is_tradchinese ) {
+    } else if ( map->enc->is_tradchinese ) {
 	low = 0x4200; high = 0x43ff;
-    } else if ( sf->encoding_name->is_japanese ) {
+    } else if ( map->enc->is_japanese ) {
 	low = 0x4000; high = 0x41ff;
-    } else if ( sf->encoding_name->is_korean ) {
+    } else if ( map->enc->is_korean ) {
 	low = 0x4400; high = 0x45ff;
-    } else if ( sf->encoding_name->is_simplechinese ) {
+    } else if ( map->enc->is_simplechinese ) {
 	low = 0x7200; high = 0x73ff;
-    } else for ( i=0; i<sf->charcnt && i<256; ++i ) if ( (sc = sf->chars[i])!=NULL ) {
+    } else for ( i=0; i<map->enccount && i<256; ++i ) if ( (gid=map->map[i])!=-1 && (sc = sf->glyphs[gid])!=NULL ) {
 	/* Japanese between	0x4000 and 0x41ff */
 	/* Trad Chinese		0x4200 and 0x43ff */
 	/*  Simp Chinese	0x7200 and 0x73ff */
@@ -183,37 +183,42 @@ static uint16 HashToId(char *fontname,SplineFont *sf) {
 return( hash );
 }
 
-static int IsMacMonospaced(SplineFont *sf) {
+static int IsMacMonospaced(SplineFont *sf,EncMap *map) {
     /* Only look at first 256 */
     int i;
     double width = 0x80000000;
 
-    for ( i=0; i<256 && i<sf->charcnt; ++i ) if ( SCWorthOutputting(sf->chars[i]) ) {
-	if ( width == 0x80000000 )
-	    width = sf->chars[i]->width;
-	else if ( sf->chars[i]->width!=width )
+    for ( i=0; i<256 && i<map->enccount; ++i ) {
+	int gid = map->map[i];
+	if ( gid!=-1 && SCWorthOutputting(sf->glyphs[gid]) ) {
+	    if ( width == 0x80000000 )
+		width = sf->glyphs[gid]->width;
+	    else if ( sf->glyphs[gid]->width!=width )
 return( false );
+	}
     }
 return( true );
 }
 
-SplineChar *SFFindExistingCharMac(SplineFont *sf,int unienc) {
-    int i;
+SplineChar *SFFindExistingCharMac(SplineFont *sf,EncMap *map,int unienc) {
+    int i, gid;
 
-    for ( i=0; i<sf->charcnt && i<256; ++i )
-	if ( sf->chars[i]!=NULL && sf->chars[i]->unicodeenc==unienc )
-return( sf->chars[i] );
+    for ( i=0; i<map->enccount && i<256; ++i )
+	if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && sf->glyphs[gid]->unicodeenc==unienc )
+return( sf->glyphs[gid] );
 return( NULL );
 }
 
-static double SFMacWidthMax(SplineFont *sf) {
+static double SFMacWidthMax(SplineFont *sf, EncMap *map) {
     /* Only look at first 256 */
-    int i;
+    int i, gid;
     double width = -1;
 
-    for ( i=0; i<256 && i<sf->charcnt; ++i ) if ( SCWorthOutputting(sf->chars[i]) ) {
-	if ( sf->chars[i]->width>width )
-	    width = sf->chars[i]->width;
+    for ( i=0; i<256 && i<map->enccount; ++i ) {
+	if ( (gid=map->map[i])!=-1 && SCWorthOutputting(sf->glyphs[gid]) ) {
+	    if ( sf->glyphs[gid]->width>width )
+		width = sf->glyphs[gid]->width;
+	}
     }
     if ( width<0 )	/* No chars, or widths the mac doesn't support */
 return( 0 );
@@ -221,15 +226,17 @@ return( 0 );
 return( width );
 }
 
-static int SFMacAnyKerns(SplineFont *sf) {
+static int SFMacAnyKerns(SplineFont *sf, EncMap *map) {
     /* Only look at first 256 */
-    int i, cnt=0;
+    int i, cnt=0, gid;
     KernPair *kp;
 
-    for ( i=0; i<256 && i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	for ( kp=sf->chars[i]->kerns; kp!=NULL; kp=kp->next )
-	    if ( kp->sc->enc<256 )
-		++cnt;
+    for ( i=0; i<256 && i<map->enccount; ++i ) {
+	if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL ) {
+	    for ( kp=sf->glyphs[gid]->kerns; kp!=NULL; kp=kp->next )
+		if ( map->backmap[kp->sc->orig_pos]<256 )
+		    ++cnt;
+	}
     }
 return( cnt );
 }
@@ -345,22 +352,25 @@ static int BDFCCopyBitmaps(uint8 **rows,int offset,BDFChar *bdfc, BDFFont *bdf) 
 return( offset + bdfc->xmax-bdfc->xmin+1 );
 }
 
-static uint32 BDFToNFNT(FILE *res, BDFFont *bdf) {
+static uint32 BDFToNFNT(FILE *res, BDFFont *bdf, EncMap *map) {
     short widths[258], lbearings[258], locs[258]/*, idealwidths[256]*/;
     uint8 **rows = galloc(bdf->pixelsize*sizeof(uint8 *));
     int i, k, width, kernMax=1, descentMax=bdf->descent-1, rectMax=1, widMax=3;
     uint32 rlenpos = ftell(res), end, owloc, owpos;
+    int gid;
 
-    for ( i=width=0; i<256 && i<bdf->charcnt; ++i ) if ( bdf->chars[i]!=NULL ) {
-	width += bdf->chars[i]->xmax+1-bdf->chars[i]->xmin;
-	if ( bdf->chars[i]->width>widMax )
-	    widMax = bdf->chars[i]->width;
-	if ( bdf->chars[i]->xmax+1-bdf->chars[i]->xmin>rectMax )
-	    rectMax = bdf->chars[i]->xmax+1-bdf->chars[i]->xmin;
-	if ( bdf->chars[i]->xmin<kernMax )
-	    kernMax = bdf->chars[i]->xmin;
-	if ( bdf->chars[i]->ymin<-descentMax )
-	    descentMax = -bdf->chars[i]->ymin;
+    for ( i=width=0; i<256 && i<map->enccount; ++i ) {
+	if ( (gid = map->map[i])!=-1 && gid<bdf->glyphcnt && bdf->glyphs[gid]!=NULL ) {
+	    width += bdf->glyphs[gid]->xmax+1-bdf->glyphs[gid]->xmin;
+	    if ( bdf->glyphs[gid]->width>widMax )
+		widMax = bdf->glyphs[gid]->width;
+	    if ( bdf->glyphs[gid]->xmax+1-bdf->glyphs[gid]->xmin>rectMax )
+		rectMax = bdf->glyphs[gid]->xmax+1-bdf->glyphs[gid]->xmin;
+	    if ( bdf->glyphs[gid]->xmin<kernMax )
+		kernMax = bdf->glyphs[gid]->xmin;
+	    if ( bdf->glyphs[gid]->ymin<-descentMax )
+		descentMax = -bdf->glyphs[gid]->ymin;
+	}
     }
     if ( descentMax>bdf->descent ) descentMax = bdf->descent;
     ++width;			/* For the "undefined character */
@@ -368,17 +378,18 @@ static uint32 BDFToNFNT(FILE *res, BDFFont *bdf) {
 	rows[k] = gcalloc((width+7)/8 + 4 , sizeof(uint8));
     for ( i=width=0; i<256 ; ++i ) {
 	locs[i] = width;
-	if ( i>=bdf->charcnt || bdf->chars[i]==NULL || !SCWorthOutputting(bdf->chars[i]->sc) ) {
+	if ( i>=map->enccount || (gid=map->map[i])==-1 || gid>=bdf->glyphcnt || bdf->glyphs[gid]==NULL ||
+		!SCWorthOutputting(bdf->glyphs[gid]->sc) ) {
 	    lbearings[i] = 0xff;
 	    widths[i] = 0xff;
 	    /*idealwidths[i] = 1<<12;		/* 1 em */
 	} else {
-	    lbearings[i] = bdf->chars[i]->xmin-kernMax;
-	    widths[i] = bdf->chars[i]->width<0?0:
-			bdf->chars[i]->width>=256?255:
-			bdf->chars[i]->width;
-	    /*idealwidths[i] = bdf->chars[i]->sc->width*(1<<12)/(bdf->sf->ascent+bdf->sf->descent);*/
-	    width = BDFCCopyBitmaps(rows,width,bdf->chars[i],bdf);
+	    lbearings[i] = bdf->glyphs[gid]->xmin-kernMax;
+	    widths[i] = bdf->glyphs[gid]->width<0?0:
+			bdf->glyphs[gid]->width>=256?255:
+			bdf->glyphs[gid]->width;
+	    /*idealwidths[i] = bdf->glyphs[gid]->sc->width*(1<<12)/(bdf->sf->ascent+bdf->sf->descent);*/
+	    width = BDFCCopyBitmaps(rows,width,bdf->glyphs[gid],bdf);
 	}
     }
     /* Now for the "undefined character", just a simple vertical bar */
@@ -400,7 +411,7 @@ static uint32 BDFToNFNT(FILE *res, BDFFont *bdf) {
 
     /* We've finished the bitmap conversion, now save it... */
     putlong(res,0);		/* Length, to be filled in later */
-    putshort(res,IsMacMonospaced(bdf->sf)?0xb000:0x9000);	/* fontType */
+    putshort(res,IsMacMonospaced(bdf->sf,map)?0xb000:0x9000);	/* fontType */
     putshort(res,0);
     putshort(res,255);
     putshort(res,widMax);
@@ -442,24 +453,25 @@ static uint32 BDFToNFNT(FILE *res, BDFFont *bdf) {
 return(rlenpos);
 }
 
-static uint32 DummyNFNT(FILE *res, BDFFont *bdf) {
+static uint32 DummyNFNT(FILE *res, BDFFont *bdf, EncMap *map) {
     /* This produces a stub NFNT which appears when the real data lives inside */
     /*  an sfnt (truetype) resource. We still need to produce an NFNT to tell */
     /*  the system that the pointsize is available. This NFNT has almost nothing */
     /*  in it, just the initial header, no metrics, no bitmaps */
     int i, width, kernMax=1, descentMax=bdf->descent-1, rectMax=1, widMax=3;
     uint32 rlenpos = ftell(res);
+    int gid;
 
-    for ( i=width=0; i<256 && i<bdf->charcnt; ++i ) if ( bdf->chars[i]!=NULL ) {
-	width += bdf->chars[i]->xmax+1-bdf->chars[i]->xmin;
-	if ( bdf->chars[i]->width>widMax )
-	    widMax = bdf->chars[i]->width;
-	if ( bdf->chars[i]->xmax+1-bdf->chars[i]->xmin>rectMax )
-	    rectMax = bdf->chars[i]->xmax+1-bdf->chars[i]->xmin;
-	if ( bdf->chars[i]->xmin<kernMax )
-	    kernMax = bdf->chars[i]->xmin;
-	if ( bdf->chars[i]->ymin<-descentMax )
-	    descentMax = -bdf->chars[i]->ymin;
+    for ( i=width=0; i<256 && i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && gid<bdf->glyphcnt && bdf->glyphs[gid]!=NULL ) {
+	width += bdf->glyphs[gid]->xmax+1-bdf->glyphs[gid]->xmin;
+	if ( bdf->glyphs[gid]->width>widMax )
+	    widMax = bdf->glyphs[gid]->width;
+	if ( bdf->glyphs[gid]->xmax+1-bdf->glyphs[gid]->xmin>rectMax )
+	    rectMax = bdf->glyphs[gid]->xmax+1-bdf->glyphs[gid]->xmin;
+	if ( bdf->glyphs[gid]->xmin<kernMax )
+	    kernMax = bdf->glyphs[gid]->xmin;
+	if ( bdf->glyphs[gid]->ymin<-descentMax )
+	    descentMax = -bdf->glyphs[gid]->ymin;
     }
     if ( descentMax>bdf->descent ) descentMax = bdf->descent;
 
@@ -481,8 +493,9 @@ static uint32 DummyNFNT(FILE *res, BDFFont *bdf) {
 return(rlenpos);
 }
 
-static struct resource *SFToNFNTs(FILE *res, SplineFont *sf, int32 *sizes) {
-    int i, baseresid = HashToId(sf->fontname,sf);
+static struct resource *SFToNFNTs(FILE *res, SplineFont *sf, int32 *sizes,
+	EncMap *map) {
+    int i, baseresid = HashToId(sf->fontname,sf,map);
     struct resource *resstarts;
     BDFFont *bdf;
 
@@ -500,7 +513,7 @@ static struct resource *SFToNFNTs(FILE *res, SplineFont *sf, int32 *sizes) {
 	if ( bdf==NULL )
     continue;
 	resstarts[i].id = baseresid+bdf->pixelsize;
-	resstarts[i].pos = BDFToNFNT(res,bdf);
+	resstarts[i].pos = BDFToNFNT(res,bdf,map);
 	/* NFNTs seem to have resource flags of 0 */
     }
 return(resstarts);
@@ -541,7 +554,7 @@ static struct resource *SFsToNFNTs(FILE *res, struct sflist *sfs,int baseresid) 
 	    sfi->ids[j] = baseresid;
 	    sfi->bdfs[j] = bdf;
 	    resstarts[cnt+j].id = baseresid++;
-	    resstarts[cnt+j++].pos = BDFToNFNT(res,bdf);
+	    resstarts[cnt+j++].pos = BDFToNFNT(res,bdf,sfi->map);
 	    /* NFNTs seem to have resource flags of 0 */
 	}
 	cnt += j;
@@ -549,7 +562,8 @@ static struct resource *SFsToNFNTs(FILE *res, struct sflist *sfs,int baseresid) 
 return(resstarts);
 }
 
-static struct resource *BuildDummyNFNTlist(FILE *res, SplineFont *sf, int32 *sizes, int baseresid) {
+static struct resource *BuildDummyNFNTlist(FILE *res, SplineFont *sf,
+	int32 *sizes, int baseresid, EncMap *map) {
     int i;
     struct resource *resstarts;
     BDFFont *bdf;
@@ -568,13 +582,14 @@ static struct resource *BuildDummyNFNTlist(FILE *res, SplineFont *sf, int32 *siz
 	if ( bdf==NULL )
     continue;
 	resstarts[i].id = baseresid++;
-	resstarts[i].pos = DummyNFNT(res,bdf);
+	resstarts[i].pos = DummyNFNT(res,bdf,map);
 	/* NFNTs seem to have resource flags of 0 */
     }
 return(resstarts);
 }
 
-static struct resource *BuildDummyNFNTfamilyList(FILE *res, struct sflist *sfs, int baseresid) {
+static struct resource *BuildDummyNFNTfamilyList(FILE *res, struct sflist *sfs,
+	int baseresid) {
     int i,j,cnt;
     struct resource *resstarts;
     BDFFont *bdf;
@@ -607,7 +622,7 @@ static struct resource *BuildDummyNFNTfamilyList(FILE *res, struct sflist *sfs, 
 	    sfi->ids[j] = baseresid;
 	    sfi->bdfs[j] = bdf;
 	    resstarts[cnt+j].id = baseresid++;
-	    resstarts[cnt+j++].pos = DummyNFNT(res,bdf);
+	    resstarts[cnt+j++].pos = DummyNFNT(res,bdf,sfi->map);
 	    /* NFNTs seem to have resource flags of 0 */
 	}
 	cnt += j;
@@ -695,23 +710,25 @@ return( sf->macstyle );
 return( _MacStyleCode(styles,sf,psstylecode));
 }
 
-static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,int32 *sizes) {
+static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,
+	int32 *sizes, EncMap *map) {
     uint32 rlenpos = ftell(res), widoffpos, widoffloc, kernloc, styleloc, end;
     int i,j,k,cnt, strcnt, fontclass, stylecode, glyphenc, geoffset, realstylecode;
+    int gid;
     KernPair *kp;
     DBounds b;
     char *pt;
     /* Fonds are generally marked system heap and sometimes purgeable (resource flags) */
 
     putlong(res,0);			/* Fill in length later */
-    putshort(res,IsMacMonospaced(sf)?0x9000:0x1000);
+    putshort(res,IsMacMonospaced(sf,map)?0x9000:0x1000);
     putshort(res,id);
     putshort(res,0);			/* First character */
     putshort(res,255);			/* Last character */
     putshort(res,(short) ((sf->ascent*(1<<12))/(sf->ascent+sf->descent)));
     putshort(res,-(short) ((sf->descent*(1<<12))/(sf->ascent+sf->descent)));
     putshort(res,(short) ((sf->pfminfo.linegap*(1<<12))/(sf->ascent+sf->descent)));
-    putshort(res,(short) ((SFMacWidthMax(sf)*(1<<12))/(sf->ascent+sf->descent)));
+    putshort(res,(short) ((SFMacWidthMax(sf,map)*(1<<12))/(sf->ascent+sf->descent)));
     widoffpos = ftell(res);
     putlong(res,0);			/* Fill in width offset later */
     putlong(res,0);			/* Fill in kern offset later */
@@ -759,25 +776,27 @@ static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,int32 *sizes
     putshort(res,1-1);			/* One style in the width table too */
     putshort(res,stylecode);
     for ( k=0; k<=256; ++k ) {
-	if ( k>=sf->charcnt || k==256 || sf->chars[k]==NULL )
+	if ( k>=map->enccount || k==256 || (gid=map->map[k])==-1 || sf->glyphs[gid]==NULL )
 	    putshort(res,1<<12);	/* 1 em is default size */
 	else
-	    putshort(res,sf->chars[k]->width*(1<<12)/(sf->ascent+sf->descent));
+	    putshort(res,sf->glyphs[gid]->width*(1<<12)/(sf->ascent+sf->descent));
     }
 
     kernloc = 0;
-    if (( cnt = SFMacAnyKerns(sf))>0 ) {
+    if (( cnt = SFMacAnyKerns(sf,map))>0 ) {
 	kernloc = ftell(res);
 	putshort(res,1-1);		/* One style in the width table too */
 	putshort(res,stylecode);	/* style */
 	putshort(res,cnt);		/* Count of kerning pairs */
-	for ( k=0; k<256 && k<sf->charcnt; ++k ) if ( sf->chars[k]!=NULL ) {
-	    for ( kp=sf->chars[k]->kerns; kp!=NULL; kp=kp->next )
-		if ( kp->sc->enc<256 ) {
-		    putc(k,res);
-		    putc(kp->sc->enc,res);
-		    putshort(res,kp->off*(1<<12)/(sf->ascent+sf->descent));
-		}
+	for ( k=0; k<256 && k<map->enccount; ++k ) {
+	    if ( (gid=map->map[k])!=-1 && sf->glyphs[gid]!=NULL ) {
+		for ( kp=sf->glyphs[gid]->kerns; kp!=NULL; kp=kp->next )
+		    if ( map->backmap[kp->sc->orig_pos]<256 ) {
+			putc(k,res);
+			putc(map->backmap[kp->sc->orig_pos],res);
+			putshort(res,kp->off*(1<<12)/(sf->ascent+sf->descent));
+		    }
+	    }
 	}
     }
 
@@ -838,9 +857,9 @@ static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,int32 *sizes
     /* GWW: Hmm. ATM refuses to use postscript fonts that have */
     /*  glyph encoding tables. Printer drivers use them ok. ATM will only */
     /*  work on fonts with mac roman encodings */
-    if ( strmatch(sf->encoding_name->enc_name,"mac")!=0 &&
-	    strmatch(sf->encoding_name->enc_name,"macintosh")!=0 &&
-	    strmatch(sf->encoding_name->enc_name,"macroman")!=0 ) {
+    if ( strmatch(map->enc->enc_name,"mac")!=0 &&
+	    strmatch(map->enc->enc_name,"macintosh")!=0 &&
+	    strmatch(map->enc->enc_name,"macroman")!=0 ) {
 #if defined(FONTFORGE_CONFIG_GTK)
 	if ( !dottf ) gwwv_post_notice(_("The generated font won't work with ATM"),_("ATM requires that fonts be encoded with the Macintosh Latin encoding. This postscript font will print fine, but only the bitmap versions will be displayed on the screen"));
 #else
@@ -991,6 +1010,7 @@ static void SFListListFree(struct sflistlist *sfsl) {
 static uint32 SFsToFOND(FILE *res,struct sflist *sfs,uint32 id,int format,int bf) {
     uint32 rlenpos = ftell(res), widoffpos, widoffloc, kernloc, styleloc, end;
     int i,j,k,cnt, scnt, kcnt, pscnt, strcnt, fontclass, glyphenc, geoffset;
+    int gid;
     int size;
     uint16 psstyle, stylecode;
     int exact, famlen, has_hyphen;
@@ -1018,14 +1038,14 @@ static uint32 SFsToFOND(FILE *res,struct sflist *sfs,uint32 id,int format,int bf
     sf = faces[0]->sf;
     
     putlong(res,0);			/* Fill in length later */
-    putshort(res,IsMacMonospaced(sf)?0x9000:0x1000);
+    putshort(res,IsMacMonospaced(sf,faces[0]->map)?0x9000:0x1000);
     putshort(res,id);
     putshort(res,0);			/* First character */
     putshort(res,255);			/* Last character */
     putshort(res,(short) ((sf->ascent*(1<<12))/(sf->ascent+sf->descent)));
     putshort(res,-(short) ((sf->descent*(1<<12))/(sf->ascent+sf->descent)));
     putshort(res,(short) ((sf->pfminfo.linegap*(1<<12))/(sf->ascent+sf->descent)));
-    putshort(res,(short) ((SFMacWidthMax(sf)*(1<<12))/(sf->ascent+sf->descent)));
+    putshort(res,(short) ((SFMacWidthMax(sf,faces[0]->map)*(1<<12))/(sf->ascent+sf->descent)));
     widoffpos = ftell(res);
     putlong(res,0);			/* Fill in width offset later */
     putlong(res,0);			/* Fill in kern offset later */
@@ -1041,7 +1061,7 @@ static uint32 SFsToFOND(FILE *res,struct sflist *sfs,uint32 id,int format,int bf
 	if ( faces[i]->id!=0 ) ++cnt;
 	if ( faces[i]->ids!=NULL )
 	    for ( j=0; faces[i]->ids[j]!=0; ++j ) ++cnt;
-	if ( SFMacAnyKerns(faces[i]->sf)>0 )
+	if ( SFMacAnyKerns(faces[i]->sf,faces[i]->map)>0 )
 	    ++kcnt;
     }
     putshort(res,cnt-1);		/* Number of faces */
@@ -1085,10 +1105,11 @@ static uint32 SFsToFOND(FILE *res,struct sflist *sfs,uint32 id,int format,int bf
     for ( i=0; i<96; ++i ) if ( faces[i]!=NULL ) {
 	putshort(res,i);
 	for ( k=0; k<=257; ++k ) {
-	    if ( k>=faces[i]->sf->charcnt || k>=256 || faces[i]->sf->chars[k]==NULL )
+	    if ( k>=faces[i]->map->enccount || k>=256 ||
+		    (gid=faces[i]->map->map[k])==-1 || faces[i]->sf->glyphs[gid]==NULL )
 		putshort(res,1<<12);	/* 1 em is default size */
 	    else
-		putshort(res,faces[i]->sf->chars[k]->width*(1<<12)/(faces[i]->sf->ascent+faces[i]->sf->descent));
+		putshort(res,faces[i]->sf->glyphs[gid]->width*(1<<12)/(faces[i]->sf->ascent+faces[i]->sf->descent));
 	}
     }
 
@@ -1096,16 +1117,18 @@ static uint32 SFsToFOND(FILE *res,struct sflist *sfs,uint32 id,int format,int bf
     if ( kcnt>0 ) {
 	kernloc = ftell(res);
 	putshort(res,kcnt-1);		/* Number of styles with kern pairs */
-	for ( i=0; i<96; ++i ) if ( faces[i]!=NULL &&( cnt = SFMacAnyKerns(sf))>0 ) {
+	for ( i=0; i<96; ++i ) if ( faces[i]!=NULL && ( cnt = SFMacAnyKerns(faces[i]->sf,faces[i]->map))>0 ) {
 	    putshort(res,i);		/* style */
 	    putshort(res,cnt);		/* Count of kerning pairs */
-	    for ( k=0; k<256 && k<faces[i]->sf->charcnt; ++k ) if ( faces[i]->sf->chars[k]!=NULL ) {
-		for ( kp=faces[i]->sf->chars[k]->kerns; kp!=NULL; kp=kp->next )
-		    if ( kp->sc->enc<256 ) {
-			putc(k,res);
-			putc(kp->sc->enc,res);
-			putshort(res,kp->off*(1<<12)/(sf->ascent+sf->descent));
-		    }
+	    for ( k=0; k<256 && k<faces[i]->map->enccount; ++k ) {
+		if ( (gid=faces[i]->map->map[k])!=-1 && faces[i]->sf->glyphs[gid]!=NULL ) {
+		    for ( kp=faces[i]->sf->glyphs[gid]->kerns; kp!=NULL; kp=kp->next )
+			if ( faces[i]->map->backmap[kp->sc->orig_pos]<256 ) {
+			    putc(k,res);
+			    putc(faces[i]->map->backmap[kp->sc->orig_pos],res);
+			    putshort(res,kp->off*(1<<12)/(sf->ascent+sf->descent));
+			}
+		}
 	    }
 	}
     }
@@ -1188,9 +1211,9 @@ static uint32 SFsToFOND(FILE *res,struct sflist *sfs,uint32 id,int format,int bf
     /* GWW: Hmm. ATM refuses to use postscript fonts that have */
     /*  glyph encoding tables. Printer drivers use them ok. ATM will only */
     /*  work on fonts with mac roman encodings */
-    if ( strmatch(psfaces[0]->sf->encoding_name->enc_name,"mac")!=0 &&
-	    strmatch(psfaces[0]->sf->encoding_name->enc_name,"macintosh")!=0 &&
-	    strmatch(psfaces[0]->sf->encoding_name->enc_name,"macroman")!=0 ) {
+    if ( strmatch(psfaces[0]->map->enc->enc_name,"mac")!=0 &&
+	    strmatch(psfaces[0]->map->enc->enc_name,"macintosh")!=0 &&
+	    strmatch(psfaces[0]->map->enc->enc_name,"macroman")!=0 ) {
 	if ( format==ff_pfbmacbin )
 #if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_notice(_("The generated font won't work with ATM"),_("ATM requires that fonts be encoded with the Macintosh Latin encoding. This postscript font will print fine, but only the bitmap versions will be displayed on the screen"));
@@ -1512,7 +1535,8 @@ static void MakeMacPSName(char buffer[63],SplineFont *sf) {
     *pt = '\0';
 }
 
-int WriteMacPSFont(char *filename,SplineFont *sf,enum fontformat format,int flags) {
+int WriteMacPSFont(char *filename,SplineFont *sf,enum fontformat format,
+	int flags,EncMap *map) {
     FILE *res, *temppfb;
     int ret = 1;
     struct resourcetype resources[2];
@@ -1542,7 +1566,7 @@ return( 0 );
     if ( islower(*sf->familyname)) { *sf->familyname = toupper(*sf->familyname); lcfam = true; }
     MakeMacPSName(buffer,sf);
 
-    ret = _WritePSFont(temppfb,sf,ff_pfb,flags);
+    ret = _WritePSFont(temppfb,sf,ff_pfb,flags,map);
     if ( lcfn ) *sf->fontname = tolower(*sf->fontname);
     if ( lcfam ) *sf->familyname = tolower(*sf->familyname);
     if ( ret==0 || ferror(temppfb) ) {
@@ -1594,7 +1618,7 @@ return( ret );
 }
 
 int WriteMacTTFFont(char *filename,SplineFont *sf,enum fontformat format,
-	int32 *bsizes, enum bitmapformat bf,int flags) {
+	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *map) {
     FILE *res, *tempttf;
     int ret = 1, r;
     struct resourcetype resources[4];
@@ -1607,7 +1631,7 @@ return( 0 );
 
     if ( _WriteTTFFont(tempttf,sf,format==ff_none?ff_none:
 				  format==ff_ttfmacbin?ff_ttf:
-			          format-1,bsizes,bf,flags)==0 || ferror(tempttf) ) {
+			          format-1,bsizes,bf,flags,map)==0 || ferror(tempttf) ) {
 	fclose(tempttf);
 return( 0 );
     }
@@ -1635,15 +1659,15 @@ return( 0 );
     resources[r].tag = CHR('s','f','n','t');
     resources[r++].res = rlist[0];
     rlist[0][0].pos = TTFToResource(res,tempttf);
-    rlist[0][0].id = HashToId(sf->fontname,sf);
+    rlist[0][0].id = HashToId(sf->fontname,sf,map);
     rlist[0][0].flags = 0x00;	/* sfnts generally have resource flags 0x20 */
     if ( bsizes!=NULL ) {
 	resources[r].tag = CHR('N','F','N','T');
-	resources[r++].res = dummynfnts = BuildDummyNFNTlist(res,sf,bsizes,rlist[0][0].id);
+	resources[r++].res = dummynfnts = BuildDummyNFNTlist(res,sf,bsizes,rlist[0][0].id,map);
     }
     resources[r].tag = CHR('F','O','N','D');
     resources[r].res = rlist[1];
-    rlist[1][0].pos = SFToFOND(res,sf,rlist[0][0].id,true,bsizes);
+    rlist[1][0].pos = SFToFOND(res,sf,rlist[0][0].id,true,bsizes,map);
     rlist[1][0].flags = 0x00;	/* I've seen FONDs with resource flags 0, 0x20, 0x60 */
     rlist[1][0].id = rlist[0][0].id;
     rlist[1][0].name = sf->fondname ? sf->fondname : sf->familyname;
@@ -1665,7 +1689,8 @@ return( 0 );
 return( ret );
 }
 
-int WriteMacBitmaps(char *filename,SplineFont *sf, int32 *sizes, int is_dfont) {
+int WriteMacBitmaps(char *filename,SplineFont *sf, int32 *sizes, int is_dfont,
+	EncMap *map) {
     FILE *res;
     int ret = 1;
     struct resourcetype resources[3];
@@ -1707,11 +1732,11 @@ return( 0 );
     memset(resources,'\0',sizeof(resources));
 
     resources[0].tag = CHR('N','F','N','T');
-    resources[0].res = SFToNFNTs(res,sf,sizes);
+    resources[0].res = SFToNFNTs(res,sf,sizes,map);
     resources[1].tag = CHR('F','O','N','D');
     resources[1].res = rlist[1];
-    rlist[1][0].id = HashToId(sf->fontname,sf);
-    rlist[1][0].pos = SFToFOND(res,sf,rlist[1][0].id,false,sizes);
+    rlist[1][0].id = HashToId(sf->fontname,sf,map);
+    rlist[1][0].pos = SFToFOND(res,sf,rlist[1][0].id,false,sizes,map);
     rlist[1][0].name = sf->fondname ? sf->fondname : sf->familyname;
     DumpResourceMap(res,resources,is_dfont?ff_ttfdfont:ff_ttfmacbin);
 
@@ -1738,7 +1763,7 @@ return( ret );
 */
 
 int WriteMacFamily(char *filename,struct sflist *sfs,enum fontformat format,
-	enum bitmapformat bf,int flags) {
+	enum bitmapformat bf,int flags, EncMap *map) {
     FILE *res;
     int ret = 1, r, i;
     struct resourcetype resources[4];
@@ -1777,7 +1802,7 @@ int WriteMacFamily(char *filename,struct sflist *sfs,enum fontformat format,
 		strcpy(pt-1,".fam.bin");
 #endif
 	    }
-	    if ( WriteMacPSFont(tempname,sfi->sf,format,flags)==0 )
+	    if ( WriteMacPSFont(tempname,sfi->sf,format,flags,sfi->map)==0 )
 return( 0 );
 	    free(tempname);
 	}
@@ -1787,7 +1812,7 @@ return( 0 );
 	    if ( sfi->tempttf==NULL ||
 		    _WriteTTFFont(sfi->tempttf,sfi->sf,format==ff_none?ff_none:
 					  format==ff_ttfmacbin?ff_ttf:
-					  format-1,sfi->sizes,bf,flags)==0 ||
+					  format-1,sfi->sizes,bf,flags,sfi->map)==0 ||
 		    ferror(sfi->tempttf) ) {
 		for ( sfsub=sfs; sfsub!=sfi; sfsub=sfsub->next )
 		    fclose( sfsub->tempttf );
@@ -1815,7 +1840,7 @@ return( 0 );
 	WriteDummyMacHeaders(res);
     memset(resources,'\0',sizeof(resources));
 
-    id = HashToId(sfs->sf->fontname,sfs->sf);
+    id = HashToId(sfs->sf->fontname,sfs->sf,sfs->map);
 
     r = 0;
     if ( format==ff_ttfmacbin || format==ff_ttfdfont || format==ff_otfdfont ||
@@ -1883,6 +1908,7 @@ void SfListFree(struct sflist *sfs) {
     while ( sfs!=NULL ) {
 	sfi = sfs->next;
 	free(sfs->sizes);
+	EncMapFree(sfs->map);
 	chunkfree(sfs,sizeof(struct sflist));
 	sfs = sfi;
     }
@@ -2367,7 +2393,7 @@ static FOND *BuildFondList(FILE *f,long rlistpos,int subcnt,long rdata_pos,
 return( head );
 }
 
-static BDFChar *NFNTCvtBitmap(struct MacFontRec *font,int index,SplineFont *sf) {
+static BDFChar *NFNTCvtBitmap(struct MacFontRec *font,int index,SplineFont *sf,int gid) {
     BDFChar *bdfc;
     int i,j, bits, bite, bit;
 
@@ -2381,8 +2407,8 @@ static BDFChar *NFNTCvtBitmap(struct MacFontRec *font,int index,SplineFont *sf) 
     bdfc->width = font->offsetWidths[index]&0xff;
     bdfc->bytes_per_line = ((bdfc->xmax-bdfc->xmin)>>3) + 1;
     bdfc->bitmap = gcalloc(bdfc->bytes_per_line*font->fRectHeight,sizeof(uint8));
-    bdfc->enc = index + font->firstChar;
-    bdfc->sc = sf->chars[bdfc->enc];
+    bdfc->orig_pos = gid;
+    bdfc->sc = sf->glyphs[gid];
 
     bits = font->locs[index]; bite = font->locs[index+1];
     for ( i=0; i<font->fRectHeight; ++i ) {
@@ -2401,9 +2427,10 @@ static void LoadNFNT(FILE *f,long offset, SplineFont *sf, int size) {
     long here = ftell(f);
     long baseow;
     long ow;
-    int i;
+    int i,gid;
     struct MacFontRec font;
     BDFFont *bdf;
+    SplineChar *sc;
 
     offset += 4;		/* skip over the length */
     fseek(f,offset,SEEK_SET);
@@ -2447,19 +2474,25 @@ return;
     bdf->sf = sf;
     bdf->next = sf->bitmaps;
     sf->bitmaps = bdf;
-    bdf->charcnt = sf->charcnt;
+    bdf->glyphcnt = bdf->glyphmax = sf->glyphcnt;
     bdf->pixelsize = font.ascent+font.descent;
-    bdf->chars = gcalloc(sf->charcnt,sizeof(BDFChar *));
+    bdf->glyphs = gcalloc(sf->glyphcnt,sizeof(BDFChar *));
     bdf->ascent = font.ascent;
     bdf->descent = font.descent;
-    bdf->encoding_name = sf->encoding_name;
     bdf->res = 72;
-    for ( i=font.firstChar; i<=font.lastChar; ++i ) {
-	SFMakeChar(sf,i);
-	bdf->chars[i] = NFNTCvtBitmap(&font,i-font.firstChar,sf);
-	if ( sf->chars[i]!=NULL && !sf->chars[i]->widthset && bdf->chars[i]!=NULL ) {
-	    sf->chars[i]->width = bdf->chars[i]->width*(sf->ascent+sf->descent)/bdf->pixelsize;
-	    sf->chars[i]->widthset = true;
+    for ( i=font.firstChar; i<=font.lastChar+1; ++i ) {
+	if ( i!=font.lastChar+1 )
+	    sc = SFMakeChar(sf,sf->map,i);
+	else {
+	    sc = SFGetChar(sf,-1,".notdef");
+	    if ( sc==NULL )
+    break;
+	}
+	gid = sc->orig_pos;
+	bdf->glyphs[gid] = NFNTCvtBitmap(&font,i-font.firstChar,sf,gid);
+	if ( !sf->glyphs[gid]->widthset ) {
+	    sf->glyphs[gid]->width = bdf->glyphs[gid]->width*(sf->ascent+sf->descent)/bdf->pixelsize;
+	    sf->glyphs[gid]->widthset = true;
 	}
     }
 
@@ -2617,6 +2650,7 @@ static SplineFont *SearchBitmapResources(FILE *f,long rlistpos,int subcnt,long r
     int style;
     SplineFont *sf;
     int find_id;
+    SplineChar *sc;
 
     fond = PickFOND(fondlist,filename,&name,&style);
     if ( fond==NULL )
@@ -2633,7 +2667,7 @@ return( NULL );
 	}
     }
 
-    sf = SplineFontBlank(FindOrMakeEncoding("mac"),256);
+    sf = SplineFontBlank(257);
     free(sf->fontname); sf->fontname = name;
     free(sf->familyname); sf->familyname = copy(fond->fondname);
     sf->fondname = copy(fond->fondname);
@@ -2645,13 +2679,23 @@ return( NULL );
     free(sf->copyright); sf->copyright = NULL;
     free(sf->comments); sf->comments = NULL;
 
+    sf->map = EncMapNew(257,257,FindOrMakeEncoding("mac"));
+
     for ( i=0; i<fond->stylewidthcnt; ++i ) {
 	if ( fond->stylewidths[i].style == style ) {
 	    short *widths = fond->stylewidths[i].widthtab;
 	    for ( j=fond->first; j<=fond->last; ++j ) {
-		sf->chars[j] = SFMakeChar(sf,j);
-		sf->chars[j]->width = ((widths[j-fond->first]*1000L+(1<<11))>>12);
+		sc = SFMakeChar(sf,sf->map,j);
+		sc->width = ((widths[j-fond->first]*1000L+(1<<11))>>12);
+		sc->widthset = true;
 	    }
+	    sc = SplineCharCreate();
+	    sc->parent = sf;
+	    sc->orig_pos = sf->glyphcnt;
+	    sf->glyphs[sf->glyphcnt++] = sc;
+	    sc->name = copy(".notdef");
+	    sc->width = (widths[fond->last+1-fond->first]*1000L+(1<<11))>>12;
+	    sc->widthset = true;
 	}
     }
 
@@ -2678,7 +2722,7 @@ return( sf );
 }
 
 /* Look for kerning info and merge it into the currently existing font "into" */
-static SplineFont *FindFamilyStyleKerns(SplineFont *into,FOND *fondlist,char *filename) {
+static SplineFont *FindFamilyStyleKerns(SplineFont *into,EncMap *map,FOND *fondlist,char *filename) {
     char *name;
     int style;
     FOND *fond;
@@ -2702,8 +2746,8 @@ return( NULL );
 	ch1 = fond->stylekerns[i].kerns[j].ch1;
 	ch2 = fond->stylekerns[i].kerns[j].ch2;
 	offset = (fond->stylekerns[i].kerns[j].offset*(into->ascent+into->descent)+(1<<11))>>12;
-	sc1 = SFMakeChar(into,ch1);
-	sc2 = SFMakeChar(into,ch2);
+	sc1 = SFMakeChar(into,map,ch1);
+	sc2 = SFMakeChar(into,map,ch2);
 	for ( kp=sc1->kerns; kp!=NULL; kp=kp->next )
 	    if ( kp->sc==sc2 )
 	break;
@@ -2753,7 +2797,7 @@ return( sf );
 }
 
 static SplineFont *IsResourceFork(FILE *f, long offset,char *filename,int flags,
-	SplineFont *into) {
+	SplineFont *into,EncMap *map) {
     /* If it is a good resource fork then the first 16 bytes are repeated */
     /*  at the location specified in bytes 4-7 */
     /* We include an offset because if we are looking at a mac binary file */
@@ -2829,7 +2873,7 @@ return( NULL );
     if ( flags&ttf_onlykerns ) {		/* For kerns */
 	if ( fond_subcnt!=0 )
 	    fondlist = BuildFondList(f,fond_pos,fond_subcnt,rdata_pos,name_list,flags);
-	into = FindFamilyStyleKerns(into,fondlist,filename);
+	into = FindFamilyStyleKerns(into,map,fondlist,filename);
 	FondListFree(fondlist);
 return( into );
     }
@@ -2851,7 +2895,7 @@ return( (SplineFont *) -1 );	/* It's a valid resource file, but just has no font
 }
 
 #if __Mac
-static SplineFont *HasResourceFork(char *filename,int flags,SplineFont *into) {
+static SplineFont *HasResourceFork(char *filename,int flags,SplineFont *into,EncMap *map) {
     /* If we're on a mac, we can try to see if we've got a real resource fork */
     /* (if we do, copy it into a temporary data file and then manipulate that)*/
     FSRef ref;
@@ -2894,13 +2938,13 @@ return( NULL );
     free(buf);
     FSClose(res);
     rewind(temp);
-    ret = IsResourceFork(temp,0,filename,flags,into);
+    ret = IsResourceFork(temp,0,filename,flags,into,map);
     fclose(temp);
 return( ret );
 }
 #endif
 
-static SplineFont *IsResourceInBinary(FILE *f,char *filename,int flags,SplineFont *into) {
+static SplineFont *IsResourceInBinary(FILE *f,char *filename,int flags,SplineFont *into,EncMap *map) {
     unsigned char header[128];
     unsigned long offset, dlen, rlen;
 
@@ -2923,7 +2967,7 @@ return( NULL );
 		(header[0]==0 && header[1]==1 && header[2]==0 && header[3]==0))
 return( MightBeTrueType(f,pos,dlen,flags));
     }
-return( IsResourceFork(f,offset,filename,flags,into));
+return( IsResourceFork(f,offset,filename,flags,into,map));
 }
 
 static int lastch=0, repeat = 0;
@@ -2948,7 +2992,7 @@ static void outchr(FILE *binary, int ch) {
     }
 }
 
-static SplineFont *IsResourceInHex(FILE *f,char *filename,int flags,SplineFont *into) {
+static SplineFont *IsResourceInHex(FILE *f,char *filename,int flags,SplineFont *into,EncMap *map) {
     /* convert file from 6bit to 8bit */
     /* interesting data is enclosed between two colons */
     FILE *binary = tmpfile();
@@ -3026,13 +3070,13 @@ return( ret );
 return( NULL );
     }
 
-    ret = IsResourceFork(binary,ftell(binary)+dlen+2,filename,flags,into);
+    ret = IsResourceFork(binary,ftell(binary)+dlen+2,filename,flags,into,map);
 
     fclose(binary);
 return( ret );
 }
 
-static SplineFont *IsResourceInFile(char *filename,int flags,SplineFont *into) {
+static SplineFont *IsResourceInFile(char *filename,int flags,SplineFont *into,EncMap *map) {
     FILE *f;
     char *spt, *pt;
     SplineFont *sf;
@@ -3052,33 +3096,33 @@ return( NULL );
     pt = strrchr(spt,'.');
     if ( pt!=NULL && (pt[1]=='b' || pt[1]=='B') && (pt[2]=='i' || pt[2]=='I') &&
 	    (pt[3]=='n' || pt[3]=='N') && (pt[4]=='\0' || pt[4]=='(') ) {
-	if ( (sf = IsResourceInBinary(f,filename,flags,into))) {
+	if ( (sf = IsResourceInBinary(f,filename,flags,into,map))) {
 	    fclose(f);
 return( sf );
 	}
     } else if ( pt!=NULL && (pt[1]=='h' || pt[1]=='H') && (pt[2]=='q' || pt[2]=='Q') &&
 	    (pt[3]=='x' || pt[3]=='X') && (pt[4]=='\0' || pt[4]=='(')) {
-	if ( (sf = IsResourceInHex(f,filename,flags,into))) {
+	if ( (sf = IsResourceInHex(f,filename,flags,into,map))) {
 	    fclose(f);
 return( sf );
 	}
     }
 
-    sf = IsResourceFork(f,0,filename,flags,into);
+    sf = IsResourceFork(f,0,filename,flags,into,map);
     fclose(f);
 #if __Mac
     if ( sf==NULL )
-	sf = HasResourceFork(filename,flags,into);
+	sf = HasResourceFork(filename,flags,into,map);
 #endif
 return( sf );
 }
 
-static SplineFont *FindResourceFile(char *filename,int flags,SplineFont *into) {
+static SplineFont *FindResourceFile(char *filename,int flags,SplineFont *into,EncMap *map) {
     char *spt, *pt, *dpt;
     char buffer[1400];
     SplineFont *sf;
 
-    if ( (sf = IsResourceInFile(filename,flags,into)))
+    if ( (sf = IsResourceInFile(filename,flags,into,map)))
 return( sf );
 
     /* Well, look in the resource fork directory (if it exists), the resource */
@@ -3089,7 +3133,7 @@ return( sf );
     else { ++spt; pt = filename + (spt-buffer); }
     strcpy(spt,"resource.frk/");
     strcat(spt,pt);
-    if ( (sf=IsResourceInFile(buffer,flags,into)))
+    if ( (sf=IsResourceInFile(buffer,flags,into,map)))
 return( sf );
 
     /* however the resource fork does not appear to do long names properly */
@@ -3110,11 +3154,11 @@ return( sf );
 	*dpt++ = '1';
 	strcpy(dpt,exten);
     }
-return( IsResourceInFile(buffer,flags,into));
+return( IsResourceInFile(buffer,flags,into,map));
 }
 
 SplineFont *SFReadMacBinary(char *filename,int flags) {
-    SplineFont *sf = FindResourceFile(filename,flags,NULL);
+    SplineFont *sf = FindResourceFile(filename,flags,NULL,NULL);
 
     if ( sf==NULL )
 	fprintf( stderr, "Couldn't find a font file named %s\n", filename );
@@ -3125,13 +3169,13 @@ SplineFont *SFReadMacBinary(char *filename,int flags) {
 return( sf );
 }
 
-int LoadKerningDataFromMacFOND(SplineFont *sf, char *filename) {
-    if ( FindResourceFile(filename,ttf_onlykerns,sf)==NULL )
+int LoadKerningDataFromMacFOND(SplineFont *sf, char *filename,EncMap *map) {
+    if ( FindResourceFile(filename,ttf_onlykerns,sf,map)==NULL )
 return ( false );
 
 return( true );
 }
 
 char **NamesReadMacBinary(char *filename) {
-return( (char **) FindResourceFile(filename,ttf_onlynames,NULL));
+return( (char **) FindResourceFile(filename,ttf_onlynames,NULL,NULL));
 }

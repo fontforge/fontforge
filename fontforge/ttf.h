@@ -94,7 +94,7 @@ struct ttfinfo {
     real strokewidth;
     int fstype;
     struct psdict *private;	/* Only for open type cff fonts */
-    Encoding *encoding_name;
+    EncMap *map;
     enum uni_interp uni_interp;
     struct pfminfo pfminfo;
     int dupnamestate;
@@ -189,7 +189,6 @@ struct ttfinfo {
     uint32 prep_start, prep_len;
     uint32 fpgm_start, fpgm_len;
 
-    struct dup *dups;
     unsigned int one_of_many: 1;	/* A TTCF file, or a opentype font with multiple fonts */
     unsigned int obscomplain: 1;	/* We've complained about obsolete format 3 in EBDT table */
     unsigned int cmpcomplain: 1;	/* We've complained about compressed format 4 in EBDT */
@@ -476,6 +475,8 @@ struct glyphinfo {
     unsigned int has_instrs: 1;
     SplineFont *sf;
     int32 *pointcounts;
+    int *bygid;			/* glyph list */
+    int gcnt;
 };
 
 struct vorg {
@@ -609,6 +610,8 @@ struct alltabs {
 	/* tables to have all these scripts */
     int script_cnt;
     uint32 *scripts;
+    SplineFont *sf;
+    EncMap *map;
 };
 
 struct subhead { uint16 first, cnt, delta, rangeoff; };	/* a sub header in 8/16 cmap table */
@@ -661,12 +664,12 @@ extern int SLIHasDefault(SplineFont *sf,int sli);
 extern int FPSTisMacable(SplineFont *sf, FPST *fpst, int checktag);
 extern uint32 MacFeatureToOTTag(int featureType,int featureSetting);
 extern int OTTagToMacFeature(uint32 tag, int *featureType,int *featureSetting);
-extern uint16 *props_array(SplineFont *sf,int numGlyphs);
+extern uint16 *props_array(SplineFont *sf,struct glyphinfo *gi);
 extern int haslrbounds(SplineChar *sc, PST **left, PST **right);
 
     /* Apple variation tables */
-extern int ContourPtNumMatch(MMSet *mm, int enc);
-extern int16 **SCFindDeltas(MMSet *mm, int enc, int *_ptcnt);
+extern int ContourPtNumMatch(MMSet *mm, int gid);
+extern int16 **SCFindDeltas(MMSet *mm, int gid, int *_ptcnt);
 extern int16 **CvtFindDeltas(MMSet *mm, int *_ptcnt);
 extern void ttf_dumpvariations(struct alltabs *at, SplineFont *sf);
 
@@ -694,10 +697,12 @@ extern SplineChar **SFGlyphsFromNames(SplineFont *sf,char *names);
 
 
 extern void AnchorClassOrder(SplineFont *sf);
-extern SplineChar **EntryExitDecompose(SplineFont *sf,AnchorClass *ac);
+extern SplineChar **EntryExitDecompose(SplineFont *sf,AnchorClass *ac,
+	struct glyphinfo *gi);
 extern void AnchorClassDecompose(SplineFont *sf,AnchorClass *_ac, int classcnt, int *subcnts,
 	SplineChar ***marks,SplineChar ***base,
-	SplineChar ***lig,SplineChar ***mkmk);
+	SplineChar ***lig,SplineChar ***mkmk,
+	struct glyphinfo *gi);
 
 
     /* Non-standard tables */
