@@ -76,7 +76,7 @@ extern GImage GIcon_Stopped, GIcon_Stop;
 extern GWindow logo_icon;
 
 extern GTextInfo encodingtypes[];
-extern GTextInfo *EncodingTypesFindEnc(GTextInfo *encodingtypes, int compact, Encoding *enc);
+extern GTextInfo *EncodingTypesFindEnc(GTextInfo *encodingtypes, Encoding *enc);
 extern Encoding *ParseEncodingNameFromList(GGadget *listfield);
 extern GTextInfo *GetEncodingTypes(void);
 */
@@ -146,7 +146,7 @@ extern GImage GIcon_sel2ptr, GIcon_rightpointer, GIcon_angle, GIcon_distance,
 	GIcon_selectedpoint, GIcon_mag;
 
 extern GTextInfo encodingtypes[];
-extern GTextInfo *EncodingTypesFindEnc(GTextInfo *encodingtypes, int compact, Encoding *enc);
+extern GTextInfo *EncodingTypesFindEnc(GTextInfo *encodingtypes, Encoding *enc);
 extern Encoding *ParseEncodingNameFromList(GGadget *listfield);
 extern GTextInfo *GetEncodingTypes(void);
 

@@ -1786,7 +1786,7 @@ void DoPrefs(void) {
 	      case pr_encoding:
 		pgcd[gc].gd.u.list = GetEncodingTypes();
 		pgcd[gc].gd.label = EncodingTypesFindEnc(pgcd[gc].gd.u.list,
-			false,*(Encoding **) pl->val);
+			*(Encoding **) pl->val);
 		for ( ii=0; pgcd[gc].gd.u.list[ii].text!=NULL ||pgcd[gc].gd.u.list[ii].line; ++ii )
 		    if ( pgcd[gc].gd.u.list[ii].userdata!=NULL &&
 			    (strcmp(pgcd[gc].gd.u.list[ii].userdata,"Compacted")==0 ||

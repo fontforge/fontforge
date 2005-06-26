@@ -2736,8 +2736,8 @@ GMenuItem *GetEncodingMenu(void (*func)(GWindow,GMenuItem *,GEvent *),
 	if ( !mi[i].ti.line ) {
 	    mi[i].ti.text = u_copy(GStringGetResource((intpt) (mi[i].ti.text),NULL));
 	    mi[i].ti.checkable = true;
-	    if ( uc_strmatch(mi[i].ti.text,current->enc_name)==0 ||
-		    (current->iconv_name!=NULL && uc_strmatch(mi[i].ti.text,current->iconv_name)==0))
+	    if ( strmatch(mi[i].ti.userdata,current->enc_name)==0 ||
+		    (current->iconv_name!=NULL && strmatch(mi[i].ti.userdata,current->iconv_name)==0))
 		mi[i].ti.checked = true;
 	}
 	mi[i].ti.text_in_resource = false;
@@ -2794,7 +2794,7 @@ GTextInfo *GetEncodingTypes(void) {
 return( ti );
 }
 
-GTextInfo *EncodingTypesFindEnc(GTextInfo *encodingtypes, int compacted, Encoding *enc) {
+GTextInfo *EncodingTypesFindEnc(GTextInfo *encodingtypes, Encoding *enc) {
     int i;
     char *name;
     Encoding *new_enc;
@@ -2806,8 +2806,7 @@ GTextInfo *EncodingTypesFindEnc(GTextInfo *encodingtypes, int compacted, Encodin
 	new_enc = FindOrMakeEncoding(name);
 	if ( new_enc==NULL )
     continue;
-	if (( compacted && new_enc->is_compact ) ||
-		(!compacted && enc==new_enc))
+	if ( enc==new_enc )
 return( &encodingtypes[i] );
     }
 return( NULL );
