@@ -5216,10 +5216,9 @@ static int _cgetc(Context *c) {
 	int nch = getc(c->script);
 	if ( nch!='\n' )
 	    ungetc(nch,c->script);
-	else if ( verbose>0 ) {
+	else if ( verbose>0 )
 	    putchar('\n');
-	    ch = '\n';
-	}
+	ch = '\n';
 	++c->lineno;
     } else if ( ch=='\n' )
 	++c->lineno;
