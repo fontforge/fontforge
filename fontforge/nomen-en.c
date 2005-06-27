@@ -119,7 +119,12 @@ static unichar_t mnemonic_RemoveUnusedSlots = 'R';
 static char str_DetachGlyphs = "Detach Glyphs";
 static unichar_t mnemonic_DetachGlyphs = 'D';
 static char str_DetachAndRemoveGlyphs = "Detach & Remove Glyphs...";
-static unichar_t mnemonic_DetachAndRemoveGlyphs = 'y';
+static unichar_t mnemonic_DetachAndRemoveGlyphs = 'v';
+static char str_DisplayByGroups = "Display By Groups...";
+static unichar_t mnemonic_DisplayByGroups = 'G';
+static char str_DefineGroups = "Define Groups...";
+static unichar_t mnemonic_DefineGroups = 'e';
+static char str_Groups = "Groups";
 static char str_ChangeSupplement = "Change Supplement...";
 static unichar_t mnemonic_ChangeSupplement = 'C';
 static char str_InsertGlyphB[] = "Insert Glyph Before...";
@@ -3746,6 +3751,22 @@ static char *str_MultiDenFont = "Multiple-Density Font"
 static char *str_SingleDenHighDenFont = "Single and High-Density Fonts"
 static char *str_SingleDenMultiDenFont = "Single and Multi-Density Fonts"
 static char *str_HighDenFont = "High-Density Font"
+
+    /* groups.c */
+static char *str_NoGlyphsInFontMatchGroups = "None of the glyphs in the current font match any names or code points in the selected groups";
+static char *str_NewSubGroup = "New Sub-Group";
+static char *str_NoGlyphDuplicates = "No Glyph Duplicates";
+static char *str_NoGlyphDuplicatesPopup = "Glyph names (or unicode code points) may occur at most once in this group and any of its sub-groups";
+static char *str_GroupName = "Group Name:";
+static char *str_Glyphs = "Glyphs:";
+static char *str_IdentifyByPopup = "Glyphs may be either identified by name or by unicode code point.\nGenerally you control this by what you type in.\nTyping \"A\" would identify a glyph by name.\nTyping \"U+0041\" identifies a glyph by code point.\nWhen loading glyphs from the selection you must specify which format is desired."
+static char *str_IdentifyBy = "Identify by";
+static char *str_NameNoC = "Name";
+static char *str_UntitledGroup = "UntitledGroup";
+static char *str_DupUniInGrp = "The code point U+%04X also occurs in group %.30s";
+static char *str_DupNameInGrp = "The glyph name \"%.30hs\" also occurs in group %.30s";
+static char *str_BadRange = "Bad Range";
+static char *str_BadRangeStartMoreEnd = "Bad Range, start (%04X) is greater than end (%04X)";
 
     /* Adjectives, etc. that are sometimes masculine and sometimes feminine in french (perhaps other langs) */
 static char str_NewDDD_fem[] = "New...";

@@ -3150,7 +3150,7 @@ static void cidfigure(struct ttfinfo *info, struct topdicts *dict,
     for ( i=0; i<info->glyph_cnt; ++i ) {
 	sf = info->subfonts[ fdselect[i] ];
 	cid = dict->charset[i];
-	if ( cid>=sf->glyphcnt ) sf->glyphcnt = cid+1;
+	if ( cid>=sf->glyphcnt ) sf->glyphcnt = sf->glyphmax = cid+1;
 	if ( cid>=encmap->enccount ) encmap->enccount = cid+1;
     }
     for ( j=0; subdicts[j]!=NULL; ++j )
@@ -4506,7 +4506,7 @@ static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
     RefChar *rf, *prev, *next;
 
     sf->glyphs = info->chars;
-    sf->glyphcnt = info->glyph_cnt;
+    sf->glyphcnt = sf->glyphmax = info->glyph_cnt;
     for ( i=0; i<sf->glyphcnt; ++i )
 	if ( sf->glyphs[i]!=NULL )
 	    sf->glyphs[i]->parent = sf;

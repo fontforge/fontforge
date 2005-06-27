@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#include "groups.h"
 #include <charset.h>
 #include <gfile.h>
 #include <gresource.h>
@@ -807,6 +808,7 @@ void LoadPrefs(void) {
     struct prefs_list *pl;
 
     LoadPfaEditEncodings();
+    LoadGroupList();
 
     if ( prefs!=NULL && (p=fopen(prefs,"r"))!=NULL ) {
 	while ( fgets(line,sizeof(line),p)!=NULL ) {
