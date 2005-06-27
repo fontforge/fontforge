@@ -427,8 +427,10 @@ static int CheckCodePointsComment(IO *wrapper) {
 
     /* Eat whitespace and comments. Comments last to eol (or formfeed) */
     while ( isspace(ch = nextch(wrapper)) );
-    if ( ch!='%' )
+    if ( ch!='%' ) {
+	unnextch(ch,wrapper);
 return( false );
+    }
 
     pt = commentbuffer;
     while ( (ch=nextch(wrapper))!=EOF && ch!='\r' && ch!='\n' && ch!='\f' ) {
