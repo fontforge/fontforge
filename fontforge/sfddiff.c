@@ -62,12 +62,12 @@ static void dohelp(void) {
 static SplineChar *FindName(SplineFont *sf,char *name, int guess) {
     int i;
 
-    if ( guess>=0 && guess<sf->charcnt && sf->chars[guess]!=NULL &&
-	strcmp(sf->chars[guess]->name,name)==0 )
-return( sf->chars[guess] );
-    for ( i=0; i<sf->charcnt; ++i ) if ( sf->chars[i]!=NULL ) {
-	if ( strcmp(sf->chars[i]->name,name)==0 )
-return( sf->chars[i] );
+    if ( guess>=0 && guess<sf->glyphcnt && sf->glyphs[guess]!=NULL &&
+	strcmp(sf->glyphs[guess]->name,name)==0 )
+return( sf->glyphs[guess] );
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	if ( strcmp(sf->glyphs[i]->name,name)==0 )
+return( sf->glyphs[i] );
     }
 return( NULL );
 }
@@ -133,7 +133,7 @@ static int HintDiff(SplineChar *sc1,SplineChar *sc2,int preverrs) {
 	    !DStemDiff(sc1->dstem,sc2->dstem) ||
 	    !MDDiff(sc1->md,sc2->md) ) {
 	if ( !preverrs ) printf( "Differences in Enc=%-5d U+%04X %s\n",
-		sc1->enc, sc1->unicodeenc, sc1->name );
+		sc1->orig_pos, sc1->unicodeenc, sc1->name );
 	printf( "\tHints differ\n" );
 return( true );
     }
@@ -169,10 +169,10 @@ static int RefsDiff(SplineChar *sc1, SplineChar *sc2, int preverrs, int firstpas
 	r2 = HasRef(sc2,r1);
 	if ( r2==NULL ) {
 	    if ( !preverrs ) printf( "Differences in Enc=%-5d U+%04X %s\n",
-		    sc1->enc, sc1->unicodeenc, sc1->name );
+		    sc1->orig_pos, sc1->unicodeenc, sc1->name );
 	    preverrs = true;
 	    printf( "\tFont%d refers to Enc=%-5d U+%04X %s\n",
-		    firstpass?1:2,r1->sc->enc, r1->sc->unicodeenc, r1->sc->name);
+		    firstpass?1:2,r1->sc->orig_pos, r1->sc->unicodeenc, r1->sc->name);
 	} else if ( firstpass &&
 		(r1->transform[0]!=r2->transform[0] ||
 		 r1->transform[1]!=r2->transform[1] ||
@@ -181,10 +181,10 @@ static int RefsDiff(SplineChar *sc1, SplineChar *sc2, int preverrs, int firstpas
 		 r1->transform[4]!=r2->transform[4] ||
 		 r1->transform[5]!=r2->transform[5] )) {
 	    if ( !preverrs ) printf( "Differences in Enc=%-5d U+%04X %s\n",
-		    sc1->enc, sc1->unicodeenc, sc1->name );
+		    sc1->orig_pos, sc1->unicodeenc, sc1->name );
 	    preverrs = true;
 	    printf( "\tDifferent transform in reference to Enc=%-5d U+%04X %s\n",
-		    r1->sc->enc, r1->sc->unicodeenc, r1->sc->name);
+		    r1->sc->orig_pos, r1->sc->unicodeenc, r1->sc->name);
 	    printf( "\t\t[%g,%g,%g,%g,%g,%g] vs. [%g,%g,%g,%g,%g,%g]\n",
 		r1->transform[0], r1->transform[1], r1->transform[2],
 		r1->transform[3], r1->transform[4], r1->transform[5],
@@ -286,7 +286,7 @@ static int SplineDiff(SplineChar *sc1,SplineChar *sc2,int preverrs) {
     for ( ss2=sc2->layers[ly_fore].splines, cnt2=0; ss2!=NULL; ss2=ss2->next, ++cnt2 );
     if ( cnt1!=cnt2 ) {
 	if ( !preverrs ) printf( "Differences in Enc=%-5d U+%04X %s\n",
-		sc1->enc, sc1->unicodeenc, sc1->name );
+		sc1->orig_pos, sc1->unicodeenc, sc1->name );
 	printf( "\tDifferent number of contours\n" );
 return( true );
     }
@@ -296,7 +296,7 @@ return( true );
     continue;		/* same */
 	else {
 	    if ( !preverrs ) printf( "Differences in Enc=%-5d U+%04X %s\n",
-		    sc1->enc, sc1->unicodeenc, sc1->name );
+		    sc1->orig_pos, sc1->unicodeenc, sc1->name );
 	    if ( diff==1 )
 		printf( "\tContour has changed direction\n" );
 	    else if ( diff==2 )
@@ -316,7 +316,7 @@ static void dodiff( SplineFont *sf1, SplineFont *sf2, int checkhints,
     int i, any, adiff=0, extras, oldcnt;
     SplineChar *sc, *sc1;
 
-    if ( sf1->encoding_name != sf2->encoding_name ) {
+    if ( sf1->map->enc != sf2->map->enc ) {
 	printf( "The two fonts have different encodings\n" );
 	adiff = 1;
     }
@@ -359,35 +359,35 @@ static void dodiff( SplineFont *sf1, SplineFont *sf2, int checkhints,
 
     /* Look for any char in sf1 not in sf2 */
     any = false;
-    for ( i=0; i<sf1->charcnt; ++i ) if ( sf1->chars[i]!=NULL ) {
-	sc = FindName(sf2,sf1->chars[i]->name,i);
+    for ( i=0; i<sf1->glyphcnt; ++i ) if ( sf1->glyphs[i]!=NULL ) {
+	sc = FindName(sf2,sf1->glyphs[i]->name,i);
 	if ( sc==NULL ) {
 	    ++adiff;
 	    if ( !any )
 		printf( "Characters in font1 not in font2\n" );
 	    any = true;
-	    printf( "\tEnc=%-5d U+%04X %s\n", i, sf1->chars[i]->unicodeenc,
-		    sf1->chars[i]->name );
+	    printf( "\tEnc=%-5d U+%04X %s\n", i, sf1->glyphs[i]->unicodeenc,
+		    sf1->glyphs[i]->name );
 	}
     }
 
     /* Look for any char in sf2 not in sf1 */
     extras = 0;
     any = false;
-    for ( i=0; i<sf2->charcnt; ++i ) if ( sf2->chars[i]!=NULL ) {
-	sc = FindName(sf1,sf2->chars[i]->name,i);
+    for ( i=0; i<sf2->glyphcnt; ++i ) if ( sf2->glyphs[i]!=NULL ) {
+	sc = FindName(sf1,sf2->glyphs[i]->name,i);
 	if ( sc==NULL ) {
 	    ++adiff; ++extras;
 	    if ( !any )
 		printf( "Characters in font2 not in font1\n" );
 	    any = true;
-	    printf( "\tEnc=%-5d U+%04X %s\n", i, sf2->chars[i]->unicodeenc,
-		    sf2->chars[i]->name );
+	    printf( "\tEnc=%-5d U+%04X %s\n", i, sf2->glyphs[i]->unicodeenc,
+		    sf2->glyphs[i]->name );
 	}
     }
 
     /* Look for characters present in both which are different */
-    for ( i=0; i<sf1->charcnt; ++i ) if ( (sc1=sf1->chars[i])!=NULL ) {
+    for ( i=0; i<sf1->glyphcnt; ++i ) if ( (sc1=sf1->glyphs[i])!=NULL ) {
 	sc = FindName(sf2,sc1->name,i);
 	if ( sc!=NULL ) {
 	    any = RefsDiff(sc1,sc,false,true);
@@ -400,7 +400,7 @@ static void dodiff( SplineFont *sf1, SplineFont *sf2, int checkhints,
 		    (sc->comment!=NULL && sc1->comment!=NULL &&
 			    u_strcmp(sc->comment,sc1->comment)==0) )) {
 		if ( !any ) printf( "Differences in Enc=%-5d U+%04X %s\n",
-			sc1->enc, sc1->unicodeenc, sc1->name );
+			sc1->orig_pos, sc1->unicodeenc, sc1->name );
 		printf( "\tComments are different\n" );
 	    }
 	    if ( any ) {
@@ -412,29 +412,29 @@ static void dodiff( SplineFont *sf1, SplineFont *sf2, int checkhints,
 
     if ( adiff!=0 && outfilename!=NULL ) {
 	if ( extras!=0 ) {
-	    oldcnt = sf1->charcnt;
-	    sf1->charcnt += extras;
-	    sf1->chars = grealloc(sf1->chars,sf1->charcnt*sizeof(SplineChar *));
-	    for ( i=oldcnt; i<sf1->charcnt; ++i )
-		sf1->chars[i] = NULL;
+	    oldcnt = sf1->glyphcnt;
+	    sf1->glyphcnt += extras;
+	    sf1->glyphs = grealloc(sf1->glyphs,sf1->glyphcnt*sizeof(SplineChar *));
+	    for ( i=oldcnt; i<sf1->glyphcnt; ++i )
+		sf1->glyphs[i] = NULL;
 	    extras = oldcnt;
-	    for ( i=0; i<sf2->charcnt; ++i ) if ( sf2->chars[i]!=NULL ) {
-		sc = FindName(sf1,sf2->chars[i]->name,i);
+	    for ( i=0; i<sf2->glyphcnt; ++i ) if ( sf2->glyphs[i]!=NULL ) {
+		sc = FindName(sf1,sf2->glyphs[i]->name,i);
 		if ( sc==NULL ) {
-		    if ( i<oldcnt && sf1->chars[i]==NULL &&
-			    sf1->encoding_name == sf2->encoding_name ) {
-			sf1->chars[i] = sf2->chars[i];
-			sf1->chars[i]->parent = sf1;
+		    if ( i<oldcnt && sf1->glyphs[i]==NULL &&
+			    sf1->map->enc == sf2->map->enc ) {
+			sf1->glyphs[i] = sf2->glyphs[i];
+			sf1->glyphs[i]->parent = sf1;
 		    } else {
-			sf1->chars[extras] = sf2->chars[i];
-			sf1->chars[extras]->enc = extras;
-			sf1->chars[extras++]->parent = sf1;
+			sf1->glyphs[extras] = sf2->glyphs[i];
+			sf1->glyphs[extras]->orig_pos = extras;
+			sf1->glyphs[extras++]->parent = sf1;
 		    }
-		    sf2->chars[i] = NULL;
+		    sf2->glyphs[i] = NULL;
 		}
 	    }
 	}
-	if ( !SFDWrite(outfilename,sf1) )
+	if ( !SFDWrite(outfilename,sf1,sf1->map) )
 	    fprintf( stderr, "Failed to write output file: %s\n", outfilename );
     }
 }

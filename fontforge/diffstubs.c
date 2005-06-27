@@ -341,7 +341,6 @@ void gwwv_progress_change_stages(int stages) { }
 #endif
 
 SplineFont *LoadSplineFont(char *filename, enum openflags of) { return NULL; }
-int SFReencodeFont(SplineFont *sf,Encoding *new_map) { return 0 ; }
 void RefCharFree(RefChar *ref) {}
 void LinearApproxFree(LinearApprox *la) {}
 SplineFont *SplineFontNew(void) {return NULL; }
@@ -354,10 +353,11 @@ void SCGuessHHintInstancesList(SplineChar *sc) { }
 void SCGuessVHintInstancesList(SplineChar *sc) { }
 int StemListAnyConflicts(StemInfo *stems) { return 0 ; }
 int getAdobeEnc(char *name) { return -1; }
-SplineChar *SFMakeChar(SplineFont *sf, int enc) { return NULL; }
+SplineChar *SFMakeChar(SplineFont *sf, EncMap *map, int enc) { return NULL; }
 GDisplay *screen_display=NULL;
 int no_windowing_ui = true;
 int FVWinInfo(struct fontview *sf,int *cc,int *rc) { return 0 ; }
+EncMap *EncMapFromEncoding(SplineFont *sf,Encoding *enc) { return NULL; }
 
 /* ************************************************************************** */
 /* And some routines we actually do need */
@@ -602,22 +602,38 @@ return( SplineMake2(from,to));
 return( SplineMake3(from,to));
 }
 
+int SCDrawsSomething(SplineChar *sc) {
+    int layer,l;
+    RefChar *ref;
+
+    if ( sc==NULL )
+return( false );
+    for ( layer = ly_fore; layer<sc->layer_cnt; ++layer ) {
+	if ( sc->layers[layer].splines!=NULL || sc->layers[layer].images!=NULL )
+return( true );
+	for ( ref = sc->layers[layer].refs; ref!=NULL; ref=ref->next )
+	    for ( l=0; l<ref->layer_cnt; ++l )
+		if ( ref->layers[l].splines!=NULL )
+return( true );
+    }
+return( false );
+}
+
 int SCWorthOutputting(SplineChar *sc) {
 return( sc!=NULL &&
-	( sc->layers[ly_fore].splines!=NULL || sc->layers[ly_fore].refs!=NULL || sc->widthset ||
+	( SCDrawsSomething(sc) || sc->widthset || sc->anchor!=NULL ||
 #if HANYANG
 	    sc->compositionunit ||
 #endif
 	    sc->dependents!=NULL ||
-	    sc->width!=sc->parent->ascent+sc->parent->descent ) &&
-	( strcmp(sc->name,".notdef")!=0 || sc->enc==0) );
+	    sc->width!=sc->parent->ascent+sc->parent->descent ) );
 }
 
 SplineFont *SplineFontEmpty(void) {
     SplineFont *sf;
     sf = gcalloc(1,sizeof(SplineFont));
     sf->pfminfo.fstype = -1;
-    sf->encoding_name = &custom;
+    sf->map->enc = &custom;
 return( sf );
 }
 
@@ -671,6 +687,43 @@ SplineChar *SplineCharCreate(void) {
     LayerDefault(&sc->layers[1]);
 #endif
 return( sc );    
+}
+
+void EncMapFree(EncMap *map) {
+    if ( map==NULL )
+return;
+
+    free(map->map);
+    free(map->backmap);
+    free(map->remap);
+    chunkfree(map,sizeof(EncMap));
+}
+
+EncMap *EncMapNew(int enccount,int backmax,Encoding *enc) {
+    EncMap *map = chunkalloc(sizeof(EncMap));
+    
+    map->enccount = map->encmax = enccount;
+    map->backmax = backmax;
+    map->map = galloc(enccount*sizeof(int));
+    memset(map->map,-1,enccount*sizeof(int));
+    map->backmap = galloc(backmax*sizeof(int));
+    memset(map->backmap,-1,backmax*sizeof(int));
+    map->enc = enc;
+return(map);
+}
+
+EncMap *EncMap1to1(int enccount) {
+    EncMap *map = chunkalloc(sizeof(EncMap));
+    /* Used for CID fonts where CID is same as orig_pos */
+    int i;
+    
+    map->enccount = map->encmax = map->backmax = enccount;
+    map->map = galloc(enccount*sizeof(int));
+    map->backmap = galloc(enccount*sizeof(int));
+    for ( i=0; i<enccount; ++i )
+	map->map[i] = map->backmap[i] = i;
+    map->enc = &custom;
+return(map);
 }
 
 GImage *GImageCreate(enum image_type type, int32 width, int32 height) {
@@ -819,7 +872,7 @@ return( scripts[s][0] );
 
     if ( sf==NULL )
 return( 0 );
-    enc = sf->encoding_name;
+    enc = sf->map->enc;
     if ( sf->cidmaster!=NULL || sf->subfontcnt!=0 ) {
 	if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
 	if ( strmatch(sf->ordering,"Identity")==0 )
