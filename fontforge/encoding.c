@@ -2382,7 +2382,7 @@ return( NULL );
 	j = -1;
 	if ( enc->psnames!=NULL ) {
 	    for ( j=enc->char_cnt-1; j>=0; --j ) {
-		if ( strcmp(enc->psnames[j],sf->glyphs[i]->name)==0 )
+		if ( enc->psnames[j]!=NULL && strcmp(enc->psnames[j],sf->glyphs[i]->name)==0 )
 	    break;
 	    }
 	}
