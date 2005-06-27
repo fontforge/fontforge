@@ -2174,7 +2174,7 @@ static void bSelectByColor(Context *c) {
 
 /* **** Element Menu **** */
 static void bReencode(Context *c) {
-    Encoding *new_map;
+    Encoding *new_enc;
     int force = 0;
 
     if ( c->a.argc!=2 && c->a.argc!=3 )
@@ -2183,13 +2183,15 @@ static void bReencode(Context *c) {
 	error(c,"Bad argument type");
     if ( c->a.argc==3 )
 	force = c->a.vals[2].u.ival;
-    new_map = FindOrMakeEncoding(c->a.vals[1].u.sval);
-    if ( new_map==NULL )
+    new_enc = FindOrMakeEncoding(c->a.vals[1].u.sval);
+    if ( new_enc==NULL )
 	errors(c,"Unknown encoding", c->a.vals[1].u.sval);
     if ( force )
-	SFForceEncoding(c->curfv->sf,c->curfv->map,new_map);
+	SFForceEncoding(c->curfv->sf,c->curfv->map,new_enc);
+    else if ( new_enc==&custom )
+	c->curfv->map->enc = &custom;
     else {
-	EncMap *map = EncMapFromEncoding(c->curfv->sf,new_map);
+	EncMap *map = EncMapFromEncoding(c->curfv->sf,new_enc);
 	EncMapFree(c->curfv->map);
 	c->curfv->map = map;
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI

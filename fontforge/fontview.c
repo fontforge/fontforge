@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#include "groups.h"
 #include "psfont.h"
 #ifndef FONTFORGE_CONFIG_GTK
 #include <ustring.h>
@@ -1470,6 +1471,7 @@ void FontViewMenu_MetaFont(GtkMenuItem *menuitem, gpointer user_data) {
 #define MID_LoadEncoding	2836
 #define MID_MakeFromFont	2837
 #define MID_RemoveEncoding	2838
+#define MID_DisplayByGroups	2839
 #define MID_CreateMM	2900
 #define MID_MMInfo	2901
 #define MID_MMValid	2902
@@ -5188,11 +5190,15 @@ static void FVMenuReencode(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     EncMap *map;
 
     enc = FindOrMakeEncoding(mi->ti.userdata);
-    map = EncMapFromEncoding(fv->sf,enc);
-    fv->selected = grealloc(fv->selected,map->enccount);
-    memset(fv->selected,0,map->enccount);
-    EncMapFree(fv->map);
-    fv->map = map;
+    if ( enc==&custom )
+	fv->map->enc = &custom;
+    else {
+	map = EncMapFromEncoding(fv->sf,enc);
+	fv->selected = grealloc(fv->selected,map->enccount);
+	memset(fv->selected,0,map->enccount);
+	EncMapFree(fv->map);
+	fv->map = map;
+    }
     FVSetTitle(fv);
     FontViewReformatOne(fv);
 }
@@ -5205,6 +5211,18 @@ static void FVMenuForceEncode(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SFForceEncoding(fv->sf,fv->map,enc);
     FVSetTitle(fv);
     FontViewReformatOne(fv);
+}
+
+static void FVMenuDisplayByGroups(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+
+    DisplayGroups(fv);
+}
+
+static void FVMenuDefineGroups(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+
+    DefineGroups(fv);
 }
 # elif defined(FONTFORGE_CONFIG_GTK)
 void FontViewMenu_Reencode(GtkMenuItem *menuitem, gpointer user_data) {
@@ -6176,6 +6194,9 @@ static GMenuItem enlist[] = {
     { { (unichar_t *) _STR_LoadEncoding, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuLoadEncoding, MID_LoadEncoding },
     { { (unichar_t *) _STR_Makefromfont, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuMakeFromFont, MID_MakeFromFont },
     { { (unichar_t *) _STR_RemoveEncoding, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuRemoveEncoding, MID_RemoveEncoding },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_DisplayByGroups, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuDisplayByGroups, MID_DisplayByGroups },
+    { { (unichar_t *) _STR_DefineGroups, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuDefineGroups },
     { NULL }
 };
 
@@ -6206,7 +6227,9 @@ static void enlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	    mi->ti.disabled = fv->cidmaster!=NULL || map->enccount>1024;
 	  break;
 	  case MID_RemoveEncoding:
-	    mi->ti.disabled = map->enc->builtin;
+	  break;
+	  case MID_DisplayByGroups:
+	    mi->ti.disabled = fv->cidmaster!=NULL || group_root==NULL;
 	  break;
 	}
     }
