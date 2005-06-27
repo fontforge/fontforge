@@ -2144,25 +2144,34 @@ static int MCD_FromSelection(GGadget *g, GEvent *e) {
 	FontView *fv = sf->fv;
 	unichar_t *vals, *pt;
 	int i, len, max, gid;
-	SplineChar *sc;
+	SplineChar *sc, dummy;
     
 	for ( i=len=max=0; i<fv->map->enccount; ++i ) if ( fv->selected[i]) {
-	    sc = SFMakeChar(sf,fv->map,i);
+	    gid = fv->map->map[i];
+	    if ( gid!=-1 && sf->glyphs[gid]!=NULL )
+		sc = sf->glyphs[gid];
+	    else
+		sc = SCBuildDummy(&dummy,sf,fv->map,i);
 	    len += strlen(sc->name)+1;
 	    if ( fv->selected[i]>max ) max = fv->selected[i];
 	}
 	pt = vals = galloc((len+1)*sizeof(unichar_t));
 	*pt = '\0';
 	/* in a class the order of selection is irrelevant */
-	for ( i=0; i<fv->map->enccount; ++i )
-	    if ( (gid=fv->map->map[i])!=-1 && fv->selected[i] && sf->glyphs[gid]!=NULL ) {
-		uc_strcpy(pt,sf->glyphs[gid]->name);
-		pt += u_strlen(pt);
-		*pt++ = ' ';
-	    }
+	for ( i=0; i<fv->map->enccount; ++i ) {
+	    gid = fv->map->map[i];
+	    if ( gid!=-1 && sf->glyphs[gid]!=NULL )
+		sc = sf->glyphs[gid];
+	    else
+		sc = SCBuildDummy(&dummy,sf,fv->map,i);
+	    uc_strcpy(pt,sc->name);
+	    pt += u_strlen(pt);
+	    *pt++ = ' ';
+	}
 	if ( pt>vals ) pt[-1]='\0';
     
 	GGadgetSetTitle(GWidgetGetControl(mcd->gw,CID_MCD_GlyphList),vals);
+	free(vals);
     }
 return( true );
 }
