@@ -2574,8 +2574,8 @@ static int MapAddEnc(SplineFont *sf,SplineChar *sc,EncMap *basemap, EncMap *map,
 	map->backmap = grealloc(map->backmap,(map->backmax+=10)*sizeof(int));
     if ( map->enc->psnames!=NULL ) {
 	/* Check for multiple encodings */
-	for ( enc = map->enc->char_cnt; enc>=0; --enc ) {
-	    if ( strcmp(sc->name,map->enc->psnames[enc])==0 ) {
+	for ( enc = map->enc->char_cnt-1; enc>=0; --enc ) {
+	    if ( map->enc->psnames[enc]!=NULL && strcmp(sc->name,map->enc->psnames[enc])==0 ) {
 		if ( !any ) {
 		    map->backmap[gid] = enc;
 		    any = true;
