@@ -1880,11 +1880,11 @@ static void CVChangeChar(CharView *cv, int i ) {
     SplineChar *sc;
     SplineFont *sf = cv->sc->parent;
     EncMap *map = cv->fv->map;
-    int gid = i<0 || i>= map->enccount ? -1 : map->map[i];
+    int gid = i<0 || i>= map->enccount ? -2 : map->map[i];
 
-    if ( gid < 0 )
+    if ( gid == -2 )
 return;
-    if ( (sc = sf->glyphs[gid])==NULL )
+    if ( gid==-1 || (sc = sf->glyphs[gid])==NULL )
 	sc = SFMakeChar(sf,map,i);
 
     if ( sc==NULL || cv->sc == sc )
