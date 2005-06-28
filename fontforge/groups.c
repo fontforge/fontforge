@@ -1193,6 +1193,9 @@ static int displaygrp_e_h(GWindow gw, GEvent *event) {
 return( GGadgetDispatchEvent(grp->vsb,event));
     }
 
+    if ( grp==NULL )
+return( true );
+
     switch ( event->type ) {
       case et_expose:
       break;
@@ -1589,6 +1592,7 @@ void DisplayGroups(FontView *fv) {
 
     while ( !grp.done )
 	GDrawProcessOneEvent(NULL);
+    GDrawSetUserData(grp.gw,NULL);
     if ( grp.oked )
 	EncodeToGroups(fv,grp.root);
     if ( grp.root!=group_root )
