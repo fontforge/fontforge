@@ -6169,6 +6169,23 @@ return;
 #endif
 }
 
+static void FVMenuAddEncodingName(GWindow gw,struct gmenuitem *mi, GEvent *e) {
+    unichar_t *ret;
+    char *cret;
+    Encoding *enc;
+
+    /* Search the iconv database for the named encoding */
+    ret = GWidgetAskStringR(_STR_AddEncodingName,NULL,_STR_GiveMeIconvEncodingName);
+    if ( ret==NULL )
+return;
+    cret = cu_copy(ret);
+    enc = FindOrMakeEncoding(cret);
+    if ( enc==NULL )
+	GWidgetErrorR(_STR_InvalidEncoding,_STR_InvalidEncoding);
+    free(ret);
+    free(cret);
+}
+
 static void FVMenuLoadEncoding(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     LoadEncodingFile();
 }
@@ -6191,6 +6208,7 @@ static GMenuItem enlist[] = {
     { { (unichar_t *) _STR_DetachGlyphs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuDetachGlyphs, MID_DetachGlyphs },
     { { (unichar_t *) _STR_DetachAndRemoveGlyphs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuDetachAndRemoveGlyphs, MID_DetachAndRemoveGlyphs },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_AddEncodingName, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuAddEncodingName },
     { { (unichar_t *) _STR_LoadEncoding, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuLoadEncoding, MID_LoadEncoding },
     { { (unichar_t *) _STR_Makefromfont, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuMakeFromFont, MID_MakeFromFont },
     { { (unichar_t *) _STR_RemoveEncoding, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuRemoveEncoding, MID_RemoveEncoding },
