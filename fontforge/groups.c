@@ -612,6 +612,8 @@ static void GroupResize(struct groupdlg *grp,GEvent *event) {
 	GGadgetMove(grp->set,wsize.x,wsize.y+offy);
 	GGadgetGetSize(grp->select,&wsize);
 	GGadgetMove(grp->select,wsize.x,wsize.y+offy);
+	GGadgetGetSize(grp->unique,&wsize);
+	GGadgetMove(grp->unique,wsize.x,wsize.y+offy);
 	GGadgetGetSize(grp->line2,&wsize);
 	GGadgetMove(grp->line2,wsize.x,wsize.y+offy);
     }
