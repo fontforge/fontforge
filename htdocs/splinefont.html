@@ -2,9 +2,9 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Feb-2001 -->
-  <!-- AP: Last modified: 16-Apr-2004 -->
-  <LINK REL="icon" href="ffanvil16.png">
+  <!-- AP: Last modified: 28-Jun-2005 -->
   <TITLE>The basic spline data structures of FontForge</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
 <BODY>
 <H2>
@@ -71,9 +71,12 @@ The <A HREF="#SplineFont">SplineFont</A> consists of a bunch of
     </UL>
 </UL>
 <P>
+In multilayered mode there can be many foreground layers which can be stroked
+or filled. Bitmap images may also be included.
+<P>
 Every SplineChar has a name associated with it, a unicode encoding and a
-local encoding (So 'A' will probably have both a unicode encoding and a local
-encoding of 0x0041).
+its original position in the font (So 'A' will probably have both a unicode
+encoding and a local encoding of 0x0041).
 <P>
 A SplineSet consists of a start point and an end point, and whatever splines
 connect them. The start point and the end point may be the same, this either
@@ -81,12 +84,23 @@ indicates a closed path, or a degenerate path with only one point on it.
 <P>
 A SplinePoint contains an x,y location of the point, and the locations of
 the two control points associated with that point. A control point may be
-coincident with the main point. SplinePoints may have two splines, a previous
-Spline and a next Spline. A Spline contains pointers to two SplinePoints
-(a start and an end point) it also contains the parameters of the B&eacute;zier
-curve that those two points describe (x = a*t^3+b*t^2+c*t+d, y=ditto). Splines
-are straight lines of the two control points that are meaningful to that
-spline are coincident with their respective SplinePoints.
+coincident with the main point. SplinePoints may connect to two splines,
+a previous Spline and a next Spline. A Spline contains pointers to two
+SplinePoints (a start and an end point) it also contains the parameters of
+the B&eacute;zier curve that those two points describe (x = a*t^3+b*t^2+c*t+d,
+y=ditto). Splines are straight lines if the two control points that are
+meaningful to that spline are coincident with their respective SplinePoints.
+<P>
+A font's encoding is stored in a separate data structure called an EncMap.
+This structure controls what glyph goes where and also contains a pointer
+to an Encoding structure which provides a name for the encoding. The EncMap
+contains two arrays, the <CODE>map</CODE> and the <CODE>backmap</CODE>. The
+map is indexed by the a character's encoding and provides the position (in
+the associated splinefont's glyph list) of the associated glyph. The backmap
+provides the reverse mapping, it is indexed by a glyph's position in the
+splinefont and provides an encoding for that glyph. (Note: the map array
+may map several encodings to one glyph, the backmap will only indicate one
+of those.)
 <P>
 A <A HREF="#BDFFont">BDFFont</A> consists of a bunch of
 <A HREF="#BDFChar">BDFChars</A>, each containing
