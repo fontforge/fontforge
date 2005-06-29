@@ -1,0 +1,373 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 27-Jun-2005 -->
+  <!-- AP: Last modified: 28-Jun-2005 -->
+  <TITLE>Encoding Menu</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
+</HEAD>
+<BODY>
+<H1 ALIGN=Center>
+  Encoding Menu
+</H1>
+<P>
+The Encoding menu is only found in the font view:
+<UL>
+  <LI>
+    <A HREF="encodingmenu.html#Reencode">Reencode &gt;</A>
+    <UL>
+      <LI>
+	various standard and user defined encodings
+    </UL>
+  <LI>
+    <A HREF="encodingmenu.html#Force">Force Encoding &gt;</A>
+    <UL>
+      <LI>
+	various standard and user defined encodings
+    </UL>
+  <LI>
+    <A HREF="#AddSlots">Add Encoding Slots...</A>
+  <LI>
+    <A HREF="#RemoveSlots">Remove Unused Slots</A>
+  <LI>
+    <A HREF="encodingmenu.html#Detach">Detach Glyphs</A>
+  <LI>
+    <A HREF="encodingmenu.html#RemoveGlyphs">Detach &amp; Remove Glyphs...</A>
+  <LI>
+    <A HREF="#AddEnc">Add Encoding...</A>
+  <LI>
+    <A HREF="#Load">Load Encoding...</A>
+  <LI>
+    <A HREF="#Make">Make From Font</A>
+  <LI>
+    <A HREF="#RemoveEnc">Remove Encoding...</A>
+  <LI>
+    <A HREF="#Display">Display by Groups...</A>
+  <LI>
+    <A HREF="encodingmenu.html#Define">Define Groups...</A>
+</UL>
+<DL>
+  <DT>
+    <A NAME="Reencode">Reencode</A>
+  <DD>
+    Has an attached sub-menu of standard and user defined encodings. The font's
+    current encoding will be indicated with a check mark. You may change the
+    encoding by selecting a different entry.
+    <P>
+    There are two slightly different formats an encoding can take. It can be
+    define by unicode code points, or it can be defined by glyph names. When
+    reencoding to an encoding defined by code points, the glyph with the matching
+    unicode value is placed in the encoding slot. When reencoding to an encoding
+    defined by glyph name, we first search for a glyph with the matching name
+    and use it, if not found we search for the glyph name's corresponding unicode
+    code point (if any) and if found we change its name to that specified by
+    the encoding.
+    <P>
+    Example: Suppose we have a font containing a glyph named "uni0041", and an
+    encoding which maps U+0041-&gt;slot 65, then the glyph will be moved into
+    slot 65. If we have another encoding which maps "A" -&gt; slot 65, then (since
+    "A" has unicode value U+0041) our glyph will still be mapped to slot 65,
+    but in addition its name will be changed to "A".
+  <DT>
+    <A NAME="Force">Force</A> Encoding
+  <DD>
+    Has the same sub-menu as above. Here we assume that the glyphs of the font
+    are currently encoded in the right order, but they have the wrong names (This
+    may seem odd, but it happens a lot). This command will change the names of
+    all the glyphs to match what they should be if the indicated encoding were
+    in force.
+  <DT>
+    <A NAME="AddSlots">Add Encoding Slots.</A>..
+  <DD>
+    Add some extra slots at the end of the font into which you can put unencoded
+    glyphs (variant glyphs, etc.)
+  <DT>
+    Remove Unused Slots
+  <DD>
+    Removes any unused slots from the end of the font.
+  <DT>
+    <A NAME="Detach">Detach Glyphs</A>
+  <DD>
+    Detaches any selected encoding slots from their currently associated glyphs.
+    These slots will now be marked as unused. The glyphs will remain in the font,
+    just not encoded.
+  <DT>
+    <A NAME="RemoveGlyphs">Detach &amp; Remove Glyphs...</A>
+  <DD>
+    Similar to the above except that any glyphs detached (which are not used
+    elsewhere in the encoding) will be removed from the font.
+  <DT>
+    <A NAME="AddEnc">Add Encoding Name.</A>..
+  <DD>
+    Requests an encoding name from the user and searches for it in the iconv()
+    database. It then adds that encoding to the menu.
+  <DT>
+    <A NAME="Load">Load Encoding</A>...
+  <DD>
+    Asks the user for a filename and attempts to load a user defined encoding
+    from that file.
+  <DT>
+    <A NAME="Make">Make from Font.</A>..
+  <DD>
+    Allows you to name the font's current encoding (if it isn't already named),
+    and add it to the encoding menu.
+  <DT>
+    <A NAME="RemoveEnc">Remove Encoding...</A>
+  <DD>
+    Removes one of the user defined encodings from the menu.
+  <DT>
+    <A NAME="Display">Display by Group</A>...
+  <DD>
+    Allows you restrict the glyphs displayed in the font view to those in a user
+    defined <A HREF="groups.html">group</A> (specified in the next command).
+  <DT>
+    <A NAME="Define">Define Groups</A>...
+  <DD>
+    Allows you to define <A HREF="groups.html">groups</A> of glyphs which
+    (presumably) have some meaningful connection to each other.
+</DL>
+<H2>
+  General notes on encodings
+</H2>
+<P>
+Not all font formats support all encodings. SVG fonts will always be output
+in a unicode encoding, truetype fonts in either unicode or one of the CJK
+encodings, type1 fonts only support single byte encodings, etc.
+<P>
+In a CID keyed font you are not allowed to change the encoding (in essence
+because there is none), but there is an entry
+<A HREF="cidmenu.html#ChangeSup">CID-&gt;Change Supplement </A>which will
+display the Registry/Ordering information and allow you to change the supplement.
+  <HR>
+<H3>
+  Built in <A NAME="Encodings">Encodings</A>
+</H3>
+<P>
+FontForge knows about the following encodings by default:
+<UL>
+  <LI>
+    ISO-8859-1 (Latin1) -- traditional encoding for western european characters.
+    Default encoding for http. Does not include the Euro sign.
+  <LI>
+    ISO-8859-15 (Latin0) -- Replacement for Latin1. Does include the Euro.
+  <LI>
+    ISO-8859-2 (Latin2) -- Central &amp; Eastern European (Czech, Hungarian,
+    Polish, Romanian, Croatian, Slovak, Slovnian.
+  <LI>
+    ISO-8859-3 (Latin3) -- Southern European (Esperanto, Maltese)
+  <LI>
+    ISO-8859-4 (Latin4) -- Northern European (Estonian, Latvian, Lithuanian,
+    Greenlandic, Lappish)
+  <LI>
+    ISO-8859-9 (Latin5) -- Turkish
+  <LI>
+    ISO-8859-10 (Latin6) -- Nordic (reworking of Latin4&amp;Latin1)
+  <LI>
+    ISO-8859-13 (Latin7) -- Another Baltic character set
+  <LI>
+    ISO-8859-14 (Latin8) -- Celtic (Gaelic &amp; Welsh)
+  <LI>
+    ISO-8859-5 (Cyrillic)
+  <LI>
+    ISO-8859-6 (Arabic)
+  <LI>
+    ISO-8859-7 (Greek)
+  <LI>
+    ISO-8859-8 (Hebrew) -- (and Yiddish)
+  <LI>
+    ISO-8859-11 (Thai) -- Also know as TIS 620<BR>
+    &lt;there is no ISO-8859-12&gt; 
+      <HR>
+  <LI>
+    KOI8-R -- Cyrillic
+  <LI>
+    Macintosh Roman
+  <LI>
+    Windows "ANSI" (CodePage1252)
+  <LI>
+    Adobe Standard
+  <LI>
+    Symbol
+  <LI>
+    TeX Base 
+      <HR>
+  <LI>
+    ISO-10646-1 (Unicode, BMP)
+  <LI>
+    ISO-10646-1 (Unicode, Full)
+  <LI>
+    ISO-10646-? (Unicode, by plane)<BR>
+    (You can select a specific plane of unicode as an encoding (ie BMP, SMP,
+    SIP,...) 
+      <HR>
+  <LI>
+    SJIS
+  <LI>
+    JIS 208 -- Japanese Kanji (first 8000 characters)
+  <LI>
+    JIS 212 -- Japanese Kanji (next 8000 characters)
+  <LI>
+    Wansung
+  <LI>
+    KSC 5601 -- Korean (this is the 94x94 version of KSC 5601)
+  <LI>
+    Johab
+  <LI>
+    GB 2312 -- Simplified Chinese
+  <LI>
+    Packed GB 2312 -- (I don't know what the proper name for this is, ASCII for
+    bytes&lt;0x80, and GB 2312 EUC offset by 0x8080)
+  <LI>
+    Big5 -- Traditional Chinese 
+      <HR>
+  <LI>
+    Custom -- An unknown encoding
+  <LI>
+    Original -- the glyph ordering used in the original font file.
+</UL>
+<P>
+Encoding sources:
+<UL>
+  <LI>
+    <A HREF="http://czyborra.com/charsets/iso8859.html">ISO 8859 Alphabet Soup</A>
+  <LI>
+    <A HREF="http://www.unicode.org/Public/MAPPINGS/">Unicode Mapping Tables</A>
+</UL>
+<P>
+<A HREF="http://www.unicode.org/charts/">An index to images of all the glyphs
+in unicode</A>.
+<P>
+  <HR>
+<H3>
+  <A NAME="User-def">User Defined Encodings</A>
+</H3>
+<P>
+You can also add new encodings to the set that FontForge knows about. There
+are three menu items that manipulate a set of user defined encodings. As
+always these specify both a character set and an encoding. The encoding has
+a maximum of 256 entries, but the character set may be larger (up to 1024).
+This means that you can define a font with extra characters. Since postscript
+fonts can be reencoded at runtime this can be useful.
+<P>
+The Load Encoding command allows you to load an encoding(s) from a file.
+Currently the file must either be in the format used by the unicode consortium
+for <A HREF="http://www.unicode.org/Public/MAPPINGS/ISO8859/">mapping ISO
+8859</A> encodings to unicode, or it must be a postscript encoding array.
+The first format looks like this:
+<BLOCKQUOTE>
+  <PRE>0x20	0x0020	#	SPACE
+0x21	0x0021	#	EXCLAMATION MARK
+...
+</PRE>
+</BLOCKQUOTE>
+<P>
+A postscript file looks like:
+<BLOCKQUOTE>
+  <PRE>/TeXBase1Encoding [
+ % 00
+ /.notdef /dotaccent /fi /fl
+ /fraction /hungarianumlaut /Lslash /lslash
+ ...
+] def
+</PRE>
+</BLOCKQUOTE>
+<P>
+There may be more than one encoding in a postscript file. The encoding parser
+is not smart. It will only read arrays specified like this, don't try any
+of the innumerable other ways of specifying an array in postscript.
+<P>
+If the font has a custom encoding then the <CODE>Make From Font</CODE> menu
+item is enabled. This allows you to name the encoding you have defined for
+the current font.
+<P>
+The <CODE>Remove Encoding</CODE> menu item brings up a list showing all the
+custom encodings and allows you to delete them.
+<P>
+Here's an <A HREF="Encodings.ps.gz">example of a postscript encoding file</A>.
+It contains:
+<UL>
+  <LI>
+    TeXMathItalicEncoding
+  <LI>
+    TeXMathSymbolEncoding
+  <LI>
+    TeXMathExtensionEncoding 
+      <HR>
+  <LI>
+    IsoLatin -- (which specifies all the characters used in any of the ISO-Latin-*
+    fonts 
+      <HR>
+  <LI>
+    AdobeExpert -- (Which contains things like lower case numbers, small caps,
+    fractions, sub/superscript numbers, etc.) 
+      <HR>
+  <LI>
+    CodePage1250 -- Microsoft's encoding for Central European characters
+  <LI>
+    CodePage1251 -- Microsoft's Cyrillic encoding
+  <LI>
+    CodePage1252 -- Microsoft's Western European encoding (a superset of Latin1.
+    Sometimes called "ANSI" though I can find no ANSI standard that it follows)
+  <LI>
+    CodePage1253 -- Microsoft's Greek encoding
+  <LI>
+    CodePage1254 -- Microsoft's Turkish encoding
+  <LI>
+    CodePage1255 -- Microsoft's Hebrew encoding (an extension of ISO-8859-8)
+  <LI>
+    CodePage1256 -- Microsoft's Arabic encoding
+  <LI>
+    CodePage1257 -- Microsoft's Baltic encoding
+  <LI>
+    CodePage1258 -- Microsoft's Viet Namese encoding
+  <LI>
+    CodePage874 -- Microsoft's Thai encoding 
+      <HR>
+  <LI>
+    MacCentralEuropean
+  <LI>
+    MacCyrillic
+  <LI>
+    MacGreek
+  <LI>
+    MacHebrew 
+      <HR>
+  <LI>
+    US-ASCII -- Not really useful by itself any more, but provides the first
+    128 characters of almost every other encoding.
+</UL>
+<H2>
+  Other menus
+</H2>
+<UL>
+  <LI>
+    <A HREF="filemenu.html">File</A>
+  <LI>
+    <A HREF="editmenu.html">Edit</A>
+  <LI>
+    <A HREF="pointmenu.html">Point</A>
+  <LI>
+    <A HREF="elementmenu.html">Element</A>
+  <LI>
+    <A HREF="hintsmenu.html">Hints</A>
+  <LI>
+    <A HREF="encodingmenu.html">Encoding</A>
+  <LI>
+    <A HREF="viewmenu.html">View</A>
+  <LI>
+    <A HREF="metricsmenu.html">Metrics</A>
+  <LI>
+    <A HREF="cidmenu.html">CID</A>
+  <LI>
+    <A HREF="mmmenu.html">MM</A>
+  <LI>
+    <A HREF="windowmenu.html">Window</A>
+  <LI>
+    <A HREF="helpmenu.html">Help</A>
+  <LI>
+    <A HREF="HotKeys.html">Hot Keys</A>
+</UL>
+<P ALIGN=Center>
+-- <A HREF="hintsmenu.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
+<A HREF="viewmenu.html">Next</A> --
+</BODY></HTML>
