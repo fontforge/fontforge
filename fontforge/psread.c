@@ -3082,9 +3082,7 @@ return( head );
 	    if ( tok==pt_namelit && i<sizeof(names)/sizeof(names[0]) ) {
 		max = i;
 		if ( strcmp(tokbuf,".notdef")==0 ) {
-		    encs[i] = 0;
-		    if ( i<32 || (i>=0x7f && i<0xa0))
-			encs[i] = i;
+		    encs[i] = -1;
 		} else if ( (enc=UniFromName(tokbuf,ui_none,&custom))!=-1 ) {
 		    encs[i] = enc;
 		    /* Used not to do this, but there are several legal names */
