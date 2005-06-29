@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jun-2005 -->
-  <!-- AP: Last modified: 28-Jun-2005 -->
+  <!-- AP: Last modified: 29-Jun-2005 -->
   <TITLE>Encoding Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -82,15 +82,17 @@ The Encoding menu is only found in the font view:
     Add some extra slots at the end of the font into which you can put unencoded
     glyphs (variant glyphs, etc.)
   <DT>
-    Remove Unused Slots
+    <A NAME="RemoveSlots">Remove Unused Slots</A>
   <DD>
-    Removes any unused slots from the end of the font.
+    Removes any unused slots from the end of the font. It does not remove unused
+    slots inside the font, that would screw up the encoding.
   <DT>
     <A NAME="Detach">Detach Glyphs</A>
   <DD>
     Detaches any selected encoding slots from their currently associated glyphs.
     These slots will now be marked as unused. The glyphs will remain in the font,
-    just not encoded.
+    just not encoded (If you reencode the font those glyphs will become visible
+    again).
   <DT>
     <A NAME="RemoveGlyphs">Detach &amp; Remove Glyphs...</A>
   <DD>
