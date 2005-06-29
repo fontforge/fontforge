@@ -9743,7 +9743,7 @@ if test "${with_freetype_src+set}" = set; then
 
     if test "$withval" != "no" >/dev/null 2>&1 ; then
 	FreeType2_TT_BUILD_INC="$withval/src/truetype"
-	if test "${FreeType2_TT_BUILD_INC/ttobjs.h:0:1}" != "/" ; then
+	if test "${FreeType2_TT_BUILD_INC:0:1}" != "/" ; then
 		FreeType2_TT_BUILD_INC=`pwd`/$FreeType2_TT_BUILD_INC
 	fi
 	echo "$as_me:$LINENO: checking for valid freetype tree" >&5
