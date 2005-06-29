@@ -1478,7 +1478,8 @@ static int SaveSubFont(SplineFont *sf,char *newname,int32 *sizes,int res,
     encmap.enc = &custom;
 
     temp = *sf;
-    temp.glyphcnt = 256;
+    temp.glyphcnt = 0;
+    temp.glyphmax = 256;
     temp.glyphs = chars;
     temp.bitmaps = NULL;
     temp.subfonts = NULL;
@@ -1494,16 +1495,19 @@ static int SaveSubFont(SplineFont *sf,char *newname,int32 *sizes,int res,
 	    if ( i<_sf->glyphcnt && _sf->glyphs[i]!=NULL )
 	break;
 	} while ( k<sf->subfontcnt );
-	if ( i<_sf->glyphcnt ) {
-	    if ( _sf->glyphs[i]!=NULL ) {
-		_sf->glyphs[i]->parent = &temp;
-		_sf->glyphs[i]->orig_pos = mapping[i]&0xff;
-		_mapping[i] = _backmap[i] = i;
-		++used;
+	if ( temp.glyphcnt<256 ) {
+	    if ( i<_sf->glyphcnt ) {
+		if ( _sf->glyphs[i]!=NULL ) {
+		    _sf->glyphs[i]->parent = &temp;
+		    _sf->glyphs[i]->orig_pos = temp.glyphcnt;
+		    chars[temp.glyphcnt] = _sf->glyphs[i];
+		    _mapping[mapping[i]&0xff] = temp.glyphcnt;
+		    _backmap[temp.glyphcnt] = mapping[i]&0xff;
+		    ++temp.glyphcnt;
+		    ++used;
+		}
 	    }
-	    chars[mapping[i]&0xff] = _sf->glyphs[i];
-	} else
-	    chars[mapping[i]&0xff] = NULL;
+	}
     }
     if ( used==0 )
 return( 0 );
@@ -1536,6 +1540,7 @@ return( 0 );
 		}
 	}
 	temp.glyphcnt += extras;	/* this might be a slightly different value from that found before if some references get reused. N'importe */
+	temp.glyphmax = temp.glyphcnt;
     }
 
     filename = galloc(strlen(newname)+2+10);
@@ -1584,7 +1589,7 @@ return( 0 );
 	strcat(pt,"]");
     }
 
-    err = !WritePSFont(filename,&temp,subtype,old_ps_flags,map);
+    err = !WritePSFont(filename,&temp,subtype,old_ps_flags,&encmap);
     if ( err )
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_Savefailedtitle,_STR_Savefailedtitle);
@@ -1598,7 +1603,7 @@ return( 0 );
 #else
     if ( !err && (old_ps_flags&ps_flag_afm)) {
 #endif
-	if ( !WriteAfmFile(filename,&temp,oldformatstate,map)) {
+	if ( !WriteAfmFile(filename,&temp,oldformatstate,&encmap)) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_Afmfailedtitle,_STR_Afmfailedtitle);
 #elif defined(FONTFORGE_CONFIG_GTK)
@@ -1608,7 +1613,7 @@ return( 0 );
 	}
     }
     if ( !err && (old_ps_flags&ps_flag_tfm) ) {
-	if ( !WriteTfmFile(filename,&temp,oldformatstate,map)) {
+	if ( !WriteTfmFile(filename,&temp,oldformatstate,&encmap)) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_Tfmfailedtitle,_STR_Tfmfailedtitle);
 #elif defined(FONTFORGE_CONFIG_GTK)
