@@ -6080,7 +6080,7 @@ static void FVMenuRemoveUnused(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     int gid, i;
     int flags = -1;
 
-    for ( i=map->enccount-1; (gid=map->map[i])==-1 || !SCWorthOutputting(sf->glyphs[gid]);
+    for ( i=map->enccount-1; i>=0 && ((gid=map->map[i])==-1 || !SCWorthOutputting(sf->glyphs[gid]));
 	    --i ) {
 	if ( gid!=-1 )
 	    SFRemoveGlyph(sf,sf->glyphs[gid],&flags);
@@ -7351,7 +7351,7 @@ int32 UniFromEnc(int enc, Encoding *encname) {
     char *tpt;
     size_t fromlen, tolen;
 
-    if ( encname->is_custom || encname->is_original || encname->is_compact )
+    if ( encname->is_custom || encname->is_original )
 return( -1 );
     if ( enc>=encname->char_cnt )
 return( -1 );
