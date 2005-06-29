@@ -5029,6 +5029,9 @@ if test "${with_freetype_src+set}" = set; then
 
     if test "$withval" != "no" >/dev/null 2>&1 ; then
 	FreeType2_TT_BUILD_INC="$withval/src/truetype"
+	if test "${FreeType2_TT_BUILD_INC:0:1}" != "/" ; then
+		FreeType2_TT_BUILD_INC=`pwd`/$FreeType2_TT_BUILD_INC
+	fi
 	echo "$as_me:$LINENO: checking for valid freetype tree" >&5
 echo $ECHO_N "checking for valid freetype tree... $ECHO_C" >&6
 	if test -f "$FreeType2_TT_BUILD_INC/ttobjs.h"; then
@@ -6759,7 +6762,7 @@ if test "${ac_cv_lib_xkbui_XkbQueryExtension+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   ac_check_lib_save_LIBS=$LIBS
-LIBS="-lxkbui $X_LIBS $X_PRE_LIBS $X_EXTRA_LIBS -lX11  $LIBS"
+LIBS="-lxkbui $X_LIBS $X_PRE_LIBS $X_EXTRA_LIBS -lX11 -lm  $LIBS"
 cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
