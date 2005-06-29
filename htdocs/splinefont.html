@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Feb-2001 -->
-  <!-- AP: Last modified: 28-Jun-2005 -->
+  <!-- AP: Last modified: 29-Jun-2005 -->
   <TITLE>The basic spline data structures of FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -11,11 +11,11 @@
   Data Types
 </H2>
 <P>
-This describes two different types of fonts, a SplineFont (which is essentially
-a postscript font) and a BDFFont (bitmap font, essentially a bdf file). There
+This describes two different types of fonts, a SplineFont (which is a postscript
+or truetype font) and a BDFFont (bitmap font, essentially a bdf file). There
 are some similarities between the two data structures, each is basically
 an array (possibly with holes in it) of characters. Each font also contains
-information like the fontname, the character set (encoding).
+information like the fontname.
 <P>
 The <A HREF="#SplineFont">SplineFont</A> consists of a bunch of
 <A HREF="#SplineChar">SplineChars</A>, each containing four layers,
@@ -75,8 +75,7 @@ In multilayered mode there can be many foreground layers which can be stroked
 or filled. Bitmap images may also be included.
 <P>
 Every SplineChar has a name associated with it, a unicode encoding and a
-its original position in the font (So 'A' will probably have both a unicode
-encoding and a local encoding of 0x0041).
+its original position in the font.
 <P>
 A SplineSet consists of a start point and an end point, and whatever splines
 connect them. The start point and the end point may be the same, this either
@@ -90,6 +89,10 @@ SplinePoints (a start and an end point) it also contains the parameters of
 the B&eacute;zier curve that those two points describe (x = a*t^3+b*t^2+c*t+d,
 y=ditto). Splines are straight lines if the two control points that are
 meaningful to that spline are coincident with their respective SplinePoints.
+A spline contains a bit indicating whether it is order2 (truetype quadratic
+format) or order3 (postscript cubic format). If it is quadratic there is
+really only one control point, ff uses the convention that the control points
+on the start and end SplinePoints have the same location.
 <P>
 A font's encoding is stored in a separate data structure called an EncMap.
 This structure controls what glyph goes where and also contains a pointer
@@ -102,7 +105,8 @@ splinefont and provides an encoding for that glyph. (Note: the map array
 may map several encodings to one glyph, the backmap will only indicate one
 of those.)
 <P>
-A <A HREF="#BDFFont">BDFFont</A> consists of a bunch of
+A <A HREF="#BDFFont">BDFFont</A> is always associated with a (possibly empty)
+SplineFont and its EncMap, it consists of an array of
 <A HREF="#BDFChar">BDFChars</A>, each containing
 <UL>
   <LI>
@@ -110,12 +114,15 @@ A <A HREF="#BDFFont">BDFFont</A> consists of a bunch of
   <LI>
     possibly a floating selection
   <LI>
-    a name and encoding
+    a name
   <LI>
     <A HREF="#Undoes">undoes</A>
   <LI>
     A pointer to the <A HREF="#SplineChar">SplineChar</A> with which it is associated
 </UL>
+<P>
+The array is ordered the same way the SplineFont's array is ordered, and
+the same EncMap can be used for both.
 <BLOCKQUOTE>
   <PRE>/* Copyright (C) 2000-2003 by George Williams */
 /*
@@ -263,11 +270,10 @@ The floating selection in a <A HREF="#BDFChar">BDFChar</A>.
 </BLOCKQUOTE>
 <P>
 The undo data structure. Used by both <A HREF="#SplineChar">SplineChar</A>
-and <A HREF="#BDFChar">BDFChar</A>. Also used to contain the clipboard (sorry,
-I don't use the real X CLIPBOARD). Every character layer has several Undoes
-(up to about 10 or so, it's configurable) that allow it to go back several
-operations, these are linked together on the next field (redos are handled
-similarly, of course).
+and <A HREF="#BDFChar">BDFChar</A>. Also used to contain the local clipboard.
+Every character layer has several Undoes (up to about 10 or so, it's
+configurable) that allow it to go back several operations, these are linked
+together on the next field (redos are handled similarly, of course).
 <P>
 Undoes come in several types, ut_none is only used by the clipboard when
 it is empty.
@@ -306,7 +312,7 @@ more than one character.
     int16 width;
     int16 bytes_per_line;
     uint8 *bitmap;
-    int enc;
+    int orig_pos;
     <A HREF="views.html#BitmapView">struct bitmapview</A> *views;
     <A HREF="#Undoes">Undoes</A> *undoes;
     <A HREF="#Undoes">Undoes</A> *redoes;
@@ -332,13 +338,10 @@ been changed since it was last saved to disk.
 <P>
 Up to this point I've been talking about bitmaps. It is also possible to
 have a bytemap. The data structure is exactly the same, except that each
-pixel is represented by a byte rather than a bit. Currently this is only
-used for anti-alias displays in the
-<A HREF="views.html#FontView">FontView</A>, but I may do more with it later.
-There is a clut for this in the BDFFont (it's the same for every character),
-but basically 0=&gt;transparent, (2^n-1) =&gt;fully drawn, other values are
-shades of grey between. Currently my anti-alias fonts contain values 0-15
-but the code can handle up to 0-255 if desired. (0-15 seems fine to my eye).
+pixel is represented by a byte rather than a bit. There is a clut for this
+in the BDFFont (it's the same for every character), but basically
+0=&gt;transparent, (2^n-1) =&gt;fully drawn, other values are shades of grey
+between. Can handle depths of 1,2,4 and 8 bits/pixel.
 <P>
 The last thing in the BDFChar is a (/an optional) floating selection. Only
 present if the user has made a selection or done a paste or something like
@@ -346,12 +349,10 @@ that.
 <BLOCKQUOTE>
   <PRE>typedef struct bdffont {
     <A HREF="#SplineFont">struct splinefont</A> *sf;
-    int charcnt;
-    <A HREF="#BDFChar">BDFChar</A> **chars;		/* an array of charcnt entries */
-    <A HREF="#BDFChar">BDFChar</A> **temp;		/* Used by ReencodeFont routine */
+    int glyphcnt;
+    <A HREF="#BDFChar">BDFChar</A> **glyphs;		/* an array of charcnt entries */
     int pixelsize;
     int ascent, descent;
-    enum charset encoding_name;
     struct bdffont *next;
     struct clut *clut;		/* Only for anti-aliased fonts */
 } <A NAME="BDFFont">BDFFont</A>;
@@ -442,6 +443,7 @@ typedef struct spline {
     unsigned int isneeded: 1;
     unsigned int isunneeded: 1;
     unsigned int ishorvert: 1;
+    unsigned int order2: 1;
     <A HREF="#SplinePoint">SplinePoint</A> *from, *to;
     <A HREF="#Spline1D">Spline1D</A> splines[2];		/* splines[0] is the x spline, splines[1] is y */
     <A HREF="#LinearApprox">struct linearapprox</A> *approx;
@@ -453,13 +455,14 @@ typedef struct spline {
 </PRE>
 </BLOCKQUOTE>
 <P>
-A spline runs from the from <A HREF="#SplinePoint">SplinePoint</A> to the
-to SplinePoint. If both control points of a Spline are degenerate, then the
-Spline is linear (actually there are some other case that will lead to linear
-splines, sometimes these will be detected and turned into the canonical case,
-other times they will not be). The remaining bits are used when processing
-Splines in various functions. Most are used in the SplineOverlap routines,
-but some are used in other places too.
+A spline runs from the <CODE>from</CODE>
+<A HREF="#SplinePoint">SplinePoint</A> to the <CODE>to</CODE> SplinePoint.
+If both control points of a Spline are degenerate, then the Spline is linear
+(actually there are some other case that will lead to linear splines, sometimes
+these will be detected and turned into the canonical case, other times they
+will not be). The remaining bits are used when processing Splines in various
+functions. Most are used in the SplineOverlap routines, but some are used
+in other places too.
 <P>
 The Spline1D structures give the equations for the x and y coordinates
 respectively (splines[0] is for x, splines[1] is for y).
@@ -493,7 +496,7 @@ Generally a series of paths will make up a character, and they are linked
 together on the next field.
 <BLOCKQUOTE>
   <PRE>typedef struct refchar {
-    int16 adobe_enc, local_enc;
+    int16 adobe_enc, orig_pos
     int unicode_enc;		/* used by paste */
     double transform[6];	/* transformation matrix (first 2 rows of a 3x3 matrix, missing row is 0,0,1) */
     <A HREF="#SplinePointList">SplinePointList</A> *splines;
@@ -508,8 +511,8 @@ together on the next field.
 <P>
 A <A HREF="#SplineChar">SplineChar</A> may contain a reference to another
 character. For instance "Agrave" might contain a reference to an "A" and
-a "grave". There are three different encoding values, of which local_enc
-is not always up to date. Adobe_enc gives the location in the Adobe Standard
+a "grave". There are three different encoding values, of which orig_pos is
+not always up to date. Adobe_enc gives the location in the Adobe Standard
 Encoding which is used by the seac command in type1 fonts. If this is -1
 then the character isn't in the adobe encoding and it won't be possible to
 put a reference to it into a Type1 font (truetype doesn't have this restriction,
@@ -569,12 +572,12 @@ to the next hint for the character.
 </PRE>
 </BLOCKQUOTE>
 <P>
-SplineChars may have images in their backgrounds. This structure contains
-a pointer to the image to be displayed, an indication of where it should
-be positioned, and how it should be scaled (I do not support any other
-transformations on images). The bounding box is after the transformations
-have been applied. The next field points to the next image, and selected
-indicates whether this one is selected or not.
+SplineChars may have images in their backgrounds (or foregrounds for multilayer
+characters). This structure contains a pointer to the image to be displayed,
+an indication of where it should be positioned, and how it should be scaled
+(I do not support any other transformations on images). The bounding box
+is after the transformations have been applied. The next field points to
+the next image, and selected indicates whether this one is selected or not.
 <BLOCKQUOTE>
   <PRE>typedef struct splinechar {
     char *name;
@@ -656,8 +659,8 @@ then the SplineChar representing "V" would have a pointer to a
     char *version;
     double italicangle, upos, uwidth;
     int ascent, descent;
-    int charcnt;
-    <A HREF="#SplineChar">SplineChar</A> **chars;
+    int glyphcnt;
+    <A HREF="#SplineChar">SplineChar</A> **glyphs;
     unsigned int changed: 1;
     unsigned int changed_since_autosave: 1;
     unsigned int display_antialias: 1;

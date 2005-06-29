@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 27-Jun-2005 -->
+  <!-- AP: Last modified: 29-Jun-2005 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -690,57 +690,56 @@ a[4][0] = "Nested array";
     filename. Valid extensions are:
     <UL>
       <LI>
-	pfa
+	.pfa
       <LI>
-	pfb
+	.pfb
       <LI>
-	bin (a mac postscript (pfb) resource in a mac binary wrapper)<BR>
+	.bin (a mac postscript (pfb) resource in a mac binary wrapper)<BR>
 	res (on the Mac itself FontForge will put the result directly into a font
 	suitcase file, and the extension should be ".res" rather than ".bin")
 	<P>
 	Note: you must also create a bitmap font in NFNT format or the mac will not
 	recognize your postscript font.
       <LI>
-	%s.pfb/%s.pfa (splits a big font up into multiple pfb fonts each with 256
-	characters, making use of the fifth argument to determine how this is done).
-	The "%s" is required somewhere in the filename (to disambiguate from a normal
-	type1 output) but it may be anywhere. "foobar%s.pfb", "foo%sbar.pfa",
-	"foobar.%s.pfb" are all valid. The "%s" will be replaced by the fontnumber
-	specified in the mult-sfd-file.
+	*%s*.pf[ab] (here more than just an extension is required, the font name
+	must contain a "%s") (splits a big font up into multiple pfb fonts each with
+	256 characters, making use of the fifth argument to determine how this is
+	done). The "%s" will be replaced by the fontnumber specified in the
+	mult-sfd-file.
       <LI>
-	mm.pfa (multiple master font in ascii format)
+	.mm.pfa (multiple master font in ascii format)
       <LI>
-	mm.pfb (multiple master font in binary format)
+	.mm.pfb (multiple master font in binary format)
       <LI>
-	pt3 (type 3)
+	.pt3 (type 3)
       <LI>
-	ps (type 0)
+	.ps (type 0)
       <LI>
-	t42 (type 42, truetype wrapped in PostScript)
+	.t42 (type 42, truetype wrapped in PostScript)
       <LI>
-	cid.t42 (type 42 cid font)
+	.cid.t42 (type 42 cid font)
       <LI>
-	cid (non-otf cid font)
+	.cid (non-otf cid font)
       <LI>
-	cff (bare cff font)
+	.cff (bare cff font)
       <LI>
-	cid.cff (bare cff cid-keyed font)
+	.cid.cff (bare cff cid-keyed font)
       <LI>
-	ttf
+	.ttf
       <LI>
-	sym.ttf (a truetype file with a symbol (custom) encoding)
+	.sym.ttf (a truetype file with a symbol (custom) encoding)
       <LI>
-	ttf.bin (a mac truetype resource in a mac binary wrapper)<BR>
+	.ttf.bin (a mac truetype resource in a mac binary wrapper)<BR>
 	suit (on the Mac itself FontForge will put the result directly into a font
 	suitcase file, and the extension should be ".suit" not ".ttf.bin")
       <LI>
-	dfont (a mac truetype resource in a dfont file)
+	.dfont (a mac truetype resource in a dfont file)
       <LI>
-	otf (either cid or not depending on the font)
+	.otf (either cid or not depending on the font)
       <LI>
-	otf.dfont (a mac opentype resource in a dfont file)
+	.otf.dfont (a mac opentype resource in a dfont file)
       <LI>
-	svg (an svg font)
+	.svg (an svg font)
       <LI>
 	&lt;null extension&gt; If you don't want to generate an outline font at all
 	(but do want to provide a filename for bitmap or metrics files) then provide
@@ -817,7 +816,7 @@ a[4][0] = "Nested array";
 	implement all of OpenType, so the result is almost certain to be wrong).
       <LI>
 	fmflags&amp;0x100 =&gt; generate a glyph map file (GID=&gt;glyph name, unicode
-	map)
+	map). The map file will have extension ".g2n".
       <LI>
 	fmflags&amp;0x200 =&gt; generate a '<A HREF="non-standard.html#TeX">TeX</A>
 	' table containing (most) TeX font metrics information
@@ -834,11 +833,12 @@ a[4][0] = "Nested array";
     res controls the resolution of generated bdf fonts. A value of -1 means fontforge
     will guess for each strike.
     <P>
-    If the filename has a ".mult" extension then a "mult-sfd-file" may be present.
-    This is the filename of a file containing the mapping from the current encoding
-    into the subfonts. <A HREF="Big5.txt">Here is an example</A>. If this file
-    is not present FontForge will go through its default search process to find
-    a file for the encoding, and if it fails the fonts will not be saved.
+    If the filename contains a "%s" and has either a ".pf[ab]" extension then
+    a "mult-sfd-file" may be present. This is the filename of a file containing
+    the mapping from the current encoding into the subfonts.
+    <A HREF="Big5.txt">Here is an example</A>. If this file is not present FontForge
+    will go through its default search process to find a file for the encoding,
+    and if it fails the fonts will not be saved.
   <DT>
     <A HREF="filemenu.html#GenerateMac">GenerateFamily</A>(filename,bitmaptype,fmflags,array-of-font-filenames)
   <DD>
@@ -1682,8 +1682,8 @@ ApplySubstitution("*","*","vrt2")
 	16 -- Remove bumps from lines
     </UL>
     <P>
-    The error argument is the number of pixels by which the modified path is
-    allowed to stray from the true path.<BR>
+    The error argument is the number of font units by which the modified path
+    is allowed to stray from the true path.<BR>
     The tan_bounds argument specifies the tangent of the angle between the curves
     at which smoothing will stop (argument is multiplied by .01 before use).<BR>
     And bump_size gives the maximum distance a bump can move from the line and
