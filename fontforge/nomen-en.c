@@ -3768,8 +3768,8 @@ static char *str_IdentifyByPopup = "Glyphs may be either identified by name or b
 static char *str_IdentifyBy = "Identify by";
 static char *str_NameNoC = "Name";
 static char *str_UntitledGroup = "UntitledGroup";
-static char *str_DupUniInGrp = "The code point U+%04X also occurs in group %.30s";
-static char *str_DupNameInGrp = "The glyph name \"%.30hs\" also occurs in group %.30s";
+static char *str_DupUniInGrp = "The code point U+%04X occurs groups %.30s and %.30s";
+static char *str_DupNameInGrp = "The glyph name \"%.30hs\" occurs in groups %.30s and %.30s";
 static char *str_BadRange = "Bad Range";
 static char *str_BadRangeStartMoreEnd = "Bad Range, start (%04X) is greater than end (%04X)";
 
