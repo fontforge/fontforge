@@ -892,12 +892,14 @@ static int GroupValidateGlyphs(Group *cur,char *g,const unichar_t *gu,int unique
     char *gpt, *start;
     Group *top, *grp;
 
-    for ( ; *gu!='\0'; ++gu ) {
-	if ( *gu<' ' || *gu>=0x7f || *gu=='(' || *gu==')' ||
-		*gu=='[' || *gu==']' || *gu=='{' || *gu=='}' ||
-		*gu=='<' || *gu=='>' || *gu=='%' || *gu=='/' ) {
-	    GWidgetErrorR(_STR_BadGlyphNameListLong,_STR_BadGlyphNameListLong);
+    if ( gu!=NULL ) {
+	for ( ; *gu!='\0'; ++gu ) {
+	    if ( *gu<' ' || *gu>=0x7f || *gu=='(' || *gu==')' ||
+		    *gu=='[' || *gu==']' || *gu=='{' || *gu=='}' ||
+		    *gu=='<' || *gu=='>' || *gu=='%' || *gu=='/' ) {
+		GWidgetErrorR(_STR_BadGlyphNameListLong,_STR_BadGlyphNameListLong);
 return( false );
+	    }
 	}
     }
     if ( unique ) {		/* Can't use cur->unique because it hasn't been set yet */
@@ -924,14 +926,15 @@ return( false );
 		}
 		for ( ; val<=val2; ++val )
 		    if ( (grp=FindDuplicateNumber(top,val,cur,gpt))!=NULL ) {
-			GWidgetErrorR(_STR_DuplicateName,_STR_DupUniInGrp, val, grp->name);
+			GWidgetErrorR(_STR_DuplicateName,_STR_DupUniInGrp, val, cur->name, grp->name);
 return( false );
 		    }
 	    } else {
 		int ch = *gpt;
 		*gpt = '\0';
 		if ( (grp=FindDuplicateName(top,start,cur,ch!='\0'?gpt+1:NULL))!=NULL ) {
-		    GWidgetErrorR(_STR_DuplicateName,_STR_DupNameInGrp, start, grp->name);
+		    GWidgetErrorR(_STR_DuplicateName,_STR_DupNameInGrp, start, cur->name, grp->name);
+		    *gpt = ch;
 return( false );
 		}
 		*gpt = ch;
@@ -941,10 +944,25 @@ return( false );
 return( true );
 }
 
+static int GroupSetKidsUnique(Group *group) {
+    int i;
+
+    group->unique = true;
+    for ( i=0; i<group->kid_cnt; ++i )
+	if ( !GroupSetKidsUnique(group->kids[i]))
+return( false );
+    if ( group->glyphs!=NULL ) {
+	if ( !GroupValidateGlyphs(group,group->glyphs,NULL,true))
+return( false );
+    }
+return( true );
+}
+
 static int GroupFinishOld(struct groupdlg *grp) {
     if ( grp->oldsel!=NULL ) {
 	const unichar_t *gu = _GGadgetGetTitle(grp->glyphs);
 	char *g = cu_copy(gu);
+	int oldunique = grp->oldsel->unique;
 
 	if ( !GroupValidateGlyphs(grp->oldsel,g,gu,GGadgetIsChecked(grp->unique))) {
 	    free(g);
@@ -959,7 +977,14 @@ return( false );
 	    free(g);
 	} else
 	    grp->oldsel->glyphs = g;
+	
 	grp->oldsel->unique = GGadgetIsChecked(grp->unique);
+	if ( grp->oldsel->unique && !oldunique ) {
+	    /* The just set the unique bit. We must force it set in all */
+	    /*  kids. We really should check for uniqueness too!!!!! */
+	    if ( !GroupSetKidsUnique(grp->oldsel))
+return( false );
+	}
     }
 return( true );
 }
