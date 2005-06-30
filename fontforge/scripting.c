@@ -2199,13 +2199,17 @@ static void bReencode(Context *c) {
 	    FVSetTitle(c->curfv);
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
+    free(c->curfv->selected);
+    c->curfv->selected = gcalloc(c->curfv->map->enccount,sizeof(char));
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( !no_windowing_ui )
 	FontViewReformatAll(c->curfv->sf);
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+/*
     c->curfv->sf->changed = true;
     c->curfv->sf->changed_since_autosave = true;
     c->curfv->sf->changed_since_xuidchanged = true;
+*/
 }
 
 static void bSetCharCnt(Context *c) {
