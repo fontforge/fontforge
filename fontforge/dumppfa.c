@@ -1504,14 +1504,18 @@ static void dumpfontcomments(void (*dumpchar)(int ch,void *data), void *data,
     extern char *source_version_str;
 
     time(&now);
+    /* Werner points out that the DSC Version comment has a very specific */
+    /*  syntax. We can't just put in a random string, must be <real> <int> */
+    /* So we can sort of do that for CID fonts (give it a <revsion> of 0 */
+    /*  but for type1s just use a comment rather than a DSC statement */
     if (( format==ff_cid || format==ff_cffcid || format==ff_type42cid ) &&
 	    sf->cidregistry!=NULL ) {
 	dumpf(dumpchar,data, "%%%%Title: (%s %s %s %d)\n",
 		sf->fontname, sf->cidregistry, sf->ordering, sf->supplement );
-	dumpf(dumpchar,data, "%%%%Version: %g\n", sf->cidversion );
+	dumpf(dumpchar,data, "%%%%Version: %g 0\n", sf->cidversion );
     } else {
 	dumpf(dumpchar,data,"%%%%Title: %s\n", sf->fontname);
-	dumpf(dumpchar,data,"%%%%Version: %s\n", sf->version);
+	dumpf(dumpchar,data,"%%Version: %s\n", sf->version);
     }
     dumpf(dumpchar,data,"%%%%CreationDate: %s", ctime(&now));
     if ( author!=NULL )
