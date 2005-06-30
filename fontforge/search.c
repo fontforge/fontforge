@@ -425,7 +425,7 @@ return( false );
     for ( s_spl = s->path, s_r_spl=s->revpath; s_spl!=NULL; s_spl=s_spl->next, s_r_spl = s_r_spl->next ) {
 	for ( spl=sc->layers[ly_fore].splines, i=0; spl!=NULL; spl=spl->next, ++i ) if ( !(s->matched_ss&(1<<i)) ) {
 	    s->matched_spl = spl;
-	    if ( spl->first!=spl->last ) {	/* Open */
+	    if ( spl->first->prev==NULL ) {	/* Open */
 		if ( s_spl->first!=s_spl->last ) {
 		    if ( SPMatches(spl->first,s,s_spl,1-first))
 	break;
