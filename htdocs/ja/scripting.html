@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 17-Apr-2005 -->
+  <!-- AP: Last modified: 14-Jun-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
 <!--<TITLE>Writing scripts to change fonts in FontForge</TITLE>-->
     <TITLE>FontForge でフォントを変更するためのスクリプトの書き方</TITLE>
@@ -993,8 +993,12 @@ a[4][0] = "Nested array";
 	注意: これと同時にビットマップフォントを NFNT フォーマットで出力しなければなりません。これを行わないと出力した PostScript フォントは Mac に認識されません。
       <LI>
 <!--	%s.pfb/%s.pfa (splits a big font up into multiple pfb fonts each with 256
-	characters) -->
-	%s.pfb/%s.pfa (1 個の巨大なフォントを、それぞれ 256 文字を含む複数の pfb フォントに分割します)
+	characters, making use of the fifth argument to determine how this is done).
+	The "%s" is required somewhere in the filename (to disambiguate from a normal
+	type1 output) but it may be anywhere. "foobar%s.pfb", "foo%sbar.pfa",
+	"foobar.%s.pfb" are all valid. The "%s" will be replaced by the fontnumber
+	specified in the mult-sfd-file. -->
+	%s.pfb/%s.pfa (1 個の巨大なフォントを、それぞれ 256 文字を含む複数の pfb フォントに分割します。この時、どのようにこれを行うかは 5 番目の引数によって決まります)。(通常の Type1 出力と区別するために) ファイル名のどこかに "%s" が含まれている必要がありますが、どこにでも置くことができ、"foobar%s.pfb", "foo%sbar.pfa", "foobar.%s.pfb" はどれも正しい指定です。"%s" は、複合 SFD ファイル内で割り当てられるフォント番号に置き換えられます。
       <LI>
 <!--	mm.pfa (multiple master font in ascii format) -->
 	mm.pfa (ASCII フォーマットのマルチプルマスターフォント)
@@ -1089,11 +1093,15 @@ a[4][0] = "Nested array";
 	"" は、ビットマップ無しの指定です。
     </UL>
     <P>
-<!--If you do not wish to generate an outline font then give the filename the
-    extension of ".bdf".<BR>
-    fmflags controls -->
-    アウトラインフォントを出力したくない場合、拡張子 ".bdf" を
-    filename に指定してください。<BR>
+<!--Note: If you request bitmap output then all strikes in the current font database
+    will be output, but this command will not create bitmaps, so if there are
+    no strikes in your font database, no strikes will be output (even if you
+    ask for them). If you wish to output bitmaps you must first create them with
+    the <A HREF="#BitmapsAvail">BitmapsAvail</A> scripting command or
+    <A HREF="elementmenu.html#Bitmaps">Element-&gt;Bitmaps Avail</A>. -->
+    注意: ビットマップ出力を指定した場合、現在のフォントデータベースに含まれる全てのサイズが出力されますが、このコマンドはビットマップを作成しませんので、フォントデータベースにビットマップが全く含まれない場合、（ビットマップを出力するように指定したとしても) 全く出力されません。ビットマップの出力を行いたい場合、あらかじめ <A HREF="#BitmapsAvail">BitmapsAvail</A> スクリプトコマンドか <A HREF="elementmenu.html#Bitmaps">エレメント(L)→使用するビットマップ(A)</A> を使ってビットマップを作成する必要があります。
+    <P>
+<!--fmflags controls -->
     AFM や PFM ファイルを出力するかどうかは、fmflags で制御できます。
     <UL>
       <LI>
@@ -1656,10 +1664,12 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
 <!--	If Select is given exactly one argument and that argument is an array then
 	the selection will be set to that specified in the array. So array[0] would
 	set the selection of the glyph at encoding 0 and so forth. The array may
-	have a different number of elements from that number of glyphs in the font. -->
+	have a different number of elements from that number of glyphs in the font
+	but should otherwise be in the same format as that returned by the $selection
+	psuedo-variable. -->
         Select に与えた引数が 1 個だけで、その引数が配列であるならば、グリフの選択範囲は配列で指定された物となります。
 	array[0] は符号位置 0 にあるグリフの選択を表し、以下の文字も同様です。
-	配列の要素数と、フォント内に含まれるグリフの個数は同じである必要はありません。
+	配列の要素数と、フォント内に含まれるグリフの個数は同じである必要はありませんが、個数が違う場合には、$selection 疑似変数が返すのと同じフォーマットである必要があります。
     </UL>
   <DT>
     SelectMore(arg1, arg2, ...)
@@ -1784,11 +1794,23 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     jis212, jisx0212, sjis, gh2312, gb2312packed, unicode, iso10646-1,
 <!--TeX-Base-Encoding, one of the user defined encodings.<BR>
      You may also specify that you want to force the encoding to be the given
-     one.
+     one.<BR>
     You may also specify that you want to force the encoding to be the given
     one. -->
     TeX-Base-Encoding, ユーザ定義の符号化方式のどれか一つ。
-    現在の文字の並びを、強制的に与えられたエンコーディングとして解釈するように指定することもできます。
+    現在の文字の並びを、強制的に与えられたエンコーディングとして解釈するように指定することもできます。<BR>
+<!--Note: some encodings are specified by glyph names (ie. user defined encodings
+    specified as postscript encoding arrays) others are specified as lists of
+    unicode code points (most built in encodings except for AdobeStandard and
+    TeX, user defined encodings specified by codepoints). If you reencode to
+    an encoding defined by glyph names, then ff will first move glyphs to the
+    appropriate slots, and then force any glyphs with the wrong name to have
+    the correct one. The most obvious example of this is the fi ligature:
+    AdobeStandard says it should be named "fi", modern fonts tend to call it
+    "f_i". Reencoding to AdobeStandard will move this glyph to the right slot,
+    and then name it "fi". -->
+    注意: グリフ名によって指定されるエンコーディングがいくつかあります (例えば、ユーザ定義のエンコーディングは PostScript エンコーディング配列として指定されます) が、その他の物は Unicode の符号位置のリストとして指定されます (AdobeStandard および TeX、符号位置で指定したユーザ定義のエンコーディングを除くほとんど全ての組み込みエンコーディングの場合)。
+グリフ名によって定義されたエンコーディングを再符号化した時、ff は最初にグリフを適切なスロットに移動し、次に、不正な名前を持つ全てのグリフを強制的に正しい名前に変更します。この最も明らかな例は fi 合字です: AdobeStandard は、これは "fi" と命名しなければならないとしていますが、最近のフォントでは "f_i" と呼ぶのが一般的です。AdobeStandard に符号化変換を行うとグリフは正しい位置に移動され、その後に "fi" という名前に変更されます。
   <DT>
     SetCharCnt(cnt)
   <DD>
@@ -2021,7 +2043,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     現在選択されているグリフに comment で指定したコメントを設定します。
     コメントは現在のエンコーディングから Unicode に変換されます。
   <DT>
-    <A HREF="elementmenu.html#Bitmaps">BitmapsAvail</A>(sizes)
+    <A HREF="elementmenu.html#Bitmaps" NAME="BitmapsAvail">BitmapsAvail</A>(sizes)
   <DD>
 <!--Controls what bitmap sizes are stored in the font's database. It is passed
     an array of sizes. If a size is specified which is not in the font database
