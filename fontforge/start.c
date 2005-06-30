@@ -152,6 +152,8 @@ static void _dousage(void) {
     printf( "\t-version\t\t (prints the version of fontforge and exits)\n" );
     printf( "\t-script scriptfile\t (executes scriptfile)\n" );
     printf( "\t\tmust be the first option. All others passed to scriptfile.\n" );
+    printf( "\t-dry scriptfile\t (syntax checks scriptfile)\n" );
+    printf( "\t\tmust be the first option. All others passed to scriptfile.\n" );
     printf( "\t-c script-string\t (executes argument as scripting cmds)\n" );
     printf( "\t\tmust be the first option. All others passed to the script.\n" );
     printf( "\n" );

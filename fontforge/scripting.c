@@ -6349,7 +6349,8 @@ static void doforeach(Context *c) {
     i = 0;
 
     while ( 1 ) {
-	while ( i<selsize && i<c->curfv->map->enccount && !sel[i]) ++i;
+	if ( !c->donteval )	/* On a dry run go through loop once */
+	    while ( i<selsize && i<c->curfv->map->enccount && !sel[i]) ++i;
 	if ( i>=selsize || i>=c->curfv->map->enccount )
     break;
 	c->curfv->selected[i] = true;
@@ -6363,6 +6364,8 @@ static void doforeach(Context *c) {
 	cseek(c,here);
 	c->lineno = lineno;
 	++i;
+	if ( c->donteval )
+    break;
     }
 
     nest = 0;
@@ -6393,10 +6396,12 @@ static void dowhile(Context *c) {
 	tok=NextToken(c);
 	expect(c,tt_rparen,tok);
 	dereflvalif(&val);
-	if ( val.type!=v_int )
-	    error( c, "Expected integer expression in while condition");
-	if ( val.u.ival==0 )
+	if ( !c->donteval ) {		/* If we do a dry run, check the syntax of loop body once */
+	    if ( val.type!=v_int )
+		error( c, "Expected integer expression in while condition");
+	    if ( val.u.ival==0 )
     break;
+	}
 	while ( (tok=NextToken(c))!=tt_endloop && tok!=tt_eof && !c->returned ) {
 	    backuptok(c);
 	    statement(c);
@@ -6405,6 +6410,8 @@ static void dowhile(Context *c) {
 	    error(c,"End of file found in while loop" );
 	cseek(c,here);
 	c->lineno = lineno;
+	if ( c->donteval )
+    break;
     }
 
     nest = 0;
@@ -6430,15 +6437,16 @@ static void doif(Context *c) {
 	tok=NextToken(c);
 	expect(c,tt_rparen,tok);
 	dereflvalif(&val);
-	if ( val.type!=v_int )
+	if ( val.type!=v_int && !c->donteval )
 	    error( c, "Expected integer expression in if condition");
-	if ( val.u.ival!=0 ) {
+	if ( c->donteval || val.u.ival!=0 ) {
 	    while ( (tok=NextToken(c))!=tt_endif && tok!=tt_eof && tok!=tt_else && tok!=tt_elseif && !c->returned ) {
 		backuptok(c);
 		statement(c);
 	    }
 	    if ( tok==tt_eof )
 		error(c,"End of file found in if statement" );
+	    if ( !c->donteval )
     break;
 	} else {
 	    nest = 0;
@@ -6448,15 +6456,15 @@ static void doif(Context *c) {
 		else if ( tok==tt_if ) ++nest;
 		else if ( tok==tt_endif ) --nest;
 	    }
-	    if ( tok==tt_else ) {
-		while ( (tok=NextToken(c))!=tt_endif && tok!=tt_eof && !c->returned ) {
-		    backuptok(c);
-		    statement(c);
-		}
-    break;
-	    } else if ( tok==tt_endif )
-    break;
 	}
+	if ( tok==tt_else ) {
+	    while ( (tok=NextToken(c))!=tt_endif && tok!=tt_eof && !c->returned ) {
+		backuptok(c);
+		statement(c);
+	    }
+    break;
+	} else if ( tok==tt_endif )
+    break;
     }
     if ( c->returned )
 return;
@@ -6474,6 +6482,8 @@ return;
 static void doshift(Context *c) {
     int i;
 
+    if ( c->donteval )
+return;
     if ( c->a.argc==1 )
 	error(c,"Attempt to shift when there are no arguments left");
     if ( c->a.vals[1].type==v_str )
@@ -6561,6 +6571,7 @@ static void ProcessScript(int argc, char *argv[], FILE *script) {
     Context c;
     enum token_type tok;
     char *string=NULL;
+    int dry = 0;
 
     no_windowing_ui = true;
     running_script = true;
@@ -6577,7 +6588,10 @@ static void ProcessScript(int argc, char *argv[], FILE *script) {
 	    ++i;
     } else if ( strcmp(argv[1],"-script")==0 || strcmp(argv[1],"--script")==0 )
 	++i;
-    else if (( strcmp(argv[1],"-c")==0 || strcmp(argv[1],"--c")==0) &&
+    else if ( strcmp(argv[1],"-dry")==0 || strcmp(argv[1],"--dry")==0 ) {
+	++i;
+	dry = 1;
+    } else if (( strcmp(argv[1],"-c")==0 || strcmp(argv[1],"--c")==0) &&
 	    argc>=2 ) {
 	++i;
 	string = argv[2];
@@ -6586,6 +6600,7 @@ static void ProcessScript(int argc, char *argv[], FILE *script) {
     c.a.argc = argc-i;
     c.a.vals = galloc(c.a.argc*sizeof(Val));
     c.dontfree = gcalloc(c.a.argc,sizeof(Array*));
+    c.donteval = dry;
     for ( j=i; j<argc; ++j ) {
 	unichar_t *t;
 	c.a.vals[j-i].type = v_str;
@@ -6636,6 +6651,7 @@ return;
     if ( strcmp(argv[1],"-")==0 )	/* Someone thought that, of course, "-" meant read from a script. I guess it makes no sense with anything else... */
 	ProcessScript(argc, argv,stdin);
     if ( strcmp(argv[1],"-script")==0 || strcmp(argv[1],"--script")==0 ||
+	    strcmp(argv[1],"-dry")==0 || strcmp(argv[1],"--dry")==0 ||
 	    strcmp(argv[1],"-c")==0 || strcmp(argv[1],"--c")==0 )
 	ProcessScript(argc, argv,NULL);
     else if ( (strcmp(argv[1],"-nosplash")==0 || strcmp(argv[1],"--nosplash")==0) &&
