@@ -86,7 +86,7 @@ struct gfc_data {
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 #if __Mac
-static char *extensions[] = { ".pfa", ".pfb", "", "%s.pfb", ".pfa", ".pfb", ".pt3", ".ps",
+static char *extensions[] = { ".pfa", ".pfb", ".res", "%s.pfb", ".pfa", ".pfb", ".pt3", ".ps",
 	".cid", ".cff", ".cid.cff",
 	".t42", ".cid.t42",
 	".ttf", ".ttf", ".suit", ".dfont", ".otf", ".otf.dfont", ".otf",

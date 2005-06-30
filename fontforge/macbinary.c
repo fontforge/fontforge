@@ -1460,18 +1460,27 @@ return( true );
     fname = mb->macfilename?mb->macfilename:mb->binfilename;
     dirname = copy(fname);
     pt = strrchr(dirname,'/');
-    if ( pt==NULL )
-return( false );
-    pt[1] = '\0';
+    if ( pt!=NULL )
+	pt[1] = '\0';
+    else {
+	free(dirname);
+	dirname = copy(".");
+    }
     ret=FSPathMakeRef( (uint8 *) dirname,&ref,NULL);
     free(dirname);
     if ( ret!=noErr )
 return( false );
     if ( FSGetCatalogInfo(&ref,kFSCatInfoNodeID,&info,NULL,&spec,NULL)!=noErr )
 return( false );
-    pt = strrchr(fname,'/')+1;
-    damnthemac[0] = strlen(pt);
-    strncpy( (char *) damnthemac+1,pt,damnthemac[0]);
+    pt = strrchr(fname,'/');
+    if ( pt!=NULL ) {
+	++pt;
+	damnthemac[0] = strlen(pt);
+	strncpy( (char *) damnthemac+1,pt,damnthemac[0]);
+    } else {
+	damnthemac[0] = strlen(fname);
+	strncpy( (char *) damnthemac+1,fname,damnthemac[0]);
+    }
     if ( (ret=FSMakeFSSpec(spec.vRefNum,info.nodeID,damnthemac,&spec))!=noErr &&
 	    ret!=fnfErr )
 return( false );
