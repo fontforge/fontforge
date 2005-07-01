@@ -247,7 +247,7 @@ static void traceback(Context *c) {
     int cnt = 0;
     while ( c!=NULL ) {
 	if ( cnt==1 ) fprintf( stderr, "Called from...\n" );
-	if ( cnt>0 ) fprintf( stderr, " %s: %d\n", c->filename, c->lineno );
+	if ( cnt>0 ) fprintf( stderr, " %s: line %d\n", c->filename, c->lineno );
 	calldatafree(c);
 	if ( c->err_env!=NULL )
 	    longjmp(*c->err_env,1);
@@ -304,8 +304,11 @@ static void error( Context *c, char *msg ) {
     /* All of fontforge's internal errors are in ASCII where there is */
     /*  no difference between latin1 and utf8. User errors are a different */
     /*  matter */
-    
-    fprintf( stderr, "%s: %d %s\n", c->filename, c->lineno, loc );
+
+    if ( c->lineno!=0 )
+	fprintf( stderr, "%s line: %d %s\n", c->filename, c->lineno, loc );
+    else
+	fprintf( stderr, "%s: %s\n", c->filename, loc );
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( !no_windowing_ui ) {
 	static unichar_t umsg[] = { '%','h','s',':',' ','%','d',' ','%','h','s',  0 };
@@ -324,7 +327,10 @@ static void errors( Context *c, char *msg, char *name) {
     unichar_t *t2 = script2u_copy(name);
     char *loc2 = u2def_copy(t2);
 
-    fprintf( stderr, "%s: %d %s: %s\n", c->filename, c->lineno, loc1, loc2 );
+    if ( c->lineno!=0 )
+	fprintf( stderr, "%s line: %d %s: %s\n", c->filename, c->lineno, loc1, loc2 );
+    else
+	fprintf( stderr, "%s: %s: %s\n", c->filename, loc1, loc2 );
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( !no_windowing_ui ) {
 	static unichar_t umsg[] = { '%','s',':',' ','%','d',' ','%','s',':',' ','%','h','s',  0 };
@@ -2006,14 +2012,21 @@ static int ParseCharIdent(Context *c, Val *val, int signal_error) {
 	else
 return( -1 );
     }
-    if ( bottom==-1 ) {
-	if ( signal_error )
-	    error( c, "Character not found" );
+    if ( bottom<0 || bottom>=map->enccount ) {
+	if ( signal_error ) {
+	    char buffer[40], *name = buffer;
+	    if ( val->type==v_int )
+		sprintf( buffer, "%d", val->u.ival );
+	    else if ( val->type == v_unicode )
+		sprintf( buffer, "U+%04X", val->u.ival );
+	    else
+		name = val->u.sval;
+	    if ( bottom==-1 )
+		errors( c, "Character not found", name );
+	    else
+		errors( c, "Character is not in font", name );
 return( -1 );
-    } else if ( bottom<0 || bottom>=map->enccount ) {
-	if ( signal_error )
-	    error( c, "Character is not in font" );
-return( -1 );
+	}
     }
 return( bottom );
 }
