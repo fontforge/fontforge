@@ -9240,6 +9240,8 @@ FontView *_FontViewCreate(SplineFont *sf) {
     int ps = sf->display_size<0 ? -sf->display_size :
 	     sf->display_size==0 ? default_fv_font_size : sf->display_size;
 
+    if ( ps>200 ) ps = 128;
+
     fv->nextsame = sf->fv;
     sf->fv = fv;
     if ( sf->mm!=NULL ) {
