@@ -7512,7 +7512,8 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,EncMap *map,int i) {
 
     if ( sf->cidmaster!=NULL )
 	dummy->name = namebuf;
-    else if ( map->enc->psnames!=NULL && map->enc->psnames[i]!=NULL )
+    else if ( map->enc->psnames!=NULL && i<map->enc->char_cnt &&
+	    map->enc->psnames[i]!=NULL )
 	dummy->name = map->enc->psnames[i];
     else
 	dummy->name = StdGlyphName(namebuf,dummy->unicodeenc,sf->uni_interp);
@@ -7534,6 +7535,7 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,EncMap *map,int i) {
 	dummy->width = 0;		/* Mark characters should be 0 width */
     dummy->parent = sf;
     dummy->orig_pos = 0xffff;
+    dummy->tex_height = *dummy->name;		/* Debugging */
 return( dummy );
 }
 
