@@ -235,7 +235,13 @@ return;
     if ( ch!='\0' )
 	strcat(temp,pt+1);
     cmd = galloc(strlen(temp)+strlen(fullspec)+8);
-    sprintf( cmd, temp, fullspec );
+    if ( strstr("%s",temp)!=NULL )
+	sprintf( cmd, temp, fullspec );
+    else {
+	strcpy(cmd,temp);
+	strcat(cmd, " ");
+	strcat(cmd,fullspec);
+    }
     strcat(cmd," &" );
     system(cmd);
     free( cmd ); free( temp ); free( format );
