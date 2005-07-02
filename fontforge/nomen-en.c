@@ -991,6 +991,7 @@ static char *str_OTFStyles = "Preferred Styles";
 static char *str_CompatableFull = "Compatable Full";
 static char *str_SampleText = "Sample Text";
 static char *str_TranslateStyle = "Translate Style";
+static char *str_BasedOnNamePane = "Based on field in Names pane"
     /* MS Language list -- http://support.microsoft.com/default.aspx?scid=kb;EN-US;q224804 */
     /* MS Reviewed 12/17/2001 */
 static char *str_Afrikaans = "Afrikaans";

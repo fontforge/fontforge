@@ -43,6 +43,7 @@ struct gfi_data {
     struct psdict *private;
     struct ttflangname *names;
     struct ttflangname def;
+    int basedon[ttf_namemax];
     unsigned int family_untitled: 1;
     unsigned int human_untitled: 1;
     unsigned int done: 1;
@@ -925,6 +926,7 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_StrID		5002
 #define CID_String		5003
 #define CID_TNDef		5004
+#define CID_BasedOn		5005
 
 #define CID_Comment		6001
 
@@ -4093,6 +4095,33 @@ static int GFI_DefaultStyles(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static void tn_recalculatedef(struct gfi_data *d,int cur_id) {
+    unichar_t versionbuf[40];
+
+    switch ( cur_id ) {
+      case ttf_copyright:
+	d->def.names[ttf_copyright] = GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Notice));
+      break;
+      case ttf_family:
+	d->def.names[ttf_family] = GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Family));
+      break;
+      case ttf_fullname:
+	d->def.names[ttf_fullname] = GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Human));
+      break;
+      case ttf_subfamily:
+	d->def.names[ttf_subfamily] = uGetModifiers(
+		GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Fontname)),
+		d->def.names[ttf_family],
+		GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Weight)));
+      break;
+      case ttf_version:
+	u_sprintf(versionbuf,versionformatspec,
+		_GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Version)));
+	d->def.names[ttf_version] = u_copy(versionbuf);
+      break;
+    }
+}
+
 static void TNFinishFormer(struct gfi_data *d) {
     GGadget *langlist = GWidgetGetControl(d->gw,CID_Language);
     int cur_lang = GGadgetGetFirstListSelectedItem(langlist);
@@ -4159,13 +4188,50 @@ static void TNFinishFormer(struct gfi_data *d) {
 
     cur_id =(int) ttfnameids[cur_id].userdata;
     cur_lang = (int) langs[cur_lang]->userdata;
+    if ( cur_lang==0x409 && (cur_id==ttf_copyright || cur_id==ttf_family ||
+	    cur_id==ttf_subfamily || cur_id==ttf_fullname || cur_id==ttf_version)) {
+	if ( d->basedon[cur_id] )
+	    tn_recalculatedef(d,cur_id);
+	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_BasedOn),true);
+	GGadgetSetChecked(GWidgetGetControl(d->gw,CID_BasedOn),d->basedon[cur_id]);
+	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_String),!d->basedon[cur_id]);
+    } else {
+	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_BasedOn),false);
+	GGadgetSetChecked(GWidgetGetControl(d->gw,CID_BasedOn),false);
+	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_String),true);
+    }
     TNNotePresence(d,cur_id);
-    for ( prev=NULL, cur = d->names; cur!=NULL && cur->lang!=cur_lang; cur=cur->next );
+    for ( cur = d->names; cur!=NULL && cur->lang!=cur_lang; cur=cur->next );
     GGadgetSetTitle(GWidgetGetControl(d->gw,CID_String),
 	    cur!=NULL && cur->names[cur_id]!=NULL?cur->names[cur_id]:
 	    cur_lang == 0x409 && d->def.names[cur_id]!=NULL?d->def.names[cur_id]:
 	    nullstr );
     GGadgetSetVisible(GWidgetGetControl(d->gw,CID_TNDef),cur_id==ttf_subfamily && cur_lang==0x409);
+}
+
+static int GFI_BasedOnChange(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	int cur_id = GGadgetGetFirstListSelectedItem(GWidgetGetControl(d->gw,CID_StrID));
+	struct ttflangname *cur;
+	static unichar_t nullstr[1] = { 0 };
+
+	cur_id =(int) ttfnameids[cur_id].userdata;
+	d->basedon[cur_id] = GGadgetIsChecked(GWidgetGetControl(d->gw,CID_BasedOn));
+	if ( d->basedon[cur_id] ) {
+	    tn_recalculatedef(d,cur_id);
+	    for ( cur = d->names; cur!=NULL && cur->lang!=0x409; cur=cur->next );
+	    if ( cur!=NULL ) {
+		free(cur->names[cur_id]);
+		cur->names[cur_id] = NULL;
+	    }
+	    GGadgetSetTitle(GWidgetGetControl(d->gw,CID_String),
+		    d->def.names[cur_id]!=NULL?d->def.names[cur_id]:
+		    nullstr );
+	}
+	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_String),!d->basedon[cur_id]);
+    }
+return( true );
 }
 
 static int GFI_LanguageChange(GGadget *g, GEvent *e) {
@@ -4225,25 +4291,20 @@ static void DefaultLanguage(struct gfi_data *d) {
     int i, found=-1, langlen;
     static char *envs[] = { "LC_ALL", "LC_MESSAGES", "LANG", NULL };
     GGadget *g = GWidgetGetControl(d->gw,CID_Language);
-    unichar_t versionbuf[40];
     int32 len;
     GTextInfo **langs;
     char langcountry[8], language[4];
     int langcode, langlocalecode;
+    struct ttflangname *cur;
 
     d->old_lang = -1;
     d->names_set = true;
     d->names = TTFLangNamesCopy(d->sf->names);
-    d->def.names[ttf_copyright] = GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Notice));
-    d->def.names[ttf_family] = GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Family));
-    d->def.names[ttf_fullname] = GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Human));
-    d->def.names[ttf_subfamily] = uGetModifiers(
-	    GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Fontname)),
-	    d->def.names[ttf_family],
-	    GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Weight)));
-    u_sprintf(versionbuf,versionformatspec,
-	    _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Version)));
-    d->def.names[ttf_version] = u_copy(versionbuf);
+    tn_recalculatedef(d,ttf_copyright);
+    tn_recalculatedef(d,ttf_family);
+    tn_recalculatedef(d,ttf_fullname);
+    tn_recalculatedef(d,ttf_subfamily);
+    tn_recalculatedef(d,ttf_version);
     DefaultTTFEnglishNames(&d->def, d->sf);
     TNNotePresence(d,ttf_subfamily);		/* What languages are available? */
 
@@ -4301,6 +4362,23 @@ static void DefaultLanguage(struct gfi_data *d) {
     }
     if ( found==-1 ) found = 0;
     GGadgetSelectOneListItem(g,found);
+
+    /* Find if standard names match ps equivalent */
+    found = LangSearch(langs,0x409,0x9);
+    for ( cur = d->names; cur!=NULL && cur->lang!=0x409; cur=cur->next );
+    if ( cur==NULL ) {
+	d->basedon[ttf_copyright] = true;
+	d->basedon[ttf_family] = true;
+	d->basedon[ttf_subfamily] = true;
+	d->basedon[ttf_fullname] = true;
+	d->basedon[ttf_version] = true;
+    } else {
+	d->basedon[ttf_copyright] = cur->names[ttf_copyright]==NULL;
+	d->basedon[ttf_family] = cur->names[ttf_family]==NULL;
+	d->basedon[ttf_subfamily] = cur->names[ttf_subfamily]==NULL;
+	d->basedon[ttf_fullname] = cur->names[ttf_fullname]==NULL;
+	d->basedon[ttf_version] = cur->names[ttf_version]==NULL;
+    }
 
     TNFinishFormer(d);
 }
@@ -5178,7 +5256,7 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     GWindow gw;
     GWindowAttrs wattrs;
     GTabInfo aspects[17], conaspects[7], smaspects[5];
-    GGadgetCreateData mgcd[10], ngcd[17], psgcd[28], tngcd[7],
+    GGadgetCreateData mgcd[10], ngcd[17], psgcd[28], tngcd[8],
 	pgcd[8], vgcd[22], pangcd[22], comgcd[3], atgcd[7], txgcd[23],
 	congcd[3], csubgcd[fpst_max-pst_contextpos][6], smgcd[3], smsubgcd[4][6],
 	mfgcd[8], mcgcd[8], szgcd[19], mkgcd[5];
@@ -5956,7 +6034,7 @@ return;
     tngcd[2].creator = GListButtonCreate;
 
     tngcd[3].gd.pos.x = 12; tngcd[3].gd.pos.y = GDrawPointsToPixels(NULL,tngcd[2].gd.pos.y+12);
-    tngcd[3].gd.pos.width = pos.width-40; tngcd[3].gd.pos.height = GDrawPointsToPixels(NULL,203);
+    tngcd[3].gd.pos.width = pos.width-40; tngcd[3].gd.pos.height = GDrawPointsToPixels(NULL,219);
     tngcd[3].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
     tngcd[3].creator = GGroupCreate;
 
@@ -5966,10 +6044,19 @@ return;
     tngcd[4].gd.cid = CID_String;
     tngcd[4].creator = GTextAreaCreate;
 
-    tngcd[5].gd.pos.x = 8; tngcd[5].gd.pos.y = GDrawPointsToPixels(NULL,tngcd[0].gd.pos.y+12);
-    tngcd[5].gd.pos.width = pos.width-32; tngcd[5].gd.pos.height = GDrawPointsToPixels(NULL,240);
-    tngcd[5].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
-    tngcd[5].creator = GGroupCreate;
+    tngcd[5].gd.pos.x = 14; tngcd[5].gd.pos.y = tngcd[4].gd.pos.y+tngcd[4].gd.pos.height+2;
+    tngcd[5].gd.flags = gg_visible | gg_enabled;
+    tngcd[5].gd.cid = CID_BasedOn;
+    tnlabel[5].text = (unichar_t *) _STR_BasedOnNamePane;
+    tnlabel[5].text_in_resource = true;
+    tngcd[5].gd.label = &tnlabel[5];
+    tngcd[5].gd.handle_controlevent = GFI_BasedOnChange;
+    tngcd[5].creator = GCheckBoxCreate;
+
+    tngcd[6].gd.pos.x = 8; tngcd[6].gd.pos.y = GDrawPointsToPixels(NULL,tngcd[0].gd.pos.y+12);
+    tngcd[6].gd.pos.width = pos.width-32; tngcd[6].gd.pos.height = GDrawPointsToPixels(NULL,256);
+    tngcd[6].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
+    tngcd[6].creator = GGroupCreate;
     
 /******************************************************************************/
     memset(&panlabel,0,sizeof(panlabel));
