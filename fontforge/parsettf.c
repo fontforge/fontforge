@@ -3930,7 +3930,8 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
     }
     if ( info->chars!=NULL )
 	for ( i=0; i<info->glyph_cnt; ++i )
-	    if ( info->chars[i]->unicodeenc==0xffff ) info->chars[i]->unicodeenc = -1;
+	    if ( info->chars[i]!=NULL && info->chars[i]->unicodeenc==0xffff )
+		info->chars[i]->unicodeenc = -1;
     if ( !justinuse ) {
 	if ( interp==ui_none )
 	    info->uni_interp = amscheck(info,map);
@@ -4698,13 +4699,14 @@ static void PsuedoEncodeUnencoded(EncMap *map,struct ttfinfo *info) {
     int i;
 
     for ( i=0; i<info->glyph_cnt; ++i )
-	info->chars[i]->ticked = false;
+	if ( info->chars[i]!=NULL )
+	    info->chars[i]->ticked = false;
     for ( i=0; i<map->enccount; ++i )
 	if ( map->map[i]!=-1 )
 	    info->chars[map->map[i]]->ticked = true;
     extras = 0;
     for ( i=0; i<info->glyph_cnt; ++i )
-	if ( !info->chars[i]->ticked )
+	if ( info->chars[i]!=NULL && !info->chars[i]->ticked )
 	    ++extras;
     if ( extras!=0 ) {
 	if ( map->enccount<=256 )
@@ -4723,7 +4725,7 @@ static void PsuedoEncodeUnencoded(EncMap *map,struct ttfinfo *info) {
 	map->enccount = base+extras;
 	extras = 0;
 	for ( i=0; i<info->glyph_cnt; ++i )
-	    if ( !info->chars[i]->ticked )
+	    if ( info->chars[i]!=NULL && !info->chars[i]->ticked )
 		map->map[base+extras++] = i;
     }
 }
