@@ -5669,9 +5669,15 @@ static void docall(Context *c,char *name,Val *val) {
 		strcpy(pt+1,name);
 	    }
 	    sub.script = fopen(sub.filename,"r");
-	    if ( sub.script==NULL )
-		error(&sub, "No such script-file or buildin function");
-	    else {
+	    if ( sub.script==NULL ) {
+		if ( sub.filename==name )
+		    error(&sub, "No built-in function or script-file");
+		else {
+		    char *filename = sub.filename;
+		    sub.filename = name;
+		    errors(&sub, "No built-in function or script-file", filename);
+		}
+	    } else {
 		sub.lineno = 1;
 		while ( !sub.returned && (tok = NextToken(&sub))!=tt_eof ) {
 		    backuptok(&sub);
