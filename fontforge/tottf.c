@@ -3336,11 +3336,18 @@ static void redoos2(struct alltabs *at) {
 	putshort(at->os2f,0);
 }
 
+#if 0
 static int icomp(const void *a, const void *b) {
     return *(int *)a - *(int *)b;
 }
+#endif
 
 static void dumpgasp(struct alltabs *at, SplineFont *sf) {
+#if 1
+    at->gaspf = tmpfile();
+    putshort(at->gaspf,0);	/* Version number */
+    putshort(at->gaspf,1);
+#else		/* What was I thinking? I don't check which bitmaps we are outputting even */
     BDFFont *bdf;
     int i, nbitmaps = 0, rangecnt = 0;
     int *bitmapsizes;
@@ -3373,12 +3380,13 @@ static void dumpgasp(struct alltabs *at, SplineFont *sf) {
 	    putshort(at->gaspf,0x0);	/* No grey scale, no gridfitting */
 	}
     }
+    gfree(bitmapsizes);
+#endif
     putshort(at->gaspf,0xffff);	/* Upper bound on pixels/em for this range */
     putshort(at->gaspf,0x2);	/* Grey scale, no gridfitting */
 				    /* No hints, so no grids to fit */
     at->gasplen = ftell(at->gaspf);
 	/* This table is always 32 bit aligned */
-    gfree(bitmapsizes);
 }
 
 #if 0
@@ -4637,6 +4645,8 @@ static int SFHasInstructions(SplineFont *sf) {
 return( false );		/* Truetype doesn't support cid keyed fonts */
 
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	if ( strcmp(sf->glyphs[i]->name,".notdef")==0 )
+    continue;		/* ff produces fonts with instructions in .notdef & not elsewhere. Ignore these */
 	if ( sf->glyphs[i]->ttf_instrs!=NULL )
 return( true );
     }
