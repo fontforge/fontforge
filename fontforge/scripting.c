@@ -1993,6 +1993,15 @@ static void bSelectNone(Context *c) {
     memset(c->curfv->selected,0,c->curfv->map->enccount);
 }
 
+static void bSelectInvert(Context *c) {
+    int i;
+
+    if ( c->a.argc!=1 )
+	error( c, "Wrong number of arguments");
+    for ( i=0; i<c->curfv->map->enccount; ++i )
+	c->curfv->selected[i] = !c->curfv->selected[i];
+}
+
 static int ParseCharIdent(Context *c, Val *val, int signal_error) {
     SplineFont *sf = c->curfv->sf;
     EncMap *map = c->curfv->map;
@@ -5093,6 +5102,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "Join", bJoin },
     { "SelectAll", bSelectAll },
     { "SelectNone", bSelectNone },
+    { "SelectInvert", bSelectInvert },
     { "SelectMore", bSelectMore },
     { "SelectFewer", bSelectFewer },
     { "Select", bSelect },
