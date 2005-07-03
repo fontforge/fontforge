@@ -5827,7 +5827,7 @@ static void handlename(Context *c,Val *val) {
 	    } else if ( strcmp(name,"$italicangle")==0 ) {
 		if ( c->curfv==NULL ) error(c,"No current font");
 		val->type = v_real;
-		val->u.ival = c->curfv->sf->italicangle;
+		val->u.fval = c->curfv->sf->italicangle;
 	    } else if ( strcmp(name,"$fontchanged")==0 ) {
 		if ( c->curfv==NULL ) error(c,"No current font");
 		val->type = v_int;
