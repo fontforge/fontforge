@@ -377,6 +377,7 @@ void UndoesFree(Undoes *undo) {
 	    /* Nothing else to free */;
 	  break;
 	  case ut_state: case ut_tstate: case ut_statehint: case ut_statename:
+	  case ut_hints:
 	    SplinePointListsFree(undo->u.state.splines);
 	    RefCharsFree(undo->u.state.refs);
 	    MinimumDistancesFree(undo->u.state.md);
@@ -384,7 +385,8 @@ void UndoesFree(Undoes *undo) {
 	    UHintListFree(undo->u.state.u.hints);
 	    ImageListsFree(undo->u.state.u.images);
 #else
-	    if ( undo->undotype==ut_statehint || undo->undotype==ut_statename )
+	    if ( undo->undotype==ut_statehint || undo->undotype==ut_statename ||
+		    undo->undotype==ut_hints )
 		UHintListFree(undo->u.state.u.hints);
 	    else
 		ImageListsFree(undo->u.state.u.images);
@@ -494,6 +496,22 @@ return(NULL);
 return( CVAddUndo(cv,undo));
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+
+Undoes *SCPreserveHints(SplineChar *sc) {
+    Undoes *undo;
+
+    if ( no_windowing_ui || maxundoes==0 )		/* No use for undoes in scripting */
+return(NULL);
+
+    undo = chunkalloc(sizeof(Undoes));
+
+    undo->undotype = ut_state;
+    undo->was_modified = sc->changed;
+    undo->undotype = ut_hints;
+    undo->u.state.u.hints = UHintCopy(sc,true);
+    undo->u.state.copied_from = sc->parent;
+return( AddUndo(undo,&sc->layers[ly_fore].undoes,&sc->layers[ly_fore].redoes));
+}
 
 Undoes *SCPreserveLayer(SplineChar *sc,int layer, int dohints) {
     Undoes *undo;
@@ -686,6 +704,12 @@ static void SCUndoAct(SplineChar *sc,int layer, Undoes *undo) {
 	int vwidth = sc->vwidth;
 	sc->vwidth = undo->u.width;
 	undo->u.width = vwidth;
+      } break;
+      case ut_hints: {
+	void *hints = UHintCopy(sc,false);
+	ExtractHints(sc,undo->u.state.u.hints,false);
+	undo->u.state.u.hints = hints;
+	SCOutOfDateBackground(sc);
       } break;
       case ut_state: case ut_tstate: case ut_statehint: case ut_statename: {
 	Layer *head = layer==ly_grid ? &sc->parent->grid : &sc->layers[layer];
@@ -927,14 +951,22 @@ static Undoes copybuffer;
 void CopyBufferFree(void) {
 
     switch( copybuffer.undotype ) {
+      case ut_hints:
+	UHintListFree(copybuffer.u.state.u.hints);
+      break;
       case ut_state: case ut_statehint:
 	SplinePointListsFree(copybuffer.u.state.splines);
 	RefCharsFree(copybuffer.u.state.refs);
 	AnchorPointsFree(copybuffer.u.state.anchor);
+#ifdef FONTFORGE_CONFIG_TYPE3
+	UHintListFree(copybuffer.u.state.u.hints);
+	ImageListsFree(copybuffer.u.state.u.images);
+#else
 	if ( copybuffer.undotype==ut_statehint )
 	    UHintListFree(copybuffer.u.state.u.hints);
 	else
 	    ImageListsFree(copybuffer.u.state.u.images);
+#endif
       break;
       case ut_bitmapsel:
 	BDFFloatFree(copybuffer.u.bmpstate.selection);
@@ -1195,7 +1227,8 @@ return( cur->undotype==ut_state || cur->undotype==ut_tstate ||
 	cur->undotype==ut_statehint || cur->undotype==ut_statename ||
 	cur->undotype==ut_width || cur->undotype==ut_vwidth ||
 	cur->undotype==ut_lbearing || cur->undotype==ut_rbearing ||
-	cur->undotype==ut_noop || cur->undotype==ut_possub );
+	cur->undotype==ut_hints || cur->undotype==ut_possub ||
+	cur->undotype==ut_noop );
 }
 
 int CopyContainsBitmap(void) {

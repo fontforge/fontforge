@@ -436,7 +436,7 @@ typedef struct undoes {
     struct undoes *next;
     enum undotype { ut_none=0, ut_state, ut_tstate, ut_statehint, ut_statename,
 	    ut_width, ut_vwidth, ut_lbearing, ut_rbearing, ut_possub,
-	    ut_bitmap, ut_bitmapsel, ut_composit, ut_multiple, ut_layers,
+	    ut_hints, ut_bitmap, ut_bitmapsel, ut_composit, ut_multiple, ut_layers,
 	    ut_noop } undotype;
     unsigned int was_modified: 1;
     unsigned int was_order2: 1;
@@ -1608,6 +1608,7 @@ extern BDFChar *BDFMakeGID(BDFFont *bdf,int gid);
 extern BDFChar *BDFMakeChar(BDFFont *bdf,EncMap *map,int enc);
 
 extern void SCUndoSetLBearingChange(SplineChar *sc,int lb);
+extern Undoes *SCPreserveHints(SplineChar *sc);
 extern Undoes *SCPreserveLayer(SplineChar *sc,int layer,int dohints);
 extern Undoes *SCPreserveState(SplineChar *sc,int dohints);
 extern Undoes *SCPreserveBackground(SplineChar *sc);

@@ -4456,6 +4456,7 @@ static void FVAutoHint(FontView *fv) {
 	    (gid = fv->map->map[i])!=-1 && SCWorthOutputting(fv->sf->glyphs[gid]) ) {
 	SplineChar *sc = fv->sf->glyphs[gid];
 	sc->manualhints = false;
+	/* Hint undoes are done in _SplineCharAutoHint */
 	SplineCharAutoHint(sc,bd);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 # ifdef FONTFORGE_CONFIG_GDRAW
@@ -4476,11 +4477,12 @@ static void FVAutoHint(FontView *fv) {
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 # ifdef FONTFORGE_CONFIG_GDRAW
 static void FVMenuAutoHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
 void FontViewMenu_AutoHint(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
-    FVAutoHint( (FontView *) GDrawGetUserData(gw) );
+    FVAutoHint( fv );
 }
 #endif
 
@@ -4711,6 +4713,7 @@ static void FVClearHints(FontView *fv) {
 	    (gid = fv->map->map[i])!=-1 && SCWorthOutputting(fv->sf->glyphs[gid]) ) {
 	SplineChar *sc = fv->sf->glyphs[gid];
 	sc->manualhints = true;
+	SCPreserveHints(sc);
 	SCClearHintMasks(sc,true);
 	StemInfosFree(sc->hstem);
 	StemInfosFree(sc->vstem);
