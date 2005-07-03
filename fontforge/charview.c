@@ -6180,7 +6180,7 @@ static void CVMenuAutoHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     /*int removeOverlap = e==NULL || !(e->u.mouse.state&ksm_shift);*/
 
-    /* !!!! Hint undoes???? */
+    /* Hint undoes are done in _SplineCharAutoHint */
     cv->sc->manualhints = false;
     SplineCharAutoHint(cv->sc,NULL);
     SCUpdateAll(cv->sc);
@@ -6214,6 +6214,7 @@ static void CVMenuAutoInstr(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void CVMenuClearHints(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
+    SCPreserveHints(cv->sc);
     if ( mi->mid==MID_ClearHStem ) {
 	StemInfosFree(cv->sc->hstem);
 	cv->sc->hstem = NULL;
@@ -6238,6 +6239,7 @@ static void CVMenuAddHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     if ( !CVTwoForePointsSelected(cv,&sp1,&sp2))
 return;
 
+    SCPreserveHints(cv->sc);
     if ( mi->mid==MID_AddHHint ) {
 	if ( sp1->me.y==sp2->me.y )
 return;
@@ -6296,7 +6298,7 @@ return;
 static void CVMenuCreateHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
-    CVCreateHint(cv,mi->mid==MID_CreateHHint);
+    CVCreateHint(cv,mi->mid==MID_CreateHHint,true);
 }
 
 static void CVMenuReviewHints(GWindow gw,struct gmenuitem *mi,GEvent *e) {

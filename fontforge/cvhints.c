@@ -311,6 +311,15 @@ return( true );
 static int RH_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	ReviewHintData *hd = GDrawGetUserData(GGadgetGetWindow(g));
+	SplineChar *sc = hd->cv->sc;
+	StemInfo *curh = sc->hstem, *curv = sc->vstem;
+	/* We go backwards here, but not for long. The point is to go back to */
+	/*  the original state so we can preserve it, now that we know we are */
+	/*  going to modify it */
+	sc->hstem = hd->oldh; sc->vstem = hd->oldv;
+	SCPreserveHints(sc);
+	sc->hstem = curh; sc->vstem = curv;
+
 	StemInfosFree(hd->oldh);
 	StemInfosFree(hd->oldv);
 	if ( hd->lastactive!=NULL )
@@ -382,7 +391,7 @@ return( true );
 static int RH_Add(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	ReviewHintData *hd = GDrawGetUserData(GGadgetGetWindow(g));
-	CVCreateHint(hd->cv,hd->ishstem);
+	CVCreateHint(hd->cv,hd->ishstem,false);
 	hd->active = hd->ishstem ? hd->cv->sc->hstem : hd->cv->sc->vstem;
 	RH_SetupHint(hd);
     }
@@ -641,6 +650,7 @@ void CVReviewHints(CharView *cv) {
 typedef struct createhintdata {
     unsigned int done: 1;
     unsigned int ishstem: 1;
+    unsigned int preservehints: 1;
     CharView *cv;
     GWindow gw;
 } CreateHintData;
@@ -656,6 +666,8 @@ static int CH_OK(GGadget *g, GEvent *e) {
 	width = GetIntR(hd->gw,CID_Width,_STR_Size,&err);
 	if ( err )
 return(true);
+	if ( hd->preservehints )
+	    SCPreserveHints(hd->cv->sc);
 	h = chunkalloc(sizeof(StemInfo));
 	h->start = base;
 	h->width = width;
@@ -696,7 +708,7 @@ return( false );
 return( true );
 }
 
-void CVCreateHint(CharView *cv,int ishstem) {
+void CVCreateHint(CharView *cv,int ishstem,int preservehints) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
@@ -707,6 +719,7 @@ void CVCreateHint(CharView *cv,int ishstem) {
 
     chd.done = false;
     chd.ishstem = ishstem;
+    chd.preservehints = preservehints;
     chd.cv = cv;
 
     if ( chd.gw==NULL ) {

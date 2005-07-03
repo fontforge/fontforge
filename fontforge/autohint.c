@@ -2865,6 +2865,7 @@ return( head );
 void _SplineCharAutoHint( SplineChar *sc, BlueData *bd, struct glyphdata *gd2 ) {
     struct glyphdata *gd;
 
+    SCPreserveHints(sc);
     StemInfosFree(sc->vstem); sc->vstem=NULL;
     StemInfosFree(sc->hstem); sc->hstem=NULL;
     DStemInfosFree(sc->dstem); sc->dstem=NULL;
