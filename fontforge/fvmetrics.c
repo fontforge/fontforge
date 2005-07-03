@@ -62,7 +62,7 @@ static int CW_OK(GGadget *g, GEvent *e) {
 	if ( GGadgetIsChecked(GWidgetGetControl(wd->gw,CID_Set)) ) {
 	    wd->type = st_set;
 	    wd->setto = GetRealR(wd->gw,CID_SetVal,rb1[wd->wtype],&err);
-	    if ( wd->setto<0 ) {
+	    if ( wd->setto<0 && wd->wtype==wt_width ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 		static int yesno[] = { _STR_Yes, _STR_No, 0 };
 		if ( GWidgetAskR(_STR_NegativeWidth, yesno, 0, 1, _STR_NegativeWidthCheck )==1 )
