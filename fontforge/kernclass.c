@@ -1171,36 +1171,39 @@ return;
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 	newd = galloc((kcd->first_cnt-remove_cnt)*kcd->second_cnt*sizeof(DeviceTable));
 #endif
-	for ( i=0; i<kcd->second_cnt; ++i ) {
-	    for ( j=k=0; j<kcd->first_cnt; ++j ) {
-		if ( !removethese[j]->selected )
-		    new[i*(kcd->first_cnt-remove_cnt)+k++] = kcd->offsets[i*kcd->first_cnt+j];
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
-		if ( !removethese[j]->selected )
-		    newd[i*(kcd->first_cnt-remove_cnt)+k-1] = kcd->adjusts[i*kcd->first_cnt+j];
-		else
-		    free(kcd->adjusts[i*kcd->first_cnt+j].corrections);
-#endif
+	for ( i=k=0; i<kcd->first_cnt; ++i ) {
+#ifndef FONTFORGE_CONFIG_DEVICETABLES
+	    if ( !removethese[i]->selected )
+		memcpy(new+(k++)*kcd->second_cnt,kcd->offsets+i*kcd->second_cnt,kcd->second_cnt*sizeof(int16));
+#else
+	    if ( !removethese[i]->selected ) {
+		memcpy(new+k*kcd->second_cnt,kcd->offsets+i*kcd->second_cnt,kcd->second_cnt*sizeof(int16));
+		memcpy(newd+(k++)*kcd->second_cnt,kcd->adjusts+i*kcd->second_cnt,kcd->second_cnt*sizeof(DeviceTable));
+	    } else {
+		for ( j=0; j<kcd->second_cnt; ++j )
+		    free(kcd->adjusts[i*kcd->second_cnt+j].corrections);
 	    }
+#endif
 	}
-	kcd->first_cnt -= remove_cnt;
+	kcd->first_cnt = k;
     } else {
 	new = galloc(kcd->first_cnt*(kcd->second_cnt-remove_cnt)*sizeof(int16));
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 	newd = galloc(kcd->first_cnt*(kcd->second_cnt-remove_cnt)*sizeof(DeviceTable));
 #endif
-	for ( i=k=0; i<kcd->second_cnt; ++i ) {
-	    if ( !removethese[i]->selected )
-		memcpy(new+(k++)*kcd->first_cnt,kcd->offsets+i*kcd->first_cnt,
-			kcd->first_cnt*sizeof(int16));
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
-	    if ( !removethese[i]->selected )
-		memcpy(newd+(k-1)*kcd->first_cnt,kcd->adjusts+i*kcd->first_cnt,
-			kcd->first_cnt*sizeof(DeviceTable));
-	    else
-		for ( j=0; j<kcd->first_cnt; ++j )
-		    free(kcd->adjusts[i*kcd->first_cnt+j].corrections);
+	for ( i=0; i<kcd->first_cnt; ++i ) {
+	    for ( j=k=0; j<kcd->second_cnt; ++j ) {
+#ifndef FONTFORGE_CONFIG_DEVICETABLES
+		if ( !removethese[j]->selected )
+		    new[i*(kcd->second_cnt-remove_cnt)+(k++)] = kcd->offsets[i*kcd->second_cnt+j];
+#else
+		if ( !removethese[j]->selected ) {
+		    new[i*(kcd->second_cnt-remove_cnt)+k] = kcd->offsets[i*kcd->second_cnt+j];
+		    newd[i*(kcd->second_cnt-remove_cnt)+(k++)] = kcd->adjusts[i*kcd->second_cnt+j];
+		} else
+		    free(kcd->adjusts[i*kcd->second_cnt+j].corrections);
 #endif
+	    }
 	}
 	kcd->second_cnt -= remove_cnt;
     }
