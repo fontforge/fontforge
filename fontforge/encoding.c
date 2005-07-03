@@ -2603,11 +2603,18 @@ return( any );
 void SFAddGlyphAndEncode(SplineFont *sf,SplineChar *sc,EncMap *basemap, int baseenc) {
     int gid, mapfound = false;
     FontView *fv;
+    BDFFont *bdf;
 
     if ( sf->cidmaster==NULL ) {
 	if ( sf->glyphcnt+1>=sf->glyphmax )
 	    sf->glyphs = grealloc(sf->glyphs,(sf->glyphmax+=10)*sizeof(SplineChar *));
 	gid = sf->glyphcnt++;
+	for ( bdf = sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+	    if ( sf->glyphcnt+1>=bdf->glyphmax )
+		bdf->glyphs = grealloc(bdf->glyphs,(bdf->glyphmax=sf->glyphmax)*sizeof(BDFChar *));
+	    memset(bdf->glyphs+bdf->glyphcnt,0,(sf->glyphcnt-bdf->glyphcnt)*sizeof(BDFChar *));
+	    bdf->glyphcnt = sf->glyphcnt;
+	}
     } else {
 	gid = baseenc;
 	if ( baseenc+1>=sf->glyphmax )
@@ -2615,6 +2622,14 @@ void SFAddGlyphAndEncode(SplineFont *sf,SplineChar *sc,EncMap *basemap, int base
 	if ( baseenc>=sf->glyphcnt ) {
 	    memset(sf->glyphs+sf->glyphcnt,0,(baseenc+1-sf->glyphcnt)*sizeof(SplineChar *));
 	    sf->glyphcnt = baseenc+1;
+	    for ( bdf = sf->cidmaster->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+		if ( baseenc+1>=bdf->glyphmax )
+		    bdf->glyphs = grealloc(bdf->glyphs,(bdf->glyphmax=baseenc+10)*sizeof(BDFChar *));
+		if ( baseenc+1>bdf->glyphcnt ) {
+		    memset(bdf->glyphs+bdf->glyphcnt,0,(baseenc+1-bdf->glyphcnt)*sizeof(BDFChar *));
+		    bdf->glyphcnt = baseenc+1;
+		}
+	    }
 	}
     }
     sf->glyphs[gid] = NULL;
