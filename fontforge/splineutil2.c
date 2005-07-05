@@ -655,10 +655,11 @@ static double ClosestSplineSolve(Spline1D *sp,double sought,double close_to_t) {
 return( t );
 }
 
-static double SigmaDeltas(Spline *spline,TPoint *mid, int cnt) {
+static double SigmaDeltas(Spline *spline,TPoint *mid, int cnt, DBounds *b) {
     int i, lasti;
     double xdiff, ydiff, sum, temp, t, lastt;
     SplinePoint *to = spline->to, *from = spline->from;
+    double t1, t2, x,y;
 
     if ( (xdiff = to->me.x-from->me.x)<0 ) xdiff = -xdiff;
     if ( (ydiff = to->me.y-from->me.y)<0 ) ydiff = -ydiff;
@@ -673,7 +674,7 @@ static double SigmaDeltas(Spline *spline,TPoint *mid, int cnt) {
 	    t = (ClosestSplineSolve(&spline->splines[1],mid[i].y,mid[i].t) +
 		    ClosestSplineSolve(&spline->splines[0],mid[i].x,mid[i].t))/2;
 	}
-	if ( t==lastt )
+	if ( t==lastt )		/* These last* values appear to be debugging */
 	    t = lastt + (mid[i].t - mid[lasti].t);
 	else {
 	    lastt = t;
@@ -685,7 +686,54 @@ static double SigmaDeltas(Spline *spline,TPoint *mid, int cnt) {
 	sum += temp*temp;
     }
 
+    /* Ok, we've got distances from a set of points on the old spline to the */
+    /*  new one. Let's do the reverse: find the extrema of the new and see how*/
+    /*  close they get to the bounding box of the old */
+    SplineFindExtrema(&spline->splines[0],&t1,&t2);
+    if ( t1!=-1 ) {
+	x = ((spline->splines[0].a*t1+spline->splines[0].b)*t1+spline->splines[0].c)*t1 + spline->splines[0].d;
+	if ( x<b->minx )
+	    sum += (x-b->minx)*(x-b->minx);
+	else if ( x>b->maxx )
+	    sum += (x-b->maxx)*(x-b->maxx);
+    }
+    if ( t2!=-1 ) {
+	x = ((spline->splines[0].a*t2+spline->splines[0].b)*t2+spline->splines[0].c)*t2 + spline->splines[0].d;
+	if ( x<b->minx )
+	    sum += (x-b->minx)*(x-b->minx);
+	else if ( x>b->maxx )
+	    sum += (x-b->maxx)*(x-b->maxx);
+    }
+    SplineFindExtrema(&spline->splines[1],&t1,&t2);
+    if ( t1!=-1 ) {
+	y = ((spline->splines[1].a*t1+spline->splines[1].b)*t1+spline->splines[1].c)*t1 + spline->splines[1].d;
+	if ( y<b->miny )
+	    sum += (y-b->miny)*(y-b->miny);
+	else if ( y>b->maxy )
+	    sum += (y-b->maxy)*(y-b->maxy);
+    }
+    if ( t2!=-1 ) {
+	y = ((spline->splines[1].a*t2+spline->splines[1].b)*t2+spline->splines[1].c)*t2 + spline->splines[1].d;
+	if ( y<b->miny )
+	    sum += (y-b->miny)*(y-b->miny);
+	else if ( y>b->maxy )
+	    sum += (y-b->maxy)*(y-b->maxy);
+    }
+
 return( sum );
+}
+
+static void ApproxBounds(DBounds *b,TPoint *mid, int cnt) {
+    int i;
+
+    b->minx = b->maxx = mid[0].x;
+    b->miny = b->maxy = mid[0].y;
+    for ( i=1; i<cnt; ++i ) {
+	if ( mid[i].x>b->maxx ) b->maxx = mid[i].x;
+	if ( mid[i].x<b->minx ) b->minx = mid[i].x;
+	if ( mid[i].y>b->maxy ) b->maxy = mid[i].y;
+	if ( mid[i].y<b->miny ) b->miny = mid[i].y;
+    }
 }
 
 /* I used to do a least squares aproach adding two more to the above set of equations */
@@ -698,8 +746,8 @@ return( sum );
 /*  improve it further yet */
 Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
 	TPoint *mid, int cnt, int order2) {
-    BasePoint tounit, fromunit;
-    double flen,tlen;
+    BasePoint tounit, fromunit, ftunit;
+    double flen,tlen,ftlen;
     Spline *spline, temp;
     BasePoint nextcp;
     int bettern, betterp;
@@ -707,7 +755,8 @@ Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
     int nocnt = 0, totcnt;
     double curdiff, bestdiff;
     int i,j,besti,bestj;
-    double fdiff, tdiff;
+    double fdiff, tdiff, fmax, tmax, fdotft, tdotft;
+    DBounds b;
 
     /* If all the selected points are at the same spot, and one of the */
     /*  end-points is also at that spot, then just copy the control point */
@@ -800,6 +849,20 @@ return( SplineMake2(from,to));
     trylen = (from->me.x-to->me.x)*tounit.x + (from->me.y-to->me.y)*tounit.y;
     if ( trylen>tlen ) tlen = trylen;
 
+    ftunit.x = (to->me.x-from->me.x); ftunit.y = (to->me.y-from->me.y);
+    ftlen = sqrt(ftunit.x*ftunit.x + ftunit.y*ftunit.y);
+    if ( ftlen!=0 ) {
+	ftunit.x /= ftlen; ftunit.y /= ftlen;
+    }
+    fdotft = fromunit.x*ftunit.x + fromunit.y*ftunit.y;
+    fmax = fdotft>0 ? ftlen/fdotft : 1e10;
+    tdotft = -tounit.x*ftunit.x - tounit.y*ftunit.y;
+    tmax = tdotft>0 ? ftlen/tdotft : 1e10;
+    /* At fmax, tmax the control points will stretch beyond the other endpoint*/
+    /*  when projected along the line between the two endpoints */
+
+    ApproxBounds(&b,mid,cnt);
+
     bestdiff = 1e10;
     besti = -1; bestj = -1;
     fdiff = flen/5;
@@ -809,13 +872,13 @@ return( SplineMake2(from,to));
     to->noprevcp = false;
     memset(&temp,0,sizeof(Spline));
     temp.from = from; temp.to = to;
-    for ( i=1; i<5; ++i ) {
+    for ( i=1; i<=4; ++i ) {
 	from->nextcp.x += fdiff*fromunit.x; from->nextcp.y += fdiff*fromunit.y;
 	to->prevcp = to->me;
-	for ( j=1; j<5; ++j ) {
+	for ( j=1; j<=4; ++j ) {
 	    to->prevcp.x += tdiff*tounit.x; to->prevcp.y += tdiff*tounit.y;
 	    SplineRefigure(&temp);
-	    curdiff = SigmaDeltas(&temp,mid,cnt);
+	    curdiff = SigmaDeltas(&temp,mid,cnt,&b);
 	    if ( curdiff<bestdiff ) {
 		bestdiff = curdiff;
 		besti = i; bestj=j;
@@ -832,7 +895,7 @@ return( SplineMake2(from,to));
     incrn = flen/16.0; incrp = tlen/16.0;
     offn = flen; offp = tlen;
     nocnt = 0;
-    curdiff = SigmaDeltas(spline,mid,cnt);
+    curdiff = SigmaDeltas(spline,mid,cnt,&b);
     totcnt = 0;
     forever {
 	double fadiff, fsdiff;
@@ -841,21 +904,21 @@ return( SplineMake2(from,to));
 	from->nextcp.x = from->me.x + (offn+incrn)*fromunit.x; from->nextcp.y = from->me.y + (offn+incrn)*fromunit.y;
 	to->prevcp.x = to->me.x + offp*tounit.x; to->prevcp.y = to->me.y + offp*tounit.y;
 	SplineRefigure(spline);
-	fadiff = SigmaDeltas(spline,mid,cnt);
+	fadiff = SigmaDeltas(spline,mid,cnt,&b);
 	from->nextcp.x = from->me.x + (offn-incrn)*fromunit.x; from->nextcp.y = from->me.y + (offn-incrn)*fromunit.y;
 	SplineRefigure(spline);
-	fsdiff = SigmaDeltas(spline,mid,cnt);
+	fsdiff = SigmaDeltas(spline,mid,cnt,&b);
 	from->nextcp.x = from->me.x + offn*fromunit.x; from->nextcp.y = from->me.y + offn*fromunit.y;
 
 	to->prevcp.x = to->me.x + (offp+incrp)*tounit.x; to->prevcp.y = to->me.y + (offp+incrp)*tounit.y;
 	SplineRefigure(spline);
-	tadiff = SigmaDeltas(spline,mid,cnt);
+	tadiff = SigmaDeltas(spline,mid,cnt,&b);
 	to->prevcp.x = to->me.x + (offp-incrn)*tounit.x; to->prevcp.y = to->me.y + (offp-incrn)*tounit.y;
 	SplineRefigure(spline);
-	tsdiff = SigmaDeltas(spline,mid,cnt);
+	tsdiff = SigmaDeltas(spline,mid,cnt,&b);
 	to->prevcp.x = to->me.x + offp*tounit.x; to->prevcp.y = to->me.y + offp*tounit.y;
 
-	if ( fsdiff<curdiff &&
+	if ( offn>=incrn && fsdiff<curdiff &&
 		(fsdiff<fadiff && fsdiff<tsdiff && fsdiff<tadiff)) {
 	    offn -= incrn;
 	    if ( bettern>0 )
@@ -864,7 +927,7 @@ return( SplineMake2(from,to));
 	    if ( tsdiff>curdiff && tadiff>curdiff ) incrp /= 2.0;
 	    nocnt = 0;
 	    curdiff = fsdiff;
-	} else if ( fadiff<curdiff &&
+	} else if ( offn+incrn<fmax && fadiff<curdiff &&
 		(fadiff<=fsdiff && fadiff<tsdiff && fadiff<tadiff)) {
 	    offn += incrn;
 	    if ( bettern<0 )
@@ -873,7 +936,7 @@ return( SplineMake2(from,to));
 	    if ( tsdiff>curdiff && tadiff>curdiff ) incrp /= 2.0;
 	    nocnt = 0;
 	    curdiff = fadiff;
-	} else if ( tsdiff<curdiff &&
+	} else if ( offp>=incrp && tsdiff<curdiff &&
 		(tsdiff<=fsdiff && tsdiff<=fadiff && tsdiff<tadiff)) {
 	    offp -= incrp;
 	    if ( betterp>0 )
@@ -882,7 +945,7 @@ return( SplineMake2(from,to));
 	    if ( fsdiff>curdiff && fadiff>curdiff ) incrn /= 2.0;
 	    nocnt = 0;
 	    curdiff = tsdiff;
-	} else if ( tadiff<curdiff &&
+	} else if ( offp+incrp<tmax && tadiff<curdiff &&
 		(tadiff<=fsdiff && tadiff<=fadiff && tadiff<=tsdiff)) {
 	    offp += incrp;
 	    if ( betterp>0 )
@@ -955,45 +1018,57 @@ return( len );
 
 static TPoint *SplinesFigureTPsBetween(SplinePoint *from, SplinePoint *to,
 	int *tot) {
-    int cnt, i, j;
+    int cnt, i, j, pcnt;
     double len, slen, lbase;
     SplinePoint *np;
     TPoint *tp;
+    double _lens[10], *lens = _lens;
+    int _cnts[10], *cnts = _cnts;
+    /* I used just to give every spline 10 points. But that gave much more */
+    /*  weight to small splines than to big ones */
 
-    cnt = 0; len = 0;
+    cnt = 0;
     for ( np = from->next->to; ; np = np->next->to ) {
 	++cnt;
-	len += SplineLenApprox(np->prev);
 	if ( np==to )
     break;
     }
-
-#if 0
-    extras = fcp = tcp = 0;
-    if ( from->pointtype!=pt_corner && !from->nonextcp ) {
-	extras += 4*cnt;
-	fcp = 1;
+    if ( cnt>10 ) {
+	lens = galloc(cnt*sizeof(double));
+	cnts = galloc(cnt*sizeof(int));
     }
-    if ( to->pointtype!=pt_corner && !to->noprevcp ) {
-	extras += 4*cnt;
-	tcp = 1;
+    cnt = 0; len = 0;
+    for ( np = from->next->to; ; np = np->next->to ) {
+	lens[cnt] = SplineLenApprox(np->prev);
+	len += lens[cnt];
+	++cnt;
+	if ( np==to )
+    break;
     }
-    tp = galloc((4*(cnt+1)+extras)*sizeof(TPoint)); i = 0;
-#endif
+    if ( len!=0 ) {
+	pcnt = 0;
+	for ( i=0; i<cnt; ++i ) {
+	    int pnts = rint( (10*cnt*lens[i])/len );
+	    if ( pnts<2 ) pnts = 2;
+	    cnts[i] = pnts;
+	    pcnt += pnts;
+	}
+    } else
+	pcnt = 2*cnt;
 
-    tp = galloc(10*(cnt+1)*sizeof(TPoint)); i = 0;
+    tp = galloc((pcnt+1)*sizeof(TPoint)); i = 0;
     if ( len==0 ) {
-	for ( ; i<=10*cnt; ++i ) {
-	    tp[i].t = i/(10.0*cnt);
+	for ( i=0; i<=pcnt; ++i ) {
+	    tp[i].t = i/(pcnt);
 	    tp[i].x = from->me.x;
 	    tp[i].y = from->me.y;
 	}
     } else {
 	lbase = 0;
-	for ( np = from->next->to; ; np = np->next->to ) {
+	for ( i=cnt=0, np = from->next->to; ; np = np->next->to, ++cnt ) {
 	    slen = SplineLenApprox(np->prev);
-	    for ( j=0; j<10; ++j ) {
-		double t = j/10.0;
+	    for ( j=0; j<cnts[cnt]; ++j ) {
+		double t = j/(double) cnts[cnt];
 		tp[i].t = (lbase+ t*slen)/len;
 		tp[i].x = ((np->prev->splines[0].a*t+np->prev->splines[0].b)*t+np->prev->splines[0].c)*t + np->prev->splines[0].d;
 		tp[i++].y = ((np->prev->splines[1].a*t+np->prev->splines[1].b)*t+np->prev->splines[1].c)*t + np->prev->splines[1].d;
@@ -1003,44 +1078,9 @@ static TPoint *SplinesFigureTPsBetween(SplinePoint *from, SplinePoint *to,
 	break;
 	}
     }
+    if ( cnts!=_cnts ) free(cnts);
+    if ( lens!=_lens ) free(lens);
 
-#if 0
-    /* for curved and tangent points we need the slope at the end points to */
-    /*  be the same as it was before. So we add a point near the start of the */
-    /*  from spline and weight it heavily */
-    if ( fcp ) {
-	np = from->next->to;
-	temp = (np->me.x-np->prev->from->me.x);
-	if ( temp<0 ) temp = -temp;
-	slen = temp;
-	temp = (np->me.y-np->prev->from->me.y);
-	if ( temp<0 ) temp = -temp;
-	slen += temp;
-	t = .05;
-	tp[i].t = (t*slen)/len;
-	tp[i].x = ((np->prev->splines[0].a*t+np->prev->splines[0].b)*t+np->prev->splines[0].c)*t + np->prev->splines[0].d;
-	tp[i].y = ((np->prev->splines[1].a*t+np->prev->splines[1].b)*t+np->prev->splines[1].c)*t + np->prev->splines[1].d;
-	for ( j=1; j<4*cnt; ++j )
-	    tp[i+j] = tp[i];
-	i += j;
-    }
-    if ( tcp ) {
-	np = to;
-	temp = (np->me.x-np->prev->from->me.x);
-	if ( temp<0 ) temp = -temp;
-	slen = temp;
-	temp = (np->me.y-np->prev->from->me.y);
-	if ( temp<0 ) temp = -temp;
-	slen += temp;
-	t = .95;
-	tp[i].t = (t*slen)/len;
-	tp[i].x = ((np->prev->splines[0].a*t+np->prev->splines[0].b)*t+np->prev->splines[0].c)*t + np->prev->splines[0].d;
-	tp[i].y = ((np->prev->splines[1].a*t+np->prev->splines[1].b)*t+np->prev->splines[1].c)*t + np->prev->splines[1].d;
-	for ( j=1; j<4*cnt; ++j )
-	    tp[i+j] = tp[i];
-	i += j;
-    }
-#endif
     *tot = i;
 	
 return( tp );
