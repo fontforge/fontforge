@@ -8355,13 +8355,16 @@ static char *jongsung[] = { "", "G", "GG", "GS", "N", "NJ", "NH", "D", "L", "LG"
 
 static void FVDrawInfo(FontView *fv,GWindow pixmap,GEvent *event) {
     GRect old, r;
-    char buffer[250];
+    char buffer[250], *pt;
     unichar_t ubuffer[250];
     Color bg = GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(pixmap));
     SplineChar *sc, dummy;
     SplineFont *sf = fv->sf;
     EncMap *map = fv->map;
     int gid;
+    int uni;
+    Color fg = 0xff0000;
+    int ulen, tlen;
 
     if ( event->u.expose.rect.y+event->u.expose.rect.height<=fv->mbh )
 return;
@@ -8405,20 +8408,34 @@ return;
 
     strcat(buffer,"  ");
     uc_strcpy(ubuffer,buffer);
-    if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x110000 && _UnicodeNameAnnot!=NULL &&
-	    _UnicodeNameAnnot[sc->unicodeenc>>16][(sc->unicodeenc>>8)&0xff][sc->unicodeenc&0xff].name!=NULL ) {
-	uc_strncat(ubuffer, _UnicodeNameAnnot[sc->unicodeenc>>16][(sc->unicodeenc>>8)&0xff][sc->unicodeenc&0xff].name, 80);
-    } else if ( sc->unicodeenc>=0xAC00 && sc->unicodeenc<=0xD7A3 ) {
+    ulen = u_strlen(ubuffer);
+
+    uni = sc->unicodeenc;
+    if ( uni==-1 && (pt=strchr(sc->name,'.'))!=NULL && pt-sc->name<30 ) {
+	strncpy(buffer,sc->name,pt-sc->name);
+	buffer[(pt-sc->name)] = '\0';
+	uni = UniFromName(buffer,fv->sf->uni_interp,map->enc);
+	if ( uni!=-1 ) {
+	    sprintf( buffer, "U+%04X ", uni );
+	    uc_strcat(ubuffer,buffer);
+	}
+	fg = 0x707070;
+    }
+    if ( uni!=-1 && uni<0x110000 && _UnicodeNameAnnot!=NULL &&
+	    _UnicodeNameAnnot[uni>>16][(uni>>8)&0xff][uni&0xff].name!=NULL ) {
+	uc_strncat(ubuffer, _UnicodeNameAnnot[uni>>16][(uni>>8)&0xff][uni&0xff].name, 80);
+    } else if ( uni>=0xAC00 && uni<=0xD7A3 ) {
 	sprintf( buffer, "Hangul Syllable %s%s%s",
-		chosung[(sc->unicodeenc-0xAC00)/(21*28)],
-		jungsung[(sc->unicodeenc-0xAC00)/28%21],
-		jongsung[(sc->unicodeenc-0xAC00)%28] );
+		chosung[(uni-0xAC00)/(21*28)],
+		jungsung[(uni-0xAC00)/28%21],
+		jongsung[(uni-0xAC00)%28] );
 	uc_strncat(ubuffer,buffer,80);
-    } else if ( sc->unicodeenc!=-1 ) {
-	uc_strncat(ubuffer, UnicodeRange(sc->unicodeenc),80);
+    } else if ( uni!=-1 ) {
+	uc_strncat(ubuffer, UnicodeRange(uni),80);
     }
 
-    GDrawDrawText(pixmap,10,fv->mbh+11,ubuffer,-1,NULL,0xff0000);
+    tlen = GDrawDrawText(pixmap,10,fv->mbh+11,ubuffer,ulen,NULL,0xff0000);
+    GDrawDrawText(pixmap,10+tlen,fv->mbh+11,ubuffer+ulen,-1,NULL,fg);
     GDrawPopClip(pixmap,&old);
 }
 
