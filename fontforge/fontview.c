@@ -6341,8 +6341,9 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	    mi->ti.disabled = anychars<0;
 	  break;
 	  case MID_NextDef:
+	    pos = anychars+1;
 	    if ( anychars<0 ) pos = map->enccount;
-	    for ( pos = anychars+1; pos<map->enccount &&
+	    for ( ; pos<map->enccount &&
 		    (map->map[pos]==-1 || !SCWorthOutputting(sf->glyphs[map->map[pos]]));
 		    ++pos );
 	    mi->ti.disabled = pos==map->enccount;
