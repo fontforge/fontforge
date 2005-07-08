@@ -2830,8 +2830,9 @@ return( NULL );
 	    int hassli = (strmatch(tok,"KernsSLI:")==0);
 	    int isv = *tok=='V';
 	    int has_orig = strstr(tok,"SLIFO:")!=NULL;
-	    if ( strmatch(tok,"KernsSLIF:")==0 ) hassli=2;
-	    if ( strmatch(tok,"VKernsSLIF:")==0 ) hassli=2;
+	    if ( strmatch(tok,"KernsSLIF:")==0 || strmatch(tok,"KernsSLIFO:")==0 ||
+		    strmatch(tok,"VKernsSLIF:")==0 || strmatch(tok,"VKernsSLIFO:")==0 )
+		hassli=2;
 	    while ( (hassli==1 && fscanf(sfd,"%d %d %d", &index, &off, &sli )==3) ||
 		    (hassli==2 && fscanf(sfd,"%d %d %d %d", &index, &off, &sli, &flags )==4) ||
 		    (hassli==0 && fscanf(sfd,"%d %d", &index, &off )==2) ) {
