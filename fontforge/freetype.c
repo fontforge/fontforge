@@ -408,7 +408,7 @@ return( NULL );
 		ftc->glyph_indeces[notdefpos] = 0;
 	    if ( ff==ff_pfa || ff==ff_pfb ) {
 		for ( i=0 ; i<sf->glyphcnt; ++i ) {
-		    if ( SCWorthOutputting(sf->glyphs[i]))
+		    if ( i!=notdefpos && SCWorthOutputting(sf->glyphs[i]))
 			ftc->glyph_indeces[i] = cnt++;
 		}
 	    } else {
