@@ -730,12 +730,13 @@ return(true);
 return( false );
 }
 
-static void SFDDumpRefs(FILE *sfd,RefChar *refs, char *name,EncMap *map) {
+static void SFDDumpRefs(FILE *sfd,RefChar *refs, char *name,EncMap *map, int *newgids) {
     RefChar *ref;
 
     for ( ref=refs; ref!=NULL; ref=ref->next ) if ( ref->sc!=NULL ) {
 	fprintf(sfd, "Refer: %d %d %c %g %g %g %g %g %g\n",
-		    ref->sc->orig_pos, ref->sc->unicodeenc,
+		    newgids!=NULL ? newgids[ref->sc->orig_pos]:ref->sc->orig_pos,
+		    ref->sc->unicodeenc,
 		    ref->selected?'S':'N',
 		    ref->transform[0], ref->transform[1], ref->transform[2],
 		    ref->transform[3], ref->transform[4], ref->transform[5]);
@@ -747,14 +748,15 @@ static char *joins[] = { "miter", "round", "bevel", "inher", NULL };
 static char *caps[] = { "butt", "round", "square", "inher", NULL };
 #endif
 
-static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map) {
+static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
     ImageList *img;
     KernPair *kp;
     PST *liga;
     int i;
 
     fprintf(sfd, "StartChar: %s\n", sc->name );
-    fprintf(sfd, "Encoding: %d %d %d\n", map->backmap[sc->orig_pos], sc->unicodeenc, sc->orig_pos);
+    fprintf(sfd, "Encoding: %d %d %d\n", map->backmap[sc->orig_pos], sc->unicodeenc,
+	    newgids!=NULL?newgids[sc->orig_pos]:sc->orig_pos);
     fprintf(sfd, "Width: %d\n", sc->width );
     if ( sc->vwidth!=sc->parent->ascent+sc->parent->descent )
 	fprintf(sfd, "VWidth: %d\n", sc->vwidth );
@@ -819,7 +821,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map) {
 		fprintf(sfd, "SplineSet\n" );
 		SFDDumpSplineSet(sfd,sc->layers[i].splines);
 	    }
-	    SFDDumpRefs(sfd,sc->layers[i].refs,sc->name,map);
+	    SFDDumpRefs(sfd,sc->layers[i].refs,sc->name,map,newgids);
 	}
     } else
 #endif
@@ -829,20 +831,24 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map) {
 	    SFDDumpSplineSet(sfd,sc->layers[ly_fore].splines);
 	    SFDDumpMinimumDistances(sfd,sc);
 	}
-	SFDDumpRefs(sfd,sc->layers[ly_fore].refs,sc->name,map);
+	SFDDumpRefs(sfd,sc->layers[ly_fore].refs,sc->name,map,newgids);
     }
     if ( sc->kerns!=NULL ) {
 	fprintf( sfd, "KernsSLIFO:" );
 	for ( kp = sc->kerns; kp!=NULL; kp=kp->next )
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    if ( (kp->off!=0 || kp->adjust!=NULL) && !SFDOmit(kp->sc)) {
-		fprintf( sfd, " %d %d %d %d", kp->sc->orig_pos, kp->off, kp->sli, kp->flags );
+		fprintf( sfd, " %d %d %d %d",
+			newgids!=NULL?newgids[kp->sc->orig_pos]:kp->sc->orig_pos,
+			kp->off, kp->sli, kp->flags );
 		if ( kp->adjust!=NULL ) putc(' ',sfd);
 		SFDDumpDeviceTable(sfd,kp->adjust);
 	    }
 #else
 	    if ( kp->off!=0 && !SFDOmit(kp->sc))
-		fprintf( sfd, " %d %d %d %d", kp->sc->orig_pos, kp->off, kp->sli, kp->flags );
+		fprintf( sfd, " %d %d %d %d",
+			newgids!=NULL?newgids[kp->sc->orig_pos]:kp->sc->orig_pos,
+			kp->off, kp->sli, kp->flags );
 #endif
 	fprintf(sfd, "\n" );
     }
@@ -850,7 +856,9 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map) {
 	fprintf( sfd, "VKernsSLIFO:" );
 	for ( kp = sc->vkerns; kp!=NULL; kp=kp->next )
 	    if ( kp->off!=0 && !SFDOmit(kp->sc))
-		fprintf( sfd, " %d %d %d %d", kp->sc->orig_pos, kp->off, kp->sli, kp->flags );
+		fprintf( sfd, " %d %d %d %d",
+			newgids!=NULL?newgids[kp->sc->orig_pos]:kp->sc->orig_pos,
+			kp->off, kp->sli, kp->flags );
 	fprintf(sfd, "\n" );
     }
     for ( liga=sc->possub; liga!=NULL; liga=liga->next ) {
@@ -916,12 +924,13 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map) {
     fprintf(sfd,"EndChar\n" );
 }
 
-static void SFDDumpBitmapChar(FILE *sfd,BDFChar *bfc, int enc) {
+static void SFDDumpBitmapChar(FILE *sfd,BDFChar *bfc, int enc,int *newgids) {
     struct enc85 encrypt;
     int i;
 
     fprintf(sfd, "BDFChar: %d %d %d %d %d %d %d\n",
-	    bfc->orig_pos, enc, bfc->width, bfc->xmin, bfc->xmax, bfc->ymin, bfc->ymax );
+	    newgids!=NULL ? newgids[bfc->orig_pos] : bfc->orig_pos, enc,
+	    bfc->width, bfc->xmin, bfc->xmax, bfc->ymin, bfc->ymax );
     memset(&encrypt,'\0',sizeof(encrypt));
     encrypt.sfd = sfd;
     for ( i=0; i<=bfc->ymax-bfc->ymin; ++i ) {
@@ -940,7 +949,7 @@ static void SFDDumpBitmapChar(FILE *sfd,BDFChar *bfc, int enc) {
 #endif
 }
 
-static void SFDDumpBitmapFont(FILE *sfd,BDFFont *bdf,EncMap *encm) {
+static void SFDDumpBitmapFont(FILE *sfd,BDFFont *bdf,EncMap *encm,int *newgids) {
     int i;
 
 #if defined(FONTFORGE_CONFIG_GDRAW)
@@ -952,7 +961,7 @@ static void SFDDumpBitmapFont(FILE *sfd,BDFFont *bdf,EncMap *encm) {
 	    bdf->ascent, bdf->descent, BDFDepth(bdf), bdf->foundry?bdf->foundry:"" );
     for ( i=0; i<bdf->glyphcnt; ++i ) {
 	if ( bdf->glyphs[i]!=NULL )
-	    SFDDumpBitmapChar(sfd,bdf->glyphs[i],encm->backmap[i]);
+	    SFDDumpBitmapChar(sfd,bdf->glyphs[i],encm->backmap[i],newgids);
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressNext();
 #elif defined(FONTFORGE_CONFIG_GTK)
@@ -1082,6 +1091,7 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map) {
     FPST *fpst;
     ASM *sm;
     int isv;
+    int *newgids = NULL;
 
     fprintf(sfd, "FontName: %s\n", sf->fontname );
     if ( sf->fullname!=NULL )
@@ -1494,11 +1504,20 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map) {
 	    realcnt = 0;
 	    for ( i=0; i<sf->glyphcnt; ++i ) if ( !SFDOmit(sf->glyphs[i]) )
 		++realcnt;
+	    if ( realcnt!=sf->glyphcnt ) {
+		newgids = galloc(sf->glyphcnt*sizeof(int));
+		realcnt = 0;
+		for ( i=0; i<sf->glyphcnt; ++i )
+		    if ( SFDOmit(sf->glyphs[i]) )
+			newgids[i] = -1;
+		    else
+			newgids[i] = realcnt++;
+	    }
 	}
 	fprintf(sfd, "BeginChars: %d %d\n", enccount, realcnt );
 	for ( i=0; i<sf->glyphcnt; ++i ) {
 	    if ( !SFDOmit(sf->glyphs[i]) )
-		SFDDumpChar(sfd,sf->glyphs[i],map);
+		SFDDumpChar(sfd,sf->glyphs[i],map,newgids);
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    GProgressNext();
 #elif defined(FONTFORGE_CONFIG_GTK)
@@ -1507,8 +1526,10 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map) {
 	}
 	fprintf(sfd, "EndChars\n" );
 	for ( i=0; i<map->enccount; ++i ) {
-	    if ( map->map[i]!=-1 && map->backmap[map->map[i]]!=i )
-		fprintf( sfd, "DupEnc: %d %d\n", i, map->map[i]);
+	    if ( map->map[i]!=-1 && map->backmap[map->map[i]]!=i &&
+		    !SFDOmit(sf->glyphs[map->map[i]]) )
+		fprintf( sfd, "DupEnc: %d %d\n", i,
+			newgids!=NULL?newgids[map->map[i]]: map->map[i]);
 	}
     }
 
@@ -1519,8 +1540,10 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map) {
 	gwwv_progress_change_line2(_("Saving Bitmaps"));
 #endif
     for ( bdf = sf->bitmaps; bdf!=NULL; bdf=bdf->next )
-	SFDDumpBitmapFont(sfd,bdf,map);
+	SFDDumpBitmapFont(sfd,bdf,map,newgids);
     fprintf(sfd, sf->cidmaster==NULL?"EndSplineFont\n":"EndSubSplineFont\n" );
+    if ( newgids!=NULL )
+	free(newgids);
 }
 
 static void SFD_MMDump(FILE *sfd,SplineFont *sf,EncMap *map) {
@@ -2614,7 +2637,15 @@ return( NULL );
 		if ( sc->orig_pos==65535 )
 		    sc->orig_pos = orig_pos++;
 		    /* An old mark meaning: "I don't know" */
-		else if ( sc->orig_pos+1 > orig_pos )
+		if ( sc->orig_pos<sf->glyphcnt && sf->glyphs[sc->orig_pos]!=NULL )
+		    sc->orig_pos = sf->glyphcnt;
+		if ( sc->orig_pos>=sf->glyphcnt ) {
+		    if ( sc->orig_pos>=sf->glyphmax )
+			sf->glyphs = grealloc(sf->glyphs,(sf->glyphmax = sc->orig_pos+10)*sizeof(SplineChar *));
+		    memset(sf->glyphs+sf->glyphcnt,0,(sc->orig_pos+1-sf->glyphcnt)*sizeof(SplineChar *));
+		    sf->glyphcnt = sc->orig_pos+1;
+		}
+		if ( sc->orig_pos+1 > orig_pos )
 		    orig_pos = sc->orig_pos+1;
 	    } else if ( sf->cidmaster!=NULL ) {		/* In cid fonts the orig_pos is just the cid */
 		sc->orig_pos = enc;
@@ -4870,7 +4901,7 @@ return;
 	    }
 	}
 	if ( ssf->glyphs[i]!=NULL && ssf->glyphs[i]->changed )
-	    SFDDumpChar( asfd,ssf->glyphs[i],map);
+	    SFDDumpChar( asfd,ssf->glyphs[i],map,NULL);
     }
     fprintf( asfd, "EndChars\n" );
     fprintf( asfd, "EndSplineFont\n" );

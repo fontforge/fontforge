@@ -170,7 +170,7 @@ static int figureProperEncoding(SplineFont *sf,EncMap *map, BDFFont *b, int enc,
 	else if ( sf->onlybitmaps && ((sf->bitmaps==b && b->next==NULL) || sf->bitmaps==NULL) ) i = enc;
 	gid = ( i>=map->enccount || i<0 ) ? -1 : map->map[i];
 	if ( gid==-1 || sf->glyphs[gid]==NULL || strcmp(sf->glyphs[gid]->name,name)!=0 ) {
-	    SplineChar *sc = SFMakeChar(sf,map,enc);
+	    SplineChar *sc = SFMakeChar(sf,map,enc==-1?sf->glyphcnt:enc);
 	    if ( sf->onlybitmaps || !sc->widthset ) {
 		sc->width = swidth;
 		sc->widthset = true;
