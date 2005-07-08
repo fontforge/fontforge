@@ -3555,10 +3555,17 @@ return( false );
 static void SCReplaceWith(SplineChar *dest, SplineChar *src) {
     int opos=dest->orig_pos, uenc=dest->unicodeenc;
     Undoes *u[2], *r1;
-    SplineSet *back = dest->layers[ly_back].splines;
-    ImageList *images = dest->layers[ly_back].images;
     struct splinecharlist *scl = dest->dependents;
     RefChar *refs;
+    int layer;
+#ifdef FONTFORGE_CONFIG_TYPE3
+    int lc;
+    Layer *layers;
+#else
+    SplineSet *back = dest->layers[ly_back].splines;
+    ImageList *images = dest->layers[ly_back].images;
+#endif
+    char namebuf[40];
 
     if ( src==dest )
 return;
@@ -3568,8 +3575,13 @@ return;
     u[0] = dest->layers[ly_fore].undoes; u[1] = dest->layers[ly_back].undoes; r1 = dest->layers[ly_back].redoes;
 
     free(dest->name);
-    SplinePointListsFree(dest->layers[ly_fore].splines);
-    RefCharsFree(dest->layers[ly_fore].refs);
+    for ( layer = ly_fore; layer<dest->layer_cnt; ++layer ) {
+	SplinePointListsFree(dest->layers[layer].splines);
+	RefCharsFree(dest->layers[layer].refs);
+#ifdef FONTFORGE_CONFIG_TYPE3
+	ImageListsFree(dest->layers[layer].images);
+#endif
+    }
     StemInfosFree(dest->hstem);
     StemInfosFree(dest->vstem);
     DStemInfosFree(dest->dstem);
@@ -3579,17 +3591,40 @@ return;
     PSTFree(dest->possub);
     free(dest->ttf_instrs);
 
+#ifdef FONTFORGE_CONFIG_TYPE3
+    layers = dest->layers;
+    lc = dest->layer_cnt;
+    *dest = *src;
+    dest->layers = galloc(dest->layer_cnt*sizeof(Layer));
+    memcpy(&dest->layers[ly_back],&layers[ly_back],sizeof(Layer));
+    for ( layer=ly_fore; layer<dest->layer_cnt; ++layer ) {
+	memcpy(&dest->layers[layer],&src->layers[layer],sizeof(Layer));
+	dest->layers[layer].undoes = dest->layers[layer].redoes = NULL;
+	src->layers[layer].splines = NULL;
+	src->layers[layer].images = NULL;
+	src->layers[layer].refs = NULL;
+    }
+    for ( layer=ly_fore; layer<dest->layer_cnt && layer<lc; ++layer )
+	dest->layers[layer].undoes = layers[layer].undoes;
+    for ( ; layer<lc; ++layer )
+	UndoesFree(layers[layer].undoes);
+    free(layers);
+#else
     *dest = *src;
     dest->layers[ly_back].images = images;
     dest->layers[ly_back].splines = back;
     dest->layers[ly_fore].undoes = u[0]; dest->layers[ly_back].undoes = u[1]; dest->layers[ly_fore].redoes = NULL; dest->layers[ly_back].redoes = r1;
+
+    src->layers[ly_fore].splines = NULL;
+    src->layers[ly_fore].refs = NULL;
+#endif
     dest->orig_pos = opos; dest->unicodeenc = uenc;
     dest->dependents = scl;
     dest->namechanged = true;
 
-    src->name = copy(".notdef");
-    src->layers[ly_fore].splines = NULL;
-    src->layers[ly_fore].refs = NULL;
+    sprintf(namebuf,"NameMe-%d", src->orig_pos);
+    src->name = copy(namebuf);
+    src->unicodeenc = -1;
     src->hstem = NULL;
     src->vstem = NULL;
     src->dstem = NULL;
@@ -3603,11 +3638,12 @@ return;
     /* Retain the dependents */
 
     /* Fix up dependant info */
-    for ( refs = dest->layers[ly_fore].refs; refs!=NULL; refs=refs->next ) {
-	for ( scl=refs->sc->dependents; scl!=NULL; scl=scl->next )
-	    if ( scl->sc==src )
-		scl->sc = dest;
-    }
+    for ( layer=ly_fore; layer<dest->layer_cnt; ++layer )
+	for ( refs = dest->layers[layer].refs; refs!=NULL; refs=refs->next ) {
+	    for ( scl=refs->sc->dependents; scl!=NULL; scl=scl->next )
+		if ( scl->sc==src )
+		    scl->sc = dest;
+	}
     SCCharChangedUpdate(src);
     SCCharChangedUpdate(dest);
 }
