@@ -1615,7 +1615,7 @@ return( true );
 return( false );
       break;
       case et_destroy:
-	if ( kcd->kcld!=NULL ) {
+	if ( kcd!=NULL && kcd->kcld!=NULL ) {
 	    kcd->kcld->kcd = NULL;
 	    GGadgetSetList(GWidgetGetControl(kcd->kcld->gw,CID_List),
 		    KCSLIArray(kcd->sf,kcd->isv),false);
@@ -2556,6 +2556,7 @@ void KernPairD(SplineFont *sf,SplineChar *sc1,SplineChar *sc2,int isv) {
     GDrawSetVisible(kcd.gw,true);
     while ( !kcd.done )
 	GDrawProcessOneEvent(NULL);
+    GDrawSetUserData(kcd.gw,NULL);
     GDrawDestroyWindow(kcd.gw);
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
