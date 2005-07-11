@@ -2983,6 +2983,7 @@ GTextInfo *GListChangeLine(GGadget *list,int pos, const unichar_t *line) {
     }
     new[i] = gcalloc(1,sizeof(GTextInfo));
     GGadgetSetList(list,new,false);
+    GGadgetScrollListToPos(list,pos);
 return( new[pos]);
 }
 
@@ -3005,6 +3006,7 @@ GTextInfo *GListAppendLine(GGadget *list,const unichar_t *line,int select) {
     new[i]->selected = select;
     new[i+1] = gcalloc(1,sizeof(GTextInfo));
     GGadgetSetList(list,new,false);
+    GGadgetScrollListToPos(list,i);
 return( new[i]);
 }
 
