@@ -2805,6 +2805,35 @@ return;
     }
 }
 
+static void _SCHintsChanged(SplineChar *sc) {
+    struct splinecharlist *dlist;
+
+    if ( !sc->changedsincelasthinted ) {
+	sc->changedsincelasthinted = true;
+	FVMarkHintsOutOfDate(sc);
+    }
+
+    for ( dlist=sc->dependents; dlist!=NULL; dlist=dlist->next )
+	_SCHintsChanged(dlist->sc);
+}
+
+void SCHintsChanged(SplineChar *sc) {
+    struct splinecharlist *dlist;
+
+    sc->changedsincelasthinted = false;		/* We just applied a hinting change */
+    if ( !sc->changed ) {
+	sc->changed = true;
+	FVToggleCharChanged(sc);
+	SCRefreshTitles(sc);
+	if ( !sc->parent->changed ) {
+	    sc->parent->changed = true;
+	    FVSetTitle(sc->parent->fv);
+	}
+    }
+    for ( dlist=sc->dependents; dlist!=NULL; dlist=dlist->next )
+	_SCHintsChanged(dlist->sc);
+}
+
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void ptcountcheck(SplineChar *sc) {
     CharView *cv;
@@ -2847,6 +2876,7 @@ void CVSetCharChanged(CharView *cv,int changed) {
 	    }
 	}
 	if ( changed ) {
+	    sc->changedsincelasthinted = true;
 	    sc->changed_since_autosave = true;
 	    sf->changed_since_autosave = true;
 	    sf->changed_since_xuidchanged = true;
@@ -2854,6 +2884,7 @@ void CVSetCharChanged(CharView *cv,int changed) {
 		fv->cidmaster->changed_since_autosave = true;
 		fv->cidmaster->changed_since_xuidchanged = true;
 	    }
+	    _SCHintsChanged(cv->sc);
 	}
 	if ( cv->drawmode==dm_fore ) {
 	    if ( changed )
@@ -2908,6 +2939,7 @@ void _SCCharChangedUpdate(SplineChar *sc,int changed) {
 	sf->changed = true;
 	sf->changed_since_autosave = true;
 	sf->changed_since_xuidchanged = true;
+	_SCHintsChanged(sc);
     }
     if ( sf->cidmaster!=NULL )
 	sf->cidmaster->changed = sf->cidmaster->changed_since_autosave =
@@ -4692,7 +4724,7 @@ static void CVClearBackground(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void _CVPaste(CharView *cv) {
     enum undotype ut = CopyUndoType();
     if ( ut!=ut_lbearing )	/* The lbearing code does this itself */
-	CVPreserveState(cv);
+	CVPreserveStateHints(cv);
     if ( ut!=ut_width && ut!=ut_vwidth && ut!=ut_lbearing && ut!=ut_rbearing && ut!=ut_possub )
 	CVClearSel(cv);
     PasteToCV(cv);
@@ -5309,7 +5341,7 @@ static void transfunc(void *d,real transform[6],int otype,BVTFunc *bvts,
     int anya;
 
     cv->p.transany = CVAnySel(cv,NULL,NULL,NULL,&anya);
-    CVPreserveState(cv);
+    CVPreserveStateHints(cv);
     if ( cv->drawmode==dm_fore && (flags&fvt_dobackground) )
 	SCPreserveBackground(cv->sc);
     CVTransFunc(cv,transform,flags);
@@ -6215,6 +6247,7 @@ static void CVMenuClearHints(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
     SCPreserveHints(cv->sc);
+    SCHintsChanged(cv->sc);
     if ( mi->mid==MID_ClearHStem ) {
 	StemInfosFree(cv->sc->hstem);
 	cv->sc->hstem = NULL;
@@ -6240,6 +6273,7 @@ static void CVMenuAddHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 return;
 
     SCPreserveHints(cv->sc);
+    SCHintsChanged(cv->sc);
     if ( mi->mid==MID_AddHHint ) {
 	if ( sp1->me.y==sp2->me.y )
 return;

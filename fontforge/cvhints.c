@@ -219,7 +219,7 @@ static void RH_MovePoints(ReviewHintData *hd,StemInfo *active,int start,int widt
     int which;
 
     if ( !hd->undocreated ) {
-	SCPreserveState(sc,false);
+	SCPreserveState(sc,true);
 	hd->undocreated = true;
     }
 
@@ -314,8 +314,8 @@ static int RH_OK(GGadget *g, GEvent *e) {
 	SplineChar *sc = hd->cv->sc;
 	StemInfo *curh = sc->hstem, *curv = sc->vstem;
 	/* We go backwards here, but not for long. The point is to go back to */
-	/*  the original state so we can preserve it, now that we know we are */
-	/*  going to modify it */
+	/*  the original hint state so we can preserve it, now that we know we*/
+	/*  are going to modify it */
 	sc->hstem = hd->oldh; sc->vstem = hd->oldv;
 	SCPreserveHints(sc);
 	sc->hstem = curh; sc->vstem = curv;
@@ -329,6 +329,7 @@ static int RH_OK(GGadget *g, GEvent *e) {
 	/* Everything else got done as we went along... */
 	SCOutOfDateBackground(hd->cv->sc);
 	SCUpdateAll(hd->cv->sc);
+	SCHintsChanged(hd->cv->sc);
 	hd->done = true;
     }
 return( true );
@@ -666,8 +667,10 @@ static int CH_OK(GGadget *g, GEvent *e) {
 	width = GetIntR(hd->gw,CID_Width,_STR_Size,&err);
 	if ( err )
 return(true);
-	if ( hd->preservehints )
+	if ( hd->preservehints ) {
 	    SCPreserveHints(hd->cv->sc);
+	    SCHintsChanged(hd->cv->sc);
+	}
 	h = chunkalloc(sizeof(StemInfo));
 	h->start = base;
 	h->width = width;

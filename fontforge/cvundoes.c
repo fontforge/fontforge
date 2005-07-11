@@ -495,6 +495,15 @@ return(NULL);
 #endif
 return( CVAddUndo(cv,undo));
 }
+
+Undoes *CVPreserveStateHints(CharView *cv) {
+    Undoes *undo = CVPreserveState(cv);
+    if ( CVLayer(cv)==ly_fore ) {
+	undo->undotype = ut_statehint;
+	undo->u.state.u.hints = UHintCopy(cv->sc,true);
+    }
+return( undo );
+}
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 Undoes *SCPreserveHints(SplineChar *sc) {

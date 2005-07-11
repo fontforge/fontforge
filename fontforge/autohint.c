@@ -2893,7 +2893,7 @@ void _SplineCharAutoHint( SplineChar *sc, BlueData *bd, struct glyphdata *gd2 ) 
     sc->hconflicts = StemListAnyConflicts(sc->hstem);
 
     SCOutOfDateBackground(sc);
-    sc->parent->changed = true;
+    SCHintsChanged(sc);
 }
 
 void SplineCharAutoHint( SplineChar *sc, BlueData *bd ) {
