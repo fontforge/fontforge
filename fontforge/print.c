@@ -42,6 +42,11 @@ char *printcommand=NULL;
 int printtype = pt_unknown;
 static int use_gv;
 
+struct kernclassmap {
+    int *firstkc;		/* maps each gid to a kern class # */
+    int *secondkc;
+};
+
 typedef struct printinfo {
     FontView *fv;
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -97,6 +102,7 @@ typedef struct printinfo {
 			        /* the font. -1 => not mapped (no encodings) */
     long start_cur_page;
     int lastfont, intext;
+    struct kernclassmap *kcm;
 } PI;
 
 static struct printdefaults {
@@ -106,6 +112,55 @@ static struct printdefaults {
     unichar_t *text;
 } pdefs[] = { { &custom, pt_fontdisplay }, { &custom, pt_chars }, { &custom, pt_fontsample }};
 /* defaults for print from fontview, charview, metricsview */
+
+static int KCFindMatch(char *name,char **lists,int cnt) {
+    int i, ch;
+    char *start, *pt;
+
+    for ( i=cnt-1; i>0; --i ) {
+	for ( pt=lists[i]; *pt; ) {
+	    while ( *pt==' ' ) ++pt;
+	    start = pt;
+	    while ( *pt!='\0' && *pt!=' ' ) ++pt;
+	    ch = *pt; *pt = '\0';
+	    if ( strcmp(start,name)==0 ) {
+		*pt = ch;
+return( i );
+	    }
+	    *pt = ch;
+	}
+    }
+return( 0 );
+}
+    
+static struct kernclassmap *KernClassMap(SplineFont *sf) {
+    KernClass *kc;
+    struct kernclassmap *kcm;
+    int i, j;
+
+    for ( i=0, kc = sf->kerns; kc!=NULL; ++i, kc=kc->next );
+    if ( i==0 )
+return( NULL );
+    kcm = gcalloc(i+1,sizeof(struct kernclassmap));
+    for ( i=0, kc = sf->kerns; kc!=NULL; ++i, kc=kc->next ) {
+	kcm[i].firstkc = gcalloc(sf->glyphcnt,sizeof(int));
+	kcm[i].secondkc = gcalloc(sf->glyphcnt,sizeof(int));
+	for ( j=0; j<sf->glyphcnt; ++j ) if ( sf->glyphs[j]!=NULL ) {
+	    kcm[i].firstkc[j] = KCFindMatch(sf->glyphs[j]->name,kc->firsts,kc->first_cnt);
+	    kcm[i].secondkc[j] = KCFindMatch(sf->glyphs[j]->name,kc->seconds,kc->second_cnt);
+	}
+    }
+return( kcm );
+}
+
+static void KernClassMapFree(struct kernclassmap *kcm) {
+    int i;
+    for ( i=0; kcm[i].firstkc!=NULL; ++i ) {
+	free( kcm[i].firstkc);
+	free( kcm[i].secondkc);
+    }
+    free(kcm);
+}
 
 static void pdf_addobject(PI *pi) {
     if ( pi->next_object==0 ) {
@@ -1572,7 +1627,7 @@ return;
     }
 }
 
-static int AnyKerns(SplineChar *first, SplineChar *second) {
+static int AnyKerns(SplineChar *first, SplineChar *second, struct kernclassmap *kcm) {
     KernPair *kp;
 
     if ( first==NULL || second==NULL )
@@ -1581,6 +1636,16 @@ return( 0 );
 	if ( kp->sc==second )
 return( kp->off );
 
+    if ( kcm!=NULL && first->parent->kerns!=NULL ) {
+	int i;
+	KernClass *kc;
+	for ( i=0, kc=first->parent->kerns; kc!=NULL; ++i, kc=kc->next ) {
+	    int off = kc->offsets[ kcm[i].firstkc[first->orig_pos]*kc->second_cnt +
+		    kcm[i].secondkc[second->orig_pos] ];
+	    if ( off!=0 )
+return( off );
+	}
+    }
 return( 0 );
 }
 
@@ -1597,7 +1662,7 @@ static unichar_t *PIFindEnd(PI *pi, unichar_t *pt, unichar_t *ept) {
 	nsc = findchar(pi,*npt);
 	if ( sc!=NULL ) {
 	    chlen = sc->width*pi->scale;
-	    chlen += AnyKerns(sc,nsc)*pi->scale;
+	    chlen += AnyKerns(sc,nsc,pi->kcm)*pi->scale;
 	    if ( chlen+len>max )
 return( pt );
 	    len += chlen;
@@ -1620,7 +1685,7 @@ static int PIFindLen(PI *pi, unichar_t *pt, unichar_t *ept) {
 	nsc = findchar(pi,*npt);
 	if ( sc!=NULL ) {
 	    chlen = sc->width*pi->scale;
-	    chlen += AnyKerns(sc,nsc)*pi->scale;
+	    chlen += AnyKerns(sc,nsc,pi->kcm)*pi->scale;
 	    len += chlen;
 	}
 	pt = npt;
@@ -1896,7 +1961,7 @@ static void PIDumpChars(PI *pi, unichar_t *pt, unichar_t *ept, int xstart) {
 		AnchorPosFree(apos);
 	    } else if ( npt>pt+1 )
 		PIDoCombiners(pi,sc,pt+1);
-	    off = AnyKerns(sc,nsc);
+	    off = AnyKerns(sc,nsc,pi->kcm);
 	    if ( off!=0 ) {
 		if ( pi->printtype==pt_pdf ) {
 		    if ( !pi->intext ) {
@@ -1995,6 +2060,7 @@ static void PIFontSample(PI *pi,unichar_t *sample) {
 
     if ( !PIDownloadFont(pi))
 return;
+    pi->kcm = KernClassMap(pi->sf);
     for ( i=0; pi->pointsizes[i]!=0; ++i ) {
 	pi->pointsize = pi->pointsizes[i];
 	pi->extravspace = pi->pointsize/6;
@@ -2039,6 +2105,7 @@ return;
     }
 
     dump_trailer(pi);
+    KernClassMapFree(pi->kcm);
 }
 
 /* ************************************************************************** */
