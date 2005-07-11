@@ -434,19 +434,22 @@ void AnchorClassDecompose(SplineFont *sf,AnchorClass *_ac, int classcnt, int *su
     for ( j=0; j<2; ++j ) {
 	for ( i=0; i<gmax; ++i ) if ( (gid = gi==NULL ? i : gi->bygid[i])!=-1 && sf->glyphs[gid]!=NULL ) {
 	    for ( ac = _ac, k=0; k<classcnt; ac=ac->next ) if ( ac->matches ) {
-		for ( test=sf->glyphs[gid]->anchor; test!=NULL && test->anchor!=ac; test=test->next );
-		if ( test==NULL )
-		    /* Do Nothing */;
-		else if ( test->type==at_mark ) {
-		    if ( j )
-			marks[k][subcnts[k]] = sf->glyphs[gid];
-		    ++subcnts[k];
-	    break;
-		} else if ( test->type!=at_centry && test->type!=at_cexit ) {
-		    if ( heads[test->type].glyphs!=NULL )
-			heads[test->type].glyphs[heads[test->type].cnt] = sf->glyphs[gid];
-		    ++heads[test->type].cnt;
-	    break;
+		for ( test=sf->glyphs[gid]->anchor; test!=NULL ; test=test->next ) {
+		    if ( test->anchor==ac ) {
+			if ( test->type==at_mark ) {
+			    if ( j )
+				marks[k][subcnts[k]] = sf->glyphs[gid];
+			    ++subcnts[k];
+			    if ( ac->type!=act_mkmk )
+		break;
+			} else if ( test->type!=at_centry && test->type!=at_cexit ) {
+			    if ( heads[test->type].glyphs!=NULL )
+				heads[test->type].glyphs[heads[test->type].cnt] = sf->glyphs[gid];
+			    ++heads[test->type].cnt;
+			    if ( ac->type!=act_mkmk )
+		break;
+			}
+		    }
 		}
 		++k;
 	    }
@@ -1278,7 +1281,8 @@ static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
 	for ( l=0; l<3; ++l ) {
 	    for ( j=0; j<cnt; ++j ) {
 		for ( k=0, ac=_ac; k<classcnt; ++k, ac=ac->next ) {
-		    for ( ap=base[j]->anchor; ap!=NULL && ap->anchor!=ac; ap=ap->next );
+		    for ( ap=base[j]->anchor; ap!=NULL && (ap->anchor!=ac || ap->type!=at);
+			    ap=ap->next );
 		    if ( ap!=NULL ) switch ( l ) {
 		      case 0:
 			offset += 2;
@@ -1379,7 +1383,8 @@ static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
 	    putshort(gpos,0);		/* Only one class */
 	else {
 	    for ( k=0, ac=_ac; k<classcnt; ++k, ac=ac->next ) {
-		for ( ap = markglyphs[j]->anchor; ap!=NULL && ap->anchor!=ac; ap=ap->next );
+		for ( ap = markglyphs[j]->anchor; ap!=NULL && (ap->anchor!=ac || ap->type!=at_mark);
+			ap=ap->next );
 		if ( ap!=NULL )
 	    break;
 	    }
