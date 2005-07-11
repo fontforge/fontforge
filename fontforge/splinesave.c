@@ -673,9 +673,6 @@ static void refmoveto(GrowBuf *gb,BasePoint *current,BasePoint startstop[MmMax*2
     BasePoint to[MmMax];
     int i;
 
-    if ( refs!=NULL && AnyRefs(refs[0]->sc))		/* if it contains references, they must be in exactly the right places */
-return;
-
     for ( i=0; i<instance_count; ++i ) {
 	to[i] = startstop[i*2+0];
 	if ( refs!=NULL ) {
@@ -964,6 +961,8 @@ static void CvtPsRSplineSet(GrowBuf *gb, SplineChar *scs[MmMax], int instance_co
 	    refs[i] = refs[i]->next;
 	}
 	_CvtPsSplineSet(gb,spls,instance_count,current,round,hdb,startend,scs[0]->parent->order2,stroked);
+	if ( spls[i]!=NULL )
+	    startend = NULL;
     }
 }
 
@@ -1094,7 +1093,7 @@ return( reverserefs(ret) );
 }
 
 static int TrySubrRefs(GrowBuf *gb, struct pschars *subrs, SplineChar *scs[MmMax],
-	int instance_count, int round, int self) {
+	int instance_count, int round, int self, BasePoint *startend,int iscjk) {
     RefChar *refs[MmMax];
     BasePoint current[MmMax], *bp;
     DBounds sb, rb;
@@ -1105,6 +1104,18 @@ static int TrySubrRefs(GrowBuf *gb, struct pschars *subrs, SplineChar *scs[MmMax
 	current[j].x = round?rint(sb.minx):sb.minx; current[j].y = 0;
     }
     if ( self ) {
+	if ( !AnyRefs(scs[0]) && (scs[0]->hstem!=NULL || scs[0]->vstem!=NULL )) {
+	    DBounds b;
+	    int i;
+	    for ( i=0; i<instance_count; ++i ) {
+		SplineCharFindBounds(scs[i],&b);
+		scs[i]->lsidebearing = round?rint(b.minx):b.minx;
+	    }
+	    CvtPsHints(gb,scs,instance_count,true,round,iscjk,NULL);
+	    CvtPsHints(gb,scs,instance_count,false,round,iscjk,NULL);
+	    for ( i=0; i<instance_count; ++i )
+		scs[i]->lsidebearing = 0;
+	}
 	refmoveto(gb,current,(BasePoint *) (subrs->keys[scs[0]->ttf_glyph]),
 		instance_count,false,round,NULL,NULL);
 	AddNumber(gb,scs[0]->ttf_glyph,round);
@@ -1117,12 +1128,12 @@ return( true );
 	    RefChar *r;
 	    refs[j] = scs[j]->layers[ly_fore].refs;
 	    for ( r=scs[j]->layers[ly_fore].refs; r!=NULL; r=r->next ) {
-		if ( r->sc->hconflicts || r->sc->vconflicts || r->sc->anyflexes || AnyRefs(r->sc) )
+		if ( r->sc->hconflicts || r->sc->vconflicts || r->sc->anyflexes )
 		    SplineCharFindBounds(r->sc,&rb);
 		if ( r->sc->ttf_glyph==0x7fff ||
-			(( r->sc->hconflicts || r->sc->vconflicts || r->sc->anyflexes || AnyRefs(r->sc) ) &&
+			(( r->sc->hconflicts || r->sc->vconflicts || r->sc->anyflexes ) &&
 				(r->transform[4]!=0 || r->transform[5]!=0 ||
-					current[j].x!=round ? rint(rb.minx) : rb.minx))) {
+					current[j].x!=(round ? rint(rb.minx) : rb.minx)))) {
 return( false );
 		}
 	    }
@@ -1135,6 +1146,14 @@ return( false );
     /* Exception: If a reffed char has hint conflicts (and it isn't translated) */
     /*  then its hints are built in */
     /* Then we need to do an rmoveto to do the appropriate translation */
+    if ( startend!=NULL ) {
+	BasePoint *rstarts = (BasePoint *) (subrs->keys[refs[0]->sc->ttf_glyph]);
+	for ( j=0; j<instance_count; ++j ) {
+	    startend[2*j].x = rstarts[2*j].x + refs[0]->transform[4];
+	    startend[2*j].y = rstarts[2*j].y + refs[0]->transform[5];
+	}
+	/* this char starts where the first reference starts */
+    }
     while ( refs[0]!=NULL ) {
 	if ( refs[0]->sc->hconflicts || refs[0]->sc->vconflicts || refs[0]->sc->anyflexes || AnyRefs(refs[0]->sc) )
 	    /* Hints already done */;
@@ -1145,12 +1164,14 @@ return( false );
 	    if ( gb->pt+1 >= gb->end )
 		GrowBuffer(gb);
 	    *gb->pt++ = 10;			/* callsubr */
- 
 	}
 	if ( gb->pt+20>=gb->end )
 	    GrowBuffer(gb);
 	bp = (BasePoint *) (subrs->keys[refs[0]->sc->ttf_glyph]);
-	refmoveto(gb,current,bp,instance_count,false,round,NULL,refs);
+	if ( startend==NULL )
+	    refmoveto(gb,current,bp,instance_count,false,round,NULL,refs);
+	else
+	    startend = NULL;		/* No moveto for first ref in a subr */
 	AddNumber(gb,refs[0]->sc->ttf_glyph,round);
 	*gb->pt++ = 10;				/* callsubr */
 	for ( j=0; j<instance_count; ++j ) {
@@ -1197,7 +1218,7 @@ return( t );
 }
 
 static int IsSeacable(GrowBuf *gb, struct pschars *subrs, SplineChar *scs[MmMax],
-    int instance_count, int round, int dontseac) {
+	int instance_count, int round, int dontseac, BasePoint *startend, int iscjk) {
     /* can be at most two chars in a seac (actually must be exactly 2, but */
     /*  I'll put in a space if there's only one */
     RefChar *r1, *r2, *rt, *refs;
@@ -1207,7 +1228,7 @@ static int IsSeacable(GrowBuf *gb, struct pschars *subrs, SplineChar *scs[MmMax]
     real data[MmMax][6];
 
     if ( scs[0]->ttf_glyph!=0x7fff )
-return( TrySubrRefs(gb,subrs,scs,instance_count,round,true));
+return( TrySubrRefs(gb,subrs,scs,instance_count,round,true,startend,iscjk));
 
     for ( j=0 ; j<instance_count; ++j )
 	if ( !IsPSRefable(scs[j]))
@@ -1263,7 +1284,7 @@ return( false );
 	    r2->adobe_enc==-1 ||
 	    ((r1->transform[4]!=0 || r1->transform[5]!=0 || r1->sc->width!=scs[0]->width ) &&
 		 (r2->transform[4]!=0 || r2->transform[5]!=0 || r2->sc->width!=scs[0]->width)) )
-return( TrySubrRefs(gb,subrs,scs,instance_count,round,false));
+return( TrySubrRefs(gb,subrs,scs,instance_count,round,false,startend,iscjk));
 
     swap = false;
     if ( r1->transform[4]!=0 || r1->transform[5]!=0 ) {
@@ -1408,7 +1429,8 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
     /*  add another reference to it later. CID keyed fonts also can't use */
     /*  seac (they have no encoding so it doesn't work), that's what iscjk&0x100 */
     /*  tests for */
-    if ( IsSeacable(&gb,subrs,scs,instance_count,round,startend!=NULL || (iscjk&0x100))) {
+    if ( IsSeacable(&gb,subrs,scs,instance_count,round,
+	    startend!=NULL || (iscjk&0x100), startend,iscjk)) {
 	/* All Done */;
 	/* All should share the same refs, so all should be seac-able if one is */
     } else {
@@ -1426,7 +1448,8 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
 	    hdb = &hintdb;
 	}
 	CvtPsSplineSet(&gb,scs,instance_count,current,round,hdb,startend,sc->parent->order2,sc->parent->strokedfont);
-	CvtPsRSplineSet(&gb,scs,instance_count,current,round,hdb,NULL,sc->parent->order2,sc->parent->strokedfont);
+	CvtPsRSplineSet(&gb,scs,instance_count,current,round,hdb,
+		scs[0]->layers[ly_fore].splines==NULL?startend:NULL,sc->parent->order2,sc->parent->strokedfont);
     }
     if ( gb.pt+1>=gb.end )
 	GrowBuffer(&gb);
@@ -1456,13 +1479,12 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
 return( ret );
 }
 
-static void CvtSimpleHints(GrowBuf *gb, SplineChar *sc,BasePoint *startend,
+static void CvtNoHints(GrowBuf *gb, SplineChar *sc,BasePoint *startend,
 	int round, enum fontformat format,int iscjk) {
     MMSet *mm = sc->parent->mm;
     int i,instance_count;
     SplineChar *scs[MmMax];
     BasePoint current[MmMax];
-    DBounds b;
 
     if ( (format==ff_mma || format==ff_mmb) && mm!=NULL ) {
 	instance_count = mm->instance_count;
@@ -1480,6 +1502,7 @@ static void CvtSimpleHints(GrowBuf *gb, SplineChar *sc,BasePoint *startend,
 	/*  already seen the procedure call to invoke us */
 	/* if ( iscjk ) CounterHints1(&gb,sc,round);*/
     }
+/*
     for ( i=0; i<instance_count; ++i ) {
 	SplineCharFindBounds(scs[i],&b);
 	scs[i]->lsidebearing = round?rint(b.minx):b.minx;
@@ -1488,6 +1511,8 @@ static void CvtSimpleHints(GrowBuf *gb, SplineChar *sc,BasePoint *startend,
     CvtPsHints(gb,scs,instance_count,false,round,iscjk,NULL);
     for ( i=0; i<instance_count; ++i )
 	scs[i]->lsidebearing = 0;
+*/
+/* Should be no hints in subroutines which can be relocated */
     memset(current,0,instance_count*sizeof(BasePoint));
     CvtPsSplineSet(gb,scs,instance_count,current,round,NULL,startend,
 	    sc->parent->order2,sc->parent->strokedfont);
@@ -1596,13 +1621,13 @@ static void SplineFont2Subrs1(SplineFont *sf,int round, int iscjk,
 
 		/* None of the generated subrs starts with a moveto operator */
 		/*  The invoker is expected to move to the appropriate place */
-		if ( sc->hconflicts || sc->vconflicts || sc->anyflexes || AnyRefs(sc) ) {
+		if ( sc->hconflicts || sc->vconflicts || sc->anyflexes || AnyRefs(sc)) {
 		    temp = SplineChar2PS(sc,&len,round,iscjk,subrs,bp,flags,format);
 		} else {
 		    memset(&gb,'\0',sizeof(gb));
 		    for ( j=0; j<instance_count; ++j )
 			bp[j*2+1] = bp[j*2+0];
-		    CvtSimpleHints(&gb,sc,bp,round,format,iscjk);
+		    CvtNoHints(&gb,sc,bp,round,format,iscjk);
 		    if ( gb.pt+1>=gb.end )
 			GrowBuffer(&gb);
 		    *gb.pt++ = 11;				/* return */
