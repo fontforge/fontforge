@@ -311,7 +311,7 @@ static void error( Context *c, char *msg ) {
 	fprintf( stderr, "%s: %s\n", c->filename, loc );
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( !no_windowing_ui ) {
-	static unichar_t umsg[] = { '%','h','s',':',' ','%','d',' ','%','h','s',  0 };
+	static unichar_t umsg[] = { '%','s',':',' ','%','d',' ','%','s',  0 };
 	unichar_t *temp = def2u_copy(c->filename);
 	GWidgetError(NULL,umsg,temp, c->lineno, t1 );
 	free(temp);
@@ -333,7 +333,7 @@ static void errors( Context *c, char *msg, char *name) {
 	fprintf( stderr, "%s: %s: %s\n", c->filename, loc1, loc2 );
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( !no_windowing_ui ) {
-	static unichar_t umsg[] = { '%','s',':',' ','%','d',' ','%','s',':',' ','%','h','s',  0 };
+	static unichar_t umsg[] = { '%','s',':',' ','%','d',' ','%','s',':',' ','%','s',  0 };
 	GWidgetError(NULL,umsg,c->filename, c->lineno, t1, t2 );
     }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
@@ -4533,6 +4533,7 @@ static void bAddAnchorClass(Context *c) {
     }
     ac->next = sf->anchor;
     sf->anchor = ac;
+    sf->changed = true;
 }
 
 static void bRemoveAnchorClass(Context *c) {
@@ -4620,7 +4621,7 @@ static void bAddAnchorPoint(Context *c) {
 	    } else if ( type==at_baselig ) {
 		if ( ap->lig_index == ligindex )
     break;
-	    } else
+	    } else if ( ap->type == type )
     break;
 	}
     }
@@ -4635,6 +4636,7 @@ static void bAddAnchorPoint(Context *c) {
     ap->lig_index = ligindex;
     ap->next = sc->anchor;
     sc->anchor = ap;
+    sc->parent->changed = true;
 }
 
 static void bAddATT(Context *c) {
