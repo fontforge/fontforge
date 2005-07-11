@@ -96,14 +96,11 @@ void FVToggleCharChanged(SplineChar *sc) {
     int pos;
     FontView *fv;
 
-    fv = sc->parent->fv;
-    if ( fv==NULL )		/* Can happen when loading bitmaps, we might not have an fv yet */
-return;
-    if ( fv->sf!=sc->parent )		/* Can happen in CID fonts if char's parent is not currently active */
-return;
-    if ( fv->v==NULL || fv->colcnt==0 )	/* Can happen in scripts */
-return;
-    for ( ; fv!=NULL ; fv = fv->nextsame ) {
+    for ( fv = sc->parent->fv; fv!=NULL; fv=fv->nextsame ) {
+	if ( fv->sf!=sc->parent )		/* Can happen in CID fonts if char's parent is not currently active */
+    continue;
+	if ( fv->v==NULL || fv->colcnt==0 )	/* Can happen in scripts */
+    continue;
 	for ( pos=0; pos<fv->map->enccount; ++pos ) if ( fv->map->map[pos]==sc->orig_pos ) {
 	    if ( fv->mapping!=NULL ) {
 		for ( i=0; i<fv->mapcnt; ++i )
@@ -161,6 +158,53 @@ return;
 			j*fv->cbw+1, i*fv->cbh+1,  fv->cbw-1, fv->lab_height);
 		gdk_gc_set_values(gc,&values,
 			GDK_GC_FOREGROUND | GDK_GC_FUNCTION );
+# endif
+	    }
+	}
+    }
+#endif
+}
+
+void FVMarkHintsOutOfDate(SplineChar *sc) {
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    int i, j;
+    int pos;
+    FontView *fv;
+
+    for ( fv = sc->parent->fv; fv!=NULL; fv=fv->nextsame ) {
+	if ( fv->sf!=sc->parent )		/* Can happen in CID fonts if char's parent is not currently active */
+    continue;
+	if ( fv->v==NULL || fv->colcnt==0 )	/* Can happen in scripts */
+    continue;
+	for ( pos=0; pos<fv->map->enccount; ++pos ) if ( fv->map->map[pos]==sc->orig_pos ) {
+	    if ( fv->mapping!=NULL ) {
+		for ( i=0; i<fv->mapcnt; ++i )
+		    if ( fv->mapping[i]==pos )
+		break;
+		if ( i==fv->mapcnt )		/* Not currently displayed */
+	continue;
+		pos = i;
+	    }
+	    i = pos / fv->colcnt;
+	    j = pos - i*fv->colcnt;
+	    i -= fv->rowoff;
+ /* Normally we should be checking against fv->rowcnt (rather than <=rowcnt) */
+ /*  but every now and then the WM forces us to use a window size which doesn't */
+ /*  fit our expectations (maximized view) and we must be prepared for half */
+ /*  lines */
+	    if ( i>=0 && i<=fv->rowcnt ) {
+# ifdef FONTFORGE_CONFIG_GDRAW
+		GRect r;
+		Color hintcol = 0x0000ff;
+		r.x = j*fv->cbw+1; r.width = fv->cbw-1;
+		r.y = i*fv->cbh+1; r.height = fv->lab_height-1;
+		GDrawDrawLine(fv->v,r.x,r.y,r.x,r.y+r.height-1,hintcol);
+		GDrawDrawLine(fv->v,r.x+1,r.y,r.x+1,r.y+r.height-1,hintcol);
+		GDrawDrawLine(fv->v,r.x+r.width-1,r.y,r.x+r.width-1,r.y+r.height-1,hintcol);
+		GDrawDrawLine(fv->v,r.x+r.width-2,r.y,r.x+r.width-2,r.y+r.height-1,hintcol);
+# elif defined(FONTFORGE_CONFIG_GTK)
+		GdkGC *gc = fv->v->style->fg_gc[fv->v->state];
+		GdkGCValues values;
 # endif
 	    }
 	}
@@ -8045,7 +8089,7 @@ static void do_Adobe_Pua(unichar_t *buf,int sob,int uni) {
 static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
     int i, j, width, gid;
     int changed;
-    GRect old, old2, box;
+    GRect old, old2, box, r;
     GClut clut;
     struct _GImage base;
     GImage gi;
@@ -8223,17 +8267,21 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 	      break;
 	    }
 	    bg = COLOR_DEFAULT;
-	    if ( sc->layers[ly_back].splines!=NULL || sc->layers[ly_back].images!=NULL || sc->color!=COLOR_DEFAULT ) {
-		GRect r;
-		r.x = j*fv->cbw+1; r.width = fv->cbw-1;
-		r.y = i*fv->cbh+1; r.height = fv->lab_height-1;
+	    r.x = j*fv->cbw+1; r.width = fv->cbw-1;
+	    r.y = i*fv->cbh+1; r.height = fv->lab_height-1;
+	    if ( sc->layers[ly_back].splines!=NULL || sc->layers[ly_back].images!=NULL ||
+		    sc->color!=COLOR_DEFAULT ) {
 		bg = sc->color!=COLOR_DEFAULT?sc->color:0x808080;
 		GDrawFillRect(pixmap,&r,bg);
 	    }
+	    if ( sc->changedsincelasthinted && !sc->changed && !fv->sf->order2 ) {
+		Color hintcol = 0x0000ff;
+		GDrawDrawLine(pixmap,r.x,r.y,r.x,r.y+r.height-1,hintcol);
+		GDrawDrawLine(pixmap,r.x+1,r.y,r.x+1,r.y+r.height-1,hintcol);
+		GDrawDrawLine(pixmap,r.x+r.width-1,r.y,r.x+r.width-1,r.y+r.height-1,hintcol);
+		GDrawDrawLine(pixmap,r.x+r.width-2,r.y,r.x+r.width-2,r.y+r.height-1,hintcol);
+	    }
 	    if ( rotated!=NULL ) {
-		GRect r;
-		r.x = j*fv->cbw+1; r.width = fv->cbw-1;
-		r.y = i*fv->cbh+1; r.height = fv->lab_height-1;
 		GDrawPushClip(pixmap,&r,&old2);
 		GDrawDrawImage(pixmap,rotated,NULL,j*fv->cbw+2,i*fv->cbh+2);
 		GDrawPopClip(pixmap,&old2);
@@ -8243,9 +8291,6 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		if ( styles!=laststyles ) GDrawSetFont(pixmap,FVCheckFont(fv,styles));
 		width = GDrawGetTextWidth(pixmap,buf,-1,mods);
 		if ( width >= fv->cbw-1 ) {
-		    GRect r;
-		    r.x = j*fv->cbw+1; r.width = fv->cbw-1;
-		    r.y = i*fv->cbh+1; r.height = fv->lab_height-1;
 		    GDrawPushClip(pixmap,&r,&old2);
 		    width = fv->cbw-1;
 		}
