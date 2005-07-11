@@ -121,7 +121,11 @@ return;
 
 void doversion(void) {
     extern const char *source_version_str;
+#ifdef FONTFORGE_CONFIG_TYPE3
+    printf( "fontforge %s-ML\n", source_version_str );
+#else
     printf( "fontforge %s\n", source_version_str );
+#endif
 exit(0);
 }
 
@@ -234,7 +238,11 @@ void ShowAboutScreen(void) {
     splash_window_tooltip_fun( splashw );
     version = lookup_widget(FontView,"Version");
     if ( version!=NULL ) {
+#ifdef FONTFORGE_CONFIG_TYPE3
+	sprintf( buffer, "Version: %s (%s-ML)", source_modtime_str, source_version_str);
+#else
 	sprintf( buffer, "Version: %s (%s)", source_modtime_str, source_version_str);
+#endif
 	gtk_label_set_text(GTK_LABEL( version ),buffer);
     }
     gtk_widget_show (splashw);
@@ -399,6 +407,9 @@ static void SplashLayout() {
     uc_strcat(pt,source_modtime_str);
     uc_strcat(pt," (");
     uc_strcat(pt,source_version_str);
+#ifdef FONTFORGE_CONFIG_TYPE3
+    uc_strcat(pt,"-ML");
+#endif
     uc_strcat(pt,")");
     lines[linecnt++] = pt+u_strlen(pt);
     lines[linecnt] = NULL;
@@ -522,8 +533,13 @@ int main( int argc, char **argv ) {
 /*  must be set */
 #endif
 
+#ifdef FONTFORGE_CONFIG_TYPE3
+    fprintf( stderr, "Copyright (c) 2000-2005 by George Williams.\n Executable based on sources from %s-ML.\n",
+	    source_modtime_str );
+#else
     fprintf( stderr, "Copyright (c) 2000-2005 by George Williams.\n Executable based on sources from %s.\n",
 	    source_modtime_str );
+#endif
     setlocale(LC_ALL,"");
     localeinfo = *localeconv();
     coord_sep = ",";
