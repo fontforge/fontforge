@@ -1382,7 +1382,7 @@ return( NULL );
 	}
 	if ( bpt[0]=='#' || bpt[0]=='\0' || isspace(bpt[0]))
     continue;
-	for ( pt = bpt; !isspace(*pt); ++pt );
+	for ( pt = bpt; !isspace(*pt) && *pt!='\0'; ++pt );
 	if ( *pt=='\0' || *pt=='\r' || *pt=='\n' )
     continue;
 	names[subfilecnt] = copyn(bpt,pt-bpt);
