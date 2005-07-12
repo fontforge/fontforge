@@ -4377,7 +4377,7 @@ return;
 	pos = CVCurEnc(cv)-1;
     } else if ( mi->mid == MID_NextDef ) {
 	for ( pos = CVCurEnc(cv)+1; pos<map->enccount &&
-		((gid=map->map[pos])==-1 || sf->glyphs[gid]==NULL); ++pos );
+		((gid=map->map[pos])==-1 || !SCWorthOutputting(sf->glyphs[gid])); ++pos );
 	if ( pos>=map->enccount ) {
 	    if ( enc->is_tradchinese ) {
 		if ( strstrmatch(enc->enc_name,"hkscs")!=NULL ) {
@@ -4400,7 +4400,7 @@ return;
 	}
     } else if ( mi->mid == MID_PrevDef ) {
 	for ( pos = CVCurEnc(cv)-1; pos>=0 &&
-		((gid=map->map[pos])==-1 || sf->glyphs[gid]==NULL); --pos );
+		((gid=map->map[pos])==-1 || !SCWorthOutputting(sf->glyphs[gid])); --pos );
 	if ( pos<0 )
 return;
     } else if ( mi->mid == MID_Former ) {
@@ -6543,11 +6543,11 @@ static void cv_vwlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_NextDef:
-	    for ( pos = CVCurEnc(cv)+1; pos<map->enccount && ((gid=map->map[pos])==-1 || sf->glyphs[gid]==NULL); ++pos );
+	    for ( pos = CVCurEnc(cv)+1; pos<map->enccount && ((gid=map->map[pos])==-1 || !SCWorthOutputting(sf->glyphs[gid])); ++pos );
 	    mi->ti.disabled = pos==map->enccount || cv->searcher!=NULL;
 	  break;
 	  case MID_PrevDef:
-	    for ( pos = CVCurEnc(cv)-1; pos>=0 && ((gid=map->map[pos])==-1 || sf->glyphs[gid]==NULL); --pos );
+	    for ( pos = CVCurEnc(cv)-1; pos>=0 && ((gid=map->map[pos])==-1 || !SCWorthOutputting(sf->glyphs[gid])); --pos );
 	    mi->ti.disabled = pos<0 || cv->searcher!=NULL;
 	  break;
 	  case MID_Next:
