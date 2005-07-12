@@ -152,6 +152,8 @@ static void readin(void) {
 	flg = 0;
 	/* code */
 	index = strtol(buffer,&end,16);
+	if ( index>0xffff )		/* For now can only deal with BMP !!!! */
+    continue;
 	pt = end;
 	if ( *pt==';' ) {
 	    ++pt;
@@ -289,6 +291,8 @@ static void readin(void) {
 	flg = 0;
 	/* code */
 	index = strtol(buffer,&end,16);
+	if ( index>0xffff )		/* Only BMP now !!!!!! */
+    continue;
 	pt = end;
 	if ( *pt==';' ) {
 	    ++pt;
@@ -358,7 +362,7 @@ static void readin(void) {
 			index = strtol(buffer+6,NULL,16);
 		    else
 			index = wasfirst;
-		    for ( ; wasfirst<=index; ++wasfirst )
+		    for ( ; wasfirst<=index && wasfirst<=0xffff; ++wasfirst )		/* BMP !!!!! */
 			flags[wasfirst] |= flg;
 		}
 	    }
