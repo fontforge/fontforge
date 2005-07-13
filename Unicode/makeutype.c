@@ -331,41 +331,68 @@ static void readin(void) {
     fclose(fp);
 
     if ((fp = fopen("PropList.txt","r"))==NULL ) {
-	fprintf( stderr, "Can't find LineBreak.txt\n" );
+	fprintf( stderr, "Can't find PropList.txt\n" );
 	exit(1);
     }
     while ( fgets(buffer,sizeof(buffer),fp)!=NULL ) {
 	flg = 0;
-	if ( strncmp(buffer,"Property dump for:", strlen("Property dump for:"))==0 ) {
-	    if ( strstr(buffer, "(Zero-width)")!=NULL )
+	if ( true || strncmp(buffer,"Property dump for:", strlen("Property dump for:"))==0 ) {
+	    if ( strstr(buffer, "(Zero-width)")!=NULL || strstr(buffer, "ZERO WIDTH")!=NULL )
 		flg = _ZEROWIDTH;
-	    else if ( strstr(buffer, "(White space)")!=NULL )
+	    else if ( strstr(buffer, "(White space)")!=NULL || strstr(buffer, "White_Space")!=NULL )
 		flg = _SPACE;
-	    else if ( strstr(buffer, "(Punctuation)")!=NULL )
+	    else if ( strstr(buffer, "(Punctuation)")!=NULL || strstr(buffer, "Punctuation")!=NULL )
 		flg = _PUNCT;
-	    else if ( strstr(buffer, "(Alphabetic)")!=NULL )
+	    else if ( strstr(buffer, "(Alphabetic)")!=NULL || strstr(buffer, "Alphabetic")!=NULL )
 		flg = _ALPHABETIC;
-	    else if ( strstr(buffer, "(Ideographic)")!=NULL )
+	    else if ( strstr(buffer, "(Ideographic)")!=NULL || strstr(buffer, "Ideographic")!=NULL )
 		flg = _IDEOGRAPHIC;
-	    else if ( strstr(buffer, "(Hex Digit)")!=NULL )
+	    else if ( strstr(buffer, "(Hex Digit)")!=NULL || strstr(buffer, "Hex_Digit")!=NULL )
 		flg = _HEX;
-	    else if ( strstr(buffer, "(Combining)")!=NULL )
+	    else if ( strstr(buffer, "(Combining)")!=NULL || strstr(buffer, "COMBINING")!=NULL )
 		flg = _COMBINING;
 	    else if ( strstr(buffer, "(Non-break)")!=NULL )
 		flg = _NOBREAK;
-	    if ( flg!=0 ) while ( fgets(buffer,sizeof(buffer),fp)!=NULL ) {
-		if ( *buffer=='*' || *buffer=='P' )
-	    break;
+	    if ( flg!=0 ) {
 		if (( buffer[0]>='0' && buffer[0]<='9') || (buffer[0]>='A' && buffer[0]<='F')) {
-		    wasfirst = strtol(buffer,NULL,16);
+		    index = wasfirst = strtol(buffer,NULL,16);
 		    if ( buffer[4]=='.' && buffer[5]=='.' )
 			index = strtol(buffer+6,NULL,16);
-		    else
-			index = wasfirst;
 		    for ( ; wasfirst<=index && wasfirst<=0xffff; ++wasfirst )		/* BMP !!!!! */
 			flags[wasfirst] |= flg;
 		}
 	    }
+	}
+    }
+    fclose(fp);
+    /* There used to be a zero width property, but no longer */
+    flags[0x200B] |= _ZEROWIDTH;
+    flags[0x200C] |= _ZEROWIDTH;
+    flags[0x200D] |= _ZEROWIDTH;
+    flags[0x2060] |= _ZEROWIDTH;
+    flags[0xFEFF] |= _ZEROWIDTH;
+    /* There used to be a No Break property, but no longer */
+    flags[0x00A0] |= _NOBREAK;
+    flags[0x2011] |= _NOBREAK;
+    flags[0x202F] |= _NOBREAK;
+    flags[0xFEFF] |= _NOBREAK;
+
+    if ((fp = fopen("NamesList.txt","r"))==NULL ) {
+	fprintf( stderr, "Can't find NamesList.txt\n" );
+	exit(1);
+    }
+    while ( fgets(buffer,sizeof(buffer),fp)!=NULL ) {
+	flg = 0;
+	if ( (index = strtol(buffer,NULL,16))!=0 ) {
+	    if ( strstr(buffer, "COMBINING")!=NULL )
+		flg = _COMBINING;
+	    else if ( strstr(buffer, "N0-BREAK")!=NULL )
+		flg = _NOBREAK;
+	    else if ( strstr(buffer, "ZERO WIDTH")!=NULL )
+		flg = _ZEROWIDTH;
+
+	    if ( index<0xffff )		/* !!!!! BMP */
+		flags[wasfirst] |= flg;
 	}
     }
     fclose(fp);
