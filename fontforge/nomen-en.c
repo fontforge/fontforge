@@ -3171,6 +3171,8 @@ static char *str_SortBy = "Sort By:"
 static char *str_FirstChar = "First Char"
 static char *str_SecondChar = "Second Char"
 static char *str_KernSize = "Kern Size"
+static char *str_MoveUp = "Move selected class up"
+static char *str_MoveDown = "Move selected class down"
     /* tilepath */
 static char *str_Center_ = "Center";
 static char mnemonic_Center_ = 'e';
