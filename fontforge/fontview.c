@@ -2571,12 +2571,21 @@ void TransHints(StemInfo *stem,real mul1, real off1, real mul2, real off2, int r
 	    stem->start = rint(stem->start);
 	    stem->width = rint(stem->width);
 	}
+	if ( mul1<0 ) {
+	    stem->start += stem->width;
+	    stem->width = -stem->width;
+	}
 	for ( hi=stem->where; hi!=NULL; hi=hi->next ) {
 	    hi->begin = hi->begin*mul2 + off2;
 	    hi->end = hi->end*mul2 + off2;
 	    if ( round_to_int ) {
 		hi->begin = rint(hi->begin);
 		hi->end = rint(hi->end);
+	    }
+	    if ( mul2<0 ) {
+		double temp = hi->begin;
+		hi->begin = hi->end;
+		hi->end = temp;
 	    }
 	}
     }
