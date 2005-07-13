@@ -461,13 +461,15 @@ static void morx_lookupmap(FILE *temp,SplineChar **glyphs,uint16 *maps,int gcnt)
 
     for ( k=0; k<3; ++k ) {
 	for ( i=seg_cnt=tot=0; i<gcnt; ++i ) {
+	    if ( glyphs[i]==NULL )
+	continue;
 	    if ( k==1 )
 		tot = 0;
 	    else if ( k==2 ) {
 		putshort(temp,maps[i]);
 	    }
 	    last = i;
-	    for ( j=i+1, ++tot; j<gcnt && glyphs[j]->ttf_glyph==glyphs[i]->ttf_glyph+j-i; ++j ) {
+	    for ( j=i+1, ++tot; j<gcnt && glyphs[j]!=NULL && glyphs[j]->ttf_glyph==glyphs[i]->ttf_glyph+j-i; ++j ) {
 		++tot;
 		last = j;
 		if ( k==2 ) {
