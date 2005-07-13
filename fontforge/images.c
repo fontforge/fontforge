@@ -3310,6 +3310,50 @@ static struct _GImage menumark_base = {
     0xffffffff
 };
 
+static uint8 upicon0_data[] = {
+    0xff, 
+    0xef, 
+    0xef, 
+    0xef, 
+    0xd7, 
+    0xd7, 
+    0xd7, 
+    0xbb, 
+    0xbb, 
+    0xbb, 
+    0xff, 
+};
+
+static struct _GImage upicon0_base = {
+    it_mono,
+    15420,7,11,1,
+    (uint8 *) upicon0_data,
+    &magnify0_clut,
+    1
+};
+
+static uint8 downicon0_data[] = {
+    0xff, 
+    0xbb, 
+    0xbb, 
+    0xbb, 
+    0xd7, 
+    0xd7, 
+    0xd7, 
+    0xef, 
+    0xef, 
+    0xef, 
+    0xff, 
+};
+
+static struct _GImage downicon0_base = {
+    it_mono,
+    15420,7,11,1,
+    (uint8 *) downicon0_data,
+    &magnify0_clut,
+    1
+};
+
 
 GImage GIcon_small3drotate = { 0, &small3drotate0_base };
 GImage GIcon_smallperspective = { 0, &smallperspective0_base };
@@ -3357,4 +3401,7 @@ GImage GIcon_shadow = { 0, &shadow_base };
 GImage GIcon_wireframe = { 0, &wireframe_base };
 
 GImage GIcon_menumark = { 0, &menumark_base };
+
+GImage GIcon_up = { 0, &upicon0_base };
+GImage GIcon_down = { 0, &downicon0_base };
 #endif
