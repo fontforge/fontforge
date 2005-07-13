@@ -3290,19 +3290,14 @@ return( true );
 
 static int GFI_ContextSelChanged(GGadget *g, GEvent *e) {
     struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-    int sel = GGadgetGetFirstListSelectedItem(g), len;
+    int sel = GGadgetGetFirstListSelectedItem(g);
     int off = GGadgetGetCid(g)-CID_ContextClasses;
-    GTextInfo **old = GGadgetGetList(g,&len);
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
 	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ContextDel+off),sel!=-1 && d->ccd==NULL);
 	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ContextEdit+off),sel!=-1 && d->ccd==NULL);
 	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ContextEditData+off),
-		d->ccd==NULL && sel!=-1 &&
-		old[sel]->userdata!=NULL &&
-		(((FPST *) (old[sel]->userdata))->format==pst_glyphs ||
-		 ((FPST *) (old[sel]->userdata))->format==pst_coverage ||
-		 ((FPST *) (old[sel]->userdata))->format==pst_reversecoverage));
+		d->ccd==NULL && sel!=-1 );
     } else if ( e->type==et_controlevent && e->u.control.subtype == et_listdoubleclick ) {
 	e->u.control.subtype = et_buttonactivate;
 	g = GWidgetGetControl(GGadgetGetWindow(g),GGadgetGetCid(g)-CID_ContextClasses+CID_ContextEditData);
