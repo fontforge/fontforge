@@ -3006,7 +3006,7 @@ static void WinBB(SplineFont *sf,uint16 *winascent,uint16 *windescent,struct all
 
 static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *sf,
 	enum fontformat format) {
-    int i,j,cnt1,cnt2,first,last,avg1,avg2;
+    int i,j,cnt1,cnt2,first,last,avg1,avg2,gid;
     char *pt;
     static int const weightFactors[26] = { 64, 14, 27, 35, 100, 20, 14, 42, 63,
 	3, 6, 35, 20, 56, 56, 17, 4, 49, 56, 71, 31, 10, 18, 3, 18, 2 };
@@ -3118,7 +3118,8 @@ docs are wrong.
 	os2->ulCodePage[1] = 0;
 	first = 255; last = 0;
 	for ( i=0; i<map->enccount && i<255; ++i )
-	    if ( map->map[i]!=-1 && sf->glyphs[i]!=NULL && sf->glyphs[i]->ttf_glyph!=-1 ) {
+	    if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL &&
+		    sf->glyphs[gid]->ttf_glyph!=-1 ) {
 		if ( i<first ) first = i;
 		if ( i>last ) last = i;
 	    }
