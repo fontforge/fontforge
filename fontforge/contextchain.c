@@ -375,6 +375,8 @@ static unichar_t *classnumbers(int cnt,uint16 *classes) {
 	len += strlen(buf);
     }
     ret = pt = galloc((len+3)*sizeof(unichar_t));
+    *pt = '\0';		/* In case it is empty */
+
     for ( i=0; i<cnt; ++i ) {
 	sprintf( buf, "%d ", classes[i]);
 	uc_strcpy(pt,buf);
@@ -1156,6 +1158,7 @@ return;
 		GGadgetSetTitle(GWidgetGetControl(ccd->gw,CID_ClassNumbers+i*20),nulstr);
 	    GGadgetClearList(GWidgetGetControl(ccd->gw,CID_LookupList+500));
 	}
+	GWidgetIndicateFocusGadget(GWidgetGetControl(ccd->gw,CID_ClassNumbers));
 	for ( i=0; i<3; ++i ) {
 	    if ( i!=0 && GGadgetIsChecked(GWidgetGetControl(ccd->gw,CID_SameAsClasses+i*20)) )
 		ti = GGadgetGetList(GWidgetGetControl(ccd->gw,CID_GList+300),&len);
@@ -1179,6 +1182,7 @@ return;
 	} else {
 	    GGadgetSetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList+to_off),nulstr);
 	}
+	GWidgetIndicateFocusGadget(GWidgetGetControl(ccd->gw,CID_GlyphList+to_off));
 	if ( off>=300 ) {		/* It's a class from the class window */
 	    ccd->aw = aw_classbuild;
 	    GDrawSetVisible(ccd->class,false);
