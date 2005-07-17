@@ -2824,6 +2824,7 @@ static void _SCHintsChanged(SplineChar *sc) {
 
 void SCHintsChanged(SplineChar *sc) {
     struct splinecharlist *dlist;
+    int was = sc->changedsincelasthinted;
 
     sc->changedsincelasthinted = false;		/* We just applied a hinting change */
     if ( !sc->changed ) {
@@ -2837,6 +2838,11 @@ void SCHintsChanged(SplineChar *sc) {
     }
     for ( dlist=sc->dependents; dlist!=NULL; dlist=dlist->next )
 	_SCHintsChanged(dlist->sc);
+    if ( was ) {
+	FontView *fvs;
+	for ( fvs = sc->parent->fv; fvs!=NULL; fvs=fvs->nextsame )
+	    GDrawRequestExpose(fvs->v,NULL,false);
+    }
 }
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -6216,11 +6222,17 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void CVMenuAutoHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     /*int removeOverlap = e==NULL || !(e->u.mouse.state&ksm_shift);*/
+    int was = cv->sc->changedsincelasthinted;
 
     /* Hint undoes are done in _SplineCharAutoHint */
     cv->sc->manualhints = false;
     SplineCharAutoHint(cv->sc,NULL);
     SCUpdateAll(cv->sc);
+    if ( was ) {
+	FontView *fvs;
+	for ( fvs=cv->fv; fvs!=NULL; fvs=fvs->nextsame )
+	    GDrawRequestExpose(fvs->v,NULL,false);	/* Clear any changedsincelasthinted marks */
+    }
 }
 
 static void CVMenuAutoHintSubs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
