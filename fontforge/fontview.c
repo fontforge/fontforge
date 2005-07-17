@@ -3605,6 +3605,33 @@ return( false );
 return( false );
 }
 
+static void SCFreeMostContents(SplineChar *sc) {
+    int i;
+
+    free(sc->name);
+    for ( i=0; i<sc->layer_cnt; ++i ) {
+	SplinePointListsFree(sc->layers[i].splines); sc->layers[i].splines = NULL;
+	RefCharsFree(sc->layers[i].refs); sc->layers[i].refs = NULL;
+	ImageListsFree(sc->layers[i].images); sc->layers[i].images = NULL;
+	/* image garbage collection????!!!! */
+	/* Keep undoes */
+    }
+    StemInfosFree(sc->hstem); sc->hstem = NULL;
+    StemInfosFree(sc->vstem); sc->vstem = NULL;
+    DStemInfosFree(sc->dstem); sc->dstem = NULL;
+    MinimumDistancesFree(sc->md); sc->md = NULL;
+    KernPairsFree(sc->kerns); sc->kerns = NULL;
+    KernPairsFree(sc->vkerns); sc->vkerns = NULL;
+    AnchorPointsFree(sc->anchor); sc->anchor = NULL;
+    SplineCharListsFree(sc->dependents); sc->dependents = NULL;
+    PSTFree(sc->possub); sc->possub = NULL;
+    free(sc->ttf_instrs); sc->ttf_instrs = NULL;
+    free(sc->countermasks); sc->countermasks = NULL;
+#ifdef FONTFORGE_CONFIG_TYPE3
+    /*free(sc->layers);*/	/* don't free this, leave it empty */
+#endif
+}
+
 static void SCReplaceWith(SplineChar *dest, SplineChar *src) {
     int opos=dest->orig_pos, uenc=dest->unicodeenc;
     Undoes *u[2], *r1;
@@ -3618,12 +3645,10 @@ static void SCReplaceWith(SplineChar *dest, SplineChar *src) {
     SplineSet *back = dest->layers[ly_back].splines;
     ImageList *images = dest->layers[ly_back].images;
 #endif
-    char namebuf[40];
 
     if ( src==dest )
 return;
 
-    SCPreserveState(src,2);
     SCPreserveState(dest,2);
     u[0] = dest->layers[ly_fore].undoes; u[1] = dest->layers[ly_back].undoes; r1 = dest->layers[ly_back].redoes;
 
@@ -3640,6 +3665,7 @@ return;
     DStemInfosFree(dest->dstem);
     MinimumDistancesFree(dest->md);
     KernPairsFree(dest->kerns);
+    KernPairsFree(dest->vkerns);
     AnchorPointsFree(dest->anchor);
     PSTFree(dest->possub);
     free(dest->ttf_instrs);
@@ -3675,20 +3701,19 @@ return;
     dest->dependents = scl;
     dest->namechanged = true;
 
-    sprintf(namebuf,"NameMe-%d", src->orig_pos);
-    src->name = copy(namebuf);
+    src->name = NULL;
     src->unicodeenc = -1;
     src->hstem = NULL;
     src->vstem = NULL;
     src->dstem = NULL;
     src->md = NULL;
     src->kerns = NULL;
+    src->vkerns = NULL;
     src->anchor = NULL;
     src->possub = NULL;
     src->ttf_instrs = NULL;
     src->ttf_instrs_len = 0;
-    /* Retain the undoes/redoes */
-    /* Retain the dependents */
+    SplineCharFree(src);
 
     /* Fix up dependant info */
     for ( layer=ly_fore; layer<dest->layer_cnt; ++layer )
@@ -3697,7 +3722,6 @@ return;
 		if ( scl->sc==src )
 		    scl->sc = dest;
 	}
-    SCCharChangedUpdate(src);
     SCCharChangedUpdate(dest);
 }
 
@@ -3707,9 +3731,18 @@ void FVApplySubstitution(FontView *fv,uint32 script, uint32 lang, uint32 tag) {
     PST *pst;
     EncMap *map = fv->map;
     int i, gid;
+    SplineChar **replacements;
+    uint8 *removes;
+    char namebuf[40];
 
     if ( sf_sl->cidmaster!=NULL ) sf_sl = sf_sl->cidmaster;
     else if ( sf_sl->mm!=NULL ) sf_sl = sf_sl->mm->normal;
+
+    /* I used to do replaces and removes as I went along, and then Werner */
+    /*  gave me a font were "a" was replaced by "b" replaced by "a" */
+    replacements = gcalloc(sf->glyphcnt,sizeof(SplineChar *));
+    removes = gcalloc(sf->glyphcnt,sizeof(uint8));
+
     for ( i=0; i<map->enccount; ++i ) if ( fv->selected[i] &&
 	    (gid=map->map[i])!=-1 && (sc=sf->glyphs[gid])!=NULL ) {
 	for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
@@ -3719,10 +3752,33 @@ void FVApplySubstitution(FontView *fv,uint32 script, uint32 lang, uint32 tag) {
 	}
 	if ( pst!=NULL ) {
 	    replacement = SFGetChar(sf,-1,pst->u.subs.variant);
-	    if ( replacement!=NULL )
-		SCReplaceWith(sc,replacement);
+	    if ( replacement!=NULL ) {
+		replacements[gid] = SplineCharCopy( replacement,sf);
+		removes[replacement->orig_pos] = true;
+	    }
 	}
     }
+
+    for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc = sf->glyphs[gid])!=NULL ) {
+	if ( replacements[gid]!=NULL ) {
+	    SCReplaceWith(sc,replacements[gid]);
+	} else if ( removes[gid] ) {
+	    /* This is deliberatly in the else. We don't want to remove a glyph*/
+	    /*  we are about to replace */
+	    SCPreserveState(sc,2);
+	    SCFreeMostContents(sc);
+	    sprintf(namebuf,"NameMe-%d", sc->orig_pos);
+	    sc->name = copy(namebuf);
+	    sc->namechanged = true;
+	    sc->unicodeenc = -1;
+	    SCCharChangedUpdate(sc);
+	    /* Retain the undoes/redoes */
+	    /* Retain the dependents */
+	}
+    }
+
+    free(removes);
+    free(replacements);
 }
 
 #if HANYANG
