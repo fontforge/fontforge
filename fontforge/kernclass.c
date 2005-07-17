@@ -1458,7 +1458,7 @@ return;
     /*  lists */
     ti = GGadgetGetList(GWidgetGetControl(kcd->gw,CID_ClassList),&tilen);
     for ( i=0 ; kcd->offtop+i<=kcd->first_cnt && (i-1)*kcd->kernh<kcd->height; ++i ) {
-	if ( i+kcd->offtop<tilen && ti[i]->selected ) {
+	if ( i+kcd->offtop<tilen && ti[i+kcd->offtop]->selected ) {
 	    select.x = kcd->xstart+1; select.y = kcd->ystart2+i*kcd->kernh+1;
 	    select.width = rect.width-1; select.height = kcd->kernh-1;
 	    GDrawFillRect(pixmap,&select,0xffff00);
@@ -1466,7 +1466,7 @@ return;
     }
     ti = GGadgetGetList(GWidgetGetControl(kcd->gw,CID_ClassList+100),&tilen);
     for ( i=0 ; kcd->offleft+i<=kcd->second_cnt && (i-1)*kcd->kernw<kcd->fullwidth; ++i ) {
-	if ( i+kcd->offtop<tilen && ti[i]->selected ) {
+	if ( i+kcd->offleft<tilen && ti[i+kcd->offleft]->selected ) {
 	    select.x = kcd->xstart2+i*kcd->kernw+1; select.y = kcd->ystart+1;
 	    select.width = kcd->kernw-1; select.height = rect.height-1;
 	    GDrawFillRect(pixmap,&select,0xffff00);
@@ -1624,7 +1624,7 @@ return;		/* Already visible */
 #endif
 	--pos;	/* One line of context */
 	if ( pos + (kcd->height/kcd->kernh) >= kcd->first_cnt )
-	    pos = kcd->second_cnt - (kcd->height/kcd->kernh);
+	    pos = kcd->first_cnt - (kcd->height/kcd->kernh);
 	if ( pos < 0 ) pos = 0;
 	kcd->offtop = pos;
 	GScrollBarSetPos(kcd->vsb,pos);
