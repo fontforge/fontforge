@@ -1748,6 +1748,7 @@ return;
     for ( i=0; i<map->enccount; ++i ) if ( fv->selected[i] ) {
 	LinkEncToGid(fv,i,base->orig_pos);
     }
+    GDrawRequestExpose(fv->v,NULL,false);
 }
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -5545,7 +5546,7 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/bmp") &&
 		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/eps"));
     RefChar *base = CopyContainsRef(fv->sf);
-    int base_enc = base!=NULL ? fv->map->map[base->orig_pos] : -1;
+    int base_enc = base!=NULL ? fv->map->backmap[base->orig_pos] : -1;
 
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
