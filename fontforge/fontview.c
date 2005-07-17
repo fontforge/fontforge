@@ -4618,6 +4618,7 @@ static void FVAutoHint(FontView *fv) {
 # elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_end_indicator();
 # endif
+    GDrawRequestExpose(fv->v,NULL,false);	/* Clear any changedsincelasthinted marks */
 }
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
