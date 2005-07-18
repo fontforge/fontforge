@@ -1476,9 +1476,6 @@ return;
     for ( i=0 ; kcd->offtop+i<=kcd->first_cnt && (i-1)*kcd->kernh<kcd->height; ++i ) {
 	GDrawDrawLine(pixmap,kcd->xstart,kcd->ystart2+i*kcd->kernh,kcd->xstart+rect.width,kcd->ystart2+i*kcd->kernh,
 		0x808080);
-	if ( i+kcd->offtop<len && ti[i]->selected ) {
-	    select.x = kcd->xstart+1; select.y = kcd->ystart2+i*kcd->kernh+1;
-	}
 	if ( i+kcd->offtop<kcd->first_cnt ) {
 	    sprintf( buf, "%d", i+kcd->offtop );
 	    uc_strcpy(ubuf,buf);
