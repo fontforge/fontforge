@@ -961,7 +961,7 @@ static void CvtPsRSplineSet(GrowBuf *gb, SplineChar *scs[MmMax], int instance_co
 	    refs[i] = refs[i]->next;
 	}
 	_CvtPsSplineSet(gb,spls,instance_count,current,round,hdb,startend,scs[0]->parent->order2,stroked);
-	if ( spls[i]!=NULL )
+	if ( spls[0]!=NULL )
 	    startend = NULL;
     }
 }
