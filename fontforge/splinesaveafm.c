@@ -686,7 +686,7 @@ static int anykerns(SplineFont *sf,int isv) {
 	if ( sf->glyphs[i]!=NULL && strcmp(sf->glyphs[i]->name,".notdef")!=0 ) {
 	    for ( kp = isv ? sf->glyphs[i]->vkerns : sf->glyphs[i]->kerns; kp!=NULL; kp = kp->next )
 		if ( kp->off!=0 && strcmp(kp->sc->name,".notdef")!=0 &&
-			kp->sc->orig_pos>=sc->parent->glyphcnt )
+			kp->sc->orig_pos<sc->parent->glyphcnt )
 		    ++cnt;
 	}
     }
