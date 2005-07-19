@@ -951,7 +951,7 @@ static void CvtPsRSplineSet(GrowBuf *gb, SplineChar *scs[MmMax], int instance_co
 	int stroked ) {
     RefChar *refs[MmMax];
     SplineSet *spls[MmMax];
-    int i;
+    int i, spls_null;
 
     for ( i=0; i<instance_count; ++i )
 	refs[i] = scs[i]->layers[ly_fore].refs;
@@ -960,8 +960,9 @@ static void CvtPsRSplineSet(GrowBuf *gb, SplineChar *scs[MmMax], int instance_co
 	    spls[i] = refs[i]->layers[0].splines;
 	    refs[i] = refs[i]->next;
 	}
+	spls_null = spls[0]==NULL;
 	_CvtPsSplineSet(gb,spls,instance_count,current,round,hdb,startend,scs[0]->parent->order2,stroked);
-	if ( spls[0]!=NULL )
+	if ( !spls_null )
 	    startend = NULL;
     }
 }
