@@ -1639,6 +1639,18 @@ return( 0 );
     free( temp.fontname );
     free( temp.fullname );
     free( filename );
+
+    /* SaveSubFont messes up the parent and orig_pos fields. Fix 'em up */
+    /* Do this after every save, else afm,tfm files might produce extraneous kerns */
+    k = 0;
+    do {
+	_sf = sf->subfontcnt==0 ? sf : sf->subfonts[k++];
+	for ( i=0; i<_sf->glyphcnt; ++i ) if ( _sf->glyphs[i]!=NULL ) {
+	    _sf->glyphs[i]->parent = _sf;
+	    _sf->glyphs[i]->orig_pos = i;
+	}
+    } while ( k<sf->subfontcnt );
+
 return( err );
 }
 
@@ -1701,16 +1713,6 @@ return( 1 );
 
     for ( i=0; i<=max && !err; ++i )
 	err = SaveSubFont(sf,newname,sizes,res,mapping,i,names,map);
-
-    /* SaveSubFont messes up the parent and orig_pos fields. Fix 'em up */
-    k = 0;
-    do {
-	_sf = sf->subfontcnt==0 ? sf : sf->subfonts[k++];
-	for ( i=0; i<_sf->glyphcnt; ++i ) if ( _sf->glyphs[i]!=NULL ) {
-	    _sf->glyphs[i]->parent = _sf;
-	    _sf->glyphs[i]->orig_pos = i;
-	}
-    } while ( k<sf->subfontcnt );
 
     free(mapping);
     for ( i=0; names[i]!=NULL; ++i ) free(names[i]);
