@@ -686,7 +686,7 @@ static int anykerns(SplineFont *sf,int isv) {
 	if ( sf->glyphs[i]!=NULL && strcmp(sf->glyphs[i]->name,".notdef")!=0 ) {
 	    for ( kp = isv ? sf->glyphs[i]->vkerns : sf->glyphs[i]->kerns; kp!=NULL; kp = kp->next )
 		if ( kp->off!=0 && strcmp(kp->sc->name,".notdef")!=0 &&
-			kp->sc->orig_pos<sc->parent->glyphcnt )
+			(kp->sc->parent==sf || sf->cidmaster!=NULL) )
 		    ++cnt;
 	}
     }
@@ -701,8 +701,8 @@ static void AfmKernPairs(FILE *afm, SplineChar *sc, int isv) {
 return;
 
     for ( kp = isv ? sc->vkerns : sc->kerns; kp!=NULL; kp=kp->next ) {
-	if ( kp->sc->orig_pos>=sc->parent->glyphcnt )	/* Can happen when saving multiple pfbs */
-    continue;
+	if ( kp->sc->parent!=sc->parent && sc->parent->cidmaster==NULL )
+    continue;		/* Can happen when saving multiple pfbs */
 	if ( strcmp(kp->sc->name,".notdef")!=0 && kp->off!=0 ) {
 	    if ( isv )
 		fprintf( afm, "KPY %s %s %d\n", sc->name, kp->sc->name, kp->off*1000/em );
