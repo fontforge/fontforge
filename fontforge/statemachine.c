@@ -798,7 +798,7 @@ return( NULL );
 	sf->glyphs[i]->lsidebearing = 1;
 	if ( !ordered )
 	    sf->glyphs[i]->ttf_glyph = gtot++;
-	else
+	else if ( sf->glyphs[i]->ttf_glyph+1>gtot )
 	    gtot = sf->glyphs[i]->ttf_glyph+1;
     }
 
