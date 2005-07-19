@@ -700,6 +700,8 @@ static void AfmKernPairs(FILE *afm, SplineChar *sc, int isv) {
 return;
 
     for ( kp = isv ? sc->vkerns : sc->kerns; kp!=NULL; kp=kp->next ) {
+	if ( kp->sc->orig_pos>=sc->parent->glyphcnt )	/* Can happen when saving multiple pfbs */
+    continue;
 	if ( strcmp(kp->sc->name,".notdef")!=0 && kp->off!=0 ) {
 	    if ( isv )
 		fprintf( afm, "KPY %s %s %d\n", sc->name, kp->sc->name, kp->off*1000/em );
@@ -2262,7 +2264,8 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map) {
 	if ( map->map[i]!=-1 && SCWorthOutputting(sf->glyphs[map->map[i]])) {
 	    SplineChar *sc = sf->glyphs[map->map[i]];
 	    for ( kp=sc->kerns; kp!=NULL; kp=kp->next )
-		if ( map->backmap[kp->sc->orig_pos]<256 ) ++kcnt;
+		if ( kp->sc->orig_pos<sf->glyphcnt &&	/* Can happen when saving multiple pfbs */
+			map->backmap[kp->sc->orig_pos]<256 ) ++kcnt;
 	}
     }
     kerns = NULL;
@@ -2274,7 +2277,8 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map) {
 	if ( map->map[i]!=-1 && SCWorthOutputting(sf->glyphs[map->map[i]])) {
 	    SplineChar *sc = sf->glyphs[map->map[i]];
 	    for ( kp=sc->kerns; kp!=NULL; kp=kp->next )
-		if ( map->map[kp->sc->orig_pos]<256 )
+		if ( kp->sc->orig_pos<sf->glyphcnt &&	/* Can happen when saving multiple pfbs */
+			map->backmap[kp->sc->orig_pos]<256 )
 		    ligkerns[i] = TfmAddKern(kp,ligkerns[i],kerns,&kcnt,map);
 	    for ( l=sc->ligofme; l!=NULL; l=l->next )
 		ligkerns[i] = TfmAddLiga(l,ligkerns[i],map);
