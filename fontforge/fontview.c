@@ -2056,9 +2056,9 @@ void FontViewMenu_UnlinkRef(GtkMenuItem *menuitem, gpointer user_data) {
 }
 #endif
 
-void SFRemoveUndoes(SplineFont *sf,uint8 *selected) {
+void SFRemoveUndoes(SplineFont *sf,uint8 *selected, EncMap *map) {
     SplineFont *main = sf->cidmaster? sf->cidmaster : sf, *ssf;
-    int i,k, max, layer;
+    int i,k, max, layer, gid;
     SplineChar *sc;
     BDFFont *bdf;
 
@@ -2069,18 +2069,31 @@ void SFRemoveUndoes(SplineFont *sf,uint8 *selected) {
 	for ( k=0; k<main->subfontcnt; ++k )
 	    if ( main->subfonts[k]->glyphcnt>max ) max = main->subfonts[k]->glyphcnt;
     }
-    for ( i=0; i<max && i<bdf->glyphcnt; ++i ) if ( selected==NULL || selected[i] ) {
+    for ( i=0; ; ++i ) {
+	if ( selected==NULL || main->subfontcnt!=0 ) {
+	    if ( i>=max )
+    break;
+	    gid = i;
+	} else {
+	    if ( i>=map->enccount )
+    break;
+	    if ( !selected[i])
+    continue;
+	    gid = map->map[i];
+	    if ( gid==-1 )
+    continue;
+	}
 	for ( bdf=main->bitmaps; bdf!=NULL; bdf=bdf->next ) {
-	    if ( bdf->glyphs[i]!=NULL ) {
-		UndoesFree(bdf->glyphs[i]->undoes); bdf->glyphs[i]->undoes = NULL;
-		UndoesFree(bdf->glyphs[i]->redoes); bdf->glyphs[i]->redoes = NULL;
+	    if ( bdf->glyphs[gid]!=NULL ) {
+		UndoesFree(bdf->glyphs[gid]->undoes); bdf->glyphs[gid]->undoes = NULL;
+		UndoesFree(bdf->glyphs[gid]->redoes); bdf->glyphs[gid]->redoes = NULL;
 	    }
 	}
 	k = 0;
 	do {
 	    ssf = main->subfontcnt==0? main: main->subfonts[k];
-	    if ( i<ssf->glyphcnt && ssf->glyphs[i]!=NULL ) {
-		sc = ssf->glyphs[i];
+	    if ( gid<ssf->glyphcnt && ssf->glyphs[gid]!=NULL ) {
+		sc = ssf->glyphs[gid];
 		for ( layer = 0; layer<sc->layer_cnt; ++layer ) {
 		    UndoesFree(sc->layers[layer].undoes); sc->layers[layer].undoes = NULL;
 		    UndoesFree(sc->layers[layer].redoes); sc->layers[layer].redoes = NULL;
@@ -2099,7 +2112,7 @@ static void FVMenuRemoveUndoes(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 void FontViewMenu_RemoveUndoes(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
-    SFRemoveUndoes(fv->sf,fv->selected);
+    SFRemoveUndoes(fv->sf,fv->selected,fv->map);
 }
 
 # ifdef FONTFORGE_CONFIG_GDRAW
