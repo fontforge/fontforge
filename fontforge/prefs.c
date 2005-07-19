@@ -1515,7 +1515,7 @@ return( true );
 	SavePrefs();
 	if ( maxundoes==0 ) { FontView *fv;
 	    for ( fv=fv_list ; fv!=NULL; fv=fv->next )
-		SFRemoveUndoes(fv->sf,NULL);
+		SFRemoveUndoes(fv->sf,NULL,NULL);
 	}
 	if ( othersubrsfile!=NULL && ReadOtherSubrsFile(othersubrsfile)<=0 )
 	    fprintf( stderr, "Failed to read OtherSubrs from %s\n", othersubrsfile );
