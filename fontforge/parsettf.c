@@ -5030,7 +5030,7 @@ char **NamesReadTTF(char *filename) {
     FILE *ttf = fopen(filename,"rb");
     int32 version, cnt, *offsets;
     int i,j;
-    char **ret;
+    char **ret = NULL;
     unichar_t *utemp;
 
     if ( ttf==NULL )
