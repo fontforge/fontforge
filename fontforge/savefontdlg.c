@@ -1660,10 +1660,9 @@ static int WriteMultiplePSFont(SplineFont *sf,char *newname,int32 *sizes,
     int err=0, tofree=false, max, filecnt;
     int32 *mapping;
     unichar_t *path;
-    int i,k;
+    int i;
     char **names;
     char *pt;
-    SplineFont *_sf;
 
     pt = strrchr(newname,'.');
     if ( pt==NULL ||
@@ -1934,6 +1933,8 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
     int32 *sizes=NULL;
     char *end = filename+strlen(filename);
     struct sflist *sfi;
+    char *freeme = NULL;
+    int ret;
 
     if ( sf->bitmaps==NULL ) i = bf_none;
     else if ( strmatch(bitmaptype,"otf")==0 ) i = bf_ttf;
@@ -1998,6 +1999,28 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	else if ( i==ff_otfdfont ) i = ff_otfciddfont;
     }
     oldformatstate = i;
+
+    if ( oldformatstate==ff_none && end[-1]=='.' &&
+	    (oldbitmapstate==bf_ttf || oldbitmapstate==bf_sfnt_dfont || oldbitmapstate==bf_otb)) {
+	freeme = galloc(strlen(filename)+8);
+	strcpy(freeme,filename);
+	if ( strmatch(bitmaptype,"otf")==0 )
+	    strcat(freeme,"otf");
+	else if ( oldbitmapstate==bf_otb )
+	    strcat(freeme,"otf");
+	else if ( oldbitmapstate==bf_sfnt_dfont )
+	    strcat(freeme,"dfont");
+	else
+	    strcat(freeme,"ttf");
+	filename = freeme;
+    } else if ( sf->onlybitmaps && sf->bitmaps!=NULL &&
+	    (oldformatstate==ff_ttf || oldformatstate==ff_otf) &&
+	    (oldbitmapstate == bf_none || oldbitmapstate==bf_ttf ||
+	     oldbitmapstate==bf_sfnt_dfont || oldbitmapstate==bf_otb)) {
+	if ( oldbitmapstate==ff_ttf )
+	    oldbitmapstate = bf_ttf;
+	oldformatstate = ff_none;
+    }
 
     if ( oldbitmapstate==bf_sfnt_dfont )
 	oldformatstate = ff_none;
@@ -2093,13 +2116,14 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	    flags = old_ttf_flags;
 	else
 	    flags = old_otf_flags;
-return( WriteMacFamily(filename,sfs,oldformatstate,oldbitmapstate,flags,map));
+	ret = WriteMacFamily(filename,sfs,oldformatstate,oldbitmapstate,flags,map);
+    } else if ( oldformatstate == ff_multiple ) {
+	ret = !WriteMultiplePSFont(sf,filename,sizes,res,subfontdefinition,map);
+    } else {
+	ret = !_DoSave(sf,filename,sizes,res,map);
     }
-
-    if ( oldformatstate == ff_multiple )
-return( !WriteMultiplePSFont(sf,filename,sizes,res,subfontdefinition,map));
-
-return( !_DoSave(sf,filename,sizes,res,map));
+    free(freeme);
+return( ret );
 }
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
