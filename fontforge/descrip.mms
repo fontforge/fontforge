@@ -1,5 +1,5 @@
-CFLAGS=/nowarn/incl=([-.inc])/name=(as_is,short)/define=("NODYNAMIC=1")
-
+CFLAGS=/nowarn/incl=([-.inc])/name=(as_is,short)/define=("NODYNAMIC=1",\
+        "FONTFORGE_CONFIG_DEVICETABLES=1")
 
 fontforge_OBJECTS =  alignment.obj,autohint.obj,autosave.obj,autowidth.obj,\
  bitmapdlg.obj,metafont.obj,parsettfbmf.obj,\
