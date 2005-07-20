@@ -2225,8 +2225,22 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map) {
 	    SplineChar *sc = sf->glyphs[map->map[i]];
 	    if ( sc->tex_height==TEX_UNDEF || sc->tex_depth==TEX_UNDEF )
 		SplineCharFindBounds(sc,&b);
-	    heights[i] = (sc->tex_height==TEX_UNDEF ? b.maxy : sc->tex_height)*scale;
-	    depths[i] = (sc->tex_height==TEX_UNDEF ? -b.miny : sc->tex_depth)*scale;
+	    heights[i] = b.maxy*scale; depths[i] = -b.miny*scale;
+	    if ( (sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 && isideographic(sc->unicodeenc)) ||
+		    (sc->unicodeenc>=0xAC00 && sc->unicodeenc<=0xD7A3) ||
+		    (sc->unicodeenc>=0x20000 && sc->unicodeenc<=0x2A6D6) ||
+		    (sc->unicodeenc>=0x2F800 && sc->unicodeenc<=0x2FA1D)) {
+		/* CJK glyphs should default to the "quadratic bounding box" */
+		/*  whatever that is. The Em square seems to be a reasonable */
+		/*  appoximation. */
+		heights[i] = sf->ascent*scale;
+		depths[i] = -sf->descent*scale;
+	    }
+	    if ( sc->tex_height!=TEX_UNDEF )
+		heights[i] = sc->tex_height*scale;
+	    if ( sc->tex_depth!=TEX_UNDEF )
+		heights[i] = sc->tex_depth*scale;
+	    if ( depths[i]<0 ) depths[i] = 0;		/* Werner says depth should never be negative. Something about how accents are positioned */
 	    if ( !is_math ) {
 		widths[i] = sc->width*scale;
 		if ( (pst=SCFindPST(sc,pst_position,CHR('I','T','L','C'),-1,-1))!=NULL )
