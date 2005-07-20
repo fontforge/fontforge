@@ -35,16 +35,42 @@ int coverageformatsallowed=3;
 /* This file contains routines to create the otf gpos and gsub tables and their */
 /*  attendant subtables */
 
-struct lookup {
+struct lookup {		/* It used to be there was one lookup for every */
+			/*  subtable, so I could use lookup and subtable */
+			/*  interchangeably. But due to a bug in Word/  */
+			/*  Uniscribe I can't do than now. These are actually */
+			/*  subtables, not lookups. */
     /*int script;*/
     uint32 feature_tag;
     int lookup_type;
     int lookup_cnt;
-    uint32 offset, len;
+    uint32 offset[2];	/* offset[0] is normal offset, offset[1] is extension offset */
+			/* One subtable might be referenced by both depending */
+			/* on what lookups it appears in (all subtables in a */
+			/* lookup must be refed the same way so if one needs */
+			/* an extension, then all do */
+    uint32 len;
     struct lookup *next;
     struct lookup *feature_next;
     uint16 flags;
+    uint8 used;
+    uint8 already_extended;
     int script_lang_index;
+};
+
+/* Undocumented fact: ATM (which does kerning for otf fonts in Word) can't handle features with multiple lookups */
+/*  So if we have multiple lookups with the same tag/flags they must be merged */
+/*  one lookup pointing to many subtables */
+struct clookup {		/* Coalesced lookups */
+    uint8 duplicate;		/* This same set of lookups is used in an earlier feature. We don't need to output the lookup data */
+    uint8 extension;		/* This set of lookups must be referenced throw an extension table */
+    uint16 flags;
+    int lookup_type;
+    int lcnt;
+    struct lookup **lookups;
+    int lookup_cnt;		/* Index of lookup in table */
+    struct clookup *next;	/* Next in table */
+    struct clookup *fnext;	/* Next in feature */
 };
 
 struct postponedlookup {
@@ -59,7 +85,9 @@ struct postponedlookup {
 struct feature {
     uint32 feature_tag;
     int lcnt;
-    struct lookup **lookups;
+    struct clookup *lookups;
+    int baselcnt;
+    struct lookup **baselookups;
     struct sl { uint32 script, lang; struct sl *next; } *sl;	/* More than one script/lang may use this feature */
     int feature_cnt;
     struct feature *feature_next;
@@ -1162,7 +1190,7 @@ return( lookups );
 	new->flags = ac->flags;
 	new->script_lang_index = ac->script_lang_index;
 	new->lookup_type = 3;		/* Cursive positioning */
-	new->offset = ftell(gpos);
+	new->offset[0] = ftell(gpos);
 	new->next = lookups;
 	lookups = new;
 
@@ -1209,10 +1237,10 @@ return( lookups );
 	}
 	coverage_offset = ftell(gpos);
 	dumpcoveragetable(gpos,glyphs);
-	fseek(gpos,new->offset+2,SEEK_SET);
-	putshort(gpos,coverage_offset-new->offset);
+	fseek(gpos,new->offset[0]+2,SEEK_SET);
+	putshort(gpos,coverage_offset-new->offset[0]);
 	fseek(gpos,0,SEEK_END);
-	new->len = ftell(gpos)-new->offset;
+	new->len = ftell(gpos)-new->offset[0];
     }
 return( lookups );
 }
@@ -1264,7 +1292,7 @@ static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
     new->flags = _ac->flags;
     new->script_lang_index = _ac->script_lang_index;
     new->lookup_type = 3+at;	/* One of the "mark to *" types 4,5,6 */
-    new->offset = ftell(gpos);
+    new->offset[0] = ftell(gpos);
     new->next = lookups;
     lookups = new;
 
@@ -1364,8 +1392,8 @@ static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
 	free(aps);
     }
     coverage_offset = ftell(gpos);
-    fseek(gpos,lookups->offset+4,SEEK_SET);
-    putshort(gpos,coverage_offset-lookups->offset);
+    fseek(gpos,lookups->offset[0]+4,SEEK_SET);
+    putshort(gpos,coverage_offset-lookups->offset[0]);
     fseek(gpos,0,SEEK_END);
     dumpcoveragetable(gpos,base);
 
@@ -1408,13 +1436,13 @@ static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
     if ( markglyphs!=marks[0] )
 	free(markglyphs);
 
-    fseek(gpos,new->offset+2,SEEK_SET);	/* mark coverage table offset */
-    putshort(gpos,coverage_offset-new->offset);
+    fseek(gpos,new->offset[0]+2,SEEK_SET);	/* mark coverage table offset */
+    putshort(gpos,coverage_offset-new->offset[0]);
     fseek(gpos,4,SEEK_CUR);
-    putshort(gpos,markarray_offset-new->offset);
+    putshort(gpos,markarray_offset-new->offset[0]);
 
     fseek(gpos,0,SEEK_END);
-    new->len = ftell(gpos)-new->offset;
+    new->len = ftell(gpos)-new->offset[0];
 
 return( lookups );
 }
@@ -2311,7 +2339,7 @@ static struct lookup *dumpg___ContextChain(FILE *lfile,FPST *fpst,SplineFont *sf
 			fpst->type == pst_contextsub ? 5 :
 			fpst->type == pst_chainsub ? 6 :
 			/* fpst->type == pst_reversesub */ 8;
-    new->offset = ftell(lfile);
+    new->offset[0] = ftell(lfile);
     new->next = lookups;
     lookups = new;
 
@@ -2329,7 +2357,7 @@ static struct lookup *dumpg___ContextChain(FILE *lfile,FPST *fpst,SplineFont *sf
     }
 
     fseek(lfile,0,SEEK_END);
-    new->len = ftell(lfile)-new->offset;
+    new->len = ftell(lfile)-new->offset[0];
 
     g___HandleNested(lfile,sf,fpst->type==pst_contextpos || fpst->type==pst_chainpos,
 	    nested,pp,at);
@@ -2439,9 +2467,9 @@ static void g___HandleNested(FILE *lfile,SplineFont *sf,int gpos,
 			ligtags.tag = pp->feature_tag;
 			new = LookupFromTagFlagLang(&ligtags);
 			new->lookup_type = 4;		/* Ligature */
-			new->offset = ftell(lfile);
+			new->offset[0] = ftell(lfile);
 			dumpgsubligdata(lfile,sf,&ligtags,at);
-			new->len = ftell(lfile)-new->offset;
+			new->len = ftell(lfile)-new->offset[0];
 		break;
 		    }
 		}
@@ -2470,7 +2498,7 @@ static void g___HandleNested(FILE *lfile,SplineFont *sf,int gpos,
 			    if ( glyphs==NULL )
  goto failure;
 			    new = LookupFromTagFlagLang(&ligtags);
-			    new->offset = ftell(lfile);
+			    new->offset[0] = ftell(lfile);
 			    if ( type==pst_position ) {
 				new->lookup_type = 1;
 				dumpGPOSsimplepos(lfile,sf,glyphs,&ligtags);
@@ -2490,7 +2518,7 @@ static void g___HandleNested(FILE *lfile,SplineFont *sf,int gpos,
 				/* Already done */;
 			    } else
 				IError("Unknown PST type in GPOS/GSUB figure lookups" );
-			    new->len = ftell(lfile)-new->offset;
+			    new->len = ftell(lfile)-new->offset[0];
 		    break;
 			}
 		    }
@@ -2530,7 +2558,7 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 	struct alltabs *at,struct lookup **nested) {
     /* When we find a feature, we split it out into various scripts */
     /*  dumping one lookup per script into the file */
-    struct lookup *lookups = NULL, *new, *lo;
+    struct lookup *lookups = NULL, *new;
     int i, j, cnt, max, isv;
     SplineChar ***map, **glyphs;
     AnchorClass *ac;
@@ -2569,7 +2597,7 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 	    glyphs = generateGlyphTypeList(sf,type,&ligtags[j],&map,&at->gi);
 	    if ( glyphs!=NULL && glyphs[0]!=NULL ) {
 		new = LookupFromTagFlagLang(&ligtags[j]);
-		new->offset = ftell(lfile);
+		new->offset[0] = ftell(lfile);
 		new->next = lookups;
 		lookups = new;
 		if ( type==pst_position ) {
@@ -2580,7 +2608,7 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 		    new->lookup_type = 2;
 		} else
 		    IError("Unknown PST type in GPOS figure lookups" );
-		new->len = ftell(lfile)-new->offset;
+		new->len = ftell(lfile)-new->offset[0];
 	    }
 	}
     }
@@ -2610,11 +2638,11 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 		new->flags = pst_r2l;
 	    new->script_lang_index = ligtags[j].script_lang_index;
 	    new->lookup_type = 2;		/* Pair adjustment subtable type */
-	    new->offset = ftell(lfile);
+	    new->offset[0] = ftell(lfile);
 	    new->next = lookups;
 	    lookups = new;
 	    dumpgposkerndata(lfile,sf,ligtags[j].script_lang_index,at,isv);
-	    new->len = ftell(lfile)-new->offset;
+	    new->len = ftell(lfile)-new->offset[0];
 	}
 
 	for ( kc=isv ? sf->vkerns : sf->kerns; kc!=NULL; kc=kc->next ) {
@@ -2623,11 +2651,11 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 	    new->flags = kc->flags;
 	    new->script_lang_index = kc->sli;
 	    new->lookup_type = 2;		/* Pair adjustment subtable type */
-	    new->offset = ftell(lfile);
+	    new->offset[0] = ftell(lfile);
 	    new->next = lookups;
 	    lookups = new;
 	    dumpgposkernclass(lfile,sf,kc,at,isv);
-	    new->len = ftell(lfile)-new->offset;
+	    new->len = ftell(lfile)-new->offset[0];
 	}
     }
     free(ligtags);
@@ -2643,12 +2671,6 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 	AnchorGuessContext(sf,at);
     }
 
-    for ( cnt=0, lo = lookups; lo!=NULL; lo = lo->next )
-	++cnt;
-    for ( fpst=sf->possub; fpst!=NULL; fpst=fpst->next ) if ( fpst->script_lang_index!=SLI_NESTED )
-	if ( fpst->type==pst_contextpos || fpst->type==pst_chainpos )
-	    ++cnt;
-    at->next_lookup = cnt;
     for ( fpst=sf->possub; fpst!=NULL; fpst=fpst->next ) if ( fpst->script_lang_index!=SLI_NESTED )
 	if ( fpst->type==pst_contextpos || fpst->type==pst_chainpos )
 	    lookups = dumpg___ContextChain(lfile,fpst,sf,lookups,nested,at);
@@ -2658,7 +2680,7 @@ return( lookups );
 
 static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
 	struct alltabs *at, struct lookup **nested) {
-    struct lookup *lookups = NULL, *new, *lo;
+    struct lookup *lookups = NULL, *new;
     struct tagflaglang *ligtags;
     int i, j, max, cnt;
     LigList *ll;
@@ -2696,11 +2718,11 @@ static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
     for ( j=0; j<cnt; ++j ) {
 	new = LookupFromTagFlagLang(&ligtags[j]);
 	new->lookup_type = 4;		/* Ligature */
-	new->offset = ftell(lfile);
+	new->offset[0] = ftell(lfile);
 	new->next = lookups;
 	lookups = new;
 	dumpgsubligdata(lfile,sf,&ligtags[j],at);
-	new->len = ftell(lfile)-new->offset;
+	new->len = ftell(lfile)-new->offset[0];
     }
 
     /* Now do something very similar for substitution simple, mult & alt tags */
@@ -2728,7 +2750,7 @@ static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
 	    if ( glyphs!=NULL && glyphs[0]!=NULL ) {
 		new = LookupFromTagFlagLang(&ligtags[j]);
 		new->lookup_type = type==pst_substitution?1:type==pst_multiple?2:3;
-		new->offset = ftell(lfile);
+		new->offset[0] = ftell(lfile);
 		new->next = lookups;
 		lookups = new;
 		if ( type==pst_substitution )
@@ -2737,18 +2759,12 @@ static struct lookup *GSUBfigureLookups(FILE *lfile,SplineFont *sf,
 		    dumpGSUBmultiplesubs(lfile,sf,glyphs,map);
 		free(glyphs);
 		GlyphMapFree(map);
-		new->len = ftell(lfile)-new->offset;
+		new->len = ftell(lfile)-new->offset[0];
 	    }
 	}
     }
     free(ligtags);
 
-    for ( cnt=0, lo = lookups; lo!=NULL; lo = lo->next )
-	++cnt;
-    for ( fpst=sf->possub; fpst!=NULL; fpst=fpst->next ) if ( fpst->script_lang_index!=SLI_NESTED )
-	if ( fpst->type==pst_contextsub || fpst->type==pst_chainsub || fpst->type==pst_reversesub )
-	    ++cnt;
-    at->next_lookup = cnt;
     for ( fpst=sf->possub; fpst!=NULL; fpst=fpst->next ) if ( fpst->script_lang_index!=SLI_NESTED )
 	if ( fpst->type==pst_contextsub || fpst->type==pst_chainsub || fpst->type==pst_reversesub )
 	    lookups = dumpg___ContextChain(lfile,fpst,sf,lookups,nested,at);
@@ -2948,17 +2964,17 @@ return( NULL );
     }
     for ( i=0; i<cnt-1; ++i ) {
 	array[i]->next = array[i+1];
-	array[i]->lookup_cnt = i;
+	array[i]->lookup_cnt = -1;
     }
     array[i]->next = NULL;
-    array[i]->lookup_cnt = i;
+    array[i]->lookup_cnt = -1;
     *_lookups = array[0];
     /* Now reorder the lookup file so that it's also in execution order */
     bsize = 16*1024;
     buf = galloc(bsize);
     for ( i=0; i<cnt; ++i ) {
-	fseek(disordered,array[i]->offset,SEEK_SET);
-	array[i]->offset = ftell(ordered);
+	fseek(disordered,array[i]->offset[0],SEEK_SET);
+	array[i]->offset[0] = ftell(ordered);
 	totlen = array[i]->len;
 	while ( totlen>0 ) {
 	    if ( (len = totlen)>bsize ) len = bsize;
@@ -2968,8 +2984,8 @@ return( NULL );
 	}
     }
     for ( l = nested; l!=NULL; l=l->next ) {
-	fseek(disordered,l->offset,SEEK_SET);
-	l->offset = ftell(ordered);
+	fseek(disordered,l->offset[0],SEEK_SET);
+	l->offset[0] = ftell(ordered);
 	totlen = l->len;
 	while ( totlen>0 ) {
 	    if ( (len = totlen)>bsize ) len = bsize;
@@ -3128,45 +3144,52 @@ static void dump_script_table(FILE *g___,SplineFont *sf,
     }
 }
     
-static FILE *g___FigureExtensionSubTables(struct lookup *lookups,int is_gpos) {
+static FILE *g___FigureExtensionSubTables(struct clookup *clookups,struct lookup *lookups,int startoffset,int is_gpos) {
+    struct clookup *cl;
     struct lookup *l;
-    int cnt, estart, gotmore;
+    int cnt, gotmore;
     FILE *efile;
-    int i;
+    int i, offset;
 
-    if ( lookups==NULL )
+    if ( clookups==NULL )
 return( NULL );
-    for ( l=lookups, cnt=1; l->next!=NULL; l=l->next, ++cnt );
-    if ( l->offset<65536 )
-return( NULL );
-
-    estart=cnt; gotmore = true;
+    gotmore = true; cnt=0;
     while ( gotmore ) {
 	gotmore = false;
-	for ( i=0, l=lookups; l!=NULL && i<estart; l=l->next, ++i ) {
-	    if ( (cnt-i)*8+l->offset+(cnt-i-1)*8 >=65536 ) {
-		estart = i;
-		gotmore = true;
-	break;
+	offset = startoffset + 8*cnt;
+	for ( cl=clookups; cl!=NULL; cl=cl->next ) if ( !cl->duplicate && !cl->extension ) {
+	    for ( i=cl->lcnt-1; i>=0; --i )
+		if ( offset+cl->lookups[i]->offset[0]>65535 )
+	    break;
+	    if ( i>=0 ) {
+		cl->extension = true;
+		cl->lookup_type = is_gpos ? 9 : 7;
+		for ( i=cl->lcnt-1; i>=0; --i ) if ( !cl->lookups[i]->already_extended ) {
+		    ++cnt;
+		    cl->lookups[i]->already_extended = true;
+		    gotmore = true;
+		}
 	    }
+	    offset -= 6+2*cl->lcnt;
 	}
     }
-    if ( estart==cnt ) {	/* Eh?, should never happen */
-	fprintf( stderr, "Internal error in GPOS/SUB extension calculation\n" );
-return( NULL );
-    }
 
+    if ( cnt==0 )		/* No offset overflows
+return( NULL );
+
+    /* Now we've worked out which lookups need extension tables and marked them*/
+    /* Generate the extension tables, and update the offsets to reflect the size */
+    /* of the extensions */
     efile = tmpfile();
-    for ( i=0, l=lookups; l!=NULL && i<estart; l=l->next, ++i )
-	l->offset += (cnt-estart)*8;
-    while ( l!=NULL ) {
-	putshort(efile,1);	/* Only one format for extensions */
-	putshort(efile,l->lookup_type);
-	putlong(efile,(cnt-i)*8 + l->offset);
-	l->lookup_type = is_gpos ? 9 : 7;
-	l->offset = (i-estart)*8;
-	l = l->next;
-	++i;
+    for ( i=0, l=lookups; l!=NULL; l=l->next ) {
+	l->offset[0] += 8*cnt;
+	if ( l->already_extended ) {
+	    putshort(efile,1);	/* exten subtable format (there's only one) */
+	    putshort(efile,l->lookup_type);
+	    putlong(efile,(cnt-i)*8 + l->offset[0]);
+	    l->offset[1] = i*8;
+	    ++i;
+	}
     }
 return( efile );
 }
@@ -3270,7 +3293,11 @@ return( f );
 /*  a given tag into one feature per script/lang. Of course some lookup */
 /*  combinations may be shared by several script/lang settings and we should */
 /*  use the same feature when possible */
-static struct feature *CoalesceLookups(SplineFont *sf, struct lookup *lookups,int is_gpos) {
+/* It gets worse. ATM does seem to deal with features containing */
+/*  more than one lookup, so we need to merge multiple sub-tables into one */
+/*  lookup if they have the same feature tag/lookup flags */
+static struct feature *CoalesceLookups(SplineFont *sf, struct lookup *lookups,
+	struct lookup *nested, struct clookup **clookups, int is_gpos) {
     struct lookup *l, *last;
     int cnt, lcnt, allsame;
     struct slusage *slu=NULL;
@@ -3279,6 +3306,11 @@ static struct feature *CoalesceLookups(SplineFont *sf, struct lookup *lookups,in
     int lang, s, pos, which, tot;
     int fcnt = 0;
     int added_size = false;
+    struct clookup *clhead, *cllast, *cl, *cl2, *clflast;
+    struct lookup **temp;
+    int clcnt, clfcnt;
+    int lc_warned;
+    int i,j;
 
     for ( ; lookups!=NULL; lookups = last->feature_next ) {
 	cnt = lcnt = 0;
@@ -3303,12 +3335,12 @@ static struct feature *CoalesceLookups(SplineFont *sf, struct lookup *lookups,in
 	if ( allsame ) {
 	    f = chunkalloc(sizeof(struct feature));
 	    f->feature_tag = lookups->feature_tag;
-	    f->lcnt = cnt;
-	    f->lookups = galloc(cnt*sizeof(struct lookup *));
+	    f->baselcnt = cnt;
+	    f->baselookups = galloc(cnt*sizeof(struct lookup *));
 	    f->feature_cnt = fcnt++;
 	    cnt = 0;
 	    for ( l=lookups; l!=NULL && l->feature_tag==lookups->feature_tag; l = l->feature_next )
-		f->lookups[cnt++] = l;
+		f->baselookups[cnt++] = l;
 	    AddSliToFeature(f,sf,lookups->script_lang_index);
 	    if ( flast==NULL )
 		fhead = f;
@@ -3352,14 +3384,14 @@ static struct feature *CoalesceLookups(SplineFont *sf, struct lookup *lookups,in
 		if ( (cnt<=32 && (slu[pos].u.used&(1<<which))) ||
 			(cnt>32 && (slu[pos].u.usedarr[which>>5]&(1<<(which&0x1f)))) )
 		++tot;
-	    f->lcnt = tot;
-	    f->lookups = galloc(cnt*sizeof(struct lookup *));
+	    f->baselcnt = tot;
+	    f->baselookups = galloc(cnt*sizeof(struct lookup *));
 	    f->feature_cnt = fcnt++;
 	    tot = 0;
 	    for ( which = 0, l=lookups; l!=NULL && l->feature_tag==lookups->feature_tag; l = l->feature_next, ++which )
 		if ( (cnt<=32 && (slu[pos].u.used&(1<<which))) ||
 			(cnt>32 && (slu[pos].u.usedarr[which>>5]&(1<<(which&0x1f)))) )
-		    f->lookups[tot++] = l;
+		    f->baselookups[tot++] = l;
 	    AddScriptLangsToFeature(f,slu,pos,lcnt,cnt);
 	    if ( flast==NULL )
 		fhead = f;
@@ -3381,6 +3413,88 @@ static struct feature *CoalesceLookups(SplineFont *sf, struct lookup *lookups,in
     }
     if ( slumax!=0 )
 	free(slu);
+
+/* Now coalesce sub-tables into lookups */
+    lc_warned = false;
+    clhead = cllast = NULL;
+    clcnt = 0;
+    for ( l = nested; l!=NULL ; l=l->next ) {
+	cl = chunkalloc(sizeof(struct clookup));
+	if ( clhead==NULL )
+	    clhead = cl;
+	else
+	    cllast->next = cl;
+	cllast = cl;
+	cl->flags = l->flags;
+	cl->lookup_type = l->lookup_type;
+	cl->lcnt = 1;
+	cl->lookups = galloc(sizeof(struct lookup *));
+	cl->lookups[0] = l;
+	if ( clcnt!=l->lookup_cnt && !lc_warned ) {
+	    IError("GPOS/GSUB: Lookup ordering mismatch #2");
+	    lc_warned = true;
+	}
+	cl->lookup_cnt = clcnt++;
+    }
+    for ( f=fhead; f!=NULL; f=f->feature_next ) {
+	clfcnt = 0;
+	clflast = NULL;
+	for ( i=0; i<f->baselcnt; ++i )
+	    f->baselookups[i]->used = false;
+	for ( i=0; i<f->baselcnt; ++i ) if ( !f->baselookups[i]->used ) {
+	    f->baselookups[i]->used = true;
+	    cnt = 1;
+	    for ( j=i+1; j<f->baselcnt; ++j ) {
+		if ( f->baselookups[i]->flags == f->baselookups[j]->flags &&
+			f->baselookups[i]->lookup_type == f->baselookups[j]->lookup_type ) {
+		    f->baselookups[j]->used = true;
+		    ++cnt;
+		}
+	    }
+	    temp = galloc(cnt*sizeof(struct lookup *));
+	    cnt = 0;
+	    for ( j=i; j<f->baselcnt; ++j ) {
+		if ( f->baselookups[i]->flags == f->baselookups[j]->flags &&
+			f->baselookups[i]->lookup_type == f->baselookups[j]->lookup_type )
+		    temp[cnt++] = f->baselookups[j];
+	    }
+	    for ( cl2 = clhead; cl2!=NULL; cl2=cl2->next ) {
+		if ( cl2->lcnt!=cnt )
+	    continue;
+		for ( j=0; j<cnt; ++j )
+		    if ( cl2->lookups[j]!=temp[j] )
+		break;
+		if ( j==cnt )
+	    break;
+	    }
+
+	    cl = chunkalloc(sizeof(struct clookup));
+	    if ( clhead==NULL )
+		clhead = cl;
+	    else
+		cllast->next = cl;
+	    cllast = cl;
+	    if ( clflast==NULL )
+		f->lookups = cl;
+	    else
+		clflast->fnext = cl;
+	    clflast = cl;
+	    cl->flags = temp[0]->flags;
+	    cl->lookup_type = temp[0]->lookup_type;
+	    cl->lcnt = cnt;
+	    cl->lookups = temp;
+	    if ( cl2==NULL )
+		cl->lookup_cnt = clcnt++;
+	    else {
+		cl->duplicate = true;
+		cl->lookup_cnt = cl2->lookup_cnt;
+	    }
+	    clfcnt++;
+	}
+	f->lcnt = clfcnt;
+    }
+    *clookups = clhead;
+	
 return( fhead );
 }
 
@@ -3496,6 +3610,7 @@ static FILE *dumpg___info(struct alltabs *at, SplineFont *sf,int is_gpos) {
     SplineFont *master;
     int lc_warned=false;
     int32 size_params_loc, size_params_ptr;
+    struct clookup *clookups, *cl, *cnext;
 
     lfile = tmpfile();
     if ( is_gpos ) {
@@ -3515,7 +3630,7 @@ return( NULL );
     lfile2 = tmpfile();
     features_ordered = orderlookups(&lookups,ord,lfile2,lfile,nested,!is_gpos);
     lfile = lfile2;
-    features = CoalesceLookups(sf,features_ordered,is_gpos);
+    features = CoalesceLookups(sf,features_ordered,nested,&clookups,is_gpos);
 
     master = ( sf->cidmaster ) ? sf->cidmaster : ( sf->mm ) ? sf->mm->normal : sf;
     for ( i=0; master->script_lang[i]!=NULL; ++i );
@@ -3575,8 +3690,8 @@ return( NULL );
 	if ( f->is_size ) size_params_ptr = ftell(g___);
 	putshort(g___,0);		/* No feature params */
 	putshort(g___,f->lcnt);		/* this many lookups */
-	for ( i=0; i<f->lcnt; ++i )
-	    putshort(g___,f->lookups[i]->lookup_cnt);	/* index of each lookup */
+	for ( cl=f->lookups; cl!=NULL; cl=cl->fnext )
+	    putshort(g___,cl->lookup_cnt);	/* index of each lookup */
     }
     if ( size_params_ptr!=0 ) {
 	size_params_loc = ftell(g___);
@@ -3601,7 +3716,7 @@ return( NULL );
     /* And that should finish all the features */
     for ( f=features; f!=NULL; f=fnext ) {
 	fnext = f->feature_next;
-	free(f->lookups);
+	free(f->baselookups);
 	for ( sl=f->sl; sl!=NULL; sl=slnext ) {
 	    slnext = sl->next;
 	    chunkfree(sl,sizeof(struct sl));
@@ -3610,38 +3725,43 @@ return( NULL );
     }
     /* So free the feature list */
 
-    if ( lookups!=NULL ) {
-	for ( l=lookups; l->next!=NULL; l = l->next );
-	l->next = nested;
-    }
-    for ( cnt=0, l=lookups; l!=NULL; l=l->next, ++cnt )
-	if ( l->lookup_cnt!=cnt && !lc_warned ) {
+    for ( cnt=0, cl=clookups; cl!=NULL; cl=cl->next ) {
+	if ( cl->duplicate )
+    continue;
+	if ( cl->lookup_cnt!=cnt && !lc_warned ) {
 	    IError("GPOS/GSUB: Lookup ordering mismatch");
 	    lc_warned = true;
 	}
+	++cnt;
+    }
     lookup_list_table_start = ftell(g___);
     fseek(g___,8,SEEK_SET);
     putshort(g___,lookup_list_table_start);
     fseek(g___,0,SEEK_END);
     putshort(g___,cnt);
     offset = 2+2*cnt;		/* Offset to start of first feature table from beginning of feature_list */
-    for ( l=lookups; l!=NULL; l=l->next ) {
+    for ( cl=clookups; cl!=NULL; cl=cl->next ) if ( !cl->duplicate ) {
 	putshort(g___,offset);
-	offset += 8;		/* 8 bytes per lookup table */
+	offset += 6+2*cl->lcnt;		/* 6 bytes header +2 per lookup */
     }
+    offset -= 2+2*cnt;
     /* now the lookup tables */
       /* do we need any extension sub-tables? */
-    efile=g___FigureExtensionSubTables(lookups,is_gpos);
-    for ( i=0, l=lookups; l!=NULL; l=l->next, ++i ) {
-	putshort(g___,l->lookup_type);
-	putshort(g___,l->flags);
-	putshort(g___,1);		/* Each table controls one lookup */
-	putshort(g___,(cnt-i)*8+l->offset); /* Offset to lookup data which is in the temp file */
-	    /* there are (cnt-i) lookup tables (of size 8) between here and */
-	    /* the place where the temp file will start, and then we need to */
-	    /* skip l->offset bytes in the temp file */
+    efile=g___FigureExtensionSubTables(clookups,lookups,offset,is_gpos);
+    for ( cl=clookups; cl!=NULL; cl=cl->next ) if ( !cl->duplicate ) {
+	putshort(g___,cl->lookup_type);
+	putshort(g___,cl->flags);
+	putshort(g___,cl->lcnt);
+	for ( i=0; i<cl->lcnt; ++i ) {
+	    putshort(g___,offset+cl->lookups[i]->offset[cl->extension]);
+	    /* Offset to lookup data which is in the temp file */
+	    /* we keep adjusting offset so it reflects the distance between */
+	    /* here and the place where the temp file will start, and then */
+	    /* we need to skip l->offset bytes in the temp file */
 	    /* If it's a big GPOS/SUB table we may also need some extension */
 	    /*  pointers, but FigureExtension will adjust for that */
+	}
+	offset -= 6+2*cl->lcnt;
     }
 
     buf = galloc(1024);
@@ -3659,6 +3779,11 @@ return( NULL );
     for ( l=lookups; l!=NULL; l=next ) {
 	next = l->next;
 	chunkfree(l,sizeof(*l));
+    }
+    for ( cl=clookups; cl!=NULL; cl=cnext ) {
+	cnext = cl->next;
+	free( cl->lookups );
+	chunkfree(cl,sizeof(*cl));
     }
     free(scripts);
     free(langs);
