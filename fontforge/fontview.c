@@ -2649,6 +2649,7 @@ void FVTrans(FontView *fv,SplineChar *sc,real transform[6], uint8 *sel,
 	    int widthset = sc->widthset;
 	    SCSynchronizeWidth(sc,sc->width*transform[0]+transform[4],sc->width,fv);
 	    if ( !(flags&fvt_dontsetwidth) ) sc->widthset = widthset;
+	    sc->vwidth = sc->vwidth*transform[3]+transform[5];
 	}
     if ( flags & fvt_scalepstpos ) {
 	for ( kp=sc->kerns; kp!=NULL; kp=kp->next )
