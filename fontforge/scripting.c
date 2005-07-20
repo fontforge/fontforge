@@ -2695,11 +2695,29 @@ static void bSetUniqueID(Context *c) {
     c->curfv->sf->uniqueid = c->a.vals[1].u.ival;
 }
 
+static void bGetTeXParam(Context *c) {
+    SplineFont *sf = c->curfv->sf;
+
+    if ( c->a.argc!=2 )
+	error(c,"Bad argument count");
+    else if ( c->a.vals[1].type!=v_int )
+	error(c,"Bad argument type");
+    else if ( c->a.vals[1].u.ival<-1 || c->a.vals[1].u.ival>=24 )
+	error(c,"Bad argument value (must be >=-1 <=24)");
+    c->return_val.type = v_int;
+    if ( sf->texdata.type==tex_unset )
+	TeXDefaultParams(sf);
+    if ( c->a.vals[1].u.ival==-1 )
+	c->return_val.u.ival = sf->texdata.type;
+    else
+	c->return_val.u.ival = sf->texdata.params[c->a.vals[1].u.ival];
+}
+    
 static void bSetTeXParams(Context *c) {
     int i;
 
     for ( i=1; i<c->a.argc; ++i )
-	if ( c->a.vals[1].type!=v_int )
+	if ( c->a.vals[i].type!=v_int )
 	    error(c,"Bad argument type");
     switch ( c->a.vals[1].u.ival ) {
       case 1:
@@ -5025,6 +5043,10 @@ return;
 	    c->return_val.u.ival = sc->width;
 	else if ( strmatch( c->a.vals[1].u.sval,"VWidth")==0 )
 	    c->return_val.u.ival = sc->vwidth;
+	else if ( strmatch( c->a.vals[1].u.sval,"TeXHeight")==0 )
+	    c->return_val.u.ival = sc->tex_height;
+	else if ( strmatch( c->a.vals[1].u.sval,"TeXDepth")==0 )
+	    c->return_val.u.ival = sc->tex_depth;
 	else if ( strmatch( c->a.vals[1].u.sval,"Changed")==0 )
 	    c->return_val.u.ival = sc->changed;
 	else if ( strmatch( c->a.vals[1].u.sval,"DontAutoHint")==0 )
@@ -5058,6 +5080,30 @@ return;
 	    } else
 		errors(c,"Unknown tag", c->a.vals[1].u.sval);
 	}
+    }
+}
+
+static void bSetGlyphTeX(Context *c) {
+    SplineFont *sf = c->curfv->sf;
+    EncMap *map = c->curfv->map;
+    SplineChar *sc;
+    int found;
+
+    if ( c->a.argc!=3 && c->a.argc!=5 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int )
+	error( c, "Bad type for argument");
+
+    found = GetOneSelCharIndex(c);
+    sc = SFMakeChar(sf,map,found);
+    sc->tex_height = c->a.vals[1].u.ival;
+    sc->tex_depth = c->a.vals[2].u.ival;
+
+    if ( c->a.argc==5 ) {
+	if ( c->a.vals[3].type!=v_int || c->a.vals[4].type!=v_int )
+	    error( c, "Bad type for argument");
+	sc->tex_height = c->a.vals[3].u.ival;
+	sc->tex_depth = c->a.vals[4].u.ival;
     }
 }
 
@@ -5174,6 +5220,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "SetPanose", bSetPanose },
     { "SetUniqueID", bSetUniqueID },
     { "SetTeXParams", bSetTeXParams },
+    { "GetTeXParam", bGetTeXParam },
     { "SetCharName", bSetCharName },
     { "SetUnicodeValue", bSetUnicodeValue },
     { "SetCharColor", bSetCharColor },
@@ -5272,6 +5319,8 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "DrawsSomething", bDrawsSomething },
     { "WorthOutputting", bWorthOutputting },
     { "CharInfo", bCharInfo },
+    { "GlyphInfo", bCharInfo },
+    { "SetGlyphTeX", bSetGlyphTeX },
     { NULL }
 };
 
@@ -7052,6 +7101,7 @@ void ScriptDlg(FontView *fv) {
 
 	GGadgetsCreate(gw,gcd);
     }
+    GWidgetIndicateFocusGadget(GWidgetGetControl(gw,CID_Script));
     sd.gw = gw;
     GDrawSetUserData(gw,&sd);
     GDrawSetVisible(gw,true);
