@@ -4662,8 +4662,8 @@ return( NULL );
 return( sf );
 }
 
-SplineChar *SFDReadOneChar(char *filename,const char *name) {
-    FILE *sfd = fopen(filename,"r");
+SplineChar *SFDReadOneChar(SplineFont *cur_sf,const char *name) {
+    FILE *sfd = fopen(cur_sf->filename,"r");
     SplineChar *sc=NULL;
     char *oldloc;
     char tok[2000];
@@ -4676,6 +4676,9 @@ return( NULL );
 
     memset(&sf,0,sizeof(sf));
     sf.ascent = 800; sf.descent = 200;
+    if ( cur_sf->cidmaster ) cur_sf = cur_sf->cidmaster;
+    sf.sli_cnt = cur_sf->sli_cnt;
+    sf.script_lang = cur_sf->script_lang;
     if ( SFDStartsCorrectly(sfd,tok) ) {
 	pos = ftell(sfd);
 	while ( getname(sfd,tok)!=-1 ) {

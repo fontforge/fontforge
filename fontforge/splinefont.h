@@ -1563,7 +1563,7 @@ extern MacFeat *SFDParseMacFeatures(FILE *sfd, char *tok);
 extern int SFDWrite(char *filename,SplineFont *sf,EncMap *map);
 extern int SFDWriteBak(SplineFont *sf,EncMap *map);
 extern SplineFont *SFDRead(char *filename);
-extern SplineChar *SFDReadOneChar(char *filename,const char *name);
+extern SplineChar *SFDReadOneChar(SplineFont *sf,const char *name);
 #ifdef FONTFORGE_CONFIG_GTK
 extern char *TTFGetFontName(FILE *ttf,int32 offset,int32 off2);
 #else

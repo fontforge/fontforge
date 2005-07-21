@@ -913,10 +913,12 @@ return;
     GDrawProcessPendingEvents(NULL);
 # endif
 #endif
-    if ( temp->glyphcnt>fv->sf->glyphcnt ) {
-	fv->selected = grealloc(fv->selected,temp->glyphcnt);
-	memset(fv->selected+fv->sf->glyphcnt,0,temp->glyphcnt-fv->sf->glyphcnt);
+    if ( temp->map->enccount>fv->map->enccount ) {
+	fv->selected = grealloc(fv->selected,temp->map->enccount);
+	memset(fv->selected+fv->map->enccount,0,temp->map->enccount-fv->map->enccount);
     }
+    EncMapFree(fv->map);
+    fv->map = temp->map;
     SFClearAutoSave(old);
     temp->fv = fv->sf->fv;
     for ( fvs=fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame )
@@ -942,14 +944,20 @@ static void FVMenuRevertGlyph(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 void FontViewMenu_RevertGlyph(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
-    int i;
+    int i, gid;
     int nc_state = -1;
     SplineFont *sf = fv->sf;
     SplineChar *sc, *tsc;
     SplineChar temp;
+#ifdef FONTFORGE_CONFIG_TYPE3
+    Undoes **undoes;
+    int layer, lc;
+#endif
+    EncMap *map = fv->map;
+    CharView *cvs;
 
-    for ( i=0; i<sf->glyphcnt; ++i ) if ( fv->selected[i] && sf->glyphs[i]!=NULL ) {
-	tsc = sf->glyphs[i];
+    for ( i=0; i<map->enccount; ++i ) if ( fv->selected[i] && (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL ) {
+	tsc = sf->glyphs[gid];
 	if ( tsc->namechanged ) {
 	    if ( nc_state==-1 ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
@@ -960,7 +968,7 @@ void FontViewMenu_RevertGlyph(GtkMenuItem *menuitem, gpointer user_data) {
 		nc_state = 0;
 	    }
 	} else {
-	    sc = SFDReadOneChar(sf->filename,tsc->name);
+	    sc = SFDReadOneChar(sf,tsc->name);
 	    if ( sc==NULL ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_CantFindGlyph,_STR_CantRevertGlyph,tsc->name);
@@ -973,17 +981,38 @@ void FontViewMenu_RevertGlyph(GtkMenuItem *menuitem, gpointer user_data) {
 		SCPreserveBackground(tsc);
 		temp = *tsc;
 		tsc->dependents = NULL;
+#ifdef FONTFORGE_CONFIG_TYPE3
+		lc = tsc->layer_cnt;
+		undoes = galloc(lc*sizeof(Undoes *));
+		for ( layer=0; layer<lc; ++layer ) {
+		    undoes[layer] = tsc->layers[layer].undoes;
+		    tsc->layers[layer].undoes = NULL;
+		}
+#else
 		tsc->layers[ly_back].undoes = tsc->layers[ly_fore].undoes = NULL;
+#endif
 		SplineCharFreeContents(tsc);
 		*tsc = *sc;
 		chunkfree(sc,sizeof(SplineChar));
 		tsc->parent = sf;
 		tsc->dependents = temp.dependents;
+		tsc->views = temp.views;
+#ifdef FONTFORGE_CONFIG_TYPE3
+		for ( layer = 0; layer<lc && layer<tsc->layer_cnt; ++layer )
+		    tsc->layers[layer].undoes = undoes[layer];
+		for ( ; layer<lc; ++layer )
+		    UndoesFree(undoes[layer]);
+		free(undoes);
+#else
 		tsc->layers[ly_fore].undoes = temp.layers[ly_fore].undoes;
 		tsc->layers[ly_back].undoes = temp.layers[ly_back].undoes;
-		tsc->views = temp.views;
-		tsc->changed = temp.changed;
-		tsc->orig_pos = temp.orig_pos;
+#endif
+		/* tsc->changed = temp.changed; */
+		/* tsc->orig_pos = temp.orig_pos; */
+		for ( cvs=tsc->views; cvs!=NULL; cvs=cvs->next ) {
+		    cvs->layerheads[dm_back] = &tsc->layers[ly_back];
+		    cvs->layerheads[dm_fore] = &tsc->layers[ly_fore];
+		}
 		RevertedGlyphReferenceFixup(tsc, sf);
 		_SCCharChangedUpdate(tsc,false);
 	    }
@@ -1768,6 +1797,7 @@ static void FVCopyFgtoBg(FontView *fv) {
 
     for ( i=0; i<fv->map->enccount; ++i )
 	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
+		fv->sf->glyphs[gid]!=NULL &&
 		fv->sf->glyphs[gid]->layers[1].splines!=NULL )
 	    SCCopyFgToBg(fv->sf->glyphs[gid],true);
 }
