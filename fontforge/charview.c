@@ -4117,10 +4117,15 @@ void RevertedGlyphReferenceFixup(SplineChar *sc, SplineFont *sf) {
 static void CVMenuRevertGlyph(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     SplineChar *sc, temp;
+#ifdef FONTFORGE_CONFIG_TYPE3
+    Undoes **undoes;
+    int layer, lc;
+#endif
+    CharView *cvs;
 
     if ( cv->sc->parent->filename==NULL || cv->sc->namechanged || cv->sc->parent->mm!=NULL )
 return;
-    sc = SFDReadOneChar(cv->sc->parent->filename,cv->sc->name);
+    sc = SFDReadOneChar(cv->sc->parent,cv->sc->name);
     if ( sc==NULL ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetErrorR(_STR_CantFindGlyph,_STR_CantRevertGlyph,cv->sc->name);
@@ -4133,18 +4138,37 @@ return;
 	SCPreserveBackground(cv->sc);
 	temp = *cv->sc;
 	cv->sc->dependents = NULL;
+#ifdef FONTFORGE_CONFIG_TYPE3
+	lc = cv->sc->layer_cnt;
+	undoes = galloc(lc*sizeof(Undoes *));
+	for ( layer=0; layer<lc; ++layer ) {
+	    undoes[layer] = cv->sc->layers[layer].undoes;
+	    cv->sc->layers[layer].undoes = NULL;
+	}
+#else
 	cv->sc->layers[ly_fore].undoes = cv->sc->layers[ly_back].undoes = NULL;
+#endif
 	SplineCharFreeContents(cv->sc);
 	*cv->sc = *sc;
 	chunkfree(sc,sizeof(SplineChar));
 	cv->sc->parent = temp.parent;
 	cv->sc->dependents = temp.dependents;
+#ifdef FONTFORGE_CONFIG_TYPE3
+	for ( layer = 0; layer<lc && layer<cv->sc->layer_cnt; ++layer )
+	    cv->sc->layers[layer].undoes = undoes[layer];
+	for ( ; layer<lc; ++layer )
+	    UndoesFree(undoes[layer]);
+	free(undoes);
+#else
 	cv->sc->layers[ly_fore].undoes = temp.layers[ly_fore].undoes;
 	cv->sc->layers[ly_back].undoes = temp.layers[ly_back].undoes;
+#endif
 	cv->sc->views = temp.views;
-	cv->sc->changed = temp.changed;
-	cv->layerheads[dm_back] = &cv->sc->layers[ly_back];
-	cv->layerheads[dm_fore] = &cv->sc->layers[ly_fore];
+	/* cv->sc->changed = temp.changed; */
+	for ( cvs=cv->sc->views; cvs!=NULL; cvs=cvs->next ) {
+	    cvs->layerheads[dm_back] = &cv->sc->layers[ly_back];
+	    cvs->layerheads[dm_fore] = &cv->sc->layers[ly_fore];
+	}
 	RevertedGlyphReferenceFixup(cv->sc, temp.parent);
 	_CVCharChangedUpdate(cv,false);
     }
