@@ -107,6 +107,7 @@ int LoadKerningDataFromAfm(SplineFont *sf, char *filename,EncMap *map) {
     int off;
     char name[44], second[44], lig[44];
     PST *liga;
+    double scale = (sf->ascent+sf->descent)/1000.0;
 
     if ( file==NULL )
 return( 0 );
@@ -129,7 +130,7 @@ return( 0 );
 	    sc2 = SFGetChar(sf,-1,pt);
 	    *ept = ch;
 	    off = strtol(ept,NULL,10);
-	    KPInsert(sc1,sc2,off,isv);
+	    KPInsert(sc1,sc2,rint(off*scale),isv);
 	} else if ( sscanf( buffer, "C %*d ; WX %*d ; N %40s ; B %*d %*d %*d %*d ; L %40s %40s",
 		name, second, lig)==3 ) {
 	    sc1 = SFGetChar(sf,-1,lig);
