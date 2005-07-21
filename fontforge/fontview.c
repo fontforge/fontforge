@@ -2248,6 +2248,38 @@ void FontViewMenu_DeselectAll(GtkMenuItem *menuitem, gpointer user_data) {
 }
 
 # ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuSelectChanged(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_SelectChanged(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+    int i, gid;
+    EncMap *map = fv->map;
+    SplineFont *sf = fv->sf;
+
+    for ( i=0; i< map->enccount; ++i )
+	fv->selected[i] = ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && sf->glyphs[gid]->changed );
+    GDrawRequestExpose(fv->v,NULL,false);
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuSelectHintingNeeded(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_SelectHintingNeeded(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+    int i, gid;
+    EncMap *map = fv->map;
+    SplineFont *sf = fv->sf;
+
+    for ( i=0; i< map->enccount; ++i )
+	fv->selected[i] = ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && sf->glyphs[gid]->changedsincelasthinted );
+    GDrawRequestExpose(fv->v,NULL,false);
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
 static void FVMenuSelectColor(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     FVSelectColor(fv,(uint32) (mi->ti.userdata),(e->u.chr.state&ksm_shift)?1:0);
@@ -5932,6 +5964,9 @@ static GMenuItem sllist[] = {
     { { (unichar_t *) _STR_SelectInvert, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, GK_Escape, ksm_control, NULL, NULL, FVMenuInvertSelection },
     { { (unichar_t *) _STR_DeselectAll, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, GK_Escape, 0, NULL, NULL, FVMenuDeselectAll },
     { { (unichar_t *) _STR_SelectColor, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control, sclist },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_SelectChangedGlyphs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control, NULL,NULL, FVMenuSelectChanged },
+    { { (unichar_t *) _STR_SelectHintingNeeded, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control, NULL,NULL, FVMenuSelectHintingNeeded },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_SelectByATT, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'T' }, '\0', 0, NULL, NULL, FVMenuSelectByPST },
     { NULL }
