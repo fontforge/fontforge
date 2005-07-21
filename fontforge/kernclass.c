@@ -786,6 +786,7 @@ return;
 	if ( kp==NULL ) {
 	    kp = chunkalloc(sizeof(KernPair));
 	    kp->next = kcd->isv?kcd->scf->vkerns:kcd->scf->kerns;
+	    kp->sc = kcd->scs;
 	    if ( kcd->isv )
 		kcd->scf->vkerns = kp;
 	    else
