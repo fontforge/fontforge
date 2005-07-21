@@ -2040,7 +2040,7 @@ return( -1 );
 return( bottom );
 }
 
-static int bDoSelect(Context *c, int signal_error, int select) {
+static int bDoSelect(Context *c, int signal_error, int select, int by_ranges) {
     int top, bottom, i,j;
     int any = false;
 
@@ -2060,9 +2060,9 @@ return( any ? -1 : -2 );
 return( any );
     }
 
-    for ( i=1; i<c->a.argc; i+=2 ) {
+    for ( i=1; i<c->a.argc; i+=1+by_ranges ) {
 	bottom = ParseCharIdent(c,&c->a.vals[i],signal_error);
-	if ( i+1==c->a.argc )
+	if ( i+1==c->a.argc || !by_ranges )
 	    top = bottom;
 	else {
 	    top = ParseCharIdent(c,&c->a.vals[i+1],signal_error);
@@ -2082,24 +2082,89 @@ return( any );
 static void bSelectMore(Context *c) {
     if ( c->a.argc==1 )
 	error( c, "SelectMore needs at least one argument");
-    bDoSelect(c,true,true);
+    bDoSelect(c,true,true,true);
 }
 
 static void bSelectFewer(Context *c) {
     if ( c->a.argc==1 )
 	error( c, "SelectFewer needs at least one argument");
-    bDoSelect(c,true,false);
+    bDoSelect(c,true,false,true);
 }
 
 static void bSelect(Context *c) {
     memset(c->curfv->selected,0,c->curfv->map->enccount);
-    bDoSelect(c,true,true);
+    bDoSelect(c,true,true,true);
+}
+
+static void bSelectMoreSingletons(Context *c) {
+    if ( c->a.argc==1 )
+	error( c, "SelectMore needs at least one argument");
+    bDoSelect(c,true,true,false);
+}
+
+static void bSelectFewerSingletons(Context *c) {
+    if ( c->a.argc==1 )
+	error( c, "SelectFewer needs at least one argument");
+    bDoSelect(c,true,false,false);
+}
+
+static void bSelectSingletons(Context *c) {
+    memset(c->curfv->selected,0,c->curfv->map->enccount);
+    bDoSelect(c,true,true,false);
 }
 
 static void bSelectIf(Context *c) {
     memset(c->curfv->selected,0,c->curfv->map->enccount);
     c->return_val.type = v_int;
-    c->return_val.u.ival = bDoSelect(c,false,true);
+    c->return_val.u.ival = bDoSelect(c,false,true,true);
+}
+
+static void bSelectChanged(Context *c) {
+    int i, gid;
+    FontView *fv = c->curfv;
+    EncMap *map = fv->map;
+    SplineFont *sf = fv->sf;
+    int add = 0;
+
+    if ( c->a.argc!=1 && c->a.argc!=2 )
+	error( c, "Too many arguments");
+    if ( c->a.argc==2 ) {
+	if ( c->a.vals[1].type!=v_int )
+	    error( c, "Bad type for argument" );
+	add = c->a.vals[1].u.ival;
+    }
+
+    if ( add ) {
+	for ( i=0; i< map->enccount; ++i )
+	    fv->selected[i] |= ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && sf->glyphs[gid]->changed );
+    } else {
+	for ( i=0; i< map->enccount; ++i )
+	    fv->selected[i] = ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && sf->glyphs[gid]->changed );
+    }
+}
+
+static void bSelectHintingNeeded(Context *c) {
+    int i, gid;
+    FontView *fv = c->curfv;
+    EncMap *map = fv->map;
+    SplineFont *sf = fv->sf;
+    int add = 0;
+
+    if ( c->a.argc!=1 && c->a.argc!=2 )
+	error( c, "Too many arguments");
+    if ( c->a.argc==2 ) {
+	if ( c->a.vals[1].type!=v_int )
+	    error( c, "Bad type for argument" );
+	add = c->a.vals[1].u.ival;
+    }
+
+    if ( add ) {
+	for ( i=0; i< map->enccount; ++i )
+	    fv->selected[i] |= ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && sf->glyphs[gid]->changedsincelasthinted );
+    } else {
+	for ( i=0; i< map->enccount; ++i )
+	    fv->selected[i] = ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && sf->glyphs[gid]->changedsincelasthinted );
+    }
 }
 
 static void bSelectByATT(Context *c) {
@@ -5195,7 +5260,12 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "SelectMore", bSelectMore },
     { "SelectFewer", bSelectFewer },
     { "Select", bSelect },
+    { "SelectMoreSingletons", bSelectMoreSingletons },
+    { "SelectFewerSingletons", bSelectFewerSingletons },
+    { "SelectSingletons", bSelectSingletons },
     { "SelectIf", bSelectIf },
+    { "SelectChanged", bSelectChanged },
+    { "SelectHintingNeeded", bSelectHintingNeeded },
     { "SelectByATT", bSelectByATT },
     { "SelectByColor", bSelectByColor },
     { "SelectByColour", bSelectByColor },
