@@ -984,7 +984,7 @@ return(NULL);
 	    putshort(subtables,2);	/* index format, big metrics, all glyphs same size */
 	    putshort(subtables,5);	/* data format, bit aligned no metrics */
 	    putlong(subtables,ftell(bdat));	/* start of glyphs in bdat */
-	    putlong(subtables,(met.width*(met.ymax-met.ymin+1))*depth/8);
+	    putlong(subtables,(met.width*(met.ymax-met.ymin+1)*depth+7)/8);
 					/* glyph size (in bytes) */
 	    /* big metrics */
 	    putc(met.ymax-met.ymin+1,subtables);	/* image height */
