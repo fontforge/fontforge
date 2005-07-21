@@ -855,6 +855,7 @@ static struct bitmapSizeTable *ttfdumpstrikelocs(FILE *bloc,FILE *bdat,
     struct mymets met;
     int32 pos = ftell(bloc), startofsubtables, base;
     BDFChar *bc, *bc2;
+    int depth = BDFDepth(bdf);
 
     for ( i=0; i<gi->gcnt && gi->bygid[i]<bdf->glyphcnt &&
 	    (gi->bygid[i]==-1 || bdf->glyphs[gi->bygid[i]]==NULL); ++i );
@@ -865,7 +866,7 @@ static struct bitmapSizeTable *ttfdumpstrikelocs(FILE *bloc,FILE *bdat,
 return(NULL);
     }
     size->flags = 0x01;		/* horizontal */
-    size->bitdepth = BDFDepth(bdf);
+    size->bitdepth = depth;
     size->ppemX = size->ppemY = bdf->ascent+bdf->descent;
     size->endGlyph = bdf->glyphs[gi->bygid[j]]->sc->ttf_glyph;
     size->startGlyph = bdf->glyphs[gi->bygid[i]]->sc->ttf_glyph;
@@ -953,18 +954,18 @@ return(NULL);
 
 	if ( !bc->widthgroup ) {
 	    putshort(subtables,1);	/* index format, 4byte offset, no metrics here */
-	    if ( BDFDepth(bdf)!=8 )
+	    if ( depth!=8 )
 		putshort(subtables,2);	/* data format, short metrics, bit aligned */
 	    else
 		putshort(subtables,1);	/* data format, short metrics, byte aligned */
 	    base = ftell(bdat);
 	    putlong(subtables,base);	/* start of glyphs in bdat */
-	    if ( BDFDepth(bdf)!=8 )
+	    if ( depth!=8 )
 		putlong(subtables,ttfdumpf2bchar(bdat,bc,bdf)-base);
 	    else
 		putlong(subtables,ttfdumpf1bchar(bdat,bc,bdf)-base);
 	    for ( j=i+1; j<=final ; ++j ) if ( (bc2=bdf->glyphs[gi->bygid[j]])!=NULL ) {
-		if ( BDFDepth(bdf)!=8 )
+		if ( depth!=8 )
 		    putlong(subtables,ttfdumpf2bchar(bdat,bc2,bdf)-base);
 		else
 		    putlong(subtables,ttfdumpf1bchar(bdat,bc2,bdf)-base);
@@ -983,7 +984,16 @@ return(NULL);
 	    putshort(subtables,2);	/* index format, big metrics, all glyphs same size */
 	    putshort(subtables,5);	/* data format, bit aligned no metrics */
 	    putlong(subtables,ftell(bdat));	/* start of glyphs in bdat */
-	    putlong(subtables,met.width*(met.ymax-met.ymin+1));	/* glyph size */
+	    if ( depth==1 )		/* glyph size (in bytes) */
+		putlong(subtables,(met.width*(met.ymax-met.ymin+1))>>3);
+	    else if ( depth==2 )
+		putlong(subtables,(met.width*(met.ymax-met.ymin+1))>>2);
+	    else if ( depth==4 )
+		putlong(subtables,(met.width*(met.ymax-met.ymin+1))>>1);
+	    else if ( depth==8 )
+		putlong(subtables,met.width*(met.ymax-met.ymin+1));
+	    else
+		IError("Unexpected bitmap depth");
 	    /* big metrics */
 	    putc(met.ymax-met.ymin+1,subtables);	/* image height */
 	    putc(met.width,subtables);			/* image width */
