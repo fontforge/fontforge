@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 27-Jun-2005 -->
+  <!-- AP: Last modified: 6-Jul-2005 -->
   <TITLE>The Element Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -85,10 +85,15 @@
 	<A HREF="#FindInter">Find Intersections</A>
     </UL>
   <LI>
-    <A HREF="#Simplify">Simplify</A><BR>
-    Simplify More
-  <LI>
-    <A HREF="#Cleanup">Cleanup Glyphs</A>
+    Simplify
+    <UL>
+      <LI>
+	<A HREF="#Simplify">Simplify</A>
+      <LI>
+	Simplify More
+      <LI>
+	<A HREF="#Cleanup">Cleanup Glyphs</A>
+    </UL>
   <LI>
     <A HREF="elementmenu.html#Add-Extrema">Add Extrema</A>
   <LI>
@@ -567,9 +572,10 @@ compiling FontForge.
   <DT>
     <A NAME="Cleanup">Cleanup Glyph</A>
   <DD>
-    This is similar to the simplify command. In this case if there is a spline
-    which actually traces out a line but none the less has control points, then
-    this command will remove the control points.
+    This is a special case of the simplify command. In this case if there is
+    a spline which actually traces out a line but none the less has control points,
+    then this command will remove the control points. It will also cleanup zero
+    length splines.
   <DT>
     <A NAME="Add-Extrema">Add Extrema</A>
   <DD>
