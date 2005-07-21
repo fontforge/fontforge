@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 29-Jun-2005 -->
+  <!-- AP: Last modified: 20-Jul-2005 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -695,7 +695,7 @@ a[4][0] = "Nested array";
 	.pfb
       <LI>
 	.bin (a mac postscript (pfb) resource in a mac binary wrapper)<BR>
-	res (on the Mac itself FontForge will put the result directly into a font
+	.res (on the Mac itself FontForge will put the result directly into a font
 	suitcase file, and the extension should be ".res" rather than ".bin")
 	<P>
 	Note: you must also create a bitmap font in NFNT format or the mac will not
@@ -743,7 +743,9 @@ a[4][0] = "Nested array";
       <LI>
 	&lt;null extension&gt; If you don't want to generate an outline font at all
 	(but do want to provide a filename for bitmap or metrics files) then provide
-	a null extension (ie. <CODE>"Times."</CODE> but NOT <CODE>"Times"</CODE>).
+	a null extension (ie. <CODE>"Times."</CODE> but NOT <CODE>"Times"</CODE>)
+	-- the generated bitmap fonts will have appropriate extensions for their
+	font types, the "." is merely a placeholder.
     </UL>
     <P>
     If present, bitmaptype may be one of:
@@ -753,14 +755,14 @@ a[4][0] = "Nested array";
       <LI>
 	ttf (for EBDT/bdat table in truetype/opentype)
       <LI>
-	sbit (for EBDT/bdat table in truetype without any outline font)
+	sbit (for bdat table in truetype without any outline font in a dfont wrapper)
       <LI>
 	bin (for nfnt in macbinary)
 	<P>
 	NOTE: Mac OS/X does not appear to support NFNT bitmaps. However even though
 	unused itself, an NFNT bitmap must be present for a resource based type1
 	postscript font to be used. (More accurately the obsolete FOND must be present,
-	and that will only be present if an NFNT is present)
+	and that will only be present if an obsolete NFNT is also present)
       <LI>
 	fnt (For windows FNT format)
       <LI>
@@ -1160,6 +1162,10 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
   <DD>
     Deselects all glyphs
   <DT>
+    SelectInvert()
+  <DD>
+    Inverts the selection.
+  <DT>
     Select(arg1, arg2, ...)
   <DD>
     This clears out the current selection, then for each pair of arguments it
@@ -1192,6 +1198,16 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     The same as the previous command except that it clears the selection on the
     indicated glyphs, so it reduces the current selection.
   <DT>
+    SelectSingletons(arg1, ...)
+  <DD>
+    Selects its arguments without looking for ranges.
+  <DT>
+    SelectMoreSingletons(arg1, ...)
+  <DD>
+  <DT>
+    SelectFewerSingletons(arg1, ...)
+  <DD>
+  <DT>
     SelectIf(arg1,arg2, ...)
   <DD>
     The same as Select() except that instead of signalling an error when a glyph
@@ -1207,6 +1223,15 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
       <LI>
 	-1 =&gt; there was an error and at least one glyph was selected before that.
     </UL>
+  <DT>
+    <A HREF="editmenu.html#SelChanged">SelectChanged</A>([merge])
+  <DD>
+    Selects all changed glyphs. If merge is true, will or the current selection
+    with the new one.
+  <DT>
+    <A HREF="editmenu.html#SelHinting">SelectHintingNeeded</A>([merge])
+  <DD>
+    Selects all glyphs which FontForge thinks need their hints updated.
   <DT>
     SelectByATT(type,tags,contents,search-type)
   <DD>
@@ -1292,7 +1317,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
   <DT>
     SetCharCnt(cnt)
   <DD>
-    Sets the number of glyphs in the font.
+    Sets the number of encoding slots in the font.
   <DT>
     LoadEncodingFile(filename)
   <DD>
@@ -1434,6 +1459,12 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     24 arguments are required (the remaining 15 are described in the metafont
     book). If type is 3 then 15 arguments are required.
   <DT>
+    GetTeXParam(index)
+  <DD>
+    If index == -1 then the tex font type will be returned (text==0, math==1,
+    math extended=2)<BR>
+    Else index is used to index into the font's tex params array.
+  <DT>
     <A HREF="charinfo.html#Unicode">SetCharName</A>(name[,set-from-name-flag])
   <DD>
     Sets the currently selected glyph to have the given name. If set-from-name-flag
@@ -1483,11 +1514,11 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     and if it finds a substitution with the tag "tag" (and if that substitution
     matches the script and language combination) then it will apply the
     substitution-- that is it will find the variant glyph specified in the
-    substitution and replace the current glyph with the variant, and remove the
-    variant from the font.
+    substitution and replace the current glyph with the variant, and clear the
+    variant.
     <P>
     FontForge recognizes the string "*" as a wildcard for both the script and
-    the language (not for the tag though). So you wish to replace all glyphs
+    the language (not for the tag though). So if you wish to replace all glyphs
     with their vertical variants:
     <BLOCKQUOTE>
       <PRE>SelectAll()
@@ -1666,8 +1697,9 @@ ApplySubstitution("*","*","vrt2")
     <A HREF="elementmenu.html#Simplify">Simplify</A>()<BR>
     Simplify(flags,error[,tan_bounds[,bump_size[,error_denom,line_len_max]]])
   <DD>
-    With no arguments it does the obvious. If flags is -1 it does a Cleanup,
-    otherwise flags should be a bitwise or of
+    With no arguments it does the obvious. If flags is -1 it does a
+    <A HREF="elementmenu.html#Cleanup">Cleanup</A>, otherwise flags should be
+    a bitwise or of
     <UL>
       <LI>
 	1 -- Slopes may change at the end points.
@@ -2193,7 +2225,8 @@ ApplySubstitution("*","*","vrt2")
   <DT>
     CharCnt()
   <DD>
-    Returns the number of glyphs in the current font
+    Returns the number of encoding slots (or encoding slots + unencoded glyphs)
+    in the current font
   <DT>
     InFont(arg)
   <DD>
@@ -2232,6 +2265,18 @@ ApplySubstitution("*","*","vrt2")
 	"Width" returns the glyph's width
       <LI>
 	"VWidth" returns the glyph's Vertical width
+      <LI>
+	"TeXHeight" returns the tex_height field (a value of 0x7fff indicates that
+	a default value will be used)
+      <LI>
+	"TeXDepth" returns the tex_depth field (a value of 0x7fff indicates that
+	a default value will be used)
+      <LI>
+	"TeXSubPos" returns the tex_sub_pos field (a value of 0x7fff indicates that
+	a default value will be used)
+      <LI>
+	"TeXSuperPos" returns the tex_super_pos field (a value of 0x7fff indicates
+	that a default value will be used)
       <LI>
 	"LBearing" returns the glyph's left side bearing
       <LI>
@@ -2313,6 +2358,11 @@ Select("a")
 verta = CharInfo("Substitution","*","dflt","vrt2")
 </PRE>
     </BLOCKQUOTE>
+  <DT>
+    SetGlyphTeX(height,depth[,subpos,suppos])
+  <DD>
+    Sets the tex_height and tex_depth fields of this glyph. And the subscript
+    pos and superscript pos for math fonts.
 </DL>
 <P>
   <HR>
