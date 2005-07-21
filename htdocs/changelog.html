@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 19-Jul-2005 -->
+  <!-- AP: Last modified: 21-Jul-2005 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -16,15 +16,142 @@ on the file stamp.c.
 <P>
 <UL>
   <LI>
+    ??-July-2005
+    <UL>
+      <LI>
+	Redesigned the way encodings are handled. From the user's perspective Encodings
+	are no longer controlled by FontInfo, but via an encoding menu.
+      <LI>
+	When saving a block of ttf bitmap glyphs all with about the same metrics,
+      <LI>
+	Kern pairs were not scaled to emsize when loading from an afm file.
+      <LI>
+	Add a series of new selection commands, to the font view and to scripting:
+	<UL>
+	  <LI>
+	    SelectChangedGlyphs
+	  <LI>
+	    SelectHintingNeeded
+	</UL>
+	<P>
+	(just to scripting)
+	<UL>
+	  <LI>
+	    SelectSingletons
+	  <LI>
+	    SelectMoreSingletons
+	  <LI>
+	    SelectFewerSingletons
+	</UL>
+      <LI>
+	Revert Glyph didn't work. One bug caused by multilayer, one caused by encoding
+	changes, and one really old one.
+      <LI>
+	GetFontNames returned an uninitialized value on bad ttf files.
+      <LI>
+	Add some new scripting commands to access the TeX per-glyph fields.
+      <LI>
+	Werner suggested some improvements to tfm output.
+      <LI>
+	Cleanup behavior of generating ttf bitmaps in a script.
+      <LI>
+	I was attaching script/langs to lookups when parsing GPOS/GSUB. That wasn't
+	good enough. Each sub-table and have it's own set, so attach script/langs
+	to subtables as well. Still a flaw in that sub-tables could be referenced
+	through severel extension sub-tables or directly and I don't unravel that
+	complexity until too late.
+      <LI>
+	ATM which handles some kerning for otf fonts for Word, does not handle 'kern'
+	features where the feature contains more than one lookup. So whenever we
+	have a feature with multiple lookups try to compress them into one lookup
+	with multiple sub-tables.
+      <LI>
+	Transform (in fontview) and Scale To Em do not scale the vertical advance.
+      <LI>
+	We didn't test the right thing when deciding where a subroutine containing
+	refs began.
+      <LI>
+	Remove Undoes was broken by the encoding changes.
+      <LI>
+	When saving multiple, make sure we don't get extraneous kerns. (to glyphs
+	not in the current sub-font).
+      <LI>
+	Make sure the blue lines (marking hints needing to be updated) get cleared
+	properly.
+      <LI>
+	Some display problems in the SameGlyphAs command.
+      <LI>
+	The Apply Substitutions code did not consider the possibility of loops:<BR>
+	a-&gt;b-&gt;c-&gt;d-&gt;a
+      <LI>
+	Werner suggests indicating multi-layer in the version string.
+      <LI>
+	Mark to Mark anchor classes should allow each mark glyph also to contain
+	a base mark entry.
+      <LI>
+	Give unicode name data (in grey) for dotted names. (ie for A.super give unicode
+	name data for "A", but in grey so it stands out as modified).
+      <LI>
+	Add scripting routines to detach glyphs from the encoding and to remove them
+	from the font.
+      <LI>
+	FF produced some very strange 'gasp' tables... depending on the bitmap fonts
+	in the sfd and not on the bitmaps in the output ttf for one thing.
+      <LI>
+	Werner wants an Invert Selection command.
+      <LI>
+	The position of Coptic and Glagolithic has been shifted in Unicode 4.1 (shifted
+	from some earlier proposal).
+      <LI>
+	Patch by KANOU, ttc files were broken.
+      <LI>
+	Some english language strings in the ttfnames pane of fontinfo where sort
+	of bound to equivalent fields in the names pane. Make this clearer, and
+	consistent.
+      <LI>
+	Werner thinks my error messages for scripts should be improved.
+      <LI>
+	Add a check in case sfd files contain unreasonable values for pixelsize,
+	etc.
+      <LI>
+	Werner suggests a --dry <scriptfile> argument which does syntax checking
+	without actually executing the script. I think it is trivial.
+      <LI>
+	Werner points out that the DSC Version comment has a very specific syntax:<BR>
+	%%Version: <version> <revision><BR>
+	<version> is a real, <revision> is a uint. So we can't use the font's version
+	string here (which might be anything). Instead we now generate a version
+	comment<BR>
+	%Version: <string><BR>
+	rather than a DSC Comment.
+      <LI>
+	We used to assign a unicode value to ".notdef"s when reading ps encoding
+	file, if the encoding was in the region of control chars (so location 1 would
+	get uni0001, while location 65 would get -1). Seems inconsistent.
+      <LI>
+	Oops. I failed to provide a mechanism to add other iconv encoding names into
+	my menu.
+      <LI>
+	Code to support group display.
+      <LI>
+	Was not reading ps encoding files properly.
+      <LI>
+	Remove encoding should always be available.
+    </UL>
+  <LI>
     19-July-2005
     <UL>
       <LI>
 	Extend to Unicode 4.1
       <LI>
+	Change to configuration system to allow relative pathspecs for
+	--with-freetype-src didn't work.
+      <LI>
 	Context chain dlg had problems with empty patterns (no terminal NUL in empty
 	string used to represent them)
       <LI>
-	EditData button in contextual subs disabled at wrong times.
+	The [EditData] button in contextual fontinfo pane was disabled due to reasons
+	which are no longer valid..
       <LI>
 	Transforming by a negative scale factor screwed up the hints.
       <LI>
