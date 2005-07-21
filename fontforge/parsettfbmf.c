@@ -984,16 +984,8 @@ return(NULL);
 	    putshort(subtables,2);	/* index format, big metrics, all glyphs same size */
 	    putshort(subtables,5);	/* data format, bit aligned no metrics */
 	    putlong(subtables,ftell(bdat));	/* start of glyphs in bdat */
-	    if ( depth==1 )		/* glyph size (in bytes) */
-		putlong(subtables,(met.width*(met.ymax-met.ymin+1))>>3);
-	    else if ( depth==2 )
-		putlong(subtables,(met.width*(met.ymax-met.ymin+1))>>2);
-	    else if ( depth==4 )
-		putlong(subtables,(met.width*(met.ymax-met.ymin+1))>>1);
-	    else if ( depth==8 )
-		putlong(subtables,met.width*(met.ymax-met.ymin+1));
-	    else
-		IError("Unexpected bitmap depth");
+	    putlong(subtables,(met.width*(met.ymax-met.ymin+1))*depth/8);
+					/* glyph size (in bytes) */
 	    /* big metrics */
 	    putc(met.ymax-met.ymin+1,subtables);	/* image height */
 	    putc(met.width,subtables);			/* image width */
