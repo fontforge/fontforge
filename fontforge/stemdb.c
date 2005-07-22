@@ -298,6 +298,8 @@ static Spline *FindMatchingHVEdge(struct glyphdata *gd, struct pointdata *pd,
 	t = .999;
 	which = pd->prev_ver;
     }
+    if ( s==NULL )		/* Somehow we got an open contour? */
+return( NULL );
     test = ((s->splines[which].a*t+s->splines[which].b)*t+s->splines[which].c)*t+s->splines[which].d;
     MonotonicFindAt(gd->ms,which,test,space = gd->space);
 
@@ -906,7 +908,7 @@ return( NULL );
     gd->fudge = (sc->parent->ascent+sc->parent->descent)/500;
 
     gd->points = gcalloc(gd->pcnt,sizeof(struct pointdata));
-    for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
+    for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) if ( ss->first->prev!=NULL ) {
 	for ( sp=ss->first; ; ) {
 	    PointInit(gd,sp,ss);
 	    if ( sp->next==NULL )
