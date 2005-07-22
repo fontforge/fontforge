@@ -2227,6 +2227,7 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map) {
 	    if ( sc->tex_height==TEX_UNDEF || sc->tex_depth==TEX_UNDEF )
 		SplineCharFindBounds(sc,&b);
 	    heights[i] = b.maxy*scale; depths[i] = -b.miny*scale;
+#if 0		/* Werner changed his mind about this */
 	    if ( (sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 && isideographic(sc->unicodeenc)) ||
 		    (sc->unicodeenc>=0xAC00 && sc->unicodeenc<=0xD7A3) ||
 		    (sc->unicodeenc>=0x20000 && sc->unicodeenc<=0x2A6D6) ||
@@ -2237,6 +2238,7 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map) {
 		heights[i] = sf->ascent*scale;
 		depths[i] = -sf->descent*scale;
 	    }
+#endif
 	    if ( sc->tex_height!=TEX_UNDEF )
 		heights[i] = sc->tex_height*scale;
 	    if ( sc->tex_depth!=TEX_UNDEF )
