@@ -272,7 +272,8 @@ Monotonic *SSsToMContours(SplineSet *spl, enum overlap_type ot) {
     Monotonic *head=NULL, *last = NULL;
 
     while ( spl!=NULL ) {
-	head = SSToMContour(spl,head,&last,ot);
+	if ( spl->first->prev!=NULL )
+	    head = SSToMContour(spl,head,&last,ot);
 	spl = spl->next;
     }
 return( head );
