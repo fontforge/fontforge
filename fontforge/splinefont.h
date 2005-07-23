@@ -924,6 +924,7 @@ struct ttflangname {
 #else
     unichar_t *names[ttf_namemax];
 #endif
+    int frommac[(ttf_namemax+31)/32];		/* Used when parsing the 'name' table */
     struct ttflangname *next;
 };
 

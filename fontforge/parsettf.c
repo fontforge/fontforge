@@ -905,11 +905,22 @@ return;
 	else
 	    prev->next = cur;
     }
-    if ( cur->names[id]==NULL )
+    if ( cur->names[id]==NULL ) {
 	cur->names[id] = str;
-    else if ( u_strcmp(cur->names[id],str)==0 )
+	if ( plat==1 || plat==0 )
+	    cur->frommac[id/32] |= (1<<(id&0x1f));
+    } else if ( u_strcmp(cur->names[id],str)==0 ) {
 	free(str);
-    else {
+	if ( plat==3 )
+	    cur->frommac[id/32] &= ~(1<<(id&0x1f));
+    } else if ( plat==3 && (cur->frommac[id/32] & (1<<(id&0x1f))) ) {
+	fprintf( stderr, "Warning: Mac and Windows entries in the 'name' table differ for the\n %s string in the language %s\n Mac String: %s\nWindows String: %s\n",
+		u2def_copy(TTFNameIds(id)),u2def_copy(MSLangString(language)),
+		u2def_copy(cur->names[id]),u2def_copy(str));		/* Memory leak */
+	free(cur->names[id]);
+	cur->names[id] = str;
+	cur->frommac[id/32] &= ~(1<<(id&0x1f));
+    } else {
 	int ret;
 	extern int running_script;
 	if ( info->dupnamestate!=0 )
