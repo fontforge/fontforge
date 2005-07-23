@@ -994,6 +994,7 @@ static char *str_OTFFamily = "Preferred Family";
 static char *str_OTFStyles = "Preferred Styles";
 static char *str_CompatableFull = "Compatable Full";
 static char *str_SampleText = "Sample Text";
+static char *str_CIDFindFontName = "CID findfont Name";
 static char *str_TranslateStyle = "Translate Style";
 static char *str_BasedOnNamePane = "Based on field in Names pane"
     /* MS Language list -- http://support.microsoft.com/default.aspx?scid=kb;EN-US;q224804 */
