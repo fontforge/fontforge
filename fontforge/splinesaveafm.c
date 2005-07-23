@@ -2224,9 +2224,10 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map) {
     for ( i=0; i<256 && i<map->enccount; ++i ) {
 	if ( map->map[i]!=-1 && SCWorthOutputting(sf->glyphs[map->map[i]])) {
 	    SplineChar *sc = sf->glyphs[map->map[i]];
-	    if ( sc->tex_height==TEX_UNDEF || sc->tex_depth==TEX_UNDEF )
+	    if ( sc->tex_height==TEX_UNDEF || sc->tex_depth==TEX_UNDEF ) {
 		SplineCharFindBounds(sc,&b);
-	    heights[i] = b.maxy*scale; depths[i] = -b.miny*scale;
+		heights[i] = b.maxy*scale; depths[i] = -b.miny*scale;
+	    }
 #if 0		/* Werner changed his mind about this */
 	    if ( (sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 && isideographic(sc->unicodeenc)) ||
 		    (sc->unicodeenc>=0xAC00 && sc->unicodeenc<=0xD7A3) ||
@@ -2264,6 +2265,7 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map) {
 		else
 		    italics[i] = 0;
 	    }
+	    if ( widths[i]<0 ) widths[i] = 0;
 	    if ( first==-1 ) first = i;
 	    last = i;
 	}
