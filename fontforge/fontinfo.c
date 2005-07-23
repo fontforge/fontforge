@@ -696,6 +696,7 @@ static GTextInfo ttfnameids[] = {
     { (unichar_t *) _STR_OTFStyles, NULL, 0, 0, (void *) 17, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_CompatableFull, NULL, 0, 0, (void *) 18, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_SampleText, NULL, 0, 0, (void *) 19, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_CIDFindFontName, NULL, 0, 0, (void *) 20, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
 
 struct langstyle { int lang; const unichar_t *str; };
