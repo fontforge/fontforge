@@ -5590,10 +5590,12 @@ static void CIFillup(CharInfo *ci) {
 
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,-1), ci->enc>0 &&
 	    ((gid=ci->map->map[ci->enc-1])==-1 ||
-	     sf->glyphs[gid]==NULL || sf->glyphs[gid]->charinfo==NULL));
+	     sf->glyphs[gid]==NULL || sf->glyphs[gid]->charinfo==NULL ||
+	     gid==sc->orig_pos));
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,1), ci->enc<ci->map->enccount-1 &&
 	    ((gid=ci->map->map[ci->enc+1])==-1 ||
-	     sf->glyphs[gid]==NULL || sf->glyphs[gid]->charinfo==NULL));
+	     sf->glyphs[gid]==NULL || sf->glyphs[gid]->charinfo==NULL ||
+	     gid==sc->orig_pos));
 
     temp = uc_copy(sc->name);
     GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_UName),temp);
@@ -5721,6 +5723,7 @@ return( true );
 return( true );
 	}
 	ci->sc = new;
+	ci->enc = enc;
 	CIFillup(ci);
     }
 return( true );
