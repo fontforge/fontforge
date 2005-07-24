@@ -3643,7 +3643,7 @@ return;
 	    if ( u_strncmp(old[i]->text,newname,upt-newname)==0 )
 	break;
 	}
-	if ( i<len && sel+1!=pst_pair ) {
+	if ( i<len && sel+1!=pst_pair && sel+1!=pst_ligature ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    GWidgetErrorR(_STR_DuplicateTag,_STR_DuplicateTag);
 #elif defined(FONTFORGE_CONFIG_GTK)
@@ -3771,7 +3771,7 @@ return(true);
 		if ( u_strncmp(old[i]->text,newname,upt-newname)==0 )
 	    break;
 	    }
-	    if ( i<len && sel+1!=pst_ligature) {
+	    if ( i<len && sel+1!=pst_ligature && sel+1!=pst_pair ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 		GWidgetErrorR(_STR_DuplicateTag,_STR_DuplicateTag);
 #elif defined(FONTFORGE_CONFIG_GTK)
