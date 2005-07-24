@@ -6464,7 +6464,7 @@ static void enlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	    mi->ti.disabled = fv->cidmaster!=NULL;
 	  break;
 	  case MID_DetachGlyphs: case MID_DetachAndRemoveGlyphs:
-	    mi->ti.disabled = anyglyphs==false;
+	    mi->ti.disabled = anyglyphs!=false;
 	  break;
 	  case MID_RemoveUnused:
 	    gid = map->map[map->enccount-1];
