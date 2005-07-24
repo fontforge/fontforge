@@ -7815,6 +7815,8 @@ return( sc );
 	}
 
 	SCBuildDummy(&dummy,sf,map,enc);
+	if ((sc = SFGetChar(sf,dummy.unicodeenc,dummy.name))!=NULL )
+return( sc );
 	sc = SplineCharCreate();
 #ifdef FONTFORGE_CONFIG_TYPE3
 	l = sc->layers;
@@ -8509,7 +8511,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		box.x = j*fv->cbw; box.width = fv->cbw;
 		box.y = i*fv->cbh+14+1; box.height = box.width+1;
 		GDrawPushClip(pixmap,&box,&old2);
-		if ( !fv->sf->onlybitmaps &&
+		if ( !fv->sf->onlybitmaps && fv->show!=fv->filled &&
 			sc->layers[ly_fore].splines==NULL && sc->layers[ly_fore].refs==NULL &&
 			!sc->widthset &&
 			!(bdfc->xmax<=0 && bdfc->xmin==0 && bdfc->ymax<=0 && bdfc->ymax==0) ) {
