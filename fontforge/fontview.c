@@ -375,6 +375,7 @@ static void _SplineFontSetUnChanged(SplineFont *sf) {
     int i;
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     int was = sf->changed;
+    FontView *fvs;
 #endif
     BDFFont *bdf;
 
@@ -397,6 +398,9 @@ static void _SplineFontSetUnChanged(SplineFont *sf) {
 # elif defined(FONTFORGE_CONFIG_GTK)
 	gtk_widget_queue_draw(sf->fv->v);
 # endif
+    if ( was )
+	for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->next )
+	    FVSetTitle(fvs);
 #endif
     for ( i=0; i<sf->subfontcnt; ++i )
 	_SplineFontSetUnChanged(sf->subfonts[i]);
