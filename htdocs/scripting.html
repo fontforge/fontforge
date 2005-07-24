@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 20-Jul-2005 -->
+  <!-- AP: Last modified: 24-Jul-2005 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -418,10 +418,32 @@ a[4][0] = "Nested array";
   <DD>
     Returns the number of elements in an array.
   <DT>
+    TypeOf(any)
+  <DD>
+    Returns a string naming the type of the argument:
+    <UL>
+      <LI>
+	"Integer"
+      <LI>
+	"Real"
+      <LI>
+	"Unicode"
+      <LI>
+	"String"
+      <LI>
+	"Array"
+      <LI>
+	"Void"<BR>
+	(The following type is used internally, but I don't think the user can ever
+	see it. It is included here for completeness)
+      <LI>
+	"LValue"
+    </UL>
+  <DT>
     Strsub(str,start[,end])
   <DD>
-    Returns a substring of the string argument. The substring beings at position
-    indexed by start and ends at the position indexed by end (if end is omitted
+    Returns a substring of the string argument. The substring begins at position
+    indexed by start and ends before the position indexed by end (if end is omitted
     the end of the string will be used, the first position is position 0). Thus
     <CODE>Strsub("abcdef",2,3) == "c" </CODE>and <CODE>Strsub("abcdef",2) ==
     "cdef"</CODE>
@@ -2246,7 +2268,7 @@ ApplySubstitution("*","*","vrt2")
     Arg is as above. This returns true if the glyph contains any splines, references
     or images.
   <DT>
-    CharInfo(str)<BR>
+    <B>CharInfo</B>(str)<BR>
     CharInfo("Kern",glyph-spec)<BR>
     CharInfo("VKern",glyph-spec)<BR>
     CharInfo(str,script,lang,tag)
@@ -2363,6 +2385,72 @@ verta = CharInfo("Substitution","*","dflt","vrt2")
   <DD>
     Sets the tex_height and tex_depth fields of this glyph. And the subscript
     pos and superscript pos for math fonts.
+  <DT>
+    GetPosSub(feature-tag,script,lang)
+  <DD>
+    One glyph must be selected, this returns information about GPOS/GSUB features
+    attached to this glyph (It will not return information about class based
+    kerning or contextual features -- nothing that applies to the font as a whole
+    -- just things relating to the current glyph). The arguments must be 4 letter
+    strings (or the special string "*" which acts as a wildcard). It returns
+    an Array of Arrays (with one entry for each feature which matches the arguments).
+    If nothing matches a 0 length array will be returned.
+    <P>
+    Each sub-array contains the following information
+    <UL>
+      <LI>
+	The feature tag (a string)
+      <LI>
+	The script/language string of this feature
+      <LI>
+	The type (As a string, One of <CODE>Position, Pair, Substitution, AltSubs,
+	MultSubs </CODE>or<CODE> Ligature</CODE>)
+    </UL>
+    <P>
+    The remaining entries depend on the type.
+    <DL>
+      <DT>
+	For Positions
+      <DD>
+	There will be 4 numbers indicating respectively the contents of a GPOS value
+	record (dx,dy,d_horizontal_advance,d_vertical_advance)
+      <DT>
+	For Pairs
+      <DD>
+	A string containing the name of the other glyph in the pair
+	<P>
+	A list of 8 numbers indicating the contents of two GPOS value records (the
+	first four numbers control the current glyph, the next four numbers control
+	the second glyph)
+      <DT>
+	For Substitutions
+      <DD>
+	A string containing the name of a glyph with which the current glyph is to
+	be replaced.
+      <DT>
+	For the others
+      <DD>
+	A set of glyph names, one for each component.
+    </DL>
+    <P>
+    Examples:
+    <BLOCKQUOTE>
+      <PRE>&gt;Select("ffl")
+&gt;Print( GetPosSub("liga","*","*"))
+[[liga,latn{dflt} ,Ligature,f,f,l],
+[liga,latn{dflt} ,Ligature,ff,l]]
+&gt;Select("T")
+&gt;Print( GetPosSub("*","*","*"))
+[[kern,latn{dflt} ,Pair,u,0,0,-76,0,0,0,0,0],
+[kern,latn{dflt} ,Pair,e,0,0,-92,0,0,0,0,0],
+[kern,latn{dflt} ,Pair,a,0,0,-92,0,0,0,0,0],
+[kern,latn{dflt} ,Pair,o,0,0,-76,0,0,0,0,0]]
+&gt;Select("onehalf")
+&gt;Print( GetPosSub("frac","latn","dflt"))
+[[frac,latn{dflt} ,Ligature,one,slash,two],
+[frac,latn{dflt} ,Ligature,one,fraction,two]]
+</PRE>
+    </BLOCKQUOTE>
 </DL>
 <P>
   <HR>
