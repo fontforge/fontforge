@@ -384,12 +384,14 @@ static void PrintVal(Val *val) {
 	char *loc = u2def_copy(t1);
 	printf( "%s", loc );
 	free(loc); free(t1);
-    } else if ( val->type==v_arr ) {
+    } else if ( val->type==v_arr || val->type==v_arrfree ) {
 	putchar( '[' );
 	if ( val->u.aval->argc>0 ) {
 	    PrintVal(&val->u.aval->vals[0]);
 	    for ( j=1; j<val->u.aval->argc; ++j ) {
 		putchar(',');
+		if ( val->u.aval->vals[j-1].type==v_arr || val->u.aval->vals[j-1].type==v_arrfree )
+		    putchar('\n');
 		PrintVal(&val->u.aval->vals[j]);
 	    }
 	}
@@ -403,7 +405,7 @@ static void PrintVal(Val *val) {
     else if ( val->type==v_void )
 	printf( "<void>");
     else
-	printf( "<???>");	/* ANSI might thing this a trigraph */
+	printf( "<???>");	/* ANSI might think this a trigraph */
 }
 
 static void bPrint(Context *c) {
@@ -5159,6 +5161,205 @@ return;
     }
 }
 
+static char *Tag(uint32 tag) {
+    char buffer[8];
+
+    buffer[0] = tag>>24;
+    buffer[1] = (tag>>16)&0xff;
+    buffer[2] = (tag>>8)&0xff;
+    buffer[3] = tag&0xff;
+    buffer[4] = '\0';
+return( copy( buffer ));
+}
+    
+static char *SLIName(SplineFont *sf,int sli) {
+    unichar_t *temp;
+    char *ret;
+
+    if ( sli>sf->sli_cnt )
+return( copy( "Internal Error"));
+
+    temp = ScriptLangLine(sf->script_lang[sli]);
+    ret = cu_copy(temp);
+    free(temp);
+    if ( ret==NULL ) ret = copy("");
+return( ret );
+}
+
+static void bGetPosSub(Context *c) {
+    SplineFont *sf = c->curfv->sf, *sf_sl = sf;
+    EncMap *map = c->curfv->map;
+    SplineChar *sc;
+    int i, j, k, cnt, subcnt, found, gid;
+    SplineChar dummy;
+    uint32 tags[3];
+    Array *ret, *temp;
+    PST *pst;
+    KernPair *kp;
+    char *pt, *start;
+
+    if ( sf_sl->cidmaster!=NULL ) sf_sl = sf_sl->cidmaster;
+    else if ( sf_sl->mm!=NULL ) sf_sl = sf_sl->mm->normal;
+
+    found = GetOneSelCharIndex(c);
+    gid = map->map[found];
+    sc = gid==-1 ? NULL : sf->glyphs[gid];
+    if ( sc==NULL )
+	sc = SCBuildDummy(&dummy,sf,map,found);
+
+    if ( c->a.argc!=4 )
+	error( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str ||
+	      c->a.vals[3].type!=v_str )
+	error(c,"Bad argument type");
+    for ( i=0; i<3; ++i ) {
+	char *str = c->a.vals[i+1].u.sval;
+	char temp[4];
+	memset(temp,' ',4);
+	if ( *str ) {
+	    temp[0] = *str;
+	    if ( str[1] ) {
+		temp[1] = str[1];
+		if ( str[2] ) {
+		    temp[2] = str[2];
+		    if ( str[3] ) {
+			temp[3] = str[3];
+			if ( str[4] )
+			    error(c,"Tags/Scripts/Languages are represented by strings which are at most 4 characters long");
+		    }
+		}
+	    }
+	}
+	tags[i] = (temp[0]<<24)|(temp[1]<<16)|(temp[2]<<8)|temp[3];
+    }
+
+    for ( i=0; i<2; ++i ) {
+	cnt = 0;
+	for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
+	    if ( pst->type==pst_lcaret )
+	continue;
+	    if (( tags[0]==CHR('*',' ',' ',' ') || tags[0]==pst->tag ) &&
+		    ScriptLangMatch(sf_sl->script_lang[pst->script_lang_index],tags[1],tags[2])) {
+		if ( i ) {
+		    ret->vals[cnt].type = v_arr;
+		    ret->vals[cnt].u.aval = temp = galloc(sizeof(Array));
+		    switch ( pst->type ) {
+		      default:
+		        free(temp);
+			ret->vals[cnt].type = v_void;
+			fprintf( stderr, "Unexpected PST type in GetPosSub (%d).\n", pst->type );
+		      break;
+		      case pst_position:
+			temp->argc = 7;
+			temp->vals = gcalloc(7,sizeof(Val));
+			temp->vals[2].u.sval = copy("Position");
+			for ( k=3; k<7; ++k ) {
+			    temp->vals[k].type = v_int;
+			    temp->vals[k].u.ival =
+				    (&pst->u.pos.xoff)[(k-3)];
+			}
+		      break;
+		      case pst_pair:
+			temp->argc = 12;
+			temp->vals = gcalloc(12,sizeof(Val));
+			temp->vals[2].u.sval = copy("Pair");
+			temp->vals[3].type = v_str;
+			temp->vals[3].u.sval = copy(pst->u.pair.paired);
+			for ( k=4; k<12; ++k ) {
+			    temp->vals[k].type = v_int;
+			    temp->vals[k].u.ival =
+				    (&pst->u.pair.vr[(k-4)/4].xoff)[k&3];
+			}
+		      break;
+		      case pst_substitution:
+			temp->argc = 4;
+			temp->vals = gcalloc(4,sizeof(Val));
+			temp->vals[2].u.sval = copy("Substitution");
+			temp->vals[3].type = v_str;
+			temp->vals[3].u.sval = copy(pst->u.subs.variant);
+		      break;
+		      case pst_alternate:
+		      case pst_multiple:
+		      case pst_ligature:
+			for ( pt=pst->u.mult.components, subcnt=1; *pt; ++pt ) {
+			    if ( *pt==' ' ) {
+				++subcnt;
+			        while ( pt[1]==' ' ) ++pt;
+			    }
+			}
+			temp->argc = 3+subcnt;
+			temp->vals = gcalloc(3+subcnt,sizeof(Val));
+			temp->vals[2].u.sval = copy(pst->type==pst_alternate?"AltSubs":
+					    pst->type==pst_multiple?"MultSubs":
+			                    "Ligature");
+			for ( pt=pst->u.mult.components, subcnt=0; *pt; ) {
+			    while ( *pt==' ' ) ++pt;
+			    if ( *pt=='\0' )
+			break;
+			    start = pt;
+			    while ( *pt!=' ' && *pt!='\0' ) ++pt;
+			    temp->vals[3+subcnt].type = v_str;
+			    temp->vals[3+subcnt].u.sval = copyn(start,pt-start);
+			    ++subcnt;
+			}
+		      break;
+		    }
+		    if ( ret->vals[cnt].type==v_arr ) {
+			temp->vals[0].type = v_str;
+			temp->vals[0].u.sval = Tag(pst->tag);
+			temp->vals[1].type = v_str;
+			temp->vals[1].u.sval = SLIName(sf_sl,pst->script_lang_index);
+			temp->vals[2].type = v_str;
+		    }
+		}
+		++cnt;
+	    }
+	}
+	for ( j=0; j<2; ++j ) {
+	    if ( tags[0]==CHR('*',' ',' ',' ') ||
+		    (j==0 && tags[0]==CHR('k','e','r','n')) ||
+		    (j==1 && tags[0]==CHR('v','k','r','n')) ) {
+		for ( kp= (j==0 ? sc->kerns : sc->vkerns); kp!=NULL; kp=kp->next ) {
+		    if ( ScriptLangMatch(sf_sl->script_lang[kp->sli],tags[1],tags[2])) {
+			if ( i ) {
+			    ret->vals[cnt].type = v_arr;
+			    ret->vals[cnt].u.aval = temp = galloc(sizeof(Array));
+			    temp->argc = 12;
+			    temp->vals = gcalloc(11,sizeof(Val));
+			    temp->vals[0].type = v_str;
+			    temp->vals[0].u.sval = copy(j==0 ? "kern" : "vkrn");
+			    temp->vals[1].type = v_str;
+			    temp->vals[1].u.sval = SLIName(sf_sl, kp->sli);
+			    temp->vals[2].type = v_str;
+			    temp->vals[2].u.sval = copy("Pair");
+			    temp->vals[3].type = v_str;
+			    temp->vals[3].u.sval = copy(kp->sc->name);
+			    for ( k=4; k<12; ++k ) {
+				temp->vals[k].type = v_int;
+				temp->vals[k].u.ival = 0;
+			    }
+			    if ( j )
+				temp->vals[7].u.ival = kp->off;
+			    else if ( SCRightToLeft(sc))
+				temp->vals[10].u.ival = kp->off;
+			    else
+				temp->vals[6].u.ival = kp->off;
+			}
+			++cnt;
+		    }
+		}
+	    }
+	}
+	if ( i==0 ) {
+	    ret = galloc(sizeof(Array));
+	    ret->argc = cnt;
+	    ret->vals = gcalloc(cnt,sizeof(Val));
+	}
+    }
+    c->return_val.type = v_arrfree;
+    c->return_val.u.aval = ret;
+}
+
 static void bSetGlyphTeX(Context *c) {
     SplineFont *sf = c->curfv->sf;
     EncMap *map = c->curfv->map;
@@ -5402,6 +5603,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "WorthOutputting", bWorthOutputting },
     { "CharInfo", bCharInfo },
     { "GlyphInfo", bCharInfo },
+    { "GetPosSub", bGetPosSub },
     { "SetGlyphTeX", bSetGlyphTeX },
     { NULL }
 };
