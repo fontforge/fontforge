@@ -19,8 +19,31 @@ on the file stamp.c.
     ??-July-2005
     <UL>
       <LI>
+	Added a TypeOf command to scripting
+      <LI>
+	Added a GetPosSub command to scripting.
+      <LI>
 	Redesigned the way encodings are handled. From the user's perspective Encodings
 	are no longer controlled by FontInfo, but via an encoding menu.
+      <LI>
+	Werner says negative widths and depths be set to 0 in tfm files.
+      <LI>
+	FontForge was generating an incorrect warning message. If a 'name' table
+	contains a duplicate entry for a given platform/specific/language/id that's
+	an error in the font. But ff conflated mac names with window names and so
+	was only checking language/id. So if the mac windows names were different
+	(which is probably a bad design idea, but not an error) ff said it was wrong.
+	It can also be caused by using a character in the string which is not in
+	the Mac Encoding for that language.
+      <LI>
+	Don't set "Hinting needed" flag in bitmap only fonts.
+      <LI>
+	AutoHint had a crash if there were open contours in a glyph being hinted.
+      <LI>
+	Add a couple of browsers to the list to check by default.
+      <LI>
+	Using the kerning pair closeup dlg to create a new kerning pair caused a
+	crash (eventually).
       <LI>
 	When saving a block of ttf bitmap glyphs all with about the same metrics,
       <LI>
