@@ -5753,10 +5753,11 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    anybuildable = false;
 	    if ( anychars!=-1 ) {
 		int i;
-		for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
-			(gid = fv->map->map[i])!=-1 ) {
-		    SplineChar *sc, dummy;
-		    sc = fv->sf->glyphs[gid];
+		for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] ) {
+		    SplineChar *sc=NULL, dummy;
+		    gid = fv->map->map[i];
+		    if ( gid!=-1 )
+			sc = fv->sf->glyphs[gid];
 		    if ( sc==NULL )
 			sc = SCBuildDummy(&dummy,fv->sf,fv->map,i);
 		    if ( SFIsSomethingBuildable(fv->sf,sc,false) ||
@@ -5841,9 +5842,10 @@ static void balistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    int anybuildable = false;
 	    int onlyaccents = mi->mid==MID_BuildAccent;
 	    int i, gid;
-	    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] && (gid=fv->map->map[i])!=-1 ) {
-		SplineChar *sc, dummy;
-		sc = fv->sf->glyphs[gid];
+	    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] ) {
+		SplineChar *sc=NULL, dummy;
+		if ( (gid=fv->map->map[i])!=-1 )
+		    sc = fv->sf->glyphs[gid];
 		if ( sc==NULL )
 		    sc = SCBuildDummy(&dummy,fv->sf,fv->map,i);
 		if ( SFIsSomethingBuildable(fv->sf,sc,onlyaccents)) {
@@ -5855,9 +5857,10 @@ static void balistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
         } else if ( mi->mid==MID_BuildDuplicates ) {
 	    int anybuildable = false;
 	    int i, gid;
-	    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] && (gid=fv->map->map[i])!=-1 ) {
-		SplineChar *sc, dummy;
-		sc = fv->sf->glyphs[gid];
+	    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] ) {
+		SplineChar *sc=NULL, dummy;
+		if ( (gid=fv->map->map[i])!=-1 )
+		    sc = fv->sf->glyphs[gid];
 		if ( sc==NULL )
 		    sc = SCBuildDummy(&dummy,fv->sf,fv->map,i);
 		if ( SFIsDuplicatable(fv->sf,sc)) {
