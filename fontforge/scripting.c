@@ -545,6 +545,17 @@ static void bSizeOf(Context *c) {
     c->return_val.u.ival = c->a.vals[1].u.aval->argc;
 }
 
+static void bTypeOf(Context *c) {
+    static char *typenames[] = { "Integer", "Real", "String", "Unicode", "LValue",
+	    "Array", "Array", "LValue", "LValue", "LValue", "Void" };
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments" );
+
+    c->return_val.type = v_str;
+    c->return_val.u.sval = copy( typenames[c->a.vals[1].type] );
+}
+
 static void bStrlen(Context *c) {
 
     if ( c->a.argc!=2 )
@@ -5180,6 +5191,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "PostNotice", bPostNotice, 1 },
     { "Array", bArray, 1 },
     { "SizeOf", bSizeOf, 1 },
+    { "TypeOf", bTypeOf, 1 },
     { "Strsub", bStrsub, 1 },
     { "Strlen", bStrlen, 1 },
     { "Strstr", bStrstr, 1 },
