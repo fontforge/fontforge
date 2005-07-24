@@ -2615,6 +2615,12 @@ void SFAddGlyphAndEncode(SplineFont *sf,SplineChar *sc,EncMap *basemap, int base
 	    memset(bdf->glyphs+bdf->glyphcnt,0,(sf->glyphcnt-bdf->glyphcnt)*sizeof(BDFChar *));
 	    bdf->glyphcnt = sf->glyphcnt;
 	}
+	for ( fv=sf->fv; fv!=NULL; fv = fv->nextsame ) {
+	    EncMap *map = fv->map;
+	    if ( gid>=map->backmax )
+		map->backmap = grealloc(map->backmap,(map->backmax=gid+10)*sizeof(int));
+	    map->backmap[gid] = -1;
+	}
     } else {
 	gid = baseenc;
 	if ( baseenc+1>=sf->glyphmax )
@@ -2629,6 +2635,12 @@ void SFAddGlyphAndEncode(SplineFont *sf,SplineChar *sc,EncMap *basemap, int base
 		    memset(bdf->glyphs+bdf->glyphcnt,0,(baseenc+1-bdf->glyphcnt)*sizeof(BDFChar *));
 		    bdf->glyphcnt = baseenc+1;
 		}
+	    }
+	    for ( fv=sf->fv; fv!=NULL; fv = fv->nextsame ) if ( fv->sf==sf ) {
+		EncMap *map = fv->map;
+		if ( gid>=map->backmax )
+		    map->backmap = grealloc(map->backmap,(map->backmax=gid+10)*sizeof(int));
+		map->backmap[gid] = -1;
 	    }
 	}
     }
