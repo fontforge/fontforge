@@ -937,7 +937,7 @@ static real SplineCharQuickTop(SplineChar *sc) {
 return( max );
 }
 
-#define haschar(sf,ch)	(SFGetChar(sf,ch,NULL)!=NULL)
+#define haschar(sf,ch)	(SCWorthOutputting(SFGetChar(sf,ch,NULL)))
 
 static const unichar_t *arabicfixup(SplineFont *sf, const unichar_t *upt, int ini, int final) {
     static unichar_t arabicalts[20];
