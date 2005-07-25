@@ -6462,7 +6462,7 @@ static void enlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     int anyglyphs = false;
 
     for ( i=map->enccount-1; i>=0 ; --i )
-	if ( fv->selected[i] && (gid=map->map[i])!=-1 && SCWorthOutputting(sf->glyphs[gid]))
+	if ( fv->selected[i] && (gid=map->map[i])!=-1 )
 	    anyglyphs = true;
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
@@ -6471,7 +6471,7 @@ static void enlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	    mi->ti.disabled = fv->cidmaster!=NULL;
 	  break;
 	  case MID_DetachGlyphs: case MID_DetachAndRemoveGlyphs:
-	    mi->ti.disabled = anyglyphs!=false;
+	    mi->ti.disabled = !anyglyphs;
 	  break;
 	  case MID_RemoveUnused:
 	    gid = map->map[map->enccount-1];

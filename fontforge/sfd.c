@@ -755,6 +755,10 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
     int i;
 
     fprintf(sfd, "StartChar: %s\n", sc->name );
+    if ( map->backmap[sc->orig_pos]>=map->enccount ) {
+	IError("Bad reverse encoding");
+	map->backmap[sc->orig_pos] = -1;
+    }
     fprintf(sfd, "Encoding: %d %d %d\n", map->backmap[sc->orig_pos], sc->unicodeenc,
 	    newgids!=NULL?newgids[sc->orig_pos]:sc->orig_pos);
     fprintf(sfd, "Width: %d\n", sc->width );
@@ -2586,7 +2590,7 @@ return;
 	map->backmap[orig_pos] = enc;
     if ( enc>=map->encmax ) {
 	int old = map->encmax;
-	map->encmax = orig_pos+10;
+	map->encmax = enc+10;
 	map->map = grealloc(map->map,map->encmax*sizeof(int));
 	memset(map->map+old,-1,(map->encmax-old)*sizeof(int));
     }

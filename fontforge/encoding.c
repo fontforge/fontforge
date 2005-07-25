@@ -2429,6 +2429,7 @@ return( NULL );
     memcpy(map->map+enc->char_cnt,unencoded,extras*sizeof(int));
     map->backmax = sf->glyphcnt;
     map->backmap = galloc(sf->glyphcnt*sizeof(int));
+    memset(map->backmap,-1,sf->glyphcnt*sizeof(int));
     for ( i = map->enccount-1; i>=0; --i ) if ( map->map[i]!=-1 )
 	map->backmap[map->map[i]] = i;
     map->enc = enc;

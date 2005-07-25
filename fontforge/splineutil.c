@@ -1794,7 +1794,7 @@ static void _SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext 
     if ( istype2 )
 	fd->private->subrs->bias = fd->private->subrs->cnt<1240 ? 107 :
 	    fd->private->subrs->cnt<33900 ? 1131 : 32768;
-    sf->glyphcnt = istype3 ? fd->charprocs->next : fd->chars->next;
+    sf->glyphmax = sf->glyphcnt = istype3 ? fd->charprocs->next : fd->chars->next;
     if ( sf->map==NULL ) {
 	sf->map = map = EncMapNew(256+CharsNotInEncoding(fd),sf->glyphcnt,fd->encoding_name);
     } else
@@ -2227,7 +2227,7 @@ return( NULL );
 	/*  encoding on which to base any fixups */
 	if ( chars[i]->layers[ly_fore].refs!=NULL )
 	    IError( "Reference found in CID font. Can't fix it up");
-	sf->subfonts[j]->glyphcnt = i+1;
+	sf->subfonts[j]->glyphcnt = sf->subfonts[j]->glyphmax = i+1;
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressNext();
 #elif defined(FONTFORGE_CONFIG_GTK)
