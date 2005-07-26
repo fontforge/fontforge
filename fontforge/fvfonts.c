@@ -674,7 +674,7 @@ static void _MergeFont(SplineFont *into,SplineFont *other) {
 		    for ( fvs = into->fv; fvs!=NULL; fvs=fvs->nextsame )
 			if ( fvs->sf == into )
 			    FVMergeRefigureMapSel(fvs,into,o_sf,mapping,emptypos,cnt);
-		    into->glyphcnt = emptypos+cnt;
+		    into->glyphcnt = into->glyphmax = emptypos+cnt;
 		}
 	    }
 	    ++k;
@@ -714,7 +714,7 @@ static void CIDMergeFont(SplineFont *into,SplineFont *other) {
 		    for ( j=i_sf->glyphcnt; j<=i; ++j )
 			fvs->selected[j] = false;
 		}
-	    i_sf->glyphcnt = i+1;
+	    i_sf->glyphcnt = i_sf->glyphmax = i+1;
 	}
 	for ( i=0; i<o_sf->glyphcnt; ++i ) if ( o_sf->glyphs[i]!=NULL ) {
 	    if ( o_sf->glyphs[i]->layers[ly_fore].splines==NULL && o_sf->glyphs[i]->layers[ly_fore].refs==NULL &&
