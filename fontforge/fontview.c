@@ -300,8 +300,8 @@ static void FVSelectColor(FontView *fv, uint32 col, int door) {
     SplineChar **glyphs = fv->sf->glyphs;
 
     for ( i=0; i<fv->map->enccount; ++i ) {
-	int enc = fv->map->map[i];
-	sccol =  ( enc==-1 || glyphs[enc]==NULL ) ? COLOR_DEFAULT : glyphs[enc]->color;
+	int gid = fv->map->map[i];
+	sccol =  ( gid==-1 || glyphs[gid]==NULL ) ? COLOR_DEFAULT : glyphs[gid]->color;
 	if ( (door && !fv->selected[i] && sccol==col) ||
 		(!door && fv->selected[i]!=(sccol==col)) ) {
 	    fv->selected[i] = !fv->selected[i];
@@ -3528,7 +3528,7 @@ void FVBuildAccent(FontView *fv,int onlyaccents) {
 	sc = NULL;
 	if ( gid!=-1 ) {
 	    sc = fv->sf->glyphs[gid];
-	    if ( sc->ticked )
+	    if ( sc!=NULL && sc->ticked )
     continue;
 	}
 	if ( sc==NULL )
@@ -7106,9 +7106,10 @@ void FontViewMenu_ActivateElement(GtkMenuItem *menuitem, gpointer user_data) {
     anybuildable = false;
     if ( anygid!=-1 ) {
 	int i, gid;
-	for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] && (gid=fv->map->map[i])!=-1 ) {
-	    SplineChar *sc, dummy;
-	    sc = fv->sf->glyphs[gid];
+	for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] ) {
+	    SplineChar *sc=NULL, dummy;
+	    if ( (gid=fv->map->map[i])!=-1 )
+		sc = fv->sf->glyphs[gid];
 	    if ( sc==NULL )
 		sc = SCBuildDummy(&dummy,fv->sf,fv->map,i);
 	    if ( SFIsSomethingBuildable(fv->sf,sc,false)) {
