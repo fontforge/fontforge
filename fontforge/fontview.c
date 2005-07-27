@@ -2016,7 +2016,7 @@ return;
 
     for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
 	    (gid = fv->map->map[i])!=-1 && sf->glyphs[gid]!=NULL ) {
-	SCClearBackground(sf->glyphs[i]);
+	SCClearBackground(sf->glyphs[gid]);
     }
 }
 
