@@ -171,7 +171,7 @@ void FVMarkHintsOutOfDate(SplineChar *sc) {
     int pos;
     FontView *fv;
 
-    if ( sc->parent->onlybitmaps || sc->parent->multilayer || sc->parent->strokedfont )
+    if ( sc->parent->onlybitmaps || sc->parent->multilayer || sc->parent->strokedfont || sc->parent->order2 )
 return;
     for ( fv = sc->parent->fv; fv!=NULL; fv=fv->nextsame ) {
 	if ( fv->sf!=sc->parent )		/* Can happen in CID fonts if char's parent is not currently active */

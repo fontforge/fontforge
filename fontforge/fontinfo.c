@@ -4675,7 +4675,13 @@ return( true );
 		sf->multilayer = multilayer;
 		SFLayerChange(sf);
 	    }
+	    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
+		sf->glyphs[i]->changedsincelasthinted = !strokedfont && !multilayer;
 	}
+#else
+	if ( strokedfont!=sf->strokedfont )
+	    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
+		sf->glyphs[i]->changedsincelasthinted = !strokedfont;
 #endif
 	sf->strokedfont = strokedfont;
 	sf->strokewidth = strokewidth;

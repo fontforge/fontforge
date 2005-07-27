@@ -712,6 +712,7 @@ void SFConvertToOrder2(SplineFont *_sf) {
 	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
 	    SCConvertToOrder2(sf->glyphs[i]);
 	    sf->glyphs[i]->ticked = false;
+	    sf->glyphs[i]->changedsincelasthinted = false;
 	}
 	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL && !sf->glyphs[i]->ticked )
 	    SCConvertRefs(sf->glyphs[i]);
@@ -770,6 +771,7 @@ void SFConvertToOrder3(SplineFont *_sf) {
 	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
 	    SCConvertToOrder3(sf->glyphs[i]);
 	    sf->glyphs[i]->ticked = false;
+	    sf->glyphs[i]->changedsincelasthinted = true;
 	}
 	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL && !sf->glyphs[i]->ticked )
 	    SCConvertRefs(sf->glyphs[i]);
