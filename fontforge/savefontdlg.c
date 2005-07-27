@@ -1543,7 +1543,7 @@ return( 0 );
 	temp.glyphmax = temp.glyphcnt;
     }
 
-    filename = galloc(strlen(newname)+2+10);
+    filename = galloc(strlen(newname)+strlen(names[subfont])+10);
     strcpy(filename,newname);
     pt = strrchr(filename,'.');
     spt = strrchr(filename,'/');
@@ -1556,14 +1556,14 @@ return( 0 );
     if ( pt==NULL )
 	strcat(filename,names[subfont]);
     else {
-	pt[0] = names[subfont][0];
-	pt[1] = names[subfont][1];
-	if ( names[subfont][2]!='\0' ) {
-	    int l;
+	int len = strlen(names[subfont]);
+	int l;
+	if ( len>2 ) {
 	    for ( l=strlen(pt); l>=2 ; --l )
-		pt[l+1] = pt[l];
-	    pt[2] = names[subfont][2];
-	}
+		pt[l+len-2] = pt[l];
+	} else if ( len<2 )
+	    strcpy(pt+len,pt+2);
+	memcpy(pt,names[subfont],len);
     }
     temp.fontname = copy(spt);
     temp.fullname = galloc(strlen(temp.fullname)+strlen(names[subfont])+3);
