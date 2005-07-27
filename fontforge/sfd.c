@@ -2687,7 +2687,7 @@ return( NULL );
 		else if ( ch=='O' ) sc->wasopen = true;
 		ch = getc(sfd);
 	    }
-	    if ( sf->multilayer || sf->onlybitmaps || sf->strokedfont )
+	    if ( sf->multilayer || sf->onlybitmaps || sf->strokedfont || sf->order2 )
 		sc->changedsincelasthinted = false;
 	} else if ( strmatch(tok,"TeX:")==0 ) {
 	    getsint(sfd,&sc->tex_height);
