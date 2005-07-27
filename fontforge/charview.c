@@ -2826,7 +2826,7 @@ void SCHintsChanged(SplineChar *sc) {
     struct splinecharlist *dlist;
     int was = sc->changedsincelasthinted;
 
-    if ( sc->parent->onlybitmaps )
+    if ( sc->parent->onlybitmaps || sc->parent->multilayer || sc->parent->strokedfont )
 return;
     sc->changedsincelasthinted = false;		/* We just applied a hinting change */
     if ( !sc->changed ) {
@@ -2889,7 +2889,11 @@ void CVSetCharChanged(CharView *cv,int changed) {
 	    }
 	}
 	if ( changed ) {
-	    if ( !sc->parent->onlybitmaps && cv->drawmode==dm_fore )
+	    if ( sc->parent->onlybitmaps )
+		/* Do nothing */;
+	    else if ( sc->parent->multilayer || sc->parent->strokedfont )
+		sc->changed_since_search = true;
+	    else if ( cv->drawmode==dm_fore )
 		sc->changed_since_search = sc->changedsincelasthinted = true;
 	    sc->changed_since_autosave = true;
 	    sf->changed_since_autosave = true;
@@ -2946,7 +2950,7 @@ void _SCCharChangedUpdate(SplineChar *sc,int changed) {
 	    ptcountcheck(sc);
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	}
-	if ( !sc->parent->onlybitmaps )
+	if ( !sc->parent->onlybitmaps && !sc->parent->multilayer && !sc->parent->strokedfont )
 	    sc->changedsincelasthinted = true;
 	sc->changed_since_search = true;
 	sf->changed = true;
