@@ -434,17 +434,22 @@ void FVSetWidth(FontView *fv,enum widthtype wtype) {
     int em = fv->sf->ascent + fv->sf->descent;
     int i, gid;
 
+    buffer[0] = '\0';		/* Just in case there are no glyphs */
     if ( !fv->sf->onlybitmaps ) {
 	sprintf(buffer,"%d",wtype==wt_width?6*em/10:wtype==wt_vwidth?em: em/10 );
 	for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] && (gid=fv->map->map[i])!=-1 && fv->sf->glyphs[gid]!=NULL ) {
 	    SCDefWidthVal(buffer,fv->sf->glyphs[gid],wtype);
 	break;
 	}
+	if ( buffer[0]=='\0' )
+	    sprintf( buffer, "%d", em );
     } else {
 	for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] && (gid=fv->map->map[i])!=-1 && fv->show->glyphs[gid]!=NULL ) {
 	    BCDefWidthVal(buffer,fv->show->glyphs[gid],fv,wtype);
 	break;
 	}
+	if ( buffer[0]=='\0' )
+	    sprintf( buffer, "%d", fv->show->pixelsize );
     }
     FVCreateWidth(fv,FVDoit,wtype,buffer);
 }
