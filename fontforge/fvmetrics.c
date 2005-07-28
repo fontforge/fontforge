@@ -365,7 +365,7 @@ static void FVDoit(CreateWidthData *wd) {
     int i;
     BDFChar *bc;
 
-    if ( fv->sf->onlybitmaps && fv->show!=NULL ) {
+    if ( fv->sf->onlybitmaps && fv->show!=NULL && fv->sf->bitmaps!=NULL ) {
 	double scale = (fv->sf->ascent+fv->sf->descent)/(double) fv->show->pixelsize;
 	wd->setto *= scale;
 	wd->increment *= scale;
@@ -375,7 +375,7 @@ static void FVDoit(CreateWidthData *wd) {
 	SplineChar *sc;
 
 	sc = SFMakeChar(fv->sf,fv->map,i);
-	if ( fv->sf->onlybitmaps ) {
+	if ( fv->sf->onlybitmaps && fv->sf->bitmaps!=NULL ) {
 	    if ( fv->show!=NULL )
 		bc = BDFMakeChar(fv->show,fv->map,i);
 	    else {
@@ -434,22 +434,19 @@ void FVSetWidth(FontView *fv,enum widthtype wtype) {
     int em = fv->sf->ascent + fv->sf->descent;
     int i, gid;
 
-    buffer[0] = '\0';		/* Just in case there are no glyphs */
-    if ( !fv->sf->onlybitmaps ) {
+    if ( !fv->sf->onlybitmaps || fv->sf->bitmaps==NULL ) {
 	sprintf(buffer,"%d",wtype==wt_width?6*em/10:wtype==wt_vwidth?em: em/10 );
 	for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] && (gid=fv->map->map[i])!=-1 && fv->sf->glyphs[gid]!=NULL ) {
 	    SCDefWidthVal(buffer,fv->sf->glyphs[gid],wtype);
 	break;
 	}
-	if ( buffer[0]=='\0' )
-	    sprintf( buffer, "%d", em );
     } else {
+	int size = fv->show->pixelsize;
+	sprintf(buffer,"%d",wtype==wt_width?6*size/10:wtype==wt_vwidth?size: size/10 );
 	for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] && (gid=fv->map->map[i])!=-1 && fv->show->glyphs[gid]!=NULL ) {
 	    BCDefWidthVal(buffer,fv->show->glyphs[gid],fv,wtype);
 	break;
 	}
-	if ( buffer[0]=='\0' )
-	    sprintf( buffer, "%d", fv->show->pixelsize );
     }
     FVCreateWidth(fv,FVDoit,wtype,buffer);
 }
