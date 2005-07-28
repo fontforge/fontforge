@@ -349,9 +349,19 @@ static void BitmapsDoIt(CreateBitmapData *bd,int32 *sizes,int usefreetype) {
 
     if ( bd->isavail && bd->sf->onlybitmaps && bd->sf->bitmaps!=NULL )
 	FVScaleBitmaps(bd->fv,sizes);
-    else if ( bd->isavail )
+    else if ( bd->isavail ) {
 	SFFigureBitmaps(bd->sf,sizes,usefreetype);
-    else {
+	/* If we had an empty font, to which we've just added bitmaps, then */
+	/*  presumably we should treat this as a bitmap font and switch the */
+	/*  fontview so that it shows one of the bitmaps */
+	if ( bd->sf->onlybitmaps && bd->sf->bitmaps!=NULL ) {
+	    BDFFont *bdf;
+	    FontView *fvs;
+	    for ( bdf=bd->sf->bitmaps; bdf->next!=NULL; bdf=bdf->next );
+	    for ( fvs = bd->sf->fv; fvs!=NULL; fvs=fvs->nextsame )
+		FVChangeDisplayBitmap(fvs,bdf);
+	}
+    } else {
 	if ( !FVRegenBitmaps(bd,sizes,usefreetype))
 	    bd->done = false;
 	else
