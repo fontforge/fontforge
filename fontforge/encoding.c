@@ -1882,7 +1882,7 @@ return(NULL);
     /* Don't copy private */
     new->xuid = copy(cidmaster->xuid);
     new->glyphs = glyphs;
-    new->glyphcnt = charcnt;
+    new->glyphcnt = new->glyphmax = charcnt;
     for ( j=0; j<charcnt; ++j ) if ( glyphs[j]!=NULL ) {
 	glyphs[j]->parent = new;
 	glyphs[j]->orig_pos = j;
@@ -2266,7 +2266,7 @@ static void BDFOrigFixup(BDFFont *bdf,int orig_cnt,SplineFont *sf) {
     }
     free(bdf->glyphs);
     bdf->glyphs = glyphs;
-    bdf->glyphcnt = orig_cnt;
+    bdf->glyphcnt = bdf->glyphmax = orig_cnt;
     bdf->ticked = true;
 }
 
@@ -2327,7 +2327,7 @@ return(false);			/* Custom, it's whatever's there */
 	    glyphs[sf->glyphs[i]->orig_pos] = sf->glyphs[i];
 	free(sf->glyphs);
 	sf->glyphs = glyphs;
-	sf->glyphcnt = enc_cnt;
+	sf->glyphcnt = sf->glyphmax = enc_cnt;
 return( true );
     }
 
@@ -2700,7 +2700,7 @@ void SFMatchGlyphs(SplineFont *sf,SplineFont *target) {
 	    glyphs[j++] = sf->glyphs[i];
     free(sf->glyphs);
     sf->glyphs = glyphs;
-    sf->glyphcnt = cnt;
+    sf->glyphcnt = sf->glyphmax = cnt;
 }
 
 GTextInfo encodingtypes[] = {

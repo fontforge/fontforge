@@ -1385,7 +1385,7 @@ static SearchView *SVFillup(SearchView *sv, FontView *fv) {
     sv->chars[0] = &sv->sc_srch;
     sv->chars[1] = &sv->sc_rpl;
     sv->dummy_sf.glyphs = sv->chars;
-    sv->dummy_sf.glyphcnt = 2;
+    sv->dummy_sf.glyphcnt = sv->dummy_sf.glyphmax = 2;
     sv->dummy_sf.pfminfo.fstype = -1;
     sv->dummy_sf.fontname = sv->dummy_sf.fullname = sv->dummy_sf.familyname = "dummy";
     sv->dummy_sf.weight = "Medium";

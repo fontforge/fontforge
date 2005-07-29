@@ -2492,7 +2492,7 @@ return( NULL );
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_change_total(cnt);
 #endif
-    sf->glyphcnt = cnt;
+    sf->glyphcnt = sf->glyphmax = cnt;
     sf->glyphs = galloc(cnt*sizeof(SplineChar *));
 
     cnt = 0;

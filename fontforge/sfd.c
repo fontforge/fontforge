@@ -3136,7 +3136,7 @@ return( 0 );
 	prev->next = bdf;
     }
     bdf->sf = sf;
-    bdf->glyphcnt = sf->glyphcnt;
+    bdf->glyphcnt = bdf->glyphmax = sf->glyphcnt;
     bdf->glyphs = gcalloc(bdf->glyphcnt,sizeof(BDFChar *));
 
     while ( getname(sfd,tok)==1 ) {
@@ -4788,6 +4788,7 @@ return(false);
 	sf->glyphs = grealloc(sf->glyphs,cnt*sizeof(SplineChar *));
 	for ( i=sf->glyphcnt; i<cnt; ++i )
 	    sf->glyphs[i] = NULL;
+	sf->glyphcnt = sf->glyphmax = cnt;
     }
     while ( (sc = SFDGetChar(asfd,&temp))!=NULL ) {
 	ssf = sf;

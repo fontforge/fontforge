@@ -878,7 +878,7 @@ BDFFont *BitmapFontScaleTo(BDFFont *old, int to) {
 	old_depth = BDFDepth(old);
 
     new->sf = old->sf;
-    new->glyphcnt = old->glyphcnt;
+    new->glyphcnt = new->glyphmax = old->glyphcnt;
     new->glyphs = galloc(new->glyphcnt*sizeof(BDFChar *));
     new->pixelsize = to;
     new->ascent = (old->ascent*to+.5)/old->pixelsize;

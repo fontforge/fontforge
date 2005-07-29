@@ -663,13 +663,13 @@ static void _MergeFont(SplineFont *into,SplineFont *other) {
 			if ( emptypos+cnt > bdf->glyphcnt ) {
 			    bdf->glyphs = grealloc(bdf->glyphs,(emptypos+cnt)*sizeof(SplineChar *));
 			    memset(bdf->glyphs+emptypos,0,cnt*sizeof(BDFChar *));
-			    bdf->glyphcnt = emptypos+cnt;
+			    bdf->glyphmax = bdf->glyphcnt = emptypos+cnt;
 			}
 		    for ( fvs = into->fv; fvs!=NULL; fvs=fvs->nextsame )
 			if ( fvs->filled!=NULL ) {
 			    fvs->filled->glyphs = grealloc(fvs->filled->glyphs,(emptypos+cnt)*sizeof(SplineChar *));
 			    memset(fvs->filled+emptypos,0,cnt*sizeof(BDFChar *));
-			    fvs->filled->glyphcnt = emptypos+cnt;
+			    fvs->filled->glyphmax = fvs->filled->glyphcnt = emptypos+cnt;
 			}
 		    for ( fvs = into->fv; fvs!=NULL; fvs=fvs->nextsame )
 			if ( fvs->sf == into )

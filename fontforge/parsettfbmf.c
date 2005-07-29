@@ -462,6 +462,7 @@ return;
 	bdf = gcalloc(1,sizeof(BDFFont));
 	/* In cid fonts fontforge stores things by cid rather than gid */
 	bdf->glyphcnt = info->subfonts!=NULL?info->map->enccount:info->glyph_cnt;
+	bdf->glyphmax = bdf->glyphcnt;
 	bdf->glyphs = gcalloc(bdf->glyphcnt,sizeof(BDFChar *));
 	bdf->pixelsize = sizes[i].ppem;
 	bdf->ascent = (info->ascent*bdf->pixelsize + info->emsize/2)/info->emsize;
