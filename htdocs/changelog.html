@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 21-Jul-2005 -->
+  <!-- AP: Last modified: 29-Jul-2005 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -16,15 +16,35 @@ on the file stamp.c.
 <P>
 <UL>
   <LI>
-    ??-July-2005
+    28-July-2005
     <UL>
+      <LI>
+	<FONT COLOR="Red"><STRONG><BIG>Redesigned the way encodings are handled.
+	From the user's perspective Encodings are no longer controlled by FontInfo,
+	but via an encoding menu.</BIG></STRONG></FONT>
+      <LI>
+	If we create a bitmap strike in an empty font then change the fontview to
+	look at the strike.
+      <LI>
+	The SetWidth command of FontView produced garbage defaults for empty fonts
+      <LI>
+	Don't set the hinting needed bit on: bitmap only fonts, multilayered fonts,
+	stroked fonts nor quadratic fonts.
+      <LI>
+	Fix some problems with the generated names in File-&gt;Generate multiple
+      <LI>
+	The Save command failed to reset the font window's title (so it still looked
+	modified)
+      <LI>
+	The enabled state of Encoding-&gt;Detach Glyphs was wrong
+      <LI>
+	FF still didn't allow two ligatures to be created for the same glyph (ie.
+	it complained if you tried to make both "f + f + i =&gt; ffi" and "ff + i
+	=&gt; ffi"
       <LI>
 	Added a TypeOf command to scripting
       <LI>
 	Added a GetPosSub command to scripting.
-      <LI>
-	Redesigned the way encodings are handled. From the user's perspective Encodings
-	are no longer controlled by FontInfo, but via an encoding menu.
       <LI>
 	Werner says negative widths and depths be set to 0 in tfm files.
       <LI>
