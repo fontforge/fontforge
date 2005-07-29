@@ -2007,7 +2007,7 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	if ( strmatch(bitmaptype,"otf")==0 )
 	    strcat(freeme,"otf");
 	else if ( oldbitmapstate==bf_otb )
-	    strcat(freeme,"otf");
+	    strcat(freeme,"otb");
 	else if ( oldbitmapstate==bf_sfnt_dfont )
 	    strcat(freeme,"dfont");
 	else
