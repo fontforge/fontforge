@@ -6293,7 +6293,7 @@ return;
 		if ( fv->filled->glyphmax<sf->glyphmax )
 		    fv->filled->glyphs = grealloc(fv->filled->glyphs,(sf->glyphmax = sf->glyphcnt+cnt+10)*sizeof(BDFChar *));
 		memset(fv->filled->glyphs+fv->filled->glyphcnt,0,cnt*sizeof(BDFChar *));
-		fv->filled->glyphcnt = sf->glyphcnt+cnt;
+		fv->filled->glyphcnt = fv->filled->glyphmax = sf->glyphcnt+cnt;
 	    }
 	}
 	sf->glyphcnt += cnt;

@@ -1304,7 +1304,7 @@ BDFFont *SplineFontToBDFHeader(SplineFont *_sf, int pixelsize, int indicate) {
 #endif
     }
     bdf->sf = _sf;
-    bdf->glyphcnt = max;
+    bdf->glyphcnt = bdf->glyphmax = max;
     bdf->pixelsize = pixelsize;
     bdf->glyphs = galloc(max*sizeof(BDFChar *));
     bdf->ascent = rint(sf->ascent*scale);
@@ -1720,7 +1720,7 @@ return( SplineFontRasterize(_sf,pixelsize,true));
     if ( linear_scale>16 ) linear_scale = 16;	/* can't deal with more than 256 levels of grey */
     if ( linear_scale<=1 ) linear_scale = 2;
     bdf->sf = _sf;
-    bdf->glyphcnt = max;
+    bdf->glyphcnt = bdf->glyphmax = max;
     bdf->pixelsize = pixelsize;
     bdf->glyphs = galloc(max*sizeof(BDFChar *));
     bdf->ascent = rint(sf->ascent*scale);
@@ -1807,7 +1807,7 @@ BDFFont *SplineFontPieceMeal(SplineFont *sf,int pixelsize,int flags,void *ftc) {
     }
 
     bdf->sf = sf;
-    bdf->glyphcnt = sf->glyphcnt;
+    bdf->glyphcnt = bdf->glyphmax = sf->glyphcnt;
     bdf->pixelsize = pixelsize;
     bdf->glyphs = gcalloc(sf->glyphcnt,sizeof(BDFChar *));
     bdf->descent = pixelsize-bdf->ascent;

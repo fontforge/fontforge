@@ -4597,7 +4597,7 @@ static SplineFont *SFFromTuple(SplineFont *basesf,struct variations *v,int tuple
     sf->vkerns = v->tuples[tuple].vkhead;
     sf->map = basesf->map;
     sf->mm = mm;
-    sf->glyphcnt = basesf->glyphcnt;
+    sf->glyphmax = sf->glyphcnt = basesf->glyphcnt;
     sf->glyphs = v->tuples[tuple].chars;
     sf->order2 = true;
     for ( i=0; i<sf->glyphcnt; ++i ) if ( basesf->glyphs[i]!=NULL ) {

@@ -1655,7 +1655,7 @@ static int PcfParse(FILE *file,struct toc *toc,SplineFont *sf,EncMap *map, BDFFo
 
     if ( metrics==NULL )
 return( false );
-    b->glyphcnt = mcnt;
+    b->glyphcnt = b->glyphmax = mcnt;
     b->glyphs = gcalloc(mcnt,sizeof(BDFChar *));
     for ( i=0; i<mcnt; ++i ) {
 	b->glyphs[i] = chunkalloc(sizeof(BDFChar));
@@ -1700,7 +1700,7 @@ return( false );
     free( b->glyphs );
     free( mult );
     b->glyphs = new;
-    b->glyphcnt = sf->glyphcnt;
+    b->glyphcnt = b->glyphmax = sf->glyphcnt;
 return( true );
 }
 
@@ -1896,7 +1896,7 @@ return( NULL );
 	    descent = pixelsize -ascent;
 	b = gcalloc(1,sizeof(BDFFont));
 	b->sf = sf;
-	b->glyphcnt = sf->glyphcnt;
+	b->glyphcnt = b->glyphmax = sf->glyphcnt;
 	b->pixelsize = pixelsize;
 	b->glyphs = gcalloc(sf->glyphcnt,sizeof(BDFChar *));
 	b->ascent = ascent;

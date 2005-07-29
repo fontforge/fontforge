@@ -1257,7 +1257,7 @@ static void SFDummyUpCIDs(struct glyphinfo *gi,SplineFont *sf) {
 return;
 
     sf->glyphs = gcalloc(max,sizeof(SplineChar *));
-    sf->glyphcnt = max;
+    sf->glyphcnt = sf->glyphmax = max;
     for ( k=0; k<sf->subfontcnt; ++k )
 	for ( i=0; i<sf->subfonts[k]->glyphcnt; ++i ) if ( sf->subfonts[k]->glyphs[i]!=NULL )
 	    sf->glyphs[i] = sf->subfonts[k]->glyphs[i];
@@ -4630,7 +4630,7 @@ static void AbortTTF(struct alltabs *at, SplineFont *sf) {
     if ( sf->subfontcnt!=0 ) {
 	free(sf->glyphs);
 	sf->glyphs = NULL;
-	sf->glyphcnt = 0;
+	sf->glyphcnt = sf->glyphmax = 0;
     }
     if ( at->fds!=NULL )
 	free( at->fds );
@@ -4886,7 +4886,7 @@ return( false );
     }
     if ( sf->subfonts!=NULL ) {
 	free(sf->glyphs); sf->glyphs = NULL;
-	sf->glyphcnt = 0;
+	sf->glyphcnt = sf->glyphmax = 0;
     }
     free( at->gi.bygid );
     at->gi.gcnt = 0;
@@ -5329,7 +5329,7 @@ static int dumpcff(struct alltabs *at,SplineFont *sf,enum fontformat format,
 	ret = dumpcidglyphs(sf,at);
 	free( at->gi.bygid );
 	free(sf->glyphs); sf->glyphs = NULL;
-	sf->glyphcnt = 0;
+	sf->glyphcnt = sf->glyphmax = 0;
     }
 
     if ( !ret )

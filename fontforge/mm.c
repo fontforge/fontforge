@@ -1433,7 +1433,7 @@ static SplineFont *_MMNewFont(MMSet *mm,int index,char *familyname,real *normali
 	sf->xuid = copy(base->xuid);
 	free(sf->glyphs);
 	sf->glyphs = gcalloc(base->glyphcnt,sizeof(SplineChar *));
-	sf->glyphcnt = base->glyphcnt;
+	sf->glyphcnt = sf->glyphmax = base->glyphcnt;
 	sf->new = base->new;
 	sf->ascent = base->ascent;
 	sf->descent = base->descent;
