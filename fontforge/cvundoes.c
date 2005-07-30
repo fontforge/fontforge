@@ -1112,6 +1112,9 @@ return( data );
 static void *copybuffer2eps(void *_copybuffer,int32 *len) {
     Undoes *cur = &copybuffer;
     SplineChar dummy;
+#ifdef FONTFORGE_CONFIG_TYPE3
+    static Layer layers[2];
+#endif
     FILE *eps;
     char *ret;
     int old_order2;
@@ -1138,6 +1141,10 @@ return( copy(""));
     }
 
     memset(&dummy,0,sizeof(dummy));
+#ifdef FONTFORGE_CONFIG_TYPE3
+    dummy.layers = layers;
+#endif
+    dummy.layer_cnt = 2;
     dummy.name = "dummy";
     dummy.parent = fv_list->sf;		/* might not be the actual parent */
     dummy.layers[ly_fore].splines = cur->u.state.splines;
