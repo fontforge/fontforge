@@ -2072,13 +2072,24 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	    }
 	} else if ( oldformatstate<=ff_ttfdfont || oldformatstate==ff_none ) {
 	    old_ttf_flags = 0;
+	    switch ( fmflags&0x90 ) {
+	      case 0x80:
+		old_ttf_flags |= ttf_flag_applemode|ttf_flag_otmode;
+	      break;
+	      case 0x90:
+		/* Neither */;
+	      break;
+	      case 0x10:
+		old_ttf_flags |= ttf_flag_applemode;
+	      break;
+	      case 0x00:
+		old_ttf_flags |= ttf_flag_otmode;
+	      break;
+	    }
 	    if ( fmflags&4 ) old_ttf_flags |= ttf_flag_shortps;
 	    if ( fmflags&8 ) old_ttf_flags |= ttf_flag_nohints;
-	    if ( fmflags&0x10 ) old_ttf_flags |= ttf_flag_applemode;
-	    else old_ttf_flags |= ttf_flag_otmode;
 	    if ( fmflags&0x20 ) old_ttf_flags |= ttf_flag_pfed_comments;
 	    if ( fmflags&0x40 ) old_ttf_flags |= ttf_flag_pfed_colors;
-	    if ( fmflags&0x80 ) old_ttf_flags |= ttf_flag_applemode|ttf_flag_otmode;
 	    if ( fmflags&0x100 ) old_ttf_flags |= ttf_flag_glyphmap;
 	} else {
 	    old_otf_flags = 0;
@@ -2090,12 +2101,23 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	    if ( fmflags&0x80000 ) old_otf_flags |= ps_flag_nohints;
 	    if ( fmflags&0x200000 ) old_otf_flags |= ps_flag_round;
 		/* Applicable truetype flags */
+	    switch ( fmflags&0x90 ) {
+	      case 0x80:
+		old_otf_flags |= ttf_flag_applemode|ttf_flag_otmode;
+	      break;
+	      case 0x90:
+		/* Neither */;
+	      break;
+	      case 0x10:
+		old_otf_flags |= ttf_flag_applemode;
+	      break;
+	      case 0x00:
+		old_otf_flags |= ttf_flag_otmode;
+	      break;
+	    }
 	    if ( fmflags&4 ) old_otf_flags |= ttf_flag_shortps;
-	    if ( fmflags&0x10 ) old_otf_flags |= ttf_flag_applemode;
-	    else old_otf_flags |= ttf_flag_otmode;
 	    if ( fmflags&0x20 ) old_otf_flags |= ttf_flag_pfed_comments;
 	    if ( fmflags&0x40 ) old_otf_flags |= ttf_flag_pfed_colors;
-	    if ( fmflags&0x80 ) old_otf_flags |= ttf_flag_applemode|ttf_flag_otmode;
 	    if ( fmflags&0x100 ) old_otf_flags |= ttf_flag_glyphmap;
 	}
     }
