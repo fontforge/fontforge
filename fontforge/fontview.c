@@ -6179,8 +6179,7 @@ static void cblistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     PST *pst;
 
     if ( sf->kerns ) anykerns=true;
-    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
-	    (gid = fv->map->map[i])!=-1 && sf->glyphs[gid]!=NULL ) {
+    for ( i=0; i<fv->map->enccount; ++i ) if ( (gid = fv->map->map[i])!=-1 && sf->glyphs[gid]!=NULL ) {
 	for ( pst=sf->glyphs[gid]->possub; pst!=NULL; pst=pst->next ) {
 	    if ( pst->type==pst_ligature ) {
 		anyligs = true;
