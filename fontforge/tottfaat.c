@@ -264,20 +264,32 @@ void ttf_dumpkerns(struct alltabs *at, SplineFont *sf) {
     int version;
     MMSet *mm = at->dovariations ? sf->mm : NULL;
     struct kerncounts kcnt;
+    int must_use_old_style = 0;
 
-    if ( mm!=NULL ) {
-	for ( i=0; i<mm->instance_count; ++i )
-	    mmcnt += CountKerns(at,mm->instances[i],&kcnt);
-	sf = mm->normal;
+    if ( !at->applemode && !at->opentypemode ) {
+	must_use_old_style = true;
+	SFKernPrepare(sf,false);
+	mm = NULL;
+    } else {
+	if ( mm!=NULL ) {
+	    for ( i=0; i<mm->instance_count; ++i )
+		mmcnt += CountKerns(at,mm->instances[i],&kcnt);
+	    sf = mm->normal;
+	}
     }
+
     sum = CountKerns(at,sf,&kcnt);
-    if ( sum==0 && mmcnt==0 )
+    if ( sum==0 && mmcnt==0 ) {
+	if ( must_use_old_style )
+	    SFKernCleanup(sf,false);
 return;
+    }
 
     /* Old kerning format (version 0) uses 16 bit quantities */
     /* Apple's new format (version 0x00010000) uses 32 bit quantities */
     at->kern = tmpfile();
-    if ( kcnt.kccnt==0 && kcnt.vkccnt==0 && kcnt.ksm==0 && mmcnt==0 ) {
+    if ( must_use_old_style  ||
+	    ( kcnt.kccnt==0 && kcnt.vkccnt==0 && kcnt.ksm==0 && mmcnt==0 )) {
 	/* MS does not support format 1,2,3 kern sub-tables so if we have them */
 	/*  we might as well admit that this table is for apple only and use */
 	/*  the new format apple recommends. Otherwise, use the old format */
@@ -296,6 +308,8 @@ return;
 	for ( i=0; i<mm->instance_count; ++i )
 	    ttf_dumpsfkerns(at, mm->instances[i], i, version);
     }
+    if ( must_use_old_style )
+	SFKernCleanup(sf,false);
 
     at->kernlen = ftell(at->kern);
     if ( at->kernlen&2 )
