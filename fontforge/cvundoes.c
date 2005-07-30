@@ -2606,7 +2606,7 @@ return;
 	j = -1;
 	forever {
 	    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] )
-		SCCheckXClipboard(fv->gw,SFMakeChar(sf,fv->map,i),dm_fore,!pasteinto);
+		SCCheckXClipboard(fv->gw,SFMakeChar(sf,fv->map,i),ly_fore,!pasteinto);
 	    ++j;
 	    if ( mm==NULL || mm->normal!=origsf || j>=mm->instance_count )
 	break;
