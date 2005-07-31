@@ -317,6 +317,7 @@ return;
     } else {
 	GGadgetSetTitle(GWidgetGetControl(kcd->cw,CID_GlyphList),nullstr);
     }
+    GWidgetIndicateFocusGadget(GWidgetGetControl(kcd->cw,CID_GlyphList));
     GDrawSetVisible(kcd->cw,true);
 }
 
