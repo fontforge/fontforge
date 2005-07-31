@@ -137,7 +137,7 @@ static void FigureAlternates(unichar_t index, char *apt, int normative) {
 
 static void readin(void) {
     char buffer[300], buf2[300], oldname[100], *pt, *end, *pt1;
-    int index, lc, uc, tc, flg, val, cc;
+    int index, lc, uc, tc, flg, val, cc, indexend;
     int wasfirst;
     FILE *fp;
     int i,j;
@@ -290,13 +290,18 @@ static void readin(void) {
     continue;
 	flg = 0;
 	/* code */
-	index = strtol(buffer,&end,16);
+	indexend = index = strtol(buffer,&end,16);
 	if ( index>0xffff )		/* Only BMP now !!!!!! */
     continue;
 	pt = end;
+	if ( *pt=='.' && pt[1]=='.' ) {
+	    indexend = strtol(pt+2,&end,16);
+	    if ( indexend>0xffff ) indexend = 0xffff;	/* Only BMP now !!!!! */
+	    pt = end;
+	}
 	if ( *pt==';' ) {
 	    ++pt;
-	    for ( pt1=pt; *pt1!=';' && *pt1!='\0'; ++pt1 );
+	    for ( pt1=pt; *pt1!=';' && *pt1!=' ' && *pt1!='\0'; ++pt1 );
 	    if ( strncmp(pt,"BK",pt1-pt)==0 || strncmp(pt,"CR",pt1-pt)==0 || strncmp(pt,"LF",pt1-pt)==0 )
 		/*flg |= _MUSTBREAK*/;
 	    else if ( strncmp(pt,"NS",pt1-pt)==0 || strncmp(pt,"CL",pt1-pt)==0 )
@@ -318,7 +323,9 @@ static void readin(void) {
 	    else if ( strncmp(pt,"SY",pt1-pt)==0 )
 		flg |= _URLBREAKAFTER;
 	    pt = pt1;
-	    flags[index] |= flg;
+	    for ( ; index<=indexend; ++index )
+		flags[index] |= flg;
+#if 0
 	    if ( strstr(pt," First>")!=NULL )
 		wasfirst = index;
 	    else if ( strstr(pt," Last>")!=NULL ) {
@@ -326,6 +333,7 @@ static void readin(void) {
 		    flags[wasfirst] = flg;
 		}
 	    }
+#endif
 	}
     }
     fclose(fp);
