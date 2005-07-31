@@ -707,7 +707,7 @@ return( NULL );
 return( NULL );
     if ( !kern->r2l )
 	x = 10 + (bdfc1->width-bdfc1->xmin) + bdfc2->xmin +
-		(kpd->kerns[i+kpd->off_top].newoff*kpd->bdf->pixelsize/em);
+		(kpd->kerns[i].newoff*kpd->bdf->pixelsize/em);
     else
 	x = kpd->vwidth-10- (bdfc1->xmax-bdfc1->xmin) - bdfc1->xmin -
 		(bdfc2->width-bdfc2->xmin) -
