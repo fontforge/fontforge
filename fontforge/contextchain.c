@@ -1006,6 +1006,7 @@ static void CCD_FinishEditNew(struct contextchaindlg *ccd) {
     char *temp;
     struct fpst_rule dummy;
     GGadget *list = GWidgetGetControl(ccd->gw,CID_GList+ccd->wasoffset);
+    int i,tot;
 
     if ( ccd->wasoffset>=300 ) {		/* It's a class */
 	const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList+300));
@@ -1046,6 +1047,16 @@ return;
 		    GWidgetGetControl(ccd->gw,CID_ClassList+40), &dummy )) {
 	    FPSTRuleContentsFree(&dummy,pst_class);
 return;
+	}
+	for ( i=0; i<dummy.lookup_cnt; ++i ) {
+	    if ( dummy.lookups[i].seq >= dummy.u.class.ncnt ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
+		GWidgetErrorR(_STR_BadSeqLookup,_STR_BadSeqNumber,  dummy.u.class.ncnt );
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Bad Sequence/Lookup List"),_("Sequence number out of bounds, must be less than %d (number of classes in list above)", dummy.u.class.ncnt ));
+#endif
+return;
+	    }
 	}
 	ret = clslistitem(&dummy);
 	FPSTRuleContentsFree(&dummy,pst_class);
@@ -1106,6 +1117,17 @@ return;
 return;
 	}
 	dummy.u.glyph.names = ccd_cu_copy(_GGadgetGetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList)));
+	tot = CCD_GlyphNameCnt(_GGadgetGetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList)));
+	for ( i=0; i<dummy.lookup_cnt; ++i ) {
+	    if ( dummy.lookups[i].seq >= tot ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
+		GWidgetErrorR(_STR_BadSeqLookup,_STR_BadSeqNumber,  tot );
+#elif defined(FONTFORGE_CONFIG_GTK)
+		gwwv_post_error(_("Bad Sequence/Lookup List"),_("Sequence number out of bounds, must be less than %d (number of glyphs, classes or coverage tables)", tot ));
+#endif
+return;
+	    }
+	}
 	temp = ccd_cu_copy(_GGadgetGetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList+20)));
 	dummy.u.glyph.back = reversenames(temp);
 	free(temp);
@@ -1859,6 +1881,16 @@ return;
 	else {
 	    fpst->rules[0].lookup_cnt = dummy.lookup_cnt;
 	    fpst->rules[0].lookups = dummy.lookups;
+	    for ( i=0; i<dummy.lookup_cnt; ++i ) {
+		if ( dummy.lookups[i].seq >= dummy.u.coverage.ncnt ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
+		    GWidgetErrorR(_STR_BadSeqLookup,_STR_BadSeqNumber,  dummy.u.coverage.ncnt );
+#elif defined(FONTFORGE_CONFIG_GTK)
+		    gwwv_post_error(_("Bad Sequence/Lookup List"),_("Sequence number out of bounds, must be less than %d (number of classes in list above)", dummy.u.coverage.ncnt ));
+#endif
+return;
+		}
+	    }
 	}
       break;
       default:
