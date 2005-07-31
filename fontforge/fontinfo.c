@@ -3198,7 +3198,7 @@ return( true );
 	if ( newname!=NULL ) {
 	    fpst = chunkalloc(sizeof(FPST));
 	    fpst->type = pst_contextpos + which;
-	    fpst->format = fpst->type==pst_reversesub ? pst_reversecoverage : pst_coverage;
+	    fpst->format = fpst->type==pst_reversesub ? pst_reversecoverage : pst_class;
 	    DecomposeClassName(newname,NULL,&fpst->tag,NULL,&fpst->flags,
 		    &fpst->script_lang_index,NULL,NULL,d->sf);
 	    if ( (d->ccd = ContextChainEdit(d->sf,fpst,d,newname))!=NULL ) {
