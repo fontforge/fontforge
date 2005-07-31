@@ -871,6 +871,30 @@ return( old );
 return( str );
 }
 
+static int IsSubSetOf(const unichar_t *substr,const unichar_t *fullstr ) {
+    /* The mac string is often a subset of the unicode string. Certain */
+    /*  characters can't be expressed in the mac encoding and are omitted */
+    /*  or turned to question marks or some such */
+    const unichar_t *pt1, *pt2;
+
+    for ( pt1=substr, pt2=fullstr; *pt1 ; ++pt2 ) {
+	if ( *pt2=='\0' )
+    break;
+	if ( *pt1==*pt2 )
+	    ++pt1;
+    }
+    if ( *pt1=='\0' )
+return( true );
+
+    for ( pt1=substr, pt2=fullstr; *pt1 ; ++pt2 ) {
+	if ( *pt2=='\0' )
+return( false );
+	if ( *pt1==*pt2 || *pt1=='?' )
+	    ++pt1;
+    }
+return( true );
+}
+
 static void TTFAddLangStr(FILE *ttf, struct ttfinfo *info, int id,
 	int strlen, int stroff,int plat,int spec,int language) {
     struct ttflangname *cur, *prev;
@@ -915,11 +939,22 @@ return;
 	    cur->frommac[id/32] &= ~(1<<(id&0x1f));
     } else if ( plat==1 ) {
 	/* Mac string doesn't match mac unicode string */
+	if ( !IsSubSetOf(str,cur->names[id]) )
+	    fprintf( stderr, "Warning: Mac and Unicode entries in the 'name' table differ for the\n %s string in the language %s\n Mac String: %s\nWindows String: %s\n",
+		    u2def_copy(TTFNameIds(id)),u2def_copy(MSLangString(language)),
+		    u2def_copy(str),u2def_copy(cur->names[id]));		/* Memory leak */
+	else
+	    fprintf( stderr, "Warning: Mac string is a subset of the Unicode string in the 'name' table\n for the %s string in the %s language.\n",
+		    u2def_copy(TTFNameIds(id)),u2def_copy(MSLangString(language)));
 	free(str);
     } else if ( plat==3 && (cur->frommac[id/32] & (1<<(id&0x1f))) ) {
-	fprintf( stderr, "Warning: Mac and Windows entries in the 'name' table differ for the\n %s string in the language %s\n Mac String: %s\nWindows String: %s\n",
-		u2def_copy(TTFNameIds(id)),u2def_copy(MSLangString(language)),
-		u2def_copy(cur->names[id]),u2def_copy(str));		/* Memory leak */
+	if ( !IsSubSetOf(cur->names[id],str) )
+	    fprintf( stderr, "Warning: Mac and Windows entries in the 'name' table differ for the\n %s string in the language %s\n Mac String: %s\nWindows String: %s\n",
+		    u2def_copy(TTFNameIds(id)),u2def_copy(MSLangString(language)),
+		    u2def_copy(cur->names[id]),u2def_copy(str));		/* Memory leak */
+	else
+	    fprintf( stderr, "Warning: Mac string is a subset of the Unicode string in the 'name' table\n for the %s string in the %s language.\n",
+		    u2def_copy(TTFNameIds(id)),u2def_copy(MSLangString(language)));
 	free(cur->names[id]);
 	cur->names[id] = str;
 	cur->frommac[id/32] &= ~(1<<(id&0x1f));
