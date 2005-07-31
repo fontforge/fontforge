@@ -913,6 +913,9 @@ return;
 	free(str);
 	if ( plat==3 )
 	    cur->frommac[id/32] &= ~(1<<(id&0x1f));
+    } else if ( plat==1 ) {
+	/* Mac string doesn't match mac unicode string */
+	free(str);
     } else if ( plat==3 && (cur->frommac[id/32] & (1<<(id&0x1f))) ) {
 	fprintf( stderr, "Warning: Mac and Windows entries in the 'name' table differ for the\n %s string in the language %s\n Mac String: %s\nWindows String: %s\n",
 		u2def_copy(TTFNameIds(id)),u2def_copy(MSLangString(language)),
