@@ -7682,7 +7682,17 @@ char *StdGlyphName(char *buffer, int uni,enum uni_interp interp) {
 	    if ( pua[uni-0xe000]!=0 )
 		uni = pua[uni-0xe000];
 	}
-	if ( uni<psunicodenames_cnt )
+	/* Adobe's standard names are wrong for: */
+	/* 0x2206 is named Delta, 0x394 should be */
+	/* 0x2126 is named Omega, 0x3A9 should be */
+	/* 0x00b5 is named mu, 0x3BC should be */
+	/* 0x0162 is named Tcommaaccent, 0x21A should be */
+	/* 0x0163 is named tcommaaccent, 0x21B should be */
+	/* 0xf6be is named dotlessj, 0x237 should be */
+	if ( uni==0x2206 || uni==0x2126 || uni==0x00b5 || uni==0x0162 ||
+		uni==0x0163 || uni==0xf6be )
+	    /* Don't use the standard names */;
+	else if ( uni<psunicodenames_cnt )
 	    name = (char *) psunicodenames[uni];
 	if ( name==NULL &&
 		(interp==ui_adobe || interp==ui_ams) &&
