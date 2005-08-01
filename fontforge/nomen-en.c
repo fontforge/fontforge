@@ -997,6 +997,11 @@ static char *str_SampleText = "Sample Text";
 static char *str_CIDFindFontName = "CID findfont Name";
 static char *str_TranslateStyle = "Translate Style";
 static char *str_BasedOnNamePane = "Based on field in Names pane"
+static char *str_BadLocale = "Bad Locale"
+static char *str_UnknownLocaleKnownLang = "This font contains a locale (%04x) for %s which I do not recognize.\nYou may retain it as is (and not be able to edit it),\nmerge it into a standard locale, or remove it."
+static char *str_UnknownLocaleLang = "This font contains a locale (%04x) which I do not recognize.\nYou may retain it as is (and not be able to edit it),\nmerge it into a standard locale, or remove it."
+static char *str_PickALocale = "Pick A Locale"
+
     /* MS Language list -- http://support.microsoft.com/default.aspx?scid=kb;EN-US;q224804 */
     /* MS Reviewed 12/17/2001 */
     /*		http://www.microsoft.com/globaldev/reference/lcid-all.mspx */

@@ -2681,6 +2681,10 @@ static unichar_t *OtfNameToText(int lang, const unichar_t *name) {
 	if ( mslanguages[i].userdata == (void *) lang )
     break;
     if ( i==-1 )
+	for ( i=sizeof(mslanguages)/sizeof(mslanguages[0])-1; i>=0 ; --i )
+	    if ( ((intpt) mslanguages[i].userdata&0xff) == (lang&0xff) )
+	break;
+    if ( i==-1 )
 	langname = nullstr;
     else
 	langname = GStringGetResource((intpt) (mslanguages[i].text),NULL);
@@ -4349,6 +4353,79 @@ static int LangSearch(GTextInfo **langs,int langlocalecode,int langcode) {
 return( found );
 }
 
+static int PickMSLocale(int def) {
+    const unichar_t **choices;
+    int ret, cnt;
+
+    for ( cnt=0; mslanguages[cnt].text!=NULL; ++cnt );
+    choices = gcalloc(cnt+1,sizeof(unichar_t *));
+    for ( cnt=0; mslanguages[cnt].text!=NULL; ++cnt )
+	choices[cnt] = GStringGetResource((intpt) mslanguages[cnt].text,NULL);
+    ret = GWidgetChoicesR(_STR_PickALocale, choices,cnt, def,_STR_PickALocale);
+    free( choices );
+return( ret );
+}
+
+void VerifyLanguages(SplineFont *sf) {
+    struct ttflangname *cur, *prev, *next, *other;
+    int i, ans;
+    static int buts[] = { _STR_Retain, _STR_Merge, _STR_Remove, 0 };
+    /* Check that we know about all the language/locales in the font */
+
+    for ( prev = NULL, cur=sf->names; cur!=NULL; cur=next ) {
+	next = cur->next;
+	for ( i=sizeof(mslanguages)/sizeof(mslanguages[0])-1; i>=0 ; --i )
+	    if ( mslanguages[i].userdata == (void *) (cur->lang) )
+	break;
+	if ( i!=-1 ) {
+	    prev = cur;
+    continue;
+	}
+	for ( i=sizeof(mslanguages)/sizeof(mslanguages[0])-1; i>=0 ; --i )
+	    if ( mslanguages[i].userdata == (void *) (0x400|(cur->lang&0x3ff)) )
+	break;
+	if ( i!=-1 )
+	    ans = GWidgetAskR(_STR_BadLocale,buts,0,0,_STR_UnknownLocaleKnownLang,
+		    cur->lang,GStringGetResource((intpt) mslanguages[i].text,NULL));
+	else
+	    ans = GWidgetAskR(_STR_BadLocale,buts,0,0,_STR_UnknownLocaleLang,
+		    cur->lang,NULL);
+	if ( ans==0 ) {
+	    prev = cur;
+    continue;
+	}
+	if ( ans==1 ) {
+	    int which = PickMSLocale(i);
+	    if ( which==-1 ) {	/* They cancelled */
+		next = cur;	/* Ask again */
+    continue;
+	    }
+	    for ( other=sf->names; other!=NULL; other=other->next )
+		if ( (void *) (other->lang)==mslanguages[which].userdata )
+	    break;
+	    if ( other==NULL ) {
+		/* Nothing to merge into, just rename this to the new locale */
+		cur->lang = (intpt) mslanguages[which].userdata;
+		prev = cur;
+    continue;
+	    }
+	    for ( i=0; i<ttf_namemax; ++i )
+		if ( other->names[i]==NULL ) {
+		    other->names[i] = cur->names[i];
+		    cur->names[i] = NULL;
+		}
+	    /* Fall through and delete the old entry */
+	}
+	/* Delete it */
+	if ( prev==NULL )
+	    sf->names = next;
+	else
+	    prev->next = next;
+	cur->next = NULL;
+	TTFLangNamesFree(cur);
+    }
+}
+
 static void DefaultLanguage(struct gfi_data *d) {
     const char *lang=NULL;
     int i, found=-1, langlen;
@@ -5259,9 +5336,10 @@ static int GFI_AspectChange(GGadget *g, GEvent *e) {
 	int new_aspect = GTabSetGetSel(g);
 	if ( !d->ttf_set && ( new_aspect == d->ttfv_aspect || new_aspect == d->panose_aspect ))
 	    TTFSetup(d);
-	else if ( !d->names_set && new_aspect == d->tn_aspect )
+	else if ( !d->names_set && new_aspect == d->tn_aspect ) {
+	    VerifyLanguages(d->sf);
 	    DefaultLanguage(d);
-	else if ( !d->tex_set && new_aspect == d->tx_aspect )
+	} else if ( !d->tex_set && new_aspect == d->tx_aspect )
 	    DefaultTeX(d);
 	d->old_aspect = new_aspect;
     }
