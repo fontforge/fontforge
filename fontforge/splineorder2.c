@@ -906,6 +906,7 @@ return;
 	} else {
 	    foff.x = from->me.x + (to->me.x-from->me.x)-(to->me.y-from->me.y);
 	    foff.y = from->me.y + (to->me.x-from->me.x)+(to->me.y-from->me.y);
+	    prev = NULL;
 	}
 	if ( to->next!=NULL && to->pointtype==pt_tangent ) {
 	    next = to->next->to;
@@ -918,6 +919,7 @@ return;
 	} else {
 	    toff.x = to->me.x + (to->me.x-from->me.x)+(to->me.y-from->me.y);
 	    toff.y = to->me.y - (to->me.x-from->me.x)+(to->me.y-from->me.y);
+	    next = NULL;
 	}
 	if ( IntersectLinesClip(&from->nextcp,&foff,&from->me,&toff,&to->me)) {
 	    from->nonextcp = to->noprevcp = false;
@@ -950,6 +952,7 @@ return;
 		new.x = -len*unit.x + from->me.x; new.y = -len*unit.y + from->me.y;
 		if ( new.x-from->prevcp.x<-1 || new.x-from->prevcp.x>1 ||
 			 new.y-from->prevcp.y<-1 || new.y-from->prevcp.y>1 ) {
+		    prev = NULL;
 		    if ( from->prev!=NULL && (prev = from->prev->from)!=NULL &&
 			    IntersectLinesClip(&from->prevcp,&new,&from->me,&prev->nextcp,&prev->me)) {
 			prev->nextcp = from->prevcp;
