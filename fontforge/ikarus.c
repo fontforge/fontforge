@@ -131,7 +131,7 @@ return;
     urwtable[329] = 0xf8;
     urwtable[330] = 0xdf;
     urwtable[331] = 0x131;
-    urwtable[332] = 0xf6be;
+    urwtable[332] = 0x237 /*0xf6be*/;
     urwtable[333] = 0x133;
     urwtable[336] = 0xfb00;
     urwtable[337] = 0xfb01;

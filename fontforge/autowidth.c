@@ -173,7 +173,7 @@ static real LineFindLeftDistance(struct charone *right,WidthInfo *wi) {
     /*  so it is better fixed up with a kern. the stem of "j" should be about */
     /*  where the stem of the "i" is and we should ignore the bowl down below */
     if ( (enc=right->sc->unicodeenc)=='g' || enc=='j' || enc=='y' || enc==0x3f3 ||
-	    enc==0x443 || enc==0x458 || enc==0xf6be )
+	    enc==0x443 || enc==0x458 || enc==0xf6be || enc==0x237 )
 	base = 0;
     for ( i=base; i<=right->top; ++i ) {
 	if ( right->ledge[i-right->base]!=NOTREACHED &&
@@ -1182,7 +1182,7 @@ static struct charone **BuildCharList(FontView *fv, SplineFont *sf,GWindow gw,
 	    /*  dotlessi instead */ /* could do the same for dotless j */
 	    if ( iswidth ) {
 		ReplaceGlyphWith(sf,ret,cnt,'i',0x131);
-		ReplaceGlyphWith(sf,ret,cnt,'j',0xf6be);
+		ReplaceGlyphWith(sf,ret,cnt,'j',0x237);
 	    }
 
 	    if ( iswidth &&		/* I always want 'I' in the character list when doing widths */
