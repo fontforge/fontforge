@@ -1583,7 +1583,7 @@ static int SCMakeBaseReference(SplineChar *sc,SplineFont *sf,int ch, int copybmp
 
     rsc = SFGetChar(sf,ch,NULL);
     if ( rsc==NULL ) {
-	if ( ch==0x131 || ch==0xf6be ) {
+	if ( ch==0x131 || ch==0xf6be || ch==0x237) {
 	    if ( ch==0x131 ) ch='i'; else ch = 'j';
 	    rsc = SFGetChar(sf,ch,NULL);
 	    if ( rsc!=NULL && !sf->dotlesswarn ) {
@@ -1906,7 +1906,7 @@ static void _SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, SplineChar *rs
 			basech!='B' && basech!='D' && basech!='L' && basech!=0xd8 )
 		    ybase = SCFindTopXRange(sc,&bb,ia);
 		if ( ((basech=='h' && ch==0x307) ||	/* dot over the stem in hdot */
-			basech=='i' || basech=='j' || basech==0x131 || basech==0xf6be ||
+			basech=='i' || basech=='j' || basech==0x131 || basech==0xf6be || basech==0x237 ||
 			(basech=='k' && ch==0x301) ||
 			(baserch=='L' && (ch==0x301 || ch==0x304)) ||
 			basech=='l' || basech=='t' ) &&
@@ -2454,9 +2454,9 @@ int SCMakeDotless(SplineFont *sf, SplineChar *dotless, int copybmp, int doit) {
 
     if ( dotless==NULL )
 return( 0 );
-    if ( dotless->unicodeenc!=0x131 && dotless->unicodeenc!=0xf6be )
+    if ( dotless->unicodeenc!=0x131 && dotless->unicodeenc!=0xf6be && dotless->unicodeenc!=0x237 )
 return( 0 );
-    sc = SFGetChar(sf,dotless->unicodeenc==0xf6be?'j':'i',NULL);
+    sc = SFGetChar(sf,dotless->unicodeenc==0x131?'i':'j',NULL);
     xsc = SFGetChar(sf,'x',NULL);
     if ( sc==NULL || sc->layers[ly_fore].splines==NULL || sc->layers[ly_fore].refs!=NULL || xsc==NULL )
 return( 0 );
@@ -2521,7 +2521,7 @@ return;
     } else if ( SFIsRotatable(sf,sc) ) {
 	DoRotation(sf,sc,copybmp,fv);
 return;
-    } else if ( sc->unicodeenc==0x131 || sc->unicodeenc==0xf6be ) {
+    } else if ( sc->unicodeenc==0x131 || sc->unicodeenc==0x237 || sc->unicodeenc==0xf6be ) {
 	SCMakeDotless(sf, sc, copybmp, true);
 return;
     }
