@@ -498,7 +498,7 @@ static void RemoveMultiples(Encoding *item) {
 void ParseEncodingFile(char *filename) {
     FILE *file;
     char *orig = filename;
-    Encoding *head, *item, *prev;
+    Encoding *head, *item, *prev, *next;
 #if defined(FONTFORGE_CONFIG_GDRAW)
     unichar_t ubuf[100];
     unichar_t *name;
@@ -535,7 +535,8 @@ return;
 return;
     }
 
-    for ( i=0, prev=NULL, item=head; item!=NULL; prev = item, item=item->next, ++i ) {
+    for ( i=0, prev=NULL, item=head; item!=NULL; prev = item, item=next, ++i ) {
+	next = item->next;
 	if ( item->enc_name==NULL ) {
 	    if ( no_windowing_ui ) {
 		GWidgetErrorR(_STR_BadEncFormat,_STR_UnnamableEncoding);
@@ -597,7 +598,6 @@ return;
 		else
 		    prev->next = item->next;
 		EncodingFree(item);
-		item = prev;
 	    }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	}
