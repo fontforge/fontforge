@@ -327,26 +327,28 @@ return( NULL );
 	temp.only_1byte = true;
 
     if ( !all ) {
-	for ( i=temp.has_1byte; i<256; ++i ) if ( !good[i] ) {
-	    for ( j=0; j<256; ++j ) {
-		from[0] = i; from[1] = j; from[2] = 0;
-		fromlen = 2;
-		fpt = from;
-		upt = ucs2;
-		tolen = sizeof(ucs2);
-		if ( iconv( temp.tounicode , &fpt, &fromlen, &upt, &tolen )!= (size_t) (-1) &&
-			upt-ucs2==2 /* Exactly one character */ ) {
-		    if ( temp.low_page==-1 )
-			temp.low_page = i;
-		    temp.high_page = i;
-		    temp.has_2byte = true;
-	    break;
+	if ( strstr(iconv_name,"2022")==NULL ) {
+	    for ( i=temp.has_1byte; i<256; ++i ) if ( !good[i] ) {
+		for ( j=0; j<256; ++j ) {
+		    from[0] = i; from[1] = j; from[2] = 0;
+		    fromlen = 2;
+		    fpt = from;
+		    upt = ucs2;
+		    tolen = sizeof(ucs2);
+		    if ( iconv( temp.tounicode , &fpt, &fromlen, &upt, &tolen )!= (size_t) (-1) &&
+			    upt-ucs2==2 /* Exactly one character */ ) {
+			if ( temp.low_page==-1 )
+			    temp.low_page = i;
+			temp.high_page = i;
+			temp.has_2byte = true;
+		break;
+		    }
 		}
 	    }
-	}
-	if ( temp.low_page==temp.high_page ) {
-	    temp.has_2byte = false;
-	    temp.low_page = temp.high_page = -1;
+	    if ( temp.low_page==temp.high_page ) {
+		temp.has_2byte = false;
+		temp.low_page = temp.high_page = -1;
+	    }
 	}
 	if ( !temp.has_2byte && !good[033]/* escape */ ) {
 	    if ( strstr(iconv_name,"2022")!=NULL &&

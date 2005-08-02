@@ -7599,6 +7599,8 @@ return( enc );
     if ( encname->unicode!=NULL )
 return( encname->unicode[enc] );
     else if ( encname->tounicode ) {
+	tolen = sizeof(to); fromlen = 0;
+	iconv(encname->tounicode,NULL,&fromlen,NULL,&tolen);	/* Reset state */
 	fpt = from; tpt = (char *) to; tolen = sizeof(to);
 	if ( encname->has_1byte && enc<256 ) {
 	    *(char *) fpt = enc;
