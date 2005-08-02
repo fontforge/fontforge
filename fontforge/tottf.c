@@ -2929,16 +2929,8 @@ void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]) {
 
     k=0;
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
-	if ( sf->glyphs[i]->unicodeenc==0xde && has_ascii ) {
+	if ( sf->glyphs[i]->unicodeenc==0xde && has_ascii )
 	    CodePage[0] |= 1<<0;		/* (ANSI) Latin1 */
-	} else if ( sf->glyphs[i]->unicodeenc==0xc3 && has_ascii )
-	    CodePage[1] |= 1<<18;		/* MS-DOS Nordic */
-	else if ( sf->glyphs[i]->unicodeenc==0xe9 && has_ascii )
-	    CodePage[1] |= 1<<20;		/* MS-DOS Canadian French */
-	else if ( sf->glyphs[i]->unicodeenc==0xf5 && has_ascii )
-	    CodePage[1] |= 1<<23;		/* MS-DOS Portuguese */
-	else if ( sf->glyphs[i]->unicodeenc==0xfe && has_ascii )
-	    CodePage[1] |= 1<<22;		/* MS-DOS Icelandic */
 	else if ( sf->glyphs[i]->unicodeenc==0x13d && has_ascii ) {
 	    CodePage[0] |= 1<<1;		/* latin2 */
 	    CodePage[1] |= 1<<26;		/* latin2 */
@@ -2963,6 +2955,8 @@ void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]) {
 	} else if ( sf->glyphs[i]->unicodeenc==0x157 && has_ascii ) {
 	    CodePage[0] |= 1<<7;		/* baltic */
 	    CodePage[1] |= 1<<27;		/* baltic */
+	} else if ( sf->glyphs[i]->unicodeenc==0x20AB && has_ascii ) {
+	    CodePage[0] |= 1<<8;		/* vietnamese */
 	} else if ( sf->glyphs[i]->unicodeenc==0xe45 )
 	    CodePage[0] |= 1<<16;		/* thai */
 	else if ( sf->glyphs[i]->unicodeenc==0x30a8 )
@@ -2971,10 +2965,24 @@ void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]) {
 	    CodePage[0] |= 1<<18;		/* simplified chinese */
 	else if ( sf->glyphs[i]->unicodeenc==0x3131 )
 	    CodePage[0] |= 1<<19;		/* korean wansung */
+	else if ( sf->glyphs[i]->unicodeenc==0x592E )
+	    CodePage[0] |= 1<<20;		/* traditional chinese */
 	else if ( sf->glyphs[i]->unicodeenc==0xacf4 )
 	    CodePage[0] |= 1<<21;		/* korean Johab */
+	else if ( sf->glyphs[i]->unicodeenc==0x2030 )
+	    CodePage[0] |= 1U<<29;		/* mac roman */
+	else if ( sf->glyphs[i]->unicodeenc==0x2665 && has_ascii )
+	    CodePage[0] |= 1U<<30;		/* OEM */
 	else if ( sf->glyphs[i]->unicodeenc==0x21d4 )
 	    CodePage[0] |= 1U<<31;		/* symbol */
+	else if ( sf->glyphs[i]->unicodeenc==0xc3 && has_ascii )
+	    CodePage[1] |= 1<<18;		/* MS-DOS Nordic */
+	else if ( sf->glyphs[i]->unicodeenc==0xe9 && has_ascii )
+	    CodePage[1] |= 1<<20;		/* MS-DOS Canadian French */
+	else if ( sf->glyphs[i]->unicodeenc==0xf5 && has_ascii )
+	    CodePage[1] |= 1<<23;		/* MS-DOS Portuguese */
+	else if ( sf->glyphs[i]->unicodeenc==0xfe && has_ascii )
+	    CodePage[1] |= 1<<22;		/* MS-DOS Icelandic */
     }
 
     if ( CodePage[0]==0 )
