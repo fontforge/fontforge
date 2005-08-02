@@ -2920,10 +2920,9 @@ void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]) {
     }
 
     has_ascii = latin1[1]==0xffffffff && latin1[2]==0xffffffff &&
-	    (latin1[3]&0x8fffffff)==0x8fffffff;		/* DEL is not a char */
-    has_latin1 = has_ascii && (latin1[4]&~1&~(1<<0xd))== (~1&~(1<<0xd))	&& /* Ignore nobreak space, softhyphen */
-	    latin1[5] == 0xffffffff && latin1[6]==0xffffffff &&
-	    latin1[7] == 0xffffffff;
+	    (latin1[3]&0x7fffffff)==0x7fffffff;		/* DEL is not a char */
+    has_latin1 = has_ascii && (latin1[5]&~1&~(1<<0xd))== (~1&~(1<<0xd))	&& /* Ignore nobreak space, softhyphen */
+	    latin1[6]==0xffffffff && latin1[7] == 0xffffffff;
     CodePage[0] = CodePage[1] = 0;
     if ( has_ascii ) CodePage[1] |= 1U<<31;		/* US (Ascii I assume) */
     if ( has_latin1 ) CodePage[0] |= 1U<<30;		/* WE/latin1 */
