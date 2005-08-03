@@ -2107,7 +2107,7 @@ static void dumpg___ContextChainClass(FILE *lfile,FPST *fpst,SplineFont *sf,
 	lclass = ClassesFromNames(sf,fpst->fclass,fpst->fccnt,at->maxp.numGlyphs,&lglyphs);
     }
     pos = ftell(lfile);
-    fseek(lfile,base+2,SEEK_SET);
+    fseek(lfile,base+sizeof(uint16),SEEK_SET);
     putshort(lfile,pos-base);
     fseek(lfile,pos,SEEK_SET);
     glyphs = GlyphsFromInitialClasses(iglyphs,at->maxp.numGlyphs,iclass,initialclasses);
