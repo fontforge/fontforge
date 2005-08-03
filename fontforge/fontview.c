@@ -7599,8 +7599,12 @@ return( enc );
     if ( encname->unicode!=NULL )
 return( encname->unicode[enc] );
     else if ( encname->tounicode ) {
-	tolen = sizeof(to); fromlen = 0;
-	iconv(encname->tounicode,NULL,&fromlen,NULL,&tolen);	/* Reset state */
+	/* To my surprise, on RH9, doing a reset on conversion of CP1258->UCS2 */
+	/* causes subsequent calls to return garbage */
+	if ( encname->iso_2022_escape_len ) {
+	    tolen = sizeof(to); fromlen = 0;
+	    iconv(encname->tounicode,NULL,&fromlen,NULL,&tolen);	/* Reset state */
+	}
 	fpt = from; tpt = (char *) to; tolen = sizeof(to);
 	if ( encname->has_1byte && enc<256 ) {
 	    *(char *) fpt = enc;
@@ -7614,6 +7618,14 @@ return( encname->unicode[enc] );
 	}
 	if ( iconv(encname->tounicode,&fpt,&fromlen,&tpt,&tolen)==(size_t) -1 )
 return( -1 );
+	if ( tpt-(char *) to == 0 ) {
+	    /* This strange call appears to be what we need to make CP1258->UCS2 */
+	    /*  work.  It's supposed to reset the state and give us the shift */
+	    /*  out. As there is no state, and no shift out I have no idea why*/
+	    /*  this works, but it does. */
+	    if ( iconv(encname->tounicode,NULL,&fromlen,&tpt,&tolen)==(size_t) -1 )
+return( -1 );
+	}
 	if ( tpt-(char *) to == 2 )
 return( to[0] );
 	else if ( tpt-(char *) to == 4 && to[0]>=0xd800 && to[0]<0xdc00 && to[1]>=0xdc00 )
@@ -7642,6 +7654,8 @@ return( i );
 	}
 return( -1 );
     } else if ( enc->fromunicode!=NULL ) {
+	/* I don't see how there can be any state to reset in this direction */
+	/*  So I don't reset it */
 	if ( uni<0x10000 ) {
 	    from[0] = uni;
 	    fromlen = 2;

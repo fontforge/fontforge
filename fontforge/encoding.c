@@ -280,12 +280,12 @@ return( &unicodefull );
 	iconv_name = "ISO-2022-JP-2";
     else if ( strncasecmp(name,"ksc5601",7)==0 )
 	iconv_name = "ISO-2022-KR";
+    else if ( strcasecmp(name,"gb2312pk")==0 || strcasecmp(name,"gb2312packed")==0 )
+	iconv_name = "EUC-CN";
     else if ( strncasecmp(name,"gb2312",6)==0 )
 	iconv_name = "ISO-2022-CN";
     else if ( strcasecmp(name,"wansung")==0 )
 	iconv_name = "EUC-KR";
-    else if ( strcasecmp(name,"gb2312pk")==0 || strcasecmp(name,"gb2312packed")==0 )
-	iconv_name = "EUC-CN";
 
 /* Escape sequences:					*/
 /*	ISO-2022-CN:     \e $ ) A ^N			*/
