@@ -1238,6 +1238,7 @@ return;
 	for ( j=0; j<rules[i].scnt; ++j ) {
 	    fseek(ttf,rules[i].subrules[j].offset,SEEK_SET);
 	    rules[i].subrules[j].ccnt = getushort(ttf);
+	    rules[i].subrules[j].scnt = getushort(ttf);
 	    if ( rules[i].subrules[j].ccnt<0 ) {
 		fprintf( stderr, "Bad class count in contextual chaining sub-table.\n" );
 		free(rules);
@@ -1247,7 +1248,6 @@ return;
 	    rules[i].subrules[j].classindeces[0] = i;
 	    for ( k=1; k<rules[i].subrules[j].ccnt; ++k )
 		rules[i].subrules[j].classindeces[k] = getushort(ttf);
-	    rules[i].subrules[j].scnt = getushort(ttf);
 	    if ( rules[i].subrules[j].scnt<0 ) {
 		fprintf( stderr, "Bad count in contextual chaining sub-table.\n" );
 		free(rules);
