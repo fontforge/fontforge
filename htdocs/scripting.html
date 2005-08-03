@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 24-Jul-2005 -->
+  <!-- AP: Last modified: 31-Jul-2005 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -836,8 +836,12 @@ a[4][0] = "Nested array";
 	fmflags&amp;0x80 =&gt; generate tables so the font will work on both Apple
 	and MS platforms.<BR>
 	Apple has screwed up and in Mac 10.4 (Tigger), if OpenType tables are present
-	in a font then the AAT tables will be ignored. Unfortunately Apple does not
-	implement all of OpenType, so the result is almost certain to be wrong).
+	in a font then the AAT tables will be ignored -- or so I'm told (I can't
+	test this myself). Unfortunately Apple does not implement all of OpenType,
+	so the result is almost certain to be wrong).
+      <LI>
+	If you want neither OpenType nor Apple tables (just an old fashioned 'kern'
+	table and nothing else) then set both 0x80 and 0x10.
       <LI>
 	fmflags&amp;0x100 =&gt; generate a glyph map file (GID=&gt;glyph name, unicode
 	map). The map file will have extension ".g2n".

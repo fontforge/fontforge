@@ -16,6 +16,61 @@ on the file stamp.c.
 <P>
 <UL>
   <LI>
+    2-August-2005
+    <UL>
+      <LI>
+	<FONT COLOR="Red"><STRONG><BIG>The OS/2 ulCodeRanges field has been broken
+	for a long time, and has failed to mark the presence of any latin code
+	pages.</BIG></STRONG></FONT>
+      <LI>
+	The ulCodeRanges field never set Vietnamese, TradChinese, Mac nor PC OEM
+      <LI>
+	FF did not support EUC-CN, ISO-2022-CN, ISO=2022-KR iconv encodings properly.
+      <LI>
+	Work around a bug in iconv's support for CP1258
+      <LI>
+	Put some code in to warn users about unknown language/locales in the ttf
+	'name' table.
+      <LI>
+	Enter some new language/locale codes for ms.
+      <LI>
+	Crash when moving the end of an open path in an order2 font.
+      <LI>
+	If one loaded an encoding specified by codepoint and then cancelled the dlg
+	which asked for a name for that encoding, then ff would crash.
+      <LI>
+	Don't use Adobe's glyphnames when they are obviously wrong (use uni???? instead)
+      <LI>
+	Add (better) support for the new dotlessj
+      <LI>
+	Put a check into the context chain dlg to make sure that people don't add
+	sequence/lookup pairs where the sequence number is too big.
+      <LI>
+	Make class be the default format for contextual/chaining substitutions rather
+	than coverage tables.
+      <LI>
+	<FONT COLOR="Red"><STRONG><BIG>The format of the LineBreak.txt file changed
+	with Unicode 4.1, so all the line break info is wrong (essentially lines
+	never broke in text fields).</BIG></STRONG></FONT>
+      <LI>
+	Reference to bad memory when creating a popup in combinations list.
+      <LI>
+	Still problems in the 'name' table when Mac &amp; Mac Unicode strings don't
+	match.
+      <LI>
+	Use of the X clipboard for transfering glyphs resulted in a crash
+      <LI>
+	When generating an old-style 'kern' table (either OpenType nor Apple modes
+	set) decompose all kerning classes into kern pairs as we do for AFM files.
+      <LI>
+	Scripting didn't have a way to generate a font with neither Apple nor OpenType
+	tables. Add one.
+      <LI>
+	Oops. wrong default extension for otb fonts from scripts.
+      <LI>
+	Fix some potential crashes where loading font types left a new field unset.
+    </UL>
+  <LI>
     28-July-2005
     <UL>
       <LI>
