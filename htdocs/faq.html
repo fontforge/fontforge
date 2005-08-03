@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 27-Jun-2005 -->
+  <!-- AP: Last modified: 31-Jul-2005 -->
   <TITLE>Frequently Asked Questions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -186,6 +186,8 @@
     <A HREF="#new-encoding">How do I tell fontforge about a new encoding?</A>
   <LI>
     <A HREF="#new-name">How do I add a glyph with a new name?</A>
+  <LI>
+    <A HREF="#glyphnames">Why does fontforge give some glyphs the wrong name?</A>
   <LI>
     <A HREF="#save-no-change">After I generate a font and quit, why does FontForge
     ask if I want to save the font? I didn't change anything.</A>
@@ -1024,6 +1026,11 @@ MANPATH=${MANPATH:-}:/usr/local/man ; export MANPATH
     If you are unsure whether all the glyphs in your font have the same advance
     width use <A HREF="problems.html#Advance">Element-&gt;Find
     Problems-&gt;Random-&gt;Check Advance.</A>
+    <P>
+    When I say "all glyphs" I really mean <EM>all</EM> glyphs. Even glyphs which
+    unicode says should be 0 width must have the same width as everything else.
+    MicroSoft suggests that GPOS be used to do accent combination (etc.) and
+    then change the advance width on any marks (accents) to be 0.
   <DT>
     <A NAME="new-encoding"><B>How I do tell fontforge about a new
     encoding</B></A>
@@ -1110,6 +1117,45 @@ MANPATH=${MANPATH:-}:/usr/local/man ; export MANPATH
 	Bring up <CODE>Element-&gt;Font Info </CODE>again<BR>
 	Change the <CODE>Encoding</CODE> back to whatever it was
     </OL>
+  <DT>
+    <A NAME="glyphnames"><B>Why does FontForge give some of my glyphs the wrong
+    name?</B></A>
+  <DD>
+    FontForge's naming conventions are those specified in
+    <A HREF="http://partners.adobe.com/public/developer/opentype/index_glyph.html">Adobe's
+    glyph naming conventions</A>, and, unfortunately, there are some problems
+    here (generally for compatibility with old encodings). I am aware of the
+    following issues:
+    <DL>
+      <DT>
+	Delta
+      <DD>
+	is assigned to U+2206, "INCREMENT" rather than U+0394, "GREEK CAPITAL LETTER
+	DELTA", probably because Increment was part of the old MacRoman encoding.
+      <DT>
+	Omega
+      <DD>
+	is assigned to U+2126, "OHM SIGN", rather than U+03A9, "GREEK CAPITAL LETTER
+	OMEGA".
+      <DT>
+	mu
+      <DD>
+	is assigned to U+00B5, "MICRO SIGN", rather than U+03BC, "GREEK SMALL LETTER
+	MU", probably because Micro Sign was part of ISO-Latin1 and MacRoman
+      <DT>
+	Tcommaaccent, tcommaaccent
+      <DD>
+	are assigned to U+0162,U+0163 "LATIN CAPITAL/SMALL LETTER T WITH CEDILLA",
+	rather than U+021A,U+021B "LATIN CAPITAL/SMALL LETTER T WITH COMMA BELOW",
+	probably because of a confusion in the early Unicode spec.
+      <DT>
+	dotlessj
+      <DD>
+	is assigned to U+F6BE (in the private use area) rather than U+0237 "LATIN
+	SMALL LETTER DOTLESS J", because Adobe saw the need for a dotlessj glyph
+	before Unicode did and assigned a slot in the private use area. Then in 4.1
+	Unicode added the glyph to the standard.
+    </DL>
   <DT>
     <A NAME="Open-size"><B>Why isn't my Open Type font much smaller than the
     .pfb file?</B></A>
