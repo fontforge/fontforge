@@ -1551,6 +1551,7 @@ void FontViewMenu_MetaFont(GtkMenuItem *menuitem, gpointer user_data) {
 #define MID_MakeFromFont	2837
 #define MID_RemoveEncoding	2838
 #define MID_DisplayByGroups	2839
+#define MID_Compact	2840
 #define MID_CreateMM	2900
 #define MID_MMInfo	2901
 #define MID_MMValid	2902
@@ -6336,6 +6337,20 @@ static void FVMenuRemoveUnused(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 #endif
 }
 
+static void FVMenuCompact(GWindow gw,struct gmenuitem *mi, GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    EncMap *map = fv->map;
+    int oldcount = map->enccount;
+
+    CompactEncMap(map,fv->sf);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    /* We reduced the encoding, so don't really need to reallocate the selection */
+    /*  array. It's just bigger than it needs to be. */
+    if ( oldcount!=map->enccount )
+	FontViewReformatOne(fv);
+#endif
+}
+
 static void FVMenuDetachGlyphs(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int i, j, gid;
@@ -6443,6 +6458,7 @@ static void FVMenuRemoveEncoding(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 
 static GMenuItem enlist[] = {
     { { (unichar_t *) _STR_Reencode, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'E' }, '\0', ksm_shift|ksm_control, emptymenu, FVEncodingMenuBuild, NULL, MID_Reencode },
+    { { (unichar_t *) _STR_Compact, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuCompact, MID_Compact },
     { { (unichar_t *) _STR_ForceEncoding, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, emptymenu, FVForceEncodingMenuBuild, NULL, MID_ForceReencode },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_AddEncodingSlots, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuAddUnencoded, MID_AddUnencoded },
