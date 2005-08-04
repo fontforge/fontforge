@@ -5438,9 +5438,14 @@ static void FVMenuReencode(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void FVMenuForceEncode(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     Encoding *enc = NULL;
+    int oldcnt = fv->map->enccount;
 
     enc = FindOrMakeEncoding(mi->ti.userdata);
     SFForceEncoding(fv->sf,fv->map,enc);
+    if ( oldcnt < fv->map->enccount ) {
+	fv->selected = grealloc(fv->selected,fv->map->enccount);
+	memset(fv->selected+oldcnt,0,fv->map->enccount-oldcnt);
+    }
     FVSetTitle(fv);
     FontViewReformatOne(fv);
 }
