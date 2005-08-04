@@ -2442,6 +2442,28 @@ return( NULL );
 return( map );
 }
 
+EncMap *CompactEncMap(EncMap *map, SplineFont *sf) {
+    int i, inuse, gid;
+    int *newmap;
+
+    for ( i=inuse=0; i<map->enccount ; ++i )
+	if ( (gid = map->map[i])!=-1 && SCWorthOutputting(sf->glyphs[gid]))
+	    ++inuse;
+    newmap = galloc(inuse*sizeof(int));
+    for ( i=inuse=0; i<map->enccount ; ++i )
+	if ( (gid = map->map[i])!=-1 && SCWorthOutputting(sf->glyphs[gid]))
+	    newmap[inuse++] = gid;
+    free(map->map);
+    map->map = newmap;
+    map->enccount = inuse;
+    map->enc = &custom;
+    memset(map->backmap,-1,sf->glyphcnt*sizeof(int));
+    for ( i=inuse-1; i>=0; --i )
+	if ( (gid=map->map[i])!=-1 )
+	    map->backmap[gid] = i;
+return( map );
+}
+
 void SFRemoveGlyph(SplineFont *sf,SplineChar *sc, int *flags) {
     struct splinecharlist *dep, *dnext;
     BDFFont *bdf;
