@@ -966,6 +966,7 @@ static void g___ContextSubTable1(FILE *ttf, int stoffset,
 	for ( j=0; j<rules[i].scnt; ++j ) {
 	    fseek(ttf,rules[i].subrules[j].offset,SEEK_SET);
 	    rules[i].subrules[j].gcnt = getushort(ttf);
+	    rules[i].subrules[j].scnt = getushort(ttf);
 	    rules[i].subrules[j].glyphs = galloc((rules[i].subrules[j].gcnt+1)*sizeof(uint16));
 	    rules[i].subrules[j].glyphs[0] = glyphs[i];
 	    for ( k=1; k<rules[i].subrules[j].gcnt; ++k ) {
@@ -979,7 +980,6 @@ static void g___ContextSubTable1(FILE *ttf, int stoffset,
 		 }
 	    }
 	    rules[i].subrules[j].glyphs[k] = 0xffff;
-	    rules[i].subrules[j].scnt = getushort(ttf);
 	    rules[i].subrules[j].sl = galloc(rules[i].subrules[j].scnt*sizeof(struct seqlookup));
 	    for ( k=0; k<rules[i].subrules[j].scnt; ++k ) {
 		rules[i].subrules[j].sl[k].seq = getushort(ttf);
