@@ -1843,8 +1843,10 @@ return;
 	} else if ( mycmp("StrokeWidth",line+1,endtok)==0 )
 	    fp->fd->strokewidth = strtod(endtok,NULL);
 	else if ( mycmp("WeightVector",line+1,endtok)==0 ) {
-	    fp->pending_parse = &fp->fd->weightvector;
-	    AddValue(fp,NULL,line,endtok);
+	    if ( fp->fd->weightvector==NULL ) {
+		fp->pending_parse = &fp->fd->weightvector;
+		AddValue(fp,NULL,line,endtok);
+	    }
 	} else if ( mycmp("$Blend",line+1,endtok)==0 ) {
 	    fp->pending_parse = &fp->fd->blendfunc;
 	    AddValue(fp,NULL,line,endtok);
