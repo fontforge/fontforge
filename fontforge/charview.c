@@ -3890,8 +3890,11 @@ return( GGadgetDispatchEvent(cv->vsb,event));
 	    SVMakeActive(cv->searcher,cv);
       break;
       case et_mousemove:
-	if ( event->u.mouse.y>cv->mbh )
-	    SCPreparePopup(cv->gw,cv->sc,cv->fv->map->remap,CVCurEnc(cv));
+	if ( event->u.mouse.y>cv->mbh ) {
+	    int enc = CVCurEnc(cv);
+	    SCPreparePopup(cv->gw,cv->sc,cv->fv->map->remap,enc,
+		    UniFromEnc(enc,cv->fv->map->enc));
+	}
       break;
       case et_drop:
 	CVDrop(cv,event);
@@ -8024,8 +8027,11 @@ static int sv_cv_e_h(GWindow gw, GEvent *event) {
 	CVPaletteActivate(cv);
       break;
       case et_mousemove:
-	if ( event->u.mouse.y>cv->mbh )
-	    SCPreparePopup(cv->gw,cv->sc,cv->fv->map->remap,CVCurEnc(cv));
+	if ( event->u.mouse.y>cv->mbh ) {
+	    int enc = CVCurEnc(cv);
+	    SCPreparePopup(cv->gw,cv->sc,cv->fv->map->remap,enc,
+		    UniFromEnc(enc,cv->fv->map->enc));
+	}
       break;
     }
 return( true );

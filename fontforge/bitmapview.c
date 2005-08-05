@@ -1083,6 +1083,7 @@ return( true );
 
 static int bv_e_h(GWindow gw, GEvent *event) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
+    int enc;
 
     if (( event->type==et_mouseup || event->type==et_mousedown ) &&
 	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
@@ -1133,7 +1134,9 @@ return( GGadgetDispatchEvent(bv->vsb,event));
 	BVPaletteActivate(bv);
       break;
       case et_mousemove:
-	SCPreparePopup(bv->gw,bv->bc->sc,bv->fv->map->remap,BVCurEnc(bv));
+        enc = BVCurEnc(bv);
+	SCPreparePopup(bv->gw,bv->bc->sc,bv->fv->map->remap,enc,
+		UniFromEnc(enc,bv->fv->map->enc));
       break;
       case et_focus:
 #if 0

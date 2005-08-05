@@ -8721,10 +8721,11 @@ return;
     else
 	sprintf( buffer, "%-5d (0x%04x) ", fv->end_pos, fv->end_pos );
     sc = (gid=fv->map->map[fv->end_pos])!=-1 ? sf->glyphs[gid] : NULL;
-    if ( sc==NULL )
-	sc = SCBuildDummy(&dummy,sf,fv->map,fv->end_pos);
-    if ( sc->unicodeenc!=-1 )
-	sprintf( buffer+strlen(buffer), "U+%04X", sc->unicodeenc );
+    SCBuildDummy(&dummy,sf,fv->map,fv->end_pos);
+    if ( sc==NULL ) sc = &dummy;
+    uni = dummy.unicodeenc!=-1 ? dummy.unicodeenc : sc->unicodeenc;
+    if ( uni!=-1 )
+	sprintf( buffer+strlen(buffer), "U+%04X", uni );
     else
 	sprintf( buffer+strlen(buffer), "U+????" );
     sprintf( buffer+strlen(buffer), "  %.*s", (int) (sizeof(buffer)-strlen(buffer)-1),
@@ -8734,7 +8735,6 @@ return;
     uc_strcpy(ubuffer,buffer);
     ulen = u_strlen(ubuffer);
 
-    uni = sc->unicodeenc;
     if ( uni==-1 && (pt=strchr(sc->name,'.'))!=NULL && pt-sc->name<30 ) {
 	strncpy(buffer,sc->name,pt-sc->name);
 	buffer[(pt-sc->name)] = '\0';
@@ -8986,12 +8986,15 @@ static void uc_annot_strncat(unichar_t *to, const char *from, int len) {
     *to = 0;
 }
 
-void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc) {
+void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
+	int actualuni) {
     static unichar_t space[810];
     char cspace[162];
     int upos=-1;
     int done = false;
 
+    /* If a glyph is multiply mapped then the inbuild unicode enc may not be */
+    /*  the actual one used to access the glyph */
     if ( remap!=NULL ) {
 	while ( remap->infont!=-1 ) {
 	    if ( localenc>=remap->infont && localenc<=remap->infont+(remap->lastenc-remap->firstenc) ) {
@@ -9002,7 +9005,9 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc)
 	}
     }
 
-    if ( sc->unicodeenc!=-1 )
+    if ( actualuni!=-1 )
+	upos = actualuni;
+    else if ( sc->unicodeenc!=-1 )
 	upos = sc->unicodeenc;
 #if HANYANG
     else if ( sc->compositionunit ) {
@@ -9144,7 +9149,7 @@ return;
 	}
     } else if ( event->type == et_mousemove ) {
 	if ( dopopup )
-	    SCPreparePopup(fv->v,sc,fv->map->remap,pos);
+	    SCPreparePopup(fv->v,sc,fv->map->remap,pos,sc==&dummy?dummy.unicodeenc: UniFromEnc(pos,fv->map->enc));
     }
     if ( event->type == et_mousedown ) {
 	if ( fv->drag_and_drop ) {
@@ -9217,7 +9222,7 @@ return;
 	}
     }
     if ( event->type==et_mouseup && dopopup )
-	SCPreparePopup(fv->v,sc,fv->map->remap,pos);
+	SCPreparePopup(fv->v,sc,fv->map->remap,pos,sc==&dummy?dummy.unicodeenc: UniFromEnc(pos,fv->map->enc));
     if ( event->type==et_mouseup )
 	SVAttachFV(fv,2);
 }

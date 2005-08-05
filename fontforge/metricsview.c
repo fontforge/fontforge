@@ -3295,7 +3295,7 @@ static void _MVVMouse(MetricsView *mv,GEvent *event) {
 	if ( sc==NULL && within!=-1 )
 	    sc = mv->perchar[within].sc;
 	if ( sc!=NULL ) 
-	    SCPreparePopup(mv->gw,sc,mv->fv->map->remap,mv->fv->map->backmap[sc->orig_pos]);
+	    SCPreparePopup(mv->gw,sc,mv->fv->map->remap,mv->fv->map->backmap[sc->orig_pos],sc->unicodeenc);
 /* Don't allow any editing when displaying a bitmap font */
     } else if ( event->type == et_mousedown && mv->bdf==NULL ) {
 	CVPaletteDeactivate();
@@ -3464,7 +3464,7 @@ static void MVMouse(MetricsView *mv,GEvent *event) {
 	    break;
 	    }
 	    if ( i<mv->charcnt )
-		SCPreparePopup(mv->gw,mv->perchar[i].sc,mv->fv->map->remap,mv->fv->map->backmap[mv->perchar[i].sc->orig_pos]);
+		SCPreparePopup(mv->gw,mv->perchar[i].sc,mv->fv->map->remap,mv->fv->map->backmap[mv->perchar[i].sc->orig_pos],sc->unicodeenc);
 	}
 	if ( mv->cursor!=ct_mypointer ) {
 	    GDrawSetCursor(mv->gw,ct_mypointer);
@@ -3587,7 +3587,7 @@ return;
 	if ( sc==NULL && within!=-1 )
 	    sc = mv->perchar[within].sc;
 	if ( sc!=NULL ) 
-	    SCPreparePopup(mv->gw,sc,mv->fv->map->remap,mv->fv->map->backmap[sc->orig_pos]);
+	    SCPreparePopup(mv->gw,sc,mv->fv->map->remap,mv->fv->map->backmap[sc->orig_pos],sc->unicodeenc);
 /* Don't allow any editing when displaying a bitmap font */
     } else if ( event->type == et_mousedown && mv->bdf==NULL ) {
 	CVPaletteDeactivate();
