@@ -671,14 +671,14 @@ static void _MergeFont(SplineFont *into,SplineFont *other) {
 		    memset(into->glyphs+emptypos,0,cnt*sizeof(SplineChar *));
 		    for ( bdf = bitmap_into->bitmaps; bdf!=NULL; bdf=bdf->next )
 			if ( emptypos+cnt > bdf->glyphcnt ) {
-			    bdf->glyphs = grealloc(bdf->glyphs,(emptypos+cnt)*sizeof(SplineChar *));
+			    bdf->glyphs = grealloc(bdf->glyphs,(emptypos+cnt)*sizeof(BDFChar *));
 			    memset(bdf->glyphs+emptypos,0,cnt*sizeof(BDFChar *));
 			    bdf->glyphmax = bdf->glyphcnt = emptypos+cnt;
 			}
 		    for ( fvs = into->fv; fvs!=NULL; fvs=fvs->nextsame )
 			if ( fvs->filled!=NULL ) {
-			    fvs->filled->glyphs = grealloc(fvs->filled->glyphs,(emptypos+cnt)*sizeof(SplineChar *));
-			    memset(fvs->filled+emptypos,0,cnt*sizeof(BDFChar *));
+			    fvs->filled->glyphs = grealloc(fvs->filled->glyphs,(emptypos+cnt)*sizeof(BDFChar *));
+			    memset(fvs->filled->glyphs+emptypos,0,cnt*sizeof(BDFChar *));
 			    fvs->filled->glyphmax = fvs->filled->glyphcnt = emptypos+cnt;
 			}
 		    for ( fvs = into->fv; fvs!=NULL; fvs=fvs->nextsame )
