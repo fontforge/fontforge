@@ -1098,7 +1098,7 @@ static int TrySubrRefs(GrowBuf *gb, struct pschars *subrs, SplineChar *scs[MmMax
     RefChar *refs[MmMax];
     BasePoint current[MmMax], *bp;
     DBounds sb, rb;
-    int j;
+    int j, first;
 
     for ( j=0; j<instance_count; ++j ) {
 	SplineCharFindBounds(scs[j],&sb);
@@ -1155,6 +1155,7 @@ return( false );
 	}
 	/* this char starts where the first reference starts */
     }
+    first = true;
     while ( refs[0]!=NULL ) {
 	if ( refs[0]->sc->hconflicts || refs[0]->sc->vconflicts || refs[0]->sc->anyflexes || AnyRefs(refs[0]->sc) )
 	    /* Hints already done */;
@@ -1169,16 +1170,20 @@ return( false );
 	if ( gb->pt+20>=gb->end )
 	    GrowBuffer(gb);
 	bp = (BasePoint *) (subrs->keys[refs[0]->sc->ttf_glyph]);
-	if ( startend==NULL )
+	if ( !first || startend==NULL )
 	    refmoveto(gb,current,bp,instance_count,false,round,NULL,refs);
 	else
-	    startend = NULL;		/* No moveto for first ref in a subr */
+	    first = false;		/* No moveto for first ref in a subr */
 	AddNumber(gb,refs[0]->sc->ttf_glyph,round);
 	*gb->pt++ = 10;				/* callsubr */
 	for ( j=0; j<instance_count; ++j ) {
 	    current[j].x = refs[j]->transform[4] + bp[2*j+1].x; current[j].y = refs[j]->transform[5]+bp[2*j+1].y;
 	    refs[j] = refs[j]->next;
 	}
+    }
+    if ( startend!=NULL ) {
+	for ( j=0; j<instance_count; ++j )
+	    startend[2*j+1] = current[j];
     }
 
 return( true );
@@ -1451,6 +1456,9 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
 	CvtPsSplineSet(&gb,scs,instance_count,current,round,hdb,startend,sc->parent->order2,sc->parent->strokedfont);
 	CvtPsRSplineSet(&gb,scs,instance_count,current,round,hdb,
 		scs[0]->layers[ly_fore].splines==NULL?startend:NULL,sc->parent->order2,sc->parent->strokedfont);
+	if ( startend!=NULL )
+	    for ( i=0; i<instance_count; ++i )
+		startend[2*i+1] = current[i];
     }
     if ( gb.pt+1>=gb.end )
 	GrowBuffer(&gb);
@@ -1465,9 +1473,6 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
 	}
     }
     free(gb.base);
-    if ( startend!=NULL )
-	for ( i=0; i<instance_count; ++i )
-	    startend[2*i+1] = current[i];
     if ( flags&ps_flag_nohints ) {
 	for ( i=0; i<instance_count; ++i ) {
 	    scs[i]->hstem = oldh[i]; scs[i]->vstem = oldv[i] = scs[i]->vstem;
