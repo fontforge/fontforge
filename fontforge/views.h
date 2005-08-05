@@ -901,7 +901,7 @@ extern void FVShowFilled(FontView *fv);
 extern void FVChangeDisplayBitmap(FontView *fv,BDFFont *bdf);
 extern void FVDelay(FontView *fv,void (*func)(FontView *));
 #ifdef FONTFORGE_CONFIG_GDRAW
-extern void SCPreparePopup(GWindow gw,SplineChar *sc, struct remap *remap, int enc);
+extern void SCPreparePopup(GWindow gw,SplineChar *sc, struct remap *remap, int enc, int actualuni);
 #endif
 #if defined(FONTFORGE_CONFIG_GTK)
 #elif defined(FONTFORGE_CONFIG_GDRAW)
