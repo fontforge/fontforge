@@ -351,6 +351,10 @@ int SFFindSlot(SplineFont *sf, EncMap *map, int unienc, const char *name ) {
 		    sf->glyphs[pos]->unicodeenc==unienc )
 	break;
 	}
+    } else if ( unienc!=-1 &&
+	    ((unienc<0x10000 && map->enc->is_unicodebmp) ||
+	     (unienc<0x110000 && map->enc->is_unicodefull))) {
+	 index = unienc;
     } else if ( unienc!=-1 ) {
 	index = EncFromUni(unienc,map->enc);
 	if ( index<0 || index>=map->enccount ) {
@@ -489,11 +493,17 @@ return( sc );
 
 static int _SFFindExistingSlot(SplineFont *sf, int unienc, const char *name ) {
     int gid = -1;
+    struct altuni *altuni;
 
     if ( unienc!=-1 ) {
-	for ( gid=sf->glyphcnt-1; gid>=0; --gid )
-	    if ( sf->glyphs[gid]!=NULL && sf->glyphs[gid]->unicodeenc==unienc )
+	for ( gid=sf->glyphcnt-1; gid>=0; --gid ) if ( sf->glyphs[gid]!=NULL ) {
+	    if ( sf->glyphs[gid]->unicodeenc==unienc )
 	break;
+	    for ( altuni=sf->glyphs[gid]->altuni ; altuni!=NULL && altuni->unienc!=unienc ;
+		    altuni=altuni->next );
+	    if ( altuni!=NULL )
+	break;
+	}
     }
     if ( gid==-1 && name!=NULL ) {
 	SplineChar *sc = SFHashName(sf,name);
