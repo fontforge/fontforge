@@ -1904,6 +1904,7 @@ static void _SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext 
     /*  formality, it acutally contains a skew. So be ready */
     if ( fd->fontmatrix[0]!=0 )
 	TransByFontMatrix(sf,fd->fontmatrix);
+    AltUniFigure(sf,sf->map);
 }
 
 static void SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext *pscontext) {
@@ -4323,6 +4324,16 @@ void TTFLangNamesFree(struct ttflangname *l) {
     }
 }
 
+void AltUniFree(struct altuni *altuni) {
+    struct altuni *next;
+
+    while ( altuni ) {
+	next = altuni->next;
+	chunkfree(altuni,sizeof(struct altuni));
+	altuni = next;
+    }
+}
+
 void LayerDefault(Layer *layer) {
     memset(layer,0,sizeof(Layer));
 #ifdef FONTFORGE_CONFIG_TYPE3
@@ -4391,6 +4402,7 @@ return;
 #ifdef FONTFORGE_CONFIG_TYPE3
     free(sc->layers);
 #endif
+    AltUniFree(sc->altuni);
 }
 
 void SplineCharFree(SplineChar *sc) {

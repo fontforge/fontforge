@@ -908,6 +908,7 @@ typedef struct splinechar {
     HintMask *countermasks;
     int16 tex_height, tex_depth;
     int16 tex_sub_pos, tex_super_pos;	/* Only for math fonts */
+    struct altuni { struct altuni *next; int unienc; } *altuni;
 } SplineChar;
 
 #define TEX_UNDEF 0x7fff
@@ -1310,6 +1311,10 @@ extern void BitmapsCopy(SplineFont *to, SplineFont *from, int to_index, int from
 extern struct gimage *ImageAlterClut(struct gimage *image);
 extern void ImageListsFree(ImageList *imgs);
 extern void TTFLangNamesFree(struct ttflangname *l);
+extern void AltUniFree(struct altuni *altuni);
+extern void AltUniFigure(SplineFont *sf,EncMap *map);
+extern void AltUniRemove(SplineChar *sc,int uni);
+extern void AltUniAdd(SplineChar *sc,int uni);
 extern void MinimumDistancesFree(MinimumDistance *md);
 extern void LayerDefault(Layer *);
 extern SplineChar *SplineCharCreate(void);
