@@ -2369,9 +2369,11 @@ return( true );
 }
 
 EncMap *EncMapFromEncoding(SplineFont *sf,Encoding *enc) {
-    int i,j, extras;
+    int i,j, extras, found;
     int *encoded, *unencoded;
     EncMap *map;
+    struct altuni *altuni;
+    SplineChar *sc;
 
     if ( enc==NULL )
 return( NULL );
@@ -2380,21 +2382,33 @@ return( NULL );
     memset(encoded,-1,enc->char_cnt*sizeof(int));
     unencoded = galloc(sf->glyphcnt*sizeof(int));
 
-    for ( i=extras=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
-	j = -1;
+    for ( i=extras=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
+	found = false;
 	if ( enc->psnames!=NULL ) {
 	    for ( j=enc->char_cnt-1; j>=0; --j ) {
-		if ( enc->psnames[j]!=NULL && strcmp(enc->psnames[j],sf->glyphs[i]->name)==0 )
-	    break;
+		if ( enc->psnames[j]!=NULL &&
+			strcmp(enc->psnames[j],sc->name)==0 ) {
+		    found = true;
+		    encoded[j] = i;
+		}
 	    }
 	}
-	if ( j!=-1 ||
-		(sf->glyphs[i]->unicodeenc!=-1 &&
-		 sf->glyphs[i]->unicodeenc<unicode4_size &&
-		 (j = EncFromUni(sf->glyphs[i]->unicodeenc,enc))!= -1 ))
-	    encoded[j] = i;
-	else
-	    unencoded[extras++] = i;
+	if ( !found ) {
+	    if ( sc->unicodeenc!=-1 &&
+		     sc->unicodeenc<unicode4_size &&
+		     (j = EncFromUni(sc->unicodeenc,enc))!= -1 )
+		encoded[j] = i;
+	    else
+		unencoded[extras++] = i;
+	    for ( altuni=sc->altuni; altuni!=NULL; altuni=altuni->next ) {
+		if ( altuni->unienc!=-1 &&
+			 altuni->unienc<unicode4_size &&
+			 (j = EncFromUni(altuni->unienc,enc))!= -1 )
+		    encoded[j] = i;
+		else
+		    unencoded[extras++] = i;
+	    }
+	}
     }
 
     /* Some glyphs have both a pua encoding and an encoding in a non-bmp */

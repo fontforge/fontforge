@@ -1746,6 +1746,34 @@ void FontViewMenu_PasteAfter(GtkMenuItem *menuitem, gpointer user_data) {
 #endif
 #endif
 
+void AltUniRemove(SplineChar *sc,int uni) {
+    struct altuni *altuni, *prev;
+
+    if ( sc==NULL || uni==-1 || sc->unicodeenc==uni )
+return;
+    for ( prev=NULL, altuni=sc->altuni; altuni!=NULL && altuni->unienc!=uni;
+	    prev = altuni, altuni = altuni->next );
+    if ( altuni ) {
+	prev->next = altuni->next;
+	altuni->next = NULL;
+	AltUniFree(altuni);
+    }
+}
+
+void AltUniAdd(SplineChar *sc,int uni) {
+    struct altuni *altuni;
+
+    if ( sc!=NULL && uni!=-1 && uni!=sc->unicodeenc ) {
+	for ( altuni = sc->altuni; altuni!=NULL && altuni->unienc!=uni; altuni=altuni->next );
+	if ( altuni==NULL ) {
+	    altuni = chunkalloc(sizeof(struct altuni));
+	    altuni->next = sc->altuni;
+	    sc->altuni = altuni;
+	    altuni->unienc = uni;
+	}
+    }
+}
+
 static void LinkEncToGid(FontView *fv,int enc, int gid) {
     EncMap *map = fv->map;
     int old_gid;
@@ -1771,6 +1799,12 @@ static void LinkEncToGid(FontView *fv,int enc, int gid) {
 	}
     }
     map->map[enc] = gid;
+    if ( map->backmap[gid]==-1 )
+	map->backmap[gid] = enc;
+    if ( map->enc!=&custom ) {
+	int uni = UniFromEnc(enc,map->enc);
+	AltUniAdd(fv->sf->glyphs[gid],uni);
+    }    
 }
 
 static void FVSameGlyphAs(FontView *fv) {
@@ -6359,6 +6393,7 @@ static void FVMenuDetachGlyphs(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     FontView *fvs;
 #endif
+    SplineFont *sf = fv->sf;
 
     for ( i=0; i<map->enccount; ++i ) if ( fv->selected[i] && (gid=map->map[i])!=-1 ) {
 	altered = true;
@@ -6367,6 +6402,8 @@ static void FVMenuDetachGlyphs(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	    for ( j=map->enccount-1; j>=0 && map->map[j]!=gid; --j );
 	    map->backmap[gid] = j;
 	}
+	if ( sf->glyphs[gid]!=NULL && sf->glyphs[gid]->altuni != NULL && map->enc!=&custom )
+	    AltUniRemove(sf->glyphs[gid],UniFromEnc(i,map->enc));
     }
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( altered )
@@ -6409,7 +6446,8 @@ return;
 	    if ( j==-1 ) {
 		SFRemoveGlyph(sf,sf->glyphs[gid],&flags);
 		changed = true;
-	    }
+	    } else if ( sf->glyphs[gid]!=NULL && sf->glyphs[gid]->altuni != NULL && map->enc!=&custom )
+		AltUniRemove(sf->glyphs[gid],UniFromEnc(i,map->enc));
 	}
     }
     if ( changed && !fv->sf->changed ) {

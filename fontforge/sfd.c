@@ -753,6 +753,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
     KernPair *kp;
     PST *liga;
     int i;
+    struct altuni *altuni;
 
     fprintf(sfd, "StartChar: %s\n", sc->name );
     if ( map->backmap[sc->orig_pos]>=map->enccount ) {
@@ -761,6 +762,12 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
     }
     fprintf(sfd, "Encoding: %d %d %d\n", map->backmap[sc->orig_pos], sc->unicodeenc,
 	    newgids!=NULL?newgids[sc->orig_pos]:sc->orig_pos);
+    if ( sc->altuni ) {
+	fprintf( sfd, "AltUni:" );
+	for ( altuni = sc->altuni; altuni!=NULL; altuni=altuni->next )
+	    fprintf( sfd, " %d", altuni->unienc );
+	putc( '\n', sfd);
+    }
     fprintf(sfd, "Width: %d\n", sc->width );
     if ( sc->vwidth!=sc->parent->ascent+sc->parent->descent )
 	fprintf(sfd, "VWidth: %d\n", sc->vwidth );
@@ -2613,6 +2620,7 @@ static SplineChar *SFDGetChar(FILE *sfd,SplineFont *sf) {
     int current_layer = ly_fore;
     int multilayer = sf->multilayer;
     SplineFont *sli_sf = sf->cidmaster ? sf->cidmaster : sf;
+    struct altuni *altuni;
 
     if ( getname(sfd,tok)!=1 )
 return( NULL );
@@ -2657,6 +2665,14 @@ return( NULL );
 		sc->orig_pos = orig_pos++;
 	    }
 	    SFDSetEncMap(sf,sc->orig_pos,enc);
+	} else if ( strmatch(tok,"AltUni:")==0 ) {
+	    int uni;
+	    while ( getint(sfd,&uni)==1 ) {
+		altuni = chunkalloc(sizeof(struct altuni));
+		altuni->unienc = uni;
+		altuni->next = sc->altuni;
+		sc->altuni = altuni;
+	    }
 	} else if ( strmatch(tok,"OldEncoding:")==0 ) {
 	    int old_enc;		/* Obsolete info */
 	    getint(sfd,&old_enc);
@@ -3835,6 +3851,7 @@ return( interp );
 
 static void SFDCleanupFont(SplineFont *sf) {
     SFDCleanupAnchorClasses(sf);
+    AltUniFigure(sf,sf->map);
     if ( sf->uni_interp==ui_unset )
 	sf->uni_interp = interp_from_encoding(sf->map->enc,ui_none);
 
