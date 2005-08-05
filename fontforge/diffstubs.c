@@ -1020,3 +1020,6 @@ void AnchorPointsFree(AnchorPoint *ap) {
 void SFSplinesFromLayers(SplineFont *sf,int flag) {
 }
 #endif
+
+void AltUniFigure(SplineFont *sf,EncMap *map) {
+}
