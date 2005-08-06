@@ -555,8 +555,8 @@ enum uni_interp { ui_unset= -1, ui_none, ui_adobe, ui_greek, ui_japanese,
 struct remap { uint32 firstenc, lastenc; int32 infont; };
 
 typedef struct encmap {		/* A per-font map of encoding to glyph id */
-    int *map;			/* Map from encoding to glyphid */
-    int *backmap;		/* Map from glyphid to encoding */
+    int32 *map;			/* Map from encoding to glyphid */
+    int32 *backmap;		/* Map from glyphid to encoding */
     int enccount;		/* used size of the map array */
     				/*  strictly speaking this might include */
 			        /*  glyphs that are not encoded, but which */

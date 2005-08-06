@@ -4127,6 +4127,8 @@ static FILE *NeedsUCS4Table(SplineFont *sf,int *ucs4len,EncMap *map) {
     int i=0,j,group;
     FILE *format12;
     SplineChar *sc;
+    EncMap *freeme = NULL;
+    struct altuni *altuni;
 
     if ( map->enc->is_unicodefull )
 	i=0x10000;
@@ -4134,13 +4136,22 @@ static FILE *NeedsUCS4Table(SplineFont *sf,int *ucs4len,EncMap *map) {
 	i = 0;
     else
 	i = map->enc->char_cnt;
-    for ( ; i<map->enccount; ++i )
-	if ( map->map[i]!=-1 && SCWorthOutputting(sf->glyphs[map->map[i]]) &&
-		sf->glyphs[map->map[i]]->unicodeenc>=0x10000 )
+    for ( ; i<map->enccount; ++i ) {
+	if ( map->map[i]!=-1 && SCWorthOutputting(sf->glyphs[map->map[i]]) ) {
+	    if ( sf->glyphs[map->map[i]]->unicodeenc>=0x10000 )
     break;
+	    for ( altuni=sf->glyphs[map->map[i]]->altuni; altuni!=NULL && altuni->unienc<0x10000;
+		    altuni=altuni->next );
+	    if ( altuni!=NULL )
+    break;
+	}
+    }
 
     if ( i>=map->enccount )
 return(NULL);
+
+    if ( !map->enc->is_unicodefull )
+	map = freeme = EncMapFromEncoding(sf,FindOrMakeEncoding("ucs4"));
 
     format12 = tmpfile();
     if ( format12==NULL )
@@ -4172,6 +4183,9 @@ return( NULL );
     putlong(format12,0);		/* language */
     putlong(format12,group);		/* Number of groups */
     rewind( format12 );
+
+    if ( freeme!=NULL )
+	EncMapFree(freeme);
 return( format12 );
 }
 
@@ -4186,11 +4200,26 @@ static FILE *NeedsUCS2Table(SplineFont *sf,int *ucs2len,EncMap *map) {
     FILE *format4 = tmpfile();
 
     memset(avail,0xff,65536*sizeof(uint32));
-    for ( i=0; i<sf->glyphcnt; ++i ) {
-	if ( (sc=sf->glyphs[i])!=NULL && sc->ttf_glyph!=-1 &&
-		sc->unicodeenc>=0 && sc->unicodeenc<=0xffff ) {
-	    avail[sc->unicodeenc] = i;
+    if ( map->enc->is_unicodebmp || map->enc->is_unicodefull ) { int gid;
+	for ( i=0; i<65536 && i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL ) {
+	    avail[i] = gid;
 	    ++cnt;
+	}
+    } else {
+	struct altuni *altuni;
+	for ( i=0; i<sf->glyphcnt; ++i ) {
+	    if ( (sc=sf->glyphs[i])!=NULL && sc->ttf_glyph!=-1 ) {
+		if ( sc->unicodeenc>=0 && sc->unicodeenc<=0xffff ) {
+		    avail[sc->unicodeenc] = i;
+		    ++cnt;
+		}
+		for ( altuni=sc->altuni; altuni!=NULL; altuni = altuni->next ) {
+		    if ( altuni->unienc>=0 && altuni->unienc<=0xffff ) {
+			avail[altuni->unienc] = i;
+			++cnt;
+		    }
+		}
+	    }
 	}
     }
 

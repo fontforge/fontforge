@@ -432,11 +432,11 @@ static PST *HasLigature(SplineChar *sc) {
 return( best );
 }
 
-static void svg_scdump(FILE *file, SplineChar *sc,int defwid) {
+static void svg_scdump(FILE *file, SplineChar *sc,int defwid, int encuni) {
     PST *best=NULL;
     const unichar_t *alt;
     int32 univals[50];
-    int i, c, uni;
+    int i, c;
 
     best = HasLigature(sc);
     if ( sc->comment!=NULL ) {
@@ -454,33 +454,33 @@ static void svg_scdump(FILE *file, SplineChar *sc,int defwid) {
 	    else
 		fprintf(file,"&#x%x;",univals[i]);
 	fputs("\" ",file);
-    } else if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x110000 ) {
-	if ( sc->unicodeenc!=0x9 &&
-		sc->unicodeenc!=0xa &&
-		sc->unicodeenc!=0xd &&
-		!(sc->unicodeenc>=0x20 && sc->unicodeenc<=0xd7ff) &&
-		!(sc->unicodeenc>=0xe000 && sc->unicodeenc<=0xfffd) &&
-		!(sc->unicodeenc>=0x10000 && sc->unicodeenc<=0x10ffff) )
+    } else if ( encuni!=-1 && encuni<0x110000 ) {
+	if ( encuni!=0x9 &&
+		encuni!=0xa &&
+		encuni!=0xd &&
+		!(encuni>=0x20 && encuni<=0xd7ff) &&
+		!(encuni>=0xe000 && encuni<=0xfffd) &&
+		!(encuni>=0x10000 && encuni<=0x10ffff) )
 	    /* Not allowed in XML */;
-	else if ( (sc->unicodeenc>=0x7f && sc->unicodeenc<=0x84) ||
-		  (sc->unicodeenc>=0x86 && sc->unicodeenc<=0x9f) ||
-		  (sc->unicodeenc>=0xfdd0 && sc->unicodeenc<=0xfddf) ||
-		  (sc->unicodeenc&0xffff)==0xfffe ||
-		  (sc->unicodeenc&0xffff)==0xffff )
+	else if ( (encuni>=0x7f && encuni<=0x84) ||
+		  (encuni>=0x86 && encuni<=0x9f) ||
+		  (encuni>=0xfdd0 && encuni<=0xfddf) ||
+		  (encuni&0xffff)==0xfffe ||
+		  (encuni&0xffff)==0xffff )
 	    /* Not recommended in XML */;
-	else if ( sc->unicodeenc>=32 && sc->unicodeenc<127 &&
-		sc->unicodeenc!='"' && sc->unicodeenc!='&' &&
-		sc->unicodeenc!='<' && sc->unicodeenc!='>' )
-	    fprintf( file, "unicode=\"%c\" ", sc->unicodeenc);
-	else if ( sc->unicodeenc<0x10000 &&
-		( isarabisolated(sc->unicodeenc) || isarabinitial(sc->unicodeenc) || isarabmedial(sc->unicodeenc) || isarabfinal(sc->unicodeenc) ) &&
-		unicode_alternates[sc->unicodeenc>>8]!=NULL &&
-		(alt = unicode_alternates[sc->unicodeenc>>8][uni&0xff])!=NULL &&
+	else if ( encuni>=32 && encuni<127 &&
+		encuni!='"' && encuni!='&' &&
+		encuni!='<' && encuni!='>' )
+	    fprintf( file, "unicode=\"%c\" ", encuni);
+	else if ( encuni<0x10000 &&
+		( isarabisolated(encuni) || isarabinitial(encuni) || isarabmedial(encuni) || isarabfinal(encuni) ) &&
+		unicode_alternates[encuni>>8]!=NULL &&
+		(alt = unicode_alternates[encuni>>8][encuni&0xff])!=NULL &&
 		alt[1]=='\0' )
 	    /* For arabic forms use the base representation in the 0600 block */
 	    fprintf( file, "unicode=\"&#x%x;\" ", alt[0]);
 	else
-	    fprintf( file, "unicode=\"&#x%x;\" ", sc->unicodeenc);
+	    fprintf( file, "unicode=\"&#x%x;\" ", encuni);
     }
     if ( sc->width!=defwid )
 	fprintf( file, "horiz-adv-x=\"%d\" ", sc->width );
@@ -488,14 +488,14 @@ static void svg_scdump(FILE *file, SplineChar *sc,int defwid) {
 	fprintf( file, "vert-adv-y=\"%d\" ", sc->vwidth );
     if ( strstr(sc->name,".vert")!=NULL || strstr(sc->name,".vrt2")!=NULL )
 	fprintf( file, "orientation=\"v\" " );
-    if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 ) {
-	if ( isarabinitial(sc->unicodeenc))
+    if ( encuni!=-1 && encuni<0x10000 ) {
+	if ( isarabinitial(encuni))
 	    fprintf( file,"arabic-form=initial " );
-	else if ( isarabmedial(sc->unicodeenc))
+	else if ( isarabmedial(encuni))
 	    fprintf( file,"arabic-form=medial ");
-	else if ( isarabfinal(sc->unicodeenc))
+	else if ( isarabfinal(encuni))
 	    fprintf( file,"arabic-form=final ");
-	else if ( isarabisolated(sc->unicodeenc))
+	else if ( isarabisolated(encuni))
 	    fprintf( file,"arabic-form=isolated ");
     }
     putc('\n',file);
@@ -581,9 +581,38 @@ static void svg_outfonttrailer(FILE *file,SplineFont *sf) {
     fprintf(file,"</defs></svg>\n" );
 }
 
+static int AnyArabicForm( SplineChar *sc ) {
+    struct altuni *altuni;
+
+    if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 &&
+		(isarabinitial(sc->unicodeenc) ||
+		 isarabmedial(sc->unicodeenc) ||
+		 isarabfinal(sc->unicodeenc) ||
+		 isarabisolated(sc->unicodeenc)))
+return( sc->unicodeenc );
+    for ( altuni = sc->altuni; altuni!=NULL; altuni = altuni->next )
+	if ( altuni->unienc!=-1 && altuni->unienc<0x10000 &&
+		(isarabinitial(altuni->unienc) ||
+		 isarabmedial(altuni->unienc) ||
+		 isarabfinal(altuni->unienc) ||
+		 isarabisolated(altuni->unienc)))
+return( altuni->unienc );
+
+return( -1 );
+}
+
+static int UnformedUni(int uni) {
+return( uni==-1 || uni>=0x10000 ||
+		!(isarabinitial(uni) ||
+		 isarabmedial(uni) ||
+		 isarabfinal(uni) ||
+		 isarabisolated(uni)));
+}
+
 static void svg_sfdump(FILE *file,SplineFont *sf) {
-    int defwid, i;
+    int defwid, i, formeduni;
     char *oldloc;
+    struct altuni *altuni;
 
     oldloc = setlocale(LC_NUMERIC,"C");
 
@@ -593,29 +622,24 @@ static void svg_sfdump(FILE *file,SplineFont *sf) {
     /* Ligatures must be output before their initial components */
     for ( i=0; i<sf->glyphcnt; ++i ) {
 	if ( SCWorthOutputting(sf->glyphs[i]) && HasLigature(sf->glyphs[i]))
-	    svg_scdump(file, sf->glyphs[i],defwid);
+	    svg_scdump(file, sf->glyphs[i],defwid,sf->glyphs[i]->unicodeenc);
     }
     /* And formed arabic before unformed */
     for ( i=0; i<sf->glyphcnt; ++i ) {
 	if ( SCWorthOutputting(sf->glyphs[i]) && !HasLigature(sf->glyphs[i]) &&
-		sf->glyphs[i]->unicodeenc!=-1 && sf->glyphs[i]->unicodeenc<0x10000 &&
-		(isarabinitial(sf->glyphs[i]->unicodeenc) ||
-		 isarabmedial(sf->glyphs[i]->unicodeenc) ||
-		 isarabfinal(sf->glyphs[i]->unicodeenc) ||
-		 isarabisolated(sf->glyphs[i]->unicodeenc)))
-	    svg_scdump(file, sf->glyphs[i],defwid);
+		(formeduni = AnyArabicForm(sf->glyphs[i]))!=-1 )
+	    svg_scdump(file, sf->glyphs[i],defwid,formeduni);
     }
     for ( i=0; i<sf->glyphcnt; ++i ) {
 	if ( sf->glyphs[i]!=NULL && strcmp(sf->glyphs[i]->name,".notdef")==0 )
     continue;
 	if ( SCWorthOutputting(sf->glyphs[i]) && !HasLigature(sf->glyphs[i]) &&
-		strcmp(sf->glyphs[i]->name,".notdef")!=0 &&
-		(sf->glyphs[i]->unicodeenc==-1 || sf->glyphs[i]->unicodeenc>=0x10000 ||
-		!(isarabinitial(sf->glyphs[i]->unicodeenc) ||
-		 isarabmedial(sf->glyphs[i]->unicodeenc) ||
-		 isarabfinal(sf->glyphs[i]->unicodeenc) ||
-		 isarabisolated(sf->glyphs[i]->unicodeenc))))
-	    svg_scdump(file, sf->glyphs[i],defwid);
+		strcmp(sf->glyphs[i]->name,".notdef")!=0 ) {
+	    if ( UnformedUni(sf->glyphs[i]->unicodeenc) )
+		svg_scdump(file, sf->glyphs[i],defwid,sf->glyphs[i]->unicodeenc);
+	    for ( altuni = sf->glyphs[i]->altuni; altuni!=NULL; altuni = altuni->next )
+		svg_scdump(file, sf->glyphs[i],defwid,altuni->unienc);
+	}
     }
     svg_dumpkerns(file,sf,false);
     svg_dumpkerns(file,sf,true);
