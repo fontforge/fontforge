@@ -2130,7 +2130,7 @@ static void SVGLigatureFixupCheck(SplineChar *sc,xmlNodePtr glyph) {
 		if ( chars[len]==NULL )
 		    len2 += 9;
 		else {
-		    len2 += strlen(chars[len]->name);
+		    len2 += strlen(chars[len]->name)+1;
 		    if ( any==NULL ) any = chars[len];
 		}
 	    }
