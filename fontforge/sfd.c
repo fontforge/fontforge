@@ -3286,11 +3286,16 @@ static void SFDFixupRefs(SplineFont *sf) {
 	}
 	if ( SCDuplicate(sc)!=sc ) {
 	    SplineChar *base = SCDuplicate(sc);
-	    int orig = sc->orig_pos, enc = sf->map->backmap[orig];
+	    int orig = sc->orig_pos, enc = sf->map->backmap[orig], uni = sc->unicodeenc;
+	    struct altuni *altuni;
 	    SplineCharFree(sc);
 	    sf->glyphs[i]=NULL;
 	    sf->map->backmap[orig] = -1;
 	    sf->map->map[enc] = base->orig_pos;
+	    altuni = chunkalloc(sizeof(struct altuni));
+	    altuni->next = base->altuni;
+	    base->altuni = altuni;
+	    altuni->unienc = uni;
 	}
     }
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
