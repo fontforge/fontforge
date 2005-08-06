@@ -1023,3 +1023,17 @@ void SFSplinesFromLayers(SplineFont *sf,int flag) {
 
 void AltUniFigure(SplineFont *sf,EncMap *map) {
 }
+
+void AltUniAdd(SplineChar *sc,int uni) {
+    struct altuni *altuni;
+
+    if ( sc!=NULL && uni!=-1 && uni!=sc->unicodeenc ) {
+	for ( altuni = sc->altuni; altuni!=NULL && altuni->unienc!=uni; altuni=altuni->next );
+	if ( altuni==NULL ) {
+	    altuni = chunkalloc(sizeof(struct altuni));
+	    altuni->next = sc->altuni;
+	    sc->altuni = altuni;
+	    altuni->unienc = uni;
+	}
+    }
+}
