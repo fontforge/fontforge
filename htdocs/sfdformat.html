@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 16-Jun-2005 -->
+  <!-- AP: Last modified: 6-Aug-2005 -->
   <TITLE>Spline Font Database File Format</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -518,7 +518,7 @@ there are a total of 253 glyphs defined (usually control characters are not
 defined). A character looks like:
 <BLOCKQUOTE>
   <PRE>StartChar: exclam
-Encoding: 33 33
+Encoding: 33 33 3
 Width: 258
 Flags: 
 HStem: 736 13&lt;39 155&gt;  -14 88&lt;162 180&gt;
@@ -546,7 +546,8 @@ EndChar
 </BLOCKQUOTE>
 <P>
 The first line names the character, the next line gives the encoding, first
-in the current font, then in unicode. Then the advance width.
+in the current font, then in unicode, and finally the original position (GID).
+Then the advance width.
 <P>
 Then a set of flags (there are currently four flags: "H" =&gt; the character
 has been changed since last hinted, "M" the character's hints have been adjusted

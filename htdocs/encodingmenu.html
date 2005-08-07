@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jun-2005 -->
-  <!-- AP: Last modified: 29-Jun-2005 -->
+  <!-- AP: Last modified: 6-Aug-2005 -->
   <TITLE>Encoding Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -19,6 +19,8 @@ The Encoding menu is only found in the font view:
       <LI>
 	various standard and user defined encodings
     </UL>
+  <LI>
+    <A HREF="#Compact">Compact</A>
   <LI>
     <A HREF="encodingmenu.html#Force">Force Encoding &gt;</A>
     <UL>
@@ -68,6 +70,10 @@ The Encoding menu is only found in the font view:
     slot 65. If we have another encoding which maps "A" -&gt; slot 65, then (since
     "A" has unicode value U+0041) our glyph will still be mapped to slot 65,
     but in addition its name will be changed to "A".
+  <DT>
+    <A NAME="Compact">Compact</A>
+  <DD>
+    Remove any holes from the encoding so all the glyphs get smushed together.
   <DT>
     <A NAME="Force">Force</A> Encoding
   <DD>
