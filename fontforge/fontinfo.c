@@ -1657,7 +1657,7 @@ static int PI_Hist(GGadget *g, GEvent *e) {
 	    h = hist_vstem;
 	else
 return( true );		/* can't happen */
-	SFHistogram(sf,private,NULL,h);
+	SFHistogram(sf,private,NULL,NULL,h);
 	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_PrivateValues),
 		temp = uc_copy( d->private->values[sel]));
 	free( temp );
