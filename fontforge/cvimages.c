@@ -322,8 +322,10 @@ return;
 	    SCPreserveLayer(sc,layer,false);
 	    head = &sc->layers[layer].splines;
 	}
-	if ( doclear )
+	if ( doclear ) {
 	    SplinePointListsFree(*head);
+	    *head = NULL;
+	}
 	espl->next = *head;
 	*head = spl;
     }
