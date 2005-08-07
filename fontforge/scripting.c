@@ -399,7 +399,7 @@ static void PrintVal(Val *val) {
     } else if ( val->type==v_int )
 	printf( "%d", val->u.ival );
     else if ( val->type==v_unicode )
-	printf( "0u%x", val->u.ival );
+	printf( "0u%04X", val->u.ival );
     else if ( val->type==v_real )
 	printf( "%g", val->u.fval );
     else if ( val->type==v_void )
@@ -928,6 +928,59 @@ static void bIsFinite(Context *c) {
 	error( c, "Bad type for argument" );
     c->return_val.type = v_int;
     c->return_val.u.ival = finite( c->a.vals[1].u.fval );
+}
+
+
+static char *ToString(Val *val) {
+    int j;
+    char buffer[40];
+
+    if ( val->type==v_str ) {
+return( copy(val->u.sval) );
+    } else if ( val->type==v_arr || val->type==v_arrfree ) {
+	char **results, *ret, *pt;
+	int len;
+
+	results = galloc(val->u.aval->argc*sizeof(char *));
+	len = 0;
+	for ( j=0; j<val->u.aval->argc; ++j ) {
+	    results[j] = ToString(&val->u.aval->vals[j]);
+	    len += strlen(results[j])+2;
+	}
+	ret = pt = galloc(len+20);
+	*pt++ = '[';
+	if ( val->u.aval->argc>0 ) {
+	    strcpy(pt,results[0]); pt += strlen(pt);
+	    free(results[0]);
+	    for ( j=1; j<val->u.aval->argc; ++j ) {
+		*pt++ = ',';
+		if ( val->u.aval->vals[j-1].type==v_arr || val->u.aval->vals[j-1].type==v_arrfree )
+		    *pt++ = '\n';
+		strcpy(pt,results[j]); pt += strlen(pt);
+		free(results[j]);
+	    }
+	}
+	*pt++ = ']'; *pt = '\0';
+	free(results);
+return( ret );
+    } else if ( val->type==v_int )
+	sprintf( buffer, "%d", val->u.ival );
+    else if ( val->type==v_unicode )
+	sprintf( buffer, "0u%04X", val->u.ival );
+    else if ( val->type==v_real )
+	sprintf( buffer, "%g", val->u.fval );
+    else if ( val->type==v_void )
+	sprintf( buffer, "<void>");
+    else
+	sprintf( buffer, "<???>");	/* ANSI might think this a trigraph */
+return( copy( buffer ));
+}
+
+static void bToString(Context *c) {
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments" );
+    c->return_val.type = v_str;
+    c->return_val.u.sval = ToString( &c->a.vals[1] );
 }
 
 static void bSqrt(Context *c) {
@@ -5415,6 +5468,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "Real", bReal, 1 },
     { "Int", bInt, 1 },
     { "UCodePoint", bUCodePoint, 1 },
+    { "ToString", bToString, 1 },
     { "Floor", bFloor, 1 },
     { "Ceil", bCeil, 1 },
     { "Round", bRound, 1 },
