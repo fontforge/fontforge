@@ -1,4 +1,4 @@
-#!/usr/local/bin/pfaedit
+#!/usr/local/bin/fontforge
 
 a = Array($argc-1)
 i = 1

@@ -1,4 +1,4 @@
-#!/usr/local/bin/pfaedit
+#!/usr/local/bin/fontforge
 #Just checking the while loop syntax
 
 i = 0

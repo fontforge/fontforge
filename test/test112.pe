@@ -1,5 +1,5 @@
-#!/usr/local/bin/pfaedit
-#Needs: fonts/QuadraticConversionBug.sfd
+#!/usr/local/bin/fontforge
+#Needs: fonts/QuadraticConversionBug.sfd, fonts/CourierNew.ttf
 #Make sure quadratic conversion works...
 
 Open("fonts/QuadraticConversionBug.sfd");
@@ -9,4 +9,17 @@ Save("results/QuadraticConversionBug2.sfd")
 Close()
 # this used to give us IErrors
 Open("results/QuadraticConversionBug2.sfd")
+Close()
+
+#Now can we go to cubic?
+Open("fonts/CourierNew.ttf");
+Generate("results/CourierNew.pfb")
+SetFontOrder(3);
+Save("results/CourierNew.sfd")
+Close()
+Open("results/CourierNew.pfb")
+Close()
+Open("results/CourierNew.sfd")
+Close()
+
 Quit()

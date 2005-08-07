@@ -1,0 +1,12 @@
+#!/usr/local/bin/fontforge
+#Needs: fonts/Ambrosia.pt3
+# check that we can read and generate type3 fonts
+
+Open("fonts/Ambrosia.pt3");
+Print( "...Read Ambrosia.pt3")
+Generate("results/Ambrosia.pt3");
+Print( "...Generated type3")
+Close();
+Open("results/Ambrosia.pt3");
+Print( "...Loaded generated font")
+Quit()

@@ -1,4 +1,4 @@
-#!/usr/local/bin/pfaedit
+#!/usr/local/bin/fontforge
 #Needs: fonts/mingliu.ttc, fonts/GillSans.dfont, fonts/ItalicHand.sfd, fonts/ItalicHand.svg, fonts/MunhwaGothic-Bold, fonts/Caliban.otf
 
 names = FontsInFile("fonts/non-existant-file");
