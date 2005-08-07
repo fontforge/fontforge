@@ -1197,7 +1197,7 @@ extern void SFUntickAll(SplineFont *sf);
 enum hist_type { hist_hstem, hist_vstem, hist_blues };
 struct psdict;
 extern void SFHistogram(SplineFont *sf,struct psdict *private,uint8 *selected,
-	enum hist_type which);
+	EncMap *map, enum hist_type which);
 
 extern GTextInfo **SFGenTagListFromType(struct gentagtype *gentags,enum possub_type type);
 extern struct contextchaindlg *ContextChainEdit(SplineFont *sf,FPST *fpst,

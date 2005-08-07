@@ -5049,6 +5049,7 @@ void FontViewMenu_ClearWidthMD(GtkMenuItem *menuitem, gpointer user_data) {
 static void FVMenuHistograms(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     SFHistogram(fv->sf, NULL, FVAnyCharSelected(fv)!=-1?fv->selected:NULL,
+			fv->map,
 			mi->mid==MID_HStemHist ? hist_hstem :
 			mi->mid==MID_VStemHist ? hist_vstem :
 				hist_blues);

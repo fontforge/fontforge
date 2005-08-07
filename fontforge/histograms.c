@@ -55,8 +55,8 @@ static void HistDataFree(HistData *h) {
     free(h);
 }
 
-static HistData *HistFindBlues(SplineFont *sf,uint8 *selected) {
-    int i, low,high, top,bottom;
+static HistData *HistFindBlues(SplineFont *sf,uint8 *selected, EncMap *map) {
+    int i, gid, low,high, top,bottom;
     SplineChar *sc;
     DBounds b;
     HistData *hist;
@@ -67,8 +67,11 @@ static HistData *HistFindBlues(SplineFont *sf,uint8 *selected) {
     hist->low = sf->ascent; hist->high = -sf->descent;
     low = -sf->descent; high = sf->ascent;
 
-    for ( i=0; i<sf->glyphcnt; ++i ) {
-	if ( (sc = sf->glyphs[i])!=NULL && sc->layers[ly_fore].splines!=NULL && sc->layers[ly_fore].refs==NULL &&
+    for ( i=0; i<(selected==NULL?sf->glyphcnt:map->enccount); ++i ) {
+	gid = selected==NULL ? i : map->map[i];
+	if ( gid!=-1 && (sc = sf->glyphs[gid])!=NULL &&
+		sc->layers[ly_fore].splines!=NULL &&
+		sc->layers[ly_fore].refs==NULL &&
 		(selected==NULL || selected[i])) {
 	    SplineCharFindBounds(sc,&b);
 	    bottom = rint(b.miny);
@@ -127,8 +130,8 @@ static HistData *HistFindBlues(SplineFont *sf,uint8 *selected) {
 return( hist );
 }
 
-static HistData *HistFindStemWidths(SplineFont *sf,uint8 *selected,int hor) {
-    int i, low,high, val;
+static HistData *HistFindStemWidths(SplineFont *sf,uint8 *selected,EncMap *map,int hor) {
+    int i, gid, low,high, val;
     SplineChar *sc;
     HistData *hist;
     struct hentry *h;
@@ -139,8 +142,11 @@ static HistData *HistFindStemWidths(SplineFont *sf,uint8 *selected,int hor) {
     hist->low = sf->ascent+sf->descent;
     low = 0; high = sf->ascent+sf->descent;
 
-    for ( i=0; i<sf->glyphcnt; ++i ) {
-	if ( (sc = sf->glyphs[i])!=NULL && sc->layers[ly_fore].splines!=NULL && sc->layers[ly_fore].refs==NULL &&
+    for ( i=0; i<(selected==NULL?sf->glyphcnt:map->enccount); ++i ) {
+	gid = selected==NULL ? i : map->map[i];
+	if ( gid!=-1 && (sc = sf->glyphs[gid])!=NULL &&
+		sc->layers[ly_fore].splines!=NULL &&
+		sc->layers[ly_fore].refs==NULL &&
 		(selected==NULL || selected[i])) {
 	    if ( autohint_before_generate && sc->changedsincelasthinted && !sc->manualhints )
 		SplineCharAutoHint(sc,NULL);
@@ -188,12 +194,12 @@ static HistData *HistFindStemWidths(SplineFont *sf,uint8 *selected,int hor) {
 return( hist );
 }
 
-static HistData *HistFindHStemWidths(SplineFont *sf,uint8 *selected) {
-return( HistFindStemWidths(sf,selected,true) );
+static HistData *HistFindHStemWidths(SplineFont *sf,uint8 *selected,EncMap *map) {
+return( HistFindStemWidths(sf,selected,map,true) );
 }
 
-static HistData *HistFindVStemWidths(SplineFont *sf,uint8 *selected) {
-return( HistFindStemWidths(sf,selected,false) );
+static HistData *HistFindVStemWidths(SplineFont *sf,uint8 *selected,EncMap *map) {
+return( HistFindStemWidths(sf,selected,map,false) );
 }
 
 static void HistFindMax(HistData *h, int sum_around) {
@@ -695,15 +701,17 @@ return( false );
 return( true );
 }
 
-static void CheckSmallSelection(uint8 *selected,SplineFont *sf) {
+static void CheckSmallSelection(uint8 *selected,EncMap *map,SplineFont *sf) {
     int i, cnt, tot;
 
-    for ( i=cnt=tot=0; i<sf->glyphcnt; ++i )
-	if ( sf->glyphs[i]!=NULL ) {
+    for ( i=cnt=tot=0; i<map->enccount; ++i ) {
+	int gid = map->map[i];
+	if ( gid!=-1 && sf->glyphs[gid]!=NULL ) {
 	    ++tot;
 	    if ( selected[i] )
 		++cnt;
 	}
+    }
     if ( (cnt==1 && tot>1) || (cnt<8 && tot>30) )
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	GWidgetPostNoticeR(_STR_TinySelection,_STR_TinySelectionFull);
@@ -713,7 +721,7 @@ static void CheckSmallSelection(uint8 *selected,SplineFont *sf) {
 }
 
 void SFHistogram(SplineFont *sf,struct psdict *private, uint8 *selected,
-	enum hist_type which) {
+	EncMap *map,enum hist_type which) {
     struct hist_dlg hist;
     GWindow gw;
     GRect pos;
@@ -737,19 +745,19 @@ void SFHistogram(SplineFont *sf,struct psdict *private, uint8 *selected,
     hist.sum_around = 0;
     switch ( which ) {
       case hist_hstem:
-	hist.h = HistFindHStemWidths(sf,selected);
+	hist.h = HistFindHStemWidths(sf,selected,map);
       break;
       case hist_vstem:
-	hist.h = HistFindVStemWidths(sf,selected);
+	hist.h = HistFindVStemWidths(sf,selected,map);
       break;
       case hist_blues:
-	hist.h = HistFindBlues(sf,selected);
+	hist.h = HistFindBlues(sf,selected,map);
       break;
     }
     HistFindMax(hist.h,hist.sum_around);
 
     if ( selected!=NULL )
-	CheckSmallSelection(selected,sf);
+	CheckSmallSelection(selected,map,sf);
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
