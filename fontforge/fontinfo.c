@@ -1023,16 +1023,23 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_StyleNameDel	8307
 #define CID_StyleNameRename	8308
 
+#define CID_Contextual		9000
 #define CID_ContextClasses	9001	/* Variants at +n*100 */
 #define CID_ContextNew		9002
 #define CID_ContextDel		9003
 #define CID_ContextEdit		9004
 #define CID_ContextEditData	9005
 
+#define CID_StateMachine	9010
 #define CID_SMList		9011	/* Variants at +n*100 */
 #define CID_SMNew		9012
 #define CID_SMDel		9013
 #define CID_SMEdit		9014
+
+#define CID_Tabs		10001
+#define CID_OK			10002
+#define CID_Cancel		10003
+#define CID_MainGroup		10004
 
 #define CID_MacAutomatic	16000
 #define CID_MacStyles		16001
@@ -5346,6 +5353,46 @@ static int GFI_AspectChange(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static void GFI_Resize(struct gfi_data *d) {
+    GRect size, temp, temp2, subsize;
+    int yoff, xoff, xw, yh, i;
+    static int xy_cids[] = { CID_Notice, CID_Comment, CID_Contextual, CID_StateMachine, 0 };
+    static int x_cids[] = { CID_PrivateEntries, CID_PrivateValues, CID_MarkClasses, CID_AnchorClasses, 0 };
+
+    GDrawGetSize(GGadgetGetWindow(GWidgetGetControl(d->gw,CID_Notice)),&subsize);
+
+    GDrawGetSize(d->gw,&size);
+    GGadgetResize(GWidgetGetControl(d->gw,CID_MainGroup),size.width-4,size.height-4);
+    GGadgetGetSize(GWidgetGetControl(d->gw,CID_OK),&temp);
+    yoff = size.height-temp.height-GDrawPointsToPixels(d->gw,3)-2-GDrawPointsToPixels(d->gw,2) - temp.y;
+    GGadgetMove(GWidgetGetControl(d->gw,CID_OK),temp.x,temp.y+yoff);
+    GGadgetGetSize(GWidgetGetControl(d->gw,CID_Cancel),&temp2);
+    GGadgetMove(GWidgetGetControl(d->gw,CID_Cancel),size.width-temp2.width-temp.x,temp2.y+yoff);
+    GGadgetGetSize(GWidgetGetControl(d->gw,CID_Tabs),&temp);
+    xoff = size.width-2*GDrawPointsToPixels(d->gw,4) - temp.width;
+    GGadgetResize(GWidgetGetControl(d->gw,CID_Tabs),temp.width+xoff,
+	    temp.height+yoff);
+    subsize.height += yoff; subsize.width += xoff;
+
+    for ( i=0; xy_cids[i]!=0; ++i ) {
+	GGadgetGetSize(GWidgetGetControl(d->gw,xy_cids[i]),&temp);
+	if ( (xw = subsize.width - temp.x - GDrawPointsToPixels(d->gw,3)) < 40 )
+	    xw = 40;
+	if ( (yh = subsize.height - temp.y - GDrawPointsToPixels(d->gw,3)) < 40 )
+	    yh = 40;
+	GGadgetResize(GWidgetGetControl(d->gw,xy_cids[i]),xw,yh);
+    }
+
+    for ( i=0; x_cids[i]!=0; ++i ) {
+	GGadgetGetSize(GWidgetGetControl(d->gw,x_cids[i]),&temp);
+	if ( (xw = subsize.width - temp.x - GDrawPointsToPixels(d->gw,3)) < 40 )
+	    xw = 40;
+	GGadgetResize(GWidgetGetControl(d->gw,x_cids[i]),xw,temp.height);
+    }
+    
+    GDrawRequestExpose(d->gw,NULL,false);
+}
+
 static int e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	struct gfi_data *d = GDrawGetUserData(gw);
@@ -5353,6 +5400,9 @@ static int e_h(GWindow gw, GEvent *event) {
     } else if ( event->type==et_destroy ) {
 	struct gfi_data *d = GDrawGetUserData(gw);
 	free(d);
+    } else if ( event->type==et_resize ) {
+	struct gfi_data *d = GDrawGetUserData(gw);
+	GFI_Resize(d);
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
 	    help("fontinfo.html");
@@ -6714,6 +6764,7 @@ return;
     congcd[0].gd.pos.height = 260;
     congcd[0].gd.u.tabs = conaspects;
     congcd[0].gd.flags = gg_visible | gg_enabled;
+    congcd[0].gd.cid = CID_Contextual;
     /*congcd[0].gd.handle_controlevent = GFI_AspectChange;*/
     congcd[0].creator = GTabSetCreate;
 
@@ -6838,6 +6889,7 @@ return;
     smgcd[0].gd.pos.height = 260;
     smgcd[0].gd.u.tabs = smaspects;
     smgcd[0].gd.flags = gg_visible | gg_enabled;
+    smgcd[0].gd.cid = CID_StateMachine;
     /*smgcd[0].gd.handle_controlevent = GFI_AspectChange;*/
     smgcd[0].creator = GTabSetCreate;
 
@@ -6932,6 +6984,7 @@ return;
     mgcd[0].gd.u.tabs = aspects;
     mgcd[0].gd.flags = gg_visible | gg_enabled;
     mgcd[0].gd.handle_controlevent = GFI_AspectChange;
+    mgcd[0].gd.cid = CID_Tabs;
     mgcd[0].creator = GTabSetCreate;
 
     mgcd[1].gd.pos.x = 30-3; mgcd[1].gd.pos.y = GDrawPixelsToPoints(NULL,pos.height)-35-3;
@@ -6941,6 +6994,7 @@ return;
     mlabel[1].text_in_resource = true;
     mgcd[1].gd.label = &mlabel[1];
     mgcd[1].gd.handle_controlevent = GFI_OK;
+    mgcd[1].gd.cid = CID_OK;
     mgcd[1].creator = GButtonCreate;
 
     mgcd[2].gd.pos.x = -30; mgcd[2].gd.pos.y = mgcd[1].gd.pos.y+3;
@@ -6950,11 +7004,13 @@ return;
     mlabel[2].text_in_resource = true;
     mgcd[2].gd.label = &mlabel[2];
     mgcd[2].gd.handle_controlevent = GFI_Cancel;
+    mgcd[2].gd.cid = CID_Cancel;
     mgcd[2].creator = GButtonCreate;
 
     mgcd[3].gd.pos.x = 2; mgcd[3].gd.pos.y = 2;
     mgcd[3].gd.pos.width = pos.width-4; mgcd[3].gd.pos.height = pos.height-4;
     mgcd[3].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
+    mgcd[3].gd.cid = CID_MainGroup;
     mgcd[3].creator = GGroupCreate;
 
     GGadgetsCreate(gw,mgcd);
@@ -6968,16 +7024,7 @@ return;
     GTextInfoListFree(atgcd[0].gd.u.list);
     if ( GTabSetGetTabLines(mgcd[0].ret)>3 ) {
 	int offset = (GTabSetGetTabLines(mgcd[0].ret)-2)*GDrawPointsToPixels(NULL,20);
-	GRect temp;
 	GDrawResize(gw,pos.width,pos.height+offset);
-	GGadgetResize(mgcd[0].ret,GDrawPointsToPixels(NULL,mgcd[0].gd.pos.width*GIntGetResource(_NUM_ScaleFactor)/100),
-		GDrawPointsToPixels(NULL,mgcd[0].gd.pos.height)+offset);
-	GGadgetMove(mgcd[1].ret,GDrawPointsToPixels(NULL,mgcd[1].gd.pos.x*GIntGetResource(_NUM_ScaleFactor)/100),
-		GDrawPointsToPixels(NULL,mgcd[1].gd.pos.y)+offset);
-	GGadgetGetSize(mgcd[2].ret,&temp);
-	GGadgetMove(mgcd[2].ret,temp.x, temp.y+offset);
-	GGadgetResize(mgcd[3].ret,mgcd[3].gd.pos.width,
-		mgcd[3].gd.pos.height+offset);
     }
     GWidgetIndicateFocusGadget(ngcd[1].ret);
     ProcessListSel(d);
