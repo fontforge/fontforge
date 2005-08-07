@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 29-Jul-2005 -->
+  <!-- AP: Last modified: 3-Aug-2005 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -15,6 +15,53 @@ Changes since the last release may be found by performing a "cvs log" command
 on the file stamp.c.
 <P>
 <UL>
+  <LI>
+    7-August-2005
+    <UL>
+      <LI>
+	SelectIf failed when passed an encoding which was out of bounds
+      <LI>
+	Added a new scripting command: ToString
+      <LI>
+	Using the X clipboard to paste a glyph into a glyph that contained stuff
+	caused a crash.
+      <LI>
+	Using the X clipboard to paste a glyph with references or with multilayer
+	did no t work.
+      <LI>
+	None of ttf, otf nor svg got multiply encoded glyphs output properly.
+      <LI>
+	FF screwed up memory when creating ligatures from an svg font.
+      <LI>
+	Merge fonts was writing to bad memory.
+      <LI>
+	FF was confused by a strange MM font
+      <LI>
+	FindExistingSlot should understand altuni.
+      <LI>
+	Font View didn't display current unicode of multiply encoded glyphs. (same
+	for popups).
+      <LI>
+	Still having problems generating type1 code for complicated reference glyphs.
+      <LI>
+	Retain knowlege of multiple unicode encodings for some glyphs. Used when
+	a glyph has multiple encodings and is reencoded.
+      <LI>
+	Add back an option to compact an encoding. It's not the same as the old compact
+	which kept track of the former encoding. This just compacts, user must explicitly
+	reencode.
+      <LI>
+	Force encoding didn't work if the new encoding had more slots than the old.
+      <LI>
+	FF also failed to parse glyph based contextual lookups properly
+    </UL>
+  <LI>
+    3-August-2005
+    <UL>
+      <LI>
+	FF failed to parse class based contextual lookups properly (contextual chaining
+	lookups were ok)
+    </UL>
   <LI>
     2-August-2005
     <UL>
