@@ -1,4 +1,4 @@
-#!/usr/local/bin/pfaedit
+#!/usr/local/bin/fontforge
 #Needs: fonts/OverlapBugs.sfd
 #Make sure remove overlap sort of works...
 

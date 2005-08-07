@@ -1,4 +1,4 @@
-#!/usr/local/bin/pfaedit
+#!/usr/local/bin/fontforge
 #Needs: fonts/Ambrosia*.sfd
 #Make sure we can generate a font family
 

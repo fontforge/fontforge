@@ -1,4 +1,4 @@
-#!/usr/local/bin/pfaedit
+#!/usr/local/bin/fontforge
 #Needs: fonts/Caliban.sfd
 
 Open("fonts/Caliban.sfd");
@@ -20,10 +20,12 @@ Generate("results/Caliban.otf","ttf",0x80);
 Print( "...Generated otf w/ both apple and ot modes set (& bitmaps)")
 Generate("results/Caliban.dfont","sbit",-1);
 Print( "...Generated sbit")
+Generate("results/Caliban.","otb",-1);
+Print( "...Generated X11 opentype bitmap")
 Generate("results/Caliban.dfont","dfont",-1);
 Print( "...Generated dfont w/ apple bitmaps")
 Close();
-  Quit();
+
 Open("results/Caliban.ps");
 Print( "...Read type0 (if PfaEdit didn't understand /CalibanBase that's ok)")
 Close();
@@ -36,6 +38,9 @@ Close();
 Open("results/Caliban.dfont");
 Print( "...Read dfont")
 Close();
+Open("results/Caliban.otb");
+Print( "...Read otb")
+Close();
 Open("results/Caliban-10.bdf");
 Generate("results/Caliban.dfont","sbit",-1);
 Print( "...Read bdf & Generated sbit")
@@ -45,4 +50,18 @@ New();
 Save("results/foo.sfd");
 Print( "...Saved new font")
 Close();
+
+Open("fonts/Zapfino-4.0d3.dfont");
+Generate("results/Zapfino.ttf","",0x10);
+Close()
+#We used to get PointCount errors in the above.
+Open("results/Zapfino.ttf")
+Close()
+Print( "...Handled Zapfino with control points at points")
+
+Print( "This font has bad 'morx' tables, we just don't want to crash")
+Open("fonts/Zapfino-4.1d6.dfont");
+Generate("results/Zapfino.ttf","",0x10);
+Close()
+
 Quit()

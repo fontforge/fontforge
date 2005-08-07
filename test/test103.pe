@@ -1,4 +1,4 @@
-#!/usr/local/bin/pfaedit
+#!/usr/local/bin/fontforge
 #Copy/Paste (in scripts) broke (and crashed) when I made them look at the
 # real clipboard.
 
