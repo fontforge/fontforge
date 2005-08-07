@@ -2306,7 +2306,7 @@ static char str_DupPixelSizeLong = "The font database already contains a bitmap\
 static char str_NoBitmapFont = "No Bitmap Font";
 static char str_NoBitmapFontIn = "Could not find a bitmap font in %hs";
 static char str_TooComplex = "Too Complex or Bad"
-static char str_TooComplexLong = "I'm sorry this file is too complex for me to understand (or is erroneous)"
+static char str_TooComplexLong = "I'm sorry this file is too complex for me to understand (or is erroneous, or is empty)"
     /* Private Info */
 static char str_Bluequest[] = "This will change both BlueValues and OtherBlues.\012Do you want to continue?";
 static char str_Hstemquest[] = "This will change both StdHW and StemSnapH.\012Do you want to continue?";
