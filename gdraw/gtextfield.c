@@ -1988,7 +1988,7 @@ static void gtextfield_resize(GGadget *g, int32 width, int32 height ) {
 	_ggadget_resize((GGadget *) (gt->vsb),gt->vsb->g.r.width,gtheight);
     }
     if ( gt->hsb!=NULL ) {
-	_ggadget_move((GGadget *) (gt->hsb),gt->hsb->g.r.y,gt->hsb->g.r.y+height-oldheight);
+	_ggadget_move((GGadget *) (gt->hsb),gt->hsb->g.r.x,gt->hsb->g.r.y+height-oldheight);
 	_ggadget_resize((GGadget *) (gt->hsb),gtwidth,gt->hsb->g.r.height);
     }
     _ggadget_resize(g,gtwidth, gtheight);
