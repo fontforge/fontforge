@@ -2100,8 +2100,8 @@ return( -1 );
 		errors( c, "Character not found", name );
 	    else
 		errors( c, "Character is not in font", name );
-return( -1 );
 	}
+return( -1 );
     }
 return( bottom );
 }
