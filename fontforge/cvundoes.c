@@ -1109,6 +1109,31 @@ return( copy(""));
 return( data );
 }
 
+static RefChar *XCopyInstanciateRefs(RefChar *refs,SplineChar *container) {
+    /* References in the copybuffer don't include the translated splines */
+    RefChar *head=NULL, *last, *cur;
+
+    while ( refs!=NULL ) {
+	cur = RefCharCreate();
+	*cur = *refs;
+#ifdef FONTFORGE_CONFIG_TYPE3
+	cur->layers = NULL;
+	cur->layer_cnt = 0;
+#else
+	cur->layers[0].splines = NULL;
+#endif
+	cur->next = NULL;
+	SCReinstanciateRefChar(container,cur);
+	if ( head==NULL )
+	    head = cur;
+	else
+	    last->next = cur;
+	last = cur;
+	refs = refs->next;
+    }
+return( head );
+}
+
 static void *copybuffer2eps(void *_copybuffer,int32 *len) {
     Undoes *cur = &copybuffer;
     SplineChar dummy;
@@ -1118,16 +1143,17 @@ static void *copybuffer2eps(void *_copybuffer,int32 *len) {
     FILE *eps;
     char *ret;
     int old_order2;
+    int lcnt;
 
     while ( cur ) {
 	switch ( cur->undotype ) {
 	  case ut_multiple:
-	    cur = cur->u.multiple.mult;
+	    cur = cur->u.multiple.mult;		/* Can only handle one char in an "eps" file */
 	  break;
 	  case ut_composit:
 	    cur = cur->u.composit.state;
 	  break;
-	  case ut_state: case ut_statehint:
+	  case ut_state: case ut_statehint: case ut_layers:
     goto out;
 	  default:
 	    cur = NULL;
@@ -1146,9 +1172,41 @@ return( copy(""));
 #endif
     dummy.layer_cnt = 2;
     dummy.name = "dummy";
-    dummy.parent = fv_list->sf;		/* might not be the actual parent */
-    dummy.layers[ly_fore].splines = cur->u.state.splines;
-    dummy.layers[ly_fore].refs = cur->u.state.refs;
+    if ( cur->undotype!=ut_layers )
+	dummy.parent = cur->u.state.copied_from;
+    else if ( cur->u.multiple.mult!=NULL && cur->u.multiple.mult->undotype == ut_state )
+	dummy.parent = cur->u.multiple.mult->u.state.copied_from;
+    if ( dummy.parent==NULL )
+	dummy.parent = fv_list->sf;		/* Might not be right, but we need something */
+#ifdef FONTFORGE_CONFIG_TYPE3
+    if ( cur->undotype==ut_layers ) {
+	Undoes *ulayer;
+	for ( ulayer = cur->u.multiple.mult, lcnt=0; ulayer!=NULL; ulayer=ulayer->next, ++lcnt);
+	dummy.layer_cnt = lcnt+1;
+	if ( lcnt!=1 )
+	    dummy.layers = gcalloc((lcnt+1),sizeof(Layer));
+	for ( ulayer = cur->u.multiple.mult, lcnt=1; ulayer!=NULL; ulayer=ulayer->next, ++lcnt) {
+	    if ( ulayer->undotype==ut_state || ulayer->undotype==ut_statehint ) {
+		dummy.layers[lcnt].fill_brush = ulayer->u.state.fill_brush;
+		dummy.layers[lcnt].stroke_pen = ulayer->u.state.stroke_pen;
+		dummy.layers[lcnt].dofill = ulayer->u.state.dofill;
+		dummy.layers[lcnt].dostroke = ulayer->u.state.dostroke;
+		dummy.layers[lcnt].splines = ulayer->u.state.splines;
+		dummy.layers[lcnt].refs = XCopyInstanciateRefs(ulayer->u.state.refs,&dummy);
+	    }
+	}
+    } else
+#endif
+    {
+#ifdef FONTFORGE_CONFIG_TYPE3
+	dummy.layers[ly_fore].fill_brush = cur->u.state.fill_brush;
+	dummy.layers[ly_fore].stroke_pen = cur->u.state.stroke_pen;
+	dummy.layers[ly_fore].dofill = cur->u.state.dofill;
+	dummy.layers[ly_fore].dostroke = cur->u.state.dostroke;
+#endif
+	dummy.layers[ly_fore].splines = cur->u.state.splines;
+	dummy.layers[ly_fore].refs = XCopyInstanciateRefs(cur->u.state.refs,&dummy);
+    }
 
     eps = tmpfile();
     if ( eps==NULL ) {
@@ -1158,8 +1216,17 @@ return( copy(""));
 
     old_order2 = dummy.parent->order2;
     dummy.parent->order2 = cur->was_order2;
-    _ExportEPS(eps,&dummy);
+    /* Don't bother to generate a preview here, that can take too long and */
+    /*  cause the paster to time out */
+    _ExportEPS(eps,&dummy,false);
     dummy.parent->order2 = old_order2;
+
+    for ( lcnt = ly_fore; lcnt<dummy.layer_cnt; ++lcnt )
+	RefCharsFree(dummy.layers[lcnt].refs);
+#ifdef FONTFORGE_CONFIG_TYPE3
+    if ( dummy.layer_cnt!=2 )
+	free( dummy.layers );
+#endif
 
     fseek(eps,0,SEEK_END);
     *len = ftell(eps);
@@ -1186,7 +1253,7 @@ return;
 	  case ut_composit:
 	    cur = cur->u.composit.state;
 	  break;
-	  case ut_state: case ut_statehint: case ut_statename:
+	  case ut_state: case ut_statehint: case ut_statename: case ut_layers:
 	    GDrawAddSelectionType(fv_list->gw,sn_clipboard,"image/eps",&copybuffer,0,sizeof(char),
 		    copybuffer2eps,noop);
 	    /* If the selection is one point, then export the coordinates as a string */

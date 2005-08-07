@@ -2793,17 +2793,29 @@ static SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags,int is_s
     real inversetrans[6];
     /*SplineSet *spl;*/
     int handle_eraser;
+    int ask = false;
 
     EntityDefaultStrokeFill(ec->splines);
 
     if ( !is_stroked ) {
-	if ( *flags==-1 )
-	    *flags = PsStrokeFlagsDlg();
-    
-	if ( *flags & sf_correctdir )
+
+	if ( *flags==-1 ) {
+	    for ( ent=ec->splines; ent!=NULL; ent = next ) {
+		if ( ent->type == et_splines &&
+			(ent->u.splines.fill.col==0xffffff ||
+			 (ent->u.splines.stroke_width!=0 && ent->u.splines.stroke.col!=0xffffffff))) {
+		    ask = true;
+	    break;
+		}
+	    }
+	    if ( ask )
+		*flags = PsStrokeFlagsDlg();
+	}
+
+	if ( *flags & sf_correctdir )		/* Will happen if flags still unset (-1) */
 	    EntityCharCorrectDir(ec);
-    
-	handle_eraser = *flags & sf_handle_eraser;
+
+	handle_eraser = *flags!=-1 && (*flags & sf_handle_eraser);
 	if ( handle_eraser )
 	    ec->splines = EntityReverse(ec->splines);
     }

@@ -74,7 +74,7 @@ return;
     fprintf(eps,"%%%%EndPreview\n" );
 }
 
-int _ExportEPS(FILE *eps,SplineChar *sc) {
+int _ExportEPS(FILE *eps,SplineChar *sc, int preview) {
     DBounds b;
     time_t now;
     struct tm *tm;
@@ -97,7 +97,8 @@ int _ExportEPS(FILE *eps,SplineChar *sc) {
     fprintf( eps, "%%%%CreationDate: %d:%02d %d-%d-%d\n", tm->tm_hour, tm->tm_min,
 	    tm->tm_mday, tm->tm_mon+1, 1900+tm->tm_year );
     fprintf( eps, "%%%%EndComments\n" );
-    EpsGeneratePreview(eps,sc,&b);
+    if ( preview )
+	EpsGeneratePreview(eps,sc,&b);
     fprintf( eps, "%%%%EndProlog\n" );
     fprintf( eps, "%%%%Page \"%s\" 1\n", sc->name );
 
@@ -126,7 +127,7 @@ static int ExportEPS(char *filename,SplineChar *sc) {
     if ( eps==NULL ) {
 return(0);
     }
-    ret = _ExportEPS(eps,sc);
+    ret = _ExportEPS(eps,sc,true);
     fclose(eps);
 return( ret );
 }
