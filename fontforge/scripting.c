@@ -2719,7 +2719,7 @@ static void bSetTTFName(Context *c) {
 	if ( u==NULL )
 return;
 	for ( prev = NULL, ln = sf->names; ln!=NULL && ln->lang<lang; prev = ln, ln = ln->next );
-	ln = gcalloc(1,sizeof(struct ttflangname));
+	ln = chunkalloc(sizeof(struct ttflangname));
 	ln->lang = lang;
 	if ( prev==NULL ) { ln->next = sf->names; sf->names = ln; }
 	else { ln->next = prev->next; prev->next = ln; }

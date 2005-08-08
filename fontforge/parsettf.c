@@ -922,7 +922,7 @@ return;
 
     for ( prev=NULL, cur=info->names; cur!=NULL && cur->lang!=language; prev = cur, cur=cur->next );
     if ( cur==NULL ) {
-	cur=gcalloc(1,sizeof(struct ttflangname));
+	cur = chunkalloc(sizeof(struct ttflangname));
 	cur->lang = language;
 	if ( prev==NULL )
 	    info->names = cur;
