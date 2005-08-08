@@ -3379,7 +3379,7 @@ static void SFDGetSubrs(FILE *sfd,SplineFont *sf) {
 }
 
 static struct ttflangname *SFDGetLangName(FILE *sfd,struct ttflangname *old) {
-    struct ttflangname *cur = gcalloc(1,sizeof(struct ttflangname)), *prev;
+    struct ttflangname *cur = chunkalloc(sizeof(struct ttflangname)), *prev;
     int i;
 
     getint(sfd,&cur->lang);

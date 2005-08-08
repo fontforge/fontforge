@@ -4319,7 +4319,7 @@ void TTFLangNamesFree(struct ttflangname *l) {
 	next = l->next;
 	for ( i=0; i<ttf_namemax; ++i )
 	    free(l->names[i]);
-	free(l);
+	chunkfree(l,sizeof(*l));
 	l = next;
     }
 }

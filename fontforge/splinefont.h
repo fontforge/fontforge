@@ -1219,7 +1219,6 @@ extern int WriteMacFamily(char *filename,struct sflist *sfs,enum fontformat form
 extern long mactime(void);
 extern int WriteSVGFont(char *fontname,SplineFont *sf,enum fontformat format,int flags,EncMap *enc);
 extern void SfListFree(struct sflist *sfs);
-extern struct ttflangname *TTFLangNamesCopy(struct ttflangname *old);
 extern void TTF_PSDupsDefault(SplineFont *sf);
 extern void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf);
 extern void TeXDefaultParams(SplineFont *sf);

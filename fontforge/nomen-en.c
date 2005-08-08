@@ -790,6 +790,16 @@ static char str_MacStyleSet = "Mac Style Set:";
 static char str_BadStyle = "Bad Style";
 static char str_NotBothCondenseExtend = "A style may not have both condense and extend set (it makes no sense)";
 static char str_FONDName = "FOND Name:";
+static char *str_LanguageOnly = "Language";
+static char mnemonic_LanguageOnly = 'L';
+static char *str_StringType = "String Type";
+static char mnemonic_StringType = 'S';
+static char *str_StrIDforLanguage = "%1$.30s string for %2$.30s"
+static char *str_MultiLineEdit = "Multi-line edit"
+static char *str_DetachFromPostScriptNames = "Detach from PostScript Names"
+static char *str_SameAsPostScriptNames = "Same as PostScript Names"
+static char *str_StringLocaleInUse = "This combination of StrID and Language is already in use"
+static char *str_AllStringsInUse = "All strings for this language have been assigned, you mayn't create another"
 
  /* Names of otf tags for GPOS features for anchor */
 static char *str_abvm = "Above Base Mark";

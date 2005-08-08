@@ -29,21 +29,37 @@
 #include <chardata.h>
 #include <utype.h>
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+extern int _GScrollBar_Width;
 #include <gkeysym.h>
 #include <math.h>
 
 static int last_aspect=0;
 
+struct sortablenames {
+    int strid;
+    int lang;
+    uint8 basedon;		/* Only for certain strids when lang is 0x409 (English US) */
+    uint8 cantremove;		/* Names based on PS values will always be output */
+    uint16 thislocale;
+    unichar_t *str;
+};
+
 struct gfi_data {
     SplineFont *sf;
-    GWindow gw;
+    GWindow gw, tn_v;
+    GFont *tn_font;
+    GGadget *tn_smalledit;
+    int tn_fh, tn_as;
+    int tn_width, tn_height;
+    int tn_offleft, tn_offtop, tn_langstart, tn_stridstart, tn_strstart, tn_hend;
+    int tn_active, tn_smallactive, tn_done;
     int private_aspect, ttfv_aspect, panose_aspect, tn_aspect, tx_aspect;
     int old_sel, old_aspect, old_lang, old_strid;
     int ttf_set, names_set, tex_set;
     struct psdict *private;
-    struct ttflangname *names;
-    struct ttflangname def;
-    int basedon[ttf_namemax];
+    int tn_cnt, tn_max;
+    int langlocalecode;	/* MS code for the current locale */
+    struct sortablenames *ttfnames;
     unsigned int family_untitled: 1;
     unsigned int human_untitled: 1;
     unsigned int done: 1;
@@ -988,11 +1004,13 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_PanMidLine		4009
 #define CID_PanXHeight		4010
 
-#define CID_Language		5001
-#define CID_StrID		5002
-#define CID_String		5003
-#define CID_TNDef		5004
-#define CID_BasedOn		5005
+#define CID_TNLangSort		5001
+#define CID_TNStringSort	5002
+#define CID_TNVScroll		5003
+#define CID_TNHScroll		5004
+#define CID_TNEntryField	5005
+
+#define CID_Language		5006	/* Used by AskForLangNames */
 
 #define CID_Comment		6001
 
@@ -2005,10 +2023,20 @@ static void GFI_ProcessContexts(struct gfi_data *d) {
 
 static void MCD_Close(struct markclassdlg *mcd);
 
+static void SortableNamesFree(struct sortablenames *names,int cnt) {
+    int i;
+
+    if ( names==NULL )
+return;
+
+    for ( i=0; i<cnt; ++i )
+	free(names[i].str);
+    free(names);
+}
+
 static void GFI_Close(struct gfi_data *d) {
     FontView *fvs;
     SplineFont *sf = d->sf;
-    int i;
 
     if ( d->ccd )
 	CCD_Close(d->ccd);
@@ -2019,9 +2047,7 @@ static void GFI_Close(struct gfi_data *d) {
 
     GFI_CleanupContext(d);
     PSDictFree(d->private);
-    for ( i=0; i<ttf_namemax; ++i )
-	free(d->def.names[i]);
-    TTFLangNamesFree(d->names);
+    SortableNamesFree(d->ttfnames,d->tn_cnt);
 
     GDrawDestroyWindow(d->gw);
     for ( fvs = d->sf->fv; fvs!=NULL; fvs = fvs->nextsame ) {
@@ -3709,15 +3735,6 @@ return( fpt );
 
 return( weight==NULL || *weight=='\0' ? regular: weight );
 }
-
-static unichar_t *uGetModifiers(unichar_t *fontname, unichar_t *familyname,
-	unichar_t *weight) {
-    unichar_t *ret;
-
-    ret = u_copy( _uGetModifiers(fontname,familyname,weight));
-    free( fontname );
-return( ret );
-}
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 void SFSetFontName(SplineFont *sf, char *family, char *mods,char *full) {
@@ -3909,129 +3926,6 @@ return( false );
     }
 return( true );
 }
-
-static int stylematch(const unichar_t *pt, const unichar_t **end) {
-    int i;
-    struct langstyle *test;
-
-    for ( i=0; stylelist[i]!=NULL; ++i ) {
-	for ( test = stylelist[i]; test->lang==0x409; ++test )
-	    if ( u_strnmatch(pt,test->str,u_strlen(test->str))==0 ) {
-		*end = pt + u_strlen(test->str);
-return( i );
-	}
-    }
-return( -1 );
-}
-
-static void DoDefaultStyles(struct gfi_data *d) {
-    const unichar_t *styles = _GGadgetGetTitle(GWidgetGetControl(d->gw, CID_String));
-    const unichar_t *pt, *end;
-    int trans[10], i=0, langs[30], j,k,l, match;
-    struct langstyle *test;
-    struct ttflangname *ln, *prev;
-
-    if ( *styles=='\0' ) styles = regulareng;
-    for ( pt=styles; *pt!='\0' ; ) {
-	if ( (match=stylematch(pt,&end))==-1 )
-	    ++pt;
-	else {
-	    if ( i<sizeof(trans)/sizeof(trans[0])-1 )
-		trans[i++] = match;
-	    pt = end;
-	}
-    }
-    trans[i] = -1;
-    if ( i==0 )
-return;
-
-    for ( test=stylelist[trans[0]], j=0; test->lang!=0; ++test ) {
-	if ( test->lang!=0x409 && j<sizeof(langs)/sizeof(langs[0])-1 )
-	    langs[j++] = test->lang;
-    }
-    for ( k=1; k<i; ++k ) {
-	for ( l=0; l<j; ++l ) {
-	    for ( test=stylelist[trans[k]]; test->lang!=0; ++test ) {
-		if ( test->lang==langs[l] )
-	    break;
-	    }
-	    if ( test->lang==0 ) {
-		/* No translation for this style, so give up on this lang */
-		--j;
-		for ( ; l<j; ++l )
-		    langs[l] = langs[l+1];
-	    }
-	}
-    }
-    
-    for ( l=0; l<j; ++l ) {
-	for ( prev = NULL, ln = d->names; ln!=NULL && ln->lang!=langs[l]; prev = ln, ln = ln->next );
-	if ( ln==NULL ) {
-	    ln = gcalloc(1,sizeof(struct ttflangname));
-	    ln->lang = langs[l];
-	    if ( prev==NULL ) { ln->next = d->names; d->names = ln; }
-	    else { ln->next = prev->next; prev->next = ln; }
-	}
-	if ( ln->names[ttf_subfamily]==NULL ) {
-	    unichar_t *res = NULL;
-	    int len;
-	    while ( 1 ) {
-		len = 0;
-		for ( k=0; k<i; ++k ) {
-		    for ( test=stylelist[trans[k]]; test->lang!=0 && test->lang!=langs[l]; ++test );
-		    if ( test->str!=NULL ) {
-			if ( res!=NULL )
-			    u_strcpy(res+len,test->str);
-			len += u_strlen(test->str);
-		    }
-		}
-		if ( res!=NULL )
-	    break;
-		res = galloc((len+1)*sizeof(unichar_t));
-	    }
-	    ln->names[ttf_subfamily] = res;
-	}
-    }
-}
-
-static void TNNotePresence(struct gfi_data *d, int strid) {
-    GGadget *list = GWidgetGetControl(d->gw,CID_Language);
-    int i,len, lang;
-    GTextInfo **ti = GGadgetGetList(list,&len);
-    struct ttflangname *cur;
-    Color fore = GDrawGetDefaultForeground(NULL);
-
-    for ( i=0; i<len; ++i ) {
-	lang = (intpt) ti[i]->userdata;
-	for ( cur=d->names; cur!=NULL && cur->lang!=lang; cur=cur->next );
-	if ( strid==-1 )
-	    ti[i]->fg = cur==NULL ? fore : COLOR_CREATE(0,0x80,0);
-	else {
-	    ti[i]->fg = cur==NULL || cur->names[strid]==NULL ? fore : COLOR_CREATE(0,0x80,0);
-	    if ( lang==0x409 && d->def.names[strid]!=NULL )
-		ti[i]->fg = COLOR_CREATE(0,0x80,0);
-	}
-    }
-}
-
-struct ttflangname *TTFLangNamesCopy(struct ttflangname *old) {
-    struct ttflangname *base=NULL, *last, *cur;
-    int i;
-
-    while ( old!=NULL ) {
-	cur = gcalloc(1,sizeof(struct ttflangname));
-	cur->lang = old->lang;
-	for ( i=0; i<ttf_namemax; ++i )
-	    cur->names[i] = u_copy(old->names[i]);
-	if ( base )
-	    last->next = cur;
-	else
-	    base = cur;
-	last = cur;
-	old = old->next;
-    }
-return( base );
-}
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 void TTF_PSDupsDefault(SplineFont *sf) {
@@ -4087,375 +3981,123 @@ return;
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static unichar_t versionformatspec[] = { 'V','e','r','s','i','o','n',' ','%','.','2','0','s',' ', '\0' };
 
-static void TTF_PSDupsChanged(GWindow gw,SplineFont *sf,struct ttflangname *newnames) {
-    struct ttflangname *english, *sfenglish;
-    const unichar_t *txt, *txt1;
-#define offsetfrom(type,name) (((char *) &(((type *) NULL)->name)) - (char *) NULL)
-    static struct dupttfps { int ttf, cid, sid, off; } dups[] =
-	{{ ttf_copyright, CID_Notice, _STR_Copyright, offsetfrom(SplineFont,copyright) },
-	 { ttf_family, CID_Family, _STR_Family, offsetfrom(SplineFont,familyname) },
-	 { ttf_fullname, CID_Human, _STR_Fullname, offsetfrom(SplineFont,fullname) },
-	 { ttf_version, CID_Version, _STR_Version, offsetfrom(SplineFont,version) },
-	 { ttf_subfamily, CID_Fontname, _STR_Styles, offsetfrom(SplineFont,fontname) },
-	 { -1 }};
-#undef offsetfrom
-    int changeall = -1, i;
-    unichar_t versionbuf[40];
+static int ttfspecials[] = { ttf_copyright, ttf_family, ttf_fullname,
+	ttf_subfamily, ttf_version, -1 };
 
-    for ( english=newnames; english!=NULL && english->lang!=0x409; english=english->next );
-    if ( english==NULL )
-return;
-    for ( sfenglish=sf->names; sfenglish!=NULL && sfenglish->lang!=0x409; sfenglish=sfenglish->next );
-    for ( i=0; dups[i].ttf!=-1; ++i ) {
-	txt=txt1=_GGadgetGetTitle(GWidgetGetControl(gw,dups[i].cid));
-	if ( dups[i].cid==CID_Fontname )
-	    txt1 = _uGetModifiers(txt,_GGadgetGetTitle(GWidgetGetControl(gw,CID_Family)),
-		    _GGadgetGetTitle(GWidgetGetControl(gw,CID_Weight)));
-	else if ( dups[i].cid==CID_Version ) {
-	    u_sprintf(versionbuf,versionformatspec,txt);
-	    txt1 = versionbuf;
-	    if ( english->names[dups[i].ttf]!=NULL &&
-		    u_strcmp(txt1,english->names[dups[i].ttf])!=0 )
-		versionbuf[u_strlen(versionbuf)-1] = '\0';	/* Trailing space often omitted */
-	}
-	if ( english->names[dups[i].ttf]!=NULL &&
-		*(char **) (((char *) sf) + dups[i].off)!=NULL &&
-		uc_strcmp(txt,*(char **) (((char *) sf) + dups[i].off))!=0 &&
-		u_strcmp(txt1,english->names[dups[i].ttf])!=0 ) {
-	    /* If we've got an entry for this guy, and the user changed the ps */
-	    /*  version of the name, and the new ps version doesn't match what */
-	    /*  we've got then.... */
-	    if ( sfenglish==NULL || sfenglish->names[dups[i].ttf]==NULL ) {
-		/* User has never set this value, let's set the new value to default */
-		free(english->names[dups[i].ttf]);
-		english->names[dups[i].ttf] = NULL;
-	    } else if ( u_strcmp(sfenglish->names[dups[i].ttf],english->names[dups[i].ttf])!=0 ) {
-		/* User has explicitly changed this from what it was, so presumably */
-		/*  s/he knows what s/he is doing */
-	    } else {
-		int ans=-1;
-		if ( changeall==-1 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		    static int buts[] = { _STR_Change, _STR_ChangeAll, _STR_RetainAll, _STR_Retain, 0 };
-		    ans = GWidgetAskR(_STR_Mismatch,buts,0,3,_STR_MismatchLong,
-#elif defined(FONTFORGE_CONFIG_GTK)
-		    char *buts[5];
-		    buts[0] = _("Change");
-		    buts[1] = _("Change All");
-		    buts[2] = _("Retain All");
-		    buts[3] = _("Retain");
-		    buts[4] = NULL;
-		    ans = gwwv_ask(_("Mismatch"),buts,0,3,_("You have changed one version of %s but not the one under TTF Names. Would you like to set the TTF version to the changed one?"),
-#endif
-			    GStringGetResource(dups[i].sid,NULL));
-		    if ( ans==1 ) changeall=1;
-		    else if ( ans==2 ) changeall=0;
-		}
-		if ( changeall==1 || ans==0 ) {
-		    free(english->names[dups[i].ttf]);
-		    english->names[dups[i].ttf] = NULL;
-		}
-	    }
-	}
-    }
-}
-
-static int GFI_DefaultStyles(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-	DoDefaultStyles(d);
-	TNNotePresence(d,ttf_subfamily);
-    }
-return( true );
-}
-
-static void tn_recalculatedef(struct gfi_data *d,int cur_id) {
+static unichar_t *tn_recalculatedef(struct gfi_data *d,int cur_id) {
     unichar_t versionbuf[40];
 
     switch ( cur_id ) {
       case ttf_copyright:
-	d->def.names[ttf_copyright] = GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Notice));
-      break;
+return( GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Notice)));
       case ttf_family:
-	d->def.names[ttf_family] = GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Family));
-      break;
+return( GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Family)));
       case ttf_fullname:
-	d->def.names[ttf_fullname] = GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Human));
-      break;
+return( GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Human)));
       case ttf_subfamily:
-	d->def.names[ttf_subfamily] = uGetModifiers(
-		GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Fontname)),
-		d->def.names[ttf_family],
-		GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Weight)));
-      break;
+return( u_copy(_uGetModifiers(
+		_GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Fontname)),
+		_GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Family)),
+		_GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Weight)))));
       case ttf_version:
 	u_sprintf(versionbuf,versionformatspec,
 		_GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Version)));
-	d->def.names[ttf_version] = u_copy(versionbuf);
-      break;
+return( u_copy(versionbuf));
+      default:
+return( NULL );
     }
 }
 
-static void TNFinishFormer(struct gfi_data *d) {
-    GGadget *langlist = GWidgetGetControl(d->gw,CID_Language);
-    int cur_lang = GGadgetGetFirstListSelectedItem(langlist);
-    int cur_id = GGadgetGetFirstListSelectedItem(GWidgetGetControl(d->gw,CID_StrID));
-    struct ttflangname *cur, *prev;
-    int nothing;
-    static unichar_t nullstr[1] = { 0 };
+static const unichar_t *ulangname(int lang,unichar_t *ubuffer) {
     int i;
-    int32 len;
-    GTextInfo **langs = GGadgetGetList(langlist,&len);
+    char buffer[20];
 
-    if ( d->old_lang!=-1 ) {
-	int lang = (int) langs[d->old_lang]->userdata;
-	int id = (int) ttfnameids[d->old_strid].userdata;
-	const unichar_t *str = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_String));
+    for ( i=0; mslanguages[i].text!=NULL; ++i )
+	if ( mslanguages[i].userdata == (void *) lang )
+return( GStringGetResource((intpt) mslanguages[i].text,NULL ));
 
-	for ( prev=NULL, cur = d->names; cur!=NULL && cur->lang!=lang; prev = cur, cur=cur->next );
-	if ( lang==0x409 /* US English, default */ && d->def.names[id]!=NULL &&
-		u_strcmp(str,d->def.names[id])==0 ) {
-	    if ( cur != NULL ) {
-		free(cur->names[id]);
-		cur->names[id] = NULL;
-	    }
-  goto finishup;	/* If it's the default value then ignore it */
-	}
-
-	nothing = false;
-	if ( *str=='\0' && cur!=NULL ) {
-	    nothing = true;
-	    for ( i=0; i<ttf_namemax && nothing; ++i )
-		if ( cur->names[i]!=NULL && i!=id ) nothing = false;
-	}
-	if ( cur==NULL && *str=='\0' )
-  goto finishup;
-	else if ( cur==NULL ) {
-	    cur = gcalloc(1,sizeof(struct ttflangname));
-	    if ( prev==NULL )
-		d->names = cur;
-	    else
-		prev->next = cur;
-	    cur->lang = lang;
-	}
-
-	if ( nothing ) {
-	    if ( prev==NULL )
-		d->names = cur->next;
-	    else
-		prev->next = cur->next;
-	    cur->next = NULL;
-	    TTFLangNamesFree(cur);
-	} else {
-	    if ( *str=='\0' ) {
-		free(cur->names[id]);
-		cur->names[id] = NULL;
-	    } else if ( cur->names[id]==NULL || u_strcmp(cur->names[id],str)!=0 ) {
-		free(cur->names[id]);
-		cur->names[id] = u_copy(str);
-	    }
-	}
-    }
-  finishup:
-    d->old_lang = cur_lang;
-    d->old_strid = cur_id;
-
-    cur_id =(int) ttfnameids[cur_id].userdata;
-    cur_lang = (int) langs[cur_lang]->userdata;
-    if ( cur_lang==0x409 && (cur_id==ttf_copyright || cur_id==ttf_family ||
-	    cur_id==ttf_subfamily || cur_id==ttf_fullname || cur_id==ttf_version)) {
-	if ( d->basedon[cur_id] )
-	    tn_recalculatedef(d,cur_id);
-	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_BasedOn),true);
-	GGadgetSetChecked(GWidgetGetControl(d->gw,CID_BasedOn),d->basedon[cur_id]);
-	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_String),!d->basedon[cur_id]);
-    } else {
-	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_BasedOn),false);
-	GGadgetSetChecked(GWidgetGetControl(d->gw,CID_BasedOn),false);
-	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_String),true);
-    }
-    TNNotePresence(d,cur_id);
-    for ( cur = d->names; cur!=NULL && cur->lang!=cur_lang; cur=cur->next );
-    GGadgetSetTitle(GWidgetGetControl(d->gw,CID_String),
-	    cur!=NULL && cur->names[cur_id]!=NULL?cur->names[cur_id]:
-	    cur_lang == 0x409 && d->def.names[cur_id]!=NULL?d->def.names[cur_id]:
-	    nullstr );
-    GGadgetSetVisible(GWidgetGetControl(d->gw,CID_TNDef),cur_id==ttf_subfamily && cur_lang==0x409);
+    sprintf( buffer, "%04X", lang );
+    uc_strcpy(ubuffer,buffer);
+return( ubuffer );
 }
 
-static int GFI_BasedOnChange(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
-	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-	int cur_id = GGadgetGetFirstListSelectedItem(GWidgetGetControl(d->gw,CID_StrID));
-	struct ttflangname *cur;
-	static unichar_t nullstr[1] = { 0 };
+static int strid_sorter(const void *pt1, const void *pt2) {
+    const struct sortablenames *n1 = pt1, *n2 = pt2;
+    unichar_t ubuf1[20], ubuf2[20];
+    const unichar_t *l1, *l2;
 
-	cur_id =(int) ttfnameids[cur_id].userdata;
-	d->basedon[cur_id] = GGadgetIsChecked(GWidgetGetControl(d->gw,CID_BasedOn));
-	if ( d->basedon[cur_id] ) {
-	    tn_recalculatedef(d,cur_id);
-	    for ( cur = d->names; cur!=NULL && cur->lang!=0x409; cur=cur->next );
-	    if ( cur!=NULL ) {
-		free(cur->names[cur_id]);
-		cur->names[cur_id] = NULL;
-	    }
-	    GGadgetSetTitle(GWidgetGetControl(d->gw,CID_String),
-		    d->def.names[cur_id]!=NULL?d->def.names[cur_id]:
-		    nullstr );
-	}
-	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_String),!d->basedon[cur_id]);
-    }
-return( true );
+    if ( n1->strid!=n2->strid )
+return( n1->strid - n2->strid );
+
+    l1 = ulangname(n1->lang,ubuf1);
+    l2 = ulangname(n2->lang,ubuf2);
+return( u_strcmp(l1,l2));
 }
 
-static int GFI_LanguageChange(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
-	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-	TNFinishFormer(d);
-    }
-return( true );
+static int lang_sorter(const void *pt1, const void *pt2) {
+    const struct sortablenames *n1 = pt1, *n2 = pt2;
+    unichar_t ubuf1[20], ubuf2[20];
+    const unichar_t *l1, *l2;
+
+    if ( n1->lang==n2->lang )
+return( n1->strid - n2->strid );
+
+    l1 = ulangname(n1->lang,ubuf1);
+    l2 = ulangname(n2->lang,ubuf2);
+return( u_strcmp(l1,l2));
 }
 
-static int LangSearch(GTextInfo **langs,int langlocalecode,int langcode) {
-    int i, found=-1, samelang=-1;
-    int code;
+static int specialvals(const struct sortablenames *n) {
+    if ( n->lang == n->thislocale )
+return( -10000000 );
+    else if ( (n->lang&0x3ff) == (n->thislocale&0x3ff) )
+return( -10000000 + (n->lang&~0x3ff) );
+    if ( n->lang == 0x409 )	/* English */
+return( -1000000 );
+    else if ( (n->lang&0x3ff) == 9 )
+return( -1000000 + (n->lang&~0x3ff) );
 
-    /* Special checks for chinese. Tradition & Simplified are distinct */
-    if ( langcode!=0x4 || langlocalecode==-1 ) {
-	for ( i=0; langs[i]->text!=NULL; ++i ) {
-	    code = (intpt) (langs[i]->userdata);
-	    if ( langs[i]->fg == COLOR_CREATE(0x00,0x80,0x00) ) {
-		if ( code==langlocalecode ) {
-		    found = i;
-	break;
-		} else if ( (code&0xff)==langcode )
-		    samelang = i;
-	    }
-	}
-    } else if ( langlocalecode == 0x404 || langlocalecode == 0xc04 || langlocalecode==0x1404 ) {
-    /* Don't confuse simplified & traditional chinese */
-	for ( i=0; langs[i]->text!=NULL; ++i ) {
-	    code = (intpt) (langs[i]->userdata);
-	    if ( langs[i]->fg == COLOR_CREATE(0x00,0x80,0x00) ) {
-		if ( code==langlocalecode ) {
-		    found = i;
-	break;
-		} else if ( code==0x404 || code == 0xc04 || code==0x1404 )
-		    samelang = i;
-	    }
-	}
-    } else {
-	for ( i=0; langs[i]->text!=NULL; ++i ) {
-	    code = (intpt) (langs[i]->userdata);
-	    if ( langs[i]->fg == COLOR_CREATE(0x00,0x80,0x00) ) {
-		if ( code==langlocalecode ) {
-		    found = i;
-	break;
-		} else if ( code==0x804 || code == 0x1004 )
-		    samelang = i;
-	    }
-	}
-    }
-    if ( found==-1 ) found = samelang;
-return( found );
+return( 1 );
 }
 
-static int PickMSLocale(int def) {
-    const unichar_t **choices;
-    int ret, cnt;
+static int speciallang_sorter(const void *pt1, const void *pt2) {
+    const struct sortablenames *n1 = pt1, *n2 = pt2;
+    unichar_t ubuf1[20], ubuf2[20];
+    const unichar_t *l1, *l2;
+    int pos1=1, pos2=1;
 
-    for ( cnt=0; mslanguages[cnt].text!=NULL; ++cnt );
-    choices = gcalloc(cnt+1,sizeof(unichar_t *));
-    for ( cnt=0; mslanguages[cnt].text!=NULL; ++cnt )
-	choices[cnt] = GStringGetResource((intpt) mslanguages[cnt].text,NULL);
-    ret = GWidgetChoicesR(_STR_PickALocale, choices,cnt, def,_STR_PickALocale);
-    free( choices );
-return( ret );
+    /* sort so that entries for the current language are first, then English */
+    /*  then alphabetical order */
+    if ( n1->lang==n2->lang )
+return( n1->strid - n2->strid );
+
+    pos1 = specialvals(n1); pos2 = specialvals(n2);
+    if ( pos1<0 || pos2<0 )
+return( pos1-pos2 );
+    l1 = ulangname(n1->lang,ubuf1);
+    l2 = ulangname(n2->lang,ubuf2);
+return( u_strcmp(l1,l2));
 }
 
-void VerifyLanguages(SplineFont *sf) {
-    struct ttflangname *cur, *prev, *next, *other;
-    int i, ans;
-    static int buts[] = { _STR_Retain, _STR_Merge, _STR_Remove, 0 };
-    /* Check that we know about all the language/locales in the font */
+static void TTFNames_Resort(struct gfi_data *d) {
+    int(*compar)(const void *, const void *);
 
-    for ( prev = NULL, cur=sf->names; cur!=NULL; cur=next ) {
-	next = cur->next;
-	for ( i=sizeof(mslanguages)/sizeof(mslanguages[0])-1; i>=0 ; --i )
-	    if ( mslanguages[i].userdata == (void *) (cur->lang) )
-	break;
-	if ( i!=-1 ) {
-	    prev = cur;
-    continue;
-	}
-	for ( i=sizeof(mslanguages)/sizeof(mslanguages[0])-1; i>=0 ; --i )
-	    if ( mslanguages[i].userdata == (void *) (0x400|(cur->lang&0x3ff)) )
-	break;
-	if ( i!=-1 )
-	    ans = GWidgetAskR(_STR_BadLocale,buts,0,0,_STR_UnknownLocaleKnownLang,
-		    cur->lang,GStringGetResource((intpt) mslanguages[i].text,NULL));
-	else
-	    ans = GWidgetAskR(_STR_BadLocale,buts,0,0,_STR_UnknownLocaleLang,
-		    cur->lang,NULL);
-	if ( ans==0 ) {
-	    prev = cur;
-    continue;
-	}
-	if ( ans==1 ) {
-	    int which = PickMSLocale(i);
-	    if ( which==-1 ) {	/* They cancelled */
-		next = cur;	/* Ask again */
-    continue;
-	    }
-	    for ( other=sf->names; other!=NULL; other=other->next )
-		if ( (void *) (other->lang)==mslanguages[which].userdata )
-	    break;
-	    if ( other==NULL ) {
-		/* Nothing to merge into, just rename this to the new locale */
-		cur->lang = (intpt) mslanguages[which].userdata;
-		prev = cur;
-    continue;
-	    }
-	    for ( i=0; i<ttf_namemax; ++i )
-		if ( other->names[i]==NULL ) {
-		    other->names[i] = cur->names[i];
-		    cur->names[i] = NULL;
-		}
-	    /* Fall through and delete the old entry */
-	}
-	/* Delete it */
-	if ( prev==NULL )
-	    sf->names = next;
-	else
-	    prev->next = next;
-	cur->next = NULL;
-	TTFLangNamesFree(cur);
-    }
+    if ( GGadgetIsChecked(GWidgetGetControl(d->gw,CID_TNLangSort)) )
+	compar = lang_sorter;
+    else if ( GGadgetIsChecked(GWidgetGetControl(d->gw,CID_TNStringSort)) )
+	compar = strid_sorter;
+    else
+	compar = speciallang_sorter;
+    qsort(d->ttfnames,d->tn_cnt,sizeof(struct sortablenames),compar);
 }
 
 static void DefaultLanguage(struct gfi_data *d) {
     const char *lang=NULL;
-    int i, found=-1, langlen;
+    int i, langlen;
     static char *envs[] = { "LC_ALL", "LC_MESSAGES", "LANG", NULL };
-    GGadget *g = GWidgetGetControl(d->gw,CID_Language);
-    int32 len;
-    GTextInfo **langs;
     char langcountry[8], language[4];
     int langcode, langlocalecode;
-    struct ttflangname *cur;
 
-    d->old_lang = -1;
-    d->names_set = true;
-    d->names = TTFLangNamesCopy(d->sf->names);
-    tn_recalculatedef(d,ttf_copyright);
-    tn_recalculatedef(d,ttf_family);
-    tn_recalculatedef(d,ttf_fullname);
-    tn_recalculatedef(d,ttf_subfamily);
-    tn_recalculatedef(d,ttf_version);
-    DefaultTTFEnglishNames(&d->def, d->sf);
-    TNNotePresence(d,ttf_subfamily);		/* What languages are available? */
-
-    langs = GGadgetGetList(g,&len);
     for ( i=0; envs[i]!=NULL; ++i ) {
 	lang = getenv(envs[i]);
 	if ( lang!=NULL ) {
@@ -4479,55 +4121,743 @@ static void DefaultLanguage(struct gfi_data *d) {
     for ( i=0; ms_2_locals[i].loc_name!=NULL; ++i ) {
 	if ( strmatch(langcountry,ms_2_locals[i].loc_name)==0 ) {
 	    langlocalecode = ms_2_locals[i].local_id;
-	    langcode = langlocalecode&0xff;
+	    langcode = langlocalecode&0x3ff;
     break;
 	} else if ( strncmp(language,ms_2_locals[i].loc_name,langlen)==0 )
-	    langcode = ms_2_locals[i].local_id&0xff;
+	    langcode = ms_2_locals[i].local_id&0x3ff;
     }
-    if ( langcode==-1 ) {		/* Default to English */
-	langlocalecode = 0x409;
+    if ( langcode==-1 )		/* Default to English */
 	langcode = 0x9;
+    d->langlocalecode = langlocalecode==-1 ? (langcode|0x400) : langlocalecode;
+}
+
+static void TN_HScroll(struct gfi_data *d,struct sbevent *sb) {
+    int newpos = d->tn_offleft;
+
+    switch( sb->type ) {
+      case et_sb_top:
+        newpos = 0;
+      break;
+      case et_sb_uppage:
+        newpos -= 9*d->tn_width/10;
+      break;
+      case et_sb_up:
+        newpos -= d->tn_width/15;
+      break;
+      case et_sb_down:
+        newpos += d->tn_width/15;
+      break;
+      case et_sb_downpage:
+        newpos += 9*d->tn_width/10;
+      break;
+      case et_sb_bottom:
+        newpos = d->tn_hend;
+      break;
+      case et_sb_thumb:
+      case et_sb_thumbrelease:
+        newpos = sb->pos;
+      break;
+    }
+    if ( newpos + d->tn_width > d->tn_hend )
+	newpos = d->tn_hend - d->tn_width;
+    if ( newpos<0 )
+	newpos = 0;
+    if ( newpos!=d->tn_offleft ) {
+	int diff = d->tn_offleft-newpos;
+	GRect r;
+	d->tn_offleft = newpos;
+	GScrollBarSetPos(GWidgetGetControl(d->gw,CID_TNHScroll),newpos);
+	r.x = 1; r.y = 1; r.width = d->tn_width-1; r.height = d->tn_height-1;
+	GDrawScroll(d->tn_v,&r,diff,0);
+    }
+}
+
+static void TN_VScroll(struct gfi_data *d,struct sbevent *sb) {
+    int newpos = d->tn_offtop;
+    int page = d->tn_height/d->tn_fh;
+
+    switch( sb->type ) {
+      case et_sb_top:
+        newpos = 0;
+      break;
+      case et_sb_uppage:
+        newpos -= 9*page/10;
+      break;
+      case et_sb_up:
+        newpos--;
+      break;
+      case et_sb_down:
+        newpos++;
+      break;
+      case et_sb_downpage:
+        newpos += 9*page/10;
+      break;
+      case et_sb_bottom:
+        newpos = d->tn_cnt+1;
+      break;
+      case et_sb_thumb:
+      case et_sb_thumbrelease:
+        newpos = sb->pos;
+      break;
+    }
+    if ( newpos + page > d->tn_cnt+1 )
+	newpos = d->tn_cnt+1 - page;
+    if ( newpos<0 )
+	newpos = 0;
+    if ( newpos!=d->tn_offtop ) {
+	int diff = (newpos-d->tn_offtop)*d->tn_fh;
+	GRect r;
+	d->tn_offtop = newpos;
+	GScrollBarSetPos(GWidgetGetControl(d->gw,CID_TNVScroll),newpos);
+	r.x = 1; r.y = 1; r.width = d->tn_width-1; r.height = d->tn_height-1;
+	GDrawScroll(d->tn_v,&r,0,diff);
+    }
+}
+
+static int _TN_HScroll(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_scrollbarchange ) {
+	struct gfi_data *d = (struct gfi_data *) GDrawGetUserData(GGadgetGetWindow(g));
+	TN_HScroll(d,&e->u.control.u.sb);
+    }
+return( true );
+}
+
+static int _TN_VScroll(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_scrollbarchange ) {
+	struct gfi_data *d = (struct gfi_data *) GDrawGetUserData(GGadgetGetWindow(g));
+	TN_VScroll(d,&e->u.control.u.sb);
+    }
+return( true );
+}
+
+static void TTFN_SetSBs(struct gfi_data *d) {
+    GGadget *vsb, *hsb;
+    int langmax,stridmax,strmax, i,k;
+    unichar_t ubuf[20];
+    int len;
+    const unichar_t *l;
+    unichar_t *str, *freeme, *pt;
+
+    vsb = GWidgetGetControl(d->gw,CID_TNVScroll);
+    hsb = GWidgetGetControl(d->gw,CID_TNHScroll);
+
+    GScrollBarSetBounds(vsb,0,d->tn_cnt+1,d->tn_height/d->tn_fh);
+    if ( d->tn_offtop + d->tn_height/d->tn_fh > d->tn_cnt+1 )
+	d->tn_offtop = d->tn_cnt+1 - d->tn_height/d->tn_fh;
+    if ( d->tn_offtop<0 ) d->tn_offtop = 0;
+    GScrollBarSetPos(vsb,d->tn_offtop);
+
+    GDrawSetFont(d->tn_v,d->tn_font);
+    langmax = stridmax = strmax = 0;
+    if ( d->tn_cnt>0 ) {
+	for ( i=0; i<d->tn_cnt; ++i ) {
+	    for ( k=0; ttfnameids[k].text!=NULL && ttfnameids[k].userdata!=(void *) d->ttfnames[i].strid;
+		    ++k );
+	    if ( ttfnameids[k].text!=NULL ) {
+		const unichar_t *strid = GStringGetResource((intpt ) ttfnameids[k].text,NULL);
+		len = GDrawGetTextWidth(d->tn_v,strid,-1,NULL);
+		if ( len>stridmax ) stridmax = len;
+	    }
+
+	    l = ulangname( d->ttfnames[i].lang,ubuf );
+	    len = GDrawGetTextWidth(d->tn_v,l,-1,NULL);
+	    if ( len>langmax ) langmax = len;
+
+	    str = d->ttfnames[i].str;
+	    freeme = NULL;
+	    if ( str==NULL )
+		freeme = str = tn_recalculatedef(d,d->ttfnames[i].strid);
+	    pt = u_strchr(str,'\n');
+	    len = GDrawGetTextWidth(d->tn_v,str,pt==NULL ? -1 : pt-str,NULL);
+	    free(freeme);
+	    if ( len>strmax ) strmax = len;
+	}
+    }
+    d->tn_langstart = 3;
+    d->tn_stridstart = d->tn_langstart+langmax+6;
+    d->tn_strstart = d->tn_stridstart+stridmax+6;
+    d->tn_hend = d->tn_strstart+strmax+3;
+
+    GScrollBarSetBounds(hsb,0,d->tn_hend,d->tn_width);
+    if ( d->tn_offleft + d->tn_width > d->tn_hend )
+	d->tn_offleft = d->tn_hend - d->tn_width;
+    if ( d->tn_offleft<0 ) d->tn_offleft = 0;
+    GScrollBarSetPos(hsb,d->tn_offleft);
+}
+
+static void TNExpose(struct gfi_data *d,GWindow pixmap,GEvent *event) {
+    int i,k;
+    const unichar_t *l, *strid;
+    unichar_t ubuf[20];
+    unichar_t *str, *freeme, *pt;
+
+    GDrawDrawLine(pixmap,0,0,0,d->tn_height,0x000000);
+    GDrawDrawLine(pixmap,d->tn_stridstart-3-d->tn_offleft,0,d->tn_stridstart-3-d->tn_offleft,d->tn_height,0x000000);
+    GDrawDrawLine(pixmap,d->tn_strstart-3-d->tn_offleft,0,d->tn_strstart-3-d->tn_offleft,d->tn_height,0x000000);
+    GDrawDrawLine(pixmap,0,0,d->tn_width,0,0x000000);
+
+    GDrawSetFont(pixmap,d->tn_font);
+    for ( i=event->u.expose.rect.y/d->tn_fh;
+	    i<=(event->u.expose.rect.y+event->u.expose.rect.height+d->tn_fh-1)/d->tn_fh &&
+	     i+d->tn_offtop<=d->tn_cnt;
+	    ++i ) {
+	if ( i+d->tn_offtop==d->tn_cnt ) {
+	    u_strncpy(ubuf+1,GStringGetResource(_STR_New,NULL),sizeof(ubuf)/sizeof(ubuf[0])-2);
+	    ubuf[0] = '<';
+	    ubuf[18] = '\0';
+	    k = u_strlen(ubuf);
+	    ubuf[k] = '>'; ubuf[k+1] = '\0';
+	    GDrawDrawText(pixmap,d->tn_langstart-d->tn_offleft,i*d->tn_fh+d->tn_as,
+		    ubuf,-1,NULL,0xff0000);
+    break;
+	}
+	if ( d->tn_stridstart-3 > d->tn_offleft ) {
+	    l = ulangname( d->ttfnames[i+d->tn_offtop].lang,ubuf );
+	    GDrawDrawText(pixmap,d->tn_langstart-d->tn_offleft,i*d->tn_fh+d->tn_as,
+		    l,-1,NULL,0x000000);
+	}
+	if ( d->tn_strstart-3 > d->tn_offleft ) {
+	    for ( k=0; ttfnameids[k].text!=NULL && ttfnameids[k].userdata!=(void *) d->ttfnames[i+d->tn_offtop].strid;
+		    ++k );
+	    if ( ttfnameids[k].text!=NULL ) {
+		strid = GStringGetResource((intpt ) ttfnameids[k].text,NULL);
+		GDrawDrawText(pixmap,d->tn_stridstart-d->tn_offleft,i*d->tn_fh+d->tn_as,
+			strid,-1,NULL,0x000000);
+	    }
+	}
+
+	str = d->ttfnames[i+d->tn_offtop].str;
+	freeme = NULL;
+	if ( str==NULL )
+	    freeme = str = tn_recalculatedef(d,d->ttfnames[i+d->tn_offtop].strid);
+	pt = u_strchr(str,'\n');
+	GDrawDrawText(pixmap,d->tn_strstart-d->tn_offleft,i*d->tn_fh+d->tn_as,
+		str,pt==NULL ? -1 : pt-str,NULL,freeme==NULL ? 0x000000 : 0xff0000);
+	free(freeme);
+    }
+}
+
+static int GFI_Char(struct gfi_data *d,GEvent *event) {
+    if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	help("fontinfo.html");
+return( true );
+    } else if ( event->u.chr.keysym=='s' &&
+	    (event->u.chr.state&ksm_control) &&
+	    (event->u.chr.state&ksm_meta) ) {
+	MenuSaveAll(NULL,NULL,NULL);
+return( true );
+    } else if ( event->u.chr.keysym=='q' && (event->u.chr.state&ksm_control)) {
+	if ( event->u.chr.state&ksm_shift ) {
+	    GFI_CancelClose(d);
+	} else
+	    MenuExit(NULL,NULL,NULL);
+return( true );
+    }
+return( false );
+}
+
+static void TN_DeleteActive(struct gfi_data *d) {
+    int i;
+
+    if ( d->ttfnames[d->tn_active].cantremove ) {
+	GDrawBeep(NULL);
+return;
+    }
+    free(d->ttfnames[d->tn_active].str);
+    --d->tn_cnt;
+    for ( i=d->tn_active; i<d->tn_cnt; ++i )
+	d->ttfnames[i] = d->ttfnames[i+1];
+    TTFN_SetSBs(d);
+    GDrawRequestExpose(d->tn_v,NULL,false);
+}
+    
+static void CheckActiveStyleTranslation(struct gfi_data *d) {
+    int i,j, eng_pos, other_pos;
+    unichar_t *english, *new=NULL, *temp, *pt;
+    int other_lang = d->ttfnames[d->tn_active].lang;
+    int changed = false;
+
+    if ( d->ttfnames[d->tn_active].strid!=ttf_subfamily ||
+	    other_lang==0x409 ||
+	    (d->ttfnames[d->tn_active].str!=NULL &&
+	     *d->ttfnames[d->tn_active].str!='\0' ))
+return;
+
+    for ( i=d->tn_cnt-1; i>=0 ; --i )
+	if ( d->ttfnames[i].strid==ttf_subfamily &&
+		d->ttfnames[i].lang == 0x409 )
+    break;
+    if ( i<0 || (english = d->ttfnames[i].str)==NULL )
+	new = tn_recalculatedef(d,ttf_subfamily);
+    else
+	new = u_copy(english);
+    for ( i=0; stylelist[i]!=NULL; ++i ) {
+	eng_pos = other_pos = -1;
+	for ( j=0; stylelist[i][j].str!=NULL; ++j ) {
+	    if ( stylelist[i][j].lang == other_lang ) {
+		other_pos = j;
+	break;
+	    }
+	}
+	if ( other_pos==-1 )
+    continue;
+	for ( j=0; stylelist[i][j].str!=NULL; ++j ) {
+	    if ( stylelist[i][j].lang == 0x409 &&
+		    (pt = u_strstrmatch(new,stylelist[i][j].str))!=NULL ) {
+		if ( pt==new && u_strlen(stylelist[i][j].str)==u_strlen(new) ) {
+		    free(new);
+		    free(d->ttfnames[d->tn_active].str);
+		    d->ttfnames[d->tn_active].str = u_copy(stylelist[i][other_pos].str);
+return;
+		}
+		temp = galloc((u_strlen(new)
+			+ u_strlen(stylelist[i][other_pos].str)
+			- u_strlen(stylelist[i][j].str)
+			+1)*sizeof(unichar_t));
+		u_strncpy(temp,new,pt-new);
+		u_strcpy(temp+(pt-new),stylelist[i][other_pos].str);
+		u_strcat(temp+(pt-new),pt+u_strlen(stylelist[i][j].str));
+		free(new);
+		new = temp;
+		changed = true;
+	continue;
+	    }
+	}
+    }
+    if ( changed ) {
+	free(d->ttfnames[d->tn_active].str);
+	d->ttfnames[d->tn_active].str = new;
+    } else
+	free(new);
+}
+
+static void TN_StrSmallEdit(struct gfi_data *d) {
+    static unichar_t nullstr[1] = { 0 };
+    int len;
+
+    if ( d->tn_active < 0 || d->tn_active >= d->tn_cnt ) {
+	d->tn_active = -1;
+return;
+    }
+    d->tn_smallactive = d->tn_active;
+    CheckActiveStyleTranslation(d);
+    GGadgetSetTitle(d->tn_smalledit,
+	    d->ttfnames[d->tn_smallactive].str!=NULL
+		    ? d->ttfnames[d->tn_smallactive].str
+		    : nullstr );
+    len = d->tn_width - d->tn_strstart + 1;
+    if ( len<60 )
+	len = 60;
+    GGadgetResize(d->tn_smalledit,len,d->tn_fh);
+    GGadgetMove(d->tn_smalledit,d->tn_width-len,d->tn_offtop+d->tn_smallactive*d->tn_fh);
+    GGadgetSetVisible(d->tn_smalledit,true);
+    GGadgetSetEnabled(d->tn_smalledit,true);
+    GWidgetIndicateFocusGadget(d->tn_smalledit);
+}
+
+static void TN_FinishSmallEdit(struct gfi_data *d) {
+    if ( d->tn_smallactive < 0 || d->tn_smallactive >= d->tn_cnt ) {
+	d->tn_smallactive = -1;
+return;
+    }
+    free(d->ttfnames[d->tn_smallactive].str);
+    d->ttfnames[d->tn_smallactive].str = GGadgetGetTitle(d->tn_smalledit);
+    GGadgetSetVisible(d->tn_smalledit,false);
+    if ( *d->ttfnames[d->tn_smallactive].str=='\0' && !d->ttfnames[d->tn_smallactive].cantremove ) {
+	d->tn_active = d->tn_smallactive;
+	TN_DeleteActive(d);
+    }
+    d->tn_active = d->tn_smallactive = -1;
+}
+
+static int big_e_h(GWindow gw, GEvent *event) {
+    struct gfi_data *d = GDrawGetUserData(gw);
+    if ( event->type==et_close ) {
+	d->tn_done = true;
+    } else if ( event->type == et_char ) {
+return( false );
+    } else if ( event->type == et_resize ) {
+	GRect size, temp, temp2;
+	GDrawGetSize(gw,&size);
+	GGadgetGetSize(GWidgetGetControl(gw,CID_TNEntryField),&temp);
+	GGadgetResize(GWidgetGetControl(gw,CID_TNEntryField),size.width-2*temp.x,
+		size.height-GDrawPointsToPixels(gw,46));
+	GGadgetResize(GWidgetGetControl(gw,CID_MainGroup),size.width-4,
+		size.height-4);
+	GGadgetGetSize(GWidgetGetControl(gw,CID_OK),&temp);
+	GGadgetMove(GWidgetGetControl(gw,CID_OK),temp.x,
+		size.height-GDrawPointsToPixels(gw,34+3));
+	GGadgetGetSize(GWidgetGetControl(gw,CID_Cancel),&temp2);
+	GGadgetMove(GWidgetGetControl(gw,CID_Cancel),size.width-temp.x-temp2.width,
+		size.height-GDrawPointsToPixels(gw,34));
+	GDrawRequestExpose(gw,NULL,false);
+    } else if ( event->type == et_controlevent && event->u.control.subtype == et_buttonactivate ) {
+	d->tn_done = true;
+	if ( GGadgetGetCid(event->u.control.g)==CID_OK ) {
+	    free(d->ttfnames[d->tn_active].str);
+	    d->ttfnames[d->tn_active].str = GGadgetGetTitle(GWidgetGetControl(gw,CID_TNEntryField));
+	    if ( *d->ttfnames[d->tn_active].str=='\0' && !d->ttfnames[d->tn_active].cantremove )
+		TN_DeleteActive(d);
+	}
+    }
+return( true );
+}
+
+static void TN_StrBigEdit(struct gfi_data *d) {
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    GGadgetCreateData mgcd[6];
+    GTextInfo mlabel[6];
+    unichar_t ubuf[100], ubuf2[20];
+    const unichar_t *lang;
+    int k;
+
+    if ( d->tn_active < 0 || d->tn_active >= d->tn_cnt ) {
+	d->tn_active = -1;
+return;
     }
 
-    found = LangSearch(langs,langlocalecode,langcode);
-    if ( found==-1 )		/* Search for English */
-	found = LangSearch(langs,0x409,0x9);
-    if ( found==-1 ) {		/* Search for any existing string */
-	for ( found=len-1; found>=0; --found )
-	    if ( langs[found]->fg == COLOR_CREATE(0x00,0x80,0x00))
-	break;
-    }
-    if ( found==-1 ) {		/* Search for non-existant string in correct locale */
-	for ( found=len-1; found>=0; --found )
-	    if ( langs[found]->userdata == (void *) langlocalecode )
-	break;
-    }
-    if ( found==-1 ) {		/* Search for non-existant string in English */
-	for ( found=len-1; found>=0; --found )
-	    if ( langs[found]->userdata == (void *) 0x409 )
-	break;
-    }
-    if ( found==-1 ) found = 0;
-    GGadgetSelectOneListItem(g,found);
+    lang = ulangname(d->ttfnames[d->tn_active].lang,ubuf2);
+    for ( k=0; ttfnameids[k].text!=NULL && ttfnameids[k].userdata!=(void *) d->ttfnames[d->tn_active].strid;
+	    ++k );
+    u_snprintf(ubuf,sizeof(ubuf),GStringGetResource(_STR_StrIDforLanguage,NULL),
+	    lang,GStringGetResource((intpt) ttfnameids[k].text,NULL) );
 
-    /* Find if standard names match ps equivalent */
-    found = LangSearch(langs,0x409,0x9);
-    for ( cur = d->names; cur!=NULL && cur->lang!=0x409; cur=cur->next );
-    if ( cur==NULL ) {
-	d->basedon[ttf_copyright] = true;
-	d->basedon[ttf_family] = true;
-	d->basedon[ttf_subfamily] = true;
-	d->basedon[ttf_fullname] = true;
-	d->basedon[ttf_version] = true;
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.is_dlg = true;
+    wattrs.restrict_input_to_me = 1;
+    wattrs.undercursor = 1;
+    wattrs.cursor = ct_pointer;
+    wattrs.window_title = ubuf;
+    pos.x = pos.y = 0;
+    pos.width =GDrawPointsToPixels(NULL,GGadgetScale(200));
+    pos.height = GDrawPointsToPixels(NULL,300);
+    d->tn_done = 0;
+    gw = GDrawCreateTopWindow(NULL,&pos,big_e_h,d,&wattrs);
+
+    memset(&mgcd,0,sizeof(mgcd));
+    memset(&mlabel,0,sizeof(mlabel));
+    mgcd[0].gd.pos.x = 4; mgcd[0].gd.pos.y = 6;
+    mgcd[0].gd.pos.width = 192;
+    mgcd[0].gd.pos.height = 260;
+    mgcd[0].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap;
+    mgcd[0].gd.cid = CID_TNEntryField;
+    mgcd[0].creator = GTextAreaCreate;
+
+    mgcd[1].gd.pos.x = 30-3; mgcd[1].gd.pos.y = GDrawPixelsToPoints(NULL,pos.height)-35-3;
+    mgcd[1].gd.pos.width = -1; mgcd[1].gd.pos.height = 0;
+    mgcd[1].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    mlabel[1].text = (unichar_t *) _STR_OK;
+    mlabel[1].text_in_resource = true;
+    mgcd[1].gd.label = &mlabel[1];
+    mgcd[1].gd.cid = CID_OK;
+    mgcd[1].creator = GButtonCreate;
+
+    mgcd[2].gd.pos.x = -30; mgcd[2].gd.pos.y = mgcd[1].gd.pos.y+3;
+    mgcd[2].gd.pos.width = -1; mgcd[2].gd.pos.height = 0;
+    mgcd[2].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    mlabel[2].text = (unichar_t *) _STR_Cancel;
+    mlabel[2].text_in_resource = true;
+    mgcd[2].gd.label = &mlabel[2];
+    mgcd[2].gd.cid = CID_Cancel;
+    mgcd[2].creator = GButtonCreate;
+
+    mgcd[3].gd.pos.x = 2; mgcd[3].gd.pos.y = 2;
+    mgcd[3].gd.pos.width = pos.width-4; mgcd[3].gd.pos.height = pos.height-4;
+    mgcd[3].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
+    mgcd[3].gd.cid = CID_MainGroup;
+    mgcd[3].creator = GGroupCreate;
+
+    GGadgetsCreate(gw,mgcd);
+    CheckActiveStyleTranslation(d);
+    if ( d->ttfnames[d->tn_active].str!=NULL )
+	GGadgetSetTitle(mgcd[0].ret,d->ttfnames[d->tn_active].str);
+    GDrawSetVisible(gw,true);
+    while ( !d->tn_done )
+	GDrawProcessOneEvent(NULL);
+    GDrawDestroyWindow(gw);
+    GDrawRequestExpose(d->tn_v,NULL,false);
+}
+
+#define MID_ToggleBase	1
+#define MID_MultiEdit	2
+#define MID_Delete	3
+
+static void TN_StrPopupDispatch(GWindow gw, GMenuItem *mi, GEvent *e) {
+    struct gfi_data *d = GDrawGetUserData(gw);
+
+    switch ( mi->mid ) {
+      case MID_ToggleBase:
+	d->ttfnames[d->tn_active].basedon = !d->ttfnames[d->tn_active].basedon;
+	if ( d->ttfnames[d->tn_active].basedon ) {
+	    free( d->ttfnames[d->tn_active].str);
+	    d->ttfnames[d->tn_active].str = NULL;
+	} else {
+	    d->ttfnames[d->tn_active].str = tn_recalculatedef(d,d->ttfnames[d->tn_active].strid);
+	}
+      break;
+      case MID_MultiEdit:
+	TN_StrBigEdit(d);
+      break;
+      case MID_Delete:
+	TN_DeleteActive(d);
+      break;
+    }
+    TTFN_SetSBs(d);
+    GDrawRequestExpose(d->tn_v,NULL,false);
+}
+
+static void TN_StrPopup(struct gfi_data *d,GEvent *event) {
+    GMenuItem mi[5];
+    int i;
+
+    memset(mi,'\0',sizeof(mi));
+    for ( i=0; i<3; ++i ) {
+	mi[i].ti.fg = COLOR_DEFAULT;
+	mi[i].ti.bg = COLOR_DEFAULT;
+	mi[i].mid = i+1;
+	mi[i].invoke = TN_StrPopupDispatch;
+	mi[i].ti.text_in_resource = true;
+    }
+    mi[MID_Delete-1].ti.disabled = d->ttfnames[d->tn_active].cantremove;
+    mi[MID_ToggleBase-1].ti.disabled = !d->ttfnames[d->tn_active].cantremove;
+    if ( d->ttfnames[d->tn_active].basedon ) {
+	mi[MID_MultiEdit-1].ti.disabled = true;
+	mi[MID_ToggleBase-1].ti.text = (unichar_t *) _STR_DetachFromPostScriptNames;
+    } else
+	mi[MID_ToggleBase-1].ti.text = (unichar_t *) _STR_SameAsPostScriptNames;
+    mi[MID_MultiEdit-1].ti.text = (unichar_t *) _STR_MultiLineEdit;
+    mi[MID_Delete-1].ti.text = (unichar_t *) _STR_Delete;
+    GMenuCreatePopupMenu(d->tn_v,event, mi);
+}
+
+static void TN_StrIDPopupDispatch(GWindow gw, GMenuItem *mi, GEvent *e) {
+    struct gfi_data *d = GDrawGetUserData(gw);
+    int lang = d->ttfnames[d->tn_active].lang;
+    int strid = mi->mid;
+    int i;
+
+    for ( i=0; i<d->tn_cnt; ++i ) if ( i!=d->tn_active ) {
+	if ( d->ttfnames[i].lang == lang && d->ttfnames[i].strid == strid ) {
+	    GWidgetErrorR(_STR_DuplicateName,_STR_StringLocaleInUse);
+return;
+	}
+    }
+    d->ttfnames[d->tn_active].strid=strid;
+    TTFN_SetSBs(d);
+    GDrawRequestExpose(d->tn_v,NULL,false);
+}
+
+static void TN_StrIDPopup(struct gfi_data *d,GEvent *event) {
+    GMenuItem mi[ttf_namemax+2];
+    int i;
+
+    memset(mi,'\0',sizeof(mi));
+    for ( i=0; ttfnameids[i].text!=NULL; ++i ) {
+	mi[i].mid = (intpt) ttfnameids[i].userdata;
+	mi[i].invoke = TN_StrIDPopupDispatch;
+	mi[i].ti = ttfnameids[i];
+	mi[i].ti.fg = COLOR_DEFAULT;
+	mi[i].ti.bg = COLOR_DEFAULT;
+	mi[i].ti.checkable = true;
+	mi[i].ti.checked = d->ttfnames[d->tn_active].strid==mi[i].mid;
+    }
+    GMenuCreatePopupMenu(d->tn_v,event, mi);
+}
+
+static void TN_LangPopupDispatch(GWindow gw, GMenuItem *mi, GEvent *e) {
+    struct gfi_data *d = GDrawGetUserData(gw);
+    int lang = mi->mid;
+    int strid;
+    int i;
+
+    if ( d->tn_active==d->tn_cnt ) {
+	strid = 0;
+	for ( i=0; i<d->tn_cnt; ++i ) {
+	    if ( d->ttfnames[i].lang == lang && d->ttfnames[i].strid == strid ) {
+		++strid;
+		if ( strid==ttf_postscriptname ) ++strid;
+		if ( strid==ttf_idontknow ) ++strid;
+		if ( strid==ttf_namemax ) {
+		    GWidgetErrorR(_STR_DuplicateName,_STR_AllStringsInUse);
+return;
+		}
+	    }
+	}
+	if ( d->tn_cnt>=d->tn_max )
+	    d->ttfnames = grealloc(d->ttfnames,(d->tn_max+=10)*sizeof(struct sortablenames));
+	memset(&d->ttfnames[d->tn_cnt],0,sizeof(struct sortablenames));
+	d->ttfnames[d->tn_cnt].lang = lang;
+	d->ttfnames[d->tn_cnt].strid = strid;
+	d->ttfnames[d->tn_cnt].thislocale = d->langlocalecode;
+	d->ttfnames[d->tn_cnt].str = uc_copy("");
+	++d->tn_cnt;
     } else {
-	d->basedon[ttf_copyright] = cur->names[ttf_copyright]==NULL;
-	d->basedon[ttf_family] = cur->names[ttf_family]==NULL;
-	d->basedon[ttf_subfamily] = cur->names[ttf_subfamily]==NULL;
-	d->basedon[ttf_fullname] = cur->names[ttf_fullname]==NULL;
-	d->basedon[ttf_version] = cur->names[ttf_version]==NULL;
+	strid = d->ttfnames[d->tn_active].strid;
+	for ( i=0; i<d->tn_cnt; ++i ) if ( i!=d->tn_active ) {
+	    if ( d->ttfnames[i].lang == lang && d->ttfnames[i].strid == strid ) {
+		GWidgetErrorR(_STR_DuplicateName,_STR_StringLocaleInUse);
+return;
+	    }
+	}
+	d->ttfnames[d->tn_active].lang = lang;
+    }
+    TTFN_SetSBs(d);
+    GDrawRequestExpose(d->tn_v,NULL,false);
+}
+
+static int menusort(const void *m1, const void *m2) {
+    const GMenuItem *mi1 = m1, *mi2 = m2;
+
+    /* Should do a strcoll here, but I never wrote one */
+return( u_strcmp(mi1->ti.text,mi2->ti.text));
+}
+
+static void TN_LangPopup(struct gfi_data *d,GEvent *event) {
+    GMenuItem mi[250];
+    int i;
+
+    if ( sizeof(mi)/sizeof(mi[0]) < sizeof(mslanguages)/sizeof(mslanguages[0])) {
+	IError( "Too many locales" );
+return;
     }
 
-    TNFinishFormer(d);
+    memset(mi,'\0',sizeof(mi));
+    for ( i=0; mslanguages[i].text!=NULL; ++i ) {
+	mi[i].mid = (intpt) mslanguages[i].userdata;
+	mi[i].invoke = TN_LangPopupDispatch;
+	mi[i].ti = mslanguages[i];
+	mi[i].ti.text = (unichar_t *) GStringGetResource((intpt) mi[i].ti.text,NULL);
+	mi[i].ti.text_in_resource = false;
+	mi[i].ti.fg = COLOR_DEFAULT;
+	mi[i].ti.bg = COLOR_DEFAULT;
+	mi[i].ti.checkable = true;
+	mi[i].ti.checked = d->tn_active<d->tn_cnt && d->ttfnames[d->tn_active].lang==mi[i].mid;
+    }
+    qsort(mi,i,sizeof(mi[0]),menusort);
+    GMenuCreatePopupMenu(d->tn_v,event, mi);
+}
+
+static void TN_Popups(struct gfi_data *d,GEvent *event) {
+    int line = event->u.mouse.y/d->tn_fh + d->tn_offtop;
+    int x = event->u.mouse.x + d->tn_offleft;
+
+    if ( d->tn_smallactive!=-1 ) {
+	TN_FinishSmallEdit(d);
+return;
+    }
+    if ( line<0 )
+return;
+    d->tn_active = line;
+    if ( event->u.mouse.button==3 && line<d->tn_cnt )
+	TN_StrPopup(d,event);
+    else if ( line<d->tn_cnt && d->ttfnames[line].basedon ) {
+	GDrawBeep(NULL);
+    } else if ( line>=d->tn_cnt || x<d->tn_stridstart-3 )
+	TN_LangPopup(d,event);
+    else if ( x<d->tn_strstart-3 )
+	TN_StrIDPopup(d,event);
+    else if ( d->ttfnames[line].str!=NULL &&
+	    (u_strlen(d->ttfnames[line].str)>40 ||
+	     u_strchr(d->ttfnames[line].str,'\n')!=NULL )) {
+	TN_StrBigEdit(d);
+    } else
+	TN_StrSmallEdit(d);
+}
+
+static int tn_e_h(GWindow gw, GEvent *event) {
+    struct gfi_data *d = (struct gfi_data *) GDrawGetUserData(gw);
+
+    GGadgetPopupExternalEvent(event);
+    if (( event->type==et_mouseup || event->type==et_mousedown ) &&
+	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
+	if ( !(event->u.mouse.state&(ksm_shift|ksm_control)) )	/* bind shift to magnify/minify */
+return( GGadgetDispatchEvent(GWidgetGetControl(d->gw,CID_TNVScroll),event));
+    }
+
+    switch ( event->type ) {
+      case et_expose:
+	GDrawSetLineWidth(gw,0);
+	TNExpose(d,gw,event);
+      break;
+      case et_mousedown:
+	TN_Popups(d,event);
+      break;
+      case et_mousemove:
+      break;
+      case et_mouseup:
+      break;
+      case et_char:
+return( GFI_Char(d,event));
+      break;
+      case et_timer:
+      break;
+    }
+return( true );
+}
+
+static void InitTTFNames(struct gfi_data *d) {
+    SplineFont *sf = d->sf;
+    int i,j,k,cnt;
+    uint8 sawEnglishUS[ttf_namemax];
+    struct ttflangname *tln;
+    struct sortablenames *stn;
+
+    DefaultLanguage(d);
+
+    stn = NULL;
+    for ( k=0; k<2; ++k ) {
+	memset(sawEnglishUS,0,sizeof(sawEnglishUS));
+	cnt = 0;
+	for ( tln = sf->names; tln!=NULL; tln = tln->next ) {
+	    for ( i=0; i<ttf_namemax; ++i ) if ( i!=ttf_postscriptname && tln->names[i]!=NULL ) {
+		if ( stn!=NULL ) {
+		    stn[cnt].strid = i;
+		    stn[cnt].lang = tln->lang;
+		    stn[cnt].basedon = false;
+		    stn[cnt].str = u_copy(tln->names[i]);
+		}
+		++cnt;
+		if ( tln->lang==0x409 )
+		    sawEnglishUS[i] = true;
+	    }
+	}
+	for ( i=0; ttfspecials[i]!=-1; ++i ) if ( !sawEnglishUS[ttfspecials[i]] ) {
+	    if ( stn!=NULL ) {
+		stn[cnt].strid = ttfspecials[i];
+		stn[cnt].lang = 0x409;
+		stn[cnt].basedon = true;
+		stn[cnt].str = NULL;
+	    }
+	    ++cnt;
+	}
+	if ( stn==NULL )
+	    stn = galloc((cnt+10)*sizeof(struct sortablenames));
+    }
+    for ( i=0; i<cnt; ++i )
+	stn[i].thislocale = d->langlocalecode;
+    for ( i=0; i<cnt; ++i ) if ( stn[i].lang==0x409 ) {
+	for ( j=0; ttfspecials[j]!=-1 && ttfspecials[j]!=stn[i].strid; ++j );
+	if ( ttfspecials[j]!=-1 )
+	    stn[i].cantremove = true;
+    }
+    d->ttfnames = stn;
+    d->tn_cnt = cnt; d->tn_max = cnt+10;
+    TTFNames_Resort(d);
+    TTFN_SetSBs(d);
+    d->names_set = true;
+}
+
+static int GFI_SortBy(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	struct gfi_data *d = (struct gfi_data *) GDrawGetUserData(GGadgetGetWindow(g));
+	TTFNames_Resort(d);
+	GDrawRequestExpose(d->tn_v,NULL,false);
+    }
+return( true );
 }
 
 static void GFI_ProcessAnchor(struct gfi_data *d) {
@@ -4610,18 +4940,29 @@ return( !err );
 static int ttfmultuniqueids(SplineFont *sf,struct gfi_data *d) {
     struct ttflangname *tln;
     int found = false;
+    int i;
 
-    for ( tln = d->names_set ? d->names : sf->names; tln!=NULL; tln=tln->next )
-	if ( tln->names[ttf_uniqueid]!=NULL ) {
-	    if ( found )
+    if ( d->names_set ) {
+	for ( i=0; i<d->tn_cnt; ++i )
+	    if ( d->ttfnames[i].strid==ttf_uniqueid ) {
+		if ( found )
 return( true );
-	    found = true;
-	}
+		found = true;
+	    }
+    } else {
+	for ( tln = sf->names; tln!=NULL; tln=tln->next )
+	    if ( tln->names[ttf_uniqueid]!=NULL ) {
+		if ( found )
+return( true );
+		found = true;
+	    }
+    }
 return( false );
 }
 
 static int ttfuniqueidmatch(SplineFont *sf,struct gfi_data *d) {
-    struct ttflangname *tln, *dtln;
+    struct ttflangname *tln;
+    int i;
 
     if ( sf->names==NULL )
 return( false );
@@ -4635,10 +4976,12 @@ return( true );
 	    if ( tln->names[ttf_uniqueid]==NULL )
 	continue;		/* Not set, so if it has been given a new value */
 				/*  that's a change, and if it hasn't that's ok */
-	    for ( dtln = d->names; dtln!=NULL && dtln->lang!=tln->lang; dtln = dtln->next );
-	    if ( dtln==NULL || dtln->names[ttf_uniqueid]==NULL )
+	    for ( i=0; i<d->tn_cnt; ++i )
+		if ( d->ttfnames[i].strid==ttf_uniqueid && d->ttfnames[i].lang==tln->lang )
+	    break;
+	    if ( i==d->tn_cnt )
 	continue;		/* removed. That's a change */
-	    if ( u_strcmp(tln->names[ttf_uniqueid],dtln->names[ttf_uniqueid])==0 )
+	    if ( u_strcmp(tln->names[ttf_uniqueid],d->ttfnames[i].str)==0 )
 return( true );		/* name unchanged */
 	}
     }
@@ -4648,6 +4991,7 @@ return( false );
 static void ttfuniqueidfixup(SplineFont *sf,struct gfi_data *d) {
     struct ttflangname *tln, *dtln;
     unichar_t *changed = NULL;
+    int i;
 
     if ( sf->names==NULL )
 return;
@@ -4662,10 +5006,12 @@ return;
 	for ( tln = sf->names; tln!=NULL; tln=tln->next ) {
 	    if ( tln->names[ttf_uniqueid]==NULL )
 	continue;
-	    for ( dtln = d->names; dtln!=NULL && dtln->lang!=tln->lang; dtln = dtln->next );
-	    if ( dtln==NULL || dtln->names[ttf_uniqueid]==NULL )
+	    for ( i=0; i<d->tn_cnt; ++i )
+		if ( d->ttfnames[i].strid==ttf_uniqueid && d->ttfnames[i].lang==tln->lang )
+	    break;
+	    if ( i==d->tn_cnt )
 	continue;
-	    if ( u_strcmp(tln->names[ttf_uniqueid],dtln->names[ttf_uniqueid])!=0 ) {
+	    if ( u_strcmp(tln->names[ttf_uniqueid],d->ttfnames[i].str)!=0 ) {
 		changed = u_copy(dtln->names[ttf_uniqueid]);
 	break;
 	    }
@@ -4673,17 +5019,40 @@ return;
 	for ( tln = sf->names; tln!=NULL; tln=tln->next ) {
 	    if ( tln->names[ttf_uniqueid]==NULL )
 	continue;
-	    for ( dtln = d->names; dtln!=NULL && dtln->lang!=tln->lang; dtln = dtln->next );
-	    if ( dtln==NULL || dtln->names[ttf_uniqueid]==NULL )
+	    for ( i=0; i<d->tn_cnt; ++i )
+		if ( d->ttfnames[i].strid==ttf_uniqueid && d->ttfnames[i].lang==tln->lang )
+	    break;
+	    if ( i==d->tn_cnt )
 	continue;
-	    if ( u_strcmp(tln->names[ttf_uniqueid],dtln->names[ttf_uniqueid])==0 ) {
-		free(dtln->names[ttf_uniqueid]);
-		dtln->names[ttf_uniqueid] = changed!=NULL
+	    if ( u_strcmp(tln->names[ttf_uniqueid],d->ttfnames[i].str)==0 ) {
+		free(d->ttfnames[i].str);
+		d->ttfnames[i].str = changed!=NULL
 			? u_copy( changed )
 			: NULL;
 	    }
 	}
     }
+}
+
+static void SortableToTTFNames(struct gfi_data *d) {
+    struct ttflangname *tln;
+    SplineFont *sf = d->sf;
+    int i;
+
+    TTFLangNamesFree(sf->names); sf->names = NULL;
+
+    for ( i=0; i<d->tn_cnt; ++i ) {
+	for ( tln=sf->names; tln!=NULL && tln->lang!=d->ttfnames[i].lang; tln=tln->next );
+	if ( tln==NULL ) {
+	    tln = chunkalloc(sizeof(struct ttflangname));
+	    tln->lang = d->ttfnames[i].lang;
+	    tln->next = sf->names;
+	    sf->names = tln;
+	}
+	tln->names[d->ttfnames[i].strid] = d->ttfnames[i].str;
+    }
+    TTF_PSDupsDefault(sf);
+    free(d->ttfnames); d->ttfnames = NULL;
 }
 
 static int GFI_OK(GGadget *g, GEvent *e) {
@@ -4711,12 +5080,12 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	int multilayer = false;
 #endif
 
+	if ( d->tn_smallactive!=-1 )
+	    TN_FinishSmallEdit(d);
 	if ( !CheckNames(d))
 return( true );
 	if ( !PIFinishFormer(d))
 return( true );
-	if ( d->names_set )
-	    TNFinishFormer(d);
 	if ( d->ccd )
 	    CCD_Close(d->ccd);
 	if ( d->smd )
@@ -4834,7 +5203,6 @@ return( true );
 #endif
 	sf->strokedfont = strokedfont;
 	sf->strokewidth = strokewidth;
-	TTF_PSDupsChanged(gw,sf,d->names_set ? d->names : sf->names);
 	GDrawSetCursor(gw,ct_watch);
 	namechange = SetFontName(gw,sf);
 	if ( namechange ) retitle_fv = true;
@@ -4944,12 +5312,8 @@ return(true);
 	    sf->private = d->private;
 	    d->private = NULL;
 	}
-	if ( d->names_set ) {
-	    TTFLangNamesFree(sf->names);
-	    sf->names = d->names;
-	    TTF_PSDupsDefault(sf);
-	    d->names = NULL;
-	}
+	if ( d->names_set )
+	    SortableToTTFNames(d);
 	if ( d->ttf_set ) {
 	    sf->pfminfo.weight = weight;
 	    sf->pfminfo.width = GGadgetGetFirstListSelectedItem(GWidgetGetControl(gw,CID_WidthClass))+1;
@@ -5341,11 +5705,12 @@ static int GFI_AspectChange(GGadget *g, GEvent *e) {
     if ( e==NULL || (e->type==et_controlevent && e->u.control.subtype == et_radiochanged )) {
 	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	int new_aspect = GTabSetGetSel(g);
+	if ( d->tn_smallactive!=-1 )
+	    TN_FinishSmallEdit(d);
 	if ( !d->ttf_set && ( new_aspect == d->ttfv_aspect || new_aspect == d->panose_aspect ))
 	    TTFSetup(d);
 	else if ( !d->names_set && new_aspect == d->tn_aspect ) {
-	    VerifyLanguages(d->sf);
-	    DefaultLanguage(d);
+	    InitTTFNames(d);
 	} else if ( !d->tex_set && new_aspect == d->tx_aspect )
 	    DefaultTeX(d);
 	d->old_aspect = new_aspect;
@@ -5358,6 +5723,7 @@ static void GFI_Resize(struct gfi_data *d) {
     int yoff, xoff, xw, yh, i;
     static int xy_cids[] = { CID_Notice, CID_Comment, CID_Contextual, CID_StateMachine, 0 };
     static int x_cids[] = { CID_PrivateEntries, CID_PrivateValues, CID_MarkClasses, CID_AnchorClasses, 0 };
+    int sbsize = GDrawPointsToPixels(d->gw,_GScrollBar_Width);
 
     GDrawGetSize(GGadgetGetWindow(GWidgetGetControl(d->gw,CID_Notice)),&subsize);
 
@@ -5389,7 +5755,24 @@ static void GFI_Resize(struct gfi_data *d) {
 	    xw = 40;
 	GGadgetResize(GWidgetGetControl(d->gw,x_cids[i]),xw,temp.height);
     }
-    
+
+    if ( d->tn_v!=NULL ) {
+	int len;
+	GDrawGetSize(d->tn_v,&temp);
+	d->tn_width = subsize.width-2*temp.x-sbsize;
+	d->tn_height = subsize.height-temp.y-GDrawPointsToPixels(d->gw,3)-sbsize;
+	GDrawResize(d->tn_v,d->tn_width,d->tn_height);
+	GGadgetResize(GWidgetGetControl(d->gw,CID_TNVScroll),sbsize,d->tn_height);
+	GGadgetResize(GWidgetGetControl(d->gw,CID_TNHScroll),d->tn_width,sbsize);
+	GGadgetMove(GWidgetGetControl(d->gw,CID_TNVScroll),temp.x+d->tn_width,temp.y);
+	GGadgetMove(GWidgetGetControl(d->gw,CID_TNHScroll),temp.x,temp.y+d->tn_height);
+	TTFN_SetSBs(d);
+	len = d->tn_width - d->tn_strstart + 1;
+	if ( len<60 )
+	    len = 60;
+	GGadgetResize(d->tn_smalledit,len,d->tn_fh);
+    }
+
     GDrawRequestExpose(d->gw,NULL,false);
 }
 
@@ -5404,22 +5787,7 @@ static int e_h(GWindow gw, GEvent *event) {
 	struct gfi_data *d = GDrawGetUserData(gw);
 	GFI_Resize(d);
     } else if ( event->type==et_char ) {
-	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("fontinfo.html");
-return( true );
-	} else if ( event->u.chr.keysym=='s' &&
-		(event->u.chr.state&ksm_control) &&
-		(event->u.chr.state&ksm_meta) ) {
-	    MenuSaveAll(NULL,NULL,NULL);
-return( true );
-	} else if ( event->u.chr.keysym=='q' && (event->u.chr.state&ksm_control)) {
-	    if ( event->u.chr.state&ksm_shift ) {
-		GFI_CancelClose(GDrawGetUserData(gw));
-	    } else
-		MenuExit(NULL,NULL,NULL);
-return( true );
-	}
-return( false );
+return( GFI_Char(GDrawGetUserData(gw),event));
     }
 return( true );
 }
@@ -5470,8 +5838,10 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     FontView *fvs;
     unichar_t title[130];
     static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
+    static unichar_t sans[] = { 'h','e','l','v','e','t','i','c','a',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
     FontRequest rq;
     GFont *font;
+    int sbwidth;
     static int connames[] = { _STR_ContextPos, _STR_ContextSub, _STR_ChainPos, _STR_ChainSub, _STR_ReverseChainSub, 0 };
     static int contypes[] = { pst_contextpos, pst_contextsub, pst_chainpos, pst_chainsub, pst_reversesub, 0 };
     static int smnames[] = { _STR_Indic, _STR_ContextSub, _STR_ContextIns, _STR_Kerning, 0 };
@@ -6207,53 +6577,53 @@ return;
     memset(&tnlabel,0,sizeof(tnlabel));
     memset(&tngcd,0,sizeof(tngcd));
 
-    tngcd[0].gd.pos.x = 20; tngcd[0].gd.pos.y = 6;
+    tngcd[0].gd.pos.x = 5; tngcd[0].gd.pos.y = 6;
     tngcd[0].gd.flags = gg_visible | gg_enabled;
-    tngcd[0].gd.cid = CID_StrID;
-    tngcd[0].gd.u.list = ttfnameids;
-    tngcd[0].gd.handle_controlevent = GFI_LanguageChange;
-    tngcd[0].creator = GListButtonCreate;
+    tnlabel[0].text = (unichar_t *) _STR_SortBy;
+    tnlabel[0].text_in_resource = true;
+    tngcd[0].gd.label = &tnlabel[0];
+    tngcd[0].creator = GLabelCreate;
 
-    tngcd[1].gd.pos.x = 150; tngcd[1].gd.pos.y = tngcd[0].gd.pos.y;
-    tngcd[1].gd.flags = gg_enabled;
-    tngcd[1].gd.cid = CID_TNDef;
-    tnlabel[1].text = (unichar_t *) _STR_TranslateStyle;
+    tngcd[1].gd.pos.x = 50; tngcd[1].gd.pos.y = tngcd[0].gd.pos.y-4;
+    tngcd[1].gd.flags = gg_enabled | gg_visible;
+    tngcd[1].gd.cid = CID_TNLangSort;
+    tnlabel[1].text = (unichar_t *) _STR_LanguageOnly;
     tnlabel[1].text_in_resource = true;
     tngcd[1].gd.label = &tnlabel[1];
-    tngcd[1].creator = GButtonCreate;
-    tngcd[1].gd.handle_controlevent = GFI_DefaultStyles;
+    tngcd[1].creator = GRadioCreate;
+    tngcd[1].gd.handle_controlevent = GFI_SortBy;
 
-    tngcd[2].gd.pos.x = 30; tngcd[2].gd.pos.y = 36;
-    tngcd[2].gd.flags = gg_visible | gg_enabled | gg_list_alphabetic;
-    tngcd[2].gd.cid = CID_Language;
-    tngcd[2].gd.u.list = mslanguages;
-    tngcd[2].gd.handle_controlevent = GFI_LanguageChange;
-    tngcd[2].creator = GListButtonCreate;
+    tngcd[2].gd.pos.x = 120; tngcd[2].gd.pos.y = tngcd[1].gd.pos.y;
+    tngcd[2].gd.flags = gg_visible | gg_enabled;
+    tngcd[2].gd.cid = CID_TNStringSort;
+    tnlabel[2].text = (unichar_t *) _STR_StringType;
+    tnlabel[2].text_in_resource = true;
+    tngcd[2].gd.label = &tnlabel[2];
+    tngcd[2].creator = GRadioCreate;
+    tngcd[2].gd.handle_controlevent = GFI_SortBy;
 
-    tngcd[3].gd.pos.x = 12; tngcd[3].gd.pos.y = GDrawPointsToPixels(NULL,tngcd[2].gd.pos.y+12);
-    tngcd[3].gd.pos.width = pos.width-40; tngcd[3].gd.pos.height = GDrawPointsToPixels(NULL,219);
-    tngcd[3].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
-    tngcd[3].creator = GGroupCreate;
+    tngcd[3].gd.pos.x = 195; tngcd[3].gd.pos.y = tngcd[1].gd.pos.y;
+    tngcd[3].gd.flags = gg_visible | gg_enabled | gg_cb_on;
+    tnlabel[3].text = (unichar_t *) _STR_Default;
+    tnlabel[3].text_in_resource = true;
+    tngcd[3].gd.label = &tnlabel[3];
+    tngcd[3].creator = GRadioCreate;
+    tngcd[3].gd.handle_controlevent = GFI_SortBy;
 
-    tngcd[4].gd.pos.x = 14; tngcd[4].gd.pos.y = tngcd[2].gd.pos.y+30;
-    tngcd[4].gd.pos.width = 220; tngcd[4].gd.pos.height = 180;
-    tngcd[4].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap | gg_text_xim;
-    tngcd[4].gd.cid = CID_String;
-    tngcd[4].creator = GTextAreaCreate;
+    sbwidth = GDrawPointsToPixels(d->gw,_GScrollBar_Width);
+    tngcd[4].gd.pos.x = 114; tngcd[4].gd.pos.y = tngcd[1].gd.pos.y+14;
+    tngcd[4].gd.pos.width = sbwidth; tngcd[4].gd.pos.height = 100;
+    tngcd[4].gd.flags = gg_enabled | gg_visible | gg_sb_vert;
+    tngcd[4].gd.cid = CID_TNVScroll;
+    tngcd[4].gd.handle_controlevent = _TN_VScroll;
+    tngcd[4].creator = GScrollBarCreate;
 
-    tngcd[5].gd.pos.x = 14; tngcd[5].gd.pos.y = tngcd[4].gd.pos.y+tngcd[4].gd.pos.height+2;
+    tngcd[5].gd.pos.x = 14; tngcd[5].gd.pos.y = tngcd[4].gd.pos.y+100;
+    tngcd[5].gd.pos.width = 100; tngcd[5].gd.pos.height = sbwidth;
     tngcd[5].gd.flags = gg_visible | gg_enabled;
-    tngcd[5].gd.cid = CID_BasedOn;
-    tnlabel[5].text = (unichar_t *) _STR_BasedOnNamePane;
-    tnlabel[5].text_in_resource = true;
-    tngcd[5].gd.label = &tnlabel[5];
-    tngcd[5].gd.handle_controlevent = GFI_BasedOnChange;
-    tngcd[5].creator = GCheckBoxCreate;
-
-    tngcd[6].gd.pos.x = 8; tngcd[6].gd.pos.y = GDrawPointsToPixels(NULL,tngcd[0].gd.pos.y+12);
-    tngcd[6].gd.pos.width = pos.width-32; tngcd[6].gd.pos.height = GDrawPointsToPixels(NULL,256);
-    tngcd[6].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
-    tngcd[6].creator = GGroupCreate;
+    tngcd[5].gd.cid = CID_TNHScroll;
+    tngcd[5].gd.handle_controlevent = _TN_HScroll;
+    tngcd[5].creator = GScrollBarCreate;
     
 /******************************************************************************/
     memset(&panlabel,0,sizeof(panlabel));
@@ -7026,11 +7396,48 @@ return;
 	int offset = (GTabSetGetTabLines(mgcd[0].ret)-2)*GDrawPointsToPixels(NULL,20);
 	GDrawResize(gw,pos.width,pos.height+offset);
     }
+
+    wattrs.mask = wam_events;
+    GGadgetGetSize(tngcd[1].ret,&pos);
+    pos.y += pos.height + GDrawPointsToPixels(NULL,3);
+    pos.x = 5; pos.width = pos.height = d->tn_height = d->tn_width = 100;
+    d->tn_v = GWidgetCreateSubWindow(GGadgetGetWindow(tngcd[1].ret),&pos,tn_e_h,d,&wattrs);	/* Will be resized later */
+    d->tn_smallactive = -1;
+    rq.family_name = sans;
+    rq.point_size = 10;
+    d->tn_font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+    {
+	int as, ds, ld;
+	GDrawFontMetrics(d->tn_font,&as,&ds,&ld);
+	d->tn_as = as; d->tn_fh = as+ds;
+    }
+    {
+	static GBox small = { 0 };
+	GGadgetData gd;
+	GTextInfo label;
+	static unichar_t nullstr[1] = { 0 };
+
+	small.main_background = small.main_foreground = COLOR_DEFAULT;
+	small.main_foreground = 0x0000ff;
+	memset(&gd,'\0',sizeof(gd));
+	memset(&label,'\0',sizeof(label));
+
+	label.text = nullstr;
+	label.font = d->tn_font;
+	gd.pos.height = d->tn_fh;
+	gd.pos.width = 40;
+	gd.label = &label;
+	gd.box = &small;
+	gd.flags = gg_enabled | gg_pos_in_pixels | gg_dontcopybox;
+	d->tn_smalledit = GTextFieldCreate(d->tn_v,&gd,d);
+    }
+
     GWidgetIndicateFocusGadget(ngcd[1].ret);
     ProcessListSel(d);
     GFI_AspectChange(mgcd[0].ret,NULL);
     GFI_InitMarkClasses(d);
     GGadgetSetList(GWidgetGetControl(gw,CID_StyleName),StyleNames(sf->fontstyle_name),false);
+    GDrawSetVisible(d->tn_v,true);
 
     GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
