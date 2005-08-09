@@ -1015,7 +1015,7 @@ return(NULL);
     }
 
     /* copy the index file and close it (and delete it) */
-    if ( !ttfcopyfile(bloc,subtables,pos+startofsubtables))
+    if ( !ttfcopyfile(bloc,subtables,pos+startofsubtables,"EBLC/bloc-subtables"))
 	size->error = true;
 
     size->tablesize = ftell(bloc)-pos;
