@@ -3464,7 +3464,9 @@ static void MVMouse(MetricsView *mv,GEvent *event) {
 	    break;
 	    }
 	    if ( i<mv->charcnt )
-		SCPreparePopup(mv->gw,mv->perchar[i].sc,mv->fv->map->remap,mv->fv->map->backmap[mv->perchar[i].sc->orig_pos],sc->unicodeenc);
+		SCPreparePopup(mv->gw,mv->perchar[i].sc,mv->fv->map->remap,
+			mv->fv->map->backmap[mv->perchar[i].sc->orig_pos],
+			mv->perchar[i].sc->unicodeenc);
 	}
 	if ( mv->cursor!=ct_mypointer ) {
 	    GDrawSetCursor(mv->gw,ct_mypointer);
