@@ -2410,7 +2410,7 @@ return;
     }
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+30;
     gcd[k].gd.pos.width = MCD_Width-20; gcd[k].gd.pos.height = 8*13+4;
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap;	/* Just ASCII text for glyph names, no need for xim */
     gcd[k].gd.cid = CID_MCD_GlyphList;
     gcd[k++].creator = GTextAreaCreate;
 
@@ -4543,7 +4543,7 @@ return;
     mgcd[0].gd.pos.x = 4; mgcd[0].gd.pos.y = 6;
     mgcd[0].gd.pos.width = 192;
     mgcd[0].gd.pos.height = 260;
-    mgcd[0].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap;
+    mgcd[0].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap | gg_text_xim;
     mgcd[0].gd.cid = CID_TNEntryField;
     mgcd[0].creator = GTextAreaCreate;
 
@@ -7428,7 +7428,7 @@ return;
 	gd.pos.width = 40;
 	gd.label = &label;
 	gd.box = &small;
-	gd.flags = gg_enabled | gg_pos_in_pixels | gg_dontcopybox;
+	gd.flags = gg_enabled | gg_pos_in_pixels | gg_dontcopybox | gg_text_xim;
 	d->tn_smalledit = GTextFieldCreate(d->tn_v,&gd,d);
     }
 
