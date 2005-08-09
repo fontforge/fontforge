@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 27-Jun-2005 -->
+  <!-- AP: Last modified: 9-Aug-2005 -->
   <TITLE>Font Info</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -315,7 +315,7 @@ by their appearence in the lookup table, MicroSoft claims that they will
 apply features in the order that they think best. So the order specified
 in the font may be ignored.<BR CLEAR=ALL>
 <H2>
-  <IMG SRC="fontinfo-ttfname.png" WIDTH="369" HEIGHT="472" ALIGN="Right"><A
+  <IMG SRC="fontinfo-ttfname.png" WIDTH="410" HEIGHT="608" ALIGN="Right"><A
       NAME="TTF-Names">TTF Names</A>
 </H2>
 <P>
@@ -326,9 +326,49 @@ in a font menu, while a German user might see CaslonKursive. There are about
 Customizing one string does not mean that you must customize the others (indeed,
 usually only the Style string is customized).
 <P>
-If you don't include any values here when FontForge saves a font as truetype
-it will create an entry with an American English language containing the
-postscript versions of the strings.
+The image at right shows the dialog, displaying all the strings set for the
+given font. You may order these strings based on type of string (ordered
+as below), on language (ordered by unicode), or by a variation of language
+which displays strings for the language of the current locale first, then
+English strings (because, in general, these will be the most important for
+the user) and then ordered by language thereafter.
+<P>
+Certain strings in English (Copyright, Family, Styles, Fullname, Version)
+will always be present. If you do not set them explicitly they will be taken
+(possibly with modifications) from the equivalent postscript strings on the
+Names pane. You may not remove these strings, and if you wish to modify them
+you must first detach them from the PostScript. In the example at right the
+strings bound to PostScript are shown in red (Copyright, Family, Styles),
+while Fullname and Version have been detached and modified.
+<P>
+You may change the language of a string by clicking the mouse on the language
+field of that string -- a popup menu will appear giving you a choice of all
+supported locale/languages. (You may not modify the language of the special
+English strings mentioned above).
+<P>
+You may change the string type in a similar manner, again you may not change
+the special English strings.
+<P>
+If you click with the right button on a string you will bring up a different
+popup menu which will allow you to:
+<UL>
+  <LI>
+    Detach a string from its PostScript equivalent if any (so you can modify
+    it)
+  <LI>
+    Delete a string entirely (except for the special strings bound to PostScript)
+  <LI>
+    Edit a string in a larger window.<BR CLEAR=ALL>
+</UL>
+<P>
+If you click with the left button on a string value you may edit that string
+in line, if it is small enough,
+<IMG SRC="fontinfo-ttfname-bigedit.png" WIDTH="343" HEIGHT="341" ALIGN="Right">otherwise
+in a larger window.
+<P>
+If you wish to add a new string, click on the &lt;New&gt; entry at the bottom.
+You will be given the standard language popup and it will create a new string
+for you.
 <P>
 The various strings and a brief description of their meanings are:
 <DL>
@@ -425,11 +465,7 @@ type docs</A>, but they apply to
 <A HREF="http://partners.adobe.com/asn/tech/type/opentype/recom.jsp">open
 type</A> as well.
 <P>
-These settings specify strings for the windows platform. If you specify []
-Apple Mode when generating the font it will also generate equivalent entries
-for the mac (It will, always, generate two additional string sets by taking
-the american english entries and creating a "Macintosh English" and an "Apple
-Unicode (2.0)" set even if you don't specify [] Apple Mode).
+These settings specify strings for the windows platform with unicode encoding.
 <P>
 Generally fonts will have a fairly complete set of strings in the American
 English entry, with the Style string (and nothing else) translated into different
@@ -558,18 +594,18 @@ languages.
   </TR>
   <TR>
     <TH>Danish</TH>
-    <TH>Normal</TH>
-    <TH>Fed</TH>
-    <TH>Halvfed</TH>
-    <TH>Fin</TH>
-    <TH>Medium</TH>
-    <TH></TH>
-    <TH>Extra fed</TH>
-    <TH>Kursiv</TH>
-    <TH></TH>
-    <TH>Smal</TH>
-    <TH>Bred</TH>
-    <TH>Kontur</TH>
+    <TD>Normal</TD>
+    <TD>Fed</TD>
+    <TD>Halvfed</TD>
+    <TD>Fin</TD>
+    <TD>Medium</TD>
+    <TD></TD>
+    <TD>Extra fed</TD>
+    <TD>Kursiv</TD>
+    <TD></TD>
+    <TD>Smal</TD>
+    <TD>Bred</TD>
+    <TD>Kontur</TD>
   </TR>
   <TR>
     <TH>Hungarian</TH>
@@ -608,15 +644,12 @@ languages.
 (Any help in expanding/correcting the above table would be greatly appreciated
 <A HREF="mailto:pfaedit@users.sourceforge.net">pfaedit@users.sourceforge.net</A>)
 <P>
-When you are setting the Style string in American English another button
-appears in the dialog, labelled "Translate Style". If you press this button
-then FontForge will attempt to figure out the style of the font and then
-attempt to translate it into whatever other languages in knows about (essentially
-the above table). It will only translate to a language for which it knows
-all the components and for which you have not already provided a translation.
-So if your style in American English is "BoldItalic" (and you have no other
-style entries) then after you press the "Translate Style" button FontForge
-will generate "GrasItalique" for French, "FettKursiv" for German,
+When you create a Style entry for an language, FontForge will attempt to
+translate the American English style into something appropriate for that
+language. It understands the above table, but not other languages so it won't
+always work. So if your style in American English is "BoldItalic" then after
+you create the appropriate strngs FontForge will default to "GrasItalique"
+for French, "FettKursiv" for German,
 "&Ouml;&Eacute;&Ograve;&Icirc;&Ugrave;&Ecirc;&euml;&Otilde;&Ograve;&Oacute;&Eacute;&#215;&Icirc;&Ugrave;&Ecirc;"
 for Russian and "NigritaCursiva" for Spanish.
 <P>
