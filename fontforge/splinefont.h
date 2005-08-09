@@ -1736,7 +1736,7 @@ real get2dot14(FILE *ttf);
 void putshort(FILE *file,int sval);
 void putlong(FILE *file,int val);
 void putfixed(FILE *file,real dval);
-int ttfcopyfile(FILE *ttf, FILE *other, int pos);
+int ttfcopyfile(FILE *ttf, FILE *other, int pos, char *table_name);
 
 extern void SCCopyFgToBg(SplineChar *sc,int show);
 extern void SCCopyBgToFg(SplineChar *sc,int show);

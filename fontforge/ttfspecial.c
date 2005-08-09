@@ -259,7 +259,7 @@ return;		/* No subtables */
     }
     for ( i=0; i<pfed.next; ++i ) {
 	fseek(pfed.subtabs[i].data,0,SEEK_SET);
-	ttfcopyfile(file,pfed.subtabs[i].data,pfed.subtabs[i].offset);
+	ttfcopyfile(file,pfed.subtabs[i].data,pfed.subtabs[i].offset,"PfEd-subtable");
     }
     if ( ftell(file)&3 )
 	IError("'PfEd' table not properly aligned");
@@ -587,7 +587,7 @@ return;		/* No subtables */
     }
     for ( i=0; i<tex.next; ++i ) {
 	fseek(tex.subtabs[i].data,0,SEEK_SET);
-	ttfcopyfile(file,tex.subtabs[i].data,tex.subtabs[i].offset);
+	ttfcopyfile(file,tex.subtabs[i].data,tex.subtabs[i].offset,"TeX-subtable");
     }
     if ( ftell(file)&3 )
 	IError("'TeX ' table not properly aligned");

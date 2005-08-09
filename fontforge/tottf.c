@@ -547,14 +547,14 @@ void putfixed(FILE *file,real dval) {
     putlong(file,val);
 }
 
-int ttfcopyfile(FILE *ttf, FILE *other, int pos) {
+int ttfcopyfile(FILE *ttf, FILE *other, int pos, char *tab_name) {
     int ch;
     int ret = 1;
 
     if ( ferror(ttf) || ferror(other)) {
 	IError("Disk error of some nature. Perhaps no space on device?\nGenerated font will be unusable" );
     } else if ( pos!=ftell(ttf)) {
-	IError("File Offset wrong for ttf table, %d expected %d", ftell(ttf), pos );
+	IError("File Offset wrong for ttf table (%s), %d expected %d", tab_name, ftell(ttf), pos );
     }
     rewind(other);
     while (( ch = getc(other))!=EOF )
@@ -2295,24 +2295,24 @@ static void finishup(SplineFont *sf,struct alltabs *at) {
     putshort(at->cfff,at->sidcnt-1);
     if ( at->sidcnt!=1 ) {		/* Everybody gets an added NULL */
 	putc(at->sidlongoffset?4:2,at->cfff);
-	if ( !ttfcopyfile(at->cfff,at->sidh,base)) at->error = true;
-	if ( !ttfcopyfile(at->cfff,at->sidf,base+shlen)) at->error = true;
+	if ( !ttfcopyfile(at->cfff,at->sidh,base,"CFF-StringBase")) at->error = true;
+	if ( !ttfcopyfile(at->cfff,at->sidf,base+shlen,"CFF-StringData")) at->error = true;
     }
 
     /* Global Subrs */
     putshort(at->cfff,0);
 
     /* Charset */
-    if ( !ttfcopyfile(at->cfff,at->charset,base+strlen+glen)) at->error = true;
+    if ( !ttfcopyfile(at->cfff,at->charset,base+strlen+glen,"CFF-Charset")) at->error = true;
 
     /* Encoding */
-    if ( !ttfcopyfile(at->cfff,at->encoding,base+strlen+glen+csetlen)) at->error = true;
+    if ( !ttfcopyfile(at->cfff,at->encoding,base+strlen+glen+csetlen,"CFF-Encoding")) at->error = true;
 
     /* Char Strings */
-    if ( !ttfcopyfile(at->cfff,at->charstrings,base+strlen+glen+csetlen+enclen)) at->error = true;
+    if ( !ttfcopyfile(at->cfff,at->charstrings,base+strlen+glen+csetlen+enclen,"CFF-CharStrings")) at->error = true;
 
     /* Private & Subrs */
-    if ( !ttfcopyfile(at->cfff,at->private,base+strlen+glen+csetlen+enclen+cstrlen)) at->error = true;
+    if ( !ttfcopyfile(at->cfff,at->private,base+strlen+glen+csetlen+enclen+cstrlen,"CFF-Private")) at->error = true;
 }
 
 static void finishupcid(SplineFont *sf,struct alltabs *at) {
@@ -2356,31 +2356,31 @@ static void finishupcid(SplineFont *sf,struct alltabs *at) {
     putshort(at->cfff,at->sidcnt-1);
     if ( at->sidcnt!=1 ) {		/* Everybody gets an added NULL */
 	putc(at->sidlongoffset?4:2,at->cfff);
-	if ( !ttfcopyfile(at->cfff,at->sidh,base)) at->error = true;
-	if ( !ttfcopyfile(at->cfff,at->sidf,base+shlen)) at->error = true;
+	if ( !ttfcopyfile(at->cfff,at->sidh,base,"CFF-StringBase")) at->error = true;
+	if ( !ttfcopyfile(at->cfff,at->sidf,base+shlen,"CFF-StringData")) at->error = true;
     }
 
     /* Global Subrs */
     putshort(at->cfff,0);
 
     /* Charset */
-    if ( !ttfcopyfile(at->cfff,at->charset,base+strlen+glen)) at->error = true;
+    if ( !ttfcopyfile(at->cfff,at->charset,base+strlen+glen,"CFF-Charset")) at->error = true;
 
     /* FDSelect */
-    if ( !ttfcopyfile(at->cfff,at->fdselect,base+strlen+glen+csetlen)) at->error = true;
+    if ( !ttfcopyfile(at->cfff,at->fdselect,base+strlen+glen+csetlen,"CFF-FDSelect")) at->error = true;
 
     /* Char Strings */
-    if ( !ttfcopyfile(at->cfff,at->charstrings,base+strlen+glen+csetlen+fdsellen)) at->error = true;
+    if ( !ttfcopyfile(at->cfff,at->charstrings,base+strlen+glen+csetlen+fdsellen,"CFF-CharStrings")) at->error = true;
 
     /* FDArray (DICT Index) */
-    if ( !ttfcopyfile(at->cfff,at->fdarray,base+strlen+glen+csetlen+fdsellen+cstrlen)) at->error = true;
+    if ( !ttfcopyfile(at->cfff,at->fdarray,base+strlen+glen+csetlen+fdsellen+cstrlen,"CFF-FDArray")) at->error = true;
 
     /* Private & Subrs */
     prvlen = 0;
     for ( i=0; i<sf->subfontcnt; ++i ) {
 	int temp = ftell(at->fds[i].private);
 	if ( !ttfcopyfile(at->cfff,at->fds[i].private,
-		base+strlen+glen+csetlen+fdsellen+cstrlen+fdarrlen+prvlen)) at->error = true;
+		base+strlen+glen+csetlen+fdsellen+cstrlen+fdarrlen+prvlen,"CFF-PrivateSubrs")) at->error = true;
 	prvlen += temp;
     }
 
@@ -3718,7 +3718,7 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
 	putshort(at->name,nt.entries[i].len);
 	putshort(at->name,nt.entries[i].offset);
     }
-    if ( !ttfcopyfile(at->name,nt.strings,(3+nt.cur*6)*sizeof(int16)))
+    if ( !ttfcopyfile(at->name,nt.strings,(3+nt.cur*6)*sizeof(int16),"name-data"))
 	at->error = true;
 
     at->namelen = ftell(at->name);
@@ -4498,16 +4498,16 @@ static void dumpcmap(struct alltabs *at, SplineFont *sf,enum fontformat format) 
 	putlong(at->cmap,ucs4pos);	/* offset from tab start to sub tab start */
     }
     if ( format4!=NULL ) {
-	if ( !ttfcopyfile(at->cmap,format4,mspos)) at->error = true;
+	if ( !ttfcopyfile(at->cmap,format4,mspos,"cmap-Unicode16")) at->error = true;
     }
     if ( format12!=NULL ) {
-	if ( !ttfcopyfile(at->cmap,format12,ucs4pos)) at->error = true;
+	if ( !ttfcopyfile(at->cmap,format12,ucs4pos,"cmap-Unicode32")) at->error = true;
     }
     if ( format2!=NULL ) {
-	if ( !ttfcopyfile(at->cmap,format2,cjkpos)) at->error = true;
+	if ( !ttfcopyfile(at->cmap,format2,cjkpos,"cmap-cjk")) at->error = true;
     }
     if ( apple2!=NULL ) {
-	if ( !ttfcopyfile(at->cmap,apple2,applecjkpos)) at->error = true;
+	if ( !ttfcopyfile(at->cmap,apple2,applecjkpos,"cmap-applecjk")) at->error = true;
     }
 
     /* Mac table */
@@ -5274,6 +5274,17 @@ return( false );
 return( true );
 }
 
+static char *Tag2String(uint32 tag) {
+    static char buffer[8];
+
+    buffer[0] = tag>>24;
+    buffer[1] = tag>>16;
+    buffer[2] = tag>>8;
+    buffer[3] = tag;
+    buffer[4] = 0;
+return( buffer );
+}
+
 static void dumpttf(FILE *ttf,struct alltabs *at, enum fontformat format) {
     int32 checksum;
     int i, head_index=-1;
@@ -5294,7 +5305,8 @@ static void dumpttf(FILE *ttf,struct alltabs *at, enum fontformat format) {
     }
 
     for ( i=0; i<at->tabdir.numtab; ++i ) if ( at->tabdir.ordered[i]->data!=NULL )
-	if ( !ttfcopyfile(ttf,at->tabdir.ordered[i]->data,at->tabdir.ordered[i]->offset))
+	if ( !ttfcopyfile(ttf,at->tabdir.ordered[i]->data,
+		at->tabdir.ordered[i]->offset,Tag2String(at->tabdir.tabs[i].tag)))
 	    at->error = true;
 
     checksum = filecheck(ttf);
@@ -5371,7 +5383,7 @@ static int dumpcff(struct alltabs *at,SplineFont *sf,enum fontformat format,
     if ( !ret )
 	at->error = true;
     else if ( at->gi.flags & ps_flag_nocffsugar ) {
-	if ( !ttfcopyfile(cff,at->cfff,0))
+	if ( !ttfcopyfile(cff,at->cfff,0,"CFF"))
 	    at->error = true;
     } else {
 	long len;
@@ -5389,7 +5401,7 @@ static int dumpcff(struct alltabs *at,SplineFont *sf,enum fontformat format,
 	sprintf( buffer, "/%s %ld StartData\n", sf->fontname, len );
 	fprintf(cff,"%%%%BeginData: %ld Binary Bytes\n", len+strlen(buffer) );
 	fputs(buffer,cff);
-	if ( !ttfcopyfile(cff,at->cfff,ftell(cff)))
+	if ( !ttfcopyfile(cff,at->cfff,ftell(cff),"CFF"))
 	    at->error = true;
 	fprintf(cff,"\n%%%%EndData\n" );
 	fprintf(cff,"%%%%EndResource\n" );

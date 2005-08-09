@@ -1292,7 +1292,7 @@ static int morx_dumpASM(FILE *temp,ASM *sm, struct alltabs *at, SplineFont *sf )
 	fseek(temp,start+4*sizeof(uint16),SEEK_SET);
 	putshort(temp,substable_pos-start);		/* Point to start of insertions */
 	fseek(temp,0,SEEK_END);
-	if ( !ttfcopyfile(temp,kernvalues,substable_pos)) at->error = true;
+	if ( !ttfcopyfile(temp,kernvalues,substable_pos,"kern-subtable")) at->error = true;
     }
 return( true );
 }
