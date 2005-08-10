@@ -3976,7 +3976,7 @@ return( NULL );		/* Doesn't have the single byte entries */
     for ( jj=0; jj<2 || (base2==-1 && jj<1); ++jj )
 	    for ( j=((jj==0?base:base2)<<8); j<=((jj==0?basebound:base2bound)<<8); j+= 0x100 ) {
 	for ( i=0; i<lbase; ++i )
-	    if ( !complained && map->map[i+j] &&
+	    if ( !complained && map->map[i+j]!=-1 &&
 		    SCWorthOutputting(sf->glyphs[map->map[i+j]])) {
 #if defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Bad Encoding"),_("There is a character (%d) which is not normally in the encoding"),i+j);
