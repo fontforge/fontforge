@@ -2369,7 +2369,7 @@ return( true );
 }
 
 EncMap *EncMapFromEncoding(SplineFont *sf,Encoding *enc) {
-    int i,j, extras, found;
+    int i,j, extras, found, base, unmax;
     int *encoded, *unencoded;
     EncMap *map;
     struct altuni *altuni;
@@ -2378,9 +2378,15 @@ EncMap *EncMapFromEncoding(SplineFont *sf,Encoding *enc) {
     if ( enc==NULL )
 return( NULL );
 
-    encoded = galloc(enc->char_cnt*sizeof(int));
-    memset(encoded,-1,enc->char_cnt*sizeof(int));
+    base = enc->char_cnt;
+    if ( enc->char_cnt<=256 )
+	base = 256;
+    else if ( enc->char_cnt<=0x10000 )
+	base = 0x10000;
+    encoded = galloc(base*sizeof(int));
+    memset(encoded,-1,base*sizeof(int));
     unencoded = galloc(sf->glyphcnt*sizeof(int));
+    unmax = sf->glyphcnt;
 
     for ( i=extras=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
 	found = false;
@@ -2398,15 +2404,19 @@ return( NULL );
 		     sc->unicodeenc<unicode4_size &&
 		     (j = EncFromUni(sc->unicodeenc,enc))!= -1 )
 		encoded[j] = i;
-	    else
+	    else {
+		if ( extras>=unmax ) unencoded = grealloc(unencoded,(unmax+=300)*sizeof(int));
 		unencoded[extras++] = i;
+	    }
 	    for ( altuni=sc->altuni; altuni!=NULL; altuni=altuni->next ) {
 		if ( altuni->unienc!=-1 &&
 			 altuni->unienc<unicode4_size &&
 			 (j = EncFromUni(altuni->unienc,enc))!= -1 )
 		    encoded[j] = i;
-		else
+		else {
+		    if ( extras>=unmax ) unencoded = grealloc(unencoded,(unmax+=300)*sizeof(int));
 		    unencoded[extras++] = i;
+		}
 	    }
 	}
     }
@@ -2439,10 +2449,10 @@ return( NULL );
     }
 
     map = chunkalloc(sizeof(EncMap));
-    map->enccount = map->encmax = enc->char_cnt + extras;
+    map->enccount = map->encmax = base + extras;
     map->map = galloc(map->enccount*sizeof(int));
-    memcpy(map->map,encoded,enc->char_cnt*sizeof(int));
-    memcpy(map->map+enc->char_cnt,unencoded,extras*sizeof(int));
+    memcpy(map->map,encoded,base*sizeof(int));
+    memcpy(map->map+base,unencoded,extras*sizeof(int));
     map->backmax = sf->glyphcnt;
     map->backmap = galloc(sf->glyphcnt*sizeof(int));
     memset(map->backmap,-1,sf->glyphcnt*sizeof(int));	/* Just in case there are some unencoded glyphs (duplicates perhaps) */
