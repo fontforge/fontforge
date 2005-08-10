@@ -9450,16 +9450,6 @@ return;
     for ( fvs=fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame )
 	if ( fvs!=fv && fvs->sf==fv->sf )
     break;
-    if ( fvs!=NULL )
-	new = fvs->filled;
-    else
-	new = SplineFontPieceMeal(fv->sf,fv->filled->pixelsize,
-		(fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0),
-		NULL);
-    BDFFontFree(fv->filled);
-    if ( fv->filled == fv->show )
-	fv->show = new;
-    fv->filled = new;
     GDrawRequestExpose(fv->v,NULL,false);
     GDrawSetCursor(fv->v,ct_pointer);
 }
