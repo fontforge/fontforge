@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 6-Aug-2005 -->
+  <!-- AP: Last modified: 10-Aug-2005 -->
   <TITLE>Spline Font Database File Format</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -12,8 +12,8 @@
 </H1>
 <P>
 <FONT COLOR="Red"><STRONG>This page is often grievously out of date. It was
-a fair approximation to reality on 31 Dec 2004.</STRONG></FONT> Even if out
-of date it should be helpful, but if you really need to know the current
+a fair approximation to reality on 10 August 2005.</STRONG></FONT> Even if
+out of date it should be helpful, but if you really need to know the current
 format look at
 <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/fontforge/sfd.c">sfd.c</A>
 and see what it parses. Some descriptions of esoteric features are not complete,
@@ -55,6 +55,10 @@ ok, but there are a couple of cases than need to be avoided:
     from one font to another, the substitution contains an index into a table
     of script/languages maintained by the font. Bad things (FontForge crashes)
     can happen if these tables do not match.
+  <LI>
+    If you copy a glyph containing references these are done by glyph index (which
+    is probably different from font to font). You may end up refering to the
+    wrong glyph.
 </UL>
 <H3>
   <A NAME="Font-Header">Font Header</A>

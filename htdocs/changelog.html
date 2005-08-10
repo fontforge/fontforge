@@ -16,6 +16,34 @@ on the file stamp.c.
 <P>
 <UL>
   <LI>
+    9-August-2005
+    <UL>
+      <LI>
+	The big5 encoding stopped at 64000, which confused routines which expected
+	unencoded glyphs to start at 65536.
+      <LI>
+	We would crash when reencoding a font with enough unencoded alternate unicode
+	code points.
+      <LI>
+	The code for creating an 8/16 cmap subtable didn't work.
+      <LI>
+	ff would crash if it had two windows open on the same font and one got reencoded
+      <LI>
+	Didn't set the length of the format4 'cmap' sub-table, so the offset to the
+	format12 (32bit unicode) table was wrong.
+      <LI>
+	ttfcopyfile can complain about a ttf table offset being wrong. Give it the
+	info so that it will now tell us which table has the wrong offset.
+      <LI>
+	Uninitialized variable in metricsview when creating a popup window.
+      <LI>
+	Redo the ttfnames pane of the font info dlg. Now show the names as an editable
+	list.
+      <LI>
+	Histogram dlg still used wrong encodings for selected glyphs when historgrams
+	invoked from Hints menu.
+    </UL>
+  <LI>
     7-August-2005
     <UL>
       <LI>

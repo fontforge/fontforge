@@ -1,0 +1,53 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 10-Aug-2005 -->
+  <!-- AP: Last modified: 10-Aug-2005 -->
+  <TITLE>Cidmap files</TITLE>
+</HEAD>
+<BODY>
+<H1 ALIGN=Center>
+  Cidmap files
+</H1>
+<P>
+These are FontForge's own files which it uses to map from CIDs in one
+Registry-Ordering-Supplement to unicode code points.
+<P>
+Cidmap files generally live in $(PREFIX)/share/fontforge (often
+/usr/local/share/fontforge or /usr/share/fontforge), though they will also
+be found if they are in the directory containing fontforge itself or the
+current directory. They are named
+&lt;registry&gt;-&lt;Ordering&gt;-&lt;Supplement&gt;.cidmap. So
+"Adobe-Japan1-6.cidmap", or "Adobe-CNS1-4.cidmap".
+<P>
+The first line of the file consists of two numbers, usually the same, which
+are the total number of CIDs defined by this ROS.
+<P>
+Subsequent lines have one of three formats
+<UL>
+  <LI>
+    &lt;cid&gt; &lt;unicode&gt;
+  <LI>
+    &lt;cid1&gt;..&lt;cid2&gt; &lt;unicode&gt;
+  <LI>
+    &lt;cid&gt; &lt;postscript-name&gt;
+</UL>
+<P>
+A &lt;cid&gt; is just a decimal number, &lt;unicode&gt; is a hex number,
+and &lt;postscript-name&gt; is a PostScript name token preceded by a slash.
+<P>
+The first few lines of Adobe-Japan1-6.cidmap look like:
+<BLOCKQUOTE>
+  <PRE>23057 23057
+0 /.notdef
+1..60 0020
+61 00a5
+62..92 005d
+93 00a6
+</PRE>
+</BLOCKQUOTE>
+<P>
+So there are 23057 cids in this ROS. CID 0 is mapped to the postscript name
+"/.notdef", cids 1-60 are mapped to space (U+0020), exclam (U+0021), ...,
+lbracket (U+005b), CID 61 is mapped to yen (U+00a5), and so forth.
+</BODY></HTML>
