@@ -2405,6 +2405,8 @@ return( NULL );
 		     (j = EncFromUni(sc->unicodeenc,enc))!= -1 )
 		encoded[j] = i;
 	    else {
+		/* I don't think extras can surpass unmax now, but it doesn't */
+		/*  hurt to leave the code (it's from when we encoded duplicates see below) */
 		if ( extras>=unmax ) unencoded = grealloc(unencoded,(unmax+=300)*sizeof(int));
 		unencoded[extras++] = i;
 	    }
@@ -2413,10 +2415,10 @@ return( NULL );
 			 altuni->unienc<unicode4_size &&
 			 (j = EncFromUni(altuni->unienc,enc))!= -1 )
 		    encoded[j] = i;
-		else {
-		    if ( extras>=unmax ) unencoded = grealloc(unencoded,(unmax+=300)*sizeof(int));
-		    unencoded[extras++] = i;
-		}
+		/* I used to have code here to add these unencoded duplicates */
+		/*  but I don't really see any reason to do so. The main unicode */
+		/*  will occur, and any encoded duplicates so the glyph won't */
+		/*  vanish */
 	    }
 	}
     }
