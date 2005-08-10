@@ -1096,8 +1096,12 @@ static void dumpcomposite(SplineChar *sc, struct glyphinfo *gi) {
 	    /*if ( sc->layers[ly_fore].refs->next==NULL || any )*/
     continue;
 	}
+#if 1
 	flags = (1<<1)|(1<<2)|(1<<12);	/* Args are always values for me */
 					/* Always round args to grid */
+#else
+	flags = (1<<1)|(1<<2)|(1<<11);	/* Test version to play with scaled components */
+#endif
 	    /* There is some very strange stuff wrongly-documented on the apple*/
 	    /*  site about how these should be interpretted when there are */
 	    /*  scale factors, or rotations */
@@ -4295,6 +4299,7 @@ static FILE *NeedsUCS2Table(SplineFont *sf,int *ucs2len,EncMap *map) {
 	putshort(format4,ranges[i]);
     free(ranges);
     free(cmapseg);
+    *ucs2len = ftell(format4);
 return( format4 );
 }
 
