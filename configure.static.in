@@ -4,17 +4,19 @@ AC_INIT(fontforge/pfaedit.h)
 AC_PROG_CC
 AC_PROG_RANLIB
 
+gww_define_caps_for_alt="dontknow"
 gww_nodynamic="no"
 gww_needsstatic="no"
+
+
 AC_CANONICAL_HOST
 case "$host" in
 *-apple-darwin*) AC_DEFINE(NODYNAMIC)
 gww_nodynamic="yes"
 AC_DEFINE(_CursorsMustBe16x16)
-dnl AC_DEFINE(_Keyboard,1)
-dnl The current X server on the mac grabs the command key for itself. Don't try using it.
-
+AC_DEFINE(_Keyboard,1)
 AC_DEFINE(__Mac,1)
+ gww_define_caps_for_alt="1"
 LIBS="/System/Library/Frameworks/CoreServices.framework/CoreServices $LIBS"
  ;;
 powerpc-*-*linux*)
@@ -32,6 +34,21 @@ gww_nodynamic="yes"
 gww_needsstatic="yes"
  ;;
 esac
+
+AC_ARG_WITH(capslock-for-alt,
+ [  --with-capslock-for-alt   Control whether to use capslock rather than alt/meta to alter behavior of tools in outline/bitmap windows],
+ [
+   if test "$withval" \!= "2" ; then
+     gww_define_caps_for_alt="2"
+   elif test "$withval" \!= "no" ; then
+     gww_define_caps_for_alt="1"
+   else
+     gww_define_caps_for_alt="0"
+   fi
+ ])
+if test "$gww_define_caps_for_alt" \!= "dontknow" ; then
+  AC_DEFINE_UNQUOTED(FONTFORGE_CONFIG_CAPSLOCK_FOR_ALT,$gww_define_caps_for_alt)
+fi
 
 dnl One user seems to have messed up iconv on his system and can't get it
 dnl to work.

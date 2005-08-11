@@ -2436,7 +2436,7 @@ return( event );
     if ( dy >= 2*dx ) {
 	cv->p.x = fake->u.mouse.x = basex;
 	cv->p.cx = base->me.x;
-	if ( !(event->u.mouse.state&ksm_meta) &&
+	if ( !(event->u.mouse.state&ksm_alt) &&
 		ItalicConstrained && cv->sc->parent->italicangle!=0 ) {
 	    double off = tan(cv->sc->parent->italicangle*3.1415926535897932/180)*
 		    (cv->p.cy-base->me.y);
@@ -2614,7 +2614,7 @@ return;
 
     if ( cv->active_tool == cvt_pointer ) {
 	fs.select_controls = true;
-	if ( event->u.mouse.state&ksm_meta ) fs.seek_controls = true;
+	if ( event->u.mouse.state&ksm_alt ) fs.seek_controls = true;
 	cv->lastselpt = NULL;
 	_CVTestSelectFromEvent(cv,&fs);
 	fs.p = &cv->p;
@@ -3047,7 +3047,7 @@ return;
 	/* Constrained */
 
 	fake.u.mouse = event->u.mouse;
-	if ( ((event->u.mouse.state&ksm_meta) ||
+	if ( ((event->u.mouse.state&ksm_alt) ||
 		    (!cv->cntrldown && (event->u.mouse.state&ksm_control))) &&
 		(cv->p.nextcp || cv->p.prevcp)) {
 	    real dot = (cv->p.cp.x-cv->p.constrain.x)*(p.cx-cv->p.constrain.x) +
@@ -6216,26 +6216,6 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	    mi->ti.disabled = cv->layerheads[cv->drawmode]->splines==NULL;
 	  /* Simplify is always available (it may not do anything though) */
 	  /*  well, ok. Disable it if there is absolutely nothing to work on */
-#if 0
-	    free(mi->ti.text);
-	    if ( e==NULL || !(e->u.mouse.state&ksm_shift) ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		mi->ti.text = u_copy(GStringGetResource(_STR_Simplify,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-		mi->ti.text = u_copy(_("Simplify"));
-#endif
-		mi->short_mask = ksm_control|ksm_shift;
-		mi->invoke = is_cv ? CVMenuSimplify : SVMenuSimplify;
-	    } else {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		mi->ti.text = u_copy(GStringGetResource(_STR_SimplifyMore,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-		mi->ti.text = u_copy(_("Simplify More..."));
-#endif
-		mi->short_mask = (ksm_control|ksm_meta|ksm_shift);
-		mi->invoke = is_cv ? CVMenuSimplifyMore : SVMenuSimplifyMore;
-	    }
-#endif
 	  break;
 	  case MID_BuildAccent:
 	    mi->ti.disabled = !SFIsSomethingBuildable(cv->fv->sf,cv->sc,false);

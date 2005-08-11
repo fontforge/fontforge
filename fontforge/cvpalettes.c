@@ -698,6 +698,22 @@ int TrueCharState(GEvent *event) {
     /*  reflect whatever key just got depressed/released */
     int keysym = event->u.chr.keysym;
 
+    if ( keysym == GK_Caps_Lock || keysym == GK_Shift_Lock ) {
+	static int set_on_last_down = false;
+	/* caps lock is sticky and doesn't work like the other modifiers */
+	/* but it is even worse. the bit seems to be set on key down, but */
+	/* unset on key up. In other words on key up, the bit will always */
+	/* set and we have no idea which way it will go. So we guess, and */
+	/* if they haven't messed with the key outside ff we should be right */
+	if ( event->type == et_char ) {
+	    set_on_last_down = (event->u.chr.state ^ ksm_capslock)& ksm_capslock;
+return( event->u.chr.state ^ ksm_capslock );
+	} else if ( !(event->u.chr.state & ksm_capslock) || set_on_last_down )
+return( event->u.chr.state );
+	else
+return( event->u.chr.state & ~ksm_capslock );
+    }
+
     if ( keysym == GK_Meta_L || keysym == GK_Meta_R ||
 	    keysym == GK_Alt_L || keysym == GK_Alt_R )
 	bit = ksm_meta;
@@ -705,8 +721,6 @@ int TrueCharState(GEvent *event) {
 	bit = ksm_shift;
     else if ( keysym == GK_Control_L || keysym == GK_Control_R )
 	bit = ksm_control;
-    else if ( keysym == GK_Caps_Lock || keysym == GK_Shift_Lock )
-	bit = ksm_capslock;
     else if ( keysym == GK_Super_L || keysym == GK_Super_L )
 	bit = ksm_super;
     else if ( keysym == GK_Hyper_L || keysym == GK_Hyper_L )
@@ -773,7 +787,7 @@ void CVToolsSetCursor(CharView *cv, int state, char *device) {
 	else
 	    shouldshow = cv->s1_tool;
     }
-    if ( shouldshow==cvt_magnify && (state&ksm_meta))
+    if ( shouldshow==cvt_magnify && (state&ksm_alt))
 	shouldshow = cvt_minify;
     if ( shouldshow!=cv->showing_tool ) {
 	GDrawSetCursor(cv->v,tools[shouldshow]);
@@ -2732,9 +2746,9 @@ void BVToolsSetCursor(BitmapView *bv, int state,char *device) {
 	    shouldshow = bv->s1_tool;
     }
     
-    if ( shouldshow==bvt_magnify && (state&ksm_meta))
+    if ( shouldshow==bvt_magnify && (state&ksm_alt))
 	shouldshow = bvt_minify;
-    if ( (shouldshow==bvt_pencil || shouldshow==bvt_line) && (state&ksm_meta) && bv->bdf->clut!=NULL )
+    if ( (shouldshow==bvt_pencil || shouldshow==bvt_line) && (state&ksm_alt) && bv->bdf->clut!=NULL )
 	shouldshow = bvt_eyedropper;
     if ( shouldshow!=bv->showing_tool ) {
 	GDrawSetCursor(bv->v,tools[shouldshow]);

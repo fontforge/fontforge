@@ -9,6 +9,7 @@ AC_DISABLE_STATIC
 AC_CANONICAL_HOST
 AC_PROG_LIBTOOL
 
+gww_define_caps_for_alt="dontknow"
 gww_nodynamic="no"
 gww_needsstatic="no"
 gww_ismac="no"
@@ -29,10 +30,9 @@ case "$host" in
 *-apple-darwin*)
  gww_ismac="yes"
  AC_DEFINE(_CursorsMustBe16x16)
-dnl AC_DEFINE(_Keyboard,1)
-dnl The current X server grabs the command key for itself. Don't try using it.
-
+ AC_DEFINE(_Keyboard,1)
  AC_DEFINE(__Mac,1)
+ gww_define_caps_for_alt="1"
 
 dnl fink puts stuff under /sw
 
@@ -61,6 +61,21 @@ dnl and crashes gdb if we attempt to use it.
  AC_DEFINE(_NO_XINPUT)
  ;;
 esac
+
+AC_ARG_WITH(capslock-for-alt,
+ [  --with-capslock-for-alt   Control whether to use capslock rather than alt/meta to alter behavior of tools in outline/bitmap windows],
+ [
+   if test "$withval" \!= "2" ; then
+     gww_define_caps_for_alt="2"
+   elif test "$withval" \!= "no" ; then
+     gww_define_caps_for_alt="1"
+   else
+     gww_define_caps_for_alt="0"
+   fi
+ ])
+if test "$gww_define_caps_for_alt" \!= "dontknow" ; then
+  AC_DEFINE_UNQUOTED(FONTFORGE_CONFIG_CAPSLOCK_FOR_ALT,$gww_define_caps_for_alt)
+fi
 
 dnl One user seems to have messed up iconv on his system and can't get it
 dnl to work.
