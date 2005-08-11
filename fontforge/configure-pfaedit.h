@@ -136,6 +136,21 @@
 /* #define FONTFORGE_CONFIG_USE_DOUBLE					      */
 /*									      */
 
+
+/* On most systems fontforge uses the alt or meta key as a mouse press modifier*/
+/*  on the mac that would mean the option key. But the mac usually uses option*/
+/*  keypress to mean mouse button 2, and so option isn't available. Let's use */
+/*  capslock instead.					                      */
+/*									      */
+/* #define FONTFORGE_CONFIG_CAPSLOCK_FOR_ALT				      */
+/*									      */
+/* This has three states:						      */
+/*	Undefined (or 0) => use meta/alt key				      */
+/*	2		 => Use either meta/alt or capslock		      */
+/*	otherwise	 => use capslock				      */
+/*									      */
+/* Can be set from configure --with-capslock-for-alt			      */
+
 /* ************************************************************************** */
 /* *********************** Set by configure script ************************** */
 /* ************************************************************************** */

@@ -527,20 +527,6 @@ return;
 
 void CVMouseUpPoint(CharView *cv,GEvent *event) {
     SplinePoint *active = cv->active_sp;
-    if ( (event->u.mouse.state&ksm_capslock) &&
-	    active->prev!=NULL && active->noprevcp &&
-	    active->prev->from->nonextcp &&
-	    (active->prev->from->me.x!=active->me.x ||
-	     active->prev->from->me.y!=active->me.y)) {
-	SplinePoint *prev = active->prev->from;
-	active->prevcp.x = (2*active->me.x+prev->me.x)/3;
-	active->prevcp.y = (2*active->me.y+prev->me.y)/3;
-	prev->nextcp.x = (active->me.x+2*prev->me.x)/3;
-	prev->nextcp.y = (active->me.y+2*prev->me.y)/3;
-	active->noprevcp = false;
-	prev->nonextcp = false;
-	SCUpdateAll(cv->sc);
-    }
     cv->lastselpt = active;
     cv->active_spl = NULL;
     cv->active_sp = NULL;

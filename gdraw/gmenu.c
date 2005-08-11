@@ -43,8 +43,9 @@ static int gmenubar_inited = false;
 static enum { kb_ibm, kb_mac, kb_sun, kb_ppc } keyboard = _Keyboard;
 /* Sigh. In old XonX the command key is mapped to 0x20 and Option to 0x8 (meta) */
 /*  the option key conversions (option-c => ccidilla) are not done */
-/*  In the new X, the command key is mapped to 0x10 and Option to 0x2000 */
+/*  In the next X, the command key is mapped to 0x10 and Option to 0x2000 */
 /*  (again option key conversion are not done) */
+/*  In 10.3, the command key is mapped to 0x10 and Option to 0x8 */
 /*  While in Suse PPC X, the command key is 0x8 (meta) and option is 0x2000 */
 /*  and the standard mac option conversions are done */
 
@@ -123,7 +124,7 @@ return;
 	pt += u_strlen(pt);
     }
     if ( gi->short_mask&ksm_control ) {
-	uc_strcpy(pt,keyboard!=kb_mac?"Ctl+":"Cmd+");
+	uc_strcpy(pt,"Ctl+"/*keyboard!=kb_mac?"Ctl+":"Cmd+"*/);	/* Used to be that X made the command key available on the mac. But no longer */
 	pt += u_strlen(pt);
     }
     if ( gi->short_mask&ksm_shift ) {

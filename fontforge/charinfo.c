@@ -1656,7 +1656,7 @@ static void SLL_DoChange(struct sl_dlg *sld,unichar_t *def,GEvent *e) {
 
     forever {
 	if ( e!=NULL && ( e->u.control.u.button.button!=1 ||
-		(e->u.control.u.button.state&(ksm_control|ksm_meta|ksm_shift))) )
+		(e->u.control.u.button.state&(ksm_control|ksm_meta|ksm_capslock|ksm_shift))) )
 	    ret = GWidgetAskStringR(_STR_ScriptLang,usedef,_STR_ScriptLangEnter);
 	else
 	    ret = ShowScripts(usedef);
