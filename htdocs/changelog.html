@@ -16,6 +16,21 @@ on the file stamp.c.
 <P>
 <UL>
   <LI>
+    11-August-2005
+    <UL>
+      <LI>The configure script did not find libfreetype when it lived (solely)
+	in /usr/X11R6/libs
+      <LI>On the Mac, menus incorrectly suggested using Cmd rather than Ctl.
+        (Cmd used to work on earlier versions of the X server, but now it
+	is snagged by the X11 menubar itself.)
+      <LI>ff uses the Alt/Meta key to alter the behavior of some tools (magnify,
+        ruler, pointer, pencil, etc.) in the editing windows. This doesn't work
+	well on the mac. First there is no real Alt/Meta key. If we contemplate
+	using Option or Command it will generally already be used to turn the
+	single button mouse into a three button mouse (Option - mouse => button 2,
+	Command - mouse => button 3). So instead use the CapsLock key.
+    </UL>
+  <LI>
     9-August-2005
     <UL>
       <LI>
