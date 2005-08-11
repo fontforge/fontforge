@@ -29,7 +29,9 @@ case "$host" in
 *-apple-darwin*)
  gww_ismac="yes"
  AC_DEFINE(_CursorsMustBe16x16)
- AC_DEFINE(_Keyboard,1)
+dnl AC_DEFINE(_Keyboard,1)
+dnl The current X server on the mac grabs the command key for itself. Don't try using it.
+
  AC_DEFINE(__Mac,1)
 
 dnl fink puts stuff under /sw
@@ -133,19 +135,35 @@ fi
 
 AC_CHECK_HEADERS([ieeefp.h])
 
+dnl many systems have freetype on /usr/X11R6/lib which isn't in the standard search path
+
+AC_CHECK_LIB(freetype, FT_New_Memory_Face, : , [
+ gww_save_LDFLAGS="$LDFLAGS"
+ LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
+ dnl Avoid configure's cache.
+
+ unset ac_cv_lib_freetype_FT_New_Memory_Face
+ echo "${ac_cv_lib_freetype_FT_New_Memory_Face+set}"  set
+ AC_CHECK_LIB(freetype, FT_New_Memory_Face,[
+   gww_rpath="$gww_rpath -rpath /usr/X11R6/lib"
+  ] , [
+   LDFLAGS=$gww_save_LDFLAGS
+   AC_DEFINE(_NO_FREETYPE)
+  ])
+])
+
 gww_hasbytecode="no"
-AC_ARG_WITH(freetype-bytecode,
- [  --with-freetype-bytecode   Control whether we build with the bytecode interpreter],
- [
-    gww_hasbytecode="$withval"
-    AC_CHECK_LIB(freetype, FT_New_Memory_Face)
- ],
- [
-  AC_CHECK_LIB(freetype, FT_New_Memory_Face, [
+if test "$ac_cv_lib_freetype_FT_New_Memory_Face" = "yes" ; then
+ AC_ARG_WITH(freetype-bytecode,
+  [  --with-freetype-bytecode   Control whether we build with the bytecode interpreter],
+  [
+     gww_hasbytecode="$withval"
+  ],
+  [
     echo checking for bytecode interpreter in freetype...
-    AC_CHECK_LIB(freetype, TT_RunIns, gww_hasbytecode="yes", : )],
-   AC_DEFINE(_NO_FREETYPE))
- ])
+    AC_CHECK_LIB(freetype, TT_RunIns, gww_hasbytecode="yes", : )
+  ])
+fi
 if test "$gww_hasbytecode" = "yes" ; then
  AC_CHECK_LIB(pthread, pthread_create, LIBS="$LIBS -lpthread", gww_hasbytecode="no")
 fi

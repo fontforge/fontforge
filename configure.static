@@ -849,6 +849,7 @@ Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --without-iconv   Don't use the system's iconv(3) routines, use fontforge's instead
+  --with-freetype-bytecode   Control whether we build with the bytecode interpreter
   --with-freetype-src=dir   Specify freetype source directory
   --with-x                use the X Window System
   --with-multilayer   Control whether we build with support for type3/svg fonts containing multilayered drawing with strokes, fills, images, etc.
@@ -2406,9 +2407,6 @@ cat >>confdefs.h <<\_ACEOF
 #define _CursorsMustBe16x16 1
 _ACEOF
 
-cat >>confdefs.h <<\_ACEOF
-#define _Keyboard 1
-_ACEOF
 
 cat >>confdefs.h <<\_ACEOF
 #define __Mac 1
@@ -4802,7 +4800,7 @@ done
 
 fi
 
-gww_hasbytecode="no"
+
 echo "$as_me:$LINENO: checking for FT_New_Memory_Face in -lfreetype" >&5
 echo $ECHO_N "checking for FT_New_Memory_Face in -lfreetype... $ECHO_C" >&6
 if test "${ac_cv_lib_freetype_FT_New_Memory_Face+set}" = set; then
@@ -4868,9 +4866,109 @@ fi
 echo "$as_me:$LINENO: result: $ac_cv_lib_freetype_FT_New_Memory_Face" >&5
 echo "${ECHO_T}$ac_cv_lib_freetype_FT_New_Memory_Face" >&6
 if test $ac_cv_lib_freetype_FT_New_Memory_Face = yes; then
+  :
+else
 
-  echo checking for bytecode interpreter in freetype...
-  echo "$as_me:$LINENO: checking for TT_RunIns in -lfreetype" >&5
+ gww_save_LDFLAGS="$LDFLAGS"
+ LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
+
+ unset ac_cv_lib_freetype_FT_New_Memory_Face
+ echo "${ac_cv_lib_freetype_FT_New_Memory_Face+set}"  set
+ echo "$as_me:$LINENO: checking for FT_New_Memory_Face in -lfreetype" >&5
+echo $ECHO_N "checking for FT_New_Memory_Face in -lfreetype... $ECHO_C" >&6
+if test "${ac_cv_lib_freetype_FT_New_Memory_Face+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lfreetype  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any gcc2 internal prototype to avoid an error.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+/* We use char because int might match the return type of a gcc2
+   builtin and then its argument prototype would still apply.  */
+char FT_New_Memory_Face ();
+int
+main ()
+{
+FT_New_Memory_Face ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_lib_freetype_FT_New_Memory_Face=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_cv_lib_freetype_FT_New_Memory_Face=no
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_lib_freetype_FT_New_Memory_Face" >&5
+echo "${ECHO_T}$ac_cv_lib_freetype_FT_New_Memory_Face" >&6
+if test $ac_cv_lib_freetype_FT_New_Memory_Face = yes; then
+
+   gww_rpath="$gww_rpath -rpath /usr/X11R6/lib"
+
+else
+
+   LDFLAGS=$gww_save_LDFLAGS
+   cat >>confdefs.h <<\_ACEOF
+#define _NO_FREETYPE 1
+_ACEOF
+
+
+fi
+
+
+fi
+
+
+gww_hasbytecode="no"
+if test "$ac_cv_lib_freetype_FT_New_Memory_Face" = "yes" ; then
+
+# Check whether --with-freetype-bytecode or --without-freetype-bytecode was given.
+if test "${with_freetype_bytecode+set}" = set; then
+  withval="$with_freetype_bytecode"
+
+     gww_hasbytecode="$withval"
+
+else
+
+    echo checking for bytecode interpreter in freetype...
+    echo "$as_me:$LINENO: checking for TT_RunIns in -lfreetype" >&5
 echo $ECHO_N "checking for TT_RunIns in -lfreetype... $ECHO_C" >&6
 if test "${ac_cv_lib_freetype_TT_RunIns+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -4940,13 +5038,9 @@ else
   :
 fi
 
-else
-  cat >>confdefs.h <<\_ACEOF
-#define _NO_FREETYPE 1
-_ACEOF
 
+fi;
 fi
-
 if test "$gww_hasbytecode" = "yes" ; then
  echo "$as_me:$LINENO: checking for pthread_create in -lpthread" >&5
 echo $ECHO_N "checking for pthread_create in -lpthread... $ECHO_C" >&6
