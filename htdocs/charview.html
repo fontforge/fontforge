@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 28-Mar-2005 -->
+  <!-- AP: Last modified: 11-Aug-2005 -->
   <TITLE>Outline Glyph View</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -152,6 +152,12 @@ At the bottom of the palette is a list of the current bindings of the mouse
 buttons. Here mouse button 1 is bound to the pointer tool, mouse button 1
 with the control key pressed is also bound to pointer, mouse button 2 is
 bound to magnify, and mouse button 2 with control is bound to ruler.
+<P>
+Many of the tools have different <A NAME="alt-meta-capslock">behaviors</A>
+if you hold the shift or alt (meta) key down when using the tool. On the
+mac there is no alt/meta key, and the Option and Command keys are usually
+bound to making a one button mouse look like a three button mouse. So on
+the mac fontforge uses the caps-lock key rather than alt/meta.
 <H3>
   <IMG SRC="cvarrowicon.png" ALIGN="Middle">The <A NAME="pointer">pointer</A>
   tool
@@ -170,11 +176,12 @@ A tripple click selects everything in the layer. Clicking on the background
 will deselect everything. Clicking on the background and dragging out a rectangle
 will select everything within the rectangle. Clicking on a line or spline
 will select the two end points of that line or spline. Clicking on the dark
-part of an image (when in the background layer) will select the image. Clicking
+part of an image (when in a layer with images) will select the image. Clicking
 on the outline of a referenced glyph will select that reference (if a reference
 glyph happens to have the same outline and bounding box, then holding down
-the meta key will allow you to move it once it is selected, without the meta
-key you will resize it).
+the <A HREF="charview.html#alt-meta-capslock">meta/alt/caps-lock</A> key
+will allow you to move it once it is selected, without the meta key you will
+resize it).
 <P>
 If a point has no visible control points, then they are at the same location
 as the point itself. If you want to select one of the control points then
@@ -190,8 +197,9 @@ Once something is selected you may drag it around. If you select something
 and drag the mouse then it and everything else selected will be moved. If
 you drag an open path and one of the end points happens to fall on the end
 point of another open path, then the two will be merged into one (If you
-don't want open paths to merge, hold down the Alt key). If you drag a control
-point then it will be moved.
+don't want open paths to merge, hold down the
+<A HREF="charview.html#alt-meta-capslock">Alt/meta/caps-lock</A> key). If
+you drag a control point then it will be moved.
 <P>
 If you selected a spline, then dragging it will drag the location on the
 spline where you pressed the mouse (so you are changing the shape of the
@@ -199,9 +207,10 @@ spline).
 <P>
 If you hold the shift key down when you drag then the motion will be constrained
 to be either horizontal, vertical, or at a 45&#176; angle. (When moving control
-points the combination of shift and meta (alt) will mean that the control
-point is constrained to be the same angle from the base point as it was before
-you started moving it).
+points the combination of shift and
+<A HREF="charview.html#alt-meta-capslock">meta (alt) </A>will mean that the
+control point is constrained to be the same angle from the base point as
+it was before you started moving it).
 <P>
 If your font has an ItalicAngle set, and the ItalicConstrain preference item
 is set, then motion that would normally be constrained to the vertical is
@@ -227,8 +236,8 @@ may include the width (right bearing) line (or vertical with line). If the
 last thing you selected was a control point then that point will be moved.
 If you hold down the shift key at the same time the up and down arrows will
 move parallel to the italic angle (be careful of this: this leads to non-integral
-values). If you hold down the meta (alt) key, then the motion will be 10
-times the normal amount.
+values). If you hold down the <A HREF="charview.html#alt-meta-capslock">meta
+(alt)</A> key, then the motion will be 10 times the normal amount.
 <P>
 If you hold down the control key while working with the arrows then the view
 will be scrolled rather than moving the selection.
@@ -249,10 +258,11 @@ a ligature </A>for a more complete description.
 </H3>
 <P>
 Clicking with the magnifying tool will magnify the view and center it around
-the point you clicked on. Holding down the Alt (Meta) key and clicking will
-minify the view, again centered around the point at which you clicked. Again
-some window managers will steal meta-clicks, so you may have to use the View
-menu to minify (It's called Zoom Out
+the point you clicked on. Holding down the
+<A HREF="charview.html#alt-meta-capslock">Alt/Meta/CapsLock </A>key and clicking
+will minify the view, again centered around the point at which you clicked.
+Again some window managers will steal meta-clicks, so you may have to use
+the View menu to minify (It's called Zoom Out
 <P>
 If you drag out a rectangle with this tool then when you release, FontForge
 will shift and scale the view so that your rectangle just fits into the window.
@@ -272,7 +282,8 @@ You can use this tool to scroll the window without using the scroll bars.
 </H3>
 <P>
 You can use this tool to draw a random curve which FontForge will then attempt
-to convert into a set of splines. If you hold down the Alt (Meta) key then
+to convert into a set of splines. If you hold down the
+<A HREF="charview.html#alt-meta-capslock">Alt/Meta/CapsLock</A> key then
 FontForge will close the curve when you release the mouse.
 <P>
 If you double click on the icon in the tool palette you get a dialog similar
@@ -355,12 +366,16 @@ you depressed the mouse to the mouse's current location. If you depress the
 tool at the end point of a spline and move it to the other endpoint then
 it will also show the length of that spline.
 <P>
-If you hold down the Meta (Alt) key when the mouse button is up, then the
-current location will be shown more accurately than on the status line.
+If you hold down the
+<A HREF="charview.html#alt-meta-capslock">Meta/Alt/CapsLock </A>key when
+the mouse button is up, then the current location will be shown more accurately
+than on the status line.
 <P>
-Finally if you hold down the Meta (Alt) key when you release the mouse button,
-then the ruler window will remain on the screen until you dismiss it by either:
-clicking in the window, or dragging out a new ruler selection.
+Finally if you hold down the
+<A HREF="charview.html#alt-meta-capslock">Meta/Alt/CapsLock</A> key when
+you release the mouse button, then the ruler window will remain on the screen
+until you dismiss it by either: clicking in the window, or dragging out a
+new ruler selection.
 <H3>
   <IMG SRC="cvscaleicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">The
   <A NAME="scale">scale</A> tool
