@@ -1819,6 +1819,7 @@ static void dumpcffencoding(SplineFont *sf,struct alltabs *at) {
 		putc(i,at->encoding);
 		putshort(at->encoding,at->gn_sid[sc->ttf_glyph]);
 	    }
+	    sc->ticked = true;
 	}
     } else {
 	fseek(at->encoding,start_pos+1,SEEK_SET);
