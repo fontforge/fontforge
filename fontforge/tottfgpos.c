@@ -61,6 +61,7 @@ struct lookup {		/* It used to be there was one lookup for every */
 /* Undocumented fact: ATM (which does kerning for otf fonts in Word) can't handle features with multiple lookups */
 /*  So if we have multiple lookups with the same tag/flags they must be merged */
 /*  one lookup pointing to many subtables */
+/* But conversely, ttx can't handle this. So we only want to do it for kerns */
 struct clookup {		/* Coalesced lookups */
     uint8 duplicate;		/* This same set of lookups is used in an earlier feature. We don't need to output the lookup data */
     uint8 extension;		/* This set of lookups must be referenced throw an extension table */
@@ -3444,20 +3445,29 @@ static struct feature *CoalesceLookups(SplineFont *sf, struct lookup *lookups,
 	for ( i=0; i<f->baselcnt; ++i ) if ( !f->baselookups[i]->used ) {
 	    f->baselookups[i]->used = true;
 	    cnt = 1;
-	    for ( j=i+1; j<f->baselcnt; ++j ) {
-		if ( f->baselookups[i]->flags == f->baselookups[j]->flags &&
-			f->baselookups[i]->lookup_type == f->baselookups[j]->lookup_type ) {
-		    f->baselookups[j]->used = true;
-		    ++cnt;
+	    /* ATM can't handle a kern feature with more than one lookup */
+	    /* TTX can't handle a sub-table referenced by more than one lookup*/
+	    /*  (in other words, can't handle what ATM forces us to do) */
+	    /* So for kern features we coalesce multiple subtables into one */
+	    /*  lookup. This makes ATM happy. But we don't coalesce anything */
+	    /*  as to keep TTX happy. Really stupid */
+	    if ( f->feature_tag==CHR('k','e','r','n') )
+		for ( j=i+1; j<f->baselcnt; ++j ) {
+		    if ( f->baselookups[i]->flags == f->baselookups[j]->flags &&
+			    f->baselookups[i]->lookup_type == f->baselookups[j]->lookup_type ) {
+			f->baselookups[j]->used = true;
+			++cnt;
+		    }
 		}
-	    }
 	    temp = galloc(cnt*sizeof(struct lookup *));
 	    cnt = 0;
-	    for ( j=i; j<f->baselcnt; ++j ) {
-		if ( f->baselookups[i]->flags == f->baselookups[j]->flags &&
-			f->baselookups[i]->lookup_type == f->baselookups[j]->lookup_type )
-		    temp[cnt++] = f->baselookups[j];
-	    }
+	    temp[cnt++] = f->baselookups[i];
+	    if ( f->feature_tag==CHR('k','e','r','n') )
+		for ( j=i+1; j<f->baselcnt; ++j ) {
+		    if ( f->baselookups[i]->flags == f->baselookups[j]->flags &&
+			    f->baselookups[i]->lookup_type == f->baselookups[j]->lookup_type )
+			temp[cnt++] = f->baselookups[j];
+		}
 	    for ( cl2 = clhead; cl2!=NULL; cl2=cl2->next ) {
 		if ( cl2->lcnt!=cnt )
 	    continue;
@@ -3612,6 +3622,7 @@ static FILE *dumpg___info(struct alltabs *at, SplineFont *sf,int is_gpos) {
     int32 size_params_loc, size_params_ptr;
     struct clookup *clookups, *cl, *cnext;
 
+    at->next_lookup = 0;
     lfile = tmpfile();
     if ( is_gpos ) {
 	lookups = GPOSfigureLookups(lfile,sf,at,&nested);
