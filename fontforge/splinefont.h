@@ -690,6 +690,7 @@ typedef struct refchar {
 					/*  and need to be converted to offsets*/
 			                /*  after truetype readin */
     unsigned int encoded: 1;		/* orig_pos is actually an encoded value, used for old sfd files */
+    unsigned int justtranslated: 1;	/* The transformation matrix specifies a translation (or is identity) */
     int16 adobe_enc;
     int orig_pos;
     int unicode_enc;		/* used by paste */
@@ -1381,7 +1382,6 @@ extern SplineChar *MakeDupRef(SplineChar *base, int local_enc, int uni_enc);
 extern void SCRemoveDependent(SplineChar *dependent,RefChar *rf);
 extern void SCRemoveLayerDependents(SplineChar *dependent,int layer);
 extern void SCRemoveDependents(SplineChar *dependent);
-extern RefChar *SCCanonicalRefs(SplineChar *sc, int isps);
 extern int SCDependsOnSC(SplineChar *parent, SplineChar *child);
 extern void BCCompressBitmap(BDFChar *bdfc);
 extern void BCRegularizeBitmap(BDFChar *bdfc);

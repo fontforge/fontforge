@@ -150,6 +150,7 @@ struct hintdb {
 	/* actually, most of the time we can't use stem3s, only if those three*/
 	/* stems are always active and there are no other stems !(h/v)hasoverlap*/
     unsigned int noconflicts: 1;
+    unsigned int startset: 1;
     int cursub;				/* Current subr number */
     BasePoint current;
 };
@@ -566,7 +567,7 @@ static void HintSetup(GrowBuf *gb,struct hintdb *hdb, SplinePoint *to,
     int s;
     int i;
 
-    if ( to->hintmask==NULL )
+    if ( to->hintmask==NULL || hdb->noconflicts )
 return;
     if ( hdb->scs[0]->hstem==NULL && hdb->scs[0]->vstem==NULL )		/* Hints are turned off. Hint mask still remains though */
 return;
@@ -1021,76 +1022,6 @@ return( NULL );
 return( NULL );
     }
 return( sofar );
-}
-	
-static RefChar *reverserefs(RefChar *cur) {
-    RefChar *n, *p;
-
-    p = NULL;
-    while ( cur!=NULL ) {
-	n = cur->next;
-	cur->next = p;
-	p = cur;
-	cur = n;
-    }
-return( p );
-}
-
-/* Postscript can only make refs to things which are in the Adobe encoding */
-/*  Suppose Cyrillic A with breve consists of two refs, one to cyrillic A and */
-/*  one to nospacebreve (neither in adobe). But if cyrillic A was just a ref */
-/*  to A, and if nospacebreve was a ref to breve (both in adobe), then by going*/
-/*  one more level of indirection we can use refs in the font. */
-/* Apple's docs say TrueType only allows refs to things which are themselves */
-/*  simple (ie. contain no refs). So if we use the above example we'd still */
-/*  end up with A and breve. I'm told that modern TT doesn't have this */
-/*  restriction, but it won't hurt to do things this way */
-/* They way I do Type2 postscript I can have as many refs as I like, they */
-/*  can only have translations (no scale, skew, rotation), they can't be */
-/*  refs themselves. They can't use hintmask commands inside */
-/* I'm going to do something similar for Type1s now (use seac if I can, else */
-/*  use a subr if I can) */
-RefChar *SCCanonicalRefs(SplineChar *sc, int isps) {
-    RefChar *ret = NULL, *ref;
-    real noop[6];
-
-    /* Neither allows mixing splines and refs */
-    if ( sc->layers[ly_fore].splines!=NULL )
-return(NULL);
-    noop[0] = noop[3] = 1.0; noop[2]=noop[1]=noop[4]=noop[5] = 0;
-    for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
-	ret = IsRefable(ref,isps,noop, ret);
-	if ( ret==NULL )
-return( NULL );
-    }
-
-    /* Postscript can only reference things which are translations, no other */
-    /*  transformations are allowed. Check for that too. */
-    /* My current approach to Type2 fonts requires that the refs have no */
-    /*  conflicts */
-    /* TrueType can only reference things where the elements of the transform-*/
-    /*  ation matrix are less than 2 (and arbetrary translations) */
-    for ( ref=ret; ref!=NULL; ref=ref->next ) {
-	if ( isps ) {
-	    if ( ref->transform[0]!=1 || ref->transform[3]!=1 ||
-		    ref->transform[1]!=0 || ref->transform[2]!=0 )
-    break;
-	    if ( isps==2 && (/*ref->sc->hconflicts || ref->sc->vconflicts ||*/
-		    ref->sc->lsidebearing == 0x7fff))
-    break;
-	} else {
-	    if ( ref->transform[0]>=2 || ref->transform[0]<=-2 ||
-		    ref->transform[1]>=2 || ref->transform[1]<=-2 ||
-		    ref->transform[2]>=2 || ref->transform[2]<=-2 ||
-		    ref->transform[3]>=2 || ref->transform[3]<=-2 )
-    break;
-	}
-    }
-    if ( ref!=NULL ) {
-	RefCharsFreeRef(ret);
-return( NULL );
-    }
-return( reverserefs(ret) );
 }
 
 static int TrySubrRefs(GrowBuf *gb, struct pschars *subrs, SplineChar *scs[MmMax],
@@ -2034,7 +1965,7 @@ static int HintSetup2(GrowBuf *gb,struct hintdb *hdb, SplinePoint *to ) {
     /* (ie. the initial point when we return to it at the end of the splineset*/
     /* in that case hdb->cnt will be 0 and we should ignore it */
     /* components in subroutines depend on not having any hintmasks */
-    if ( to->hintmask==NULL || hdb->cnt==0 )
+    if ( to->hintmask==NULL || hdb->cnt==0 || hdb->noconflicts )
 return( false );
 
     if ( memcmp(hdb->mask,*to->hintmask,(hdb->cnt+7)/8)==0 )
@@ -2333,13 +2264,21 @@ static void flexto2(GrowBuf *gb,struct hintdb *hdb,Spline *pspline,int round) {
 }
 
 static void CvtPsSplineSet2(GrowBuf *gb, SplinePointList *spl,
-	struct hintdb *hdb, BasePoint *start,int is_order2,int round) {
+	struct hintdb *hdb, BasePoint *start,int is_order2,int round,
+	BasePoint *trans) {
     Spline *spline, *first;
-    SplinePointList temp, *freeme = NULL;
-    int init = true, unhinted = true;;
+    SplinePointList temp, *freeme = NULL, *freeme2 = NULL;
+    int unhinted = true;;
 
+    if ( trans->x!=0 || trans->y!=0 ) {
+	real transform[6];
+	transform[1] = transform[2] = 0; transform[0] = transform[3] = 1;
+	transform[4] = trans->x; transform[5] = trans->y;
+	freeme2 = spl = SplinePointListTransform(SplinePointListCopy(spl),transform,true);
+    }
     if ( is_order2 )
 	freeme = spl = SplineSetsPSApprox(spl);
+
     for ( ; spl!=NULL; spl = spl->next ) {
 	first = NULL;
 	SplineSetReverse(spl);
@@ -2365,7 +2304,10 @@ static void CvtPsSplineSet2(GrowBuf *gb, SplinePointList *spl,
 		spl->first->flexx = spl->first->flexy = false;
 	    }
 	}
-	if ( start==NULL || !init ) {
+	/* When a glyph with conflicts is put in a subr, it needs the rmoveto */
+	/*  the subr will contain all the hints, and the initial moveto must  */
+	/*  come after them. That is, in the subr */
+	if ( start==NULL || hdb->startset || !hdb->noconflicts ) {
 	    if ( unhinted && hdb->cnt>0 && spl->first->hintmask!=NULL ) {
 		hdb->mask[0] = ~(*spl->first->hintmask)[0];	/* Make it different */
 		unhinted = false;
@@ -2373,7 +2315,7 @@ static void CvtPsSplineSet2(GrowBuf *gb, SplinePointList *spl,
 	    moveto2(gb,hdb,spl->first,round);
 	} else {
 	    hdb->current = *start = spl->first->me;
-	    init = false;
+	    hdb->startset = true;
 	}
 	for ( spline = spl->first->next; spline!=NULL && spline!=first; ) {
 	    if ( first==NULL ) first = spline;
@@ -2390,34 +2332,8 @@ static void CvtPsSplineSet2(GrowBuf *gb, SplinePointList *spl,
 	/* Of course, I have to Reverse again to get back to my convention after*/
 	/*  saving */
     }
+    SplinePointListFree(freeme2);
     SplinePointListFree(freeme);
-}
-
-static StemInfo *OrderHints(StemInfo *mh, StemInfo *h, real offset, real otheroffset, int mask) {
-    StemInfo *prev, *new, *test;
-
-    while ( h!=NULL ) {
-	prev = NULL;
-	for ( test=mh; test!=NULL && (h->start+offset>test->start ||
-		(h->start+offset==test->start && h->width<test->width)); test=test->next )
-	    prev = test;
-	if ( test!=NULL && test->start==h->start+offset && test->width==h->width )
-	    test->u.mask |= mask;		/* Actually a bit */
-	else {
-	    new = chunkalloc(sizeof(StemInfo));
-	    new->next = test;
-	    new->start = h->start+offset;
-	    new->width = h->width;
-	    new->where = HICopyTrans(h->where,1,otheroffset);
-	    new->u.mask = mask;
-	    if ( prev==NULL )
-		mh = new;
-	    else
-		prev->next = new;
-	}
-	h = h->next;
-    }
-return( mh );
 }
 
 static void DumpHints(GrowBuf *gb,StemInfo *h,int oper,int midoper,int round) {
@@ -2466,177 +2382,185 @@ return;
     }
 }
 
-static void DumpHintMasked(GrowBuf *gb,RefChar *cur,StemInfo *h,StemInfo *v) {
+static void DumpRefsHints(GrowBuf *gb,RefChar *cur,StemInfo *h,StemInfo *v,
+	BasePoint *trans, int round) {
     uint8 masks[12];
-    int cnt;
+    int cnt, sets=0;
+    StemInfo *rs;
+
+    /* trans has already been rounded (whole char is translated by an integral amount) */
 
     if ( h==NULL && v==NULL )
 	IError("hintmask invoked when there are no hints");
     memset(masks,'\0',sizeof(masks));
     cnt = 0;
     while ( h!=NULL && h->hintnumber>=0 ) {
-	if ( h->u.mask&cur->adobe_enc )
-	    masks[h->hintnumber>>3] |= 0x80>>(h->hintnumber&7);
+	real pos = (round ? rint(h->start) : h->start) - trans->x;
+	for ( rs = cur->sc->hstem; rs!=NULL; rs=rs->next ) {
+	    real rpos = round ? rint(rs->start) : rs->start;
+	    if ( rpos==pos && (round ? (rint(rs->width)==rint(h->width)) : (rs->width==h->width)) ) {
+		masks[h->hintnumber>>3] |= 0x80>>(h->hintnumber&7);
+		++sets;
+	break;
+	    } else if ( rpos>pos )
+	break;
+	}
 	h = h->next; ++cnt;
     }
     while ( v!=NULL && v->hintnumber>=0 ) {
-	if ( v->u.mask&cur->adobe_enc )
-	    masks[v->hintnumber>>3] |= 0x80>>(v->hintnumber&7);
+	real pos = (round ? rint(v->start) : v->start) - trans->y;
+	for ( rs = cur->sc->vstem; rs!=NULL; rs=rs->next ) {
+	    real rpos = round ? rint(rs->start) : rs->start;
+	    if ( rpos==pos && (round ? (rint(rs->width)==rint(v->width)) : (rs->width==v->width)) ) {
+		masks[v->hintnumber>>3] |= 0x80>>(v->hintnumber&7);
+		++sets;
+	break;
+	    } else if ( rpos>pos )
+	break;
+	}
 	v = v->next; ++cnt;
     }
-    AddMask2(gb,masks,cnt,19);		/* hintmask */
+    /* if ( sets!=0 ) */	/* First ref will need a hintmask even if it has no hints (if there are conflicts) */
+	AddMask2(gb,masks,cnt,19);		/* hintmask */
 }
 
-static void ExpandRefList2(GrowBuf *gb, SplineChar *sc, RefChar *refs, RefChar *unsafe,
+static void ExpandRef2(GrowBuf *gb, SplineChar *sc, struct hintdb *hdb,
+	RefChar *r, BasePoint *trans, BasePoint *startend,
 	struct pschars *subrs, int round) {
-    RefChar *r;
-    int hsccnt=0;
-    BasePoint current, *bpt;
-    StemInfo *h=NULL, *v=NULL, *s;
-    int cnt;
-    /* The only refs I deal with have no hint conflicts within them */
-    /* Unless unsafe is set. In which case it will contain conflicts and */
-    /*  none of the other refs will contain any hints at all */
+    BasePoint *bpt;
+    BasePoint temp, rtrans;
+    /* The only refs I deal with here have no hint conflicts within them */
+    
+    rtrans.x = r->transform[4]+trans->x;
+    rtrans.y = r->transform[5]+trans->y;
+    if ( round ) {
+	rtrans.x = rint(rtrans.x);
+	rtrans.y = rint(rtrans.y);
+    }
 
-    memset(&current,'\0',sizeof(current));
+    if ( hdb->cnt>0 && !hdb->noconflicts )
+	DumpRefsHints(gb,r,sc->hstem,sc->vstem,&rtrans,round);
 
-    if ( unsafe!=NULL ) {
-	/* All the hints live in this one reference, and its subroutine */
-	/*  contains them and it has its own rmoveto */
-	if ( unsafe->sc->lsidebearing==0x7fff )
-	    IError("Attempt to reference an unreferenceable glyph %s", unsafe->sc->name );
-	AddNumber2(gb,unsafe->sc->lsidebearing,round);
+    /* Translate from end of last character to where this one should */
+    /*  start (we must have one moveto operator to start off, none */
+    /*  in the subr) */
+    bpt = (BasePoint *) (subrs->keys[r->sc->lsidebearing+subrs->bias]);
+    temp.x = bpt[0].x+rtrans.x;
+    temp.y = bpt[0].y+rtrans.y;
+    if ( startend == NULL || hdb->startset ) {
+	if ( hdb->current.x!=temp.x )
+	    AddNumber2(gb,temp.x-hdb->current.x,round);
+	if ( hdb->current.y!=temp.y || hdb->current.x==temp.x )
+	    AddNumber2(gb,temp.y-hdb->current.y,round);
 	if ( gb->pt+1>=gb->end )
 	    GrowBuffer(gb);
-	*gb->pt++ = 10;					/* callsubr */
-	hsccnt = 0;
-	bpt = (BasePoint *) (subrs->keys[unsafe->sc->lsidebearing+subrs->bias]);
-	current = bpt[1];
+	*gb->pt++ = hdb->current.x==temp.x?4:	/* vmoveto */
+		    hdb->current.y==temp.y?22:	/* hmoveto */
+		    21;				/* rmoveto */
     } else {
-	for ( r=refs; r!=NULL; r=r->next )
-	    if ( r->sc->hstem!=NULL || r->sc->vstem!=NULL )
-		r->adobe_enc = 1<<hsccnt++;
-	    else
-		r->adobe_enc = 0;
-    
-	for ( r=refs, h=v=NULL; r!=NULL; r=r->next ) {
-	    h = OrderHints(h,r->sc->hstem,r->transform[5],r->transform[4],r->adobe_enc);
-	    v = OrderHints(v,r->sc->vstem,r->transform[4],r->transform[5],r->adobe_enc);
-	}
-	for ( s=h, cnt=0; s!=NULL; s=s->next, ++cnt )
-	    s->hintnumber = cnt>=HntMax?-1:cnt;
-	for ( s=v; s!=NULL; s=s->next, ++cnt )
-	    s->hintnumber = cnt>=HntMax?-1:cnt;
-    
-	if ( h!=NULL )
-	    DumpHints(gb,h,hsccnt>1?18:1,hsccnt>1?18:1,round);	/* hstemhm/hstem */
-	if ( v!=NULL )
-	    DumpHints(gb,v, hsccnt<=1 ? 3:-1, hsccnt<=1 ? 3:23,round);	/* vstem */
-	CounterHints2(gb,sc,cnt);			/* Precedes first hintmask */
+	hdb->startset = true;
+	startend[0] = temp;
     }
-
-    for ( r=refs; r!=NULL; r=r->next ) if ( r!=unsafe ) {
-	if ( hsccnt>1 )
-	    DumpHintMasked(gb,r,h,v);
-	/* Translate from end of last character to where this one should */
-	/*  start (we must have one moveto operator to start off, none */
-	/*  in the subr) */
-	bpt = (BasePoint *) (subrs->keys[r->sc->lsidebearing+subrs->bias]);
-	if ( current.x!=bpt[0].x+r->transform[4] )
-	    AddNumber2(gb,bpt[0].x+r->transform[4]-current.x,round);
-	if ( current.y!=bpt[0].y+r->transform[5] || current.x==bpt[0].x+r->transform[4] )
-	    AddNumber2(gb,bpt[0].y+r->transform[5]-current.y,round);
-	if ( gb->pt+1>=gb->end )
-	    GrowBuffer(gb);
-	*gb->pt++ = current.x==bpt[0].x+r->transform[4]?4:	/* vmoveto */
-		    current.y==bpt[0].y+r->transform[5]?22:	/* hmoveto */
-		    21;						/* rmoveto */
-	if ( r->sc->lsidebearing==0x7fff )
-	    IError("Attempt to reference an unreferenceable glyph %s", r->sc->name );
-	AddNumber2(gb,r->sc->lsidebearing,round);
-	if ( gb->pt+1>=gb->end )
-	    GrowBuffer(gb);
-	*gb->pt++ = 10;					/* callsubr */
-	current.x = bpt[1].x+r->transform[4];
-	current.y = bpt[1].y+r->transform[5];
-    }
-    StemInfosFree(h); StemInfosFree(v);
+    if ( r->sc->lsidebearing==0x7fff )
+	IError("Attempt to reference an unreferenceable glyph %s", r->sc->name );
+    AddNumber2(gb,r->sc->lsidebearing,round);
+    if ( gb->pt+1>=gb->end )
+	GrowBuffer(gb);
+    *gb->pt++ = 10;					/* callsubr */
+    hdb->current.x = bpt[1].x+rtrans.x;
+    hdb->current.y = bpt[1].y+rtrans.y;
 }
 
-static int IsRefable2(GrowBuf *gb, SplineChar *sc, struct pschars *subrs,int round) {
-    RefChar *refs, *r, *unsafe=NULL;
-    int allsafe=true, unsafecnt=0, allwithouthints=true, ret;
-
-    refs = SCCanonicalRefs(sc,2);
-    if ( refs==NULL )
-return( false );
-    for ( r=refs; r!=NULL; r=r->next ) {
-	if ( r->sc->hconflicts || r->sc->vconflicts ) {
-	    ++unsafecnt;
-	    allsafe = false;
-	    unsafe = r;
-	} else if ( r->sc->hstem!=NULL || r->sc->vstem!=NULL )
-	    allwithouthints = false;
+static void PS2CallSubr(GrowBuf *gb,int subr_num,struct pschars *subrs, BasePoint *current) {
+    AddNumber2(gb,subr_num,false);
+    if ( gb->pt+1>=gb->end )
+	GrowBuffer(gb);
+    *gb->pt++ = 10;					/* callsubr */
+    if ( current!=NULL ) {
+	BasePoint *bpt = (BasePoint *) (subrs->keys[subr_num+subrs->bias]);
+	*current = bpt[1];
     }
-    if ( allsafe || ( unsafecnt==1 && allwithouthints )) {
-	ExpandRefList2(gb,sc,refs,unsafe,subrs,round);
-	ret = true;
-    } else
-	ret = false;
-    RefCharsFreeRef(refs);
-return( ret );
 }
 
-static unsigned char *SplineChar2PSOutline2(SplineChar *sc,int *len,
+static void RSC2PS2(GrowBuf *gb, SplineChar *base,SplineChar *rsc,
+	struct hintdb *hdb, BasePoint *trans, struct pschars *subrs,
 	BasePoint *startend, int flags ) {
-    GrowBuf gb;
-    struct hintdb hdb;
-    RefChar *rf;
-    unsigned char *ret;
+    BasePoint subtrans;
+    int stationary = trans->x==0 && trans->y==0;
+    RefChar *r, *unsafe=NULL;
+    int allsafe=true, unsafecnt=0, allwithouthints=true;
+    int round = (flags&ps_flag_round)? true : false;
     StemInfo *oldh, *oldv;
     int hc, vc;
-    SplineChar *scs[MmMax];
-    int round = (flags&ps_flag_round)? true : false;
-    HintMask *hm = NULL;
 
     if ( flags&ps_flag_nohints ) {
-	oldh = sc->hstem; oldv = sc->vstem;
-	hc = sc->hconflicts; vc = sc->vconflicts;
-	sc->hstem = NULL; sc->vstem = NULL;
-	sc->hconflicts = false; sc->vconflicts = false;
-    } else if ( sc->layers[ly_fore].splines!=NULL && !sc->vconflicts &&
-	    !sc->hconflicts ) {
-	hm = sc->layers[ly_fore].splines->first->hintmask;
-	sc->layers[ly_fore].splines->first->hintmask = NULL;
+	oldh = rsc->hstem; oldv = rsc->vstem;
+	hc = rsc->hconflicts; vc = rsc->vconflicts;
+	rsc->hstem = NULL; rsc->vstem = NULL;
+	rsc->hconflicts = false; rsc->vconflicts = false;
+    } else {
+	for ( r=rsc->layers[ly_fore].refs; r!=NULL; r=r->next ) {
+	    if ( !r->justtranslated )
+	continue;
+	    if ( r->sc->hconflicts || r->sc->vconflicts ) {
+		++unsafecnt;
+		allsafe = false;
+		unsafe = r;
+	    } else if ( r->sc->hstem!=NULL || r->sc->vstem!=NULL )
+		allwithouthints = false;
+	}
+	if ( !stationary )
+	    allwithouthints = false;
+	if ( allwithouthints && unsafe!=NULL && hdb->cnt!=NumberHints(&unsafe->sc,1)) 
+	    allwithouthints = false;		/* There are other hints elsewhere in the base glyph */
     }
 
-    memset(&gb,'\0',sizeof(gb));
-    memset(&hdb,'\0',sizeof(hdb));
-    scs[0] = sc;
-    hdb.scs = scs;
+    if ( unsafe && allwithouthints ) {
+	if ( unsafe->sc->lsidebearing!=0x7fff ) {
+	    PS2CallSubr(gb,unsafe->sc->lsidebearing,subrs, &hdb->current);
+	} else if ( unsafe->transform[4]==0 && unsafe->transform[5]==0 )
+	    RSC2PS2(gb,base,unsafe->sc,hdb,trans,subrs,startend,flags);
+	else
+	    unsafe = NULL;
+    } else
+	unsafe = NULL;
 
-    CvtPsSplineSet2(&gb,sc->layers[ly_fore].splines,&hdb,startend,sc->parent->order2,round);
-    for ( rf = sc->layers[ly_fore].refs; rf!=NULL; rf = rf->next )
-	CvtPsSplineSet2(&gb,rf->layers[0].splines,&hdb,NULL,sc->parent->order2,round);
-    if ( gb.pt+1>=gb.end )
-	GrowBuffer(&gb);
-    *gb.pt++ = 11;				/* return */
-    ret = (unsigned char *) copyn((char *) gb.base,gb.pt-gb.base);
-    *len = gb.pt-gb.base;
-    free(gb.base);
-    startend[1] = hdb.current;
+    /* What is the hintmask state here? It should not matter */
+    CvtPsSplineSet2(gb,rsc->layers[ly_fore].splines,hdb,startend,rsc->parent->order2,round,trans);
+    for ( r = rsc->layers[ly_fore].refs; r!=NULL; r = r->next ) if ( r!=unsafe ) {
+	if ( !r->justtranslated ) {
+	    CvtPsSplineSet2(gb,r->layers[0].splines,hdb,startend,rsc->parent->order2,round,trans);
+	} else if ( r->sc->lsidebearing!=0x7fff &&
+		((flags&ps_flag_nohints) ||(!r->sc->hconflicts && !r->sc->vconflicts)) ) {
+	    ExpandRef2(gb,base,hdb,r,trans,startend,subrs,round);
+	} else {
+	    subtrans.x = trans->x + r->transform[4];
+	    subtrans.y = trans->y + r->transform[5];
+	    RSC2PS2(gb,base,r->sc,hdb,&subtrans,subrs,startend,flags);
+	}
+    }
+
     if ( flags&ps_flag_nohints ) {
-	sc->hstem = oldh; sc->vstem = oldv;
-	sc->hconflicts = hc; sc->vconflicts = vc;
-    } else if ( hm!=NULL )
-	sc->layers[ly_fore].splines->first->hintmask = hm;
-return( ret );
+	rsc->hstem = oldh; rsc->vstem = oldv;
+	rsc->hconflicts = hc; rsc->vconflicts = vc;
+    }
+}
+
+static void MarkTranslationRefs(SplineFont *sf) {
+    int i;
+    SplineChar *sc;
+    RefChar *r;
+
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc = sf->glyphs[i])!=NULL ) {
+	for ( r = sc->layers[ly_fore].refs; r!=NULL; r=r->next )
+	    r->justtranslated = (r->transform[0]==1 && r->transform[3]==1 &&
+		    r->transform[1]==0 && r->transform[2]==0);
+    }
 }
 
 static unsigned char *SplineChar2PS2(SplineChar *sc,int *len, int nomwid,
 	int defwid, struct pschars *subrs, BasePoint *startend, int flags ) {
     GrowBuf gb;
-    RefChar *rf;
     unsigned char *ret;
     struct hintdb hdb;
     StemInfo *oldh, *oldv;
@@ -2644,6 +2568,7 @@ static unsigned char *SplineChar2PS2(SplineChar *sc,int *len, int nomwid,
     SplineChar *scs[MmMax];
     int round = (flags&ps_flag_round)? true : false;
     HintMask *hm = NULL;
+    BasePoint trans;
 
     if ( autohint_before_generate && sc->changedsincelasthinted &&
 	    !sc->manualhints && !(flags&ps_flag_nohints))
@@ -2672,29 +2597,29 @@ static unsigned char *SplineChar2PS2(SplineChar *sc,int *len, int nomwid,
 	else
 	    AddNumber2(&gb,sc->width-nomwid,round);
     }
-    if ( IsRefable2(&gb,sc,subrs,round))
-	/* All Done */;
-    else if ( startend==NULL && sc->lsidebearing!=0x7fff ) {
-	RefChar refs;
-	memset(&refs,'\0',sizeof(refs));
-	refs.sc = sc;
-	refs.transform[0] = refs.transform[3] = 1.0;
-	ExpandRefList2(&gb,sc,&refs,sc->hconflicts||sc->vconflicts?&refs:NULL,subrs,round);
-    } else {
-	memset(&hdb,'\0',sizeof(hdb));
-	hdb.scs = scs;
-	scs[0] = sc;
-	hdb.noconflicts = !sc->hconflicts && !sc->vconflicts;
-	hdb.cnt = NumberHints(hdb.scs,1);
+
+    memset(&trans,'\0',sizeof(trans));
+    memset(&hdb,'\0',sizeof(hdb));
+    hdb.scs = scs;
+    scs[0] = sc;
+    hdb.noconflicts = !sc->hconflicts && !sc->vconflicts;
+    hdb.cnt = NumberHints(hdb.scs,1);
+    if ( startend==NULL ) {
 	DumpHints(&gb,sc->hstem,sc->hconflicts || sc->vconflicts?18:1,
 				sc->hconflicts || sc->vconflicts?18:1,round);
 	DumpHints(&gb,sc->vstem,sc->hconflicts || sc->vconflicts?-1:3,
 				sc->hconflicts || sc->vconflicts?23:3,round);
 	CounterHints2(&gb, sc, hdb.cnt );
-	CvtPsSplineSet2(&gb,sc->layers[ly_fore].splines,&hdb,NULL,sc->parent->order2,round);
-	for ( rf = sc->layers[ly_fore].refs; rf!=NULL; rf = rf->next )
-	    CvtPsSplineSet2(&gb,rf->layers[0].splines,&hdb,NULL,sc->parent->order2,round);
     }
+    if ( startend==NULL && sc->lsidebearing!=0x7fff ) {
+	RefChar ref;
+	memset(&ref,'\0',sizeof(ref));
+	ref.sc = sc;
+	ref.transform[0] = ref.transform[3] = 1.0;
+	ExpandRef2(&gb,sc,&hdb,&ref,&trans,startend,subrs,round);
+    } else
+	RSC2PS2(&gb,sc,sc,&hdb,&trans,subrs,startend,flags);
+
     if ( gb.pt+1>=gb.end )
 	GrowBuffer(&gb);
     *gb.pt++ = startend==NULL?14:11;		/* endchar / return */
@@ -2782,11 +2707,7 @@ return( subrs);
 	    /* Do Nothing */;
 	else if ( sc->lsidebearing!=0x7fff ) {
 	    subrs->keys[cnt] = gcalloc(2,sizeof(BasePoint));
-	    if (( !sc->hconflicts && !sc->vconflicts ) || (flags&ps_flag_nohints))
-		subrs->values[cnt] = SplineChar2PSOutline2(sc,&subrs->lens[cnt],
-			(BasePoint *) (subrs->keys[cnt]),flags);
-	    else
-		subrs->values[cnt] = SplineChar2PS2(sc,&subrs->lens[cnt],0,0,
+	    subrs->values[cnt] = SplineChar2PS2(sc,&subrs->lens[cnt],0,0,
 			subrs,(BasePoint *) (subrs->keys[cnt]),flags);
 	    sc->lsidebearing = cnt++ - subrs->bias;
 	}
@@ -2814,6 +2735,8 @@ struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
     int fixed = SFOneWidth(sf), notdefwidth;
 
     /* real_warn = false; */ /* Should have been done by SplineFont2Subrs2 */
+
+    MarkTranslationRefs(sf);
 
     notdefwidth = fixed;
     if ( notdefwidth==-1 ) notdefwidth = sf->ascent+sf->descent;
