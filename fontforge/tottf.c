@@ -4206,7 +4206,7 @@ static FILE *NeedsUCS2Table(SplineFont *sf,int *ucs2len,EncMap *map) {
 
     memset(avail,0xff,65536*sizeof(uint32));
     if ( map->enc->is_unicodebmp || map->enc->is_unicodefull ) { int gid;
-	for ( i=0; i<65536 && i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL ) {
+	for ( i=0; i<65536 && i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && sf->glyphs[gid]->ttf_glyph!=-1 ) {
 	    avail[i] = gid;
 	    ++cnt;
 	}
