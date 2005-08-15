@@ -1580,6 +1580,8 @@ static void PIChangePoint(GIData *ci) {
 	    if ( sp==spl->first )
 	break;
 	}
+	if ( sp==ci->cursp )
+    break;
     }
     if ( hm==NULL ) {
 	for ( i=0; i<len; ++i )
