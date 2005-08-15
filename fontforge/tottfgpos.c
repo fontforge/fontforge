@@ -3450,7 +3450,7 @@ static struct feature *CoalesceLookups(SplineFont *sf, struct lookup *lookups,
 	    /*  (in other words, can't handle what ATM forces us to do) */
 	    /* So for kern features we coalesce multiple subtables into one */
 	    /*  lookup. This makes ATM happy. But we don't coalesce anything */
-	    /*  as to keep TTX happy. Really stupid */
+	    /*  else so as to keep TTX happy. Really stupid */
 	    if ( f->feature_tag==CHR('k','e','r','n') )
 		for ( j=i+1; j<f->baselcnt; ++j ) {
 		    if ( f->baselookups[i]->flags == f->baselookups[j]->flags &&
