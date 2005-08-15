@@ -1370,6 +1370,10 @@ extern ImageList *ImageListTransform(ImageList *cimg,real transform[6]);
 extern void ApTransform(AnchorPoint *ap, real transform[6]);
 extern SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[6], int allpoints );
 extern SplinePointList *SplinePointListShift(SplinePointList *base, real xoff, int allpoints );
+extern SplinePointList *SPLCopyTranslatedHintMasks(SplinePointList *base,
+	SplineChar *basesc, SplineChar *subsc, BasePoint *trans, int hcnt );
+extern SplinePointList *SPLCopyTransformedHintMasks(RefChar *r,
+	SplineChar *basesc, BasePoint *trans, int hcnt );
 extern SplinePointList *SplinePointListRemoveSelected(SplineChar *sc,SplinePointList *base);
 extern void SplinePointListSet(SplinePointList *tobase, SplinePointList *frombase);
 extern void SplinePointListSelect(SplinePointList *spl,int sel);

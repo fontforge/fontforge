@@ -2264,18 +2264,11 @@ static void flexto2(GrowBuf *gb,struct hintdb *hdb,Spline *pspline,int round) {
 }
 
 static void CvtPsSplineSet2(GrowBuf *gb, SplinePointList *spl,
-	struct hintdb *hdb, BasePoint *start,int is_order2,int round,
-	BasePoint *trans) {
+	struct hintdb *hdb, BasePoint *start,int is_order2,int round ) {
     Spline *spline, *first;
-    SplinePointList temp, *freeme = NULL, *freeme2 = NULL;
+    SplinePointList temp, *freeme = NULL;
     int unhinted = true;;
 
-    if ( trans->x!=0 || trans->y!=0 ) {
-	real transform[6];
-	transform[1] = transform[2] = 0; transform[0] = transform[3] = 1;
-	transform[4] = trans->x; transform[5] = trans->y;
-	freeme2 = spl = SplinePointListTransform(SplinePointListCopy(spl),transform,true);
-    }
     if ( is_order2 )
 	freeme = spl = SplineSetsPSApprox(spl);
 
@@ -2332,7 +2325,6 @@ static void CvtPsSplineSet2(GrowBuf *gb, SplinePointList *spl,
 	/* Of course, I have to Reverse again to get back to my convention after*/
 	/*  saving */
     }
-    SplinePointListFree(freeme2);
     SplinePointListFree(freeme);
 }
 
@@ -2492,6 +2484,7 @@ static void RSC2PS2(GrowBuf *gb, SplineChar *base,SplineChar *rsc,
     int round = (flags&ps_flag_round)? true : false;
     StemInfo *oldh, *oldv;
     int hc, vc;
+    SplineSet *freeme, *temp;
 
     if ( flags&ps_flag_nohints ) {
 	oldh = rsc->hstem; oldv = rsc->vstem;
@@ -2526,10 +2519,17 @@ static void RSC2PS2(GrowBuf *gb, SplineChar *base,SplineChar *rsc,
 	unsafe = NULL;
 
     /* What is the hintmask state here? It should not matter */
-    CvtPsSplineSet2(gb,rsc->layers[ly_fore].splines,hdb,startend,rsc->parent->order2,round,trans);
+    freeme = NULL; temp = rsc->layers[ly_fore].splines;
+    if ( base!=rsc )
+	temp = freeme = SPLCopyTranslatedHintMasks(temp,base,rsc,trans,hdb->cnt);
+    CvtPsSplineSet2(gb,temp,hdb,startend,rsc->parent->order2,round);
+    SplinePointListFree(freeme);
+
     for ( r = rsc->layers[ly_fore].refs; r!=NULL; r = r->next ) if ( r!=unsafe ) {
 	if ( !r->justtranslated ) {
-	    CvtPsSplineSet2(gb,r->layers[0].splines,hdb,startend,rsc->parent->order2,round,trans);
+	    temp = SPLCopyTransformedHintMasks(r,base,trans,hdb->cnt);
+	    CvtPsSplineSet2(gb,temp,hdb,startend,rsc->parent->order2,round);
+	    SplinePointListFree(temp);
 	} else if ( r->sc->lsidebearing!=0x7fff &&
 		((flags&ps_flag_nohints) ||(!r->sc->hconflicts && !r->sc->vconflicts)) ) {
 	    ExpandRef2(gb,base,hdb,r,trans,startend,subrs,round);
