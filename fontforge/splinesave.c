@@ -2808,9 +2808,11 @@ struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds,int flags) {
     /* real_warn = false; */
 
     max = 0;
-    for ( i=0; i<cidmaster->subfontcnt; ++i )
+    for ( i=0; i<cidmaster->subfontcnt; ++i ) {
 	if ( max<cidmaster->subfonts[i]->glyphcnt )
 	    max = cidmaster->subfonts[i]->glyphcnt;
+	MarkTranslationRefs(cidmaster->subfonts[i]);
+    }
     cnt = 1;			/* for .notdef */
     for ( cid = 1; cid<max; ++cid ) {
 	for ( i=0; i<cidmaster->subfontcnt; ++i ) {
