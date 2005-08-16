@@ -3492,6 +3492,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		r1->next = r2;
 		if ( rlast!=NULL ) rlast->next = r1;
 		else ret->layers[ly_fore].refs = r1;
+		ret->changedsincelasthinted = true;	/* seac glyphs contain no hints */
 		rlast = r2;
 		sp = 0;
 	      break;
