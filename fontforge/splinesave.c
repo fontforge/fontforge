@@ -1516,6 +1516,8 @@ static void SplineFont2Subrs1(SplineFont *sf,int round, int iscjk,
     MMSet *mm = (format==ff_mma || format==ff_mmb) ? sf->mm : NULL;
     int instance_count = mm!=NULL ? mm->instance_count : 1;
 
+    if ( !autohint_before_generate && !(flags&ps_flag_nohints))
+	SplineFontAutoHintRefs(sf);
     for ( i=cnt=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL )
 	sc->ttf_glyph = 0x7fff;
 
@@ -2396,6 +2398,15 @@ static void DumpRefsHints(GrowBuf *gb,RefChar *cur,StemInfo *h,StemInfo *v,
 	AddMask2(gb,masks,cnt,19);		/* hintmask */
 }
 
+static void SetTransformedHintMask(GrowBuf *gb,struct hintdb *hdb,
+	SplineChar *sc, RefChar *ref, BasePoint *trans, int round) {
+    HintMask hm;
+
+    if ( HintMaskFromTransformedRef(ref,trans,sc,&hm)==NULL )
+return;
+    AddMask2(gb,hm,hdb->cnt,19);		/* hintmask */
+}
+
 static void ExpandRef2(GrowBuf *gb, SplineChar *sc, struct hintdb *hdb,
 	RefChar *r, BasePoint *trans, BasePoint *startend,
 	struct pschars *subrs, int round) {
@@ -2465,6 +2476,7 @@ static void RSC2PS2(GrowBuf *gb, SplineChar *base,SplineChar *rsc,
     StemInfo *oldh, *oldv;
     int hc, vc;
     SplineSet *freeme, *temp;
+    int wasntconflicted = hdb->noconflicts;
 
     if ( flags&ps_flag_nohints ) {
 	oldh = rsc->hstem; oldv = rsc->vstem;
@@ -2507,6 +2519,9 @@ static void RSC2PS2(GrowBuf *gb, SplineChar *base,SplineChar *rsc,
 
     for ( r = rsc->layers[ly_fore].refs; r!=NULL; r = r->next ) if ( r!=unsafe ) {
 	if ( !r->justtranslated ) {
+	    if ( !r->sc->hconflicts && !r->sc->vconflicts && !hdb->noconflicts &&
+		    r->transform[1]==0 && r->transform[2]==0 )
+		SetTransformedHintMask(gb,hdb,base,r,trans,round);
 	    temp = SPLCopyTransformedHintMasks(r,base,trans);
 	    CvtPsSplineSet2(gb,temp,hdb,startend,rsc->parent->order2,round);
 	    SplinePointListFree(temp);
@@ -2516,7 +2531,12 @@ static void RSC2PS2(GrowBuf *gb, SplineChar *base,SplineChar *rsc,
 	} else {
 	    subtrans.x = trans->x + r->transform[4];
 	    subtrans.y = trans->y + r->transform[5];
+	    if ( !hdb->noconflicts && !r->sc->hconflicts && !r->sc->vconflicts) {
+		SetTransformedHintMask(gb,hdb,base,r,trans,round);
+		hdb->noconflicts = true;
+	    }
 	    RSC2PS2(gb,base,r->sc,hdb,&subtrans,subrs,startend,flags);
+	    hdb->noconflicts = wasntconflicted;
 	}
     }
 
@@ -2636,7 +2656,8 @@ struct pschars *SplineFont2Subrs2(SplineFont *sf,int flags) {
     int i,cnt;
     SplineChar *sc;
 
-    /*real_warn = false;*/
+    if ( !autohint_before_generate && !(flags&ps_flag_nohints))
+	SplineFontAutoHintRefs(sf);
 
     /* We don't allow refs to refs. It confuses the hintmask operators */
     /*  instead we track down to the base ref */
@@ -2701,8 +2722,6 @@ struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
     char notdefentry[20];
     SplineChar *sc;
     int fixed = SFOneWidth(sf), notdefwidth;
-
-    /* real_warn = false; */ /* Should have been done by SplineFont2Subrs2 */
 
     MarkTranslationRefs(sf);
 
