@@ -1480,8 +1480,46 @@ return( base );
 return( SplinePointListTransform(base,transform,allpoints));
 }
 
+HintMask *HintMaskFromTransformedRef(RefChar *ref,BasePoint *trans,
+	SplineChar *basesc,HintMask *hm) {
+    StemInfo *st, *st2;
+    int hst_cnt, bcnt;
+    real start, width;
+    int i;
+
+    if ( ref->transform[1]!=0 || ref->transform[2]!=0 )
+return(NULL);
+
+    memset(hm,0,sizeof(HintMask));
+    for ( st = ref->sc->hstem; st!=NULL; st=st->next ) {
+	start = st->start*ref->transform[3] + ref->transform[5] + trans->y;
+	width = st->width*ref->transform[3];
+	for ( st2=basesc->hstem,bcnt=0; st2!=NULL; st2=st2->next, bcnt++ )
+	    if ( st2->start == start && st2->width == width )
+	break;
+	if ( st2!=NULL )
+	    (*hm)[bcnt>>3] |= (0x80>>(bcnt&7));
+    }
+    for ( st2=basesc->hstem,hst_cnt=0; st2!=NULL; st2=st2->next, hst_cnt++ );
+
+    for ( st = ref->sc->vstem; st!=NULL; st=st->next ) {
+	start = st->start*ref->transform[1] + ref->transform[4] + trans->x;
+	width = st->width*ref->transform[1];
+	for ( st2=basesc->vstem,bcnt=hst_cnt; st2!=NULL; st2=st2->next, bcnt++ )
+	    if ( st2->start == start && st2->width == width )
+	break;
+	if ( st2!=NULL )
+	    (*hm)[bcnt>>3] |= (0x80>>(bcnt&7));
+    }
+    for ( i=0; i<HntMax/8; ++i )
+	if ( (*hm)[i]!=0 )
+return( hm );
+
+return( NULL );
+}
+
 static HintMask *HintMaskTransform(HintMask *oldhm,real transform[6],
-	SplineChar *basesc,SplineChar *subsc,int hcnt) {
+	SplineChar *basesc,SplineChar *subsc) {
     HintMask *newhm;
     StemInfo *st, *st2;
     int cnt, hst_cnt, bcnt;
@@ -1519,7 +1557,7 @@ return( newhm );
 }
 
 SplinePointList *SPLCopyTranslatedHintMasks(SplinePointList *base,
-	SplineChar *basesc, SplineChar *subsc, BasePoint *trans, int hcnt ) {
+	SplineChar *basesc, SplineChar *subsc, BasePoint *trans ) {
     SplinePointList *spl, *spl2, *head;
     SplinePoint *spt, *spt2, *pfirst;
     real transform[6];
@@ -1535,7 +1573,7 @@ SplinePointList *SPLCopyTranslatedHintMasks(SplinePointList *base,
 	    if ( pfirst==NULL ) pfirst = spt;
 	    TransformPoint(spt,transform);
 	    if ( spt2->hintmask )
-		spt->hintmask = HintMaskTransform(spt2->hintmask,transform,basesc,subsc,hcnt);
+		spt->hintmask = HintMaskTransform(spt2->hintmask,transform,basesc,subsc);
 	    if ( spt->next==NULL )
 	break;
 	}
@@ -1544,7 +1582,7 @@ return( head );
 }
 
 static SplinePointList *_SPLCopyTransformedHintMasks(SplineChar *subsc,real transform[6],
-	SplineChar *basesc, int hcnt ) {
+	SplineChar *basesc ) {
     SplinePointList *spl, *spl2, *head, *last=NULL, *cur, *base;
     SplinePoint *spt, *spt2, *pfirst;
     real trans[6];
@@ -1552,6 +1590,8 @@ static SplinePointList *_SPLCopyTransformedHintMasks(SplineChar *subsc,real tran
 
     base = subsc->layers[ly_fore].splines;
     head = SplinePointListCopy(base);
+    if ( head!=NULL )
+	for ( last = head; last->next!=NULL; last=last->next );
 
     for ( spl = head, spl2=base; spl!=NULL; spl = spl->next ) {
 	pfirst = NULL;
@@ -1559,7 +1599,7 @@ static SplinePointList *_SPLCopyTransformedHintMasks(SplineChar *subsc,real tran
 	    if ( pfirst==NULL ) pfirst = spt;
 	    TransformPoint(spt,transform);
 	    if ( spt2->hintmask )
-		spt->hintmask = HintMaskTransform(spt2->hintmask,transform,basesc,subsc,hcnt);
+		spt->hintmask = HintMaskTransform(spt2->hintmask,transform,basesc,subsc);
 	    if ( spt->next==NULL )
 	break;
 	}
@@ -1579,7 +1619,7 @@ static SplinePointList *_SPLCopyTransformedHintMasks(SplineChar *subsc,real tran
 	trans[5] = rf->transform[4]*transform[1] +
 		    rf->transform[5]*transform[3] +
 		    transform[5];
-	cur = _SPLCopyTransformedHintMasks(rf->sc,trans,basesc,hcnt);
+	cur = _SPLCopyTransformedHintMasks(rf->sc,trans,basesc);
 	if ( head==NULL )
 	    head = cur;
 	else
@@ -1593,12 +1633,12 @@ return( head );
 }
 
 SplinePointList *SPLCopyTransformedHintMasks(RefChar *r,
-	SplineChar *basesc, BasePoint *trans, int hcnt ) {
+	SplineChar *basesc, BasePoint *trans ) {
     real transform[6];
 
     memcpy(transform,r->transform,sizeof(transform));
     transform[4] += trans->x; transform[5] += trans->y;
-return( _SPLCopyTransformedHintMasks(r->sc,transform,basesc,hcnt));
+return( _SPLCopyTransformedHintMasks(r->sc,transform,basesc));
 }
 
 void SplinePointListSelect(SplinePointList *spl,int sel) {
