@@ -1861,14 +1861,19 @@ static DStemInfo *RefDHintsMerge(DStemInfo *into, DStemInfo *rh, real xmul, real
 return( into );
 }
 
-static void AutoHintRefs(SplineChar *sc,BlueData *bd) {
+static void AutoHintRefs(SplineChar *sc,BlueData *bd, int picky) {
     RefChar *ref;
 
     /* Add hints for base characters before accent hints => if there are any */
     /*  conflicts, the base characters win */
     for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
 	if ( ref->transform[1]==0 && ref->transform[2]==0 ) {
-	    if ( !ref->sc->manualhints && ref->sc->changedsincelasthinted )
+	    if ( picky ) {
+		if ( !ref->sc->manualhints && ref->sc->changedsincelasthinted &&
+			(ref->sc->layers[ly_fore].refs!=NULL &&
+			 ref->sc->layers[ly_fore].splines==NULL))
+		    AutoHintRefs(ref->sc,bd,true);
+	    } else if ( !ref->sc->manualhints && ref->sc->changedsincelasthinted )
 		SplineCharAutoHint(ref->sc,bd);
 	    if ( ref->sc->unicodeenc!=-1 && ref->sc->unicodeenc<0x10000 &&
 		    isalnum(ref->sc->unicodeenc) ) {
@@ -1888,6 +1893,12 @@ static void AutoHintRefs(SplineChar *sc,BlueData *bd) {
 	    sc->dstem = RefDHintsMerge(sc->dstem,ref->sc->dstem,ref->transform[0], ref->transform[4], ref->transform[3], ref->transform[5]);
 	}
     }
+
+    sc->vconflicts = StemListAnyConflicts(sc->vstem);
+    sc->hconflicts = StemListAnyConflicts(sc->hstem);
+
+    SCOutOfDateBackground(sc);
+    SCHintsChanged(sc);
 }
 
 static void _SCClearHintMasks(SplineChar *sc,int counterstoo) {
@@ -2888,12 +2899,7 @@ void _SplineCharAutoHint( SplineChar *sc, BlueData *bd, struct glyphdata *gd2 ) 
 	sc->hstem = CheckForGhostHints(sc->hstem,sc,bd);
     }
 
-    AutoHintRefs(sc,bd);
-    sc->vconflicts = StemListAnyConflicts(sc->vstem);
-    sc->hconflicts = StemListAnyConflicts(sc->hstem);
-
-    SCOutOfDateBackground(sc);
-    SCHintsChanged(sc);
+    AutoHintRefs(sc,bd,false);
 }
 
 void SplineCharAutoHint( SplineChar *sc, BlueData *bd ) {
@@ -2957,6 +2963,34 @@ void SplineFontAutoHint( SplineFont *_sf) {
 	break;
 	    }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+	}
+	++k;
+    } while ( k<_sf->subfontcnt );
+}
+
+void SplineFontAutoHintRefs( SplineFont *_sf) {
+    int i,k;
+    SplineFont *sf;
+    BlueData *bd = NULL, _bd;
+    SplineChar *sc;
+
+    if ( _sf->mm==NULL ) {
+	QuickBlues(_sf,&_bd);
+	bd = &_bd;
+    }
+
+    k=0;
+    do {
+	sf = _sf->subfontcnt==0 ? _sf : _sf->subfonts[k];
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc = sf->glyphs[i])!=NULL ) {
+	    if ( sc->changedsincelasthinted &&
+		    !sc->manualhints &&
+		    (sc->layers[ly_fore].refs!=NULL && sc->layers[ly_fore].splines==NULL)) {
+		SCPreserveHints(sc);
+		StemInfosFree(sc->vstem); sc->vstem=NULL;
+		StemInfosFree(sc->hstem); sc->hstem=NULL;
+		AutoHintRefs(sc,bd,true);
+	    }
 	}
 	++k;
     } while ( k<_sf->subfontcnt );
