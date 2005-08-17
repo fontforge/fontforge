@@ -564,12 +564,19 @@ SplineSet *SSttfApprox(SplineSet *ss) {
 
     ret->first = chunkalloc(sizeof(SplinePoint));
     *ret->first = *ss->first;
-    ret->first->hintmask = NULL;
+    if ( ret->first->hintmask != NULL ) {
+	ret->first->hintmask = chunkalloc(sizeof(HintMask));
+	memcpy(ret->first->hintmask,ss->first->hintmask,sizeof(HintMask));
+    }
     ret->last = ret->first;
 
     first = NULL;
     for ( spline=ss->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
 	ret->last = ttfApprox(spline,0,1,ret->last);
+	if ( spline->to->hintmask != NULL ) {
+	    ret->last->hintmask = chunkalloc(sizeof(HintMask));
+	    memcpy(ret->last->hintmask,spline->to->hintmask,sizeof(HintMask));
+	}
 	if ( first==NULL ) first = spline;
     }
     if ( ss->first==ss->last ) {
@@ -609,14 +616,20 @@ SplineSet *SSPSApprox(SplineSet *ss) {
 
     ret->first = chunkalloc(sizeof(SplinePoint));
     *ret->first = *ss->first;
-    ret->first->hintmask = NULL;
+    if ( ret->first->hintmask != NULL ) {
+	ret->first->hintmask = chunkalloc(sizeof(HintMask));
+	memcpy(ret->first->hintmask,ss->first->hintmask,sizeof(HintMask));
+    }
     ret->last = ret->first;
 
     first = NULL;
     for ( spline=ss->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
 	to = chunkalloc(sizeof(SplinePoint));
 	*to = *spline->to;
-	to->hintmask = NULL;
+	if ( to->hintmask != NULL ) {
+	    to->hintmask = chunkalloc(sizeof(HintMask));
+	    memcpy(to->hintmask,spline->to->hintmask,sizeof(HintMask));
+	}
 	if ( !spline->knownlinear ) {
 	    ret->last->nextcp.x = spline->splines[0].c/3 + ret->last->me.x;
 	    ret->last->nextcp.y = spline->splines[1].c/3 + ret->last->me.y;
