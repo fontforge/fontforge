@@ -2129,8 +2129,10 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     } else if ( paster->undotype==ut_layers ) {
 	Undoes *pl;
-	for ( pl = paster->u.multiple.mult; pl!=NULL; pl=pl->next );
+	for ( pl = paster->u.multiple.mult; pl!=NULL; pl=pl->next ) {
 	    _PasteToSC(sc,pl,fv,pasteinto,ly_fore,trans);
+	    pasteinto = true;		/* Merge other layers in */
+	}
     } else
 	_PasteToSC(sc,paster,fv,pasteinto,ly_fore,trans);
 }
