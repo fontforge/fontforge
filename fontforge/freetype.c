@@ -913,6 +913,7 @@ static SplineSet *StrokeOutline(Layer *layer,SplineChar *sc) {
     if ( sc->parent->strokedfont ) {
 	si.radius = sc->parent->strokewidth/2;
 	si.join = lj_bevel;
+	si.toobigwarn = true;
 	si.cap = lc_butt;
 	si.stroke_type = si_std;
 	head = SSStroke(layer->splines,&si,sc);
@@ -937,6 +938,7 @@ return( head );
 	si.radius = layer->stroke_pen.width/2;
 	si.join = layer->stroke_pen.linejoin;
 	si.cap = layer->stroke_pen.linecap;
+	si.toobigwarn = true;
 	si.stroke_type = si_std;
 return( SSStroke(layer->splines,&si,sc));
     }
