@@ -62,6 +62,9 @@ struct lookup {		/* It used to be there was one lookup for every */
 /*  So if we have multiple lookups with the same tag/flags they must be merged */
 /*  one lookup pointing to many subtables */
 /* But conversely, ttx can't handle this. So we only want to do it for kerns */
+/* Alexej Kryukov suggests instead that we merge all sub-tables with the same */
+/*  sli/tag/flags. Currently no one generates different kerning tables depend-*/
+/*  ing on the language, so it will catch (current) kerns. */
 struct clookup {		/* Coalesced lookups */
     uint8 duplicate;		/* This same set of lookups is used in an earlier feature. We don't need to output the lookup data */
     uint8 extension;		/* This set of lookups must be referenced throw an extension table */
@@ -3294,9 +3297,10 @@ return( f );
 /*  a given tag into one feature per script/lang. Of course some lookup */
 /*  combinations may be shared by several script/lang settings and we should */
 /*  use the same feature when possible */
-/* It gets worse. ATM does seem to deal with features containing */
+/* It gets worse. ATM does not seem to deal with kern features containing */
 /*  more than one lookup, so we need to merge multiple sub-tables into one */
 /*  lookup if they have the same feature tag/lookup flags */
+/* Alexej suggests requiring the same sli too */
 static struct feature *CoalesceLookups(SplineFont *sf, struct lookup *lookups,
 	struct lookup *nested, struct clookup **clookups, int is_gpos) {
     struct lookup *l, *last;
@@ -3448,26 +3452,26 @@ static struct feature *CoalesceLookups(SplineFont *sf, struct lookup *lookups,
 	    /* ATM can't handle a kern feature with more than one lookup */
 	    /* TTX can't handle a sub-table referenced by more than one lookup*/
 	    /*  (in other words, can't handle what ATM forces us to do) */
-	    /* So for kern features we coalesce multiple subtables into one */
-	    /*  lookup. This makes ATM happy. But we don't coalesce anything */
-	    /*  else so as to keep TTX happy. Really stupid */
-	    if ( f->feature_tag==CHR('k','e','r','n') )
-		for ( j=i+1; j<f->baselcnt; ++j ) {
-		    if ( f->baselookups[i]->flags == f->baselookups[j]->flags &&
-			    f->baselookups[i]->lookup_type == f->baselookups[j]->lookup_type ) {
-			f->baselookups[j]->used = true;
-			++cnt;
-		    }
+	    /* Alexej suggests only making ATM happy in cases when TTX can */
+	    /*  handle it (that is only coalescing subtables if they have the */
+	    /*  same sli -- so won't appear in other lookups.) */
+	    for ( j=i+1; j<f->baselcnt; ++j ) {
+		if ( f->baselookups[i]->flags == f->baselookups[j]->flags &&
+			f->baselookups[i]->lookup_type == f->baselookups[j]->lookup_type &&
+                        f->baselookups[i]->script_lang_index == f->baselookups[j]->script_lang_index) {
+		    f->baselookups[j]->used = true;
+		    ++cnt;
 		}
+	    }
 	    temp = galloc(cnt*sizeof(struct lookup *));
 	    cnt = 0;
 	    temp[cnt++] = f->baselookups[i];
-	    if ( f->feature_tag==CHR('k','e','r','n') )
-		for ( j=i+1; j<f->baselcnt; ++j ) {
-		    if ( f->baselookups[i]->flags == f->baselookups[j]->flags &&
-			    f->baselookups[i]->lookup_type == f->baselookups[j]->lookup_type )
-			temp[cnt++] = f->baselookups[j];
-		}
+	    for ( j=i+1; j<f->baselcnt; ++j ) {
+		if ( f->baselookups[i]->flags == f->baselookups[j]->flags &&
+			f->baselookups[i]->lookup_type == f->baselookups[j]->lookup_type &&
+                        f->baselookups[i]->script_lang_index == f->baselookups[j]->script_lang_index )
+		    temp[cnt++] = f->baselookups[j];
+	    }
 	    for ( cl2 = clhead; cl2!=NULL; cl2=cl2->next ) {
 		if ( cl2->lcnt!=cnt )
 	    continue;
