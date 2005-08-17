@@ -2910,7 +2910,7 @@ static void readttf_applelookup(FILE *ttf,struct ttfinfo *info,
 	void (*apply_values)(struct ttfinfo *info, int gfirst, int glast,FILE *ttf),
 	void (*apply_value)(struct ttfinfo *info, int gfirst, int glast,FILE *ttf),
 	void (*apply_default)(struct ttfinfo *info, int gfirst, int glast,void *def),
-	void *def) {
+	void *def, int allow_out_of_bounds) {
     int format, i, first, last, data_off, cnt, prev;
     uint32 here;
     uint32 base = ftell(ttf);
@@ -2930,7 +2930,8 @@ static void readttf_applelookup(FILE *ttf,struct ttfinfo *info,
 	for ( i=0; i<cnt; ++i ) {
 	    last = getushort(ttf);
 	    first = getushort(ttf);
-	    if ( last<first || last>=info->glyph_cnt ) {
+	    if ( last<first || last>=0xffff ||
+		    (!allow_out_of_bounds && last>=info->glyph_cnt )) {
 		fprintf( stderr, "Bad lookup table format=2 (%d/%d), first=%d last=%d total glyphs in font=%d\n",
 			i,cnt,first,last,info->glyph_cnt );
 	    } else {
@@ -2952,7 +2953,8 @@ static void readttf_applelookup(FILE *ttf,struct ttfinfo *info,
 	    last = getushort(ttf);
 	    first = getushort(ttf);
 	    data_off = getushort(ttf);
-	    if ( last<first || last>=info->glyph_cnt ) {
+	    if ( last<first || last>=0xffff ||
+		    (!allow_out_of_bounds && last>=info->glyph_cnt )) {
 		fprintf( stderr, "Bad lookup table format=4 (%d/%d), first=%d last=%d total glyphs in font=%d\n",
 			i,cnt,first,last,info->glyph_cnt );
 	    } else {
@@ -2975,7 +2977,7 @@ static void readttf_applelookup(FILE *ttf,struct ttfinfo *info,
 	prev = 0;
 	for ( i=0; i<cnt; ++i ) {
 	    first = getushort(ttf);
-	    if ( first>=info->glyph_cnt ) {
+	    if ( first>=0xffff || (!allow_out_of_bounds && first>=info->glyph_cnt )) {
 		fprintf( stderr, "Bad lookup table format=6, first=%d total glyphs in font=%d\n",
 			first,info->glyph_cnt );
 	    } else {
@@ -2989,7 +2991,7 @@ static void readttf_applelookup(FILE *ttf,struct ttfinfo *info,
       case 8:	/* Simple array */
 	first = getushort(ttf);
 	cnt = getushort(ttf);
-	if ( first+cnt>=info->glyph_cnt ) {
+	if ( first+cnt>=0xffff || (!allow_out_of_bounds && first+cnt>=info->glyph_cnt )) {
 	    fprintf( stderr, "Bad lookup table format=8, first=%d cnt=%d total glyphs in font=%d\n",
 		    first,cnt,info->glyph_cnt );
 	} else {
@@ -3065,7 +3067,7 @@ void readttfprop(FILE *ttf,struct ttfinfo *info) {
     def = getushort(ttf);
     readttf_applelookup(ttf,info,
 	    prop_apply_values,prop_apply_value,
-	    prop_apply_default,(void *) def);
+	    prop_apply_default,(void *) def, false);
 }
 
 static void TTF_SetLcaret(struct ttfinfo *info, int gnum, int offset, FILE *ttf) {
@@ -3118,7 +3120,7 @@ void readttflcar(FILE *ttf,struct ttfinfo *info) {
     if ( getushort(ttf)!=0 )	/* A format type of 1 has the caret locations */
 return;				/*  indicated by points */
     readttf_applelookup(ttf,info,
-	    lcar_apply_values,lcar_apply_value,NULL,NULL);
+	    lcar_apply_values,lcar_apply_value,NULL,NULL,false);
 }
 
 static void TTF_SetOpticalBounds(struct ttfinfo *info, int gnum, int left, int right) {
@@ -3196,16 +3198,39 @@ void readttfopbd(FILE *ttf,struct ttfinfo *info) {
     if ( getushort(ttf)!=0 )	/* A format type of 1 has the bounds */
 return;				/*  indicated by points */
     readttf_applelookup(ttf,info,
-	    opbd_apply_values,opbd_apply_value,NULL,NULL);
+	    opbd_apply_values,opbd_apply_value,NULL,NULL,false);
 }
 
 /* Interesting. The mac allows the creation of temporary gids beyond the */
 /*  range specified by the font, as long as the user never sees them. So */
 /*  it seems perfectly legal for one substitution to use a gid of 1111   */
-/*  if that gid never reach output but will be converted into a real gid */
+/*  if that gid never reaches output but will be converted into a real gid */
 /*  by a subsequent substitution. I saw this used in a conditional situation */
-/*  to provide a temporary context for a later match. FontForge does not */
-/*  support this. All gids must refer to real glyphs */
+/*  to provide a temporary context for a later match. */
+static SplineChar *CreateBadGid(struct ttfinfo *info,int badgid) {
+    int i;
+    SplineChar *fake;
+    char name[60];
+
+    if ( badgid<0 || badgid>=0xffff )		/* <0 should never happen, 0xffff is the special "deleted" glyph, >0xffff should never happen */
+return( NULL );
+
+    for ( i=0; i<info->badgid_cnt; ++i )
+	if ( info->badgids[i]->orig_pos == badgid )
+return( info->badgids[i] );
+
+    if ( info->badgid_cnt>=info->badgid_max )
+	info->badgids = grealloc(info->badgids,(info->badgid_max += 20)*sizeof(SplineChar *));
+    fake = SplineCharCreate();
+    fake->orig_pos = badgid;
+    sprintf( name, "Out-Of-Range-GID-%d", badgid );
+    fake->name = copy(name);
+    fake->widthset = true;		/* So it doesn't just vanish on us */
+    fake->width = fake->vwidth = info->emsize;
+    info->badgids[info->badgid_cnt++] = fake;
+return( fake );
+}
+
 static void TTF_SetMortSubs(struct ttfinfo *info, int gnum, int gsubs) {
     PST *pst;
     SplineChar *sc, *ssc;
@@ -3214,19 +3239,28 @@ static void TTF_SetMortSubs(struct ttfinfo *info, int gnum, int gsubs) {
 return;
 
     if ( gnum<0 || gnum>=info->glyph_cnt ) {
-	fprintf( stderr, "Glyph out of bounds in 'mort'/'morx' table %d\n", gnum );
-return;
-    } else if ( gsubs<0 || (gsubs>=info->glyph_cnt && gsubs!=0xffff)) {
-	fprintf( stderr, "Substitute glyph out of bounds in 'mort'/'morx' table %d\n", gsubs );
-return;
-    } else if ( (sc=info->chars[gnum])==NULL ||
-	    (gsubs!=0xffff && (ssc=info->chars[gsubs])==NULL) )
+	if ( !info->warned_morx_out_of_bounds_glyph ) {
+	    fprintf( stderr, "Glyph out of bounds in 'mort'/'morx' table %d\n", gnum );
+	    info->warned_morx_out_of_bounds_glyph = true;
+	}
+	sc = CreateBadGid(info,gnum);
+    } else
+	sc = info->chars[gnum];
+    if ( gsubs<0 || (gsubs>=info->glyph_cnt && gsubs!=0xffff)) {
+	if ( !info->warned_morx_out_of_bounds_glyph ) {
+	    fprintf( stderr, "Substitute glyph out of bounds in 'mort'/'morx' table %d\n", gsubs );
+	    info->warned_morx_out_of_bounds_glyph = true;
+	}
+	ssc = CreateBadGid(info,gsubs);
+    } else if ( gsubs!=0xffff )
+	ssc=info->chars[gsubs];
+    if ( sc==NULL || (gsubs!=0xffff && ssc==NULL) )
 return;
 
     pst = chunkalloc(sizeof(PST));
     pst->type = pst_substitution;
     pst->tag = info->mort_subs_tag;
-    pst->macfeature = info->mort_tag_mac;
+    pst->macfeature = info->mort_tag_mac && !info->mort_is_nested;
     pst->flags = info->mort_r2l ? pst_r2l : 0;
     pst->script_lang_index = info->mort_is_nested ? SLI_NESTED :
 	    SLIFromInfo(info,sc,DEFAULT_LANG);
@@ -3553,11 +3587,14 @@ return;
 	sm.compOff = memlong(sm.data,sm.length, 5*sizeof(long));
 	sm.ligOff = memlong(sm.data,sm.length, 6*sizeof(long));
 	fseek(ttf,here+sm.classOffset,SEEK_SET);
-	sm.classes = info->morx_classes = galloc(info->glyph_cnt*sizeof(uint16));
-	for ( i=0; i<info->glyph_cnt; ++i )
+	/* I used only to allocate space for info->glyph_cnt entries */
+	/*  but some fonts use out of bounds gids as flags to contextual */
+	/*  morx subtables, so allocate a full 65536 */
+	sm.classes = info->morx_classes = galloc(65536*sizeof(uint16));
+	for ( i=0; i<65536; ++i )
 	    sm.classes[i] = 1;			/* Out of bounds */
 	readttf_applelookup(ttf,info,
-		mortclass_apply_values,mortclass_apply_value,NULL,NULL);
+		mortclass_apply_values,mortclass_apply_value,NULL,NULL,true);
 	sm.smax = length/(2*sm.nClasses);
 	sm.states_in_use = gcalloc(sm.smax,sizeof(uint8));
 	follow_morx_state(&sm,0,-1);
@@ -3638,12 +3675,15 @@ static struct statetable *read_statetable(FILE *ttf, int ent_extras, int ismorx,
     fseek(ttf,here+class_off,SEEK_SET);
     error = 0;
     if ( ismorx ) {
-	st->classes2 = info->morx_classes = galloc(info->glyph_cnt*sizeof(uint16));
-	for ( i=0; i<info->glyph_cnt; ++i )
+	/* I used only to allocate space for info->glyph_cnt entries */
+	/*  but some fonts use out of bounds gids as flags to contextual */
+	/*  morx subtables, so allocate a full 65536 */
+	st->classes2 = info->morx_classes = galloc(65536*sizeof(uint16));
+	for ( i=0; i<65536; ++i )
 	    st->classes2[i] = 1;			/* Out of bounds */
 	readttf_applelookup(ttf,info,
-		mortclass_apply_values,mortclass_apply_value,NULL,NULL);
-	for ( i=0; i<info->glyph_cnt; ++i ) {
+		mortclass_apply_values,mortclass_apply_value,NULL,NULL,true);
+	for ( i=0; i<65536; ++i ) {
 	    if ( /*st->classes2[i]<0 ||*/ st->classes2[i]>=st->nclasses ) {
 		if ( !error )
 		    fprintf(stderr, "Bad class in state machine.\n" );
@@ -3767,6 +3807,9 @@ static char **ClassesFromStateTable(struct statetable *st,int ismorx,struct ttfi
     if ( ismorx ) {
 	for ( i=0; i<info->glyph_cnt; ++i ) if ( info->chars[i]!=NULL )
 	    lens[st->classes2[i]] += strlen( info->chars[i]->name )+1;
+	if ( info->badgids!=NULL )
+	    for ( i=0; i<info->badgid_cnt; ++i ) if ( info->badgids[i]!=NULL )
+		lens[st->classes2[info->badgids[i]->orig_pos]] += strlen( info->badgids[i]->name )+1;
     } else {
 	for ( i=st->first_glyph; i<st->first_glyph+st->nglyphs && i<info->glyph_cnt; ++i )
 	    if ( info->chars[i]!=NULL )
@@ -3782,6 +3825,11 @@ static char **ClassesFromStateTable(struct statetable *st,int ismorx,struct ttfi
 	    strcat(classes[st->classes2[i]],info->chars[i]->name );
 	    strcat(classes[st->classes2[i]]," ");
 	}
+	if ( info->badgids!=NULL )
+	    for ( i=0; i<info->badgid_cnt; ++i ) if ( info->badgids[i]!=NULL && st->classes2[info->badgids[i]->orig_pos]>=4) {
+		strcat(classes[st->classes2[info->badgids[i]->orig_pos]],info->badgids[i]->name );
+		strcat(classes[st->classes2[info->badgids[i]->orig_pos]]," ");
+	    }
     } else {
 	for ( i=st->first_glyph; i<st->first_glyph+st->nglyphs && i<info->glyph_cnt; ++i ) if ( st->classes[i-st->first_glyph]>=4 && info->chars[i]!=NULL ) {
 	    strcat(classes[st->classes[i-st->first_glyph]],info->chars[i]->name );
@@ -4128,7 +4176,7 @@ return(NULL);
 	    info->mort_subs_tag = TagFromInfo(info,i);
 	    info->mort_is_nested = true;
 	    readttf_applelookup(ttf,info,
-		    mort_apply_values,mort_apply_value,NULL,NULL);
+		    mort_apply_values,mort_apply_value,NULL,NULL,true);
 	}
 	info->mort_is_nested = false;
 	free(lookups);
@@ -4256,7 +4304,7 @@ return( chain_len );
 	      break;
 	      case 4:	/* non-contextual glyph substitutions */
 		readttf_applelookup(ttf,info,
-			mort_apply_values,mort_apply_value,NULL,NULL);
+			mort_apply_values,mort_apply_value,NULL,NULL,true);
 	      break;
 	      case 5:	/* contextual glyph insertion */
 		readttf_mortx_asm(ttf,info,ismorx,length,asm_insert,2,
@@ -4298,6 +4346,19 @@ return;
     break;
 	}
 	fseek(ttf,here+len,SEEK_SET);
+    }
+    /* Some Apple fonts use out of range gids as flags in conditional substitutions */
+    /*  generally to pass information from one sub-table to another which then */
+    /*  removes the flag */
+    if ( info->badgid_cnt!=0 ) {
+	/* Merge the fake glyphs in with the real ones */
+	info->chars = grealloc(info->chars,(info->glyph_cnt+info->badgid_cnt)*sizeof(SplineChar *));
+	for ( i=0; i<info->badgid_cnt; ++i ) {
+	    info->chars[info->glyph_cnt+i] = info->badgids[i];
+	    info->badgids[i]->orig_pos = info->glyph_cnt+i;
+	}
+	info->glyph_cnt += info->badgid_cnt;
+	free(info->badgids);
     }
 }
 
