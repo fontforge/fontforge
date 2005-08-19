@@ -541,7 +541,6 @@ return(NULL);
 	undo->u.state.md = MDsCopyState(sc,undo->u.state.splines);
 	undo->u.state.anchor = AnchorPointsCopy(sc->anchor);
     }
-    undo->u.state.u.images = ImageListCopy(sc->layers[layer].images);
     if ( dohints ) {
 	undo->undotype = ut_statehint;
 	undo->u.state.u.hints = UHintCopy(sc,true);
@@ -553,6 +552,10 @@ return(NULL);
 	    undo->u.state.possub = PSTCopy(sc->possub,sc,sc->parent);
 	}
     }
+#ifndef FONTFORGE_CONFIG_TYPE3
+    else	/* In normal mode we save hints XOR images. In type3 we save both */
+#endif
+	undo->u.state.u.images = ImageListCopy(sc->layers[layer].images);
 #ifdef FONTFORGE_CONFIG_TYPE3
     undo->u.state.fill_brush = sc->layers[layer].fill_brush;
     undo->u.state.stroke_pen = sc->layers[layer].stroke_pen;
@@ -746,12 +749,16 @@ static void SCUndoAct(SplineChar *sc,int layer, Undoes *undo) {
 	    RefChar *refs = RefCharsCopyState(sc,layer);
 	    FixupRefChars(sc,undo->u.state.refs,layer);
 	    undo->u.state.refs = refs;
-	} else if ( layer==ly_fore && undo->undotype==ut_statehint ) {
+	} else if ( layer==ly_fore &&
+		(undo->undotype==ut_statehint || undo->undotype==ut_statename)) {
 	    void *hints = UHintCopy(sc,false);
 	    ExtractHints(sc,undo->u.state.u.hints,false);
 	    undo->u.state.u.hints = hints;
 	}
-	if ( undo->undotype!=ut_statehint &&
+	if (
+#ifndef FONTFORGE_CONFIG_TYPE3
+		undo->undotype!=ut_statehint && undo->undotype!=ut_statename &&
+#endif	/* In normal mode we save hints XOR images. In type3 we save both */
 		!ImagesMatch(undo->u.state.u.images,head->images)) {
 	    ImageList *images = ImageListCopy(head->images);
 	    FixupImages(sc,undo->u.state.u.images,layer);
