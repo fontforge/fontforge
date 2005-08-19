@@ -129,6 +129,14 @@ PST *PSTCopy(PST *base,SplineChar *sc,SplineFont *from) {
 	if ( cur->type==pst_ligature ) {
 	    cur->u.lig.components = copy(cur->u.lig.components);
 	    cur->u.lig.lig = sc;
+	} else if ( cur->type==pst_pair ) {
+	    cur->u.pair.paired = copy(cur->u.pair.paired);
+	    cur->u.pair.vr = chunkalloc(sizeof( struct vr [2]));
+	    memcpy(cur->u.pair.vr,base->u.pair.vr,sizeof(struct vr [2]));
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	    cur->u.pair.vr[0].adjust = ValDevTabCopy(base->u.pair.vr[0].adjust);
+	    cur->u.pair.vr[1].adjust = ValDevTabCopy(base->u.pair.vr[1].adjust);
+#endif
 	} else if ( cur->type==pst_lcaret ) {
 	    cur->u.lcaret.carets = galloc(cur->u.lcaret.cnt*sizeof(uint16));
 	    memcpy(cur->u.lcaret.carets,base->u.lcaret.carets,cur->u.lcaret.cnt*sizeof(uint16));
