@@ -4935,8 +4935,10 @@ return( false );
 
     if ( format==ff_otf || format==ff_otfcid ) {
 	at->tabdir.version = CHR('O','T','T','O');
+#if 0		/* This means that Windows will reject the font. Probably not a good idea */
     } else if ( at->applemode && !at->opentypemode ) {
 	at->tabdir.version = CHR('t','r','u','e');
+#endif
     } else {
 	at->tabdir.version = 0x00010000;
     }
