@@ -4935,7 +4935,7 @@ return( false );
 
     if ( format==ff_otf || format==ff_otfcid ) {
 	at->tabdir.version = CHR('O','T','T','O');
-#if 0		/* This means that Windows will reject the font. Probably not a good idea */
+#if FONTFORGE_CONFIG_APPLE_ONLY_TTF		/* This means that Windows will reject the font. In general not a good idea */
     } else if ( at->applemode && !at->opentypemode ) {
 	at->tabdir.version = CHR('t','r','u','e');
 #endif
