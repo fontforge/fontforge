@@ -63,12 +63,28 @@
 /* Making FontForge handle device tables uses up more space, so I want        */
 /*  people to be able to turn it off if space is an issue and device tables   */
 /*  (ability to correct rounding errors in spacing, ie. kerning, at small     */
-/*  point sizes) aren't important. */
+/*  point sizes) aren't important.					      */
 /*									      */
 /* #define FONTFORGE_CONFIG_DEVICETABLES				      */
 /*									      */
 /* Can be set from configure --with-devicetables			      */
 
+
+/* Apple suggests using a sfnt version of 'true' for fonts designed for use   */
+/*  only on a mac (windows refuses such fonts). I generally prefer to have a  */
+/*  font work everywhere, so normally ff produces fonts with version 1.0      */
+/*  Set this if you want Apple only fonts (produced when Apple mode is set and*/
+/*  Opentype mode is unset in the Generate Fonts-Options dialog).	      */
+/*									      */
+/* #define FONTFORGE_CONFIG_APPLE_ONLY_TTF				      */
+/*									      */
+
+
+/* Nobody else puts apple unicode encodings into the name table. So I probably*/
+/*  shouldn't either.  But if someone wants them...			      */
+/*									      */
+/* #define FONTFORGE_CONFIG_APPLE_UNICODE_NAMES				      */
+/*									      */
 
 /* Sometimes I want to create a glyph which is a word, and this command       */
 /*  makes that easy                                                           */

@@ -3551,11 +3551,13 @@ static void AddEncodedName(NamTab *nt,unichar_t *uniname,uint16 lang,uint16 stri
     if ( !nt->applemode && lang!=0x409 )
 	maclang = 0xffff;
     if ( maclang!=0xffff ) {
+#ifdef FONTFORGE_CONFIG_APPLE_UNICODE_NAMES
 	*ne = ne[-1];
 	ne->platform = 0;	/* Mac unicode */
 	ne->specific = 0;	/* 3 => Unicode 2.0 semantics */ /* 0 ("default") is also a reasonable value */
 	ne->lang     = maclang;
 	++ne;
+#endif
 
 	macenc = MacEncFromMacLang(maclang);
 	macname = UnicodeToMacStr(uniname,macenc,maclang);
@@ -4935,7 +4937,7 @@ return( false );
 
     if ( format==ff_otf || format==ff_otfcid ) {
 	at->tabdir.version = CHR('O','T','T','O');
-#if FONTFORGE_CONFIG_APPLE_ONLY_TTF		/* This means that Windows will reject the font. In general not a good idea */
+#ifdef FONTFORGE_CONFIG_APPLE_ONLY_TTF		/* This means that Windows will reject the font. In general not a good idea */
     } else if ( at->applemode && !at->opentypemode ) {
 	at->tabdir.version = CHR('t','r','u','e');
 #endif
