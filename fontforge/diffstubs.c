@@ -1037,3 +1037,6 @@ void AltUniAdd(SplineChar *sc,int uni) {
 	}
     }
 }
+
+void MMMatchGlyphs(MMSet *mm) {
+}
