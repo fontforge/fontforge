@@ -688,13 +688,13 @@ return( true );
 return( false );
 }
 
-static void refmoveto(GrowBuf *gb,BasePoint *current,BasePoint startstop[MmMax*2],
+static void refmoveto(GrowBuf *gb,BasePoint *current,BasePoint rpos[MmMax],
 	int instance_count, int line, int round, struct hintdb *hdb, RefChar *refs[MmMax]) {
     BasePoint to[MmMax];
     int i;
 
     for ( i=0; i<instance_count; ++i ) {
-	to[i] = startstop[i*2+0];
+	to[i] = rpos[i];
 	if ( refs!=NULL ) {
 	    to[i].x += refs[i]->transform[4];
 	    to[i].y += refs[i]->transform[5];
@@ -915,8 +915,10 @@ static void _CvtPsSplineSet(GrowBuf *gb, SplinePointList *spl[MmMax], int instan
 	    splmoveto(gb,current,spl,instance_count,false,round,hdb);
 	else {
 	    if ( hdb!=NULL ) HintSetup(gb,hdb,spl[0]->first,round);
-	    for ( i=0; i<instance_count; ++i )
-		current[i] = start[2*i] = spl[i]->first->me;
+	    for ( i=0; i<instance_count; ++i ) {
+		current[i].x = start[2*i].x = myround(spl[i]->first->me.x,round);
+		current[i].y = start[2*i].y = myround(spl[i]->first->me.y,round);
+	    }
 	    hdb->startset = true;
 	}
 	for ( i=0; i<instance_count; ++i )
