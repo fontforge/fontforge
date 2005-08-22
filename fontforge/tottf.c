@@ -3693,8 +3693,14 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
 	for ( i=0; at->feat_name[i].strid!=0; ++i ) {
 	    for ( mn=at->feat_name[i].mn; mn!=NULL; mn=mn->next )
 		AddMacName(&nt,mn,at->feat_name[i].strid);
+#if 0	/* I'm not sure why I keep track of these alternates */
+	/*  Dumping them out like this is a bad idea. It might be worth */
+	/*  something if we searched through the alternate sets for languages */
+	/*  not found in the main set, but at the moment I don't think so */
+	/*  What happens now is that I get duplicate names output */
 	    for ( mn=at->feat_name[i].smn; mn!=NULL; mn=mn->next )
 		AddMacName(&nt,mn,at->feat_name[i].strid);
+#endif
 	}
     }
     /* And the names used by the fvar table aren't mac unicode either */
