@@ -1406,11 +1406,11 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
 		CvtPsHints(&gb,scs,instance_count,false,round,iscjk,NULL);
 	    }
 	}
+	memset(&trans,0,sizeof(trans));
 	if ( scs[0]->ttf_glyph!=0x7fff ) {
 	    ExpandSelf1(&gb,scs,instance_count,hdb,trans,startend,
 		    current,subrs,round,iscjk);
 	} else {
-	    memset(&trans,0,sizeof(trans));
 	    RSC2PS1(&gb,scs,scs,hdb,trans,subrs,current,startend,flags,iscjk,
 		    instance_count);
 	}
