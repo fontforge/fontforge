@@ -4603,6 +4603,13 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	sf->mm = NULL;
 	SplineFontFree(sf);
 	sf = mm->normal;
+	if ( sf->map->enc!=&custom ) {
+	    EncMap *map;
+	    MMMatchGlyphs(mm);		/* sfd files from before the encoding change can have mismatched orig pos */
+	    map = EncMapFromEncoding(sf,sf->map->enc);
+	    EncMapFree(sf->map);
+	    sf->map = map;
+	}
     } else {
 	while ( (sc = SFDGetChar(sfd,sf))!=NULL ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)

@@ -2208,7 +2208,7 @@ int FVImportMult(FontView *fv, char *filename, int toback, int bf) {
 #endif
 return( false );
     }
-    SFMatchGlyphs(strikeholder,sf);
+    SFMatchGlyphs(strikeholder,sf,false);
     if ( toback )
 	SFAddToBackground(sf,strikes);
     else

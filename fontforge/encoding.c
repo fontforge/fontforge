@@ -2720,10 +2720,24 @@ void SFAddGlyphAndEncode(SplineFont *sf,SplineChar *sc,EncMap *basemap, int base
     GlyphHashFree(sf);
 }
 
-void SFMatchGlyphs(SplineFont *sf,SplineFont *target) {
+static SplineChar *SplineCharMatch(SplineFont *parent,SplineChar *sc) {
+    SplineChar *scnew = SplineCharCreate();
+
+    scnew->parent = parent;
+    scnew->orig_pos = sc->orig_pos;
+    scnew->name = copy(sc->name);
+    scnew->unicodeenc = sc->unicodeenc;
+    scnew->width = sc->width;
+    scnew->vwidth = sc->vwidth;
+    scnew->widthset = true;
+return( scnew );
+}
+
+void SFMatchGlyphs(SplineFont *sf,SplineFont *target,int addempties) {
     /* reorder sf so that its glyphs array is the same as that in target */
     int i, j, cnt, cnt2;
     SplineChar **glyphs;
+    BDFFont *bdf;
 
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
 	sf->glyphs[i]->ticked = false;
@@ -2731,6 +2745,8 @@ void SFMatchGlyphs(SplineFont *sf,SplineFont *target) {
     glyphs = gcalloc(cnt,sizeof(SplineChar *));
     for ( i=0; i<target->glyphcnt; ++i ) if ( target->glyphs[i]!=NULL ) {
 	SplineChar *sc = SFGetChar(sf,target->glyphs[i]->unicodeenc,target->glyphs[i]->name );
+	if ( sc==NULL && addempties )
+	    sc = SplineCharMatch(sf,target->glyphs[i]);
 	if ( sc!=NULL ) {
 	    glyphs[i] = sc;
 	    sc->ticked = true;
@@ -2751,6 +2767,69 @@ void SFMatchGlyphs(SplineFont *sf,SplineFont *target) {
     free(sf->glyphs);
     sf->glyphs = glyphs;
     sf->glyphcnt = sf->glyphmax = cnt;
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
+	sf->glyphs[i]->orig_pos = i;
+    for ( bdf = sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
+	BDFChar **glyphs;
+	glyphs = gcalloc(sf->glyphcnt,sizeof(BDFChar *));
+	for ( i=0; i<bdf->glyphcnt; ++i ) if ( bdf->glyphs[i]!=NULL )
+	    glyphs[bdf->glyphs[i]->sc->orig_pos] = bdf->glyphs[i];
+	free(bdf->glyphs);
+	bdf->glyphs = glyphs;
+	bdf->glyphcnt = bdf->glyphmax = sf->glyphcnt;
+    }
+}
+
+void MMMatchGlyphs(MMSet *mm) {
+    /* reorder all instances so that they have the same orig_pos */
+    int i, j, index, lasthole;
+    SplineFont *sf, *base;
+    SplineChar *sc, *scnew, *sc2;
+
+    for ( i = 0; i<mm->instance_count; ++i ) if ( mm->instances[i]!=NULL ) {
+	base = mm->instances[i];
+    break;
+    }
+    if ( base==NULL )
+return;
+
+    /* First build up an ordering that uses all glyphs found in any of the */
+    /*  sub-fonts, "base" will be the start of it. We will add glyphs to */
+    /*  "base" as needed */
+    lasthole = -1;
+    for ( i = 0; i<mm->instance_count; ++i ) if ( (sf=mm->instances[i])!=NULL && sf!=NULL ) {
+	for ( j=0; j<sf->glyphcnt; ++j ) if ( (sc=sf->glyphs[j])!=NULL ) {
+	    if ( j<base->glyphcnt && base->glyphs[j]!=NULL &&
+		    base->glyphs[j]->unicodeenc==sc->unicodeenc &&
+		    strcmp(base->glyphs[j]->name,sc->name)==0 )
+	continue;	/* It's good, and in the same place */
+	    else if ( (sc2=SFGetChar(base,sc->unicodeenc,sc->name))!=NULL &&
+		    sc2->unicodeenc==sc->unicodeenc &&
+		    strcmp(sc2->name,sc->name)==0 )
+	continue;	/* Well, it's in there somewhere */
+	    else {
+		/* We need to add it */
+		if ( j<base->glyphcnt && base->glyphs[j]==NULL )
+		    index = j;
+		else {
+		    for ( ++lasthole ; lasthole<base->glyphcnt && base->glyphs[lasthole]!=NULL; ++lasthole );
+		    index = lasthole;
+		    if ( lasthole>=base->glyphmax )
+			base->glyphs = grealloc(base->glyphs,(base->glyphmax+=20)*sizeof(SplineChar *));
+		    if ( lasthole>=base->glyphcnt )
+			base->glyphcnt = lasthole+1;
+		}
+		base->glyphs[index] = scnew = SplineCharMatch(base,sc);
+		scnew->orig_pos = index;
+	    }
+	}
+    }
+
+    /* Now force all other instances to match */
+    for ( i = 0; i<mm->instance_count; ++i ) if ( (sf=mm->instances[i])!=NULL && sf!=NULL )
+	SFMatchGlyphs(sf,base,true);
+    if ( mm->normal!=NULL )
+	SFMatchGlyphs(mm->normal,base,true);
 }
 
 GTextInfo encodingtypes[] = {

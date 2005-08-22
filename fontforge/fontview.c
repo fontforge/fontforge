@@ -5146,7 +5146,7 @@ return;
 static void CIDSetEncMap(FontView *fv, SplineFont *new ) {
     int gcnt = new->glyphcnt;
 
-    if ( gcnt!=fv->sf->glyphcnt ) {
+    if ( fv->cidmaster!=NULL && gcnt!=fv->sf->glyphcnt ) {
 	int i;
 	if ( fv->map->encmax<gcnt ) {
 	    fv->map->map = grealloc(fv->map->map,gcnt*sizeof(int));
@@ -9433,7 +9433,6 @@ return( true );
 }
 
 void FontViewReformatOne(FontView *fv) {
-    BDFFont *new;
     FontView *fvs;
 
     if ( fv->v==NULL || fv->colcnt==0 )	/* Can happen in scripts */

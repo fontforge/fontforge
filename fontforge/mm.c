@@ -3219,6 +3219,7 @@ continue;
 	    setto->instances[i]->mm = setto;
 	}
     }
+    MMMatchGlyphs(setto);
     if ( setto->normal==NULL ) {
 	setto->normal = MMNewFont(setto,-1,familyname);
 	setto->normal->private = oldprivate;

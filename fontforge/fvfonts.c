@@ -588,7 +588,7 @@ static void MergeFixupRefChars(SplineFont *sf) {
     }
 }
 
-static int SFHasChar(SplineFont *sf, int unienc, char *name ) {
+int SFHasChar(SplineFont *sf, int unienc, const char *name ) {
     SplineChar *sc = SFGetChar(sf,unienc,name);
 
 return( SCWorthOutputting(sc) );
