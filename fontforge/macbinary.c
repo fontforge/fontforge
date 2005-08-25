@@ -1477,12 +1477,17 @@ return( false );
     ret = FSCreateFileUnicode(&parentref,u_strlen(filename), (UniChar *) filename,
     		kFSCatInfoFinderInfo, &info, &ref, NULL);
     free(filename);
+    if ( ret==dupFNErr ) {
+    	/* File already exists, create failed, didn't get an FSRef */
+	ret=FSPathMakeRef( (uint8 *) fname,&ref,NULL);
+    }
     if ( ret!=noErr )
 return( false );
 
     FSGetResourceForkName(&resforkname);
     FSCreateFork(&ref,resforkname.length,resforkname.unicode);	/* I don't think this is needed, but it doesn't hurt... */
-    if ( FSOpenFork(&ref,resforkname.length,resforkname.unicode,fsWrPerm,&macfile)!=noErr )
+    ret = FSOpenFork(&ref,resforkname.length,resforkname.unicode,fsWrPerm,&macfile);
+    if ( ret!=noErr )
 return( false );
     SetEOF(macfile,0);		/* Truncate it just in case it existed... */
     fseek(res,128,SEEK_SET);	/* Everything after the mac binary header in */
