@@ -1442,20 +1442,19 @@ static int DumpMacBinaryHeader(FILE *res,struct macbinaryheader *mb) {
 return( true );
 #else
     int ret;
-    FSRef ref;
-    FSSpec spec;
+    FSRef ref, parentref;
     short macfile;
     char *buf, *dirname, *pt, *fname;
-    Str255 damnthemac;
+    HFSUniStr255 resforkname;
     FSCatalogInfo info;
     long len;
+    unichar_t *filename;
     /* When on the mac let's just create a real resource fork. We do this by */
     /*  creating a mac file with a resource fork, opening that fork, and */
     /*  dumping all the data in the temporary file after the macbinary header */
 
     /* The mac file routines are really lovely. I can't convert a pathspec to */
-    /*  an FSRef unless the file exists. So I can't get an FSSpec to create */
-    /*  the file with. That is incredibly stupid and annoying of them */
+    /*  an FSRef unless the file exists.  That is incredibly stupid and annoying of them */
     /* But the directory should exist... */
     fname = mb->macfilename?mb->macfilename:mb->binfilename;
     dirname = copy(fname);
@@ -1466,27 +1465,24 @@ return( true );
 	free(dirname);
 	dirname = copy(".");
     }
-    ret=FSPathMakeRef( (uint8 *) dirname,&ref,NULL);
+    ret=FSPathMakeRef( (uint8 *) dirname,&parentref,NULL);
     free(dirname);
     if ( ret!=noErr )
 return( false );
-    if ( FSGetCatalogInfo(&ref,kFSCatInfoNodeID,&info,NULL,&spec,NULL)!=noErr )
-return( false );
+
     pt = strrchr(fname,'/');
-    if ( pt!=NULL ) {
-	++pt;
-	damnthemac[0] = strlen(pt);
-	strncpy( (char *) damnthemac+1,pt,damnthemac[0]);
-    } else {
-	damnthemac[0] = strlen(fname);
-	strncpy( (char *) damnthemac+1,fname,damnthemac[0]);
-    }
-    if ( (ret=FSMakeFSSpec(spec.vRefNum,info.nodeID,damnthemac,&spec))!=noErr &&
-	    ret!=fnfErr )
+    filename = def2u_copy(pt==NULL?fname:pt+1);
+    ((FInfo *) (info.finderInfo))->fdType = mb->type;
+    ((FInfo *) (info.finderInfo))->fdCreator = mb->creator;
+    ret = FSCreateFileUnicode(&parentref,u_strlen(filename), (UniChar *) filename,
+    		kFSCatInfoFinderInfo, &info, &ref, NULL);
+    free(filename);
+    if ( ret!=noErr )
 return( false );
-    FSpCreateResFile(&spec,mb->creator,mb->type,smSystemScript);
-	/* The header files say this returns void. I'd expect errors like dupFNErr, but appearently not */
-    if ( FSpOpenRF(&spec,fsWrPerm,&macfile)!=noErr )
+
+    FSGetResourceForkName(&resforkname);
+    FSCreateFork(&ref,resforkname.length,resforkname.unicode);	/* I don't think this is needed, but it doesn't hurt... */
+    if ( FSOpenFork(&ref,resforkname.length,resforkname.unicode,fsWrPerm,&macfile)!=noErr )
 return( false );
     SetEOF(macfile,0);		/* Truncate it just in case it existed... */
     fseek(res,128,SEEK_SET);	/* Everything after the mac binary header in */
@@ -2907,48 +2903,26 @@ return( (SplineFont *) -1 );	/* It's a valid resource file, but just has no font
 static SplineFont *HasResourceFork(char *filename,int flags,SplineFont *into,EncMap *map) {
     /* If we're on a mac, we can try to see if we've got a real resource fork */
     /* (if we do, copy it into a temporary data file and then manipulate that)*/
-    FSRef ref;
-    FSSpec spec;
-    short res, err;
-    int iret;
-    long cnt;
     SplineFont *ret;
-    FILE *temp;
-    char *buf;
-    char *tempfn=filename, *pt, *lparen;
+    FILE *resfork;
+    char *tempfn=filename, *pt, *lparen, *respath;
 
     if (( pt=strrchr(filename,'/'))==NULL ) pt = filename;
     if ( (lparen = strchr(pt,'('))!=NULL && strchr(lparen,')')!=NULL ) {
 	tempfn = copy(filename);
 	tempfn[lparen-filename] = '\0';
     }
-
-    iret = FSPathMakeRef( (uint8 *) tempfn,&ref,NULL);
+    respath = galloc(strlen(tempfn)+strlen("/rsrc")+1);
+    strcpy(respath,tempfn);
+    strcat(respath,"/rsrc");
+    resfork = fopen(respath,"r");
+    free(respath);
     if ( tempfn!=filename )
 	free(tempfn);
-    if ( iret!=noErr )
+    if ( resfork==NULL )
 return( NULL );
-    if ( FSGetCatalogInfo(&ref,0,NULL,NULL,&spec,NULL)!=noErr )
-return( NULL );
-    if ( FSpOpenRF(&spec,fsRdPerm,&res)!=noErr )
-return( NULL );
-    temp = tmpfile();
-    buf = galloc(8192);
-    while ( 1 ) {
-	cnt = 8192;
-	err = FSRead(res,&cnt,buf);
-	if ( cnt!=0 )
-	    fwrite(buf,1,cnt,temp);
-	if ( err==eofErr )
-    break;
-	if ( err!=noErr )
-    break;
-    }
-    free(buf);
-    FSClose(res);
-    rewind(temp);
-    ret = IsResourceFork(temp,0,filename,flags,into,map);
-    fclose(temp);
+    ret = IsResourceFork(resfork,0,filename,flags,into,map);
+    fclose(resfork);
 return( ret );
 }
 #endif
