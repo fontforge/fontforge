@@ -1,5 +1,7 @@
 /* I can't find the mac "Files.h" include file under Darwin, so... */
 /* Nor the CoreServices/CoreServices.h file that is supposed to replace it */
+/* /System/Library/FrameWorks/CoreServices.framework/Versions/A/Frameworks/CarbonCore.framework/Versions/A/Heacers */
+/*  but unfortunately they don't compile with my utype.h */
 
 #define noErr		0
 #define eofErr		(-39)
