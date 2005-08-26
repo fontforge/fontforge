@@ -4231,7 +4231,12 @@ static void CVMenuFindProblems(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void CVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
+#ifdef TEST
+    extern int ChangeWeight(SplineChar *sc,double factor,double add);
+    ChangeWeight(cv->sc,2.0,25);
+#else
     MetaFont(NULL,cv,NULL);
+#endif
 }
 
 static void CVMenuInline(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -6296,7 +6301,7 @@ static void CVMenuClearHints(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void CVMenuAddHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     SplinePoint *sp1, *sp2, *sp3, *sp4;
-    StemInfo *h;
+    StemInfo *h=NULL;
     DStemInfo *d;
 
     if ( !CVTwoForePointsSelected(cv,&sp1,&sp2))
@@ -6354,7 +6359,10 @@ return;
 	d->rightedgebottom = sp4->me;
     }
     cv->sc->manualhints = true;
-    SCClearHintMasks(cv->sc,true);
+    if ( h!=NULL && cv->sc->parent->mm==NULL )
+	SCModifyHintMasksAdd(cv->sc,h);
+    else
+	SCClearHintMasks(cv->sc,true);
     SCOutOfDateBackground(cv->sc);
     SCUpdateAll(cv->sc);
 }

@@ -1938,6 +1938,65 @@ static void _SCClearHintMasks(SplineChar *sc,int counterstoo) {
     }
 }
 
+static void ModifyHintMaskAdd(HintMask *hm,int index) {
+    int i;
+
+    if ( hm==NULL )
+return;
+
+    for ( i=94; i>=index ; --i ) {
+	if ( (*hm)[i>>3]&(0x80>>(i&7)) )
+	    (*hm)[(i+1)>>3] |= (0x80>>((i+1)&7));
+	else
+	    (*hm)[(i+1)>>3] &= ~(0x80>>((i+1)&7));
+    }
+    (*hm)[index>>3] &= ~(0x80>>(index&7));
+}
+
+void SCModifyHintMasksAdd(SplineChar *sc,StemInfo *new) {
+    SplineSet *spl;
+    SplinePoint *sp;
+    RefChar *ref;
+    int index;
+    StemInfo *h;
+    int i;
+    /* We've added a new stem. Figure out where it goes and modify the */
+    /*  hintmasks accordingly */
+
+    for ( index=0, h=sc->hstem; h!=NULL && h!=new; ++index, h=h->next );
+    if ( h==NULL )
+	for ( h=sc->vstem; h!=NULL && h!=new; ++index, h=h->next );
+    if ( h==NULL )
+return;
+
+    for ( i=0; i<sc->countermask_cnt; ++i )
+	ModifyHintMaskAdd(&sc->countermasks[i],index);
+
+    for ( spl = sc->layers[ly_fore].splines; spl!=NULL; spl=spl->next ) {
+	for ( sp = spl->first ; ; ) {
+	    ModifyHintMaskAdd(sp->hintmask,index);
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==spl->first )
+	break;
+	}
+    }
+
+    for ( ref = sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
+	for ( spl = ref->layers[0].splines; spl!=NULL; spl=spl->next ) {
+	    for ( sp = spl->first ; ; ) {
+		ModifyHintMaskAdd(sp->hintmask,index);
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+		if ( sp==spl->first )
+	    break;
+	    }
+	}
+    }
+}
+
 static void SCFigureSimpleCounterMasks(SplineChar *sc) {
     SplineChar *scs[MmMax];
     int hadh3, hadv3, i;
