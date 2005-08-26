@@ -1,4 +1,4 @@
-This is a minimal testsuite for pfaedit. I expect it will grow with time.
+This is a minimal testsuite for fontforge. I expect it will grow with time.
 
 You can execute the tests by:
   $ <testdir>/runtests <pfaedit>
@@ -7,7 +7,8 @@ You can execute the tests by:
 
 Before you execute any of the tests you must download the test fonts.
 I do not provide these because most of them aren't my work. If you can't find
-one of the requisit fonts, simply comment out the tests which use it.
+one of the requisit fonts, simply comment out the tests which use it. Each
+test file (*.pe) contains a list of fonts which it expects.
 
 These fonts must be placed in <testdir>/fonts/
 
@@ -19,3 +20,10 @@ test001.pe
 			(any other cid-keyed non-otf file would do)
 test002.pe
   GillSans.dfont	Provided on Mac OS/X (but any truetype font would do)
+
+================================================================================
+
+This directory also includes the file randomtest.c . This program takes a
+directory of good fonts, makes copies of them, introduces random errors into
+those copies, and runs fontforge on the result. If ff crashes it saves the
+test, otherwise it deletes it. Then it tries another test.
