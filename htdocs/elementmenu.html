@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 6-Jul-2005 -->
+  <!-- AP: Last modified: 22-Aug-2005 -->
   <TITLE>The Element Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -459,10 +459,10 @@ compiling FontForge.
   <DT>
     <A NAME="Expand">Expand</A> Stroke...
   <DD>
-    Not in the bitmap view. In the font view it applies to all foreground splines
-    in all selected glyphs. In the outline view it applies to all paths that
-    have at least one point selected (or if no points are selected then it applies
-    to all paths).<BR>
+    Not in the bitmap view, not in quadratic (truetype) fonts. In the font view
+    it applies to all foreground splines in all selected glyphs. In the outline
+    view it applies to all paths that have at least one point selected (or if
+    no points are selected then it applies to all paths).<BR>
     <IMG SRC="twolines.png" WIDTH="247" HEIGHT="247">
     <IMG SRC="expandedlines.png" WIDTH="247" HEIGHT="247"><BR>
     Above is a simple example of what expand stroke can do. It takes the two
@@ -484,98 +484,116 @@ compiling FontForge.
     <A NAME="TilePath">Tile Path</A>
   <DD>
     This command is not available in the default build, you must modify the file
-    <CODE>configure-fontforge.h</CODE> and then rebuild FontForge. This command
-    takes the contents of the clipboard and treats it as a tile which is applied
-    to any selected contours.
+    <CODE>configure-fontforge.h</CODE> and then rebuild FontForge. Not available
+    in quadratic (truetype) fonts. This command takes the contents of the clipboard
+    and treats it as a tile which is applied to any selected contours.
   <DT>
-    <A NAME="Remove">Remove</A> Overlap
+    Overlap
   <DD>
-    Not in the bitmap view. If two closed paths intersect then there will be
-    overlap. This will get rid of it, leaving one closed path behind.
-    <P>
-    Make sure paths have the correct orientation. Consider the letter "O" with
-    two contours. If both contours run in the same direction then the inner path
-    will be removed (because the outer path overlaps it everywhere), but if the
-    contours run in oposite orientations then the inner path will be retained.
-    Things get very strange if you have intersecting paths with different
-    orientations.
-    <P>
-    <IMG SRC="expandedlines.png" WIDTH="247" HEIGHT="247">
-    <IMG SRC="overlappedlines.png" WIDTH="247" HEIGHT="247"><BR>
-    This command is probably the buggiest in FontForge. So before FontForge invokes
-    the command it will save the state to the error recovery file.<BR>
-    Warning: Splines which are tangent (or nearly so) cause problems. Points
-    which are close together can cause problems.
+    None of these is available in the bitmap view. None works on quadratic (truetype)
+    fonts<SUP><A HREF="#overlap-footnote">1</A></SUP>.
+    <DL>
+      <DT>
+	<A NAME="Remove">Remove</A> Overlap
+      <DD>
+	Not in the bitmap view, <EM>not available when the font has quadratic
+	splines</EM><SUP><A HREF="#overlap-footnote">1</A></SUP>. If two closed paths
+	intersect then there will be overlap. This will get rid of it, leaving one
+	closed path behind.
+	<P>
+	Make sure paths have the correct orientation. Consider the letter "O" with
+	two contours. If both contours run in the same direction then the inner path
+	will be removed (because the outer path overlaps it everywhere), but if the
+	contours run in oposite orientations then the inner path will be retained.
+	Things get very strange if you have intersecting paths with different
+	orientations.
+	<P>
+	<IMG SRC="expandedlines.png" WIDTH="247" HEIGHT="247">
+	<IMG SRC="overlappedlines.png" WIDTH="247" HEIGHT="247"><BR>
+	This command is probably the buggiest in FontForge. So before FontForge invokes
+	the command it will save the state to the error recovery file.<BR>
+	Warning: Splines which are tangent (or nearly so) cause problems. Points
+	which are close together can cause problems.
+	<P>
+	<SUP><A NAME="overlap-footnote">1</A></SUP><SMALL>If you wish to run remove
+	overlap on a truetype (quadratic) font, you must first use Element-&gt;Font
+	Info-&gt;General to convert it into a cubic font, do the remove overlap,
+	and then convert back to quadratic.</SMALL>
+      <DT>
+	<A NAME="Intersect">Intersect</A>
+      <DD>
+	<TABLE CELLPADDING="2">
+	  <TR>
+	    <TD><IMG SRC="exclude-pre.png" WIDTH="174" HEIGHT="174"></TD>
+	    <TD><IMG SRC="intersect-post.png" WIDTH="174" HEIGHT="174"></TD>
+	  </TR>
+	</TABLE>
+	<P>
+	This will remove everything not in the intersection of two regions.
+      <DT>
+	<A NAME="Exclude">Exclude</A>
+      <DD>
+	<TABLE CELLPADDING="2">
+	  <TR>
+	    <TD><IMG SRC="exclude-pre.png" WIDTH="174" HEIGHT="174"></TD>
+	    <TD><IMG SRC="exclude-post.png" WIDTH="174" HEIGHT="174"></TD>
+	  </TR>
+	</TABLE>
+	<P>
+	This will remove the selected contours from the unselected ones. Only available
+	in the outline glyph view.
+      <DT>
+	Find Intersections
+      <DD>
+	This finds the places where overlapping contours intersect and inserts points
+	at those locations.
+    </DL>
   <DT>
-    <A NAME="Intersect">Intersect</A>
+    Simplify
   <DD>
-    <TABLE CELLPADDING="2">
-      <TR>
-	<TD><IMG SRC="exclude-pre.png" WIDTH="174" HEIGHT="174"></TD>
-	<TD><IMG SRC="intersect-post.png" WIDTH="174" HEIGHT="174"></TD>
-      </TR>
-    </TABLE>
-    <P>
-    This will remove everything not in the intersection of two regions.
-  <DT>
-    <A NAME="Exclude">Exclude</A>
-  <DD>
-    <TABLE CELLPADDING="2">
-      <TR>
-	<TD><IMG SRC="exclude-pre.png" WIDTH="174" HEIGHT="174"></TD>
-	<TD><IMG SRC="exclude-post.png" WIDTH="174" HEIGHT="174"></TD>
-      </TR>
-    </TABLE>
-    <P>
-    This will remove the selected contours from the unselected ones. Only available
-    in the outline glyph view.
-  <DT>
-    Find Intersections
-  <DD>
-    This finds the places where overlapping contours intersect and inserts points
-    at those locations.
-  <DT>
-    <A NAME="Simplify">Simplify</A>
-  <DD>
-    Not in the bitmap view. If you have lots of points on a path, some of which
-    do not materially add to the path's shape, then this command will remove
-    the extraneous points. (It will not remove points where the slope at the
-    point is horizontal or vertical as postscript likes to have these points
-    present).
-    <P>
-    <A HREF="pfaeditmath.html#Approximating">How is this done?</A>
-  <DT>
-    Simplify More
-  <DD>
-    This is a variant of the simplify command, obtainable if you hold down the
-    shift key when invoking from the menu. It brings up a dialog which gives
-    you control over what sorts of errors this simplification is allowed to induce.
-    You can control:
-    <UL>
-      <LI>
-	How far the simplified contour is allowed to stray from the original
-      <LI>
-	Whether to allow removal of extreme points
-      <LI>
-	Whether to allow the slope to change at points.
-      <LI>
-	Whether to make corner points into curve points (by adjusting the control
-	points)
-      <LI>
-	Whether to flatten small bumps off of lines
-      <LI>
-	Whether to try to simplify straight lines at all
-    </UL>
-    <P>
-    Finally, you may specify whether this set of values should become the default
-    value for future Simplify commands
-  <DT>
-    <A NAME="Cleanup">Cleanup Glyph</A>
-  <DD>
-    This is a special case of the simplify command. In this case if there is
-    a spline which actually traces out a line but none the less has control points,
-    then this command will remove the control points. It will also cleanup zero
-    length splines.
+    <DL>
+      <DT>
+	<A NAME="Simplify">Simplify</A>
+      <DD>
+	Not in the bitmap view. If you have lots of points on a path, some of which
+	do not materially add to the path's shape, then this command will remove
+	the extraneous points. (It will not remove points where the slope at the
+	point is horizontal or vertical as postscript likes to have these points
+	present).
+	<P>
+	<A HREF="pfaeditmath.html#Approximating">How is this done?</A>
+      <DT>
+	Simplify More
+      <DD>
+	This is a variant of the simplify command. It brings up a dialog which gives
+	you control over what sorts of errors this simplification is allowed to induce.
+	You can control:
+	<UL>
+	  <LI>
+	    How far the simplified contour is allowed to stray from the original
+	  <LI>
+	    Whether to allow removal of extreme points
+	  <LI>
+	    Whether to allow the slope to change at points.
+	  <LI>
+	    Whether to make corner points into curve points (by adjusting the control
+	    points)
+	  <LI>
+	    Whether to flatten small bumps off of lines
+	  <LI>
+	    Whether to try to simplify straight lines at all
+	</UL>
+	<P>
+	Finally, you may specify whether this set of values should become the default
+	value for future Simplify commands
+      <DT>
+	<A NAME="Cleanup">Cleanup Glyph</A>
+      <DD>
+	This is a special case of the simplify command. In this case if there is
+	a spline which actually traces out a line but none the less has control points,
+	then this command will remove the control points. It will also cleanup zero
+	length splines.
+    </DL>
   <DT>
     <A NAME="Add-Extrema">Add Extrema</A>
   <DD>
@@ -590,6 +608,7 @@ compiling FontForge.
   <DT>
     Effects
   <DD>
+    Not in quadratic (truetype) fonts.
     <DL>
       <DT>
 	<A NAME="Outline">Outline</A>
@@ -617,8 +636,8 @@ compiling FontForge.
     <A NAME="MetaFont">MetaFont</A>...
   <DD>
     This <A HREF="MetaFont.html">dialog</A> is only present in the font and outline
-    glyph views. It allows you to make fonts bolder or condensed. It doesn't
-    work very well.<FONT COLOR="Red"><BR>
+    glyph views, not in quadratic (truetype) fonts. It allows you to make fonts
+    bolder or condensed. It doesn't work very well.<FONT COLOR="Red"><BR>
     <STRONG>NOTE</STRONG></FONT>: It does <EM>not</EM> read TeX .mf files. The
     name is chosen because it has some similarity in terms of features.
   <DT>
@@ -697,25 +716,30 @@ compiling FontForge.
 	on the one you want moved).
     </DL>
   <DT>
-    <A NAME="Round">Round</A> to Int
+    Round
   <DD>
-    Not in the bitmap view. FontForge stores point locations as real numbers
-    (ie. it retains fractional values). TrueType only supports integral values
-    (And much of the time you want integral values in Type1 and Type2 fonts also
-    -- using real numbers makes font files bigger), so when generating the font
-    points are rounded to integral values. This command will round all selected
-    locations to the closest integer.
-  <DT>
-    Round to <A NAME="Hundredths">Hundredths</A>
-  <DD>
-    Not in bitmap or metrics views. FontForge's Type1 output is limited to hundredths
-    of an em-unit, even when rounding is turned off in the Generate [Options]
-    dialog.
-  <DT>
-    Round to <A NAME="Cluster">Cluster</A>
-  <DD>
-    Occasionally you want to make sure that coordinates which are close together
-    have the same value. This command will do that.
+    <DL>
+      <DT>
+	<A NAME="Round">Round</A> to Int
+      <DD>
+	Not in the bitmap view. FontForge stores point locations as real numbers
+	(ie. it retains fractional values). TrueType only supports integral values
+	(And much of the time you want integral values in Type1 and Type2 fonts also
+	-- using real numbers makes font files bigger), so when generating the font
+	points are rounded to integral values. This command will round all selected
+	locations to the closest integer.
+      <DT>
+	Round to <A NAME="Hundredths">Hundredths</A>
+      <DD>
+	Not in bitmap or metrics views. FontForge's Type1 output is limited to hundredths
+	of an em-unit, even when rounding is turned off in the Generate [Options]
+	dialog.
+      <DT>
+	Round to <A NAME="Cluster">Cluster</A>
+      <DD>
+	Occasionally you want to make sure that coordinates which are close together
+	have the same value. This command will do that.
+    </DL>
   <DT>
     <A NAME="Order">Order</A>
   <DD>
