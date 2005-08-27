@@ -1604,29 +1604,23 @@ void CopyWidth(CharView *cv,enum undotype ut) {
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-static SplineChar *FindCharacter(SplineFont *sf,RefChar *rf) {
-    extern char *AdobeStandardEncoding[256];
-    int i;
+static SplineChar *FindCharacter(SplineFont *into, SplineFont *from,RefChar *rf) {
+    FontView *fv;
+    char *fromname = NULL;
 
-    if ( rf->orig_pos<sf->glyphcnt && sf->glyphs[rf->orig_pos]!=NULL &&
-	    sf->glyphs[rf->orig_pos]->unicodeenc == rf->unicode_enc )
-return( sf->glyphs[rf->orig_pos] );
+    for ( fv = fv_list; fv!=NULL && fv->sf!=from; fv=fv->next );
+    if ( fv==NULL ) from=NULL;
 
-    if ( rf->unicode_enc!=-1 ) {
-	for ( i=0; i<sf->glyphcnt; ++i )
-	    if ( sf->glyphs[i]!=NULL && sf->glyphs[i]->unicodeenc == rf->unicode_enc )
-return( sf->glyphs[i] );
-    }
-    if ( rf->adobe_enc!=-1 ) {
-	for ( i=0; i<sf->glyphcnt; ++i )
-	    if ( sf->glyphs[i]!=NULL &&
-		    strcmp(sf->glyphs[i]->name,AdobeStandardEncoding[rf->adobe_enc])==0 )
-return( sf->glyphs[i] );
-    }
-    if ( rf->orig_pos<sf->glyphcnt )
-return( sf->glyphs[rf->orig_pos] );
+    if ( from!=NULL && rf->orig_pos<from->glyphcnt && from->glyphs[rf->orig_pos]!=NULL )
+	fromname = from->glyphs[rf->orig_pos]->name;
 
-return( NULL );
+    if ( rf->orig_pos<into->glyphcnt && into->glyphs[rf->orig_pos]!=NULL &&
+	    ((into->glyphs[rf->orig_pos]->unicodeenc == rf->unicode_enc && rf->unicode_enc!=-1 ) ||
+	     (rf->unicode_enc==-1 && fromname!=NULL &&
+		     strcmp(into->glyphs[rf->orig_pos]->name,fromname)==0 )) )
+return( into->glyphs[rf->orig_pos] );
+
+return( SFGetChar( into, rf->unicode_enc, fromname ));
 }
 
 int SCDependsOnSC(SplineChar *parent, SplineChar *child) {
@@ -1643,18 +1637,12 @@ return( false );
 
 static void PasteNonExistantRefCheck(SplineChar *sc,Undoes *paster,RefChar *ref,
 	int *refstate) {
-    FontView *fv;
     SplineChar *rsc=NULL;
     SplineSet *new, *spl;
     int yes = 3;
 
-    for ( fv = fv_list; fv!=NULL && fv->sf!=paster->u.state.copied_from; fv=fv->next );
-    if ( fv!=NULL ) {
-	rsc = FindCharacter(fv->sf,ref);
-	if ( rsc==NULL )
-	    fv = NULL;
-    }
-    if ( fv==NULL ) {
+    rsc = FindCharacter(sc->parent,paster->u.state.copied_from,ref);
+    if ( rsc==NULL ) {
 	if ( !(*refstate&0x4) ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    static int buts[] = { _STR_DontWarnAgain, _STR_OK, 0 };
@@ -1771,9 +1759,13 @@ return;
 /*  width of the glyphs in the new font as well */
 static int PasteGuessCorrectWidth(SplineFont *sf,Undoes *paster,int *vwidth) {
     RefChar *ref, *base=NULL;
+    FontView *fv;
+    SplineFont *from = NULL;
 
-    if ( paster->u.state.copied_from==NULL ||
-	    paster->u.state.vwidth == paster->u.state.copied_from->ascent+paster->u.state.copied_from->descent )
+    for ( fv = fv_list; fv!=NULL && fv->sf!=paster->u.state.copied_from; fv=fv->next );
+    if ( fv!=NULL ) from = fv->sf;
+    if ( from==NULL ||
+	    paster->u.state.vwidth == from->ascent+from->descent )
 	*vwidth = sf->ascent+sf->descent;
     for ( ref=paster->u.state.refs; ref!=NULL; ref=ref->next ) {
 	if ( ref->unicode_enc!=-1 && ref->unicode_enc<0x10000 &&
@@ -1789,7 +1781,7 @@ static int PasteGuessCorrectWidth(SplineFont *sf,Undoes *paster,int *vwidth) {
 	}
     }
     if ( base!=NULL ) {
-	SplineChar *sc = FindCharacter(sf,base);
+	SplineChar *sc = FindCharacter(sf,from,base);
 	if ( sc!=NULL ) {
 	    *vwidth = sc->vwidth;
 return( sc->width );
@@ -2025,10 +2017,10 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
 	    for ( refs = paster->u.state.refs; refs!=NULL; refs=refs->next ) {
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 		if ( sc->searcherdummy )
-		    rsc = FindCharacter(sc->views->searcher->fv->sf,refs);
+		    rsc = FindCharacter(sc->views->searcher->fv->sf,paster->u.state.copied_from,refs);
 		else
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-		    rsc = FindCharacter(sc->parent,refs);
+		    rsc = FindCharacter(sc->parent,paster->u.state.copied_from,refs);
 		if ( rsc!=NULL && SCDependsOnSC(rsc,sc))
 #if defined(FONTFORGE_CONFIG_GTK)
 		    gwwv_post_error(_("Self-referential character"),_("Attempt to make a character that refers to itself"));
@@ -2218,9 +2210,9 @@ return;
 	    SplineChar *sc;
 	    for ( refs = paster->u.state.refs; refs!=NULL; refs=refs->next ) {
 		if ( cv->searcher!=NULL )
-		    sc = FindCharacter(cv->searcher->fv->sf,refs);
+		    sc = FindCharacter(cv->searcher->fv->sf,paster->u.state.copied_from,refs);
 		else {
-		    sc = FindCharacter(cvsc->parent,refs);
+		    sc = FindCharacter(cvsc->parent,paster->u.state.copied_from,refs);
 		    if ( sc!=NULL && SCDependsOnSC(sc,cvsc)) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 			GWidgetErrorR(_STR_SelfRef,_STR_AttemptSelfRef);
@@ -2257,9 +2249,9 @@ return;
 	    SplinePointList *new, *spl;
 	    for ( refs = paster->u.state.refs; refs!=NULL; refs=refs->next ) {
 		if ( cv->searcher!=NULL )
-		    sc = FindCharacter(cv->searcher->fv->sf,refs);
+		    sc = FindCharacter(cv->searcher->fv->sf,paster->u.state.copied_from,refs);
 		else
-		    sc = FindCharacter(cvsc->parent,refs);
+		    sc = FindCharacter(cvsc->parent,paster->u.state.copied_from,refs);
 		if ( sc!=NULL ) {
 		    new = SplinePointListTransform(SplinePointListCopy(sc->layers[ly_back].splines),refs->transform,true);
 		    SplinePointListSelect(new,true);
