@@ -682,7 +682,10 @@ return(true);
 	    hd->cv->sc->vconflicts = StemListAnyConflicts(hd->cv->sc->vstem);
 	}
 	hd->cv->sc->manualhints = true;
-	SCClearHintMasks(hd->cv->sc,true);
+	if ( h!=NULL && hd->cv->sc->parent->mm==NULL )
+	    SCModifyHintMasksAdd(hd->cv->sc,h);
+	else
+	    SCClearHintMasks(hd->cv->sc,true);
 	SCOutOfDateBackground(hd->cv->sc);
 	SCUpdateAll(hd->cv->sc);
 	hd->done = true;
