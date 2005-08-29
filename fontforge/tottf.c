@@ -2860,9 +2860,10 @@ void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *sf,char *fontname) {
 	samewid = CIDOneWidth(sf);
 
 	pfminfo->pfmfamily = 0x10;
-	if ( samewid>0 )
+	if ( samewid>0 ) {
 	    pfminfo->pfmfamily = 0x30;
-	else if ( strstrmatch(fontname,"sans")!=NULL )
+	    /* pfminfo->panose[3] = 9; */ /* This is done later */
+	} else if ( strstrmatch(fontname,"sans")!=NULL )
 	    pfminfo->pfmfamily = 0x20;
 	else if ( strstrmatch(fontname,"script")!=NULL ) {
 	    pfminfo->pfmfamily = 0x40;
@@ -2979,8 +2980,17 @@ void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]) {
 	else if ( sf->glyphs[i]->unicodeenc==0x2665 && has_ascii )
 	    CodePage[0] |= 1U<<30;		/* OEM */
 #if 0	/* the symbol bit doesn't mean it contains the glyphs in symbol */
-	/* rather that one is using a symbol encoding. */
+	/* rather that one is using a symbol encoding. Or that there are */
+	/* glyphs with unicode encoding between 0xf000 and 0xf0ff, in which */
+	/* case those guys should be given a symbol encoding */
+	/* There's a bug in the way otf fonts handle this (but not ttf) and */
+	/*  they only seem to list the symbol glyphs */
 	else if ( sf->glyphs[i]->unicodeenc==0x21d4 )
+	    CodePage[0] |= 1U<<31;		/* symbol */
+#else
+	/* This doesn't work well either. In ttf fonts the bit is ignored */
+	/*  in otf fonts the bit means "ignore all other bits" */
+	else if ( sf->glyphs[i]->unicodeenc>=0xf000 && sf->glyphs[i]->unicodeenc<=0xf0ff )
 	    CodePage[0] |= 1U<<31;		/* symbol */
 #endif
 	else if ( sf->glyphs[i]->unicodeenc==0xc3 && has_ascii )
