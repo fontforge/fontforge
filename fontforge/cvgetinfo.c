@@ -88,7 +88,7 @@ typedef struct gidata {
 #define CID_Delete	3013
 #define CID_New		3014
 
-#define RI_Width	215
+#define RI_Width	225
 #define RI_Height	180
 
 #define II_Width	130
