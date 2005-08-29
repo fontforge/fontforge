@@ -2800,7 +2800,7 @@ static SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags,int is_s
     if ( !is_stroked ) {
 
 	if ( *flags==-1 ) {
-	    for ( ent=ec->splines; ent!=NULL; ent = next ) {
+	    for ( ent=ec->splines; ent!=NULL; ent = ent->next ) {
 		if ( ent->type == et_splines &&
 			(ent->u.splines.fill.col==0xffffff ||
 			 (ent->u.splines.stroke_width!=0 && ent->u.splines.stroke.col!=0xffffffff))) {
