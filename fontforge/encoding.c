@@ -2379,7 +2379,9 @@ EncMap *EncMapFromEncoding(SplineFont *sf,Encoding *enc) {
 return( NULL );
 
     base = enc->char_cnt;
-    if ( enc->char_cnt<=256 )
+    if ( enc->is_original )
+	base = 0;
+    else if ( enc->char_cnt<=256 )
 	base = 256;
     else if ( enc->char_cnt<=0x10000 )
 	base = 0x10000;
