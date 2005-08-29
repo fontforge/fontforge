@@ -188,6 +188,7 @@ struct unicoderange {
 	/* Boundary between private and corporate use is not fixed */
 	/*  these should be safe... */
     { "Corporate Use", 0xf500, 0xf8ff, 0xf730 },
+    { "MicroSoft Symbol Area", 0xf000, 0xf0ff, 0xf020 },
     { "CJK Compatibility Ideographs", 0xf900, 0xfaff, 0xf900 },
     { "Alphabetic Presentation Forms", 0xfb00, 0xfb4f, 0xfb00 },
     { "Latin Ligatures", 0xfb00, 0xfb05, 0xfb00 },
