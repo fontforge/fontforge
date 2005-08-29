@@ -2978,8 +2978,11 @@ void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]) {
 	    CodePage[0] |= 1U<<29;		/* mac roman */
 	else if ( sf->glyphs[i]->unicodeenc==0x2665 && has_ascii )
 	    CodePage[0] |= 1U<<30;		/* OEM */
+#if 0	/* the symbol bit doesn't mean it contains the glyphs in symbol */
+	/* rather that one is using a symbol encoding. */
 	else if ( sf->glyphs[i]->unicodeenc==0x21d4 )
 	    CodePage[0] |= 1U<<31;		/* symbol */
+#endif
 	else if ( sf->glyphs[i]->unicodeenc==0xc3 && has_ascii )
 	    CodePage[1] |= 1<<18;		/* MS-DOS Nordic */
 	else if ( sf->glyphs[i]->unicodeenc==0xe9 && has_ascii )
