@@ -5333,8 +5333,8 @@ return(true);
 		sf->pfminfo.fstype |=0x200;
 	    for ( i=0; i<10; ++i )
 		sf->pfminfo.panose[i] = (int) (GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_PanFamily+i))->userdata);
-	    if ( sf->pfminfo.hiddenset )
-		sf->pfminfo.os2_typolinegap += linegap-sf->pfminfo.linegap;
+	    sf->pfminfo.hiddenset = false;
+	    sf->pfminfo.os2_typolinegap = linegap;
 	    sf->pfminfo.linegap = linegap;
 	    if ( vmetrics )
 		sf->pfminfo.vlinegap = vlinegap;
