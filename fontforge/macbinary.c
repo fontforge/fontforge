@@ -29,7 +29,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <math.h>
-#include <utype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <time.h>
@@ -37,7 +36,7 @@
 #include "ttf.h"
 #include "psfont.h"
 #if __Mac
-# include <MacFiles.h>
+# include </Developer/Headers/FlatCarbon/Files.h>
 #else
 #undef __Mac
 #define __Mac 0

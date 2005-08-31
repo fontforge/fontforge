@@ -105,4 +105,5 @@ extern void GIOSetDefAuthorizer(int32 (*getauth)(struct giocontrol *));
 extern void GIOSetUserAgent(unichar_t *agent);
 
 extern unichar_t *GIOguessMimeType(const unichar_t *path,int isdir);
+extern unichar_t *_GioMacMime(const char *path);
 #endif
