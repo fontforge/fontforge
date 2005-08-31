@@ -466,7 +466,7 @@ return;
     } else
 	GGadgetSetTitle(p->explaintext,GStringGetResource(explain,NULL));
     p->explaining = explain;
-    fixable = explain==/*_STR_ProbHintHWidth || explain==_STR_ProbHintVWidth ||*/
+    fixable = /*explain==_STR_ProbHintHWidth || explain==_STR_ProbHintVWidth ||*/
 	    explain==_STR_ProbFlippedRef ||
 	    explain==_STR_ProbXNear || explain==_STR_ProbPtNearVHint ||
 	    explain==_STR_ProbYNear || explain==_STR_ProbPtNearHHint ||
