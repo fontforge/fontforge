@@ -2178,7 +2178,7 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map) {
 
     familyname = sf->cidmaster ? sf->cidmaster->familyname : sf->familyname;
     header.family[0] = strlen(familyname);
-    if ( header.family[0]>19 ) {
+    if ( header.family[0]>=19 ) {
 	header.family[0] = 19;
 	memcpy(header.family+1,familyname,19);
     } else
