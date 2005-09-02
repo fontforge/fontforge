@@ -1111,7 +1111,7 @@ for ( ii=0; ii<sp; ++ii )
  else if ( stack[ii].type==ps_array )
   printf( "--[]-- " );
  else
-  printf( "--???-- " );
+  printf( "--" "???" "-- " );
 printf( "-%s-\n", toknames[tok]);
 #endif
 	if ( tok==pt_unknown ) {

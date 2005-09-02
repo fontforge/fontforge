@@ -405,7 +405,7 @@ static void PrintVal(Val *val) {
     else if ( val->type==v_void )
 	printf( "<void>");
     else
-	printf( "<???>");	/* ANSI might think this a trigraph */
+	printf( "<" "???" ">");
 }
 
 static void bPrint(Context *c) {
@@ -972,7 +972,7 @@ return( ret );
     else if ( val->type==v_void )
 	sprintf( buffer, "<void>");
     else
-	sprintf( buffer, "<???>");	/* ANSI might think this a trigraph */
+	sprintf( buffer, "<" "???" ">");
 return( copy( buffer ));
 }
 
@@ -6090,7 +6090,7 @@ static void docall(Context *c,char *name,Val *val) {
 		else if ( args[i].type == v_void )
 		    printf( "<void>");
 		else
-		    printf( "<???>");	/* ANSI might thing this a trigraph */
+		    printf( "<" "???" ">");
 	    }
 	    printf(")\n");
 	}
