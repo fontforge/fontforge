@@ -63,7 +63,7 @@ static uint8 textmake_data[] = {
 };
 
 static GClut textmake_clut = { 4, 0, 0,
-    0xffffff, 0x0, 0x444444, 0xff0000 };
+    { 0xffffff, 0x0, 0x444444, 0xff0000 } };
 
 static struct _GImage textmake_base = {
     it_index,
@@ -109,7 +109,7 @@ static uint8 textc0_data[] = {
 };
 
 static GClut textc0_clut = { 5, 0, 0,
-    0xffffff, 0x0, 0x444444, 0xd0d0ff, 0x0000ff };
+    { 0xffffff, 0x0, 0x444444, 0xd0d0ff, 0x0000ff } };
     
 static struct _GImage textc0_base = {
     it_index,
@@ -155,7 +155,7 @@ static uint8 image0_data[] = {
 };
 
 static GClut image0_clut = { 8, 0, 0,
-    0xffffff, 0x20a020, 0x0, 0x808080, 0x8000, 0xc0c0ff, 0xffffff, 0xffff00 };
+    { 0xffffff, 0x20a020, 0x0, 0x808080, 0x8000, 0xc0c0ff, 0xffffff, 0xffff00 } };
 
 static struct _GImage image0_base = {
     it_index,
@@ -588,7 +588,7 @@ static uint8 textjava0_data[] = {
 };
 
 static GClut textjava0_clut = { 6, 0, 0,
-    0xffffff, 0xbbbbbb, 0x777777, 0x0, 0x444444, 0x8080ff };
+    { 0xffffff, 0xbbbbbb, 0x777777, 0x0, 0x444444, 0x8080ff } };
 
 static struct _GImage textjava0_base = {
     it_index,
@@ -877,7 +877,7 @@ static uint8 ttf0_data[] = {
 };
 
 static GClut ttf0_clut = { 2, 0, 1,
-    0x0, 0xb0b0b0 };
+    { 0x0, 0xb0b0b0 } };
 
 static struct _GImage ttf0_base = {
     it_mono,
@@ -888,7 +888,7 @@ static struct _GImage ttf0_base = {
 };
 
 static GClut macttf_clut = { 2, 0, 1,
-    0xff, 0xffffff };
+    { 0xff, 0xffffff } };
 
 static struct _GImage macttf0_base = {
     it_mono,
@@ -988,8 +988,8 @@ static uint8 tar0_data[] = {
 };
 
 static GClut tar0_clut = { 16, 0, 0,
-    0xffffff, 0xff0000, 0xa0a0ff, 0x8080ff, 0x0, 0xc0c0ff, 0x6060ff, 0x4040ff, 
-    0xffffff, 0xffffff, 0xffffff, 0xffffff, 0xffffff, 0xffffff, 0xffffff, 0xffffff };
+    { 0xffffff, 0xff0000, 0xa0a0ff, 0x8080ff, 0x0, 0xc0c0ff, 0x6060ff, 0x4040ff, 
+    0xffffff, 0xffffff, 0xffffff, 0xffffff, 0xffffff, 0xffffff, 0xffffff, 0xffffff } };
 
 static struct _GImage tar0_base = {
     it_index,
@@ -1035,8 +1035,8 @@ static uint8 compressed0_data[] = {
 };
 
 static GClut compressed0_clut = { 16, 0, 0,
-    0xffffff, 0x0, 0x3030, 0xff0000, 0xc0c0c0, 0xa0a0ff, 0x8080ff, 0x808080, 
-    0xc0c0ff, 0x4040ff, 0xffffff, 0xffffff, 0xffffff, 0xffffff, 0xffffff, 0xffffff };
+    { 0xffffff, 0x0, 0x3030, 0xff0000, 0xc0c0c0, 0xa0a0ff, 0x8080ff, 0x808080, 
+    0xc0c0ff, 0x4040ff, 0xffffff, 0xffffff, 0xffffff, 0xffffff, 0xffffff, 0xffffff } };
 
 static struct _GImage compressed0_base = {
     it_index,
@@ -1046,28 +1046,28 @@ static struct _GImage compressed0_base = {
     0x0
 };
 
-GImage _GIcon_compressed = { 0, &compressed0_base };
-GImage _GIcon_tar = { 0, &tar0_base };
-GImage _GIcon_ttf = { 0, &ttf0_base };
-GImage _GIcon_unknown = { 0, &unknown0_base };
-GImage _GIcon_texthtml = { 0, &texthtml0_base };
-GImage _GIcon_textxml = { 0, &textxml0_base };
-GImage _GIcon_textcss = { 0, &textcss0_base };
-GImage _GIcon_textjava = { 0, &textjava0_base };
-GImage _GIcon_textfontsfd = { 0, &textfontsfd0_base };
-GImage _GIcon_textfontbdf = { 0, &textbdf0_base };
-GImage _GIcon_textfontps = { 0, &textfontps0_base };
-GImage _GIcon_textps = { 0, &textps0_base };
-GImage _GIcon_textplain = { 0, &textplain0_base };
-GImage _GIcon_textc = { 0, &textc0_base };
-GImage _GIcon_textmake = { 0, &textmake_base };
-GImage _GIcon_object = { 0, &object0_base };
-GImage _GIcon_updir = { 0, &updir0_base };
-GImage _GIcon_dir = { 0, &dir0_base };
-GImage _GIcon_core = { 0, &core0_base };
-GImage _GIcon_image = { 0, &image0_base };
-GImage _GIcon_video = { 0, &video0_base };
-GImage _GIcon_audio = { 0, &audio0_base };
-GImage _GIcon_cid = { 0, &cid0_base };
-GImage _GIcon_mac = { 0, &mac_base };
-GImage _GIcon_macttf = { 0, &macttf0_base };
+GImage _GIcon_compressed = { 0, { &compressed0_base } };
+GImage _GIcon_tar = { 0, { &tar0_base } };
+GImage _GIcon_ttf = { 0, { &ttf0_base } };
+GImage _GIcon_unknown = { 0, { &unknown0_base } };
+GImage _GIcon_texthtml = { 0, { &texthtml0_base } };
+GImage _GIcon_textxml = { 0, { &textxml0_base } };
+GImage _GIcon_textcss = { 0, { &textcss0_base } };
+GImage _GIcon_textjava = { 0, { &textjava0_base } };
+GImage _GIcon_textfontsfd = { 0, { &textfontsfd0_base } };
+GImage _GIcon_textfontbdf = { 0, { &textbdf0_base } };
+GImage _GIcon_textfontps = { 0, { &textfontps0_base } };
+GImage _GIcon_textps = { 0, { &textps0_base } };
+GImage _GIcon_textplain = { 0, { &textplain0_base } };
+GImage _GIcon_textc = { 0, { &textc0_base } };
+GImage _GIcon_textmake = { 0, { &textmake_base } };
+GImage _GIcon_object = { 0, { &object0_base } };
+GImage _GIcon_updir = { 0, { &updir0_base } };
+GImage _GIcon_dir = { 0, { &dir0_base } };
+GImage _GIcon_core = { 0, { &core0_base } };
+GImage _GIcon_image = { 0, { &image0_base } };
+GImage _GIcon_video = { 0, { &video0_base } };
+GImage _GIcon_audio = { 0, { &audio0_base } };
+GImage _GIcon_cid = { 0, { &cid0_base } };
+GImage _GIcon_mac = { 0, { &mac_base } };
+GImage _GIcon_macttf = { 0, { &macttf0_base } };
