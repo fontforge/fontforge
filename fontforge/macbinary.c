@@ -32,12 +32,14 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <time.h>
-#include "ustring.h"
+#include <ustring.h>
 #include "ttf.h"
 #include "psfont.h"
 #if __Mac
+# include <ctype.h>
 # include </Developer/Headers/FlatCarbon/Files.h>
 #else
+# include <utype.h>
 #undef __Mac
 #define __Mac 0
 #endif
