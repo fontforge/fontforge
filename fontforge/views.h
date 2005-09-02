@@ -70,8 +70,8 @@ typedef struct pressedOn {
     unsigned int nextcp: 1;	/* Is the cursor on the "next" control point of */
     unsigned int prevcp: 1;	/*  the spline point, or the "prev" control point */
     unsigned int anysel: 1;	/* did we hit anything? */
-/*    unsigned int width: 1;	/* we're moving the width rather than a spline */
-/*    unsigned int vwidth: 1;	/* we're moving the width rather than a spline */
+/*    unsigned int width: 1;	/ * we're moving the width rather than a spline */
+/*    unsigned int vwidth: 1;	/ * we're moving the width rather than a spline */
     unsigned int pressed: 1;
     unsigned int rubberbanding: 1;
     unsigned int rubberlining: 1;
