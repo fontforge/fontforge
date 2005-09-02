@@ -4496,7 +4496,7 @@ static void bWorthOutputting(Context *c) {
     EncMap *map = c->curfv->map;
     int gid;
 
-    if ( c->a.argc!=2 )
+    if ( c->a.argc!=2 && c->a.argc!=1 )
 	error( c, "Wrong number of arguments");
     c->return_val.type = v_int;
     if ( c->a.argc==1 ) {
