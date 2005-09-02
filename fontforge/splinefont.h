@@ -116,7 +116,7 @@ struct pen {
 
 struct spline;
 enum si_type { si_std, si_caligraphic, si_elipse, si_centerline };
-/* If you change this structure you may need to update MakeStrokeDlg
+/* If you change this structure you may need to update MakeStrokeDlg */
 /*  and cvpalettes.c both contain statically initialized StrokeInfos */
 typedef struct strokeinfo {
     real radius;			/* or major axis of pen */
@@ -1534,6 +1534,7 @@ extern void MDAdd(SplineChar *sc, int x, SplinePoint *sp1, SplinePoint *sp2);
 extern int SFNeedsAutoHint( SplineFont *_sf);
 extern void SCAutoInstr( SplineChar *sc,BlueData *bd );
 extern void SCModifyHintMasksAdd(SplineChar *sc,StemInfo *new);
+extern void SCClearHints(SplineChar *sc);
 extern void SCClearHintMasks(SplineChar *sc,int counterstoo);
 extern void SCFigureVerticalCounterMasks(SplineChar *sc);
 extern void SCFigureCounterMasks(SplineChar *sc);
