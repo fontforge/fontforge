@@ -69,9 +69,9 @@ return( *str==ch );
 static void padvalue(struct state *state,int arg,unichar_t *txt,int fieldwidth) {
     int len=0, padc;
 
+    padc = state->args[arg].is_zeropad?'0':' ';
     if ( fieldwidth>0 ) {
 	len = u_strlen(txt);
-	padc = state->args[arg].is_zeropad?'0':' ';
 	if ( !state->args[arg].is_leftadj ) {
 	    while ( len<fieldwidth ) {
 		addchar(state,padc);
