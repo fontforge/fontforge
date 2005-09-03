@@ -740,7 +740,7 @@ static void ApproxBounds(DBounds *b,TPoint *mid, int cnt) {
 /*  which held the slopes constant. But that didn't work very well. So instead*/
 /*  I'm doing the approximation, and then forcing the control points to be */
 /*  in line (witht the original slopes), getting a better approximation to */
-/*  "t" for each data point and then calculating an error array, approximating
+/*  "t" for each data point and then calculating an error array, approximating*/
 /*  it, and using that to fix up the final result */
 /* This still isn't as good as I'd like it... But I haven't been able to */
 /*  improve it further yet */

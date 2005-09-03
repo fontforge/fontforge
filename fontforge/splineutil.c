@@ -42,9 +42,9 @@ typedef struct quartic {
 /* In an attempt to make allocation more efficient I just keep preallocated */
 /*  lists of certain common sizes. It doesn't seem to make much difference */
 /*  when allocating stuff, but does when freeing. If the extra complexity */
-/*  is bad then put:
-/*	#define chunkalloc(size)	gcalloc(1,size)
-/*	#define chunkfree(item,size)	free(item)
+/*  is bad then put:							  */
+/*	#define chunkalloc(size)	gcalloc(1,size)			  */
+/*	#define chunkfree(item,size)	free(item)			  */
 /*  into splinefont.h after (or instead of) the definition of chunkalloc()*/
 
 #ifndef chunkalloc
