@@ -1098,6 +1098,7 @@ static void *copybufferPosSub2str(void *_copybuffer,int32 *len) {
 	*len=0;
 return( copy(""));
     }
+    lcnt = size = 0;
     for ( otherpsts = cur; otherpsts!=NULL; otherpsts = otherpsts->u.possub.more_pst )
 	for ( lcnt=size=0; otherpsts->u.possub.data[lcnt]!=NULL; ++lcnt )
 	    size += strlen(otherpsts->u.possub.data[lcnt])+1;

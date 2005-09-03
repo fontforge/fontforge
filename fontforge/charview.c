@@ -1222,7 +1222,8 @@ return;
 		sprintf(buf,"#%d", ap->lig_index);
 		uc_strcat(ubuf,buf);
 		name = ubuf;
-	    }
+	    } else
+		name = NULL;		/* Should never happen */
 	    len = GDrawGetTextWidth(pixmap,name,-1,NULL);
 	    r.x = x-len/2; r.width = len;
 	    r.y = y+7; r.height = cv->nfh;
@@ -4231,7 +4232,7 @@ static void CVMenuFindProblems(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void CVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-#ifdef TEST
+#ifdef GWW_TEST
     extern int ChangeWeight(SplineChar *sc,double factor,double add);
     ChangeWeight(cv->sc,2.0,25);
 #else
@@ -5851,7 +5852,7 @@ static void CVMenuCleanupGlyph(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 static void _CVMenuMakeFirst(CharView *cv) {
-    SplinePoint *selpt;
+    SplinePoint *selpt = NULL;
     int anypoints = 0, splinepoints;
     SplinePointList *spl, *sel;
     Spline *spline, *first;
@@ -7142,6 +7143,7 @@ static void mvlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	memcpy(mml,mvlist,sizeof(mvlist));
 	mml[base-1].ti.fg = mml[base-1].ti.bg = COLOR_DEFAULT;
 	mml[base-1].ti.line = true;
+	submask = 0;
 	for ( j = 0, i=base; j<mm->instance_count+1; ++i, ++j ) {
 	    if ( j==0 )
 		sub = mm->normal;

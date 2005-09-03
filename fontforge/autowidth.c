@@ -774,6 +774,7 @@ static void FindFontParameters(WidthInfo *wi) {
 	stemx = SCFindMinXAtY(sf->glyphs[si],ytop);
 	if ( topx==bottomx ) {
 	    ca = 0;
+	    yorig = 0;	/* Irrelevant because we will multiply it by 0, but makes gcc happy */
 	    while ( ytop-ybottom>=.5 ) {
 		y = (ytop+ybottom)/2;
 		testx = SCFindMinXAtY(sf->glyphs[si],y);
@@ -1572,8 +1573,7 @@ return( true );
 
 #define SelHeight	34
 static int MakeSelGadgets(GGadgetCreateData *gcd, GTextInfo *label,
-	int i, int base, int labr, int y, int pixel_width, GWindow gw,
-	int toomany, int autokern ) {
+	int i, int base, int labr, int y, int toomany, int autokern ) {
     int std = !autokern ? _STR_StdGlyphRange :
 		base==CID_Left ? _STR_StdGlyphRangeKernL :
 		_STR_StdGlyphRangeKernR;
@@ -1678,10 +1678,10 @@ static void AutoWKDlg(FontView *fv,int autokern) {
     gcd[i++].creator = GLabelCreate;
 
     i = MakeSelGadgets(gcd, label, i, CID_Left, _STR_GlyphsLeft, 33,
-	    pos.width, gw, toomany, autokern );
+	    toomany, autokern );
     selfield = i-1;
     i = MakeSelGadgets(gcd, label, i, CID_Right, _STR_GlyphsRight, 33+SelHeight+9,
-	    pos.width, gw, toomany, autokern );
+	    toomany, autokern );
     y = 32+2*(SelHeight+9);
 
     label[i].text = (unichar_t *) _STR_Spacing;
