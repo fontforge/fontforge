@@ -55,7 +55,7 @@
 /*   than keeping them as sub-sections of the original. Unfortunately this   */
 /*   splitting introduced rounding errors which meant that we got more       */
 /*   intersections, which meant that splines could be both needed and un.    */
-/*   so I don't do that until later)
+/*   so I don't do that until later)					     */
 /*  if the spline hasn't been tagged yet:				     */
 /*   does the spline change greater in x or y?				     */
 /*   draw a line parallel to the OTHER axis which hits our spline and doesn't*/

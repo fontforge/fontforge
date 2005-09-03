@@ -60,7 +60,7 @@ const int mac_dpi = 72;
 /*    then 256-16 bytes of zeros */
 /*    the resource section consists of (many) */
 /*	4 byte length count */
-/*	resource data
+/*	resource data	*/
 /*    the map section contains */
 /*	A copy of the 16 byte header */
 /*	a 4 byte mac internal value (I hope) */
@@ -96,7 +96,7 @@ const int mac_dpi = 72;
 /*	(which specifies lengths for data/resource forks) */
 /*	(and contains mac type/creator data) */
 /*	(and other stuff) */
-/*	(and finally a crc checksum)
+/*	(and finally a crc checksum) */
 /*    is followed by the data section (padded to a mult of 128 bytes) */
 /*    is followed by the resource section (padded to a mult of 128 bytes) */
 
@@ -383,7 +383,7 @@ static uint32 BDFToNFNT(FILE *res, BDFFont *bdf, EncMap *map) {
 		!SCWorthOutputting(bdf->glyphs[gid]->sc) ) {
 	    lbearings[i] = 0xff;
 	    widths[i] = 0xff;
-	    /*idealwidths[i] = 1<<12;		/* 1 em */
+	    /*idealwidths[i] = 1<<12; */		/* 1 em */
 	} else {
 	    lbearings[i] = bdf->glyphs[gid]->xmin-kernMax;
 	    widths[i] = bdf->glyphs[gid]->width<0?0:
