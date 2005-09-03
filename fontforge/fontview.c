@@ -1423,7 +1423,14 @@ static void FVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 void FontViewMenu_MetaFont(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
+#ifdef GWW_TEST
+    extern int ChangeWeight(SplineChar *sc,double factor,double add);
+    int i, gid;
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] && (gid=fv->map->map[i])!=-1 && fv->sf->glyphs[gid]!=NULL )
+	ChangeWeight(fv->sf->glyphs[gid],2.0,25);
+#else
     MetaFont(fv,NULL,NULL);
+#endif
 }
 
 # ifdef FONTFORGE_CONFIG_GDRAW
@@ -2527,6 +2534,8 @@ void FontViewMenu_AATSuffix(GtkMenuItem *menuitem, gpointer user_data) {
     for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] && (gid=fv->map->map[i])!=-1 && fv->sf->glyphs[gid]!=NULL )
 	if ( SCScriptFromUnicode(fv->sf->glyphs[gid])!=DEFAULT_SCRIPT )
     break;
+    if ( i==fv->map->enccount )
+return;
     usuffix = AskNameTag(_STR_SuffixToTag,NULL,0,0,-1,pst_substitution,fv->sf,fv->sf->glyphs[gid],-1,-1);
     if ( usuffix==NULL )
 return;
@@ -2537,12 +2546,12 @@ return;
     tag |= (*upt++&0xff)<< 8;
     tag |= (*upt++&0xff)    ;
     if ( *upt==' ' ) ++upt;
+    flags = 0;
     if (( upt[0]=='b' || upt[0]==' ' ) &&
 	    ( upt[1]=='l' || upt[1]==' ' ) &&
 	    ( upt[2]=='m' || upt[2]==' ' ) &&
 	    ( upt[3]=='m' || upt[3]==' ' ) &&
 	    upt[4]==' ' ) {
-	flags = 0;
 	if ( upt[0]=='r' ) flags |= pst_r2l;
 	if ( upt[1]=='b' ) flags |= pst_ignorebaseglyphs;
 	if ( upt[2]=='l' ) flags |= pst_ignoreligatures;
@@ -2877,7 +2886,7 @@ void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
 
 	if ( onlycopydisplayed && fv->show!=fv->filled ) {
 	    if ( fv->show->glyphs[gid]!=NULL )
-		BCTrans(bdf,fv->show->glyphs[gid],bvts,fv);
+		BCTrans(fv->show,fv->show->glyphs[gid],bvts,fv);
 	} else {
 	    if ( otype==1 ) {
 		SplineCharFindBounds(sc,&bb);
@@ -4978,17 +4987,7 @@ static void FVClearHints(FontView *fv) {
 	SplineChar *sc = fv->sf->glyphs[gid];
 	sc->manualhints = true;
 	SCPreserveHints(sc);
-	SCClearHintMasks(sc,true);
-	StemInfosFree(sc->hstem);
-	StemInfosFree(sc->vstem);
-	sc->hstem = sc->vstem = NULL;
-	sc->hconflicts = sc->vconflicts = false;
-	DStemInfosFree(sc->dstem);
-	sc->dstem = NULL;
-	MinimumDistancesFree(sc->md);
-	sc->md = NULL;
-	SCClearRounds(sc);
-	SCOutOfDateBackground(sc);
+	SCClearHints(sc);
 	SCUpdateAll(sc);
 #if 0
 	if ( !GProgressNext())
