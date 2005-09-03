@@ -762,6 +762,7 @@ void CVToolsSetCursor(CharView *cv, int state, char *device) {
 	tools[cvt_minify] = ct_magminus;
     }
 
+    shouldshow = cvt_none;
     if ( cv->active_tool!=cvt_none )
 	shouldshow = cv->active_tool;
     else if ( cv->pressed_display!=cvt_none )
@@ -2720,6 +2721,7 @@ void BVToolsSetCursor(BitmapView *bv, int state,char *device) {
 	tools[bvt_filledelipse] = ct_filledelipse;
     }
 
+    shouldshow = bvt_none;
     if ( bv->active_tool!=bvt_none )
 	shouldshow = bv->active_tool;
     else if ( bv->pressed_display!=bvt_none )
