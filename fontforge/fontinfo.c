@@ -2127,7 +2127,6 @@ return( true );
 
 static int MCD_InvalidClassList(const unichar_t *ret,char **classes, unichar_t **names,
 	int nclass, int which) {
-    int32 len;
     const unichar_t *pt, *end;
     char *tpt, *tend;
     int i;
@@ -2138,7 +2137,7 @@ static int MCD_InvalidClassList(const unichar_t *ret,char **classes, unichar_t *
     break;
 	end = u_strchr(pt,' ');
 	if ( end==NULL ) end = pt+u_strlen(pt);
-	for ( i=1; i<len; ++i ) {
+	for ( i=1; classes[i]!=NULL; ++i ) {
 	    if ( which==i )
 	continue;
 	    for ( tpt=classes[i]; *tpt; tpt = tend ) {
@@ -4989,7 +4988,7 @@ return( false );
 }
 
 static void ttfuniqueidfixup(SplineFont *sf,struct gfi_data *d) {
-    struct ttflangname *tln, *dtln;
+    struct ttflangname *tln;
     unichar_t *changed = NULL;
     int i;
 
@@ -5012,10 +5011,12 @@ return;
 	    if ( i==d->tn_cnt )
 	continue;
 	    if ( u_strcmp(tln->names[ttf_uniqueid],d->ttfnames[i].str)!=0 ) {
-		changed = u_copy(dtln->names[ttf_uniqueid]);
+		changed = u_copy(d->ttfnames[i].str);
 	break;
 	    }
 	}
+	/* All unique ids should be the same, if any changed set the unchanged */
+	/*  ones to the one that did (or the first of many if several changed) */
 	for ( tln = sf->names; tln!=NULL; tln=tln->next ) {
 	    if ( tln->names[ttf_uniqueid]==NULL )
 	continue;
