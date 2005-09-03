@@ -3178,7 +3178,7 @@ return( NULL );
 	}
     }
 
-    if ( cnt==0 )		/* No offset overflows
+    if ( cnt==0 )		/* No offset overflows */
 return( NULL );
 
     /* Now we've worked out which lookups need extension tables and marked them*/
