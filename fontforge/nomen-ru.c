@@ -500,7 +500,6 @@ static char *str_Encoding2 = "Кодировка";
 static char *str_PSGeneral = "Общее";
 static char *str_PSPrivate = "PS Приватное";
 static char *str_TTFNames = "Названия TTF";
-static char *str_TTFValues = "Значения TTF";
 static char *str_Panose = "Panose";
 static char *str_Comment = "Комментарий";
 static char *str_InvalidEncoding = "Неправильная кодировка";

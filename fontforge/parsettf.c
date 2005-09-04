@@ -4054,8 +4054,10 @@ static void readttfos2metrics(FILE *ttf,struct ttfinfo *info) {
     info->pfminfo.os2_winascent = getushort(ttf);
     info->pfminfo.os2_windescent = getushort(ttf);
     info->pfminfo.winascent_add = info->pfminfo.windescent_add = false;
+    info->pfminfo.typoascent_add = info->pfminfo.typodescent_add = false;
     info->pfminfo.pfmset = true;
-    info->pfminfo.hiddenset = true;
+    info->pfminfo.panose_set = true;
+    info->pfminfo.subsuper_set = true;
 }
 
 static int cmapEncFromName(struct ttfinfo *info,const char *nm, int glyphid) {
@@ -4728,7 +4730,7 @@ static void MMFillFromVAR(SplineFont *sf, struct ttfinfo *info) {
 }
 
 static void SFRelativeWinAsDs(SplineFont *sf) {
-    if ( !sf->pfminfo.winascent_add || sf->pfminfo.windescent_add ||
+    if ( !sf->pfminfo.winascent_add || !sf->pfminfo.windescent_add ||
 	    !sf->pfminfo.hheadascent_add || !sf->pfminfo.hheaddescent_add ) {
 	DBounds b;
 	CIDFindBounds(sf,&b);
@@ -4754,6 +4756,14 @@ static void SFRelativeWinAsDs(SplineFont *sf) {
 	    sf->pfminfo.hheaddescent_add = true;
 	    sf->pfminfo.hhead_descent -= b.miny;
 	}
+    }
+    if ( !sf->pfminfo.typoascent_add ) {
+	sf->pfminfo.typoascent_add = true;
+	sf->pfminfo.os2_typoascent -= sf->ascent;
+    }
+    if ( !sf->pfminfo.typodescent_add  ) {
+	sf->pfminfo.typodescent_add = true;
+	sf->pfminfo.os2_typodescent -= -sf->descent;
     }
 }
 

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 9-Aug-2005 -->
+  <!-- AP: Last modified: 4-Sep-2005 -->
   <TITLE>Font Info</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -27,11 +27,19 @@ of many different sub dialogs.
   <LI>
     <A HREF="fontinfo.html#Private">PostScript Private Dictionary</A>
   <LI>
-    <A HREF="fontinfo.html#TTF-Values">TTF Values</A>
+    <A HREF="fontinfo.html#TTF-Values">OS/2</A>
+    <UL>
+      <LI>
+	<A HREF="fontinfo.html#TTF-Values">OS/2 Misc</A>
+      <LI>
+	<A HREF="fontinfo.html#TTF-Metrics">OS/2 Metrics</A>
+      <LI>
+	<A HREF="#SubSuper">OS/2 Sub/Superscripts</A>
+      <LI>
+	<A HREF="fontinfo.html#Panose">OS/2 Panose</A>
+    </UL>
   <LI>
     <A HREF="fontinfo.html#TTF-Names">TTF Names</A>
-  <LI>
-    <A HREF="fontinfo.html#Panose">Panose</A>
   <LI>
     <A HREF="fontinfo.html#TeX">TeX</A>
   <LI>
@@ -237,10 +245,13 @@ They perform the same function but are formatted differently).
 These entries are only meaningful for PostScript fonts.<BR CLEAR=ALL>
 <H2>
   <IMG SRC="fontinfo-ttfvals.png" WIDTH="376" HEIGHT="608" ALIGN="Right"><A
-      NAME="TTF-Values">TTF Values</A>
+      NAME="TTF-Values">OS/2</A>
 </H2>
 <P>
-This sub dialog contains a few settings important on Windows platforms.
+This sub dialog contains settings important on Windows platforms that live
+in the 'OS/2' table of a truetype or opentype font. The pane also includes
+a few pieces of data that do not live in the 'OS/2' table but are logically
+related.
 <P>
 The weight class provides a numeric value describing the boldness of the
 font. A normal face will usually have a boldness of 400, and a bold face
@@ -264,38 +275,16 @@ of it. Finally you can restrict the embedding so that only bitmap versions
 of the font may be embedded. (meaningful in CID keyed postscript fonts as
 well as TTF and OTF).
 <P>
-The Windows Ascent and Descent fields are badly defined in the OpenType spec,
-which says that they should express the maximum range of the Windows "ANSI"
-glyphs. If one uses this definition, non-"ANSI" glyphs are cropped. These
-should be the maximum range of all glyphs to avoid cropping. But even that
-will not always work. If you have a line with marks which are repositioned
-with GPOS, then the marks may be cropped, so Windows Ascent should include
-the repositioned marks.
+The "Vendor ID" is a four character ASCII field used to identify the creator
+of the font.
 <P>
-This is too complex (and too ill defined) for FontForge to figure out, instead
-FontForge gives you a couple of options.
-<OL>
-  <LI>
-    You may set WinAscent and WinDescent directly. Turn off the "[ ] Is Offset"
-    checkboxes and any value you provide will be used as is.
-  <LI>
-    Or you may specify an offset to be added to the maximum ascent and descent
-    of the font (which FontForge will compute for you when it saves the font).
-    If you don't have any mark to base data, then I recommend that you set the
-    offsets to 0, and check the "[*] Is Offset" checkboxes.
-</OL>
+The IBM Family is another classification scheme for fonts.
 <P>
-Both WinAscent and WinDescent should be positive numbers.
-<P>
-You can also specify the default line gap, or leading between lines.
-<P>
-And if your font has vertical metrics enabled (See General above) you will
-be able to set the default spacing between vertical columns of text. (the
-equivalent to LineGap in vertical text).
+Finally you may order lookups in the GSUB (or morx) table.
 <P>
 These entries are only meaningful in TrueType and OpenType fonts (though
 the Embeddable entry (generally called FSType) will be set on CID keyed fonts
-even if they are not in an OpenType wrapper.<BR Clear=ALL>
+even if they are not in an OpenType wrapper.<BR CLEAR=ALL>
 <H3>
   <CODE><A NAME="Order"><IMG SRC="GSUB-Order.png" WIDTH="185" HEIGHT="294"
       ALIGN="Right">GSUB/morx</A></CODE> Ordering
@@ -314,6 +303,97 @@ claims that the execution of features (actually lookups) will be ordered
 by their appearence in the lookup table, MicroSoft claims that they will
 apply features in the order that they think best. So the order specified
 in the font may be ignored.<BR CLEAR=ALL>
+<H2>
+  <IMG SRC="fontinfo-ttfmetrics.png" WIDTH="376" HEIGHT="608" ALIGN="Right"><A
+      NAME="TTF-Metrics">OS/2 Metrics</A>
+</H2>
+<P>
+The Windows Ascent and Descent fields are badly defined in the OpenType spec,
+which says that they should express the maximum range of the Windows "ANSI"
+glyphs. If one uses this definition, non-"ANSI" glyphs are cropped. These
+should be the maximum range of all glyphs to avoid cropping. But even that
+will not always work. If you have a line with marks which are repositioned
+with GPOS, then the marks may be cropped, so Windows Ascent should include
+the maximum possible height of repositioned marks (or any other GPOS vertical
+repositioning feature).
+<P>
+This is too complex (and too ill defined) for FontForge to figure out, instead
+FontForge gives you a couple of options.
+<OL>
+  <LI>
+    You may set WinAscent and WinDescent directly. Turn off the "[ ] Is Offset"
+    checkboxes and any value you provide will be used as is.
+  <LI>
+    Or you may specify an offset to be added to the maximum ascent and descent
+    of the font (which FontForge will compute for you when it saves the font).
+    If you don't have a mark to base feature, then I recommend that you set the
+    offsets to 0, and check the "[*] Is Offset" checkboxes.
+</OL>
+<P>
+Both WinAscent and WinDescent should be positive numbers.
+<P>
+The Typographic Ascent and Typographic Descent are <EM>supposed</EM> to represent
+the line spacing of the font on the windows platform. Sadly very few applications
+actually use them (most applications use the Windows Ascent/Descent described
+above).
+<P>
+In traditional (Latin) typography, the unleaded line spacing should be 1em,
+and that is what Adobe recommends for these fields (they should sum to the
+Em-Size specified in the <A HREF="fontinfo.html#PS-General">General</A> pane).
+The Typographic Ascent should be the same as the font's Ascent, and the
+Typographic Descent should be the (negative) of the font's descent.
+<P>
+The "[*] Is Offset" checkboxes behave much as they do above, except they
+specify offsets from the font's ascent and descent rather than its bounding
+box.
+<P>
+The Typographic descent should be a negative number, the ascent a positive
+number.
+<P>
+You can also specify the default line gap, or leading between lines.
+<P>
+The mac uses a different set of fields for the same concepts, and stores
+them in the 'hhea' table rather than the 'OS/2'. The HHead Ascent and Descent
+are used to specify clipping (in some applications) and line spacing. They
+behave very much the way the Win Ascent &amp; Descent behave (they are based
+on bounding box values). And the 'hhea' table has its own line gap field.
+<P>
+And if your font has vertical metrics enabled (See
+<A HREF="fontinfo.html#PS-General">General</A> above) you will be able to
+set the default spacing between vertical columns of text. (the equivalent
+to LineGap in vertical text).<BR CLEAR=ALL>
+<H2>
+  <IMG SRC="fontinfo-subsup.png" WIDTH="376" HEIGHT="608" ALIGN="Right"><A
+      NAME="TTF-SubSuper">OS/2 Sub/Superscripts</A>
+</H2>
+<P>
+The OS/2 table also contain information on scaling and positioning subscripts
+and superscripts.
+<P>
+Most fonts don't really need this control. If you leave the [*] Default check
+box on, then FontForge will generate some reasonable values on output (if
+nothing significant changes, it will use the values shown here). If you want
+control of these values, turn off the checkbox and the text fields will be
+enabled for you to change.<BR Clear=ALL>
+<H2>
+  <IMG SRC="fontinfo-panose.png" WIDTH="376" HEIGHT="608" ALIGN="Right"><A
+      NAME="Panose">Panose</A>
+</H2>
+<P>
+This sub-dialog allows you to describe your font in 10 different dimensions.
+The exact meanings of many of these entries vary from script to script, and
+even the Latin ones are not clear to me, I have merely typed them in as specified
+in the <A HREF="http://fonts.apple.com/TTRefMan/RM06/Chap6OS2.html">true
+type docs</A>. Better information is available from
+<A HREF="http://www.panose.com/">HP</A>,
+<A HREF="http://www.agfamonotype.com/hardware/pan1.asp">AGFA</A> and
+<A HREF="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/gdi/fontext_48aa.asp">MS</A>.
+<P>
+If you leave the [*] Default checkbox set then FontForge will generate reasonable
+values when the font is output, otherwise you may set these values manually.
+<P>
+These entries are only meaningful for TrueType, OpenType and SVG
+fonts.<BR Clear=All>
 <H2>
   <IMG SRC="fontinfo-ttfname.png" WIDTH="410" HEIGHT="608" ALIGN="Right"><A
       NAME="TTF-Names">TTF Names</A>
@@ -654,22 +734,6 @@ for French, "FettKursiv" for German,
 for Russian and "NigritaCursiva" for Spanish.
 <P>
 These names are only meaningful for TrueType and OpenType fonts.
-<H2>
-  <IMG SRC="fontinfo-panose.png" WIDTH="369" HEIGHT="472" ALIGN="Right"><A
-      NAME="Panose">Panose</A>
-</H2>
-<P>
-This sub-dialog allows you to describe your font in 10 different dimensions.
-The exact meanings of many of these entries are not clear to me, I have merely
-typed them in as specified in the
-<A HREF="http://fonts.apple.com/TTRefMan/RM06/Chap6OS2.html">true type
-docs</A>. Better information is available from
-<A HREF="http://www.panose.com/">HP</A>,
-<A HREF="http://www.agfamonotype.com/hardware/pan1.asp">AGFA</A> and
-<A HREF="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/gdi/fontext_48aa.asp">MS</A>.
-<P>
-These entries are only meaningful for TrueType, OpenType and SVG
-fonts.<BR Clear=All>
 <H2>
   <IMG SRC="fontinfo-tex.png" WIDTH="376" HEIGHT="600" ALIGN="Right"><A NAME="TeX">TeX</A>
 </H2>

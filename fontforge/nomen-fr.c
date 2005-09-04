@@ -652,7 +652,6 @@ static char *str_Encoding2 = "Codage" ;
 static char *str_PSGeneral = "Général" ;
 static char *str_PSPrivate = "Dictionnaire PS privé" ;
 static char *str_TTFNames = "Noms TTF" ;
-static char *str_TTFValues = "Paramètres TTF" ;
 static char *str_Panose = "Panose-1" ;
 static char *str_Comment = "Commentaire" ;
 static char *str_InvalidEncoding = "Codage incorrect" ;

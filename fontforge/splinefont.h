@@ -973,11 +973,14 @@ typedef struct splinefont {
     char *xuid;
     struct pfminfo {		/* A misnomer now. OS/2 info would be more accurate, but that's stuff in here from all over ttf files */
 	unsigned int pfmset: 1;
-	unsigned int hiddenset: 1;
 	unsigned int winascent_add: 1;
 	unsigned int windescent_add: 1;
 	unsigned int hheadascent_add: 1;
 	unsigned int hheaddescent_add: 1;
+	unsigned int typoascent_add: 1;
+	unsigned int typodescent_add: 1;
+	unsigned int subsuper_set: 1;
+	unsigned int panose_set: 1;
 	unsigned char pfmfamily;
 	int16 weight;
 	int16 width;
@@ -1226,6 +1229,7 @@ extern void TeXDefaultParams(SplineFont *sf);
 extern void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]);
 extern void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *sf,char *fontname);
 extern void SFDefaultOS2Simple(struct pfminfo *pfminfo,SplineFont *sf);
+extern void SFDefaultOS2SubSuper(struct pfminfo *pfminfo,int emsize);
 extern void VerifyLanguages(SplineFont *sf);
 extern int ScriptIsRightToLeft(uint32 script);
 extern uint32 ScriptFromUnicode(int u,SplineFont *sf);

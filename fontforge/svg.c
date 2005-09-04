@@ -2414,6 +2414,8 @@ return( NULL );
 			sf->pfminfo.panose[2] = 10;
 		    }
 		}
+		sf->pfminfo.panose_set = true;
+		sf->pfminfo.pfmset = true;
 		_xmlFree(name);
 	    }
 	    name = _xmlGetProp(kids,(xmlChar *) "font-stretch");
@@ -2446,6 +2448,8 @@ return( NULL );
 		    sf->pfminfo.panose[3] = 5;
 		    sf->pfminfo.width = 6;
 		}
+		sf->pfminfo.panose_set = true;
+		sf->pfminfo.pfmset = true;
 		_xmlFree(name);
 	    }
 	    name = _xmlGetProp(kids,(xmlChar *) "panose-1");
@@ -2455,6 +2459,7 @@ return( NULL );
 		for ( i=0, pt=(char *) name; i<10 && *pt; pt = end, ++i ) {
 		    sf->pfminfo.panose[i] = strtol(pt,&end,10);
 		}
+		sf->pfminfo.panose_set = true;
 	    }
 	    name = _xmlGetProp(kids,(xmlChar *) "slope");
 	    if ( name!=NULL ) {
