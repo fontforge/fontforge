@@ -2210,7 +2210,7 @@ static void SFDGetMinimumDistances(FILE *sfd, SplineChar *sc) {
     int pt,i, val, err;
     int ch;
     SplinePoint **mapping=NULL;
-    MinimumDistance *last, *md, *mdhead;
+    MinimumDistance *last, *md, *mdhead=NULL;
 
     for ( i=0; i<2; ++i ) {
 	pt = 0;

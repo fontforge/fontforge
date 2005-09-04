@@ -1313,13 +1313,14 @@ return( true );
 static int pcf_properties(FILE *file,struct toc *toc, int *_as, int *_ds,
 	Encoding **_enc, char *family, char *mods, char *full) {
     int pixelsize = -1;
-    int ascent= -1, descent= -1, enc;
+    int ascent= -1, descent= -1, enc=0;
     char encname[100], weight[100], italic[100];
     int cnt, i, format, strl, dash_cnt;
     struct props { int name_offset; int isStr; int val; char *name; char *value; } *props;
     char *strs, *pt;
 
     family[0] = '\0'; full[0] = '\0';
+    encname[0] = '\0'; weight[0] = '\0'; italic[0] = '\0';
     if ( !pcfSeekToType(file,toc,PCF_PROPERTIES))
 return(-2);
     format = getint32(file);

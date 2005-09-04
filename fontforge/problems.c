@@ -213,6 +213,7 @@ return;
 return;
     }
 
+    sp = NULL;
     for ( spl=p->sc->layers[ly_fore].splines; spl!=NULL; spl=spl->next ) {
 	for ( sp = spl->first; ; ) {
 	    if ( sp->selected )
@@ -2294,6 +2295,7 @@ static void DoProbs(struct problems *p) {
     } else {
 	for ( i=0; i<p->fv->map->enccount && !p->finish; ++i )
 	    if ( p->fv->selected[i] ) {
+		sc = NULL;
 		if ( (gid=p->fv->map->map[i])!=-1 && (sc = p->fv->sf->glyphs[gid])!=NULL ) {
 		    if ( SCProblems(NULL,sc,p)) {
 			if ( sc!=p->lastcharopened ) {

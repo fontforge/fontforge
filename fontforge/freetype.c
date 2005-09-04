@@ -318,7 +318,7 @@ static void *__FreeTypeFontContext(FT_Library context,
      *  else	   => the entire font
      */
     FTC *ftc;
-    SplineChar **old, **new;
+    SplineChar **old=sf->glyphs, **new;
     uint8 *selected = fv!=NULL ? fv->selected : NULL;
     EncMap *map = fv!=NULL ? fv->map : sf->fv->map;
     int i,cnt, notdefpos;
@@ -999,7 +999,7 @@ BDFChar *SplineCharFreeTypeRasterizeNoHints(SplineChar *sc,
     int cmax, pmax;
     real scale = pixelsize*(1<<6)/(double) (sc->parent->ascent+sc->parent->descent);
     BDFChar *bdfc;
-    int err;
+    int err = 0;
     DBounds b;
     SplineSet *all;
 

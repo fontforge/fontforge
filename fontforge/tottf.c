@@ -1466,7 +1466,7 @@ return( false );
     gi->loca[gi->next_glyph] = ftell(gi->glyphs);
     /* Microsoft's Font Validator wants the last loca entry to point into the */
     /*  glyph table. I think that's an error on their part, but it's so easy */
-    /*  to fix, I might as well */
+    /*  to fix, I might as well (instead of pointing to right after the table)*/
     putlong(gi->glyphs,0);
     gi->glyph_len = ftell(gi->glyphs);
     gi->hmtxlen = ftell(gi->hmtx);
@@ -1583,6 +1583,8 @@ static void dumpdbl(FILE *cfff,double d) {
 		++pt;
 	    } else if ( *pt=='E' || *pt=='e')
 		n = 0xb;
+	    else
+		n = 0;		/* Should never happen */
 	    if ( odd ) {
 		sofar = n<<4;
 		odd = false;
@@ -2507,6 +2509,7 @@ static void dumpcffcidhmtx(struct alltabs *at,SplineFont *_sf) {
 		at->gi.vfullcnt = cnt;
 	} else if ( cid==0 ) {
 	    /* Create a dummy entry for .notdef */
+	    sf = _sf->subfonts[0];
 	    putshort(at->gi.hmtx,sf->ascent+sf->descent);
 	    putshort(at->gi.hmtx,0);
 	    ++cnt;
@@ -5376,6 +5379,7 @@ return;
 		max = sf->subfonts[k]->glyphcnt;
     }
     for ( i=0; i<max; ++i ) {
+	sc = NULL;
 	if ( sf->subfontcnt==0 )
 	    sc = sf->glyphs[i];
 	else {

@@ -940,7 +940,7 @@ static void instr_mousemove(struct instrinfo *ii,int pos) {
     const unichar_t *msg;
 
     if ( ii->mousedown ) {
-	instr_mousedown(ii,y);
+	instr_mousedown(ii,pos);
 return;
     }
     if ( ii->instrdata->bts==NULL )

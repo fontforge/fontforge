@@ -716,6 +716,7 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 
 	diff = (b.maxy-b.miny)/32;
 	y = b.miny;
+	x1o = x2o = 0;
 	while ( y<b.maxy ) {
 	    while ( y<b.maxy ) {
 		t1o = BoundIterateSplineSolve(&m1->s->splines[1],m1->tstart,m1->tend,b.miny,error);
@@ -790,6 +791,7 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 
 	diff = (b.maxx-b.minx)/32;
 	x = b.minx;
+	y1o = y2o = 0;
 	while ( x<b.maxx ) {
 	    while ( x<b.maxx ) {
 		t1o = BoundIterateSplineSolve(&m1->s->splines[0],m1->tstart,m1->tend,b.minx,error);
@@ -810,6 +812,7 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 	    ilist = AddIntersection(ilist,m1,m2,t1o,t2o,&pt);
 	}
 #endif
+	y1 = y2 = 0;
 	for ( x+=diff; x<=b.maxx; x += diff ) {
 	    t1 = BoundIterateSplineSolve(&m1->s->splines[0],m1->tstart,m1->tend,x,error);
 	    t2 = BoundIterateSplineSolve(&m2->s->splines[0],m2->tstart,m2->tend,x,error);

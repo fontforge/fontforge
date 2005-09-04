@@ -933,6 +933,7 @@ static struct sflistlist *FondSplitter(struct sflist *sfs,int *fondcnt) {
     if ( sfi->sf->fondname==NULL ) {
 	memset(psfaces,0,sizeof(psfaces));
 	MacStyleCode(sfi->sf,&psstyle);
+	last = NULL;
 	while ( sfi->sf->fondname==NULL && psfaces[psstyle]==NULL ) {
 	    psfaces[psstyle] = sfi;
 	    last = sfi;
@@ -2671,9 +2672,9 @@ return( NULL );
     if ( flags&ttf_onlyonestrike ) {
 	int biggest = 0;
 	for ( i=0; i<fond->assoc_cnt; ++i ) {
-	    if ( fond->assoc[j].style==style && fond->assoc[j].size>biggest ) {
-		biggest = fond->assoc[j].size;
-		find_id = fond->assoc[j].id;
+	    if ( fond->assoc[i].style==style && fond->assoc[i].size>biggest ) {
+		biggest = fond->assoc[i].size;
+		find_id = fond->assoc[i].id;
 	    }
 	}
     }
@@ -2819,7 +2820,7 @@ static SplineFont *IsResourceFork(FILE *f, long offset,char *filename,int flags,
     int32 rdata_len, map_len;
     uint32 nfnt_pos, font_pos, fond_pos;
     unsigned long tag;
-    int i, cnt, subcnt, nfnt_subcnt=0, font_subcnt=0, fond_subcnt;
+    int i, cnt, subcnt, nfnt_subcnt=0, font_subcnt=0, fond_subcnt=0;
     SplineFont *sf;
     FOND *fondlist=NULL;
 

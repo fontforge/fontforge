@@ -211,7 +211,7 @@ int SFRemoveThisFeatureTag(SplineFont *sf, uint32 tag, int sli, int flags) {
     if ( tag!=0xffffffff || (sli==SLI_UNKNOWN && flags==-1)) {
 	int macflags;
 	if ( flags==-1 ) macflags = -1;
-	else if ( flags&pst_r2l ) macflags |= asm_descending;
+	else if ( flags&pst_r2l ) macflags = asm_descending;
 	else macflags = 0;
 	for ( sprev = NULL, sm = _sf->sm; sm!=NULL; sm=snext ) {
 	    snext = sm->next;
@@ -315,7 +315,7 @@ int SFRenameTheseFeatureTags(SplineFont *sf, uint32 tag, int sli, int flags,
     if ( ismac && ( tag!=0xffffffff || (sli==SLI_UNKNOWN && flags==-1))) {
 	int macflags;
 	if ( flags==-1 ) macflags = -1;
-	else if ( flags&pst_r2l ) macflags |= asm_descending;
+	else if ( flags&pst_r2l ) macflags = asm_descending;
 	else macflags = 0;
 	for ( sm = _sf->sm; sm!=NULL; sm=sm->next ) {
 	    if ( ( tag==0xffffffff || tag==((sm->feature<<16)|sm->setting) ) &&
@@ -810,7 +810,7 @@ static int _SFCopyTheseFeaturesToSF(SplineFont *_sf, uint32 tag, int sli, int fl
     if ( tag!=0xffffffff || (sli==SLI_UNKNOWN && flags==-1) ) {
 	int macflags;
 	if ( flags==-1 ) macflags = -1;
-	else if ( flags&pst_r2l ) macflags |= asm_descending;
+	else if ( flags&pst_r2l ) macflags = asm_descending;
 	else macflags = 0;
 	for ( sm = _sf->sm; sm!=NULL; sm=sm->next ) {
 	    if ( ( tag==0xffffffff || tag==((sm->feature<<16)|sm->setting) ) &&

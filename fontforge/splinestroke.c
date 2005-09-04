@@ -1245,6 +1245,7 @@ static struct strokedspline *_SplineSetApprox(SplineSet *spl,StrokeInfo *si,Spli
 	    /*  near the mid point of the pen */
 	    cnt = SplineSolveForPen(spline,si,ts,pinners+1,0,1);
 	    p_to = m_to = NULL;
+	    p_from = NULL;		/* Make gcc happy */
 	    for ( j=1; j<cnt; ++j ) {
 		for ( i=0; i<Approx; ++i ) {
 		    real t = ts[j-1] + (i+1)*(ts[j]-ts[j-1])/(Approx+1);

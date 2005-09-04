@@ -2013,7 +2013,7 @@ static int glorpline(struct fontparse *fp, FILE *temp, char *rdtok) {
     char *tokpt = NULL, *rdpt;
     char temptok[255];
     int intok, first;
-    int wasminus=false, isminus, nibble, firstnibble, inhex;
+    int wasminus=false, isminus, nibble=0, firstnibble=true, inhex;
     int willbehex = false;
 
     ch = getc(temp);
@@ -2171,7 +2171,7 @@ static void decrypteexec(FILE *in,FILE *temp, int hassectionheads,char *extra) {
     int ch1, ch2, ch3, ch4, binary;
     int zcnt;
     unsigned char zeros[EODMARKLEN+6+1];
-    int sect_len;
+    int sect_len=0x7fffffff;
 
     if ( extra==(void *) 5 ) extra = "";
 
@@ -2275,7 +2275,7 @@ static unsigned char *readt1str(FILE *temp,int offset,int len,int leniv) {
     fseek(temp,offset,SEEK_SET);
     if ( leniv<0 ) {
 	str = pt = galloc(len+1);
-	for (; i<len; ++i )
+	for ( i=0 ; i<len; ++i )
 	    *pt++ = getc(temp);
     } else {
 	for ( i=0; i<leniv; ++i ) {

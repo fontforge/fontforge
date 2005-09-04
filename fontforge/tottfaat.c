@@ -51,7 +51,7 @@ void aat_dumpacnt(struct alltabs *at, SplineFont *sf) {
 
 
 static void DumpKernClass(FILE *file, uint16 *class,int cnt,int add,int mul) {
-    int i, first=-1, last;
+    int i, first=-1, last=-1;
 
     for ( i=0; i<cnt; ++i ) {
 	if ( class[i] ) last = i;
@@ -1360,6 +1360,7 @@ static struct feature *aat_dumpmorx_cvtopentype(struct alltabs *at, SplineFont *
 	}
     }
 
+    sliflags = NULL;
     if ( OTTagToMacFeature(CHR('i','s','o','l'),&featureType,&featureSetting) ) {
 	sliflags = SFGetFormsList(sf,true);
 	if ( sliflags!=NULL ) {

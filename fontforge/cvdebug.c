@@ -291,6 +291,7 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
     uint8 *watches;
 
     GDrawFillRect(pixmap,&event->u.expose.rect,GDrawGetDefaultBackground(screen_display));
+    y = 3+dv->ii.as-dv->points_offtop*dv->ii.fh;
     if ( exc==NULL )
 	n = 0;
     else {
@@ -306,7 +307,6 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 	watches = DebuggerGetWatches(dv->dc,&n_watch);
 
 	GDrawSetFont(pixmap,dv->ii.gfont);
-	y = 3+dv->ii.as-dv->points_offtop*dv->ii.fh;
 	for ( i=0; i<n; ++i ) {
 	    if ( r->contours!=NULL && i==r->contours[c] ) {	/* No contours in twilight */
 		++c;

@@ -3246,6 +3246,7 @@ return;
 	sc = CreateBadGid(info,gnum);
     } else
 	sc = info->chars[gnum];
+    ssc = NULL;
     if ( gsubs<0 || (gsubs>=info->glyph_cnt && gsubs!=0xffff)) {
 	if ( !info->warned_morx_out_of_bounds_glyph ) {
 	    fprintf( stderr, "Substitute glyph out of bounds in 'mort'/'morx' table %d\n", gsubs );

@@ -469,7 +469,7 @@ return( sf->subfonts[j]->glyphs[ind] );
 }
 
 SplineChar *SFGetOrMakeChar(SplineFont *sf, int unienc, const char *name ) {
-    SplineChar *sc;
+    SplineChar *sc=NULL;
 
     if ( sf->fv!=NULL ) {
 	int ind = SFFindSlot(sf,sf->fv->map,unienc,name);

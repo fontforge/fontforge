@@ -1305,6 +1305,7 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 	last = cur;
 	last_off = false;
 	start = i;
+	sp = NULL;
 	while ( i<=endpt[path] ) {
 	    if ( flags[i]&_On_Curve ) {
 		sp = chunkalloc(sizeof(SplinePoint));
@@ -2802,6 +2803,7 @@ static void readcffset(FILE *ttf,struct topdicts *dict) {
     int i;
     int format, cnt, j, first;
 
+    i = 0;
     if ( dict->charsetoff==0 ) {
 	/* ISO Adobe charset */
 	dict->charset = galloc(len*sizeof(uint16));
