@@ -2792,7 +2792,7 @@ static SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags,int is_s
     StrokeInfo si;
     real inversetrans[6];
     /*SplineSet *spl;*/
-    int handle_eraser;
+    int handle_eraser = false;
     int ask = false;
 
     EntityDefaultStrokeFill(ec->splines);

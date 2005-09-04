@@ -258,7 +258,7 @@ static int figure_fontdesc(PI *pi, struct fontdesc *fd, int fonttype, int fontst
     EncMap *map = pi->map;
     DBounds b;
     int capcnt=0, xhcnt=0, wcnt=0;
-    double samewidth;
+    double samewidth = -1;
     int beyond_std = false;
     int fd_num = pi->next_object;
     int cidmax;
@@ -1814,18 +1814,21 @@ return( NULL );
 	map = NULL;
 	/* We don't handle the case of a mark having two different basemark anchors */
 	/*  which are both in use */
-	if ( apt!=NULL ) for ( atest=apt-1; atest>=apos; --atest ) if ( !atest->ticked ) {
-	    for ( ap=atest->sc->anchor; ap!=NULL; ap=ap->next ) if ( ap->type==at_basemark || ap->type==at_cexit ) {
-		for ( map=mark->anchor; map!=NULL; map=map->next )
-		    if (( map->type==at_mark || map->type==at_centry) &&
-			    map->anchor==ap->anchor )
+	if ( apt!=NULL ) {
+	    for ( atest=apt-1; atest>=apos; --atest ) if ( !atest->ticked ) {
+		for ( ap=atest->sc->anchor; ap!=NULL; ap=ap->next ) if ( ap->type==at_basemark || ap->type==at_cexit ) {
+		    for ( map=mark->anchor; map!=NULL; map=map->next )
+			if (( map->type==at_mark || map->type==at_centry) &&
+				map->anchor==ap->anchor )
+		    break;
+		    if ( map!=NULL )
 		break;
+		}
 		if ( map!=NULL )
 	    break;
 	    }
-	    if ( map!=NULL )
-	break;
-	}
+	} else
+	    atest = NULL;
 	if ( map==NULL ) {
 	    for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) if ( !ap->ticked ) {
 		for ( map=mark->anchor; map!=NULL; map=map->next )

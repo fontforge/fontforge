@@ -2271,6 +2271,7 @@ static void MVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	if ( mv->perchar[i].selected )
     break;
     if ( i!=mv->charcnt ) {
+	pos = -1;
 	if ( mi->mid == MID_Next ) {
 	    pos = map->backmap[mv->perchar[i].sc->orig_pos]+1;
 	} else if ( mi->mid==MID_Prev ) {

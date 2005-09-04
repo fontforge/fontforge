@@ -1319,9 +1319,8 @@ return( maybe );
 	    if ( ret==1 || no_windowing_ui )
 		ubuf[0] = '\0';
 	}
-	if ( ubuf[0]=='\0' )
-	    uret = NULL;
-	else if ( !no_windowing_ui ) {
+	uret = NULL;
+	if ( ubuf[0]!='\0' && !no_windowing_ui ) {
 	    if ( sf!=NULL ) sf->loading_cid_map = true;
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    uret = GWidgetOpenFile(GStringGetResource(_STR_FindCharset,NULL),NULL,ubuf,NULL,NULL);
@@ -2785,7 +2784,7 @@ void SFMatchGlyphs(SplineFont *sf,SplineFont *target,int addempties) {
 void MMMatchGlyphs(MMSet *mm) {
     /* reorder all instances so that they have the same orig_pos */
     int i, j, index, lasthole;
-    SplineFont *sf, *base;
+    SplineFont *sf, *base = NULL;
     SplineChar *sc, *scnew, *sc2;
 
     for ( i = 0; i<mm->instance_count; ++i ) if ( mm->instances[i]!=NULL ) {

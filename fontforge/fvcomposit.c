@@ -986,6 +986,7 @@ return( NULL );
     if ( semi==NULL ) semi = ligstart+strlen(ligstart);
     sch = *semi; *semi = '\0';
     spt = space;
+    dpt = NULL;
     for ( pt = ligstart; *pt!='\0'; ) {
 	char *start = pt; dpt=NULL;
 	for ( ; *pt!='\0' && *pt!=' '; ++pt );
@@ -1780,6 +1781,7 @@ static void _SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, SplineChar *rs
     transform[0] = transform[3] = 1;
     transform[1] = transform[2] = transform[4] = transform[5] = 0;
 
+    italicoff = 0;
     if ( sc->layers[ly_fore].refs!=NULL && sc->layers[ly_fore].refs->next!=NULL &&
 	    (AnchorClassMkMkMatch(sc->layers[ly_fore].refs->sc,rsc,&ap1,&ap2)!=NULL ||
 	     AnchorClassCursMatch(sc->layers[ly_fore].refs->sc,rsc,&ap1,&ap2)!=NULL) ) {
@@ -1799,151 +1801,150 @@ static void _SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, SplineChar *rs
  /* Obviously this test is only meaningful for latin,greek,cyrillic alphas */
  /*  hence test for isupper,islower. And I'm assuming greek,cyrillic will */
  /*  be consistant with latin */
-    if ( islower(basech) || isupper(basech)) {
-	SplineChar *common = SFGetChar(sf,islower(basech)?'o':'O',NULL);
-	if ( common!=NULL ) {
-	    real top = SplineCharQuickTop(common);
-	    if ( bb.maxy<top ) {
-		bb.maxx += tan(ia)*(top-bb.maxy);
-		bb.maxy = top;
+	if ( islower(basech) || isupper(basech)) {
+	    SplineChar *common = SFGetChar(sf,islower(basech)?'o':'O',NULL);
+	    if ( common!=NULL ) {
+		real top = SplineCharQuickTop(common);
+		if ( bb.maxy<top ) {
+		    bb.maxx += tan(ia)*(top-bb.maxy);
+		    bb.maxy = top;
+		}
 	    }
 	}
-    }
-    eta = false;
-    if ( ((basech>=0x1f20 && basech<=0x1f27) || basech==0x1f74 || basech==0x1f75 || basech==0x1fc6 || basech==0x3b7 || basech==0x3ae) &&
-	    ch==0x345 ) {
-	bb.miny = 0;		/* ypogegrammeni rides below baseline, not below bottom stem */
-	eta = true;
-	if ( basersc!=NULL && basersc->vstem!=NULL ) {
-	    bb.minx = basersc->vstem->start;
-	    bb.maxx = bb.minx + basersc->vstem->width;
-	} else
-	    bb.maxx -= (bb.maxx-bb.minx)/3;	/* Should also be centered on left stem of eta, but I don't know how to do that..., hence this hack */
-    }
+	eta = false;
+	if ( ((basech>=0x1f20 && basech<=0x1f27) || basech==0x1f74 || basech==0x1f75 || basech==0x1fc6 || basech==0x3b7 || basech==0x3ae) &&
+		ch==0x345 ) {
+	    bb.miny = 0;		/* ypogegrammeni rides below baseline, not below bottom stem */
+	    eta = true;
+	    if ( basersc!=NULL && basersc->vstem!=NULL ) {
+		bb.minx = basersc->vstem->start;
+		bb.maxx = bb.minx + basersc->vstem->width;
+	    } else
+		bb.maxx -= (bb.maxx-bb.minx)/3;	/* Should also be centered on left stem of eta, but I don't know how to do that..., hence this hack */
+	}
 
-    if ( invert ) {
-	/* this transform does a vertical flip from the vertical midpoint of the breve */
-	transform[3] = -1;
-	transform[5] = rbb.maxy+rbb.miny;
-    }
-    if ( pos==-1 ) {
-	pos = ____utype2[1+ch];
-	/* In greek, PSILI and friends are centered above lower case, and kern left*/
-	/*  for upper case */
-	if (( basech>=0x390 && basech<=0x3ff) || (basech>=0x1f00 && basech<=0x1fff)) {
-	    if ( ( basech==0x1fbf || basech==0x1fef || basech==0x1ffe ) &&
-		    (ch==0x1fbf || ch==0x1fef || ch==0x1ffe || ch==0x1fbd || ch==0x1ffd )) {
-		pos = ____ABOVE|____RIGHT;
-	    } else if ( isupper(basech) &&
-		    (ch==0x313 || ch==0x314 || ch==0x301 || ch==0x300 || ch==0x30d ||
-		     ch==0x1ffe || ch==0x1fbf || ch==0x1fcf || ch==0x1fdf ||
-		     ch==0x1fbd || ch==0x1fef || ch==0x1ffd ||
-		     ch==0x1fcd || ch==0x1fdd || ch==0x1fce || ch==0x1fde ) )
-		pos = ____ABOVE|____LEFT;
-	    else if ( isupper(basech) && ch==0x1fbe )
+	if ( invert ) {
+	    /* this transform does a vertical flip from the vertical midpoint of the breve */
+	    transform[3] = -1;
+	    transform[5] = rbb.maxy+rbb.miny;
+	}
+	if ( pos==-1 ) {
+	    pos = ____utype2[1+ch];
+	    /* In greek, PSILI and friends are centered above lower case, and kern left*/
+	    /*  for upper case */
+	    if (( basech>=0x390 && basech<=0x3ff) || (basech>=0x1f00 && basech<=0x1fff)) {
+		if ( ( basech==0x1fbf || basech==0x1fef || basech==0x1ffe ) &&
+			(ch==0x1fbf || ch==0x1fef || ch==0x1ffe || ch==0x1fbd || ch==0x1ffd )) {
+		    pos = ____ABOVE|____RIGHT;
+		} else if ( isupper(basech) &&
+			(ch==0x313 || ch==0x314 || ch==0x301 || ch==0x300 || ch==0x30d ||
+			 ch==0x1ffe || ch==0x1fbf || ch==0x1fcf || ch==0x1fdf ||
+			 ch==0x1fbd || ch==0x1fef || ch==0x1ffd ||
+			 ch==0x1fcd || ch==0x1fdd || ch==0x1fce || ch==0x1fde ) )
+		    pos = ____ABOVE|____LEFT;
+		else if ( isupper(basech) && ch==0x1fbe )
+		    pos = ____RIGHT;
+		else if ( ch==0x1fcd || ch==0x1fdd || ch==0x1fce || ch==0x1fde ||
+			 ch==0x1ffe || ch==0x1fbf || ch==0x1fcf || ch==0x1fdf ||
+			 ch==0x384 )
+		    pos = ____ABOVE;
+	    } else if ( (basech==0x1ffe || basech==0x1fbf) && (ch==0x301 || ch==0x300))
 		pos = ____RIGHT;
-	    else if ( ch==0x1fcd || ch==0x1fdd || ch==0x1fce || ch==0x1fde ||
-		     ch==0x1ffe || ch==0x1fbf || ch==0x1fcf || ch==0x1fdf ||
-		     ch==0x384 )
-		pos = ____ABOVE;
-	} else if ( (basech==0x1ffe || basech==0x1fbf) && (ch==0x301 || ch==0x300))
-	    pos = ____RIGHT;
-	else if ( sc->unicodeenc==0x1fbe && ch==0x345 )
-	    pos = ____RIGHT;
-	else if ( basech=='l' && ch==0xb7 )
-	    pos = ____RIGHT|____OVERSTRIKE;
-	else if ( ch==0xb7 )
-	    pos = ____OVERSTRIKE;
-	else if ( basech=='A' && ch==0x30a )	/* Aring usually touches */
-	    pos = ____ABOVE|____TOUCHING;
-	else if (( basech=='A' || basech=='a' || basech=='E' || basech=='u' ) &&
-		ch == 0x328 )
-	    pos = ____BELOW|____CENTERRIGHT|____TOUCHING;	/* ogonek off to the right for these in polish (but not lc e) */
-	else if (( basech=='N' || basech=='n' || basech=='K' || basech=='k' || basech=='R' || basech=='r' || basech=='H' || basech=='h' ) &&
-		ch == 0x327 )
-	    pos = ____BELOW|____CENTERLEFT|____TOUCHING;	/* cedilla off under left stem for these guys */
-	if ( basech==0x391 && pos==(____ABOVE|____LEFT) ) {
-	    bb.minx += (bb.maxx-bb.minx)/4;
-	}
-    }
-    if ( sc->unicodeenc==0x0149 )
-	pos = ____ABOVE|____LEFT;
-    else if ( sc->unicodeenc==0x013d || sc->unicodeenc==0x013e )
-	pos = ____ABOVE|____RIGHT;
-    else if ( sc->unicodeenc==0x010f || sc->unicodeenc==0x013d ||
-	      sc->unicodeenc==0x013e || sc->unicodeenc==0x0165 )
-	pos = ____ABOVE|____RIGHT;
-    else if ( (sc->unicodeenc==0x1fbd || sc->unicodeenc==0x1fbf ||
-	    sc->unicodeenc==0x1ffe || sc->unicodeenc==0x1fc0 ) &&
-	    bb.maxy==0 && bb.miny==0 ) {
-	/* Building accents on top of space */
-	bb.maxy = 7*sf->ascent/10;
-    }
-
-    if ( (pos&____ABOVE) && (pos&(____LEFT|____RIGHT)) )
-	yoff = bb.maxy - rbb.maxy;
-    else if ( pos&____ABOVE ) {
-	yoff = bb.maxy - rbb.miny;
-	if ( !( pos&____TOUCHING) )
-	    yoff += spacing;
-    } else if ( pos&____BELOW ) {
-	yoff = bb.miny - rbb.maxy;
-	if ( !( pos&____TOUCHING) )
-	    yoff -= spacing;
-    } else if ( pos&____OVERSTRIKE )
-	yoff = bb.miny - rbb.miny + ((bb.maxy-bb.miny)-(rbb.maxy-rbb.miny))/2;
-    else /* If neither Above, Below, nor overstrike then should use the same baseline */
-	yoff = bb.miny - rbb.miny;
-
-    if ( pos&(____ABOVE|____BELOW) ) {
-	/* When we center an accent above an asymetric character like "C" we */
-	/*  should not pick the mid point of the char. Rather we should pick */
-	/*  the highest point (mostly anyway, there are exceptions) */
-	if ( pos&____ABOVE ) {
-	    static DBounds pointless;
-	    if ( CharCenterHighest ) {
-		if ( basech!='b' && basech!='d' && basech!='h' && basech!='n' && basech!='r' && basech!=0xf8 &&
-			basech!='B' && basech!='D' && basech!='L' && basech!=0xd8 )
-		    ybase = SCFindTopXRange(sc,&bb,ia);
-		if ( ((basech=='h' && ch==0x307) ||	/* dot over the stem in hdot */
-			basech=='i' || basech=='j' || basech==0x131 || basech==0xf6be || basech==0x237 ||
-			(basech=='k' && ch==0x301) ||
-			(baserch=='L' && (ch==0x301 || ch==0x304)) ||
-			basech=='l' || basech=='t' ) &&
-			(xoff=SCStemCheck(sf,basech,&bb,&pointless,pos))!=0x70000000 )
-		    bb.minx = bb.maxx = xoff;		/* While on "t" we should center over the stem */
+	    else if ( sc->unicodeenc==0x1fbe && ch==0x345 )
+		pos = ____RIGHT;
+	    else if ( basech=='l' && ch==0xb7 )
+		pos = ____RIGHT|____OVERSTRIKE;
+	    else if ( ch==0xb7 )
+		pos = ____OVERSTRIKE;
+	    else if ( basech=='A' && ch==0x30a )	/* Aring usually touches */
+		pos = ____ABOVE|____TOUCHING;
+	    else if (( basech=='A' || basech=='a' || basech=='E' || basech=='u' ) &&
+		    ch == 0x328 )
+		pos = ____BELOW|____CENTERRIGHT|____TOUCHING;	/* ogonek off to the right for these in polish (but not lc e) */
+	    else if (( basech=='N' || basech=='n' || basech=='K' || basech=='k' || basech=='R' || basech=='r' || basech=='H' || basech=='h' ) &&
+		    ch == 0x327 )
+		pos = ____BELOW|____CENTERLEFT|____TOUCHING;	/* cedilla off under left stem for these guys */
+	    if ( basech==0x391 && pos==(____ABOVE|____LEFT) ) {
+		bb.minx += (bb.maxx-bb.minx)/4;
 	    }
-	} else if ( ( pos&____BELOW ) && !eta )
-	    if ( CharCenterHighest )
-		ybase = SCFindBottomXRange(sc,&bb,ia);
-    }
+	}
+	if ( sc->unicodeenc==0x0149 )
+	    pos = ____ABOVE|____LEFT;
+	else if ( sc->unicodeenc==0x013d || sc->unicodeenc==0x013e )
+	    pos = ____ABOVE|____RIGHT;
+	else if ( sc->unicodeenc==0x010f || sc->unicodeenc==0x013d ||
+		  sc->unicodeenc==0x013e || sc->unicodeenc==0x0165 )
+	    pos = ____ABOVE|____RIGHT;
+	else if ( (sc->unicodeenc==0x1fbd || sc->unicodeenc==0x1fbf ||
+		sc->unicodeenc==0x1ffe || sc->unicodeenc==0x1fc0 ) &&
+		bb.maxy==0 && bb.miny==0 ) {
+	    /* Building accents on top of space */
+	    bb.maxy = 7*sf->ascent/10;
+	}
 
-    if ( isupper(basech) && ch==0x342)	/* While this guy rides above PSILI on left */
-	xoff = bb.minx - rbb.minx;
-    else if ( pos&____LEFT )
-	xoff = bb.minx - spacing - rbb.maxx;
-    else if ( pos&____RIGHT ) {
-	xoff = bb.maxx - rbb.minx+spacing/2;
-	if ( !( pos&____TOUCHING) )
-	    xoff += spacing;
-    } else {
-	if ( (pos&(____CENTERLEFT|____CENTERRIGHT)) &&
-		(xoff=SCStemCheck(sf,basech,&bb,&rbb,pos))!=0x70000000 )
-	    /* Done */;
-	else if ( pos&____CENTERLEFT )
-	    xoff = bb.minx + (bb.maxx-bb.minx)/2 - rbb.maxx;
-	else if ( pos&____LEFTEDGE )
+	if ( (pos&____ABOVE) && (pos&(____LEFT|____RIGHT)) )
+	    yoff = bb.maxy - rbb.maxy;
+	else if ( pos&____ABOVE ) {
+	    yoff = bb.maxy - rbb.miny;
+	    if ( !( pos&____TOUCHING) )
+		yoff += spacing;
+	} else if ( pos&____BELOW ) {
+	    yoff = bb.miny - rbb.maxy;
+	    if ( !( pos&____TOUCHING) )
+		yoff -= spacing;
+	} else if ( pos&____OVERSTRIKE )
+	    yoff = bb.miny - rbb.miny + ((bb.maxy-bb.miny)-(rbb.maxy-rbb.miny))/2;
+	else /* If neither Above, Below, nor overstrike then should use the same baseline */
+	    yoff = bb.miny - rbb.miny;
+
+	if ( pos&(____ABOVE|____BELOW) ) {
+	    /* When we center an accent above an asymetric character like "C" we */
+	    /*  should not pick the mid point of the char. Rather we should pick */
+	    /*  the highest point (mostly anyway, there are exceptions) */
+	    if ( pos&____ABOVE ) {
+		static DBounds pointless;
+		if ( CharCenterHighest ) {
+		    if ( basech!='b' && basech!='d' && basech!='h' && basech!='n' && basech!='r' && basech!=0xf8 &&
+			    basech!='B' && basech!='D' && basech!='L' && basech!=0xd8 )
+			ybase = SCFindTopXRange(sc,&bb,ia);
+		    if ( ((basech=='h' && ch==0x307) ||	/* dot over the stem in hdot */
+			    basech=='i' || basech=='j' || basech==0x131 || basech==0xf6be || basech==0x237 ||
+			    (basech=='k' && ch==0x301) ||
+			    (baserch=='L' && (ch==0x301 || ch==0x304)) ||
+			    basech=='l' || basech=='t' ) &&
+			    (xoff=SCStemCheck(sf,basech,&bb,&pointless,pos))!=0x70000000 )
+			bb.minx = bb.maxx = xoff;		/* While on "t" we should center over the stem */
+		}
+	    } else if ( ( pos&____BELOW ) && !eta )
+		if ( CharCenterHighest )
+		    ybase = SCFindBottomXRange(sc,&bb,ia);
+	}
+
+	if ( isupper(basech) && ch==0x342)	/* While this guy rides above PSILI on left */
 	    xoff = bb.minx - rbb.minx;
-	else if ( pos&____CENTERRIGHT )
-	    xoff = bb.minx + (bb.maxx-bb.minx)/2 - rbb.minx;
-	else if ( pos&____RIGHTEDGE )
-	    xoff = bb.maxx - rbb.maxx;
-	else
-	    xoff = bb.minx - rbb.minx + ((bb.maxx-bb.minx)-(rbb.maxx-rbb.minx))/2;
-    }
-    italicoff = 0;
-    if ( ia!=0 )
-	xoff += (italicoff = tan(-ia)*(rbb.miny+yoff-ybase));
+	else if ( pos&____LEFT )
+	    xoff = bb.minx - spacing - rbb.maxx;
+	else if ( pos&____RIGHT ) {
+	    xoff = bb.maxx - rbb.minx+spacing/2;
+	    if ( !( pos&____TOUCHING) )
+		xoff += spacing;
+	} else {
+	    if ( (pos&(____CENTERLEFT|____CENTERRIGHT)) &&
+		    (xoff=SCStemCheck(sf,basech,&bb,&rbb,pos))!=0x70000000 )
+		/* Done */;
+	    else if ( pos&____CENTERLEFT )
+		xoff = bb.minx + (bb.maxx-bb.minx)/2 - rbb.maxx;
+	    else if ( pos&____LEFTEDGE )
+		xoff = bb.minx - rbb.minx;
+	    else if ( pos&____CENTERRIGHT )
+		xoff = bb.minx + (bb.maxx-bb.minx)/2 - rbb.minx;
+	    else if ( pos&____RIGHTEDGE )
+		xoff = bb.maxx - rbb.maxx;
+	    else
+		xoff = bb.minx - rbb.minx + ((bb.maxx-bb.minx)-(rbb.maxx-rbb.minx))/2;
+	}
+	if ( ia!=0 )
+	    xoff += (italicoff = tan(-ia)*(rbb.miny+yoff-ybase));
     }	/* Anchor points */
     transform[4] = xoff;
     /*if ( invert ) transform[5] -= yoff; else */transform[5] += yoff;
@@ -2285,8 +2286,8 @@ return;		/* Can't happen */
     } else {
 	if ( strncmp(sc->name,"vertuni",7)==0 && strlen(sc->name)==11 ) {
 	    char *end;
-	    int uni = strtol(sc->name+7,&end,16), index;
-	    if ( *end!='\0' || (index = SFCIDFindExistingChar(sf,uni,NULL))==-1 )
+	    int uni = strtol(sc->name+7,&end,16);
+	    if ( *end!='\0' || (cid = SFCIDFindExistingChar(sf,uni,NULL))==-1 )
 return;		/* Can't happen */
 	} else if ( strncmp(sc->name,"uni",3)==0 && strstr(sc->name,".vert")!=NULL ) {
 	    int uni = strtol(sc->name+3,&end,16);
@@ -2447,7 +2448,7 @@ static void SCBuildHangul(SplineFont *sf,SplineChar *sc, const unichar_t *pt, in
 int SCMakeDotless(SplineFont *sf, SplineChar *dotless, int copybmp, int doit) {
     SplineChar *sc, *xsc;
     BlueData bd;
-    SplineSet *head, *last=NULL, *test, *cur, *next;
+    SplineSet *head=NULL, *last=NULL, *test, *cur, *next;
     DBounds b;
     BDFFont *bdf;
     BDFChar *bc;

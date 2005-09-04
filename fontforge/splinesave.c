@@ -110,7 +110,7 @@ static int NumberHints(SplineChar *scs[MmMax], int instance_count) {
 	else if ( cnt!=i )
 	    IError("MM font with different hint counts");
     }
-return( i );
+return( cnt );
 }
 
 void RefCharsFreeRef(RefChar *ref) {
@@ -787,7 +787,7 @@ return( true );
 
 static void flexto(GrowBuf *gb,BasePoint current[MmMax],Spline *pspline[MmMax],
 	int instance_count,int round, struct hintdb *hdb) {
-    BasePoint *c0, *c1, *mid, *end;
+    BasePoint *c0, *c1, *mid, *end=NULL;
     Spline *nspline;
     BasePoint offsets[MmMax][8];
     int i,j;
@@ -1999,6 +1999,7 @@ static Spline *lineto2(GrowBuf *gb,struct hintdb *hdb,Spline *spline, Spline *do
     BasePoint temp1, temp2, *tom, *fromm;
     int donehm;
 
+    lastgood = NULL;
     for ( test=spline, cnt=0; test->knownlinear && cnt<15; ) {
 	++cnt;
 	lastgood = test;

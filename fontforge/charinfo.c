@@ -5278,7 +5278,7 @@ void SCSuffixDefault(SplineChar *sc,uint32 tag,char *suffix,uint16 flags,uint16 
 }
 
 void SCLigCaretCheck(SplineChar *sc,int clean) {
-    PST *pst, *carets=NULL, *prev_carets, *prev;
+    PST *pst, *carets=NULL, *prev_carets=NULL, *prev;
     int lig_comp_max=0, lc, i;
     char *pt;
     /* Check to see if this is a ligature character, and if so, does it have */
@@ -6364,7 +6364,6 @@ int FVParseSelectByPST(FontView *fv,int type,
 	const unichar_t *tags,const unichar_t *contents,
 	int search_type) {
     struct match_data md;
-    const unichar_t *ret;
     uint8 u[4];
     int i, j;
     int (*tester)(SplineChar *sc,struct match_data *md);
@@ -6405,9 +6404,9 @@ return( false );
 	if ( ac==NULL ) {
 	    free( md.contains );
 #if defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_error(_("Select By ATT..."),_("Unknown Anchor Class: %.70s"),ret);
+	    gwwv_post_error(_("Select By ATT..."),_("Unknown Anchor Class: %.70s"),tags);
 #else
-	    GWidgetErrorR(_STR_SelectByATT,_STR_UnknownAnchorClass,ret);
+	    GWidgetErrorR(_STR_SelectByATT,_STR_UnknownAnchorClass,tags);
 #endif
 return( false );
 	}

@@ -1411,9 +1411,10 @@ static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
     putshort(gpos,cnt);
     offset = 2+4*cnt;
     for ( j=0; j<cnt; ++j ) {
-	if ( classcnt==0 )
+	if ( classcnt==0 ) {
 	    putshort(gpos,0);		/* Only one class */
-	else {
+	    ap = NULL;
+	} else {
 	    for ( k=0, ac=_ac; k<classcnt; ++k, ac=ac->next ) {
 		for ( ap = markglyphs[j]->anchor; ap!=NULL && (ap->anchor!=ac || ap->type!=at_mark);
 			ap=ap->next );
@@ -1425,7 +1426,7 @@ static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
 	putshort(gpos,offset);
 	offset += 6;
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
-	if ( ap->xadjust.corrections!=NULL || ap->yadjust.corrections!=NULL )
+	if ( ap!=NULL && (ap->xadjust.corrections!=NULL || ap->yadjust.corrections!=NULL ))
 	    offset += 4 + DevTabLen(&ap->xadjust) + DevTabLen(&ap->yadjust);
 #endif
     }

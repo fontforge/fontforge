@@ -300,6 +300,7 @@ return( ret );
 	/* Just ignore a unary plus */;
 return( gete0(c));
       case op_sub: case op_not:
+	ret = gcalloc(1,sizeof(struct expr));
 	ret->operator = op;
 	ret->op1 = gete0(c);
 return( ret );
