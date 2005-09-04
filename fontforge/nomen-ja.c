@@ -664,7 +664,6 @@ static char *str_Encoding2 = "エンコーディング";
 static char *str_PSGeneral = "一般情報";
 static char *str_PSPrivate = "PS Private辞書";
 static char *str_TTFNames = "TTF名";
-static char *str_TTFValues = "TTFの設定値";
 static char *str_Panose = "Panose";
 static char *str_Comment = "コメント";
 static char str_TeX = "ΤεΧ";

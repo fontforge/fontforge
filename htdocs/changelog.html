@@ -16,24 +16,52 @@ on the file stamp.c.
 <P>
 <UL>
   <LI>
-    ??-August-2005
+    4-Sept-2005
     <UL>
-      <LI>It used to be that both the Hint->Add Hint and Hint->Create Hint
-      commands would destroy all hint masks. Now we update those hint masks
-      appropriately.
-      <LI>The "Original" encoding was broken, and reencoding to it gaves us 256 blank glyphs before glyph0. Sigh.
       <LI>
-The CodeRange bit for symbol doesn't mean the font contains any standard set of 
-"symbol" glyphs, but rather either that it has a 3,0 cmap sub-table, or that
-there are glyphs mapped to 0xf000-0xf0ff in the 3,1 (unicode) sub-table.
-<P>
-Setting this bit should give you a symbol encoding as well as all the other
-encodings you've set bits for. It doesn't work under windows. It doesn't work. TrueType fonts do not
- provide a symbol encoding, while 'CFF ' fonts only provide a symbol encoding. But hey, let's support it anyway!
-<P> change View->Goto to know about this range as MS Symbol.
-      <LI>Importing an eps file (or pasting the x clipboard) made use of an
-uninitialized variable.
-      <LI>Cleanup pasting references from one font to another (gave some very strange results when pasting refs with no unicode encodings).
+	In fontinfo, changed the tab "TTF Values" to be "OS/2", consolidated the
+	Panose tab underneath it. Added many more fields, almost all of OS/2.
+      <LI>
+	Fixed a number of uninitialized variables, at the instigation of Pavel Roskin.
+      <LI>
+	Applied several patches from Pavel Roskin.
+      <LI>
+	The scripting WorthOutputting command insisted on an argument, even when
+	it should not have.
+      <LI>
+	Scripting SetCharCnt command has been broken since the encoding change.
+    </UL>
+  <LI>
+    31-August-2005
+    <UL>
+      <LI>
+	The mac fix for 25-Aug wasn't quite enough.
+      <LI>
+	I used to maintain a hidden value of the os2 linegap. This didn't change
+	when users set linegap with font info, leaving users annoyed.
+      <LI>
+	It used to be that both the Hint-&gt;Add Hint and Hint-&gt;Create Hint commands
+	would destroy all hint masks. Now we update those hint masks appropriately.
+      <LI>
+	The "Original" encoding was broken, and reencoding to it gaves us 256 blank
+	glyphs before glyph0. Sigh.
+      <LI>
+	The CodeRange bit for symbol doesn't mean the font contains any standard
+	set of "symbol" glyphs, but rather either that it has a 3,0 cmap sub-table,
+	or that there are glyphs mapped to 0xf000-0xf0ff in the 3,1 (unicode) sub-table.
+	<P>
+	Setting this bit should give you a symbol encoding as well as all the other
+	encodings you've set bits for. It doesn't work under windows. It doesn't
+	work. TrueType fonts do not provide a symbol encoding, while 'CFF ' fonts
+	only provide a symbol encoding. But hey, let's support it anyway!
+	<P>
+	change View-&gt;Goto to know about this range as MS Symbol.
+      <LI>
+	Importing an eps file (or pasting the x clipboard) made use of an uninitialized
+	variable. (introduced 7-Aug)
+      <LI>
+	Cleanup pasting references from one font to another (gave some very strange
+	results when pasting refs with no unicode encodings).
     </UL>
   <LI>
     25-August-2005

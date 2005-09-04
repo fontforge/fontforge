@@ -2943,10 +2943,8 @@ int SFScaleToEm(SplineFont *sf, int as, int des) {
     sf->pfminfo.vlinegap *= scale;
     sf->pfminfo.os2_winascent *= scale;
     sf->pfminfo.os2_windescent *= scale;
-    if ( sf->pfminfo.os2_typoascent!=0 ) {
-	sf->pfminfo.os2_typoascent = as;
-	sf->pfminfo.os2_typodescent = -des;
-    }
+    sf->pfminfo.os2_typoascent *= scale;
+    sf->pfminfo.os2_typodescent *= scale;
     sf->pfminfo.os2_typolinegap *= scale;
 
     sf->pfminfo.os2_subxsize *= scale;

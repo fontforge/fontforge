@@ -627,7 +627,6 @@ static char *str_Encoding2 = "Codificación";
 static char *str_PSGeneral = "General";
 static char *str_PSPrivate = "Diccionario PS Privado";
 static char *str_TTFNames = "Nombres TTF";
-static char *str_TTFValues = "Valores TTF";
 static char *str_Panose = "Panose";
 static char *str_Comment = "Comentario";
 static unichar_t str_TeX = { 0x3a4, 0x3b5, 0x3a7, 0 };

@@ -2739,6 +2739,9 @@ static void sethhead(struct hhead *hhead,struct hhead *vhead,struct alltabs *at,
 	if ( bb.minx < xmin ) xmin = bb.minx;
     }
 
+    if ( at->head.ymax>ymax ) ymax = at->head.ymax;	/* If generated .notdef glyph is bigger than real glyphs */
+    if ( at->head.ymin<ymin ) ymin = at->head.ymin;
+
     if ( ymax==0 && ymin==0 ) {
 	/* this can happen in a bitmap only font */
 	ymax = sf->ascent;
@@ -2843,11 +2846,22 @@ void SFDefaultOS2Simple(struct pfminfo *pfminfo,SplineFont *sf) {
     pfminfo->panose[3] = 3;
     pfminfo->winascent_add = pfminfo->windescent_add = true;
     pfminfo->hheadascent_add = pfminfo->hheaddescent_add = true;
+    pfminfo->typoascent_add = pfminfo->typodescent_add = true;
     pfminfo->os2_winascent = pfminfo->os2_windescent = 0;
 
     if ( sf->subfonts!=NULL ) sf = sf->subfonts[0];
-    pfminfo->linegap = pfminfo->vlinegap =
+    pfminfo->linegap = pfminfo->vlinegap = pfminfo->os2_typolinegap = 
 	    rint(.09*(sf->ascent+sf->descent));
+}
+
+void SFDefaultOS2SubSuper(struct pfminfo *pfminfo,int emsize) {
+    pfminfo->os2_supysize = pfminfo->os2_subysize = .7*emsize;
+    pfminfo->os2_supxsize = pfminfo->os2_subxsize = .65*emsize;
+    pfminfo->os2_subyoff = .14*emsize;
+    pfminfo->os2_subxoff = pfminfo->os2_supxoff = 0;
+    pfminfo->os2_subyoff = .48*emsize;
+    pfminfo->os2_strikeysize = 102*emsize/2048;
+    pfminfo->os2_strikeypos = 530*emsize/2048;
 }
 
 void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *sf,char *fontname) {
@@ -2857,6 +2871,14 @@ void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *sf,char *fontname) {
     if ( sf->pfminfo.pfmset ) {
 	if ( pfminfo!=&sf->pfminfo )
 	    *pfminfo = sf->pfminfo;
+	if ( !pfminfo->panose_set ) {
+	    struct pfminfo info;
+	    memset(&info,0,sizeof(info));
+	    sf->pfminfo.pfmset = false;
+	    SFDefaultOS2Info(&info,sf,fontname);
+	    sf->pfminfo.pfmset = true;
+	    memcpy(pfminfo->panose,info.panose,sizeof(info.panose));
+	}
     } else {
 	memset(pfminfo,'\0',sizeof(*pfminfo));
 	SFDefaultOS2Simple(pfminfo,sf);
@@ -2915,6 +2937,8 @@ void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *sf,char *fontname) {
 	if ( samewid>0 )
 	    pfminfo->panose[3] = 9;
     }
+    if ( !pfminfo->subsuper_set )
+	SFDefaultOS2SubSuper(pfminfo,sf->ascent+sf->descent);
 }
 
 void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]) {
@@ -3046,34 +3070,22 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *sf,
     os2->fstype = 0x8;
     if ( sf->pfminfo.fstype!=-1 )
 	os2->fstype = sf->pfminfo.fstype;
-    if ( sf->pfminfo.hiddenset ) {
-	os2->ysupYSize = sf->pfminfo.os2_supysize;
-	os2->ysubXSize = sf->pfminfo.os2_subxsize;
-	os2->ysubYSize = sf->pfminfo.os2_subysize;
-	os2->ysupXSize = sf->pfminfo.os2_supxsize;
-	os2->ysubYOff = sf->pfminfo.os2_subyoff;
-	os2->ysubXOff = sf->pfminfo.os2_subxoff;
-	os2->ysupXOff = sf->pfminfo.os2_supxoff;
-	os2->ysupYOff = sf->pfminfo.os2_supyoff;
-	os2->yStrikeoutSize = sf->pfminfo.os2_strikeysize;
-	os2->yStrikeoutPos = sf->pfminfo.os2_strikeypos;
-    } else {
-	os2->ysupYSize = os2->ysubYSize = .7*(sf->ascent+sf->descent);
-	os2->ysupXSize = os2->ysubXSize = .65*(sf->ascent+sf->descent);
-	os2->ysubYOff = .14*(sf->ascent+sf->descent);
-	os2->ysubXOff = os2->ysupXOff = 0;
-	os2->ysupYOff = .48*(sf->ascent+sf->descent);
-	os2->yStrikeoutSize = 102*(sf->ascent+sf->descent)/2048;
-	os2->yStrikeoutPos = 530*(sf->ascent+sf->descent)/2048;
-    }
+    if ( !sf->pfminfo.subsuper_set )
+	SFDefaultOS2SubSuper(&sf->pfminfo,sf->ascent+sf->descent);
+    os2->ysupYSize = sf->pfminfo.os2_supysize;
+    os2->ysubXSize = sf->pfminfo.os2_subxsize;
+    os2->ysubYSize = sf->pfminfo.os2_subysize;
+    os2->ysupXSize = sf->pfminfo.os2_supxsize;
+    os2->ysubYOff = sf->pfminfo.os2_subyoff;
+    os2->ysubXOff = sf->pfminfo.os2_subxoff;
+    os2->ysupXOff = sf->pfminfo.os2_supxoff;
+    os2->ysupYOff = sf->pfminfo.os2_supyoff;
+    os2->yStrikeoutSize = sf->pfminfo.os2_strikeysize;
+    os2->yStrikeoutPos = sf->pfminfo.os2_strikeypos;
     os2->fsSel = (at->head.macstyle&1?32:0)|(at->head.macstyle&2?1:0);
     if ( sf->fullname!=NULL && strstrmatch(sf->fullname,"outline")!=NULL )
 	os2->fsSel |= 8;
     if ( os2->fsSel==0 ) os2->fsSel = 64;		/* Regular */
-    if ( sf->pfminfo.os2_typoascent!=0 ) {
-	os2->ascender = sf->pfminfo.os2_typoascent;
-	os2->descender = sf->pfminfo.os2_typodescent;
-    } else {
 /* David Lemon @Adobe.COM
 1)  The sTypoAscender and sTypoDescender values should sum to 2048 in 
 a 2048-unit font. They indicate the position of the em square 
@@ -3087,16 +3099,17 @@ bounding box. (the "ANSI" glyphs)
 GWW: That's what's documented. But it means non-ANSI glyphs get clipped. So the
 docs are wrong.
 */
-	os2->ascender = sf->ascent;
-	os2->descender = -sf->descent;		/* Should be neg */
-    }
-    WinBB(sf,&os2->winascent,&os2->windescent,at);
-    if ( sf->pfminfo.hiddenset )
-	os2->linegap = sf->pfminfo.os2_typolinegap;
+    if ( sf->pfminfo.typoascent_add )
+	os2->ascender = sf->ascent + sf->pfminfo.os2_typoascent;
     else
-	os2->linegap = sf->pfminfo.linegap;
-    if ( sf->pfminfo.hiddenset )
-	os2->sFamilyClass = sf->pfminfo.os2_family_class;
+	os2->ascender = sf->pfminfo.os2_typoascent;
+    if ( sf->pfminfo.typodescent_add )
+	os2->descender = -sf->descent + sf->pfminfo.os2_typodescent;	/* Should be neg */
+    else
+	os2->descender = sf->pfminfo.os2_typodescent;
+    WinBB(sf,&os2->winascent,&os2->windescent,at);
+    os2->linegap = sf->pfminfo.os2_typolinegap;
+    os2->sFamilyClass = sf->pfminfo.os2_family_class;
 
     avg1 = avg2 = last = 0; first = 0x10000;
     cnt1 = cnt2 = 0;

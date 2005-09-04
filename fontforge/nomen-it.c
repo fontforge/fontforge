@@ -508,7 +508,6 @@ static char *str_Encoding2 = "Encoding";
 static char *str_PSGeneral = "Generale";
 static char *str_PSPrivate = "PS privato";
 static char *str_TTFNames = "Nomi TTF";
-static char *str_TTFValues = "Costanti TTF";
 static char *str_Panose = "Panose";
 static char *str_Comment = "Commento";
 static char *str_InvalidEncoding = "Encoding errato";

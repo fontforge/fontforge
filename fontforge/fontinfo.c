@@ -53,7 +53,7 @@ struct gfi_data {
     int tn_width, tn_height;
     int tn_offleft, tn_offtop, tn_langstart, tn_stridstart, tn_strstart, tn_hend;
     int tn_active, tn_smallactive, tn_done;
-    int private_aspect, ttfv_aspect, panose_aspect, tn_aspect, tx_aspect;
+    int private_aspect, ttfv_aspect, tn_aspect, tx_aspect;
     int old_sel, old_aspect, old_lang, old_strid;
     int ttf_set, names_set, tex_set;
     struct psdict *private;
@@ -137,6 +137,77 @@ static GTextInfo pfmfamily[] = {
     { (unichar_t *) _STR_Monospace, NULL, 0, 0, (void *) 0x31, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Script, NULL, 0, 0, (void *) 0x41, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) _STR_Decorative, NULL, 0, 0, (void *) 0x51, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { NULL }};
+static GTextInfo ibmfamily[] = {
+    { (unichar_t *) _STR_NoClassification, NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_OldStyleSerifs, NULL, 0, 0, (void *) 0x100, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_OSSRoundedLegibility, NULL, 0, 0, (void *) 0x101, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_OSSGeralde, NULL, 0, 0, (void *) 0x102, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_OSSVenetian, NULL, 0, 0, (void *) 0x103, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_OSSModifiedVenetian, NULL, 0, 0, (void *) 0x104, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_OSSDutchModern, NULL, 0, 0, (void *) 0x105, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_OSSDutchTrad, NULL, 0, 0, (void *) 0x106, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_OSSContemporary, NULL, 0, 0, (void *) 0x107, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_OSSCaligraphic, NULL, 0, 0, (void *) 0x108, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_OSSMiscellaneous, NULL, 0, 0, (void *) 0x10f, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_TransitionalSerifs, NULL, 0, 0, (void *) 0x200, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_TSDirectLine, NULL, 0, 0, (void *) 0x201, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_TSScript, NULL, 0, 0, (void *) 0x202, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_TSMiscellaneous, NULL, 0, 0, (void *) 0x20f, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_ModernSerifs, NULL, 0, 0, (void *) 0x300, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MSItalian, NULL, 0, 0, (void *) 0x301, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MSScript, NULL, 0, 0, (void *) 0x302, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_MSMiscellaneous, NULL, 0, 0, (void *) 0x30f, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_ClarendonSerifs, NULL, 0, 0, (void *) 0x400, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_CSClarendon, NULL, 0, 0, (void *) 0x401, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_CSModern, NULL, 0, 0, (void *) 0x402, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_CSTraditional, NULL, 0, 0, (void *) 0x403, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_CSNewspaper, NULL, 0, 0, (void *) 0x404, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_CSStubSerif, NULL, 0, 0, (void *) 0x405, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_CSMonotone, NULL, 0, 0, (void *) 0x406, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_CSTypewriter, NULL, 0, 0, (void *) 0x407, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_CSMiscellaneous, NULL, 0, 0, (void *) 0x40f, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_SlabSerifs, NULL, 0, 0, (void *) 0x500, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_SSMonotone, NULL, 0, 0, (void *) 0x501, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_SSHumanist, NULL, 0, 0, (void *) 0x502, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_SSGeometric, NULL, 0, 0, (void *) 0x503, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_SSSwiss, NULL, 0, 0, (void *) 0x504, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_SSTypewriter, NULL, 0, 0, (void *) 0x505, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_SSMiscellaneous, NULL, 0, 0, (void *) 0x50f, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_FreeformSerifs, NULL, 0, 0, (void *) 0x700, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_FSModern, NULL, 0, 0, (void *) 0x701, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_FSMiscellaneous, NULL, 0, 0, (void *) 0x70f, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_SansSerif, NULL, 0, 0, (void *) 0x800, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_SSIBMNeoGrotesqueGothic, NULL, 0, 0, (void *) 0x801, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_SSHumanist, NULL, 0, 0, (void *) 0x802, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_SSLowxRoundGeometric, NULL, 0, 0, (void *) 0x803, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_SSHighxRoundGeometric, NULL, 0, 0, (void *) 0x804, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_SSNeoGrotesqueGothic, NULL, 0, 0, (void *) 0x805, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_SSModifiedGrotesqueGothic, NULL, 0, 0, (void *) 0x806, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_SSTypewriterGothic, NULL, 0, 0, (void *) 0x809, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_SSMatrix, NULL, 0, 0, (void *) 0x80a, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_SSMiscellaneous, NULL, 0, 0, (void *) 0x80f, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Ornamentals, NULL, 0, 0, (void *) 0x900, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_OEngraver, NULL, 0, 0, (void *) 0x901, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_OBlackLetter, NULL, 0, 0, (void *) 0x902, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_ODecorative, NULL, 0, 0, (void *) 0x903, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_O3D, NULL, 0, 0, (void *) 0x904, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_OMiscellaneous, NULL, 0, 0, (void *) 0x90f, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Scripts, NULL, 0, 0, (void *) 0xa00, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_SUncial, NULL, 0, 0, (void *) 0xa01, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_SBrushJoined, NULL, 0, 0, (void *) 0xa02, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_SFormalJoined, NULL, 0, 0, (void *) 0xa03, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_SMonotoneJoined, NULL, 0, 0, (void *) 0xa04, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_SCaligraphic, NULL, 0, 0, (void *) 0xa05, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_SBrushUnjoined, NULL, 0, 0, (void *) 0xa06, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_SFormalUnjoined, NULL, 0, 0, (void *) 0xa07, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_SMonotoneUnjoined, NULL, 0, 0, (void *) 0xa08, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_SMiscellaneous, NULL, 0, 0, (void *) 0xa0f, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_Symbolic, NULL, 0, 0, (void *) 0xc00, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_SyMixedSerif, NULL, 0, 0, (void *) 0xc03, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_SyOldStyleSerif, NULL, 0, 0, (void *) 0xc06, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_SyNeoGrotesqueSansSerif, NULL, 0, 0, (void *) 0xc07, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) _STR_SyMiscellaneous, NULL, 0, 0, (void *) 0xc0f, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
 static GTextInfo panfamily[] = {
     { (unichar_t *) _STR_Any, NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -977,6 +1048,7 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_Remove		2005
 #define CID_Hist		2006
 
+#define CID_TTFTabs		3000
 #define CID_WeightClass		3001
 #define CID_WidthClass		3002
 #define CID_PFMFamily		3003
@@ -992,6 +1064,33 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_WinDescent		3013
 #define CID_WinDescentLab	3014
 #define CID_WinDescentIsOff	3015
+#define CID_TypoAscent		3016
+#define CID_TypoAscentLab	3017
+#define CID_TypoAscentIsOff	3018
+#define CID_TypoDescent		3019
+#define CID_TypoDescentLab	3020
+#define CID_TypoDescentIsOff	3021
+#define CID_TypoLineGap		3022
+#define CID_HHeadAscent		3023
+#define CID_HHeadAscentLab	3024
+#define CID_HHeadAscentIsOff	3025
+#define CID_HHeadDescent	3026
+#define CID_HHeadDescentLab	3027
+#define CID_HHeadDescentIsOff	3028
+#define CID_Vendor		3029
+#define CID_IBMFamily		3030
+
+#define CID_SubSuperDefault	3100
+#define CID_SubXSize		3101
+#define CID_SubYSize		3102
+#define CID_SubXOffset		3103
+#define CID_SubYOffset		3104
+#define CID_SuperXSize		3105
+#define CID_SuperYSize		3106
+#define CID_SuperXOffset	3107
+#define CID_SuperYOffset	3108
+#define CID_StrikeoutSize	3109
+#define CID_StrikeoutPos	3110
 
 #define CID_PanFamily		4001
 #define CID_PanSerifs		4002
@@ -1003,6 +1102,17 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_PanLetterform	4008
 #define CID_PanMidLine		4009
 #define CID_PanXHeight		4010
+#define CID_PanDefault		4011
+#define CID_PanFamilyLab	4021
+#define CID_PanSerifsLab	4022
+#define CID_PanWeightLab	4023
+#define CID_PanPropLab		4024
+#define CID_PanContrastLab	4025
+#define CID_PanStrokeVarLab	4026
+#define CID_PanArmStyleLab	4027
+#define CID_PanLetterformLab	4028
+#define CID_PanMidLineLab	4029
+#define CID_PanXHeightLab	4030
 
 #define CID_TNLangSort		5001
 #define CID_TNStringSort	5002
@@ -5065,21 +5175,25 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	int reformat_fv=0, retitle_fv=false;
 	int upos, uwid, as, des, err = false, weight=0;
 	int uniqueid, linegap=0, vlinegap=0, winascent=0, windescent=0;
+	int tlinegap=0, tascent=0, tdescent=0, hascent=0, hdescent=0;
 	int winaoff=true, windoff=true;
+	int taoff=true, tdoff=true, haoff = true, hdoff = true;
 	real ia, cidversion;
 	const unichar_t *txt, *fond; unichar_t *end;
 	int i,j, mcs;
 	int vmetrics, vorigin, namechange, order2;
 	int xuidchanged = false;
-	GTextInfo *pfmfam, *fstype;
+	GTextInfo *pfmfam, *ibmfam, *fstype;
 	int32 len;
 	GTextInfo **ti;
+	int subs[4], super[4], strike[2];
 	int design_size, size_top, size_bottom, styleid;
 	int strokedfont = false;
 	real strokewidth;
 #ifdef FONTFORGE_CONFIG_TYPE3
 	int multilayer = false;
 #endif
+	char os2_vendor[4];
 
 	if ( d->tn_smallactive!=-1 )
 	    TN_FinishSmallEdit(d);
@@ -5142,12 +5256,45 @@ return(true);
 	    if ( weight == 0 )
 		weight = GetIntR(gw,CID_WeightClass,_STR_WeightClass,&err);
 	    linegap = GetIntR(gw,CID_LineGap,_STR_LineGap,&err);
+	    tlinegap = GetIntR(gw,CID_LineGap,_STR_TypoLineGap,&err);
 	    if ( vmetrics )
 		vlinegap = GetIntR(gw,CID_VLineGap,_STR_VLineGap,&err);
 	    winaoff = GGadgetIsChecked(GWidgetGetControl(gw,CID_WinAscentIsOff));
 	    windoff = GGadgetIsChecked(GWidgetGetControl(gw,CID_WinDescentIsOff));
 	    winascent  = GetIntR(gw,CID_WinAscent,winaoff ? _STR_WinAscentOff : _STR_WinAscent,&err);
 	    windescent = GetIntR(gw,CID_WinDescent,windoff ? _STR_WinDescentOff : _STR_WinDescent,&err);
+	    taoff = GGadgetIsChecked(GWidgetGetControl(gw,CID_TypoAscentIsOff));
+	    tdoff = GGadgetIsChecked(GWidgetGetControl(gw,CID_TypoDescentIsOff));
+	    tascent  = GetIntR(gw,CID_TypoAscent,taoff ? _STR_TypoAscentOff : _STR_TypoAscent,&err);
+	    tdescent = GetIntR(gw,CID_TypoDescent,tdoff ? _STR_TypoDescentOff : _STR_TypoDescent,&err);
+	    haoff = GGadgetIsChecked(GWidgetGetControl(gw,CID_HHeadAscentIsOff));
+	    hdoff = GGadgetIsChecked(GWidgetGetControl(gw,CID_HHeadDescentIsOff));
+	    hascent  = GetIntR(gw,CID_HHeadAscent,haoff ? _STR_HHeadAscentOff : _STR_HHeadAscent,&err);
+	    hdescent = GetIntR(gw,CID_HHeadDescent,hdoff ? _STR_HHeadDescentOff : _STR_HHeadDescent,&err);
+	    if ( err )
+return(true);
+
+	    if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_SubSuperDefault)) ) {
+		for ( i=0; i<4; ++i )
+		    subs[i] = GetIntR(gw,CID_SubXSize+i,_STR_Subscript,&err);
+		for ( i=0; i<4; ++i )
+		    super[i] = GetIntR(gw,CID_SuperXSize+i,_STR_Superscript,&err);
+		for ( i=0; i<2; ++i )
+		    strike[i] = GetIntR(gw,CID_StrikeoutSize+i,_STR_Strikeout,&err);
+	    }
+	    txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Vendor));
+	    if ( u_strlen(txt)>4 || txt[0]>0x7e || (txt[0]!='\0' && (txt[1]>0x7e ||
+		    (txt[1]!='\0' && (txt[2]>0x7e || (txt[2]!='\0' && txt[3]>0x7e))))) ) {
+		if ( u_strlen(txt)>4 )
+		    GWidgetErrorR(_STR_BadIBMFamily,_STR_TagMustBe4);
+		else
+		    GWidgetErrorR(_STR_BadIBMFamily,_STR_TagMustBeASCII);
+return( true );
+	    }
+	    os2_vendor[0] = txt[0]==0 ? ' ' : txt[0];
+	    os2_vendor[1] = txt[0]==0 || txt[1]=='\0' ? ' ' : txt[1];
+	    os2_vendor[2] = txt[0]==0 || txt[1]=='\0' || txt[2]=='\0' ? ' ' : txt[2];
+	    os2_vendor[3] = txt[0]==0 || txt[1]=='\0' || txt[2]=='\0' || txt[3]=='\0' ? ' ' : txt[3];
 	}
 	if ( err )
 return(true);
@@ -5270,13 +5417,6 @@ return(true);
 	    sf->descent = des;
 	    BDFsSetAsDs(sf);
 	    reformat_fv = true;
-	    if ( sf->pfminfo.os2_typoascent!=0 ) {
-		double scale = (as+des)/(double) (sf->ascent+sf->descent);
-		sf->pfminfo.os2_typoascent = as;
-		sf->pfminfo.os2_typodescent = -des;
-		sf->pfminfo.os2_winascent *= scale;
-		sf->pfminfo.os2_windescent *= scale;
-	    }
 	}
 	fond = _GGadgetGetTitle(GWidgetGetControl(gw,CID_MacFOND));
 	free(sf->fondname); sf->fondname = NULL;
@@ -5323,6 +5463,12 @@ return(true);
 		sf->pfminfo.pfmfamily = (int) (pfmfam->userdata);
 	    else
 		sf->pfminfo.pfmfamily = 0x11;
+	    ibmfam = GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_IBMFamily));
+	    if ( pfmfam!=NULL )
+		sf->pfminfo.os2_family_class = (int) (ibmfam->userdata);
+	    else
+		sf->pfminfo.os2_family_class = 0x00;
+	    memcpy(sf->pfminfo.os2_vendor,os2_vendor,sizeof(os2_vendor));
 	    fstype = GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_FSType));
 	    if ( fstype!=NULL )
 		sf->pfminfo.fstype = (int) (fstype->userdata);
@@ -5334,8 +5480,8 @@ return(true);
 		sf->pfminfo.fstype |=0x200;
 	    for ( i=0; i<10; ++i )
 		sf->pfminfo.panose[i] = (int) (GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_PanFamily+i))->userdata);
-	    sf->pfminfo.hiddenset = false;
-	    sf->pfminfo.os2_typolinegap = linegap;
+	    sf->pfminfo.panose_set = !GGadgetIsChecked(GWidgetGetControl(gw,CID_PanDefault));
+	    sf->pfminfo.os2_typolinegap = tlinegap;
 	    sf->pfminfo.linegap = linegap;
 	    if ( vmetrics )
 		sf->pfminfo.vlinegap = vlinegap;
@@ -5343,7 +5489,29 @@ return(true);
 	    sf->pfminfo.os2_windescent = windescent;
 	    sf->pfminfo.winascent_add = winaoff;
 	    sf->pfminfo.windescent_add = windoff;
+	    sf->pfminfo.os2_typoascent = tascent;
+	    sf->pfminfo.os2_typodescent = tdescent;
+	    sf->pfminfo.typoascent_add = taoff;
+	    sf->pfminfo.typodescent_add = tdoff;
+	    sf->pfminfo.hhead_ascent = hascent;
+	    sf->pfminfo.hhead_descent = hdescent;
+	    sf->pfminfo.hheadascent_add = haoff;
+	    sf->pfminfo.hheaddescent_add = hdoff;
 	    sf->pfminfo.pfmset = true;
+
+	    sf->pfminfo.subsuper_set = !GGadgetIsChecked(GWidgetGetControl(gw,CID_PanDefault));
+	    if ( sf->pfminfo.subsuper_set ) {
+		sf->pfminfo.os2_subxsize = subs[0];
+		sf->pfminfo.os2_subysize = subs[1];
+		sf->pfminfo.os2_subxoff = subs[2];
+		sf->pfminfo.os2_subyoff = subs[3];
+		sf->pfminfo.os2_supxsize = super[0];
+		sf->pfminfo.os2_supysize = super[1];
+		sf->pfminfo.os2_supxoff = super[2];
+		sf->pfminfo.os2_supyoff = super[3];
+		sf->pfminfo.os2_strikeysize = strike[0];
+		sf->pfminfo.os2_strikeypos = strike[1];
+	    }
 	}
 	if ( order2!=sf->order2 ) {
 	    if ( order2 )
@@ -5386,33 +5554,65 @@ return( true );
 static void GFI_AsDsLab(struct gfi_data *d, int cid) {
     int isoffset = GGadgetIsChecked(GWidgetGetControl(d->gw,cid));
     DBounds b;
-    int ocid = cid==CID_WinAscentIsOff ? CID_WinAscent : CID_WinDescent;
+    int ocid, labcid;
     double val;
     char buf[40];
     unichar_t ubuf[40];
+    int offt, baret, ismax=0;
+    unichar_t *end;
 
-    if ( cid==CID_WinAscentIsOff )
-	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_WinAscentLab),
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GStringGetResource(isoffset?_STR_WinAscentOff:_STR_WinAscent,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-		isoffset?_("Win Ascent Offset:"));
-#endif
-    else
-	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_WinDescentLab),
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GStringGetResource(isoffset?_STR_WinDescentOff:_STR_WinDescent,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-		isoffset?_("Win Descent Offset:"));
-#endif
-    CIDFindBounds(d->sf,&b);
-    b.miny = -b.miny;
+    switch ( cid ) {
+      case CID_WinAscentIsOff:
+	offt = _STR_WinAscentOff; baret = _STR_WinAscent;
+	ocid = CID_WinAscent; labcid = CID_WinAscentLab;
+	ismax = true;
+      break;
+      case CID_WinDescentIsOff:
+	offt = _STR_WinDescentOff; baret = _STR_WinDescent;
+	ocid = CID_WinDescent; labcid = CID_WinDescentLab;
+      break;
+      case CID_TypoAscentIsOff:
+	offt = _STR_TypoAscentOff; baret = _STR_TypoAscent;
+	ocid = CID_TypoAscent; labcid = CID_TypoAscentLab;
+	ismax = true;
+      break;
+      case CID_TypoDescentIsOff:
+	offt = _STR_TypoDescentOff; baret = _STR_TypoDescent;
+	ocid = CID_TypoDescent; labcid = CID_TypoDescentLab;
+      break;
+      case CID_HHeadAscentIsOff:
+	offt = _STR_HHeadAscentOff; baret = _STR_HHeadAscent;
+	ocid = CID_HHeadAscent; labcid = CID_HHeadAscentLab;
+	ismax = true;
+      break;
+      case CID_HHeadDescentIsOff:
+	offt = _STR_HHeadDescentOff; baret = _STR_HHeadDescent;
+	ocid = CID_HHeadDescent; labcid = CID_HHeadDescentLab;
+      break;
+      default:
+return;
+    }
+
+    GGadgetSetTitle(GWidgetGetControl(d->gw,labcid),
+	    GStringGetResource(isoffset?offt:baret,NULL));
+    if ( cid == CID_TypoAscentIsOff ) {
+	const unichar_t *as = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Ascent));
+	double av=u_strtod(as,&end);
+	b.maxy = *end=='\0' ? av : d->sf->ascent;
+    } else if ( cid == CID_TypoDescentIsOff ) {
+	const unichar_t *ds = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Descent));
+	double dv=u_strtod(ds,&end);
+	b.miny = *end=='\0' ? -dv : -d->sf->descent;
+    } else {
+	CIDFindBounds(d->sf,&b);
+	if ( cid == CID_WinDescentIsOff ) b.miny = -b.miny;
+    }
 
     val = u_strtod(_GGadgetGetTitle(GWidgetGetControl(d->gw,ocid)),NULL);
     if ( isoffset )
-	sprintf( buf,"%g",rint( val-(cid==CID_WinAscentIsOff ? b.maxy : -b.miny)) );
+	sprintf( buf,"%g",rint( val-(ismax ? b.maxy : b.miny)) );
     else
-	sprintf( buf,"%g",rint( val+(cid==CID_WinAscentIsOff ? b.maxy : -b.miny)) );
+	sprintf( buf,"%g",rint( val+(ismax ? b.maxy : b.miny)) );
     uc_strcpy(ubuf,buf);
     GGadgetSetTitle(GWidgetGetControl(d->gw,ocid),ubuf);
 }
@@ -5425,10 +5625,116 @@ static int GFI_AsDesIsOff(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static void _GFI_PanoseDefault(struct gfi_data *d) {
+    int i;
+    int isdefault = GGadgetIsChecked(GWidgetGetControl(d->gw,CID_PanDefault));
+
+    for ( i=0; i<10; ++i ) {
+	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_PanFamily+i),!isdefault);
+	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_PanFamilyLab+i),!isdefault);
+    }
+    if ( isdefault ) {
+	char *n = cu_copy(_GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Fontname)));
+	struct pfminfo info;
+	memset(&info,0,sizeof(info));
+	SFDefaultOS2Info(&info,d->sf,n);
+	free(n);
+	for ( i=0; i<10; ++i )
+	    GGadgetSelectOneListItem(GWidgetGetControl(d->gw,CID_PanFamily+i),info.panose[i]);
+    }
+}
+
+static int GFI_PanoseDefault(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	_GFI_PanoseDefault(d);
+    }
+return( true );
+}
+
+static void GFI_SubSuperSet(struct gfi_data *d, struct pfminfo *info) {
+    char buffer[40];
+    unichar_t ubuf[40];
+
+    sprintf( buffer, "%d", info->os2_subxsize );
+    uc_strcpy(ubuf,buffer);
+    GGadgetSetTitle(GWidgetGetControl(d->gw,CID_SubXSize),ubuf);
+
+    sprintf( buffer, "%d", info->os2_subysize );
+    uc_strcpy(ubuf,buffer);
+    GGadgetSetTitle(GWidgetGetControl(d->gw,CID_SubYSize),ubuf);
+
+    sprintf( buffer, "%d", info->os2_subxoff );
+    uc_strcpy(ubuf,buffer);
+    GGadgetSetTitle(GWidgetGetControl(d->gw,CID_SubXOffset),ubuf);
+
+    sprintf( buffer, "%d", info->os2_subyoff );
+    uc_strcpy(ubuf,buffer);
+    GGadgetSetTitle(GWidgetGetControl(d->gw,CID_SubYOffset),ubuf);
+
+
+    sprintf( buffer, "%d", info->os2_supxsize );
+    uc_strcpy(ubuf,buffer);
+    GGadgetSetTitle(GWidgetGetControl(d->gw,CID_SuperXSize),ubuf);
+
+    sprintf( buffer, "%d", info->os2_supysize );
+    uc_strcpy(ubuf,buffer);
+    GGadgetSetTitle(GWidgetGetControl(d->gw,CID_SuperYSize),ubuf);
+
+    sprintf( buffer, "%d", info->os2_supxoff );
+    uc_strcpy(ubuf,buffer);
+    GGadgetSetTitle(GWidgetGetControl(d->gw,CID_SuperXOffset),ubuf);
+
+    sprintf( buffer, "%d", info->os2_supyoff );
+    uc_strcpy(ubuf,buffer);
+    GGadgetSetTitle(GWidgetGetControl(d->gw,CID_SuperYOffset),ubuf);
+
+
+    sprintf( buffer, "%d", info->os2_strikeysize );
+    uc_strcpy(ubuf,buffer);
+    GGadgetSetTitle(GWidgetGetControl(d->gw,CID_StrikeoutSize),ubuf);
+
+    sprintf( buffer, "%d", info->os2_strikeypos );
+    uc_strcpy(ubuf,buffer);
+    GGadgetSetTitle(GWidgetGetControl(d->gw,CID_StrikeoutPos),ubuf);
+}
+
+static void _GFI_SubSuperDefault(struct gfi_data *d) {
+    int i;
+    int isdefault = GGadgetIsChecked(GWidgetGetControl(d->gw,CID_SubSuperDefault));
+
+    for ( i=0; i<10; ++i )
+	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_SubXSize+i),!isdefault);
+    if ( isdefault ) {
+	const unichar_t *as = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Ascent));
+	const unichar_t *ds = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Descent));
+	unichar_t *aend, *dend;
+	double av=u_strtod(as,&aend),dv=u_strtod(ds,&dend);
+	struct pfminfo info;
+	if ( *aend!='\0' ) av = d->sf->ascent;
+	if ( *dend!='\0' ) dv = d->sf->descent;
+	memset(&info,0,sizeof(info));
+	SFDefaultOS2SubSuper(&info,(int) (dv+av));
+	GFI_SubSuperSet(d,&info);
+    }
+}
+
+static int GFI_SubSuperDefault(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	_GFI_SubSuperDefault(d);
+    }
+return( true );
+}
+
 static void TTFSetup(struct gfi_data *d) {
     struct pfminfo info;
     char buffer[10]; unichar_t ubuf[10];
-    int i, lg, vlg;
+    int i, lg, vlg, tlg;
+    const unichar_t *as = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Ascent));
+    const unichar_t *ds = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Descent));
+    unichar_t *aend, *dend;
+    double av=u_strtod(as,&aend),dv=u_strtod(ds,&dend);
 
     info = d->sf->pfminfo;
     if ( !info.pfmset ) {
@@ -5440,22 +5746,22 @@ static void TTFSetup(struct gfi_data *d) {
 	/*  name properly */
 	/* And on CURRENT values of ascent and descent */
 	char *n = cu_copy(_GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Fontname)));
-	const unichar_t *as = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Ascent));
-	const unichar_t *ds = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Descent));
-	unichar_t *aend, *dend;
-	double av=u_strtod(as,&aend),dv=u_strtod(ds,&dend);
 	if ( *aend=='\0' && *dend=='\0' ) {
 	    if ( info.linegap==0 )
 		info.linegap = rint(.09*(av+dv));
 	    if ( info.vlinegap==0 )
 		info.vlinegap = info.linegap;
+	    if ( info.os2_typolinegap==0 )
+		info.os2_typolinegap = info.linegap;
 	}
-	lg = info.linegap; vlg = info.vlinegap;
+	lg = info.linegap; vlg = info.vlinegap; tlg = info.os2_typolinegap;
 	SFDefaultOS2Info(&info,d->sf,n);
 	if ( lg != 0 )
 	    info.linegap = lg;
 	if ( vlg!= 0 )
 	    info.vlinegap = vlg;
+	if ( tlg!=0 )
+	    info.os2_typolinegap = tlg;
 	free(n);
     }
 
@@ -5473,8 +5779,35 @@ static void TTFSetup(struct gfi_data *d) {
 	    GGadgetSelectOneListItem(GWidgetGetControl(d->gw,CID_PFMFamily),i);
     break;
 	}
-    for ( i=0; i<10; ++i )
-	GGadgetSelectOneListItem(GWidgetGetControl(d->gw,CID_PanFamily+i),info.panose[i]);
+    for ( i=0; ibmfamily[i].text!=NULL; ++i )
+	if ( (int) (ibmfamily[i].userdata)==info.os2_family_class ) {
+	    GGadgetSelectOneListItem(GWidgetGetControl(d->gw,CID_IBMFamily),i);
+    break;
+	}
+    if ( info.os2_vendor[0]!='\0' ) {
+	ubuf[0] = info.os2_vendor[0];
+	ubuf[1] = info.os2_vendor[1];
+	ubuf[2] = info.os2_vendor[2];
+	ubuf[3] = info.os2_vendor[3];
+	ubuf[4] = 0;
+    } else if ( TTFFoundry!=NULL )
+	uc_strncpy(ubuf,TTFFoundry,4);
+    else
+	uc_strcpy(ubuf,"PfEd");
+    GGadgetSetTitle(GWidgetGetControl(d->gw,CID_Vendor),ubuf);
+
+
+    GGadgetSetChecked(GWidgetGetControl(d->gw,CID_PanDefault),!info.panose_set);
+    _GFI_PanoseDefault(d);
+    if ( info.panose_set )
+	for ( i=0; i<10; ++i )
+	    GGadgetSelectOneListItem(GWidgetGetControl(d->gw,CID_PanFamily+i),info.panose[i]);
+
+    GGadgetSetChecked(GWidgetGetControl(d->gw,CID_SubSuperDefault),!info.subsuper_set);
+    if ( info.subsuper_set )
+	GFI_SubSuperSet(d,&info);
+    _GFI_SubSuperDefault(d);
+
     d->ttf_set = true;
     /* FSType is already set */
     sprintf( buffer, "%d", info.linegap );
@@ -5483,6 +5816,9 @@ static void TTFSetup(struct gfi_data *d) {
     sprintf( buffer, "%d", info.vlinegap );
     uc_strcpy(ubuf,buffer);
     GGadgetSetTitle(GWidgetGetControl(d->gw,CID_VLineGap),ubuf);
+    sprintf( buffer, "%d", info.os2_typolinegap );
+    uc_strcpy(ubuf,buffer);
+    GGadgetSetTitle(GWidgetGetControl(d->gw,CID_TypoLineGap),ubuf);
 
     GGadgetSetChecked(GWidgetGetControl(d->gw,CID_WinAscentIsOff),info.winascent_add);
     GFI_AsDsLab(d,CID_WinAscentIsOff);
@@ -5494,6 +5830,28 @@ static void TTFSetup(struct gfi_data *d) {
     sprintf( buffer, "%d", info.os2_windescent );
     uc_strcpy(ubuf,buffer);
     GGadgetSetTitle(GWidgetGetControl(d->gw,CID_WinDescent),ubuf);
+
+    GGadgetSetChecked(GWidgetGetControl(d->gw,CID_TypoAscentIsOff),info.typoascent_add);
+    GFI_AsDsLab(d,CID_TypoAscentIsOff);
+    sprintf( buffer, "%d", info.os2_typoascent );
+    uc_strcpy(ubuf,buffer);
+    GGadgetSetTitle(GWidgetGetControl(d->gw,CID_TypoAscent),ubuf);
+    GGadgetSetChecked(GWidgetGetControl(d->gw,CID_TypoDescentIsOff),info.typodescent_add);
+    GFI_AsDsLab(d,CID_TypoDescentIsOff);
+    sprintf( buffer, "%d", info.os2_typodescent );
+    uc_strcpy(ubuf,buffer);
+    GGadgetSetTitle(GWidgetGetControl(d->gw,CID_TypoDescent),ubuf);
+
+    GGadgetSetChecked(GWidgetGetControl(d->gw,CID_HHeadAscentIsOff),info.hheadascent_add);
+    GFI_AsDsLab(d,CID_HHeadAscentIsOff);
+    sprintf( buffer, "%d", info.hhead_ascent );
+    uc_strcpy(ubuf,buffer);
+    GGadgetSetTitle(GWidgetGetControl(d->gw,CID_HHeadAscent),ubuf);
+    GGadgetSetChecked(GWidgetGetControl(d->gw,CID_HHeadDescentIsOff),info.hheaddescent_add);
+    GFI_AsDsLab(d,CID_HHeadDescentIsOff);
+    sprintf( buffer, "%d", info.hhead_descent );
+    uc_strcpy(ubuf,buffer);
+    GGadgetSetTitle(GWidgetGetControl(d->gw,CID_HHeadDescent),ubuf);
 }
 
 static int mathparams[] = { _STR_Num1, _STR_Num2,  _STR_Num3, _STR_Denom1,
@@ -5708,7 +6066,7 @@ static int GFI_AspectChange(GGadget *g, GEvent *e) {
 	int new_aspect = GTabSetGetSel(g);
 	if ( d->tn_smallactive!=-1 )
 	    TN_FinishSmallEdit(d);
-	if ( !d->ttf_set && ( new_aspect == d->ttfv_aspect || new_aspect == d->panose_aspect ))
+	if ( !d->ttf_set && new_aspect == d->ttfv_aspect )
 	    TTFSetup(d);
 	else if ( !d->names_set && new_aspect == d->tn_aspect ) {
 	    InitTTFNames(d);
@@ -5721,17 +6079,18 @@ return( true );
 
 static void GFI_Resize(struct gfi_data *d) {
     GRect size, temp, temp2, subsize;
-    int yoff, xoff, xw, yh, i;
-    static int xy_cids[] = { CID_Notice, CID_Comment, CID_Contextual, CID_StateMachine, 0 };
+    int yoff, xoff, xw, yh, i, okdown;
+    static int xy_cids[] = { CID_Notice, CID_Comment, CID_Contextual, CID_StateMachine, CID_TTFTabs, 0 };
     static int x_cids[] = { CID_PrivateEntries, CID_PrivateValues, CID_MarkClasses, CID_AnchorClasses, 0 };
     int sbsize = GDrawPointsToPixels(d->gw,_GScrollBar_Width);
 
-    GDrawGetSize(GGadgetGetWindow(GWidgetGetControl(d->gw,CID_Notice)),&subsize);
+    GDrawGetSize(GGadgetGetWindow(GWidgetGetControl(d->gw,CID_TTFTabs)),&subsize);
 
     GDrawGetSize(d->gw,&size);
     GGadgetResize(GWidgetGetControl(d->gw,CID_MainGroup),size.width-4,size.height-4);
     GGadgetGetSize(GWidgetGetControl(d->gw,CID_OK),&temp);
-    yoff = size.height-temp.height-GDrawPointsToPixels(d->gw,3)-2-GDrawPointsToPixels(d->gw,2) - temp.y;
+    okdown = temp.height+GDrawPointsToPixels(d->gw,3)+2+GDrawPointsToPixels(d->gw,2);
+    yoff = (size.height - okdown) - temp.y;
     GGadgetMove(GWidgetGetControl(d->gw,CID_OK),temp.x,temp.y+yoff);
     GGadgetGetSize(GWidgetGetControl(d->gw,CID_Cancel),&temp2);
     GGadgetMove(GWidgetGetControl(d->gw,CID_Cancel),size.width-temp2.width-temp.x,temp2.y+yoff);
@@ -5739,7 +6098,7 @@ static void GFI_Resize(struct gfi_data *d) {
     xoff = size.width-2*GDrawPointsToPixels(d->gw,4) - temp.width;
     GGadgetResize(GWidgetGetControl(d->gw,CID_Tabs),temp.width+xoff,
 	    temp.height+yoff);
-    subsize.height += yoff; subsize.width += xoff;
+    subsize.height = size.height- subsize.y- okdown-GDrawPointsToPixels(d->gw,8); subsize.width += xoff;
 
     for ( i=0; xy_cids[i]!=0; ++i ) {
 	GGadgetGetSize(GWidgetGetControl(d->gw,xy_cids[i]),&temp);
@@ -5821,15 +6180,16 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GTabInfo aspects[17], conaspects[7], smaspects[5];
+    GTabInfo aspects[17], conaspects[7], smaspects[5], vaspects[5];
     GGadgetCreateData mgcd[10], ngcd[17], psgcd[28], tngcd[8],
-	pgcd[8], vgcd[22], pangcd[22], comgcd[3], atgcd[7], txgcd[23],
+	pgcd[8], vgcd[16], pangcd[22], comgcd[3], atgcd[7], txgcd[23],
 	congcd[3], csubgcd[fpst_max-pst_contextpos][6], smgcd[3], smsubgcd[4][6],
-	mfgcd[8], mcgcd[8], szgcd[19], mkgcd[5];
+	mfgcd[8], mcgcd[8], szgcd[19], mkgcd[5], metgcd[28], vagcd[3], ssgcd[23];
     GTextInfo mlabel[10], nlabel[17], pslabel[28], tnlabel[7],
-	plabel[8], vlabel[22], panlabel[22], comlabel[3], atlabel[7], txlabel[23],
+	plabel[8], vlabel[16], panlabel[22], comlabel[3], atlabel[7], txlabel[23],
 	csublabel[fpst_max-pst_contextpos][6], smsublabel[4][6],
-	mflabel[8], mclabel[8], szlabel[17], mklabel[5];
+	mflabel[8], mclabel[8], szlabel[17], mklabel[5], metlabel[28],
+	sslabel[23];
     struct gfi_data *d;
     char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20],
 	    vbuf[20], uibuf[12], vorig[20], embuf[20];
@@ -6371,7 +6731,7 @@ return;
     vgcd[0].gd.flags = gg_visible | gg_enabled;
     vgcd[0].creator = GLabelCreate;
 
-    vgcd[1].gd.pos.x = 100; vgcd[1].gd.pos.y = vgcd[0].gd.pos.y-6; vgcd[1].gd.pos.width = 140;
+    vgcd[1].gd.pos.x = 90; vgcd[1].gd.pos.y = vgcd[0].gd.pos.y-6; vgcd[1].gd.pos.width = 140;
     vgcd[1].gd.flags = gg_visible | gg_enabled;
     vgcd[1].gd.cid = CID_WeightClass;
     vgcd[1].gd.u.list = weightclass;
@@ -6384,7 +6744,7 @@ return;
     vgcd[2].gd.flags = gg_visible | gg_enabled;
     vgcd[2].creator = GLabelCreate;
 
-    vgcd[3].gd.pos.x = 100; vgcd[3].gd.pos.y = vgcd[2].gd.pos.y-6;
+    vgcd[3].gd.pos.x = 90; vgcd[3].gd.pos.y = vgcd[2].gd.pos.y-6;
     vgcd[3].gd.flags = gg_visible | gg_enabled;
     vgcd[3].gd.cid = CID_WidthClass;
     vgcd[3].gd.u.list = widthclass;
@@ -6397,7 +6757,7 @@ return;
     vgcd[4].gd.flags = gg_visible | gg_enabled;
     vgcd[4].creator = GLabelCreate;
 
-    vgcd[5].gd.pos.x = 100; vgcd[5].gd.pos.y = vgcd[4].gd.pos.y-6; vgcd[5].gd.pos.width = 140;
+    vgcd[5].gd.pos.x = 90; vgcd[5].gd.pos.y = vgcd[4].gd.pos.y-6; vgcd[5].gd.pos.width = 140;
     vgcd[5].gd.flags = gg_visible | gg_enabled;
     vgcd[5].gd.cid = CID_PFMFamily;
     vgcd[5].gd.u.list = pfmfamily;
@@ -6415,7 +6775,7 @@ return;
 #endif
     vgcd[6].creator = GLabelCreate;
 
-    vgcd[7].gd.pos.x = 100; vgcd[7].gd.pos.y = vgcd[6].gd.pos.y-6;
+    vgcd[7].gd.pos.x = 90; vgcd[7].gd.pos.y = vgcd[6].gd.pos.y-6;
     vgcd[7].gd.pos.width = 140;
     vgcd[7].gd.flags = gg_visible | gg_enabled;
     vgcd[7].gd.cid = CID_FSType;
@@ -6465,114 +6825,619 @@ return;
     vgcd[9].gd.cid = CID_OnlyBitmaps;
     vgcd[9].creator = GCheckBoxCreate;
 
-    vgcd[10].gd.pos.x = 10; vgcd[10].gd.pos.y = vgcd[9].gd.pos.y+26+4;
-    vlabel[10].text = (unichar_t *) _STR_WinAscentOff;
+    vgcd[10].gd.pos.x = 10; vgcd[10].gd.pos.y = vgcd[9].gd.pos.y+24;
+    vlabel[10].text = (unichar_t *) _STR_Vendor;
     vlabel[10].text_in_resource = true;
     vgcd[10].gd.label = &vlabel[10];
     vgcd[10].gd.flags = gg_visible | gg_enabled;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    vgcd[10].gd.popup_msg = GStringGetResource(_STR_WinAscentPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    vgcd[10].gd.popup_msg = _("Anything outside the OS/2 WinAscent &\nWinDescent fields will be clipped by windows.\nThis includes marks, etc. that have been repositioned by GPOS.\nIf the \"[] Is Offset\" checkbox is clear then\nany number you enter will be the value used in OS/2.\nIf set then any number you enter will be added to the\nfont's bounds. You should leave this\nfield 0 and check \"[*] Is Offset\" in most cases.");
-#endif
-    vgcd[10].gd.cid = CID_WinAscentLab;
     vgcd[10].creator = GLabelCreate;
 
-    vgcd[11].gd.pos.x = 105; vgcd[11].gd.pos.y = vgcd[10].gd.pos.y-4;
+    vgcd[11].gd.pos.x = 90; vgcd[11].gd.pos.y = vgcd[11-1].gd.pos.y-4;
     vgcd[11].gd.pos.width = 50;
     vgcd[11].gd.flags = gg_visible | gg_enabled;
 	/* value set later */
-    vgcd[11].gd.cid = CID_WinAscent;
-    vgcd[11].gd.popup_msg = vgcd[10].gd.popup_msg;
+    vgcd[11].gd.cid = CID_Vendor;
     vgcd[11].creator = GTextFieldCreate;
 
-    vgcd[12].gd.pos.x = 160; vgcd[12].gd.pos.y = vgcd[11].gd.pos.y;
-    vlabel[12].text = (unichar_t *) _STR_IsOffset;
+    vgcd[12].gd.pos.x = 10; vgcd[12].gd.pos.y = vgcd[11].gd.pos.y+24+6;
+    vlabel[12].text = (unichar_t *) _STR_IBMFamily;
     vlabel[12].text_in_resource = true;
     vgcd[12].gd.label = &vlabel[12];
     vgcd[12].gd.flags = gg_visible | gg_enabled;
-	/* value set later */
-    vgcd[12].gd.cid = CID_WinAscentIsOff;
-    vgcd[12].gd.popup_msg = vgcd[10].gd.popup_msg;
-    vgcd[12].gd.handle_controlevent = GFI_AsDesIsOff;
-    vgcd[12].creator = GCheckBoxCreate;
+    vgcd[12].creator = GLabelCreate;
 
-    vgcd[13].gd.pos.x = 10; vgcd[13].gd.pos.y = vgcd[11].gd.pos.y+26+4;
-    vlabel[13].text = (unichar_t *) _STR_WinDescentOff;
-    vlabel[13].text_in_resource = true;
-    vgcd[13].gd.label = &vlabel[13];
+    vgcd[13].gd.pos.x = 90; vgcd[13].gd.pos.y = vgcd[12].gd.pos.y-4; vgcd[13].gd.pos.width = vgcd[7].gd.pos.width;
     vgcd[13].gd.flags = gg_visible | gg_enabled;
-    vgcd[13].gd.popup_msg = vgcd[10].gd.popup_msg;
-    vgcd[13].gd.cid = CID_WinDescentLab;
-    vgcd[13].creator = GLabelCreate;
+    vgcd[13].gd.cid = CID_IBMFamily;
+    vgcd[13].gd.u.list = ibmfamily;
+    vgcd[13].creator = GListButtonCreate;
 
-    vgcd[14].gd.pos.x = 105; vgcd[14].gd.pos.y = vgcd[13].gd.pos.y-4;
-    vgcd[14].gd.pos.width = 50;
+    vgcd[14].gd.pos.x = 10; vgcd[14].gd.pos.y = vgcd[13].gd.pos.y+56;
+    vlabel[14].text = (unichar_t *) _STR_SetGSUBOrder;
+    vlabel[14].text_in_resource = true;
+    vgcd[14].gd.label = &vlabel[14];
     vgcd[14].gd.flags = gg_visible | gg_enabled;
+    vgcd[14].gd.handle_controlevent = OrderGSUB;
+    vgcd[14].creator = GButtonCreate;
+
+
+/******************************************************************************/
+
+    memset(&metgcd,0,sizeof(metgcd));
+    memset(&metlabel,'\0',sizeof(metlabel));
+
+    i = 0;
+
+    metgcd[i].gd.pos.x = 10; metgcd[i].gd.pos.y = 9;
+    metlabel[i].text = (unichar_t *) _STR_WinAscentOff;
+    metlabel[i].text_in_resource = true;
+    metgcd[i].gd.label = &metlabel[i];
+    metgcd[i].gd.flags = gg_visible | gg_enabled;
+    metgcd[i].gd.popup_msg = GStringGetResource(_STR_WinAscentPopup,NULL);
+    metgcd[i].gd.cid = CID_WinAscentLab;
+    metgcd[i++].creator = GLabelCreate;
+
+    metgcd[i].gd.pos.x = 125; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y-4;
+    metgcd[i].gd.pos.width = 50;
+    metgcd[i].gd.flags = gg_visible | gg_enabled;
 	/* value set later */
-    vgcd[14].gd.cid = CID_WinDescent;
-    vgcd[14].gd.popup_msg = vgcd[10].gd.popup_msg;
-    vgcd[14].creator = GTextFieldCreate;
+    metgcd[i].gd.cid = CID_WinAscent;
+    metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
+    metgcd[i++].creator = GTextFieldCreate;
 
-    vgcd[15].gd.pos.x = 160; vgcd[15].gd.pos.y = vgcd[14].gd.pos.y;
-    vlabel[15].text = (unichar_t *) _STR_IsOffset;
-    vlabel[15].text_in_resource = true;
-    vgcd[15].gd.label = &vlabel[15];
-    vgcd[15].gd.flags = gg_visible | gg_enabled;
+    metgcd[i].gd.pos.x = 178; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y;
+    metlabel[i].text = (unichar_t *) _STR_IsOffset;
+    metlabel[i].text_in_resource = true;
+    metgcd[i].gd.label = &metlabel[i];
+    metgcd[i].gd.flags = gg_visible | gg_enabled;
 	/* value set later */
-    vgcd[15].gd.cid = CID_WinDescentIsOff;
-    vgcd[15].gd.popup_msg = vgcd[10].gd.popup_msg;
-    vgcd[15].gd.handle_controlevent = GFI_AsDesIsOff;
-    vgcd[15].creator = GCheckBoxCreate;
+    metgcd[i].gd.cid = CID_WinAscentIsOff;
+    metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
+    metgcd[i].gd.handle_controlevent = GFI_AsDesIsOff;
+    metgcd[i++].creator = GCheckBoxCreate;
 
-    vgcd[16].gd.pos.x = 10; vgcd[16].gd.pos.y = vgcd[14].gd.pos.y+26+4;
-    vlabel[16].text = (unichar_t *) _STR_LineGap;
-    vlabel[16].text_in_resource = true;
-    vgcd[16].gd.label = &vlabel[16];
-    vgcd[16].gd.flags = gg_visible | gg_enabled;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    vgcd[16].gd.popup_msg = GStringGetResource(_STR_LineGapPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    vgcd[16].gd.popup_msg = _("Sets the linegap field in both the OS/2 and hhea tables");
-#endif
-    vgcd[16].creator = GLabelCreate;
+    metgcd[i].gd.pos.x = 10; metgcd[i].gd.pos.y = metgcd[i-2].gd.pos.y+26+4;
+    metlabel[i].text = (unichar_t *) _STR_WinDescentOff;
+    metlabel[i].text_in_resource = true;
+    metgcd[i].gd.label = &metlabel[i];
+    metgcd[i].gd.flags = gg_visible | gg_enabled;
+    metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
+    metgcd[i].gd.cid = CID_WinDescentLab;
+    metgcd[i++].creator = GLabelCreate;
 
-    vgcd[17].gd.pos.x = 105; vgcd[17].gd.pos.y = vgcd[16].gd.pos.y-4;
-    vgcd[17].gd.pos.width = 50;
-    vgcd[17].gd.flags = gg_visible | gg_enabled;
+    metgcd[i].gd.pos.x = 125; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y-4;
+    metgcd[i].gd.pos.width = 50;
+    metgcd[i].gd.flags = gg_visible | gg_enabled;
+	/* value set later */
+    metgcd[i].gd.cid = CID_WinDescent;
+    metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
+    metgcd[i++].creator = GTextFieldCreate;
+
+    metgcd[i].gd.pos.x = 178; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y;
+    metlabel[i].text = (unichar_t *) _STR_IsOffset;
+    metlabel[i].text_in_resource = true;
+    metgcd[i].gd.label = &metlabel[i];
+    metgcd[i].gd.flags = gg_visible | gg_enabled;
+	/* value set later */
+    metgcd[i].gd.cid = CID_WinDescentIsOff;
+    metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
+    metgcd[i].gd.handle_controlevent = GFI_AsDesIsOff;
+    metgcd[i++].creator = GCheckBoxCreate;
+
+    metgcd[i].gd.pos.x = 10; metgcd[i].gd.pos.y = metgcd[i-2].gd.pos.y+26+4;
+    metlabel[i].text = (unichar_t *) _STR_TypoAscentOff;
+    metlabel[i].text_in_resource = true;
+    metgcd[i].gd.label = &metlabel[i];
+    metgcd[i].gd.flags = gg_visible | gg_enabled;
+    metgcd[i].gd.popup_msg = GStringGetResource(_STR_TypoAscentPopup,NULL);
+    metgcd[i].gd.cid = CID_TypoAscentLab;
+    metgcd[i++].creator = GLabelCreate;
+
+    metgcd[i].gd.pos.x = 125; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y-4;
+    metgcd[i].gd.pos.width = 50;
+    metgcd[i].gd.flags = gg_visible | gg_enabled;
+	/* value set later */
+    metgcd[i].gd.cid = CID_TypoAscent;
+    metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
+    metgcd[i++].creator = GTextFieldCreate;
+
+    metgcd[i].gd.pos.x = 178; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y;
+    metlabel[i].text = (unichar_t *) _STR_IsOffset;
+    metlabel[i].text_in_resource = true;
+    metgcd[i].gd.label = &metlabel[i];
+    metgcd[i].gd.flags = gg_visible | gg_enabled;
+	/* value set later */
+    metgcd[i].gd.cid = CID_TypoAscentIsOff;
+    metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
+    metgcd[i].gd.handle_controlevent = GFI_AsDesIsOff;
+    metgcd[i++].creator = GCheckBoxCreate;
+
+    metgcd[i].gd.pos.x = 10; metgcd[i].gd.pos.y = metgcd[i-2].gd.pos.y+26+4;
+    metlabel[i].text = (unichar_t *) _STR_TypoDescentOff;
+    metlabel[i].text_in_resource = true;
+    metgcd[i].gd.label = &metlabel[i];
+    metgcd[i].gd.flags = gg_visible | gg_enabled;
+    metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
+    metgcd[i].gd.cid = CID_TypoDescentLab;
+    metgcd[i++].creator = GLabelCreate;
+
+    metgcd[i].gd.pos.x = 125; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y-4;
+    metgcd[i].gd.pos.width = 50;
+    metgcd[i].gd.flags = gg_visible | gg_enabled;
+	/* value set later */
+    metgcd[i].gd.cid = CID_TypoDescent;
+    metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
+    metgcd[i++].creator = GTextFieldCreate;
+
+    metgcd[i].gd.pos.x = 178; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y;
+    metlabel[i].text = (unichar_t *) _STR_IsOffset;
+    metlabel[i].text_in_resource = true;
+    metgcd[i].gd.label = &metlabel[i];
+    metgcd[i].gd.flags = gg_visible | gg_enabled;
+	/* value set later */
+    metgcd[i].gd.cid = CID_TypoDescentIsOff;
+    metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
+    metgcd[i].gd.handle_controlevent = GFI_AsDesIsOff;
+    metgcd[i++].creator = GCheckBoxCreate;
+
+    metgcd[i].gd.pos.x = 10; metgcd[i].gd.pos.y = metgcd[i-2].gd.pos.y+26+4;
+    metlabel[i].text = (unichar_t *) _STR_TypoLineGap;
+    metlabel[i].text_in_resource = true;
+    metgcd[i].gd.label = &metlabel[i];
+    metgcd[i].gd.flags = gg_visible | gg_enabled;
+    metgcd[i].gd.popup_msg = GStringGetResource(_STR_TypoLineGapPopup,NULL);
+    metgcd[i++].creator = GLabelCreate;
+
+    metgcd[i].gd.pos.x = 125; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y-4;
+    metgcd[i].gd.pos.width = 50;
+    metgcd[i].gd.flags = gg_visible | gg_enabled;
 	/* Line gap value set later */
-    vgcd[17].gd.cid = CID_LineGap;
-    vgcd[17].gd.popup_msg = vgcd[16].gd.popup_msg;
-    vgcd[17].creator = GTextFieldCreate;
+    metgcd[i].gd.cid = CID_TypoLineGap;
+    metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
+    metgcd[i++].creator = GTextFieldCreate;
 
-    vgcd[18].gd.pos.x = 10; vgcd[18].gd.pos.y = vgcd[17].gd.pos.y+26+6;
-    vlabel[18].text = (unichar_t *) _STR_VLineGap;
-    vlabel[18].text_in_resource = true;
-    vgcd[18].gd.label = &vlabel[18];
-    vgcd[18].gd.flags = sf->hasvmetrics ? (gg_visible | gg_enabled) : gg_visible;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    vgcd[18].gd.popup_msg = GStringGetResource(_STR_VLineGapPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    vgcd[18].gd.popup_msg = _("Sets the linegap field in the vhea table.\nThis is the horizontal spacing between rows\nof vertically set text.");
-#endif
-    vgcd[18].gd.cid = CID_VLineGapLab;
-    vgcd[18].creator = GLabelCreate;
+    metgcd[i].gd.pos.x = 10; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y+26+4;
+    metlabel[i].text = (unichar_t *) _STR_HHeadAscentOff;
+    metlabel[i].text_in_resource = true;
+    metgcd[i].gd.label = &metlabel[i];
+    metgcd[i].gd.flags = gg_visible | gg_enabled;
+    metgcd[i].gd.popup_msg = GStringGetResource(_STR_HHeadAscentPopup,NULL);
+    metgcd[i].gd.cid = CID_HHeadAscentLab;
+    metgcd[i++].creator = GLabelCreate;
 
-    vgcd[19].gd.pos.x = 105; vgcd[19].gd.pos.y = vgcd[18].gd.pos.y-6;
-    vgcd[19].gd.pos.width = 50;
-    vgcd[19].gd.flags = sf->hasvmetrics ? (gg_visible | gg_enabled) : gg_visible;
+    metgcd[i].gd.pos.x = 125; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y-4;
+    metgcd[i].gd.pos.width = 50;
+    metgcd[i].gd.flags = gg_visible | gg_enabled;
+	/* value set later */
+    metgcd[i].gd.cid = CID_HHeadAscent;
+    metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
+    metgcd[i++].creator = GTextFieldCreate;
+
+    metgcd[i].gd.pos.x = 178; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y;
+    metlabel[i].text = (unichar_t *) _STR_IsOffset;
+    metlabel[i].text_in_resource = true;
+    metgcd[i].gd.label = &metlabel[i];
+    metgcd[i].gd.flags = gg_visible | gg_enabled;
+	/* value set later */
+    metgcd[i].gd.cid = CID_HHeadAscentIsOff;
+    metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
+    metgcd[i].gd.handle_controlevent = GFI_AsDesIsOff;
+    metgcd[i++].creator = GCheckBoxCreate;
+
+    metgcd[i].gd.pos.x = 10; metgcd[i].gd.pos.y = metgcd[i-2].gd.pos.y+26+4;
+    metlabel[i].text = (unichar_t *) _STR_HHeadDescentOff;
+    metlabel[i].text_in_resource = true;
+    metgcd[i].gd.label = &metlabel[i];
+    metgcd[i].gd.flags = gg_visible | gg_enabled;
+    metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
+    metgcd[i].gd.cid = CID_HHeadDescentLab;
+    metgcd[i++].creator = GLabelCreate;
+
+    metgcd[i].gd.pos.x = 125; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y-4;
+    metgcd[i].gd.pos.width = 50;
+    metgcd[i].gd.flags = gg_visible | gg_enabled;
+	/* value set later */
+    metgcd[i].gd.cid = CID_HHeadDescent;
+    metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
+    metgcd[i++].creator = GTextFieldCreate;
+
+    metgcd[i].gd.pos.x = 178; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y;
+    metlabel[i].text = (unichar_t *) _STR_IsOffset;
+    metlabel[i].text_in_resource = true;
+    metgcd[i].gd.label = &metlabel[i];
+    metgcd[i].gd.flags = gg_visible | gg_enabled;
+	/* value set later */
+    metgcd[i].gd.cid = CID_HHeadDescentIsOff;
+    metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
+    metgcd[i].gd.handle_controlevent = GFI_AsDesIsOff;
+    metgcd[i++].creator = GCheckBoxCreate;
+
+    metgcd[i].gd.pos.x = 10; metgcd[i].gd.pos.y = metgcd[i-2].gd.pos.y+26+4;
+    metlabel[i].text = (unichar_t *) _STR_LineGap;
+    metlabel[i].text_in_resource = true;
+    metgcd[i].gd.label = &metlabel[i];
+    metgcd[i].gd.flags = gg_visible | gg_enabled;
+    metgcd[i].gd.popup_msg = GStringGetResource(_STR_LineGapPopup,NULL);
+    metgcd[i++].creator = GLabelCreate;
+
+    metgcd[i].gd.pos.x = 125; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y-4;
+    metgcd[i].gd.pos.width = 50;
+    metgcd[i].gd.flags = gg_visible | gg_enabled;
+	/* Line gap value set later */
+    metgcd[i].gd.cid = CID_LineGap;
+    metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
+    metgcd[i++].creator = GTextFieldCreate;
+
+    metgcd[i].gd.pos.x = 10; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y+26+6;
+    metlabel[i].text = (unichar_t *) _STR_VLineGap;
+    metlabel[i].text_in_resource = true;
+    metgcd[i].gd.label = &metlabel[i];
+    metgcd[i].gd.flags = sf->hasvmetrics ? (gg_visible | gg_enabled) : gg_visible;
+    metgcd[i].gd.popup_msg = GStringGetResource(_STR_VLineGapPopup,NULL);
+    metgcd[i].gd.cid = CID_VLineGapLab;
+    metgcd[i++].creator = GLabelCreate;
+
+    metgcd[i].gd.pos.x = 125; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y-6;
+    metgcd[i].gd.pos.width = 50;
+    metgcd[i].gd.flags = sf->hasvmetrics ? (gg_visible | gg_enabled) : gg_visible;
 	/* V Line gap value set later */
-    vgcd[19].gd.cid = CID_VLineGap;
-    vgcd[19].gd.popup_msg = vgcd[17].gd.popup_msg;
-    vgcd[19].creator = GTextFieldCreate;
+    metgcd[i].gd.cid = CID_VLineGap;
+    metgcd[i].gd.popup_msg = metgcd[17].gd.popup_msg;
+    metgcd[i++].creator = GTextFieldCreate;
 
-    vgcd[20].gd.pos.x = 10; vgcd[20].gd.pos.y = vgcd[19].gd.pos.y+26;
-    vlabel[20].text = (unichar_t *) _STR_SetGSUBOrder;
-    vlabel[20].text_in_resource = true;
-    vgcd[20].gd.label = &vlabel[20];
-    vgcd[20].gd.flags = gg_visible | gg_enabled;
-    vgcd[20].gd.handle_controlevent = OrderGSUB;
-    vgcd[20].creator = GButtonCreate;
+/******************************************************************************/
+
+    memset(&ssgcd,0,sizeof(ssgcd));
+    memset(&sslabel,'\0',sizeof(sslabel));
+
+    i = 0;
+
+    ssgcd[i].gd.pos.x = 5; ssgcd[i].gd.pos.y = 5;
+    sslabel[i].text = (unichar_t *) _STR_Default;
+    sslabel[i].text_in_resource = true;
+    ssgcd[i].gd.label = &sslabel[i];
+    ssgcd[i].gd.flags = gg_visible | gg_enabled;
+	/* value set later */
+    ssgcd[i].gd.cid = CID_SubSuperDefault;
+    ssgcd[i].gd.handle_controlevent = GFI_SubSuperDefault;
+    ssgcd[i++].creator = GCheckBoxCreate;
+
+    ssgcd[i].gd.pos.x = 5; ssgcd[i].gd.pos.y = ssgcd[i-1].gd.pos.y+16;
+    sslabel[i].text = (unichar_t *) _STR_Subscript;
+    sslabel[i].text_in_resource = true;
+    ssgcd[i].gd.label = &sslabel[i];
+    ssgcd[i].gd.flags = gg_visible | gg_enabled;
+    ssgcd[i++].creator = GLabelCreate;
+
+    ssgcd[i].gd.pos.x = 120; ssgcd[i].gd.pos.y = ssgcd[i-1].gd.pos.y-4;
+    sslabel[i].text = (unichar_t *) _STR_XNoM;
+    sslabel[i].text_in_resource = true;
+    ssgcd[i].gd.label = &sslabel[i];
+    ssgcd[i].gd.flags = gg_visible | gg_enabled;
+    ssgcd[i++].creator = GLabelCreate;
+
+    ssgcd[i].gd.pos.x = 180; ssgcd[i].gd.pos.y = ssgcd[i-1].gd.pos.y;
+    sslabel[i].text = (unichar_t *) _STR_YNoM;
+    sslabel[i].text_in_resource = true;
+    ssgcd[i].gd.label = &sslabel[i];
+    ssgcd[i].gd.flags = gg_visible | gg_enabled;
+    ssgcd[i++].creator = GLabelCreate;
+
+    ssgcd[i].gd.pos.x = 10; ssgcd[i].gd.pos.y = ssgcd[i-3].gd.pos.y+14+4;
+    sslabel[i].text = (unichar_t *) _STR_SizeNoC;
+    sslabel[i].text_in_resource = true;
+    ssgcd[i].gd.label = &sslabel[i];
+    ssgcd[i].gd.flags = gg_visible | gg_enabled;
+    ssgcd[i++].creator = GLabelCreate;
+
+    ssgcd[i].gd.pos.x = 100; ssgcd[i].gd.pos.y = ssgcd[i-1].gd.pos.y-6;
+    ssgcd[i].gd.pos.width = 50;
+    ssgcd[i].gd.flags = gg_visible | gg_enabled;
+	/* set later */
+    ssgcd[i].gd.cid = CID_SubXSize;
+    ssgcd[i++].creator = GTextFieldCreate;
+
+    ssgcd[i].gd.pos.x = 160; ssgcd[i].gd.pos.y = ssgcd[i-1].gd.pos.y;
+    ssgcd[i].gd.pos.width = 50;
+    ssgcd[i].gd.flags = gg_visible | gg_enabled;
+	/* set later */
+    ssgcd[i].gd.cid = CID_SubYSize;
+    ssgcd[i++].creator = GTextFieldCreate;
+
+    ssgcd[i].gd.pos.x = 10; ssgcd[i].gd.pos.y = ssgcd[i-3].gd.pos.y+26;
+    sslabel[i].text = (unichar_t *) _STR_Offset;
+    sslabel[i].text_in_resource = true;
+    ssgcd[i].gd.label = &sslabel[i];
+    ssgcd[i].gd.flags = gg_visible | gg_enabled;
+    ssgcd[i++].creator = GLabelCreate;
+
+    ssgcd[i].gd.pos.x = 100; ssgcd[i].gd.pos.y = ssgcd[i-1].gd.pos.y-6;
+    ssgcd[i].gd.pos.width = 50;
+    ssgcd[i].gd.flags = gg_visible | gg_enabled;
+	/* set later */
+    ssgcd[i].gd.cid = CID_SubXOffset;
+    ssgcd[i++].creator = GTextFieldCreate;
+
+    ssgcd[i].gd.pos.x = 160; ssgcd[i].gd.pos.y = ssgcd[i-1].gd.pos.y;
+    ssgcd[i].gd.pos.width = 50;
+    ssgcd[i].gd.flags = gg_visible | gg_enabled;
+	/* set later */
+    ssgcd[i].gd.cid = CID_SubYOffset;
+    ssgcd[i++].creator = GTextFieldCreate;
+
+
+    ssgcd[i].gd.pos.x = 5; ssgcd[i].gd.pos.y = ssgcd[i-1].gd.pos.y+30;
+    sslabel[i].text = (unichar_t *) _STR_Superscript;
+    sslabel[i].text_in_resource = true;
+    ssgcd[i].gd.label = &sslabel[i];
+    ssgcd[i].gd.flags = gg_visible | gg_enabled;
+    ssgcd[i++].creator = GLabelCreate;
+
+    ssgcd[i].gd.pos.x = 10; ssgcd[i].gd.pos.y = ssgcd[i-1].gd.pos.y+14+4;
+    sslabel[i].text = (unichar_t *) _STR_SizeNoC;
+    sslabel[i].text_in_resource = true;
+    ssgcd[i].gd.label = &sslabel[i];
+    ssgcd[i].gd.flags = gg_visible | gg_enabled;
+    ssgcd[i++].creator = GLabelCreate;
+
+    ssgcd[i].gd.pos.x = 100; ssgcd[i].gd.pos.y = ssgcd[i-1].gd.pos.y-6;
+    ssgcd[i].gd.pos.width = 50;
+    ssgcd[i].gd.flags = gg_visible | gg_enabled;
+	/* set later */
+    ssgcd[i].gd.cid = CID_SuperXSize;
+    ssgcd[i++].creator = GTextFieldCreate;
+
+    ssgcd[i].gd.pos.x = 160; ssgcd[i].gd.pos.y = ssgcd[i-1].gd.pos.y;
+    ssgcd[i].gd.pos.width = 50;
+    ssgcd[i].gd.flags = gg_visible | gg_enabled;
+	/* set later */
+    ssgcd[i].gd.cid = CID_SuperYSize;
+    ssgcd[i++].creator = GTextFieldCreate;
+
+    ssgcd[i].gd.pos.x = 10; ssgcd[i].gd.pos.y = ssgcd[i-3].gd.pos.y+26;
+    sslabel[i].text = (unichar_t *) _STR_Offset;
+    sslabel[i].text_in_resource = true;
+    ssgcd[i].gd.label = &sslabel[i];
+    ssgcd[i].gd.flags = gg_visible | gg_enabled;
+    ssgcd[i++].creator = GLabelCreate;
+
+    ssgcd[i].gd.pos.x = 100; ssgcd[i].gd.pos.y = ssgcd[i-1].gd.pos.y-6;
+    ssgcd[i].gd.pos.width = 50;
+    ssgcd[i].gd.flags = gg_visible | gg_enabled;
+	/* set later */
+    ssgcd[i].gd.cid = CID_SuperXOffset;
+    ssgcd[i++].creator = GTextFieldCreate;
+
+    ssgcd[i].gd.pos.x = 160; ssgcd[i].gd.pos.y = ssgcd[i-1].gd.pos.y;
+    ssgcd[i].gd.pos.width = 50;
+    ssgcd[i].gd.flags = gg_visible | gg_enabled;
+	/* set later */
+    ssgcd[i].gd.cid = CID_SuperYOffset;
+    ssgcd[i++].creator = GTextFieldCreate;
+
+
+    ssgcd[i].gd.pos.x = 5; ssgcd[i].gd.pos.y = ssgcd[i-1].gd.pos.y+30;
+    sslabel[i].text = (unichar_t *) _STR_Strikeout;
+    sslabel[i].text_in_resource = true;
+    ssgcd[i].gd.label = &sslabel[i];
+    ssgcd[i].gd.flags = gg_visible | gg_enabled;
+    ssgcd[i++].creator = GLabelCreate;
+
+    ssgcd[i].gd.pos.x = 10; ssgcd[i].gd.pos.y = ssgcd[i-1].gd.pos.y+14+4;
+    sslabel[i].text = (unichar_t *) _STR_SizeNoC;
+    sslabel[i].text_in_resource = true;
+    ssgcd[i].gd.label = &sslabel[i];
+    ssgcd[i].gd.flags = gg_visible | gg_enabled;
+    ssgcd[i++].creator = GLabelCreate;
+
+    ssgcd[i].gd.pos.x = 160; ssgcd[i].gd.pos.y = ssgcd[i-1].gd.pos.y-6;
+    ssgcd[i].gd.pos.width = 50;
+    ssgcd[i].gd.flags = gg_visible | gg_enabled;
+	/* set later */
+    ssgcd[i].gd.cid = CID_StrikeoutSize;
+    ssgcd[i++].creator = GTextFieldCreate;
+
+    ssgcd[i].gd.pos.x = 10; ssgcd[i].gd.pos.y = ssgcd[i-2].gd.pos.y+26;
+    sslabel[i].text = (unichar_t *) _STR_Pos;
+    sslabel[i].text_in_resource = true;
+    ssgcd[i].gd.label = &sslabel[i];
+    ssgcd[i].gd.flags = gg_visible | gg_enabled;
+    ssgcd[i++].creator = GLabelCreate;
+
+    ssgcd[i].gd.pos.x = 160; ssgcd[i].gd.pos.y = ssgcd[i-1].gd.pos.y-6;
+    ssgcd[i].gd.pos.width = 50;
+    ssgcd[i].gd.flags = gg_visible | gg_enabled;
+	/* set later */
+    ssgcd[i].gd.cid = CID_StrikeoutPos;
+    ssgcd[i++].creator = GTextFieldCreate;
+    
+/******************************************************************************/
+    memset(&panlabel,0,sizeof(panlabel));
+    memset(&pangcd,0,sizeof(pangcd));
+
+    i = 0;
+
+    pangcd[i].gd.pos.x = 5; pangcd[i].gd.pos.y = 5;
+    panlabel[i].text = (unichar_t *) _STR_Default;
+    panlabel[i].text_in_resource = true;
+    pangcd[i].gd.label = &panlabel[i];
+    pangcd[i].gd.flags = gg_visible | gg_enabled;
+	/* value set later */
+    pangcd[i].gd.cid = CID_PanDefault;
+    /*pangcd[i].gd.popup_msg = pangcd[i-1].gd.popup_msg;*/
+    pangcd[i].gd.handle_controlevent = GFI_PanoseDefault;
+    pangcd[i++].creator = GCheckBoxCreate;
+
+    pangcd[i].gd.pos.x = 20; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y+14+4;
+    panlabel[i].text = (unichar_t *) _STR_Family;
+    panlabel[i].text_in_resource = true;
+    pangcd[i].gd.label = &panlabel[i];
+    pangcd[i].gd.cid = CID_PanFamilyLab;
+    pangcd[i].gd.flags = gg_visible | gg_enabled;
+    pangcd[i++].creator = GLabelCreate;
+
+    pangcd[i].gd.pos.x = 100; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y-6; pangcd[i].gd.pos.width = 120;
+    pangcd[i].gd.flags = gg_visible | gg_enabled;
+    pangcd[i].gd.cid = CID_PanFamily;
+    pangcd[i].gd.u.list = panfamily;
+    pangcd[i++].creator = GListButtonCreate;
+
+    pangcd[i].gd.pos.x = 20; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y+26+5;
+    panlabel[i].text = (unichar_t *) _STR_Serifs;
+    panlabel[i].text_in_resource = true;
+    pangcd[i].gd.label = &panlabel[i];
+    pangcd[i].gd.cid = CID_PanSerifsLab;
+    pangcd[i].gd.flags = gg_visible | gg_enabled;
+    pangcd[i++].creator = GLabelCreate;
+
+    pangcd[i].gd.pos.x = 100; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y-6; pangcd[i].gd.pos.width = 120;
+    pangcd[i].gd.flags = gg_visible | gg_enabled;
+    pangcd[i].gd.cid = CID_PanSerifs;
+    pangcd[i].gd.u.list = panserifs;
+    pangcd[i++].creator = GListButtonCreate;
+
+    pangcd[i].gd.pos.x = 20; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y+26+5;
+    panlabel[i].text = (unichar_t *) _STR_Weight;
+    panlabel[i].text_in_resource = true;
+    pangcd[i].gd.label = &panlabel[i];
+    pangcd[i].gd.cid = CID_PanWeightLab;
+    pangcd[i].gd.flags = gg_visible | gg_enabled;
+    pangcd[i++].creator = GLabelCreate;
+
+    pangcd[i].gd.pos.x = 100; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y-6; pangcd[i].gd.pos.width = 120;
+    pangcd[i].gd.flags = gg_visible | gg_enabled;
+    pangcd[i].gd.cid = CID_PanWeight;
+    pangcd[i].gd.u.list = panweight;
+    pangcd[i++].creator = GListButtonCreate;
+
+    pangcd[i].gd.pos.x = 20; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y+26+5;
+    panlabel[i].text = (unichar_t *) _STR_Proportion;
+    panlabel[i].text_in_resource = true;
+    pangcd[i].gd.label = &panlabel[i];
+    pangcd[i].gd.cid = CID_PanPropLab;
+    pangcd[i].gd.flags = gg_visible | gg_enabled;
+    pangcd[i++].creator = GLabelCreate;
+
+    pangcd[i].gd.pos.x = 100; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y-6; pangcd[i].gd.pos.width = 120;
+    pangcd[i].gd.flags = gg_visible | gg_enabled;
+    pangcd[i].gd.cid = CID_PanProp;
+    pangcd[i].gd.u.list = panprop;
+    pangcd[i++].creator = GListButtonCreate;
+
+    pangcd[i].gd.pos.x = 20; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y+26+5;
+    panlabel[i].text = (unichar_t *) _STR_Contrast;
+    panlabel[i].text_in_resource = true;
+    pangcd[i].gd.label = &panlabel[i];
+    pangcd[i].gd.cid = CID_PanContrastLab;
+    pangcd[i].gd.flags = gg_visible | gg_enabled;
+    pangcd[i++].creator = GLabelCreate;
+
+    pangcd[i].gd.pos.x = 100; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y-6; pangcd[i].gd.pos.width = 120;
+    pangcd[i].gd.flags = gg_visible | gg_enabled;
+    pangcd[i].gd.cid = CID_PanContrast;
+    pangcd[i].gd.u.list = pancontrast;
+    pangcd[i++].creator = GListButtonCreate;
+
+    pangcd[i].gd.pos.x = 20; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y+26+5;
+    panlabel[i].text = (unichar_t *) _STR_StrokeVar;
+    panlabel[i].text_in_resource = true;
+    pangcd[i].gd.label = &panlabel[i];
+    pangcd[i].gd.cid = CID_PanStrokeVarLab;
+    pangcd[i].gd.flags = gg_visible | gg_enabled;
+    pangcd[i++].creator = GLabelCreate;
+
+    pangcd[i].gd.pos.x = 100; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y-6; pangcd[i].gd.pos.width = 120;
+    pangcd[i].gd.flags = gg_visible | gg_enabled;
+    pangcd[i].gd.cid = CID_PanStrokeVar;
+    pangcd[i].gd.u.list = panstrokevar;
+    pangcd[i++].creator = GListButtonCreate;
+
+    pangcd[i].gd.pos.x = 20; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y+26+5;
+    panlabel[i].text = (unichar_t *) _STR_ArmStyle;
+    panlabel[i].text_in_resource = true;
+    pangcd[i].gd.label = &panlabel[i];
+    pangcd[i].gd.cid = CID_PanArmStyleLab;
+    pangcd[i].gd.flags = gg_visible | gg_enabled;
+    pangcd[i++].creator = GLabelCreate;
+
+    pangcd[i].gd.pos.x = 100; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y-6; pangcd[i].gd.pos.width = 120;
+    pangcd[i].gd.flags = gg_visible | gg_enabled;
+    pangcd[i].gd.cid = CID_PanArmStyle;
+    pangcd[i].gd.u.list = panarmstyle;
+    pangcd[i++].creator = GListButtonCreate;
+
+    pangcd[i].gd.pos.x = 20; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y+26+5;
+    panlabel[i].text = (unichar_t *) _STR_Letterform;
+    panlabel[i].text_in_resource = true;
+    pangcd[i].gd.label = &panlabel[i];
+    pangcd[i].gd.cid = CID_PanLetterformLab;
+    pangcd[i].gd.flags = gg_visible | gg_enabled;
+    pangcd[i++].creator = GLabelCreate;
+
+    pangcd[i].gd.pos.x = 100; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y-6; pangcd[i].gd.pos.width = 120;
+    pangcd[i].gd.flags = gg_visible | gg_enabled;
+    pangcd[i].gd.cid = CID_PanLetterform;
+    pangcd[i].gd.u.list = panletterform;
+    pangcd[i++].creator = GListButtonCreate;
+
+    pangcd[i].gd.pos.x = 20; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y+26+5;
+    panlabel[i].text = (unichar_t *) _STR_MidLine;
+    panlabel[i].text_in_resource = true;
+    pangcd[i].gd.label = &panlabel[i];
+    pangcd[i].gd.cid = CID_PanMidLineLab;
+    pangcd[i].gd.flags = gg_visible | gg_enabled;
+    pangcd[i++].creator = GLabelCreate;
+
+    pangcd[i].gd.pos.x = 100; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y-6; pangcd[i].gd.pos.width = 120;
+    pangcd[i].gd.flags = gg_visible | gg_enabled;
+    pangcd[i].gd.cid = CID_PanMidLine;
+    pangcd[i].gd.u.list = panmidline;
+    pangcd[i++].creator = GListButtonCreate;
+
+    pangcd[i].gd.pos.x = 20; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y+26+5;
+    panlabel[i].text = (unichar_t *) _STR_XHeight;
+    panlabel[i].text_in_resource = true;
+    pangcd[i].gd.label = &panlabel[i];
+    pangcd[i].gd.cid = CID_PanXHeightLab;
+    pangcd[i].gd.flags = gg_visible | gg_enabled;
+    pangcd[i++].creator = GLabelCreate;
+
+    pangcd[i].gd.pos.x = 100; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y-6; pangcd[i].gd.pos.width = 120;
+    pangcd[i].gd.flags = gg_visible | gg_enabled;
+    pangcd[i].gd.cid = CID_PanXHeight;
+    pangcd[i].gd.u.list = panxheight;
+    pangcd[i++].creator = GListButtonCreate;
+
+/******************************************************************************/
+
+    memset(&vagcd,0,sizeof(vagcd));
+    memset(&vaspects,'\0',sizeof(vaspects));
+
+    i = 0;
+    vaspects[i].text = (unichar_t *) _STR_Misc;
+    vaspects[i].text_in_resource = true;
+    vaspects[i++].gcd = vgcd;
+
+    vaspects[i].text = (unichar_t *) _STR_Metrics;
+    vaspects[i].text_in_resource = true;
+    vaspects[i++].gcd = metgcd;
+
+    vaspects[i].text = (unichar_t *) _STR_SubSuper;
+    vaspects[i].text_in_resource = true;
+    vaspects[i++].gcd = ssgcd;
+
+    vaspects[i].text = (unichar_t *) _STR_Panose;
+    vaspects[i].text_in_resource = true;
+    vaspects[i++].gcd = pangcd;
+
+    vagcd[0].gd.pos.x = 4; vagcd[0].gd.pos.y = 6;
+    vagcd[0].gd.pos.width = 252;
+    vagcd[0].gd.pos.height = 300;
+    vagcd[0].gd.u.tabs = vaspects;
+    vagcd[0].gd.flags = gg_visible | gg_enabled;
+    /*vagcd[0].gd.handle_controlevent = GFI_TTFAspectChange;*/
+    vagcd[0].gd.cid = CID_TTFTabs;
+    vagcd[0].creator = GTabSetCreate;
 
 /******************************************************************************/
     memset(&tnlabel,0,sizeof(tnlabel));
@@ -6625,140 +7490,6 @@ return;
     tngcd[5].gd.cid = CID_TNHScroll;
     tngcd[5].gd.handle_controlevent = _TN_HScroll;
     tngcd[5].creator = GScrollBarCreate;
-    
-/******************************************************************************/
-    memset(&panlabel,0,sizeof(panlabel));
-    memset(&pangcd,0,sizeof(pangcd));
-
-    pangcd[0].gd.pos.x = 10; pangcd[0].gd.pos.y = 12;
-    panlabel[0].text = (unichar_t *) _STR_Family;
-    panlabel[0].text_in_resource = true;
-    pangcd[0].gd.label = &panlabel[0];
-    pangcd[0].gd.flags = gg_visible | gg_enabled;
-    pangcd[0].creator = GLabelCreate;
-
-    pangcd[1].gd.pos.x = 100; pangcd[1].gd.pos.y = pangcd[0].gd.pos.y-6; pangcd[1].gd.pos.width = 120;
-    pangcd[1].gd.flags = gg_visible | gg_enabled;
-    pangcd[1].gd.cid = CID_PanFamily;
-    pangcd[1].gd.u.list = panfamily;
-    pangcd[1].creator = GListButtonCreate;
-
-    pangcd[2].gd.pos.x = 10; pangcd[2].gd.pos.y = pangcd[1].gd.pos.y+26+6;
-    panlabel[2].text = (unichar_t *) _STR_Serifs;
-    panlabel[2].text_in_resource = true;
-    pangcd[2].gd.label = &panlabel[2];
-    pangcd[2].gd.flags = gg_visible | gg_enabled;
-    pangcd[2].creator = GLabelCreate;
-
-    pangcd[3].gd.pos.x = 100; pangcd[3].gd.pos.y = pangcd[2].gd.pos.y-6; pangcd[3].gd.pos.width = 120;
-    pangcd[3].gd.flags = gg_visible | gg_enabled;
-    pangcd[3].gd.cid = CID_PanSerifs;
-    pangcd[3].gd.u.list = panserifs;
-    pangcd[3].creator = GListButtonCreate;
-
-    pangcd[4].gd.pos.x = 10; pangcd[4].gd.pos.y = pangcd[3].gd.pos.y+26+6;
-    panlabel[4].text = (unichar_t *) _STR_Weight;
-    panlabel[4].text_in_resource = true;
-    pangcd[4].gd.label = &panlabel[4];
-    pangcd[4].gd.flags = gg_visible | gg_enabled;
-    pangcd[4].creator = GLabelCreate;
-
-    pangcd[5].gd.pos.x = 100; pangcd[5].gd.pos.y = pangcd[4].gd.pos.y-6; pangcd[5].gd.pos.width = 120;
-    pangcd[5].gd.flags = gg_visible | gg_enabled;
-    pangcd[5].gd.cid = CID_PanWeight;
-    pangcd[5].gd.u.list = panweight;
-    pangcd[5].creator = GListButtonCreate;
-
-    pangcd[6].gd.pos.x = 10; pangcd[6].gd.pos.y = pangcd[5].gd.pos.y+26+6;
-    panlabel[6].text = (unichar_t *) _STR_Proportion;
-    panlabel[6].text_in_resource = true;
-    pangcd[6].gd.label = &panlabel[6];
-    pangcd[6].gd.flags = gg_visible | gg_enabled;
-    pangcd[6].creator = GLabelCreate;
-
-    pangcd[7].gd.pos.x = 100; pangcd[7].gd.pos.y = pangcd[6].gd.pos.y-6; pangcd[7].gd.pos.width = 120;
-    pangcd[7].gd.flags = gg_visible | gg_enabled;
-    pangcd[7].gd.cid = CID_PanProp;
-    pangcd[7].gd.u.list = panprop;
-    pangcd[7].creator = GListButtonCreate;
-
-    pangcd[8].gd.pos.x = 10; pangcd[8].gd.pos.y = pangcd[7].gd.pos.y+26+6;
-    panlabel[8].text = (unichar_t *) _STR_Contrast;
-    panlabel[8].text_in_resource = true;
-    pangcd[8].gd.label = &panlabel[8];
-    pangcd[8].gd.flags = gg_visible | gg_enabled;
-    pangcd[8].creator = GLabelCreate;
-
-    pangcd[9].gd.pos.x = 100; pangcd[9].gd.pos.y = pangcd[8].gd.pos.y-6; pangcd[9].gd.pos.width = 120;
-    pangcd[9].gd.flags = gg_visible | gg_enabled;
-    pangcd[9].gd.cid = CID_PanContrast;
-    pangcd[9].gd.u.list = pancontrast;
-    pangcd[9].creator = GListButtonCreate;
-
-    pangcd[10].gd.pos.x = 10; pangcd[10].gd.pos.y = pangcd[9].gd.pos.y+26+6;
-    panlabel[10].text = (unichar_t *) _STR_StrokeVar;
-    panlabel[10].text_in_resource = true;
-    pangcd[10].gd.label = &panlabel[10];
-    pangcd[10].gd.flags = gg_visible | gg_enabled;
-    pangcd[10].creator = GLabelCreate;
-
-    pangcd[11].gd.pos.x = 100; pangcd[11].gd.pos.y = pangcd[10].gd.pos.y-6; pangcd[11].gd.pos.width = 120;
-    pangcd[11].gd.flags = gg_visible | gg_enabled;
-    pangcd[11].gd.cid = CID_PanStrokeVar;
-    pangcd[11].gd.u.list = panstrokevar;
-    pangcd[11].creator = GListButtonCreate;
-
-    pangcd[12].gd.pos.x = 10; pangcd[12].gd.pos.y = pangcd[11].gd.pos.y+26+6;
-    panlabel[12].text = (unichar_t *) _STR_ArmStyle;
-    panlabel[12].text_in_resource = true;
-    pangcd[12].gd.label = &panlabel[12];
-    pangcd[12].gd.flags = gg_visible | gg_enabled;
-    pangcd[12].creator = GLabelCreate;
-
-    pangcd[13].gd.pos.x = 100; pangcd[13].gd.pos.y = pangcd[12].gd.pos.y-6; pangcd[13].gd.pos.width = 120;
-    pangcd[13].gd.flags = gg_visible | gg_enabled;
-    pangcd[13].gd.cid = CID_PanArmStyle;
-    pangcd[13].gd.u.list = panarmstyle;
-    pangcd[13].creator = GListButtonCreate;
-
-    pangcd[14].gd.pos.x = 10; pangcd[14].gd.pos.y = pangcd[13].gd.pos.y+26+6;
-    panlabel[14].text = (unichar_t *) _STR_Letterform;
-    panlabel[14].text_in_resource = true;
-    pangcd[14].gd.label = &panlabel[14];
-    pangcd[14].gd.flags = gg_visible | gg_enabled;
-    pangcd[14].creator = GLabelCreate;
-
-    pangcd[15].gd.pos.x = 100; pangcd[15].gd.pos.y = pangcd[14].gd.pos.y-6; pangcd[15].gd.pos.width = 120;
-    pangcd[15].gd.flags = gg_visible | gg_enabled;
-    pangcd[15].gd.cid = CID_PanLetterform;
-    pangcd[15].gd.u.list = panletterform;
-    pangcd[15].creator = GListButtonCreate;
-
-    pangcd[16].gd.pos.x = 10; pangcd[16].gd.pos.y = pangcd[15].gd.pos.y+26+6;
-    panlabel[16].text = (unichar_t *) _STR_MidLine;
-    panlabel[16].text_in_resource = true;
-    pangcd[16].gd.label = &panlabel[16];
-    pangcd[16].gd.flags = gg_visible | gg_enabled;
-    pangcd[16].creator = GLabelCreate;
-
-    pangcd[17].gd.pos.x = 100; pangcd[17].gd.pos.y = pangcd[16].gd.pos.y-6; pangcd[17].gd.pos.width = 120;
-    pangcd[17].gd.flags = gg_visible | gg_enabled;
-    pangcd[17].gd.cid = CID_PanMidLine;
-    pangcd[17].gd.u.list = panmidline;
-    pangcd[17].creator = GListButtonCreate;
-
-    pangcd[18].gd.pos.x = 10; pangcd[18].gd.pos.y = pangcd[17].gd.pos.y+26+6;
-    panlabel[18].text = (unichar_t *) _STR_XHeight;
-    panlabel[18].text_in_resource = true;
-    pangcd[18].gd.label = &panlabel[18];
-    pangcd[18].gd.flags = gg_visible | gg_enabled;
-    pangcd[18].creator = GLabelCreate;
-
-    pangcd[19].gd.pos.x = 100; pangcd[19].gd.pos.y = pangcd[18].gd.pos.y-6; pangcd[19].gd.pos.width = 120;
-    pangcd[19].gd.flags = gg_visible | gg_enabled;
-    pangcd[19].gd.cid = CID_PanXHeight;
-    pangcd[19].gd.u.list = panxheight;
-    pangcd[19].creator = GListButtonCreate;
 /******************************************************************************/
     memset(&comlabel,0,sizeof(comlabel));
     memset(&comgcd,0,sizeof(comgcd));
@@ -7293,22 +8024,16 @@ return;
     aspects[i++].gcd = pgcd;
 
     d->ttfv_aspect = i;
-    aspects[i].text = (unichar_t *) _STR_TTFValues;
+    aspects[i].text = (unichar_t *) _STR_OS2;
     if ( sf->cidmaster!=NULL ) aspects[i].disabled = true;
     aspects[i].text_in_resource = true;
-    aspects[i++].gcd = vgcd;
+    aspects[i++].gcd = vagcd;
 
     d->tn_aspect = i;
     if ( sf->cidmaster!=NULL ) aspects[i].disabled = true;
     aspects[i].text = (unichar_t *) _STR_TTFNames;
     aspects[i].text_in_resource = true;
     aspects[i++].gcd = tngcd;
-
-    d->panose_aspect = i;
-    if ( sf->cidmaster!=NULL ) aspects[i].disabled = true;
-    aspects[i].text = (unichar_t *) _STR_Panose;
-    aspects[i].text_in_resource = true;
-    aspects[i++].gcd = pangcd;
 
     d->tx_aspect = i;
     aspects[i].text = (unichar_t *) _STR_TeX;
