@@ -1901,6 +1901,20 @@ static void AutoHintRefs(SplineChar *sc,BlueData *bd, int picky) {
     SCHintsChanged(sc);
 }
 
+void SCClearHints(SplineChar *sc) {
+    SCClearHintMasks(sc,true);
+    StemInfosFree(sc->hstem);
+    StemInfosFree(sc->vstem);
+    sc->hstem = sc->vstem = NULL;
+    sc->hconflicts = sc->vconflicts = false;
+    DStemInfosFree(sc->dstem);
+    sc->dstem = NULL;
+    MinimumDistancesFree(sc->md);
+    sc->md = NULL;
+    SCClearRounds(sc);
+    SCOutOfDateBackground(sc);
+}
+
 static void _SCClearHintMasks(SplineChar *sc,int counterstoo) {
     SplineSet *spl;
     SplinePoint *sp;
