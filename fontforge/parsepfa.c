@@ -45,6 +45,7 @@ struct fontparse {
     unsigned int inmetrics2: 1;
     unsigned int inbb: 1;
     unsigned int inencoding: 1;
+    unsigned int simpleencoding: 1;
     unsigned int multiline: 1;
     unsigned int incidsysteminfo: 1;
     unsigned int inblendfi:1;
@@ -56,6 +57,7 @@ struct fontparse {
     unsigned int useshexstrings: 1;
     unsigned int doneencoding: 1;
     unsigned int ignore: 1;
+    int simple_enc_pos;
     int instring;
     int fdindex;
     char **pending_parse;
@@ -1424,6 +1426,35 @@ static void sfnts2tempfile(struct fontparse *fp,FILE *in,char *line) {
     rewind(fp->sfnts);
 }
 
+static void ParseSimpleEncoding(struct fontparse *fp,char *line) {
+    char tok[200], *pt;
+
+    while ( *line!='\0' && *line!=']' ) {
+	while ( isspace(*line)) ++line;
+	if ( *line==']' )
+    break;
+	if ( *line!='/' ) {
+	    ++line;
+    continue;
+	}
+	++line;
+	while ( isspace(*line)) ++line;
+	for ( pt=tok; !isspace(*line) && *line!='\0' && *line!='/' && *line!=']'; ) {
+	    if ( pt<tok+sizeof(tok)-2 )
+		*pt++ = *line++;
+	    else
+		++line;
+	}
+	*pt = '\0';
+	if ( fp->simple_enc_pos<256 )
+	    fp->fd->encoding[fp->simple_enc_pos++] = copy(tok);
+    }
+    if ( *line==']' ) {
+	fp->simpleencoding = false;
+	fp->inencoding = false;
+    }
+}
+
 static void parseline(struct fontparse *fp,char *line,FILE *in) {
     char buffer[200], *pt, *endtok;
 
@@ -1431,7 +1462,10 @@ static void parseline(struct fontparse *fp,char *line,FILE *in) {
     if ( line[0]=='%' && !fp->multiline )
 return;
 
-    if (( fp->inencoding && strncmp(line,"dup",3)==0 ) ||
+    if ( fp->simpleencoding ) {
+	ParseSimpleEncoding(fp,line);
+return;
+    } else if (( fp->inencoding && strncmp(line,"dup",3)==0 ) ||
 	    ( strncmp(line,"dup ",4)==0 && isdigit(line[4]) &&
 	      strstr(line+strlen(line)-6," put")!=NULL && strchr(line,'/')!=NULL )) {
 	/* Fontographer's type3 fonts claim to be standard, but then aren't */
@@ -1565,6 +1599,12 @@ return;
 	    fp->fd->encoding_name = &custom;
 	fp->infi = fp->inprivate = fp->inbb = fp->inmetrics = fp->inmetrics2 = false;
 	fp->doneencoding = true;
+	while ( *endtok==' ' || *endtok=='\t' ) ++endtok;
+	if ( *endtok=='[' ) {	/* It's a literal array */
+	    fp->simpleencoding = true;
+	    fp->simple_enc_pos = 0;
+	    ParseSimpleEncoding(fp,endtok+1);
+	}
     } else if ( mycmp("BoundingBoxes",line+1,endtok)==0 ) {
 	fp->infi = fp->inprivate = fp->inencoding = fp->inmetrics = fp->inmetrics2 = false;
 	fp->inbb = true;

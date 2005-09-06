@@ -1089,6 +1089,8 @@ return( cnt );
 static int LookupCharString(char *encname,struct pschars *chars) {
     int k;
 
+    if ( encname==NULL ) encname = ".notdef";	/* In case of an incomplete encoding array */
+
     for ( k=0; k<chars->cnt; ++k ) {
 	if ( chars->keys[k]!=NULL )
 	    if ( strcmp(encname,chars->keys[k])==0 )
@@ -1945,6 +1947,7 @@ static void SFInstanciateRefs(SplineFont *sf) {
     }
 }
 
+/* Also handles type3s */
 static void _SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext *pscontext) {
     int i, j, notdefpos;
     RefChar *refs, *next;
@@ -2016,20 +2019,18 @@ static void _SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext 
     for ( i=0; i<map->enccount; ++i ) if ( map->map[i]==-1 )
 	map->map[i] = notdefpos;
 
-    if ( !istype3 ) {
-	for ( i=0; i<sf->glyphcnt; ++i ) {
-	    if ( !istype3 )
-		sf->glyphs[i] = PSCharStringToSplines(fd->chars->values[i],fd->chars->lens[i],
-			pscontext,fd->private->subrs,NULL,fd->chars->keys[i]);
-	    else
-		sf->glyphs[i] = fd->charprocs->values[i];
-	    if ( sf->glyphs[i]!=NULL ) {
-		sf->glyphs[i]->orig_pos = i;
-		sf->glyphs[i]->vwidth = sf->ascent+sf->descent;
-		sf->glyphs[i]->unicodeenc = UniFromName(sf->glyphs[i]->name,sf->uni_interp,map->enc);
-		sf->glyphs[i]->parent = sf;
-		SCLigDefault(sf->glyphs[i]);		/* Also reads from AFM file, but it probably doesn't exist */
-	    }
+    for ( i=0; i<sf->glyphcnt; ++i ) {
+	if ( !istype3 )
+	    sf->glyphs[i] = PSCharStringToSplines(fd->chars->values[i],fd->chars->lens[i],
+		    pscontext,fd->private->subrs,NULL,fd->chars->keys[i]);
+	else
+	    sf->glyphs[i] = fd->charprocs->values[i];
+	if ( sf->glyphs[i]!=NULL ) {
+	    sf->glyphs[i]->orig_pos = i;
+	    sf->glyphs[i]->vwidth = sf->ascent+sf->descent;
+	    sf->glyphs[i]->unicodeenc = UniFromName(sf->glyphs[i]->name,sf->uni_interp,map->enc);
+	    sf->glyphs[i]->parent = sf;
+	    SCLigDefault(sf->glyphs[i]);		/* Also reads from AFM file, but it probably doesn't exist */
 	}
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressNext();
