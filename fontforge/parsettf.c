@@ -3669,7 +3669,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    for ( i=0; i<len-6; ++i )
 		table[i] = getc(ttf);
 	    trans = enc->unicode;
-	    for ( i=0; i<256 && i<info->glyph_cnt && i<len-6; ++i )
+	    for ( i=0; i<256 && i<len-6; ++i )
 		if ( !justinuse ) {
 		    if ( table[i]<info->glyph_cnt && info->chars[table[i]]!=NULL ) {
 			map->map[i] = table[i];
