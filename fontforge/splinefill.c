@@ -1077,18 +1077,19 @@ static void FillImages(uint8 *bytemap,EdgeList *es,ImageList *img,Layer *layer,L
 	for ( i=0; i<=y2-y1; ++i ) {
 	    if ( i+y1<0 || i+y1>=es->cnt )	/* Shouldn't happen, rounding errors might gives us off by 1s though */
 	continue;
-	    ii = i*base->height/(y2-y1);
+	    ii = i*(base->height-1)/(y2-y1);
 	    for ( j=0; j<x2-x1; ++j ) {
 		if ( j+x1<0 || j+x1>=8*es->bytes_per_line )
 	    continue;
-		jj = j*base->width/(x2-x1);
+		jj = j*(base->width-1)/(x2-x1);
 		if ( base->image_type==it_true )
 		    col = ((uint32 *) (base->data + ii*base->bytes_per_line))[jj];
 		else if ( base->image_type==it_index ) {
 		    col = (base->data + ii*base->bytes_per_line)[jj];
 		    col = base->clut->clut[col];
-		} else if ( layer->dofill ) {		/* Equivalent to imagemask */
-		    if ( !( (base->data + ii*base->bytes_per_line)[jj>>3]&(0x80>>(j&7)) ) )
+		} else if ( layer->dofill && base->trans!=-1) {		/* Equivalent to imagemask */
+		    if ( (base->trans==0 && !( (base->data + ii*base->bytes_per_line)[jj>>3]&(0x80>>(jj&7)) ) ) ||
+			    (base->trans!=0 && ( (base->data + ii*base->bytes_per_line)[jj>>3]&(0x80>>(jj&7)) ) ))
 	    continue;	/* transparent */
 		    col = fillcol;
 		} else {

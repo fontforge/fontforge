@@ -541,6 +541,11 @@ static void FlushFilter(struct psfilter *ps) {
     (ps->dumpchar)('\n',ps->data);
 }
 
+#if 0
+/* Inside a font, I can't use a <stdin> as a data source. Probably because */
+/*  the parser doesn't know what to do with those data when building the char */
+/*  proc (as opposed to executing) */
+/* So I can't use run length filters or other compression technique */
 static void RunLengthFilter(struct psfilter *ps,uint8 *pt, int len ) {
     uint8 *end = pt+len, *test;
 
@@ -608,6 +613,130 @@ static void PSDrawMonoImg(void (*dumpchar)(int ch,void *data), void *data,
 	    use_imagemask?"imagemask":"image" );
     PSBuildImageMonoString(dumpchar,data,base);
 }
+#else
+static void FilterStr(struct psfilter *ps,uint8 *pt, int len ) {
+    uint8 *end = pt+len;
+
+    while ( pt<end )
+	Filter(ps,*pt++);
+}
+
+static void PSDumpBinaryData(void (*dumpchar)(int ch,void *data), void *data,
+	uint8 *bytes,int rows, int bytes_per_row, int useful_bytes_per_row) {
+    struct psfilter ps;
+    int i,j,cnt,group_cnt;
+    const int max_string = 65536;
+
+    if ( useful_bytes_per_row*rows<max_string ) {
+	/* It all fits in one string. Easy peasy */
+	dumpf(dumpchar,data, "{<~" );
+	InitFilter(&ps,dumpchar,data);
+	if (bytes_per_row==useful_bytes_per_row )
+	    FilterStr(&ps,(uint8 *) bytes, rows*bytes_per_row);
+	else for ( i=0; i<rows; ++i ) {
+	    FilterStr(&ps,(uint8 *) (bytes + i*bytes_per_row),
+		    useful_bytes_per_row);
+	}
+	FlushFilter(&ps);
+	dumpchar('}',data);
+    } else {
+	cnt = (max_string-1)/useful_bytes_per_row;
+	if ( cnt==0 ) cnt=1;
+	group_cnt = -1;
+	for ( i=0; i<rows; ) {
+	    if ( i+cnt>=rows )
+		dumpf(dumpchar,data, "{currentdict /ff-image-cnt undef <~" );
+	    else {
+		dumpf(dumpchar,data, "{{/ff-image-cnt %d def <~", i/cnt );
+		group_cnt = i/cnt;
+	    }
+	    InitFilter(&ps,dumpchar,data);
+	    for ( j=0; j<cnt && i<rows; ++i, ++j ) {
+		FilterStr(&ps,(uint8 *) (bytes + i*bytes_per_row),
+			useful_bytes_per_row);
+	    }
+	    FlushFilter(&ps);
+	    dumpf(dumpchar,data,"}\n");
+	}
+	for ( i=group_cnt-1; i>=0; --i ) {
+	    dumpf(dumpchar,data,"ff-image-cnt %d eq 3 1 roll ifelse}\n", i );
+	}
+	dumpf(dumpchar,data,"currentdict /ff-image-cnt known not 3 1 roll ifelse}\n" );
+    }
+}
+
+static void PSDump24BinaryData(void (*dumpchar)(int ch,void *data), void *data,
+	struct _GImage *base ) {
+    struct psfilter ps;
+    int i,j,cnt,group_cnt;
+    register uint32 val;
+    register uint32 *pt, *end;
+    const int max_string = 65536;
+
+    if ( 3*base->width*base->height<max_string ) {
+	/* It all fits in one string. Easy peasy */
+	dumpf(dumpchar,data, "{<~" );
+	InitFilter(&ps,dumpchar,data);
+	for ( i=0; i<base->height; ++i ) {
+	    pt = (uint32 *) (base->data + i*base->bytes_per_line);
+	    end = pt + base->width;
+	    while ( pt<end ) {
+		val = *pt++;
+		Filter(&ps,COLOR_RED(val));
+		Filter(&ps,COLOR_GREEN(val));
+		Filter(&ps,COLOR_BLUE(val));
+	    }
+	}
+	FlushFilter(&ps);
+	dumpchar('}',data);
+    } else {
+	cnt = (max_string-1)/(3*base->width);
+	if ( cnt==0 ) cnt=1;
+	group_cnt = -1;
+	for ( i=0; i<base->height; ) {
+	    if ( i+cnt>=base->height )
+		dumpf(dumpchar,data, "{currentdict /ff-image-cnt undef <~" );
+	    else {
+		dumpf(dumpchar,data, "{{/ff-image-cnt %d def <~", i/cnt );
+		group_cnt = i/cnt;
+	    }
+	    InitFilter(&ps,dumpchar,data);
+	    for ( j=0; j<cnt && i<base->height; ++i, ++j ) {
+		pt = (uint32 *) (base->data + i*base->bytes_per_line);
+		end = pt + base->width;
+		while ( pt<end ) {
+		    val = *pt++;
+		    Filter(&ps,COLOR_RED(val));
+		    Filter(&ps,COLOR_GREEN(val));
+		    Filter(&ps,COLOR_BLUE(val));
+		}
+	    }
+	    FlushFilter(&ps);
+	    dumpf(dumpchar,data,"}\n");
+	}
+	for ( i=group_cnt-1; i>=0; --i ) {
+	    dumpf(dumpchar,data,"ff-image-cnt %d eq 3 1 roll ifelse}\n", i );
+	}
+	dumpf(dumpchar,data,"currentdict /ff-image-cnt known not 3 1 roll ifelse}\n" );
+    }
+}
+
+static void PSDrawMonoImg(void (*dumpchar)(int ch,void *data), void *data,
+	struct _GImage *base,int use_imagemask) {
+
+    dumpf(dumpchar,data, " %d %d ", base->width, base->height );
+    if ( base->trans==1 )
+	dumpf(dumpchar,data, "false ");
+    else
+	dumpf(dumpchar,data, "true ");
+    dumpf(dumpchar,data, "[%d 0 0 %d 0 %d]\n",
+	    base->width, -base->height, base->height);
+    PSDumpBinaryData(dumpchar,data,(uint8 *) base->data,base->height,base->bytes_per_line,(base->width+7)/8);
+
+    dumpf(dumpchar,data, "%s\n",
+	    use_imagemask?"imagemask":"image" );
+}
+#endif
 
 static void PSSetIndexColors(void (*dumpchar)(int ch,void *data), void *data,
 	GClut *clut) {
@@ -621,29 +750,9 @@ static void PSSetIndexColors(void (*dumpchar)(int ch,void *data), void *data,
     dumpf(dumpchar,data,">\n] setcolorspace\n");
 }
 
-static void PSBuildImageIndexString(void (*dumpchar)(int ch,void *data), void *data,
-	struct _GImage *base) {
-    register int i;
-    register uint8 *pt, *end;
-    int clut_len = base->clut->clut_len;
-    struct psfilter ps;
-
-    for ( pt=base->data, end = pt+base->height*base->bytes_per_line; pt<end; )
-	if ( *pt>=clut_len ) *pt = clut_len-1;
-
-    InitFilter(&ps,dumpchar,data);
-    if ( base->bytes_per_line==base->width )
-	RunLengthFilter(&ps,(uint8 *) base->data, base->height*base->bytes_per_line);
-    else for ( i=0; i<base->height; ++i ) {
-	RunLengthFilter(&ps,(uint8 *) (base->data + i*base->bytes_per_line),
-		base->width);
-    }
-    Filter(&ps,0x80);		/* EOD mark */
-    FlushFilter(&ps);
-}
-
 static void PSBuildImageIndexDict(void (*dumpchar)(int ch,void *data), void *data,
 	struct _GImage *base) {
+    /* I need an image dict, otherwise I am restricted to grey scale */
     dumpf(dumpchar,data, "<<\n" );
     dumpf(dumpchar,data, "  /ImageType 1\n" );
     dumpf(dumpchar,data, "  /Width %d\n", base->width );
@@ -654,30 +763,10 @@ static void PSBuildImageIndexDict(void (*dumpchar)(int ch,void *data), void *dat
     dumpf(dumpchar,data, "  /BitsPerComponent 8\n" );
     dumpf(dumpchar,data, "  /Decode [0 255]\n" );
     dumpf(dumpchar,data, "  /Interpolate false\n" );
-    dumpf(dumpchar,data, "  /DataSource currentfile /ASCII85Decode filter\n" );
+    dumpf(dumpchar,data, "  /DataSource " );
+    PSDumpBinaryData(dumpchar,data,base->data,base->height,base->bytes_per_line,
+	    base->width);
     dumpf(dumpchar,data, ">> image\n" );
-    PSBuildImageIndexString(dumpchar,data,base);
-}
-
-static void PSBuildImage24String(void (*dumpchar)(int ch,void *data), void *data,
-	struct _GImage *base) {
-    int i;
-    register long val;
-    register uint32 *pt, *end;
-    struct psfilter ps;
-
-    InitFilter(&ps,dumpchar,data);
-    for ( i=0; i<base->height; ++i ) {
-	pt = (uint32 *) (base->data + i*base->bytes_per_line);
-	end = pt + base->width;
-	while ( pt<end ) {
-	    val = *pt++;
-	    Filter(&ps,COLOR_RED(val));
-	    Filter(&ps,COLOR_GREEN(val));
-	    Filter(&ps,COLOR_BLUE(val));
-	}
-    }
-    FlushFilter(&ps);
 }
 
 static void PSDrawImg(void (*dumpchar)(int ch,void *data), void *data,
@@ -690,9 +779,8 @@ static void PSDrawImg(void (*dumpchar)(int ch,void *data), void *data,
     } else {
 	dumpf(dumpchar,data, "%d %d 8 [%d 0 0 %d 0 %d] ",
 		base->width, base->height,  base->width, -base->height, base->height);
-	    dumpf(dumpchar,data, "currentfile /ASCII85Decode filter " );
-	    dumpf(dumpchar,data, "false 3 colorimage\n" );
-	PSBuildImage24String(dumpchar,data,base);
+	PSDump24BinaryData(dumpchar,data,base);
+	dumpf(dumpchar,data, "false 3 colorimage\n" );
     }
 }
 
@@ -876,6 +964,8 @@ return( true );
 	    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
 	    if ( base->image_type!=it_mono )
 return( true );
+	    if ( !sc->layers[l].dofill )
+return( true );
 	}
 	for ( r = sc->layers[l].refs; r!=NULL; r = r->next )
 	    if ( SCSetsColor(r->sc) )
@@ -916,7 +1006,7 @@ static int dumpcharprocs(void (*dumpchar)(int ch,void *data), void *data, Spline
     cnt = 0;
     notdefpos = SFFindNotdef(sf,-2);
     for ( i=0; i<sf->glyphcnt; ++i )
-	if ( sf->glyphs[i]!=NULL ) {
+	if ( SCWorthOutputting(sf->glyphs[i]) ) {
 	    if ( strcmp(sf->glyphs[i]->name,".notdef")!=0 )
 		++cnt;
 	}
@@ -2399,5 +2489,76 @@ return( 0 );
     ret = _WritePSFont(out,sf,format,flags,map);
     if ( fclose(out)==-1 )
 	ret = 0;
+return( ret );
+}
+
+static void dumpimageproc(FILE *file,BDFChar *bdfc,BDFFont *font) {
+    SplineFont *sf = font->sf;
+    double scale = (sf->ascent+sf->descent)/font->pixelsize;
+    int width = bdfc->xmax-bdfc->xmin+1, height = bdfc->ymax-bdfc->ymin+1;
+    int i;
+    struct psfilter ps;
+
+    fprintf( file, "  /%s { %d 0 0 0 0 0 setcachedevice \n",
+	    bdfc->sc->name, (int) rint(bdfc->width*scale));
+    fprintf( file, "\t%g %g translate %g %g scale %d %d true [%d 0 0 %d 0 %d] {<~\n",
+	    bdfc->xmin*scale, bdfc->ymax*scale,	/* Translate */
+	    width*scale, height*scale,		/* Scale */
+	   width, height,
+	    width, -height, height );
+    InitFilter(&ps,(DumpChar) fputc,file);
+    if ( bdfc->bytes_per_line==(width+7)/8 )
+	FilterStr(&ps,(uint8 *) bdfc->bitmap, height*bdfc->bytes_per_line);
+    else for ( i=0; i<height; ++i )
+	FilterStr(&ps,(uint8 *) (bdfc->bitmap + i*bdfc->bytes_per_line),
+		(width+7)/8);
+    FlushFilter(&ps);
+    fprintf(file,"} imagemask } bind def\n" );
+}
+
+int PSBitmapDump(char *filename,BDFFont *font, EncMap *map) {
+    char buffer[300];
+    FILE *file;
+    int i, notdefpos, cnt;
+    int ret = 0;
+    SplineFont *sf = font->sf;
+
+    if ( filename==NULL ) {
+	sprintf(buffer,"%s-%d.pt3", sf->fontname, font->pixelsize );
+	filename = buffer;
+    }
+    file = fopen(filename,"w" );
+    if ( file==NULL )
+	fprintf( stderr, "Can't open %s\n", filename );
+    else {
+	dumprequiredfontinfo((DumpChar) fputc, file, sf, ff_ptype3, map);
+
+	cnt = 0;
+	notdefpos = SFFindNotdef(sf,-2);
+	for ( i=0; i<sf->glyphcnt; ++i )
+	    if ( font->glyphs[i]!=NULL ) {
+		if ( strcmp(font->glyphs[i]->sc->name,".notdef")!=0 )
+		    ++cnt;
+	    }
+	++cnt;		/* one notdef entry */
+
+	fprintf(file,"/CharProcs %d dict def\nCharProcs begin\n", cnt );
+
+	if ( notdefpos!=-1 && font->glyphs[notdefpos]!=NULL)
+	    dumpimageproc(file,font->glyphs[notdefpos],font);
+	else
+	    fprintf( file, "  /.notdef { %d 0 0 0 0 0 setcachedevice } bind def\n",
+		sf->ascent+sf->descent );
+
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( i!=notdefpos ) {
+	    if ( font->glyphs[i]!=NULL )
+		dumpimageproc(file,font->glyphs[i],font);
+	}
+	fprintf(file,"end\ncurrentdict end\n" );
+	fprintf(file,"/%s exch definefont\n", sf->fontname );
+	ret = ferror(file)==0;
+	if ( fclose(file)!=0 )
+	    ret = false;
+    }
 return( ret );
 }

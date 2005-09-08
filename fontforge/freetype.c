@@ -1015,6 +1015,13 @@ return( NULL );
 return( NULL );
 	}
     }
+    if ( sc->parent->multilayer ) {
+	/* I don't support images here */
+	for ( i=ly_fore; i<sc->layer_cnt; ++i ) {
+	    if ( sc->layers[i].images!=NULL )
+return( NULL );
+	}
+    }
 #endif
 
     SplineCharFindBounds(sc,&b);

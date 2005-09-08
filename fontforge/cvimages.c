@@ -274,7 +274,8 @@ return;
 	    sc->layers[pos].dostroke = e->u.splines.stroke.col != 0xffffffff;
 	    if ( !sc->layers[pos].dofill && !sc->layers[pos].dostroke )
 		sc->layers[pos].dofill = true;		/* If unspecified, assume an implied fill in BuildGlyph */
-	    sc->layers[pos].fill_brush.col = e->u.splines.fill.col==0xffffffff ? COLOR_INHERITED : e->u.splines.fill.col;
+	    sc->layers[pos].fill_brush.col = e->u.splines.fill.col==0xffffffff ?
+		    COLOR_INHERITED : e->u.splines.fill.col;
 	    sc->layers[pos].stroke_pen.brush.col = e->u.splines.stroke.col==0xffffffff ? COLOR_INHERITED : e->u.splines.stroke.col;
 	    sc->layers[pos].stroke_pen.width = e->u.splines.stroke_width;
 	    sc->layers[pos].stroke_pen.linejoin = e->u.splines.join;
@@ -282,6 +283,23 @@ return;
 	    memcpy(sc->layers[pos].stroke_pen.trans, e->u.splines.transform,
 		    4*sizeof(real));
 	    sc->layers[pos].splines = e->u.splines.splines;
+	} else if ( e->type == et_image ) {
+	    ImageList *ilist = chunkalloc(sizeof(ImageList));
+	    struct _GImage *base = e->u.image.image->list_len==0?
+		    e->u.image.image->u.image:e->u.image.image->u.images[0];
+	    sc->layers[pos].images = ilist;
+	    sc->layers[pos].dofill = base->image_type==it_mono && base->trans!=-1;
+	    sc->layers[pos].fill_brush.col = e->u.image.col==0xffffffff ?
+		    COLOR_INHERITED : e->u.image.col;
+	    ilist->image = e->u.image.image;
+	    ilist->xscale = e->u.image.transform[0];
+	    ilist->yscale = e->u.image.transform[3];
+	    ilist->xoff = e->u.image.transform[4];
+	    ilist->yoff = e->u.image.transform[5];
+	    ilist->bb.minx = ilist->xoff;
+	    ilist->bb.maxy = ilist->yoff;
+	    ilist->bb.maxx = ilist->xoff + base->width*ilist->xscale;
+	    ilist->bb.miny = ilist->yoff - base->height*ilist->yscale;
 	}
 	free(e);
     }

@@ -169,6 +169,8 @@ enum pstoks { pt_eof=-1, pt_moveto, pt_rmoveto, pt_curveto, pt_rcurveto,
     pt_currentpoint,
     pt_fill, pt_stroke,
 
+    pt_imagemask,
+
     pt_transform, pt_itransform, pt_dtransform, pt_idtransform,
 
     /* things we sort of pretend to do, but actually do something wrong */
@@ -211,6 +213,8 @@ char *toknames[] = { "moveto", "rmoveto", "curveto", "rcurveto",
 	"setrgbcolor", "currentrgbcolor", "setcmykcolor", "currentcmykcolor",
 	"currentpoint",
 	"fill", "stroke",
+
+	"imagemask",
 
 	"transform", "itransform", "dtransform", "idtransform",
 
@@ -962,6 +966,242 @@ static Entity *EntityCreate(SplinePointList *head,int linecap,int linejoin,
 return( ent );
 }
 
+#ifdef FONTFORGE_CONFIG_TYPE3
+static uint8 *StringToBytes(struct psstack *stackel,int *len) {
+    char *pt;
+    uint8 *upt, *base, *ret;
+    int half, sofar, val, nesting;
+    int i,j;
+
+    pt = stackel->u.str;
+    if ( stackel->type==ps_instr ) {
+	/* imagemask operators take strings or procedures or files */
+	/* we support strings, or procedures containing strings */
+	while ( isspace(*pt)) ++pt;
+	if ( *pt=='{' || *pt=='[' ) ++pt;
+	while ( isspace(*pt)) ++pt;
+    } else if ( stackel->type!=pt_string )
+return( NULL );
+
+    upt = base = galloc(65536+1);	/* Maximum size of ps string */
+
+    if ( *pt=='(' ) {
+	/* A conventional string */
+	++pt;
+	nesting = 0;
+	while ( *pt!='\0' && (nesting!=0 || *pt!=')') ) {
+	    if ( *pt=='(' ) {
+		++nesting;
+		*upt++ = *pt++;
+	    } else if ( *pt==')' ) {
+		--nesting;
+		*upt++ = *pt++;
+	    } else if ( *pt=='\r' || *pt=='\n' ) {
+		/* any of lf, cr, crlf gets translated to \n */
+		if ( *pt=='\r' && pt[1]=='\n' ) ++pt;
+		*upt++ = '\n';
+		++pt;
+	    } else if ( *pt!='\\' ) {
+		*upt++ = *pt++;
+	    } else {
+		++pt;
+		if ( *pt=='\r' || *pt=='\n' ) {
+		    /* any of \lf, \cr, \crlf gets ignored */
+		    if ( *pt=='\r' && pt[1]=='\n' ) ++pt;
+		    ++pt;
+		} else if ( *pt=='n' ) {
+		    *upt++ = '\n';
+		    ++pt;
+		} else if ( *pt=='r' ) {
+		    *upt++ = '\r';
+		    ++pt;
+		} else if ( *pt=='t' ) {
+		    *upt++ = '\t';
+		    ++pt;
+		} else if ( *pt=='b' ) {
+		    *upt++ = '\b';
+		    ++pt;
+		} else if ( *pt=='f' ) {
+		    *upt++ = '\f';
+		    ++pt;
+		} else if ( *pt>='0' && *pt<='7' ) {
+		    if ( pt[1]<'0' || pt[1]>'7' )	/* This isn't really legal postscript */
+			*upt++ = *pt++ - '0';
+		    else if ( pt[2]<'0' || pt[2]>'7' ) {/* 3 octal digits are required */
+			*upt++ = ((*pt - '0')<<3) + (pt[1]-'0');
+			pt += 2;
+		    } else {
+			*upt++ = ((*pt - '0')<<6) + ((pt[1]-'0')<<3) + (pt[2]-'0');
+			pt += 3;
+		    }
+		} else if ( *pt=='(' || *pt==')' || *pt=='\\' )
+		    *upt++ = *pt++;
+		else {
+		    fprintf( stderr, "Unknown character after backslash in literal string.\n");
+		    *upt++ = *pt++;
+		}
+	    }
+	}
+    } else if ( *pt!='<' ) {
+	fprintf( stderr, "Unknown string type\n" );
+return( NULL );
+    } else if ( pt[1]!='~' ) {
+	/* A hex string. Ignore any characters which aren't hex */
+	half = sofar = 0;
+	++pt;
+	while ( *pt!='>' && *pt!='\0' ) {
+	    if ( *pt>='a' && *pt<='f' )
+		val = *pt++-'a'+10;
+	    else if ( *pt>='A' && *pt<='F' )
+		val = *pt++-'A'+10;
+	    else if ( isdigit(*pt))
+		val = *pt++-'0';
+	    else {
+		++pt;		/* Not hex */
+	continue;
+	    }
+	    if ( !half ) {
+		half = true;
+		sofar = val<<4;
+	    } else {
+		*upt++ = sofar|val;
+		half = false;
+	    }
+	}
+	if ( half )
+	    *upt++ = sofar;
+    } else {
+	/* An ASCII-85 string */
+	/* c1 c2 c3 c4 c5 (c>='!' && c<='u') => ((c1-'!')*85+(c2-'!'))*85... */
+	/* z => 32bits of 0 */
+	pt += 2;
+	while ( *pt!='\0' && *pt!='~' ) {
+	    if ( upt-base+4 > 65536 )
+	break;
+	    if ( *pt=='z' ) {
+		*upt++ = 0;
+		*upt++ = 0;
+		*upt++ = 0;
+		*upt++ = 0;
+		++pt;
+	    } else if ( *pt>='!' && *pt<='u' ) {
+		val = 0;
+		for ( i=0; i<5 && *pt>='!' && *pt<='u'; ++i )
+		    val = (val*85) + *pt++ - '!';
+		for ( j=i; j<5; ++j )
+		    val *= 85;
+		*upt++ =  val>>24      ;
+		if ( i>2 )
+		    *upt++ = (val>>16)&0xff;
+		if ( i>3 )
+		    *upt++ = (val>>8 )&0xff;
+		if ( i>4 )
+		    *upt++ =  val     &0xff;
+		if ( i<5 )
+	break;
+	    } else if ( isspace( *pt ) ) {
+		++pt;
+	    } else
+	break;
+	}
+    }
+    *len = upt-base;
+    ret = galloc(upt-base);
+    memcpy(ret,base,upt-base);
+    free(base);
+return(ret);
+}
+
+static int PSAddImagemask(EntityChar *ec,struct psstack *stack,int sp,
+	real transform[6],Color fillcol) {
+    uint8 *data;
+    int datalen, width, height, polarity;
+    real trans[6];
+    struct _GImage *base;
+    GImage *gi;
+    Entity *ent;
+    int i,j;
+
+    if ( sp<5 || (stack[sp-1].type!=ps_instr && stack[sp-1].type!=ps_string)) {
+	fprintf( stderr, "FontForge does not support dictionary based imagemask operators.\n" );
+return( sp-1 );
+    }
+
+    if ( stack[sp-2].type!=ps_array || stack[sp-2].u.dict.cnt!=6 ) {
+	fprintf( stderr, "Fourth argument of imagemask must be a 6-element transformation matrix.\n" );
+return( sp-5 );
+    }
+
+    if ( stack[sp-3].type!=ps_bool ) {
+	fprintf( stderr, "Third argument of imagemask must be a boolean.\n" );
+return( sp-5 );
+    }
+    polarity = stack[sp-3].u.tf;
+    
+    if ( stack[sp-4].type!=ps_num || stack[sp-5].type!=ps_num ) {
+	fprintf( stderr, "First and second arguments of imagemask must be integers.\n" );
+return( sp-5 );
+    }
+    height = stack[sp-4].u.val;
+    width = stack[sp-5].u.val;
+
+    data = StringToBytes(&stack[sp-1],&datalen);
+
+    if ( width<=0 || height<=0 || ((width+7)/8)*height>datalen ) {
+	fprintf( stderr, "Width or height arguments to imagemask contain invalid values\n(either negative or they require more data than provided).\n" );
+	free(data);
+return( sp-5 );
+    }
+    trans[0] = stack[sp-2].u.dict.entries[0].u.val;
+    trans[1] = stack[sp-2].u.dict.entries[1].u.val;
+    trans[2] = stack[sp-2].u.dict.entries[2].u.val;
+    trans[3] = stack[sp-2].u.dict.entries[3].u.val;
+    trans[4] = stack[sp-2].u.dict.entries[4].u.val;
+    trans[5] = stack[sp-2].u.dict.entries[5].u.val;
+
+    gi = GImageCreate(it_mono,width,height);
+    base = gi->u.image;
+    base->trans = 1;
+    if ( polarity ) {
+	for ( i=0; i<datalen; ++i )
+	    data[i] ^= 0xff;
+    }
+    if ( trans[0]>0 && trans[3]<0 )
+	memcpy(base->data,data,datalen);
+    else if ( trans[0]>0 && trans[3]>0 ) {
+	for ( i=0; i<height; ++i )
+	    memcpy(base->data+i*base->bytes_per_line,data+(height-i)*base->bytes_per_line,
+		    base->bytes_per_line);
+    } else if ( trans[0]<0 && trans[3]<0 ) {
+	for ( i=0; i<height; ++i ) for ( j=0; j<width; ++j ) {
+	    if ( data[i*base->bytes_per_line+ (j>>3)]&(0x80>>(j&7)) )
+		base->data[i*base->bytes_per_line + ((width-j-1)>>3)] |=
+			(0x80>>((width-j-1)&7));
+	}
+    } else {
+	for ( i=0; i<height; ++i ) for ( j=0; j<width; ++j ) {
+	    if ( data[i*base->bytes_per_line+ (j>>3)]&(0x80>>(j&7)) )
+		base->data[(height-i-1)*base->bytes_per_line + ((width-j-1)>>3)] |=
+			(0x80>>((width-j-1)&7));
+	}
+    }
+    free(data);
+
+    ent = gcalloc(1,sizeof(Entity));
+    ent->type = et_image;
+    ent->u.image.image = gi;
+    memcpy(ent->u.image.transform,transform,sizeof(real[6]));
+    ent->u.image.transform[0] /= width;
+    ent->u.image.transform[3] /= height;
+    ent->u.image.transform[5] += height;
+    ent->u.image.col = fillcol;
+
+    ent->next = ec->splines;
+    ec->splines = ent;
+return( sp-5 );
+}
+#endif
+
 static void HandleType3Reference(IO *wrapper,EntityChar *ec,real transform[6],
 	char *tokbuf, int toksize) {
     int tok;
@@ -1011,7 +1251,6 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
     } gsaves[30];
     int gsp = 0;
     int ccnt=0;
-    char tokbuf[100];
     GrowBuf gb;
     struct pskeydict dict;
     struct pskeyval *kv;
@@ -1022,6 +1261,15 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
     Entity *ent;
     char *oldloc;
     int warned = 0;
+#if !defined(FONTFORGE_CONFIG_TYPE3)
+    char tokbuf[100];
+    const int tokbufsize = 100;
+#else
+    char *tokbuf;
+    const int tokbufsize = 2*65536+10;
+
+    tokbuf = galloc(tokbufsize);
+#endif
 
     oldloc = setlocale(LC_NUMERIC,"C");
 
@@ -1045,7 +1293,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 	sp = 2;
     }
 
-    while ( (tok = nextpstoken(wrapper,&dval,tokbuf,sizeof(tokbuf)))!=pt_eof ) {
+    while ( (tok = nextpstoken(wrapper,&dval,tokbuf,tokbufsize))!=pt_eof ) {
 	if ( endedstopped(wrapper)) {
 	    if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
 		stack[sp].type = ps_bool;
@@ -1743,7 +1991,7 @@ printf( "-%s-\n", toknames[tok]);
 	  break;
 	  case pt_namelit:
 	    if ( strcmp(tokbuf,"CharProcs")==0 && ec!=NULL ) {
-		HandleType3Reference(wrapper,ec,transform,tokbuf,sizeof(tokbuf));
+		HandleType3Reference(wrapper,ec,transform,tokbuf,tokbufsize);
 	    } else if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
 		stack[sp].type = ps_lit;
 		stack[sp++].u.str = copy(tokbuf);
@@ -2162,6 +2410,24 @@ printf( "-%s-\n", toknames[tok]);
 	    head = NULL; cur = NULL;
 	  break;
 
+	  case pt_imagemask:
+#ifdef FONTFORGE_CONFIG_TYPE3
+	    i = PSAddImagemask(ec,stack,sp,transform,fore);
+	    while ( sp>i ) {
+		--sp;
+		if ( stack[sp].type==ps_string || stack[sp].type==ps_instr ||
+			stack[sp].type==ps_lit )
+		    free(stack[sp].u.str);
+		else if ( stack[sp].type==ps_array || stack[sp].type==ps_dict )
+		    dictfree(&stack[sp].u.dict);
+	    }
+#else
+	    fprintf(stderr,"This version of FontForge does not support the imagemask operator.\nFor support configure --with-multilayer.\n" );
+	    if ( sp>=5 && (stack[sp-1].type==ps_instr || stack[sp-1].type==ps_string))
+		sp -= 5;
+#endif
+	  break;
+
 	  /* We don't do these right, but at least we'll avoid some errors with this hack */
 	  case pt_save: case pt_currentmatrix:
 	    /* push some junk on the stack */
@@ -2324,8 +2590,16 @@ printf( "-%s-\n", toknames[tok]);
 	    break;
 	    if ( i==sp )
 		fprintf( stderr, "No mark in cleartomark\n" );
-	    else
-		sp = sp-i-1;
+	    else {
+		while ( sp>=i ) {
+		    --sp;
+		    if ( stack[sp].type==ps_string || stack[sp].type==ps_instr ||
+			    stack[sp].type==ps_lit )
+			free(stack[sp].u.str);
+		    else if ( stack[sp].type==ps_array || stack[sp].type==ps_dict )
+			dictfree(&stack[sp].u.dict);
+		}
+	    }
 	  break;
 	  case pt_closearray:
 	    for ( i=0; i<sp; ++i )
@@ -2522,6 +2796,9 @@ printf( "-%s-\n", toknames[tok]);
     }
     ECCatagorizePoints(ec);
     setlocale(LC_NUMERIC,oldloc);
+#ifdef FONTFORGE_CONFIG_TYPE3
+    free(tokbuf);
+#endif
 }
 
 static void InterpretPS(FILE *ps, char *psstr, EntityChar *ec, RetStack *rs) {

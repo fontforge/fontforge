@@ -572,7 +572,6 @@ typedef struct bdffont {
     struct splinefont *sf;
     int glyphcnt, glyphmax;	/* used & allocated sizes of glyphs array */
     BDFChar **glyphs;		/* an array of charcnt entries */
-    BDFChar **temp;		/* Used by ReencodeFont routine */
     int16 pixelsize;
     int16 ascent, descent;
     unsigned int piecemeal: 1;
@@ -1198,6 +1197,7 @@ extern struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
 extern struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds,int flags);
 enum bitmapformat { bf_bdf, bf_ttf, bf_sfnt_dfont, 
 	bf_nfntmacbin, /*bf_nfntdfont, */bf_fon, bf_otb, bf_palm,
+	bf_ptype3,
 	bf_none };
 extern const char *GetAuthor(void);
 extern SplineChar *SFFindExistingCharMac(SplineFont *,EncMap *map, int unienc);
@@ -1415,6 +1415,7 @@ extern void BDFCharFindBounds(BDFChar *bc,IBounds *bb);
 extern BDFFont *BitmapFontScaleTo(BDFFont *old, int to);
 extern void BDFCharFree(BDFChar *bdfc);
 extern void BDFFontFree(BDFFont *bdf);
+extern int  PSBitmapDump(char *filename,BDFFont *font, EncMap *map);
 extern int  BDFFontDump(char *filename,BDFFont *font, EncMap *map, int res);
 extern int  FONFontDump(char *filename,BDFFont *font, EncMap *map, int res);
 /* Two lines intersect in at most 1 point */
@@ -1605,6 +1606,7 @@ extern SplineFont *LoadSplineFont(char *filename,enum openflags);
 extern SplineFont *ReadSplineFont(char *filename,enum openflags);	/* Don't use this, use LoadSF instead */
 extern SplineFont *SFFromBDF(char *filename,int ispk,int toback);
 extern SplineFont *SFFromMF(char *filename);
+extern void SFCheckPSBitmap(SplineFont *sf);
 extern uint16 _MacStyleCode( char *styles, SplineFont *sf, uint16 *psstyle );
 extern uint16 MacStyleCode( SplineFont *sf, uint16 *psstyle );
 extern SplineFont *SFReadIkarus(char *fontname);
