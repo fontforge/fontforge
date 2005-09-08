@@ -73,6 +73,7 @@ typedef struct entity {
 	struct image {
 	    GImage *image;
 	    real transform[6];
+	    Color col;				/* that gets poured into imagemasks */
 	} image;
 	struct group {
 	    struct entity *group;

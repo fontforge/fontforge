@@ -2451,6 +2451,8 @@ SplineFont *SplineFontFromPSFont(FontDict *fd) {
 		fd->weightvector==NULL )
 	    SFConvertToOrder2(sf);
     }
+    if ( sf->multilayer )
+	SFCheckPSBitmap(sf);
 return( sf );
 }
 

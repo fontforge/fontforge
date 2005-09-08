@@ -92,7 +92,7 @@ static char *extensions[] = { ".pfa", ".pfb", ".res", "%s.pfb", ".pfa", ".pfb", 
 	".ttf", ".ttf", ".suit", ".dfont", ".otf", ".otf.dfont", ".otf",
 	".otf.dfont", ".svg", NULL };
 # ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-static char *bitmapextensions[] = { ".*bdf", ".ttf", ".dfont", ".bmap", ".dfont", ".*fnt", ".otb", ".pdb", ".none", NULL };
+static char *bitmapextensions[] = { ".*bdf", ".ttf", ".dfont", ".bmap", ".dfont", ".*fnt", ".otb", ".pdb", "-*.pt3", ".none", NULL };
 # endif
 #else
 static char *extensions[] = { ".pfa", ".pfb", ".bin", "%s.pfb", ".pfa", ".pfb", ".pt3", ".ps",
@@ -153,6 +153,7 @@ static GTextInfo bitmaptypes[] = {
     { (unichar_t *) "Win FNT", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "OpenType Bitmap", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) "Palm OS Bitmap", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) "PS Type3 Bitmap", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) _STR_Nobitmapfonts, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }
 };
@@ -1047,7 +1048,7 @@ static int WriteBitmaps(char *filename,SplineFont *sf, int32 *sizes,int res,
     /* res = -1 => Guess depending on pixel size of font */
     extern int ask_user_for_resolution;
 
-    if ( ask_user_for_resolution && res==0x80000000 ) {
+    if ( bf!=bf_ptype3 && ask_user_for_resolution && res==0x80000000 ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressPauseTimer();
 	res = AskResolution(bf);
@@ -1085,6 +1086,16 @@ return( false );
 	    free(buf);
 return( false );
 	}
+
+	if ( bf==bf_ptype3 && bdf->clut!=NULL ) {
+#if defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_notice(_("Bad Bytemap"),_("Currently, FontForge only supports bitmap (not bytemap) type3 output"));
+#else
+	    GWidgetPostNoticeR(_STR_MissingBitmap,_STR_BadBytemapLong );
+#endif
+return( false );
+	}
+
 	strcpy(buf,filename);
 	pt = strrchr(buf,'.');
 	if ( pt!=NULL && (pt2=strrchr(buf,'/'))!=NULL && pt<pt2 )
@@ -1092,7 +1103,7 @@ return( false );
 	if ( pt==NULL )
 	    pt = buf+strlen(buf);
 	if ( strcmp(pt-4,".otf.dfont")==0 || strcmp(pt-4,".ttf.bin")==0 ) pt-=4;
-	ext = bf==bf_bdf ? ".bdf" : ".fnt";
+	ext = bf==bf_bdf ? ".bdf" : bf==bf_ptype3 ? ".pt3" : ".fnt";
 	if ( bdf->clut==NULL )
 	    sprintf( pt, "-%d%s", bdf->pixelsize, ext );
 	else
@@ -1105,6 +1116,8 @@ return( false );
 #endif
 	if ( bf==bf_bdf ) 
 	    BDFFontDump(buf,bdf,map,res);
+	else if ( bf==bf_ptype3 )
+	    PSBitmapDump(buf,bdf,map);
 	else
 	    FONFontDump(buf,bdf,map,res);
 #if defined(FONTFORGE_CONFIG_GDRAW)
@@ -1877,7 +1890,8 @@ return( true );
 	    err = true;
 	if ( temp!=newname )
 	    free(temp);
-    } else if ( (oldbitmapstate==bf_bdf || oldbitmapstate==bf_fon) && !err ) {
+    } else if ( (oldbitmapstate==bf_bdf || oldbitmapstate==bf_fon ||
+	    oldbitmapstate==bf_ptype3 ) && !err ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressChangeLine1R(_STR_SavingBitmapFonts);
 	GProgressIncrementBy(-sf->glyphcnt);
@@ -1929,7 +1943,7 @@ return( sizes );
 int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	int res, char *subfontdefinition, struct sflist *sfs,EncMap *map) {
     int i;
-    static char *bitmaps[] = {"bdf", "ttf", "sbit", "bin", /*"dfont", */"fnt", "otb", "pdb", NULL };
+    static char *bitmaps[] = {"bdf", "ttf", "sbit", "bin", /*"dfont", */"fnt", "otb", "pdb", "pt3", NULL };
     int32 *sizes=NULL;
     char *end = filename+strlen(filename);
     struct sflist *sfi;
@@ -1941,6 +1955,7 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
     else if ( strmatch(bitmaptype,"ms")==0 ) i = bf_ttf;
     else if ( strmatch(bitmaptype,"apple")==0 ) i = bf_ttf;
     else if ( strmatch(bitmaptype,"nfnt")==0 ) i = bf_nfntmacbin;
+    else if ( strmatch(bitmaptype,"ps")==0 ) i = bf_ptype3;
     else for ( i=0; bitmaps[i]!=NULL; ++i ) {
 	if ( strmatch(bitmaptype,bitmaps[i])==0 )
     break;

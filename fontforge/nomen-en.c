@@ -1519,6 +1519,8 @@ static char *str_Type1NeedsNFNTTit = "Needs bitmap font"
 static char *str_MissingBitmap = "Missing Bitmap"
 static char *str_MissingBitmapLong = "Attempt to save a pixel size that has not been created (%d@%d)"
 static char *str_MissingRegenBitmapLong = "Attempt to regenerate a pixel size that has not been created (%d@%d)"
+static char *str_BadBytemap = "Bad Bytemap"
+static char *str_BadBytemapLong = "Currently, FontForge only supports bitmap (not bytemap) type3 output"
     /* Goto character ... */
 static char str_Badnumberin[] = "Bad Number in ";
 static char str_EnternameofGlyph[] = "Enter the name of a glyph in the font";

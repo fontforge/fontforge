@@ -2240,3 +2240,81 @@ SplineFont *SFFromBDF(char *filename,int ispk,int toback) {
 	sf->changed = false;
 return( sf );
 }
+
+void SFCheckPSBitmap(SplineFont *sf) {
+#ifdef FONTFORGE_CONFIG_TYPE3
+    /* Check to see if this type3 font is actually a bitmap font in disguise */
+    /*  (and make sure all bitmaps are the same size */
+    /* If so, create a bitmap version of the font too */
+    int i,j;
+    SplineChar *sc;
+    ImageList *il=NULL;
+    double scale = 0;
+    BDFFont *bdf;
+    BDFChar *bdfc;
+    struct _GImage *base;
+
+    if ( !sf->multilayer )
+return;
+
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
+	if ( sc->layer_cnt!=2 )
+return;
+	if ( sc->layers[ly_fore].splines!=NULL || sc->layers[ly_fore].refs!=NULL )
+return;
+	if ( (il = sc->layers[ly_fore].images)!=NULL ) {
+	    base = il->image->list_len==0 ? il->image->u.image : il->image->u.images[0];
+	    if ( il->next!=NULL )
+return;
+	    if ( base->image_type!=it_mono )
+return;
+	    if ( !RealNear(il->xscale,il->yscale) )
+return;
+	    if ( scale == 0 )
+		scale = il->xscale;
+	    else if ( !RealNear(il->xscale,scale))
+return;
+	}
+    }
+    if ( il==NULL || scale <= 0 )
+return;			/* No images */
+
+    /* Every glyph is either:
+    	A single image
+	empty (space)
+      and all images have the same scale
+    */
+
+    bdf = chunkalloc(sizeof(BDFFont));
+    bdf->sf = sf;
+    sf->bitmaps = bdf;
+    bdf->pixelsize = (sf->ascent+sf->descent)/scale;
+    bdf->ascent = rint(sf->ascent/scale);
+    bdf->descent = bdf->pixelsize - bdf->ascent;
+    bdf->res = -1;
+    bdf->glyphcnt = bdf->glyphmax = sf->glyphcnt;
+    bdf->glyphs = gcalloc(sf->glyphcnt,sizeof(BDFChar *));
+
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
+	bdf->glyphs[i] = bdfc = chunkalloc(sizeof(BDFChar));
+	bdfc->sc = sc;
+	bdfc->orig_pos = i;
+	bdfc->depth = 1;
+	bdfc->width = rint(sc->width/scale);
+	if ( (il = sc->layers[ly_fore].images)==NULL )
+	    bdfc->bitmap = galloc(1);
+	else {
+	    base = il->image->list_len==0 ? il->image->u.image : il->image->u.images[0];
+	    bdfc->xmin = rint(il->xoff/scale);
+	    bdfc->ymax = rint(il->yoff/scale);
+	    bdfc->xmax = bdfc->xmin + base->width -1;
+	    bdfc->ymin = bdfc->ymax - base->height +1;
+	    bdfc->bytes_per_line = base->bytes_per_line;
+	    bdfc->bitmap = galloc(bdfc->bytes_per_line*base->height);
+	    memcpy(bdfc->bitmap,base->data,bdfc->bytes_per_line*base->height);
+	    for ( j=0; j<bdfc->bytes_per_line*base->height; ++j )
+		bdfc->bitmap[j] ^= 0xff;
+	}
+    }
+#endif
+}
