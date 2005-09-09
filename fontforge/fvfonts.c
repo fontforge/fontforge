@@ -151,6 +151,24 @@ PST *PSTCopy(PST *base,SplineChar *sc,SplineFont *from) {
 return( head );
 }
 
+static struct altuni *AltUniCopy(struct altuni *altuni,SplineFont *noconflicts) {
+    struct altuni *head=NULL, *last=NULL, *cur;
+
+    while ( altuni!=NULL ) {
+	if ( noconflicts==NULL || SFGetChar(noconflicts,altuni->unienc,NULL)==NULL ) {
+	    cur = chunkalloc(sizeof(struct altuni));
+	    cur->unienc = altuni->unienc;
+	    if ( head==NULL )
+		head = cur;
+	    else
+		last->next = cur;
+	    last = cur;
+	}
+	altuni = altuni->next;
+    }
+return( head );
+}
+
 SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into) {
     SplineChar *nsc = SplineCharCreate();
 #ifdef FONTFORGE_CONFIG_TYPE3
@@ -194,6 +212,7 @@ SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into) {
     }
     nsc->kerns = NULL;
     nsc->possub = PSTCopy(nsc->possub,nsc,sc->parent);
+    nsc->altuni = AltUniCopy(nsc->altuni,into);
     if ( sc->parent!=NULL && into->order2!=sc->parent->order2 )
 	SCConvertOrder(nsc,into->order2);
 return(nsc);
