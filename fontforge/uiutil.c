@@ -635,6 +635,15 @@ static void CreateErrorWindow(void) {
     GGadgetData gd;
     extern int _GScrollBar_Width;
 
+    memset(&rq,0,sizeof(rq));
+    rq.family_name = sans;
+    rq.point_size = 10;
+    rq.weight = 400;
+    errdata.font = GDrawInstanciateFont(NULL,&rq);
+    GDrawFontMetrics(errdata.font,&as,&ds,&ld);
+    errdata.as = as;
+    errdata.fh = as+ds;
+
     GDrawGetSize(GDrawGetRoot(NULL),&size);
 
     memset(&wattrs,0,sizeof(wattrs));
@@ -644,8 +653,8 @@ static void CreateErrorWindow(void) {
     wattrs.cursor = ct_pointer;
     wattrs.positioned = true;
     wattrs.window_title = GStringGetResource(_STR_Warnings,NULL);
-    pos.width =GDrawPointsToPixels(NULL,GGadgetScale(480));
-    pos.height = GDrawPointsToPixels(NULL,240);
+    pos.width = GDrawPointsToPixels(NULL,GGadgetScale(400));
+    pos.height = 5*errdata.fh;
     pos.x = size.width - pos.width - 10;
     pos.y = size.height - pos.height - 30;
     errdata.gw = gw = GDrawCreateTopWindow(NULL,&pos,warnings_e_h,&errdata,&wattrs);
@@ -662,15 +671,6 @@ static void CreateErrorWindow(void) {
     wattrs.mask = wam_events|wam_cursor;
     errdata.v = GWidgetCreateSubWindow(gw,&pos,warningsv_e_h,&errdata,&wattrs);
     GDrawSetVisible(errdata.v,true);
-
-    memset(&rq,0,sizeof(rq));
-    rq.family_name = sans;
-    rq.point_size = 10;
-    rq.weight = 400;
-    errdata.font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
-    GDrawFontMetrics(errdata.font,&as,&ds,&ld);
-    errdata.as = as;
-    errdata.fh = as+ds;
 
     errdata.linecnt = pos.height/errdata.fh;
 }
@@ -720,6 +720,7 @@ void ShowErrorWindow(void) {
     if ( errdata.gw==NULL )
 return;
     GDrawSetVisible(errdata.gw,true);
+    GDrawRaise(errdata.gw);
     if ( errdata.showing )
 	GDrawRequestExpose(errdata.v,NULL,false);
     errdata.showing = true;
