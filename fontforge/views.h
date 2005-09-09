@@ -850,6 +850,7 @@ extern FontView *ViewPostscriptFont(char *filename);
 #if defined(FONTFORGE_CONFIG_GTK)
     /* These are defined in interface.h */
 #elif defined(FONTFORGE_CONFIG_GDRAW)
+extern void _MenuWarnings(GWindow gw,struct gmenuitem *mi,GEvent *e);
 extern void MenuPrefs(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuSaveAll(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuExit(GWindow base,struct gmenuitem *mi,GEvent *e);

@@ -1176,6 +1176,8 @@ return( true );
 #define MID_Recent	2703
 #define MID_SetWidth	2601
 
+#define MID_Warnings	3000
+
 static void BVMenuClose(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     GDrawDestroyWindow(gw);
 }
@@ -1553,10 +1555,20 @@ static GMenuItem wnmenu[] = {
     { { (unichar_t *) _STR_NewBitmap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, 'J', ksm_control, NULL, NULL, /* No function, never avail */NULL },
     { { (unichar_t *) _STR_NewMetrics, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, 'K', ksm_control, NULL, NULL, BVMenuOpenMetrics },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_Warnings, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, '\0', ksm_control, NULL, NULL, _MenuWarnings, MID_Warnings },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { NULL }
 };
 
 static void BVWindowMenuBuild(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    struct gmenuitem *wmi;
+    for ( wmi = wnmenu; wmi->ti.text!=NULL || wmi->ti.line ; ++wmi ) {
+	switch ( wmi->mid ) {
+	  case MID_Warnings:
+	    wmi->ti.disabled = ErrorWindowExists();
+	  break;
+	}
+    }
     WindowMenuBuild(gw,mi,e,wnmenu);
 }
 

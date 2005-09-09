@@ -6232,11 +6232,7 @@ return;
     }
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
     u_snprintf(title,sizeof(title)/sizeof(title[0]),GStringGetResource(_STR_Fontinformation,NULL), sf->fontname);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    u_snprintf(title,sizeof(title)/sizeof(title[0]),_("Font Information for %.90s"), sf->fontname);
-#endif
     wattrs.window_title = title;
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,GGadgetScale(268));

@@ -632,7 +632,7 @@ return;
 
     file = fopen( getPfaEditEncodings(), "w");
     if ( file==NULL ) {
-	fprintf(stderr, "couldn't write encodings file\n" );
+	LogError( "couldn't write encodings file\n" );
 return;
     }
 

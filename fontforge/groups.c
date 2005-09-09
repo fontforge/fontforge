@@ -249,7 +249,7 @@ return;
     gc.found_indent = countIndent(groups);
     group_root = _LoadGroupList(groups,NULL,0,&gc);
     if ( !feof(groups))
-	fprintf( stderr, "Unparsed characters found after end of groups file (last line parsed was %d).\n", gc.lineno );
+	LogError( "Unparsed characters found after end of groups file (last line parsed was %d).\n", gc.lineno );
     fclose(groups);
 
     free(gc.buffer);

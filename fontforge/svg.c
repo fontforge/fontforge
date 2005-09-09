@@ -1292,7 +1292,7 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 		    SVGTraceArc(cur,&current,x,y,rx,ry,axisrot,large_arc,sweep);
 	      break;
 	      default:
-		fprintf(stderr,"Unknown type '%c' found in path specification\n", type );
+		LogError("Unknown type '%c' found in path specification\n", type );
 	      break;
 	    }
 	}
@@ -1780,7 +1780,7 @@ static int xmlParseColor(xmlChar *name,uint32 *color) {
 			 ( ((int) b)     );
 	    }
 	} else {
-	    fprintf( stderr, "Failed to parse color %s\n", (char *) name );
+	    LogError( "Failed to parse color %s\n", (char *) name );
 	    *color = COLOR_INHERITED;
 	}
     }
@@ -2362,7 +2362,7 @@ static SplineFont *SVGParseFont(xmlNodePtr font) {
 		if ( defh==0 ) defh = val;
 		SFDefaultOS2Simple(&sf->pfminfo,sf);
 	    } else {
-		fprintf( stderr, "This font does not specify units-per-em\n" );
+		LogError( "This font does not specify units-per-em\n" );
 		SplineFontFree(sf);
 return( NULL );
 	    }
@@ -2496,7 +2496,7 @@ return( NULL );
 	    ++cnt;
     }
     if ( sf->descent==0 ) {
-	fprintf( stderr, "This font does not specify font-face\n" );
+	LogError( "This font does not specify font-face\n" );
 	SplineFontFree(sf);
 return( NULL );
     }
@@ -2684,7 +2684,7 @@ SplineFont *SFReadSVG(char *filename, int flags) {
     char *chosenname = NULL;
 
     if ( !libxml_init_base()) {
-	fprintf( stderr, "Can't find libxml2.\n" );
+	LogError( "Can't find libxml2.\n" );
 return( NULL );
     }
 
@@ -2705,7 +2705,7 @@ return( NULL );
 
     fonts = FindSVGFontNodes(doc);
     if ( fonts==NULL || fonts[0]==NULL ) {
-	fprintf( stderr, "This file contains no SVG fonts.\n" );
+	LogError( "This file contains no SVG fonts.\n" );
 	_xmlFreeDoc(doc);
 return( NULL );
     }
@@ -2742,7 +2742,7 @@ char **NamesReadSVG(char *filename) {
     xmlChar *name;
 
     if ( !libxml_init_base()) {
-	fprintf( stderr, "Can't find libxml2.\n" );
+	LogError( "Can't find libxml2.\n" );
 return( NULL );
     }
 
@@ -2787,7 +2787,7 @@ Entity *EntityInterpretSVG(char *filename,int em_size,int ascent) {
     int order2;
 
     if ( !libxml_init_base()) {
-	fprintf( stderr, "Can't find libxml2.\n" );
+	LogError( "Can't find libxml2.\n" );
 return( NULL );
     }
     doc = _xmlParseFile(filename);
@@ -2798,7 +2798,7 @@ return( NULL );
 
     top = _xmlDocGetRootElement(doc);
     if ( _xmlStrcmp(top->name,(xmlChar *) "svg")!=0 ) {
-	fprintf( stderr, "%s does not contain an <svg> element at the top\n", filename);
+	LogError( "%s does not contain an <svg> element at the top\n", filename);
 	_xmlFreeDoc(doc);
 return( NULL );
     }

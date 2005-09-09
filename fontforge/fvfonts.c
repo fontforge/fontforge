@@ -1017,7 +1017,7 @@ static RefChar *InterpRefs(RefChar *base, RefChar *other, real amount, SplineCha
 		last->next = cur;
 	    last = cur;
 	} else
-	    fprintf( stderr, "In character %s, could not find reference to %s\n",
+	    LogError( "In character %s, could not find reference to %s\n",
 		    sc->name, base->sc->name );
 	base = base->next;
 	if ( test==other && other!=NULL )
@@ -1080,7 +1080,7 @@ return( cur );
 return( cur );
 	}
 	if ( bp->next == NULL || bp->next->to==base->first ) {
-	    fprintf( stderr, "In character %s, there are too few points on a path in the base\n", sc->name);
+	    LogError( "In character %s, there are too few points on a path in the base\n", sc->name);
 	    if ( bp->next!=NULL ) {
 		if ( bp->next->order2 ) {
 		    cur->last->nextcp.x = cur->first->prevcp.x = (cur->last->nextcp.x+cur->first->prevcp.x)/2;
@@ -1091,7 +1091,7 @@ return( cur );
 	    }
 return( cur );
 	} else if ( op->next==NULL || op->next->to==other->first ) {
-	    fprintf( stderr, "In character %s, there are too many points on a path in the base\n", sc->name);
+	    LogError( "In character %s, there are too many points on a path in the base\n", sc->name);
 	    while ( bp->next!=NULL && bp->next->to!=base->first ) {
 		bp = bp->next->to;
 		InterpPoint(cur,bp,op,amount);
@@ -1185,54 +1185,54 @@ static void LayerInterpolate(Layer *to,Layer *base,Layer *other,real amount,Spli
     if ( base->dostroke==other->dostroke )
 	to->dostroke = base->dostroke;
     else
-	fprintf( stderr, "Different settings on whether to stroke in layer %d of %s\n", lc, sc->name );
+	LogError( "Different settings on whether to stroke in layer %d of %s\n", lc, sc->name );
     if ( base->dofill==other->dofill )
 	to->dofill = base->dofill;
     else
-	fprintf( stderr, "Different settings on whether to fill in layer %d of %s\n", lc, sc->name );
+	LogError( "Different settings on whether to fill in layer %d of %s\n", lc, sc->name );
     if ( base->fill_brush.col==COLOR_INHERITED && other->fill_brush.col==COLOR_INHERITED )
 	to->fill_brush.col = COLOR_INHERITED;
     else if ( base->fill_brush.col!=COLOR_INHERITED && other->fill_brush.col!=COLOR_INHERITED )
 	to->fill_brush.col = InterpColor( base->fill_brush.col,other->fill_brush.col, amount );
     else
-	fprintf( stderr, "Different settings on whether to inherit fill color in layer %d of %s\n", lc, sc->name );
+	LogError( "Different settings on whether to inherit fill color in layer %d of %s\n", lc, sc->name );
     if ( base->fill_brush.opacity<0 && other->fill_brush.opacity<0 )
 	to->fill_brush.opacity = WIDTH_INHERITED;
     else if ( base->fill_brush.opacity>=0 && other->fill_brush.opacity>=0 )
 	to->fill_brush.opacity = base->fill_brush.opacity + amount*(other->fill_brush.opacity-base->fill_brush.opacity);
     else
-	fprintf( stderr, "Different settings on whether to inherit fill opacity in layer %d of %s\n", lc, sc->name );
+	LogError( "Different settings on whether to inherit fill opacity in layer %d of %s\n", lc, sc->name );
     if ( base->stroke_pen.brush.col==COLOR_INHERITED && other->stroke_pen.brush.col==COLOR_INHERITED )
 	to->stroke_pen.brush.col = COLOR_INHERITED;
     else if ( base->stroke_pen.brush.col!=COLOR_INHERITED && other->stroke_pen.brush.col!=COLOR_INHERITED )
 	to->stroke_pen.brush.col = InterpColor( base->stroke_pen.brush.col,other->stroke_pen.brush.col, amount );
     else
-	fprintf( stderr, "Different settings on whether to inherit fill color in layer %d of %s\n", lc, sc->name );
+	LogError( "Different settings on whether to inherit fill color in layer %d of %s\n", lc, sc->name );
     if ( base->stroke_pen.brush.opacity<0 && other->stroke_pen.brush.opacity<0 )
 	to->stroke_pen.brush.opacity = WIDTH_INHERITED;
     else if ( base->stroke_pen.brush.opacity>=0 && other->stroke_pen.brush.opacity>=0 )
 	to->stroke_pen.brush.opacity = base->stroke_pen.brush.opacity + amount*(other->stroke_pen.brush.opacity-base->stroke_pen.brush.opacity);
     else
-	fprintf( stderr, "Different settings on whether to inherit stroke opacity in layer %d of %s\n", lc, sc->name );
+	LogError( "Different settings on whether to inherit stroke opacity in layer %d of %s\n", lc, sc->name );
     if ( base->stroke_pen.width<0 && other->stroke_pen.width<0 )
 	to->stroke_pen.width = WIDTH_INHERITED;
     else if ( base->stroke_pen.width>=0 && other->stroke_pen.width>=0 )
 	to->stroke_pen.width = base->stroke_pen.width + amount*(other->stroke_pen.width-base->stroke_pen.width);
     else
-	fprintf( stderr, "Different settings on whether to inherit stroke width in layer %d of %s\n", lc, sc->name );
+	LogError( "Different settings on whether to inherit stroke width in layer %d of %s\n", lc, sc->name );
     if ( base->stroke_pen.linecap==other->stroke_pen.linecap )
 	to->stroke_pen.linecap = base->stroke_pen.linecap;
     else
-	fprintf( stderr, "Different settings on stroke linecap in layer %d of %s\n", lc, sc->name );
+	LogError( "Different settings on stroke linecap in layer %d of %s\n", lc, sc->name );
     if ( base->stroke_pen.linejoin==other->stroke_pen.linejoin )
 	to->stroke_pen.linejoin = base->stroke_pen.linejoin;
     else
-	fprintf( stderr, "Different settings on stroke linejoin in layer %d of %s\n", lc, sc->name );
+	LogError( "Different settings on stroke linejoin in layer %d of %s\n", lc, sc->name );
 
     to->splines = InterpSplineSets(base->splines,other->splines,amount,sc);
     to->refs = InterpRefs(base->refs,other->refs,amount,sc);
     if ( base->images!=NULL || other->images!=NULL )
-	fprintf( stderr, "I can't even imagine how to attempt to interpolate images in layer %d of %s\n", lc, sc->name );
+	LogError( "I can't even imagine how to attempt to interpolate images in layer %d of %s\n", lc, sc->name );
 }
 #endif
 
@@ -1262,7 +1262,7 @@ return;
     if ( base->parent->multilayer && other->parent->multilayer ) {
 	int lc = base->layer_cnt,i;
 	if ( lc!=other->layer_cnt ) {
-	    fprintf( stderr, "Different numbers of layers in %s\n", base->name );
+	    LogError( "Different numbers of layers in %s\n", base->name );
 	    if ( other->layer_cnt<lc ) lc = other->layer_cnt;
 	}
 	if ( lc>2 ) {

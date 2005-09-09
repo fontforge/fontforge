@@ -246,8 +246,8 @@ static void calldatafree(Context *c) {
 static void traceback(Context *c) {
     int cnt = 0;
     while ( c!=NULL ) {
-	if ( cnt==1 ) fprintf( stderr, "Called from...\n" );
-	if ( cnt>0 ) fprintf( stderr, " %s: line %d\n", c->filename, c->lineno );
+	if ( cnt==1 ) LogError( "Called from...\n" );
+	if ( cnt>0 ) LogError( " %s: line %d\n", c->filename, c->lineno );
 	calldatafree(c);
 	if ( c->err_env!=NULL )
 	    longjmp(*c->err_env,1);
@@ -259,21 +259,21 @@ static void traceback(Context *c) {
 
 static void showtoken(Context *c,enum token_type got) {
     if ( got==tt_name || got==tt_string )
-	fprintf( stderr, " \"%s\"\n", c->tok_text );
+	LogError( " \"%s\"\n", c->tok_text );
     else if ( got==tt_number )
-	fprintf( stderr, " %d (0x%x)\n", c->tok_val.u.ival, c->tok_val.u.ival );
+	LogError( " %d (0x%x)\n", c->tok_val.u.ival, c->tok_val.u.ival );
     else if ( got==tt_unicode )
-	fprintf( stderr, " 0u%x\n", c->tok_val.u.ival );
+	LogError( " 0u%x\n", c->tok_val.u.ival );
     else if ( got==tt_real )
-	fprintf( stderr, " %g\n", c->tok_val.u.fval );
+	LogError( " %g\n", c->tok_val.u.fval );
     else
-	fprintf( stderr, "\n" );
+	LogError( "\n" );
     traceback(c);
 }
 
 static void expect(Context *c,enum token_type expected, enum token_type got) {
     if ( got!=expected ) {
-	fprintf( stderr, "%s: %d Expected %s, got %s",
+	LogError( "%s: %d Expected %s, got %s",
 		c->filename, c->lineno, toknames[expected], toknames[got] );
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	if ( !no_windowing_ui ) {
@@ -286,7 +286,7 @@ static void expect(Context *c,enum token_type expected, enum token_type got) {
 }
 
 static void unexpected(Context *c,enum token_type got) {
-    fprintf( stderr, "%s: %d Unexpected %s found",
+    LogError( "%s: %d Unexpected %s found",
 	    c->filename, c->lineno, toknames[got] );
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( !no_windowing_ui ) {
@@ -306,9 +306,9 @@ static void error( Context *c, char *msg ) {
     /*  matter */
 
     if ( c->lineno!=0 )
-	fprintf( stderr, "%s line: %d %s\n", c->filename, c->lineno, loc );
+	LogError( "%s line: %d %s\n", c->filename, c->lineno, loc );
     else
-	fprintf( stderr, "%s: %s\n", c->filename, loc );
+	LogError( "%s: %s\n", c->filename, loc );
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( !no_windowing_ui ) {
 	static unichar_t umsg[] = { '%','s',':',' ','%','d',' ','%','s',  0 };
@@ -328,9 +328,9 @@ static void errors( Context *c, char *msg, char *name) {
     char *loc2 = u2def_copy(t2);
 
     if ( c->lineno!=0 )
-	fprintf( stderr, "%s line: %d %s: %s\n", c->filename, c->lineno, loc1, loc2 );
+	LogError( "%s line: %d %s: %s\n", c->filename, c->lineno, loc1, loc2 );
     else
-	fprintf( stderr, "%s: %s: %s\n", c->filename, loc1, loc2 );
+	LogError( "%s: %s: %s\n", c->filename, loc1, loc2 );
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( !no_windowing_ui ) {
 	static unichar_t umsg[] = { '%','s',':',' ','%','d',' ','%','s',':',' ','%','s',  0 };
@@ -1404,17 +1404,17 @@ static void bGenerateFamily(Context *c) {
 		if ( strcmp(fonts->vals[i].u.sval,fv->sf->fontname)==0 )
 	    break;
 	if ( fv==NULL ) {
-	    fprintf( stderr, "%s\n", fonts->vals[i].u.sval );
+	    LogError( "%s\n", fonts->vals[i].u.sval );
 	    error( c, "The above font is not loaded" );
 	}
 	if ( sf==NULL )
 	    sf = fv->sf;
 	if ( strcmp(fv->sf->familyname,sf->familyname)!=0 )
-	    fprintf( stderr, "Warning: %s has a different family name than does %s (GenerateFamily)\n",
+	    LogError( "Warning: %s has a different family name than does %s (GenerateFamily)\n",
 		    fv->sf->fontname, sf->fontname );
 	MacStyleCode(fv->sf,&psstyle);
 	if ( psstyle>=48 ) {
-	    fprintf( stderr, "%s(%s)\n", fv->sf->origname, fv->sf->fontname );
+	    LogError( "%s(%s)\n", fv->sf->origname, fv->sf->fontname );
 	    error( c, "A font can't be both Condensed and Expanded" );
 	}
 	added = false;
@@ -1442,7 +1442,7 @@ static void bGenerateFamily(Context *c) {
 			familysfs[fc][psstyle] = fv->sf;
 			added = true;
 		    } else {
-			fprintf( stderr, "%s(%s) and %s(%s) 0x%x in FOND %s\n",
+			LogError( "%s(%s) and %s(%s) 0x%x in FOND %s\n",
 				familysfs[fc][psstyle]->origname, familysfs[fc][psstyle]->fontname,
 				fv->sf->origname, fv->sf->fontname,
 				psstyle, fv->sf->fondname );
@@ -3899,7 +3899,7 @@ static void _AddHint(Context *c,int ish) {
 	any = true;
     }
     if ( !any )
-	fprintf(stderr, "Warning: No characters selected in AddHint(%d,%d,%d)\n",
+	LogError( "Warning: No characters selected in AddHint(%d,%d,%d)\n",
 		ish, start, width);
 }
 
@@ -4324,7 +4324,7 @@ static void Reblend(Context *c, int tonew) {
 	blends[i] = c->a.vals[1].u.aval->vals[i].u.ival/65536.0;
 	if ( blends[i]<mm->axismaps[i].min ||
 		blends[i]>mm->axismaps[i].max )
-	    fprintf( stderr, "Warning: %dth axis value (%g) is outside the allowed range [%g,%g]\n",
+	    LogError( "Warning: %dth axis value (%g) is outside the allowed range [%g,%g]\n",
 		    i,blends[i],mm->axismaps[i].min,mm->axismaps[i].max );
     }
     c->curfv = MMCreateBlendedFont(mm,c->curfv,blends,tonew);
@@ -5303,7 +5303,7 @@ static void bGetPosSub(Context *c) {
 		      default:
 		        free(temp);
 			ret->vals[cnt].type = v_void;
-			fprintf( stderr, "Unexpected PST type in GetPosSub (%d).\n", pst->type );
+			LogError( "Unexpected PST type in GetPosSub (%d).\n", pst->type );
 		      break;
 		      case pst_position:
 			temp->argc = 7;
@@ -5710,7 +5710,7 @@ return( ch );
 
 static void cungetc(int ch,Context *c) {
     if ( c->ungotch )
-	fprintf( stderr, "Internal error: Attempt to unget two characters\n" );
+	IError("Attempt to unget two characters\n" );
     c->ungotch = ch;
 }
 
@@ -6013,7 +6013,7 @@ return( c->tok );
 		cungetc(ch,c);
 	  break;
 	  default:
-	    fprintf( stderr, "%s:%d Unexpected character %c (%d)\n",
+	    LogError( "%s:%d Unexpected character %c (%d)\n",
 		    c->filename, c->lineno, ch, ch);
 	    traceback(c);
 	}
@@ -6025,7 +6025,7 @@ return( tok );
 
 static void backuptok(Context *c) {
     if ( c->backedup )
-	fprintf( stderr, "%s:%d Internal Error: Attempt to back token twice\n",
+	IError( "%s:%d Internal Error: Attempt to back token twice\n",
 		c->filename, c->lineno );
     c->backedup = true;
 }

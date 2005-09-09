@@ -329,9 +329,9 @@ static void unnextch(int ch,IO *wrapper) {
     if ( ch==EOF )
 return;
     if ( wrapper->top==NULL )
-	fprintf( stderr, "Can't back up with nothing on stack\n" );
+	LogError( "Can't back up with nothing on stack\n" );
     else if ( wrapper->top->backedup!=EOF )
-	fprintf( stderr, "Attempt to back up twice\n" );
+	LogError( "Attempt to back up twice\n" );
     else if ( wrapper->top->ps!=NULL )
 	ungetc(ch,wrapper->top->ps);
     else
@@ -385,7 +385,7 @@ return;
 	io = iop;
     }
 
-    fprintf( stderr, "Use of \"exit\" when not in a loop\n" );
+    LogError( "Use of \"exit\" when not in a loop\n" );
     wrapper->top = io;
 }
 
@@ -409,7 +409,7 @@ return(sp);
 	io = iop;
     }
 
-    fprintf( stderr, "Use of \"stop\" when not in a stopped\n" );
+    LogError( "Use of \"stop\" when not in a stopped\n" );
     wrapper->top = io;
 return( sp );
 }
@@ -547,7 +547,7 @@ return( pt_number );
 	} else {
 	    *val = strtod(tokbuf,&end);
 	    if ( !finite(*val) ) {
-		fprintf( stderr, "Bad number, infinity or nan: %s\n", tokbuf );
+		LogError( "Bad number, infinity or nan: %s\n", tokbuf );
 		*val = 0;
 	    }
 	    if ( *end=='\0' )		/* It's a real */
@@ -591,7 +591,7 @@ void MatInverse(real into[6], real orig[6]) {
     real det = orig[0]*orig[3] - orig[1]*orig[2];
 
     if ( det==0 ) {
-	fprintf(stderr, "Attempt to invert a singular matrix\n" );
+	LogError( "Attempt to invert a singular matrix\n" );
 	memset(into,0,sizeof(*into));
     } else {
 	into[0] =  orig[3]/det;
@@ -626,7 +626,7 @@ static int AddEntry(struct pskeydict *dict,struct psstack *stack, int sp) {
     if ( sp<2 )
 return(sp);
     if ( stack[sp-2].type!=ps_string && stack[sp-2].type!=ps_lit ) {
-	fprintf( stderr, "Key for a def must be a string or name literal\n" );
+	LogError( "Key for a def must be a string or name literal\n" );
 return(sp-2);
     }
     for ( i=0; i<dict->cnt; ++i )
@@ -688,14 +688,14 @@ return( sp );
 
 static void CheckMakeB(BasePoint *test, BasePoint *good) {
     if ( !finite(test->x) || test->x>100000 || test->x<-100000 ) {
-	fprintf( stderr, "Value out of bounds in spline.\n" );
+	LogError( "Value out of bounds in spline.\n" );
 	if ( good!=NULL )
 	    test->x = good->x;
 	else
 	    test->x = 0;
     }
     if ( !finite(test->y) || test->y>100000 || test->y<-100000 ) {
-	fprintf( stderr, "Value out of bounds in spline.\n" );
+	LogError( "Value out of bounds in spline.\n" );
 	if ( good!=NULL )
 	    test->y = good->y;
 	else
@@ -1037,13 +1037,13 @@ return( NULL );
 		} else if ( *pt=='(' || *pt==')' || *pt=='\\' )
 		    *upt++ = *pt++;
 		else {
-		    fprintf( stderr, "Unknown character after backslash in literal string.\n");
+		    LogError( "Unknown character after backslash in literal string.\n");
 		    *upt++ = *pt++;
 		}
 	    }
 	}
     } else if ( *pt!='<' ) {
-	fprintf( stderr, "Unknown string type\n" );
+	LogError( "Unknown string type\n" );
 return( NULL );
     } else if ( pt[1]!='~' ) {
 	/* A hex string. Ignore any characters which aren't hex */
@@ -1123,23 +1123,23 @@ static int PSAddImagemask(EntityChar *ec,struct psstack *stack,int sp,
     int i,j;
 
     if ( sp<5 || (stack[sp-1].type!=ps_instr && stack[sp-1].type!=ps_string)) {
-	fprintf( stderr, "FontForge does not support dictionary based imagemask operators.\n" );
+	LogError( "FontForge does not support dictionary based imagemask operators.\n" );
 return( sp-1 );
     }
 
     if ( stack[sp-2].type!=ps_array || stack[sp-2].u.dict.cnt!=6 ) {
-	fprintf( stderr, "Fourth argument of imagemask must be a 6-element transformation matrix.\n" );
+	LogError( "Fourth argument of imagemask must be a 6-element transformation matrix.\n" );
 return( sp-5 );
     }
 
     if ( stack[sp-3].type!=ps_bool ) {
-	fprintf( stderr, "Third argument of imagemask must be a boolean.\n" );
+	LogError( "Third argument of imagemask must be a boolean.\n" );
 return( sp-5 );
     }
     polarity = stack[sp-3].u.tf;
     
     if ( stack[sp-4].type!=ps_num || stack[sp-5].type!=ps_num ) {
-	fprintf( stderr, "First and second arguments of imagemask must be integers.\n" );
+	LogError( "First and second arguments of imagemask must be integers.\n" );
 return( sp-5 );
     }
     height = stack[sp-4].u.val;
@@ -1148,7 +1148,7 @@ return( sp-5 );
     data = StringToBytes(&stack[sp-1],&datalen);
 
     if ( width<=0 || height<=0 || ((width+7)/8)*height>datalen ) {
-	fprintf( stderr, "Width or height arguments to imagemask contain invalid values\n(either negative or they require more data than provided).\n" );
+	LogError( "Width or height arguments to imagemask contain invalid values\n(either negative or they require more data than provided).\n" );
 	free(data);
 return( sp-5 );
     }
@@ -1558,7 +1558,7 @@ printf( "-%s-\n", toknames[tok]);
 	  case pt_div:
 	    if ( sp>=2 && stack[sp-1].type==ps_num && stack[sp-2].type==ps_num ) {
 		if ( stack[sp-1].u.val == 0 )
-		    fprintf( stderr, "Divide by zero in postscript code.\n" );
+		    LogError( "Divide by zero in postscript code.\n" );
 		else
 		    stack[sp-2].u.val /= stack[sp-1].u.val;
 		--sp;
@@ -1567,7 +1567,7 @@ printf( "-%s-\n", toknames[tok]);
 	  case pt_idiv:
 	    if ( sp>=2 && stack[sp-1].type==ps_num && stack[sp-2].type==ps_num ) {
 		if ( stack[sp-1].u.val == 0 )
-		    fprintf( stderr, "Divide by zero in postscript code.\n" );
+		    LogError( "Divide by zero in postscript code.\n" );
 		else
 		    stack[sp-2].u.val = ((int) stack[sp-2].u.val) / ((int) stack[sp-1].u.val);
 		--sp;
@@ -1576,7 +1576,7 @@ printf( "-%s-\n", toknames[tok]);
 	  case pt_mod:
 	    if ( sp>=2 && stack[sp-1].type==ps_num && stack[sp-2].type==ps_num ) {
 		if ( stack[sp-1].u.val == 0 )
-		    fprintf( stderr, "Divide by zero in postscript code.\n" );
+		    LogError( "Divide by zero in postscript code.\n" );
 		else
 		    stack[sp-2].u.val = ((int) stack[sp-2].u.val) % ((int) stack[sp-1].u.val);
 		--sp;
@@ -1658,7 +1658,7 @@ printf( "-%s-\n", toknames[tok]);
 		if ( stack[sp-2].type!=stack[sp-1].type )
 		    stack[sp-2].u.tf = false;
 		else if ( stack[sp-2].type==ps_array )
-		    fprintf( stderr, "Can't compare arrays\n" );
+		    LogError( "Can't compare arrays\n" );
 		else {
 		    int cmp;
 		    if ( stack[sp-2].type==ps_num )
@@ -2422,7 +2422,7 @@ printf( "-%s-\n", toknames[tok]);
 		    dictfree(&stack[sp].u.dict);
 	    }
 #else
-	    fprintf(stderr,"This version of FontForge does not support the imagemask operator.\nFor support configure --with-multilayer.\n" );
+	    LogError("This version of FontForge does not support the imagemask operator.\nFor support configure --with-multilayer.\n" );
 	    if ( sp>=5 && (stack[sp-1].type==ps_instr || stack[sp-1].type==ps_string))
 		sp -= 5;
 #endif
@@ -2578,7 +2578,7 @@ printf( "-%s-\n", toknames[tok]);
 		if ( stack[sp-1-i].type==ps_mark )
 	    break;
 	    if ( i==sp )
-		fprintf( stderr, "No mark in counttomark\n" );
+		LogError( "No mark in counttomark\n" );
 	    else if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
 		stack[sp].type = ps_num;
 		stack[sp++].u.val = i;
@@ -2589,7 +2589,7 @@ printf( "-%s-\n", toknames[tok]);
 		if ( stack[sp-1-i].type==ps_mark )
 	    break;
 	    if ( i==sp )
-		fprintf( stderr, "No mark in cleartomark\n" );
+		LogError( "No mark in cleartomark\n" );
 	    else {
 		while ( sp>=i ) {
 		    --sp;
@@ -2606,7 +2606,7 @@ printf( "-%s-\n", toknames[tok]);
 		if ( stack[sp-1-i].type==ps_mark )
 	    break;
 	    if ( i==sp )
-		fprintf( stderr, "No mark in ] (close array)\n" );
+		LogError( "No mark in ] (close array)\n" );
 	    else {
 		struct pskeydict dict;
 		dict.cnt = dict.max = i;
@@ -2690,7 +2690,7 @@ printf( "-%s-\n", toknames[tok]);
 		if ( tok==pt_output || tok==pt_outputd )
 		    printf( "\n" );
 	    } else
-		fprintf(stderr, "Nothing on stack to print\n" );
+		LogError( "Nothing on stack to print\n" );
 	  break;
 
 	  case pt_cvi: case pt_cvr:
@@ -2767,7 +2767,7 @@ printf( "-%s-\n", toknames[tok]);
 
 	  case pt_unknown:
 	    if ( !warned ) {
-		fprintf( stderr, "Warning: Unable to parse token %s, some features may be lost\n", tokbuf );
+		LogError( "Warning: Unable to parse token %s, some features may be lost\n", tokbuf );
 		warned = true;
 	    }
 	  break;
@@ -3238,7 +3238,7 @@ static void SCInterpretPS(FILE *ps,SplineChar *sc, int *flags) {
 	pushio(&wrapper,ps,NULL,0);
 
 	if ( nextpstoken(&wrapper,&dval,tokbuf,sizeof(tokbuf))!=pt_opencurly )
-	    fprintf(stderr, "We don't understand this font\n" );
+	    LogError( "We don't understand this font\n" );
     } else {
 	(void) getc(ps);
 	pushfogio(&wrapper,ps);
@@ -3625,7 +3625,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
     current.x = current.y = 0;
     while ( len>0 ) {
 	if ( sp>48 ) {
-	    fprintf( stderr, "Stack got too big in %s\n", name );
+	    LogError( "Stack got too big in %s\n", name );
 	    sp = 48;
 	}
 	base = 0;
@@ -3671,7 +3671,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		sp = 0;
 	      break;
 	      case 1: /* vstem3 */	/* specifies three v hints zones at once */
-		if ( sp<6 ) fprintf(stderr, "Stack underflow on vstem3 in %s\n", name );
+		if ( sp<6 ) LogError( "Stack underflow on vstem3 in %s\n", name );
 		/* according to the standard, if there is a vstem3 there can't */
 		/*  be any vstems, so there can't be any confusion about hint order */
 		/*  so we don't need to worry about unblended stuff */
@@ -3710,7 +3710,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		sp = 0;
 	      break;
 	      case 2: /* hstem3 */	/* specifies three h hints zones at once */
-		if ( sp<6 ) fprintf(stderr, "Stack underflow on hstem3 in %s\n", name );
+		if ( sp<6 ) LogError( "Stack underflow on hstem3 in %s\n", name );
 		sameh = NULL;
 		if ( !is_type2 )
 		    sameh = SameH(ret->hstem,stack[0],stack[1], unblended,0);
@@ -3745,7 +3745,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	      break;
 	      case 6: /* seac */	/* build accented characters */
  seac:
-		if ( sp<5 ) fprintf(stderr, "Stack underflow on seac in %s\n", name );
+		if ( sp<5 ) LogError( "Stack underflow on seac in %s\n", name );
 		/* stack[0] must be the lsidebearing of the accent. I'm not sure why */
 		r1 = RefCharCreate();
 		r2 = RefCharCreate();
@@ -3762,7 +3762,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		r1->adobe_enc = stack[3];
 		r2->adobe_enc = stack[4];
 		if ( stack[3]<0 || stack[3]>=256 || stack[4]<0 || stack[4]>=256 ) {
-		    fprintf( stderr, "Reference encoding out of bounds in %s\n", name );
+		    LogError( "Reference encoding out of bounds in %s\n", name );
 		    r1->adobe_enc = 0;
 		    r2->adobe_enc = 0;
 		}
@@ -3774,7 +3774,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		sp = 0;
 	      break;
 	      case 7: /* sbw */		/* generalized width/sidebearing command */
-		if ( sp<4 ) fprintf(stderr, "Stack underflow on sbw in %s\n", name );
+		if ( sp<4 ) LogError( "Stack underflow on sbw in %s\n", name );
 		ret->lsidebearing = stack[0];
 		/* stack[1] is lsidebearing y (only for vertical writing styles, CJK) */
 		ret->width = stack[2];
@@ -3782,7 +3782,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		sp = 0;
 	      break;
 	      case 5: case 9: case 14: case 26:
-		if ( sp<1 ) fprintf(stderr, "Stack underflow on unary operator in %s\n", name );
+		if ( sp<1 ) LogError( "Stack underflow on unary operator in %s\n", name );
 		switch ( v ) {
 		  case 5: stack[sp-1] = (stack[sp-1]==0); break;	/* not */
 		  case 9: if ( stack[sp-1]<0 ) stack[sp-1]= -stack[sp-1]; break;	/* abs */
@@ -3791,7 +3791,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		}
 	      break;
 	      case 3: case 4: case 10: case 11: case 12: case 15: case 24:
-		if ( sp<2 ) fprintf(stderr, "Stack underflow on binary operator in %s\n", name );
+		if ( sp<2 ) LogError( "Stack underflow on binary operator in %s\n", name );
 		else switch ( v ) {
 		  case 3: /* and */
 		    stack[sp-2] = (stack[sp-1]!=0 && stack[sp-2]!=0);
@@ -3818,7 +3818,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		--sp;
 	      break;
 	      case 22: /* ifelse */
-		if ( sp<4 ) fprintf(stderr, "Stack underflow on ifelse in %s\n", name );
+		if ( sp<4 ) LogError( "Stack underflow on ifelse in %s\n", name );
 		else {
 		    if ( stack[sp-2]>stack[sp-1] )
 			stack[sp-4] = stack[sp-3];
@@ -3839,7 +3839,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		/* stack[sp-2] is the number of args to grab off our stack and put on the */
 		/*  real postscript stack */
 		if ( sp<2 || sp < 2+stack[sp-2] ) {
-		    fprintf(stderr, "Stack underflow on callothersubr in %s\n", name );
+		    LogError( "Stack underflow on callothersubr in %s\n", name );
 		    sp = 0;
 		} else {
 		    int tot = stack[sp-2], i, k, j;
@@ -3880,7 +3880,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 			    oldcur = cur;
 			    cur->next = NULL;
 			} else
-			    fprintf(stderr, "Bad flex subroutine in %s\n", name );
+			    LogError( "Bad flex subroutine in %s\n", name );
 		      } break;
 		      case 2: {
 			/* No op */;
@@ -3922,7 +3922,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 				SplineMake3(cur->last,pt);
 				cur->last = pt;
 			    } else
-				fprintf(stderr, "No previous point on path in curveto from flex 0 in %s\n", name );
+				LogError( "No previous point on path in curveto from flex 0 in %s\n", name );
 			} else {
 			    /* Um, something's wrong. Let's just draw a line */
 			    /* do the simple method, which consists of creating */
@@ -3937,14 +3937,14 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 				SplineMake3(cur->last,pt);
 				cur->last = pt;
 			    } else
-				fprintf(stderr, "No previous point on path in lineto from flex 0 in %s\n", name );
+				LogError( "No previous point on path in lineto from flex 0 in %s\n", name );
 			}
 			--popsp;
 			cur->next = NULL;
 			SplinePointListFree(spl);
 			oldcur = NULL;
 		      } else
-			fprintf(stderr, "Bad flex subroutine in %s\n", name );
+			LogError( "Bad flex subroutine in %s\n", name );
 		      break;
 		      case 14: 		/* results in 1 blended value */
 		      case 15:		/* results in 2 blended values */
@@ -3954,9 +3954,9 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 			int cnt = stack[sp-1]-13;
 			if ( cnt==5 ) cnt=6;
 			if ( context->instance_count==0 )
-			    fprintf( stderr, "Attempt to use a multiple master subroutine in a non-mm font in %s.\n", name );
+			    LogError( "Attempt to use a multiple master subroutine in a non-mm font in %s.\n", name );
 			else if ( tot!=cnt*context->instance_count )
-			    fprintf( stderr, "Multiple master subroutine called with the wrong number of arguments in %s.\n", name );
+			    LogError( "Multiple master subroutine called with the wrong number of arguments in %s.\n", name );
 			else {
 			    /* Hints need to keep track of the original blends */
 			    if ( cnt==1 && !is_type2 ) {
@@ -3990,16 +3990,16 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		}
 	      break;
 	      case 20: /* put */
-		if ( sp<2 ) fprintf(stderr, "Too few items on stack for put in %s\n", name );
-		else if ( stack[sp-1]<0 || stack[sp-1]>=32 ) fprintf(stderr,"Reference to transient memory out of bounds in put in %s\n", name );
+		if ( sp<2 ) LogError( "Too few items on stack for put in %s\n", name );
+		else if ( stack[sp-1]<0 || stack[sp-1]>=32 ) LogError("Reference to transient memory out of bounds in put in %s\n", name );
 		else {
 		    transient[(int)stack[sp-1]] = stack[sp-2];
 		    sp -= 2;
 		}
 	      break;
 	      case 21: /* get */
-		if ( sp<1 ) fprintf(stderr, "Too few items on stack for get in %s\n", name );
-		else if ( stack[sp-1]<0 || stack[sp-1]>=32 ) fprintf(stderr,"Reference to transient memory out of bounds in put in %s\n", name );
+		if ( sp<1 ) LogError( "Too few items on stack for get in %s\n", name );
+		else if ( stack[sp-1]<0 || stack[sp-1]>=32 ) LogError("Reference to transient memory out of bounds in put in %s\n", name );
 		else
 		    stack[sp-1] = transient[(int)stack[sp-1]];
 	      break;
@@ -4009,7 +4009,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		/* Bleah. Adobe wants the pops to return the arguments if we */
 		/*  don't understand the call. What use is the subroutine then?*/
 		if ( popsp<=0 )
-		    fprintf(stderr, "Pop stack underflow on pop in %s\n", name );
+		    LogError( "Pop stack underflow on pop in %s\n", name );
 		else
 		    stack[sp++] = pops[--popsp];
 	      break;
@@ -4032,7 +4032,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		if ( sp>=1 ) {
 		    int index = stack[--sp];
 		    if ( index<0 || sp<index+1 )
-			fprintf( stderr, "Index out of range in %s\n", name );
+			LogError( "Index out of range in %s\n", name );
 		    else {
 			stack[sp] = stack[sp-index-1];
 			++sp;
@@ -4043,7 +4043,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		if ( sp>=2 ) {
 		    int j = stack[sp-1], N=stack[sp-2];
 		    if ( N>sp || j>=N || j<0 || N<0 )
-			fprintf( stderr, "roll out of range in %s\n", name );
+			LogError( "roll out of range in %s\n", name );
 		    else if ( j==0 || N==0 )
 			/* No op */;
 		    else {
@@ -4058,7 +4058,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		}
 	      break;
 	      case 33: /* setcurrentpoint */
-		if ( sp<2 ) fprintf(stderr, "Stack underflow on setcurrentpoint in %s\n", name );
+		if ( sp<2 ) LogError( "Stack underflow on setcurrentpoint in %s\n", name );
 		else {
 		    current.x = stack[0];
 		    current.y = stack[1];
@@ -4141,11 +4141,11 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		    SplineMake3(cur->last,pt);
 		    cur->last = pt;
 		} else
-		    fprintf(stderr, "No previous point on path in flex operator in %s\n", name );
+		    LogError( "No previous point on path in flex operator in %s\n", name );
 		sp = 0;
 	      break;
 	      default:
-		fprintf( stderr, "Uninterpreted opcode 12,%d in %s\n", v, name );
+		LogError( "Uninterpreted opcode 12,%d in %s\n", v, name );
 	      break;
 	    }
 	} else { last_was_b1 = false; switch ( v ) {
@@ -4157,7 +4157,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		base=1;
 	    }
 	    if ( sp-base<2 )
-		fprintf(stderr, "Stack underflow on hstem in %s\n", name );
+		LogError( "Stack underflow on hstem in %s\n", name );
 	    /* stack[0] is absolute y for start of horizontal hint */
 	    /*	(actually relative to the y specified as lsidebearing y in sbw*/
 	    /* stack[1] is relative y for height of hint zone */
@@ -4208,7 +4208,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		/*  to be used if one uses a hintmask, but that's not what the */
 		/*  examples show.  Or I'm not understanding. */
 		if ( sp-base<2 && v!=19 && v!=20 )
-		    fprintf(stderr, "Stack underflow on vstem in %s\n", name );
+		    LogError( "Stack underflow on vstem in %s\n", name );
 		/* stack[0] is absolute x for start of vertical hint */
 		/*	(actually relative to the x specified as lsidebearing in h/sbw*/
 		/* stack[1] is relative x for height of hint zone */
@@ -4284,7 +4284,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
   goto done;
 	  break;
 	  case 13: /* hsbw (set left sidebearing and width) */
-	    if ( sp<2 ) fprintf(stderr, "Stack underflow on hsbw in %s\n", name );
+	    if ( sp<2 ) LogError( "Stack underflow on hsbw in %s\n", name );
 	    ret->lsidebearing = stack[0];
 	    current.x = stack[0];		/* sets the current point too */
 	    ret->width = stack[1];
@@ -4321,20 +4321,20 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		dx = dy = 0;
 		if ( v==5 || v==21 ) {
 		    if ( sp<base+2 ) {
-			fprintf(stderr, "Stack underflow on rlineto/rmoveto in %s\n", name );
+			LogError( "Stack underflow on rlineto/rmoveto in %s\n", name );
 	    break;
 		    }
 		    dx = stack[base++];
 		    dy = stack[base++];
 		} else if ( (v==6 && !(polarity&1)) || (v==7 && (polarity&1)) || v==22 ) {
 		    if ( sp<=base ) {
-			fprintf(stderr, "Stack underflow on hlineto/hmoveto in %s\n", name );
+			LogError( "Stack underflow on hlineto/hmoveto in %s\n", name );
 	    break;
 		    }
 		    dx = stack[base++];
 		} else /*if ( (v==7 && !(parity&1)) || (v==6 && (parity&1) || v==4 )*/ {
 		    if ( sp<=base ) {
-			fprintf(stderr, "Stack underflow on vlineto/vmoveto in %s\n", name );
+			LogError( "Stack underflow on vlineto/vmoveto in %s\n", name );
 	    break;
 		    }
 		    dy = stack[base++];
@@ -4366,7 +4366,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 			SplineMake3(cur->last,pt);
 			cur->last = pt;
 		    } else
-			fprintf(stderr, "No previous point on path in lineto in %s\n", name );
+			LogError( "No previous point on path in lineto in %s\n", name );
 		    if ( !is_type2 )
 	    break;
 		}
@@ -4398,7 +4398,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		dx = dy = dx2 = dy2 = dx3 = dy3 = 0;
 		if ( v==8 || v==25 || v==24 ) {
 		    if ( sp<6+base ) {
-			fprintf(stderr, "Stack underflow on rrcurveto in %s\n", name );
+			LogError( "Stack underflow on rrcurveto in %s\n", name );
 			base = sp;
 		    } else {
 			dx = stack[base++];
@@ -4410,7 +4410,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		    }
 		} else if ( v==27 ) {		/* hhcurveto */
 		    if ( sp<4+base ) {
-			fprintf(stderr, "Stack underflow on hhcurveto in %s\n", name );
+			LogError( "Stack underflow on hhcurveto in %s\n", name );
 			base = sp;
 		    } else {
 			if ( (sp-base)&1 ) dy = stack[base++];
@@ -4421,7 +4421,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		    }
 		} else if ( v==26 ) {		/* vvcurveto */
 		    if ( sp<4+base ) {
-			fprintf(stderr, "Stack underflow on hhcurveto in %s\n", name );
+			LogError( "Stack underflow on hhcurveto in %s\n", name );
 			base = sp;
 		    } else {
 			if ( (sp-base)&1 ) dx = stack[base++];
@@ -4432,7 +4432,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		    }
 		} else if ( (v==31 && !(polarity&1)) || (v==30 && (polarity&1)) ) {
 		    if ( sp<4+base ) {
-			fprintf(stderr, "Stack underflow on hvcurveto in %s\n", name );
+			LogError( "Stack underflow on hvcurveto in %s\n", name );
 			base = sp;
 		    } else {
 			dx = stack[base++];
@@ -4444,7 +4444,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		    }
 		} else /*if ( (v==30 && !(polarity&1)) || (v==31 && (polarity&1)) )*/ {
 		    if ( sp<4+base ) {
-			fprintf(stderr, "Stack underflow on vhcurveto in %s\n", name );
+			LogError( "Stack underflow on vhcurveto in %s\n", name );
 			base = sp;
 		    } else {
 			dy = stack[base++];
@@ -4471,7 +4471,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		    SplineMake3(cur->last,pt);
 		    cur->last = pt;
 		} else
-		    fprintf(stderr, "No previous point on path in curveto in %s\n", name );
+		    LogError( "No previous point on path in curveto in %s\n", name );
 	    }
 	    if ( v==24 ) {
 		current.x += stack[base++]; current.y += stack[base++];
@@ -4491,10 +4491,10 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	  case 10: /* callsubr */
 	    /* stack[sp-1] contains the number of the subroutine to call */
 	    if ( sp<1 ) {
-		fprintf(stderr, "Stack underflow on callsubr in %s\n", name );
+		LogError( "Stack underflow on callsubr in %s\n", name );
 	  break;
 	    } else if ( pcsp>10 ) {
-		fprintf( stderr, "Too many subroutine calls in %s\n", name );
+		LogError( "Too many subroutine calls in %s\n", name );
 	  break;
 	    }
 	    s=subrs; if ( v==29 ) s = gsubrs;
@@ -4503,7 +4503,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	    /* Type1 subrs do not. We set the bias on them to 0 */
 	    if ( s==NULL || stack[sp-1]>=s->cnt || stack[sp-1]<0 ||
 		    s->values[(int) stack[sp-1]]==NULL )
-		fprintf(stderr,"Subroutine number out of bounds in %s\n", name );
+		LogError("Subroutine number out of bounds in %s\n", name );
 	    else {
 		pcstack[pcsp].type1 = type1;
 		pcstack[pcsp].len = len;
@@ -4516,7 +4516,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	  break;
 	  case 11: /* return */
 	    /* return from a subr outine */
-	    if ( pcsp<1 ) fprintf(stderr, "return when not in subroutine in %s\n", name );
+	    if ( pcsp<1 ) LogError( "return when not in subroutine in %s\n", name );
 	    else {
 		--pcsp;
 		type1 = pcstack[pcsp].type1;
@@ -4526,12 +4526,12 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	  case 16: { /* blend -- obsolete type 2 multiple master operator */
 	    int cnt,i,j;
 	    if ( context->instance_count==0 )
-		fprintf( stderr, "Attempt to use a multiple master subroutine in a non-mm font.\n" );
+		LogError( "Attempt to use a multiple master subroutine in a non-mm font.\n" );
 	    else if ( sp<1 || sp<context->instance_count*stack[sp-1]+1 )
-		fprintf(stderr, "Too few items on stack for blend in %s\n", name );
+		LogError( "Too few items on stack for blend in %s\n", name );
 	    else {
 		if ( !context->blend_warn ) {
-		    fprintf( stderr, "Use of obsolete blend operator.\n" );
+		    LogError( "Use of obsolete blend operator.\n" );
 		    context->blend_warn = true;
 		}
 		cnt = stack[sp-1];
@@ -4548,13 +4548,13 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	  }
 	  break;
 	  default:
-	    fprintf( stderr, "Uninterpreted opcode %d in %s\n", v, name );
+	    LogError( "Uninterpreted opcode %d in %s\n", v, name );
 	  break;
 	}}
     }
   done:
     if ( pcsp!=0 )
-	fprintf(stderr, "end of subroutine reached with no return in %s\n", name );
+	LogError( "end of subroutine reached with no return in %s\n", name );
     SCCatagorizePoints(ret);
 
     ret->hstem = HintsAppend(ret->hstem,activeh); activeh=NULL;

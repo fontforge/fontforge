@@ -1123,7 +1123,7 @@ return( ret );
     }
 
     if ( macenc<0 || macenc>31 ) {
-	fprintf( stderr, "Invalid mac encoding %d.\n", macenc );
+	IError( "Invalid mac encoding %d.\n", macenc );
 return( NULL );
     }
     table = macencodings[macenc];

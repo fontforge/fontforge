@@ -883,7 +883,7 @@ static void morx_dumpLigaFeature(FILE *temp,SplineChar **glyphs,int gcnt,
 	putshort(temp,components[i]);
     /* Do A simple check on the validity of what we've done */
     if ( here+6*trans_cnt+6*acnt != ftell(temp) )
-	fprintf( stderr, "Offset wrong in morx ligature table\n" );
+	IError( "Offset wrong in morx ligature table\n" );
     /* And finally the ligature glyph indeces */
     for ( i=0; i<lcnt; ++i )
 	putshort(temp,lig_glyphs[i]);
@@ -1288,7 +1288,7 @@ static int morx_dumpASM(FILE *temp,ASM *sm, struct alltabs *at, SplineFont *sf )
 	free(subsins);
     } else if ( sm->type==asm_kern ) {
 	if ( substable_pos!=ftell(temp) )
-	    fprintf(stderr, "Internal Error: Kern Values table in wrong place.\n" );
+	    IError( "Kern Values table in wrong place.\n" );
 	fseek(temp,start+4*sizeof(uint16),SEEK_SET);
 	putshort(temp,substable_pos-start);		/* Point to start of insertions */
 	fseek(temp,0,SEEK_END);
@@ -1698,7 +1698,7 @@ static void morxDumpChain(struct alltabs *at,struct feature *features,int chain,
 	    len = fread(buf,1,len,temp);
 	    len = fwrite(buf,1,len,at->morx);
 	    if ( len<=0 ) {
-		fprintf( stderr, "Disk error\n" );
+		IError( "Disk error\n" );
 	break;
 	    }
 	    tot -= len;

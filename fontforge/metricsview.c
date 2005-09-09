@@ -1568,6 +1568,8 @@ return( true );
 #define MID_VKernFromHKern	2606
 #define MID_Recent	2703
 
+#define MID_Warnings	3000
+
 static void MVMenuClose(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     GDrawDestroyWindow(gw);
 }
@@ -2609,6 +2611,8 @@ static GMenuItem wnmenu[] = {
     { { (unichar_t *) _STR_NewBitmap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, 'J', ksm_control, NULL, NULL, MVMenuOpenBitmap, MID_OpenBitmap },
     { { (unichar_t *) _STR_NewMetrics, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, 'K', ksm_control, NULL, NULL, /* No function, never avail */NULL },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_Warnings, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, '\0', ksm_control, NULL, NULL, _MenuWarnings, MID_Warnings },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { NULL }
 };
 
@@ -2630,6 +2634,9 @@ static void MVWindowMenuBuild(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_OpenBitmap:
 	    mi->ti.disabled = mv->fv->sf->bitmaps==NULL || sc==NULL;
+	  break;
+	  case MID_Warnings:
+	    wmi->ti.disabled = ErrorWindowExists();
 	  break;
 	}
     }

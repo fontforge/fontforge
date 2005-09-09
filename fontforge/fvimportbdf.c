@@ -287,7 +287,7 @@ static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b,EncMap *map,int dep
     break;
     }
     if ( xmax<xmin || ymax<ymin ) {
-	fprintf( stderr, "Bad bounding box for %s.\n", name );
+	LogError( "Bad bounding box for %s.\n", name );
 return;
     }
     i = figureProperEncoding(sf,map,b,enc,name,swidth,swidth1,encname);
@@ -548,7 +548,7 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, Encoding **_enc,
 	comments[strlen(comments)-1] = '\0';
 
     if ( *depth!=1 && *depth!=2 && *depth!=4 && *depth!=8 && *depth!=16 && *depth!=32 )
-	fprintf( stderr, "FontForge does not support this bit depth %d (must be 1,2,4,8,16,32)\n", *depth);
+	LogError( "FontForge does not support this bit depth %d (must be 1,2,4,8,16,32)\n", *depth);
 
 return( pixelsize );
 }
@@ -850,10 +850,10 @@ return( false );
 	    else
 		r += get3byte(gf)+1;
 	} else if ( ch==EOF ) {
-	    fprintf( stderr, "Unexpected EOF in gf\n" );
+	    LogError( "Unexpected EOF in gf\n" );
     break;
 	} else
-	    fprintf( stderr, "Uninterpreted code in gf: %d\n", ch);
+	    LogError( "Uninterpreted code in gf: %d\n", ch);
     }
     fseek(gf,pos,SEEK_SET);
 return( true );
@@ -968,7 +968,7 @@ return( i );
 return( (i-st->dyn_f-1)*16 + getnibble(pk,st) + st->dyn_f + 1 );
 	} else {
 	    if ( st->rpt!=0 )
-		fprintf( stderr, "Duplicate repeat row count in char %d of pk file\n", st->cc );
+		LogError( "Duplicate repeat row count in char %d of pk file\n", st->cc );
 	    if ( i==15 ) st->rpt = 1;
 	    else st->rpt = pkgetcount(pk,st);
  /*printf( "[%d]", st->rpt );*/
@@ -1112,7 +1112,7 @@ return( 0 );
 	}
     }
     if ( ftell(pk)!=char_end ) {
-	fprintf( stderr, "The character, %d, was not read properly (or pk file is in bad format)\n At %ld should be %d, off by %ld\n", cc, ftell(pk), char_end, ftell(pk)-char_end );
+	LogError( "The character, %d, was not read properly (or pk file is in bad format)\n At %ld should be %d, off by %ld\n", cc, ftell(pk), char_end, ftell(pk)-char_end );
 	fseek(pk,char_end,SEEK_SET);
     }
  /* printf( "\n" ); */
