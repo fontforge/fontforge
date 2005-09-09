@@ -1605,15 +1605,21 @@ void CopyWidth(CharView *cv,enum undotype ut) {
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-static SplineChar *FindCharacter(SplineFont *into, SplineFont *from,RefChar *rf) {
+static SplineChar *FindCharacter(SplineFont *into, SplineFont *from,RefChar *rf,
+	SplineChar **fromsc) {
     FontView *fv;
     char *fromname = NULL;
 
     for ( fv = fv_list; fv!=NULL && fv->sf!=from; fv=fv->next );
     if ( fv==NULL ) from=NULL;
 
-    if ( from!=NULL && rf->orig_pos<from->glyphcnt && from->glyphs[rf->orig_pos]!=NULL )
+    if ( fromsc!=NULL ) *fromsc = NULL;
+
+    if ( from!=NULL && rf->orig_pos<from->glyphcnt && from->glyphs[rf->orig_pos]!=NULL ) {
 	fromname = from->glyphs[rf->orig_pos]->name;
+	if ( fromsc!=NULL )
+	    *fromsc = from->glyphs[rf->orig_pos];
+    }
 
     if ( rf->orig_pos<into->glyphcnt && into->glyphs[rf->orig_pos]!=NULL &&
 	    ((into->glyphs[rf->orig_pos]->unicodeenc == rf->unicode_enc && rf->unicode_enc!=-1 ) ||
@@ -1638,12 +1644,14 @@ return( false );
 
 static void PasteNonExistantRefCheck(SplineChar *sc,Undoes *paster,RefChar *ref,
 	int *refstate) {
-    SplineChar *rsc=NULL;
+    SplineChar *rsc=NULL, *fromsc;
     SplineSet *new, *spl;
     int yes = 3;
 
-    rsc = FindCharacter(sc->parent,paster->u.state.copied_from,ref);
-    if ( rsc==NULL ) {
+    rsc = FindCharacter(sc->parent,paster->u.state.copied_from,ref,&fromsc);
+    if ( rsc!=NULL )
+	IError("We should never have called PasteNonExistantRefCheck if we had a glyph");
+    if ( fromsc==NULL ) {
 	if ( !(*refstate&0x4) ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    static int buts[] = { _STR_DontWarnAgain, _STR_OK, 0 };
@@ -1676,7 +1684,7 @@ static void PasteNonExistantRefCheck(SplineChar *sc,Undoes *paster,RefChar *ref,
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    static int buts[] = { _STR_Yes, _STR_YesToAll, _STR_NoToAll, _STR_No, 0 };
 	    GProgressPauseTimer();
-	    yes = GWidgetAskCenteredR(_STR_BadReference,buts,0,3,_STR_FontNoRef,rsc->name,sc->name);
+	    yes = GWidgetAskCenteredR(_STR_BadReference,buts,0,3,_STR_FontNoRef,fromsc->name,sc->name);
 	    GProgressResumeTimer();
 #elif defined(FONTFORGE_CONFIG_GTK)
 	    char *buts[];
@@ -1686,7 +1694,7 @@ static void PasteNonExistantRefCheck(SplineChar *sc,Undoes *paster,RefChar *ref,
 	    buts[3] = GTK_STOCK_NO;
 	    buts[4] = NULL;
 	    gwwv_progress_pause_timer();
-	    yes = gwwv_ask(_("Bad Reference"),buts,0,3,_("You are attempting to paste a reference to %1$s into %2$s.\nBut %1$s does not exist in this font.\nWould you like to copy the original splines (or delete the reference)?"),rsc->name,sc->name);
+	    yes = gwwv_ask(_("Bad Reference"),buts,0,3,_("You are attempting to paste a reference to %1$s into %2$s.\nBut %1$s does not exist in this font.\nWould you like to copy the original splines (or delete the reference)?"),fromsc->name,sc->name);
 	    gwwv_progress_resume_timer();
 #endif
 	    if ( yes==1 )
@@ -1695,7 +1703,7 @@ static void PasteNonExistantRefCheck(SplineChar *sc,Undoes *paster,RefChar *ref,
 		*refstate |= 2;
 	}
 	if ( (*refstate&1) || yes<=1 ) {
-	    new = SplinePointListTransform(SplinePointListCopy(rsc->layers[ly_fore].splines),ref->transform,true);
+	    new = SplinePointListTransform(SplinePointListCopy(fromsc->layers[ly_fore].splines),ref->transform,true);
 	    SplinePointListSelect(new,true);
 	    if ( new!=NULL ) {
 		for ( spl = new; spl->next!=NULL; spl = spl->next );
@@ -1782,7 +1790,7 @@ static int PasteGuessCorrectWidth(SplineFont *sf,Undoes *paster,int *vwidth) {
 	}
     }
     if ( base!=NULL ) {
-	SplineChar *sc = FindCharacter(sf,from,base);
+	SplineChar *sc = FindCharacter(sf,from,base,NULL);
 	if ( sc!=NULL ) {
 	    *vwidth = sc->vwidth;
 return( sc->width );
@@ -2018,10 +2026,10 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
 	    for ( refs = paster->u.state.refs; refs!=NULL; refs=refs->next ) {
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 		if ( sc->searcherdummy )
-		    rsc = FindCharacter(sc->views->searcher->fv->sf,paster->u.state.copied_from,refs);
+		    rsc = FindCharacter(sc->views->searcher->fv->sf,paster->u.state.copied_from,refs,NULL);
 		else
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-		    rsc = FindCharacter(sc->parent,paster->u.state.copied_from,refs);
+		    rsc = FindCharacter(sc->parent,paster->u.state.copied_from,refs,NULL);
 		if ( rsc!=NULL && SCDependsOnSC(rsc,sc))
 #if defined(FONTFORGE_CONFIG_GTK)
 		    gwwv_post_error(_("Self-referential character"),_("Attempt to make a character that refers to itself"));
@@ -2211,9 +2219,9 @@ return;
 	    SplineChar *sc;
 	    for ( refs = paster->u.state.refs; refs!=NULL; refs=refs->next ) {
 		if ( cv->searcher!=NULL )
-		    sc = FindCharacter(cv->searcher->fv->sf,paster->u.state.copied_from,refs);
+		    sc = FindCharacter(cv->searcher->fv->sf,paster->u.state.copied_from,refs,NULL);
 		else {
-		    sc = FindCharacter(cvsc->parent,paster->u.state.copied_from,refs);
+		    sc = FindCharacter(cvsc->parent,paster->u.state.copied_from,refs,NULL);
 		    if ( sc!=NULL && SCDependsOnSC(sc,cvsc)) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 			GWidgetErrorR(_STR_SelfRef,_STR_AttemptSelfRef);
@@ -2250,9 +2258,9 @@ return;
 	    SplinePointList *new, *spl;
 	    for ( refs = paster->u.state.refs; refs!=NULL; refs=refs->next ) {
 		if ( cv->searcher!=NULL )
-		    sc = FindCharacter(cv->searcher->fv->sf,paster->u.state.copied_from,refs);
+		    sc = FindCharacter(cv->searcher->fv->sf,paster->u.state.copied_from,refs,NULL);
 		else
-		    sc = FindCharacter(cvsc->parent,paster->u.state.copied_from,refs);
+		    sc = FindCharacter(cvsc->parent,paster->u.state.copied_from,refs,NULL);
 		if ( sc!=NULL ) {
 		    new = SplinePointListTransform(SplinePointListCopy(sc->layers[ly_back].splines),refs->transform,true);
 		    SplinePointListSelect(new,true);
