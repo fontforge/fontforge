@@ -7910,8 +7910,10 @@ return( sc );
 	}
 
 	SCBuildDummy(&dummy,sf,map,enc);
-	if ((sc = SFGetChar(sf,dummy.unicodeenc,dummy.name))!=NULL )
+	if ((sc = SFGetChar(sf,dummy.unicodeenc,dummy.name))!=NULL ) {
+	    map->map[enc] = sc->orig_pos;
 return( sc );
+	}
 	sc = SplineCharCreate();
 #ifdef FONTFORGE_CONFIG_TYPE3
 	l = sc->layers;
