@@ -5923,7 +5923,8 @@ static void balistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void delistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    int gid = fv->map->map[gid];
+    int i = FVAnyCharSelected(fv);
+    int gid = i<0 ? -1 : fv->map->map[i];
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
