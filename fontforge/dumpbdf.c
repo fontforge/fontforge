@@ -197,13 +197,23 @@ static void calculate_bounding_box(BDFFont *font,
     *fbb_lbearing = lbearing;
 }
 
-static void BDFDumpChar(FILE *file,BDFFont *font,BDFChar *bdfc,int enc) {
+static void BDFDumpChar(FILE *file,BDFFont *font,BDFChar *bdfc,int enc,
+	EncMap *map, int *dups) {
     int r,c;
     int bpl;
     int em = ( font->sf->ascent+font->sf->descent );	/* Just in case em isn't 1000, be prepared to normalize */
+    int isdup = false;
 
     BCCompressBitmap(bdfc);
-    fprintf( file, "STARTCHAR %s\n", bdfc->sc->name );
+    if ( bdfc->sc->altuni!=NULL ) {
+	int uni = UniFromEnc(enc,map->enc);
+	isdup = uni!=bdfc->sc->unicodeenc;
+    }
+    if ( !isdup )
+	fprintf( file, "STARTCHAR %s\n", bdfc->sc->name );
+    else
+	fprintf( file, "STARTCHAR %s.dup%d\n", bdfc->sc->name, ++*dups );
+
     fprintf( file, "ENCODING %d\n", enc );
     if ( !font->sf->hasvmetrics || bdfc->sc->width!=em ) {
 	fprintf( file, "SWIDTH %d 0\n", bdfc->sc->width*1000/em );
@@ -480,6 +490,7 @@ int BDFFontDump(char *filename,BDFFont *font, EncMap *map, int res) {
     int i, enc;
     int ret = 0;
     char *encodingname = EncodingName(map->enc);
+    int dups=0;
 
     if ( filename==NULL ) {
 	sprintf(buffer,"%s-%s.%d.bdf", font->sf->fontname, encodingname, font->pixelsize );
@@ -496,7 +507,7 @@ int BDFFontDump(char *filename,BDFFont *font, EncMap *map, int res) {
 		enc = i;
 		if ( i>=map->enc->char_cnt )	/* The map's enccount may contain "unencoded" glyphs */
 		    enc = -1;
-		BDFDumpChar(file,font,font->glyphs[gid],enc);
+		BDFDumpChar(file,font,font->glyphs[gid],enc,map,&dups);
 	    }
 	}
 	fprintf( file, "ENDFONT\n" );
