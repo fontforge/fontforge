@@ -1494,7 +1494,7 @@ static void dumpGPOSsimplepos(FILE *gpos,SplineFont *sf,SplineChar **glyphs,
     }
     if ( bits==0 ) bits=1;
     if ( cnt!=cnt2 )
-	fprintf( stderr, "Count mismatch in dumpGPOSsimplepos#1 %d vs %d\n", cnt, cnt2 );
+	IError( "Count mismatch in dumpGPOSsimplepos#1 %d vs %d\n", cnt, cnt2 );
 
     putshort(gpos,same?1:2);	/* 1 means all value records same */
     coverage_pos = ftell(gpos);
@@ -1546,7 +1546,7 @@ static void dumpGPOSsimplepos(FILE *gpos,SplineFont *sf,SplineChar **glyphs,
 	    }
 	}
 	if ( cnt!=cnt2 )
-	    fprintf( stderr, "Count mismatch in dumpGPOSsimplepos#3 %d vs %d\n", cnt, cnt2 );
+	    IError( "Count mismatch in dumpGPOSsimplepos#3 %d vs %d\n", cnt, cnt2 );
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 	if ( bits&0xf0 ) {
 	    for ( cnt2 = 0; glyphs[cnt2]!=NULL; ++cnt2 ) {

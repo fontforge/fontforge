@@ -2529,7 +2529,7 @@ int PSBitmapDump(char *filename,BDFFont *font, EncMap *map) {
     }
     file = fopen(filename,"w" );
     if ( file==NULL )
-	fprintf( stderr, "Can't open %s\n", filename );
+	LogError( "Can't open %s\n", filename );
     else {
 	dumprequiredfontinfo((DumpChar) fputc, file, sf, ff_ptype3, map);
 

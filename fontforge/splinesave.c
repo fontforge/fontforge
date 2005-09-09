@@ -1871,7 +1871,7 @@ static void AddNumber2(GrowBuf *gb, real pos, int round) {
     if ( round )
 	pos = rint(pos);
     if ( pos>65535 || pos<-65536 ) {
-	fprintf( stderr, "Number out of range: %g in type2 output (must be [-65536,65535])\n",
+	LogError( "Number out of range: %g in type2 output (must be [-65536,65535])\n",
 		pos );
 	if ( pos>0 ) pos = 65535; else pos = -65536;
     }

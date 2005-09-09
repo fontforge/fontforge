@@ -1860,7 +1860,7 @@ static void rle2image(struct enc85 *dec,int rlelen,struct _GImage *base) {
     memset(base->data,0xff,end-pt);
     while ( rlelen>0 ) {
 	if ( pt>=end ) {
-	    fprintf( stderr, "IError: RLE failure\n" );
+	    IError( "RLE failure\n" );
 	    while ( rlelen>0 ) { Dec85(dec); --rlelen; }
     break;
 	}
@@ -1882,7 +1882,7 @@ static void rle2image(struct enc85 *dec,int rlelen,struct _GImage *base) {
 	    set = 1;
 	} else {
 	    if ( pt + ((c+cnt)>>3) > end ) {
-		fprintf(stderr, "Run length encoded image has been corrupted.\n" );
+		IError( "Run length encoded image has been corrupted.\n" );
     break;
 	    }
 	    if ( !set ) {
@@ -2244,7 +2244,7 @@ static void SFDGetMinimumDistances(FILE *sfd, SplineChar *sc) {
 	if ( ch=='x' ) md->x = true;
 	getint(sfd,&val);
 	if ( val<-1 || val>=pt ) {
-	    fprintf( stderr, "Internal Error: Minimum Distance specifies bad point (%d) in sfd file\n", val );
+	    IError( "Minimum Distance specifies bad point (%d) in sfd file\n", val );
 	    err = true;
 	} else if ( val!=-1 ) {
 	    md->sp1 = mapping[val];
@@ -2252,12 +2252,12 @@ static void SFDGetMinimumDistances(FILE *sfd, SplineChar *sc) {
 	}
 	ch = getc(sfd);
 	if ( ch!=',' ) {
-	    fprintf( stderr, "Internal Error: Minimum Distance lacks a comma where expected\n" );
+	    IError( "Minimum Distance lacks a comma where expected\n" );
 	    err = true;
 	}
 	getint(sfd,&val);
 	if ( val<-1 || val>=pt ) {
-	    fprintf( stderr, "Internal Error: Minimum Distance specifies bad point (%d) in sfd file\n", val );
+	    IError( "Minimum Distance specifies bad point (%d) in sfd file\n", val );
 	    err = true;
 	} else if ( val!=-1 ) {
 	    md->sp2 = mapping[val];
@@ -2363,7 +2363,7 @@ return;
 	getint(sfd,&last);
 	len = last-first+1;
 	if ( len<=0 ) {
-	    fprintf( stderr, "Bad device table, invalid length.\n" );
+	    IError( "Bad device table, invalid length.\n" );
 return;
 	}
 	adjust->first_pixel_size = first;
@@ -2873,7 +2873,7 @@ return( NULL );
 				isv ? "vkrn" : "kern",
 				sc->name, sli );
 		    else
-			fprintf( stderr, "Internal Error: '%s' in %s has a script index out of bounds: %d",
+			IError( "'%s' in %s has a script index out of bounds: %d",
 				isv ? "vkrn" : "kern",
 				sc->name, sli );
 		    sli = SFAddScriptLangIndex(sli_sf,
@@ -2970,7 +2970,7 @@ return( NULL );
 			    (liga->tag>>24), (liga->tag>>16)&0xff, (liga->tag>>8)&0xff, liga->tag&0xff,
 			    sc->name, liga->script_lang_index );
 		else
-		    fprintf( stderr, "Internal Error: '%c%c%c%c' in %s has a script index out of bounds: %d\n",
+		    IError( "'%c%c%c%c' in %s has a script index out of bounds: %d\n",
 			    (liga->tag>>24), (liga->tag>>16)&0xff, (liga->tag>>8)&0xff, liga->tag&0xff,
 			    sc->name, liga->script_lang_index );
 		liga->script_lang_index = SFAddScriptLangIndex(sli_sf,
@@ -3272,7 +3272,7 @@ static void SFDFixupRefs(SplineFont *sf) {
 			index = map->map[(int) (kp->sc)];
 		}
 		if ( index>=sf->glyphcnt ) {
-		    fprintf( stderr, "Warning: Bad kerning information in glyph %s\n", sc->name );
+		    IError( "Bad kerning information in glyph %s\n", sc->name );
 		    kp->sc = NULL;
 		} else
 		    kp->sc = sf->glyphs[index];
@@ -3520,7 +3520,7 @@ static void SFDParseChainContext(FILE *sfd,SplineFont *sf,FPST *fpst, char *tok)
 		    (fpst->tag>>24), (fpst->tag>>16)&0xff, (fpst->tag>>8)&0xff, fpst->tag&0xff,
 		    fpst->script_lang_index );
 	else
-	    fprintf( stderr, "Internal Error: '%c%c%c%c' has a script index out of bounds: %d\n",
+	    IError("'%c%c%c%c' has a script index out of bounds: %d\n",
 		    (fpst->tag>>24), (fpst->tag>>16)&0xff, (fpst->tag>>8)&0xff, fpst->tag&0xff,
 		    fpst->script_lang_index );
 	if ( sli_sf->sli_cnt!=0 )
@@ -4108,7 +4108,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 #ifdef FONTFORGE_CONFIG_TYPE3
 	    sf->multilayer = temp;
 #else
-	    fprintf( stderr, "Warning: This version of FontForge does not contain extended type3/svg support\n needed for this font.\nReconfigure with --with-type3.\n" );
+	    LogError( "Warning: This version of FontForge does not contain extended type3/svg support\n needed for this font.\nReconfigure with --with-type3.\n" );
 #endif
 	} else if ( strmatch(tok,"NeedsXUIDChange:")==0 ) {
 	    int temp;

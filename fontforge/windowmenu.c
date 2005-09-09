@@ -64,6 +64,9 @@ void WindowMenuBuild(GWindow basew,struct gmenuitem *mi,GEvent *e, struct gmenui
     precnt = 0;
     for ( sub = base; sub->ti.text!=NULL || sub->ti.line; ++sub )
 	++precnt;
+    if ( sub->ti.text!=NULL )		/* Skip two lines now */
+	for ( ++sub; sub->ti.text!=NULL || sub->ti.line; ++sub )
+	    ++precnt;
     cnt = precnt;
 
     for ( fv = fv_list; fv!=NULL; fv = fv->next ) {

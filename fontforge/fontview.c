@@ -1354,6 +1354,14 @@ return;
 }
 
 # ifdef FONTFORGE_CONFIG_GDRAW
+void _MenuWarnings(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+# elif defined(FONTFORGE_CONFIG_GTK)
+void _Menu_Warnings(GtkMenuItem *menuitem, gpointer user_data) {
+# endif
+    ShowErrorWindow();
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
 static void FVMenuOpenMetrics(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
@@ -1566,6 +1574,8 @@ void FontViewMenu_MetaFont(GtkMenuItem *menuitem, gpointer user_data) {
 #define MID_BlendToNew	2904
 #define MID_ModifyComposition	20902
 #define MID_BuildSyllables	20903
+
+#define MID_Warnings	3000
 # endif
 #endif
 
@@ -5627,12 +5637,6 @@ static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
-	  case MID_OpenOutline:
-	    mi->ti.disabled = anychars==-1;
-	  break;
-	  case MID_OpenBitmap:
-	    mi->ti.disabled = anychars==-1 || fv->sf->bitmaps==NULL;
-	  break;
 	  case MID_Revert:
 	    mi->ti.disabled = fv->sf->origname==NULL;
 	  break;
@@ -6880,6 +6884,8 @@ static GMenuItem wnmenu[] = {
     { { (unichar_t *) _STR_NewBitmap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, 'J', ksm_control, NULL, NULL, FVMenuOpenBitmap, MID_OpenBitmap },
     { { (unichar_t *) _STR_NewMetrics, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, 'K', ksm_control, NULL, NULL, FVMenuOpenMetrics },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) _STR_Warnings, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, '\0', ksm_control, NULL, NULL, _MenuWarnings, MID_Warnings },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { NULL }
 };
 
@@ -6895,6 +6901,9 @@ static void FVWindowMenuBuild(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_OpenBitmap:
 	    wmi->ti.disabled = anychars==-1 || fv->sf->bitmaps==NULL;
+	  break;
+	  case MID_Warnings:
+	    wmi->ti.disabled = ErrorWindowExists();
 	  break;
 	}
     }

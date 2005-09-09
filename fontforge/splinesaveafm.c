@@ -2333,7 +2333,7 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map) {
 		else {
 		    lkarray[former[i]] |= (lkcnt-former[i]-1)<<24;
 		    if ( lkcnt-former[i]-1 >= 128 )
-			fprintf( stderr, "Internal error generating lig/kern array, jump too far.\n" );
+			IError( " generating lig/kern array, jump too far.\n" );
 		}
 		former[i] = lkcnt;
 		lkarray[lkcnt++] = ((lk->next==NULL?128U:0U)<<24) |
@@ -2366,7 +2366,7 @@ int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map) {
 	    }
 	}
 	if ( lkcnt>sccnt )
-	    fprintf( stderr, "Internal error, lig/kern mixup\n" );
+	    IError( "lig/kern mixup\n" );
 	lkcnt = lkcnt2;
     }
 

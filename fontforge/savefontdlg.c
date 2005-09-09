@@ -1413,7 +1413,7 @@ return( NULL );
 	    while ( isspace(*end)) ++end;
 	    if ( *end==':' ) {
 		if ( r1>=256 || r1<0)
-		    fprintf( stderr, "Bad offset: %d for subfont %s\n", r1, names[subfilecnt]);
+		    LogError( "Bad offset: %d for subfont %s\n", r1, names[subfilecnt]);
 		else
 		    thusfar = r1;
 		r1 = strtoul(end+1,&end,0);
@@ -1444,7 +1444,7 @@ return( NULL );
 				(map->enc->is_unicodebmp || map->enc->is_unicodefull))
 			    /* Not a character anyway. just ignore it */;
 			else {
-			    fprintf( stderr, "Warning: Encoding %d (%x) is mapped to at least two locations (%s@0x%02x and %s@0x%02x)\n Only one will be used here.\n",
+			    LogError( "Warning: Encoding %d (%x) is mapped to at least two locations (%s@0x%02x and %s@0x%02x)\n Only one will be used here.\n",
 				    i, i, names[subfilecnt], thusfar, names[(mapping[modi]>>8)], mapping[modi]&0xff );
 			    warned = true;
 			}
@@ -1455,7 +1455,7 @@ return( NULL );
 	    }
 	}
 	if ( thusfar>256 )
-	    fprintf( stderr, "More that 256 entries in subfont %s\n", names[subfilecnt] );
+	    LogError( "More that 256 entries in subfont %s\n", names[subfilecnt] );
 	++subfilecnt;
 	if ( bpt!=buffer )
 	    free(bpt);

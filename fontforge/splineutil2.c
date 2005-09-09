@@ -3169,7 +3169,7 @@ SplineSet *SplineSetsDetectDir(SplineSet **_base,int *_lastscan) {
     dummy.layers[ly_fore].splines = base;
     ELFindEdges(&dummy,&el);
     if ( el.coordmax[1]-el.coordmin[1] > 1.e6 ) {
-	fprintf( stderr, "Warning: Unreasonably big splines. They will be ignored.\n" );
+	LogError( "Warning: Unreasonably big splines. They will be ignored.\n" );
 return( NULL );
     }
     el.major = 1;
@@ -3255,7 +3255,7 @@ return( -1 );		/* Open paths, (open paths with only one point are a special case
     next = spl->next; spl->next = NULL;
     ELFindEdges(&dummy,&el);
     if ( el.coordmax[1]-el.coordmin[1] > 1.e6 ) {
-	fprintf( stderr, "Warning: Unreasonably big splines. They will be ignored.\n" );
+	LogError( "Warning: Unreasonably big splines. They will be ignored.\n" );
 return( -1 );
     }
     el.major = 1;

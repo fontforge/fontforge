@@ -163,35 +163,35 @@ return( NULL );
     }
     dlen = sizeof(programindicator);
     if ( (err=RegQueryValueEx(hkey_exten,"",NULL,&type,(uint8 *)programindicator,&dlen))!=ERROR_SUCCESS ) {
-	fprintf( stderr, "Failed to default value of exten \"%s\".\n Error=%ld", exten, err );
+	LogError( "Failed to default value of exten \"%s\".\n Error=%ld", exten, err );
 	RegCloseKey(hkey_exten);
 return( NULL );
     }
     RegCloseKey(hkey_exten);
 
     if ( RegOpenKeyEx(HKEY_CLASSES_ROOT,programindicator,0,KEY_READ,&hkey_prog)!=ERROR_SUCCESS ) {
-	fprintf( stderr, "Failed to find program \"%s\"\n", programindicator );
+	LogError( "Failed to find program \"%s\"\n", programindicator );
 return( NULL );
     }
     if ( RegOpenKeyEx(hkey_prog,"shell",0,KEY_READ,&hkey_shell)!=ERROR_SUCCESS ) {
-	fprintf( stderr, "Failed to find \"%s->shell\"\n", programindicator );
+	LogError( "Failed to find \"%s->shell\"\n", programindicator );
 	RegCloseKey(hkey_prog);
 return( NULL );
     }
     if ( RegOpenKeyEx(hkey_shell,"open",0,KEY_READ,&hkey_open)!=ERROR_SUCCESS ) {
-	fprintf( stderr, "Failed to find \"%s->shell->open\"\n", programindicator );
+	LogError( "Failed to find \"%s->shell->open\"\n", programindicator );
 	RegCloseKey(hkey_prog); RegCloseKey(hkey_shell);
 return( NULL );
     }
     if ( RegOpenKeyEx(hkey_open,"command",0,KEY_READ,&hkey_command)!=ERROR_SUCCESS ) {
-	fprintf( stderr, "Failed to find \"%s->shell->open\"\n", programindicator );
+	LogError( "Failed to find \"%s->shell->open\"\n", programindicator );
 	RegCloseKey(hkey_prog); RegCloseKey(hkey_shell); RegCloseKey(hkey_command);
 return( NULL );
     }
 
     dlen = sizeof(programpath);
     if ( RegQueryValueEx(hkey_command,"",NULL,&type,(uint8 *)programpath,&dlen)!=ERROR_SUCCESS ) {
-	fprintf( stderr, "Failed to find default for \"%s->shell->open->command\"\n", programindicator );
+	LogError( "Failed to find default for \"%s->shell->open->command\"\n", programindicator );
 	RegCloseKey(hkey_prog); RegCloseKey(hkey_shell); RegCloseKey(hkey_open); RegCloseKey(hkey_command);
 return( NULL );
     }
@@ -485,6 +485,264 @@ void IError(const char *format,...) {
     strcpy(buffer,_("Internal Error: "));
     len = strlen(buffer);
     vsnprintf(buffer+len,sizeof(buffer)-len,format,ap);
+#endif
+    va_end(ap);
+}
+
+#if !defined( FONTFORGE_CONFIG_NO_WINDOWING_UI )
+#define MAX_ERR_LINES	200
+static struct errordata {
+    char *errlines[MAX_ERR_LINES];
+    GFont *font;
+    int fh, as;
+    GGadget *vsb;
+    GWindow gw, v;
+    int cnt, linecnt;
+    int offtop;
+    int showing;
+} errdata;
+
+static void ErrHide(void) {
+    GDrawSetVisible(errdata.gw,false);
+    errdata.showing = false;
+}
+
+static void ErrScroll(struct sbevent *sb) {
+    int newpos = errdata.offtop;
+
+    switch( sb->type ) {
+      case et_sb_top:
+        newpos = 0;
+      break;
+      case et_sb_uppage:
+        newpos -= errdata.linecnt;
+      break;
+      case et_sb_up:
+        --newpos;
+      break;
+      case et_sb_down:
+        ++newpos;
+      break;
+      case et_sb_downpage:
+        newpos += errdata.linecnt;
+      break;
+      case et_sb_bottom:
+        newpos = errdata.cnt-errdata.linecnt;
+      break;
+      case et_sb_thumb:
+      case et_sb_thumbrelease:
+        newpos = sb->pos;
+      break;
+    }
+    if ( newpos>errdata.cnt-errdata.linecnt )
+        newpos = errdata.cnt-errdata.linecnt;
+    if ( newpos<0 ) newpos =0;
+    if ( newpos!=errdata.offtop ) {
+	int diff = newpos-errdata.offtop;
+	errdata.offtop = newpos;
+	GScrollBarSetPos(errdata.vsb,errdata.offtop);
+	GDrawScroll(errdata.v,NULL,0,diff*errdata.fh);
+    }
+}
+
+static int warnings_e_h(GWindow gw, GEvent *event) {
+
+    if (( event->type==et_mouseup || event->type==et_mousedown ) &&
+	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
+return( GGadgetDispatchEvent(errdata.vsb,event));
+    }
+
+    switch ( event->type ) {
+      case et_selclear:
+      break;
+      case et_expose:
+      break;
+      case et_resize: {
+	  GRect size, sbsize;
+	  GDrawGetSize(gw,&size);
+	  GGadgetGetSize(errdata.vsb,&sbsize);
+	  GGadgetMove(errdata.vsb,size.width-sbsize.width,0);
+	  GGadgetResize(errdata.vsb,sbsize.width,size.height);
+	  GDrawResize(errdata.v,size.width-sbsize.width,size.height);
+	  errdata.linecnt = size.height/errdata.fh;
+	  if ( errdata.offtop + errdata.linecnt > errdata.cnt ) {
+	      errdata.offtop = errdata.cnt-errdata.linecnt;
+	      if ( errdata.offtop < 0 ) errdata.offtop = 0;
+	      GScrollBarSetBounds(errdata.vsb,0,errdata.cnt,errdata.linecnt);
+	      GScrollBarSetPos(errdata.vsb,errdata.offtop);
+	  }
+	  GDrawRequestExpose(errdata.v,NULL,false);
+      } break;
+      case et_char:
+return( false );
+      break;
+      case et_controlevent:
+	switch ( event->u.control.subtype ) {
+	  case et_scrollbarchange:
+	    ErrScroll(&event->u.control.u.sb);
+	  break;
+	}
+      break;
+      case et_close:
+	ErrHide();
+      break;
+      case et_create:
+      break;
+      case et_destroy:
+      break;
+    }
+return( true );
+}
+
+static int warningsv_e_h(GWindow gw, GEvent *event) {
+    int i;
+    unichar_t ubuffer[200];
+
+    if (( event->type==et_mouseup || event->type==et_mousedown ) &&
+	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
+return( GGadgetDispatchEvent(errdata.vsb,event));
+    }
+
+    switch ( event->type ) {
+      case et_expose:
+	  GDrawSetFont(gw,errdata.font);
+	  for ( i=0; i<errdata.linecnt && i+errdata.offtop<errdata.cnt; ++i ) {
+	      uc_strncpy(ubuffer,errdata.errlines[i+errdata.offtop],sizeof(ubuffer)/sizeof(ubuffer[0]));
+	      ubuffer[sizeof(ubuffer)/sizeof(ubuffer[0])-1] = 0;
+	      GDrawDrawText(gw,3,i*errdata.fh+errdata.as,ubuffer,-1,NULL,0x000000);
+	  }
+      break;
+      case et_char:
+return(false);
+      break;
+      case et_mousemove: case et_mousedown: case et_mouseup:
+      break;
+      case et_timer:
+      break;
+      case et_focus:
+      break;
+    }
+return( true );
+}
+
+static void CreateErrorWindow(void) {
+    static unichar_t sans[] = { 'h','e','l','v','e','t','i','c','a',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
+    GWindowAttrs wattrs;
+    FontRequest rq;
+    GRect pos,size;
+    int as, ds, ld;
+    GWindow gw;
+    GGadgetData gd;
+    extern int _GScrollBar_Width;
+
+    GDrawGetSize(GDrawGetRoot(NULL),&size);
+
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_isdlg|wam_positioned;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.is_dlg = true;
+    wattrs.cursor = ct_pointer;
+    wattrs.positioned = true;
+    wattrs.window_title = GStringGetResource(_STR_Warnings,NULL);
+    pos.width =GDrawPointsToPixels(NULL,GGadgetScale(480));
+    pos.height = GDrawPointsToPixels(NULL,240);
+    pos.x = size.width - pos.width - 10;
+    pos.y = size.height - pos.height - 30;
+    errdata.gw = gw = GDrawCreateTopWindow(NULL,&pos,warnings_e_h,&errdata,&wattrs);
+
+    memset(&gd,0,sizeof(gd));
+    gd.pos.y = 0; gd.pos.height = pos.height;
+    gd.pos.width = GDrawPointsToPixels(gw,_GScrollBar_Width);
+    gd.pos.x = pos.width-gd.pos.width;
+    gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_sb_vert;
+    errdata.vsb = GScrollBarCreate(gw,&gd,&errdata);
+
+    pos.width -= gd.pos.width;
+    pos.x = pos.y = 0;
+    wattrs.mask = wam_events|wam_cursor;
+    errdata.v = GWidgetCreateSubWindow(gw,&pos,warningsv_e_h,&errdata,&wattrs);
+    GDrawSetVisible(errdata.v,true);
+
+    memset(&rq,0,sizeof(rq));
+    rq.family_name = sans;
+    rq.point_size = 10;
+    rq.weight = 400;
+    errdata.font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+    GDrawFontMetrics(errdata.font,&as,&ds,&ld);
+    errdata.as = as;
+    errdata.fh = as+ds;
+
+    errdata.linecnt = pos.height/errdata.fh;
+}
+
+static void AppendToErrorWindow(char *buffer) {
+    int i,linecnt;
+    char *pt,*end;
+
+    if ( buffer[strlen(buffer)-1]=='\n' ) buffer[strlen(buffer)-1] = '\0';
+
+    for ( linecnt=1, pt=buffer; (pt=strchr(pt,'\n'))!=NULL; ++linecnt )
+	++pt;
+    if ( errdata.cnt + linecnt > MAX_ERR_LINES ) {
+	int off = errdata.cnt + linecnt - MAX_ERR_LINES;
+	for ( i=0; i<off; ++i )
+	    free(errdata.errlines[i]);
+	for ( /*i=off*/; i<errdata.cnt; ++i )
+	    errdata.errlines[i-off] = errdata.errlines[i];
+	for ( ; i<MAX_ERR_LINES+off ; ++i )
+	    errdata.errlines[i-off] = NULL;
+	errdata.cnt -= off;
+    }
+    for ( i=errdata.cnt, pt=buffer; i<MAX_ERR_LINES; ++i ) {
+	end = strchr(pt,'\n');
+	if ( end==NULL ) end = pt+strlen(pt);
+	errdata.errlines[i] = copyn(pt,end-pt);
+	pt = end;
+	if ( *pt=='\0' ) {
+	    ++i;
+    break;
+	}
+	++pt;
+    }
+    errdata.cnt = i;
+
+    errdata.offtop = errdata.cnt - errdata.linecnt;
+    if ( errdata.offtop<0 ) errdata.offtop = 0;
+    GScrollBarSetBounds(errdata.vsb,0,errdata.cnt,errdata.linecnt);
+    GScrollBarSetPos(errdata.vsb,errdata.offtop);
+}
+
+int ErrorWindowExists(void) {
+return( errdata.gw!=NULL );
+}
+
+void ShowErrorWindow(void) {
+    if ( errdata.gw==NULL )
+return;
+    GDrawSetVisible(errdata.gw,true);
+    if ( errdata.showing )
+	GDrawRequestExpose(errdata.v,NULL,false);
+    errdata.showing = true;
+}
+#endif
+
+void LogError(const char *format,...) {
+    va_list ap;
+
+    va_start(ap,format);
+#if defined( FONTFORGE_CONFIG_NO_WINDOWING_UI )
+    vfprintf(stderr,format,ap);
+#else
+    if ( no_windowing_ui )
+	vfprintf(stderr,format,ap);
+    else {
+	char buffer[300];
+	vsnprintf(buffer,sizeof(buffer),format,ap);
+	if ( !ErrorWindowExists())
+	    CreateErrorWindow();
+	AppendToErrorWindow(buffer);
+	ShowErrorWindow();
+    }
 #endif
     va_end(ap);
 }

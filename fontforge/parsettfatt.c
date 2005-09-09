@@ -70,7 +70,7 @@ static uint16 *getAppleClassTable(FILE *ttf, int classdef_offset, int cnt, int s
     first = getushort(ttf);
     n = getushort(ttf);
     if ( first+n+1>=cnt )
-	fprintf( stderr, "Bad Apple Kern Class\n" );
+	LogError( "Bad Apple Kern Class\n" );
     for ( i=0; i<=n && i+first<cnt; ++i )
 	class[first+i] = (getushort(ttf)-sub)/div;
 return( class );
@@ -93,7 +93,7 @@ static char **ClassToNames(struct ttfinfo *info,int class_cnt,uint16 *class,int 
 	    lens[class[i]] += strlen(info->chars[i]->name)+1;
 	    ret[class[i]][lens[class[i]]-1] = ' ';
 	} else
-	    fprintf( stderr, "Class index out of range %d (must be <%d)\n",class[i], class_cnt );
+	    LogError( "Class index out of range %d (must be <%d)\n",class[i], class_cnt );
     }
     for ( i=1; i<class_cnt ; ++i )
 	if ( lens[i]==0 )
@@ -193,22 +193,22 @@ static uint16 *getCoverageTable(FILE *ttf, int coverage_offset, struct ttfinfo *
 	cnt = getushort(ttf);
 	glyphs = galloc((cnt+1)*sizeof(uint16));
 	if ( ftell(ttf)+2*cnt > info->g_bounds ) {
-	    fprintf( stderr, "coverage table extends beyond end of table\n" );
+	    LogError( "coverage table extends beyond end of table\n" );
 	    if ( ftell(ttf)>info->g_bounds )
 return( NULL );
 	    cnt = (info->g_bounds-ftell(ttf))/2;
 	}
 	for ( i=0; i<cnt; ++i ) {
 	    if ( cnt&0xffff0000 )
-		fprintf( stderr, "Bad count.\n");
+		LogError( "Bad count.\n");
 	    glyphs[i] = getushort(ttf);
 	    if ( feof(ttf) ) {
-		fprintf( stderr, "End of file found in coverage table.\n" );
+		LogError( "End of file found in coverage table.\n" );
 		free(glyphs);
 return( NULL );
 	    }
 	    if ( glyphs[i]>=info->glyph_cnt ) {
-		fprintf( stderr, "Bad coverage table. Glyph %d out of range [0,%d)\n", glyphs[i], info->glyph_cnt );
+		LogError( "Bad coverage table. Glyph %d out of range [0,%d)\n", glyphs[i], info->glyph_cnt );
 		glyphs[i] = 0;
 	    }
 	}
@@ -216,7 +216,7 @@ return( NULL );
 	glyphs = gcalloc((max=256),sizeof(uint16));
 	rcnt = getushort(ttf); cnt = 0;
 	if ( ftell(ttf)+6*rcnt > info->g_bounds ) {
-	    fprintf( stderr, "coverage table extends beyond end of table\n" );
+	    LogError( "coverage table extends beyond end of table\n" );
 	    rcnt = (info->g_bounds-ftell(ttf))/6;
 	}
 
@@ -225,12 +225,12 @@ return( NULL );
 	    end = getushort(ttf);
 	    ind = getushort(ttf);
 	    if ( feof(ttf) ) {
-		fprintf( stderr, "End of file found in coverage table.\n" );
+		LogError( "End of file found in coverage table.\n" );
 		free(glyphs);
 return( NULL );
 	    }
 	    if ( start>end || end>=info->glyph_cnt ) {
-		fprintf( stderr, "Bad coverage table. Glyph range %d-%d out of range [0,%d)\n", start, end, info->glyph_cnt );
+		LogError( "Bad coverage table. Glyph range %d-%d out of range [0,%d)\n", start, end, info->glyph_cnt );
 		start = end = 0;
 	    }
 	    if ( ind+end-start+2 >= max ) {
@@ -248,7 +248,7 @@ return( NULL );
 		cnt = ind+end-start+1;
 	}
     } else {
-	fprintf( stderr, "Bad format for coverage table %d\n", format );
+	LogError( "Bad format for coverage table %d\n", format );
 return( NULL );
     }
     glyphs[cnt] = 0xffff;
@@ -276,10 +276,10 @@ static uint16 *getClassDefTable(FILE *ttf, int classdef_offset, int cnt,
 	start = getushort(ttf);
 	glyphcnt = getushort(ttf);
 	if ( start+(int) glyphcnt>cnt ) {
-	    fprintf( stderr, "Bad class def table. start=%d cnt=%d, max glyph=%d\n", start, glyphcnt, cnt );
+	    LogError( "Bad class def table. start=%d cnt=%d, max glyph=%d\n", start, glyphcnt, cnt );
 	    glyphcnt = cnt-start;
 	} else if ( ftell(ttf)+2*glyphcnt > g_bounds ) {
-	    fprintf( stderr, "Class definition table extends beyond end of table\n" );
+	    LogError( "Class definition table extends beyond end of table\n" );
 	    glyphcnt = (g_bounds-ftell(ttf))/2;
 	}
 	for ( i=0; i<glyphcnt; ++i )
@@ -287,26 +287,26 @@ static uint16 *getClassDefTable(FILE *ttf, int classdef_offset, int cnt,
     } else if ( format==2 ) {
 	rangecnt = getushort(ttf);
 	if ( ftell(ttf)+6*rangecnt > g_bounds ) {
-	    fprintf( stderr, "Class definition table extends beyond end of table\n" );
+	    LogError( "Class definition table extends beyond end of table\n" );
 	    rangecnt = (g_bounds-ftell(ttf))/6;
 	}
 	for ( i=0; i<rangecnt; ++i ) {
 	    start = getushort(ttf);
 	    end = getushort(ttf);
 	    if ( start>end || end>=cnt )
-		fprintf( stderr, "Bad class def table. Glyph range %d-%d out of range [0,%d)\n", start, end, cnt );
+		LogError( "Bad class def table. Glyph range %d-%d out of range [0,%d)\n", start, end, cnt );
 	    class = getushort(ttf);
 	    for ( j=start; j<=end; ++j ) if ( j<cnt )
 		glist[j] = class;
 	}
     } else
-	fprintf( stderr, "Unknown class table format: %d\n", format );
+	LogError( "Unknown class table format: %d\n", format );
 
     /* Do another validity test */
     for ( i=0; i<cnt; ++i ) {
 	if ( glist[i]>=cnt+1 ) {
 	    if ( !warned ) {
-		fprintf( stderr, "Nonsensical class assigned to a glyph-- class=%d is too big. Glyph=%d\n",
+		LogError( "Nonsensical class assigned to a glyph-- class=%d is too big. Glyph=%d\n",
 			glist[i], i );
 		warned = true;
 	    }
@@ -351,7 +351,7 @@ return;
     adjust->last_pixel_size  = getushort(ttf);
     pack = getushort(ttf);
     if ( adjust->first_pixel_size>adjust->last_pixel_size || pack==0 || pack>3 ) {
-	fprintf(stderr,"Bad device table\n" );
+	LogError("Bad device table\n" );
 	adjust->first_pixel_size = adjust->last_pixel_size = 0;
     } else {
 	c = adjust->last_pixel_size-adjust->first_pixel_size+1;
@@ -422,7 +422,7 @@ static void addPairPos(struct ttfinfo *info, int glyph1, int glyph2,
 	pos->u.pair.vr[1].adjust = readValDevTab(ttf,vr2,base);
 #endif
     } else
-	fprintf( stderr, "Bad pair position: glyphs %d & %d should have been < %d\n",
+	LogError( "Bad pair position: glyphs %d & %d should have been < %d\n",
 		glyph1, glyph2, info->glyph_cnt );
 }
 
@@ -459,7 +459,7 @@ static int addKernPair(struct ttfinfo *info, int glyph1, int glyph2,
 	} else if ( kp->sli!=sli || kp->flags!=flags )
 return( true );
     } else
-	fprintf( stderr, "Bad kern pair: glyphs %d & %d should have been < %d\n",
+	LogError( "Bad kern pair: glyphs %d & %d should have been < %d\n",
 		glyph1, glyph2, info->glyph_cnt );
 return( false );
 }
@@ -718,7 +718,7 @@ static AnchorClass **MarkGlyphsProcessMarks(FILE *ttf,int markoffset,
     fseek(ttf,markoffset,SEEK_SET);
     cnt = getushort(ttf);
     if ( feof(ttf) ) {
-	fprintf( stderr, "Bad mark table.\n" );
+	LogError( "Bad mark table.\n" );
 return( NULL );
     }
     at_offsets = galloc(cnt*sizeof(struct mr));
@@ -727,7 +727,7 @@ return( NULL );
 	at_offsets[i].offset = getushort(ttf);
 	if ( at_offsets[i].class>=classcnt ) {
 	    at_offsets[i].class = 0;
-	    fprintf( stderr, "Class out of bounds in GPOS mark sub-table\n" );
+	    LogError( "Class out of bounds in GPOS mark sub-table\n" );
 	}
     }
     for ( i=0; i<cnt; ++i ) {
@@ -753,7 +753,7 @@ static void MarkGlyphsProcessBases(FILE *ttf,int baseoffset,
     fseek(ttf,baseoffset,SEEK_SET);
     basecnt = getushort(ttf);
     if ( feof(ttf) ) {
-	fprintf( stderr, "Bad base table.\n" );
+	LogError( "Bad base table.\n" );
 return;
     }
     offsets = galloc(basecnt*classcnt*sizeof(uint16));
@@ -782,7 +782,7 @@ static void MarkGlyphsProcessLigs(FILE *ttf,int baseoffset,
     fseek(ttf,baseoffset,SEEK_SET);
     basecnt = getushort(ttf);
     if ( feof(ttf) ) {
-	fprintf( stderr, "Bad ligature base table.\n" );
+	LogError( "Bad ligature base table.\n" );
 return;
     }
     loffsets = galloc(basecnt*sizeof(uint16));
@@ -795,7 +795,7 @@ return;
 	fseek(ttf,baseoffset+loffsets[i],SEEK_SET);
 	compcnt = getushort(ttf);
 	if ( feof(ttf)) {
-	    fprintf(stderr,"Bad ligature anchor count.\n");
+	    LogError("Bad ligature anchor count.\n");
     continue;
 	}
 	aoffsets = galloc(compcnt*classcnt*sizeof(uint16));
@@ -916,7 +916,7 @@ static void ProcessSubLookups(FILE *ttf,struct ttfinfo *info,int gpos,
 
     i = sl->lookup_tag;
     if ( i<0 || i>=info->lookup_cnt ) {
-	fprintf( stderr, "Attempt to reference lookup %d (within a contextual lookup), but there are\n only %d lookups in %s\n",
+	LogError( "Attempt to reference lookup %d (within a contextual lookup), but there are\n only %d lookups in %s\n",
 		i, info->lookup_cnt, gpos ? "'GPOS'" : "'GSUB'" );
 	sl->lookup_tag = CHR('!','!','!','!');
 return;
@@ -973,7 +973,7 @@ static void g___ContextSubTable1(FILE *ttf, int stoffset,
 		rules[i].subrules[j].glyphs[k] = getushort(ttf);
 		if ( rules[i].subrules[j].glyphs[k]>=info->glyph_cnt ) {
 		    if ( !warned )
-			fprintf( stderr, "Bad contextual or chaining sub table. Glyph %d out of range [0,%d)\n",
+			LogError( "Bad contextual or chaining sub table. Glyph %d out of range [0,%d)\n",
 				 rules[i].subrules[j].glyphs[k], info->glyph_cnt );
 		    warned = true;
 		     rules[i].subrules[j].glyphs[k] = 0;
@@ -985,7 +985,7 @@ static void g___ContextSubTable1(FILE *ttf, int stoffset,
 		rules[i].subrules[j].sl[k].seq = getushort(ttf);
 		if ( rules[i].subrules[j].sl[k].seq >= rules[i].subrules[j].gcnt+1 )
 		    if ( !warned2 ) {
-			fprintf( stderr, "Attempt to apply a lookup to a location out of the range of this contextual\n lookup seq=%d max=%d\n",
+			LogError( "Attempt to apply a lookup to a location out of the range of this contextual\n lookup seq=%d max=%d\n",
 				rules[i].subrules[j].sl[k].seq, rules[i].subrules[j].gcnt );
 			warned2 = true;
 		    }
@@ -1084,7 +1084,7 @@ return;
 	    fseek(ttf,rules[i].subrules[j].offset,SEEK_SET);
 	    rules[i].subrules[j].bcnt = getushort(ttf);
 	    if ( feof(ttf)) {
-		fprintf( stderr, "Unexpected end of file in contextual chaining subtable.\n" );
+		LogError( "Unexpected end of file in contextual chaining subtable.\n" );
 return;
 	    }
 	    rules[i].subrules[j].bglyphs = galloc((rules[i].subrules[j].bcnt+1)*sizeof(uint16));
@@ -1094,7 +1094,7 @@ return;
 
 	    rules[i].subrules[j].gcnt = getushort(ttf);
 	    if ( feof(ttf)) {
-		fprintf( stderr, "Unexpected end of file in contextual chaining subtable.\n" );
+		LogError( "Unexpected end of file in contextual chaining subtable.\n" );
 return;
 	    }
 	    rules[i].subrules[j].glyphs = galloc((rules[i].subrules[j].gcnt+1)*sizeof(uint16));
@@ -1105,7 +1105,7 @@ return;
 
 	    rules[i].subrules[j].fcnt = getushort(ttf);
 	    if ( feof(ttf)) {
-		fprintf( stderr, "Unexpected end of file in contextual chaining subtable.\n" );
+		LogError( "Unexpected end of file in contextual chaining subtable.\n" );
 return;
 	    }
 	    rules[i].subrules[j].fglyphs = galloc((rules[i].subrules[j].fcnt+1)*sizeof(uint16));
@@ -1117,7 +1117,7 @@ return;
 		for ( k=0; k<(&rules[i].subrules[j].gcnt)[which]; ++k ) {
 		    if ( (&rules[i].subrules[j].glyphs)[which][k]>=info->glyph_cnt ) {
 			if ( !warned )
-			    fprintf( stderr, "Bad contextual or chaining sub table. Glyph %d out of range [0,%d)\n",
+			    LogError( "Bad contextual or chaining sub table. Glyph %d out of range [0,%d)\n",
 				    (&rules[i].subrules[j].glyphs)[which][k], info->glyph_cnt );
 			warned = true;
 			(&rules[i].subrules[j].glyphs)[which][k] = 0;
@@ -1127,7 +1127,7 @@ return;
 
 	    rules[i].subrules[j].scnt = getushort(ttf);
 	    if ( feof(ttf)) {
-		fprintf( stderr, "Unexpected end of file in contextual chaining subtable.\n" );
+		LogError( "Unexpected end of file in contextual chaining subtable.\n" );
 return;
 	    }
 	    rules[i].subrules[j].sl = galloc(rules[i].subrules[j].scnt*sizeof(struct seqlookup));
@@ -1135,7 +1135,7 @@ return;
 		rules[i].subrules[j].sl[k].seq = getushort(ttf);
 		if ( rules[i].subrules[j].sl[k].seq >= rules[i].subrules[j].gcnt+1 )
 		    if ( !warned2 ) {
-			fprintf( stderr, "Attempt to apply a lookup to a location out of the range of this contextual\n lookup seq=%d max=%d\n",
+			LogError( "Attempt to apply a lookup to a location out of the range of this contextual\n lookup seq=%d max=%d\n",
 				rules[i].subrules[j].sl[k].seq, rules[i].subrules[j].gcnt );
 			warned2 = true;
 		    }
@@ -1228,7 +1228,7 @@ static void g___ContextSubTable2(FILE *ttf, int stoffset,
 	fseek(ttf,rules[i].offsets,SEEK_SET);
 	rules[i].scnt = getushort(ttf);
 	if ( rules[i].scnt<0 ) {
-	    fprintf( stderr, "Bad count in context chaining sub-table.\n" );
+	    LogError( "Bad count in context chaining sub-table.\n" );
 return;
 	}
 	cnt += rules[i].scnt;
@@ -1240,7 +1240,7 @@ return;
 	    rules[i].subrules[j].ccnt = getushort(ttf);
 	    rules[i].subrules[j].scnt = getushort(ttf);
 	    if ( rules[i].subrules[j].ccnt<0 ) {
-		fprintf( stderr, "Bad class count in contextual chaining sub-table.\n" );
+		LogError( "Bad class count in contextual chaining sub-table.\n" );
 		free(rules);
 return;
 	    }
@@ -1249,7 +1249,7 @@ return;
 	    for ( k=1; k<rules[i].subrules[j].ccnt; ++k )
 		rules[i].subrules[j].classindeces[k] = getushort(ttf);
 	    if ( rules[i].subrules[j].scnt<0 ) {
-		fprintf( stderr, "Bad count in contextual chaining sub-table.\n" );
+		LogError( "Bad count in contextual chaining sub-table.\n" );
 		free(rules);
 return;
 	    }
@@ -1258,7 +1258,7 @@ return;
 		rules[i].subrules[j].sl[k].seq = getushort(ttf);
 		if ( rules[i].subrules[j].sl[k].seq >= rules[i].subrules[j].ccnt )
 		    if ( !warned2 ) {
-			fprintf( stderr, "Attempt to apply a lookup to a location out of the range of this contextual\n lookup seq=%d max=%d\n",
+			LogError( "Attempt to apply a lookup to a location out of the range of this contextual\n lookup seq=%d max=%d\n",
 				rules[i].subrules[j].sl[k].seq, rules[i].subrules[j].ccnt-1);
 			warned2 = true;
 		    }
@@ -1355,7 +1355,7 @@ static void g___ChainingSubTable2(FILE *ttf, int stoffset,
 	fseek(ttf,rules[i].offsets,SEEK_SET);
 	rules[i].scnt = getushort(ttf);
 	if ( rules[i].scnt<0 ) {
-	    fprintf( stderr, "Bad count in context chaining sub-table.\n" );
+	    LogError( "Bad count in context chaining sub-table.\n" );
 return;
 	}
 	cnt += rules[i].scnt;
@@ -1366,7 +1366,7 @@ return;
 	    fseek(ttf,rules[i].subrules[j].offset,SEEK_SET);
 	    rules[i].subrules[j].bccnt = getushort(ttf);
 	    if ( rules[i].subrules[j].bccnt<0 ) {
-		fprintf( stderr, "Bad class count in contextual chaining sub-table.\n" );
+		LogError( "Bad class count in contextual chaining sub-table.\n" );
 		free(rules);
 return;
 	    }
@@ -1375,7 +1375,7 @@ return;
 		rules[i].subrules[j].bci[k] = getushort(ttf);
 	    rules[i].subrules[j].ccnt = getushort(ttf);
 	    if ( rules[i].subrules[j].ccnt<0 ) {
-		fprintf( stderr, "Bad class count in contextual chaining sub-table.\n" );
+		LogError( "Bad class count in contextual chaining sub-table.\n" );
 		free(rules);
 return;
 	    }
@@ -1385,7 +1385,7 @@ return;
 		rules[i].subrules[j].classindeces[k] = getushort(ttf);
 	    rules[i].subrules[j].fccnt = getushort(ttf);
 	    if ( rules[i].subrules[j].fccnt<0 ) {
-		fprintf( stderr, "Bad class count in contextual chaining sub-table.\n" );
+		LogError( "Bad class count in contextual chaining sub-table.\n" );
 		free(rules);
 return;
 	    }
@@ -1394,7 +1394,7 @@ return;
 		rules[i].subrules[j].fci[k] = getushort(ttf);
 	    rules[i].subrules[j].scnt = getushort(ttf);
 	    if ( rules[i].subrules[j].scnt<0 ) {
-		fprintf( stderr, "Bad count in contextual chaining sub-table.\n" );
+		LogError( "Bad count in contextual chaining sub-table.\n" );
 		free(rules);
 return;
 	    }
@@ -1403,7 +1403,7 @@ return;
 		rules[i].subrules[j].sl[k].seq = getushort(ttf);
 		if ( rules[i].subrules[j].sl[k].seq >= rules[i].subrules[j].ccnt )
 		    if ( !warned2 ) {
-			fprintf( stderr, "Attempt to apply a lookup to a location out of the range of this contextual\n lookup seq=%d max=%d\n",
+			LogError( "Attempt to apply a lookup to a location out of the range of this contextual\n lookup seq=%d max=%d\n",
 				rules[i].subrules[j].sl[k].seq, rules[i].subrules[j].ccnt-1);
 			warned2 = true;
 		    }
@@ -1492,7 +1492,7 @@ static void g___ContextSubTable3(FILE *ttf, int stoffset,
     gcnt = getushort(ttf);
     scnt = getushort(ttf);
     if ( feof(ttf) ) {
-	fprintf( stderr, "Bad count in context chaining sub-table.\n" );
+	LogError( "Bad count in context chaining sub-table.\n" );
 return;
     }
     coverage = galloc(gcnt*sizeof(uint16));
@@ -1502,7 +1502,7 @@ return;
     for ( k=0; k<scnt; ++k ) {
 	sl[k].seq = getushort(ttf);
 	if ( sl[k].seq >= gcnt && !warned2 ) {
-	    fprintf( stderr, "Attempt to apply a lookup to a location out of the range of this contextual\n lookup seq=%d, max=%d\n",
+	    LogError( "Attempt to apply a lookup to a location out of the range of this contextual\n lookup seq=%d, max=%d\n",
 		    sl[k].seq, gcnt-1 );
 	    warned2 = true;
 	}
@@ -1556,7 +1556,7 @@ static void g___ChainingSubTable3(FILE *ttf, int stoffset,
 
     bcnt = getushort(ttf);
     if ( feof(ttf)) {
-	fprintf( stderr, "End of file in context chaining subtable.\n" );
+	LogError( "End of file in context chaining subtable.\n" );
 return;
     }
     bcoverage = galloc(bcnt*sizeof(uint16));
@@ -1564,7 +1564,7 @@ return;
 	bcoverage[i] = getushort(ttf);
     gcnt = getushort(ttf);
     if ( feof(ttf)) {
-	fprintf( stderr, "End of file in context chaining subtable.\n" );
+	LogError( "End of file in context chaining subtable.\n" );
 return;
     }
     coverage = galloc(gcnt*sizeof(uint16));
@@ -1572,7 +1572,7 @@ return;
 	coverage[i] = getushort(ttf);
     fcnt = getushort(ttf);
     if ( feof(ttf)) {
-	fprintf( stderr, "End of file in context chaining subtable.\n" );
+	LogError( "End of file in context chaining subtable.\n" );
 return;
     }
     fcoverage = galloc(fcnt*sizeof(uint16));
@@ -1580,14 +1580,14 @@ return;
 	fcoverage[i] = getushort(ttf);
     scnt = getushort(ttf);
     if ( feof(ttf)) {
-	fprintf( stderr, "End of file in context chaining subtable.\n" );
+	LogError( "End of file in context chaining subtable.\n" );
 return;
     }
     sl = galloc(scnt*sizeof(struct seqlookup));
     for ( k=0; k<scnt; ++k ) {
 	sl[k].seq = getushort(ttf);
 	if ( sl[k].seq >= gcnt && !warned2 ) {
-	    fprintf( stderr, "Attempt to apply a lookup to a location out of the range of this contextual\n lookup seq=%d, max=%d\n",
+	    LogError( "Attempt to apply a lookup to a location out of the range of this contextual\n lookup seq=%d, max=%d\n",
 		    sl[k].seq, gcnt-1 );
 	    warned2 = true;
 	}
@@ -1753,7 +1753,7 @@ return;
 	for ( i=0; glyphs[i]!=0xffff; ++i ) if ( glyphs[i]<info->glyph_cnt && info->chars[glyphs[i]]!=NULL ) {
 	    which = format==1 ? (uint16) (glyphs[i]+delta) : glyph2s[i];
 	    if ( which>=info->glyph_cnt ) {
-		fprintf( stderr, "Bad substitution glyph: %d not less than %d\n",
+		LogError( "Bad substitution glyph: %d not less than %d\n",
 			which, info->glyph_cnt);
 		which = 0;
 	    }
@@ -1793,7 +1793,7 @@ return;
     coverage = getushort(ttf);
     cnt = getushort(ttf);
     if ( feof(ttf)) {
-	fprintf( stderr, "Unexpected end of file in GSUB sub-table.\n");
+	LogError( "Unexpected end of file in GSUB sub-table.\n");
 return;
     }
     offsets = galloc(cnt*sizeof(uint16));
@@ -1806,7 +1806,7 @@ return;
     }
     for ( i=0; glyphs[i]!=0xffff; ++i );
     if ( i!=cnt ) {
-	fprintf(stderr, "Coverage table specifies a different number of glyphs than the sub-table expects.\n" );
+	LogError( "Coverage table specifies a different number of glyphs than the sub-table expects.\n" );
 	if ( cnt<i )
 	    glyphs[cnt] = 0xffff;
 	else
@@ -1819,7 +1819,7 @@ return;
 	fseek(ttf,stoffset+offsets[i],SEEK_SET);
 	cnt = getushort(ttf);
 	if ( feof(ttf)) {
-	    fprintf( stderr, "Unexpected end of file in GSUB sub-table.\n");
+	    LogError( "Unexpected end of file in GSUB sub-table.\n");
 return;
 	}
 	if ( cnt>max ) {
@@ -1830,12 +1830,12 @@ return;
 	for ( j=0; j<cnt; ++j ) {
 	    glyph2s[j] = getushort(ttf);
 	    if ( feof(ttf)) {
-		fprintf( stderr, "Unexpected end of file in GSUB sub-table.\n" );
+		LogError( "Unexpected end of file in GSUB sub-table.\n" );
 return;
 	    }
 	    if ( glyph2s[j]>=info->glyph_cnt ) {
 		if ( !justinuse )
-		    fprintf( stderr, "Bad Multiple/Alternate substitution glyph %d not less than %d\n",
+		    LogError( "Bad Multiple/Alternate substitution glyph %d not less than %d\n",
 			    glyph2s[j], info->glyph_cnt );
 		if ( ++badcnt>20 )
 return;
@@ -1887,7 +1887,7 @@ static void gsubLigatureSubTable(FILE *ttf, int stoffset,
     coverage = getushort(ttf);
     cnt = getushort(ttf);
     if ( feof(ttf)) {
-	fprintf( stderr, "Unexpected end of file in GSUB ligature sub-table.\n" );
+	LogError( "Unexpected end of file in GSUB ligature sub-table.\n" );
 return;
     }
     ls_offsets = galloc(cnt*sizeof(uint16));
@@ -1900,27 +1900,27 @@ return;
 	fseek(ttf,stoffset+ls_offsets[i],SEEK_SET);
 	lig_cnt = getushort(ttf);
 	if ( feof(ttf)) {
-	    fprintf( stderr, "Unexpected end of file in GSUB ligature sub-table.\n" );
+	    LogError( "Unexpected end of file in GSUB ligature sub-table.\n" );
 return;
 	}
 	lig_offsets = galloc(lig_cnt*sizeof(uint16));
 	for ( j=0; j<lig_cnt; ++j )
 	    lig_offsets[j] = getushort(ttf);
 	if ( feof(ttf)) {
-	    fprintf( stderr, "Unexpected end of file in GSUB ligature sub-table.\n" );
+	    LogError( "Unexpected end of file in GSUB ligature sub-table.\n" );
 return;
 	}
 	for ( j=0; j<lig_cnt; ++j ) {
 	    fseek(ttf,stoffset+ls_offsets[i]+lig_offsets[j],SEEK_SET);
 	    lig = getushort(ttf);
 	    if ( lig>=info->glyph_cnt ) {
-		fprintf( stderr, "Bad ligature glyph %d not less than %d\n",
+		LogError( "Bad ligature glyph %d not less than %d\n",
 			lig, info->glyph_cnt );
 		lig = 0;
 	    }
 	    cc = getushort(ttf);
 	    if ( cc<0 || cc>100 ) {
-		fprintf( stderr, "Unlikely count of ligature components (%d), I suspect this ligature sub-\n table is garbage, I'm giving up on it.\n", cc );
+		LogError( "Unlikely count of ligature components (%d), I suspect this ligature sub-\n table is garbage, I'm giving up on it.\n", cc );
 		free(glyphs); free(lig_offsets);
 return;
 	    }
@@ -1930,7 +1930,7 @@ return;
 		lig_glyphs[k] = getushort(ttf);
 		if ( lig_glyphs[k]>=info->glyph_cnt ) {
 		    if ( justinuse==git_normal )
-			fprintf( stderr, "Bad ligature component glyph %d not less than %d (in ligature %d)\n",
+			LogError( "Bad ligature component glyph %d not less than %d (in ligature %d)\n",
 				lig_glyphs[k], info->glyph_cnt, lig );
 		    lig_glyphs[k] = 0;
 		}
@@ -2065,7 +2065,7 @@ return;		/* Don't understand this format type */
     sglyphs = galloc((scnt+1)*sizeof(uint16));
     for ( i = 0 ; i<scnt; ++i )
 	if (( sglyphs[i] = getushort(ttf))>=info->glyph_cnt ) {
-	    fprintf( stderr, "Bad reverse contextual chaining substitution glyph: %d is not less than %d\n",
+	    LogError( "Bad reverse contextual chaining substitution glyph: %d is not less than %d\n",
 		    sglyphs[i], info->glyph_cnt );
 	    sglyphs[i] = 0;
 	}
@@ -2124,10 +2124,10 @@ static void readttfsizeparameters(FILE *ttf,int32 pos,struct ttfinfo *info) {
 return;
 
     if ( info->last_size_pos!=0 ) {
-	fprintf( stderr, "This font" );
+	LogError( "This font" );
 	if ( info->fontname!=NULL )
-	    fprintf( stderr, ", %s,", info->fontname );
-	fprintf( stderr, " has multiple GPOS 'size' features. I'm not sure how to interpret that. I shall pick one arbetrarily.\n" );
+	    LogError( ", %s,", info->fontname );
+	LogError( " has multiple GPOS 'size' features. I'm not sure how to interpret that. I shall pick one arbetrarily.\n" );
 return;
     }
 
@@ -2158,7 +2158,7 @@ static struct scripts *readttfscripts(FILE *ttf,int32 pos) {
     if ( cnt<=0 )
 return( NULL );
     else if ( cnt>1000 ) {
-	fprintf( stderr, "Too many scripts %d\n", cnt );
+	LogError( "Too many scripts %d\n", cnt );
 return( NULL );
     }
 
@@ -2210,7 +2210,7 @@ static struct feature *readttffeatures(FILE *ttf,int32 pos,int isgpos, struct tt
     if ( cnt<=0 )
 return( NULL );
     else if ( cnt>1000 ) {
-	fprintf( stderr, "Too many features %d\n", cnt );
+	LogError( "Too many features %d\n", cnt );
 return( NULL );
     }
 
@@ -2229,7 +2229,7 @@ return( NULL );
 	    readttfsizeparameters(ttf,pos+parameters,info);
 	features[i].lcnt = getushort(ttf);
 	if ( features[i].lcnt<0 ) {
-	    fprintf(stderr,"Bad lookup count in feature.\n" );
+	    LogError("Bad lookup count in feature.\n" );
 	    features[i].lcnt = 0;
 	}
 	features[i].lookups = galloc(features[i].lcnt*sizeof(uint16));
@@ -2249,7 +2249,7 @@ static struct lookup *readttflookups(FILE *ttf,int32 pos, struct ttfinfo *info) 
     if ( cnt<=0 )
 return( NULL );
     else if ( cnt>1000 ) {
-	fprintf( stderr, "Too many lookups %d\n", cnt );
+	LogError( "Too many lookups %d\n", cnt );
 return( NULL );
     }
 
@@ -2316,7 +2316,7 @@ static void tagFeature(struct feature *feat, uint32 feat_tag, uint32 script_tag,
     for ( l=0; l<feat->lcnt; ++l ) {
 	struct lookup *look;
 	if ( feat->lookups[l]>=lcnt ) {
-	    fprintf( stderr, "Lookup out of bounds in feature table.\n" );
+	    LogError( "Lookup out of bounds in feature table.\n" );
     continue;
 	}
 	look = &lookups[feat->lookups[l]];
@@ -2360,7 +2360,7 @@ static struct lookup_subtable *tagSubLookupsWithScript(struct scripts *scripts,
 	for ( i=0; i<s->langcnt; ++i ) {
 	    for ( f=0; f<s->languages[i].fcnt; ++f ) {
 		if ( s->languages[i].features[f]>=fcnt ) {
-		    fprintf( stderr, "Feature out of bounds in script table.\n" );
+		    LogError( "Feature out of bounds in script table.\n" );
 	    continue;
 		}
 		feat = &features[s->languages[i].features[f]];
@@ -2368,7 +2368,7 @@ static struct lookup_subtable *tagSubLookupsWithScript(struct scripts *scripts,
 	    }
 	    if ( s->languages[i].req!=0xffff ) {
 		if ( s->languages[i].req>=fcnt ) {
-		    fprintf( stderr, "Required feature out of bounds in script table.\n" );
+		    LogError( "Required feature out of bounds in script table.\n" );
 		} else {
 		    feat = &features[s->languages[i].req];
 		    tagFeature(feat,REQUIRED_FEATURE,s->tag,s->languages[i].tag,lookups,lcnt);
@@ -2509,15 +2509,15 @@ static void gposExtensionSubTable(FILE *ttf, int stoffset,
 	gposChainingSubTable(ttf,st,info,sub,alllooks);
       break;
       case 9:
-	fprintf( stderr, "This font is erroneous it has a GPOS extension subtable that points to\nanother extension sub-table.\n" );
+	LogError( "This font is erroneous it has a GPOS extension subtable that points to\nanother extension sub-table.\n" );
       break;
 /* Any cases added here also need to go in the gposLookupSwitch */
       default:
-	fprintf( stderr, "Unknown GPOS sub-table type: %d\n", lu_type );
+	LogError( "Unknown GPOS sub-table type: %d\n", lu_type );
       break;
     }
     if ( ftell(ttf)>info->gpos_start+info->gpos_length )
-	fprintf( stderr, "Subtable extends beyond end of GPOS table\n" );
+	LogError( "Subtable extends beyond end of GPOS table\n" );
 }
 
 static void gsubExtensionSubTable(FILE *ttf, int stoffset,
@@ -2548,18 +2548,18 @@ static void gsubExtensionSubTable(FILE *ttf, int stoffset,
 	gsubChainingSubTable(ttf,st,info,sub,justinuse,alllooks);
       break;
       case 7:
-	fprintf( stderr, "This font is erroneous it has a GSUB extension subtable that points to\nanother extension sub-table.\n" );
+	LogError( "This font is erroneous it has a GSUB extension subtable that points to\nanother extension sub-table.\n" );
       break;
       case 8:
 	gsubReverseChainSubTable(ttf,st,info,sub,justinuse);
       break;
 /* Any cases added here also need to go in the gsubLookupSwitch */
       default:
-	fprintf( stderr, "Unknown GSUB sub-table type: %d\n", lu_type );
+	LogError( "Unknown GSUB sub-table type: %d\n", lu_type );
       break;
     }
     if ( ftell(ttf)>info->gsub_start+info->gsub_length )
-	fprintf( stderr, "Subtable extends beyond end of GSUB table\n" );
+	LogError( "Subtable extends beyond end of GSUB table\n" );
 }
 
 static void gposLookupSwitch(FILE *ttf, int st,
@@ -2595,11 +2595,11 @@ static void gposLookupSwitch(FILE *ttf, int st,
       break;
 /* Any cases added here also need to go in the gposExtensionSubTable */
       default:
-	fprintf( stderr, "Unknown GPOS sub-table type: %d\n", sub->type );
+	LogError( "Unknown GPOS sub-table type: %d\n", sub->type );
       break;
     }
     if ( ftell(ttf)>info->gpos_start+info->gpos_length )
-	fprintf( stderr, "Subtable extends beyond end of GPOS table\n" );
+	LogError( "Subtable extends beyond end of GPOS table\n" );
 }
 
 static void gsubLookupSwitch(FILE *ttf, int st,
@@ -2630,11 +2630,11 @@ static void gsubLookupSwitch(FILE *ttf, int st,
       break;
 /* Any cases added here also need to go in the gsubExtensionSubTable */
       default:
-	fprintf( stderr, "Unknown GSUB sub-table type: %d\n", sub->type );
+	LogError( "Unknown GSUB sub-table type: %d\n", sub->type );
       break;
     }
     if ( ftell(ttf)>info->g_bounds )
-	fprintf( stderr, "Subtable extends beyond end of GSUB table\n" );
+	LogError( "Subtable extends beyond end of GSUB table\n" );
 }
 
 static uint32 InfoGenerateNewFeatureTag(struct gentagtype *gentags,int lu_type,
@@ -2895,7 +2895,7 @@ return;
 		    pst->u.lcaret.carets[j] = getushort(ttf);
 		    /* in device table = */ getushort(ttf);
 		} else {
-		    fprintf( stderr, "!!!! Unknown caret format %d !!!!\n", format );
+		    LogError( "!!!! Unknown caret format %d !!!!\n", format );
 		}
 	    }
 	    free(offsets);
@@ -2932,7 +2932,7 @@ static void readttf_applelookup(FILE *ttf,struct ttfinfo *info,
 	    first = getushort(ttf);
 	    if ( last<first || last>=0xffff ||
 		    (!allow_out_of_bounds && last>=info->glyph_cnt )) {
-		fprintf( stderr, "Bad lookup table format=2 (%d/%d), first=%d last=%d total glyphs in font=%d\n",
+		LogError( "Bad lookup table format=2 (%d/%d), first=%d last=%d total glyphs in font=%d\n",
 			i,cnt,first,last,info->glyph_cnt );
 	    } else {
 		if ( apply_default!=NULL )
@@ -2955,7 +2955,7 @@ static void readttf_applelookup(FILE *ttf,struct ttfinfo *info,
 	    data_off = getushort(ttf);
 	    if ( last<first || last>=0xffff ||
 		    (!allow_out_of_bounds && last>=info->glyph_cnt )) {
-		fprintf( stderr, "Bad lookup table format=4 (%d/%d), first=%d last=%d total glyphs in font=%d\n",
+		LogError( "Bad lookup table format=4 (%d/%d), first=%d last=%d total glyphs in font=%d\n",
 			i,cnt,first,last,info->glyph_cnt );
 	    } else {
 		here = ftell(ttf);
@@ -2978,7 +2978,7 @@ static void readttf_applelookup(FILE *ttf,struct ttfinfo *info,
 	for ( i=0; i<cnt; ++i ) {
 	    first = getushort(ttf);
 	    if ( first>=0xffff || (!allow_out_of_bounds && first>=info->glyph_cnt )) {
-		fprintf( stderr, "Bad lookup table format=6, first=%d total glyphs in font=%d\n",
+		LogError( "Bad lookup table format=6, first=%d total glyphs in font=%d\n",
 			first,info->glyph_cnt );
 	    } else {
 		if ( apply_default!=NULL )
@@ -2992,7 +2992,7 @@ static void readttf_applelookup(FILE *ttf,struct ttfinfo *info,
 	first = getushort(ttf);
 	cnt = getushort(ttf);
 	if ( first+cnt>=0xffff || (!allow_out_of_bounds && first+cnt>=info->glyph_cnt )) {
-	    fprintf( stderr, "Bad lookup table format=8, first=%d cnt=%d total glyphs in font=%d\n",
+	    LogError( "Bad lookup table format=8, first=%d cnt=%d total glyphs in font=%d\n",
 		    first,cnt,info->glyph_cnt );
 	} else {
 	    if ( apply_default!=NULL ) {
@@ -3003,7 +3003,7 @@ static void readttf_applelookup(FILE *ttf,struct ttfinfo *info,
 	}
       break;
       default:
-	fprintf( stderr, "Invalid lookup table format. %d\n", format );
+	LogError( "Invalid lookup table format. %d\n", format );
       break;
     }
 }
@@ -3013,7 +3013,7 @@ static void TTF_SetProp(struct ttfinfo *info,int gnum, int prop) {
     PST *pst;
 
     if ( gnum<0 || gnum>=info->glyph_cnt ) {
-	fprintf( stderr, "Glyph out of bounds in 'prop' table %d\n", gnum );
+	LogError( "Glyph out of bounds in 'prop' table %d\n", gnum );
 return;
     }
 
@@ -3077,7 +3077,7 @@ static void TTF_SetLcaret(struct ttfinfo *info, int gnum, int offset, FILE *ttf)
     int cnt, i;
 
     if ( gnum<0 || gnum>=info->glyph_cnt ) {
-	fprintf( stderr, "Glyph out of bounds in 'lcar' table %d\n", gnum );
+	LogError( "Glyph out of bounds in 'lcar' table %d\n", gnum );
 return;
     } else if ( (sc=info->chars[gnum])==NULL )
 return;
@@ -3131,7 +3131,7 @@ static void TTF_SetOpticalBounds(struct ttfinfo *info, int gnum, int left, int r
 return;
 
     if ( gnum<0 || gnum>=info->glyph_cnt ) {
-	fprintf( stderr, "Glyph out of bounds in 'opbd' table %d\n", gnum );
+	LogError( "Glyph out of bounds in 'opbd' table %d\n", gnum );
 return;
     } else if ( (sc=info->chars[gnum])==NULL )
 return;
@@ -3240,7 +3240,7 @@ return;
 
     if ( gnum<0 || gnum>=info->glyph_cnt ) {
 	if ( !info->warned_morx_out_of_bounds_glyph ) {
-	    fprintf( stderr, "Glyph out of bounds in 'mort'/'morx' table %d\n", gnum );
+	    LogError( "Glyph out of bounds in 'mort'/'morx' table %d\n", gnum );
 	    info->warned_morx_out_of_bounds_glyph = true;
 	}
 	sc = CreateBadGid(info,gnum);
@@ -3249,7 +3249,7 @@ return;
     ssc = NULL;
     if ( gsubs<0 || (gsubs>=info->glyph_cnt && gsubs!=0xffff)) {
 	if ( !info->warned_morx_out_of_bounds_glyph ) {
-	    fprintf( stderr, "Substitute glyph out of bounds in 'mort'/'morx' table %d\n", gsubs );
+	    LogError( "Substitute glyph out of bounds in 'mort'/'morx' table %d\n", gsubs );
 	    info->warned_morx_out_of_bounds_glyph = true;
 	}
 	ssc = CreateBadGid(info,gsubs);
@@ -3312,7 +3312,7 @@ int32 memlong(uint8 *data,int len, int offset) {
 	int ch1 = data[offset], ch2 = data[offset+1], ch3 = data[offset+2], ch4 = data[offset+3];
 return( (ch1<<24)|(ch2<<16)|(ch3<<8)|ch4 );
     } else {
-	fprintf( stderr, "Bad font, offset out of bounds.\n" );
+	LogError( "Bad font, offset out of bounds.\n" );
 return( 0 );
     }
 }
@@ -3322,7 +3322,7 @@ int memushort(uint8 *data,int len, int offset) {
 	int ch1 = data[offset], ch2 = data[offset+1];
 return( (ch1<<8)|ch2 );
     } else {
-	fprintf( stderr, "Bad font, offset out of bounds.\n" );
+	LogError( "Bad font, offset out of bounds.\n" );
 return( 0 );
     }
 }
@@ -3365,16 +3365,16 @@ return;
 	lig_offset += memushort(sm->data,sm->length,2*( ((((int32) lig)<<2)>>2) + i ) );
 	if ( lig&0xc0000000 ) {
 	    if ( lig_offset+1 > sm->length ) {
-		fprintf( stderr, "Invalid ligature offset\n" );
+		LogError( "Invalid ligature offset\n" );
     break;
 	    }
 	    lig_glyph = memushort(sm->data,sm->length,lig_offset);
 	    if ( lig_glyph>=sm->info->glyph_cnt ) {
-		fprintf(stderr, "Attempt to make a ligature for glyph %d out of ",
+		LogError( "Attempt to make a ligature for glyph %d out of ",
 			lig_glyph );
 		for ( j=lcp; j<sm->lcp; ++j )
-		    fprintf(stderr,"%d ",sm->lig_comp_glyphs[j]);
-		fprintf(stderr,"\n");
+		    LogError("%d ",sm->lig_comp_glyphs[j]);
+		LogError("\n");
 	    } else {
 		char *comp;
 		for ( len=0, j=lcp; j<sm->lcp; ++j )
@@ -3413,7 +3413,7 @@ return;
 		    } else
 			free(comp);
 		} else {
-		    fprintf( stderr, "Bad font: Ligature glyph %d is missing\n", lig_glyph );
+		    LogError( "Bad font: Ligature glyph %d is missing\n", lig_glyph );
 		}
 	    }
 	} else
@@ -3431,7 +3431,7 @@ return;
     ++ sm->cnt;
     if ( sm->cnt>=10000 ) {
 	if ( sm->cnt==10000 )
-	    fprintf(stderr,"In an attempt to process the ligatures of this font, I've concluded\nthat the state machine in Apple's mort/morx table is\n(like the learned constable) too cunning to be understood.\nI shall give up on it. Your ligatures may be incomplete.\n" );
+	    LogError("In an attempt to process the ligatures of this font, I've concluded\nthat the state machine in Apple's mort/morx table is\n(like the learned constable) too cunning to be understood.\nI shall give up on it. Your ligatures may be incomplete.\n" );
 return;
     }
     sm->states_in_use[state] = true;
@@ -3477,16 +3477,16 @@ return;
 	lig_offset += memushort(sm->data,sm->length,sm->compOff + 2*( ((((int32) lig)<<2)>>2) + i ) );
 	if ( lig&0xc0000000 ) {
 	    if ( sm->ligOff+2*lig_offset+1 > sm->length ) {
-		fprintf( stderr, "Invalid ligature offset\n" );
+		LogError( "Invalid ligature offset\n" );
     break;
 	    }
 	    lig_glyph = memushort(sm->data,sm->length,sm->ligOff+2*lig_offset);
 	    if ( lig_glyph>=sm->info->glyph_cnt || sm->info->chars[lig_glyph]==NULL ) {
-		fprintf(stderr, "Attempt to make a ligature for (non-existent) glyph %d out of ",
+		LogError( "Attempt to make a ligature for (non-existent) glyph %d out of ",
 			lig_glyph );
 		for ( j=lcp; j<sm->lcp; ++j )
-		    fprintf(stderr,"%d ",sm->lig_comp_glyphs[j]);
-		fprintf(stderr,"\n");
+		    LogError("%d ",sm->lig_comp_glyphs[j]);
+		LogError("\n");
 	    } else {
 		char *comp;
 		for ( len=0, j=lcp; j<sm->lcp; ++j )
@@ -3532,7 +3532,7 @@ return;
     ++ sm->cnt;
     if ( sm->cnt>=10000 ) {
 	if ( sm->cnt==10000 )
-	    fprintf(stderr,"In an attempt to process the ligatures of this font, I've concluded\nthat the state machine in Apple's mort/morx table is\n(like the learned constable) too cunning to be understood.\nI shall give up on it. Your ligatures may be incomplete.\n" );
+	    LogError("In an attempt to process the ligatures of this font, I've concluded\nthat the state machine in Apple's mort/morx table is\n(like the learned constable) too cunning to be understood.\nI shall give up on it. Your ligatures may be incomplete.\n" );
 return;
     }
     sm->states_in_use[state] = true;
@@ -3575,7 +3575,7 @@ static void readttf_mortx_lig(FILE *ttf,struct ttfinfo *info,int ismorx,uint32 b
     sm.length = length;
     if ( fread(sm.data,1,length,ttf)!=length ) {
 	free(sm.data);
-	fprintf( stderr, "Bad mort ligature table. Not long enough\n");
+	LogError( "Bad mort ligature table. Not long enough\n");
 return;
     }
     fseek(ttf,here,SEEK_SET);
@@ -3687,7 +3687,7 @@ static struct statetable *read_statetable(FILE *ttf, int ent_extras, int ismorx,
 	for ( i=0; i<65536; ++i ) {
 	    if ( /*st->classes2[i]<0 ||*/ st->classes2[i]>=st->nclasses ) {
 		if ( !error )
-		    fprintf(stderr, "Bad class in state machine.\n" );
+		    LogError( "Bad class in state machine.\n" );
 		error = true;
 		st->classes2[i] = 1;			/* Out of bounds */
 	    }
@@ -3696,7 +3696,7 @@ static struct statetable *read_statetable(FILE *ttf, int ent_extras, int ismorx,
 	st->first_glyph = getushort(ttf);
 	st->nglyphs = getushort(ttf);
 	if ( feof(ttf)) {
-	    fprintf(stderr,"Bad glyph count in mort table.\n");
+	    LogError("Bad glyph count in mort table.\n");
 	    st->nglyphs = 0;
 	}
 	st->classes = galloc(st->nglyphs);
@@ -3704,7 +3704,7 @@ static struct statetable *read_statetable(FILE *ttf, int ent_extras, int ismorx,
 	for ( i=0; i<st->nglyphs; ++i ) {
 	    if ( /*st->classes[i]<0 ||*/ st->classes[i]>=st->nclasses ) {
 		if ( !error )
-		    fprintf(stderr, "Bad class in state machine.\n" );
+		    LogError( "Bad class in state machine.\n" );
 		error = true;
 		st->classes[i] = 1;			/* Out of bounds */
 	    }
@@ -3740,7 +3740,7 @@ static struct statetable *read_statetable(FILE *ttf, int ent_extras, int ismorx,
 	if ( ent_max==old_ent_max )		/* Nothing more */
     break;
 	if ( ent_max>1000 ) {
-	    fprintf( stderr, "It looks to me as though there's a morx sub-table with more than 1000\n transitions. Which makes me think there's probably an error\n" );
+	    LogError( "It looks to me as though there's a morx sub-table with more than 1000\n transitions. Which makes me think there's probably an error\n" );
 	    free(st);
 return( NULL );
 	}
@@ -3758,7 +3758,7 @@ return( NULL );
 		state_max = new_state+1;
 	}
 	if ( state_max>1000 ) {
-	    fprintf( stderr, "It looks to me as though there's a morx sub-table with more than 1000\n states. Which makes me think there's probably an error\n" );
+	    LogError( "It looks to me as though there's a morx sub-table with more than 1000\n states. Which makes me think there's probably an error\n" );
 	    free(st);
 return( NULL );
 	}
@@ -4333,7 +4333,7 @@ void readttfmort(FILE *ttf,struct ttfinfo *info) {
 return;
     nchains = getlong(ttf);
     if ( feof(ttf)) {
-	fprintf( stderr, "Unexpected end of file found in morx chain.\n" );
+	LogError( "Unexpected end of file found in morx chain.\n" );
 return;
     }
     info->mort_max = nchains*33;		/* Maximum of one feature per bit ? */
@@ -4343,7 +4343,7 @@ return;
 	here = ftell(ttf);
 	len = readmortchain(ttf,info,base,ismorx);
 	if ( feof(ttf)) {
-	    fprintf( stderr, "Unexpected end of file found in morx chain.\n");
+	    LogError( "Unexpected end of file found in morx chain.\n");
     break;
 	}
 	fseek(ttf,here+len,SEEK_SET);
@@ -4441,7 +4441,7 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 			chars[left]->kerns = kp;
 		    }
 		} else
-		    fprintf( stderr, "Bad kern pair glyphs %d & %d must be less than %d\n",
+		    LogError( "Bad kern pair glyphs %d & %d must be less than %d\n",
 			    left, right, info->glyph_cnt );
 	    }
 	} else if ( flags_good && format==1 ) {
@@ -4457,7 +4457,7 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 	    fseek(ttf,begin_table+len,SEEK_SET);
 #else
 	    fseek(ttf,len-header_size,SEEK_CUR);
-	    fprintf( stderr, "This font has a format 1 kerning table (a state machine).\nPfaEdit doesn't parse these\nCould you send a copy of %s to gww@silcom.com?  Thanks.\n",
+	    LogError( "This font has a format 1 kerning table (a state machine).\nPfaEdit doesn't parse these\nCould you send a copy of %s to gww@silcom.com?  Thanks.\n",
 		info->fontname );
 #endif
 	} else if ( flags_good && (format==2 || format==3 )) {
@@ -4511,7 +4511,7 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 		kc->second_cnt = getc(ttf);
 		flags = getc(ttf);
 		if ( gc>info->glyph_cnt )
-		    fprintf( stderr, "Kerning subtable 3 says the glyph count is %d, but maxp says %d\n",
+		    LogError( "Kerning subtable 3 says the glyph count is %d, but maxp says %d\n",
 			    gc, info->glyph_cnt );
 		class1 = gcalloc(gc>info->glyph_cnt?gc:info->glyph_cnt,sizeof(uint16));
 		class2 = gcalloc(gc>info->glyph_cnt?gc:info->glyph_cnt,sizeof(uint16));
@@ -4558,7 +4558,7 @@ void readmacfeaturemap(FILE *ttf,struct ttfinfo *info) {
     /* reserved */ getushort(ttf);
     /* reserved */ getlong(ttf);
     if ( feof(ttf)) {
-	fprintf( stderr, "End of file in feat table.\n" );
+	LogError( "End of file in feat table.\n" );
 return;
     }
 
@@ -4580,7 +4580,7 @@ return;
 	if ( flags&0x4000 )
 	    cur->default_setting = flags&0xff;
 	if ( feof(ttf)) {
-	    fprintf( stderr, "End of file in feat table.\n" );
+	    LogError( "End of file in feat table.\n" );
 return;
 	}
     }
@@ -4599,7 +4599,7 @@ return;
 	    scur->setting = getushort(ttf);
 	    scur->strid = getushort(ttf);
 	    if ( feof(ttf)) {
-		fprintf( stderr, "End of file in feat table.\n" );
+		LogError( "End of file in feat table.\n" );
 return;
 	    }
 	}

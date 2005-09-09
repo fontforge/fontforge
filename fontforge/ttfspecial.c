@@ -312,7 +312,7 @@ return;			/* Bad version number */
 	grange[i].end = getushort(ttf);
 	grange[i].offset = getlong(ttf);
 	if ( grange[i].start>grange[i].end || grange[i].end>info->glyph_cnt ) {
-	    fprintf( stderr, "Bad glyph range specified in glyph comment subtable of PfEd table\n" );
+	    LogError( "Bad glyph range specified in glyph comment subtable of PfEd table\n" );
 	    grange[i].start = 1; grange[i].end = 0;
 	}
     }
@@ -340,7 +340,7 @@ return;			/* Bad version number */
 	end = getushort(ttf);
 	col = getlong(ttf);
 	if ( start>end || end>info->glyph_cnt )
-	    fprintf( stderr, "Bad glyph range specified in colour subtable of PfEd table\n" );
+	    LogError( "Bad glyph range specified in colour subtable of PfEd table\n" );
 	else {
 	    for ( j=start; j<=end; ++j )
 		info->chars[j]->color = col;
@@ -374,7 +374,7 @@ return;
 	pfed_readcolours(ttf,info,info->pfed_start+tagoff[i].offset);
       break;
       default:
-	fprintf( stderr, "Unknown subtable '%c%c%c%c' in 'PfEd' table, ignored\n",
+	LogError( "Unknown subtable '%c%c%c%c' in 'PfEd' table, ignored\n",
 		tagoff[i].tag>>24, (tagoff[i].tag>>16)&0xff, (tagoff[i].tag>>8)&0xff, tagoff[i].tag&0xff );
       break;
     }
@@ -688,7 +688,7 @@ return;
 	TeX_readSubSuper(ttf,info,info->tex_start+tagoff[i].offset);
       break;
       default:
-	fprintf( stderr, "Unknown subtable '%c%c%c%c' in 'TeX ' table, ignored\n",
+	LogError( "Unknown subtable '%c%c%c%c' in 'TeX ' table, ignored\n",
 		tagoff[i].tag>>24, (tagoff[i].tag>>16)&0xff, (tagoff[i].tag>>8)&0xff, tagoff[i].tag&0xff );
       break;
     }

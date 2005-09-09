@@ -53,7 +53,7 @@ void CVGridFitChar(CharView *cv) {
     single_glyph_context = _FreeTypeFontContext(sf,cv->sc,NULL,
 	    sf->order2?ff_ttf:ff_otf,0,NULL);
     if ( single_glyph_context==NULL ) {
-	fprintf( stderr,"Freetype rasterization failed.\n" );
+	LogError("Freetype rasterization failed.\n" );
 return;
     }
 

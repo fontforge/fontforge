@@ -683,10 +683,10 @@ uint16 _MacStyleCode( char *styles, SplineFont *sf, uint16 *psstylecode ) {
     }
     if ( (psstyle&psf_extend) && (psstyle&psf_condense) ) {
 	if ( sf!=NULL )
-	    fprintf( stderr, "Warning: %s(%s) is both extended and condensed. That's impossible.\n",
+	    LogError( "Warning: %s(%s) is both extended and condensed. That's impossible.\n",
 		    sf->fontname, sf->origname );
 	else
-	    fprintf( stderr, "Warning: Both extended and condensed. That's impossible.\n" );
+	    LogError( "Warning: Both extended and condensed. That's impossible.\n" );
 	psstyle &= ~psf_extend;
 	stylecode &= ~sf_extend;
     }
@@ -1961,7 +1961,7 @@ static SplineFont *SearchPostscriptResources(FILE *f,long rlistpos,int subcnt,lo
 
     pfb = tmpfile();
     if ( pfb==NULL ) {
-	fprintf( stderr, "Can't open temporary file for postscript output\n" );
+	LogError( "Can't open temporary file for postscript output\n" );
 	fseek(f,here,SEEK_SET );
 	free(offsets);
 return(NULL);
@@ -1981,7 +1981,7 @@ return(NULL);
 	    if ( rsrcids[j]==id )
 		break;
 	if ( j == subcnt ) {
-	    fprintf( stderr, "Missing POST resource %u\n", id );
+	    LogError( "Missing POST resource %u\n", id );
 	    break;
 	}
 	id = id + 1;
@@ -2017,7 +2017,7 @@ return(NULL);
 	    if ( max<0x800 ) max = 0x800;
 	    buffer=galloc(max);
 	    if ( buffer==NULL ) {
-		fprintf( stderr, "Out of memory\n" );
+		LogError( "Out of memory\n" );
 		exit( 1 );
 	    }
 	}
@@ -2149,7 +2149,7 @@ return( (SplineFont *) ret );
 
 	ttf = tmpfile();
 	if ( ttf==NULL ) {
-	    fprintf( stderr, "Can't open temporary file for truetype output.\n" );
+	    LogError( "Can't open temporary file for truetype output.\n" );
     continue;
 	}
 
@@ -2750,7 +2750,7 @@ return( NULL );
 	if ( fond->stylekerns[i].style==style )
     break;
     if ( i==fond->stylekerncnt ) {
-	fprintf(stderr,"No kerning table for %s\n", name );
+	LogError("No kerning table for %s\n", name );
 	free(name);
 return( NULL );
     }
@@ -2992,7 +2992,7 @@ static SplineFont *IsResourceInHex(FILE *f,char *filename,int flags,SplineFont *
     SplineFont *ret;
 
     if ( binary==NULL ) {
-	fprintf( stderr, "can't create temporary file\n" );
+	LogError( "can't create temporary file\n" );
 return( NULL );
     }
 
@@ -3151,9 +3151,9 @@ SplineFont *SFReadMacBinary(char *filename,int flags) {
     SplineFont *sf = FindResourceFile(filename,flags,NULL,NULL);
 
     if ( sf==NULL )
-	fprintf( stderr, "Couldn't find a font file named %s\n", filename );
+	LogError( "Couldn't find a font file named %s\n", filename );
     else if ( sf==(SplineFont *) (-1) ) {
-	fprintf( stderr, "%s is a mac resource file but contains no postscript or truetype fonts\n", filename );
+	LogError( "%s is a mac resource file but contains no postscript or truetype fonts\n", filename );
 	sf = NULL;
     }
 return( sf );

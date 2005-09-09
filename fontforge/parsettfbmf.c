@@ -98,7 +98,7 @@ return;
 	/* metrics from EBLC */
 	/* Do nothing here */
 	if ( metrics==NULL ) {
-	    fprintf( stderr, "Unexpected use of bitmap format 5, no metrics are appearant\n" );
+	    LogError( "Unexpected use of bitmap format 5, no metrics are appearant\n" );
 	    /*fseek(ttf,len,SEEK_CUR);*/
 return;
 	}
@@ -106,16 +106,16 @@ return;
 	/* format 3 is obsolete */
 	/* format 4 is compressed apple and I'm not supporting it (Nor is MS) */
 	if ( imageformat==3 && !info->obscomplain ) {
-	    fprintf( stderr, "This font contains bitmaps in the obsolete format 3 (And I can't read them)\n" );
+	    LogError( "This font contains bitmaps in the obsolete format 3 (And I can't read them)\n" );
 	    info->obscomplain = true;
 	} else if ( imageformat==4 ) {
 	    /* Apple doesn't describe it (fully) in their spec. */
 	    /* MS doesn't support it (and doesn't describe) */
 	    /* Adobe doesn't describe it (and says MS doesn't support it) */
-	    fprintf( stderr, "This font contains bitmaps in Apple's compressed format 4 (And I don't support that)\n" );
+	    LogError( "This font contains bitmaps in Apple's compressed format 4 (And I don't support that)\n" );
 	    info->cmpcomplain = true;
 	} else if ( !info->unkcomplain ) {
-	    fprintf( stderr, "This font contains bitmaps in a format %d that I've never heard of\n", imageformat );
+	    LogError( "This font contains bitmaps in a format %d that I've never heard of\n", imageformat );
 	    info->unkcomplain = true;
 	}
 return;
@@ -241,7 +241,7 @@ static void readttfbitmapfont(FILE *ttf,struct ttfinfo *info,
 	last =  getushort(ttf);
 	moreoff = getlong(ttf);
 	if ( last<first ) {
-	    fprintf( stderr, "Bad format of subtable %d (of %d) in strike with pixelsize=%d. First=%d, last=%d.\n",
+	    LogError( "Bad format of subtable %d (of %d) in strike with pixelsize=%d. First=%d, last=%d.\n",
 		    j, head->numIndexSubTables, bdf->pixelsize, first, last );
     continue;
 	}
@@ -332,7 +332,7 @@ static void readttfbitmapfont(FILE *ttf,struct ttfinfo *info,
 	    free(glyphs);
 	  break;
 	  default:
-	    fprintf(stderr,"Didn't understand index format: %d\n", indexformat );
+	    LogError("Didn't understand index format: %d\n", indexformat );
 	  break;
 	}
 	fseek(ttf,loc,SEEK_SET);

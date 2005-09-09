@@ -487,7 +487,7 @@ int BDFFontDump(char *filename,BDFFont *font, EncMap *map, int res) {
     }
     file = fopen(filename,"w" );
     if ( file==NULL )
-	fprintf( stderr, "Can't open %s\n", filename );
+	LogError( "Can't open %s\n", filename );
     else {
 	BDFDumpHeader(file,font,map,encodingname,res);
 	for ( i=0; i<map->enccount; ++i ) {
@@ -501,7 +501,7 @@ int BDFFontDump(char *filename,BDFFont *font, EncMap *map, int res) {
 	}
 	fprintf( file, "ENDFONT\n" );
 	if ( ferror(file))
-	    fprintf( stderr, "Failed to write %s\n", filename );
+	    LogError( "Failed to write %s\n", filename );
 	else
 	    ret = 1;
 	fclose(file);

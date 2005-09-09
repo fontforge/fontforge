@@ -3910,7 +3910,7 @@ static FILE *_Gen816Enc(SplineFont *sf,int *tlen,EncMap *map) {
 	base2bound >>= 8;
 	subheadcnt = basebound-base + 1 + base2bound-base2 + 1;
     } else {
-	fprintf( stderr, "Unsupported 8/16 encoding %s\n", map->enc->enc_name );
+	IError( "Unsupported 8/16 encoding %s\n", map->enc->enc_name );
 return( NULL );
     }
     plane0size = base2==-1? base : base2;
@@ -5379,7 +5379,7 @@ static void DumpGlyphToNameMap(char *fontname,SplineFont *sf) {
 
     file = fopen(newname,"wb");
     if ( file==NULL ) {
-	fprintf(stderr, "Failed to open glyph to name map file for writing: %s\n", newname );
+	LogError( "Failed to open glyph to name map file for writing: %s\n", newname );
 	free(newname);
 return;
     }
@@ -5543,7 +5543,7 @@ static void dumphex(struct hexout *hexout,FILE *temp,int length) {
     int i, ch, ch1;
 
     if ( length&1 )
-	fprintf(stderr, "Table length should not be odd\n" );
+	LogError( "Table length should not be odd\n" );
 
     while ( length>65534 ) {
 	dumphex(hexout,temp,65534);

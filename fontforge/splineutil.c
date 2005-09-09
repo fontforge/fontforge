@@ -1691,7 +1691,7 @@ static void InstanciateReference(SplineFont *sf, RefChar *topref, RefChar *refs,
 	    refs->orig_pos = rsc->orig_pos;
 	    SCMakeDependent(dsc,rsc);
 	} else {
-	    fprintf( stderr, "Couldn't find referenced character \"%s\" in %s\n",
+	    LogError( "Couldn't find referenced character \"%s\" in %s\n",
 		    AdobeStandardEncoding[refs->adobe_enc], dsc->name);
 return;
 	}
@@ -2116,7 +2116,7 @@ return( NULL );
     break;
 	++(pscontext->instance_count);
 	if ( pscontext->instance_count>=sizeof(pscontext->blend_values)/sizeof(pscontext->blend_values[0])) {
-	    fprintf( stderr, "Multiple master font with more than 16 instances\n" );
+	    LogError( "Multiple master font with more than 16 instances\n" );
     break;
 	}
 	for ( pt = end; *pt==' '; ++pt );
@@ -2141,7 +2141,7 @@ return( NULL );
 	if ( pt==end )
     break;
 	if ( mm->axis_count>=sizeof(mm->axes)/sizeof(mm->axes[0])) {
-	    fprintf( stderr, "Multiple master font with more than 4 axes\n" );
+	    LogError( "Multiple master font with more than 4 axes\n" );
     break;
 	}
 	mm->axes[ mm->axis_count++ ] = copyn( pt,end-pt );
@@ -2176,7 +2176,7 @@ return( NULL );
 	    apos=0;
 	    while ( *pt!=']' && *pt!='\0' ) {
 		if ( apos>=mm->axis_count ) {
-		    fprintf( stderr, "Too many axis positions specified in /BlendDesignPositions.\n" );
+		    LogError( "Too many axis positions specified in /BlendDesignPositions.\n" );
 	    break;
 		}
 		mm->positions[ipos*mm->axis_count+apos] =
@@ -2208,7 +2208,7 @@ return( NULL );
 	    ppos=0;
 	    while ( *pt!=']' && *pt!='\0' ) {
 		if ( ppos>=12 ) {
-		    fprintf( stderr, "Too many mapping data points specified in /BlendDesignMap for axis %s.\n", mm->axes[apos] );
+		    LogError( "Too many mapping data points specified in /BlendDesignMap for axis %s.\n", mm->axes[apos] );
 	    break;
 		}
 		while ( *pt==' ' ) ++pt;
@@ -2217,7 +2217,7 @@ return( NULL );
 		    designs[ppos] = strtod(pt,&end);
 		    blends[ppos] = strtod(end,&end);
 		    if ( blends[ppos]<0 || blends[ppos]>1 ) {
-			fprintf( stderr, "Bad value for blend in /BlendDesignMap for axis %s.\n", mm->axes[apos] );
+			LogError( "Bad value for blend in /BlendDesignMap for axis %s.\n", mm->axes[apos] );
 			if ( blends[ppos]<0 ) blends[ppos] = 0;
 			if ( blends[ppos]>1 ) blends[ppos] = 1;
 		    }
@@ -2230,7 +2230,7 @@ return( NULL );
 	    }
 	    if ( *pt==']' ) ++pt;
 	    if ( ppos<2 )
-		fprintf( stderr, "Bad few values in /BlendDesignMap for axis %s.\n", mm->axes[apos] );
+		LogError( "Bad few values in /BlendDesignMap for axis %s.\n", mm->axes[apos] );
 	    mm->axismaps[apos].points = ppos;
 	    mm->axismaps[apos].blends = galloc(ppos*sizeof(real));
 	    mm->axismaps[apos].designs = galloc(ppos*sizeof(real));
@@ -2342,17 +2342,15 @@ static SplineFont *SplineFontFromCIDType1(SplineFont *sf, FontDict *fd,
 	if ( fd->fds[i]->fonttype!=1 && fd->fds[i]->fonttype!=2 )
 	    bad = fd->fds[i]->fonttype;
     if ( bad!=0x80000000 || fd->cidfonttype!=0 ) {
-	fprintf(stderr,"Could not parse a CID font, " );
-	if ( fd->cidfonttype!=0 )
-	    fprintf( stderr, "unexpected CIDFontType %d ", fd->cidfonttype );
-	if ( bad!=0x80000000 )
-	    fprintf( stderr, "unexpected fonttype %d", bad );
-	fprintf( stderr,"\n");
+	LogError("Could not parse a CID font, %sCIDFontType %d, %sfonttype %d\n",
+		( fd->cidfonttype!=0 ) ? "unexpected " : "",
+		( bad!=0x80000000 ) ? "unexpected " : "",
+		fd->cidfonttype, bad );
 	SplineFontFree(sf);
 return( NULL );
     }
     if ( fd->cidstrs==NULL || fd->cidcnt==0 ) {
-	fprintf( stderr, "CID format doesn't contain what we expected it to.\n" );
+	LogError( "CID format doesn't contain what we expected it to.\n" );
 	SplineFontFree(sf);
 return( NULL );
     }
