@@ -101,7 +101,7 @@ static char *extensions[] = { ".pfa", ".pfb", ".bin", "%s.pfb", ".pfa", ".pfb", 
 	".ttf", ".ttf", ".ttf.bin", ".dfont", ".otf", ".otf.dfont", ".otf",
 	".otf.dfont", ".svg", NULL };
 # ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-static char *bitmapextensions[] = { ".*bdf", ".ttf", ".dfont", ".bmap.bin", ".*fnt", ".otb", ".pdb", ".none", NULL };
+static char *bitmapextensions[] = { "-*.bdf", ".ttf", ".dfont", ".bmap.bin", ".*fnt", ".otb", ".pdb", "-*.pt3", ".none", NULL };
 # endif
 #endif
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -3039,6 +3039,8 @@ return( 0 );
 	/*bitmaptypes[bf_nfntdfont].disabled = true;*/
 	bitmaptypes[bf_fon].disabled = true;
 	bitmaptypes[bf_otb].disabled = true;
+	bitmaptypes[bf_palm].disabled = true;
+	bitmaptypes[bf_ptype3].disabled = true;
     } else if ( ofs!=ff_none )
 	bitmaptypes[bf_sfnt_dfont].disabled = true;
     bitmaptypes[old].selected = true;
