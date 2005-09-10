@@ -369,6 +369,14 @@ void IError(const char *format, ... ) {
     va_end(ap);
 }
 
+void LogError(const char *format,...) {
+    va_list ap;
+
+    va_start(ap,format);
+    vfprintf(stderr,format,ap);
+    va_end(ap);
+}
+
 int RealNear(real a,real b) {
     real d;
 
