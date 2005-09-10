@@ -472,6 +472,7 @@ static void dumppen(void (*dumpchar)(int ch,void *data), void *data,
 	dumpf(dumpchar,data,pdfopers ? "] 0 d\n" : "] 0 setdash\n");
     }
 }
+#endif
 
 struct psfilter {
     int ascii85encode, ascii85n, ascii85bytes_per_line;
@@ -541,79 +542,11 @@ static void FlushFilter(struct psfilter *ps) {
     (ps->dumpchar)('\n',ps->data);
 }
 
-#if 0
 /* Inside a font, I can't use a <stdin> as a data source. Probably because */
 /*  the parser doesn't know what to do with those data when building the char */
 /*  proc (as opposed to executing) */
 /* So I can't use run length filters or other compression technique */
-static void RunLengthFilter(struct psfilter *ps,uint8 *pt, int len ) {
-    uint8 *end = pt+len, *test;
 
-    while ( pt<end ) {
-	for ( test=pt; *test==*pt && test<pt+128 && test<end; ++test );
-	if ( test>pt+1 ) {
-	    int len = test-pt;
-	    Filter(ps,257-len);
-	    Filter(ps,*pt);
-	    pt = test;
-    continue;
-	}
-	for ( test=pt; test<pt+128 && test<end; ++test ) {
-	    if ( test+2<end && *test==test[1] && *test==test[2] )
-	break;
-	    if ( test+1<end && test-pt>64 && *test==test[1] )
-	break;
-	}
-	if ( test!=pt ) {
-	    Filter(ps,test-pt-1);
-	    while ( pt<test )
-		Filter(ps,*pt++);
-	}
-    }
-}
-
-static void PSBuildImageMonoString(void (*dumpchar)(int ch,void *data), void *data,
-	struct _GImage *base) {
-    int i;
-    struct psfilter ps;
-
-    InitFilter(&ps,dumpchar,data);
-    if ( base->bytes_per_line==(base->width+7)/8 )
-	RunLengthFilter(&ps,(uint8 *) base->data, base->height*base->bytes_per_line);
-    else for ( i=0; i<base->height; ++i ) {
-	RunLengthFilter(&ps,(uint8 *) (base->data + i*base->bytes_per_line),
-		(base->width+7)/8);
-    }
-    Filter(&ps,0x80);		/* EOD mark */
-    FlushFilter(&ps);
-}
-
-static void PSDrawMonoImg(void (*dumpchar)(int ch,void *data), void *data,
-	struct _GImage *base,int use_imagemask) {
-
-    dumpf(dumpchar,data, "<<\n" );
-    dumpf(dumpchar,data, "  /ImageType 1\n" );
-    dumpf(dumpchar,data, "  /Width %d\n", base->width );
-    dumpf(dumpchar,data, "  /Height %d\n", base->height );
-    dumpf(dumpchar,data, "  /ImageMatrix [%d 0 0 %d 0 %d]\n",
-	    base->width, -base->height, base->height);
-    dumpf(dumpchar,data, "  /MultipleDataSources false\n" );
-    dumpf(dumpchar,data, "  /BitsPerComponent 1\n" );
-    if ( base->trans != COLOR_UNKNOWN ) {
-	if ( base->trans==0 )
-	    dumpf(dumpchar,data, "  /Decode [1 0]\n" );
-	else
-	    dumpf(dumpchar,data, "  /Decode [0 1]\n" );
-    } else {
-	dumpf(dumpchar,data, "  /Decode [0 1]\n" );
-    }
-    dumpf(dumpchar,data, "  /Interpolate true\n" );
-    dumpf(dumpchar,data, "  /DataSource currentfile /ASCII85Decode filter /RunLengthDecode filter\n" );
-    dumpf(dumpchar,data, ">> %s\n",
-	    use_imagemask?"imagemask":"image" );
-    PSBuildImageMonoString(dumpchar,data,base);
-}
-#else
 static void FilterStr(struct psfilter *ps,uint8 *pt, int len ) {
     uint8 *end = pt+len;
 
@@ -621,6 +554,7 @@ static void FilterStr(struct psfilter *ps,uint8 *pt, int len ) {
 	Filter(ps,*pt++);
 }
 
+#ifdef FONTFORGE_CONFIG_TYPE3
 static void PSDumpBinaryData(void (*dumpchar)(int ch,void *data), void *data,
 	uint8 *bytes,int rows, int bytes_per_row, int useful_bytes_per_row) {
     struct psfilter ps;
@@ -736,7 +670,6 @@ static void PSDrawMonoImg(void (*dumpchar)(int ch,void *data), void *data,
     dumpf(dumpchar,data, "%s\n",
 	    use_imagemask?"imagemask":"image" );
 }
-#endif
 
 static void PSSetIndexColors(void (*dumpchar)(int ch,void *data), void *data,
 	GClut *clut) {
