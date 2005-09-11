@@ -1807,43 +1807,6 @@ return;
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-/* When we paste a composit character from one font to another the references */
-/*  refer to the glyphs in the new font. So the width should refer to the */
-/*  width of the glyphs in the new font as well */
-static int PasteGuessCorrectWidth(SplineFont *sf,Undoes *paster,int *vwidth) {
-    RefChar *ref, *base=NULL;
-    FontView *fv;
-    SplineFont *from = NULL;
-
-    for ( fv = fv_list; fv!=NULL && fv->sf!=paster->u.state.copied_from; fv=fv->next );
-    if ( fv!=NULL ) from = fv->sf;
-    if ( from==NULL ||
-	    paster->u.state.vwidth == from->ascent+from->descent )
-	*vwidth = sf->ascent+sf->descent;
-    for ( ref=paster->u.state.refs; ref!=NULL; ref=ref->next ) {
-	if ( ref->unicode_enc!=-1 && ref->unicode_enc<0x10000 &&
-		isalpha(ref->unicode_enc) && !iscombining(ref->unicode_enc) &&
-		ref->transform[0]==1 && ref->transform[3]==1 &&
-		ref->transform[1]==0 && ref->transform[2]==0 &&
-		ref->transform[4]==0 && ref->transform[5]==0 ) {
-	    if ( base!=NULL ) {
-		base= NULL;
-    break;
-	    }
-	    base = ref;
-	}
-    }
-    if ( base!=NULL ) {
-	SplineChar *sc = FindCharacter(sf,from,base,NULL);
-	if ( sc!=NULL ) {
-	    *vwidth = sc->vwidth;
-return( sc->width );
-	}
-    }
-    *vwidth = paster->u.state.vwidth;
-return( paster->u.state.width );
-}
-
 static double PasteFigureScale(SplineFont *newsf,SplineFont *oldsf) {
     FontView *fv;
 
@@ -1960,10 +1923,6 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
 	SCPreserveState(sc,paster->undotype==ut_statehint);
 	width = paster->u.state.width;
 	vwidth = paster->u.state.vwidth;
-	if ( !pasteinto && paster->u.state.copied_from!=sc->parent &&
-		paster->u.state.splines==NULL &&
-		paster->u.state.refs!=NULL )
-	    width = PasteGuessCorrectWidth(sc->parent,paster,&vwidth);
 	if (( pasteinto!=1 || paster->u.state.splines!=NULL ) && sc->ttf_instrs!=NULL ) {
 	    free(sc->ttf_instrs); sc->ttf_instrs = NULL;
 	    sc->ttf_instrs_len = 0;
@@ -2197,6 +2156,7 @@ static void _PasteToCV(CharView *cv,SplineChar *cvsc,Undoes *paster) {
     int refstate = 0;
     DBounds bb;
     real transform[6];
+    int wasempty = false;
 
     if ( copybuffer.undotype == ut_none ) {
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -2212,13 +2172,10 @@ return;
       case ut_noop:
       break;
       case ut_state: case ut_statehint: case ut_statename:
-	if ( cv->drawmode==dm_fore && cvsc->layers[ly_fore].splines==NULL && cvsc->layers[ly_fore].refs==NULL ) {
-	    SCSynchronizeWidth(cvsc,paster->u.state.width,cvsc->width,NULL);
-	    cvsc->vwidth = paster->u.state.vwidth;
-	}
+	wasempty =cv->drawmode==dm_fore && cvsc->layers[ly_fore].splines==NULL &&
+		cvsc->layers[ly_fore].refs==NULL;
 #ifdef FONTFORGE_CONFIG_TYPE3
-	if ( cv->drawmode==dm_fore && cv->layerheads[dm_fore]->splines==NULL &&
-		cv->layerheads[dm_fore]->refs==NULL && cv->layerheads[dm_fore]->images==NULL &&
+	if ( wasempty && cv->layerheads[dm_fore]->images==NULL &&
 		cvsc->parent->multilayer ) {
 	    /* pasting into an empty layer sets the fill/stroke */
 	    cv->layerheads[dm_fore]->fill_brush = paster->u.state.fill_brush;
@@ -2322,6 +2279,25 @@ return;
 		    paster->u.state.comment);
 	    PSTFree(cvsc->possub);
 	    cvsc->possub = paster->u.state.possub;
+	}
+	if ( wasempty ) {
+	    int width = paster->u.state.width;
+	    int vwidth = paster->u.state.vwidth;
+	    if ( cvsc->layers[ly_fore].splines==NULL && cvsc->layers[ly_fore].refs!=NULL ) {
+		RefChar *r;
+		/* If we copied a glyph containing refs from a different font */
+		/*  then the glyphs refered to will be in this font, and the */
+		/*  width should not be the original width, but the width in */
+		/*  the current font */
+		for ( r=cvsc->layers[ly_fore].refs; r!=NULL; r=r->next )
+		    if ( r->use_my_metrics ) {
+			width = r->sc->width;
+			vwidth = r->sc->vwidth;
+		break;
+		    }
+	    }
+	    SCSynchronizeWidth(cvsc,width,cvsc->width,NULL);
+	    cvsc->vwidth = vwidth;
 	}
       break;
       case ut_possub:
@@ -2838,6 +2814,24 @@ return;
 	if ( !gwwv_progress_next())
 #endif
     break;
+    }
+    /* If we copy glyphs from one font to another, and if some of those glyphs*/
+    /*  contain references, and the width of the original glyph is the same as*/
+    /*  the width of the original refered character, then we should make sure */
+    /*  that the new width of the glyph is the same as the current width of   */
+    /*  the refered char. We can't do this earlier because of foreward refs.  */
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] ) {
+	SplineChar *sc = SFMakeChar(sf,fv->map,i);
+	if ( sc->layers[ly_fore].refs!=NULL && sc->layers[ly_fore].splines==NULL ) {
+	    RefChar *r;
+	    for ( r=sc->layers[ly_fore].refs; r!=NULL; r=r->next ) {
+		if ( r->use_my_metrics ) {
+		    sc->vwidth = r->sc->vwidth;
+		    if ( sc->width!=r->sc->width )
+			SCSynchronizeWidth(sc,r->sc->width,sc->width,NULL);
+		}
+	    }
+	}
     }
  err:
 #if defined(FONTFORGE_CONFIG_GDRAW)
