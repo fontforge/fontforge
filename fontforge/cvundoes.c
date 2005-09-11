@@ -1612,6 +1612,16 @@ static SplineChar *FindCharacter(SplineFont *into, SplineFont *from,RefChar *rf,
 
     for ( fv = fv_list; fv!=NULL && fv->sf!=from; fv=fv->next );
     if ( fv==NULL ) from=NULL;
+    /* A subtler error: If we've closed the "from" font and subsequently */
+    /*  opened the "into" font, there is a good chance they have the same */
+    /*  address, and we just found ourselves. */
+    /* More complicated cases are possible too, where from and into might */
+    /*  be different -- but from has still been closed and reopened as something */
+    /*  else */
+    if ( from!=NULL && (
+	    rf->orig_pos>=from->glyphcnt || from->glyphs[rf->orig_pos]==NULL ||
+	    from->glyphs[rf->orig_pos]->unicodeenc!=rf->unicode_enc ))
+	from = NULL;
 
     if ( fromsc!=NULL ) *fromsc = NULL;
 
@@ -2724,7 +2734,7 @@ return;
     if ( cur->undotype==ut_state || cur->undotype==ut_statehint || cur->undotype==ut_statename ||
 	    (cur->undotype==ut_composit && cur->u.composit.state!=NULL)) {
 	for ( i=0; i<fv->map->enccount; ++i )
-	    if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 && sf->glyphs[gid]==NULL )
+	    if ( fv->selected[i] && ((gid = fv->map->map[i])==-1 || sf->glyphs[gid]==NULL ))
 		SFMakeChar(sf,fv->map,i);
     }
     cur = NULL;
