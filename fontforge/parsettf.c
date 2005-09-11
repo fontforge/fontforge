@@ -1482,7 +1482,7 @@ return;
 #define _XY_SCALE	0x40
 #define _MATRIX		0x80
 #define _INSTR		0x100
-#define _MY_METRICS	0x200
+#define _USE_MY_METRICS	0x200
 #define _OVERLAP_COMPOUND	0x400	/* Used in Apple GX fonts */
 	    /* Means the components overlap (which? this one and what other?) */
 /* Described in OpenType specs, not by Apple */
@@ -1523,6 +1523,7 @@ return;
 	}
 	cur->transform[4] = arg1;
 	cur->transform[5] = arg2;
+	cur->use_my_metrics = (flags & _USE_MY_METRICS) ? 1 : 0;
 	if ( flags & _ARGS_ARE_XY ) {
 	    /* There is some very strange stuff (half-)documented on the apple*/
 	    /*  site about how these should be interpretted when there are */
@@ -1623,7 +1624,7 @@ return;
 	    sc->ttf_instrs_len = 0;
     }
     /* I'm ignoring many things that I don't understand here */
-    /* USE_MY_METRICS, what happens if ARGS AREN'T XY */
+    /* what happens if ARGS AREN'T XY */
     /* ROUND means that offsets should rounded to the grid before being added */
     /*  (it's irrelevant for my purposes) */
     sc->layers[ly_fore].refs = head;

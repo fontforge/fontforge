@@ -690,6 +690,9 @@ typedef struct refchar {
 			                /*  after truetype readin */
     unsigned int encoded: 1;		/* orig_pos is actually an encoded value, used for old sfd files */
     unsigned int justtranslated: 1;	/* The transformation matrix specifies a translation (or is identity) */
+    unsigned int use_my_metrics: 1;	/* Retain the ttf "use_my_metrics" info. */
+	/* important for glyphs with instructions which change the width used */
+	/* inside composites */
     int16 adobe_enc;
     int orig_pos;
     int unicode_enc;		/* used by paste */
