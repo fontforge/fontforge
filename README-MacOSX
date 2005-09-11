@@ -32,18 +32,18 @@ INSTALLATION NOTES:
     /usr/local/lib
 
 BUILDING
-    Just download the file fontforge_full-*.tgz which you will find on
+    Just download the file fontforge_full-*.tar.bz2 which you will find on
         http://fontforge.sourceforge.net/index.html#source
     Move it somewhere appropriate (/usr/local/src perhaps?) and type:
-        $ gunzip fontforge_full-*.tgz ; tar xf fontforge_full-*.tar
+        $ bunzip2 fontforge_full-*.tar.bz2 ; tar xf fontforge_full-*.tar
         $ cd fontforge
-        $ configure
+        $ ./configure
         $ make
         $ sudo -s
         # make install
 
 If you want access to FontForge's type3 editing capabilities then
-	$ configure --with-multilayer
+	$ ./configure --with-multilayer
 
 More complex installations
     "make install" will also install a few other things which are not part of
@@ -134,16 +134,6 @@ invoking menu items (that is both ^Q and Cmd-Q will cause FontForge to quit).
 CAVEATS
  1) FontForge does not conform to Apple's Human Interface Guidelines, and never
     will.
- 2) The default window manager (twm) does not work well when 
-    run in Rootless mode.
-    FontForge allows the window manager to position its windows for it, and
-    twm does this by allowing the user to click anywhere on the screen to
-    mark the upper left corner of the window. Unfortunately if you click on
-    top of an Aqua window (ie. anything that isn't X window) Aqua will put
-    X into the background and the click will be lost to X.   
-
-    So in rootless mode you can only open a window if you position it so
-   that it's upper left  corner is in one of X's already existing windows.
 
 Please report any bugs to
         fontforge-devel@lists.sourceforge.net
