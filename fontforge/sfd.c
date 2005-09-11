@@ -734,12 +734,13 @@ static void SFDDumpRefs(FILE *sfd,RefChar *refs, char *name,EncMap *map, int *ne
     RefChar *ref;
 
     for ( ref=refs; ref!=NULL; ref=ref->next ) if ( ref->sc!=NULL ) {
-	fprintf(sfd, "Refer: %d %d %c %g %g %g %g %g %g\n",
+	fprintf(sfd, "Refer: %d %d %c %g %g %g %g %g %g %d\n",
 		    newgids!=NULL ? newgids[ref->sc->orig_pos]:ref->sc->orig_pos,
 		    ref->sc->unicodeenc,
 		    ref->selected?'S':'N',
 		    ref->transform[0], ref->transform[1], ref->transform[2],
-		    ref->transform[3], ref->transform[4], ref->transform[5]);
+		    ref->transform[3], ref->transform[4], ref->transform[5],
+		    ref->use_my_metrics );
     }
 }
 
@@ -2517,14 +2518,13 @@ return( ap );
 
 static RefChar *SFDGetRef(FILE *sfd, int was_enc) {
     RefChar *rf;
-    int orig=0, ch;
+    int temp=0, ch;
 
     rf = RefCharCreate();
-    getint(sfd,&orig);
-    rf->orig_pos = orig;
+    getint(sfd,&rf->orig_pos);
     rf->encoded = was_enc;
-    if ( getint(sfd,&orig))
-	rf->unicode_enc = orig;
+    if ( getint(sfd,&temp))
+	rf->unicode_enc = temp;
     while ( isspace(ch=getc(sfd)));
     if ( ch=='S' ) rf->selected = true;
     getreal(sfd,&rf->transform[0]);
@@ -2533,6 +2533,12 @@ static RefChar *SFDGetRef(FILE *sfd, int was_enc) {
     getreal(sfd,&rf->transform[3]);
     getreal(sfd,&rf->transform[4]);
     getreal(sfd,&rf->transform[5]);
+    while ( (ch=getc(sfd))==' ');
+    ungetc(ch,sfd);
+    if ( isdigit(ch) ) {
+	getint(sfd,&temp);
+	rf->use_my_metrics = temp;
+    }
 return( rf );
 }
 

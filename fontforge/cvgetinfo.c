@@ -89,7 +89,7 @@ typedef struct gidata {
 #define CID_New		3014
 
 #define RI_Width	225
-#define RI_Height	180
+#define RI_Height	194
 
 #define II_Width	130
 #define II_Height	70
@@ -225,9 +225,10 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
     static GIData gi;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[16];
-    GTextInfo label[16];
-    char namebuf[100], tbuf[6][40];
+    GGadgetCreateData gcd[17];
+    GTextInfo label[17];
+    char tbuf[6][40];
+    unichar_t namebuf[100];
     char ubuf[40];
     int i,j;
 
@@ -243,11 +244,7 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	wattrs.window_title = GStringGetResource(_STR_ReferenceInfo,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	wattrs.window_title = _("Reference Info");
-#endif
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,RI_Width));
@@ -258,9 +255,10 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	memset(&gcd,0,sizeof(gcd));
 	memset(&label,0,sizeof(label));
 
-	sprintf( namebuf, "Reference to character %.20s at %d", ref->sc->name, cv->fv->map->backmap[ref->sc->orig_pos]);
-	label[0].text = (unichar_t *) namebuf;
-	label[0].text_is_1byte = true;
+	u_snprintf( namebuf, sizeof(namebuf)/sizeof(namebuf[0]),
+		GStringGetResource(_STR_ReferenceLabel,NULL),
+		ref->sc->name, cv->fv->map->backmap[ref->sc->orig_pos]);
+	label[0].text = namebuf;
 	gcd[0].gd.label = &label[0];
 	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5; 
 	gcd[0].gd.flags = gg_enabled|gg_visible;
@@ -283,11 +281,7 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	gcd[j].gd.label = &label[j];
 	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+14;
 	gcd[j].gd.flags = gg_enabled|gg_visible;
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	gcd[j].gd.popup_msg = GStringGetResource(_STR_TransformPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gcd[j].gd.popup_msg = _("The transformation matrix specifies how the points in\nthe source character should be transformed before\nthey are drawn in the current character.\n x(new) = tm[1,1]*x + tm[2,1]*y + tm[3,1]\n y(new) = tm[1,2]*x + tm[2,2]*y + tm[3,2]");
-#endif
 	gcd[j].creator = GLabelCreate;
 	++j;
 
@@ -304,8 +298,16 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	    gcd[i+j].creator = GTextFieldCreate;
 	}
 
+	label[6+j].text = (unichar_t *) _STR_UseMyMetrics;
+	label[6+j].text_in_resource = true;
+	gcd[6+j].gd.label = &label[6+j];
+	gcd[6+j].gd.pos.x = 5; gcd[6+j].gd.pos.y = gcd[6+j-1].gd.pos.y+21;
+	gcd[6+j].gd.flags = gg_enabled|gg_visible | (ref->use_my_metrics?gg_cb_on:0);
+	gcd[6+j].gd.popup_msg = GStringGetResource(_STR_UseMyMetricsPopup,NULL);
+	gcd[6+j++].creator = GCheckBoxCreate;	
+
 	gcd[6+j].gd.pos.x = (RI_Width-GIntGetResource(_NUM_Buttonsize))/2;
-	gcd[6+j].gd.pos.y = RI_Height+(j==3?12:0)-64;
+	gcd[6+j].gd.pos.y = RI_Height+(j==4?12:0)-64;
 	gcd[6+j].gd.pos.width = -1; gcd[6+j].gd.pos.height = 0;
 	gcd[6+j].gd.flags = gg_visible | gg_enabled ;
 	label[6+j].text = (unichar_t *) _STR_Show;
@@ -315,7 +317,7 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	gcd[6+j].gd.handle_controlevent = GI_Show;
 	gcd[6+j].creator = GButtonCreate;
 
-	gcd[7+j].gd.pos.x = 30-3; gcd[7+j].gd.pos.y = RI_Height+(j==3?12:0)-32-3;
+	gcd[7+j].gd.pos.x = 30-3; gcd[7+j].gd.pos.y = RI_Height+(j==4?12:0)-32-3;
 	gcd[7+j].gd.pos.width = -1; gcd[7+j].gd.pos.height = 0;
 	gcd[7+j].gd.flags = gg_visible | gg_enabled | gg_but_default;
 	label[7+j].text = (unichar_t *) _STR_OK;

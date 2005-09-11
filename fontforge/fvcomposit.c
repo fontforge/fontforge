@@ -2550,13 +2550,17 @@ return;
     else if ( isrighttoleft(ch) && !iscombining(*pt)) {
 	SCMakeRightToLeftLig(sc,sf,pt-1,copybmp);
     } else {
+	RefChar *base;
 	if ( !SCMakeBaseReference(sc,sf,ch,copybmp) )
 return;
+	base = sc->layers[ly_fore].refs;
 	while ( iscombining(*pt) || (ch!='l' && *pt==0xb7) ||	/* b7, centered dot is used as a combining accent for Ldot but as a lig for ldot */
 		*pt==0x384 || *pt==0x385 || (*pt>=0x1fbd && *pt<=0x1fff ))	/* Special greek accents */
 	    SCCenterAccent(sc,sf,*pt++,copybmp,ia, ch);
 	while ( *pt )
 	    SCPutRefAfter(sc,sf,*pt++,copybmp);
+	if ( sc->width == base->sc->width )
+	    base->use_my_metrics = true;
     }
     SCCharChangedUpdate(sc);
     if ( copybmp ) {

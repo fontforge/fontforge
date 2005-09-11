@@ -1115,6 +1115,8 @@ static void dumpcomposite(SplineChar *sc, struct glyphinfo *gi) {
     and if we want an ambiguous composite...
 	flags = (1<<1)|(1<<2);
 */
+	if ( ref->use_my_metrics )
+	    flags |= 0x200;
 	if ( ref->next!=NULL )
 	    flags |= (1<<5);		/* More components */
 	else if ( isc->ttf_instrs_len!=0 )	/* Composits also inherit instructions */
