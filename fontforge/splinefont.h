@@ -1272,6 +1272,7 @@ extern void RefCharFree(RefChar *ref);
 extern void RefCharsFree(RefChar *ref);
 extern void RefCharsFreeRef(RefChar *ref);
 extern void CopyBufferFree(void);
+extern void CopyBufferClearCopiedFrom(SplineFont *dying);
 extern void UndoesFree(Undoes *undo);
 extern void StemInfosFree(StemInfo *h);
 extern void StemInfoFree(StemInfo *h);
@@ -1685,6 +1686,7 @@ extern int NameToEncoding(SplineFont *sf,EncMap *map,const char *uname);
 extern int NameToEncoding(SplineFont *sf,EncMap *map,const unichar_t *uname);
 #endif
 extern void GlyphHashFree(SplineFont *sf);
+extern int SFFindGID(SplineFont *sf, int unienc, const char *name );
 extern int SFFindSlot(SplineFont *sf, EncMap *map, int unienc, const char *name );
 extern int SFCIDFindCID(SplineFont *sf, int unienc, const char *name );
 extern SplineChar *SFGetChar(SplineFont *sf, int unienc, const char *name );

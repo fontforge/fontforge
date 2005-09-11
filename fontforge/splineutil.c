@@ -4809,6 +4809,7 @@ return;
 	MMSetFree(sf->mm);
 return;
     }
+    CopyBufferClearCopiedFrom(sf);
     PasteRemoveSFAnchors(sf);
     for ( bdf = sf->bitmaps; bdf!=NULL; bdf = bnext ) {
 	bnext = bdf->next;

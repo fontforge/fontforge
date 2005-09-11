@@ -1370,6 +1370,40 @@ return( NULL );
 return( cur->u.possub.data );
 }
 
+static void _CopyBufferClearCopiedFrom(Undoes *cb, SplineFont *dying) {
+    switch ( cb->undotype ) {
+      case ut_noop:
+      break;
+      case ut_state: case ut_statehint: case ut_statename:
+	if ( cb->u.state.copied_from == dying )
+	    cb->u.state.copied_from = NULL;
+      break;
+      case ut_possub:
+	while ( cb!=NULL ) {
+	    if ( cb->u.possub.copied_from == dying )
+		cb->u.possub.copied_from = NULL;
+	    cb = cb->u.possub.more_pst;
+	}
+      break;
+      case ut_width:
+      case ut_vwidth:
+      case ut_rbearing:
+      case ut_lbearing:
+      break;
+      case ut_composit:
+	_CopyBufferClearCopiedFrom(cb->u.composit.state,dying);
+      break;
+      case ut_multiple: case ut_layers:
+	for ( cb=cb->u.multiple.mult; cb!=NULL; cb=cb->next )
+	    _CopyBufferClearCopiedFrom(cb,dying);
+      break;
+    }
+}
+
+void CopyBufferClearCopiedFrom(SplineFont *dying) {
+    _CopyBufferClearCopiedFrom(&copybuffer,dying);
+}
+
 int getAdobeEnc(char *name) {
     extern char *AdobeStandardEncoding[256];
     int i;
