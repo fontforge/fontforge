@@ -19,19 +19,19 @@ BEFORE INSTALLATION
 INSTALLATION NOTES:
     Download the appropriate binary from
     	http://fontforge.sourceforge.net/index.html#binary
-    If it is a .tgz file then it should contain
+    If it is a .tgz (or .tar.bz2) file then it should contain
 	A README file or two
 	fontforge.exe  -- the executable
-	fontforge.1    --	the man page.
-	fontforge-*.ui --	various user interface string files for different
-			languages
+	fontforge.1    -- the man page.
+	fontforge-*.ui -- various user interface string files for
+			   different languages
+	doinstall      -- a script to install everything into the right
+			   places
     You should:
+	$ bunzip2 fontforge_cygwin*.tar.bz2
 	$ tar xfz fontforge_cygwin-*.tar
-	$ mkdir -p /usr/local/bin /usr/local/man/man1 /usr/local/share/fontforge
 	$ cd fontforge
-	$ mv fontforge /usr/local/bin
-	$ mv fontforge.1 /usr/local/man/man1
-	$ mv *.ui /usr/local/share/fontforge
+	$ ./doinstall
 
     You may need to add /usr/local/bin to your PATH environment variable (and
     /usr/local/man to your MANPATH environment variable)
@@ -61,18 +61,18 @@ $ fontforge -script script-file [script arguments]
  (passing it any other arguments given on the command line) and then exit.
 
 BUILDING
-    Just download the file fontforge_full-*.tgz which you will find on
+    Just download the file fontforge_full-*.tar.bz2 which you will find on
 	http://fontforge.sourceforge.net/index.html#source
     Move it somewhere appropriate (/usr/local/src perhaps?) and type:
-	$ gunzip fontforge_full-*.tgz ; tar xf fontforge_full-*.tar
+	$ bunzip2 fontforge_full-*.tar.bz2 ; tar xf fontforge_full-*.tar
 	$ cd fontforge
-	$ configure
+	$ ./configure
 	$ make
 	$ su
 	# make install
 
 If you want access to FontForge's type3 editing capabilities then
-	$ configure --with-multilayer
+	$ ./configure --with-multilayer
 
 More complex installations
     "make install" will also install a few other things which are not part of

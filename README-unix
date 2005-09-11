@@ -55,12 +55,12 @@ INSTALLATION WITHOUT DYNAMIC LIBRARIES
 	endif
 
 BUILDING
-    Just download the file fontforge_full-*.tgz which you will find on
+    Just download the file fontforge_full-*.tar.bz2 which you will find on
 	http://fontforge.sourceforge.net/index.html#source
     Move it somewhere appropriate (/usr/local/src perhaps?) and type:
-	$ gunzip fontforge_full-*.tgz ; tar xf fontforge_full-*.tar
+	$ bunzip2 fontforge_full-*.tar.bz2 ; tar xf fontforge_full-*.tar
 	$ cd fontforge
-	$ configure
+	$ ./configure
 	$ make
 	$ su
 	# make install
@@ -68,7 +68,7 @@ BUILDING
     libraries you should substitute "configure.static" for configure.
 
 If you want access to FontForge's type3 editing capabilities then
-	$ configure --with-multilayer
+	$ ./configure --with-multilayer
 
 More complex installations
     "make install" will also install a few other things which are not part of
