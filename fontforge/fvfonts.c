@@ -361,6 +361,32 @@ return( test->sc );
 return( NULL );
 }
 
+/* Find the position in the glyph list where this code point/name is found. */
+/*  Returns -1 else on error */
+int SFFindGID(SplineFont *sf, int unienc, const char *name ) {
+    struct altuni *altuni;
+    int gid;
+    SplineChar *sc;
+
+    if ( unienc!=-1 ) {
+	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( sf->glyphs[gid]!=NULL ) {
+	    if ( sf->glyphs[gid]->unicodeenc == unienc )
+return( gid );
+	    for ( altuni = sf->glyphs[gid]->altuni; altuni!=NULL; altuni=altuni->next ) {
+		if ( altuni->unienc == unienc )
+return( gid );
+	    }
+	}
+    }
+    if ( name!=NULL ) {
+	sc = SFHashName(sf,name);
+	if ( sc!=NULL )
+return( sc->orig_pos );
+    }
+
+return ( -1 );
+}
+
 /* Find the position in the current encoding where this code point/name should*/
 /*  be found. (or for unencoded glyphs where it is found). Returns -1 else */
 int SFFindSlot(SplineFont *sf, EncMap *map, int unienc, const char *name ) {
@@ -431,8 +457,21 @@ return( SFFindSlot(sf,map,psaltuninames[i].unicode,NULL));
 return( index );
 }
 
+int SFCIDFindExistingChar(SplineFont *sf, int unienc, const char *name ) {
+    int j,ret;
+
+    if ( sf->subfonts==NULL && sf->cidmaster==NULL )
+return( SFFindExistingSlot(sf,unienc,name));
+    if ( sf->cidmaster!=NULL )
+	sf=sf->cidmaster;
+    for ( j=0; j<sf->subfontcnt; ++j )
+	if (( ret = SFFindExistingSlot(sf,unienc,name))!=-1 )
+return( ret );
+return( -1 );
+}
+
 int SFCIDFindCID(SplineFont *sf, int unienc, const char *name ) {
-    int ret;
+    int j,ret;
     struct cidmap *cidmap;
 
     if ( sf->cidmaster!=NULL || sf->subfontcnt!=0 ) {
@@ -444,7 +483,16 @@ int SFCIDFindCID(SplineFont *sf, int unienc, const char *name ) {
 return( ret );
     }
 
-return( SFCIDFindExistingChar(sf,unienc,name));
+    if ( sf->subfonts==NULL && sf->cidmaster==NULL )
+return( SFFindGID(sf,unienc,name));
+
+    if ( sf->cidmaster!=NULL )
+	sf=sf->cidmaster;
+    for ( j=0; j<sf->subfontcnt; ++j )
+	if (( ret = SFFindGID(sf,unienc,name))!=-1 )
+return( ret );
+
+return( -1 );
 }
 
 int SFHasCID(SplineFont *sf,int cid) {
@@ -466,9 +514,6 @@ return( -1 );
 SplineChar *SFGetChar(SplineFont *sf, int unienc, const char *name ) {
     int ind;
     int j;
-
-    if ( unienc==-1 && name!=NULL )
-return( SFHashName(sf,name));
 
     ind = SFCIDFindCID(sf,unienc,name);
     if ( ind==-1 )
@@ -548,19 +593,6 @@ int SFFindExistingSlot(SplineFont *sf, int unienc, const char *name ) {
 return( -1 );
 
 return( gid );
-}
-
-int SFCIDFindExistingChar(SplineFont *sf, int unienc, const char *name ) {
-    int j,ret;
-
-    if ( sf->subfonts==NULL && sf->cidmaster==NULL )
-return( SFFindExistingSlot(sf,unienc,name));
-    if ( sf->cidmaster!=NULL )
-	sf=sf->cidmaster;
-    for ( j=0; j<sf->subfontcnt; ++j )
-	if (( ret = SFFindExistingSlot(sf,unienc,name))!=-1 )
-return( ret );
-return( -1 );
 }
 
 static void MFixupSC(SplineFont *sf, SplineChar *sc,int i) {
