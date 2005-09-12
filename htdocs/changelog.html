@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 25-Aug-2005 -->
+  <!-- AP: Last modified: 11-Sep-2005 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -15,6 +15,43 @@ Changes since the last release may be found by performing a "cvs log" command
 on the file stamp.c.
 <P>
 <UL>
+  <LI>
+    11-Sept-2005
+    <UL>
+      <LI>
+	&nbsp;&nbsp; When ff pastes refs from one font to another it tries to figure
+	out the width of a glyph containing references from the width of what appears
+	to be the base glyph. (because if you paste Aacute from one font to another,
+	the size of the "A" glyph may be quite different in the new font. Using the
+	width of the glyph in the original font would be wrong).
+	<P>
+	There are two problems with this:
+	<OL>
+	  <LI>
+	    It didn't take forward references into account, and would use the original
+	    width rather than the modified width of the reference.
+	  <LI>
+	    It would (probably) be confused by an Alphatonos where the width of Alphatonos
+	    is not the same as that of Alpha.
+	</OL>
+	<P>
+	instead figure widths out after all pastes have completed, looking at the
+	use_my_metrics bit to get things right.
+      <LI>
+	Various fixes for pasting references from a font which has since been closed.
+      <LI>
+	Support the ttf "_USE_MY_METRICS" bit on composite glyphs. This entails:
+	<UL>
+	  <LI>
+	    Retaining it when reading a truetype font
+	  <LI>
+	    Setting properly when generating one
+	  <LI>
+	    Storing it in sfd files
+	  <LI>
+	    Giving the user a way to set it with the Element-&gt;GetInfo command
+	</UL>
+    </UL>
   <LI>
     9-Sept-2005
     <UL>
