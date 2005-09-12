@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 11-Sep-2005 -->
+  <!-- AP: Last modified: 12-Sep-2005 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -15,6 +15,13 @@ Changes since the last release may be found by performing a "cvs log" command
 on the file stamp.c.
 <P>
 <UL>
+  <LI>
+    12-Sept-2005
+    <UL>
+      <LI>
+	Added a scripting command DefaultUseMyMetrics() to set the use_my_metrics
+	bit in old fonts.
+    </UL>
   <LI>
     11-Sept-2005
     <UL>
@@ -37,6 +44,9 @@ on the file stamp.c.
 	<P>
 	instead figure widths out after all pastes have completed, looking at the
 	use_my_metrics bit to get things right.
+      <LI>
+	Handle forward references to glyphs which will be pasted into by the current
+	command (used to work, broken by the encoding change)
       <LI>
 	Various fixes for pasting references from a font which has since been closed.
       <LI>
@@ -66,7 +76,8 @@ on the file stamp.c.
 	Uninitialized variable in dependant sub-menu (broken by encoding change)
       <LI>
 	Pasting a reference into a font which did not contain the referred glyph
-	did not give you the option of copying the original outlines any more.
+	did not give you the option of copying the original outlines any more. (broken
+	by the encoding change)
       <LI>
 	Merging fonts where glyphs had multiple encodings caused crashes.
       <LI>
