@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 9-Sep-2005 -->
+  <!-- AP: Last modified: 12-Sep-2005 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -2016,6 +2016,13 @@ ApplySubstitution("*","*","vrt2")
     <FONT COLOR="Red"><STRONG><SMALL>NOTE:</SMALL></STRONG></FONT> You will need
     to set the fontname of this new font. The flag argument is the same as for
     Open.
+  <DT>
+    Default<A NAME="Use-My-Metrics">UseMyM</A>etrics()
+  <DD>
+    Looks at all selected glyphs. If any glyph contains references, does not
+    have the "USE-MY-METRICS" bit set on any of those references, and if one
+    of those references has the same width as the current glyph, and has an identity
+    transformation matrix, then set the bit on that reference.
   <DT>
       <HR>
   <DT>
