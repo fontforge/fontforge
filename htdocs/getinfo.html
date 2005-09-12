@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 5-Dec-2004 -->
+  <!-- AP: Last modified: 11-Sep-2005 -->
   <TITLE>Get Info</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -30,7 +30,7 @@ to that point from the base (and whether this setting is the default for
 that point, if this point is the last on an open contour then the [] Default
 button will be grey), underneath the offsets it shows the same information
 in a different format -- as a distance from the point itself, and the angle
-to it. 
+to it.
 <P>
 The Prev CP does the same for the previous control point.
 <P>
@@ -96,7 +96,7 @@ Anchor points may also be created with the
 <A HREF="pointmenu.html#AddAnchor">Point-&gt;Add Anchor</A> command.
 <BR Clear=All>
 <H2>
-  <IMG SRC="rgetinfo.png" WIDTH="297" HEIGHT="284" ALIGN="Right">Reference
+  <IMG SRC="rgetinfo.png" WIDTH="317" HEIGHT="317" ALIGN="Right">Reference
   Info
 </H2>
 <P>
@@ -110,6 +110,11 @@ their location in the current glyph: <BR>
 TM[2,1]*y<SUB>ref</SUB> + TM[3,1]<BR>
 &nbsp; &nbsp; y<SUB>current</SUB> = TM[1,2]*y<SUB>ref</SUB> +
 TM[2,2]*y<SUB>ref</SUB> + TM[3,2]</CODE>
+<P>
+The Use My Metrics checkbox is useful in truetype fonts where it forces the
+metrics (width) of a composite glyph (for exampe acute a) is the same as
+the metrics of one of its components (for example a). This is especially
+important in fonts containing instructions that might modify a glyph's width.
 <P>
 The [Show] button will open a glyph outline view showing the glyph being
 referred to.<BR CLEAR=ALL>
