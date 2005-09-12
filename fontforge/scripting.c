@@ -3819,6 +3819,48 @@ static void bInterpolateFonts(Context *c) {
     c->curfv = FVAppend(_FontViewCreate(InterpolateFont(c->curfv->sf,sf,percent/100.0 )));
 }
 
+static void bDefaultUseMyMetrics(Context *c) {
+    int i,gid;
+    FontView *fv = c->curfv;
+    SplineFont *sf = fv->sf;
+    EncMap *map = fv->map;
+
+    if ( c->a.argc!=1 )
+	error( c, "Wrong number of arguments");
+    for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && fv->selected[i] ) {
+	SplineChar *sc = sf->glyphs[gid];
+	RefChar *r, *match=NULL, *goodmatch=NULL;
+	int already = false;
+
+	for ( r=sc->layers[ly_fore].refs ; r!=NULL; r = r->next ) {
+	    if ( r->use_my_metrics ) already = true;
+	    if ( r->sc->width == sc->width &&
+		    r->transform[0]==1 && r->transform[3]==1 &&
+		    r->transform[1]==0 && r->transform[2]==0 &&
+		    r->transform[4]==0 && r->transform[5]==0 ) {
+		if ( match==NULL ) match = r;
+		/* I shan't bother checking for multiple matches */
+		/* I think the transform check is strict enough. */
+		if ( r->unicode_enc>=0 && r->unicode_enc<0x10000 &&
+			isalpha(r->unicode_enc) ) {
+		    if ( goodmatch==NULL ) {
+			goodmatch = r;
+	break;
+		    }
+		}
+	    }
+	}
+
+	if ( goodmatch==NULL )
+	    goodmatch = match;
+	if ( sc->layer_cnt==2 && !already && goodmatch!=NULL ) {
+	    SCPreserveState(sc,false);
+	    goodmatch->use_my_metrics = true;
+	    SCCharChangedUpdate(sc);
+	}
+    }
+}
+
 static void bAutoHint(Context *c) {
     if ( c->a.argc!=1 )
 	error( c, "Wrong number of arguments");
@@ -5610,6 +5652,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "ReplaceWithReference", bReplaceOutlineWithReference },
     { "InterpolateFonts", bInterpolateFonts },
     { "MergeFonts", bMergeFonts },
+    { "DefaultUseMyMetrics", bDefaultUseMyMetrics },
 /*  Menu */
     { "AutoHint", bAutoHint },
     { "bSubstitutionPoints", bSubstitutionPoints },
