@@ -121,6 +121,7 @@ static int GI_ROK_Do(GIData *ci) {
     real trans[6];
     SplinePointList *spl, *new;
     RefChar *ref = ci->rf, *subref;
+    int usemy = GGadgetIsChecked(GWidgetGetControl(ci->gw,6+1000));
 
     for ( i=0; i<6; ++i ) {
 	trans[i] = GetRealR(ci->gw,1000+i,_STR_TransformationMatrix,&errs);
@@ -142,7 +143,7 @@ return( false );
     }
 
     for ( i=0; i<6 && ref->transform[i]==trans[i]; ++i );
-    if ( i==6 )		/* Didn't really change */
+    if ( i==6 && usemy==ref->use_my_metrics )	/* Didn't really change */
 return( true );
 
     for ( i=0; i<6; ++i )
@@ -161,6 +162,7 @@ return( true );
 	if ( new!=NULL )
 	    for ( spl = new; spl->next!=NULL; spl = spl->next );
     }
+    ref->use_my_metrics = usemy;
 
     SplineSetFindBounds(ref->layers[0].splines,&ref->bb);
     CVCharChangedUpdate(ci->cv);
@@ -303,6 +305,7 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	gcd[6+j].gd.label = &label[6+j];
 	gcd[6+j].gd.pos.x = 5; gcd[6+j].gd.pos.y = gcd[6+j-1].gd.pos.y+21;
 	gcd[6+j].gd.flags = gg_enabled|gg_visible | (ref->use_my_metrics?gg_cb_on:0);
+	gcd[i+j].gd.cid = 6+1000;
 	gcd[6+j].gd.popup_msg = GStringGetResource(_STR_UseMyMetricsPopup,NULL);
 	gcd[6+j++].creator = GCheckBoxCreate;	
 
