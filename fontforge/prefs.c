@@ -671,6 +671,7 @@ static int encmatch(const char *enc,int subok) {
 #endif
 	{ NULL }};
     int i;
+    static char *last_complaint;
 
 #if HAVE_ICONV_H
     iconv_t test;
@@ -691,10 +692,18 @@ return( encs[i].enc );
 	/* I only try to use iconv if the encoding doesn't match one I support*/
 	/*  loading iconv unicode data takes a while */
 	test = iconv_open(enc,FindUCS2Name());
-	if ( test==(iconv_t) (-1) || test==NULL )
-	    fprintf( stderr, "Neither FontForge nor iconv() supports your encoding (%s) we will pretend\n you asked for latin1 instead.\n", enc );
-	else {
-	    fprintf( stderr, "FontForge does not support your encoding (%s), it will try to use iconv()\n or it will pretend the local encoding is latin1\n", enc );
+	if ( test==(iconv_t) (-1) || test==NULL ) {
+	    if ( last_complaint==NULL || strcmp(last_complaint,enc)!=0 ) {
+		fprintf( stderr, "Neither FontForge nor iconv() supports your encoding (%s) we will pretend\n you asked for latin1 instead.\n", enc );
+		free( last_complaint );
+		last_complaint = copy(enc);
+	    }
+	} else {
+	    if ( last_complaint==NULL || strcmp(last_complaint,enc)!=0 ) {
+		fprintf( stderr, "FontForge does not support your encoding (%s), it will try to use iconv()\n or it will pretend the local encoding is latin1\n", enc );
+		free( last_complaint );
+		last_complaint = copy(enc);
+	    }
 	    iconv_local_encoding_name= copy(enc);
 	    iconv_close(test);
 	}
