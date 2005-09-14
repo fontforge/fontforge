@@ -3149,6 +3149,9 @@ static void FVOverlap(FontView *fv,enum overlap_type ot) {
 static void FVMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
+    if ( fv->sf->order2 || fv->sf->onlybitmaps )
+return;
+
     /* We know it's more likely that we'll find a problem in the overlap code */
     /*  than anywhere else, so let's save the current state against a crash */
     DoAutoSaves();
