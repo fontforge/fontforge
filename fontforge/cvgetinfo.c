@@ -1910,7 +1910,7 @@ static int PI_HintSel(GGadget *g, GEvent *e) {
 		if ( h==NULL )
 		    IError("Failed to find hint");
 		else {
-		    for ( h2 = ci->cv->sc->hstem, i=j ; h2!=NULL; h2=h2->next, ++i ) {
+		    for ( h2 = ci->cv->sc->vstem, i=j ; h2!=NULL; h2=h2->next, ++i ) {
 			if ( h2!=h && GGadgetIsListItemSelected(g,i)) {
 			    if (( h2->start<h->start && h2->start+h2->width>h->start ) ||
 				( h2->start>=h->start && h->start+h->width>h2->start ))
