@@ -1290,6 +1290,9 @@ static void RSC2PS1(GrowBuf *gb, SplineChar *base[MmMax],SplineChar *rsc[MmMax],
 		SplinePointListFree(spls[i]);
 	} else if ( refs[0]->sc->ttf_glyph!=0x7fff &&
 		((flags&ps_flag_nohints) ||
+		 !refs[0]->sc->anyflexes ||
+		 (refs[0]->transform[4]+trans[0].x==0 && refs[0]->transform[5]+trans[0].y==0)) &&
+		((flags&ps_flag_nohints) ||
 		 NeverConflicts(refs,instance_count) ||
 		 AllStationary(refs,trans,instance_count)) ) {
 	    ExpandRef1(gb,base,instance_count,hdb,refs,trans,startend,

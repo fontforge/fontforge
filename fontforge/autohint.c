@@ -3223,6 +3223,7 @@ static int _SplineCharIsFlexible(SplineChar *sc, int blueshift) {
     SplineSet *spl;
     SplinePoint *sp, *np, *pp;
     int max=0, val;
+    RefChar *r;
 
     if ( sc==NULL )
 return(false);
@@ -3291,6 +3292,12 @@ return(false);
 	} while ( sp!=spl->first );
     }
     sc->anyflexes = max>0;
+    if ( max==0 )
+	for ( r = sc->layers[ly_fore].refs; r!=NULL ; r=r->next )
+	    if ( r->sc->anyflexes ) {
+		sc->anyflexes = true;
+	break;
+	    }
 return( max );
 }
 
@@ -3387,6 +3394,14 @@ static void SCUnflex(SplineChar *sc) {
     sc->anyflexes = false;
 }
 
+static void FlexDependents(SplineChar *sc) {
+    struct splinecharlist *scl;
+
+    sc->anyflexes = true;
+    for ( scl = sc->dependents; scl!=NULL; scl=scl->next )
+	FlexDependents(scl->sc);
+}
+
 int SplineFontIsFlexible(SplineFont *sf,int flags) {
     int i;
     int max=0, val;
@@ -3412,9 +3427,11 @@ return( 0 );
 	blueshift = 7;	/* The BlueValues array may depend on BlueShift having its default value */
 
     for ( i=0; i<sf->glyphcnt; ++i )
-	if ( sf->glyphs[i]!=NULL ) {
+	if ( sf->glyphs[i]!=NULL ) if ( sf->glyphs[i]!=NULL ) {
 	    val = _SplineCharIsFlexible(sf->glyphs[i],blueshift);
 	    if ( val>max ) max = val;
+	    if ( sf->glyphs[i]->anyflexes )
+		FlexDependents(sf->glyphs[i]);
 	}
 return( max );
 }
