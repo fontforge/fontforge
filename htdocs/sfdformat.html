@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 10-Aug-2005 -->
+  <!-- AP: Last modified: 15-Sep-2005 -->
   <TITLE>Spline Font Database File Format</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -150,7 +150,7 @@ CIDVersion: 1.2
 <P>
 Some fonts will have some TrueType information in them too (look at the
 <A HREF="http://www.microsoft.com/typography/tt/tt.htm">truetype spec</A>
-for the meanings of these, they usually live in the OS/2 table).
+for the meanings of these, they usually live in the OS/2, hhea, or vhea tables).
 <BLOCKQUOTE>
   <PRE>FSType: 4
 PFMFamily: 17
@@ -158,24 +158,57 @@ TTFWeight: 400
 TTFWidth: 5
 Panose: 2 0 5 3 0 0 0 0 0 0
 LineGap: 252
+OS2LineGap: 252
 VLineGap: 0
+OS2Vendor: 'PfEd'
+OS2FamilyClass: 2050
 </PRE>
 </BLOCKQUOTE>
 <P>
-If loaded from a font with an OS/2 table there may also be the following
-fields (there is no ui to set these fields, but FontForge preserves them)
+These items also come from the OS/2 and hhea tables but are slightly more
+complex. The keywords are paired, so <CODE>HheadAscent</CODE> and
+<CODE>HheadAOffset</CODE> work together. If the offset keyword is 1 (true)
+then the other keyword is treated as a value relative to what FontForge thinks
+should be the correct value, FontForge will calculate what it thinks the
+value should be and then will add the value specified in the keyword. So
+in the example below, FF will figure out what it thinks
+<CODE>HheadAscent</CODE> should be and then add "0" to it to get the value
+stored in a truetype font's OS/2 table. However if the Offset flag is set
+to 0 (false) then the Ascent would be used exactly as specified.
 <BLOCKQUOTE>
-  <PRE>HheadAscent: 892
-HheadDescent: -200
-OS2TypoAscent: 892
-OS2TypoDescent: -200
-OS2WinAscent: 892
-OS2WinDescent: -200
+  <PRE>HheadAscent: 0
+HheadAOffset: 1
+HheadDescent: 0
+HheadDOffset: 1
+OS2TypoAscent: 0
+OS2TypoAOffset: 1
+OS2TypoDescent: 0
+OS2TypoDOffset: 1
+OS2WinAscent: 0
+OS2WinAOffset: 1
+OS2WinDescent: 0
+OS2WinDOffset: 1
 </PRE>
 </BLOCKQUOTE>
 <P>
 These represent different definitions of ascent and descent that are stored
 in various places in the truetype file (Horizontal header and OS/2 tables).
+<P>
+The OS/2 table contains information on the position of subscripts, superscripts
+and strike throughs:
+<BLOCKQUOTE>
+  <PRE>OS2SubXSize: 1351
+OS2SubYSize: 1228
+OS2SubXOff: 0
+OS2SubYOff: -446
+OS2SupXSize: 1351
+OS2SupYSize: 1228
+OS2SupXOff: 0
+OS2SupYOff: 595
+OS2StrikeYSize: 143
+OS2StrikeYPos: 614
+</PRE>
+</BLOCKQUOTE>
 <P>
 The MacStyle field (if present) indicates whether the font is bold, italic,
 condensed, extended, etc.
