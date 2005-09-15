@@ -619,8 +619,19 @@ return( ilist );
 	    (m2->next==m1 && RealNear(t1,m1->tstart) && RealNear(t2,m2->tend)) )
 return( ilist );
 
+    if ( RealWithin(m1->tstart,t1,.01) )
+	il = m1->start;
+    else if ( RealWithin(m1->tend,t1,.01) )
+	il = m1->end;
+    else
+	il = NULL;
+    if ( il!=NULL &&
+	    ((RealWithin(m2->tstart,t2,.01) && m2->start==il) ||
+	     (RealWithin(m2->tend,t2,.01) && m2->end==il)) )
+return( il );
+
     for ( il = ilist; il!=NULL; il=il->next ) {
-	if ( RealNearish(il->inter.x,inter->x) && RealNearish(il->inter.y,inter->y)) {
+	if ( RealWithin(il->inter.x,inter->x,.01) && RealWithin(il->inter.y,inter->y,.01)) {
 	    AddSpline(il,m1,t1);
 	    AddSpline(il,m2,t2);
 return( ilist );
@@ -2190,7 +2201,7 @@ SplineSet *SplineSetRemoveOverlap(SplineChar *sc, SplineSet *base,enum overlap_t
     base = SSRemoveTiny(base);
     SSRemoveStupidControlPoints(base);
     SplineSetsRemoveAnnoyingExtrema(base,.3);
-    SSOverlapClusterCpAngles(base,.005);
+    SSOverlapClusterCpAngles(base,.01);
     base = SSRemoveReversals(base);
     ms = SSsToMContours(base,ot);
     ilist = FindIntersections(ms,ot);
