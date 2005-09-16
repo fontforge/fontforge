@@ -30,6 +30,8 @@
 #include <gkeysym.h>
 #include <math.h>
 
+static int dpi=72; static double pointsize=12;
+
 static int last_fpgm = false;
 
 void SCDeGridFit(SplineChar *sc) {
@@ -83,20 +85,22 @@ typedef struct ftsizedata {
 static int FtPpem_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	FtSizeData *fsd = GDrawGetUserData(GGadgetGetWindow(g));
-	int dpi;
+	int _dpi;
 	real ptsize;
 	int err = 0, bit;
 	CharView *cv = fsd->cv;
 
 	ptsize = GetRealR(fsd->gw,CID_PointSize,_STR_Pointsize,&err);
-	dpi = GetIntR(fsd->gw,CID_DPI,_STR_DPI,&err);
+	_dpi = GetIntR(fsd->gw,CID_DPI,_STR_DPI,&err);
 	if ( err )
 return(true);
 
 	bit = GGadgetIsChecked(GWidgetGetControl(fsd->gw,CID_ShowGrid));
 	last_fpgm = GGadgetIsChecked(GWidgetGetControl(fsd->gw,CID_Debugfpgm));
-	cv->ft_pointsize = ptsize; cv->ft_dpi = dpi;
+	cv->ft_pointsize = ptsize; cv->ft_dpi = _dpi;
 	cv->ft_ppem = rint(cv->ft_pointsize*cv->ft_dpi/72.0);
+
+	dpi = _dpi; pointsize = ptsize;
 
 	SplinePointListsFree(cv->gridfit); cv->gridfit = NULL;
 	FreeType_FreeRaster(cv->raster); cv->raster = NULL;
@@ -178,7 +182,7 @@ void CVFtPpemDlg(CharView *cv,int debug) {
     gcd[0].gd.flags = gg_enabled|gg_visible;
     gcd[0].creator = GLabelCreate;
 
-    sprintf( buffer, "%g", cv->ft_pointsize );
+    sprintf( buffer, "%g", pointsize );
     label[1].text = (unichar_t *) buffer;
     label[1].text_is_1byte = true;
     gcd[1].gd.label = &label[1];
@@ -194,7 +198,7 @@ void CVFtPpemDlg(CharView *cv,int debug) {
     gcd[2].gd.flags = gg_enabled|gg_visible;
     gcd[2].creator = GLabelCreate;
 
-    sprintf( buffer2, "%d", cv->ft_dpi );
+    sprintf( buffer2, "%d", dpi );
     label[3].text = (unichar_t *) buffer2;
     label[3].text_is_1byte = true;
     gcd[3].gd.label = &label[3];
