@@ -308,13 +308,6 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 
 	GDrawSetFont(pixmap,dv->ii.gfont);
 	for ( i=0; i<n; ++i ) {
-	    if ( r->contours!=NULL && i==r->contours[c] ) {	/* No contours in twilight */
-		++c;
-		if ( y>0 )
-		    GDrawDrawLine(pixmap,0,y+dv->ii.fh-dv->ii.as,
-			    event->u.expose.rect.x+event->u.expose.rect.width,y+dv->ii.fh-dv->ii.as,
-			    0x000000);
-	    }
 	    if ( i==0 ) l=n-5; else l=i-1;
 	    if ( !show_twilight && i<n-ph &&
 		    !(r->tags[i]&FT_Curve_Tag_On) && !(r->tags[l]&FT_Curve_Tag_On)) {
@@ -328,6 +321,13 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 		if ( y>0 )
 		    GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
 		y += dv->ii.fh;
+	    }
+	    if ( r->contours!=NULL && i==r->contours[c] ) {	/* No contours in twilight */
+		++c;
+		if ( y>0 )
+		    GDrawDrawLine(pixmap,0,y+dv->ii.fh-dv->ii.as,
+			    event->u.expose.rect.x+event->u.expose.rect.width,y+dv->ii.fh-dv->ii.as,
+			    0x000000);
 	    }
 	    watched = i<n_watch && !show_twilight && watches!=NULL && watches[i] ? 'W' : ' ';
 	    if ( show_grid )
