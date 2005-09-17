@@ -1523,7 +1523,8 @@ return;
 	}
 	cur->transform[4] = arg1;
 	cur->transform[5] = arg2;
-	cur->use_my_metrics = (flags & _USE_MY_METRICS) ? 1 : 0;
+	cur->use_my_metrics =		 (flags & _USE_MY_METRICS) ? 1 : 0;
+	cur->round_translation_to_grid = (flags & _ROUND) ? 1 : 0;
 	if ( flags & _ARGS_ARE_XY ) {
 	    /* There is some very strange stuff (half-)documented on the apple*/
 	    /*  site about how these should be interpretted when there are */

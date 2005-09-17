@@ -1115,6 +1115,8 @@ static void dumpcomposite(SplineChar *sc, struct glyphinfo *gi) {
     and if we want an ambiguous composite...
 	flags = (1<<1)|(1<<2);
 */
+	if ( ref->round_translation_to_grid )
+	    flags |= 0x004;
 	if ( ref->use_my_metrics )
 	    flags |= 0x200;
 	if ( ref->next!=NULL )
