@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 11-Sep-2005 -->
+  <!-- AP: Last modified: 16-Sep-2005 -->
   <TITLE>Get Info</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -96,7 +96,7 @@ Anchor points may also be created with the
 <A HREF="pointmenu.html#AddAnchor">Point-&gt;Add Anchor</A> command.
 <BR Clear=All>
 <H2>
-  <IMG SRC="rgetinfo.png" WIDTH="317" HEIGHT="317" ALIGN="Right"><A NAME="GetReferenceInfo">Reference</A>
+  <IMG SRC="rgetinfo.png" WIDTH="317" HEIGHT="337" ALIGN="Right"><A NAME="GetReferenceInfo">Reference</A>
   Info
 </H2>
 <P>
@@ -115,6 +115,11 @@ The Use My Metrics checkbox is useful in truetype fonts where it forces the
 metrics (width) of a composite glyph (for exampe acute a) is the same as
 the metrics of one of its components (for example a). This is especially
 important in fonts containing instructions that might modify a glyph's width.
+<P>
+The Round To Grid checkbox is also used in truetype hints and indicates that
+the translation should be rounded to the rasterizer's grid before being applied
+to the points of the reference. This means that the grid-fitting done by
+the reference's instructions will still be useful in the composite.
 <P>
 The [Show] button will open a glyph outline view showing the glyph being
 referred to.<BR CLEAR=ALL>
