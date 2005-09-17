@@ -89,7 +89,7 @@ typedef struct gidata {
 #define CID_New		3014
 
 #define RI_Width	225
-#define RI_Height	194
+#define RI_Height	208
 
 #define II_Width	130
 #define II_Height	70
@@ -122,6 +122,7 @@ static int GI_ROK_Do(GIData *ci) {
     SplinePointList *spl, *new;
     RefChar *ref = ci->rf, *subref;
     int usemy = GGadgetIsChecked(GWidgetGetControl(ci->gw,6+1000));
+    int round = GGadgetIsChecked(GWidgetGetControl(ci->gw,7+1000));
 
     for ( i=0; i<6; ++i ) {
 	trans[i] = GetRealR(ci->gw,1000+i,_STR_TransformationMatrix,&errs);
@@ -143,8 +144,8 @@ return( false );
     }
 
     for ( i=0; i<6 && ref->transform[i]==trans[i]; ++i );
-    if ( i==6 && usemy==ref->use_my_metrics )	/* Didn't really change */
-return( true );
+    if ( i==6 && usemy==ref->use_my_metrics && round==ref->round_translation_to_grid)
+return( true );		/* Didn't really change */
 
     for ( i=0; i<6; ++i )
 	ref->transform[i] = trans[i];
@@ -163,6 +164,7 @@ return( true );
 	    for ( spl = new; spl->next!=NULL; spl = spl->next );
     }
     ref->use_my_metrics = usemy;
+    ref->round_translation_to_grid = round;
 
     SplineSetFindBounds(ref->layers[0].splines,&ref->bb);
     CVCharChangedUpdate(ci->cv);
@@ -307,10 +309,19 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	gcd[6+j].gd.flags = gg_enabled|gg_visible | (ref->use_my_metrics?gg_cb_on:0);
 	gcd[i+j].gd.cid = 6+1000;
 	gcd[6+j].gd.popup_msg = GStringGetResource(_STR_UseMyMetricsPopup,NULL);
-	gcd[6+j++].creator = GCheckBoxCreate;	
+	gcd[6+j++].creator = GCheckBoxCreate;
+
+	label[6+j].text = (unichar_t *) _STR_RoundToGrid;
+	label[6+j].text_in_resource = true;
+	gcd[6+j].gd.label = &label[6+j];
+	gcd[6+j].gd.pos.x = 5; gcd[6+j].gd.pos.y = gcd[6+j-1].gd.pos.y+14;
+	gcd[6+j].gd.flags = gg_enabled|gg_visible | (ref->round_translation_to_grid?gg_cb_on:0);
+	gcd[i+j].gd.cid = 7+1000;
+	gcd[6+j].gd.popup_msg = GStringGetResource(_STR_RoundToGridPopup,NULL);
+	gcd[6+j++].creator = GCheckBoxCreate;
 
 	gcd[6+j].gd.pos.x = (RI_Width-GIntGetResource(_NUM_Buttonsize))/2;
-	gcd[6+j].gd.pos.y = RI_Height+(j==4?12:0)-64;
+	gcd[6+j].gd.pos.y = RI_Height+(j==5?12:0)-64;
 	gcd[6+j].gd.pos.width = -1; gcd[6+j].gd.pos.height = 0;
 	gcd[6+j].gd.flags = gg_visible | gg_enabled ;
 	label[6+j].text = (unichar_t *) _STR_Show;
@@ -320,7 +331,7 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	gcd[6+j].gd.handle_controlevent = GI_Show;
 	gcd[6+j].creator = GButtonCreate;
 
-	gcd[7+j].gd.pos.x = 30-3; gcd[7+j].gd.pos.y = RI_Height+(j==4?12:0)-32-3;
+	gcd[7+j].gd.pos.x = 30-3; gcd[7+j].gd.pos.y = RI_Height+(j==5?12:0)-32-3;
 	gcd[7+j].gd.pos.width = -1; gcd[7+j].gd.pos.height = 0;
 	gcd[7+j].gd.flags = gg_visible | gg_enabled | gg_but_default;
 	label[7+j].text = (unichar_t *) _STR_OK;

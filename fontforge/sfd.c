@@ -740,7 +740,7 @@ static void SFDDumpRefs(FILE *sfd,RefChar *refs, char *name,EncMap *map, int *ne
 		    ref->selected?'S':'N',
 		    ref->transform[0], ref->transform[1], ref->transform[2],
 		    ref->transform[3], ref->transform[4], ref->transform[5],
-		    ref->use_my_metrics );
+		    ref->use_my_metrics|(ref->round_translation_to_grid<<1) );
     }
 }
 
@@ -2537,7 +2537,8 @@ static RefChar *SFDGetRef(FILE *sfd, int was_enc) {
     ungetc(ch,sfd);
     if ( isdigit(ch) ) {
 	getint(sfd,&temp);
-	rf->use_my_metrics = temp;
+	rf->use_my_metrics = temp&1;
+	rf->round_translation_to_grid = (temp&2)?1:0;
     }
 return( rf );
 }
