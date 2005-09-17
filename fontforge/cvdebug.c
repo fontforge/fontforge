@@ -271,13 +271,36 @@ static void DVCvtExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
     }
 }
 
+static void ScalePoint(BasePoint *me,FT_Vector *cur,real scale,RefChar *r) {
+    double x,y,temp, offx, offy;
+
+    x = cur->x*scale;
+    y = cur->y*scale;
+    if ( r!=NULL ) {
+	temp = r->transform[0]*x + r->transform[2]*y;
+	y    = r->transform[1]*x + r->transform[3]*y;
+	x    = temp;
+	offx = r->transform[4];
+	offy = r->transform[5];
+	if ( r->round_translation_to_grid ) {
+	    scale *= 64.0;
+	    offx = rint(offx/scale)*scale;
+	    offy = rint(offy/scale)*scale;
+	}
+	x += offx; y += offy;
+    }
+    me->x = x;
+    me->y = y;
+}
+
 #define CID_Twilight	1001
 #define CID_Normal	1002
 #define CID_Grid	1003
 #define CID_EmUnit	1004
 #define CID_Current	1005
 #define CID_Original	1006
-static int show_twilight = false, show_grid=true, show_current=true;
+#define CID_Transform	1006
+static int show_twilight = false, show_grid=true, show_current=true, show_transformed=true;
 
 static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
     TT_ExecContext exc = DebuggerGetEContext(dv->dc);
@@ -289,6 +312,8 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
     char watched;
     TT_GlyphZoneRec *r;
     uint8 *watches;
+    BasePoint me,me2;
+    RefChar *active;
 
     GDrawFillRect(pixmap,&event->u.expose.rect,GDrawGetDefaultBackground(screen_display));
     y = 3+dv->ii.as-dv->points_offtop*dv->ii.fh;
@@ -298,11 +323,16 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 	show_twilight = GGadgetIsChecked(GWidgetGetControl(dv->points,CID_Twilight));
 	show_grid = GGadgetIsChecked(GWidgetGetControl(dv->points,CID_Grid));
 	show_current = GGadgetIsChecked(GWidgetGetControl(dv->points,CID_Current));
+	show_transformed = GGadgetIsChecked(GWidgetGetControl(dv->points,CID_Transform));
 	r = show_twilight ? &exc->twilight : &exc->pts;
 	n = r->n_points;
 	pts = show_current ? r->cur : r->org;
 	c = 0;
 	ph = FreeTypeAtLeast(2,1,8)?4:2;	/* number of phantom pts */
+
+	active = dv->active_ref;
+	if ( !show_transformed )
+	    active = NULL;
 
 	watches = DebuggerGetWatches(dv->dc,&n_watch);
 
@@ -311,12 +341,14 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 	    if ( i==0 ) l=n-5; else l=i-1;
 	    if ( !show_twilight && i<n-ph &&
 		    !(r->tags[i]&FT_Curve_Tag_On) && !(r->tags[l]&FT_Curve_Tag_On)) {
+		ScalePoint(&me,&pts[i],dv->scale,active);
+		ScalePoint(&me2,&pts[l],dv->scale,active);
+		me.x = (me.x+me2.x)/2;  me.y = (me.y+me2.y)/2;
 		if ( show_grid )
 		    sprintf(buffer, "   : I    %.2f,%.2f",
-			    (pts[i].x+pts[l].x)/128.0, (pts[i].y+pts[l].y)/128.0 );
+			    me.x/dv->scale/64.0, me.y/dv->scale/64.0 );
 		else
-		    sprintf(buffer, "   : I    %g,%g",
-			    (pts[i].x+pts[l].x)*dv->scale/2.0, (pts[i].y+pts[l].y)*dv->scale/2.0 );
+		    sprintf(buffer, "   : I    %g,%g", me.x , me.y );
 		uc_strcpy(ubuffer,buffer);
 		if ( y>0 )
 		    GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
@@ -330,15 +362,16 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 			    0x000000);
 	    }
 	    watched = i<n_watch && !show_twilight && watches!=NULL && watches[i] ? 'W' : ' ';
+	    ScalePoint(&me,&pts[i],dv->scale,active);
 	    if ( show_grid )
 		sprintf(buffer, "%3d: %c%c%c%c %.2f,%.2f", i,
 			show_twilight ? 'T' : i>=n-ph? 'F' : r->tags[i]&FT_Curve_Tag_On?'P':'C',
 			r->tags[i]&FT_Curve_Tag_Touch_X?'H':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'V':' ', watched,
-			pts[i].x/64.0, pts[i].y/64.0 );
+			me.x/dv->scale/64.0, me.y/dv->scale/64.0 );
 	    else
 		sprintf(buffer, "%3d: %c%c%c%c %g,%g", i,
 			r->tags[i]&FT_Curve_Tag_On?'P':'C', r->tags[i]&FT_Curve_Tag_Touch_X?'H':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'V':' ', watched,
-			pts[i].x*dv->scale, pts[i].y*dv->scale );
+			me.x, me.y );
 	    uc_strcpy(ubuffer,buffer);
 	    if ( y>0 )
 		GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
@@ -359,11 +392,14 @@ static void DVPointsExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 }
 
 static SplineSet *ContourFromPoint(TT_GlyphZoneRec *pts, real scale,int i,
-	SplineSet *last ) {
+	SplineSet *last, RefChar *r ) {
     SplineSet *cur;
     SplinePoint *sp;
+    BasePoint me;
 
-    sp = SplinePointCreate(pts->cur[i].x*scale,pts->cur[i].y*scale);
+    ScalePoint(&me,&pts->cur[i],scale,r);
+
+    sp = SplinePointCreate(me.x,me.y);
     sp->ttfindex = i;
     cur = chunkalloc(sizeof(SplineSet));
     if ( last!=NULL )
@@ -372,10 +408,12 @@ static SplineSet *ContourFromPoint(TT_GlyphZoneRec *pts, real scale,int i,
 return( cur );
 }
 
-static SplineSet *SplineSetsFromPoints(TT_GlyphZoneRec *pts, real scale) {
+static SplineSet *SplineSetsFromPoints(TT_GlyphZoneRec *pts, real scale,
+	RefChar *active) {
     int i=0, c, last_off, start;
     SplineSet *head=NULL, *last=NULL, *cur;
     SplinePoint *sp;
+    BasePoint me, me2;
     /* very similar to parsettf.c: ttfbuildcontours */
 
     for ( c=0; c<pts->n_contours; ++c ) {
@@ -391,25 +429,25 @@ static SplineSet *SplineSetsFromPoints(TT_GlyphZoneRec *pts, real scale) {
 	start = i;
 	while ( i<=pts->contours[c] && i<pts->n_points ) {
 	    if ( pts->tags[i]&FT_Curve_Tag_On ) {
-		sp = SplinePointCreate(pts->cur[i].x*scale,pts->cur[i].y*scale);
+		ScalePoint(&me,&pts->cur[i],scale,active);
+		sp = SplinePointCreate(me.x,me.y);
 		sp->ttfindex = i;
 		if ( last_off && cur->last!=NULL ) {
-		    cur->last->nextcp.x = sp->prevcp.x = pts->cur[i-1].x*scale;
-		    cur->last->nextcp.y = sp->prevcp.y = pts->cur[i-1].y*scale;
+		    ScalePoint(&cur->last->nextcp,&pts->cur[i-1],scale,active);
+		    sp->prevcp = cur->last->nextcp;
 		    cur->last->nonextcp = false;
 		    cur->last->nextcpindex = i-1;
 		    sp->noprevcp = false;
 		}
 		last_off = false;
 	    } else if ( last_off ) {
-		sp = SplinePointCreate(
-		    (pts->cur[i].x+pts->cur[i-1].x)/2 * scale,
-		    (pts->cur[i].y+pts->cur[i-1].y)/2 * scale);
+		ScalePoint(&me,&pts->cur[i],scale,active);
+		ScalePoint(&me2,&pts->cur[i-1],scale,active);
+		sp = SplinePointCreate((me.x+me2.x)/2, (me.y+me2.y)/2 );
 		sp->noprevcp = false;
 		sp->ttfindex = 0xffff;
 		if ( last_off && cur->last!=NULL ) {
-		    cur->last->nextcp.x = sp->prevcp.x = pts->cur[i-1].x * scale;
-		    cur->last->nextcp.y = sp->prevcp.y = pts->cur[i-1].y * scale;
+		    cur->last->nextcp = sp->prevcp = me2;
 		    cur->last->nonextcp = false;
 		    cur->last->nextcpindex = i-1;
 		}
@@ -429,30 +467,29 @@ static SplineSet *SplineSetsFromPoints(TT_GlyphZoneRec *pts, real scale) {
 	}
 	if ( start==i-1 ) {
 	    /* Single point contours (probably for positioning components, etc.) */
-	    sp = SplinePointCreate(pts->cur[start].x*scale,pts->cur[start].y*scale);
+	    ScalePoint(&me,&pts->cur[start],scale,active);
+	    sp = SplinePointCreate(me.x,me.y);
 	    sp->ttfindex = i-1;
 	    cur->first = cur->last = sp;
 	} else if ( !(pts->tags[start]&FT_Curve_Tag_On) && !(pts->tags[i-1]&FT_Curve_Tag_On) ) {
-	    sp = SplinePointCreate(
-		    (pts->cur[start].x+pts->cur[i-1].x)/2 * scale,
-		    (pts->cur[start].y+pts->cur[i-1].y)/2 * scale);
+	    ScalePoint(&me,&pts->cur[start],scale,active);
+	    ScalePoint(&me2,&pts->cur[i-1],scale,active);
+	    sp = SplinePointCreate((me.x+me2.x)/2 , (me.y+me2.y)/2);
 	    sp->noprevcp = sp->nonextcp = false;
-	    cur->last->nextcp.x = sp->prevcp.x = pts->cur[i-1].x * scale;
-	    cur->last->nextcp.y = sp->prevcp.y = pts->cur[i-1].y * scale;
+	    cur->last->nextcp = sp->prevcp = me2;
 	    SplineMake2(cur->last,sp);
 	    cur->last = sp;
-	    cur->last->nextcp.x = cur->first->prevcp.x = pts->cur[start].x * scale;
-	    cur->last->nextcp.y = cur->first->prevcp.y = pts->cur[start].y * scale;
+	    cur->last->nextcp = cur->first->prevcp = me;
 	    cur->first->noprevcp = false;
 	    cur->last->nextcpindex = start;
 	} else if ( !(pts->tags[i-1]&FT_Curve_Tag_On)) {
-	    cur->last->nextcp.x = cur->first->prevcp.x = pts->cur[i-1].x * scale;
-	    cur->last->nextcp.y = cur->first->prevcp.y = pts->cur[i-1].y * scale;
+	    ScalePoint(&me,&pts->cur[i-1],scale,active);
+	    cur->last->nextcp = cur->first->prevcp = me;
 	    cur->last->nonextcp = cur->first->noprevcp = false;
 	    cur->last->nextcpindex = i-1;
 	} else if ( !(pts->tags[start]&FT_Curve_Tag_On) ) {
-	    cur->last->nextcp.x = cur->first->prevcp.x = pts->cur[start].x * scale;
-	    cur->last->nextcp.y = cur->first->prevcp.y = pts->cur[start].y * scale;
+	    ScalePoint(&me,&pts->cur[start],scale,active);
+	    cur->last->nextcp = cur->first->prevcp = me;
 	    cur->last->nonextcp = cur->first->noprevcp = false;
 	    cur->last->nextcpindex = start;
 	}
@@ -464,12 +501,12 @@ static SplineSet *SplineSetsFromPoints(TT_GlyphZoneRec *pts, real scale) {
     if ( i+1<pts->n_points ) {
 	/* depending on the version of freetype there should be either 2 or 4 */
 	/*  metric phantom points (2 horizontal metrics + 2 vertical metrics) */
-	last = ContourFromPoint(pts,scale,i,last);
+	last = ContourFromPoint(pts,scale,i,last,active);
 	if ( head==NULL ) head = last;
-	last = ContourFromPoint(pts,scale,i+1,last);
+	last = ContourFromPoint(pts,scale,i+1,last,active);
 	if ( i+3<pts->n_points ) {
-	    last = ContourFromPoint(pts,scale,i+2,last);
-	    last = ContourFromPoint(pts,scale,i+3,last);
+	    last = ContourFromPoint(pts,scale,i+2,last,active);
+	    last = ContourFromPoint(pts,scale,i+3,last,active);
 	}
     }
 return( head );
@@ -527,6 +564,10 @@ static void ChangeCode(DebugView *dv,TT_ExecContext exc) {
     dv->codeSize = exc->codeSize;
     for ( i=0 ; i<sizeof(dv->initialbytes) && i<dv->codeSize; ++i )
 	dv->initialbytes[i] = ((uint8 *) exc->code)[i];
+    if ( dv->active_ref!=NULL )
+	dv->active_ref = dv->active_ref->next;
+    if ( dv->active_ref==NULL && dv->cv->sc->layers[ly_fore].splines==NULL )
+	dv->active_ref = dv->cv->sc->layers[ly_fore].refs;
 }
     
 static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
@@ -560,7 +601,7 @@ static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
 	    FreeType_FreeRaster(cv->oldraster);
 	cv->oldraster = cv->raster;
 	SplinePointListsFree(cv->gridfit);
-	cv->gridfit = SplineSetsFromPoints(&exc->pts,dv->scale);
+	cv->gridfit = SplineSetsFromPoints(&exc->pts,dv->scale,dv->active_ref);
 	cv->raster = DebuggerCurrentRasterization(cv->gridfit,
 		(cv->sc->parent->ascent+cv->sc->parent->descent) / (real) cv->ft_ppem);
 	if ( exc->pts.n_points<=2 )
@@ -1526,7 +1567,7 @@ static void DVCreatePoints(DebugView *dv) {
     GWindowAttrs wattrs;
     GRect pos;
     /*extern int _GScrollBar_Width;*/
-    GGadgetCreateData gcd[8];
+    GGadgetCreateData gcd[9];
     GTextInfo label[8];
     extern int _GScrollBar_Width;
 
@@ -1544,7 +1585,7 @@ static void DVCreatePoints(DebugView *dv) {
     pos.height = 269;
     dv->points = GDrawCreateTopWindow(NULL,&pos,dvpoints_e_h,dv,&wattrs);
 
-    dv->pts_head = GDrawPointsToPixels(NULL,GGadgetScale(5+3*16+3));
+    dv->pts_head = GDrawPointsToPixels(NULL,GGadgetScale(5+4*16+3));
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
@@ -1597,14 +1638,25 @@ static void DVCreatePoints(DebugView *dv) {
     gcd[5].gd.cid = CID_EmUnit;
     gcd[5].creator = GRadioCreate;
 
-    gcd[6].gd.pos.width = GDrawPointsToPixels(NULL,_GScrollBar_Width);
-    gcd[6].gd.pos.height = pos.height-dv->pts_head;
-    gcd[6].gd.pos.x = pos.width-gcd[6].gd.pos.width; gcd[6].gd.pos.y = dv->pts_head;
-    gcd[6].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_sb_vert;
-    gcd[6].creator = GScrollBarCreate;
+    label[6].text = (unichar_t *) _STR_Transformed;
+    label[6].text_in_resource = true;
+    gcd[6].gd.label = &label[6];
+    gcd[6].gd.pos.x = 5; gcd[6].gd.pos.y = gcd[4].gd.pos.y+16;
+    gcd[6].gd.flags = gg_visible | (show_transformed ? gg_cb_on : 0 );
+    if ( dv->cv->sc->layers[ly_fore].splines==NULL &&
+	    dv->cv->sc->layers[ly_fore].refs!=NULL )
+	gcd[6].gd.flags |= gg_enabled;
+    gcd[6].gd.cid = CID_Transform;
+    gcd[6].creator = GCheckBoxCreate;
+
+    gcd[7].gd.pos.width = GDrawPointsToPixels(NULL,_GScrollBar_Width);
+    gcd[7].gd.pos.height = pos.height-dv->pts_head;
+    gcd[7].gd.pos.x = pos.width-gcd[7].gd.pos.width; gcd[7].gd.pos.y = dv->pts_head;
+    gcd[7].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_sb_vert;
+    gcd[7].creator = GScrollBarCreate;
 
     GGadgetsCreate(dv->points,gcd);
-    dv->pts_vsb = gcd[6].ret;
+    dv->pts_vsb = gcd[7].ret;
 
     pos.x = 0;
     pos.y = dv->pts_head;
