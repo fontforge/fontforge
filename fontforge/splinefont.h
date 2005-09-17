@@ -693,6 +693,7 @@ typedef struct refchar {
     unsigned int use_my_metrics: 1;	/* Retain the ttf "use_my_metrics" info. */
 	/* important for glyphs with instructions which change the width used */
 	/* inside composites */
+    unsigned int round_translation_to_grid: 1;	/* Retain the ttf "round_to_grid" info. */
     int16 adobe_enc;
     int orig_pos;
     int unicode_enc;		/* used by paste */
