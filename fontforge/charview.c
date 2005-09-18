@@ -2683,11 +2683,62 @@ return;
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
+static int _SCRefNumberPoints2(SplineSet **_rss,SplineChar *sc,int pnum) {
+    SplineSet *ss, *rss = *_rss;
+    SplinePoint *sp, *rsp;
+    RefChar *r;
+    int starts_with_cp, startcnt;
+
+    for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next, rss=rss->next ) {
+	if ( rss==NULL )		/* Can't happen */
+    break;
+	starts_with_cp = ss->first->ttfindex==0xffff && !ss->first->noprevcp;
+	startcnt = pnum;
+	if ( starts_with_cp ) ++pnum;
+	for ( sp = ss->first, rsp=rss->first; ; ) {
+	    if ( sp->ttfindex==0xffff )
+		rsp->ttfindex = 0xffff;
+	    else
+		rsp->ttfindex = pnum++;
+	    if ( sp->next==NULL )
+	break;
+	    if ( sp->next->to == ss->first ) {
+		if ( sp->nonextcp )
+		    rsp->nextcpindex = 0xffff;
+		else if ( starts_with_cp )
+		    rsp->nextcpindex = startcnt;
+		else
+		    rsp->nextcpindex = pnum++;
+	break;
+	    }
+	    if ( sp->nonextcp )
+		rsp->nextcpindex = 0xffff;
+	    else
+		rsp->nextcpindex = pnum++;
+	    sp = sp->next->to;
+	    rsp = rsp->next->to;
+	}
+    }
+
+    *_rss = rss;
+    for ( r = sc->layers[ly_fore].refs; r!=NULL; r=r->next )
+	pnum = _SCRefNumberPoints2(_rss,r->sc,pnum);
+return( pnum );
+}
+
+static int SCRefNumberPoints2(RefChar *ref,int pnum) {
+    SplineSet *rss;
+
+    rss = ref->layers[0].splines;
+return( _SCRefNumberPoints2(&rss,ref->sc,pnum));
+}
+
 int SCNumberPoints(SplineChar *sc) {
     int pnum=0;
     SplineSet *ss;
     SplinePoint *sp;
     int starts_with_cp, startcnt;
+    RefChar *ref;
     uint8 *instrs = sc->ttf_instrs==NULL && sc->parent->mm!=NULL && sc->parent->mm->apple ?
 		sc->parent->mm->normal->glyphs[sc->orig_pos]->ttf_instrs : sc->ttf_instrs;
 
@@ -2722,6 +2773,8 @@ int SCNumberPoints(SplineChar *sc) {
 	    break;
 	    }
 	}
+	for ( ref = sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
+	    pnum = SCRefNumberPoints2(ref,pnum);
     } else {		/* cubic (PostScript/SVG) splines */
 	int layer;
 	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
