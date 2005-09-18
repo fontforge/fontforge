@@ -354,6 +354,7 @@ RefChar *RefCharCreate(void) {
     ref->layers[0].dofill = true;
 #endif
     ref->layer_cnt = 1;
+    ref->round_translation_to_grid = true;
 return( ref );
 }
 

@@ -1096,12 +1096,7 @@ static void dumpcomposite(SplineChar *sc, struct glyphinfo *gi) {
 	    /*if ( sc->layers[ly_fore].refs->next==NULL || any )*/
     continue;
 	}
-#if 1
-	flags = (1<<1)|(1<<2)|(1<<12);	/* Args are always values for me */
-					/* Always round args to grid */
-#else
-	flags = (1<<1)|(1<<2)|(1<<11);	/* Test version to play with scaled components */
-#endif
+	flags = _ARGS_ARE_XY|_UNSCALED_OFFSETS;	/* Args are always values for me */
 	    /* There is some very strange stuff wrongly-documented on the apple*/
 	    /*  site about how these should be interpretted when there are */
 	    /*  scale factors, or rotations */
@@ -1111,45 +1106,45 @@ static void dumpcomposite(SplineChar *sc, struct glyphinfo *gi) {
 	    /* Adobe says that setting bit 12 means that this will not happen */
 	    /*  Apple doesn't mention bit 12 though...(but they do support it) */
 /* if we want a mac style scaled composite then
-	flags = (1<<1)|(1<<2)|(1<<11);
+	flags = _ARGS_ARE_XY|_SCALED_OFFSETS;
     and if we want an ambiguous composite...
-	flags = (1<<1)|(1<<2);
+	flags = _ARGS_ARE_XY;
 */
 	if ( ref->round_translation_to_grid )
-	    flags |= 0x004;
+	    flags |= _ROUND;
 	if ( ref->use_my_metrics )
-	    flags |= 0x200;
+	    flags |= _USE_MY_METRICS;
 	if ( ref->next!=NULL )
-	    flags |= (1<<5);		/* More components */
+	    flags |= _MORE;		/* More components */
 	else if ( isc->ttf_instrs_len!=0 )	/* Composits also inherit instructions */
-	    flags |= (1<<8);		/* Instructions appear after last ref */
+	    flags |= _INSTR;		/* Instructions appear after last ref */
 	if ( ref->transform[1]!=0 || ref->transform[2]!=0 )
-	    flags |= (1<<7);		/* Need a full matrix */
+	    flags |= _MATRIX;		/* Need a full matrix */
 	else if ( ref->transform[0]!=ref->transform[3] )
-	    flags |= (1<<6);		/* different xy scales */
+	    flags |= _XY_SCALE;		/* different xy scales */
 	else if ( ref->transform[0]!=1. )
-	    flags |= (1<<3);		/* xy scale is same */
+	    flags |= _SCALE;		/* xy scale is same */
 	if ( ref->transform[4]<-128 || ref->transform[4]>127 ||
 		ref->transform[5]<-128 || ref->transform[5]>127 )
-	    flags |= (1<<0);
+	    flags |= _ARGS_ARE_WORDS;
 	putshort(gi->glyphs,flags);
 	putshort(gi->glyphs,ref->sc->ttf_glyph==-1?0:ref->sc->ttf_glyph);
-	if ( flags&(1<<0) ) {
+	if ( flags&_ARGS_ARE_WORDS ) {
 	    putshort(gi->glyphs,(short)ref->transform[4]);
 	    putshort(gi->glyphs,(short)ref->transform[5]);
 	} else {
 	    putc((char) (ref->transform[4]),gi->glyphs);
 	    putc((char) (ref->transform[5]),gi->glyphs);
 	}
-	if ( flags&(1<<7) ) {
+	if ( flags&_MATRIX ) {
 	    put2d14(gi->glyphs,ref->transform[0]);
 	    put2d14(gi->glyphs,ref->transform[1]);
 	    put2d14(gi->glyphs,ref->transform[2]);
 	    put2d14(gi->glyphs,ref->transform[3]);
-	} else if ( flags&(1<<6) ) {
+	} else if ( flags&_XY_SCALE ) {
 	    put2d14(gi->glyphs,ref->transform[0]);
 	    put2d14(gi->glyphs,ref->transform[3]);
-	} else if ( flags&(1<<3) ) {
+	} else if ( flags&_SCALE ) {
 	    put2d14(gi->glyphs,ref->transform[0]);
 	}
 	for ( ss=ref->layers[0].splines, sptcnt=0; ss!=NULL ; ss=ss->next ) {

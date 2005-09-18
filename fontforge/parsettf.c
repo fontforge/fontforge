@@ -1473,24 +1473,6 @@ return;
 	LogError( "Reached end of file when reading simple glyph\n" );
 }
 
-#define _ARGS_ARE_WORDS	1
-#define _ARGS_ARE_XY	2
-#define _ROUND		4		/* round offsets so componant is on grid */
-#define _SCALE		8
-/* 0x10 is reserved */
-#define _MORE		0x20
-#define _XY_SCALE	0x40
-#define _MATRIX		0x80
-#define _INSTR		0x100
-#define _USE_MY_METRICS	0x200
-#define _OVERLAP_COMPOUND	0x400	/* Used in Apple GX fonts */
-	    /* Means the components overlap (which? this one and what other?) */
-/* Described in OpenType specs, not by Apple */
-/* amusingly, Apple supports but MS does not */
-/* MS says they support this after Win 2000 */
-#define _SCALED_OFFSETS		0x800	/* Use Apple definition of offset interpretation */
-#define _UNSCALED_OFFSETS	0x1000	/* Use MS definition */
-
 static void readttfcompositglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, int32 end) {
     RefChar *head=NULL, *last=NULL, *cur;
     int flags=0, arg1, arg2;
