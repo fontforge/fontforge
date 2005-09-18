@@ -73,7 +73,7 @@ return( NULL );
 }
 
 SplineSet *FreeType_GridFitChar(void *single_glyph_context,
-	int enc, real ptsize, int dpi, int16 *width, SplineSet *splines) {
+	int enc, real ptsize, int dpi, int16 *width, SplineChar *sc) {
 return( NULL );
 }
 
@@ -575,6 +575,7 @@ struct ft_context {
     double scale;
     SplinePointList *orig_cpl;
     SplinePoint *orig_sp;
+    RefChar *orig_ref;
     int order2;
 };
 
@@ -593,6 +594,12 @@ static void FT_ClosePath(struct ft_context *context) {
 	context->last = NULL;
 	if ( context->orig_cpl!=NULL )
 	    context->orig_cpl = context->orig_cpl->next;
+	while ( context->orig_cpl==NULL ) {
+	    if ( context->orig_ref==NULL )
+	break;
+	    context->orig_cpl = context->orig_ref->layers[0].splines;
+	    context->orig_ref = context->orig_ref->next;
+	}
 	context->orig_sp = NULL;
     }
 }
@@ -696,7 +703,7 @@ static FT_Outline_Funcs outlinefuncs = {
 };
 
 SplineSet *FreeType_GridFitChar(void *single_glyph_context,
-	int enc, real ptsize, int dpi, int16 *width, SplineSet *splines) {
+	int enc, real ptsize, int dpi, int16 *width, SplineChar *sc) {
     FT_GlyphSlot slot;
     FTC *ftc = (FTC *) single_glyph_context;
     struct ft_context outline_context;
@@ -726,7 +733,12 @@ return( NULL );
     /* The outline's position is expressed in 24.6 fixed numbers representing */
     /*  pixels. I want to scale it back to the original coordinate system */
     outline_context.scale = ftc->em/(64.0*ptsize*dpi/72.0);
-    outline_context.orig_cpl = splines;
+    outline_context.orig_ref = sc->layers[ly_fore].refs;
+    outline_context.orig_cpl = sc->layers[ly_fore].splines;
+    while ( outline_context.orig_cpl==NULL && outline_context.orig_ref != NULL ) {
+	outline_context.orig_cpl = outline_context.orig_ref->layers[0].splines;
+	outline_context.orig_ref = outline_context.orig_ref->next;
+    }
     outline_context.orig_sp = NULL;
     outline_context.order2 = ftc->isttf;
     if ( !_FT_Outline_Decompose(&slot->outline,&outlinefuncs,&outline_context)) {

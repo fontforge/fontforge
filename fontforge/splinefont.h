@@ -1776,7 +1776,7 @@ extern BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int gid,
 	int pixelsize,int depth);
 extern void FreeTypeFreeContext(void *freetypecontext);
 extern SplineSet *FreeType_GridFitChar(void *single_glyph_context,
-	int enc, real ptsize, int dpi, int16 *width, SplineSet *splines);
+	int enc, real ptsize, int dpi, int16 *width, SplineChar *sc);
 extern struct freetype_raster *FreeType_GetRaster(void *single_glyph_context,
 	int enc, real ptsize, int dpi);
 extern BDFChar *SplineCharFreeTypeRasterizeNoHints(SplineChar *sc,
