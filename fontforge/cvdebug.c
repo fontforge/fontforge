@@ -585,8 +585,10 @@ static void ChangeCode(DebugView *dv,TT_ExecContext exc) {
     dv->id.instr_cnt = exc->codeSize;
     IIReinit(&dv->ii,exc->IP);
     dv->codeSize = exc->codeSize;
+    dv->last_npoints = exc->pts.n_points;
     for ( i=0 ; i<sizeof(dv->initialbytes) && i<dv->codeSize; ++i )
 	dv->initialbytes[i] = ((uint8 *) exc->code)[i];
+
     if ( dv->active_refs==NULL )
 	dv->active_refs = ARFindBase(dv->cv->sc,NULL);
     else {
@@ -627,7 +629,7 @@ static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
 	dv->id.instrs = NULL;
 	dv->id.instr_cnt = 0;
 	IIReinit(&dv->ii,-1);
-    } else if ( !SameInstructionSet(dv,exc)) {
+    } else if ( !SameInstructionSet(dv,exc) || dv->last_npoints!=exc->pts.n_points ) {
 	ChangeCode(dv,exc);
     } else
 	IIScrollTo(&dv->ii,exc->IP,true);
