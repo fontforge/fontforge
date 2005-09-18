@@ -202,7 +202,7 @@ typedef struct debugview {
     int codeSize;
     uint8 initialbytes[4];
     struct reflist { RefChar *ref; struct reflist *parent; } *active_refs;
-    RefChar *active_ref;
+    int last_npoints;
 } DebugView;
 
 enum dv_coderange { cr_none=0, cr_fpgm, cr_prep, cr_glyph };	/* cleverly chosen to match ttobjs.h */
