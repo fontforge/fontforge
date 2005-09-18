@@ -1435,6 +1435,8 @@ void DebuggerReset(struct debugger_context *dc,real ptsize,int dpi,int dbg_fpgm)
     dc->initted_pts = false;
 
     pthread_create(&dc->thread,NULL,StartChar,(void *) dc);
+    if ( dc->has_finished )
+return;
     dc->has_thread = true;
     pthread_cond_wait(&dc->parent_cond,&dc->parent_mutex);
 }
