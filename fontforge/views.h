@@ -201,6 +201,7 @@ typedef struct debugview {
 
     int codeSize;
     uint8 initialbytes[4];
+    struct reflist { RefChar *ref; struct reflist *parent; } *active_refs;
     RefChar *active_ref;
 } DebugView;
 

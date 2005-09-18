@@ -88,6 +88,12 @@ return( NULL );
 #include <unistd.h>
 #include <sys/mman.h>
 
+#ifdef GWW_TEST
+static void dbgstrout(char *str) {
+write(1,str,strlen(str));
+}
+#endif
+
 static FT_Library context;
 
 /* Ok, this complication is here because:				    */
@@ -1434,7 +1440,10 @@ void DebuggerReset(struct debugger_context *dc,real ptsize,int dpi,int dbg_fpgm)
     dc->terminate = dc->has_finished = false;
     dc->initted_pts = false;
 
-    pthread_create(&dc->thread,NULL,StartChar,(void *) dc);
+    if ( pthread_create(&dc->thread,NULL,StartChar,(void *) dc)!=0 ) {
+	DebuggerTerminate(dc);
+return;
+    }
     if ( dc->has_finished )
 return;
     dc->has_thread = true;

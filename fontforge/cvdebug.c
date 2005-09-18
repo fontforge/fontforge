@@ -271,12 +271,14 @@ static void DVCvtExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
     }
 }
 
-static void ScalePoint(BasePoint *me,FT_Vector *cur,real scale,RefChar *r) {
+static void ScalePoint(BasePoint *me,FT_Vector *cur,real scale,struct reflist *a) {
     double x,y,temp, offx, offy;
 
     x = cur->x*scale;
     y = cur->y*scale;
-    if ( r!=NULL ) {
+    while ( a!=NULL ) {
+	RefChar *r = a->ref;
+	a = a->parent;
 	temp = r->transform[0]*x + r->transform[2]*y;
 	y    = r->transform[1]*x + r->transform[3]*y;
 	x    = temp;
@@ -313,7 +315,7 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
     TT_GlyphZoneRec *r;
     uint8 *watches;
     BasePoint me,me2;
-    RefChar *active;
+    struct reflist *actives;
 
     GDrawFillRect(pixmap,&event->u.expose.rect,GDrawGetDefaultBackground(screen_display));
     y = 3+dv->ii.as-dv->points_offtop*dv->ii.fh;
@@ -330,9 +332,9 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 	c = 0;
 	ph = FreeTypeAtLeast(2,1,8)?4:2;	/* number of phantom pts */
 
-	active = dv->active_ref;
+	actives = dv->active_refs;
 	if ( !show_transformed )
-	    active = NULL;
+	    actives = NULL;
 
 	watches = DebuggerGetWatches(dv->dc,&n_watch);
 
@@ -341,8 +343,8 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 	    if ( i==0 ) l=n-5; else l=i-1;
 	    if ( !show_twilight && i<n-ph &&
 		    !(r->tags[i]&FT_Curve_Tag_On) && !(r->tags[l]&FT_Curve_Tag_On)) {
-		ScalePoint(&me,&pts[i],dv->scale,active);
-		ScalePoint(&me2,&pts[l],dv->scale,active);
+		ScalePoint(&me,&pts[i],dv->scale,actives);
+		ScalePoint(&me2,&pts[l],dv->scale,actives);
 		me.x = (me.x+me2.x)/2;  me.y = (me.y+me2.y)/2;
 		if ( show_grid )
 		    sprintf(buffer, "   : I    %.2f,%.2f",
@@ -362,7 +364,7 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 			    0x000000);
 	    }
 	    watched = i<n_watch && !show_twilight && watches!=NULL && watches[i] ? 'W' : ' ';
-	    ScalePoint(&me,&pts[i],dv->scale,active);
+	    ScalePoint(&me,&pts[i],dv->scale,actives);
 	    if ( show_grid )
 		sprintf(buffer, "%3d: %c%c%c%c %.2f,%.2f", i,
 			show_twilight ? 'T' : i>=n-ph? 'F' : r->tags[i]&FT_Curve_Tag_On?'P':'C',
@@ -392,12 +394,12 @@ static void DVPointsExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 }
 
 static SplineSet *ContourFromPoint(TT_GlyphZoneRec *pts, real scale,int i,
-	SplineSet *last, RefChar *r ) {
+	SplineSet *last, struct reflist *actives ) {
     SplineSet *cur;
     SplinePoint *sp;
     BasePoint me;
 
-    ScalePoint(&me,&pts->cur[i],scale,r);
+    ScalePoint(&me,&pts->cur[i],scale,actives);
 
     sp = SplinePointCreate(me.x,me.y);
     sp->ttfindex = i;
@@ -409,7 +411,7 @@ return( cur );
 }
 
 static SplineSet *SplineSetsFromPoints(TT_GlyphZoneRec *pts, real scale,
-	RefChar *active) {
+	struct reflist *actives) {
     int i=0, c, last_off, start;
     SplineSet *head=NULL, *last=NULL, *cur;
     SplinePoint *sp;
@@ -429,11 +431,11 @@ static SplineSet *SplineSetsFromPoints(TT_GlyphZoneRec *pts, real scale,
 	start = i;
 	while ( i<=pts->contours[c] && i<pts->n_points ) {
 	    if ( pts->tags[i]&FT_Curve_Tag_On ) {
-		ScalePoint(&me,&pts->cur[i],scale,active);
+		ScalePoint(&me,&pts->cur[i],scale,actives);
 		sp = SplinePointCreate(me.x,me.y);
 		sp->ttfindex = i;
 		if ( last_off && cur->last!=NULL ) {
-		    ScalePoint(&cur->last->nextcp,&pts->cur[i-1],scale,active);
+		    ScalePoint(&cur->last->nextcp,&pts->cur[i-1],scale,actives);
 		    sp->prevcp = cur->last->nextcp;
 		    cur->last->nonextcp = false;
 		    cur->last->nextcpindex = i-1;
@@ -441,8 +443,8 @@ static SplineSet *SplineSetsFromPoints(TT_GlyphZoneRec *pts, real scale,
 		}
 		last_off = false;
 	    } else if ( last_off ) {
-		ScalePoint(&me,&pts->cur[i],scale,active);
-		ScalePoint(&me2,&pts->cur[i-1],scale,active);
+		ScalePoint(&me,&pts->cur[i],scale,actives);
+		ScalePoint(&me2,&pts->cur[i-1],scale,actives);
 		sp = SplinePointCreate((me.x+me2.x)/2, (me.y+me2.y)/2 );
 		sp->noprevcp = false;
 		sp->ttfindex = 0xffff;
@@ -467,13 +469,13 @@ static SplineSet *SplineSetsFromPoints(TT_GlyphZoneRec *pts, real scale,
 	}
 	if ( start==i-1 ) {
 	    /* Single point contours (probably for positioning components, etc.) */
-	    ScalePoint(&me,&pts->cur[start],scale,active);
+	    ScalePoint(&me,&pts->cur[start],scale,actives);
 	    sp = SplinePointCreate(me.x,me.y);
 	    sp->ttfindex = i-1;
 	    cur->first = cur->last = sp;
 	} else if ( !(pts->tags[start]&FT_Curve_Tag_On) && !(pts->tags[i-1]&FT_Curve_Tag_On) ) {
-	    ScalePoint(&me,&pts->cur[start],scale,active);
-	    ScalePoint(&me2,&pts->cur[i-1],scale,active);
+	    ScalePoint(&me,&pts->cur[start],scale,actives);
+	    ScalePoint(&me2,&pts->cur[i-1],scale,actives);
 	    sp = SplinePointCreate((me.x+me2.x)/2 , (me.y+me2.y)/2);
 	    sp->noprevcp = sp->nonextcp = false;
 	    cur->last->nextcp = sp->prevcp = me2;
@@ -483,12 +485,12 @@ static SplineSet *SplineSetsFromPoints(TT_GlyphZoneRec *pts, real scale,
 	    cur->first->noprevcp = false;
 	    cur->last->nextcpindex = start;
 	} else if ( !(pts->tags[i-1]&FT_Curve_Tag_On)) {
-	    ScalePoint(&me,&pts->cur[i-1],scale,active);
+	    ScalePoint(&me,&pts->cur[i-1],scale,actives);
 	    cur->last->nextcp = cur->first->prevcp = me;
 	    cur->last->nonextcp = cur->first->noprevcp = false;
 	    cur->last->nextcpindex = i-1;
 	} else if ( !(pts->tags[start]&FT_Curve_Tag_On) ) {
-	    ScalePoint(&me,&pts->cur[start],scale,active);
+	    ScalePoint(&me,&pts->cur[start],scale,actives);
 	    cur->last->nextcp = cur->first->prevcp = me;
 	    cur->last->nonextcp = cur->first->noprevcp = false;
 	    cur->last->nextcpindex = start;
@@ -501,12 +503,12 @@ static SplineSet *SplineSetsFromPoints(TT_GlyphZoneRec *pts, real scale,
     if ( i+1<pts->n_points ) {
 	/* depending on the version of freetype there should be either 2 or 4 */
 	/*  metric phantom points (2 horizontal metrics + 2 vertical metrics) */
-	last = ContourFromPoint(pts,scale,i,last,active);
+	last = ContourFromPoint(pts,scale,i,last,actives);
 	if ( head==NULL ) head = last;
-	last = ContourFromPoint(pts,scale,i+1,last,active);
+	last = ContourFromPoint(pts,scale,i+1,last,actives);
 	if ( i+3<pts->n_points ) {
-	    last = ContourFromPoint(pts,scale,i+2,last,active);
-	    last = ContourFromPoint(pts,scale,i+3,last,active);
+	    last = ContourFromPoint(pts,scale,i+2,last,actives);
+	    last = ContourFromPoint(pts,scale,i+3,last,actives);
 	}
     }
 return( head );
@@ -555,6 +557,27 @@ return( false );
 return( true );		/* As best we can tell... */
 }
 
+static struct reflist *ARFindBase(SplineChar *sc,struct reflist *parent) {
+    struct reflist *ret, *temp;
+    RefChar *ref;
+
+    if ( sc->layers[ly_fore].splines!=NULL ||
+	    sc->layers[ly_fore].refs==NULL )
+return( parent );
+    ret = chunkalloc(sizeof(struct reflist));
+    ret->parent = parent;
+    for ( ref = sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
+	ret->ref = ref;
+	temp = ARFindBase(ref->sc,ret);
+	if ( temp!=ret )
+return( temp );
+	if ( ref->sc->ttf_instrs_len!=0 )
+return( ret );
+    }
+    chunkfree(ret,sizeof(struct reflist));
+return( parent );
+}
+
 static void ChangeCode(DebugView *dv,TT_ExecContext exc) {
     int i;
 
@@ -564,10 +587,35 @@ static void ChangeCode(DebugView *dv,TT_ExecContext exc) {
     dv->codeSize = exc->codeSize;
     for ( i=0 ; i<sizeof(dv->initialbytes) && i<dv->codeSize; ++i )
 	dv->initialbytes[i] = ((uint8 *) exc->code)[i];
-    if ( dv->active_ref!=NULL )
-	dv->active_ref = dv->active_ref->next;
-    if ( dv->active_ref==NULL && dv->cv->sc->layers[ly_fore].splines==NULL )
-	dv->active_ref = dv->cv->sc->layers[ly_fore].refs;
+    if ( dv->active_refs==NULL )
+	dv->active_refs = ARFindBase(dv->cv->sc,NULL);
+    else {
+	struct reflist *temp;
+	while ( dv->active_refs!=NULL ) {
+	    dv->active_refs->ref = dv->active_refs->ref->next;
+	    if ( dv->active_refs->ref==NULL ) {
+		temp = dv->active_refs;
+		dv->active_refs = temp->parent;
+		chunkfree(temp,sizeof(struct reflist));
+		if ( dv->active_refs==NULL ) {
+		    if ( dv->cv->sc->ttf_instrs_len!=0 )
+	break;
+		    dv->active_refs = ARFindBase(dv->cv->sc,NULL);
+	break;
+		} else if ( dv->active_refs->ref->sc->ttf_instrs_len!=0 )
+	break;
+		else
+	continue;
+	    }
+	    temp = ARFindBase(dv->active_refs->ref->sc,dv->active_refs);
+	    if ( temp!=dv->active_refs ) {
+		dv->active_refs = temp;
+	break;
+	    }
+	    if ( temp->ref->sc->ttf_instrs_len!=0 )
+	break;
+	}
+    }
 }
     
 static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
@@ -601,7 +649,7 @@ static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
 	    FreeType_FreeRaster(cv->oldraster);
 	cv->oldraster = cv->raster;
 	SplinePointListsFree(cv->gridfit);
-	cv->gridfit = SplineSetsFromPoints(&exc->pts,dv->scale,dv->active_ref);
+	cv->gridfit = SplineSetsFromPoints(&exc->pts,dv->scale,dv->active_refs);
 	cv->raster = DebuggerCurrentRasterization(cv->gridfit,
 		(cv->sc->parent->ascent+cv->sc->parent->descent) / (real) cv->ft_ppem);
 	if ( exc->pts.n_points<=2 )
@@ -1225,6 +1273,9 @@ static int dvpts_cnt(DebugView *dv) {
     FT_Vector *pts;
     int n;
     TT_GlyphZoneRec *r;
+
+    if ( exc==NULL )		/* Can happen in glyphs with no instructions */
+return( 0 );
 
     show_twilight = GGadgetIsChecked(GWidgetGetControl(dv->points,CID_Twilight));
     show_current = GGadgetIsChecked(GWidgetGetControl(dv->points,CID_Current));
