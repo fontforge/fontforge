@@ -646,6 +646,11 @@ and rarely appear on this list.
   <LI>
     FontForge only produces an approximation to the OS/2 Codepages fields.
   <LI>
+    FontForge does not support the truetype concept of matching glyphs based
+    on points (seen in mark-to-base GPOS sub-tables, and in composite glyphs),
+    instead ff will figure out an equivalent translation based on the default
+    positioning of those points and use that.
+  <LI>
     ???
 </UL>
 <H2>

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 17-Sep-2005 -->
+  <!-- AP: Last modified: 18-Sep-2005 -->
   <TITLE>Outline Glyph View</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -678,6 +678,43 @@ turning off the debug check box), or to restart the debugger with different
 values for the point size and resolution. This dlg can also control whether
 the fpgm and prep tables are debugged. Usually debugging will start when
 execution reaches the instructions associated with this glyph.
+<H3>
+  Debugging composite glyphs
+</H3>
+<P>
+FontForge is not as friendly when debugging composite glyphs as it should
+be -- this is influenced by the way truetype works. Suppose you want to debug
+the "Atilde" glyph. 
+<P>
+First FontForge will load and grid fit the "A" glyph, points from the "tilde"
+will not be displayed and behavior will be exactly the same as if you were
+debugging a stand alone "A". 
+<P>
+Then FontForge will load and grid fit the "tilde" glyph, and now points from
+the "A" glyph will not be visible. The point numbers on the "tilde" will
+be the same as they are in a stand-alone "tilde" (whereas in a true
+representation of "Atilde", the points numbering in the "tilde" component
+will be offset by the number of points in the "A" component). The "tilde"
+may appear oddly positioned, this is caused by rounding: the "tilde" will
+usually be translated, and this translation will usually be rounded to fit
+the pixel grid. The width line will show the width of the "tilde" and not
+of the "Atilde".
+<P>
+Finally FontForge will execute any instructions in the composite itself,
+now all sub-components will be displayed, and all points will be numbered
+as they should be.
+<P>
+Several words of caution:
+<UL>
+  <LI>
+    If a component, or the composite as a whole, as no instructions then FontForge
+    will not debug that piece (there will be nothing to debug).
+  <LI>
+    FontForge does not retain information about point matching (that is positioning
+    the tilde glyph so that its point n matches point m in the A glyph). You
+    can't debug glyphs that use this mechanism (or you can, but the results you
+    see in fontforge will not match those that will happen in the real world)
+</UL>
 <TABLE ALIGN=RIGHT>
   <TR>
     <TD><IMG SRC="mmcharview.png" WIDTH="431" HEIGHT="435" ALT='Intermediate version of "A" showing two other styles in background'><BR>
