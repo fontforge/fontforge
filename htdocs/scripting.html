@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 12-Sep-2005 -->
+  <!-- AP: Last modified: 18-Sep-2005 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -2023,6 +2023,12 @@ ApplySubstitution("*","*","vrt2")
     have the "USE-MY-METRICS" bit set on any of those references, and if one
     of those references has the same width as the current glyph, and has an identity
     transformation matrix, then set the bit on that reference.
+  <DT>
+    DefaultRoundToGrid()
+  <DD>
+    Looks at all selected glyphs, if any reference is not positioned by point
+    matching, then FontForge will set the truetype "ROUND-TO-GRID" flag for the
+    reference.
   <DT>
       <HR>
   <DT>

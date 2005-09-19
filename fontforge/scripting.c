@@ -3861,6 +3861,32 @@ static void bDefaultUseMyMetrics(Context *c) {
     }
 }
 
+static void bDefaultRoundToGrid(Context *c) {
+    int i,gid;
+    FontView *fv = c->curfv;
+    SplineFont *sf = fv->sf;
+    EncMap *map = fv->map;
+
+    if ( c->a.argc!=1 )
+	error( c, "Wrong number of arguments");
+    for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && fv->selected[i] ) {
+	SplineChar *sc = sf->glyphs[gid];
+	RefChar *r;
+	int changed = false;
+
+	for ( r=sc->layers[ly_fore].refs ; r!=NULL; r = r->next ) {
+	    if ( !r->round_translation_to_grid && !r->point_match ) {
+		if ( !changed )
+		    SCPreserveState(sc,false);
+		r->round_translation_to_grid = true;
+		changed = true;
+	    }
+	}
+	if ( changed )
+	    SCCharChangedUpdate(sc);
+    }
+}
+
 static void bAutoHint(Context *c) {
     if ( c->a.argc!=1 )
 	error( c, "Wrong number of arguments");
@@ -5653,6 +5679,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "InterpolateFonts", bInterpolateFonts },
     { "MergeFonts", bMergeFonts },
     { "DefaultUseMyMetrics", bDefaultUseMyMetrics },
+    { "DefaultRoundToGrid", bDefaultRoundToGrid },
 /*  Menu */
     { "AutoHint", bAutoHint },
     { "bSubstitutionPoints", bSubstitutionPoints },
