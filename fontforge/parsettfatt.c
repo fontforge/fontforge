@@ -69,9 +69,9 @@ static uint16 *getAppleClassTable(FILE *ttf, int classdef_offset, int cnt, int s
     fseek(ttf,classdef_offset,SEEK_SET);
     first = getushort(ttf);
     n = getushort(ttf);
-    if ( first+n+1>=cnt )
+    if ( first+n-1>=cnt )
 	LogError( "Bad Apple Kern Class\n" );
-    for ( i=0; i<=n && i+first<cnt; ++i )
+    for ( i=0; i<n && i+first<cnt; ++i )
 	class[first+i] = (getushort(ttf)-sub)/div;
 return( class );
 }
