@@ -684,11 +684,11 @@ execution reaches the instructions associated with this glyph.
 <P>
 FontForge is not as friendly when debugging composite glyphs as it should
 be -- this is influenced by the way truetype works. Suppose you want to debug
-the "Atilde" glyph. 
+the "Atilde" glyph.
 <P>
 First FontForge will load and grid fit the "A" glyph, points from the "tilde"
 will not be displayed and behavior will be exactly the same as if you were
-debugging a stand alone "A". 
+debugging a stand alone "A".
 <P>
 Then FontForge will load and grid fit the "tilde" glyph, and now points from
 the "A" glyph will not be visible. The point numbers on the "tilde" will
@@ -707,13 +707,11 @@ as they should be.
 Several words of caution:
 <UL>
   <LI>
-    If a component, or the composite as a whole, as no instructions then FontForge
+    If a component, or the composite as a whole, has no instructions then FontForge
     will not debug that piece (there will be nothing to debug).
   <LI>
-    FontForge does not retain information about point matching (that is positioning
-    the tilde glyph so that its point n matches point m in the A glyph). You
-    can't debug glyphs that use this mechanism (or you can, but the results you
-    see in fontforge will not match those that will happen in the real world)
+    FontForge does not translate references which do point matching properly
+    until the entire glyph has been loaded.
 </UL>
 <TABLE ALIGN=RIGHT>
   <TR>
