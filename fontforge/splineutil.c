@@ -1690,6 +1690,7 @@ static void InstanciateReference(SplineFont *sf, RefChar *topref, RefChar *refs,
 	    refs->checked = true;
 	    refs->sc = rsc = sf->glyphs[i];
 	    refs->orig_pos = rsc->orig_pos;
+	    refs->unicode_enc = rsc->unicodeenc;
 	    SCMakeDependent(dsc,rsc);
 	} else {
 	    LogError( "Couldn't find referenced character \"%s\" in %s\n",
