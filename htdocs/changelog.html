@@ -16,6 +16,53 @@ on the file stamp.c.
 <P>
 <UL>
   <LI>
+    19-Sept-2005
+    <UL>
+      <LI>
+	ff did not read AAT classes (kerning classes, etc) properly. It read one
+	extra element which could cause problems
+      <LI>
+	Cleanup svg output for kerning classes with no members.
+      <LI>
+	Out of bounds array reference in OS2FigureCodePages caused a crash on the
+	mac.
+      <LI>
+	When loading a type1 font we failed to set the unicode encoding on seac
+	references. This probably broke lots of things, it certainly broke replace
+	with reference.
+      <LI>
+	Add a DefaultRoundToGrid scripting function to set the Round-to-Grid truetype
+	reference bit (basically set it whenever we have a reference which isn't
+	point matched).
+      <LI>
+	Add support for truetype point matching in references and anchor points
+      <LI>
+	Improve the debugging heuristic that notices when we've jumpped to a new
+	routine to work better with composites
+      <LI>
+	If I attempted to debug a glyph with no instructions there was a race condition
+	and if the race was won one way, ff would hang.
+      <LI>
+	We weren't numbering points in a composite. This was only obvious when we
+	did a View-&gt;Show Grid Fit on a composite glyph.
+      <LI>
+	When debugging a composite glyph, ff forgot that some references are translated
+	(or scaled or rotated), and failed to display this.
+      <LI>
+	FF failed to keep track of the truetype "RoundToGrid" bit which applies to
+	references.
+      <LI>
+	In the Points window of truetype debugging, if the penultimate point of a
+	contour was interpolated, then the contour boundary was drawn in the wrong
+	place.
+      <LI>
+	Use to store debugging dpi/pointsize in the charview. Werner suggests that
+	it be global (so different glyphs will all share the same defaults).
+      <LI>
+	Some Unicode code blocks have moved (probably those which only in the pipeline
+	or some such), and some others have been added to the pipeline.
+    </UL>
+  <LI>
     15-Sept-2005
     <UL>
       <LI>
