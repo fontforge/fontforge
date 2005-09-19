@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 15-Sep-2005 -->
+  <!-- AP: Last modified: 18-Sep-2005 -->
   <TITLE>Spline Font Database File Format</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -281,6 +281,16 @@ of them in fact. This specifies the amount of kerning that should be placed
 between a characters of the given classes of left and right characters (ie.
 if char1 was in left class 2 and char2 was in right class 4 then we would
 index this array with 3*&lt;char2 class cnt&gt; + 4).
+<P>
+If your fontforge has been configured with device table support you may find
+<A HREF="#device-table">device</A> tables interspersed among the kerning
+offsets array:
+<BLOCKQUOTE>
+  <PRE>...
+0 {} 0 {} 0 {} ...
+-145 {12-13 -1,1} -145 {} -130 {8-9 -1,-1} ...
+</PRE>
+</BLOCKQUOTE>
 <P>
 The order of opentype features within GPOS/GSUB tables may be stored:
 <BLOCKQUOTE>
@@ -708,8 +718,8 @@ Width: 264
 Flags: 
 HStem: 
 VStem: 
-Refer: 33 44 N 1 0 0 1 0 0
-Refer: 35 46 N 1 0 0 1 0 414
+Refer: 33 44 N 1 0 0 1 0 0 1
+Refer: 35 46 N 1 0 0 1 0 414 2
 EndChar
 </PRE>
 </BLOCKQUOTE>
@@ -718,10 +728,21 @@ Above is one with just references to other characters (a semi-colon is drawn
 here by drawing a comma and stacking a period on top of it). The first number
 is the glyph index of the character being refered to (in the current font
 of course), the next number is the unicode code point, the N says the reference
-is not selected (An "S" indicates it is selected), the remaining 6 numbers
+is not selected (An "S" indicates it is selected), the following 6 numbers
 are a postscript transformation matrix, the one for comma (unicode 44) is
 the identity matrix, while the one for period (unicode 46) just translates
-it vertically 414 units.
+it vertically 414 units. The final number is a set of truetype flags:
+<UL>
+  <LI>
+    1 =&gt; Use My Metrics
+  <LI>
+    2 =&gt; Round to Grid
+  <LI>
+    4 =&gt; Position reference by point match (rather than by offset)<BR>
+    If this is set there will be two additional numbers, the first indicating
+    the point number in the base glyph, and the second the point number in the
+    current reference.
+</UL>
 <P>
 Old versions of sfd files will use the format:
 <BLOCKQUOTE>
@@ -783,7 +804,30 @@ AnchorPoint: "top" 803 1487 basechar 0
 the point names the anchor class it belongs to (in UTF-7), its location,
 what type of point it is (basechar, mark, baselig, basemark, entry, exit),
 and for ligatures a number indicating which ligature component it refers
-to.
+to. If you have configured fontforge with support for device tables, you
+may also see:
+<BLOCKQUOTE>
+  <PRE>AnchorPoint: "bottom" 780 -60 basechar 0 {12-13 -1,-1} {8-14 1,0,-1,-1,-2,-2,-2}
+</PRE>
+</BLOCKQUOTE>
+<P>
+Where the items in braces are horizontal/vertical
+<A NAME="device-table">device</A> tables. The first indicates that the
+(horizontal) device table applies to pixel sizes 12 through 13 with pixel
+adjustments of -1 pixel each. The second indicates a vertical device table
+applies to pixel sizes 8 through 14 with pixel adjustments of 1, 0, -1, -1,
+-2, -2, -2 pixels.
+<P>
+Finally a TrueType font may position an anchor point based on a normal point
+within the glyph (if this is done a device table may not be present).
+<BLOCKQUOTE>
+  <PRE>AnchorPoint: "bottom" 780 -60 basechar 0 23
+</PRE>
+</BLOCKQUOTE>
+<P>
+Indicates that this anchor point will be positioned at the same location
+(which is normally 780,-60 but which might be moved by an instruction) as
+truetype point 23.
 <P>
 If the user has set the glyph class
 <BLOCKQUOTE>
@@ -797,19 +841,29 @@ the 2 above means a base glyph (class 1)).
 If the character is the first in any kern pairs (not a pair defined by a
 kern class, however)
 <BLOCKQUOTE>
-  <PRE>KernsSLIF: 114 -100 1 0 117 -92 1 0 101 -123 1 0 97 -107 1 0 111 -107 1 0
+  <PRE>KernsSLIFO: 60 -100 1 0 {12-13 -1,-1} 63 -92 1 0 70 -123 1 0 45 -107 1 0 76 -107 1 0
 </PRE>
 </BLOCKQUOTE>
 <P>
-Where each kern pair is represented by 4 numbers. The first is the encoding
-of the second character (using the current encoding for the font), the next
-is the horizontal kerning amount, then the script lang index, and finally
+Where each kern pair is represented by 4 numbers (and an optional
+<A HREF="sfdformat.html#device-table">device</A> table, see above). The first
+is the original position of the second character (in the current font), the
+next is the horizontal kerning amount, then the script lang index, and finally
 the open type flags. Then we start over with the next kernpair.
+<P>
+Old sfd files may contain a slightly different format:
+<BLOCKQUOTE>
+  <PRE>KernsSLIF: 114 -100 1 0 {12-13 -1,-1} 117 -92 1 0 101 -123 1 0 97 -107 1 0 111 -107 1 0
+</PRE>
+</BLOCKQUOTE>
+<P>
+where the first number is the encoding of the second glyph in the kern pair.
 <P>
 Data that are to go into other GPOS, GSUB or GDEF sub-tables are stored like
 this:
 <BLOCKQUOTE>
   <PRE>Position: 12 0 'sinf' dx=0 dy=-900 dh=0 dv=0
+PairPos: 12 0 'dist' B dx=0 dy=0 dh=0 dv=0  dx=-10 dy=0 dh=0 dv=0
 Ligature: 12 0 'frac' one slash four
 Substitution: 12 3 'smcp' agrave.sc
 AlternateSubs: 12 0 'swsh' glyph490 A.swash
@@ -823,13 +877,14 @@ In most of these lines the first two numbers provide a script lang index
 and a set of opentype flags (except for LCarets where they are ignored).
 This is followed by an opentype tag (also ignored for ligature carets). A
 simple position change is expressed by the amount of movement of the glyph
-and of the glyph's advance width. A ligature contains the names of the characters
-that make it up. A simple substitution contains the name of the character
-that it will become. An alternate sub contains the list of characters that
-the user may choose from. A multiple substitution contains the characters
-the current glyph is to be decomposed into. A ligature caret contains a count
-of the number of carets defined, and the a list of the locations of those
-carets.
+and of the glyph's advance width. A pairwise positioning controls the positioning
+of two adjacent glyphs (kerning is a special case of this). A ligature contains
+the names of the characters that make it up. A simple substitution contains
+the name of the character that it will become. An alternate sub contains
+the list of characters that the user may choose from. A multiple substitution
+contains the characters the current glyph is to be decomposed into. A ligature
+caret contains a count of the number of carets defined, and the a list of
+the locations of those carets.
 <P>
 A glyph may have an arbitrary comment associated with it, this will be output
 in UTF-7
