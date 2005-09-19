@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 18-Sep-2005 -->
+  <!-- AP: Last modified: 19-Sep-2005 -->
   <TITLE>Get Info</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -132,6 +132,15 @@ is at the same place as point 0 in whatever the base glyph might be. The
 glory of this method is that the truetype instructions assocated with the
 glyphs can move these points around to an appropriate location for the current
 pixelsize.
+<P>
+Points in a composite glyph are numbered by counting the points of the first
+component, adding 4 (for the 4 phantom (metric) points), then counting the
+points in the second composite, adding 4, etc. The first composite is the
+one which is drawn first, not the one which is added first. The Base numbering
+scheme is from the full composite, while the reference point is numbered
+by the current reference. The current reference must be drawn after the base
+point. You may use <A HREF="elementmenu.html#Order">Element-&gt;Order</A>
+to reorder the references.
 <P>
 (You should probably not set Round To Grid when doing point matching)
 <P>
