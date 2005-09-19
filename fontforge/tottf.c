@@ -2952,7 +2952,7 @@ void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]) {
 
     memset(latin1,0,sizeof(latin1));
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
-	if ( sf->glyphs[i]->unicodeenc<256 )
+	if ( sf->glyphs[i]->unicodeenc<256 && sf->glyphs[i]->unicodeenc>=0 )
 	    latin1[(sf->glyphs[i]->unicodeenc>>5)] |= 1<<(sf->glyphs[i]->unicodeenc&31);
     }
 
