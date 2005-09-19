@@ -501,8 +501,10 @@ static void SFDDumpAnchorPoints(FILE *sfd,SplineChar *sc) {
 	    SFDDumpDeviceTable(sfd,&ap->xadjust);
 	    putc(' ',sfd);
 	    SFDDumpDeviceTable(sfd,&ap->yadjust);
-	}
+	} else
 #endif
+	if ( ap->has_ttf_pt )
+	    fprintf( sfd, " %d", ap->ttf_pt_index );
 	putc('\n',sfd);
     }
 }
@@ -734,13 +736,18 @@ static void SFDDumpRefs(FILE *sfd,RefChar *refs, char *name,EncMap *map, int *ne
     RefChar *ref;
 
     for ( ref=refs; ref!=NULL; ref=ref->next ) if ( ref->sc!=NULL ) {
-	fprintf(sfd, "Refer: %d %d %c %g %g %g %g %g %g %d\n",
+	fprintf(sfd, "Refer: %d %d %c %g %g %g %g %g %g %d",
 		    newgids!=NULL ? newgids[ref->sc->orig_pos]:ref->sc->orig_pos,
 		    ref->sc->unicodeenc,
 		    ref->selected?'S':'N',
 		    ref->transform[0], ref->transform[1], ref->transform[2],
 		    ref->transform[3], ref->transform[4], ref->transform[5],
-		    ref->use_my_metrics|(ref->round_translation_to_grid<<1) );
+		    ref->use_my_metrics|(ref->round_translation_to_grid<<1)|
+		     (ref->point_match<<2));
+	if ( ref->point_match )
+	    fprintf(sfd, " %d %d\n", ref->match_pt_base, ref->match_pt_ref );
+	else
+	    putc('\n',sfd);
     }
 }
 
@@ -909,7 +916,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 		SFDDumpValDevTab(sfd,liga->u.pair.vr[0].adjust);
 #endif
-		fprintf( sfd, " dx=%d dy=%d dh=%d dv=%d\n",
+		fprintf( sfd, " dx=%d dy=%d dh=%d dv=%d",
 			liga->u.pair.vr[1].xoff, liga->u.pair.vr[1].yoff,
 			liga->u.pair.vr[1].h_adv_off, liga->u.pair.vr[1].v_adv_off);
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
@@ -2475,6 +2482,7 @@ static AnchorPoint *SFDReadAnchorPoints(FILE *sfd,SplineChar *sc,AnchorPoint *la
     unichar_t *name;
 #endif
     char tok[200];
+    int ch;
 
     name = SFDReadUTF7Str(sfd);
     for ( an=sc->parent->anchor; an!=NULL && u_strcmp(an->name,name)!=0; an=an->next );
@@ -2483,13 +2491,6 @@ static AnchorPoint *SFDReadAnchorPoints(FILE *sfd,SplineChar *sc,AnchorPoint *la
     getreal(sfd,&ap->me.x);
     getreal(sfd,&ap->me.y);
     ap->type = -1;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
-    SFDReadDeviceTable(sfd,&ap->xadjust);
-    SFDReadDeviceTable(sfd,&ap->yadjust);
-#else
-    SFDSkipDeviceTable(sfd);
-    SFDSkipDeviceTable(sfd);
-#endif
     if ( getname(sfd,tok)==1 ) {
 	if ( strcmp(tok,"mark")==0 )
 	    ap->type = at_mark;
@@ -2504,7 +2505,24 @@ static AnchorPoint *SFDReadAnchorPoints(FILE *sfd,SplineChar *sc,AnchorPoint *la
 	else if ( strcmp(tok,"exit")==0 )
 	    ap->type = at_cexit;
     }
-    getint(sfd,&ap->lig_index);
+    getsint(sfd,&ap->lig_index);
+    ch = getc(sfd);
+    ungetc(ch,sfd);
+    if ( ch==' ' ) {
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	SFDReadDeviceTable(sfd,&ap->xadjust);
+	SFDReadDeviceTable(sfd,&ap->yadjust);
+#else
+	SFDSkipDeviceTable(sfd);
+	SFDSkipDeviceTable(sfd);
+#endif
+	ch = getc(sfd);
+	ungetc(ch,sfd);
+	if ( isdigit(ch)) {
+	    getsint(sfd,(int16 *) &ap->ttf_pt_index);
+	    ap->has_ttf_pt = true;
+	}
+    }
     if ( ap->anchor==NULL || ap->type==-1 ) {
 	AnchorPointsFree(ap);
 return( lastap );
@@ -2539,6 +2557,11 @@ static RefChar *SFDGetRef(FILE *sfd, int was_enc) {
 	getint(sfd,&temp);
 	rf->use_my_metrics = temp&1;
 	rf->round_translation_to_grid = (temp&2)?1:0;
+	rf->point_match = (temp&4)?1:0;
+	if ( rf->point_match ) {
+	    getsint(sfd,(int16 *) &rf->match_pt_base);
+	    getsint(sfd,(int16 *) &rf->match_pt_ref);
+	}
     }
 return( rf );
 }
@@ -3006,7 +3029,7 @@ return( NULL );
 #else
 		SFDSkipValDevTab(sfd);
 #endif
-		fscanf( sfd, " dx=%hd dy=%hd dh=%hd dv=%hd\n",
+		fscanf( sfd, " dx=%hd dy=%hd dh=%hd dv=%hd",
 			&liga->u.pair.vr[1].xoff, &liga->u.pair.vr[1].yoff,
 			&liga->u.pair.vr[1].h_adv_off, &liga->u.pair.vr[1].v_adv_off);
 #ifdef FONTFORGE_CONFIG_DEVICETABLES

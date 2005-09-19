@@ -1158,6 +1158,9 @@ static void dumpanchor(FILE *gpos,AnchorPoint *ap) {
 	putshort(gpos,3);	/* format 3 w/ device tables */
     else
 #endif
+    if ( ap->has_ttf_pt )
+	putshort(gpos,2);	/* format 2 w/ a matching ttf point index */
+    else
 	putshort(gpos,1);	/* Anchor format 1 just location*/
     putshort(gpos,ap->me.x);	/* X coord of attachment */
     putshort(gpos,ap->me.y);	/* Y coord of attachment */
@@ -1169,8 +1172,10 @@ static void dumpanchor(FILE *gpos,AnchorPoint *ap) {
 		ftell(gpos)-base+2+DevTabLen(&ap->xadjust));
 	dumpgposdevicetable(gpos,&ap->xadjust);
 	dumpgposdevicetable(gpos,&ap->yadjust);
-    }
+    } else
 #endif
+    if ( ap->has_ttf_pt )
+	putshort(gpos,ap->ttf_pt_index);
 }
 
 static struct lookup *dumpgposCursiveAttach(FILE *gpos,AnchorClass *ac,

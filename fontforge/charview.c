@@ -2976,6 +2976,39 @@ void SCClearSelPt(SplineChar *sc) {
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
+static void TTFPointMatches(SplineChar *sc,int top) {
+    AnchorPoint *ap;
+    BasePoint here, there;
+    struct splinecharlist *deps;
+    RefChar *ref;
+
+    if ( !sc->parent->order2 )
+return;
+    for ( ap=sc->anchor ; ap!=NULL; ap=ap->next ) {
+	if ( ap->has_ttf_pt )
+	    if ( ttfFindPointInSC(sc,ap->ttf_pt_index,&ap->me,NULL)!=-1 )
+		ap->has_ttf_pt = false;
+    }
+    for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
+	if ( ref->point_match ) {
+	    if ( ttfFindPointInSC(sc,ref->match_pt_base,&there,ref)==-1 &&
+		    ttfFindPointInSC(ref->sc,ref->match_pt_ref,&here,NULL)==-1 ) {
+		if ( ref->transform[4]!=there.x-here.x ||
+			ref->transform[5]!=there.y-here.y ) {
+		    ref->transform[4] = there.x-here.x;
+		    ref->transform[5] = there.y-here.y;
+		    SCReinstanciateRefChar(sc,ref);
+		    if ( !top )
+			_SCCharChangedUpdate(sc,true);
+		}
+	    } else
+		ref->point_match = false;		/* one of the points no longer exists */
+	}
+    }
+    for ( deps = sc->dependents; deps!=NULL; deps = deps->next )
+	TTFPointMatches(deps->sc,false);
+}
+
 void _SCCharChangedUpdate(SplineChar *sc,int changed) {
     SplineFont *sf = sc->parent;
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -2983,6 +3016,7 @@ void _SCCharChangedUpdate(SplineChar *sc,int changed) {
     extern int updateflex;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
+    TTFPointMatches(sc,true);
     if ( changed != -1 ) {
 	sc->changed_since_autosave = true;
 	if ( sc->changed!=changed ) {
@@ -3043,6 +3077,7 @@ void _CVCharChangedUpdate(CharView *cv,int changed) {
     CVLayerChange(cv);
 #endif
     if ( cv->needsrasterize ) {
+	TTFPointMatches(cv->sc,true);		/* Must precede regen dependents, as this can change references */
 	SCRegenDependents(cv->sc);		/* All chars linked to this one need to get the new splines */
 	if ( updateflex )
 	    SplineCharIsFlexible(cv->sc);

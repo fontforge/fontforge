@@ -616,13 +616,18 @@ static AnchorPoint *readAnchorPoint(FILE *ttf,uint32 base,AnchorClass *class,
     ap = chunkalloc(sizeof(AnchorPoint));
     ap->anchor = class;
     /* All anchor types have the same initial 3 entries, format */
-    /*  x,y pos. If format==3 may also have device tables */
+    /*  x,y pos. format 2 contains a truetype positioning point, and */
+    /*  format==3 may also have device tables */
     format = getushort(ttf);
     ap->me.x = (int16) getushort(ttf);
     ap->me.y = (int16) getushort(ttf);
     ap->type = type;
+    if ( format==2 ) {
+	ap->ttf_pt_index = getushort(ttf);
+	ap->has_ttf_pt = true;
+    }
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
-    if ( format==3 ) {
+    else if ( format==3 ) {
 	int devoff;
 	devoff = getushort(ttf);
 	if ( devoff!=0 )
