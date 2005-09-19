@@ -87,9 +87,12 @@ typedef struct gidata {
 #define CID_Prev	3012
 #define CID_Delete	3013
 #define CID_New		3014
+#define CID_MatchPt	3015
 
 #define RI_Width	225
-#define RI_Height	208
+#define RI_Height	246
+#define CID_Match_Pt_Base	1010
+#define CID_Match_Pt_Ref	1011
 
 #define II_Width	130
 #define II_Height	70
@@ -98,7 +101,7 @@ typedef struct gidata {
 #define PI_Height	334
 
 #define AI_Width	160
-#define AI_Height	234
+#define AI_Height	258
 
 static int GI_Cancel(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
@@ -116,6 +119,36 @@ static int GI_TransChange(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static int GI_MatchPtChange(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	const unichar_t *t1 = _GGadgetGetTitle(GWidgetGetControl(ci->gw,CID_Match_Pt_Base));
+	const unichar_t *t2 = _GGadgetGetTitle(GWidgetGetControl(ci->gw,CID_Match_Pt_Ref));
+	while ( *t1==' ' ) ++t1;
+	while ( *t2==' ' ) ++t2;
+	GGadgetSetEnabled(GWidgetGetControl(ci->gw,1004),*t1=='\0' && *t2=='\0' );
+	GGadgetSetEnabled(GWidgetGetControl(ci->gw,1005),*t1=='\0' && *t2=='\0' );
+	if ( isdigit(*t1) && isdigit(*t2)) {
+	    BasePoint inbase, inref;
+	    int basept, refpt;
+	    basept = u_strtol(t1,NULL,10);
+	    refpt = u_strtol(t2,NULL,10);
+	    if ( ttfFindPointInSC(ci->cv->sc,basept,&inbase,ci->rf)==-1 &&
+		    ttfFindPointInSC(ci->rf->sc,refpt,&inref,NULL)==-1 ) {
+		char buffer[40];
+		unichar_t ubuffer[40];
+		sprintf(buffer,"%g",inbase.x-inref.x);
+		uc_strcpy(ubuffer,buffer);
+		GGadgetSetTitle(GWidgetGetControl(ci->gw,1004),ubuffer);
+		sprintf(buffer,"%g",inbase.y-inref.y);
+		uc_strcpy(ubuffer,buffer);
+		GGadgetSetTitle(GWidgetGetControl(ci->gw,1005),ubuffer);
+	    }
+	}
+    }
+return( true );
+}
+
 static int GI_ROK_Do(GIData *ci) {
     int errs=false,i;
     real trans[6];
@@ -123,6 +156,8 @@ static int GI_ROK_Do(GIData *ci) {
     RefChar *ref = ci->rf, *subref;
     int usemy = GGadgetIsChecked(GWidgetGetControl(ci->gw,6+1000));
     int round = GGadgetIsChecked(GWidgetGetControl(ci->gw,7+1000));
+    int basept=-1, refpt=-1;
+    BasePoint inbase, inref;
 
     for ( i=0; i<6; ++i ) {
 	trans[i] = GetRealR(ci->gw,1000+i,_STR_TransformationMatrix,&errs);
@@ -142,9 +177,46 @@ static int GI_ROK_Do(GIData *ci) {
 	if ( errs )
 return( false );
     }
+    if ( !ci->cv->sc->parent->order2 )
+	/* No point matching */;
+    else {
+	const unichar_t *txt;
+	txt = _GGadgetGetTitle(GWidgetGetControl(ci->gw,CID_Match_Pt_Base));
+	while ( isspace(*txt)) ++txt;
+	if ( *txt!='\0' )
+	    basept = GetIntR(ci->gw,CID_Match_Pt_Base,_STR_Base,&errs);
+	txt = _GGadgetGetTitle(GWidgetGetControl(ci->gw,CID_Match_Pt_Ref));
+	while ( isspace(*txt)) ++txt;
+	if ( *txt!='\0' )
+	    refpt = GetIntR(ci->gw,CID_Match_Pt_Ref,_STR_Ref,&errs);
+	if ( errs )
+return( false );
+	if ( (basept!=-1) ^ (refpt!=-1) ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
+	    GWidgetErrorR(_STR_BadPointMatch,_STR_SpecifyTwoPointsOrNone);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Bad Point Match"),_("Both points must be specified, or neither"));
+#endif
+	}
+	if ( ttfFindPointInSC(ci->cv->sc,basept,&inbase,ci->rf)!=-1 ) {
+	    GWidgetErrorR(_STR_BadPointMatch,_STR_CouldntFindBasePoint);
+return( false );
+	} else if ( ttfFindPointInSC(ci->rf->sc,refpt,&inref,NULL)!=-1 ) {
+	    GWidgetErrorR(_STR_BadPointMatch,_STR_CouldntFindPointInReference);
+return( false );
+	}
+	/* Override user specified value */
+	trans[4] = inbase.x-inref.x;
+	trans[5] = inbase.y-inref.y;
+    }
 
     for ( i=0; i<6 && ref->transform[i]==trans[i]; ++i );
-    if ( i==6 && usemy==ref->use_my_metrics && round==ref->round_translation_to_grid)
+    if ( i==6 &&
+	    usemy==ref->use_my_metrics &&
+	    round==ref->round_translation_to_grid &&
+	    (basept!=-1)==ref->point_match &&
+	    (basept==-1 ||
+		(ref->match_pt_base==basept && ref->match_pt_ref==refpt)))
 return( true );		/* Didn't really change */
 
     for ( i=0; i<6; ++i )
@@ -165,6 +237,8 @@ return( true );		/* Didn't really change */
     }
     ref->use_my_metrics = usemy;
     ref->round_translation_to_grid = round;
+    ref->point_match = basept!=-1;
+    ref->match_pt_base = basept; ref->match_pt_ref = refpt;
 
     SplineSetFindBounds(ref->layers[0].splines,&ref->bb);
     CVCharChangedUpdate(ci->cv);
@@ -229,9 +303,10 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
     static GIData gi;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[17];
-    GTextInfo label[17];
+    GGadgetCreateData gcd[22];
+    GTextInfo label[22];
     char tbuf[6][40];
+    char basebuf[20], refbuf[20];
     unichar_t namebuf[100];
     char ubuf[40];
     int i,j;
@@ -301,6 +376,8 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	    gcd[i+j].gd.handle_controlevent = GI_TransChange;
 	    gcd[i+j].creator = GTextFieldCreate;
 	}
+	if ( ref->point_match )
+	    gcd[4+j].gd.flags = gcd[5+j].gd.flags = gg_visible;
 
 	label[6+j].text = (unichar_t *) _STR_UseMyMetrics;
 	label[6+j].text_in_resource = true;
@@ -320,8 +397,58 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	gcd[6+j].gd.popup_msg = GStringGetResource(_STR_RoundToGridPopup,NULL);
 	gcd[6+j++].creator = GCheckBoxCreate;
 
+	label[6+j].text = (unichar_t *) _STR_TrueTypePointMatching;
+	label[6+j].text_in_resource = true;
+	gcd[6+j].gd.label = &label[6+j];
+	gcd[6+j].gd.pos.x = 5; gcd[6+j].gd.pos.y = gcd[6+j-1].gd.pos.y+17;
+	gcd[6+j].gd.flags = cv->sc->parent->order2 ? (gg_enabled|gg_visible) : gg_visible;
+	gcd[6+j].gd.popup_msg = GStringGetResource(_STR_TTPtMatchPopup,NULL);
+	gcd[6+j++].creator = GLabelCreate;
+
+	label[6+j].text = (unichar_t *) _STR_Base;
+	label[6+j].text_in_resource = true;
+	gcd[6+j].gd.label = &label[6+j];
+	gcd[6+j].gd.pos.x = 8; gcd[6+j].gd.pos.y = gcd[6+j-1].gd.pos.y+19;
+	gcd[6+j].gd.flags = cv->sc->parent->order2 ? (gg_enabled|gg_visible) : gg_visible;
+	gcd[6+j].gd.popup_msg = GStringGetResource(_STR_TTPtMatchPopup,NULL);
+	gcd[6+j++].creator = GLabelCreate;
+
+	if ( ref->point_match ) {
+	    sprintf(basebuf,"%d", ref->match_pt_base);
+	    label[6+j].text = (unichar_t *) basebuf;
+	    label[6+j].text_is_1byte = true;
+	    gcd[6+j].gd.label = &label[6+j];
+	}
+	gcd[6+j].gd.pos.x = 40; gcd[6+j].gd.pos.width=50;
+	gcd[6+j].gd.pos.y = gcd[6+j-1].gd.pos.y-4; 
+	gcd[6+j].gd.flags = gcd[6+j-1].gd.flags;
+	gcd[6+j].gd.cid = CID_Match_Pt_Base;
+	gcd[6+j].gd.handle_controlevent = GI_MatchPtChange;
+	gcd[6+j++].creator = GTextFieldCreate;
+
+	label[6+j].text = (unichar_t *) _STR_Ref;
+	label[6+j].text_in_resource = true;
+	gcd[6+j].gd.label = &label[6+j];
+	gcd[6+j].gd.pos.x = 95; gcd[6+j].gd.pos.y = gcd[6+j-2].gd.pos.y;
+	gcd[6+j].gd.flags = gcd[6+j-1].gd.flags;
+	gcd[6+j].gd.popup_msg = GStringGetResource(_STR_TTPtMatchPopup,NULL);
+	gcd[6+j++].creator = GLabelCreate;
+
+	if ( ref->point_match ) {
+	    sprintf(refbuf,"%d", ref->match_pt_ref);
+	    label[6+j].text = (unichar_t *) refbuf;
+	    label[6+j].text_is_1byte = true;
+	    gcd[6+j].gd.label = &label[6+j];
+	}
+	gcd[6+j].gd.pos.x = 127; gcd[6+j].gd.pos.width=50;
+	gcd[6+j].gd.pos.y = gcd[6+j-2].gd.pos.y;
+	gcd[6+j].gd.flags = gcd[6+j-1].gd.flags;
+	gcd[6+j].gd.cid = CID_Match_Pt_Ref;
+	gcd[6+j].gd.handle_controlevent = GI_MatchPtChange;
+	gcd[6+j++].creator = GTextFieldCreate;
+
 	gcd[6+j].gd.pos.x = (RI_Width-GIntGetResource(_NUM_Buttonsize))/2;
-	gcd[6+j].gd.pos.y = RI_Height+(j==5?12:0)-64;
+	gcd[6+j].gd.pos.y = RI_Height+(j==10?12:0)-64;
 	gcd[6+j].gd.pos.width = -1; gcd[6+j].gd.pos.height = 0;
 	gcd[6+j].gd.flags = gg_visible | gg_enabled ;
 	label[6+j].text = (unichar_t *) _STR_Show;
@@ -331,7 +458,7 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	gcd[6+j].gd.handle_controlevent = GI_Show;
 	gcd[6+j].creator = GButtonCreate;
 
-	gcd[7+j].gd.pos.x = 30-3; gcd[7+j].gd.pos.y = RI_Height+(j==5?12:0)-32-3;
+	gcd[7+j].gd.pos.x = 30-3; gcd[7+j].gd.pos.y = RI_Height+(j==10?12:0)-30-3;
 	gcd[7+j].gd.pos.width = -1; gcd[7+j].gd.pos.height = 0;
 	gcd[7+j].gd.flags = gg_visible | gg_enabled | gg_but_default;
 	label[7+j].text = (unichar_t *) _STR_OK;
@@ -967,6 +1094,40 @@ return( true );
 return( true );
 }
 
+static int AI_MatchChanged(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	const unichar_t *t1 = _GGadgetGetTitle(GWidgetGetControl(ci->gw,CID_MatchPt));
+	unichar_t *end;
+	AnchorPoint *ap = ci->ap;
+
+	while ( *t1==' ' ) ++t1;
+	GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_X),*t1=='\0');
+	GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_Y),*t1=='\0');
+	if ( isdigit(*t1)) {
+	    BasePoint here;
+	    int pt;
+	    pt = u_strtol(t1,&end,10);
+	    if ( *end=='\0' && ttfFindPointInSC(ci->cv->sc,pt,&here,NULL)==-1 ) {
+		char buffer[40];
+		unichar_t ubuffer[40];
+		sprintf(buffer,"%g",here.x);
+		uc_strcpy(ubuffer,buffer);
+		GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_X),ubuffer);
+		sprintf(buffer,"%g",here.y);
+		uc_strcpy(ubuffer,buffer);
+		GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_Y),ubuffer);
+		ap->me = here;
+		ap->has_ttf_pt = true;
+		ap->ttf_pt_index = pt;
+		CVCharChangedUpdate(ci->cv);
+	    }
+	} else
+	    ap->has_ttf_pt = false;
+    }
+return( true );
+}
+
 static void AI_DoCancel(GIData *ci) {
     CharView *cv = ci->cv;
     ci->done = true;
@@ -1015,8 +1176,8 @@ void ApGetInfo(CharView *cv, AnchorPoint *ap) {
     static GIData gi;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[22];
-    GTextInfo label[22];
+    GGadgetCreateData gcd[24];
+    GTextInfo label[24];
     int j;
     SplineFont *sf;
 
@@ -1041,11 +1202,7 @@ return;
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	wattrs.window_title = GStringGetResource(_STR_AnchorPointInfo,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	wattrs.window_title = _("Anchor Point Info");
-#endif
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,AI_Width));
@@ -1098,6 +1255,22 @@ return;
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].gd.cid = CID_Y;
 	gcd[j].gd.handle_controlevent = AI_PosChanged;
+	gcd[j].creator = GTextFieldCreate;
+	++j;
+
+	label[j].text = (unichar_t *) _STR_MatchingTTFContourPoint;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[j-2].gd.pos.y+24;
+	gcd[j].gd.flags = cv->sc->parent->order2 ? (gg_enabled|gg_visible) : gg_visible;
+	gcd[j].creator = GLabelCreate;
+	++j;
+
+	gcd[j].gd.pos.x = 103; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y-2;
+	gcd[j].gd.pos.width = 50;
+	gcd[j].gd.flags = gcd[j-1].gd.flags;
+	gcd[j].gd.cid = CID_MatchPt;
+	gcd[j].gd.handle_controlevent = AI_MatchChanged;
 	gcd[j].creator = GTextFieldCreate;
 	++j;
 
@@ -1230,9 +1403,9 @@ return;
 	label[j].text = (unichar_t *) _STR_OK;
 	label[j].text_in_resource = true;
 	gcd[j].gd.label = &label[j];
-	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+8;
+	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+4;
 	gcd[j].gd.pos.width = -1;
-	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.flags = gg_enabled|gg_visible|gg_but_default;
 	gcd[j].gd.handle_controlevent = AI_Ok;
 	gcd[j].creator = GButtonCreate;
 	++j;
@@ -1242,7 +1415,7 @@ return;
 	gcd[j].gd.label = &label[j];
 	gcd[j].gd.pos.x = -5; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+3;
 	gcd[j].gd.pos.width = -1;
-	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.flags = gg_enabled|gg_visible|gg_but_cancel;
 	gcd[j].gd.handle_controlevent = AI_Cancel;
 	gcd[j].creator = GButtonCreate;
 	++j;

@@ -255,7 +255,9 @@ typedef struct anchorpoint {
     unsigned int type: 4;
     unsigned int selected: 1;
     unsigned int ticked: 1;
-    int lig_index;
+    unsigned int has_ttf_pt: 1;
+    uint16 ttf_pt_index;
+    int16  lig_index;
     struct anchorpoint *next;
 } AnchorPoint;
 
@@ -685,9 +687,9 @@ typedef struct imagelist {
 typedef struct refchar {
     unsigned int checked: 1;
     unsigned int selected: 1;
-    unsigned int point_match: 1;	/* transform[4:5] are point indexes */
-					/*  and need to be converted to offsets*/
-			                /*  after truetype readin */
+    unsigned int point_match: 1;	/* match_pt* are point indexes */
+					/*  and need to be converted to a */
+			                /*  translation after truetype readin */
     unsigned int encoded: 1;		/* orig_pos is actually an encoded value, used for old sfd files */
     unsigned int justtranslated: 1;	/* The transformation matrix specifies a translation (or is identity) */
     unsigned int use_my_metrics: 1;	/* Retain the ttf "use_my_metrics" info. */
@@ -718,6 +720,7 @@ typedef struct refchar {
     DBounds bb;
     struct splinechar *sc;
     BasePoint top;
+    uint16 match_pt_base, match_pt_ref;
 } RefChar;
 
 typedef struct kernpair {
@@ -1806,6 +1809,8 @@ extern int SFCloseAllInstrs(SplineFont *sf);
 extern void SCMarkInstrDlgAsChanged(SplineChar *sc);
 extern int  SCNumberPoints(SplineChar *sc);
 extern int  SCPointsNumberedProperly(SplineChar *sc);
+extern int  ttfFindPointInSC(SplineChar *sc,int pnum,BasePoint *pos,
+	RefChar *bound);
 
 int SFFigureDefWidth(SplineFont *sf, int *_nomwid);
 

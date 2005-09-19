@@ -1074,6 +1074,7 @@ static void dumpcomposite(SplineChar *sc, struct glyphinfo *gi) {
     RefChar *ref;
     SplineChar *isc = sc->ttf_instrs==NULL && sc->parent->mm!=NULL && sc->parent->mm->apple ?
 		sc->parent->mm->normal->glyphs[sc->orig_pos] : sc;
+    int arg1, arg2;
 
 #if 0
     if ( autohint_before_generate && sc->changedsincelasthinted &&
@@ -1096,20 +1097,7 @@ static void dumpcomposite(SplineChar *sc, struct glyphinfo *gi) {
 	    /*if ( sc->layers[ly_fore].refs->next==NULL || any )*/
     continue;
 	}
-	flags = _ARGS_ARE_XY|_UNSCALED_OFFSETS;	/* Args are always values for me */
-	    /* There is some very strange stuff wrongly-documented on the apple*/
-	    /*  site about how these should be interpretted when there are */
-	    /*  scale factors, or rotations */
-	    /* That description does not match the behavior of their rasterizer*/
-	    /*  I've reverse engineered something else (see parsettf.c) */
-	    /*  http://fonts.apple.com/TTRefMan/RM06/Chap6glyf.html */
-	    /* Adobe says that setting bit 12 means that this will not happen */
-	    /*  Apple doesn't mention bit 12 though...(but they do support it) */
-/* if we want a mac style scaled composite then
-	flags = _ARGS_ARE_XY|_SCALED_OFFSETS;
-    and if we want an ambiguous composite...
-	flags = _ARGS_ARE_XY;
-*/
+	flags = 0;
 	if ( ref->round_translation_to_grid )
 	    flags |= _ROUND;
 	if ( ref->use_my_metrics )
@@ -1124,17 +1112,34 @@ static void dumpcomposite(SplineChar *sc, struct glyphinfo *gi) {
 	    flags |= _XY_SCALE;		/* different xy scales */
 	else if ( ref->transform[0]!=1. )
 	    flags |= _SCALE;		/* xy scale is same */
-	if ( ref->transform[4]<-128 || ref->transform[4]>127 ||
-		ref->transform[5]<-128 || ref->transform[5]>127 )
+	if ( ref->point_match ) {
+	    arg1 = ref->match_pt_base;
+	    arg2 = ref->match_pt_ref;
+	} else {
+	    arg1 = rint(ref->transform[4]);
+	    arg2 = rint(ref->transform[5]);
+	    flags |= _ARGS_ARE_XY|_UNSCALED_OFFSETS;
+	    /* The values I output are the values I want to see */
+	    /* There is some very strange stuff wrongly-documented on the apple*/
+	    /*  site about how these should be interpretted when there are */
+	    /*  scale factors, or rotations */
+	    /* That description does not match the behavior of their rasterizer*/
+	    /*  I've reverse engineered something else (see parsettf.c) */
+	    /*  http://fonts.apple.com/TTRefMan/RM06/Chap6glyf.html */
+	    /* Adobe says that setting bit 12 means that this will not happen */
+	    /*  Apple doesn't mention bit 12 though...(but they do support it) */
+	}
+	if ( arg1<-128 || arg1>127 ||
+		arg2<-128 || arg2>127 )
 	    flags |= _ARGS_ARE_WORDS;
 	putshort(gi->glyphs,flags);
 	putshort(gi->glyphs,ref->sc->ttf_glyph==-1?0:ref->sc->ttf_glyph);
 	if ( flags&_ARGS_ARE_WORDS ) {
-	    putshort(gi->glyphs,(short)ref->transform[4]);
-	    putshort(gi->glyphs,(short)ref->transform[5]);
+	    putshort(gi->glyphs,(short)arg1);
+	    putshort(gi->glyphs,(short)arg2);
 	} else {
-	    putc((char) (ref->transform[4]),gi->glyphs);
-	    putc((char) (ref->transform[5]),gi->glyphs);
+	    putc((char) arg1,gi->glyphs);
+	    putc((char) arg2,gi->glyphs);
 	}
 	if ( flags&_MATRIX ) {
 	    put2d14(gi->glyphs,ref->transform[0]);

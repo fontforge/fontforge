@@ -1503,8 +1503,6 @@ return;
 	    arg1 = (signed char) getc(ttf);
 	    arg2 = (signed char) getc(ttf);
 	}
-	cur->transform[4] = arg1;
-	cur->transform[5] = arg2;
 	cur->use_my_metrics =		 (flags & _USE_MY_METRICS) ? 1 : 0;
 	cur->round_translation_to_grid = (flags & _ROUND) ? 1 : 0;
 	if ( flags & _ARGS_ARE_XY ) {
@@ -1526,6 +1524,8 @@ return;
 	    /* Ah. It turns out that even Apple does not do what Apple's docs */
 	    /*  claim it does. I think I've worked it out (see below), but... */
 	    /*  Bleah! */
+	    cur->transform[4] = arg1;
+	    cur->transform[5] = arg2;
 	} else {
 	    /* Somehow we can get offsets by looking at the points in the */
 	    /*  points so far generated and comparing them to the points in */
@@ -1536,6 +1536,8 @@ return;
 	    /*  offset.x = arg1.x - arg2.x; offset.y = arg1.y - arg2.y; */
 	    /* This fixup needs to be done later though (after all glyphs */
 	    /*  have been loaded) */
+	    cur->match_pt_base = arg1;
+	    cur->match_pt_ref = arg2;
 	    cur->point_match = true;
 	}
 	cur->transform[0] = cur->transform[3] = 1.0;
@@ -4243,7 +4245,7 @@ static void UnfigureControls(Spline *spline,BasePoint *pos) {
     pos->y = rint( (spline->splines[1].c+2*spline->splines[1].d)/2 );
 }
 
-static int ttfFindPointInSC(SplineChar *sc,int pnum,BasePoint *pos,
+int ttfFindPointInSC(SplineChar *sc,int pnum,BasePoint *pos,
 	RefChar *bound) {
     SplineSet *ss;
     SplinePoint *sp;
@@ -4255,17 +4257,19 @@ static int ttfFindPointInSC(SplineChar *sc,int pnum,BasePoint *pos,
 	    if ( sp->ttfindex==pnum ) {
 		*pos = sp->me;
 return(-1);
-	    } else if ( !sp->nonextcp && last+1==pnum ) {
-		/* fix this up to be 2 degree bezier control point */
-		UnfigureControls(sp->next,pos);
+	    } else if ( sp->nextcpindex==pnum ) {
+		if ( sp->next!=NULL && sp->next->order2 )
+		    *pos = sp->nextcp;
+		else {
+		    /* fix this up to be 2 degree bezier control point */
+		    UnfigureControls(sp->next,pos);
+		}
 return( -1 );
 	    }
-	    if ( sp->ttfindex==0xffff )
-		++last;
-	    else if ( sp->nonextcp )
+	    if ( !sp->nonextcp && last<sp->nextcpindex )
+		last = sp->nextcpindex;
+	    else if ( sp->ttfindex!=0xffff )
 		last = sp->ttfindex;
-	    else
-		last = sp->ttfindex+1;
 	    if ( sp->next==NULL )
 	break;
 	    sp = sp->next->to;
@@ -4279,8 +4283,13 @@ return( -1 );
 return( 0x800000 );
 	}
 	ret = ttfFindPointInSC(refs->sc,pnum-last,pos,NULL);
-	if ( ret==-1 )
+	if ( ret==-1 ) {
+	    BasePoint p;
+	    p.x = refs->transform[0]*pos->x + refs->transform[2]*pos->y + refs->transform[4];
+	    p.y = refs->transform[1]*pos->x + refs->transform[3]*pos->y + refs->transform[5];
+	    *pos = p;
 return( -1 );
+	}
 	last += ret;
     }
 return( last );		/* Count of number of points in the character */
@@ -4289,14 +4298,10 @@ return( last );		/* Count of number of points in the character */
 static void ttfPointMatch(SplineChar *sc,RefChar *rf) {
     BasePoint sofar, inref;
 
-    if ( rf->transform[4]<0 || rf->transform[5]<0 ) {
-	LogError( "Invalid point to match.\n" );
-return;
-    }
-    if ( ttfFindPointInSC(sc,rf->transform[4],&sofar,rf)!=-1 ||
-	    ttfFindPointInSC(rf->sc,rf->transform[5],&inref,NULL)!=-1 ) {
-	LogError( "Could not match points in composite glyph (%g to %g) when adding %s to %s\n",
-		rf->transform[4], rf->transform[5], rf->sc->name, sc->name);
+    if ( ttfFindPointInSC(sc,rf->match_pt_base,&sofar,rf)!=-1 ||
+	    ttfFindPointInSC(rf->sc,rf->match_pt_ref,&inref,NULL)!=-1 ) {
+	LogError( "Could not match points in composite glyph (%d to %d) when adding %s to %s\n",
+		rf->match_pt_base, rf->match_pt_ref, rf->sc->name, sc->name);
 return;
     }
     rf->transform[4] = sofar.x-inref.x;

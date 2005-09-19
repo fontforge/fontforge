@@ -744,6 +744,8 @@ void SFConvertToOrder2(SplineFont *_sf) {
     
 void SCConvertToOrder3(SplineChar *sc) {
     SplineSet *new;
+    RefChar *ref;
+    AnchorPoint *ap;
 
     new = SplineSetsPSApprox(sc->layers[ly_fore].splines);
     SplinePointListsFree(sc->layers[ly_fore].splines);
@@ -759,6 +761,13 @@ void SCConvertToOrder3(SplineChar *sc) {
     sc->layers[ly_fore].redoes = sc->layers[ly_back].redoes = NULL;
 
     MinimumDistancesFree(sc->md); sc->md = NULL;
+
+    /* OpenType/PostScript fonts don't support point matching to position */
+    /*  references or anchors */
+    for ( ref = sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
+	ref->point_match = false;
+    for ( ap = sc->anchor; ap!=NULL; ap=ap->next )
+	ap->has_ttf_pt = false;
 
     free(sc->ttf_instrs);
     sc->ttf_instrs = NULL; sc->ttf_instrs_len = 0;
