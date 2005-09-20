@@ -372,17 +372,17 @@ return;
 }
 
 static void tfmDoExten(SplineFont *sf,int i,uint8 *ext,EncMap *map) {
-    int j, len, k;
+    int j, len, k, gid, gid2;
     char *names[4], *components;
 
-    if ( i>=map->enccount || map->map[i]==-1 || sf->glyphs[map->map[i]]==NULL )
+    if ( i>=map->enccount || (gid=map->map[i])==-1 || sf->glyphs[gid]==NULL )
 return;
 
     names[0] = names[1] = names[2] = names[3] = ".notdef";
     for ( j=len=0; j<4; ++j ) {
 	k = ext[j];
-	if ( k>=map->enccount || map->map[k]==-1 || sf->glyphs[map->map[k]]==NULL )
-	    names[j] = sf->glyphs[k]->name;
+	if ( k>=map->enccount || (gid2 = map->map[k])==-1 || sf->glyphs[gid2]==NULL )
+	    names[j] = sf->glyphs[gid2]->name;
 	len += strlen(names[j])+1;
     }
     components = galloc(len); components[0] = '\0';
@@ -391,8 +391,8 @@ return;
 	if ( j!=3 )
 	    strcat(components," ");
     }
-    SubsNew(sf->glyphs[i],pst_multiple,CHR('T','E','X','L'),components,
-	    sf->glyphs[i]);
+    SubsNew(sf->glyphs[gid],pst_multiple,CHR('T','E','X','L'),components,
+	    sf->glyphs[gid]);
 }
 
 #define BigEndianWord(pt) ((((uint8 *) pt)[0]<<24) | (((uint8 *) pt)[1]<<16) | (((uint8 *) pt)[2]<<8) | (((uint8 *) pt)[3]))
