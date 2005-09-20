@@ -5190,15 +5190,22 @@ static void FontViewMenu_ShowSubFont(GtkMenuItem *menuitem, gpointer user_data) 
 # endif
     SplineFont *new = mi->ti.userdata;
     MetricsView *mv, *mvnext;
+    BDFFont *newbdf;
 
     for ( mv=fv->metrics; mv!=NULL; mv = mvnext ) {
 	/* Don't bother trying to fix up metrics views, just not worth it */
 	mvnext = mv->next;
 	GDrawDestroyWindow(mv->gw);
     }
-    GDrawSync(NULL);
-    GDrawProcessPendingEvents(NULL);
     CIDSetEncMap(fv,new);
+    newbdf = SplineFontPieceMeal(fv->sf,fv->filled->pixelsize,
+	    (fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0),
+	    NULL);
+    BDFFontFree(fv->filled);
+    if ( fv->filled == fv->show )
+	fv->show = newbdf;
+    fv->filled = newbdf;
+    GDrawRequestExpose(fv->v,NULL,true);
 }
 
 # ifdef FONTFORGE_CONFIG_GDRAW
@@ -7576,6 +7583,8 @@ return;
 
 		if ( bdfc==NULL )
 		    bdfc = BDFPieceMeal(fv->show,gid);
+		if ( bdfc==NULL )
+	continue;
 
 		memset(&gi,'\0',sizeof(gi));
 		memset(&base,'\0',sizeof(base));
@@ -9278,7 +9287,13 @@ static void FVResize(FontView *fv,GEvent *event) {
     else {
 	/* Position on 'A' if it exists */
 	topchar = SFFindSlot(fv->sf,fv->map,'A',NULL);
-	if ( topchar==-1 ) topchar = 0;
+	if ( topchar==-1 ) {
+	    for ( topchar=0; topchar<fv->map->enccount; ++topchar )
+		if ( fv->map->map[topchar]!=-1 && fv->sf->glyphs[fv->map->map[topchar]]!=NULL )
+	    break;
+	    if ( topchar==fv->map->enccount )
+		topchar = 0;
+	}
     }
     if ( !event->u.resize.sized )
 	/* WM isn't responding to my resize requests, so no point in trying */;
@@ -9321,7 +9336,7 @@ static void FVResize(FontView *fv,GEvent *event) {
     GScrollBarSetBounds(fv->vsb,0,fv->rowltot,fv->rowcnt);
     fv->rowoff = topchar/fv->colcnt;
     if ( fv->rowoff>=fv->rowltot-fv->rowcnt )
-        fv->rowoff = fv->rowltot-fv->rowcnt-1;
+        fv->rowoff = fv->rowltot-fv->rowcnt;
     if ( fv->rowoff<0 ) fv->rowoff =0;
     GScrollBarSetPos(fv->vsb,fv->rowoff);
     GDrawRequestExpose(fv->gw,NULL,true);
@@ -9609,7 +9624,14 @@ FontView *_FontViewCreate(SplineFont *sf) {
 	fv->cidmaster = sf;
 	for ( i=0; i<sf->subfontcnt; ++i )
 	    sf->subfonts[i]->fv = fv;
-	fv->sf = sf = sf->subfonts[0];
+	for ( i=0; i<sf->subfontcnt; ++i )	/* Search for a subfont that contains more than ".notdef" (most significant in .gai fonts) */
+	    if ( sf->subfonts[i]->glyphcnt>1 ) {
+		fv->sf = sf->subfonts[i];
+	break;
+	    }
+	if ( fv->sf==NULL )
+	    fv->sf = sf->subfonts[0];
+	sf = fv->sf;
 	if ( fv->nextsame==NULL ) EncMapFree(sf->map);
 	fv->map = EncMap1to1(sf->glyphcnt);
     }
