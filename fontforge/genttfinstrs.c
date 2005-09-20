@@ -1661,6 +1661,8 @@ static uint8 *dogeninstructions(SplineChar *sc, struct glyphinstrs *gi,
 	fprintf(stderr,"We're about to crash.\nWe miscalculated the glyph's instruction set length\n" );
 	fprintf(stderr,"When processing TTF instructions (hinting) of %s\n", sc->name );
     }
+    sc->ttf_instrs_len = (pt-instrs);
+    sc->ttf_instrs = instrs;
 return(instrs);
 }
 
