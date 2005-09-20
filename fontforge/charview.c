@@ -1722,9 +1722,9 @@ static GWindow CharIcon(CharView *cv, FontView *fv) {
     bdf = NULL; bdfc = NULL;
     if ( sc->layers[ly_fore].refs!=NULL || sc->layers[ly_fore].splines!=NULL ) {
 	bdf = fv->show;
-	if ( bdf->glyphs[sc->orig_pos]==NULL )
+	if ( sc->orig_pos>=bdf->glyphcnt || bdf->glyphs[sc->orig_pos]==NULL )
 	    bdf = fv->filled;
-	if ( bdf->glyphs[sc->orig_pos]==NULL ) {
+	if ( sc->orig_pos>=bdf->glyphcnt || bdf->glyphs[sc->orig_pos]==NULL ) {
 	    bdf2 = NULL; bdfc = NULL;
 	    for ( bdf=fv->sf->bitmaps; bdf!=NULL && bdf->pixelsize<24 ; bdf=bdf->next )
 		bdf2 = bdf;
@@ -1734,7 +1734,7 @@ static GWindow CharIcon(CharView *cv, FontView *fv) {
 	    } else if ( bdf==NULL )
 		bdf = bdf2;
 	}
-	if ( bdf!=NULL )
+	if ( bdf!=NULL && sc->orig_pos<bdf->glyphcnt )
 	    bdfc = bdf->glyphs[sc->orig_pos];
     }
 
