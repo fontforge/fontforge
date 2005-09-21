@@ -3238,9 +3238,9 @@ static void cidfigure(struct ttfinfo *info, struct topdicts *dict,
 	    IError( "Reference found in CID font. Can't fix it up");
 	if ( cstype==2 ) {
 	    if ( sf->glyphs[cid]->width == (int16) 0x8000 )
-		sf->glyphs[cid]->width = dict->defaultwidthx;
+		sf->glyphs[cid]->width = subdicts[j]->defaultwidthx;
 	    else
-		sf->glyphs[cid]->width += dict->nominalwidthx;
+		sf->glyphs[cid]->width += subdicts[j]->nominalwidthx;
 	}
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	GProgressNext();
@@ -3678,7 +3678,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    for ( i=0; i<segCount; ++i )
 		endchars[i] = getushort(ttf);
 	    if ( getushort(ttf)!=0 )
-		IError("Expected 0 in true type font");
+		IError("Expected 0 in 'cmap' format 4 subtable");
 	    startchars = galloc(segCount*sizeof(uint16));
 	    for ( i=0; i<segCount; ++i )
 		startchars[i] = getushort(ttf);
