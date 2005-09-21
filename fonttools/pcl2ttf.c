@@ -418,7 +418,7 @@ static unsigned short gettableshort(struct ttf_header *hdr, int tag, int offset)
     /* Get a short at the indicated offset of the indicated table */
     struct subtables *tbl = gettable(hdr,tag);
     if ( tbl==NULL ) {
-	fprintf( stderr, "Missing required table\n" );
+	fprintf( stderr, "Missing required table: '%c%c%c%c'\n", tag>>24, tag>>16, tag>>8, tag );
 return( -1 );
     }
     if ( offset+1>=tbl->len ) {
@@ -1112,7 +1112,7 @@ static void dumpfont(struct ttf_header *hdr) {
 
     fpt = hdr->fontname;
     for ( pt=buffer; *fpt; ++fpt )
-	if ( *fpt!=' ' )
+	if ( *fpt!=' ' && *fpt!='/' )
 	    *pt++ = *fpt;
     strcpy(pt,".ttf");
     ttf = fopen(buffer,"wb+");
@@ -1187,8 +1187,10 @@ static void freedata(struct ttf_header *hdr) {
     int i;
 
     free(hdr->subtables);
-    for ( i=0; i<hdr->num_chars; ++i )
-	free( hdr->glyphs[i].continuation );
+    if ( hdr->glyphs!=NULL ) {
+	for ( i=0; i<hdr->num_chars; ++i )
+	    free( hdr->glyphs[i].continuation );
+    }
     free(hdr->glyphs);
     free(hdr->copyright);
 }
