@@ -30,6 +30,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <math.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -77,6 +79,7 @@ struct ttf_header {
     int capheight;
     int fontnumber;
     char fontname[17];
+    int xres, yres;		/* Bitmap fonts only */
     int scale_factor;
     int mupos, muthick;
     int fontscaletech;
@@ -292,7 +295,7 @@ static int hasRequiredTables(struct ttf_header *hdr) {
 	/* They can leave out 'gdir' if they want, I don't need it */
 	/* (and I'll remove it anyway) */
 	{ 0 }};
-    int i, j;
+    int i;
 
     for ( i=0; tables[i].name!=0; ++i ) {
 	if ( gettable(hdr,tables[i].name)==NULL )
@@ -301,9 +304,8 @@ return( false );
 return( true );
 }
 
-static int readheader(FILE *pcl,struct ttf_header *hdr) {
+static int readheaderformat(FILE *pcl,struct ttf_header *hdr) {
     int ch, i;
-    int seg_id, seg_size;
 
     memset(hdr,0,sizeof(*hdr));
 
@@ -349,6 +351,59 @@ return( false );
 	hdr->fontname[i] = getc(pcl);
     while ( i>1 && hdr->fontname[i-1]==' ' ) --i;
     hdr->fontname[i] = '\0';
+return( false );
+}
+
+static int readheaderttf(FILE *pcl,struct ttf_header *hdr) {
+    int i;
+    int seg_id, seg_size;
+
+#if 0		/* Moved into its own routine */
+    memset(hdr,0,sizeof(*hdr));
+
+    fscanf(pcl,"%d", &hdr->header_size );
+    ch = getc(pcl);
+    if ( ch!='W' ) {
+	fprintf( stderr, "Bad font, font header command doesn't end in \"W\"\n" );
+return( false );
+    }
+    hdr->fd_size = getshort(pcl);
+    hdr->header_format = getc(pcl);
+    hdr->fonttype = getc(pcl);
+    hdr->style = getc(pcl)<<8;
+    (void) getc(pcl);
+    hdr->baseline_pos = getshort(pcl);
+    hdr->cell_width = getshort(pcl);
+    hdr->cell_height = getshort(pcl);
+    hdr->orientation = getc(pcl);
+    hdr->spacing = getc(pcl);
+    hdr->symbol_set = getshort(pcl);
+    hdr->pitch = getshort(pcl);
+    hdr->height = getshort(pcl);
+    hdr->xheight = getshort(pcl);
+    hdr->widthtype = getc(pcl);
+    hdr->style |= getc(pcl);
+    hdr->strokeweight = getc(pcl);
+    hdr->typeface = getc(pcl);
+    hdr->typeface |= getc(pcl)<<8;
+    hdr->serifstyle = getc(pcl);
+    hdr->quality = getc(pcl);
+    hdr->placement = getc(pcl);
+    hdr->upos = getc(pcl);
+    hdr->uthick = getc(pcl);
+    hdr->textheight = getshort(pcl);
+    hdr->textwidth = getshort(pcl);
+    hdr->firstcode = getshort(pcl);
+    hdr->num_chars = getshort(pcl);
+    hdr->pitchx = getc(pcl);
+    hdr->heightx = getc(pcl);
+    hdr->capheight = getshort(pcl);
+    hdr->fontnumber = getlong(pcl);
+    for ( i=0; i<16; ++i )
+	hdr->fontname[i] = getc(pcl);
+    while ( i>1 && hdr->fontname[i-1]==' ' ) --i;
+    hdr->fontname[i] = '\0';
+#endif
     hdr->scale_factor = getshort(pcl);
     hdr->mupos = (short) getshort(pcl);
     hdr->muthick = getshort(pcl);
@@ -402,12 +457,12 @@ return( slurpglyphs(pcl,hdr));
 /* *********************** Generate Missing ttf tables ********************** */
 /* ************************************************************************** */
 
-void putshort(FILE *file,int sval) {
+static void putshort(FILE *file,int sval) {
     putc((sval>>8)&0xff,file);
     putc(sval&0xff,file);
 }
 
-void putlong(FILE *file,int val) {
+static void putlong(FILE *file,int val) {
     putc((val>>24)&0xff,file);
     putc((val>>16)&0xff,file);
     putc((val>>8)&0xff,file);
@@ -490,7 +545,7 @@ static void create_cmap(struct ttf_header *hdr,struct glyph *glyphs,int numGlyph
     /* taken pretty much directly from pfaedit */
 
     {
-	int i,j,k,l,charcnt,enccnt, issmall, mspos;
+	int i,j,l, mspos;
 	int segcnt, delta, rpos;
 	struct cmapseg { unsigned short start, end; unsigned short delta; unsigned short rangeoff; } *cmapseg;
 	unsigned short *ranges;
@@ -969,11 +1024,17 @@ static void create_name(struct ttf_header *hdr) {
     /* oops, we might have a copyright */
     int cnt = 5+(hdr->copyright!=NULL);
     int off = 0;
-    char *pt;
+    char *pt, *pt2;
     char family[20], style[20], *version="Version 1.0", unique[32];
 
     /* Guess at font family, style */
     strcpy(family,hdr->fontname);
+    for ( pt=pt2=family; *pt!='\0'; ++pt )
+	if ( *pt>' ' && *pt<0x7f && *pt!='(' && *pt!=')' && *pt!='{' && *pt!='}' &&
+		*pt!='[' && *pt!=']' && *pt!='<' && *pt!='>' && *pt!='%' &&
+		*pt!='/' )
+	    *pt2++ = *pt;
+    *pt2 = '\0';
     if ( (pt=strstr(family,"BdIt"))!=NULL )
 	strcpy(style,"Bold Italic");
     else if ( (pt=strstr(family,"Bd"))!=NULL )
@@ -1180,6 +1241,300 @@ return;
 }
 
 /* ************************************************************************** */
+/* ******************************* bitmap font ****************************** */
+/* ************************************************************************** */
+
+static int readheaderbitmap(FILE *pcl,struct ttf_header *hdr) {
+    int i, base;
+
+#if 0		/* Moved into its own routine */
+    memset(hdr,0,sizeof(*hdr));
+
+    fscanf(pcl,"%d", &hdr->header_size );
+    ch = getc(pcl);
+    if ( ch!='W' ) {
+	fprintf( stderr, "Bad font, font header command doesn't end in \"W\"\n" );
+return( false );
+    }
+    hdr->fd_size = getshort(pcl);
+    hdr->header_format = getc(pcl);
+    hdr->fonttype = getc(pcl);
+    hdr->style = getc(pcl)<<8;
+    (void) getc(pcl);
+    hdr->baseline_pos = getshort(pcl);
+    hdr->cell_width = getshort(pcl);
+    hdr->cell_height = getshort(pcl);
+    hdr->orientation = getc(pcl);
+    hdr->spacing = getc(pcl);
+    hdr->symbol_set = getshort(pcl);
+    hdr->pitch = getshort(pcl);
+    hdr->height = getshort(pcl);
+    hdr->xheight = getshort(pcl);
+    hdr->widthtype = getc(pcl);
+    hdr->style |= getc(pcl);
+    hdr->strokeweight = getc(pcl);
+    hdr->typeface = getc(pcl);
+    hdr->typeface |= getc(pcl)<<8;
+    hdr->serifstyle = getc(pcl);
+    hdr->quality = getc(pcl);
+    hdr->placement = getc(pcl);
+    hdr->upos = getc(pcl);
+    hdr->uthick = getc(pcl);
+    hdr->textheight = getshort(pcl);
+    hdr->textwidth = getshort(pcl);
+    hdr->firstcode = getshort(pcl);
+    hdr->num_chars = getshort(pcl);
+    hdr->pitchx = getc(pcl);
+    hdr->heightx = getc(pcl);
+    hdr->capheight = getshort(pcl);
+    hdr->fontnumber = getlong(pcl);
+    for ( i=0; i<16; ++i )
+	hdr->fontname[i] = getc(pcl);
+    while ( i>1 && hdr->fontname[i-1]==' ' ) --i;
+    hdr->fontname[i] = '\0';
+#endif
+    if ( hdr->header_format==20 ) {
+	hdr->xres = getshort(pcl);
+	hdr->yres = getshort(pcl);
+    } else
+	hdr->xres = hdr->yres = 300;
+
+    if ( (hdr->header_format==0 && hdr->fd_size<64) ||
+	    (hdr->header_format==20 && hdr->fd_size<68) ||
+	    (hdr->header_format!=0 && hdr->header_format!=20)) {
+	fprintf( stderr, "%s is not a PCL bitmap font\n", hdr->fontname );
+return( false );
+    }
+    /* Variable data contain the copyright */
+    base = hdr->header_format==0 ? 64 : 68;
+    if ( hdr->fd_size>base ) {
+	char *pt;
+	hdr->copyright = pt = malloc(hdr->fd_size-base+1);
+	for ( i=0; i<hdr->fd_size-base; ++i )
+	    *pt++ = getc(pcl);
+	*pt = '\0';
+    }
+return( true );
+}
+
+static int slurpbdf_glyph(FILE *pcl,struct ttf_header *hdr, FILE *bdf,
+	int fbbox[4], int *cnt) {
+    int encoding, size, ch;
+    int desc_size, i;
+    int class;
+    int glyph_start;
+    int restart = ftell(pcl);
+    int left_off, top_off, width, height, deltax, bpl;
+
+    if ( !skip2charcode(pcl)) {
+	fprintf( stderr, "Fewer glyphs in font than expected\n" );
+	fseek(pcl,restart,SEEK_SET);
+return( false );
+    }
+    fscanf(pcl,"%d", &encoding );
+    ch = getc(pcl);
+    if ( ch!='E' ) {
+	fprintf( stderr, "Fewer glyphs in font than expected\n" );
+	fseek(pcl,restart,SEEK_SET);
+return( false );
+    }
+
+    if ( !skip2glyph(pcl))
+return( false );
+    fscanf(pcl,"%d", &size );
+    ch = getc(pcl);
+    if ( ch!='W' ) {
+	fprintf( stderr, "Bad font, glyph size does not end in \"W\"\n" );
+return( false );
+    }
+    glyph_start = ftell(pcl);
+
+    if ( getc(pcl)!=4 ) {
+	fprintf( stderr, "Bad font, glyph format must be 4\n" );
+return( false );
+    }
+    if ( getc(pcl)!=0 ) {
+	fprintf( stderr, "Bad font, I don't support continuations\n" );
+return( false );
+    }
+    desc_size = getc(pcl);
+    if ( desc_size!=14 ) {
+	fprintf( stderr, "Bad font, glyph descriptor size must be 14\n" );
+return( false );
+    }
+    class = getc(pcl);
+    if ( class!=1 && class!=2 ) {
+	fprintf( stderr, "Bad font, glyph class must be 1 or 2\n" );
+return( false );
+    }
+    getc(pcl);		/* orientation */
+    getc(pcl);		/* reserved */
+    left_off = getshort(pcl);
+    top_off = getshort(pcl);
+    width = getshort(pcl);
+    height = getshort(pcl);
+    deltax = getshort(pcl);
+
+    if ( left_off<fbbox[2]) fbbox[2] = left_off;
+    if ( left_off+width > fbbox[0] ) fbbox[0] = left_off+width;
+    if ( top_off-height < fbbox[3] ) fbbox[3] = top_off-height;
+    if ( top_off > fbbox[1] ) fbbox[1] = top_off;
+
+    fprintf( bdf, "STARTCHAR glyph%d\n", *cnt++ );
+    fprintf( bdf, "ENCODING %d\n", encoding );
+    fprintf( bdf, "DWIDTH %d 0\n", deltax );
+    fprintf( bdf, "BBX %d %d %d %d\n", width, height, left_off, top_off-height );
+    fprintf( bdf, "BITMAP\n" );
+    bpl = (width+7)/8;
+    if ( class==2 ) {
+	fprintf( stderr, "Warning: I don't support run length encoded glyphs\n" );
+	i = 0;
+    } else {
+	for ( i=0; i<size-14 && i<height*bpl ; ++i ) {
+	    int ch = getc(pcl);
+	    if ( (ch>>4) >= 10 )
+		putc((ch>>4)-10+'A',bdf);
+	    else
+		putc((ch>>4)+'0',bdf);
+	    if ( (ch&0xf) >= 10 )
+		putc((ch&0xf)-10+'A',bdf);
+	    else
+		putc((ch&0xf)+'0',bdf);
+	    if ( i % bpl == bpl-1 )
+		putc('\n',bdf);
+	}
+    }
+    for ( ; i<height*bpl; ++i ) {
+	putc('0',bdf);
+	putc('0',bdf);
+	if ( i % bpl == bpl-1 )
+	    putc('\n',bdf);
+    }
+
+return( true );
+}
+
+static int slurpbdf_glyphs(FILE *pcl,struct ttf_header *hdr, FILE *bdf,
+	int fbbox[4], int *cnt) {
+    int i;
+
+    for ( i=0; i<hdr->num_chars; ++i )
+	if ( !slurpbdf_glyph(pcl,hdr,bdf,fbbox,cnt)) {
+	    hdr->actual_num = i;
+return( false );
+	}
+    hdr->actual_num = i;
+
+return( true );
+}
+
+static int dumpbdffont(FILE *pcl,struct ttf_header *hdr) {
+    FILE *bdf;
+    char buffer[32], *pt, *fpt;
+    char *weight, *expansion;
+    int fbboxpos;
+    int fbbox[4];	/* xmax, ymax, xmin, ymin */
+    int cntpos;
+    int cnt;
+
+    fpt = hdr->fontname;
+    for ( pt=buffer; *fpt; ++fpt )
+	if ( *fpt!=' ' && *fpt!='/' )
+	    *pt++ = *fpt;
+    strcpy(pt,".bdf");
+    bdf = fopen(buffer,"wb+");
+    if ( bdf==NULL ) {
+	fprintf( stderr, "Failed to open %s\n", buffer );
+return( false );
+    } else
+	printf( "Created %s\n", buffer );
+
+    fprintf( bdf, "STARTFONT 2.1\n" );
+    *pt = '\0';
+    weight = hdr->strokeweight<=-7 ? "UltraThin" :
+	     hdr->strokeweight==-6 ? "ExtraThin" :
+	     hdr->strokeweight==-5 ? "Thin" :
+	     hdr->strokeweight==-4 ? "ExtraLight" :
+	     hdr->strokeweight==-3 ? "Light" :
+	     hdr->strokeweight==-2 ? "DemiLight" :
+	     hdr->strokeweight==-1 ? "SemiLight" :
+	     hdr->strokeweight==0 ? "Medium" :
+	     hdr->strokeweight==1 ? "SemiBold" :
+	     hdr->strokeweight==2 ? "DemiBold" :
+	     hdr->strokeweight==3 ? "Bold" :
+	     hdr->strokeweight==4 ? "ExtraBold" :
+	     hdr->strokeweight==5 ? "Black" :
+	     hdr->strokeweight==6 ? "ExtraBlack" : "UltraBlack";
+    expansion = hdr->widthtype<=-5 ? "UltraCompressed" :
+	     hdr->widthtype==-4 ? "ExtraCompressed" :
+	     hdr->widthtype==-3 ? "Compressed" :
+	     hdr->strokeweight<=-1 ? "Condensed" :
+	     hdr->strokeweight==0 ? "Normal" :
+	     hdr->strokeweight<=2 ? "Expanded" :
+		 "ExtraExpanded";
+    fprintf( bdf, "FONT -pcl2ttf-%s-%s-%c-%s--%d-%d-%d-%d-%c-%d-FontSpecific-1\n",
+	    buffer,
+	    weight,
+	    (hdr->style&3)==1 || (hdr->style&3)==2 ? 'I' : 'R',
+	    expansion,
+	    hdr->height/4,		/* pixelsize in dots*/
+	    (int) rint(720.0*hdr->height/hdr->yres/4),	/* pointsize * 10 */
+	    hdr->xres,
+	    hdr->yres,
+	    hdr->spacing ? 'M' : 'P',	/* Monospace, proportional */
+	    hdr->height/8		/* Guess. average char width */
+	    );
+    fprintf( bdf, "SIZE %d %d %d\n", (int) rint(72.0*hdr->height/hdr->yres/4),
+	    hdr->xres, hdr->yres);
+    fbboxpos = ftell(bdf);
+    fprintf( bdf, "FONTBOUNDINGBOX %5d %5d %5d %5d\n", 0, 0, 0, 0 );
+    if ( hdr->copyright!=NULL )
+	fprintf( bdf, "COMMENT \"%s\"\n", hdr->copyright );
+    fprintf( bdf, "STARTPROPERTIES %d\n", 15+( hdr->xres==hdr->yres )+( hdr->copyright!=NULL ) );
+    fprintf( bdf, "FONT_NAME \"%s\"\n", buffer );
+    fprintf( bdf, "FAMILY_NAME \"%s\"\n", buffer );
+    fprintf( bdf, "FULL_NAME \"%s\"\n", buffer );
+    fprintf( bdf, "FONT_ASCENT %d\n", hdr->baseline_pos );
+    fprintf( bdf, "FONT_DESCENT %d\n", hdr->height/4-hdr->baseline_pos );
+    fprintf( bdf, "UNDERLINE_POSITION %d\n", hdr->upos );
+    fprintf( bdf, "UNDERLINE_THICKNESS %d\n", hdr->uthick );
+    fprintf( bdf, "FOUNDRY \"pcl2ttf\"\n" );
+    fprintf( bdf, "WEIGHT_NAME \"%s\"\n", weight );
+    fprintf( bdf, "SETWIDTH_NAME \"%s\"\n", expansion );
+    fprintf( bdf, "SLANT \"%c\"\n", (hdr->style&3)==1 || (hdr->style&3)==2 ? 'I' : 'R');
+    fprintf( bdf, "PIXEL_SIZE %d\n", hdr->height/4);
+    fprintf( bdf, "POINT_SIZE %d\n", (int) rint(720.0*hdr->height/hdr->yres/4));
+    fprintf( bdf, "RESOLUTION_X %d\n", hdr->xres );
+    fprintf( bdf, "RESOLUTION_Y %d\n", hdr->yres );
+    if ( hdr->xres==hdr->yres )
+	fprintf( bdf, "RESOLUTION %d\n", hdr->xres );
+    fprintf( bdf, "SPACING \"%c\"\n", hdr->spacing ? 'M' : 'P');
+    if ( hdr->copyright!=NULL )
+	fprintf( bdf, "COPYRIGHT \"%s\"\n", hdr->copyright );
+    fprintf( bdf, "ENDPROPERTIES\n" );
+
+    fbbox[0] = fbbox[1] = -10000;
+    fbbox[2] = fbbox[3] = 10000;
+
+    cntpos = ftell(bdf);
+    fprintf( bdf, "CHARS %3d\n", 0 );
+    cnt = 0;
+
+    slurpbdf_glyphs(pcl,hdr,bdf,fbbox, &cnt);
+
+    fprintf( bdf, "ENDFONT\n" );
+    
+    if ( fbbox[0]==-10000 )
+	fbbox[0] = fbbox[1] = fbbox[2] = fbbox[0] = 0;
+    fseek(bdf,fbboxpos,SEEK_SET);
+    fprintf( bdf, "FONTBOUNDINGBOX %5d %5d %5d %5d\n", fbbox[0], fbbox[1], fbbox[2], fbbox[3] );
+    fseek(bdf,cntpos,SEEK_SET );
+    fprintf( bdf, "CHARS %3d\n", cnt );
+    fclose(bdf);
+return( true );
+}
+
+/* ************************************************************************** */
 /* **************************** ui, such as it is *************************** */
 /* ************************************************************************** */
 
@@ -1204,9 +1559,20 @@ static void parsepclfile(char *filename) {
 return;
     }
     while ( skip2fontheader(pcl)) {
-	readheader(pcl,&hdr);
-	create_missingtables(pcl,&hdr);
-	dumpfont(&hdr);
+	readheaderformat(pcl,&hdr);
+	if ( hdr.header_format==15 ) {		/* TrueType */
+	    if ( readheaderttf(pcl,&hdr) ) {
+		create_missingtables(pcl,&hdr);
+		dumpfont(&hdr);
+	    }
+	} else if ( hdr.header_format==0 || hdr.header_format==20 ) {	/* Bitmap */
+	    if ( readheaderbitmap(pcl,&hdr))
+		dumpbdffont(pcl,&hdr);
+	} else if ( hdr.header_format==10 || hdr.header_format==11 ) {
+	    fprintf( stderr, "This file contains an Intellifont Scalable font.\nI have no docs on that format and can't help you.\n" );
+	} else {
+	    fprintf( stderr, "I don't recognize this font format. It isn't mentioned in my documentation.\nSorry.\n" );
+	}
 	freedata(&hdr);
     }
     fclose(pcl);
