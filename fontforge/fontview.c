@@ -2940,6 +2940,115 @@ void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
     }
 }
 
+static char *scaleString(char *string, double scale) {
+    char *result;
+    char *pt;
+    char *end;
+    double val;
+
+    if ( string==NULL )
+return( NULL );
+
+    while ( *string==' ' ) ++string;
+    result = galloc(10*strlen(string)+1);
+    if ( *string!='[' ) {
+	val = strtod(string,&end);
+	if ( end==string ) {
+	    free( result );
+return( NULL );
+	}
+	sprintf( result, "%g", val*scale);
+return( result );
+    }
+
+    pt = result;
+    *pt++ = '[';
+    ++string;
+    while ( *string!='\0' && *string!=']' ) {
+	val = strtod(string,&end);
+	if ( end==string ) {
+	    free(result);
+return( NULL );
+	}
+	sprintf( pt, "%g ", val*scale);
+	pt += strlen(pt);
+	string = end;
+    }
+    if ( pt[-1] == ' ' ) pt[-1] = ']';
+    else *pt++ = ']';
+    *pt = '\0';
+return( result );
+}
+
+static char *iscaleString(char *string, double scale) {
+    char *result;
+    char *pt;
+    char *end;
+    double val;
+
+    if ( string==NULL )
+return( NULL );
+
+    while ( *string==' ' ) ++string;
+    result = galloc(10*strlen(string)+1);
+    if ( *string!='[' ) {
+	val = strtod(string,&end);
+	if ( end==string ) {
+	    free( result );
+return( NULL );
+	}
+	sprintf( result, "%g", rint(val*scale));
+return( result );
+    }
+
+    pt = result;
+    *pt++ = '[';
+    ++string;
+    while ( *string!='\0' && *string!=']' ) {
+	val = strtod(string,&end);
+	if ( end==string ) {
+	    free(result);
+return( NULL );
+	}
+	sprintf( pt, "%g ", rint(val*scale));
+	pt += strlen(pt);
+	string = end;
+    }
+    if ( pt[-1] == ' ' ) pt[-1] = ']';
+    else *pt++ = ']';
+    *pt = '\0';
+return( result );
+}
+
+static void SFScalePrivate(SplineFont *sf,double scale) {
+    static char *scalethese[] = {
+	NULL
+    };
+    static char *integerscalethese[] = {
+	"BlueValues", "OtherBlues",
+	"FamilyBlues", "FamilyOtherBlues",
+	"BlueShift", "BlueFuzz",
+	"StdHW", "StdVW", "StemSnapH", "StemSnapV",
+	NULL
+    };
+    int i;
+
+    for ( i=0; integerscalethese[i]!=NULL; ++i ) {
+	char *str = PSDictHasEntry(sf->private,integerscalethese[i]);
+	char *new = iscaleString(str,scale);
+	if ( new!=NULL )
+	    PSDictChangeEntry(sf->private,integerscalethese[i],new);
+	free(new);
+    }
+    for ( i=0; scalethese[i]!=NULL; ++i ) {
+	char *str = PSDictHasEntry(sf->private,scalethese[i]);
+	char *new = scaleString(str,scale);
+	if ( new!=NULL )
+	    PSDictChangeEntry(sf->private,scalethese[i],new);
+	free(new);
+    }
+}
+
 int SFScaleToEm(SplineFont *sf, int as, int des) {
     double scale;
     real transform[6];
@@ -2969,6 +3078,9 @@ int SFScaleToEm(SplineFont *sf, int as, int des) {
     sf->pfminfo.os2_strikeypos *= scale;
     sf->upos *= scale;
     sf->uwidth *= scale;
+
+    if ( sf->private!=NULL )
+	SFScalePrivate(sf,scale);
 
     if ( as+des == sf->ascent+sf->descent ) {
 	if ( as!=sf->ascent && des!=sf->descent ) {
