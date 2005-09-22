@@ -3337,7 +3337,7 @@ static void _bMoveReference(Context *c,int position) {
 	    char buffer[12];
 	    sprintf(buffer,"%d", i );
 	    if ( gid!=-1 && sc!=NULL )
-		errors(c,"Failed to find a matching reference in ", sc->name);
+		errors(c,"Failed to find a matching reference in", sc->name);
 	    else
 		errors(c,"Failed to find a matching reference at encoding", buffer);
 	} else {
