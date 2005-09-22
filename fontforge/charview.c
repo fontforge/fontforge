@@ -443,7 +443,8 @@ static GPointList *MakePoly(CharView *cv, SplinePointList *spl) {
 return( head );
 }
 
-static void DrawPoint(CharView *cv, GWindow pixmap, SplinePoint *sp, SplineSet *spl) {
+static void DrawPoint(CharView *cv, GWindow pixmap, SplinePoint *sp,
+	SplineSet *spl, int onlynumber) {
     GRect r;
     int x, y, cx, cy;
     Color col = sp==spl->first ? firstpointcol : pointcol, subcol;
@@ -483,14 +484,16 @@ return;
 		cy = cv->height+100;
 	    }
 	    subcol = nextcpcol;
-	    if ( iscurrent && cv->p.nextcp ) {
+	    if ( iscurrent && cv->p.nextcp && !onlynumber ) {
 		r.x = cx-3; r.y = cy-3; r.width = r.height = 7;
 		GDrawFillRect(pixmap,&r, nextcpcol);
 		subcol = selectedcpcol;
 	    }
-	    GDrawDrawLine(pixmap,x,y,cx,cy, nextcpcol);
-	    GDrawDrawLine(pixmap,cx-3,cy-3,cx+3,cy+3,subcol);
-	    GDrawDrawLine(pixmap,cx+3,cy-3,cx-3,cy+3,subcol);
+	    if ( !onlynumber ) {
+		GDrawDrawLine(pixmap,x,y,cx,cy, nextcpcol);
+		GDrawDrawLine(pixmap,cx-3,cy-3,cx+3,cy+3,subcol);
+		GDrawDrawLine(pixmap,cx+3,cy-3,cx-3,cy+3,subcol);
+	    }
 	    if ( cv->showpointnumbers || cv->show_ft_results || cv->dv ) {
 		pnum = sp->nextcpindex;
 		if ( pnum!=0xffff && pnum!=0xfffe ) {
@@ -518,14 +521,16 @@ return;
 		cy = cv->height+100;
 	    }
 	    subcol = prevcpcol;
-	    if ( iscurrent && cv->p.prevcp ) {
+	    if ( iscurrent && cv->p.prevcp && !onlynumber ) {
 		r.x = cx-3; r.y = cy-3; r.width = r.height = 7;
 		GDrawFillRect(pixmap,&r, prevcpcol);
 		subcol = selectedcpcol;
 	    }
-	    GDrawDrawLine(pixmap,x,y,cx,cy, prevcpcol);
-	    GDrawDrawLine(pixmap,cx-3,cy-3,cx+3,cy+3,subcol);
-	    GDrawDrawLine(pixmap,cx+3,cy-3,cx-3,cy+3,subcol);
+	    if ( !onlynumber ) {
+		GDrawDrawLine(pixmap,x,y,cx,cy, prevcpcol);
+		GDrawDrawLine(pixmap,cx-3,cy-3,cx+3,cy+3,subcol);
+		GDrawDrawLine(pixmap,cx+3,cy-3,cx-3,cy+3,subcol);
+	    }
 	}
     }
 
@@ -536,7 +541,9 @@ return;
     r.width = r.height = 5;
     if ( sp->selected )
 	GDrawSetLineWidth(pixmap,selectedpointwidth);
-    if ( sp->pointtype==pt_curve ) {
+    if ( onlynumber )
+	/* Draw Nothing */;
+    else if ( sp->pointtype==pt_curve ) {
 	--r.x; --r.y; r.width +=2; r.height += 2;
 	if ( sp->selected )
 	    GDrawDrawElipse(pixmap,&r,col);
@@ -600,18 +607,20 @@ return;
 	uc_strcpy(ubuf,buf);
 	GDrawDrawText(pixmap,x,y-6,ubuf,-1,NULL,col);
     }
-    if ((( sp->roundx || sp->roundy ) &&
-	     (((cv->showrounds&1) && cv->scale>=.3) || (cv->showrounds&2))) ||
-	    (sp->watched && cv->dv!=NULL) ||
-	    sp->hintmask!=NULL ) {
-	r.x = x-5; r.y = y-5;
-	r.width = r.height = 11;
-	GDrawDrawElipse(pixmap,&r,col);
-    }
-    if (( sp->flexx && cv->showhhints ) || (sp->flexy && cv->showvhints)) {
-	r.x = x-5; r.y = y-5;
-	r.width = r.height = 11;
-	GDrawDrawElipse(pixmap,&r,sp->flexx ? hflexhintcol : vflexhintcol );
+    if ( !onlynumber ) {
+	if ((( sp->roundx || sp->roundy ) &&
+		 (((cv->showrounds&1) && cv->scale>=.3) || (cv->showrounds&2))) ||
+		(sp->watched && cv->dv!=NULL) ||
+		sp->hintmask!=NULL ) {
+	    r.x = x-5; r.y = y-5;
+	    r.width = r.height = 11;
+	    GDrawDrawElipse(pixmap,&r,col);
+	}
+	if (( sp->flexx && cv->showhhints ) || (sp->flexy && cv->showvhints)) {
+	    r.x = x-5; r.y = y-5;
+	    r.width = r.height = 11;
+	    GDrawDrawElipse(pixmap,&r,sp->flexx ? hflexhintcol : vflexhintcol );
+	}
     }
 }
 
@@ -693,15 +702,16 @@ void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 
     for ( spl = set; spl!=NULL; spl = spl->next ) {
 	GPointList *gpl = MakePoly(cv,spl), *cur;
-	if ( dopoints ) {
+	if ( dopoints>0 || (dopoints==-1 && cv->showpointnumbers) ) {
 	    first = NULL;
-	    DrawDirection(cv,pixmap,spl->first);
+	    if ( dopoints>0 )
+		DrawDirection(cv,pixmap,spl->first);
 	    for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
-		DrawPoint(cv,pixmap,spline->from,spl);
+		DrawPoint(cv,pixmap,spline->from,spl,dopoints<0);
 		if ( first==NULL ) first = spline;
 	    }
 	    if ( spline==NULL )
-		DrawPoint(cv,pixmap,spl->last,spl);
+		DrawPoint(cv,pixmap,spl->last,spl,dopoints<0);
 	}
 	for ( cur=gpl; cur!=NULL; cur=cur->next )
 	    GDrawDrawPoly(pixmap,cur->gp,cur->cnt,fg);
@@ -1495,7 +1505,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	    for ( rf=cv->sc->layers[layer].refs; rf!=NULL; rf = rf->next ) {
 		CVDrawRefName(cv,pixmap,rf,0);
 		for ( rlayer=0; rlayer<rf->layer_cnt; ++rlayer )
-		    CVDrawSplineSet(cv,pixmap,rf->layers[rlayer].splines,foreoutlinecol,false,&clip);
+		    CVDrawSplineSet(cv,pixmap,rf->layers[rlayer].splines,foreoutlinecol,-1,&clip);
 		if ( rf->selected && cv->layerheads[cv->drawmode]==&cv->sc->layers[layer])
 		    CVDrawBB(cv,pixmap,&rf->bb);
 	    }
