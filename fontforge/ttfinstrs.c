@@ -1491,6 +1491,7 @@ static int SV_OK(GGadget *g, GEvent *e) {
 		tab->next = sv->sf->ttf_tables;
 		sv->sf->ttf_tables = tab;
 		tab->tag = sv->tag;
+		sv->table = tab;
 	    }
 	    sv->table->data = galloc(sv->len);
 	    for ( i=0; i<sv->len/2; ++i ) {
