@@ -333,7 +333,7 @@ static void errors( Context *c, char *msg, char *name) {
 	LogError( "%s: %s: %s\n", c->filename, loc1, loc2 );
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( !no_windowing_ui ) {
-	static unichar_t umsg[] = { '%','s',':',' ','%','d',' ','%','s',':',' ','%','s',  0 };
+	static unichar_t umsg[] = { '%','h','s',':',' ','%','d',' ','%','s',':',' ','%','s',  0 };
 	GWidgetError(NULL,umsg,c->filename, c->lineno, t1, t2 );
     }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
@@ -3265,6 +3265,110 @@ static void bScaleToEm(Context *c) {
     SFScaleToEm(c->curfv->sf,ascent,descent);
 }
 
+static int RefMatchesNamesUni(RefChar *ref,char **refnames, int *refunis, int refcnt) {
+    int i;
+
+    for ( i=0; i<refcnt; ++i ) {
+	if ( refunis[i]!=-1 && refunis[i]==ref->unicode_enc )
+return( true );
+	else if ( refnames[i]!=NULL && strcmp(refnames[i],ref->sc->name)==0 )
+return( true );
+    }
+return( false );
+}
+
+static RefChar *FindFirstRef(SplineChar *sc,char **refnames, int *refunis, int refcnt) {
+    RefChar *ref;
+
+    for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref = ref->next )
+	if ( RefMatchesNamesUni(ref,refnames,refunis,refcnt))
+return( ref );
+
+return( NULL );
+}
+
+static void _bMoveReference(Context *c,int position) {
+    real translate[2], t[6];
+    char **refnames;
+    int *refunis;
+    FontView *fv;
+    int i, j, gid, refcnt;
+    EncMap *map;
+    SplineFont *sf;
+    SplineChar *sc;
+    RefChar *ref;
+
+    if ( c->a.argc<4 )
+	error( c, "Wrong number of arguments");
+    if ( c->a.vals[1].type==v_int )
+	translate[0] = c->a.vals[1].u.ival;
+    else if ( c->a.vals[1].type==v_real )
+	translate[0] = c->a.vals[1].u.fval;
+    else
+	error(c,"Bad argument type");
+    if ( c->a.vals[2].type==v_int )
+	translate[1] = c->a.vals[2].u.ival;
+    else if ( c->a.vals[2].type==v_real )
+	translate[1] = c->a.vals[2].u.fval;
+    else
+	error(c,"Bad argument type");
+
+    refcnt = c->a.argc-3;
+    refnames = gcalloc(refcnt,sizeof(char *));
+    refunis = galloc(refcnt*sizeof(int));
+    memset(refunis,-1,refcnt*sizeof(int));
+    for ( i=0; i<refcnt; ++i ) {
+	if ( c->a.vals[3+i].type==v_str )
+	    refnames[i] = c->a.vals[3+i].u.sval;
+	else if ( c->a.vals[3+i].type == v_int || c->a.vals[3+i].type == v_unicode )
+	    refunis[i] = c->a.vals[3+i].u.ival;
+	else
+	    error(c,"Bad argument type");
+    }
+
+    fv = c->curfv;
+    map = fv->map;
+    sf = fv->sf;
+    t[0] = t[3] = 1; t[1] = t[2] = 0;
+    t[4] = translate[0]; t[5] = translate[1];
+    for ( i=0; i<map->enccount; ++i ) if ( fv->selected[i] ) {
+	if ( (gid=map->map[i])==-1 || (sc=sf->glyphs[gid])==NULL ||
+		(ref = FindFirstRef(sc,refnames,refunis,refcnt))==NULL ) {
+	    char buffer[12];
+	    sprintf(buffer,"%d", i );
+	    if ( gid!=-1 && sc!=NULL )
+		errors(c,"Failed to find a matching reference in ", sc->name);
+	    else
+		errors(c,"Failed to find a matching reference at encoding", buffer);
+	} else {
+	    SCPreserveState(sc,false);
+	    for ( ref =sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
+		if ( RefMatchesNamesUni(ref,refnames,refunis,refcnt)) {
+		    if ( position ) {
+			t[4] = translate[0]-ref->transform[4];
+			t[5] = translate[1]-ref->transform[5];
+		    }
+		    ref->transform[4] += t[4];
+		    ref->transform[5] += t[5];
+		    for ( j=0; j<ref->layer_cnt; ++j )
+			SplinePointListTransform(ref->layers[j].splines,t,true);
+		    ref->bb.minx += t[4]; ref->bb.miny += t[5];
+		    ref->bb.maxx += t[4]; ref->bb.maxy += t[5];
+		}
+	    }
+	    SCCharChangedUpdate(sc);
+	}
+    }
+}
+
+static void bMoveReference(Context *c) {
+    _bMoveReference(c,false);
+}
+
+static void bPositionReference(Context *c) {
+    _bMoveReference(c,true);
+}
+
 static void bNonLinearTransform(Context *c) {
 
     if ( c->a.argc!=3 )
@@ -5644,6 +5748,8 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "Skew", bSkew },
     { "Move", bMove },
     { "ScaleToEm", bScaleToEm },
+    { "MoveReference", bMoveReference },
+    { "PositionReference", bPositionReference },
     { "NonLinearTransform", bNonLinearTransform },
     { "ExpandStroke", bExpandStroke },
     { "Inline", bInline },
