@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 18-Sep-2005 -->
+  <!-- AP: Last modified: 21-Sep-2005 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -1606,6 +1606,38 @@ ApplySubstitution("*","*","vrt2")
     Move(delta-x,delta-y)
   <DD>
     All selected glyphs will have their points moved the given amount.
+  <DT>
+    MoveReference(delta-x,delta-y,[refname/ref-unicode]+)
+  <DD>
+    References may be identified either by a string containing the name of the
+    glyph being refered to, or an integer containing the unicode code point of
+    the glyph being refered to, there may be an arbetrary (positive) number of
+    references specified. Each selected glyph will be searched for references
+    that match the name/unicode-values given, all references found will be moved
+    by the specified offsets.
+    <BLOCKQUOTE>
+      <PRE>MoveReference(300,0,"acute",0xb4)
+</PRE>
+      <P>
+      Will move any acute or grave references 300 em-units horizontally from where
+      they currently are
+    </BLOCKQUOTE>
+  <DT>
+    PositionReference(x,y,[refname/ref-unicode]+)
+  <DD>
+    References may be identified either by a string containing the name of the
+    glyph being refered to, or an integer containing the unicode code point of
+    the glyph being refered to, there may be an arbetrary (positive) number of
+    references specified. Each selected glyph will be searched for references
+    that match the name/unicode-values given, all references found will be at
+    the specified location.
+    <BLOCKQUOTE>
+      <PRE>PositionReference(0,0,"circumflex")
+</PRE>
+      <P>
+      Will position any references to circumflex so that they are where the base
+      circumflex is
+    </BLOCKQUOTE>
   <DT>
     ScaleToEm(em-size)<BR>
     ScaleToEm(ascent,descent)
