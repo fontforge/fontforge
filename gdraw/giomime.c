@@ -125,13 +125,15 @@ return( textcss );
 return( texthtml );
     else if ( uc_strmatch(pt,".xml")==0 || uc_strmatch(pt,".xml~")==0 )
 return( textxml );
-    else if ( uc_strmatch(pt,".pfa")==0 || uc_strmatch(pt,".pfb")==0 )
+    else if ( uc_strmatch(pt,".pfa")==0 || uc_strmatch(pt,".pfb")==0 ||
+	    uc_strmatch(pt,".pt3")==0 )
 return( textpsfont );
     else if ( uc_strmatch(pt,".sfd")==0 )
 return( textsfdfont );
     else if ( uc_strmatch(pt,".ttf")==0 )
 return( fontttf );
-    else if ( uc_strmatch(pt,".otf")==0 || uc_strmatch(pt,".otb")==0 )
+    else if ( uc_strmatch(pt,".otf")==0 || uc_strmatch(pt,".otb")==0 ||
+	    uc_strmatch(pt,".gai")==0 )
 return( fontotf );
     else if ( uc_strmatch(pt,".cid")==0 )
 return( fontcid );
