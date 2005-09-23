@@ -284,6 +284,7 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,EncMap *map, char *encoding, 
     char *pt;
     uint32 codepages[2];
     char *sffn = *font->sf->fontname ? font->sf->fontname : "Untitled";
+    int glyph_at_zero;
 
     if ( AllSame(font,&avg,&cnt))
 	mono="M";
@@ -368,10 +369,14 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,EncMap *map, char *encoding, 
 	if ( def_ch>=map->enc->char_cnt )
 	    def_ch = -1;
     }
+    glyph_at_zero = false;	/* bdftopcf will make the glyph encoded at 0 */
+    if ( map->map[0]!=-1 && !IsntBDFChar(font->glyphs[map->map[0]]) )
+	glyph_at_zero = true;	/* be the default glyph if no explicit default*/
+		/* char is given. A default char of -1 means no default */
 
     fprintf( file, "STARTPROPERTIES %d\n", 25+(x_h!=-1)+(cap_h!=-1)+
 	    GenerateGlyphRanges(font,NULL)+
-	    (def_ch!=-1)+(font->clut!=NULL));
+	    (def_ch!=-1 || glyph_at_zero)+(font->clut!=NULL));
     fprintf( file, "FONT_NAME \"%s\"\n", font->sf->fontname );
     fprintf( file, "FONT_ASCENT %d\n", font->ascent );
     fprintf( file, "FONT_DESCENT %d\n", font->descent );
@@ -382,7 +387,7 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,EncMap *map, char *encoding, 
 	fprintf( file, "X_HEIGHT %d\n", x_h );
     if ( cap_h!=-1 )
 	fprintf( file, "CAP_HEIGHT %d\n", cap_h );
-    if ( def_ch!=-1 )
+    if ( def_ch!=-1 || glyph_at_zero )
 	fprintf( file, "DEFAULT_CHAR %d\n", def_ch );
     fprintf( file, "FONTNAME_REGISTRY \"\"\n" );
     fprintf( file, "FAMILY_NAME \"%s\"\n", family_name );
