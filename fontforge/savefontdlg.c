@@ -92,7 +92,7 @@ static char *extensions[] = { ".pfa", ".pfb", ".res", "%s.pfb", ".pfa", ".pfb", 
 	".ttf", ".ttf", ".suit", ".dfont", ".otf", ".otf.dfont", ".otf",
 	".otf.dfont", ".svg", NULL };
 # ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-static char *bitmapextensions[] = { ".*bdf", ".ttf", ".dfont", ".bmap", ".dfont", ".*fnt", ".otb", ".pdb", "-*.pt3", ".none", NULL };
+static char *bitmapextensions[] = { "-*.bdf", ".ttf", ".dfont", ".bmap", ".dfont", "-*.fnt", ".otb", ".pdb", "-*.pt3", ".none", NULL };
 # endif
 #else
 static char *extensions[] = { ".pfa", ".pfb", ".bin", "%s.pfb", ".pfa", ".pfb", ".pt3", ".ps",
@@ -101,7 +101,7 @@ static char *extensions[] = { ".pfa", ".pfb", ".bin", "%s.pfb", ".pfa", ".pfb", 
 	".ttf", ".ttf", ".ttf.bin", ".dfont", ".otf", ".otf.dfont", ".otf",
 	".otf.dfont", ".svg", NULL };
 # ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-static char *bitmapextensions[] = { "-*.bdf", ".ttf", ".dfont", ".bmap.bin", ".*fnt", ".otb", ".pdb", "-*.pt3", ".none", NULL };
+static char *bitmapextensions[] = { "-*.bdf", ".ttf", ".dfont", ".bmap.bin", "-*.fnt", ".otb", ".pdb", "-*.pt3", ".none", NULL };
 # endif
 #endif
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -1103,6 +1103,8 @@ return( false );
 	if ( pt==NULL )
 	    pt = buf+strlen(buf);
 	if ( strcmp(pt-4,".otf.dfont")==0 || strcmp(pt-4,".ttf.bin")==0 ) pt-=4;
+	if ( pt-2>buf && pt[-2]=='-' && pt[-1]=='*' )
+	    pt -= 2;
 	ext = bf==bf_bdf ? ".bdf" : bf==bf_ptype3 ? ".pt3" : ".fnt";
 	if ( bdf->clut==NULL )
 	    sprintf( pt, "-%d%s", bdf->pixelsize, ext );
