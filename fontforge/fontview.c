@@ -1149,6 +1149,7 @@ char *GetPostscriptFontName(char *dir, int mult) {
 			                       'o','t','b',',',
 			                       'c','f','f',',',
 			                       'c','e','f',',',
+			                       'g','a','i',',',
 #ifndef _NO_LIBXML
 			                       's','v','g',',',
 #endif
@@ -10097,6 +10098,7 @@ return( NULL );
 	fromsfd = true;
     } else if ( strmatch(fullname+strlen(fullname)-4, ".ttf")==0 ||
 		strmatch(fullname+strlen(strippedname)-4, ".ttc")==0 ||
+		strmatch(fullname+strlen(fullname)-4, ".gai")==0 ||
 		strmatch(fullname+strlen(fullname)-4, ".otf")==0 ||
 		strmatch(fullname+strlen(fullname)-4, ".otb")==0 ) {
 	sf = SFReadTTF(fullname,0);
