@@ -4032,6 +4032,8 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	} else if ( strmatch(tok,"HheadDOffset:")==0 ) {
 	    int temp;
 	    getint(sfd,&temp); sf->pfminfo.hheaddescent_add = temp;
+	} else if ( strmatch(tok,"OS2TypoLinegap:")==0 ) {
+	    getsint(sfd,&sf->pfminfo.os2_typolinegap);
 	} else if ( strmatch(tok,"OS2TypoAscent:")==0 ) {
 	    getsint(sfd,&sf->pfminfo.os2_typoascent);
 	} else if ( strmatch(tok,"OS2TypoAOffset:")==0 ) {
