@@ -3157,7 +3157,8 @@ static void cfffigure(struct ttfinfo *info, struct topdicts *dict,
 	}
     }
     /* Need to do a reference fixup here !!!!! just in case some idiot */
-    /*  used type1 char strings */
+    /*  used type1 char strings -- or used the depreciated meaning of */
+    /*  endchar (==seac) */
 }
 
 static void cidfigure(struct ttfinfo *info, struct topdicts *dict,
@@ -4564,6 +4565,11 @@ static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
     for ( i=0; i<sf->glyphcnt; ++i )
 	if ( sf->glyphs[i]!=NULL )
 	    sf->glyphs[i]->parent = sf;
+
+    /* A CFF font could contain type1 charstrings, or a type2 font could use */
+    /*  the depreciated convention that endchar =~ seac */
+    if ( info->cff_length!=0 )
+	SFInstanciateRefs(sf);
 
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
 	for ( rf = sf->glyphs[i]->layers[ly_fore].refs, prev=NULL; rf!=NULL; rf = next ) {

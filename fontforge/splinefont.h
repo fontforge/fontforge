@@ -1397,6 +1397,7 @@ extern void RefCharFindBounds(RefChar *rf);
 extern void SCReinstanciateRefChar(SplineChar *sc,RefChar *rf);
 extern void SCReinstanciateRef(SplineChar *sc,SplineChar *rsc);
 extern void SFReinstanciateRefs(SplineFont *sf);
+extern void SFInstanciateRefs(SplineFont *sf);
 extern SplineChar *MakeDupRef(SplineChar *base, int local_enc, int uni_enc);
 extern void SCRemoveDependent(SplineChar *dependent,RefChar *rf);
 extern void SCRemoveLayerDependents(SplineChar *dependent,int layer);

@@ -4261,6 +4261,8 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	  break;
 	  case 14: /* endchar */
 	    /* endchar is allowed to terminate processing even within a subroutine */
+	    if ( (sp&1) && is_type2 )
+		ret->width = stack[0];
 	    if ( context->painttype!=2 )
 		closepath(cur,is_type2);
 	    pcsp = 0;
@@ -4271,6 +4273,10 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		stack[4] = stack[3]; stack[3] = stack[2]; stack[2] = stack[1]; stack[1] = stack[0];
 		stack[0] = 0;
 		sp = 5;
+  goto seac;
+	    } else if ( sp==5 ) {
+		/* same as above except also specified a width */
+		stack[0] = 0;
   goto seac;
 	    }
 	    /* the docs say that endchar must be the last command in a char */

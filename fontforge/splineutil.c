@@ -1916,7 +1916,7 @@ return;		/* It's just the expected matrix */
     }
 }
 
-static void SFInstanciateRefs(SplineFont *sf) {
+void SFInstanciateRefs(SplineFont *sf) {
     int i, layer;
     RefChar *refs, *next, *pr;
 
