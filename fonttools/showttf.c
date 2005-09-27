@@ -221,6 +221,8 @@ return( sum );
 
 #define CHR(ch1,ch2,ch3,ch4) (((ch1)<<24)|((ch2)<<16)|((ch3)<<8)|(ch4))
 
+static int readcff(FILE *ttf,FILE *util, struct ttfinfo *info);
+
 static int readttfheader(FILE *ttf, FILE *util, struct ttfinfo *info) {
     int i;
     int tag, checksum, offset, length, sr, es, rs; uint32 v;
@@ -258,6 +260,14 @@ exit ( 1 );
     } else if ( v>=0x80000000 && info->numtables==0 ) {
 	fprintf(stderr, "This looks like a postscript (pfb) file, and not a truetype font.\n" );
 exit ( 1 );
+    } else if ( (v>>24)==1 && ((v>>16)&0xff)==0 && ((v>>8)&0xff)==4 ) {
+	fprintf( stderr, "This looks like a bare CFF file. Proceding under that assumption.\n");
+	info->cff_start = 0;
+	fseek(ttf,0,SEEK_END);
+	info->cff_length = ftell(ttf);
+	rewind(ttf);
+	readcff(ttf,util,info);
+exit(0);
     } else if ( v==CHR('t','y','p','1')) {
 	fprintf(stderr, "This is apple's embedding of a type1 font in a truetype file. I don't know how to parse it. I'd like a copy to look at if you don't mind sending me one... gww@silcom.com\n" );
 exit ( 1 );
@@ -1789,6 +1799,10 @@ static void readttfencodings(FILE *ttf,FILE *util, struct ttfinfo *info) {
 		rangeOffset[i] = getushort(ttf);
 	    len -= 8*sizeof(unsigned short) +
 		    4*segCount*sizeof(unsigned short);
+	    if ( len<0 ) {
+		fprintf( stderr, "This font has an illegal format 4 subtable with too little space for all the segments.\n" );
+return;
+	    }
 	    /* that's the amount of space left in the subtable and it must */
 	    /*  be filled with glyphIDs */
 	    glyphs = malloc(len);
@@ -4900,6 +4914,9 @@ return;
 	offsets[i] = getoffset(ttf,offsize);
 	if ( i==0 && offsets[0]!=1 )
 	    fprintf( stderr, "!!! Initial offset must be 1 in %s in %s\n", text[type], label);
+	else if ( i!=0 && offsets[i]<offsets[i-1] )
+	    fprintf( stderr, "!!! bad length for %d, %d in %s in %s\n",
+		    i-1, offsets[i]-offsets[i-1], text[type], label);
 	printf( "%d ", offsets[i]);
     }
     putchar('\n');
@@ -5778,16 +5795,24 @@ static void readit(FILE *ttf, FILE *util) {
 return;
     }
 
-    readttfhead(ttf,util,&info);
-    readttfhhead(ttf,util,&info);
-    readttfname(ttf,util,&info);
-    readttfos2(ttf,util,&info);
-    readttfmaxp(ttf,util,&info);
+    if ( info.head_start!=0 )
+	readttfhead(ttf,util,&info);
+    if ( info.hhea_start!=0 )
+	readttfhhead(ttf,util,&info);
+    if ( info.copyright_start!=0 )
+	readttfname(ttf,util,&info);
+    if ( info.os2_start!=0 )
+	readttfos2(ttf,util,&info);
+    if ( info.maxp_start!=0 )
+	readttfmaxp(ttf,util,&info);
     if ( info.gasp_start!=0 )
 	readttfgasp(ttf,util,&info);
-    readttfencodings(ttf,util,&info);
-    readttfpost(ttf,util,&info);
-    readttfcvt(ttf,util,&info);
+    if ( info.encoding_start!=0 )
+	readttfencodings(ttf,util,&info);
+    if ( info.postscript_len!= 0 )
+	readttfpost(ttf,util,&info);
+    if ( info.cvt_length!=0 )
+	readttfcvt(ttf,util,&info);
     if ( info.cff_start!=0 )
 	readcff(ttf,util,&info);
     if ( info.gsub_start!=0 )
@@ -5802,8 +5827,10 @@ return;
 	readttfbitmaps(ttf,util,&info);
     if ( info.bitmapscale_start!=0 )
 	readttfbitmapscale(ttf,util,&info);
-    readtableinstr(ttf,info.prep_start,info.prep_length,"prep");
-    readtableinstr(ttf,info.fpgm_start,info.fpgm_length,"fpgm");
+    if ( info.prep_length!=0 )
+	readtableinstr(ttf,info.prep_start,info.prep_length,"prep");
+    if ( info.fpgm_length!=0 )
+	readtableinstr(ttf,info.fpgm_start,info.fpgm_length,"fpgm");
     if ( info.fdsc_start!=0 )
 	readttffontdescription(ttf,util,&info);
     if ( info.feat_start!=0 )
