@@ -60,8 +60,8 @@ acorn2sfd: $(ACORNOBJS)
 
 # The slight error introduced occasionally by optimization turns out to have
 # disasterous effects. This file may not be compiled with the optimizer.
-splinerefigure.o: splinerefigure.c
-	$(CC) -g -c -o splinerefigure.o $(_CFLAGS) splinerefigure.c
+splinerefigure.o: $(srcdir)/splinerefigure.c
+	$(CC) -g -c -o splinerefigure.o $(_CFLAGS) $(srcdir)/splinerefigure.c
 
 #this makes all the .ui files but wildcarding doesn't work too well if the
 # files don't exist.

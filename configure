@@ -15702,7 +15702,7 @@ fi
 echo Configuration defines: $DEFS
 echo CFLAGS: $CFLAGS
 if test "$STATIC_LIBS" != ""; then
-  echo Static Libraries: $STATIC_LIBS
+  echo Non DlOpenable or Static Libraries: $STATIC_LIBS
 fi
 
 if test "$no_x" = "yes"; then
