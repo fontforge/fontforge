@@ -155,6 +155,10 @@ return( kcm );
 
 static void KernClassMapFree(struct kernclassmap *kcm) {
     int i;
+
+    if ( kcm==NULL )
+return;
+
     for ( i=0; kcm[i].firstkc!=NULL; ++i ) {
 	free( kcm[i].firstkc);
 	free( kcm[i].secondkc);
