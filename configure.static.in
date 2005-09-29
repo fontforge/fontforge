@@ -226,6 +226,11 @@ echo -n checking for long long ...
 AC_TRY_COMPILE(,[long long foo=0x400000000000;],[ AC_DEFINE(_HAS_LONGLONG)
     echo " " yes] , echo " " no )
 
+dnl mac's don't have gettext, people have to use fink to install it
+
+gww_has_gettext="yes"
+AC_CHECK_HEADERS([libintl.h], : , gww_has_gettext="no")
+
 dnl If we can't/don't want to use dynamic libraries then we must link with
 dnl the static libraries we've found
 
@@ -260,6 +265,7 @@ if test "$gww_nodynamic" = "yes"; then
    STATIC_LIBS="$STATIC_LIBS -luninameslist"
    AC_DEFINE(_STATIC_LIBUNINAMESLIST) ] , AC_DEFINE(_NO_LIBUNINAMESLIST))
 fi
+AC_CHECK_LIB(intl, gettext, STATIC_LIBS="$STATIC_LIBS -lintl" ,HAVE_LIBINTL_H=0 ) 
 
 AC_ARG_WITH(multilayer,
  [  --with-multilayer   Control whether we build with support for type3/svg fonts containing multilayered drawing with strokes, fills, images, etc.],
@@ -333,6 +339,29 @@ if test "$no_x" = "yes"; then
  echo " * This version of fontforge will only run scripts. No X libraries *"
  echo " * were found so there is NO user interface!!!!! If you want a UI  *"
  echo " * try installing X11 on your system.                              *"
+ echo " *******************************************************************"
+ case "$host" in
+ *-apple-darwin*)
+  echo ""
+  echo "X11 is optional software on the mac, it does not install automatically"
+  echo " but X11User it is on CD 3 of the OS/X install disks, and X11SDK is on"
+  echo " the Xcode CD. You must install both packages for fontforge to build"
+  echo " with a user interface"
+  ;;
+ esac
+fi
+if test "$gww_has_gettext" = "no"; then
+ echo " *******************************************************************"
+ echo " * Your system does not have the gettext package installed.  This  *"
+ echo " * means that fontforge cannot localize its user interface and all *"
+ echo " * messages will be in English. You might want to install libintl. *"
+ case "$host" in
+ *-apple-darwin*)
+ echo " * Unfortunately Mac OS/X does not ship with gettext. You can find *"
+ echo " * it as part of the standard fink download at:                    *"
+ echo " *  http://fink.sourceforge.net/                                   *"
+  ;;
+ esac
  echo " *******************************************************************"
 fi
 

@@ -1,4 +1,4 @@
-/* Copyright (C) 2000-2005 by George Williams */
+/* Copyright (C) 2000-2003 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -63,9 +63,7 @@ static unichar_t err501[] = { ' ','N','o','t',' ','I','m','p','l','e','m','e','n
 
 static int AddProtocol(unichar_t *prefix,int len) {
     char lib[300], buffer[1400];
-#ifndef NODYNAMIC
     DL_CONST void *handle;
-#endif
     void (*init)(void *,struct stdfuncs *,int);
 
     if ( plen>=pmax ) {
@@ -95,9 +93,9 @@ return( false );
 return( false );
 	}
 	protocols[plen].handle = handle;
-	protocols[plen].dispatcher = (void *(*)(GIOControl *)) dlsym(handle,"GIO_dispatch");
-	protocols[plen].cancel = (void (*)(GIOControl *)) dlsym(handle,"GIO_cancel");
-	protocols[plen].term = (void (*)(void *)) dlsym(handle,"GIO_term");
+	protocols[plen].dispatcher = dlsym(handle,"GIO_dispatch");
+	protocols[plen].cancel = dlsym(handle,"GIO_cancel");
+	protocols[plen].term = dlsym(handle,"GIO_term");
 	init = dlsym(handle,"GIO_init");
 	if ( init!=NULL )
 	    (init)(handle,&_GIO_stdfuncs,plen);

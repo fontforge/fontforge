@@ -1008,16 +1008,17 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-static=PKGS  build static libraries default=no
-  --enable-shared=PKGS  build shared libraries default=yes
+  --enable-static=PKGS  build static libraries default=yes
+  --enable-shared=PKGS  build shared libraries default=no
   --enable-fast-install=PKGS  optimize for fast installation default=yes
   --disable-libtool-lock  avoid locking (might break parallel builds)
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+  --with-static-imagelibs   Control whether to try using static image libaries
   --with-gnu-ld           assume the C compiler uses GNU ld default=no
   --with-pic              try to use only PIC/non-PIC objects default=use both
-  --with-static-imagelibs   Control whether to try using static image libaries
   --with-capslock-for-alt   Control whether to use capslock rather than alt/meta to alter behavior of tools in outline/bitmap windows
   --without-iconv   Don't use the system's iconv(3) routines, use fontforge's instead
   --with-freetype-bytecode   Control whether we build with the bytecode interpreter
@@ -2587,7 +2588,87 @@ host_vendor=`echo $ac_cv_host | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\2/'`
 host_os=`echo $ac_cv_host | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\3/'`
 
 
-# Check whether --enable-shared or --disable-shared was given.
+
+gww_define_caps_for_alt="dontknow"
+gww_nodynamic="no"
+gww_needsstatic="no"
+gww_ismac="no"
+gww_needsstaticimages="no"
+gww_rpath=""
+
+# Check whether --with-static-imagelibs or --without-static-imagelibs was given.
+if test "${with_static_imagelibs+set}" = set; then
+  withval="$with_static_imagelibs"
+
+   if test "$withval" \!= "no" ; then
+     gww_needsstaticimages="yes"
+   fi
+
+
+fi;
+
+LDFLAGS="$LDFLAGS -L/usr/local/libs"
+
+case "$host" in
+*-apple-darwin*)
+ gww_ismac="yes"
+ cat >>confdefs.h <<\_ACEOF
+#define _CursorsMustBe16x16 1
+_ACEOF
+
+ cat >>confdefs.h <<\_ACEOF
+#define _Keyboard 1
+_ACEOF
+
+ cat >>confdefs.h <<\_ACEOF
+#define __Mac 1
+_ACEOF
+
+ gww_define_caps_for_alt="1"
+
+
+ CPPFLAGS="$CPPFLAGS -I/sw/include"
+ LDFLAGS="$LDFLAGS -L/sw/lib"
+ gww_rpath="-rpath /sw/lib"
+ LIBS="/System/Library/Frameworks/CoreServices.framework/CoreServices $LIBS"
+ ;;
+powerpc-*-*linux*)
+ cat >>confdefs.h <<\_ACEOF
+#define _Keyboard 3
+_ACEOF
+
+ ;;
+*sparc*)
+ cat >>confdefs.h <<\_ACEOF
+#define _Keyboard 2
+_ACEOF
+
+ ;;
+*-pc-cygwin*)
+
+ # Check whether --enable-static or --disable-static was given.
+if test "${enable_static+set}" = set; then
+  enableval="$enable_static"
+  p=${PACKAGE-default}
+case $enableval in
+yes) enable_static=yes ;;
+no) enable_static=no ;;
+*)
+  enable_static=no
+  # Look at the argument we got.  We use all the common list separators.
+  IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS="${IFS}:,"
+  for pkg in $enableval; do
+    if test "X$pkg" = "X$p"; then
+      enable_static=yes
+    fi
+  done
+  IFS="$ac_save_ifs"
+  ;;
+esac
+else
+  enable_static=yes
+fi;
+ # Check whether --enable-shared or --disable-shared was given.
 if test "${enable_shared+set}" = set; then
   enableval="$enable_shared"
   p=${PACKAGE-default}
@@ -2607,8 +2688,35 @@ no) enable_shared=no ;;
   ;;
 esac
 else
-  enable_shared=yes
+  enable_shared=no
 fi;
+
+ cat >>confdefs.h <<\_ACEOF
+#define _BrokenBitmapImages 1
+_ACEOF
+
+ cat >>confdefs.h <<\_ACEOF
+#define _ModKeysAutoRepeat 1
+_ACEOF
+
+ cat >>confdefs.h <<\_ACEOF
+#define __CygWin 1
+_ACEOF
+
+
+
+ cat >>confdefs.h <<\_ACEOF
+#define _NO_XINPUT 1
+_ACEOF
+
+
+
+
+
+
+ ;;
+esac
+
 # Check whether --enable-fast-install or --disable-fast-install was given.
 if test "${enable_fast_install+set}" = set; then
   enableval="$enable_fast_install"
@@ -4146,7 +4254,7 @@ test "x$enable_libtool_lock" != xno && enable_libtool_lock=yes
 case $host in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 4149 "configure"' > conftest.$ac_ext
+  echo '#line 4257 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -4722,7 +4830,7 @@ chmod -w .
 save_CFLAGS="$CFLAGS"
 CFLAGS="$CFLAGS -o out/conftest2.$ac_objext"
 compiler_c_o=no
-if { (eval echo configure:4725: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>out/conftest.err; } && test -s out/conftest2.$ac_objext; then
+if { (eval echo configure:4833: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>out/conftest.err; } && test -s out/conftest2.$ac_objext; then
   # The compiler can only warn and ignore the option if not recognized
   # So say no if there are warnings
   if test -s out/conftest.err; then
@@ -6657,7 +6765,7 @@ else
     lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 6660 "configure"
+#line 6768 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -6755,7 +6863,7 @@ else
     lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 6758 "configure"
+#line 6866 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -7487,87 +7595,6 @@ LIBTOOL='$(SHELL) $(top_builddir)/libtool'
 # Prevent multiple expansion
 
 
-
-gww_define_caps_for_alt="dontknow"
-gww_nodynamic="no"
-gww_needsstatic="no"
-gww_ismac="no"
-gww_needsstaticimages="no"
-gww_rpath=""
-
-# Check whether --with-static-imagelibs or --without-static-imagelibs was given.
-if test "${with_static_imagelibs+set}" = set; then
-  withval="$with_static_imagelibs"
-
-   if test "$withval" \!= "no" ; then
-     gww_needsstaticimages="yes"
-   fi
-
-
-fi;
-
-case "$host" in
-*-apple-darwin*)
- gww_ismac="yes"
- cat >>confdefs.h <<\_ACEOF
-#define _CursorsMustBe16x16 1
-_ACEOF
-
- cat >>confdefs.h <<\_ACEOF
-#define _Keyboard 1
-_ACEOF
-
- cat >>confdefs.h <<\_ACEOF
-#define __Mac 1
-_ACEOF
-
- gww_define_caps_for_alt="1"
-
-
- CPPFLAGS="$CPPFLAGS -I/sw/include"
- LDFLAGS="$LDFLAGS -L/sw/lib"
- gww_rpath="-rpath /sw/lib"
- LIBS="/System/Library/Frameworks/CoreServices.framework/CoreServices $LIBS"
- ;;
-powerpc-*-*linux*)
- cat >>confdefs.h <<\_ACEOF
-#define _Keyboard 3
-_ACEOF
-
- ;;
-*sparc*)
- cat >>confdefs.h <<\_ACEOF
-#define _Keyboard 2
-_ACEOF
-
- ;;
-*-pc-cygwin*)
- cat >>confdefs.h <<\_ACEOF
-#define _BrokenBitmapImages 1
-_ACEOF
-
- cat >>confdefs.h <<\_ACEOF
-#define _ModKeysAutoRepeat 1
-_ACEOF
-
- cat >>confdefs.h <<\_ACEOF
-#define __CygWin 1
-_ACEOF
-
- cat >>confdefs.h <<\_ACEOF
-#define NODYNAMIC 1
-_ACEOF
-
- gww_nodynamic="yes"
- gww_needsstatic="yes"
-
-
- cat >>confdefs.h <<\_ACEOF
-#define _NO_XINPUT 1
-_ACEOF
-
- ;;
-esac
 
 
 # Check whether --with-capslock-for-alt or --without-capslock-for-alt was given.
@@ -9077,7 +9104,84 @@ _ACEOF
 fi
 
 
-echo "$as_me:$LINENO: checking for xmlParseFile in -lxml2" >&5
+case "$host" in
+*-pc-cygwin*)
+ echo "$as_me:$LINENO: checking for xmlParseFile in -lxml2" >&5
+echo $ECHO_N "checking for xmlParseFile in -lxml2... $ECHO_C" >&6
+if test "${ac_cv_lib_xml2_xmlParseFile+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lxml2 -liconv -lz $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any gcc2 internal prototype to avoid an error.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+/* We use char because int might match the return type of a gcc2
+   builtin and then its argument prototype would still apply.  */
+char xmlParseFile ();
+int
+main ()
+{
+xmlParseFile ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_lib_xml2_xmlParseFile=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_cv_lib_xml2_xmlParseFile=no
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_lib_xml2_xmlParseFile" >&5
+echo "${ECHO_T}$ac_cv_lib_xml2_xmlParseFile" >&6
+if test $ac_cv_lib_xml2_xmlParseFile = yes; then
+  :
+else
+  cat >>confdefs.h <<\_ACEOF
+#define _NO_LIBXML 1
+_ACEOF
+
+fi
+
+ ;;
+*)
+ echo "$as_me:$LINENO: checking for xmlParseFile in -lxml2" >&5
 echo $ECHO_N "checking for xmlParseFile in -lxml2... $ECHO_C" >&6
 if test "${ac_cv_lib_xml2_xmlParseFile+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -9150,6 +9254,8 @@ _ACEOF
 
 fi
 
+ ;;
+esac
 
 if test "$gww_uselessiconv" = "no" ; then
 
@@ -11632,6 +11738,161 @@ echo " " no
 fi
 rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
 
+
+gww_has_gettext="yes"
+
+for ac_header in libintl.h
+do
+as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
+if eval "test \"\${$as_ac_Header+set}\" = set"; then
+  echo "$as_me:$LINENO: checking for $ac_header" >&5
+echo $ECHO_N "checking for $ac_header... $ECHO_C" >&6
+if eval "test \"\${$as_ac_Header+set}\" = set"; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+fi
+echo "$as_me:$LINENO: result: `eval echo '${'$as_ac_Header'}'`" >&5
+echo "${ECHO_T}`eval echo '${'$as_ac_Header'}'`" >&6
+else
+  # Is the header compilable?
+echo "$as_me:$LINENO: checking $ac_header usability" >&5
+echo $ECHO_N "checking $ac_header usability... $ECHO_C" >&6
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+$ac_includes_default
+#include <$ac_header>
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_header_compiler=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_header_compiler=no
+fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+echo "$as_me:$LINENO: result: $ac_header_compiler" >&5
+echo "${ECHO_T}$ac_header_compiler" >&6
+
+# Is the header present?
+echo "$as_me:$LINENO: checking $ac_header presence" >&5
+echo $ECHO_N "checking $ac_header presence... $ECHO_C" >&6
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <$ac_header>
+_ACEOF
+if { (eval echo "$as_me:$LINENO: \"$ac_cpp conftest.$ac_ext\"") >&5
+  (eval $ac_cpp conftest.$ac_ext) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } >/dev/null; then
+  if test -s conftest.err; then
+    ac_cpp_err=$ac_c_preproc_warn_flag
+    ac_cpp_err=$ac_cpp_err$ac_c_werror_flag
+  else
+    ac_cpp_err=
+  fi
+else
+  ac_cpp_err=yes
+fi
+if test -z "$ac_cpp_err"; then
+  ac_header_preproc=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+  ac_header_preproc=no
+fi
+rm -f conftest.err conftest.$ac_ext
+echo "$as_me:$LINENO: result: $ac_header_preproc" >&5
+echo "${ECHO_T}$ac_header_preproc" >&6
+
+# So?  What about this header?
+case $ac_header_compiler:$ac_header_preproc:$ac_c_preproc_warn_flag in
+  yes:no: )
+    { echo "$as_me:$LINENO: WARNING: $ac_header: accepted by the compiler, rejected by the preprocessor!" >&5
+echo "$as_me: WARNING: $ac_header: accepted by the compiler, rejected by the preprocessor!" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header: proceeding with the compiler's result" >&5
+echo "$as_me: WARNING: $ac_header: proceeding with the compiler's result" >&2;}
+    ac_header_preproc=yes
+    ;;
+  no:yes:* )
+    { echo "$as_me:$LINENO: WARNING: $ac_header: present but cannot be compiled" >&5
+echo "$as_me: WARNING: $ac_header: present but cannot be compiled" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header:     check for missing prerequisite headers?" >&5
+echo "$as_me: WARNING: $ac_header:     check for missing prerequisite headers?" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header: see the Autoconf documentation" >&5
+echo "$as_me: WARNING: $ac_header: see the Autoconf documentation" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header:     section \"Present But Cannot Be Compiled\"" >&5
+echo "$as_me: WARNING: $ac_header:     section \"Present But Cannot Be Compiled\"" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header: proceeding with the preprocessor's result" >&5
+echo "$as_me: WARNING: $ac_header: proceeding with the preprocessor's result" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header: in the future, the compiler will take precedence" >&5
+echo "$as_me: WARNING: $ac_header: in the future, the compiler will take precedence" >&2;}
+    (
+      cat <<\_ASBOX
+## ------------------------------------------ ##
+## Report this to the AC_PACKAGE_NAME lists.  ##
+## ------------------------------------------ ##
+_ASBOX
+    ) |
+      sed "s/^/$as_me: WARNING:     /" >&2
+    ;;
+esac
+echo "$as_me:$LINENO: checking for $ac_header" >&5
+echo $ECHO_N "checking for $ac_header... $ECHO_C" >&6
+if eval "test \"\${$as_ac_Header+set}\" = set"; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  eval "$as_ac_Header=\$ac_header_preproc"
+fi
+echo "$as_me:$LINENO: result: `eval echo '${'$as_ac_Header'}'`" >&5
+echo "${ECHO_T}`eval echo '${'$as_ac_Header'}'`" >&6
+
+fi
+if test `eval echo '${'$as_ac_Header'}'` = yes; then
+  cat >>confdefs.h <<_ACEOF
+#define `echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+ :
+else
+  gww_has_gettext="no"
+fi
+
+done
+
+
 gww_regular_link="no"
 
 # Check whether --with-regular-link or --without-regular-link was given.
@@ -11758,6 +12019,7 @@ _ACEOF
 fi
 
 fi
+# AC_CHECK_LIB(intl, gettext, STATIC_LIBS="$STATIC_LIBS -lintl" ,HAVE_LIBINTL_H=0 )
 if test "$gww_needsstaticimages" = "yes" -a "$gww_regular_link" = "no"; then
  if test "$gww_needsstatic" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -static"
@@ -11797,6 +12059,706 @@ _ACEOF
 _ACEOF
 
  fi
+fi
+if test "$gww_nodynamic" != "yes" -a "$gww_regular_link" != "yes" -a \
+    "$gww_needsstaticimages" != "yes" ; then
+case "$host" in
+*-pc-cygwin*)
+ if test "$ac_cv_lib_ungif_DGifOpenFileName" = "yes"; then
+
+  echo "$as_me:$LINENO: checking for /lib/libungif.la" >&5
+echo $ECHO_N "checking for /lib/libungif.la... $ECHO_C" >&6
+if test "${ac_cv_file__lib_libungif_la+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/lib/libungif.la"; then
+  ac_cv_file__lib_libungif_la=yes
+else
+  ac_cv_file__lib_libungif_la=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__lib_libungif_la" >&5
+echo "${ECHO_T}$ac_cv_file__lib_libungif_la" >&6
+if test $ac_cv_file__lib_libungif_la = yes; then
+  :
+else
+
+   echo "$as_me:$LINENO: checking for /usr/lib/libungif.la" >&5
+echo $ECHO_N "checking for /usr/lib/libungif.la... $ECHO_C" >&6
+if test "${ac_cv_file__usr_lib_libungif_la+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/usr/lib/libungif.la"; then
+  ac_cv_file__usr_lib_libungif_la=yes
+else
+  ac_cv_file__usr_lib_libungif_la=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__usr_lib_libungif_la" >&5
+echo "${ECHO_T}$ac_cv_file__usr_lib_libungif_la" >&6
+if test $ac_cv_file__usr_lib_libungif_la = yes; then
+  :
+else
+
+    echo "$as_me:$LINENO: checking for /usr/local/lib/libungif.la" >&5
+echo $ECHO_N "checking for /usr/local/lib/libungif.la... $ECHO_C" >&6
+if test "${ac_cv_file__usr_local_lib_libungif_la+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/usr/local/lib/libungif.la"; then
+  ac_cv_file__usr_local_lib_libungif_la=yes
+else
+  ac_cv_file__usr_local_lib_libungif_la=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__usr_local_lib_libungif_la" >&5
+echo "${ECHO_T}$ac_cv_file__usr_local_lib_libungif_la" >&6
+if test $ac_cv_file__usr_local_lib_libungif_la = yes; then
+  :
+else
+
+     echo "$as_me:$LINENO: checking for /usr/X11R6/lib/libungif.la" >&5
+echo $ECHO_N "checking for /usr/X11R6/lib/libungif.la... $ECHO_C" >&6
+if test "${ac_cv_file__usr_X11R6_lib_libungif_la+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/usr/X11R6/lib/libungif.la"; then
+  ac_cv_file__usr_X11R6_lib_libungif_la=yes
+else
+  ac_cv_file__usr_X11R6_lib_libungif_la=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__usr_X11R6_lib_libungif_la" >&5
+echo "${ECHO_T}$ac_cv_file__usr_X11R6_lib_libungif_la" >&6
+if test $ac_cv_file__usr_X11R6_lib_libungif_la = yes; then
+  :
+else
+   STATIC_LIBS="$STATIC_LIBS -lungif" ; cat >>confdefs.h <<\_ACEOF
+#define _STATIC_LIBUNGIF 1
+_ACEOF
+
+fi
+
+fi
+
+fi
+
+fi
+
+
+ fi
+ if test "$ac_cv_lib_png_png_create_read_struct" = "yes"; then
+
+  echo "$as_me:$LINENO: checking for /lib/libpng.la" >&5
+echo $ECHO_N "checking for /lib/libpng.la... $ECHO_C" >&6
+if test "${ac_cv_file__lib_libpng_la+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/lib/libpng.la"; then
+  ac_cv_file__lib_libpng_la=yes
+else
+  ac_cv_file__lib_libpng_la=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__lib_libpng_la" >&5
+echo "${ECHO_T}$ac_cv_file__lib_libpng_la" >&6
+if test $ac_cv_file__lib_libpng_la = yes; then
+  :
+else
+
+   echo "$as_me:$LINENO: checking for /usr/lib/libpng.la" >&5
+echo $ECHO_N "checking for /usr/lib/libpng.la... $ECHO_C" >&6
+if test "${ac_cv_file__usr_lib_libpng_la+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/usr/lib/libpng.la"; then
+  ac_cv_file__usr_lib_libpng_la=yes
+else
+  ac_cv_file__usr_lib_libpng_la=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__usr_lib_libpng_la" >&5
+echo "${ECHO_T}$ac_cv_file__usr_lib_libpng_la" >&6
+if test $ac_cv_file__usr_lib_libpng_la = yes; then
+  :
+else
+
+    echo "$as_me:$LINENO: checking for /usr/local/lib/libpng.la" >&5
+echo $ECHO_N "checking for /usr/local/lib/libpng.la... $ECHO_C" >&6
+if test "${ac_cv_file__usr_local_lib_libpng_la+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/usr/local/lib/libpng.la"; then
+  ac_cv_file__usr_local_lib_libpng_la=yes
+else
+  ac_cv_file__usr_local_lib_libpng_la=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__usr_local_lib_libpng_la" >&5
+echo "${ECHO_T}$ac_cv_file__usr_local_lib_libpng_la" >&6
+if test $ac_cv_file__usr_local_lib_libpng_la = yes; then
+  :
+else
+
+     echo "$as_me:$LINENO: checking for /usr/X11R6/lib/libpng.la" >&5
+echo $ECHO_N "checking for /usr/X11R6/lib/libpng.la... $ECHO_C" >&6
+if test "${ac_cv_file__usr_X11R6_lib_libpng_la+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/usr/X11R6/lib/libpng.la"; then
+  ac_cv_file__usr_X11R6_lib_libpng_la=yes
+else
+  ac_cv_file__usr_X11R6_lib_libpng_la=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__usr_X11R6_lib_libpng_la" >&5
+echo "${ECHO_T}$ac_cv_file__usr_X11R6_lib_libpng_la" >&6
+if test $ac_cv_file__usr_X11R6_lib_libpng_la = yes; then
+  :
+else
+   STATIC_LIBS="$STATIC_LIBS -lpng -lz" ; cat >>confdefs.h <<\_ACEOF
+#define _STATIC_LIBPNG 1
+_ACEOF
+
+fi
+
+fi
+
+fi
+
+fi
+
+
+ fi
+ if test "$ac_cv_lib_png12_png_create_read_struct" = "yes"; then
+
+  echo "$as_me:$LINENO: checking for /lib/libpng12.la" >&5
+echo $ECHO_N "checking for /lib/libpng12.la... $ECHO_C" >&6
+if test "${ac_cv_file__lib_libpng12_la+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/lib/libpng12.la"; then
+  ac_cv_file__lib_libpng12_la=yes
+else
+  ac_cv_file__lib_libpng12_la=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__lib_libpng12_la" >&5
+echo "${ECHO_T}$ac_cv_file__lib_libpng12_la" >&6
+if test $ac_cv_file__lib_libpng12_la = yes; then
+  :
+else
+
+   echo "$as_me:$LINENO: checking for /usr/lib/libpng12.la" >&5
+echo $ECHO_N "checking for /usr/lib/libpng12.la... $ECHO_C" >&6
+if test "${ac_cv_file__usr_lib_libpng12_la+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/usr/lib/libpng12.la"; then
+  ac_cv_file__usr_lib_libpng12_la=yes
+else
+  ac_cv_file__usr_lib_libpng12_la=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__usr_lib_libpng12_la" >&5
+echo "${ECHO_T}$ac_cv_file__usr_lib_libpng12_la" >&6
+if test $ac_cv_file__usr_lib_libpng12_la = yes; then
+  :
+else
+
+    echo "$as_me:$LINENO: checking for /usr/local/lib/libpng12.la" >&5
+echo $ECHO_N "checking for /usr/local/lib/libpng12.la... $ECHO_C" >&6
+if test "${ac_cv_file__usr_local_lib_libpng12_la+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/usr/local/lib/libpng12.la"; then
+  ac_cv_file__usr_local_lib_libpng12_la=yes
+else
+  ac_cv_file__usr_local_lib_libpng12_la=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__usr_local_lib_libpng12_la" >&5
+echo "${ECHO_T}$ac_cv_file__usr_local_lib_libpng12_la" >&6
+if test $ac_cv_file__usr_local_lib_libpng12_la = yes; then
+  :
+else
+
+     echo "$as_me:$LINENO: checking for /usr/X11R6/lib/libpng12.la" >&5
+echo $ECHO_N "checking for /usr/X11R6/lib/libpng12.la... $ECHO_C" >&6
+if test "${ac_cv_file__usr_X11R6_lib_libpng12_la+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/usr/X11R6/lib/libpng12.la"; then
+  ac_cv_file__usr_X11R6_lib_libpng12_la=yes
+else
+  ac_cv_file__usr_X11R6_lib_libpng12_la=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__usr_X11R6_lib_libpng12_la" >&5
+echo "${ECHO_T}$ac_cv_file__usr_X11R6_lib_libpng12_la" >&6
+if test $ac_cv_file__usr_X11R6_lib_libpng12_la = yes; then
+  :
+else
+   STATIC_LIBS="$STATIC_LIBS -lpng12 -lz" ; cat >>confdefs.h <<\_ACEOF
+#define _STATIC_LIBPNG12 1
+_ACEOF
+
+fi
+
+fi
+
+fi
+
+fi
+
+
+ fi
+ if test "$ac_cv_lib_tiff_TIFFOpen" = "yes"; then
+
+  echo "$as_me:$LINENO: checking for /lib/libtiff.la" >&5
+echo $ECHO_N "checking for /lib/libtiff.la... $ECHO_C" >&6
+if test "${ac_cv_file__lib_libtiff_la+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/lib/libtiff.la"; then
+  ac_cv_file__lib_libtiff_la=yes
+else
+  ac_cv_file__lib_libtiff_la=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__lib_libtiff_la" >&5
+echo "${ECHO_T}$ac_cv_file__lib_libtiff_la" >&6
+if test $ac_cv_file__lib_libtiff_la = yes; then
+  :
+else
+
+   echo "$as_me:$LINENO: checking for /usr/lib/libtiff.la" >&5
+echo $ECHO_N "checking for /usr/lib/libtiff.la... $ECHO_C" >&6
+if test "${ac_cv_file__usr_lib_libtiff_la+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/usr/lib/libtiff.la"; then
+  ac_cv_file__usr_lib_libtiff_la=yes
+else
+  ac_cv_file__usr_lib_libtiff_la=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__usr_lib_libtiff_la" >&5
+echo "${ECHO_T}$ac_cv_file__usr_lib_libtiff_la" >&6
+if test $ac_cv_file__usr_lib_libtiff_la = yes; then
+  :
+else
+
+    echo "$as_me:$LINENO: checking for /usr/local/lib/libtiff.la" >&5
+echo $ECHO_N "checking for /usr/local/lib/libtiff.la... $ECHO_C" >&6
+if test "${ac_cv_file__usr_local_lib_libtiff_la+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/usr/local/lib/libtiff.la"; then
+  ac_cv_file__usr_local_lib_libtiff_la=yes
+else
+  ac_cv_file__usr_local_lib_libtiff_la=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__usr_local_lib_libtiff_la" >&5
+echo "${ECHO_T}$ac_cv_file__usr_local_lib_libtiff_la" >&6
+if test $ac_cv_file__usr_local_lib_libtiff_la = yes; then
+  :
+else
+
+     echo "$as_me:$LINENO: checking for /usr/X11R6/lib/libtiff.la" >&5
+echo $ECHO_N "checking for /usr/X11R6/lib/libtiff.la... $ECHO_C" >&6
+if test "${ac_cv_file__usr_X11R6_lib_libtiff_la+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/usr/X11R6/lib/libtiff.la"; then
+  ac_cv_file__usr_X11R6_lib_libtiff_la=yes
+else
+  ac_cv_file__usr_X11R6_lib_libtiff_la=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__usr_X11R6_lib_libtiff_la" >&5
+echo "${ECHO_T}$ac_cv_file__usr_X11R6_lib_libtiff_la" >&6
+if test $ac_cv_file__usr_X11R6_lib_libtiff_la = yes; then
+  :
+else
+   STATIC_LIBS="$STATIC_LIBS -ltiff" ; cat >>confdefs.h <<\_ACEOF
+#define _STATIC_LIBTIFF 1
+_ACEOF
+
+fi
+
+fi
+
+fi
+
+fi
+
+
+ fi
+ if test "$ac_cv_lib_jpeg_jpeg_CreateDecompress" = "yes"; then
+
+  echo "$as_me:$LINENO: checking for /lib/libjpeg.la" >&5
+echo $ECHO_N "checking for /lib/libjpeg.la... $ECHO_C" >&6
+if test "${ac_cv_file__lib_libjpeg_la+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/lib/libjpeg.la"; then
+  ac_cv_file__lib_libjpeg_la=yes
+else
+  ac_cv_file__lib_libjpeg_la=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__lib_libjpeg_la" >&5
+echo "${ECHO_T}$ac_cv_file__lib_libjpeg_la" >&6
+if test $ac_cv_file__lib_libjpeg_la = yes; then
+  :
+else
+
+   echo "$as_me:$LINENO: checking for /usr/lib/libjpeg.la" >&5
+echo $ECHO_N "checking for /usr/lib/libjpeg.la... $ECHO_C" >&6
+if test "${ac_cv_file__usr_lib_libjpeg_la+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/usr/lib/libjpeg.la"; then
+  ac_cv_file__usr_lib_libjpeg_la=yes
+else
+  ac_cv_file__usr_lib_libjpeg_la=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__usr_lib_libjpeg_la" >&5
+echo "${ECHO_T}$ac_cv_file__usr_lib_libjpeg_la" >&6
+if test $ac_cv_file__usr_lib_libjpeg_la = yes; then
+  :
+else
+
+    echo "$as_me:$LINENO: checking for /usr/local/lib/libjpeg.la" >&5
+echo $ECHO_N "checking for /usr/local/lib/libjpeg.la... $ECHO_C" >&6
+if test "${ac_cv_file__usr_local_lib_libjpeg_la+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/usr/local/lib/libjpeg.la"; then
+  ac_cv_file__usr_local_lib_libjpeg_la=yes
+else
+  ac_cv_file__usr_local_lib_libjpeg_la=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__usr_local_lib_libjpeg_la" >&5
+echo "${ECHO_T}$ac_cv_file__usr_local_lib_libjpeg_la" >&6
+if test $ac_cv_file__usr_local_lib_libjpeg_la = yes; then
+  :
+else
+
+     echo "$as_me:$LINENO: checking for /usr/X11R6/lib/libjpeg.la" >&5
+echo $ECHO_N "checking for /usr/X11R6/lib/libjpeg.la... $ECHO_C" >&6
+if test "${ac_cv_file__usr_X11R6_lib_libjpeg_la+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/usr/X11R6/lib/libjpeg.la"; then
+  ac_cv_file__usr_X11R6_lib_libjpeg_la=yes
+else
+  ac_cv_file__usr_X11R6_lib_libjpeg_la=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__usr_X11R6_lib_libjpeg_la" >&5
+echo "${ECHO_T}$ac_cv_file__usr_X11R6_lib_libjpeg_la" >&6
+if test $ac_cv_file__usr_X11R6_lib_libjpeg_la = yes; then
+  :
+else
+   STATIC_LIBS="$STATIC_LIBS -ljpeg" ; cat >>confdefs.h <<\_ACEOF
+#define _STATIC_LIBJPEG 1
+_ACEOF
+
+fi
+
+fi
+
+fi
+
+fi
+
+
+ fi
+ if test "$ac_cv_lib_freetype_FT_New_Memory_Face" = "yes"; then
+
+  echo "$as_me:$LINENO: checking for /lib/libfreetype.la" >&5
+echo $ECHO_N "checking for /lib/libfreetype.la... $ECHO_C" >&6
+if test "${ac_cv_file__lib_libfreetype_la+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/lib/libfreetype.la"; then
+  ac_cv_file__lib_libfreetype_la=yes
+else
+  ac_cv_file__lib_libfreetype_la=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__lib_libfreetype_la" >&5
+echo "${ECHO_T}$ac_cv_file__lib_libfreetype_la" >&6
+if test $ac_cv_file__lib_libfreetype_la = yes; then
+  :
+else
+
+   echo "$as_me:$LINENO: checking for /usr/lib/libfreetype.la" >&5
+echo $ECHO_N "checking for /usr/lib/libfreetype.la... $ECHO_C" >&6
+if test "${ac_cv_file__usr_lib_libfreetype_la+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/usr/lib/libfreetype.la"; then
+  ac_cv_file__usr_lib_libfreetype_la=yes
+else
+  ac_cv_file__usr_lib_libfreetype_la=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__usr_lib_libfreetype_la" >&5
+echo "${ECHO_T}$ac_cv_file__usr_lib_libfreetype_la" >&6
+if test $ac_cv_file__usr_lib_libfreetype_la = yes; then
+  :
+else
+
+    echo "$as_me:$LINENO: checking for /usr/local/lib/libfreetype.la" >&5
+echo $ECHO_N "checking for /usr/local/lib/libfreetype.la... $ECHO_C" >&6
+if test "${ac_cv_file__usr_local_lib_libfreetype_la+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/usr/local/lib/libfreetype.la"; then
+  ac_cv_file__usr_local_lib_libfreetype_la=yes
+else
+  ac_cv_file__usr_local_lib_libfreetype_la=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__usr_local_lib_libfreetype_la" >&5
+echo "${ECHO_T}$ac_cv_file__usr_local_lib_libfreetype_la" >&6
+if test $ac_cv_file__usr_local_lib_libfreetype_la = yes; then
+  :
+else
+
+     echo "$as_me:$LINENO: checking for /usr/X11R6/lib/libfreetype.la" >&5
+echo $ECHO_N "checking for /usr/X11R6/lib/libfreetype.la... $ECHO_C" >&6
+if test "${ac_cv_file__usr_X11R6_lib_libfreetype_la+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/usr/X11R6/lib/libfreetype.la"; then
+  ac_cv_file__usr_X11R6_lib_libfreetype_la=yes
+else
+  ac_cv_file__usr_X11R6_lib_libfreetype_la=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__usr_X11R6_lib_libfreetype_la" >&5
+echo "${ECHO_T}$ac_cv_file__usr_X11R6_lib_libfreetype_la" >&6
+if test $ac_cv_file__usr_X11R6_lib_libfreetype_la = yes; then
+  :
+else
+   STATIC_LIBS="$STATIC_LIBS -lfreetype" ; cat >>confdefs.h <<\_ACEOF
+#define _STATIC_LIBFREETYPE 1
+_ACEOF
+
+fi
+
+fi
+
+fi
+
+fi
+
+
+ fi
+ if test "$ac_cv_lib_xml2_xmlParseFile" = "yes"; then
+
+  echo "$as_me:$LINENO: checking for /lib/libxml2.la" >&5
+echo $ECHO_N "checking for /lib/libxml2.la... $ECHO_C" >&6
+if test "${ac_cv_file__lib_libxml2_la+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/lib/libxml2.la"; then
+  ac_cv_file__lib_libxml2_la=yes
+else
+  ac_cv_file__lib_libxml2_la=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__lib_libxml2_la" >&5
+echo "${ECHO_T}$ac_cv_file__lib_libxml2_la" >&6
+if test $ac_cv_file__lib_libxml2_la = yes; then
+  :
+else
+
+   echo "$as_me:$LINENO: checking for /usr/lib/libxml2.la" >&5
+echo $ECHO_N "checking for /usr/lib/libxml2.la... $ECHO_C" >&6
+if test "${ac_cv_file__usr_lib_libxml2_la+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/usr/lib/libxml2.la"; then
+  ac_cv_file__usr_lib_libxml2_la=yes
+else
+  ac_cv_file__usr_lib_libxml2_la=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__usr_lib_libxml2_la" >&5
+echo "${ECHO_T}$ac_cv_file__usr_lib_libxml2_la" >&6
+if test $ac_cv_file__usr_lib_libxml2_la = yes; then
+  :
+else
+
+    echo "$as_me:$LINENO: checking for /usr/local/lib/libxml2.la" >&5
+echo $ECHO_N "checking for /usr/local/lib/libxml2.la... $ECHO_C" >&6
+if test "${ac_cv_file__usr_local_lib_libxml2_la+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/usr/local/lib/libxml2.la"; then
+  ac_cv_file__usr_local_lib_libxml2_la=yes
+else
+  ac_cv_file__usr_local_lib_libxml2_la=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__usr_local_lib_libxml2_la" >&5
+echo "${ECHO_T}$ac_cv_file__usr_local_lib_libxml2_la" >&6
+if test $ac_cv_file__usr_local_lib_libxml2_la = yes; then
+  :
+else
+
+     echo "$as_me:$LINENO: checking for /usr/X11R6/lib/libxml2.la" >&5
+echo $ECHO_N "checking for /usr/X11R6/lib/libxml2.la... $ECHO_C" >&6
+if test "${ac_cv_file__usr_X11R6_lib_libxml2_la+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/usr/X11R6/lib/libxml2.la"; then
+  ac_cv_file__usr_X11R6_lib_libxml2_la=yes
+else
+  ac_cv_file__usr_X11R6_lib_libxml2_la=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__usr_X11R6_lib_libxml2_la" >&5
+echo "${ECHO_T}$ac_cv_file__usr_X11R6_lib_libxml2_la" >&6
+if test $ac_cv_file__usr_X11R6_lib_libxml2_la = yes; then
+  :
+else
+   STATIC_LIBS="$STATIC_LIBS -lxml2" ; cat >>confdefs.h <<\_ACEOF
+#define _STATIC_LIBXML2 1
+_ACEOF
+
+fi
+
+fi
+
+fi
+
+fi
+
+
+ fi
+ ;;
+esac
 fi
 
 
@@ -14760,5 +15722,17 @@ if test "$no_x" = "yes"; then
   echo " with a user interface"
   ;;
  esac
+fi
+if test "$gww_has_gettext" = "no"; then
+ echo " *******************************************************************"
+ echo " * Your system does not have the gettext package installed.  This  *"
+ echo " * means that fontforge cannot localize its user interface and all *"
+ echo " * messages will be in English. You might want to install libintl. *"
+  if test "$gww_ismac" = "yes"; then
+ echo " * Unfortunately Mac OS/X does not ship with gettext. You can find *"
+ echo " * it as part of the standard fink download at:                    *"
+ echo " *  http://fink.sourceforge.net/                                   *"
+ fi
+ echo " *******************************************************************"
 fi
 
