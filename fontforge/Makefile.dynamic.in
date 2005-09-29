@@ -54,13 +54,13 @@ DLIBS = -rpath $(libdir) ../libgunicode.la @LIBS@ -lm
 all: pfaedit-en.ui fontforge sfddiff
 
 fontforge: nomen.h $(fontforge_OBJECTS)
-	$(LIBTOOL) $(CC) -o fontforge $(fontforge_OBJECTS) $(LIBS)
+	$(LIBTOOL) --mode=link $(CC) -o fontforge $(fontforge_OBJECTS) $(LIBS)
 
 sfddiff: $(DIFFOBJS)
-	$(LIBTOOL) $(CC) -o sfddiff $(DIFFOBJS) $(DLIBS)
+	$(LIBTOOL) --mode=link $(CC) -o sfddiff $(DIFFOBJS) $(DLIBS)
 
 acorn2sfd: $(ACORNOBJS)
-	$(LIBTOOL) $(CC) -o acorn2sfd $(ACORNOBJS) $(DLIBS)
+	$(LIBTOOL) --mode=link $(CC) -o acorn2sfd $(ACORNOBJS) $(DLIBS)
 
 # The slight error introduced occasionally by optimization turns out to have
 # disasterous effects. This file may not be compiled with the optimizer.
@@ -70,7 +70,7 @@ splinerefigure.o: splinerefigure.c
 #this makes all the .ui files but wildcarding doesn't work too well if the
 # files don't exist.
 nomen.h pfaedit-ui.c pfaedit-en.ui: $(srcdir)/nomen-*.c makenomenh.c
-	$(LIBTOOL) $(CC) -o makenomenh $(CFLAGS) $(srcdir)/makenomenh.c $(LIBS)
+	$(LIBTOOL) --mode=link $(CC) -o makenomenh $(CFLAGS) $(srcdir)/makenomenh.c $(LIBS)
 	-ln -s $(srcdir)/nomen-*.c .
 	./makenomenh
 	mv pfaedit-ui-en.c pfaedit-ui.c

@@ -16,6 +16,10 @@
 #   define dlerror()		"Error when loading dynamic library"
 #  else
 #   include <dlfcn.h>
+#   ifdef __CygWin
+#    define dlopen(name,foo) libtool_laopen(name,foo)
+void *libtool_laopen(const char *filename, int flags);
+#   endif
 #   define SO_EXT	".so"
 #   define DL_CONST
 #  endif

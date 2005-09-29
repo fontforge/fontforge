@@ -7,7 +7,6 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AC_DISABLE_STATIC
 AC_CANONICAL_HOST
-AC_PROG_LIBTOOL
 
 gww_define_caps_for_alt="dontknow"
 gww_nodynamic="no"
@@ -25,6 +24,8 @@ AC_ARG_WITH(static-imagelibs,
    dnl static versions, else users won't have them.
 
  ])
+
+LDFLAGS="$LDFLAGS -L/usr/local/libs"
 
 case "$host" in
 *-apple-darwin*)
@@ -48,19 +49,43 @@ powerpc-*-*linux*)
  AC_DEFINE(_Keyboard,2)
  ;;
 *-pc-cygwin*)
+ dnl building dynamic libraries on cygwin means marking each entry point
+ dnl and each shared data item as exported. And marking anything borrowed
+ dnl from another library as imported (stdout? strlen? fopen? malloc? X*)
+ dnl Seems far too much work as I borrow freely from libc, X11, etc.
+
+ AC_ENABLE_STATIC
+ AC_DISABLE_SHARED
+
  AC_DEFINE(_BrokenBitmapImages)
  AC_DEFINE(_ModKeysAutoRepeat)
  AC_DEFINE(__CygWin,1)
- AC_DEFINE(NODYNAMIC)
- gww_nodynamic="yes"
- gww_needsstatic="yes"
 
 dnl Although present on my cygwin system the Xi library does not load
 dnl and crashes gdb if we attempt to use it.
 
  AC_DEFINE(_NO_XINPUT)
+
+dnl on cygwin the file we dlopen is not the expected filename. We must
+dnl search for a libtool .la file (libpng.la for example) to tell us
+dnl what name we should dlopen. Sadly cygwin doesn't always provide
+dnl these => we must link statically, or load at start up.
+
+dnl so provide a simplistic function to check for the .la file
+dnl AC_CHECK_LIB_LA(lib-name, action-if-found, action-if-missing)
+
+AC_DEFUN([AC_CHECK_LIB_LA],
+ [
+  AC_CHECK_FILE(/lib/lib$1.la,[$2],[
+   AC_CHECK_FILE(/usr/lib/lib$1.la,[$2],[
+    AC_CHECK_FILE(/usr/local/lib/lib$1.la,[$2],[
+     AC_CHECK_FILE(/usr/X11R6/lib/lib$1.la,[$2],[$3])])])])
+ ])
+
  ;;
 esac
+
+AC_PROG_LIBTOOL
 
 AC_ARG_WITH(capslock-for-alt,
  [  --with-capslock-for-alt   Control whether to use capslock rather than alt/meta to alter behavior of tools in outline/bitmap windows],
@@ -142,7 +167,14 @@ AC_CHECK_LIB(jpeg, jpeg_CreateDecompress, :  ,AC_DEFINE(_NO_LIBJPEG))
 AC_CHECK_HEADER(jpeglib.h, : , AC_DEFINE(_NO_LIBJPEG))
 AC_CHECK_LIB(tiff, TIFFOpen, : , AC_DEFINE(_NO_LIBTIFF), -lm )
 AC_CHECK_HEADER(tiffio.h, : , AC_DEFINE(_NO_LIBTIFF))
-AC_CHECK_LIB(xml2, xmlParseFile, : , AC_DEFINE(_NO_LIBXML))
+case "$host" in
+*-pc-cygwin*)
+ AC_CHECK_LIB(xml2, xmlParseFile, : , AC_DEFINE(_NO_LIBXML), [-liconv -lz])
+ ;;
+*)
+ AC_CHECK_LIB(xml2, xmlParseFile, : , AC_DEFINE(_NO_LIBXML))
+ ;;
+esac
 
 if test "$gww_uselessiconv" = "no" ; then
  AC_CHECK_HEADERS([iconv.h])
@@ -258,6 +290,11 @@ echo -n checking for long long ...
 AC_TRY_COMPILE(,[long long foo=0x400000000000;],[ AC_DEFINE(_HAS_LONGLONG)
     echo " " yes] , echo " " no )
 
+dnl mac's don't have gettext, people have to use fink to install it
+
+gww_has_gettext="yes"
+AC_CHECK_HEADERS([libintl.h], : , gww_has_gettext="no")
+
 gww_regular_link="no"
 AC_ARG_WITH(regular-link,
  [  --with-regular-link   Don't try to dlopen libraries],
@@ -303,6 +340,7 @@ if test "$gww_nodynamic" = "yes" -o "$gww_regular_link" = "yes"; then
    STATIC_LIBS="$STATIC_LIBS -luninameslist"
    AC_DEFINE(_STATIC_LIBUNINAMESLIST) ] , AC_DEFINE(_NO_LIBUNINAMESLIST))
 fi
+# AC_CHECK_LIB(intl, gettext, STATIC_LIBS="$STATIC_LIBS -lintl" ,HAVE_LIBINTL_H=0 ) 
 if test "$gww_needsstaticimages" = "yes" -a "$gww_regular_link" = "no"; then
  if test "$gww_needsstatic" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -static"
@@ -327,6 +365,34 @@ if test "$gww_needsstaticimages" = "yes" -a "$gww_regular_link" = "no"; then
   STATIC_LIBS="$STATIC_LIBS -ljpeg"
   AC_DEFINE(_STATIC_LIBJPEG)
  fi
+fi
+if test "$gww_nodynamic" != "yes" -a "$gww_regular_link" != "yes" -a \
+    "$gww_needsstaticimages" != "yes" ; then
+case "$host" in
+*-pc-cygwin*)
+ if test "$ac_cv_lib_ungif_DGifOpenFileName" = "yes"; then
+  AC_CHECK_LIB_LA(ungif, :, [ STATIC_LIBS="$STATIC_LIBS -lungif" ; AC_DEFINE(_STATIC_LIBUNGIF)])
+ fi
+ if test "$ac_cv_lib_png_png_create_read_struct" = "yes"; then
+  AC_CHECK_LIB_LA(png, :, [ STATIC_LIBS="$STATIC_LIBS -lpng -lz" ; AC_DEFINE(_STATIC_LIBPNG)])
+ fi
+ if test "$ac_cv_lib_png12_png_create_read_struct" = "yes"; then
+  AC_CHECK_LIB_LA(png12, :, [ STATIC_LIBS="$STATIC_LIBS -lpng12 -lz" ; AC_DEFINE(_STATIC_LIBPNG12)])
+ fi
+ if test "$ac_cv_lib_tiff_TIFFOpen" = "yes"; then
+  AC_CHECK_LIB_LA(tiff, :, [ STATIC_LIBS="$STATIC_LIBS -ltiff" ; AC_DEFINE(_STATIC_LIBTIFF)])
+ fi
+ if test "$ac_cv_lib_jpeg_jpeg_CreateDecompress" = "yes"; then
+  AC_CHECK_LIB_LA(jpeg, :, [ STATIC_LIBS="$STATIC_LIBS -ljpeg" ; AC_DEFINE(_STATIC_LIBJPEG)])
+ fi
+ if test "$ac_cv_lib_freetype_FT_New_Memory_Face" = "yes"; then
+  AC_CHECK_LIB_LA(freetype, :, [ STATIC_LIBS="$STATIC_LIBS -lfreetype" ; AC_DEFINE(_STATIC_LIBFREETYPE)])
+ fi
+ if test "$ac_cv_lib_xml2_xmlParseFile" = "yes"; then
+  AC_CHECK_LIB_LA(xml2, :, [ STATIC_LIBS="$STATIC_LIBS -lxml2" ; AC_DEFINE(_STATIC_LIBXML2)])
+ fi
+ ;;
+esac
 fi
 
 AC_ARG_WITH(multilayer,
@@ -415,6 +481,18 @@ if test "$no_x" = "yes"; then
   echo " with a user interface"
   ;;
  esac
+fi
+if test "$gww_has_gettext" = "no"; then
+ echo " *******************************************************************"
+ echo " * Your system does not have the gettext package installed.  This  *"
+ echo " * means that fontforge cannot localize its user interface and all *"
+ echo " * messages will be in English. You might want to install libintl. *"
+  if test "$gww_ismac" = "yes"; then
+ echo " * Unfortunately Mac OS/X does not ship with gettext. You can find *"
+ echo " * it as part of the standard fink download at:                    *"
+ echo " *  http://fink.sourceforge.net/                                   *"
+ fi
+ echo " *******************************************************************"
 fi
 
 dnl EOF
