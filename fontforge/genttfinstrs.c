@@ -1662,8 +1662,7 @@ static uint8 *dogeninstructions(SplineChar *sc, struct glyphinstrs *gi,
 	fprintf(stderr,"When processing TTF instructions (hinting) of %s\n", sc->name );
     }
     sc->ttf_instrs_len = (pt-instrs);
-    sc->ttf_instrs = instrs;
-return(instrs);
+return( sc->ttf_instrs = grealloc(instrs,pt-instrs));
 }
 
 void SCAutoInstr(SplineChar *sc, BlueData *bd) {
