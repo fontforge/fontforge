@@ -1481,7 +1481,8 @@ static int SV_OK(GGadget *g, GEvent *e) {
 		else
 		    sv->sf->ttf_tables = tab->next;
 		free(sv->table->data);
-		free(sv->table);
+		chunkfree(sv->table,sizeof(struct ttf_table));
+		sv->table = NULL;
 	    }
 	} else {
 	    if ( sv->table!=NULL )
