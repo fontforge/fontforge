@@ -5756,7 +5756,8 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = !fv->sf->order2 || anychars==-1 || multilayer;
 	  break;
 	  case MID_PrivateToCvt:
-	    mi->ti.disabled = !fv->sf->order2 || multilayer || fv->sf->cvt_dlg!=NULL;
+	    mi->ti.disabled = !fv->sf->order2 || multilayer ||
+		    fv->sf->private==NULL || fv->sf->cvt_dlg!=NULL;
 	  break;
 	  case MID_Editfpgm: case MID_Editprep: case MID_Editcvt:
 	    mi->ti.disabled = !fv->sf->order2 || multilayer;
