@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 12-Sep-2005 -->
+  <!-- AP: Last modified: 29-Sep-2005 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -15,6 +15,77 @@ Changes since the last release may be found by performing a "cvs log" command
 on the file stamp.c.
 <P>
 <UL>
+  <LI>
+    29-Sept-2005
+    <UL>
+      <LI>
+	Add utf8 entry points for many (ucs2) routines. Minimal ability to draw non-BMP
+	glyphs now with <A HREF="nonBMP/index.html">bdf fonts</A> with encodings:
+	*-UnicodePlane-1 (for plane 1), *-UnicodePlane-2 (for plane 2), etc.
+      <LI>
+	Add a menu command to add values from the private dict into the cvt table
+	(BlueValues, StemSnaps).
+      <LI>
+	The Edit cvt window usually failed to draw anything in itself when it popped
+	up (subsequent refreshes were ok).
+      <LI>
+	Patch from Michal Nowakowski to improve memory usage in auto instr.
+      <LI>
+	Printing sample text was broken in fonts with no kerning classes.
+      <LI>
+	cygwin does very weird things with shared libaries, and we didn't support
+	them at all.
+      <LI>
+	FontForge did not support the depreciated usage of endchar to mean (almost)
+	seac in type2 charstrings. It should now.
+      <LI>
+	os2 typo linegap was not read out of sfd files.
+      <LI>
+	Display 'gai' files in the open dlg.
+      <LI>
+	I got some mnemonics wrong. Fix 'em up.
+      <LI>
+	bdftopcf will use the glyph encoded at 0 as the default glyph if there is
+	no explicit DEFAULT_CHAR. It seems happy with a DEFAULT_CHAR of -1 to mean
+	no default, so use that if we don't want glyph 0 to be the default.
+      <LI>
+	when outputting bdf, fnt or pt3 bitmap fonts with no outline font generated,
+	we'd get filenames like foo-*-13.bdf. Get rid of the "-*".
+      <LI>
+	Support point numbering of composites even when not debugging.
+      <LI>
+	Michal Nowakowski points out that the cvt editor crashed if we changed the
+	length of the table.
+      <LI>
+	Provide two new scripting functions:
+	<UL>
+	  <LI>
+	    MoveReference(xoff,yoff,[ref-name/ref-unicode]+)
+	  <LI>
+	    PositionReference(x,y,[ref-name/ref-unicode]+)
+	</UL>
+	<P>
+	These search all selected glyphs, looking for any references in those glyphs
+	with the given name/unicode value, and then translating the reference by
+	(xoff,yoff) or positioning the reference absolutely at (x,y).
+      <LI>
+	ff failed to read horizontal metrics properly from a type2 CFF CID font.
+	In most cases this would be masked by the fact that ff would correct the
+	bad width values by reading the hmtx table. But if one had a bare CFF font,
+	or a 'gai' font where there is no external source of widths, ff would get
+	things wrong.
+      <LI>
+	Alexej Kryukov points out that most entries in the private dict should be
+	scaled when we do a ScaleToEm.
+      <LI>
+	Fix a couple of problems with cid font display that "gai" fonts expose.
+      <LI>
+	Michal Nowakowski points out that I generated truetype instructions --- and
+	then forgot to attach them to the glyph. Whoops.
+      <LI>
+	Loading extensible glyph information from a tfm file was broken by the encoding
+	change.
+    </UL>
   <LI>
     19-Sept-2005
     <UL>
