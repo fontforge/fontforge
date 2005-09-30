@@ -35,7 +35,7 @@ Incs = -I$(top_srcdir)/inc -I/usr/pkg/include -I/usr/pkg/include/giflib
 CFLAGS = @CFLAGS@ @CPPFLAGS@ $(Incs) @WFLAGS@ $(X_CFLAGS) -DNOTHREADS @DEFS@ -DLIBDIR='"$(libdir)"'
 
 ../libgdraw.la: $(libgdraw_OBJECTS)
-	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) -o ../libgdraw.la $(libgdraw_OBJECTS) \
+	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) @LDFLAGS@ -o ../libgdraw.la $(libgdraw_OBJECTS) \
 	    $(STATIC_LIBS) \
 	    -rpath $(libdir) -version-info $(GD_VERSION):$(GD_REVISION):$(GD_AGE)
 
