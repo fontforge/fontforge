@@ -404,14 +404,19 @@ return;
 
 FontInstance *GDrawInstanciateFont(GDisplay *disp, FontRequest *rq) {
     FState *fs;
-    unichar_t *requested_families = normalize_font_names(rq->family_name);
+    unichar_t *temp = NULL;
+    unichar_t *requested_families = normalize_font_names(rq->family_name!=NULL?
+	    rq->family_name :
+	    (temp = utf82u_copy(rq->utf8_family_name)));
     struct family_info *fam;
     struct font_instance *fi;
-    struct font_data *main[em_max+1], *smallcaps[em_max+1];
-    int pos[em_max+1], val[em_max+1];
+    struct font_data *main[em_uplanemax], *smallcaps[em_uplanemax];
+    int pos[em_uplanemax], val[em_uplanemax];
     FontRequest smallrq;
     struct font_data **unifonts=NULL;
     int i;
+
+    free(temp);
 
     if ( disp==NULL ) disp = screen_display;
     fs = disp->fontstate;
@@ -442,11 +447,11 @@ return( NULL );
     break;
 
     if ( fi==NULL ) {
-	for ( i=0; i<em_max; ++i ) {
+	for ( i=0; i<em_uplanemax; ++i ) {
 	    main[i] = smallcaps[i] = NULL;
 	    pos[i] = 0x7fff;
 	}
-	for ( i=0; i<em_max; ++i ) {
+	for ( i=0; i<em_uplanemax; ++i ) {
 	    main[i] = PickFontForEncoding(disp,fam,rq,i,pos,val);
 	    if ( (rq->style&fs_smallcaps) && main[i]!=NULL && !(main[i]->style&fs_smallcaps)) {
 		int old_size = smallrq.point_size;
@@ -481,16 +486,16 @@ return( NULL );
 	fam->instanciations = fi;
 	fi->smallcaps = NULL;
 	if ( rq->style&fs_smallcaps ) {
-	    for ( i=0; i<em_max; ++i )
+	    for ( i=0; i<em_uplanemax; ++i )
 		if ( smallcaps[i]!=NULL )
 	    break;
-	    if ( i!=em_max ) fi->smallcaps = galloc(em_max*sizeof(struct font_data *));
+	    if ( i!=em_uplanemax ) fi->smallcaps = galloc(em_uplanemax*sizeof(struct font_data *));
 	}
-	for ( i=0; i<em_max; ++i ) {
+	for ( i=0; i<em_uplanemax; ++i ) {
 	    fi->fonts[i] = main[i];
 	    if ( fi->smallcaps ) fi->smallcaps[i] = smallcaps[i];
 	    /* If unicode is a better match than the encoding then use it */
-	    if ( pos[i]!=0x7fff ) {
+	    if ( pos[i]!=0x7fff && i<em_max ) {
 		if ( i==em_unicode || pos[i]!=pos[em_unicode] || val[i]<=val[em_unicode] )
 		    fi->level_masks[pos[i]] |= (1<<i);
 		else
@@ -1001,7 +1006,7 @@ static int TextWidth2(struct font_data *fd,GChar2b *transbuf,int len) {
 	    if ( ch1>=0 && ch1<tot )
 		width += per_char[ch1].width;
 	    else
-		width += info->max_bounds.width;
+		/*width += info->max_bounds.width*/;
 	    ++tpt;
 	    ch1 = (tpt->byte1-offset1)*row+tpt->byte2-offset2;
 	}
@@ -1039,7 +1044,7 @@ return( afont );
 }
 #endif
 enum text_funcs { tf_width, tf_drawit, tf_rect, tf_stopat, tf_stopbefore, tf_stopafter };
-struct tf_arg { GTextBounds size; int width, maxwidth; unichar_t *last; int first; int dont_replace; };
+struct tf_arg { GTextBounds size; int width, maxwidth; unichar_t *last; char *utf8_last; int first; int dont_replace; };
 
 static int RealAsDs(struct font_data *fd,char *transbuf,int len,struct tf_arg *arg) {
     XFontStruct *info = fd->info;
@@ -1548,7 +1553,7 @@ static int32 _GDraw_Transform(GWindow gw, struct font_data *fd, struct font_data
 	lcstate = -1;
 	while ( olen<TB_MAX-4 && text<end ) {
 	    ch = *text++;
-	    if ( !mods->has_charset ) {
+	    if ( !mods->has_charset && enc<em_max ) {
 		started = starts_word;
 		starts_word = isspace(ch) && !isnobreak(ch);
 		if ( ch==_SOFT_HYPHEN && !(mods->mods&tm_showsofthyphen))
@@ -1589,7 +1594,7 @@ static int32 _GDraw_Transform(GWindow gw, struct font_data *fd, struct font_data
 		    ++olen;
 		    if ( drawit>=tf_stopat ) cw = TextWidth1((lcstate>0)?sc:fd,opt-1,1)+letter_spacing;
 		}
-	    } else if ( enc!=em_unicode && !mods->has_charset ) {
+	    } else if ( enc!=em_unicode && enc<em_max && !mods->has_charset ) {
 		int highch = ch>>8;
 		if ( highch>=table2->first && highch<=table2->last &&
 			(plane2 = table2->table[highch-table2->first])!=NULL &&
@@ -2020,6 +2025,7 @@ int32 GDrawGetTextBounds(GWindow gw,unichar_t *text, int32 cnt, FontMods *mods,
     struct tf_arg arg;
     int width;
     memset(&arg,'\0',sizeof(arg));
+    arg.first = true;
     width = _GDraw_DoText(gw,0,0,text,cnt,mods,0,tf_rect,&arg);
     *size = arg.size;
 return( width );
@@ -2064,6 +2070,143 @@ int32 GDrawGetTextPtAfterPos(GWindow gw,unichar_t *text, int32 cnt, FontMods *mo
 return( width );
 }
 
+/* UTF8 routines */
+
+static int32 _GDraw_DoText8(GWindow gw, int32 x, int32 y,
+	const char *text, int32 cnt, FontMods *mods, Color col,
+	enum text_funcs drawit, struct tf_arg *arg) {
+    const char *end = text+(cnt<0?strlen(text):cnt);
+    const char *start, *last;
+    int32 dist = 0;
+    struct font_data *fd;
+    struct font_instance *fi = gw->ggc->fi;
+    GDisplay *disp = gw->display;
+    int enc;
+    unichar_t ubuffer[200], *upt;
+    uint32 val;
+    int i;
+
+    if ( fi==NULL )
+return( 0 );
+
+    if ( mods==NULL ) mods = &dummyfontmods;
+
+    forever {
+	if ( text>=end )
+    break;
+	start = text;
+	last = text;
+	val = utf8_ildb(&text);
+	if ( val<=0xffff ) {
+	    upt = ubuffer;
+	    while ( val<=0xffff && text<=end &&
+		    upt<ubuffer+sizeof(ubuffer)/sizeof(ubuffer[0])) {
+		*upt++ = val;
+		last = text;
+		val = utf8_ildb(&text);
+	    }
+	    text = last;
+	    dist += _GDraw_DoText(gw,x+dist,y,ubuffer,upt-ubuffer,mods,col,drawit,arg);
+	} else {
+	    int plane = (val>>16);
+	    upt = ubuffer;
+	    while ( (val>>16)==plane && text<=end &&
+		    upt<ubuffer+sizeof(ubuffer)/sizeof(ubuffer[0])) {
+		*upt++ = val&0xffff;
+		last = text;
+		val = utf8_ildb(&text);
+	    }
+	    text = last;
+	    /* the "encoding" we want to use is "unicodeplane-plane" which is */
+	    /* em_uplane+plane */
+	    enc = em_uplane0 + plane;
+	    fd = fi->fonts[enc];
+
+	    if ( fd!=NULL && fd->info==NULL )
+		(disp->funcs->loadFontMetrics)(disp,fd);
+	    if ( fd!=NULL )
+		dist += _GDraw_Transform(gw,fd,NULL,enc,x+dist,y,ubuffer,upt,mods,col,drawit,arg);
+	    if ( drawit==tf_rect ) {
+		arg->size.rbearing += dist;
+		arg->size.width = dist;
+	    }
+	}
+	if ( drawit>=tf_stopat && arg->width>=arg->maxwidth ) {
+	    if ( arg->last!=upt ) {
+		text = start;
+		for ( i = arg->last-ubuffer; i>0 ; --i )
+		    utf8_ildb(&text);
+	    }
+	    arg->utf8_last = (char *) text;
+return( dist );
+	}
+    }
+return( dist );
+}
+
+int32 GDrawDrawText8(GWindow gw, int32 x, int32 y,
+	const char *text, int32 cnt, FontMods *mods, Color col) {
+    struct tf_arg arg;
+    memset(&arg,'\0',sizeof(arg));
+return( _GDraw_DoText8(gw,x,y,text,cnt,mods,col,tf_drawit,&arg));
+}
+
+int32 GDrawGetText8Width(GWindow gw,const char *text, int32 cnt, FontMods *mods) {
+    struct tf_arg arg;
+    memset(&arg,'\0',sizeof(arg));
+return( _GDraw_DoText8(gw,0,0, text,cnt,mods,0,tf_width,&arg));
+}
+
+int32 GDrawGetText8Bounds(GWindow gw,char *text, int32 cnt, FontMods *mods,
+	GTextBounds *size) {
+    struct tf_arg arg;
+    int width;
+    memset(&arg,'\0',sizeof(arg));
+    arg.first = true;
+    width = _GDraw_DoText8(gw,0,0,text,cnt,mods,0,tf_rect,&arg);
+    *size = arg.size;
+return( width );
+}
+
+int32 GDrawGetText8PtFromPos(GWindow gw,char *text, int32 cnt, FontMods *mods,
+	int32 maxwidth, char **end) {
+    struct tf_arg arg;
+    int width;
+    memset(&arg,'\0',sizeof(arg));
+    arg.maxwidth = maxwidth;
+    width = _GDraw_DoText8(gw,0,0,text,cnt,mods,0,tf_stopat,&arg);
+    if ( arg.utf8_last==NULL )
+	arg.utf8_last = text + (cnt==-1?strlen(text):cnt);
+    *end = arg.utf8_last;
+return( width );
+}
+
+int32 GDrawGetText8PtBeforePos(GWindow gw,char *text, int32 cnt, FontMods *mods,
+	int32 maxwidth, char **end) {
+    struct tf_arg arg;
+    int width;
+    memset(&arg,'\0',sizeof(arg));
+    arg.maxwidth = maxwidth;
+    width = _GDraw_DoText8(gw,0,0,text,cnt,mods,0,tf_stopbefore,&arg);
+    if ( arg.utf8_last==NULL )
+	arg.utf8_last = text + (cnt==-1?strlen(text):cnt);
+    *end = arg.utf8_last;
+return( width );
+}
+
+int32 GDrawGetText8PtAfterPos(GWindow gw,char *text, int32 cnt, FontMods *mods,
+	int32 maxwidth, char **end) {
+    struct tf_arg arg;
+    int width;
+    memset(&arg,'\0',sizeof(arg));
+    arg.maxwidth = maxwidth;
+    width = _GDraw_DoText8(gw,0,0,text,cnt,mods,0,tf_stopafter,&arg);
+    if ( arg.utf8_last==NULL )
+	arg.utf8_last = text + (cnt==-1?strlen(text):cnt);
+    *end = arg.utf8_last;
+return( width );
+}
+/* End UTF8 routines */
 void GDrawFontMetrics(FontInstance *fi,int *as, int *ds, int *ld) {
     struct font_data *fd;
     XFontStruct *fontinfo;

@@ -159,12 +159,15 @@ struct font_data {
     uint8 *exists;			/* Bit mask. set bits indicate contains a glyph for that index */
 };
 
+#define em_uplane0	(em_max+1)
+#define em_uplanemax	(em_max+1+17)
 struct font_name {
     struct font_name *next;
     unichar_t *family_name;
     enum font_type ft;
     int32 map_mask;		/* all charsets */
-    struct font_data *data[em_max+1];	/* list of all fonts with this name & type */
+    struct font_data *data[em_uplanemax];/* list of all fonts with this name & type */
+					/*  Final 17 are any UnicodePlane fonts */
 };
 
 struct family_info {
@@ -183,7 +186,7 @@ struct font_instance {
     FontRequest rq;		/* identification of this instance */
     struct family_info *fam;
     struct font_instance *next;	/* next instanciation in our family */
-    struct font_data *fonts[em_max];
+    struct font_data *fonts[em_uplanemax];
     struct font_data **smallcaps;/* either NULL or an array of em_max fonts to match the above but smaller */
     struct font_data **unifonts;/* an array of fam->name_cnt+ft_max possible unicode fonts */
     uint32 *level_masks;	/* an array of fam->name_cnt+3 masks */
@@ -201,8 +204,8 @@ typedef struct font_state {
     int res, res_closer_to;
     struct font_name *font_names[26];
     struct family_info *fam_hash[26];
-    struct font_name *lastchance[em_max+1][ft_max];
-    struct font_name *lastchance2[em_max+1][ft_max];
+    struct font_name *lastchance[em_uplanemax][ft_max];
+    struct font_name *lastchance2[em_uplanemax][ft_max];
     /*struct font_data *nomaps;*/
     struct font_data *StolenFromScreen;		/* Fonts not on the printer, but on the screen */
     unsigned int allow_scaling: 1;

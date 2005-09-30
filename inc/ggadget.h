@@ -28,6 +28,7 @@
 #define _GGADGET_H
 
 #include "gdraw.h"
+#include "intl.h"
 struct giocontrol;
 
 typedef struct gtextinfo {
@@ -138,7 +139,8 @@ typedef struct ggadgetdata {
 	gg_pos_newline = (int) 0x80000000,
 	/* Reuse some flag values for different widgets */
 	gg_file_pulldown=gg_sb_vert, gg_file_multiple = gg_list_multiplesel,
-	gg_text_xim = gg_tabset_scroll
+	gg_text_xim = gg_tabset_scroll,
+	gg_utf8_popup = gg_rowcol_displayonly
 	} flags;
     const unichar_t *popup_msg;		/* Brief help message */
     GGadgetHandler handle_controlevent;
@@ -216,8 +218,10 @@ void GGadgetRedraw(GGadget *g);
 void GGadgetsCreate(GWindow base, GGadgetCreateData *gcd);
 
 void GGadgetSetTitle(GGadget *g,const unichar_t *title);
+void GGadgetSetTitle8(GGadget *g,const char *title);
 const unichar_t *_GGadgetGetTitle(GGadget *g);	/* Do not free!!! */
 unichar_t *GGadgetGetTitle(GGadget *g);		/* Free the return */
+char *GGadgetGetTitle8(GGadget *g);		/* Free the return (utf8) */
 void GGadgetSetFont(GGadget *g,GFont *font);
 GFont *GGadgetGetFont(GGadget *g);
 int GGadgetEditCmd(GGadget *g,enum editor_commands cmd);

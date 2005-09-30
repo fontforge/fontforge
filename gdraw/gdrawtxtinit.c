@@ -125,7 +125,12 @@ enum charset _GDraw_ParseMapping(unichar_t *setname) {
 
     if ( uc_strstrmatch(setname,"iso")!=NULL && uc_strstrmatch(setname,"10646")!=NULL )
 return( em_unicode );
-    else if ( uc_strstrmatch(setname,"unicode")!=NULL )
+    else if ( uc_strstrmatch(setname,"UnicodePlane")!=NULL ) {
+	pt = u_strchr(setname,'-');
+	if ( pt==NULL )
+return( em_uplane0+1 );
+return( em_uplane0+u_strtol(pt+1,NULL,10) );
+    } else if ( uc_strstrmatch(setname,"unicode")!=NULL )
 return( em_unicode );
 
 #if 0
@@ -404,7 +409,7 @@ void _GDraw_FillLastChance(FState *fonts) {
     if ( hel==NULL )
 	hel = _FindFontName(fonts,"arial");
     times = _FindFontName(fonts,"times");
-    for ( i=0; i<em_max; ++i ) {
+    for ( i=0; i<em_uplanemax; ++i ) {
 	fonts->lastchance[i][ft_serif]= times==NULL || times->data[i]==NULL?NULL: times;
 	fonts->lastchance[i][ft_sans]= hel==NULL || hel->data[i]==NULL?NULL: hel;
 	fonts->lastchance[i][ft_mono]= cour==NULL || cour->data[i]==NULL?NULL: cour;

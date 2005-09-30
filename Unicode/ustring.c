@@ -475,10 +475,10 @@ return( ubuf );
 
 unichar_t *utf82u_strncpy(unichar_t *ubuf,const char *utf8buf,int len) {
     unichar_t *upt=ubuf, *uend=ubuf+len-1;
-    const uint8 *pt = (const uint8 *) utf8buf;
+    const uint8 *pt = (const uint8 *) utf8buf, *end = pt+strlen(utf8buf);
     int w;
 
-    while ( *pt!='\0' && upt<uend ) {
+    while ( pt<end && *pt!='\0' && upt<uend ) {
 	if ( *pt<=127 )
 	    *upt = *pt++;
 	else if ( *pt<=0xdf ) {
@@ -536,7 +536,7 @@ char *u322utf8_strncpy(char *utf8buf, const int32 *ubuf,int len) {
 
     while ( *upt!='\0' && pt<end ) {
 	if ( *upt<=127 )
-	    *pt = *upt++;
+	    *pt++ = *upt;
 	else if ( *upt<=0x7ff ) {
 	    if ( pt+1>=end )
     break;
@@ -610,7 +610,7 @@ return( NULL );
 return( utf82u32_strncpy(ubuf,utf8buf,len+1));
 }
 
-char *utf82u_strcpy(char *utf8buf,const unichar_t *ubuf) {
+char *u2utf8_strcpy(char *utf8buf,const unichar_t *ubuf) {
     char *pt = utf8buf;
 
     while ( *ubuf ) {
@@ -636,6 +636,24 @@ char *utf82u_strcpy(char *utf8buf,const unichar_t *ubuf) {
 return( utf8buf );
 }
 
+char *latin1_2_utf8_strcpy(char *utf8buf,const char *lbuf) {
+    char *pt = utf8buf;
+    const unsigned char *lpt = (const unsigned char *) lbuf;
+
+    while ( *lpt ) {
+	if ( *lpt<0x80 )
+	    *pt++ = *lpt;
+	else {
+	    *pt++ = 0xc0 | (*lpt>>6);
+	    *pt++ = 0x80 | (*lpt&0x3f);
+	}
+	++lpt;
+    }
+    *pt = '\0';
+return( utf8buf );
+}
+
+
 char *u2utf8_copy(const unichar_t *ubuf) {
     int len;
     char *utf8buf;
@@ -645,5 +663,84 @@ return( NULL );
 
     len = u_strlen(ubuf);
     utf8buf = galloc((len+1)*3);
-return( utf82u_strcpy(utf8buf,ubuf));
+return( u2utf8_strcpy(utf8buf,ubuf));
+}
+
+uint32 utf8_ildb(const char **_text) {
+    uint32 val;
+    int ch;
+    const uint8 *text = (const uint8 *) *_text;
+    /* Increment and load character */
+
+    if ( (ch = *text++)<0x80 ) {
+	val = ch;
+    } else if ( ch<=0xdf ) {
+	if ( *text<0x80 )
+return( -1 );
+	val = ((ch&0x1f)<<6) | (*text++&0x3f);
+    } else if ( ch<=0xef ) {
+	if ( *text<0x80 || text[1]<0x80 )
+return( -1 );
+	val = ((ch&0xf)<<12) | ((text[0]&0x3f)<<6) | (text[1]&0x3f);
+	text += 2;
+    } else {
+	int w = ( ((ch&0x7)<<2) | ((text[0]&0x30)>>4) )-1, w2;
+	w = (w<<6) | ((text[0]&0xf)<<2) | ((text[1]&0x30)>>4);
+	w2 = ((text[1]&0xf)<<6) | (text[2]&0x3f);
+	val = w*0x400 + w2 + 0x10000;
+	if ( *text<0x80 || text[1]<0x80 || text[2]<0x80 )
+return( -1 );
+	text += 3;
+    }
+    *_text = text;
+return( val );
+}
+
+char *utf8_idpb(char *utf8_text,uint32 ch) {
+    /* Increment and deposit character */
+    if ( ch<0 || ch>=17*65536 )
+return( utf8_text );
+
+    if ( ch<=127 )
+	*utf8_text++ = ch;
+    else if ( ch<=0x7ff ) {
+	*utf8_text++ = 0xc0 | (ch>>6);
+	*utf8_text++ = 0x80 | (ch&0x3f);
+    } else if ( ch<=0xffff ) {
+	*utf8_text++ = 0xe0 | (ch>>12);
+	*utf8_text++ = 0x80 | ((ch>>6)&0x3f);
+	*utf8_text++ = 0x80 | (ch&0x3f);
+    } else {
+	uint32 val = ch-0x10000;
+	int u = ((val&0xf0000)>>16)+1, z=(val&0x0f000)>>12, y=(val&0x00fc0)>>6, x=val&0x0003f;
+	*utf8_text++ = 0xf0 | (u>>2);
+	*utf8_text++ = 0x80 | ((u&3)<<4) | z;
+	*utf8_text++ = 0x80 | y;
+	*utf8_text++ = 0x80 | x;
+    }
+return( utf8_text );
+}
+
+char *utf8_db(char *utf8_text) {
+    /* Decrement utf8 pointer */
+    unsigned char *pt = (unsigned char *) utf8_text;
+
+    --pt;
+    if ( *pt>=0xc0 )
+	/* This should never happen. The pointer was looking at an intermediate */
+	/*  character. However, if it does happen then we are now properly */
+	/*  positioned at the start of a new char */;
+    else if ( *pt>=0x80 ) {
+	--pt;
+	if ( *pt>=0xc0 )
+	    /* Done */;
+	else if ( *pt>=0x80 ) {
+	    --pt;
+	    if ( *pt>=0xc0 )
+		/* Done */;
+	    else if ( *pt>=0x80 )
+		--pt;
+	}
+    }
+return( (char *) pt );
 }

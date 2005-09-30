@@ -8534,6 +8534,8 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 	if ( index < fv->map->enccount && index!=-1 ) {
 	    SplineChar *sc = (gid=fv->map->map[index])!=-1 ? fv->sf->glyphs[gid]: NULL;
 	    unichar_t buf[60]; char cbuf[8];
+	    char utf8_buf[8];
+	    int use_utf8 = false;
 	    Color fg;
 	    FontMods *mods=NULL;
 	    extern const int amspua[];
@@ -8581,16 +8583,11 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 	      case gl_glyph:
 		if ( uni==0xad )
 		    buf[0] = '-';
-#if 0
-		else if ( Use2ByteEnc(fv,sc,buf,&for_charset))
-		    mods = &for_charset;
-#endif
 		else if ( fv->sf->uni_interp==ui_adobe && uni>=0xf600 && uni<=0xf7ff &&
-			adobes_pua_alts[uni-0xf600]!=0 )
+			adobes_pua_alts[uni-0xf600]!=0 ) {
+		    use_utf8 = false;
 		    do_Adobe_Pua(buf,sizeof(buf),uni);
-		else if ( uni!=-1 && uni<65536 )
-		    buf[0] = uni;
-		else if ( uni>=0x1d400 && uni<=0x1d7ff ) {
+		} else if ( uni>=0x1d400 && uni<=0x1d7ff ) {
 		    int i;
 		    for ( i=0; mathmap[i].start!=0; ++i ) {
 			if ( uni<=mathmap[i].last ) {
@@ -8599,7 +8596,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		    break;
 			}
 		    }
-		} else if ( uni>=0xe0020 && uni<=0xe0007e ) {
+		} else if ( uni>=0xe0020 && uni<=0xe007e ) {
 		    buf[0] = uni-0xe0000;	/* A map of Ascii for language names */
 #if HANYANG
 		} else if ( sc->compositionunit ) {
@@ -8610,6 +8607,27 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		    else	/* Leave a hole for the blank char */
 			buf[0] = 0x11a8 + sc->jamo-(19+21+1);
 #endif
+		} else if ( uni>0 && uni<unicode4_size ) {
+		    char *pt = utf8_buf;
+		    use_utf8 = true;
+		    if ( uni<=0x7f )
+			*pt ++ = uni;
+		    else if ( uni<=0x7ff ) {
+			*pt++ = 0xc0 | (uni>>6);
+			*pt++ = 0x80 | (uni&0x3f);
+		    } else if ( uni<=0xffff ) {
+			*pt++ = 0xe0 | (uni>>12);
+			*pt++ = 0x80 | ((uni>>6)&0x3f);
+			*pt++ = 0x80 | (uni&0x3f);
+		    } else {
+			uint32 val = uni-0x10000;
+			int u = ((val&0xf0000)>>16)+1, z=(val&0x0f000)>>12, y=(val&0x00fc0)>>6, x=val&0x0003f;
+			*pt++ = 0xf0 | (u>>2);
+			*pt++ = 0x80 | ((u&3)<<4) | z;
+			*pt++ = 0x80 | y;
+			*pt++ = 0x80 | x;
+		    }
+		    *pt = '\0';
 		} else {
 		    char *pt = strchr(sc->name,'.');
 		    buf[0] = '?';
@@ -8680,6 +8698,27 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		GDrawPopClip(pixmap,&old2);
 		GImageDestroy(rotated);
 		rotated = NULL;
+	    } else if ( use_utf8 ) {
+		GTextBounds size;
+		if ( styles!=laststyles ) GDrawSetFont(pixmap,FVCheckFont(fv,styles));
+		width = GDrawGetText8Bounds(pixmap,utf8_buf,-1,mods,&size);
+		if ( size.lbearing==0 && size.rbearing==0 ) {
+		    utf8_buf[0] = 0xe0 | (0xfffd>>12);
+		    utf8_buf[1] = 0x80 | ((0xfffd>>6)&0x3f);
+		    utf8_buf[2] = 0x80 | (0xfffd&0x3f);
+		    utf8_buf[3] = 0;
+		    width = GDrawGetText8Bounds(pixmap,utf8_buf,-1,mods,&size);
+		}
+		width = size.rbearing - size.lbearing+1;
+		if ( width >= fv->cbw-1 ) {
+		    GDrawPushClip(pixmap,&r,&old2);
+		    width = fv->cbw-1;
+		}
+		if ( sc->unicodeenc<0x80 || sc->unicodeenc>=0xa0 )
+		    GDrawDrawText8(pixmap,j*fv->cbw+(fv->cbw-1-width)/2-size.lbearing,i*fv->cbh+fv->lab_height-2,utf8_buf,-1,mods,fg);
+		if ( width >= fv->cbw-1 )
+		    GDrawPopClip(pixmap,&old2);
+		laststyles = styles;
 	    } else {
 		if ( styles!=laststyles ) GDrawSetFont(pixmap,FVCheckFont(fv,styles));
 		width = GDrawGetTextWidth(pixmap,buf,-1,mods);

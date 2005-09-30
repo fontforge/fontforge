@@ -1093,6 +1093,16 @@ return( NULL );
 	    XSetIconName(display,nw->w,(pt = u2def_copy(wattrs->icon_title)));
 	    gfree(pt);
 	}
+	if ( (wattrs->mask&wam_utf8_wtitle) && wattrs->utf8_window_title!=NULL ) {
+	    unichar_t *tit = utf82u_copy(wattrs->utf8_window_title);
+	    XStoreName(display,nw->w,(pt = u2def_copy(tit)));
+	    gfree(pt); gfree(tit);
+	}
+	if ( (wattrs->mask&wam_utf8_ititle) && wattrs->utf8_icon_title!=NULL ) {
+	    unichar_t *tit = utf82u_copy(wattrs->utf8_icon_title);
+	    XSetIconName(display,nw->w,(pt = u2def_copy(tit)));
+	    gfree(pt); gfree(tit);
+	}
 	s_h.x = pos->x; s_h.y = pos->y;
 	s_h.base_width = s_h.width = pos->width; s_h.base_height = s_h.height = pos->height;
 	s_h.min_width = s_h.max_width = s_h.width;
@@ -1568,6 +1578,23 @@ static void GXDrawSetWindowTitles(GWindow w, const unichar_t *title, const unich
     }
 }
 
+static void GXDrawSetWindowTitles8(GWindow w, const char *title, const char *icontit) {
+    GXWindow gw = (GXWindow) w;
+    Display *display = gw->display->display;
+    char *pt;
+
+    if ( title!=NULL ) {
+	unichar_t *tit = utf82u_copy(title);
+	XStoreName(display,gw->w,(pt = u2def_copy(tit)));
+	gfree(pt);  gfree(tit);
+    }
+    if ( icontit!=NULL ) {
+	unichar_t *tit = utf82u_copy(icontit);
+	XSetIconName(display,gw->w,(pt = u2def_copy(tit)));
+	gfree(pt);  gfree(tit);
+    }
+}
+
 static void GXDrawSetCursor(GWindow w, GCursor ct) {
     GXWindow gw = (GXWindow) w;
     GXDisplay *gdisp = gw->display;
@@ -1614,6 +1641,14 @@ static unichar_t *GXDrawGetWindowTitle(GWindow w) {
     XFetchName(display,gw->w,&pt);
     ret = def2u_copy(pt);
     XFree(pt);
+return( ret );
+}
+
+static char *GXDrawGetWindowTitle8(GWindow w) {
+    unichar_t *ret1 = GXDrawGetWindowTitle(w);
+    char *ret = u2utf8_copy(ret1);
+
+    free(ret1);
 return( ret );
 }
 
@@ -3953,7 +3988,9 @@ static struct displayfuncs xfuncs = {
     GXDrawIsAbove,
     GXDrawLower,
     GXDrawSetWindowTitles,
+    GXDrawSetWindowTitles8,
     GXDrawGetWindowTitle,
+    GXDrawGetWindowTitle8,
     GXDrawGetPointerPosition,
     GXDrawSetCursor,
     GXDrawGetCursor,

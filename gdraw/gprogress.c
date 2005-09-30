@@ -238,8 +238,9 @@ return;
     gd.pos.y = pos.height-GDrawPointsToPixels(new->gw,29);
     gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_pos_use0;
     gd.mnemonic = 'S';
-    label.text = (unichar_t *) "Stop";
+    label.text = (unichar_t *) _("_Stop");
     label.text_is_1byte = true;
+    label.text_in_resource = true;
     gd.label = &label;
     GButtonCreate( new->gw, &gd, NULL);
 
@@ -414,4 +415,27 @@ return;
     GDrawProcessPendingEvents(NULL);
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);
+}
+
+void GProgressStartIndicator8(int delay, const char *title, const char *line1,
+	const char *line2, int tot, int stages) {
+    unichar_t *tit = utf82u_copy(title),
+		*l1 = utf82u_copy(line1),
+		*l2 = utf82u_copy(line2);
+    GProgressStartIndicator(delay,
+	tit,l1,l2,
+	tot,stages);
+    free(l1); free(l2); free(tit);
+}
+
+void GProgressChangeLine1_8(const char *line1) {
+    unichar_t *l1 = utf82u_copy(line1);
+    GProgressChangeLine1(l1);
+    free(l1);
+}
+
+void GProgressChangeLine2_8(const char *line2) {
+    unichar_t *l2 = utf82u_copy(line2);
+    GProgressChangeLine2(l2);
+    free(l2);
 }

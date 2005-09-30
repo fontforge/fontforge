@@ -497,7 +497,7 @@ return( u_copy(def ));
     while ( !d.done )
 	GDrawProcessOneEvent(NULL);
     if ( d.ret==0 )
-	ret = u_copy(GGadgetGetTitle(GWidgetGetControl(gw,2)));
+	ret = GGadgetGetTitle(GWidgetGetControl(gw,2));
     GDrawDestroyWindow(gw);
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);
@@ -844,6 +844,544 @@ return( -2 );
 
     va_start(ap,question);
     gw = ChoiceDlgCreate(&d,GStringGetResource( title,NULL),GStringGetResource( question,NULL),ap,
+	    choices,cnt,sel,buts,-1,true,false);
+    va_end(ap);
+    while ( !d.done )
+	GDrawProcessOneEvent(NULL);
+    if ( d.ret==-1 ) {
+	for ( i=0; i<cnt; ++i )
+	    sel[i] = 0;
+    } else {
+	list = GWidgetGetControl(gw,CID_List);
+	lsel = GGadgetGetList(list,&len);
+	for ( i=0; i<len; ++i )
+	    sel[i] = lsel[i]->selected;
+    }
+    GDrawDestroyWindow(gw);
+    GDrawSync(NULL);
+    GDrawProcessPendingEvents(NULL);
+return(d.ret);
+}
+
+/* ************** Parallel routines using utf8 arguments ******************** */
+
+static GWindow DlgCreate8(const char *title,const char *question,va_list ap,
+	const char **answers, int def, int cancel,
+	struct dlg_info *d, int add_text, int restrict_input, int center) {
+    GTextInfo qlabels[GLINE_MAX+1], *blabels;
+    GGadgetCreateData *gcd;
+    int lb, bcnt=0;
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    extern FontInstance *_ggadget_default_font;
+    int as, ds, ld, fh;
+    int w, maxw, bw, bspace;
+    int i, y;
+    char buf[1600];
+    unichar_t *ubuf;
+
+    vsnprintf(buf,sizeof(buf)/sizeof(buf[0]),question,ap);
+    if ( screen_display==NULL ) {
+	fprintf(stderr, "%s\n", buf );
+	if ( d!=NULL ) d->done = true;
+return( NULL );
+    }
+    ubuf = utf82u_copy(buf);
+
+    GProgressPauseTimer();
+    memset(qlabels,'\0',sizeof(qlabels));
+    lb = FindLineBreaks(ubuf,qlabels);
+    for ( bcnt=0; answers[bcnt]!=NULL; ++bcnt);
+    blabels = gcalloc(bcnt+1,sizeof(GTextInfo));
+    for ( bcnt=0; answers[bcnt]!=NULL; ++bcnt) {
+	blabels[bcnt].text = (unichar_t *) answers[bcnt];
+	blabels[bcnt].text_is_1byte = true;
+	blabels[bcnt].text_in_resource = true;	/* Look for mnemonics in the utf8 string (preceded by _) */
+    }
+
+    memset(&wattrs,0,sizeof(wattrs));
+    /* If we have many questions in quick succession the dlg will jump around*/
+    /*  as it tracks the cursor (which moves to the buttons). That's not good*/
+    /*  So I don't do undercursor here */
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle;
+    if ( restrict_input )
+	wattrs.mask |= wam_restrict;
+    else 
+	wattrs.mask |= wam_notrestricted;
+    if ( center )
+	wattrs.mask |= wam_centered;
+    else
+	wattrs.mask |= wam_undercursor;
+    wattrs.not_restricted = true;
+    wattrs.restrict_input_to_me = 1;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.undercursor = 1;
+    wattrs.centered = 2;
+    wattrs.cursor = ct_pointer;
+    wattrs.utf8_window_title = (char *) title;
+    pos.x = pos.y = 0;
+    pos.width = 200; pos.height = 60;		/* We'll figure size later */
+		/* but if we get the size too small, the cursor isn't in dlg */
+    gw = GDrawCreateTopWindow(NULL,&pos,restrict_input?d_e_h:w_e_h,d,&wattrs);
+
+    GGadgetInit();
+    GDrawSetFont(gw,_ggadget_default_font);
+    GDrawFontMetrics(_ggadget_default_font,&as,&ds,&ld);
+    fh = as+ds;
+    maxw = 0;
+    for ( i=0; i<lb; ++i ) {
+	w = GDrawGetTextWidth(gw,qlabels[i].text,-1,NULL);
+	if ( w>maxw ) maxw = w;
+    }
+    bw = 0;
+    for ( i=0; i<bcnt; ++i ) {
+	w = GDrawGetText8Width(gw,answers[i],-1,NULL);
+	if ( w>bw ) bw = w;
+    }
+    bw += GDrawPointsToPixels(gw,20);
+    bspace = GDrawPointsToPixels(gw,6);
+    if ( (bw+bspace) * bcnt > maxw )
+	maxw = (bw+bspace)*bcnt;
+    if ( bcnt!=1 )
+	bspace = (maxw-bcnt*bw)/(bcnt-1);
+    maxw += GDrawPointsToPixels(gw,16);
+
+    gcd = gcalloc(lb+bcnt+2,sizeof(GGadgetCreateData));
+    if ( lb==1 ) {
+	gcd[0].gd.pos.width = GDrawGetTextWidth(gw,qlabels[0].text,-1,NULL);
+	gcd[0].gd.pos.x = (maxw-gcd[0].gd.pos.width)/2;
+	gcd[0].gd.pos.y = GDrawPointsToPixels(gw,6);
+	gcd[0].gd.pos.height = fh;
+	gcd[0].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_pos_use0;
+	gcd[0].gd.label = &qlabels[0];
+	gcd[0].creator = GLabelCreate;
+    } else for ( i=0; i<lb; ++i ) {
+	gcd[i].gd.pos.x = GDrawPointsToPixels(gw,8);
+	gcd[i].gd.pos.y = GDrawPointsToPixels(gw,6)+i*fh;
+	gcd[i].gd.pos.width = GDrawGetTextWidth(gw,qlabels[i].text,-1,NULL);
+	gcd[i].gd.pos.height = fh;
+	gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_pos_use0;
+	gcd[i].gd.label = &qlabels[i];
+	gcd[i].creator = GLabelCreate;
+    }
+    y = GDrawPointsToPixels(gw,12)+lb*fh;
+    if ( add_text ) {
+	gcd[bcnt+lb].gd.pos.x = GDrawPointsToPixels(gw,8);
+	gcd[bcnt+lb].gd.pos.y = y;
+	gcd[bcnt+lb].gd.pos.width = maxw-2*GDrawPointsToPixels(gw,6);
+	gcd[bcnt+lb].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_pos_use0 | gg_text_xim;
+	gcd[bcnt+lb].gd.cid = bcnt;
+	gcd[bcnt+lb].creator = GTextFieldCreate;
+	y += fh + GDrawPointsToPixels(gw,6) + GDrawPointsToPixels(gw,10);
+    }
+    y += GDrawPointsToPixels(gw,2);
+    for ( i=0; i<bcnt; ++i ) {
+	gcd[i+lb].gd.pos.x = GDrawPointsToPixels(gw,8) + i*(bw+bspace);
+	gcd[i+lb].gd.pos.y = y;
+	gcd[i+lb].gd.pos.width = bw;
+	gcd[i+lb].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_pos_use0;
+	if ( i==def ) {
+	    gcd[i+lb].gd.flags |= gg_but_default;
+	    gcd[i+lb].gd.pos.x -= GDrawPointsToPixels(gw,3);
+	    gcd[i+lb].gd.pos.y -= GDrawPointsToPixels(gw,3);
+	    gcd[i+lb].gd.pos.width += 2*GDrawPointsToPixels(gw,3);
+	}
+	if ( i==cancel )
+	    gcd[i+lb].gd.flags |= gg_but_cancel;
+	gcd[i+lb].gd.cid = i;
+	gcd[i+lb].gd.label = &blabels[i];
+	gcd[i+lb].creator = GButtonCreate;
+    }
+    if ( bcnt==1 )
+	gcd[lb].gd.pos.x = (maxw-bw)/2;
+    GGadgetsCreate(gw,gcd);
+    pos.width = maxw;
+    pos.height = (lb+1)*fh + GDrawPointsToPixels(gw,34);
+    if ( add_text )
+	pos.height += fh + GDrawPointsToPixels(gw,16);
+    GDrawResize(gw,pos.width,pos.height);
+    GWidgetHidePalettes();
+    if ( d!=NULL ) {
+	memset(d,'\0',sizeof(*d));
+	d->ret = cancel;
+    }
+    GDrawSetVisible(gw,true);
+    free(blabels);
+    free(gcd);
+    for ( i=0; i<lb; ++i )
+	free(qlabels[i].text);
+    GProgressResumeTimer();
+return( gw );
+}
+
+int GWidgetAsk8(const char *title,
+	const char **answers, int def, int cancel,
+	const char *question,...) {
+    struct dlg_info d;
+    GWindow gw;
+    va_list ap;
+
+    if ( screen_display==NULL )
+return( def );
+
+    va_start(ap,question);
+    gw = DlgCreate8(title,question,ap,answers,def,cancel,&d,false,true,false);
+    va_end(ap);
+
+    while ( !d.done )
+	GDrawProcessOneEvent(NULL);
+    GDrawDestroyWindow(gw);
+    GDrawSync(NULL);
+    GDrawProcessPendingEvents(NULL);
+return(d.ret);
+}
+
+int GWidgetAskCentered8(const char *title,
+	const char **answers, int def, int cancel,
+	const char *question, ... ) {
+    struct dlg_info d;
+    GWindow gw;
+    va_list ap;
+
+    if ( screen_display==NULL )
+return( def );
+
+    va_start(ap,question);
+    gw = DlgCreate8(title,question,ap,answers,def,cancel,&d,false,true,true);
+    va_end(ap);
+
+    while ( !d.done )
+	GDrawProcessOneEvent(NULL);
+    GDrawDestroyWindow(gw);
+    GDrawSync(NULL);
+    GDrawProcessPendingEvents(NULL);
+return(d.ret);
+}
+
+char *GWidgetAskString8(const char *title,const char *def,
+	const char *question,...) {
+    struct dlg_info d;
+    GWindow gw;
+    char *ret = NULL;
+    char *ocb[3];
+    va_list ap;
+
+    if ( screen_display==NULL )
+return( copy(def ));
+
+    ocb[2]=NULL;
+    if ( _ggadget_use_gettext ) {
+	ocb[0] = _("_OK");
+	ocb[1] = _("_Cancel");
+    } else {
+	ocb[0] = u2utf8_copy(GStringGetResource( _STR_OK, NULL));
+	ocb[1] = u2utf8_copy(GStringGetResource( _STR_Cancel, NULL));
+    }
+    va_start(ap,question);
+    gw = DlgCreate8(title,question,ap,(const char **) ocb,0,1,&d,true,true,false);
+    va_end(ap);
+    if ( def!=NULL && *def!='\0' )
+	GGadgetSetTitle8(GWidgetGetControl(gw,2),def);
+    while ( !d.done )
+	GDrawProcessOneEvent(NULL);
+    if ( d.ret==0 )
+	ret = GGadgetGetTitle8(GWidgetGetControl(gw,2));
+    GDrawDestroyWindow(gw);
+    GDrawSync(NULL);
+    GDrawProcessPendingEvents(NULL);
+    if ( !_ggadget_use_gettext ) {
+	free(ocb[0]); free(ocb[1]);
+    }
+return(ret);
+}
+
+void GWidgetPostNotice8(const char *title,const char *statement,...) {
+    GWindow gw;
+    char *ob[2];
+    va_list ap;
+
+    ob[1]=NULL;
+    if ( _ggadget_use_gettext )
+	ob[0] = _("_OK");
+    else
+	ob[0] = u2utf8_copy(GStringGetResource( _STR_OK, NULL));
+    va_start(ap,statement);
+    gw = DlgCreate8(title,statement,ap,(const char **) ob,0,0,NULL,false,false,true);
+    va_end(ap);
+    if ( gw!=NULL ) 
+	GDrawRequestTimer(gw,40*1000,0,NULL);
+    /* Continue merrily on our way. Window will destroy itself in 40 secs */
+    /*  or when user kills it. We can ignore it */
+    if ( !_ggadget_use_gettext )
+	free(ob[0]);
+}
+
+void GWidgetError8(const char *title,const char *statement, ...) {
+    struct dlg_info d;
+    GWindow gw;
+    char *ob[2];
+    va_list ap;
+
+    ob[1]=NULL;
+    if ( _ggadget_use_gettext )
+	ob[0] = _("_OK");
+    else
+	ob[0] = u2utf8_copy(GStringGetResource( _STR_OK, NULL));
+    va_start(ap,statement);
+    gw = DlgCreate8(title,statement,ap,(const char **) ob,0,0,&d,false,true,true);
+    va_end(ap);
+    if ( gw!=NULL ) {
+	while ( !d.done )
+	    GDrawProcessOneEvent(NULL);
+	GDrawDestroyWindow(gw);
+    }
+    if ( !_ggadget_use_gettext )
+	free(ob[0]);
+}
+
+static GWindow ChoiceDlgCreate8(struct dlg_info *d,const char *title,
+	const char *question, va_list ap,
+	const char **choices, int cnt, char *multisel,
+	char *buts[2], int def,
+	int restrict_input, int center) {
+    GTextInfo qlabels[GLINE_MAX+1], *llabels, blabel[4];
+    GGadgetCreateData *gcd;
+    int lb;
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    extern FontInstance *_ggadget_default_font;
+    int as, ds, ld, fh;
+    int w, maxw;
+    int i, y, listi;
+    char buf[600];
+    unichar_t *ubuf;
+
+    GProgressPauseTimer();
+    vsnprintf(buf,sizeof(buf)/sizeof(buf[0]),question,ap);
+    ubuf = utf82u_copy(buf);
+    memset(qlabels,'\0',sizeof(qlabels));
+    lb = FindLineBreaks(ubuf,qlabels);
+    llabels = gcalloc(cnt+1,sizeof(GTextInfo));
+    for ( i=0; i<cnt; ++i) {
+	llabels[i].text = (unichar_t *) choices[i];
+	llabels[i].text_is_1byte = true;
+	if ( multisel )
+	    llabels[i].selected = multisel[i];
+	else
+	    llabels[i].selected = (i==def);
+    }
+
+    memset(&wattrs,0,sizeof(wattrs));
+    /* If we have many questions in quick succession the dlg will jump around*/
+    /*  as it tracks the cursor (which moves to the buttons). That's not good*/
+    /*  So I don't do undercursor here */
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle;
+    if ( restrict_input )
+	wattrs.mask |= wam_restrict;
+    else 
+	wattrs.mask |= wam_notrestricted;
+    if ( center )
+	wattrs.mask |= wam_centered;
+    else
+	wattrs.mask |= wam_undercursor;
+    wattrs.not_restricted = true;
+    wattrs.restrict_input_to_me = 1;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.undercursor = 1;
+    wattrs.centered = 2;
+    wattrs.cursor = ct_pointer;
+    wattrs.utf8_window_title = (char *) title;
+    pos.x = pos.y = 0;
+    pos.width = 220; pos.height = 60;		/* We'll figure size later */
+		/* but if we get the size too small, the cursor isn't in dlg */
+    gw = GDrawCreateTopWindow(NULL,&pos,c_e_h,d,&wattrs);
+
+    GDrawSetFont(gw,_ggadget_default_font);
+    GDrawFontMetrics(_ggadget_default_font,&as,&ds,&ld);
+    fh = as+ds;
+    maxw = 220;
+    for ( i=0; i<lb; ++i ) {
+	w = GDrawGetTextWidth(gw,qlabels[i].text,-1,NULL);
+	if ( w>maxw ) maxw = w;
+    }
+    maxw += GDrawPointsToPixels(gw,20);
+
+    gcd = gcalloc(lb+1+2+2+2,sizeof(GGadgetCreateData));
+    if ( lb==1 ) {
+	gcd[0].gd.pos.width = GDrawGetTextWidth(gw,qlabels[0].text,-1,NULL);
+	gcd[0].gd.pos.x = (maxw-gcd[0].gd.pos.width)/2;
+	gcd[0].gd.pos.y = GDrawPointsToPixels(gw,6);
+	gcd[0].gd.pos.height = fh;
+	gcd[0].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_pos_use0;
+	gcd[0].gd.label = &qlabels[0];
+	gcd[0].creator = GLabelCreate;
+    } else for ( i=0; i<lb; ++i ) {
+	gcd[i].gd.pos.x = GDrawPointsToPixels(gw,8);
+	gcd[i].gd.pos.y = GDrawPointsToPixels(gw,6)+i*fh;
+	gcd[i].gd.pos.width = GDrawGetTextWidth(gw,qlabels[i].text,-1,NULL);
+	gcd[i].gd.pos.height = fh;
+	gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_pos_use0;
+	gcd[i].gd.label = &qlabels[i];
+	gcd[i].creator = GLabelCreate;
+    }
+
+    y = GDrawPointsToPixels(gw,12)+lb*fh;
+    gcd[i].gd.pos.x = GDrawPointsToPixels(gw,8); gcd[i].gd.pos.y = y;
+    gcd[i].gd.pos.width = maxw - 2*GDrawPointsToPixels(gw,8);
+    gcd[i].gd.pos.height = (cnt<4?4:cnt<8?cnt:8)*fh + 2*GDrawPointsToPixels(gw,6);
+    gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_pos_use0;
+    if ( multisel )
+	gcd[i].gd.flags |= gg_list_multiplesel;
+    else
+	gcd[i].gd.flags |= gg_list_exactlyone;
+    gcd[i].gd.u.list = llabels;
+    gcd[i].gd.cid = CID_List;
+    listi = i;
+    gcd[i++].creator = GListCreate;
+    y += gcd[i-1].gd.pos.height + GDrawPointsToPixels(gw,10);
+
+    memset(blabel,'\0',sizeof(blabel));
+    if ( multisel ) {
+	y -= GDrawPointsToPixels(gw,5);
+	gcd[i].gd.pos.x = GDrawPointsToPixels(gw,15); gcd[i].gd.pos.y = y;
+	gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_pos_use0;
+	gcd[i].gd.label = &blabel[2];
+	if ( _ggadget_use_gettext ) {
+	    blabel[2].text = (unichar_t *) _("Select _All");
+	    blabel[2].text_is_1byte = true;
+	} else
+	    blabel[2].text = (unichar_t *) _STR_SelectAll;
+	blabel[2].text_in_resource = true;
+	gcd[i].gd.cid = CID_SelectAll;
+	gcd[i].gd.handle_controlevent = GCD_Select;
+	gcd[i++].creator = GButtonCreate;
+
+	gcd[i].gd.pos.x = maxw-GDrawPointsToPixels(gw,15)-
+		GDrawPointsToPixels(gw,GIntGetResource(_NUM_Buttonsize));
+	gcd[i].gd.pos.y = y;
+	gcd[i].gd.pos.width = -1;
+	gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_pos_use0 ;
+	gcd[i].gd.label = &blabel[3];
+	if ( _ggadget_use_gettext ) {
+	    blabel[3].text = (unichar_t *) _("_None");
+	    blabel[3].text_is_1byte = true;
+	} else
+	    blabel[3].text = (unichar_t *) _STR_None;
+	blabel[3].text_in_resource = true;
+	gcd[i].gd.cid = CID_SelectNone;
+	gcd[i].gd.handle_controlevent = GCD_Select;
+	gcd[i++].creator = GButtonCreate;
+	y += GDrawPointsToPixels(gw,30);
+    }
+
+    gcd[i].gd.pos.x = GDrawPointsToPixels(gw,15)-3; gcd[i].gd.pos.y = y-3;
+    gcd[i].gd.pos.width = -1;
+    gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels |gg_but_default | gg_pos_use0;
+    gcd[i].gd.label = &blabel[0];
+    blabel[0].text = (unichar_t *) buts[0];
+    blabel[0].text_is_1byte = true;
+    blabel[0].text_in_resource = true;
+    gcd[i].gd.cid = CID_OK;
+    gcd[i++].creator = GButtonCreate;
+
+    gcd[i].gd.pos.x = maxw-GDrawPointsToPixels(gw,15)-
+	    GDrawPointsToPixels(gw,GIntGetResource(_NUM_Buttonsize));
+    gcd[i].gd.pos.y = y;
+    gcd[i].gd.pos.width = -1;
+    gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels |gg_but_cancel | gg_pos_use0;
+    gcd[i].gd.label = &blabel[1];
+    blabel[1].text = (unichar_t *) buts[1];
+    blabel[1].text_is_1byte = true;
+    gcd[i].gd.cid = CID_Cancel;
+    gcd[i++].creator = GButtonCreate;
+
+    GGadgetsCreate(gw,gcd);
+    pos.width = maxw;
+    pos.height = y + GDrawPointsToPixels(gw,34);
+    GDrawResize(gw,pos.width,pos.height);
+    GWidgetHidePalettes();
+    GDrawSetVisible(gw,true);
+    memset(d,'\0',sizeof(d));
+    d->ret = -1;
+    d->size_diff = pos.height - gcd[listi].gd.pos.height;
+    free(llabels);
+    free(gcd);
+    for ( i=0; i<lb; ++i )
+	free(qlabels[i].text);
+    free(ubuf);
+    GProgressResumeTimer();
+return( gw );
+}
+
+int GWidgetChoices8(const char *title, const char **choices,int cnt, int def,
+	const char *question,...) {
+    struct dlg_info d;
+    GWindow gw;
+    va_list ap;
+    char *buts[2];
+
+    if ( screen_display==NULL )
+return( -2 );
+
+    va_start(ap,question);
+    if ( _ggadget_use_gettext ) {
+	buts[0] = _("_OK");
+	buts[1] = _("_Cancel");
+    } else {
+	buts[0] = u2utf8_copy(GStringGetResource(_STR_OK,NULL));
+	buts[1] = u2utf8_copy(GStringGetResource(_STR_Cancel,NULL));
+    }
+    gw = ChoiceDlgCreate8(&d,title,question,ap,
+	    choices,cnt,NULL, buts,def,true,false);
+    va_end(ap);
+    while ( !d.done )
+	GDrawProcessOneEvent(NULL);
+    GDrawDestroyWindow(gw);
+    GDrawSync(NULL);
+    GDrawProcessPendingEvents(NULL);
+    if ( !_ggadget_use_gettext ) {
+	free(buts[0]); free(buts[1]);
+    }
+return(d.ret);
+}
+
+int GWidgetChoicesBR8(char *title, const char **choices, int cnt, int def,
+	char *buts[2], const char *question,...) {
+    struct dlg_info d;
+    GWindow gw;
+    va_list ap;
+
+    if ( screen_display==NULL )
+return( -2 );
+
+    va_start(ap,question);
+    gw = ChoiceDlgCreate8(&d,title,question,ap,
+	    choices,cnt,NULL,buts,def,true,false);
+    va_end(ap);
+    while ( !d.done )
+	GDrawProcessOneEvent(NULL);
+    GDrawDestroyWindow(gw);
+    GDrawSync(NULL);
+    GDrawProcessPendingEvents(NULL);
+return(d.ret);
+}
+
+int GWidgetChoicesBRM8(char *title, const char **choices,char *sel,
+	int cnt, char *buts[2], const char *question,...) {
+    struct dlg_info d;
+    GWindow gw;
+    va_list ap;
+    GGadget *list;
+    GTextInfo **lsel;
+    int i, len;
+
+    if ( screen_display==NULL )
+return( -2 );
+
+    va_start(ap,question);
+    gw = ChoiceDlgCreate8(&d,title,question,ap,
 	    choices,cnt,sel,buts,-1,true,false);
     va_end(ap);
     while ( !d.done )

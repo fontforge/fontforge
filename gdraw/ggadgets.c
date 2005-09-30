@@ -615,7 +615,9 @@ GGadget *_GGadget_Create(GGadget *g, struct gwindow *base, GGadgetData *gd,void 
     g->short_mask = gd->short_mask;
     g->cid = gd->cid;
     g->data = data;
-    g->popup_msg = u_copy(gd->popup_msg);
+    g->popup_msg = (gd->flags&gg_utf8_popup)
+	    ? utf82u_copy((char *) gd->popup_msg)
+	    : u_copy(gd->popup_msg);
     g->handle_controlevent = gd->handle_controlevent;
     if ( gd->box == NULL )
 	g->box = def;
@@ -834,6 +836,14 @@ void GGadgetSetTitle(GGadget *g,const unichar_t *title) {
 	(g->funcs->set_title)(g,title);
 }
 
+void GGadgetSetTitle8(GGadget *g,const char *title) {
+    if ( g->funcs->set_title!=NULL ) {
+	unichar_t *temp = utf82u_copy(title);
+	(g->funcs->set_title)(g,temp);
+	free(temp);
+    }
+}
+
 const unichar_t *_GGadgetGetTitle(GGadget *g) {
     if ( g->funcs->_get_title!=NULL )
 return( (g->funcs->_get_title)(g) );
@@ -846,6 +856,19 @@ unichar_t *GGadgetGetTitle(GGadget *g) {
 return( (g->funcs->get_title)(g) );
     else if ( g->funcs->_get_title!=NULL )
 return( u_copy( (g->funcs->_get_title)(g) ));
+
+return( NULL );
+}
+
+char *GGadgetGetTitle8(GGadget *g) {
+    if ( g->funcs->_get_title!=NULL )
+return( u2utf8_copy( (g->funcs->_get_title)(g) ));
+    else if ( g->funcs->get_title!=NULL ) {
+	unichar_t *temp = (g->funcs->get_title)(g);
+	char *ret = u2utf8_copy(temp);
+	free(temp);
+return( ret );
+    }
 
 return( NULL );
 }

@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <string.h>
-#include <ctype.h>
+#include <utype.h>
 
 #include <sys/types.h>
 #include <dirent.h>
+#include <time.h>
 
 #include <sys/stat.h>
 #include <unistd.h>
@@ -12,6 +13,8 @@
 #include <ustring.h>
 #include <charset.h>
 #include <chardata.h>
+
+static int make_po = false;
 
 #ifdef FONTFORGE_CONFIG_NO_WINDOWING_UI
 int local_encoding = e_iso8859_1;
@@ -27,7 +30,8 @@ static char *standard[] = { "Language", "OK", "Cancel", "Open", "Save",
 	"Fileexistspost", "Createdir", "Dirname", "Couldntcreatedir",
 	"SelectAll", "None", NULL };
 
-static unichar_t **names, **inames, **en_strings;
+static char *lc="pfaedit", *uc="PfaEdit";
+static unichar_t **names, **inames, **en_strings, *en_mn;
 static char *hadmn;
 static int nlen=__STR_LastStd+1000, npos=__STR_LastStd+1;
 static int ilen=__NUM_LastStd+1, ipos=__NUM_LastStd+1;
@@ -227,10 +231,165 @@ static void outpututf8(FILE *out, unichar_t *str) {
     fprintf( out, "\n" );
 }
 
-static void MakePOFile(unichar_t **en_strings,unichar_t **values,char *lang) {
+static unichar_t *AddMn(unichar_t *str,unichar_t mn, int strict ) {
+    unichar_t *ret, *pt, *rpt;
+
+    if ( str==NULL )
+return( NULL );
+    if ( mn==0 ) {
+	ret = u_copy(str);
+	/* remove %hs entries */
+	for ( rpt=ret; *rpt!='%' && *rpt!='\0'; ++rpt );
+	if ( *rpt=='%' ) {
+	    for ( ++rpt; *rpt!='\0' && *rpt!='d' && *rpt!='i' && *rpt!='o' &&
+		    *rpt!='u' && *rpt!='x' && *rpt!='X' && *rpt!='e' &&
+		    *rpt!='E' && *rpt!='f' && *rpt!='F' && *rpt!='g' &&
+		    *rpt!='G' && *rpt!='c' && *rpt!='s' && *rpt!='%' ; ++rpt ) {
+		if ( *rpt=='h' && rpt[1]=='s' ) {
+		    u_strcpy(rpt,rpt+1);
+	    break;
+		}
+	    }
+	}
+return( ret );
+    }
+
+    ret = malloc((u_strlen(str)+8)*sizeof(unichar_t));
+    if ( islower(mn)) mn = toupper(mn);
+    for ( pt = str, rpt = ret; *pt!='\0'; ) {
+	int ch = islower(*pt)? toupper(*pt) : *pt;
+	if ( ch==mn ) {
+	    *rpt++ = '_';
+	    mn = 0;
+	}
+	if ( ch=='_' ) {
+	    fprintf( stderr, "Entry with mnemonic has underscore " );
+	    outpututf8(stderr,str);
+	}
+	*rpt++ = *pt++;
+    }
+    if ( strict && mn!=0 ) {
+	fprintf( stderr, "Failed to find mnemonic. " );
+	outpututf8(stderr,str);
+	fprintf( stderr, "\n" );
+	exit(1);
+    }
+    if ( mn!=0 ) {
+	*rpt++ = '(';
+	*rpt++ = '_';
+	*rpt++ = mn;
+	*rpt++ = ')';
+    }
+    *rpt = '\0';
+return( ret );
+}
+
+static void DumpPOHeader(FILE *po,char *lang) {
+    time_t now;
+    struct tm *tmnow;
+    
+    fprintf( po, "# SOME DESCRIPTIVE TITLE.\n" );
+    fprintf( po, "# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER\n" );
+    fprintf( po, "# This file is distributed under the same license as FontForge.\n" );
+    fprintf( po, "# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.\n" );
+    fprintf( po, "#\n" );
+    fprintf( po, "#, fuzzy\n" );
+    fprintf( po, "msgid \"\"\n" );
+    fprintf( po, "msgstr \"\"\n" );
+    fprintf( po, "\"Project-Id-Version: PACKAGE VERSION\\n\"\n" );
+    time(&now);
+    tmnow = localtime(&now);
+    fprintf( po, "\"POT-Creation-Date: %d-%02d-%02d %02d:%02d+%02ld%02ld\\n\"\n",
+	    tmnow->tm_year+1900, tmnow->tm_mon, tmnow->tm_mday,
+	    tmnow->tm_hour, tmnow->tm_min,
+	    timezone/3600, (timezone/60)%60);
+    fprintf( po, "\"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\\n\"\n" );
+    fprintf( po, "\"Last-Translator: FULL NAME <EMAIL@ADDRESS>\\n\"\n" );
+    fprintf( po, "\"Language-Team: LANGUAGE <%s@li.org>\\n\"\n", lang );
+    fprintf( po, "\"MIME-Version: 1.0\\n\"\n" );
+    if ( strcmp(lang,"LANG")==0 )
+	fprintf( po, "\"Content-Type: text/plain; charset=CHARSET\\n\"\n" );
+    else
+	fprintf( po, "\"Content-Type: text/plain; charset=UTF-8\\n\"\n" );
+    fprintf( po, "\"Content-Transfer-Encoding: 8bit\\n\"\n" );
+}
+
+static void MakeGoodEnglishPO(unichar_t **en_strings,unichar_t *en_mn) {
+    int i, j;
+    FILE *search, *pot;
+    char fn[100];
+
+    if ( !make_po ) {
+	for ( i=0; i<npos; ++i )
+	    free(en_strings[i]);
+	free(en_strings);
+	free(en_mn);
+return;
+    }
+
+    for ( i=0; i<npos; ++i ) {
+	unichar_t *str = AddMn(en_strings[i],en_mn[i],true);
+	free(en_strings[i]);
+	en_strings[i] = str;
+    }
+
+    search = fopen("po/replacements","w");
+    if ( search!=NULL ) {
+	for ( i=0; i<npos; ++i ) {
+	    char *str = cu_copy(names[i]);
+	    fprintf( search, "_STR_%s\t", str);
+	    free(str);
+	    outpututf8(search,en_strings[i]);
+	}
+	fclose(search);
+    } else
+	fprintf( stderr, "Failed to create replacement file.\n" );
+
+    for ( i=0; i<npos; ++i ) {
+	if ( *en_strings[i]=='\0' )
+	    en_strings[i] = NULL;
+	else for ( j=i+1; j<npos; ++j ) {
+	    if ( u_strcmp(en_strings[i],en_strings[j])==0 ) {
+		en_strings[i] = NULL;
+		fprintf( stderr, "Duplicate msg :" );
+		outpututf8(stderr,en_strings[j]);
+		fprintf( stderr, "\n" );
+	break;
+	    }
+	}
+    }
+
+    sprintf(fn, "po/%s.pot", uc);
+    pot = fopen(fn,"w");
+    if ( pot!=NULL ) {
+	DumpPOHeader(pot,"LANG");
+	for ( i=0; i<npos; ++i ) if ( en_strings[i]!=NULL ) {
+	    fprintf( pot, "\nmsgid " );
+	    outpututf8(pot,en_strings[i]);
+	    fprintf( pot, "msgstr \"\"\n" );
+	}
+	if ( ipos>0 ) {
+	    fprintf( pot, "\nmsgid \"GGadget|ButtonSize|55\"\n" );
+	    fprintf( pot, "msgstr \"\"\n");
+	}
+	if ( ipos>1 ) {
+	    fprintf( pot, "\nmsgid \"GGadget|ScaleFactor|100\"\n" );
+	    fprintf( pot, "msgstr \"\"\n");
+	}
+	fclose(pot);
+    } else
+	fprintf( stderr, "Failed to create po template file.\n" );
+}
+
+static void MakePOFile(unichar_t **en_strings,
+	unichar_t **values,unichar_t *mn, int *ivalues, char *lang) {
     int i;
     char buffer[80], *pt;
-    FILE *out;
+    FILE *out, *full;
+    unichar_t *str;
+
+    if ( !make_po )
+return;
 
     strcpy(buffer,"po/");
     strcat(buffer,lang);
@@ -245,13 +404,47 @@ return;
 	fprintf( stderr, "Failed to write %s\n", buffer);
 return;
     }
+    DumpPOHeader(out,lang);
+    strcpy(buffer+strlen(buffer)-3, "-full.po");
+    full = fopen(buffer,"w");
+    if ( full!=NULL )
+	DumpPOHeader(full,lang);
 
     for ( i=0; i<npos; ++i ) {
-	fprintf( out, "\nmsgid " );
-	outpututf8(out,en_strings[i]);
-	fprintf( out, "msgstr " );
-	outpututf8(out,values[i]);
+	if ( en_strings[i]==NULL )
+    continue;
+	str = AddMn(values[i],mn[i],false);
+	if ( str!=NULL ) {
+	    fprintf( out, "\nmsgid " );
+	    outpututf8(out,en_strings[i]);
+	    fprintf( out, "msgstr " );
+	    outpututf8(out,str);
+	}
+	if ( full!=NULL ) {
+	    fprintf( full, "\nmsgid " );
+	    outpututf8(full,en_strings[i]);
+	    fprintf( full, "msgstr " );
+	    outpututf8(full,str);
+	}
+	free(str);
     }
+    if ( ipos>0 && ivalues[0]!=-1 ) {
+	fprintf( out, "\nmsgid \"GGadget|ButtonSize|55\"\n" );
+	fprintf( out, "msgstr \"%d\"\n", ivalues[0]);
+	if ( full!=NULL ) {
+	    fprintf( full, "\nmsgid \"GGadget|ButtonSize|55\"\n" );
+	    fprintf( full, "msgstr \"%d\"\n", ivalues[0]);
+	}
+    }
+    if ( ipos>1 && ivalues[1]!=-1 ) {
+	fprintf( out, "\nmsgid \"GGadget|ScaleFactor|100\"\n" );
+	fprintf( out, "msgstr \"%d\"\n", ivalues[1]);
+	if ( full!=NULL ) {
+	    fprintf( full, "\nmsgid \"GGadget|ScaleFactor|100\"\n" );
+	    fprintf( full, "msgstr \"%d\"\n", ivalues[1]);
+	}
+    }
+    fclose(out); fclose(full);
 }
 
 static int charval(char **buffer) {
@@ -836,8 +1029,10 @@ return;
 
     if ( en_strings==NULL ) {
 	en_strings = values;
+	en_mn = mn;
+	MakeGoodEnglishPO(en_strings,en_mn);
     } else {
-	MakePOFile(en_strings,values,filename+6);
+	MakePOFile(en_strings,values,mn,ivalues,filename+6);
 	for ( i=0; i<npos; ++i ) free( values[i] );
 	free( values);
 	free( mn );
@@ -849,10 +1044,17 @@ int main(int argc, char **argv) {
     DIR *here;
     struct dirent *file;
     int len;
-    char *lc="pfaedit", *uc="PfaEdit";
+    int i, pos=0;
 
-    if ( argc>1 ) lc = argv[1];
-    if ( argc>2 ) uc = argv[2];
+    for ( i=1; i<argc; ++i ) {
+	if ( strcmp(argv[i],"-po")==0 )
+	    make_po = true;
+	else if ( pos==0 ) {
+	    lc = argv[i];
+	    pos++;
+	} else
+	     uc = argv[i];
+     }
 
     if ( makenomenh())
 return( 1 );
@@ -860,7 +1062,8 @@ return( 1 );
     /* Process the english file first to get a list of strings for the po file(s) */
     /*  That means we'll process English twice, but so what? */
     ProcessNames("nomen-en.c",lc,uc);
-    mkdir("po",0755);
+    if ( make_po )
+	mkdir("po",0755);
 
     /* read all nomen-??*.c files in the current directory */
     here = opendir(".");
