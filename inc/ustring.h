@@ -89,11 +89,14 @@ extern int32 *utf82u32_strncpy(int32 *ubuf,const char *utf8buf,int len);
 extern int32 *utf82u32_copy(const char *utf8buf);
 extern char *u322utf8_copy(const int32 *ubuf);
 extern char *u322utf8_strncpy(char *utf8buf, const int32 *ubuf,int len);
+extern uint32 utf8_ildb(const char **utf8_text);
+extern char *utf8_idpb(char *utf8_text,uint32 ch);
+extern char *latin1_2_utf8_strcpy(char *utf8buf,const char *lbuf);
 
 extern unichar_t *utf82u_strncpy(unichar_t *ubuf,const char *utf8buf,int len);
 extern unichar_t *utf82u_copyn(const char *utf8buf,int len);
 extern unichar_t *utf82u_copy(const char *utf8buf);
-extern char *utf82u_strcpy(char *utf8buf,const unichar_t *ubuf);
+extern char *u2utf8_strcpy(char *utf8buf,const unichar_t *ubuf);
 extern char *u2utf8_copy(const unichar_t *ubuf);
 extern unichar_t *encoding2u_strncpy(unichar_t *uto, const char *from, int n, enum encoding cs);
 extern char *u2encoding_strncpy(char *to, const unichar_t *ufrom, int n, enum encoding cs);

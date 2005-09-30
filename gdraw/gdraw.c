@@ -219,6 +219,14 @@ unichar_t *GDrawGetWindowTitle(GWindow w) {
 return( (w->display->funcs->getWindowTitle)(w) );
 }
 
+void GDrawSetWindowTitles8(GWindow w, const char *title, const char *icontit) {
+    (w->display->funcs->setWindowTitles8)(w,title,icontit);
+}
+
+char *GDrawGetWindowTitle8(GWindow w) {
+return( (w->display->funcs->getWindowTitle8)(w) );
+}
+
 void GDrawSetCursor(GWindow w, GCursor ct) {
     (w->display->funcs->setCursor)(w,ct);
 }

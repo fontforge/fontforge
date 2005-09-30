@@ -99,6 +99,10 @@ unichar_t *GWidgetOpenFile(const unichar_t *title, const unichar_t *defaultfile,
 	const unichar_t *initial_filter, unichar_t **mimetypes,GFileChooserFilterType filter);
 unichar_t *GWidgetSaveAsFile(const unichar_t *title, const unichar_t *defaultfile,
 	const unichar_t *initial_filter, unichar_t **mimetypes,GFileChooserFilterType filter );
+char *GWidgetOpenFile8(const char *title, const char *defaultfile,
+	const char *initial_filter, char **mimetypes,GFileChooserFilterType filter);
+char *GWidgetSaveAsFile8(const char *title, const char *defaultfile,
+	const char *initial_filter, char **mimetypes,GFileChooserFilterType filter );
 int GWidgetAsk(const unichar_t *title, const unichar_t **answers, const unichar_t *mn,
 	int def, int cancel,const unichar_t *question,...);
 int GWidgetAskCentered(const unichar_t *title,
@@ -114,11 +118,36 @@ int GWidgetAskCenteredR(int title, int *answers, int def, int cancel,int questio
 int GWidgetAskCenteredR_(int title, int *answers, int def, int cancel,const unichar_t *question,...);
 unichar_t *GWidgetAskStringR(int title, const unichar_t *def,int question,...);
 void GWidgetPostNoticeR(int title,int statement,...);
+int GWidgetAsk8(const char *title, const char **answers,
+	int def, int cancel,const char *question,...);
+int GWidgetAskCentered8(const char *title,
+	const char ** answers, int def, int cancel,const char *question,...);
+char *GWidgetAskString8(const char *title,
+	const char *def,const char *question,...);
+void GWidgetPostNotice8(const char *title,const char *statement,...);
+void GWidgetError8(const char *title,const char *statement,...);
+
 int GWidgetChoicesR(int title, const unichar_t **choices,int cnt, int def,int question,...);
 int GWidgetChoicesBR(int title, const unichar_t **choices, int cnt, int def,
 	int buts[2],int question,...);
 int GWidgetChoicesBRM(int title, const unichar_t **choices,char *sel,
 	int cnt, int buts[2], int question,...);
+int GWidgetChoices8(const char *title, const char **choices,int cnt, int def,
+	const char *question,...);
+int GWidgetChoicesB8(char *title, const char **choices, int cnt, int def,
+	char *buts[2], const char *question,...);
+int GWidgetChoicesBM8(char *title, const char **choices,char *sel,
+	int cnt, char *buts[2], const char *question,...);
+
+#define gwwv_choose_multiple	GWidgetChoicesBM8
+#define gwwv_choose_with_buttons	GWidgetChoicesB8
+#define gwwv_choose		GWidgetChoices8
+#define gwwv_ask_string		GWidgetAskString8
+#define gwwv_ask		GWidgetAsk8
+#define gwwv_ask_centered	GWidgetAskCentered8
+#define gwwv_post_error		GWidgetError8
+#define gwwv_post_notice	GWidgetPostNotice8
+
 void GWidgetCreateInsChar(void);	/* takes input even when a modal dlg is active */
 		/* but is not modal itself */
 void GInsCharSetChar(unichar_t ch);	/* Sets current selection in ins char dlg */

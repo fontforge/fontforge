@@ -99,6 +99,7 @@ typedef struct {
     int16 point_size;			/* negative values are in pixels */
     int16 weight;
     enum font_style style;
+    char *utf8_family_name;
 } FontRequest;
 
 typedef struct {
@@ -292,7 +293,8 @@ typedef struct gwindow_attrs {
 	    wam_positioned=0x400, wam_centered=0x800, wam_undercursor=0x1000,
 	    wam_noresize=0x2000, wam_restrict=0x4000, wam_redirect=0x8000,
 	    wam_isdlg=0x10000, wam_notrestricted=0x20000,
-	    wam_transient=0x40000 } mask;
+	    wam_transient=0x40000,
+	    wam_utf8_wtitle=0x80000, wam_utf8_ititle=0x100000 } mask;
     uint32 event_masks;			/* (1<<et_char) | (1<<et_mouseup) etc */
     int16 border_width;
     Color border_color;			/* Color_UNKNOWN if unspecified */
@@ -313,6 +315,8 @@ typedef struct gwindow_attrs {
     unsigned int not_restricted: 1;	/* gets events if if a restricted (modal) dlg is up */
     GWindow redirect_from;		/* only redirect input from this window and its children */
     GWindow transient;			/* the Transient_FOR hint */
+    const char *utf8_window_title;
+    const char *utf8_icon_title;
 } GWindowAttrs;
 
 typedef struct gprinter_attrs {
@@ -394,7 +398,9 @@ extern void GDrawRaiseAbove(GWindow w,GWindow below);
 extern int  GDrawIsAbove(GWindow w,GWindow other);
 extern void GDrawLower(GWindow w);
 extern void GDrawSetWindowTitles(GWindow w, const unichar_t *title, const unichar_t *icontit);
+extern void GDrawSetWindowTitles8(GWindow w, const char *title, const char *icontit);
 extern unichar_t *GDrawGetWindowTitle(GWindow w);
+extern char *GDrawGetWindowTitle8(GWindow w);
 extern void GDrawSetCursor(GWindow w, GCursor ct);
 extern GCursor GDrawGetCursor(GWindow w);
 extern GWindow GDrawGetRedirectWindow(GDisplay *gd);
@@ -456,6 +462,17 @@ extern void GDrawBiText1(GBiText *bd, const unichar_t *text, int32 cnt);
 extern void GDrawArabicForms(GBiText *bd, int32 start, int32 end);
 extern void _GDrawBiText2(GBiText *bd, int32 start, int32 end);
 extern void GDrawBiText2(GBiText *bd, int32 start, int32 end);
+/* UTF8 routines */
+extern int32 GDrawGetText8PtAfterPos(GWindow gw,char *text, int32 cnt, FontMods *mods,
+	int32 maxwidth, char **end);
+extern int32 GDrawGetText8PtBeforePos(GWindow gw,char *text, int32 cnt, FontMods *mods,
+	int32 maxwidth, char **end);
+extern int32 GDrawGetText8PtFromPos(GWindow gw,char *text, int32 cnt, FontMods *mods,
+	int32 maxwidth, char **end);
+int32 GDrawGetText8Bounds(GWindow gw,char *text, int32 cnt, FontMods *mods,
+	GTextBounds *size);
+extern int32 GDrawGetText8Width(GWindow gw, const char *text, int32 cnt, FontMods *mods);
+extern int32 GDrawDrawText8(GWindow gw, int32 x, int32 y, const char *txt, int32 cnt, FontMods *mods, Color col);
 
 extern GIC *GDrawCreateInputContext(GWindow w,enum gic_style def_style);
 extern void GDrawSetGIC(GWindow w,GIC *gic,int x, int y);

@@ -28,6 +28,7 @@
 #ifndef _GPROGRESS_H
 #define _GPROGRESS_H
 #include "basics.h"
+#include "intl.h"
 
 extern void GProgressStartIndicator(
     int delay,			/* in tenths of seconds */
@@ -54,4 +55,22 @@ extern int GProgressIncrementBy(int cnt);	/* Increment progress by cnt sub-entit
 extern void GProgressPauseTimer(void);	/* Don't bring up the progress dlg because of */
 extern void GProgressResumeTimer(void);	/*  time spent between a pause and resume */
 extern void GProgressShow(void);	/* Display the damn thing whether we should or not */
+
+extern void GProgressStartIndicator8(int delay, const char *title, const char *line1,
+	const char *line2, int tot, int stages);
+extern void GProgressChangeLine1_8(const char *line1); /* Changes the text in the topmost */
+extern void GProgressChangeLine2_8(const char *line2); /* Changes the text in the topmost */
+
+#define gwwv_progress_start_indicator	GProgressStartIndicator8
+#define gwwv_progress_next		GProgressNext
+#define gwwv_progress_next_stage	GProgressNextStage
+#define gwwv_progress_end_indicator	GProgressEndIndicator
+#define gwwv_progress_show		GProgressShow
+#define gwwv_progress_change_line1	GProgressChangeLine1_8
+#define gwwv_progress_change_line2	GProgressChangeLine2_8
+#define gwwv_progress_change_total	GProgressChangeTotal
+#define gwwv_progress_change_stages	GProgressChangeStages
+#define gwwv_progress_increment_by	GProgressIncrementBy
+#define gwwv_progress_pause_timer	GProgressPauseTimer
+#define gwwv_progress_resume_timer	GProgressResumeTimer
 #endif

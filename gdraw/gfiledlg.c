@@ -26,9 +26,11 @@
  */
 #include <stdlib.h>
 #include <string.h>
+#include "ustring.h"
 #include "gdraw.h"
 #include "gwidget.h"
 #include "ggadget.h"
+#include "ggadgetP.h"
 
 struct gfc_data {
     int done;
@@ -114,7 +116,11 @@ unichar_t *GWidgetOpenFile(const unichar_t *title, const unichar_t *defaultfile,
     gcd[1].gd.pos.x = 12; gcd[1].gd.pos.y = 192-3;
     gcd[1].gd.pos.width = -1;
     gcd[1].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[1].text = (unichar_t *) _STR_OK;
+    if ( _ggadget_use_gettext ) {
+	label[1].text = (unichar_t *) _("_OK");
+	label[1].text_is_1byte = true;
+    } else
+	label[1].text = (unichar_t *) _STR_OK;
     label[1].text_in_resource = true;
     gcd[1].gd.mnemonic = 'O';
     gcd[1].gd.label = &label[1];
@@ -124,7 +130,11 @@ unichar_t *GWidgetOpenFile(const unichar_t *title, const unichar_t *defaultfile,
     gcd[2].gd.pos.x = (totwid-bs)*100/GIntGetResource(_NUM_ScaleFactor)/2; gcd[2].gd.pos.y = gcd[1].gd.pos.y+3;
     gcd[2].gd.pos.width = -1;
     gcd[2].gd.flags = gg_visible | gg_enabled;
-    label[2].text = (unichar_t *) _STR_Filter;
+    if ( _ggadget_use_gettext ) {
+	label[2].text = (unichar_t *) _("_Filter");
+	label[2].text_is_1byte = true;
+    } else
+	label[2].text = (unichar_t *) _STR_Filter;
     label[2].text_in_resource = true;
     gcd[2].gd.mnemonic = 'F';
     gcd[2].gd.label = &label[2];
@@ -134,7 +144,11 @@ unichar_t *GWidgetOpenFile(const unichar_t *title, const unichar_t *defaultfile,
     gcd[3].gd.pos.x = -gcd[1].gd.pos.x; gcd[3].gd.pos.y = gcd[2].gd.pos.y;
     gcd[3].gd.pos.width = -1;
     gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[3].text = (unichar_t *) _STR_Cancel;
+    if ( _ggadget_use_gettext ) {
+	label[3].text = (unichar_t *) _("_Cancel");
+	label[3].text_is_1byte = true;
+    } else
+	label[3].text = (unichar_t *) _STR_Cancel;
     label[3].text_in_resource = true;
     gcd[3].gd.label = &label[3];
     gcd[3].gd.mnemonic = 'C';
@@ -168,4 +182,36 @@ unichar_t *GWidgetOpenFile(const unichar_t *title, const unichar_t *defaultfile,
     GDrawProcessPendingEvents(NULL);		/* Give the window a chance to vanish... */
     GProgressResumeTimer();
 return(d.ret);
+}
+
+char *GWidgetOpenFile8(const char *title, const char *defaultfile,
+	const char *initial_filter, char **mimetypes,
+	GFileChooserFilterType filter) {
+    unichar_t *tit=NULL, *def=NULL, *filt=NULL, **mimes=NULL, *ret;
+    char *utf8_ret;
+    int i;
+
+    if ( title!=NULL )
+	tit = utf82u_copy(title);
+    if ( defaultfile!=NULL )
+	def = utf82u_copy(defaultfile);
+    if ( initial_filter!=NULL )
+	filt = utf82u_copy(initial_filter);
+    if ( mimetypes!=NULL ) {
+	for ( i=0; mimetypes[i]!=NULL; ++i );
+	mimes = galloc((i+1)*sizeof(unichar_t *));
+	for ( i=0; mimetypes[i]!=NULL; ++i )
+	    mimes[i] = utf82u_copy(mimetypes[i]);
+	mimes[i] = NULL;
+    }
+    ret = GWidgetOpenFile(tit,def,filt,mimes,filter);
+    if ( mimes!=NULL ) {
+	for ( i=0; mimes[i]!=NULL; ++i )
+	    free(mimes[i]);
+	free(mimes);
+    }
+    free(filt); free(def); free(tit);
+    utf8_ret = u2utf8_copy(ret);
+    free(ret);
+return( utf8_ret );
 }

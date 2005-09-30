@@ -785,10 +785,18 @@ static unichar_t errort[] = { 'C','o','u','l','d',' ','n','o','t',' ','o','p','e
 static unichar_t error[] = { 'C','o','u','l','d',' ','n','o','t',' ','o','p','e','n',' ','%','.','1','0','0','h','s',  '\0' };
 
 static void GTextFieldImport(GTextField *gt) {
-    unichar_t *ret = GWidgetOpenFile(GStringGetResource(_STR_Open,NULL),NULL,
-	    txt,NULL,NULL);
+    unichar_t *ret;
     char *cret;
     unichar_t *str;
+
+    if ( _ggadget_use_gettext ) {
+	char *temp = GWidgetOpenFile8(_("_Open"),NULL,"*.txt",NULL,NULL);
+	ret = utf82u_copy(temp);
+	free(temp);
+    } else {
+	ret = GWidgetOpenFile(GStringGetResource(_STR_Open,NULL),NULL,
+		txt,NULL,NULL);
+    }
 
     if ( ret==NULL )
 return;
@@ -796,7 +804,10 @@ return;
     free(ret);
     str = _GGadgetFileToUString(cret,65536);
     if ( str==NULL ) {
-	GWidgetError(errort,error,cret);
+	if ( _ggadget_use_gettext )
+	    GWidgetError8(_("Could not open file"), _("Could not open %.100s"),cret);
+	else
+	    GWidgetError(errort,error,cret);
 	free(cret);
 return;
     }
@@ -806,11 +817,18 @@ return;
 }
 
 static void GTextFieldSave(GTextField *gt,int utf8) {
-    unichar_t *ret = GWidgetSaveAsFile(GStringGetResource(_STR_Save,NULL),NULL,
-	    txt,NULL,NULL);
+    unichar_t *ret;
     char *cret;
     FILE *file;
     unichar_t *pt;
+
+    if ( _ggadget_use_gettext ) {
+	char *temp = GWidgetOpenFile8(_("_Save"),NULL,"*.txt",NULL,NULL);
+	ret = utf82u_copy(temp);
+	free(temp);
+    } else
+	ret = GWidgetSaveAsFile(GStringGetResource(_STR_Save,NULL),NULL,
+		txt,NULL,NULL);
 
     if ( ret==NULL )
 return;
@@ -818,7 +836,10 @@ return;
     free(ret);
     file = fopen(cret,"w");
     if ( file==NULL ) {
-	GWidgetError(errort,error,cret);
+	if ( _ggadget_use_gettext )
+	    GWidgetError8(_("Could not open file"), _("Could not open %.100s"),cret);
+	else
+	    GWidgetError(errort,error,cret);
 	free(cret);
 return;
     }
@@ -907,20 +928,33 @@ return;
 }
 
 static GMenuItem gtf_popuplist[] = {
-    { { (unichar_t *) "Undo", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'U' }, 'Z', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Undo },
+    { { (unichar_t *) "_Undo", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 1, 0, 0, 'U' }, 'Z', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Undo },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) "Cut", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 't' }, 'X', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Cut },
-    { { (unichar_t *) "Copy", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'C' }, 'C', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Copy },
-    { { (unichar_t *) "Paste", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'P' }, 'V', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Paste },
+    { { (unichar_t *) "Cu_t", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 1, 0, 0, 't' }, 'X', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Cut },
+    { { (unichar_t *) "_Copy", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 1, 0, 0, 'C' }, 'C', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Copy },
+    { { (unichar_t *) "_Paste", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 1, 0, 0, 'P' }, 'V', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Paste },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) "Save in UTF8", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'S' }, 'S', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Save },
-    { { (unichar_t *) "Save in UCS2", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '2' }, '\0', ksm_control, NULL, NULL, GTFPopupInvoked, MID_SaveUCS2 },
-    { { (unichar_t *) "Import", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'I' }, 'I', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Import },
+    { { (unichar_t *) "_Save in UTF8", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 1, 0, 0, 'S' }, 'S', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Save },
+    { { (unichar_t *) "Save in _UCS2", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 1, 0, 0, '2' }, '\0', ksm_control, NULL, NULL, GTFPopupInvoked, MID_SaveUCS2 },
+    { { (unichar_t *) "_Import", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 1, 0, 0, 'I' }, 'I', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Import },
     { NULL }
 };
+static int first = true;
 
 static void GTFPopupMenu(GTextField *gt, GEvent *event) {
     int no_sel = gt->sel_start==gt->sel_end;
+
+    if ( first ) {
+	gtf_popuplist[0].ti.text = (unichar_t *) _("_Undo");
+	gtf_popuplist[2].ti.text = (unichar_t *) _("Cu_t");
+	gtf_popuplist[3].ti.text = (unichar_t *) _("_Copy");
+	gtf_popuplist[4].ti.text = (unichar_t *) _("_Paste");
+	gtf_popuplist[6].ti.text = (unichar_t *) _("_Save in UTF8");
+	gtf_popuplist[7].ti.text = (unichar_t *) _("Save in _UCS2");
+	gtf_popuplist[8].ti.text = (unichar_t *) _("_Import");
+	first = false;
+    }
+
     gtf_popuplist[0].ti.disabled = gt->oldtext==NULL;	/* Undo */
     gtf_popuplist[2].ti.disabled = no_sel;		/* Cut */
     gtf_popuplist[3].ti.disabled = no_sel;		/* Copy */
@@ -2335,7 +2369,7 @@ static GTextField *_GTextFieldCreate(GTextField *gt, struct gwindow *base, GGadg
 	if ( gd->label->text_in_resource )
 	    gt->text = u_copy((unichar_t *) GStringGetResource((int) gd->label->text,&gt->g.mnemonic));
 	else if ( gd->label->text_is_1byte )
-	    gt->text = /* def2u_*/ uc_copy((char *) gd->label->text);
+	    gt->text = /* def2u_*/ utf82u_copy((char *) gd->label->text);
 	else
 	    gt->text = u_copy(gd->label->text);
 	gt->sel_start = gt->sel_end = gt->sel_base = u_strlen(gt->text);

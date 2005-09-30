@@ -3568,6 +3568,13 @@ static char *str_Glyph = "Glyphe";
 static char *str_Prep = "'prep'";
 static char str_Editcvt[] = "Éditer 'cvt '...";
 
+static char str_NewAnchorDDD_fem[] = "Nouvelle...";
+static unichar_t mnemonic_NewAnchorDDD_fem[] = 'N';
+static char str_NewMarkDDD_fem[] = "Nouvelle...";
+static unichar_t mnemonic_NewMarkDDD_fem[] = 'N';
+static char *str_NoneInterpretation_fem ="Aucune";
+static char mnemonic_NoneInterpretation_fem ='A';
+
 static char str_NewDDD_fem[] = "Nouvelle...";
 static unichar_t mnemonic_NewDDD_fem[] = 'N';
 static char *str_None_fem ="Aucune";

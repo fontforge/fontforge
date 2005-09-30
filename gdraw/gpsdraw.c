@@ -140,6 +140,10 @@ static void PSDrawSetWindowTitles(GWindow w, const unichar_t *title, const unich
     /* Not meaningful */
 }
 
+static void PSDrawSetWindowTitles8(GWindow w, const char *title, const char *icontit) {
+    /* Not meaningful */
+}
+
 static void PSDrawGetPointerPosition(GWindow w, GEvent *ret) {
     /* Not meaningful */
 
@@ -163,6 +167,10 @@ return( NULL );
 }
 
 static unichar_t *PSDrawGetWindowTitle(GWindow w) {
+return(NULL);
+}
+
+static char *PSDrawGetWindowTitle8(GWindow w) {
 return(NULL);
 }
 
@@ -1278,7 +1286,9 @@ static struct displayfuncs psfuncs = {
     PSDrawIsAbove,
     PSDrawLower,
     PSDrawSetWindowTitles,
+    PSDrawSetWindowTitles8,
     PSDrawGetWindowTitle,
+    PSDrawGetWindowTitle8,
     PSDrawGetPointerPosition,
     PSDrawSetCursor,
     PSDrawGetCursor,

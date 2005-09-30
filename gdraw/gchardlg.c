@@ -345,7 +345,7 @@ static void inituninameannot(void) {
 #else
     DL_CONST void *libuninames=NULL;
 # ifdef LIBDIR
-    libuninames = dlopen( LIBDIR "/libuninameslist" SO_EXT,RTLD_LAZY);
+    libuninames = dlopen( LIBDIR "/" "libuninameslist" SO_EXT,RTLD_LAZY);
 # endif
     if ( libuninames==NULL )
 	libuninames = dlopen( "libuninameslist" SO_EXT,RTLD_LAZY);

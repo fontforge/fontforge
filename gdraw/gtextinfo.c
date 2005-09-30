@@ -198,6 +198,51 @@ int GTextInfoDraw(GWindow base,int x,int y,GTextInfo *ti,
 return( height );
 }
 
+unichar_t *utf82u_mncopy(const char *utf8buf,unichar_t *mn) {
+    int len = strlen(utf8buf);
+    unichar_t *ubuf = galloc((len+1)*sizeof(unichar_t));
+    unichar_t *upt=ubuf, *uend=ubuf+len;
+    const uint8 *pt = (const uint8 *) utf8buf, *end = pt+strlen(utf8buf);
+    int w;
+    int was_mn = false;
+
+    *mn = '\0';
+    while ( pt<end && *pt!='\0' && upt<uend ) {
+	if ( *pt<=127 ) {
+	    if ( *pt!='_' )
+		*upt = *pt++;
+	    else {
+		was_mn = 2;
+		++pt;
+		--upt;
+	    }
+	} else if ( *pt<=0xdf ) {
+	    *upt = ((*pt&0x1f)<<6) | (pt[1]&0x3f);
+	    pt += 2;
+	} else if ( *pt<=0xef ) {
+	    *upt = ((*pt&0xf)<<12) | ((pt[1]&0x3f)<<6) | (pt[2]&0x3f);
+	    pt += 3;
+	} else if ( upt+1<uend ) {
+	    /* Um... I don't support surrogates */
+	    w = ( ((*pt&0x7)<<2) | ((pt[1]&0x30)>>4) )-1;
+	    *upt++ = 0xd800 | (w<<6) | ((pt[1]&0xf)<<2) | ((pt[2]&0x30)>>4);
+	    *upt   = 0xdc00 | ((pt[2]&0xf)<<6) | (pt[3]&0x3f);
+	    pt += 4;
+	} else {
+	    /* no space for surrogate */
+	    pt += 4;
+	}
+	++upt;
+	if ( was_mn==1 ) {
+	    *mn = upt[-1];
+	    if ( islower(*mn) ) *mn = toupper(*mn);
+	}
+	--was_mn;
+    }
+    *upt = '\0';
+return( ubuf );
+}
+
 GTextInfo *GTextInfoCopy(GTextInfo *ti) {
     GTextInfo *copy;
 
@@ -208,11 +253,15 @@ GTextInfo *GTextInfoCopy(GTextInfo *ti) {
 	copy->fg = copy->bg = COLOR_UNKNOWN;
     }
     if ( ti->text!=NULL ) {
-	if ( ti->text_in_resource ) {
+	if ( ti->text_is_1byte && ti->text_in_resource ) {
+	    copy->text = utf82u_mncopy((char *) copy->text,&copy->mnemonic);
+	    copy->text_in_resource = false;
+	    copy->text_is_1byte = false;
+	} else if ( ti->text_in_resource ) {
 	    copy->text = u_copy((unichar_t *) GStringGetResource((int) copy->text,&copy->mnemonic));
 	    copy->text_in_resource = false;
 	} else if ( ti->text_is_1byte ) {
-	    copy->text = uc_copy((char *) copy->text);
+	    copy->text = utf82u_copy((char *) copy->text);
 	    copy->text_is_1byte = false;
 	} else
 	    copy->text = u_copy(copy->text);
@@ -351,10 +400,12 @@ return( NULL );
     for ( i=0; mi[i].ti.text!=NULL || mi[i].ti.image!=NULL || mi[i].ti.line; ++i ) {
 	arr[i] = mi[i];
 	if ( mi[i].ti.text!=NULL ) {
-	    if ( mi[i].ti.text_in_resource )
+	    if ( mi[i].ti.text_in_resource && mi[i].ti.text_is_1byte )
+		arr[i].ti.text = utf82u_mncopy((char *) mi[i].ti.text,&arr[i].ti.mnemonic);
+	    else if ( mi[i].ti.text_in_resource )
 		arr[i].ti.text = u_copy((unichar_t *) GStringGetResource((int) mi[i].ti.text,&arr[i].ti.mnemonic));
 	    else if ( mi[i].ti.text_is_1byte )
-		arr[i].ti.text = uc_copy((char *) mi[i].ti.text);
+		arr[i].ti.text = utf82u_copy((char *) mi[i].ti.text);
 	    else
 		arr[i].ti.text = u_copy(mi[i].ti.text);
 	    arr[i].ti.text_in_resource = arr[i].ti.text_is_1byte = false;
@@ -441,6 +492,15 @@ return( fallback[index]);
 }
 
 int GIntGetResource(int index) {
+    if ( _ggadget_use_gettext && index<2 ) {
+	static int gt_intarray[2];
+	if ( gt_intarray[0]==0 ) {
+	    gt_intarray[0] = strtol(sgettext("GGadget|ButtonSize|55"),NULL,10);
+	    gt_intarray[1] = strtol(sgettext("GGadget|ScaleFactor|100"),NULL,10);
+	}
+return( gt_intarray[index] );
+    }
+
     if ( index<0 || (index>=ilen && index>=filen ))
 return( -1 );
     if ( index<ilen && intarray[index]!=0x80000000 ) {
@@ -534,7 +594,7 @@ return( 0 );
     }
     fclose(res);
     slen = scnt; ilen = icnt;
-    
+
 return( true );
 }
 
@@ -608,4 +668,17 @@ void GStringSetFallbackArray(const unichar_t **array,const unichar_t *mn,const i
     i=0;
     if ( ires!=NULL ) while ( ires[i]!=0x80000000 ) ++i;
     filen = i;
+
+}
+
+char *sgettext(const char *msgid) {
+    char *msgval = _(msgid);
+    if (msgval == msgid)
+	msgval = strrchr (msgid, '|') + 1;
+return msgval;
+}
+
+int _ggadget_use_gettext = false;
+void GResourceUseGetText(void) {
+    _ggadget_use_gettext = true;
 }
