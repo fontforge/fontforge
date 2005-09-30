@@ -1543,7 +1543,7 @@ return;
 	    event->u.resize.size.height-GDrawPointsToPixels(sv->gw,60));
     
     GDrawRequestExpose(sv->gw,NULL,false);
-    GDrawRequestExpose(sv->v,NULL,true);
+    GDrawRequestExpose(sv->v,NULL,false);
 }
 
 static void short_expose(ShortView *sv,GWindow pixmap,GRect *rect) {
@@ -1790,7 +1790,7 @@ static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
 
     wattrs.mask = wam_events|wam_cursor;
     subpos.x = 0; subpos.y = 0;
-    subpos.width = gd.pos.x; subpos.height -= sv->bh;
+    subpos.width = gd.pos.x; subpos.height = pos.height - sv->bh;
     sv->v = GWidgetCreateSubWindow(gw,&subpos,sv_v_e_h,sv,&wattrs);
     GDrawSetVisible(sv->v,true);
 
