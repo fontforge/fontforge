@@ -1,5 +1,8 @@
 /* Vague support for two different shared library formats */
 /* Everyone but the mac uses a varient of dlopen, while the mac uses NSAddImage */
+/* Under cygwin the shared libs have very strange names which bare little */
+/*  resemblance to what we expect. GNU creates a .la file that tells us what */
+/*  the name should be, so indirect through that */
 #ifndef __DYNAMIC_H
 # define __DYNAMIC_H
 
