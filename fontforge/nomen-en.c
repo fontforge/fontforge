@@ -384,6 +384,7 @@ static char mnemonic_DebugDDD = 'D';
 static char str_Editfpgm[] = "Edit 'fpgm'...";
 static char str_Editprep[] = "Edit 'prep'...";
 static char str_Editcvt[] = "Edit 'cvt '...";
+static char str_PrivateToCvt[] = "Private to 'cvt '";
 static char str_ClearHints[] = "Clear Hints";
 static unichar_t mnemonic_ClearHints[] = 'C';
 static char str_ClearInstructions[] = "Clear Instructions";

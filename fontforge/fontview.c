@@ -1515,6 +1515,7 @@ void FontViewMenu_MetaFont(GtkMenuItem *menuitem, gpointer user_data) {
 #define MID_HintSubsPt	2513
 #define MID_AutoCounter	2514
 #define MID_DontAutoHint	2515
+#define MID_PrivateToCvt	2516
 #define MID_OpenBitmap	2700
 #define MID_OpenOutline	2701
 #define MID_Revert	2702
@@ -5079,6 +5080,16 @@ void FontViewMenu_EditTable(GtkMenuItem *menuitem, gpointer user_data) {
 # endif
 
 # ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuPrivateToCvt(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_PrivateToCvt(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+    CVT_ImportPrivate(fv->sf);
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
 static void FVMenuClearInstrs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
@@ -5743,6 +5754,9 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_AutoInstr: case MID_EditInstructions:
 	    mi->ti.disabled = !fv->sf->order2 || anychars==-1 || multilayer;
+	  break;
+	  case MID_PrivateToCvt:
+	    mi->ti.disabled = !fv->sf->order2 || multilayer || fv->sf->cvt_dlg!=NULL;
 	  break;
 	  case MID_Editfpgm: case MID_Editprep: case MID_Editcvt:
 	    mi->ti.disabled = !fv->sf->order2 || multilayer;
@@ -6833,6 +6847,7 @@ static GMenuItem htlist[] = {
     { { (unichar_t *) _STR_Editfpgm, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, FVMenuEditTable, MID_Editfpgm },
     { { (unichar_t *) _STR_Editprep, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, FVMenuEditTable, MID_Editprep },
     { { (unichar_t *) _STR_Editcvt, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, FVMenuEditTable, MID_Editcvt },
+    { { (unichar_t *) _STR_PrivateToCvt, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, FVMenuPrivateToCvt, MID_PrivateToCvt },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) _STR_ClearHints, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuClearHints, MID_ClearHints },
     { { (unichar_t *) _STR_ClearWidthMD, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuClearWidthMD, MID_ClearWidthMD },
