@@ -8008,19 +8008,20 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,EncMap *map,int i) {
     }
     dummy->width = dummy->vwidth = sf->ascent+sf->descent;
     if ( dummy->unicodeenc>0 && dummy->unicodeenc<0x10000 &&
-	    iscombining(dummy->unicodeenc)) {
+	    iscombining(dummy->unicodeenc))
 	/* Mark characters should be 0 width */
 	dummy->width = 0;
 	/* Except in monospaced fonts on windows, where they should be the */
 	/*  same width as everything else */
-	if ( sf->pfminfo.panose_set && sf->pfminfo.panose[3]==9 &&
-		sf->glyphcnt>0 ) {
-	    for ( i=sf->glyphcnt-1; i>=0; ++i )
-		if ( SCWorthOutputting(sf->glyphs[i])) {
-		    dummy->width = sf->glyphs[i]->width;
-	    break;
-		}
-	}
+    /* Actually, in a monospace font, all glyphs should be the same width */
+    /*  whether mark or base */
+    if ( sf->pfminfo.panose_set && sf->pfminfo.panose[3]==9 &&
+	    sf->glyphcnt>0 ) {
+	for ( i=sf->glyphcnt-1; i>=0; ++i )
+	    if ( SCWorthOutputting(sf->glyphs[i])) {
+		dummy->width = sf->glyphs[i]->width;
+	break;
+	    }
     }
     dummy->parent = sf;
     dummy->orig_pos = 0xffff;
