@@ -1721,8 +1721,10 @@ static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
     sf->cvt_dlg = sv;
     sv->tag = tag;
 
-    if ( tab==NULL && sf->mm!=NULL && sf->mm->apple )
-	tab = SFFindTable(sf->mm->normal,tag);
+    if ( tab==NULL && sf->mm!=NULL && sf->mm->apple ) {
+	sf = sf->mm->normal;
+	tab = SFFindTable(sf,tag);
+    }
     if ( tab!=NULL ) {
 	sv->len = tab->len;
 	sv->edits = galloc(tab->len+1);
@@ -1891,6 +1893,276 @@ return( false );
 return( true );
 }
 
+struct maxp_data {
+    GWindow gw;
+    SplineFont *sf;
+    struct ttf_table *tab;
+    int done;
+};
+
+#define CID_Zones	1006
+#define CID_TPoints	1007
+#define CID_Storage	1008
+#define CID_FDefs	1009
+#define CID_IDefs	1010
+#define CID_SEl		1011
+
+static void MP_DoClose(struct maxp_data *mp) {
+    mp->done = true;
+}
+
+static int Maxp_Cancel(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	MP_DoClose(GDrawGetUserData(GGadgetGetWindow(g)));
+    }
+return( true );
+}
+
+static int Maxp_OK(GGadget *g, GEvent *e) {
+    struct maxp_data *mp;
+    int zones, tp, store, stack, fd, id, err=0;
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	mp = GDrawGetUserData(GGadgetGetWindow(g));
+	zones = GetIntR(mp->gw,CID_Zones,_STR_Zones,&err);
+	tp = GetIntR(mp->gw,CID_TPoints,_STR_TwilightPntCnt,&err);
+	store = GetIntR(mp->gw,CID_Storage,_STR_Storage,&err);
+	stack = GetIntR(mp->gw,CID_SEl,_STR_StackDepth,&err);
+	fd = GetIntR(mp->gw,CID_FDefs,_STR_FDEFs,&err);
+	id = GetIntR(mp->gw,CID_IDefs,_STR_IDEFs,&err);
+	if ( err )
+return( true );
+	mp->done = true;
+	if ( mp->tab==NULL ) {
+	    mp->tab = chunkalloc(sizeof(struct ttf_table));
+	    mp->tab->tag = CHR('m','a','x','p');
+	    mp->tab->len = 32;
+	    mp->tab->data = gcalloc(32,1);
+	    mp->tab->next = mp->sf->ttf_tables;
+	    mp->sf->ttf_tables = mp->tab;
+	} else if ( mp->tab->len<32 ) {
+	    free(mp->tab->data);
+	    mp->tab->len = 32;
+	    mp->tab->data = gcalloc(32,1);
+	}
+	mp->tab->data[14] = zones>>8; mp->tab->data[15] = zones&0xff;
+	mp->tab->data[16] = tp>>8; mp->tab->data[17] = tp&0xff;
+	mp->tab->data[18] = store>>8; mp->tab->data[19] = store&0xff;
+	mp->tab->data[20] = fd>>8; mp->tab->data[21] = fd&0xff;
+	mp->tab->data[22] = id>>8; mp->tab->data[23] = id&0xff;
+	mp->tab->data[24] = stack>>8; mp->tab->data[25] = stack&0xff;
+	mp->sf->changed = true;
+	mp->done = true;
+    }
+return( true );
+}
+
+static int mp_e_h(GWindow gw, GEvent *event) {
+    struct maxp_data *mp = (struct maxp_data *) GDrawGetUserData(gw);
+
+    switch ( event->type ) {
+      case et_char:
+	if ( event->u.chr.keysym == GK_Help || event->u.chr.keysym == GK_F1 )
+	    help("ttfinstrs.html#maxp");
+	else
+return( false );
+      break;
+      case et_close:
+	MP_DoClose(mp);
+      break;
+    }
+return( true );
+}
+
+static void maxpCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
+    unichar_t title[60];
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    struct maxp_data mp;
+    GGadgetCreateData gcd[17];
+    GTextInfo label[17];
+    uint8 dummy[32], *data;
+    char buffer[6][20];
+    int k;
+
+    if ( tab==NULL && sf->mm!=NULL && sf->mm->apple ) {
+	sf = sf->mm->normal;
+	tab = SFFindTable(sf,tag);
+    }
+    memset(&mp,0,sizeof(mp));
+    mp.sf = sf;
+    mp.tab = tab;
+    if ( tab==NULL || tab->len<32 ) {
+	memset(dummy,0,sizeof(dummy));
+	dummy[15]=2;	/* default Zones to 2 */
+	data = dummy;
+    } else
+	data = tab->data;
+
+    title[0] = (tag>>24)&0xff;
+    title[1] = (tag>>16)&0xff;
+    title[2] = (tag>>8 )&0xff;
+    title[3] = (tag    )&0xff;
+    title[4] = ' ';
+    uc_strncpy(title+5, sf->fontname, sizeof(title)/sizeof(title[0])-6);
+
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.undercursor = 1;
+    wattrs.cursor = ct_pointer;
+    wattrs.window_title = title;
+    wattrs.restrict_input_to_me = 1;
+    wattrs.undercursor = 1;
+    wattrs.is_dlg = true;
+    pos.x = pos.y = 0;
+    pos.width = GDrawPointsToPixels(NULL,260);
+    pos.height = GDrawPointsToPixels(NULL,125);
+    mp.gw = gw = GDrawCreateTopWindow(NULL,&pos,mp_e_h,&mp,&wattrs);
+
+    memset(label,0,sizeof(label));
+    memset(gcd,0,sizeof(gcd));
+
+	k=0;
+	label[k].text = (unichar_t *) _STR_Zones;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = 16; 
+	gcd[k].gd.flags = gg_enabled|gg_visible;
+	gcd[k].gd.cid = CID_Zones+1000;
+	gcd[k++].creator = GLabelCreate;
+
+	sprintf( buffer[0], "%d", (data[14]<<8)|data[14+1] );
+	label[k].text = (unichar_t *) buffer[0];
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 60; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-6;
+	gcd[k].gd.pos.width = 50;
+	gcd[k].gd.flags = gg_enabled|gg_visible;
+	gcd[k].gd.cid = CID_Zones;
+	gcd[k++].creator = GTextFieldCreate;
+
+	label[k].text = (unichar_t *) _STR_TwilightPntCnt;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 120; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y; 
+	gcd[k].gd.flags = gg_enabled|gg_visible;
+	gcd[k].gd.cid = CID_TPoints+1000;
+	gcd[k++].creator = GLabelCreate;
+
+	sprintf( buffer[1], "%d", (data[16]<<8)|data[16+1] );
+	label[k].text = (unichar_t *) buffer[1];
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 202; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-6;
+	gcd[k].gd.pos.width = 50;
+	gcd[k].gd.flags = gg_enabled|gg_visible;
+	gcd[k].gd.cid = CID_TPoints;
+	gcd[k++].creator = GTextFieldCreate;
+
+	label[k].text = (unichar_t *) _STR_StorageC;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = gcd[k-4].gd.pos.x; gcd[k].gd.pos.y = gcd[k-3].gd.pos.y+24+6; 
+	gcd[k].gd.flags = gg_enabled|gg_visible;
+	gcd[k].gd.cid = CID_Storage;
+	gcd[k++].creator = GLabelCreate;
+
+	sprintf( buffer[2], "%d", (data[18]<<8)|data[18+1] );
+	label[k].text = (unichar_t *) buffer[2];
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = gcd[k-4].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-6;
+	gcd[k].gd.pos.width = 50;
+	gcd[k].gd.flags = gg_enabled|gg_visible;
+	gcd[k].gd.cid = CID_Storage;
+	gcd[k++].creator = GTextFieldCreate;
+
+	label[k].text = (unichar_t *) _STR_StackDepth;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = gcd[k-4].gd.pos.x; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y; 
+	gcd[k].gd.flags = gg_enabled|gg_visible;
+	gcd[k].gd.cid = CID_SEl+1000;
+	gcd[k++].creator = GLabelCreate;
+
+	sprintf( buffer[3], "%d", (data[24]<<8)|data[24+1] );
+	label[k].text = (unichar_t *) buffer[3];
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = gcd[k-4].gd.pos.x; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y;
+	gcd[k].gd.pos.width = 50;
+	gcd[k].gd.flags = gg_enabled|gg_visible;
+	gcd[k].gd.cid = CID_SEl;
+	gcd[k++].creator = GTextFieldCreate;
+
+	label[k].text = (unichar_t *) _STR_FDEFs;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = gcd[k-4].gd.pos.x; gcd[k].gd.pos.y = gcd[k-3].gd.pos.y+24+6; 
+	gcd[k].gd.flags = gg_enabled|gg_visible;
+	gcd[k].gd.cid = CID_FDefs+1000;
+	gcd[k++].creator = GLabelCreate;
+
+	sprintf( buffer[4], "%d", (data[20]<<8)|data[20+1] );
+	label[k].text = (unichar_t *) buffer[4];
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = gcd[k-4].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-6;  gcd[k].gd.pos.width = 50;
+	gcd[k].gd.flags = gg_enabled|gg_visible;
+	gcd[k].gd.cid = CID_FDefs;
+	gcd[k++].creator = GTextFieldCreate;
+
+	label[k].text = (unichar_t *) _STR_IDEFs;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = gcd[k-4].gd.pos.x; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y; 
+	gcd[k].gd.flags = gg_enabled|gg_visible;
+	gcd[k].gd.cid = CID_IDefs+1000;
+	gcd[k++].creator = GLabelCreate;
+
+	sprintf( buffer[5], "%d", (data[22]<<8)|data[22+1] );
+	label[k].text = (unichar_t *) buffer[5];
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = gcd[k-4].gd.pos.x; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y;  gcd[k].gd.pos.width = 50;
+	gcd[k].gd.flags = gg_enabled|gg_visible;
+	gcd[k].gd.cid = CID_IDefs;
+	gcd[k++].creator = GTextFieldCreate;
+
+
+    gcd[k].gd.pos.x = 20-3; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+35-3;
+    gcd[k].gd.pos.width = -1; gcd[k].gd.pos.height = 0;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    label[k].text = (unichar_t *) _STR_OK;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.handle_controlevent = Maxp_OK;
+    gcd[k++].creator = GButtonCreate;
+
+    gcd[k].gd.pos.x = -20; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+3;
+    gcd[k].gd.pos.width = -1; gcd[k].gd.pos.height = 0;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    label[k].text = (unichar_t *) _STR_Cancel;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.handle_controlevent = Maxp_Cancel;
+    gcd[k++].creator = GButtonCreate;
+
+    gcd[k].gd.pos.x = 2; gcd[k].gd.pos.y = 2;
+    gcd[k].gd.pos.width = pos.width-4; gcd[k].gd.pos.height = pos.height-4;
+    gcd[k].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
+    gcd[k].creator = GGroupCreate;
+
+    GGadgetsCreate(gw,gcd);
+    GDrawSetVisible(gw,true);
+    while ( !mp.done )
+	GDrawProcessOneEvent(NULL);
+    GDrawDestroyWindow(gw);
+}
+
 void SFEditTable(SplineFont *sf, uint32 tag) {
     struct instrdata *id;
     struct ttf_table *tab;
@@ -1905,7 +2177,9 @@ void SFEditTable(SplineFont *sf, uint32 tag) {
 	    sf = sf->mm->normal;
 
     tab = SFFindTable(sf,tag);
-    if ( tag!=CHR('c','v','t',' ') ) {
+    if ( tag==CHR('m','a','x','p') ) {
+	maxpCreateEditor(tab,sf,tag);
+    } else if ( tag!=CHR('c','v','t',' ') ) {
 	for ( id = sf->instr_dlgs; id!=NULL && id->tag!=tag; id=id->next );
 	if ( id!=NULL ) {
 	    GDrawSetVisible(id->id->gw,true);
