@@ -1516,6 +1516,7 @@ void FontViewMenu_MetaFont(GtkMenuItem *menuitem, gpointer user_data) {
 #define MID_AutoCounter	2514
 #define MID_DontAutoHint	2515
 #define MID_PrivateToCvt	2516
+#define MID_Editmaxp	2517
 #define MID_OpenBitmap	2700
 #define MID_OpenOutline	2701
 #define MID_Revert	2702
@@ -5066,6 +5067,7 @@ static void FVMenuEditTable(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SFEditTable(fv->sf,
 	    mi->mid==MID_Editprep?CHR('p','r','e','p'):
 	    mi->mid==MID_Editfpgm?CHR('f','p','g','m'):
+	    mi->mid==MID_Editmaxp?CHR('m','a','x','p'):
 				  CHR('c','v','t',' '));
 }
 # elif defined(FONTFORGE_CONFIG_GTK)
@@ -5075,6 +5077,7 @@ void FontViewMenu_EditTable(GtkMenuItem *menuitem, gpointer user_data) {
     SFEditTable(fv->sf,
 	    strcmp(name,"edit_prep1")==0?CHR('p','r','e','p'):
 	    strcmp(name,"edit_fpgm1")==0?CHR('f','p','g','m'):
+	    strcmp(name,"edit_maxp1")==0?CHR('m','a','x','p'):
 				  CHR('c','v','t',' '));
 }
 # endif
@@ -5759,7 +5762,7 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = !fv->sf->order2 || multilayer ||
 		    fv->sf->private==NULL || fv->sf->cvt_dlg!=NULL;
 	  break;
-	  case MID_Editfpgm: case MID_Editprep: case MID_Editcvt:
+	  case MID_Editfpgm: case MID_Editprep: case MID_Editcvt: case MID_Editmaxp:
 	    mi->ti.disabled = !fv->sf->order2 || multilayer;
 	  break;
 	  case MID_ClearHints: case MID_ClearWidthMD: case MID_ClearInstrs:
@@ -6847,6 +6850,7 @@ static GMenuItem htlist[] = {
     { { (unichar_t *) _STR_EditInstructions, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, '\0', 0, NULL, NULL, FVMenuEditInstrs, MID_EditInstructions },
     { { (unichar_t *) _STR_Editfpgm, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, FVMenuEditTable, MID_Editfpgm },
     { { (unichar_t *) _STR_Editprep, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, FVMenuEditTable, MID_Editprep },
+    { { (unichar_t *) _STR_Editmaxp, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, FVMenuEditTable, MID_Editmaxp },
     { { (unichar_t *) _STR_Editcvt, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, FVMenuEditTable, MID_Editcvt },
     { { (unichar_t *) _STR_PrivateToCvt, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, FVMenuPrivateToCvt, MID_PrivateToCvt },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
