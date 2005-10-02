@@ -1145,7 +1145,7 @@ static void gdraw_xbitmap(GXWindow w, XImage *xi, GClut *clut,
 	bg = trans==0?0:_GXDraw_GetScreenPixel(gdisp,clut!=NULL?clut->clut[0]:COLOR_CREATE(0,0,0));
 	if ( bg!=fg || fg!=0 ) {
 #ifdef _BrokenBitmapImages
-	    /* This makes absolutely no sense to me. But it works under cygwin*/
+	    /* See the comment at _GXDraw_Image about why this works */
 	    XSetFunction(display,gc,GXxor);
 #else
 	    XSetFunction(display,gc,GXor);
@@ -1404,6 +1404,12 @@ return;
     gximage_to_ximage(gw, image, src);
 
     if ( base->trans!=COLOR_UNKNOWN ) {
+	/* ((destination & mask) | src) seems to me to yield the proper behavior */
+	/*  for transparent backgrounds. This is equivalent to: */
+	/* ((destination GXorReverse mask) GXnand src) */
+	/* Oh... I think xor works too because the mask and the src will never*/
+	/*  both be 1 on the same pixel. If the mask is set then the image will*/
+	/*  be clear. So xor and or are equivalent (the case on which they differ never occurs) */
 	XSetFunction(display,gc,GXand);
 #if FAST_BITS
 	XSetForeground(display,gc, ~((-1)<<gdisp->pixel_size) );
@@ -1412,7 +1418,6 @@ return;
 	XPutImage(display,w,gc,gdisp->gg.mask,0,0,
 		x,y, src->width, src->height );
 #ifdef _BrokenBitmapImages
-	/* This makes absolutely no sense to me. But it works under cygwin*/
 	XSetFunction(display,gc,GXxor);
 #else
 	XSetFunction(display,gc,GXor);
