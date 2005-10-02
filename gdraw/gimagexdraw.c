@@ -1144,7 +1144,12 @@ static void gdraw_xbitmap(GXWindow w, XImage *xi, GClut *clut,
 	fg = trans==1?0:_GXDraw_GetScreenPixel(gdisp,clut!=NULL?clut->clut[1]:COLOR_CREATE(0xff,0xff,0xff));
 	bg = trans==0?0:_GXDraw_GetScreenPixel(gdisp,clut!=NULL?clut->clut[0]:COLOR_CREATE(0,0,0));
 	if ( bg!=fg || fg!=0 ) {
+#ifdef _BrokenBitmapImages
+	    /* This makes absolutely no sense to me. But it works under cygwin*/
+	    XSetFunction(display,gc,GXxor);
+#else
 	    XSetFunction(display,gc,GXor);
+#endif
 	    XSetForeground(display,gc,fg);
 	    XSetBackground(display,gc,bg);
 	}
@@ -1184,13 +1189,7 @@ static void gdraw_bitmap(GXWindow w, struct _GImage *image, GClut *clut,
 	}
 	xi->data = (char *) newdata;
     }
-#ifdef _BrokenBitmapImages
-    /* This doesn't really solve the problem for cygwin, it just avoids the */
-    /*  issue, and most of the time is good enough */
-    gdraw_xbitmap(w,xi,clut,-1,src,x,y);
-#else
     gdraw_xbitmap(w,xi,clut,trans,src,x,y);
-#endif
     if ( (uint8 *) (xi->data)==image->data ) xi->data = NULL;
     XDestroyImage(xi);
 }
@@ -1412,7 +1411,12 @@ return;
 #endif
 	XPutImage(display,w,gc,gdisp->gg.mask,0,0,
 		x,y, src->width, src->height );
+#ifdef _BrokenBitmapImages
+	/* This makes absolutely no sense to me. But it works under cygwin*/
+	XSetFunction(display,gc,GXxor);
+#else
 	XSetFunction(display,gc,GXor);
+#endif
 	XPutImage(display,w,gc,gdisp->gg.img,0,0,
 		x,y, src->width, src->height );
 	XSetFunction(display,gc,GXcopy);
