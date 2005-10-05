@@ -3864,11 +3864,6 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 			/*  well enough that we needn't clear the manualhints bit */
 			ret->hstem = HintsAppend(ret->hstem,activeh); activeh=NULL;
 			ret->vstem = HintsAppend(ret->vstem,activev); activev=NULL;
-			is_type2 = context->is_type2;
-			/* If we found a type2 font with a type1 flex sequence */
-			/*  (an illegal idea, but never mind, someone gave us one)*/
-			/*  then we had to turn off type2 untill the end of the */
-			/*  flex sequence. Which is here */
 		      } break;
 		      case 1: {
 			/* Essentially what we want to do is draw a line from */
@@ -3884,7 +3879,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 			/*  dished serif */
 			/* We should never get here in a type2 font. But we did*/
 			/*  this code won't work if we follow type2 conventions*/
-			/*  so turn off type2 until we get 3 callothersubrs */
+			/*  so turn off type2 until we get 0 callothersubrs */
 			/*  which marks the end of the flex sequence */
 			is_type2 = false;
 			if ( cur!=NULL ) {
@@ -3957,6 +3952,12 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 			oldcur = NULL;
 		      } else
 			LogError( "Bad flex subroutine in %s\n", name );
+
+			is_type2 = context->is_type2;
+			/* If we found a type2 font with a type1 flex sequence */
+			/*  (an illegal idea, but never mind, someone gave us one)*/
+			/*  then we had to turn off type2 untill the end of the */
+			/*  flex sequence. Which is here */
 		      break;
 		      case 14: 		/* results in 1 blended value */
 		      case 15:		/* results in 2 blended values */
