@@ -3838,6 +3838,8 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		/* stack[sp-1] is the number of the thing to call in the othersubr array */
 		/* stack[sp-2] is the number of args to grab off our stack and put on the */
 		/*  real postscript stack */
+		if ( is_type2 )
+		    LogError( "Type2 fonts do not support the Type1 callothersubrs operator" );
 		if ( sp<2 || sp < 2+stack[sp-2] ) {
 		    LogError( "Stack underflow on callothersubr in %s\n", name );
 		    sp = 0;
@@ -3862,6 +3864,11 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 			/*  well enough that we needn't clear the manualhints bit */
 			ret->hstem = HintsAppend(ret->hstem,activeh); activeh=NULL;
 			ret->vstem = HintsAppend(ret->vstem,activev); activev=NULL;
+			is_type2 = context->is_type2;
+			/* If we found a type2 font with a type1 flex sequence */
+			/*  (an illegal idea, but never mind, someone gave us one)*/
+			/*  then we had to turn off type2 untill the end of the */
+			/*  flex sequence. Which is here */
 		      } break;
 		      case 1: {
 			/* Essentially what we want to do is draw a line from */
@@ -3875,6 +3882,11 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 			/* Let's punt a little less, and actually figure out */
 			/*  the appropriate rrcurveto commands and put in a */
 			/*  dished serif */
+			/* We should never get here in a type2 font. But we did*/
+			/*  this code won't work if we follow type2 conventions*/
+			/*  so turn off type2 until we get 3 callothersubrs */
+			/*  which marks the end of the flex sequence */
+			is_type2 = false;
 			if ( cur!=NULL ) {
 			    oldcurrent = current;
 			    oldcur = cur;
