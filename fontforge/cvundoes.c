@@ -888,12 +888,12 @@ void CVUndoCleanup(CharView *cv) {
 #ifdef FONTFORGE_CONFIG_TYPE3
 	    int i;
 	    for ( i=0; i<uref->layer_cnt; ++i )
-		SplinePointListFree(uref->layers[i].splines);
+		SplinePointListsFree(uref->layers[i].splines);
 	    free(uref->layers);
 	    uref->layers = NULL;
 	    uref->layer_cnt = 0;
 #else
-	    SplinePointListFree(uref->layers[0].splines);
+	    SplinePointListsFree(uref->layers[0].splines);
 	    uref->layers[0].splines = NULL;
 #endif
 	}

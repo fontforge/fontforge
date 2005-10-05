@@ -782,7 +782,7 @@ void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
 	    } else
 #endif
 		dumpsplineset(dumpchar,data,temp,pdfopers,!sc->parent->strokedfont,false);
-	    if ( sc->parent->order2 ) SplinePointListFree(temp);
+	    if ( sc->parent->order2 ) SplinePointListsFree(temp);
 	}
 	if ( sc->layers[i].refs!=NULL ) {
 #ifdef FONTFORGE_CONFIG_TYPE3
@@ -831,7 +831,7 @@ void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
 			} else
 #endif
 			    dumpsplineset(dumpchar,data,temp,pdfopers,!sc->parent->strokedfont,false);
-			if ( sc->parent->order2 ) SplinePointListFree(temp);
+			if ( sc->parent->order2 ) SplinePointListsFree(temp);
 		    }
 		}
 	    } else {

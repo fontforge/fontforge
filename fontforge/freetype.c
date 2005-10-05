@@ -1090,7 +1090,7 @@ return( NULL );
 		scale,&b,sc->parent->order2);
 	err = (_FT_Outline_Get_Bitmap)(context,&outline,&bitmap);
 	if ( sc->layers[ly_fore].splines!=all )
-	    SplinePointListFree(all);
+	    SplinePointListsFree(all);
     }
 #else
     if ( temp.buffer==NULL ) {
@@ -1118,7 +1118,7 @@ return( NULL );
 			scale,&b,sc->parent->order2);
 		err |= (_FT_Outline_Get_Bitmap)(context,&outline,&temp);
 		MergeBitmaps(&bitmap,&temp,sc->layers[i].stroke_pen.brush.col);
-		SplinePointListFree(stroked);
+		SplinePointListsFree(stroked);
 	    }
 	    for ( r = sc->layers[i].refs; r!=NULL; r=r->next ) {
 		for ( j=0; j<r->layer_cnt; ++j ) {
@@ -1136,7 +1136,7 @@ return( NULL );
 				scale,&b,sc->parent->order2);
 			err |= (_FT_Outline_Get_Bitmap)(context,&outline,&temp);
 			MergeBitmaps(&bitmap,&temp,r->layers[j].stroke_pen.brush.col);
-			SplinePointListFree(stroked);
+			SplinePointListsFree(stroked);
 		    }
 		}
 	    }

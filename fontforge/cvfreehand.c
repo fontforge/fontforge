@@ -852,7 +852,7 @@ return;
 #if 0		/* This branch is correct */
 	    cv->layerheads[cv->drawmode]->splines = cv->freehand.current_trace->next;
 	    cv->freehand.current_trace->next = NULL;
-	    SplinePointListFree(cv->freehand.current_trace);
+	    SplinePointListsFree(cv->freehand.current_trace);
 #else		/* Debug!!!! */
 	    cv->layerheads[cv->drawmode]->splines = cv->freehand.current_trace;
 #endif

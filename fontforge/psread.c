@@ -2815,7 +2815,7 @@ static SplinePointList *EraseStroke(SplineChar *sc,SplinePointList *head,SplineP
 
     if ( head==NULL ) {
 	/* Pointless, but legal */
-	SplinePointListFree(erase);
+	SplinePointListsFree(erase);
 return( NULL );
     }
 
@@ -2919,7 +2919,7 @@ return( head );
 		    for ( nlast=temp; nlast->next!=NULL; nlast=nlast->next );
 	    }
 	    new = SplinePointListTransform(new,transform,true);
-	    SplinePointListFree(transed);
+	    SplinePointListsFree(transed);
 	    if ( handle_eraser && sc->layers[layer].stroke_pen.brush.col==0xffffff ) {
 		head = EraseStroke(sc,head,new);
 		last = head;
@@ -3141,7 +3141,7 @@ static SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags,int is_s
 			for ( nlast=temp; nlast->next!=NULL; nlast=nlast->next );
 		}
 		new = SplinePointListTransform(new,ent->u.splines.transform,true);
-		SplinePointListFree(transed);
+		SplinePointListsFree(transed);
 		if ( handle_eraser && ent->u.splines.stroke.col==0xffffff ) {
 		    head = EraseStroke(ec->sc,head,new);
 		    last = head;
@@ -3160,7 +3160,7 @@ static SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags,int is_s
 	    }
 	    /* If they have neither a stroke nor a fill, pretend they said fill */
 	    if ( ent->u.splines.fill.col==0xffffffff && ent->u.splines.stroke.col!=0xffffffff )
-		SplinePointListFree(ent->u.splines.splines);
+		SplinePointListsFree(ent->u.splines.splines);
 	    else if ( handle_eraser && ent->u.splines.fill.col==0xffffff ) {
 		head = EraseStroke(ec->sc,head,ent->u.splines.splines);
 		last = head;
