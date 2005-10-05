@@ -1479,8 +1479,10 @@ return;
 	    if ( *line=='/' ) ++line;
 	    for ( pt = buffer; !isspace(*line); *pt++ = *line++ );
 	    *pt = '\0';
-	    if ( pos>=0 && pos<256 )
+	    if ( pos>=0 && pos<256 ) {
+		free(fp->fd->encoding[pos]);
 		fp->fd->encoding[pos] = copy(buffer);
+	    }
 	    while ( isspace(*line)) ++line;
 	    if ( strncmp(line,"put",3)==0 ) line+=3;
 	    while ( isspace(*line)) ++line;
@@ -1639,9 +1641,10 @@ return;
 return;
 	} else if ( endtok==NULL )
 return;
-	if ( mycmp("version",line+1,endtok)==0 )
+	if ( mycmp("version",line+1,endtok)==0 ) {
+	    free(fp->fd->fontinfo->version);
 	    fp->fd->fontinfo->version = getstring(endtok,in);
-	else if ( mycmp("Notice",line+1,endtok)==0 ) {
+	} else if ( mycmp("Notice",line+1,endtok)==0 ) {
 	    if ( fp->fd->fontinfo->notice!=NULL )
 		free(fp->fd->fontinfo->notice);
 	    fp->fd->fontinfo->notice = getstring(endtok,in);
@@ -1653,12 +1656,14 @@ return;
 	    if ( fp->fd->fontinfo->fullname==NULL )
 		fp->fd->fontinfo->fullname = getstring(endtok,in);
 	    else
-		getstring(endtok,in);
-	} else if ( mycmp("FamilyName",line+1,endtok)==0 )
+		free(getstring(endtok,in));
+	} else if ( mycmp("FamilyName",line+1,endtok)==0 ) {
+	    free( fp->fd->fontinfo->familyname );
 	    fp->fd->fontinfo->familyname = getstring(endtok,in);
-	else if ( mycmp("Weight",line+1,endtok)==0 )
+	} else if ( mycmp("Weight",line+1,endtok)==0 ) {
+	    free( fp->fd->fontinfo->weight );
 	    fp->fd->fontinfo->weight = getstring(endtok,in);
-	else if ( mycmp("ItalicAngle",line+1,endtok)==0 )
+	} else if ( mycmp("ItalicAngle",line+1,endtok)==0 )
 	    fp->fd->fontinfo->italicangle = strtod(endtok,NULL);
 	else if ( mycmp("UnderlinePosition",line+1,endtok)==0 )
 	    fp->fd->fontinfo->underlineposition = strtod(endtok,NULL);
@@ -1763,11 +1768,13 @@ return;
 return;
 	} else if ( endtok==NULL )
 return;
-	if ( mycmp("Registry",line+1,endtok)==0 )
+	if ( mycmp("Registry",line+1,endtok)==0 ) {
+	    free( fp->fd->registry );
 	    fp->fd->registry = getstring(endtok,in);
-	else if ( mycmp("Ordering",line+1,endtok)==0 )
+	} else if ( mycmp("Ordering",line+1,endtok)==0 ) {
+	    free( fp->fd->ordering );
 	    fp->fd->ordering = getstring(endtok,in);
-	else if ( mycmp("Supplement",line+1,endtok)==0 )		/* cff spec allows for copyright and notice */
+	} else if ( mycmp("Supplement",line+1,endtok)==0 )		/* cff spec allows for copyright and notice */
 	    fp->fd->supplement = strtol(endtok,NULL,0);
     } else {
 	if ( strstr(line,"/Private")!=NULL && (strstr(line,"dict")!=NULL || strstr(line,"<<")!=NULL )) {
@@ -1852,7 +1859,7 @@ return;
 	    if ( fp->fd->fontname==NULL )
 		fp->fd->fontname = gettoken(endtok);
 	    else
-		gettoken(endtok);	/* skip it */
+		free(gettoken(endtok));	/* skip it */
 	} else if ( mycmp("PaintType",line+1,endtok)==0 )
 	    fp->fd->painttype = strtol(endtok,NULL,10);
 	else if ( mycmp("FontType",line+1,endtok)==0 )
@@ -1900,9 +1907,10 @@ return;
 	    /* Do Nothing */;
 	else if ( mycmp("BuildGlyph",line+1,endtok)==0 )
 	    /* Do Nothing */;
-	else if ( mycmp("CIDFontName",line+1,endtok)==0 )
+	else if ( mycmp("CIDFontName",line+1,endtok)==0 ) {
+	    free( fp->fd->cidfontname );
 	    fp->fd->cidfontname = gettoken(endtok);
-	else if ( mycmp("CIDFontVersion",line+1,endtok)==0 ) {
+	} else if ( mycmp("CIDFontVersion",line+1,endtok)==0 ) {
 	    fp->fd->cidversion = strtod(endtok,NULL);
 #if 0
 	    if ( fp->fd->fontinfo->version==NULL ) {
