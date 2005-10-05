@@ -799,6 +799,14 @@ static void ValidatePostScriptFontName(char *str) {
     int complained = false;
     unichar_t *temp = NULL;
 
+    /* someone gave me a font where the fontname started with the utf8 byte */
+    /*  order mark.  PLRM says only ASCII encoding is supported. CFF says */
+    /*  only printable ASCII should be used */
+    if ( ((uint8 *) str)[0] == 0xef && ((uint8 *) str)[1]==0xbb && ((uint8 *) str)[2] == 0xbf ) {
+	LogError("The fontname begins with the utf8 byte order sequence. This is illegal. %s", str+3 );
+	for ( pt=str+3; *pt; ++pt )
+	    pt[-3] = *pt;		/* ANSI says we can't strcpy overlapping strings */
+    }
     strtod(str,&end);
     if ( (*end=='\0' || (isdigit(str[0]) && strchr(str,'#')!=NULL)) &&
 	    *str!='\0' ) {
