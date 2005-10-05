@@ -887,6 +887,13 @@ struct glyphdata *GlyphDataBuild(SplineChar *sc, int only_hv) {
 return( NULL );
 
     gd = gcalloc(1,sizeof(struct glyphdata));
+
+    /* SSToMContours can clean up the splinesets (remove 0 length splines) */
+    /*  so it must be called BEFORE everything else (even though logically */
+    /*  that doesn't make much sense). Otherwise we might have a pointer */
+    /*  to something since freed */
+    gd->ms = SSsToMContours(sc->layers[ly_fore].splines,over_remove);	/* second argument is meaningless here */
+
     gd->pcnt = SCNumberPoints(sc);
     for ( i=0, ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next, ++i );
     gd->ccnt = i;
@@ -919,7 +926,7 @@ return( NULL );
 	}
     }
 
-    gd->ms = SSsToMContours(sc->layers[ly_fore].splines,over_remove);	/* second argument is meaningless here */
+    /*gd->ms = SSsToMContours(sc->layers[ly_fore].splines,over_remove);*/	/* second argument is meaningless here */
     for ( m=gd->ms, cnt=0; m!=NULL; m=m->linked, ++cnt );
     gd->space = galloc((cnt+2)*sizeof(Monotonic*));
     gd->mcnt = cnt;
