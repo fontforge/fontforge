@@ -1943,6 +1943,8 @@ void SFInstanciateRefs(SplineFont *sf) {
 			sc->layers[layer].refs = next;
 		    else
 			pr->next = next;
+		    refs->next = NULL;
+		    RefCharsFree(refs);
 		}
 	    }
 	}
