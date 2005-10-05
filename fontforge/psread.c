@@ -3941,7 +3941,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 			}
 			--popsp;
 			cur->next = NULL;
-			SplinePointListFree(spl);
+			SplinePointListsFree(spl);
 			oldcur = NULL;
 		      } else
 			LogError( "Bad flex subroutine in %s\n", name );
