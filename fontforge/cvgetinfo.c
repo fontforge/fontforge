@@ -221,7 +221,7 @@ return( true );		/* Didn't really change */
 
     for ( i=0; i<6; ++i )
 	ref->transform[i] = trans[i];
-    SplinePointListFree(ref->layers[0].splines);
+    SplinePointListsFree(ref->layers[0].splines);
     ref->layers[0].splines = SplinePointListTransform(SplinePointListCopy(ref->sc->layers[ly_fore].splines),trans,true);
     spl = NULL;
     if ( ref->layers[0].splines!=NULL )

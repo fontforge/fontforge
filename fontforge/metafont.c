@@ -212,7 +212,7 @@ void SCCopyFgToBg(SplineChar *sc, int show) {
     SCPreserveBackground(sc);
     fore = SplinePointListCopy(sc->layers[ly_fore].splines);
     if ( fore!=NULL ) {
-	SplinePointListFree(sc->layers[ly_back].splines);
+	SplinePointListsFree(sc->layers[ly_back].splines);
 	sc->layers[ly_back].splines = NULL;
 	for ( end = fore; end->next!=NULL; end = end->next );
 	end->next = sc->layers[ly_back].splines;
@@ -229,7 +229,7 @@ void SCCopyBgToFg(SplineChar *sc, int show) {
     SCPreserveState(sc, true);
     back = SplinePointListCopy(sc->layers[ly_back].splines);
     if ( back!=NULL ) {
-	SplinePointListFree(sc->layers[ly_fore].splines);
+	SplinePointListsFree(sc->layers[ly_fore].splines);
 	sc->layers[ly_fore].splines = NULL;
 	for ( end = back; end->next!=NULL; end = end->next );
 	end->next = sc->layers[ly_fore].splines;

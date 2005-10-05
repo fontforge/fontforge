@@ -102,7 +102,7 @@ static SplinePointList *localSplinesFromEntities(Entity *ent, Color bgcol, int i
 			nlast->next = temp;
 		    for ( nlast=temp; nlast->next!=NULL; nlast=nlast->next );
 		}
-		SplinePointListFree(ent->u.splines.splines);
+		SplinePointListsFree(ent->u.splines.splines);
 		ent->u.splines.fill.col = ent->u.splines.stroke.col;
 	    } else {
 		new = ent->u.splines.splines;
@@ -326,7 +326,7 @@ return;
 		new = SplinePointListTransform(new,transform,true);
 		if ( sc->parent->order2 ) {
 		    SplineSet *o2 = SplineSetsTTFApprox(new);
-		    SplinePointListFree(new);
+		    SplinePointListsFree(new);
 		    new = o2;
 		}
 		if ( new!=NULL ) {
