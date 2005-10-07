@@ -10029,6 +10029,7 @@ SplineFont *ReadSplineFont(char *filename,enum openflags openflags) {
     char *pt, *strippedname, *tmpfile=NULL, *paren=NULL, *fullname=filename;
     int len;
     FILE *foo;
+    int checked;
 
     if ( filename==NULL )
 return( NULL );
@@ -10115,6 +10116,7 @@ return( NULL );
 
     sf = NULL;
     foo = fopen(strippedname,"rb");
+    checked = false;
     if ( foo!=NULL ) {
 	/* Try to guess the file type from the first few characters... */
 	int ch1 = getc(foo);
@@ -10134,49 +10136,60 @@ return( NULL );
 		(ch1=='t' && ch2=='r' && ch3=='u' && ch4=='e') ||
 		(ch1=='t' && ch2=='t' && ch3=='c' && ch4=='f') ) {
 	    sf = SFReadTTF(fullname,0);
+	    checked = 't';
 	} else if (( ch1=='%' && ch2=='!' ) ||
 		    ( ch1==0x80 && ch2=='\01' ) ) {	/* PFB header */
 	    sf = SFReadPostscript(fullname);
+	    checked = 'p';
+	} else if ( ch1=='%' && ch2=='P' && ch3=='D' && ch4=='F' ) {
+	    sf = SFReadPdfFont(fullname);
+	    checked = 'P';
 	} else if ( ch1==1 && ch2==0 && ch3==4 ) {
 	    sf = CFFParse(fullname);
+	    checked = 'c';
 	} else if ( ch1=='<' && ch2=='?' && (ch3=='x'||ch3=='X') && (ch4=='m'||ch4=='M') ) {
 	    sf = SFReadSVG(fullname,0);
+	    checked = 'S';
 	} else if ( ch1==0xef && ch2==0xbb && ch3==0xbf &&
 		ch4=='<' && ch5=='?' && (ch6=='x'||ch6=='X') && (ch7=='m'||ch7=='M') ) {
 	    /* UTF-8 SVG with initial byte ordering mark */
 	    sf = SFReadSVG(fullname,0);
+	    checked = 'S';
 #if 0		/* I'm not sure if this is a good test for mf files... */
 	} else if ( ch1=='%' && ch2==' ' ) {
 	    sf = SFFromMF(fullname);
 #endif
 	} else if ( ch1=='S' && ch2=='p' && ch3=='l' && ch4=='i' ) {
 	    sf = SFDRead(fullname);
+	    checked = 'f';
 	    fromsfd = true;
 	} else if ( ch1=='S' && ch2=='T' && ch3=='A' && ch4=='R' ) {
 	    sf = SFFromBDF(fullname,0,false);
+	    checked = 'b';
 	} else if ( ch1=='\1' && ch2=='f' && ch3=='c' && ch4=='p' ) {
 	    sf = SFFromBDF(fullname,2,false);
 	} else if ( ch9=='I' && ch10=='K' && ch3==0 && ch4==55 ) {
 	    /* Ikarus font type appears at word 50 (byte offset 98) */
 	    /* Ikarus name section length (at word 2, byte offset 2) was 55 in the 80s at URW */
+	    checked = 'i';
 	    sf = SFReadIkarus(fullname);
 	} /* Too hard to figure out a valid mark for a mac resource file */
     }
     if ( sf!=NULL )
 	/* good */;
-    else if ( strmatch(fullname+strlen(fullname)-4, ".sfd")==0 ||
-	 strmatch(fullname+strlen(fullname)-5, ".sfd~")==0 ) {
+    else if (( strmatch(fullname+strlen(fullname)-4, ".sfd")==0 ||
+	 strmatch(fullname+strlen(fullname)-5, ".sfd~")==0 ) && checked!='f' ) {
 	sf = SFDRead(fullname);
 	fromsfd = true;
-    } else if ( strmatch(fullname+strlen(fullname)-4, ".ttf")==0 ||
+    } else if (( strmatch(fullname+strlen(fullname)-4, ".ttf")==0 ||
 		strmatch(fullname+strlen(strippedname)-4, ".ttc")==0 ||
 		strmatch(fullname+strlen(fullname)-4, ".gai")==0 ||
 		strmatch(fullname+strlen(fullname)-4, ".otf")==0 ||
-		strmatch(fullname+strlen(fullname)-4, ".otb")==0 ) {
+		strmatch(fullname+strlen(fullname)-4, ".otb")==0 ) && checked!='t') {
 	sf = SFReadTTF(fullname,0);
-    } else if ( strmatch(fullname+strlen(fullname)-4, ".svg")==0 ) {
+    } else if ( strmatch(fullname+strlen(fullname)-4, ".svg")==0 && checked!='s' ) {
 	sf = SFReadSVG(fullname,0);
-    } else if ( strmatch(fullname+strlen(fullname)-4, ".bdf")==0 ) {
+    } else if ( strmatch(fullname+strlen(fullname)-4, ".bdf")==0 && checked!='b' ) {
 	sf = SFFromBDF(fullname,0,false);
     } else if ( strmatch(fullname+strlen(fullname)-2, "pk")==0 ) {
 	sf = SFFromBDF(fullname,1,true);
@@ -10193,19 +10206,21 @@ return( NULL );
 	sf = SFReadWinFON(fullname,0);
     } else if ( strmatch(fullname+strlen(strippedname)-4, ".pdb")==0 ) {
 	sf = SFReadPalmPdb(fullname,0);
-    } else if ( strmatch(fullname+strlen(fullname)-4, ".pfa")==0 ||
+    } else if ( (strmatch(fullname+strlen(fullname)-4, ".pfa")==0 ||
 		strmatch(fullname+strlen(fullname)-4, ".pfb")==0 ||
 		strmatch(fullname+strlen(fullname)-4, ".pf3")==0 ||
 		strmatch(fullname+strlen(fullname)-4, ".cid")==0 ||
 		strmatch(fullname+strlen(fullname)-4, ".gsf")==0 ||
 		strmatch(fullname+strlen(fullname)-4, ".pt3")==0 ||
-		strmatch(fullname+strlen(fullname)-3, ".ps")==0 ) {
+		strmatch(fullname+strlen(fullname)-3, ".ps")==0 ) && checked!='p' ) {
 	sf = SFReadPostscript(fullname);
-    } else if ( strmatch(fullname+strlen(fullname)-4, ".cff")==0 ) {
+    } else if ( strmatch(fullname+strlen(fullname)-4, ".cff")==0 && checked!='c' ) {
 	sf = CFFParse(fullname);
     } else if ( strmatch(fullname+strlen(fullname)-3, ".mf")==0 ) {
 	sf = SFFromMF(fullname);
-    } else if ( strmatch(fullname+strlen(fullname)-3, ".ik")==0 ) {
+    } else if ( strmatch(fullname+strlen(fullname)-4, ".pdf")==0 && checked!='P' ) {
+	sf = SFReadPdfFont(fullname);
+    } else if ( strmatch(fullname+strlen(fullname)-3, ".ik")==0 && checked!='i' ) {
 	sf = SFReadIkarus(fullname);
     } else {
 	sf = SFReadMacBinary(fullname,0);

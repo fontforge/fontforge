@@ -4458,9 +4458,11 @@ return( 0 );
     } else if ( info->cff_start!=0 ) {
 	info->to_order2 = (loaded_fonts_same_as_new && new_fonts_are_order2);
 	if ( !readcffglyphs(ttf,info) ) {
+	    setlocale(LC_NUMERIC,oldloc);
 return( 0 );
 	}
     } else {
+	setlocale(LC_NUMERIC,oldloc);
 return( 0 );
     }
     if ( info->bitmapdata_start!=0 && info->bitmaploc_start!=0 )
@@ -4473,6 +4475,7 @@ return( 0 );
 #endif
     if ( info->onlystrikes && info->bitmaps==NULL ) {
 	free(info->chars);
+	setlocale(LC_NUMERIC,oldloc);
 return( 0 );
     }
     if ( info->hmetrics_start!=0 )
