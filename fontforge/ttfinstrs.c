@@ -675,7 +675,7 @@ return( false );
 		while ( nread<i )
 		    instrs[icnt++] = numberstack[nread++];
 	    } else {
-		while ( i<npos && numberstack[i]<0 && numberstack[i]>255 )
+		while ( i<npos && (numberstack[i]<0 || numberstack[i]>255) )
 		    ++i;
 		if ( i-nread<=8 )
 		    instrs[icnt++] = ttf_pushw+(i-nread)-1;
