@@ -122,4 +122,47 @@ extern Entity *EntityInterpretSVG(char *filename,int em_size,int ascent);
 extern SplinePointList *SplinesFromEntities(Entity *ent,int *flags,int is_stroked);
 extern void SCAppendEntityLayers(SplineChar *sc, Entity *ent);
 extern void EntityDefaultStrokeFill(Entity *ent);
+
+	/* Used for type3 fonts briefly */
+/* This is not a "real" structure. It is a temporary hack that encompasses */
+/*  various possibilities, the combination of which won't occur in reality */
+typedef struct entitychar {
+    Entity *splines;
+    RefChar *refs;
+    int width, vwidth;
+    SplineChar *sc;
+    uint8 fromtype3;
+} EntityChar;
+
+extern SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags,int is_stroked);
+
+struct pskeydict {
+    int16 cnt, max;
+    uint8 is_executable;
+    struct pskeyval *entries;
+};
+
+struct psstack {
+    enum pstype { ps_void, ps_num, ps_bool, ps_string, ps_instr, ps_lit,
+		  ps_mark, ps_array, ps_dict } type;
+    union vals {
+	real val;
+	int tf;
+	char *str;
+	struct pskeydict dict;		/* and for arrays too */
+    } u;
+};
+
+struct pskeyval {
+    enum pstype type;
+    union vals u;
+    char *key;
+};
+
+typedef struct retstack {
+    int max;
+    int cnt;
+    real *stack;
+} RetStack;
+
 #endif

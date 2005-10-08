@@ -36,16 +36,6 @@
 #endif
 /* Solaris should include <ieeefp.h> */
 
-/* This is not a "real" structure. It is a temporary hack that encompasses */
-/*  various possibilities, the combination of which won't occur in reality */
-typedef struct entitychar {
-    Entity *splines;
-    RefChar *refs;
-    int width, vwidth;
-    SplineChar *sc;
-    uint8 fromtype3;
-} EntityChar;
-
 typedef struct _io {
     char *macro, *start;
     FILE *ps, *fog;
@@ -58,35 +48,6 @@ typedef struct io {
     struct _io *top;
     int endedstopped;
 } IO;
-
-struct pskeydict {
-    int16 cnt, max;
-    uint8 is_executable;
-    struct pskeyval *entries;
-};
-
-struct psstack {
-    enum pstype { ps_void, ps_num, ps_bool, ps_string, ps_instr, ps_lit,
-		  ps_mark, ps_array, ps_dict } type;
-    union vals {
-	real val;
-	int tf;
-	char *str;
-	struct pskeydict dict;		/* and for arrays too */
-    } u;
-};
-
-struct pskeyval {
-    enum pstype type;
-    union vals u;
-    char *key;
-};
-
-typedef struct retstack {
-    int max;
-    int cnt;
-    real *stack;
-} RetStack;
 
 typedef struct growbuf {
     char *pt;
@@ -193,7 +154,7 @@ enum pstoks { pt_eof=-1, pt_moveto, pt_rmoveto, pt_curveto, pt_rcurveto,
     pt_opencurly, pt_closecurly, pt_openarray, pt_closearray, pt_string,
     pt_number, pt_unknown, pt_namelit, pt_output, pt_outputd };
 
-char *toknames[] = { "moveto", "rmoveto", "curveto", "rcurveto",
+static char *toknames[] = { "moveto", "rmoveto", "curveto", "rcurveto",
 	"lineto", "rlineto", "arc", "arcn", "arct", "arcto",
 	"newpath", "closepath", "dup", "pop", "index",
 	"exch", "roll", "clear", "copy", "count",
@@ -3063,7 +3024,7 @@ void EntityDefaultStrokeFill(Entity *ent) {
     }
 }
 
-static SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags,int is_stroked) {
+SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags,int is_stroked) {
     Entity *ent, *next;
     SplinePointList *head=NULL, *last, *new, *nlast, *temp, *each, *transed;
     StrokeInfo si;
