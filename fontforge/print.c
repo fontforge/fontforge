@@ -573,6 +573,7 @@ return;			/* Nothing in this range */
     fprintf( pi->out, "  <<\n" );
     fprintf( pi->out, "    /Type /Font\n" );
     fprintf( pi->out, "    /Subtype /Type3\n" );
+    fprintf( pi->out, "    /Name /%s\n", sf->fontname );
     fprintf( pi->out, "    /FontBBox [%g %g %g %g]\n",
 	    floor(bb->minx), floor(bb->miny), ceil(bb->maxx), ceil(bb->maxy) );
     fprintf( pi->out, "    /FontMatrix [%g 0 0 %g 0 0]\n",
