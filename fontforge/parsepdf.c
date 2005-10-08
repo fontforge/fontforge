@@ -32,6 +32,7 @@
 #include <locale.h>
 #include <gwidget.h>
 #include "psfont.h"
+#include "sd.h"
 
 
 struct pdfcontext {
@@ -321,7 +322,9 @@ static int pdf_findfonts(struct pdfcontext *pc) {
 	    if ( (pt=PSDictHasEntry(&pc->pdfdict,"Type"))!=NULL && strcmp(pt,"/Font")==0 &&
 		    (PSDictHasEntry(&pc->pdfdict,"FontDescriptor")!=NULL ||
 		     ((pt=PSDictHasEntry(&pc->pdfdict,"Subtype"))!=NULL && strcmp(pt,"/Type3")==0)) &&
-		    (pt=PSDictHasEntry(&pc->pdfdict,"BaseFont"))!=NULL ) {
+		    ((pt=PSDictHasEntry(&pc->pdfdict,"BaseFont"))!=NULL ||
+		    /* Type3 fonts are named by "Name" rather than BaseFont */
+			(pt=PSDictHasEntry(&pc->pdfdict,"Name"))!=NULL) ) {
 		pc->fonts[k] = pc->objs[i];
 		if ( *pt=='/' || *pt=='(' )
 		    ++pt;
@@ -598,14 +601,693 @@ return( res );
 /* ****************************** End filters ******************************* */
 /* ************************************************************************** */
 
-static FILE *pdf_insertpfbsections(FILE *file,struct pdfcontext *pc) {
-    /* I don't think I need this */
-return( file );
+/* ************************************************************************** */
+/* *********************** pdf graphics interpretter ************************ */
+/* ************************************************************************** */
+
+/* Stolen from the PS interpreter and then modified beyond all recognition */
+enum pstoks { pt_eof=-1, pt_moveto, pt_lineto, pt_curveto, pt_vcurveto,
+    pt_ycurveto, pt_closepath, pt_rect,
+    pt_gsave, pt_grestore, pt_concat, pt_setlinewidth, pt_setlinecap, pt_setlinejoin,
+    pt_setmiterlimit, pt_setdash,
+    pt_stroke, pt_closestroke, pt_fillnz, pt_filleo, pt_fillstrokenz,
+    pt_fillstrokeeo, pt_closefillstrokenz, pt_closefillstrokeeo, pt_paintnoop,
+    pt_setcachedevice, pt_setcharwidth,
+    pt_strokecolor, pt_fillcolor, pt_setgreystroke, pt_setgreyfill,
+    pt_setrgbstroke, pt_setrgbfill,
+
+    pt_true, pt_false,
+
+    pt_opencurly, pt_closecurly, pt_openarray, pt_closearray, pt_string,
+    pt_number, pt_unknown, pt_namelit
+ };
+
+static char *toknames[] = { "m", "l", "c", "v",
+	"y", "h", "re",
+	"q", "Q", "cm", "w", "j", "J",
+	"M", "d",
+	"S", "s", "f" /* "F" is an alternate form for "f"*/, "f*", "B"
+	"B*", "b", "b*", "n",
+	"d1", "d0",
+	"SC", "sc", "G", "g",
+	"RG", "rg",
+
+	"true", "false",
+
+	"opencurly", "closecurly", "openarray", "closearray", "string",
+	"number", "unknown", "namelit", "=", "==",
+	NULL };
+
+static int nextpdftoken(FILE *file, real *val, char *tokbuf, int tbsize) {
+    int ch, r, i;
+    char *pt, *end;
+
+    /* Eat whitespace and comments. Comments last to eol */
+    while ( 1 ) {
+	while ( isspace(ch = getc(file)) );
+	if ( ch!='%' )
+    break;
+	while ( (ch=getc(file))!=EOF && ch!='\r' && ch!='\n' );
+    }
+
+    if ( ch==EOF )
+return( pt_eof );
+
+    pt = tokbuf;
+    end = pt+tbsize-1;
+    *pt++ = ch; *pt='\0';
+
+    if ( ch=='(' ) {
+	int nest=1, quote=0;
+	while ( (ch=getc(file))!=EOF ) {
+	    if ( pt<end ) *pt++ = ch;
+	    if ( quote )
+		quote=0;
+	    else if ( ch=='(' )
+		++nest;
+	    else if ( ch==')' ) {
+		if ( --nest==0 )
+	break;
+	    } else if ( ch=='\\' )
+		quote = 1;
+	}
+	*pt='\0';
+return( pt_string );
+    } else if ( ch=='<' ) {
+	ch = getc(file);
+	if ( pt<end ) *pt++ = ch;
+	if ( ch=='>' )
+	    /* Done */;
+	else if ( ch!='~' ) {
+	    while ( (ch=getc(file))!=EOF && ch!='>' )
+		if ( pt<end ) *pt++ = ch;
+	} else {
+	    int twiddle=0;
+	    while ( (ch=getc(file))!=EOF ) {
+		if ( pt<end ) *pt++ = ch;
+		if ( ch=='~' ) twiddle = 1;
+		else if ( twiddle && ch=='>' )
+	    break;
+		else twiddle = 0;
+	    }
+	}
+	*pt='\0';
+return( pt_string );
+    } else if ( ch==')' || ch=='>' || ch=='[' || ch==']' || ch=='{' || ch=='}' ) {
+	if ( ch=='{' )
+return( pt_opencurly );
+	else if ( ch=='}' )
+return( pt_closecurly );
+	if ( ch=='[' )
+return( pt_openarray );
+	else if ( ch==']' )
+return( pt_closearray );
+
+return( pt_unknown );	/* single character token */
+    } else if ( ch=='/' ) {
+	pt = tokbuf;
+	while ( (ch=getc(file))!=EOF && !isspace(ch) && ch!='%' &&
+		ch!='(' && ch!=')' && ch!='<' && ch!='>' && ch!='[' && ch!=']' &&
+		ch!='{' && ch!='}' && ch!='/' )
+	    if ( pt<tokbuf+tbsize-2 )
+		*pt++ = ch;
+	*pt = '\0';
+	ungetc(ch,file);
+return( pt_namelit );	/* name literal */
+    } else {
+	while ( (ch=getc(file))!=EOF && !isspace(ch) && ch!='%' &&
+		ch!='(' && ch!=')' && ch!='<' && ch!='>' && ch!='[' && ch!=']' &&
+		ch!='{' && ch!='}' && ch!='/' ) {
+	    if ( pt<tokbuf+tbsize-2 )
+		*pt++ = ch;
+	}
+	*pt = '\0';
+	ungetc(ch,file);
+	r = strtol(tokbuf,&end,10);
+	pt = end;
+	if ( *pt=='\0' ) {		/* It's a normal integer */
+	    *val = r;
+return( pt_number );
+	} else if ( *pt=='#' ) {
+	    r = strtol(pt+1,&end,r);
+	    if ( *end=='\0' ) {		/* It's a radix integer */
+		*val = r;
+return( pt_number );
+	    }
+	} else {
+	    *val = strtod(tokbuf,&end);
+	    if ( !finite(*val) ) {
+		LogError( "Bad number, infinity or nan: %s\n", tokbuf );
+		*val = 0;
+	    }
+	    if ( *end=='\0' )		/* It's a real */
+return( pt_number );
+	}
+	/* It's not a number */
+	for ( i=0; toknames[i]!=NULL; ++i )
+	    if ( strcmp(tokbuf,toknames[i])==0 )
+return( i );
+
+return( pt_unknown );
+    }
+}
+
+static void Transform(BasePoint *to, BasePoint *from, real trans[6]) {
+    to->x = trans[0]*from->x+trans[2]*from->y+trans[4];
+    to->y = trans[1]*from->x+trans[3]*from->y+trans[5];
+}
+
+static Entity *EntityCreate(SplinePointList *head,int linecap,int linejoin,
+	real linewidth, real *transform) {
+    Entity *ent = gcalloc(1,sizeof(Entity));
+    ent->type = et_splines;
+    ent->u.splines.splines = head;
+    ent->u.splines.cap = linecap;
+    ent->u.splines.join = linejoin;
+    ent->u.splines.stroke_width = linewidth;
+    ent->u.splines.fill.col = 0xffffffff;
+    ent->u.splines.stroke.col = 0xffffffff;
+    ent->u.splines.fill.opacity = 1.0;
+    ent->u.splines.stroke.opacity = 1.0;
+    memcpy(ent->u.splines.transform,transform,6*sizeof(real));
+return( ent );
+}
+
+static void ECCatagorizePoints( EntityChar *ec ) {
+    Entity *ent;
+
+    for ( ent=ec->splines; ent!=NULL; ent=ent->next ) if ( ent->type == et_splines ) {
+	SPLCatagorizePoints( ent->u.splines.splines );
+    }
+}
+
+static void dictfree(struct pskeydict *dict) {
+    int i;
+
+    for ( i=0; i<dict->cnt; ++i ) {
+	if ( dict->entries[i].type==ps_string || dict->entries[i].type==ps_instr ||
+		dict->entries[i].type==ps_lit )
+	    free(dict->entries[i].u.str);
+	else if ( dict->entries[i].type==ps_array || dict->entries[i].type==ps_dict )
+	    dictfree(&dict->entries[i].u.dict);
+    }
+}
+
+static void freestuff(struct psstack *stack, int sp) {
+    int i;
+
+    for ( i=0; i<sp; ++i ) {
+	if ( stack[i].type==ps_string || stack[i].type==ps_instr ||
+		stack[i].type==ps_lit )
+	    free(stack[i].u.str);
+	else if ( stack[i].type==ps_array || stack[i].type==ps_dict )
+	    dictfree(&stack[i].u.dict);
+    }
+}
+
+static void _InterpretPdf(FILE *in, struct pdfcontext *pc, EntityChar *ec) {
+    SplinePointList *cur=NULL, *head=NULL;
+    BasePoint current;
+    int tok, i, j;
+    struct psstack stack[100];
+    real dval;
+    int sp=0;
+    SplinePoint *pt;
+    real transform[6], t[6];
+    struct graphicsstate {
+	real transform[6];
+	BasePoint current;
+	real linewidth;
+	int linecap, linejoin;
+	Color fore_stroke, fore_fill;
+	DashType dashes[DASH_MAX];
+    } gsaves[30];
+    int gsp = 0;
+    Color fore_stroke=COLOR_INHERITED, fore_fill=COLOR_INHERITED;
+    int linecap=lc_inherited, linejoin=lj_inherited; real linewidth=WIDTH_INHERITED;
+    DashType dashes[DASH_MAX];
+    int dash_offset = 0;
+    Entity *ent;
+    char *oldloc;
+    char tokbuf[100];
+    const int tokbufsize = 100;
+
+    oldloc = setlocale(LC_NUMERIC,"C");
+
+    transform[0] = transform[3] = 1.0;
+    transform[1] = transform[2] = transform[4] = transform[5] = 0;
+    current.x = current.y = 0;
+    dashes[0] = 0; dashes[1] = DASH_INHERITED;
+
+    while ( (tok = nextpdftoken(in,&dval,tokbuf,tokbufsize))!=pt_eof ) {
+	switch ( tok ) {
+	  case pt_number:
+	    if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
+		stack[sp].type = ps_num;
+		stack[sp++].u.val = dval;
+	    }
+	  break;
+	  case pt_string:
+	    if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
+		stack[sp].type = ps_string;
+		stack[sp++].u.str = copyn(tokbuf+1,strlen(tokbuf)-2);
+	    }
+	  break;
+	  case pt_namelit:
+	    if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
+		stack[sp].type = ps_lit;
+		stack[sp++].u.str = copy(tokbuf);
+	    }
+	  break;
+	  case pt_true: case pt_false:
+	    if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
+		stack[sp].type = ps_bool;
+		stack[sp++].u.tf = tok==pt_true;
+	    }
+	  break;
+	  case pt_openarray:
+	    if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
+		stack[sp++].type = ps_mark;
+	    }
+	  break;
+	  case pt_closearray:
+	    for ( i=0; i<sp; ++i )
+		if ( stack[sp-1-i].type==ps_mark )
+	    break;
+	    if ( i==sp )
+		LogError( "No mark in ] (close array)\n" );
+	    else {
+		struct pskeydict dict;
+		dict.cnt = dict.max = i;
+		dict.entries = gcalloc(i,sizeof(struct pskeyval));
+		for ( j=0; j<i; ++j ) {
+		    dict.entries[j].type = stack[sp-i+j].type;
+		    dict.entries[j].u = stack[sp-i+j].u;
+		    /* don't need to copy because the things on the stack */
+		    /*  are being popped (don't need to free either) */
+		}
+		sp = sp-i;
+		stack[sp-1].type = ps_array;
+		stack[sp-1].u.dict = dict;
+	    }
+	  break;
+	  case pt_setcachedevice:
+	    if ( sp>=6 ) {
+		ec->width = stack[sp-6].u.val;
+		ec->vwidth = stack[sp-5].u.val;
+		/* I don't care about the bounding box */
+		sp-=6;
+	    }
+	  break;
+	  case pt_setcharwidth:
+	    if ( sp>=2 )
+		ec->width = stack[sp-=2].u.val;
+	  break;
+	  case pt_concat:
+	    if ( sp>=1 ) {
+		if ( stack[sp-1].type==ps_array ) {
+		    if ( stack[sp-1].u.dict.cnt==6 && stack[sp-1].u.dict.entries[0].type==ps_num ) {
+			--sp;
+			t[5] = stack[sp].u.dict.entries[5].u.val;
+			t[4] = stack[sp].u.dict.entries[4].u.val;
+			t[3] = stack[sp].u.dict.entries[3].u.val;
+			t[2] = stack[sp].u.dict.entries[2].u.val;
+			t[1] = stack[sp].u.dict.entries[1].u.val;
+			t[0] = stack[sp].u.dict.entries[0].u.val;
+			dictfree(&stack[sp].u.dict);
+			MatMultiply(t,transform,transform);
+		    }
+		}
+	    }
+	  break;
+	  case pt_setmiterlimit:
+	    sp = 0;		/* don't interpret, just ignore */
+	  break;
+	  case pt_setlinecap:
+	    if ( sp>=1 )
+		linecap = stack[--sp].u.val;
+	  break;
+	  case pt_setlinejoin:
+	    if ( sp>=1 )
+		linejoin = stack[--sp].u.val;
+	  break;
+	  case pt_setlinewidth:
+	    if ( sp>=1 )
+		linewidth = stack[--sp].u.val;
+	  break;
+	  case pt_setdash:
+	    if ( sp>=2 && stack[sp-1].type==ps_num && stack[sp-2].type==ps_array ) {
+		sp -= 2;
+		dash_offset = stack[sp+1].u.val;
+		for ( i=0; i<DASH_MAX && i<stack[sp].u.dict.cnt; ++i )
+		    dashes[i] = stack[sp].u.dict.entries[i].u.val;
+		dictfree(&stack[sp].u.dict);
+	    }
+	  break;
+	  case pt_setgreystroke:
+	    if ( sp>=1 ) {
+		fore_stroke = stack[--sp].u.val*255;
+		fore_stroke *= 0x010101;
+	    }
+	  break;
+	  case pt_setgreyfill:
+	    if ( sp>=1 ) {
+		fore_fill = stack[--sp].u.val*255;
+		fore_fill *= 0x010101;
+	    }
+	  break;
+	  case pt_setrgbstroke:
+	    if ( sp>=3 ) {
+		fore_stroke = (((int) (stack[sp-3].u.val*255))<<16) +
+			(((int) (stack[sp-2].u.val*255))<<8) +
+			(int) (stack[sp-1].u.val*255);
+		sp -= 3;
+	    }
+	  break;
+	  case pt_setrgbfill:
+	    if ( sp>=3 ) {
+		fore_fill = (((int) (stack[sp-3].u.val*255))<<16) +
+			(((int) (stack[sp-2].u.val*255))<<8) +
+			(int) (stack[sp-1].u.val*255);
+		sp -= 3;
+	    }
+	  break;
+	  case pt_lineto:
+	  case pt_moveto:
+	    if ( sp>=2 ) {
+		current.x = stack[sp-2].u.val;
+		current.y = stack[sp-1].u.val;
+		sp -= 2;
+		pt = chunkalloc(sizeof(SplinePoint));
+		Transform(&pt->me,&current,transform);
+		pt->noprevcp = true; pt->nonextcp = true;
+		if ( tok==pt_moveto ) {
+		    SplinePointList *spl = chunkalloc(sizeof(SplinePointList));
+		    spl->first = spl->last = pt;
+		    if ( cur!=NULL )
+			cur->next = spl;
+		    else
+			head = spl;
+		    cur = spl;
+		} else {
+		    if ( cur!=NULL && cur->first!=NULL && (cur->first!=cur->last || cur->first->next==NULL) ) {
+			SplineMake3(cur->last,pt);
+			cur->last = pt;
+		    }
+		}
+	    } else
+		sp = 0;
+	  break;
+	  case pt_curveto: case pt_vcurveto: case pt_ycurveto:
+	    if ( (sp>=6 && tok==pt_curveto) || (sp>=4 && tok!=pt_curveto)) {
+		BasePoint ncp, pcp, to;
+		to.x  = stack[sp-2].u.val;
+		to.y  = stack[sp-1].u.val;
+		if ( tok==pt_curveto ) {
+		    ncp.x = stack[sp-6].u.val;
+		    ncp.y = stack[sp-5].u.val;
+		    pcp.x = stack[sp-4].u.val;
+		    pcp.y = stack[sp-3].u.val;
+		} else if ( tok==pt_vcurveto ) {
+		    ncp = current;
+		    pcp.x = stack[sp-4].u.val;
+		    pcp.y = stack[sp-3].u.val;
+		} else if ( tok==pt_ycurveto ) {
+		    pcp = to;
+		    ncp.x = stack[sp-4].u.val;
+		    ncp.y = stack[sp-3].u.val;
+		}
+		current = to;
+		if ( cur!=NULL && cur->first!=NULL && (cur->first!=cur->last || cur->first->next==NULL) ) {
+		    Transform(&cur->last->nextcp,&ncp,transform);
+		    cur->last->nonextcp = false;
+		    pt = chunkalloc(sizeof(SplinePoint));
+		    Transform(&pt->prevcp,&pcp,transform);
+		    Transform(&pt->me,&current,transform);
+		    pt->nonextcp = true;
+		    SplineMake3(cur->last,pt);
+		    cur->last = pt;
+		}
+	    }
+	    sp = 0;
+	  break;
+	  case pt_rect:
+	    if ( sp>=4 ) {
+		SplinePointList *spl = chunkalloc(sizeof(SplinePointList));
+		SplinePoint *first, *second, *third, *fourth;
+		BasePoint temp1, temp2;
+		spl->first = spl->last = pt;
+		if ( cur!=NULL )
+		    cur->next = spl;
+		else
+		    head = spl;
+		cur = spl;
+		temp1.x = stack[sp-4].u.val; temp1.y = stack[sp-3].u.val;
+		Transform(&temp2,&temp1,transform);
+		first = SplinePointCreate(temp2.x,temp2.y);
+		temp1.x += stack[sp-2].u.val;
+		Transform(&temp2,&temp1,transform);
+		second = SplinePointCreate(temp2.x,temp2.y);
+		temp1.y += stack[sp-3].u.val;
+		Transform(&temp2,&temp1,transform);
+		third = SplinePointCreate(temp2.x,temp2.y);
+		temp1.x = stack[sp-4].u.val;
+		Transform(&temp2,&temp1,transform);
+		fourth = SplinePointCreate(temp2.x,temp2.y);
+		cur->first = cur->last = first;
+		SplineMake3(first,second);
+		SplineMake3(second,third);
+		SplineMake3(third,fourth);
+		SplineMake3(fourth,first);
+		current = temp1;
+	    }
+	    sp = 0;
+	  break;
+	  case pt_closepath:
+	  case pt_stroke: case pt_closestroke: case pt_fillnz: case pt_filleo:
+	  case pt_fillstrokenz: case pt_fillstrokeeo: case pt_closefillstrokenz:
+	  case pt_closefillstrokeeo: case pt_paintnoop:
+	    if ( tok==pt_closepath || tok==pt_closestroke ||
+		    tok==pt_closefillstrokenz || tok==pt_closefillstrokeeo ) {
+		if ( cur!=NULL && cur->first!=NULL && cur->first!=cur->last ) {
+		    if ( cur->first->me.x==cur->last->me.x && cur->first->me.y==cur->last->me.y ) {
+			SplinePoint *oldlast = cur->last;
+			cur->first->prevcp = oldlast->prevcp;
+			cur->first->noprevcp = false;
+			oldlast->prev->from->next = NULL;
+			cur->last = oldlast->prev->from;
+			SplineFree(oldlast->prev);
+			SplinePointFree(oldlast);
+		    }
+		    SplineMake3(cur->last,cur->first);
+		    cur->last = cur->first;
+		}
+	    }
+	    if ( tok==pt_closepath )
+	  break;
+	    else if ( tok==pt_paintnoop ) {
+		SplinePointListsFree(head);
+		head = cur = NULL;
+	  break;
+	    }
+	    ent = EntityCreate(head,linecap,linejoin,linewidth,transform);
+	    ent->next = ec->splines;
+	    ec->splines = ent;
+	    if ( tok==pt_stroke || tok==pt_closestroke || tok==pt_fillstrokenz ||
+		    tok==pt_fillstrokeeo || tok==pt_closefillstrokenz ||
+		    tok==pt_closefillstrokeeo )
+		ent->u.splines.stroke.col = fore_stroke;
+	    if ( tok==pt_fillnz || tok==pt_filleo || tok==pt_fillstrokenz ||
+		    tok==pt_fillstrokeeo || tok==pt_closefillstrokenz ||
+		    tok==pt_closefillstrokeeo )
+		ent->u.splines.fill.col = fore_fill;
+	    head = NULL; cur = NULL;
+	  break;
+	  case pt_gsave:
+	    if ( gsp<30 ) {
+		memcpy(gsaves[gsp].transform,transform,sizeof(transform));
+		gsaves[gsp].current = current;
+		gsaves[gsp].linewidth = linewidth;
+		gsaves[gsp].linecap = linecap;
+		gsaves[gsp].linejoin = linejoin;
+		gsaves[gsp].fore_stroke = fore_stroke;
+		gsaves[gsp].fore_fill = fore_fill;
+		++gsp;
+		/* Unlike PS does not! save current path */
+	    }
+	  break;
+	  case pt_grestore:
+	    if ( gsp>0 ) {
+		--gsp;
+		memcpy(transform,gsaves[gsp].transform,sizeof(transform));
+		current = gsaves[gsp].current;
+		linewidth = gsaves[gsp].linewidth;
+		linecap = gsaves[gsp].linecap;
+		linejoin = gsaves[gsp].linejoin;
+		fore_stroke = gsaves[gsp].fore_stroke;
+		fore_fill = gsaves[gsp].fore_fill;
+	    }
+	  break;
+	  default:
+	    sp=0;
+	  break;
+	}
+    }
+    freestuff(stack,sp);
+    if ( head!=NULL ) {
+	ent = EntityCreate(head,linecap,linejoin,linewidth,transform);
+	ent->next = ec->splines;
+	ec->splines = ent;
+    }
+    ECCatagorizePoints(ec);
+    setlocale(LC_NUMERIC,oldloc);
+}
+
+static SplineChar *pdf_InterpretSC(struct pdfcontext *pc,char *glyphname,
+	char *objnum, int *flags) {
+    int gn = strtol(objnum,NULL,10);
+    EntityChar ec;
+    FILE *glyph_stream;
+    SplineChar *sc;
+
+    if ( gn<=0 || gn>=pc->ocnt || pc->objs[gn]==-1 )
+  goto fail;
+    fseek(pc->pdf,pc->objs[gn],SEEK_SET);
+    pdf_skipobjectheader(pc);
+    if ( !pdf_readdict(pc) )
+  goto fail;
+    glyph_stream = pdf_defilterstream(pc);
+    if ( glyph_stream==NULL )
+return( NULL );
+    rewind(glyph_stream);
+
+    memset(&ec,'\0',sizeof(ec));
+    ec.fromtype3 = true;
+    ec.sc = sc = SplineCharCreate();
+    sc->name = copy(glyphname);
+
+    _InterpretPdf(glyph_stream,pc,&ec);
+    sc->width = ec.width;
+#ifdef FONTFORGE_CONFIG_TYPE3
+    sc->layer_cnt = 1;
+    SCAppendEntityLayers(sc,ec.splines);
+    if ( sc->layer_cnt==1 ) ++sc->layer_cnt;
+#else
+    sc->layers[ly_fore].splines = SplinesFromEntityChar(&ec,flags,false);
+#endif
+
+    fclose(glyph_stream);
+return( sc );
+
+  fail:
+    LogError("Syntax error in parsing type3 glyph: %s", glyphname );
+return( NULL );
+}
+    
+/* ************************************************************************** */
+/* ****************************** End graphics ****************************** */
+/* ************************************************************************** */
+
+static int pdf_getcharprocs(struct pdfcontext *pc,char *charprocs) {
+    int cp = strtol(charprocs,NULL,10);
+    FILE *temp, *pdf = pc->pdf;
+    int ret;
+
+    /* An indirect reference? */
+    if ( cp!=0 ) {
+	if ( cp<0 || cp>=pc->ocnt || pc->objs[cp]==-1 )
+return( false );
+	fseek(pdf,pc->objs[cp],SEEK_SET);
+	pdf_skipobjectheader(pc);
+return( pdf_readdict(pc));
+    }
+    temp = tmpfile();
+    if ( temp==NULL )
+return( false );
+    while ( *charprocs ) {
+	putc(*charprocs,temp);
+	++charprocs;
+    }
+    rewind(temp);
+    pc->pdf = temp;
+    ret = pdf_readdict(pc);
+    pc->pdf = pdf;
+    fclose(temp);
+return( ret );
 }
 
 static SplineFont *pdf_loadtype3(struct pdfcontext *pc) {
-    LogError("No support for type3 pdf fonts yet (and this is a type3 font)");
+    char *enc, *cp, *fontmatrix, *name;
+    double emsize;
+    SplineFont *sf;
+    int flags = -1;
+    int i;
+    struct psdict *charprocdict;
+
+    name=PSDictHasEntry(&pc->pdfdict,"Name");
+    if ( name==NULL )
+	name=PSDictHasEntry(&pc->pdfdict,"BaseFont");
+    if ( (enc=PSDictHasEntry(&pc->pdfdict,"Encoding"))==NULL )
+  goto fail;
+    if ( (cp=PSDictHasEntry(&pc->pdfdict,"CharProcs"))==NULL )
+  goto fail;
+    if ( (fontmatrix=PSDictHasEntry(&pc->pdfdict,"FontMatrix"))==NULL )
+  goto fail;
+    if ( sscanf(fontmatrix,"[%lg",&emsize)!=1 || emsize==0 )
+  goto fail;
+    emsize = 1.0/emsize;
+    enc = copy(enc);
+    name = copy(name+1);
+
+    if ( !pdf_getcharprocs(pc,cp))
+  goto fail;
+    charprocdict = PSDictCopy(&pc->pdfdict);
+
+    sf = SplineFontBlank(charprocdict->next);
+    if ( name!=NULL ) {
+	free(sf->fontname); free(sf->fullname); free(sf->familyname);
+	sf->fontname = name;
+	sf->familyname = copy(name);
+	sf->fullname = copy(name);
+    }
+    free(sf->copyright); sf->copyright = NULL;
+    free(sf->comments); sf->comments = NULL;
+    sf->ascent = .8*emsize;
+    sf->descent = emsize - sf->ascent;
+#ifdef FONTFORGE_CONFIG_TYPE3
+    sf->multilayer = true;
+#endif
+
+    for ( i=0; i<charprocdict->next; ++i ) {
+	sf->glyphs[i] = pdf_InterpretSC(pc,charprocdict->keys[i],
+		charprocdict->values[i],&flags);
+	if ( sf->glyphs[i]!=NULL ) {
+	    sf->glyphs[i]->orig_pos = i;
+	    sf->glyphs[i]->parent = sf;
+	    sf->glyphs[i]->vwidth = emsize;
+	    sf->glyphs[i]->unicodeenc = UniFromName(sf->glyphs[i]->name,sf->uni_interp,&custom);
+	}
+    }
+    sf->glyphcnt = charprocdict->next;
+    PSDictFree(charprocdict);
+
+    /* I'm going to ignore the encoding vector for now, and just return original */
+    free(enc);
+    sf->map = EncMapFromEncoding(sf,FindOrMakeEncoding("Original"));
+
+return( sf );
+
+  fail:
+    LogError("Syntax errors while parsing Type3 font headers" );
 return( NULL );
+}
+
+static FILE *pdf_insertpfbsections(FILE *file,struct pdfcontext *pc) {
+    /* I don't need this. Type1 fonts provide us with the same info */
+    /*  about cleartext length, binary length, cleartext length that */
+    /*  the pfb section headings do. But the info isn't important in */
+    /*  parsing the pfb file, so we can just ignore it */
+return( file );
 }
 
 static SplineFont *pdf_loadfont(struct pdfcontext *pc,int font_num) {

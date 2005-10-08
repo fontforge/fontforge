@@ -2399,7 +2399,6 @@ SplineFont *SplineFontBlank(int charcnt) {
 return( sf );
 }
 
-/* see also SFReencodeFont in fontinfo.c */
 SplineFont *SplineFontNew(void) {
     SplineFont *sf;
     int enclen = default_encoding->char_cnt;
