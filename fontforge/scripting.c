@@ -5279,8 +5279,9 @@ static void bCharInfo(Context *c) {
     SplineChar *sc;
     DBounds b;
     KernClass *kc;
-    int i, found, gid, gid2;
+    int i, j, found, gid, gid2, layer;
     SplineChar dummy;
+    RefChar *ref;
 
     if ( c->a.argc!=2 && c->a.argc!=3 && c->a.argc!=5 )
 	error( c, "Wrong number of arguments");
@@ -5361,9 +5362,51 @@ return;
 	    c->return_val.u.ival = sc->color;
 	else if ( strmatch( c->a.vals[1].u.sval,"GlyphIndex")==0 )
 	    c->return_val.u.ival = sc->orig_pos;
-	else if ( strmatch( c->a.vals[1].u.sval,"Comment")==0 ) {
+	else if ( strmatch( c->a.vals[1].u.sval,"LayerCount")==0 )
+	    c->return_val.u.ival = sc->layer_cnt;
+	else if ( strmatch( c->a.vals[1].u.sval,"RefCount")==0 ) {
+	    for ( i=0, layer=ly_fore; layer<sc->layer_cnt; ++layer )
+		for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next, ++i )
+		    ;
+	    c->return_val.u.ival = i;
+	} else if ( strmatch( c->a.vals[1].u.sval,"RefName")==0 ||
+		strmatch( c->a.vals[1].u.sval,"RefNames")==0 ) {
+	    for ( i=0, layer=ly_fore; layer<sc->layer_cnt; ++layer )
+		for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next, ++i )
+		    ;
+	    c->return_val.type = v_arr;
+	    c->return_val.u.aval = galloc(sizeof(Array));
+	    c->return_val.u.aval->argc = i;
+	    c->return_val.u.aval->vals = galloc(i*sizeof(Val));
+	    for ( i=0, layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+		for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next, ++i ) {
+		    c->return_val.u.aval->vals[i].u.sval = copy(ref->sc->name);
+		    c->return_val.u.aval->vals[i].type = v_str;
+		}
+	    }
+	} else if ( strmatch( c->a.vals[1].u.sval,"RefTransform")==0 ) {
+	    for ( i=0, layer=ly_fore; layer<sc->layer_cnt; ++layer )
+		for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next, ++i )
+		    ;
+	    c->return_val.type = v_arr;
+	    c->return_val.u.aval = galloc(sizeof(Array));
+	    c->return_val.u.aval->argc = i;
+	    c->return_val.u.aval->vals = galloc(i*sizeof(Val));
+	    for ( i=0, layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+		for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next, ++i ) {
+		    c->return_val.u.aval->vals[i].type = v_arr;
+		    c->return_val.u.aval->vals[i].u.aval = galloc(sizeof(Array));
+		    c->return_val.u.aval->vals[i].u.aval->argc = 6;
+		    c->return_val.u.aval->vals[i].u.aval->vals = galloc(6*sizeof(Val));
+		    for ( j=0; j<6; ++j ) {
+			c->return_val.u.aval->vals[i].u.aval->vals[j].type = v_real;
+			c->return_val.u.aval->vals[i].u.aval->vals[j].u.fval = ref->transform[j];
+		    }
+		}
+	    }
+	} else if ( strmatch( c->a.vals[1].u.sval,"Comment")==0 ) {
 	    c->return_val.type = v_str;
-	    c->return_val.u.sval = sc->comment?u2def_copy(sc->comment):copy("");
+	    c->return_val.u.sval = sc->comment?u2utf8_copy(sc->comment):copy("");
 	} else {
 	    SplineCharFindBounds(sc,&b);
 	    if ( strmatch( c->a.vals[1].u.sval,"LBearing")==0 )
