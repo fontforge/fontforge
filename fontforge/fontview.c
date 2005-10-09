@@ -8017,7 +8017,7 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,EncMap *map,int i) {
     /*  whether mark or base */
     if ( sf->pfminfo.panose_set && sf->pfminfo.panose[3]==9 &&
 	    sf->glyphcnt>0 ) {
-	for ( i=sf->glyphcnt-1; i>=0; ++i )
+	for ( i=sf->glyphcnt-1; i>=0; --i )
 	    if ( SCWorthOutputting(sf->glyphs[i])) {
 		dummy->width = sf->glyphs[i]->width;
 	break;
