@@ -779,8 +779,8 @@ return( sc!=NULL &&
 #if HANYANG
 	    sc->compositionunit ||
 #endif
-	    sc->dependents!=NULL ||
-	    sc->width!=sc->parent->ascent+sc->parent->descent ) );
+	    sc->dependents!=NULL /*||
+	    sc->width!=sc->parent->ascent+sc->parent->descent*/ ) );
 }
 
 int CIDWorthOutputting(SplineFont *cidmaster, int enc) {
