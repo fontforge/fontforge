@@ -2195,7 +2195,7 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
 	if ( d->sf->glyphs[i]!=NULL && strcmp(d->sf->glyphs[i]->name,".notdef")==0 &&
 		(d->sf->glyphs[i]->layers[ly_fore].splines!=NULL || AnyRefs(d->sf->glyphs[i]->layers[ly_fore].refs )))
     break;
-    if ( i!=0 ) {
+    if ( i>0 ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( GWidgetAskR(_STR_NotdefName,buts,0,1,_STR_NotdefGlyph,i)==1 )
 #elif defined(FONTFORGE_CONFIG_GTK)
