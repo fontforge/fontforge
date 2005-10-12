@@ -62,9 +62,6 @@ typedef void *(ptread_startfunc_t)(void *);
 static unichar_t err501[] = { ' ','N','o','t',' ','I','m','p','l','e','m','e','n','t','e','d', '\0' };
 
 static int AddProtocol(unichar_t *prefix,int len) {
-    char lib[300], buffer[1400];
-    DL_CONST void *handle;
-    void (*init)(void *,struct stdfuncs *,int);
 
     if ( plen>=pmax ) {
 	pmax += 20;		/* We're never going to support 20 protocols? */
@@ -84,6 +81,9 @@ static int AddProtocol(unichar_t *prefix,int len) {
 #ifdef NODYNAMIC
 return( false );
 #else
+	char lib[300], buffer[1400];
+	DL_CONST void *handle;
+	void (*init)(void *,struct stdfuncs *,int);
 	strcpy(lib,"libgio");
 	cu_strncat(lib,prefix,len);
 	strcat(lib,SO_EXT);
