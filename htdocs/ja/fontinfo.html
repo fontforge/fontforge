@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 4-May-2005 -->
+  <!-- AP: Last modified: 4-Sep-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
 <!--<TITLE>Font Info</TITLE>-->
     <TITLE>フォント情報</TITLE>
@@ -14,7 +14,7 @@
     フォント情報
 </H1>
 <P>
-<IMG SRC="../fontinfo.png" WIDTH="376" HEIGHT="608" ALIGN="Right">
+<IMG SRC="fontinfo.png" WIDTH="325" HEIGHT="454" ALIGN="Right">
 <P>
 <!--
 The Font Info dialog is available from all views. It allows you to name your
@@ -23,33 +23,40 @@ other useful bits of information. In a <A HREF="fontview.html#CID">CID keyed
 font</A>, there is a <A HREF="cidmenu.html#FontInfo">separate command</A>
 to access the information for the font as a whole, the dialog looks the same.
 The dialog is composed of many different sub dialogs. -->
-フォント情報ダイアログはすべてのビューから使用可能です。このメニューを使ってフォントの名前をつけたり、<A HREF="fontview.html#Encodings">エンコーディング</A>などの様々なその他の細かい情報を設定することができます。<A HREF="fontview.html#CID">CID フォント</A>では、フォント全体の集合体の情報にアクセスするための<A HREF="cidmenu.html#FontInfo">独立したコマンド</A>がありますが、ダイアログの見た目は同じです。このダイアログは多数の別種のサブダイアログから構成されています。
+フォント情報ダイアログはすべてのビューから使用可能です。このメニューを使って様々な有用な情報の各ビットを設定することができます。<A HREF="fontview.html#CID">CID フォント</A>では、フォント全体の集合体の情報にアクセスするための<A HREF="cidmenu.html#FontInfo">独立したコマンド</A>がありますが、ダイアログの見た目は同じです。このダイアログは多数の別種のサブダイアログから構成されています。
 <UL>
   <LI>
 <!--<A HREF="fontinfo.html#Names">Names</A>-->
     <A HREF="fontinfo.html#Names">名前</A>
   <LI>
-<!--<A HREF="fontinfo.html#Encoding">Encoding</A>-->
-    <A HREF="fontinfo.html#Encoding">エンコーディング</A>
-  <LI>
 <!--<A HREF="fontinfo.html#PS-General">General</A>-->
-    <A HREF="fontinfo.html#PS-General">一般</A>
+    <A HREF="fontinfo.html#PS-General">一般情報</A>
   <LI>
 <!--<A HREF="fontinfo.html#Private">PostScript Private Dictionary</A>-->
     <A HREF="fontinfo.html#Private">PostScript プライベート辞書</A>
   <LI>
-<!--<A HREF="fontinfo.html#TTF-Values">TTF Values</A>-->
-    <A HREF="fontinfo.html#TTF-Values">TTF の設定値</A>
+    <A HREF="fontinfo.html#TTF-Values">OS/2</A>
+    <UL>
+      <LI>
+<!--	<A HREF="fontinfo.html#TTF-Values">OS/2 Misc</A> -->
+	<A HREF="fontinfo.html#TTF-Values">OS/2 各種情報</A>
+      <LI>
+<!--	<A HREF="fontinfo.html#TTF-Metrics">OS/2 Metrics</A> -->
+	<A HREF="fontinfo.html#TTF-Metrics">OS/2 メトリック</A>
+      <LI>
+<!--	<A HREF="#SubSuper">OS/2 Sub/Superscripts</A> -->
+	<A HREF="#SubSuper">OS/2 上付き/下付き文字</A>
+      <LI>
+	<A HREF="fontinfo.html#Panose">OS/2 Panose</A>
+    </UL>
   <LI>
 <!--<A HREF="fontinfo.html#TTF-Names">TTF Names</A>-->
     <A HREF="fontinfo.html#TTF-Names">TTF 名</A>
   <LI>
-    <A HREF="fontinfo.html#Panose">Panose</A>
-  <LI>
     <A HREF="fontinfo.html#TeX">TeX</A>
   <LI>
 <!--<A HREF="#Size">Size</A>-->
-    <A HREF="#Size">サイズ(S)</A>
+    <A HREF="#Size">サイズ</A>
   <LI>
 <!--<A HREF="fontinfo.html#Comment">Comment</A>-->
     <A HREF="fontinfo.html#Comment">コメント</A>
@@ -86,7 +93,7 @@ are for machines, this name can contain spaces (like "New Century Schoolbook-Bol
 Condensed"). Finally there is the weight name. All of these names should
 be in ASCII. If you wish to enter names with characters outside this range
 look at the <A HREF="#TTF-Names">TTF Names</A> Section. -->
-PostScript フォントには何種類かの別の名前がついていますが、そのうちで重要なのは基本的に 2 つです: ファミリー名 (Times など) とフォント名 (ファミリー名に多数の修飾子をつけたもの。例えば Bold Italic Condensed などが後ろにつく。) です。フルネームは人間が読む目的でつけられていて、その他の機械が読むための項目と異なります。これは空白を含むことができます (例えば "New Century Schoolbook-Bold Condensed")。最後に、ウェイト名があります。これらの名前はすべて ASCII で書かなければなりません。この範囲に含まれない文字を含む名前をつけたい場合は、<A HREF="#TTF-Names">TTF 名</A>のセクションを参照してください。
+PostScript フォントには何種類かの異なる名前がついていますが、そのうちで重要なのは基本的に 2 つです: ファミリー名 (Times など) とフォント名 (ファミリー名に多数の修飾子をつけたもの。例えば Bold Italic Condensed などが後ろにつく。) です。フルネームは人間が読む目的でつけられていて、その他の機械が読むための項目と異なります。これは空白を含むことができます (例えば "New Century Schoolbook-Bold Condensed")。最後に、ウェイト名があります。これらの名前はすべて ASCII で書かなければなりません。この範囲に含まれない文字を含む名前をつけたい場合は、<A HREF="#TTF-Names">TTF 名</A>のセクションを参照してください。
 <P>
 <!--
 The copyright field can contain whatever you want to put there, but it's
@@ -101,357 +108,11 @@ on it), but in CID keyed fonts it must be a floating point number. -->
 <!--
 Many of these names are similar to the english names of the TTF Names section.
 If nothing is specified in that section then the names specified here will
-be used by default in ttf files.<BR Clear=ALL> -->
-これらの名前の多くは TTF 名セクションの英語名に似ています。そのセクションで何も選択しなかった場合には、ここで指定した名前が TTF ファイルのデフォルトとして使用されます。<BR Clear=ALL>
+be used by default in ttf files. -->
+これらの名前の多くは TTF 名セクションの英語名に似ています。そのセクションで何も選択しなかった場合には、ここで指定した名前が TTF ファイルのデフォルトとして使用されます。
 <H2>
-  <IMG SRC="../fontinfo-encoding.png" WIDTH="369" HEIGHT="472" ALIGN="Right"><!--<A
-      NAME="Encoding">Encoding</A>-->
-   <A NAME="Encoding">エンコーディング</A>
-</H2>
-<P>
-<!--
-This sub dialog allows you to specify the encoding for your font, and to
-teach FontForge about new encodings. -->
-このサブダイアログでは、フォントのエンコーディングを指定することができます。FontForge に新しいエンコーディングを教えることも可能です。
-<P>
-<!--
-FontForge has a set of common encodings in a pull down list. You may also
-type in the name of any encoding recognized by iconv() (assuming that ff
-can figure it out). -->
-FontForge では、一般的なエンコーディングの一覧はプルダウンリストに含まれています。また、iconv() が認識する任意のエンコーディグの名前をタイプすることもできます (ff がそれを理解可能だと仮定しています)。
-<P>
-<!--
-There are two ways to change the encoding. The default assumes that the font
-currently has a reasonable encoding, but you want it to have a different
-one, here each glyph will be moved to the appropriate position in the new
-font. However if you check the <SAMP>[ ] Force Encoding box</SAMP>, then
-FontForge will assume that the glyphs are in the right order, but have got
-the wrong names. It will go through and rename every glyph to match what
-it should be in the new encoding (this is for cases where people have given
-a font an inappropriate encoding but where the mapping from character code
-to glyph is correct). -->
-エンコーディングを変更するには 2 つの方法があります。標準の方法では、フォントが現在まともなエンコーディングになっていて、それを別のものに変更したい場合です。この場合は各グリフは新しいフォント内の適切な位置に移動します。一方、チェックボックス <SAMP>[] エンコーディングを強制(C)</SAMP> を有効にしている場合、FontForge は、各グリフの順番は現在のままで正しく、それらの名前が間違っているのだと仮定します。変換は行わず、すべてのグリフの名前を新しいエンコーディングでの正しい名前に変更します (これは、フォントに間違ったエンコーディングをつけてしまったが文字コードからグリフへの対応は正しい場合のためのものです)。
-<P>
-<!--
-You may want to add glyphs to or remove glyphs from your font. You can specify
-how many glyphs you want in the font here. -->
-フォントに新しいグリフを追加したりグリフを削除したりしたくなることもあるはずです。フォントに含まれるグリフの個数もここで変更することができます。
-<P>
-<!--
-<STRONG>Note</STRONG> some encodings have different numbers of glyphs, and
-it may be hard to guess how many will be used. But if you have changed the
-encoding but not altered the "Number of Glyphs" box, then the value in the
-Number box will be ignored and the correct number will come from the encoding
-process. -->
-<STRONG>注意</STRONG> ある種のエンコーディングは、含まれるグリフの個数が通常と異なります。また、何個のグリフが使われているのかを推測するのも困難です。しかしながら、エンコーディングを変更したときに "グリフの個数(N)" ボックスを変更しなければ、ボックス内の数値は無視され、エンコーディング処理で得られた正しいグリフの個数が表示されます。
-<P>
-<!--
-In a CID keyed font you are not allowed to change the encoding (in essence
-because there is none), but the dialog will show you the
-Registry/Ordering/Supplement for this font.  -->
-CID キー指定フォントではエンコーディングを変更することはできません (本質的にエンコーディングが存在しないため) が、ダイアログにはそのフォントのレジストリ/順序づけ/補遺番号が表示されます。
-<P>
-<!--
-Not all font formats support all encodings. SVG fonts will always be output
-in a unicode encoding, truetype fonts in either unicode or one of the CJK
-encodings, type1 fonts only support single byte encodings, etc. -->
-すべてのフォントフォーマットが全てのエンコーディングをサポートするわけではないことにご注意ください。SVG フォントは常に Unicode エンコーディングで出力され、TreuType では Unicode か CJK エンコーディングのどれかを選ぶことができ、Type1 フォントは 1 バイトエンコーディングしかサポートしていないなどです。
-<P>
-<!--
-<A NAME="Interpretation">Sadly</A> the encoding is not always sufficient
-for understanding the font's behavior. For example a unicode font designed
-for a chinese system will look very different from a unicode font for a japanese
-system (The same unicode character may map to very different chinese or japanese
-glyphs). To handle this (and some other cases) FontForge has the concept
-of "Interpretation". There are several cases in which this field is useful. -->
-<A NAME="Interpretation">残念ながら</A>エンコーディングは、フォントのふるまいを理解するのに常に十分なわけではありません。例えば、中国語の表記法に合わせて作られた Unicode フォントは、日本語の表記法に合わせて作られた Unicode フォントとは大きく異なる見かけをもつでしょう (中国語と日本語で大きく異なるグリフが同一の Unicode 文字に割り当てられています)。これを扱うために (および他のいくつかの目的のために) FontForge は「解釈」という概念をもっています。このフィールドが役に立つ場合がいくつかあります。
-<UL>
-  <LI>
-<!--To allow FontForge to know whether a Unicode (or any other non-CJK encoding
-    which includes CJK glyphs) font should be viewed as Japanese, Chinese or
-    Korean.-->
-    Unicode (またはその他の任意の CJK 文字を含む非 CJK エンコーディングの) フォントを日本語、中国語または韓国語のどれとして解釈するべきかを FontForge に指示することができます。
-  <LI>
-<!--Can cause FontForge to use the names "Delta.greek", "Omega.greek" and "mu.greek"
-    for U+0396, U+03a9, U+03bc (instead of uni0396, etc.).-->
-    FontForge に U+0396, U+03a9, U+03bc にマッピングされたグリフに、(uni0396 などの名前ではなく) "Delta.greek", "Omega.greek" および "mu.greek" という名前を使用させることができます。
-  <LI>
-<!--Can cause FontForge to name glyphs in the public use area after Adobe's
-    assignments to that area (ie. small caps, etc.) -->
-    FontForge が公有領域にある文字を Adobe の割り当て (例: 小型大文字など) に沿った名前づけを行うことができるようにします。
-  <LI>
-    Can cause FontForge to name glyphs n the public use area after the American
-    Mathematical Society's
-    <A HREF="http://www.ams.org/STIX/bnb/stix-tbl.asc-2003-10-10">specification</A>.
-    FontForge が公有領域にある文字を米国数学会の<A HREF="http://www.ams.org/STIX/bnb/stix-tbl.asc-2003-10-10">仕様</A>に沿った名前づけを行うことができるようにします。
-</UL>
-<P>
-  <HR>
-<H3>
-<!--Built in <A NAME="Encodings">Encodings</A>-->
-    組み込みの<A NAME="Encodings">エンコーディング</A>
-</H3>
-<P>
-<!--
-FontForge knows about the following encodings by default: -->
-FontForge は、デフォルトで以下のエンコーディングについて知っています。
-<UL>
-  <LI>
-<!--ISO-8859-1 (Latin1) - - traditional encoding for western european characters.
-    Default encoding for http. Does not include the Euro sign.-->
-    ISO-8859-1 (Latin1) -- 西ヨーロッパの伝統的エンコーディングです。HTTP のデフォルトエンコーディングです。ユーロ記号は含まれません。
-  <LI>
-<!--ISO-8859-15 (Latin0) -- Replacement for Latin1. Does include the Euro. -->
-    ISO-8859-15 (Latin9) -- Latin1に代るコードです。ユーロ記号を含んでいます。
-  <LI>
-<!--ISO-8859-2 (Latin2) -- Central &amp; Eastern European (Czech, Hungarian,
-    Polish, Romanian, Croatian, Slovak, Slovnian.-->
-    ISO-8859-2 (Latin2) -- 中央ヨーロッパと東ヨーロッパ (チェコ語、ハンガリー語、ポーランド語、ルーマニア語、クロアチア語、スロバキア語、スロベニア語)。
-<!--ISO-8859-3 (Latin3) -- Southern European (Esperanto, Maltese)-->
-    ISO-8859-3 (Latin3) -- 南ヨーロッパ (エスペラント、マルタ語)
-  <LI>
-<!--ISO-8859-4 (Latin4) -- Northern European (Estonian, Latvian, Lithuanian,
-    Greenlandic, Lappish) -->
-    ISO-8859-4 (Latin4) -- 北ヨーロッパ (エストニア語、ラトビア語、リトアニア語、グリーンランド語、ラップ語)
-  <LI>
-    <IMG SRC="../fontinfo-cid.png" WIDTH="369" HEIGHT="472" ALIGN="Right">ISO-8859-9
-<!--    (Latin5) -- Turkish-->
-    (Latin5) -- トルコ語
-  <LI>
-<!--ISO-8859-10 (Latin6) -- Nordic (reworking of Latin4&amp;Latin1)-->
-    ISO-8859-10 (Latin6) -- ノルウェー語 (Latin4 と Latin1 の作り直し)
-  <LI>
-<!--ISO-8859-13 (Latin7) -- Another Baltic character set-->
-    ISO-8859-13 (Latin7) -- その他のバルト諸言語用の文字セット
-  <LI>
-<!--ISO-8859-14 (Latin8) -- Celtic (Gaelic &amp; Welsh)-->
-    ISO-8859-14 (Latin8) -- ケルト諸語 (ゲール語とウェールズ語)
-  <LI>
-    ISO-8859-5 (Cyrillic)
-  <LI>
-    ISO-8859-6 (Arabic)
-  <LI>
-    ISO-8859-7 (Greek)
-  <LI>
-<!--ISO-8859-8 (Hebrew) -- (and Yiddish)-->
-    ISO-8859-8 (Hebrew) -- (およびイディッシュ語)
-  <LI>
-<!--ISO-8859-11 (Thai) -- Also know as TIS 620<BR>-->
-    ISO-8859-11 (Thai) -- 別名TIS 620<BR>
-<!--&lt;there is no ISO-8859-12&gt; -->
-    &lt;ISO-8859-12 はありません&gt; 
-      <HR>
-  <LI>
-<!--KOI8-R -- Cyrillic -->
-    KOI8-R -- キリル文字
-  <LI>
-    Macintosh Roman
-  <LI>
-    Windows "ANSI" (CodePage1252)
-  <LI>
-<!--Adobe Standard-->
-    Adobe 標準
-  <LI>
-<!--Symbol-->
-    シンボル
-  <LI>
-    TeX Base 
-      <HR>
-  <LI>
-    ISO-10646-1 (Unicode, BMP)
-  <LI>
-    ISO-10646-1 (Unicode, Full)
-  <LI>
-<!--ISO-10646-? (Unicode, by plane)<BR>
-    (You can select a specific plane of unicode as an encoding (ie BMP, SMP,
-    SIP,...) -->
-    ISO-10646-? (Unicode, 面を指定)<BR>
-      <HR>
-    (unicode の特定の面を 1 つのエンコーディングとして選べます (例: BMP, SMP,
-    SIP……)
-  <LI>
-    SJIS
-  <LI>
-<!--JIS 208 -- Japanese Kanji (first 8000 characters)-->
-    JIS 208 -- 日本語の漢字 (最初の 8000 文字)
-  <LI>
-<!--JIS 212 -- Japanese Kanji (next 8000 characters)-->
-    JIS 212 -- 日本語の漢字 (次の 8000 文字)
-  <LI>
-    Wansung
-  <LI>
-<!--KSC 5601 -- Korean (this is the 94x94 version of KSC 5601)-->
-    KSC 5601 -- 韓国語 (これは KS C 5601 の 94×94 バージョンです)
-  <LI>
-    Johab
-  <LI>
-<!--GB 2312 -- Simplified Chinese -->
-    GB 2312 -- 簡体字中国語
-  <LI>
-<!--Packed GB 2312 -- (I don't know what the proper name for this is, ASCII for
-    bytes&lt;0x80, and GB 2312 EUC offset by 0x8080) -->
-    パック形式 GB 2312 -- (正確な名前は不明です。ASCII を 0x80 未満のバイトに割り当て、GB 2312 を EUC (オフセットは 0x8080) で)
-  <LI>
-<!--Big5 -- Traditional Chinese -->
-    Big5 -- 繁体字中国語
-      <HR>
-  <LI>
-<!--Custom -- An unknown encoding-->
-    Custom -- 不明なエンコーディング
-  <LI>
-<!--Compacted -- An encoding with no holes in it -->
-    Compacted -- 内部に隙間のないエンコーディング
-  <LI>
-<!--Original -- the glyph ordering used in the original font file.-->
-    Original -- オリジナルのフォントファイルで使用されているグリフ順
-</UL>
-<P>
-<!--
-Encoding sources:-->
-エンコーディングに関する情報源:
-<UL>
-  <LI>
-    <A HREF="http://czyborra.com/charsets/iso8859.html">ISO 8859 Alphabet Soup</A>
-  <LI>
-<!--<A HREF="http://www.unicode.org/Public/MAPPINGS/">Unicode Mapping Tables</A>-->
-    <A HREF="http://www.unicode.org/Public/MAPPINGS/">Unicode の対応表</A>
-</UL>
-<P>
-<!--
-<A HREF="http://www.unicode.org/charts/">An index to images of all the glyphs
-in unicode</A>. -->
-<A HREF="http://www.unicode.org/charts/">Unicode のグリフすべての画像へのインデックス</A>。
-<P>
-  <HR>
-<H3>
-<!--<A NAME="User-def">User Defined Encodings</A>-->
-    <A NAME="User-def">ユーザ定義のエンコーディング</A>
-</H3>
-<P>
-<!--
-You can also use the font info dialog to add new encodings to the set that
-FontForge knows about. There are three buttons that manipulate a set of user
-defined encodings. As always these specify both a character set and an encoding.
-The encoding has a maximum of 256 entries, but the character set may be larger
-(up to 1024). This means that you can define a font with extra characters.
-Since postscript fonts can be reencoded at runtime this can be useful. -->
-フォント情報ダイアログは、FontForge が知っているエンコーディングに新しいエンコーディングを追加するにも使うことができます。ユーザ定義のエンコーディング群を操作するためのボタンは 3 つ用意されています。標準のエンコーディングと同様に、これらは文字セットと符号化方式の両方を指定します。エンコーディングは最大 256 項目を含むことができますが、文字セットはそれより大きくても構いません (1024 文字まで)。これは、追加の文字を含むフォントを定義できるということです。PostScript フォントは実行時にエンコーディングを切り替えることができるので、これが役に立つ場合があります。
-<P>
-<!--
-The button <CODE>[Load]</CODE> allows you to load an encoding(s) from a file.
-Currently the file must either be in the format used by the unicode consortium
-for <A HREF="http://www.unicode.org/Public/MAPPINGS/ISO8859/">mapping ISO
-8859</A> encodings to unicode, or it must be a postscript encoding array.
-The first format looks like this: -->
-<CODE>[Load]</CODE> ボタンを押すと、エンコーディングをファイルから読み込むことができます。現在のところ、ファイルは Unicode Consortium が <A HREF="http://www.unicode.org/Public/MAPPINGS/ISO8859/">ISO 8859</A> の各エンコーディングを Unicode に対応づけるのに使っているフォーマットか、PostScript のエンコーディング配列でなければなりません。最初の形式は以下のような形です:
-<BLOCKQUOTE>
-  <PRE>0x20	0x0020	#	SPACE
-0x21	0x0021	#	EXCLAMATION MARK
-...
-</PRE>
-</BLOCKQUOTE>
-<P>
-<!--
-A postscript file looks like: -->
-PostScript ファイルは以下のような形です:
-<BLOCKQUOTE>
-  <PRE>/TeXBase1Encoding [
- % 00
- /.notdef /dotaccent /fi /fl
- /fraction /hungarianumlaut /Lslash /lslash
- ...
-] def
-</PRE>
-</BLOCKQUOTE>
-<P>
-<!--
-There may be more than one encoding in a postscript file. The encoding parser
-is not smart. It will only read arrays specified like this, don't try any
-of the innumerable other ways of specifying an array in postscript. -->
-PostScript ファイルには複数のエンコーディングを含めることができます。エンコーディングの読み込み処理は賢くありません。このような形で指定されたエンコーディングしか読み込めないので、PostScript で配列を指定する他の無数の方法を試みないでください。
-<P>
-<!--
-If the font has a custom encoding then the <CODE>[Make From Font]</CODE>
-button is enabled. This allows you to name the encoding you have defined
-for the current font. -->
-フォントにカスタムエンコーディングがある場合、<CODE>[フォントから作成(K)]</CODE> ボタンが押せるようになります。これを使って、現在のフォントに対して定義したエンコーディングに名前をつけることができます。
-<P>
-<!--
-The <CODE>[Remove]</CODE> button brings up a list showing all the custom
-encodings and allows you to delete them.-->
-<CODE>[削除(M)]</CODE> ボタンを押すと、すべてのカスタムエンコーディングを列挙するリストが表示され、それらを削除することができます。
-<P>
-<!--
-Here's an <A HREF="Encodings.ps.gz">example of a postscript encoding file</A>.
-It contains:-->
-ここに <A HREF="Encodings.ps.gz">PostScript エンコーディングファイルの例</A>があります。それには以下のエンコーディングが含まれています:
-<UL>
-  <LI>
-    TeXMathItalicEncoding
-  <LI>
-    TeXMathSymbolEncoding
-  <LI>
-    TeXMathExtensionEncoding 
-      <HR>
-  <LI>
-<!--IsoLatin -- (which specifies all the characters used in any of the ISO-Latin-*
-    fonts -->
-    IsoLatin -- (これは、ISO-Latin-* フォントのどれかに含まれる文字をすべて指定しています)
-      <HR>
-  <LI>
-<!--AdobeExpert -- (Which contains things like lower case numbers, small caps,
-    fractions, sub/superscript numbers, etc.) -->
-    AdobeExpert -- (これはノンライニング数字、小型大文字、分数、下つき/上つき数字などを含みます。)
-      <HR>
-  <LI>
-<!--CodePage1250 -- Microsoft's encoding for Central European characters-->
-    CodePage1250 -- Microsoft の中央ヨーロッパ用 エンコーディング
-  <LI>
-<!--CodePage1251 -- Microsoft's Cyrillic encoding-->
-    CodePage1251 -- Microsoft のキリル文字エンコーディング
-  <LI>
-<!--CodePage1252 -- Microsoft's Western European encoding (a superset of Latin1.
-    Sometimes called "ANSI" though I can find no ANSI standard that it follows)-->
-    CodePage1252 -- Microsoft の西ヨーロッパ用エンコーディング (Latin1 のスーパーセット)。時に "Ansi" と呼ばれますが、これを定めた ANSI 規格の存在は見つかりません。
-  <LI>
-<!--CodePage1253 -- Microsoft's Greek encoding-->
-    CodePage1253 -- Microsoft のギリシャ文字エンコーディング
-  <LI>
-<!--CodePage1254 -- Microsoft's Turkish encoding-->
-    CodePage1254 -- Microsoft のトルコ語エンコーディング
-  <LI>
-<!--CodePage1255 -- Microsoft's Hebrew encoding (an extension of ISO-8859-8)-->
-    CodePage1255 -- Microsoft のヘブライ文字エンコーディング (ISO-8859-8 の拡張)。
-  <LI>
-<!--CodePage1256 -- Microsoft's Arabic encoding-->
-    CodePage1256 -- Microsoft のアラビア語エンコーディング
-  <LI>
-<!--CodePage1257 -- Microsoft's Baltic encoding-->
-    CodePage1257 -- Microsoft のバルト諸言語エンコーディング
-  <LI>
-<!--CodePage1258 -- Microsoft's Viet Namese encoding-->
-    CodePage1258 -- Microsoft のベトナム語エンコーディング
-  <LI>
-<!--CodePage874 -- Microsoft's Thai encoding -->
-    CodePage874 -- Microsoft のタイ語エンコーディング
-      <HR>
-  <LI>
-    MacCentralEuropean
-  <LI>
-    MacCyrillic
-  <LI>
-    MacGreek
-  <LI>
-    MacHebrew 
-      <HR>
-  <LI>
-<!--US-ASCII -- Not really useful by itself any more, but provides the first
-    128 characters of almost every other encoding.-->
-    US-ASCII -- それ自身ではもはや本当に役立つわけではありませんが、その他ほとんどすべてのエンコーディングの最初の 128 文字を提供します。
-</UL>
-<H2>
-  <IMG SRC="../fontinfo-ps.png" WIDTH="376" HEIGHT="600" ALIGN="Right"><!--<A NAME="PS-General">General</A>-->
-  <A NAME="PS-General">一般</A>
+  <IMG SRC="fontinfo-ps.png" WIDTH="325" HEIGHT="454" ALIGN="Right"><!--<A NAME="PS-General">General</A>-->
+  <A NAME="PS-General">一般情報</A>
 </H2>
 <P>
 <!--
@@ -468,7 +129,7 @@ the sum is a power of 2). Since both TrueType and Type1 (postscript) fonts
 represent numbers as 16-bit integers ascent and descent must be less than
 32767. TrueType is more restrictive and requires their sum to be less than
 16384. -->
-Ascent と Descent は、(現在の定義では) PostScript の概念よりも Macintosh の概念と言うべきです。とはいえ、それらの合計は EM 正方形のサイズを与え、これは PostScript の概念に似ています。PostScript フォントでは、この数値は 1000 にするという強固な慣習があります。一方、TrueType フォントのほとんどでは 2048 になります (これも慣習ですが、TrueType の仕様書によると、合計が 2 の冪であるとラスタライズが高速に行えると主張しています)。TrueType と Type1 (PostScript) フォントはどちらも 16 ビット整数で表現されるので、アセントとディセントは 32767 より小さくなければなりません。TrueType はより制限がきつく、それらの合計は 16384 より小さくなければなりません。
+高さ (Ascent) と深さ (Descent) は、(現在の定義では) PostScript の概念よりも Macintosh の概念と言うべきです。とはいえ、それらの合計が EM 正方形のサイズとなるという点では PostScript の概念と似ています。PostScript フォントでは、この合計値を 1000 にするという強固な慣習があります。一方、TrueType フォントのほとんどでは 2048 になります (これも慣習ですが、TrueType の仕様書によると、合計が 2 の冪であるとラスタライズが高速に行えると主張しています)。TrueType と Type1 (PostScript) フォントはどちらも 16 ビット整数で表現されるので、高さと深さは 32767 より小さくなければなりません。TrueType では制限がさらにきつく、それらの合計が 16384 より小さくなければなりません。
 <P>
 <!--
 If you change the size of the Em you may choose to have all the outlines
@@ -476,16 +137,17 @@ If you change the size of the Em you may choose to have all the outlines
 they had to the old. -->
 EM のサイズを変更したときには、すべてのアウトライン (およびカーニング情報) を古い値から新しい値に変更したのと同じ比率で拡大・縮小します。
 <P>
+<!--
 The Italic Angle indicates the slant of the font. FontForge can attempt to
 guess a good value for you by looking at the stems of certain letters ("I"
-for instance).
+for instance). -->
 イタリックの傾き(I) は、フォントの傾きを表します。FontForge はいくつかの文字 (例えば "I") のステムを見ることにより、適切な値の推測を試みることができます。
 <P>
 <!--
 The underline position and height provide a program using this font a hint
 as to where it should place a line if it wants to underline text printed
 in this font. -->
-下線の位置(P) と 下線の太さ(H) は、このフォントを使うプログラムが下線つきテキストをこのフォントで印字しようとするときに、線をどこに引くかに関するヒントを提供します。
+下線の位置(P) と太さ(H) は、このフォントを使うプログラムが下線つきテキストをこのフォントで印字しようとするときに、線をどこに引くかに関するヒントを提供します。
 <P>
 <!--
 <FONT COLOR="Red"><SMALL><STRONG>NOTE:</STRONG></SMALL></FONT>
@@ -503,7 +165,7 @@ the font is changed, so each time you generate a postscript font, that font's
 XUID (if present) will be incremented by 1 (This incrementing does not happen
 in CID-keyed fonts, where the XUID behavior is too complex for this simple
 trick). (The XUID field is only meaningful in PostScript fonts). -->
-XUID フィールドは、空白で区切られた数値の集まりを括弧でくくったものです。フォントの拡張ユニーク ID はこを用いて指定することができます。
+XUID フィールドは、空白で区切られた数値の集まりを括弧でくくったものです。フォントの拡張ユニーク ID はこれを用いて指定することができます。
 XUID プリファレンス項目が既に設定されているならば、FontForge はすべての新しいフォントに対して (指定した値の後に各フォントに一意な数値を付け加えて) その値を設定します。Adobe は、フォントが変更されるたびに XUID を毎回変更することを推奨しているので、PostScript フォントを生成するたびごとにフォントの XUID (存在する場合) は 1ずつ加えられます (この増加は CID フォントでは行いません。CID フォントでは XUID の扱いがこの単純なトリックでは対処しきれないほど非常に複雑だからです)。(XUID フィールドは、PostScript フォントでのみ意味があります)。
 <P>
 <!--
@@ -544,15 +206,46 @@ If you have configured FontForge for <A HREF="multilayer.html">multi-layered
 editing</A> there will also be a radio button here to turn that on. -->
 FontForge を <A HREF="multilayer.html">複数レイヤ編集</A> 機能を有効にしてコンパイルした場合、その機能を使用するためのチェックボックスも表示されます。
 <P>
+<!--
 You can also indicate that you are making a stroked font where every spline
-is stroked with a circular pen of the given width.<BR Clear=ALL> -->
-その場合、各スプラインが指定した幅をもつ円形のペンで描かれたストロークフォントを作成することもできます。<BR Clear=ALL>
+is stroked with a circular pen of the given width. -->
+その場合、各スプラインが指定した幅をもつ円形のペンで描かれたストロークフォントを作成することもできます。
+<P>
+<!--
+<A NAME="Interpretation">Sadly</A> the encoding is not always sufficient
+for understanding the font's behavior. For example a unicode font designed
+for a chinese system will look very different from a unicode font for a japanese
+system (The same unicode character may map to very different chinese or japanese
+glyphs). To handle this (and some other cases) FontForge has the concept
+of "Interpretation". There are several cases in which this field is useful. -->
+<A NAME="Interpretation">残念ながら</A>エンコーディングは、フォントのふるまいを理解するのに常に十分なわけではありません。例えば、中国語の表記法に合わせて作られた Unicode フォントは、日本語の表記法に合わせて作られた Unicode フォントとは大きく異なる見かけをもつでしょう (中国語と日本語で大きく異なるグリフが同一の Unicode 文字に割り当てられています)。これを扱うために (および他のいくつかの目的のために) FontForge は「解釈」という概念をもっています。このフィールドが役に立つ場合がいくつかあります。
+<UL>
+  <LI>
+<!--To allow FontForge to know whether a Unicode (or any other non-CJK encoding
+    which includes CJK glyphs) font should be viewed as Japanese, Chinese or
+    Korean.-->
+    Unicode (またはその他の任意の CJK 文字を含む非 CJK エンコーディングの) フォントを日本語、中国語または韓国語のどれとして解釈するべきかを FontForge に指示することができます。
+  <LI>
+<!--Can cause FontForge to use the names "Delta.greek", "Omega.greek" and "mu.greek"
+    for U+0396, U+03a9, U+03bc (instead of uni0396, etc.).-->
+    FontForge に U+0396, U+03a9, U+03bc にマッピングされたグリフに、(uni0396 などの名前ではなく) "Delta.greek", "Omega.greek" および "mu.greek" という名前を使用させることができます。
+  <LI>
+<!--Can cause FontForge to name glyphs in the public use area after Adobe's
+    assignments to that area (ie. small caps, etc.) -->
+    FontForge が公有領域にある文字を Adobe の割り当て (例: 小型大文字など) に沿った名前づけを行うことができるようにします。
+  <LI>
+<!--Can cause FontForge to name glyphs n the public use area after the American
+    Mathematical Society's
+    <A HREF="http://www.ams.org/STIX/bnb/stix-tbl.asc-2003-10-10">specification</A>.<BR
+	Clear=ALL> -->
+    FontForge が公有領域にある文字を米国数学会の<A HREF="http://www.ams.org/STIX/bnb/stix-tbl.asc-2003-10-10">仕様</A>に沿った名前づけを行うことができるようにします。<BR Clear=ALL>
+</UL>
 <H2>
 <!--<A NAME="Private">Private</A> - - <SMALL>(font-wide postscript hinting)</SMALL>-->
     <A NAME="Private">PostScript Private 辞書</A> -- <SMALL>(フォント全体に適用される PostScript のヒント)</SMALL>
 </H2>
 <P>
-<IMG SRC="../fontinfo-private.png" WIDTH="376" HEIGHT="544" ALIGN="Right"><!--This
+<IMG SRC="fontinfo-private.png" WIDTH="325" HEIGHT="454" ALIGN="Right"><!--This
 sub-dialog shows most entries in the font's Private dictionary. The interesting
 things in this dictionary are mostly concerned with hints appropriate for
 the entire font. I shall not go into detail about the meanings of the various
@@ -606,8 +299,8 @@ will simply guess at a reasonable value when it needs to generate the
 font.<BR Clear=Right>-->
 また、<CODE>[削除(R)]</CODE> ボタンを押せば辞書から項目を削除できます。いくつかの項目 (<CODE>BlueValues</CODE> など) はすべての Type1 フォントで設定する必要がある項目ですが、それらの項目も削除することができます。FontForge はフォントを出力するために値が必要になったときに妥当な値を単純に推測します。
 <P>
-<IMG SRC="../privatekey.png" WIDTH="208" HEIGHT="146" ALIGN="Left"><IMG SRC="../privatekeymenu.png"
-    WIDTH="208" HEIGHT="202" ALIGN="Right"><!--The <CODE>[Add]</CODE> button allows
+<IMG SRC="privatekey.png" WIDTH="276" HEIGHT="120" ALIGN="Left"><IMG SRC="privatekeymenu.png"
+    WIDTH="276" HEIGHT="280" ALIGN="Right"><!--The <CODE>[Add]</CODE> button allows
 you to add new keys to the dictionary. Every key will be added with a blank
 value, and you will almost certainly need to provide an appropriate value
 for it. When you press <CODE>[Add]</CODE> a dialog pops up which allows you
@@ -625,20 +318,23 @@ provide a value here then FontForge will copy it into the UniqueID field
 in the Font Dictionary. If you do not provide a UniqueID here, FontForge
 will generate a random one itself (this is different from True Type's UniqueID.
 They perform the same function but are formatted differently). -->
-いくつかのキーはヒント以外のものに影響を与えます。項目 <CODE>lenIV</CODE> は、フォントが生成されるときの Type1 文字列の先頭に置かれるランダムなパディングが何バイトになるかを制御します。通常はこれは 4 ですが、スペースを節約したい場合 (PFB フォーマットではグリフ 1 個ごとに 4 バイト、PFA では 8 バイト)
+いくつかのキーはヒント以外のものに影響を与えます。項目 <CODE>lenIV</CODE> は、フォントが生成されるときの Type1 文字列の先頭に置かれるランダムなパディングが何バイトになるかを制御します。通常はこれは 4 ですが、スペースを節約したい場合 (PFB フォーマットではグリフ 1 個ごとに 4 バイト、PFA では 8 バイト) 他の値を選択できます。UniqueID キーは、フォントのユニーク PostScript ID を表します。ここで値を設定した場合は、FontForge はその値をフォント辞書の UniqueID syー琉度にコピーするだけです。ここで UniqueID を設定しなかった場合、FontForge は自分でランダムな値を生成します (これは TrueType の UniqueID とは異なります。それらは同じ機能ですが、フォーマットが異なります)。
 <P>
 <!--
 These entries are only meaningful for PostScript fonts.<BR CLEAR=ALL> -->
 これらの項目は PostScript フォントでのみ意味をもちます。<BR CLEAR=ALL>
 <H2>
-  <IMG SRC="../fontinfo-ttfvals.png" WIDTH="376" HEIGHT="608" ALIGN="Right"><!--<A
-      NAME="TTF-Values">TTF Values</A>-->
-   <A NAME="TTF-Values">TTF の設定値</A>
+  <IMG SRC="fontinfo-ttfvals.png" WIDTH="325" HEIGHT="454" ALIGN="Right"><A
+      NAME="TTF-Values">OS/2</A>
 </H2>
 <P>
 <!--
+This sub dialog contains settings important for Windows platforms, most of these
+settings live in the 'OS/2' table of a truetype or opentype font. The pane also includes
+a few pieces of data that do not live in the 'OS/2' table but are logically
+related.
 This sub dialog contains a few settings important on Windows platforms. -->
-このサブダイアログには、Windows プラットフォームで重要となる 2, 3 の設定値が含まれます。
+このサブダイアログには、Windows プラットフォームで重要となる設定値が含まれており、それらの設定のほとんどは TrueType および OpenType フォントの 'OS/2' テーブルに含まれています。このタブには、'OS/2' テーブルに含まれてはいないものの論理的に関連するいくつかの設定も含まれています。
 <P>
 <!--
 The weight class provides a numeric value describing the boldness of the
@@ -671,51 +367,23 @@ a different system. You can also control whether the document producer is
 フォントを他の文書 (いちばん一般的なのは PDF) に埋め込むことを許可するかどうかを設定することができます。まったく埋め込むことができないように制限をつけることもできますし、文書にフォントを埋め込んで印刷できるように (ただし編集はできないように) することもできますし、文書を編集できるように埋め込むこともできますし、編集可能な文書にフォントを埋め込んで、後で取り出して別のシステムにインストールできるように設定することも可能です。また、文書の制作者が必要なグリフだけを抜き出して、新しくフォントを作る (これにより容量が節約できます) ことを許すか、このフォントを使用する時には常にフォント全体を埋め込まなければならないようにするかを選択することができます。最後に、埋め込みを制限して、フォントのビットマップ版だけを埋め込めるようにも設定できます (TTF と OTF のほかに、CID キー指定 PostScript フォントでも意味があります)。
 <P>
 <!--
-The Windows Ascent and Descent fields are badly defined in the OpenType spec,
-which says that they should express the maximum range of the Windows "ANSI"
-glyphs. If one uses this definition, non-"ANSI" glyphs are cropped. These
-should be the maximum range of all glyphs to avoid cropping. But even that
-will not always work. If you have a line with marks which are repositioned
-with GPOS, then the marks may be cropped, so Windows Ascent should include
-the repositioned marks. -->
-Windows の Ascent と Descent フィールドは、OpenType の仕様書であまりきちんと定義されていません。その文書では、Windows の "ANSI" グリフの最大幅を表現することとなっています。もしこの定義を使う場合、非 "ANSI" 文字は表示の上下が切り詰められてしまいます。表示が切れないようにするにはフォント全体の最大範囲を使用しなければなりません。ところがそれでも常にうまく良くわけではありません。GPOS によって位置が変更されたマークを含む行があると、そのマークが途中で切れることがあるので、Windows の Ascent は、再配置されたマークを含んだ高さでなければなりません。
+The "Vendor ID" is a four character ASCII field used to identify the creator
+of the font. -->
+「ベンダID」とは、フォントの製作者を識別するための 4 文字の ASCII 文字からなるフィールドです。
 <P>
 <!--
-This is too complex (and too ill defined) for FontForge to figure out, instead
-FontForge gives you a couple of options. -->
-これを計算するのは FontForge にとってあまりに複雑 (かつあまりに定義が曖昧すぎ) なので、FontForge ではその代りに 2 つの選択肢から選べるようにしてあります。
-<OL>
-  <LI>
-<!--You may set WinAscent and WinDescent directly. Turn off the "[ ] Is Offset"
-    checkboxes and any value you provide will be used as is.-->
-    WinAscent と WinDescent を直接指定することができます。"[ ] オフセットを指定" チェックボックスをオフにすれば、あなたが入力した値がそのまま使われます。
-  <LI>
-<!--Or you may specify an offset to be added to the maximum ascent and descent
-    of the font (which FontForge will compute for you when it saves the font).
-    If you don't have any mark to base data, then I recommend that you set the
-    offsets to 0, and check the "[*] Is Offset" checkboxes. -->
-    または、フォントの高さと深さの最大値 (これはフォントを保存するときに FontForge が自動計算します) に加えるオフセットを指定することもできます。もしも、マークから基底文字への位置指定データをまったく含まないならば、このオフセットを 0 にして、"[*] オフセットを指定" チェックボックスにチェックを入れることをお奨めします。
-</OL>
+The IBM Family is another classification scheme for fonts. -->
+IBM ファミリー分類はもう一つのフォント分類体系です。
 <P>
 <!--
-Both WinAscent and WinDescent should be positive numbers. -->
-WinAscent と WinDescent は、どちらも正の値でなければなりません。
-<P>
-<!--
-You can also specify the default line gap, or leading between lines. -->
-またデフォルトの行間のアキ量か、行と行の間の送り幅を指定することも可能です。
-<P>
-<!--
-And if your font has vertical metrics enabled (See General above) you will
-be able to set the default spacing between vertical columns of text. (the
-equivalent to LineGap in vertical text). -->
-フォントに縦書き用メトリックが含まれている場合 (上の「一般」を参照)、縦書きにおけるデフォルトの行間のアキ量を設定することができます (縦書きテキストにおける LineGap と等価です)。
+Finally you may order lookups in the GSUB (or morx) table. -->
+一番下のボタンで、GSUB (または morx) テーブルの照合の順序指定ができます。
 <P>
 <!--
 These entries are only meaningful in TrueType and OpenType fonts (though
 the Embeddable entry (generally called FSType) will be set on CID keyed fonts
-even if they are not in an OpenType wrapper.<BR Clear=ALL> -->
-これらの項目は TrueType および OpenType フォントでのみ意味をもちます (項目 Embeddable (一般に FSType と呼ばれます) は CID キー指定フォントでも設定されます (たとえ OpenType ラッパで囲まれていなくとも)。
+even if they are not in an OpenType wrapper.<BR CLEAR=ALL> -->
+これらの項目は TrueType および OpenType フォントでのみ意味を持ちます (ただし、項目「埋め込み可能(E)」(一般に FSType と呼ばれています) は CID キー指定フォントでも設定することができ、OpenType ラッパに包まれていなくても使用可能です。<BR CLEAR=ALL>
 <H3>
 <!--<CODE><A NAME="Order"><IMG SRC="../GSUB-Order.png" WIDTH="185" HEIGHT="294"
       ALIGN="Right">GSUB/morx</A></CODE> Ordering-->
@@ -731,7 +399,7 @@ they will appear at the bottom of the list (which may not be appropriate).
 You may select a feature name and use the buttons to move it up and down
 in the list. Things at the top of the list are executed first, things at
 the bottom last. -->
-このダイアログではワードプロセッサプログラムによってフォントの機能が実行されるときの順番を指定します。OpenType または TrueType フォントから読み込んだ場合、元の順序が保存されます。新しく機能を追加するごとにリストの末尾に付け加えられます (これは適切ではないと思われます)。機能名を選択し、上へ(U) ボタンと 下へ(D) ボタンを使ってリスト内の順序を入れ換えることができます。リストの一番上にあるものが最初に実行され、リストの底にあるものが最後に実行されます。
+このダイアログではワードプロセッサプログラムによってフォントの機能が実行されるときの順番を設定できます。OpenType または TrueType フォントから読み込んだ場合、元の順序が保存されます。新しく機能を追加するごとにリストの末尾に付け加えられます (これは適切ではないと思われます)。機能名を選択し、上へ(U) ボタンと 下へ(D) ボタンを使ってリスト内の順序を入れ換えることができます。リストの一番上にあるものが最初に実行され、リストの底にあるものが最後に実行されます。
 <P>
 <!--
 <FONT COLOR="Red"><STRONG>Caveat: </STRONG></FONT>Although the OpenType spec
@@ -741,7 +409,133 @@ apply features in the order that they think best. So the order specified
 in the font may be ignored.<BR CLEAR=ALL> -->
 <FONT COLOR="Red"><STRONG>警告: </STRONG></FONT>OpenType 仕様書では機能の実行 (実際には照合) は、照合テーブルの中の出現順に並べられると主張していますが、Microsoft は、彼らが最良だと考える順番で機能を適用すると主張しています。ですからフォント内で指定された順序は無視される可能性があります。<BR CLEAR=ALL>
 <H2>
-  <IMG SRC="../fontinfo-ttfname.png" WIDTH="369" HEIGHT="472" ALIGN="Right"><!--<A
+  <IMG SRC="fontinfo-ttfmetrics.png" WIDTH="356" HEIGHT="454" ALIGN="Right"><!--<A
+      NAME="TTF-Metrics">OS/2 Metrics</A>-->
+      <A NAME="TTF-Metrics">OS/2 メトリック</A>
+</H2>
+<P>
+<!--
+The Windows Ascent and Descent fields are badly defined in the OpenType spec,
+which says that they should express the maximum range of the Windows "ANSI"
+glyphs. If one uses this definition, non-"ANSI" glyphs are cropped. These
+should be the maximum range of all glyphs to avoid cropping. But even that
+will not always work. If you have a line with marks which are repositioned
+with GPOS, then the marks may be cropped, so Windows Ascent should include
+the maximum possible height of repositioned marks (or any other GPOS vertical
+repositioning feature). -->
+Windows の Ascent と Descent フィールドは、OpenType の仕様書であまりきちんと定義されていません。その文書では、Windows の "ANSI" グリフの最大幅を表現することとなっています。もしこの定義を使う場合、非 "ANSI" 文字は表示の上下が切り詰められてしまいます。表示が切れないようにするにはフォント全体の最大範囲を使用しなければなりません。ところがそれでも常にうまく良くわけではありません。GPOS によって位置が変更されたマークを含む行があると、そのマークが途中で切れることがあるので、Windows の Ascent は、マークの再配置機能  (または任意の他の GPOS の垂直再配置機能) が適用された可能な最大の高さを含んだ高さでなければなりません。
+<P>
+<!--
+This is too complex (and too ill defined) for FontForge to figure out, instead
+FontForge gives you a couple of options. -->
+これを計算するのは FontForge にとってあまりに複雑 (かつあまりに定義が曖昧すぎ) なので、FontForge ではその代りに 2 つの選択肢から選べるようにしてあります。
+<OL>
+  <LI>
+<!--You may set WinAscent and WinDescent directly. Turn off the "[ ] Is Offset"
+    checkboxes and any value you provide will be used as is.-->
+    WinAscent と WinDescent を直接指定することができます。"[ ] オフセットを指定" チェックボックスをオフにすれば、あなたが入力した値がそのまま使われます。
+  <LI>
+<!--Or you may specify an offset to be added to the maximum ascent and descent
+    of the font (which FontForge will compute for you when it saves the font).
+    If you don't have a mark to base feature, then I recommend that you set the
+    offsets to 0, and check the "[*] Is Offset" checkboxes. -->
+    または、フォントの高さと深さの最大値 (これはフォントを保存するときに FontForge が自動計算します) に加えるオフセットを指定することもできます。もしも、マークから基底文字への位置を指定する機能をまったく含まないならば、このオフセットを 0 にして、"[*] オフセットを指定" チェックボックスにチェックを入れることをお奨めします。
+</OL>
+<P>
+<!--
+Both WinAscent and WinDescent should be positive numbers. -->
+WinAscent と WinDescent は、どちらも正の値でなければなりません。
+<P>
+<!--
+The Typographic Ascent and Typographic Descent are <EM>supposed</EM> to represent
+the line spacing of the font on the windows platform. Sadly very few applications
+actually use them (most applications use the Windows Ascent/Descent described
+above).-->
+組版上の高さ (Typographic Ascent) と 組版上の深さ (Typographic Descent) は Windows プラットフォーム上でのラインスペーシングを表す<EM>ということになっています</EM>。残念ながらこれを実際に使用するアプリケーションはごく稀です (ほとんどのアプリケーションは上に記した WinAscent/WinDescent を使用します)。
+<P>
+<!--
+In traditional (Latin) typography, the unleaded line spacing should be 1em,
+and that is what Adobe recommends for these fields (they should sum to the
+Em-Size specified in the <A HREF="fontinfo.html#PS-General">General</A> pane).
+The Typographic Ascent should be the same as the font's Ascent, and the
+Typographic Descent should be the (negative) of the font's descent. -->
+伝統的な (ラテン文字の) タイポグラフィにおいては、行間にインテルを入れない時には 1em であるはずであり、Adobe はこのフィールドをそう設定することを推奨しています (2 つを合わせた値は <A HREF="fontinfo.html#PS-General">[一般]</A> タブで指定された em サイズと等しくするべきです)。組版上の高さはフォントの高さと同じに設定し、組版上の深さはフォントの深さ (と絶対値が同じ負の値) に設定するべきです。
+<P>
+<!--
+The "[*] Is Offset" checkboxes behave much as they do above, except they
+specify offsets from the font's ascent and descent rather than its bounding
+box. -->
+"[*] オフセットを使用" チェックボックスをセットした時に振舞いが変わる唯一の点は、フォントのバウンディングボックスではなく高さと深さからのオフセットを指定することで、他はだいたい同じです。
+<P>
+<!--
+The Typographic descent should be a negative number, the ascent a positive
+number. -->
+組版上の深さは負の値であるべきで、高さは正の値であるべきです。
+<P>
+<!--
+You can also specify the default line gap, or leading between lines. -->
+またデフォルトの行間のアキ量か、行と行の間の送り幅を指定することも可能です。
+<P>
+<!--
+The mac uses a different set of fields for the same concepts, and stores
+them in the 'hhea' table rather than the 'OS/2'. The HHead Ascent and Descent
+are used to specify clipping (in some applications) and line spacing. They
+behave very much the way the Win Ascent &amp; Descent behave (they are based
+on bounding box values). And the 'hhea' table has its own line gap field. -->
+Mac では同じ概念のために異なるフィールドの組を使用しており、'OS/2' テーブルではなく 'hhea' テーブルにその値を格納しています。hhea テーブルの高さおよび深さは、(いくつかのアプリケーションにおける) クリッピングと、ラインスペーシングを指定するのに用いられます。それらは (バウンディングボックスの値に基づいた) WinAscent と WinDescent と非常によく似た振舞いをします。また、'hhea' テーブルには独自の行間アキフィールドが存在します。
+<P>
+<!--
+And if your font has vertical metrics enabled (See
+<A HREF="fontinfo.html#PS-General">General</A> above) you will be able to
+set the default spacing between vertical columns of text. (the equivalent
+to LineGap in vertical text).<BR CLEAR=ALL> -->
+フォントに縦書き用メトリックが含まれている場合 (上の「<A HREF="fontinfo.html#PS-General">一般情報</A>」を参照)、縦書きにおけるデフォルトの行間のアキ量を設定することができます (縦書きテキストにおける LineGap と等価です)。<BR CLEAR=ALL>
+<H2>
+  <IMG SRC="fontinfo-subsup.png" WIDTH="325" HEIGHT="454" ALIGN="Right"><A
+      NAME="TTF-SubSuper"><!--OS/2 Sub/Superscripts</A>-->
+      OS/2 下つき/上つき文字</A>
+</H2>
+<P>
+<!--
+The OS/2 table also contain information on scaling and positioning subscripts
+and superscripts. -->
+OS/2 テーブルには下つきおよび上つき文字の拡大・縮小と位置指定のための情報も含まれています。
+<P>
+<!--
+Most fonts don't really need this control. If you leave the [*] Default check
+box on, then FontForge will generate some reasonable values on output (if
+nothing significant changes, it will use the values shown here). If you want
+control of these values, turn off the checkbox and the text fields will be
+enabled for you to change.<BR Clear=ALL> -->
+ほとんどのフォントでは実際にこれを制御する必要はありません。[*] デフォルト チェックボックスをチェックしたままにしておけば、FontForge は適切な値を出力時に生成します (特に大きな変更が何もなければ、右記の値を使用します)。これらの値を変更したい場合、チェックボックスのチェックを外せば、テキストフィールドが変更可能になります。
+<H2>
+  <IMG SRC="fontinfo-panose.png" WIDTH="325" HEIGHT="454" ALIGN="Right"><A
+      NAME="Panose">Panose</A>
+</H2>
+<P>
+<!--
+This sub-dialog allows you to describe your font in 10 different dimensions.
+The exact meanings of many of these entries vary from script to script, and
+even the Latin ones are not clear to me, I have merely typed them in as specified
+in the <A HREF="http://fonts.apple.com/TTRefMan/RM06/Chap6OS2.html">true
+type docs</A>. Better information is available from
+<A HREF="http://www.panose.com/">HP</A>,
+<A HREF="http://www.agfamonotype.com/hardware/pan1.asp">AGFA</A> and
+<A HREF="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/gdi/fontext_48aa.asp">MS</A>. -->
+このサブダイアログでは、フォントを 10 種類の分類基準によって記述することができます。これらの各項目が正確に何を意味しているかは用字系毎に異なり、ラテン文字ですらよく分からない所があります。私がしたのは単に <A HREF="http://fonts.apple.com/TTRefMan/RM06/Chap6OS2.html">TrueType の仕様書</a>にある名前を書き写しただけです。より詳しい情報は <A HREF="http://www.panose.com/">HP</A>, <A HREF="http://www.agfamonotype.com/hardware/pan1.asp">AGFA</A> と <A HREF="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/gdi/fontext_48aa.asp">MS</A> から入手可能です。
+<P>
+<!--
+If you leave the [*] Default checkbox set then FontForge will generate reasonable
+values when the font is output, otherwise you may set these values manually. -->
+[*] デフォルト ダイアログのチェックが入ったままにしておくと、FontForge は適切な値を出力します。チェックを外すと、それらの値を手動で設定することができます。
+<P>
+<!--
+These entries are only meaningful for TrueType, OpenType and SVG
+fonts.<BR Clear=All> -->
+これらの設定項目は TrueType, OpenType および SVG フォントでのみ有効です <BR Clear=All>
+<P>
+<H2>
+  <IMG SRC="../fontinfo-ttfname.png" WIDTH="410" HEIGHT="608" ALIGN="Right"><!--<A
       NAME="TTF-Names">TTF Names</A>-->
    <A NAME="TTF-Names">TTF 名</A>
 </H2>
@@ -756,11 +550,65 @@ usually only the Style string is customized). -->
 TrueType (および OpenType) フォントは複数の名前を各種の異なる言語で格納することができます。よってフランスのユーザーは CaslonItlic がフォントメニューで CaslonItalique と表示され、ドイツのユーザは CaslonKursive と表示されるのを見るでしょう。さまざまな異なる言語にカスタマイズすることができる 20 種類ほどの文字列が存在します。ある文字列をカスタマイズしたからといって、他のものもカスタマイズしないとならないわけでは (まったく) ありません。通常は Style 文字列のみをカスタマイズします。
 <P>
 <!--
-If you don't include any values here when FontForge saves a font as truetype
-it will create an entry with an American English language containing the
-postscript versions of the strings. -->
-ここに何の値も入力しないと、FontForge は TrueType 形式でフォントを保存する時に PostScript 版の文字列を含むアメリカ英語用の項目を作成します。
+The image at right shows the dialog, displaying all the strings set for the
+given font. You may order these strings based on type of string (ordered
+as below), on language (ordered by unicode), or by a variation of language
+which displays strings for the language of the current locale first, then
+English strings (because, in general, these will be the most important for
+the user) and then ordered by language thereafter. -->
+右の図は、ダイアログがあるフォントに含まれる全ての文字列を表示しているところです。これらの文字列は、文字列のタイプ別 (下記の説明の並び順)、言語順 (Unicode 順)、または現在の文字列表示用のロケールを最初に、英語を 2 番目に (なぜなら、一般的にユーザにとってこれらが最も重要だからです)、その後言語名順にソートすることができます。
 <P>
+<!--
+Certain strings in English (Copyright, Family, Styles, Fullname, Version)
+will always be present. If you do not set them explicitly they will be taken
+(possibly with modifications) from the equivalent postscript strings on the
+Names pane. You may not remove these strings, and if you wish to modify them
+you must first detach them from the PostScript. In the example at right the
+strings bound to PostScript are shown in red (Copyright, Family, Styles),
+while Fullname and Version have been detached and modified. -->
+いくつかの英語の文字列 (Copyright, Family, Styles, Fullname, Version) は常に存在します。それらを明示的に設定していない場合、[名前] タブで設定された等価な PostScript 文字列から (おそらく変更を加えたうえで) コピーされます。これらの文字列は削除できません。また、これらを変更したい場合は、まず PostScript との対応を切り離す必要があります。右の例では PostScript と対応づけられた文字列 (Copyright, Family, Styles) は赤で表示されており、Fullname と Version は対応を切り離したうえで変更されています。
+<P>
+<!--
+You may change the language of a string by clicking the mouse on the language
+field of that string - - a popup menu will appear giving you a choice of all
+supported locale/languages. (You may not modify the language of the special
+English strings mentioned above). -->
+その文字列の言語フィールドをクリックするとその文字列の言語を変更する個とができます――サポートされているすべての言語/ロケールの組合せを表示したポップアップメニューが現れてます。(上に挙げた特別な英語文字列の言語を変更することはできません)。
+<P>
+<!--
+You may change the string type in a similar manner, again you may not change
+the special English strings. -->
+同様の方法で文字列の型も変更可能ですが、ここでも特別な英語文字列の型は変更できません。
+<P>
+<!--
+If you click with the right button on a string you will bring up a different
+popup menu which will allow you to: -->
+右ボタンで文字列をクリックすると、文字列を変更できる別のポップアップメニューが起動します:
+<UL>
+  <LI>
+<!--Detach a string from its PostScript equivalent if any (so you can modify
+    it) -->
+    文字列を、それと対応する PostScript 文字列から切り離す (それにより変更可能になります)
+  <LI>
+<!--Delete a string entirely (except for the special strings bound to PostScript) -->
+    文字列を巻tんに削除する (PostScript に対応づけられた特殊文字列を除く)
+  <LI>
+<!--Edit a string in a larger window.<BR CLEAR=ALL> -->
+    文字列をより大きなウィンドウで編集する<BR CLEAR=ALL>
+</UL>
+<P>
+<!--
+If you click with the left button on a string value you may edit that string
+in line, if it is small enough,
+<IMG SRC="../fontinfo-ttfname-bigedit.png" WIDTH="343" HEIGHT="341" ALIGN="Right">otherwise
+in a larger window. -->
+文字列が十分に短い場合は、文字列値の上で左ボタンをクリックすると文字列を行内で編集できますが、<IMG SRC="../fontinfo-ttfname-bigedit.png" WIDTH="343" HEIGHT="341" ALIGN="Right">長い文字列は右ボタンをクリックすれば別のウィンドウで編集できます。
+<P>
+<!--
+If you wish to add a new string, click on the &lt;New&gt; entry at the bottom.
+You will be given the standard language popup and it will create a new string
+for you. -->
+新しい文字列を追加したい場合、一番下の <FONT COLOR="red">&lt;新規(N)&gt;</FONT> をクリックしてください。標準の言語一覧がポップアップ表示され、新しい文字列が作成できます。
 <!--
 The various strings and a brief description of their meanings are: -->
 各種の文字列とその意味に関する簡単な説明は以下の通りです:
@@ -894,12 +742,9 @@ type</A> as well. -->
 これらは<A HREF="http://fonts.apple.com/TTRefMan/RM06/Chap6name.html">オリジナルの TrueType 文書</A>で定められていますが、<A HREF="http://partners.adobe.com/asn/tech/type/opentype/recom.jsp">OpenType</a> でも同じように適用されます。
 <P>
 <!--
-These settings specify strings for the windows platform. If you specify []
-Apple Mode when generating the font it will also generate equivalent entries
-for the mac (It will, always, generate two additional string sets by taking
-the american english entries and creating a "Macintosh English" and an "Apple
-Unicode (2.0)" set even if you don't specify [] Apple Mode). -->
-これらの設定は Windows プラットホームでの文字列を指定します。フォントを出力する時に [] Apple モードを指定していると、Mac 用の等価な項目も生成します (また、アメリカ英語の項目は [] Apple モードを指定していない場合でも、"Macintosh English" と "Apple Unicode (2.0)" に変換されて出力されます。
+These settings specify strings for the windows platform with unicode encoding.
+-->
+これらの設定は Unicode 符号化方式による Windows プラットホームでの文字列を指定します。
 <P>
 <!--
 Generally fonts will have a fairly complete set of strings in the American
@@ -1039,18 +884,18 @@ languages. -->
   <TR>
 <!--<TH>Danish</TH> -->
     <TH>デンマーク語</TH>
-    <TH>Normal</TH>
-    <TH>Fed</TH>
-    <TH>Halvfed</TH>
-    <TH>Fin</TH>
-    <TH>Medium</TH>
-    <TH></TH>
-    <TH>Extra fed</TH>
-    <TH>Kursiv</TH>
-    <TH></TH>
-    <TH>Smal</TH>
-    <TH>Bred</TH>
-    <TH>Kontur</TH>
+    <TD>Normal</TD>
+    <TD>Fed</TD>
+    <TD>Halvfed</TD>
+    <TD>Fin</TD>
+    <TD>Medium</TD>
+    <TD></TD>
+    <TD>Extra fed</TD>
+    <TD>Kursiv</TD>
+    <TD></TD>
+    <TD>Smal</TD>
+    <TD>Bred</TD>
+    <TD>Kontur</TD>
   </TR>
   <TR>
 <!--<TH>Hungarian</TH>-->
@@ -1102,44 +947,19 @@ languages. -->
 (上の表を拡張/訂正するための情報はどんなものでも <A HREF="mailto:pfaedit@users.sourceforge.net">pfaedit@users.sourceforge.net</A> に知らせていただければ非常に助かります)
 <P>
 <!--
-When you are setting the Style string in American English another button
-appears in the dialog, labelled "Translate Style". If you press this button
-then FontForge will attempt to figure out the style of the font and then
-attempt to translate it into whatever other languages in knows about (essentially
-the above table). It will only translate to a language for which it knows
-all the components and for which you have not already provided a translation.
-So if your style in American English is "BoldItalic" (and you have no other
-style entries) then after you press the "Translate Style" button FontForge
-will generate "GrasItalique" for French, "FettKursiv" for German,
-"&Ouml;&Eacute;&Ograve;&Icirc;&Ugrave;&Ecirc;&euml;&Otilde;&Ograve;&Oacute;&Eacute;&#215;&Icirc;&Ugrave;&Ecirc;"
-for Russian and "NigritaCursiva" for Spanish. -->
-スタイル文字列をアメリカ英語で設定している場合、[スタイル名を翻訳] と書かれたもう一つのボタンがダイアログに表示されます。このボタンを押すと FontForge はフォントのスタイルを理解して、他の知っている言語のすべて (基本的に上の表と同じ) に翻訳しようと試みます。それにより、アメリカ英語の項目が "BoldItalic" である (なおかつその他にスタイルの項目がない) 場合、[スタイル名を翻訳] ボタンを押すと FontForge はフランス語の項目に "GrasItalique" を、ドイツ語に "FettKursiv" を、ロシア語に "&Ouml;&Eacute;&Ograve;&Icirc;&Ugrave;&Ecirc;&euml;&Otilde;&Ograve;&Oacute;&Eacute;&#215;&Icirc;&Ugrave;&Ecirc;" を、スペイン語に "NigritaCursiva" を出力します。
++When you create a Style entry for an language, FontForge will attempt to
++translate the American English style into something appropriate for that
++language. It understands the above table, but not other languages so it won't
++always work. So if your style in American English is "BoldItalic" then after
++you create the appropriate strngs FontForge will default to "GrasItalique"
++for French, "FettKursiv" for German,
+ある言語用のスタイル項目を作成すると、FontForge はアメリカ英語のスタイルからその言語に適切な項目に翻訳を行おうと試みます。これは上記の表を理解しますが、他の言語はありませんので常にうまく動くとは限りません。もしアメリカ英語で指定した項目が "BoldItalic" であれば、その後それに相当する文字列を作成したとき、FontForge は、フランス語であれば "GrasItalique"を、ドイツ語であれば "FettKursiv"を、ロシア語であれば "жхрныйсЙвный" を、スペイン語であれば "NigritaCursiva" をデフォルトの文字列として設定します。
 <P>
 <!--
 These names are only meaningful for TrueType and OpenType fonts. -->
 これらの名前は TrueType および OpenType フォントでのみ意味をもちます。
 <H2>
-  <IMG SRC="../fontinfo-panose.png" WIDTH="369" HEIGHT="472" ALIGN="Right"><A
-      NAME="Panose">Panose</A>
-</H2>
-<P>
-<!--
-This sub-dialog allows you to describe your font in 10 different dimensions.
-The exact meanings of many of these entries are not clear to me, I have merely
-typed them in as specified in the
-<A HREF="http://fonts.apple.com/TTRefMan/RM06/Chap6OS2.html">true type
-docs</A>. Better information is available from
-<A HREF="http://www.panose.com/">HP</A>,
-<A HREF="http://www.agfamonotype.com/hardware/pan1.asp">AGFA</A> and
-<A HREF="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/gdi/fontext_48aa.asp">MS</A>. -->
-このサブダイアログでは、フォントを 10 種類の分類基準によって記述することができます。これらの各項目が正確に何を意味しているかは私には分かりません。私がしたのは単に <A HREF="http://fonts.apple.com/TTRefMan/RM06/Chap6OS2.html">TrueType の仕様書</a>にある名前を書き写しただけです。より詳しい情報は <A HREF="http://www.panose.com/">HP</A>, <A HREF="http://www.agfamonotype.com/hardware/pan1.asp">AGFA</A> と <A HREF="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/gdi/fontext_48aa.asp">MS</A> から入手可能です。
-<P>
-<!--
-These entries are only meaningful for TrueType, OpenType and SVG
-fonts.<BR Clear=All> -->
-これらは TrueType, OpenType および SVG フォントでのみ有効です <BR Clear=All>
-<H2>
-  <IMG SRC="../fontinfo-tex.png" WIDTH="376" HEIGHT="600" ALIGN="Right"><A NAME="TeX">TeX</A>
+  <IMG SRC="fontinfo-tex.png" WIDTH="325" HEIGHT="454" ALIGN="Right"><A NAME="TeX">TeX</A>
 </H2>
 <P>
 <!--
@@ -1158,7 +978,7 @@ These values are stored in tfm files (should you generate a tfm file with
 your font).<BR Clear=All> -->
 これらの値は TFM ファイルに格納されます (フォントと一緒に TFM ファイルを出力する必要があります)。<BR Clear=All>
 <H2>
-  <IMG SRC="../fontinfo-size.png" ALIGN="Right" WIDTH="376" HEIGHT="601"><!--<A NAME="Size">Size</A>-->
+  <IMG SRC="fontinfo-size.png" ALIGN="Right" WIDTH="325" HEIGHT="454"><!--<A NAME="Size">Size</A>-->
   <A NAME="Size">サイズ(S)</A>
 </H2>
 <P>
@@ -1219,7 +1039,7 @@ complication, as far as s/he is concerned there is just a font called
 it. So the Style Name of all four fonts above should be "Regular"<BR Clear=All> -->
 上の例では、すべての異なるフォントが同じ "スタイル ID" という数値をもっています。この数値は任意の値を撮り、その ID をもつすべてのフォントを結びつけます (つまり、すべてのフォントが同じファミリーに属するようになります)。ただし、Ambrosia-Italic-Text はこれらと異なるスタイル ID をもつでしょう。同じスタイル ID をもつすべてのフォントは同じスタイル名をもつはずです。ここで、フォント名は例えば "Ambrosia-Regular-Heading" というような物ですが、ユーザはこんな複雑な名前に悩まされるべきではありません。ユーザの立場からは "Ambrosia-Regular" という 1 個のフォントがあるだけで、上の 4 つのフォントはどれもその具体例でしかありません。ですから、4 つのフォントのスタイル名はすべて "Regular" にすべきです <BR Clear=All>
 <H2>
-  <IMG SRC="../fontinfo-comment.png" WIDTH="369" HEIGHT="506" ALIGN="Right"><!--<A
+  <IMG SRC="fontinfo-comment.png" WIDTH="325" HEIGHT="320" ALIGN="Right"><!--<A
       NAME="Comment">Comment</A>-->
    <A NAME="Comment">コメント</A>
 </H2>
@@ -1326,7 +1146,7 @@ OpenType フォントでは一般に、いくつかのアンカークラスがほぼ同じ基底グリフのセッ�
 FontForge recognizes a special feature tag ' RQD' to indicate that this feature
 is required for the given script/language. Such a feature will always be
 applied. -->
-FontForge は、この機能があるスクリプト/言語において必須であることを示すときに、特別な機能タグ ' RQD' を使用します。このような機能は常に適用されます。
+FontForge は、この機能がある用字系/言語において必須であることを示すときに、特別な機能タグ ' RQD' を使用します。このような機能は常に適用されます。
 <P>
 <!--
 Anchor classes are only meaningful when generating a truetype (ttf or otf)
@@ -1368,7 +1188,7 @@ Contextual/chaining tables are only meaningful when generating a truetype
 into Apple Advanced Typography tables too).<BR CLEAR=ALL>-->
 文脈依存/文脈連鎖依存テーブルは、TrueType (TTF または OTF) 類似のフォントで、OpenType テーブルを出力したときのみに意味があります。<BR CLEAR=ALL>
 <H2>
-  <IMG SRC="../fontinfo-macstyle.png" WIDTH="376" HEIGHT="608" ALIGN="Right" ALT="Font Info Mac Styles">
+  <IMG SRC="fontinfo-macstyle.png" WIDTH="325" HEIGHT="454" ALIGN="Right" ALT="Font Info Mac Styles">
 <!--<A NAME="Mac-Style">Mac Style</A> &amp; FOND-->
     <A NAME="Mac-Style">Mac スタイル情報</A> と FOND
 </H2>
@@ -1419,7 +1239,7 @@ setting).<BR Clear=ALL> -->
 <H2>
 <!-- <IMG SRC="fontinfo-statemach.png" WIDTH="376" HEIGHT="608" ALIGN="Right"
       ALT="Font Info State Machines"> <A NAME="Mac-SM">Mac State Machines</A>-->
-     <IMG SRC="../fontinfo-statemach.png" WIDTH="376" HEIGHT="608" ALIGN="Right"
+     <IMG SRC="fontinfo-statemach.png" WIDTH="325" HEIGHT="454" ALIGN="Right"
       ALT="フォント情報状態機械"> <A NAME="Mac-SM">Mac 状態機械</A>
 </H2>
 <P>

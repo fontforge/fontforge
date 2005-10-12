@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 30-Jan-2005 -->
+  <!-- AP: Last modified: 22-Aug-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
 <!--<TITLE>The Element Menu</TITLE>-->
     <TITLE>エレメントメニュー</TITLE>
@@ -117,16 +117,22 @@
 	<A HREF="#Exclude">重複部分を除去(E)</A>
       <LI>
 <!--	<A HREF="#FindInter">Find Intersections</A> -->
-	<A HREF="#FindInter">頂点を見つける(F)</A>
+	<A HREF="#FindInter">交点を見つける(F)</A>
     </UL>
   <LI>
-<!--<A HREF="#Simplify">Simplify</A><BR>
-    Simplify More -->
-    <A HREF="#Simplify">単純化(S)</A><BR>
-    さらに単純化
-  <LI>
-<!--<A HREF="#Cleanup">Cleanup Glyph</A>-->
-    <A HREF="#Cleanup">不要な曲線を除去(N)</A>
+<!--Simplify-->
+    単純化
+    <UL>
+      <LI>
+<!--	<A HREF="#Simplify">Simplify</A> -->
+	<A HREF="#Simplify">単純化(S)</A>
+      <LI>
+<!--	Simplify More -->
+	さらに単純化
+      <LI>
+<!--	<A HREF="#Cleanup">Cleanup Glyphs</A> -->
+	<A HREF="#Cleanup">不要な曲線を除去(N)</A>
+    </UL>
   <LI>
 <!--<A HREF="elementmenu.html#Add-Extrema">Add Extrema</A>-->
     <A HREF="elementmenu.html#Add-Extrema">極大点の追加(X)</A>
@@ -391,7 +397,7 @@ compiling FontForge. -->
   <DD>
 <!--This brings up a list of pixel sizes for bitmap fonts.<BR> -->
     このコマンドはビットマップフォントのピクセルサイズ一覧を表示します。
-    <IMG SRC="../bitmapsavail.png" WIDTH="263" HEIGHT="366" ALIGN="Right"> <!-- If you
+    <IMG SRC="bitmapsavail.png" WIDTH="232" HEIGHT="286" ALIGN="Right"> <!-- If you
     have bitmap fonts this will show their pixel sizes. If you remove a size
     that is in the list then that font will be deleted from the sfd file. If
     you add a size then that size font will be created and stored in the sfd
@@ -482,7 +488,7 @@ compiling FontForge. -->
     instead the entire complex of sub-fonts share bitmaps.<BR Clear=Right> -->
     CID フォントでは、各サブセットにはビットマップは存在しません。その代りに、サブフォントの複合体全体がビットマップを共有します。<BR Clear=Right>
     <P>
-    <IMG SRC="../greymapsavail.png" WIDTH="263" HEIGHT="366" ALIGN="Right"><!--FontForge
+    <IMG SRC="greymapsavail.png" WIDTH="232" HEIGHT="286" ALIGN="Right"><!--FontForge
     also supports anti-aliased bitmap fonts, and you can use this dialog to generate
     them. If you want to generate a 12 point anti-aliased font with 8 bits per
     pixel you would type 12@8 into the dialog above. FontForge supports 1, 2,
@@ -594,17 +600,17 @@ compiling FontForge. -->
 <!--<A NAME="Expand">Expand</A> Stroke...-->
     輪郭を<A NAME="Expand">太らせる(E)...</A>
   <DD>
-<!--Not in the bitmap view. In the font view it applies to all foreground splines
-    in all selected glyphs. In the outline view it applies to all paths that
-    have at least one point selected (or if no points are selected then it applies
-    to all paths).<BR> -->
-    ビットマップビューでは使用できません。フォントビューでは選択されたすべてのグリフの前面にあるすべてのスプラインに対して太め処理を適用します。アウトラインビューでは、最低 1 個の点が選択されているすべてのパスに適用します (点が選択されていないときには、すべてのパスに適用します)。<BR>
+<!--Not in the bitmap view, not in quadratic (truetype) fonts. In the font view
+    it applies to all foreground splines in all selected glyphs. In the outline
+    view it applies to all paths that have at least one point selected (or if
+    no points are selected then it applies to all paths).<BR> -->
+    ビットマップビューからは呼び出せません。2 次曲線 (TrueType) フォントでは使用できません。フォントビューでは選択されたすべてのグリフの前面にあるすべてのスプラインに対して太め処理を適用します。アウトラインビューでは、最低 1 個の点が選択されているすべてのパスに適用します (点が選択されていないときには、すべてのパスに適用します)。<BR>
     <IMG SRC="../twolines.png" WIDTH="247" HEIGHT="247">
     <IMG SRC="../expandedlines.png" WIDTH="247" HEIGHT="247"><BR>
 <!--Above is a simple example of what expand stroke can do. It takes the two
     open paths above left and turns them into the two closed paths right.<BR> -->
     上図は、ストロークの太め処理が何を行うかの簡単な例です。左上にある 2 本の開いたパスを元に、それらを右の 2 本の閉じたパスに変換します。
-    <IMG SRC="../expandstroke.png" WIDTH="323" HEIGHT="488" ALIGN="Left"><BR>
+    <IMG SRC="expandstroke.png" WIDTH="279" HEIGHT="371" ALIGN="Left"><BR>
 <!--The Expand Stroke dialog gives you control over various aspects of the expansion
     process. You can chose a stroke width, how the ends of an open path should
     be drawn, and how the path should look when two splines (or lines) join which
@@ -624,123 +630,142 @@ compiling FontForge. -->
     <A NAME="TilePath">パスを敷きつめる(P)</A>
   <DD>
 <!--This command is not available in the default build, you must modify the file
-    <CODE>configure-fontforge.h</CODE> and then rebuild FontForge. This command
-    takes the contents of the clipboard and treats it as a tile which is applied
-    to any selected contours.-->
-    このコマンドはデフォルトのビルドでは利用できません。ファイル <CODE>configure-fontforge.h</CODE> を修正してから FontForge を再ビルドする必要があります。このコマンドはクリップボードの内容をとり、それを選択中のパスに当てはめるためのタイルであるかのように扱います。
+    <CODE>configure-fontforge.h</CODE> and then rebuild FontForge. Not available
+    in quadratic (truetype) fonts. This command takes the contents of the clipboard
+    and treats it as a tile which is applied to any selected contours. -->
+    このコマンドはデフォルトのビルドでは利用できません。2 次曲線 (TrueType) フォントでは使用できません。ファイル <CODE>configure-fontforge.h</CODE> を修正してから FontForge を再ビルドする必要があります。このコマンドはクリップボードの内容をとり、それを選択中のパスに当てはめるためのタイルであるかのように扱います。
   <DT>
-<!--<A NAME="Remove">Remove</A> Overlap-->
-    重なり合う図形を<A NAME="Remove">結合(R)</A>
-  <DD>
-<!--Not in the bitmap view. If two closed paths intersect then there will be
-    overlap. This will get rid of it, leaving one closed path behind. -->
-    ビットマップビューでは使用できません。2 本の閉じたパスが交差するとき、それらを重なり合っていると言います。このコマンドは、重なり合いを取り除いて 1 本のパスに変換します。
-    <P>
-<!--Make sure paths have the correct orientation. Consider the letter "O" with
-    two contours. If both contours run in the same direction then the inner path
-    will be removed (because the outer path overlaps it everywhere), but if the
-    contours run in oposite orientations then the inner path will be retained.
-    Things get very strange if you have intersecting paths with different
-    orientations.-->
-    パスの向きが正しいことを確かめておいてください。2 本の輪郭をもつ文字 "O" を考えましょう。2 本の輪郭が同じ方向を向いている場合、内側のものが削除されます (外側のパスが全体に重なり合っているからです) が、輪郭同士が逆向きになっている場合、内側のパスは保持されます。交差するパスが逆向きになっているときは非常に奇妙なことが起こります。
-    <P>
-    <IMG SRC="../expandedlines.png" WIDTH="247" HEIGHT="247">
-    <IMG SRC="../overlappedlines.png" WIDTH="247" HEIGHT="247"><BR>
-<!--This command is probably the buggiest in FontForge. So before FontForge invokes
-    the command it will save the state to the error recovery file.<BR>
-    Warning: Splines which are tangent (or nearly so) cause problems. Points
-    which are close together can cause problems. -->
-    このコマンドは FontForge の中でおそらく最もバグが多いはずです。ですから、FontForge はコマンドを起動する前にエラー回復ファイルに現状を保存します。<BR>
+<!----None of these is available in the bitmap view. None works on quadratic (truetype)
+    fonts<SUP><A HREF="#overlap-footnote">1</A></SUP>. -->
+    これらはいずれもビットマップビューには存在しません。どれも 2 次曲線 (TrueType) フォントでは使用できません<SUP><A HREF="#overlap-footnote">1</A></SUP>。
+    <DL>
+      <DT>
+<!--	<A NAME="Remove">Remove</A> Overlap -->
+	重なり合う図形を<A NAME="Remove">結合(R)</A>
+      <DD>
+<!--	Not in the bitmap view, <EM>not available when the font has quadratic
+	splines</EM><SUP><A HREF="#overlap-footnote">1</A></SUP>. If two closed paths
+	intersect then there will be overlap. This will get rid of it, leaving one
+	closed path behind. -->
+	ビットマップビューには存在しません。<EM>フォントが 2 次スプラインのときは使用できません</EM><A HREF="#overlap-footnote">1</A></SUP>。2 本の閉じたパスが交差するとき、それらを重なり合っていると言います。このコマンドは、重なり合いを取り除いて 1 本のパスに変換します。
+	<P>
+<!--	Make sure paths have the correct orientation. Consider the letter "O" with
+	two contours. If both contours run in the same direction then the inner path
+	will be removed (because the outer path overlaps it everywhere), but if the
+	contours run in oposite orientations then the inner path will be retained.
+	Things get very strange if you have intersecting paths with different
+	orientations. -->
+	パスの向きが正しいことを確かめておいてください。2 本の輪郭をもつ文字 "O" を考えましょう。2 本の輪郭が同じ方向を向いている場合、内側のものが削除されます (外側のパスが全体に重なり合っているからです) が、輪郭同士が逆向きになっている場合、内側のパスは保持されます。交差するパスが逆向きになっているときは非常に奇妙なことが起こります。
+	<P>
+	<IMG SRC="../expandedlines.png" WIDTH="247" HEIGHT="247">
+	<IMG SRC="../overlappedlines.png" WIDTH="247" HEIGHT="247"><BR>
+<!--	This command is probably the buggiest in FontForge. So before FontForge invokes
+	the command it will save the state to the error recovery file.<BR>
+	Warning: Splines which are tangent (or nearly so) cause problems. Points
+	which are close together can cause problems. -->
+	このコマンドは FontForge の中でおそらく最もバグが多いはずです。ですから、FontForge はコマンドを起動する前にエラー回復ファイルに現状を保存します。<BR>
     警告: 平行な (またはほとんどそれに近い) スプラインは問題を起こします。あまりに近い点も問題を起こす可能性があります。
+	<P>
+<!--	<SUP><A NAME="overlap-footnote">1</A></SUP><SMALL>If you wish to run remove
+	overlap on a truetype (quadratic) font, you must first use Element-&gt;Font
+	Info-&gt;General to convert it into a cubic font, do the remove overlap,
+	and then convert back to quadratic.</SMALL> -->
+	<SUP><A NAME="overlap-footnote">1</A></SUP><SMALL>TrueType (2 次曲線) フォントで重複除去処理を実行したい場合、最初に エレメント(L)→フォント情報(I)→一般 で 3 次曲線フォントに変換し、重複除去処理を行ったのち再度 2 次曲線に変換する必要があります。</SMALL>
+      <DT>
+<!--	<A NAME="Intersect">Intersect</A> -->
+	<A NAME="Intersect">重複部分を抽出(I)</A>
+      <DD>
+	<TABLE CELLPADDING="2">
+	  <TR>
+	    <TD><IMG SRC="../exclude-pre.png" WIDTH="174" HEIGHT="174"></TD>
+	    <TD><IMG SRC="../intersect-post.png" WIDTH="174" HEIGHT="174"></TD>
+	  </TR>
+	</TABLE>
+	<P>
+<!--	This will remove everything not in the intersection of two regions. -->
+	これは 2 つの領域の交差部分以外のすべてを削除します。
+      <DT>
+<!--	<A NAME="Exclude">Exclude</A> -->
+	<A NAME="Exclude">重複部分を除去(E)</A>
+      <DD>
+	<TABLE CELLPADDING="2">
+	  <TR>
+	    <TD><IMG SRC="../exclude-pre.png" WIDTH="174" HEIGHT="174"></TD>
+	    <TD><IMG SRC="../exclude-post.png" WIDTH="174" HEIGHT="174"></TD>
+	  </TR>
+	</TABLE>
+	<P>
+<!--	This will remove the selected contours from the unselected ones. Only available
+	in the outline glyph view. -->
+	これは選択された輪郭内の領域を選択されていない輪郭から除去します。アウトライングリフビューでのみ使用可能です。
+      <DT>
+<!--	Find Intersections -->
+	<A NAME="FindInter">交点を見つける(F)</A>
+      <DD>
+<!--	This finds the places where overlapping contours intersect and inserts points
+	at those locations. -->
+	これは重なり合う輪郭同士の交点を見つけ、そこを通るパスそれぞれに点を追加します。
+    </DL>
   <DT>
-<!--<A NAME="Intersect">Intersect</A>-->
-    <A NAME="Intersect">重複部分を抽出(I)</A>
-  <DD>
-    <TABLE CELLPADDING="2">
-      <TR>
-	<TD><IMG SRC="../exclude-pre.png" WIDTH="174" HEIGHT="174"></TD>
-	<TD><IMG SRC="../intersect-post.png" WIDTH="174" HEIGHT="174"></TD>
-      </TR>
-    </TABLE>
-    <P>
-<!--This will remove everything not in the intersection of two regions. -->
-    これは 2 つの領域の交差部分以外のすべてを削除します。
-  <DT>
-<!--<A NAME="Exclude">Exclude</A>-->
-    <A NAME="Exclude">重複部分を除去(E)</A>
-  <DD>
-    <TABLE CELLPADDING="2">
-      <TR>
-	<TD><IMG SRC="../exclude-pre.png" WIDTH="174" HEIGHT="174"></TD>
-	<TD><IMG SRC="../exclude-post.png" WIDTH="174" HEIGHT="174"></TD>
-      </TR>
-    </TABLE>
-    <P>
-<!--This will remove the selected contours from the unselected ones. Only available
-    in the outline glyph view. -->
-    これは選択された輪郭内の領域を選択されていない輪郭から除去します。アウトライングリフビューでのみ使用可能です。
-  <DT>
-<!--Find Intersections-->
-    <A NAME="FindInter">頂点を見つける(F)</A>
-  <DD>
-<!--This finds the places where overlapping contours intersect and inserts points
-    at those locations. -->
-    これは重合う輪郭同士の交点を見つけ、そこを通るパスそれぞれに点を追加します。
-  <DT>
-<!--<A NAME="Simplify">Simplify</A>-->
-    <A NAME="Simplify">単純化(S)</A><BR>
-  <DD>
-<!--Not in the bitmap view. If you have lots of points on a path, some of which
-    do not materially add to the path's shape, then this command will remove
-    the extraneous points. (It will not remove points where the slope at the
-    point is horizontal or vertical as postscript likes to have these points
-    present). -->
-    ビットマップビューでは使用できません。パス上にたくさんの点があって、そのうちのいくつかは実質的にはパスの形を指定する役割を果たしていない場合、このコマンドは無駄な点を取り除きます (このコマンドは線の傾きが水平または垂直になっている箇所にある点は取り除きません。PostScript インタプリタではそれがあると都合がいいからです)。
-    <P>
-<!--<A HREF="pfaeditmath.html#Approximating">How is this done?</A>-->
-    <A HREF="pfaeditmath.html#Approximating">どうやって処理しているのか?</A>
-  <DT>
-<!--Simplify More-->
-    さらに単純化
-  <DD>
-<!--This is a variant of the simplify command, obtainable if you hold down the
-    shift key when invoking from the menu. It brings up a dialog which gives
-    you control over what sorts of errors this simplification is allowed to induce.
-    You can control: -->
-    これは 単純化(S) コマンドの変種で、Shift キーを押しながらメニューを呼び出すと使用できます。単純化処理によってどういう種類の誤差が生じてもよいかを指定することができるメニューが起動します。
-    <UL>
-      <LI>
-<!--	How far the simplified contour is allowed to stray from the original -->
-	単純化の結果の輪郭が、オリジナルからどれだけ離れてもいいか
-      <LI>
-<!--	Whether to allow removal of extreme points -->
-	極値にある点を取り除いてもいいか
-      <LI>
-<!--	Whether to allow the slope to change at points. -->
-	端点の所で傾きが変化してもいいか
-      <LI>
-<!--	Whether to make corner points into curve points (by adjusting the control
-	points) -->
-	(制御点を調節することにより、) 角の点を曲線上の点に転換してもいいか 
-      <LI>
-<!--	Whether to flatten small bumps off of lines -->
-	線から飛び出た小さなコブを平滑化するか
-      <LI>
-<!--	Whether to try to simplify straight lines at all -->
-        直線を完全に単純化することを試みるか
-    </UL>
-    <P>
-<!--Finally, you may specify whether this set of values should become the default
-    value for future Simplify commands -->
-    最後に、今回使用する値の組を、それ以降に実行する 単純化(S) コマンド群のデフォルト値とするかどうかを指定することができます。
-  <DT>
-<!--<A NAME="Cleanup">Cleanup Glyph</A>-->
-    <A NAME="Cleanup">不要な曲線を除去(N)</A>
-  <DD>
-<!--This is similar to the simplify command. In this case if there is a spline
-    which actually traces out a line but none the less has control points, then
-    this command will remove the control points. -->
-    これは 単純化(S) コマンドに似ています。この場合、実際には直線を描いているのに不要な制御点がある場合、このコマンドがそれらの制御点を取り除きます。
+<!--Simplify -->
+    単純化
+    <DL>
+      <DT>
+<!--	<A NAME="Simplify">Simplify</A> -->
+	<A NAME="Simplify">単純化(S)</A><BR>
+      <DD>
+<!--	Not in the bitmap view. If you have lots of points on a path, some of which
+	do not materially add to the path's shape, then this command will remove
+	the extraneous points. (It will not remove points where the slope at the
+	point is horizontal or vertical as postscript likes to have these points
+	present). -->
+	ビットマップビューでは使用できません。パス上にたくさんの点があって、そのうちのいくつかは実質的にはパスの形を指定する役割を果たしていない場合、このコマンドは無駄な点を取り除きます (このコマンドは線の傾きが水平または垂直になっている箇所にある点は取り除きません。PostScript インタプリタではそれがあると都合がいいからです)。
+	<P>
+<!--	<A HREF="pfaeditmath.html#Approximating">How is this done?</A> -->
+	<A HREF="pfaeditmath.html#Approximating">どうやって処理しているのか?</A>
+      <DT>
+<!--	Simplify More -->
+	さらに単純化
+      <DD>
+<!--	This is a variant of the simplify command. It brings up a dialog which gives
+	you control over what sorts of errors this simplification is allowed to induce.
+	You can control: -->
+	これは 単純化(S) コマンドの変種で、Shift キーを押しながらメニューを呼び出すと使用できます。単純化処理によってどういう種類の誤差が生じてもよいかを指定することができるメニューが起動します。以下の項目が設定可能です:
+	<UL>
+	  <LI>
+<!--	    How far the simplified contour is allowed to stray from the original -->
+	    単純化の結果の輪郭が、オリジナルからどれだけ離れてもいいか
+	  <LI>
+<!--	    Whether to allow removal of extreme points -->
+	    極値にある点を取り除いてもいいか
+	  <LI>
+<!--	    Whether to allow the slope to change at points. -->
+	    端点の所で傾きが変化してもいいか
+	  <LI>
+<!--	    Whether to make corner points into curve points (by adjusting the control
+	    points) -->
+	    (制御点を調節することにより、) 角の点を曲線上の点に転換してもいいか 
+	  <LI>
+<!--	    Whether to flatten small bumps off of lines -->
+	    線から飛び出た小さなコブを平滑化するか
+	  <LI>
+<!--	    Whether to try to simplify straight lines at all -->
+            直線を完全に単純化することを試みるか
+	</UL>
+	<P>
+<!--	Finally, you may specify whether this set of values should become the default
+	value for future Simplify commands -->
+	最後に、今回使用する値の組を、それ以降に実行する 単純化(S) コマンド群のデフォルト値とするかどうかを指定することができます。
+      <DT>
+<!--	<A NAME="Cleanup">Cleanup Glyph</A> -->
+	<A NAME="Cleanup">不要な曲線を除去(N)</A>
+      <DD>
+<!--	This is a special case of the simplify command. In this case if there is
+	a spline which actually traces out a line but none the less has control points,
+	then this command will remove the control points. It will also cleanup zero
+	length splines. -->
+	これは 単純化(S) コマンドの特殊な場合です。この場合、実際には直線を描いているのに不要な制御点がある場合、このコマンドがそれらの制御点を取り除きます。また、長さ 0 のスプラインを取り除きます。
+    </DL>
   <DT>
 <!--<A NAME="Add-Extrema">Add Extrema</A>-->
     <A NAME="Add-Extrema">極大点の追加(X)</A>
@@ -758,6 +783,8 @@ compiling FontForge. -->
 <!--Effects-->
     効果
    <DD>
+<!--Not in quadratic (truetype) fonts.-->
+    2 次曲線 (TrueType) フォントでは実行できません。
     <DL>
       <DT>
 <!--	<A NAME="Outline">Outline</A> -->
@@ -794,11 +821,11 @@ compiling FontForge. -->
     <A NAME="MetaFont">MetaFont</A>...
   <DD>
 <!--This <A HREF="MetaFont.html">dialog</A> is only present in the font and outline
-    glyph views. It allows you to make fonts bolder or condensed. It doesn't
-    work very well.<FONT COLOR="Red"><BR>
+    glyph views, not in quadratic (truetype) fonts. It allows you to make fonts
+    bolder or condensed. It doesn't work very well.<FONT COLOR="Red"><BR>
     <STRONG>NOTE</STRONG></FONT>: It does <EM>not</EM> read TeX .mf files. The
     name is chosen because it has some similarity in terms of features. -->
-    この<A HREF="MetaFont.html">ダイアログ</a>はフォントビューとアウトライングリフビューにのみ存在します。このコマンドによって、フォントをより太くしたり文字幅を狭めたりすることが可能です。これはあまりよく動きません。<FONT COLOR="Red"><BR>
+    この<A HREF="MetaFont.html">ダイアログ</a>はフォントビューとアウトライングリフビューにのみ存在します。2 次曲線 (TrueType) フォントでは使用できません。このコマンドによって、フォントをより太くしたり文字幅を狭めたりすることが可能です。これはあまりよく動きません。<FONT COLOR="Red"><BR>
     <STRONG>注意</STRONG></FONT>: これは TeX の .mf ファイルを読み込み<EM>ません</EM>。この名前は、機能面で似たところがあるためにつけました。
   <DT>
     <A NAME="AutoTrace">自動トレース(R)</A>
@@ -892,31 +919,36 @@ compiling FontForge. -->
 	移動するのは最後に選択した線です (FontForge は、どの点が最後に選択されたか覚えていないことがしばしばあります。その時は 1 個をランダムに選びます。これを避けたい場合は、点を選択した後で移動したい点をシングルクリックしてください)。
     </DL>
   <DT>
-<!--<A NAME="Round">Round</A> to Int-->
-    整数値に(I)<A NAME="Round">丸める</A>
-  <DD>
-<!--Not in the bitmap view. FontForge stores point locations as real numbers
-    (ie. it retains fractional values). TrueType only supports integral values
-    (And much of the time you want integral values in Type1 and Type2 fonts also
-    - - using real numbers makes font files bigger), so when generating the font
-    points are rounded to integral values. This command will round all selected
-    locations to the closest integer. -->
-    ビットマップビューでは使用できません。FontForge は点の位置を実数として格納しています (つまり、それらの値には端数が含まれます)。TrueType は整数値のみをサポートしています (また、Type1, Type2 の両形式のフォントでもほとんどの場合は整数値が望ましいでしょう――実数値を使用するとフォントファイルが大きくなります) ので、フォントを出力する時には座標は整数値に丸められます。このコマンドは、選択した対象の座標値をすべて一番近い整数に丸めます。
-  <DT>
-<!--Round to <A NAME="Hundredths">Hundredths</A>-->
-    <A NAME="Hundredths">1/100単位(H)</A>に丸める
-  <DD>
-<!--Not in bitmap or metrics views. FontForge's Type1 output is limited to hundredths
-    of an em-unit, even when rounding is turned off in the Generate [Options]
-    dialog. -->
-    ビットマップビューとメトリックビューでは使用できません。FontForge の Type1 出力の精度は、出力ダイアログの [オプション] で、整数への丸めを off にした場合でも、em 単位の 1/100 に限られています。
-  <DT>
-<!--Round to <A NAME="Cluster">Cluster</A> -->
-    近い値をまとめる(C)
-  <DD>
-<!--Occasionally you want to make sure that coordinates which are close together
-    have the same value. This command will do that. -->
-    ときどき、非常に近い座標値を確実に同じ値にしたいことがあります。このコマンドはそれを行います。
+<!--Round -->
+    座標を丸める(D)
+    <DL>
+      <DT>
+<!--	<A NAME="Round">Round</A> to Int -->
+	整数値に(I)<A NAME="Round">丸める</A>
+      <DD>
+<!--	Not in the bitmap view. FontForge stores point locations as real numbers
+	(ie. it retains fractional values). TrueType only supports integral values
+	(And much of the time you want integral values in Type1 and Type2 fonts also
+	- - using real numbers makes font files bigger), so when generating the font
+	points are rounded to integral values. This command will round all selected
+	locations to the closest integer.-->
+	ビットマップビューでは使用できません。FontForge は点の位置を実数として格納しています (つまり、それらの値には端数が含まれます)。TrueType は整数値のみをサポートしています (また、Type1, Type2 の両形式のフォントでもほとんどの場合は整数値が望ましいでしょう――実数値を使用するとフォントファイルが大きくなります) ので、フォントを出力する時には座標は整数値に丸められます。このコマンドは、選択した対象の座標値をすべて一番近い整数に丸めます。
+      <DT>
+<!--	Round to <A NAME="Hundredths">Hundredths</A> -->
+	<A NAME="Hundredths">1/100単位(H)</A>に丸める
+      <DD>
+<!--	Not in bitmap or metrics views. FontForge's Type1 output is limited to hundredths
+	of an em-unit, even when rounding is turned off in the Generate [Options]
+	dialog. -->
+    	ビットマップビューとメトリックビューでは使用できません。FontForge の Type1 出力の精度は、出力ダイアログの [オプション] で、整数への丸めを off にした場合でも、em 単位の 1/100 に限られています。
+      <DT>
+<!--	Round to <A NAME="Cluster">Cluster</A> -->
+	近い値を<A NAME="Cluster">まとめる(C)</A>
+      <DD>
+<!--	Occasionally you want to make sure that coordinates which are close together
+	have the same value. This command will do that. -->
+	ときどき、非常に近い座標値を確実に同じ値にしたいことがあります。このコマンドはそれを行います。
+    </DL>
   <DT>
 <!--<A NAME="Order">Order</A>-->
     <A NAME="Order">順序</A>
@@ -1089,6 +1121,8 @@ compiling FontForge. -->
   <LI>
 <!--<A HREF="hintsmenu.html">Hints</A>-->
     <A HREF="hintsmenu.html">ヒント(H)</A>
+  <LI>
+    <A HREF="encodingmenu.html">エンコーディング(N)</A>
   <LI>
 <!--<A HREF="viewmenu.html">View</A>-->
     <A HREF="viewmenu.html">表示(V)</A>

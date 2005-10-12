@@ -2,8 +2,8 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 30-May-2005 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
+  <!-- AP: Last modified: 20-Jul-2005 -->
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>The Edit Menu</TITLE>--> 
     <TITLE>編集メニュー</TITLE>
   <LINK REL="icon" href="../ffanvil16.png">
@@ -137,6 +137,12 @@ in text fields. -->
       <LI>
 <!--	<A HREF="#Color">Select Color&gt;</A>-->
 	<A HREF="#Color">色で選択(S)&gt;</A>
+      <LI>
+<!--	<A HREF="#SelChanged">Changed Glyphs</A> -->
+	<A HREF="#SelChanged">変更されたグリフ</A>
+      <LI>
+<!--	<A HREF="#SelHinting">Hinting Needed</A> -->
+	<A HREF="#SelHinting">ヒントが必要なグリフ</A>
       <LI>
 <!--	<A HREF="#SelectByATT">Select By ATT</A>...-->
 	<A HREF="#SelectByATT">ATTによる選択</A>...
@@ -592,6 +598,18 @@ view this menu will be disabled when one of the text fields has the focus. -->
 	to the colored glyphs. -->
 	フォントビューでのみ使用可能です。色の一覧を含むサブメニューが表示され、そこで色を選ぶと、グリフ情報ダイアログであらかじめ設定した色がそれに等しいすべてのグリフを選択することができます。通常は、色の指定されたグリフを選択する前に選択していたグリフは選択解除されますが、Shift キーを押しながら選択を行うことによって、色で指定したグリフを今までの選択内容に追加選択することができます。
       <DT>
+<!--	<A NAME="SelChanged">Changed</A> -->
+	<A NAME="SelChanged">変更されたグリフ</A>
+      <DD>
+<!--	Selects all changed glyphs -->
+	変更されたグリフをすべて選択します。
+      <DT>
+<!--	<A NAME="SelHinting">Hinting Needed</A> -->
+	<A NAME="SelHinting">ヒントが必要なグリフ</A>
+      <DD>
+<!--	Selects all glyphs which FontForge thinks need to be hinted. -->
+	ヒントづけが必要だと FontForge が判断したすべてのグリフを選択します。
+      <DT>
 <!--	<A NAME="SelectByATT">Select By ATT...</A> -->
 	<A NAME="SelectByATT">ATTによる選択...</A>
       <DD>
@@ -718,6 +736,9 @@ view this menu will be disabled when one of the text fields has the focus. -->
   <LI>
 <!--<A HREF="hintsmenu.html">Hints</A>-->
     <A HREF="hintsmenu.html">ヒント(H)</A>
+  <LI>
+<!--<A HREF="encodingmenu.html">Encoding</A>-->
+    <A HREF="encodingmenu.html">エンコーディング(E)</A>
   <LI>
 <!--<A HREF="viewmenu.html">View</A>-->
     <A HREF="viewmenu.html">表示(V)</A>

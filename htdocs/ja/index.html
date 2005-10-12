@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 24-Jun-2005 -->
+  <!-- AP: Last modified: 19-Sep-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
   <TITLE>FontForge</TITLE>
   <LINK REL="icon" href="../ffanvil16.png">
@@ -236,13 +236,9 @@ FontForge の能力を拡張するために追加したいかもしれない外部ライブラリ/プログラム�
 <P>
 <!--You can download a <A HREF="fontforge-20041012-1.src.rpm">source RPM</A>:
 Version: 12-Oct-2004<BR>--> <!--You can download the
-<A HREF="fontforge_full-20050624.tgz">source tree </A>in one .tgz file: Version
-24-June-2005<BR>
-<A HREF="http://fontforge.sourceforge.net/fontforge_full-2005624.tgz">ソースツリー</A> (2005年6月24日版) を 1 個の .tgz ファイルとしてダウンロードすることができます。<BR>
-<!--
-&nbsp; &nbsp; Or there's a <A HREF="fontforge_test-20050624.tgz">test
-version</A> (24-June)<BR>-->
-&nbsp; &nbsp; または<A HREF="fontforge_test-20050624.tgz">テスト版</a> (6月24日版) もあります。<BR>
+<A HREF="fontforge_full-20050919.tar.bz2">source tree </A>in one .tgz file: Version
+19-September-2005<BR>
+<A HREF="http://fontforge.sourceforge.net/fontforge_full-20050919.tar.bz2">ソースツリー</A> (2005年9月19日版) を 1 個の .tar.bz2 ファイルとしてダウンロードすることができます。<BR>
 <!--Or you can go to the
 <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/">cvs
 tree</A> and get the most recent version. (This may be delayed by 24 hours)-->
@@ -430,7 +426,7 @@ they are available from: -->
 	<HR>
     </TD>
     <TD>6.3.3<BR>
-      =2.1.4</TD>
+      =2.1.9</TD>
   </TR>
   <TR>
     <TD></TD>
@@ -505,8 +501,8 @@ bitmap fonts that fontforge uses -->
 <P>
 <!--
 All the documentation files in this directory bundled up into one
-<A HREF="fontforge_htdocs-2005624.tgz">tgz file</A> 24-June-2005.<BR>-->
-すべての文書ファイルは 1 個の <A HREF="http://fontforge.sourceforge.net/fontforge_htdocs-20050624.tgz">tgz ファイル</A> (2005年6月24日版) にまとめられています。<BR>
+<A HREF="fontforge_htdocs-20050909.tgz">tgz file</A> 9-September-2005.<BR>-->
+すべての文書ファイルは 1 個の <A HREF="http://fontforge.sourceforge.net/fontforge_htdocs-20050909.tgz">tgz ファイル</A> (2005年9月9日版) にまとめられています。<BR>
 以下の手順でインストールすれば、FontForge は F1 を押したときに文書を見つけることができるでしょう (つまり、FontForge は Web を見に行く前に /usr/local/share/doc/fontforge を探します)。
 <BLOCKQUOTE>
   <PRE>$ mkdir -p /usr/local/share/doc/fontforge
@@ -526,9 +522,9 @@ current) -->
     <A NAME="Building">ビルド</A>方法
 </H2>
 <BLOCKQUOTE>
-  <PRE>$ gunzip fontforge_full-*.tgz
-$ tar xf fontforge-full*.tar
-$ cd fontforge
+  <PRE>$ bunzip2 fontforge_full-*.tar.bz2
+$ tar xf fontforge_full*.tar
+$ cd fontforge-*
 $ configure
 $ make
 $ su
@@ -564,7 +560,7 @@ normally does, so it is off by default)-->
 The executable tarball contains a shell script doinstall -->
 実行可能な tarball には doinstall というシェルスクリプトが含まれています。
 <BLOCKQUOTE>
-  <PRE>$ gunzip fontforge-*.tgz
+  <PRE>$ bunzip2 fontforge-*.tar.bz2
 $ tar xf fontforge-*.tar
 $ cd fontforge
 $ su
@@ -1160,23 +1156,33 @@ which company has given me the free time to write this program. -->
 	<A HREF="http://pfaedit.sf.net/">PfaEdit</A> -- FontForge の旧名称</A>
 	  <HR>
       <LI>
-	<A HREF="http://www.macromedia.com/software/fontographer/">Fontographer</A>
-<!--	-- my favorite, no longer updated -->
-	-- 私のお気に入り、もう更新されない
-<!--	(<FONT COLOR="Red"><STRONG>proprietary</STRONG></FONT>) -->
-	(<FONT COLOR="Red"><STRONG>商用</STRONG></FONT>)
+<!--	<A HREF="http://www.fontlab.com/">Fontographer</A> - - my favorite, has not
+	been updated since1996 but has recently been purchased by FontLab who promise
+	an update in 2006 (<FONT COLOR="Red"><STRONG>proprietary</STRONG></FONT>) -->
+	<A HREF="http://www.fontlab.com/">Fontographer</A> -- 私のお気に入りで、1996 年以来更新されていなかったが、2006 年の新版を約束する FontLab に最近買収された (<FONT COLOR="Red"><STRONG>商用</STRONG></FONT>)
+	</UL>
       <LI>
 <!--	<A HREF="http://www.fontlab.com/">FontLab</A> -- Said to have really good
 	tools for hinting truetype. -->
 	<A HREF="http://www.fontlab.com/">FontLab</A> -- TrueType のヒントづけには非常に優れたツールと言われている
 <!--	(<FONT COLOR="Red"><STRONG>proprietary</STRONG></FONT>) -->
 	(<FONT COLOR="Red"><STRONG>商用</STRONG></FONT>)
+	<UL>
+	  <LI>
+<!--	    <A HREF="http://www.fontlab.com/">AsiaFont Studio</A> - - FontLab for big
+	    fonts (<FONT COLOR="Red"><STRONG>proprietary</STRONG></FONT>) -->
+	    <A HREF="http://www.fontlab.com/">AsiaFont Studio</A> -- 大きなフォント用の FontLab (<FONT COLOR="Red"><STRONG>商用</STRONG></FONT>)
       <LI>
-<!--	<A HREF="http://www.urwpp.de/english/home.html">Ikarus</A> -- Top of the
+<!--	<A HREF="http://www.fontmaster.nl/english/">FontMaster</A> (used to be
+	<A HREF="http://www.urwpp.de/english/home.html">Ikarus</A> )-- Top of the
 	line font creation software.-->
-	<A HREF="http://www.urwpp.de/english/home.html">Ikarus</A> -- 最高級品のフォント作成ソフトウェア。
+	<A HREF="http://www.fontmaster.nl/english/">FontMaster</A> (かつて <A HREF="http://www.urwpp.de/english/home.html">Ikarus</A> と呼ばれていた) -- 最高級品のフォント作成ソフトウェア。
 <!--	(<FONT COLOR="Red"><STRONG>proprietary</STRONG></FONT>) -->
 	(<FONT COLOR="Red"><STRONG>商用</STRONG></FONT>)
+      <LI>
+<!--	<A HREF="http://www.CR8.netfirms.com/">CR8Type</A> - - TrueType font editor
+	(<FONT COLOR="Red"><STRONG>proprietary</STRONG></FONT>) -->
+	<A HREF="http://www.CR8.netfirms.com/">CR8Type</A> -- TrueType フォントエディタ (<FONT COLOR="Red"><STRONG>商用</STRONG></FONT>)	
     </UL>
   <LI>
 <!--Automated font creation by template -->
@@ -1301,15 +1307,23 @@ which company has given me the free time to write this program. -->
 	<A HREF="http://developer.apple.com/fonts/OSXTools.html">OS X 用のツールもいくつかあります (Mac 専用)
     </UL>
   <LI>
-<!--<A HREF="http://cgm.cs.mcgill.ca/~luc/palm.html">Palm pilot font converters</A> -->
-    <A HREF="http://cgm.cs.mcgill.ca/~luc/palm.html">Palm pilot 用の各種フォントコンバータ</A>
-  <LI>
-<!--<A HREF="http://www.ank.com.ar/fonts/">pcf to windows fon converter</A>-->
+<!--Other font creation tools-->
+    その他のフォント制作ツール
+    <UL>
+      <LI>
+<!--	<A HREF="http://cgm.cs.mcgill.ca/~luc/palm.html">Palm pilot font converters</A> -->
+	<A HREF="http://cgm.cs.mcgill.ca/~luc/palm.html">Palm pilot 用の各種フォントコンバータ</A>
+      <LI>
+<!--	<A HREF="http://www.ank.com.ar/fonts/">pcf to windows fon converter</A> -->
     <A HREF="http://www.ank.com.ar/fonts/">pcf から Windows の fon 形式へのコンバータ</A>
-  <LI>
-<!--<A HREF="http://www.tardis.ed.ac.uk/~ajcd/winnt/">bdf to windows fon converter -->
-    <A HREF="http://www.tardis.ed.ac.uk/~ajcd/winnt/">bdf から Windows の fon 形式へのコンバータ
-    (BDFtoFON)</A>
+      <LI>
+<!--	<A HREF="http://www.tardis.ed.ac.uk/~ajcd/winnt/">bdf to windows fon converter
+	(BDFtoFON)</A> -->
+    <A HREF="http://www.tardis.ed.ac.uk/~ajcd/winnt/">bdf から Windows の fon 形式へのコンバータ (BDFtoFON)</A>
+      <LI>
+<!--	<A HREF="http://nafe.sf.net/">nafe</A> - - text based psf font utilities -->
+	<A HREF="http://nafe.sf.net/">nafe</A> -- テキストベースの psf フォントユーティリティ
+    </UL>
   <LI>
 <!--Font manipulation libraries-->
     フォント操作ライブラリ
