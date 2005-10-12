@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 5-Dec-2004 -->
+  <!-- AP: Last modified: 19-Sep-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
 <!--<TITLE>Get Info</TITLE>-->
     <TITLE>情報を得る</TITLE>
@@ -27,7 +27,7 @@ the anchor point dialog is brought up. -->
     点の情報
 </H2>
 <P>
-<IMG SRC="../pointinfo.png" WIDTH="321" HEIGHT="495" ALIGN="Right"><!-- This shows
+<IMG SRC="pointinfo.png" WIDTH="277" HEIGHT="370" ALIGN="Right"><!-- This shows
 information about the current point. The Base position is where the point
 itself is. -->
 ここでは現在の点に関する情報を表示します。基準(B) は、その点自身の置かれた位置を表します。
@@ -114,7 +114,7 @@ in. It shows you what hints are currently selected at this point. If a point
 has a hint mask then the two will be identical.<BR Clear=All> -->
 これはヒントマスクと見た目上同じですが、ここでは何も変更できない点が異なります。現在の点においてどのヒントが現在選択されているかを表示します。点にヒントマスクが設定されているならば、これら 2 つは同一になります。<BR Clear=ALL>
 <H2>
-  <IMG SRC="../agetinfo.png" WIDTH="226" HEIGHT="329" ALIGN="Right"><!--<A NAME="Anchors">Anchor
+  <IMG SRC="agetinfo.png" WIDTH="196" HEIGHT="292" ALIGN="Right"><!--<A NAME="Anchors">Anchor
   Points</A> Info-->
   <A NAME="Anchors">アンカーポイント情報</A>
 </H2>
@@ -128,14 +128,21 @@ above you may step through all the anchor points in your glyph. -->
 このダイアログは選択中の<A HREF="overview.html#Anchors">アンカーポイント</A>をアンカークラス、位置、タイプと (合字については) 合字のインデックスを表示します。これらの任意の属性を変更可能です (その変更が筋が通っている場合)。点を新規に作成したり現在ある点を削除したりできます。上で説明した通常の点と同様、グリフ内に存在するアンカーポイントを順次切り替えて表示することができます。
 <P>
 <!--
+In a truetype font you can force the anchor to track a contour point in the
+truetype glyph. This point can then be manipulated with truetype instructions
+to grid fit it properly with the current rasterization. -->
+TrueType フォントでは、
+TrueType グリフ内の 1 個の輪郭点を保持するためにアンカーを強制することができます。この点はその後 TrueType 命令によって現在のラスタライズ処理に適したグリッド合わせ操作を行うことができます。
+<P>
+<!--
 Anchor points may also be created with the
 <A HREF="pointmenu.html#AddAnchor">Point-&gt;Add Anchor</A> command.-->
 アンカーポイントは <A HREF="pointmenu.html#AddAnchor">点(P)→アンカーを追加(A)</A> コマンドで作成することもできます。
 <BR Clear=All>
 <H2>
-  <IMG SRC="../rgetinfo.png" WIDTH="297" HEIGHT="284" ALIGN="Right"><!--Reference
-  Info-->
-  参照の情報
+  <IMG SRC="rgetinfo.png" WIDTH="273" HEIGHT="292" ALIGN="Right"><!--<A NAME="GetReferenceInfo">Reference</A>
+  Info -->
+  <A NAME="GetReferenceInfo">参照</A>の情報
 </H2>
 <P>
 <!--
@@ -152,6 +159,45 @@ their location in the current glyph: <BR> -->
 TM[2,1]*y<SUB>ref</SUB> + TM[3,1]<BR>
 &nbsp; &nbsp; y<SUB>current</SUB> = TM[1,2]*y<SUB>ref</SUB> +
 TM[2,2]*y<SUB>ref</SUB> + TM[3,2]</CODE>
+<P>
+<!--
+The Use My Metrics checkbox is useful in truetype fonts where it forces the
+metrics (width) of a composite glyph (for exampe acute a) is the same as
+the metrics of one of its components (for example a). This is especially
+important in fonts containing instructions that might modify a glyph's width. -->
+<CODE>[ ]この参照を使用</CODE> チェックボックスは TrueType 複合グリフ (例えば a アキュート) のメトリック (幅) が、その構成要素の一つ (例えば a) の幅と等しいことを強制したいときに役立ちます。これは、グリフの幅を変更する可能性のある命令を含んだフォントにおいて特に重要です。
+<P>
+<!--
+The Round To Grid checkbox is also used in truetype hints and indicates that
+the translation should be rounded to the rasterizer's grid before being applied
+to the points of the reference. This means that the grid-fitting done by
+the reference's instructions will still be useful in the composite. -->
+<CODE>[ ]グリッド単位に丸める</CODE> チェックボックスは TrueType ヒントでも用いられ、平行移動を参照の点に適用される前に、移動量をラスタライズ時のグリッドに丸める必要があることを表します。その結果、参照の命令によって行われたグリッド合わせが複合グリフでも有効に利用できます。
+<P>
+<!--
+In a truetype font a reference may be positioned by matching two points,
+one in the base character, and one in the reference itself. In the example
+at right, the reference to "acute" will be moved until point 2 in "acute"
+is at the same place as point 0 in whatever the base glyph might be. The
+glory of this method is that the truetype instructions assocated with the
+glyphs can move these points around to an appropriate location for the current
+pixelsize. -->
+TrueType フォントでは、参照の位置指定を、基底文字と参照それ自体から 1 個ずつ選んだ 2 個の点を重ね合わせることによって行うことができます。右の例では、参照 "acute" は、基底グリフ (その如何を問わず) の点 0 に "acute" の点 2 が重なり合うまで移動されます。個の方法の素晴らしいところは、グリフに付随する TrueType 命令が、現在のピクセルサイズにふさわしい位置までそれらの点を移動することができることです。
+<P>
+<!--
+Points in a composite glyph are numbered by counting the points of the first
+component, adding 4 (for the 4 phantom (metric) points), then counting the
+points in the second composite, adding 4, etc. The first composite is the
+one which is drawn first, not the one which is added first. The Base numbering
+scheme is from the full composite, while the reference point is numbered
+by the current reference. The current reference must be drawn after the base
+point. You may use <A HREF="elementmenu.html#Order">Element-&gt;Order</A>
+to reorder the references. -->
+複合グリフに含まれる点は、最初の要素に含まれる点の個数を数え、それに 4 (ファントム (メトリック)ポイント 4 個分) を加える、次に 2 番目の構成要素の点の個数を数え、4 をくわえ、というようにして番号づけされます。最初の構成要素は最初に描画される要素であり、最初に追加される要素ではありません。基底グリフの番号づけ方式は複合グリフ全体に由来しますが、参照点は現在の参照により番号づけられた物を用います。現在の参照は基底文字の後に描画しなければなりません。参照の並び順は<A HREF="elementmenu.html#Order">エレメント(L)→順序</A>を使って変更することができます。
+<P>
+<!--
+(You should probably not set Round To Grid when doing point matching) -->
+(おそらく、点の重ね合わせを行う時は、[*]グリッド単位に丸める をチェックしておくべきでしょう)
 <P>
 <!--
 The [Show] button will open a glyph outline view showing the character being

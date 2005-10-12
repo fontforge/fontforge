@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 16-Jun-2005 -->
+  <!-- AP: Last modified: 18-Sep-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
 <!--<TITLE>Spline Font Database File Format</TITLE>-->
     <TITLE>スプラインフォントデータベースファイルフォーマット</TITLE>
@@ -16,14 +16,14 @@
 <P>
 <!--
 <FONT COLOR="Red"><STRONG>This page is often grievously out of date. It was
-a fair approximation to reality on 31 Dec 2004.</STRONG></FONT> Even if out
-of date it should be helpful, but if you really need to know the current
+a fair approximation to reality on 10 August 2005.</STRONG></FONT> Even if
+out of date it should be helpful, but if you really need to know the current
 format look at
 <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/fontforge/sfd.c">sfd.c</A>
 and see what it parses. Some descriptions of esoteric features are not complete,
 but I hope they give you enough hints that you can figure the format out
 (especially after looking it up in sfd.c) -->
-<FONT COLOR="Red"><STRONG>このページは悲しくなるほど時代遅れです。これは2004年12月31日に事実だったことの大まかな近似です。</STRONG></FONT>時代遅れであっても、これは役に立つでしょうが、現在のフォーマットについて本当に知りたい場合は <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/fontforge/sfd.c">sfd.c</A> を参照して、それがどのように読み込みを行うかを調べてください。いくつかの秘教めいた機能の説明は完全ではありませんが、あなたが (とくに sfd.c を調べた後に) フォーマットを記述できるようになるためのヒントとなることを私は望んでいます。
+<FONT COLOR="Red"><STRONG>このページは悲しくなるほど時代遅れです。これは2005年8月10日に事実だったことの大まかな近似です。</STRONG></FONT>時代遅れであっても、これは役に立つでしょうが、現在のフォーマットについて本当に知りたい場合は <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/fontforge/sfd.c">sfd.c</A> を参照して、それがどのように読み込みを行うかを調べてください。いくつかの秘教めいた機能の説明は完全ではありませんが、あなたが (とくに sfd.c を調べた後に) フォーマットを記述できるようになるためのヒントとなることを私は望んでいます。
 <P>
 <!--
 FontForge's <A HREF="sfd.html">sfd</A> files are ASCII files (so they can
@@ -74,6 +74,11 @@ ok, but there are a couple of cases than need to be avoided: -->
     of script/languages maintained by the font. Bad things (FontForge crashes)
     can happen if these tables do not match. -->
     置換 (合字、カーニング、連鎖型文脈依存、…) をあるフォントから別のフォントにコピーしたときには、置換にはフォントに保存されているスクリプト/言語テーブル内のインデックスが保存されています。それらのテーブルが一致していなければ、悪い事 (FontForge のクラッシュ) が起こるかもしれません。
+  <LI>
+<!--If you copy a glyph containing references these are done by glyph index (which
+    is probably different from font to font). You may end up refering to the
+    wrong glyph. -->
+    グリフインデックス (これはフォント語とに異なります) によって指定された参照を含むグリフをコピーすると、間違ったグリフを参照する結果となるでしょう。
 </UL>
 <H3>
 <!--<A NAME="Font-Header">Font Header</A>-->
@@ -177,8 +182,8 @@ CIDVersion: 1.2
 <!--
 Some fonts will have some TrueType information in them too (look at the
 <A HREF="http://www.microsoft.com/typography/tt/tt.htm">truetype spec</A>
-for the meanings of these, they usually live in the OS/2 table). -->
-フォントによっては、いくつかの TrueType 情報もここに含まれるでしょう (それらの意味については <A HREF="http://www.microsoft.com/typography/tt/tt.htm">TrueType の仕様書</A>を参照してください。それらは大抵 OS/2 テーブルにあるはずです。
+for the meanings of these, they usually live in the OS/2, hhea, or vhea tables). -->
+フォントによっては、いくつかの TrueType 情報もここに含まれるでしょう (それらの意味については <A HREF="http://www.microsoft.com/typography/tt/tt.htm">TrueType の仕様書</A>を参照してください。それらは大抵 OS/2, hhea, vhea テーブルのいずれかにあるはずです。
 <BLOCKQUOTE>
   <PRE>FSType: 4
 PFMFamily: 17
@@ -186,28 +191,58 @@ TTFWeight: 400
 TTFWidth: 5
 Panose: 2 0 5 3 0 0 0 0 0 0
 LineGap: 252
+OS2LineGap: 252
 VLineGap: 0
+OS2Vendor: 'PfEd'
+OS2FamilyClass: 2050
 </PRE>
 </BLOCKQUOTE>
 <P>
 <!--
-If loaded from a font with an OS/2 table there may also be the following
-fields (there is no ui to set these fields, but FontForge preserves them) -->
-OS/2 テーブルをもつフォントから読み込んだ場合、以下のフィールドも含まれるでしょう。(これらのフィールドに対応する UI は設定されていませんが、FontForge はこれらの値を保持します)
+These items also come from the OS/2 and hhea tables but are slightly more
+complex. The keywords are paired, so <CODE>HheadAscent</CODE> and
+<CODE>HheadAOffset</CODE> work together. If the offset keyword is 1 (true)
+then the other keyword is treated as a value relative to what FontForge thinks
+should be the correct value, FontForge will calculate what it thinks the
+value should be and then will add the value specified in the keyword. So
+in the example below, FF will figure out what it thinks
+<CODE>HheadAscent</CODE> should be and then add "0" to it to get the value
+stored in a truetype font's OS/2 table. However if the Offset flag is set
+to 0 (false) then the Ascent would be used exactly as specified. -->
+以下の項目は OS/2 および hhea テーブルからも取得されますが、それらは僅かにより複雑です。それらのキーワードは対になっているので <CODE>HheadAscent</CODE> と <CODE>HheadAOffset</CODE> は一緒に動作します。*Offset キーワードが 1 (真) である場合、もう片方のキーワードは、FontForge が正しい値として認識する値を基準とした相対値として扱われます。その場合 FontForge は適切と思われる値を計算して、それにキーワードで指定された値を加えます。ですから以下の例では、FF は TrueType フォントの OS/2 テーブルに格納された値を得るために <CODE>HheadAscent</CODE> に "0" を加えるべきと考えます。その一方、Offset フラグが 0 (偽) に設定されている場合、アセントの値は指定されたとおりの物が使用されます。
 <BLOCKQUOTE>
-  <PRE>HheadAscent: 892
-HheadDescent: -200
-OS2TypoAscent: 892
-OS2TypoDescent: -200
-OS2WinAscent: 892
-OS2WinDescent: -200
+  <PRE>HheadAscent: 0
+HheadAOffset: 1
+HheadDescent: 0
+HheadDOffset: 1
+OS2TypoAscent: 0
+OS2TypoAOffset: 1
+OS2TypoDescent: 0
+OS2TypoDOffset: 1
+OS2WinAscent: 0
+OS2WinAOffset: 1
+OS2WinDescent: 0
+OS2WinDOffset: 1
 </PRE>
 </BLOCKQUOTE>
 <P>
 <!--
-These represent different definitions of ascent and descent that are stored
-in various places in the truetype file (Horizontal header and OS/2 tables). -->
-これらは TrueType フォントファイルのさまざまな場所 (水平ヘッダ (hhea) および OS/2 テーブル) に格納されたアセント・ディセントの定義と異なる定義を表しています。
+The OS/2 table contains information on the position of subscripts, superscripts
+and strike throughs: -->
+OS/2 テーブルには下付き文字、上付き文字および取り消し線の位置情報が含まれています:
+<BLOCKQUOTE>
+  <PRE>OS2SubXSize: 1351
+OS2SubYSize: 1228
+OS2SubXOff: 0
+OS2SubYOff: -446
+OS2SupXSize: 1351
+OS2SupYSize: 1228
+OS2SupXOff: 0
+OS2SupYOff: 595
+OS2StrikeYSize: 143
+OS2StrikeYPos: 614
+</PRE>
+</BLOCKQUOTE>
 <P>
 <!--
 The MacStyle field (if present) indicates whether the font is bold, italic,
@@ -294,6 +329,18 @@ between a characters of the given classes of left and right characters (ie.
 if char1 was in left class 2 and char2 was in right class 4 then we would
 index this array with 3*&lt;char2 class cnt&gt; + 4). -->
 最初の行は、このカーニングクラスに含まれる先頭文字のクラスが 31 種類存在し、第二文字のクラスが 64 種類存在することを表しています。これは、上記の用字系・言語リストの項目 2 に対して有効になります。<A HREF="charinfo.html#lookup-flags">OpenType フラグ</A> は 0 となります。次の行は、最初の文字 (クラス 0 は予約済みで、決して定義する必要がないので、この番号は 1 となります) の先頭文字クラスは文字 "F" 1 文字からなることを表します ("F" の前にある数字は行の文字数です。これは SFD ファイルの処理速度の向上に役立ちますが、それ自体で意味を持つ情報ではありません)。次の行は、先頭文字のクラス 2 で、より多くの文字を含んでいるため文字列長も長くなっています。30 個の項目が続いた後に、第二文字のクラスが始まります。これは、先頭文字のクラスと全く同様です。第二文字のクラスを全部定義し終わった後に、多数(正確には &lt;先頭文字クラスの個数×第二文字クラスの個数&gt;) の数値からなる 1 個の配列が来ます。これは、該当するクラスの対における左右の文字間に施されるカーニングの量を指定しています (例えば、文字1 が先頭文字クラス 2 に属し、文字2 が第二文字クラス 4 に属している場合、この配列のインデックス 3×&lt;文字2 のクラス番号&gt; + 4 で指定することになります)
+<P>
+<!--
+If your fontforge has been configured with device table support you may find
+<A HREF="#device-table">device</A> tables interspersed among the kerning
+offsets array: -->
+お使いの FontForge がデバイステーブルサポートつきの設定でコンパイルされている場合、<A HREF="#device-table">デバイス</A>テーブルがカーニングオフセット配列の間に組み込まれているのが見つかるでしょう:
+<BLOCKQUOTE>
+  <PRE>...
+0 {} 0 {} 0 {} ...
+-145 {12-13 -1,1} -145 {} -130 {8-9 -1,-1} ...
+</PRE>
+</BLOCKQUOTE>
 <P>
 <!--
 The order of opentype features within GPOS/GSUB tables may be stored: -->
@@ -628,7 +675,7 @@ defined). A character looks like: -->
 これは、フォントのエンコーディングには 285 文字ぶんの場所が取られており、全部で 253 個が定義済みであることを表します (通常、制御文字は定義されません)。文字は以下のように表現されます:
 <BLOCKQUOTE>
   <PRE>StartChar: exclam
-Encoding: 33 33
+Encoding: 33 33 3
 Width: 258
 Flags: 
 HStem: 736 13&lt;39 155&gt;  -14 88&lt;162 180&gt;
@@ -657,8 +704,10 @@ EndChar
 <P>
 <!--
 The first line names the character, the next line gives the encoding, first
+in the current font, then in unicode, and finally the original position (GID).
+Then the advance width. -->
 in the current font, then in unicode. Then the advance width. -->
-最初の行では文字名を定義しています。次の行では文字符号を定義していて、最初に現在のフォント内の符号値を置き、後ろに Unicode を置きます。次の行は送り幅です。
+最初の行では文字名を定義しています。次の行では文字符号を定義していて、最初に現在のフォント内の符号値があり、次に Unicode での符号値がきて、最後にフォント独自の位置 (GID) が来ます。それから。次の行に送り幅が来ます。
 <P>
 <!--
 Then a set of flags (there are currently four flags: "H" =&gt; the character
@@ -814,8 +863,8 @@ Width: 264
 Flags: 
 HStem: 
 VStem: 
-Refer: 33 44 N 1 0 0 1 0 0
-Refer: 35 46 N 1 0 0 1 0 414
+Refer: 33 44 N 1 0 0 1 0 0 1
+Refer: 35 46 N 1 0 0 1 0 414 2
 EndChar
 </PRE>
 </BLOCKQUOTE>
@@ -825,11 +874,26 @@ Above is one with just references to other characters (a semi-colon is drawn
 here by drawing a comma and stacking a period on top of it). The first number
 is the glyph index of the character being refered to (in the current font
 of course), the next number is the unicode code point, the N says the reference
-is not selected (An "S" indicates it is selected), the remaining 6 numbers
+is not selected (An "S" indicates it is selected), the following 6 numbers
 are a postscript transformation matrix, the one for comma (unicode 44) is
 the identity matrix, while the one for period (unicode 46) just translates
-it vertically 414 units. -->
-上の例は、他の文字への参照のみを含んでいる一例です (セミコロンを、カンマを描画して、その上にピリオドを載せることによって描画しています)。最初の数値は参照先の文字のグリフインデックス (当然、現在のフォント内での) です。2 番目の数値は Unicode の符号位置で、N は、参照が選択されていないことを表し、残り 6 個の数値は PostScript の変換行列を表します。カンマ (Unicode 44) の行列は恒等行列で、ピリオド (Unicode 46) に対する行列は垂直方向に 414 ユニット平行移動しています。
+it vertically 414 units. The final number is a set of truetype flags: -->
+上の例は、他の文字への参照のみを含んでいる一例です (セミコロンを、カンマを描画して、その上にピリオドを載せることによって描画しています)。最初の数値は参照先の文字のグリフインデックス (当然、現在のフォント内での) です。2 番目の数値は Unicode の符号位置で、N は、参照が選択されていないことを表し、それに続く 6 個の数値は PostScript の変換行列を表します。カンマ (Unicode 44) の行列は恒等行列で、ピリオド (Unicode 46) に対する行列は垂直方向に 414 ユニット平行移動しています。最後の数値は TrueType フラグの集合です:
+<UL>
+  <LI>
+<!--1 =&gt; Use My Metrics -->
+    1 ⇒ メトリックで使用
+  <LI>
+<!--2 =&gt; Round to Grid -->
+    2 ⇒ グリッドに合わせて丸める
+  <LI>
+<!--4 =&gt; Position reference by point match (rather than by offset)<BR>
+    If this is set there will be two additional numbers, the first indicating
+    the point number in the base glyph, and the second the point number in the
+    current reference. -->
+    4 ⇒ (オフセットでなく) 点の一致による位置参照<BR>
+    このフラグがセットされている場合、2 個の数字が追加されます。最初の数字は基底グリフ内の点番号で、2 番目の数字は現在の参照における点番号です。
+</UL>
 <P>
 <!--
 Old versions of sfd files will use the format: -->
@@ -906,8 +970,37 @@ AnchorPoint: "top" 803 1487 basechar 0
 the point names the anchor class it belongs to (in UTF-7), its location,
 what type of point it is (basechar, mark, baselig, basemark, entry, exit),
 and for ligatures a number indicating which ligature component it refers
-to. -->
-アンカークラスが所属する点の名前 (UTF-7 で)、位置、点のタイプが (基底文字、マーク、基底合字、基底マーク、始筆、収筆のうち) どれであるか、そして合字については、それがどの合字要素を参照しているかを示す番号です。
+to. If you have configured fontforge with support for device tables, you
+may also see: -->
+アンカークラスが所属する点の名前 (UTF-7 で)、位置、点のタイプが (基底文字、マーク、基底合字、基底マーク、始筆、収筆のうち) どれであるか、そして合字については、それがどの合字要素を参照しているかを示す番号です。デバイステーブルをサポートする設定でコンパイルされた FontForge を使用している場合、以下のような記述が含まれているかもしれません:
+<BLOCKQUOTE>
+  <PRE>AnchorPoint: "bottom" 780 -60 basechar 0 {12-13 -1,-1} {8-14 1,0,-1,-1,-2,-2,-2}
+</PRE>
+</BLOCKQUOTE>
+<P>
+<!--
+Where the items in braces are horizontal/vertical
+<A NAME="device-table">device</A> tables. The first indicates that the
+(horizontal) device table applies to pixel sizes 12 through 13 with pixel
+adjustments of -1 pixel each. The second indicates a vertical device table
+applies to pixel sizes 8 through 14 with pixel adjustments of 1, 0, -1, -1,
+-2, -2, -2 pixels. -->
+ここで、波括弧内の項目は水平/垂直<A NAME="device-table">デバイス</A>テーブルです。最初の括弧は、(水平) デバイステーブルが 12～13 ピクセルの範囲のサイズで、それぞれ -1 ピクセルの補正を施すことを表しています。2 番目は、垂直デバイステーブルが 8～14 ピクセルの範囲においてでそれぞれ 1, 0, -1, -1, -2, -2, -2 ピクセルの補正を施すことを表します。
+<P>
+<!--
+Finally a TrueType font may position an anchor point based on a normal point
+within the glyph (if this is done a device table may not be present). -->
+最後に、TrueType フォントは 1 個のアンカーポイントをグリフ内の 1 個の基準点に基づいて配置することができます (これが行われる場合、デバイステーブルを置くことはできません)。
+<BLOCKQUOTE>
+  <PRE>AnchorPoint: "bottom" 780 -60 basechar 0 23
+</PRE>
+</BLOCKQUOTE>
+<P>
+<!--
+Indicates that this anchor point will be positioned at the same location
+(which is normally 780,-60 but which might be moved by an instruction) as
+truetype point 23. -->
+は、このアンカーポイントが TrueType グリフの点番号 23 と同じ位置 (通常は (780,-60) ですが、命令によって移動することができます) に配置されることを表しています。
 <P>
 <!--
 If the user has set the glyph class -->
@@ -927,16 +1020,29 @@ If the character is the first in any kern pairs (not a pair defined by a
 kern class, however) -->
 その文字がカーニングペアのどれか (ただし、カーニングクラスに定義されているペアを除く) の先頭文字である場合:
 <BLOCKQUOTE>
-  <PRE>KernsSLIF: 114 -100 1 0 117 -92 1 0 101 -123 1 0 97 -107 1 0 111 -107 1 0
+  <PRE>KernsSLIFO: 60 -100 1 0 {12-13 -1,-1} 63 -92 1 0 70 -123 1 0 45 -107 1 0 76 -107 1 0
 </PRE>
 </BLOCKQUOTE>
 <P>
 <!--
-Where each kern pair is represented by 4 numbers. The first is the encoding
-of the second character (using the current encoding for the font), the next
-is the horizontal kerning amount, then the script lang index, and finally
+Where each kern pair is represented by 4 numbers (and an optional
+<A HREF="sfdformat.html#device-table">device</A> table, see above). The first
+is the original position of the second character (in the current font), the
+next is the horizontal kerning amount, then the script lang index, and finally
 the open type flags. Then we start over with the next kernpair. -->
-ここでは各カーニングペアは 4 個の数値で表されます。最初に来るのは 2 番目の文字の (そのフォントの現在の配列を用いた) 文字符号で、次に来るのは横書きのカーニング量で、スクリプト・言語インデックスがその次に置かれ、最後に OpenType のフラグが来ます。それから、次のカーニングペアの記述が始まります。
+ここでは各カーニングペアは 4 個の数値 (および省略可能な<A HREF="sfdformat.html#device-table">デバイス</A>テーブル。上記参照) で表されます。最初に来るのは 2 番目の文字の (現在のフォント内での) 位置で、次に来るのは横書きのカーニング量で、スクリプト・言語インデックスがその次に置かれ、最後に OpenType のフラグが来ます。それから、次のカーニングペアの記述が始まります。
+<P>
+<!--
+Old sfd files may contain a slightly different format:-->
+古い SFD ファイルは以下の僅かに異なるフォーマットの行を含んでいるかもしれません:
+<BLOCKQUOTE>
+  <PRE>KernsSLIF: 114 -100 1 0 {12-13 -1,-1} 117 -92 1 0 101 -123 1 0 97 -107 1 0 111 -107 1 0
+</PRE>
+</BLOCKQUOTE>
+<P>
+<!--
+where the first number is the encoding of the second glyph in the kern pair. -->
+ここで、最初の数値はカーニングペアの 2 番目のグリフの符号位置です。
 <P>
 <!--
 Data that are to go into other GPOS, GSUB or GDEF sub-tables are stored like
@@ -944,6 +1050,7 @@ this: -->
 その他の GPOS, GSUB または GDEF サブテーブルに送られるデータは、以下のような形で格納されます:
 <BLOCKQUOTE>
   <PRE>Position: 12 0 'sinf' dx=0 dy=-900 dh=0 dv=0
+PairPos: 12 0 'dist' B dx=0 dy=0 dh=0 dv=0  dx=-10 dy=0 dh=0 dv=0
 Ligature: 12 0 'frac' one slash four
 Substitution: 12 3 'smcp' agrave.sc
 AlternateSubs: 12 0 'swsh' glyph490 A.swash
@@ -959,13 +1066,14 @@ and a set of opentype flags (except for LCarets where they are ignored).
 This is followed by an opentype tag (also ignored for ligature carets). A
 simple position change is expressed by the amount of movement of the glyph
 and of the glyph's advance width. A ligature contains the names of the characters
-that make it up. A simple substitution contains the name of the character
-that it will become. An alternate sub contains the list of characters that
-the user may choose from. A multiple substitution contains the characters
-the current glyph is to be decomposed into. A ligature caret contains a count
-of the number of carets defined, and the a list of the locations of those
-carets. -->
-これらの行のほとんどは、最初の 2 個の数値では用字系/言語インデックスと、一連の OpenType フラグの情報を提供しています (LCaret は例外で、それらは無視されます)。その後ろに OpenType が来ます (合字キャレットではこれらも無視されます)。単純位置変更はグリフの移動量とグリフの送り幅によって表現されます。合字には、それを構成する各文字の名前が含まれます。単純置換には、それが置き換えられる文字の名前が含まれます。選択型置換には、ユーザが選ぶ文字のリストが含まれます。複数置換は現在のグリフが分解される文字群が含まれます。合字キャレットには、定義されるキャレットの個数と、それらのキャレットの位置のリストが含まれます。
+of two adjacent glyphs (kerning is a special case of this). A ligature contains
+the names of the characters that make it up. A simple substitution contains
+the name of the character that it will become. An alternate sub contains
+the list of characters that the user may choose from. A multiple substitution
+contains the characters the current glyph is to be decomposed into. A ligature
+caret contains a count of the number of carets defined, and the a list of
+the locations of those carets. -->
+これらの行のほとんどは、最初の 2 個の数値では用字系/言語インデックスと、一連の OpenType フラグの情報を提供しています (LCaret は例外で、それらは無視されます)。その後ろに OpenType が来ます (合字キャレットではこれらも無視されます)。単純位置変更はグリフの移動量とグリフの送り幅によって表現されます。ペア単位の位置指定は 2 個の隣り合うグリフの位置を指定します (カーニングはこの特殊な場合です)。合字には、それを構成する各文字の名前が含まれます。単純置換には、それが置き換えられる文字の名前が含まれます。選択型置換には、ユーザが選ぶ文字のリストが含まれます。複数置換は現在のグリフが分解される文字群が含まれます。合字キャレットには、定義されるキャレットの個数と、それらのキャレットの位置のリストが含まれます。
 <P>
 <!--
 A glyph may have an arbitrary comment associated with it, this will be output

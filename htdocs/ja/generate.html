@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Sep-2002 -->
-  <!-- AP: Last modified: 7-May-2005 -->
+  <!-- AP: Last modified: 9-Sep-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
 <!--<TITLE>Generate Font Dialog</TITLE>-->
     <TITLE>フォント出力ダイアログ</TITLE>
@@ -14,7 +14,7 @@
     フォント出力ダイアログ
 </H1>
 <P>
-<IMG SRC="../generate.png" WIDTH="414" HEIGHT="419" ALIGN="Right"><!--This generates
+<IMG SRC="generate.png" WIDTH="386" HEIGHT="320" ALIGN="Right"><!--This generates
 font files, both outline and bitmap. You may choose not to generate either,
 you may generate an afm file or a pfm file, you may select the type of postscript
 output, you may select which pixelsizes of bitmap to generate. -->
@@ -105,7 +105,7 @@ The outline types are: -->
     normal encodings. It is important on the Mac because I do not generate the
     correct encoding tables for any script other than MacRoman, so if you want
     a MacCyrillic font use this mode. -->
-    TrueType Symbol フォント。TrueType と同じですが、フォント内で定義された 1 バイトエンコーディングをそのまま使用する点が子となります。Windows では、Symbol および Dingbat エンコーディングは通常のエンコーディングでは文字が割り当てられないところ (0x80-0x9f の領域) に文字が含まれることがよくあるため、これは重要です。Mac でも、MacRoman 以外の任意のスクリプトに対する正しいエンコーディングテーブルを出力しないため、これが重要です。ですから、もし MacCyrillic フォントを出力したいならばこのモードを使用してください。
+    TrueType Symbol フォント。TrueType と同じですが、フォント内で定義された 1 バイトエンコーディングをそのまま使用する点が異なります。Windows では、Symbol および Dingbat エンコーディングは通常のエンコーディングでは文字が割り当てられないところ (0x80-0x9f の領域) に文字が含まれることがよくあるため、これは重要です。Mac でも、MacRoman 以外の任意のスクリプトに対する正しいエンコーディングテーブルを出力しないため、これが重要です。ですから、もし MacCyrillic フォントを出力したいならばこのモードを使用してください。
   <LI>
 <!--True Type macbinary format, a truetype font wrapped up in a mac resource,
     wrapped up in a macbinary file. Designed to be used for a mac.<BR>
@@ -186,11 +186,15 @@ The outline types are: -->
     formats.</A> -->
     Palm フォント -- <A HREF="palmfonts.html">各種の palm ビットマップフォントフォーマット</A>をサポートします。
   <LI>
+<!--PS Type3 Bitmap - - create a PostScript Type3 font which uses the imagemask
+    operator to display each glyph's bitmap.
+    PS Type3 ビットマップ -- 各グリフのビットマップを表示するのに imagemask オペレータを使った PostScript Type3 フォントを作成します。
+  <LI>
 <!--None-->
     ビットマップフォント無し
 </UL>
 <P>
-<IMG SRC="../GenerateOptions.png" WIDTH="323" HEIGHT="316" ALIGN="Right"><!--The
+<IMG SRC="GenerateOptions.png" WIDTH="279" HEIGHT="238" ALIGN="Right"><!--The
 <A NAME="Options">options</A> dialog provides the following check boxes.
 Not all are enabled at all times.-->
 <A NAME="Options">オプション</A>ダイアログには、以下のチェックボックスがあります。これらのすべてが常に使用可能なわけではありません。
@@ -199,10 +203,10 @@ Not all are enabled at all times.-->
 <!--[] Round - - Round all coordinates to integral values. If this is not checked
     then Type1 fonts will be output with 2 decimal digits of precision, and Type2
     fonts with 16 binary digits (~4 decimal digits) when needed. -->
-    [] 整数値に変換(D) -- すべての座標値を整数に丸めます。これにチェックが入っていない場合は必要に応じて、Type1 フォントは小数点以下第 2 位までの制度で出力され、Type2 フォントは 2 進数で 16 桁までの精度 (10 進数で約 4 桁に相当) で出力されます。
+    [] 整数値に変換 -- すべての座標値を整数に丸めます。これにチェックが入っていない場合は必要に応じて、Type1 フォントは小数点以下第 2 位までの制度で出力され、Type2 フォントは 2 進数で 16 桁までの精度 (10 進数で約 4 桁に相当) で出力されます。
   <LI>
 <!--[] Hints - - Include PostScript hints in the output file -->
-    [] ヒント(I) -- PostScript のヒントを出力ファイルに含めます。
+    [] ヒント -- PostScript のヒントを出力ファイルに含めます。
   <LI>
 <!--[] Flex Hints -- Include PostScript flex hints in the output file -->
     [] Flexヒント -- PostScript の flex ヒントを出力ファイルに含めます。
@@ -239,7 +243,7 @@ Not all are enabled at all times.-->
     </UL>
   <LI>
 <!--[] PSNames - - Include the full 'post' (postscript name) table in the font -->
-    [] PostScript名 -- 完全版の 'post' テーブルをフォントに含めます。 
+    [] PostScriptグリフ名 -- 完全版の 'post' テーブルをフォントに含めます。 
   <LI>
 <!--[] <A NAME="AppleMode">Apple</A> - - Apple and MS/Adobe disagree on the format
     of a ttf font. This is annoying. Checking this box means the font will be
@@ -252,8 +256,9 @@ Not all are enabled at all times.-->
 	are the same) -->
 	ビットマップ用テーブル (Apple はこれを 'bdat' と呼び、MS/Adobe は 'EBDT' と呼びます。これらが含むデータは同じです)
       <LI>
-	The PostScript name in the 'name' table (Apple says there must be either
-	0 or 1 of them, MS/Adobe say any value other than 1)
+<!--	The PostScript name in the 'name' table (Apple says there must be either
+	0 or 1 of them, MS/Adobe say any value other than 1) -->
+	'name' テーブル内の PostScript 名 (Apple は、0 か 1 のどちらかでなければならないと言い、MS/Adobe は 1 以外の任意の値と言っています)
       <LI>
 <!--	Apple and MS/Adobe also differ on the way references (components) are scaled.
 	Luckily there is another way to disambiguate this case (and references are
@@ -386,7 +391,7 @@ Apple と OpenType の両方を設定している場合、両方のテーブルセットが出力されます。
     <A NAME="Mac-Family">Mac</A> ファミリーを出力
 </H2>
 <P>
-<IMG SRC="../GenerateFamily.png" WIDTH="414" HEIGHT="509" ALIGN="Right"><!--This
+<IMG SRC="GenerateFamily.png" WIDTH="386" HEIGHT="413" ALIGN="Right"><!--This
 brings up a dialog very similar to the above, but with a few added fields.
 Because this dialog is for Mac families, only Mac formats are supported. -->
 これは上に挙げたのと非常に似たダイアログを起動しますが、2, 3 の追加フィールドがあります。このダイアログは Mac ファミリーのためであり、Mac フォーマットのみがサポートされているからです。

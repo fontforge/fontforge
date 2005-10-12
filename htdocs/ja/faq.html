@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 8-May-2005 -->
+  <!-- AP: Last modified: 31-Jul-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
 <!--<TITLE>Frequently Asked Questions</TITLE>-->
     <TITLE>よくある質問</TITLE>
@@ -243,6 +243,9 @@
   <LI>
 <!--<A HREF="#new-name">How do I add a glyph with a new name?</A> -->
     <A HREF="#new-name">新しい名前のグリフを追加するにはどうすればいいか?</A>
+  <LI>
+<!--<A HREF="#glyphnames">Why does fontforge give some glyphs the wrong name?</A>
+    <A HREF="#glyphnames">FontForge がいくつかのグリフに間違った名前をつけるはなぜか?</A>
   <LI>
 <!--<A HREF="#save-no-change">After I generate a font and quit, why does FontForge
     ask if I want to save the font? I didn't change anything.</A> -->
@@ -535,7 +538,7 @@
     (もちろん、現在ではほとんどのヨーロッパ人はデスクトップソフトウェア上でパイカポイントを使うことを強いられており、ほとんどのコンピュータフォントは現在アクセントつきグリフを含んでいます。ですからこれらの区別とその必然性は消え去ったと言えるでしょう)。
   <DT>
 <!--<A NAME="linespace"><B>How do I set the line spacing on a font?</B></A>-->
-    <A HREF="linespace"><B>フォントの行間を設定するにはどうすればよいか?</B></A>
+    <A NAME="linespace"><B>フォントの行間を設定するにはどうすればよいか?</B></A>
   <DD>
 <!--It depends on the kind of font you are generating, the operating system under
     which you are running, and luck. -->
@@ -1299,6 +1302,12 @@ MANPATH=${MANPATH:-}:/usr/local/man ; export MANPATH
     width use <A HREF="problems.html#Advance">Element-&gt;Find
     Problems-&gt;Random-&gt;Check Advance.</A> -->
     フォントに含まれる全グリフが同じ送り幅を持っているかどうか自信がない場合は、<A HREF="problems.html#Advance">エレメント(L)→問題点を発見(O)→[ランダム]→送り幅をチェック:</A> を使用してください。
+    <P>
+<!--When I say "all glyphs" I really mean <EM>all</EM> glyphs. Even glyphs which
+    unicode says should be 0 width must have the same width as everything else.
+    MicroSoft suggests that GPOS be used to do accent combination (etc.) and
+    then change the advance width on any marks (accents) to be 0. -->
+    "全グリフ" とここで言ったのは本当に<EM>全ての</EM>グリフのことです。Unicode の規格が幅 0 であると定めている文字ですら、その他全てと同じ幅でなければなりません。Microsoft は、アクセントの組合せ (等) を行うのに GPOS を使用し、任意のマーク (アクセント) の幅を 0 に変更することを提唱しています。
   <DT>
 <!--<A NAME="new-encoding"><B>How I do tell fontforge about a new
     encoding</B></A>-->
@@ -1415,6 +1424,52 @@ MANPATH=${MANPATH:-}:/usr/local/man ; export MANPATH
 	もう一度<CODE>エレメント(L)→フォント情報(F)</CODE> を呼び出す<BR>
 	<CODE>エンコーディング(E)</CODE> を変更前の値に戻す
     </OL>
+  <DT>
+<!--<A NAME="glyphnames"><B>Why does FontForge give some of my glyphs the wrong
+    name?</B></A> -->
+    <A NAME="glyphnames"><B>FontForge がいくつかのグリフに間違った名前をつけるはなぜか?</B></A>
+  <DD>
+<!-- FontForge's naming conventions are those specified in
+    <A HREF="http://partners.adobe.com/public/developer/opentype/index_glyph.html">Adobe's
+    glyph naming conventions</A>, and, unfortunately, there are some problems
+    here (generally for compatibility with old encodings). I am aware of the
+    following issues:
+    FontForge のグリフ命名規約は <A HREF="http://partners.adobe.com/public/developer/opentype/index_glyph.html">Adobe のグリフ命名規約</A>で指定されている方法ですが、残念ながら、それにはいくつか問題があります (一般的に、古い符号化方式との互換性のためです)。私の知るかぎり以下の問題があります:
+    <DL>
+      <DT>
+	Delta
+      <DD>
+<!--	is assigned to U+2206, "INCREMENT" rather than U+0394, "GREEK CAPITAL LETTER
+	DELTA", probably because Increment was part of the old MacRoman encoding. -->
+	は U+0394, "GREEK CAPITAL LETTER DELTA" ではなく U+2206, "INCREMENT" に割り当てられています。おそらく、Increment が古い MacRoman エンコーディングに含まれているからでしょう。
+      <DT>
+	Omega
+      <DD>
+<!--	is assigned to U+2126, "OHM SIGN", rather than U+03A9, "GREEK CAPITAL LETTER
+	OMEGA". -->
+	は U+03A9, "GREEK CAPITAL LETTER OMEGA" ではなく U+2126, "OHM SIGN" に割り当てられています。
+      <DT>
+	mu
+      <DD>
+<!--	is assigned to U+00B5, "MICRO SIGN", rather than U+03BC, "GREEK SMALL LETTER
+	MU", probably because Micro Sign was part of ISO-Latin1 and MacRoman -->
+	は U+03BC, "GREEK SMALL LETTER MU" ではなく U+00B5, "MICRO SIGN" に割り当てられています。おそらく、マイクロ記号が ISO-Latin1 と MacRoman に含まれているからでしょう。
+      <DT>
+	Tcommaaccent, tcommaaccent
+      <DD>
+<!--	are assigned to U+0162,U+0163 "LATIN CAPITAL/SMALL LETTER T WITH CEDILLA",
+	rather than U+021A,U+021B "LATIN CAPITAL/SMALL LETTER T WITH COMMA BELOW",
+	probably because of a confusion in the early Unicode spec.
+	は U+021A,U+021B "LATIN CAPITAL/SMALL LETTER T WITH COMMA BELOW" ではなく U+0162,U+0163 "LATIN CAPITAL/SMALL LETTER T WITH CEDILLA" に割り当てられています。おそらく初期の Unicode の仕様の混乱のためでしょう。
+      <DT>
+	dotlessj
+      <DD>
+<!--	is assigned to U+F6BE (in the private use area) rather than U+0237 "LATIN
+	SMALL LETTER DOTLESS J", because Adobe saw the need for a dotlessj glyph
+	before Unicode did and assigned a slot in the private use area. Then in 4.1
+	Unicode added the glyph to the standard. -->
+	は U+0237 "LATIN SMALL LETTER DOTLESS J" ではなく (私用領域内の) U+F6BE に割り当てられています。これは Adobe が dotlessj グリフの必要性を Unicode よりも前に認識しており、私用領域に符号位置を割り当てたからです。その後、Unicode 4.1 でこのグリフは規格に追加されました。
+    </DL>
   <DT>
 <!--<A NAME="Open-size"><B>Why isn't my Open Type font much smaller than the
     .pfb file?</B></A> -->
@@ -1586,7 +1641,7 @@ MANPATH=${MANPATH:-}:/usr/local/man ; export MANPATH
   <DD>
 <!--Firstly because I believe that any attempt to copy a glyph's name will almost
     certainly be better done by defining a custom
-    <A TARGET="_top" HREF="fontinfo.html#Encoding">encoding</A>.<BR> -->
+    <A TARGET="_top" HREF="encodingmenu.html">encoding</A>.<BR> -->
     最初の理由として、グリフ名をコピーしようとする人がやりたい事は、カスタム<A TARGET="_top" HREF="fontinfo.html#Encoding">エンコーディング</A>を定義したほうがうまくできることがほぼ確実だからです。<BR>
 <!--Secondly because most of the time you don't want the name copied.<BR>
     Thirdly because it is esthetically better that copy should only work with

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 28-Mar-2005 -->
+  <!-- AP: Last modified: 18-Sep-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
 <!--<TITLE>Outline Glyph View</TITLE>-->
     <TITLE>アウトライングリフビュー</TITLE>
@@ -234,6 +234,14 @@ with the control key pressed is also bound to pointer, mouse button 2 is
 bound to magnify, and mouse button 2 with control is bound to ruler. -->
 パレットの一番下にはマウスボタンの現在の機能割り当ての一覧が表示されています。
 この図では、マウスボタン 1 はポインタツールに割り当てられていて、Control キー + マウスボタン 1 も同じくポインタに、マウスボタン 2 は拡大ツールに、Controlキー + マウスボタン 2 はものさしツールに割り当てられています。
+<P>
+<!--
+Many of the tools have different <A NAME="alt-meta-capslock">behaviors</A>
+if you hold the shift or alt (meta) key down when using the tool. On the
+mac there is no alt/meta key, and the Option and Command keys are usually
+bound to making a one button mouse look like a three button mouse. So on
+the mac fontforge uses the caps-lock key rather than alt/meta. -->
+多くのツールは、Shift または Alt (Meta) キーを押しながら選択した場合には通常と異なる<A NAME="alt-meta-capslock">挙動</A>を示します。Mac には Alt/Meta キーは存在せず、Option キーと Command キーは 1 ボタンマウスを 3 ボタンマウスに見せかけるために使われるのが普通です。そこで FontForge は  Mac ではAlt/Meta の代わりに CapsLock キーを使用します。
 <H3>
 <!--<IMG SRC="cvarrowicon.png" ALIGN="Middle">The <A NAME="pointer">pointer</A>
   tool -->
@@ -259,19 +267,20 @@ A tripple click selects everything in the layer. Clicking on the background
 will deselect everything. Clicking on the background and dragging out a rectangle
 will select everything within the rectangle. Clicking on a line or spline
 will select the two end points of that line or spline. Clicking on the dark
-part of an image (when in the background layer) will select the image. Clicking
+part of an image (when in a layer with images) will select the image. Clicking
 on the outline of a referenced glyph will select that reference (if a reference
 glyph happens to have the same outline and bounding box, then holding down
-the meta key will allow you to move it once it is selected, without the meta
-key you will resize it). -->
+the <A HREF="charview.html#alt-meta-capslock">meta/alt/caps-lock</A> key
+will allow you to move it once it is selected, without the meta key you will
+resize it). -->
 選択されていない点の上で単純にクリックするとその点が選択され、その時選択されていた物は全て選択解除されます。
 Shift キーを押しながらクリックするとその点が選択されているかいないかの状態を反転します。
 ダブルクリックすると、その点を含むパス上の全ての点を選択します。
 トリプルクリックすると、レイヤ上の全ての物を選択します。
 何もない場所を選択し、ドラッグするとその領域の長方形に含まれる全ての物を選択します。
 直線や曲線の上で選択を行うと、その点の両側にある直線または曲線の端点を選択します。
-(背景レイヤにいる時に) 画像の暗い部分をクリックすると画像を選択します。
-参照された文字のアウトライン上をクリックすると参照を選択します (参照されているグリフのアウトラインとバウンディングボックスがぴったり一致しているときは、いちど選択を行い、Meta キーを押すと移動が行え、Meta キーを押さない状態だとサイズ変更ができます。
+(画像を含むレイヤにいる時に) 画像の暗い部分をクリックすると画像を選択します。
+参照された文字のアウトライン上をクリックすると参照を選択します (参照されているグリフのアウトラインとバウンディングボックスがぴったり一致しているときは、いちど選択を行い、<A HREF="charview.html#alt-meta-capslock">Alt/Meta/CapsLock</A> キーを押すと移動が行え、Meta キーを押さない状態だとサイズ変更ができます)。
 <P>
 <!--
 If a point has no visible control points, then they are at the same location
@@ -310,10 +319,11 @@ spline). -->
 <!--
 If you hold the shift key down when you drag then the motion will be constrained
 to be either horizontal, vertical, or at a 45&#176; angle. (When moving control
-points the combination of shift and meta (alt) will mean that the control
-point is constrained to be the same angle from the base point as it was before
-you started moving it). -->
-Shift キーを押しながらドラッグすると、マウスの動きは水平・垂直か 45°方向に制限されます (制御点を移動するときに、Shift + Meta (Alt) と組み合わせてドラッグすると、制御点の基点から見た角度は移動を開始する前と同じ方向に制限されます)。
+points the combination of shift and
+<A HREF="charview.html#alt-meta-capslock">meta (alt) </A>will mean that the
+control point is constrained to be the same angle from the base point as
+it was before you started moving it). -->
+Shift キーを押しながらドラッグすると、マウスの動きは水平・垂直か 45°方向に制限されます (制御点を移動するときに、Shift + <A HREF="charview.html#alt-meta-capslock">Meta (Alt)</A> と組み合わせてドラッグすると、制御点の基点から見た角度は移動を開始する前と同じ方向に制限されます)。
 <P>
 <!--
 If your font has an ItalicAngle set, and the ItalicConstrain preference item
@@ -349,13 +359,13 @@ may include the width (right bearing) line (or vertical with line). If the
 last thing you selected was a control point then that point will be moved.
 If you hold down the shift key at the same time the up and down arrows will
 move parallel to the italic angle (be careful of this: this leads to non-integral
-values). If you hold down the meta (alt) key, then the motion will be 10
-times the normal amount. -->
+values). If you hold down the <A HREF="charview.html#alt-meta-capslock">meta
+(alt)</A> key, then the motion will be 10 times the normal amount. -->
 選択された物を移動するために、矢印キーを使うこともできます。
 矢印キーを 1 回押すたびに選択範囲は 1 em ユニットだけその方向に移動します (これは、環境設定において、em ユニット単位で任意の値を指定することができます)。
 最後に選択したのが制御点である場合、その点が移動します。
 Shift キーと同時に上下の矢印キーを押すとイタリックの傾きと平行な角度に移動します (要注意です: これによって座標値は非整数になります)
-Meta (Alt) キーを押すと、移動量は通常時の 10 倍になります。
+<A HREF="charview.html#alt-meta-capslock">Meta (Alt)</A> キーを押すと、移動量は通常時の 10 倍になります。
 <P>
 <!--
 If you hold down the control key while working with the arrows then the view
@@ -386,12 +396,13 @@ a ligature </A>for a more complete description. -->
 <P>
 <!--
 Clicking with the magnifying tool will magnify the view and center it around
-the point you clicked on. Holding down the Alt (Meta) key and clicking will
-minify the view, again centered around the point at which you clicked. Again
-some window managers will steal meta-clicks, so you may have to use the View
-menu to minify (It's called Zoom Out -->
+the point you clicked on. Holding down the
+<A HREF="charview.html#alt-meta-capslock">Alt/Meta/CapsLock </A>key and clicking
+will minify the view, again centered around the point at which you clicked.
+Again some window managers will steal meta-clicks, so you may have to use
+the View menu to minify (It's called Zoom Out -->
 拡大ツールをクリックするとビューを拡大し、クリックした位置を中心に移します。
-Alt (Meta) キーを押しながらクリックするとビューを縮小し、クリックした位置を中心に移します。
+<A HREF="charview.html#alt-meta-capslock">Alt/Meta/CapsLock</A> キーを押しながらクリックするとビューを縮小し、クリックした位置を中心に移します。
 先にも述べたとおり、ウィンドウマネージャの中には Meta クリックを奪い取るものがあるので、そのばあい縮小には 表示(V) メニューの 縮小(O) を使う必要があるでしょう。
 <P>
 <!--
@@ -422,9 +433,10 @@ You can use this tool to scroll the window without using the scroll bars. -->
 <P>
 <!--
 You can use this tool to draw a random curve which FontForge will then attempt
-to convert into a set of splines. If you hold down the Alt (Meta) key then
+to convert into a set of splines. If you hold down the
+<A HREF="charview.html#alt-meta-capslock">Alt/Meta/CapsLock</A> key then
 FontForge will close the curve when you release the mouse. -->
-このツールを使うと自由曲線を描くことができ、FontForge はそれをスプラインの集合に変換しようと試みます。 Alt (Meta) キーを押して線を描くと、FontForge はマウスを離した時に曲線を閉じます。
+このツールを使うと自由曲線を描くことができ、FontForge はそれをスプラインの集合に変換しようと試みます。 <A HREF="charview.html#alt-meta-capslock">Alt/Meta/CapsLock</A> キーを押して線を描くと、FontForge はマウスを離した時に曲線を閉じます。
 <P>
 <!--
 If you double click on the icon in the tool palette you get a dialog similar
@@ -545,15 +557,19 @@ it will also show the length of that spline. -->
 スプラインの端点でマウスボタンを押してもう片方の端点へ持って行ったときには、そのスプラインの長さも表示します。
 <P>
 <!--
-If you hold down the Meta (Alt) key when the mouse button is up, then the
-current location will be shown more accurately than on the status line. -->
-マウスボタンが押されていないときに Meta (Alt) キーを押したままにすると、ステータスラインの表示よりも精密な現在位置の値を表示します。
+If you hold down the
+<A HREF="charview.html#alt-meta-capslock">Meta/Alt/CapsLock </A>key when
+the mouse button is up, then the current location will be shown more accurately
+than on the status line. -->
+マウスボタンが押されていないときに <A HREF="charview.html#alt-meta-capslock">Meta/Alt/CapsLock</A> キーを押したままにすると、ステータスラインの表示よりも精密な現在位置の値を表示します。
 <P>
 <!--
-Finally if you hold down the Meta (Alt) key when you release the mouse button,
-then the ruler window will remain on the screen until you dismiss it by either:
-clicking in the window, or dragging out a new ruler selection. -->
-最後に、Meta (Alt) キーを押したままでマウスボタンを離すと、ウィンドウを再度クリックするか、新たにものさしツールでドラッグ操作を行うまでものさしウィンドウが画面上に表示され続けます。
+Finally if you hold down the
+<A HREF="charview.html#alt-meta-capslock">Meta/Alt/CapsLock</A> key when
+you release the mouse button, then the ruler window will remain on the screen
+until you dismiss it by either: clicking in the window, or dragging out a
+new ruler selection. -->
+最後に、<A HREF="charview.html#alt-meta-capslock">Meta/Alt/CapsLock</A> キーを押したままでマウスボタンを離すと、ウィンドウを再度クリックするか、新たにものさしツールでドラッグ操作を行うまでものさしウィンドウが画面上に表示され続けます。
 <H3>
   <IMG SRC="../cvscaleicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle"><!--The
   <A NAME="scale">scale</A> tool -->
@@ -856,8 +872,8 @@ on the instruction again will remove the breakpoint. -->
 <P>
 <!--
 Flaw: Currently there is no way to set breakpoints outside of the current
-function. -->
-制限: 現在のところ現在の関数の外側の位置にブレークポイントを設定する方法はありません。
+function (or glyph). -->
+制限: 現在のところ現在の関数 (またはグリフ) の外側の位置にブレークポイントを設定する方法はありません。
 <P>
 <!--
 Flaw: Currently there is no way to examine the call stack. -->
@@ -869,11 +885,11 @@ Stack, Points, Storage, Cvt, Raster and Gloss.
 -->
 6 番目のボタンは各種のデバッグパレットのどれを表示するかを制御できるメニューを表示します。
 使用可能なメニューの一覧は以下のとおりです: レジスタ、スタック、点、ストレージ、ラスタおよび注記です。
-<TABLE BORDER CELLPADDING="2" WIDTH="500">
+<TABLE BORDER CELLPADDING="2">
   <TR VALIGN="Top">
     <TD><IMG SRC="../TTRegisters.png" WIDTH="137" HEIGHT="292"></TD>
     <TD><IMG SRC="../TTStack.png" WIDTH="137" HEIGHT="292"></TD>
-    <TD><IMG SRC="../TTPoints.png" WIDTH="205" HEIGHT="344"></TD>
+    <TD><IMG SRC="../TTPoints.png" WIDTH="205" HEIGHT="300"></TD>
   </TR>
   <TR VALIGN="Top">
 <!--<TD>Shows the truetype graphics state.</TD>-->
@@ -885,6 +901,12 @@ Stack, Points, Storage, Cvt, Raster and Gloss.
       current location or the original location. You may view them in the units
       of the current grid, or in em-units. -->
     <TD>点を表示する。トワイライトポイントを表示するか、グリフペーンで表示される点 (通常の点) を表示するかを選択可能です。現在の位置または元の位置を表示することができます。単位は、現在のグリッドのユニット数か em ユニットを選択可能です。
+      <P>
+<!--  When debugging a composite glyph the Transformed check box indicates whether
+      the points of the current component have been transformed (to show where
+      they fit in the composite) or not (showing where they are in the base component
+      - - this is what the instructions are working on). -->
+      複合グリフをデバッグ中、現在の点または部品に (複合グリフ内のどこに置けばよいかを見るために) 変形を適用しているか、(部品が元のグリフでどう見えるかを確かめるために) 変形を適用していないか (命令が実行途中の場合はこちらになります) は「変形を適用」チェックボックスに表示されます。
       <P>
 <!--The points may have some flags associated with them: 'P' means the point
       is an on curve point, 'C' means the point is an off curve point (a control
@@ -980,6 +1002,54 @@ values for the point size and resolution. This dlg can also control whether
 the fpgm and prep tables are debugged. Usually debugging will start when
 execution reaches the instructions associated with this glyph. -->
 ヒント(I)→デバッグ(D) メニューコマンドは、デバッガの終了 (「デバッグ」チェックボックスをオフにします) またはポイントサイズと解像度を変更してのデバッガの再実行にも使用できます。このダイアログは fpgm と prep テーブルもデバッグの対象にするかを設定できます。通常は、このグリフに付随する命令に実行が到達した時にデバッグが開始されます。
+<H3>
+<!-- Debugging composite glyphs -->
+     複合グリフのデバッグ方法
+</H3>
+<P>
+<!--
+FontForge is not as friendly when debugging composite glyphs as it should
+be - - this is influenced by the way truetype works. Suppose you want to debug
+the "Atilde" glyph. -->
+FontForge は、複合グリフのデバッグ時にはあまり十分に親切ではありません――これは TrueType の動作方法の影響によるものです。例えば "Atilde" グリフをデバッグしたいとしましょう。
+<P>
+<!--
+First FontForge will load and grid fit the "A" glyph, points from the "tilde"
+will not be displayed and behavior will be exactly the same as if you were
+debugging a stand alone "A". -->
+最初に FontForge が "A" グリフを読み込んでグリッド合わせを行う時点では、"tilde" の点は表示されず、"A" 単独をデバッグしているときと全く同じです。
+<P>
+<!--
+Then FontForge will load and grid fit the "tilde" glyph, and now points from
+the "A" glyph will not be visible. The point numbers on the "tilde" will
+be the same as they are in a stand-alone "tilde" (whereas in a true
+representation of "Atilde", the points numbering in the "tilde" component
+will be offset by the number of points in the "A" component). The "tilde"
+may appear oddly positioned, this is caused by rounding: the "tilde" will
+usually be translated, and this translation will usually be rounded to fit
+the pixel grid. The width line will show the width of the "tilde" and not
+of the "Atilde". -->
+次に FontForge は "tilde" グリフを読み込んでグリッド合わせを行い、この時点では "A" グリフの点は見えなくなります。"tilde" の点番号は単独の "tilde" のものと同じになるでしょう ("Atilde" の本当の表現では、部品 "tilde" の点の番号づけは部品 "A" の点の個数ぶんだけずらされたものになります)。"tilde" は、丸めによって変な位置に現れることがあります: "tilde" はふつう平行移動を施され、この移動量はピクセルグリッドに合わせて丸められます。横幅の線は "tilde" の幅を表し、"Atilde" の幅ではありません。
+<P>
+<!--
+Finally FontForge will execute any instructions in the composite itself,
+now all sub-components will be displayed, and all points will be numbered
+as they should be. -->
+最後に FontForge は複合グリフそのものに含まれる任意の命令を実行し、全ての構成部品が表示され、全ての点が正しく番号づけされます。
+<P>
+<!--
+Several words of caution: -->
+いくつか警告しておきます:
+<UL>
+  <LI>
+<!--If a component, or the composite as a whole, has no instructions then FontForge
+    will not debug that piece (there will be nothing to debug). -->
+    ある部品または複合グリフ全体に命令が含まれていない場合、FontForge はその部分をデバッグしません (デバッグするものが無いはずですから)。
+  <LI>
+<!--FontForge does not translate references which do point matching properly
+    until the entire glyph has been loaded. -->
+    FontForge は点のマッチングを正しく行う参照を、グリフ全体が読み込まれるまで平行移動しません。
+</UL>
 <TABLE ALIGN=RIGHT>
   <TR>
 <!--
