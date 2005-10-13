@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 19-Feb-2003 -->
-  <!-- AP: Last modified: 22-Dec-2004 -->
+  <!-- AP: Last modified: 22-Sep-2005 -->
   <TITLE>Random utilities for examining fonts</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -47,5 +47,9 @@ byte codes into readable postscript like instructions.
   <A HREF="http://cvs.sourceforge.net/viewcvs.cgi/fontforge/fontforge/fonttools/pcl2ttf.c">Pcl2Ttf</A>
 </H2>
 <P>
-Will extract ttf fonts embedded in an hp pcl file.
+Will extract ttf or bitmap fonts embedded in an hp pcl file. Bitmap fonts
+become bdf fonts (I don't have any examples of run length encoded bitmap
+fonts, and do not currently support them. If you have an rle bitmap pcl font
+please send it to me). I have neither documentation on nor examples of the
+"Intellifont" format, so these fonts are not supported.
 </BODY></HTML>
