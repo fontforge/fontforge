@@ -1008,6 +1008,7 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-static=PKGS  build static libraries default=no
+  --enable-shared=PKGS  build shared libraries default=yes
   --enable-static=PKGS  build static libraries default=yes
   --enable-shared=PKGS  build shared libraries default=no
   --enable-fast-install=PKGS  optimize for fast installation default=yes
@@ -2534,6 +2535,28 @@ esac
 else
   enable_static=no
 fi;
+# Check whether --enable-shared or --disable-shared was given.
+if test "${enable_shared+set}" = set; then
+  enableval="$enable_shared"
+  p=${PACKAGE-default}
+case $enableval in
+yes) enable_shared=yes ;;
+no) enable_shared=no ;;
+*)
+  enable_shared=no
+  # Look at the argument we got.  We use all the common list separators.
+  IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS="${IFS}:,"
+  for pkg in $enableval; do
+    if test "X$pkg" = "X$p"; then
+      enable_shared=yes
+    fi
+  done
+  IFS="$ac_save_ifs"
+  ;;
+esac
+else
+  enable_shared=yes
+fi;
 # Make sure we can run config.sub.
 $ac_config_sub sun4 >/dev/null 2>&1 ||
   { { echo "$as_me:$LINENO: error: cannot run $ac_config_sub" >&5
@@ -2607,7 +2630,7 @@ if test "${with_static_imagelibs+set}" = set; then
 
 fi;
 
-LDFLAGS="$LDFLAGS -L/usr/local/libs"
+LDFLAGS="$LDFLAGS -L/usr/local/lib"
 
 case "$host" in
 *-apple-darwin*)
@@ -4254,7 +4277,7 @@ test "x$enable_libtool_lock" != xno && enable_libtool_lock=yes
 case $host in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 4257 "configure"' > conftest.$ac_ext
+  echo '#line 4280 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -4830,7 +4853,7 @@ chmod -w .
 save_CFLAGS="$CFLAGS"
 CFLAGS="$CFLAGS -o out/conftest2.$ac_objext"
 compiler_c_o=no
-if { (eval echo configure:4833: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>out/conftest.err; } && test -s out/conftest2.$ac_objext; then
+if { (eval echo configure:4856: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>out/conftest.err; } && test -s out/conftest2.$ac_objext; then
   # The compiler can only warn and ignore the option if not recognized
   # So say no if there are warnings
   if test -s out/conftest.err; then
@@ -6765,7 +6788,7 @@ else
     lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 6768 "configure"
+#line 6791 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -6863,7 +6886,7 @@ else
     lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 6866 "configure"
+#line 6889 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

@@ -6,6 +6,7 @@ AC_INIT(fontforge/pfaedit.h)
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_DISABLE_STATIC
+AC_ENABLE_SHARED
 AC_CANONICAL_HOST
 
 gww_define_caps_for_alt="dontknow"
@@ -25,7 +26,7 @@ AC_ARG_WITH(static-imagelibs,
 
  ])
 
-LDFLAGS="$LDFLAGS -L/usr/local/libs"
+LDFLAGS="$LDFLAGS -L/usr/local/lib"
 
 case "$host" in
 *-apple-darwin*)
