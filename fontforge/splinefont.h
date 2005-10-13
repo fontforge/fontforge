@@ -1142,7 +1142,8 @@ enum ttf_flags { ttf_flag_shortps = 1, ttf_flag_nohints = 2,
 		    ttf_flag_pfed_comments=8, ttf_flag_pfed_colors=0x10,
 		    ttf_flag_otmode=0x20,
 		    ttf_flag_glyphmap=0x40,
-		    ttf_flag_TeXtable=0x80
+		    ttf_flag_TeXtable=0x80,
+		    ttf_flag_ofm=0x100
 		};
 enum openflags { of_fstypepermitted=1 };
 enum ps_flags { ps_flag_nohintsubs = 0x10000, ps_flag_noflex=0x20000,
@@ -1174,6 +1175,7 @@ extern int CheckAfmOfPostscript(SplineFont *sf,char *psname,EncMap *map);
 extern int LoadKerningDataFromAmfm(SplineFont *sf, char *filename, EncMap *map);
 extern int LoadKerningDataFromAfm(SplineFont *sf, char *filename, EncMap *map);
 extern int LoadKerningDataFromTfm(SplineFont *sf, char *filename, EncMap *map);
+extern int LoadKerningDataFromOfm(SplineFont *sf, char *filename, EncMap *map);
 extern int LoadKerningDataFromPfm(SplineFont *sf, char *filename, EncMap *map);
 extern int LoadKerningDataFromMacFOND(SplineFont *sf, char *filename, EncMap *map);
 extern int LoadKerningDataFromMetricsFile(SplineFont *sf, char *filename, EncMap *map);
@@ -1569,6 +1571,7 @@ extern int AmfmSplineFont(FILE *afm, MMSet *mm,int formattype,EncMap *map);
 extern int AfmSplineFont(FILE *afm, SplineFont *sf,int formattype,EncMap *map);
 extern int PfmSplineFont(FILE *pfm, SplineFont *sf,int type0,EncMap *map);
 extern int TfmSplineFont(FILE *afm, SplineFont *sf,int formattype,EncMap *map);
+extern int OfmSplineFont(FILE *afm, SplineFont *sf,int formattype,EncMap *map);
 extern char *EncodingName(Encoding *map);
 extern char *SFEncodingName(SplineFont *sf,EncMap *map);
 extern void SFLigaturePrepare(SplineFont *sf);

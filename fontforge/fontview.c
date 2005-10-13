@@ -1107,8 +1107,8 @@ return( FVOpenFont(_("Open Postscript Font"), dir,wild,mult));
 
 void MergeKernInfo(SplineFont *sf,EncMap *map) {
 #ifndef __Mac
-    static char wild = "*.{afm,tfm,pfm,bin,hqx,dfont}";
-    static char wild2[] = "*.{afm,amfm,tfm,pfm,bin,hqx,dfont}";
+    static char wild = "*.{afm,tfm,ofm,pfm,bin,hqx,dfont}";
+    static char wild2[] = "*.{afm,amfm,tfm,ofm,pfm,bin,hqx,dfont}";
 #else
     static char wild[] = "*";	/* Mac resource files generally don't have extensions */
     static char wild2[] = "*";
@@ -1181,8 +1181,8 @@ return( temp );
 
 void MergeKernInfo(SplineFont *sf,EncMap *map) {
 #ifndef __Mac
-    static unichar_t wild[] = { '*', '.', '{','a','f','m',',','t','f','m',',','p','f','m',',','b','i','n',',','h','q','x',',','d','f','o','n','t','}',  '\0' };
-    static unichar_t wild2[] = { '*', '.', '{','a','f','m',',','a','m','f','m',',','t','f','m',',','p','f','m',',','b','i','n',',','h','q','x',',','d','f','o','n','t','}',  '\0' };
+    static unichar_t wild[] = { '*', '.', '{','a','f','m',',','t','f','m',',','o','f','m',',','p','f','m',',','b','i','n',',','h','q','x',',','d','f','o','n','t','}',  '\0' };
+    static unichar_t wild2[] = { '*', '.', '{','a','f','m',',','a','m','f','m',',','t','f','m',',','o','f','m',',','p','f','m',',','b','i','n',',','h','q','x',',','d','f','o','n','t','}',  '\0' };
 #else
     static unichar_t wild[] = { '*', 0 };	/* Mac resource files generally don't have extensions */
     static unichar_t wild2[] = { '*', 0 };
