@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 19-Sep-2005 -->
+  <!-- AP: Last modified: 12-Oct-2005 -->
   <TITLE>FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -179,8 +179,8 @@ FontForge's capabilities.
 <P>
 <!--You can download a <A HREF="fontforge-20041012-1.src.rpm">source RPM</A>:
 Version: 12-Oct-2004<BR>--> You can download the
-<A HREF="fontforge_full-20050919.tar.bz2">source tree </A>in one .tgz file:
-Version 19-September-2005<BR>
+<A HREF="fontforge_full-20051012.tar.bz2">source tree </A>in one tarball:
+Version 12-October-2005<BR>
 Or you can go to the
 <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/">cvs
 tree</A> and get the most recent version. (This may be delayed by 24 hours)
@@ -400,13 +400,20 @@ bitmap fonts that fontforge uses
   <LI>
     <A HREF="http://canopus.iacp.dvo.ru/~panov/cm-unicode/">Computer Modern Unicode
     fonts</A>
+  <LI>
+    <A HREF="http://eyegene.ophthy.med.umich.edu/unicode/fontguide/">Unicode
+    Font Guide for Free/Libre Open Source Operating Systems</A> 
+      <HR>
+  <LI>
+    <A HREF="nonBMP/index.html">FontForge's conventions for non-BMP unicode bitmap
+    fonts</A>
 </UL>
 <H2>
   <A NAME="docs">Documentation</A>
 </H2>
 <P>
 All the documentation files in this directory bundled up into one
-<A HREF="fontforge_htdocs-20050909.tgz">tgz file</A> 9-September-2005.<BR>
+<A HREF="fontforge_htdocs-20051012.tgz">tgz file</A> 12-October-2005.<BR>
 If you do the following then FontForge will find the docs for you when you
 press F1 (ie. FontForge it will look in /usr/local/share/doc/fontforge before
 it looks on the web):
@@ -1078,8 +1085,9 @@ which company has given me the free time to write this program.
 	too.
       <LI>
 	<A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/fonttools/pcl2ttf.c">pcl2ttf</A>
-	-- Reads a pcl file (to go to an HP printer) and extracts any truetype fonts
-	in it.
+	-- Reads a pcl file (to go to an HP printer) and extracts any truetype or
+	bitmap fonts in it. (the bitmap fonts become bdf files, the truetype fonts
+	become ttf files).
     </UL>
   <LI>
     font organizers
@@ -1087,6 +1095,9 @@ which company has given me the free time to write this program.
       <LI>
 	<A HREF="http://freshmeat.net/projects/fontlinge/">fontlinge</A>
     </UL>
+  <LI>
+    <A HREF="http://eyegene.ophthy.med.umich.edu/unicode/fontguide/">Unicode
+    Font Guide for Free/Libre Open Source Operating Systems</A>
   <LI>
     <A HREF="otherlinks.html">Other related links...</A>
 </UL>
