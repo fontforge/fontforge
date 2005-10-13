@@ -299,10 +299,16 @@ static void DumpPOHeader(FILE *po,char *lang) {
     fprintf( po, "\"Project-Id-Version: PACKAGE VERSION\\n\"\n" );
     time(&now);
     tmnow = localtime(&now);
+#ifndef __Mac
     fprintf( po, "\"POT-Creation-Date: %d-%02d-%02d %02d:%02d+%02ld%02ld\\n\"\n",
 	    tmnow->tm_year+1900, tmnow->tm_mon, tmnow->tm_mday,
 	    tmnow->tm_hour, tmnow->tm_min,
 	    timezone/3600, (timezone/60)%60);
+#else
+    fprintf( po, "\"POT-Creation-Date: %d-%02d-%02d %02d:%02d\\n\"\n",
+	    tmnow->tm_year+1900, tmnow->tm_mon, tmnow->tm_mday,
+	    tmnow->tm_hour, tmnow->tm_min);
+#endif
     fprintf( po, "\"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\\n\"\n" );
     fprintf( po, "\"Last-Translator: FULL NAME <EMAIL@ADDRESS>\\n\"\n" );
     fprintf( po, "\"Language-Team: LANGUAGE <%s@li.org>\\n\"\n", lang );
