@@ -2178,6 +2178,7 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 		if ( fmflags&0x20 ) old_ttf_flags |= ttf_flag_pfed_comments;
 		if ( fmflags&0x40 ) old_ttf_flags |= ttf_flag_pfed_colors;
 		if ( fmflags&0x200 ) old_ttf_flags |= ttf_flag_TeXtable;
+		if ( fmflags&0x400 ) old_ttf_flags |= ttf_flag_ofm;
 	    }
 	} else if ( oldformatstate<=ff_ttfdfont || oldformatstate==ff_none ) {
 	    old_ttf_flags = 0;
@@ -2200,6 +2201,8 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	    if ( fmflags&0x20 ) old_ttf_flags |= ttf_flag_pfed_comments;
 	    if ( fmflags&0x40 ) old_ttf_flags |= ttf_flag_pfed_colors;
 	    if ( fmflags&0x100 ) old_ttf_flags |= ttf_flag_glyphmap;
+	    if ( fmflags&0x200 ) old_ttf_flags |= ttf_flag_TeXtable;
+	    if ( fmflags&0x400 ) old_ttf_flags |= ttf_flag_ofm;
 	} else {
 	    old_otf_flags = 0;
 		/* Applicable postscript flags */
@@ -2228,6 +2231,8 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	    if ( fmflags&0x20 ) old_otf_flags |= ttf_flag_pfed_comments;
 	    if ( fmflags&0x40 ) old_otf_flags |= ttf_flag_pfed_colors;
 	    if ( fmflags&0x100 ) old_otf_flags |= ttf_flag_glyphmap;
+	    if ( fmflags&0x200 ) old_ttf_flags |= ttf_flag_TeXtable;
+	    if ( fmflags&0x400 ) old_ttf_flags |= ttf_flag_ofm;
 	}
     }
 
