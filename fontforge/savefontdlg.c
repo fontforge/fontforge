@@ -51,6 +51,7 @@ static int nfnt_warned = false, post_warned = false;
 #define CID_PS_Hints		1007
 #define CID_PS_Restrict256	1008
 #define CID_PS_Round		1009
+#define CID_PS_OFM		1010
 #define CID_TTF_Hints		1101
 #define CID_TTF_FullPS		1102
 #define CID_TTF_AppleMode	1103
@@ -60,6 +61,7 @@ static int nfnt_warned = false, post_warned = false;
 #define CID_TTF_TeXTable	1107
 #define CID_TTF_OpenTypeMode	1108
 #define CID_TTF_GlyphMap	1109
+#define CID_TTF_OFM		1110
 
 
 struct gfc_data {
@@ -377,6 +379,69 @@ return( false );
 return( ret );
 }
 
+static int WriteOfmFile(char *filename,SplineFont *sf, int formattype, EncMap *map) {
+    char *buf = galloc(strlen(filename)+6), *pt, *pt2;
+    FILE *tfm, *enc;
+    int ret;
+#if defined(FONTFORGE_CONFIG_GDRAW)
+    unichar_t *temp;
+#endif
+    int i;
+    char *encname;
+    char *texparamnames[] = { "SLANT", "SPACE", "STRETCH", "SHRINK", "XHEIGHT", "QUAD", "EXTRASPACE", NULL };
+
+    strcpy(buf,filename);
+    pt = strrchr(buf,'.');
+    if ( pt!=NULL && (pt2=strrchr(buf,'/'))!=NULL && pt<pt2 )
+	pt = NULL;
+    if ( pt==NULL )
+	strcat(buf,".ofm");
+    else
+	strcpy(pt,".ofm");
+#if defined(FONTFORGE_CONFIG_GDRAW)
+    GProgressChangeLine1R(_STR_SavingOFM);
+    GProgressChangeLine2(temp=uc_copy(buf)); free(temp);
+    GProgressNext();
+#elif defined(FONTFORGE_CONFIG_GTK)
+    gwwv_progress_change_line1(_("Saving OFM File"));
+    gwwv_progress_change_line2(buf);
+#endif
+    tfm = fopen(buf,"wb");
+    if ( tfm==NULL )
+return( false );
+    ret = OfmSplineFont(tfm,sf,formattype,map);
+    if ( fclose(tfm)==-1 )
+	ret = 0;
+
+    pt = strrchr(buf,'.');
+    strcpy(pt,".cfg");
+    enc = fopen(buf,"wb");
+    free(buf);
+    if ( enc==NULL )
+return( false );
+
+    fprintf( enc, "VTITLE %s\n", sf->fontname );
+    fprintf( enc, "FAMILY %s\n", sf->familyname );
+    encname=NULL;
+    if ( sf->subfontcnt==0 && map->enc!=&custom )
+	encname = EncodingName(map->enc );
+    fprintf( enc, "CODINGSCHEME %s\n", encname==NULL?encname:"FONT-SPECIFIC" );
+
+    /* OfmSplineFont has already called TeXDefaultParams, so we don't have to */
+    fprintf( enc, "EPSILON 0.090\n" );		/* I have no idea what this means */
+    for ( i=0; texparamnames[i]!=NULL; ++i )
+	fprintf( enc, "%s %g\n", texparamnames[i], sf->texdata.params[i]/(double) (1<<20) );
+
+    for ( i=0; i<map->enccount && i<65536; ++i ) {
+	if ( map->map[i]!=-1 && SCWorthOutputting(sf->glyphs[map->map[i]]) )
+	    fprintf( enc, "%04X N %s", i, sf->glyphs[map->map[i]]->name );
+    }
+
+    if ( fclose(enc)==-1 )
+	ret = 0;
+return( ret );
+}
+
 #ifndef FONTFORGE_CONFIG_WRITE_PFM
 static
 #endif
@@ -481,6 +546,8 @@ return( false );
 		    d->ttf_flags |= ttf_flag_TeXtable;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_GlyphMap)) )
 		    d->ttf_flags |= ttf_flag_glyphmap;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_OFM)) )
+		    d->ttf_flags |= ttf_flag_ofm;
 	    } else if ( d->sod_which==2 ) {				/* OpenType */
 		d->otf_flags = 0;
 		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_FullPS)) )
@@ -497,6 +564,8 @@ return( false );
 		    d->otf_flags |= ttf_flag_TeXtable;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_GlyphMap)) )
 		    d->otf_flags |= ttf_flag_glyphmap;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_OFM)) )
+		    d->otf_flags |= ttf_flag_ofm;
 
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_AFM)) )
 		    d->otf_flags |= ps_flag_afm;
@@ -535,6 +604,8 @@ return( false );
 		    d->psotb_flags |= ttf_flag_TeXtable;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_GlyphMap)) )
 		    d->psotb_flags |= ttf_flag_glyphmap;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_OFM)) )
+		    d->psotb_flags |= ttf_flag_ofm;
 	    }
 	    d->sod_invoked = true;
 	}
@@ -560,6 +631,7 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
 
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_Hints),!(flags&ttf_flag_nohints));
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_FullPS),!(flags&ttf_flag_shortps));
+    GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_OFM),flags&ttf_flag_ofm);
     if ( d->optset[which] )
 	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_AppleMode),flags&ttf_flag_applemode);
     else if ( which==0 || which==3 )	/* Postscript */
@@ -611,12 +683,13 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_PfEdColors),which!=0);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_TeXTable),which!=0);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_GlyphMap),which!=0);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_OFM),which!=0);
 
     d->optset[which] = true;
 }
 
 #define OPT_Width	230
-#define OPT_Height	205
+#define OPT_Height	219
 
 static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     int flags;
@@ -749,7 +822,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
 
     group2 = k;
     gcd[k].gd.pos.x = 4; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+4;
-    gcd[k].gd.pos.width = OPT_Width-8; gcd[k].gd.pos.height = 86;
+    gcd[k].gd.pos.width = OPT_Width-8; gcd[k].gd.pos.height = 100;
     gcd[k].gd.flags = gg_enabled | gg_visible ;
     gcd[k++].creator = GGroupCreate;
 
@@ -832,6 +905,15 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.popup_msg = GStringGetResource(_STR_PrefsPopupG2N,NULL);
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_GlyphMap;
+    gcd[k++].creator = GCheckBoxCreate;
+
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
+    gcd[k].gd.flags = gg_visible ;
+    label[k].text = (unichar_t *) _STR_OutputOfm;
+    label[k].text_in_resource = true;
+    gcd[k].gd.popup_msg = GStringGetResource(_STR_OutputOfmPopup,NULL);
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_TTF_OFM;
     gcd[k++].creator = GCheckBoxCreate;
 
     gcd[k].gd.pos.x = 30-3; gcd[k].gd.pos.y = gcd[group2].gd.pos.y+gcd[group2].gd.pos.height+10-3;
@@ -1845,6 +1927,16 @@ return( true );
 	    GWidgetErrorR(_STR_Tfmfailedtitle,_STR_Tfmfailedtitle);
 #elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Tfm Save Failed"),_("Tfm Save Failed"));
+#endif
+	    err = true;
+	}
+    }
+    if ( !err && (flags&ttf_flag_ofm) ) {
+	if ( !WriteOfmFile(newname,sf,oldformatstate,map)) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
+	    GWidgetErrorR(_STR_Ofmfailedtitle,_STR_Ofmfailedtitle);
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    gwwv_post_error(_("Ofm Save Failed"),_("Ofm Save Failed"));
 #endif
 	    err = true;
 	}

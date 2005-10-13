@@ -1436,9 +1436,11 @@ static char str_GenerateHints[] = "Hints";
 static char str_Outputafm[] = "Output AFM";
 static char str_Outputpfm[] = "Output PFM";
 static char str_Outputtfm[] = "Output TFM & ENC";
+static char str_OutputOfm[] = "Output OFM & CFG";
 static char *str_OutputAfmPopup = "The AFM file contains metrics information that many word-processors will read when using a PostScript\256 font.";
 static char *str_OutputPfmPopup = "The PFM file contains information Windows needs to install a PostScript\256 font.";
 static char *str_OutputTfmPopup = "The tfm and enc files contain information TeX needs to install a PostScript\256 font.";
+static char *str_OutputOfmPopup = "The ofm and clf files contain information Omega needs to process a font.";
 static char str_AppleMode[] = "Apple";
 static char *str_AppleModePopup = "Apple and MS/Adobe differ about the format of truetype and opentype files\nThis allows you to select which standard to follow for your font.\nThe main differences are:\n The requirements for the 'postscript' name in the name table conflict\n Bitmap data are stored in different tables\n Scaled composite characters are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop"
 static char str_OpenTypeMode[] = "OpenType";
@@ -1448,6 +1450,7 @@ static char str_Nobitmapfonts[] = "No Bitmap Fonts";
 static char str_Afmfailedtitle[] = "Afm Save Failed";
 static char str_Pfmfailedtitle[] = "Pfm Save Failed";
 static char str_Tfmfailedtitle[] = "Tfm Save Failed";
+static char str_Ofmfailedtitle[] = "Ofm Save Failed";
 static char *str_SavingFont = "Saving font";
 static char *str_SavingPSFont = "Saving Postscript Font";
 static char *str_SavingMultiplePSFonts = "Saving Multiple Postscript Fonts";
@@ -1457,6 +1460,8 @@ static char *str_SavingAFM = "Saving AFM File";
 static char *str_SavingPFM = "Saving PFM File";
 static char *str_SavingTFM = "Saving TFM File";
 static char *str_SavingENC = "Saving ENC File";
+static char *str_SavingOFM = "Saving OFM File";
+static char *str_SavingCFG = "Saving CFG File";
 static char *str_SavingBitmapFonts = "Saving Bitmap Font(s)";
 static char *str_NotCID = "Not a CID format";
 static char *str_NotCIDOk = "You are attempting to save a CID font in a non-CID format. This is ok, but it means that only the current sub-font will be saved.\nIs that what you want?";
@@ -3966,6 +3971,10 @@ static char *str_DupUniInGrp = "The code point U+%04X occurs groups %.30s and %.
 static char *str_DupNameInGrp = "The glyph name \"%.30hs\" occurs in groups %.30s and %.30s";
 static char *str_BadRange = "Bad Range";
 static char *str_BadRangeStartMoreEnd = "Bad Range, start (%04X) is greater than end (%04X)";
+
+static char *str_UnlikelyOfm= "Unlikely Ofm file"
+static char *str_Level1Ofm = "This looks like a level1 (or level2) ofm. FontForge only supports level0 files, and can't read a real level1 file.";
+static char *str_BadOfm = "This doesn't look like an ofm file, I don't know how to read it."
 
     /* Adjectives, etc. that are sometimes masculine and sometimes feminine in french (perhaps other langs) */
 #if 0		/* Properly arranged dup entries for gettext */
