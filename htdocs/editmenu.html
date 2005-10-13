@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 20-Jul-2005 -->
+  <!-- AP: Last modified: 5-Oct-2005 -->
   <TITLE>The Edit Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -309,6 +309,12 @@ view this menu will be disabled when one of the text fields has the focus.
     frequently uses the same glyph as the space glyph. To accomplish this, select
     the space glyph, Copy Ref, select the non-breaking-space glyph and Same Glyph
     As).
+    <P>
+    Adobe suggests that you avoid this. Use a reference instead. In some situations
+    (I think pdf files is one) having one glyph with several encodings causes
+    problems (Acrobat uses the glyph to back-map through the encoding to work
+    out the unicode code point. But that will fail if a glyph has two unicode
+    code points associated with it).
   <DT>
     <A NAME="Clear">Clear</A>
   <DD>

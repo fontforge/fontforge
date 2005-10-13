@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 21-Sep-2005 -->
+  <!-- AP: Last modified: 12-Oct-2005 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -856,6 +856,8 @@ a[4][0] = "Nested array";
 	fmflags&amp;0x200 =&gt; generate a '<A HREF="non-standard.html#TeX">TeX</A>
 	' table containing (most) TeX font metrics information
       <LI>
+	fmflags&amp;0x400 =&gt; generate an ofm file (for omega)
+      <LI>
 	fmflags&amp;0x10000 =&gt; generate a tfm file
       <LI>
 	fmflags&amp;0x40000 =&gt; do not do flex hints
@@ -1165,6 +1167,12 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
   <DD>
     If the clipboard contains a reference to a single glyph then this makes all
     selected glyphs refer to that one.
+    <P>
+    Adobe suggests that you avoid this. Use a reference instead. In some situations
+    (I think pdf files is one) having one glyph with several encodings causes
+    problems (Acrobat uses the glyph to back-map through the encoding to work
+    out the unicode code point. But that will fail if a glyph has two unicode
+    code points associated with it).
   <DT>
     <A HREF="editmenu.html#Clear">Clear</A>
   <DD>
@@ -2324,10 +2332,10 @@ ApplySubstitution("*","*","vrt2")
     Arg is as above. This returns true if the glyph contains any splines, references
     or images.
   <DT>
-    <B>CharInfo</B>(str)<BR>
-    CharInfo("Kern",glyph-spec)<BR>
-    CharInfo("VKern",glyph-spec)<BR>
-    CharInfo(str,script,lang,tag)
+    <B><A NAME="GlyphInfo">GlyphInfo</A></B>(str)<BR>
+    GlyphInfo("Kern",glyph-spec)<BR>
+    GlyphInfo("VKern",glyph-spec)<BR>
+    GlyphInfo(str,script,lang,tag)
   <DD>
     There must be exactly one glyph selected in the font, and this returns
     information on it. The information returned depends on str with the obvious
@@ -2422,6 +2430,18 @@ ApplySubstitution("*","*","vrt2")
 	"GlyphIndex" returns the index of the current glyph in the ttf 'glyf' table,
 	or -1 if it has been created since. This value may change when a
 	truetype/opentype font is generated (to the index in the generated font).
+      <LI>
+	"LayerCount" returns the number of layers in the glyph. This will always
+	be 2 (foreground &amp; background) except in the case of a multilayered font.
+      <LI>
+	"RefCount" returns the number of references in the glyph
+      <LI>
+	"RefNames" returns an array containing the names of all glyphs refered to.
+	This may contain 0 elements. This may contain a glyph twice ("colon" might
+	refer twice to period)
+      <LI>
+	"RefTransform" returns an array of arrays. The bottom most arrays are 6 element
+	(real) transformation matrices which are applied to their respective glyphs.
     </UL>
     <P>
     Examples:
@@ -2436,6 +2456,10 @@ Select("a")
 verta = CharInfo("Substitution","*","dflt","vrt2")
 </PRE>
     </BLOCKQUOTE>
+  <DT>
+    CharInfo(str)
+  <DD>
+    Depreciated name for <A HREF="#GlyphInfo">GlyphInfo</A>
   <DT>
     SetGlyphTeX(height,depth[,subpos,suppos])
   <DD>
