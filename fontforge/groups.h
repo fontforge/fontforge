@@ -28,7 +28,7 @@
 #define _GROUPS_H
 
 typedef struct group {
-    unichar_t *name;		/* The name of this group */
+    char *name;			/* The name of this group (utf8) */
     struct group *parent;	/* parent of this group (NULL for group root) */
     int kid_cnt;		/* Number of sub-groups */
     struct group **kids;	/* The sub-groups */

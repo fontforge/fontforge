@@ -36,7 +36,8 @@ struct glyphdata {
     int fudge;
     int ccnt;
     int *contourends;
-    int pcnt;				/* Includes control points, excludes implied points */
+    int realcnt;			/* Includes control points, excludes implied points */
+    int pcnt;				/* Includes control points, includes implied points */
     struct pointdata *points;		/* Entries corresponding to control points are empty */
     int stemcnt;
     struct stemdata *stems;
@@ -52,10 +53,12 @@ struct glyphdata {
     struct st *stspace;
     DBounds size;
     struct pointdata **pspace;
+    struct stembundle *bundles;
 };
 
 struct pointdata {
     SplinePoint *sp;
+    SplineSet *ss;
     BasePoint nextunit, prevunit;	/* unit vectors pointing in the next/prev directions */
     struct linedata *nextline, *prevline;	/* any other points lying on approximately the same line */
     Spline *nextedge, *prevedge;		/* There should always be a matching spline, which may end up as part of a stem, and may not */
@@ -71,6 +74,12 @@ struct pointdata {
     unsigned int next_ver: 1;
     unsigned int prev_hor: 1;
     unsigned int prev_ver: 1;
+    unsigned int newpos_set: 2;		/* Holds three values: 0 (not), 1 (positioned by 1 stem), 2 (2 stems) */
+    unsigned int next_is_l: 1;
+    unsigned int prev_is_l: 1;
+    BasePoint newpos;
+    BasePoint newnext, newprev;
+    BasePoint posdir;		/* If point has been positioned in 1 direction, this is that direction */
 };
 
 struct linedata {
@@ -82,6 +91,7 @@ struct linedata {
 
 struct stemdata {
     BasePoint unit;		/* Unit vector pointing in direction of stem */
+    BasePoint l_to_r;		/* Unit vector pointing from left to right (across stem) */
     BasePoint left;		/* a point on one side of the stem (not necissarily left, even for vertical stems) */
     BasePoint right;		/* and one on the other */
     double width;
@@ -93,8 +103,44 @@ struct stemdata {
 	uint8 lnext, rnext;	/* are we using the next/prev side of the left/right points */
 	uint8 ltick, rtick;
     } *chunks;
+    struct splinebits {
+	struct splinebits *next;
+	Spline *s;
+	double tstart, tend;
+	double ustart, uend;	/* distance along unit from left */
+    } *lsb, *rsb;
+    int activecnt;
+    double (*active)[2];
     uint8 toobig;		/* Stem is fatter than tall, unlikely to be a real stem */
+    uint8 positioned;
+    uint8 ticked;
+    double len, clen;
+    struct stembundle *bundle;
+    double lpos, rpos;		/* When placed in a bundle, relative to the bundle's basepoint in l_to_r */
+    double lnew, rnew;		/* New position of left, right edges relative to bp,l_to_r */
 };
+
+struct stembounds {
+    struct stembounds *next;
+    struct stemdata *stem;
+    double tstart, tend;
+    uint8 isr;
+};
+
+struct splinesteminfo {
+    Spline *s;
+    struct stembounds *sb;
+};
+
+struct stembundle {
+    BasePoint *unit;		/* All these stems are parallel, pointing in unit direction */
+    BasePoint *l_to_r;		/* Axis along which these stems are ordered (normal to unit) */
+    BasePoint *bp;		/* Base point for measuring by l_to_r (stem->lpos,rpos) */
+    int cnt;			/* Number of stems in the bundle */
+    struct stemdata **stemlist;
+    struct stembundle *next;
+};
+    
 
 extern struct glyphdata *GlyphDataBuild(SplineChar *sc, int only_hv);
 extern void GlyphDataFree(struct glyphdata *gd);

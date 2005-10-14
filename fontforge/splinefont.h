@@ -231,11 +231,7 @@ enum pst_flags { pst_r2l=1, pst_ignorebaseglyphs=2, pst_ignoreligatures=4,
 	pst_ignorecombiningmarks=8 };
 enum anchorclass_type { act_mark, /* act_mklg, */act_mkmk, act_curs };
 typedef struct anchorclass {
-#ifdef FONTFORGE_CONFIG_GTK
     char *name;			/* in utf8 */
-#else
-    unichar_t *name;
-#endif
     uint32 feature_tag;
     uint16 script_lang_index;
     uint16 flags;
@@ -415,7 +411,7 @@ struct macname {
 struct otfname {
     struct otfname *next;
     uint16 lang;	/* windows language code */
-    unichar_t *name;
+    char *name;		/* utf8 */
 };
 
 typedef struct macfeat {
@@ -448,11 +444,7 @@ typedef struct undoes {
 	    int16 lbearingchange;
 	    int unicodeenc;			/* only for ut_statename */
 	    char *charname;			/* only for ut_statename */
-#ifdef FONTFORGE_CONFIG_GTK
 	    char *comment;			/* in utf8 */
-#else
-	    unichar_t *comment;			/* only for ut_statename */
-#endif
 	    PST *possub;			/* only for ut_statename */
 	    struct splinepointlist *splines;
 	    struct refchar *refs;
@@ -902,11 +894,7 @@ typedef struct splinechar {
 				/*  It may also contain a bunch of other stuff now */
     LigList *ligofme;		/* If this is the first character of a ligature then this gives us the list of possible ones */
 				/*  this field must be regenerated before the font is saved */
-#ifdef FONTFORGE_CONFIG_GTK
     char *comment;			/* in utf8 */
-#else
-    unichar_t *comment;
-#endif
     uint32 /*Color*/ color;
     AnchorPoint *anchor;
     uint8 *ttf_instrs;
@@ -928,11 +916,7 @@ enum ttfnames { ttf_copyright=0, ttf_family, ttf_subfamily, ttf_uniqueid,
     ttf_cidfindfontname, ttf_namemax };
 struct ttflangname {
     int lang;
-#ifdef FONTFORGE_CONFIG_GTK
     char *names[ttf_namemax];			/* in utf8 */
-#else
-    unichar_t *names[ttf_namemax];
-#endif
     int frommac[(ttf_namemax+31)/32];		/* Used when parsing the 'name' table */
     struct ttflangname *next;
 };
@@ -1077,7 +1061,7 @@ typedef struct splinefont {
 /* As usual, class 0 is unused */
     int mark_class_cnt;
     char **mark_classes;		/* glyph name list */
-    unichar_t **mark_class_names;	/* used within ff */
+    char **mark_class_names;		/* used within ff, utf8 */
 } SplineFont;
 
 /* I am going to simplify my life and not encourage intermediate designs */
@@ -1582,12 +1566,8 @@ extern KernClass *SFFindKernClass(SplineFont *sf,SplineChar *first,SplineChar *l
 	int *index,int allow_zero);
 extern KernClass *SFFindVKernClass(SplineFont *sf,SplineChar *first,SplineChar *last,
 	int *index,int allow_zero);
-#ifdef FONTFORGE_CONFIG_GTK
 extern int SCSetMetaData(SplineChar *sc,char *name,int unienc,
 	const char *comment);
-#else
-extern int SCSetMetaData(SplineChar *sc,char *name,int unienc,const unichar_t *comment);
-#endif
 
 extern enum uni_interp interp_from_encoding(Encoding *enc,enum uni_interp interp);
 extern const char *EncName(Encoding *encname);
@@ -1600,11 +1580,7 @@ extern int SFDWrite(char *filename,SplineFont *sf,EncMap *map);
 extern int SFDWriteBak(SplineFont *sf,EncMap *map);
 extern SplineFont *SFDRead(char *filename);
 extern SplineChar *SFDReadOneChar(SplineFont *sf,const char *name);
-#ifdef FONTFORGE_CONFIG_GTK
 extern char *TTFGetFontName(FILE *ttf,int32 offset,int32 off2);
-#else
-extern unichar_t *TTFGetFontName(FILE *ttf,int32 offset,int32 off2);
-#endif
 extern void TTFLoadBitmaps(FILE *ttf,struct ttfinfo *info, int onlyone);
 enum ttfflags { ttf_onlystrikes=1, ttf_onlyonestrike=2, ttf_onlykerns=4, ttf_onlynames=8 };
 extern SplineFont *_SFReadTTF(FILE *ttf,int flags,char *filename,struct fontdict *fd);
@@ -1691,11 +1667,7 @@ extern SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext
 	struct pschars *subrs, struct pschars *gsubrs, const char *name);
 extern void MatMultiply(real m1[6], real m2[6], real to[6]);
 
-#ifdef FONTFORGE_CONFIG_GTK
 extern int NameToEncoding(SplineFont *sf,EncMap *map,const char *uname);
-#else
-extern int NameToEncoding(SplineFont *sf,EncMap *map,const unichar_t *uname);
-#endif
 extern void GlyphHashFree(SplineFont *sf);
 extern int SFFindGID(SplineFont *sf, int unienc, const char *name );
 extern int SFFindSlot(SplineFont *sf, EncMap *map, int unienc, const char *name );
@@ -1838,25 +1810,15 @@ extern ASM *ASMFromFPST(SplineFont *sf,FPST *fpst,int ordered);
 extern struct sliflag { uint16 sli, flags; } *SFGetFormsList(SplineFont *sf,int test_dflt);
 extern int SFAnyConvertableSM(SplineFont *sf);
 
-#ifdef FONTFORGE_CONFIG_GTK
-extern char *MacStrToUnicode(const char *str,int macenc,int maclang);
-extern char *UnicodeToMacStr(const char *ustr,int macenc,int maclang);
-#else
-extern unichar_t *MacStrToUnicode(const char *str,int macenc,int maclang);
-extern char *UnicodeToMacStr(const unichar_t *ustr,int macenc,int maclang);
-#endif
+extern char *MacStrToUtf8(const char *str,int macenc,int maclang);
+extern char *Utf8ToMacStr(const char *ustr,int macenc,int maclang);
 extern uint8 MacEncFromMacLang(int maclang);
 extern uint16 WinLangFromMac(int maclang);
 extern uint16 WinLangToMac(int winlang);
 extern int CanEncodingWinLangAsMac(int winlang);
 extern int MacLangFromLocale(void);
-#ifdef FONTFORGE_CONFIG_GTK
 extern char *FindEnglishNameInMacName(struct macname *mn);
 extern char *PickNameFromMacName(struct macname *mn);
-#else
-extern unichar_t *FindEnglishNameInMacName(struct macname *mn);
-extern unichar_t *PickNameFromMacName(struct macname *mn);
-#endif
 extern MacFeat *FindMacFeature(SplineFont *sf, int feat,MacFeat **secondary);
 extern struct macsetting *FindMacSetting(SplineFont *sf, int feat, int set,struct macsetting **secondary);
 extern struct macname *FindMacSettingName(SplineFont *sf, int feat, int set);
@@ -1880,14 +1842,16 @@ extern char *MMExtractArrayNth(char *pt,int ipos);
 extern int MMValid(MMSet *mm,int complain);
 extern void MMKern(SplineFont *sf,SplineChar *first,SplineChar *second,int diff,
 	int sli,KernPair *oldkp);
-extern int MMBlendChar(MMSet *mm, int gid);
-extern int MMReblend(struct fontview *fv, MMSet *mm);
+extern char *MMBlendChar(MMSet *mm, int gid);
+extern int   MMReblend(struct fontview *fv, MMSet *mm);
 struct fontview *MMCreateBlendedFont(MMSet *mm,struct fontview *fv,real blends[MmMax],int tonew );
 
 extern char *EnforcePostScriptName(char *old);
 
-const unichar_t *TTFNameIds(int id);
-const unichar_t *MSLangString(int language);
+extern const char *TTFNameIds(int id);
+extern const char *MSLangString(int language);
+extern void FontInfoInit(void);
+
 
 # if HANYANG
 extern void SFDDumpCompositionRules(FILE *sfd,struct compositionrules *rules);
