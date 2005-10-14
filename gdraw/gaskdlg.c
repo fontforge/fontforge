@@ -1294,6 +1294,7 @@ static GWindow ChoiceDlgCreate8(struct dlg_info *d,const char *title,
     gcd[i].gd.label = &blabel[1];
     blabel[1].text = (unichar_t *) buts[1];
     blabel[1].text_is_1byte = true;
+    blabel[1].text_in_resource = true;
     gcd[i].gd.cid = CID_Cancel;
     gcd[i++].creator = GButtonCreate;
 
@@ -1320,7 +1321,7 @@ int GWidgetChoices8(const char *title, const char **choices,int cnt, int def,
     struct dlg_info d;
     GWindow gw;
     va_list ap;
-    char *buts[2];
+    char *buts[3];
 
     if ( screen_display==NULL )
 return( -2 );
@@ -1333,6 +1334,7 @@ return( -2 );
 	buts[0] = u2utf8_copy(GStringGetResource(_STR_OK,NULL));
 	buts[1] = u2utf8_copy(GStringGetResource(_STR_Cancel,NULL));
     }
+    buts[2] = NULL;
     gw = ChoiceDlgCreate8(&d,title,question,ap,
 	    choices,cnt,NULL, buts,def,true,false);
     va_end(ap);
@@ -1347,7 +1349,7 @@ return( -2 );
 return(d.ret);
 }
 
-int GWidgetChoicesBR8(char *title, const char **choices, int cnt, int def,
+int GWidgetChoicesB8(char *title, const char **choices, int cnt, int def,
 	char *buts[2], const char *question,...) {
     struct dlg_info d;
     GWindow gw;
@@ -1368,7 +1370,7 @@ return( -2 );
 return(d.ret);
 }
 
-int GWidgetChoicesBRM8(char *title, const char **choices,char *sel,
+int GWidgetChoicesBM8(char *title, const char **choices,char *sel,
 	int cnt, char *buts[2], const char *question,...) {
     struct dlg_info d;
     GWindow gw;
@@ -1376,10 +1378,22 @@ int GWidgetChoicesBRM8(char *title, const char **choices,char *sel,
     GGadget *list;
     GTextInfo **lsel;
     int i, len;
+    char *buttons[3];
 
     if ( screen_display==NULL )
 return( -2 );
 
+    if ( buts==NULL ) {
+	buts = buttons;
+	buttons[2] = NULL;
+	if ( _ggadget_use_gettext ) {
+	    buts[0] = _("_OK");
+	    buts[1] = _("_Cancel");
+	} else {
+	    buts[0] = u2utf8_copy(GStringGetResource(_STR_OK,NULL));
+	    buts[1] = u2utf8_copy(GStringGetResource(_STR_Cancel,NULL));
+	}
+    }
     va_start(ap,question);
     gw = ChoiceDlgCreate8(&d,title,question,ap,
 	    choices,cnt,sel,buts,-1,true,false);
@@ -1398,5 +1412,8 @@ return( -2 );
     GDrawDestroyWindow(gw);
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);
+    if ( !_ggadget_use_gettext ) {
+	free(buts[0]); free(buts[1]);
+    }
 return(d.ret);
 }

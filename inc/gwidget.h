@@ -147,6 +147,8 @@ int GWidgetChoicesBM8(char *title, const char **choices,char *sel,
 #define gwwv_ask_centered	GWidgetAskCentered8
 #define gwwv_post_error		GWidgetError8
 #define gwwv_post_notice	GWidgetPostNotice8
+#define gwwv_open_filename	GWidgetOpenFile8
+#define gwwv_save_filename	GWidgetSaveAsFile8
 
 void GWidgetCreateInsChar(void);	/* takes input even when a modal dlg is active */
 		/* but is not modal itself */

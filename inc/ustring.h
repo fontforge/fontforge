@@ -91,13 +91,24 @@ extern char *u322utf8_copy(const int32 *ubuf);
 extern char *u322utf8_strncpy(char *utf8buf, const int32 *ubuf,int len);
 extern uint32 utf8_ildb(const char **utf8_text);
 extern char *utf8_idpb(char *utf8_text,uint32 ch);
+extern char *utf8_db(char *utf8_text);
+extern char *utf8_ib(char *utf8_text);
 extern char *latin1_2_utf8_strcpy(char *utf8buf,const char *lbuf);
+extern char *latin1_2_utf8_copy(const char *lbuf);
+extern char *utf8_2_latin1_copy(const char *utf8buf);
+extern int utf8_strlen(const char *utf8_str); /* how many characters in the string */
+extern int utf82u_strlen(const char *utf8_str); /* how many long would this be in shorts (UCS2) */
+extern char *def2utf8_copy(const char *from);
+extern char *utf82def_copy(const char *ufrom);
 
 extern unichar_t *utf82u_strncpy(unichar_t *ubuf,const char *utf8buf,int len);
+extern unichar_t *utf82u_strcpy(unichar_t *ubuf,const char *utf8buf);
+extern void       utf82u_strcat(unichar_t *ubuf,const char *utf8buf);
 extern unichar_t *utf82u_copyn(const char *utf8buf,int len);
 extern unichar_t *utf82u_copy(const char *utf8buf);
 extern char *u2utf8_strcpy(char *utf8buf,const unichar_t *ubuf);
 extern char *u2utf8_copy(const unichar_t *ubuf);
+extern char *u2utf8_copyn(const unichar_t *ubuf,int len);
 extern unichar_t *encoding2u_strncpy(unichar_t *uto, const char *from, int n, enum encoding cs);
 extern char *u2encoding_strncpy(char *to, const unichar_t *ufrom, int n, enum encoding cs);
 extern unichar_t *def2u_strncpy(unichar_t *uto, const char *from, int n);

@@ -32,6 +32,7 @@ extern char *GFileMakeAbsoluteName(char *name);
 extern char *GFileBuildName(char *dir,char *fname,char *buffer,int size);
 extern char *GFileReplaceName(char *oldname,char *fname,char *buffer,int size);
 extern char *GFileNameTail(const char *oldname);
+extern char *GFileAppendFile(char *dir,char *name,int isdir);
 extern int GFileIsAbsolute(const char *file);
 extern int GFileIsDir(const char *file);
 extern int GFileExists(const char *file);
