@@ -154,6 +154,25 @@ return( pt+1);
 return( (char *)oldname );
 }
 
+char *GFileAppendFile(char *dir,char *name,int isdir) {
+    char *ret, *pt;
+
+    ret = galloc((strlen(dir)+strlen(name)+3));
+    strcpy(ret,dir);
+    pt = ret+strlen(ret);
+    if ( pt>ret && pt[-1]!='/' )
+	*pt++ = '/';
+    strcpy(pt,name);
+    if ( isdir ) {
+	pt += strlen(pt);
+	if ( pt>ret && pt[-1]!='/' ) {
+	    *pt++ = '/';
+	    *pt = '\0';
+	}
+    }
+return(ret);
+}
+
 int GFileIsAbsolute(const char *file) {
     if ( *file=='/' )
 return( true );

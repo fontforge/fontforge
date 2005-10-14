@@ -242,7 +242,7 @@ unichar_t *GWidgetSaveAsFile(const unichar_t *title, const unichar_t *defaultfil
     gcd[2].gd.pos.width = -1;
     gcd[2].gd.flags = gg_visible | gg_enabled;
     if ( _ggadget_use_gettext ) {
-	label[2].text = (unichar_t *) _("Filter");
+	label[2].text = (unichar_t *) _("_Filter");
 	label[2].text_is_1byte = true;
     } else
 	label[2].text = (unichar_t *) _STR_Filter;
@@ -270,8 +270,8 @@ unichar_t *GWidgetSaveAsFile(const unichar_t *title, const unichar_t *defaultfil
     gcd[4].gd.pos.width = -1;
     gcd[4].gd.flags = gg_visible | gg_enabled;
     if ( _ggadget_use_gettext ) {
-	label[1].text = (unichar_t *) _("_New");
-	label[1].text_is_1byte = true;
+	label[4].text = (unichar_t *) _("_New");
+	label[4].text_is_1byte = true;
     } else
 	label[4].text = (unichar_t *) _STR_New;
     label[4].text_in_resource = true;

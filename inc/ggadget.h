@@ -201,6 +201,7 @@ extern int GStringSetResourceFile(char *filename);	/* returns 1 for success, 0 f
 extern void GStringSetFallbackArray(const unichar_t **array,const unichar_t *mn,
 	const int *ires);
 unichar_t *GStringFileGetResource(char *filename, int index,unichar_t *mnemonic);
+extern void GResourceUseGetText(void);
 
 void GGadgetDestroy(GGadget *g);
 void GGadgetSetVisible(GGadget *g,int visible);
@@ -289,6 +290,7 @@ unichar_t *GFileChooserFileNameOfPos(GGadget *g, int pos);
 
 extern void GGadgetPreparePopup(GWindow base,const unichar_t *msg);
 extern void GGadgetPreparePopupR(GWindow base,int msg);
+extern void GGadgetPreparePopup8(GWindow base,char *msg);
 extern void GGadgetEndPopup(void);
 extern void GGadgetPopupExternalEvent(GEvent *e);
 
@@ -324,6 +326,8 @@ GGadget *CreateFileChooser(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *CreateGadgets(struct gwindow *base, GGadgetCreateData *gcd);
 
 GTextInfo **GTextInfoArrayFromList(GTextInfo *ti, uint16 *cnt);
+
+extern unichar_t *utf82u_mncopy(const char *utf8buf,unichar_t *mn);
 
 #if 0
 void GadgetRedraw(Gadget *g);

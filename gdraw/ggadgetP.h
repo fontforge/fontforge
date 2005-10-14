@@ -447,4 +447,3 @@ extern int GMenuBarCheckKey(GGadget *g, GEvent *event);
 extern void _GButton_SetDefault(GGadget *g,int32 is_default);
 
 extern int _ggadget_use_gettext;
-extern unichar_t *utf82u_mncopy(const char *utf8buf,unichar_t *mn);

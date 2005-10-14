@@ -29,12 +29,19 @@
 
 #if HAVE_LIBINTL_H
 # include <libintl.h>
-# define _(str)  gettext(str)
-# define N_(str) gettext_noop(str)
+# define _(str)			gettext(str)
+# define P_(str1,str_non1,n)	ngettext(str1,str_non1,n)
+/* For messages including utf8 characters. xgettext won't handle them */
+/*  so we must do something special. Not sure what yet */
+# define U_(str)		gettext(str)
 #else
-# define _(str)  (str)
-# define N_(str) (str)
+# define _(str)			(str)
+# define P_(str1,str_non1,n)	((n)==1?str1:str_non1)
+# define U_(str)		(str)
 #endif
+/* For messages including utf8 sequences that need gettext_noop treatment */
+#define NU_(str)	(str)
+#define N_(str)		(str)
 #define S_(str) sgettext(str)
 
 extern void GResourceUseGetText(void);

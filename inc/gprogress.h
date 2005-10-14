@@ -70,7 +70,8 @@ extern void GProgressChangeLine2_8(const char *line2); /* Changes the text in th
 #define gwwv_progress_change_line2	GProgressChangeLine2_8
 #define gwwv_progress_change_total	GProgressChangeTotal
 #define gwwv_progress_change_stages	GProgressChangeStages
-#define gwwv_progress_increment_by	GProgressIncrementBy
+#define gwwv_progress_increment		GProgressIncrementBy
 #define gwwv_progress_pause_timer	GProgressPauseTimer
 #define gwwv_progress_resume_timer	GProgressResumeTimer
+#define gwwv_progress_enable_stop	GProgressEnableStop
 #endif

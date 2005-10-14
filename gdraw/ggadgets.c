@@ -472,6 +472,13 @@ void GGadgetPreparePopupR(GWindow base,int msg) {
     GGadgetPreparePopup(base,GStringGetResource(msg,NULL));
 }
 
+void GGadgetPreparePopup8(GWindow base,char *msg) {
+    static unichar_t popup_msg[300];
+    utf82u_strncpy(popup_msg,msg,sizeof(popup_msg)/sizeof(popup_msg[0]));
+    popup_msg[sizeof(popup_msg)/sizeof(popup_msg[0])-1]=0;
+    GGadgetPreparePopup(base,popup_msg);
+}
+
 void _ggadget_redraw(GGadget *g) {
     GDrawRequestExpose(g->base, &g->r, false);
 }
