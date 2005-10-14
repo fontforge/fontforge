@@ -503,6 +503,10 @@ unichar_t *utf82u_strncpy(unichar_t *ubuf,const char *utf8buf,int len) {
 return( ubuf );
 }
 
+unichar_t *utf82u_strcpy(unichar_t *ubuf,const char *utf8buf) {
+return( utf82u_strncpy(ubuf,utf8buf,strlen(utf8buf)+1));
+}
+
 int32 *utf82u32_strncpy(int32 *ubuf,const char *utf8buf,int len) {
     int32 *upt=ubuf, *uend=ubuf+len-1;
     const uint8 *pt = (const uint8 *) utf8buf;
@@ -598,6 +602,10 @@ return( NULL );
 return( utf82u_strncpy(ubuf,utf8buf,len+1));
 }
 
+void utf82u_strcat(unichar_t *to,const char *from) {
+    utf82u_strcpy(to+u_strlen(to),from);
+}
+
 int32 *utf82u32_copy(const char *utf8buf) {
     int len;
     int32 *ubuf;
@@ -653,6 +661,36 @@ char *latin1_2_utf8_strcpy(char *utf8buf,const char *lbuf) {
 return( utf8buf );
 }
 
+char *latin1_2_utf8_copy(const char *lbuf) {
+    int len;
+    char *utf8buf;
+
+    if ( lbuf==NULL )
+return( NULL );
+
+    len = strlen(lbuf);
+    utf8buf = galloc(2*len+1);
+return( latin1_2_utf8_strcpy(utf8buf,lbuf));
+}
+
+char *utf8_2_latin1_copy(const char *utf8buf) {
+    int len;
+    int ch;
+    char *lbuf, *pt; const char *upt;
+
+    if ( utf8buf==NULL )
+return( NULL );
+
+    len = strlen(utf8buf);
+    lbuf = galloc(len+1);
+    for ( upt=utf8buf; (ch=utf8_ildb(&upt))!='\0'; )
+	if ( ch>=0xff )
+	    *pt++ = '?';
+	else
+	    *pt++ = ch;
+    *pt = '\0';
+return( lbuf );
+}
 
 char *u2utf8_copy(const unichar_t *ubuf) {
     int len;
@@ -664,6 +702,20 @@ return( NULL );
     len = u_strlen(ubuf);
     utf8buf = galloc((len+1)*3);
 return( u2utf8_strcpy(utf8buf,ubuf));
+}
+
+char *u2utf8_copyn(const unichar_t *ubuf,int len) {
+    int i;
+    char *utf8buf, *pt;
+
+    if ( ubuf==NULL )
+return( NULL );
+
+    utf8buf = pt = galloc((len+1)*3);
+    for ( i=0; i<len && *ubuf!='\0'; ++i )
+	pt = utf8_idpb(pt, *ubuf++);
+    *pt = '\0';
+return( utf8buf );
 }
 
 uint32 utf8_ildb(const char **_text) {
@@ -721,6 +773,23 @@ return( utf8_text );
 return( utf8_text );
 }
 
+
+char *utf8_ib(char *utf8_text) {
+    int ch;
+
+    /* Increment character */
+    if ( (ch = *utf8_text)=='\0' )
+return( utf8_text );
+    else if ( ch<=127 )
+return( utf8_text+1 );
+    else if ( ch<0xe0 )
+return( utf8_text+2 );
+    else if ( ch<0xf0 )
+return( utf8_text+3 );
+    else
+return( utf8_text+4 );
+}
+
 char *utf8_db(char *utf8_text) {
     /* Decrement utf8 pointer */
     unsigned char *pt = (unsigned char *) utf8_text;
@@ -743,4 +812,26 @@ char *utf8_db(char *utf8_text) {
 	}
     }
 return( (char *) pt );
+}
+
+int utf8_strlen(const char *utf8_str) {
+    /* how many characters in the string NOT bytes */
+    int len = 0;
+
+    while ( utf8_ildb(&utf8_str)!=0 )
+	++len;
+return( len );
+}
+
+int utf82u_strlen(const char *utf8_str) {
+    /* how many shorts needed to represent it in UCS2 */
+    int ch;
+    int len = 0;
+
+    while ( (ch = utf8_ildb(&utf8_str))!=0 )
+	if ( ch>0x10000 )
+	    len += 2;
+	else
+	    ++len;
+return( len );
 }
