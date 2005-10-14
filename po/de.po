@@ -1,0 +1,104 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as FontForge.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2005-08-29 17:43+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <de.c@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1\n"
+
+msgid "_Cancel"
+msgstr "_Abbrechen"
+
+msgid "_Open"
+msgstr "Ö_ffnen"
+
+msgid "_Save"
+msgstr "_Speichern"
+
+msgid "_New"
+msgstr "_Neu"
+
+msgid "Select _All"
+msgstr "Alles auswähle_n"
+
+msgid "_File"
+msgstr "_Datei"
+
+msgid "_Edit"
+msgstr "_Bearbeiten"
+
+msgid "_View"
+msgstr "_Ansicht"
+
+msgid "_Help"
+msgstr "_Hilfe"
+
+msgid "_Print..."
+msgstr "_Drucken..."
+
+msgid "_Revert File"
+msgstr "Neu _laden"
+
+msgid "S_ave as..."
+msgstr "Speichern _unter..."
+
+msgid "_Close"
+msgstr "S_chließen"
+
+msgid "Pr_eferences..."
+msgstr "_Einstellungen..."
+
+msgid "_Quit"
+msgstr "_Beenden"
+
+msgid "_Ligatures"
+msgstr "_Ligaturen"
+
+msgid "_Undo"
+msgstr "_Rückgängig machen"
+
+msgid "_Redo"
+msgstr "_Wieder herstellen"
+
+msgid "Cu_t"
+msgstr "_Ausschneiden"
+
+msgid "_Copy"
+msgstr "_Kopieren"
+
+msgid "_Paste"
+msgstr "Ein_fügen"
+
+msgid "_All Fonts"
+msgstr "_Alle Schriften"
+
+msgid "Styles (SubFamily)"
+msgstr "Schriftschnitte"
+
+msgid "_Yes"
+msgstr "_Ja"
+
+msgid "_No"
+msgstr "_Nein"
+
+msgid "Standard Ligatures"
+msgstr "Normale Ligaturen"
+
+msgid "Anchor-%d"
+msgstr "Anker-%d"
+
+msgid "GGadget|ButtonSize|55"
+msgstr "60"
+
+msgid "GGadget|ScaleFactor|100"
+msgstr "-2147483648"

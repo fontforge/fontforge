@@ -1,0 +1,9 @@
+MOFILES = es.mo fr.mo it.mo ja.mo ru.mo zh_TW.mo
+
+.SUFFIXES:
+.SUFFIXES: .po .mo
+
+all: $(MOFILES)
+
+.po.mo:
+	msgfmt -o $@ $<
