@@ -7,6 +7,7 @@ mandir = @mandir@
 includedir = @includedir@
 sharedir = $(prefix)/share/fontforge
 docdir = $(prefix)/share/doc/fontforge
+localedir = $(prefix)/share/locale
 
 srcdir = @srcdir@
 top_builddir = .
@@ -18,7 +19,7 @@ all: fontforge
 
 libs: libgunicode libgdraw
 
-fontforge: libgunicode libgdraw
+fontforge: libgunicode libgdraw pos
 	( cd fontforge ; $(MAKE) )
 
 libgunicode:
@@ -26,6 +27,9 @@ libgunicode:
 
 libgdraw:
 	( cd gdraw ; $(MAKE) )
+
+pos:
+	( cd po ; $(MAKE) )
 
 clean:
 	( cd fontforge ; $(MAKE) clean )
@@ -44,12 +48,12 @@ install_libs: libs
 # You may need to be root to do the install
 	mkdir -p $(libdir)
 	#-rm $(libdir)/libgdraw.so* $(libdir)/libgunicode.so.*
-	$(LIBTOOL) $(INSTALL) -c libgdraw.la $(libdir)/libgdraw.la
-	$(LIBTOOL) $(INSTALL) -c libgunicode.la $(libdir)/libgunicode.la
+	$(LIBTOOL) --mode=install $(INSTALL) -c libgdraw.la $(libdir)/libgdraw.la
+	$(LIBTOOL) --mode=install $(INSTALL) -c libgunicode.la $(libdir)/libgunicode.la
 	#cp .libs/*.so.*.* $(libdir)
-	$(LIBTOOL) --finish $(libdir)
+	$(LIBTOOL) --mode=finish $(libdir)
 	mkdir -p $(libdir)/pkgconfig
-	$(LIBTOOL) $(INSTALL) -c fontforge.pc $(libdir)/pkgconfig
+	$(LIBTOOL) --mode=install $(INSTALL) -c fontforge.pc $(libdir)/pkgconfig
 
 install_docs:
 	mkdir -p $(docdir)
@@ -60,16 +64,29 @@ install_docs:
 	-cp htdocs/flags/* $(docdir)/flags
 	-cp htdocs/ja/* $(docdir)/ja
 
-install: $(sharedir) all install_libs
+install_po:
+#There must be a better way to do this...
+	mkdir -p $(localedir)/es/LC_MESSAGES
+	cp po/es.mo $(localedir)/es/LC_MESSAGES/FontForge.mo
+	mkdir -p $(localedir)/fr/LC_MESSAGES
+	cp po/fr.mo $(localedir)/fr/LC_MESSAGES/FontForge.mo
+	mkdir -p $(localedir)/it/LC_MESSAGES
+	cp po/it.mo $(localedir)/it/LC_MESSAGES/FontForge.mo
+	mkdir -p $(localedir)/ru/LC_MESSAGES
+	cp po/ru.mo $(localedir)/ru/LC_MESSAGES/FontForge.mo
+	mkdir -p $(localedir)/ja/LC_MESSAGES
+	cp po/ja.mo $(localedir)/ja/LC_MESSAGES/FontForge.mo
+
+install: $(sharedir) all install_libs install_po
 # You may need to be root to do the install
 	mkdir -p $(bindir)
 	mkdir -p $(mandir)/man1
 	mkdir -p $(sharedir)
-	$(LIBTOOL) $(INSTALL) -c fontforge/fontforge $(bindir)
-	$(LIBTOOL) $(INSTALL) -c fontforge/sfddiff $(bindir)
-	-rm -f $(bindir)/pfaedit
-	(cd $(bindir) ; ln -s fontforge pfaedit)
-	cp fontforge/pfaedit-*.ui $(sharedir)
+	$(LIBTOOL) --mode=install $(INSTALL) -c fontforge/fontforge $(bindir)
+	$(LIBTOOL) --mode=install $(INSTALL) -c fontforge/sfddiff $(bindir)
+#	-rm -f $(bindir)/pfaedit
+#	(cd $(bindir) ; ln -s fontforge pfaedit)
+#	cp fontforge/pfaedit-*.ui $(sharedir)
 #The next line will fail for most installs. If you have downloaded the cidmaps
 # this will install them. If you haven't it won't. You only need the cidmaps
 # if you are editing CID keyed files (and even then you can live without them
@@ -83,6 +100,7 @@ uninstall:
 	-rm $(bindir)/fontforge
 	-rm $(bindir)/sfddiff
 	-rm $(sharedir)/pfaedit-*.ui
+	-rm $(localedir)/*/LC_MESSAGES/FontForge.mo
 	-rm $(mandir)/man1/fontforge.1
 	-rm $(mandir)/man1/sfddiff.1
 	-rm $(libdir)/libgdraw.so*
