@@ -50,9 +50,9 @@ typedef struct createwidthdata {
 #define CID_IncrVal	1012
 #define CID_ScaleVal	1013
 
-static int rb1[] = { _STR_SetWidthTo, _STR_SetLBearingTo, _STR_SetRBearingTo, _STR_SetVWidthTo };
-static int rb2[] = { _STR_IncrWidthBy, _STR_IncrLBearingBy, _STR_IncrRBearingBy, _STR_IncrVWidthBy };
-static int rb3[] = { _STR_ScaleWidthBy, _STR_ScaleLBearingBy, _STR_ScaleRBearingBy, _STR_ScaleVWidthBy };
+static char *rb1[] = { N_("Set Width To:"), N_("Set LBearing To:"), N_("Set RBearing To:"), N_("Set Vert. Advance To:") };
+static char *rb2[] = { N_("Increment Width By:"), N_("Increment LBearing By:"), N_("Increment RBearing By:"), N_("Increment V. Adv. By:") };
+static char *rb3[] = { N_("Scale Width By:"), N_("Scale LBearing By:"), N_("Scale RBearing By:"), N_("Scale VAdvance By:") };
 
 static int CW_OK(GGadget *g, GEvent *e) {
 
@@ -61,26 +61,26 @@ static int CW_OK(GGadget *g, GEvent *e) {
 	CreateWidthData *wd = GDrawGetUserData(GGadgetGetWindow(g));
 	if ( GGadgetIsChecked(GWidgetGetControl(wd->gw,CID_Set)) ) {
 	    wd->type = st_set;
-	    wd->setto = GetRealR(wd->gw,CID_SetVal,rb1[wd->wtype],&err);
+	    wd->setto = GetReal8(wd->gw,CID_SetVal,rb1[wd->wtype],&err);
 	    if ( wd->setto<0 && wd->wtype==wt_width ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		static int yesno[] = { _STR_Yes, _STR_No, 0 };
-		if ( GWidgetAskR(_STR_NegativeWidth, yesno, 0, 1, _STR_NegativeWidthCheck )==1 )
-#elif defined(FONTFORGE_CONFIG_GTK)
 		char *yesno[3];
+#if defined(FONTFORGE_CONFIG_GDRAW)
+		yesno[0] = _("_Yes");
+		yesno[1] = _("_No");
+#elif defined(FONTFORGE_CONFIG_GTK)
 		yesno[0] = GTK_STOCK_YES;
 		yesno[1] = GTK_STOCK_NO;
-		yesno[2] = NULL;
-		if ( gwwv_ask(_("Negative Width"), yesno, 0, 1, _("Negative character widths are not allowed in TrueType\nDo you really want a negative width?") )==1 )
 #endif
+		yesno[2] = NULL;
+		if ( gwwv_ask(_("Negative Width"), (const char **) yesno, 0, 1, _("Negative glyph widths are not allowed in TrueType\nDo you really want a negative width?") )==1 )
 return( true );
 	    }
 	} else if ( GGadgetIsChecked(GWidgetGetControl(wd->gw,CID_Incr)) ) {
 	    wd->type = st_incr;
-	    wd->increment = GetRealR(wd->gw,CID_IncrVal,rb2[wd->wtype],&err);
+	    wd->increment = GetReal8(wd->gw,CID_IncrVal,rb2[wd->wtype],&err);
 	} else {
 	    wd->type = st_scale;
-	    wd->scale = GetRealR(wd->gw,CID_ScaleVal,rb2[wd->wtype],&err);
+	    wd->scale = GetReal8(wd->gw,CID_ScaleVal,rb2[wd->wtype],&err);
 	}
 	(wd->doit)(wd);
     }
@@ -135,7 +135,7 @@ static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
     GTextInfo label[11];
     static CreateWidthData cwd;
     static GWindow winds[3];
-    static int title[] = { _STR_Setwidth, _STR_Setlbearing, _STR_Setrbearing, _STR_SetVWidth };
+    static char *title[] = { N_("Set Width..."), N_("Set LBearing..."), N_("Set RBearing..."), N_("Set Vertical Advance...") };
 
     cwd.done = false;
     cwd._fv = _fv;
@@ -145,12 +145,12 @@ static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
 
     if ( cwd.gw==NULL ) {
 	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
 	wattrs.event_masks = ~(1<<et_charup);
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-	wattrs.window_title = GStringGetResource(title[wtype],NULL);
+	wattrs.utf8_window_title = _(title[wtype]);
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,210));
@@ -160,8 +160,8 @@ static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
 	memset(&label,0,sizeof(label));
 	memset(&gcd,0,sizeof(gcd));
 
-	label[0].text = (unichar_t *) rb1[wtype];
-	label[0].text_in_resource = true;
+	label[0].text = (unichar_t *) _(rb1[wtype]);
+	label[0].text_is_1byte = true;
 	gcd[0].gd.label = &label[0];
 	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5; 
 	gcd[0].gd.flags = gg_enabled|gg_visible|gg_cb_on;
@@ -170,8 +170,8 @@ static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
 	gcd[0].data = (void *) CID_SetVal;
 	gcd[0].creator = GRadioCreate;
 
-	label[1].text = (unichar_t *) rb2[wtype];
-	label[1].text_in_resource = true;
+	label[1].text = (unichar_t *) _(rb2[wtype]);
+	label[1].text_is_1byte = true;
 	gcd[1].gd.label = &label[1];
 	gcd[1].gd.pos.x = 5; gcd[1].gd.pos.y = 32; 
 	gcd[1].gd.flags = gg_enabled|gg_visible;
@@ -180,8 +180,8 @@ static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
 	gcd[1].data = (void *) CID_IncrVal;
 	gcd[1].creator = GRadioCreate;
 
-	label[2].text = (unichar_t *) rb3[wtype];
-	label[2].text_in_resource = true;
+	label[2].text = (unichar_t *) _(rb3[wtype]);
+	label[2].text_is_1byte = true;
 	gcd[2].gd.label = &label[2];
 	gcd[2].gd.pos.x = 5; gcd[2].gd.pos.y = 59; 
 	gcd[2].gd.flags = gg_enabled|gg_visible;
@@ -223,7 +223,8 @@ static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
 	gcd[6].gd.pos.x = 20-3; gcd[6].gd.pos.y = 120-32-3;
 	gcd[6].gd.pos.width = -1; gcd[6].gd.pos.height = 0;
 	gcd[6].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[6].text = (unichar_t *) _STR_OK;
+	label[6].text = (unichar_t *) _("_OK");
+	label[6].text_is_1byte = true;
 	label[6].text_in_resource = true;
 	gcd[6].gd.mnemonic = 'O';
 	gcd[6].gd.label = &label[6];
@@ -233,7 +234,8 @@ static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
 	gcd[7].gd.pos.x = -20; gcd[7].gd.pos.y = 120-32;
 	gcd[7].gd.pos.width = -1; gcd[7].gd.pos.height = 0;
 	gcd[7].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[7].text = (unichar_t *) _STR_Cancel;
+	label[7].text = (unichar_t *) _("_Cancel");
+	label[7].text_is_1byte = true;
 	label[7].text_in_resource = true;
 	gcd[7].gd.label = &label[7];
 	gcd[7].gd.mnemonic = 'C';

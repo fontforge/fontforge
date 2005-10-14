@@ -211,7 +211,7 @@ void FindBlues( SplineFont *sf, real blues[14], real otherblues[10]) {
 	}
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	if ( !GProgressNext())
+	if ( !gwwv_progress_next())
 #elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
 #endif
@@ -3027,11 +3027,7 @@ void SplineFontAutoHint( SplineFont *_sf) {
 		    !sf->glyphs[i]->manualhints )
 		SplineCharAutoHint(sf->glyphs[i],bd);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    if ( !GProgressNext()) {
-#elif defined(FONTFORGE_CONFIG_GTK)
 	    if ( !gwwv_progress_next()) {
-#endif
 		k = _sf->subfontcnt+1;
 	break;
 	    }

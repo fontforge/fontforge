@@ -42,7 +42,7 @@ void FVOutline(FontView *fv, real width) {
 		fv->selected[i] && sc->layers[ly_fore].splines )
 	    ++cnt;
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressStartIndicatorR(10,_STR_Outlining,_STR_Outlining,0,cnt,1);
+    gwwv_progress_start_indicator(10,_("Outlining glyphs"),_("Outlining glyphs"),0,cnt,1);
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_start_indicator(10,_("Outlining characters"),_("Outlining characters"),0,cnt,1);
 #endif
@@ -65,7 +65,7 @@ void FVOutline(FontView *fv, real width) {
 	    SCCharChangedUpdate(sc);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	    if ( !GProgressNext())
+	    if ( !gwwv_progress_next())
 #elif defined(FONTFORGE_CONFIG_GTK)
 	    if ( !gwwv_progress_next())
 #endif
@@ -73,7 +73,7 @@ void FVOutline(FontView *fv, real width) {
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	}
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressEndIndicator();
+    gwwv_progress_end_indicator();
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_end_indicator();
 #endif
@@ -134,7 +134,7 @@ void FVInline(FontView *fv, real width, real inset) {
 		sc->layers[ly_fore].splines )
 	    ++cnt;
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressStartIndicatorR(10,_STR_Inlining,_STR_Inlining,0,cnt,1);
+    gwwv_progress_start_indicator(10,_("Inlining glyphs"),_("Inlining glyphs"),0,cnt,1);
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_start_indicator(10,_("Inlining characters"),_("Inlining characters"),0,cnt,1);
 #endif
@@ -161,7 +161,7 @@ void FVInline(FontView *fv, real width, real inset) {
 	    SCCharChangedUpdate(sc);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	    if ( !GProgressNext())
+	    if ( !gwwv_progress_next())
 #elif defined(FONTFORGE_CONFIG_GTK)
 	    if ( !gwwv_progress_next())
 #endif
@@ -169,7 +169,7 @@ void FVInline(FontView *fv, real width, real inset) {
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	}
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressEndIndicator();
+    gwwv_progress_end_indicator();
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_end_indicator();
 #endif
@@ -247,9 +247,9 @@ static int OD_OK(GGadget *g, GEvent *e) {
 	real width, gap;
 	int err = 0;
 
-	width = GetRealR(od->gw,CID_Width,_STR_Width,&err);
+	width = GetReal8(od->gw,CID_Width,_("_Width"),&err);
 	if ( od->isinline )
-	    gap = GetRealR(od->gw,CID_Gap,_STR_Gap,&err);
+	    gap = GetReal8(od->gw,CID_Gap,_("_Gap:"),&err);
 	if ( err )
 return(true);
 	def_outline_width = width;
@@ -312,16 +312,12 @@ void OutlineDlg(FontView *fv, CharView *cv,MetricsView *mv,int isinline) {
     od.isinline = isinline;
 
 	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
 	wattrs.event_masks = ~(1<<et_charup);
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	wattrs.window_title = GStringGetResource(isinline?_STR_Inline:_STR_Outline,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	wattrs.window_title = isinline?_("Inline");
-#endif
+	wattrs.utf8_window_title = isinline?_("Inline"):_("Outline");
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,170));
@@ -332,7 +328,8 @@ void OutlineDlg(FontView *fv, CharView *cv,MetricsView *mv,int isinline) {
 	memset(&gcd,0,sizeof(gcd));
 
 	i = 0;
-	label[i].text = (unichar_t *) _STR_WidthC;
+	label[i].text = (unichar_t *) _("_Width:");
+	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = 7; gcd[i].gd.pos.y = 7+3; 
@@ -349,7 +346,8 @@ void OutlineDlg(FontView *fv, CharView *cv,MetricsView *mv,int isinline) {
 	gcd[i++].creator = GTextFieldCreate;
 
 	if ( isinline ) {
-	    label[i].text = (unichar_t *) _STR_Gap;
+	    label[i].text = (unichar_t *) _("_Gap:");
+	    label[i].text_is_1byte = true;
 	    label[i].text_in_resource = true;
 	    gcd[i].gd.label = &label[i];
 	    gcd[i].gd.pos.x = 90; gcd[i].gd.pos.y = 7+3; 
@@ -369,7 +367,8 @@ void OutlineDlg(FontView *fv, CharView *cv,MetricsView *mv,int isinline) {
 	gcd[i].gd.pos.x = 20-3; gcd[i].gd.pos.y = 7+32;
 	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
 	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[i].text = (unichar_t *) _STR_OK;
+	label[i].text = (unichar_t *) _("_OK");
+	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.handle_controlevent = OD_OK;
@@ -378,7 +377,8 @@ void OutlineDlg(FontView *fv, CharView *cv,MetricsView *mv,int isinline) {
 	gcd[i].gd.pos.x = -20; gcd[i].gd.pos.y = 7+32+3;
 	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
 	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[i].text = (unichar_t *) _STR_Cancel;
+	label[i].text = (unichar_t *) _("_Cancel");
+	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.handle_controlevent = OD_Cancel;
@@ -1073,7 +1073,7 @@ void FVShadow(FontView *fv,real angle, real outline_width,
 		sc->layers[ly_fore].splines )
 	    ++cnt;
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressStartIndicatorR(10,_STR_Shadowing,_STR_Shadowing,0,cnt,1);
+    gwwv_progress_start_indicator(10,_("Shadowing glyphs"),_("Shadowing glyphs"),0,cnt,1);
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_start_indicator(10,_("Shadowing characters"),_("Shadowing characters"),0,cnt,1);
 #endif
@@ -1088,7 +1088,7 @@ void FVShadow(FontView *fv,real angle, real outline_width,
 	    SCCharChangedUpdate(sc);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	    if ( !GProgressNext())
+	    if ( !gwwv_progress_next())
 #elif defined(FONTFORGE_CONFIG_GTK)
 	    if ( !gwwv_progress_next())
 #endif
@@ -1096,7 +1096,7 @@ void FVShadow(FontView *fv,real angle, real outline_width,
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	}
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressEndIndicator();
+    gwwv_progress_end_indicator();
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_end_indicator();
 #endif
@@ -1136,9 +1136,9 @@ static int SD_OK(GGadget *g, GEvent *e) {
 	real width, angle, len;
 	int err = 0;
 
-	width = GetRealR(od->gw,CID_Width,_STR_Width,&err);
-	len = GetRealR(od->gw,CID_ShadowLen,_STR_ShadowLen,&err);
-	angle = GetRealR(od->gw,CID_LightAngle,_STR_LightAngle,&err);
+	width = GetReal8(od->gw,CID_Width,_("_Width"),&err);
+	len = GetReal8(od->gw,CID_ShadowLen,_("Shadow Length:"),&err);
+	angle = GetReal8(od->gw,CID_LightAngle,_("Light Angle:"),&err);
 	if ( err )
 return(true);
 	def_outline_width = width;
@@ -1174,16 +1174,12 @@ void ShadowDlg(FontView *fv, CharView *cv,MetricsView *mv,int wireframe) {
     od.wireframe = wireframe;
 
 	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
 	wattrs.event_masks = ~(1<<et_charup);
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	wattrs.window_title = GStringGetResource(_STR_Shadow,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	wattrs.window_title = _("Shadow");
-#endif
+	wattrs.utf8_window_title = _("Shadow");
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,160));
@@ -1194,8 +1190,8 @@ void ShadowDlg(FontView *fv, CharView *cv,MetricsView *mv,int wireframe) {
 	memset(&gcd,0,sizeof(gcd));
 
 	i = 0;
-	label[i].text = (unichar_t *) _STR_OutlineWidth;
-	label[i].text_in_resource = true;
+	label[i].text = (unichar_t *) _("Outline Width:");
+	label[i].text_is_1byte = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = 7; gcd[i].gd.pos.y = 7+3; 
 	gcd[i].gd.flags = gg_enabled|gg_visible;
@@ -1210,8 +1206,8 @@ void ShadowDlg(FontView *fv, CharView *cv,MetricsView *mv,int wireframe) {
 	gcd[i].gd.cid = CID_Width;
 	gcd[i++].creator = GTextFieldCreate;
 
-	label[i].text = (unichar_t *) _STR_ShadowLen;
-	label[i].text_in_resource = true;
+	label[i].text = (unichar_t *) _("Shadow Length:");
+	label[i].text_is_1byte = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = gcd[i-2].gd.pos.x; gcd[i].gd.pos.y = gcd[i-2].gd.pos.y+26;
 	gcd[i].gd.flags = gg_enabled|gg_visible;
@@ -1226,8 +1222,8 @@ void ShadowDlg(FontView *fv, CharView *cv,MetricsView *mv,int wireframe) {
 	gcd[i].gd.cid = CID_ShadowLen;
 	gcd[i++].creator = GTextFieldCreate;
 
-	label[i].text = (unichar_t *) _STR_LightAngle;
-	label[i].text_in_resource = true;
+	label[i].text = (unichar_t *) _("Light Angle:");
+	label[i].text_is_1byte = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = gcd[i-2].gd.pos.x; gcd[i].gd.pos.y = gcd[i-2].gd.pos.y+26;
 	gcd[i].gd.flags = gg_enabled|gg_visible;
@@ -1245,7 +1241,8 @@ void ShadowDlg(FontView *fv, CharView *cv,MetricsView *mv,int wireframe) {
 	gcd[i].gd.pos.x = 20-3; gcd[i].gd.pos.y = gcd[i-2].gd.pos.y+30;
 	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
 	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[i].text = (unichar_t *) _STR_OK;
+	label[i].text = (unichar_t *) _("_OK");
+	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.handle_controlevent = SD_OK;
@@ -1254,7 +1251,8 @@ void ShadowDlg(FontView *fv, CharView *cv,MetricsView *mv,int wireframe) {
 	gcd[i].gd.pos.x = -20; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+3;
 	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
 	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[i].text = (unichar_t *) _STR_Cancel;
+	label[i].text = (unichar_t *) _("_Cancel");
+	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.handle_controlevent = OD_Cancel;

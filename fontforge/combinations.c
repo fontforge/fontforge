@@ -44,9 +44,9 @@ GTextInfo sizes[] = {
 };
 enum sortby { sb_first, sb_second, sb_kern };
 GTextInfo sortby[] = {
-    { (unichar_t *) _STR_FirstChar, NULL, 0, 0, (void *) sb_first, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_SecondChar, NULL, 0, 0, (void *) sb_second, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_KernSize, NULL, 0, 0, (void *) sb_kern, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("First Char"), NULL, 0, 0, (void *) sb_first, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Second Char"), NULL, 0, 0, (void *) sb_second, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Kern Size"), NULL, 0, 0, (void *) sb_kern, NULL, 0, 0, 0, 0, 0, 0, 1},
     { NULL }
 };
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
@@ -65,10 +65,10 @@ return( false );
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 void SFShowLigatures(SplineFont *sf,SplineChar *searchfor) {
     int i, cnt;
-    unichar_t **choices=NULL;
+    char **choices=NULL;
     int *where=NULL;
     SplineChar *sc, *sc2;
-    unichar_t *pt, *line;
+    char *pt, *line;
     char *start, *end, ch;
     PST *pst;
 
@@ -79,17 +79,16 @@ void SFShowLigatures(SplineFont *sf,SplineChar *searchfor) {
 			if ( pst->type==pst_ligature &&
 				(searchfor==NULL || PSTContains(pst->u.lig.components,searchfor->name))) {
 		    if ( choices!=NULL ) {
-			line = pt = galloc((strlen(sc->name)+8+3*strlen(pst->u.lig.components))*sizeof(unichar_t));
-			uc_strcpy(pt,sc->name);
-			pt += u_strlen(pt);
+			line = pt = galloc((strlen(sc->name)+13+3*strlen(pst->u.lig.components)));
+			strcpy(pt,sc->name);
+			pt += strlen(pt);
 			if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 ) {
 			    *pt++='(';
-			    *pt++ = sc->unicodeenc;
+			    pt = utf8_idpb(pt,sc->unicodeenc);
 			    *pt++=')';
 			}
-			*pt++ = ' ';
-			*pt++ = 0x21d0;
-			*pt++ = ' ';
+			/* *pt++ = 0x21d0;*/ /* left arrow */
+			strcpy(pt," ⇐ "); pt += strlen(pt);
 			for ( start= pst->u.lig.components; ; start=end ) {
 			    while ( *start==' ' ) ++start;
 			    if ( *start=='\0' )
@@ -97,8 +96,8 @@ void SFShowLigatures(SplineFont *sf,SplineChar *searchfor) {
 			    for ( end=start+1; *end!='\0' && *end!=' '; ++end );
 			    ch = *end;
 			    *end = '\0';
-			    uc_strcpy( pt,start );
-			    pt += u_strlen(pt);
+			    strcpy( pt,start );
+			    pt += strlen(pt);
 			    sc2 = SFGetChar(sf,-1,start);
 			    *end = ch;
 			    if ( sc2!=NULL && sc2->unicodeenc!=-1 && sc2->unicodeenc<0x10000 ) {
@@ -121,18 +120,14 @@ void SFShowLigatures(SplineFont *sf,SplineChar *searchfor) {
 	choices = galloc((cnt+2)*sizeof(unichar_t *));
 	where = galloc((cnt+1)*sizeof(int));
 	if ( cnt==0 ) {
-	    choices[0] = uc_copy("<No Ligatures>");
+	    choices[0] = copy("<No Ligatures>");
 	    where[0] = -1;
 	    choices[1] = NULL;
     break;
 	}
     }
     choices[cnt] = NULL;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    i = GWidgetChoicesR(_STR_Ligatures, (const unichar_t **) choices,cnt, 0,_STR_SelectLigature);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    i = gwwv_choose(_("Ligatures"),(const unichar_t **) choices,cnt,0,_("Select a ligature to view"));
-#endif
+    i = gwwv_choose(_("Ligatures"),(const char **) choices,cnt,0,_("Select a ligature to view"));
     if ( i!=-1 && where[i]!=-1 )
 	CharViewCreate(sf->glyphs[where[i]],sf->fv,-1);
     free(where);
@@ -561,7 +556,7 @@ static void KP_ExposeKerns(KPData *kpd,GWindow pixmap,GRect *rect) {
     int i, as, x, em = kpd->sf->ascent+kpd->sf->descent, yoff;
     int first, last;
     struct kerns *kern;
-    char buffer[40]; unichar_t ubuf[100];
+    char buffer[140];
 
     first = rect->y/kpd->uh;
     last = (rect->y+rect->height+kpd->uh-1)/kpd->uh;
@@ -626,10 +621,9 @@ static void KP_ExposeKerns(KPData *kpd,GWindow pixmap,GRect *rect) {
 	    sprintf( buffer, "%d ", kern->newoff);
 	else
 	    sprintf( buffer, "%d,%d ", kern->newoff, kern->newyoff );
-	uc_strcpy(ubuf,buffer);
 	if ( kern->ac!=NULL )
-	    u_strncat(ubuf,kern->ac->name,sizeof(ubuf)/sizeof(ubuf[0]));
-	GDrawDrawText(pixmap,15,subclip.y+kpd->uh-kpd->fh+kpd->as,ubuf,-1,NULL,
+	    strncat(buffer,kern->ac->name,sizeof(buffer));
+	GDrawDrawText8(pixmap,15,subclip.y+kpd->uh-kpd->fh+kpd->as,buffer,-1,NULL,
 		kern->kp!=NULL && kern->newoff!=kern->kp->off ? 0xff0000 : 0x000000 );
 	if ( i+kpd->off_top==kpd->selected ) {
 	    sel.x = 0; sel.width = kpd->vwidth-1;
@@ -935,7 +929,7 @@ static void KPMenuRemove(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 static GMenuItem kernmenu[] = {
-    { { (unichar_t *) _STR_Clear, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'N' }, '\177', 0, NULL, NULL, KPMenuRemove },
+    { { (unichar_t *) N_("C_lear"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'N' }, '\177', 0, NULL, NULL, KPMenuRemove },
     { NULL }
 };
 
@@ -945,6 +939,7 @@ static int kpdv_e_h(GWindow gw, GEvent *event) {
     KPData *kpd = GDrawGetUserData(gw);
     int index, old_sel, temp;
     char buffer[100];
+    static int done=false;
 
     switch ( event->type ) {
       case et_expose:
@@ -970,6 +965,13 @@ return( true );
 	    KP_RefreshSel(kpd,index);
 	}
 	if ( event->u.mouse.button==3 && index>=0 ) {
+	    if ( !done ) {
+		int i;
+		for ( i=0; kernmenu[i].ti.text!=NULL || kernmenu[i].ti.line; ++i )
+		    if ( kernmenu[i].ti.text!=NULL )
+			kernmenu[i].ti.text = (unichar_t *) _((char *) kernmenu[i].ti.text);
+		done = true;
+	    }
 	    if ( kpd->ac==NULL )
 		GMenuCreatePopupMenu(gw,event, kernmenu);
 	} else if ( KP_Cursor(kpd,event)!=NULL ) {
@@ -1089,7 +1091,8 @@ void SFShowKernPairs(SplineFont *sf,SplineChar *sc,AnchorClass *ac) {
     GTextInfo label[9];
     FontRequest rq;
     static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
-    int as, ds, ld;
+    int as, ds, ld,i;
+    static int done=false;
 
     memset(&kpd,0,sizeof(kpd));
     kpd.sf = sf;
@@ -1105,16 +1108,12 @@ void SFShowKernPairs(SplineFont *sf,SplineChar *sc,AnchorClass *ac) {
 return;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(ac==NULL?_STR_KernPairs:_STR_AnchoredPairs,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = ac==NULL?_("Kern Pairs");
-#endif
+    wattrs.utf8_window_title = ac==NULL?_("Kern Pairs"):_("_Anchored Pairs");
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(200);
@@ -1124,7 +1123,8 @@ return;
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
 
-    label[0].text = (unichar_t *) _STR_Size;
+    label[0].text = (unichar_t *) _("_Size:");
+    label[0].text_is_1byte = true;
     label[0].text_in_resource = true;
     gcd[0].gd.label = &label[0];
     gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5+6; 
@@ -1139,12 +1139,18 @@ return;
     gcd[1].gd.handle_controlevent = KP_ChangeSize;
     gcd[1].creator = GListButtonCreate;
 
-    label[2].text = (unichar_t *) _STR_SortBy;
-    label[2].text_in_resource = true;
+    label[2].text = (unichar_t *) _("Sort By:");
+    label[2].text_is_1byte = true;
     gcd[2].gd.label = &label[2];
     gcd[2].gd.pos.x = gcd[0].gd.pos.x; gcd[2].gd.pos.y = gcd[0].gd.pos.y+25; 
     gcd[2].gd.flags = gg_enabled|gg_visible;
     gcd[2].creator = GLabelCreate;
+
+    if ( !done ) {
+	done = true;
+	for ( i=0; sortby[i].text!=NULL; ++i )
+	    sortby[i].text = (unichar_t *) _((char *) sortby[i].text);
+    }
 
     gcd[3].gd.label = &sortby[0]; gcd[3].gd.label->selected = true;
     gcd[3].gd.pos.x = 50; gcd[3].gd.pos.y = gcd[1].gd.pos.y+25;
@@ -1164,7 +1170,8 @@ return;
     gcd[5].gd.pos.x = 20-3; gcd[5].gd.pos.y = 17+37;
     gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
     gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[5].text = (unichar_t *) _STR_OK;
+    label[5].text = (unichar_t *) _("_OK");
+    label[5].text_is_1byte = true;
     label[5].text_in_resource = true;
     gcd[5].gd.mnemonic = 'O';
     gcd[5].gd.label = &label[5];
@@ -1175,7 +1182,8 @@ return;
     gcd[6].gd.pos.x = -20; gcd[6].gd.pos.y = gcd[5].gd.pos.y+3;
     gcd[6].gd.pos.width = -1; gcd[6].gd.pos.height = 0;
     gcd[6].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[6].text = (unichar_t *) _STR_Cancel;
+    label[6].text = (unichar_t *) _("_Cancel");
+    label[6].text_is_1byte = true;
     label[6].text_in_resource = true;
     gcd[6].gd.label = &label[6];
     gcd[6].gd.mnemonic = 'C';

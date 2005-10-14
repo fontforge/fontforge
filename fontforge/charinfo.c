@@ -79,17 +79,17 @@ typedef struct charinfo {
 #define CID_RestrictSelection	1116
 
 static GTextInfo glyphclasses[] = {
-    { (unichar_t *) _STR_Automatic, NULL, 0, 0, NULL, NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_NoClass, NULL, 0, 0, NULL, NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_BaseGlyph, NULL, 0, 0, NULL, NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_BaseLigature, NULL, 0, 0, NULL, NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_MarkGlyph, NULL, 0, 0, NULL, NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Component, NULL, 0, 0, NULL, NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Automatic"), NULL, 0, 0, NULL, NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("No Class"), NULL, 0, 0, NULL, NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Base Glyph"), NULL, 0, 0, NULL, NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Base Lig"), NULL, 0, 0, NULL, NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Mark"), NULL, 0, 0, NULL, NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Component"), NULL, 0, 0, NULL, NULL, false, false, false, false, false, false, true },
     { NULL, NULL }
 };
 
 static GTextInfo std_colors[] = {
-    { (unichar_t *) _STR_Default, &def_image, 0, 0, (void *) COLOR_DEFAULT, NULL, false, true, false, false, false, false, false, true },
+    { (unichar_t *) N_("Default"), &def_image, 0, 0, (void *) COLOR_DEFAULT, NULL, false, true, false, false, false, false, true },
     { NULL, &white_image, 0, 0, (void *) 0xffffff, NULL, false, true },
     { NULL, &red_image, 0, 0, (void *) 0xff0000, NULL, false, true },
     { NULL, &green_image, 0, 0, (void *) 0x00ff00, NULL, false, true },
@@ -101,685 +101,685 @@ static GTextInfo std_colors[] = {
 };
 
 GTextInfo scripts[] = {
-    { (unichar_t *) _STR_Arab, NULL, 0, 0, (void *) CHR('a','r','a','b'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Aramaic, NULL, 0, 0, (void *) CHR('a','r','a','m'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Armn, NULL, 0, 0, (void *) CHR('a','r','m','n'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Avestan, NULL, 0, 0, (void *) CHR('a','v','e','s'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Batak, NULL, 0, 0, (void *) CHR('b','a','t','k'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Beng, NULL, 0, 0, (void *) CHR('b','e','n','g'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Bliss, NULL, 0, 0, (void *) CHR('b','l','i','s'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Bopo, NULL, 0, 0, (void *) CHR('b','o','p','o'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Brahmi, NULL, 0, 0, (void *) CHR('b','r','a','h'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Brai, NULL, 0, 0, (void *) CHR('b','r','a','i'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Buginese, NULL, 0, 0, (void *) CHR('b','u','g','i'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Buhid, NULL, 0, 0, (void *) CHR('b','u','h','d'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Byzm, NULL, 0, 0, (void *) CHR('b','y','z','m'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Cans, NULL, 0, 0, (void *) CHR('c','a','n','s'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Cham, NULL, 0, 0, (void *) CHR('c','h','a','m'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Cher, NULL, 0, 0, (void *) CHR('c','h','e','r'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Cirth, NULL, 0, 0, (void *) CHR('c','i','r','t'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Hani, NULL, 0, 0, (void *) CHR('h','a','n','i'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_CyproMinoan, NULL, 0, 0, (void *) CHR('c','p','r','t'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_CypriotSyl, NULL, 0, 0, (void *) CHR('c','p','m','n'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Cyrl, NULL, 0, 0, (void *) CHR('c','y','r','l'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_DFLT, NULL, 0, 0, (void *) CHR('D','F','L','T'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Deseret, NULL, 0, 0, (void *) CHR('d','s','r','t'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Deva, NULL, 0, 0, (void *) CHR('d','e','v','a'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_EgyptianDemotic, NULL, 0, 0, (void *) CHR('e','g','y','d'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_EgyptianHieratic, NULL, 0, 0, (void *) CHR('e','g','y','h'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_EgyptianHieroglyphs, NULL, 0, 0, (void *) CHR('e','g','y','p'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Ethi, NULL, 0, 0, (void *) CHR('e','t','h','i'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Geor, NULL, 0, 0, (void *) CHR('g','e','o','r'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Glagolitic, NULL, 0, 0, (void *) CHR('g','l','a','g'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Gothic, NULL, 0, 0, (void *) CHR('g','o','t','h'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Grek, NULL, 0, 0, (void *) CHR('g','r','e','k'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Gujr, NULL, 0, 0, (void *) CHR('g','u','j','r'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Guru, NULL, 0, 0, (void *) CHR('g','u','r','u'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Jamo, NULL, 0, 0, (void *) CHR('j','a','m','o'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Hang, NULL, 0, 0, (void *) CHR('h','a','n','g'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Hanunoo, NULL, 0, 0, (void *) CHR('h','a','n','o'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Hebr, NULL, 0, 0, (void *) CHR('h','e','b','r'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_HmongPahawh, NULL, 0, 0, (void *) CHR('h','m','n','g'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Indus, NULL, 0, 0, (void *) CHR('i','n','d','s'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OldItalic, NULL, 0, 0, (void *) CHR('i','t','a','l'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Javanese, NULL, 0, 0, (void *) CHR('j','a','v','a'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_KayahLi, NULL, 0, 0, (void *) CHR('k','a','l','i'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Kana, NULL, 0, 0, (void *) CHR('k','a','n','a'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Kharosthi, NULL, 0, 0, (void *) CHR('k','h','a','r'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Knda, NULL, 0, 0, (void *) CHR('k','n','d','a'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Khmr, NULL, 0, 0, (void *) CHR('k','h','m','r'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Lao , NULL, 0, 0, (void *) CHR('l','a','o',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Latn, NULL, 0, 0, (void *) CHR('l','a','t','n'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Lepcha, NULL, 0, 0, (void *) CHR('l','e','p','c'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Limbu, NULL, 0, 0, (void *) CHR('l','i','m','b'), NULL, false, false, false, false, false, false, false, true },	/* Not in ISO 15924 !!!!!, just guessing */
-    { (unichar_t *) _STR_LinearA, NULL, 0, 0, (void *) CHR('l','i','n','a'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_LinearB, NULL, 0, 0, (void *) CHR('l','i','n','b'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Mandaean, NULL, 0, 0, (void *) CHR('m','a','n','d'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Mayan, NULL, 0, 0, (void *) CHR('m','a','y','a'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Mlym, NULL, 0, 0, (void *) CHR('m','l','y','m'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Mong, NULL, 0, 0, (void *) CHR('m','o','n','g'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Mymr, NULL, 0, 0, (void *) CHR('m','y','m','r'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Ogam, NULL, 0, 0, (void *) CHR('o','g','a','m'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Orya, NULL, 0, 0, (void *) CHR('o','r','y','a'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Osmanya, NULL, 0, 0, (void *) CHR('o','s','m','a'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Pahlavi, NULL, 0, 0, (void *) CHR('p','a','l','v'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Permic, NULL, 0, 0, (void *) CHR('p','e','r','m'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Phoenician, NULL, 0, 0, (void *) CHR('p','h','n','x'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Phaistos, NULL, 0, 0, (void *) CHR('p','h','s','t'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Pollard, NULL, 0, 0, (void *) CHR('p','l','r','d'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Rongorongo, NULL, 0, 0, (void *) CHR('r','o','r','o'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Runr, NULL, 0, 0, (void *) CHR('r','u','n','r'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Shavian, NULL, 0, 0, (void *) CHR('s','h','a','w'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Sinh, NULL, 0, 0, (void *) CHR('s','i','n','h'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Syrc, NULL, 0, 0, (void *) CHR('s','y','r','c'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Tagbanwa, NULL, 0, 0, (void *) CHR('t','a','g','b'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_TaiLe, NULL, 0, 0, (void *) CHR('t','a','i','l'), NULL, false, false, false, false, false, false, false, true },	/* Not in ISO 15924 !!!!!, just guessing */
-    { (unichar_t *) _STR_Taml, NULL, 0, 0, (void *) CHR('t','a','m','l'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Telu, NULL, 0, 0, (void *) CHR('t','e','l','u'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Tengwar, NULL, 0, 0, (void *) CHR('t','e','n','g'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Tifinagh, NULL, 0, 0, (void *) CHR('t','f','n','g'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Tagalog, NULL, 0, 0, (void *) CHR('t','g','l','g'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Thaa, NULL, 0, 0, (void *) CHR('t','h','a','a'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Thai, NULL, 0, 0, (void *) CHR('t','h','a','i'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Tibt, NULL, 0, 0, (void *) CHR('t','i','b','t'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Ugaritic, NULL, 0, 0, (void *) CHR('u','g','r','t'), NULL, false, false, false, false, false, false, false, true },	/* Not in ISO 15924 !!!!!, just guessing */
-    { (unichar_t *) _STR_Vai, NULL, 0, 0, (void *) CHR('v','a','i',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_VisibleSpeech, NULL, 0, 0, (void *) CHR('v','i','s','p'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_CuneiformOP, NULL, 0, 0, (void *) CHR('x','p','e','o'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_CuneiformSA, NULL, 0, 0, (void *) CHR('x','s','u','x'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_CuneiformUg, NULL, 0, 0, (void *) CHR('x','u','g','a'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Yi  , NULL, 0, 0, (void *) CHR('y','i',' ',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_PrivateUseScript1  , NULL, 0, 0, (void *) CHR('q','a','a','a'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_PrivateUseScript2  , NULL, 0, 0, (void *) CHR('q','a','a','b'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_UndeterminedScript  , NULL, 0, 0, (void *) CHR('z','y','y','y'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_UncodedScript  , NULL, 0, 0, (void *) CHR('z','z','z','z'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Arabic"), NULL, 0, 0, (void *) CHR('a','r','a','b'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Aramaic"), NULL, 0, 0, (void *) CHR('a','r','a','m'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Armenian"), NULL, 0, 0, (void *) CHR('a','r','m','n'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Avestan"), NULL, 0, 0, (void *) CHR('a','v','e','s'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Batak"), NULL, 0, 0, (void *) CHR('b','a','t','k'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Bengali"), NULL, 0, 0, (void *) CHR('b','e','n','g'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Bliss Symbolics"), NULL, 0, 0, (void *) CHR('b','l','i','s'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Bopomofo"), NULL, 0, 0, (void *) CHR('b','o','p','o'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) NU_("Brāhmī"), NULL, 0, 0, (void *) CHR('b','r','a','h'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Braille"), NULL, 0, 0, (void *) CHR('b','r','a','i'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Buginese"), NULL, 0, 0, (void *) CHR('b','u','g','i'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Buhid"), NULL, 0, 0, (void *) CHR('b','u','h','d'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Byzantine Music"), NULL, 0, 0, (void *) CHR('b','y','z','m'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Canadian Syllabics"), NULL, 0, 0, (void *) CHR('c','a','n','s'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Cham"), NULL, 0, 0, (void *) CHR('c','h','a','m'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Cherokee"), NULL, 0, 0, (void *) CHR('c','h','e','r'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Cirth"), NULL, 0, 0, (void *) CHR('c','i','r','t'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("CJK Ideographic"), NULL, 0, 0, (void *) CHR('h','a','n','i'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Cypro-Minoan"), NULL, 0, 0, (void *) CHR('c','p','r','t'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Cypriot syllabary"), NULL, 0, 0, (void *) CHR('c','p','m','n'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Cyrillic"), NULL, 0, 0, (void *) CHR('c','y','r','l'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Default"), NULL, 0, 0, (void *) CHR('D','F','L','T'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Deseret (Mormon)"), NULL, 0, 0, (void *) CHR('d','s','r','t'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Devanagari"), NULL, 0, 0, (void *) CHR('d','e','v','a'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Egyptian demotic"), NULL, 0, 0, (void *) CHR('e','g','y','d'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Egyptian hieratic"), NULL, 0, 0, (void *) CHR('e','g','y','h'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Egyptian hieroglyphs"), NULL, 0, 0, (void *) CHR('e','g','y','p'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Ethiopic"), NULL, 0, 0, (void *) CHR('e','t','h','i'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Georgian"), NULL, 0, 0, (void *) CHR('g','e','o','r'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Glagolitic"), NULL, 0, 0, (void *) CHR('g','l','a','g'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Gothic"), NULL, 0, 0, (void *) CHR('g','o','t','h'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Greek"), NULL, 0, 0, (void *) CHR('g','r','e','k'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Gujarati"), NULL, 0, 0, (void *) CHR('g','u','j','r'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Gurmukhi"), NULL, 0, 0, (void *) CHR('g','u','r','u'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Hangul Jamo"), NULL, 0, 0, (void *) CHR('j','a','m','o'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Hangul"), NULL, 0, 0, (void *) CHR('h','a','n','g'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) NU_("Hanunóo"), NULL, 0, 0, (void *) CHR('h','a','n','o'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Hebrew"), NULL, 0, 0, (void *) CHR('h','e','b','r'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Pahawh Hmong"), NULL, 0, 0, (void *) CHR('h','m','n','g'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Indus (Harappan)"), NULL, 0, 0, (void *) CHR('i','n','d','s'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Old Italic (Etruscan, Oscan, etc.)"), NULL, 0, 0, (void *) CHR('i','t','a','l'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Javanese"), NULL, 0, 0, (void *) CHR('j','a','v','a'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Kayah Li"), NULL, 0, 0, (void *) CHR('k','a','l','i'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Hiragana & Katakana"), NULL, 0, 0, (void *) CHR('k','a','n','a'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) NU_("Kharoṣṭhī"), NULL, 0, 0, (void *) CHR('k','h','a','r'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Kannada"), NULL, 0, 0, (void *) CHR('k','n','d','a'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Khmer"), NULL, 0, 0, (void *) CHR('k','h','m','r'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Lao") , NULL, 0, 0, (void *) CHR('l','a','o',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Latin"), NULL, 0, 0, (void *) CHR('l','a','t','n'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) NU_("Lepcha (Róng)"), NULL, 0, 0, (void *) CHR('l','e','p','c'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Limbu"), NULL, 0, 0, (void *) CHR('l','i','m','b'), NULL, false, false, false, false, false, false, true },	/* Not in ISO 15924 !!!!!, just guessing */
+    { (unichar_t *) N_("Linear A"), NULL, 0, 0, (void *) CHR('l','i','n','a'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Linear B"), NULL, 0, 0, (void *) CHR('l','i','n','b'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Mandaean"), NULL, 0, 0, (void *) CHR('m','a','n','d'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Mayan hieroglyphs"), NULL, 0, 0, (void *) CHR('m','a','y','a'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) NU_("Malayālam"), NULL, 0, 0, (void *) CHR('m','l','y','m'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Mongolian"), NULL, 0, 0, (void *) CHR('m','o','n','g'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Myanmar"), NULL, 0, 0, (void *) CHR('m','y','m','r'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Ogham"), NULL, 0, 0, (void *) CHR('o','g','a','m'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Oriya"), NULL, 0, 0, (void *) CHR('o','r','y','a'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Osmanya"), NULL, 0, 0, (void *) CHR('o','s','m','a'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Pahlavi"), NULL, 0, 0, (void *) CHR('p','a','l','v'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Old Permic"), NULL, 0, 0, (void *) CHR('p','e','r','m'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Phoenician"), NULL, 0, 0, (void *) CHR('p','h','n','x'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Phaistos"), NULL, 0, 0, (void *) CHR('p','h','s','t'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Pollard Phonetic"), NULL, 0, 0, (void *) CHR('p','l','r','d'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Rongorongo"), NULL, 0, 0, (void *) CHR('r','o','r','o'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Runic"), NULL, 0, 0, (void *) CHR('r','u','n','r'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Shavian"), NULL, 0, 0, (void *) CHR('s','h','a','w'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Sinhala"), NULL, 0, 0, (void *) CHR('s','i','n','h'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Syriac"), NULL, 0, 0, (void *) CHR('s','y','r','c'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Tagbanwa"), NULL, 0, 0, (void *) CHR('t','a','g','b'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Tai Le"), NULL, 0, 0, (void *) CHR('t','a','i','l'), NULL, false, false, false, false, false, false, true },	/* Not in ISO 15924 !!!!!, just guessing */
+    { (unichar_t *) N_("Tamil"), NULL, 0, 0, (void *) CHR('t','a','m','l'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Telugu"), NULL, 0, 0, (void *) CHR('t','e','l','u'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Tengwar"), NULL, 0, 0, (void *) CHR('t','e','n','g'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Tifinagh (Berber)"), NULL, 0, 0, (void *) CHR('t','f','n','g'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Tagalog"), NULL, 0, 0, (void *) CHR('t','g','l','g'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Thaana"), NULL, 0, 0, (void *) CHR('t','h','a','a'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Thai"), NULL, 0, 0, (void *) CHR('t','h','a','i'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Tibetan"), NULL, 0, 0, (void *) CHR('t','i','b','t'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Ugaritic"), NULL, 0, 0, (void *) CHR('u','g','r','t'), NULL, false, false, false, false, false, false, true },	/* Not in ISO 15924 !!!!!, just guessing */
+    { (unichar_t *) N_("Vai"), NULL, 0, 0, (void *) CHR('v','a','i',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Visible Speech"), NULL, 0, 0, (void *) CHR('v','i','s','p'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Cuneiform, Old Persian"), NULL, 0, 0, (void *) CHR('x','p','e','o'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Cuneiform, Sumero-Akkadian"), NULL, 0, 0, (void *) CHR('x','s','u','x'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Cuneiform, Ugaritic"), NULL, 0, 0, (void *) CHR('x','u','g','a'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Yi")  , NULL, 0, 0, (void *) CHR('y','i',' ',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Private Use Script 1")  , NULL, 0, 0, (void *) CHR('q','a','a','a'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Private Use Script 2")  , NULL, 0, 0, (void *) CHR('q','a','a','b'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Undetermined Script")  , NULL, 0, 0, (void *) CHR('z','y','y','y'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Uncoded Script")  , NULL, 0, 0, (void *) CHR('z','z','z','z'), NULL, false, false, false, false, false, false, true },
     { NULL }
 };
 
 GTextInfo languages[] = {
-    { (unichar_t *) _STR_OTFAbaza, NULL, 0, 0, (void *) CHR('A','B','A',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFAbkhazian, NULL, 0, 0, (void *) CHR('A','B','K',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFAdyghe, NULL, 0, 0, (void *) CHR('A','D','Y',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFAfrikaans, NULL, 0, 0, (void *) CHR('A','F','K',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFAfar, NULL, 0, 0, (void *) CHR('A','F','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFAgaw, NULL, 0, 0, (void *) CHR('A','G','W',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFAltai, NULL, 0, 0, (void *) CHR('A','L','T',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFAmharic, NULL, 0, 0, (void *) CHR('A','M','H',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFArabic, NULL, 0, 0, (void *) CHR('A','R','A',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFAari, NULL, 0, 0, (void *) CHR('A','R','I',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFArakanese, NULL, 0, 0, (void *) CHR('A','R','K',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFAssamese, NULL, 0, 0, (void *) CHR('A','S','M',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFAthapaskan, NULL, 0, 0, (void *) CHR('A','T','H',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFAvar, NULL, 0, 0, (void *) CHR('A','V','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFAwadhi, NULL, 0, 0, (void *) CHR('A','W','A',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFAymara, NULL, 0, 0, (void *) CHR('A','Y','M',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFAzeri, NULL, 0, 0, (void *) CHR('A','Z','E',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFBadaga, NULL, 0, 0, (void *) CHR('B','A','D',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFBaghelkhandi, NULL, 0, 0, (void *) CHR('B','A','G',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFBalkar, NULL, 0, 0, (void *) CHR('B','A','L',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFBaule, NULL, 0, 0, (void *) CHR('B','A','U',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFBerber, NULL, 0, 0, (void *) CHR('B','B','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFBench, NULL, 0, 0, (void *) CHR('B','C','H',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFBibleCree, NULL, 0, 0, (void *) CHR('B','C','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFBelarussian, NULL, 0, 0, (void *) CHR('B','E','L',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFBemba, NULL, 0, 0, (void *) CHR('B','E','M',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFBengali, NULL, 0, 0, (void *) CHR('B','E','N',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFBulgarian, NULL, 0, 0, (void *) CHR('B','G','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFBhili, NULL, 0, 0, (void *) CHR('B','H','I',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFBhojpuri, NULL, 0, 0, (void *) CHR('B','H','O',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFBikol, NULL, 0, 0, (void *) CHR('B','I','K',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFBilen, NULL, 0, 0, (void *) CHR('B','I','L',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFBlackfoot, NULL, 0, 0, (void *) CHR('B','K','F',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFBalochi, NULL, 0, 0, (void *) CHR('B','L','I',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFBalante, NULL, 0, 0, (void *) CHR('B','L','N',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFBalti, NULL, 0, 0, (void *) CHR('B','L','T',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFBambara, NULL, 0, 0, (void *) CHR('B','M','B',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFBamileke, NULL, 0, 0, (void *) CHR('B','M','L',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFBreton, NULL, 0, 0, (void *) CHR('B','R','E',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFBrahui, NULL, 0, 0, (void *) CHR('B','R','H',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFBrajBhasha, NULL, 0, 0, (void *) CHR('B','R','I',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFBurmese, NULL, 0, 0, (void *) CHR('B','R','M',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFBashkir, NULL, 0, 0, (void *) CHR('B','S','H',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFBeti, NULL, 0, 0, (void *) CHR('B','T','I',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFCatalan, NULL, 0, 0, (void *) CHR('C','A','T',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFCebuano, NULL, 0, 0, (void *) CHR('C','E','B',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFChechen, NULL, 0, 0, (void *) CHR('C','H','E',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFChahaGurage, NULL, 0, 0, (void *) CHR('C','H','G',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFChattisgarhi, NULL, 0, 0, (void *) CHR('C','H','H',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFChichewa, NULL, 0, 0, (void *) CHR('C','H','I',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFChukchi, NULL, 0, 0, (void *) CHR('C','H','K',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFChipewyan, NULL, 0, 0, (void *) CHR('C','H','P',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFCherokee, NULL, 0, 0, (void *) CHR('C','H','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFChuvash, NULL, 0, 0, (void *) CHR('C','H','U',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFComorian, NULL, 0, 0, (void *) CHR('C','M','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFCoptic, NULL, 0, 0, (void *) CHR('C','O','P',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFCree, NULL, 0, 0, (void *) CHR('C','R','E',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFCarrier, NULL, 0, 0, (void *) CHR('C','R','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFCrimeanTatar, NULL, 0, 0, (void *) CHR('C','R','T',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFChurchSlavonic, NULL, 0, 0, (void *) CHR('C','S','L',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFCzech, NULL, 0, 0, (void *) CHR('C','S','Y',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFDanish, NULL, 0, 0, (void *) CHR('D','A','N',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFDargwa, NULL, 0, 0, (void *) CHR('D','A','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Default, NULL, 0, 0, (void *) DEFAULT_LANG, NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFWoodsCree, NULL, 0, 0, (void *) CHR('D','C','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFGermanStandard, NULL, 0, 0, (void *) CHR('D','E','U',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFDogri, NULL, 0, 0, (void *) CHR('D','G','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFDhivehi, NULL, 0, 0, (void *) CHR('D','H','V',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFDjerma, NULL, 0, 0, (void *) CHR('D','J','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFDangme, NULL, 0, 0, (void *) CHR('D','N','G',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Default, NULL, 0, 0, (void *) CHR('D','F','L','T'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFDinka, NULL, 0, 0, (void *) CHR('D','N','K',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFDungan, NULL, 0, 0, (void *) CHR('D','U','N',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFDzongkha, NULL, 0, 0, (void *) CHR('D','Z','N',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFEbira, NULL, 0, 0, (void *) CHR('E','B','I',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFEasternCree, NULL, 0, 0, (void *) CHR('E','C','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFEdo, NULL, 0, 0, (void *) CHR('E','D','O',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFEfik, NULL, 0, 0, (void *) CHR('E','F','I',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFGreek, NULL, 0, 0, (void *) CHR('E','L','L',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFEnglish, NULL, 0, 0, (void *) CHR('E','N','G',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFErzya, NULL, 0, 0, (void *) CHR('E','R','Z',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFSpanish, NULL, 0, 0, (void *) CHR('E','S','P',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFEstonian, NULL, 0, 0, (void *) CHR('E','T','I',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFBasque, NULL, 0, 0, (void *) CHR('E','U','Q',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFEvenki, NULL, 0, 0, (void *) CHR('E','V','K',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFEven, NULL, 0, 0, (void *) CHR('E','V','N',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFEwe, NULL, 0, 0, (void *) CHR('E','W','E',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFFrenchAntillean, NULL, 0, 0, (void *) CHR('F','A','N',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFFarsi, NULL, 0, 0, (void *) CHR('F','A','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFFinnish, NULL, 0, 0, (void *) CHR('F','I','N',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFFijian, NULL, 0, 0, (void *) CHR('F','J','I',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFFlemish, NULL, 0, 0, (void *) CHR('F','L','E',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFForestNenets, NULL, 0, 0, (void *) CHR('F','N','E',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFFon, NULL, 0, 0, (void *) CHR('F','O','N',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFFaroese, NULL, 0, 0, (void *) CHR('F','O','S',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFFrenchStandard, NULL, 0, 0, (void *) CHR('F','R','A',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFFrisian, NULL, 0, 0, (void *) CHR('F','R','I',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFFriulian, NULL, 0, 0, (void *) CHR('F','R','L',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFFuta, NULL, 0, 0, (void *) CHR('F','T','A',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFFulani, NULL, 0, 0, (void *) CHR('F','U','L',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFGa, NULL, 0, 0, (void *) CHR('G','A','D',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFGaelic, NULL, 0, 0, (void *) CHR('G','A','E',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFGagauz, NULL, 0, 0, (void *) CHR('G','A','G',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFGalician, NULL, 0, 0, (void *) CHR('G','A','L',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFGarshuni, NULL, 0, 0, (void *) CHR('G','A','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFGarhwali, NULL, 0, 0, (void *) CHR('G','A','W',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFGeez, NULL, 0, 0, (void *) CHR('G','E','Z',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFGilyak, NULL, 0, 0, (void *) CHR('G','I','L',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFGumuz, NULL, 0, 0, (void *) CHR('G','M','Z',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFGondi, NULL, 0, 0, (void *) CHR('G','O','N',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFGreenlandic, NULL, 0, 0, (void *) CHR('G','R','N',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFGaro, NULL, 0, 0, (void *) CHR('G','R','O',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFGuarani, NULL, 0, 0, (void *) CHR('G','U','A',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFGujarati, NULL, 0, 0, (void *) CHR('G','U','J',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFHaitian, NULL, 0, 0, (void *) CHR('H','A','I',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFHalam, NULL, 0, 0, (void *) CHR('H','A','L',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFHarauti, NULL, 0, 0, (void *) CHR('H','A','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFHausa, NULL, 0, 0, (void *) CHR('H','A','U',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFHawaiin, NULL, 0, 0, (void *) CHR('H','A','W',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFHammer_Banna, NULL, 0, 0, (void *) CHR('H','B','N',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFHiligaynon, NULL, 0, 0, (void *) CHR('H','I','L',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFHindi, NULL, 0, 0, (void *) CHR('H','I','N',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFHighMari, NULL, 0, 0, (void *) CHR('H','M','A',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFHindko, NULL, 0, 0, (void *) CHR('H','N','D',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFHo, NULL, 0, 0, (void *) CHR('H','O',' ',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFHarari, NULL, 0, 0, (void *) CHR('H','R','I',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFCroatian, NULL, 0, 0, (void *) CHR('H','R','V',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFHungarian, NULL, 0, 0, (void *) CHR('H','U','N',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFArmenian, NULL, 0, 0, (void *) CHR('H','Y','E',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFIgbo, NULL, 0, 0, (void *) CHR('I','B','O',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFIjo, NULL, 0, 0, (void *) CHR('I','J','O',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFIlokano, NULL, 0, 0, (void *) CHR('I','L','O',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFIndonesian, NULL, 0, 0, (void *) CHR('I','N','D',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFIngush, NULL, 0, 0, (void *) CHR('I','N','G',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFInuktitut, NULL, 0, 0, (void *) CHR('I','N','U',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFIrish, NULL, 0, 0, (void *) CHR('I','R','I',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFIrishTraditional, NULL, 0, 0, (void *) CHR('I','R','T',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFIcelandic, NULL, 0, 0, (void *) CHR('I','S','L',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFInariSami, NULL, 0, 0, (void *) CHR('I','S','M',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFItalian, NULL, 0, 0, (void *) CHR('I','T','A',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFHebrew, NULL, 0, 0, (void *) CHR('I','W','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFJavanese, NULL, 0, 0, (void *) CHR('J','A','V',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFYiddish, NULL, 0, 0, (void *) CHR('J','I','I',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFJapanese, NULL, 0, 0, (void *) CHR('J','A','N',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFJudezmo, NULL, 0, 0, (void *) CHR('J','U','D',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFJula, NULL, 0, 0, (void *) CHR('J','U','L',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKabardian, NULL, 0, 0, (void *) CHR('K','A','B',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKachchi, NULL, 0, 0, (void *) CHR('K','A','C',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKalenjin, NULL, 0, 0, (void *) CHR('K','A','L',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKannada, NULL, 0, 0, (void *) CHR('K','A','N',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKarachay, NULL, 0, 0, (void *) CHR('K','A','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFGeorgian, NULL, 0, 0, (void *) CHR('K','A','T',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKazakh, NULL, 0, 0, (void *) CHR('K','A','Z',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKebena, NULL, 0, 0, (void *) CHR('K','E','B',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKhutsuriGeorgian, NULL, 0, 0, (void *) CHR('K','G','E',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKhakass, NULL, 0, 0, (void *) CHR('K','H','A',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKhanty_Kazim, NULL, 0, 0, (void *) CHR('K','H','K',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKhmer, NULL, 0, 0, (void *) CHR('K','H','M',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKhanty_Shurishkar, NULL, 0, 0, (void *) CHR('K','H','S',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKhanty_Vakhi, NULL, 0, 0, (void *) CHR('K','H','V',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKhowar, NULL, 0, 0, (void *) CHR('K','H','W',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKikuyu, NULL, 0, 0, (void *) CHR('K','I','K',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKirghiz, NULL, 0, 0, (void *) CHR('K','I','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKisii, NULL, 0, 0, (void *) CHR('K','I','S',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKokni, NULL, 0, 0, (void *) CHR('K','K','N',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKalmyk, NULL, 0, 0, (void *) CHR('K','L','M',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKamba, NULL, 0, 0, (void *) CHR('K','M','B',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKumaoni, NULL, 0, 0, (void *) CHR('K','M','N',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKomo, NULL, 0, 0, (void *) CHR('K','M','O',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKomso, NULL, 0, 0, (void *) CHR('K','M','S',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKanuri, NULL, 0, 0, (void *) CHR('K','N','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKodagu, NULL, 0, 0, (void *) CHR('K','O','D',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKonkani, NULL, 0, 0, (void *) CHR('K','O','K',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKikongo, NULL, 0, 0, (void *) CHR('K','O','N',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKomi_Permyak, NULL, 0, 0, (void *) CHR('K','O','P',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKorean, NULL, 0, 0, (void *) CHR('K','O','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKomi_Zyrian, NULL, 0, 0, (void *) CHR('K','O','Z',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKpelle, NULL, 0, 0, (void *) CHR('K','P','L',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKrio, NULL, 0, 0, (void *) CHR('K','R','I',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKarakalpak, NULL, 0, 0, (void *) CHR('K','R','K',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKarelian, NULL, 0, 0, (void *) CHR('K','R','L',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKaraim, NULL, 0, 0, (void *) CHR('K','R','M',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKaren, NULL, 0, 0, (void *) CHR('K','R','N',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKoorete, NULL, 0, 0, (void *) CHR('K','R','T',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKashmiri, NULL, 0, 0, (void *) CHR('K','S','H',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKhasi, NULL, 0, 0, (void *) CHR('K','S','I',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKildinSami, NULL, 0, 0, (void *) CHR('K','S','M',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKui, NULL, 0, 0, (void *) CHR('K','U','I',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKulvi, NULL, 0, 0, (void *) CHR('K','U','L',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKumyk, NULL, 0, 0, (void *) CHR('K','U','M',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKurdish, NULL, 0, 0, (void *) CHR('K','U','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKurukh, NULL, 0, 0, (void *) CHR('K','U','U',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKuy, NULL, 0, 0, (void *) CHR('K','U','Y',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFKoryak, NULL, 0, 0, (void *) CHR('K','Y','K',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFLadin, NULL, 0, 0, (void *) CHR('L','A','D',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFLahuli, NULL, 0, 0, (void *) CHR('L','A','H',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFLak, NULL, 0, 0, (void *) CHR('L','A','K',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFLambani, NULL, 0, 0, (void *) CHR('L','A','M',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFLao, NULL, 0, 0, (void *) CHR('L','A','O',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFLatin, NULL, 0, 0, (void *) CHR('L','A','T',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFLaz, NULL, 0, 0, (void *) CHR('L','A','Z',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFL_Cree, NULL, 0, 0, (void *) CHR('L','C','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFLadakhi, NULL, 0, 0, (void *) CHR('L','D','K',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFLezgi, NULL, 0, 0, (void *) CHR('L','E','Z',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFLingala, NULL, 0, 0, (void *) CHR('L','I','N',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFLowMari, NULL, 0, 0, (void *) CHR('L','M','A',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFLimbu, NULL, 0, 0, (void *) CHR('L','M','B',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFLomwe, NULL, 0, 0, (void *) CHR('L','M','W',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFLowerSorbian, NULL, 0, 0, (void *) CHR('L','S','B',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFLuleSami, NULL, 0, 0, (void *) CHR('L','S','M',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFLithuanian, NULL, 0, 0, (void *) CHR('L','T','H',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFLuba, NULL, 0, 0, (void *) CHR('L','U','B',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFLuganda, NULL, 0, 0, (void *) CHR('L','U','G',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFLuhya, NULL, 0, 0, (void *) CHR('L','U','H',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFLuo, NULL, 0, 0, (void *) CHR('L','U','O',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFLatvian, NULL, 0, 0, (void *) CHR('L','V','I',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFMajang, NULL, 0, 0, (void *) CHR('M','A','J',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFMakua, NULL, 0, 0, (void *) CHR('M','A','K',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFMalayalamTraditional, NULL, 0, 0, (void *) CHR('M','A','L',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFMansi, NULL, 0, 0, (void *) CHR('M','A','N',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFMarathi, NULL, 0, 0, (void *) CHR('M','A','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFMarwari, NULL, 0, 0, (void *) CHR('M','A','W',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFMbundu, NULL, 0, 0, (void *) CHR('M','B','N',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFManchu, NULL, 0, 0, (void *) CHR('M','C','H',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFMooseCree, NULL, 0, 0, (void *) CHR('M','C','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFMende, NULL, 0, 0, (void *) CHR('M','D','E',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFMeen, NULL, 0, 0, (void *) CHR('M','E','N',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFMizo, NULL, 0, 0, (void *) CHR('M','I','Z',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFMacedonian, NULL, 0, 0, (void *) CHR('M','K','D',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFMale, NULL, 0, 0, (void *) CHR('M','L','E',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFMalagasy, NULL, 0, 0, (void *) CHR('M','L','G',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFMalinke, NULL, 0, 0, (void *) CHR('M','L','N',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFMalayalamReformed, NULL, 0, 0, (void *) CHR('M','L','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFMalay, NULL, 0, 0, (void *) CHR('M','L','Y',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFMandinka, NULL, 0, 0, (void *) CHR('M','N','D',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFMongolian, NULL, 0, 0, (void *) CHR('M','N','G',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFManipuri, NULL, 0, 0, (void *) CHR('M','N','I',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFManinka, NULL, 0, 0, (void *) CHR('M','N','K',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFManxGaelic, NULL, 0, 0, (void *) CHR('M','N','X',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFMoksha, NULL, 0, 0, (void *) CHR('M','O','K',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFMoldavian, NULL, 0, 0, (void *) CHR('M','O','L',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFMon, NULL, 0, 0, (void *) CHR('M','O','N',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFMoroccan, NULL, 0, 0, (void *) CHR('M','O','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFMaori, NULL, 0, 0, (void *) CHR('M','R','I',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFMaithili, NULL, 0, 0, (void *) CHR('M','T','H',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFMaltese, NULL, 0, 0, (void *) CHR('M','T','S',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFMundari, NULL, 0, 0, (void *) CHR('M','U','N',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFNaga_Assamese, NULL, 0, 0, (void *) CHR('N','A','G',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFNanai, NULL, 0, 0, (void *) CHR('N','A','N',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFNaskapi, NULL, 0, 0, (void *) CHR('N','A','S',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFN_Cree, NULL, 0, 0, (void *) CHR('N','C','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFNdebele, NULL, 0, 0, (void *) CHR('N','D','B',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFNdonga, NULL, 0, 0, (void *) CHR('N','D','G',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFNepali, NULL, 0, 0, (void *) CHR('N','E','P',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFNewari, NULL, 0, 0, (void *) CHR('N','E','W',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFNorwayHouseCree, NULL, 0, 0, (void *) CHR('N','H','C',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFNisi, NULL, 0, 0, (void *) CHR('N','I','S',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFNiuean, NULL, 0, 0, (void *) CHR('N','I','U',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFNkole, NULL, 0, 0, (void *) CHR('N','K','L',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFDutch, NULL, 0, 0, (void *) CHR('N','L','D',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFNogai, NULL, 0, 0, (void *) CHR('N','O','G',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFNorwegian, NULL, 0, 0, (void *) CHR('N','O','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFNorthernSami, NULL, 0, 0, (void *) CHR('N','S','M',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFNorthernTai, NULL, 0, 0, (void *) CHR('N','T','A',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFEsperanto, NULL, 0, 0, (void *) CHR('N','T','O',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFNynorsk, NULL, 0, 0, (void *) CHR('N','Y','N',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFOji_Cree, NULL, 0, 0, (void *) CHR('O','C','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFOjibway, NULL, 0, 0, (void *) CHR('O','J','B',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFOriya, NULL, 0, 0, (void *) CHR('O','R','I',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFOromo, NULL, 0, 0, (void *) CHR('O','R','O',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFOssetian, NULL, 0, 0, (void *) CHR('O','S','S',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFPalestinianAramaic, NULL, 0, 0, (void *) CHR('P','A','A',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFPali, NULL, 0, 0, (void *) CHR('P','A','L',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFPunjabi, NULL, 0, 0, (void *) CHR('P','A','N',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFPalpa, NULL, 0, 0, (void *) CHR('P','A','P',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFPashto, NULL, 0, 0, (void *) CHR('P','A','S',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFPolytonicGreek, NULL, 0, 0, (void *) CHR('P','G','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFPilipino, NULL, 0, 0, (void *) CHR('P','I','L',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFPalaung, NULL, 0, 0, (void *) CHR('P','L','G',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFPolish, NULL, 0, 0, (void *) CHR('P','L','K',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFProvencal, NULL, 0, 0, (void *) CHR('P','R','O',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFPortuguese, NULL, 0, 0, (void *) CHR('P','T','G',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFChin, NULL, 0, 0, (void *) CHR('Q','I','N',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFRajasthani, NULL, 0, 0, (void *) CHR('R','A','J',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFR_Cree, NULL, 0, 0, (void *) CHR('R','C','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFRussianBuriat, NULL, 0, 0, (void *) CHR('R','B','U',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFRiang, NULL, 0, 0, (void *) CHR('R','I','A',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFRhaeto_Romanic, NULL, 0, 0, (void *) CHR('R','M','S',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFRomanian, NULL, 0, 0, (void *) CHR('R','O','M',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFRomany, NULL, 0, 0, (void *) CHR('R','O','Y',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFRusyn, NULL, 0, 0, (void *) CHR('R','S','Y',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFRuanda, NULL, 0, 0, (void *) CHR('R','U','A',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFRussian, NULL, 0, 0, (void *) CHR('R','U','S',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFSadri, NULL, 0, 0, (void *) CHR('S','A','D',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFSanskrit, NULL, 0, 0, (void *) CHR('S','A','N',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFSantali, NULL, 0, 0, (void *) CHR('S','A','T',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFSayisi, NULL, 0, 0, (void *) CHR('S','A','Y',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFSekota, NULL, 0, 0, (void *) CHR('S','E','K',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFSelkup, NULL, 0, 0, (void *) CHR('S','E','L',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFSango, NULL, 0, 0, (void *) CHR('S','G','O',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFShan, NULL, 0, 0, (void *) CHR('S','H','N',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFSibe, NULL, 0, 0, (void *) CHR('S','I','B',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFSidamo, NULL, 0, 0, (void *) CHR('S','I','D',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFSilteGurage, NULL, 0, 0, (void *) CHR('S','I','G',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFSkoltSami, NULL, 0, 0, (void *) CHR('S','K','S',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFSlovak, NULL, 0, 0, (void *) CHR('S','K','Y',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFSlavey, NULL, 0, 0, (void *) CHR('S','L','A',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFSlovenian, NULL, 0, 0, (void *) CHR('S','L','V',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFSomali, NULL, 0, 0, (void *) CHR('S','M','L',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFSamoan, NULL, 0, 0, (void *) CHR('S','M','O',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFSena, NULL, 0, 0, (void *) CHR('S','N','A',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFSindhi, NULL, 0, 0, (void *) CHR('S','N','D',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFSinhalese, NULL, 0, 0, (void *) CHR('S','N','H',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFSoninke, NULL, 0, 0, (void *) CHR('S','N','K',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFSodoGurage, NULL, 0, 0, (void *) CHR('S','O','G',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFSotho, NULL, 0, 0, (void *) CHR('S','O','T',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFAlbanian, NULL, 0, 0, (void *) CHR('S','Q','I',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFSerbian, NULL, 0, 0, (void *) CHR('S','R','B',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFSaraiki, NULL, 0, 0, (void *) CHR('S','R','K',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFSerer, NULL, 0, 0, (void *) CHR('S','R','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFSouthSlavey, NULL, 0, 0, (void *) CHR('S','S','L',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFSouthernSami, NULL, 0, 0, (void *) CHR('S','S','M',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFSuri, NULL, 0, 0, (void *) CHR('S','U','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFSvan, NULL, 0, 0, (void *) CHR('S','V','A',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFSwedish, NULL, 0, 0, (void *) CHR('S','V','E',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFSwadayaAramaic, NULL, 0, 0, (void *) CHR('S','W','A',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFSwahili, NULL, 0, 0, (void *) CHR('S','W','K',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFSwazi, NULL, 0, 0, (void *) CHR('S','W','Z',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFSutu, NULL, 0, 0, (void *) CHR('S','X','T',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFSyriac, NULL, 0, 0, (void *) CHR('S','Y','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFTabasaran, NULL, 0, 0, (void *) CHR('T','A','B',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFTajiki, NULL, 0, 0, (void *) CHR('T','A','J',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFTamil, NULL, 0, 0, (void *) CHR('T','A','M',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFTatar, NULL, 0, 0, (void *) CHR('T','A','T',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFTH_Cree, NULL, 0, 0, (void *) CHR('T','C','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFTelugu, NULL, 0, 0, (void *) CHR('T','E','L',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFTongan, NULL, 0, 0, (void *) CHR('T','G','N',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFTigre, NULL, 0, 0, (void *) CHR('T','G','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFTigrinya, NULL, 0, 0, (void *) CHR('T','G','Y',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFThai, NULL, 0, 0, (void *) CHR('T','H','A',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFTahitian, NULL, 0, 0, (void *) CHR('T','H','T',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFTibetan, NULL, 0, 0, (void *) CHR('T','I','B',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFTurkmen, NULL, 0, 0, (void *) CHR('T','K','M',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFTemne, NULL, 0, 0, (void *) CHR('T','M','N',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFTswana, NULL, 0, 0, (void *) CHR('T','N','A',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFTundraNenets, NULL, 0, 0, (void *) CHR('T','N','E',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFTonga, NULL, 0, 0, (void *) CHR('T','N','G',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFTodo, NULL, 0, 0, (void *) CHR('T','O','D',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFTurkish, NULL, 0, 0, (void *) CHR('T','R','K',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFTsonga, NULL, 0, 0, (void *) CHR('T','S','G',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFTuroyoAramaic, NULL, 0, 0, (void *) CHR('T','U','A',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFTulu, NULL, 0, 0, (void *) CHR('T','U','L',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFTuvin, NULL, 0, 0, (void *) CHR('T','U','V',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFTwi, NULL, 0, 0, (void *) CHR('T','W','I',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFUdmurt, NULL, 0, 0, (void *) CHR('U','D','M',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFUkrainian, NULL, 0, 0, (void *) CHR('U','K','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFUrdu, NULL, 0, 0, (void *) CHR('U','R','D',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFUpperSorbian, NULL, 0, 0, (void *) CHR('U','S','B',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFUyghur, NULL, 0, 0, (void *) CHR('U','Y','G',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFUzbek, NULL, 0, 0, (void *) CHR('U','Z','B',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFVenda, NULL, 0, 0, (void *) CHR('V','E','N',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFVietnamese, NULL, 0, 0, (void *) CHR('V','I','T',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFWa, NULL, 0, 0, (void *) CHR('W','A',' ',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFWagdi, NULL, 0, 0, (void *) CHR('W','A','G',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFWest_Cree, NULL, 0, 0, (void *) CHR('W','C','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFWelsh, NULL, 0, 0, (void *) CHR('W','E','L',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFWolof, NULL, 0, 0, (void *) CHR('W','L','F',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFXhosa, NULL, 0, 0, (void *) CHR('X','H','S',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFYakut, NULL, 0, 0, (void *) CHR('Y','A','K',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFYoruba, NULL, 0, 0, (void *) CHR('Y','B','A',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFY_Cree, NULL, 0, 0, (void *) CHR('Y','C','R',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFYiClassic, NULL, 0, 0, (void *) CHR('Y','I','C',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFYiModern, NULL, 0, 0, (void *) CHR('Y','I','M',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFChinesePhonetic, NULL, 0, 0, (void *) CHR('Z','H','P',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFChineseSimplified, NULL, 0, 0, (void *) CHR('Z','H','S',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFChineseTraditional, NULL, 0, 0, (void *) CHR('Z','H','T',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFZande, NULL, 0, 0, (void *) CHR('Z','N','D',' '), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OTFZulu, NULL, 0, 0, (void *) CHR('Z','U','L',' '), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Abaza"), NULL, 0, 0, (void *) CHR('A','B','A',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Abkhazian"), NULL, 0, 0, (void *) CHR('A','B','K',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Adyghe"), NULL, 0, 0, (void *) CHR('A','D','Y',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Afrikaans"), NULL, 0, 0, (void *) CHR('A','F','K',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Afar"), NULL, 0, 0, (void *) CHR('A','F','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Agaw"), NULL, 0, 0, (void *) CHR('A','G','W',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Altai"), NULL, 0, 0, (void *) CHR('A','L','T',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Amharic"), NULL, 0, 0, (void *) CHR('A','M','H',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Arabic"), NULL, 0, 0, (void *) CHR('A','R','A',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Aari"), NULL, 0, 0, (void *) CHR('A','R','I',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Arakanese"), NULL, 0, 0, (void *) CHR('A','R','K',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Assamese"), NULL, 0, 0, (void *) CHR('A','S','M',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Athapaskan"), NULL, 0, 0, (void *) CHR('A','T','H',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Avar"), NULL, 0, 0, (void *) CHR('A','V','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Awadhi"), NULL, 0, 0, (void *) CHR('A','W','A',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Aymara"), NULL, 0, 0, (void *) CHR('A','Y','M',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Azeri"), NULL, 0, 0, (void *) CHR('A','Z','E',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Badaga"), NULL, 0, 0, (void *) CHR('B','A','D',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Baghelkhandi"), NULL, 0, 0, (void *) CHR('B','A','G',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Balkar"), NULL, 0, 0, (void *) CHR('B','A','L',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Baule"), NULL, 0, 0, (void *) CHR('B','A','U',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Berber"), NULL, 0, 0, (void *) CHR('B','B','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Bench"), NULL, 0, 0, (void *) CHR('B','C','H',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Bible Cree"), NULL, 0, 0, (void *) CHR('B','C','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Belarussian"), NULL, 0, 0, (void *) CHR('B','E','L',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Bemba"), NULL, 0, 0, (void *) CHR('B','E','M',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Bengali"), NULL, 0, 0, (void *) CHR('B','E','N',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Bulgarian"), NULL, 0, 0, (void *) CHR('B','G','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Bhili"), NULL, 0, 0, (void *) CHR('B','H','I',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Bhojpuri"), NULL, 0, 0, (void *) CHR('B','H','O',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Bikol"), NULL, 0, 0, (void *) CHR('B','I','K',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Bilen"), NULL, 0, 0, (void *) CHR('B','I','L',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Blackfoot"), NULL, 0, 0, (void *) CHR('B','K','F',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Balochi"), NULL, 0, 0, (void *) CHR('B','L','I',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Balante"), NULL, 0, 0, (void *) CHR('B','L','N',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Balti"), NULL, 0, 0, (void *) CHR('B','L','T',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Bambara"), NULL, 0, 0, (void *) CHR('B','M','B',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Bamileke"), NULL, 0, 0, (void *) CHR('B','M','L',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Breton"), NULL, 0, 0, (void *) CHR('B','R','E',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Brahui"), NULL, 0, 0, (void *) CHR('B','R','H',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Braj Bhasha"), NULL, 0, 0, (void *) CHR('B','R','I',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Burmese"), NULL, 0, 0, (void *) CHR('B','R','M',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Bashkir"), NULL, 0, 0, (void *) CHR('B','S','H',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Beti"), NULL, 0, 0, (void *) CHR('B','T','I',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Catalan"), NULL, 0, 0, (void *) CHR('C','A','T',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Cebuano"), NULL, 0, 0, (void *) CHR('C','E','B',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Chechen"), NULL, 0, 0, (void *) CHR('C','H','E',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Chaha Gurage"), NULL, 0, 0, (void *) CHR('C','H','G',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Chattisgarhi"), NULL, 0, 0, (void *) CHR('C','H','H',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Chichewa"), NULL, 0, 0, (void *) CHR('C','H','I',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Chukchi"), NULL, 0, 0, (void *) CHR('C','H','K',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Chipewyan"), NULL, 0, 0, (void *) CHR('C','H','P',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Cherokee"), NULL, 0, 0, (void *) CHR('C','H','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Chuvash"), NULL, 0, 0, (void *) CHR('C','H','U',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Comorian"), NULL, 0, 0, (void *) CHR('C','M','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Coptic"), NULL, 0, 0, (void *) CHR('C','O','P',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Cree"), NULL, 0, 0, (void *) CHR('C','R','E',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Carrier"), NULL, 0, 0, (void *) CHR('C','R','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Crimean Tatar"), NULL, 0, 0, (void *) CHR('C','R','T',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Church Slavonic"), NULL, 0, 0, (void *) CHR('C','S','L',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Czech"), NULL, 0, 0, (void *) CHR('C','S','Y',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Danish"), NULL, 0, 0, (void *) CHR('D','A','N',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Dargwa"), NULL, 0, 0, (void *) CHR('D','A','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Default"), NULL, 0, 0, (void *) DEFAULT_LANG, NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Woods Cree"), NULL, 0, 0, (void *) CHR('D','C','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("German (Standard)"), NULL, 0, 0, (void *) CHR('D','E','U',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Dogri"), NULL, 0, 0, (void *) CHR('D','G','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Dhivehi"), NULL, 0, 0, (void *) CHR('D','H','V',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Djerma"), NULL, 0, 0, (void *) CHR('D','J','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Dangme"), NULL, 0, 0, (void *) CHR('D','N','G',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Default"), NULL, 0, 0, (void *) CHR('D','F','L','T'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Dinka"), NULL, 0, 0, (void *) CHR('D','N','K',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Dungan"), NULL, 0, 0, (void *) CHR('D','U','N',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Dzongkha"), NULL, 0, 0, (void *) CHR('D','Z','N',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Ebira"), NULL, 0, 0, (void *) CHR('E','B','I',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Eastern Cree"), NULL, 0, 0, (void *) CHR('E','C','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Edo"), NULL, 0, 0, (void *) CHR('E','D','O',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Efik"), NULL, 0, 0, (void *) CHR('E','F','I',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Greek"), NULL, 0, 0, (void *) CHR('E','L','L',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("English"), NULL, 0, 0, (void *) CHR('E','N','G',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Erzya"), NULL, 0, 0, (void *) CHR('E','R','Z',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Spanish"), NULL, 0, 0, (void *) CHR('E','S','P',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Estonian"), NULL, 0, 0, (void *) CHR('E','T','I',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Basque"), NULL, 0, 0, (void *) CHR('E','U','Q',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Evenki"), NULL, 0, 0, (void *) CHR('E','V','K',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Even"), NULL, 0, 0, (void *) CHR('E','V','N',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Ewe"), NULL, 0, 0, (void *) CHR('E','W','E',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("French Antillean"), NULL, 0, 0, (void *) CHR('F','A','N',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Farsi"), NULL, 0, 0, (void *) CHR('F','A','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Finnish"), NULL, 0, 0, (void *) CHR('F','I','N',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Fijian"), NULL, 0, 0, (void *) CHR('F','J','I',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Flemish"), NULL, 0, 0, (void *) CHR('F','L','E',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Forest Nenets"), NULL, 0, 0, (void *) CHR('F','N','E',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Fon"), NULL, 0, 0, (void *) CHR('F','O','N',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Faroese"), NULL, 0, 0, (void *) CHR('F','O','S',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("French (Standard)"), NULL, 0, 0, (void *) CHR('F','R','A',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Frisian"), NULL, 0, 0, (void *) CHR('F','R','I',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Friulian"), NULL, 0, 0, (void *) CHR('F','R','L',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Futa"), NULL, 0, 0, (void *) CHR('F','T','A',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Fulani"), NULL, 0, 0, (void *) CHR('F','U','L',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Ga"), NULL, 0, 0, (void *) CHR('G','A','D',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Gaelic"), NULL, 0, 0, (void *) CHR('G','A','E',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Gagauz"), NULL, 0, 0, (void *) CHR('G','A','G',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Galician"), NULL, 0, 0, (void *) CHR('G','A','L',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Garshuni"), NULL, 0, 0, (void *) CHR('G','A','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Garhwali"), NULL, 0, 0, (void *) CHR('G','A','W',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Ge'ez"), NULL, 0, 0, (void *) CHR('G','E','Z',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Gilyak"), NULL, 0, 0, (void *) CHR('G','I','L',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Gumuz"), NULL, 0, 0, (void *) CHR('G','M','Z',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Gondi"), NULL, 0, 0, (void *) CHR('G','O','N',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Greenlandic"), NULL, 0, 0, (void *) CHR('G','R','N',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Garo"), NULL, 0, 0, (void *) CHR('G','R','O',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Guarani"), NULL, 0, 0, (void *) CHR('G','U','A',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Gujarati"), NULL, 0, 0, (void *) CHR('G','U','J',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Haitian"), NULL, 0, 0, (void *) CHR('H','A','I',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Halam"), NULL, 0, 0, (void *) CHR('H','A','L',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Harauti"), NULL, 0, 0, (void *) CHR('H','A','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Hausa"), NULL, 0, 0, (void *) CHR('H','A','U',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Hawaiin"), NULL, 0, 0, (void *) CHR('H','A','W',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Hammer-Banna"), NULL, 0, 0, (void *) CHR('H','B','N',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Hiligaynon"), NULL, 0, 0, (void *) CHR('H','I','L',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Hindi"), NULL, 0, 0, (void *) CHR('H','I','N',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("High Mari"), NULL, 0, 0, (void *) CHR('H','M','A',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Hindko"), NULL, 0, 0, (void *) CHR('H','N','D',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Ho"), NULL, 0, 0, (void *) CHR('H','O',' ',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Harari"), NULL, 0, 0, (void *) CHR('H','R','I',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Croatian"), NULL, 0, 0, (void *) CHR('H','R','V',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Hungarian"), NULL, 0, 0, (void *) CHR('H','U','N',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Armenian"), NULL, 0, 0, (void *) CHR('H','Y','E',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Igbo"), NULL, 0, 0, (void *) CHR('I','B','O',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Ijo"), NULL, 0, 0, (void *) CHR('I','J','O',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Ilokano"), NULL, 0, 0, (void *) CHR('I','L','O',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Indonesian"), NULL, 0, 0, (void *) CHR('I','N','D',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Ingush"), NULL, 0, 0, (void *) CHR('I','N','G',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Inuktitut"), NULL, 0, 0, (void *) CHR('I','N','U',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Irish"), NULL, 0, 0, (void *) CHR('I','R','I',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Irish Traditional"), NULL, 0, 0, (void *) CHR('I','R','T',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Icelandic"), NULL, 0, 0, (void *) CHR('I','S','L',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Inari Sami"), NULL, 0, 0, (void *) CHR('I','S','M',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Italian"), NULL, 0, 0, (void *) CHR('I','T','A',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Hebrew"), NULL, 0, 0, (void *) CHR('I','W','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Javanese"), NULL, 0, 0, (void *) CHR('J','A','V',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Yiddish"), NULL, 0, 0, (void *) CHR('J','I','I',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Japanese"), NULL, 0, 0, (void *) CHR('J','A','N',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Judezmo"), NULL, 0, 0, (void *) CHR('J','U','D',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Jula"), NULL, 0, 0, (void *) CHR('J','U','L',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Kabardian"), NULL, 0, 0, (void *) CHR('K','A','B',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Kachchi"), NULL, 0, 0, (void *) CHR('K','A','C',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Kalenjin"), NULL, 0, 0, (void *) CHR('K','A','L',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Kannada"), NULL, 0, 0, (void *) CHR('K','A','N',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Karachay"), NULL, 0, 0, (void *) CHR('K','A','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Georgian"), NULL, 0, 0, (void *) CHR('K','A','T',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Kazakh"), NULL, 0, 0, (void *) CHR('K','A','Z',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Kebena"), NULL, 0, 0, (void *) CHR('K','E','B',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Khutsuri Georgian"), NULL, 0, 0, (void *) CHR('K','G','E',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Khakass"), NULL, 0, 0, (void *) CHR('K','H','A',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Khanty-Kazim"), NULL, 0, 0, (void *) CHR('K','H','K',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Khmer"), NULL, 0, 0, (void *) CHR('K','H','M',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Khanty-Shurishkar"), NULL, 0, 0, (void *) CHR('K','H','S',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Khanty-Vakhi"), NULL, 0, 0, (void *) CHR('K','H','V',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Khowar"), NULL, 0, 0, (void *) CHR('K','H','W',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Kikuyu"), NULL, 0, 0, (void *) CHR('K','I','K',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Kirghiz"), NULL, 0, 0, (void *) CHR('K','I','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Kisii"), NULL, 0, 0, (void *) CHR('K','I','S',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Kokni"), NULL, 0, 0, (void *) CHR('K','K','N',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Kalmyk"), NULL, 0, 0, (void *) CHR('K','L','M',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Kamba"), NULL, 0, 0, (void *) CHR('K','M','B',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Kumaoni"), NULL, 0, 0, (void *) CHR('K','M','N',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Komo"), NULL, 0, 0, (void *) CHR('K','M','O',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Komso"), NULL, 0, 0, (void *) CHR('K','M','S',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Kanuri"), NULL, 0, 0, (void *) CHR('K','N','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Kodagu"), NULL, 0, 0, (void *) CHR('K','O','D',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Konkani"), NULL, 0, 0, (void *) CHR('K','O','K',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Kikongo"), NULL, 0, 0, (void *) CHR('K','O','N',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Komi-Permyak"), NULL, 0, 0, (void *) CHR('K','O','P',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Korean"), NULL, 0, 0, (void *) CHR('K','O','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Komi-Zyrian"), NULL, 0, 0, (void *) CHR('K','O','Z',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Kpelle"), NULL, 0, 0, (void *) CHR('K','P','L',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Krio"), NULL, 0, 0, (void *) CHR('K','R','I',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Karakalpak"), NULL, 0, 0, (void *) CHR('K','R','K',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Karelian"), NULL, 0, 0, (void *) CHR('K','R','L',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Karaim"), NULL, 0, 0, (void *) CHR('K','R','M',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Karen"), NULL, 0, 0, (void *) CHR('K','R','N',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Koorete"), NULL, 0, 0, (void *) CHR('K','R','T',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Kashmiri"), NULL, 0, 0, (void *) CHR('K','S','H',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Khasi"), NULL, 0, 0, (void *) CHR('K','S','I',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Kildin Sami"), NULL, 0, 0, (void *) CHR('K','S','M',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Kui"), NULL, 0, 0, (void *) CHR('K','U','I',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Kulvi"), NULL, 0, 0, (void *) CHR('K','U','L',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Kumyk"), NULL, 0, 0, (void *) CHR('K','U','M',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Kurdish"), NULL, 0, 0, (void *) CHR('K','U','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Kurukh"), NULL, 0, 0, (void *) CHR('K','U','U',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Kuy"), NULL, 0, 0, (void *) CHR('K','U','Y',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Koryak"), NULL, 0, 0, (void *) CHR('K','Y','K',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Ladin"), NULL, 0, 0, (void *) CHR('L','A','D',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Lahuli"), NULL, 0, 0, (void *) CHR('L','A','H',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Lak"), NULL, 0, 0, (void *) CHR('L','A','K',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Lambani"), NULL, 0, 0, (void *) CHR('L','A','M',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Lao"), NULL, 0, 0, (void *) CHR('L','A','O',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Latin"), NULL, 0, 0, (void *) CHR('L','A','T',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Laz"), NULL, 0, 0, (void *) CHR('L','A','Z',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("L-Cree"), NULL, 0, 0, (void *) CHR('L','C','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Ladakhi"), NULL, 0, 0, (void *) CHR('L','D','K',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Lezgi"), NULL, 0, 0, (void *) CHR('L','E','Z',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Lingala"), NULL, 0, 0, (void *) CHR('L','I','N',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Low Mari"), NULL, 0, 0, (void *) CHR('L','M','A',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Limbu"), NULL, 0, 0, (void *) CHR('L','M','B',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Lomwe"), NULL, 0, 0, (void *) CHR('L','M','W',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Lower Sorbian"), NULL, 0, 0, (void *) CHR('L','S','B',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Lule Sami"), NULL, 0, 0, (void *) CHR('L','S','M',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Lithuanian"), NULL, 0, 0, (void *) CHR('L','T','H',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Luba"), NULL, 0, 0, (void *) CHR('L','U','B',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Luganda"), NULL, 0, 0, (void *) CHR('L','U','G',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Luhya"), NULL, 0, 0, (void *) CHR('L','U','H',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Luo"), NULL, 0, 0, (void *) CHR('L','U','O',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Latvian"), NULL, 0, 0, (void *) CHR('L','V','I',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Majang"), NULL, 0, 0, (void *) CHR('M','A','J',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Makua"), NULL, 0, 0, (void *) CHR('M','A','K',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Malayalam Traditional"), NULL, 0, 0, (void *) CHR('M','A','L',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Mansi"), NULL, 0, 0, (void *) CHR('M','A','N',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Marathi"), NULL, 0, 0, (void *) CHR('M','A','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Marwari"), NULL, 0, 0, (void *) CHR('M','A','W',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Mbundu"), NULL, 0, 0, (void *) CHR('M','B','N',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Manchu"), NULL, 0, 0, (void *) CHR('M','C','H',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Moose Cree"), NULL, 0, 0, (void *) CHR('M','C','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Mende"), NULL, 0, 0, (void *) CHR('M','D','E',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Me'en"), NULL, 0, 0, (void *) CHR('M','E','N',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Mizo"), NULL, 0, 0, (void *) CHR('M','I','Z',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Macedonian"), NULL, 0, 0, (void *) CHR('M','K','D',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Male"), NULL, 0, 0, (void *) CHR('M','L','E',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Malagasy"), NULL, 0, 0, (void *) CHR('M','L','G',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Malinke"), NULL, 0, 0, (void *) CHR('M','L','N',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Malayalam Reformed"), NULL, 0, 0, (void *) CHR('M','L','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Malay"), NULL, 0, 0, (void *) CHR('M','L','Y',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Mandinka"), NULL, 0, 0, (void *) CHR('M','N','D',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Mongolian"), NULL, 0, 0, (void *) CHR('M','N','G',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Manipuri"), NULL, 0, 0, (void *) CHR('M','N','I',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Maninka"), NULL, 0, 0, (void *) CHR('M','N','K',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Manx Gaelic"), NULL, 0, 0, (void *) CHR('M','N','X',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Moksha"), NULL, 0, 0, (void *) CHR('M','O','K',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Moldavian"), NULL, 0, 0, (void *) CHR('M','O','L',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Mon"), NULL, 0, 0, (void *) CHR('M','O','N',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Moroccan"), NULL, 0, 0, (void *) CHR('M','O','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Maori"), NULL, 0, 0, (void *) CHR('M','R','I',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Maithili"), NULL, 0, 0, (void *) CHR('M','T','H',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Maltese"), NULL, 0, 0, (void *) CHR('M','T','S',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Mundari"), NULL, 0, 0, (void *) CHR('M','U','N',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Naga-Assamese"), NULL, 0, 0, (void *) CHR('N','A','G',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Nanai"), NULL, 0, 0, (void *) CHR('N','A','N',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Naskapi"), NULL, 0, 0, (void *) CHR('N','A','S',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("N-Cree"), NULL, 0, 0, (void *) CHR('N','C','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Ndebele"), NULL, 0, 0, (void *) CHR('N','D','B',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Ndonga"), NULL, 0, 0, (void *) CHR('N','D','G',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Nepali"), NULL, 0, 0, (void *) CHR('N','E','P',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Newari"), NULL, 0, 0, (void *) CHR('N','E','W',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Norway House Cree"), NULL, 0, 0, (void *) CHR('N','H','C',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Nisi"), NULL, 0, 0, (void *) CHR('N','I','S',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Niuean"), NULL, 0, 0, (void *) CHR('N','I','U',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Nkole"), NULL, 0, 0, (void *) CHR('N','K','L',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Dutch"), NULL, 0, 0, (void *) CHR('N','L','D',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Nogai"), NULL, 0, 0, (void *) CHR('N','O','G',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Norwegian"), NULL, 0, 0, (void *) CHR('N','O','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Northern Sami"), NULL, 0, 0, (void *) CHR('N','S','M',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Northern Tai"), NULL, 0, 0, (void *) CHR('N','T','A',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Esperanto"), NULL, 0, 0, (void *) CHR('N','T','O',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Nynorsk"), NULL, 0, 0, (void *) CHR('N','Y','N',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Oji-Cree"), NULL, 0, 0, (void *) CHR('O','C','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Ojibway"), NULL, 0, 0, (void *) CHR('O','J','B',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Oriya"), NULL, 0, 0, (void *) CHR('O','R','I',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Oromo"), NULL, 0, 0, (void *) CHR('O','R','O',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Ossetian"), NULL, 0, 0, (void *) CHR('O','S','S',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Palestinian Aramaic"), NULL, 0, 0, (void *) CHR('P','A','A',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Pali"), NULL, 0, 0, (void *) CHR('P','A','L',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Punjabi"), NULL, 0, 0, (void *) CHR('P','A','N',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Palpa"), NULL, 0, 0, (void *) CHR('P','A','P',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Pashto"), NULL, 0, 0, (void *) CHR('P','A','S',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Polytonic Greek"), NULL, 0, 0, (void *) CHR('P','G','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Pilipino"), NULL, 0, 0, (void *) CHR('P','I','L',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Palaung"), NULL, 0, 0, (void *) CHR('P','L','G',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Polish"), NULL, 0, 0, (void *) CHR('P','L','K',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Provencal"), NULL, 0, 0, (void *) CHR('P','R','O',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Portuguese"), NULL, 0, 0, (void *) CHR('P','T','G',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Chin"), NULL, 0, 0, (void *) CHR('Q','I','N',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Rajasthani"), NULL, 0, 0, (void *) CHR('R','A','J',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("R-Cree"), NULL, 0, 0, (void *) CHR('R','C','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Russian Buriat"), NULL, 0, 0, (void *) CHR('R','B','U',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Riang"), NULL, 0, 0, (void *) CHR('R','I','A',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Rhaeto-Romanic"), NULL, 0, 0, (void *) CHR('R','M','S',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Romanian"), NULL, 0, 0, (void *) CHR('R','O','M',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Romany"), NULL, 0, 0, (void *) CHR('R','O','Y',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Rusyn"), NULL, 0, 0, (void *) CHR('R','S','Y',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Ruanda"), NULL, 0, 0, (void *) CHR('R','U','A',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Russian"), NULL, 0, 0, (void *) CHR('R','U','S',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Sadri"), NULL, 0, 0, (void *) CHR('S','A','D',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Sanskrit"), NULL, 0, 0, (void *) CHR('S','A','N',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Santali"), NULL, 0, 0, (void *) CHR('S','A','T',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Sayisi"), NULL, 0, 0, (void *) CHR('S','A','Y',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Sekota"), NULL, 0, 0, (void *) CHR('S','E','K',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Selkup"), NULL, 0, 0, (void *) CHR('S','E','L',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Sango"), NULL, 0, 0, (void *) CHR('S','G','O',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Shan"), NULL, 0, 0, (void *) CHR('S','H','N',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Sibe"), NULL, 0, 0, (void *) CHR('S','I','B',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Sidamo"), NULL, 0, 0, (void *) CHR('S','I','D',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Silte Gurage"), NULL, 0, 0, (void *) CHR('S','I','G',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Skolt Sami"), NULL, 0, 0, (void *) CHR('S','K','S',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Slovak"), NULL, 0, 0, (void *) CHR('S','K','Y',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Slavey"), NULL, 0, 0, (void *) CHR('S','L','A',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Slovenian"), NULL, 0, 0, (void *) CHR('S','L','V',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Somali"), NULL, 0, 0, (void *) CHR('S','M','L',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Samoan"), NULL, 0, 0, (void *) CHR('S','M','O',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Sena"), NULL, 0, 0, (void *) CHR('S','N','A',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Sindhi"), NULL, 0, 0, (void *) CHR('S','N','D',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Sinhalese"), NULL, 0, 0, (void *) CHR('S','N','H',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Soninke"), NULL, 0, 0, (void *) CHR('S','N','K',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Sodo Gurage"), NULL, 0, 0, (void *) CHR('S','O','G',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Sotho"), NULL, 0, 0, (void *) CHR('S','O','T',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Albanian"), NULL, 0, 0, (void *) CHR('S','Q','I',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Serbian"), NULL, 0, 0, (void *) CHR('S','R','B',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Saraiki"), NULL, 0, 0, (void *) CHR('S','R','K',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Serer"), NULL, 0, 0, (void *) CHR('S','R','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("South Slavey"), NULL, 0, 0, (void *) CHR('S','S','L',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Southern Sami"), NULL, 0, 0, (void *) CHR('S','S','M',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Suri"), NULL, 0, 0, (void *) CHR('S','U','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Svan"), NULL, 0, 0, (void *) CHR('S','V','A',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Swedish"), NULL, 0, 0, (void *) CHR('S','V','E',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Swadaya Aramaic"), NULL, 0, 0, (void *) CHR('S','W','A',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Swahili"), NULL, 0, 0, (void *) CHR('S','W','K',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Swazi"), NULL, 0, 0, (void *) CHR('S','W','Z',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Sutu"), NULL, 0, 0, (void *) CHR('S','X','T',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Syriac"), NULL, 0, 0, (void *) CHR('S','Y','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Tabasaran"), NULL, 0, 0, (void *) CHR('T','A','B',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Tajiki"), NULL, 0, 0, (void *) CHR('T','A','J',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Tamil"), NULL, 0, 0, (void *) CHR('T','A','M',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Tatar"), NULL, 0, 0, (void *) CHR('T','A','T',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("TH-Cree"), NULL, 0, 0, (void *) CHR('T','C','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Telugu"), NULL, 0, 0, (void *) CHR('T','E','L',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Tongan"), NULL, 0, 0, (void *) CHR('T','G','N',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Tigre"), NULL, 0, 0, (void *) CHR('T','G','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Tigrinya"), NULL, 0, 0, (void *) CHR('T','G','Y',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Thai"), NULL, 0, 0, (void *) CHR('T','H','A',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Tahitian"), NULL, 0, 0, (void *) CHR('T','H','T',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Tibetan"), NULL, 0, 0, (void *) CHR('T','I','B',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Turkmen"), NULL, 0, 0, (void *) CHR('T','K','M',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Temne"), NULL, 0, 0, (void *) CHR('T','M','N',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Tswana"), NULL, 0, 0, (void *) CHR('T','N','A',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Tundra Nenets"), NULL, 0, 0, (void *) CHR('T','N','E',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Tonga"), NULL, 0, 0, (void *) CHR('T','N','G',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Todo"), NULL, 0, 0, (void *) CHR('T','O','D',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Turkish"), NULL, 0, 0, (void *) CHR('T','R','K',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Tsonga"), NULL, 0, 0, (void *) CHR('T','S','G',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Turoyo Aramaic"), NULL, 0, 0, (void *) CHR('T','U','A',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Tulu"), NULL, 0, 0, (void *) CHR('T','U','L',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Tuvin"), NULL, 0, 0, (void *) CHR('T','U','V',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Twi"), NULL, 0, 0, (void *) CHR('T','W','I',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Udmurt"), NULL, 0, 0, (void *) CHR('U','D','M',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Ukrainian"), NULL, 0, 0, (void *) CHR('U','K','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Urdu"), NULL, 0, 0, (void *) CHR('U','R','D',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Upper Sorbian"), NULL, 0, 0, (void *) CHR('U','S','B',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Uyghur"), NULL, 0, 0, (void *) CHR('U','Y','G',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Uzbek"), NULL, 0, 0, (void *) CHR('U','Z','B',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Venda"), NULL, 0, 0, (void *) CHR('V','E','N',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Vietnamese"), NULL, 0, 0, (void *) CHR('V','I','T',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Wa"), NULL, 0, 0, (void *) CHR('W','A',' ',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Wagdi"), NULL, 0, 0, (void *) CHR('W','A','G',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("West-Cree"), NULL, 0, 0, (void *) CHR('W','C','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Welsh"), NULL, 0, 0, (void *) CHR('W','E','L',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Wolof"), NULL, 0, 0, (void *) CHR('W','L','F',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Xhosa"), NULL, 0, 0, (void *) CHR('X','H','S',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Yakut"), NULL, 0, 0, (void *) CHR('Y','A','K',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Yoruba"), NULL, 0, 0, (void *) CHR('Y','B','A',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Y-Cree"), NULL, 0, 0, (void *) CHR('Y','C','R',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Yi Classic"), NULL, 0, 0, (void *) CHR('Y','I','C',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Yi Modern"), NULL, 0, 0, (void *) CHR('Y','I','M',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Chinese Phonetic"), NULL, 0, 0, (void *) CHR('Z','H','P',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Chinese Simplified"), NULL, 0, 0, (void *) CHR('Z','H','S',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Chinese Traditional"), NULL, 0, 0, (void *) CHR('Z','H','T',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Zande"), NULL, 0, 0, (void *) CHR('Z','N','D',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Zulu"), NULL, 0, 0, (void *) CHR('Z','U','L',' '), NULL, false, false, false, false, false, false, true },
     { NULL }
 };
 
 static GTextInfo ligature_tags[] = {
-    { (unichar_t *) _STR_AncientLig, NULL, 0, 0, (void *) CHR('a','l','i','g'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_DiscretionaryLig, NULL, 0, 0, (void *) CHR('d','l','i','g'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_HistoricLig, NULL, 0, 0, (void *) CHR('h','l','i','g'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_RequiredLig, NULL, 0, 0, (void *) CHR('r','l','i','g'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_StandardLig, NULL, 0, 0, (void *) CHR('l','i','g','a'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_FractionLig, NULL, 0, 0, (void *) CHR('f','r','a','c'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_AltFrac, NULL, 0, 0, (void *) CHR('a','f','r','c'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_AboveBaseSubs, NULL, 0, 0, (void *) CHR('a','b','v','s'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_BelowBaseForms, NULL, 0, 0, (void *) CHR('b','l','w','f'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_BelowBaseSubs, NULL, 0, 0, (void *) CHR('b','l','w','s'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Akhand, NULL, 0, 0, (void *) CHR('a','k','h','n'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_GlyphCompDecomp, NULL, 0, 0, (void *) CHR('c','c','m','p'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_HalfForm, NULL, 0, 0, (void *) CHR('h','a','l','f'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_HalantForm, NULL, 0, 0, (void *) CHR('h','a','l','n'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_LeadingJamo, NULL, 0, 0, (void *) CHR('l','j','m','o'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_TrailingJamo, NULL, 0, 0, (void *) CHR('t','j','m','o'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_VowelJamo, NULL, 0, 0, (void *) CHR('v','j','m','o'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Nukta, NULL, 0, 0, (void *) CHR('n','u','k','t'), NULL, false, false, false, false, false, false, false, true },	/* for numero */
-    { (unichar_t *) _STR_Ordinals, NULL, 0, 0, (void *) CHR('o','r','d','n'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_PreBaseForms, NULL, 0, 0, (void *) CHR('p','r','e','f'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_PreBaseSubs, NULL, 0, 0, (void *) CHR('p','r','e','s'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_PostBaseForms, NULL, 0, 0, (void *) CHR('p','s','t','f'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_PostBaseSubs, NULL, 0, 0, (void *) CHR('p','s','t','s'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Reph, NULL, 0, 0, (void *) CHR('r','p','h','f'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_VattuVariants, NULL, 0, 0, (void *) CHR('v','a','t','u'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Ancient Ligatures"), NULL, 0, 0, (void *) CHR('a','l','i','g'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Discretionary Ligatures"), NULL, 0, 0, (void *) CHR('d','l','i','g'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Historic Ligatures"), NULL, 0, 0, (void *) CHR('h','l','i','g'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Required Ligatures"), NULL, 0, 0, (void *) CHR('r','l','i','g'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Standard Ligatures"), NULL, 0, 0, (void *) CHR('l','i','g','a'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Diagonal Fractions"), NULL, 0, 0, (void *) CHR('f','r','a','c'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Vertical Fractions"), NULL, 0, 0, (void *) CHR('a','f','r','c'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Above Base Substitutions"), NULL, 0, 0, (void *) CHR('a','b','v','s'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Below Base Forms"), NULL, 0, 0, (void *) CHR('b','l','w','f'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Below Base Substitutions"), NULL, 0, 0, (void *) CHR('b','l','w','s'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Akhand"), NULL, 0, 0, (void *) CHR('a','k','h','n'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Glyph Composition/Decomposition"), NULL, 0, 0, (void *) CHR('c','c','m','p'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Half Forms"), NULL, 0, 0, (void *) CHR('h','a','l','f'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Halant Forms"), NULL, 0, 0, (void *) CHR('h','a','l','n'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Leading Jamo Forms"), NULL, 0, 0, (void *) CHR('l','j','m','o'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Trailing Jamo Forms"), NULL, 0, 0, (void *) CHR('t','j','m','o'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Vowel Jamo Forms"), NULL, 0, 0, (void *) CHR('v','j','m','o'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Nukta Forms"), NULL, 0, 0, (void *) CHR('n','u','k','t'), NULL, false, false, false, false, false, false, true },	/* for numero */
+    { (unichar_t *) N_("Ordinals"), NULL, 0, 0, (void *) CHR('o','r','d','n'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Pre Base Forms"), NULL, 0, 0, (void *) CHR('p','r','e','f'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Pre Base Substitutions"), NULL, 0, 0, (void *) CHR('p','r','e','s'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Post Base Forms"), NULL, 0, 0, (void *) CHR('p','s','t','f'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Post Base Substitutions"), NULL, 0, 0, (void *) CHR('p','s','t','s'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Reph Form"), NULL, 0, 0, (void *) CHR('r','p','h','f'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Vattu Variants"), NULL, 0, 0, (void *) CHR('v','a','t','u'), NULL, false, false, false, false, false, false, true },
 /* My hack to identify required features */
-    { (unichar_t *) _STR_RQD, NULL, 0, 0, (void *) REQUIRED_FEATURE, NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Required feature"), NULL, 0, 0, (void *) REQUIRED_FEATURE, NULL, false, false, false, false, false, false, true },
     { NULL }
 };
 
 GTextInfo simplepos_tags[] = {
-    { (unichar_t *) _STR_CaseSensForms, NULL, 0, 0, (void *) CHR('c','a','s','e'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_CapitalSpacing, NULL, 0, 0, (void *) CHR('c','p','s','p'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_FullWidths, NULL, 0, 0, (void *) CHR('f','w','i','d'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_AltHalfWidths, NULL, 0, 0, (void *) CHR('h','a','l','t'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_HalfWidths, NULL, 0, 0, (void *) CHR('h','w','i','d'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_LeftBounds, NULL, 0, 0, (void *) CHR('l','f','b','d'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OpticalBounds, NULL, 0, 0, (void *) CHR('o','p','b','d'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_PropAltMet, NULL, 0, 0, (void *) CHR('p','a','l','t'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_QuartWidths, NULL, 0, 0, (void *) CHR('q','w','i','d'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_RightBounds, NULL, 0, 0, (void *) CHR('r','t','b','d'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_ThirdWidths, NULL, 0, 0, (void *) CHR('t','w','i','d'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_AltVertMet, NULL, 0, 0, (void *) CHR('v','a','l','t'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_AltVertHalfMet, NULL, 0, 0, (void *) CHR('v','h','a','l'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_AltVertPropMet, NULL, 0, 0, (void *) CHR('v','p','a','l'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Case-Sensitive Forms"), NULL, 0, 0, (void *) CHR('c','a','s','e'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Capital Spacing"), NULL, 0, 0, (void *) CHR('c','p','s','p'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Full Widths"), NULL, 0, 0, (void *) CHR('f','w','i','d'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Alternative Half Widths"), NULL, 0, 0, (void *) CHR('h','a','l','t'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Half Widths"), NULL, 0, 0, (void *) CHR('h','w','i','d'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Left Bounds"), NULL, 0, 0, (void *) CHR('l','f','b','d'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Optical Bounds"), NULL, 0, 0, (void *) CHR('o','p','b','d'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Proportional Alternate Metrics"), NULL, 0, 0, (void *) CHR('p','a','l','t'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Quarter Widths"), NULL, 0, 0, (void *) CHR('q','w','i','d'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Right Bounds"), NULL, 0, 0, (void *) CHR('r','t','b','d'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Third Widths"), NULL, 0, 0, (void *) CHR('t','w','i','d'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Alternate Vertical Metrics"), NULL, 0, 0, (void *) CHR('v','a','l','t'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Alternate Vertical Half Metrics"), NULL, 0, 0, (void *) CHR('v','h','a','l'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Proportional Alternate Vertical Metrics"), NULL, 0, 0, (void *) CHR('v','p','a','l'), NULL, false, false, false, false, false, false, true },
 /* Added by me so I can do round trip conversion of TeX tfm files */
-    { (unichar_t *) _STR_ItalicCorrection, NULL, 0, 0, (void *) CHR('I','T','L','C'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Italic Correction"), NULL, 0, 0, (void *) CHR('I','T','L','C'), NULL, false, false, false, false, false, false, true },
 /* My hack to identify required features */
-    { (unichar_t *) _STR_RQD, NULL, 0, 0, (void *) REQUIRED_FEATURE, NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Required feature"), NULL, 0, 0, (void *) REQUIRED_FEATURE, NULL, false, false, false, false, false, false, true },
     { NULL }
 };
 
 GTextInfo pairpos_tags[] = {
-    { (unichar_t *) _STR_Distance, NULL, 0, 0, (void *) CHR('d','i','s','t'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_HorizontalKerning, NULL, 0, 0, (void *) CHR('k','e','r','n'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_VerticalKerning, NULL, 0, 0, (void *) CHR('v','k','r','n'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Distance"), NULL, 0, 0, (void *) CHR('d','i','s','t'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Horizontal Kerning"), NULL, 0, 0, (void *) CHR('k','e','r','n'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Vertical Kerning"), NULL, 0, 0, (void *) CHR('v','k','r','n'), NULL, false, false, false, false, false, false, true },
 /* My hack to identify required features */
-    { (unichar_t *) _STR_RQD, NULL, 0, 0, (void *) REQUIRED_FEATURE, NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Required feature"), NULL, 0, 0, (void *) REQUIRED_FEATURE, NULL, false, false, false, false, false, false, true },
     { NULL }
 };
 
 GTextInfo simplesubs_tags[] = {
-    { (unichar_t *) _STR_AllAlt, NULL, 0, 0, (void *) CHR('a','a','l','t'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_AboveBaseForms, NULL, 0, 0, (void *) CHR('a','b','v','f'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_CaseSensForms, NULL, 0, 0, (void *) CHR('c','a','s','e'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Cap2PetiteCaps, NULL, 0, 0, (void *) CHR('c','2','p','c'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Cap2SmallCaps, NULL, 0, 0, (void *) CHR('c','2','s','c'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Denominators, NULL, 0, 0, (void *) CHR('d','n','o','m'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_ExpertForms, NULL, 0, 0, (void *) CHR('e','x','p','t'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_TerminalForms, NULL, 0, 0, (void *) CHR('f','i','n','a'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_FractionLig, NULL, 0, 0, (void *) CHR('f','r','a','c'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_FullWidths, NULL, 0, 0, (void *) CHR('f','w','i','d'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_HistoricalForms, NULL, 0, 0, (void *) CHR('h','i','s','t'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_HorKanaAlt, NULL, 0, 0, (void *) CHR('h','k','n','a'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Hanja2Hangul, NULL, 0, 0, (void *) CHR('h','n','g','l'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_HalfWidths, NULL, 0, 0, (void *) CHR('h','w','i','d'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_InitialForms, NULL, 0, 0, (void *) CHR('i','n','i','t'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_IsolatedForms, NULL, 0, 0, (void *) CHR('i','s','o','l'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Italics, NULL, 0, 0, (void *) CHR('i','t','a','l'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_JIS78Forms, NULL, 0, 0, (void *) CHR('j','p','7','8'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_JIS83Forms, NULL, 0, 0, (void *) CHR('j','p','8','3'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_JIS90Forms, NULL, 0, 0, (void *) CHR('j','p','9','0'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_LiningFigures, NULL, 0, 0, (void *) CHR('l','n','u','m'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_LocalizedForms, NULL, 0, 0, (void *) CHR('l','o','c','l'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_MedialForms, NULL, 0, 0, (void *) CHR('m','e','d','i'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_MathematicalGreek, NULL, 0, 0, (void *) CHR('m','g','r','k'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_AltAnnotForms, NULL, 0, 0, (void *) CHR('n','a','l','t'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Numerators, NULL, 0, 0, (void *) CHR('n','u','m','r'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_OldstyleFigures, NULL, 0, 0, (void *) CHR('o','n','u','m'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Ornaments, NULL, 0, 0, (void *) CHR('o','r','n','m'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_PetiteCaps, NULL, 0, 0, (void *) CHR('p','c','a','p'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_PropNumbers, NULL, 0, 0, (void *) CHR('p','n','u','m'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_PropWidth, NULL, 0, 0, (void *) CHR('p','w','i','d'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_QuartWidths, NULL, 0, 0, (void *) CHR('q','w','i','d'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_R2LAlt, NULL, 0, 0, (void *) CHR('r','t','l','a'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_RubyNoteForms, NULL, 0, 0, (void *) CHR('r','u','b','y'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_StylisticAlt, NULL, 0, 0, (void *) CHR('s','a','l','t'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_ScientificInf, NULL, 0, 0, (void *) CHR('s','i','n','f'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_SmallCaps, NULL, 0, 0, (void *) CHR('s','m','c','p'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_SimplifiedForms, NULL, 0, 0, (void *) CHR('s','m','p','l'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_StyleSet1, NULL, 0, 0, (void *) CHR('s','s','0','1'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_StyleSet2, NULL, 0, 0, (void *) CHR('s','s','0','2'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_StyleSet3, NULL, 0, 0, (void *) CHR('s','s','0','3'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_StyleSet4, NULL, 0, 0, (void *) CHR('s','s','0','4'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_StyleSet5, NULL, 0, 0, (void *) CHR('s','s','0','5'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Access All Alternates"), NULL, 0, 0, (void *) CHR('a','a','l','t'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Above Base Forms"), NULL, 0, 0, (void *) CHR('a','b','v','f'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Case-Sensitive Forms"), NULL, 0, 0, (void *) CHR('c','a','s','e'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Capitals to Petite Capitals"), NULL, 0, 0, (void *) CHR('c','2','p','c'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Capitals to Small Capitals"), NULL, 0, 0, (void *) CHR('c','2','s','c'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Denominators"), NULL, 0, 0, (void *) CHR('d','n','o','m'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Expert Forms"), NULL, 0, 0, (void *) CHR('e','x','p','t'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Terminal Forms"), NULL, 0, 0, (void *) CHR('f','i','n','a'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Diagonal Fractions"), NULL, 0, 0, (void *) CHR('f','r','a','c'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Full Widths"), NULL, 0, 0, (void *) CHR('f','w','i','d'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Historical Forms"), NULL, 0, 0, (void *) CHR('h','i','s','t'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Horizontal Kana Alternatives"), NULL, 0, 0, (void *) CHR('h','k','n','a'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Hanja to Hangul"), NULL, 0, 0, (void *) CHR('h','n','g','l'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Half Widths"), NULL, 0, 0, (void *) CHR('h','w','i','d'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Initial Forms"), NULL, 0, 0, (void *) CHR('i','n','i','t'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Isolated Forms"), NULL, 0, 0, (void *) CHR('i','s','o','l'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Italics"), NULL, 0, 0, (void *) CHR('i','t','a','l'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("JIS78 Forms"), NULL, 0, 0, (void *) CHR('j','p','7','8'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("JIS83 Forms"), NULL, 0, 0, (void *) CHR('j','p','8','3'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("JIS90 Forms"), NULL, 0, 0, (void *) CHR('j','p','9','0'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Lining Figures"), NULL, 0, 0, (void *) CHR('l','n','u','m'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Localized Forms"), NULL, 0, 0, (void *) CHR('l','o','c','l'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Medial Forms"), NULL, 0, 0, (void *) CHR('m','e','d','i'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Mathematical Greek"), NULL, 0, 0, (void *) CHR('m','g','r','k'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Alternate Annotation Forms"), NULL, 0, 0, (void *) CHR('n','a','l','t'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Numerators"), NULL, 0, 0, (void *) CHR('n','u','m','r'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Oldstyle Figures"), NULL, 0, 0, (void *) CHR('o','n','u','m'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Ornaments"), NULL, 0, 0, (void *) CHR('o','r','n','m'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Lowercase to Petite Capitals"), NULL, 0, 0, (void *) CHR('p','c','a','p'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Proportional Numbers"), NULL, 0, 0, (void *) CHR('p','n','u','m'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Proportional Width"), NULL, 0, 0, (void *) CHR('p','w','i','d'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Quarter Widths"), NULL, 0, 0, (void *) CHR('q','w','i','d'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Right to Left Alternates"), NULL, 0, 0, (void *) CHR('r','t','l','a'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Ruby Notational Forms"), NULL, 0, 0, (void *) CHR('r','u','b','y'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Stylistic Alternatives"), NULL, 0, 0, (void *) CHR('s','a','l','t'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Scientific Inferiors"), NULL, 0, 0, (void *) CHR('s','i','n','f'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Lowercase to Small Capitals"), NULL, 0, 0, (void *) CHR('s','m','c','p'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Simplified Forms"), NULL, 0, 0, (void *) CHR('s','m','p','l'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Style Set 1"), NULL, 0, 0, (void *) CHR('s','s','0','1'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Style Set 2"), NULL, 0, 0, (void *) CHR('s','s','0','2'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Style Set 3"), NULL, 0, 0, (void *) CHR('s','s','0','3'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Style Set 4"), NULL, 0, 0, (void *) CHR('s','s','0','4'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Style Set 5"), NULL, 0, 0, (void *) CHR('s','s','0','5'), NULL, false, false, false, false, false, false, true },
 	/* These are documented to go up to Style Set 20, but I'm not going to bother will all of them until someone cares */
-    { (unichar_t *) _STR_Subscript, NULL, 0, 0, (void *) CHR('s','u','b','s'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Superscript, NULL, 0, 0, (void *) CHR('s','u','p','s'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Swash, NULL, 0, 0, (void *) CHR('s','w','s','h'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Titling, NULL, 0, 0, (void *) CHR('t','i','t','l'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_TraditionalNameForms, NULL, 0, 0, (void *) CHR('t','n','a','m'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_TabNumb, NULL, 0, 0, (void *) CHR('t','n','u','m'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_TraditionalForms, NULL, 0, 0, (void *) CHR('t','r','a','d'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_ThirdWidths, NULL, 0, 0, (void *) CHR('t','w','i','d'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Unicase, NULL, 0, 0, (void *) CHR('u','n','i','c'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_VerticalRot, NULL, 0, 0, (void *) CHR('v','e','r','t'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_VertRotAlt, NULL, 0, 0, (void *) CHR('v','r','t','2'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_VertKana, NULL, 0, 0, (void *) CHR('v','k','n','a'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_SlashedZero, NULL, 0, 0, (void *) CHR('z','e','r','o'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Subscript"), NULL, 0, 0, (void *) CHR('s','u','b','s'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Superscript"), NULL, 0, 0, (void *) CHR('s','u','p','s'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Swash"), NULL, 0, 0, (void *) CHR('s','w','s','h'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Titling"), NULL, 0, 0, (void *) CHR('t','i','t','l'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Traditional Name Forms"), NULL, 0, 0, (void *) CHR('t','n','a','m'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Tabular Numbers"), NULL, 0, 0, (void *) CHR('t','n','u','m'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Traditional Forms"), NULL, 0, 0, (void *) CHR('t','r','a','d'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Third Widths"), NULL, 0, 0, (void *) CHR('t','w','i','d'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Unicase"), NULL, 0, 0, (void *) CHR('u','n','i','c'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Vertical Alternates (obs)"), NULL, 0, 0, (void *) CHR('v','e','r','t'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Vertical Rotation & Alternates"), NULL, 0, 0, (void *) CHR('v','r','t','2'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Vertical Kana Alternates"), NULL, 0, 0, (void *) CHR('v','k','n','a'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Slashed Zero"), NULL, 0, 0, (void *) CHR('z','e','r','o'), NULL, false, false, false, false, false, false, true },
 /* My hack to identify required features */
-    { (unichar_t *) _STR_RQD, NULL, 0, 0, (void *) REQUIRED_FEATURE, NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Required feature"), NULL, 0, 0, (void *) REQUIRED_FEATURE, NULL, false, false, false, false, false, false, true },
     { NULL }
 };
 
 GTextInfo alternatesubs_tags[] = {
-    { (unichar_t *) _STR_AllAlt, NULL, 0, 0, (void *) CHR('a','a','l','t'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_FinalGlyphLine, NULL, 0, 0, (void *) CHR('f','a','l','t'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Hanja2Hangul, NULL, 0, 0, (void *) CHR('h','n','g','l'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_JustificationAlt, NULL, 0, 0, (void *) CHR('j','a','l','t'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_JIS78Forms, NULL, 0, 0, (void *) CHR('j','p','7','8'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_AltAnnotForms, NULL, 0, 0, (void *) CHR('n','a','l','t'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Ornaments, NULL, 0, 0, (void *) CHR('o','r','n','m'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Randomize, NULL, 0, 0, (void *) CHR('r','a','n','d'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_StylisticAlt, NULL, 0, 0, (void *) CHR('s','a','l','t'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Swash, NULL, 0, 0, (void *) CHR('s','w','s','h'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_TraditionalForms, NULL, 0, 0, (void *) CHR('t','r','a','d'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Access All Alternates"), NULL, 0, 0, (void *) CHR('a','a','l','t'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Final Glyph On Line"), NULL, 0, 0, (void *) CHR('f','a','l','t'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Hanja to Hangul"), NULL, 0, 0, (void *) CHR('h','n','g','l'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Justification Alternatives"), NULL, 0, 0, (void *) CHR('j','a','l','t'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("JIS78 Forms"), NULL, 0, 0, (void *) CHR('j','p','7','8'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Alternate Annotation Forms"), NULL, 0, 0, (void *) CHR('n','a','l','t'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Ornaments"), NULL, 0, 0, (void *) CHR('o','r','n','m'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Randomize"), NULL, 0, 0, (void *) CHR('r','a','n','d'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Stylistic Alternatives"), NULL, 0, 0, (void *) CHR('s','a','l','t'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Swash"), NULL, 0, 0, (void *) CHR('s','w','s','h'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Traditional Forms"), NULL, 0, 0, (void *) CHR('t','r','a','d'), NULL, false, false, false, false, false, false, true },
 /* My own invention, to provide data for tfm files for TeX's characters (like parens) which come in multiple sizes */
-    { (unichar_t *) _STR_TeXGlyphList, NULL, 0, 0, (void *) CHR('T','C','H','L'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("TeX Glyphlist"), NULL, 0, 0, (void *) CHR('T','C','H','L'), NULL, false, false, false, false, false, false, true },
 /* My hack to identify required features */
-    { (unichar_t *) _STR_RQD, NULL, 0, 0, (void *) REQUIRED_FEATURE, NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Required feature"), NULL, 0, 0, (void *) REQUIRED_FEATURE, NULL, false, false, false, false, false, false, true },
     { NULL }
 };
 
 static GTextInfo multiplesubs_tags[] = {
-    { (unichar_t *) _STR_GlyphCompDecomp, NULL, 0, 0, (void *) CHR('c','c','m','p'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Glyph Composition/Decomposition"), NULL, 0, 0, (void *) CHR('c','c','m','p'), NULL, false, false, false, false, false, false, true },
 /* My own invention, to provide data for tfm files for TeX's characters (like parens) which can grow to an arbetrary size */
-    { (unichar_t *) _STR_TeXExtensionList, NULL, 0, 0, (void *) CHR('T','E','X','L'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("TeX Extension List"), NULL, 0, 0, (void *) CHR('T','E','X','L'), NULL, false, false, false, false, false, false, true },
 /* My hack to identify required features */
-    { (unichar_t *) _STR_RQD, NULL, 0, 0, (void *) REQUIRED_FEATURE, NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Required feature"), NULL, 0, 0, (void *) REQUIRED_FEATURE, NULL, false, false, false, false, false, false, true },
     { NULL }
 };
 
 static GTextInfo mark_tags[] = {
-    { (unichar_t *) _STR_Abvm, NULL, 0, 0, (void *) CHR('a','b','v','m'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Blwm, NULL, 0, 0, (void *) CHR('b','l','w','m'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_MarkT, NULL, 0, 0, (void *) CHR('m','a','r','k'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Mkmk, NULL, 0, 0, (void *) CHR('m','k','m','k'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Curs, NULL, 0, 0, (void *) CHR('c','u','r','s'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_RQD, NULL, 0, 0, (void *) REQUIRED_FEATURE, NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Above Base Mark"), NULL, 0, 0, (void *) CHR('a','b','v','m'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Below Base Mark"), NULL, 0, 0, (void *) CHR('b','l','w','m'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Mark Positioning"), NULL, 0, 0, (void *) CHR('m','a','r','k'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Mark to Mark"), NULL, 0, 0, (void *) CHR('m','k','m','k'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Cursive Attachment"), NULL, 0, 0, (void *) CHR('c','u','r','s'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Required feature"), NULL, 0, 0, (void *) REQUIRED_FEATURE, NULL, false, false, false, false, false, false, true },
     { NULL }
 };
 
 static GTextInfo contextualsubs_tags[] = {		/* 5 */
-    { (unichar_t *) _STR_TerminalForms2, NULL, 0, 0, (void *) CHR('f','i','n','2'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_TerminalForms3, NULL, 0, 0, (void *) CHR('f','i','n','3'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_MedialForms2, NULL, 0, 0, (void *) CHR('m','e','d','2'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_MarkPosViaSubs, NULL, 0, 0, (void *) CHR('m','s','e','t'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_PreBaseSubs, NULL, 0, 0, (void *) CHR('p','r','e','s'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Terminal Forms #2"), NULL, 0, 0, (void *) CHR('f','i','n','2'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Terminal Forms #3"), NULL, 0, 0, (void *) CHR('f','i','n','3'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Medial Forms 2"), NULL, 0, 0, (void *) CHR('m','e','d','2'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Mark Positioning via Substitution"), NULL, 0, 0, (void *) CHR('m','s','e','t'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Pre Base Substitutions"), NULL, 0, 0, (void *) CHR('p','r','e','s'), NULL, false, false, false, false, false, false, true },
 /* My hack to identify required features */
-    { (unichar_t *) _STR_RQD, NULL, 0, 0, (void *) REQUIRED_FEATURE, NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Required feature"), NULL, 0, 0, (void *) REQUIRED_FEATURE, NULL, false, false, false, false, false, false, true },
     { NULL }
 };
 
 static GTextInfo contextualchainingsubs_tags[] = {	/* 6 */
-    { (unichar_t *) _STR_ContextAltern, NULL, 0, 0, (void *) CHR('c','a','l','t'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Ordinals, NULL, 0, 0, (void *) CHR('o','r','d','n'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Contextual Alternates"), NULL, 0, 0, (void *) CHR('c','a','l','t'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Ordinals"), NULL, 0, 0, (void *) CHR('o','r','d','n'), NULL, false, false, false, false, false, false, true },
 /* My hack to identify required features */
-    { (unichar_t *) _STR_RQD, NULL, 0, 0, (void *) REQUIRED_FEATURE, NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Required feature"), NULL, 0, 0, (void *) REQUIRED_FEATURE, NULL, false, false, false, false, false, false, true },
     { NULL }
 };
 
 static GTextInfo reversechainingsubs_tags[] = {		/* 8 */
-    { (unichar_t *) _STR_ContextLig, NULL, 0, 0, (void *) CHR('c','l','i','g'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_ContextSwash, NULL, 0, 0, (void *) CHR('c','s','w','h'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Contextual Ligatures"), NULL, 0, 0, (void *) CHR('c','l','i','g'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Contextual Swash"), NULL, 0, 0, (void *) CHR('c','s','w','h'), NULL, false, false, false, false, false, false, true },
 /* My hack to identify required features */
-    { (unichar_t *) _STR_RQD, NULL, 0, 0, (void *) REQUIRED_FEATURE, NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Required feature"), NULL, 0, 0, (void *) REQUIRED_FEATURE, NULL, false, false, false, false, false, false, true },
     { NULL }
 };
 
 /* No recommended contextualpos_tags */
 static GTextInfo contextualpos_tags[] = {		/* 7 */
 /* My hack to identify required features */
-    { (unichar_t *) _STR_RQD, NULL, 0, 0, (void *) REQUIRED_FEATURE, NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Required feature"), NULL, 0, 0, (void *) REQUIRED_FEATURE, NULL, false, false, false, false, false, false, true },
     { NULL }
 };
 
 static GTextInfo contextualchainingpos_tags[] = {	/* 8 */
-    { (unichar_t *) _STR_HorizontalKerning, NULL, 0, 0, (void *) CHR('k','e','r','n'), NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_VerticalKerning, NULL, 0, 0, (void *) CHR('v','k','r','n'), NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Horizontal Kerning"), NULL, 0, 0, (void *) CHR('k','e','r','n'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Vertical Kerning"), NULL, 0, 0, (void *) CHR('v','k','r','n'), NULL, false, false, false, false, false, false, true },
 /* My hack to identify required features */
-    { (unichar_t *) _STR_RQD, NULL, 0, 0, (void *) REQUIRED_FEATURE, NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Required feature"), NULL, 0, 0, (void *) REQUIRED_FEATURE, NULL, false, false, false, false, false, false, true },
     { NULL }
 };
 
@@ -801,12 +801,12 @@ GTextInfo *pst_tags[] = {
     NULL
 };
 
-static int newstrings[] = { _STR_NewPosition, _STR_NewPair,
-	_STR_NewSubstitution,
-	_STR_NewAlternate, _STR_NewMultiple, _STR_NewLigature };
-static int editstrings[] = { _STR_EditPosition, _STR_EditPair,
-	_STR_EditSubstitution,
-	_STR_EditAlternate, _STR_EditMultiple, _STR_EditLigature };
+static char *newstrings[] = { N_("New Position Variant"), N_("New Pair Position"),
+	N_("New Substitution Variant"),
+	N_("New Alternate List"), N_("New Multiple List"), N_("New Ligature"), NULL };
+static char *editstrings[] = { N_("Edit Position Variant"), N_("Edit Pair Position"),
+	N_("Edit Substitution Variant"),
+	N_("Edit Alternate List"), N_("Edit Multiple List"), N_("Edit Ligature"), NULL };
 
 static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
@@ -1070,8 +1070,8 @@ return( i );
 }
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-static int sli_names[] = { _STR_AnyScript, _STR_HHDefaultHH, _STR_Nested, _STR_EditLangList };
-static int sli_ud[] = { SLI_UNKNOWN, SLI_UNKNOWN, SLI_NESTED, -1 };
+static char *sli_names[] = { N_("Any Script"), N_(" -- Default --"), N_(" -- Nested --"), N_(" -- Edit Script & Lang List --"), NULL };
+static int   sli_ud[] = { SLI_UNKNOWN, SLI_UNKNOWN, SLI_NESTED, -1 };
 
 static GTextInfo *SFMarkClassList(SplineFont *sf,int class) {
     int i;
@@ -1082,11 +1082,11 @@ static GTextInfo *SFMarkClassList(SplineFont *sf,int class) {
 
     i = sf->mark_class_cnt;
     ti = gcalloc(i+4,sizeof( GTextInfo ));
-    ti[0].text = (unichar_t *) _STR_All;
-    ti[0].text_in_resource = true;
+    ti[0].text = utf82u_copy( _("All"));
     ti[0].selected = class==0;
     for ( i=1; i<sf->mark_class_cnt; ++i ) {
-	ti[i].text = u_copy(sf->mark_class_names[i]);
+	ti[i].text = (unichar_t *) copy(sf->mark_class_names[i]);
+	ti[i].text_is_1byte = true;
 	if ( i==class ) ti[i].selected = true;
     }
 return( ti );
@@ -1112,10 +1112,9 @@ GTextInfo *SFLangList(SplineFont *sf,int addfinal,SplineChar *default_script) {
 	}
     if ( def_sli!=-1 && def_sli<i )
 	ti[def_sli].selected = true;
-    for ( k=0, j=sizeof(sli_names)/sizeof(sli_names[0])-1, bit = 1<<j; j>=0; --j, ++k, bit>>=1 ) {
+    for ( k=0, j=sizeof(sli_names)/sizeof(sli_names[0])-2, bit = 1<<j; j>=0; --j, ++k, bit>>=1 ) {
 	if ( addfinal&bit ) {
-	    ti[i].text = (unichar_t *) sli_names[k];
-	    ti[i].text_in_resource = true;
+	    ti[i].text = utf82u_copy(sli_names[k]);
 	    ti[i].userdata = (void *) sli_ud[k];
 	    if ( sli_ud[k]==def_sli )
 		ti[i].selected = true;
@@ -1139,10 +1138,10 @@ GTextInfo **SFLangArray(SplineFont *sf,int addfinal) {
 	ti[i]->fg = ti[i]->bg = COLOR_DEFAULT;
 	ti[i]->userdata = (void *) i;
     }
-    for ( k=0, j=sizeof(sli_names)/sizeof(sli_names[0])-1, bit = 1<<j; j>=0; --j, ++k, bit>>=1 ) {
+    for ( k=0, j=sizeof(sli_names)/sizeof(sli_names[0])-2, bit = 1<<j; j>=0; --j, ++k, bit>>=1 ) {
 	if ( addfinal&bit ) {
 	    ti[i] = gcalloc(1,sizeof( GTextInfo));
-	    ti[i]->text = u_copy(GStringGetResource(sli_names[k],NULL));;
+	    ti[i]->text = utf82u_copy(sli_names[k]);
 	    ti[i]->userdata = (void *) sli_ud[k];
 	    ti[i]->fg = ti[i]->bg = COLOR_DEFAULT;
 	    ++i;
@@ -1185,11 +1184,7 @@ return( NULL );
 	}
 	if ( *pt!='{' ) {
 	    ScriptRecordFree(sr);
-#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Cant Parse Scripts"),_("A script language list consists of a list of\n4 letter script tags each followed by a '{'\nand a list of 4 letter language tags seperated\nby commas. As:\nlatn{DEU ,dflt} cyrl{dflt}"));
-#else
-	    GWidgetErrorR(_STR_SLError,_STR_SLErrorText);
-#endif
 return( NULL );
 	}
 	sr[i].script = (start[0]<<24) | ((start[1]&0xff)<<16) | ((start[2]&0xff)<<8) | (start[3]&0xff);
@@ -1197,11 +1192,7 @@ return( NULL );
 	    if ( *lpt==',' ) ++lcnt;
 	if ( *lpt=='\0' ) {
 	    ScriptRecordFree(sr);
-#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Cant Parse Scripts"),_("A script language list consists of a list of\n4 letter script tags each followed by a '{'\nand a list of 4 letter language tags seperated\nby commas. As:\nlatn{DEU ,dflt} cyrl{dflt}"));
-#else
-	    GWidgetErrorR(_STR_SLError,_STR_SLErrorText);
-#endif
 return( NULL );
 	}
 	sr[i].langs = galloc((lcnt+1)*sizeof(uint32));
@@ -1230,11 +1221,7 @@ return( NULL );
 
     if ( *pt!='\0' ) {
 	ScriptRecordFree(sr);
-#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Cant Parse Scripts"),_("A script language list consists of a list of\n4 letter script tags each followed by a '{'\nand a list of 4 letter language tags seperated\nby commas. As:\nlatn{DEU ,dflt} cyrl{dflt}"));
-#else
-	GWidgetErrorR(_STR_SLError,_STR_SLErrorText);
-#endif
 return( NULL );
     }
 
@@ -1282,6 +1269,8 @@ return( NULL );
 return( sr );
 }
 
+#define CID_Ok		1
+
 static int sl_e_h(GWindow gw, GEvent *event) {
     int *done = GDrawGetUserData(gw);
 
@@ -1295,10 +1284,10 @@ return( true );
 return( false );
     } else if ( event->type==et_controlevent && event->u.control.subtype == et_buttonactivate ) {
 	switch ( GGadgetGetCid(event->u.control.g)) {
-	  case _STR_OK:
+	  case CID_Ok:
 	    *done = 2;
 	  break;
-	  case _STR_Cancel:
+	  case CID_Cancel:
 	    *done = true;
 	  break;
 	}
@@ -1320,16 +1309,12 @@ static uint32 *ShowLanguages(uint32 *langs) {
     int warned=0;
 
 	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
 	wattrs.event_masks = ~(1<<et_charup);
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	wattrs.window_title = GStringGetResource( _STR_LanguageList,NULL );
-#elif defined(FONTFORGE_CONFIG_GTK)
-	wattrs.window_title =  _("Language List");
-#endif
+	wattrs.utf8_window_title =  _("Language List");
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,width));
@@ -1346,11 +1331,7 @@ static uint32 *ShowLanguages(uint32 *langs) {
 	    if ( languages[j].text!=NULL )
 		languages[j].selected = true;
 	    else if ( !warned ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_LangMissing,_STR_LangMissingText,
-#elif defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Language Missing"),_("Could not find a language to match '%c%c%c%c'.\nIt has been omitted from this list.\nIf that is not desirable press [Cancel] twice\nand then hold down the control key and press [Edit]"),
-#endif
 			langs[i]>>24,
 			(langs[i]>>16)&0xff,
 			(langs[i]>>8)&0xff,
@@ -1371,21 +1352,23 @@ static uint32 *ShowLanguages(uint32 *langs) {
 	gcd[i].gd.pos.x = 15-3; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+gcd[i-1].gd.pos.height+5;
 	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
 	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[i].text = (unichar_t *) _STR_OK;
+	label[i].text = (unichar_t *) _("_OK");
+	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.mnemonic = 'O';
 	gcd[i].gd.label = &label[i];
-	gcd[i].gd.cid = _STR_OK;
+	gcd[i].gd.cid = CID_Ok;
 	gcd[i++].creator = GButtonCreate;
 
 	gcd[i].gd.pos.x = -15; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+3;
 	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
 	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[i].text = (unichar_t *) _STR_Cancel;
+	label[i].text = (unichar_t *) _("_Cancel");
+	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.mnemonic = 'C';
-	gcd[i].gd.cid = _STR_Cancel;
+	gcd[i].gd.cid = CID_Cancel;
 	gcd[i++].creator = GButtonCreate;
 
 	GGadgetsCreate(gw,gcd);
@@ -1403,11 +1386,7 @@ static uint32 *ShowLanguages(uint32 *langs) {
 		++lcnt;
 	}
 	if ( lcnt==0 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_LangMissing,_STR_AtLeastOneLang);
-#elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Language Missing"),_("You must select at least one language\nUse the \"Default\" language if nothing else fits."));
-#endif
 	    done = 0;
  goto retry;
 	}
@@ -1430,12 +1409,15 @@ static int FromScriptToList(GTextInfo **ti,int sindex) {
     /* everything in ti should be in script and vice-versa, but ti is in */
     /* alphabetic order (which may not be english ordering) */
     int i;
-    const unichar_t *match = GStringGetResource((int) (scripts[sindex].text),NULL);
+    unichar_t *match = utf82u_copy((char *) scripts[sindex].text);
 
     for ( i=0; ti[i]->text!=NULL; ++i ) {
-	if ( u_strcmp(ti[i]->text,match)==0 )
+	if ( u_strcmp(ti[i]->text,match)==0 ) {
+	    free(match);
 return( i );
+	}
     }
+    free(match);
     IError("Failed to find corresponding script S2L" );
 return( -1 );
 }
@@ -1447,9 +1429,12 @@ static int FromListToScript(GTextInfo **ti,int tindex) {
     int i;
 
     for ( i=0; scripts[i].text!=NULL; ++i ) {
-	const unichar_t *match = GStringGetResource((int) (scripts[i].text),NULL);
-	if ( u_strcmp(ti[tindex]->text,match)==0 )
+	unichar_t *match = utf82u_copy((char *) scripts[i].text);
+	if ( u_strcmp(ti[tindex]->text,match)==0 ) {
+	    free(match);
 return( i );
+	}
+	free(match);
     }
     IError("Failed to find corresponding script L2S" );
 return( -1 );
@@ -1488,10 +1473,10 @@ return( false );
 	}
     } else if ( event->type==et_controlevent && event->u.control.subtype == et_buttonactivate ) {
 	switch ( GGadgetGetCid(event->u.control.g)) {
-	  case _STR_OK:
+	  case CID_Ok:
 	    *done = 2;
 	  break;
-	  case _STR_Cancel:
+	  case CID_Cancel:
 	    *done = true;
 	  break;
 	}
@@ -1514,19 +1499,17 @@ unichar_t *ShowScripts(unichar_t *usedef) {
     const int width = 150;
     unichar_t *ret, *pt;
 
+    CharInfoInit();
+
     if ( sr==NULL ) sr = &dummy;
 
 	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
 	wattrs.event_masks = ~(1<<et_charup);
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	wattrs.window_title = GStringGetResource( _STR_ScriptList,NULL );
-#elif defined(FONTFORGE_CONFIG_GTK)
-	wattrs.window_title =  _("Script List");
-#endif
+	wattrs.utf8_window_title =  _("Script List");
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,width));
@@ -1548,21 +1531,23 @@ unichar_t *ShowScripts(unichar_t *usedef) {
 	gcd[i].gd.pos.x = 15-3; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+gcd[i-1].gd.pos.height+5;
 	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
 	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[i].text = (unichar_t *) _STR_OK;
+	label[i].text = (unichar_t *) _("_OK");
+	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.mnemonic = 'O';
 	gcd[i].gd.label = &label[i];
-	gcd[i].gd.cid = _STR_OK;
+	gcd[i].gd.cid = CID_Ok;
 	gcd[i++].creator = GButtonCreate;
 
 	gcd[i].gd.pos.x = -15; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+3;
 	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
 	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[i].text = (unichar_t *) _STR_Cancel;
+	label[i].text = (unichar_t *) _("_Cancel");
+	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.mnemonic = 'C';
-	gcd[i].gd.cid = _STR_Cancel;
+	gcd[i].gd.cid = CID_Cancel;
 	gcd[i++].creator = GButtonCreate;
 
 	GGadgetsCreate(gw,gcd);
@@ -1580,11 +1565,7 @@ unichar_t *ShowScripts(unichar_t *usedef) {
 		ti[jj]->userdata = sr[i].langs;
 		sr[i].langs = NULL;
 	    } else if ( !warned ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_ScriptMissing,_STR_ScriptMissingText,
-#elif defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Script Missing"),_("Could not find a script to match '%c%c%c%c'.\nIt has been omitted from this list.\nIf that is not desirable press [Cancel]\nand then hold down the control key and press [Edit]"),
-#endif
 			sr[i].script>>24,
 			(sr[i].script>>16)&0xff,
 			(sr[i].script>>8)&0xff,
@@ -1611,11 +1592,7 @@ unichar_t *ShowScripts(unichar_t *usedef) {
 	    }
 	}
 	if ( scnt==0 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_ScriptMissing,_STR_AtLeastOneScript);
-#elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Script Missing"),_("You must select at least one script"));
-#endif
 	    done = 0;
  goto retry;
 	}
@@ -1651,14 +1628,19 @@ return( ret );
 
 static void SLL_DoChange(struct sl_dlg *sld,unichar_t *def,GEvent *e) {
     struct script_record *sr;
+    char *cret;
     unichar_t *ret;
     unichar_t *usedef = def;
 
     forever {
 	if ( e!=NULL && ( e->u.control.u.button.button!=1 ||
-		(e->u.control.u.button.state&(ksm_control|ksm_meta|ksm_capslock|ksm_shift))) )
-	    ret = GWidgetAskStringR(_STR_ScriptLang,usedef,_STR_ScriptLangEnter);
-	else
+		(e->u.control.u.button.state&(ksm_control|ksm_meta|ksm_capslock|ksm_shift))) ) {
+	    char *cdef = u2utf8_copy(usedef);
+	    cret = gwwv_ask_string(_("Script & Language"),cdef,_("Enter a list of scripts each followed by a list of languages"));
+	    ret = utf82u_copy(cret);
+	    free(cdef);
+	    free(cret);
+	} else
 	    ret = ShowScripts(usedef);
 	if ( usedef!=def )
 	    free(usedef);
@@ -1693,7 +1675,7 @@ return( true );
 	}
 return( false );
     } else if ( event->type==et_controlevent && event->u.control.subtype == et_listselected ) {
-	GGadgetSetEnabled(GWidgetGetControl(gw,_STR_Edit),
+	GGadgetSetEnabled(GWidgetGetControl(gw,CID_Edit),
 		GGadgetGetFirstListSelectedItem(sld->list)!=-1);
     } else if ( event->type==et_controlevent && event->u.control.subtype == et_listdoubleclick ) {
 	ti = GGadgetGetListItemSelected(sld->list);
@@ -1701,7 +1683,7 @@ return( false );
 	    SLL_DoChange(sld,ti->text,NULL);
     } else if ( event->type==et_controlevent && event->u.control.subtype == et_buttonactivate ) {
 	switch ( GGadgetGetCid(event->u.control.g)) {
-	  case _STR_OK:
+	  case CID_Ok:
 	    if ( (srl = SRParseList(sld->list,&sld->sel))!=NULL ) {
 		sld->done = true;
 		ScriptRecordListFree(sld->sf->script_lang);
@@ -1713,14 +1695,14 @@ return( false );
 		    sld->sf->sli_cnt = 0;
 	    }
 	  break;
-	  case _STR_Cancel:
+	  case CID_Cancel:
 	    sld->done = true;
 	    sld->sel = -2;
 	  break;
-	  case _STR_NewDDD:
+	  case CID_New:
 	    SLL_DoChange(sld,NULL,event);
 	  break;
-	  case _STR_Edit:
+	  case CID_Edit:
 	    ti = GGadgetGetListItemSelected(sld->list);
 	    if ( ti!=NULL )
 		SLL_DoChange(sld,ti->text,event);
@@ -1744,6 +1726,8 @@ int ScriptLangList(SplineFont *sf,GGadget *list,int sli) {
     int i;
     const int width = 300;
 
+    CharInfoInit();
+
     if ( len>=2 && ti[len-2]->selected && ti[len-2]->userdata==(void *) SLI_NESTED )
 return(false);
     if ( len>=1 && !ti[len-1]->selected )
@@ -1755,16 +1739,12 @@ return(true);
 	sld.sf = sf;
 	sld.sel = -2;
 	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
 	wattrs.event_masks = ~(1<<et_charup);
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	wattrs.window_title = GStringGetResource( _STR_ScriptLangList,NULL );
-#elif defined(FONTFORGE_CONFIG_GTK)
-	wattrs.window_title =  _("Script & Language List");
-#endif
+	wattrs.utf8_window_title =  _("Script & Language List");
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,width));
@@ -1786,19 +1766,21 @@ return(true);
 	gcd[i].gd.pos.x = 30; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+gcd[i-1].gd.pos.height+5;
 	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
 	gcd[i].gd.flags = gg_visible | gg_enabled;
-	label[i].text = (unichar_t *) _STR_NewDDD;
+	label[i].text = (unichar_t *) _("_New...");
+	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
-	gcd[i].gd.cid = _STR_NewDDD;
+	gcd[i].gd.cid = CID_New;
 	gcd[i++].creator = GButtonCreate;
 
 	gcd[i].gd.pos.x = -30; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y;
 	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
 	gcd[i].gd.flags = gg_visible /*| gg_enabled*/;
-	label[i].text = (unichar_t *) _STR_Edit;
+	label[i].text = (unichar_t *) _("_Edit");
+	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
-	gcd[i].gd.cid = _STR_Edit;
+	gcd[i].gd.cid = CID_Edit;
 	gcd[i++].creator = GButtonCreate;
 
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+28;
@@ -1809,21 +1791,23 @@ return(true);
 	gcd[i].gd.pos.x = 15-3; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+5;
 	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
 	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[i].text = (unichar_t *) _STR_OK;
+	label[i].text = (unichar_t *) _("_OK");
+	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.mnemonic = 'O';
 	gcd[i].gd.label = &label[i];
-	gcd[i].gd.cid = _STR_OK;
+	gcd[i].gd.cid = CID_Ok;
 	gcd[i++].creator = GButtonCreate;
 
 	gcd[i].gd.pos.x = -15; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+3;
 	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
 	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[i].text = (unichar_t *) _STR_Cancel;
+	label[i].text = (unichar_t *) _("_Cancel");
+	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.mnemonic = 'C';
-	gcd[i].gd.cid = _STR_Cancel;
+	gcd[i].gd.cid = CID_Cancel;
 	gcd[i++].creator = GButtonCreate;
 
 	GGadgetsCreate(gw,gcd);
@@ -1861,21 +1845,19 @@ return( true );
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-unichar_t *ClassName(const unichar_t *name,uint32 feature_tag,
+unichar_t *ClassName(const char *name,uint32 feature_tag,
 	uint16 flags, int script_lang_index,int merge_with,int act_type,
 	int macfeature,SplineFont *sf) {
-    unichar_t *newname, *upt, *mark_class_name=NULL;
-    char index[20];
+    char *newname, *upt, *mark_class_name=NULL;
+    unichar_t *u2;
 
     if ( (flags&0xff00)!=0 && ((flags&0xff00)>>8) < sf->mark_class_cnt )
 	mark_class_name = sf->mark_class_names[((flags&0xff00)>>8)];
 
-    newname = galloc((u_strlen(name)+30+(mark_class_name==NULL?0:u_strlen(mark_class_name)+2))*
-	    sizeof(unichar_t));
+    newname = galloc((strlen(name)+30+(mark_class_name==NULL?0:strlen(mark_class_name)+2)) );
     if ( macfeature ) {
-	sprintf(index,"<%d,%d> ", feature_tag>>16, feature_tag&0xffff);
-	uc_strcpy(newname,index);
-	upt = newname+strlen(index);
+	sprintf(newname,"<%d,%d> ", feature_tag>>16, feature_tag&0xffff);
+	upt = newname+strlen(newname);
     } else {
 	if ( (newname[0] = feature_tag>>24)==0 ) newname[0] = ' ';
 	if ( (newname[1] = (feature_tag>>16)&0xff)==0 ) newname[1] = ' ';
@@ -1892,29 +1874,28 @@ unichar_t *ClassName(const unichar_t *name,uint32 feature_tag,
 
     if ( mark_class_name ) {
 	*upt++ = '(';
-	u_strcpy(upt,mark_class_name); upt += u_strlen(upt);
+	strcpy(upt,mark_class_name); upt += strlen(upt);
 	*upt++ = ')';
     }
     *upt++ = ' ';
 
-    sprintf( index,"%3d ", script_lang_index );
-    uc_strcpy(upt,index);
-    upt += u_strlen(upt);
+    sprintf( upt,"%3d ", script_lang_index );
+    upt += strlen(upt);
 
     if ( act_type!=-1 ) {
-	sprintf( index,"%d ", act_type );
-	uc_strcpy(upt,index);
-	upt += u_strlen(upt);
+	sprintf( upt,"%d ", act_type );
+	upt += strlen(upt);
     }
 
     if ( merge_with!=-1 ) {
-	sprintf( index,"%3d ", merge_with );
-	uc_strcpy(upt,index);
-	upt += u_strlen(upt);
+	sprintf( upt,"%3d ", merge_with );
+	upt += strlen(upt);
     }
 
-    u_strcpy(upt,name);
-return( newname );
+    strcpy(upt,name);
+    u2 = utf82u_copy(newname);
+    free(newname);
+return( u2 );
 }
 
 unichar_t *DecomposeClassName(const unichar_t *clsnm, unichar_t **name,
@@ -1959,14 +1940,14 @@ unichar_t *DecomposeClassName(const unichar_t *clsnm, unichar_t **name,
 	clsnm += 4;
 	if ( *clsnm=='(' ) {
 	    const unichar_t *end;
+	    char *utf8;
 	    int i;
 	    for ( end = ++clsnm; *end && *end!=')'; ++end );
+	    utf8 = u2utf8_copyn(clsnm,end-clsnm);
 	    for ( i=sf->mark_class_cnt-1; i>0; --i )
-		if ( u_strlen(sf->mark_class_names[i])==end-clsnm &&
-			u_strncmp(sf->mark_class_names[i],
-				clsnm,
-				end-clsnm)==0 )
+		if ( strcmp(sf->mark_class_names[i],utf8)== 0 )
 	    break;
+	    free(utf8);
 	    if ( flags!=NULL ) *flags |= (i<<8);
 	    clsnm = end;
 	}
@@ -2027,7 +2008,8 @@ return( opentype );
 	    break;
 		if ( s!=NULL && s->setname!=NULL ) {
 		    if ( res!=NULL ) {
-			res[cnt].text = PickNameFromMacName(s->setname);
+			res[cnt].text = (unichar_t *) PickNameFromMacName(s->setname);
+			res[cnt].text_is_1byte = true;
 			res[cnt].image_precedes = true;	/* flag to say it's a mac thing */
 			res[cnt].userdata = (void *) ((feat<<16)|set);
 		    }
@@ -2043,6 +2025,9 @@ return( opentype );
 		for ( c=0; opentype[c].text!=NULL; ++c );
 		res = gcalloc(c+3+cnt,sizeof(GTextInfo));
 		memcpy(res,opentype,c*sizeof(GTextInfo));
+		for ( c=0; opentype[c].text!=NULL; ++c )
+		    if ( res[c].text_is_1byte )
+			res[c].text = (unichar_t *) copy((char *) res[c].text);
 		res[c].line = true;
 		cnt = c+1;
 	    } else {
@@ -2081,17 +2066,18 @@ static GTextInfo **ACD_FigureMerge(SplineFont *sf,uint32 tag, int flags,
     int i, cnt, j;
     GTextInfo **ti = NULL;
     AnchorClass *ac;
+    char *u8skipname = u2utf8_copy(skipname);
 
     for ( j=0; j<2; ++j ) {
 	cnt = 0;
 	for ( ac = sf->anchor; ac!=NULL ; ac=ac->next ) {
-	    if ( u_strcmp(skipname,ac->name)!=0 ) {
+	    if ( strcmp(u8skipname,ac->name)!=0 ) {
 		if ( ac->feature_tag==tag && ac->flags==flags &&
 			ac->script_lang_index==sli ) {
 		    if ( ti!=NULL ) {
 			ti[cnt] = gcalloc(1,sizeof(GTextInfo));
 			ti[cnt]->fg = ti[cnt]->bg = COLOR_DEFAULT;
-			ti[cnt]->text = u_copy(ac->name);
+			ti[cnt]->text = utf82u_copy(ac->name);
 			ti[cnt]->userdata = (void *) (int32) (ac->merge_with);
 			if ( ac->merge_with == select ) {
 			    ti[cnt]->selected = true;
@@ -2106,7 +2092,7 @@ static GTextInfo **ACD_FigureMerge(SplineFont *sf,uint32 tag, int flags,
 	if ( j==0 ) {
 	    for ( i=1; i<0xfffff; ++i ) {
 		for ( ac=sf->anchor; ac!=NULL; ac=ac->next )
-		    if ( u_strcmp(ac->name,skipname)!=0 &&
+		    if ( strcmp(ac->name,u8skipname)!=0 &&
 			    ac->merge_with==i )
 		break;
 		if ( ac==NULL )
@@ -2115,11 +2101,7 @@ static GTextInfo **ACD_FigureMerge(SplineFont *sf,uint32 tag, int flags,
 	    ti = galloc((cnt+2)*sizeof(GTextInfo *));
 	    ti[cnt] = gcalloc(1,sizeof(GTextInfo));
 	    ti[cnt]->fg = ti[cnt]->bg = COLOR_DEFAULT;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    ti[cnt]->text = u_copy(GStringGetResource(_STR_Itself,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    ti[cnt]->text = u_copy(_("Itself"));
-#endif
+	    ti[cnt]->text = utf82u_copy(_("Itself"));
 	    ti[cnt]->userdata = (void *) (i);
 	    ti[cnt+1] = gcalloc(1,sizeof(GTextInfo));
 	} else if ( select!=-2 ) {
@@ -2127,6 +2109,7 @@ static GTextInfo **ACD_FigureMerge(SplineFont *sf,uint32 tag, int flags,
 	    *spos = cnt;
 	}
     }
+    free(u8skipname);
 return( ti );
 }
 
@@ -2239,11 +2222,12 @@ static void TagPopupMessage(GGadget *g,SplineFont *sf) {
 	int setting = u_strtol(end+1,&end,10);
 	for ( ret=end; isspace(*ret); ++ret );
 	if ( *ret=='>' ) {
-	    unichar_t *fs = PickNameFromMacName(
+	    char *fs = PickNameFromMacName(
 		    FindMacSettingName(sf, feat, setting));
 	    if ( fs!=NULL ) {
-		GGadgetSetPopupMsg(g,fs);
-		free(fs);
+		unichar_t *temp = utf82u_copy(fs);
+		GGadgetSetPopupMsg(g,temp);
+		free(fs); free(temp);
 	    }
 	}
     } else if ( u_strlen(ret)==4 ) {
@@ -2251,7 +2235,9 @@ static void TagPopupMessage(GGadget *g,SplineFont *sf) {
 	for ( k=0; pst_tags[k]!=NULL; ++k ) {
 	    for ( i=0; pst_tags[k][i].text!=NULL; ++i ) {
 		if ( pst_tags[k][i].userdata == (void *) tag ) {
-		    GGadgetSetPopupMsg(g,GStringGetResource((intpt) pst_tags[k][i].text,NULL));
+		    unichar_t *temp = utf82u_copy((char *) pst_tags[k][i].text);
+		    GGadgetSetPopupMsg(g,temp);
+		    free(temp);
 return;
 		}
 	    }
@@ -2320,7 +2306,7 @@ return( SLI_UNKNOWN );
 return( sel );
 }
 
-unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
+unichar_t *AskNameTag(char *title,unichar_t *def,uint32 def_tag, uint16 flags,
 	int script_lang_index, enum possub_type type, SplineFont *sf,
 	SplineChar *default_script, int merge_with, int act_type ) {
     static unichar_t nullstr[] = { 0 };
@@ -2333,11 +2319,14 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
     char buf[16];
     unichar_t ubuf[16];
     unichar_t *ret;
-    const unichar_t *name, *utag;
+    char *name;
+    const unichar_t *utag;
     unichar_t *end, *components=NULL;
     uint32 tag;
     int i, j, macfeature = false, class;
     GTextInfo *tags = pst_tags[type-1], *mactags = tags;
+
+    CharInfoInit();
 
     if ( def==NULL ) def=nullstr;
     if ( def_tag==0 && *def!='\0' ) {
@@ -2359,12 +2348,12 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	acd.skipname = def;
 	acd.was_normalsli = true;
 	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
 	wattrs.event_masks = ~(1<<et_charup);
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-	wattrs.window_title = GStringGetResource( title,NULL );
+	wattrs.utf8_window_title = title;
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,160));
@@ -2374,10 +2363,11 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	memset(&gcd,0,sizeof(gcd));
 	memset(&label,0,sizeof(label));
 
-	label[0].text = (unichar_t *) (title==_STR_EditAnchorClass||title==_STR_NewAnchorClass?_STR_AnchorClassName:
-					title==_STR_SuffixToTag?_STR_Suffix:
-			                _STR_Components);
-	label[0].text_in_resource = true;
+	label[0].text = (unichar_t *) (strcmp(title,_("Edit anchor class"))==0||strcmp(title,_("New anchor class"))==0?
+			_("Anchor Class Name:"):
+		    strcmp(title,_("Suffix to Tag..."))==0?
+			_("Suffix:"): _("Components"));
+	label[0].text_is_1byte = true;
 	gcd[0].gd.label = &label[0];
 	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5;
 	gcd[0].gd.flags = gg_enabled|gg_visible;
@@ -2398,7 +2388,8 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	    merge_with = -1;
 	}
 
-	label[2].text = (unichar_t *) _STR_TagC;
+	label[2].text = (unichar_t *) _("_Tag:");
+	label[2].text_is_1byte = true;
 	label[2].text_in_resource = true;
 	gcd[2].gd.label = &label[2];
 	gcd[2].gd.pos.x = 5; gcd[2].gd.pos.y = gcd[1].gd.pos.y+26; 
@@ -2422,7 +2413,8 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	gcd[3].gd.cid = CID_ACD_Tag;
 	gcd[3].creator = GListFieldCreate;
 
-	label[4].text = (unichar_t *) _STR_ScriptAndLangC;
+	label[4].text = (unichar_t *) _("_Script & Languages:");
+	label[4].text_is_1byte = true;
 	label[4].text_in_resource = true;
 	gcd[4].gd.label = &label[4];
 	gcd[4].gd.pos.x = 5; gcd[4].gd.pos.y = gcd[3].gd.pos.y+26; 
@@ -2432,7 +2424,7 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	gcd[5].gd.pos.x = 10; gcd[5].gd.pos.y = gcd[4].gd.pos.y+14;
 	gcd[5].gd.pos.width = 140;
 	gcd[5].gd.flags = gg_enabled|gg_visible;
-	gcd[5].gd.u.list = SFLangList(sf,title==_STR_SuffixToTag?7:3,default_script);
+	gcd[5].gd.u.list = SFLangList(sf,strcmp(title,_("Suffix to Tag..."))==0?7:3,default_script);
 	j = script_lang_index;
 	if ( script_lang_index!=-1 && script_lang_index!=65535 ) {
 	    for ( i=0; gcd[5].gd.u.list[i].text!=NULL; ++i )
@@ -2459,38 +2451,38 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 
 	gcd[6].gd.pos.x = 5; gcd[6].gd.pos.y = gcd[5].gd.pos.y+28;
 	gcd[6].gd.flags = gg_visible | gg_enabled | (flags&pst_r2l?gg_cb_on:0);
-	label[6].text = (unichar_t *) _STR_RightToLeft;
-	label[6].text_in_resource = true;
+	label[6].text = (unichar_t *) _("Right To Left");
+	label[6].text_is_1byte = true;
 	gcd[6].gd.label = &label[6];
 	gcd[6].gd.cid = CID_ACD_R2L;
 	gcd[6].creator = GCheckBoxCreate;
 
 	gcd[7].gd.pos.x = 5; gcd[7].gd.pos.y = gcd[6].gd.pos.y+15;
 	gcd[7].gd.flags = gg_visible | gg_enabled | (flags&pst_ignorebaseglyphs?gg_cb_on:0);
-	label[7].text = (unichar_t *) _STR_IgnoreBaseGlyphs;
-	label[7].text_in_resource = true;
+	label[7].text = (unichar_t *) _("Ignore Base Glyphs");
+	label[7].text_is_1byte = true;
 	gcd[7].gd.label = &label[7];
 	gcd[7].gd.cid = CID_ACD_IgnBase;
 	gcd[7].creator = GCheckBoxCreate;
 
 	gcd[8].gd.pos.x = 5; gcd[8].gd.pos.y = gcd[7].gd.pos.y+15;
 	gcd[8].gd.flags = gg_visible | gg_enabled | (flags&pst_ignoreligatures?gg_cb_on:0);
-	label[8].text = (unichar_t *) _STR_IgnoreLigatures;
-	label[8].text_in_resource = true;
+	label[8].text = (unichar_t *) _("Ignore Ligatures");
+	label[8].text_is_1byte = true;
 	gcd[8].gd.label = &label[8];
 	gcd[8].gd.cid = CID_ACD_IgnLig;
 	gcd[8].creator = GCheckBoxCreate;
 
 	gcd[9].gd.pos.x = 5; gcd[9].gd.pos.y = gcd[8].gd.pos.y+15;
 	gcd[9].gd.flags = gg_visible | gg_enabled | (flags&pst_ignorecombiningmarks?gg_cb_on:0);
-	label[9].text = (unichar_t *) _STR_IgnoreCombiningMarks;
-	label[9].text_in_resource = true;
+	label[9].text = (unichar_t *) _("Ignore Combining Marks");
+	label[9].text_is_1byte = true;
 	gcd[9].gd.label = &label[9];
 	gcd[9].gd.cid = CID_ACD_IgnMark;
 	gcd[9].creator = GCheckBoxCreate;
 
-	label[10].text = (unichar_t *) _STR_ProcessMarks;
-	label[10].text_in_resource = true;
+	label[10].text = (unichar_t *) _("Process Marks:");
+	label[10].text_is_1byte = true;
 	gcd[10].gd.label = &label[10];
 	gcd[10].gd.pos.x = 5; gcd[10].gd.pos.y = gcd[9].gd.pos.y+16; 
 	gcd[10].gd.flags = sf->mark_class_cnt<=1 ? gg_visible : (gg_enabled|gg_visible);
@@ -2508,66 +2500,46 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 
 	i = 12;
 	if ( merge_with!=-1 ) {
-	    label[i].text = (unichar_t *) _STR_Default;
-	    label[i].text_in_resource = true;
+	    label[i].text = (unichar_t *) _("Default");
+	    label[i].text_is_1byte = true;
 	    gcd[i].gd.label = &label[i];
 	    gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[11].gd.pos.y+28;
-	    gcd[i].gd.flags = gg_enabled|gg_visible;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    gcd[i].gd.popup_msg = GStringGetResource(_STR_MarkToBaseLig,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    gcd[i].gd.popup_msg = _("Mark To Base, or\nMark To Ligature");
-#endif
+	    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	    gcd[i].gd.popup_msg = (unichar_t *) _("Mark To Base, or\nMark To Ligature");
 	    gcd[i++].creator = GRadioCreate;
 
 	    label[i].text = (unichar_t *) "Mk-Mk";
 	    label[i].text_is_1byte = true;
 	    gcd[i].gd.label = &label[i];
 	    gcd[i].gd.pos.x = 55; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y;
-	    gcd[i].gd.flags = gg_enabled|gg_visible;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    gcd[i].gd.popup_msg = GStringGetResource(_STR_MarkToMark,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    gcd[i].gd.popup_msg = _("Mark To Mark");
-#endif
+	    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	    gcd[i].gd.popup_msg = (unichar_t *) _("Mark To Mark");
 	    gcd[i++].creator = GRadioCreate;
 
-	    label[i].text = (unichar_t *) _STR_Cursive;
-	    label[i].text_in_resource = true;
+	    label[i].text = (unichar_t *) _("Cursive");
+	    label[i].text_is_1byte = true;
 	    gcd[i].gd.label = &label[i];
 	    gcd[i].gd.pos.x = 103; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y;
-	    gcd[i].gd.flags = gg_enabled|gg_visible;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    gcd[i].gd.popup_msg = GStringGetResource(_STR_CursiveAttach,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    gcd[i].gd.popup_msg = _("Cursive Attachment");
-#endif
+	    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	    gcd[i].gd.popup_msg = (unichar_t *) _("Cursive Attachment");
 	    gcd[i++].creator = GRadioCreate;
 
 	    if ( act_type==act_mark ) gcd[12].gd.flags |= gg_cb_on;
 	    else if ( act_type==act_mkmk ) gcd[13].gd.flags |= gg_cb_on;
 	    else gcd[14].gd.flags |= gg_cb_on;
 
-	    label[i].text = (unichar_t *) _STR_MergeWith;
-	    label[i].text_in_resource = true;
+	    label[i].text = (unichar_t *) _("Merge With:");
+	    label[i].text_is_1byte = true;
 	    gcd[i].gd.label = &label[i];
 	    gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+17;
-	    gcd[i].gd.flags = gg_enabled|gg_visible;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    gcd[i].gd.popup_msg = GStringGetResource(_STR_MergeWithPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    gcd[i].gd.popup_msg = _("FontForge will attempt to merge all anchor classes with the same value for \"Merge With\" into one GPOS lookup");
-#endif
+	    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	    gcd[i].gd.popup_msg = (unichar_t *) _("FontForge will attempt to merge all anchor classes with the same value for \"Merge With\" into one GPOS lookup");
 	    gcd[i++].creator = GLabelCreate;
 
 	    gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+13;
 	    gcd[i].gd.pos.width = 140;
-	    gcd[i].gd.flags = gg_enabled|gg_visible;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    gcd[i].gd.popup_msg = GStringGetResource(_STR_MergeWithPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    gcd[i].gd.popup_msg = _("FontForge will attempt to merge all anchor classes with the same value for \"Merge With\" into one GPOS lookup");
-#endif
+	    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	    gcd[i].gd.popup_msg = (unichar_t *) _("FontForge will attempt to merge all anchor classes with the same value for \"Merge With\" into one GPOS lookup");
 	    gcd[i].gd.cid = CID_ACD_Merge;
 	    gcd[i++].creator = GListButtonCreate;
 
@@ -2578,7 +2550,8 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	gcd[i].gd.pos.x = 15-3;
 	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
 	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[i].text = (unichar_t *) _STR_OK;
+	label[i].text = (unichar_t *) _("_OK");
+	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.cid = true;
@@ -2587,7 +2560,8 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 	gcd[i].gd.pos.x = -15; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+3;
 	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
 	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[i].text = (unichar_t *) _STR_Cancel;
+	label[i].text = (unichar_t *) _("_Cancel");
+	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.cid = false;
@@ -2612,15 +2586,11 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
     while ( !acd.done )
 	GDrawProcessOneEvent(NULL);
     if ( acd.ok ) {
-	name = _GGadgetGetTitle(gcd[1].ret);
+	name = GGadgetGetTitle8(gcd[1].ret);
 	utag = _GGadgetGetTitle(gcd[3].ret);
 	script_lang_index = GetSLI(gcd[5].ret);
 	if ( (ubuf[0] = utag[0])==0 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_MissingTag,_STR_MissingTag);
-#elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Missing Feature Tag"),_("Missing Feature Tag"));
-#endif
  goto tryagain;
 	} else if ((( utag[0]=='<' && utag[u_strlen(utag)-1]=='>' ) ||
 		((u_strtol(utag,&end,10),*end==',') &&
@@ -2642,11 +2612,7 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 		else if ( (ubuf[3] = utag[3])==0 )
 		    ubuf[3] = ' ';
 		if ( u_strlen(utag)>4 || ubuf[0]>=0x7f || ubuf[1]>=0x7f || ubuf[2]>=0x7f || ubuf[3]>=0x7f ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		    GWidgetErrorR(_STR_TagTooLong,_STR_FeatureTagTooLong);
-#elif defined(FONTFORGE_CONFIG_GTK)
 		    gwwv_post_error(_("Tag too long"),_("Feature tags must be exactly 4 ASCII characters"));
-#endif
  goto tryagain;
 		}
 	    }
@@ -2660,11 +2626,7 @@ unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
 		if ( pstype==type && type<=pst_ligature )
 		    /* That's ok */;
 		else {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		    GWidgetErrorR(_STR_TagReuse,_STR_TagReuseLong);
-#elif defined(FONTFORGE_CONFIG_GTK)
 		    gwwv_post_error(_("Tag Reuse"),_("You may not reuse a tag that has already been used for a nested feature"));
-#endif
  goto tryagain;
 		}
 	    }
@@ -2755,7 +2717,7 @@ return( false );
 return( true );
 }
 
-static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flags,
+static unichar_t *AskPosTag(char *title,unichar_t *def,uint32 def_tag, uint16 flags,
 	int script_lang_index, enum possub_type type,SplineFont *sf,
 	SplineChar *default_script) {
     struct pt_dlg ptd;
@@ -2775,12 +2737,20 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
     unichar_t udx2[12], udy2[12], udxa2[12], udya2[12];
     int i, j, temp, tag_pos, sli_pos, class, mrk_pos;
     static unichar_t nullstr[] = { 0 };
+    GTextInfo *tags = pst_tags[type-1];
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    static int buts[3] = { _STR_OK, _STR_Cancel, 0 };
+    static char *buts[3];
+    static int done = false;
+
+    if ( !done ) {
+	buts[0] = _("_Yes");
+	buts[1] = _("_Cancel");
+	done = true;
+	CharInfoInit();
+    }
 #elif defined(FONTFORGE_CONFIG_GTK)
     static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_CANCEL, NULL };
 #endif
-    GTextInfo *tags = pst_tags[type-1];
 
     if ( def==NULL ) def=nullstr;
     if ( def_tag==0 && u_strlen(def)>4 && def[4]==' ' && def[0]<0x7f && def[1]<0x7f && def[2]<0x7f && def[3]<0x7f ) {
@@ -2801,9 +2771,8 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
 	    if ( *def=='(' ) {
 		for ( end = ++def; *end && *end!=')'; ++end );
 		for ( i=sf->mark_class_cnt-1; i>0; --i )
-		    if ( u_strlen(sf->mark_class_names[i])==end-def &&
-			    u_strncmp(sf->mark_class_names[i],
-				    def,
+		    if ( strlen(sf->mark_class_names[i])==end-def &&
+			    uc_strncmp(def,sf->mark_class_names[i],
 				    end-def)==0 )
 		break;
 		flags |= (i<<8);
@@ -2871,12 +2840,12 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
 	ptd.tags = tags;
 	ptd.was_normalsli = true;
 	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
 	wattrs.event_masks = ~(1<<et_charup);
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-	wattrs.window_title = GStringGetResource( title,NULL );
+	wattrs.utf8_window_title = title;
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,ptd.ispair?190:160));
@@ -2887,8 +2856,8 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
 	memset(&label,0,sizeof(label));
 
 	i=0;
-	label[i].text = (unichar_t *) _STR_Dx;
-	label[i].text_in_resource = true;
+	label[i].text = (unichar_t *) U_("∆X:");
+	label[i].text_is_1byte = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4;
 	gcd[i].gd.flags = gg_enabled|gg_visible;
@@ -2901,8 +2870,8 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
 	gcd[i].gd.cid = i+1;
 	gcd[i++].creator = GTextFieldCreate;
 
-	label[i].text = (unichar_t *) _STR_Dy;
-	label[i].text_in_resource = true;
+	label[i].text = (unichar_t *) U_("∆Y:");
+	label[i].text_is_1byte = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-2].gd.pos.y+26;
 	gcd[i].gd.flags = gg_enabled|gg_visible;
@@ -2915,8 +2884,8 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
 	gcd[i].gd.cid = i+1;
 	gcd[i++].creator = GTextFieldCreate;
 
-	label[i].text = (unichar_t *) _STR_Dxa;
-	label[i].text_in_resource = true;
+	label[i].text = (unichar_t *) U_("∆XAdvance:");
+	label[i].text_is_1byte = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-2].gd.pos.y+26;
 	gcd[i].gd.flags = gg_enabled|gg_visible;
@@ -2929,8 +2898,8 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
 	gcd[i].gd.cid = i+1;
 	gcd[i++].creator = GTextFieldCreate;
 
-	label[i].text = (unichar_t *) _STR_Dya;
-	label[i].text_in_resource = true;
+	label[i].text = (unichar_t *) U_("∆YAdvance:");
+	label[i].text_is_1byte = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-2].gd.pos.y+26;
 	gcd[i].gd.flags = gg_enabled|gg_visible;
@@ -2972,8 +2941,8 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
 	    gcd[i].gd.cid = i+1;
 	    gcd[i++].creator = GTextFieldCreate;
 
-	    label[i].text = (unichar_t *) _STR_PairedGlyph;
-	    label[i].text_in_resource = true;
+	    label[i].text = (unichar_t *) _("Paired Glyph:");
+	    label[i].text_is_1byte = true;
 	    gcd[i].gd.label = &label[i];
 	    gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-6].gd.pos.y+26;
 	    gcd[i].gd.flags = gg_enabled|gg_visible;
@@ -2987,7 +2956,8 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
 	    gcd[i++].creator = GTextFieldCreate;
 	}
 
-	label[i].text = (unichar_t *) _STR_TagC;
+	label[i].text = (unichar_t *) _("_Tag:");
+	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+26; 
@@ -3004,7 +2974,8 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
 	gcd[i].gd.cid = i+1;
 	gcd[i++].creator = GListFieldCreate;
 
-	label[i].text = (unichar_t *) _STR_ScriptAndLangC;
+	label[i].text = (unichar_t *) _("_Script & Languages:");
+	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+26; 
@@ -3042,34 +3013,34 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
 
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+28;
 	gcd[i].gd.flags = gg_visible | gg_enabled | (flags&pst_r2l?gg_cb_on:0);
-	label[i].text = (unichar_t *) _STR_RightToLeft;
-	label[i].text_in_resource = true;
+	label[i].text = (unichar_t *) _("Right To Left");
+	label[i].text_is_1byte = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i++].creator = GCheckBoxCreate;
 
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+15;
 	gcd[i].gd.flags = gg_visible | gg_enabled | (flags&pst_ignorebaseglyphs?gg_cb_on:0);
-	label[i].text = (unichar_t *) _STR_IgnoreBaseGlyphs;
-	label[i].text_in_resource = true;
+	label[i].text = (unichar_t *) _("Ignore Base Glyphs");
+	label[i].text_is_1byte = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i++].creator = GCheckBoxCreate;
 
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+15;
 	gcd[i].gd.flags = gg_visible | gg_enabled | (flags&pst_ignoreligatures?gg_cb_on:0);
-	label[i].text = (unichar_t *) _STR_IgnoreLigatures;
-	label[i].text_in_resource = true;
+	label[i].text = (unichar_t *) _("Ignore Ligatures");
+	label[i].text_is_1byte = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i++].creator = GCheckBoxCreate;
 
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+15;
 	gcd[i].gd.flags = gg_visible | gg_enabled | (flags&pst_ignorecombiningmarks?gg_cb_on:0);
-	label[i].text = (unichar_t *) _STR_IgnoreCombiningMarks;
-	label[i].text_in_resource = true;
+	label[i].text = (unichar_t *) _("Ignore Combining Marks");
+	label[i].text_is_1byte = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i++].creator = GCheckBoxCreate;
 
-	label[i].text = (unichar_t *) _STR_ProcessMarks;
-	label[i].text_in_resource = true;
+	label[i].text = (unichar_t *) _("Process Marks:");
+	label[i].text_is_1byte = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+16;
 	gcd[i].gd.flags = sf->mark_class_cnt<=1 ? gg_visible : (gg_enabled|gg_visible);
@@ -3090,7 +3061,8 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
 	gcd[i].gd.pos.x = 15-3; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+30;
 	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
 	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[i].text = (unichar_t *) _STR_OK;
+	label[i].text = (unichar_t *) _("_OK");
+	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.mnemonic = 'O';
 	gcd[i].gd.label = &label[i];
@@ -3100,7 +3072,8 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
 	gcd[i].gd.pos.x = -15; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+3;
 	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
 	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[i].text = (unichar_t *) _STR_Cancel;
+	label[i].text = (unichar_t *) _("_Cancel");
+	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.mnemonic = 'C';
@@ -3122,29 +3095,21 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
     if ( ptd.ok ) {
 	int err=false;
 	char *other;
-	dx = GetIntR(gw,2, _STR_Dx,&err);
-	dy = GetIntR(gw,4, _STR_Dy,&err);
-	dxa = GetIntR(gw,6, _STR_Dxa,&err);
-	dya = GetIntR(gw,8, _STR_Dya,&err);
+	dx = GetInt8(gw,2, U_("∆X:"),&err);
+	dy = GetInt8(gw,4, U_("∆Y:"),&err);
+	dxa = GetInt8(gw,6, U_("∆XAdvance:"),&err);
+	dya = GetInt8(gw,8, U_("∆YAdvance:"),&err);
 	if ( ptd.ispair ) {
-	    dx2 = GetIntR(gw,9, _STR_Dx,&err);
-	    dy2 = GetIntR(gw,10, _STR_Dy,&err);
-	    dxa2 = GetIntR(gw,11, _STR_Dxa,&err);
-	    dya2 = GetIntR(gw,12, _STR_Dya,&err);
+	    dx2 = GetInt8(gw,9, U_("∆X:"),&err);
+	    dy2 = GetInt8(gw,10, U_("∆Y:"),&err);
+	    dxa2 = GetInt8(gw,11, U_("∆XAdvance:"),&err);
+	    dya2 = GetInt8(gw,12, U_("∆YAdvance:"),&err);
 	    other = cu_copy(_GGadgetGetTitle(GWidgetGetControl(gw,14)));
 	    if ( *other=='\0' ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_MissingPaired,_STR_NeedPaired);
-#elif defined(FONTFORGE_CONFIG_GTK)
-		gwwv_post_error(_("Missing paired character"),_("You must specify a name by which to identify the paired character"));
-#endif
+		gwwv_post_error(_("Missing paired glyph"),_("You must specify a name by which to identify the paired glyph"));
 		err = true;
 	    } else if ( SFGetChar(sf,-1,other)==NULL ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		if ( GWidgetAskR(_STR_MissingPaired,buts,0,1,_STR_PairedNotInFont,other)==1 )
-#elif defined(FONTFORGE_CONFIG_GTK)
-		if ( gwwv_ask(_("Missing paired character"),buts,0,1,_("The paired character's name (%.50s) does not match any character in font. Is that what you want?"),other)==1 )
-#endif
+		if ( gwwv_ask(_("Missing paired glyph"),(const char **) buts,0,1,_("The paired glyph's name (%.50s) does not match any glyph in font. Is that what you want?"),other)==1 )
 		    err = true;
 	    }
 	}
@@ -3155,11 +3120,7 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
  goto tryagain;
 	}
 	if ( (ubuf[0] = utag[0])==0 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_MissingTag,_STR_MissingTag);
-#elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Missing Feature Tag"),_("Missing Feature Tag"));
-#endif
  goto tryagain;
 	/* Can't get any mac features here */
 	} else {
@@ -3173,11 +3134,7 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
 		else if ( (ubuf[3] = utag[3])==0 )
 		    ubuf[3] = ' ';
 		if ( u_strlen(utag)>4 || ubuf[0]>=0x7f || ubuf[1]>=0x7f || ubuf[2]>=0x7f || ubuf[3]>=0x7f ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		    GWidgetErrorR(_STR_TagTooLong,_STR_FeatureTagTooLong);
-#elif defined(FONTFORGE_CONFIG_GTK)
 		    gwwv_post_error(_("Tag too long"),_("Feature tags must be exactly 4 ASCII characters"));
-#endif
  goto tryagain;
 		}
 	    }
@@ -3191,11 +3148,7 @@ static unichar_t *AskPosTag(int title,unichar_t *def,uint32 def_tag, uint16 flag
 		if ( pstype==type && type<=pst_ligature )
 		    /* That's ok */;
 		else {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		    GWidgetErrorR(_STR_TagReuse,_STR_TagReuseLong);
-#elif defined(FONTFORGE_CONFIG_GTK)
 		    gwwv_post_error(_("Tag Reuse"),_("You may not reuse a tag that has already been used for a nested feature"));
-#endif
  goto tryagain;
 		}
 	    }
@@ -3365,16 +3318,12 @@ static void CI_AskCounters(CharInfo *ci,HintMask *old) {
     hi.sc = ci->sc;
 
 	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
 	wattrs.event_masks = ~(1<<et_charup);
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	wattrs.window_title = GStringGetResource(old==NULL?_STR_NewCounterMask:_STR_EditCounterMask,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	wattrs.window_title = old==NULL?_("New Counter Mask");
-#endif
+	wattrs.utf8_window_title = old==NULL?_("New Counter Mask"):_("Edit Counter Mask");
 	wattrs.is_dlg = true;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,HI_Width));
 	pos.height = GDrawPointsToPixels(NULL,HI_Height);
@@ -3396,7 +3345,8 @@ static void CI_AskCounters(CharInfo *ci,HintMask *old) {
 	hgcd[j].gd.pos.x = 20-3; hgcd[j].gd.pos.y = HI_Height-31-3;
 	hgcd[j].gd.pos.width = -1; hgcd[j].gd.pos.height = 0;
 	hgcd[j].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	hlabel[j].text = (unichar_t *) _STR_OK;
+	hlabel[j].text = (unichar_t *) _("_OK");
+	hlabel[j].text_is_1byte = true;
 	hlabel[j].text_in_resource = true;
 	hgcd[j].gd.label = &hlabel[j];
 	hgcd[j].gd.handle_controlevent = HI_Ok;
@@ -3405,7 +3355,8 @@ static void CI_AskCounters(CharInfo *ci,HintMask *old) {
 	hgcd[j].gd.pos.x = -20; hgcd[j].gd.pos.y = HI_Height-31;
 	hgcd[j].gd.pos.width = -1; hgcd[j].gd.pos.height = 0;
 	hgcd[j].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	hlabel[j].text = (unichar_t *) _STR_Cancel;
+	hlabel[j].text = (unichar_t *) _("_Cancel");
+	hlabel[j].text_is_1byte = true;
 	hlabel[j].text_in_resource = true;
 	hgcd[j].gd.label = &hlabel[j];
 	hgcd[j].gd.handle_controlevent = HI_Cancel;
@@ -3443,16 +3394,20 @@ return;
 static int LigCheck(SplineChar *sc,enum possub_type type,
 	uint32 tag, unichar_t *components) {
     int i;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    static int buts[3] = { _STR_OK, _STR_Cancel, 0 };
-#elif defined(FONTFORGE_CONFIG_GTK)
-    static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_CANCEL, NULL };
-#endif
     unichar_t *pt, *start, ch;
     PST *pst;
     SplineFont *sf = sc->parent;
     SplineChar *found;
     char *temp;
+#if defined(FONTFORGE_CONFIG_GDRAW)
+    char *buts[3];
+
+    buts[0] = _("_Yes");
+    buts[1] = _("_Cancel");
+    buts[2] = NULL;
+#elif defined(FONTFORGE_CONFIG_GTK)
+    static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_CANCEL, NULL };
+#endif
 
     if ( components==NULL || *components=='\0' )
 return( true );
@@ -3463,11 +3418,7 @@ return( true );
 		for ( pst=sf->glyphs[i]->possub; pst!=NULL; pst=pst->next )
 			if ( pst->type==pst_ligature && pst->tag==tag &&
 			    uc_strcmp(components,pst->u.lig.components)==0 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-return( GWidgetAskR(_STR_Multiple,buts,0,1,_STR_AlreadyLigature,sf->glyphs[i]->name,i)==0 );
-#elif defined(FONTFORGE_CONFIG_GTK)
-return( gwwv_ask(_("Multiple"),buts,0,1,_("There is already a ligature made from these components,\n(named %1$.40s, at local encoding %2$d)\nIs that what you want?"),sf->glyphs[i]->name,i)==0 );
-#endif
+return( gwwv_ask(_("Multiple"),(const char **) buts,0,1,_("There is already a ligature made from these components,\n(named %1$.40s, at local encoding %2$d)\nIs that what you want?"),sf->glyphs[i]->name,i)==0 );
 		}
 	    }
     }
@@ -3481,11 +3432,7 @@ return( true );
 	if ( pt==NULL ) pt = start+u_strlen(start);
 	ch = *pt; *pt = '\0';
 	if ( uc_strcmp(start,sc->name)==0 && type == pst_ligature ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_Badligature,_STR_SelfReferential );
-#elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("A ligature may not be made up of itself"),_("This substitution is self-referential") );
-#endif
 	    *pt = ch;
 return( false );
 	}
@@ -3493,11 +3440,7 @@ return( false );
 	found = SFGetChar(sf,-1,temp);
 	free(temp);
 	if ( found==NULL ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    int ret = GWidgetAskR(_STR_Multiple,buts,0,1,_STR_MissingComponent,start);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    int ret = gwwv_ask(_("Multiple"),buts,0,1,_("The component \"%.20s\" is not in this font,\nIs that what you want?"),start);
-#endif
+	    int ret = gwwv_ask(_("Multiple"),(const char **) buts,0,1,_("The component \"%.20s\" is not in this font,\nIs that what you want?"),start);
 	    *pt = ch;
 return( ret==0 );
 	}
@@ -3590,6 +3533,7 @@ static unichar_t *SLICheck(SplineChar *sc,unichar_t *data,SplineFont *copied_fro
     uint32 tag;
     uint16 flags, sli;
     unichar_t *name, *ret;
+    char *u8name;
 
     DecomposeClassName(data,&name,&tag,&macfeat,&flags,&sli,&merge,&act,sc->parent);
 
@@ -3600,8 +3544,10 @@ static unichar_t *SLICheck(SplineChar *sc,unichar_t *data,SplineFont *copied_fro
 return( data );
     }
 
-    ret = ClassName(name,tag,flags,new,merge,act,macfeat,sc->parent);
-    free(name); free(data);
+    u8name = u2utf8_copy(name);
+    free(name);
+    ret = ClassName(u8name,tag,flags,new,merge,act,macfeat,sc->parent);
+    free(u8name); free(data);
 return( ret );
 }
 
@@ -3644,11 +3590,7 @@ return;
 	break;
 	}
 	if ( i<len && sel+1!=pst_pair && sel+1!=pst_ligature ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_DuplicateTag,_STR_DuplicateTag);
-#elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Duplicate Tag"),_("Duplicate Tag"));
-#endif
 	    free(newname);
 return;
 	}
@@ -3669,7 +3611,7 @@ return;
 
 static void CI_Drop(CharInfo *ci, GEvent *e) {
     char *cnames;
-    unichar_t *unames, *ucnames;
+    unichar_t *unames;
     int sel;
     int32 len;
 
@@ -3686,21 +3628,15 @@ return;
 return;
 
     if ( sel==pst_substitution && strchr(cnames,' ')!=NULL ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_TooManyComponents,_STR_SubsOnlyOne);
-#elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Too Many Components"),_("A simple substitution takes exactly one component, but you have provided several"));
-#endif
 	free(cnames);
 return;
     }
 
-    ucnames = uc_copy(cnames);
-    free(cnames);
-    unames = ClassName(ucnames,CHR(' ',' ',' ',' '),PSTDefaultFlags(sel,ci->sc),
+    unames = ClassName(cnames,CHR(' ',' ',' ',' '),PSTDefaultFlags(sel,ci->sc),
 	    -1,-1,-1,false,ci->sc->parent);
     CI_DoNew(ci,unames);
-    free(ucnames);
+    free(cnames);
     free(unames);
 }
 
@@ -3772,11 +3708,7 @@ return(true);
 	    break;
 	    }
 	    if ( i<len && sel+1!=pst_ligature && sel+1!=pst_pair ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_DuplicateTag,_STR_DuplicateTag);
-#elif defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Duplicate Tag"),_("Duplicate Tag"));
-#endif
 		free(newname);
 return( false );
 	    }
@@ -3911,11 +3843,7 @@ return;
 		type = PSTGuess(paste);
 	    if ( type==pst_null ) {
 		free(paste); free(tempdata);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_BadPOSSUB,_STR_BadPOSSUB);
-#elif defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Bad GPOS/GSUB"),_("Bad GPOS/GSUB"));
-#endif
 return;
 	    }
 	}
@@ -3970,12 +3898,12 @@ return( true );
 
 static int MultipleValues(char *name, int local) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    static int buts[] = { _STR_Yes, _STR_Cancel, 0 };
-    if ( GWidgetAskR(_STR_Multiple,buts,0,1,_STR_AlreadyGlyphUnicode,name,local)==0 )
+    char *buts[3];
+    buts[0] = _("_Yes"); buts[1]=_("_No"); buts[2] = NULL;
 #elif defined(FONTFORGE_CONFIG_GTK)
     static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_CANCEL, NULL };
-    if ( gwwv_ask(_("Multiple"),buts,0,1,_("There is already a glyph with this Unicode encoding,\n(named %1$.40s, at local encoding %2$d)\nIs that what you want?"),name,local)==0 )
 #endif
+    if ( gwwv_ask(_("Multiple"),(const char **) buts,0,1,_("There is already a glyph with this Unicode encoding,\n(named %1$.40s, at local encoding %2$d)\nIs that what you want?"),name,local)==0 )
 return( true );
 
 return( false );
@@ -3983,12 +3911,12 @@ return( false );
 
 static int MultipleNames(void) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    static int buts[] = { _STR_Yes, _STR_Cancel, 0 };
-    if ( GWidgetAskR(_STR_Multiple,buts,0,1,_STR_AlreadyGlyphNamed)==0 )
+    char *buts[3];
+    buts[0] = _("_Yes"); buts[1]=_("_Cancel"); buts[2] = NULL;
 #elif defined(FONTFORGE_CONFIG_GTK)
     static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_CANCEL, NULL };
-    if ( gwwv_ask(_("Multiple"),buts,0,1,_("There is already a glyph with this name,\ndo you want to swap names?"))==0 )
 #endif
+    if ( gwwv_ask(_("Multiple"),(const char **) buts,0,1,_("There is already a glyph with this name,\ndo you want to swap names?"))==0 )
 return( true );
 
 return( false );
@@ -4009,19 +3937,8 @@ static int ParseUValue(GWindow gw, int cid, int minusoneok, SplineFont *sf) {
     if ( val==-1 && minusoneok )
 return( -1 );
     if ( *end || val<0 || val>0x10ffff ) {
-	ProtestR( _STR_UnicodeValue );
+	Protest8( _("Unicode _Value:") );
 return( -2 );
-#if 0
-    } else if ( val>65535 && sf->encoding_name->is_unicodebmp ) {
-# if defined(FONTFORGE_CONFIG_GDRAW)
-	static int buts[] = { _STR_Yes, _STR_No, 0 };
-	if ( GWidgetAskR(_STR_PossiblyTooBig,buts,1,1,_STR_NotUnicodeBMP)==1 )
-# elif defined(FONTFORGE_CONFIG_GTK)
-	static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_NO, NULL };
-	if ( gwwv_ask(_("Value possibly out of range"),buts,1,1,_("Warning: This value is outside of the Unicode BMP.\nIs that really what you want?"))==1 )
-# endif
-return(-2);
-#endif
     }
 return( val );
 }
@@ -4099,11 +4016,7 @@ static int ParseVR(unichar_t *end,struct vr *vr,unichar_t **done) {
     if ( *pt=='=' )
 	++pt;
     else {
-#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad GPOS/GSUB"),_("Bad format for position data, expected four = characters with data"));
-#else
-	GWidgetErrorR(_STR_BadPOSSUB,_STR_ExpectedEquals);
-#endif
 return(false);
     }
     vr->v_adv_off = u_strtol(pt,&end,10);
@@ -4179,21 +4092,13 @@ return;
 		cend[6]==' ' )
 	    /* Don't check any further */;
 	else if ( strlen(data)<10 || data[4]!=' ' || (data[9]!=' ' && data[9]!='(') ) {
-#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Bad GPOS/GSUB"),_("The string must start with a 4 character type field, be followed by a space, and then contain the information"));
-#else
-	    GWidgetErrorR(_STR_BadPOSSUB,_STR_BadPOSSUBPaste);
-#endif
 return;
 	}
 	if ( type==pst_null ) {
 	    type = PSTGuess(data);
 	    if ( type==pst_null ) {
-#if defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Bad GPOS/GSUB"),_("Bad GPOS/GSUB"));
-#else
-		GWidgetErrorR(_STR_BadPOSSUB,_STR_BadPOSSUB);
-#endif
 return;
 	    }
 	}
@@ -4244,11 +4149,7 @@ return;
 		for ( end=pt+u_strlen(pt)-1; *pt==' '; --pt )
 		    *pt = '\0';
 		if ( type==pst_substitution && u_strchr(pt,' ')!=NULL ) {
-#if defined(FONTFORGE_CONFIG_GTK)
 		    gwwv_post_error(_("Bad GPOS/GSUB"),_("A simple substitution must have exactly one component"));
-#else
-		    GWidgetErrorR(_STR_BadPOSSUB,_STR_SimpleSubsOneComponent);
-#endif
 		    free(rest);
 return;
 		}
@@ -4274,7 +4175,7 @@ return;
 	sc->parent->changed = true;
 }
 		
-int SCSetMetaData(SplineChar *sc,char *name,int unienc,const unichar_t *comment) {
+int SCSetMetaData(SplineChar *sc,char *name,int unienc,const char *comment) {
     SplineFont *sf = sc->parent;
     int i, mv=0;
     int isnotdef, samename=false;
@@ -4337,7 +4238,7 @@ return( false );
     }
     free(sc->comment); sc->comment = NULL;
     if ( comment!=NULL && *comment!='\0' )
-	sc->comment = u_copy(comment);
+	sc->comment = copy(comment);
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     SCRefreshTitles(sc);
@@ -4386,33 +4287,22 @@ return( true );
 static int CI_NameCheck(const unichar_t *name) {
     int bad, questionable;
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    static int buts[] = { _STR_Yes, _STR_No, 0 };
+    char *buts[3];
+    buts[0] = _("_Yes"); buts[1]=_("_No"); buts[2] = NULL;
 #elif defined(FONTFORGE_CONFIG_GTK)
-    static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_NO, NULL };
+    static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_CANCEL, NULL };
 #endif
 
     if ( uc_strcmp(name,".notdef")==0 )		/* This name is a special case and doesn't follow conventions */
 return( true );
     if ( u_strlen(name)>31 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_BadName,_STR_GlyphNameTooLong);
-#elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad Name"),_("Glyph names are limitted to 31 characters"));
-#endif
 return( false );
     } else if ( *name=='\0' ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_BadName,_STR_BadName);
-#elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad Name"),_("Bad Name"));
-#endif
 return( false );
     } else if ( isdigit(*name) || *name=='.' ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_BadName,_STR_GlyphNameNoDigits);
-#elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad Name"),_("A glyph name may not start with a digit nor a full stop (period)"));
-#endif
 return( false );
     }
     bad = questionable = false;
@@ -4427,18 +4317,10 @@ return( false );
 	++name;
     }
     if ( bad ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_BadName,_STR_GlyphNameBadChars);
-#elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad Name"),_("A glyph name must be ASCII, without spaces and may not contain the characters \"([{<>}])/%%\", and should contain only alphanumerics, periods and underscores"));
-#endif
 return( false );
     } else if ( questionable ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	if ( GWidgetAskR(_STR_BadName,buts,0,1,_STR_GlyphNameQuestionableChars)==1 )
-#elif defined(FONTFORGE_CONFIG_GTK)
-	if ( gwwv_ask(_("Bad Name"),buts,0,1,_("A glyph name should contain only alphanumerics, periods and underscores\nDo you want to use this name in spite of that?"))==1 )
-#endif
+	if ( gwwv_ask(_("Bad Name"),(const char **) buts,0,1,_("A glyph name should contain only alphanumerics, periods and underscores\nDo you want to use this name in spite of that?"))==1 )
 return(false);
     }
 return( true );
@@ -4464,19 +4346,19 @@ static void CI_ParseCounters(CharInfo *ci) {
     }
 }
 
-static int gettex(GWindow gw,int cid,int strid,int *err) {
+static int gettex(GWindow gw,int cid,char *msg,int *err) {
     const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(gw,cid));
 
     if ( *ret=='\0' )
 return( TEX_UNDEF );
-return( GetIntR(gw,cid,strid,err));
+return( GetInt8(gw,cid,msg,err));
 }
 
 static int _CI_OK(CharInfo *ci) {
     int val;
     int ret, refresh_fvdi=0;
-    char *name;
-    const unichar_t *comment, *nm;
+    char *name, *comment;
+    const unichar_t *nm;
     FontView *fvs;
     int err = false;
     int tex_height, tex_depth, tex_sub, tex_super;
@@ -4484,10 +4366,10 @@ static int _CI_OK(CharInfo *ci) {
     val = ParseUValue(ci->gw,CID_UValue,true,ci->sc->parent);
     if ( val==-2 )
 return( false );
-    tex_height = gettex(ci->gw,CID_TeX_Height,_STR_Height,&err);
-    tex_depth  = gettex(ci->gw,CID_TeX_Depth ,_STR_Depth ,&err);
-    tex_sub    = gettex(ci->gw,CID_TeX_Sub   ,_STR_SubscriptPosition,&err);
-    tex_super  = gettex(ci->gw,CID_TeX_Super ,_STR_SuperscriptPosition,&err);
+    tex_height = gettex(ci->gw,CID_TeX_Height,_("Height:"),&err);
+    tex_depth  = gettex(ci->gw,CID_TeX_Depth ,_("Depth:") ,&err);
+    tex_sub    = gettex(ci->gw,CID_TeX_Sub   ,_("Sub Pos:"),&err);
+    tex_super  = gettex(ci->gw,CID_TeX_Super ,_("Sup Pos:"),&err);
     if ( err )
 return( false );
     if ( !CI_ProcessPosSubs(ci))
@@ -4498,10 +4380,10 @@ return( false );
     name = cu_copy( nm );
     if ( strcmp(name,ci->sc->name)!=0 || val!=ci->sc->unicodeenc )
 	refresh_fvdi = 1;
-    comment = _GGadgetGetTitle(GWidgetGetControl(ci->gw,CID_Comment));
+    comment = GGadgetGetTitle8(GWidgetGetControl(ci->gw,CID_Comment));
     SCPreserveState(ci->sc,2);
     ret = SCSetMetaData(ci->sc,name,val,comment);
-    free(name);
+    free(name); free(comment);
     if ( refresh_fvdi ) {
 	for ( fvs=ci->sc->parent->fv; fvs!=NULL; fvs=fvs->next )
 	    GDrawRequestExpose(fvs->gw,NULL,false);	/* Redraw info area just in case this char is selected */
@@ -5471,9 +5353,7 @@ static int CI_CharChanged(GGadget *g, GEvent *e) {
 	unichar_t *temp, ubuf[1]; char buf[10];
 
 	if ( ret[1]!='\0' ) {
-	    temp = uc_copy("Only a single character allowed");
-	    GWidgetPostNotice(temp,temp);
-	    free(temp);
+	    gwwv_post_notice(_("Only a single character allowed"),_("Only a single character allowed"));
 	    ubuf[0] = '\0';
 	    GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_UChar),ubuf);
 return( true );
@@ -5504,7 +5384,7 @@ return( true );
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-unichar_t *PST2Text(PST *pst,SplineFont *sf) {
+char *PST2Text(PST *pst,SplineFont *sf) {
     char buffer[400];
 
     if ( pst->type==pst_position || pst->type==pst_pair ) {
@@ -5532,17 +5412,17 @@ unichar_t *PST2Text(PST *pst,SplineFont *sf) {
 	buffer[7] = pst->flags&pst_ignoreligatures?'l':' ';
 	buffer[8] = pst->flags&pst_ignorecombiningmarks?'m':' ';
 	buffer[9] = ' ';
-return( uc_copy( buffer ));
+return( copy( buffer ));
     } else {
-	unichar_t *temp = uc_copy(pst->u.subs.variant);
-	unichar_t *ret  = ClassName(temp,pst->tag,pst->flags,
+	unichar_t *uret  = ClassName(pst->u.subs.variant,pst->tag,pst->flags,
 		pst->script_lang_index,-1,-1,pst->macfeature,sf);
-	free(temp);
+	char *ret = u2utf8_copy(uret);
+	free(uret);
 return( ret );
     }
 }
 
-unichar_t *Kern2Text(SplineChar *other,KernPair *kp,int isv) {
+char *Kern2Text(SplineChar *other,KernPair *kp,int isv) {
     char buffer[400];
 
     sprintf(buffer,"%s %c%c%c%c %3d %s offset=%d",
@@ -5554,7 +5434,7 @@ unichar_t *Kern2Text(SplineChar *other,KernPair *kp,int isv) {
 	    kp->sli,
 	    other->name,
 	    kp->off );
-return( uc_copy( buffer ));
+return( copy( buffer ));
 }
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -5563,23 +5443,16 @@ static void CIFillup(CharInfo *ci) {
     SplineFont *sf = sc->parent;
     unichar_t *temp;
     char buffer[400];
-    unichar_t ubuf[200];
+    char buf[200];
     const unichar_t *bits;
     int i,j,gid;
     GTextInfo **arrays[pst_max], **ti;
     int cnts[pst_max];
     PST *pst;
+    unichar_t ubuf[4];
 
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    u_sprintf(ubuf,GStringGetResource(_STR_GlyphInfoFor,NULL),sc->name);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    u_sprintf(ubuf,_("Glyph Info for %.40s"),sc->name);
-#endif
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    GDrawSetWindowTitles(ci->gw, ubuf, GStringGetResource(_STR_GlyphInfo,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-    GDrawSetWindowTitles(ci->gw, ubuf, _("Glyph Info..."));
-#endif
+    sprintf(buf,_("Glyph Info for %.40s"),sc->name);
+    GDrawSetWindowTitles8(ci->gw, buf, _("Glyph Info..."));
 
     if ( ci->oldsc!=NULL && ci->oldsc->charinfo==ci )
 	ci->oldsc->charinfo = NULL;
@@ -5620,9 +5493,11 @@ static void CIFillup(CharInfo *ci) {
 	arrays[i] = gcalloc((cnts[i]+1),sizeof(GTextInfo *));
     memset(cnts,0,sizeof(cnts));
     for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
+	char *t;
 	j = cnts[pst->type]++;
 	arrays[pst->type][j] = gcalloc(1,sizeof(GTextInfo));
-	arrays[pst->type][j]->text = PST2Text(pst,ci->sc->parent);
+	arrays[pst->type][j]->text = utf82u_copy(t= PST2Text(pst,ci->sc->parent));
+	free(t);
 	arrays[pst->type][j]->fg = arrays[pst->type][j]->bg = COLOR_DEFAULT;
     }
     for ( i=pst_null+1; i<pst_lcaret /* == pst_max-1 */; ++i ) {
@@ -5632,10 +5507,10 @@ static void CIFillup(CharInfo *ci) {
     }
 
     bits = SFGetAlternate(sc->parent,sc->unicodeenc,sc,true);
-    GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_ComponentMsg),GStringGetResource(
-	bits==NULL ? _STR_NoComponents :
-	hascomposing(sc->parent,sc->unicodeenc,sc) ? _STR_AccentedComponents :
-	    _STR_CompositComponents, NULL));
+    GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_ComponentMsg),
+	bits==NULL ? _("No components") :
+	hascomposing(sc->parent,sc->unicodeenc,sc) ? _("Accented glyph composed of:") :
+	    _("Glyph composed of:"));
     if ( bits==NULL ) {
 	ubuf[0] = '\0';
 	GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_Components),ubuf);
@@ -5655,9 +5530,8 @@ static void CIFillup(CharInfo *ci) {
 
     GGadgetSelectOneListItem(GWidgetGetControl(ci->gw,CID_Color),0);
 
-    ubuf[0] = '\0';
-    GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_Comment),
-	    sc->comment?sc->comment:ubuf);
+    GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_Comment),
+	    sc->comment?sc->comment:"");
     GGadgetSelectOneListItem(GWidgetGetControl(ci->gw,CID_GClass),sc->glyph_class);
     for ( i=0; std_colors[i].image!=NULL; ++i ) {
 	if ( std_colors[i].userdata == (void *) sc->color )
@@ -5795,6 +5669,8 @@ void SCCharInfo(SplineChar *sc,EncMap *map,int enc) {
     FontRequest rq;
     GFont *font;
 
+    CharInfoInit();
+
     if ( sc->charinfo!=NULL ) {
 	GDrawSetVisible(sc->charinfo->gw,true);
 	GDrawRaise(sc->charinfo->gw);
@@ -5819,16 +5695,12 @@ return;
     }
 
 	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
 	wattrs.event_masks = ~(1<<et_charup);
 	wattrs.restrict_input_to_me = false;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	wattrs.window_title = GStringGetResource( _STR_GlyphInfo,NULL );
-#elif defined(FONTFORGE_CONFIG_GTK)
-	wattrs.window_title =  _("Char Info...");
-#endif
+	wattrs.utf8_window_title =  _("Glyph Info...");
 	wattrs.is_dlg = false;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,CI_Width));
@@ -5838,7 +5710,8 @@ return;
 	memset(&ugcd,0,sizeof(ugcd));
 	memset(&ulabel,0,sizeof(ulabel));
 
-	ulabel[0].text = (unichar_t *) _STR_UnicodeName;
+	ulabel[0].text = (unichar_t *) _("U_nicode Name:");
+	ulabel[0].text_is_1byte = true;
 	ulabel[0].text_in_resource = true;
 	ugcd[0].gd.label = &ulabel[0];
 	ugcd[0].gd.pos.x = 5; ugcd[0].gd.pos.y = 5+4; 
@@ -5853,8 +5726,9 @@ return;
 	ugcd[1].creator = GListFieldCreate;
 	ugcd[1].data = (void *) (-2);
 
-	ulabel[2].text = (unichar_t *) _STR_UnicodeValue;
+	ulabel[2].text = (unichar_t *) _("Unicode _Value:");
 	ulabel[2].text_in_resource = true;
+	ulabel[2].text_is_1byte = true;
 	ugcd[2].gd.label = &ulabel[2];
 	ugcd[2].gd.pos.x = 5; ugcd[2].gd.pos.y = 31+4; 
 	ugcd[2].gd.flags = gg_enabled|gg_visible;
@@ -5868,8 +5742,9 @@ return;
 	ugcd[3].gd.handle_controlevent = CI_UValChanged;
 	ugcd[3].creator = GTextFieldCreate;
 
-	ulabel[4].text = (unichar_t *) _STR_UnicodeChar;
+	ulabel[4].text = (unichar_t *) _("Unicode C_har:");
 	ulabel[4].text_in_resource = true;
+	ulabel[4].text_is_1byte = true;
 	ugcd[4].gd.label = &ulabel[4];
 	ugcd[4].gd.pos.x = 5; ugcd[4].gd.pos.y = 57+4; 
 	ugcd[4].gd.flags = gg_enabled|gg_visible;
@@ -5885,14 +5760,16 @@ return;
 
 	ugcd[6].gd.pos.x = 5; ugcd[6].gd.pos.y = 83+4;
 	ugcd[6].gd.flags = gg_visible | gg_enabled;
-	ulabel[6].text = (unichar_t *) _STR_GlyphClass;
+	ulabel[6].text = (unichar_t *) _("OT _Glyph Class:");
+	ulabel[6].text_is_1byte = true;
 	ulabel[6].text_in_resource = true;
 	ugcd[6].gd.label = &ulabel[6];
 	ugcd[6].creator = GLabelCreate;
 
 	ugcd[7].gd.pos.x = 85; ugcd[7].gd.pos.y = 83;
 	ugcd[7].gd.flags = gg_visible | gg_enabled;
-	ulabel[7].text = (unichar_t *) _STR_SetFromValue;
+	ulabel[7].text = (unichar_t *) _("Set From Val_ue");
+	ulabel[7].text_is_1byte = true;
 	ulabel[7].text_in_resource = true;
 	ugcd[7].gd.cid = CID_GClass;
 	ugcd[7].gd.u.list = glyphclasses;
@@ -5901,7 +5778,8 @@ return;
 
 	ugcd[8].gd.pos.x = 12; ugcd[8].gd.pos.y = 117;
 	ugcd[8].gd.flags = gg_visible | gg_enabled;
-	ulabel[8].text = (unichar_t *) _STR_SetFromName;
+	ulabel[8].text = (unichar_t *) _("Set From N_ame");
+	ulabel[8].text_is_1byte = true;
 	ulabel[8].text_in_resource = true;
 	ugcd[8].gd.mnemonic = 'a';
 	ugcd[8].gd.label = &ulabel[8];
@@ -5910,7 +5788,8 @@ return;
 
 	ugcd[9].gd.pos.x = 107; ugcd[9].gd.pos.y = 117;
 	ugcd[9].gd.flags = gg_visible | gg_enabled;
-	ulabel[9].text = (unichar_t *) _STR_SetFromValue;
+	ulabel[9].text = (unichar_t *) _("Set From Val_ue");
+	ulabel[9].text_is_1byte = true;
 	ulabel[9].text_in_resource = true;
 	ugcd[9].gd.mnemonic = 'l';
 	ugcd[9].gd.label = &ulabel[9];
@@ -5920,8 +5799,8 @@ return;
 	memset(&cgcd,0,sizeof(cgcd));
 	memset(&clabel,0,sizeof(clabel));
 
-	clabel[0].text = (unichar_t *) _STR_Comment;
-	clabel[0].text_in_resource = true;
+	clabel[0].text = (unichar_t *) _("Comment");
+	clabel[0].text_is_1byte = true;
 	cgcd[0].gd.label = &clabel[0];
 	cgcd[0].gd.pos.x = 5; cgcd[0].gd.pos.y = 5; 
 	cgcd[0].gd.flags = gg_enabled|gg_visible;
@@ -5935,8 +5814,8 @@ return;
 	cgcd[1].gd.handle_controlevent = CI_CommentChanged;
 	cgcd[1].creator = GTextAreaCreate;
 
-	clabel[2].text = (unichar_t *) _STR_Color;
-	clabel[2].text_in_resource = true;
+	clabel[2].text = (unichar_t *) _("Color:");
+	clabel[2].text_is_1byte = true;
 	cgcd[2].gd.label = &clabel[2];
 	cgcd[2].gd.pos.x = 5; cgcd[2].gd.pos.y = cgcd[1].gd.pos.y+cgcd[1].gd.pos.height+5+6; 
 	cgcd[2].gd.flags = gg_enabled|gg_visible;
@@ -5964,7 +5843,8 @@ return;
 	    psgcd[i][1].gd.pos.x = 10; psgcd[i][1].gd.pos.y = psgcd[i][0].gd.pos.y+psgcd[i][0].gd.pos.height+4;
 	    psgcd[i][1].gd.pos.width = -1;
 	    psgcd[i][1].gd.flags = gg_visible | gg_enabled;
-	    pslabel[i][1].text = (unichar_t *) _STR_NewDDD;
+	    pslabel[i][1].text = (unichar_t *) _("_New...");
+	    pslabel[i][1].text_is_1byte = true;
 	    pslabel[i][1].text_in_resource = true;
 	    psgcd[i][1].gd.label = &pslabel[i][1];
 	    psgcd[i][1].gd.cid = CID_New+i*100;
@@ -5975,7 +5855,8 @@ return;
 	    psgcd[i][2].gd.pos.x = 20+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor); psgcd[i][2].gd.pos.y = psgcd[i][1].gd.pos.y;
 	    psgcd[i][2].gd.pos.width = -1;
 	    psgcd[i][2].gd.flags = gg_visible;
-	    pslabel[i][2].text = (unichar_t *) _STR_Delete;
+	    pslabel[i][2].text = (unichar_t *) _("_Delete");
+	    pslabel[i][2].text_is_1byte = true;
 	    pslabel[i][2].text_in_resource = true;
 	    psgcd[i][2].gd.label = &pslabel[i][2];
 	    psgcd[i][2].gd.cid = CID_Delete+i*100;
@@ -5986,7 +5867,8 @@ return;
 	    psgcd[i][3].gd.pos.x = -10; psgcd[i][3].gd.pos.y = psgcd[i][1].gd.pos.y;
 	    psgcd[i][3].gd.pos.width = -1;
 	    psgcd[i][3].gd.flags = gg_visible;
-	    pslabel[i][3].text = (unichar_t *) _STR_EditDDD;
+	    pslabel[i][3].text = (unichar_t *) _("_Edit...");
+	    pslabel[i][3].text_is_1byte = true;
 	    pslabel[i][3].text_in_resource = true;
 	    psgcd[i][3].gd.label = &pslabel[i][3];
 	    psgcd[i][3].gd.cid = CID_Edit+i*100;
@@ -5997,7 +5879,8 @@ return;
 	    psgcd[i][4].gd.pos.x = 20; psgcd[i][4].gd.pos.y = psgcd[i][3].gd.pos.y+22;
 	    psgcd[i][4].gd.pos.width = -1;
 	    psgcd[i][4].gd.flags = gg_visible;
-	    pslabel[i][4].text = (unichar_t *) _STR_Copy;
+	    pslabel[i][4].text = (unichar_t *) _("_Copy");
+	    pslabel[i][4].text_is_1byte = true;
 	    pslabel[i][4].text_in_resource = true;
 	    psgcd[i][4].gd.label = &pslabel[i][4];
 	    psgcd[i][4].gd.cid = CID_Copy+i*100;
@@ -6008,7 +5891,8 @@ return;
 	    psgcd[i][5].gd.pos.x = -20; psgcd[i][5].gd.pos.y = psgcd[i][4].gd.pos.y;
 	    psgcd[i][5].gd.pos.width = -1;
 	    psgcd[i][5].gd.flags = gg_visible;
-	    pslabel[i][5].text = (unichar_t *) _STR_Paste;
+	    pslabel[i][5].text = (unichar_t *) _("_Paste");
+	    pslabel[i][5].text_is_1byte = true;
 	    pslabel[i][5].text_in_resource = true;
 	    psgcd[i][5].gd.label = &pslabel[i][5];
 	    psgcd[i][5].gd.cid = CID_Paste+i*100;
@@ -6021,40 +5905,30 @@ return;
 	memset(&cogcd,0,sizeof(cogcd));
 	memset(&colabel,0,sizeof(colabel));
 
-	colabel[0].text = (unichar_t *) _STR_AccentedComponents;
-	colabel[0].text_in_resource = true;
+	colabel[0].text = (unichar_t *) _("Accented glyph composed of:");
+	colabel[0].text_is_1byte = true;
 	cogcd[0].gd.label = &colabel[0];
 	cogcd[0].gd.pos.x = 5; cogcd[0].gd.pos.y = 5; 
-	cogcd[0].gd.flags = gg_enabled|gg_visible;
+	cogcd[0].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
 	cogcd[0].gd.cid = CID_ComponentMsg;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	/*cogcd[0].gd.popup_msg = GStringGetResource(_STR_Ligpop,NULL);*/
-#elif defined(FONTFORGE_CONFIG_GTK)
-	/*cogcd[0].gd.popup_msg = _("If this character is a ligature,\nthen enter the names of the characters\ninto which it decomposes");*/
-#endif
 	cogcd[0].creator = GLabelCreate;
 
 	cogcd[1].gd.pos.x = 5; cogcd[1].gd.pos.y = cogcd[0].gd.pos.y+12;
 	cogcd[1].gd.pos.width = CI_Width-20;
-	cogcd[1].gd.flags = gg_enabled|gg_visible;
+	cogcd[1].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
 	cogcd[1].gd.cid = CID_Components;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	/*cogcd[1].gd.popup_msg = GStringGetResource(_STR_Ligpop,NULL);*/
-#elif defined(FONTFORGE_CONFIG_GTK)
-	/*cogcd[1].gd.popup_msg = _("If this character is a ligature,\nthen enter the names of the characters\ninto which it decomposes");*/
-#endif
 	cogcd[1].creator = GLabelCreate;
 
 
 	memset(&tgcd,0,sizeof(tgcd));
 	memset(&tlabel,0,sizeof(tlabel));
 
-	tlabel[0].text = (unichar_t *) _STR_Height;
-	tlabel[0].text_in_resource = true;
+	tlabel[0].text = (unichar_t *) _("Height:");
+	tlabel[0].text_is_1byte = true;
 	tgcd[0].gd.label = &tlabel[0];
 	tgcd[0].gd.pos.x = 5; tgcd[0].gd.pos.y = 5+4; 
-	tgcd[0].gd.flags = gg_enabled|gg_visible;
-	tgcd[0].gd.popup_msg = GStringGetResource(_STR_TeXMetricsPopup,NULL);
+	tgcd[0].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	tgcd[0].gd.popup_msg = (unichar_t *) _("These fields are the metrics fields used by TeX\nThe height and depth are pretty self-explanatory\nexcept that they are corrected for optical distortion.\nSo 'x' and 'o' probably have the same height.\nSubscript and Superscript positions\nare only used in math fonts and should be left blank elsewhere");
 	tgcd[0].creator = GLabelCreate;
 
 	tgcd[1].gd.pos.x = 85; tgcd[1].gd.pos.y = 5;
@@ -6062,24 +5936,24 @@ return;
 	tgcd[1].gd.cid = CID_TeX_Height;
 	tgcd[1].creator = GTextFieldCreate;
 
-	tlabel[2].text = (unichar_t *) _STR_Depth;
-	tlabel[2].text_in_resource = true;
+	tlabel[2].text = (unichar_t *) _("Depth:");
+	tlabel[2].text_is_1byte = true;
 	tgcd[2].gd.label = &tlabel[2];
 	tgcd[2].gd.pos.x = 5; tgcd[2].gd.pos.y = 31+4; 
-	tgcd[2].gd.flags = gg_enabled|gg_visible;
+	tgcd[2].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
 	tgcd[2].gd.popup_msg = tgcd[0].gd.popup_msg;
 	tgcd[2].creator = GLabelCreate;
 
 	tgcd[3].gd.pos.x = 85; tgcd[3].gd.pos.y = 31;
-	tgcd[3].gd.flags = gg_enabled|gg_visible;
+	tgcd[3].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
 	tgcd[3].gd.cid = CID_TeX_Depth;
 	tgcd[3].creator = GTextFieldCreate;
 
-	tlabel[4].text = (unichar_t *) _STR_SubscriptPosition;
-	tlabel[4].text_in_resource = true;
+	tlabel[4].text = (unichar_t *) _("Sub Pos:");
+	tlabel[4].text_is_1byte = true;
 	tgcd[4].gd.label = &tlabel[4];
 	tgcd[4].gd.pos.x = 5; tgcd[4].gd.pos.y = 57+4; 
-	tgcd[4].gd.flags = gg_enabled|gg_visible;
+	tgcd[4].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
 	tgcd[4].gd.popup_msg = tgcd[0].gd.popup_msg;
 	tgcd[4].creator = GLabelCreate;
 
@@ -6089,9 +5963,9 @@ return;
 	tgcd[5].creator = GTextFieldCreate;
 
 	tgcd[6].gd.pos.x = 5; tgcd[6].gd.pos.y = 83+4;
-	tgcd[6].gd.flags = gg_visible | gg_enabled;
-	tlabel[6].text = (unichar_t *) _STR_SuperscriptPosition;
-	tlabel[6].text_in_resource = true;
+	tgcd[6].gd.flags = gg_visible | gg_enabled|gg_utf8_popup;
+	tlabel[6].text = (unichar_t *) _("Sup Pos:");
+	tlabel[6].text_is_1byte = true;
 	tgcd[6].gd.label = &tlabel[6];
 	tgcd[6].gd.popup_msg = tgcd[0].gd.popup_msg;
 	tgcd[6].creator = GLabelCreate;
@@ -6107,49 +5981,49 @@ return;
 	memset(&aspects,'\0',sizeof(aspects));
 
 	i = 0;
-	aspects[i].text = (unichar_t *) _STR_UnicodeL;
-	aspects[i].text_in_resource = true;
+	aspects[i].text = (unichar_t *) _("Unicode");
+	aspects[i].text_is_1byte = true;
 	aspects[i].selected = true;
 	aspects[i++].gcd = ugcd;
 
-	aspects[i].text = (unichar_t *) _STR_Comment;
-	aspects[i].text_in_resource = true;
+	aspects[i].text = (unichar_t *) _("Comment");
+	aspects[i].text_is_1byte = true;
 	aspects[i++].gcd = cgcd;
 
-	aspects[i].text = (unichar_t *) _STR_AltPos;
-	aspects[i].text_in_resource = true;
+	aspects[i].text = (unichar_t *) _("Pos");
+	aspects[i].text_is_1byte = true;
 	aspects[i++].gcd = psgcd[0];
 
-	aspects[i].text = (unichar_t *) _STR_Pair;
-	aspects[i].text_in_resource = true;
+	aspects[i].text = (unichar_t *) _("Pair");
+	aspects[i].text_is_1byte = true;
 	aspects[i++].gcd = psgcd[1];
 
-	aspects[i].text = (unichar_t *) _STR_Subs;
-	aspects[i].text_in_resource = true;
+	aspects[i].text = (unichar_t *) _("Subs");
+	aspects[i].text_is_1byte = true;
 	aspects[i++].gcd = psgcd[2];
 
-	aspects[i].text = (unichar_t *) _STR_AltSubs;
-	aspects[i].text_in_resource = true;
+	aspects[i].text = (unichar_t *) _("Alt Subs");
+	aspects[i].text_is_1byte = true;
 	aspects[i++].gcd = psgcd[3];
 
-	aspects[i].text = (unichar_t *) _STR_MultSubs;
-	aspects[i].text_in_resource = true;
+	aspects[i].text = (unichar_t *) _("Mult Subs");
+	aspects[i].text_is_1byte = true;
 	aspects[i++].gcd = psgcd[4];
 
-	aspects[i].text = (unichar_t *) _STR_LigatureL;
-	aspects[i].text_in_resource = true;
+	aspects[i].text = (unichar_t *) _("Ligature");
+	aspects[i].text_is_1byte = true;
 	aspects[i++].gcd = psgcd[5];
 
-	aspects[i].text = (unichar_t *) _STR_Components;
-	aspects[i].text_in_resource = true;
+	aspects[i].text = (unichar_t *) _("Components");
+	aspects[i].text_is_1byte = true;
 	aspects[i++].gcd = cogcd;
 
-	aspects[i].text = (unichar_t *) _STR_Counters;
-	aspects[i].text_in_resource = true;
+	aspects[i].text = (unichar_t *) _("Counters");
+	aspects[i].text_is_1byte = true;
 	aspects[i++].gcd = psgcd[6];
 
-	aspects[i].text = (unichar_t *) _STR_TeX;
-	aspects[i].text_in_resource = true;
+	aspects[i].text = (unichar_t *) U_("ΤεΧ");		/* TeX */
+	aspects[i].text_is_1byte = true;
 	aspects[i++].gcd = tgcd;
 
 	mgcd[0].gd.pos.x = 4; mgcd[0].gd.pos.y = 6;
@@ -6163,7 +6037,8 @@ return;
 	mgcd[1].gd.pos.x = 40; mgcd[1].gd.pos.y = mgcd[0].gd.pos.y+mgcd[0].gd.pos.height+3;
 	mgcd[1].gd.pos.width = -1; mgcd[1].gd.pos.height = 0;
 	mgcd[1].gd.flags = gg_visible | gg_enabled ;
-	mlabel[1].text = (unichar_t *) _STR_PrevArrow;
+	mlabel[1].text = (unichar_t *) _("< _Prev");
+	mlabel[1].text_is_1byte = true;
 	mlabel[1].text_in_resource = true;
 	mgcd[1].gd.mnemonic = 'P';
 	mgcd[1].gd.label = &mlabel[1];
@@ -6174,7 +6049,8 @@ return;
 	mgcd[2].gd.pos.x = -40; mgcd[2].gd.pos.y = mgcd[1].gd.pos.y;
 	mgcd[2].gd.pos.width = -1; mgcd[2].gd.pos.height = 0;
 	mgcd[2].gd.flags = gg_visible | gg_enabled ;
-	mlabel[2].text = (unichar_t *) _STR_NextArrow;
+	mlabel[2].text = (unichar_t *) _("_Next >");
+	mlabel[2].text_is_1byte = true;
 	mlabel[2].text_in_resource = true;
 	mgcd[2].gd.label = &mlabel[2];
 	mgcd[2].gd.mnemonic = 'N';
@@ -6185,7 +6061,8 @@ return;
 	mgcd[3].gd.pos.x = 25-3; mgcd[3].gd.pos.y = CI_Height-31-3;
 	mgcd[3].gd.pos.width = -1; mgcd[3].gd.pos.height = 0;
 	mgcd[3].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	mlabel[3].text = (unichar_t *) _STR_OK;
+	mlabel[3].text = (unichar_t *) _("_OK");
+	mlabel[3].text_is_1byte = true;
 	mlabel[3].text_in_resource = true;
 	mgcd[3].gd.mnemonic = 'O';
 	mgcd[3].gd.label = &mlabel[3];
@@ -6195,7 +6072,8 @@ return;
 	mgcd[4].gd.pos.x = -25; mgcd[4].gd.pos.y = mgcd[3].gd.pos.y+3;
 	mgcd[4].gd.pos.width = -1; mgcd[4].gd.pos.height = 0;
 	mgcd[4].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	mlabel[4].text = (unichar_t *) _STR_Done;
+	mlabel[4].text = (unichar_t *) _("_Done");
+	mlabel[4].text_is_1byte = true;
 	mlabel[4].text_in_resource = true;
 	mgcd[4].gd.label = &mlabel[4];
 	mgcd[4].gd.mnemonic = 'C';
@@ -6229,16 +6107,16 @@ struct sel_dlg {
 };
 
 GTextInfo pst_names[] = {
-    { (unichar_t *) _STR_LigatureL, NULL, 0, 0, (void *) pst_ligature, NULL, false, false, false, false, true, false, false, true },
-    { (unichar_t *) _STR_SimpSubstitution, NULL, 0, 0, (void *) pst_substitution, NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_AltSubstitutions, NULL, 0, 0, (void *) pst_alternate, NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_MultSubstitution, NULL, 0, 0, (void *) pst_multiple, NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_SimpPos, NULL, 0, 0, (void *) pst_position, NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_PairPos, NULL, 0, 0, (void *) pst_pair, NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_Kerning, NULL, 0, 0, (void *) pst_kerning, NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_VKerning, NULL, 0, 0, (void *) pst_vkerning, NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_AnchorClass, NULL, 0, 0, (void *) pst_anchors, NULL, false, false, false, false, false, false, false, true },
-    { (unichar_t *) _STR_LigCaret, NULL, 0, 0, (void *) pst_lcaret, NULL, false, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Ligature"), NULL, 0, 0, (void *) pst_ligature, NULL, false, false, false, false, true, false, true },
+    { (unichar_t *) N_("Simple Substitution"), NULL, 0, 0, (void *) pst_substitution, NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Alternate Substitutions"), NULL, 0, 0, (void *) pst_alternate, NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Multiple Substitution"), NULL, 0, 0, (void *) pst_multiple, NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Simple Position"), NULL, 0, 0, (void *) pst_position, NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Pairwise Position"), NULL, 0, 0, (void *) pst_pair, NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Kerning"), NULL, 0, 0, (void *) pst_kerning, NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("VKerning"), NULL, 0, 0, (void *) pst_vkerning, NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Anchor Classes"), NULL, 0, 0, (void *) pst_anchors, NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Ligature Caret"), NULL, 0, 0, (void *) pst_lcaret, NULL, false, false, false, false, false, false, true },
     { NULL }
 };
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
@@ -6385,11 +6263,7 @@ int FVParseSelectByPST(FontView *fv,int type,
 		md.contains!=NULL ) {
 	    md.kernwith = SFGetChar(md.sf,-1,md.contains);
 	    if ( md.kernwith==NULL )
-#if defined(FONTFORGE_CONFIG_GTK)
-		gwwv_post_error(_("Select By ATT..."),_("Could not find the glyph: %.70s"),md.contains);
-#else
-		GWidgetErrorR(_STR_SelectByATT,_STR_CouldntfindGlyph,md.contains);
-#endif
+		gwwv_post_error(_("Selec_t By ATT..."),_("Could not find the glyph: %.70s"),md.contains);
 	    free(md.contains);
 	    md.contains = NULL;
 	    if ( md.kernwith==NULL )
@@ -6397,17 +6271,15 @@ return( false );
 	}
     }
     if ( type==pst_anchors ) {
+	char *u8tags = u2utf8_copy(tags);
 	for ( ac = md.sf->anchor; ac!=NULL; ac=ac->next )
-	    if ( u_strcmp(tags,ac->name)==0 )
+	    if ( strcmp(u8tags,ac->name)==0 )
 	break;
+	free(u8tags);
 	md.ac = ac;
 	if ( ac==NULL ) {
 	    free( md.contains );
-#if defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_error(_("Select By ATT..."),_("Unknown Anchor Class: %.70s"),tags);
-#else
-	    GWidgetErrorR(_STR_SelectByATT,_STR_UnknownAnchorClass,tags);
-#endif
+	    gwwv_post_error(_("Selec_t By ATT..."),_("Unknown Anchor Class: %.70s"),tags);
 return( false );
 	}
     } else if ( type!=pst_kerning && type!=pst_vkerning && type!=pst_lcaret ) {
@@ -6422,11 +6294,7 @@ return( false );
 		md.tags[i] = (u[0]<<24) | (u[1]<<16) | (u[2]<<8) | u[3];
 	    }
 	    if ( *tags!='\0' ) {
-#if defined(FONTFORGE_CONFIG_GTK)
-		gwwv_post_error(_("Select By ATT..."),_("Too many tags specified"));
-#else
-		GWidgetErrorR(_STR_SelectByATT,_STR_TooManyTags);
-#endif
+		gwwv_post_error(_("Selec_t By ATT..."),_("Too many tags specified"));
 		free( md.contains );
 return( false );
 	    }
@@ -6470,11 +6338,7 @@ return( false );
     if ( first!=-1 )
 	FVScrollToChar(fv,first);
     else if ( !no_windowing_ui )
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetPostNoticeR(_STR_SelectByATT,_STR_NoMatch);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_notice(_("Select By ATT..."),_("No characters matched"));
-#endif
+	gwwv_post_notice(_("Select By ATT..."),_("No glyphs matched"));
     if (  !no_windowing_ui )
 	GDrawRequestExpose(fv->v,NULL,false);
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
@@ -6491,9 +6355,9 @@ static GTextInfo **LListFromList(GTextInfo *array) {
     for ( cnt=0; array[cnt].text!=NULL; ++cnt) {
 	ti[cnt] = gcalloc(1,sizeof(GTextInfo));
 	*(ti[cnt]) = array[cnt];
-	if ( ti[cnt]->text_in_resource ) {
-	    ti[cnt]->text_in_resource = false;
-	    ti[cnt]->text = u_copy(GStringGetResource((int) ti[cnt]->text,NULL));
+	if ( ti[cnt]->text_is_1byte ) {
+	    ti[cnt]->text_is_1byte = false;
+	    ti[cnt]->text = utf82u_copy((char *) ti[cnt]->text);
 	}
 	ti[cnt]->fg = ti[cnt]->bg = COLOR_DEFAULT;
     }
@@ -6593,20 +6457,18 @@ void FVSelectByPST(FontView *fv) {
     GTextInfo label[14];
     int i,j;
 
+    CharInfoInit();
+
     memset(&sld,0,sizeof(sld));
     sld.fv = fv;
     if ( gw==NULL ) {
 	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
 	wattrs.event_masks = ~(1<<et_charup);
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	wattrs.window_title = GStringGetResource( _STR_SelectByATT,NULL );
-#elif defined(FONTFORGE_CONFIG_GTK)
-	wattrs.window_title =  _("Select By ATT...");
-#endif
+	wattrs.utf8_window_title =  _("Select By ATT...");
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,160));
@@ -6625,11 +6487,12 @@ void FVSelectByPST(FontView *fv) {
 	gcd[i++].creator = GListButtonCreate;
 	if ( fv->sf->anchor==NULL )
 	    for ( j=0; pst_names[j].text!=NULL; ++j )
-		if ( pst_names[j].text == (void *) _STR_AnchorClass )
+		if ( pst_names[j].text == (void *) _("Anchor Classes") )
 		    pst_names[j].disabled = true;
 
-	label[i].text = (unichar_t *) _STR_TagC;
+	label[i].text = (unichar_t *) _("_Tag:");
 	label[i].text_in_resource = true;
+	label[i].text_is_1byte = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+26; 
 	gcd[i].gd.flags = gg_enabled|gg_visible;
@@ -6641,8 +6504,8 @@ void FVSelectByPST(FontView *fv) {
 	gcd[i].gd.cid = CID_Tag;
 	gcd[i++].creator = GListFieldCreate;
 
-	label[i].text = (unichar_t *) _STR_Containing;
-	label[i].text_in_resource = true;
+	label[i].text = (unichar_t *) _("Containing:");
+	label[i].text_is_1byte = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+26; 
 	gcd[i].gd.flags = gg_enabled|gg_visible;
@@ -6654,49 +6517,38 @@ void FVSelectByPST(FontView *fv) {
 	gcd[i].gd.cid = CID_Contents;
 	gcd[i++].creator = GTextFieldCreate;
 
-	label[i].text = (unichar_t *) _STR_SelectResults;
-	label[i].text_in_resource = true;
+	label[i].text = (unichar_t *) _("Select Results");
+	label[i].text_is_1byte = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+26; 
-	gcd[i].gd.flags = gg_enabled|gg_visible|gg_cb_on;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	gcd[i].gd.popup_msg = GStringGetResource(_STR_SelectResultsPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gcd[i].gd.popup_msg = _("Set the selection of the font view to the characters\nfound by this search");
-#endif
+	gcd[i].gd.flags = gg_enabled|gg_visible|gg_cb_on|gg_utf8_popup;
+	gcd[i].gd.popup_msg = (unichar_t *) _("Set the selection of the font view to the characters\nfound by this search");
 	gcd[i].gd.cid = CID_SelectResults;
 	gcd[i++].creator = GRadioCreate;
 
-	label[i].text = (unichar_t *) _STR_MergeResults;
-	label[i].text_in_resource = true;
+	label[i].text = (unichar_t *) _("Merge Results");
+	label[i].text_is_1byte = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+15; 
-	gcd[i].gd.flags = gg_enabled|gg_visible;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	gcd[i].gd.popup_msg = GStringGetResource(_STR_MergeResultsPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gcd[i].gd.popup_msg = _("Expand the selection of the font view to include\nall the characters found by this search");
-#endif
+	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[i].gd.popup_msg = (unichar_t *) _("Expand the selection of the font view to include\nall the characters found by this search");
 	gcd[i].gd.cid = CID_MergeResults;
 	gcd[i++].creator = GRadioCreate;
 
-	label[i].text = (unichar_t *) _STR_RestrictSelection;
-	label[i].text_in_resource = true;
+	label[i].text = (unichar_t *) _("Restrict Selection");
+	label[i].text_is_1byte = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+15; 
-	gcd[i].gd.flags = gg_enabled|gg_visible;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	gcd[i].gd.popup_msg = GStringGetResource(_STR_RestrictSelectionPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gcd[i].gd.popup_msg = _("Only search the selected characters, and unselect\nany characters which do not match this search");
-#endif
+	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[i].gd.popup_msg = (unichar_t *) _("Only search the selected characters, and unselect\nany characters which do not match this search");
 	gcd[i].gd.cid = CID_RestrictSelection;
 	gcd[i++].creator = GRadioCreate;
 
 	gcd[i].gd.pos.x = 15-3; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+22;
 	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
 	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[i].text = (unichar_t *) _STR_OK;
+	label[i].text = (unichar_t *) _("_OK");
+	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.mnemonic = 'O';
 	gcd[i].gd.label = &label[i];
@@ -6706,7 +6558,8 @@ void FVSelectByPST(FontView *fv) {
 	gcd[i].gd.pos.x = -15; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+3;
 	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
 	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[i].text = (unichar_t *) _STR_Cancel;
+	label[i].text = (unichar_t *) _("_Cancel");
+	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.mnemonic = 'C';
@@ -6784,11 +6637,8 @@ void SCCopyFeatures(SplineChar *sc) {
     SplineFont *sf;
     int cnt, haslk, haslv, hask, hasv;
     char *sel;
-    unichar_t **choices;
+    char **choices;
     uint32 *tags;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    static int buts[] = { _STR_OK, _STR_Cancel, 0 };
-#endif
 
     if ( sc==NULL )
 return;
@@ -6821,7 +6671,7 @@ return;
 	if ( pst->type!=pst_lcaret )
 	    ++cnt;
 
-    choices = gcalloc(cnt+1,sizeof(unichar_t *));
+    choices = gcalloc(cnt+1,sizeof(char *));
     tags = gcalloc(cnt+1,sizeof(uint32));
     sel = gcalloc(cnt,sizeof(char));
 
@@ -6837,19 +6687,6 @@ return;
     qsort(tags,cnt,sizeof(uint32),compare_tag);
     for ( i=0; i<cnt; ++i )
 	choices[i] = TagFullName(sf,tags[i],-1);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    if ( haslk )
-	choices[i++] = u_copy( GStringGetResource(_STR_KernsInitial,NULL));
-    if ( haslv )
-	choices[i++] = u_copy( GStringGetResource(_STR_VKernsInitial,NULL));
-    if ( hask )
-	choices[i++] = u_copy( GStringGetResource(_STR_KernsFinal,NULL));
-    if ( hasv )
-	choices[i++] = u_copy( GStringGetResource(_STR_VKernsFinal,NULL));
-    if ( GWidgetChoicesBRM(_STR_CopyFeatures,(const unichar_t **) choices,sel,i,buts,
-	    _STR_CopyWhichFeatures)==-1 )
-return;
-#elif defined(FONTFORGE_CONFIG_GTK)
     if ( haslk )
 	choices[i++] = copy( _("Kern Pairs with this as the initial glyph"));
     if ( haslv )
@@ -6858,10 +6695,9 @@ return;
 	choices[i++] = copy( _("Kern Pairs with this as the final glyph"));
     if ( hasv )
 	choices[i++] = copy( _("Vertical Kern Pairs with this as the final glyph"));
-    if ( gwwv_choose_multiple(_("Copy Which Features?"),(const char **) choices,sel,i
+    if ( gwwv_choose_multiple(_("Copy Which Features?"),(const char **) choices,sel,i,NULL,
 	    _("Copy Which Features?"))==-1 )
 return;
-#endif
     CopyPSTStart(sf);
     for ( i=0; i<cnt; ++i ) if ( sel[i] ) {
 	for ( pst = sc->possub; pst!=NULL; pst=pst->next )
@@ -6907,3 +6743,28 @@ return;
     free(choices);
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+
+void CharInfoInit(void) {
+    static GTextInfo *lists[] = { contextualchainingpos_tags,contextualpos_tags,
+	reversechainingsubs_tags, contextualchainingsubs_tags,
+	contextualsubs_tags, mark_tags, multiplesubs_tags, alternatesubs_tags,
+	simplesubs_tags, pairpos_tags, simplepos_tags, ligature_tags,
+	languages, scripts, glyphclasses, std_colors, pst_names, NULL };
+    static int done = 0;
+    int i, j;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    static char **cnames[] = { sli_names, newstrings, editstrings, NULL };
+#endif
+
+    if ( done )
+return;
+    done = true;
+    for ( i=0; lists[i]!=NULL; ++i )
+	for ( j=0; lists[i][j].text!=NULL; ++j )
+	    lists[i][j].text = (unichar_t *) _((char *) lists[i][j].text);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    for ( i=0; cnames[i]!=NULL; ++i )
+	for ( j=0; cnames[i][j]!=NULL; ++j )
+	    cnames[i][j] = _(cnames[i][j]);
+#endif
+}    

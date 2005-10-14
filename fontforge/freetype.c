@@ -555,7 +555,7 @@ BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int dep
 		else
 		    bdf->glyphs[i] = SplineCharAntiAlias(subsf->glyphs[i],pixelsize,(1<<(depth/2)));
 #if defined(FONTFORGE_CONFIG_GDRAW)
-		GProgressNext();
+		gwwv_progress_next();
 #elif defined(FONTFORGE_CONFIG_GTK)
 		gwwv_progress_next();
 #endif
@@ -567,7 +567,7 @@ BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int dep
 	++k;
     } while ( k<sf->subfontcnt );
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressEndIndicator();
+    gwwv_progress_end_indicator();
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_end_indicator();
 #endif
@@ -724,7 +724,7 @@ return( NULL );
 #if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_notice(_("No ByteCode Interpreter"),_("These results are those of the freetype autohinter. They do not reflect the truetype instructions."));
 #else
-	    GWidgetPostNoticeR(_STR_NoByteCode,_STR_NoByteCodeMsg);
+	    gwwv_post_notice(_("No ByteCode Interpreter"),_("These results are those of the freetype autohinter. They do not reflect the truetype instructions."));
 #endif
     }
 
@@ -1188,7 +1188,7 @@ BDFFont *SplineFontFreeTypeRasterizeNoHints(SplineFont *sf,int pixelsize,int dep
 		else
 		    bdf->glyphs[i] = SplineCharAntiAlias(subsf->glyphs[i],pixelsize,(1<<(depth/2)));
 #if defined(FONTFORGE_CONFIG_GDRAW)
-		GProgressNext();
+		gwwv_progress_next();
 #elif defined(FONTFORGE_CONFIG_GTK)
 		gwwv_progress_next();
 #endif
@@ -1197,7 +1197,7 @@ BDFFont *SplineFontFreeTypeRasterizeNoHints(SplineFont *sf,int pixelsize,int dep
 	++k;
     } while ( k<sf->subfontcnt );
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressEndIndicator();
+    gwwv_progress_end_indicator();
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_end_indicator();
 #endif
@@ -1337,7 +1337,7 @@ return( TT_Err_Execution_Too_Long );
 		(exc->curRange==tt_coderange_glyph && exc->IP==exc->codeSize)) {
 	    if ( dc->found_wp ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetPostNoticeR(_STR_HitWatchPoint,_STR_HitWatchPointn,dc->wp_ptindex);
+		gwwv_post_notice(_("Hit Watch Point"),_("Point %d was moved by the previous instruction"),dc->wp_ptindex);
 #elif defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_notice(_("Hit Watch Point"),_("Point %d was moved by the previous instruction"),dc->wp_ptindex);
 #endif
@@ -1558,7 +1558,7 @@ return;
     /* Else add it */
     if ( dc->bcnt>=sizeof(dc->breaks)/sizeof(dc->breaks[0]) ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_TooManyBreakpoints,_STR_TooManyBreakpoints);
+	gwwv_post_error(_("Too Many Breakpoints"),_("Too Many Breakpoints"));
 #elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Too Many Breakpoints"),_("Too Many Breakpoints"));
 #endif

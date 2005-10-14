@@ -280,7 +280,7 @@ static int RH_TextChanged(GGadget *g, GEvent *e) {
 	if ( hd->active!=NULL ) {
 	    int cid = GGadgetGetCid(g);
 	    int err=0;
-	    int val = GetIntR(hd->gw,cid,cid==CID_Base?_STR_Base:_STR_Size,&err);
+	    int val = GetInt8(hd->gw,cid,cid==CID_Base?_("_Base:"):_("_Size:"),&err);
 	    if ( err )
 return( true );
 	    if ( GGadgetIsChecked(GWidgetGetControl(GGadgetGetWindow(g),CID_MovePoints)) ) {
@@ -451,16 +451,12 @@ void CVReviewHints(CharView *cv) {
 
     if ( hd.gw==NULL ) {
 	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
 	wattrs.event_masks = ~(1<<et_charup);
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	wattrs.window_title = GStringGetResource(_STR_Reviewhints,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	wattrs.window_title = _("Review Hints...");
-#endif
+	wattrs.utf8_window_title = _("Review Hints...");
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,170));
@@ -470,7 +466,8 @@ void CVReviewHints(CharView *cv) {
 	memset(&label,0,sizeof(label));
 	memset(&gcd,0,sizeof(gcd));
 
-	label[0].text = (unichar_t *) _STR_Base;
+	label[0].text = (unichar_t *) _("_Base:");
+	label[0].text_is_1byte = true;
 	label[0].text_in_resource = true;
 	gcd[0].gd.label = &label[0];
 	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 14+17+5+3; 
@@ -483,7 +480,8 @@ void CVReviewHints(CharView *cv) {
 	gcd[1].gd.handle_controlevent = RH_TextChanged;
 	gcd[1].creator = GTextFieldCreate;
 
-	label[2].text = (unichar_t *) _STR_Size;
+	label[2].text = (unichar_t *) _("_Size:");
+	label[2].text_is_1byte = true;
 	label[2].text_in_resource = true;
 	gcd[2].gd.label = &label[2];
 	gcd[2].gd.pos.x = 90; gcd[2].gd.pos.y = gcd[0].gd.pos.y; 
@@ -499,7 +497,8 @@ void CVReviewHints(CharView *cv) {
 	gcd[4].gd.pos.x = 20-3; gcd[4].gd.pos.y = 14+17+37+14+60;
 	gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
 	gcd[4].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[4].text = (unichar_t *) _STR_OK;
+	label[4].text = (unichar_t *) _("_OK");
+	label[4].text_is_1byte = true;
 	label[4].text_in_resource = true;
 	gcd[4].gd.mnemonic = 'O';
 	gcd[4].gd.label = &label[4];
@@ -509,14 +508,16 @@ void CVReviewHints(CharView *cv) {
 	gcd[5].gd.pos.x = -20; gcd[5].gd.pos.y = gcd[4].gd.pos.y+3;
 	gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
 	gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[5].text = (unichar_t *) _STR_Cancel;
+	label[5].text = (unichar_t *) _("_Cancel");
+	label[5].text_is_1byte = true;
 	label[5].text_in_resource = true;
 	gcd[5].gd.label = &label[5];
 	gcd[5].gd.mnemonic = 'C';
 	gcd[5].gd.handle_controlevent = RH_Cancel;
 	gcd[5].creator = GButtonCreate;
 
-	label[6].text = (unichar_t *) _STR_HStem;
+	label[6].text = (unichar_t *) _("_HStem");
+	label[6].text_is_1byte = true;
 	label[6].text_in_resource = true;
 	gcd[6].gd.label = &label[6];
 	gcd[6].gd.pos.x = 3; gcd[6].gd.pos.y = 2; 
@@ -525,7 +526,8 @@ void CVReviewHints(CharView *cv) {
 	gcd[6].gd.handle_controlevent = RH_HVStem;
 	gcd[6].creator = GRadioCreate;
 
-	label[7].text = (unichar_t *) _STR_VStem;
+	label[7].text = (unichar_t *) _("_VStem");
+	label[7].text_is_1byte = true;
 	label[7].text_in_resource = true;
 	gcd[7].gd.label = &label[7];
 	gcd[7].gd.pos.x = 60; gcd[7].gd.pos.y = 2; 
@@ -542,7 +544,8 @@ void CVReviewHints(CharView *cv) {
 	gcd[9].gd.pos.x = 20; gcd[9].gd.pos.y = 14+17+14+33;
 	gcd[9].gd.pos.width = -1; gcd[9].gd.pos.height = 0;
 	gcd[9].gd.flags = gg_visible | gg_enabled;
-	label[9].text = (unichar_t *) _STR_Create;
+	label[9].text = (unichar_t *) _("Cr_eate");
+	label[9].text_is_1byte = true;
 	label[9].text_in_resource = true;
 	gcd[9].gd.mnemonic = 'e';
 	gcd[9].gd.label = &label[9];
@@ -553,7 +556,8 @@ void CVReviewHints(CharView *cv) {
 	gcd[10].gd.pos.x = -20; gcd[10].gd.pos.y = gcd[9].gd.pos.y;
 	gcd[10].gd.pos.width = -1; gcd[10].gd.pos.height = 0;
 	gcd[10].gd.flags = gg_visible | gg_enabled;
-	label[10].text = (unichar_t *) _STR_Remove;
+	label[10].text = (unichar_t *) _("Re_move");
+	label[10].text_is_1byte = true;
 	label[10].text_in_resource = true;
 	gcd[10].gd.label = &label[10];
 	gcd[10].gd.mnemonic = 'R';
@@ -564,7 +568,8 @@ void CVReviewHints(CharView *cv) {
 	gcd[11].gd.pos.x = 20; gcd[11].gd.pos.y = 14+17+37+14+30;
 	gcd[11].gd.pos.width = -1; gcd[11].gd.pos.height = 0;
 	gcd[11].gd.flags = gg_visible | gg_enabled;
-	label[11].text = (unichar_t *) _STR_PrevArrow;
+	label[11].text = (unichar_t *) _("< _Prev");
+	label[11].text_is_1byte = true;
 	label[11].text_in_resource = true;
 	gcd[11].gd.mnemonic = 'P';
 	gcd[11].gd.label = &label[11];
@@ -575,7 +580,8 @@ void CVReviewHints(CharView *cv) {
 	gcd[12].gd.pos.x = -20; gcd[12].gd.pos.y = 14+17+37+14+30;
 	gcd[12].gd.pos.width = -1; gcd[12].gd.pos.height = 0;
 	gcd[12].gd.flags = gg_visible | gg_enabled;
-	label[12].text = (unichar_t *) _STR_NextArrow;
+	label[12].text = (unichar_t *) _("_Next >");
+	label[12].text_is_1byte = true;
 	label[12].text_in_resource = true;
 	gcd[12].gd.label = &label[12];
 	gcd[12].gd.mnemonic = 'N';
@@ -600,17 +606,14 @@ void CVReviewHints(CharView *cv) {
 	gcd[14].gd.cid = CID_Count;
 	gcd[14].creator = GLabelCreate;
 
-	label[15].text = (unichar_t *) _STR_MovePoints;
+	label[15].text = (unichar_t *) _("_Move Points");
+	label[15].text_is_1byte = true;
 	label[15].text_in_resource = true;
 	gcd[15].gd.label = &label[15];
 	gcd[15].gd.pos.x = 3; gcd[15].gd.pos.y = 12+5+3; 
-	gcd[15].gd.flags = gg_enabled|gg_visible;
+	gcd[15].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
 	gcd[15].gd.cid = CID_MovePoints;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	gcd[15].gd.popup_msg = GStringGetResource(_STR_MovePointsPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gcd[15].gd.popup_msg = _("When the hint's position is changed\nadjust the postion of any points\nwhich lie on that hint");
-#endif
+	gcd[15].gd.popup_msg = (unichar_t *) _("When the hint's position is changed\nadjust the postion of any points\nwhich lie on that hint");
 	gcd[15].creator = GCheckBoxCreate;
 
 	GGadgetsCreate(gw,gcd);
@@ -663,8 +666,8 @@ static int CH_OK(GGadget *g, GEvent *e) {
 	int err = 0;
 	StemInfo *h;
 
-	base = GetIntR(hd->gw,CID_Base,_STR_Base,&err);
-	width = GetIntR(hd->gw,CID_Width,_STR_Size,&err);
+	base = GetInt8(hd->gw,CID_Base,_("_Base:"),&err);
+	width = GetInt8(hd->gw,CID_Width,_("_Size:"),&err);
 	if ( err )
 return(true);
 	if ( hd->preservehints ) {
@@ -730,16 +733,12 @@ void CVCreateHint(CharView *cv,int ishstem,int preservehints) {
 
     if ( chd.gw==NULL ) {
 	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
 	wattrs.event_masks = ~(1<<et_charup);
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	wattrs.window_title = GStringGetResource(_STR_CreateHint,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	wattrs.window_title = _("Create Hint...");
-#endif
+	wattrs.utf8_window_title = _("Create Hint...");
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,170));
@@ -749,7 +748,8 @@ void CVCreateHint(CharView *cv,int ishstem,int preservehints) {
 	memset(&label,0,sizeof(label));
 	memset(&gcd,0,sizeof(gcd));
 
-	label[0].text = (unichar_t *) _STR_Base;
+	label[0].text = (unichar_t *) _("_Base:");
+	label[0].text_is_1byte = true;
 	label[0].text_in_resource = true;
 	gcd[0].gd.label = &label[0];
 	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 17+5+6; 
@@ -765,7 +765,8 @@ void CVCreateHint(CharView *cv,int ishstem,int preservehints) {
 	gcd[1].gd.cid = CID_Base;
 	gcd[1].creator = GTextFieldCreate;
 
-	label[2].text = (unichar_t *) _STR_Size;
+	label[2].text = (unichar_t *) _("_Size:");
+	label[2].text_is_1byte = true;
 	label[2].text_in_resource = true;
 	gcd[2].gd.label = &label[2];
 	gcd[2].gd.pos.x = 90; gcd[2].gd.pos.y = 17+5+6; 
@@ -783,7 +784,8 @@ void CVCreateHint(CharView *cv,int ishstem,int preservehints) {
 	gcd[4].gd.pos.x = 20-3; gcd[4].gd.pos.y = 17+37;
 	gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
 	gcd[4].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[4].text = (unichar_t *) _STR_OK;
+	label[4].text = (unichar_t *) _("_OK");
+	label[4].text_is_1byte = true;
 	label[4].text_in_resource = true;
 	gcd[4].gd.mnemonic = 'O';
 	gcd[4].gd.label = &label[4];
@@ -793,15 +795,16 @@ void CVCreateHint(CharView *cv,int ishstem,int preservehints) {
 	gcd[5].gd.pos.x = -20; gcd[5].gd.pos.y = 17+37+3;
 	gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
 	gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[5].text = (unichar_t *) _STR_Cancel;
+	label[5].text = (unichar_t *) _("_Cancel");
+	label[5].text_is_1byte = true;
 	label[5].text_in_resource = true;
 	gcd[5].gd.label = &label[5];
 	gcd[5].gd.mnemonic = 'C';
 	gcd[5].gd.handle_controlevent = CH_Cancel;
 	gcd[5].creator = GButtonCreate;
 
-	label[6].text = (unichar_t *) _STR_CreateHorizontalHint;	/* Initialize to bigger size */
-	label[6].text_in_resource = true;
+	label[6].text = (unichar_t *) _("Create Horizontal Stem Hint");	/* Initialize to bigger size */
+	label[6].text_is_1byte = true;
 	gcd[6].gd.label = &label[6];
 	gcd[6].gd.pos.x = 17; gcd[6].gd.pos.y = 5; 
 	gcd[6].gd.flags = gg_enabled|gg_visible;
@@ -820,8 +823,9 @@ void CVCreateHint(CharView *cv,int ishstem,int preservehints) {
 	uc_strcpy(ubuf,buffer);
 	GGadgetSetTitle(GWidgetGetControl(gw,CID_Base),ubuf);
     }
-    GGadgetSetTitle(GWidgetGetControl(gw,CID_Label),GStringGetResource(
-	    ishstem ? _STR_CreateHorizontalHint : _STR_CreateVerticalHint,NULL));
+    GGadgetSetTitle8(GWidgetGetControl(gw,CID_Label),
+	    ishstem ? _("Create Horizontal Stem Hint") :
+		    _("Create Vertical Stem Hint"));
     GWidgetIndicateFocusGadget(GWidgetGetControl(gw,CID_Base));
     GTextFieldSelect(GWidgetGetControl(gw,CID_Base),0,-1);
 

@@ -286,7 +286,7 @@ static int RC_OK(GGadget *g, GEvent *e) {
 	int err=false;
 	real size;
 	int dir = GGadgetIsChecked(GWidgetGetControl(gw,CID_Y));
-	size = GetRealR(gw,CID_Size,_STR_Size,&err);
+	size = GetReal8(gw,CID_Size,_("_Size:"),&err);
 	if ( err )
 return(true);
 	SpaceMany(rcd->cv,rcd->b, dir, size, rcd->cnt);
@@ -327,16 +327,12 @@ static void RegionControl(CharView *cv,DBounds *b,int cnt) {
     rcd.done = false;
 
 	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
 	wattrs.event_masks = ~(1<<et_charup);
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	wattrs.window_title = GStringGetResource(_STR_SpaceRegions,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	wattrs.window_title = _("Space Regions...");
-#endif
+	wattrs.utf8_window_title = _("Space Regions...");
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,225));
@@ -346,14 +342,15 @@ static void RegionControl(CharView *cv,DBounds *b,int cnt) {
 	memset(&label,0,sizeof(label));
 	memset(&gcd,0,sizeof(gcd));
 
-	label[0].text = (unichar_t *) _STR_CoordinateAlongWhich;
-	label[0].text_in_resource = true;
+	label[0].text = (unichar_t *) _("Coordinate along which to space");
+	label[0].text_is_1byte = true;
 	gcd[0].gd.label = &label[0];
 	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 6; 
 	gcd[0].gd.flags = gg_enabled|gg_visible;
 	gcd[0].creator = GLabelCreate;
 
-	label[1].text = (unichar_t *) _STR_X;
+	label[1].text = (unichar_t *) _("_X");
+	label[1].text_is_1byte = true;
 	label[1].text_in_resource = true;
 	gcd[1].gd.label = &label[1];
 	gcd[1].gd.pos.x = 25; gcd[1].gd.pos.y = gcd[0].gd.pos.y+13; 
@@ -361,7 +358,8 @@ static void RegionControl(CharView *cv,DBounds *b,int cnt) {
 	gcd[1].creator = GRadioCreate;
 	gcd[1].gd.cid = CID_X;
 
-	label[2].text = (unichar_t *) _STR_Y;
+	label[2].text = (unichar_t *) _("_Y");
+	label[2].text_is_1byte = true;
 	label[2].text_in_resource = true;
 	gcd[2].gd.label = &label[2];
 	gcd[2].gd.pos.x = 60; gcd[2].gd.pos.y = gcd[2].gd.pos.y; 
@@ -374,7 +372,8 @@ static void RegionControl(CharView *cv,DBounds *b,int cnt) {
 	else
 	    gcd[2].gd.flags |= gg_cb_on;
 
-	label[3].text = (unichar_t *) _STR_MaximumDistanceBetweenPts;
+	label[3].text = (unichar_t *) _("_Maximum distance between points in a region");
+	label[3].text_is_1byte = true;
 	label[3].text_in_resource = true;
 	gcd[3].gd.label = &label[3];
 	gcd[3].gd.pos.x = 5; gcd[3].gd.pos.y = gcd[1].gd.pos.y+16; 
@@ -393,7 +392,8 @@ static void RegionControl(CharView *cv,DBounds *b,int cnt) {
 	gcd[5].gd.pos.x = 20-3; gcd[5].gd.pos.y = gcd[4].gd.pos.y+35-3;
 	gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
 	gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[5].text = (unichar_t *) _STR_OK;
+	label[5].text = (unichar_t *) _("_OK");
+	label[5].text_is_1byte = true;
 	label[5].text_in_resource = true;
 	gcd[5].gd.mnemonic = 'O';
 	gcd[5].gd.label = &label[5];
@@ -403,7 +403,8 @@ static void RegionControl(CharView *cv,DBounds *b,int cnt) {
 	gcd[6].gd.pos.x = -20; gcd[6].gd.pos.y = gcd[5].gd.pos.y+3;
 	gcd[6].gd.pos.width = -1; gcd[6].gd.pos.height = 0;
 	gcd[6].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[6].text = (unichar_t *) _STR_Cancel;
+	label[6].text = (unichar_t *) _("_Cancel");
+	label[6].text_is_1byte = true;
 	label[6].text_in_resource = true;
 	gcd[6].gd.label = &label[6];
 	gcd[6].gd.mnemonic = 'C';
@@ -633,16 +634,12 @@ return;
 	 edges[cnt++] = pts[3]->next;
 
     if ( cnt<2 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_NotEnoughLines,_STR_NotEnoughLines);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 	gwwv_post_error(_("Not enough lines"),_("Not enough lines"));
 #endif
 return;
     } else if ( cnt==2 && CommonEndPoint(edges[0],edges[1]) ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_CantParallel,_STR_ShareCommonEndpoint);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 	gwwv_post_error(_("Can't Parallel"),_("These two lines share a common endpoint, I can't make them parallel"));
 #endif
 return;

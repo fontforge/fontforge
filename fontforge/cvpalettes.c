@@ -171,17 +171,17 @@ return;
 }
 
 /* Note: If you change this ordering, change enum cvtools */
-static int popupsres[] = { _STR_Pointer, _STR_PopMag,
-				    _STR_FreeCurve, _STR_ScrollByHand,
-				    _STR_AddCurvePoint, _STR_AddCornerPoint,
-			            _STR_AddTangentPoint, _STR_AddPenPoint,
-			            _STR_PopKnife, _STR_PopRuler,
-			            _STR_PopScale, _STR_PopFlip,
-			            _STR_PopRotate, _STR_PopSkew,
-			            _STR_PopRotate3D, _STR_PopPerspective,
-			            _STR_PopRectElipse, _STR_PopPolyStar,
-			            _STR_PopRectElipse, _STR_PopPolyStar};
-static int editablelayers[] = { _STR_Fore, _STR_Back, _STR_Grid };
+static char *popupsres[] = { N_("Pointer"), N_("Magnify (Minify with alt)"),
+				    N_("Draw a freehand curve"), N_("Scroll by hand"),
+				    N_("Add a curve point"), N_("Add a corner point"),
+			            N_("Add a tangent point"), N_("Add a point, then drag out its control points"),
+			            N_("Cut splines in two"), N_("Measure distance, angle between points"),
+			            N_("Scale the selection"), N_("Flip the selection"),
+			            N_("Rotate the selection"), N_("Skew the selection"),
+			            N_("Rotate the selection in 3D and project back to plain"), N_("Perform a perspective transformation on the selection"),
+			            N_("Rectangle or Ellipse"), N_("Polygon or Star"),
+			            N_("Rectangle or Ellipse"), N_("Polygon or Star")};
+static char *editablelayers[] = { N_("F_ore"), N_("_Back"), N_("_Guide") };
 static real raddiam_x = 20, raddiam_y = 20, rotate_by=0;
 static StrokeInfo expand = { 25, lj_round, lc_butt, si_centerline,
 	    /* toobigwarn */  true,
@@ -226,7 +226,7 @@ struct ask_info {
     GGadget *pts;
     int ispolystar;
     int haspos;
-    int lab;
+    char *lab;
     CharView *cv;
 };
 #define CID_ValText		1001
@@ -274,22 +274,22 @@ static int TA_OK(GGadget *g, GEvent *e) {
 	int err=0;
 	int re = !GGadgetIsChecked(d->rb1);
 	if ( d->ispolystar ) {
-	    val = GetIntR(d->gw,CID_ValText,d->lab,&err);
+	    val = GetInt8(d->gw,CID_ValText,d->lab,&err);
 	    if ( !(regular_star = GGadgetIsChecked(d->reg)))
-		val2 = GetRealR(d->gw,CID_PointPercent,_STR_SizeOfPoints,&err);
+		val2 = GetReal8(d->gw,CID_PointPercent,_("Size of Points"),&err);
 	} else {
-	    val = GetRealR(d->gw,CID_ValText,d->lab,&err);
+	    val = GetReal8(d->gw,CID_ValText,d->lab,&err);
 	    d->co[re] = !GGadgetIsChecked(d->reg);
 	}
 	if ( err )
 return( true );
 	if ( d->haspos ) {
 	    real x,y, radx,rady, ang;
-	    x = GetIntR(d->gw,CID_CentCornX,_STR_X,&err);
-	    y = GetIntR(d->gw,CID_CentCornY,_STR_Y,&err);
-	    radx = GetIntR(d->gw,CID_RadDiamX,_STR_Radius,&err);
-	    rady = GetIntR(d->gw,CID_RadDiamY,_STR_Radius,&err);
-	    ang = GetIntR(d->gw,CID_Angle,_STR_Angle,&err);
+	    x = GetInt8(d->gw,CID_CentCornX,_("_X"),&err);
+	    y = GetInt8(d->gw,CID_CentCornY,_("_Y"),&err);
+	    radx = GetInt8(d->gw,CID_RadDiamX,_("Radius:   "),&err);
+	    rady = GetInt8(d->gw,CID_RadDiamY,_("Radius:   "),&err);
+	    ang = GetInt8(d->gw,CID_Angle,_("Angle:"),&err);
 	    if ( err )
 return( true );
 	    d->cv->p.x = d->cv->info.x = x;
@@ -322,18 +322,10 @@ static int TA_CenRadChange(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
 	struct ask_info *d = GDrawGetUserData(GGadgetGetWindow(g));
 	int is_bb = GGadgetIsChecked(d->reg);
-	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_CentCornLab),
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GStringGetResource(is_bb ? _STR_Corner : _STR_Center_,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-		is_bb ? _("Corner"));
-#endif
-	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_RadDiamLab),
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GStringGetResource(is_bb ? _STR_Diameter : _STR_Radius,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-		is_bb ? _("Diameter:"));
-#endif
+	GGadgetSetTitle8(GWidgetGetControl(d->gw,CID_CentCornLab),
+		is_bb ? _("Corner") : _("C_enter"));
+	GGadgetSetTitle8(GWidgetGetControl(d->gw,CID_RadDiamLab),
+		is_bb ? _("Diameter:") : _("Radius:   "));
     }
 return( true );
 }
@@ -362,7 +354,7 @@ static int toolask_e_h(GWindow gw, GEvent *event) {
 return( event->type!=et_char );
 }
 
-static int Ask(int rb1, int rb2, int rb, int lab, float *val, int *co,
+static int Ask(char *rb1, char *rb2, int rb, char *lab, float *val, int *co,
 	int ispolystar, CharView *cv ) {
     struct ask_info d;
     char buffer[20], buf[20];
@@ -386,16 +378,12 @@ static int Ask(int rb1, int rb2, int rb, int lab, float *val, int *co,
     d.cv = cv;
 
 	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
 	wattrs.event_masks = ~(1<<et_charup);
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	wattrs.window_title = GStringGetResource(_STR_ShapeType,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	wattrs.window_title = _("Shape Type");
-#endif
+	wattrs.utf8_window_title = _("Shape Type");
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,190));
@@ -406,21 +394,21 @@ static int Ask(int rb1, int rb2, int rb, int lab, float *val, int *co,
 	memset(&gcd,0,sizeof(gcd));
 
 	label[0].text = (unichar_t *) rb1;
-	label[0].text_in_resource = true;
+	label[0].text_is_1byte = true;
 	gcd[0].gd.label = &label[0];
 	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5; 
 	gcd[0].gd.flags = gg_enabled|gg_visible | (rb==0?gg_cb_on:0);
 	gcd[0].creator = GRadioCreate;
 
 	label[1].text = (unichar_t *) rb2;
-	label[1].text_in_resource = true;
+	label[1].text_is_1byte = true;
 	gcd[1].gd.label = &label[1];
 	gcd[1].gd.pos.x = ispolystar?65:75; gcd[1].gd.pos.y = 5; 
 	gcd[1].gd.flags = gg_enabled|gg_visible | (rb==1?gg_cb_on:0);
 	gcd[1].creator = GRadioCreate;
 
 	label[2].text = (unichar_t *) lab;
-	label[2].text_in_resource = true;
+	label[2].text_is_1byte = true;
 	gcd[2].gd.label = &label[2];
 	gcd[2].gd.pos.x = 5; gcd[2].gd.pos.y = 25; 
 	gcd[2].gd.flags = gg_enabled|gg_visible ;
@@ -438,7 +426,8 @@ static int Ask(int rb1, int rb2, int rb, int lab, float *val, int *co,
 	gcd[4].gd.pos.x = 20-3; gcd[4].gd.pos.y = 85+off;
 	gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
 	gcd[4].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[4].text = (unichar_t *) _STR_OK;
+	label[4].text = (unichar_t *) _("_OK");
+	label[4].text_is_1byte = true;
 	label[4].text_in_resource = true;
 	gcd[4].gd.mnemonic = 'O';
 	gcd[4].gd.label = &label[4];
@@ -448,7 +437,8 @@ static int Ask(int rb1, int rb2, int rb, int lab, float *val, int *co,
 	gcd[5].gd.pos.x = -20; gcd[5].gd.pos.y = 85+3+off;
 	gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
 	gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[5].text = (unichar_t *) _STR_Cancel;
+	label[5].text = (unichar_t *) _("_Cancel");
+	label[5].text_is_1byte = true;
 	label[5].text_in_resource = true;
 	gcd[5].gd.label = &label[5];
 	gcd[5].gd.mnemonic = 'C';
@@ -456,15 +446,15 @@ static int Ask(int rb1, int rb2, int rb, int lab, float *val, int *co,
 	gcd[5].creator = GButtonCreate;
 
 	if ( ispolystar ) {
-	    label[6].text = (unichar_t *) _STR_Regular;
-	    label[6].text_in_resource = true;
+	    label[6].text = (unichar_t *) _("Regular");
+	    label[6].text_is_1byte = true;
 	    gcd[6].gd.label = &label[6];
 	    gcd[6].gd.pos.x = 5; gcd[6].gd.pos.y = 70; 
 	    gcd[6].gd.flags = gg_enabled|gg_visible | (rb==0?gg_cb_on:0);
 	    gcd[6].creator = GRadioCreate;
 
-	    label[7].text = (unichar_t *) _STR_Points;
-	    label[7].text_in_resource = true;
+	    label[7].text = (unichar_t *) _("Points:");
+	    label[7].text_is_1byte = true;
 	    gcd[7].gd.label = &label[7];
 	    gcd[7].gd.pos.x = 65; gcd[7].gd.pos.y = 70; 
 	    gcd[7].gd.flags = gg_enabled|gg_visible | (rb==1?gg_cb_on:0);
@@ -486,15 +476,15 @@ static int Ask(int rb1, int rb2, int rb, int lab, float *val, int *co,
 	    gcd[9].gd.flags = gg_enabled|gg_visible ;
 	    gcd[9].creator = GLabelCreate;
 	} else {
-	    label[6].text = (unichar_t *) _STR_WithinBoundingBox;
-	    label[6].text_in_resource = true;
+	    label[6].text = (unichar_t *) _("Bounding Box");
+	    label[6].text_is_1byte = true;
 	    gcd[6].gd.label = &label[6];
 	    gcd[6].gd.pos.x = 5; gcd[6].gd.pos.y = 65; 
 	    gcd[6].gd.flags = gg_enabled|gg_visible | (co[rb]==0?gg_cb_on:0);
 	    gcd[6].creator = GRadioCreate;
 
-	    label[7].text = (unichar_t *) _STR_CenterOut;
-	    label[7].text_in_resource = true;
+	    label[7].text = (unichar_t *) _("Center Out");
+	    label[7].text_is_1byte = true;
 	    gcd[7].gd.label = &label[7];
 	    gcd[7].gd.pos.x = 90; gcd[7].gd.pos.y = 65; 
 	    gcd[7].gd.flags = gg_enabled|gg_visible | (co[rb]==1?gg_cb_on:0);
@@ -509,21 +499,24 @@ static int Ask(int rb1, int rb2, int rb, int lab, float *val, int *co,
 		gcd[6].gd.handle_controlevent = TA_CenRadChange;
 		gcd[7].gd.handle_controlevent = TA_CenRadChange;
 
-		label[8].text = (unichar_t *) _STR_X;
+		label[8].text = (unichar_t *) _("_X");
+		label[8].text_is_1byte = true;
 		label[8].text_in_resource = true;
 		gcd[8].gd.label = &label[8];
 		gcd[8].gd.pos.x = 70; gcd[8].gd.pos.y = gcd[7].gd.pos.y+15;
 		gcd[8].gd.flags = gg_enabled|gg_visible;
 		gcd[8].creator = GLabelCreate;
 
-		label[9].text = (unichar_t *) _STR_Y;
+		label[9].text = (unichar_t *) _("_Y");
+		label[9].text_is_1byte = true;
 		label[9].text_in_resource = true;
 		gcd[9].gd.label = &label[9];
 		gcd[9].gd.pos.x = 120; gcd[9].gd.pos.y = gcd[8].gd.pos.y;
 		gcd[9].gd.flags = gg_enabled|gg_visible;
 		gcd[9].creator = GLabelCreate;
 
-		label[10].text = (unichar_t *) (co[rb] ? _STR_Center_ : _STR_Corner );
+		label[10].text = (unichar_t *) (co[rb] ? _("C_enter") : _("C_orner") );
+		label[10].text_is_1byte = true;
 		label[10].text_in_resource = true;
 		gcd[10].gd.label = &label[10];
 		gcd[10].gd.pos.x = 5; gcd[10].gd.pos.y = gcd[8].gd.pos.y+17;
@@ -551,8 +544,8 @@ static int Ask(int rb1, int rb2, int rb, int lab, float *val, int *co,
 		gcd[12].gd.cid = CID_CentCornY;
 		gcd[12].creator = GTextFieldCreate;
 
-		label[13].text = (unichar_t *) (co[rb] ? _STR_Radius : _STR_Diameter );
-		label[13].text_in_resource = true;
+		label[13].text = (unichar_t *) (co[rb] ? _("Radius:   ") : _("Diameter:") );
+		label[13].text_is_1byte = true;
 		gcd[13].gd.label = &label[13];
 		gcd[13].gd.pos.x = 5; gcd[13].gd.pos.y = gcd[10].gd.pos.y+24;
 		gcd[13].gd.flags = gg_enabled|gg_visible;
@@ -579,8 +572,8 @@ static int Ask(int rb1, int rb2, int rb, int lab, float *val, int *co,
 		gcd[15].gd.cid = CID_RadDiamY;
 		gcd[15].creator = GTextFieldCreate;
 
-		label[16].text = (unichar_t *) _STR_Angle;
-		label[16].text_in_resource = true;
+		label[16].text = (unichar_t *) _("Angle:");
+		label[16].text_is_1byte = true;
 		gcd[16].gd.label = &label[16];
 		gcd[16].gd.pos.x = 5; gcd[16].gd.pos.y = gcd[13].gd.pos.y+24;
 		gcd[16].gd.flags = gg_enabled|gg_visible;
@@ -611,22 +604,22 @@ return( d.ret );
 }
 
 static void CVRectElipse(CharView *cv) {
-    rectelipse = Ask(_STR_Rectangle,_STR_Elipse,rectelipse,
-	    _STR_RRRad,&rr_radius,center_out,false, cv);
+    rectelipse = Ask(_("Rectangle"),_("Ellipse"),rectelipse,
+	    _("Round Rectangle Radius"),&rr_radius,center_out,false, cv);
     GDrawRequestExpose(cvtools,NULL,false);
 }
 
 void CVRectEllipsePosDlg(CharView *cv) {
-    rectelipse = Ask(_STR_Rectangle,_STR_Elipse,rectelipse,
-	    _STR_RRRad,&rr_radius,center_out,2, cv);
+    rectelipse = Ask(_("Rectangle"),_("Ellipse"),rectelipse,
+	    _("Round Rectangle Radius"),&rr_radius,center_out,2, cv);
     GDrawRequestExpose(cvtools,NULL,false);
 }
 
 static void CVPolyStar(CharView *cv) {
     float temp = ps_pointcnt;
     int foo[2];
-    polystar = Ask(_STR_Polygon,_STR_Star,polystar,
-	    _STR_NumPSVert,&temp,foo,true, cv);
+    polystar = Ask(_("Polygon"),_("Star"),polystar,
+	    _("Number of star points/Polygon verteces"),&temp,foo,true, cv);
     ps_pointcnt = temp;
 }
 
@@ -882,7 +875,7 @@ return;			/* Not available in order2 spline mode */
     } else if ( event->type == et_mousemove ) {
 	if ( cv->pressed_tool==cvt_none && pos!=cvt_none )
 	    /* Not pressed */
-	    GGadgetPreparePopupR(cvtools,popupsres[pos]);
+	    GGadgetPreparePopup8(cvtools,_(popupsres[pos]));
 	else if ( pos!=cv->pressed_tool || cv->had_control != (((event->u.mouse.state&ksm_control) || styluscntl)?1:0) )
 	    cv->pressed_display = cvt_none;
 	else
@@ -987,16 +980,12 @@ GWindow CVMakeTools(CharView *cv) {
 return( cvtools );
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_positioned|wam_isdlg;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_positioned|wam_isdlg;
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
     wattrs.positioned = true;
     wattrs.is_dlg = true;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(_STR_Tools,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = _("Tools");
-#endif
+    wattrs.utf8_window_title = _("Tools");
 
     r.width = CV_TOOLS_WIDTH; r.height = CV_TOOLS_HEIGHT;
     if ( cvtoolsoff.x==-9999 ) {
@@ -1099,7 +1088,7 @@ static void CVLayers2Set(CharView *cv) {
 
 static void Layers2Expose(CharView *cv,GWindow pixmap,GEvent *event) {
     int i, ll;
-    const unichar_t *str;
+    const char *str;
     GRect r;
     struct _GImage base;
     GImage gi;
@@ -1137,12 +1126,8 @@ return;
 		r.x+r.width,CV_LAYERS2_HEADER_HEIGHT+i*CV_LAYERS2_LINE_HEIGHT,
 		0x808080);
 	if ( i==0 || i==1 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    str = GStringGetResource(i==0?_STR_Grid:_STR_Back,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    str = i==0?_("Guide");
-#endif
-	    GDrawDrawText(pixmap,r.x+2,CV_LAYERS2_HEADER_HEIGHT + i*CV_LAYERS2_LINE_HEIGHT + (CV_LAYERS2_LINE_HEIGHT-12)/2+12,
+	    str = i==0?_("Guide") : _("_Back");
+	    GDrawDrawText8(pixmap,r.x+2,CV_LAYERS2_HEADER_HEIGHT + i*CV_LAYERS2_LINE_HEIGHT + (CV_LAYERS2_LINE_HEIGHT-12)/2+12,
 		    str,-1,NULL,ll==layer2.active?0xffffff:0x000000);
 	} else if ( layer2.offtop+i>=layer2.current_layers ) {
     break;
@@ -1172,12 +1157,13 @@ static void CVLayer2Invoked(GWindow v, GMenuItem *mi, GEvent *e) {
     Layer temp;
     int layer = CVLayer(cv);
     SplineChar *sc = cv->sc;
+    int i;
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    static int buts[] = { _STR_Yes, _STR_Cancel, 0 };
+    char *buts[3];
+    buts[0] = _("_Yes"); buts[1]=_("_No"); buts[2] = NULL;
 #elif defined(FONTFORGE_CONFIG_GTK)
     static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_CANCEL, NULL };
 #endif
-    int i;
 
     switch ( mi->mid ) {
       case MID_LayerInfo:
@@ -1197,11 +1183,7 @@ return;
       case MID_DelLayer:
 	if ( sc->layer_cnt==2 )		/* May not delete the last foreground layer */
 return;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	if ( GWidgetAskR(_STR_CantBeUndone,buts,0,1,_STR_CantBeUndoneDoItAnyway)==1 )
-#elif defined(FONTFORGE_CONFIG_GTK)
-	if ( gwwv_ask(_("Cannot Be Undone"),buts,0,1,_("This operation cannot be undone, do it anyway?"))==1 )
-#endif
+	if ( gwwv_ask(_("Cannot Be Undone"),(const char **) buts,0,1,_("This operation cannot be undone, do it anyway?"))==1 )
 return;
 	SplinePointListsFree(sc->layers[layer].splines);
 	RefCharsFree(sc->layers[layer].refs);
@@ -1256,17 +1238,17 @@ return;
 static void Layer2Menu(CharView *cv,GEvent *event, int nolayer) {
     GMenuItem mi[20];
     int i;
-    static int names[] = { _STR_LayerInfo, _STR_NewLayer, _STR_DelLayer, -1,
-	    _STR_First, _STR_Earlier, _STR_Later, _STR_Last, 0 };
+    static char *names[] = { N_("Layer Info..."), N_("New Layer..."), N_("Del Layer"), (char *) -1,
+	    N_("_First"), N_("_Earlier"), N_("L_ater"), N_("_Last"), NULL };
     static int mids[] = { MID_LayerInfo, MID_NewLayer, MID_DelLayer, -1,
 	    MID_First, MID_Earlier, MID_Later, MID_Last, 0 };
     int layer = CVLayer(cv);
 
     memset(mi,'\0',sizeof(mi));
     for ( i=0; names[i]!=0; ++i ) {
-	if ( names[i]!=-1 ) {
-	    mi[i].ti.text = (unichar_t *) names[i];
-	    mi[i].ti.text_in_resource = true;
+	if ( names[i]!=(char *) -1 ) {
+	    mi[i].ti.text = (unichar_t *) _(names[i]);
+	    mi[i].ti.text_is_1byte = true;
 	} else
 	    mi[i].ti.line = true;
 	mi[i].ti.fg = COLOR_DEFAULT;
@@ -1403,16 +1385,12 @@ static void CVMakeLayers2(CharView *cv) {
     if ( cvlayers2!=NULL )
 return;
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_positioned|wam_isdlg;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_positioned|wam_isdlg;
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
     wattrs.positioned = true;
     wattrs.is_dlg = true;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(_STR_Layers,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = _("Layers");
-#endif
+    wattrs.utf8_window_title = _("Layers");
 
     r.width = GGadgetScale(CV_LAYERS2_WIDTH); r.height = CV_LAYERS_HEIGHT;
     if ( cvlayersoff.x==-9999 ) {
@@ -1444,60 +1422,40 @@ return;
     gcd[0].creator = GScrollBarCreate;
     layer2.sb_start = gcd[0].gd.pos.x;
 
-    label[1].text = (unichar_t *) _STR_V;
-    label[1].text_in_resource = true;
+    label[1].text = (unichar_t *) _("V");
+    label[1].text_is_1byte = true;
     gcd[1].gd.label = &label[1];
     gcd[1].gd.pos.x = 7; gcd[1].gd.pos.y = 5; 
-    gcd[1].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[0].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[0].gd.popup_msg = _("Is Layer Visible?");
-#endif
+    gcd[1].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels|gg_utf8_popup;
+    gcd[0].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
     gcd[1].creator = GLabelCreate;
 
-    label[2].text = (unichar_t *) _STR_Layer;
-    label[2].text_in_resource = true;
+    label[2].text = (unichar_t *) _("Layer");
+    label[2].text_is_1byte = true;
     gcd[2].gd.label = &label[2];
     gcd[2].gd.pos.x = 30; gcd[2].gd.pos.y = 5; 
-    gcd[2].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[2].gd.popup_msg = GStringGetResource(_STR_IsEdit,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[2].gd.popup_msg = _("Is Layer Editable?");
-#endif
+    gcd[2].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels|gg_utf8_popup;
+    gcd[2].gd.popup_msg = (unichar_t *) _("Is Layer Editable?");
     gcd[2].creator = GLabelCreate;
 
     gcd[3].gd.pos.x = 5; gcd[3].gd.pos.y = CV_LAYERS2_HEADER_HEIGHT+(CV_LAYERS2_LINE_HEIGHT-12)/2; 
-    gcd[3].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+    gcd[3].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels|gg_utf8_popup;
     gcd[3].gd.cid = CID_VGrid;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[3].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[3].gd.popup_msg = _("Is Layer Visible?");
-#endif
+    gcd[3].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
     gcd[3].gd.box = &radio_box;
     gcd[3].creator = GCheckBoxCreate;
 
     gcd[4].gd.pos.x = 5; gcd[4].gd.pos.y = gcd[3].gd.pos.y+CV_LAYERS2_LINE_HEIGHT; 
-    gcd[4].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+    gcd[4].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels|gg_utf8_popup;
     gcd[4].gd.cid = CID_VBack;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[4].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[4].gd.popup_msg = _("Is Layer Visible?");
-#endif
+    gcd[4].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
     gcd[4].gd.box = &radio_box;
     gcd[4].creator = GCheckBoxCreate;
 
     gcd[5].gd.pos.x = 5; gcd[5].gd.pos.y = gcd[4].gd.pos.y+CV_LAYERS2_LINE_HEIGHT; 
-    gcd[5].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+    gcd[5].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels|gg_utf8_popup;
     gcd[5].gd.cid = CID_VFore;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[5].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[5].gd.popup_msg = _("Is Layer Visible?");
-#endif
+    gcd[5].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
     gcd[5].gd.box = &radio_box;
     gcd[5].creator = GCheckBoxCreate;
 
@@ -1672,15 +1630,15 @@ return( true );
 }
 
 int CVPaletteMnemonicCheck(GEvent *event) {
-    static struct strmatch { int str; int cid; } strmatch[] = {
-	{ _STR_Fore, CID_EFore },
-	{ _STR_Back, CID_EBack },
-	{ _STR_Grid, CID_EGrid },
+    static struct strmatch { char *str; int cid; } strmatch[] = {
+	{ N_("F_ore"), CID_EFore },
+	{ N_("_Back"), CID_EBack },
+	{ N_("_Guide"), CID_EGrid },
 	{ 0 }
     };
     unichar_t mn, mnc;
-    int i;
-    const unichar_t *foo;
+    int i, ch;
+    char *foo;
     GEvent fake;
     GGadget *g;
 #ifdef FONTFORGE_CONFIG_TYPE3
@@ -1694,8 +1652,14 @@ return( false );
 #endif
 
     for ( i=0; strmatch[i].str!=0 ; ++i ) {
-	foo = GStringGetResource(strmatch[i].str,&mn);
-	mnc = mn;
+	for ( foo = _(strmatch[i].str); (ch=utf8_ildb((const char **) &foo))!=0; )
+	    if ( ch=='_' )
+	break;
+	if ( ch=='_' )
+	    mnc = utf8_ildb((const char **) &foo);
+	else
+	    mnc = 0;
+	mn = mnc;
 	if ( islower(mn)) mnc = toupper(mn);
 	else if ( isupper(mn)) mnc = tolower(mn);
 	if ( event->u.chr.chars[0]==mn || event->u.chr.chars[0]==mnc ) {
@@ -1752,16 +1716,12 @@ GWindow CVMakeLayers(CharView *cv) {
     if ( cvlayers!=NULL )
 return( cvlayers );
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_positioned|wam_isdlg;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_positioned|wam_isdlg;
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
     wattrs.positioned = true;
     wattrs.is_dlg = true;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(_STR_Layers,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = _("Layers");
-#endif
+    wattrs.utf8_window_title = _("Layers");
 
     r.width = GGadgetScale(104); r.height = CV_LAYERS_HEIGHT;
     if ( cvlayersoff.x==-9999 ) {
@@ -1787,243 +1747,182 @@ return( cvlayers );
     for ( i=0; i<sizeof(label)/sizeof(label[0]); ++i )
 	label[i].font = font;
 
-    label[0].text = (unichar_t *) _STR_V;
-    label[0].text_in_resource = true;
+    label[0].text = (unichar_t *) _("V");
+    label[0].text_is_1byte = true;
     gcd[0].gd.label = &label[0];
     gcd[0].gd.pos.x = 7; gcd[0].gd.pos.y = 5; 
-    gcd[0].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[0].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[0].gd.popup_msg = _("Is Layer Visible?");
-#endif
+    gcd[0].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels|gg_utf8_popup;
+    gcd[0].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
     gcd[0].creator = GLabelCreate;
 
-    label[1].text = (unichar_t *) _STR_E;
-    label[1].text_in_resource = true;
+    label[1].text = (unichar_t *) _("E");
+    label[1].text_is_1byte = true;
     gcd[1].gd.label = &label[1];
     gcd[1].gd.pos.x = 30; gcd[1].gd.pos.y = 5; 
-    gcd[1].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[1].gd.popup_msg = GStringGetResource(_STR_IsEdit,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[1].gd.popup_msg = _("Is Layer Editable?");
-#endif
+    gcd[1].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels|gg_utf8_popup;
+    gcd[1].gd.popup_msg = (unichar_t *) _("Is Layer Editable?");
     gcd[1].creator = GLabelCreate;
 
-    label[2].text = (unichar_t *) _STR_Layer;
-    label[2].text_in_resource = true;
+    label[2].text = (unichar_t *) _("Layer");
+    label[2].text_is_1byte = true;
     gcd[2].gd.label = &label[2];
     gcd[2].gd.pos.x = 47; gcd[2].gd.pos.y = 5; 
-    gcd[2].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[2].gd.popup_msg = GStringGetResource(_STR_IsEdit,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[2].gd.popup_msg = _("Is Layer Editable?");
-#endif
+    gcd[2].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels|gg_utf8_popup;
+    gcd[2].gd.popup_msg = (unichar_t *) _("Is Layer Editable?");
     gcd[2].creator = GLabelCreate;
 
     gcd[3].gd.pos.x = 5; gcd[3].gd.pos.y = 21; 
-    gcd[3].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+    gcd[3].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels|gg_utf8_popup;
     gcd[3].gd.cid = CID_VFore;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[3].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[3].gd.popup_msg = _("Is Layer Visible?");
-#endif
+    gcd[3].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
     gcd[3].gd.box = &radio_box;
     gcd[3].creator = GCheckBoxCreate;
 
     gcd[4].gd.pos.x = 5; gcd[4].gd.pos.y = 38; 
-    gcd[4].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+    gcd[4].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels|gg_utf8_popup;
     gcd[4].gd.cid = CID_VBack;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[4].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[4].gd.popup_msg = _("Is Layer Visible?");
-#endif
+    gcd[4].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
     gcd[4].gd.box = &radio_box;
     gcd[4].creator = GCheckBoxCreate;
 
     gcd[5].gd.pos.x = 5; gcd[5].gd.pos.y = 55; 
-    gcd[5].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+    gcd[5].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels|gg_utf8_popup;
     gcd[5].gd.cid = CID_VGrid;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[5].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[5].gd.popup_msg = _("Is Layer Visible?");
-#endif
+    gcd[5].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
     gcd[5].gd.box = &radio_box;
     gcd[5].creator = GCheckBoxCreate;
 
     gcd[6].gd.pos.x = 5; gcd[6].gd.pos.y = 72; 
-    gcd[6].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+    gcd[6].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels|gg_utf8_popup;
     gcd[6].gd.cid = CID_VHHints;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[6].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[6].gd.popup_msg = _("Is Layer Visible?");
-#endif
+    gcd[6].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
     gcd[6].gd.box = &radio_box;
     gcd[6].creator = GCheckBoxCreate;
 
     gcd[7].gd.pos.x = 5; gcd[7].gd.pos.y = 89; 
-    gcd[7].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+    gcd[7].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels|gg_utf8_popup;
     gcd[7].gd.cid = CID_VVHints;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[7].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[7].gd.popup_msg = _("Is Layer Visible?");
-#endif
+    gcd[7].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
     gcd[7].gd.box = &radio_box;
     gcd[7].creator = GCheckBoxCreate;
 
     gcd[8].gd.pos.x = 5; gcd[8].gd.pos.y = 106; 
-    gcd[8].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+    gcd[8].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels|gg_utf8_popup;
     gcd[8].gd.cid = CID_VDHints;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[8].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[8].gd.popup_msg = _("Is Layer Visible?");
-#endif
+    gcd[8].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
     gcd[8].gd.box = &radio_box;
     gcd[8].creator = GCheckBoxCreate;
 
     gcd[9].gd.pos.x = 5; gcd[9].gd.pos.y = 123;
-    gcd[9].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+    gcd[9].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels|gg_utf8_popup;
     gcd[9].gd.cid = CID_VBlues;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[9].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[9].gd.popup_msg = _("Is Layer Visible?");
-#endif
+    gcd[9].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
     gcd[9].gd.box = &radio_box;
     gcd[9].creator = GCheckBoxCreate;
 
     gcd[10].gd.pos.x = 5; gcd[10].gd.pos.y = 140; 
-    gcd[10].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+    gcd[10].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels|gg_utf8_popup;
     gcd[10].gd.cid = CID_VAnchor;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[10].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[10].gd.popup_msg = _("Is Layer Visible?");
-#endif
+    gcd[10].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
     gcd[10].gd.box = &radio_box;
     gcd[10].creator = GCheckBoxCreate;
 
     gcd[11].gd.pos.x = 5; gcd[11].gd.pos.y = 157; 
-    gcd[11].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+    gcd[11].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels|gg_utf8_popup;
     gcd[11].gd.cid = CID_VHMetrics;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[11].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[11].gd.popup_msg = _("Is Layer Visible?");
-#endif
+    gcd[11].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
     gcd[11].gd.box = &radio_box;
     gcd[11].creator = GCheckBoxCreate;
 
     gcd[12].gd.pos.x = 5; gcd[12].gd.pos.y = 174; 
-    gcd[12].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+    gcd[12].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels|gg_utf8_popup;
     gcd[12].gd.cid = CID_VVMetrics;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[12].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[12].gd.popup_msg = _("Is Layer Visible?");
-#endif
+    gcd[12].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
     gcd[12].gd.box = &radio_box;
     gcd[12].creator = GCheckBoxCreate;
     base = 13;
 
 
-    label[base].text = (unichar_t *) _STR_Fore;
+    label[base].text = (unichar_t *) _("F_ore");
+    label[base].text_is_1byte = true;
     label[base].text_in_resource = true;
     gcd[base].gd.label = &label[base];
     gcd[base].gd.pos.x = 27; gcd[base].gd.pos.y = 21; 
-    gcd[base].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+    gcd[base].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels|gg_utf8_popup;
     gcd[base].gd.cid = CID_EFore;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[base].gd.popup_msg = GStringGetResource(_STR_IsEdit,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[base].gd.popup_msg = _("Is Layer Editable?");
-#endif
+    gcd[base].gd.popup_msg = (unichar_t *) _("Is Layer Editable?");
     gcd[base].gd.box = &radio_box;
     gcd[base].creator = GRadioCreate;
 
-    label[base+1].text = (unichar_t *) _STR_Back;
+    label[base+1].text = (unichar_t *) _("_Back");
+    label[base+1].text_is_1byte = true;
     label[base+1].text_in_resource = true;
     gcd[base+1].gd.label = &label[base+1];
     gcd[base+1].gd.pos.x = 27; gcd[base+1].gd.pos.y = 38; 
-    gcd[base+1].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+    gcd[base+1].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels|gg_utf8_popup;
     gcd[base+1].gd.cid = CID_EBack;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[base+1].gd.popup_msg = GStringGetResource(_STR_IsEdit,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[base+1].gd.popup_msg = _("Is Layer Editable?");
-#endif
+    gcd[base+1].gd.popup_msg = (unichar_t *) _("Is Layer Editable?");
     gcd[base+1].gd.box = &radio_box;
     gcd[base+1].creator = GRadioCreate;
 
-    label[base+2].text = (unichar_t *) _STR_Grid;
+    label[base+2].text = (unichar_t *) _("_Guide");
+    label[base+2].text_is_1byte = true;
     label[base+2].text_in_resource = true;
     gcd[base+2].gd.label = &label[base+2];
     gcd[base+2].gd.pos.x = 27; gcd[base+2].gd.pos.y = 55; 
-    gcd[base+2].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+    gcd[base+2].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels|gg_utf8_popup;
     gcd[base+2].gd.cid = CID_EGrid;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[base+2].gd.popup_msg = GStringGetResource(_STR_IsEdit,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[base+2].gd.popup_msg = _("Is Layer Editable?");
-#endif
+    gcd[base+2].gd.popup_msg = (unichar_t *) _("Is Layer Editable?");
     gcd[base+2].gd.box = &radio_box;
     gcd[base+2].creator = GRadioCreate;
 
     gcd[base+cv->drawmode].gd.flags |= gg_cb_on;
     base += 3;
 
-    label[base].text = (unichar_t *) _STR_HHints;
-    label[base].text_in_resource = true;
+    label[base].text = (unichar_t *) _("HHints");
+    label[base].text_is_1byte = true;
     gcd[base].gd.label = &label[base];
     gcd[base].gd.pos.x = 47; gcd[base].gd.pos.y = 72; 
     gcd[base].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[base++].creator = GLabelCreate;
 
-    label[base].text = (unichar_t *) _STR_VHints;
-    label[base].text_in_resource = true;
+    label[base].text = (unichar_t *) _("VHints");
+    label[base].text_is_1byte = true;
     gcd[base].gd.label = &label[base];
     gcd[base].gd.pos.x = 47; gcd[base].gd.pos.y = 89; 
     gcd[base].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[base++].creator = GLabelCreate;
 
-    label[base].text = (unichar_t *) _STR_DHints;
-    label[base].text_in_resource = true;
+    label[base].text = (unichar_t *) _("DHints");
+    label[base].text_is_1byte = true;
     gcd[base].gd.label = &label[base];
     gcd[base].gd.pos.x = 47; gcd[base].gd.pos.y = 106; 
     gcd[base].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[base++].creator = GLabelCreate;
 
-    label[base].text = (unichar_t *) _STR_Blues;
-    label[base].text_in_resource = true;
+    label[base].text = (unichar_t *) _("Blues");
+    label[base].text_is_1byte = true;
     gcd[base].gd.label = &label[base];
     gcd[base].gd.pos.x = 47; gcd[base].gd.pos.y = 123; 
     gcd[base].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[base++].creator = GLabelCreate;
 
-    label[base].text = (unichar_t *) _STR_Anchors;
-    label[base].text_in_resource = true;
+    label[base].text = (unichar_t *) _("Anchors");
+    label[base].text_is_1byte = true;
     gcd[base].gd.label = &label[base];
     gcd[base].gd.pos.x = 47; gcd[base].gd.pos.y = 140; 
     gcd[base].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[base++].creator = GLabelCreate;
 
-    label[base].text = (unichar_t *) _STR_HMetrics;
-    label[base].text_in_resource = true;
+    label[base].text = (unichar_t *) _("HMetrics");
+    label[base].text_is_1byte = true;
     gcd[base].gd.label = &label[base];
     gcd[base].gd.pos.x = 47; gcd[base].gd.pos.y = 157; 
     gcd[base].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[base++].creator = GLabelCreate;
 
-    label[base].text = (unichar_t *) _STR_VMetrics;
-    label[base].text_in_resource = true;
+    label[base].text = (unichar_t *) _("VMetrics");
+    label[base].text_is_1byte = true;
     gcd[base].gd.label = &label[base];
     gcd[base].gd.pos.x = 47; gcd[base].gd.pos.y = 174; 
     gcd[base].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
@@ -2114,11 +2013,11 @@ static void CVPopupSelectInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
 void CVToolsPopup(CharView *cv, GEvent *event) {
     GMenuItem mi[125];
     int i, j, anysel;
-    static int selectables[] = { _STR_Getinfo, _STR_OpenReference, _STR_AddAnchor, 0 };
+    static char *selectables[] = { N_("Get _Info..."), N_("Open Reference"), N_("_Add Anchor"), 0 };
 
     memset(mi,'\0',sizeof(mi));
     for ( i=0;i<16; ++i ) {
-	mi[i].ti.text = (unichar_t *) popupsres[i];
+	mi[i].ti.text = (unichar_t *) _(popupsres[i]);
 	mi[i].ti.text_in_resource = true;
 	mi[i].ti.fg = COLOR_DEFAULT;
 	mi[i].ti.bg = COLOR_DEFAULT;
@@ -2132,7 +2031,7 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
 	mi[i++].ti.bg = COLOR_DEFAULT;
 	for ( j=0;j<3; ++j, ++i ) {
 	    mi[i].ti.text = (unichar_t *) editablelayers[j];
-	    mi[i].ti.text_in_resource = true;
+	    mi[i].ti.text_is_1byte = true;
 	    mi[i].ti.fg = COLOR_DEFAULT;
 	    mi[i].ti.bg = COLOR_DEFAULT;
 	    mi[i].mid = j;
@@ -2145,8 +2044,8 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
     mi[i].ti.fg = COLOR_DEFAULT;
     mi[i++].ti.bg = COLOR_DEFAULT;
     for ( j=0;selectables[j]!=0; ++j, ++i ) {
-	mi[i].ti.text = (unichar_t *) selectables[j];
-	mi[i].ti.text_in_resource = true;
+	mi[i].ti.text = (unichar_t *) _(selectables[j]);
+	mi[i].ti.text_is_1byte = true;
 	if ( (!anysel && j!=2 ) ||
 		( j==0 && cv->p.spline!=NULL ) ||
 		( j==1 && cv->p.ref==NULL ))
@@ -2411,16 +2310,12 @@ GWindow BVMakeLayers(BitmapView *bv) {
     if ( bvlayers!=NULL )
 return(bvlayers);
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_positioned|wam_isdlg;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_positioned|wam_isdlg;
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
     wattrs.positioned = true;
     wattrs.is_dlg = true;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(_STR_Layers,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = _("Layers");
-#endif
+    wattrs.utf8_window_title = _("Layers");
 
     r.width = GGadgetScale(BV_LAYERS_WIDTH); r.height = BV_LAYERS_HEIGHT;
     r.x = -r.width-6; r.y = bv->mbh+BV_TOOLS_HEIGHT+45/*25*/;	/* 45 is right if there's decor, is in kde, not in twm. Sigh */
@@ -2442,16 +2337,12 @@ return(bvlayers);
     for ( i=0; i<sizeof(label)/sizeof(label[0]); ++i )
 	label[i].font = font;
 
-    label[0].text = (unichar_t *) _STR_V;
-    label[0].text_in_resource = true;
+    label[0].text = (unichar_t *) _("V");
+    label[0].text_is_1byte = true;
     gcd[0].gd.label = &label[0];
     gcd[0].gd.pos.x = 7; gcd[0].gd.pos.y = 5; 
-    gcd[0].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[0].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[0].gd.popup_msg = _("Is Layer Visible?");
-#endif
+    gcd[0].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels|gg_utf8_popup;
+    gcd[0].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
     gcd[0].creator = GLabelCreate;
 
     gcd[1].gd.pos.x = 1; gcd[1].gd.pos.y = 1;
@@ -2460,56 +2351,41 @@ return(bvlayers);
     gcd[1].creator = GGroupCreate;
 
     label[2].text = (unichar_t *) "Layer";
-    label[2].text_in_resource = true;
+    label[2].text_is_1byte = true;
     gcd[2].gd.label = &label[2];
     gcd[2].gd.pos.x = 23; gcd[2].gd.pos.y = 5; 
-    gcd[2].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[2].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[2].gd.popup_msg = _("Is Layer Visible?");
-#endif
+    gcd[2].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels|gg_utf8_popup;
+    gcd[2].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
     gcd[2].creator = GLabelCreate;
 
     gcd[3].gd.pos.x = 5; gcd[3].gd.pos.y = 21; 
-    gcd[3].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+    gcd[3].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels|gg_utf8_popup;
     gcd[3].gd.cid = CID_VFore;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[3].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[3].gd.popup_msg = _("Is Layer Visible?");
-#endif
+    gcd[3].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
     gcd[3].gd.box = &radio_box;
     gcd[3].creator = GCheckBoxCreate;
-    label[3].text = (unichar_t *) _STR_Bitmap;
-    label[3].text_in_resource = true;
+    label[3].text = (unichar_t *) _("Bitmap");
+    label[3].text_is_1byte = true;
     gcd[3].gd.label = &label[3];
 
     gcd[4].gd.pos.x = 5; gcd[4].gd.pos.y = 37; 
-    gcd[4].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+    gcd[4].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels|gg_utf8_popup;
     gcd[4].gd.cid = CID_VBack;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[4].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[4].gd.popup_msg = _("Is Layer Visible?");
-#endif
+    gcd[4].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
     gcd[4].gd.box = &radio_box;
     gcd[4].creator = GCheckBoxCreate;
-    label[4].text = (unichar_t *) _STR_Outline;
-    label[4].text_in_resource = true;
+    label[4].text = (unichar_t *) _("Outline");
+    label[4].text_is_1byte = true;
     gcd[4].gd.label = &label[4];
 
     gcd[5].gd.pos.x = 5; gcd[5].gd.pos.y = 53; 
-    gcd[5].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
+    gcd[5].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels|gg_utf8_popup;
     gcd[5].gd.cid = CID_VGrid;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[5].gd.popup_msg = GStringGetResource(_STR_IsVis,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[5].gd.popup_msg = _("Is Layer Visible?");
-#endif
+    gcd[5].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
     gcd[5].gd.box = &radio_box;
     gcd[5].creator = GCheckBoxCreate;
-    label[5].text = (unichar_t *) _STR_Grid;
+    label[5].text = (unichar_t *) _("_Guide");
+    label[5].text_is_1byte = true;
     label[5].text_in_resource = true;
     gcd[5].gd.label = &label[5];
 
@@ -2646,17 +2522,13 @@ static GWindow BVMakeShades(BitmapView *bv) {
     if ( bvshades!=NULL )
 return( bvshades );
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_positioned|wam_isdlg/*|wam_backcol*/;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_positioned|wam_isdlg/*|wam_backcol*/;
     wattrs.event_masks = -1;
     wattrs.cursor = ct_eyedropper;
     wattrs.positioned = true;
     wattrs.is_dlg = true;
     wattrs.background_color = 0xffffff;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(_STR_Shades,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = _("Shades");
-#endif
+    wattrs.utf8_window_title = _("Shades");
 
     r.width = BV_SHADES_HEIGHT; r.height = r.width;
     r.x = -r.width-6; r.y = bv->mbh+225;
@@ -2672,9 +2544,9 @@ return( bvshades );
 return( bvshades );
 }
 
-static int bvpopups[] = { _STR_Pointer, _STR_PopMag,
-				    _STR_PopPencil, _STR_PopLine,
-			            _STR_PopShift, _STR_PopHand };
+static char *bvpopups[] = { N_("Pointer"), N_("Magnify (Minify with alt)"),
+				    N_("Set/Clear Pixels"), N_("Draw a Line"),
+			            N_("Shift Entire Bitmap"), N_("Scroll Bitmap") };
 
 static void BVToolsExpose(GWindow pixmap, BitmapView *bv, GRect *r) {
     GRect old;
@@ -2791,10 +2663,10 @@ static void BVToolsMouse(BitmapView *bv, GEvent *event) {
     } else if ( event->type == et_mousemove ) {
 	if ( bv->pressed_tool==bvt_none && pos!=bvt_none ) {
 	    /* Not pressed */
-	    if ( !bv->shades_hidden && bvpopups[pos]==_STR_PopPencil )
-		GGadgetPreparePopupR(bvtools,_STR_PopPencilGrey);
+	    if ( !bv->shades_hidden && strcmp(bvpopups[pos],"Set/Clear Pixels")==0 )
+		GGadgetPreparePopup8(bvtools,_("Set/Clear Pixels\n(Eyedropper with alt)"));
 	    else
-		GGadgetPreparePopupR(bvtools,bvpopups[pos]);
+		GGadgetPreparePopup8(bvtools,_(bvpopups[pos]));
 	} else if ( pos!=bv->pressed_tool || bv->had_control != (((event->u.mouse.state&ksm_control)||styluscntl)?1:0) )
 	    bv->pressed_display = bvt_none;
 	else
@@ -2881,16 +2753,12 @@ GWindow BVMakeTools(BitmapView *bv) {
     if ( bvtools!=NULL )
 return( bvtools );
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_positioned|wam_isdlg;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_positioned|wam_isdlg;
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
     wattrs.positioned = true;
     wattrs.is_dlg = true;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(_STR_Tools,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = _("Tools");
-#endif
+    wattrs.utf8_window_title = _("Tools");
 
     r.width = BV_TOOLS_WIDTH; r.height = BV_TOOLS_HEIGHT;
     r.x = -r.width-6; r.y = bv->mbh+20;
@@ -2928,30 +2796,31 @@ void BVToolsPopup(BitmapView *bv, GEvent *event) {
 
     memset(mi,'\0',sizeof(mi));
     for ( i=0;i<6; ++i ) {
-	mi[i].ti.text = (unichar_t *) bvpopups[i];
-	mi[i].ti.text_in_resource = true;
+	mi[i].ti.text = (unichar_t *) _(bvpopups[i]);
+	mi[i].ti.text_is_1byte = true;
 	mi[i].ti.fg = COLOR_DEFAULT;
 	mi[i].ti.bg = COLOR_DEFAULT;
 	mi[i].mid = i;
 	mi[i].invoke = BVPopupInvoked;
     }
 
-    mi[i].ti.text = (unichar_t *) _STR_Rectangle; mi[i].ti.text_in_resource = true;
+    mi[i].ti.text = (unichar_t *) _("Rectangle");
+    mi[i].ti.text_is_1byte = true;
     mi[i].ti.fg = COLOR_DEFAULT;
     mi[i].ti.bg = COLOR_DEFAULT;
     mi[i].mid = bvt_rect;
     mi[i++].invoke = BVPopupInvoked;
-    mi[i].ti.text = (unichar_t *) _STR_FilledRectangle; mi[i].ti.text_in_resource = true;
+    mi[i].ti.text = (unichar_t *) _("Filled Rectangle"); mi[i].ti.text_is_1byte = true;
     mi[i].ti.fg = COLOR_DEFAULT;
     mi[i].ti.bg = COLOR_DEFAULT;
     mi[i].mid = bvt_filledrect;
     mi[i++].invoke = BVPopupInvoked;
-    mi[i].ti.text = (unichar_t *) _STR_Elipse; mi[i].ti.text_in_resource = true;
+    mi[i].ti.text = (unichar_t *) _("Ellipse"); mi[i].ti.text_is_1byte = true;
     mi[i].ti.fg = COLOR_DEFAULT;
     mi[i].ti.bg = COLOR_DEFAULT;
     mi[i].mid = bvt_elipse;
     mi[i++].invoke = BVPopupInvoked;
-    mi[i].ti.text = (unichar_t *) _STR_FilledElipse; mi[i].ti.text_in_resource = true;
+    mi[i].ti.text = (unichar_t *) _("Filled Ellipse"); mi[i].ti.text_is_1byte = true;
     mi[i].ti.fg = COLOR_DEFAULT;
     mi[i].ti.bg = COLOR_DEFAULT;
     mi[i].mid = bvt_filledelipse;
@@ -2962,7 +2831,7 @@ void BVToolsPopup(BitmapView *bv, GEvent *event) {
     mi[i++].ti.line = true;
     for ( j=0; j<6; ++j, ++i ) {
 	mi[i].ti.text = (unichar_t *) BVFlipNames[j];
-	mi[i].ti.text_in_resource = true;
+	mi[i].ti.text_is_1byte = true;
 	mi[i].ti.fg = COLOR_DEFAULT;
 	mi[i].ti.bg = COLOR_DEFAULT;
 	mi[i].mid = j;
@@ -2972,7 +2841,9 @@ void BVToolsPopup(BitmapView *bv, GEvent *event) {
 	mi[i].ti.fg = COLOR_DEFAULT;
 	mi[i].ti.bg = COLOR_DEFAULT;
 	mi[i++].ti.line = true;
-	mi[i].ti.text = (unichar_t *) _STR_Setwidth; mi[i].ti.text_in_resource = true;
+	mi[i].ti.text = (unichar_t *) _("Set _Width...");
+	mi[i].ti.text_is_1byte = true;
+	mi[i].ti.text_in_resource = true;
 	mi[i].ti.fg = COLOR_DEFAULT;
 	mi[i].ti.bg = COLOR_DEFAULT;
 	mi[i].mid = bvt_setwidth;
