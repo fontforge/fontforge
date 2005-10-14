@@ -262,8 +262,8 @@ struct hist_dlg {
 static void HistPopup(struct hist_dlg *hist,GEvent *e) {
     int x = e->u.mouse.x - (hist->x+1);
     struct hentry *h;
-    static unichar_t buffer[300];
-    unichar_t *end = buffer + sizeof(buffer)/sizeof(buffer[0]), *pt, *line;
+    static char buffer[300];
+    char *end = buffer + sizeof(buffer)/sizeof(buffer[0]), *pt, *line;
     int i;
 
     if ( e->u.mouse.y<hist->y || e->u.mouse.y>hist->y+hist->hheight )
@@ -278,52 +278,36 @@ return;
     h = &hist->h->hist[x + hist->hoff - hist->h->low];
     if ( hist->sum_around==0 ) {
 	if ( hist->which == hist_blues )
-	    u_snprintf(buffer,end-buffer,
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		    GStringGetResource(_STR_BlueHistPopup,NULL),
-#elif defined(FONTFORGE_CONFIG_GTK)
+	    snprintf(buffer,end-buffer,
 		    _("Position: %d\nCount: %d\n"),
-#endif
 		    x + hist->hoff,
 		    h->sum);
 	else
-	    u_snprintf(buffer,end-buffer,
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		    GStringGetResource(_STR_StemHistPopup,NULL),
-#elif defined(FONTFORGE_CONFIG_GTK)
+	    snprintf(buffer,end-buffer,
 		    _("Width: %d\nCount: %d\nPercentage of Max: %d%%\n"),
-#endif
 		    x + hist->hoff,
 		    h->sum, (int) rint(h->sum*100.0/hist->h->max));
     } else {
 	if ( hist->which == hist_blues )
-	    u_snprintf(buffer,end-buffer,
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		    GStringGetResource(_STR_BlueHistSumPopup,NULL),
-#elif defined(FONTFORGE_CONFIG_GTK)
+	    snprintf(buffer,end-buffer,
 		    _("Position: %d-%d (%d)\nCount: %d (%d)\n"),
-#endif
 		    x+hist->hoff-hist->sum_around, x+hist->hoff+hist->sum_around, x + hist->hoff,
 		    h->sum, h->cnt);
 	else
-	    u_snprintf(buffer,end-buffer,
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		    GStringGetResource(_STR_StemHistSumPopup,NULL),
-#elif defined(FONTFORGE_CONFIG_GTK)
+	    snprintf(buffer,end-buffer,
 		    _("Width: %d-%d (%d)\nCount: %d (%d)\nPercentage of Max: %d%%\n"),
-#endif
 		    x+hist->hoff-hist->sum_around, x+hist->hoff+hist->sum_around, x + hist->hoff,
 		    h->sum, h->cnt, (int) rint(h->sum*100.0/hist->h->max));
     }
-    pt = buffer+u_strlen(buffer);
+    pt = buffer+strlen(buffer);
     line = pt;
     for ( i = 0; i<h->char_cnt; ++i ) {
 	if ( pt+strlen(h->chars[i]->name)+4>end ) {
-	    uc_strcpy(pt,"...");
+	    strcpy(pt,"...");
     break;
 	}
-	uc_strcpy(pt,h->chars[i]->name);
-	pt += u_strlen(pt);
+	strcpy(pt,h->chars[i]->name);
+	pt += strlen(pt);
 	if ( pt-line>70 ) {
 	    *pt++ = '\n';
 	    line = pt;
@@ -331,7 +315,7 @@ return;
 	    *pt++ = ' ';
 	*pt = '\0';
     }
-    GGadgetPreparePopup(hist->gw,buffer);
+    GGadgetPreparePopup8(hist->gw,buffer);
 }
 
 static unichar_t *ArrayOrder(const unichar_t *old,int args,int val1,int val2) {
@@ -396,7 +380,7 @@ return;
 	if ( hist->is_pending ) {
 	    if ( x<hist->pending_blue )
 #if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_BadValue,_STR_SmallerNumberFirstInBlues);
+		gwwv_post_error(_("Bad Value"),_("The smaller number must be selected first in a pair of bluevalues"));
 #elif defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Bad Value"),_("The smaller number must be selected first in a pair of bluevalues"));
 #endif
@@ -714,7 +698,7 @@ static void CheckSmallSelection(uint8 *selected,EncMap *map,SplineFont *sf) {
     }
     if ( (cnt==1 && tot>1) || (cnt<8 && tot>30) )
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetPostNoticeR(_STR_TinySelection,_STR_TinySelectionFull);
+	gwwv_post_notice(_("Tiny Selection"),_("There are so few glyphs selected that it seems unlikely to me that you will get a representative sample of this aspect of your font. If you deselect everything the command will apply to all glyphs in the font"));
 #elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_notice(_("Tiny Selection"),_("There are so few characters selected that it seems unlikely to me that you will get a representative sample of this aspect of your font. If you deselect everything the command will apply to all characters in the font"));
 #endif
@@ -760,18 +744,14 @@ void SFHistogram(SplineFont *sf,struct psdict *private, uint8 *selected,
 	CheckSmallSelection(selected,map,sf);
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource( which==hist_hstem?_STR_HStem:
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title =  which==hist_hstem?_("HStem")
-#endif
-					      which==hist_vstem?_STR_VStem:
-							  _STR_Blues, NULL );
+    wattrs.utf8_window_title =  which==hist_hstem?_("HStem") :
+					      which==hist_vstem?_("_VStem"):
+							  _("Blues");
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,210));
@@ -802,8 +782,8 @@ void SFHistogram(SplineFont *sf,struct psdict *private, uint8 *selected,
     gcd[i].gd.cid = CID_ScrollBar;
     gcd[i++].creator = GScrollBarCreate;
 
-    label[i].text = (unichar_t *) _STR_SumAround;
-    label[i].text_in_resource = true;
+    label[i].text = (unichar_t *) _("Sum Around:");
+    label[i].text_is_1byte = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = GDrawPixelsToPoints(NULL,hist.y+hist.hheight)+12+10;
     gcd[i].gd.flags = gg_enabled|gg_visible;
@@ -820,8 +800,8 @@ void SFHistogram(SplineFont *sf,struct psdict *private, uint8 *selected,
     gcd[i].gd.cid = CID_SumAround;
     gcd[i++].creator = GTextFieldCreate;
 
-    label[i].text = (unichar_t *) _STR_BarWidth;
-    label[i].text_in_resource = true;
+    label[i].text = (unichar_t *) _("Bar Width:");
+    label[i].text_is_1byte = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.pos.x = 120; gcd[i].gd.pos.y = GDrawPixelsToPoints(NULL,hist.y+hist.hheight)+12+10;
     gcd[i].gd.flags = gg_enabled|gg_visible;
@@ -838,8 +818,8 @@ void SFHistogram(SplineFont *sf,struct psdict *private, uint8 *selected,
     gcd[i].gd.cid = CID_BarWidth;
     gcd[i++].creator = GTextFieldCreate;
 
-    label[i].text = (unichar_t *) _STR_BlueMsg;
-    label[i].text_in_resource = true;
+    label[i].text = (unichar_t *) _("BlueValues come in pairs. Select another.");
+    label[i].text_is_1byte = true;
     label[i].fg = 0xff0000;
     label[i].bg = GDrawGetDefaultBackground(NULL);
     gcd[i].gd.label = &label[i];
@@ -904,7 +884,8 @@ void SFHistogram(SplineFont *sf,struct psdict *private, uint8 *selected,
     gcd[i].gd.pos.x = 15-3; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+26;
     gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[i].text = (unichar_t *) _STR_OK;
+    label[i].text = (unichar_t *) _("_OK");
+    label[i].text_is_1byte = true;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.cid = CID_OK;
@@ -913,7 +894,8 @@ void SFHistogram(SplineFont *sf,struct psdict *private, uint8 *selected,
     gcd[i].gd.pos.x = -15; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+3;
     gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[i].text = (unichar_t *) _STR_Cancel;
+    label[i].text = (unichar_t *) _("_Cancel");
+    label[i].text_is_1byte = true;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.mnemonic = 'C';

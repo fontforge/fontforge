@@ -1095,8 +1095,9 @@ static char *LanguageCodesFromMacLang[] = {
 	NULL
 };
 
-unichar_t *MacStrToUnicode(const char *str,int macenc,int maclang) {
-    unichar_t *ret, *table, *rpt;
+char *MacStrToUtf8(const char *str,int macenc,int maclang) {
+    unichar_t *table;
+    char *ret, *rpt;
     const uint8 *ustr = (uint8 *) str;
 
     if ( str==NULL )
@@ -1108,17 +1109,22 @@ return( NULL );
 					    macenc==sm_korean ? "EUC-KR" :
 			                    macenc==sm_tradchinese ? "Big5" :
 			                      "EUC-CN" );
+	iconv_t *toutf8;
 	ICONV_CONST char *in;
 	char *out;
 	size_t inlen, outlen;
 	if ( enc==NULL )
 return( NULL );
+	toutf8 = iconv_open("UTF-8",enc->iconv_name!=NULL?enc->iconv_name:enc->enc_name);
+	if ( toutf8==(iconv_t) -1 || toutf8==NULL )
+return( NULL );
 	in = (char *) str;
 	inlen = strlen(in);
-	outlen = (inlen+1)*sizeof(unichar_t);
+	outlen = (inlen+1)*4;
 	out = (char *) (ret = galloc(outlen+2));
 	iconv(enc->tounicode,&in,&inlen,&out,&outlen);
-	out[0] = '\0'; out[1] = '\0';
+	out[0] = '\0';
+	iconv_close(toutf8);
 return( ret );
     }
 
@@ -1144,17 +1150,19 @@ return( NULL );
     if ( table==NULL )
 return( NULL );
 
-    ret = galloc((strlen(str)+1)*sizeof(unichar_t));
-    for ( rpt = ret; *ustr; ++ustr )
-	*rpt++ = table[*ustr];
+    ret = galloc((strlen(str)+1)*3);
+    for ( rpt = ret; *ustr; ++ustr ) {
+	int ch = table[*ustr];
+	rpt = utf8_idpb(rpt,ch);
+    }
     *rpt = '\0';
 return( ret );
 }
 
-char *UnicodeToMacStr(const unichar_t *ustr,int macenc,int maclang) {
+char *Utf8ToMacStr(const char *ustr,int macenc,int maclang) {
     char *ret, *rpt;
     const unichar_t *table;
-    int i;
+    int i, ch;
 
     if ( ustr==NULL )
 return( NULL );
@@ -1165,17 +1173,22 @@ return( NULL );
 					    macenc==sm_korean ? "EUC-KR" :
 			                    macenc==sm_tradchinese ? "Big5" :
 			                      "EUC-CN" );
+	iconv_t fromutf8;
 	ICONV_CONST char *in;
 	char *out;
 	size_t inlen, outlen;
 	if ( enc==NULL )
 return( NULL );
+	fromutf8 = iconv_open(enc->iconv_name!=NULL?enc->iconv_name:enc->enc_name,"UTF-8");
+	if ( fromutf8==(iconv_t) -1 || fromutf8==NULL )
+return( NULL );
 	in = (char *) ustr;
-	inlen = u_strlen(ustr)*sizeof(unichar_t);
-	outlen = 3*u_strlen(ustr);
+	inlen = strlen(ustr);
+	outlen = 2*strlen(ustr);
 	out = ret = galloc(outlen+2);
-	iconv(enc->fromunicode,&in,&inlen,&out,&outlen);
+	iconv(fromutf8,&in,&inlen,&out,&outlen);
 	out[0] = out[1] = '\0';
+	iconv_close(fromutf8);
 return( ret );
     }
 
@@ -1197,10 +1210,10 @@ return( ret );
     if ( table==NULL )
 return( NULL );
 
-    ret = galloc(u_strlen(ustr)+1);
-    for ( rpt = ret; *ustr; ++ustr ) {
+    ret = galloc(strlen(ustr)+1);
+    for ( rpt = ret; (ch=utf8_ildb(&ustr)); ) {
 	for ( i=0; i<256; ++i )
-	    if ( table[i]==*ustr ) {
+	    if ( table[i]==ch ) {
 		*rpt++ = i;
 	break;
 	    }
@@ -1286,7 +1299,7 @@ return( found );
 return( found );
 }
 
-unichar_t *PickNameFromMacName(struct macname *mn) {
+char *PickNameFromMacName(struct macname *mn) {
     int lang = MacLangFromLocale();
     struct macname *first=mn, *english=NULL;
 
@@ -1304,10 +1317,10 @@ unichar_t *PickNameFromMacName(struct macname *mn) {
     if ( mn==NULL )
 return( NULL );
 
-return( MacStrToUnicode(mn->name,mn->enc,mn->lang));
+return( MacStrToUtf8(mn->name,mn->enc,mn->lang));
 }
 
-unichar_t *FindEnglishNameInMacName(struct macname *mn) {
+char *FindEnglishNameInMacName(struct macname *mn) {
 
     while ( mn!=NULL ) {
 	if ( mn->lang==0 )
@@ -1317,7 +1330,7 @@ unichar_t *FindEnglishNameInMacName(struct macname *mn) {
     if ( mn==NULL )
 return( NULL );
 
-return( MacStrToUnicode(mn->name,mn->enc,mn->lang));
+return( MacStrToUtf8(mn->name,mn->enc,mn->lang));
 }
 
 MacFeat *FindMacFeature(SplineFont *sf, int feat, MacFeat **secondary) {
@@ -2180,124 +2193,124 @@ return( head );
 
 /* ************************************************************************** */
 static GTextInfo maclanguages[] = {
-    { (unichar_t *) _STR_MacEnglish, NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacFrench, NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacGerman, NULL, 0, 0, (void *) 2, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacItalian, NULL, 0, 0, (void *) 3, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacDutch, NULL, 0, 0, (void *) 4, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacSwedish, NULL, 0, 0, (void *) 5, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacSpanish, NULL, 0, 0, (void *) 6, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacDanish, NULL, 0, 0, (void *) 7, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacPortuguese, NULL, 0, 0, (void *) 8, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacNorwegian, NULL, 0, 0, (void *) 9, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacHebrew, NULL, 0, 0, (void *) 10, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacJapanese, NULL, 0, 0, (void *) 11, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacArabic, NULL, 0, 0, (void *) 12, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacFinnish, NULL, 0, 0, (void *) 13, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacGreek, NULL, 0, 0, (void *) 14, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacIcelandic, NULL, 0, 0, (void *) 15, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacMaltese, NULL, 0, 0, (void *) 16, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacTurkish, NULL, 0, 0, (void *) 17, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacCroatian, NULL, 0, 0, (void *) 18, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacTraditionalChinese, NULL, 0, 0, (void *) 19, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacUrdu, NULL, 0, 0, (void *) 20, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacHindi, NULL, 0, 0, (void *) 21, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacThai, NULL, 0, 0, (void *) 22, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacKorean, NULL, 0, 0, (void *) 23, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacLithuanian, NULL, 0, 0, (void *) 24, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacPolish, NULL, 0, 0, (void *) 25, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacHungarian, NULL, 0, 0, (void *) 26, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacEstonian, NULL, 0, 0, (void *) 27, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacLatvian, NULL, 0, 0, (void *) 28, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacSami, NULL, 0, 0, (void *) 29, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacFaroese, NULL, 0, 0, (void *) 30, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacFarsi, NULL, 0, 0, (void *) 31, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacRussian, NULL, 0, 0, (void *) 32, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacSimplifiedChinese, NULL, 0, 0, (void *) 33, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacFlemish, NULL, 0, 0, (void *) 34, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacIrish, NULL, 0, 0, (void *) 35, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacAlbanian, NULL, 0, 0, (void *) 36, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacRomanian, NULL, 0, 0, (void *) 37, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacCzech, NULL, 0, 0, (void *) 38, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacSlovak, NULL, 0, 0, (void *) 39, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacSlovenian, NULL, 0, 0, (void *) 40, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacYiddish, NULL, 0, 0, (void *) 41, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacSerbian, NULL, 0, 0, (void *) 42, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacMacedonian, NULL, 0, 0, (void *) 43, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacBulgarian, NULL, 0, 0, (void *) 44, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacUkrainian, NULL, 0, 0, (void *) 45, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacByelorussian, NULL, 0, 0, (void *) 46, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacUzbek, NULL, 0, 0, (void *) 47, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacKazakh, NULL, 0, 0, (void *) 48, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacAxerbaijaniC, NULL, 0, 0, (void *) 49, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacAxerbaijaniA, NULL, 0, 0, (void *) 50, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacArmenian, NULL, 0, 0, (void *) 51, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacGeorgian, NULL, 0, 0, (void *) 52, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacMoldavian, NULL, 0, 0, (void *) 53, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacKirghiz, NULL, 0, 0, (void *) 54, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacTajiki, NULL, 0, 0, (void *) 55, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacTurkmen, NULL, 0, 0, (void *) 56, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacMongolianM, NULL, 0, 0, (void *) 57, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacMongolianC, NULL, 0, 0, (void *) 58, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacPashto, NULL, 0, 0, (void *) 59, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacKurdish, NULL, 0, 0, (void *) 60, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacKashmiri, NULL, 0, 0, (void *) 61, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacSindhi, NULL, 0, 0, (void *) 62, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacTibetan, NULL, 0, 0, (void *) 63, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacNepali, NULL, 0, 0, (void *) 64, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacSanskrit, NULL, 0, 0, (void *) 65, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacMarathi, NULL, 0, 0, (void *) 66, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacBengali, NULL, 0, 0, (void *) 67, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacAssamese, NULL, 0, 0, (void *) 68, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacGujarati, NULL, 0, 0, (void *) 69, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacPunjabi, NULL, 0, 0, (void *) 70, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacOriya, NULL, 0, 0, (void *) 71, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacMalayalam, NULL, 0, 0, (void *) 72, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacKannada, NULL, 0, 0, (void *) 73, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacTamil, NULL, 0, 0, (void *) 74, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacTelugu, NULL, 0, 0, (void *) 75, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacSinhalese, NULL, 0, 0, (void *) 76, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacBurmese, NULL, 0, 0, (void *) 77, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacKhmer, NULL, 0, 0, (void *) 78, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacLao, NULL, 0, 0, (void *) 79, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacVietnamese, NULL, 0, 0, (void *) 80, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacIndonesian, NULL, 0, 0, (void *) 81, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacTagalog, NULL, 0, 0, (void *) 82, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacMalayR, NULL, 0, 0, (void *) 83, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacMalayA, NULL, 0, 0, (void *) 84, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacAmharic, NULL, 0, 0, (void *) 85, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacTigrinya, NULL, 0, 0, (void *) 86, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacGalla, NULL, 0, 0, (void *) 87, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacSomali, NULL, 0, 0, (void *) 88, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacSwahili, NULL, 0, 0, (void *) 89, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacKinyarwanda, NULL, 0, 0, (void *) 90, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacRundi, NULL, 0, 0, (void *) 91, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacNyanja, NULL, 0, 0, (void *) 92, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacMalagasy, NULL, 0, 0, (void *) 93, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacEsperanto, NULL, 0, 0, (void *) 94, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacWelsh, NULL, 0, 0, (void *) 128, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacBasque, NULL, 0, 0, (void *) 129, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacCatalan, NULL, 0, 0, (void *) 130, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacLatinLang, NULL, 0, 0, (void *) 131, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacQuechua, NULL, 0, 0, (void *) 132, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacGuarani, NULL, 0, 0, (void *) 133, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacAymara, NULL, 0, 0, (void *) 134, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacTatar, NULL, 0, 0, (void *) 135, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacUighur, NULL, 0, 0, (void *) 136, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacDzongkha, NULL, 0, 0, (void *) 137, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacJavanese, NULL, 0, 0, (void *) 138, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacSundanese, NULL, 0, 0, (void *) 139, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacGalician, NULL, 0, 0, (void *) 140, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacAfrikaans, NULL, 0, 0, (void *) 141, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacBreton, NULL, 0, 0, (void *) 142, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacInuktitut, NULL, 0, 0, (void *) 143, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacScottish, NULL, 0, 0, (void *) 144, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacManx, NULL, 0, 0, (void *) 145, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacIrishDot, NULL, 0, 0, (void *) 146, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacTongan, NULL, 0, 0, (void *) 147, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacGreekPolytonic, NULL, 0, 0, (void *) 148, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacGreenlandic, NULL, 0, 0, (void *) 149, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_MacAzebaijani, NULL, 0, 0, (void *) 150, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("English"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("French"), NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("German"), NULL, 0, 0, (void *) 2, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Italian"), NULL, 0, 0, (void *) 3, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Dutch"), NULL, 0, 0, (void *) 4, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Swedish"), NULL, 0, 0, (void *) 5, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Spanish"), NULL, 0, 0, (void *) 6, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Danish"), NULL, 0, 0, (void *) 7, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Portuguese"), NULL, 0, 0, (void *) 8, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Norwegian"), NULL, 0, 0, (void *) 9, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Hebrew"), NULL, 0, 0, (void *) 10, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Japanese"), NULL, 0, 0, (void *) 11, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Arabic"), NULL, 0, 0, (void *) 12, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Finnish"), NULL, 0, 0, (void *) 13, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Greek"), NULL, 0, 0, (void *) 14, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Icelandic"), NULL, 0, 0, (void *) 15, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Maltese"), NULL, 0, 0, (void *) 16, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Turkish"), NULL, 0, 0, (void *) 17, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Croatian"), NULL, 0, 0, (void *) 18, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Traditional Chinese"), NULL, 0, 0, (void *) 19, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Urdu"), NULL, 0, 0, (void *) 20, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Hindi"), NULL, 0, 0, (void *) 21, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Thai"), NULL, 0, 0, (void *) 22, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Korean"), NULL, 0, 0, (void *) 23, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Lithuanian"), NULL, 0, 0, (void *) 24, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Polish"), NULL, 0, 0, (void *) 25, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Hungarian"), NULL, 0, 0, (void *) 26, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Estonian"), NULL, 0, 0, (void *) 27, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Latvian"), NULL, 0, 0, (void *) 28, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Sami (Lappish)"), NULL, 0, 0, (void *) 29, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Faroese (Icelandic)"), NULL, 0, 0, (void *) 30, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Farsi/Persian"), NULL, 0, 0, (void *) 31, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Russian"), NULL, 0, 0, (void *) 32, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Simplified Chinese"), NULL, 0, 0, (void *) 33, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Flemish"), NULL, 0, 0, (void *) 34, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Irish Gaelic"), NULL, 0, 0, (void *) 35, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Albanian"), NULL, 0, 0, (void *) 36, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Romanian"), NULL, 0, 0, (void *) 37, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Czech"), NULL, 0, 0, (void *) 38, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Slovak"), NULL, 0, 0, (void *) 39, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Slovenian"), NULL, 0, 0, (void *) 40, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Yiddish"), NULL, 0, 0, (void *) 41, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Serbian"), NULL, 0, 0, (void *) 42, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Macedonian"), NULL, 0, 0, (void *) 43, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Bulgarian"), NULL, 0, 0, (void *) 44, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Ukrainian"), NULL, 0, 0, (void *) 45, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Byelorussian"), NULL, 0, 0, (void *) 46, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Uzbek"), NULL, 0, 0, (void *) 47, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Kazakh"), NULL, 0, 0, (void *) 48, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Axerbaijani (Cyrillic)"), NULL, 0, 0, (void *) 49, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Axerbaijani (Arabic)"), NULL, 0, 0, (void *) 50, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Armenian"), NULL, 0, 0, (void *) 51, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Georgian"), NULL, 0, 0, (void *) 52, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Moldavian"), NULL, 0, 0, (void *) 53, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Kirghiz"), NULL, 0, 0, (void *) 54, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Tajiki"), NULL, 0, 0, (void *) 55, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Turkmen"), NULL, 0, 0, (void *) 56, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Mongolian (Mongolian)"), NULL, 0, 0, (void *) 57, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Mongolian (cyrillic)"), NULL, 0, 0, (void *) 58, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Pashto"), NULL, 0, 0, (void *) 59, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Kurdish"), NULL, 0, 0, (void *) 60, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Kashmiri"), NULL, 0, 0, (void *) 61, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Sindhi"), NULL, 0, 0, (void *) 62, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Tibetan"), NULL, 0, 0, (void *) 63, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Nepali"), NULL, 0, 0, (void *) 64, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Sanskrit"), NULL, 0, 0, (void *) 65, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Marathi"), NULL, 0, 0, (void *) 66, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Bengali"), NULL, 0, 0, (void *) 67, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Assamese"), NULL, 0, 0, (void *) 68, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Gujarati"), NULL, 0, 0, (void *) 69, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Punjabi"), NULL, 0, 0, (void *) 70, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Oriya"), NULL, 0, 0, (void *) 71, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Malayalam"), NULL, 0, 0, (void *) 72, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Kannada"), NULL, 0, 0, (void *) 73, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Tamil"), NULL, 0, 0, (void *) 74, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Telugu"), NULL, 0, 0, (void *) 75, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Sinhalese"), NULL, 0, 0, (void *) 76, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Burmese"), NULL, 0, 0, (void *) 77, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Khmer"), NULL, 0, 0, (void *) 78, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Lao"), NULL, 0, 0, (void *) 79, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Vietnamese"), NULL, 0, 0, (void *) 80, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Indonesian"), NULL, 0, 0, (void *) 81, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Tagalog"), NULL, 0, 0, (void *) 82, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Malay (roman)"), NULL, 0, 0, (void *) 83, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Malay (arabic)"), NULL, 0, 0, (void *) 84, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Amharic"), NULL, 0, 0, (void *) 85, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Tigrinya"), NULL, 0, 0, (void *) 86, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Galla"), NULL, 0, 0, (void *) 87, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Somali"), NULL, 0, 0, (void *) 88, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Swahili"), NULL, 0, 0, (void *) 89, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Kinyarwanda/Ruanda"), NULL, 0, 0, (void *) 90, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Rundi"), NULL, 0, 0, (void *) 91, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Nyanja/Chewa"), NULL, 0, 0, (void *) 92, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Malagasy"), NULL, 0, 0, (void *) 93, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Esperanto"), NULL, 0, 0, (void *) 94, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Welsh"), NULL, 0, 0, (void *) 128, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Basque"), NULL, 0, 0, (void *) 129, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Catalan"), NULL, 0, 0, (void *) 130, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Latin"), NULL, 0, 0, (void *) 131, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Quechua"), NULL, 0, 0, (void *) 132, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Guarani"), NULL, 0, 0, (void *) 133, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Aymara"), NULL, 0, 0, (void *) 134, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Tatar"), NULL, 0, 0, (void *) 135, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Uighur"), NULL, 0, 0, (void *) 136, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Dzongkha"), NULL, 0, 0, (void *) 137, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Javanese (roman)"), NULL, 0, 0, (void *) 138, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Sundanese (roman)"), NULL, 0, 0, (void *) 139, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Galician"), NULL, 0, 0, (void *) 140, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Afrikaans"), NULL, 0, 0, (void *) 141, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Breton"), NULL, 0, 0, (void *) 142, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Inuktitut"), NULL, 0, 0, (void *) 143, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Scottish Gaelic"), NULL, 0, 0, (void *) 144, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Manx Gaelic"), NULL, 0, 0, (void *) 145, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Irish Gaelic (with dot)"), NULL, 0, 0, (void *) 146, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Tongan"), NULL, 0, 0, (void *) 147, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Greek (polytonic)"), NULL, 0, 0, (void *) 148, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Greenlandic"), NULL, 0, 0, (void *) 149, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Azebaijani (roman)"), NULL, 0, 0, (void *) 150, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
 
 #define CID_Features	101
@@ -2321,35 +2334,36 @@ static GTextInfo maclanguages[] = {
 #define CID_On		305
 #define CID_Mutex	306
 
-static unichar_t spacer[] = { 0x2003, 0x21d2, 0x2003, 0 };
+static char *spacer = " ⇒ ";	/* right double arrow */
 
 static GTextInfo *Pref_MacNamesList(struct macname *all) {
     GTextInfo *ti;
     int i, j;
     struct macname *mn;
-    unichar_t *temp, *full;
+    char *temp, *full;
 
     for ( i=0, mn=all; mn!=NULL; mn=mn->next, ++i );
     ti = gcalloc(i+1,sizeof( GTextInfo ));
 
     for ( i=0, mn=all; mn!=NULL; mn=mn->next, ++i ) {
-	temp = MacStrToUnicode(mn->name,mn->enc,mn->lang);
+	temp = MacStrToUtf8(mn->name,mn->enc,mn->lang);
 	for ( j=0 ; maclanguages[j].text!=0; ++j )
 	    if ( maclanguages[j].userdata == (void *) (intpt) (mn->lang ))
 	break;
 	if ( maclanguages[j].text!=0 ) {
-	    const unichar_t *lang = GStringGetResource((int) maclanguages[j].text,NULL );
-	    full = galloc((u_strlen(lang)+u_strlen(temp)+6)*sizeof(unichar_t));
-	    u_strcpy(full,lang);
+	    char *lang = _((char *) maclanguages[j].text );
+	    full = galloc((strlen(lang)+strlen(temp)+strlen(spacer)+1));
+	    strcpy(full,lang);
 	} else {
 	    char *hunh = "???";
-	    full = galloc((strlen(hunh)+u_strlen(temp)+6)*sizeof(unichar_t));
-	    uc_strcpy(full,hunh);
+	    full = galloc((strlen(hunh)+strlen(temp)+strlen(spacer)+1));
+	    strcpy(full,hunh);
 	}
-	u_strcat(full,spacer);
-	u_strcat(full,temp);
+	strcat(full,spacer);
+	strcat(full,temp);
 	free(temp);
-	ti[i].text = full;
+	ti[i].text = (unichar_t *) full;
+	ti[i].text_is_1byte = true;
 	ti[i].userdata = (void *) mn;
     }
 return( ti );
@@ -2359,7 +2373,7 @@ static GTextInfo *Pref_SettingsList(struct macsetting *all) {
     GTextInfo *ti;
     int i;
     struct macsetting *ms;
-    unichar_t *temp, *full;
+    unichar_t *full; char *temp;
     char buf[20];
 
     for ( i=0, ms=all; ms!=NULL; ms=ms->next, ++i );
@@ -2371,9 +2385,9 @@ static GTextInfo *Pref_SettingsList(struct macsetting *all) {
 	if ( temp==NULL )
 	    full = uc_copy(buf);
 	else {
-	    full = galloc((strlen(buf)+u_strlen(temp)+1)*sizeof(unichar_t));
+	    full = galloc((strlen(buf)+strlen(temp)+1)*sizeof(unichar_t));
 	    uc_strcpy(full,buf);
-	    u_strcat(full,temp);
+	    utf82u_strcpy(full+u_strlen(full),temp);
 	    free(temp);
 	}
 	ti[i].text = full;
@@ -2386,7 +2400,8 @@ static GTextInfo *Pref_FeaturesList(MacFeat *all) {
     GTextInfo *ti;
     int i;
     MacFeat *mf;
-    unichar_t *temp, *full;
+    char *temp;
+    unichar_t *full;
     char buf[20];
 
     for ( i=0, mf=all; mf!=NULL; mf=mf->next, ++i );
@@ -2398,9 +2413,9 @@ static GTextInfo *Pref_FeaturesList(MacFeat *all) {
 	if ( temp==NULL )
 	    full = uc_copy(buf);
 	else {
-	    full = galloc((strlen(buf)+u_strlen(temp)+1)*sizeof(unichar_t));
+	    full = galloc((strlen(buf)+strlen(temp)+1)*sizeof(unichar_t));
 	    uc_strcpy(full,buf);
-	    u_strcat(full,temp);
+	    utf82u_strcpy(full+u_strlen(full),temp);
 	    free(temp);
 	}
 	ti[i].text = full;
@@ -2422,7 +2437,7 @@ static int name_e_h(GWindow gw, GEvent *event) {
     int i;
     int32 len;
     GTextInfo **ti, *sel;
-    const unichar_t *ret1; unichar_t *full, *temp;
+    char *ret1, *temp; unichar_t *full;
     int val1, val2;
     struct macname *mn;
     int language;
@@ -2448,47 +2463,40 @@ return( false );
 	    if ( sel!=NULL )
 		language = (int) sel->userdata;
 	    else if ( nd->index==-1 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_BadLanguage,_STR_BadLanguage);
-#elif defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Bad Language"),_("Bad Language"));
-#endif
 return( true );
 	    }	/* Otherwise use the original language, it might not be one we recognize */
 	    if ( language != nd->changing->lang )
 		nd->changing->enc = MacEncFromMacLang(language);
 	    nd->changing->lang = language;
 	    val1 = (nd->changing->enc<<16) | nd->changing->lang;
-	    ret1 = _GGadgetGetTitle(GWidgetGetControl(nd->gw,CID_Name));
+	    ret1 = GGadgetGetTitle8(GWidgetGetControl(nd->gw,CID_Name));
 	    free(nd->changing->name);
-	    nd->changing->name = UnicodeToMacStr(ret1,nd->changing->enc,nd->changing->lang);
+	    nd->changing->name = Utf8ToMacStr(ret1,nd->changing->enc,nd->changing->lang);
+	    free(ret1);
 
 	    ti = GGadgetGetList(nd->namelist,&len);
 	    for ( i=0; i<len; ++i ) if ( i!=nd->index ) {
 		val2 = (((struct macname *) (ti[i]->userdata))->enc<<16) |
 			(((struct macname *) (ti[i]->userdata))->lang);
 		if ( val2==val1 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		    GWidgetErrorR(_STR_ThisFeatureCodeIsAlreadyUsed,_STR_ThisFeatureCodeIsAlreadyUsed);
-#elif defined(FONTFORGE_CONFIG_GTK)
 		    gwwv_post_error(_("This feature code is already used"),_("This feature code is already used"));
-#endif
 return( true );
 		}
 	    }
 
-	    temp = MacStrToUnicode(nd->changing->name,nd->changing->enc,nd->changing->lang);
+	    temp = MacStrToUtf8(nd->changing->name,nd->changing->enc,nd->changing->lang);
 	    if ( sel!=NULL ) {
 		const unichar_t *lang = sel->text;
-		full = galloc((u_strlen(lang)+u_strlen(temp)+6)*sizeof(unichar_t));
+		full = galloc((u_strlen(lang)+strlen(temp)+6)*sizeof(unichar_t));
 		u_strcpy(full,lang);
 	    } else {
 		char *hunh = "???";
-		full = galloc((strlen(hunh)+u_strlen(temp)+6)*sizeof(unichar_t));
+		full = galloc((strlen(hunh)+strlen(temp)+6)*sizeof(unichar_t));
 		uc_strcpy(full,hunh);
 	    }
-	    u_strcat(full,spacer);
-	    u_strcat(full,temp);
+	    uc_strcat(full,spacer);
+	    utf82u_strcpy(full+u_strlen(full),temp);
 
 	    if ( nd->index==-1 )
 		GListAddStr(nd->namelist,full,nd->changing);
@@ -2533,16 +2541,12 @@ static char *AskName(struct macname *changing,struct macname *all,GGadget *list,
     nd.all = all;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(_STR_Setting,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = _("Setting");
-#endif
+    wattrs.utf8_window_title = _("Setting");
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,270));
     pos.height = GDrawPointsToPixels(NULL,98);
@@ -2552,7 +2556,8 @@ static char *AskName(struct macname *changing,struct macname *all,GGadget *list,
     memset(gcd,0,sizeof(gcd));
     memset(label,0,sizeof(label));
 
-    label[0].text = (unichar_t *) _STR_LanguageC;
+    label[0].text = (unichar_t *) _("_Language:");
+    label[0].text_is_1byte = true;
     label[0].text_in_resource = true;
     gcd[0].gd.label = &label[0];
     gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5+4;
@@ -2575,14 +2580,16 @@ static char *AskName(struct macname *changing,struct macname *all,GGadget *list,
 	    maclanguages[0].selected = true;
     }
 
-    label[2].text = (unichar_t *) _STR_Name;
+    label[2].text = (unichar_t *) _("_Name:");
+    label[2].text_is_1byte = true;
     label[2].text_in_resource = true;
     gcd[2].gd.label = &label[2];
     gcd[2].gd.pos.x = 5; gcd[2].gd.pos.y = gcd[0].gd.pos.y+28;
     gcd[2].gd.flags = gg_enabled|gg_visible;
     gcd[2].creator = GLabelCreate;
 
-    label[3].text = MacStrToUnicode(changing->name,changing->enc,changing->lang);
+    label[3].text = (unichar_t *) MacStrToUtf8(changing->name,changing->enc,changing->lang);
+    label[3].text_is_1byte = true;
     gcd[3].gd.label = changing->name==NULL ? NULL : &label[3];
     gcd[3].gd.pos.x = gcd[1].gd.pos.x; gcd[3].gd.pos.y = gcd[2].gd.pos.y-4;
     gcd[3].gd.pos.width = 200;
@@ -2595,7 +2602,8 @@ static char *AskName(struct macname *changing,struct macname *all,GGadget *list,
     gcd[i].gd.pos.x = 13-3; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+30;
     gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[i].text = (unichar_t *) _STR_OK;
+    label[i].text = (unichar_t *) _("_OK");
+    label[i].text_is_1byte = true;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.cid = CID_OK;
@@ -2605,7 +2613,8 @@ static char *AskName(struct macname *changing,struct macname *all,GGadget *list,
     gcd[i].gd.pos.x = -13; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+3;
     gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[i].text = (unichar_t *) _STR_Cancel;
+    label[i].text = (unichar_t *) _("_Cancel");
+    label[i].text_is_1byte = true;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.cid = CID_Cancel;
@@ -2738,7 +2747,8 @@ int GCDBuildNames(GGadgetCreateData *gcd,GTextInfo *label,int pos,struct macname
 
     gcd[pos].gd.pos.x = 6; gcd[pos].gd.pos.y = gcd[pos-1].gd.pos.y+gcd[pos-1].gd.pos.height+10;
     gcd[pos].gd.flags = gg_visible | gg_enabled;
-    label[pos].text = (unichar_t *) _STR_NewDDD;
+    label[pos].text = (unichar_t *) _("_New...");
+    label[pos].text_is_1byte = true;
     label[pos].text_in_resource = true;
     gcd[pos].gd.label = &label[pos];
     gcd[pos].gd.handle_controlevent = Pref_NewName;
@@ -2748,7 +2758,8 @@ int GCDBuildNames(GGadgetCreateData *gcd,GTextInfo *label,int pos,struct macname
     gcd[pos].gd.pos.x = gcd[pos-1].gd.pos.x+20+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor);
     gcd[pos].gd.pos.y = gcd[pos-1].gd.pos.y;
     gcd[pos].gd.flags = gg_visible ;
-    label[pos].text = (unichar_t *) _STR_Delete;
+    label[pos].text = (unichar_t *) _("_Delete");
+    label[pos].text_is_1byte = true;
     label[pos].text_in_resource = true;
     gcd[pos].gd.label = &label[pos];
     gcd[pos].gd.cid = CID_NameDel;
@@ -2758,7 +2769,8 @@ int GCDBuildNames(GGadgetCreateData *gcd,GTextInfo *label,int pos,struct macname
     gcd[pos].gd.pos.x = gcd[pos-1].gd.pos.x+20+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor);
     gcd[pos].gd.pos.y = gcd[pos-1].gd.pos.y;
     gcd[pos].gd.flags = gg_visible ;
-    label[pos].text = (unichar_t *) _STR_EditDDD;
+    label[pos].text = (unichar_t *) _("_Edit...");
+    label[pos].text_is_1byte = true;
     label[pos].text_in_resource = true;
     gcd[pos].gd.label = &label[pos];
     gcd[pos].gd.cid = CID_NameEdit;
@@ -2781,7 +2793,7 @@ static int set_e_h(GWindow gw, GEvent *event) {
     int i;
     int32 len;
     GTextInfo **ti;
-    const unichar_t *ret1; unichar_t *end, *temp, *res;
+    const unichar_t *ret1; unichar_t *end, *res; char *temp;
     int val1, val2;
     char buf[20];
     struct macsetting *ms;
@@ -2808,7 +2820,7 @@ return( false );
 	    val1 = u_strtol(ret1,&end,10);
 	    if ( *end!='\0' ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_BadNumber,_STR_BadNumber);
+		gwwv_post_error(_("Bad Number"),_("Bad Number"));
 #elif defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Bad Number"),_("Bad Number"));
 #endif
@@ -2819,7 +2831,7 @@ return( true );
 		val2 = ((struct macsetting *) (ti[i]->userdata))->setting;
 		if ( val2==val1 ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-		    GWidgetErrorR(_STR_ThisSettingIsAlreadyUsed,_STR_ThisSettingIsAlreadyUsed);
+		    gwwv_post_error(_("This setting is already used"),_("This setting is already used"));
 #elif defined(FONTFORGE_CONFIG_GTK)
 		    gwwv_post_error(_("This setting is already used"),_("This setting is already used"));
 #endif
@@ -2842,10 +2854,10 @@ return( true );
 
 	    sprintf(buf,"%3d ", val1);
 	    temp = PickNameFromMacName(sd->changing->setname);
-	    len = u_strlen(temp);
+	    len = strlen(temp);
 	    res = galloc( (strlen(buf)+len+3)*sizeof(unichar_t) );
 	    uc_strcpy(res,buf);
-	    u_strcat(res,temp);
+	    utf82u_strcpy(res+u_strlen(res),temp);
 	    free(temp);
 
 	    if ( sd->index==-1 )
@@ -2893,16 +2905,12 @@ static char *AskSetting(struct macsetting *changing,struct macsetting *all,
     sd.all = all;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(_STR_Setting,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = _("Setting");
-#endif
+    wattrs.utf8_window_title = _("Setting");
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,270));
     pos.height = GDrawPointsToPixels(NULL,193);
@@ -2912,8 +2920,8 @@ static char *AskSetting(struct macsetting *changing,struct macsetting *all,
     memset(gcd,0,sizeof(gcd));
     memset(label,0,sizeof(label));
 
-    label[0].text = (unichar_t *) _STR_SettingId;
-    label[0].text_in_resource = true;
+    label[0].text = (unichar_t *) _("Setting Id:");
+    label[0].text_is_1byte = true;
     gcd[0].gd.label = &label[0];
     gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5+4;
     gcd[0].gd.flags = gg_enabled|gg_visible;
@@ -2928,7 +2936,8 @@ static char *AskSetting(struct macsetting *changing,struct macsetting *all,
     gcd[1].gd.cid = CID_Id;
     gcd[1].creator = GTextFieldCreate;
 
-    label[2].text = (unichar_t *) _STR_Enabled;
+    label[2].text = (unichar_t *) _("_Enabled");
+    label[2].text_is_1byte = true;
     label[2].text_in_resource = true;
     gcd[2].gd.label = &label[2];
     gcd[2].gd.pos.x = 110; gcd[2].gd.pos.y = 5;
@@ -2936,7 +2945,8 @@ static char *AskSetting(struct macsetting *changing,struct macsetting *all,
     gcd[2].gd.cid = CID_On;
     gcd[2].creator = GCheckBoxCreate;
 
-    label[3].text = (unichar_t *) _STR_Name;
+    label[3].text = (unichar_t *) _("_Name:");
+    label[3].text_is_1byte = true;
     label[3].text_in_resource = true;
     gcd[3].gd.label = &label[3];
     gcd[3].gd.pos.x = 5; gcd[3].gd.pos.y = 5+24;
@@ -2949,7 +2959,8 @@ static char *AskSetting(struct macsetting *changing,struct macsetting *all,
     gcd[i].gd.pos.x = 13-3; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+35;
     gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[i].text = (unichar_t *) _STR_OK;
+    label[i].text = (unichar_t *) _("_OK");
+    label[i].text_is_1byte = true;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.cid = CID_OK;
@@ -2959,7 +2970,8 @@ static char *AskSetting(struct macsetting *changing,struct macsetting *all,
     gcd[i].gd.pos.x = -13; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+3;
     gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[i].text = (unichar_t *) _STR_Cancel;
+    label[i].text = (unichar_t *) _("_Cancel");
+    label[i].text_is_1byte = true;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.cid = CID_Cancel;
@@ -3086,7 +3098,7 @@ static int feat_e_h(GWindow gw, GEvent *event) {
     int i;
     int32 len;
     GTextInfo **ti;
-    const unichar_t *ret1; unichar_t *end, *temp, *res;
+    const unichar_t *ret1; unichar_t *end, *res; char *temp;
     int val1, val2;
     char buf[20];
     MacFeat *mf;
@@ -3115,7 +3127,7 @@ return( false );
 	    val1 = u_strtol(ret1,&end,10);
 	    if ( *end!='\0' ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_BadNumber,_STR_BadNumber);
+		gwwv_post_error(_("Bad Number"),_("Bad Number"));
 #elif defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Bad Number"),_("Bad Number"));
 #endif
@@ -3126,7 +3138,7 @@ return( true );
 		val2 = ((MacFeat *) (ti[i]->userdata))->feature;
 		if ( val2==val1 ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-		    GWidgetErrorR(_STR_ThisFeatureCodeIsAlreadyUsed,_STR_ThisFeatureCodeIsAlreadyUsed);
+		    gwwv_post_error(_("This feature code is already used"),_("This feature code is already used"));
 #elif defined(FONTFORGE_CONFIG_GTK)
 		    gwwv_post_error(_("This feature code is already used"),_("This feature code is already used"));
 #endif
@@ -3151,10 +3163,10 @@ return( true );
 
 	    sprintf(buf,"%3d ", val1);
 	    temp = PickNameFromMacName(fd->changing->featname);
-	    len = u_strlen(temp);
+	    len = strlen(temp);
 	    res = galloc( (strlen(buf)+len+3)*sizeof(unichar_t) );
 	    uc_strcpy(res,buf);
-	    u_strcat(res,temp);
+	    utf82u_strcpy(res+u_strlen(res),temp);
 	    free(temp);
 
 	    if ( fd->index==-1 )
@@ -3201,16 +3213,12 @@ static char *AskFeature(MacFeat *changing,MacFeat *all,GGadget *list, int index)
     fd.all = all;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(_STR_Feature,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = _("Feature");
-#endif
+    wattrs.utf8_window_title = _("Feature");
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,265));
     pos.height = GDrawPointsToPixels(NULL,353);
@@ -3220,8 +3228,8 @@ static char *AskFeature(MacFeat *changing,MacFeat *all,GGadget *list, int index)
     memset(gcd,0,sizeof(gcd));
     memset(label,0,sizeof(label));
 
-    label[0].text = (unichar_t *) _STR_FeatureId;
-    label[0].text_in_resource = true;
+    label[0].text = (unichar_t *) _("Feature _Id:");
+    label[0].text_is_1byte = true;
     gcd[0].gd.label = &label[0];
     gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5+4;
     gcd[0].gd.flags = gg_enabled|gg_visible;
@@ -3236,15 +3244,16 @@ static char *AskFeature(MacFeat *changing,MacFeat *all,GGadget *list, int index)
     gcd[1].gd.cid = CID_Id;
     gcd[1].creator = GTextFieldCreate;
 
-    label[2].text = (unichar_t *) _STR_MutuallyExclusive;
-    label[2].text_in_resource = true;
+    label[2].text = (unichar_t *) _("Mutually Exclusive");
+    label[2].text_is_1byte = true;
     gcd[2].gd.label = &label[2];
     gcd[2].gd.pos.x = 105; gcd[2].gd.pos.y = 5+4;
     gcd[2].gd.flags = gg_enabled|gg_visible | (changing->ismutex?gg_cb_on:0);
     gcd[2].gd.cid = CID_Mutex;
     gcd[2].creator = GCheckBoxCreate;
 
-    label[3].text = (unichar_t *) _STR_Name;
+    label[3].text = (unichar_t *) _("_Name:");
+    label[3].text_is_1byte = true;
     label[3].text_in_resource = true;
     gcd[3].gd.label = &label[3];
     gcd[3].gd.pos.x = 5; gcd[3].gd.pos.y = 5+24;
@@ -3253,8 +3262,8 @@ static char *AskFeature(MacFeat *changing,MacFeat *all,GGadget *list, int index)
 
     i = GCDBuildNames(gcd,label,4,changing->featname);
 
-    label[i].text = (unichar_t *) _STR_Settings;
-    label[i].text_in_resource = true;
+    label[i].text = (unichar_t *) _("Settings");
+    label[i].text_is_1byte = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+35;
     gcd[i].gd.flags = gg_enabled|gg_visible;
@@ -3271,7 +3280,8 @@ static char *AskFeature(MacFeat *changing,MacFeat *all,GGadget *list, int index)
 
     gcd[i].gd.pos.x = 6; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+gcd[i-1].gd.pos.height+10;
     gcd[i].gd.flags = gg_visible | gg_enabled;
-    label[i].text = (unichar_t *) _STR_NewDDD;
+    label[i].text = (unichar_t *) _("_New...");
+    label[i].text_is_1byte = true;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.handle_controlevent = Pref_NewSetting;
@@ -3280,7 +3290,8 @@ static char *AskFeature(MacFeat *changing,MacFeat *all,GGadget *list, int index)
     gcd[i].gd.pos.x = gcd[i-1].gd.pos.x+20+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor);
     gcd[i].gd.pos.y = gcd[i-1].gd.pos.y;
     gcd[i].gd.flags = gg_visible ;
-    label[i].text = (unichar_t *) _STR_Delete;
+    label[i].text = (unichar_t *) _("_Delete");
+    label[i].text_is_1byte = true;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.cid = CID_SettingDel;
@@ -3290,7 +3301,8 @@ static char *AskFeature(MacFeat *changing,MacFeat *all,GGadget *list, int index)
     gcd[i].gd.pos.x = gcd[i-1].gd.pos.x+20+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor);
     gcd[i].gd.pos.y = gcd[i-1].gd.pos.y;
     gcd[i].gd.flags = gg_visible ;
-    label[i].text = (unichar_t *) _STR_EditDDD;
+    label[i].text = (unichar_t *) _("_Edit...");
+    label[i].text_is_1byte = true;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.cid = CID_SettingEdit;
@@ -3300,7 +3312,8 @@ static char *AskFeature(MacFeat *changing,MacFeat *all,GGadget *list, int index)
     gcd[i].gd.pos.x = 13-3; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+30;
     gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[i].text = (unichar_t *) _STR_OK;
+    label[i].text = (unichar_t *) _("_OK");
+    label[i].text_is_1byte = true;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.cid = CID_OK;
@@ -3310,7 +3323,8 @@ static char *AskFeature(MacFeat *changing,MacFeat *all,GGadget *list, int index)
     gcd[i].gd.pos.x = -13; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+3;
     gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[i].text = (unichar_t *) _STR_Cancel;
+    label[i].text = (unichar_t *) _("_Cancel");
+    label[i].text_is_1byte = true;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.cid = CID_Cancel;
@@ -3455,7 +3469,8 @@ void GCDFillMacFeat(GGadgetCreateData *mfgcd,GTextInfo *mflabels, int width,
 
     mfgcd[sgc].gd.pos.x = 6; mfgcd[sgc].gd.pos.y = mfgcd[sgc-1].gd.pos.y+mfgcd[sgc-1].gd.pos.height+10;
     mfgcd[sgc].gd.flags = gg_visible | gg_enabled;
-    mflabels[sgc].text = (unichar_t *) _STR_NewDDD;
+    mflabels[sgc].text = (unichar_t *) _("_New...");
+    mflabels[sgc].text_is_1byte = true;
     mflabels[sgc].text_in_resource = true;
     mfgcd[sgc].gd.label = &mflabels[sgc];
     /*mfgcd[sgc].gd.cid = CID_AnchorRename;*/
@@ -3465,7 +3480,8 @@ void GCDFillMacFeat(GGadgetCreateData *mfgcd,GTextInfo *mflabels, int width,
     mfgcd[sgc].gd.pos.x = mfgcd[sgc-1].gd.pos.x+10+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor);
     mfgcd[sgc].gd.pos.y = mfgcd[sgc-1].gd.pos.y;
     mfgcd[sgc].gd.flags = gg_visible ;
-    mflabels[sgc].text = (unichar_t *) _STR_Delete;
+    mflabels[sgc].text = (unichar_t *) _("_Delete");
+    mflabels[sgc].text_is_1byte = true;
     mflabels[sgc].text_in_resource = true;
     mfgcd[sgc].gd.label = &mflabels[sgc];
     mfgcd[sgc].gd.cid = CID_FeatureDel;
@@ -3475,7 +3491,8 @@ void GCDFillMacFeat(GGadgetCreateData *mfgcd,GTextInfo *mflabels, int width,
     mfgcd[sgc].gd.pos.x = mfgcd[sgc-1].gd.pos.x+10+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor);
     mfgcd[sgc].gd.pos.y = mfgcd[sgc-1].gd.pos.y;
     mfgcd[sgc].gd.flags = gg_visible ;
-    mflabels[sgc].text = (unichar_t *) _STR_EditDDD;
+    mflabels[sgc].text = (unichar_t *) _("_Edit...");
+    mflabels[sgc].text_is_1byte = true;
     mflabels[sgc].text_in_resource = true;
     mfgcd[sgc].gd.label = &mflabels[sgc];
     mfgcd[sgc].gd.cid = CID_FeatureEdit;
@@ -3485,8 +3502,8 @@ void GCDFillMacFeat(GGadgetCreateData *mfgcd,GTextInfo *mflabels, int width,
     mfgcd[sgc].gd.pos.x = mfgcd[sgc-1].gd.pos.x+10+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor);
     mfgcd[sgc].gd.pos.y = mfgcd[sgc-1].gd.pos.y;
     mfgcd[sgc].gd.flags = gg_visible|gg_enabled ;
-    mflabels[sgc].text = (unichar_t *) _STR_Default;
-    mflabels[sgc].text_in_resource = true;
+    mflabels[sgc].text = (unichar_t *) _("Default");
+    mflabels[sgc].text_is_1byte = true;
     mfgcd[sgc].gd.label = &mflabels[sgc];
     mfgcd[sgc].gd.handle_controlevent = Pref_DefaultFeat;
     mfgcd[sgc].data = (void *) (intpt) fromprefs;

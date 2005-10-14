@@ -940,11 +940,7 @@ static void MapFromCounterGroup(struct map *map,MetaFontDlg *meta,
 		if ( (newcwidth<meta->counters[isvert].widthmin && counterwidth>=meta->counters[isvert].widthmin) ||
 			newcwidth<0 ) {
 		    if ( !counterwarned )
-#if defined(FONTFORGE_CONFIG_GDRAW)
-			GWidgetErrorR(_STR_CounterTooSmallT,_STR_CounterTooSmall, charname);
-#elif defined(FONTFORGE_CONFIG_GTK)
 			gwwv_post_error(_("Counter Too Small"),_("A counter in %.30s was requested to be too small, it has been pegged at its minimum value"), charname);
-#endif
 		    counterwarned = true;
 		    if ( counterwidth>=meta->counters[isvert].widthmin )
 			newcwidth = meta->counters[isvert].widthmin;
@@ -1863,15 +1859,15 @@ return;
 static int lastdlgtype=0;
 
 static GTextInfo dlgtypes[] = {
-    { (unichar_t *) _STR_Simple, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Advanced, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Simple"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Advanced"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
 
 static GTextInfo simplefuncs[] = {
-    { (unichar_t *) _STR_Embolden, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 1, 0, 0, 1},
-    { (unichar_t *) _STR_Thin, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Condense, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Expand, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Embolden"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 1, 0, 1},
+    { (unichar_t *) N_("Thin"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Condense"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Expand"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
 
 #define CID_DlgType		1001
@@ -1902,10 +1898,10 @@ static int MT_OK(GGadget *g, GEvent *e) {
 	if ( type==0 ) {
 	    func = GGadgetGetFirstListSelectedItem(GWidgetGetControl(meta->gw,CID_SimpleFuncs));
 	    err = false;
-	    stems = GetRealR(meta->gw,CID_StemScale, _STR_StemScale,&err)/100;
-	    counters = GetRealR(meta->gw,CID_CounterScale,_STR_CounterScale,&err)/100;
+	    stems = GetReal8(meta->gw,CID_StemScale, _("Scale Stems By:"),&err)/100;
+	    counters = GetReal8(meta->gw,CID_CounterScale,_("Scale Counters By:"),&err)/100;
 	    if ( meta->bxh!=-1 )
-		xh = GetRealR(meta->gw,CID_XH_Val,_STR_XHeight,&err);
+		xh = GetReal8(meta->gw,CID_XH_Val,_("_X-Height"),&err);
 	    if ( err )
 return( true );
 	    meta->counters[0].counterchoices = cc_edgefixed;
@@ -1939,7 +1935,7 @@ return( true );
 			    meta->fv->sf->glyphs[gid]!=NULL )
 			++cnt;
 #if defined(FONTFORGE_CONFIG_GDRAW)
-		GProgressStartIndicatorR(10,_STR_MetamorphosingFont,_STR_MetamorphosingFont,0,cnt,1);
+		gwwv_progress_start_indicator(10,_("Metamorphosing Font..."),_("Metamorphosing Font..."),0,cnt,1);
 #elif defined(FONTFORGE_CONFIG_GTK)
 		gwwv_progress_start_indicator(10,_("Metamorphosing Font..."),_("Metamorphosing Font..."),0,cnt,1);
 #endif
@@ -1951,7 +1947,7 @@ return( true );
 			_MetaFont(meta,meta->fv->sf->glyphs[i]);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
-			if ( !GProgressNext())
+			if ( !gwwv_progress_next())
 #elif defined(FONTFORGE_CONFIG_GTK)
 			if ( !gwwv_progress_next())
 #endif
@@ -1959,7 +1955,7 @@ return( true );
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 		    }
 #if defined(FONTFORGE_CONFIG_GDRAW)
-		GProgressEndIndicator();
+		gwwv_progress_end_indicator();
 #elif defined(FONTFORGE_CONFIG_GTK)
 		gwwv_progress_end_indicator();
 #endif
@@ -2057,6 +2053,15 @@ void MetaFont(FontView *fv,CharView *cv,SplineChar *sc) {
     int i;
     BlueData bd;
     char buffer[20];
+    static int done = false;
+
+    if ( !done ) {
+	done = true;
+	for ( i=0; dlgtypes[i].text!=NULL; ++i )
+	    dlgtypes[i].text = (unichar_t *) _((char *) dlgtypes[i].text);
+	for ( i=0; simplefuncs[i].text!=NULL; ++i )
+	    simplefuncs[i].text = (unichar_t *) _((char *) simplefuncs[i].text);
+    }
 
     memset(&meta,'\0',sizeof(meta));
     meta.fv = fv; meta.cv = cv; meta.sc = sc;
@@ -2082,16 +2087,12 @@ void MetaFont(FontView *fv,CharView *cv,SplineChar *sc) {
     }
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(_STR_MetaFont,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = _("Meta Font...");
-#endif
+    wattrs.utf8_window_title = _("Meta Font...");
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,268));
     pos.height = GDrawPointsToPixels(NULL,330);
@@ -2104,16 +2105,16 @@ void MetaFont(FontView *fv,CharView *cv,SplineChar *sc) {
 	dlgtypes[i].selected = ( i==lastdlgtype );
 
     i = 0;
-    aspects[i].text = (unichar_t *) _STR_Stems;
+    aspects[i].text = (unichar_t *) _("Stems");
     aspects[i].selected = true;
-    aspects[i++].text_in_resource = true;
+    aspects[i++].text_is_1byte = true;
     /*aspects[i++].gcd = ngcd;*/
 
-    aspects[i].text = (unichar_t *) _STR_HCounters;
-    aspects[i++].text_in_resource = true;
+    aspects[i].text = (unichar_t *) _("H Counters");
+    aspects[i++].text_is_1byte = true;
 
-    aspects[i].text = (unichar_t *) _STR_VCounters;
-    aspects[i++].text_in_resource = true;
+    aspects[i].text = (unichar_t *) _("V Counters");
+    aspects[i++].text_is_1byte = true;
 
     mgcd[0].gd.pos.x = 6; mgcd[0].gd.pos.y = 6;
     mgcd[0].gd.flags = gg_visible | gg_enabled;
@@ -2142,8 +2143,8 @@ void MetaFont(FontView *fv,CharView *cv,SplineChar *sc) {
 
     mgcd[3].gd.pos.x = 16; mgcd[3].gd.pos.y = mgcd[1].gd.pos.y+36+6;
     mgcd[3].gd.flags = gg_enabled;
-    mlabel[3].text = (unichar_t *) _STR_StemScale;
-    mlabel[3].text_in_resource = true;
+    mlabel[3].text = (unichar_t *) _("Scale Stems By:");
+    mlabel[3].text_is_1byte = true;
     mgcd[3].gd.label = &mlabel[3];
     mgcd[3].gd.cid = CID_StemScaleTxt;
     mgcd[3].creator = GLabelCreate;
@@ -2163,8 +2164,8 @@ void MetaFont(FontView *fv,CharView *cv,SplineChar *sc) {
 
     mgcd[6].gd.pos.x = 16; mgcd[6].gd.pos.y = mgcd[4].gd.pos.y+26+6;
     mgcd[6].gd.flags = gg_enabled;
-    mlabel[6].text = (unichar_t *) _STR_CounterScale;
-    mlabel[6].text_in_resource = true;
+    mlabel[6].text = (unichar_t *) _("Scale Counters By:");
+    mlabel[6].text_is_1byte = true;
     mgcd[6].gd.label = &mlabel[6];
     mgcd[6].gd.cid = CID_CounterScaleTxt;
     mgcd[6].creator = GLabelCreate;
@@ -2184,8 +2185,8 @@ void MetaFont(FontView *fv,CharView *cv,SplineChar *sc) {
 
     mgcd[9].gd.pos.x = 16; mgcd[9].gd.pos.y = mgcd[7].gd.pos.y+26+6;
     mgcd[9].gd.flags = gg_enabled;
-    mlabel[9].text = (unichar_t *) _STR_XHeightFrom;
-    mlabel[9].text_in_resource = true;
+    mlabel[9].text = (unichar_t *) _("XHeight From:");
+    mlabel[9].text_is_1byte = true;
     mgcd[9].gd.label = &mlabel[9];
     mgcd[9].gd.cid = CID_XH_From;
     mgcd[9].creator = GLabelCreate;
@@ -2201,8 +2202,8 @@ void MetaFont(FontView *fv,CharView *cv,SplineChar *sc) {
 
     mgcd[11].gd.pos.x = mgcd[10].gd.pos.x+30; mgcd[11].gd.pos.y = mgcd[9].gd.pos.y;
     mgcd[11].gd.flags = gg_enabled;
-    mlabel[11].text = (unichar_t *) _STR_To;
-    mlabel[11].text_in_resource = true;
+    mlabel[11].text = (unichar_t *) _("To:");
+    mlabel[11].text_is_1byte = true;
     mgcd[11].gd.label = &mlabel[11];
     mgcd[11].gd.cid = CID_XH_To;
     mgcd[11].creator = GLabelCreate;
@@ -2216,7 +2217,8 @@ void MetaFont(FontView *fv,CharView *cv,SplineChar *sc) {
     mgcd[13].gd.pos.x = 30-3; mgcd[13].gd.pos.y = 330-35-3;
     mgcd[13].gd.pos.width = -1; mgcd[13].gd.pos.height = 0;
     mgcd[13].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    mlabel[13].text = (unichar_t *) _STR_OK;
+    mlabel[13].text = (unichar_t *) _("_OK");
+    mlabel[13].text_is_1byte = true;
     mlabel[13].text_in_resource = true;
     mgcd[13].gd.label = &mlabel[13];
     mgcd[13].gd.handle_controlevent = MT_OK;
@@ -2225,7 +2227,8 @@ void MetaFont(FontView *fv,CharView *cv,SplineChar *sc) {
     mgcd[14].gd.pos.x = -30; mgcd[14].gd.pos.y = mgcd[13].gd.pos.y+3;
     mgcd[14].gd.pos.width = -1; mgcd[14].gd.pos.height = 0;
     mgcd[14].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    mlabel[14].text = (unichar_t *) _STR_Cancel;
+    mlabel[14].text = (unichar_t *) _("_Cancel");
+    mlabel[14].text_is_1byte = true;
     mlabel[14].text_in_resource = true;
     mgcd[14].gd.label = &mlabel[14];
     mgcd[14].gd.handle_controlevent = MT_Cancel;

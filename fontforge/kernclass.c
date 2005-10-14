@@ -247,22 +247,20 @@ return( true );
 static int KCD_Next(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	KernClassDlg *kcd = GDrawGetUserData(GGadgetGetWindow(g));
-	const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(kcd->gw,CID_GlyphList));
+	char *ret = GGadgetGetTitle8(GWidgetGetControl(kcd->gw,CID_GlyphList));
 	GGadget *list = GWidgetGetControl( kcd->gw, CID_ClassList+kcd->off );
 	int i;
 
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	if ( !CCD_NameListCheck(kcd->sf,ret,true,_STR_BadClass) ||
-#elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !CCD_NameListCheck(kcd->sf,ret,true,_("Bad Class")) ||
-#endif
-		CCD_InvalidClassList(ret,list,kcd->isedit))
+		CCD_InvalidClassList(ret,list,kcd->isedit)) {
+	    free(ret);
 return( true );
+	}
 
 	if ( kcd->isedit ) {
-	    GListChangeLine(list,GGadgetGetFirstListSelectedItem(list),ret);
+	    GListChangeLine8(list,GGadgetGetFirstListSelectedItem(list),ret);
 	} else {
-	    GListAppendLine(list,ret,false);
+	    GListAppendLine8(list,ret,false);
 	    if ( kcd->off==0 ) {
 		kcd->offsets = grealloc(kcd->offsets,(kcd->first_cnt+1)*kcd->second_cnt*sizeof(int16));
 		memset(kcd->offsets+kcd->first_cnt*kcd->second_cnt,
@@ -299,6 +297,7 @@ return( true );
 	    KCD_SBReset(kcd);
 	}
 	GDrawSetVisible(kcd->cw,false);		/* This will give us an expose so we needed ask for one */
+	free(ret);
     }
 return( true );
 }
@@ -380,7 +379,7 @@ static int KCD_Next2(GGadget *g, GEvent *e) {
 
 	if ( val<-32768 || val>32767 || *end!='\0' ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR( _STR_BadNumber, _STR_BadNumber );
+	    gwwv_post_error( _("Bad Number"), _("Bad Number") );
 #elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error( _("Bad Number"), _("Bad Number") );
 #endif
@@ -755,7 +754,7 @@ static int KCD_CorrectionChanged(GGadget *g, GEvent *e) {
 return( true );
 	if ( correction<-128 || correction>127 ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_OutOfRange,_STR_OutOfRange);
+	    gwwv_post_error(_("Value out of range"),_("Value out of range"));
 #elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error( _("Out of Range"), _("Corrections must be between -128 and 127 (and should be smaller)") );
 #endif
@@ -972,7 +971,7 @@ static void KCD_EditOffset(KernClassDlg *kcd) {
 
     if ( first==0 || second==0 )
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetPostNoticeR(_STR_ClassZero,_STR_ClassZeroOffsets);
+	gwwv_post_notice(_("Class 0"),_("The kerning values for class 0 (\"Everything Else\") should always be 0"));
 #elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_notice(_("Class 0"),_("The kerning values for class 0 (\"Everything Else\") should always be 0"));
 #endif
@@ -1054,7 +1053,7 @@ return( KCD_Next2(g,e));
 	if ( sf->script_lang==NULL || sli<0 ||
 		sf->script_lang[sli]==NULL ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_SelectAScript,_STR_SelectAScript);
+	    gwwv_post_error(_("Please select a script"),_("Please select a script"));
 #elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Please select a script"),_("Please select a script"));
 #endif
@@ -1850,8 +1849,8 @@ static int AddClassList(GGadgetCreateData *gcd, GTextInfo *label, int k, int off
     int blen = GIntGetResource(_NUM_Buttonsize);
     int space = 10;
 
-    label[k].text = (unichar_t *) (x<20?_STR_FirstChar:_STR_SecondChar);
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) (x<20?_("First Char"):_("Second Char"));
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = x+10; gcd[k].gd.pos.y = y;
     gcd[k].gd.flags = gg_visible | gg_enabled;
@@ -1862,9 +1861,9 @@ static int AddClassList(GGadgetCreateData *gcd, GTextInfo *label, int k, int off
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = x+100; gcd[k].gd.pos.y = y-3;
     gcd[k].gd.pos.height = 19;
-    gcd[k].gd.flags = gg_visible;
+    gcd[k].gd.flags = gg_visible|gg_utf8_popup;
     gcd[k].gd.handle_controlevent = KCD_Up;
-    gcd[k].gd.popup_msg = GStringGetResource(_STR_MoveUp,NULL);
+    gcd[k].gd.popup_msg = (unichar_t *) _("Move selected class up");
     gcd[k].gd.cid = CID_ClassUp+off;
     gcd[k++].creator = GButtonCreate;
 
@@ -1872,9 +1871,9 @@ static int AddClassList(GGadgetCreateData *gcd, GTextInfo *label, int k, int off
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = x+120; gcd[k].gd.pos.y = y-3;
     gcd[k].gd.pos.height = 19;
-    gcd[k].gd.flags = gg_visible;
+    gcd[k].gd.flags = gg_visible|gg_utf8_popup;
     gcd[k].gd.handle_controlevent = KCD_Down;
-    gcd[k].gd.popup_msg = GStringGetResource(_STR_MoveDown,NULL);
+    gcd[k].gd.popup_msg = (unichar_t *) _("Move selected class down");
     gcd[k].gd.cid = CID_ClassDown+off;
     gcd[k++].creator = GButtonCreate;
 
@@ -1886,7 +1885,8 @@ static int AddClassList(GGadgetCreateData *gcd, GTextInfo *label, int k, int off
     gcd[k].gd.cid = CID_ClassList+off;
     gcd[k++].creator = GListCreate;
 
-    label[k].text = (unichar_t *) _STR_NewDDD;
+    label[k].text = (unichar_t *) _("_New...");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+gcd[k-1].gd.pos.height+10;
@@ -1896,7 +1896,8 @@ static int AddClassList(GGadgetCreateData *gcd, GTextInfo *label, int k, int off
     gcd[k].gd.cid = CID_ClassNew+off;
     gcd[k++].creator = GButtonCreate;
 
-    label[k].text = (unichar_t *) _STR_EditDDD;
+    label[k].text = (unichar_t *) _("_Edit...");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = x+blen+space; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
@@ -1906,7 +1907,8 @@ static int AddClassList(GGadgetCreateData *gcd, GTextInfo *label, int k, int off
     gcd[k].gd.cid = CID_ClassEdit+off;
     gcd[k++].creator = GButtonCreate;
 
-    label[k].text = (unichar_t *) _STR_Delete;
+    label[k].text = (unichar_t *) _("_Delete");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+blen+space; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
@@ -1948,8 +1950,8 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class) {
     gcd[k].gd.cid = CID_Second;
     gcd[k++].creator = for_class ? GListButtonCreate : GListFieldCreate;
 
-    label[k].text = (unichar_t *) _STR_UseFreeType;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Use FreeType");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 260; gcd[k].gd.pos.y = 7;
     if ( !hasFreeType() )
@@ -1960,8 +1962,8 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class) {
     gcd[k].gd.handle_controlevent = KCB_FreeTypeChanged;
     gcd[k++].creator = GCheckBoxCreate;
 
-    label[k].text = (unichar_t *) _STR_DisplaySize;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Display Size:");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 30; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+30;
     gcd[k].gd.flags = gg_visible|gg_enabled ;
@@ -1982,8 +1984,8 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class) {
     gcd[k++].creator = GListFieldCreate;
 #endif
 
-    label[k].text = (unichar_t *) _STR_Magnification;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Magnification:");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 185; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y;
     gcd[k].gd.flags = gg_visible|gg_enabled ;
@@ -2000,8 +2002,8 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class) {
     gcd[k].gd.handle_controlevent = KCD_MagnificationChanged;
     gcd[k++].creator = GListButtonCreate;
 
-    label[k].text = (unichar_t *) _STR_KernOffset;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Kern Offset:");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 30; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+30;
     gcd[k].gd.flags = gg_visible|gg_enabled ;
@@ -2015,8 +2017,8 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class) {
     gcd[k++].creator = GTextFieldCreate;
 
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
-    label[k].text = (unichar_t *) _STR_DevTabCorrection;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Device Table Correction:");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 185; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y;
     gcd[k].gd.flags = gg_visible|gg_enabled ;
@@ -2038,8 +2040,8 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class) {
     if ( !for_class ) {
 	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = -40;
 	gcd[k].gd.flags = gg_enabled ;
-	label[k].text = (unichar_t *) _STR_RightToLeft;
-	label[k].text_in_resource = true;
+	label[k].text = (unichar_t *) _("Right To Left");
+	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.cid = CID_R2L;
 	gcd[k++].creator = GCheckBoxCreate;
@@ -2053,7 +2055,8 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class) {
 	gcd[k++].creator = GListButtonCreate;
     }
 
-    label[k].text = (unichar_t *) (for_class ? _STR_PrevArrow : _STR_OK);
+    label[k].text = (unichar_t *) (for_class ? _("< _Prev") : _("_OK"));
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 30; gcd[k].gd.pos.y = KC_Height-KC_CANCELDROP;
@@ -2064,7 +2067,8 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class) {
     gcd[k].gd.cid = CID_Prev2;
     gcd[k++].creator = GButtonCreate;
 
-    label[k].text = (unichar_t *) (for_class ? _STR_NextArrow : _STR_Cancel);
+    label[k].text = (unichar_t *) (for_class ? _("_Next >") : _("_Cancel"));
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = -30+3; gcd[k].gd.pos.y = KC_Height-KC_CANCELDROP;
@@ -2137,16 +2141,12 @@ return;
     memset(&gcd,0,sizeof(gcd));
     memset(&label,0,sizeof(label));
 
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = false;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource( _STR_KernClass,NULL );
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title =  _("Kerning Class");
-#endif
+    wattrs.utf8_window_title =  _("Kerning Class");
     wattrs.is_dlg = false;
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,KC_Width));
@@ -2171,32 +2171,32 @@ return;
 
     gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+28;
     gcd[i].gd.flags = gg_visible | gg_enabled | (kc!=NULL && (kc->flags&pst_r2l)?gg_cb_on:0);
-    label[i].text = (unichar_t *) _STR_RightToLeft;
-    label[i].text_in_resource = true;
+    label[i].text = (unichar_t *) _("Right To Left");
+    label[i].text_is_1byte = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.cid = CID_R2L;
     gcd[i++].creator = GCheckBoxCreate;
 
     gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+15;
     gcd[i].gd.flags = gg_visible | gg_enabled | (kc!=NULL && (kc->flags&pst_ignorebaseglyphs)?gg_cb_on:0);
-    label[i].text = (unichar_t *) _STR_IgnoreBaseGlyphs;
-    label[i].text_in_resource = true;
+    label[i].text = (unichar_t *) _("Ignore Base Glyphs");
+    label[i].text_is_1byte = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.cid = CID_IgnBase;
     gcd[i++].creator = GCheckBoxCreate;
 
     gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+15;
     gcd[i].gd.flags = gg_visible | gg_enabled | (kc!=NULL && (kc->flags&pst_ignoreligatures)?gg_cb_on:0);
-    label[i].text = (unichar_t *) _STR_IgnoreLigatures;
-    label[i].text_in_resource = true;
+    label[i].text = (unichar_t *) _("Ignore Ligatures");
+    label[i].text_is_1byte = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.cid = CID_IgnLig;
     gcd[i++].creator = GCheckBoxCreate;
 
     gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+15;
     gcd[i].gd.flags = gg_visible | gg_enabled | (kc!=NULL && (kc->flags&pst_ignorecombiningmarks)?gg_cb_on:0);
-    label[i].text = (unichar_t *) _STR_IgnoreCombiningMarks;
-    label[i].text_in_resource = true;
+    label[i].text = (unichar_t *) _("Ignore Combining Marks");
+    label[i].text_is_1byte = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.cid = CID_IgnMark;
     gcd[i++].creator = GCheckBoxCreate;
@@ -2242,7 +2242,8 @@ return;
     gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+24+3;
     gcd[i].gd.pos.width = -1;
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[i].text = (unichar_t *) _STR_OK;
+    label[i].text = (unichar_t *) _("_OK");
+    label[i].text_is_1byte = true;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.handle_controlevent = KC_OK;
@@ -2252,7 +2253,8 @@ return;
     gcd[i].gd.pos.x = -10; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+3;
     gcd[i].gd.pos.width = -1;
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[i].text = (unichar_t *) _STR_Cancel;
+    label[i].text = (unichar_t *) _("_Cancel");
+    label[i].text_is_1byte = true;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.handle_controlevent = KC_Cancel;
@@ -2286,11 +2288,7 @@ return;
 
     for ( i=0; i<2; ++i ) {
 	GGadget *list = GWidgetGetControl(kcd->gw,CID_ClassList+i*100);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GListAppendLine(list,GStringGetResource(_STR_EverythingElse,NULL),false);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	GListAppendLine(list,_("{Everything Else}"),false);
-#endif
+	GListAppendLine8(list,_("{Everything Else}"),false);
 	if ( kcd->orig!=NULL ) {
 	    for ( k=1; k<(&kcd->first_cnt)[i]; ++k ) {
 		unichar_t *temp = uc_copy((&kcd->orig->firsts)[i][k]);
@@ -2308,32 +2306,24 @@ return;
     memset(label,0,sizeof(label));
     k = 0;
 
-    label[k].text = (unichar_t *) _STR_Set;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Set");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = 5;
     gcd[k].gd.pos.width = -1;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[k].gd.popup_msg = GStringGetResource(_STR_SetGlyphsFromSelectionPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[k].gd.popup_msg = _("Set this glyph list to be the characters selected in the fontview");
-#endif
-    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Set this glyph list to be the characters selected in the fontview");
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     gcd[k].gd.handle_controlevent = KCD_FromSelection;
     gcd[k].gd.cid = CID_Set;
     gcd[k++].creator = GButtonCreate;
 
-    label[k].text = (unichar_t *) _STR_Select_nom;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Select");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 70; gcd[k].gd.pos.y = 5;
     gcd[k].gd.pos.width = -1;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[k].gd.popup_msg = GStringGetResource(_STR_SelectFromGlyphsPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[k].gd.popup_msg = _("Set the fontview's selection to be the characters named here");
-#endif
-    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Set the fontview's selection to be the characters named here");
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     gcd[k].gd.handle_controlevent = KCD_ToSelection;
     gcd[k].gd.cid = CID_Select;
     gcd[k++].creator = GButtonCreate;
@@ -2344,7 +2334,8 @@ return;
     gcd[k].gd.cid = CID_GlyphList;
     gcd[k++].creator = GTextAreaCreate;
 
-    label[k].text = (unichar_t *) _STR_PrevArrow;
+    label[k].text = (unichar_t *) _("< _Prev");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 30; gcd[k].gd.pos.y = KC_Height-KC_CANCELDROP;
@@ -2354,7 +2345,8 @@ return;
     gcd[k].gd.cid = CID_Prev;
     gcd[k++].creator = GButtonCreate;
 
-    label[k].text = (unichar_t *) _STR_NextArrow;
+    label[k].text = (unichar_t *) _("_Next >");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = -30+3; gcd[k].gd.pos.y = KC_Height-KC_CANCELDROP;
@@ -2538,16 +2530,12 @@ return;
     memset(&gcd,0,sizeof(gcd));
     memset(&label,0,sizeof(label));
 
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = false;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource( isv?_STR_VKernByClasses:_STR_KernByClasses,NULL );
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title =  isv?_("VKern By Classes...");
-#endif
+    wattrs.utf8_window_title =  isv?_("VKern By Classes..."):_("Kern By Classes...");
     wattrs.is_dlg = false;
     pos.x = pos.y = 0;
     temp = 40 + 300*GIntGetResource(_NUM_Buttonsize)/GGadgetScale(100);
@@ -2567,7 +2555,8 @@ return;
     gcd[1].gd.pos.x = 10; gcd[1].gd.pos.y = gcd[0].gd.pos.y+gcd[0].gd.pos.height+4;
     gcd[1].gd.pos.width = -1;
     gcd[1].gd.flags = gg_visible | gg_enabled;
-    label[1].text = (unichar_t *) _STR_NewDDD;
+    label[1].text = (unichar_t *) _("_New...");
+    label[1].text_is_1byte = true;
     label[1].text_in_resource = true;
     gcd[1].gd.label = &label[1];
     gcd[1].gd.cid = CID_New;
@@ -2577,7 +2566,8 @@ return;
     gcd[2].gd.pos.x = 20+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor); gcd[2].gd.pos.y = gcd[1].gd.pos.y;
     gcd[2].gd.pos.width = -1;
     gcd[2].gd.flags = gg_visible;
-    label[2].text = (unichar_t *) _STR_Delete;
+    label[2].text = (unichar_t *) _("_Delete");
+    label[2].text_is_1byte = true;
     label[2].text_in_resource = true;
     gcd[2].gd.label = &label[2];
     gcd[2].gd.cid = CID_Delete;
@@ -2587,7 +2577,8 @@ return;
     gcd[3].gd.pos.x = -10; gcd[3].gd.pos.y = gcd[1].gd.pos.y;
     gcd[3].gd.pos.width = -1;
     gcd[3].gd.flags = gg_visible;
-    label[3].text = (unichar_t *) _STR_EditDDD;
+    label[3].text = (unichar_t *) _("_Edit...");
+    label[3].text_is_1byte = true;
     label[3].text_in_resource = true;
     gcd[3].gd.label = &label[3];
     gcd[3].gd.cid = CID_Edit;
@@ -2602,7 +2593,8 @@ return;
     gcd[5].gd.pos.x = (kcl_width-GIntGetResource(_NUM_Buttonsize))/2; gcd[5].gd.pos.y = gcd[4].gd.pos.y+7;
     gcd[5].gd.pos.width = -1;
     gcd[5].gd.flags = gg_visible|gg_enabled|gg_but_default|gg_but_cancel;
-    label[5].text = (unichar_t *) _STR_Done;
+    label[5].text = (unichar_t *) _("_Done");
+    label[5].text_is_1byte = true;
     label[5].text_in_resource = true;
     gcd[5].gd.label = &label[5];
     gcd[5].gd.handle_controlevent = KCL_Done;
@@ -2675,12 +2667,12 @@ void KernPairD(SplineFont *sf,SplineChar *sc1,SplineChar *sc2,int isv) {
 
     memset(&wattrs,0,sizeof(wattrs));
 
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = true;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.window_title = GStringGetResource( _STR_KernPairCloseup,NULL );
+    wattrs.utf8_window_title = _("Kern Pair Closeup...");
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,KC_Width));
