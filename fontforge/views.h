@@ -711,7 +711,7 @@ extern void PasteAnchorClassMerge(SplineFont *sf,AnchorClass *into,AnchorClass *
 extern void PasteRemoveAnchorClass(SplineFont *sf,AnchorClass *dying);
 extern void PosSubCopy(enum possub_type type, char **data,SplineFont *sf);
 extern void CopyPSTStart(SplineFont *sf);
-extern void CopyPSTAppend(enum possub_type type, unichar_t *text );
+extern void CopyPSTAppend(enum possub_type type, char *text );
 extern void ClipboardClear(void);
 extern SplineSet *ClipBoardToSplineSet(void);
 extern void BCCopySelected(BDFChar *bc,int pixelsize,int depth);
@@ -804,13 +804,8 @@ extern int BitmapControl(FontView *fv,int32 *sizes,int isavail);
 extern void ScriptPrint(FontView *fv,int type,int32 *pointsizes,char *samplefile,
 	unichar_t *sample, char *outputfile);
 
-#if defined(FONTFORGE_CONFIG_GTK)
 extern char *Kern2Text(SplineChar *other,KernPair *kp,int isv);
 extern char *PST2Text(PST *pst,SplineFont *sf);
-#else
-extern unichar_t *Kern2Text(SplineChar *other,KernPair *kp,int isv);
-extern unichar_t *PST2Text(PST *pst,SplineFont *sf);
-#endif
 
 extern void DropChars2Text(GWindow gw, GGadget *glyphs,GEvent *event);
 
@@ -832,7 +827,7 @@ extern unichar_t *PrtBuildDef( SplineFont *sf, int istwobyte );
 
 extern unichar_t *ScriptLangLine(struct script_record *sr);
 extern int  SLICount(SplineFont *sf);
-extern unichar_t *ClassName(const unichar_t *name,uint32 feature_tag,
+extern unichar_t *ClassName(const char *name,uint32 feature_tag,
 	uint16 flags, int script_lang_index, int merge_with, int act_type,
 	int macfeature,SplineFont *sf);
 extern unichar_t *DecomposeClassName(const unichar_t *clsnm, unichar_t **name,
@@ -865,10 +860,11 @@ extern void MenuNew(GWindow gw,struct gmenuitem *mi,GEvent *e);
 extern void WindowMenuBuild(GWindow base,struct gmenuitem *mi,GEvent *,struct gmenuitem *);
 extern void MenuRecentBuild(GWindow base,struct gmenuitem *mi,GEvent *);
 extern void MenuScriptsBuild(GWindow base,struct gmenuitem *mi,GEvent *);
+extern void mbDoGetText(GMenuItem *mb);
 extern int RecentFilesAny(void);
 extern void _aplistbuild(struct gmenuitem *mi,SplineFont *sf,
 	void (*func)(GWindow,struct gmenuitem *,GEvent *));
-extern int32 *ParseBitmapSizes(GGadget *g,int msg,int *err);
+extern int32 *ParseBitmapSizes(GGadget *g,char *msg,int *err);
 extern GTextInfo *AnchorClassesList(SplineFont *sf);
 extern GTextInfo **AnchorClassesLList(SplineFont *sf);
 extern GTextInfo **AnchorClassesSimpleLList(SplineFont *sf);
@@ -876,7 +872,8 @@ extern GTextInfo *AddMacFeatures(GTextInfo *opentype,enum possub_type type,Splin
 #endif
 extern int SCAnyFeatures(SplineChar *sc);
 extern void SCCopyFeatures(SplineChar *sc);
-extern unichar_t *AskNameTag(int title,unichar_t *def,uint32 def_tag,uint16 flags,
+extern void CharInfoInit(void);
+extern unichar_t *AskNameTag(char *title,unichar_t *def,uint32 def_tag,uint16 flags,
 	int script_lang_index, enum possub_type type, SplineFont *sf, SplineChar *default_script,
 	int merge_with,int act_type);
 extern unichar_t *ShowScripts(unichar_t *usedef);
@@ -887,6 +884,8 @@ extern void GListDelSelected(GGadget *list);
 extern void GListMoveSelected(GGadget *list,int offset);
 extern GTextInfo *GListChangeLine(GGadget *list,int pos, const unichar_t *line);
 extern GTextInfo *GListAppendLine(GGadget *list,const unichar_t *line,int select);
+extern GTextInfo *GListChangeLine8(GGadget *list,int pos, const char *line);
+extern GTextInfo *GListAppendLine8(GGadget *list,const char *line,int select);
 extern void FontInfo(SplineFont *sf,int aspect,int sync);
 extern void FontInfoDestroy(FontView *fv);
 extern void FontMenuFontInfo(void *fv);
@@ -1090,7 +1089,7 @@ extern int  BVColor(BitmapView *bv);
 extern void BCSetPoint(BDFChar *bc, int x, int y, int color);
 extern void BCGeneralFunction(BitmapView *bv,
 	void (*SetPoint)(BitmapView *,int x, int y, void *data),void *data);
-extern int BVFlipNames[];
+extern char *BVFlipNames[];
 extern void BVChangeBC(BitmapView *bv, BDFChar *bc, int fitit );
 extern void BVChar(BitmapView *cv, GEvent *event );
 
@@ -1120,8 +1119,8 @@ extern void Prefs_ReplaceMacFeatures(GGadget *list);
 extern void SCAutoTrace(SplineChar *sc,GWindow v,int ask);
 #endif
 
-extern unichar_t *FVOpenFont(const unichar_t *title, const unichar_t *defaultfile,
-	const unichar_t *initial_filter, unichar_t **mimetypes,int mult,int newok);
+extern unichar_t *FVOpenFont(char *title, const char *defaultfile,
+	const char *initial_filter, unichar_t **mimetypes,int mult,int newok);
 
 extern void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv);
 
@@ -1167,7 +1166,7 @@ extern void SVDetachFV(FontView *fv);
 extern void ShowAtt(SplineFont *sf);
 extern void SFShowKernPairs(SplineFont *sf,SplineChar *sc,AnchorClass *ac);
 extern void SFShowLigatures(SplineFont *sf,SplineChar *sc);
-extern unichar_t *TagFullName(SplineFont *sf,uint32 tag, int ismac);
+extern char *TagFullName(SplineFont *sf,uint32 tag, int ismac);
 
 extern void SCEditInstructions(SplineChar *sc);
 extern void SFEditTable(SplineFont *sf, uint32 tag);
@@ -1206,12 +1205,8 @@ extern GTextInfo **SFGenTagListFromType(struct gentagtype *gentags,enum possub_t
 extern struct contextchaindlg *ContextChainEdit(SplineFont *sf,FPST *fpst,
 	struct gfi_data *gfi,unichar_t *newname);
 extern void CCD_Close(struct contextchaindlg *ccd);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-extern int CCD_NameListCheck(SplineFont *sf,const unichar_t *ret,int empty_bad,int title);
-#elif defined(FONTFORGE_CONFIG_GTK)
 extern int CCD_NameListCheck(SplineFont *sf,const char *ret,int empty_bad,char *title);
-#endif
-extern int CCD_InvalidClassList(const unichar_t *ret,GGadget *list,int wasedit);
+extern int CCD_InvalidClassList(char *ret,GGadget *list,int wasedit);
 extern char *cu_copybetween(const unichar_t *start, const unichar_t *end);
 
 extern struct statemachinedlg *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d);
