@@ -321,7 +321,7 @@ cp Makefile.static.in Makefile.in
 cp Unicode/Makefile.static.in Unicode/Makefile.in
 cp gdraw/Makefile.static.in gdraw/Makefile.in
 cp fontforge/Makefile.static.in fontforge/Makefile.in
-AC_OUTPUT(Makefile Unicode/Makefile gdraw/Makefile fontforge/Makefile)
+AC_OUTPUT(Makefile Unicode/Makefile gdraw/Makefile fontforge/Makefile po/Makefile)
 if test -e umap >/dev/null 2>&1 ; then
   cp umap/Makefile.static.in umap/Makefile.in
   AC_OUTPUT( umap/Makefile )

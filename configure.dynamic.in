@@ -293,8 +293,8 @@ AC_TRY_COMPILE(,[long long foo=0x400000000000;],[ AC_DEFINE(_HAS_LONGLONG)
 
 dnl mac's don't have gettext, people have to use fink to install it
 
-#gww_has_gettext="yes"
-#AC_CHECK_HEADERS([libintl.h], : , gww_has_gettext="no")
+gww_has_gettext="yes"
+AC_CHECK_HEADERS([libintl.h], : , gww_has_gettext="no")
 
 gww_regular_link="no"
 AC_ARG_WITH(regular-link,
@@ -342,7 +342,7 @@ if test "$gww_nodynamic" = "yes" -o "$gww_regular_link" = "yes"; then
    AC_DEFINE(_STATIC_LIBUNINAMESLIST) ] , AC_DEFINE(_NO_LIBUNINAMESLIST))
 fi
 
-#AC_CHECK_LIB(intl, gettext, STATIC_LIBS="$STATIC_LIBS -lintl" ,HAVE_LIBINTL_H=0 )
+AC_CHECK_LIB(intl, gettext, STATIC_LIBS="$STATIC_LIBS -lintl" ,HAVE_LIBINTL_H=0 )
 
 if test "$gww_needsstaticimages" = "yes" -a "$gww_regular_link" = "no"; then
  if test "$gww_needsstatic" = "yes"; then
@@ -454,7 +454,7 @@ cp Makefile.dynamic.in Makefile.in
 cp Unicode/Makefile.dynamic.in Unicode/Makefile.in
 cp gdraw/Makefile.dynamic.in gdraw/Makefile.in
 cp fontforge/Makefile.dynamic.in fontforge/Makefile.in
-AC_OUTPUT(Makefile Unicode/Makefile gdraw/Makefile fontforge/Makefile)
+AC_OUTPUT(Makefile Unicode/Makefile gdraw/Makefile fontforge/Makefile po/Makefile)
 if test -e umap >/dev/null 2>&1 ; then
   cp umap/Makefile.dynamic.in umap/Makefile.in
   AC_OUTPUT( umap/Makefile )
