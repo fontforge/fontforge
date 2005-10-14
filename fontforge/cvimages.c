@@ -121,16 +121,12 @@ enum psstrokeflags PsStrokeFlagsDlg(void) {
 return( oldflags );
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(_STR_PSInterpretation,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = _("PS Interpretion");
-#endif
+    wattrs.utf8_window_title = _("PS Interpretion");
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,PSSF_Width));
@@ -141,43 +137,44 @@ return( oldflags );
     memset(&gcd,0,sizeof(gcd));
 
     k = 0;
-    label[k].text = (unichar_t *) _STR_RmOverlapBuggy1;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("FontForge has some bugs in its remove overlap");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = 6;
     gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k++].creator = GLabelCreate;
 
-    label[k].text = (unichar_t *) _STR_RmOverlapBuggy2;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("function which may cause you problems, so");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+13;
     gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k++].creator = GLabelCreate;
 
-    label[k].text = (unichar_t *) _STR_RmOverlapBuggy3;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("I give you the option of turning it off.");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+13;
     gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k++].creator = GLabelCreate;
 
-    label[k].text = (unichar_t *) _STR_RmOverlapBuggy4;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Leave it on if possible though, it is useful.");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+13;
     gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k++].creator = GLabelCreate;
 
-    label[k].text = (unichar_t *) _STR_RmOverlapBuggy5;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) "";
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+13;
     gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k++].creator = GLabelCreate;
 
     cd_k = k;
-    label[k].text = (unichar_t *) _STR_Correct;
+    label[k].text = (unichar_t *) _("_Correct Direction");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+15;
@@ -185,35 +182,30 @@ return( oldflags );
     gcd[k++].creator = GCheckBoxCreate;
 
     rm_k = k;
-    label[k].text = (unichar_t *) _STR_CleanupSelfIntersect;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Cleanup Self Intersect");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+15;
-    gcd[k].gd.flags = gg_enabled | gg_visible | (oldflags&sf_removeoverlap?gg_cb_on:0);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[k].gd.popup_msg = GStringGetResource(_STR_CleanupSelfIntersectPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[k].gd.popup_msg = _("When FontForge detects that an expanded stroke will self-intersect,\nthen setting this option will cause it to try to make things nice\nby removing the intersections");
-#endif
+    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup |
+	    (oldflags&sf_removeoverlap?gg_cb_on:0);
+    gcd[k].gd.popup_msg = (unichar_t *) _("When FontForge detects that an expanded stroke will self-intersect,\nthen setting this option will cause it to try to make things nice\nby removing the intersections");
     gcd[k++].creator = GCheckBoxCreate;
 
     he_k = k;
-    label[k].text = (unichar_t *) _STR_HandleErasers;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Handle Erasers");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+15;
-    gcd[k].gd.flags = gg_enabled | gg_visible | (oldflags&sf_handle_eraser?gg_cb_on:0);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[k].gd.popup_msg = GStringGetResource(_STR_HandleErasersPop,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[k].gd.popup_msg = _("Certain programs use pens with white ink as erasers\nIf you select (blacken) this checkbox, FontForge will\nattempt to simulate that.");
-#endif
+    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup |
+	    (oldflags&sf_handle_eraser?gg_cb_on:0);
+    gcd[k].gd.popup_msg = (unichar_t *) _("Certain programs use pens with white ink as erasers\nIf you select (blacken) this checkbox, FontForge will\nattempt to simulate that.");
     gcd[k++].creator = GCheckBoxCreate;
 
     gcd[k].gd.pos.x = (PSSF_Width-GIntGetResource(_NUM_Buttonsize))/2; gcd[k].gd.pos.y = PSSF_Height-34;
     gcd[k].gd.pos.width = -1;
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[k].text = (unichar_t *) _STR_OK;
+    label[k].text = (unichar_t *) _("_OK");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.handle_controlevent = PSSF_OK;
@@ -327,7 +319,7 @@ return;
 #if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Too Complex or Bad"),_("I'm sorry this file is too complex for me to understand (or is erroneous)"));
 #else
-	    GWidgetErrorR( _STR_TooComplex, _STR_TooComplexLong );
+	    gwwv_post_error( _("Too Complex or Bad"), _("I'm sorry this file is too complex for me to understand (or is erroneous, or is empty)") );
 #endif
 return;
 	}
@@ -391,7 +383,7 @@ void SCImportSVG(SplineChar *sc,int layer,char *path,int doclear) {
 #if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Too Complex or Bad"),_("I'm sorry this file is too complex for me to understand (or is erroneous)"));
 #else
-	    GWidgetErrorR( _STR_TooComplex, _STR_TooComplexLong );
+	    gwwv_post_error( _("Too Complex or Bad"), _("I'm sorry this file is too complex for me to understand (or is erroneous, or is empty)") );
 #endif
 return;
 	}
@@ -887,7 +879,7 @@ static void ImportFig(CharView *cv,char *path) {
     fig = fopen(path,"r");
     if ( fig==NULL ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_CantFindFile,_STR_CantFindFile);
+	gwwv_post_error(_("Can't find the file"),_("Can't find the file"));
 #elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Can't find the file"),_("Can't find the file"));
 #endif
@@ -895,7 +887,7 @@ return;
     }
     if ( fgets(buffer,sizeof(buffer),fig)==NULL || strcmp(buffer,"#FIG 3.2\n")!=0 ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_BadXFigFile,_STR_BadXFigFile);
+	gwwv_post_error(_("Bad xfig file"),_("Bad xfig file"));
 #elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad xfig file"),_("Bad xfig file"));
 #endif
@@ -1009,7 +1001,7 @@ static void ImportImage(CharView *cv,char *path) {
     image = GImageRead(path);
     if ( image==NULL ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileName, path);
+	gwwv_post_error(_("Bad image file"),_("Bad image file: %.100s"), path);
 #elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad image file"),_("Bad image file: %.100s"), path);
 #endif
@@ -1032,7 +1024,7 @@ static int BVImportImage(BitmapView *bv,char *path) {
     image = GImageRead(path);
     if ( image==NULL ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileName, path);
+	gwwv_post_error(_("Bad image file"),_("Bad image file: %.100s"), path);
 #elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad image file"),_("Bad image file: %.100s"), path);
 #endif
@@ -1122,7 +1114,7 @@ int FVImportImages(FontView *fv,char *path,int format,int toback, int flags) {
 	    image = GImageRead(start);
 	    if ( image==NULL ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileName,start);
+		gwwv_post_error(_("Bad image file"),_("Bad image file: %.100s"),start);
 #elif defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Bad image file"),_("Bad image file: %.100s"),start);
 #endif
@@ -1132,7 +1124,7 @@ return(false);
 	    base = image->list_len==0?image->u.image:image->u.images[0];
 	    if ( base->image_type!=it_mono ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileNotBitmap,start);
+		gwwv_post_error(_("Bad image file"),_("Bad image file, not a bitmap: %.100s"),start);
 #elif defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Bad image file"),_("Bad image file, not a bitmap: %.100s"),start);
 #endif
@@ -1163,13 +1155,13 @@ return(false);
 #if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Nothing Selected"),_("You must select a glyph before you can import an image into it"));
 #else
-	GWidgetErrorR(_STR_NothingSelected,_STR_NoGlyphSelectedForImport);
+	gwwv_post_error(_("Nothing Selected"),_("You must select a glyph before you can import an image into it"));
 #endif
     else if ( endpath!=NULL )
 #if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("More Images Than Selected Characters"),_("More Images Than Selected Characters"));
 #else
-	GWidgetErrorR(_STR_MoreImagesThanSelected,_STR_MoreImagesThanSelected);
+	gwwv_post_error(_("More Images Than Selected Glyphs"),_("More Images Than Selected Glyphs"));
 #endif
 return( true );
 }
@@ -1190,7 +1182,7 @@ int FVImportImageTemplate(FontView *fv,char *path,int format,int toback, int fla
     name = strrchr(path,'/');
     if ( ext==NULL ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_BadTemplate,_STR_BadTemplateNoExtension);
+	gwwv_post_error(_("Bad Template"),_("Bad template, no extension"));
 #elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad Template"),_("Bad template, no extension"));
 #endif
@@ -1202,7 +1194,7 @@ return( false );
     else if ( name[1]=='e' ) ise = true;
     else {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_BadTemplate,_STR_BadTemplateUnrecognized);
+	gwwv_post_error(_("Bad Template"),_("Bad template, unrecognized format"));
 #elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad Template"),_("Bad template, unrecognized format"));
 #endif
@@ -1217,7 +1209,7 @@ return( false );
 
     if ( (dir = opendir(dirname))==NULL ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_NothingLoaded,_STR_NothingLoaded);
+	    gwwv_post_error(_("Nothing Loaded"),_("Nothing Loaded"));
 #elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Nothing Loaded"),_("Nothing Loaded"));
 #endif
@@ -1242,7 +1234,7 @@ return( false );
 	    i = SFFindSlot(fv->sf,fv->map,val,NULL);
 	    if ( i==-1 ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_UnicodeNotInFont,_STR_UnicodeValueNotInFont,val);
+		gwwv_post_error(_("Unicode value not in font"),_("Unicode value (%x) not in font, ignored"),val);
 #elif defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Unicode value not in font"),_("Unicode value (%x) not in font, ignored"),val);
 #endif
@@ -1254,7 +1246,7 @@ return( false );
 		/* It's there */;
 	    } else {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_EncodingNotInFont,_STR_EncodingValueNotInFont,val);
+		gwwv_post_error(_("Encoding value not in font"),_("Encoding value (%x) not in font, ignored"),val);
 #elif defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Encoding value not in font"),_("Encoding value (%x) not in font, ignored"),val);
 #endif
@@ -1266,7 +1258,7 @@ return( false );
 	    image = GImageRead(start);
 	    if ( image==NULL ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileName,start);
+		gwwv_post_error(_("Bad image file"),_("Bad image file: %.100s"),start);
 #elif defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Bad image file"),_("Bad image file: %.100s"),start);
 #endif
@@ -1275,7 +1267,7 @@ return( false );
 	    base = image->list_len==0?image->u.image:image->u.images[0];
 	    if ( base->image_type!=it_mono ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_BadImageFile,_STR_BadImageFileNotBitmap,start);
+		gwwv_post_error(_("Bad image file"),_("Bad image file, not a bitmap: %.100s"),start);
 #elif defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Bad image file"),_("Bad image file, not a bitmap: %.100s"),start);
 #endif
@@ -1302,7 +1294,7 @@ return( false );
 #if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Nothing Loaded"),_("Nothing Loaded"));
 #else
-	GWidgetErrorR(_STR_NothingLoaded,_STR_NothingLoaded);
+	gwwv_post_error(_("Nothing Loaded"),_("Nothing Loaded"));
 #endif
 return( true );
 }
@@ -1323,29 +1315,29 @@ struct gfc_data {
 };
 
 static GTextInfo formats[] = {
-    { (unichar_t *) _STR_Image, NULL, 0, 0, (void *) fv_image, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "EPS", NULL, 0, 0, (void *) fv_eps, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Image"), NULL, 0, 0, (void *) fv_image, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("EPS"), NULL, 0, 0, (void *) fv_eps, 0, 0, 0, 0, 0, 0, 0, 1 },
 #ifndef _NO_LIBXML
-    { (unichar_t *) "SVG", NULL, 0, 0, (void *) fv_svg, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("SVG"), NULL, 0, 0, (void *) fv_svg, 0, 0, 0, 0, 0, 0, 0, 1 },
 #endif
-    { (unichar_t *) "XFig", NULL, 0, 0, (void *) fv_fig, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("XFig"), NULL, 0, 0, (void *) fv_fig, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }};
 
 static GTextInfo fvformats[] = {
-    { (unichar_t *) "BDF", NULL, 0, 0, (void *) fv_bdf, 0, 0, 0, 0, 0, 1, 0, 1 },
-    { (unichar_t *) "TTF", NULL, 0, 0, (void *) fv_ttf, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) _STR_TeXBitmap, NULL, 0, 0, (void *) fv_pk, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "PCF", NULL, 0, 0, (void *) fv_pcf, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) _STR_MacBitmap, NULL, 0, 0, (void *) fv_mac, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "Win FON", NULL, 0, 0, (void *) fv_win, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "palm", NULL, 0, 0, (void *) fv_palm, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) _STR_Image, NULL, 0, 0, (void *) fv_image, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) _STR_Template, NULL, 0, 0, (void *) fv_imgtemplate, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "EPS", NULL, 0, 0, (void *) fv_eps, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) _STR_EPSTemplate, NULL, 0, 0, (void *) fv_epstemplate, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("BDF"), NULL, 0, 0, (void *) fv_bdf, 0, 0, 0, 0, 0, 1, 0, 1 },
+    { (unichar_t *) N_("TTF"), NULL, 0, 0, (void *) fv_ttf, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("TeX Bitmap"), NULL, 0, 0, (void *) fv_pk, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("PCF"), NULL, 0, 0, (void *) fv_pcf, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Mac Bitmap"), NULL, 0, 0, (void *) fv_mac, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Win FON"), NULL, 0, 0, (void *) fv_win, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("palm"), NULL, 0, 0, (void *) fv_palm, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Image"), NULL, 0, 0, (void *) fv_image, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Image Template"), NULL, 0, 0, (void *) fv_imgtemplate, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("EPS"), NULL, 0, 0, (void *) fv_eps, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("EPS Template"), NULL, 0, 0, (void *) fv_epstemplate, 0, 0, 0, 0, 0, 0, 0, 1 },
 #ifndef _NO_LIBXML
-    { (unichar_t *) "SVG", NULL, 0, 0, (void *) fv_svg, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) _STR_SVGTemplate, NULL, 0, 0, (void *) fv_svgtemplate, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("SVG"), NULL, 0, 0, (void *) fv_svg, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("SVG Template"), NULL, 0, 0, (void *) fv_svgtemplate, 0, 0, 0, 0, 0, 0, 0, 1 },
 #endif
     { NULL }};
 
@@ -1371,7 +1363,7 @@ return( true );
 	    int toback = GGadgetIsChecked(d->background);
 	    if ( toback && strchr(temp,';')!=NULL && format<3 )
 #if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_OnlyOneFont,_STR_OnlyOneFontBackground);
+		gwwv_post_error(_("Only One Font"),_("Only one font may be imported into the background"));
 #elif defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Only One Font"),_("Only one font may be imported into the background"));
 #endif
@@ -1492,18 +1484,23 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
     struct gfc_data d;
     int i, format;
     int bs = GIntGetResource(_NUM_Buttonsize), bsbigger, totwid, scalewid;
+    static int done= false;
+
+    if ( !done ) {
+	for ( i=0; formats[i].text!=NULL; ++i )
+	    formats[i].text = (unichar_t *) _((char *) formats[i].text);
+	for ( i=0; fvformats[i].text!=NULL; ++i )
+	    fvformats[i].text = (unichar_t *) _((char *) fvformats[i].text);
+	done = true;
+    }
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(_STR_Import,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = _("Import...");
-#endif
+    wattrs.utf8_window_title = _("Import...");
     pos.x = pos.y = 0;
     totwid = 223;
     if ( fv!=NULL ) totwid += 60;
@@ -1523,7 +1520,8 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
 
     gcd[1].gd.pos.x = 12; gcd[1].gd.pos.y = 224-3; gcd[1].gd.pos.width = -1; gcd[1].gd.pos.height = 0;
     gcd[1].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[1].text = (unichar_t *) _STR_Import;
+    label[1].text = (unichar_t *) _("_Import...");
+    label[1].text_is_1byte = true;
     label[1].text_in_resource = true;
     gcd[1].gd.label = &label[1];
     gcd[1].gd.handle_controlevent = GFD_ImportOk;
@@ -1531,7 +1529,8 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
 
     gcd[2].gd.pos.x = (totwid-bs)*100/GIntGetResource(_NUM_ScaleFactor)/2; gcd[2].gd.pos.y = 224; gcd[2].gd.pos.width = -1; gcd[2].gd.pos.height = 0;
     gcd[2].gd.flags = gg_visible | gg_enabled;
-    label[2].text = (unichar_t *) _STR_Filter;
+    label[2].text = (unichar_t *) _("_Filter");
+    label[2].text_is_1byte = true;
     label[2].text_in_resource = true;
     gcd[2].gd.mnemonic = 'F';
     gcd[2].gd.label = &label[2];
@@ -1540,7 +1539,8 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
 
     gcd[3].gd.pos.x = -gcd[1].gd.pos.x; gcd[3].gd.pos.y = 224; gcd[3].gd.pos.width = -1; gcd[3].gd.pos.height = 0;
     gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[3].text = (unichar_t *) _STR_Cancel;
+    label[3].text = (unichar_t *) _("_Cancel");
+    label[3].text_is_1byte = true;
     label[3].text_in_resource = true;
     gcd[3].gd.label = &label[3];
     gcd[3].gd.handle_controlevent = GFD_Cancel;
@@ -1548,8 +1548,8 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
 
     gcd[4].gd.pos.x = 12; gcd[4].gd.pos.y = 200; gcd[4].gd.pos.width = 0; gcd[4].gd.pos.height = 0;
     gcd[4].gd.flags = gg_visible | gg_enabled;
-    label[4].text = (unichar_t *) _STR_Format;
-    label[4].text_in_resource = true;
+    label[4].text = (unichar_t *) _("Format:");
+    label[4].text_is_1byte = true;
     gcd[4].gd.label = &label[4];
     gcd[4].creator = GLabelCreate;
 
@@ -1580,8 +1580,8 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
 	else if ( format==fv_image || format==fv_imgtemplate )
 	    gcd[6].gd.flags = gg_visible | gg_cb_on;
 #endif
-	label[6].text = (unichar_t *) _STR_AsBackground;
-	label[6].text_in_resource = true;
+	label[6].text = (unichar_t *) _("As Background");
+	label[6].text_is_1byte = true;
 	gcd[6].gd.label = &label[6];
 	gcd[6].creator = GCheckBoxCreate;
     }

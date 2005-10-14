@@ -501,24 +501,15 @@ void ParseEncodingFile(char *filename) {
     FILE *file;
     char *orig = filename;
     Encoding *head, *item, *prev, *next;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    unichar_t ubuf[100];
-    unichar_t *name;
-#elif defined(FONTFORGE_CONFIG_GTK)
     char buf[300];
     char *name;
-#endif
     int i,ch;
 
     if ( filename==NULL ) filename = getPfaEditEncodings();
     file = fopen(filename,"r");
     if ( file==NULL ) {
 	if ( orig!=NULL )
-#if defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_error(_("Missing encoding file"),_("Couldn't open encoding file: %s"), orig );
-#else
-	    GWidgetErrorR(_STR_CouldNotOpenFile, _STR_CouldNotOpenFileName, orig);
-#endif
+	    gwwv_post_error(_("Couldn't open file"), _("Couldn't open file %.200s"), orig);
 return;
     }
     ch = getc(file);
@@ -529,11 +520,7 @@ return;
 	head = PSSlurpEncodings(file);
     fclose(file);
     if ( head==NULL ) {
-#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad encoding file format"),_("Bad encoding file format") );
-#else
-	GWidgetErrorR(_STR_BadEncFormat,_STR_BadEncFormat );
-#endif
 return;
     }
 
@@ -541,28 +528,12 @@ return;
 	next = item->next;
 	if ( item->enc_name==NULL ) {
 	    if ( no_windowing_ui ) {
-		GWidgetErrorR(_STR_BadEncFormat,_STR_UnnamableEncoding);
+		gwwv_post_error(_("Bad encoding file format"),_("This file contains an unnamed encoding, which cannot be named in a script"));
 return;
 	    }
-#if defined(FONTFORGE_CONFIG_GDRAW)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	    if ( item==head && item->next==NULL )
-		u_strcpy(ubuf,GStringGetResource(_STR_PleaseNameEnc,NULL) );
-	    else {
-		if ( i<=3 )
-		    u_snprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),
-			    GStringGetResource(_STR_PleaseNameEncNamed,NULL),
-			    i==1 ? GStringGetResource(_STR_First,NULL) :
-			    i==2 ? GStringGetResource(_STR_Second,NULL) :
-				    GStringGetResource(_STR_Third,NULL) );
-		else
-		    u_snprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),
-			    GStringGetResource(_STR_PleaseNameEncNumeric,NULL),
-			    i );
-	    }
-	    name = GWidgetAskString(ubuf,NULL,ubuf);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    if ( item==head && item->next==NULL )
-		u_strcpy(buf,_("Please name this encoding") );
+		strcpy(buf,_("Please name this encoding"));
 	    else {
 # if defined( _NO_SNPRINTF ) || defined( __VMS )
 		if ( i<=3 )
@@ -572,16 +543,13 @@ return;
 			    i==2 ? _("Second") :
 				    _("Third") );
 		else
-		    sprintf(buf,sizeof(buf),
-			    _("Please name the %dth encoding in this file"),
+		    sprintf(buf, _("Please name the %dth encoding in this file"),
 			    i );
 # else
 		if ( i<=3 )
-		    snprintf(buf,
+		    snprintf(buf,sizeof(buf),
 			    _("Please name the %s encoding in this file"),
-			    i==1 ? _("First") :
-			    i==2 ? _("Second") :
-				    _("Third") );
+			    i==1 ? _("_First") : i==2 ? _("Second") : _("Third") );
 		else
 		    snprintf(buf,sizeof(buf),
 			    _("Please name the %dth encoding in this file"),
@@ -589,10 +557,8 @@ return;
 # endif
 	    }
 	    name = gwwv_ask_string(buf,NULL,buf);
-#endif
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	    if ( name!=NULL ) {
-		item->enc_name = cu_copy(name);
+		item->enc_name = copy(name);
 		free(name);
 	    } else {
 		if ( prev==NULL )
@@ -632,7 +598,7 @@ return;
 
     file = fopen( getPfaEditEncodings(), "w");
     if ( file==NULL ) {
-	LogError( "couldn't write encodings file\n" );
+	LogError( _("couldn't write encodings file\n") );
 return;
     }
 
@@ -776,16 +742,12 @@ return;
     memset(&gcd,0,sizeof(gcd));
     memset(&label,0,sizeof(label));
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(_STR_RemoveEncoding,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = _("Remove Encoding");
-#endif
+    wattrs.utf8_window_title = _("Remove Encoding");
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,150));
     pos.height = GDrawPointsToPixels(NULL,110);
@@ -802,7 +764,8 @@ return;
     gcd[2].gd.pos.x = -10; gcd[2].gd.pos.y = gcd[0].gd.pos.y+gcd[0].gd.pos.height+5;
     gcd[2].gd.pos.width = -1; gcd[2].gd.pos.height = 0;
     gcd[2].gd.flags = gg_visible | gg_enabled | gg_but_cancel ;
-    label[2].text = (unichar_t *) _STR_Cancel;
+    label[2].text = (unichar_t *) _("_Cancel");
+    label[2].text_is_1byte = true;
     label[2].text_in_resource = true;
     gcd[2].gd.label = &label[2];
     gcd[2].gd.mnemonic = 'C';
@@ -812,7 +775,8 @@ return;
     gcd[1].gd.pos.x = 10-3; gcd[1].gd.pos.y = gcd[2].gd.pos.y-3;
     gcd[1].gd.pos.width = -1; gcd[1].gd.pos.height = 0;
     gcd[1].gd.flags = gg_visible | gg_enabled | gg_but_default ;
-    label[1].text = (unichar_t *) _STR_Delete;
+    label[1].text = (unichar_t *) _("_Delete");
+    label[1].text_is_1byte = true;
     label[1].text_in_resource = true;
     gcd[1].gd.mnemonic = 'D';
     gcd[1].gd.label = &label[1];
@@ -835,7 +799,7 @@ return;
 }
 
 Encoding *MakeEncoding(SplineFont *sf,EncMap *map) {
-    unichar_t *name;
+    char *name;
     int i, gid;
     Encoding *item, *temp;
     SplineChar *sc;
@@ -843,13 +807,12 @@ Encoding *MakeEncoding(SplineFont *sf,EncMap *map) {
     if ( map->enc!=&custom )
 return(NULL);
 
-    name = GWidgetAskStringR(_STR_PleaseNameEnc,NULL,_STR_PleaseNameEnc);
+    name = gwwv_ask_string(_("Please name this encoding"),NULL,_("Please name this encoding"));
     if ( name==NULL )
 return(NULL);
     item = gcalloc(1,sizeof(Encoding));
-    item->enc_name = cu_copy(name);
+    item->enc_name = name;
     item->only_1byte = item->has_1byte = true;
-    free(name);
     item->char_cnt = map->enccount;
     item->unicode = gcalloc(map->enccount,sizeof(int32));
     for ( i=0; i<map->enccount; ++i ) if ( (gid = map->map[i])!=-1 && (sc=sf->glyphs[gid])!=NULL ) {
@@ -874,23 +837,19 @@ return( item );
 }
 
 void LoadEncodingFile(void) {
-    static unichar_t filter[] = { '*','.','{','p','s',',','P','S',',','t','x','t',',','T','X','T',',','e','n','c',',','E','N','C','}',  '\0' };
-    unichar_t *fn;
+    static char filter[] = "*.{ps,PS,txt,TXT,enc,ENC}";
+    char *fn;
     char *filename;
 
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    fn = GWidgetOpenFile(GStringGetResource(_STR_LoadEncoding,NULL), NULL, filter, NULL,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    fn = GWidgetOpenFile(_("Load Encoding"), NULL, filter, NULL,NULL);
+    fn = gwwv_open_filename(_("Load Encoding"), NULL, filter, NULL,NULL);
 #endif
     if ( fn==NULL )
 return;
-    filename = u2def_copy(fn);
+    filename = utf82def_copy(fn);
     ParseEncodingFile(filename);
     free(fn); free(filename);
     DumpPfaEditEncodings();
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 void SFFindNearTop(SplineFont *sf) {
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -1173,7 +1132,7 @@ static struct cidmap *LoadMapFromFile(char *file,char *registry,char *ordering,
 #if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Missing cidmap file"),_("Couldn't open cidmap file: %s"), file );
 #else
-	GWidgetErrorR(_STR_CouldNotOpenFile, _STR_CouldNotOpenFileName, file);
+	gwwv_post_error(_("Couldn't open file"), _("Couldn't open file %.200s"), file);
 #endif
 	ret->cidmax = ret->namemax = 0;
 	ret->unicode = NULL; ret->name = NULL;
@@ -1182,7 +1141,7 @@ static struct cidmap *LoadMapFromFile(char *file,char *registry,char *ordering,
 	gwwv_post_error(_("Bad cidmap file"),_("%s is not a cidmap file, please download\nhttp://fontforge.sourceforge.net/cidmaps.tgz"), file );
 	fprintf( stderr, _("%s is not a cidmap file, please download\nhttp://fontforge.sourceforge.net/cidmaps.tgz"), file );
 #else
-	GWidgetErrorR(_STR_BadCidmap, _STR_BadCidmapLong, file);
+	gwwv_post_error(_("Bad Cidmap File"), _("%s is not a cidmap file, please download\nhttp://fontforge.sourceforge.net/cidmaps.tgz"), file);
 	fprintf( stderr, "%s is not a cidmap file, please download\nhttp://fontforge.sourceforge.net/cidmaps.tgz", file );
 #endif
 	ret->cidmax = ret->namemax = 0;
@@ -1217,15 +1176,8 @@ struct cidmap *FindCidMap(char *registry,char *ordering,int supplement,SplineFon
     struct cidmap *map, *maybe=NULL;
     char *file, *maybefile=NULL;
     int maybe_sup = -1;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    static int buts[] = { _STR_UseIt, _STR_Search, 0 };
-    static int buts2[] = { _STR_UseIt, _STR_GiveUp, 0 };
-    static int buts3[] = { _STR_Browse, _STR_GiveUp, 0 };
-    unichar_t ubuf[100]; char buf[100];
-#elif defined(FONTFORGE_CONFIG_GTK)
-    char *buts[3], *buts2[3], *buts[3];
-    unichar_t ubuf[100]; char buf[100];
-#endif
+    char *buts[3], *buts2[3], *buts3[3];
+    char buf[100];
     int ret;
 
     if ( sf!=NULL && sf->loading_cid_map )
@@ -1271,12 +1223,9 @@ return( maybe );	/* User has said it's ok to use maybe at this supplement level 
 	if ( maybe!=NULL )
 	    maybe_sup = maybe->supplement;
 	if ( sf!=NULL ) sf->loading_cid_map = true;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	ret = GWidgetAskR(_STR_UseCidMap,buts,0,1,_STR_SearchForCIDMap,
-		registry,ordering,supplement,maybe_sup);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	buts[0] = "_Use It"; buts[1] = "Search"; buts[2] = NULL;
-	ret = gwwv_ask(_("Use CID Map"),buts,0,1,_("This font is based on the charset %1$.20s-%2$.20s-%3$d, but the best I've been able to find is %1$.20s-%2$.20s-%4$d.\nShall I use that or let you search?"),
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+	buts[0] = _("_Use It"); buts[1] = _("_Search"); buts[2] = NULL;
+	ret = gwwv_ask(_("Use CID Map"),(const char **) buts,0,1,_("This font is based on the charset %1$.20s-%2$.20s-%3$d, but the best I've been able to find is %1$.20s-%2$.20s-%4$d.\nShall I use that or let you search?"),
 		registry,ordering,supplement,maybe_sup);
 #else
 	ret = 0;		/* In a script, default to using an old version of the file */
@@ -1296,20 +1245,15 @@ return( maybe );
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( file==NULL ) {
-	unichar_t *uret;
+	char *uret;
 #if defined( _NO_SNPRINTF ) || defined( __VMS )
 	sprintf(buf,"%s-%s-*.cidmap", registry, ordering );
 #else
 	snprintf(buf,sizeof(buf),"%s-%s-*.cidmap", registry, ordering );
 #endif
-	uc_strcpy(ubuf,buf);
 	if ( maybe==NULL && maybefile==NULL ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    ret = GWidgetAskR(_STR_NoCidmap,buts3,0,1,_STR_LookForCidmap,
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    buts3[0] = "_Browse"; buts3[1] = "_Give Up"; buts3[2] = NULL;
-	    ret = gwwv_ask(_("No cidmap file..."),buts3,0,1,_("FontForge was unable to find a cidmap file for this font. It is not essential to have one, but some things will work better if you do. If you have not done so you might want to download the cidmaps from:\n   http://FontForge.sourceforge.net/cidmaps.tgz\nand then gunzip and untar them and move them to:\n  %.80s\n\nWould you like to search your local disk for an appropriate file?"),
-#endif
+	    buts3[0] = _("_Browse"); buts3[1] = _("_Give Up"); buts3[2] = NULL;
+	    ret = gwwv_ask(_("No cidmap file..."),(const char **)buts3,0,1,_("FontForge was unable to find a cidmap file for this font. It is not essential to have one, but some things will work better if you do. If you have not done so you might want to download the cidmaps from:\n   http://FontForge.sourceforge.net/cidmaps.tgz\nand then gunzip and untar them and move them to:\n  %.80s\n\nWould you like to search your local disk for an appropriate file?"),
 #ifdef SHAREDIR
 		    SHAREDIR
 #else
@@ -1317,20 +1261,16 @@ return( maybe );
 #endif
 		    );
 	    if ( ret==1 || no_windowing_ui )
-		ubuf[0] = '\0';
+		buf[0] = '\0';
 	}
 	uret = NULL;
-	if ( ubuf[0]!='\0' && !no_windowing_ui ) {
+	if ( buf[0]!='\0' && !no_windowing_ui ) {
 	    if ( sf!=NULL ) sf->loading_cid_map = true;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    uret = GWidgetOpenFile(GStringGetResource(_STR_FindCharset,NULL),NULL,ubuf,NULL,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    buts2[0] = "_Use It"; buts2[1] = "_Give Up"; buts2[2] = NULL;
-	    uret = GWidgetOpenFile(_("Find a cidmap file..."),NULL,ubuf,NULL,NULL);
-#endif
+	    uret = gwwv_open_filename(_("Find a cidmap file..."),NULL,buf,NULL,NULL);
 	    if ( sf!=NULL ) sf->loading_cid_map = false;
 	}
 	if ( uret==NULL ) {
+	    buts2[0] = "_Use It"; buts2[1] = "_Search"; buts2[2] = NULL;
 	    if ( maybe==NULL && maybefile==NULL )
 		/* No luck */;
 	    else if ( no_windowing_ui && maybe!=NULL ) {
@@ -1339,11 +1279,7 @@ return( maybe );
 	    } else if ( no_windowing_ui ) {
 		file = maybefile;
 		maybefile = NULL;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    } else if ( GWidgetAskR(_STR_UseCidMap,buts2,0,1,_STR_AreYouSureCharset)==0 ) {
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    } else if ( gwwv_ask(_("Use CID Map"),buts2,0,1,_("Are you sure you don't want to use the cidmap I found?"))==0 ) {
-#endif
+	    } else if ( gwwv_ask(_("Use CID Map"),(const char **)buts2,0,1,_("Are you sure you don't want to use the cidmap I found?"))==0 ) {
 		if ( maybe!=NULL ) {
 		    maybe->maxsupple = supplement;
 return( maybe );
@@ -1353,7 +1289,7 @@ return( maybe );
 		}
 	    }
 	} else {
-	    file = u2def_copy(uret);
+	    file = utf82def_copy(uret);
 	    free(uret);
 	}
     }
@@ -1433,12 +1369,14 @@ void SFEncodeToMap(SplineFont *sf,struct cidmap *map) {
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( anyextras ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	static int buttons[] = { _STR_Delete, _STR_Add, 0 };
-	if ( GWidgetAskR(_STR_ExtraGlyphsTitle,buttons,0,1,_STR_ExtraGlyphs)==1 ) {
+	char *buttons[3];
+	buttons[0] = _("_Delete");
+	buttons[1] = _("_Add");
+	buttons[2] = NULL;
 #elif defined(FONTFORGE_CONFIG_GTK)
 	static char *buttons[] = { GTK_STOCK_DELETE, GTK_STOCK_ADD, NULL };
-	if ( gwwv_ask(_("Extraneous glyphs"),buttons,0,1,_("The current encoding contains glyphs which I cannot map to CIDs.\nShould I delete them or add them to the end (where they may conflict with future ros definitions)?"))==1 ) {
 #endif
+	if ( gwwv_ask(_("Extraneous glyphs"),(const char **) buttons,0,1,_("The current encoding contains glyphs which I cannot map to CIDs.\nShould I delete them or add them to the end (where they may conflict with future ros definitions)?"))==1 ) {
 	    if ( map!=NULL && max<map->cidmax ) max = map->cidmax;
 	    anyextras = 0;
 	    for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sc = sf->glyphs[i]) ) {
@@ -1532,9 +1470,8 @@ struct cidmap *AskUserForCIDMap(SplineFont *sf) {
     struct block block;
     struct cidmap *map = NULL;
     char buffer[200];
-    const unichar_t **choices;
+    char **choices;
     int i,ret;
-    static unichar_t cidwild[] = { '?','*','-','?','*','-','[','0','-','9',']','*','.','c','i','d','m','a','p',  '\0' };
     char *filename=NULL;
     char *reg, *ord, *pt;
     int supplement;
@@ -1554,32 +1491,18 @@ struct cidmap *AskUserForCIDMap(SplineFont *sf) {
     FindMapsInDir(&block,"/usr/share/fontforge");
 
     choices = gcalloc(block.cur+2,sizeof(unichar_t *));
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    choices[0] = u_copy(GStringGetResource(_STR_Browse,NULL));
-    for ( i=0; i<block.cur; ++i )
-	choices[i+1] = uc_copy(block.maps[i]);
-    ret = GWidgetChoicesR(_STR_FindCharset,choices,i+1,0,_STR_SelectCIDOrdering);
-#elif defined(FONTFORGE_CONFIG_GTK)
     choices[0] = strdup(_("Browse..."));
     for ( i=0; i<block.cur; ++i )
 	choices[i+1] = strdup(block.maps[i]);
-    ret = gwwv_choose(_("Find a cidmap file..."),(const unichar_t **) choices,i+1,0,_("Please select a CID ordering"));
-#endif
+    ret = gwwv_choose(_("Find a cidmap file..."),(const char **) choices,i+1,0,_("Please select a CID ordering"));
     for ( i=0; i<=block.cur; ++i )
-	free( (unichar_t *) choices[i] );
+	free( choices[i] );
     free(choices);
     if ( ret==0 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	unichar_t *uret = GWidgetOpenFile(GStringGetResource(_STR_FindCharset,NULL),NULL,cidwild,NULL,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	unichar_t *uret = GWidgetOpenFile(_("Find a cidmap file..."),NULL,cidwild,NULL,NULL);
-#endif
-	if ( uret==NULL )
+	filename = gwwv_open_filename(_("Find a cidmap file..."),NULL,
+		"?*-?*-[0-9]*.cidmap",NULL,NULL);
+	if ( filename==NULL )
 	    ret = -1;
-	else {
-	    filename = u2def_copy(uret);
-	    free(uret);
-	}
     }
     if ( ret!=-1 ) {
 	if ( filename!=NULL )
@@ -1950,22 +1873,12 @@ int SFFlattenByCMap(SplineFont *sf,char *cmapname) {
     if ( sf->cidmaster!=NULL )
 	sf = sf->cidmaster;
     if ( sf->subfontcnt==0 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_NotACIDFont,_STR_NotACIDFont);
-#elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Not a CID-keyed font"),_("Not a CID-keyed font"));
-#endif
 return( false );
     }
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( cmapname==NULL ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	unichar_t *uret = GWidgetOpenFile(GStringGetResource(_STR_FindCMap,NULL),NULL,NULL,NULL,CMapFilter);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	unichar_t *uret = GWidgetOpenFile(_("Find an adobe CMap file..."),NULL,NULL,NULL,CMapFilter);
-#endif
-	cmapname = u2def_copy(uret);
-	free(uret);
+	cmapname = gwwv_open_filename(_("Find an adobe CMap file..."),NULL,NULL,NULL,CMapFilter);
     }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     if ( cmapname==NULL )
@@ -1980,7 +1893,7 @@ return( false );
 	    max = cmap->groups[cmt_cid].ranges[i].last;
 	if ( cmap->groups[cmt_cid].ranges[i].last>0x100000 ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_EncodingTooLarge,_STR_EncodingTooLarge);
+	    gwwv_post_error(_("Encoding Too Large"),_("Encoding Too Large"));
 #elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Encoding Too Large"),_("Encoding Too Large"));
 #endif
@@ -2025,13 +1938,13 @@ return( false );
 				found[m++] = l;
 			    else if ( !warned ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-				GWidgetPostNoticeR(_STR_MultipleEncodingIgnored,
-					_STR_CIDGlyphMultEncoded, i,
+				gwwv_post_notice(_("MultipleEncodingIgnored"),
+					_("The glyph at CID %d is mapped to more than %d encodings. Only the first %d are handled."), i,
 					sizeof(found)/sizeof(found[0]),
 					sizeof(found)/sizeof(found[0]));
 #elif defined(FONTFORGE_CONFIG_GTK)
 				gwwv_post_notice(_("MultipleEncodingIgnored"),
-					_STR_CIDGlyphMultEncoded, i,
+					_("The glyph at CID %d is mapped to more than %d encodings. Only the first %d are handled."), i,
 					sizeof(found)/sizeof(found[0]),
 					sizeof(found)/sizeof(found[0]));
 #endif
@@ -2113,12 +2026,14 @@ static void SFEncodeToCMap(SplineFont *cidmaster,SplineFont *sf,EncMap *oldmap, 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( anyextras ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	static int buttons[] = { _STR_Delete, _STR_Add, 0 };
-	if ( GWidgetAskR(_STR_ExtraGlyphsTitle,buttons,0,1,_STR_ExtraGlyphs)==1 ) {
+	char *buttons[3];
+	buttons[0] = _("_Delete");
+	buttons[1] = _("_Add");
+	buttons[2] = NULL;
 #elif defined(FONTFORGE_CONFIG_GTK)
 	static char *buttons[] = { GTK_STOCK_DELETE, GTK_STOCK_ADD, NULL };
-	if ( gwwv_ask(_("Extraneous glyphs"),buttons,0,1,_("The current encoding contains glyphs which I cannot map to CIDs.\nShould I delete them or add them to the end (where they may conflict with future ros definitions)?"))==1 ) {
 #endif
+	if ( gwwv_ask(_("Extraneous glyphs"),(const char **) buttons,0,1,_("The current encoding contains glyphs which I cannot map to CIDs.\nShould I delete them or add them to the end (where they may conflict with future ros definitions)?"))==1 ) {
 	    if ( cmap!=NULL && max<cmap->total ) max = cmap->total;
 	    anyextras = 0;
 	    for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc = sf->glyphs[i])!=NULL ) {
@@ -2144,14 +2059,8 @@ SplineFont *MakeCIDMaster(SplineFont *sf,EncMap *oldmap,int bycmap,char *cmapfil
 	freeme = false;
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	if ( cmapfilename==NULL ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    unichar_t *uret = GWidgetOpenFile(GStringGetResource(_STR_FindCMap,NULL),NULL,NULL,NULL,CMapFilter);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    unichar_t *uret = GWidgetOpenFile(_("Find an adobe CMap file..."),NULL,NULL,NULL,CMapFilter);
-#endif
-	    cmapfilename = u2def_copy(uret);
+	    cmapfilename = gwwv_open_filename(_("Find an adobe CMap file..."),NULL,NULL,NULL,CMapFilter);
 	    freeme = true;
-	    free(uret);
 	}
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	if ( cmapfilename==NULL ) {
@@ -2834,53 +2743,68 @@ return;
 }
 
 GTextInfo encodingtypes[] = {
-    { (unichar_t *) _STR_Custom, NULL, 0, 0, (void *) "Custom", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Original, NULL, 0, 0, (void *) "Original", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Custom"), NULL, 0, 0, (void *) "Custom", NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Original"), NULL, 0, 0, (void *) "Original", NULL, 0, 0, 0, 0, 0, 0, 1},
     { NULL, NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 1, 0 },
-    { (unichar_t *) _STR_Isolatin1, NULL, 0, 0, (void *) "iso8859-1", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Isolatin0, NULL, 0, 0, (void *) "iso8859-15", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Isolatin2, NULL, 0, 0, (void *) "iso8859-2", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Isolatin3, NULL, 0, 0, (void *) "iso8859-3", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Isolatin4, NULL, 0, 0, (void *) "iso8859-4", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Isolatin5, NULL, 0, 0, (void *) "iso8859-9", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Isolatin6, NULL, 0, 0, (void *) "iso8859-10", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Isolatin7, NULL, 0, 0, (void *) "iso8859-13", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Isolatin8, NULL, 0, 0, (void *) "iso8859-14", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("ISO 8859-1  (Latin1)"), NULL, 0, 0, (void *) "iso8859-1", NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("ISO 8859-15  (Latin0)"), NULL, 0, 0, (void *) "iso8859-15", NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("ISO 8859-2  (Latin2)"), NULL, 0, 0, (void *) "iso8859-2", NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("ISO 8859-3  (Latin3)"), NULL, 0, 0, (void *) "iso8859-3", NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("ISO 8859-4  (Latin4)"), NULL, 0, 0, (void *) "iso8859-4", NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("ISO 8859-9  (Latin5)"), NULL, 0, 0, (void *) "iso8859-9", NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("ISO 8859-10  (Latin6)"), NULL, 0, 0, (void *) "iso8859-10", NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("ISO 8859-13  (Latin7)"), NULL, 0, 0, (void *) "iso8859-13", NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("ISO 8859-14  (Latin8)"), NULL, 0, 0, (void *) "iso8859-14", NULL, 0, 0, 0, 0, 0, 0, 1},
     { NULL, NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 1, 0 },
-    { (unichar_t *) _STR_Isocyrillic, NULL, 0, 0, (void *) "iso8859-5", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Koi8cyrillic, NULL, 0, 0, (void *) "koi8-r", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Isoarabic, NULL, 0, 0, (void *) "iso8859-6", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Isogreek, NULL, 0, 0, (void *) "iso8859-7", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Isohebrew, NULL, 0, 0, (void *) "iso8859-8", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Isothai, NULL, 0, 0, (void *) "iso8859-11", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("ISO 8859-5 (Cyrillic)"), NULL, 0, 0, (void *) "iso8859-5", NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("KOI8-R (Cyrillic)"), NULL, 0, 0, (void *) "koi8-r", NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("ISO 8859-6 (Arabic)"), NULL, 0, 0, (void *) "iso8859-6", NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("ISO 8859-7 (Greek)"), NULL, 0, 0, (void *) "iso8859-7", NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("ISO 8859-8 (Hebrew)"), NULL, 0, 0, (void *) "iso8859-8", NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("ISO 8859-11 (Thai)"), NULL, 0, 0, (void *) "iso8859-11", NULL, 0, 0, 0, 0, 0, 0, 1},
     { NULL, NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 1, 0 },
-    { (unichar_t *) _STR_MacLatin, NULL, 0, 0, (void *) "mac", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Win, NULL, 0, 0, (void *) "win", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Adobestd, NULL, 0, 0, (void *) "AdobeStandard", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Symbol, NULL, 0, 0, (void *) "Symbol", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Texbase, NULL, 0, 0, (void *) "TeX-Base-Encoding", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Macintosh Latin"), NULL, 0, 0, (void *) "mac", NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Windows Latin (\"ANSI\")"), NULL, 0, 0, (void *) "win", NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Adobe Standard"), NULL, 0, 0, (void *) "AdobeStandard", NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Symbol"), NULL, 0, 0, (void *) "Symbol", NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) NU_("ΤεΧ Base (8r)"), NULL, 0, 0, (void *) "TeX-Base-Encoding", NULL, 0, 0, 0, 0, 0, 0, 1},
     { NULL, NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 1, 0 },
-    { (unichar_t *) _STR_Unicode, NULL, 0, 0, (void *) "UnicodeBmp", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Unicode4, NULL, 0, 0, (void *) "UnicodeFull", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    /*{ (unichar_t *) _STR_UnicodePlanes, NULL, 0, 0, (void *) em_unicodeplanes, NULL, 0, 0, 0, 0, 0, 0, 0, 1}*/
+    { (unichar_t *) N_("ISO 10646-1 (Unicode, BMP)"), NULL, 0, 0, (void *) "UnicodeBmp", NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("ISO 10646-1 (Unicode, Full)"), NULL, 0, 0, (void *) "UnicodeFull", NULL, 0, 0, 0, 0, 0, 0, 1},
+    /*{ (unichar_t *) N_("ISO 10646-? (by plane) ..."), NULL, 0, 0, (void *) em_unicodeplanes, NULL, 0, 0, 0, 0, 0, 0, 1}*/
     { NULL, NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 1, 0 },
-    { (unichar_t *) _STR_SJIS, NULL, 0, 0, (void *) "sjis", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Jis208, NULL, 0, 0, (void *) "jis208", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Jis212, NULL, 0, 0, (void *) "jis212", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_KoreanWansung, NULL, 0, 0, (void *) "wansung", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Korean, NULL, 0, 0, (void *) "ksc5601", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_KoreanJohab, NULL, 0, 0, (void *) "johab", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Chinese, NULL, 0, 0, (void *) "gb2312", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_ChinesePacked, NULL, 0, 0, (void *) "gb2312pk", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_ChineseTrad, NULL, 0, 0, (void *) "big5", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_ChineseTradHKSCS, NULL, 0, 0, (void *) "big5hkscs", NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("SJIS (Kanji)"), NULL, 0, 0, (void *) "sjis", NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("JIS 208 (Kanji)"), NULL, 0, 0, (void *) "jis208", NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("JIS 212 (Kanji)"), NULL, 0, 0, (void *) "jis212", NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Wansung (Korean)"), NULL, 0, 0, (void *) "wansung", NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("KSC 5601-1987 (Korean)"), NULL, 0, 0, (void *) "ksc5601", NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Johab (Korean)"), NULL, 0, 0, (void *) "johab", NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("GB 2312 (Simp. Chinese)"), NULL, 0, 0, (void *) "gb2312", NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Packed GB 2312 (Chinese)"), NULL, 0, 0, (void *) "gb2312pk", NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Big5 (Trad. Chinese)"), NULL, 0, 0, (void *) "big5", NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Big5 HKSCS (Trad. Chinese)"), NULL, 0, 0, (void *) "big5hkscs", NULL, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
+
+static void EncodingInit(void) {
+    int i;
+    static int done = false;
+
+    if ( done )
+return;
+    done = true;
+    for ( i=0; i<sizeof(encodingtypes)/sizeof(encodingtypes[0])-1; ++i ) {
+	if ( !encodingtypes[i].line )
+	    encodingtypes[i].text = (unichar_t *) _((char *) encodingtypes[i].text);
+    }
+}
 
 GMenuItem *GetEncodingMenu(void (*func)(GWindow,GMenuItem *,GEvent *),
 	Encoding *current) {
     GMenuItem *mi;
     int i, cnt;
     Encoding *item;
+
+    EncodingInit();
 
     cnt = 0;
     for ( item=enclist; item!=NULL ; item=item->next )
@@ -2892,13 +2816,13 @@ GMenuItem *GetEncodingMenu(void (*func)(GWindow,GMenuItem *,GEvent *),
     for ( i=0; i<sizeof(encodingtypes)/sizeof(encodingtypes[0])-1; ++i ) {
 	mi[i].ti = encodingtypes[i];
 	if ( !mi[i].ti.line ) {
-	    mi[i].ti.text = u_copy(GStringGetResource((intpt) (mi[i].ti.text),NULL));
+	    mi[i].ti.text = utf82u_copy((char *) (mi[i].ti.text));
 	    mi[i].ti.checkable = true;
 	    if ( strmatch(mi[i].ti.userdata,current->enc_name)==0 ||
 		    (current->iconv_name!=NULL && strmatch(mi[i].ti.userdata,current->iconv_name)==0))
 		mi[i].ti.checked = true;
 	}
-	mi[i].ti.text_in_resource = false;
+	mi[i].ti.text_is_1byte = false;
 	mi[i].ti.fg = mi[i].ti.bg = COLOR_DEFAULT;
 	mi[i].invoke = func;
     }
@@ -2907,7 +2831,7 @@ GMenuItem *GetEncodingMenu(void (*func)(GWindow,GMenuItem *,GEvent *),
 	mi[i++].ti.line = true;
 	for ( item=enclist; item!=NULL ; item=item->next )
 	    if ( !item->hidden ) {
-		mi[i].ti.text = uc_copy(item->enc_name);
+		mi[i].ti.text = utf82u_copy(item->enc_name);
 		mi[i].ti.userdata = (void *) item->enc_name;
 		mi[i].ti.fg = mi[i].ti.bg = COLOR_DEFAULT;
 		mi[i].ti.checkable = true;
@@ -2924,6 +2848,8 @@ GTextInfo *GetEncodingTypes(void) {
     int i, cnt;
     Encoding *item;
 
+    EncodingInit();
+
     cnt = 0;
     for ( item=enclist; item!=NULL ; item=item->next )
 	if ( !item->hidden )
@@ -2932,14 +2858,7 @@ GTextInfo *GetEncodingTypes(void) {
     ti = gcalloc(i+1,sizeof(GTextInfo));
     memcpy(ti,encodingtypes,sizeof(encodingtypes)-sizeof(encodingtypes[0]));
     for ( i=0; i<sizeof(encodingtypes)/sizeof(encodingtypes[0])-1; ++i ) {
-	if ( ti[i].text_is_1byte ) {
-	    ti[i].text = uc_copy((char *) ti[i].text);
-	    ti[i].text_is_1byte = false;
-	} else if ( ti[i].text_in_resource ) {
-	    ti[i].text = u_copy(GStringGetResource( (int) ti[i].text,NULL));
-	    ti[i].text_in_resource = false;
-	} else
-	    ti[i].text = u_copy(ti[i].text);
+	ti[i].text = (unichar_t *) copy((char *) ti[i].text);
     }
     if ( cnt!=0 ) {
 	ti[i++].line = true;
@@ -2985,12 +2904,12 @@ Encoding *ParseEncodingNameFromList(GGadget *listfield) {
     }
 
     if ( enc == NULL ) {
-	char *cname = cu_copy(name);
-	enc = FindOrMakeEncoding(cname);
-	free(cname);
+	char *temp = u2utf8_copy(name);
+	enc = FindOrMakeEncoding(temp);
+	free(temp);
     }
     if ( enc==NULL )
-	GWidgetErrorR(_STR_BadEncoding,_STR_BadEncoding);
+	gwwv_post_error(_("Bad Encoding"),_("Bad Encoding"));
 return( enc );
 }
 

@@ -730,7 +730,7 @@ static int DV_WatchPnt(GGadget *g, GEvent *e) {
 	dv = GDrawGetUserData(GGadgetGetWindow(g));
 	if ( dv->cv->sc->layers[ly_fore].refs!=NULL ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_NoWatchPoints,_STR_NoWatchPointsWithRefs);
+	    gwwv_post_error(_("No Watch Points"),_("Watch Points not supported in glyphs with references"));
 #elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("No Watch Points"),_("Watch Points not supported in glyphs with references"));
 #endif
@@ -813,13 +813,13 @@ static void DVMenuCreate(GWindow v, GMenuItem *mi,GEvent *e) {
 }
 
 static GMenuItem popupwindowlist[] = {
-    { { (unichar_t *) _STR_Registers, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, DVMenuCreate, MID_Registers },
-    { { (unichar_t *) _STR_Stack, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, DVMenuCreate, MID_Stack },
-    { { (unichar_t *) _STR_Storage, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, DVMenuCreate, MID_Storage },
-    { { (unichar_t *) _STR_Points, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, DVMenuCreate, MID_Points },
-    { { (unichar_t *) _STR_Cvt, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, DVMenuCreate, MID_Cvt },
-    { { (unichar_t *) _STR_Raster, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, DVMenuCreate, MID_Raster },
-    { { (unichar_t *) _STR_Gloss, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, DVMenuCreate, MID_Gloss },
+    { { (unichar_t *) N_("Registers"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 0, 0, '\0' }, '\0', 0, NULL, NULL, DVMenuCreate, MID_Registers },
+    { { (unichar_t *) N_("Stack"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 0, 0, '\0' }, '\0', 0, NULL, NULL, DVMenuCreate, MID_Stack },
+    { { (unichar_t *) N_("Storage"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 0, 0, '\0' }, '\0', 0, NULL, NULL, DVMenuCreate, MID_Storage },
+    { { (unichar_t *) N_("Points:"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 0, 0, '\0' }, '\0', 0, NULL, NULL, DVMenuCreate, MID_Points },
+    { { (unichar_t *) N_("Cvt"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 0, 0, '\0' }, '\0', 0, NULL, NULL, DVMenuCreate, MID_Cvt },
+    { { (unichar_t *) N_("Raster"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 0, 0, '\0' }, '\0', 0, NULL, NULL, DVMenuCreate, MID_Raster },
+    { { (unichar_t *) N_("Gloss"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 0, 0, '\0' }, '\0', 0, NULL, NULL, DVMenuCreate, MID_Gloss },
     { NULL }
 };
 
@@ -827,9 +827,16 @@ static int DV_WindowMenu(GGadget *g, GEvent *e) {
     DebugView *dv;
     GEvent fake;
     GRect pos;
+    static int done = false;
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonpress ) {
 	dv = GDrawGetUserData(GGadgetGetWindow(g));
+	if ( !done ) {
+	    int i;
+	    for ( i=0; popupwindowlist[i].ti.text!=NULL; ++i )
+		popupwindowlist[i].ti.text = (unichar_t *) _((char *) popupwindowlist[i].ti.text);
+	    done = true;
+	}
 	popupwindowlist[0].ti.checked = dv->regs!=NULL;
 	popupwindowlist[1].ti.checked = dv->stack!=NULL;
 	popupwindowlist[2].ti.checked = dv->storage!=NULL;
@@ -1512,14 +1519,10 @@ static void DVCreateRaster(DebugView *dv) {
     GRect pos;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle;
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(_STR_TTRaster,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = _("Current Raster (TrueType)");
-#endif
+    wattrs.utf8_window_title = _("Current Raster (TrueType)");
     pos.x = 664; pos.y = 1;
     pos.width = 50; pos.height = 50;
     dv->raster = GDrawCreateTopWindow(NULL,&pos,dvraster_e_h,dv,&wattrs);
@@ -1533,14 +1536,10 @@ static void DVCreateRegs(DebugView *dv) {
     extern int _GScrollBar_Width;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle;
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(_STR_TTRegisters,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = _("Registers (TrueType)");
-#endif
+    wattrs.utf8_window_title = _("Registers (TrueType)");
     pos.x = 664; pos.y = 1;
     pos.width = 143; pos.height = 269;
     dv->regs = GDrawCreateTopWindow(NULL,&pos,dvreg_e_h,dv,&wattrs);
@@ -1563,14 +1562,10 @@ static void DVCreateStack(DebugView *dv) {
     extern int _GScrollBar_Width;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle;
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(_STR_TTStack,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = _("Stack (TrueType)");
-#endif
+    wattrs.utf8_window_title = _("Stack (TrueType)");
     pos.x = 664; pos.y = 302;
     pos.width = 143; pos.height = 269;
     dv->stack = GDrawCreateTopWindow(NULL,&pos,dvstack_e_h,dv,&wattrs);
@@ -1593,14 +1588,10 @@ static void DVCreateStore(DebugView *dv) {
     extern int _GScrollBar_Width;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle;
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(_STR_TTStorage,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = _("Storage (TrueType)");
-#endif
+    wattrs.utf8_window_title = _("Storage (TrueType)");
     pos.x = 664; pos.y = 602;
     pos.width = 133; pos.height = 100;
     dv->storage = GDrawCreateTopWindow(NULL,&pos,dvstore_e_h,dv,&wattrs);
@@ -1625,14 +1616,10 @@ static void DVCreatePoints(DebugView *dv) {
     extern int _GScrollBar_Width;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle;
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(_STR_TTPoints,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = _("Points (TrueType)");
-#endif
+    wattrs.utf8_window_title = _("Points (TrueType)");
     pos.x = 664; pos.y = 732;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,132+_GScrollBar_Width));
     pos.height = 269;
@@ -1643,56 +1630,56 @@ static void DVCreatePoints(DebugView *dv) {
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
 
-    label[0].text = (unichar_t *) _STR_Twilight;
-    label[0].text_in_resource = true;
+    label[0].text = (unichar_t *) _("Twilight");
+    label[0].text_is_1byte = true;
     gcd[0].gd.label = &label[0];
     gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 3;
     gcd[0].gd.flags = gg_visible | gg_enabled | (show_twilight ? gg_cb_on : 0 );
     gcd[0].gd.cid = CID_Twilight;
     gcd[0].creator = GRadioCreate;
 
-    label[1].text = (unichar_t *) _STR_Normal;
-    label[1].text_in_resource = true;
+    label[1].text = (unichar_t *) _("Normal");
+    label[1].text_is_1byte = true;
     gcd[1].gd.label = &label[1];
     gcd[1].gd.pos.x = 60; gcd[1].gd.pos.y = gcd[0].gd.pos.y;
     gcd[1].gd.flags = gg_visible | gg_enabled | (!show_twilight ? gg_cb_on : 0 );
     gcd[1].gd.cid = CID_Normal;
     gcd[1].creator = GRadioCreate;
 
-    label[2].text = (unichar_t *) _STR_Current;
-    label[2].text_in_resource = true;
+    label[2].text = (unichar_t *) _("Current");
+    label[2].text_is_1byte = true;
     gcd[2].gd.label = &label[2];
     gcd[2].gd.pos.x = 5; gcd[2].gd.pos.y = gcd[0].gd.pos.y+16;
     gcd[2].gd.flags = gg_visible | gg_enabled | gg_rad_startnew | (show_current ? gg_cb_on : 0 );
     gcd[2].gd.cid = CID_Current;
     gcd[2].creator = GRadioCreate;
 
-    label[3].text = (unichar_t *) _STR_Original;
-    label[3].text_in_resource = true;
+    label[3].text = (unichar_t *) _("Original");
+    label[3].text_is_1byte = true;
     gcd[3].gd.label = &label[3];
     gcd[3].gd.pos.x = gcd[1].gd.pos.x; gcd[3].gd.pos.y = gcd[2].gd.pos.y;
     gcd[3].gd.flags = gg_visible | gg_enabled | (!show_current ? gg_cb_on : 0 );
     gcd[3].gd.cid = CID_Original;
     gcd[3].creator = GRadioCreate;
 
-    label[4].text = (unichar_t *) _STR_GridUnit;
-    label[4].text_in_resource = true;
+    label[4].text = (unichar_t *) _("Grid");
+    label[4].text_is_1byte = true;
     gcd[4].gd.label = &label[4];
     gcd[4].gd.pos.x = 5; gcd[4].gd.pos.y = gcd[2].gd.pos.y+16;
     gcd[4].gd.flags = gg_visible | gg_enabled | gg_rad_startnew | (show_current ? gg_cb_on : 0 );
     gcd[4].gd.cid = CID_Grid;
     gcd[4].creator = GRadioCreate;
 
-    label[5].text = (unichar_t *) _STR_EmUnit;
-    label[5].text_in_resource = true;
+    label[5].text = (unichar_t *) _("Em Units");
+    label[5].text_is_1byte = true;
     gcd[5].gd.label = &label[5];
     gcd[5].gd.pos.x = gcd[1].gd.pos.x; gcd[5].gd.pos.y = gcd[4].gd.pos.y;
     gcd[5].gd.flags = gg_visible | gg_enabled | (!show_current ? gg_cb_on : 0 );
     gcd[5].gd.cid = CID_EmUnit;
     gcd[5].creator = GRadioCreate;
 
-    label[6].text = (unichar_t *) _STR_Transformed;
-    label[6].text_in_resource = true;
+    label[6].text = (unichar_t *) _("Transformed");
+    label[6].text_is_1byte = true;
     gcd[6].gd.label = &label[6];
     gcd[6].gd.pos.x = 5; gcd[6].gd.pos.y = gcd[4].gd.pos.y+16;
     gcd[6].gd.flags = gg_visible | (show_transformed ? gg_cb_on : 0 );
@@ -1727,10 +1714,10 @@ static void DVCreateCvt(DebugView *dv) {
     extern int _GScrollBar_Width;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle;
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
-    wattrs.window_title = GStringGetResource(_STR_Cvt,NULL);
+    wattrs.utf8_window_title = _("Cvt");
     pos.x = 664; pos.y = 732;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,125)); pos.height = 169;
     dv->cvt = GDrawCreateTopWindow(NULL,&pos,dvcvt_e_h,dv,&wattrs);
@@ -1912,94 +1899,66 @@ return;
 	gcd[0].creator = GScrollBarCreate;
 
 	gcd[1].gd.pos.y = 2; gcd[1].gd.pos.x = 2;
-	gcd[1].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
+	gcd[1].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_utf8_popup;
 	gcd[1].gd.cid = dgt_step;
 	gcd[1].gd.label = &label[1];
 	label[1].image = &GIcon_stepinto;
 	gcd[1].gd.handle_controlevent = DV_Run;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	gcd[1].gd.popup_msg = GStringGetResource(_STR_StepPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gcd[1].gd.popup_msg = _("Step into");
-#endif
+	gcd[1].gd.popup_msg = (unichar_t *) _("Step into");
 	gcd[1].creator = GButtonCreate;
 
 	gcd[2].gd.pos.y = 2; gcd[2].gd.pos.x = 38;
-	gcd[2].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
+	gcd[2].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_utf8_popup;
 	gcd[2].gd.cid = dgt_next;
 	gcd[2].gd.label = &label[2];
 	label[2].image = &GIcon_stepover;
 	gcd[2].gd.handle_controlevent = DV_Run;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	gcd[2].gd.popup_msg = GStringGetResource(_STR_NextPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gcd[2].gd.popup_msg = _("Step over (Next)");
-#endif
+	gcd[2].gd.popup_msg = (unichar_t *) _("Step over (Next)");
 	gcd[2].creator = GButtonCreate;
 
 	gcd[3].gd.pos.y = 2; gcd[3].gd.pos.x = 74;
-	gcd[3].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
+	gcd[3].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_utf8_popup;
 	gcd[3].gd.cid = dgt_stepout;
 	gcd[3].gd.label = &label[3];
 	label[3].image = &GIcon_stepout;
 	gcd[3].gd.handle_controlevent = DV_Run;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	gcd[3].gd.popup_msg = GStringGetResource(_STR_StepOutOfPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gcd[3].gd.popup_msg = _("Step out of current function");
-#endif
+	gcd[3].gd.popup_msg = (unichar_t *) _("Step out of current function");
 	gcd[3].creator = GButtonCreate;
 
 	gcd[4].gd.pos.y = 2; gcd[4].gd.pos.x = 110;
-	gcd[4].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
+	gcd[4].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_utf8_popup;
 	gcd[4].gd.cid = dgt_continue;
 	gcd[4].gd.label = &label[4];
 	label[4].image = &GIcon_continue;
 	gcd[4].gd.handle_controlevent = DV_Run;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	gcd[4].gd.popup_msg = GStringGetResource(_STR_ContinuePopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gcd[4].gd.popup_msg = _("Continue");
-#endif
+	gcd[4].gd.popup_msg = (unichar_t *) _("Continue");
 	gcd[4].creator = GButtonCreate;
 
 	gcd[5].gd.pos.y = 2; gcd[5].gd.pos.x = 146;
-	gcd[5].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
+	gcd[5].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_utf8_popup;
 	/*gcd[5].gd.cid = dgt_continue;*/
 	gcd[5].gd.label = &label[5];
 	label[5].image = &GIcon_watchpnt;
 	gcd[5].gd.handle_controlevent = DV_WatchPnt;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	gcd[5].gd.popup_msg = GStringGetResource(_STR_WatchPointPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gcd[5].gd.popup_msg = _("Watch all selected points\n(stop when a point moves)");
-#endif
+	gcd[5].gd.popup_msg = (unichar_t *) _("Watch all selected points\n(stop when a point moves)");
 	gcd[5].creator = GButtonCreate;
 
 	gcd[6].gd.pos.y = 2; gcd[6].gd.pos.x = 182;
-	gcd[6].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
+	gcd[6].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_utf8_popup;
 	/*gcd[6].gd.cid = dgt_continue;*/
 	gcd[6].gd.label = &label[6];
 	label[6].image = &GIcon_menudelta;
 	gcd[6].gd.handle_controlevent = DV_WindowMenu;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	gcd[6].gd.popup_msg = GStringGetResource(_STR_Window,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gcd[6].gd.popup_msg = _("Window");
-#endif
+	gcd[6].gd.popup_msg = (unichar_t *) _("Window");
 	gcd[6].creator = GButtonCreate;
 
 	gcd[7].gd.pos.y = 2; gcd[7].gd.pos.x = 218;
-	gcd[7].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
+	gcd[7].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_utf8_popup;
 	/*gcd[7].gd.cid = dgt_continue;*/
 	gcd[7].gd.label = &label[7];
 	label[7].image = &GIcon_exit;
 	gcd[7].gd.handle_controlevent = DV_Exit;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	gcd[7].gd.popup_msg = GStringGetResource(_STR_ExitDebugger,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gcd[7].gd.popup_msg = _("Exit Debugger");
-#endif
+	gcd[7].gd.popup_msg = (unichar_t *) _("Exit Debugger");
 	gcd[7].creator = GButtonCreate;
 
 	GGadgetsCreate(dv->dv,gcd);

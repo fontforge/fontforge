@@ -342,7 +342,7 @@ static int dumpcharstrings(void (*dumpchar)(int ch,void *data), void *data,
 	dumpstr(dumpchar,data," ND\n");
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	if ( !GProgressNext())
+	if ( !gwwv_progress_next())
 #elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
 #endif
@@ -960,7 +960,7 @@ static int dumpcharprocs(void (*dumpchar)(int ch,void *data), void *data, Spline
 	    dumpproc(dumpchar,data,sf->glyphs[i]);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	if ( !GProgressNext())
+	if ( !gwwv_progress_next())
 #elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
 #endif
@@ -1190,14 +1190,14 @@ return( false );
 	isbold = true;
 
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressChangeStages(2+2-hasblue);
+    gwwv_progress_change_stages(2+2-hasblue);
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_change_stages(2+2-hasblue);
 #endif
     if ( autohint_before_generate && SFNeedsAutoHint(sf) &&
 	    !(flags&ps_flag_nohints)) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	GProgressChangeLine1R(_STR_AutoHintingFont);
+	gwwv_progress_change_line1(_("Auto Hinting Font..."));
 #elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_progress_change_line1(_("Auto Hinting Font..."));
 #endif
@@ -1205,7 +1205,7 @@ return( false );
     }
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    if ( !GProgressNextStage())
+    if ( !gwwv_progress_next_stage())
 #elif defined(FONTFORGE_CONFIG_GTK)
     if ( !gwwv_progress_next_stage())
 #endif
@@ -1216,7 +1216,7 @@ return( false );
 	FindBlues(sf,bluevalues,otherblues);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	if ( !GProgressNextStage())
+	if ( !gwwv_progress_next_stage())
 #elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next_stage())
 #endif
@@ -1246,8 +1246,8 @@ return( false );
 
     if ( incid==NULL ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	GProgressNextStage();
-	GProgressChangeLine1R(_STR_CvtPS);
+	gwwv_progress_next_stage();
+	gwwv_progress_change_line1(_("Converting Postscript"));
 #elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_progress_next_stage();
 	gwwv_progress_change_line1(_("Converting Postscript"));
@@ -1255,8 +1255,8 @@ return( false );
 	if ( (chars = SplineFont2Chrs(sf,iscjk,subrs,flags,format))==NULL )
 return( false );
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	GProgressNextStage();
-	GProgressChangeLine1R(_STR_SavingPSFont);
+	gwwv_progress_next_stage();
+	gwwv_progress_change_line1(_("Saving Postscript Font"));
 #elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_progress_next_stage();
 	gwwv_progress_change_line1(_("Saving Postscript Font"));
@@ -1367,7 +1367,7 @@ return( false );
     }
 
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressChangeStages(1);
+    gwwv_progress_change_stages(1);
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_change_stages(1);
 #endif
@@ -2169,15 +2169,15 @@ return( NULL );
 	    fd->leniv = 4;
     }
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressChangeLine1R(_STR_CvtPS);
+    gwwv_progress_change_line1(_("Converting Postscript"));
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_change_line1(_("Converting Postscript"));
 #endif
     if ( (chars = CID2Chrs(cidmaster,cidbytes,flags))==NULL )
 return( NULL );
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressNextStage();
-    GProgressChangeLine1R(_STR_SavingPSFont);
+    gwwv_progress_next_stage();
+    gwwv_progress_change_line1(_("Saving Postscript Font"));
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_next_stage();
     gwwv_progress_change_line1(_("Saving Postscript Font"));
@@ -2190,7 +2190,7 @@ return( NULL );
 	    dumpt1str(chrs,chars->values[i],chars->lens[i],leniv);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	    if ( !GProgressNext()) {
+	    if ( !gwwv_progress_next()) {
 #elif defined(FONTFORGE_CONFIG_GTK)
 	    if ( !gwwv_progress_next()) {
 #endif
@@ -2462,7 +2462,7 @@ int PSBitmapDump(char *filename,BDFFont *font, EncMap *map) {
     }
     file = fopen(filename,"w" );
     if ( file==NULL )
-	LogError( "Can't open %s\n", filename );
+	LogError( _("Can't open %s\n"), filename );
     else {
 	dumprequiredfontinfo((DumpChar) fputc, file, sf, ff_ptype3, map);
 

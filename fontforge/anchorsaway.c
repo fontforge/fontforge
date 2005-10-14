@@ -663,9 +663,7 @@ static int AnchorD_CorrectionChanged(GGadget *g, GEvent *e) {
 	if ( *end!='\0' )
 return( true );
 	if ( correction<-128 || correction>127 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_OutOfRange,_STR_OutOfRange);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 	    gwwv_post_error( _("Out of Range"), _("Corrections must be between -128 and 127 (and should be smaller)") );
 #endif
 return( true );
@@ -829,12 +827,12 @@ void AnchorControl(SplineChar *sc,AnchorPoint *ap) {
 
     memset(&wattrs,0,sizeof(wattrs));
 
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = true;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.window_title = GStringGetResource( _STR_AnchorControl,NULL );
+    wattrs.utf8_window_title = _("Anchor Control...");
     wattrs.is_dlg = true;
     GDrawGetSize(GDrawGetRoot(NULL),&pos);
     pos.x = pos.y = 0;
@@ -850,7 +848,8 @@ void AnchorControl(SplineChar *sc,AnchorPoint *ap) {
     memset(label,0,sizeof(label));
     k = 0;
 
-    label[k].text = (unichar_t *) _STR_Size;
+    label[k].text = (unichar_t *) _("_Size:");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = 9;
@@ -872,8 +871,8 @@ void AnchorControl(SplineChar *sc,AnchorPoint *ap) {
     gcd[k++].creator = GListFieldCreate;
 #endif
 
-    label[k].text = (unichar_t *) _STR_Mag;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Mag:");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y+26;
     gcd[k].gd.flags = gg_visible|gg_enabled ;
@@ -886,7 +885,8 @@ void AnchorControl(SplineChar *sc,AnchorPoint *ap) {
     gcd[k].gd.handle_controlevent = AnchorD_MagnificationChanged;
     gcd[k++].creator = GListButtonCreate;
 
-    label[k].text = (unichar_t *) _STR_X;
+    label[k].text = (unichar_t *) _("_X");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+30;
@@ -905,8 +905,8 @@ void AnchorControl(SplineChar *sc,AnchorPoint *ap) {
     gcd[k++].creator = GTextFieldCreate;
 
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
-    label[k].text = (unichar_t *) _STR_Cor;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Cor:");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+30;
     gcd[k].gd.flags = gg_visible|gg_enabled ;
@@ -923,7 +923,8 @@ void AnchorControl(SplineChar *sc,AnchorPoint *ap) {
     gcd[k++].creator = GTextFieldCreate;
 #endif
 
-    label[k].text = (unichar_t *) _STR_Y;
+    label[k].text = (unichar_t *) _("_Y");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+30;
@@ -942,8 +943,8 @@ void AnchorControl(SplineChar *sc,AnchorPoint *ap) {
     gcd[k++].creator = GTextFieldCreate;
 
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
-    label[k].text = (unichar_t *) _STR_Cor;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Cor:");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+30;
     gcd[k].gd.flags = gg_visible|gg_enabled ;
@@ -960,7 +961,8 @@ void AnchorControl(SplineChar *sc,AnchorPoint *ap) {
     gcd[k++].creator = GTextFieldCreate;
 #endif
 
-    label[k].text = (unichar_t *) _STR_OK;
+    label[k].text = (unichar_t *) _("_OK");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+40;
@@ -969,7 +971,8 @@ void AnchorControl(SplineChar *sc,AnchorPoint *ap) {
     gcd[k].gd.handle_controlevent = AnchorD_OK;
     gcd[k++].creator = GButtonCreate;
 
-    label[k].text = (unichar_t *) _STR_Cancel;
+    label[k].text = (unichar_t *) _("_Cancel");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 80; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+3;

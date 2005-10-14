@@ -55,7 +55,7 @@ void CVGridFitChar(CharView *cv) {
     single_glyph_context = _FreeTypeFontContext(sf,cv->sc,NULL,
 	    sf->order2?ff_ttf:ff_otf,0,NULL);
     if ( single_glyph_context==NULL ) {
-	LogError("Freetype rasterization failed.\n" );
+	LogError(_("Freetype rasterization failed.\n") );
 return;
     }
 
@@ -92,8 +92,8 @@ static int FtPpem_OK(GGadget *g, GEvent *e) {
 	int err = 0, bit;
 	CharView *cv = fsd->cv;
 
-	ptsize = GetRealR(fsd->gw,CID_PointSize,_STR_Pointsize,&err);
-	_dpi = GetIntR(fsd->gw,CID_DPI,_STR_DPI,&err);
+	ptsize = GetReal8(fsd->gw,CID_PointSize,_("_Pointsize:"),&err);
+	_dpi = GetInt8(fsd->gw,CID_DPI,_("D_PI:"),&err);
 	if ( err )
 return(true);
 
@@ -158,16 +158,12 @@ void CVFtPpemDlg(CharView *cv,int debug) {
     fsd.debug = debug;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(_STR_FreeTypeParams,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = _("Grid Fit Parameters");
-#endif
+    wattrs.utf8_window_title = _("Grid Fit Parameters");
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,190));
@@ -177,7 +173,8 @@ void CVFtPpemDlg(CharView *cv,int debug) {
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
 
-    label[0].text = (unichar_t *) _STR_Pointsize;
+    label[0].text = (unichar_t *) _("_Pointsize:");
+    label[0].text_is_1byte = true;
     label[0].text_in_resource = true;
     gcd[0].gd.label = &label[0];
     gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 17+5+6; 
@@ -193,7 +190,8 @@ void CVFtPpemDlg(CharView *cv,int debug) {
     gcd[1].gd.cid = CID_PointSize;
     gcd[1].creator = GTextFieldCreate;
 
-    label[2].text = (unichar_t *) _STR_DPI;
+    label[2].text = (unichar_t *) _("D_PI:");
+    label[2].text_is_1byte = true;
     label[2].text_in_resource = true;
     gcd[2].gd.label = &label[2];
     gcd[2].gd.pos.x = 110; gcd[2].gd.pos.y = 17+5+6; 
@@ -212,7 +210,8 @@ void CVFtPpemDlg(CharView *cv,int debug) {
     gcd[4].gd.pos.x = 20-3; gcd[4].gd.pos.y = 17+37;
     gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
     gcd[4].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[4].text = (unichar_t *) _STR_OK;
+    label[4].text = (unichar_t *) _("_OK");
+    label[4].text_is_1byte = true;
     label[4].text_in_resource = true;
     gcd[4].gd.mnemonic = 'O';
     gcd[4].gd.label = &label[4];
@@ -222,14 +221,16 @@ void CVFtPpemDlg(CharView *cv,int debug) {
     gcd[5].gd.pos.x = -20; gcd[5].gd.pos.y = 17+37+3;
     gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
     gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[5].text = (unichar_t *) _STR_Cancel;
+    label[5].text = (unichar_t *) _("_Cancel");
+    label[5].text_is_1byte = true;
     label[5].text_in_resource = true;
     gcd[5].gd.label = &label[5];
     gcd[5].gd.mnemonic = 'C';
     gcd[5].gd.handle_controlevent = FtPpem_Cancel;
     gcd[5].creator = GButtonCreate;
 
-    label[6].text = (unichar_t *) (debug ? _STR_Debug : _STR_ShowGridFit);
+    label[6].text = (unichar_t *) (debug ? _("_Debug") : _("Show _Grid Fit"));
+    label[6].text_is_1byte = true;
     label[6].text_in_resource = true;
     gcd[6].gd.label = &label[6];
     gcd[6].gd.pos.x = 17; gcd[6].gd.pos.y = 4; 
@@ -239,7 +240,8 @@ void CVFtPpemDlg(CharView *cv,int debug) {
     gcd[6].gd.cid = CID_ShowGrid;
     gcd[6].creator = GCheckBoxCreate;
 
-    label[7].text = (unichar_t *) _STR_Debugfpgm;
+    label[7].text = (unichar_t *) _("Debug _fpgm/prep");
+    label[7].text_is_1byte = true;
     label[7].text_in_resource = true;
     gcd[7].gd.label = &label[7];
     gcd[7].gd.pos.x = 80; gcd[7].gd.pos.y = 4; 

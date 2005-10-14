@@ -53,9 +53,9 @@ enum { bd_all, bd_selected, bd_current };
 static int lastwhich = bd_selected;
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static GTextInfo which[] = {
-    { (unichar_t *) _STR_AllGlyphs, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) _STR_SelGlyphs, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) _STR_CurGlyph, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("All Glyphs"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1 },
+    { (unichar_t *) N_("Selected Glyphs"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1 },
+    { (unichar_t *) N_("Current Glyph"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1 },
     { NULL }};
 
 static void RemoveBDFWindows(BDFFont *bdf) {
@@ -197,7 +197,7 @@ static void FVScaleBitmaps(FontView *fv,int32 *sizes) {
 	++cnt;
     scale = fv->show;
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressStartIndicatorR(10,_STR_ScalingBitmaps,_STR_ScalingBitmaps,0,cnt,1);
+    gwwv_progress_start_indicator(10,_("Scaling Bitmaps"),_("Scaling Bitmaps"),0,cnt,1);
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_start_indicator(10,_("Scaling Bitmaps"),_("Scaling Bitmaps"),0,cnt,1);
 #endif
@@ -211,7 +211,7 @@ static void FVScaleBitmaps(FontView *fv,int32 *sizes) {
 	fv->sf->changed = true;
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	if ( !GProgressNext())
+	if ( !gwwv_progress_next())
 #elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
 #endif
@@ -219,7 +219,7 @@ static void FVScaleBitmaps(FontView *fv,int32 *sizes) {
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressEndIndicator();
+    gwwv_progress_end_indicator();
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_end_indicator();
 #endif
@@ -293,7 +293,7 @@ static int FVRegenBitmaps(CreateBitmapData *bd,int32 *sizes,int usefreetype) {
 	    gwwv_post_notice(_("Missing Bitmap"),_("Attempt to regenerate a pixel size that has not been created (%d@%d)",
 			    sizes[i]&0xffff, sizes[i]>>16);
 #else
-	    GWidgetPostNoticeR(_STR_MissingBitmap,_STR_MissingRegenBitmapLong,
+	    gwwv_post_notice(_("Missing Bitmap"),_("Attempt to regenerate a pixel size that has not been created (%d@%d)"),
 		    sizes[i]&0xffff, sizes[i]>>16);
 #endif
 return( false );
@@ -423,7 +423,7 @@ static int32 *ParseList(GWindow gw, int cid,int *err, int final) {
 	if ( *end!=' ' && *end!=',' && *end!='\0' ) {
 	    free(sizes); free(ret);
 	    if ( final )
-		ProtestR(_STR_PixelSizes);
+		Protest8(_("Pixel Sizes:"));
 	    *err = true;
 return( NULL );
 	}
@@ -535,21 +535,13 @@ return( true );
 
 static void _CB_SystemChange(CreateBitmapData *bd) {
     int system = GetSystem(bd->gw);
-    GGadgetSetTitle(GWidgetGetControl(bd->gw,CID_75Lab),
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GStringGetResource(system==CID_X?_STR_PointSizes75:
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    system==CID_X?_("Point sizes on a 75 dpi screen")
-#endif
-			       system==CID_Win?_STR_PointSizes96:
-					       _STR_PointSizes72,NULL));
-    GGadgetSetTitle(GWidgetGetControl(bd->gw,CID_100Lab),
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GStringGetResource(system==CID_Win?_STR_PointSizes120:
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    system==CID_Win?_("Point sizes on a 120 dpi screen")
-#endif
-					       _STR_PointSizes100,NULL));
+    GGadgetSetTitle8(GWidgetGetControl(bd->gw,CID_75Lab),
+	    system==CID_X?_("Point sizes on a 75 dpi screen"):
+	    system==CID_Win?_("Point sizes on a 96 dpi screen"):
+			    _("Point sizes on a 72 dpi screen"));
+    GGadgetSetTitle8(GWidgetGetControl(bd->gw,CID_100Lab),
+	    system==CID_Win?_("Point sizes on a 120 dpi screen"):
+			    _("Point sizes on a 100 dpi screen"));
     GGadgetSetEnabled(GWidgetGetControl(bd->gw,CID_100Lab),system!=CID_Mac);
     GGadgetSetEnabled(GWidgetGetControl(bd->gw,CID_100),system!=CID_Mac);
     _CB_TextChange(bd,GWidgetGetControl(bd->gw,CID_Pixel));
@@ -589,6 +581,13 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     int i,j,y;
     int32 *sizes;
     BDFFont *bdf;
+    static int done= false;
+
+    if ( !done ) {
+	for ( i=0; which[i].text!=NULL; ++i )
+	    which[i].text = (unichar_t *) _((char *) which[i].text);
+	done = true;
+    }
 
     bd.fv = fv;
     bd.sc = sc;
@@ -611,16 +610,12 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     sizes[i] = 0;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(isavail ? _STR_Bitmapsavail : _STR_Regenbitmaps,NULL );
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = isavail ? _("Bitmaps Available...");
-#endif
+    wattrs.utf8_window_title = isavail ? _("Bitmaps Available...") : _("Regenerate Bitmaps...");
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,190));
@@ -631,33 +626,33 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     memset(&gcd,0,sizeof(gcd));
 
     if ( isavail ) {
-	label[0].text = (unichar_t *) _STR_ListPixelSizes;
-	label[0].text_in_resource = true;
+	label[0].text = (unichar_t *) _("The list of current pixel bitmap sizes");
+	label[0].text_is_1byte = true;
 	gcd[0].gd.label = &label[0];
 	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5; 
 	gcd[0].gd.flags = gg_enabled|gg_visible|gg_cb_on;
 	gcd[0].creator = GLabelCreate;
 
-	label[1].text = (unichar_t *) _STR_RemovingSize;
-	label[1].text_in_resource = true;
+	label[1].text = (unichar_t *) _(" Removing a size will delete it.");
+	label[1].text_is_1byte = true;
 	gcd[1].gd.label = &label[1];
 	gcd[1].gd.pos.x = 5; gcd[1].gd.pos.y = 5+13;
 	gcd[1].gd.flags = gg_enabled|gg_visible;
 	gcd[1].creator = GLabelCreate;
 
 	if ( bd.sf->onlybitmaps && bd.sf->bitmaps!=NULL )
-	    label[2].text = (unichar_t *) _STR_AddingSizeScale;
+	    label[2].text = (unichar_t *) _(" Adding a size will create it by scaling.");
 	else
-	    label[2].text = (unichar_t *) _STR_AddingSize;
-	label[2].text_in_resource = true;
+	    label[2].text = (unichar_t *) _(" Adding a size will create it.");
+	label[2].text_is_1byte = true;
 	gcd[2].gd.label = &label[2];
 	gcd[2].gd.pos.x = 5; gcd[2].gd.pos.y = 5+26;
 	gcd[2].gd.flags = gg_enabled|gg_visible;
 	gcd[2].creator = GLabelCreate;
 	j = 3; y = 5+39+3;
     } else {
-	label[0].text = (unichar_t *) _STR_SpecifyRegenSizes;
-	label[0].text_in_resource = true;
+	label[0].text = (unichar_t *) _("Specify bitmap sizes to be regenerated");
+	label[0].text_is_1byte = true;
 	gcd[0].gd.label = &label[0];
 	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5; 
 	gcd[0].gd.flags = gg_enabled|gg_visible|gg_cb_on;
@@ -677,8 +672,8 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
 	j=2; y = 5+13+28;
     }
 
-    label[j].text = (unichar_t *) _STR_XSizes;
-    label[j].text_in_resource = true;
+    label[j].text = (unichar_t *) _("X");
+    label[j].text_is_1byte = true;
     gcd[j].gd.label = &label[j];
     gcd[j].gd.pos.x = 10; gcd[j].gd.pos.y = y;
     gcd[j].gd.flags = gg_enabled|gg_visible;
@@ -686,8 +681,8 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     gcd[j].gd.handle_controlevent = CB_SystemChange;
     gcd[j++].creator = GRadioCreate;
 
-    label[j].text = (unichar_t *) _STR_WinSizes;
-    label[j].text_in_resource = true;
+    label[j].text = (unichar_t *) _("Win");
+    label[j].text_is_1byte = true;
     gcd[j].gd.label = &label[j];
     gcd[j].gd.pos.x = 50; gcd[j].gd.pos.y = y;
     gcd[j].gd.flags = gg_enabled|gg_visible;
@@ -695,8 +690,8 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     gcd[j].gd.handle_controlevent = CB_SystemChange;
     gcd[j++].creator = GRadioCreate;
 
-    label[j].text = (unichar_t *) _STR_MacSizes;
-    label[j].text_in_resource = true;
+    label[j].text = (unichar_t *) _("Mac");
+    label[j].text_is_1byte = true;
     gcd[j].gd.label = &label[j];
     gcd[j].gd.pos.x = 90; gcd[j].gd.pos.y = y;
     gcd[j].gd.flags = gg_enabled|gg_visible;
@@ -706,8 +701,8 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     y += 26;
     gcd[j-3+oldsystem].gd.flags |= gg_cb_on;
 
-    label[j].text = (unichar_t *) _STR_PointSizes75;
-    label[j].text_in_resource = true;
+    label[j].text = (unichar_t *) _("Point sizes on a 75 dpi screen");
+    label[j].text_is_1byte = true;
     gcd[j].gd.label = &label[j];
     gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = y;
     gcd[j].gd.flags = gg_enabled|gg_visible;
@@ -725,8 +720,8 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     gcd[j++].creator = GTextFieldCreate;
     y += 26;
 
-    label[j].text = (unichar_t *) _STR_PointSizes100;
-    label[j].text_in_resource = true;
+    label[j].text = (unichar_t *) _("Point sizes on a 100 dpi screen");
+    label[j].text_is_1byte = true;
     gcd[j].gd.label = &label[j];
     gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = y;
     gcd[j].gd.flags = gg_enabled|gg_visible;
@@ -746,8 +741,8 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     gcd[j++].creator = GTextFieldCreate;
     y += 26;
 
-    label[j].text = (unichar_t *) _STR_PixelSizes;
-    label[j].text_in_resource = true;
+    label[j].text = (unichar_t *) _("Pixel Sizes:");
+    label[j].text_is_1byte = true;
     gcd[j].gd.label = &label[j];
     gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = y;
     gcd[j].gd.flags = gg_enabled|gg_visible;
@@ -764,8 +759,8 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     gcd[j++].creator = GTextFieldCreate;
     y += 26;
 
-    label[j].text = (unichar_t *) _STR_UseFreeType;
-    label[j].text_in_resource = true;
+    label[j].text = (unichar_t *) _("Use FreeType");
+    label[j].text_is_1byte = true;
     gcd[j].gd.label = &label[j];
     gcd[j].gd.pos.x = 10; gcd[j].gd.pos.y = y;
     if ( !hasFreeType() || bd.sf->onlybitmaps)
@@ -788,7 +783,8 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     gcd[j].gd.pos.x = 20-3; gcd[j].gd.pos.y = 252-32-3;
     gcd[j].gd.pos.width = -1; gcd[j].gd.pos.height = 0;
     gcd[j].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[j].text = (unichar_t *) _STR_OK;
+    label[j].text = (unichar_t *) _("_OK");
+    label[j].text_is_1byte = true;
     label[j].text_in_resource = true;
     gcd[j].gd.mnemonic = 'O';
     gcd[j].gd.label = &label[j];
@@ -798,7 +794,8 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     gcd[j].gd.pos.x = -20; gcd[j].gd.pos.y = 252-32;
     gcd[j].gd.pos.width = -1; gcd[j].gd.pos.height = 0;
     gcd[j].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[j].text = (unichar_t *) _STR_Cancel;
+    label[j].text = (unichar_t *) _("_Cancel");
+    label[j].text_is_1byte = true;
     label[j].text_in_resource = true;
     gcd[j].gd.label = &label[j];
     gcd[j].gd.mnemonic = 'C';

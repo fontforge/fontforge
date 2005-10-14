@@ -267,7 +267,7 @@ static void BDFDumpChar(FILE *file,BDFFont *font,BDFChar *bdfc,int enc,
     }
     fprintf( file, "ENDCHAR\n" );
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressNext();
+    gwwv_progress_next();
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_next();
 #endif
@@ -503,7 +503,7 @@ int BDFFontDump(char *filename,BDFFont *font, EncMap *map, int res) {
     }
     file = fopen(filename,"w" );
     if ( file==NULL )
-	LogError( "Can't open %s\n", filename );
+	LogError( _("Can't open %s\n"), filename );
     else {
 	BDFDumpHeader(file,font,map,encodingname,res);
 	for ( i=0; i<map->enccount; ++i ) {
@@ -517,7 +517,7 @@ int BDFFontDump(char *filename,BDFFont *font, EncMap *map, int res) {
 	}
 	fprintf( file, "ENDFONT\n" );
 	if ( ferror(file))
-	    LogError( "Failed to write %s\n", filename );
+	    LogError( _("Failed to write %s\n"), filename );
 	else
 	    ret = 1;
 	fclose(file);

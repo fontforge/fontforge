@@ -138,7 +138,7 @@ static void FVStrokeIt(void *_fv, StrokeInfo *si) {
     for ( i=0; i<fv->map->enccount; ++i ) if ( (gid=fv->map->map[i])!=-1 && fv->sf->glyphs[gid]!=NULL && fv->selected[i] )
 	++cnt;
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressStartIndicatorR(10,_STR_Stroking,_STR_Stroking,0,cnt,1);
+    gwwv_progress_start_indicator(10,_("Stroking..."),_("Stroking..."),0,cnt,1);
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_start_indicator(10,_("Stroking..."),_("Stroking..."),0,cnt,1);
 #endif
@@ -157,7 +157,7 @@ static void FVStrokeIt(void *_fv, StrokeInfo *si) {
 	    SCCharChangedUpdate(sc);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	    if ( !GProgressNext())
+	    if ( !gwwv_progress_next())
 #elif defined(FONTFORGE_CONFIG_GTK)
 	    if ( !gwwv_progress_next())
 #endif
@@ -166,7 +166,7 @@ static void FVStrokeIt(void *_fv, StrokeInfo *si) {
 	}
     }
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressEndIndicator();
+    gwwv_progress_end_indicator();
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_end_indicator();
 #endif
@@ -196,10 +196,10 @@ static int Stroke_OK(GGadget *g, GEvent *e) {
 		GGadgetIsChecked( GWidgetGetControl(sw,CID_CenterLine)) )
 	    si->stroke_type = si_centerline;
 	if ( si!=&strokeinfo && si->stroke_type!=si_centerline ) {
-	    si->pressure1 = GetRealR(sw,CID_Pressure1,_STR_Pressure,&err);
-	    si->pressure2 = GetRealR(sw,CID_Pressure2,_STR_Pressure,&err);
+	    si->pressure1 = GetReal8(sw,CID_Pressure1,_("_Pressure:"),&err);
+	    si->pressure2 = GetReal8(sw,CID_Pressure2,_("_Pressure:"),&err);
 	    if ( si->pressure1!=si->pressure2 )
-		si->radius2 = GetRealR(sw,CID_Width2,_STR_StrokeWidth,&err)/2;
+		si->radius2 = GetReal8(sw,CID_Width2,_("Stroke _Width:"),&err)/2;
 	}
 	si->cap = GGadgetIsChecked( GWidgetGetControl(sw,CID_ButtCap))?lc_butt:
 		GGadgetIsChecked( GWidgetGetControl(sw,CID_RoundCap))?lc_round:
@@ -212,15 +212,15 @@ static int Stroke_OK(GGadget *g, GEvent *e) {
 	si->removeoverlapifneeded = GGadgetIsChecked( GWidgetGetControl(sw,CID_CleanupSelfIntersect));
 	if ( si->removeinternal && si->removeexternal ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_BadValue,_STR_NotInternalAndExternal);
+	    gwwv_post_error(_("Bad Value"),_("Removing both the internal and the external contours makes no sense"));
 #elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Bad Value"),_("Removing both the internal and the external contours makes no sense"));
 #endif
 	    err = true;
 	}
-	si->radius = GetRealR(sw,CID_Width,_STR_StrokeWidth,&err)/2;
+	si->radius = GetReal8(sw,CID_Width,_("Stroke _Width:"),&err)/2;
 	if ( si->stroke_type == si_elipse ) {
-	    si->penangle = GetRealR(sw,CID_PenAngle2,_STR_PenAngle,&err);
+	    si->penangle = GetReal8(sw,CID_PenAngle2,_("Pen _Angle:"),&err);
 	    if ( si->penangle>180 || si->penangle < -180 ) {
 		si->penangle = fmod(si->penangle,360);
 		if ( si->penangle>180 )
@@ -231,13 +231,13 @@ static int Stroke_OK(GGadget *g, GEvent *e) {
 	    si->penangle *= 3.1415926535897932/180;
 	    si->cap = lc_butt;
 	    si->join = lj_bevel;
-	    si->ratio = GetRealR(sw,CID_ThicknessRatio,_STR_PenHeightRatio,&err);
+	    si->ratio = GetReal8(sw,CID_ThicknessRatio,_("_Height Ratio:"),&err);
 	    si->s = sin(si->penangle);
 	    si->c = cos(si->penangle);
 	    si->cap = lc_round; si->join = lj_round;
-	    si->minorradius = GetRealR(sw,CID_MinorAxis,_STR_MinorAxis,&err)/2;
+	    si->minorradius = GetReal8(sw,CID_MinorAxis,_("Minor A_xis:"),&err)/2;
 	} else if ( si->stroke_type == si_caligraphic ) {
-	    si->penangle = GetRealR(sw,CID_PenAngle,_STR_PenAngle,&err);
+	    si->penangle = GetReal8(sw,CID_PenAngle,_("Pen _Angle:"),&err);
 	    if ( si->penangle>180 || si->penangle < -180 ) {
 		si->penangle = fmod(si->penangle,360);
 		if ( si->penangle>180 )
@@ -248,7 +248,7 @@ static int Stroke_OK(GGadget *g, GEvent *e) {
 	    si->penangle *= 3.1415926535897932/180;
 	    si->cap = lc_butt;
 	    si->join = lj_bevel;
-	    si->ratio = GetRealR(sw,CID_ThicknessRatio,_STR_PenHeightRatio,&err);
+	    si->ratio = GetReal8(sw,CID_ThicknessRatio,_("_Height Ratio:"),&err);
 	    si->s = sin(si->penangle);
 	    si->c = cos(si->penangle);
 	    r2 = si->ratio*si->radius;
@@ -282,8 +282,8 @@ static void StrokePressureCheck(StrokeDlg *sd) {
     int err = false;
     real p1, p2;
 
-    p1 = GetRealR(sd->gw,CID_Pressure1,_STR_Pressure,&err);
-    p2 = GetRealR(sd->gw,CID_Pressure2,_STR_Pressure,&err);
+    p1 = GetReal8(sd->gw,CID_Pressure1,_("_Pressure:"),&err);
+    p2 = GetReal8(sd->gw,CID_Pressure2,_("_Pressure:"),&err);
     GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_Width2),
 	    !err && p1!=p2 && !sd->dontexpand);
 }
@@ -396,11 +396,7 @@ return( false );
 	if ( sd->si && (!(event->u.mouse.state&0x0f00) || event->u.mouse.device!=NULL ) &&
 		!sd->dontexpand ) {
 	    if ( event->u.mouse.y >= sd->r1.y-3 && event->u.mouse.y < sd->r1.y+sd->r1.height+3 )
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GGadgetPreparePopup(gw,GStringGetResource(_STR_PressurePopup,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-		GGadgetPreparePopup(gw,_("Press in this square with a wacom pressure sensitive tool\nto set the pressure end-point"));
-#endif
+		GGadgetPreparePopup8(gw,_("Press in this square with a wacom pressure sensitive tool\nto set the pressure end-point"));
 	    if ( event->u.mouse.y >= sd->r1.y && event->u.mouse.y < sd->r1.y+sd->r1.height &&
 		    event->u.mouse.device!=NULL ) {
 		if ( event->u.mouse.x>=sd->r1.x && event->u.mouse.x < sd->r1.x+sd->r1.width )
@@ -460,16 +456,13 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 
     if ( sd->gw==NULL ) {
 	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
 	wattrs.event_masks = ~(1<<et_charup);
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	wattrs.window_title = GStringGetResource(strokeit!=NULL ? _STR_Stroke : _STR_FreeHand,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	wattrs.window_title = strokeit!=NULL ? _("Expand Stroke...");
-#endif
+	wattrs.utf8_window_title = strokeit!=NULL ? _("Expand Stroke...") :
+		    _("Free Hand");
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,SD_Width));
@@ -483,7 +476,8 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 
 	gcdoff = 0;
 	if ( strokeit==NULL ) {
-	    label[0].text = (unichar_t *) _STR_CenterLine;
+	    label[0].text = (unichar_t *) _("_Don't Expand");
+	    label[0].text_is_1byte = true;
 	    label[0].text_in_resource = true;
 	    gcd[0].gd.label = &label[0];
 	    gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5;
@@ -494,7 +488,8 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	    gcdoff = 1;
 	}
 
-	label[gcdoff].text = (unichar_t *) _STR_Strok;
+	label[gcdoff].text = (unichar_t *) _("_Stroke");
+	label[gcdoff].text_is_1byte = true;
 	label[gcdoff].text_in_resource = true;
 	gcd[gcdoff].gd.mnemonic = 'S';
 	gcd[gcdoff].gd.label = &label[gcdoff];
@@ -506,7 +501,8 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 
 	    /* This radio button is here rather than where it's location would */
 	    /*  suggest because itneeds to be grouped with stroke and dont expand */
-	label[gcdoff].text = (unichar_t *) _STR_Caligraphic;
+	label[gcdoff].text = (unichar_t *) _("_Caligraphic");
+	label[gcdoff].text_is_1byte = true;
 	label[gcdoff].text_in_resource = true;
 	gcd[gcdoff].gd.mnemonic = 'C';
 	gcd[gcdoff].gd.label = &label[gcdoff];
@@ -517,7 +513,8 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff++].creator = GRadioCreate;
 
 	    /* ditto */
-	label[gcdoff].text = (unichar_t *) _STR_ElipseM;
+	label[gcdoff].text = (unichar_t *) _("_Ellipse");
+	label[gcdoff].text_is_1byte = true;
 	label[gcdoff].text_in_resource = true;
 	gcd[gcdoff].gd.mnemonic = 'E';
 	gcd[gcdoff].gd.label = &label[gcdoff];
@@ -543,8 +540,8 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
 	gcd[gcdoff++].creator = GGroupCreate;
 
-	label[gcdoff].text = (unichar_t *) _STR_LineCap;
-	label[gcdoff].text_in_resource = true;
+	label[gcdoff].text = (unichar_t *) _("Line Cap");
+	label[gcdoff].text_is_1byte = true;
 	gcd[gcdoff].gd.label = &label[gcdoff];
 	gcd[gcdoff].gd.pos.x = 10; gcd[gcdoff].gd.pos.y = 23+yoff;
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
@@ -556,7 +553,8 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
 	gcd[gcdoff++].creator = GGroupCreate;
 
-	label[gcdoff].text = (unichar_t *) _STR_Butt;
+	label[gcdoff].text = (unichar_t *) _("_Butt");
+	label[gcdoff].text_is_1byte = true;
 	label[gcdoff].text_in_resource = true;
 	label[gcdoff].image = &GIcon_buttcap;
 	gcd[gcdoff].gd.mnemonic = 'B';
@@ -566,7 +564,8 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff].gd.cid = CID_ButtCap;
 	gcd[gcdoff++].creator = GRadioCreate;
 
-	label[gcdoff].text = (unichar_t *) _STR_Round;
+	label[gcdoff].text = (unichar_t *) _("_Round");
+	label[gcdoff].text_is_1byte = true;
 	label[gcdoff].text_in_resource = true;
 	label[gcdoff].image = &GIcon_roundcap;
 	gcd[gcdoff].gd.mnemonic = 'R';
@@ -576,7 +575,8 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff].gd.cid = CID_RoundCap;
 	gcd[gcdoff++].creator = GRadioCreate;
 
-	label[gcdoff].text = (unichar_t *) _STR_Squareq;
+	label[gcdoff].text = (unichar_t *) _("S_quare");
+	label[gcdoff].text_is_1byte = true;
 	label[gcdoff].text_in_resource = true;
 	label[gcdoff].image = &GIcon_squarecap;
 	gcd[gcdoff].gd.mnemonic = 'q';
@@ -586,7 +586,8 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff].gd.cid = CID_SquareCap;
 	gcd[gcdoff++].creator = GRadioCreate;
 
-	label[gcdoff].text = (unichar_t *) _STR_LineJoin;
+	label[gcdoff].text = (unichar_t *) _("Line Join");
+	label[gcdoff].text_is_1byte = true;
 	label[gcdoff].text_in_resource = true;
 	gcd[gcdoff].gd.label = &label[gcdoff];
 	gcd[gcdoff].gd.pos.x = gcd[gcdoff-5].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-3].gd.pos.y+25;
@@ -599,7 +600,8 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
 	gcd[gcdoff++].creator = GGroupCreate;
 
-	label[gcdoff].text = (unichar_t *) _STR_Miter;
+	label[gcdoff].text = (unichar_t *) _("_Miter");
+	label[gcdoff].text_is_1byte = true;
 	label[gcdoff].text_in_resource = true;
 	label[gcdoff].image = &GIcon_miterjoin;
 	gcd[gcdoff].gd.mnemonic = 'M';
@@ -609,7 +611,8 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff].gd.cid = CID_MiterJoin;
 	gcd[gcdoff++].creator = GRadioCreate;
 
-	label[gcdoff].text = (unichar_t *) _STR_Roundu;
+	label[gcdoff].text = (unichar_t *) _("Ro_und");
+	label[gcdoff].text_is_1byte = true;
 	label[gcdoff].text_in_resource = true;
 	label[gcdoff].image = &GIcon_roundjoin;
 	gcd[gcdoff].gd.mnemonic = 'u';
@@ -619,7 +622,8 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff].gd.cid = CID_RoundJoin;
 	gcd[gcdoff++].creator = GRadioCreate;
 
-	label[gcdoff].text = (unichar_t *) _STR_Bevel;
+	label[gcdoff].text = (unichar_t *) _("Be_vel");
+	label[gcdoff].text_is_1byte = true;
 	label[gcdoff].text_in_resource = true;
 	label[gcdoff].image = &GIcon_beveljoin;
 	gcd[gcdoff].gd.mnemonic = 'v';
@@ -630,7 +634,8 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff++].creator = GRadioCreate;
 
 	    /* Caligraphic */
-	label[gcdoff].text = (unichar_t *) _STR_PenAngle;
+	label[gcdoff].text = (unichar_t *) _("Pen _Angle:");
+	label[gcdoff].text_is_1byte = true;
 	label[gcdoff].text_in_resource = true;
 	gcd[gcdoff].gd.mnemonic = 'A';
 	gcd[gcdoff].gd.label = &label[gcdoff];
@@ -649,18 +654,15 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff].gd.cid = CID_PenAngle;
 	gcd[gcdoff++].creator = GTextFieldCreate;
 
-	label[gcdoff].text = (unichar_t *) _STR_PenHeightRatio;
+	label[gcdoff].text = (unichar_t *) _("_Height Ratio:");
+	label[gcdoff].text_is_1byte = true;
 	label[gcdoff].text_in_resource = true;
 	gcd[gcdoff].gd.mnemonic = 'H';
 	gcd[gcdoff].gd.label = &label[gcdoff];
 	gcd[gcdoff].gd.pos.x = gcd[gcdoff-2].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-2].gd.pos.y+24;
-	gcd[gcdoff].gd.flags = gg_visible;
+	gcd[gcdoff].gd.flags = gg_visible | gg_utf8_popup;
 	gcd[gcdoff].gd.cid = CID_ThicknessRatioTxt;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	gcd[gcdoff].gd.popup_msg = GStringGetResource(_STR_PenHeightRatioPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gcd[gcdoff].gd.popup_msg = _("A caligraphic pen's nib has two dimensions, the width\n(which may be set by Stroke Width below) and a thickness\nor height. I express the height as a ratio to the width.");
-#endif
+	gcd[gcdoff].gd.popup_msg = (unichar_t *) _("A caligraphic pen's nib has two dimensions, the width\n(which may be set by Stroke Width below) and a thickness\nor height. I express the height as a ratio to the width.");
 	gcd[gcdoff++].creator = GLabelCreate;
 
 	sprintf( ratiobuf, "%g", def->ratio );
@@ -669,17 +671,14 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff].gd.mnemonic = 'H';
 	gcd[gcdoff].gd.label = &label[gcdoff];
 	gcd[gcdoff].gd.pos.x = gcd[gcdoff-2].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-2].gd.pos.y+24;
-	gcd[gcdoff].gd.flags = gg_visible;
+	gcd[gcdoff].gd.flags = gg_visible | gg_utf8_popup;
 	gcd[gcdoff].gd.cid = CID_ThicknessRatio;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	gcd[gcdoff].gd.popup_msg = GStringGetResource(_STR_PenHeightRatioPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gcd[gcdoff].gd.popup_msg = _("A caligraphic pen's nib has two dimensions, the width\n(which may be set by Stroke Width below) and a thickness\nor height. I express the height as a ratio to the width.");
-#endif
+	gcd[gcdoff].gd.popup_msg = (unichar_t *) _("A caligraphic pen's nib has two dimensions, the width\n(which may be set by Stroke Width below) and a thickness\nor height. I express the height as a ratio to the width.");
 	gcd[gcdoff++].creator = GTextFieldCreate;
 
 	    /* Elipse */
-	label[gcdoff].text = (unichar_t *) _STR_PenAngle;
+	label[gcdoff].text = (unichar_t *) _("Pen _Angle:");
+	label[gcdoff].text_is_1byte = true;
 	label[gcdoff].text_in_resource = true;
 	gcd[gcdoff].gd.mnemonic = 'A';
 	gcd[gcdoff].gd.label = &label[gcdoff];
@@ -698,7 +697,8 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff].gd.cid = CID_PenAngle2;
 	gcd[gcdoff++].creator = GTextFieldCreate;
 
-	label[gcdoff].text = (unichar_t *) _STR_MinorAxis;
+	label[gcdoff].text = (unichar_t *) _("Minor A_xis:");
+	label[gcdoff].text_is_1byte = true;
 	label[gcdoff].text_in_resource = true;
 	gcd[gcdoff].gd.mnemonic = 'H';
 	gcd[gcdoff].gd.label = &label[gcdoff];
@@ -713,18 +713,15 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff].gd.mnemonic = 'H';
 	gcd[gcdoff].gd.label = &label[gcdoff];
 	gcd[gcdoff].gd.pos.x = gcd[gcdoff-2].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-2].gd.pos.y+24;
-	gcd[gcdoff].gd.flags = gg_visible;
+	gcd[gcdoff].gd.flags = gg_visible | gg_utf8_popup;
 	gcd[gcdoff].gd.cid = CID_MinorAxis;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	gcd[gcdoff].gd.popup_msg = GStringGetResource(_STR_PenHeightRatioPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gcd[gcdoff].gd.popup_msg = _("A caligraphic pen's nib has two dimensions, the width\n(which may be set by Stroke Width below) and a thickness\nor height. I express the height as a ratio to the width.");
-#endif
+	gcd[gcdoff].gd.popup_msg = (unichar_t *) _("A caligraphic pen's nib has two dimensions, the width\n(which may be set by Stroke Width below) and a thickness\nor height. I express the height as a ratio to the width.");
 	gcd[gcdoff++].creator = GTextFieldCreate;
 	/* End radio area */
 
 	width_pos = gcdoff;
-	label[gcdoff].text = (unichar_t *) _STR_StrokeWidth;
+	label[gcdoff].text = (unichar_t *) _("Stroke _Width:");
+	label[gcdoff].text_is_1byte = true;
 	label[gcdoff].text_in_resource = true;
 	gcd[gcdoff].gd.mnemonic = 'W';
 	gcd[gcdoff].gd.label = &label[gcdoff];
@@ -764,7 +761,8 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	    sd->r2 = sd->r1;
 	    sd->r2.x = GDrawPointsToPixels(NULL,150);
 
-	    label[gcdoff].text = (unichar_t *) _STR_Pressure;
+	    label[gcdoff].text = (unichar_t *) _("_Pressure:");
+	    label[gcdoff].text_is_1byte = true;
 	    label[gcdoff].text_in_resource = true;
 	    gcd[gcdoff].gd.mnemonic = 'P';
 	    gcd[gcdoff].gd.label = &label[gcdoff];
@@ -798,7 +796,8 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	    gcd[gcdoff++].gd.pos.width = 50;
 	}
 
-	label[gcdoff].text = (unichar_t *) _STR_RmInternalContour;
+	label[gcdoff].text = (unichar_t *) _("Remove Internal Contour");
+	label[gcdoff].text_is_1byte = true;
 	label[gcdoff].text_in_resource = true;
 	gcd[gcdoff].gd.label = &label[gcdoff];
 	gcd[gcdoff].gd.pos.x = gcd[width_pos].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+20;
@@ -806,7 +805,8 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff].gd.cid = CID_RmInternal;
 	gcd[gcdoff++].creator = GCheckBoxCreate;
 
-	label[gcdoff].text = (unichar_t *) _STR_RmExternalContour;
+	label[gcdoff].text = (unichar_t *) _("Remove External Contour");
+	label[gcdoff].text_is_1byte = true;
 	label[gcdoff].text_in_resource = true;
 	gcd[gcdoff].gd.label = &label[gcdoff];
 	gcd[gcdoff].gd.pos.x = gcd[gcdoff-1].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+15;
@@ -814,23 +814,21 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff].gd.cid = CID_RmExternal;
 	gcd[gcdoff++].creator = GCheckBoxCreate;
 
-	label[gcdoff].text = (unichar_t *) _STR_CleanupSelfIntersect;
+	label[gcdoff].text = (unichar_t *) _("Cleanup Self Intersect");
+	label[gcdoff].text_is_1byte = true;
 	label[gcdoff].text_in_resource = true;
 	gcd[gcdoff].gd.label = &label[gcdoff];
 	gcd[gcdoff].gd.pos.x = gcd[gcdoff-1].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+15;
-	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (def->removeoverlapifneeded?gg_cb_on:0);
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | gg_utf8_popup | (def->removeoverlapifneeded?gg_cb_on:0);
 	gcd[gcdoff].gd.cid = CID_CleanupSelfIntersect;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	gcd[gcdoff].gd.popup_msg = GStringGetResource(_STR_CleanupSelfIntersectPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gcd[gcdoff].gd.popup_msg = _("When FontForge detects that an expanded stroke will self-intersect,\nthen setting this option will cause it to try to make things nice\nby removing the intersections");
-#endif
+	gcd[gcdoff].gd.popup_msg = (unichar_t *) _("When FontForge detects that an expanded stroke will self-intersect,\nthen setting this option will cause it to try to make things nice\nby removing the intersections");
 	gcd[gcdoff++].creator = GCheckBoxCreate;
 
 	gcd[gcdoff].gd.pos.x = 30-3; gcd[gcdoff].gd.pos.y = (strokeit!=NULL?SD_Height:FH_Height)-30-3;
 	gcd[gcdoff].gd.pos.width = -1;
 	gcd[gcdoff].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[gcdoff].text = (unichar_t *) _STR_OK;
+	label[gcdoff].text = (unichar_t *) _("_OK");
+	label[gcdoff].text_is_1byte = true;
 	label[gcdoff].text_in_resource = true;
 	gcd[gcdoff].gd.mnemonic = 'O';
 	gcd[gcdoff].gd.label = &label[gcdoff];
@@ -840,7 +838,8 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff].gd.pos.x = -30; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+3;
 	gcd[gcdoff].gd.pos.width = -1;
 	gcd[gcdoff].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[gcdoff].text = (unichar_t *) _STR_Cancel;
+	label[gcdoff].text = (unichar_t *) _("_Cancel");
+	label[gcdoff].text_is_1byte = true;
 	label[gcdoff].text_in_resource = true;
 	gcd[gcdoff].gd.label = &label[gcdoff];
 	gcd[gcdoff].gd.mnemonic = 'C';
@@ -940,7 +939,7 @@ static uint32 getcol(GGadget *g,int *err) {
     if ( col<0 || col>0xffffff || *end!='\0' ) {
 	*err = true;
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_BadColor,_STR_BadColor);
+	gwwv_post_error(_("Bad Color"),_("Bad Color"));
 #elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad Color"),_("Bad Color"));
 #endif
@@ -969,7 +968,7 @@ static int Layer_OK(GGadget *g, GEvent *e) {
 	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_FillOInherit)) )
 	    temp.fill_brush.opacity = -1;
 	else
-	    temp.fill_brush.opacity = GetRealR(gw,CID_FillOpacity,_STR_Opacity,&err);
+	    temp.fill_brush.opacity = GetReal8(gw,CID_FillOpacity,_("Opacity:"),&err);
 
 	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_StrokeCInherit)) )
 	    temp.stroke_pen.brush.col = COLOR_INHERITED;
@@ -978,11 +977,11 @@ static int Layer_OK(GGadget *g, GEvent *e) {
 	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_StrokeOInherit)) )
 	    temp.stroke_pen.brush.opacity = -1;
 	else
-	    temp.stroke_pen.brush.opacity = GetRealR(gw,CID_StrokeOpacity,_STR_Opacity,&err);
+	    temp.stroke_pen.brush.opacity = GetReal8(gw,CID_StrokeOpacity,_("Opacity:"),&err);
 	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_StrokeWInherit)) )
 	    temp.stroke_pen.width = WIDTH_INHERITED;
 	else
-	    temp.stroke_pen.width = GetRealR(gw,CID_Width,_STR_Width,&err);
+	    temp.stroke_pen.width = GetReal8(gw,CID_Width,_("_Width"),&err);
 	if ( err )
 return( true );
 
@@ -995,7 +994,7 @@ return( true );
 	for ( ret = end2 ; *ret==' ' || *ret==']' ; ++ret );
 	if ( end2==end || *ret!='\0' || temp.stroke_pen.trans[0] ==0 || temp.stroke_pen.trans[3]==0 ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_BadMatrix,_STR_BadMatrix);
+	    gwwv_post_error(_("Bad Transformation Matrix"),_("Bad Transformation Matrix"));
 #elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Bad Transformation Matrix"),_("Bad Transformation Matrix"));
 #endif
@@ -1011,13 +1010,13 @@ return( true );
 		if ( *end=='\0' )
 	    break;
 		if ( val<0 || val>255 ) {
-		    GWidgetErrorR(_STR_BadDash,_STR_OutOfRange);
+		    gwwv_post_error(_("Bad dash list"),_("Value out of range"));
 return( true );
 		} else if ( *end!=' ' ) {
-		    GWidgetErrorR(_STR_BadDash,_STR_BadNumber);
+		    gwwv_post_error(_("Bad dash list"),_("Bad Number"));
 return( true );
 		} else if ( i>=DASH_MAX ) {
-		    GWidgetErrorR(_STR_BadDash,_STR_TooManyDashes, DASH_MAX);
+		    gwwv_post_error(_("Bad dash list"),_("Too many dashes (at most %d allowed)"), DASH_MAX);
 return( true );
 		}
 		temp.stroke_pen.dashes[i] = val;
@@ -1096,16 +1095,12 @@ int LayerDialog(Layer *layer) {
     ld.layer = layer;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(_STR_Layer,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = _("Layer");
-#endif
+    wattrs.utf8_window_title = _("Layer");
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,LY_Width));
@@ -1117,7 +1112,8 @@ int LayerDialog(Layer *layer) {
 
     gcdoff = 0;
 
-    label[gcdoff].text = (unichar_t *) _STR_Fill;
+    label[gcdoff].text = (unichar_t *) _("Fi_ll");
+    label[gcdoff].text_is_1byte = true;
     label[gcdoff].text_in_resource = true;
     gcd[gcdoff].gd.label = &label[gcdoff];
     gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = 5+yoff;
@@ -1131,8 +1127,8 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
     gcd[gcdoff++].creator = GGroupCreate;
 
-    label[gcdoff].text = (unichar_t *) _STR_Color;
-    label[gcdoff].text_in_resource = true;
+    label[gcdoff].text = (unichar_t *) _("Color:");
+    label[gcdoff].text_is_1byte = true;
     gcd[gcdoff].gd.label = &label[gcdoff];
     gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+12;
     gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
@@ -1152,8 +1148,8 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.cid = CID_FillColor;
     gcd[gcdoff++].creator = GTextFieldCreate;
 
-    label[gcdoff].text = (unichar_t *) _STR_Inherited;
-    label[gcdoff].text_in_resource = true;
+    label[gcdoff].text = (unichar_t *) _("Inherited");
+    label[gcdoff].text_is_1byte = true;
     gcd[gcdoff].gd.label = &label[gcdoff];
     gcd[gcdoff].gd.pos.x = 165; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+2;
     gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (layer->fill_brush.col==COLOR_INHERITED? gg_cb_on : 0);
@@ -1162,8 +1158,8 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.handle_controlevent = Layer_Inherit;
     gcd[gcdoff++].creator = GCheckBoxCreate;
 
-    label[gcdoff].text = (unichar_t *) _STR_Opacity;
-    label[gcdoff].text_in_resource = true;
+    label[gcdoff].text = (unichar_t *) _("Opacity:");
+    label[gcdoff].text_is_1byte = true;
     gcd[gcdoff].gd.label = &label[gcdoff];
     gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+25;
     gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
@@ -1183,8 +1179,8 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.cid = CID_FillOpacity;
     gcd[gcdoff++].creator = GTextFieldCreate;
 
-    label[gcdoff].text = (unichar_t *) _STR_Inherited;
-    label[gcdoff].text_in_resource = true;
+    label[gcdoff].text = (unichar_t *) _("Inherited");
+    label[gcdoff].text_is_1byte = true;
     gcd[gcdoff].gd.label = &label[gcdoff];
     gcd[gcdoff].gd.pos.x = 165; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+2;
     gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (layer->fill_brush.opacity<0? gg_cb_on : 0);
@@ -1193,8 +1189,8 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.handle_controlevent = Layer_Inherit;
     gcd[gcdoff++].creator = GCheckBoxCreate;
 
-    label[gcdoff].text = (unichar_t *) _STR_Strok;
-    label[gcdoff].text_in_resource = true;
+    label[gcdoff].text = (unichar_t *) _("Stroke");
+    label[gcdoff].text_is_1byte = true;
     gcd[gcdoff].gd.mnemonic = 'S';
     gcd[gcdoff].gd.label = &label[gcdoff];
     gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[fill_gcd].gd.pos.y+gcd[fill_gcd].gd.pos.height+4;
@@ -1207,8 +1203,8 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
     gcd[gcdoff++].creator = GGroupCreate;
 
-    label[gcdoff].text = (unichar_t *) _STR_Color;
-    label[gcdoff].text_in_resource = true;
+    label[gcdoff].text = (unichar_t *) _("Color:");
+    label[gcdoff].text_is_1byte = true;
     gcd[gcdoff].gd.label = &label[gcdoff];
     gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+12;
     gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
@@ -1228,8 +1224,8 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.cid = CID_StrokeColor;
     gcd[gcdoff++].creator = GTextFieldCreate;
 
-    label[gcdoff].text = (unichar_t *) _STR_Inherited;
-    label[gcdoff].text_in_resource = true;
+    label[gcdoff].text = (unichar_t *) _("Inherited");
+    label[gcdoff].text_is_1byte = true;
     gcd[gcdoff].gd.label = &label[gcdoff];
     gcd[gcdoff].gd.pos.x = 165; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+2;
     gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (layer->stroke_pen.brush.col==COLOR_INHERITED? gg_cb_on : 0);
@@ -1238,8 +1234,8 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.handle_controlevent = Layer_Inherit;
     gcd[gcdoff++].creator = GCheckBoxCreate;
 
-    label[gcdoff].text = (unichar_t *) _STR_Opacity;
-    label[gcdoff].text_in_resource = true;
+    label[gcdoff].text = (unichar_t *) _("Opacity:");
+    label[gcdoff].text_is_1byte = true;
     gcd[gcdoff].gd.mnemonic = 'W';
     gcd[gcdoff].gd.label = &label[gcdoff];
     gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+25;
@@ -1260,8 +1256,8 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.cid = CID_StrokeOpacity;
     gcd[gcdoff++].creator = GTextFieldCreate;
 
-    label[gcdoff].text = (unichar_t *) _STR_Inherited;
-    label[gcdoff].text_in_resource = true;
+    label[gcdoff].text = (unichar_t *) _("Inherited");
+    label[gcdoff].text_is_1byte = true;
     gcd[gcdoff].gd.label = &label[gcdoff];
     gcd[gcdoff].gd.pos.x = 165; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+2;
     gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (layer->stroke_pen.brush.opacity<0? gg_cb_on : 0);
@@ -1270,8 +1266,8 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.handle_controlevent = Layer_Inherit;
     gcd[gcdoff++].creator = GCheckBoxCreate;
 
-    label[gcdoff].text = (unichar_t *) _STR_StrokeWidth;
-    label[gcdoff].text_in_resource = true;
+    label[gcdoff].text = (unichar_t *) _("Stroke _Width:");
+    label[gcdoff].text_is_1byte = true;
     gcd[gcdoff].gd.mnemonic = 'W';
     gcd[gcdoff].gd.label = &label[gcdoff];
     gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+26;
@@ -1293,8 +1289,8 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.cid = CID_Width;
     gcd[gcdoff++].creator = GTextFieldCreate;
 
-    label[gcdoff].text = (unichar_t *) _STR_Inherited;
-    label[gcdoff].text_in_resource = true;
+    label[gcdoff].text = (unichar_t *) _("Inherited");
+    label[gcdoff].text_is_1byte = true;
     gcd[gcdoff].gd.label = &label[gcdoff];
     gcd[gcdoff].gd.pos.x = 165; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+2;
     gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (layer->stroke_pen.width==WIDTH_INHERITED? gg_cb_on : 0);
@@ -1303,13 +1299,13 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.handle_controlevent = Layer_Inherit;
     gcd[gcdoff++].creator = GCheckBoxCreate;
 
-    label[gcdoff].text = (unichar_t *) _STR_Dashes;
-    label[gcdoff].text_in_resource = true;
+    label[gcdoff].text = (unichar_t *) _("Dashes");
+    label[gcdoff].text_is_1byte = true;
     gcd[gcdoff].gd.label = &label[gcdoff];
     gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+26;
-    gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
     gcd[gcdoff].gd.cid = CID_DashesTxt;
-    gcd[gcdoff].gd.popup_msg = GStringGetResource(_STR_DashesPopup,NULL);
+    gcd[gcdoff].gd.popup_msg = (unichar_t *) _("This specifies the dash pattern for a line.\nLeave this field blank for a solid line.\nOtherwise specify a list of up to 8 integers\n(between 0 and 255) which give the dash pattern\nin em-units. So \"10 10\" will draw the first\n10 units of a line, leave the next 10 blank,\ndraw the next 10, and so on.");
     gcd[gcdoff++].creator = GLabelCreate;
 
     pt = dashbuf; dashbuf[0] = '\0';
@@ -1331,22 +1327,23 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.cid = CID_Dashes;
     gcd[gcdoff++].creator = GTextFieldCreate;
 
-    label[gcdoff].text = (unichar_t *) _STR_Inherited;
-    label[gcdoff].text_in_resource = true;
+    label[gcdoff].text = (unichar_t *) _("Inherited");
+    label[gcdoff].text_is_1byte = true;
     gcd[gcdoff].gd.label = &label[gcdoff];
     gcd[gcdoff].gd.pos.x = 165; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+2;
     if ( layer->stroke_pen.dashes[0]==0 && layer->stroke_pen.dashes[1]==DASH_INHERITED ) 
-	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | gg_cb_on;
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | gg_cb_on | gg_utf8_popup;
     else
-	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
     gcd[gcdoff].data = (void *) CID_Dashes;
     gcd[gcdoff].gd.cid = CID_DashesInherit;
     gcd[gcdoff].gd.handle_controlevent = Layer_Inherit;
-    gcd[gcdoff].gd.popup_msg = GStringGetResource(_STR_DashesPopup,NULL);
+    gcd[gcdoff].gd.popup_msg = (unichar_t *) _("This specifies the dash pattern for a line.\nLeave this field blank for a solid line.\nOtherwise specify a list of up to 8 integers\n(between 0 and 255) which give the dash pattern\nin em-units. So \"10 10\" will draw the first\n10 units of a line, leave the next 10 blank,\ndraw the next 10, and so on.");
     gcd[gcdoff++].creator = GCheckBoxCreate;
 
-    label[gcdoff].text = (unichar_t *) _STR_TransformPen;
+    label[gcdoff].text = (unichar_t *) _("_Transform Pen:");
     label[gcdoff].text_in_resource = true;
+    label[gcdoff].text_is_1byte = true;
     gcd[gcdoff].gd.mnemonic = 'W';
     gcd[gcdoff].gd.label = &label[gcdoff];
     gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+25;
@@ -1365,8 +1362,8 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.cid = CID_Trans;
     gcd[gcdoff++].creator = GTextFieldCreate;
 
-    label[gcdoff].text = (unichar_t *) _STR_LineCap;
-    label[gcdoff].text_in_resource = true;
+    label[gcdoff].text = (unichar_t *) _("Line Cap");
+    label[gcdoff].text_is_1byte = true;
     gcd[gcdoff].gd.label = &label[gcdoff];
     gcd[gcdoff].gd.pos.x = 10; gcd[gcdoff].gd.pos.y = gcd[gcdoff-2].gd.pos.y+20;
     gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
@@ -1378,7 +1375,8 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
     gcd[gcdoff++].creator = GGroupCreate;
 
-    label[gcdoff].text = (unichar_t *) _STR_Butt;
+    label[gcdoff].text = (unichar_t *) _("_Butt");
+    label[gcdoff].text_is_1byte = true;
     label[gcdoff].text_in_resource = true;
     label[gcdoff].image = &GIcon_buttcap;
     gcd[gcdoff].gd.mnemonic = 'B';
@@ -1388,7 +1386,8 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.cid = CID_ButtCap;
     gcd[gcdoff++].creator = GRadioCreate;
 
-    label[gcdoff].text = (unichar_t *) _STR_Round;
+    label[gcdoff].text = (unichar_t *) _("_Round");
+    label[gcdoff].text_is_1byte = true;
     label[gcdoff].text_in_resource = true;
     label[gcdoff].image = &GIcon_roundcap;
     gcd[gcdoff].gd.mnemonic = 'R';
@@ -1398,7 +1397,8 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.cid = CID_RoundCap;
     gcd[gcdoff++].creator = GRadioCreate;
 
-    label[gcdoff].text = (unichar_t *) _STR_Squareq;
+    label[gcdoff].text = (unichar_t *) _("S_quare");
+    label[gcdoff].text_is_1byte = true;
     label[gcdoff].text_in_resource = true;
     label[gcdoff].image = &GIcon_squarecap;
     gcd[gcdoff].gd.mnemonic = 'q';
@@ -1408,16 +1408,16 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.cid = CID_SquareCap;
     gcd[gcdoff++].creator = GRadioCreate;
 
-    label[gcdoff].text = (unichar_t *) _STR_Inherited;
-    label[gcdoff].text_in_resource = true;
+    label[gcdoff].text = (unichar_t *) _("Inherited");
+    label[gcdoff].text_is_1byte = true;
     gcd[gcdoff].gd.label = &label[gcdoff];
     gcd[gcdoff].gd.pos.x = 220; gcd[gcdoff].gd.pos.y = gcd[gcdoff-2].gd.pos.y;
     gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (layer->stroke_pen.linecap==lc_inherited?gg_cb_on:0);
     gcd[gcdoff].gd.cid = CID_InheritCap;
     gcd[gcdoff++].creator = GRadioCreate;
 
-    label[gcdoff].text = (unichar_t *) _STR_LineJoin;
-    label[gcdoff].text_in_resource = true;
+    label[gcdoff].text = (unichar_t *) _("Line Join");
+    label[gcdoff].text_is_1byte = true;
     gcd[gcdoff].gd.label = &label[gcdoff];
     gcd[gcdoff].gd.pos.x = gcd[gcdoff-6].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-3].gd.pos.y+25;
     gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
@@ -1429,7 +1429,8 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
     gcd[gcdoff++].creator = GGroupCreate;
 
-    label[gcdoff].text = (unichar_t *) _STR_Miter;
+    label[gcdoff].text = (unichar_t *) _("_Miter");
+    label[gcdoff].text_is_1byte = true;
     label[gcdoff].text_in_resource = true;
     label[gcdoff].image = &GIcon_miterjoin;
     gcd[gcdoff].gd.mnemonic = 'M';
@@ -1439,7 +1440,8 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.cid = CID_MiterJoin;
     gcd[gcdoff++].creator = GRadioCreate;
 
-    label[gcdoff].text = (unichar_t *) _STR_Roundu;
+    label[gcdoff].text = (unichar_t *) _("Ro_und");
+    label[gcdoff].text_is_1byte = true;
     label[gcdoff].text_in_resource = true;
     label[gcdoff].image = &GIcon_roundjoin;
     gcd[gcdoff].gd.mnemonic = 'u';
@@ -1449,7 +1451,8 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.cid = CID_RoundJoin;
     gcd[gcdoff++].creator = GRadioCreate;
 
-    label[gcdoff].text = (unichar_t *) _STR_Bevel;
+    label[gcdoff].text = (unichar_t *) _("Be_vel");
+    label[gcdoff].text_is_1byte = true;
     label[gcdoff].text_in_resource = true;
     label[gcdoff].image = &GIcon_beveljoin;
     gcd[gcdoff].gd.mnemonic = 'v';
@@ -1459,8 +1462,8 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.cid = CID_BevelJoin;
     gcd[gcdoff++].creator = GRadioCreate;
 
-    label[gcdoff].text = (unichar_t *) _STR_Inherited;
-    label[gcdoff].text_in_resource = true;
+    label[gcdoff].text = (unichar_t *) _("Inherited");
+    label[gcdoff].text_is_1byte = true;
     gcd[gcdoff].gd.mnemonic = 'q';
     gcd[gcdoff].gd.label = &label[gcdoff];
     gcd[gcdoff].gd.pos.x = 220; gcd[gcdoff].gd.pos.y = gcd[gcdoff-2].gd.pos.y;
@@ -1472,7 +1475,8 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.pos.x = 30-3; gcd[gcdoff].gd.pos.y = LY_Height-30-3;
     gcd[gcdoff].gd.pos.width = -1;
     gcd[gcdoff].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[gcdoff].text = (unichar_t *) _STR_OK;
+    label[gcdoff].text = (unichar_t *) _("_OK");
+    label[gcdoff].text_is_1byte = true;
     label[gcdoff].text_in_resource = true;
     gcd[gcdoff].gd.label = &label[gcdoff];
     gcd[gcdoff].gd.handle_controlevent = Layer_OK;
@@ -1481,7 +1485,8 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.pos.x = -30; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+3;
     gcd[gcdoff].gd.pos.width = -1;
     gcd[gcdoff].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[gcdoff].text = (unichar_t *) _STR_Cancel;
+    label[gcdoff].text = (unichar_t *) _("_Cancel");
+    label[gcdoff].text_is_1byte = true;
     label[gcdoff].text_in_resource = true;
     gcd[gcdoff].gd.label = &label[gcdoff];
     gcd[gcdoff].gd.handle_controlevent = Layer_Cancel;

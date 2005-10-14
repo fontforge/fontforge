@@ -433,11 +433,7 @@ static void FVFlattenAllBitmapSelections(FontView *fv) {
 
 static int AskChanged(SplineFont *sf) {
     int ret;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    static int buts[] = { _STR_Save, _STR_Dontsave, _STR_Cancel, 0 };
-#elif defined(FONTFORGE_CONFIG_GTK)
     char *buts[4];
-#endif
     char *filename, *fontname;
 
     if ( sf->cidmaster!=NULL )
@@ -452,35 +448,33 @@ static int AskChanged(SplineFont *sf) {
     if ( filename==NULL ) filename = "untitled.sfd";
     filename = GFileNameTail(filename);
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    ret = GWidgetAskR( _STR_Fontchange,buts,0,2,_STR_FontChangedMsg,fontname,filename);
+    buts[0] = _("_Save");
+    buts[2] = _("_Cancel");
 #elif defined(FONTFORGE_CONFIG_GTK)
     buts[0] = GTK_STOCK_SAVE;
-    buts[1] = _("_Don't Save");
     buts[2] = GTK_STOCK_CANCEL;
-    buts[3] = NULL;
-    ret = gwwv_ask( _("Font changed"),buts,0,2,_("Font %1$.40s in file %2$.40s has been changed.\nDo you want to save it?"),fontname,filename);
 #endif
+    buts[1] = _("_Don't Save");
+    buts[3] = NULL;
+    ret = gwwv_ask( _("Font changed"),(const char **) buts,0,2,_("Font %1$.40s in file %2$.40s has been changed.\nDo you want to save it?"),fontname,filename);
 return( ret );
 }
 
 static int RevertAskChanged(char *fontname,char *filename) {
     int ret;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    static int buts[] = { _STR_Revert, _STR_Cancel, 0 };
-#elif defined(FONTFORGE_CONFIG_GTK)
     char *buts[3];
-#endif
 
     if ( filename==NULL ) filename = "untitled.sfd";
     filename = GFileNameTail(filename);
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    ret = GWidgetAskR( _STR_Fontchange,buts,0,1,_STR_FontChangedRevertMsg,fontname,filename);
+    buts[0] = _("_Revert");
+    buts[1] = _("_Cancel");
 #elif defined(FONTFORGE_CONFIG_GTK)
     buts[0] = GTK_STOCK_REVERT;
     buts[1] = GTK_STOCK_CANCEL;
-    buts[2] = NULL;
-    ret = gwwv_ask( _("Font changed"),buts,0,1,_("Font %1$.40s in file %2$.40s has been changed.\nReverting the file will lose those changes.\nIs that what you want?"),fontname,filename);
 #endif
+    buts[2] = NULL;
+    ret = gwwv_ask( _("Font changed"),(const char **) buts,0,1,_("Font %1$.40s in file %2$.40s has been changed.\nReverting the file will lose those changes.\nIs that what you want?"),fontname,filename);
 return( ret==0 );
 }
 #endif
@@ -518,41 +512,37 @@ void FontViewMenu_GenerateFamily(GtkMenuItem *menuitem, gpointer user_data) {
 # endif
 
 int _FVMenuSaveAs(FontView *fv) {
-    unichar_t *temp;
-    unichar_t *ret;
+    char *temp;
+    char *ret;
     char *filename;
     int ok;
 
     if ( fv->cidmaster!=NULL && fv->cidmaster->filename!=NULL )
-	temp=def2u_copy(fv->cidmaster->filename);
+	temp=def2utf8_copy(fv->cidmaster->filename);
     else if ( fv->sf->mm!=NULL && fv->sf->mm->normal->filename!=NULL )
-	temp=def2u_copy(fv->sf->mm->normal->filename);
+	temp=def2utf8_copy(fv->sf->mm->normal->filename);
     else if ( fv->sf->filename!=NULL )
-	temp=def2u_copy(fv->sf->filename);
+	temp=def2utf8_copy(fv->sf->filename);
     else {
 	SplineFont *sf = fv->cidmaster?fv->cidmaster:
 		fv->sf->mm!=NULL?fv->sf->mm->normal:fv->sf;
-	temp = galloc(sizeof(unichar_t)*(strlen(sf->fontname)+10));
-	uc_strcpy(temp,sf->fontname);
+	temp = galloc((strlen(sf->fontname)+10));
+	strcpy(temp,sf->fontname);
 	if ( fv->cidmaster!=NULL )
-	    uc_strcat(temp,"CID");
+	    strcat(temp,"CID");
 	else if ( sf->mm==NULL )
 	    ;
 	else if ( sf->mm->apple )
-	    uc_strcat(temp,"Var");
+	    strcat(temp,"Var");
 	else
-	    uc_strcat(temp,"MM");
-	uc_strcat(temp,".sfd");
+	    strcat(temp,"MM");
+	strcat(temp,".sfd");
     }
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    ret = GWidgetSaveAsFile(GStringGetResource(_STR_Saveas,NULL),temp,NULL,NULL,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    ret = gwwv_save_filename(_("Save as..."),temp);
-#endif
+    ret = gwwv_save_filename(_("Save as..."),temp,NULL,NULL,NULL);
     free(temp);
     if ( ret==NULL )
 return( 0 );
-    filename = u2def_copy(ret);
+    filename = utf82def_copy(ret);
     free(ret);
     FVFlattenAllBitmapSelections(fv);
     ok = SFDWrite(filename,fv->sf,fv->map);
@@ -615,9 +605,7 @@ int _FVMenuSave(FontView *fv) {
     else {
 	FVFlattenAllBitmapSelections(fv);
 	if ( !SFDWriteBak(sf,fv->map) )
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_SaveFailed,_STR_SaveFailed);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	    gwwv_post_error(_("Save Failed"),_("Save Failed"));
 #endif
 	else {
@@ -966,19 +954,15 @@ void FontViewMenu_RevertGlyph(GtkMenuItem *menuitem, gpointer user_data) {
 	tsc = sf->glyphs[gid];
 	if ( tsc->namechanged ) {
 	    if ( nc_state==-1 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_NameChanged,_STR_NameChangedGlyph,tsc->name);
-#elif defined(FONTFORGE_CONFIG_GTK)
-		gwwv_post_error(_("Glyph Name Changed"),_("The the name of character %.40s has changed. This is what I use to find the glyph in the file, so I cannot revert this character.\n(You will not be warned for subsequent characters)"),tsc->name);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+		gwwv_post_error(_("Glyph Name Changed"),_("The the name of glyph %.40s has changed. This is what I use to find the glyph in the file, so I cannot revert this glyph.\n(You will not be warned for subsequent glyphs)"),tsc->name);
 #endif
 		nc_state = 0;
 	    }
 	} else {
 	    sc = SFDReadOneChar(sf,tsc->name);
 	    if ( sc==NULL ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_CantFindGlyph,_STR_CantRevertGlyph,tsc->name);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 		gwwv_post_error(_("Can't Find Glyph"),_("The glyph, %.80s, can't be found in the sfd file"),tsc->name);
 #endif
 		tsc->namechanged = true;
@@ -1084,6 +1068,7 @@ char *GetPostscriptFontName(char *dir, int mult) {
 	   "otb,"
 	   "cff,"
 	   "cef,"
+	   "gai",
 #ifndef _NO_LIBXML
 	   "svg,"
 #endif
@@ -1097,7 +1082,8 @@ char *GetPostscriptFontName(char *dir, int mult) {
 	   "mf,"
 	   "ik,"
 	   "fon,"
-	   "fnt"
+	   "fnt",
+	   "pdb"
 	   "}"
 /* With any of these methods of compression */
 	     "{.gz,.Z,.bz2,}";
@@ -1138,41 +1124,44 @@ void MenuExit(GWindow base,struct gmenuitem *mi,GEvent *e) {
 char *GetPostscriptFontName(char *dir, int mult) {
     /* Some people use pf3 as an extension for postscript type3 fonts */
     static unichar_t fontmacsuit[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','m','a','c','-','s','u','i','t', '\0' };
-    static unichar_t wild[] = { '*', '.', '{', 'p','f','a',',',
-					       'p','f','b',',',
-					       'p','t','3',',',
-					       't','4','2',',',
-			                       's','f','d',',',
-			                       't','t','f',',',
-			                       'b','d','f',',',
-			                       'o','t','f',',',
-			                       'o','t','b',',',
-			                       'c','f','f',',',
-			                       'c','e','f',',',
-			                       'g','a','i',',',
+    static char wild[] = "*.{"
+	   "pfa,"
+	   "pfb,"
+	   "pt3,"
+	   "t42,"
+	   "sfd,"
+	   "ttf,"
+	   "bdf,"
+	   "otf,"
+	   "otb,"
+	   "cff,"
+	   "cef,"
+	   "gai,"
 #ifndef _NO_LIBXML
-			                       's','v','g',',',
+	   "svg,"
 #endif
-			                       'p','f','3',',',
-			                       't','t','c',',',
-			                       'g','s','f',',',
-			                       'c','i','d',',',
-			                       'b','i','n',',',
-			                       'h','q','x',',',
-			                       'd','f','o','n','t',',',
-			                       'm','f',',',
-			                       'i','k',',',
-			                       'p','d','b',',',
-			                       'f','o','n',',',
-			                       'f','n','t','}', 
-	     '{','.','g','z',',','.','Z',',','.','b','z','2',',','}',  '\0' };
+	   "pf3,"
+	   "ttc,"
+	   "gsf,"
+	   "cid,"
+	   "bin,"
+	   "hqx,"
+	   "dfont,"
+	   "mf,"
+	   "ik,"
+	   "fon,"
+	   "fnt,"
+	   "pdb"
+	   "}"
+/* With any of these methods of compression */
+	     "{.gz,.Z,.bz2,}";
     static unichar_t *mimes[] = { fontmacsuit, NULL };
-    unichar_t *ret, *u_dir;
+    unichar_t *ret;
+    char *u_dir;
     char *temp;
 
-    u_dir = uc_copy(dir);
-    ret = FVOpenFont(GStringGetResource(_STR_OpenPostscript,NULL),
-	    u_dir,wild,mimes,mult,true);
+    u_dir = def2utf8_copy(dir);
+    ret = FVOpenFont(_("Open Font"), u_dir,wild,mimes,mult,true);
     temp = u2def_copy(ret);
 
     free(ret);
@@ -1181,25 +1170,21 @@ return( temp );
 
 void MergeKernInfo(SplineFont *sf,EncMap *map) {
 #ifndef __Mac
-    static unichar_t wild[] = { '*', '.', '{','a','f','m',',','t','f','m',',','o','f','m',',','p','f','m',',','b','i','n',',','h','q','x',',','d','f','o','n','t','}',  '\0' };
-    static unichar_t wild2[] = { '*', '.', '{','a','f','m',',','a','m','f','m',',','t','f','m',',','o','f','m',',','p','f','m',',','b','i','n',',','h','q','x',',','d','f','o','n','t','}',  '\0' };
+    static char wild[] = "*.{afm,tfm,ofm,pfm,bin,hqx,dfont}";
+    static char wild2[] = "*.{afm,amfm,tfm,ofm,pfm,bin,hqx,dfont}";
 #else
-    static unichar_t wild[] = { '*', 0 };	/* Mac resource files generally don't have extensions */
-    static unichar_t wild2[] = { '*', 0 };
+    static char wild[] = "*";	/* Mac resource files generally don't have extensions */
+    static char wild2[] = "*";
 #endif
-    unichar_t *ret = GWidgetOpenFile(GStringGetResource(_STR_MergeKernInfo,NULL),
+    char *ret = gwwv_open_filename(_("Merge Kern Info"),
 	    NULL,sf->mm!=NULL?wild2:wild,NULL,NULL);
-    char *temp = u2def_copy(ret);
+    char *temp = utf82def_copy(ret);
 
     if ( temp==NULL )		/* Cancelled */
 return;
 
     if ( !LoadKerningDataFromMetricsFile(sf,temp,map))
-#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Load of Kerning Metrics Failed"),_("Failed to load kern data from %s"), temp);
-#else
-	GWidgetErrorR(_STR_KerningLoadFailed,_STR_KerningLoadFailedLong, temp);
-#endif
     free(ret); free(temp);
 }
 # endif
@@ -1302,12 +1287,13 @@ static int FVSelCount(FontView *fv) {
 	if ( fv->selected[i] ) ++cnt;
     if ( cnt>10 ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    static int buts[] = { _STR_OK, _STR_Cancel, 0 };
-	if ( GWidgetAskR(_STR_Manywin,buts,0,1,_STR_Toomany)==1 )
+	char *buts[3];
+	buts[0] = _("_OK");
+	buts[1] = _("_Cancel");
 #elif defined(FONTFORGE_CONFIG_GTK)
 	static char *buts[] = { GTK_STOCK_OK, GTK_STOCK_CANCEL, NULL };
-	if ( gwwv_ask(_("Many Windows"),buts,0,1,_("This involves opening more than 10 windows.\nIs that really what you want?"))==1 )
 #endif
+	if ( gwwv_ask(_("Many Windows"),(const char **) buts,0,1,_("This involves opening more than 10 windows.\nIs that really what you want?"))==1 )
 return( false );
     }
 return( true );
@@ -1995,11 +1981,7 @@ static void FVClear(FontView *fv) {
     int i;
     BDFFont *bdf;
     int refstate = 0;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    static int buts[] = { _STR_Yes, _STR_YesToAll, _STR_UnlinkAll, _STR_NoToAll, _STR_No, 0 };
-#elif defined(FONTFORGE_CONFIG_GTK)
     char *buts[6];
-#endif
     int yes, unsel, gid;
     /* refstate==0 => ask, refstate==1 => clearall, refstate==-1 => skip all */
 
@@ -2015,16 +1997,17 @@ static void FVClear(FontView *fv) {
 		    if ( refstate<0 )
     continue;
 #if defined(FONTFORGE_CONFIG_GDRAW)
-		    yes = GWidgetAskCenteredR(_STR_BadReference,buts,2,4,_STR_ClearDependent,fv->sf->glyphs[gid]->name);
+		    buts[0] = _("_Yes");
+		    buts[4] = _("_No");
 #elif defined(FONTFORGE_CONFIG_GTK)
 		    buts[0] = GTK_STOCK_YES;
-		    buts[1] = _("Yes to All");
-		    buts[2] = _("Unlink All");
-		    buts[3] = _("No to All");
 		    buts[4] = GTK_STOCK_NO;
-		    buts[5] = NULL;
-		    yes = gwwv_ask(_("Bad Reference"),buts,2,4,_("You are attempting to clear %.30s which is refered to by\nanother character. Are you sure you want to clear it?"),fv->sf->glyphs[gid]->name);
 #endif
+		    buts[1] = _("Yes to _All");
+		    buts[2] = _("_Unlink All");
+		    buts[3] = _("No _to All");
+		    buts[5] = NULL;
+		    yes = gwwv_ask(_("Bad Reference"),(const char **) buts,2,4,_("You are attempting to clear %.30s which is refered to by\nanother character. Are you sure you want to clear it?"),fv->sf->glyphs[gid]->name);
 		    if ( yes==1 )
 			refstate = 1;
 		    else if ( yes==2 ) {
@@ -2549,7 +2532,7 @@ void FontViewMenu_AATSuffix(GtkMenuItem *menuitem, gpointer user_data) {
     break;
     if ( i==fv->map->enccount )
 return;
-    usuffix = AskNameTag(_STR_SuffixToTag,NULL,0,0,-1,pst_substitution,fv->sf,fv->sf->glyphs[gid],-1,-1);
+    usuffix = AskNameTag(_("Suffix to Tag..."),NULL,0,0,-1,pst_substitution,fv->sf,fv->sf->glyphs[gid],-1,-1);
     if ( usuffix==NULL )
 return;
 
@@ -2599,7 +2582,7 @@ static void FVMenuRemoveAllFeatures(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
     if ( !SFRemoveThisFeatureTag(fv->sf,0xffffffff,SLI_UNKNOWN,-1))
-	GWidgetErrorR(_STR_NoFeaturesRemoved,_STR_NoFeaturesRemoved);
+	gwwv_post_error(_("No Features Removed"),_("No Features Removed"));
 }
 # elif defined(FONTFORGE_CONFIG_GTK)
 void FontViewMenu_RemoveAllFeatures(GtkMenuItem *menuitem, gpointer user_data) {
@@ -2624,7 +2607,7 @@ void FontViewMenu_RemoveFeatures(GtkMenuItem *menuitem, gpointer user_data) {
 static void FVMenuRemoveUnusedNested(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     if ( !SFRemoveUnusedNestedFeatures(fv->sf))
-	GWidgetErrorR(_STR_NoFeaturesRemoved,_STR_NoFeaturesRemoved);
+	gwwv_post_error(_("No Features Removed"),_("No Features Removed"));
 }
 # elif defined(FONTFORGE_CONFIG_GTK)
 void FontViewMenu_UnusedNested(GtkMenuItem *menuitem, gpointer user_data) {
@@ -2884,9 +2867,7 @@ void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
 	    fv->sf->pfminfo.vlinegap *= transform[0];
     }
 
-# ifdef FONTFORGE_CONFIG_GDRAW
-    GProgressStartIndicatorR(10,_STR_Transforming,_STR_Transforming,0,cnt,1);
-# elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_start_indicator(10,_("Transforming..."),_("Transforming..."),0,cnt,1);
 # endif
 
@@ -2919,17 +2900,11 @@ void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
 	}
 	sc->ticked = true;
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-# ifdef FONTFORGE_CONFIG_GDRAW
-	if ( !GProgressNext())
-# elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
-# endif
     break;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
-# ifdef FONTFORGE_CONFIG_GDRAW
-    GProgressEndIndicator();
-# elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_end_indicator();
 # endif
 
@@ -3225,9 +3200,7 @@ static void FVOverlap(FontView *fv,enum overlap_type ot) {
 		SCWorthOutputting(fv->sf->glyphs[gid]) )
 	    ++cnt;
 
-# ifdef FONTFORGE_CONFIG_GDRAW
-    GProgressStartIndicatorR(10,_STR_RemovingOverlap,_STR_RemovingOverlap,0,cnt,1);
-# elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_start_indicator(10,_("Removing overlaps..."),_("Removing overlaps..."),0,cnt,1);
 # endif
 
@@ -3245,17 +3218,11 @@ static void FVOverlap(FontView *fv,enum overlap_type ot) {
 	    sc->layers[layer].splines = SplineSetRemoveOverlap(sc,sc->layers[layer].splines,ot);
 	SCCharChangedUpdate(sc);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-# ifdef FONTFORGE_CONFIG_GDRAW
-	if ( !GProgressNext())
-# elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
-# endif
     break;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
-# ifdef FONTFORGE_CONFIG_GDRAW
-    GProgressEndIndicator();
-# elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_end_indicator();
 # endif
 }
@@ -3353,9 +3320,7 @@ void _FVSimplify(FontView *fv,struct simplifyinfo *smpl) {
 	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
 		SCWorthOutputting(fv->sf->glyphs[gid]) )
 	    ++cnt;
-# ifdef FONTFORGE_CONFIG_GDRAW
-    GProgressStartIndicatorR(10,_STR_Simplifying,_STR_Simplifying,0,cnt,1);
-# elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_start_indicator(10,_("Simplifying..."),_("Simplifying..."),0,cnt,1);
 # endif
 
@@ -3369,17 +3334,11 @@ void _FVSimplify(FontView *fv,struct simplifyinfo *smpl) {
 		sc->layers[layer].splines = SplineCharSimplify(sc,sc->layers[layer].splines,smpl);
 	    SCCharChangedUpdate(sc);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-# ifdef FONTFORGE_CONFIG_GDRAW
-	    if ( !GProgressNext())
-# elif defined(FONTFORGE_CONFIG_GTK)
 	    if ( !gwwv_progress_next())
-# endif
     break;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	}
-# ifdef FONTFORGE_CONFIG_GDRAW
-    GProgressEndIndicator();
-# elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_end_indicator();
 # endif
 }
@@ -3441,9 +3400,7 @@ static void FVAddExtrema(FontView *fv) {
 	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
 		SCWorthOutputting(fv->sf->glyphs[gid]) )
 	    ++cnt;
-# ifdef FONTFORGE_CONFIG_GDRAW
-    GProgressStartIndicatorR(10,_STR_AddingExtrema,_STR_AddingExtrema,0,cnt,1);
-# elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_start_indicator(10,_("Adding points at Extrema..."),_("Adding points at Extrema..."),0,cnt,1);
 # endif
 
@@ -3458,17 +3415,11 @@ static void FVAddExtrema(FontView *fv) {
 	    SplineCharAddExtrema(sc->layers[layer].splines,ae_only_good,sc->parent);
 	SCCharChangedUpdate(sc);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-# ifdef FONTFORGE_CONFIG_GDRAW
-	if ( !GProgressNext())
-# elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
-# endif
     break;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
-# ifdef FONTFORGE_CONFIG_GDRAW
-    GProgressEndIndicator();
-# elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_end_indicator();
 # endif
 }
@@ -3499,9 +3450,7 @@ void FontViewMenu_CorrectDir(GtkMenuItem *menuitem, gpointer user_data) {
 	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
 		SCWorthOutputting(fv->sf->glyphs[gid]) )
 	    ++cnt;
-# ifdef FONTFORGE_CONFIG_GDRAW
-    GProgressStartIndicatorR(10,_STR_CorrectingDirection,_STR_CorrectingDirection,0,cnt,1);
-# elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_start_indicator(10,_("Correcting Direction..."),_("Correcting Direction..."),0,cnt,1);
 # endif
 
@@ -3518,17 +3467,16 @@ void FontViewMenu_CorrectDir(GtkMenuItem *menuitem, gpointer user_data) {
 		if ( ref->transform[0]*ref->transform[3]<0 ||
 			(ref->transform[0]==0 && ref->transform[1]*ref->transform[2]>0)) {
 		    if ( asked==-1 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-			static int buts[] = { _STR_UnlinkAll, _STR_Unlink, _STR_No, _STR_Cancel, 0 };
-			asked = GWidgetAskR(_STR_FlippedRef,buts,0,2,_STR_FlippedRefUnlink, sc->name );
-#elif defined(FONTFORGE_CONFIG_GTK)
 			char *buts[5];
+#if defined(FONTFORGE_CONFIG_GDRAW)
+			buts[2] = _("_Cancel");
+#elif defined(FONTFORGE_CONFIG_GTK)
+			buts[2] = GTK_STOCK_CANCEL;
+#endif
 			buts[0] = _("Unlink All");
 			buts[1] = _("Unlink");
-			buts[2] = GTK_STOCK_CANCEL;
 			buts[3] = NULL;
-			asked = gwwv_ask(_("Flipped Reference"),buts,0,2,_("%.50s contains a flipped reference. This cannot be corrected as is. Would you like me to unlink it and then correct it?"), sc->name );
-#endif
+			asked = gwwv_ask(_("Flipped Reference"),(const char **) buts,0,2,_("%.50s contains a flipped reference. This cannot be corrected as is. Would you like me to unlink it and then correct it?"), sc->name );
 			if ( asked==3 )
 return;
 			else if ( asked==2 )
@@ -3555,17 +3503,11 @@ return;
 	if ( changed || refchanged )
 	    SCCharChangedUpdate(sc);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-# ifdef FONTFORGE_CONFIG_GDRAW
-	if ( !GProgressNext())
-# elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
-# endif
     break;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
-# ifdef FONTFORGE_CONFIG_GDRAW
-    GProgressEndIndicator();
-# elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_end_indicator();
 # endif
 }
@@ -3578,9 +3520,7 @@ static void FVRound2Int(FontView *fv,real factor) {
 	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
 		SCWorthOutputting(fv->sf->glyphs[gid]) )
 	    ++cnt;
-# ifdef FONTFORGE_CONFIG_GDRAW
-    GProgressStartIndicatorR(10,_STR_Rounding,_STR_Rounding,0,cnt,1);
-# elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_start_indicator(10,_("Rounding to integer..."),_("Rounding to integer..."),0,cnt,1);
 # endif
 
@@ -3591,17 +3531,11 @@ static void FVRound2Int(FontView *fv,real factor) {
 	SCPreserveState(sc,false);
 	SCRound2Int( sc,factor);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-# ifdef FONTFORGE_CONFIG_GDRAW
-	if ( !GProgressNext())
-# elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
-# endif
     break;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
-# ifdef FONTFORGE_CONFIG_GDRAW
-    GProgressEndIndicator();
-# elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_end_indicator();
 # endif
 }
@@ -3632,9 +3566,7 @@ static void FVCluster(FontView *fv) {
 	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
 		SCWorthOutputting(fv->sf->glyphs[gid]) )
 	    ++cnt;
-# ifdef FONTFORGE_CONFIG_GDRAW
-    GProgressStartIndicatorR(10,_STR_Rounding,_STR_Rounding,0,cnt,1);
-# elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_start_indicator(10,_("Rounding to integer..."),_("Rounding to integer..."),0,cnt,1);
 # endif
 
@@ -3642,17 +3574,11 @@ static void FVCluster(FontView *fv) {
 	    (gid = fv->map->map[i])!=-1 && SCWorthOutputting(fv->sf->glyphs[gid]) ) {
 	SCRoundToCluster(fv->sf->glyphs[gid],-2,false,.1,.5);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-# ifdef FONTFORGE_CONFIG_GDRAW
-	if ( !GProgressNext())
-# elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
-# endif
     break;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
-# ifdef FONTFORGE_CONFIG_GDRAW
-    GProgressEndIndicator();
-# elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_end_indicator();
 # endif
 }
@@ -3686,10 +3612,9 @@ void FVBuildAccent(FontView *fv,int onlyaccents) {
 	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
 		SCWorthOutputting(fv->sf->glyphs[gid]) )
 	    ++cnt;
-# ifdef FONTFORGE_CONFIG_GDRAW
-    GProgressStartIndicatorR(10,_STR_Buildingaccented,_STR_Buildingaccented,_STR_NULL,cnt,1);
-# elif defined(FONTFORGE_CONFIG_GTK)
-    gwwv_progress_start_indicator(10,_("Building accented letters"),_("Building accented letters"),_(),cnt,1);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    gwwv_progress_start_indicator(10,_("Building accented glyphs"),
+	    _("Building accented glyphs"),NULL,cnt,1);
 # endif
 
     SFUntickAll(fv->sf);
@@ -3706,12 +3631,14 @@ void FVBuildAccent(FontView *fv,int onlyaccents) {
 	else if ( !no_windowing_ui && sc->unicodeenc == 0x00c5 /* Aring */ &&
 		sc->layers[ly_fore].splines!=NULL ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	    static int buts[] = { _STR_Yes, _STR_No, 0 };
-	    if ( GWidgetAskR(_STR_Replacearing,buts,0,1,_STR_Areyousurearing)==1 )
+	    char *buts[3];
+	    buts[0] = _("_Yes");
+	    buts[1] = _("_No");
+	    buts[2] = NULL;
 #elif defined(FONTFORGE_CONFIG_GTK)
-    static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_NO, NULL };
-	    if ( gwwv_ask(_("Replace Å"),buts,0,1,_("Are you sure you want to replace Å?\nThe ring will not join to the A."))==1 )
+	    static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_NO, NULL };
 #endif
+	    if ( gwwv_ask(U_("Replace Å"),(const char **) buts,0,1,U_("Are you sure you want to replace Å?\nThe ring will not join to the A."))==1 )
     continue;
 	}
 	if ( SFIsSomethingBuildable(fv->sf,sc,onlyaccents) ) {
@@ -3720,17 +3647,11 @@ void FVBuildAccent(FontView *fv,int onlyaccents) {
 	    SCBuildComposit(fv->sf,sc,!onlycopydisplayed,fv);
 	}
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-# ifdef FONTFORGE_CONFIG_GDRAW
-	if ( !GProgressNext())
-# elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
-# endif
     break;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
-# ifdef FONTFORGE_CONFIG_GDRAW
-    GProgressEndIndicator();
-# elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_end_indicator();
 # endif
 }
@@ -3781,10 +3702,9 @@ void FVBuildDuplicate(FontView *fv) {
 
     for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] )
 	++cnt;
-# ifdef FONTFORGE_CONFIG_GDRAW
-    GProgressStartIndicatorR(10,_STR_BuildingDuplicates,_STR_BuildingDuplicates,_STR_NULL,cnt,1);
-# elif defined(FONTFORGE_CONFIG_GTK)
-    gwwv_progress_start_indicator(10,_("Building duplicate encodings"),_("Building duplicate encodings"),NULL,cnt,1);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    gwwv_progress_start_indicator(10,_("Building duplicate encodings"),
+	_("Building duplicate encodings"),NULL,cnt,1);
 # endif
 
     for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] ) {
@@ -3801,17 +3721,11 @@ void FVBuildDuplicate(FontView *fv) {
 	if ( baseuni!=0 && (gid = SFFindExistingSlot(fv->sf,baseuni,NULL))!=-1 )
 	    LinkEncToGid(fv,i,gid);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-# ifdef FONTFORGE_CONFIG_GDRAW
-	if ( !GProgressNext())
-# elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
-# endif
     break;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
-# ifdef FONTFORGE_CONFIG_GDRAW
-    GProgressEndIndicator();
-# elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_end_indicator();
 # endif
 }
@@ -4255,7 +4169,7 @@ void FontViewMenu_DisplaySubstitutions(GtkMenuItem *menuitem, gpointer user_data
 	int macfeature;
 	uint16 flags, sli;
 	uint32 tag;
-	newname = AskNameTag(_STR_DisplaySubstitutions,NULL,0,0,
+	newname = AskNameTag(_("Display S_ubstitutions..."),NULL,0,0,
 		-1, pst_substitution,fv->sf,NULL,-2,-1);
 	if ( newname==NULL )
 return;
@@ -4392,12 +4306,12 @@ static void FVMenuShowMetrics(GWindow fvgw,struct gmenuitem *mi,GEvent *e) {
     d.ish = mi->mid==MID_ShowHMetrics;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.window_title = GStringGetResource(d.ish?_STR_ShowHMetrics:_STR_ShowVMetrics,NULL);
+    wattrs.utf8_window_title = d.ish?_("Show H. Metrics..."):_("Show V. Metrics...");
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,GGadgetScale(170));
     pos.height = GDrawPointsToPixels(NULL,130);
@@ -4406,41 +4320,42 @@ static void FVMenuShowMetrics(GWindow fvgw,struct gmenuitem *mi,GEvent *e) {
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
 
-    label[0].text = (unichar_t *) _STR_Baseline;
-    label[0].text_in_resource = true;
+    label[0].text = (unichar_t *) _("Baseline");
+    label[0].text_is_1byte = true;
     gcd[0].gd.label = &label[0];
     gcd[0].gd.pos.x = 8; gcd[0].gd.pos.y = 8; 
     gcd[0].gd.flags = gg_enabled|gg_visible|(metrics&fvm_baseline?gg_cb_on:0);
     gcd[0].gd.cid = fvm_baseline;
     gcd[0].creator = GCheckBoxCreate;
 
-    label[1].text = (unichar_t *) _STR_Origin;
-    label[1].text_in_resource = true;
+    label[1].text = (unichar_t *) _("Origin");
+    label[1].text_is_1byte = true;
     gcd[1].gd.label = &label[1];
     gcd[1].gd.pos.x = 8; gcd[1].gd.pos.y = gcd[0].gd.pos.y+16;
     gcd[1].gd.flags = gg_enabled|gg_visible|(metrics&fvm_origin?gg_cb_on:0);
     gcd[1].gd.cid = fvm_origin;
     gcd[1].creator = GCheckBoxCreate;
 
-    label[2].text = (unichar_t *) _STR_AdvanceWidthAsLine;
-    label[2].text_in_resource = true;
+    label[2].text = (unichar_t *) _("Advance Width as a Line");
+    label[2].text_is_1byte = true;
     gcd[2].gd.label = &label[2];
     gcd[2].gd.pos.x = 8; gcd[2].gd.pos.y = gcd[1].gd.pos.y+16;
-    gcd[2].gd.flags = gg_enabled|gg_visible|(metrics&fvm_advanceat?gg_cb_on:0);
+    gcd[2].gd.flags = gg_enabled|gg_visible|gg_utf8_popup|(metrics&fvm_advanceat?gg_cb_on:0);
     gcd[2].gd.cid = fvm_advanceat;
-    gcd[2].gd.popup_msg = GStringGetResource(_STR_AdvanceLinePopup,NULL);
+    gcd[2].gd.popup_msg = (unichar_t *) _("Display the advance width as a line\nperpendicular to the advance direction");
     gcd[2].creator = GCheckBoxCreate;
 
-    label[3].text = (unichar_t *) _STR_AdvanceWidthAsBar;
-    label[3].text_in_resource = true;
+    label[3].text = (unichar_t *) _("Advance Width as a Bar");
+    label[3].text_is_1byte = true;
     gcd[3].gd.label = &label[3];
     gcd[3].gd.pos.x = 8; gcd[3].gd.pos.y = gcd[2].gd.pos.y+16; 
-    gcd[3].gd.flags = gg_enabled|gg_visible|(metrics&fvm_advanceto?gg_cb_on:0);
+    gcd[3].gd.flags = gg_enabled|gg_visible|gg_utf8_popup|(metrics&fvm_advanceto?gg_cb_on:0);
     gcd[3].gd.cid = fvm_advanceto;
-    gcd[3].gd.popup_msg = GStringGetResource(_STR_AdvanceBarPopup,NULL);
+    gcd[3].gd.popup_msg = (unichar_t *) _("Display the advance width as a bar under the glyph\nshowing the extent of the advance");
     gcd[3].creator = GCheckBoxCreate;
 
-    label[4].text = (unichar_t *) _STR_OK;
+    label[4].text = (unichar_t *) _("_OK");
+    label[4].text_is_1byte = true;
     label[4].text_in_resource = true;
     gcd[4].gd.label = &label[4];
     gcd[4].gd.pos.x = 20-3; gcd[4].gd.pos.y = GDrawPixelsToPoints(NULL,pos.height)-35-3;
@@ -4449,7 +4364,8 @@ static void FVMenuShowMetrics(GWindow fvgw,struct gmenuitem *mi,GEvent *e) {
     gcd[4].gd.cid = 10;
     gcd[4].creator = GButtonCreate;
 
-    label[5].text = (unichar_t *) _STR_Cancel;
+    label[5].text = (unichar_t *) _("_Cancel");
+    label[5].text_is_1byte = true;
     label[5].text_in_resource = true;
     gcd[5].gd.label = &label[5];
     gcd[5].gd.pos.x = -20; gcd[5].gd.pos.y = gcd[4].gd.pos.y+3;
@@ -4844,9 +4760,7 @@ static void FVAutoHint(FontView *fv) {
 	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
 		SCWorthOutputting(fv->sf->glyphs[gid]) )
 	    ++cnt;
-# ifdef FONTFORGE_CONFIG_GDRAW
-    GProgressStartIndicatorR(10,_STR_AutoHintingFont,_STR_AutoHintingFont,0,cnt,1);
-# elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_start_indicator(10,_("Auto Hinting Font..."),_("Auto Hinting Font..."),0,cnt,1);
 # endif
 
@@ -4857,17 +4771,11 @@ static void FVAutoHint(FontView *fv) {
 	/* Hint undoes are done in _SplineCharAutoHint */
 	SplineCharAutoHint(sc,bd);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-# ifdef FONTFORGE_CONFIG_GDRAW
-	if ( !GProgressNext())
-# elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
-# endif
     break;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
-# ifdef FONTFORGE_CONFIG_GDRAW
-    GProgressEndIndicator();
-# elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_end_indicator();
 # endif
     GDrawRequestExpose(fv->v,NULL,false);	/* Clear any changedsincelasthinted marks */
@@ -4894,9 +4802,7 @@ return;
 	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
 		SCWorthOutputting(fv->sf->glyphs[gid]) )
 	    ++cnt;
-# ifdef FONTFORGE_CONFIG_GDRAW
-    GProgressStartIndicatorR(10,_STR_FindingSubstitutionPts,_STR_FindingSubstitutionPts,0,cnt,1);
-# elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_start_indicator(10,_("Finding Substitution Points..."),_("Finding Substitution Points..."),0,cnt,1);
 # endif
 
@@ -4906,17 +4812,11 @@ return;
 	SCFigureHintMasks(sc);
 	SCUpdateAll(sc);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-# ifdef FONTFORGE_CONFIG_GDRAW
-	if ( !GProgressNext())
-# elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
-# endif
     break;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
-# ifdef FONTFORGE_CONFIG_GDRAW
-    GProgressEndIndicator();
-# elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_end_indicator();
 # endif
 }
@@ -4940,9 +4840,7 @@ static void FVAutoCounter(FontView *fv) {
 	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
 		SCWorthOutputting(fv->sf->glyphs[gid]) )
 	    ++cnt;
-# ifdef FONTFORGE_CONFIG_GDRAW
-    GProgressStartIndicatorR(10,_STR_FindingCounterMasks,_STR_FindingCounterMasks,0,cnt,1);
-# elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_start_indicator(10,_("Finding Counter Masks..."),_("Finding Counter Masks..."),0,cnt,1);
 # endif
 
@@ -4951,17 +4849,11 @@ static void FVAutoCounter(FontView *fv) {
 	SplineChar *sc = fv->sf->glyphs[gid];
 	SCFigureCounterMasks(sc);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-# ifdef FONTFORGE_CONFIG_GDRAW
-	if ( !GProgressNext())
-# elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
-# endif
     break;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
-# ifdef FONTFORGE_CONFIG_GDRAW
-    GProgressEndIndicator();
-# elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_end_indicator();
 # endif
 }
@@ -5009,9 +4901,7 @@ static void FVAutoInstr(FontView *fv) {
 	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
 		SCWorthOutputting(fv->sf->glyphs[gid]) )
 	    ++cnt;
-# ifdef FONTFORGE_CONFIG_GDRAW
-    GProgressStartIndicatorR(10,_STR_AutoInstructingFont,_STR_AutoInstructingFont,0,cnt,1);
-# elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_start_indicator(10,_("Auto Instructing Font..."),_("Auto Instructing Font..."),0,cnt,1);
 # endif
 
@@ -5020,17 +4910,11 @@ static void FVAutoInstr(FontView *fv) {
 	SplineChar *sc = fv->sf->glyphs[gid];
 	SCAutoInstr(sc,&bd);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-# ifdef FONTFORGE_CONFIG_GDRAW
-	if ( !GProgressNext())
-# elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
-# endif
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     break;
     }
-# ifdef FONTFORGE_CONFIG_GDRAW
-    GProgressEndIndicator();
-# elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_end_indicator();
 # endif
 }
@@ -5077,7 +4961,6 @@ void FontViewMenu_EditTable(GtkMenuItem *menuitem, gpointer user_data) {
     SFEditTable(fv->sf,
 	    strcmp(name,"edit_prep1")==0?CHR('p','r','e','p'):
 	    strcmp(name,"edit_fpgm1")==0?CHR('f','p','g','m'):
-	    strcmp(name,"edit_maxp1")==0?CHR('m','a','x','p'):
 				  CHR('c','v','t',' '));
 }
 # endif
@@ -5128,12 +5011,12 @@ static void FVClearHints(FontView *fv) {
 	SCClearHints(sc);
 	SCUpdateAll(sc);
 #if 0
-	if ( !GProgressNext())
+	if ( !gwwv_progress_next())
     break;
 #endif
     }
 #if 0
-    GProgressEndIndicator();
+    gwwv_progress_end_indicator();
 #endif
 }
 
@@ -5442,9 +5325,7 @@ return;
     if ( new->fv != NULL ) {
 	if ( new->fv->gw!=NULL )
 	    GDrawRaise(new->fv->gw);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_CloseFont,_STR_CloseFontForCID,new->origname);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	gwwv_post_error(_("Please close font"),_("Please close %s before inserting it into a CID font"),new->origname);
 #endif
 return;
@@ -5487,7 +5368,7 @@ return;
 # ifdef FONTFORGE_CONFIG_GDRAW
 static void FVMenuRemoveFontFromCID(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    static int buts[] = { _STR_Remove, _STR_Cancel, 0 };
+    char *buts[3];
 # elif defined(FONTFORGE_CONFIG_GTK)
 void FontViewMenu_RemoveFontFromCID(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
@@ -5501,10 +5382,9 @@ void FontViewMenu_RemoveFontFromCID(GtkMenuItem *menuitem, gpointer user_data) {
     if ( cidmaster==NULL || cidmaster->subfontcnt<=1 )	/* Can't remove last font */
 return;
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    if ( GWidgetAskR(_STR_RemoveFont,buts,0,1,_STR_CIDRemoveFontCheck,
-#elif defined(FONTFORGE_CONFIG_GTK)
-    if ( gwwv_ask(_("Remove Font"),buts,0,1,_("Are you sure you wish to remove sub-font %1$.40s from the CID font %2$.40s"),
+    buts[0] = _("_Remove"); buts[1] = _("_Cancel"); buts[2] = NULL;
 #endif
+    if ( gwwv_ask(_("_Remove Font"),(const char **) buts,0,1,_("Are you sure you wish to remove sub-font %1$.40s from the CID font %2$.40s"),
 	    sf->fontname,cidmaster->fontname)==1 )
 return;
 
@@ -5568,22 +5448,20 @@ void FontViewMenu_ChangeSupplement(GtkMenuItem *menuitem, gpointer user_data) {
     SplineFont *cidmaster = fv->cidmaster;
     struct cidmap *cidmap;
     char buffer[20];
-    unichar_t ubuffer[20];
-    unichar_t *ret, *end;
+    char *ret, *end;
     int supple;
 
     if ( cidmaster==NULL )
 return;
     sprintf(buffer,"%d",cidmaster->supplement);
-    uc_strcpy(ubuffer,buffer);
-    ret = GWidgetAskStringR(_STR_ChangeSupplement,ubuffer,_STR_ChangeSupplementOfFont,
+    ret = gwwv_ask_string(_("_Change Supplement..."),buffer,_("Please specify a new supplement for %.20s-%.20s"),
 	    cidmaster->cidregistry,cidmaster->ordering);
     if ( ret==NULL )
 return;
-    supple = u_strtol(ret,&end,10);
+    supple = strtol(ret,&end,10);
     if ( *end!='\0' || supple<=0 ) {
 	free(ret);
-	GWidgetErrorR( _STR_BadNumber,_STR_BadNumber );
+	gwwv_post_error( _("Bad Number"),_("Bad Number") );
 return;
     }
     free(ret);
@@ -6015,10 +5893,10 @@ static void hglistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 static GMenuItem hglist[] = {
-    { { (unichar_t *) _STR_NewComposition, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'N' }, 'N', ksm_shift|ksm_control, NULL, NULL, MenuNewComposition },
-    { { (unichar_t *) _STR_ModifyComposition, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuModifyComposition, MID_ModifyComposition },
+    { { (unichar_t *) N_("_New Composition..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'N' }, 'N', ksm_shift|ksm_control, NULL, NULL, MenuNewComposition },
+    { { (unichar_t *) N_("_Modify Composition..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuModifyComposition, MID_ModifyComposition },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_BuildSyllables, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuBuildSyllables, MID_BuildSyllables },
+    { { (unichar_t *) N_("_Build Syllables"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuBuildSyllables, MID_BuildSyllables },
     { NULL }
 };
 #endif
@@ -6099,49 +5977,49 @@ static void aatlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
-static GMenuItem dummyitem[] = { { (unichar_t *) _STR_New, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'N' }, NULL };
+static GMenuItem dummyitem[] = { { (unichar_t *) N_("_New"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'N' }, NULL };
 static GMenuItem fllist[] = {
-    { { (unichar_t *) _STR_New, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'N' }, 'N', ksm_control, NULL, NULL, MenuNew },
+    { { (unichar_t *) N_("_New"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'N' }, 'N', ksm_control, NULL, NULL, MenuNew },
 #if HANYANG
-    { { (unichar_t *) _STR_Hangul, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, '\0', 0, hglist, hglistcheck, NULL, 0 },
+    { { (unichar_t *) N_("_Hangul"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, '\0', 0, hglist, hglistcheck, NULL, 0 },
 #endif
-    { { (unichar_t *) _STR_Open, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'O' }, 'O', ksm_control, NULL, NULL, MenuOpen },
-    { { (unichar_t *) _STR_Recent, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 't' }, '\0', ksm_control, dummyitem, MenuRecentBuild, NULL, MID_Recent },
-    { { (unichar_t *) _STR_Close, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, 'Q', ksm_control|ksm_shift, NULL, NULL, FVMenuClose },
+    { { (unichar_t *) N_("_Open"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'O' }, 'O', ksm_control, NULL, NULL, MenuOpen },
+    { { (unichar_t *) N_("Recen_t"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 't' }, '\0', ksm_control, dummyitem, MenuRecentBuild, NULL, MID_Recent },
+    { { (unichar_t *) N_("_Close"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, 'Q', ksm_control|ksm_shift, NULL, NULL, FVMenuClose },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Save, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, 'S', ksm_control, NULL, NULL, FVMenuSave },
-    { { (unichar_t *) _STR_Saveas, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'a' }, 'S', ksm_control|ksm_shift, NULL, NULL, FVMenuSaveAs },
-    { { (unichar_t *) _STR_SaveAll, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, 'S', ksm_control|ksm_meta, NULL, NULL, MenuSaveAll },
-    { { (unichar_t *) _STR_Generate, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'G' }, 'G', ksm_control|ksm_shift, NULL, NULL, FVMenuGenerate },
-    { { (unichar_t *) _STR_GenerateMac, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, 'G', ksm_control|ksm_meta, NULL, NULL, FVMenuGenerateFamily },
+    { { (unichar_t *) N_("_Save"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'S' }, 'S', ksm_control, NULL, NULL, FVMenuSave },
+    { { (unichar_t *) N_("S_ave as..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'a' }, 'S', ksm_control|ksm_shift, NULL, NULL, FVMenuSaveAs },
+    { { (unichar_t *) N_("Save A_ll"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'l' }, 'S', ksm_control|ksm_meta, NULL, NULL, MenuSaveAll },
+    { { (unichar_t *) N_("_Generate Fonts..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'G' }, 'G', ksm_control|ksm_shift, NULL, NULL, FVMenuGenerate },
+    { { (unichar_t *) N_("Generate Mac _Family..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'F' }, 'G', ksm_control|ksm_meta, NULL, NULL, FVMenuGenerateFamily },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Import, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, 'I', ksm_control|ksm_shift, NULL, NULL, FVMenuImport },
-    { { (unichar_t *) _STR_Mergekern, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, 'K', ksm_meta|ksm_control|ksm_shift, NULL, NULL, FVMenuMergeKern },
-    { { (unichar_t *) _STR_Revertfile, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'R' }, 'R', ksm_control|ksm_shift, NULL, NULL, FVMenuRevert, MID_Revert },
-    { { (unichar_t *) _STR_RevertGlyph, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'R' }, 'R', ksm_control|ksm_meta, NULL, NULL, FVMenuRevertGlyph, MID_RevertGlyph },
+    { { (unichar_t *) N_("_Import..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, 'I', ksm_control|ksm_shift, NULL, NULL, FVMenuImport },
+    { { (unichar_t *) N_("_Merge Kern Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, 'K', ksm_meta|ksm_control|ksm_shift, NULL, NULL, FVMenuMergeKern },
+    { { (unichar_t *) N_("_Revert File"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'R' }, 'R', ksm_control|ksm_shift, NULL, NULL, FVMenuRevert, MID_Revert },
+    { { (unichar_t *) N_("Revert Gl_yph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'R' }, 'R', ksm_control|ksm_meta, NULL, NULL, FVMenuRevertGlyph, MID_RevertGlyph },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Print, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, 'P', ksm_control, NULL, NULL, FVMenuPrint, MID_Print },
-    { { (unichar_t *) _STR_Display, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, 'P', ksm_control|ksm_meta, NULL, NULL, FVMenuDisplay, MID_Display },
+    { { (unichar_t *) N_("_Print..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, 'P', ksm_control, NULL, NULL, FVMenuPrint, MID_Print },
+    { { (unichar_t *) N_("_Display..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'D' }, 'P', ksm_control|ksm_meta, NULL, NULL, FVMenuDisplay, MID_Display },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_ExecuteScript, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'x' }, '.', ksm_control, NULL, NULL, FVMenuExecute },
-    { { (unichar_t *) _STR_ScriptMenu, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'r' }, '\0', ksm_control, dummyitem, MenuScriptsBuild, NULL, MID_ScriptMenu },
+    { { (unichar_t *) N_("E_xecute Script..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'x' }, '.', ksm_control, NULL, NULL, FVMenuExecute },
+    { { (unichar_t *) N_("Script Menu"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'r' }, '\0', ksm_control, dummyitem, MenuScriptsBuild, NULL, MID_ScriptMenu },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Prefs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'e' }, '\0', ksm_control, NULL, NULL, MenuPrefs },
+    { { (unichar_t *) N_("Pr_eferences..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'e' }, '\0', ksm_control, NULL, NULL, MenuPrefs },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Quit, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'Q' }, 'Q', ksm_control, NULL, NULL, FVMenuExit },
+    { { (unichar_t *) N_("_Quit"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'Q' }, 'Q', ksm_control, NULL, NULL, FVMenuExit },
     { NULL }
 };
 
 static GMenuItem cflist[] = {
-    { { (unichar_t *) _STR_Allfonts, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'A' }, '\0', ksm_control, NULL, NULL, FVMenuCopyFrom, MID_AllFonts },
-    { { (unichar_t *) _STR_Displayedfont, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'D' }, '\0', ksm_control, NULL, NULL, FVMenuCopyFrom, MID_DisplayedFont },
+    { { (unichar_t *) N_("_All Fonts"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'A' }, '\0', ksm_control, NULL, NULL, FVMenuCopyFrom, MID_AllFonts },
+    { { (unichar_t *) N_("_Displayed Font"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'D' }, '\0', ksm_control, NULL, NULL, FVMenuCopyFrom, MID_DisplayedFont },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_GlyphMetadata, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'N' }, '\0', ksm_control, NULL, NULL, FVMenuCopyFrom, MID_CharName },
+    { { (unichar_t *) N_("Glyph _Metadata"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'N' }, '\0', ksm_control, NULL, NULL, FVMenuCopyFrom, MID_CharName },
     { NULL }
 };
 
 static GMenuItem sclist[] = {
-    { { (unichar_t *)  _STR_Default, &def_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) COLOR_DEFAULT, NULL, 0, 1, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control, NULL, NULL, FVMenuSelectColor },
+    { { (unichar_t *)  N_("Default"), &def_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) COLOR_DEFAULT, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control, NULL, NULL, FVMenuSelectColor },
     { { NULL, &white_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0xffffff, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, '\0', ksm_control, NULL, NULL, FVMenuSelectColor },
     { { NULL, &red_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0xff0000, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, '\0', ksm_control, NULL, NULL, FVMenuSelectColor },
     { { NULL, &green_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0x00ff00, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, '\0', ksm_control, NULL, NULL, FVMenuSelectColor },
@@ -6153,186 +6031,186 @@ static GMenuItem sclist[] = {
 };
 
 static GMenuItem sllist[] = {
-    { { (unichar_t *) _STR_SelectAll, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, 'A', ksm_control, NULL, NULL, FVMenuSelectAll },
-    { { (unichar_t *) _STR_SelectInvert, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, GK_Escape, ksm_control, NULL, NULL, FVMenuInvertSelection },
-    { { (unichar_t *) _STR_DeselectAll, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, GK_Escape, 0, NULL, NULL, FVMenuDeselectAll },
-    { { (unichar_t *) _STR_SelectColor, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control, sclist },
+    { { (unichar_t *) N_("Select _All"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, 'A', ksm_control, NULL, NULL, FVMenuSelectAll },
+    { { (unichar_t *) N_("_Invert Selection"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, GK_Escape, ksm_control, NULL, NULL, FVMenuInvertSelection },
+    { { (unichar_t *) N_("_Deselect All"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, GK_Escape, 0, NULL, NULL, FVMenuDeselectAll },
+    { { (unichar_t *) N_("_Select by Color"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control, sclist },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_SelectChangedGlyphs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control, NULL,NULL, FVMenuSelectChanged },
-    { { (unichar_t *) _STR_SelectHintingNeeded, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control, NULL,NULL, FVMenuSelectHintingNeeded },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_SelectByATT, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'T' }, '\0', 0, NULL, NULL, FVMenuSelectByPST },
+    { { (unichar_t *) N_("_Changed Glyphs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control, NULL,NULL, FVMenuSelectChanged },
+    { { (unichar_t *) N_("_Hinting Needed"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control, NULL,NULL, FVMenuSelectHintingNeeded },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 1, 1, 0, 0, }},
+    { { (unichar_t *) N_("Selec_t By ATT..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'T' }, '\0', 0, NULL, NULL, FVMenuSelectByPST },
     { NULL }
 };
 
 static GMenuItem edlist[] = {
-    { { (unichar_t *) _STR_Undo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'U' }, 'Z', ksm_control, NULL, NULL, FVMenuUndo, MID_Undo },
-    { { (unichar_t *) _STR_Redo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'R' }, 'Y', ksm_control, NULL, NULL, FVMenuRedo, MID_Redo},
+    { { (unichar_t *) N_("_Undo"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 1, 0, 'U' }, 'Z', ksm_control, NULL, NULL, FVMenuUndo, MID_Undo },
+    { { (unichar_t *) N_("_Redo"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 1, 0, 'R' }, 'Y', ksm_control, NULL, NULL, FVMenuRedo, MID_Redo},
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Cut, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 't' }, 'X', ksm_control, NULL, NULL, FVMenuCut, MID_Cut },
-    { { (unichar_t *) _STR_Copy, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, 'C', ksm_control, NULL, NULL, FVMenuCopy, MID_Copy },
-    { { (unichar_t *) _STR_Copyref, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, 'G', ksm_control, NULL, NULL, FVMenuCopyRef, MID_CopyRef },
-    { { (unichar_t *) _STR_Copywidth, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'W' }, 'W', ksm_control, NULL, NULL, FVMenuCopyWidth, MID_CopyWidth },
-    { { (unichar_t *) _STR_CopyVWidth, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, '\0', ksm_control, NULL, NULL, FVMenuCopyWidth, MID_CopyVWidth },
-    { { (unichar_t *) _STR_CopyLBearing, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'p' }, '\0', ksm_control, NULL, NULL, FVMenuCopyWidth, MID_CopyLBearing },
-    { { (unichar_t *) _STR_CopyRBearing, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'g' }, '\0', ksm_control, NULL, NULL, FVMenuCopyWidth, MID_CopyRBearing },
-    { { (unichar_t *) _STR_CopyFeatures, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control, NULL, NULL, FVMenuCopyFeatures, MID_CopyFeatures },
-    { { (unichar_t *) _STR_Paste, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, 'V', ksm_control, NULL, NULL, FVMenuPaste, MID_Paste },
-    { { (unichar_t *) _STR_PasteInto, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, 'V', ksm_control|ksm_shift, NULL, NULL, FVMenuPasteInto, MID_PasteInto },
+    { { (unichar_t *) N_("Cu_t"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 't' }, 'X', ksm_control, NULL, NULL, FVMenuCut, MID_Cut },
+    { { (unichar_t *) N_("_Copy"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, 'C', ksm_control, NULL, NULL, FVMenuCopy, MID_Copy },
+    { { (unichar_t *) N_("C_opy Reference"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, 'G', ksm_control, NULL, NULL, FVMenuCopyRef, MID_CopyRef },
+    { { (unichar_t *) N_("Copy _Width"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'W' }, 'W', ksm_control, NULL, NULL, FVMenuCopyWidth, MID_CopyWidth },
+    { { (unichar_t *) N_("Copy _VWidth"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'V' }, '\0', ksm_control, NULL, NULL, FVMenuCopyWidth, MID_CopyVWidth },
+    { { (unichar_t *) N_("Co_py LBearing"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'p' }, '\0', ksm_control, NULL, NULL, FVMenuCopyWidth, MID_CopyLBearing },
+    { { (unichar_t *) N_("Copy RBearin_g"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'g' }, '\0', ksm_control, NULL, NULL, FVMenuCopyWidth, MID_CopyRBearing },
+    { { (unichar_t *) N_("Copy Glyph Features..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control, NULL, NULL, FVMenuCopyFeatures, MID_CopyFeatures },
+    { { (unichar_t *) N_("_Paste"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, 'V', ksm_control, NULL, NULL, FVMenuPaste, MID_Paste },
+    { { (unichar_t *) N_("Paste Into"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, 'V', ksm_control|ksm_shift, NULL, NULL, FVMenuPasteInto, MID_PasteInto },
 #ifdef FONTFORGE_CONFIG_PASTEAFTER
-    { { (unichar_t *) _STR_PasteAfter, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, 'V', ksm_control|ksm_meta|ksm_shift, NULL, NULL, FVMenuPasteAfter, MID_PasteAfter },
+    { { (unichar_t *) N_("Paste After"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, 'V', ksm_control|ksm_meta|ksm_shift, NULL, NULL, FVMenuPasteAfter, MID_PasteAfter },
 #endif
-    { { (unichar_t *) _STR_SameGlyphAs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'm' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuSameGlyphAs, MID_SameGlyphAs },
-    { { (unichar_t *) _STR_Clear, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, 0, 0, NULL, NULL, FVMenuClear, MID_Clear },
-    { { (unichar_t *) _STR_ClearBackground, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, 0, 0, NULL, NULL, FVMenuClearBackground, MID_ClearBackground },
-    { { (unichar_t *) _STR_CopyFgToBg, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, 'C', ksm_control|ksm_shift, NULL, NULL, FVMenuCopyFgBg, MID_CopyFgToBg },
-    { { (unichar_t *) _STR_Join, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'J' }, 'J', ksm_control|ksm_shift, NULL, NULL, FVMenuJoin, MID_Join },
+    { { (unichar_t *) N_("Sa_me Glyph As"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'm' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuSameGlyphAs, MID_SameGlyphAs },
+    { { (unichar_t *) N_("C_lear"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'l' }, 0, 0, NULL, NULL, FVMenuClear, MID_Clear },
+    { { (unichar_t *) N_("Clear _Background"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, 0, 0, NULL, NULL, FVMenuClearBackground, MID_ClearBackground },
+    { { (unichar_t *) N_("Copy _Fg To Bg"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'F' }, 'C', ksm_control|ksm_shift, NULL, NULL, FVMenuCopyFgBg, MID_CopyFgToBg },
+    { { (unichar_t *) N_("_Join"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'J' }, 'J', ksm_control|ksm_shift, NULL, NULL, FVMenuJoin, MID_Join },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Select, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, 0, ksm_control, sllist, sllistcheck },
-    { { (unichar_t *) _STR_FindReplace, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'i' }, 'F', ksm_control|ksm_meta, NULL, NULL, FVMenuFindRpl },
-    { { (unichar_t *) _STR_ReplaceOutlineWithReference, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'i' }, 'F', ksm_control|ksm_meta|ksm_shift, NULL, NULL, FVMenuReplaceWithRef, MID_RplRef },
+    { { (unichar_t *) N_("_Select"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'S' }, 0, ksm_control, sllist, sllistcheck },
+    { { (unichar_t *) N_("F_ind / Replace..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'i' }, 'F', ksm_control|ksm_meta, NULL, NULL, FVMenuFindRpl },
+    { { (unichar_t *) N_("Replace with Reference"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'i' }, 'F', ksm_control|ksm_meta|ksm_shift, NULL, NULL, FVMenuReplaceWithRef, MID_RplRef },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Unlinkref, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'U' }, 'U', ksm_control, NULL, NULL, FVMenuUnlinkRef, MID_UnlinkRef },
+    { { (unichar_t *) N_("U_nlink Reference"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'U' }, 'U', ksm_control, NULL, NULL, FVMenuUnlinkRef, MID_UnlinkRef },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Copyfrom, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, '\0', 0, cflist, cflistcheck, NULL, 0 },
+    { { (unichar_t *) N_("Copy _From"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'F' }, '\0', 0, cflist, cflistcheck, NULL, 0 },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_RemoveUndoes, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'e' }, '\0', 0, NULL, NULL, FVMenuRemoveUndoes, MID_RemoveUndoes },
+    { { (unichar_t *) N_("Remo_ve Undoes"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'e' }, '\0', 0, NULL, NULL, FVMenuRemoveUndoes, MID_RemoveUndoes },
     { NULL }
 };
 
 static GMenuItem aat2list[] = {
-    { { (unichar_t *) _STR_All, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) _STR_Ligatures, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0xffffffff, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("All"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("_Ligatures"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0xffffffff, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_StandardLig, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('l','i','g','a'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) _STR_RequiredLig, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('r','l','i','g'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) _STR_HistoricLig, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('h','l','i','g'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) _STR_DiscretionaryLig, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('d','l','i','g'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) _STR_FractionLig, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('f','r','a','c'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) _STR_MacUnicodeDecomposition, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) ((27<<16)|1), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Standard Ligatures"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('l','i','g','a'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Required Ligatures"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('r','l','i','g'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Historic Ligatures"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('h','l','i','g'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Discretionary Ligatures"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('d','l','i','g'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Diagonal Fractions"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('f','r','a','c'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Unicode Decomposition (Mac Only)"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) ((27<<16)|1), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_R2LAlt, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('r','t','l','a'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) _STR_VertRotAlt, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('v','r','t','2'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) _STR_SmallCaps, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('s','m','c','p'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) _STR_Cap2SmallCaps, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('c','2','s','c'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) _STR_OldstyleFigures, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('o','n','u','m'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) _STR_Superscript, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('s','u','p','s'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) _STR_Subscript, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('s','u','b','s'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) _STR_Swash, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('s','w','s','h'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) _STR_PropWidth, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('p','w','i','d'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) _STR_FullWidths, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('f','w','i','d'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) _STR_HalfWidths, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('h','w','i','d'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) _STR_InitialForms, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('i','n','i','t'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) _STR_MedialForms, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('m','e','d','i'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) _STR_TerminalForms, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('f','i','n','a'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) _STR_IsolatedForms, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('i','s','o','l'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Right to Left Alternates"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('r','t','l','a'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Vertical Rotation & Alternates"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('v','r','t','2'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Lowercase to Small Capitals"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('s','m','c','p'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Capitals to Small Capitals"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('c','2','s','c'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Oldstyle Figures"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('o','n','u','m'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Superscript"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('s','u','p','s'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Subscript"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('s','u','b','s'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Swash"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('s','w','s','h'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Proportional Width"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('p','w','i','d'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Full Widths"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('f','w','i','d'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Half Widths"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('h','w','i','d'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Initial Forms"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('i','n','i','t'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Medial Forms"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('m','e','d','i'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Terminal Forms"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('f','i','n','a'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Isolated Forms"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('i','s','o','l'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_LeftBounds, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('l','f','b','d'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) _STR_RightBounds, NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('r','t','b','d'), NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Left Bounds"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('l','f','b','d'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Right Bounds"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('r','t','b','d'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_SuffixToTag, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAATSuffix },
+    { { (unichar_t *) N_("Suffix to Tag..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAATSuffix },
     { NULL }
 };
 
 static GMenuItem smlist[] = {
-    { { (unichar_t *) _STR_Simplify, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, 'M', ksm_control|ksm_shift, NULL, NULL, FVMenuSimplify, MID_Simplify },
-    { { (unichar_t *) _STR_SimplifyMore, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, 'M', ksm_control|ksm_shift|ksm_meta, NULL, NULL, FVMenuSimplifyMore, MID_SimplifyMore },
-    { { (unichar_t *) _STR_CleanupGlyph, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'n' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuCleanup, MID_CleanupGlyph },
+    { { (unichar_t *) N_("_Simplify"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'S' }, 'M', ksm_control|ksm_shift, NULL, NULL, FVMenuSimplify, MID_Simplify },
+    { { (unichar_t *) N_("Simplify More..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, 'M', ksm_control|ksm_shift|ksm_meta, NULL, NULL, FVMenuSimplifyMore, MID_SimplifyMore },
+    { { (unichar_t *) N_("Clea_nup Glyph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'n' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuCleanup, MID_CleanupGlyph },
     { NULL }
 };
 
 static GMenuItem rmlist[] = {
-    { { (unichar_t *) _STR_Rmoverlap, &GIcon_rmoverlap, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 0, 1, 0, 'O' }, 'O', ksm_control|ksm_shift, NULL, NULL, FVMenuOverlap, MID_RmOverlap },
-    { { (unichar_t *) _STR_Intersect, &GIcon_intersection, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuOverlap, MID_Intersection },
-    { { (unichar_t *) _STR_FindIntersections, &GIcon_findinter, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 0, 1, 0, 'O' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuOverlap, MID_FindInter },
+    { { (unichar_t *) N_("_Remove Overlap"), &GIcon_rmoverlap, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'O' }, 'O', ksm_control|ksm_shift, NULL, NULL, FVMenuOverlap, MID_RmOverlap },
+    { { (unichar_t *) N_("_Intersect"), &GIcon_intersection, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'I' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuOverlap, MID_Intersection },
+    { { (unichar_t *) N_("_Find Intersections"), &GIcon_findinter, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'O' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuOverlap, MID_FindInter },
     { NULL }
 };
 
 static GMenuItem eflist[] = {
-    { { (unichar_t *) _STR_Inline, &GIcon_inline, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 0, 1, 0, 'O' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuInline },
-    { { (unichar_t *) _STR_OutlineMn, &GIcon_outline, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuOutline },
-    { { (unichar_t *) _STR_Shadow, &GIcon_shadow, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 0, 1, 0, 'S' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuShadow },
-    { { (unichar_t *) _STR_Wireframe, &GIcon_wireframe, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 0, 1, 0, 'W' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuWireframe },
+    { { (unichar_t *) N_("_Inline"), &GIcon_inline, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'O' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuInline },
+    { { (unichar_t *) N_("_Outline"), &GIcon_outline, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'I' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuOutline },
+    { { (unichar_t *) N_("_Shadow"), &GIcon_shadow, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'S' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuShadow },
+    { { (unichar_t *) N_("_Wireframe"), &GIcon_wireframe, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'W' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuWireframe },
     { NULL }
 };
 
 static GMenuItem balist[] = {
-    { { (unichar_t *) _STR_Buildaccent, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, 'A', ksm_control|ksm_shift, NULL, NULL, FVMenuBuildAccent, MID_BuildAccent },
-    { { (unichar_t *) _STR_Buildcomposit, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuBuildComposite, MID_BuildComposite },
-    { { (unichar_t *) _STR_BuildDuplicates, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuBuildDuplicate, MID_BuildDuplicates },
+    { { (unichar_t *) N_("_Build Accented Glyph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, 'A', ksm_control|ksm_shift, NULL, NULL, FVMenuBuildAccent, MID_BuildAccent },
+    { { (unichar_t *) N_("Build _Composite Glyph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuBuildComposite, MID_BuildComposite },
+    { { (unichar_t *) N_("Buil_d Duplicate Glyph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuBuildDuplicate, MID_BuildDuplicates },
 #ifdef KOREAN
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_ShowGrp, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuShowGroup },
+    { { (unichar_t *) _STR_ShowGrp, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuShowGroup },
 #endif
     { NULL }
 };
 
 static GMenuItem aatlist[] = {
-    { { (unichar_t *) _STR_CopyFeatureToFont, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuCopyFeatureToFont, MID_CopyFeatureToFont },
-    { { (unichar_t *) _STR_DefaultATT, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, 'I', ksm_control|ksm_meta, aat2list, NULL, NULL, MID_DefaultATT },
+    { { (unichar_t *) N_("_Copy Feature(s) To Font..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuCopyFeatureToFont, MID_CopyFeatureToFont },
+    { { (unichar_t *) N_("_Default ATT"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'D' }, 'I', ksm_control|ksm_meta, aat2list, NULL, NULL, MID_DefaultATT },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_RemoveAllFeatures, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuRemoveAllFeatures },
-    { { (unichar_t *) _STR_RemoveFeature, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuRemoveFeatures },
-    { { (unichar_t *) _STR_RemoveUnusedNested, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuRemoveUnusedNested },
+    { { (unichar_t *) N_("_Remove All Features"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuRemoveAllFeatures },
+    { { (unichar_t *) N_("R_emove Feature(s)..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuRemoveFeatures },
+    { { (unichar_t *) N_("Remove U_nused Nested"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuRemoveUnusedNested },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_RetagFeature, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuRetagFeature },
+    { { (unichar_t *) N_("Re_tag Feature(s)..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuRetagFeature },
     { NULL }
 };
 
 static GMenuItem delist[] = {
-    { { (unichar_t *) _STR_ReferencesDDD, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'u' }, 'I', ksm_control|ksm_meta, NULL, NULL, FVMenuShowDependentRefs, MID_ShowDependentRefs },
-    { { (unichar_t *) _STR_SubstitutionsDDD, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuShowDependentSubs, MID_ShowDependentSubs },
+    { { (unichar_t *) N_("_References..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'u' }, 'I', ksm_control|ksm_meta, NULL, NULL, FVMenuShowDependentRefs, MID_ShowDependentRefs },
+    { { (unichar_t *) N_("_Substitutions..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuShowDependentSubs, MID_ShowDependentSubs },
     { NULL }
 };
 
 static GMenuItem trlist[] = {
-    { { (unichar_t *) _STR_Transform, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'T' }, '\\', ksm_control, NULL, NULL, FVMenuTransform, MID_Transform },
-    { { (unichar_t *) _STR_PoVProj, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'T' }, '<', ksm_shift|ksm_control, NULL, NULL, FVMenuPOV, MID_POV },
-    { { (unichar_t *) _STR_NonLinearTransform, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'T' }, '|', ksm_shift|ksm_control, NULL, NULL, FVMenuNLTransform, MID_NLTransform },
+    { { (unichar_t *) N_("_Transform..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'T' }, '\\', ksm_control, NULL, NULL, FVMenuTransform, MID_Transform },
+    { { (unichar_t *) N_("_Point of View Projection..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'T' }, '<', ksm_shift|ksm_control, NULL, NULL, FVMenuPOV, MID_POV },
+    { { (unichar_t *) N_("_Non Linear Transform..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'T' }, '|', ksm_shift|ksm_control, NULL, NULL, FVMenuNLTransform, MID_NLTransform },
     { NULL }
 };
 
 static GMenuItem rndlist[] = {
-    { { (unichar_t *) _STR_Round2int, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '_', ksm_control|ksm_shift, NULL, NULL, FVMenuRound2Int, MID_Round },
-    { { (unichar_t *) _STR_Round2Hundredths, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuRound2Hundredths, 0 },
-    { { (unichar_t *) _STR_Cluster, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuCluster },
+    { { (unichar_t *) N_("To _Int"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, '_', ksm_control|ksm_shift, NULL, NULL, FVMenuRound2Int, MID_Round },
+    { { (unichar_t *) N_("To _Hundredths"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuRound2Hundredths, 0 },
+    { { (unichar_t *) N_("_Cluster"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuCluster },
     { NULL }
 };
 
 static GMenuItem ellist[] = {
-    { { (unichar_t *) _STR_Fontinfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, 'F', ksm_control|ksm_shift, NULL, NULL, FVMenuFontInfo },
-    { { (unichar_t *) _STR_GlyphInfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, 'I', ksm_control, NULL, NULL, FVMenuCharInfo, MID_CharInfo },
-    { { (unichar_t *) _STR_TypoFeatures, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, '\0', ksm_control|ksm_meta, aatlist, aatlistcheck },
-    { { (unichar_t *) _STR_ShowDependents, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, 'I', ksm_control|ksm_meta, delist, delistcheck },
-    { { (unichar_t *) _STR_Findprobs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, 'E', ksm_control, NULL, NULL, FVMenuFindProblems, MID_FindProblems },
+    { { (unichar_t *) N_("_Font Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'F' }, 'F', ksm_control|ksm_shift, NULL, NULL, FVMenuFontInfo },
+    { { (unichar_t *) N_("Glyph _Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, 'I', ksm_control, NULL, NULL, FVMenuCharInfo, MID_CharInfo },
+    { { (unichar_t *) N_("T_ypo. Features"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'D' }, '\0', ksm_control|ksm_meta, aatlist, aatlistcheck },
+    { { (unichar_t *) N_("S_how Dependent"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'D' }, 'I', ksm_control|ksm_meta, delist, delistcheck },
+    { { (unichar_t *) N_("Find Pr_oblems..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, 'E', ksm_control, NULL, NULL, FVMenuFindProblems, MID_FindProblems },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Bitmapsavail, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, 'B', ksm_control|ksm_shift, NULL, NULL, FVMenuBitmaps, MID_AvailBitmaps },
-    { { (unichar_t *) _STR_Regenbitmaps, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, 'B', ksm_control, NULL, NULL, FVMenuBitmaps, MID_RegenBitmaps },
+    { { (unichar_t *) N_("Bitm_aps Available..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, 'B', ksm_control|ksm_shift, NULL, NULL, FVMenuBitmaps, MID_AvailBitmaps },
+    { { (unichar_t *) N_("Regenerate _Bitmaps..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, 'B', ksm_control, NULL, NULL, FVMenuBitmaps, MID_RegenBitmaps },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Transformations, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'T' }, 0, ksm_control, trlist, trlistcheck, NULL, MID_Transform },
-    { { (unichar_t *) _STR_Stroke, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'E' }, 'E', ksm_control|ksm_shift, NULL, NULL, FVMenuStroke, MID_Stroke },
+    { { (unichar_t *) N_("_Transformations"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'T' }, 0, ksm_control, trlist, trlistcheck, NULL, MID_Transform },
+    { { (unichar_t *) N_("_Expand Stroke..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'E' }, 'E', ksm_control|ksm_shift, NULL, NULL, FVMenuStroke, MID_Stroke },
 #ifdef FONTFORGE_CONFIG_TILEPATH
-    { { (unichar_t *) _STR_TilePath, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuTilePath, MID_TilePath },
+    { { (unichar_t *) N_("Tile _Path..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuTilePath, MID_TilePath },
 #endif
-    { { (unichar_t *) _STR_Overlap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'O' }, '\0', ksm_control|ksm_shift, rmlist, NULL, NULL, MID_RmOverlap },
-    { { (unichar_t *) _STR_Simplify, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, '\0', ksm_control|ksm_shift, smlist, NULL, NULL, MID_Simplify },
-    { { (unichar_t *) _STR_AddExtrema, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'x' }, 'X', ksm_control|ksm_shift, NULL, NULL, FVMenuAddExtrema, MID_AddExtrema },
-    { { (unichar_t *) _STR_Round_Menu, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control|ksm_shift, rndlist, NULL, NULL, MID_Round },
-    { { (unichar_t *) _STR_Effects, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, '\0', ksm_control|ksm_shift, eflist, NULL, NULL, MID_Effects },
-    { { (unichar_t *) _STR_MetaFont, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, '!', ksm_control|ksm_shift, NULL, NULL, FVMenuMetaFont, MID_MetaFont },
-    { { (unichar_t *) _STR_Autotrace, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'r' }, 'T', ksm_control|ksm_shift, NULL, NULL, FVMenuAutotrace, MID_Autotrace },
+    { { (unichar_t *) N_("O_verlap"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'O' }, '\0', ksm_control|ksm_shift, rmlist, NULL, NULL, MID_RmOverlap },
+    { { (unichar_t *) N_("_Simplify"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'S' }, '\0', ksm_control|ksm_shift, smlist, NULL, NULL, MID_Simplify },
+    { { (unichar_t *) N_("Add E_xtrema"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'x' }, 'X', ksm_control|ksm_shift, NULL, NULL, FVMenuAddExtrema, MID_AddExtrema },
+    { { (unichar_t *) N_("Roun_d"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, '\0', ksm_control|ksm_shift, rndlist, NULL, NULL, MID_Round },
+    { { (unichar_t *) N_("Effects"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'S' }, '\0', ksm_control|ksm_shift, eflist, NULL, NULL, MID_Effects },
+    { { (unichar_t *) N_("_Meta Font..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, '!', ksm_control|ksm_shift, NULL, NULL, FVMenuMetaFont, MID_MetaFont },
+    { { (unichar_t *) N_("Autot_race"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'r' }, 'T', ksm_control|ksm_shift, NULL, NULL, FVMenuAutotrace, MID_Autotrace },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Correct, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, 'D', ksm_control|ksm_shift, NULL, NULL, FVMenuCorrectDir, MID_Correct },
+    { { (unichar_t *) N_("_Correct Direction"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'D' }, 'D', ksm_control|ksm_shift, NULL, NULL, FVMenuCorrectDir, MID_Correct },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Build, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, balist, balistcheck, NULL, MID_BuildAccent },
+    { { (unichar_t *) N_("B_uild"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, balist, balistcheck, NULL, MID_BuildAccent },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Mergefonts, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuMergeFonts, MID_MergeFonts },
-    { { (unichar_t *) _STR_Interp, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'p' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuInterpFonts, MID_InterpolateFonts },
+    { { (unichar_t *) N_("_Merge Fonts..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuMergeFonts, MID_MergeFonts },
+    { { (unichar_t *) N_("Interpo_late Fonts..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'p' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuInterpFonts, MID_InterpolateFonts },
     { NULL }
 };
 
 static GMenuItem dummyall[] = {
-    { { (unichar_t *) _STR_All, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 0, 1, 0, 'K' }, '\0', ksm_shift|ksm_control, NULL, NULL, NULL },
+    { { (unichar_t *) N_("All"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 1, 0, 'K' }, '\0', ksm_shift|ksm_control, NULL, NULL, NULL },
     NULL
 };
 
@@ -6350,9 +6228,9 @@ static void aplistbuild(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 static GMenuItem cblist[] = {
-    { { (unichar_t *) _STR_KernPairs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'K' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuKernPairs, MID_KernPairs },
-    { { (unichar_t *) _STR_AnchoredPairs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'K' }, '\0', ksm_shift|ksm_control, dummyall, aplistbuild, NULL, MID_AnchorPairs },
-    { { (unichar_t *) _STR_Ligatures, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'L' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuLigatures, MID_Ligatures },
+    { { (unichar_t *) N_("_Kern Pairs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'K' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuKernPairs, MID_KernPairs },
+    { { (unichar_t *) N_("_Anchored Pairs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'K' }, '\0', ksm_shift|ksm_control, dummyall, aplistbuild, NULL, MID_AnchorPairs },
+    { { (unichar_t *) N_("_Ligatures"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'L' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuLigatures, MID_Ligatures },
     NULL
 };
 
@@ -6395,10 +6273,10 @@ static void cblistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 
 
 static GMenuItem gllist[] = {
-    { { (unichar_t *) _STR_GlyphImage, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'K' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuGlyphLabel, gl_glyph },
-    { { (unichar_t *) _STR_GlyphName, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'K' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuGlyphLabel, gl_name },
-    { { (unichar_t *) _STR_GlyphUnicode, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'L' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuGlyphLabel, gl_unicode },
-    { { (unichar_t *) _STR_GlyphEncodingHex, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'L' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuGlyphLabel, gl_encoding },
+    { { (unichar_t *) N_("_Glyph Image"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'K' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuGlyphLabel, gl_glyph },
+    { { (unichar_t *) N_("_Name"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'K' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuGlyphLabel, gl_name },
+    { { (unichar_t *) N_("_Unicode"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'L' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuGlyphLabel, gl_unicode },
+    { { (unichar_t *) N_("_Encoding Hex"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'L' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuGlyphLabel, gl_encoding },
     NULL
 };
 
@@ -6439,19 +6317,18 @@ static void FVForceEncodingMenuBuild(GWindow gw,struct gmenuitem *mi, GEvent *e)
 
 static void FVMenuAddUnencoded(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    unichar_t *ret, *end;
-    static unichar_t def[] = { '1', 0 };
+    char *ret, *end;
     int cnt, i;
     EncMap *map = fv->map;
 
     /* Add unused unencoded slots in the map */
-    ret = GWidgetAskStringR(_STR_AddEncodingSlots,def,fv->cidmaster?_STR_HowManyCIDsToAdd:_STR_HowManySlotsToAdd);
+    ret = gwwv_ask_string(_("_Add Encoding Slots..."),"1",fv->cidmaster?_("How many CID slots do you wish to add?"):_("How many unencoded glyph slots do you wish to add?"));
     if ( ret==NULL )
 return;
-    cnt = u_strtol(ret,&end,10);
+    cnt = strtol(ret,&end,10);
     if ( *end!='\0' || cnt<=0 ) {
 	free(ret);
-	GWidgetErrorR( _STR_BadNumber,_STR_BadNumber );
+	gwwv_post_error( _("Bad Number"),_("Bad Number") );
 return;
     }
     free(ret);
@@ -6559,7 +6436,7 @@ static void FVMenuDetachGlyphs(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 # ifdef FONTFORGE_CONFIG_GDRAW
 static void FVMenuDetachAndRemoveGlyphs(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    static int buts[] = { _STR_Remove, _STR_Cancel, 0 };
+    char *buts[3];
 # elif defined(FONTFORGE_CONFIG_GTK)
 void FontViewMenu_DetachAndRemoveGlyphs(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
@@ -6575,10 +6452,12 @@ void FontViewMenu_DetachAndRemoveGlyphs(GtkMenuItem *menuitem, gpointer user_dat
 #endif
 
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    if ( GWidgetAskR(_STR_DetachAndRemoveGlyphs,buts,0,1,_STR_AreYouSureRemoveGlyphs)==1 )
-#elif defined(FONTFORGE_CONFIG_GTK)
-    if ( gwwv_ask(_("Remove Glyphs"),buts,0,1,_("Are you sure you wish to remove these glyphs? This operation cannot be undone.")==1 )
+    buts[0] = _("_Remove");
+    buts[1] = _("_Cancel");
+    buts[2] = NULL;
 #endif
+    
+    if ( gwwv_ask(_("Detach & Remo_ve Glyphs..."),(const char **) buts,0,1,_("Are you sure you wish to remove these glyphs? This operation cannot be undone."))==1 )
 return;
 
     for ( i=0; i<map->enccount; ++i ) if ( fv->selected[i] && (gid=map->map[i])!=-1 ) {
@@ -6609,20 +6488,17 @@ return;
 }
 
 static void FVMenuAddEncodingName(GWindow gw,struct gmenuitem *mi, GEvent *e) {
-    unichar_t *ret;
-    char *cret;
+    char *ret;
     Encoding *enc;
 
     /* Search the iconv database for the named encoding */
-    ret = GWidgetAskStringR(_STR_AddEncodingName,NULL,_STR_GiveMeIconvEncodingName);
+    ret = gwwv_ask_string(_("Add E_ncoding Name..."),NULL,_("Please provide the name of an encoding in the iconv database which you want in the menu."));
     if ( ret==NULL )
 return;
-    cret = cu_copy(ret);
-    enc = FindOrMakeEncoding(cret);
+    enc = FindOrMakeEncoding(ret);
     if ( enc==NULL )
-	GWidgetErrorR(_STR_InvalidEncoding,_STR_InvalidEncoding);
+	gwwv_post_error(_("Invalid Encoding"),_("Invalid Encoding"));
     free(ret);
-    free(cret);
 }
 
 static void FVMenuLoadEncoding(GWindow gw,struct gmenuitem *mi, GEvent *e) {
@@ -6639,22 +6515,22 @@ static void FVMenuRemoveEncoding(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 }
 
 static GMenuItem enlist[] = {
-    { { (unichar_t *) _STR_Reencode, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'E' }, '\0', ksm_shift|ksm_control, emptymenu, FVEncodingMenuBuild, NULL, MID_Reencode },
-    { { (unichar_t *) _STR_Compact, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuCompact, MID_Compact },
-    { { (unichar_t *) _STR_ForceEncoding, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, emptymenu, FVForceEncodingMenuBuild, NULL, MID_ForceReencode },
+    { { (unichar_t *) N_("_Reencode"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'E' }, '\0', ksm_shift|ksm_control, emptymenu, FVEncodingMenuBuild, NULL, MID_Reencode },
+    { { (unichar_t *) N_("_Compact"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuCompact, MID_Compact },
+    { { (unichar_t *) N_("_Force Encoding"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, emptymenu, FVForceEncodingMenuBuild, NULL, MID_ForceReencode },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_AddEncodingSlots, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuAddUnencoded, MID_AddUnencoded },
-    { { (unichar_t *) _STR_RemoveUnusedSlots, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuRemoveUnused, MID_RemoveUnused },
-    { { (unichar_t *) _STR_DetachGlyphs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuDetachGlyphs, MID_DetachGlyphs },
-    { { (unichar_t *) _STR_DetachAndRemoveGlyphs, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuDetachAndRemoveGlyphs, MID_DetachAndRemoveGlyphs },
+    { { (unichar_t *) N_("_Add Encoding Slots..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuAddUnencoded, MID_AddUnencoded },
+    { { (unichar_t *) N_("Remove _Unused Slots"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuRemoveUnused, MID_RemoveUnused },
+    { { (unichar_t *) N_("_Detach Glyphs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuDetachGlyphs, MID_DetachGlyphs },
+    { { (unichar_t *) N_("Detach & Remo_ve Glyphs..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuDetachAndRemoveGlyphs, MID_DetachAndRemoveGlyphs },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_AddEncodingName, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuAddEncodingName },
-    { { (unichar_t *) _STR_LoadEncoding, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuLoadEncoding, MID_LoadEncoding },
-    { { (unichar_t *) _STR_Makefromfont, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuMakeFromFont, MID_MakeFromFont },
-    { { (unichar_t *) _STR_RemoveEncoding, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuRemoveEncoding, MID_RemoveEncoding },
+    { { (unichar_t *) N_("Add E_ncoding Name..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuAddEncodingName },
+    { { (unichar_t *) N_("_Load Encoding..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuLoadEncoding, MID_LoadEncoding },
+    { { (unichar_t *) N_("Ma_ke From Font..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuMakeFromFont, MID_MakeFromFont },
+    { { (unichar_t *) N_("Remove En_coding..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuRemoveEncoding, MID_RemoveEncoding },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_DisplayByGroups, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuDisplayByGroups, MID_DisplayByGroups },
-    { { (unichar_t *) _STR_DefineGroups, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuDefineGroups },
+    { { (unichar_t *) N_("Display By _Groups..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuDisplayByGroups, MID_DisplayByGroups },
+    { { (unichar_t *) N_("D_efine Groups..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuDefineGroups },
     { NULL }
 };
 
@@ -6694,28 +6570,28 @@ static void enlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 }
 
 static GMenuItem vwlist[] = {
-    { { (unichar_t *) _STR_NextGlyph, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'N' }, ']', ksm_control, NULL, NULL, FVMenuChangeChar, MID_Next },
-    { { (unichar_t *) _STR_PrevGlyph, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '[', ksm_control, NULL, NULL, FVMenuChangeChar, MID_Prev },
-    { { (unichar_t *) _STR_NextDefGlyph, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, ']', ksm_control|ksm_meta, NULL, NULL, FVMenuChangeChar, MID_NextDef },
-    { { (unichar_t *) _STR_PrevDefGlyph, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'a' }, '[', ksm_control|ksm_meta, NULL, NULL, FVMenuChangeChar, MID_PrevDef },
-    { { (unichar_t *) _STR_Goto, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'G' }, '>', ksm_shift|ksm_control, NULL, NULL, FVMenuGotoChar },
+    { { (unichar_t *) N_("_Next Glyph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'N' }, ']', ksm_control, NULL, NULL, FVMenuChangeChar, MID_Next },
+    { { (unichar_t *) N_("_Prev Glyph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, '[', ksm_control, NULL, NULL, FVMenuChangeChar, MID_Prev },
+    { { (unichar_t *) N_("Next _Defined Glyph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'D' }, ']', ksm_control|ksm_meta, NULL, NULL, FVMenuChangeChar, MID_NextDef },
+    { { (unichar_t *) N_("Prev Defined Gl_yph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'a' }, '[', ksm_control|ksm_meta, NULL, NULL, FVMenuChangeChar, MID_PrevDef },
+    { { (unichar_t *) N_("_Goto"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'G' }, '>', ksm_shift|ksm_control, NULL, NULL, FVMenuGotoChar },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_ShowAtt, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuShowAtt },
-    { { (unichar_t *) _STR_DisplaySubstitutions, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'u' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuDisplaySubs, MID_DisplaySubs },
-    { { (unichar_t *) _STR_Combinations, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'b' }, '\0', ksm_shift|ksm_control, cblist, cblistcheck },
+    { { (unichar_t *) N_("_Show ATT"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'S' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuShowAtt },
+    { { (unichar_t *) N_("Display S_ubstitutions..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'u' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuDisplaySubs, MID_DisplaySubs },
+    { { (unichar_t *) N_("Com_binations"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'b' }, '\0', ksm_shift|ksm_control, cblist, cblistcheck },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_LabelGlyphBy, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'b' }, '\0', ksm_shift|ksm_control, gllist, gllistcheck },
+    { { (unichar_t *) N_("_Label Glyph By"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'b' }, '\0', ksm_shift|ksm_control, gllist, gllistcheck },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_ShowHMetrics, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuShowMetrics, MID_ShowHMetrics },
-    { { (unichar_t *) _STR_ShowVMetrics, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuShowMetrics, MID_ShowVMetrics },
+    { { (unichar_t *) N_("S_how H. Metrics..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuShowMetrics, MID_ShowHMetrics },
+    { { (unichar_t *) N_("Show _V. Metrics..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'V' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuShowMetrics, MID_ShowVMetrics },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_24, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '2' }, '2', ksm_control, NULL, NULL, FVMenuSize, MID_24 },
-    { { (unichar_t *) _STR_36, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '3' }, '3', ksm_control, NULL, NULL, FVMenuSize, MID_36 },
-    { { (unichar_t *) _STR_48, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '4' }, '4', ksm_control, NULL, NULL, FVMenuSize, MID_48 },
-    { { (unichar_t *) _STR_72, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '4' }, '7', ksm_control, NULL, NULL, FVMenuSize, MID_72 },
-    { { (unichar_t *) _STR_96, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, '4' }, '9', ksm_control, NULL, NULL, FVMenuSize, MID_96 },
-    { { (unichar_t *) _STR_Antialias, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'A' }, '5', ksm_control, NULL, NULL, FVMenuSize, MID_AntiAlias },
-    { { (unichar_t *) _STR_FitToEm, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 1, 0, 'F' }, '6', ksm_control, NULL, NULL, FVMenuSize, MID_FitToEm },
+    { { (unichar_t *) N_("_24 pixel outline"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, '2' }, '2', ksm_control, NULL, NULL, FVMenuSize, MID_24 },
+    { { (unichar_t *) N_("_36 pixel outline"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, '3' }, '3', ksm_control, NULL, NULL, FVMenuSize, MID_36 },
+    { { (unichar_t *) N_("_48 pixel outline"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, '4' }, '4', ksm_control, NULL, NULL, FVMenuSize, MID_48 },
+    { { (unichar_t *) N_("_72 pixel outline"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, '4' }, '7', ksm_control, NULL, NULL, FVMenuSize, MID_72 },
+    { { (unichar_t *) N_("_96 pixel outline"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, '4' }, '9', ksm_control, NULL, NULL, FVMenuSize, MID_96 },
+    { { (unichar_t *) N_("_Anti Alias"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'A' }, '5', ksm_control, NULL, NULL, FVMenuSize, MID_AntiAlias },
+    { { (unichar_t *) N_("_Fit to em"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'F' }, '6', ksm_control, NULL, NULL, FVMenuSize, MID_FitToEm },
     { NULL },			/* Some extra room to show bitmaps */
     { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
     { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
@@ -6728,7 +6604,7 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     int anychars = FVAnyCharSelected(fv);
     int i, base;
     BDFFont *bdf;
-    unichar_t buffer[50];
+    char buffer[50];
     extern void GMenuItemArrayFree(GMenuItem *mi);
     extern GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt);
     int pos;
@@ -6741,7 +6617,7 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     break;
     }
 
-    for ( i=0; vwlist[i].ti.text!=(unichar_t *) _STR_FitToEm; ++i );
+    for ( i=0; vwlist[i].ti.text==NULL || strcmp((char *) vwlist[i].ti.text, _("_Fit to em"))!=0; ++i );
     base = i+2;
     for ( i=base; vwlist[i].ti.text!=NULL; ++i ) {
 	free( vwlist[i].ti.text);
@@ -6757,11 +6633,11 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 		i<sizeof(vwlist)/sizeof(vwlist[0])-1 && bdf!=NULL;
 		++i, bdf = bdf->next ) {
 	    if ( BDFDepth(bdf)==1 )
-		u_sprintf( buffer, GStringGetResource(_STR_DPixelBitmap,NULL), bdf->pixelsize );
+		printf( buffer, _("%d pixel bitmap"), bdf->pixelsize );
 	    else
-		u_sprintf( buffer, GStringGetResource(_STR_DdPixelBitmap,NULL),
+		sprintf( buffer, _("%d@%d pixel bitmap"),
 			bdf->pixelsize, BDFDepth(bdf) );
-	    vwlist[i].ti.text = u_copy(buffer);
+	    vwlist[i].ti.text = (unichar_t *) uc_copy(buffer);
 	    vwlist[i].ti.checkable = true;
 	    vwlist[i].ti.checked = bdf==fv->show;
 	    vwlist[i].ti.userdata = bdf;
@@ -6834,68 +6710,68 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 }
 
 static GMenuItem histlist[] = {
-    { { (unichar_t *) _STR_HStem, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuHistograms, MID_HStemHist },
-    { { (unichar_t *) _STR_VStem, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuHistograms, MID_VStemHist },
-    { { (unichar_t *) "BlueValues", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuHistograms, MID_BlueValuesHist },
+    { { (unichar_t *) N_("_HStem"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuHistograms, MID_HStemHist },
+    { { (unichar_t *) N_("_VStem"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'V' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuHistograms, MID_VStemHist },
+    { { (unichar_t *) N_("BlueValues"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 1, 0, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuHistograms, MID_BlueValuesHist },
     { NULL }
 };
 
 static GMenuItem htlist[] = {
-    { { (unichar_t *) _STR_Autohint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, 'H', ksm_control|ksm_shift, NULL, NULL, FVMenuAutoHint, MID_AutoHint },
-    { { (unichar_t *) _STR_HintSubsPts, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAutoHintSubs, MID_HintSubsPt },
-    { { (unichar_t *) _STR_AutoCounterHint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAutoCounter, MID_AutoCounter },
-    { { (unichar_t *) _STR_DontAutoHint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuDontAutoHint, MID_DontAutoHint },
+    { { (unichar_t *) N_("Auto_Hint"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, 'H', ksm_control|ksm_shift, NULL, NULL, FVMenuAutoHint, MID_AutoHint },
+    { { (unichar_t *) N_("Hint _Substitution Pts"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAutoHintSubs, MID_HintSubsPt },
+    { { (unichar_t *) N_("Auto _Counter Hint"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAutoCounter, MID_AutoCounter },
+    { { (unichar_t *) N_("_Don't AutoHint"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuDontAutoHint, MID_DontAutoHint },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_AutoInstr, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, 'T', ksm_control, NULL, NULL, FVMenuAutoInstr, MID_AutoInstr },
-    { { (unichar_t *) _STR_EditInstructions, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, '\0', 0, NULL, NULL, FVMenuEditInstrs, MID_EditInstructions },
-    { { (unichar_t *) _STR_Editfpgm, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, FVMenuEditTable, MID_Editfpgm },
-    { { (unichar_t *) _STR_Editprep, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, FVMenuEditTable, MID_Editprep },
-    { { (unichar_t *) _STR_Editmaxp, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, FVMenuEditTable, MID_Editmaxp },
-    { { (unichar_t *) _STR_Editcvt, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, FVMenuEditTable, MID_Editcvt },
-    { { (unichar_t *) _STR_PrivateToCvt, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', 0, NULL, NULL, FVMenuPrivateToCvt, MID_PrivateToCvt },
+    { { (unichar_t *) N_("Auto_Instr"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, 'T', ksm_control, NULL, NULL, FVMenuAutoInstr, MID_AutoInstr },
+    { { (unichar_t *) N_("_Edit Instructions..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'l' }, '\0', 0, NULL, NULL, FVMenuEditInstrs, MID_EditInstructions },
+    { { (unichar_t *) N_("Edit 'fpgm'..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', 0, NULL, NULL, FVMenuEditTable, MID_Editfpgm },
+    { { (unichar_t *) N_("Edit 'prep'..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', 0, NULL, NULL, FVMenuEditTable, MID_Editprep },
+    { { (unichar_t *) N_("Edit 'maxp'..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', 0, NULL, NULL, FVMenuEditTable, MID_Editmaxp },
+    { { (unichar_t *) N_("Edit 'cvt '..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', 0, NULL, NULL, FVMenuEditTable, MID_Editcvt },
+    { { (unichar_t *) N_("Private to 'cvt'"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', 0, NULL, NULL, FVMenuPrivateToCvt, MID_PrivateToCvt },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_ClearHints, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuClearHints, MID_ClearHints },
-    { { (unichar_t *) _STR_ClearWidthMD, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuClearWidthMD, MID_ClearWidthMD },
-    { { (unichar_t *) _STR_ClearInstructions, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuClearInstrs, MID_ClearInstrs },
+    { { (unichar_t *) N_("_Clear Hints"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuClearHints, MID_ClearHints },
+    { { (unichar_t *) N_("Clear _Width MD"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuClearWidthMD, MID_ClearWidthMD },
+    { { (unichar_t *) N_("Clear Instructions"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuClearInstrs, MID_ClearInstrs },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Histograms, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, '\0', ksm_shift|ksm_control, histlist },
+    { { (unichar_t *) N_("Histograms"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_shift|ksm_control, histlist },
     { NULL }
 };
 
 static GMenuItem mtlist[] = {
-    { { (unichar_t *) _STR_Center, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_control, NULL, NULL, FVMenuCenter, MID_Center },
-    { { (unichar_t *) _STR_Thirds, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'T' }, '\0', ksm_control, NULL, NULL, FVMenuCenter, MID_Thirds },
-    { { (unichar_t *) _STR_Setwidth, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'W' }, 'L', ksm_control|ksm_shift, NULL, NULL, FVMenuSetWidth, MID_SetWidth },
-    { { (unichar_t *) _STR_Setlbearing, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'L' }, 'L', ksm_control, NULL, NULL, FVMenuSetWidth, MID_SetLBearing },
-    { { (unichar_t *) _STR_Setrbearing, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'R' }, 'R', ksm_control, NULL, NULL, FVMenuSetWidth, MID_SetRBearing },
+    { { (unichar_t *) N_("_Center in Width"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_control, NULL, NULL, FVMenuCenter, MID_Center },
+    { { (unichar_t *) N_("_Thirds in Width"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'T' }, '\0', ksm_control, NULL, NULL, FVMenuCenter, MID_Thirds },
+    { { (unichar_t *) N_("Set _Width..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'W' }, 'L', ksm_control|ksm_shift, NULL, NULL, FVMenuSetWidth, MID_SetWidth },
+    { { (unichar_t *) N_("Set _LBearing..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'L' }, 'L', ksm_control, NULL, NULL, FVMenuSetWidth, MID_SetLBearing },
+    { { (unichar_t *) N_("Set _RBearing..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'R' }, 'R', ksm_control, NULL, NULL, FVMenuSetWidth, MID_SetRBearing },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_SetVWidth, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuSetWidth, MID_SetVWidth },
+    { { (unichar_t *) N_("Set _Vertical Advance..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'V' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuSetWidth, MID_SetVWidth },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Autowidth, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, 'W', ksm_control|ksm_shift, NULL, NULL, FVMenuAutoWidth },
-    { { (unichar_t *) _STR_Autokern, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'K' }, 'K', ksm_control|ksm_shift, NULL, NULL, FVMenuAutoKern },
-    { { (unichar_t *) _STR_KernByClasses, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'K' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuKernByClasses },
-    { { (unichar_t *) _STR_Removeallkern, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuRemoveKern, MID_RmHKern },
-    { { (unichar_t *) _STR_KernPairCloseup, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuKPCloseup },
+    { { (unichar_t *) N_("_Auto Width..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, 'W', ksm_control|ksm_shift, NULL, NULL, FVMenuAutoWidth },
+    { { (unichar_t *) N_("Auto _Kern..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'K' }, 'K', ksm_control|ksm_shift, NULL, NULL, FVMenuAutoKern },
+    { { (unichar_t *) N_("Ker_n By Classes..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'K' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuKernByClasses },
+    { { (unichar_t *) N_("Remove All Kern _Pairs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuRemoveKern, MID_RmHKern },
+    { { (unichar_t *) N_("Kern Pair Closeup..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuKPCloseup },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_VKernByClasses, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'K' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuVKernByClasses, MID_VKernByClass },
-    { { (unichar_t *) _STR_VKernFromHKern, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuVKernFromHKern, MID_VKernFromH },
-    { { (unichar_t *) _STR_RemoveAllVKern, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuRemoveVKern, MID_RmVKern },
+    { { (unichar_t *) N_("VKern By Classes..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'K' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuVKernByClasses, MID_VKernByClass },
+    { { (unichar_t *) N_("VKern From HKern"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuVKernFromHKern, MID_VKernFromH },
+    { { (unichar_t *) N_("Remove All VKern Pairs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuRemoveVKern, MID_RmVKern },
     { NULL }
 };
 
 static GMenuItem cdlist[] = {
-    { { (unichar_t *) _STR_Convert2CID, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_control, NULL, NULL, FVMenuConvert2CID, MID_Convert2CID },
-    { { (unichar_t *) _STR_ConvertByCMap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_control, NULL, NULL, FVMenuConvertByCMap, MID_ConvertByCMap },
+    { { (unichar_t *) N_("_Convert to CID"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_control, NULL, NULL, FVMenuConvert2CID, MID_Convert2CID },
+    { { (unichar_t *) N_("Convert By C_Map"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_control, NULL, NULL, FVMenuConvertByCMap, MID_ConvertByCMap },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Flatten, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, '\0', ksm_control, NULL, NULL, FVMenuFlatten, MID_Flatten },
-    { { (unichar_t *) _STR_FlattenByCMap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, '\0', ksm_control, NULL, NULL, FVMenuFlattenByCMap, MID_FlattenByCMap },
+    { { (unichar_t *) N_("_Flatten"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'F' }, '\0', ksm_control, NULL, NULL, FVMenuFlatten, MID_Flatten },
+    { { (unichar_t *) N_("Fl_attenByCMap"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'F' }, '\0', ksm_control, NULL, NULL, FVMenuFlattenByCMap, MID_FlattenByCMap },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_InsertFont, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuInsertFont, MID_InsertFont },
-    { { (unichar_t *) _STR_InsertBlank, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, '\0', ksm_control, NULL, NULL, FVMenuInsertBlank, MID_InsertBlank },
-    { { (unichar_t *) _STR_RemoveFont, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'R' }, '\0', ksm_control, NULL, NULL, FVMenuRemoveFontFromCID, MID_RemoveFromCID },
+    { { (unichar_t *) N_("Insert F_ont..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuInsertFont, MID_InsertFont },
+    { { (unichar_t *) N_("Insert _Blank"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, '\0', ksm_control, NULL, NULL, FVMenuInsertBlank, MID_InsertBlank },
+    { { (unichar_t *) N_("_Remove Font"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'R' }, '\0', ksm_control, NULL, NULL, FVMenuRemoveFontFromCID, MID_RemoveFromCID },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_ChangeSupplement, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuChangeSupplement, MID_ChangeSupplement },
-    { { (unichar_t *) _STR_CIDFontInfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuCIDFontInfo, MID_CIDFontInfo },
+    { { (unichar_t *) N_("_Change Supplement..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuChangeSupplement, MID_ChangeSupplement },
+    { { (unichar_t *) N_("C_ID Font Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuCIDFontInfo, MID_CIDFontInfo },
     { NULL },				/* Extra room to show sub-font names */
     { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
     { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
@@ -6961,11 +6837,11 @@ static void cdlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 }
 
 static GMenuItem mmlist[] = {
-    { { (unichar_t *) _STR_CreateMM, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuCreateMM, MID_CreateMM },
-    { { (unichar_t *) _STR_MMValid, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuMMValid, MID_MMValid },
-    { { (unichar_t *) _STR_MMInfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuMMInfo, MID_MMInfo },
-    { { (unichar_t *) _STR_MMBlendToNew, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuBlendToNew, MID_BlendToNew },
-    { { (unichar_t *) _STR_ChangeMMBlend, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuChangeMMBlend, MID_ChangeMMBlend },
+    { { (unichar_t *) N_("_Create MM..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuCreateMM, MID_CreateMM },
+    { { (unichar_t *) N_("MM _Validity Check"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuMMValid, MID_MMValid },
+    { { (unichar_t *) N_("MM _Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuMMInfo, MID_MMInfo },
+    { { (unichar_t *) N_("_Blend to New Font..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuBlendToNew, MID_BlendToNew },
+    { { (unichar_t *) N_("MM Change Def _Weights..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuChangeMMBlend, MID_ChangeMMBlend },
     { NULL },				/* Extra room to show sub-font names */
 };
 
@@ -7024,11 +6900,11 @@ static void mmlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 }
 
 static GMenuItem wnmenu[] = {
-    { { (unichar_t *) _STR_NewOutline, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'u' }, 'H', ksm_control, NULL, NULL, FVMenuOpenOutline, MID_OpenOutline },
-    { { (unichar_t *) _STR_NewBitmap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'B' }, 'J', ksm_control, NULL, NULL, FVMenuOpenBitmap, MID_OpenBitmap },
-    { { (unichar_t *) _STR_NewMetrics, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, 'K', ksm_control, NULL, NULL, FVMenuOpenMetrics },
+    { { (unichar_t *) N_("New O_utline Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'u' }, 'H', ksm_control, NULL, NULL, FVMenuOpenOutline, MID_OpenOutline },
+    { { (unichar_t *) N_("New _Bitmap Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, 'J', ksm_control, NULL, NULL, FVMenuOpenBitmap, MID_OpenBitmap },
+    { { (unichar_t *) N_("New _Metrics Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, 'K', ksm_control, NULL, NULL, FVMenuOpenMetrics },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Warnings, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, '\0', ksm_control, NULL, NULL, _MenuWarnings, MID_Warnings },
+    { { (unichar_t *) N_("Warnings"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, '\0', ksm_control, NULL, NULL, _MenuWarnings, MID_Warnings },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { NULL }
 };
@@ -7055,52 +6931,52 @@ static void FVWindowMenuBuild(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 GMenuItem helplist[] = {
-    { { (unichar_t *) _STR_Help, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, GK_F1, 0, NULL, NULL, MenuHelp },
-    { { (unichar_t *) _STR_Index, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, GK_F1, ksm_control, NULL, NULL, MenuIndex },
-    { { (unichar_t *) _STR_About, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, '\0', 0, NULL, NULL, MenuAbout },
-    { { (unichar_t *) _STR_LicenseDDD, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'A' }, '\0', 0, NULL, NULL, MenuLicense },
+    { { (unichar_t *) N_("_Help"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, GK_F1, 0, NULL, NULL, MenuHelp },
+    { { (unichar_t *) N_("_Index"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, GK_F1, ksm_control, NULL, NULL, MenuIndex },
+    { { (unichar_t *) N_("_About..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, '\0', 0, NULL, NULL, MenuAbout },
+    { { (unichar_t *) N_("_License..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, '\0', 0, NULL, NULL, MenuLicense },
     { NULL }
 };
 
 GMenuItem fvpopupmenu[] = {
-    { { (unichar_t *) _STR_Cut, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 't' }, '\0', ksm_control, NULL, NULL, FVMenuCut, MID_Cut },
-    { { (unichar_t *) _STR_Copy, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_control, NULL, NULL, FVMenuCopy, MID_Copy },
-    { { (unichar_t *) _STR_Copyref, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, FVMenuCopyRef, MID_CopyRef },
-    { { (unichar_t *) _STR_Copywidth, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'W' }, '\0', ksm_control, NULL, NULL, FVMenuCopyWidth, MID_CopyWidth },
-    { { (unichar_t *) _STR_Paste, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, '\0', ksm_control, NULL, NULL, FVMenuPaste, MID_Paste },
-    { { (unichar_t *) _STR_Clear, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, 0, 0, NULL, NULL, FVMenuClear, MID_Clear },
-    { { (unichar_t *) _STR_CopyFgToBg, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuCopyFgBg, MID_CopyFgToBg },
-    { { (unichar_t *) _STR_Unlinkref, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'U' }, '\0', ksm_control, NULL, NULL, FVMenuUnlinkRef, MID_UnlinkRef },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_GlyphInfo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuCharInfo, MID_CharInfo },
-    { { (unichar_t *) _STR_Transform, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'T' }, '\0', ksm_control, NULL, NULL, FVMenuTransform, MID_Transform },
-    { { (unichar_t *) _STR_Stroke, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'E' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuStroke, MID_Stroke },
-/*    { { (unichar_t *) _STR_Rmoverlap, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'O' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuOverlap, MID_RmOverlap },*/
-/*    { { (unichar_t *) _STR_Simplify, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuSimplify, MID_Simplify },*/
-/*    { { (unichar_t *) _STR_AddExtrema, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'x' }, 'X', ksm_control|ksm_shift, NULL, NULL, FVMenuAddExtrema, MID_AddExtrema },*/
-    { { (unichar_t *) _STR_Round2int, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuRound2Int, MID_Round },
-    { { (unichar_t *) _STR_Correct, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'D' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuCorrectDir, MID_Correct },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Autohint, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAutoHint, MID_AutoHint },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Center, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, '\0', ksm_control, NULL, NULL, FVMenuCenter, MID_Center },
-    { { (unichar_t *) _STR_Setwidth, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'W' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuSetWidth, MID_SetWidth },
-    { { (unichar_t *) _STR_SetVWidth, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuSetWidth, MID_SetVWidth },
+    { { (unichar_t *) N_("Cu_t"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 't' }, '\0', ksm_control, NULL, NULL, FVMenuCut, MID_Cut },
+    { { (unichar_t *) N_("_Copy"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_control, NULL, NULL, FVMenuCopy, MID_Copy },
+    { { (unichar_t *) N_("C_opy Reference"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, FVMenuCopyRef, MID_CopyRef },
+    { { (unichar_t *) N_("Copy _Width"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'W' }, '\0', ksm_control, NULL, NULL, FVMenuCopyWidth, MID_CopyWidth },
+    { { (unichar_t *) N_("_Paste"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, '\0', ksm_control, NULL, NULL, FVMenuPaste, MID_Paste },
+    { { (unichar_t *) N_("C_lear"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'l' }, 0, 0, NULL, NULL, FVMenuClear, MID_Clear },
+    { { (unichar_t *) N_("Copy _Fg To Bg"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'F' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuCopyFgBg, MID_CopyFgToBg },
+    { { (unichar_t *) N_("U_nlink Reference"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'U' }, '\0', ksm_control, NULL, NULL, FVMenuUnlinkRef, MID_UnlinkRef },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 1, 1, 0, 0, }},
+    { { (unichar_t *) N_("Glyph _Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuCharInfo, MID_CharInfo },
+    { { (unichar_t *) N_("_Transform..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'T' }, '\0', ksm_control, NULL, NULL, FVMenuTransform, MID_Transform },
+    { { (unichar_t *) N_("_Expand Stroke..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'E' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuStroke, MID_Stroke },
+/*    { { (unichar_t *) N_("_Remove Overlap"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'O' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuOverlap, MID_RmOverlap },*/
+/*    { { (unichar_t *) N_("_Simplify"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'S' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuSimplify, MID_Simplify },*/
+/*    { { (unichar_t *) N_("Add E_xtrema"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'x' }, 'X', ksm_control|ksm_shift, NULL, NULL, FVMenuAddExtrema, MID_AddExtrema },*/
+    { { (unichar_t *) N_("To _Int"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuRound2Int, MID_Round },
+    { { (unichar_t *) N_("_Correct Direction"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'D' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuCorrectDir, MID_Correct },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 1, 1, 0, 0, }},
+    { { (unichar_t *) N_("Auto_Hint"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAutoHint, MID_AutoHint },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 1, 1, 0, 0, }},
+    { { (unichar_t *) N_("_Center in Width"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_control, NULL, NULL, FVMenuCenter, MID_Center },
+    { { (unichar_t *) N_("Set _Width..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'W' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuSetWidth, MID_SetWidth },
+    { { (unichar_t *) N_("Set _Vertical Advance..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'V' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuSetWidth, MID_SetVWidth },
     { NULL }
 };
 
 static GMenuItem mblist[] = {
-    { { (unichar_t *) _STR_File, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'F' }, 0, 0, fllist, fllistcheck },
-    { { (unichar_t *) _STR_Edit, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'E' }, 0, 0, edlist, edlistcheck },
-    { { (unichar_t *) _STR_Element, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'l' }, 0, 0, ellist, ellistcheck },
-    { { (unichar_t *) _STR_Hints, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'i' }, 0, 0, htlist, htlistcheck },
-    { { (unichar_t *) _STR_EncodingNoC, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, 0, 0, enlist, enlistcheck },
-    { { (unichar_t *) _STR_View, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'V' }, 0, 0, vwlist, vwlistcheck },
-    { { (unichar_t *) _STR_Metric, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'M' }, 0, 0, mtlist, mtlistcheck },
-    { { (unichar_t *) _STR_CID, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, 0, 0, cdlist, cdlistcheck },
-    { { (unichar_t *) _STR_MM, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, '\0' }, 0, 0, mmlist, mmlistcheck },
-    { { (unichar_t *) _STR_Window, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'W' }, 0, 0, wnmenu, FVWindowMenuBuild, NULL },
-    { { (unichar_t *) _STR_Help, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'H' }, 0, 0, helplist, NULL },
+    { { (unichar_t *) N_("_File"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'F' }, 0, 0, fllist, fllistcheck },
+    { { (unichar_t *) N_("_Edit"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'E' }, 0, 0, edlist, edlistcheck },
+    { { (unichar_t *) N_("E_lement"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'l' }, 0, 0, ellist, ellistcheck },
+    { { (unichar_t *) N_("H_ints"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'i' }, 0, 0, htlist, htlistcheck },
+    { { (unichar_t *) N_("E_ncoding"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'V' }, 0, 0, enlist, enlistcheck },
+    { { (unichar_t *) N_("_View"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'V' }, 0, 0, vwlist, vwlistcheck },
+    { { (unichar_t *) N_("_Metrics"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, 0, 0, mtlist, mtlistcheck },
+    { { (unichar_t *) N_("_CID"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, 0, 0, cdlist, cdlistcheck },
+    { { (unichar_t *) N_("MM"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, 0, 0, mmlist, mmlistcheck },
+    { { (unichar_t *) N_("_Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'W' }, 0, 0, wnmenu, FVWindowMenuBuild, NULL },
+    { { (unichar_t *) N_("_Help"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, 0, 0, helplist, NULL },
     { NULL }
 };
 # elif defined(FONTFORGE_CONFIG_GTK)
@@ -8008,13 +7884,14 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,EncMap *map,int i) {
     }
     dummy->width = dummy->vwidth = sf->ascent+sf->descent;
     if ( dummy->unicodeenc>0 && dummy->unicodeenc<0x10000 &&
-	    iscombining(dummy->unicodeenc))
+	    iscombining(dummy->unicodeenc)) {
 	/* Mark characters should be 0 width */
 	dummy->width = 0;
 	/* Except in monospaced fonts on windows, where they should be the */
 	/*  same width as everything else */
+    }
     /* Actually, in a monospace font, all glyphs should be the same width */
-    /*  whether mark or base */
+    /*  whether mark or not */
     if ( sf->pfminfo.panose_set && sf->pfminfo.panose[3]==9 &&
 	    sf->glyphcnt>0 ) {
 	for ( i=sf->glyphcnt-1; i>=0; --i )
@@ -9284,7 +9161,7 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 	int left = sizeof(space)/sizeof(space[0]) - u_strlen(space)-1;
 	if ( left>4 ) {
 	    uc_strcat(space,"\n\n");
-	    u_strncat(space,sc->comment,left-2);
+	    utf82u_strncpy(space+u_strlen(space),sc->comment,left-2);
 	}
     }
     GGadgetPreparePopup(gw,space);
@@ -9832,8 +9709,14 @@ FontView *_FontViewCreate(SplineFont *sf) {
 return( fv );
 }
 
+static void FontViewInit(void) {
+    mbDoGetText(mblist);
+    mbDoGetText(fvpopupmenu);
+}
+
 FontView *FontViewCreate(SplineFont *sf) {
     FontView *fv = _FontViewCreate(sf);
+    static int done = false;
 #if defined(FONTFORGE_CONFIG_GTK)
     GtkWidget *status;
     PangoContext *context;
@@ -9841,6 +9724,8 @@ FontView *FontViewCreate(SplineFont *sf) {
     PangoFontMetrics *fm;
     int as, ds;
     BDFFont *bdf;
+
+    if ( !done ) { FontViewInit(); done=true;}
 
     fv->gw = create_FontView();
     g_object_set_data (G_OBJECT (fv->gw), "data", fv );
@@ -9888,6 +9773,7 @@ FontView *FontViewCreate(SplineFont *sf) {
     GRect size;
     BDFFont *bdf;
 
+    if ( !done ) { FontViewInit(); done=true;}
     if ( icon==NULL ) {
 #ifdef BIGICONS
 	icon = GDrawCreateBitmap(NULL,fontview_width,fontview_height,fontview_bits);
@@ -9987,10 +9873,10 @@ static SplineFont *SFReadPostscript(char *filename) {
     SplineFont *sf=NULL;
 
 # ifdef FONTFORGE_CONFIG_GDRAW
-    GProgressChangeStages(2);
+    gwwv_progress_change_stages(2);
     fd = ReadPSFont(filename);
-    GProgressNextStage();
-    GProgressChangeLine2R(_STR_InterpretingGlyphs);
+    gwwv_progress_next_stage();
+    gwwv_progress_change_line2(_("Interpreting Glyphs"));
 # elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_change_stages(2);
     fd = ReadPSFont(filename);
@@ -10012,11 +9898,7 @@ return( sf );
 /*  by LoadSplineFont (which does) and by RevertFile (which knows what it's doing) */
 SplineFont *ReadSplineFont(char *filename,enum openflags openflags) {
     SplineFont *sf;
-# ifdef FONTFORGE_CONFIG_GDRAW
-    unichar_t ubuf[150], *temp;
-#elif defined(FONTFORGE_CONFIG_GTK)
-    char buf[400];
-#endif
+    char ubuf[250], *temp;
     char buf[1500];
     int fromsfd = false;
     static struct { char *ext, *decomp, *recomp; } compressors[] = {
@@ -10074,11 +9956,7 @@ return( NULL );
 		if ( strippedname!=filename ) free(strippedname);
 		strippedname = tmpfile;
 	    } else {
-#if defined(FONTFORGE_CONFIG_GTK)
-		gwwv_post_error(_("Decompress Failed"),_("Decompress Failed"));
-#else
-		GWidgetErrorR(_STR_DecompressFailed,_STR_DecompressFailed);
-#endif
+		gwwv_post_error(_("Decompress Failed!"),_("Decompress Failed!"));
 		free(tmpfile);
 return( NULL );
 	    }
@@ -10093,23 +9971,15 @@ return( NULL );
 
     /* If there are no pfaedit windows, give them something to look at */
     /*  immediately. Otherwise delay a bit */
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    u_strcpy(ubuf,GStringGetResource(_STR_LoadingFontFrom,NULL));
-    len = u_strlen(ubuf);
-    u_strncat(ubuf,temp = def2u_copy(GFileNameTail(fullname)),100);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    strcpy(ubuf,_("Loading font from "));
+    len = strlen(ubuf);
+    strncat(ubuf,temp = def2utf8_copy(GFileNameTail(fullname)),100);
     free(temp);
     ubuf[100+len] = '\0';
-    GProgressStartIndicator(fv_list==NULL?0:10,GStringGetResource(_STR_Loading,NULL),ubuf,GStringGetResource(_STR_ReadingGlyphs,NULL),0,1);
-    GProgressEnableStop(0);
-    if ( fv_list==NULL && !no_windowing_ui ) { GDrawSync(NULL); GDrawProcessPendingEvents(NULL); }
-#elif defined(FONTFORGE_CONFIG_GTK)
-    strcpy(ubuf,_("Loading font from "));
-    len = u_strlen(buf);
-    strncat(buf,GFileNameTail(fullname),100);
-    buf[100+len] = '\0';
-    gwwv_progress_start_indicator(fv_list==NULL?0:10,_("Loading..."),buf,_("Reading Glyphs"),NULL),0,1);
+    gwwv_progress_start_indicator(fv_list==NULL?0:10,_("Loading..."),ubuf,_("Reading Glyphs"),0,1);
     gwwv_progress_enable_stop(0);
-    /* Do something here to force an expose !!!! */
+    if ( fv_list==NULL && !no_windowing_ui ) { GDrawSync(NULL); GDrawProcessPendingEvents(NULL); }
 #else
     len = 0;
 #endif
@@ -10229,9 +10099,7 @@ return( NULL );
 	free(strippedname);
     if ( fullname!=filename && fullname!=strippedname )
 	free(fullname);
-# ifdef FONTFORGE_CONFIG_GDRAW
-    GProgressEndIndicator();
-# elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_end_indicator();
 # endif
 
@@ -10257,19 +10125,19 @@ return( NULL );
 #if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Couldn't open font"),_("The requested file, %.100s, does not exist"),GFileNameTail(filename));
 #else
-	GWidgetErrorR(_STR_CouldntOpenFontTitle,_STR_NoSuchFontFile,GFileNameTail(filename));
+	gwwv_post_error(_("Couldn't open font"),_("The requested file, %.100s, does not exist"),GFileNameTail(filename));
 #endif
     else if ( !GFileReadable(filename) )
 #if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Couldn't open font"),_("You do not have permission to read %.100s"),GFileNameTail(filename));
 #else
-	GWidgetErrorR(_STR_CouldntOpenFontTitle,_STR_FontFileNotReadable,GFileNameTail(filename));
+	gwwv_post_error(_("Couldn't open font"),_("You do not have permission to read %.100s"),GFileNameTail(filename));
 #endif
     else
 #if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Couldn't open font"),_("%.100s is not in a known format (or is so badly corrupted as to be unreadable)"),GFileNameTail(filename));
 #else
-	GWidgetErrorR(_STR_CouldntOpenFontTitle,_STR_CouldntParseFont,GFileNameTail(filename));
+	gwwv_post_error(_("Couldn't open font"),_("%.100s is not in a known format (or is so badly corrupted as to be unreadable)"),GFileNameTail(filename));
 #endif
 
     if ( tmpfile!=NULL ) {
@@ -10287,11 +10155,12 @@ return( NULL );
 	/* Ok, they have told us from a script they have access to the font */
     } else if ( !fromsfd && sf!=NULL && (sf->pfminfo.fstype&0xff)==0x0002 ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	static int buts[] = { _STR_Yes, _STR_No, 0 };
-	if ( GWidgetAskR(_STR_RestrictedFont,buts,1,1,_STR_RestrictedRightsFont)==1 ) {
+	char *buts[3];
+	buts[0] = _("_Yes"); buts[1] = _("_No"); buts[2] = NULL;
+	if ( gwwv_ask(_("Restricted Font"),(const char **) buts,1,1,_("This font is marked with an FSType of 2 (Restricted\nLicense). That means it is not editable without the\npermission of the legal owner.\n\nDo you have such permission?"))==1 ) {
 #elif defined(FONTFORGE_CONFIG_GTK)
 	static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_NO, NULL };
-	if ( gwwv_ask(_("Restricted Font"),buts,1,1,_("This font is marked with an FSType of 2 (Restricted\nLicense). That means it is not editable without the\npermission of the legal owner.\n\nDo you have such permission?"))==1 ) {
+	if ( gwwv_ask(_("Restricted Font"),(const char **) buts,1,1,_("This font is marked with an FSType of 2 (Restricted\nLicense). That means it is not editable without the\npermission of the legal owner.\n\nDo you have such permission?"))==1 ) {
 #else
 	if ( true ) {		/* In a script, if they didn't explicitly say so, fail */
 #endif

@@ -77,29 +77,45 @@ Autokern has similar ideas, but is simpler:
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static GTextInfo widthlist[] = {
-    { (unichar_t *) _STR_StdGlyphRange, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_StdGlyphRangeGreek, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_StdGlyphRangeCyr, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_All, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Selected, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("A-Za-z0-9"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+/* gettext gets very unhappy with things outside of ASCII and removes them */
+    { (unichar_t *) NU_("Α-ΡΣ-Ωα-ω"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) NU_("ЂЄ-ІЈ-ЋЏ-ИК-Яа-ик-яђє-іј-ћџ"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("All"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Selected"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
     NULL };
 static GTextInfo kernllist[] = {
-    { (unichar_t *) _STR_StdGlyphRangeKernL, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_StdGlyphRangeGreek, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_StdGlyphRangeCyr, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_All, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Selected, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("A-Za-z"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) NU_("Α-ΡΣ-Ωα-ω"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) NU_("ЂЄ-ІЈ-ЋЏ-ИК-Яа-ик-яђє-іј-ћџ"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("All"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Selected"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
     NULL };
 static GTextInfo kernrlist[] = {
-    { (unichar_t *) _STR_StdGlyphRangeKernR, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_StdGlyphRangeKernR2, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_StdGlyphRangeKernRGreek, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_StdGlyphRangeKernR2Greek, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_StdGlyphRangeKernRCyr, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_StdGlyphRangeKernR2Cyr, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_All, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) _STR_Selected, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("a-z.,:;-"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("A-Za-z.,:;-"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) NU_("α-ω.,:;-"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) NU_("Α-ΡΣ-Ωα-ω.,:;-"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) NU_("а-ик-яђє-іј-ћџ.,:;-"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) NU_("ЂЄ-ІЈ-ЋЏ-ИК-Яа-ик-яђє-іј-ћџ.,:;-"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("All"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Selected"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
     NULL };
+
+static void AutoWidthInit(void) {
+    static int done=false;
+    int i;
+
+    if ( done )
+return;
+    for ( i=0; widthlist[i].text!=NULL; ++i )
+	widthlist[i].text = (unichar_t *) _((char *) widthlist[i].text);
+    for ( i=0; kernllist[i].text!=NULL; ++i )
+	kernllist[i].text = (unichar_t *) _((char *) kernllist[i].text);
+    for ( i=0; kernrlist[i].text!=NULL; ++i )
+	kernrlist[i].text = (unichar_t *) _((char *) kernrlist[i].text);
+    done = true;
+}
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static SplineFont *old_sf=NULL;
@@ -305,14 +321,14 @@ static void CheckOutOfBounds(WidthInfo *wi) {
 
     for ( i=0; i<wi->real_rcnt; ++i ) {
 	if ( wi->right[i]->newl<-wi->spacing || wi->right[i]->newl>wi->spacing )
-	    LogError( "AutoWidth failure on %s\n", wi->right[i]->sc->name );
+	    LogError( _("AutoWidth failure on %s\n"), wi->right[i]->sc->name );
 	if ( wi->right[i]->newl<-minsp )
 	    wi->right[i]->newl = -rint(minsp);
     }
     for ( i=0; i<wi->real_lcnt; ++i ) {
 	if ( wi->left[i]->newr<-wi->spacing-wi->seriflength ||
 		wi->left[i]->newr>wi->spacing+wi->seriflength ) {
-	    LogError( "AutoWidth failure on %s\n", wi->right[i]->sc->name );
+	    LogError( _("AutoWidth failure on %s\n"), wi->right[i]->sc->name );
 	    if ( wi->left[i]->newr>wi->spacing )
 		wi->left[i]->newr = wi->spacing;
 	}
@@ -1119,16 +1135,8 @@ static struct charone **BuildCharList(FontView *fv, SplineFont *sf,GWindow gw,
     int gid;
 
     str = _GGadgetGetTitle(GWidgetGetControl(gw,base));
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    all = u_strcmp(str,GStringGetResource(_STR_All,NULL))==0;
-#elif defined(FONTFORGE_CONFIG_GTK)
-    all = u_strcmp(str,_("All"))==0;
-#endif
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    sel = u_strcmp(str,GStringGetResource(_STR_Selected,NULL))==0;
-#elif defined(FONTFORGE_CONFIG_GTK)
-    sel = u_strcmp(str,_("Selected"))==0;
-#endif
+    all = uc_strcmp(str,_("All"))==0;
+    sel = uc_strcmp(str,_("Selected"))==0;
     if ( !all && !sel )
 	parse = true;
 
@@ -1424,23 +1432,19 @@ static void kernsetsfree(struct kernsets *ks) {
     free(ks->ch1);
 }
 
-static int ReadKernPairFile(unichar_t *fn,WidthInfo *wi) {
+static int ReadKernPairFile(char *fn,WidthInfo *wi) {
     char *filename;
     FILE *file;
     int ch, format=0;
     unichar_t buffer[300];
     struct kernsets ks;
 
-    filename = u2def_copy(fn);
-    free(fn);
+    filename = utf82def_copy(fn);
     file = fopen(filename,"r");
+    free( filename );
     if ( file==NULL ) {
-#if defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_error(_("Couldn't open file"), _("Couldn't open file %.200s"), filename );
-#else
-	GWidgetErrorR(_STR_CouldNotOpenFile, _STR_CouldNotOpenFileName, filename );
-#endif
-	free( filename );
+	gwwv_post_error(_("Couldn't open file"), _("Couldn't open file %.200s"), fn );
+	free(fn);
 return( false );
     }
 
@@ -1462,17 +1466,13 @@ return( false );
 
     fclose(file);
     if ( !figurekernsets(wi,&ks)) {
-#if defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_error(_("No Kern Pairs"), _("No kerning pairs found in %.200s"), filename );
-#else
-	GWidgetErrorR(_STR_NoKernPairs, _STR_NoKernPairsFile, filename );
-#endif
+	gwwv_post_error(_("No Kern Pairs"), _("No kerning pairs found in %.200s"), fn );
 	free( filename );
 	kernsetsfree(&ks);
 return( false );
     }
     kernsetsfree(&ks);
-    free( filename );
+    free( fn );
 return( true );
 }
 
@@ -1484,10 +1484,10 @@ static int AW_OK(GGadget *g, GEvent *e) {
 	int err = false;
 	int tot;
 
-	wi->spacing = GetRealR(gw,CID_Spacing, _STR_Spacing,&err);
+	wi->spacing = GetReal8(gw,CID_Spacing, _("Spacing"),&err);
 	if ( wi->autokern ) {
-	    wi->threshold = GetIntR(gw,CID_Threshold, _STR_Threshold, &err);
-	    tot = GetIntR(gw,CID_Total, _STR_TotalKerns, &err);
+	    wi->threshold = GetInt8(gw,CID_Threshold, _("Threshold:"), &err);
+	    tot = GetInt8(gw,CID_Total, _("Total Kerns:"), &err);
 	    if ( tot<0 ) tot = 0;
 	}
 	if ( err )
@@ -1507,22 +1507,13 @@ return( true );
 	    if ( wi->real_lcnt==0 || wi->real_rcnt==0 ) {
 		FreeCharList(wi->left);
 		FreeCharList(wi->right);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_NoGlyphsSelected,_STR_NoGlyphsSelected);
-#elif defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("No glyphs selected."),_("No glyphs selected."));
-#endif
 return( true );
 	    }
 	    ScriptSerifChecker(wi);
 	    InitCharPairs(wi);
 	} else {
-	    static unichar_t filter[] = { '*','.','t', 'x', 't', '\0' };
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    unichar_t *fn = GWidgetOpenFile(GStringGetResource(_STR_LoadKernPairs,NULL), NULL, filter, NULL,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    unichar_t *fn = GWidgetOpenFile(_("Load Kern Pairs"), NULL, filter, NULL,NULL);
-#endif
+	    char *fn = gwwv_open_filename(_("Load Kern Pairs"), NULL, "*.txt", NULL,NULL);
 	    if ( fn==NULL ) {
 		GDrawSetVisible(gw,true);
 		wi->done = false;
@@ -1573,21 +1564,21 @@ return( true );
 
 #define SelHeight	34
 static int MakeSelGadgets(GGadgetCreateData *gcd, GTextInfo *label,
-	int i, int base, int labr, int y, int toomany, int autokern ) {
-    int std = !autokern ? _STR_StdGlyphRange :
-		base==CID_Left ? _STR_StdGlyphRangeKernL :
-		_STR_StdGlyphRangeKernR;
+	int i, int base, char *labr, int y, int toomany, int autokern ) {
+    char *std = !autokern ? _("A-Za-z0-9") :
+		base==CID_Left ? _("A-Za-z") :
+		_("a-z.,:;-");
     int epos;
 
     label[i].text = (unichar_t *) labr;
-    label[i].text_in_resource = true;
+    label[i].text_is_1byte = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.pos.x = 12; gcd[i].gd.pos.y = y; 
     gcd[i].gd.flags = gg_visible | gg_enabled;
     gcd[i++].creator = GLabelCreate;
 
     label[i].text = (unichar_t *) std;
-    label[i].text_in_resource = true;
+    label[i].text_is_1byte = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.pos.x = 12; gcd[i].gd.pos.y = y+14; 
     gcd[i].gd.flags = gg_visible | gg_enabled;
@@ -1641,18 +1632,15 @@ static void AutoWKDlg(FontView *fv,int autokern) {
     wi.sf = sf;
     wi.fv = fv;
     FindFontParameters(&wi);
+    AutoWidthInit();
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(autokern?_STR_Autokern:_STR_Autowidth,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = autokern?_("Auto Kern...");
-#endif
+    wattrs.utf8_window_title = autokern?_("Auto Kern..."):_("Auto Width...");
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,200));
     pos.height = GDrawPointsToPixels(NULL,autokern?270:180);
@@ -1663,29 +1651,29 @@ static void AutoWKDlg(FontView *fv,int autokern) {
 
     i = 0;
 
-    label[i].text = (unichar_t *) _STR_EnterTwoGlyphRange;
-    label[i].text_in_resource = true;
+    label[i].text = (unichar_t *) _("Enter two glyph ranges");
+    label[i].text_is_1byte = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 6;
     gcd[i].gd.flags = gg_visible | gg_enabled;
     gcd[i++].creator = GLabelCreate;
 
-    label[i].text = (unichar_t *) _STR_ToBeAdjusted;
-    label[i].text_in_resource = true;
+    label[i].text = (unichar_t *) _("to be adjusted.");
+    label[i].text_is_1byte = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 18;
     gcd[i].gd.flags = gg_visible | gg_enabled;
     gcd[i++].creator = GLabelCreate;
 
-    i = MakeSelGadgets(gcd, label, i, CID_Left, _STR_GlyphsLeft, 33,
+    i = MakeSelGadgets(gcd, label, i, CID_Left, _("Glyphs on Left"), 33,
 	    toomany, autokern );
     selfield = i-1;
-    i = MakeSelGadgets(gcd, label, i, CID_Right, _STR_GlyphsRight, 33+SelHeight+9,
+    i = MakeSelGadgets(gcd, label, i, CID_Right, _("Glyphs on Right"), 33+SelHeight+9,
 	    toomany, autokern );
     y = 32+2*(SelHeight+9);
 
-    label[i].text = (unichar_t *) _STR_Spacing;
-    label[i].text_in_resource = true;
+    label[i].text = (unichar_t *) _("Spacing");
+    label[i].text_is_1byte = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = y+7;
     gcd[i].gd.flags = gg_visible | gg_enabled;
@@ -1704,8 +1692,8 @@ static void AutoWKDlg(FontView *fv,int autokern) {
     if ( autokern ) {
 	y -= 4;
 
-	label[i].text = (unichar_t *) _STR_TotalKerns;
-	label[i].text_in_resource = true;
+	label[i].text = (unichar_t *) _("Total Kerns:");
+	label[i].text_is_1byte = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = y+7;
 	gcd[i].gd.flags = gg_visible | gg_enabled;
@@ -1720,8 +1708,8 @@ static void AutoWKDlg(FontView *fv,int autokern) {
 	gcd[i++].creator = GTextFieldCreate;
 	y += 28;
 
-	label[i].text = (unichar_t *) _STR_Threshold;
-	label[i].text_in_resource = true;
+	label[i].text = (unichar_t *) _("Threshold:");
+	label[i].text_is_1byte = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = y+7;
 	gcd[i].gd.flags = gg_visible | gg_enabled;
@@ -1739,17 +1727,13 @@ static void AutoWKDlg(FontView *fv,int autokern) {
 
 	gcd[i].gd.pos.width = 80; gcd[i].gd.pos.height = 0;
 	gcd[i].gd.pos.x = (200-gcd[i].gd.pos.width)/2; gcd[i].gd.pos.y = y;
-	gcd[i].gd.flags = gg_visible | gg_enabled;
-	label[i].text = (unichar_t *) _STR_Browse;
-	label[i].text_in_resource = true;
+	gcd[i].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+	label[i].text = (unichar_t *) _("_Browse...");
+	label[i].text_is_1byte = true;
 	gcd[i].gd.mnemonic = 'B';
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.handle_controlevent = AW_OK;	/* Yes, really */
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	gcd[i].gd.popup_msg = GStringGetResource(_STR_KernPairFilePopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gcd[i].gd.popup_msg = _("Browse for a file containing a list of kerning pairs\ntwo characters per line. FontForge will only check\nthose pairs for kerning info.");
-#endif
+	gcd[i].gd.popup_msg = (unichar_t *) _("Browse for a file containing a list of kerning pairs\ntwo characters per line. FontForge will only check\nthose pairs for kerning info.");
 	gcd[i].gd.cid = CID_Browse;
 	gcd[i++].creator = GButtonCreate;
 	y += 32;
@@ -1758,7 +1742,8 @@ static void AutoWKDlg(FontView *fv,int autokern) {
     gcd[i].gd.pos.x = 30-3; gcd[i].gd.pos.y = y-3;
     gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[i].text = (unichar_t *) _STR_OK;
+    label[i].text = (unichar_t *) _("_OK");
+    label[i].text_is_1byte = true;
     label[i].text_in_resource = true;
     gcd[i].gd.mnemonic = 'O';
     gcd[i].gd.label = &label[i];
@@ -1769,7 +1754,8 @@ static void AutoWKDlg(FontView *fv,int autokern) {
     gcd[i].gd.pos.x = -30; gcd[i].gd.pos.y = y;
     gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[i].text = (unichar_t *) _STR_Cancel;
+    label[i].text = (unichar_t *) _("_Cancel");
+    label[i].text_is_1byte = true;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.mnemonic = 'C';
@@ -2107,7 +2093,7 @@ return( false );
 	ScriptSerifChecker(&wi);
 	InitCharPairs(&wi);
     } else {
-	if ( !ReadKernPairFile(uc_copy(kernfile),&wi))
+	if ( !ReadKernPairFile(copy(kernfile),&wi))
 return( false );
     }
     wi.done = true;

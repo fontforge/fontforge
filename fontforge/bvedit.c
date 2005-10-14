@@ -32,30 +32,21 @@
 static int askfraction(int *xoff, int *yoff) {
     static int lastx=1, lasty = 3;
     char buffer[30];
-    unichar_t ubuffer[30];
-    unichar_t *ret, *end, *end2;
+    char *ret, *end, *end2;
     int xv, yv;
 
     sprintf( buffer, "%d:%d", lastx, lasty );
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    uc_strcpy(ubuffer,buffer);
-    ret = GWidgetAskStringR(_STR_Skew,ubuffer,_STR_SkewRatio);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    ret = gwwv_ask_string(_("Skew"),ubuffer,_("Skew Ratio"));
-#endif
+    ret = gwwv_ask_string(_("Skew"),buffer,_("Skew Ratio"));
     if ( ret==NULL )
 return( 0 );
-    xv = u_strtol(ret,&end,10);
-    yv = u_strtol(end+1,&end2,10);
+    xv = strtol(ret,&end,10);
+    yv = strtol(end+1,&end2,10);
     if ( xv==0 || xv>10 || xv<-10 || yv<=0 || yv>10 || *end!=':' || *end2!='\0' ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR( _STR_BadNumber,_STR_BadNumber );
-#elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error( _("Bad Number"),_("Bad Number") );
-#endif
 	free(ret);
 return( 0 );
     }
+    free(ret);
     *xoff = lastx = xv; *yoff = lasty = yv;
 return( 1 );
 }

@@ -1054,7 +1054,10 @@ return( did_a_merge );
 
 void CVMouseUpPointer(CharView *cv ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    static int buts[] = { _STR_Yes, _STR_No, 0 };
+    static char *buts[3];
+    buts[0] = _("_Yes");
+    buts[1] = _("_No");
+    buts[2] = NULL;
 #elif defined(FONTFORGE_CONFIG_GTK)
     static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_NO, NULL };
 #endif
@@ -1062,11 +1065,7 @@ void CVMouseUpPointer(CharView *cv ) {
     if ( cv->widthsel ) {
 	/* cv->widthsel = false; */
 	if ( cv->sc->width<0 && cv->oldwidth>=0 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    if ( GWidgetAskR(_STR_NegativeWidth, buts, 0, 1, _STR_NegativeWidthCheck )==1 )
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    if ( gwwv_ask(_("Negative Width"), buts, 0, 1, _("Negative character widths are not allowed in TrueType\nDo you really want a negative width?") )==1 )
-#endif
+	    if ( gwwv_ask(_("Negative Width"), (const char **) buts, 0, 1, _("Negative character widths are not allowed in TrueType\nDo you really want a negative width?") )==1 )
 		cv->sc->width = cv->oldwidth;
 	}
 	SCSynchronizeWidth(cv->sc,cv->sc->width,cv->oldwidth,NULL);
@@ -1076,11 +1075,7 @@ void CVMouseUpPointer(CharView *cv ) {
     if ( cv->vwidthsel ) {
 	/* cv->vwidthsel = false; */
 	if ( cv->sc->vwidth<0 && cv->oldvwidth>=0 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    if ( GWidgetAskR(_STR_NegativeWidth, buts, 0, 1, _STR_NegativeWidthCheck )==1 )
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    if ( gwwv_ask(_("Negative Width"), buts, 0, 1, _("Negative character widths are not allowed in TrueType\nDo you really want a negative width?") )==1 )
-#endif
+	    if ( gwwv_ask(_("Negative Width"), (const char **) buts, 0, 1, _("Negative character widths are not allowed in TrueType\nDo you really want a negative width?") )==1 )
 		cv->sc->vwidth = cv->oldvwidth;
 	}
 	cv->expandedge = ee_none;

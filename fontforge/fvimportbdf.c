@@ -287,7 +287,7 @@ static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b,EncMap *map,int dep
     break;
     }
     if ( xmax<xmin || ymax<ymin ) {
-	LogError( "Bad bounding box for %s.\n", name );
+	LogError( _("Bad bounding box for %s.\n"), name );
 return;
     }
     i = figureProperEncoding(sf,map,b,enc,name,swidth,swidth1,encname);
@@ -418,9 +418,7 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, Encoding **_enc,
 	if ( strcmp(tok,"CHARS")==0 ) {
 	    cnt=0;
 	    fscanf(bdf,"%d",&cnt);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GProgressChangeTotal(cnt);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	    gwwv_progress_change_total(cnt);
 #endif
     break;
@@ -548,7 +546,7 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, Encoding **_enc,
 	comments[strlen(comments)-1] = '\0';
 
     if ( *depth!=1 && *depth!=2 && *depth!=4 && *depth!=8 && *depth!=16 && *depth!=32 )
-	LogError( "FontForge does not support this bit depth %d (must be 1,2,4,8,16,32)\n", *depth);
+	LogError( _("FontForge does not support this bit depth %d (must be 1,2,4,8,16,32)\n"), *depth);
 
 return( pixelsize );
 }
@@ -850,10 +848,10 @@ return( false );
 	    else
 		r += get3byte(gf)+1;
 	} else if ( ch==EOF ) {
-	    LogError( "Unexpected EOF in gf\n" );
+	    LogError( _("Unexpected EOF in gf\n") );
     break;
 	} else
-	    LogError( "Uninterpreted code in gf: %d\n", ch);
+	    LogError( _("Uninterpreted code in gf: %d\n"), ch);
     }
     fseek(gf,pos,SEEK_SET);
 return( true );
@@ -968,7 +966,7 @@ return( i );
 return( (i-st->dyn_f-1)*16 + getnibble(pk,st) + st->dyn_f + 1 );
 	} else {
 	    if ( st->rpt!=0 )
-		LogError( "Duplicate repeat row count in char %d of pk file\n", st->cc );
+		LogError( _("Duplicate repeat row count in char %d of pk file\n"), st->cc );
 	    if ( i==15 ) st->rpt = 1;
 	    else st->rpt = pkgetcount(pk,st);
  /*printf( "[%d]", st->rpt );*/
@@ -1112,7 +1110,7 @@ return( 0 );
 	}
     }
     if ( ftell(pk)!=char_end ) {
-	LogError( "The character, %d, was not read properly (or pk file is in bad format)\n At %ld should be %d, off by %ld\n", cc, ftell(pk), char_end, ftell(pk)-char_end );
+	LogError( _("The character, %d, was not read properly (or pk file is in bad format)\n At %ld should be %d, off by %ld\n"), cc, ftell(pk), char_end, ftell(pk)-char_end );
 	fseek(pk,char_end,SEEK_SET);
     }
  /* printf( "\n" ); */
@@ -1545,9 +1543,7 @@ return( false );
 		IError("Bad PCF glyph bitmap size");
 	    memcpy(bc->bitmap,bitmap+offsets[i],
 		    bc->bytes_per_line * (bc->ymax-bc->ymin+1));
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GProgressNext();
-#elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	    gwwv_progress_next();
 #endif
 	}
@@ -1560,9 +1556,7 @@ return( false );
 		memcpy(bc->bitmap+(j-bc->ymin)*bc->bytes_per_line,
 			bitmap+offsets[i]+(j-bc->ymin)*bpl,
 			bc->bytes_per_line);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GProgressNext();
-#elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	    gwwv_progress_next();
 #endif
 	}
@@ -1711,9 +1705,8 @@ return( true );
 static int askusersize(char *filename) {
     char *pt;
     int guess;
-    unichar_t *ret, *end;
+    char *ret, *end;
     char def[10];
-    unichar_t udef[10];
 
     for ( pt=filename; *pt && !isdigit(*pt); ++pt );
     guess = strtol(pt,NULL,10);
@@ -1721,20 +1714,15 @@ static int askusersize(char *filename) {
 	sprintf(def,"%d",guess);
     else
 	*def = '\0';
-    uc_strcpy(udef,def);
   retry:
-    ret = GWidgetAskStringR(_STR_PixelSize,udef,_STR_PixelSizeFont);
+    ret = gwwv_ask_string(_("Pixel size:"),def,_("What is the pixel size of the font in this file?"));
     if ( ret==NULL )
 	guess = -1;
     else {
-	guess = u_strtol(ret,&end,10);
+	guess = strtol(ret,&end,10);
 	free(ret);
 	if ( guess<=0 || *end!='\0' ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_BadNumber,_STR_BadNumber);
-#elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Bad Number"),_("Bad Number"));
-#endif
   goto retry;
 	}
     }
@@ -1742,21 +1730,19 @@ return( guess );
 }
 
 static int alreadyexists(int pixelsize) {
+    int ret;
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    static int buts[] = { _STR_OK, _STR_Cancel, 0 };
+    char *buts[3];
+    buts[0] = _("_OK");
+    buts[1] = _("_Cancel");
+    buts[2] = NULL;
 #elif defined(FONTFORGE_CONFIG_GTK)
     static char *buts[] = { GTK_STOCK_OK, GTK_STOCK_CANCEL, NULL };
 #endif
-    int ret;
 
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    ret = GWidgetAskR(_STR_Duppixelsize,buts,0,1,_STR_DupPixelSizeLong,
-	    pixelsize)==0;
-#elif defined(FONTFORGE_CONFIG_GTK)
-    ret = GWidgetAsk(_("Duplicate pixelsize"),buts,0,1,
+    ret = gwwv_ask(_("Duplicate pixelsize"),(const char **) buts,0,1,
 	_("The font database already contains a bitmap\012font with this pixelsize (%d)\012Do you want to overwrite it?"),
 	pixelsize);
-#endif
 
 return( ret );
 }
@@ -1786,63 +1772,39 @@ static BDFFont *SFImportBDF(SplineFont *sf, char *filename,int ispk, int toback,
 	ispk = 3;
     bdf = fopen(filename,"rb");
     if ( bdf==NULL ) {
-#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Couldn't open file"), _("Couldn't open file %.200s"), filename );
-#else
-	GWidgetErrorR(_STR_CouldNotOpenFile, _STR_CouldNotOpenFileName, filename );
-#endif
 return( NULL );
     }
     if ( ispk==1 ) {
 	pixelsize = pk_header(bdf,&ascent,&descent,&enc,family,mods,full, filename);
 	if ( pixelsize==-2 ) {
 	    fclose(bdf);
-#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Not a pk file"), _("Not a (metafont) pk file %.200s"), filename );
-#else
-	    GWidgetErrorR(_STR_NotPkFile, _STR_NotPkFileName, filename );
-#endif
 return( NULL );
 	}
     } else if ( ispk==3 ) {		/* gf */
 	pixelsize = gf_postamble(bdf,&ascent,&descent,&enc,family,mods,full, filename);
 	if ( pixelsize==-2 ) {
 	    fclose(bdf);
-#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Not a gf file"), _("Not a (metafont) gf file %.200s"), filename );
-#else
-	    GWidgetErrorR(_STR_NotGfFile, _STR_NotGfFileName, filename );
-#endif
 return( NULL );
 	}
     } else if ( ispk==2 ) {		/* pcf */
 	if (( toc = pcfReadTOC(bdf))== NULL ) {
 	    fclose(bdf);
-#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Not a pcf file"), _("Not an X11 pcf file %.200s"), filename );
-#else
-	    GWidgetErrorR(_STR_NotPcfFile, _STR_NotPcfFileName, filename );
-#endif
 return( NULL );
 	}
 	pixelsize = pcf_properties(bdf,toc,&ascent,&descent,&enc,family,mods,full);
 	if ( pixelsize==-2 ) {
 	    fclose(bdf); free(toc);
-#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Not a pcf file"), _("Not an X11 pcf file %.200s"), filename );
-#else
-	    GWidgetErrorR(_STR_NotPcfFile, _STR_NotPcfFileName, filename );
-#endif
 return( NULL );
 	}
     } else {
 	if ( gettoken(bdf,tok,sizeof(tok))==-1 || strcmp(tok,"STARTFONT")!=0 ) {
 	    fclose(bdf);
-#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Not a bdf file"), _("Not a bdf file %.200s"), filename );
-#else
-	    GWidgetErrorR(_STR_NotBdfFile, _STR_NotBdfFileName, filename );
-#endif
 return( NULL );
 	}
 	pixelsize = slurp_header(bdf,&ascent,&descent,&enc,family,mods,full,
@@ -1919,19 +1881,15 @@ return( NULL );
 	while ( gf_char(bdf,sf,b,map));
     } else if ( ispk==2 ) {
 	if ( !PcfParse(bdf,toc,sf,map,b,enc) ) {
-#if defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	    gwwv_post_error(_("Not a pcf file"), _("Not an X11 pcf file %.200s"), filename );
-#else
-	    GWidgetErrorR(_STR_NotPcfFile, _STR_NotPcfFileName, filename );
 #endif
 	}
     } else {
 	while ( gettoken(bdf,tok,sizeof(tok))!=-1 ) {
 	    if ( strcmp(tok,"STARTCHAR")==0 ) {
 		AddBDFChar(bdf,sf,b,map,depth,&defs,enc);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GProgressNext();
-#elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 		gwwv_progress_next();
 #endif
 	    }
@@ -1978,11 +1936,7 @@ static BDFFont *_SFImportBDF(SplineFont *sf, char *filename,int ispk, int toback
 		filename = temp;
 	    else {
 		free(temp);
-#if defined(FONTFORGE_CONFIG_GTK)
-		gwwv_post_error(_("Decompress Failed"),_("Decompress Failed"));
-#else
-		GWidgetErrorR(_STR_DecompressFailed,_STR_DecompressFailed);
-#endif
+		gwwv_post_error(_("Decompress Failed!"),_("Decompress Failed!"));
 return( NULL );
 	    }
 	}
@@ -2046,11 +2000,7 @@ static void SFAddToBackground(SplineFont *sf,BDFFont *bdf);
 
 int FVImportBDF(FontView *fv, char *filename, int ispk, int toback) {
     BDFFont *b, *anyb=NULL;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    unichar_t ubuf[140];
-#elif defined(FONTFORGE_CONFIG_GTK)
     char buf[300];
-#endif
     char *eod, *fpt, *file, *full;
     int fcnt, any = 0;
     int oldenccnt = fv->map->enccount;
@@ -2062,15 +2012,9 @@ int FVImportBDF(FontView *fv, char *filename, int ispk, int toback) {
     while (( fpt=strstr(fpt,"; "))!=NULL )
 	{ ++fcnt; fpt += 2; }
 
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    u_sprintf(ubuf, GStringGetResource(_STR_LoadingFrom,NULL), filename);
-    GProgressStartIndicator(10,GStringGetResource(_STR_Loading,NULL),ubuf,GStringGetResource(_STR_ReadingGlyphs,NULL),0,fcnt);
-    GProgressEnableStop(false);
-#elif defined(FONTFORGE_CONFIG_GTK)
     sprintf(buf, _("Loading font from %.100s"), filename);
-    gwwv_progress_start_indicator(10_("Loading..."),buf,_("Reading Glyphs"),0,fcnt);
+    gwwv_progress_start_indicator(10,_("Loading..."),buf,_("Reading Glyphs"),0,fcnt);
     gwwv_progress_enable_stop(false);
-#endif
 
     file = eod+1;
     do {
@@ -2078,20 +2022,11 @@ int FVImportBDF(FontView *fv, char *filename, int ispk, int toback) {
 	if ( fpt!=NULL ) *fpt = '\0';
 	full = galloc(strlen(filename)+1+strlen(file)+1);
 	strcpy(full,filename); strcat(full,"/"); strcat(full,file);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	u_sprintf(ubuf, GStringGetResource(_STR_LoadingFrom,NULL), filename);
-	GProgressChangeLine1(ubuf);
-#elif defined(FONTFORGE_CONFIG_GTK)
 	sprintf(buf, _("Loading font from %.100s"), filename);
 	gwwv_progress_change_line1(buf);
-#endif
 	b = _SFImportBDF(fv->sf,full,ispk,toback, fv->map);
 	free(full);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	if ( fpt!=NULL ) GProgressNextStage();
-#elif defined(FONTFORGE_CONFIG_GTK)
 	if ( fpt!=NULL ) gwwv_progress_next_stage();
-#endif
 	if ( b!=NULL ) {
 	    anyb = b;
 	    any = true;
@@ -2102,11 +2037,7 @@ int FVImportBDF(FontView *fv, char *filename, int ispk, int toback) {
 	}
 	file = fpt+2;
     } while ( fpt!=NULL );
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressEndIndicator();
-#elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_end_indicator();
-#endif
     if ( oldenccnt != fv->map->enccount ) {
 	FontView *fvs;
 	for ( fvs=fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
@@ -2118,11 +2049,7 @@ int FVImportBDF(FontView *fv, char *filename, int ispk, int toback) {
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
     if ( anyb==NULL ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR( _STR_NoBitmapFont, _STR_NoBitmapFontIn, filename );
-#elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error( _("No Bitmap Font"), _("Could not find a bitmap font in %s"), filename );
-#endif
     } else if ( toback )
 	SFAddToBackground(fv->sf,anyb);
 return( any );
@@ -2176,20 +2103,11 @@ static void SFAddToBackground(SplineFont *sf,BDFFont *bdf) {
 int FVImportMult(FontView *fv, char *filename, int toback, int bf) {
     SplineFont *strikeholder, *sf = fv->sf;
     BDFFont *strikes;
-
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    unichar_t ubuf[100];
-
-    u_snprintf(ubuf, sizeof(ubuf)/sizeof(ubuf[0]), GStringGetResource(_STR_LoadingFrom,NULL), filename);
-    GProgressStartIndicator(10,GStringGetResource(_STR_Loading,NULL),ubuf,GStringGetResource(_STR_ReadingGlyphs,NULL),0,2);
-    GProgressEnableStop(false);
-#elif defined(FONTFORGE_CONFIG_GTK)
     char buf[300];
 
-    snprintf(buf, sizeof(buf)/sizeof(buf[0]), _("Loading font from %.100s"), filename);
-    gwwv_progress_start_indicator(10,_("Loading..."),buf,_("Reading Glyphs"),NULL),0,2);
+    snprintf(buf, sizeof(buf), _("Loading font from %.100s"), filename);
+    gwwv_progress_start_indicator(10,_("Loading..."),buf,_("Reading Glyphs"),0,2);
     gwwv_progress_enable_stop(false);
-#endif
 
     if ( bf == bf_ttf )
 	strikeholder = SFReadTTF(filename,toback?ttf_onlyonestrike|ttf_onlystrikes:ttf_onlystrikes);
@@ -2202,9 +2120,7 @@ int FVImportMult(FontView *fv, char *filename, int toback, int bf) {
 
     if ( strikeholder==NULL || (strikes = strikeholder->bitmaps)==NULL ) {
 	SplineFontFree(strikeholder);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GProgressEndIndicator();
-#elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	gwwv_progress_end_indicator();
 #endif
 return( false );
@@ -2217,9 +2133,7 @@ return( false );
 
     strikeholder->bitmaps =NULL;
     SplineFontFree(strikeholder);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressEndIndicator();
-#elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_end_indicator();
 #endif
 return( true );

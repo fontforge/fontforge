@@ -1169,10 +1169,10 @@ void DVCreateGloss(DebugView *dv) {
     extern int _GScrollBar_Width;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle;
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
-    wattrs.window_title = GStringGetResource(_STR_TTGloss,NULL);
+    wattrs.utf8_window_title = _("Instruction Gloss (TrueType)");
     pos.x = 664; pos.y = 732;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,230)); pos.height = 169;
     dv->gloss = GDrawCreateTopWindow(NULL,&pos,dvgloss_e_h,dv,&wattrs);

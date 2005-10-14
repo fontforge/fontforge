@@ -371,10 +371,8 @@ return( ret );
 }
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-static unichar_t def[] = { '1', '0', '0',  '\0' };
-static unichar_t def_bits[] = { '1',  '\0' };
-static unichar_t *last = NULL;
-static unichar_t *last_bits = NULL;
+static char *last = NULL;
+static char *last_bits = NULL;
 
 struct sizebits {
     GWindow gw;
@@ -390,21 +388,17 @@ static int SB_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct sizebits *d = GDrawGetUserData(GGadgetGetWindow(g));
 	int err=0;
-	*d->pixels = GetIntR(d->gw,CID_Size,_STR_PixelSize,&err);
-	*d->bits   = GetIntR(d->gw,CID_Bits,_STR_BitsPerPixel,&err);
+	*d->pixels = GetInt8(d->gw,CID_Size,_("Pixel size:"),&err);
+	*d->bits   = GetInt8(d->gw,CID_Bits,_("Bits/Pixel:"),&err);
 	if ( err )
 return( true );
 	if ( *d->bits!=1 && *d->bits!=2 && *d->bits!=4 && *d->bits!=8 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_InvalidBits,_STR_InvalidBits);
-#elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("The only valid values for bits/pixel are 1, 2, 4 or 8"),_("The only valid values for bits/pixel are 1, 2, 4 or 8"));
-#endif
 return( true );
 	}
 	free( last ); free( last_bits );
-	last = GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Size));
-	last_bits = GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Bits));
+	last = GGadgetGetTitle8(GWidgetGetControl(d->gw,CID_Size));
+	last_bits = GGadgetGetTitle8(GWidgetGetControl(d->gw,CID_Bits));
 	d->done = true;
 	d->good = true;
     }
@@ -439,16 +433,12 @@ static int AskSizeBits(int *pixelsize,int *bitsperpixel) {
     sb.pixels = pixelsize; sb.bits = bitsperpixel;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(_STR_PixelSizeQ,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = _("Pixel size?");
-#endif
+    wattrs.utf8_window_title = _("Pixel size?");
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,140));
@@ -458,29 +448,31 @@ static int AskSizeBits(int *pixelsize,int *bitsperpixel) {
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
 
-    label[0].text = (unichar_t *) _STR_PixelSize;
-    label[0].text_in_resource = true;
+    label[0].text = (unichar_t *) _("Pixel size:");
+    label[0].text_is_1byte = true;
     gcd[0].gd.label = &label[0];
     gcd[0].gd.pos.x = 8; gcd[0].gd.pos.y = 8+6; 
     gcd[0].gd.flags = gg_enabled|gg_visible;
     gcd[0].creator = GLabelCreate;
 
     gcd[1].gd.pos.x = 70; gcd[1].gd.pos.y = 8;  gcd[1].gd.pos.width = 65;
-    label[1].text = last==NULL ? def : last;
+    label[1].text = (unichar_t *) (last==NULL ? "100" : last);
+    label[1].text_is_1byte = true;
     gcd[1].gd.label = &label[1];
     gcd[1].gd.flags = gg_enabled|gg_visible;
     gcd[1].gd.cid = CID_Size;
     gcd[1].creator = GTextFieldCreate;
 
-    label[2].text = (unichar_t *) _STR_BitsPerPixel;
-    label[2].text_in_resource = true;
+    label[2].text = (unichar_t *) _("Bits/Pixel:");
+    label[2].text_is_1byte = true;
     gcd[2].gd.label = &label[2];
     gcd[2].gd.pos.x = 8; gcd[2].gd.pos.y = 38+6; 
     gcd[2].gd.flags = gg_enabled|gg_visible;
     gcd[2].creator = GLabelCreate;
 
     gcd[3].gd.pos.x = 70; gcd[3].gd.pos.y = 38;  gcd[3].gd.pos.width = 65;
-    label[3].text = last_bits==NULL? def_bits : last_bits;
+    label[3].text = (unichar_t *) (last_bits==NULL? "1" : last_bits);
+    label[3].text_is_1byte = true;
     gcd[3].gd.label = &label[3];
     gcd[3].gd.flags = gg_enabled|gg_visible;
     gcd[3].gd.cid = CID_Bits;
@@ -489,7 +481,8 @@ static int AskSizeBits(int *pixelsize,int *bitsperpixel) {
     gcd[4].gd.pos.x = 10-3; gcd[4].gd.pos.y = 38+30-3;
     gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
     gcd[4].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[4].text = (unichar_t *) _STR_OK;
+    label[4].text = (unichar_t *) _("_OK");
+    label[4].text_is_1byte = true;
     label[4].text_in_resource = true;
     gcd[4].gd.mnemonic = 'O';
     gcd[4].gd.label = &label[4];
@@ -499,7 +492,8 @@ static int AskSizeBits(int *pixelsize,int *bitsperpixel) {
     gcd[5].gd.pos.x = -10; gcd[5].gd.pos.y = 38+30;
     gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
     gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[5].text = (unichar_t *) _STR_Cancel;
+    label[5].text = (unichar_t *) _("_Cancel");
+    label[5].text_is_1byte = true;
     label[5].text_in_resource = true;
     gcd[5].gd.label = &label[5];
     gcd[5].gd.mnemonic = 'C';
@@ -529,17 +523,17 @@ static int ExportXBM(char *filename,SplineChar *sc, int format) {
     GClut clut;
     BDFChar *bdfc;
     int pixelsize, ret;
-    unichar_t *ans;
+    char *ans;
     int tot, bitsperpixel, i;
     uint8 *pt, *end;
     int scale;
     void *freetypecontext;
 
     if ( format==0 ) {
-	ans = GWidgetAskStringR(_STR_PixelSizeQ,def,_STR_PixelSizeQ);
+	ans = gwwv_ask_string(_("Pixel size?"),"100",_("Pixel size?"));
 	if ( ans==NULL )
 return( 0 );
-	if ( (pixelsize=u_strtol(ans,NULL,10))<=0 )
+	if ( (pixelsize=strtol(ans,NULL,10))<=0 )
 return( 0 );
 	free(last);
 	last = ans;
@@ -748,11 +742,7 @@ return;
     else if ( bc!=NULL )
 	good = BCExportXBM(buffer,bc,format-3);
     if ( !good )
-#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Save Failed"),_("Save Failed"));
-#else
-	GWidgetErrorR(_STR_Savefailedtitle,_STR_Savefailedtitle);
-#endif
 }
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -808,11 +798,7 @@ static void DoExport(struct gfc_data *d,unichar_t *path) {
     else
 	good = ExportXBM(temp,d->sc,format-4);
     if ( !good )
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_Savefailedtitle,_STR_Savefailedtitle);
-#elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Save Failed"),_("Save Failed"));
-#endif
     free(temp);
     d->done = good;
     d->ret = good;
@@ -828,39 +814,17 @@ static void GFD_doesnt(GIOControl *gio) {
 static void GFD_exists(GIOControl *gio) {
     /* The filename the user chose exists, ask user if s/he wants to overwrite */
     struct gfc_data *d = gio->userdata;
-    unichar_t buffer[200];
-    const unichar_t *rcb[3]; unichar_t rcmn[2];
+    char *rcb[3], *temp;
 
     rcb[2]=NULL;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    rcb[0] = GStringGetResource( _STR_Replace, &rcmn[0]);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    rcb[0] =  _("Replace");
-#endif
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    rcb[1] = GStringGetResource( _STR_Cancel, &rcmn[1]);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    rcb[1] =  _("Cancel");
-#endif
+    rcb[0] =  _("_Replace");
+    rcb[1] =  _("_Cancel");
 
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    u_strcpy(buffer, GStringGetResource(_STR_Fileexistspre,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-    u_strcpy(buffer, _("File, "));
-#endif
-    u_strcat(buffer, u_GFileNameTail(gio->path));
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    u_strcat(buffer, GStringGetResource(_STR_Fileexistspost,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-    u_strcat(buffer, _(", exists. Replace it?"));
-#endif
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    if ( GWidgetAsk(GStringGetResource(_STR_Fileexists,NULL),rcb,rcmn,0,1,buffer)==0 ) {
-#elif defined(FONTFORGE_CONFIG_GTK)
-    if ( GWidgetAsk(_("File Exists"),rcb,rcmn,0,1,buffer)==0 ) {
-#endif
+    if ( gwwv_ask(_("File Exists"),(const char **) rcb,0,1,_("File, %s, exists. Replace it?"),
+	    temp = u2utf8_copy(u_GFileNameTail(gio->path)))==0 ) {
 	DoExport(d,gio->path);
     }
+    free(temp);
     GFileChooserReplaceIO(d->gfc,NULL);
 }
 
@@ -929,45 +893,34 @@ static void GFD_dircreated(GIOControl *gio) {
 static void GFD_dircreatefailed(GIOControl *gio) {
     /* We couldn't create the directory */
     struct gfc_data *d = gio->userdata;
-    unichar_t buffer[500];
+    char *temp;
 
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    u_strcpy(buffer, GStringGetResource(_STR_Couldntcreatedir,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-    u_strcpy(buffer, _("Couldn't create directory"));
-#endif
-    uc_strcat(buffer,": ");
-    u_strcat(buffer, u_GFileNameTail(gio->path));
-    uc_strcat(buffer, ".\n");
-    if ( gio->error!=NULL ) {
-	u_strcat(buffer,gio->error);
-	uc_strcat(buffer, "\n");
-    }
-    if ( gio->status[0]!='\0' )
-	u_strcat(buffer,gio->status);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    GWidgetPostNotice(GStringGetResource(_STR_Couldntcreatedir,NULL),buffer);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    GWidgetPostNotice(_("Couldn't create directory"),buffer);
-#endif
+    gwwv_post_notice(_("Couldn't create directory"),_("Couldn't create directory: %s"),
+		temp = u2utf8_copy(u_GFileNameTail(gio->path)));
+    free(temp);
+    GFileChooserReplaceIO(d->gfc,NULL);
     GFileChooserReplaceIO(d->gfc,NULL);
 }
 
 static int GFD_NewDir(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-	unichar_t *newdir;
-	newdir = GWidgetAskStringR(_STR_Createdir,NULL,_STR_Dirname);
+	char *newdir;
+	unichar_t *utemp;
+
+	newdir = gwwv_ask_string(_("Create directory..."),NULL,_("Directory name?"));
 	if ( newdir==NULL )
 return( true );
-	if ( !u_GFileIsAbsolute(newdir)) {
-	    unichar_t *temp = u_GFileAppendFile(GFileChooserGetDir(d->gfc),newdir,false);
-	    free(newdir);
+	if ( !GFileIsAbsolute(newdir)) {
+	    char *basedir = u2utf8_copy(GFileChooserGetDir(d->gfc));
+	    char *temp = GFileAppendFile(basedir,newdir,false);
+	    free(newdir); free(basedir);
 	    newdir = temp;
 	}
+	utemp = utf82u_copy(newdir); free(newdir);
 	GIOmkDir(GFileChooserReplaceIO(d->gfc,
-		GIOCreate(newdir,d,GFD_dircreated,GFD_dircreatefailed)));
-	free(newdir);
+		GIOCreate(utemp,d,GFD_dircreated,GFD_dircreatefailed)));
+	free(utemp);
     }
 return( true );
 }
@@ -1007,16 +960,12 @@ static int _Export(SplineChar *sc,BDFChar *bc) {
     int bs = GIntGetResource(_NUM_Buttonsize), bsbigger, totwid;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(_STR_Export,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = _("Export...");
-#endif
+    wattrs.utf8_window_title = _("Export...");
     pos.x = pos.y = 0;
     totwid = GGadgetScale(223);
     bsbigger = 3*bs+4*14>totwid; totwid = bsbigger?3*bs+4*12:totwid;
@@ -1032,7 +981,8 @@ static int _Export(SplineChar *sc,BDFChar *bc) {
 
     gcd[1].gd.pos.x = 12; gcd[1].gd.pos.y = 224-3; gcd[1].gd.pos.width = -1; gcd[1].gd.pos.height = 0;
     gcd[1].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[1].text = (unichar_t *) _STR_Save;
+    label[1].text = (unichar_t *) _("_Save");
+    label[1].text_is_1byte = true;
     label[1].text_in_resource = true;
     gcd[1].gd.label = &label[1];
     gcd[1].gd.handle_controlevent = GFD_SaveOk;
@@ -1040,7 +990,8 @@ static int _Export(SplineChar *sc,BDFChar *bc) {
 
     gcd[2].gd.pos.x = (totwid-bs)*100/GIntGetResource(_NUM_ScaleFactor)/2; gcd[2].gd.pos.y = 224; gcd[2].gd.pos.width = -1; gcd[2].gd.pos.height = 0;
     gcd[2].gd.flags = gg_visible | gg_enabled;
-    label[2].text = (unichar_t *) _STR_Filter;
+    label[2].text = (unichar_t *) _("_Filter");
+    label[2].text_is_1byte = true;
     label[2].text_in_resource = true;
     gcd[2].gd.label = &label[2];
     gcd[2].gd.handle_controlevent = GFileChooserFilterEh;
@@ -1048,7 +999,8 @@ static int _Export(SplineChar *sc,BDFChar *bc) {
 
     gcd[3].gd.pos.x = -gcd[1].gd.pos.x; gcd[3].gd.pos.y = 224; gcd[3].gd.pos.width = -1; gcd[3].gd.pos.height = 0;
     gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[3].text = (unichar_t *) _STR_Cancel;
+    label[3].text = (unichar_t *) _("_Cancel");
+    label[3].text_is_1byte = true;
     label[3].text_in_resource = true;
     gcd[3].gd.label = &label[3];
     gcd[3].gd.handle_controlevent = GFD_Cancel;
@@ -1056,7 +1008,8 @@ static int _Export(SplineChar *sc,BDFChar *bc) {
 
     gcd[4].gd.pos.x = gcd[3].gd.pos.x; gcd[4].gd.pos.y = 194; gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
     gcd[4].gd.flags = gg_visible | gg_enabled;
-    label[4].text = (unichar_t *) _STR_New;
+    label[4].text = (unichar_t *) _("_New");
+    label[4].text_is_1byte = true;
     label[4].text_in_resource = true;
     label[4].image = &_GIcon_dir;
     label[4].image_precedes = false;
@@ -1066,8 +1019,8 @@ static int _Export(SplineChar *sc,BDFChar *bc) {
 
     gcd[5].gd.pos.x = 12; gcd[5].gd.pos.y = 200; gcd[5].gd.pos.width = 0; gcd[5].gd.pos.height = 0;
     gcd[5].gd.flags = gg_visible | gg_enabled;
-    label[5].text = (unichar_t *) _STR_Format;
-    label[5].text_in_resource = true;
+    label[5].text = (unichar_t *) _("Format:");
+    label[5].text_is_1byte = true;
     gcd[5].gd.label = &label[5];
     gcd[5].creator = GLabelCreate;
 
