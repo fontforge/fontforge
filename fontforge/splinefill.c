@@ -1263,8 +1263,8 @@ BDFFont *SplineFontToBDFHeader(SplineFont *_sf, int pixelsize, int indicate) {
     BDFFont *bdf = gcalloc(1,sizeof(BDFFont));
     int i;
     real scale;
-    char csize[10]; unichar_t size[30];
-    unichar_t aa[200];
+    char size[40];
+    char aa[200];
     int max;
     SplineFont *sf;	/* The complexity here is to pick the appropriate subfont of a CID font */
 
@@ -1277,32 +1277,16 @@ BDFFont *SplineFontToBDFHeader(SplineFont *_sf, int pixelsize, int indicate) {
     scale = pixelsize / (real) (sf->ascent+sf->descent);
 
     if ( indicate ) {
-	sprintf(csize,"%d", pixelsize );
-	uc_strcpy(size,csize);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	u_strcat(size,GStringGetResource(_STR_Pixels,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	u_strcat(size,_(" pixels"));
-#endif
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	u_strcpy(aa,GStringGetResource(_STR_GenBitmap,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	u_strcpy(aa,_("Generating bitmap font"));
-#endif
+	sprintf(size,_("%d pixels"), pixelsize );
+	strcpy(aa,_("Generating bitmap font"));
 	if ( sf->fontname!=NULL ) {
-	    uc_strcat(aa,": ");
-	    uc_strncat(aa,sf->fontname,sizeof(aa)/sizeof(aa[0])-u_strlen(aa));
-	    aa[sizeof(aa)/sizeof(aa[0])-1] = '\0';
+	    strcat(aa,": ");
+	    strncat(aa,sf->fontname,sizeof(aa)-strlen(aa));
+	    aa[sizeof(aa)-1] = '\0';
 	}
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GProgressStartIndicator(10,GStringGetResource(_STR_Rasterizing,NULL),
-		aa,size,sf->glyphcnt,1);
-	GProgressEnableStop(0);
-#elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_progress_start_indicator(10,_("Rasterizing..."),
 		aa,size,sf->glyphcnt,1);
 	gwwv_progress_enable_stop(0);
-#endif
     }
     bdf->sf = _sf;
     bdf->glyphcnt = bdf->glyphmax = max;
@@ -1557,13 +1541,13 @@ BDFFont *SplineFontRasterize(SplineFont *_sf, int pixelsize, int indicate) {
 	bdf->glyphs[i] = SplineCharRasterize(sf->glyphs[i],pixelsize);
 #endif
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	if ( indicate ) GProgressNext();
+	if ( indicate ) gwwv_progress_next();
 #elif defined(FONTFORGE_CONFIG_GTK)
 	if ( indicate ) gwwv_progress_next();
 #endif
     }
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    if ( indicate ) GProgressEndIndicator();
+    if ( indicate ) gwwv_progress_end_indicator();
 #elif defined(FONTFORGE_CONFIG_GTK)
     if ( indicate ) gwwv_progress_end_indicator();
 #endif
@@ -1674,8 +1658,8 @@ BDFFont *SplineFontAntiAlias(SplineFont *_sf, int pixelsize, int linear_scale) {
     BDFFont *bdf;
     int i,k;
     real scale;
-    char csize[10]; unichar_t size[30];
-    unichar_t aa[200];
+    char size[40];
+    char aa[200];
     int max;
     SplineFont *sf;	/* The complexity here is to pick the appropriate subfont of a CID font */
 
@@ -1691,32 +1675,16 @@ return( SplineFontRasterize(_sf,pixelsize,true));
     }
     scale = pixelsize / (real) (sf->ascent+sf->descent);
 
-    sprintf(csize,"%d", pixelsize );
-    uc_strcpy(size,csize);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    u_strcat(size,GStringGetResource(_STR_Pixels,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-    u_strcat(size,_(" pixels"));
-#endif
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    u_strcpy(aa,GStringGetResource(_STR_GenAntiAlias,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-    u_strcpy(aa,_("Generating anti-alias font"));
-#endif
+    sprintf(size,_("%d pixels"), pixelsize );
+    strcpy(aa,_("Generating anti-alias font"));
     if ( sf->fontname!=NULL ) {
-	uc_strcat(aa,": ");
-	uc_strncat(aa,sf->fontname,sizeof(aa)/sizeof(aa[0])-u_strlen(aa));
-	aa[sizeof(aa)/sizeof(aa[0])-1] = '\0';
+	strcat(aa,": ");
+	strncat(aa,sf->fontname,sizeof(aa)-strlen(aa));
+	aa[sizeof(aa)-1] = '\0';
     }
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressStartIndicator(10,GStringGetResource(_STR_Rasterizing,NULL),
-	    aa,size,sf->glyphcnt,1);
-    GProgressEnableStop(0);
-#elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_start_indicator(10,_("Rasterizing..."),
 	    aa,size,sf->glyphcnt,1);
     gwwv_progress_enable_stop(0);
-#endif
 
     if ( linear_scale>16 ) linear_scale = 16;	/* can't deal with more than 256 levels of grey */
     if ( linear_scale<=1 ) linear_scale = 2;
@@ -1739,14 +1707,14 @@ return( SplineFontRasterize(_sf,pixelsize,true));
 	bdf->glyphs[i] = SplineCharRasterize(sf->glyphs[i],pixelsize*linear_scale);
 	BDFCAntiAlias(bdf->glyphs[i],linear_scale);
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	GProgressNext();
+	gwwv_progress_next();
 #elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_progress_next();
 #endif
     }
     BDFClut(bdf,linear_scale);
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressEndIndicator();
+    gwwv_progress_end_indicator();
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_end_indicator();
 #endif

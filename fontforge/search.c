@@ -914,17 +914,9 @@ static int DoFindOne(SearchView *sv,int startafter) {
 	startafter = false;
     }
     if ( i>=sv->fv->map->enccount ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetPostNoticeR(_STR_NotFound,sv->showsfindnext?_STR_PatternNotFoundAgain:_STR_PatternNotFound,sv->fv->sf->fontname);
-#elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_notice(_("Not Found"),sv->showsfindnext?_("The search pattern was not found again in the font %.100s"):_("The search pattern was not found in the font %.100s"),sv->fv->sf->fontname);
-#endif
 	sv->curchar = startcur;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GGadgetSetTitle(GWidgetGetControl(sv->gw,CID_Find),GStringGetResource(_STR_Find,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	GGadgetSetTitle(GWidgetGetControl(sv->gw,CID_Find),_("Find"));
-#endif
+	GGadgetSetTitle8(GWidgetGetControl(sv->gw,CID_Find),_("Find"));
 	sv->showsfindnext = false;
 return( false );
     }
@@ -935,11 +927,7 @@ return( false );
 	GDrawRaise(sv->lastcv->gw);
     } else
 	sv->lastcv = CharViewCreate(sv->curchar,sv->fv,-1);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    GGadgetSetTitle(GWidgetGetControl(sv->gw,CID_Find),GStringGetResource(_STR_FindNext,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-    GGadgetSetTitle(GWidgetGetControl(sv->gw,CID_Find),_("Find Next"));
-#endif
+    GGadgetSetTitle8(GWidgetGetControl(sv->gw,CID_Find),_("Find Next"));
     sv->showsfindnext = true;
 return( true );
 }
@@ -951,7 +939,7 @@ static void DoFindAll(SearchView *sv) {
     GDrawRequestExpose(sv->fv->v,NULL,false);
     if ( !any )
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetPostNoticeR(_STR_NotFound,_STR_PatternNotFound,sv->fv->sf->fontname);
+	gwwv_post_notice(_("Not Found"),_("The search pattern was not found in the font %.100s"),sv->fv->sf->fontname);
 #elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_notice(_("Not Found"),_("The search pattern was not found in the font %.100s"),sv->fv->sf->fontname);
 #endif
@@ -1032,7 +1020,7 @@ static int SV_RplFind(GGadget *g, GEvent *e) {
 	for ( rf=sv->sc_rpl.layers[ly_fore].refs; rf!=NULL; rf = rf->next ) {
 	    if ( SCDependsOnSC(rf->sc,sv->curchar)) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_SelfRef,_STR_AttemptSelfRef);
+		gwwv_post_error(_("Self-referential glyph"),_("Attempt to make a glyph that refers to itself"));
 #elif defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Self-referential character"),_("Attempt to make a character that refers to itself"));
 #endif
@@ -1147,22 +1135,14 @@ static void SVDraw(SearchView *sv, GWindow pixmap, GEvent *event) {
 	GDrawSetFont(pixmap,sv->plain);
     else
 	GDrawSetFont(pixmap,sv->bold);
-    GDrawDrawText(pixmap,10,sv->mbh+5+sv->as,
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GStringGetResource(_STR_SearchPattern,NULL),-1,NULL,0);
-#elif defined(FONTFORGE_CONFIG_GTK)
+    GDrawDrawText8(pixmap,10,sv->mbh+5+sv->as,
 	    _("Search Pattern:"),-1,NULL,0);
-#endif
     if ( sv->cv_rpl.inactive )
 	GDrawSetFont(pixmap,sv->plain);
     else
 	GDrawSetFont(pixmap,sv->bold);
-    GDrawDrawText(pixmap,sv->rpl_x,sv->mbh+5+sv->as,
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GStringGetResource(_STR_ReplacePattern,NULL),-1,NULL,0);
-#elif defined(FONTFORGE_CONFIG_GTK)
+    GDrawDrawText8(pixmap,sv->rpl_x,sv->mbh+5+sv->as,
 	    _("Replace Pattern:"),-1,NULL,0);
-#endif
     r.x = 10-1; r.y=sv->cv_y-1;
     r.width = sv->cv_width+1; r.height = sv->cv_height+1;
     GDrawDrawRect(pixmap,&r,0);
@@ -1175,11 +1155,7 @@ static void SVCheck(SearchView *sv) {
     int showrplall=show, showrpl;
 
     if ( sv->sc_srch.changed_since_autosave && sv->showsfindnext ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GGadgetSetTitle(GWidgetGetControl(sv->gw,CID_Find),GStringGetResource(_STR_Find,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	GGadgetSetTitle(GWidgetGetControl(sv->gw,CID_Find),_("Find"));
-#endif
+	GGadgetSetTitle8(GWidgetGetControl(sv->gw,CID_Find),_("Find"));
 	sv->showsfindnext = false;
     }
     if ( showrplall ) {
@@ -1255,17 +1231,9 @@ return( true );
 }
 
 static void SVSetTitle(SearchView *sv) {
-    unichar_t ubuf[150];
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    u_sprintf(ubuf,GStringGetResource(_STR_FindIn,NULL),sv->fv->sf->fontname);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    u_sprintf(ubuf,_("Find in %.100s"),sv->fv->sf->fontname);
-#endif
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    GDrawSetWindowTitles(sv->gw,ubuf,GStringGetResource(_STR_Find,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-    GDrawSetWindowTitles(sv->gw,ubuf,_("Find"));
-#endif
+    char ubuf[150];
+    sprintf(ubuf,_("Find in %.100s"),sv->fv->sf->fontname);
+    GDrawSetWindowTitles8(sv->gw,ubuf,_("Find"));
 }
 
 int SVAttachFV(FontView *fv,int ask_if_difficult) {
@@ -1303,23 +1271,19 @@ return( true );
 		pos = SFFindSlot(fv->sf,fv->map,r->sc->unicodeenc,r->sc->name);
 		if ( pos==-1 && !doit ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-		    static int buttons[] = { _STR_Yes, _STR_Cancel, 0 };
+		    char *buttons[3];
+		    buttons[0] = _("Yes");
+		    buttons[1] = _("Cancel");
+		    buttons[2] = NULL;
 #elif defined(FONTFORGE_CONFIG_GTK)
 		    static char *buttons[] = { GTK_STOCK_YES, GTK_STOCK_CANCEL, NULL };
 #endif
 		    if ( ask_if_difficult==2 && !searcher->isvisible )
 return( false );
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		    if ( GWidgetAskR(_STR_BadReference,buttons,1,1,
-			    _STR_BadRefInSearchRpl,
-				GStringGetResource(i==0?_STR_SearchPattern:_STR_ReplacePattern,NULL),
-			        r->sc->name)==1 )
-#elif defined(FONTFORGE_CONFIG_GTK)
-		    if ( gwwv_ask(_("Bad Reference"),buttons,1,1,
+		    if ( gwwv_ask(_("Bad Reference"),(const char **) buttons,1,1,
 			    _("The %1$s contains a reference to %2$.20hs which does not exist in the new font.\nShould I remove the reference?"),
 				i==0?_("Search Pattern:"):_("Replace Pattern:"),
 			        r->sc->name)==1 )
-#endif
 return( false );
 		} else if ( !doit )
 		    /* Do Nothing */;
@@ -1462,73 +1426,53 @@ return( NULL );
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
 
-    label[0].text = (unichar_t *) _STR_Allow;
-    label[0].text_in_resource = true;
+    label[0].text = (unichar_t *) _("Allow:");
+    label[0].text_is_1byte = true;
     gcd[0].gd.label = &label[0];
     gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = GDrawPixelsToPoints(NULL,sv->cv_y+sv->cv_height+8);
-    gcd[0].gd.flags = gg_enabled|gg_visible;
+    gcd[0].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
     gcd[0].gd.cid = CID_Allow;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[0].gd.popup_msg = GStringGetResource(_STR_AllowTransPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[0].gd.popup_msg = _("Allow a match even if the search pattern has\nto be transformed by a combination of the\nfollowing transformations.");
-#endif
+    gcd[0].gd.popup_msg = (unichar_t *) _("Allow a match even if the search pattern has\nto be transformed by a combination of the\nfollowing transformations.");
     gcd[0].creator = GLabelCreate;
 
-    label[1].text = (unichar_t *) _STR_Flipping;
-    label[1].text_in_resource = true;
+    label[1].text = (unichar_t *) _("Flipping");
+    label[1].text_is_1byte = true;
     gcd[1].gd.label = &label[1];
     gcd[1].gd.pos.x = 35; gcd[1].gd.pos.y = gcd[0].gd.pos.y-3;
-    gcd[1].gd.flags = gg_enabled|gg_visible|gg_cb_on;
+    gcd[1].gd.flags = gg_enabled|gg_visible|gg_cb_on|gg_utf8_popup;
     gcd[1].gd.cid = CID_Flipping;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[1].gd.popup_msg = GStringGetResource(_STR_AllowTransPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[1].gd.popup_msg = _("Allow a match even if the search pattern has\nto be transformed by a combination of the\nfollowing transformations.");
-#endif
+    gcd[1].gd.popup_msg = (unichar_t *) _("Allow a match even if the search pattern has\nto be transformed by a combination of the\nfollowing transformations.");
     gcd[1].creator = GCheckBoxCreate;
 
-    label[2].text = (unichar_t *) _STR_Scaling;
-    label[2].text_in_resource = true;
+    label[2].text = (unichar_t *) _("Scaling");
+    label[2].text_is_1byte = true;
     gcd[2].gd.label = &label[2];
     gcd[2].gd.pos.x = 100; gcd[2].gd.pos.y = gcd[1].gd.pos.y; 
-    gcd[2].gd.flags = gg_enabled|gg_visible;
+    gcd[2].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
     gcd[2].gd.cid = CID_Scaling;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[2].gd.popup_msg = GStringGetResource(_STR_AllowTransPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[2].gd.popup_msg = _("Allow a match even if the search pattern has\nto be transformed by a combination of the\nfollowing transformations.");
-#endif
+    gcd[2].gd.popup_msg = (unichar_t *) _("Allow a match even if the search pattern has\nto be transformed by a combination of the\nfollowing transformations.");
     gcd[2].creator = GCheckBoxCreate;
 
-    label[3].text = (unichar_t *) _STR_Rotating;
-    label[3].text_in_resource = true;
+    label[3].text = (unichar_t *) _("Rotating");
+    label[3].text_is_1byte = true;
     gcd[3].gd.label = &label[3];
     gcd[3].gd.pos.x = 170; gcd[3].gd.pos.y = gcd[1].gd.pos.y;
-    gcd[3].gd.flags = gg_enabled|gg_visible;
+    gcd[3].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
     gcd[3].gd.cid = CID_Rotating;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[3].gd.popup_msg = GStringGetResource(_STR_AllowTransPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[3].gd.popup_msg = _("Allow a match even if the search pattern has\nto be transformed by a combination of the\nfollowing transformations.");
-#endif
+    gcd[3].gd.popup_msg = (unichar_t *) _("Allow a match even if the search pattern has\nto be transformed by a combination of the\nfollowing transformations.");
     gcd[3].creator = GCheckBoxCreate;
 
-    label[4].text = (unichar_t *) _STR_SearchSelected;
-    label[4].text_in_resource = true;
+    label[4].text = (unichar_t *) _("Search Selected Chars");
+    label[4].text_is_1byte = true;
     gcd[4].gd.label = &label[4];
     gcd[4].gd.pos.x = 5; gcd[4].gd.pos.y = gcd[1].gd.pos.y+18;
-    gcd[4].gd.flags = gg_enabled|gg_visible;
+    gcd[4].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
     gcd[4].gd.cid = CID_Selected;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[4].gd.popup_msg = GStringGetResource(_STR_SearchSelectedPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[4].gd.popup_msg = _("Only search selected characters in the fontview\nNormally we search all characters in the font.");
-#endif
+    gcd[4].gd.popup_msg = (unichar_t *) _("Only search selected characters in the fontview\nNormally we search all characters in the font.");
     gcd[4].creator = GCheckBoxCreate;
 
-    label[5].text = (unichar_t *) _STR_FindNext;	/* Start with this to allow sufficient space */
-    label[5].text_in_resource = true;
+    label[5].text = (unichar_t *) _("Find Next");	/* Start with this to allow sufficient space */
+    label[5].text_is_1byte = true;
     gcd[5].gd.label = &label[5];
     gcd[5].gd.pos.x = 5; gcd[5].gd.pos.y = gcd[4].gd.pos.y+24;
     gcd[5].gd.flags = gg_visible|gg_but_default;
@@ -1536,8 +1480,8 @@ return( NULL );
     gcd[5].gd.handle_controlevent = SV_Find;
     gcd[5].creator = GButtonCreate;
 
-    label[6].text = (unichar_t *) _STR_FindAll;
-    label[6].text_in_resource = true;
+    label[6].text = (unichar_t *) _("Find All");
+    label[6].text_is_1byte = true;
     gcd[6].gd.label = &label[6];
     gcd[6].gd.pos.x = 0; gcd[6].gd.pos.y = gcd[5].gd.pos.y+3;
     gcd[6].gd.flags = gg_visible;
@@ -1545,8 +1489,8 @@ return( NULL );
     gcd[6].gd.handle_controlevent = SV_FindAll;
     gcd[6].creator = GButtonCreate;
 
-    label[7].text = (unichar_t *) _STR_Replace;
-    label[7].text_in_resource = true;
+    label[7].text = (unichar_t *) _("Replace");
+    label[7].text_is_1byte = true;
     gcd[7].gd.label = &label[7];
     gcd[7].gd.pos.x = 0; gcd[7].gd.pos.y = gcd[6].gd.pos.y;
     gcd[7].gd.flags = gg_visible;
@@ -1554,8 +1498,8 @@ return( NULL );
     gcd[7].gd.handle_controlevent = SV_RplFind;
     gcd[7].creator = GButtonCreate;
 
-    label[8].text = (unichar_t *) _STR_ReplaceAll;
-    label[8].text_in_resource = true;
+    label[8].text = (unichar_t *) _("Replace All");
+    label[8].text_is_1byte = true;
     gcd[8].gd.label = &label[8];
     gcd[8].gd.pos.x = 0; gcd[8].gd.pos.y = gcd[6].gd.pos.y;
     gcd[8].gd.flags = gg_visible;
@@ -1563,7 +1507,8 @@ return( NULL );
     gcd[8].gd.handle_controlevent = SV_RplAll;
     gcd[8].creator = GButtonCreate;
 
-    label[9].text = (unichar_t *) _STR_Cancel;
+    label[9].text = (unichar_t *) _("_Cancel");
+    label[9].text_is_1byte = true;
     label[9].text_in_resource = true;
     gcd[9].gd.label = &label[9];
     gcd[9].gd.pos.x = 0; gcd[9].gd.pos.y = gcd[6].gd.pos.y;
@@ -1574,11 +1519,7 @@ return( NULL );
 
     GGadgetsCreate(gw,gcd);
 
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    GGadgetSetTitle(GWidgetGetControl(gw,CID_Find),GStringGetResource(_STR_Find,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-    GGadgetSetTitle(GWidgetGetControl(gw,CID_Find),_("Find"));
-#endif
+    GGadgetSetTitle8(GWidgetGetControl(gw,CID_Find),_("Find"));
     sv->showsfindnext = false;
     GDrawRequestTimer(gw,1000,1000,NULL);
 
@@ -1663,8 +1604,8 @@ void FVReplaceOutlineWithReference( FontView *fv, double fudge ) {
 	    sf->glyphs[gid]!=NULL )
 	++selcnt;
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressStartIndicatorR(10,_STR_ReplaceOutlineWithReference,
-	    _STR_ReplaceOutlineWithReference,0,selcnt,1);
+    gwwv_progress_start_indicator(10,_("Replace with Reference"),
+	    _("Replace with Reference"),0,selcnt,1);
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_start_indicator(10,_("Replace with Reference"),
 	    _("Replace Outline with Reference",0,selcnt,1);
@@ -1681,7 +1622,7 @@ void FVReplaceOutlineWithReference( FontView *fv, double fudge ) {
 	SVResetPaths(sv);
 	if ( !_DoFindAll(sv) && selcnt==1 )
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetPostNoticeR(_STR_NotFound,_STR_GlyphNotFound,
+	    gwwv_post_notice(_("Not Found"),_("The outlines of glyph %2$.30s were not found in the font %1$.60s"),
 		    sf->fontname,sf->glyphs[gid]->name);
 #elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_notice(_("Not Found"),_("The outlines of glyph %2$.30s were not found in the font %1$.60s"),
@@ -1693,7 +1634,7 @@ void FVReplaceOutlineWithReference( FontView *fv, double fudge ) {
 	CopyBufferFree();
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	if ( !GProgressNext())
+	if ( !gwwv_progress_next())
 #elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
 #endif
@@ -1701,7 +1642,7 @@ void FVReplaceOutlineWithReference( FontView *fv, double fudge ) {
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressEndIndicator();
+    gwwv_progress_end_indicator();
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_end_indicator();
 #endif

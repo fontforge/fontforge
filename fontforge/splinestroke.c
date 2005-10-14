@@ -867,7 +867,7 @@ static int DoIntersect_Splines(struct strokedspline *before,
 #if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error( _("Bad Stroke"), _("The stroke width is so big that the generated path\nmay intersect itself in %.100s"),
 #else
-	    GWidgetErrorR( _STR_BadStroke, _STR_StrokeWidthTooBig,
+	    gwwv_post_error( _("Bad Stroke"), _("The stroke width is so big that the generated path\nmay intersect itself in %.100s"),
 #endif
 		    sc==NULL?"<nameless char>": sc->name );
 	}
@@ -1346,7 +1346,7 @@ static struct strokedspline *_SplineSetApprox(SplineSet *spl,StrokeInfo *si,Spli
 #if defined(FONTFORGE_CONFIG_GTK)
 		    gwwv_post_error( _("Bad Stroke"), _("The stroke width is so big that the generated path\nmay intersect itself in %.100s"),
 #else
-		    GWidgetErrorR( _STR_BadStroke, _STR_StrokeWidthTooBig,
+		    gwwv_post_error( _("Bad Stroke"), _("The stroke width is so big that the generated path\nmay intersect itself in %.100s"),
 #endif
 			    sc==NULL?"<nameless char>": sc->name );
 		}

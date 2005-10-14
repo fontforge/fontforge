@@ -221,7 +221,7 @@ return;
 	}
     }
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressNext();
+    gwwv_progress_next();
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_next();
 #endif
@@ -344,14 +344,16 @@ void TTFLoadBitmaps(FILE *ttf,struct ttfinfo *info,int onlyone) {
     int bigval, biggest;
     struct ttfsizehead *sizes;
     BDFFont *bdf, *last;
-    const unichar_t **choices;
+    const char **choices;
     char *sel;
-    char buf[10];
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    static int buttons[]= { _STR_Yes, _STR_No };
-    unichar_t ubuf[100];
-#elif defined(FONTFORGE_CONFIG_GTK)
     char buf[300];
+#if defined(FONTFORGE_CONFIG_GDRAW)
+    char *buttons[3];
+    buttons[0] = _("_Yes");
+    buttons[1] = _("_No");
+    buttons[2] = NULL;
+#elif defined(FONTFORGE_CONFIG_GTK)
+    static char *buttons[] = { GTK_STOCK_YES, GTK_STOCK_NO, NULL };
 #endif
 
     fseek(ttf,info->bitmaploc_start,SEEK_SET);
@@ -394,14 +396,14 @@ void TTFLoadBitmaps(FILE *ttf,struct ttfinfo *info,int onlyone) {
 return;
 
     /* Ask user which (if any) s/he is interested in */
-    choices = gcalloc(cnt+1,sizeof(unichar_t *));
+    choices = gcalloc(cnt+1,sizeof(char *));
     sel = gcalloc(cnt,sizeof(char));
     for ( i=0; i<cnt; ++i ) {
 	if ( sizes[i].depth==1 )
 	    sprintf(buf,"%d", sizes[i].ppem );
 	else
 	    sprintf(buf,"%d@%d", sizes[i].ppem, sizes[i].depth );
-	choices[i] = uc_copy(buf);
+	choices[i] = copy(buf);
     }
     /* When loading a ttf font with only bitmaps, and there's only one strike */
     /*  then just load that strike. Don't ask */
@@ -418,20 +420,14 @@ return;
 	    for ( i=0; i<cnt; ++i )
 		sel[i] = true;
 	}
-#if defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     } else if ( onlyone ) {
 	biggest=gwwv_choose_with_buttons(_("Load Bitmap Fonts"), choices,cnt,biggest,buttons,
 		_("Do you want to load the bitmap fonts embedded in this true/open type file?\n(And if so, which)"));
 	if ( biggest!=-1 ) sel[biggest] = true;
     } else {
-	biggest = gwwv_choose_multiple_with_buttons(_("Load Bitmap Fonts"), choices,sel,cnt,buttons,
+	biggest = gwwv_choose_multiple(_("Load Bitmap Fonts"), choices,sel,cnt,buttons,
 		_("Do you want to load the bitmap fonts embedded in this true/open type file?\n(And if so, which)"));
-#elif defined(FONTFORGE_CONFIG_GDRAW)
-    } else if ( onlyone ) {
-	biggest=GWidgetChoicesBR(_STR_LoadBitmapFonts, choices,cnt,biggest,buttons,_STR_LoadTTFBitmaps);
-	if ( biggest!=-1 ) sel[biggest] = true;
-    } else {
-	biggest = GWidgetChoicesBRM(_STR_LoadBitmapFonts, choices,sel,cnt,buttons,_STR_LoadTTFBitmaps);
 #else
     } else if ( onlyone ) {
 	if ( biggest!=-1 ) sel[biggest] = true;
@@ -452,9 +448,7 @@ return;
     }
     cnt = j;
 
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressChangeStages(3+cnt);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_change_stages(3+cnt);
 #endif
     info->bitmaps = last = NULL;
@@ -475,19 +469,12 @@ return;
 	else
 	    last->next = bdf;
 	last = bdf;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	u_snprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),GStringGetResource(_STR_DPixelBitmap,NULL),
-		sizes[i].ppem );
-	GProgressChangeLine2(ubuf);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	snprintf(buf,sizeof(buf),_("%d pixel bitmap"),
-		sizes[i].ppem );
-	gwwv_progress_change_line2(ubuf);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+	snprintf(buf,sizeof(buf),_("%d pixel bitmap"), sizes[i].ppem );
+	gwwv_progress_change_line2(buf);
 #endif
 	readttfbitmapfont(ttf,info,&sizes[i],bdf);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GProgressNextStage();
-#elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	gwwv_progress_next_stage();
 #endif
     }
@@ -1074,13 +1061,13 @@ void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,int32 *sizes) {
 
     /* Dump out the strikes... */
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressChangeLine1R(_STR_SavingBitmapFonts);
+    gwwv_progress_change_line1(_("Saving Bitmap Font(s)"));
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_change_line1(_("Saving Bitmap Font(s)"));
 #endif
     for ( i=0; sizes[i]!=0; ++i ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	GProgressNextStage();
+	gwwv_progress_next_stage();
 #elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_progress_next_stage();
 #endif
@@ -1121,7 +1108,7 @@ void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,int32 *sizes) {
 	putshort(at->bloc,0);
 
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressChangeLine1R(_STR_SavingTTFont);
+    gwwv_progress_change_line1(_("Saving TrueType Font"));
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_change_line1(_("Saving TrueType Font"));
 #endif

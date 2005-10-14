@@ -148,8 +148,8 @@ return( GGadgetDispatchEvent((GGadget *) (d->gfc),event));
 return( event->type!=et_char );
 }
 
-unichar_t *FVOpenFont(const unichar_t *title, const unichar_t *defaultfile,
-	const unichar_t *initial_filter, unichar_t **mimetypes,int mult,
+unichar_t *FVOpenFont(char *title, const char *defaultfile,
+	const char *initial_filter, unichar_t **mimetypes,int mult,
 	int newok) {
     GRect pos;
     int i, filter;
@@ -159,15 +159,16 @@ unichar_t *FVOpenFont(const unichar_t *title, const unichar_t *defaultfile,
     GTextInfo label[5];
     struct gfc_data d;
     int bs = GIntGetResource(_NUM_Buttonsize), bsbigger, totwid, spacing;
-    GGadget *tf; 
+    GGadget *tf;
+    unichar_t *temp;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.window_title = (unichar_t *) title;
+    wattrs.utf8_window_title = title;
     pos.x = pos.y = 0;
     if ( newok ) {
 	totwid = GGadgetScale(295);
@@ -195,7 +196,8 @@ unichar_t *FVOpenFont(const unichar_t *title, const unichar_t *defaultfile,
     gcd[1].gd.pos.x = 12; gcd[1].gd.pos.y = 192-3;
     gcd[1].gd.pos.width = -1;
     gcd[1].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[1].text = (unichar_t *) _STR_OK;
+    label[1].text = (unichar_t *) _("_OK");
+    label[1].text_is_1byte = true;
     label[1].text_in_resource = true;
     gcd[1].gd.mnemonic = 'O';
     gcd[1].gd.label = &label[1];
@@ -207,7 +209,8 @@ unichar_t *FVOpenFont(const unichar_t *title, const unichar_t *defaultfile,
 	gcd[2].gd.pos.x = -(spacing+bs)*100/GIntGetResource(_NUM_ScaleFactor)-12; gcd[2].gd.pos.y = 192;
 	gcd[2].gd.pos.width = -1;
 	gcd[2].gd.flags = gg_visible | gg_enabled;
-	label[2].text = (unichar_t *) _STR_New;
+	label[2].text = (unichar_t *) _("_New");
+	label[2].text_is_1byte = true;
 	label[2].text_in_resource = true;
 	gcd[2].gd.mnemonic = 'N';
 	gcd[2].gd.label = &label[2];
@@ -220,7 +223,8 @@ unichar_t *FVOpenFont(const unichar_t *title, const unichar_t *defaultfile,
     gcd[i].gd.pos.x = (spacing+bs)*100/GIntGetResource(_NUM_ScaleFactor)+12; gcd[i].gd.pos.y = 192;
     gcd[i].gd.pos.width = -1;
     gcd[i].gd.flags = gg_visible | gg_enabled;
-    label[i].text = (unichar_t *) _STR_Filter;
+    label[i].text = (unichar_t *) _("_Filter");
+    label[i].text_is_1byte = true;
     label[i].text_in_resource = true;
     gcd[i].gd.mnemonic = 'F';
     gcd[i].gd.label = &label[i];
@@ -230,7 +234,8 @@ unichar_t *FVOpenFont(const unichar_t *title, const unichar_t *defaultfile,
     gcd[i].gd.pos.x = -12; gcd[i].gd.pos.y = 192;
     gcd[i].gd.pos.width = -1;
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[i].text = (unichar_t *) _STR_Cancel;
+    label[i].text = (unichar_t *) _("_Cancel");
+    label[i].text_is_1byte = true;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.mnemonic = 'C';
@@ -246,13 +251,15 @@ unichar_t *FVOpenFont(const unichar_t *title, const unichar_t *defaultfile,
     GGadgetSetUserData(gcd[filter].ret,gcd[0].ret);
 
     GFileChooserConnectButtons(gcd[0].ret,gcd[1].ret,gcd[filter].ret);
-    GFileChooserSetFilterText(gcd[0].ret,initial_filter);
+    temp = utf82u_copy(initial_filter);
+    GFileChooserSetFilterText(gcd[0].ret,temp);
+    free(temp);
     GFileChooserSetMimetypes(gcd[0].ret,mimetypes);
     GFileChooserGetChildren(gcd[0].ret,NULL, NULL, &tf);
     if ( RecentFiles[0]!=NULL ) {
 	GGadgetSetList(tf,GTextInfoFromChars(RecentFiles,RECENT_MAX),false);
     }
-    GGadgetSetTitle(gcd[0].ret,defaultfile);
+    GGadgetSetTitle8(gcd[0].ret,defaultfile);
 
     memset(&d,'\0',sizeof(d));
     d.gfc = gcd[0].ret;

@@ -440,13 +440,12 @@ static int splash_e_h(GWindow gw, GEvent *event) {
     static int splash_cnt;
     GRect old;
     int i, y, x;
-    static int foolishness[] = {
-	    _STR_FreePress,
-	    _STR_FreePress,
-	    _STR_GaudiamusLigature,
-	    _STR_GaudiamusLigature,
-	    _STR_InTheBeginning,
-	    _STR_LovelyFonts
+    static char *foolishness[] = {
+	    N_("A free press discriminates\nagainst the illiterate."),
+	    N_("A free press discriminates\nagainst the illiterate."),
+	    N_("Gaudeamus Ligature!"),
+	    N_("Gaudeamus Ligature!"),
+	    N_("In the beginning was the letter..."),
     };
 
     if ( event->type == et_expose ) {
@@ -490,7 +489,7 @@ static int splash_e_h(GWindow gw, GEvent *event) {
 	GGadgetEndPopup();
 	GDrawSetVisible(gw,false);
     } else if ( event->type==et_mousemove ) {
-	GGadgetPreparePopupR(gw,foolishness[rand()%(sizeof(foolishness)/sizeof(foolishness[0]))] );
+	GGadgetPreparePopup8(gw,_(foolishness[rand()%(sizeof(foolishness)/sizeof(foolishness[0]))]) );
     }
 return( true );
 }
@@ -503,6 +502,31 @@ static void AddR(char *prog, char *name, char *val ) {
     GResourceAddResourceString(full,prog);
 }
 #endif
+
+static char *getLocaleDir(void) {
+    static char *sharedir=NULL;
+    static int set=false;
+    char *pt;
+    int len;
+
+    if ( set )
+return( sharedir );
+
+    set = true;
+    pt = strstr(GResourceProgramDir,"/bin");
+    if ( pt==NULL ) {
+#ifdef PREFIX
+return( PREFIX "/share/locale" );
+#else
+	pt = GResourceProgramDir + strlen(GResourceProgramDir);
+#endif
+    }
+    len = (pt-GResourceProgramDir)+strlen("/share/locale")+1;
+    sharedir = galloc(len);
+    strncpy(sharedir,GResourceProgramDir,pt-GResourceProgramDir);
+    strcpy(sharedir+(pt-GResourceProgramDir),"/share/locale");
+return( sharedir );
+}
 
 int main( int argc, char **argv ) {
     extern const char *source_modtime_str;
@@ -546,6 +570,7 @@ int main( int argc, char **argv ) {
     if ( *localeinfo.decimal_point=='.' ) coord_sep=",";
     else if ( *localeinfo.decimal_point!='.' ) coord_sep=" ";
     if ( getenv("FF_SCRIPT_IN_LATIN1") ) use_utf8_in_script=false;
+
 #ifdef FONTFORGE_CONFIG_GDRAW
     GResourceAddResourceString(NULL,argv[0]);
 #elif defined( FONTFORGE_CONFIG_GTK )
@@ -562,6 +587,13 @@ int main( int argc, char **argv ) {
 #else
     GResourceSetProg(argv[0]);
 #endif
+
+    bindtextdomain("FontForge", getLocaleDir());
+    textdomain("FontForge");
+#if !defined( FONTFORGE_CONFIG_GTK )
+    GResourceUseGetText();
+#endif
+
     SetDefaults();
     if ( load_prefs!=NULL && strcasecmp(load_prefs,"Always")==0 )
 	LoadPrefs();
@@ -661,11 +693,11 @@ int main( int argc, char **argv ) {
     /*  the window around, which I can determine if I have a positioned */
     /*  decorated window created at the begining */
     /* Actually I don't care any more */
-    wattrs.mask = wam_events|wam_cursor|wam_bordwidth|wam_backcol|wam_positioned|wam_wtitle|wam_isdlg;
+    wattrs.mask = wam_events|wam_cursor|wam_bordwidth|wam_backcol|wam_positioned|wam_utf8_wtitle|wam_isdlg;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.positioned = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.window_title = GStringGetResource(_STR_FontForge,NULL);
+    wattrs.utf8_window_title = "FontForge";
     wattrs.border_width = 2;
     wattrs.background_color = 0xffffff;
     wattrs.is_dlg = true;

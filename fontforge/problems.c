@@ -74,7 +74,7 @@ struct problems {
     unsigned int finish: 1;
     unsigned int ignorethis: 1;
     real near, xval, yval, widthval;
-    int explaining;
+    char *explaining;
     real found, expected;
     real xheight, caph, ascent, descent;
     real irrelevantfactor;
@@ -172,7 +172,7 @@ static void FixIt(struct problems *p) {
 #if 0	/* The ultimate cause (the thing we need to fix) for these two errors */
 	/* is that the stem is wrong, it's too hard to fix that here, so best */
 	/* not to attempt to fix the proximal cause */
-    if ( p->explaining==_STR_ProbHintHWidth ) {
+    if ( p->explaining==_("This glyph contains a horizontal hint near the specified width") ) {
 	for ( h=p->sc->hstem; h!=NULL && !h->active; h=h->next );
 	if ( h!=NULL ) {
 	    h->width = p->widthval;
@@ -182,7 +182,7 @@ static void FixIt(struct problems *p) {
 	    IError("Could not find hint");
 return;
     }
-    if ( p->explaining==_STR_ProbHintVWidth ) {
+    if ( p->explaining==_("This glyph contains a vertical hint near the specified width") ) {
 	for ( h=p->sc->vstem; h!=NULL && !h->active; h=h->next );
 	if ( h!=NULL ) {
 	    h->width = p->widthval;
@@ -193,7 +193,7 @@ return;
 return;
     }
 #endif
-    if ( p->explaining==_STR_ProbFlippedRef ) {
+    if ( p->explaining==_("This reference has been flipped, so the paths in it are drawn backwards") ) {
 	for ( r=p->sc->layers[ly_fore].refs; r!=NULL && !r->selected; r = r->next );
 	if ( r!=NULL ) {
 	    SCPreserveState(p->sc,false);
@@ -205,10 +205,10 @@ return;
 	} else
 	    IError("Could not find referenc");
 return;
-    } else if ( p->explaining==_STR_ProbBadWidth ) {
+    } else if ( p->explaining==_("This glyph's advance width is different from the standard width") ) {
 	SCSynchronizeWidth(p->sc,p->advancewidthval,p->sc->width,NULL);
 return;
-    } else if ( p->explaining==_STR_ProbBadVWidth ) {
+    } else if ( p->explaining==_("This glyph's vertical advance is different from the standard width") ) {
 	p->sc->vwidth=p->vadvancewidthval;
 return;
     }
@@ -233,29 +233,29 @@ return;
     }
 
 /* I do not handle:
-    _STR_ProbOpenPath
-    _STR_ProbIntersectingPaths
-    _STR_ProbPointsTooClose
-    _STR_ProbLineItal, _STR_ProbAboveItal, _STR_ProbBelowItal, _STR_ProbRightItal, _STR_ProbLeftItal
-    _STR_ProbAboveOdd, _STR_ProbBelowOdd, _STR_ProbRightOdd, _STR_ProbLeftOdd
-    _STR_ProbHintControl
+    _("The two selected points are the endpoints of an open path")
+    _("The paths that make up this glyph intersect one another")
+    _("The selected points are too close to each other")
+    _("The selected line segment is near the italic angle"), _("The control point above the selected point is near the italic angle"), _("The control point below the selected point is near the italic angle"), _("The control point right of the selected point is near the italic angle"), _("The control point left of the selected point is near the italic angle")
+    _("The control point above the selected point is outside the spline segment"), _("The control point below the selected point is outside the spline segment"), _("The control point right of the selected point is outside the spline segment"), _("The control point left of the selected point is outside the spline segment")
+    _("This hint does not control any points")
     _STR_ProbHint3*
     _STR_ProbMultUni, STR_ProbMultName
 */
 
     SCPreserveState(p->sc,false);
-    if ( p->explaining==_STR_ProbXNear || p->explaining==_STR_ProbPtNearVHint) {
+    if ( p->explaining==_("The x coord of the selected point is near the specified value") || p->explaining==_("The selected point is near a vertical stem hint")) {
 	sp->prevcp.x += p->expected-sp->me.x;
 	sp->nextcp.x += p->expected-sp->me.x;
 	sp->me.x = p->expected;
-    } else if ( p->explaining==_STR_ProbYNear || p->explaining==_STR_ProbPtNearHHint ||
-	    p->explaining==_STR_ProbYBase || p->explaining==_STR_ProbYXHeight ||
-	    p->explaining==_STR_ProbYCapHeight || p->explaining==_STR_ProbYAs ||
-	    p->explaining==_STR_ProbYDs ) {
+    } else if ( p->explaining==_("The y coord of the selected point is near the specified value") || p->explaining==_("The selected point is near a horizontal stem hint") ||
+	    p->explaining==_("The y coord of the selected point is near the baseline") || p->explaining==_("The y coord of the selected point is near the xheight") ||
+	    p->explaining==_("The y coord of the selected point is near the cap height") || p->explaining==_("The y coord of the selected point is near the ascender height") ||
+	    p->explaining==_("The y coord of the selected point is near the descender height") ) {
 	sp->prevcp.y += p->expected-sp->me.y;
 	sp->nextcp.y += p->expected-sp->me.y;
 	sp->me.y = p->expected;
-    } else if ( p->explaining==_STR_ProbLineHor ) {
+    } else if ( p->explaining==_("The selected line segment is nearly horizontal") ) {
 	if ( sp->me.y!=p->found ) {
 	    sp=sp->next->to;
 	    if ( !sp->selected || sp->me.y!=p->found ) {
@@ -266,8 +266,8 @@ return;
 	sp->prevcp.y += p->expected-sp->me.y;
 	sp->nextcp.y += p->expected-sp->me.y;
 	sp->me.y = p->expected;
-    } else if ( p->explaining==_STR_ProbAboveHor || p->explaining==_STR_ProbBelowHor ||
-	    p->explaining==_STR_ProbRightHor || p->explaining==_STR_ProbLeftHor ) {
+    } else if ( p->explaining==_("The control point above the selected point is nearly horizontal") || p->explaining==_("The control point below the selected point is nearly horizontal") ||
+	    p->explaining==_("The control point right of the selected point is nearly horizontal") || p->explaining==_("The control point left of the selected point is nearly horizontal") ) {
 	BasePoint *tofix, *other;
 	if ( sp->nextcp.y==p->found ) {
 	    tofix = &sp->nextcp;
@@ -285,7 +285,7 @@ return;
 	    other->y = p->expected;
 	else
 	    sp->pointtype = pt_corner;
-    } else if ( p->explaining==_STR_ProbLineVert ) {
+    } else if ( p->explaining==_("The selected line segment is nearly vertical") ) {
 	if ( sp->me.x!=p->found ) {
 	    sp=sp->next->to;
 	    if ( !sp->selected || sp->me.x!=p->found ) {
@@ -296,8 +296,8 @@ return;
 	sp->prevcp.x += p->expected-sp->me.x;
 	sp->nextcp.x += p->expected-sp->me.x;
 	sp->me.x = p->expected;
-    } else if ( p->explaining==_STR_ProbAboveVert || p->explaining==_STR_ProbBelowVert ||
-	    p->explaining==_STR_ProbRightVert || p->explaining==_STR_ProbLeftVert ) {
+    } else if ( p->explaining==_("The control point above the selected point is nearly vertical") || p->explaining==_("The control point below the selected point is nearly vertical") ||
+	    p->explaining==_("The control point right of the selected point is nearly vertical") || p->explaining==_("The control point left of the selected point is nearly vertical") ) {
 	BasePoint *tofix, *other;
 	if ( sp->nextcp.x==p->found ) {
 	    tofix = &sp->nextcp;
@@ -315,9 +315,9 @@ return;
 	    other->x = p->expected;
 	else
 	    sp->pointtype = pt_corner;
-    } else if ( p->explaining==_STR_ProbExpectedCounter || p->explaining==_STR_ProbExpectedClockwise ) {
+    } else if ( p->explaining==_("This path should have been drawn in a counter-clockwise direction") || p->explaining==_("This path should have been drawn in a clockwise direction") ) {
 	SplineSetReverse(spl);
-    } else if ( p->explaining==_STR_ProbIrrelCP ) {
+    } else if ( p->explaining==_("This glyph contains control points which are probably too close to the main points to alter the look of the spline") ) {
 	if ( sp->next!=NULL ) {
 	    double len = sqrt((sp->me.x-sp->next->to->me.x)*(sp->me.x-sp->next->to->me.x) +
 		    (sp->me.y-sp->next->to->me.y)*(sp->me.y-sp->next->to->me.y));
@@ -373,13 +373,13 @@ return( false );
 return( true );
 }
 
-static void ExplainIt(struct problems *p, SplineChar *sc, int explain,
+static void ExplainIt(struct problems *p, SplineChar *sc, char *explain,
 	real found, real expected ) {
     GRect pos;
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[9];
     GTextInfo label[9];
-    unichar_t ubuf[100]; char buf[20];
+    char buf[100];
     SplinePointList *spl; Spline *spline, *first;
     int fixable;
 
@@ -387,15 +387,11 @@ static void ExplainIt(struct problems *p, SplineChar *sc, int explain,
 return;
     if ( p->explainw==NULL ) {
 	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor;
+	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor;
 	wattrs.event_masks = ~(1<<et_charup);
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	wattrs.window_title = GStringGetResource(_STR_ProbExplain,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	wattrs.window_title = _("Problem explanation");
-#endif
+	wattrs.utf8_window_title = _("Problem explanation");
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,400));
 	pos.height = GDrawPointsToPixels(NULL,86);
@@ -405,7 +401,7 @@ return;
 	memset(&gcd,0,sizeof(gcd));
 
 	label[0].text = (unichar_t *) explain;
-	label[0].text_in_resource = true;
+	label[0].text_is_1byte = true;
 	gcd[0].gd.label = &label[0];
 	gcd[0].gd.pos.x = 6; gcd[0].gd.pos.y = 6; gcd[0].gd.pos.width = 400-12;
 	gcd[0].gd.flags = gg_visible | gg_enabled;
@@ -418,8 +414,8 @@ return;
 	gcd[4].gd.flags = gg_visible | gg_enabled;
 	gcd[4].creator = GLabelCreate;
 
-	label[5].text = (unichar_t *) _STR_IgnoreProblemFuture;
-	label[5].text_in_resource = true;
+	label[5].text = (unichar_t *) _("Ignore this problem in the future");
+	label[5].text_is_1byte = true;
 	gcd[5].gd.label = &label[5];
 	gcd[5].gd.pos.x = 6; gcd[5].gd.pos.y = gcd[4].gd.pos.y+12;
 	gcd[5].gd.flags = gg_visible | gg_enabled;
@@ -428,7 +424,8 @@ return;
 	gcd[1].gd.pos.x = 15-3; gcd[1].gd.pos.y = gcd[5].gd.pos.y+20;
 	gcd[1].gd.pos.width = -1; gcd[1].gd.pos.height = 0;
 	gcd[1].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[1].text = (unichar_t *) _STR_Next;
+	label[1].text = (unichar_t *) _("_Next");
+	label[1].text_is_1byte = true;
 	label[1].text_in_resource = true;
 	gcd[1].gd.mnemonic = 'N';
 	gcd[1].gd.label = &label[1];
@@ -438,7 +435,8 @@ return;
 	gcd[2].gd.pos.x = -15; gcd[2].gd.pos.y = gcd[1].gd.pos.y+3;
 	gcd[2].gd.pos.width = -1; gcd[2].gd.pos.height = 0;
 	gcd[2].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[2].text = (unichar_t *) _STR_Stop;
+	label[2].text = (unichar_t *) _("_Stop");
+	label[2].text_is_1byte = true;
 	label[2].text_in_resource = true;
 	gcd[2].gd.label = &label[2];
 	gcd[2].gd.mnemonic = 'S';
@@ -453,8 +451,8 @@ return;
 	gcd[6].gd.pos.x = 200-30; gcd[6].gd.pos.y = gcd[2].gd.pos.y;
 	gcd[6].gd.pos.width = -1; gcd[6].gd.pos.height = 0;
 	gcd[6].gd.flags = /*gg_visible |*/ gg_enabled;
-	label[6].text = (unichar_t *) _STR_Fix;
-	label[6].text_in_resource = true;
+	label[6].text = (unichar_t *) _("Fix");
+	label[6].text_is_1byte = true;
 	gcd[6].gd.mnemonic = 'F';
 	gcd[6].gd.label = &label[6];
 	gcd[6].gd.cid = CID_Fix;
@@ -465,70 +463,41 @@ return;
 	p->explainvals = gcd[4].ret;
 	p->ignoregadg = gcd[5].ret;
     } else
-	GGadgetSetTitle(p->explaintext,GStringGetResource(explain,NULL));
+	GGadgetSetTitle8(p->explaintext,explain);
     p->explaining = explain;
-    fixable = /*explain==_STR_ProbHintHWidth || explain==_STR_ProbHintVWidth ||*/
-	    explain==_STR_ProbFlippedRef ||
-	    explain==_STR_ProbXNear || explain==_STR_ProbPtNearVHint ||
-	    explain==_STR_ProbYNear || explain==_STR_ProbPtNearHHint ||
-	    explain==_STR_ProbIrrelCP ||
-	    explain==_STR_ProbYBase || explain==_STR_ProbYXHeight ||
-	    explain==_STR_ProbYCapHeight || explain==_STR_ProbYAs ||
-	    explain==_STR_ProbYDs ||
-	    explain==_STR_ProbLineHor || explain==_STR_ProbLineVert ||
-	    explain==_STR_ProbAboveHor || explain==_STR_ProbBelowHor ||
-	    explain==_STR_ProbRightHor || explain==_STR_ProbLeftHor ||
-	    explain==_STR_ProbAboveVert || explain==_STR_ProbBelowVert ||
-	    explain==_STR_ProbRightVert || explain==_STR_ProbLeftVert ||
-	    explain==_STR_ProbExpectedCounter || explain==_STR_ProbExpectedClockwise ||
-	    explain==_STR_ProbBadWidth ||
-	    explain==_STR_ProbBadVWidth;
+    fixable = /*explain==_("This glyph contains a horizontal hint near the specified width") || explain==_("This glyph contains a vertical hint near the specified width") ||*/
+	    explain==_("This reference has been flipped, so the paths in it are drawn backwards") ||
+	    explain==_("The x coord of the selected point is near the specified value") || explain==_("The selected point is near a vertical stem hint") ||
+	    explain==_("The y coord of the selected point is near the specified value") || explain==_("The selected point is near a horizontal stem hint") ||
+	    explain==_("This glyph contains control points which are probably too close to the main points to alter the look of the spline") ||
+	    explain==_("The y coord of the selected point is near the baseline") || explain==_("The y coord of the selected point is near the xheight") ||
+	    explain==_("The y coord of the selected point is near the cap height") || explain==_("The y coord of the selected point is near the ascender height") ||
+	    explain==_("The y coord of the selected point is near the descender height") ||
+	    explain==_("The selected line segment is nearly horizontal") || explain==_("The selected line segment is nearly vertical") ||
+	    explain==_("The control point above the selected point is nearly horizontal") || explain==_("The control point below the selected point is nearly horizontal") ||
+	    explain==_("The control point right of the selected point is nearly horizontal") || explain==_("The control point left of the selected point is nearly horizontal") ||
+	    explain==_("The control point above the selected point is nearly vertical") || explain==_("The control point below the selected point is nearly vertical") ||
+	    explain==_("The control point right of the selected point is nearly vertical") || explain==_("The control point left of the selected point is nearly vertical") ||
+	    explain==_("This path should have been drawn in a counter-clockwise direction") || explain==_("This path should have been drawn in a clockwise direction") ||
+	    explain==_("This glyph's advance width is different from the standard width") ||
+	    explain==_("This glyph's vertical advance is different from the standard width");
     GGadgetSetVisible(GWidgetGetControl(p->explainw,CID_Fix),fixable);
 
-    if ( explain==_STR_ProbBadSubs ) {
-	u_snprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GStringGetResource(_STR_ProbBadSubs2,NULL), p->badsubsname,
-#elif defined(FONTFORGE_CONFIG_GTK)
+    if ( explain==_("This glyph contains a substitution or ligature entry which refers to an empty char") ) {
+	snprintf(buf,sizeof(buf),
 		_("'%2$c%3$c%4$c%5$c' refers to an empty character \"%1$.20s\""), p->badsubsname,
-#endif
 		(p->badsubstag>>24),(p->badsubstag>>16)&0xff,(p->badsubstag>>8)&0xff,p->badsubstag&0xff);
-    } else if ( explain==_STR_ProbMultiUni ) {
-	u_snprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GStringGetResource(_STR_ProbMultiUni2,NULL),
-#elif defined(FONTFORGE_CONFIG_GTK)
-		_("%.40s"),
-#endif
-		p->glyphname );
-    } else if ( explain==_STR_ProbMultiName ) {
-	u_snprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GStringGetResource(_STR_ProbMultiName2,NULL),
-#elif defined(FONTFORGE_CONFIG_GTK)
-		_("%d"),
-#endif
-		p->glyphenc );
+    } else if ( explain==_("This glyph has the same unicode code point as the glyph named") ) {
+	snprintf(buf,sizeof(buf), _("%.40s"), p->glyphname );
+    } else if ( explain==_("This glyph has the same name as the glyph at encoding") ) {
+	snprintf(buf,sizeof(buf),_("%d"), p->glyphenc );
     } else if ( found==expected )
-	ubuf[0]='\0';
+	buf[0]='\0';
     else {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	u_strcpy(ubuf,GStringGetResource(_STR_Found,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	u_strcpy(ubuf,_("Found "));
-#endif
-	sprintf(buf,"%.4g", found );
-	uc_strcat(ubuf,buf);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	u_strcat(ubuf,GStringGetResource(_STR_Expected,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	u_strcat(ubuf,_(", expected "));
-#endif
-	sprintf(buf,"%.4g", expected );
-	uc_strcat(ubuf,buf);
+	sprintf(buf,"Found %1$.4g, expected %2$.4g", found, expected );
     }
     p->found = found; p->expected = expected;
-    GGadgetSetTitle(p->explainvals,ubuf);
+    GGadgetSetTitle8(p->explainvals,buf);
     GGadgetSetChecked(p->ignoregadg,false);
 
     p->doneexplain = false;
@@ -547,7 +516,7 @@ return;
 	GDrawProcessPendingEvents(NULL);
 	p->lastcharopened = sc;
     }
-    if ( explain==_STR_ProbBadSubs ) {
+    if ( explain==_("This glyph contains a substitution or ligature entry which refers to an empty char") ) {
 	SCCharInfo(sc,p->fv->map,-1);
 	GDrawSync(NULL);
 	GDrawProcessPendingEvents(NULL);
@@ -577,7 +546,7 @@ return;
     }
 }
 
-static void _ExplainIt(struct problems *p, int enc, int explain,
+static void _ExplainIt(struct problems *p, int enc, char *explain,
 	real found, real expected ) {
     ExplainIt(p,p->sc=SFMakeChar(p->fv->sf,p->fv->map,enc),explain,found,expected);
 }
@@ -646,9 +615,27 @@ static int HVITest(struct problems *p,BasePoint *to, BasePoint *from,
     int isto;
     int type;
     BasePoint *base, *other;
-    static int hmsgs[5] = { _STR_ProbLineHor, _STR_ProbAboveHor, _STR_ProbBelowHor, _STR_ProbRightHor, _STR_ProbLeftHor };
-    static int vmsgs[5] = { _STR_ProbLineVert, _STR_ProbAboveVert, _STR_ProbBelowVert, _STR_ProbRightVert, _STR_ProbLeftVert };
-    static int imsgs[5] = { _STR_ProbLineItal, _STR_ProbAboveItal, _STR_ProbBelowItal, _STR_ProbRightItal, _STR_ProbLeftItal };
+    static char *hmsgs[5] = {
+	N_("The selected line segment is nearly horizontal"),
+	N_("The control point above the selected point is nearly horizontal"),
+	N_("The control point below the selected point is nearly horizontal"),
+	N_("The control point right of the selected point is nearly horizontal"),
+	N_("The control point left of the selected point is nearly horizontal")
+    };
+    static char *vmsgs[5] = {
+	N_("The selected line segment is nearly vertical"),
+	N_("The control point above the selected point is nearly vertical"),
+	N_("The control point below the selected point is nearly vertical"),
+	N_("The control point right of the selected point is nearly vertical"),
+	N_("The control point left of the selected point is nearly vertical")
+    };
+    static char *imsgs[5] = {
+	N_("The selected line segment is near the italic angle"),
+	N_("The control point above the selected point is near the italic angle"),
+	N_("The control point below the selected point is near the italic angle"),
+	N_("The control point right of the selected point is near the italic angle"),
+	N_("The control point left of the selected point is near the italic angle")
+    };
 
     yoff = to->y-from->y;
     xoff = to->x-from->x;
@@ -690,11 +677,11 @@ static int HVITest(struct problems *p,BasePoint *to, BasePoint *from,
 	else
 	    type = ((xoff>0) ^ isto)?3:4;
 	if ( ishor )
-	    ExplainIt(p,p->sc,hmsgs[type], other->y,base->y);
+	    ExplainIt(p,p->sc,_(hmsgs[type]), other->y,base->y);
 	else if ( isvert )
-	    ExplainIt(p,p->sc,vmsgs[type], other->x,base->x);
+	    ExplainIt(p,p->sc,_(vmsgs[type]), other->x,base->x);
 	else
-	    ExplainIt(p,p->sc,imsgs[type],0,0);
+	    ExplainIt(p,p->sc,_(imsgs[type]),0,0);
 return( true );
     }
 return( false );
@@ -706,14 +693,14 @@ static int OddCPCheck(BasePoint *cp,BasePoint *base,BasePoint *v,
 	SplinePoint *sp, struct problems *p) {
     real len = (cp->x-base->x)*v->x+ (cp->y-base->y)*v->y;
     real xoff, yoff;
-    int msg=0;
+    char *msg=NULL;
 
     if ( len<0 || len>1 || (len==0 && &sp->me!=base) || (len==1 && &sp->me==base)) {
 	xoff = cp->x-sp->me.x; yoff = cp->y-sp->me.y;
 	if ( fabs(yoff)>fabs(xoff) )
-	    msg = yoff>0?_STR_ProbAboveOdd:_STR_ProbBelowOdd;
+	    msg = yoff>0?_("The control point above the selected point is outside the spline segment"):_("The control point below the selected point is outside the spline segment");
 	else
-	    msg = xoff>0?_STR_ProbRightOdd:_STR_ProbLeftOdd;
+	    msg = xoff>0?_("The control point right of the selected point is outside the spline segment"):_("The control point left of the selected point is outside the spline segment");
 	sp->selected = true;
 	ExplainIt(p,p->sc,msg, 0,0);
 return( true );
@@ -756,7 +743,7 @@ return(false);
 return(false);
 	if ( goods[2]->start-goods[1]->start == goods[1]->start-goods[0]->start ) {
 	    bad->active = true;
-	    ExplainIt(p,p->sc,_STR_ProbHint3Four,0,0);
+	    ExplainIt(p,p->sc,_("This glyph has four hints, but if this one were omitted it would fit a stem3 hint"),0,0);
 	    if ( !missinghint(p->sc->hstem,bad) || !missinghint(p->sc->vstem,bad))
 		bad->active = false;
 	    if ( p->ignorethis )
@@ -769,7 +756,7 @@ return(false);
     if ( h->width==h2->width && h->width==h3->width &&
 	    h2->start-h->start == h3->start-h2->start ) {
 	if ( p->showexactstem3 ) {
-	    ExplainIt(p,p->sc,_STR_NoProbHint3,0,0);
+	    ExplainIt(p,p->sc,_("This glyph can use a stem3 hint"),0,0);
 	    if ( p->ignorethis )
 		p->showexactstem3 = false;
 	}
@@ -779,7 +766,7 @@ return( false );		/* It IS a stem3, so don't complain */
     if ( h->width==h2->width && h->width==h3->width ) {
 	if ( h2->start-h->start+p->near > h3->start-h2->start &&
 		h2->start-h->start-p->near < h3->start-h2->start ) {
-	    ExplainIt(p,p->sc,_STR_ProbHint3Spacing,0,0);
+	    ExplainIt(p,p->sc,_("The counters between these hints are not the same size, bad for a stem3 hint"),0,0);
 	    if ( p->ignorethis )
 		p->stem3 = false;
 return( true );
@@ -794,7 +781,7 @@ return( false );
 	if ( h->width==h2->width ) {
 	    if ( h->width+p->near > h3->width && h->width-p->near < h3->width ) {
 		h3->active = true;
-		ExplainIt(p,p->sc,_STR_ProbHint3Width,0,0);
+		ExplainIt(p,p->sc,_("This hint has the wrong width for a stem3 hint"),0,0);
 		if ( !missinghint(p->sc->hstem,h3) || !missinghint(p->sc->vstem,h3))
 		    h3->active = false;
 		if ( p->ignorethis )
@@ -806,7 +793,7 @@ return( false );
 	if ( h->width==h3->width ) {
 	    if ( h->width+p->near > h2->width && h->width-p->near < h2->width ) {
 		h2->active = true;
-		ExplainIt(p,p->sc,_STR_ProbHint3Width,0,0);
+		ExplainIt(p,p->sc,_("This hint has the wrong width for a stem3 hint"),0,0);
 		if ( !missinghint(p->sc->hstem,h2) || !missinghint(p->sc->vstem,h2))
 		    h2->active = false;
 		if ( p->ignorethis )
@@ -818,7 +805,7 @@ return( false );
 	if ( h2->width==h3->width ) {
 	    if ( h2->width+p->near > h->width && h2->width-p->near < h->width ) {
 		h->active = true;
-		ExplainIt(p,p->sc,_STR_ProbHint3Width,0,0);
+		ExplainIt(p,p->sc,_("This hint has the wrong width for a stem3 hint"),0,0);
 		if ( !missinghint(p->sc->hstem,h) || !missinghint(p->sc->vstem,h))
 		    h->active = false;
 		if ( p->ignorethis )
@@ -914,7 +901,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 			test->first->noprevcp && test->first->nonextcp))) {
 		changed = true;
 		test->first->selected = test->last->selected = true;
-		ExplainIt(p,sc,_STR_ProbOpenPath,0,0);
+		ExplainIt(p,sc,_("The two selected points are the endpoints of an open path"),0,0);
 		if ( p->ignorethis ) {
 		    p->openpaths = false;
 	break;
@@ -964,7 +951,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	    changed = true;
 	    spline->from->selected = true; spline->to->selected = true;
 	    spline2->from->selected = true; spline2->to->selected = true;
-	    ExplainIt(p,sc,_STR_ProbIntersectingPaths,0,0);
+	    ExplainIt(p,sc,_("The paths that make up this glyph intersect one another"),0,0);
 	    if ( p->ignorethis ) {
 		p->intersectingpaths = false;
     /* break; */
@@ -982,7 +969,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		if ( (nsp->me.x-sp->me.x)*(nsp->me.x-sp->me.x) + (nsp->me.y-sp->me.y)*(nsp->me.y-sp->me.y) < 2*2 ) {
 		    changed = true;
 		    sp->selected = nsp->selected = true;
-		    ExplainIt(p,sc,_STR_ProbPointsTooClose,0,0);
+		    ExplainIt(p,sc,_("The selected points are too close to each other"),0,0);
 		    if ( p->ignorethis ) {
 			p->pointstooclose = false;
 	    break;
@@ -1005,7 +992,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 			sp->me.x!=p->xval ) {
 		    changed = true;
 		    sp->selected = true;
-		    ExplainIt(p,sc,_STR_ProbXNear,sp->me.x,p->xval);
+		    ExplainIt(p,sc,_("The x coord of the selected point is near the specified value"),sp->me.x,p->xval);
 		    if ( p->ignorethis ) {
 			p->xnearval = false;
 	    break;
@@ -1030,7 +1017,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 			sp->me.y != p->yval ) {
 		    changed = true;
 		    sp->selected = true;
-		    ExplainIt(p,sc,_STR_ProbYNear,sp->me.y,p->yval);
+		    ExplainIt(p,sc,_("The y coord of the selected point is near the specified value"),sp->me.y,p->yval);
 		    if ( p->ignorethis ) {
 			p->ynearval = false;
 	    break;
@@ -1049,7 +1036,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 
     if ( p->ynearstd && !p->finish ) {
 	real expected;
-	int msg;
+	char *msg;
 	for ( test=spl; test!=NULL && !p->finish && p->ynearstd; test=test->next ) {
 	    sp = test->first;
 	    do {
@@ -1061,19 +1048,19 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		    changed = true;
 		    sp->selected = true;
 		    if ( sp->me.y<p->near && -sp->me.y<p->near ) {
-			msg = _STR_ProbYBase;
+			msg = _("The y coord of the selected point is near the baseline");
 			expected = 0;
 		    } else if ( sp->me.y-p->xheight<p->near && p->xheight-sp->me.y<p->near ) {
-			msg = _STR_ProbYXHeight;
+			msg = _("The y coord of the selected point is near the xheight");
 			expected = p->xheight;
 		    } else if ( sp->me.y-p->caph<p->near && p->caph-sp->me.y<p->near ) {
-			msg = _STR_ProbYCapHeight;
+			msg = _("The y coord of the selected point is near the cap height");
 			expected = p->caph;
 		    } else if ( sp->me.y-p->ascent<p->near && p->ascent-sp->me.y<p->near ) {
-			msg = _STR_ProbYAs;
+			msg = _("The y coord of the selected point is near the ascender height");
 			expected = p->ascent;
 		    } else {
-			msg = _STR_ProbYDs;
+			msg = _("The y coord of the selected point is near the descender height");
 			expected = p->descent;
 		    }
 		    ExplainIt(p,sc,msg,sp->me.y,expected);
@@ -1217,7 +1204,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		}
 		if ( either ) {
 		    sp->selected = true;
-		    ExplainIt(p,sc,_STR_ProbIrrelCP,0,0);
+		    ExplainIt(p,sc,_("This glyph contains control points which are probably too close to the main points to alter the look of the spline"),0,0);
 		    if ( p->ignorethis ) {
 			p->irrelevantcontrolpoints = false;
 	    break;
@@ -1254,7 +1241,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	    else if ( !anys || !anye ) {
 		h->active = true;
 		changed = true;
-		ExplainIt(p,sc,_STR_ProbHintControl,0,0);
+		ExplainIt(p,sc,_("This hint does not control any points"),0,0);
 		if ( !missinghint(sc->hstem,h))
 		    h->active = false;
 		if ( p->ignorethis ) {
@@ -1283,7 +1270,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	    if ( !anys || !anye ) {
 		h->active = true;
 		changed = true;
-		ExplainIt(p,sc,_STR_ProbHintControl,0,0);
+		ExplainIt(p,sc,_("This hint does not control any points"),0,0);
 		if ( p->ignorethis ) {
 		    p->hintwithnopt = false;
 	break;
@@ -1336,7 +1323,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		if ( hs || vs ) {
 		    changed = true;
 		    sp->selected = true;
-		    ExplainIt(p,sc,hs?_STR_ProbPtNearHHint:_STR_ProbPtNearVHint,found,expected);
+		    ExplainIt(p,sc,hs?_("The selected point is near a horizontal stem hint"):_("The selected point is near a vertical stem hint"),found,expected);
 		    if ( p->ignorethis ) {
 			p->ptnearhint = false;
 	    break;
@@ -1373,7 +1360,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	}
 	if ( hs || vs ) {
 	    changed = true;
-	    ExplainIt(p,sc,hs?_STR_ProbHintHWidth:_STR_ProbHintVWidth,
+	    ExplainIt(p,sc,hs?_("This glyph contains a horizontal hint near the specified width"):_("This glyph contains a vertical hint near the specified width"),
 		    hs?hs->width:vs->width,p->widthval);
 	    if ( hs!=NULL && !missinghint(sc->hstem,hs)) hs->active = false;
 	    if ( vs!=NULL && !missinghint(sc->vstem,vs)) vs->active = false;
@@ -1409,9 +1396,9 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	    break;
 	    }
 	    if ( SplinePointListIsClockwise(ret))
-		ExplainIt(p,sc,_STR_ProbExpectedCounter,0,0);
+		ExplainIt(p,sc,_("This path should have been drawn in a counter-clockwise direction"),0,0);
 	    else
-		ExplainIt(p,sc,_STR_ProbExpectedClockwise,0,0);
+		ExplainIt(p,sc,_("This path should have been drawn in a clockwise direction"),0,0);
 	    if ( p->ignorethis ) {
 		p->direction = false;
 	break;
@@ -1428,7 +1415,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		    (ref->transform[0]==0 && ref->transform[1]*ref->transform[2]>0)) {
 		changed = true;
 		ref->selected = true;
-		ExplainIt(p,sc,_STR_ProbFlippedRef,0,0);
+		ExplainIt(p,sc,_("This reference has been flipped, so the paths in it are drawn backwards"),0,0);
 		ref->selected = false;
 		if ( p->ignorethis ) {
 		    p->flippedrefs = false;
@@ -1442,7 +1429,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	int cnt=SCRefDepth(sc);
 	if ( cnt>p->refdepthmax ) {
 	    changed = true;
-	    ExplainIt(p,sc,_STR_ProbTooDeepRefs,cnt,p->refdepthmax);
+	    ExplainIt(p,sc,_("References are nested more deeply in this glyph than the maximum allowed"),cnt,p->refdepthmax);
 	    if ( p->ignorethis )
 		p->toodeeprefs = false;
 	}
@@ -1456,7 +1443,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	    cnt += SPLPointCnt(r->layers[0].splines);
 	if ( cnt>p->pointsmax ) {
 	    changed = true;
-	    ExplainIt(p,sc,_STR_ProbTooManyPoints,cnt,p->pointsmax);
+	    ExplainIt(p,sc,_("There are more points in this glyph than the maximum allowed"),cnt,p->pointsmax);
 	    if ( p->ignorethis )
 		p->toomanypoints = false;
 	}
@@ -1470,7 +1457,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	    ++cnt;
 	if ( cnt>p->hintsmax ) {
 	    changed = true;
-	    ExplainIt(p,sc,_STR_ProbTooManyHints,cnt,p->hintsmax);
+	    ExplainIt(p,sc,_("There are more hints in this glyph than the maximum allowed"),cnt,p->hintsmax);
 	    if ( p->ignorethis )
 		p->toomanyhints = false;
 	}
@@ -1482,7 +1469,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	for ( bdf=sc->parent->bitmaps; bdf!=NULL; bdf=bdf->next ) {
 	    if ( sc->orig_pos>=bdf->glyphcnt || bdf->glyphs[sc->orig_pos]==NULL ) {
 		changed = true;
-		ExplainIt(p,sc,_STR_ProbMissingBitmap,0,0);
+		ExplainIt(p,sc,_("This outline glyph is missing a bitmap version"),0,0);
 		if ( p->ignorethis )
 		    p->bitmaps = false;
 	break;
@@ -1493,7 +1480,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
     if ( p->advancewidth && !p->finish && SCWorthOutputting(sc)) {
 	if ( sc->width!=p->advancewidthval ) {
 	    changed = true;
-	    ExplainIt(p,sc,_STR_ProbBadWidth,sc->width,p->advancewidthval);
+	    ExplainIt(p,sc,_("This glyph's advance width is different from the standard width"),sc->width,p->advancewidthval);
 	    if ( p->ignorethis )
 		p->advancewidth = false;
 	}
@@ -1502,7 +1489,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
     if ( p->vadvancewidth && !p->finish && SCWorthOutputting(sc)) {
 	if ( sc->vwidth!=p->vadvancewidthval ) {
 	    changed = true;
-	    ExplainIt(p,sc,_STR_ProbBadVWidth,sc->vwidth,p->vadvancewidthval);
+	    ExplainIt(p,sc,_("This glyph's vertical advance is different from the standard width"),sc->vwidth,p->vadvancewidthval);
 	    if ( p->ignorethis )
 		p->vadvancewidth = false;
 	}
@@ -1524,7 +1511,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 			p->badsubsname = copy(pt);
 			*end = ch;
 			p->badsubstag = pst->tag;
-			ExplainIt(p,sc,_STR_ProbBadSubs,0,0);
+			ExplainIt(p,sc,_("This glyph contains a substitution or ligature entry which refers to an empty char"),0,0);
 			free(p->badsubsname);
 			if ( p->ignorethis )
 			    p->badsubs = false;
@@ -1548,7 +1535,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	    if ( sf->glyphs[i]->unicodeenc == sc->unicodeenc ) {
 		changed = true;
 		p->glyphname = sf->glyphs[i]->name;
-		ExplainIt(p,sc,_STR_ProbMultiUni,0,0);
+		ExplainIt(p,sc,_("This glyph has the same unicode code point as the glyph named"),0,0);
 		if ( p->ignorethis )
 		    p->multuni = false;
 	    }
@@ -1563,7 +1550,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	    if ( strcmp(sf->glyphs[i]->name, sc->name)==0 ) {
 		changed = true;
 		p->glyphenc = i;
-		ExplainIt(p,sc,_STR_ProbMultiName,0,0);
+		ExplainIt(p,sc,_("This glyph has the same name as the glyph at encoding"),0,0);
 		if ( p->ignorethis )
 		    p->multname = false;
 	    }
@@ -1587,12 +1574,12 @@ static int CIDCheck(struct problems *p,int cid) {
 		    SCWorthOutputting(csf->subfonts[i]->glyphs[cid]) )
 		++cnt;
 	if ( cnt>1 && p->cidmultiple ) {
-	    _ExplainIt(p,cid,_STR_ProbCIDMult,cnt,1);
+	    _ExplainIt(p,cid,_("This glyph is defined in more than one of the CID subfonts"),cnt,1);
 	    if ( p->ignorethis )
 		p->cidmultiple = false;
 	    found = true;
 	} else if ( cnt==0 && p->cidblank ) {
-	    _ExplainIt(p,cid,_STR_ProbCIDBlank,0,0);
+	    _ExplainIt(p,cid,_("This glyph is not defined in any of the CID subfonts"),0,0);
 	    if ( p->ignorethis )
 		p->cidblank = false;
 	    found = true;
@@ -1727,11 +1714,7 @@ static int MGA_Rpl(GGadget *g, GEvent *e) {
 	const unichar_t *_rpl = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_RplText));
 	if ( d->islookup ) {
 	    if ( u_strlen(_rpl)!=4 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_TagMustBe4,_STR_TagMustBe4);
-#elif defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Tag must be 4 characters long"),_("Tag must be 4 characters long"));
-#endif
 return( true);
 	    }
 	    mark_tagto_replace(d->p,d->tag,((_rpl[0]&0xff)<<24)|((_rpl[1]&0xff)<<16)|((_rpl[2]&0xff)<<8)|((_rpl[3]&0xff)));
@@ -1786,15 +1769,15 @@ return( true );
 
 static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32 tag,
 	SplineChar *sc,enum missingglyph_type which,void *data) {
-    unichar_t buffer[200], tbuf[6];
-    static char *pstnames[] = { "", "position", "pair", "substitution",
-	"alternate subs", "multiple subs", "ligature", NULL };
-    static char *fpstnames[] = { "Contextual position", "Contextual substitution",
-	"Chaining position", "Chaining substitution", "Reverse chaining subs", NULL };
-    static char *asmnames[] = { "Indic reordering", "Contextual substitution",
-	"Lig", NULL, "Simple", "Contextual insertion", NULL, NULL, NULL,
+    char buffer[200], tbuf[6];
+    static char *pstnames[] = { "", N_("position"), N_("pair"), N_("substitution"),
+	N_("alternate subs"), N_("multiple subs"), N_("ligature"), NULL };
+    static char *fpstnames[] = { N_("Contextual position"), N_("Contextual substitution"),
+	N_("Chaining position"), N_("Chaining substitution"), N_("Reverse chaining subs"), NULL };
+    static char *asmnames[] = { N_("Indic reordering"), N_("Contextual substitution"),
+	N_("Lig"), NULL, N_("Simple"), N_("Contextual insertion"), NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	"Kerning", NULL };
+	N_("Kerning"), NULL };
     PST *pst = data;
     FPST *fpst = data;
     ASM *sm = data;
@@ -1814,49 +1797,29 @@ static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32 tag,
 
     if ( which == mg_pst ) {
 	if ( pst->macfeature )
-	    u_snprintf(buffer,sizeof(buffer)/sizeof(buffer[0]),
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		    GStringGetResource(_STR_GlyphMacPSTTag,NULL),
-#elif defined(FONTFORGE_CONFIG_GTK)
+	    snprintf(buffer,sizeof(buffer),
 		    _("Glyph %1$.50s with a %2$s with feature <%3$d,%4$d>"),
-#endif
-		    sc->name, pstnames[pst->type],
+		    sc->name, _(pstnames[pst->type]),
 		    pst->tag>>16, pst->tag&0xffff);
 	else
-	    u_snprintf(buffer,sizeof(buffer)/sizeof(buffer[0]),
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		    GStringGetResource(_STR_GlyphPSTTag,NULL),
-#elif defined(FONTFORGE_CONFIG_GTK)
+	    snprintf(buffer,sizeof(buffer),
 		    _("Glyph %1$.50s with a %2$s with tag '%3$c%4$c%5$c%6$c'"),
-#endif
-		    sc->name, pstnames[pst->type],
+		    sc->name, _(pstnames[pst->type]),
 		    pst->tag>>24, (pst->tag>>16)&0xff, (pst->tag>>8)&0xff, pst->tag&0xff);
     } else if ( which == mg_fpst || which==mg_lookups )
-	u_snprintf(buffer,sizeof(buffer)/sizeof(buffer[0]),
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GStringGetResource(_STR_FPSTKernTag,NULL),
-#elif defined(FONTFORGE_CONFIG_GTK)
+	snprintf(buffer,sizeof(buffer),
 		_("%1$s with tag '%2$c%3$c%4$c%5$c'"),
-#endif
-		fpstnames[fpst->type-pst_contextpos],
+		_(fpstnames[fpst->type-pst_contextpos]),
 		fpst->tag>>24, (fpst->tag>>16)&0xff, (fpst->tag>>8)&0xff, fpst->tag&0xff);
     else if ( which == mg_asm || which==mg_smlookups )
-	u_snprintf(buffer,sizeof(buffer)/sizeof(buffer[0]),
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GStringGetResource(_STR_MacASMTag,NULL),
-#elif defined(FONTFORGE_CONFIG_GTK)
+	snprintf(buffer,sizeof(buffer),
 		_("%1$s with feature <%2$d,%3$d>"),
-#endif
-		asmnames[sm->type],
+		_(asmnames[sm->type]),
 		sm->feature, sm->setting);
     else
-	u_snprintf(buffer,sizeof(buffer)/sizeof(buffer[0]),
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GStringGetResource(_STR_FPSTKernTag,NULL),
-#elif defined(FONTFORGE_CONFIG_GTK)
+	snprintf(buffer,sizeof(buffer),
 		_("%1$s with tag '%2$c%3$c%4$c%5$c'"),
-#endif
-		which==mg_kern ? "Kerning Class": "Vertical Kerning Class",
+		which==mg_kern ? _("Kerning Class"): _("Vertical Kerning Class"),
 		which==mg_kern ? 'k' : 'v', which==mg_kern ? 'e' : 'k', 'r', 'n' );
 
     memset(&d,'\0',sizeof(d));
@@ -1870,16 +1833,12 @@ static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32 tag,
     d.tag = tag;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_centered|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_centered|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = 1;
     wattrs.centered = 1;
     wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(_STR_MissingGlyphCheck,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = _("Check for missing glyph names");
-#endif
+    wattrs.utf8_window_title = _("Check for missing glyph names");
     pos.x = pos.y = 0;
     ptwidth = 3*blen+GGadgetScale(80);
     pos.width =GDrawPointsToPixels(NULL,ptwidth);
@@ -1890,16 +1849,17 @@ static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32 tag,
     memset(&gcd,0,sizeof(gcd));
 
     k=0;
-    label[k].text = buffer;
+    label[k].text = (unichar_t *) buffer;
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = 6;
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k++].creator = GLabelCreate;
 
     label[k].text = (unichar_t *) (which==mg_lookups ?
-	    _STR_RefersToMissingLookup :
-	    _STR_RefersToMissingGlyph);
-    label[k].text_in_resource = true;
+	    _(" refers to a missing lookup tag") :
+	    _(" refers to a missing glyph"));
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+13;
     gcd[k].gd.flags = gg_visible | gg_enabled;
@@ -1909,7 +1869,8 @@ static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32 tag,
 	label[k].text = (unichar_t *) str;
 	label[k].text_is_1byte = true;
     } else {
-	label[k].text = tbuf;
+	label[k].text = (unichar_t *) tbuf;
+	label[k].text_is_1byte = true;
 	tbuf[0] = tag>>24; tbuf[1] = (tag>>16)&0xff;
 	tbuf[2] = (tag>>8)&0xff; tbuf[3] = tag&0xff;
 	tbuf[4] = 0;
@@ -1919,8 +1880,8 @@ static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32 tag,
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k++].creator = GLabelCreate;
 
-    label[k].text = (unichar_t *) _STR_ReplaceWith;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Replace With:");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+16;
     gcd[k].gd.flags = gg_visible | gg_enabled;
@@ -1938,16 +1899,16 @@ static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32 tag,
 
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+30;
     gcd[k].gd.flags = gg_visible | gg_enabled;
-    label[k].text = (unichar_t *) _STR_Always;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Always");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_Always;
     gcd[k++].creator = GCheckBoxCreate;
     if ( which==mg_lookups )
 	gcd[k-1].gd.flags = gg_enabled | gg_cb_on;
 
-    label[k].text = (unichar_t *) _STR_IgnoreProblemFuture;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Ignore this problem in the future");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+20;
     gcd[k].gd.flags = gg_visible | gg_enabled;
@@ -1957,8 +1918,8 @@ static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32 tag,
     gcd[k].gd.pos.x = 10-3; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+30 -3;
     gcd[k].gd.pos.width = -1;
     gcd[k].gd.flags = gg_visible | gg_but_default;
-    label[k].text = (unichar_t *) _STR_Replace;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Replace");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.handle_controlevent = MGA_Rpl;
     gcd[k].gd.cid = CID_Rpl;
@@ -1968,8 +1929,8 @@ static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32 tag,
     gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+3;
     gcd[k].gd.pos.width = -1;
     gcd[k].gd.flags = gg_visible | gg_enabled;
-    label[k].text = (unichar_t *) _STR_Remove;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Remove");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.handle_controlevent = MGA_Delete;
     gcd[k].gd.cid = CID_Delete;
@@ -1978,8 +1939,8 @@ static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32 tag,
     gcd[k].gd.pos.x = -10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
     gcd[k].gd.pos.width = -1;
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[k].text = (unichar_t *) _STR_Skip;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Skip");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.handle_controlevent = MGA_Skip;
     gcd[k].gd.cid = CID_Skip;
@@ -2208,7 +2169,10 @@ static int CheckForATT(struct problems *p) {
     KernClass *kc;
     SplineFont *_sf, *sf;
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    static int buts[] = { _STR_Yes, _STR_No, 0 };
+    static char *buts[3];
+    buts[0] = _("_Yes");
+    buts[1] = _("_No");
+    buts[2] = NULL;
 #elif defined(FONTFORGE_CONFIG_GTK)
     static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_NO, NULL };
 #endif
@@ -2224,11 +2188,7 @@ static int CheckForATT(struct problems *p) {
 	    for ( i=0; sf->script_lang[i]!=NULL; ++i ) {
 		if ( sf->script_lang[i][0].script == DEFAULT_SCRIPT ) {
 		    found = true;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		    if ( GWidgetAskR(_STR_UsedDFLTscript,buts,0,1,_STR_ProbDFLT)==0 ) {
-#elif defined(FONTFORGE_CONFIG_GTK)
-		    if ( gwwv_ask(_("Check for use of 'DFLT' script"),buts,0,1,_("This font refers to the script 'DFLT'\nwhich means FontForge couldn't guess\na good script.\nYou should probably provide a new\nlist of scripts (if you are unsure\nof which scripts to select, select all\nthat are used in your font).\nWould you like to do this?"))==0 ) {
-#endif
+		    if ( gwwv_ask(_("Check for use of 'DFLT' script"),(const char **) buts,0,1,_("This font refers to the script 'DFLT'\nwhich means FontForge couldn't guess\na good script.\nYou should probably provide a new\nlist of scripts (if you are unsure\nof which scripts to select, select all\nthat are used in your font).\nWould you like to do this?"))==0 ) {
 			unichar_t *dflt, *result;
 			dflt = ScriptLangLine(sf->script_lang[i]);
 			result = ShowScripts(dflt);
@@ -2312,7 +2272,7 @@ static void DoProbs(struct problems *p) {
 		    for ( bdf=p->fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 			if ( i<bdf->glyphcnt && bdf->glyphs[i]!=NULL ) {
 			    sc = SFMakeChar(p->fv->sf,p->fv->map,i);
-			    ExplainIt(p,sc,_STR_ProbMissingOutline,0,0);
+			    ExplainIt(p,sc,_("This blank outline glyph has an unexpected bitmap version"),0,0);
 			    ret = true;
 			}
 		}
@@ -2320,11 +2280,7 @@ static void DoProbs(struct problems *p) {
 	    }
     }
     if ( !ret )
-#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("No problems found"),_("No problems found"));
-#else
-	GWidgetErrorR(_STR_NoProblemsFound,_STR_NoProblemsFound);
-#endif
 }
 
 static void FigureStandardHeights(struct problems *p) {
@@ -2413,24 +2369,24 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	    p->vadvancewidth = false;
 	p->explain = true;
 	if ( doxnear )
-	    p->xval = xval = GetRealR(gw,CID_XNearVal,_STR_XNear,&errs);
+	    p->xval = xval = GetReal8(gw,CID_XNearVal,U_("_X near¹"),&errs);
 	if ( doynear )
-	    p->yval = yval = GetRealR(gw,CID_YNearVal,_STR_YNear,&errs);
+	    p->yval = yval = GetReal8(gw,CID_YNearVal,U_("_Y near¹"),&errs);
 	if ( hintwidth )
-	    widthval = p->widthval = GetRealR(gw,CID_HintWidth,_STR_HintWidth,&errs);
+	    widthval = p->widthval = GetReal8(gw,CID_HintWidth,U_("Hint _Width Near¹"),&errs);
 	if ( p->advancewidth )
-	    advancewidthval = p->advancewidthval = GetIntR(gw,CID_AdvanceWidthVal,_STR_HintWidth,&errs);
+	    advancewidthval = p->advancewidthval = GetInt8(gw,CID_AdvanceWidthVal,U_("Hint _Width Near¹"),&errs);
 	if ( p->vadvancewidth )
-	    vadvancewidthval = p->vadvancewidthval = GetIntR(gw,CID_VAdvanceWidthVal,_STR_HintWidth,&errs);
+	    vadvancewidthval = p->vadvancewidthval = GetInt8(gw,CID_VAdvanceWidthVal,U_("Hint _Width Near¹"),&errs);
 	if ( toomanypoints )
-	    p->pointsmax = pointsmax = GetIntR(gw,CID_PointsMax,_STR_MorePointsThan,&errs);
+	    p->pointsmax = pointsmax = GetInt8(gw,CID_PointsMax,_("_More points than:"),&errs);
 	if ( toomanyhints )
-	    p->hintsmax = hintsmax = GetIntR(gw,CID_HintsMax,_STR_MoreHintsThan,&errs);
+	    p->hintsmax = hintsmax = GetInt8(gw,CID_HintsMax,_("_More hints than:"),&errs);
 	if ( toodeeprefs )
-	    p->refdepthmax = refdepthmax = GetIntR(gw,CID_RefDepthMax,_STR_RefsDeeperThan,&errs);
+	    p->refdepthmax = refdepthmax = GetInt8(gw,CID_RefDepthMax,_("Refs neste_d deeper than:"),&errs);
 	if ( irrelevantcp )
-	    p->irrelevantfactor = irrelevantfactor = GetRealR(gw,CID_IrrelevantFactor,_STR_IrrelevantFactor,&errs)/100.0;
-	near = p->near = GetRealR(gw,CID_Near,_STR_Near,&errs);
+	    p->irrelevantfactor = irrelevantfactor = GetReal8(gw,CID_IrrelevantFactor,_("Irrelevant _Factor:"),&errs)/100.0;
+	near = p->near = GetReal8(gw,CID_Near,_("Near"),&errs);
 	if ( errs )
 return( true );
 	if ( doynearstd )
@@ -2503,16 +2459,12 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
 	p.lastcharopened = cv->sc;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(_STR_Findprobs,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = _("Find Problems...");
-#endif
+    wattrs.utf8_window_title = _("Find Problems...");
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,218));
     pos.height = GDrawPointsToPixels(NULL,294);
@@ -2521,33 +2473,27 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     memset(&plabel,0,sizeof(plabel));
     memset(&pgcd,0,sizeof(pgcd));
 
-    plabel[0].text = (unichar_t *) _STR_Points2Close;
+    plabel[0].text = (unichar_t *) _("Poin_ts too close");
+    plabel[0].text_is_1byte = true;
     plabel[0].text_in_resource = true;
     pgcd[0].gd.label = &plabel[0];
     pgcd[0].gd.mnemonic = 't';
     pgcd[0].gd.pos.x = 3; pgcd[0].gd.pos.y = 5; 
-    pgcd[0].gd.flags = gg_visible | gg_enabled;
+    pgcd[0].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( pointstooclose ) pgcd[0].gd.flags |= gg_cb_on;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    pgcd[0].gd.popup_msg = GStringGetResource(_STR_Points2ClosePopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    pgcd[0].gd.popup_msg = _("If two adjacent points on the same path are less than a few\nemunits apart they will cause problems for some of FontForge's\ncommands. PostScript shouldn't care though.");
-#endif
+    pgcd[0].gd.popup_msg = (unichar_t *) _("If two adjacent points on the same path are less than a few\nemunits apart they will cause problems for some of FontForge's\ncommands. PostScript shouldn't care though.");
     pgcd[0].gd.cid = CID_PointsTooClose;
     pgcd[0].creator = GCheckBoxCreate;
 
-    plabel[1].text = (unichar_t *) _STR_XNear;
+    plabel[1].text = (unichar_t *) U_("_X near¹");
+    plabel[1].text_is_1byte = true;
     plabel[1].text_in_resource = true;
     pgcd[1].gd.label = &plabel[1];
     pgcd[1].gd.mnemonic = 'X';
     pgcd[1].gd.pos.x = 3; pgcd[1].gd.pos.y = pgcd[0].gd.pos.y+19; 
-    pgcd[1].gd.flags = gg_visible | gg_enabled;
+    pgcd[1].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( doxnear ) pgcd[1].gd.flags |= gg_cb_on;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    pgcd[1].gd.popup_msg = GStringGetResource(_STR_XNearPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    pgcd[1].gd.popup_msg = _("Allows you to check that vertical stems in several\ncharacters start at the same location.");
-#endif
+    pgcd[1].gd.popup_msg = (unichar_t *) _("Allows you to check that vertical stems in several\ncharacters start at the same location.");
     pgcd[1].gd.cid = CID_XNear;
     pgcd[1].creator = GCheckBoxCreate;
 
@@ -2562,18 +2508,15 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pgcd[2].data = (void *) CID_XNear;
     pgcd[2].creator = GTextFieldCreate;
 
-    plabel[3].text = (unichar_t *) _STR_YNear;
+    plabel[3].text = (unichar_t *) U_("_Y near¹");
+    plabel[3].text_is_1byte = true;
     plabel[3].text_in_resource = true;
     pgcd[3].gd.label = &plabel[3];
     pgcd[3].gd.mnemonic = 'Y';
     pgcd[3].gd.pos.x = 3; pgcd[3].gd.pos.y = pgcd[1].gd.pos.y+26; 
-    pgcd[3].gd.flags = gg_visible | gg_enabled;
+    pgcd[3].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( doynear ) pgcd[3].gd.flags |= gg_cb_on;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    pgcd[3].gd.popup_msg = GStringGetResource(_STR_YNearPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    pgcd[3].gd.popup_msg = _("Allows you to check that horizontal stems in several\ncharacters start at the same location.");
-#endif
+    pgcd[3].gd.popup_msg = (unichar_t *) _("Allows you to check that horizontal stems in several\ncharacters start at the same location.");
     pgcd[3].gd.cid = CID_YNear;
     pgcd[3].creator = GCheckBoxCreate;
 
@@ -2588,75 +2531,59 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pgcd[4].data = (void *) CID_YNear;
     pgcd[4].creator = GTextFieldCreate;
 
-    plabel[5].text = (unichar_t *) _STR_YNearStd;
+    plabel[5].text = (unichar_t *) U_("Y near¹ _standard heights");
+    plabel[5].text_is_1byte = true;
     plabel[5].text_in_resource = true;
     pgcd[5].gd.label = &plabel[5];
     pgcd[5].gd.mnemonic = 'S';
     pgcd[5].gd.pos.x = 3; pgcd[5].gd.pos.y = pgcd[3].gd.pos.y+20; 
-    pgcd[5].gd.flags = gg_visible | gg_enabled;
+    pgcd[5].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( doynearstd ) pgcd[5].gd.flags |= gg_cb_on;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    pgcd[5].gd.popup_msg = GStringGetResource(_STR_YNearStdPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    pgcd[5].gd.popup_msg = _("Allows you to find points which are slightly\noff from the baseline, xheight,cap height,\nascender, descender heights.");
-#endif
+    pgcd[5].gd.popup_msg = (unichar_t *) _("Allows you to find points which are slightly\noff from the baseline, xheight,cap height,\nascender, descender heights.");
     pgcd[5].gd.cid = CID_YNearStd;
     pgcd[5].creator = GCheckBoxCreate;
 
-    plabel[6].text = (unichar_t *) (fv->sf->italicangle==0?_STR_CpStd:_STR_CpStd2);
+    plabel[6].text = (unichar_t *) (fv->sf->italicangle==0?_("_Control Points near horizontal/vertical"):_("Control Points near horizontal/vertical/italic"));
+    plabel[6].text_is_1byte = true;
     plabel[6].text_in_resource = true;
     pgcd[6].gd.label = &plabel[6];
     pgcd[6].gd.mnemonic = 'C';
     pgcd[6].gd.pos.x = 3; pgcd[6].gd.pos.y = pgcd[5].gd.pos.y+15; 
-    pgcd[6].gd.flags = gg_visible | gg_enabled;
+    pgcd[6].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( cpstd ) pgcd[6].gd.flags |= gg_cb_on;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    pgcd[6].gd.popup_msg = GStringGetResource(_STR_CpStdPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    pgcd[6].gd.popup_msg = _("Allows you to find control points which are almost,\nbut not quite horizontal or vertical\nfrom their base point\n(or at the italic angle).");
-#endif
+    pgcd[6].gd.popup_msg = (unichar_t *) _("Allows you to find control points which are almost,\nbut not quite horizontal or vertical\nfrom their base point\n(or at the italic angle).");
     pgcd[6].gd.cid = CID_CpStd;
     pgcd[6].creator = GCheckBoxCreate;
 
-    plabel[7].text = (unichar_t *) _STR_CpOdd;
+    plabel[7].text = (unichar_t *) _("Control Points _beyond spline");
+    plabel[7].text_is_1byte = true;
     plabel[7].text_in_resource = true;
     pgcd[7].gd.label = &plabel[7];
     pgcd[7].gd.mnemonic = 'b';
     pgcd[7].gd.pos.x = 3; pgcd[7].gd.pos.y = pgcd[6].gd.pos.y+15; 
-    pgcd[7].gd.flags = gg_visible | gg_enabled;
+    pgcd[7].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( cpodd ) pgcd[7].gd.flags |= gg_cb_on;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    pgcd[7].gd.popup_msg = GStringGetResource(_STR_CpOddPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    pgcd[7].gd.popup_msg = _("Allows you to find control points which when projected\nonto the line segment between the two end points lie\noutside of those end points");
-#endif
+    pgcd[7].gd.popup_msg = (unichar_t *) _("Allows you to find control points which when projected\nonto the line segment between the two end points lie\noutside of those end points");
     pgcd[7].gd.cid = CID_CpOdd;
     pgcd[7].creator = GCheckBoxCreate;
 
-    plabel[8].text = (unichar_t *) _STR_IrrelevantCP;
+    plabel[8].text = (unichar_t *) _("Check for _irrelevant control points");
+    plabel[8].text_is_1byte = true;
     plabel[8].text_in_resource = true;
     pgcd[8].gd.label = &plabel[8];
     pgcd[8].gd.pos.x = 3; pgcd[8].gd.pos.y = pgcd[7].gd.pos.y+15; 
-    pgcd[8].gd.flags = gg_visible | gg_enabled;
+    pgcd[8].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( irrelevantcp ) pgcd[8].gd.flags |= gg_cb_on;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    pgcd[8].gd.popup_msg = GStringGetResource(_STR_IrrelevantCPPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    pgcd[8].gd.popup_msg = _("Control points are irrelevant if they are too close to the main\npoint to make a significant difference in the shape of the curve.");
-#endif
+    pgcd[8].gd.popup_msg = (unichar_t *) _("Control points are irrelevant if they are too close to the main\npoint to make a significant difference in the shape of the curve.");
     pgcd[8].gd.cid = CID_IrrelevantCP;
     pgcd[8].creator = GCheckBoxCreate;
 
-    plabel[9].text = (unichar_t *) _STR_IrrelevantFactor;
-    plabel[9].text_in_resource = true;
+    plabel[9].text = (unichar_t *) _("Irrelevant _Factor:");
+    plabel[9].text_is_1byte = true;
     pgcd[9].gd.label = &plabel[9];
     pgcd[9].gd.pos.x = 20; pgcd[9].gd.pos.y = pgcd[8].gd.pos.y+20; 
-    pgcd[9].gd.flags = gg_visible | gg_enabled;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    pgcd[9].gd.popup_msg = GStringGetResource(_STR_IrrelevantFactorPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    pgcd[9].gd.popup_msg = _("A control point is deemed irrelevant if the distance between it and the main\n(end) point is less than this times the distance between the two end points");
-#endif
+    pgcd[9].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    pgcd[9].gd.popup_msg = (unichar_t *) _("A control point is deemed irrelevant if the distance between it and the main\n(end) point is less than this times the distance between the two end points");
     pgcd[9].creator = GLabelCreate;
 
     sprintf( irrel, "%g", irrelevantfactor*100 );
@@ -2665,12 +2592,8 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pgcd[10].gd.label = &plabel[10];
     pgcd[10].gd.pos.x = 105; pgcd[10].gd.pos.y = pgcd[9].gd.pos.y-3;
     pgcd[10].gd.pos.width = 50; 
-    pgcd[10].gd.flags = gg_visible | gg_enabled;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    pgcd[10].gd.popup_msg = GStringGetResource(_STR_IrrelevantFactorPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    pgcd[10].gd.popup_msg = _("A control point is deemed irrelevant if the distance between it and the main\n(end) point is less than this times the distance between the two end points");
-#endif
+    pgcd[10].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    pgcd[10].gd.popup_msg = (unichar_t *) _("A control point is deemed irrelevant if the distance between it and the main\n(end) point is less than this times the distance between the two end points");
     pgcd[10].gd.cid = CID_IrrelevantFactor;
     pgcd[10].creator = GTextFieldCreate;
 
@@ -2678,12 +2601,8 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     plabel[11].text_is_1byte = true;
     pgcd[11].gd.label = &plabel[11];
     pgcd[11].gd.pos.x = 163; pgcd[11].gd.pos.y = pgcd[9].gd.pos.y; 
-    pgcd[11].gd.flags = gg_visible | gg_enabled;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    pgcd[11].gd.popup_msg = GStringGetResource(_STR_IrrelevantFactorPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    pgcd[11].gd.popup_msg = _("A control point is deemed irrelevant if the distance between it and the main\n(end) point is less than this times the distance between the two end points");
-#endif
+    pgcd[11].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    pgcd[11].gd.popup_msg = (unichar_t *) _("A control point is deemed irrelevant if the distance between it and the main\n(end) point is less than this times the distance between the two end points");
     pgcd[11].creator = GLabelCreate;
 
 /* ************************************************************************** */
@@ -2691,78 +2610,62 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     memset(&palabel,0,sizeof(palabel));
     memset(&pagcd,0,sizeof(pagcd));
 
-    palabel[0].text = (unichar_t *) _STR_OpenPaths;
+    palabel[0].text = (unichar_t *) _("O_pen Paths");
+    palabel[0].text_is_1byte = true;
     palabel[0].text_in_resource = true;
     pagcd[0].gd.label = &palabel[0];
     pagcd[0].gd.mnemonic = 'P';
     pagcd[0].gd.pos.x = 3; pagcd[0].gd.pos.y = 6; 
-    pagcd[0].gd.flags = gg_visible | gg_enabled;
+    pagcd[0].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( openpaths ) pagcd[0].gd.flags |= gg_cb_on;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    pagcd[0].gd.popup_msg = GStringGetResource(_STR_OpenPathsPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    pagcd[0].gd.popup_msg = _("All paths should be closed loops, there should be no exposed endpoints");
-#endif
+    pagcd[0].gd.popup_msg = (unichar_t *) _("All paths should be closed loops, there should be no exposed endpoints");
     pagcd[0].gd.cid = CID_OpenPaths;
     pagcd[0].creator = GCheckBoxCreate;
 
-    palabel[1].text = (unichar_t *) _STR_IntersectingPaths;
-    palabel[1].text_in_resource = true;
+    palabel[1].text = (unichar_t *) _("Intersecting Paths");
+    palabel[1].text_is_1byte = true;
     pagcd[1].gd.label = &palabel[1];
     pagcd[1].gd.mnemonic = 'E';
     pagcd[1].gd.pos.x = 3; pagcd[1].gd.pos.y = pagcd[0].gd.pos.y+17; 
-    pagcd[1].gd.flags = gg_visible | gg_enabled;
+    pagcd[1].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( intersectingpaths ) pagcd[1].gd.flags |= gg_cb_on;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    pagcd[1].gd.popup_msg = GStringGetResource(_STR_IntersectingPathsPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    pagcd[1].gd.popup_msg = _("No paths with within a glyph should intersect");
-#endif
+    pagcd[1].gd.popup_msg = (unichar_t *) _("No paths with within a glyph should intersect");
     pagcd[1].gd.cid = CID_IntersectingPaths;
     pagcd[1].creator = GCheckBoxCreate;
 
-    palabel[2].text = (unichar_t *) (fv->sf->italicangle==0?_STR_LineStd:_STR_LineStd2);
+    palabel[2].text = (unichar_t *) (fv->sf->italicangle==0?_("_Edges near horizontal/vertical"):_("Edges near horizontal/vertical/italic"));
+    palabel[2].text_is_1byte = true;
     palabel[2].text_in_resource = true;
     pagcd[2].gd.label = &palabel[2];
     pagcd[2].gd.mnemonic = 'E';
     pagcd[2].gd.pos.x = 3; pagcd[2].gd.pos.y = pagcd[1].gd.pos.y+17; 
-    pagcd[2].gd.flags = gg_visible | gg_enabled;
+    pagcd[2].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( linestd ) pagcd[2].gd.flags |= gg_cb_on;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    pagcd[2].gd.popup_msg = GStringGetResource(_STR_LineStdPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    pagcd[2].gd.popup_msg = _("Allows you to find lines which are almost,\nbut not quite horizontal or vertical\n(or at the italic angle).");
-#endif
+    pagcd[2].gd.popup_msg = (unichar_t *) _("Allows you to find lines which are almost,\nbut not quite horizontal or vertical\n(or at the italic angle).");
     pagcd[2].gd.cid = CID_LineStd;
     pagcd[2].creator = GCheckBoxCreate;
 
-    palabel[3].text = (unichar_t *) _STR_CheckDirection;
+    palabel[3].text = (unichar_t *) _("Check _outermost paths clockwise");
+    palabel[3].text_is_1byte = true;
     palabel[3].text_in_resource = true;
     pagcd[3].gd.label = &palabel[3];
     pagcd[3].gd.mnemonic = 'S';
     pagcd[3].gd.pos.x = 3; pagcd[3].gd.pos.y = pagcd[2].gd.pos.y+17; 
-    pagcd[3].gd.flags = gg_visible | gg_enabled;
+    pagcd[3].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( direction ) pagcd[3].gd.flags |= gg_cb_on;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    pagcd[3].gd.popup_msg = GStringGetResource(_STR_CheckDirectionPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    pagcd[3].gd.popup_msg = _("Postscript and TrueType require that paths be drawn\nin a clockwise direction. This lets you check that they\nare.");
-#endif
+    pagcd[3].gd.popup_msg = (unichar_t *) _("Postscript and TrueType require that paths be drawn\nin a clockwise direction. This lets you check that they\nare.");
     pagcd[3].gd.cid = CID_Direction;
     pagcd[3].creator = GCheckBoxCreate;
 
-    palabel[4].text = (unichar_t *) _STR_MorePointsThan;
+    palabel[4].text = (unichar_t *) _("_More points than:");
+    palabel[4].text_is_1byte = true;
     palabel[4].text_in_resource = true;
     pagcd[4].gd.label = &palabel[4];
     pagcd[4].gd.mnemonic = 'r';
     pagcd[4].gd.pos.x = 3; pagcd[4].gd.pos.y = pagcd[3].gd.pos.y+21; 
-    pagcd[4].gd.flags = gg_visible | gg_enabled;
+    pagcd[4].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( toomanypoints ) pagcd[4].gd.flags |= gg_cb_on;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    pagcd[4].gd.popup_msg = GStringGetResource(_STR_MorePointsThanPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    pagcd[4].gd.popup_msg = _("The PostScript Language Reference Manual (Appendix B) says that\nan interpreter need not support paths with more than 1500 points.\nI think this count includes control points. From PostScript's point\nof view, all the contours in a character make up one path. Modern\ninterpreters tend to support paths with more points than this limit.\n(Note a truetype font after conversion to PS will contain\ntwice as many control points)");
-#endif
+    pagcd[4].gd.popup_msg = (unichar_t *) _("The PostScript Language Reference Manual (Appendix B) says that\nan interpreter need not support paths with more than 1500 points.\nI think this count includes control points. From PostScript's point\nof view, all the contours in a character make up one path. Modern\ninterpreters tend to support paths with more points than this limit.\n(Note a truetype font after conversion to PS will contain\ntwice as many control points)");
     pagcd[4].gd.cid = CID_TooManyPoints;
     pagcd[4].creator = GCheckBoxCreate;
 
@@ -2772,12 +2675,8 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pagcd[5].gd.label = &palabel[5];
     pagcd[5].gd.pos.x = 105; pagcd[5].gd.pos.y = pagcd[4].gd.pos.y-3;
     pagcd[5].gd.pos.width = 50; 
-    pagcd[5].gd.flags = gg_visible | gg_enabled;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    pagcd[5].gd.popup_msg = GStringGetResource(_STR_MorePointsThanPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    pagcd[5].gd.popup_msg = _("The PostScript Language Reference Manual (Appendix B) says that\nan interpreter need not support paths with more than 1500 points.\nI think this count includes control points. From PostScript's point\nof view, all the contours in a character make up one path. Modern\ninterpreters tend to support paths with more points than this limit.\n(Note a truetype font after conversion to PS will contain\ntwice as many control points)");
-#endif
+    pagcd[5].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    pagcd[5].gd.popup_msg = (unichar_t *) _("The PostScript Language Reference Manual (Appendix B) says that\nan interpreter need not support paths with more than 1500 points.\nI think this count includes control points. From PostScript's point\nof view, all the contours in a character make up one path. Modern\ninterpreters tend to support paths with more points than this limit.\n(Note a truetype font after conversion to PS will contain\ntwice as many control points)");
     pagcd[5].gd.cid = CID_PointsMax;
     pagcd[5].creator = GTextFieldCreate;
 
@@ -2786,33 +2685,27 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     memset(&rflabel,0,sizeof(rflabel));
     memset(&rfgcd,0,sizeof(rfgcd));
 
-    rflabel[0].text = (unichar_t *) _STR_CheckFlippedRefs;
+    rflabel[0].text = (unichar_t *) _("Check flipped _references");
+    rflabel[0].text_is_1byte = true;
     rflabel[0].text_in_resource = true;
     rfgcd[0].gd.label = &rflabel[0];
     rfgcd[0].gd.mnemonic = 'r';
     rfgcd[0].gd.pos.x = 3; rfgcd[0].gd.pos.y = 6; 
-    rfgcd[0].gd.flags = gg_visible | gg_enabled;
+    rfgcd[0].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( flippedrefs ) rfgcd[0].gd.flags |= gg_cb_on;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    rfgcd[0].gd.popup_msg = GStringGetResource(_STR_CheckFlippedRefsPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    rfgcd[0].gd.popup_msg = _("Postscript and TrueType require that paths be drawn\nin a clockwise direction. If you have a reference\nthat has been flipped then the paths in that reference will\nprobably be counter-clockwise. You should unlink it and do\nCorect direction on it.");
-#endif
+    rfgcd[0].gd.popup_msg = (unichar_t *) _("Postscript and TrueType require that paths be drawn\nin a clockwise direction. If you have a reference\nthat has been flipped then the paths in that reference will\nprobably be counter-clockwise. You should unlink it and do\nCorect direction on it.");
     rfgcd[0].gd.cid = CID_FlippedRefs;
     rfgcd[0].creator = GCheckBoxCreate;
 
-    rflabel[1].text = (unichar_t *) _STR_RefsDeeperThan;
+    rflabel[1].text = (unichar_t *) _("Refs neste_d deeper than:");
+    rflabel[1].text_is_1byte = true;
     rflabel[1].text_in_resource = true;
     rfgcd[1].gd.label = &rflabel[1];
     rfgcd[1].gd.mnemonic = 'r';
     rfgcd[1].gd.pos.x = 3; rfgcd[1].gd.pos.y = rfgcd[0].gd.pos.y+21; 
-    rfgcd[1].gd.flags = gg_visible | gg_enabled;
+    rfgcd[1].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( toodeeprefs ) rfgcd[1].gd.flags |= gg_cb_on;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    rfgcd[1].gd.popup_msg = GStringGetResource(_STR_RefsDeeperThanPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    rfgcd[1].gd.popup_msg = _("The Type 2 Charstring Reference (Appendix B) says that\nsubroutines may not be nested more than 10 deep. Each\nnesting level for references requires one subroutine\nlevel, and hints may require another level.");
-#endif
+    rfgcd[1].gd.popup_msg = (unichar_t *) _("The Type 2 Charstring Reference (Appendix B) says that\nsubroutines may not be nested more than 10 deep. Each\nnesting level for references requires one subroutine\nlevel, and hints may require another level.");
     rfgcd[1].gd.cid = CID_TooDeepRefs;
     rfgcd[1].creator = GCheckBoxCreate;
 
@@ -2822,12 +2715,8 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rfgcd[2].gd.label = &rflabel[2];
     rfgcd[2].gd.pos.x = 140; rfgcd[2].gd.pos.y = rfgcd[1].gd.pos.y-3;
     rfgcd[2].gd.pos.width = 40; 
-    rfgcd[2].gd.flags = gg_visible | gg_enabled;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    rfgcd[2].gd.popup_msg = GStringGetResource(_STR_RefsDeeperThanPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    rfgcd[2].gd.popup_msg = _("The Type 2 Charstring Reference (Appendix B) says that\nsubroutines may not be nested more than 10 deep. Each\nnesting level for references requires one subroutine\nlevel, and hints may require another level.");
-#endif
+    rfgcd[2].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    rfgcd[2].gd.popup_msg = (unichar_t *) _("The Type 2 Charstring Reference (Appendix B) says that\nsubroutines may not be nested more than 10 deep. Each\nnesting level for references requires one subroutine\nlevel, and hints may require another level.");
     rfgcd[2].gd.cid = CID_RefDepthMax;
     rfgcd[2].creator = GTextFieldCreate;
 
@@ -2836,48 +2725,39 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     memset(&hlabel,0,sizeof(hlabel));
     memset(&hgcd,0,sizeof(hgcd));
 
-    hlabel[0].text = (unichar_t *) _STR_HintNoPt;
+    hlabel[0].text = (unichar_t *) _("_Hints controlling no points");
+    hlabel[0].text_is_1byte = true;
     hlabel[0].text_in_resource = true;
     hgcd[0].gd.label = &hlabel[0];
     hgcd[0].gd.mnemonic = 'H';
     hgcd[0].gd.pos.x = 3; hgcd[0].gd.pos.y = 5; 
-    hgcd[0].gd.flags = gg_visible | gg_enabled;
+    hgcd[0].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( hintnopt ) hgcd[0].gd.flags |= gg_cb_on;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    hgcd[0].gd.popup_msg = GStringGetResource(_STR_HintNoPtPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    hgcd[0].gd.popup_msg = _("Ghostview (perhaps other interpreters) has a problem when a\nhint exists without any points that lie on it.");
-#endif
+    hgcd[0].gd.popup_msg = (unichar_t *) _("Ghostview (perhaps other interpreters) has a problem when a\nhint exists without any points that lie on it.");
     hgcd[0].gd.cid = CID_HintNoPt;
     hgcd[0].creator = GCheckBoxCreate;
 
-    hlabel[1].text = (unichar_t *) _STR_PtNearHint;
+    hlabel[1].text = (unichar_t *) U_("_Points near¹ hint edges");
+    hlabel[1].text_is_1byte = true;
     hlabel[1].text_in_resource = true;
     hgcd[1].gd.label = &hlabel[1];
     hgcd[1].gd.mnemonic = 'H';
     hgcd[1].gd.pos.x = 3; hgcd[1].gd.pos.y = hgcd[0].gd.pos.y+17; 
-    hgcd[1].gd.flags = gg_visible | gg_enabled;
+    hgcd[1].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( ptnearhint ) hgcd[1].gd.flags |= gg_cb_on;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    hgcd[1].gd.popup_msg = GStringGetResource(_STR_PtNearHintPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    hgcd[1].gd.popup_msg = _("Often if a point is slightly off from a hint\nit is because a stem is made up\nof several segments, and one of them\nhas the wrong width.");
-#endif
+    hgcd[1].gd.popup_msg = (unichar_t *) _("Often if a point is slightly off from a hint\nit is because a stem is made up\nof several segments, and one of them\nhas the wrong width.");
     hgcd[1].gd.cid = CID_PtNearHint;
     hgcd[1].creator = GCheckBoxCreate;
 
-    hlabel[2].text = (unichar_t *) _STR_HintWidth;
+    hlabel[2].text = (unichar_t *) U_("Hint _Width Near¹");
+    hlabel[2].text_is_1byte = true;
     hlabel[2].text_in_resource = true;
     hgcd[2].gd.label = &hlabel[2];
     hgcd[2].gd.mnemonic = 'W';
     hgcd[2].gd.pos.x = 3; hgcd[2].gd.pos.y = hgcd[1].gd.pos.y+21;
-    hgcd[2].gd.flags = gg_visible | gg_enabled;
+    hgcd[2].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( hintwidth ) hgcd[2].gd.flags |= gg_cb_on;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    hgcd[2].gd.popup_msg = GStringGetResource(_STR_HintWidthPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    hgcd[2].gd.popup_msg = _("Allows you to check that stems have consistant widths..");
-#endif
+    hgcd[2].gd.popup_msg = (unichar_t *) _("Allows you to check that stems have consistant widths..");
     hgcd[2].gd.cid = CID_HintWidthNear;
     hgcd[2].creator = GCheckBoxCreate;
 
@@ -2892,49 +2772,40 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     hgcd[3].data = (void *) CID_HintWidthNear;
     hgcd[3].creator = GTextFieldCreate;
 
-    hlabel[4].text = (unichar_t *) _STR_Hint3;
+    hlabel[4].text = (unichar_t *) _("Almost stem_3 hint");
+    hlabel[4].text_is_1byte = true;
     hlabel[4].text_in_resource = true;
     hgcd[4].gd.label = &hlabel[4];
     hgcd[4].gd.mnemonic = '3';
     hgcd[4].gd.pos.x = 3; hgcd[4].gd.pos.y = hgcd[3].gd.pos.y+19;
-    hgcd[4].gd.flags = gg_visible | gg_enabled;
+    hgcd[4].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( stem3 ) hgcd[4].gd.flags |= gg_cb_on;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    hgcd[4].gd.popup_msg = GStringGetResource(_STR_Hint3Popup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    hgcd[4].gd.popup_msg = _("This checks if the character almost, but not exactly,\nconforms to the requirements for a stem3 hint.\nThat is, either vertically or horizontally, there must\nbe exactly three hints, and they must have the same\nwidth and they must be evenly spaced.");
-#endif
+    hgcd[4].gd.popup_msg = (unichar_t *) _("This checks if the character almost, but not exactly,\nconforms to the requirements for a stem3 hint.\nThat is, either vertically or horizontally, there must\nbe exactly three hints, and they must have the same\nwidth and they must be evenly spaced.");
     hgcd[4].gd.cid = CID_Stem3;
     hgcd[4].gd.handle_controlevent = Prob_EnableExact;
     hgcd[4].creator = GCheckBoxCreate;
 
-    hlabel[5].text = (unichar_t *) _STR_ShowExactHint3;
+    hlabel[5].text = (unichar_t *) _("_Show Exact *stem3");
+    hlabel[5].text_is_1byte = true;
     hlabel[5].text_in_resource = true;
     hgcd[5].gd.label = &hlabel[5];
     hgcd[5].gd.mnemonic = 'S';
     hgcd[5].gd.pos.x = hgcd[4].gd.pos.x+5; hgcd[5].gd.pos.y = hgcd[4].gd.pos.y+17;
-    hgcd[5].gd.flags = gg_visible;
+    hgcd[5].gd.flags = gg_visible | gg_utf8_popup;
     if ( showexactstem3 ) hgcd[5].gd.flags |= gg_cb_on;
     if ( stem3 ) hgcd[5].gd.flags |= gg_enabled;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    hgcd[5].gd.popup_msg = GStringGetResource(_STR_ShowExactHint3Popup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    hgcd[5].gd.popup_msg = _("Shows when this character is exactly a stem3 hint");
-#endif
+    hgcd[5].gd.popup_msg = (unichar_t *) _("Shows when this character is exactly a stem3 hint");
     hgcd[5].gd.cid = CID_ShowExactStem3;
     hgcd[5].creator = GCheckBoxCreate;
 
-    hlabel[6].text = (unichar_t *) _STR_MoreHintsThan;
+    hlabel[6].text = (unichar_t *) _("_More hints than:");
+    hlabel[6].text_is_1byte = true;
     hlabel[6].text_in_resource = true;
     hgcd[6].gd.label = &hlabel[6];
     hgcd[6].gd.pos.x = 3; hgcd[6].gd.pos.y = hgcd[5].gd.pos.y+21; 
-    hgcd[6].gd.flags = gg_visible | gg_enabled;
+    hgcd[6].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( toomanyhints ) hgcd[6].gd.flags |= gg_cb_on;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    hgcd[6].gd.popup_msg = GStringGetResource(_STR_MoreHintsThanPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    hgcd[6].gd.popup_msg = _("The Type 2 Charstring Reference (Appendix B) says that\nthere may be at most 96 horizontal and vertical stem hints\nin a character.");
-#endif
+    hgcd[6].gd.popup_msg = (unichar_t *) _("The Type 2 Charstring Reference (Appendix B) says that\nthere may be at most 96 horizontal and vertical stem hints\nin a character.");
     hgcd[6].gd.cid = CID_TooManyHints;
     hgcd[6].creator = GCheckBoxCreate;
 
@@ -2944,12 +2815,8 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     hgcd[7].gd.label = &hlabel[7];
     hgcd[7].gd.pos.x = 105; hgcd[7].gd.pos.y = hgcd[6].gd.pos.y-3;
     hgcd[7].gd.pos.width = 50; 
-    hgcd[7].gd.flags = gg_visible | gg_enabled;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    hgcd[7].gd.popup_msg = GStringGetResource(_STR_MoreHintsThanPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    hgcd[7].gd.popup_msg = _("The Type 2 Charstring Reference (Appendix B) says that\nthere may be at most 96 horizontal and vertical stem hints\nin a character.");
-#endif
+    hgcd[7].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    hgcd[7].gd.popup_msg = (unichar_t *) _("The Type 2 Charstring Reference (Appendix B) says that\nthere may be at most 96 horizontal and vertical stem hints\nin a character.");
     hgcd[7].gd.cid = CID_HintsMax;
     hgcd[7].creator = GTextFieldCreate;
 
@@ -2958,33 +2825,27 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     memset(&rlabel,0,sizeof(rlabel));
     memset(&rgcd,0,sizeof(rgcd));
 
-    rlabel[0].text = (unichar_t *) _STR_CheckBitmaps;
+    rlabel[0].text = (unichar_t *) _("Check missing _bitmaps");
+    rlabel[0].text_is_1byte = true;
     rlabel[0].text_in_resource = true;
     rgcd[0].gd.label = &rlabel[0];
     rgcd[0].gd.mnemonic = 'r';
     rgcd[0].gd.pos.x = 3; rgcd[0].gd.pos.y = 6; 
-    rgcd[0].gd.flags = gg_visible | gg_enabled;
+    rgcd[0].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( bitmaps ) rgcd[0].gd.flags |= gg_cb_on;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    rgcd[0].gd.popup_msg = GStringGetResource(_STR_CheckBitmapsPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    rgcd[0].gd.popup_msg = _("Are there any outline characters which don't have a bitmap version in one of the bitmap fonts?\nConversely are there any bitmap characters without a corresponding outline character?");
-#endif
+    rgcd[0].gd.popup_msg = (unichar_t *) _("Are there any outline characters which don't have a bitmap version in one of the bitmap fonts?\nConversely are there any bitmap characters without a corresponding outline character?");
     rgcd[0].gd.cid = CID_Bitmaps;
     rgcd[0].creator = GCheckBoxCreate;
 
-    rlabel[1].text = (unichar_t *) _STR_AdvanceWidth;
+    rlabel[1].text = (unichar_t *) _("Check Advance:");
+    rlabel[1].text_is_1byte = true;
     rlabel[1].text_in_resource = true;
     rgcd[1].gd.label = &rlabel[1];
     rgcd[1].gd.mnemonic = 'W';
     rgcd[1].gd.pos.x = 3; rgcd[1].gd.pos.y = rgcd[0].gd.pos.y+21;
-    rgcd[1].gd.flags = gg_visible | gg_enabled;
+    rgcd[1].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( advancewidth ) rgcd[1].gd.flags |= gg_cb_on;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    rgcd[1].gd.popup_msg = GStringGetResource(_STR_AdvanceWidthPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    rgcd[1].gd.popup_msg = _("Check for characters whose advance width is not the displayed value.");
-#endif
+    rgcd[1].gd.popup_msg = (unichar_t *) _("Check for characters whose advance width is not the displayed value.");
     rgcd[1].gd.cid = CID_AdvanceWidth;
     rgcd[1].creator = GCheckBoxCreate;
 
@@ -3003,19 +2864,15 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rgcd[2].data = (void *) CID_AdvanceWidth;
     rgcd[2].creator = GTextFieldCreate;
 
-    rlabel[3].text = (unichar_t *) _STR_AdvanceVWidth;
-    rlabel[3].text_in_resource = true;
+    rlabel[3].text = (unichar_t *) _("Check VAdvance:\n");
+    rlabel[3].text_is_1byte = true;
     rgcd[3].gd.label = &rlabel[3];
     rgcd[3].gd.mnemonic = 'W';
     rgcd[3].gd.pos.x = 3; rgcd[3].gd.pos.y = rgcd[2].gd.pos.y+24;
-    rgcd[3].gd.flags = gg_visible | gg_enabled;
+    rgcd[3].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( !sf->hasvmetrics ) rgcd[3].gd.flags = gg_visible;
     else if ( vadvancewidth ) rgcd[3].gd.flags |= gg_cb_on;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    rgcd[3].gd.popup_msg = GStringGetResource(_STR_AdvanceVWidthPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    rgcd[3].gd.popup_msg = _("Check for characters whose vertical advance width is not the displayed value.");
-#endif
+    rgcd[3].gd.popup_msg = (unichar_t *) _("Check for characters whose vertical advance width is not the displayed value.");
     rgcd[3].gd.cid = CID_VAdvanceWidth;
     rgcd[3].creator = GCheckBoxCreate;
 
@@ -3032,45 +2889,33 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rgcd[4].data = (void *) CID_VAdvanceWidth;
     rgcd[4].creator = GTextFieldCreate;
 
-    rlabel[5].text = (unichar_t *) _STR_SubsToEmptyChar;
-    rlabel[5].text_in_resource = true;
+    rlabel[5].text = (unichar_t *) _("Check subtitutions for empty chars");
+    rlabel[5].text_is_1byte = true;
     rgcd[5].gd.label = &rlabel[5];
     rgcd[5].gd.pos.x = 3; rgcd[5].gd.pos.y = rgcd[4].gd.pos.y+24; 
-    rgcd[5].gd.flags = gg_visible | gg_enabled;
+    rgcd[5].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( badsubs ) rgcd[5].gd.flags |= gg_cb_on;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    rgcd[5].gd.popup_msg = GStringGetResource(_STR_SubsToEmptyCharPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    rgcd[5].gd.popup_msg = _("Check for characters which contain 'GSUB' entries which refer to empty characters");
-#endif
+    rgcd[5].gd.popup_msg = (unichar_t *) _("Check for characters which contain 'GSUB' entries which refer to empty characters");
     rgcd[5].gd.cid = CID_BadSubs;
     rgcd[5].creator = GCheckBoxCreate;
 
-    rlabel[6].text = (unichar_t *) _STR_MultipleUnicode;
-    rlabel[6].text_in_resource = true;
+    rlabel[6].text = (unichar_t *) _("Check multiple Unicode");
+    rlabel[6].text_is_1byte = true;
     rgcd[6].gd.label = &rlabel[6];
     rgcd[6].gd.pos.x = 3; rgcd[6].gd.pos.y = rgcd[5].gd.pos.y+17; 
-    rgcd[6].gd.flags = gg_visible | gg_enabled;
+    rgcd[6].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( multuni ) rgcd[6].gd.flags |= gg_cb_on;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    rgcd[6].gd.popup_msg = GStringGetResource(_STR_MultipleUnicode,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    rgcd[6].gd.popup_msg = _("Check multiple Unicode");
-#endif
+    rgcd[6].gd.popup_msg = (unichar_t *) _("Check multiple Unicode");
     rgcd[6].gd.cid = CID_MultUni;
     rgcd[6].creator = GCheckBoxCreate;
 
-    rlabel[7].text = (unichar_t *) _STR_MultipleName;
-    rlabel[7].text_in_resource = true;
+    rlabel[7].text = (unichar_t *) _("Check multiple Names");
+    rlabel[7].text_is_1byte = true;
     rgcd[7].gd.label = &rlabel[7];
     rgcd[7].gd.pos.x = 3; rgcd[7].gd.pos.y = rgcd[6].gd.pos.y+17; 
-    rgcd[7].gd.flags = gg_visible | gg_enabled;
+    rgcd[7].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( multname ) rgcd[7].gd.flags |= gg_cb_on;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    rgcd[7].gd.popup_msg = GStringGetResource(_STR_MultipleNamePopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    rgcd[7].gd.popup_msg = _("Check for muliple characters which with the same name");
-#endif
+    rgcd[7].gd.popup_msg = (unichar_t *) _("Check for muliple characters which with the same name");
     rgcd[7].gd.cid = CID_MultName;
     rgcd[7].creator = GCheckBoxCreate;
 
@@ -3079,33 +2924,27 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     memset(&clabel,0,sizeof(clabel));
     memset(&cgcd,0,sizeof(cgcd));
 
-    clabel[0].text = (unichar_t *) _STR_CIDMultiple;
+    clabel[0].text = (unichar_t *) _("Check for CIDs defined _twice");
+    clabel[0].text_is_1byte = true;
     clabel[0].text_in_resource = true;
     cgcd[0].gd.label = &clabel[0];
     cgcd[0].gd.mnemonic = 'S';
     cgcd[0].gd.pos.x = 3; cgcd[0].gd.pos.y = 6;
-    cgcd[0].gd.flags = gg_visible | gg_enabled;
+    cgcd[0].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( cidmultiple ) cgcd[0].gd.flags |= gg_cb_on;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    cgcd[0].gd.popup_msg = GStringGetResource(_STR_CIDMultiplePopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    cgcd[0].gd.popup_msg = _("Check whether a CID is defined in more than one sub-font");
-#endif
+    cgcd[0].gd.popup_msg = (unichar_t *) _("Check whether a CID is defined in more than one sub-font");
     cgcd[0].gd.cid = CID_CIDMultiple;
     cgcd[0].creator = GCheckBoxCreate;
 
-    clabel[1].text = (unichar_t *) _STR_CIDBlank;
+    clabel[1].text = (unichar_t *) _("Check for _undefined CIDs");
+    clabel[1].text_is_1byte = true;
     clabel[1].text_in_resource = true;
     cgcd[1].gd.label = &clabel[1];
     cgcd[1].gd.mnemonic = 'S';
     cgcd[1].gd.pos.x = 3; cgcd[1].gd.pos.y = cgcd[0].gd.pos.y+17; 
-    cgcd[1].gd.flags = gg_visible | gg_enabled;
+    cgcd[1].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( cidblank ) cgcd[1].gd.flags |= gg_cb_on;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    cgcd[1].gd.popup_msg = GStringGetResource(_STR_CIDBlankPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    cgcd[1].gd.popup_msg = _("Check whether a CID is undefined in all sub-fonts");
-#endif
+    cgcd[1].gd.popup_msg = (unichar_t *) _("Check whether a CID is undefined in all sub-fonts");
     cgcd[1].gd.cid = CID_CIDBlank;
     cgcd[1].creator = GCheckBoxCreate;
 
@@ -3114,45 +2953,36 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     memset(&alabel,0,sizeof(alabel));
     memset(&agcd,0,sizeof(agcd));
 
-    alabel[0].text = (unichar_t *) _STR_MissingGlyphCheck;
+    alabel[0].text = (unichar_t *) _("Check for _missing glyph names");
+    alabel[0].text_is_1byte = true;
     alabel[0].text_in_resource = true;
     agcd[0].gd.label = &alabel[0];
     agcd[0].gd.pos.x = 3; agcd[0].gd.pos.y = 6;
-    agcd[0].gd.flags = gg_visible | gg_enabled;
+    agcd[0].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( missingglyph ) agcd[0].gd.flags |= gg_cb_on;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    agcd[0].gd.popup_msg = GStringGetResource(_STR_MissingGlyphCheckPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    agcd[0].gd.popup_msg = _("Check whether a substitution, kerning class, etc. uses a glyph name which does not match any glyph in the font");
-#endif
+    agcd[0].gd.popup_msg = (unichar_t *) _("Check whether a substitution, kerning class, etc. uses a glyph name which does not match any glyph in the font");
     agcd[0].gd.cid = CID_MissingGlyph;
     agcd[0].creator = GCheckBoxCreate;
 
-    alabel[1].text = (unichar_t *) _STR_MissingLookupTag;
+    alabel[1].text = (unichar_t *) _("Check for missing _lookup tags");
+    alabel[1].text_is_1byte = true;
     alabel[1].text_in_resource = true;
     agcd[1].gd.label = &alabel[1];
     agcd[1].gd.pos.x = 3; agcd[1].gd.pos.y = agcd[0].gd.pos.y+17; 
-    agcd[1].gd.flags = gg_visible | gg_enabled;
+    agcd[1].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( missinglookuptag ) agcd[1].gd.flags |= gg_cb_on;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    agcd[1].gd.popup_msg = GStringGetResource(_STR_MissingLookupTagPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    agcd[1].gd.popup_msg = _("Check whether a contextual subtitution/positioning item refers to a tag which is not defined in the font");
-#endif
+    agcd[1].gd.popup_msg = (unichar_t *) _("Check whether a contextual subtitution/positioning item refers to a tag which is not defined in the font");
     agcd[1].gd.cid = CID_MissingLookupTag;
     agcd[1].creator = GCheckBoxCreate;
 
-    alabel[2].text = (unichar_t *) _STR_UsedDFLTscript;
+    alabel[2].text = (unichar_t *) _("Check for use of '_DFLT' script");
+    alabel[2].text_is_1byte = true;
     alabel[2].text_in_resource = true;
     agcd[2].gd.label = &alabel[2];
     agcd[2].gd.pos.x = 3; agcd[2].gd.pos.y = agcd[1].gd.pos.y+17; 
-    agcd[2].gd.flags = gg_visible | gg_enabled;
+    agcd[2].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( DFLTscript ) agcd[2].gd.flags |= gg_cb_on;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    agcd[2].gd.popup_msg = GStringGetResource(_STR_UsedDFLTscriptPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    agcd[2].gd.popup_msg = _("Use of the 'DFLT' script is not very informative.\nFontForge will occasionally make create an entry with\nthis script if it doesn't know what better to use.");
-#endif
+    agcd[2].gd.popup_msg = (unichar_t *) _("Use of the 'DFLT' script is not very informative.\nFontForge will occasionally make create an entry with\nthis script if it doesn't know what better to use.");
     agcd[2].gd.cid = CID_DFLTScript;
     agcd[2].creator = GCheckBoxCreate;
 
@@ -3163,34 +2993,34 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     memset(aspects,0,sizeof(aspects));
     i = 0;
 
-    aspects[i].text = (unichar_t *) _STR_PointsNoC;
+    aspects[i].text = (unichar_t *) _("Points");
     aspects[i].selected = true;
-    aspects[i].text_in_resource = true;
+    aspects[i].text_is_1byte = true;
     aspects[i++].gcd = pgcd;
 
-    aspects[i].text = (unichar_t *) _STR_Paths;
-    aspects[i].text_in_resource = true;
+    aspects[i].text = (unichar_t *) _("Paths");
+    aspects[i].text_is_1byte = true;
     aspects[i++].gcd = pagcd;
 
-    aspects[i].text = (unichar_t *) _STR_Refs;
-    aspects[i].text_in_resource = true;
+    aspects[i].text = (unichar_t *) _("Refs");
+    aspects[i].text_is_1byte = true;
     aspects[i++].gcd = rfgcd;
 
-    aspects[i].text = (unichar_t *) _STR_HintsNoC;
-    aspects[i].text_in_resource = true;
+    aspects[i].text = (unichar_t *) _("Hints");
+    aspects[i].text_is_1byte = true;
     aspects[i++].gcd = hgcd;
 
-    aspects[i].text = (unichar_t *) _STR_ATT;
-    aspects[i].text_in_resource = true;
+    aspects[i].text = (unichar_t *) _("ATT");
+    aspects[i].text_is_1byte = true;
     aspects[i++].gcd = agcd;
 
-    aspects[i].text = (unichar_t *) _STR_CID;
+    aspects[i].text = (unichar_t *) _("CID");
     aspects[i].disabled = fv->cidmaster==NULL;
-    aspects[i].text_in_resource = true;
+    aspects[i].text_is_1byte = true;
     aspects[i++].gcd = cgcd;
 
-    aspects[i].text = (unichar_t *) _STR_Random;
-    aspects[i].text_in_resource = true;
+    aspects[i].text = (unichar_t *) _("Random");
+    aspects[i].text_is_1byte = true;
     aspects[i++].gcd = rgcd;
 
     mgcd[0].gd.pos.x = 4; mgcd[0].gd.pos.y = 6;
@@ -3202,7 +3032,8 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
 
     mgcd[1].gd.pos.x = 15; mgcd[1].gd.pos.y = 190+10;
     mgcd[1].gd.flags = gg_visible | gg_enabled | gg_dontcopybox;
-    mlabel[1].text = (unichar_t *) _STR_ClearAll;
+    mlabel[1].text = (unichar_t *) _("Clear All");
+    mlabel[1].text_is_1byte = true;
     mlabel[1].text_in_resource = true;
     mgcd[1].gd.label = &mlabel[1];
     /*mgcd[1].gd.box = &smallbox;*/
@@ -3213,7 +3044,8 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     mgcd[2].gd.pos.x = mgcd[1].gd.pos.x+1.25*GIntGetResource(_NUM_Buttonsize);
     mgcd[2].gd.pos.y = mgcd[1].gd.pos.y;
     mgcd[2].gd.flags = gg_visible | gg_enabled | gg_dontcopybox;
-    mlabel[2].text = (unichar_t *) _STR_SetAll;
+    mlabel[2].text = (unichar_t *) _("Set All");
+    mlabel[2].text_is_1byte = true;
     mlabel[2].text_in_resource = true;
     mgcd[2].gd.label = &mlabel[2];
     /*mgcd[2].gd.box = &smallbox;*/
@@ -3226,8 +3058,8 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     mgcd[3].gd.flags = gg_visible | gg_enabled;
     mgcd[3].creator = GLineCreate;
 
-    mlabel[4].text = (unichar_t *) _STR_PointsNear;
-    mlabel[4].text_in_resource = true;
+    mlabel[4].text = (unichar_t *) U_("¹ \"Near\" means within");
+    mlabel[4].text_is_1byte = true;
     mgcd[4].gd.label = &mlabel[4];
     mgcd[4].gd.mnemonic = 'N';
     mgcd[4].gd.pos.x = 6; mgcd[4].gd.pos.y = mgcd[3].gd.pos.y+6+6;
@@ -3243,8 +3075,8 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     mgcd[5].gd.cid = CID_Near;
     mgcd[5].creator = GTextFieldCreate;
 
-    mlabel[6].text = (unichar_t *) _STR_EmUnits;
-    mlabel[6].text_in_resource = true;
+    mlabel[6].text = (unichar_t *) _("em-units");
+    mlabel[6].text_is_1byte = true;
     mgcd[6].gd.label = &mlabel[6];
     mgcd[6].gd.pos.x = mgcd[5].gd.pos.x+mgcd[5].gd.pos.width+4; mgcd[6].gd.pos.y = mgcd[4].gd.pos.y;
     mgcd[6].gd.flags = gg_visible | gg_enabled;
@@ -3253,7 +3085,8 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     mgcd[7].gd.pos.x = 15-3; mgcd[7].gd.pos.y = mgcd[5].gd.pos.y+26;
     mgcd[7].gd.pos.width = -1; mgcd[7].gd.pos.height = 0;
     mgcd[7].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    mlabel[7].text = (unichar_t *) _STR_OK;
+    mlabel[7].text = (unichar_t *) _("_OK");
+    mlabel[7].text_is_1byte = true;
     mlabel[7].text_in_resource = true;
     mgcd[7].gd.mnemonic = 'O';
     mgcd[7].gd.label = &mlabel[7];
@@ -3263,7 +3096,8 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     mgcd[8].gd.pos.x = -15; mgcd[8].gd.pos.y = mgcd[7].gd.pos.y+3;
     mgcd[8].gd.pos.width = -1; mgcd[8].gd.pos.height = 0;
     mgcd[8].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    mlabel[8].text = (unichar_t *) _STR_Cancel;
+    mlabel[8].text = (unichar_t *) _("_Cancel");
+    mlabel[8].text_is_1byte = true;
     mlabel[8].text_in_resource = true;
     mgcd[8].gd.label = &mlabel[8];
     mgcd[8].gd.mnemonic = 'C';

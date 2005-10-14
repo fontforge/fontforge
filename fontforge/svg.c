@@ -440,9 +440,7 @@ static void svg_scdump(FILE *file, SplineChar *sc,int defwid, int encuni) {
 
     best = HasLigature(sc);
     if ( sc->comment!=NULL ) {
-	char *temp = u2utf8_copy(sc->comment);
-	fprintf( file, "\n<!--\n%s\n-->\n",temp );
-	free(temp);
+	fprintf( file, "\n<!--\n%s\n-->\n",sc->comment );
     }
     fprintf(file,"    <glyph glyph-name=\"%s\" ",sc->name );
     if ( best!=NULL ) {
@@ -775,7 +773,7 @@ static int libxml_init_base() {
     if ( xmltested )
 return( libxml!=NULL );
 
-    libxml = dlopen("libxml2" SO_EXT,RTLD_LAZY);
+    libxml = dlopen( "libxml2" SO_EXT,RTLD_LAZY);
     xmltested = true;
     if ( libxml==NULL )
 return( false );
@@ -862,19 +860,19 @@ return( fonts );
 
 static xmlNodePtr SVGPickFont(xmlNodePtr *fonts,char *filename) {
     int cnt;
-    unichar_t **names;
+    char **names;
     xmlChar *name;
     char *pt, *lparen;
     int choice;
 
     for ( cnt=0; fonts[cnt]!=NULL; ++cnt);
-    names = galloc((cnt+1)*sizeof(unichar_t *));
+    names = galloc((cnt+1)*sizeof(char *));
     for ( cnt=0; fonts[cnt]!=NULL; ++cnt) {
 	name = _xmlGetProp(fonts[cnt],(xmlChar *) "id");
 	if ( name==NULL ) {
-	    names[cnt] = uc_copy("nameless-font");
+	    names[cnt] = copy("nameless-font");
 	} else {
-	    names[cnt] = utf82u_copy((char *) name);
+	    names[cnt] = copy((char *) name);
 	    _xmlFree(name);
 	}
     }
@@ -888,30 +886,21 @@ static xmlNodePtr SVGPickFont(xmlNodePtr *fonts,char *filename) {
 	pt = strchr(find,')');
 	if ( pt!=NULL ) *pt='\0';
 	for ( choice=cnt-1; choice>=0; --choice )
-	    if ( uc_strcmp(names[choice],find)==0 )
+	    if ( strcmp(names[choice],find)==0 )
 	break;
 	if ( choice==-1 ) {
 	    char *fn = copy(filename);
 	    fn[lparen-filename] = '\0';
-#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Not in Collection"),_("%s is not in %.100s"),find,fn);
-#else
-	    GWidgetErrorR(_STR_NotInCollection,_STR_FontNotInCollection,find,fn);
-#endif
 	    free(fn);
 	}
 	free(find);
-#if defined(FONTFORGE_CONFIG_GDRAW)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
     } else if ( no_windowing_ui )
 	choice = 0;
     else
-	choice = GWidgetChoicesR(_STR_PickFont,(const unichar_t **) names,cnt,0,_STR_MultipleFontsPick);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    } else if ( no_windowing_ui )
-	choice = 0;
-    else
-	choice = gwwv_choose(_("Pick a font, any font..."),(const unichar_t **) names,cnt,0,_("There are multiple fonts in this file, pick one"));
-#elif defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
+	choice = gwwv_choose(_("Pick a font, any font..."),(const char **) names,cnt,0,_("There are multiple fonts in this file, pick one"));
+#else
     } else
 	choice = 0;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
@@ -1293,7 +1282,7 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 		    SVGTraceArc(cur,&current,x,y,rx,ry,axisrot,large_arc,sweep);
 	      break;
 	      default:
-		LogError("Unknown type '%c' found in path specification\n", type );
+		LogError( _("Unknown type '%c' found in path specification\n"), type );
 	      break;
 	    }
 	}
@@ -1781,7 +1770,7 @@ static int xmlParseColor(xmlChar *name,uint32 *color) {
 			 ( ((int) b)     );
 	    }
 	} else {
-	    LogError( "Failed to parse color %s\n", (char *) name );
+	    LogError( _("Failed to parse color %s\n"), (char *) name );
 	    *color = COLOR_INHERITED;
 	}
     }
@@ -2363,7 +2352,7 @@ static SplineFont *SVGParseFont(xmlNodePtr font) {
 		if ( defh==0 ) defh = val;
 		SFDefaultOS2Simple(&sf->pfminfo,sf);
 	    } else {
-		LogError( "This font does not specify units-per-em\n" );
+		LogError( _("This font does not specify units-per-em\n") );
 		SplineFontFree(sf);
 return( NULL );
 	    }
@@ -2497,7 +2486,7 @@ return( NULL );
 	    ++cnt;
     }
     if ( sf->descent==0 ) {
-	LogError( "This font does not specify font-face\n" );
+	LogError( _("This font does not specify font-face\n") );
 	SplineFontFree(sf);
 return( NULL );
     }
@@ -2517,9 +2506,7 @@ return( NULL );
 	sprintf(sf->xuid,"[%s %d]", xuid, (rand()&0xffffff));
     }
 
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressChangeTotal(cnt);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
     gwwv_progress_change_total(cnt);
 #endif
     sf->glyphcnt = sf->glyphmax = cnt;
@@ -2533,9 +2520,7 @@ return( NULL );
 		sf->glyphs[cnt]->orig_pos = cnt;
 		cnt++;
 	    }
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GProgressNext();
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 	    gwwv_progress_next();
 #endif
 	} else if ( _xmlStrcmp(kids->name,(const xmlChar *) "glyph")==0 ) {
@@ -2544,9 +2529,7 @@ return( NULL );
 		sf->glyphs[cnt]->orig_pos = cnt;
 		cnt++;
 	    }
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GProgressNext();
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 	    gwwv_progress_next();
 #endif
 	}
@@ -2685,7 +2668,7 @@ SplineFont *SFReadSVG(char *filename, int flags) {
     char *chosenname = NULL;
 
     if ( !libxml_init_base()) {
-	LogError( "Can't find libxml2.\n" );
+	LogError( _("Can't find libxml2.\n") );
 return( NULL );
     }
 
@@ -2706,7 +2689,7 @@ return( NULL );
 
     fonts = FindSVGFontNodes(doc);
     if ( fonts==NULL || fonts[0]==NULL ) {
-	LogError( "This file contains no SVG fonts.\n" );
+	LogError( _("This file contains no SVG fonts.\n") );
 	_xmlFreeDoc(doc);
 return( NULL );
     }
@@ -2738,12 +2721,11 @@ char **NamesReadSVG(char *filename) {
     xmlNodePtr *fonts;
     xmlDocPtr doc;
     char **ret=NULL;
-    unichar_t *utemp;
     int cnt;
     xmlChar *name;
 
     if ( !libxml_init_base()) {
-	LogError( "Can't find libxml2.\n" );
+	LogError( _("Can't find libxml2.\n") );
 return( NULL );
     }
 
@@ -2766,9 +2748,7 @@ return( NULL );
 	if ( name==NULL ) {
 	    ret[cnt] = copy("nameless-font");
 	} else {
-	    utemp = utf82u_copy((char *) name);
-	    ret[cnt] = cu_copy(utemp);
-	    free(utemp);
+	    ret[cnt] = copy(name);
 	    _xmlFree(name);
 	}
     }
@@ -2788,7 +2768,7 @@ Entity *EntityInterpretSVG(char *filename,int em_size,int ascent) {
     int order2;
 
     if ( !libxml_init_base()) {
-	LogError( "Can't find libxml2.\n" );
+	LogError( _("Can't find libxml2.\n") );
 return( NULL );
     }
     doc = _xmlParseFile(filename);
@@ -2799,7 +2779,7 @@ return( NULL );
 
     top = _xmlDocGetRootElement(doc);
     if ( _xmlStrcmp(top->name,(xmlChar *) "svg")!=0 ) {
-	LogError( "%s does not contain an <svg> element at the top\n", filename);
+	LogError( _("%s does not contain an <svg> element at the top\n"), filename);
 	_xmlFreeDoc(doc);
 return( NULL );
     }

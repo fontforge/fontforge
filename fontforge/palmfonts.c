@@ -181,7 +181,7 @@ static SplineFont *PalmTestFont(FILE *file,int end, char *family,char *style) {
 
     type = getushort(file);
     if ( type==0x0090 || type==0x0092 ) {
-	LogError( "Warning: Byte swapped font mark in palm font.\n" );
+	LogError( _("Warning: Byte swapped font mark in palm font.\n") );
 	type = type<<8;
     }
     if ( (type&0x9000)!=0x9000 )
@@ -297,7 +297,7 @@ return( NULL );
     /* Now test for a font bucket structure */
     version = getc(file); /* version number of font bucket format. currently 0 */
     if ( version==4 ) {
-	LogError( "Warning: Font Bucket version 4 treated as 0.\n" );
+	LogError( _("Warning: Font Bucket version 4 treated as 0.\n") );
 	version=0;
     }
     if ( version!=0 )
@@ -388,7 +388,7 @@ static FILE *MakeFewRecordPdb(char *filename,int cnt) {
     file = fopen(fn,"wb");
     if ( file==NULL ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_CouldNotOpenFile,_STR_CouldNotOpenFileName,fn);
+	gwwv_post_error(_("Couldn't open file"),_("Couldn't open file %.200s"),fn);
 #elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Could not open file"),_("Could not open file %.200s"), fn);
 #endif
@@ -464,7 +464,7 @@ return( true );
 
     if ( test==base && map->enc->char_cnt>=256 )
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetPostNoticeR(_STR_BadMetrics,_STR_OnlyFirst256);
+	gwwv_post_notice(_("Bad Metrics"),_("Only the first 256 glyphs in the encoding will be used"));
 #elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_notice(_("Bad Metrics"),_("Only the first 256 glyphs in the encoding will be used"));
 #endif
@@ -472,7 +472,7 @@ return( true );
     for ( i=0; i<map->enccount && i<256; ++i ) if ( (gid=map->map[i])!=-1 && (test->glyphs[gid]!=NULL || base->glyphs[gid]!=NULL )) {
 	if ( base->glyphs[gid]==NULL || test->glyphs[gid]==NULL ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_BadMetrics,_STR_NoCorrespondingGlyph,
+	    gwwv_post_error(_("Bad Metrics"),_("One of the fonts %1$d,%2$d is missing glyph %3$d"),
 		    test->pixelsize,base->pixelsize, i);
 #elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_notice(_("Bad Metrics"),_("One of the fonts %d,%d is missing glyph %d"),
@@ -486,7 +486,7 @@ return( false );
 		 test->glyphs[gid]->ymax>=test->ascent ||
 		 test->glyphs[gid]->ymin<-test->descent)) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetPostNoticeR(_STR_BadMetrics,_STR_GlyphKernsBadly,
+	    gwwv_post_notice(_("Bad Metrics"),_("In font %1$d the glyph %2$.30s either starts before 0, or extends after the advance width or is above the ascent or below the descent"),
 		    test->pixelsize,test->glyphs[gid]->sc->name);
 #elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Bad Metrics"),_("In font %d the glyph %.30s either starts before 0, or extends after the advance width or is above the ascent or below the descent"),
@@ -496,7 +496,7 @@ return( false );
 	}
 	if ( !wwarned && test->glyphs[gid]->width!=den*base->glyphs[gid]->width ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetPostNoticeR(_STR_BadMetrics,_STR_AdvanceWidthBad,
+	    gwwv_post_notice(_("Bad Metrics"),_("In font %1$d the advance width of glyph %2$.30s does not scale the base advance width properly, it shall be forced to the proper value"),
 		    test->pixelsize,test->glyphs[gid]->sc->name);
 #elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_notice(_("Bad Metrics"),_("In font %d the advance width of glyph %.30s does not scale the base advance width properly, it shall be forced to the proper value"),
@@ -506,7 +506,7 @@ return( false );
 	}
 	if ( base->glyphs[gid]->width>127 ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_BadMetrics,_STR_AdvanceWidthTooBig,
+	    gwwv_post_error(_("Bad Metrics"),_("Advance width of glyph %.30s must be less than 127"),
 		    test->pixelsize,test->glyphs[gid]->sc->name);
 #elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Bad Metrics"),_("Advance width of glyph %.30s must be less than 127"),
@@ -633,7 +633,7 @@ return( false );
 	den = temp->pixelsize/base->pixelsize;
 	if ( temp->pixelsize!=base->pixelsize*den || den>4 ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_UnexpectedDensity,_STR_UnexpectedDensityLong,
+	    gwwv_post_error(_("Unexpected density"),_("One of the bitmap fonts, %1$d, specified is not an integral scale up of the smallest font, %2$d (or is too large a factor)"),
 		    temp->pixelsize,base->pixelsize);
 #elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Unexpected density"),_("One of the bitmap fonts, %d, specified is not an integral scale up of the smallest font, %d (or is too large a factor)"),
@@ -655,22 +655,14 @@ return( false );
     if ( no_windowing_ui && dencnt>1 )
 	fonttype = 3;
     else if ( dencnt>1 ) {
-	const unichar_t *choices[5];
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	choices[0] = GStringGetResource(_STR_MultiDenFont,NULL);
-	choices[1] = GStringGetResource(_STR_HighDenFont,NULL);
-	choices[2] = GStringGetResource(_STR_SingleDenMultiDenFont,NULL);
-	choices[3] = GStringGetResource(_STR_SingleDenHighDenFont,NULL);
-	choices[4] = NULL;
-	fonttype = GWidgetChoicesR(_STR_WhatTypePalmFont,choices,4,3,
-		_STR_WhatTypePalmFont);
-#elif defined(FONTFORGE_CONFIG_GTK)
+	char *choices[5];
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	choices[0] = _("Multiple-Density Font");
 	choices[1] = _("High-Density Font");
 	choices[2] = _("Single and Multi-Density Fonts");
 	choices[3] = _("Single and High-Density Fonts");
 	choices[4] = NULL;
-	fonttype = gwwv_choose(_("Choose a file format..."),(const unichar_t **) choices,4,3,_("What type(s) of palm font records do you want?"));
+	fonttype = gwwv_choose(_("Choose a file format..."),(const char **) choices,4,3,_("What type(s) of palm font records do you want?"));
 #endif
 	if ( fonttype==-1 )
 return( false );

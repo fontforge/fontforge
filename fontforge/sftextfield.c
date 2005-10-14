@@ -1004,27 +1004,16 @@ static int GTForePos(SFTextArea *st,int pos, int ismeta) {
 return( newpos );
 }
 
-static unichar_t txt[] = { '*','.','t','x','t',  '\0' };
-static unichar_t errort[] = { 'C','o','u','l','d',' ','n','o','t',' ','o','p','e','n',  '\0' };
-static unichar_t error[] = { 'C','o','u','l','d',' ','n','o','t',' ','o','p','e','n',' ','%','.','1','0','0','h','s',  '\0' };
-
 static void SFTextAreaImport(SFTextArea *st) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    unichar_t *ret = GWidgetOpenFile(GStringGetResource(_STR_Open,NULL),NULL,
-#elif defined(FONTFORGE_CONFIG_GTK)
-    unichar_t *ret = GWidgetOpenFile(_("Open"),NULL,
-#endif
-	    txt,NULL,NULL);
-    char *cret;
+    char *cret = gwwv_open_filename(_("Open"),NULL,
+	    "*.txt",NULL,NULL);
     unichar_t *str;
 
-    if ( ret==NULL )
+    if ( cret==NULL )
 return;
-    cret = u2def_copy(ret);
-    free(ret);
     str = _GGadgetFileToUString(cret,65536);
     if ( str==NULL ) {
-	GWidgetError(errort,error,cret);
+	gwwv_post_error(_("Could not open"),_("Could not open %.100s"),cret);
 	free(cret);
 return;
     }
@@ -1034,23 +1023,16 @@ return;
 }
 
 static void SFTextAreaSave(SFTextArea *st) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    unichar_t *ret = GWidgetSaveAsFile(GStringGetResource(_STR_Save,NULL),NULL,
-#elif defined(FONTFORGE_CONFIG_GTK)
-    unichar_t *ret = GWidgetSaveAsFile(_("Save"),NULL,
-#endif
-	    txt,NULL,NULL);
-    char *cret;
+    char *cret = gwwv_save_filename(_("Save"),NULL,
+	    "*.txt",NULL,NULL);
     FILE *file;
     unichar_t *pt;
 
-    if ( ret==NULL )
+    if ( cret==NULL )
 return;
-    cret = u2def_copy(ret);
-    free(ret);
     file = fopen(cret,"w");
     if ( file==NULL ) {
-	GWidgetError(errort,error,cret);
+	gwwv_post_error(_("Could not open"),_("Could not open %.100s"),cret);
 	free(cret);
 return;
     }
@@ -1110,19 +1092,29 @@ return;
 }
 
 static GMenuItem sftf_popuplist[] = {
-    { { (unichar_t *) _STR_Undo, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'U' }, 'Z', ksm_control, NULL, NULL, SFTFPopupInvoked, MID_Undo },
+    { { (unichar_t *) N_("_Undo"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'U' }, 'Z', ksm_control, NULL, NULL, SFTFPopupInvoked, MID_Undo },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Cut, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 't' }, 'X', ksm_control, NULL, NULL, SFTFPopupInvoked, MID_Cut },
-    { { (unichar_t *) _STR_Copy, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'C' }, 'C', ksm_control, NULL, NULL, SFTFPopupInvoked, MID_Copy },
-    { { (unichar_t *) _STR_Paste, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'P' }, 'V', ksm_control, NULL, NULL, SFTFPopupInvoked, MID_Paste },
+    { { (unichar_t *) N_("Cu_t"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 't' }, 'X', ksm_control, NULL, NULL, SFTFPopupInvoked, MID_Cut },
+    { { (unichar_t *) N_("_Copy"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, 'C', ksm_control, NULL, NULL, SFTFPopupInvoked, MID_Copy },
+    { { (unichar_t *) N_("_Paste"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, 'V', ksm_control, NULL, NULL, SFTFPopupInvoked, MID_Paste },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_Save, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, 'S', ksm_control, NULL, NULL, SFTFPopupInvoked, MID_Save },
-    { { (unichar_t *) _STR_Import, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'I' }, 'I', ksm_control, NULL, NULL, SFTFPopupInvoked, MID_Import },
+    { { (unichar_t *) N_("_Save"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'S' }, 'S', ksm_control, NULL, NULL, SFTFPopupInvoked, MID_Save },
+    { { (unichar_t *) N_("_Import..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, 'I', ksm_control, NULL, NULL, SFTFPopupInvoked, MID_Import },
     { NULL }
 };
 
 static void SFTFPopupMenu(SFTextArea *st, GEvent *event) {
     int no_sel = st->sel_start==st->sel_end;
+    static int done = false;
+
+    if ( !done ) {
+	int i;
+	for ( i=0; sftf_popuplist[i].ti.text!=NULL || sftf_popuplist[i].ti.line; ++i )
+	    if ( sftf_popuplist[i].ti.text!=NULL )
+		sftf_popuplist[i].ti.text = (unichar_t *) _( (char *) sftf_popuplist[i].ti.text);
+	done = true;
+    }
+
     sftf_popuplist[0].ti.disabled = st->oldtext==NULL;	/* Undo */
     sftf_popuplist[2].ti.disabled = no_sel;		/* Cut */
     sftf_popuplist[3].ti.disabled = no_sel;		/* Copy */
@@ -2398,10 +2390,10 @@ static SFTextArea *_SFTextAreaCreate(SFTextArea *st, struct gwindow *base, GGadg
 
     st->g.takes_input = true; st->g.takes_keyboard = true; st->g.focusable = true;
     if ( gd->label!=NULL ) {
-	if ( gd->label->text_in_resource )
+	if ( gd->label->text_in_resource )	/* This one use of GStringGetResource is ligit */
 	    st->text = u_copy((unichar_t *) GStringGetResource((int) gd->label->text,&st->g.mnemonic));
 	else if ( gd->label->text_is_1byte )
-	    st->text = /* def2u_*/ uc_copy((char *) gd->label->text);
+	    st->text = utf82u_copy((char *) gd->label->text);
 	else
 	    st->text = u_copy(gd->label->text);
 	st->sel_start = st->sel_end = st->sel_base = u_strlen(st->text);

@@ -398,7 +398,7 @@ static void dodiff( SplineFont *sf1, SplineFont *sf2, int checkhints,
 	    }
 	    if (! ( (sc->comment==NULL && sc1->comment==NULL) ||
 		    (sc->comment!=NULL && sc1->comment!=NULL &&
-			    u_strcmp(sc->comment,sc1->comment)==0) )) {
+			    strcmp(sc->comment,sc1->comment)==0) )) {
 		if ( !any ) printf( "Differences in Enc=%-5d U+%04X %s\n",
 			sc1->orig_pos, sc1->unicodeenc, sc1->name );
 		printf( "\tComments are different\n" );

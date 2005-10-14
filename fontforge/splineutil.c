@@ -1693,7 +1693,7 @@ static void InstanciateReference(SplineFont *sf, RefChar *topref, RefChar *refs,
 	    refs->unicode_enc = rsc->unicodeenc;
 	    SCMakeDependent(dsc,rsc);
 	} else {
-	    LogError( "Couldn't find referenced character \"%s\" in %s\n",
+	    LogError( _("Couldn't find referenced character \"%s\" in %s\n"),
 		    AdobeStandardEncoding[refs->adobe_enc], dsc->name);
 return;
 	}
@@ -2037,7 +2037,7 @@ static void _SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext 
 	    SCLigDefault(sf->glyphs[i]);		/* Also reads from AFM file, but it probably doesn't exist */
 	}
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	GProgressNext();
+	gwwv_progress_next();
 #elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_progress_next();
 #endif
@@ -2103,7 +2103,7 @@ static SplineFont *SplineFontFromMMType1(SplineFont *sf, FontDict *fd, struct ps
 #if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad Multiple Master Font"),_("Bad Multiple Master Font"));
 #else
-	GWidgetErrorR(_STR_BadMM,_STR_BadMM);
+	gwwv_post_error(_("Bad Multiple Master Font"),_("Bad Multiple Master Font"));
 #endif
 	SplineFontFree(sf);
 return( NULL );
@@ -2120,7 +2120,7 @@ return( NULL );
     break;
 	++(pscontext->instance_count);
 	if ( pscontext->instance_count>=sizeof(pscontext->blend_values)/sizeof(pscontext->blend_values[0])) {
-	    LogError( "Multiple master font with more than 16 instances\n" );
+	    LogError( _("Multiple master font with more than 16 instances\n") );
     break;
 	}
 	for ( pt = end; *pt==' '; ++pt );
@@ -2145,7 +2145,7 @@ return( NULL );
 	if ( pt==end )
     break;
 	if ( mm->axis_count>=sizeof(mm->axes)/sizeof(mm->axes[0])) {
-	    LogError( "Multiple master font with more than 4 axes\n" );
+	    LogError( _("Multiple master font with more than 4 axes\n") );
     break;
 	}
 	mm->axes[ mm->axis_count++ ] = copyn( pt,end-pt );
@@ -2156,13 +2156,13 @@ return( NULL );
 #if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad Multiple Master Font"),_("This multiple master font has %1$d instance fonts, but it needs at least %2$d master fonts for %3$d axes. FontForge will not be able to edit this correctly"),mm->instance_count,1<<mm->axis_count,mm->axis_count);
 #else
-	GWidgetErrorR(_STR_BadMM,_STR_MMTooFewMasters,mm->instance_count,1<<mm->axis_count,mm->axis_count);
+	gwwv_post_error(_("Bad Multiple Master Font"),_("This multiple master font has %1$d instance fonts, but it needs at least %2$d master fonts for %3$d axes. FontForge will not be able to edit this correctly"),mm->instance_count,1<<mm->axis_count,mm->axis_count);
 #endif
     else if ( mm->instance_count > (1<<mm->axis_count) )
 #if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad Multiple Master Font"),_("This multiple master font has %1$d instance fonts, but FontForge can only handle %2$d master fonts for %3$d axes. FontForge will not be able to edit this correctly"),mm->instance_count,1<<mm->axis_count,mm->axis_count);
 #else
-	GWidgetErrorR(_STR_BadMM,_STR_MMHasInstances,mm->instance_count,1<<mm->axis_count,mm->axis_count);
+	gwwv_post_error(_("Bad Multiple Master Font"),_("This multiple master font has %1$d instance fonts, but FontForge can only handle %2$d master fonts for %3$d axes. FontForge will not be able to edit this correctly"),mm->instance_count,1<<mm->axis_count,mm->axis_count);
 #endif
     mm->positions = gcalloc(mm->axis_count*mm->instance_count,sizeof(real));
     pt = fd->fontinfo->blenddesignpositions;
@@ -2180,7 +2180,7 @@ return( NULL );
 	    apos=0;
 	    while ( *pt!=']' && *pt!='\0' ) {
 		if ( apos>=mm->axis_count ) {
-		    LogError( "Too many axis positions specified in /BlendDesignPositions.\n" );
+		    LogError( _("Too many axis positions specified in /BlendDesignPositions.\n") );
 	    break;
 		}
 		mm->positions[ipos*mm->axis_count+apos] =
@@ -2212,7 +2212,7 @@ return( NULL );
 	    ppos=0;
 	    while ( *pt!=']' && *pt!='\0' ) {
 		if ( ppos>=12 ) {
-		    LogError( "Too many mapping data points specified in /BlendDesignMap for axis %s.\n", mm->axes[apos] );
+		    LogError( _("Too many mapping data points specified in /BlendDesignMap for axis %s.\n"), mm->axes[apos] );
 	    break;
 		}
 		while ( *pt==' ' ) ++pt;
@@ -2221,7 +2221,7 @@ return( NULL );
 		    designs[ppos] = strtod(pt,&end);
 		    blends[ppos] = strtod(end,&end);
 		    if ( blends[ppos]<0 || blends[ppos]>1 ) {
-			LogError( "Bad value for blend in /BlendDesignMap for axis %s.\n", mm->axes[apos] );
+			LogError( _("Bad value for blend in /BlendDesignMap for axis %s.\n"), mm->axes[apos] );
 			if ( blends[ppos]<0 ) blends[ppos] = 0;
 			if ( blends[ppos]>1 ) blends[ppos] = 1;
 		    }
@@ -2234,7 +2234,7 @@ return( NULL );
 	    }
 	    if ( *pt==']' ) ++pt;
 	    if ( ppos<2 )
-		LogError( "Bad few values in /BlendDesignMap for axis %s.\n", mm->axes[apos] );
+		LogError( _("Bad few values in /BlendDesignMap for axis %s.\n"), mm->axes[apos] );
 	    mm->axismaps[apos].points = ppos;
 	    mm->axismaps[apos].blends = galloc(ppos*sizeof(real));
 	    mm->axismaps[apos].designs = galloc(ppos*sizeof(real));
@@ -2346,7 +2346,7 @@ static SplineFont *SplineFontFromCIDType1(SplineFont *sf, FontDict *fd,
 	if ( fd->fds[i]->fonttype!=1 && fd->fds[i]->fonttype!=2 )
 	    bad = fd->fds[i]->fonttype;
     if ( bad!=0x80000000 || fd->cidfonttype!=0 ) {
-	LogError("Could not parse a CID font, %sCIDFontType %d, %sfonttype %d\n",
+	LogError( _("Could not parse a CID font, %sCIDFontType %d, %sfonttype %d\n"),
 		( fd->cidfonttype!=0 ) ? "unexpected " : "",
 		( bad!=0x80000000 ) ? "unexpected " : "",
 		fd->cidfonttype, bad );
@@ -2354,7 +2354,7 @@ static SplineFont *SplineFontFromCIDType1(SplineFont *sf, FontDict *fd,
 return( NULL );
     }
     if ( fd->cidstrs==NULL || fd->cidcnt==0 ) {
-	LogError( "CID format doesn't contain what we expected it to.\n" );
+	LogError( _("CID format doesn't contain what we expected it to.\n") );
 	SplineFontFree(sf);
 return( NULL );
     }
@@ -2394,7 +2394,7 @@ return( NULL );
 	    IError( "Reference found in CID font. Can't fix it up");
 	sf->subfonts[j]->glyphcnt = sf->subfonts[j]->glyphmax = i+1;
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	GProgressNext();
+	gwwv_progress_next();
 #elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_progress_next();
 #endif

@@ -132,12 +132,12 @@ static const char *toknames[] = {
     "End Of File",
     NULL };
 
-static char *u2script_copy(unichar_t *ustr) {
-return( use_utf8_in_script ? u2utf8_copy(ustr) : cu_copy(ustr));
+static char *utf82script_copy(char *ustr) {
+return( use_utf8_in_script ? copy(ustr) : utf8_2_latin1_copy(ustr));
 }
 
-static unichar_t *script2u_copy(char *str) {
-return( use_utf8_in_script ? utf82u_copy(str) : uc_copy(str));
+static char *script2utf8_copy(char *str) {
+return( use_utf8_in_script ? copy(str) : latin1_2_utf8_copy(str));
 }
 
 static char *script2latin1_copy(char *str) {
@@ -246,8 +246,8 @@ static void calldatafree(Context *c) {
 static void traceback(Context *c) {
     int cnt = 0;
     while ( c!=NULL ) {
-	if ( cnt==1 ) LogError( "Called from...\n" );
-	if ( cnt>0 ) LogError( " %s: line %d\n", c->filename, c->lineno );
+	if ( cnt==1 ) LogError( _("Called from...\n") );
+	if ( cnt>0 ) LogError( _(" %s: line %d\n"), c->filename, c->lineno );
 	calldatafree(c);
 	if ( c->err_env!=NULL )
 	    longjmp(*c->err_env,1);
@@ -273,12 +273,12 @@ static void showtoken(Context *c,enum token_type got) {
 
 static void expect(Context *c,enum token_type expected, enum token_type got) {
     if ( got!=expected ) {
-	LogError( "%s: %d Expected %s, got %s",
+	LogError( _("%s: %d Expected %s, got %s"),
 		c->filename, c->lineno, toknames[expected], toknames[got] );
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	if ( !no_windowing_ui ) {
-	    static unichar_t umsg[] = { '%','h','s',':',' ','%','d',' ','E','x','p','e','c','t','e','d',' ','%','h','s',',',' ','g','o','t',' ','%','h','s',  0 };
-	    GWidgetError(NULL,umsg,c->filename, c->lineno, toknames[expected], toknames[got] );
+	    gwwv_post_error(NULL,_("%1$s: %2$d. Expected %3$s got %4$s"),
+		    c->filename, c->lineno, toknames[expected], toknames[got] );
 	}
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	showtoken(c,got);
@@ -286,34 +286,33 @@ static void expect(Context *c,enum token_type expected, enum token_type got) {
 }
 
 static void unexpected(Context *c,enum token_type got) {
-    LogError( "%s: %d Unexpected %s found",
+    LogError( _("%s: %d Unexpected %s found"),
 	    c->filename, c->lineno, toknames[got] );
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( !no_windowing_ui ) {
-	static unichar_t umsg[] = { '%','h','s',':',' ','%','d',' ','U','n','e','x','p','e','c','t','e','d',' ','%','h','s',  0 };
-	GWidgetError(NULL,umsg,c->filename, c->lineno, toknames[got] );
+	gwwv_post_error(NULL,"%1$s: %2$d Unexpected %3$",
+		c->filename, c->lineno, toknames[got] );
     }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     showtoken(c,got);
 }
 
 static void error( Context *c, char *msg ) {
-    unichar_t *t1 = script2u_copy(msg);
-    char *loc = u2def_copy(t1);
+    char *t1 = script2utf8_copy(msg);
+    char *loc = utf82def_copy(t1);
 
     /* All of fontforge's internal errors are in ASCII where there is */
     /*  no difference between latin1 and utf8. User errors are a different */
     /*  matter */
 
     if ( c->lineno!=0 )
-	LogError( "%s line: %d %s\n", c->filename, c->lineno, loc );
+	LogError( _("%s line: %d %s\n"), c->filename, c->lineno, loc );
     else
 	LogError( "%s: %s\n", c->filename, loc );
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( !no_windowing_ui ) {
-	static unichar_t umsg[] = { '%','s',':',' ','%','d',' ','%','s',  0 };
-	unichar_t *temp = def2u_copy(c->filename);
-	GWidgetError(NULL,umsg,temp, c->lineno, t1 );
+	char *temp = def2utf8_copy(c->filename);
+	gwwv_post_error(NULL,"%s: %d  %s",temp, c->lineno, t1 );
 	free(temp);
     }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
@@ -322,19 +321,18 @@ static void error( Context *c, char *msg ) {
 }
 
 static void errors( Context *c, char *msg, char *name) {
-    unichar_t *t1 = script2u_copy(msg);
-    char *loc1 = u2def_copy(t1);
-    unichar_t *t2 = script2u_copy(name);
-    char *loc2 = u2def_copy(t2);
+    char *t1 = script2utf8_copy(msg);
+    char *loc1 = utf82def_copy(t1);
+    char *t2 = script2utf8_copy(name);
+    char *loc2 = utf82def_copy(t2);
 
     if ( c->lineno!=0 )
-	LogError( "%s line: %d %s: %s\n", c->filename, c->lineno, loc1, loc2 );
+	LogError( _("%s line: %d %s: %s\n"), c->filename, c->lineno, loc1, loc2 );
     else
 	LogError( "%s: %s: %s\n", c->filename, loc1, loc2 );
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( !no_windowing_ui ) {
-	static unichar_t umsg[] = { '%','h','s',':',' ','%','d',' ','%','s',':',' ','%','s',  0 };
-	GWidgetError(NULL,umsg,c->filename, c->lineno, t1, t2 );
+	gwwv_post_error(NULL,"%s: %d %s: %s",c->filename, c->lineno, t1, t2 );
     }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     free(loc1); free(loc2); free(t1); free(t2);
@@ -380,8 +378,8 @@ static void PrintVal(Val *val) {
     int j;
 
     if ( val->type==v_str ) {
-	unichar_t *t1 = script2u_copy(val->u.sval);
-	char *loc = u2def_copy(t1);
+	char *t1 = script2utf8_copy(val->u.sval);
+	char *loc = utf82def_copy(t1);
 	printf( "%s", loc );
 	free(loc); free(t1);
     } else if ( val->type==v_arr || val->type==v_arrfree ) {
@@ -428,7 +426,7 @@ static void bError(Context *c) {
 }
 
 static void bPostNotice(Context *c) {
-    unichar_t *t1;
+    char *t1;
     char *loc;
 
     if ( c->a.argc!=2 )
@@ -437,10 +435,10 @@ static void bPostNotice(Context *c) {
 	error( c, "Expected string argument" );
 
     loc = c->a.vals[1].u.sval;
-#if defined(FONTFORGE_CONFIG_GTK)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
     if ( !no_windowing_ui ) {
 	if ( !use_utf8_in_script ) {
-	    t1 = uc_copy(loc);
+	    unichar_t *t1 = uc_copy(loc);
 	    loc = u2utf8_copy(t1);
 	    free(t1);
 	}
@@ -448,18 +446,10 @@ static void bPostNotice(Context *c) {
 	if ( loc != c->a.vals[1].u.sval )
 	    free(loc);
     } else
-#elif defined(FONTFORGE_CONFIG_GDRAW)
-    if ( !no_windowing_ui ) {
-	static const unichar_t format[] = { '%','.','2','0','0','s', '\0' };
-	static const unichar_t notice[] = { 'A','t','t','e','n','t','i','o','n',  '\0' };
-	t1 = script2u_copy(loc);
-	GWidgetPostNotice( notice, format, t1 );
-	free(t1);
-    } else
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     {
-	t1 = script2u_copy(loc);
-	loc = u2def_copy(t1);
+	t1 = script2utf8_copy(loc);
+	loc = utf82def_copy(t1);
 	fprintf(stderr,"%s\n", loc );
 	free(loc); free(t1);
     }
@@ -481,8 +471,8 @@ static void bAskUser(Context *c) {
 	{
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	char buffer[300];
-	unichar_t *t1 = script2u_copy(quest);
-	char *loc = u2def_copy(t1);
+	char *t1 = script2utf8_copy(quest);
+	char *loc = utf82def_copy(t1);
 	printf( "%s", loc );
 	free(t1); free(loc);
 	buffer[0] = '\0';
@@ -493,25 +483,22 @@ static void bAskUser(Context *c) {
 	} else if ( buffer[0]=='\0' || buffer[0]=='\n' || buffer[0]=='\r' )
 	    c->return_val.u.sval = copy(def);
 	else {
-	    t1 = def2u_copy(buffer);
-	    c->return_val.u.sval = u2script_copy(t1);
+	    t1 = def2utf8_copy(buffer);
+	    c->return_val.u.sval = utf82script_copy(t1);
 	    free(t1);
 	}
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     } else {
-	unichar_t *t1, *t2, *ret;
-	static unichar_t format[] = { '%','s', 0 };
+	char *t1, *t2, *ret;
 	if ( use_utf8_in_script ) {
-	    t1 = utf82u_copy(quest);
-	    ret = GWidgetAskString(t1,t2=utf82u_copy(def),format, t1);
+	    ret = gwwv_ask_string(quest,def,"%s", t1);
 	} else {
-	    t1 = uc_copy(quest);
-	    ret = GWidgetAskString(t1,t2=uc_copy(def),format, t1);
+	    t1 = latin1_2_utf8_copy(quest);
+	    ret = gwwv_ask_string(t1,t2=latin1_2_utf8_copy(def),"%s", t1);
+	    free(t1); free(t2);
 	}
-	free(t1);
-	free(t2);
 	c->return_val.type = v_str;
-	c->return_val.u.sval = u2script_copy(ret);
+	c->return_val.u.sval = utf82script_copy(ret);
 	if ( ret==NULL )
 	    c->return_val.u.sval = copy("");
 	else
@@ -1197,15 +1184,15 @@ return( ret );
 static void bFontsInFile(Context *c) {
     char **ret;
     int cnt;
-    unichar_t *t;
+    char *t;
     char *locfilename;
 
     if ( c->a.argc!=2 )
 	error( c, "Wrong number of arguments");
     else if ( c->a.vals[1].type!=v_str )
 	error( c, "FontsInFile expects a filename" );
-    t = script2u_copy(c->a.vals[1].u.sval);
-    locfilename = u2def_copy(t);
+    t = script2utf8_copy(c->a.vals[1].u.sval);
+    locfilename = utf82def_copy(t);
     ret = GetFontNames(locfilename);
     free(t); free(locfilename);
 
@@ -1225,7 +1212,7 @@ static void bFontsInFile(Context *c) {
 static void bOpen(Context *c) {
     SplineFont *sf;
     int openflags=0;
-    unichar_t *t;
+    char *t;
     char *locfilename;
 
     if ( c->a.argc!=2 && c->a.argc!=3 )
@@ -1237,8 +1224,8 @@ static void bOpen(Context *c) {
 	    error( c, "Open expects an integer for second argument" );
 	openflags = c->a.vals[2].u.ival;
     }
-    t = script2u_copy(c->a.vals[1].u.sval);
-    locfilename = u2def_copy(t);
+    t = script2utf8_copy(c->a.vals[1].u.sval);
+    locfilename = utf82def_copy(t);
     sf = LoadSplineFont(locfilename,openflags);
     if ( sf==NULL )
 	errors(c, "Failed to open", c->a.vals[1].u.sval);
@@ -1298,7 +1285,7 @@ static void bClose(Context *c) {
 
 static void bSave(Context *c) {
     SplineFont *sf = c->curfv->sf;
-    unichar_t *t;
+    char *t;
     char *locfilename;
 
     if ( c->a.argc>2 )
@@ -1306,8 +1293,8 @@ static void bSave(Context *c) {
     if ( c->a.argc==2 ) {
 	if ( c->a.vals[1].type!=v_str )
 	    error(c,"If an argument is given to Save it must be a filename");
-	t = script2u_copy(c->a.vals[1].u.sval);
-	locfilename = u2def_copy(t);
+	t = script2utf8_copy(c->a.vals[1].u.sval);
+	locfilename = utf82def_copy(t);
 	if ( !SFDWrite(locfilename,sf,c->curfv->map))
 	    error(c,"Save As failed" );
 	free(t); free(locfilename);
@@ -1325,7 +1312,7 @@ static void bGenerate(Context *c) {
     int fmflags = -1;
     int res = -1;
     char *subfontdirectory = NULL;
-    unichar_t *t;
+    char *t;
     char *locfilename;
 
     if ( c->a.argc!=2 && c->a.argc!=3 && c->a.argc!=4 && c->a.argc!=5 && c->a.argc!=6 )
@@ -1344,8 +1331,8 @@ static void bGenerate(Context *c) {
 	res = c->a.vals[4].u.ival;
     if ( c->a.argc>=6 )
 	subfontdirectory = c->a.vals[5].u.sval;
-    t = script2u_copy(c->a.vals[1].u.sval);
-    locfilename = u2def_copy(t);
+    t = script2utf8_copy(c->a.vals[1].u.sval);
+    locfilename = utf82def_copy(t);
     if ( !GenerateScript(sf,locfilename,bitmaptype,fmflags,res,subfontdirectory,
 	    NULL,c->curfv->map) )
 	error(c,"Save failed");
@@ -1377,7 +1364,7 @@ static void bGenerateFamily(Context *c) {
     uint16 psstyle;
     int fondcnt = 0, fondmax = 10;
     SFArray *familysfs=NULL;
-    unichar_t *t;
+    char *t;
     char *locfilename;
 
     familysfs = galloc((fondmax=10)*sizeof(SFArray));
@@ -1410,7 +1397,7 @@ static void bGenerateFamily(Context *c) {
 	if ( sf==NULL )
 	    sf = fv->sf;
 	if ( strcmp(fv->sf->familyname,sf->familyname)!=0 )
-	    LogError( "Warning: %s has a different family name than does %s (GenerateFamily)\n",
+	    LogError( _("Warning: %s has a different family name than does %s (GenerateFamily)\n"),
 		    fv->sf->fontname, sf->fontname );
 	MacStyleCode(fv->sf,&psstyle);
 	if ( psstyle>=48 ) {
@@ -1442,7 +1429,7 @@ static void bGenerateFamily(Context *c) {
 			familysfs[fc][psstyle] = fv->sf;
 			added = true;
 		    } else {
-			LogError( "%s(%s) and %s(%s) 0x%x in FOND %s\n",
+			LogError( _("%s(%s) and %s(%s) 0x%x in FOND %s\n"),
 				familysfs[fc][psstyle]->origname, familysfs[fc][psstyle]->fontname,
 				fv->sf->origname, fv->sf->fontname,
 				psstyle, fv->sf->fondname );
@@ -1477,8 +1464,8 @@ static void bGenerateFamily(Context *c) {
     }
     free(familysfs);
 
-    t = script2u_copy(c->a.vals[1].u.sval);
-    locfilename = u2def_copy(t);
+    t = script2utf8_copy(c->a.vals[1].u.sval);
+    locfilename = utf82def_copy(t);
     if ( !GenerateScript(sf,locfilename,bitmaptype,fmflags,-1,NULL,sfs,
 	    c->curfv->map) )
 	error(c,"Save failed");
@@ -1603,7 +1590,7 @@ static void bBitmapsRegen(Context *c) {
 static void bImport(Context *c) {
     char *ext, *filename;
     int format, back, ok, flags;
-    unichar_t *t; char *locfilename;
+    char *t; char *locfilename;
 
     if ( c->a.argc!=2 && c->a.argc!=3 && c->a.argc!=4 )
 	error( c, "Wrong number of arguments");
@@ -1612,8 +1599,8 @@ static void bImport(Context *c) {
 	    (c->a.argc==4 && c->a.vals[3].type!=v_int ))
 	error( c, "Bad type of argument");
 
-    t = script2u_copy(c->a.vals[1].u.sval);
-    locfilename = u2def_copy(t);
+    t = script2utf8_copy(c->a.vals[1].u.sval);
+    locfilename = utf82def_copy(t);
     filename = GFileMakeAbsoluteName(locfilename);
     free(locfilename); free(t);
 
@@ -1676,15 +1663,15 @@ static void bImport(Context *c) {
 #ifdef FONTFORGE_CONFIG_WRITE_PFM
 static void bWritePfm(Context *c) {
     SplineFont *sf = c->curfv->sf;
-    unichar_t *t; char *locfilename;
+    char *t; char *locfilename;
 
     if ( c->a.argc!=2 )
 	error( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_str )
 	error( c, "Bad type of argument");
 
-    t = script2u_copy(c->a.vals[1].u.sval);
-    locfilename = u2def_copy(t);
+    t = script2utf8_copy(c->a.vals[1].u.sval);
+    locfilename = utf82def_copy(t);
     if ( !WritePfmFile(c->a.vals[1].u.sval,sf,0,c->curfv->map) )
 	error(c,"Save failed");
     free(locfilename); free(t);
@@ -1696,15 +1683,15 @@ static void bExport(Context *c) {
     BDFFont *bdf;
     char *pt, *format_spec;
     char buffer[20];
-    unichar_t *t;
+    char *t;
 
     if ( c->a.argc!=2 && c->a.argc!=3 )
 	error( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_str || (c->a.argc==3 && c->a.vals[2].type!=v_int ))
 	error( c, "Bad type of arguments");
 
-    t = script2u_copy(c->a.vals[1].u.sval);
-    pt = u2def_copy(t); free(t);
+    t = script2utf8_copy(c->a.vals[1].u.sval);
+    pt = utf82def_copy(t); free(t);
     sprintf( buffer, "%%n_%%f.%.4s", pt);
     format_spec = buffer;
     if ( strrchr(pt,'.')!=NULL ) {
@@ -1752,15 +1739,15 @@ static void bExport(Context *c) {
 }
 
 static void bMergeKern(Context *c) {
-    unichar_t *t; char *locfilename;
+    char *t; char *locfilename;
 
     if ( c->a.argc!=2 )
 	error( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_str )
 	error( c, "Bad type of arguments");
 
-    t = script2u_copy(c->a.vals[1].u.sval);
-    locfilename = u2def_copy(t);
+    t = script2utf8_copy(c->a.vals[1].u.sval);
+    locfilename = utf82def_copy(t);
     if ( !LoadKerningDataFromMetricsFile(c->curfv->sf,locfilename,c->curfv->map))
 	error( c, "Failed to find kern info in file" );
     free(locfilename); free(t);
@@ -1797,7 +1784,7 @@ static void bPrintFont(Context *c) {
     int32 *pointsizes=NULL;
     char *samplefile=NULL, *output=NULL;
     unichar_t *sample=NULL;
-    unichar_t *t; char *locfilename=NULL;
+    char *t; char *locfilename=NULL;
 
     if ( c->a.argc!=2 && c->a.argc!=3 && c->a.argc!=4 && c->a.argc!=5 )
 	error( c, "Wrong number of arguments");
@@ -1835,8 +1822,8 @@ static void bPrintFont(Context *c) {
 		sample = utf82u_copy(samplefile);
 		samplefile = NULL;
 	    } else {
-		t = script2u_copy(samplefile);
-		samplefile = locfilename = u2def_copy(t); free(t);
+		t = script2utf8_copy(samplefile);
+		samplefile = locfilename = utf82def_copy(t); free(t);
 	    }
 	}
     }
@@ -2451,7 +2438,7 @@ static void bLoadTableFromFile(Context *c) {
     FILE *file;
     int len;
     struct stat statb;
-    unichar_t *t; char *locfilename;
+    char *t; char *locfilename;
 
     if ( c->a.argc!=3 )
 	error( c, "Wrong number of arguments");
@@ -2467,8 +2454,8 @@ static void bLoadTableFromFile(Context *c) {
     tag |= (tstr+2<end ? tstr[2] : ' ')<<8 ;
     tag |= (tstr+3<end ? tstr[3] : ' ')    ;
 
-    t = script2u_copy(c->a.vals[2].u.sval);
-    locfilename = u2def_copy(t);
+    t = script2utf8_copy(c->a.vals[2].u.sval);
+    locfilename = utf82def_copy(t);
     file = fopen(locfilename,"rb");
     free(locfilename); free(t);
     if ( file==NULL )
@@ -2497,7 +2484,7 @@ static void bSaveTableToFile(Context *c) {
     char *tstr, *end;
     struct ttf_table *tab;
     FILE *file;
-    unichar_t *t; char *locfilename;
+    char *t; char *locfilename;
 
     if ( c->a.argc!=3 )
 	error( c, "Wrong number of arguments");
@@ -2513,8 +2500,8 @@ static void bSaveTableToFile(Context *c) {
     tag |= (tstr+2<end ? tstr[2] : ' ')<<8 ;
     tag |= (tstr+3<end ? tstr[3] : ' ')    ;
 
-    t = script2u_copy(c->a.vals[2].u.sval);
-    locfilename = u2def_copy(t);
+    t = script2utf8_copy(c->a.vals[2].u.sval);
+    locfilename = utf82def_copy(t);
     file = fopen(locfilename,"wb");
     free(locfilename); free(t);
     if ( file==NULL )
@@ -2584,15 +2571,15 @@ static void bHasPreservedTable(Context *c) {
 }
 
 static void bLoadEncodingFile(Context *c) {
-    unichar_t *t; char *locfilename;
+    char *t; char *locfilename;
 
     if ( c->a.argc!=2 )
 	error( c, "Wrong number of arguments");
     else if ( c->a.vals[1].type!=v_str )
 	error(c,"Bad argument type");
 
-    t = script2u_copy(c->a.vals[1].u.sval);
-    locfilename = u2def_copy(t);
+    t = script2utf8_copy(c->a.vals[1].u.sval);
+    locfilename = utf82def_copy(t);
     ParseEncodingFile(locfilename);
     free(locfilename); free(t);
     /*DumpPfaEditEncodings();*/
@@ -2693,7 +2680,7 @@ static void bSetFondName(Context *c) {
 
 static void bSetTTFName(Context *c) {
     SplineFont *sf = c->curfv->sf;
-    unichar_t *u;
+    char *u;
     int lang, strid;
     struct ttflangname *prev, *ln;
 
@@ -2711,7 +2698,7 @@ static void bSetTTFName(Context *c) {
     else if ( strid<0 || strid>=ttf_namemax )
 	error(c,"Bad value for string id");
 
-    u = utf82u_copy(c->a.vals[3].u.sval);
+    u = copy(c->a.vals[3].u.sval);
     if ( *u=='\0' ) {
 	free(u);
 	u = NULL;
@@ -2755,7 +2742,7 @@ static void bGetTTFName(Context *c) {
     if ( ln==NULL || ln->names[strid]==NULL )
 	c->return_val.u.sval = copy("");
     else
-	c->return_val.u.sval = u2utf8_copy(ln->names[strid]);
+	c->return_val.u.sval = copy(ln->names[strid]);
 }
 
 static void bSetItalicAngle(Context *c) {
@@ -2883,7 +2870,7 @@ static void bSetCharName(Context *c) {
     SplineChar *sc;
     char *name, *end;
     int uni;
-    unichar_t *comment;
+    char *comment;
 
     if ( c->a.argc!=2 && c->a.argc!=3 )
 	error( c, "Wrong number of arguments");
@@ -2892,7 +2879,7 @@ static void bSetCharName(Context *c) {
     sc = GetOneSelChar(c);
     uni = sc->unicodeenc;
     name = c->a.vals[1].u.sval;
-    comment = u_copy(sc->comment);
+    comment = copy(sc->comment);
 
     if ( c->a.argc!=3 || c->a.vals[2].u.ival==-1 ) {
 	if ( name[0]=='u' && name[1]=='n' && name[2]=='i' && strlen(name)==7 &&
@@ -2915,7 +2902,7 @@ static void bSetUnicodeValue(Context *c) {
     SplineChar *sc;
     char *name;
     int uni;
-    unichar_t *comment;
+    char *comment;
 
     if ( c->a.argc!=2 && c->a.argc!=3 )
 	error( c, "Wrong number of arguments");
@@ -2925,7 +2912,7 @@ static void bSetUnicodeValue(Context *c) {
     sc = GetOneSelChar(c);
     uni = c->a.vals[1].u.ival;
     name = copy(sc->name);
-    comment = u_copy(sc->comment);
+    comment = copy(sc->comment);
 
     if ( c->a.argc!=3 || c->a.vals[2].u.ival ) {
 	free(name);
@@ -2970,7 +2957,7 @@ static void bSetCharComment(Context *c) {
     else if ( c->a.vals[1].type!=v_str )
 	error(c,"Bad argument type");
     sc = GetOneSelChar(c);
-    sc->comment = *c->a.vals[1].u.sval=='\0'?NULL:script2u_copy(c->a.vals[1].u.sval);
+    sc->comment = *c->a.vals[1].u.sval=='\0'?NULL:script2utf8_copy(c->a.vals[1].u.sval);
     c->curfv->sf->changed = true;
 }
 
@@ -3873,7 +3860,7 @@ static void bBuildDuplicate(Context *c) {
 static void bMergeFonts(Context *c) {
     SplineFont *sf;
     int openflags=0;
-    unichar_t *t; char *locfilename;
+    char *t; char *locfilename;
 
     if ( c->a.argc!=2 && c->a.argc!=3 )
 	error( c, "Wrong number of arguments");
@@ -3884,8 +3871,8 @@ static void bMergeFonts(Context *c) {
 	    error( c, "MergeFonts expects an integer for second argument" );
 	openflags = c->a.vals[2].u.ival;
     }
-    t = script2u_copy(c->a.vals[1].u.sval);
-    locfilename = u2def_copy(t);
+    t = script2utf8_copy(c->a.vals[1].u.sval);
+    locfilename = utf82def_copy(t);
     sf = LoadSplineFont(locfilename,openflags);
     free(t); free(locfilename);
     if ( sf==NULL )
@@ -3897,7 +3884,7 @@ static void bInterpolateFonts(Context *c) {
     SplineFont *sf;
     int openflags=0;
     float percent;
-    unichar_t *t; char *locfilename;
+    char *t; char *locfilename;
 
     if ( c->a.argc!=3 && c->a.argc!=4 )
 	error( c, "Wrong number of arguments");
@@ -3914,8 +3901,8 @@ static void bInterpolateFonts(Context *c) {
 	percent = c->a.vals[1].u.ival;
     else
 	percent = c->a.vals[1].u.fval;
-    t = script2u_copy(c->a.vals[2].u.sval);
-    locfilename = u2def_copy(t);
+    t = script2utf8_copy(c->a.vals[2].u.sval);
+    locfilename = utf82def_copy(t);
     sf = LoadSplineFont(locfilename,openflags);
     free(t); free(locfilename);
     if ( sf==NULL )
@@ -4071,7 +4058,7 @@ static void _AddHint(Context *c,int ish) {
 	any = true;
     }
     if ( !any )
-	LogError( "Warning: No characters selected in AddHint(%d,%d,%d)\n",
+	LogError( _("Warning: No characters selected in AddHint(%d,%d,%d)\n"),
 		ish, start, width);
 }
 
@@ -4496,7 +4483,7 @@ static void Reblend(Context *c, int tonew) {
 	blends[i] = c->a.vals[1].u.aval->vals[i].u.ival/65536.0;
 	if ( blends[i]<mm->axismaps[i].min ||
 		blends[i]>mm->axismaps[i].max )
-	    LogError( "Warning: %dth axis value (%g) is outside the allowed range [%g,%g]\n",
+	    LogError( _("Warning: %dth axis value (%g) is outside the allowed range [%g,%g]\n"),
 		    i,blends[i],mm->axismaps[i].min,mm->axismaps[i].max );
     }
     c->curfv = MMCreateBlendedFont(mm,c->curfv,blends,tonew);
@@ -4530,7 +4517,7 @@ static void bConvertToCID(Context *c) {
 
 static void bConvertByCMap(Context *c) {
     SplineFont *sf = c->curfv->sf;
-    unichar_t *t; char *locfilename;
+    char *t; char *locfilename;
 
     if ( c->a.argc!=2 )
 	error( c, "Wrong number of arguments" );
@@ -4538,8 +4525,8 @@ static void bConvertByCMap(Context *c) {
 	error( c, "Bad argument type" );
     if ( sf->cidmaster!=NULL )
 	errors( c, "Already a cid-keyed font", sf->cidmaster->fontname );
-    t = script2u_copy(c->a.vals[1].u.sval);
-    locfilename = u2def_copy(t);
+    t = script2utf8_copy(c->a.vals[1].u.sval);
+    locfilename = utf82def_copy(t);
     MakeCIDMaster(sf, c->curfv->map, true, locfilename, NULL);
     free(t); free(locfilename);
 }
@@ -4615,7 +4602,7 @@ static void bCIDFlatten(Context *c) {
 
 static void bCIDFlattenByCMap(Context *c) {
     SplineFont *sf = c->curfv->sf;
-    unichar_t *t; char *locfilename;
+    char *t; char *locfilename;
     
     if ( sf->cidmaster==NULL )
 	errors( c, "Not a cid-keyed font", sf->fontname );
@@ -4624,8 +4611,8 @@ static void bCIDFlattenByCMap(Context *c) {
     else if ( c->a.vals[1].type!=v_str )
 	error( c, "Argument must be a filename");
     
-    t = script2u_copy(c->a.vals[1].u.sval);
-    locfilename = u2def_copy(t);
+    t = script2utf8_copy(c->a.vals[1].u.sval);
+    locfilename = utf82def_copy(t);
     if ( !SFFlattenByCMap(sf,locfilename))
 	errors( c, "Can't find (or can't parse) cmap file",c->a.vals[1].u.sval);
     free(t); free(locfilename);
@@ -4654,9 +4641,7 @@ static void bInFont(Context *c) {
 	if ( c->a.vals[1].type==v_unicode )
 	    enc = SFFindSlot(sf,map,c->a.vals[1].u.ival,NULL);
 	else {
-	    unichar_t *temp = uc_copy(c->a.vals[1].u.sval);
-	    enc = NameToEncoding(sf,map,temp);
-	    free(temp);
+	    enc = NameToEncoding(sf,map,c->a.vals[1].u.sval);
 	}
 	c->return_val.u.ival = (enc!=-1);
     } else
@@ -4681,9 +4666,7 @@ static void bWorthOutputting(Context *c) {
 	if ( c->a.vals[1].type==v_unicode )
 	    enc = SFFindSlot(sf,map,c->a.vals[1].u.ival,NULL);
 	else {
-	    unichar_t *temp = uc_copy(c->a.vals[1].u.sval);
-	    enc = NameToEncoding(sf,map,temp);
-	    free(temp);
+	    enc = NameToEncoding(sf,map,c->a.vals[1].u.sval);
 	}
 	gid = enc==-1 ? -1 : map->map[enc];
     } else
@@ -4709,9 +4692,7 @@ static void bDrawsSomething(Context *c) {
 	if ( c->a.vals[1].type==v_unicode )
 	    enc = SFFindSlot(sf,map,c->a.vals[1].u.ival,NULL);
 	else {
-	    unichar_t *temp = uc_copy(c->a.vals[1].u.sval);
-	    enc = NameToEncoding(sf,map,temp);
-	    free(temp);
+	    enc = NameToEncoding(sf,map,c->a.vals[1].u.sval);
 	}
 	gid = enc==-1 ? -1 : map->map[enc];
     } else
@@ -4787,7 +4768,6 @@ return( (tag[0]<<24)|(tag[1]<<16)|(tag[2]<<8)|tag[3] );
 
 static void bCheckForAnchorClass(Context *c) {
     AnchorClass *t;
-    unichar_t *ustr;
     SplineFont *sf = c->curfv->sf;
 
     if ( c->a.argc!=2 )
@@ -4795,11 +4775,9 @@ static void bCheckForAnchorClass(Context *c) {
     else if ( c->a.vals[1].type!=v_str )
 	error( c, "Bad type for argument");
 
-    ustr = utf82u_copy( c->a.vals[1].u.sval );
     for ( t=sf->anchor; t!=NULL; t=t->next )
-	if ( u_strcmp(ustr,t->name)==0 )
+	if ( strcmp(c->a.vals[1].u.sval,t->name)==0 )
     break;
-    free(ustr);
     c->return_val.type = v_int;
     c->return_val.u.ival = ( t!=NULL );
 return;
@@ -4819,9 +4797,9 @@ static void bAddAnchorClass(Context *c) {
 
     ac = chunkalloc(sizeof(AnchorClass));
 
-    ac->name = utf82u_copy( c->a.vals[1].u.sval );
+    ac->name = copy( c->a.vals[1].u.sval );
     for ( t=sf->anchor; t!=NULL; t=t->next )
-	if ( u_strcmp(ac->name,t->name)==0 )
+	if ( strcmp(ac->name,t->name)==0 )
     break;
     if ( t!=NULL )
 	errors(c,"This font already contains an anchor class with this name: ", c->a.vals[1].u.sval );
@@ -4844,12 +4822,11 @@ static void bAddAnchorClass(Context *c) {
     ac->script_lang_index = SFAddScriptLangRecord(sf,SRParse(ustr));
     free(ustr);
 
-    ustr = utf82u_copy( c->a.vals[6].u.sval );
-    if ( *ustr=='\0' || u_strcmp(ustr,ac->name)==0 )
+    if ( *c->a.vals[6].u.sval=='\0' || strcmp(c->a.vals[6].u.sval,ac->name)==0 )
 	ac->merge_with = AnchorClassesNextMerge(sf->anchor);
     else {
 	for ( t=sf->anchor; t!=NULL; t=t->next )
-	    if ( u_strcmp(ustr,t->name)==0 )
+	    if ( strcmp(c->a.vals[6].u.sval,t->name)==0 )
 	break;
 	if ( t==NULL )
 	    errors(c,"Attempt to merge with unknown anchor class: ", c->a.vals[6].u.sval );
@@ -4862,7 +4839,6 @@ static void bAddAnchorClass(Context *c) {
 
 static void bRemoveAnchorClass(Context *c) {
     AnchorClass *t;
-    unichar_t *name;
     SplineFont *sf = c->curfv->sf;
 
     if ( c->a.argc!=2 )
@@ -4870,19 +4846,16 @@ static void bRemoveAnchorClass(Context *c) {
     else if ( c->a.vals[1].type!=v_str )
 	error( c, "Bad type for argument");
 
-    name = utf82u_copy( c->a.vals[1].u.sval );
     for ( t=sf->anchor; t!=NULL; t=t->next )
-	if ( u_strcmp(name,t->name)==0 )
+	if ( strcmp(c->a.vals[1].u.sval,t->name)==0 )
     break;
     if ( t==NULL )
 	errors(c,"This font does not contain an anchor class with this name: ", c->a.vals[1].u.sval );
     SFRemoveAnchorClass(sf,t);
-    free(name);
 }
 
 static void bAddAnchorPoint(Context *c) {
     AnchorClass *t;
-    unichar_t *name;
     SplineFont *sf = c->curfv->sf;
     int type;
     SplineChar *sc;
@@ -4895,13 +4868,11 @@ static void bAddAnchorPoint(Context *c) {
 	    c->a.vals[3].type!=v_int || c->a.vals[4].type!=v_int )
 	error( c, "Bad type for argument");
 
-    name = utf82u_copy( c->a.vals[1].u.sval );
     for ( t=sf->anchor; t!=NULL; t=t->next )
-	if ( u_strcmp(name,t->name)==0 )
+	if ( strcmp(c->a.vals[1].u.sval,t->name)==0 )
     break;
     if ( t==NULL )
 	errors(c,"This font does not contain an anchor class with this name: ", c->a.vals[1].u.sval );
-    free(name);
 
     if ( strmatch(c->a.vals[2].u.sval,"mark")==0 )
 	type = at_mark;
@@ -5406,7 +5377,7 @@ return;
 	    }
 	} else if ( strmatch( c->a.vals[1].u.sval,"Comment")==0 ) {
 	    c->return_val.type = v_str;
-	    c->return_val.u.sval = sc->comment?u2utf8_copy(sc->comment):copy("");
+	    c->return_val.u.sval = sc->comment?copy(sc->comment):copy("");
 	} else {
 	    SplineCharFindBounds(sc,&b);
 	    if ( strmatch( c->a.vals[1].u.sval,"LBearing")==0 )
@@ -5518,7 +5489,7 @@ static void bGetPosSub(Context *c) {
 		      default:
 		        free(temp);
 			ret->vals[cnt].type = v_void;
-			LogError( "Unexpected PST type in GetPosSub (%d).\n", pst->type );
+			LogError( _("Unexpected PST type in GetPosSub (%d).\n"), pst->type );
 		      break;
 		      case pst_position:
 			temp->argc = 7;
@@ -6232,7 +6203,7 @@ return( c->tok );
 		cungetc(ch,c);
 	  break;
 	  default:
-	    LogError( "%s:%d Unexpected character %c (%d)\n",
+	    LogError( _("%s:%d Unexpected character %c (%d)\n"),
 		    c->filename, c->lineno, ch, ch);
 	    traceback(c);
 	}
@@ -6393,7 +6364,7 @@ static void handlename(Context *c,Val *val) {
 		val->u.aval = &c->a;
 	    } else if ( strcmp(name,"$curfont")==0 || strcmp(name,"$nextfont")==0 ||
 		    strcmp(name,"$firstfont")==0 ) {
-		unichar_t *t;
+		char *t;
 		if ( strcmp(name,"$firstfont")==0 ) {
 		    if ( fv_list==NULL ) sf=NULL;
 		    else sf = fv_list->sf;
@@ -6407,9 +6378,9 @@ static void handlename(Context *c,Val *val) {
 		    }
 		}
 		val->type = v_str;
-		t = def2u_copy(sf==NULL?"":
+		t = def2utf8_copy(sf==NULL?"":
 			sf->filename!=NULL?sf->filename:sf->origname);
-		val->u.sval = u2script_copy(t);
+		val->u.sval = utf82script_copy(t);
 		free(t);
 	    } else if ( strcmp(name,"$mmcount")==0 ) {
 		if ( c->curfv==NULL ) error(c,"No current font");
@@ -6445,10 +6416,10 @@ static void handlename(Context *c,Val *val) {
 		    strcmp(name,"$fullname")==0 || strcmp(name,"$weight")==0 ||
 		    strcmp(name,"$copyright")==0 || strcmp(name,"$filename")==0 ||
 		    strcmp(name,"$fontversion")==0 || strcmp(name,"$fondname")==0 ) {
-		unichar_t *t;
+		char *t;
 		if ( c->curfv==NULL ) error(c,"No current font");
 		val->type = v_str;
-		t = uc_copy(strcmp(name,"$fontname")==0?c->curfv->sf->fontname:
+		t = copy(strcmp(name,"$fontname")==0?c->curfv->sf->fontname:
 			name[2]=='a'?c->curfv->sf->familyname:
 			name[2]=='u'?c->curfv->sf->fullname:
 			name[2]=='e'?c->curfv->sf->weight:
@@ -6456,26 +6427,26 @@ static void handlename(Context *c,Val *val) {
 			strcmp(name,"$fondname")==0?c->curfv->sf->fondname:
 			name[3]=='p'?c->curfv->sf->copyright:
 				    c->curfv->sf->version);
-		val->u.sval = u2script_copy(t);
+		val->u.sval = utf82script_copy(t);
 		if ( val->u.sval==NULL )
 		    val->u.sval = copy("");
 		free(t);
 	    } else if ( strcmp(name,"$cidfontname")==0 || strcmp(name,"$cidfamilyname")==0 ||
 		    strcmp(name,"$cidfullname")==0 || strcmp(name,"$cidweight")==0 ||
 		    strcmp(name,"$cidcopyright")==0 ) {
-		unichar_t *t;
+		char *t;
 		if ( c->curfv==NULL ) error(c,"No current font");
 		val->type = v_str;
 		if ( c->curfv->sf->cidmaster==NULL )
 		    val->u.sval = copy("");
 		else {
 		    SplineFont *sf = c->curfv->sf->cidmaster;
-		    t = uc_copy(strcmp(name,"$cidfontname")==0?sf->fontname:
+		    t = copy(strcmp(name,"$cidfontname")==0?sf->fontname:
 			    name[5]=='a'?sf->familyname:
 			    name[5]=='u'?sf->fullname:
 			    name[5]=='e'?sf->weight:
 					 sf->copyright);
-		    val->u.sval = u2script_copy(t);
+		    val->u.sval = utf82script_copy(t);
 		    free(t);
 		}
 	    } else if ( strcmp(name,"$italicangle")==0 ) {
@@ -7285,10 +7256,10 @@ static void ProcessScript(int argc, char *argv[], FILE *script) {
     c.dontfree = gcalloc(c.a.argc,sizeof(Array*));
     c.donteval = dry;
     for ( j=i; j<argc; ++j ) {
-	unichar_t *t;
+	char *t;
 	c.a.vals[j-i].type = v_str;
-	t = def2u_copy(argv[j]);
-	c.a.vals[j-i].u.sval = u2script_copy(t);
+	t = def2utf8_copy(argv[j]);
+	c.a.vals[j-i].u.sval = utf82script_copy(t);
 	free(t);
     }
     c.return_val.type = v_void;
@@ -7457,20 +7428,15 @@ struct sd_data {
 
 static int SD_Call(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	static unichar_t filter[] = { '*',/*'.','p','e',*/  0 };
-	unichar_t *fn;
+	char *fn;
 	unichar_t *insert;
     
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	fn = GWidgetOpenFile(GStringGetResource(_STR_CallScript,NULL), NULL, filter, NULL, NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	fn = GWidgetOpenFile(_("Call Script"), NULL, filter, NULL, NULL);
-#endif
+	fn = gwwv_open_filename(_("Call Script"), NULL, "*", NULL, NULL);
 	if ( fn==NULL )
 return(true);
-	insert = galloc((u_strlen(fn)+10)*sizeof(unichar_t));
+	insert = galloc((strlen(fn)+10)*sizeof(unichar_t));
 	*insert = '"';
-	u_strcpy(insert+1,fn);
+	utf82u_strcpy(insert+1,fn);
 	uc_strcat(insert,"\"()");
 	GTextFieldReplace(GWidgetGetControl(GGadgetGetWindow(g),CID_Script),insert);
 	free(insert);
@@ -7596,16 +7562,12 @@ void ScriptDlg(FontView *fv) {
 
     if ( gw==NULL ) {
 	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict|wam_isdlg;
+	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict|wam_isdlg;
 	wattrs.event_masks = ~(1<<et_charup);
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	wattrs.window_title = GStringGetResource(_STR_ExecuteScript,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	wattrs.window_title = _("Execute Script...");
-#endif
+	wattrs.utf8_window_title = _("Execute Script...");
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GDrawPointsToPixels(NULL,GGadgetScale(SD_Width));
@@ -7623,7 +7585,8 @@ void ScriptDlg(FontView *fv) {
 	gcd[1].gd.pos.x = 25-3; gcd[1].gd.pos.y = SD_Height-32-3;
 	gcd[1].gd.pos.width = -1; gcd[1].gd.pos.height = 0;
 	gcd[1].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[1].text = (unichar_t *) _STR_OK;
+	label[1].text = (unichar_t *) _("_OK");
+	label[1].text_is_1byte = true;
 	label[1].text_in_resource = true;
 	gcd[1].gd.mnemonic = 'O';
 	gcd[1].gd.label = &label[1];
@@ -7634,7 +7597,8 @@ void ScriptDlg(FontView *fv) {
 	gcd[2].gd.pos.x = -25; gcd[2].gd.pos.y = SD_Height-32;
 	gcd[2].gd.pos.width = -1; gcd[2].gd.pos.height = 0;
 	gcd[2].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[2].text = (unichar_t *) _STR_Cancel;
+	label[2].text = (unichar_t *) _("_Cancel");
+	label[2].text_is_1byte = true;
 	label[2].text_in_resource = true;
 	gcd[2].gd.label = &label[2];
 	gcd[2].gd.mnemonic = 'C';
@@ -7645,7 +7609,8 @@ void ScriptDlg(FontView *fv) {
 	gcd[3].gd.pos.x = (SD_Width-GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor))/2; gcd[3].gd.pos.y = SD_Height-40;
 	gcd[3].gd.pos.width = -1; gcd[3].gd.pos.height = 0;
 	gcd[3].gd.flags = gg_visible | gg_enabled;
-	label[3].text = (unichar_t *) _STR_Call;
+	label[3].text = (unichar_t *) _("C_all...");
+	label[3].text_is_1byte = true;
 	label[3].text_in_resource = true;
 	gcd[3].gd.label = &label[3];
 	gcd[3].gd.mnemonic = 'a';
