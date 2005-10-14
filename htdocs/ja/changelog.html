@@ -21,6 +21,101 @@ on the file stamp.c. -->
 <P>
 <UL>
   <LI>
+<!--12-Oct-2005-->
+    2005年10月12日
+    <UL>
+      <LI>
+<!--	Add support for generating &amp; parsing ofm files (I hope) -->
+        OFM ファイルの出力と解析のサポートを追加 (できたと思います)
+      <LI>
+<!--	If I tried to generate a font from an absolutely empty fontdb (ie. a new
+	one) then I'd get a stupid error about how .notdef was at encoding -1 and
+	this was a bad idea. -->
+	完全に空の (つまり、新規作成直後の) フォントデータベースからフォントを出力しようとしたとき、「なぜ .notdef の符号位置が -1 なのか」という馬鹿げたエラーを出していましたが、これはよくないアイディアでした。
+      <LI>
+<!--	Add 4 new information types to scripting GlyphInfo -->
+	スクリプトの GlyphInfo 関数に 4 つの新しい情報型を追加。
+	<DL>
+	  <DT>
+	    * LayerCount
+	  <DD>
+<!--	    Number of layers in glyph (usually 2) -->
+	    グリフ内のレイヤの個数 (ふつう 2)
+	  <DT>
+	    * RefCount
+	  <DD>
+<!--	    Number of refs in glyph -->
+	    グリフ内の参照の個数
+	  <DT>
+	    * RefNames
+	  <DD>
+<!--	    Returns an array of all reference names (may be 0 length) -->
+	    すべての参照名を含む配列を返します (長さ 0 になることもあります)
+	  <DT>
+	    * RefTransform
+	  <DD>
+<!--	    Returns an array of all reference transforms -->
+	    すべての参照の変換行列からなる配列を返します
+	</DL>
+      <LI>
+	Don't mark glyphs with widths other than 1em as being worth outputting (require
+	widthset). Used to use both (because in the early days, before pfaedit moved
+	to sourceforge even, the widthset bit didn't exist). Now there are too many
+	cases w here glyphs are created with a width other than 1em (marks, glyphs
+	in monospace fonts (where the space is anything but 1em)).
+      <LI>
+<!--	When printing a type3 pdf font, give it a name. Not required, but so what. -->
+	Type3 PDF フォントを印字するときに名前をつけるようにしました。
+      <LI>
+	Patch from Michal Nowakowski. When editing truetype instructions using my
+	prefix notation for numbers, there was a crash if a number needed a word
+	(rather than a byte).
+      <LI>
+	Add some support for reading fonts out of a pdf file.
+	<UL>
+	  <LI>
+	    Limitted support for pdf type3 (no images)
+	  <LI>
+	    Only support (Hex, 85, Flate, RLE)Decode filters (no support for lzw, fax,
+	    JBIG, DCT)
+	</UL>
+      <LI>
+	The routine to build the stem database (autohint) would set up a point database
+	and then call a routine to convert all splines into a set of monotonics.
+	But that routine could remove 0 length splines (and the points attached),
+	which would mean our point db would be wrong.
+      <LI>
+	Stefan Wanger suggests some patches to fix memory leaks.
+      <LI>
+	Stefan Wanger gave me a type2 font which used type1 flex conventions (calling
+	othersubrs, etc.) There is no othersubrs operator in type2, nor any place
+	to store othersubrs subroutines. But it is easy enough to support, so why
+	not. Warn that it's an illegal font, of course.
+      <LI>
+	Stefan Wanger gave me a font containing the utf8 byte order mark in a fontname
+	( in a CFF Name Index). PostScript says FontNames are printable ASCII. But
+	it's easy enough to skip over it.
+      <LI>
+	Stepan Roh points out that in a monospace font, combining glyphs should default
+	to the mono-width while in a proportional font they should default to 0 width
+	(or perhaps 1 em-unit for compatability with old idiotic windows systems).
+	Use the panose field to determine if a font is monospace.
+	<P>
+	Actually ALL glyphs in a monospace font should default to the mono-space
+	width rather than 1em.
+      <LI>
+	New dialog: Hints-&gt;Edit 'maxp'... Gives user access to number of functions
+	defined, the stack depth, storage usage, number of twilight points, which
+	ff can't figure out for you.
+      <LI>
+	Figured out how to make transparent images work on cygwin
+      <LI>
+	Michal Nowakowski points out that negative values are duplicated in cvt.
+      <LI>
+	Patch from Michal Nowakowski fixing crash when setting size of cvt table
+	to 0.
+    </UL>
+  <LI>
 <!--29-Sept-2005-->
     2005年9月29日
     <UL>

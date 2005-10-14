@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 21-Sep-2005 -->
+  <!-- AP: Last modified: 12-Oct-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
 <!--<TITLE>Writing scripts to change fonts in FontForge</TITLE>-->
     <TITLE>FontForge でフォントを変更するためのスクリプトの書き方</TITLE>
@@ -93,8 +93,8 @@ by menu. -->
 The scripting language provides access to much of the functionality found
 in the font view's menus. It does not currently (and probably never will)
 provide access to everything. (If you find a lack let me know, I may put
-+it in for you). It does not provide commands for building up a glyph out
-+of splines, instead it allows you to do high level modifications to glyphs. -->
+it in for you). It does not provide commands for building up a glyph out
+of splines, instead it allows you to do high level modifications to glyphs. -->
 スクリプト言語により、フォント表示画面のメニューに見られる機能の多くを使用することができます。
 現在のところ (将来もそうでしょうが) 全ての対象にアクセスできるわけではありません。
 (もし何か欠けている機能があったら作者に知らせてください。それを追加しましょう)。
@@ -1210,6 +1210,8 @@ a[4][0] = "Nested array";
 	' table containing (most) TeX font metrics information -->
         fmflags&amp;0x200 =&gt; TeX のフォントメトリック情報を含む '<A HREF="non-standard.html#TeX">TeX</A>' テーブルを生成します。
       <LI>
+<!--	fmflags&amp;0x400 =&gt; generate an ofm file (for omega) -->
+	fmflags&amp;0x400 =&gt; (Omega 用の) OFM ファイルを出力します。
       <LI>
 <!--	fmflags&amp;0x10000 =&gt; generate a tfm file -->
 	fmflags&amp;0x10000 =&gt; TFM ファイルを出力します。
@@ -1640,6 +1642,13 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
 <!--If the clipboard contains a reference to a single glyph then this makes all
     selected glyphs refer to that one. -->
     クリップボードに 1 個のグリフへの参照が含まれているときにこのコマンドを実行すると、選択中のすべてのグリフがそのグリフを参照するようになります。
+    <P>
+<!--Adobe suggests that you avoid this. Use a reference instead. In some situations
+    (I think pdf files is one) having one glyph with several encodings causes
+    problems (Acrobat uses the glyph to back-map through the encoding to work
+    out the unicode code point. But that will fail if a glyph has two unicode
+    code points associated with it). -->
+    Adobe は、それを避けるように勧めています。その代わりに参照を使ってください。いくつかの情況 (PDF がその一例だと思われます) においては 、1 個のグリフが複数の文字符号を持っていると問題が起こります (Acrobat は、Unicode コードポイントを算出するために、グリフから符号位置への逆対応表を使用します。しかし、あるグリフが 2 つの Unicode コードポイントを持っているとそれが失敗します)。
   <DT>
     <A HREF="editmenu.html#Clear">Clear</A>
   <DD>
@@ -3192,10 +3201,10 @@ ApplySubstitution("*","*","vrt2")
     引数 arg の意味は上と同様です。
     この関数は、グリフにアウトライン、参照または画像が含まれているときに真を返します。
   <DT>
-    <B>CharInfo</B>(str)<BR>
-    CharInfo("Kern",glyph-spec)<BR>
-    CharInfo("VKern",glyph-spec)<BR>
-    CharInfo(str,script,lang,tag)
+    <B><A NAME="GlyphInfo">GlyphInfo</A></B>(str)<BR>
+    GlyphInfo("Kern",glyph-spec)<BR>
+    GlyphInfo("VKern",glyph-spec)<BR>
+    GlyphInfo(str,script,lang,tag)
   <DD>
 <!--There must be exactly one glyph selected in the font, and this returns
     information on it. The information returned depends on str with the obvious
@@ -3321,9 +3330,26 @@ ApplySubstitution("*","*","vrt2")
 	truetype/opentype font is generated (to the index in the generated font). -->
 	"GlyphIndex" は、TrueType フォントの 'glyf' 内で選択中のグリフが位置するインデックスを返します。グリフが後から作成された場合は -1 を返します。
 	この値は、TrueType/OpenType フォントが生成された時には (生成されたフォント内のインデックスに) 変更される可能性があります。
+      <LI>
+<!--	"LayerCount" returns the number of layers in the glyph. This will always
+	be 2 (foreground &amp; background) except in the case of a multilayered font. -->
+	"LayerCount" はグリフに含まれるレイヤの個数を返します。マルチレイヤフォント以外では、この値は常に (前面と背面で) 2 が返されます。
+      <LI>
+<!--	"RefCount" returns the number of references in the glyph -->
+	"RefCount" はグリフ内の参照の個数を返します。
+      <LI>
+<!--	"RefNames" returns an array containing the names of all glyphs refered to.
+	This may contain 0 elements. This may contain a glyph twice ("colon" might
+	refer twice to period) -->
+	"RefNames" は、参照している全グリフの名前を含む 1 個の配列を返します。この配列の要素数が 0 であることもあります。この配列には同一のグリフを 2 回含むことがあります ("colon" はピリオドを 2 回参照するでしょう)。
+      <LI>
+<!--	"RefTransform" returns an array of arrays. The bottom most arrays are 6 element
+	(real) transformation matrices which are applied to their respective glyphs. -->
+	"RefTransform" は配列の配列を返します。いちばん下の配列は、それぞれ対応するグリフに適用される 6 要素の (実数値) 変換行列です。
     </UL>
     <P>
-    Examples:
+<!--    Examples: -->
+    例:
     <BLOCKQUOTE>
       <PRE>Select("A")
 lbearing = CharInfo("LBearing")
@@ -3335,6 +3361,11 @@ Select("a")
 verta = CharInfo("Substitution","*","dflt","vrt2")
 </PRE>
     </BLOCKQUOTE>
+  <DT>
+    CharInfo(str)
+  <DD>
+<!--Depreciated name for <A HREF="#GlyphInfo">GlyphInfo</A> -->
+    <A HREF="#GlyphInfo">GlyphInfo</A> の廃止された名前です。
   <DT>
     SetGlyphTeX(height,depth[,subpos,suppos])
   <DD>

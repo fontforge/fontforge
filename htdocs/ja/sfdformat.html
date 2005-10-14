@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 18-Sep-2005 -->
+  <!-- AP: Last modified: 2-Oct-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
 <!--<TITLE>Spline Font Database File Format</TITLE>-->
     <TITLE>スプラインフォントデータベースファイルフォーマット</TITLE>
@@ -372,10 +372,12 @@ can at least preserve the data): -->
 <P>
 <!--
 The first line says that the 'prep' table is 4360 bytes long. Subsequent
-lines will provide 4360 bytes of data, packed in Enc85 (which takes binary
+lines will provide 4360 bytes of data, packed in
+<A HREF="#ASCII85Encode">ASCII85Encode<SUP>1</SUP></A> (which takes binary
 data and packs it into ASCII without too much expansion. See the PostScript
-Reference Manual for a description of this packing). -->
-最初の行は、'prep' テーブルの長さが 4360 バイトであることを表します。後ろに続く行には、4360 バイトのデータが Enc85 (入力されたバイナリデータをあまりサイズを大きくしないで ASCII にパックします。この方式の説明は、PostScript リファレンスマニュアルを参照してください) にパックされて納められています。
+Reference Manual (3rd edition, pages 131-132) for a description of this packing,
+or <CODE>$&nbsp;man&nbsp;btoa</CODE>). -->
+最初の行は、'prep' テーブルの長さが 4360 バイトであることを表します。後ろに続く行には、4360 バイトのデータが <A HREF="#ASCII85Encode">ASCII85Encode<SUP>1</SUP></A> (入力されたバイナリデータをあまりサイズを大きくしないで ASCII にパックします。この方式の説明は、PostScript リファレンスマニュアル (第3版、原書 131～132 ページ) を参照するか、<CODE>$&nbsp;man&nbsp;btoa</CODE> で調べてください) にパックされて納められています。
 <P>
 <!--
 The <CODE>LangName</CODE> entries represent the TrueType name table: the
@@ -954,8 +956,8 @@ EndTtf
 </BLOCKQUOTE>
 <P>
 <!--
-This is 107 bytes of Enc85 encoded binary data. -->
-これは Enc85 で符号化された 107 バイトのバイナリデータです。
+This is 107 bytes of ASCII85Encode encoded binary data. -->
+これは ASCII85Encode で符号化された 107 バイトのバイナリデータです。
 <P>
 <!--
 If the character contains Anchor Points these will be included: -->
@@ -1354,4 +1356,49 @@ Bitmaps are not preserved. Grid changes are not preserved. -->
 <P ALIGN=Center>
 -- <A HREF="src.html">前</A> -- <A HREF="overview.html">目次</A> --
 <A HREF="bezier.html">次</A> --
+<P ALIGN=Left>
+<!--
+<A NAME="ASCII85Encode"><SUP>1</SUP>ASCII85Encode</A>: an encoding which
+takes 4 binary bytes and converts them to 5 ASCII characters between '!'
+and 'u'. Suppose we have 4 binary bytes: (b1 b2 b3 b4) then we want to find
+(c1 c2 c3 c4 c5) such that: -->
+<A NAME="ASCII85Encode"><SUP>1</SUP>ASCII85Encode</A>: 4 バイトのバイナリを '!' から 'u' までの ASCII 文字 5 文字に変換する符号化方式の一つです。バイナリ 4 バイト (b1 b2 b3 b4) があるとして、それに対して次の条件を満たす (c1 c2 c3 c4 c5) を探すことを考えましょう:
+<BLOCKQUOTE>
+  <PRE><I>b<SUB>1</SUB> * 256<SUP>3</SUP>  +  b<SUB>2</SUB> * 256<SUP>2</SUP>  +  b<SUB>3</SUB> * 256  +  b<SUB>4</SUB> =</I>
+<I>	c<SUB>1</SUB> * 85<SUP>4</SUP>  +  c<SUB>2</SUB> * 85<SUP>3</SUP>  +  c<SUB>3</SUB> * 85<SUP>2</SUP>  +  c<SUB>4</SUB> * 85  +  c<SUB>5</SUB></I>
+</PRE>
+</BLOCKQUOTE>
+<P>
+<!--
+The final output is obtained by adding 33 ('!') to each of the
+<I>c<SUB>i</SUB></I>. If all four bytes are 0, then rather than writing '!!!!!',
+the letter 'z' may be used instead. -->
+最終的な出力は、<I>c<SUB>i</SUB></I> のそれぞれの値に 33 ('!') を加えることによって得られます。4 つのバイトがすべて 0 の場合、'!!!!!' を書き出さないで代わりに文字 'z' を使うことができます。
+<P>
+<!--
+Unfortunately, not all streams of binary data have a length divisible by
+4. So at the end of the run, assume there are <I>n</I> bytes left over. Append
+<I>4-n</I> zero bytes to the data stream, and apply the above transformation
+(without the 'z' special case for all zeros), and output <I>n+1 </I>of the
+<I>c<SUB>i</SUB></I> bytes. -->
+残念ながら、バイナリデータのストリームの長さは必ずしも 4 で割り切れるわけではありません。そこで、一連のデータの最後に <I>n</I> バイトが残っていたとしましょう。その場合、<I>4-n</I> 個のゼロバイトをデータストリームの末尾に付け加え、上記の変換を適用し (すべてゼロの場合に 'z' を出力する特別な処理を除く)、<I>c<SUB>i</SUB></I> のバイト列のうち最初の <I>n+1</I> 個を出力します。
+<P>
+<!--
+So to encode a single 0 byte we would: -->
+ですから、1 個のバイト値 0 を変換するした場合には以下のようになります:
+<UL>
+  <LI>
+<!--append 3 additional 0 bytes (n==1 =&gt; add 4-1=3 bytes)-->
+    3 個の追加の 0 を後ろに追加する (n==1 =&gt; 4-1=3 バイトを追加)
+  <LI>
+<!--find that all the <I>c<SUB>i</SUB></I> were also zero-->
+    すべての <I>c<SUB>i</SUB></I> が 0 になる
+  <LI>
+<!--add '!' to each (all are now '!')-->
+    それぞれに '!' を加える (全バイトが '!' になる)
+  <LI>
+<!--output two '!' (n+1 = 2)-->
+    2 個の '!' を追加する (n+1 = 2 だから)
+</UL>
+<P>
 </BODY></HTML>

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 20-Jul-2005 -->
+  <!-- AP: Last modified: 5-Oct-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>The Edit Menu</TITLE>--> 
     <TITLE>編集メニュー</TITLE>
@@ -422,6 +422,13 @@ view this menu will be disabled when one of the text fields has the focus. -->
     the space glyph, Copy Ref, select the non-breaking-space glyph and Same Glyph
     As). -->
     フォントビューでのみ使用可能です。クリップボードに文字への参照が 1 個だけ含まれているときにこのコマンドを適用すると、選択中のすべての符号位置が同一のグリフを参照するようになります。(例えば、ノンブレーキングスペース文字 (U+00A0) はスペース文字と同じグリフを使うことがしばしばあります。これを実現するためには、スペース文字のグリフを選択し、参照をコピー(O) を実行してからノンブレーキングスペース文字のグリフを選択して 同じ文字として設定(M) を実行します。
+    <P>
+<!--Adobe suggests that you avoid this. Use a reference instead. In some situations
+    (I think pdf files is one) having one glyph with several encodings causes
+    problems (Acrobat uses the glyph to back-map through the encoding to work
+    out the unicode code point. But that will fail if a glyph has two unicode
+    code points associated with it). -->
+    Adobe は、それを避けるように勧めています。その代わりに参照を使ってください。いくつかの情況 (PDF がその一例だと思われます) においては 、1 個のグリフが複数の文字符号を持っていると問題が起こります (Acrobat は、Unicode コードポイントを算出するために、グリフから符号位置への逆対応表を使用します。しかし、あるグリフが 2 つの Unicode コードポイントを持っているとそれが失敗します)。
   <DT>
 <!--<A NAME="Clear">Clear</A>-->
     <A NAME="Clear">クリア(L)</A>
