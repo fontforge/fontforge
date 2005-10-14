@@ -683,10 +683,10 @@ uint16 _MacStyleCode( char *styles, SplineFont *sf, uint16 *psstylecode ) {
     }
     if ( (psstyle&psf_extend) && (psstyle&psf_condense) ) {
 	if ( sf!=NULL )
-	    LogError( "Warning: %s(%s) is both extended and condensed. That's impossible.\n",
+	    LogError( _("Warning: %s(%s) is both extended and condensed. That's impossible.\n"),
 		    sf->fontname, sf->origname );
 	else
-	    LogError( "Warning: Both extended and condensed. That's impossible.\n" );
+	    LogError( _("Warning: Both extended and condensed. That's impossible.\n") );
 	psstyle &= ~psf_extend;
 	stylecode &= ~sf_extend;
     }
@@ -861,10 +861,8 @@ static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,
     if ( strmatch(map->enc->enc_name,"mac")!=0 &&
 	    strmatch(map->enc->enc_name,"macintosh")!=0 &&
 	    strmatch(map->enc->enc_name,"macroman")!=0 ) {
-#if defined(FONTFORGE_CONFIG_GTK)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 	if ( !dottf ) gwwv_post_notice(_("The generated font won't work with ATM"),_("ATM requires that fonts be encoded with the Macintosh Latin encoding. This postscript font will print fine, but only the bitmap versions will be displayed on the screen"));
-#else
-	if ( !dottf ) GWidgetPostNoticeR(_STR_NoATM,_STR_BadEncodingForATM);
 #endif
 	glyphenc = ftell( res );
 	fseek(res,geoffset,SEEK_SET);
@@ -1217,10 +1215,8 @@ static uint32 SFsToFOND(FILE *res,struct sflist *sfs,uint32 id,int format,int bf
 	    strmatch(psfaces[0]->map->enc->enc_name,"macintosh")!=0 &&
 	    strmatch(psfaces[0]->map->enc->enc_name,"macroman")!=0 ) {
 	if ( format==ff_pfbmacbin )
-#if defined(FONTFORGE_CONFIG_GTK)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 	    gwwv_post_notice(_("The generated font won't work with ATM"),_("ATM requires that fonts be encoded with the Macintosh Latin encoding. This postscript font will print fine, but only the bitmap versions will be displayed on the screen"));
-#else
-	    GWidgetPostNoticeR(_STR_NoATM,_STR_BadEncodingForATM);
 #endif
 	glyphenc = ftell( res );
 	fseek(res,geoffset,SEEK_SET);
@@ -1961,7 +1957,7 @@ static SplineFont *SearchPostscriptResources(FILE *f,long rlistpos,int subcnt,lo
 
     pfb = tmpfile();
     if ( pfb==NULL ) {
-	LogError( "Can't open temporary file for postscript output\n" );
+	LogError( _("Can't open temporary file for postscript output\n") );
 	fseek(f,here,SEEK_SET );
 	free(offsets);
 return(NULL);
@@ -1981,7 +1977,7 @@ return(NULL);
 	    if ( rsrcids[j]==id )
 		break;
 	if ( j == subcnt ) {
-	    LogError( "Missing POST resource %u\n", id );
+	    LogError( _("Missing POST resource %u\n"), id );
 	    break;
 	}
 	id = id + 1;
@@ -2017,7 +2013,7 @@ return(NULL);
 	    if ( max<0x800 ) max = 0x800;
 	    buffer=galloc(max);
 	    if ( buffer==NULL ) {
-		LogError( "Out of memory\n" );
+		LogError( _("Out of memory\n") );
 		exit( 1 );
 	    }
 	}
@@ -2063,13 +2059,13 @@ static SplineFont *SearchTtfResources(FILE *f,long rlistpos,int subcnt,long rdat
     FILE *ttf;
     SplineFont *sf;
     int which = 0;
-    unichar_t **names;
+    char **names;
     char *pt,*lparen;
     char *chosenname=NULL;
 
     fseek(f,rlistpos,SEEK_SET);
     if ( subcnt>1 || (flags&ttf_onlynames) ) {
-	names = gcalloc(subcnt,sizeof(unichar_t *));
+	names = gcalloc(subcnt+1,sizeof(char *));
 	for ( i=0; i<subcnt; ++i ) {
 	    /* resource id = */ getushort(f);
 	    /* rname = (short) */ getushort(f);
@@ -2082,18 +2078,12 @@ static SplineFont *SearchTtfResources(FILE *f,long rlistpos,int subcnt,long rdat
 	    if ( names[i]==NULL ) {
 		char buffer[32];
 		sprintf( buffer, "Nameless%d", i );
-		names[i] = uc_copy(buffer);
+		names[i] = copy(buffer);
 	    }
 	    fseek(f,here,SEEK_SET);
 	}
 	if ( flags&ttf_onlynames ) {
-	    char **ret = gcalloc(subcnt+1,sizeof(char *));
-	    for ( i=0; i<subcnt; ++i ) {
-		ret[i] = cu_copy(names[i]);
-		free(names[i]);
-	    }
-	    free(names);
-return( (SplineFont *) ret );
+return( (SplineFont *) names );
 	}
 	if ((pt = strrchr(filename,'/'))==NULL ) pt = filename;
 	if ( (lparen = strchr(pt,'('))!=NULL && strchr(lparen,')')!=NULL ) {
@@ -2101,35 +2091,28 @@ return( (SplineFont *) ret );
 	    pt = strchr(find,')');
 	    if ( pt!=NULL ) *pt='\0';
 	    for ( which=subcnt-1; which>=0; --which )
-		if ( uc_strcmp(names[which],find)==0 )
+		if ( strcmp(names[which],find)==0 )
 	    break;
 	    if ( which==-1 ) {
 		char *fn = copy(filename);
 		fn[lparen-filename] = '\0';
-#if defined(FONTFORGE_CONFIG_GTK)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 		gwwv_post_error(_("Not in Collection"),_("%s is not in %.100s"),find,fn);
-#else
-		GWidgetErrorR(_STR_NotInCollection,_STR_FontNotInCollection,find,fn);
 #endif
 		free(fn);
 	    }
 	    free(find);
-#if defined(FONTFORGE_CONFIG_GDRAW)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 	} else if ( no_windowing_ui )
 	    which = 0;
 	else
-	    which = GWidgetChoicesR(_STR_PickFont,(const unichar_t **) names,subcnt,0,_STR_MultipleFontsPick);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	} else if ( no_windowing_ui )
-	    which = 0;
-	else
-	    which = gwwv_choose(_("Pick a font, any font..."),(const unichar_t **) names,subcnt,0,_("There are multiple fonts in this file, pick one"));
-#elif defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
+	    which = gwwv_choose(_("Pick a font, any font..."),(const char **) names,subcnt,0,_("There are multiple fonts in this file, pick one"));
+#else
 	} else
 	    which = 0;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	if ( lparen==NULL && which!=-1 )
-	    chosenname = cu_copy(names[which]);
+	    chosenname = copy(names[which]);
 	for ( i=0; i<subcnt; ++i )
 	    free(names[i]);
 	free(names);
@@ -2149,7 +2132,7 @@ return( (SplineFont *) ret );
 
 	ttf = tmpfile();
 	if ( ttf==NULL ) {
-	    LogError( "Can't open temporary file for truetype output.\n" );
+	    LogError( _("Can't open temporary file for truetype output.\n") );
     continue;
 	}
 
@@ -2513,7 +2496,7 @@ return;
     free(font.offsetWidths);
 }
 
-static unichar_t *BuildName(char *family,int style) {
+static char *BuildName(char *family,int style) {
     char buffer[350];
 
     strncpy(buffer,family,200);
@@ -2533,7 +2516,7 @@ static unichar_t *BuildName(char *family,int style) {
 	strcat(buffer,"Condensed");
     if ( style&sf_extend )
 	strcat(buffer,"Extended");
-return( uc_copy(buffer));
+return( copy(buffer));
 }
 
 static int GuessStyle(char *fontname,int *styles,int style_cnt) {
@@ -2552,7 +2535,7 @@ static FOND *PickFOND(FOND *fondlist,char *filename,char **name, int *style) {
     int i,j;
     FOND *test;
     uint8 stylesused[96];
-    unichar_t **names;
+    char **names;
     FOND **fonds, *fond;
     int *styles;
     int cnt, which;
@@ -2576,7 +2559,7 @@ return( test );
 
     /* The file may contain multiple families, and each family may contain */
     /*  multiple styles (and each style may contain multiple sizes, but that's */
-    /*  not an issue for us) */
+    /*  not an issue for us here) */
     names = NULL;
     for ( i=0; i<2; ++i ) {
 	cnt = 0;
@@ -2603,33 +2586,27 @@ return( test );
 
     if ( find!=NULL ) {
 	for ( which=cnt-1; which>=0; --which )
-	    if ( uc_strcmp(names[which],find)==0 )
+	    if ( strcmp(names[which],find)==0 )
 	break;
 	if ( which==-1 && strstrmatch(find,test->fondname)!=NULL )
 	    which = GuessStyle(find,styles,cnt);
 	if ( which==-1 ) {
 	    char *fn = copy(filename);
 	    fn[lparen-filename] = '\0';
-#if defined(FONTFORGE_CONFIG_GTK)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 	    gwwv_post_error(_("Not in Collection"),_("%s is not in %.100s"),find,fn);
-#else
-	    GWidgetErrorR(_STR_NotInCollection,_STR_FontNotInCollection,find,fn);
 #endif
 	    free(fn);
 	}
 	free(find);
     } else if ( cnt==1 )
 	which = 0;
-#if defined(FONTFORGE_CONFIG_GDRAW)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
     else if ( no_windowing_ui )
 	which = 0;
     else
-	which = GWidgetChoicesR(_STR_PickFont,(const unichar_t **) names,cnt,0,_STR_MultipleFontsPick);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    else if ( no_windowing_ui )
-	which = 0;
-    else
-	which = gwwv_choose(_("Pick a font, any font..."),(const unichar_t **) names,subcnt,0,_("There are multiple fonts in this file, pick one"));
+	which = gwwv_choose(_("Pick a font, any font..."),(const char **) names,cnt,0,
+		_("There are multiple fonts in this file, pick one"));
 #elif defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
     else
 	which = 0;
@@ -2637,7 +2614,7 @@ return( test );
 
     if ( which!=-1 ) {
 	fond = fonds[which];
-	*name = cu_copy(names[which]);
+	*name = copy(names[which]);
 	*style = styles[which];
     }
     for ( i=0; i<cnt; ++i )
@@ -2750,7 +2727,7 @@ return( NULL );
 	if ( fond->stylekerns[i].style==style )
     break;
     if ( i==fond->stylekerncnt ) {
-	LogError("No kerning table for %s\n", name );
+	LogError(_("No kerning table for %s\n"), name );
 	free(name);
 return( NULL );
     }
@@ -2783,11 +2760,11 @@ static SplineFont *MightBeTrueType(FILE *binary,int32 pos,int32 dlen,int flags) 
 
     if ( flags&ttf_onlynames ) {
 	char **ret;
-	unichar_t *utemp = TTFGetFontName(binary,pos,pos);
-	if ( utemp==NULL )
+	char *temp = TTFGetFontName(binary,pos,pos);
+	if ( temp==NULL )
 return( NULL );
 	ret = galloc(2*sizeof(char *));
-	ret[0] = cu_copy(utemp);
+	ret[0] = temp;
 	ret[1] = NULL;
 return( (SplineFont *) ret );
     }
@@ -2992,7 +2969,7 @@ static SplineFont *IsResourceInHex(FILE *f,char *filename,int flags,SplineFont *
     SplineFont *ret;
 
     if ( binary==NULL ) {
-	LogError( "can't create temporary file\n" );
+	LogError( _("can't create temporary file\n") );
 return( NULL );
     }
 
@@ -3151,9 +3128,9 @@ SplineFont *SFReadMacBinary(char *filename,int flags) {
     SplineFont *sf = FindResourceFile(filename,flags,NULL,NULL);
 
     if ( sf==NULL )
-	LogError( "Couldn't find a font file named %s\n", filename );
+	LogError( _("Couldn't find a font file named %s\n"), filename );
     else if ( sf==(SplineFont *) (-1) ) {
-	LogError( "%s is a mac resource file but contains no postscript or truetype fonts\n", filename );
+	LogError( _("%s is a mac resource file but contains no postscript or truetype fonts\n"), filename );
 	sf = NULL;
     }
 return( sf );

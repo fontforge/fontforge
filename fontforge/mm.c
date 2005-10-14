@@ -91,7 +91,7 @@ static char *cdv_4axis[3] = {
     "}"
 };
 
-static int axistablab[] = { _STR_Axis1, _STR_Axis2, _STR_Axis3, _STR_Axis4 };
+static char *axistablab[] = { N_("Axis 1"), N_("Axis 2"), N_("Axis 3"), N_("Axis 4") };
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 char *MMAxisAbrev(char *axis_name) {
@@ -124,40 +124,6 @@ return( axismap->designs[j-1]+ t*(axismap->designs[j]-axismap->designs[j-1]) );
 return(axismap->designs[axismap->points-1]);
 }
 
-#include <chardata.h>
-static char *ASCIIName(unichar_t *str) {
-    char *pt, *ret;
-    const unichar_t *upt;
-
-    pt = ret = galloc(2*u_strlen(str)+1);
-    while ( *str ) {
-	if ( *str=='/' || *str=='[' || *str==']' || *str=='{' || *str=='}' ||
-		*str=='(' || *str==')' || *pt<=' ' )
-	    *pt++ = ' ';
-	else if ( *str<0x7f )
-	    *pt++ = *str;
-	else if ( *str==(uint8) 'Æ' ) {
-	    *pt++ = 'A'; *pt++ = 'E';
-	} else if ( *str==(uint8) 'æ' ) {
-	    *pt++ = 'a'; *pt++ = 'e';
-	} else if ( *str==0152 ) {
-	    *pt++ = 'O'; *pt++ = 'E';
-	} else if ( *str==0153 ) {
-	    *pt++ = 'o'; *pt++ = 'e';
-	} else if ( unicode_alternates[*str>>8]!=NULL &&
-		(upt = unicode_alternates[*str>>8][*str&0xff])!=NULL &&
-		((*upt>='A' && *upt<='Z') || (*upt>='a' && *upt<='z')))
-	    *pt++ = *upt;
-	else {
-	    free(ret);
-return( NULL );
-	}
-	++str;
-    }
-    *pt = '\0';
-return( ret );
-}
-
 static char *_MMMakeFontname(MMSet *mm,real *normalized,char **fullname) {
     char *pt, *pt2, *hyphen=NULL;
     char *ret = NULL;
@@ -180,21 +146,16 @@ static char *_MMMakeFontname(MMSet *mm,real *normalized,char **fullname) {
 	break;
 	}
 	if ( i!=mm->named_instance_count ) {
-	    unichar_t *styles = PickNameFromMacName(mm->named_instances[i].names);
-	    char *cstyles = ASCIIName(styles);
-	    free(styles);
-	    if ( cstyles==NULL ) {
+	    char *styles = PickNameFromMacName(mm->named_instances[i].names);
+	    if ( styles==NULL )
 		styles = FindEnglishNameInMacName(mm->named_instances[i].names);
-		cstyles = ASCIIName(styles);
-		free(styles);
-	    }
-	    if ( cstyles!=NULL ) {
-		ret = galloc(strlen(mm->normal->familyname)+ strlen(cstyles)+3 );
+	    if ( styles!=NULL ) {
+		ret = galloc(strlen(mm->normal->familyname)+ strlen(styles)+3 );
 		strcpy(ret,mm->normal->familyname);
 		hyphen = ret+strlen(ret);
 		strcpy(hyphen," ");
-		strcpy(hyphen+1,cstyles);
-		free(cstyles);
+		strcpy(hyphen+1,styles);
+		free(styles);
 	    }
 	}
     }
@@ -560,14 +521,14 @@ return( false );
 #if defined(FONTFORGE_CONFIG_GTK)
 		    gwwv_post_error(_("Bad Multiple Master Font"),_("The font %.30s contains cubic splines. It must be converted to quadratic splines before it can be used in an apple distortable font"),
 #else
-		    GWidgetErrorR(_STR_BadMM,_STR_MMOrder3,
+		    gwwv_post_error(_("Bad Multiple Master Font"),_("The font %.30s contains cubic splines. It must be converted to quadratic splines before it can be used in an apple distortable font"),
 #endif
 			    mm->instances[i]->fontname);
 		else
 #if defined(FONTFORGE_CONFIG_GTK)
 		    gwwv_post_error(_("Bad Multiple Master Font"),_("The font %.30s contains quadratic splines. It must be converted to cubic splines before it can be used in a multiple master"),
 #else
-		    GWidgetErrorR(_STR_BadMM,_STR_MMOrder2,
+		    gwwv_post_error(_("Bad Multiple Master Font"),_("The font %.30s contains quadratic splines. It must be converted to cubic splines before it can be used in a multiple master"),
 #endif
 			    mm->instances[i]->fontname);
 	    }
@@ -582,7 +543,7 @@ return( false );
 #if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Bad Multiple Master Font"),_("There is no ForceBoldThreshold entry in the weighted font, but there is a ForceBold entry in font %30s"),
 #else
-	    GWidgetErrorR(_STR_BadMM,_STR_MMNeedsBoldThresh,
+	    gwwv_post_error(_("Bad Multiple Master Font"),_("There is no ForceBoldThreshold entry in the weighted font, but there is a ForceBold entry in font %30s"),
 #endif
 		    sf->fontname);
 return( false );
@@ -594,7 +555,7 @@ return( false );
 #if defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Bad Multiple Master Font"),_("The fonts %1$.30s and %2$.30s have a different number of glyphs or different encodings"),
 #else
-		GWidgetErrorR(_STR_BadMM,_STR_MMDifferentNumGlyphs,
+		gwwv_post_error(_("Bad Multiple Master Font"),_("The fonts %1$.30s and %2$.30s have a different number of glyphs or different encodings"),
 #endif
 			sf->fontname, mm->instances[j]->fontname);
 return( false );
@@ -603,7 +564,7 @@ return( false );
 #if defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Bad Multiple Master Font"),_("The fonts %1$.30s and %2$.30s use different types of splines (one quadratic, one cubic)"),
 #else
-		GWidgetErrorR(_STR_BadMM,_STR_MMDifferentOrder,
+		gwwv_post_error(_("Bad Multiple Master Font"),_("The fonts %1$.30s and %2$.30s use different types of splines (one quadratic, one cubic)"),
 #endif
 			sf->fontname, mm->instances[j]->fontname);
 return( false );
@@ -615,7 +576,7 @@ return( false );
 #if defined(FONTFORGE_CONFIG_GTK)
 		    gwwv_post_error(_("Bad Multiple Master Font"),_("There is no ForceBoldThreshold entry in the weighted font, but there is a ForceBold entry in font %30s"),
 #else
-		    GWidgetErrorR(_STR_BadMM,_STR_MMNeedsBoldThresh,
+		    gwwv_post_error(_("Bad Multiple Master Font"),_("There is no ForceBoldThreshold entry in the weighted font, but there is a ForceBold entry in font %30s"),
 #endif
 			    mm->instances[j]->fontname);
 return( false );
@@ -627,7 +588,7 @@ return( false );
 #if defined(FONTFORGE_CONFIG_GTK)
 			gwwv_post_error(_("Bad Multiple Master Font"),_("The entry \"%1$.20s\" is not present in the private dictionary of both %2$.30s and %3$.30s"),
 #else
-			GWidgetErrorR(_STR_BadMM,_STR_MMPrivateMismatch,
+			gwwv_post_error(_("Bad Multiple Master Font"),_("The entry \"%1$.20s\" is not present in the private dictionary of both %2$.30s and %3$.30s"),
 #endif
 				arrnames[i], sf->fontname, mm->instances[j]->fontname);
 return( false );
@@ -645,14 +606,14 @@ return( false );
 #if defined(FONTFORGE_CONFIG_GTK)
 			gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s is defined in font %2$.30s but not in %3$.30s"),
 #else
-			GWidgetErrorR(_STR_BadMM,_STR_MMUndefGlyph,
+			gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s is defined in font %2$.30s but not in %3$.30s"),
 #endif
 				sf->glyphs[i]->name,sf->fontname, mm->instances[j]->fontname);
 		    else
 #if defined(FONTFORGE_CONFIG_GTK)
 			gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s is defined in font %2$.30s but not in %3$.30s"),
 #else
-			GWidgetErrorR(_STR_BadMM,_STR_MMUndefGlyph,
+			gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s is defined in font %2$.30s but not in %3$.30s"),
 #endif
 				mm->instances[j]->glyphs[i]->name, mm->instances[j]->fontname,sf->fontname);
 		}
@@ -666,7 +627,7 @@ return( false );
 #if defined(FONTFORGE_CONFIG_GTK)
 		    gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s in %2$.30s has both references and contours. This is not supported in a font with variations"),
 #else
-		    GWidgetErrorR(_STR_BadMM,_STR_MMBothRefSplines,
+		    gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s in %2$.30s has both references and contours. This is not supported in a font with variations"),
 #endif
 			    sf->glyphs[i]->name,sf->fontname);
 		}
@@ -680,7 +641,7 @@ return( false );
 #if defined(FONTFORGE_CONFIG_GTK)
 			gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s in %2$.30s has both references and contours. This is not supported in a font with variations"),
 #else
-			GWidgetErrorR(_STR_BadMM,_STR_MMBothRefSplines,
+			gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s in %2$.30s has both references and contours. This is not supported in a font with variations"),
 #endif
 				sf->glyphs[i]->name,mm->instances[j]->fontname);
 		    }
@@ -692,7 +653,7 @@ return( false );
 #if defined(FONTFORGE_CONFIG_GTK)
 			gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s has a different number of contours in font %2$.30s than in %3$.30s"),
 #else
-			GWidgetErrorR(_STR_BadMM,_STR_MMWrongContourCount,
+			gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s has a different number of contours in font %2$.30s than in %3$.30s"),
 #endif
 				sf->glyphs[i]->name,sf->fontname, mm->instances[j]->fontname);
 		    }
@@ -703,7 +664,7 @@ return( false );
 #if defined(FONTFORGE_CONFIG_GTK)
 			gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s in font %2$.30s has a different number of points (or control points) on its contours than in %3$.30s"),
 #else
-			GWidgetErrorR(_STR_BadMM,_STR_MMMismatchContoursPt,
+			gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s in font %2$.30s has a different number of points (or control points) on its contours than in %3$.30s"),
 #endif
 				sf->glyphs[i]->name,sf->fontname, mm->instances[j]->fontname);
 		    }
@@ -714,7 +675,7 @@ return( false );
 #if defined(FONTFORGE_CONFIG_GTK)
 			gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s in font %2$.30s has contours running in a different direction than in %3$.30s"),
 #else
-			GWidgetErrorR(_STR_BadMM,_STR_MMMismatchContoursDir,
+			gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s in font %2$.30s has contours running in a different direction than in %3$.30s"),
 #endif
 				sf->glyphs[i]->name,sf->fontname, mm->instances[j]->fontname);
 		    }
@@ -725,7 +686,7 @@ return( false );
 #if defined(FONTFORGE_CONFIG_GTK)
 			gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s in font %2$.30s has a different number of references than in %3$.30s"),
 #else
-			GWidgetErrorR(_STR_BadMM,_STR_MMMismatchRefs,
+			gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s in font %2$.30s has a different number of references than in %3$.30s"),
 #endif
 				sf->glyphs[i]->name,sf->fontname, mm->instances[j]->fontname);
 		    }
@@ -736,7 +697,7 @@ return( false );
 #if defined(FONTFORGE_CONFIG_GTK)
 			gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s in font %2$.30s has references with different scaling or rotation (etc.) than in %3$.30s"),
 #else
-			GWidgetErrorR(_STR_BadMM,_STR_MMMismatchRefTrans,
+			gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s in font %2$.30s has references with different scaling or rotation (etc.) than in %3$.30s"),
 #endif
 				sf->glyphs[i]->name,sf->fontname, mm->instances[j]->fontname);
 		    }
@@ -747,7 +708,7 @@ return( false );
 #if defined(FONTFORGE_CONFIG_GTK)
 			gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s in font %2$.30s has a different set of kern pairs than in %3$.30s"),
 #else
-			GWidgetErrorR(_STR_BadMM,_STR_MMMismatchKerns,
+			gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s in font %2$.30s has a different set of kern pairs than in %3$.30s"),
 #endif
 				"vertical", sf->glyphs[i]->name,sf->fontname, mm->instances[j]->fontname);
 		    }
@@ -760,7 +721,7 @@ return( false );
 #if defined(FONTFORGE_CONFIG_GTK)
 		    gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s has a different numbering of points (and control points) on its contours than in the various instances of the font"),
 #else
-		    GWidgetErrorR(_STR_BadMM,_STR_MMMismatchContoursPtNum,
+		    gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s has a different numbering of points (and control points) on its contours than in the various instances of the font"),
 #endif
 			    sf->glyphs[i]->name);
 		}
@@ -774,7 +735,7 @@ return( false );
 #if defined(FONTFORGE_CONFIG_GTK)
 			    gwwv_post_error(_("Bad Multiple Master Font"),_("The %1$s hints in glyph \"%2$.30s\" in font %3$.30s do not match those in %4$.30s (different number or different overlap criteria)"),
 #else
-			    GWidgetErrorR(_STR_BadMM,_STR_MMMismatchHints,
+			    gwwv_post_error(_("Bad Multiple Master Font"),_("The %1$s hints in glyph \"%2$.30s\" in font %3$.30s do not match those in %4$.30s (different number or different overlap criteria)"),
 #endif
 				    "horizontal", sf->glyphs[i]->name,sf->fontname, mm->instances[j]->fontname);
 			}
@@ -785,7 +746,7 @@ return( false );
 #if defined(FONTFORGE_CONFIG_GTK)
 			    gwwv_post_error(_("Bad Multiple Master Font"),_("The %1$s hints in glyph \"%2$.30s\" in font %3$.30s do not match those in %4$.30s (different number or different overlap criteria)"),
 #else
-			    GWidgetErrorR(_STR_BadMM,_STR_MMMismatchHints,
+			    gwwv_post_error(_("Bad Multiple Master Font"),_("The %1$s hints in glyph \"%2$.30s\" in font %3$.30s do not match those in %4$.30s (different number or different overlap criteria)"),
 #endif
 				    "vertical", sf->glyphs[i]->name,sf->fontname, mm->instances[j]->fontname);
 			}
@@ -799,7 +760,7 @@ return( false );
 #if defined(FONTFORGE_CONFIG_GTK)
 			    gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s in font %2$.30s has a different hint mask on its contours than in %3$.30s"),
 #else
-			    GWidgetErrorR(_STR_BadMM,_STR_MMMismatchHintMask,
+			    gwwv_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s in font %2$.30s has a different hint mask on its contours than in %3$.30s"),
 #endif
 				    sf->glyphs[i]->name,sf->fontname, mm->instances[j]->fontname);
 			}
@@ -819,7 +780,7 @@ return( false );
 #if defined(FONTFORGE_CONFIG_GTK)
 			gwwv_post_error(_("Bad Multiple Master Font"),_("The default font does not have a 'cvt ' table, but the instance %.30s does"),
 #else
-			GWidgetErrorR(_STR_BadMM,_STR_MMMissingCVT,
+			gwwv_post_error(_("Bad Multiple Master Font"),_("The default font does not have a 'cvt ' table, but the instance %.30s does"),
 #endif
 				mm->instances[j]->fontname);
 return( false );
@@ -836,7 +797,7 @@ return( false );
 #if defined(FONTFORGE_CONFIG_GTK)
 			gwwv_post_error(_("Bad Multiple Master Font"),_("Instance fonts may only contain a 'cvt ' table, but %.30s has some other truetype table as well"),
 #else
-			GWidgetErrorR(_STR_BadMM,_STR_MMBadTable,
+			gwwv_post_error(_("Bad Multiple Master Font"),_("Instance fonts may only contain a 'cvt ' table, but %.30s has some other truetype table as well"),
 #endif
 				mm->instances[j]->fontname);
 return( false );
@@ -847,7 +808,7 @@ return( false );
 #if defined(FONTFORGE_CONFIG_GTK)
 			gwwv_post_error(_("Bad Multiple Master Font"),_("The 'cvt ' table in instance %.30s is a different size from that in the default font"),
 #else
-			GWidgetErrorR(_STR_BadMM,_STR_MMMismatchCVT,
+			gwwv_post_error(_("Bad Multiple Master Font"),_("The 'cvt ' table in instance %.30s is a different size from that in the default font"),
 #endif
 				mm->instances[j]->fontname);
 return( false );
@@ -860,7 +821,7 @@ return( false );
 #if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_notice(_("OK"),_("No problems detected"));
 #else
-	GWidgetPostNoticeR(_STR_OK,_STR_NoProblems);
+	gwwv_post_notice(_("_OK"),_("No problems detected"));
 #endif
 return( true );
 }
@@ -877,7 +838,7 @@ static SplineChar *SFMakeGlyphLike(SplineFont *sf, int gid, SplineFont *base) {
 return( bsc );
 }
 
-static int _MMBlendChar(MMSet *mm, int gid) {
+static char *_MMBlendChar(MMSet *mm, int gid) {
     int i, j, worthit = -1;
     int all, any, any2, all2, anyend, allend, diff;
     SplineChar *sc;
@@ -890,17 +851,17 @@ static int _MMBlendChar(MMSet *mm, int gid) {
 
     for ( i=0; i<mm->instance_count; ++i ) {
 	if ( mm->instances[i]->order2 )
-return( _STR_MMOrder2NoName );
+return( _("One of the multiple master instances contains quadratic splines. It must be converted to cubic splines before it can be used in a multiple master") );
 	if ( gid>=mm->instances[i]->glyphcnt )
-return( _STR_MMDifferentNumGlyphsNoName );
+return( _("The different instances of this mm have a different number of glyphs") );
 	if ( SCWorthOutputting(mm->instances[i]->glyphs[gid]) ) {
 	    if ( worthit == -1 ) worthit = true;
 	    else if ( worthit != true )
-return( _STR_MMUndefGlyphNoName );
+return( _("This glyph is defined in one instance font but not in another") );
 	} else {
 	    if ( worthit == -1 ) worthit = false;
 	    else if ( worthit != false )
-return( _STR_MMUndefGlyphNoName );
+return( _("This glyph is defined in one instance font but not in another") );
 	}
     }
 
@@ -954,9 +915,9 @@ return( 0 );
 	}
     }
     if ( any )
-return( _STR_MMDiffNumRefs );
+return( _("This glyph contains a different number of references in different instances") );
     if ( diff )
-return( _STR_MMDiffRefEncodings );
+return( _("A references in this glyph refers to a different encoding in different instances") );
 
 	/* Blend Width */
     width = 0;
@@ -1019,7 +980,7 @@ return( _STR_MMDiffRefEncodings );
 		else all2 = false;
 	    }
 	    if ( !all2 && any2 )
-return( _STR_MMPointMismatch );
+return( _("A contour in this glyph contains a different number of points in different instances") );
 	    anyend = false; allend = true;
 	    for ( i=0; i<mm->instance_count; ++i ) {
 		if ( tos[i]==spls[i]->first ) anyend = true;
@@ -1031,7 +992,7 @@ return( _STR_MMPointMismatch );
 	break;
 	    }
 	    if ( anyend )
-return( _STR_MMPointMismatch );
+return( _("A contour in this glyph contains a different number of points in different instances") );
 	}
 	any = false; all = true;
 	for ( i=0; i<mm->instance_count; ++i ) {
@@ -1041,7 +1002,7 @@ return( _STR_MMPointMismatch );
 	}
     }
     if ( any )
-return( _STR_MMContourMismatch );
+return( _("This glyph contains a different number of contours in different instances") );
 
 	/* Blend hints */
     for ( j=0; j<2; ++j ) {
@@ -1077,7 +1038,7 @@ return( _STR_MMContourMismatch );
 	    }
 	}
 	if ( any )
-return( _STR_MMDiffNumHints );
+return( _("This glyph contains a different number of hints in different instances") );
     }
 
 	/* Blend kernpairs */
@@ -1092,7 +1053,7 @@ return( _STR_MMDiffNumHints );
 		if ( kptest->sc->orig_pos==kp0->sc->orig_pos )
 	    break;
 	    if ( kptest==NULL )
-return( _STR_MMDiffKerns );
+return( _("This glyph contains different kerning pairs in different instances") );
 	    off += kptest->off*mm->defweights[i];
 	}
 	kp = chunkalloc(sizeof(KernPair));
@@ -1110,12 +1071,12 @@ return( _STR_MMDiffKerns );
 return( 0 );
 }
 
-int MMBlendChar(MMSet *mm, int gid) {
-    int ret;
+char *MMBlendChar(MMSet *mm, int gid) {
+    char *ret;
     RefChar *ref;
 
     if ( gid>=mm->normal->glyphcnt )
-return( _STR_MMDifferentNumGlyphsNoName );
+return( _("The different instances of this mm have a different number of glyphs") );
     ret = _MMBlendChar(mm,gid);
     if ( mm->normal->glyphs[gid]!=NULL ) {
 	SplineChar *sc = mm->normal->glyphs[gid];
@@ -1213,28 +1174,29 @@ return( private );
 }
 
 int MMReblend(FontView *fv, MMSet *mm) {
-    int olderr, err, i, first = -1;
+    char *olderr, *err;
+    int i, first = -1;
     SplineFont *sf = mm->instances[0];
     RefChar *ref;
 
-    olderr = 0;
+    olderr = NULL;
     for ( i=0; i<sf->glyphcnt; ++i ) {
 	if ( i>=mm->normal->glyphcnt )
     break;
 	err = MMBlendChar(mm,i);
 	if ( mm->normal->glyphs[i]!=NULL )
 	    _SCCharChangedUpdate(mm->normal->glyphs[i],-1);
-	if ( err==0 )
+	if ( err==NULL )
     continue;
-	if ( olderr==0 ) {
+	if ( olderr==NULL ) {
 	    if ( fv!=NULL )
 		FVDeselectAll(fv);
 	    first = i;
 	}
-	if ( olderr==0 || olderr == err )
+	if ( olderr==NULL || olderr == err )
 	    olderr = err;
 	else
-	    olderr = -1;
+	    olderr = (char *) -1;
 	if ( fv!=NULL ) {
 	    int enc = fv->map->backmap[i];
 	    if ( enc!=-1 )
@@ -1251,26 +1213,18 @@ int MMReblend(FontView *fv, MMSet *mm) {
     }
     sf->private = BlendPrivate(sf->private,mm);
 
-    if ( olderr == 0 )	/* No Errors */
+    if ( olderr == NULL )	/* No Errors */
 return( true );
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( fv!=NULL ) {
 	FVScrollToChar(fv,first);
-	if ( olderr==-1 )
-#if defined(FONTFORGE_CONFIG_GTK)
+	if ( olderr==(char *) -1 )
 	    gwwv_post_error(_("Bad Multiple Master Font"),_("Various errors occurred at the selected glyphs"));
-#else
-	    GWidgetErrorR(_STR_BadMM,_STR_MMVariousErrors);
-#endif
 	else
-#if defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_error(_("Bad Multiple Master Font"),_("The following error occurred on the selected glyphs: %.100s"),GStringGetResource(olderr,NULL));
-#else
-	    GWidgetErrorR(_STR_BadMM,_STR_MMSelErr,GStringGetResource(olderr,NULL));
+	    gwwv_post_error(_("Bad Multiple Master Font"),_("The following error occurred on the selected glyphs: %.100s"),olderr);
 #endif
     }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 return( false );
 }
 
@@ -1618,7 +1572,8 @@ static GTextInfo *MMCB_KnownValues(MMSet *mm) {
     ti[0].text = uc_copy(" --- ");
     ti[0].bg = ti[0].fg = COLOR_DEFAULT;
     for ( i=0; i<mm->named_instance_count; ++i ) {
-	ti[i+1].text = PickNameFromMacName(mm->named_instances[i].names);
+	ti[i+1].text = (unichar_t *) PickNameFromMacName(mm->named_instances[i].names);
+	ti[i+1].text_is_1byte = true;
 	ti[i+1].bg = ti[i+1].fg = COLOR_DEFAULT;
     }
 return( ti );
@@ -1676,31 +1631,19 @@ static int GetWeights(GWindow gw, real blends[MmMax], MMSet *mm,
     if ( (explicitblends && i!=instance_count ) ||
 	    (!explicitblends && i!=axis_count ) ||
 	    *upt!='\0' ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_BadMMWeights,_STR_BadOrFewWeights);
-#elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad MM Weights"),_("Incorrect number of instances weights, or illegal numbers"));
-#endif
 return(false);
     }
     if ( explicitblends ) {
 	if ( sum<.99 || sum>1.01 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_BadMMWeights,_STR_WeightsMustBe1);
-#elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Bad MM Weights"),_("The weights for the default version of the font must sum to 1.0"));
-#endif
 return(false);
 	}
     } else {
 	i = ExecConvertDesignVector(blends, i, mm->ndv, mm->cdv,
 		blends);
 	if ( i!=instance_count ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_BadMMWeights,_STR_BadNDVCDV);
-#elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Bad MM Weights"),_("The results produced by applying the NormalizeDesignVector and ConvertDesignVector functions were not the results expected. You may need to change these functions"));
-#endif
 return(false);
 	}
     }
@@ -1716,7 +1659,7 @@ static int MMCB_OKApple(GGadget *g, GEvent *e) {
 	MMSet *mm = mmcb->mm;
 
 	for ( i=0; i<mm->axis_count; ++i )
-	    newcoords[i] = rint(GetRealR(mmcb->gw,1000+i,axistablab[i],&err)*8096)/8096;
+	    newcoords[i] = rint(GetReal8(mmcb->gw,1000+i,_(axistablab[i]),&err)*8096)/8096;
 	if ( err )
 return( true );
 	/* Now normalize each */
@@ -1834,10 +1777,10 @@ return( true );
 }
 
 static int GCDFillupMacWeights(GGadgetCreateData *gcd, GTextInfo *label, int k,
-	unichar_t *axisnames[4], char axisval[4][24],
+	char *axisnames[4], char axisval[4][24],
 	real *defcoords,int axis_count,MMSet *mm) {
     int i;
-    unichar_t *an;
+    char *an;
     char axisrange[80];
 
     for ( i=0; i<axis_count; ++i ) {
@@ -1845,20 +1788,21 @@ static int GCDFillupMacWeights(GGadgetCreateData *gcd, GTextInfo *label, int k,
 		mm->axismaps[i].def, mm->axismaps[i].max );
 	an = PickNameFromMacName(mm->axismaps[i].axisnames);
 	if ( an==NULL )
-	    an = uc_copy(mm->axes[i]);
-	axisnames[i] = galloc((strlen(axisrange)+3+u_strlen(an))*sizeof(unichar_t));
-	u_strcpy(axisnames[i],an);
-	uc_strcat(axisnames[i],axisrange);
+	    an = copy(mm->axes[i]);
+	axisnames[i] = galloc(strlen(axisrange)+3+strlen(an));
+	strcpy(axisnames[i],an);
+	strcat(axisnames[i],axisrange);
 	sprintf(axisval[i],"%.4g", defcoords[i]);
 	free(an);
     }
     for ( ; i<4; ++i ) {
-	axisnames[i] = u_copy(GStringGetResource(axistablab[i],NULL));
+	axisnames[i] = _(axistablab[i]);
 	axisval[i][0] = '\0';
     }
 
     for ( i=0; i<4; ++i ) {
-	label[k].text = axisnames[i];
+	label[k].text = (unichar_t *) axisnames[i];
+	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = k==0 ? 4 : gcd[k-1].gd.pos.y+28;
 	gcd[k].gd.flags = i<axis_count ? (gg_visible | gg_enabled) : gg_visible;
@@ -1887,7 +1831,7 @@ void MMChangeBlend(MMSet *mm,FontView *fv,int tonew) {
     GTextInfo label[14];
     unichar_t *utemp;
     char axisval[4][24];
-    unichar_t *axisnames[4];
+    char *axisnames[4];
     real defcoords[4];
 
     if ( mm==NULL )
@@ -1899,17 +1843,13 @@ return;
     mmcb.tonew = tonew;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.is_dlg = true;
     wattrs.restrict_input_to_me = true;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(tonew ? _STR_MMBlendToNew:_STR_ChangeMMBlend,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = tonew ? _("Blend to New Font...");
-#endif
+    wattrs.utf8_window_title = tonew ? _("Blend to New Font..."):_("MM Change Def Weights...");
     pos.x = pos.y = 0;
 
     if ( !mm->apple ) {
@@ -1930,36 +1870,36 @@ return;
 	memset(&label,0,sizeof(label));
 
 	k=0;
-	label[k].text = (unichar_t *) (tonew ? _STR_BlendNew1 : _STR_ChangeBlend1);
-	label[k].text_in_resource = true;
+	label[k].text = (unichar_t *) (tonew ? _("You may specify the new instance of this font") : _("You may change the default instance of this font"));
+	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = 10;
 	gcd[k].gd.flags = gg_visible | gg_enabled;
 	gcd[k++].creator = GLabelCreate;
 
-	label[k].text = (unichar_t *) _STR_ChangeBlend2;
-	label[k].text_in_resource = true;
+	label[k].text = (unichar_t *) _("either by explicitly entering the contribution");
+	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+13;
 	gcd[k].gd.flags = gg_visible | gg_enabled;
 	gcd[k++].creator = GLabelCreate;
 
-	label[k].text = (unichar_t *) _STR_ChangeBlend3;
-	label[k].text_in_resource = true;
+	label[k].text = (unichar_t *) _("of each master design, or by entering the design");
+	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+13;
 	gcd[k].gd.flags = gg_visible | gg_enabled;
 	gcd[k++].creator = GLabelCreate;
 
-	label[k].text = (unichar_t *) _STR_ChangeBlend4;
-	label[k].text_in_resource = true;
+	label[k].text = (unichar_t *) _("values for each axis");
+	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+13;
 	gcd[k].gd.flags = gg_visible | gg_enabled;
 	gcd[k++].creator = GLabelCreate;
 
-	label[k].text = (unichar_t *) _STR_ContribOfMaster;
-	label[k].text_in_resource = true;
+	label[k].text = (unichar_t *) _("Contribution of each master design");
+	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+16;
 	gcd[k].gd.flags = gg_visible | gg_enabled | gg_cb_on;
@@ -1967,8 +1907,8 @@ return;
 	gcd[k].gd.handle_controlevent = MMCB_Changed;
 	gcd[k++].creator = GRadioCreate;
 
-	label[k].text = (unichar_t *) _STR_DesignAxisValues;
-	label[k].text_in_resource = true;
+	label[k].text = (unichar_t *) _("Design Axis Values");
+	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+45;
 	gcd[k].gd.flags = gg_visible | gg_enabled;
@@ -1995,7 +1935,8 @@ return;
 	gcd[k].gd.pos.x = 30-3; gcd[k].gd.pos.y = GDrawPixelsToPoints(NULL,pos.height)-35-3;
 	gcd[k].gd.pos.width = -1;
 	gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[k].text = (unichar_t *) _STR_OK;
+	label[k].text = (unichar_t *) _("_OK");
+	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.handle_controlevent = MMCB_OK;
@@ -2004,7 +1945,8 @@ return;
 	gcd[k].gd.pos.x = -30; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+3;
 	gcd[k].gd.pos.width = -1;
 	gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[k].text = (unichar_t *) _STR_Cancel;
+	label[k].text = (unichar_t *) _("_Cancel");
+	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.handle_controlevent = MMCB_Cancel;
@@ -2045,7 +1987,8 @@ return;
 	gcd[k].gd.pos.x = 30-3; gcd[k].gd.pos.y = GDrawPixelsToPoints(NULL,pos.height)-35-3;
 	gcd[k].gd.pos.width = -1;
 	gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[k].text = (unichar_t *) _STR_OK;
+	label[k].text = (unichar_t *) _("_OK");
+	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.handle_controlevent = MMCB_OKApple;
@@ -2054,7 +1997,8 @@ return;
 	gcd[k].gd.pos.x = -30; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+3;
 	gcd[k].gd.pos.width = -1;
 	gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[k].text = (unichar_t *) _STR_Cancel;
+	label[k].text = (unichar_t *) _("_Cancel");
+	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.handle_controlevent = MMCB_Cancel;
@@ -2220,20 +2164,16 @@ static int ESD_OK(GGadget *g, GEvent *e) {
 	real coords[4];
 	struct macname *mn;
 	char buffer[120], *pt;
-	unichar_t *name, *style;
+	unichar_t *name; char *style;
 
 	for ( i=0; i<esd->mmw->axis_count && i<4; ++i )
-	    coords[i] = rint(GetRealR(esd->gw,1000+i,axistablab[i],&err)*8096)/8096;
+	    coords[i] = rint(GetReal8(esd->gw,1000+i,_(axistablab[i]),&err)*8096)/8096;
 	if ( err )
 return( true );
 	axis_count = i;
 	mn = NameGadgetsGetNames(esd->gw);
 	if ( mn==NULL ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_BadMM,_STR_AtLeastOneName);
-#elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Bad Multiple Master Font"),_("You must provide at least one name here"));
-#endif
 return( true );
 	}
 	pt = buffer; *pt++ = ' '; *pt++ = '[';
@@ -2244,8 +2184,8 @@ return( true );
 	pt[-1] = ']';
 	*pt = '\0';
 	style = PickNameFromMacName(mn);
-	name = galloc(((pt-buffer) + u_strlen(style) + 1)*sizeof(unichar_t));
-	u_strcpy(name,style);
+	name = galloc(((pt-buffer) + strlen(style) + 1)*sizeof(unichar_t));
+	utf82u_strcpy(name,style);
 	uc_strcat(name,buffer);
 	free(style);
 	if ( esd->index==-1 )
@@ -2288,7 +2228,7 @@ static void EditStyleName(MMW *mmw,int index) {
     real axes[4];
     struct macname *mn = NULL;
     char axisval[4][24];
-    unichar_t *axisnames[4];
+    char *axisnames[4];
     GGadgetCreateData gcd[17];
     GTextInfo label[17];
     GRect pos;
@@ -2318,17 +2258,13 @@ static void EditStyleName(MMW *mmw,int index) {
     esd.list = list;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.is_dlg = true;
     wattrs.restrict_input_to_me = true;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(_STR_NamedStyles,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = _("Named Styles");
-#endif
+    wattrs.utf8_window_title = _("Named Styles");
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,GGadgetScale(ESD_Width));
     pos.height = GDrawPointsToPixels(NULL,ESD_Height);
@@ -2345,7 +2281,8 @@ static void EditStyleName(MMW *mmw,int index) {
     gcd[k].gd.pos.x = 20; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+33-3;
     gcd[k].gd.pos.width = -1; gcd[k].gd.pos.height = 0;
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[k].text = (unichar_t *) _STR_OK;
+    label[k].text = (unichar_t *) _("_OK");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.handle_controlevent = ESD_OK;
@@ -2354,7 +2291,8 @@ static void EditStyleName(MMW *mmw,int index) {
     gcd[k].gd.pos.x = -20; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+3;
     gcd[k].gd.pos.width = -1; gcd[k].gd.pos.height = 0;
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[k].text = (unichar_t *) _STR_Cancel;
+    label[k].text = (unichar_t *) _("_Cancel");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.handle_controlevent = ESD_Cancel;
@@ -2522,7 +2460,7 @@ static void MMW_SetState(MMW *mmw) {
 	    mmw->state==mmw_others || mmw->state==mmw_named);
 }
 
-static int ParseWeights(GWindow gw,int cid, int str_r,
+static int ParseWeights(GWindow gw,int cid, char *str,
 	real *list, int expected, int tabset_cid, int aspect ) {
     int cnt=0;
     const unichar_t *ret, *pt; unichar_t *endpt;
@@ -2535,12 +2473,7 @@ static int ParseWeights(GWindow gw,int cid, int str_r,
 	if ( pt==endpt || ( *endpt!='\0' && *endpt!=' ' )) {
 	    if ( tabset_cid!=-1 )
 		GTabSetSetSel(GWidgetGetControl(gw,tabset_cid),aspect);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_BadAxis,_STR_BadNumberIn_s,
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_error(_("Bad Axis"),_("Bad Number in %s"),
-#endif
-		    GStringGetResource(str_r,NULL));
+	    gwwv_post_error(_("Bad Axis"),_("Bad Number in %s"), str);
 return( 0 );
 	}
 	for ( pt = endpt; *pt==' '; ++pt );
@@ -2548,19 +2481,14 @@ return( 0 );
     if ( cnt!=expected && expected!=-1 ) {
 	if ( tabset_cid!=-1 )
 	    GTabSetSetSel(GWidgetGetControl(gw,tabset_cid),aspect);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_BadAxis,_STR_WrongNumberOfEntriesIn_s,
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_error(_("Bad Axis"),_("Wrong number of entries in %s"),
-#endif
-		GStringGetResource(str_r,NULL));
+	gwwv_post_error(_("Bad Axis"),_("Wrong number of entries in %s"), str);
 return( 0 );
     }
 
 return( cnt );
 }
 
-static int ParseList(GWindow gw,int cid, int str_r, int *err, real start,
+static int ParseList(GWindow gw,int cid, char *str8, int *err, real start,
 	real def, real end, real **_list, int tabset_cid, int aspect,
 	int isapple ) {
     int i, cnt;
@@ -2602,12 +2530,7 @@ static int ParseList(GWindow gw,int cid, int str_r, int *err, real start,
 	if ( pt==endpt || ( *endpt!='\0' && *endpt!=' ' )) {
 	    GTabSetSetSel(GWidgetGetControl(gw,tabset_cid),aspect);
 	    free(list);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_BadAxis,_STR_BadNumberIn_s,
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_error(_("Bad Axis"),_("Bad Number in %s"),
-#endif
-		    GStringGetResource(str_r,NULL));
+	    gwwv_post_error(_("Bad Axis"),_("Bad Number in %s"), str8);
 	    *err = true;
 return( 0 );
 	}
@@ -2618,12 +2541,7 @@ return( 0 );
     for ( i=1; i<cnt; ++i )
 	if ( list[i-1]>list[i] ) {
 	    GTabSetSetSel(GWidgetGetControl(gw,tabset_cid),aspect);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_BadAxis,_STR_ListOutOfOrder,
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_error(_("Bad Axis"),_("The %s list is not ordered"),
-#endif
-		    GStringGetResource(str_r,NULL));
+	    gwwv_post_error(_("Bad Axis"),_("The %s list is not ordered"), str8);
 	    free(list);
 	    *err = true;
 return( 0 );
@@ -2922,7 +2840,7 @@ static GTextInfo *NamedDesigns(MMW *mmw) {
     int cnt, i, j;
     GTextInfo *ti;
     char buffer[120], *pt;
-    unichar_t *ustyle;
+    char *ustyle;
 
     if ( !mmw->mm->apple || mmw->old==NULL )
 return( NULL );
@@ -2938,8 +2856,8 @@ return( NULL );
 	pt[-1] = ']';
 	ustyle = PickNameFromMacName(mmw->old->named_instances[i].names);
 	ti[i].bg = ti[i].fg = COLOR_DEFAULT;
-	ti[i].text = galloc((strlen(buffer)+3+u_strlen(ustyle))*sizeof(unichar_t));
-	u_strcpy(ti[i].text,ustyle);
+	ti[i].text = galloc((strlen(buffer)+3+strlen(ustyle))*sizeof(unichar_t));
+	utf82u_strcpy(ti[i].text,ustyle);
 	uc_strcat(ti[i].text," ");
 	uc_strcat(ti[i].text,buffer);
 	ti[i].userdata = MacNameCopy(mmw->old->named_instances[i].names);
@@ -3002,19 +2920,11 @@ static GTextInfo **FontList(MMW *mmw, int instance, int *sel) {
     }
     if ( pos==-1 ) pos=cnt;
     ti[cnt] = gcalloc(1,sizeof(GTextInfo));
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    ti[cnt]->text = u_copy(GStringGetResource(_STR_New,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-    ti[cnt]->text = u_copy(_("New"));
-#endif
+    ti[cnt]->text = utf82u_copy(_("New"));
     ti[cnt]->bg = ti[cnt]->fg = COLOR_DEFAULT;
     ++cnt;
     ti[cnt] = gcalloc(1,sizeof(GTextInfo));
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    ti[cnt]->text = u_copy(GStringGetResource(_STR_Browse,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-    ti[cnt]->text = u_copy(_("Browse..."));
-#endif
+    ti[cnt]->text = utf82u_copy(_("Browse..."));
     ti[cnt]->bg = ti[cnt]->fg = COLOR_DEFAULT;
     ti[cnt]->userdata = (void *) (-1);
     ++cnt;
@@ -3089,8 +2999,8 @@ static void MMW_DoOK(MMW *mmw) {
     if ( !isapple ) {
 	if ( !GetWeights(mmw->gw, weights, mmw->mm, mmw->instance_count, mmw->axis_count))
 return;
-	fbt = GetRealR(mmw->subwins[mmw_others],CID_ForceBoldThreshold,
-			_STR_ForceBoldThreshold,&err);
+	fbt = GetReal8(mmw->subwins[mmw_others],CID_ForceBoldThreshold,
+			_("Force Bold Threshold:"),&err);
 	if ( err )
 return;
     }
@@ -3105,11 +3015,7 @@ return;
 	    else
 		fn = mmw->mm->instances[i]->familyname;
 	if ( i!=mmw->instance_count ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_BadMM,_STR_FamilyNameRequired);
-#elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Bad Multiple Master Font"),_("A Font Family name is required"));
-#endif
 return;
 	}
 	familyname = copy(fn);
@@ -3302,9 +3208,10 @@ static void MMW_DoNext(MMW *mmw) {
     int n, n2;
     int isapple = GGadgetIsChecked(GWidgetGetControl(mmw->subwins[mmw_counts],CID_Apple));
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    static int yesno[] = { _STR_Yes, _STR_No, 0 };
-#elif defined(FONTFORGE_CONFIG_GTK)
     char *yesno[3];
+    yesno[0] = _("_Yes"); yesno[1] = _("_No"); yesno[2] = NULL;
+#elif defined(FONTFORGE_CONFIG_GTK)
+    static char *yesno[3] = { GTK_STOCK_YES, GTK_STOCK_NO, NULL };
 #endif
 
     if ( mmw->state==mmw_others )
@@ -3361,11 +3268,7 @@ return;
 	    if ( *mmw->mm->axes[i]=='\0' ) {
 		GTabSetSetSel(GWidgetGetControl(mmw->subwins[mmw_axes],CID_WhichAxis),
 			i);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_BadAxis,_STR_SetAxisType);
-#elif defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Bad Axis"),_("Please set the Axis Type field"));
-#endif
 return;		/* Failure */
 	    }
 	    /* Don't free the current value. If it is non-null then it just */
@@ -3380,22 +3283,18 @@ return;		/* Failure */
 		if ( mmw->mm->axismaps[i].axisnames == NULL ) {
 		    GTabSetSetSel(GWidgetGetControl(mmw->subwins[mmw_axes],CID_WhichAxis),
 			    i);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		    GWidgetErrorR(_STR_BadAxis,_STR_SetAxisName);
-#elif defined(FONTFORGE_CONFIG_GTK)
 		    gwwv_post_error(_("Bad Axis"),_("When building an Apple distortable font, you must specify at least one name for the axis"));
-#endif
 return;		    /* Failure */
 		}
 	    }
 	    err = false;
-	    start = GetRealR(mmw->subwins[mmw_axes],CID_AxisBegin+i*100,
-		    _STR_Begin,&err);
-	    end = GetRealR(mmw->subwins[mmw_axes],CID_AxisEnd+i*100,
-		    _STR_End,&err);
+	    start = GetReal8(mmw->subwins[mmw_axes],CID_AxisBegin+i*100,
+		    _("Begin:"),&err);
+	    end = GetReal8(mmw->subwins[mmw_axes],CID_AxisEnd+i*100,
+		    _("End:"),&err);
 	    if ( isapple ) {
-		def = rint(GetRealR(mmw->subwins[mmw_axes],CID_AxisDefault+i*100,
-			_STR_Default,&err)*8096)/8096;
+		def = rint(GetReal8(mmw->subwins[mmw_axes],CID_AxisDefault+i*100,
+			_("Default"),&err)*8096)/8096;
 		start = rint(start*8096)/8096;
 		end = rint(end*8096)/8096;
 	    } else
@@ -3403,27 +3302,19 @@ return;		    /* Failure */
 	    if ( start>=end || def<start || def>end ) {
 		GTabSetSetSel(GWidgetGetControl(mmw->subwins[mmw_axes],CID_WhichAxis),
 			i);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_BadAxis,_STR_AxisRangeNotValid);
-#elif defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Bad Axis"),_("Axis range not valid"));
-#endif
 return;		/* Failure */
 	    }
 	    n = ParseList(mmw->subwins[mmw_axes],CID_IntermediateDesign+i*100,
-		    _STR_DesignSettings,&err,start,def,end,&designs,CID_WhichAxis,i,isapple);
+		    _("Design Settings:"),&err,start,def,end,&designs,CID_WhichAxis,i,isapple);
 	    n2 = ParseList(mmw->subwins[mmw_axes],CID_IntermediateNormalized+i*100,
-		    _STR_NormalizedSettings,&err,
+		    _("Normalized Settings:"),&err,
 			isapple?-1:0,0,1,&norm,CID_WhichAxis,i,isapple);
 	    if ( n!=n2 || err ) {
 		GTabSetSetSel(GWidgetGetControl(mmw->subwins[mmw_axes],CID_WhichAxis),
 			i);
 		if ( !err )
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		    GWidgetErrorR(_STR_BadAxis,_STR_DesignNormMustCorrespond);
-#elif defined(FONTFORGE_CONFIG_GTK)
 		    gwwv_post_error(_("Bad Axis"),_("The number of entries in the design settings must match the number in normalized settings"));
-#endif
 		free(designs); free(norm);
 return;		/* Failure */
 	    }
@@ -3445,7 +3336,7 @@ return;		/* Failure */
 	memset(positions,0,sizeof(positions));
 	for ( i=0; i<mmw->instance_count; ++i ) {
 	    if ( !ParseWeights(mmw->subwins[mmw_designs],CID_AxisWeights+i*DesignScaleFactor,
-		    _STR_AxisWeights,positions[i],mmw->axis_count,
+		    _("Normalized position of this design along each axis"),positions[i],mmw->axis_count,
 		    CID_WhichDesign,i))
 return;
 	    if ( isapple ) {
@@ -3478,13 +3369,11 @@ return;
 		    if ( positions[j][k] != positions[i][k] )
 		break;
 		if ( k==mmw->axis_count ) {
+		    char *temp;
 		    GTabSetSetSel(GWidgetGetControl(mmw->subwins[mmw_designs],CID_WhichDesign),i);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		    GWidgetErrorR(_STR_BadMM,_STR_PositionUsedTwice,
-#elif defined(FONTFORGE_CONFIG_GTK)
 		    gwwv_post_error(_("Bad Multiple Master Font"),_("The set of positions, %.30s, is used more than once"),
-#endif
-			    _GGadgetGetTitle(GWidgetGetControl(mmw->subwins[mmw_designs],CID_AxisWeights+i*DesignScaleFactor)));
+			    temp = GGadgetGetTitle8(GWidgetGetControl(mmw->subwins[mmw_designs],CID_AxisWeights+i*DesignScaleFactor)));
+		    free(temp);
 return;
 		}
 	    }
@@ -3494,11 +3383,7 @@ return;
 		for ( j=0; j<i; ++j )
 		    if ( sfs[i]==sfs[j] ) {
 			GTabSetSetSel(GWidgetGetControl(mmw->subwins[mmw_designs],CID_WhichDesign),i);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-			GWidgetErrorR(_STR_BadMM,_STR_FontUsedTwice,sfs[i]->fontname);
-#elif defined(FONTFORGE_CONFIG_GTK)
 			gwwv_post_error(_("Bad Multiple Master Font"),_("The font %.30s is assigned to two master designs"),sfs[i]->fontname);
-#endif
 return;
 		    }
 	    }
@@ -3510,21 +3395,10 @@ return;
 		pt += 2;
 	    }
 	    if ( !isapple ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_BadMM,_STR_PositionUnused, buffer );
-#elif defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Bad Multiple Master Font"),_("The set of positions, %.30s, is not specified in any design (and should be)"), buffer );
-#endif
 return;
 	    } else {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		if ( GWidgetAskR(_STR_BadMM,yesno,0,1,_STR_PositionUnusedOk,buffer)==1 )
-#elif defined(FONTFORGE_CONFIG_GTK)
-		yesno[0] = GTK_STOCK_YES;
-		yesno[1] = GTK_STOCK_NO;
-		yesno[2] = NULL;
-		if ( gwwv_ask(_("Bad Multiple Master Font"),yesno,0,1,_("The set of positions, %.30s, is not specified in any design.\nIs that what you want?"),buffer)==1 )
-#endif
+		if ( gwwv_ask(_("Bad Multiple Master Font"),(const char **) yesno,0,1,_("The set of positions, %.30s, is not specified in any design.\nIs that what you want?"),buffer)==1 )
 return;
 	    }
 	}
@@ -3544,24 +3418,13 @@ return;
 	    /* It's arranged according to our secondary expectations */;
 	else if ( !isapple && (mmw->instance_count==(1<<mmw->axis_count) ||
 		mmw->axis_count==1 )) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    if ( GWidgetAskR(_STR_DisorderedDesigns,yesno,0,1,_STR_DisorderedDesignsOk)==1 )
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    yesno[0] = GTK_STOCK_YES;
-	    yesno[1] = GTK_STOCK_NO;
-	    yesno[2] = NULL;
-	    if ( gwwv_ask(_("Disordered designs"),yesno,0,1,_("The master designs are not positioned in the expected order. FontForge will be unable to suggest a ConvertDesignVector for you. Is this what you want?"))==1 )
-#endif
+	    if ( gwwv_ask(_("Disordered designs"),(const char **) yesno,0,1,_("The master designs are not positioned in the expected order. FontForge will be unable to suggest a ConvertDesignVector for you. Is this what you want?"))==1 )
 return;
 	}
     } else if ( mmw->state==mmw_funcs ) {
 	if ( *_GGadgetGetTitle(GWidgetGetControl(mmw->subwins[mmw_funcs],CID_NDV))=='\0' ||
 		*_GGadgetGetTitle(GWidgetGetControl(mmw->subwins[mmw_funcs],CID_CDV))=='\0' ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_BadFunction,_STR_BadFunction);
-#elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Bad PostScript function"),_("Bad PostScript function"));
-#endif
 return;
 	}
 	free(mmw->mm->ndv); free(mmw->mm->cdv);
@@ -3740,18 +3603,10 @@ return(true);
 	    if ( sf==NULL )
 return(true);
 	    if ( sf->cidmaster!=NULL || sf->subfonts!=0 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_BadMM,_STR_NoCIDinMM);
-#elif defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Bad Multiple Master Font"),_("CID keyed fonts may not be a master design of a multiple master font"));
-#endif
 return(true);
 	    } else if ( sf->mm!=NULL ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_BadMM,_STR_NoCIDinMM);
-#elif defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Bad Multiple Master Font"),_("CID keyed fonts may not be a master design of a multiple master font"));
-#endif
 return(true);
 	    }
 	    if ( sf->fv==NULL ) {
@@ -3902,17 +3757,13 @@ void MMWizard(MMSet *mm) {
     }
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.is_dlg = true;
     wattrs.restrict_input_to_me = true;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(mmw.isnew?_STR_CreateMM:_STR_MMInfo,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = mmw.isnew?_("Create MM...");
-#endif
+    wattrs.utf8_window_title = mmw.isnew?_("Create MM..."):_("MM _Info...") ;
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,GGadgetScale(MMW_Width));
     pos.height = GDrawPointsToPixels(NULL,MMW_Height);
@@ -3925,7 +3776,8 @@ void MMWizard(MMSet *mm) {
     bgcd[0].gd.pos.x = 20; bgcd[0].gd.pos.y = GDrawPixelsToPoints(NULL,pos.height)-33;
     bgcd[0].gd.pos.width = -1; bgcd[0].gd.pos.height = 0;
     bgcd[0].gd.flags = gg_visible | gg_enabled;
-    blabel[0].text = (unichar_t *) _STR_OK;
+    blabel[0].text = (unichar_t *) _("_OK");
+    blabel[0].text_is_1byte = true;
     blabel[0].text_in_resource = true;
     bgcd[0].gd.label = &blabel[0];
     bgcd[0].gd.cid = CID_OK;
@@ -3936,7 +3788,8 @@ void MMWizard(MMSet *mm) {
     bgcd[1].gd.pos.x = bgcd[0].gd.pos.x+blen+space; bgcd[1].gd.pos.y = bgcd[0].gd.pos.y;
     bgcd[1].gd.pos.width = -1; bgcd[1].gd.pos.height = 0;
     bgcd[1].gd.flags = gg_visible;
-    blabel[1].text = (unichar_t *) _STR_PrevArrow;
+    blabel[1].text = (unichar_t *) _("< _Prev");
+    blabel[1].text_is_1byte = true;
     blabel[1].text_in_resource = true;
     bgcd[1].gd.label = &blabel[1];
     bgcd[1].gd.handle_controlevent = MMW_Prev;
@@ -3946,8 +3799,9 @@ void MMWizard(MMSet *mm) {
     bgcd[2].gd.pos.x = bgcd[1].gd.pos.x+blen+space; bgcd[2].gd.pos.y = bgcd[1].gd.pos.y;
     bgcd[2].gd.pos.width = -1; bgcd[2].gd.pos.height = 0;
     bgcd[2].gd.flags = gg_visible;
-    blabel[2].text = (unichar_t *) _STR_NextArrow;
+    blabel[2].text = (unichar_t *) _("_Next >");
     blabel[2].text_in_resource = true;
+    blabel[2].text_is_1byte = true;
     bgcd[2].gd.label = &blabel[2];
     bgcd[2].gd.handle_controlevent = MMW_Next;
     bgcd[2].gd.cid = CID_Next;
@@ -3956,8 +3810,9 @@ void MMWizard(MMSet *mm) {
     bgcd[3].gd.pos.x = -20; bgcd[3].gd.pos.y = bgcd[1].gd.pos.y;
     bgcd[3].gd.pos.width = -1; bgcd[3].gd.pos.height = 0;
     bgcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    blabel[3].text = (unichar_t *) _STR_Cancel;
+    blabel[3].text = (unichar_t *) _("_Cancel");
     blabel[3].text_in_resource = true;
+    blabel[3].text_is_1byte = true;
     bgcd[3].gd.label = &blabel[3];
     bgcd[3].gd.handle_controlevent = MMW_Cancel;
     bgcd[3].gd.cid = CID_Cancel;
@@ -3984,15 +3839,15 @@ void MMWizard(MMSet *mm) {
     memset(&cntgcd,0,sizeof(cntgcd));
 
     k=0;
-    cntlabel[k].text = (unichar_t *) _STR_TypeOfDistortableFont;
-    cntlabel[k].text_in_resource = true;
+    cntlabel[k].text = (unichar_t *) _("Type of distortable font:");
+    cntlabel[k].text_is_1byte = true;
     cntgcd[k].gd.label = &cntlabel[k];
     cntgcd[k].gd.pos.x = 5; cntgcd[k].gd.pos.y = 11;
     cntgcd[k].gd.flags = gg_visible | gg_enabled;
     cntgcd[k++].creator = GLabelCreate;
 
-    cntlabel[k].text = (unichar_t *) _STR_Adobe;
-    cntlabel[k].text_in_resource = true;
+    cntlabel[k].text = (unichar_t *) _("Adobe");
+    cntlabel[k].text_is_1byte = true;
     cntgcd[k].gd.label = &cntlabel[k];
     cntgcd[k].gd.pos.x = 10; cntgcd[k].gd.pos.y = cntgcd[k-1].gd.pos.y+12;
     cntgcd[k].gd.flags = isadobe ? (gg_visible | gg_enabled | gg_cb_on) :
@@ -4001,8 +3856,8 @@ void MMWizard(MMSet *mm) {
     cntgcd[k].gd.handle_controlevent = MMW_TypeChanged;
     cntgcd[k++].creator = GRadioCreate;
 
-    cntlabel[k].text = (unichar_t *) _STR_Apple;
-    cntlabel[k].text_in_resource = true;
+    cntlabel[k].text = (unichar_t *) _("Apple");
+    cntlabel[k].text_is_1byte = true;
     cntgcd[k].gd.label = &cntlabel[k];
     cntgcd[k].gd.pos.x = 70; cntgcd[k].gd.pos.y = cntgcd[k-1].gd.pos.y;
     cntgcd[k].gd.flags = !isadobe ? (gg_visible | gg_enabled | gg_cb_on) :
@@ -4011,8 +3866,8 @@ void MMWizard(MMSet *mm) {
     cntgcd[k].gd.handle_controlevent = MMW_TypeChanged;
     cntgcd[k++].creator = GRadioCreate;
 
-    cntlabel[k].text = (unichar_t *) _STR_NumberOfAxes;
-    cntlabel[k].text_in_resource = true;
+    cntlabel[k].text = (unichar_t *) _("Number of Axes:");
+    cntlabel[k].text_is_1byte = true;
     cntgcd[k].gd.label = &cntlabel[k];
     cntgcd[k].gd.pos.x = 5; cntgcd[k].gd.pos.y = cntgcd[k-1].gd.pos.y+18;
     cntgcd[k].gd.flags = gg_visible | gg_enabled;
@@ -4029,8 +3884,8 @@ void MMWizard(MMSet *mm) {
 	axiscounts[i].selected = false;
     axiscounts[mmw.axis_count-1].selected = true;
 
-    cntlabel[k].text = (unichar_t *) _STR_NumberOfMasterDesigns;
-    cntlabel[k].text_in_resource = true;
+    cntlabel[k].text = (unichar_t *) _("Number of Master Designs:");
+    cntlabel[k].text_is_1byte = true;
     cntgcd[k].gd.label = &cntlabel[k];
     cntgcd[k].gd.pos.x = 5; cntgcd[k].gd.pos.y = cntgcd[k-1].gd.pos.y+30;
     cntgcd[k].gd.flags = gg_visible | gg_enabled;
@@ -4046,7 +3901,8 @@ void MMWizard(MMSet *mm) {
 	mastercounts[i].selected = false;
     mastercounts[mmw.instance_count-1].selected = true;
 
-    cntlabel[k].text = (unichar_t *) _STR_Familyname;
+    cntlabel[k].text = (unichar_t *) _("_Family Name:");
+    cntlabel[k].text_is_1byte = true;
     cntlabel[k].text_in_resource = true;
     cntgcd[k].gd.label = &cntlabel[k];
     cntgcd[k].gd.pos.x = 10; cntgcd[k].gd.pos.y = cntgcd[k-1].gd.pos.y+30;
@@ -4077,8 +3933,8 @@ void MMWizard(MMSet *mm) {
 
     for ( i=0; i<4; ++i ) {
 	k=0;
-	axislabel[i][k].text = (unichar_t *) _STR_AxisType;
-	axislabel[i][k].text_in_resource = true;
+	axislabel[i][k].text = (unichar_t *) _("Axis Type:");
+	axislabel[i][k].text_is_1byte = true;
 	axisgcd[i][k].gd.label = &axislabel[i][k];
 	axisgcd[i][k].gd.pos.x = 5; axisgcd[i][k].gd.pos.y = 11;
 	axisgcd[i][k].gd.flags = gg_visible | gg_enabled;
@@ -4095,8 +3951,8 @@ void MMWizard(MMSet *mm) {
 	}
 	axisgcd[i][k++].creator = GListFieldCreate;
 
-	axislabel[i][k].text = (unichar_t *) _STR_AxisRange;
-	axislabel[i][k].text_in_resource = true;
+	axislabel[i][k].text = (unichar_t *) _("Axis Range:");
+	axislabel[i][k].text_is_1byte = true;
 	axisgcd[i][k].gd.label = &axislabel[i][k];
 	axisgcd[i][k].gd.pos.x = 5; axisgcd[i][k].gd.pos.y = axisgcd[i][k-1].gd.pos.y+20;
 	axisgcd[i][k].gd.flags = gg_visible | gg_enabled;
@@ -4116,8 +3972,8 @@ void MMWizard(MMSet *mm) {
 			mmw.mm->axismaps[i].designs[mmw.mm->axismaps[i].points-1])/2);
 	}
 
-	axislabel[i][k].text = (unichar_t *) _STR_Begin;
-	axislabel[i][k].text_in_resource = true;
+	axislabel[i][k].text = (unichar_t *) _("Begin:");
+	axislabel[i][k].text_is_1byte = true;
 	axisgcd[i][k].gd.label = &axislabel[i][k];
 	axisgcd[i][k].gd.pos.x = 10; axisgcd[i][k].gd.pos.y = axisgcd[i][k-1].gd.pos.y+16;
 	axisgcd[i][k].gd.flags = gg_visible | gg_enabled;
@@ -4132,8 +3988,8 @@ void MMWizard(MMSet *mm) {
 	axisgcd[i][k].gd.cid = CID_AxisBegin+i*100;
 	axisgcd[i][k++].creator = GTextFieldCreate;
 
-	axislabel[i][k].text = (unichar_t *) _STR_DefaultC;
-	axislabel[i][k].text_in_resource = true;
+	axislabel[i][k].text = (unichar_t *) _("Default:");
+	axislabel[i][k].text_is_1byte = true;
 	axisgcd[i][k].gd.label = &axislabel[i][k];
 	axisgcd[i][k].gd.pos.x = 110; axisgcd[i][k].gd.pos.y = axisgcd[i][k-2].gd.pos.y;
 	axisgcd[i][k].gd.flags = mmw.mm->apple ? (gg_visible | gg_enabled) : gg_visible;
@@ -4149,8 +4005,8 @@ void MMWizard(MMSet *mm) {
 	axisgcd[i][k].gd.cid = CID_AxisDefault+i*100;
 	axisgcd[i][k++].creator = GTextFieldCreate;
 
-	axislabel[i][k].text = (unichar_t *) _STR_End;
-	axislabel[i][k].text_in_resource = true;
+	axislabel[i][k].text = (unichar_t *) _("End:");
+	axislabel[i][k].text_is_1byte = true;
 	axisgcd[i][k].gd.label = &axislabel[i][k];
 	axisgcd[i][k].gd.pos.x = 210; axisgcd[i][k].gd.pos.y = axisgcd[i][k-2].gd.pos.y;
 	axisgcd[i][k].gd.flags = gg_visible | gg_enabled;
@@ -4165,8 +4021,8 @@ void MMWizard(MMSet *mm) {
 	axisgcd[i][k].gd.cid = CID_AxisEnd+i*100;
 	axisgcd[i][k++].creator = GTextFieldCreate;
 
-	axislabel[i][k].text = (unichar_t *) _STR_IntermediatePoints;
-	axislabel[i][k].text_in_resource = true;
+	axislabel[i][k].text = (unichar_t *) _("Intermediate Points:");
+	axislabel[i][k].text_is_1byte = true;
 	axisgcd[i][k].gd.label = &axislabel[i][k];
 	axisgcd[i][k].gd.pos.x = 5; axisgcd[i][k].gd.pos.y = axisgcd[i][k-1].gd.pos.y+26;
 	axisgcd[i][k].gd.flags = gg_visible | gg_enabled;
@@ -4203,8 +4059,8 @@ void MMWizard(MMSet *mm) {
 	    }
 	}
 
-	axislabel[i][k].text = (unichar_t *) _STR_DesignSettings;
-	axislabel[i][k].text_in_resource = true;
+	axislabel[i][k].text = (unichar_t *) _("Design Settings:");
+	axislabel[i][k].text_is_1byte = true;
 	axisgcd[i][k].gd.label = &axislabel[i][k];
 	axisgcd[i][k].gd.pos.x = 10; axisgcd[i][k].gd.pos.y = axisgcd[i][k-1].gd.pos.y+12;
 	axisgcd[i][k].gd.flags = gg_visible | gg_enabled;
@@ -4220,8 +4076,8 @@ void MMWizard(MMSet *mm) {
 	axisgcd[i][k].gd.cid = CID_IntermediateDesign+i*100;
 	axisgcd[i][k++].creator = GTextFieldCreate;
 
-	axislabel[i][k].text = (unichar_t *) _STR_NormalizedSettings;
-	axislabel[i][k].text_in_resource = true;
+	axislabel[i][k].text = (unichar_t *) _("Normalized Settings:");
+	axislabel[i][k].text_is_1byte = true;
 	axisgcd[i][k].gd.label = &axislabel[i][k];
 	axisgcd[i][k].gd.pos.x = 10; axisgcd[i][k].gd.pos.y = axisgcd[i][k-1].gd.pos.y+28;
 	axisgcd[i][k].gd.flags = gg_visible | gg_enabled;
@@ -4240,8 +4096,8 @@ void MMWizard(MMSet *mm) {
 	k = GCDBuildNames(axisgcd[i],axislabel[i],k,mm==NULL || i>=mm->axis_count ? NULL :
 		mm->axismaps[i].axisnames);
 	
-	axisaspects[i].text = (unichar_t *) axistablab[i];
-	axisaspects[i].text_in_resource = true;
+	axisaspects[i].text = (unichar_t *) _(axistablab[i]);
+	axisaspects[i].text_is_1byte = true;
 	axisaspects[i].gcd = axisgcd[i];
     }
     axisaspects[0].selected = true;
@@ -4268,8 +4124,8 @@ void MMWizard(MMSet *mm) {
     memset(&designaspects,0,sizeof(designaspects));
 
     for ( i=0; i<AppleMmMax+1; ++i ) {
-	designlabel[i][0].text = (unichar_t *) _STR_SourceOfDesign;
-	designlabel[i][0].text_in_resource = true;
+	designlabel[i][0].text = (unichar_t *) _("Source from which this design is to be taken");
+	designlabel[i][0].text_is_1byte = true;
 	designgcd[i][0].gd.label = &designlabel[i][0];
 	designgcd[i][0].gd.pos.x = 3; designgcd[i][0].gd.pos.y = 4;
 	designgcd[i][0].gd.flags = gg_visible | gg_enabled;
@@ -4282,8 +4138,8 @@ void MMWizard(MMSet *mm) {
 	designgcd[i][1].gd.handle_controlevent = MMW_CheckBrowse;
 	designgcd[i][1].creator = GListButtonCreate;
 
-	designlabel[i][2].text = (unichar_t *) _STR_AxisWeights;
-	designlabel[i][2].text_in_resource = true;
+	designlabel[i][2].text = (unichar_t *) _("Normalized position of this design along each axis");
+	designlabel[i][2].text_is_1byte = true;
 	designgcd[i][2].gd.label = &designlabel[i][2];
 	designgcd[i][2].gd.pos.x = 3; designgcd[i][2].gd.pos.y = 50;
 	designgcd[i][2].gd.flags = gg_visible | gg_enabled;
@@ -4301,8 +4157,8 @@ void MMWizard(MMSet *mm) {
     }
     designaspects[0].selected = true;
 
-    dlabel.text = (unichar_t *) _STR_MasterDesigns;
-    dlabel.text_in_resource = true;
+    dlabel.text = (unichar_t *) _("Master Designs");
+    dlabel.text_is_1byte = true;
     dgcd[0].gd.label = &dlabel;
     dgcd[0].gd.pos.x = 3; dgcd[0].gd.pos.y = 4;
     dgcd[0].gd.flags = gg_visible | gg_enabled;
@@ -4321,8 +4177,8 @@ void MMWizard(MMSet *mm) {
     memset(&ngcd,0,sizeof(ngcd));
     memset(&nlabel,0,sizeof(nlabel));
 
-    nlabel[0].text = (unichar_t *) _STR_NamedStyles;
-    nlabel[0].text_in_resource = true;
+    nlabel[0].text = (unichar_t *) _("Named Styles");
+    nlabel[0].text_is_1byte = true;
     ngcd[0].gd.label = &nlabel[0];
     ngcd[0].gd.pos.x = 3; ngcd[0].gd.pos.y = 4;
     ngcd[0].gd.flags = gg_visible | gg_enabled;
@@ -4340,7 +4196,8 @@ void MMWizard(MMSet *mm) {
     ngcd[2].gd.pos.x = 20; ngcd[2].gd.pos.y = ngcd[1].gd.pos.y + ngcd[1].gd.pos.height+5;
     ngcd[2].gd.pos.width = -1;
     ngcd[2].gd.flags = gg_visible | gg_enabled;
-    nlabel[2].text = (unichar_t *) _STR_NewDDD;
+    nlabel[2].text = (unichar_t *) _("_New...");
+    nlabel[2].text_is_1byte = true;
     nlabel[2].text_in_resource = true;
     ngcd[2].gd.label = &nlabel[2];
     ngcd[2].gd.cid = CID_NamedNew;
@@ -4350,7 +4207,8 @@ void MMWizard(MMSet *mm) {
     ngcd[3].gd.pos.x = 20+blen+10; ngcd[3].gd.pos.y = ngcd[2].gd.pos.y;
     ngcd[3].gd.pos.width = -1;
     ngcd[3].gd.flags = gg_visible;
-    nlabel[3].text = (unichar_t *) _STR_Delete;
+    nlabel[3].text = (unichar_t *) _("_Delete");
+    nlabel[3].text_is_1byte = true;
     nlabel[3].text_in_resource = true;
     ngcd[3].gd.label = &nlabel[3];
     ngcd[3].gd.cid = CID_NamedDelete;
@@ -4360,7 +4218,8 @@ void MMWizard(MMSet *mm) {
     ngcd[4].gd.pos.x = 20+2*blen+20; ngcd[4].gd.pos.y = ngcd[2].gd.pos.y;
     ngcd[4].gd.pos.width = -1;
     ngcd[4].gd.flags = gg_visible;
-    nlabel[4].text = (unichar_t *) _STR_EditDDD;
+    nlabel[4].text = (unichar_t *) _("_Edit...");
+    nlabel[4].text_is_1byte = true;
     nlabel[4].text_in_resource = true;
     ngcd[4].gd.label = &nlabel[4];
     ngcd[4].gd.cid = CID_NamedEdit;
@@ -4375,8 +4234,8 @@ void MMWizard(MMSet *mm) {
     memset(&olabels,0,sizeof(olabels));
 
     k=0;
-    olabels[k].text = (unichar_t *) _STR_NDV;
-    olabels[k].text_in_resource = true;
+    olabels[k].text = (unichar_t *) _("Normalize Design Vector Function:");
+    olabels[k].text_is_1byte = true;
     ogcd[k].gd.label = &olabels[k];
     ogcd[k].gd.pos.x = 3; ogcd[k].gd.pos.y = 4;
     ogcd[k].gd.flags = gg_visible | gg_enabled;
@@ -4389,8 +4248,8 @@ void MMWizard(MMSet *mm) {
     ogcd[k].gd.cid = CID_NDV;
     ogcd[k++].creator = GTextAreaCreate;
 
-    olabels[k].text = (unichar_t *) _STR_CDV;
-    olabels[k].text_in_resource = true;
+    olabels[k].text = (unichar_t *) _("Convert Design Vector Function:");
+    olabels[k].text_is_1byte = true;
     ogcd[k].gd.label = &olabels[k];
     ogcd[k].gd.pos.x = 3; ogcd[k].gd.pos.y = ogcd[k-1].gd.pos.y+ogcd[k-1].gd.pos.height+5;
     ogcd[k].gd.flags = gg_visible | gg_enabled;
@@ -4409,8 +4268,8 @@ void MMWizard(MMSet *mm) {
     memset(&olabels,0,sizeof(olabels));
 
     k=0;
-    olabels[k].text = (unichar_t *) _STR_ContribOfMaster;
-    olabels[k].text_in_resource = true;
+    olabels[k].text = (unichar_t *) _("Contribution of each master design");
+    olabels[k].text_is_1byte = true;
     ogcd[k].gd.label = &olabels[k];
     ogcd[k].gd.pos.x = 10; ogcd[k].gd.pos.y = 4;
     ogcd[k].gd.flags = gg_visible | gg_enabled | gg_cb_on;
@@ -4418,8 +4277,8 @@ void MMWizard(MMSet *mm) {
     ogcd[k].gd.handle_controlevent = MMCB_Changed;
     ogcd[k++].creator = GRadioCreate;
 
-    olabels[k].text = (unichar_t *) _STR_DesignAxisValues;
-    olabels[k].text_in_resource = true;
+    olabels[k].text = (unichar_t *) _("Design Axis Values");
+    olabels[k].text_is_1byte = true;
     ogcd[k].gd.label = &olabels[k];
     ogcd[k].gd.pos.x = 10; ogcd[k].gd.pos.y = ogcd[k-1].gd.pos.y+45;
     ogcd[k].gd.flags = gg_visible | gg_enabled;
@@ -4439,8 +4298,8 @@ void MMWizard(MMSet *mm) {
     ogcd[k].gd.cid = CID_NewDesign;
     ogcd[k++].creator = GTextFieldCreate;
 
-    olabels[k].text = (unichar_t *) _STR_ForceBoldThreshold;
-    olabels[k].text_in_resource = true;
+    olabels[k].text = (unichar_t *) _("Force Bold Threshold:");
+    olabels[k].text_is_1byte = true;
     ogcd[k].gd.label = &olabels[k];
     ogcd[k].gd.pos.x = 10; ogcd[k].gd.pos.y = ogcd[k-1].gd.pos.y+45;
     ogcd[k].gd.flags = gg_visible | gg_enabled;

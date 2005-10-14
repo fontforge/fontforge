@@ -310,21 +310,21 @@ return( ret );
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-int NameToEncoding(SplineFont *sf,EncMap *map,const unichar_t *uname) {
-    int enc, uni, i;
+int NameToEncoding(SplineFont *sf,EncMap *map,const char *name) {
+    int enc, uni, i, ch;
     char *end, *dot=NULL, *freeme=NULL;
-    char *name;
+    const char *upt = name;
 
-    if ( uname[1]==0 && uname[0]>=256 )
-return( SFFindSlot(sf,map,uname[0],NULL));
+    ch = utf8_ildb(&upt);
+    if ( *upt=='\0' )
+return( SFFindSlot(sf,map,ch,NULL));
 
-    name = cu_copy(uname);
     enc = uni = -1;
 	
     while ( 1 ) {
 	enc = SFFindSlot(sf,map,-1,name);
 	if ( enc!=-1 ) {
-	    free(name);
+	    free(freeme);
 return( enc );
 	}
 	if ( (*name=='U' || *name=='u') && name[1]=='+' ) {
@@ -383,7 +383,7 @@ return( enc );
 		uni = enc;
 	}
 	if ( dot!=NULL ) {
-	    free(name);
+	    free(freeme);
 	    if ( uni==-1 )
 return( -1 );
 	    if ( uni<0x600 || uni>0x6ff )
@@ -400,15 +400,14 @@ return( -1 );
 return( -1 );
 return( SFFindSlot(sf,map,uni,NULL) );
 	} else 	if ( enc!=-1 ) {
-	    free(name);
+	    free(freeme);
 return( enc );
 	}
 	dot = strrchr(name,'.');
 	if ( dot==NULL )
 return( -1 );
-	freeme = copyn(name,dot-name);
-	free(name);
-	name = freeme;
+	free(freeme);
+	name = freeme = copyn(name,dot-name);
     }
 }
 
@@ -438,15 +437,15 @@ return( true );
 static int Goto_OK(GGadget *g, GEvent *e) {
     GWindow gw;
     GotoData *d;
-    const unichar_t *ret;
+    char *ret;
     int i;
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	gw = GGadgetGetWindow(g);
 	d = GDrawGetUserData(gw);
-	ret = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Name));
+	ret = GGadgetGetTitle8(GWidgetGetControl(gw,CID_Name));
 	for ( i=0; d->ranges[i].text!=NULL; ++i ) {
-	    if ( uc_strcmp(ret,(char *) d->ranges[i].text)==0 ) {
+	    if ( strcmp(ret,(char *) d->ranges[i].text)==0 ) {
 		d->ret = (int) d->ranges[i].userdata;
 	break;
 	    }
@@ -456,18 +455,13 @@ static int Goto_OK(GGadget *g, GEvent *e) {
 	    if ( d->ret<0 || d->ret>=d->map->enccount )
 		d->ret = -1;
 	    if ( d->ret==-1 ) {
-		char *temp=cu_copy(ret);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetPostNoticeR(_STR_Goto,_STR_CouldntfindGlyph,temp);
-#elif defined(FONTFORGE_CONFIG_GTK)
-		gwwv_post_notice(_("Goto"),_("Could not find the glyph: %.70s"),temp);
-#endif
-		free(temp);
+		gwwv_post_notice(_("Goto"),_("Could not find the glyph: %.70s"),ret);
 	    } else
 		d->done = true;
 	} else
 	    d->done = true;
     }
+    free(ret);
 return( true );
 }
 
@@ -483,23 +477,19 @@ return( true );
 
 int GotoChar(SplineFont *sf,EncMap *map) {
     int enc = -1;
-    unichar_t *ret;
+    char *ret;
 
     if ( map->enc->only_1byte ) {
 	/* In one byte encodings don't bother with the range list. It won't */
 	/*  have enough entries to be useful */
-	ret = GWidgetAskStringR(_STR_Goto,NULL,_STR_EnternameofGlyph);
+	ret = gwwv_ask_string(_("_Goto"),NULL,_("Enter the name of a glyph in the font"));
 	if ( ret==NULL )
 return(-1);
 	enc = NameToEncoding(sf,map,ret);
 	if ( enc<0 || enc>=map->enccount )
 	    enc = -1;
 	if ( enc==-1 )
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetPostNoticeR(_STR_Goto,_STR_CouldntfindGlyphU,ret);
-#elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_notice(_("Goto"),_("Could not find the glyph: %.70s"),ret);
-#endif
 	free(ret);
 return( enc );
     } else {
@@ -520,16 +510,12 @@ return( enc );
 	gd.ranges = ranges;
 
 	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
 	wattrs.event_masks = ~(1<<et_charup);
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	wattrs.window_title = GStringGetResource(_STR_Goto,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	wattrs.window_title = _("Goto");
-#endif
+	wattrs.utf8_window_title = _("Goto");
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,170));
@@ -537,11 +523,7 @@ return( enc );
 	gd.gw = gw = GDrawCreateTopWindow(NULL,&pos,goto_e_h,&gd,&wattrs);
 
 	GDrawSetFont(gw,GGadgetGetFont(NULL));		/* Default gadget font */
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	wid = GDrawGetTextWidth(gw,GStringGetResource(_STR_EnternameofGlyph,NULL),-1,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	wid = GDrawGetTextWidth(gw,_("Enter the name of a glyph in the font"),-1,NULL);
-#endif
+	wid = GDrawGetText8Width(gw,_("Enter the name of a glyph in the font"),-1,NULL);
 	for ( i=0; ranges[i].text!=NULL; ++i ) {
 	    uc_strncpy(ubuf,(char *) (ranges[i].text),sizeof(ubuf)/sizeof(ubuf[0])-1);
 	    temp = GDrawGetTextWidth(gw,ubuf,-1,NULL);
@@ -556,8 +538,8 @@ return( enc );
 	memset(&label,0,sizeof(label));
 	memset(&gcd,0,sizeof(gcd));
 
-	label[0].text = (unichar_t *) _STR_EnternameofGlyph;
-	label[0].text_in_resource = true;
+	label[0].text = (unichar_t *) _("Enter the name of a glyph in the font");
+	label[0].text_is_1byte = true;
 	gcd[0].gd.label = &label[0];
 	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5; 
 	gcd[0].gd.flags = gg_enabled|gg_visible;
@@ -572,7 +554,8 @@ return( enc );
 	gcd[2].gd.pos.x = 20-3; gcd[2].gd.pos.y = 90-35-3;
 	gcd[2].gd.pos.width = -1; gcd[2].gd.pos.height = 0;
 	gcd[2].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[2].text = (unichar_t *) _STR_OK;
+	label[2].text = (unichar_t *) _("_OK");
+	label[2].text_is_1byte = true;
 	label[2].text_in_resource = true;
 	gcd[2].gd.mnemonic = 'O';
 	gcd[2].gd.label = &label[2];
@@ -582,7 +565,8 @@ return( enc );
 	gcd[3].gd.pos.x = -20; gcd[3].gd.pos.y = 90-35;
 	gcd[3].gd.pos.width = -1; gcd[3].gd.pos.height = 0;
 	gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[3].text = (unichar_t *) _STR_Cancel;
+	label[3].text = (unichar_t *) _("_Cancel");
+	label[3].text_is_1byte = true;
 	label[3].text_in_resource = true;
 	gcd[3].gd.label = &label[3];
 	gcd[3].gd.mnemonic = 'C';

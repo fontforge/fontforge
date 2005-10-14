@@ -464,7 +464,7 @@ static void IkarusReadChar(SplineChar *sc,FILE *file) {
     IkarusNameFromURWNumber(sc,number);
     following = getushort(file);
     if ( following!=0 )
-	LogError( "This character (gid=%d) has a following part (%d). I'm not sure what that means, please send me (gww@silcom.com) a copy of this font so I can test with it.\n",
+	LogError( _("This character (gid=%d) has a following part (%d). I'm not sure what that means, please send me (gww@silcom.com) a copy of this font so I can test with it.\n"),
 		sc->orig_pos, following );
     for ( i=3; i<n ; ++i )
 	getushort(file);	/* Just in case the name section is bigger now */
@@ -626,9 +626,9 @@ return( NULL );
 		(ch1=='v' && ch2=='s') || (ch1=='v' && ch2=='e') || 
 		(ch1=='s' && ch2=='c') || (ch1=='s' && ch2=='n') || 
 		(ch1=='b' && ch2=='i') || (ch1=='g' && isdigit(ch2)))
-	    LogError( "This is probably a valid URW font, but it is in a format (%c%c) which FontForge\ndoes not support. FontForge only supports 'IK' format fonts.\n", ch1, ch2 );
+	    LogError( _("This is probably a valid URW font, but it is in a format (%c%c) which FontForge\ndoes not support. FontForge only supports 'IK' format fonts.\n"), ch1, ch2 );
 	else if ( ch1==0 && ch2==0 && ilen==55 )
-	    LogError( "This looks like an ikarus format which I have seen examples of, but for which\nI have no documentation. FontForge does not support it yet.\n" );
+	    LogError( _("This looks like an ikarus format which I have seen examples of, but for which\nI have no documentation. FontForge does not support it yet.\n") );
 	fclose(file);
 return( NULL );
     } else if ( ilen<55 || hlen<=ilen ) {
@@ -636,7 +636,7 @@ return( NULL );
 return( NULL );
     }
     if ( ilen!=55 )
-	LogError( "Unexpected size for name section of URW font (expected 55, got %d)\n", ilen );
+	LogError( _("Unexpected size for name section of URW font (expected 55, got %d)\n"), ilen );
 
     fseek(file,2*ilen+2,SEEK_SET);
     jlen = getushort(file);
@@ -645,7 +645,7 @@ return( NULL );
 return( NULL );
     }
     if ( jlen!=12 )
-	LogError( "Unexpected size for font info section of URW font (expected 12, got %d)\n", ilen );
+	LogError( _("Unexpected size for font info section of URW font (expected 12, got %d)\n"), ilen );
     if ( getushort(file)!=1 ) {		/* 1=> typeface */
 	fclose(file);
 return( NULL );

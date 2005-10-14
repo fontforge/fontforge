@@ -55,7 +55,7 @@ static Group *GroupCopy(Group *g) {
 return( NULL );
 
     gp = chunkalloc(sizeof(Group));
-    gp->name = u_copy(g->name);
+    gp->name = copy(g->name);
     gp->glyphs = copy(g->glyphs);
     if ( g->kid_cnt!=0 ) {
 	gp->kids = galloc((gp->kid_cnt=g->kid_cnt)*sizeof(Group *));
@@ -85,13 +85,11 @@ return( groupname );
 }
 
 static void _SaveGroupList(FILE *file, Group *g, int indent) {
-    char *utf8_name = u2utf8_copy( g->name );
     int i;
 
     for ( i=0; i<indent; ++i )
 	putc(' ',file);
-    fprintf(file,"\"%s\": %d", utf8_name, g->unique );
-    free(utf8_name);
+    fprintf(file,"\"%s\": %d", g->name, g->unique );
     if ( g->glyphs!=NULL && g->kid_cnt==0 )
 	fprintf(file, " \"%s\"\n", g->glyphs );
     else {
@@ -191,7 +189,7 @@ return( NULL );
 return( NULL );
     g = chunkalloc(sizeof(Group));
     g->parent = parent;
-    g->name = utf82u_copy(n);
+    g->name = n;
     if ( (ch = getc(file))==':' )
 	ch = getc(file);
     while ( ch==' ' )
@@ -205,7 +203,7 @@ return( NULL );
     while ( (ch = getc(file))==' ' );
     if ( ch=='"' ) {
 	ungetc(ch,file);
-	g->glyphs = copy(loadString(file,gc));
+	g->glyphs = loadString(file,gc);
 	if ( g->glyphs==NULL ) {
 	    GroupFree(g);
 return( NULL );
@@ -249,7 +247,7 @@ return;
     gc.found_indent = countIndent(groups);
     group_root = _LoadGroupList(groups,NULL,0,&gc);
     if ( !feof(groups))
-	LogError( "Unparsed characters found after end of groups file (last line parsed was %d).\n", gc.lineno );
+	LogError( _("Unparsed characters found after end of groups file (last line parsed was %d).\n"), gc.lineno );
     fclose(groups);
 
     free(gc.buffer);
@@ -353,12 +351,9 @@ static int _GroupSBSizes(struct groupdlg *grp, Group *group, int lpos, int depth
 
     group->lpos = lpos++;
 
-    len = 5+8*depth+ grp->as + 5 + GDrawGetTextWidth(grp->v,group->name,-1,NULL);
-    if ( group->glyphs!=NULL ) {
-	unichar_t *glyphs = uc_copy(group->glyphs);
-	len += 5 + GDrawGetTextWidth(grp->v,glyphs,-1,NULL);
-	free(glyphs);
-    }
+    len = 5+8*depth+ grp->as + 5 + GDrawGetText8Width(grp->v,group->name,-1,NULL);
+    if ( group->glyphs!=NULL )
+	len += 5 + GDrawGetText8Width(grp->v,group->glyphs,-1,NULL);
     if ( len > grp->maxl )
 	grp->maxl = len;
 
@@ -447,12 +442,9 @@ static void GroupWExpose(struct groupdlg *grp,GWindow pixmap,GRect *rect) {
 		GDrawDrawLine(pixmap,r.x+grp->as/2,r.y+2,r.x+grp->as/2,r.y+grp->as-2,
 			fg);
 	}
-	len = GDrawDrawText(pixmap,r.x+r.width+5,y,group->name,-1,NULL,fg);
-	if ( group->glyphs ) {
-	    unichar_t *glyphs = uc_copy(group->glyphs);
-	    GDrawDrawText(pixmap,r.x+r.width+5+len+5,y,glyphs,-1,NULL,fg);
-	    free(glyphs);
-	}
+	len = GDrawDrawText8(pixmap,r.x+r.width+5,y,group->name,-1,NULL,fg);
+	if ( group->glyphs )
+	    GDrawDrawText8(pixmap,r.x+r.width+5+len+5,y,group->glyphs,-1,NULL,fg);
 	group = GroupNext(group,&depth);
 	y += grp->fh;
 	if ( y-grp->fh>rect->y+rect->height )
@@ -897,7 +889,7 @@ static int GroupValidateGlyphs(Group *cur,char *g,const unichar_t *gu,int unique
 	    if ( *gu<' ' || *gu>=0x7f || *gu=='(' || *gu==')' ||
 		    *gu=='[' || *gu==']' || *gu=='{' || *gu=='}' ||
 		    *gu=='<' || *gu=='>' || *gu=='%' || *gu=='/' ) {
-		GWidgetErrorR(_STR_BadGlyphNameListLong,_STR_BadGlyphNameListLong);
+		gwwv_post_error(_("Glyph names must be valid postscript names"),_("Glyph names must be valid postscript names"));
 return( false );
 	    }
 	}
@@ -921,19 +913,19 @@ return( false );
 		    val2 = strtol(end+1,NULL,16);
 		}
 		if ( val2<val ) {
-		    GWidgetErrorR(_STR_BadRange,_STR_BadRangeStartMoreEnd, val, val2 );
+		    gwwv_post_error(_("Bad Range"),_("Bad Range, start (%1$04X) is greater than end (%2$04X)"), val, val2 );
 return( false );
 		}
 		for ( ; val<=val2; ++val )
 		    if ( (grp=FindDuplicateNumber(top,val,cur,gpt))!=NULL ) {
-			GWidgetErrorR(_STR_DuplicateName,_STR_DupUniInGrp, val, cur->name, grp->name);
+			gwwv_post_error(_("Duplicate Name"),_("The code point U+%1$04X occurs groups %2$.30s and %3$.30s"), val, cur->name, grp->name);
 return( false );
 		    }
 	    } else {
 		int ch = *gpt;
 		*gpt = '\0';
 		if ( (grp=FindDuplicateName(top,start,cur,ch!='\0'?gpt+1:NULL))!=NULL ) {
-		    GWidgetErrorR(_STR_DuplicateName,_STR_DupNameInGrp, start, cur->name, grp->name);
+		    gwwv_post_error(_("Duplicate Name"),_("The glyph name \"%1$.30s\" occurs in groups %2$.30s and %3$.30s"), start, cur->name, grp->name);
 		    *gpt = ch;
 return( false );
 		}
@@ -970,7 +962,7 @@ return( false );
 	}
 
 	free(grp->oldsel->name);
-	grp->oldsel->name = GGadgetGetTitle(grp->gpname);
+	grp->oldsel->name = GGadgetGetTitle8(grp->gpname);
 	free(grp->oldsel->glyphs);
 	if ( *g=='\0' ) {
 	    grp->oldsel->glyphs = NULL;
@@ -1012,7 +1004,7 @@ return;
 	GGadgetSetEnabled(grp->unique,false);
     } else {
 	unichar_t *glyphs = uc_copy(current->glyphs);
-	GGadgetSetTitle(grp->gpname,current->name);
+	GGadgetSetTitle8(grp->gpname,current->name);
 	if ( glyphs==NULL ) glyphs = uc_copy("");
 	GGadgetSetTitle(grp->glyphs,glyphs);
 	free(glyphs);
@@ -1176,7 +1168,7 @@ return( true );
 	grp->oldsel->kids[grp->oldsel->kid_cnt-1] = new_grp = chunkalloc(sizeof(Group));
 	new_grp->parent = grp->oldsel;
 	new_grp->unique = grp->oldsel->unique;
-	new_grp->name = u_copy(GStringGetResource(_STR_UntitledGroup,NULL));
+	new_grp->name = copy(_("UntitledGroup"));
 	grp->oldsel->selected = false;
 	grp->oldsel->open = true;
 	new_grp->selected = true;
@@ -1288,22 +1280,18 @@ void DefineGroups(FontView *fv) {
 
     if ( group_root==NULL ) {
 	grp->root = chunkalloc(sizeof(Group));
-	grp->root->name = u_copy(GStringGetResource(_STR_Groups,NULL));
+	grp->root->name = copy(_("Groups"));
     } else
 	grp->root = GroupCopy(group_root);
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.is_dlg = true;
     wattrs.restrict_input_to_me = false;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(_STR_DefineGroups,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = _("Define Groups");
-#endif
+    wattrs.utf8_window_title = _("Define Groups");
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,GGadgetScale(200));
     pos.height = h = GDrawPointsToPixels(NULL,481);
@@ -1321,8 +1309,8 @@ void DefineGroups(FontView *fv) {
     gcd[k].gd.pos.x = 20;
     gcd[k].gd.pos.y = GDrawPixelsToPoints(NULL,h-grp->bmargin)+6;
     gcd[k].gd.flags = gg_visible;
-    label[k].text = (unichar_t *) _STR_NewSubGroup;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("New Sub-Group");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.handle_controlevent = Group_NewSubGroup;
     gcd[k++].creator = GButtonCreate;
@@ -1331,7 +1319,8 @@ void DefineGroups(FontView *fv) {
     gcd[k].gd.pos.x = GDrawPixelsToPoints(NULL,(pos.width-30-GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor)));
     gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
     gcd[k].gd.flags = gg_visible;
-    label[k].text = (unichar_t *) _STR_Delete;
+    label[k].text = (unichar_t *) _("_Delete");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.handle_controlevent = Group_Delete;
@@ -1346,8 +1335,8 @@ void DefineGroups(FontView *fv) {
     gcd[k].gd.pos.x = 5;
     gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+8;
     gcd[k].gd.flags = gg_visible;
-    label[k].text = (unichar_t *) _STR_GroupName;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Group Name:");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k++].creator = GLabelCreate;
 
@@ -1359,8 +1348,8 @@ void DefineGroups(FontView *fv) {
     gcd[k].gd.pos.x = 5;
     gcd[k].gd.pos.y = gcd[k-2].gd.pos.y+16;
     gcd[k].gd.flags = gg_visible;
-    label[k].text = (unichar_t *) _STR_Glyphs;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Glyphs:");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k++].creator = GLabelCreate;
 
@@ -1371,55 +1360,55 @@ void DefineGroups(FontView *fv) {
 
     gcd[k].gd.pos.x = 5;
     gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+gcd[k-1].gd.pos.height+5;
-    gcd[k].gd.flags = gg_visible | gg_enabled;
-    label[k].text = (unichar_t *) _STR_IdentifyBy;
-    label[k].text_in_resource = true;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    label[k].text = (unichar_t *) _("Identify by");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.popup_msg = GStringGetResource(_STR_IdentifyByPopup,NULL);
+    gcd[k].gd.popup_msg = (unichar_t *) _("Glyphs may be either identified by name or by unicode code point.\nGenerally you control this by what you type in.\nTyping \"A\" would identify a glyph by name.\nTyping \"U+0041\" identifies a glyph by code point.\nWhen loading glyphs from the selection you must specify which format is desired.");
     gcd[k++].creator = GLabelCreate;
 
     gcd[k].gd.pos.x = 90; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-2;
-    label[k].text = (unichar_t *) _STR_NameNoC;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Name");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = (gg_visible | gg_enabled | gg_cb_on);
-    gcd[k].gd.popup_msg = GStringGetResource(_STR_IdentifyByPopup,NULL);
+    gcd[k].gd.flags = (gg_visible | gg_enabled | gg_cb_on | gg_utf8_popup);
+    gcd[k].gd.popup_msg = (unichar_t *) _("Glyphs may be either identified by name or by unicode code point.\nGenerally you control this by what you type in.\nTyping \"A\" would identify a glyph by name.\nTyping \"U+0041\" identifies a glyph by code point.\nWhen loading glyphs from the selection you must specify which format is desired.");
     gcd[k++].creator = GRadioCreate;
 
     gcd[k].gd.pos.x = 140; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
-    label[k].text = (unichar_t *) _STR_UnicodeL;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Unicode");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_visible | gg_enabled;
-    gcd[k].gd.popup_msg = GStringGetResource(_STR_IdentifyByPopup,NULL);
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Glyphs may be either identified by name or by unicode code point.\nGenerally you control this by what you type in.\nTyping \"A\" would identify a glyph by name.\nTyping \"U+0041\" identifies a glyph by code point.\nWhen loading glyphs from the selection you must specify which format is desired.");
     gcd[k++].creator = GRadioCreate;
 
-    label[k].text = (unichar_t *) _STR_Set;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Set");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+18;
     gcd[k].gd.pos.width = -1;
-    gcd[k].gd.popup_msg = GStringGetResource(_STR_SetGlyphsFromSelectionPopup,NULL);
-    gcd[k].gd.flags = gg_visible;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Set this glyph list to be the glyphs selected in the fontview");
+    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
     gcd[k].gd.handle_controlevent = Group_FromSelection;
     gcd[k++].creator = GButtonCreate;
 
-    label[k].text = (unichar_t *) _STR_Select_nom;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Select");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 70; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
     gcd[k].gd.pos.width = -1;
-    gcd[k].gd.popup_msg = GStringGetResource(_STR_SelectFromGlyphsPopup,NULL);
-    gcd[k].gd.flags = gg_visible;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Set the fontview's selection to be the glyphs named here");
+    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
     gcd[k].gd.handle_controlevent = Group_ToSelection;
     gcd[k++].creator = GButtonCreate;
 
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+26;
-    label[k].text = (unichar_t *) _STR_NoGlyphDuplicates;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("No Glyph Duplicates");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_visible;
-    gcd[k].gd.popup_msg = GStringGetResource(_STR_NoGlyphDuplicatesPopup,NULL);
+    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Glyph names (or unicode code points) may occur at most once in this group and any of its sub-groups");
     gcd[k++].creator = GCheckBoxCreate;
 
     gcd[k].gd.pos.width = GDrawPixelsToPoints(NULL,pos.width)-20;
@@ -1432,7 +1421,8 @@ void DefineGroups(FontView *fv) {
     gcd[k].gd.pos.x = 30;
     gcd[k].gd.pos.y = h-GDrawPointsToPixels(NULL,32);
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default | gg_pos_in_pixels;
-    label[k].text = (unichar_t *) _STR_OK;
+    label[k].text = (unichar_t *) _("_OK");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k++].creator = GButtonCreate;
@@ -1441,7 +1431,8 @@ void DefineGroups(FontView *fv) {
     gcd[k].gd.pos.x = (pos.width-30-GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor));
     gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+3;
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_cancel | gg_pos_in_pixels;
-    label[k].text = (unichar_t *) _STR_Cancel;
+    label[k].text = (unichar_t *) _("_Cancel");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k++].creator = GButtonCreate;
@@ -1532,10 +1523,10 @@ static void EncodeToGroups(FontView *fv,Group *group) {
     EncMap *map = EncMapNew(0,sf->glyphcnt,&custom);
 
     if ( MapAddSelectedGroups(map,sf,group)==0 ) {
-	GWidgetErrorR(_STR_NothingSelected,_STR_NothingSelected);
+	gwwv_post_error(_("Nothing Selected"),_("Nothing Selected"));
 	EncMapFree(map);
     } else if ( map->enccount==0 ) {
-	GWidgetErrorR(_STR_NothingSelected,_STR_NoGlyphsInFontMatchGroups);
+	gwwv_post_error(_("Nothing Selected"),_("None of the glyphs in the current font match any names or code points in the selected groups"));
 	EncMapFree(map);
     } else {
 	fv->selected = grealloc(fv->selected,map->enccount);
@@ -1562,21 +1553,17 @@ void DisplayGroups(FontView *fv) {
 
     if ( grp.root==NULL ) {
 	grp.root = chunkalloc(sizeof(Group));
-	grp.root->name = u_copy(GStringGetResource(_STR_Groups,NULL));
+	grp.root->name = copy(_("Groups"));
     }
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.is_dlg = true;
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(_STR_DisplayByGroups,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = _("Display By Groups...");
-#endif
+    wattrs.utf8_window_title = _("Display By Groups...");
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,GGadgetScale(200));
     pos.height = h = GDrawPointsToPixels(NULL,300);
@@ -1593,7 +1580,8 @@ void DisplayGroups(FontView *fv) {
     gcd[0].gd.pos.x = 30;
     gcd[0].gd.pos.y = h-GDrawPointsToPixels(NULL,30);
     gcd[0].gd.flags = gg_visible | gg_enabled | gg_but_default | gg_pos_in_pixels;
-    label[0].text = (unichar_t *) _STR_OK;
+    label[0].text = (unichar_t *) _("_OK");
+    label[0].text_is_1byte = true;
     label[0].text_in_resource = true;
     gcd[0].gd.label = &label[0];
     gcd[0].creator = GButtonCreate;
@@ -1602,7 +1590,8 @@ void DisplayGroups(FontView *fv) {
     gcd[1].gd.pos.x = (pos.width-30-GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor));
     gcd[1].gd.pos.y = gcd[0].gd.pos.y+3;
     gcd[1].gd.flags = gg_visible | gg_enabled | gg_but_cancel | gg_pos_in_pixels;
-    label[1].text = (unichar_t *) _STR_Cancel;
+    label[1].text = (unichar_t *) _("_Cancel");
+    label[1].text_is_1byte = true;
     label[1].text_in_resource = true;
     gcd[1].gd.label = &label[1];
     gcd[1].creator = GButtonCreate;
