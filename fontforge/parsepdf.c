@@ -451,14 +451,14 @@ static int haszlib(void) {
 return( true );
 
     if ( (zlib = dlopen("libz" SO_EXT,RTLD_GLOBAL|RTLD_LAZY))==NULL ) {
-	LogError("%s", dlerror());
+	LogError( "%s", dlerror());
 return( false );
     }
     _inflateInit_ = (int (*)(z_stream *,const char *,int)) dlsym(zlib,"inflateInit_");
     _inflate = (int (*)(z_stream *,int )) dlsym(zlib,"inflate");
     _inflateEnd = (int (*)(z_stream *)) dlsym(zlib,"inflateEnd");
     if ( _inflateInit_==NULL || _inflate==NULL || _inflateEnd==NULL ) {
-	LogError("%s", dlerror());
+	LogError( "%s", dlerror());
 	dlclose(zlib); zlib=NULL;
 return( false );
     }
@@ -554,7 +554,7 @@ static FILE *pdf_defilterstream(struct pdfcontext *pc) {
     char *pt;
 
     if ( (pt=PSDictHasEntry(&pc->pdfdict,"Length"))==NULL ) {
-	LogError("A pdf stream object is missing a Length attribute");
+	LogError( _("A pdf stream object is missing a Length attribute"));
 return( NULL );
     }
     length = pdf_getinteger(pt,pc);
@@ -588,7 +588,7 @@ return( res );
 	    pdf_rlefilter(res,old);
 	    pt += strlen("RunLengthDecode");
 	} else {
-	    LogError("Unsupported filter: %s", pt );
+	    LogError( _("Unsupported filter: %s"), pt );
 	    fclose(old); fclose(res);
 return( NULL );
 	}
@@ -737,7 +737,7 @@ return( pt_number );
 	} else {
 	    *val = strtod(tokbuf,&end);
 	    if ( !finite(*val) ) {
-		LogError( "Bad number, infinity or nan: %s\n", tokbuf );
+		LogError( _("Bad number, infinity or nan: %s\n"), tokbuf );
 		*val = 0;
 	    }
 	    if ( *end=='\0' )		/* It's a real */
@@ -875,7 +875,7 @@ static void _InterpretPdf(FILE *in, struct pdfcontext *pc, EntityChar *ec) {
 		if ( stack[sp-1-i].type==ps_mark )
 	    break;
 	    if ( i==sp )
-		LogError( "No mark in ] (close array)\n" );
+		LogError( _("No mark in ] (close array)\n") );
 	    else {
 		struct pskeydict dict;
 		dict.cnt = dict.max = i;
@@ -1180,7 +1180,7 @@ return( NULL );
 return( sc );
 
   fail:
-    LogError("Syntax error in parsing type3 glyph: %s", glyphname );
+    LogError( _("Syntax error in parsing type3 glyph: %s"), glyphname );
 return( NULL );
 }
     
@@ -1278,7 +1278,7 @@ static SplineFont *pdf_loadtype3(struct pdfcontext *pc) {
 return( sf );
 
   fail:
-    LogError("Syntax errors while parsing Type3 font headers" );
+    LogError( _("Syntax errors while parsing Type3 font headers") );
 return( NULL );
 }
 
@@ -1322,7 +1322,7 @@ return( pdf_loadtype3(pc));
     else if ( (pt=PSDictHasEntry(&pc->pdfdict,"FontFile3"))!=NULL )
 	type = 3;
     else {
-	LogError("The font %s is one of the standard fonts. It isn't actually in the file.", pc->fontnames[font_num]);
+	LogError( _("The font %s is one of the standard fonts. It isn't actually in the file."), pc->fontnames[font_num]);
 return( NULL );
     }
     ff = strtol(pt,NULL,10);
@@ -1356,7 +1356,7 @@ return( NULL );
 return( sf );
 
   fail:
-    LogError("Unable to parse the pdf objects that make up %s",pc->fontnames[font_num]);
+    LogError( _("Unable to parse the pdf objects that make up %s"),pc->fontnames[font_num]);
 return( NULL );
 }
 
@@ -1382,13 +1382,13 @@ SplineFont *_SFReadPdfFont(FILE *pdf,char *filename,char *select_this_font) {
     memset(&pc,0,sizeof(pc));
     pc.pdf = pdf;
     if ( (pc.objs = FindObjects(&pc))==NULL ) {
-	LogError("Doesn't look like a valid pdf file, couldn't find xref section" );
+	LogError( _("Doesn't look like a valid pdf file, couldn't find xref section") );
 	pcFree(&pc);
 	setlocale(LC_NUMERIC,oldloc);
 return( NULL );
     }
     if ( pdf_findfonts(&pc)==0 ) {
-	LogError("This pdf file has no fonts");
+	LogError( _("This pdf file has no fonts"));
 	pcFree(&pc);
 	setlocale(LC_NUMERIC,oldloc);
 return( NULL );
@@ -1403,34 +1403,26 @@ return( NULL );
 	if ( i<pc.fcnt )
 	    sf = pdf_loadfont(&pc,i);
 	else
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_NotInCollection,_STR_FontNotInCollection,
-		    select_this_font, filename);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 	    gwwv_post_error(_("Not in Collection"),_("%s is not in %.100s"),
 		    select_this_font, filename);
 #else
 	    ;
 #endif
     } else {
-	unichar_t **names;
+	char **names;
 	int choice;
 	names = galloc((pc.fcnt+1)*sizeof(unichar_t *));
 	for ( i=0; i<pc.fcnt; ++i )
-	    names[i] = utf82u_copy(pc.fontnames[i]);
+	    names[i] = copy(pc.fontnames[i]);
 	names[i] = NULL;
 #if defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 	choice = 0;
-#elif defined(FONTFORGE_CONFIG_GDRAW)
-	if ( no_windowing_ui )
-	    choice = 0;
-	else
-	    choice = GWidgetChoicesR(_STR_PickFont,(const unichar_t **) names,pc.fcnt,0,_STR_MultipleFontsPick);
 #else
 	if ( no_windowing_ui )
 	    choice = 0;
 	else
-	    choice = gwwv_choose(_("Pick a font, any font..."),(const unichar_t **) names,pc.fcnt,0,_("There are multiple fonts in this file, pick one"));
+	    choice = gwwv_choose(_("Pick a font, any font..."),(const char **) names,pc.fcnt,0,_("There are multiple fonts in this file, pick one"));
 #endif
 	for ( i=0; i<pc.fcnt; ++i )
 	    free(names[i]);

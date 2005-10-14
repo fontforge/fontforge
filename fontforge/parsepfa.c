@@ -1059,9 +1059,7 @@ static void InitChars(struct pschars *chars,char *line) {
 	chars->keys = gcalloc(chars->cnt,sizeof(char *));
 	chars->values = gcalloc(chars->cnt,sizeof(char *));
 	chars->lens = gcalloc(chars->cnt,sizeof(int));
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GProgressChangeTotal(chars->cnt);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 	gwwv_progress_change_total(chars->cnt);
 #endif
     }
@@ -1074,9 +1072,7 @@ static void InitCharProcs(struct charprocs *cp, char *line) {
     if ( cp->cnt>0 ) {
 	cp->keys = gcalloc(cp->cnt,sizeof(char *));
 	cp->values = gcalloc(cp->cnt,sizeof(SplineChar *));
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GProgressChangeTotal(cp->cnt);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 	gwwv_progress_change_total(cp->cnt);
 #endif
     }
@@ -1350,7 +1346,7 @@ static void sfnts2tempfile(struct fontparse *fp,FILE *in,char *line) {
 		nibble = *pt-'A'+10;
 	    else {
 		if ( !complained ) {
-		    LogError( "Invalid hex digit in sfnts array\n" );
+		    LogError( _("Invalid hex digit in sfnts array\n") );
 		    complained = true;
 		}
 		++pt;
@@ -1387,7 +1383,7 @@ static void sfnts2tempfile(struct fontparse *fp,FILE *in,char *line) {
 	    sofar = 0;
 	} else if ( !instring ) {
 	    if ( !complained ) {
-		LogError( "Invalid character outside of string in sfnts array\n" );
+		LogError( _("Invalid character outside of string in sfnts array\n") );
 		complained = true;
 	    }
 	} else if ( instring && ch=='>' ) {
@@ -1405,7 +1401,7 @@ static void sfnts2tempfile(struct fontparse *fp,FILE *in,char *line) {
 		nibble = ch-'A'+10;
 	    else {
 		if ( !complained ) {
-		    LogError( "Invalid hex digit in sfnts array\n" );
+		    LogError( _("Invalid hex digit in sfnts array\n") );
 		    complained = true;
 		}
     continue;
@@ -1529,7 +1525,7 @@ return;
 	    else if ( i<subrs->cnt ) {
 		findstring(fp,subrs,i,NULL,ept);
 	    } else if ( !fp->alreadycomplained ) {
-		LogError( "Index too big (must be <%d) |%s", subrs->cnt, rmbinary(line));
+		LogError( _("Index too big (must be <%d) |%s"), subrs->cnt, rmbinary(line));
 		fp->alreadycomplained = true;
 	    }
 	} else if ( strncmp(line, "readonly put", 12)==0 || strncmp(line, "ND", 2)==0 || strncmp(line, "|-", 2)==0 ) {
@@ -1538,7 +1534,7 @@ return;
 	} else if ( *line=='\n' || *line=='\0' ) {
 	    /* Ignore blank lines */;
 	} else if ( !fp->alreadycomplained ) {
-	    LogError( "Didn't understand |%s", rmbinary(line) );
+	    LogError( _("Didn't understand |%s"), rmbinary(line) );
 	    fp->alreadycomplained = true;
 	}
     } else if ( fp->inchars ) {
@@ -1549,12 +1545,12 @@ return;
 	else if ( *line=='\n' || *line=='\0' )
 	    /* Ignore it */;
 	else if ( *line!='/' || !(isalpha(line[1]) || line[1]=='.')) {
-	    LogError( "No name for CharStrings dictionary |%s", rmbinary(line) );
+	    LogError( _("No name for CharStrings dictionary |%s"), rmbinary(line) );
 	    fp->alreadycomplained = true;
 	} else if ( fp->ignore ) {
 	    /* Do Nothing */;
 	} else if ( chars->next>=chars->cnt )
-	    LogError( "Too many entries in CharStrings dictionary |%s", rmbinary(line) );
+	    LogError( _("Too many entries in CharStrings dictionary |%s"), rmbinary(line) );
 	else if ( fp->fd->fonttype==42 || fp->fd->fonttype==11 || fp->fd->cidfonttype==2 )
 	    findnumbers(fp,chars,line);
 	else {
@@ -1563,9 +1559,7 @@ return;
 	    while ( isalnum(*line) || *line=='.' ) ++line;
 	    *line = '\0';
 	    findstring(fp,chars,i,namestrt,line+1);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GProgressNext();
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 	    gwwv_progress_next();
 #endif
 	}
@@ -1689,7 +1683,7 @@ return;
 	    fp->pending_parse = &fp->fd->fontinfo->blendaxistypes;
 	    AddValue(fp,NULL,line,endtok);
 	} else if ( !fp->alreadycomplained ) {
-	    LogError( "Didn't understand |%s", rmbinary(line) );
+	    LogError( _("Didn't understand |%s"), rmbinary(line) );
 	    fp->alreadycomplained = true;
 	}
     } else if ( fp->inblend ) {
@@ -1719,7 +1713,7 @@ return;
 		fp->ignore = false;
 	    } else {
 		fp->ignore = true;
-		LogError( "Ignoring duplicate /CharStrings entry\n" );
+		LogError( _("Ignoring duplicate /CharStrings entry\n") );
 	    }
 	    fp->inchars = 1;
 	    fp->insubs = 0;
@@ -1727,7 +1721,7 @@ return;
 	} else if ( strstr(line,"/Subrs")!=NULL ) {
 	    if ( fp->fd->private->subrs->next>0 ) {
 		fp->ignore = true;
-		LogError( "Ignoring duplicate /Subrs entry\n" );
+		LogError( _("Ignoring duplicate /Subrs entry\n") );
 	    } else {
 		InitChars(fp->fd->private->subrs,line);
 		fp->ignore = false;
@@ -1815,7 +1809,7 @@ return;
 		fp->ignore = false;
 	    } else {
 		fp->ignore = true;
-		LogError( "Ignoring duplicate /CharStrings entry\n" );
+		LogError( _("Ignoring duplicate /CharStrings entry\n") );
 	    }
 	    fp->inchars = 1;
 	    fp->insubs = 0;
@@ -1881,7 +1875,7 @@ return;
 	    if ( fp->fd->uniqueid==0 )
 		fp->fd->uniqueid = strtol(endtok,NULL,10);
 	} else if ( mycmp("UniqueId",line+1,endtok)==0 ) {
-	    LogError("This font contains a \"UniqueId\" variable, but the correct name for it is\n\t\"UniqueID\" (postscript is case concious)\n" );
+	    LogError(_("This font contains a \"UniqueId\" variable, but the correct name for it is\n\t\"UniqueID\" (postscript is case concious)\n") );
 	    if ( fp->fd->uniqueid==0 )
 		fp->fd->uniqueid = strtol(endtok,NULL,10);
 	} else if ( mycmp("XUID",line+1,endtok)==0 ) {
@@ -1948,7 +1942,7 @@ return;
 	} else if ( fp->skipping_mbf ) {	/* Skip over the makeblendedfont defn in a multimaster font */
 	    /* Do Nothing */
 	} else if ( !fp->alreadycomplained ) {
-	    LogError( "Didn't understand |%s", rmbinary(line) );
+	    LogError( _("Didn't understand |%s"), rmbinary(line) );
 	    fp->alreadycomplained = true;
 	}
     }
@@ -1961,7 +1955,7 @@ static void addinfo(struct fontparse *fp,char *line,char *tok,char *binstart,int
     binstart += fp->fd->private->leniv;
     binlen -= fp->fd->private->leniv;
     if ( binlen<0 ) {
-	LogError( "Bad CharString. Does not include lenIV bytes.\n" );
+	LogError( _("Bad CharString. Does not include lenIV bytes.\n") );
 return;
     }
 
@@ -1975,27 +1969,27 @@ return;
 		/* Do Nothing */;
 	    else if ( i<chars->cnt ) {
 		if ( chars->values[i]!=NULL )
-		    LogError( "Duplicate definition of subroutine %d\n", i );
+		    LogError( _("Duplicate definition of subroutine %d\n"), i );
 		chars->lens[i] = binlen;
 		chars->values[i] = galloc(binlen);
 		memcpy(chars->values[i],binstart,binlen);
 		if ( i>=chars->next ) chars->next = i+1;
 	    } else if ( !fp->alreadycomplained ) {
-		LogError( "Index too big (must be <%d) |%s", chars->cnt, rmbinary(line));
+		LogError( _("Index too big (must be <%d) |%s"), chars->cnt, rmbinary(line));
 		fp->alreadycomplained = true;
 	    }
 	} else if ( !fp->alreadycomplained ) {
-	    LogError( "Didn't understand |%s", rmbinary(line) );
+	    LogError( _("Didn't understand |%s"), rmbinary(line) );
 	    fp->alreadycomplained = true;
 	}
     } else if ( fp->inchars ) {
 	struct pschars *chars = fp->fd->chars;
 	if ( *tok=='\0' )
-	    LogError( "No name for CharStrings dictionary |%s", rmbinary(line) );
+	    LogError( _("No name for CharStrings dictionary |%s"), rmbinary(line) );
 	else if ( fp->ignore )
 	    /* Do Nothing */;
 	else if ( chars->next>=chars->cnt )
-	    LogError( "Too many entries in CharStrings dictionary |%s", rmbinary(line) );
+	    LogError( _("Too many entries in CharStrings dictionary |%s"), rmbinary(line) );
 	else {
 	    int i = chars->next;
 	    chars->lens[i] = binlen;
@@ -2003,9 +1997,7 @@ return;
 	    chars->values[i] = galloc(binlen);
 	    memcpy(chars->values[i],binstart,binlen);
 	    ++chars->next;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GProgressNext();
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 	    gwwv_progress_next();
 #endif
 	}
@@ -2035,7 +2027,7 @@ return;
 	    }
 return;
 	}
-	LogError( "Shouldn't be in addinfo |%s", rmbinary(line) );
+	LogError( _("Shouldn't be in addinfo |%s"), rmbinary(line) );
 	fp->alreadycomplained = true;
     }
 }
@@ -2355,9 +2347,7 @@ static void figurecids(struct fontparse *fp,FILE *temp) {
     fd->cidlens = galloc(cidcnt*sizeof(int16));
     fd->cidfds = galloc((cidcnt+1)*sizeof(int16));
     offsets = galloc((cidcnt+1)*sizeof(int));
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressChangeTotal(cidcnt);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
     gwwv_progress_change_total(cidcnt);
 #endif
 
@@ -2366,7 +2356,7 @@ static void figurecids(struct fontparse *fp,FILE *temp) {
 	for ( j=val=0; j<fd->fdbytes; ++j )
 	    val = (val<<8) + getc(temp);
 	if ( val >= fd->fdcnt && val!=255 ) {	/* 255 is a special mark */
-	    LogError( "Invalid FD (%d) assigned to CID %d.\n", val, i );
+	    LogError( _("Invalid FD (%d) assigned to CID %d.\n"), val, i );
 	    val = 0;
 	}
 	fd->cidfds[i] = val;
@@ -2376,7 +2366,7 @@ static void figurecids(struct fontparse *fp,FILE *temp) {
 	if ( i!=0 ) {
 	    fd->cidlens[i-1] = offsets[i]-offsets[i-1];
 	    if ( fd->cidlens[i-1]<0 ) {
-		LogError( "Bad CID offset for CID %d\n", i-1 );
+		LogError( _("Bad CID offset for CID %d\n"), i-1 );
 		fd->cidlens[i-1] = 0;
 	    }
 	}
@@ -2390,9 +2380,7 @@ static void figurecids(struct fontparse *fp,FILE *temp) {
 		    fd->fds[fd->cidfds[i]]->private->leniv);
 	    fd->cidlens[i] -= fd->fds[fd->cidfds[i]]->private->leniv;
 	}
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GProgressNext();
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 	gwwv_progress_next();
 #endif
     }
@@ -2455,14 +2443,14 @@ static void dodata( struct fontparse *fp, FILE *in, FILE *temp) {
 	else if ( ch=='H' || ch=='h' ) binary = false;
 	else {
 	    binary = true;		/* Who knows? */
-	    LogError( "Failed to parse the StartData command properly\n" );
+	    LogError( _("Failed to parse the StartData command properly\n") );
 	}
 	fontsetname[0] = '\0';
 	while ( (ch=getc(in))!=')' && ch!=EOF );
     }
     if ( fscanf( in, "%d", &len )!=1 || len<=0 ) {
 	len = 0;
-	LogError( "Failed to parse the StartData command properly, bad cnt\n" );
+	LogError( _("Failed to parse the StartData command properly, bad cnt\n") );
     }
     cnt = len;
     while ( isspace(ch=getc(in)) );
@@ -2586,7 +2574,7 @@ FontDict *_ReadPSFont(FILE *in) {
 
     temp = tmpfile();
     if ( temp==NULL ) {
-	LogError( "Cannot open a temporary file\n" );
+	LogError( _("Cannot open a temporary file\n") );
 	fclose(in); 
 return(NULL);
     }
@@ -2609,7 +2597,7 @@ FontDict *ReadPSFont(char *fontname) {
 
     in = fopen(fontname,"rb");
     if ( in==NULL ) {
-	LogError( "Cannot open %s\n", fontname );
+	LogError( _("Cannot open %s\n"), fontname );
 return(NULL);
     }
     fd = _ReadPSFont(in);

@@ -115,7 +115,7 @@ int LoadKerningDataFromAfm(SplineFont *sf, char *filename,EncMap *map) {
     if ( file==NULL )
 return( 0 );
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressChangeLine2R(_STR_ReadingAFM);
+    gwwv_progress_change_line2(_("Reading AFM file"));
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_change_line2(_("Reading AFM file"));
 #endif
@@ -206,7 +206,7 @@ int LoadKerningDataFromAmfm(SplineFont *sf, char *filename,EncMap *map) {
 return( 0 );
 
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressChangeLine2R(_STR_ReadingAFM);
+    gwwv_progress_change_line2(_("Reading AFM file"));
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_change_line2(_("Reading AFM file"));
 #endif
@@ -643,9 +643,9 @@ return( 0 );
 	    nki + nwi + nkf + nwf + nkm + nwm + nkr + nwr + nkg + nwg + nkp + nwp;
 	/* Level 2 appears to have the same structure as level 1 */
 	if ( level1 )
-	    GWidgetErrorR(_STR_UnlikelyOfm,_STR_Level1Ofm);
+	    gwwv_post_error(_("Unlikely Ofm File"),_("This looks like a level1 (or level2) ofm. FontForge only supports level0 files, and can't read a real level1 file."));
 	else
-	    GWidgetErrorR(_STR_UnlikelyOfm,_STR_BadOfm);
+	    gwwv_post_error(_("Unlikely Ofm File"),_("This doesn't look like an ofm file, I don't know how to read it."));
 	fclose(file);
 return( 0 );
     }
@@ -840,7 +840,7 @@ static void AfmSplineCharX(FILE *afm, SplineChar *sc, int enc) {
 	AfmLigOut(afm,sc);
     putc('\n',afm);
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressNext();
+    gwwv_progress_next();
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_next();
 #endif
@@ -870,7 +870,7 @@ static void AfmSplineChar(FILE *afm, SplineChar *sc, int enc) {
 	AfmLigOut(afm,sc);
     putc('\n',afm);
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressNext();
+    gwwv_progress_next();
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_next();
 #endif
@@ -890,7 +890,7 @@ static void AfmCIDChar(FILE *afm, SplineChar *sc, int enc) {
 	    (int) ceil(b.maxx*1000/em), (int) ceil(b.maxy*1000/em) );
     putc('\n',afm);
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressNext();
+    gwwv_progress_next();
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_next();
 #endif

@@ -1745,7 +1745,7 @@ struct pschars *SplineFont2Chrs(SplineFont *sf, int iscjk,
 	}
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	if ( !GProgressNext()) {
+	if ( !gwwv_progress_next()) {
 #elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next()) {
 #endif
@@ -1835,7 +1835,7 @@ struct pschars *CID2Chrs(SplineFont *cidmaster,struct cidbytes *cidbytes,int fla
 	}
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	if ( !GProgressNext()) {
+	if ( !gwwv_progress_next()) {
 #elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next()) {
 #endif
@@ -1874,7 +1874,7 @@ static void AddNumber2(GrowBuf *gb, real pos, int round) {
     if ( round )
 	pos = rint(pos);
     if ( pos>65535 || pos<-65536 ) {
-	LogError( "Number out of range: %g in type2 output (must be [-65536,65535])\n",
+	LogError( _("Number out of range: %g in type2 output (must be [-65536,65535])\n"),
 		pos );
 	if ( pos>0 ) pos = 65535; else pos = -65536;
     }
@@ -1884,7 +1884,7 @@ static void AddNumber2(GrowBuf *gb, real pos, int round) {
 #if 0
 	if ( !real_warn ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetPostNoticeR(_STR_NotIntegral,_STR_TryRoundToInt);
+	    gwwv_post_notice(_("Not integral"),_("This font contains at least one non-integral coordinate.\nThis is perfectly legal, but it is unusual and does\nincrease the size of the generated font file. You might\nwant to try using\n  Element->Round To Int\non the entire font."));
 #elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_notice(_("Not integral"),_("This font contains at least one non-integral coordinate.\nThis is perfectly legal, but it is unusual and does\nincrease the size of the generated font file. You might\nwant to try using\n  Element->Round To Int\non the entire font."));
 #endif
@@ -2708,7 +2708,7 @@ return( subrs);
 	}
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	if ( !GProgressNext()) {
+	if ( !gwwv_progress_next()) {
 #elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next()) {
 #endif
@@ -2775,7 +2775,7 @@ struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
 	chrs->values[i] = SplineChar2PS2(sc,&chrs->lens[i],nomwid,defwid,subrs,NULL,flags);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	if ( !GProgressNext()) {
+	if ( !gwwv_progress_next()) {
 #elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next()) {
 #endif
@@ -2878,7 +2878,7 @@ struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds,int flags) {
 	    sc->ttf_glyph = cnt++;
 	}
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	GProgressNext();
+	gwwv_progress_next();
 #elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_progress_next();
 #endif

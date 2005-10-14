@@ -157,7 +157,7 @@ static Encoding *enc_from_platspec(int platform,int specific) {
     if ( e==NULL ) {
 	static int p = -1,s = -1;
 	if ( p!=platform || s!=specific ) {
-	    LogError( "The truetype encoding specified by platform=%d specific=%d (which we map to %s) is not supported by your version of iconv(3).\n",
+	    LogError( _("The truetype encoding specified by platform=%d specific=%d (which we map to %s) is not supported by your version of iconv(3).\n"),
 		    platform, specific, enc );
 	    p = platform; s = specific;
 	}
@@ -165,13 +165,13 @@ static Encoding *enc_from_platspec(int platform,int specific) {
 return( e );
 }
 
-static unichar_t *_readencstring(FILE *ttf,int offset,int len,
+static char *_readencstring(FILE *ttf,int offset,int len,
 	int platform,int specific,int language) {
     long pos = ftell(ttf);
-    unichar_t *str;
+    unichar_t *str, *pt;
+    char *ret;
     int i, ch;
     Encoding *enc;
-    unichar_t *pt;
 
     fseek(ttf,offset,SEEK_SET);
 
@@ -184,7 +184,7 @@ static unichar_t *_readencstring(FILE *ttf,int offset,int len,
 	for ( i=0; i<len; ++i )
 	    *cpt++ = getc(ttf);
 	*cpt = '\0';
-	str = MacStrToUnicode(cstr,specific,language);
+	ret = MacStrToUtf8(cstr,specific,language);
 	free(cstr);
     } else {
 	enc = enc_from_platspec(platform,specific);
@@ -215,12 +215,14 @@ return( NULL );
 	} else {
 	    str = uc_copy("");
 	}
+	ret = u2utf8_copy(str);
+	free(str);
     }
     fseek(ttf,pos,SEEK_SET);
-return( str );
+return( ret );
 }
 
-unichar_t *TTFGetFontName(FILE *ttf,int32 offset,int32 off2) {
+char *TTFGetFontName(FILE *ttf,int32 offset,int32 off2) {
     int i,num;
     int32 tag, nameoffset, length, stringoffset;
     int plat, spec, lang, name, len, off, val;
@@ -301,7 +303,7 @@ return( _readencstring(ttf,stringoffset+fullstr,fulllen,fullplat,fullspec,fullla
 
 static int PickTTFFont(FILE *ttf,char *filename,char **chosenname) {
     int32 *offsets, cnt, i, choice, j;
-    unichar_t **names;
+    char **names;
     char *pt, *lparen;
 
     /* TTCF version = */ getlong(ttf);
@@ -315,7 +317,7 @@ return( true );
     offsets = galloc(cnt*sizeof(int32));
     for ( i=0; i<cnt; ++i )
 	offsets[i] = getlong(ttf);
-    names = galloc(cnt*sizeof(unichar_t *));
+    names = galloc(cnt*sizeof(char *));
     for ( i=j=0; i<cnt; ++i ) {
 	names[j] = TTFGetFontName(ttf,offsets[i],0);
 	if ( names[j]!=NULL ) ++j;
@@ -327,36 +329,27 @@ return( true );
 	pt = strchr(find,')');
 	if ( pt!=NULL ) *pt='\0';
 	for ( choice=cnt-1; choice>=0; --choice )
-	    if ( uc_strcmp(names[choice],find)==0 )
+	    if ( strcmp(names[choice],find)==0 )
 	break;
 	if ( choice==-1 ) {
 	    char *fn = copy(filename);
 	    fn[lparen-filename] = '\0';
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_NotInCollection,_STR_FontNotInCollection,find,fn);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_error(_("Not in Collection"),_("%s is not in %.100s"),find,fn);
-#endif
+	    gwwv_post_error(_("Not in Collection"),_("%1$s is not in %2$.100s"),find,fn);
 	    free(fn);
 	}
 	free(find);
-#if defined(FONTFORGE_CONFIG_GDRAW)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
     } else if ( no_windowing_ui )
 	choice = 0;
     else
-	choice = GWidgetChoicesR(_STR_PickFont,(const unichar_t **) names,j,0,_STR_MultipleFontsPick);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    } else if ( no_windowing_ui )
-	choice = 0;
-    else
-	choice = gwwv_choose(_("Pick a font, any font..."),(const unichar_t **) names,j,0,_("There are multiple fonts in this file, pick one"));
-#elif defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
+	choice = gwwv_choose(_("Pick a font, any font..."),(const char **) names,j,0,_("There are multiple fonts in this file, pick one"));
+#else
     } else
 	choice = 0;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     if ( choice!=-1 ) {
 	fseek(ttf,offsets[choice],SEEK_SET);
-	*chosenname = cu_copy(names[choice]);
+	*chosenname = copy(names[choice]);
     }
     for ( i=0; i<j; ++i )
 	free(names[i]);
@@ -373,18 +366,12 @@ static int PickCFFFont(char **fontnames) {
     names = gcalloc(cnt+1,sizeof(unichar_t *));
     for ( i=0; i<cnt; ++i )
 	names[i] = uc_copy(fontnames[i]);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    if ( no_windowing_ui )
-	choice = 0;
-    else
-	choice = GWidgetChoicesR(_STR_PickFont,
-		(const unichar_t **) names,cnt,0,_STR_MultipleFontsPick);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
     if ( no_windowing_ui )
 	choice = 0;
     else
 	choice = gwwv_choose(_("Pick a font, any font..."),
-	    (const unichar_t **) names,cnt,0,_("There are multiple fonts in this file, pick one"));
+	    (const char **) names,cnt,0,_("There are multiple fonts in this file, pick one"));
 #elif defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
     choice = 0;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
@@ -446,7 +433,7 @@ return( 0 );
     /*  or how */
     if ( version==CHR('t','y','p','1')) {
 	if ( filename==NULL ) filename = "it";
-	LogError( "Interesting, I've never seen an example of this type of font, could you\nsend me a copy of %s?\nThanks\n  gww@silcom.com\n", filename );
+	LogError( _("Interesting, I've never seen an example of this type of font, could you\nsend me a copy of %s?\nThanks\n  gww@silcom.com\n"), filename );
     }
     if ( version!=0x00010000 && version!=CHR('t','r','u','e') &&
 	    version!=0x00020000 &&	/* Windows 3.1 Chinese version used this version for some arphic fonts */
@@ -660,10 +647,8 @@ static void readttfmaxp(FILE *ttf,struct ttfinfo *info) {
 	/* X11 OpenType bitmap format */;
 	info->onlystrikes = true;
     } else if ( cnt!=info->glyph_cnt && info->loca_length!=0 ) {
-#if defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_notice(_("Bad Glyph Count"),_("Font file has bad glyph count field. maxp says: %d sizeof(loca)=>%d"), cnt, info->glyph_cnt );
-#else
-	GWidgetPostNoticeR(_STR_BadGlyphCount, _STR_BadGlyphCountLong, cnt, info->glyph_cnt);
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
+	gwwv_post_notice(_("Bad Glyph Count"), _("Font file has bad glyph count field. maxp says: %d sizeof(loca)=>%d"), cnt, info->glyph_cnt);
 #endif
 	if ( cnt>info->glyph_cnt )
 	    cnt = info->glyph_cnt;		/* Use the smaller of the two values */
@@ -750,69 +735,22 @@ return;
     }
 }
 
-static void uValidatePostScriptFontName(unichar_t *str) {
-    unichar_t *end, *pt, *npt;
-    int complained = false;
-
-    u_strtod(str,&end);
-    if ( (*end=='\0' || (isdigit(str[0]) && u_strchr(str,'#')!=NULL)) &&
-	    *str!='\0' ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_BadFontName,_STR_PSNameNotNumber);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_error(_("Bad Font Name"),_("A Postscript name may not be a number"));
-#endif
-	*str = 'a';
-	complained = true;
-    }
-    for ( pt=str; *pt; ) {
-	if ( *pt<=' ' || *pt>=0x7f ||
-		*pt=='(' || *pt=='[' || *pt=='{' || *pt=='<' ||
-		*pt==')' || *pt==']' || *pt=='}' || *pt=='>' ||
-		*pt=='%' || *pt=='/' ) {
-	    if ( !complained ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_BadFontName,_STR_BadPSName2,str);
-#elif defined(FONTFORGE_CONFIG_GTK)
-		gwwv_post_error(_("Bad Font Name"),_("The Postscript font name \"%.63s\" is invalid.\nIt should be printable ASCII,\nmust not contain (){}[]<>%%/ or space\nand must be shorted than 63 characters",str));
-#endif
-	    }
-	    complained = true;
-	    for ( npt=pt; npt[1]; ++npt )
-		*npt = npt[1];
-	    *npt = '\0';
-	} else
-	    ++pt;
-    }
-    if ( u_strlen(str)>63 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_BadFontName,_STR_BadPSName2,str);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_error(_("Bad Font Name"),_("The Postscript font name \"%.63s\" is invalid.\nIt should be printable ASCII,\nmust not contain (){}[]<>%%/ or space\nand must be shorted than 63 characters",str));
-#endif
-	str[63] = '\0';
-    }
-}
-
 static void ValidatePostScriptFontName(char *str) {
     char *end, *pt, *npt;
     int complained = false;
-    unichar_t *temp = NULL;
 
     /* someone gave me a font where the fontname started with the utf8 byte */
     /*  order mark.  PLRM says only ASCII encoding is supported. CFF says */
     /*  only printable ASCII should be used */
     if ( ((uint8 *) str)[0] == 0xef && ((uint8 *) str)[1]==0xbb && ((uint8 *) str)[2] == 0xbf ) {
-	LogError("The fontname begins with the utf8 byte order sequence. This is illegal. %s", str+3 );
+	LogError(_("The fontname begins with the utf8 byte order sequence. This is illegal. %s"), str+3 );
 	for ( pt=str+3; *pt; ++pt )
 	    pt[-3] = *pt;		/* ANSI says we can't strcpy overlapping strings */
     }
     strtod(str,&end);
     if ( (*end=='\0' || (isdigit(str[0]) && strchr(str,'#')!=NULL)) &&
 	    *str!='\0' ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_BadFontName,_STR_PSNameNotNumber);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 	gwwv_post_error(_("Bad Font Name"),_("A Postscript name may not be a number"));
 #endif
 	*str = 'a';
@@ -824,12 +762,8 @@ static void ValidatePostScriptFontName(char *str) {
 		*pt==')' || *pt==']' || *pt=='}' || *pt=='>' ||
 		*pt=='%' || *pt=='/' ) {
 	    if ( !complained ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		temp = uc_copy(str);
-		GWidgetErrorR(_STR_BadFontName,_STR_BadPSName2,temp);
-		free(temp);
-#elif defined(FONTFORGE_CONFIG_GTK)
-		gwwv_post_error(_("Bad Font Name"),_("The Postscript font name \"%.63s\" is invalid.\nIt should be printable ASCII,\nmust not contain (){}[]<>%%/ or space\nand must be shorted than 63 characters",str));
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
+		gwwv_post_error(_("Bad Font Name"),_("The Postscript font name \"%.63s\" is invalid.\nIt should be printable ASCII,\nmust not contain (){}[]<>%%/ or space\nand must be shorted than 63 characters"),str);
 #endif
 	    }
 	    complained = true;
@@ -839,12 +773,8 @@ static void ValidatePostScriptFontName(char *str) {
 	}
     }
     if ( strlen(str)>63 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	temp = uc_copy(str);
-	GWidgetErrorR(_STR_BadFontName,_STR_BadPSName2,temp);
-	free(temp);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_error(_("Bad Font Name"),_("The Postscript font name \"%.63s\" is invalid.\nIt should be printable ASCII,\nmust not contain (){}[]<>%%/ or space\nand must be shorted than 63 characters",str));
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
+	gwwv_post_error(_("Bad Font Name"),_("The Postscript font name \"%.63s\" is invalid.\nIt should be printable ASCII,\nmust not contain (){}[]<>%%/ or space\nand must be shorted than 63 characters"),str);
 #endif
 	str[63] = '\0';
     }
@@ -879,34 +809,37 @@ return( old );
 return( str );
 }
 
-static int IsSubSetOf(const unichar_t *substr,const unichar_t *fullstr ) {
+static int IsSubSetOf(const char *substr,const char *fullstr ) {
     /* The mac string is often a subset of the unicode string. Certain */
     /*  characters can't be expressed in the mac encoding and are omitted */
     /*  or turned to question marks or some such */
-    const unichar_t *pt1, *pt2;
+    const char *pt1, *pt2;
+    uint32 ch1, ch2;
 
-    for ( pt1=substr, pt2=fullstr; *pt1 ; ++pt2 ) {
+    for ( pt1=substr, pt2=fullstr, ch1=utf8_ildb(&pt1); ch1!=0 ; ) {
 	if ( *pt2=='\0' )
     break;
-	if ( *pt1==*pt2 )
-	    ++pt1;
+	ch2 = utf8_ildb(&pt2);
+	if ( ch1==ch2 )
+	    ch1 = utf8_ildb(&pt1);
     }
-    if ( *pt1=='\0' )
+    if ( ch1=='\0' )
 return( true );
 
-    for ( pt1=substr, pt2=fullstr; *pt1 ; ++pt2 ) {
+    for ( pt1=substr, pt2=fullstr, ch1=utf8_ildb(&pt1); ch1!=0 ; ) {
 	if ( *pt2=='\0' )
-return( false );
-	if ( *pt1==*pt2 || *pt1=='?' )
-	    ++pt1;
+    break;
+	ch2 = utf8_ildb(&pt2);
+	if ( ch1==ch2 || ch1=='?' )
+	    ch1 = utf8_ildb(&pt1);
     }
-return( true );
+return( ch1=='\0' );
 }
 
 static void TTFAddLangStr(FILE *ttf, struct ttfinfo *info, int id,
 	int strlen, int stroff,int plat,int spec,int language) {
     struct ttflangname *cur, *prev;
-    unichar_t *str;
+    char *str;
 
     if ( plat==1 && id>=256 && (info->features!=NULL || info->fvar_start!=0)) {
 	MacFeatureAdd(ttf,info,id,strlen,stroff,spec,language);
@@ -918,7 +851,7 @@ return;
     if ( str==NULL )		/* we didn't understand the encoding */
 return;
     if ( id==ttf_postscriptname )
-	uValidatePostScriptFontName(str);
+	ValidatePostScriptFontName(str);
     if ( *str=='\0' ) {
 	free(str);
 return;
@@ -941,28 +874,35 @@ return;
 	cur->names[id] = str;
 	if ( plat==1 || plat==0 )
 	    cur->frommac[id/32] |= (1<<(id&0x1f));
-    } else if ( u_strcmp(cur->names[id],str)==0 ) {
+/* There's some wacky bug in gcc. If the optimizer is on then strcmp gets turned */
+/*  into some inline call. Which would be fine, except the following line goes */
+/*  bluey. "Called object is not a function", etc. Comiles fine if we turn off */
+/*  the inlining magic */
+#ifdef strcmp
+# undef strcmp
+#endif
+    } else if ( strcmp(str,cur->names[id])==0 ) {
 	free(str);
 	if ( plat==3 )
 	    cur->frommac[id/32] &= ~(1<<(id&0x1f));
     } else if ( plat==1 ) {
 	/* Mac string doesn't match mac unicode string */
 	if ( !IsSubSetOf(str,cur->names[id]) )
-	    LogError( "Warning: Mac and Unicode entries in the 'name' table differ for the\n %s string in the language %s\n Mac String: %s\nWindows String: %s\n",
-		    u2def_copy(TTFNameIds(id)),u2def_copy(MSLangString(language)),
-		    u2def_copy(str),u2def_copy(cur->names[id]));		/* Memory leak */
+	    LogError( _("Warning: Mac and Unicode entries in the 'name' table differ for the\n %s string in the language %s\n Mac String: %s\nWindows String: %s\n"),
+		    utf82def_copy(TTFNameIds(id)),utf82def_copy(MSLangString(language)),
+		    utf82def_copy(str),utf82def_copy(cur->names[id]));		/* Memory leak */
 	else
-	    LogError( "Warning: Mac string is a subset of the Unicode string in the 'name' table\n for the %s string in the %s language.\n",
-		    u2def_copy(TTFNameIds(id)),u2def_copy(MSLangString(language)));
+	    LogError( _("Warning: Mac string is a subset of the Unicode string in the 'name' table\n for the %s string in the %s language.\n"),
+		    utf82def_copy(TTFNameIds(id)),utf82def_copy(MSLangString(language)));
 	free(str);
     } else if ( plat==3 && (cur->frommac[id/32] & (1<<(id&0x1f))) ) {
 	if ( !IsSubSetOf(cur->names[id],str) )
-	    LogError( "Warning: Mac and Windows entries in the 'name' table differ for the\n %s string in the language %s\n Mac String: %s\nWindows String: %s\n",
-		    u2def_copy(TTFNameIds(id)),u2def_copy(MSLangString(language)),
-		    u2def_copy(cur->names[id]),u2def_copy(str));		/* Memory leak */
+	    LogError( _("Warning: Mac and Windows entries in the 'name' table differ for the\n %s string in the language %s\n Mac String: %s\nWindows String: %s\n"),
+		    utf82def_copy(TTFNameIds(id)),utf82def_copy(MSLangString(language)),
+		    utf82def_copy(cur->names[id]),utf82def_copy(str));		/* Memory leak */
 	else
-	    LogError( "Warning: Mac string is a subset of the Unicode string in the 'name' table\n for the %s string in the %s language.\n",
-		    u2def_copy(TTFNameIds(id)),u2def_copy(MSLangString(language)));
+	    LogError( _("Warning: Mac string is a subset of the Unicode string in the 'name' table\n for the %s string in the %s language.\n"),
+		    utf82def_copy(TTFNameIds(id)),utf82def_copy(MSLangString(language)));
 	free(cur->names[id]);
 	cur->names[id] = str;
 	cur->frommac[id/32] &= ~(1<<(id&0x1f));
@@ -974,20 +914,15 @@ return;
 	else if ( running_script )
 	    ret = 3;
 	else {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    static int buts[] = { _STR_First, _STR_FirstToAll,
-			    _STR_SecondToAll, _STR_Second, 0 };
-	    ret = GWidgetAskR(_STR_MultName,buts,0,3,_STR_NameTableMultPickOne,
-		    TTFNameIds(id),MSLangString(language),
-		    cur->names[id],str);
-#elif defined(FONTFORGE_CONFIG_GTK)
 	    char *buts[5];
-	    buts[0] = _("Use First");
-	    buts[1] = _("First to All");
-	    buts[2] = _("Second to All");
-	    buts[3] = _("Use Second");
-	    ret = gwwv_ask(_("Multiple names for language"),buts,0,3,
-		    _("The 'name' table contains (at least) two strings for the %s in language %s, the first '%.12s...' the second '%.12...'.\nWhich do you prefer?"),
+	    buts[0] = _("Use _First");
+	    buts[1] = _("First to _All");
+	    buts[2] = _("Second _to All");
+	    buts[3] = _("Use _Second");
+	    buts[4] = NULL;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+	    ret = gwwv_ask(_("Multiple names for language"),(const char **)buts,0,3,
+		    _("The 'name' table contains (at least) two strings for the %s in language %s, the first '%.12s...' the second '%.12s...'.\nWhich do you prefer?"),
 		    TTFNameIds(id),MSLangString(language),
 		    cur->names[id],str);
 #else
@@ -1005,18 +940,10 @@ return;
     }
 }
 
-static int is_ascii(unichar_t *str) {	/* isascii is in ctype */
+static int is_ascii(char *str) {	/* isascii is in ctype */
     if ( str==NULL )
 return( false );
     while ( *str && *str<127 && *str>=' ' )
-	++str;
-return( *str=='\0' );
-}
-
-static int is_latin1(unichar_t *str) {
-    if ( str==NULL )
-return( false );
-    while ( *str && *str<256 && *str>=' ' )
 	++str;
 return( *str=='\0' );
 }
@@ -1083,7 +1010,6 @@ return( (char *) str );
 static char *FindLangEntry(struct ttfinfo *info, int id ) {
     /* Look for an entry with string id */
     /* we prefer english, if we can't find english look for something in ascii */
-    /* if not english let's try for latin1, if that fails we are doomed */
     struct ttflangname *cur;
     char *ret;
 
@@ -1095,10 +1021,8 @@ static char *FindLangEntry(struct ttfinfo *info, int id ) {
     if ( cur==NULL )
 	for ( cur=info->names; cur!=NULL && !is_ascii(cur->names[id]); cur=cur->next );
     if ( cur==NULL )
-	for ( cur=info->names; cur!=NULL && !is_latin1(cur->names[id]); cur=cur->next );
-    if ( cur==NULL )
 return( NULL );
-    ret = cu_copy(cur->names[id]);
+    ret = copy(cur->names[id]);
     ret = removeaccents(ret);
 return( ret );
 }
@@ -1124,7 +1048,7 @@ struct otfname *FindAllLangEntries(FILE *ttf, struct ttfinfo *info, int id ) {
 	    stroff = getushort(ttf);
 
 	    if ( platform==3 && name==id ) {
-		unichar_t *temp = _readencstring(ttf,tableoff+stroff,str_len,platform,specific,language);
+		char *temp = _readencstring(ttf,tableoff+stroff,str_len,platform,specific,language);
 		if ( temp!=NULL ) {
 		    cur = chunkalloc(sizeof(struct otfname));
 		    cur->next = head;
@@ -1402,7 +1326,7 @@ static void readttfsimpleglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, in
     for ( i=0; i<path_cnt; ++i ) {
 	endpt[i] = getushort(ttf);
 	if ( i!=0 && endpt[i]<endpt[i-1] ) {
-	    LogError( "Bad tt font: contour ends make no sense in glyph %d.\n",
+	    LogError( _("Bad tt font: contour ends make no sense in glyph %d.\n"),
 		    sc->orig_pos );
 return;
 	}
@@ -1478,7 +1402,7 @@ return;
     free(flags);
     free(pts);
     if ( feof(ttf))
-	LogError( "Reached end of file when reading simple glyph\n" );
+	LogError( _("Reached end of file when reading simple glyph\n") );
 }
 
 static void readttfcompositglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, int32 end) {
@@ -1486,20 +1410,20 @@ static void readttfcompositglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, 
     int flags=0, arg1, arg2;
 
     if ( ftell(ttf)>=end ) {
-	LogError( "Empty composite %d\n", sc->orig_pos );
+	LogError( _("Empty composite %d\n"), sc->orig_pos );
 return;
     }
 
     do {
 	if ( ftell(ttf)>=end ) {
-	    LogError( "Bad flags value, implied MORE components at end of glyph %d\n", sc->orig_pos );
+	    LogError( _("Bad flags value, implied MORE components at end of glyph %d\n"), sc->orig_pos );
     break;
 	}
 	cur = RefCharCreate();
 	flags = getushort(ttf);
 	cur->orig_pos = getushort(ttf);
 	if ( feof(ttf) || cur->orig_pos>=info->glyph_cnt ) {
-	    LogError("Reference to glyph %d out of bounds when parsing 'glyf' table.\n", cur->orig_pos );
+	    LogError(_("Reference to glyph %d out of bounds when parsing 'glyf' table.\n"), cur->orig_pos );
 	    cur->orig_pos = 0;
 	}
 	if ( info->inuse!=NULL )
@@ -1591,7 +1515,7 @@ return;
 	}
 	}
 	if ( cur->orig_pos>=info->glyph_cnt ) {
-	    LogError("Glyph %d attempts to reference glyph %d which is outside the font\n", sc->orig_pos, cur->orig_pos );
+	    LogError(_("Glyph %d attempts to reference glyph %d which is outside the font\n"), sc->orig_pos, cur->orig_pos );
 	    chunkfree(cur,sizeof(*cur));
 	} else {
 	    if ( head==NULL )
@@ -1601,7 +1525,7 @@ return;
 	    last = cur;
 	}
 	if ( feof(ttf)) {
-	    LogError("Reached end of file when reading composit glyph\n" );
+	    LogError(_("Reached end of file when reading composit glyph\n") );
     break;
 	}
     } while ( flags&_MORE );
@@ -1633,7 +1557,7 @@ static SplineChar *readttfglyph(FILE *ttf,struct ttfinfo *info,int start, int en
 
     if ( end>info->glyph_length ) {
 	if ( !info->complainedbeyondglyfend )
-	    LogError("Bad glyph (%d), its definition extends beyond the end of the glyf table\n", gid );
+	    LogError(_("Bad glyph (%d), its definition extends beyond the end of the glyf table\n"), gid );
 	info->complainedbeyondglyfend = true;
 	SplineCharFree(sc);
 return( NULL );
@@ -1655,9 +1579,9 @@ return( sc );
     else
 	readttfcompositglyph(ttf,info,sc,info->glyph_start+end);
     if ( start>end )
-	LogError("Bad glyph (%d), disordered 'loca table (start comes after end)\n", gid );
+	LogError(_("Bad glyph (%d), disordered 'loca table (start comes after end)\n"), gid );
     else if ( ftell(ttf)>info->glyph_start+end )
-	LogError("Bad glyph (%d), its definition extends beyond the space allowed for it\n", gid );
+	LogError(_("Bad glyph (%d), its definition extends beyond the space allowed for it\n"), gid );
 return( sc );
 }
 
@@ -1684,9 +1608,7 @@ static void readttfglyphs(FILE *ttf,struct ttfinfo *info) {
 	/* read all the glyphs */
 	for ( i=0; i<info->glyph_cnt ; ++i ) {
 	    info->chars[i] = readttfglyph(ttf,info,goffsets[i],goffsets[i+1],i);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GProgressNext();
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 	    gwwv_progress_next();
 #endif
 	}
@@ -1706,9 +1628,7 @@ static void readttfglyphs(FILE *ttf,struct ttfinfo *info) {
 	    for ( i=0; i<info->glyph_cnt ; ++i ) {
 		if ( info->inuse[i] && info->chars[i]==NULL ) {
 		    info->chars[i] = readttfglyph(ttf,info,goffsets[i],goffsets[i+1],i);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		    GProgressNext();
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 		    gwwv_progress_next();
 #endif
 		    anyread = info->chars[i]!=NULL;
@@ -1721,9 +1641,7 @@ static void readttfglyphs(FILE *ttf,struct ttfinfo *info) {
     for ( i=0; i<info->glyph_cnt ; ++i )
 	if ( info->chars[i]!=NULL )
 	    info->chars[i]->orig_pos = i;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressNextStage();
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
     gwwv_progress_next_stage();
 #endif
 }
@@ -2143,7 +2061,7 @@ return( NULL );
     names = galloc((count+1)*sizeof(char *));
     for ( i=0; i<count; ++i ) {
 	if ( offsets[i+1]<offsets[i] ) {
-	    LogError( "Bad CFF name INDEX\n" );
+	    LogError( _("Bad CFF name INDEX\n") );
 	    while ( i<count ) {
 		names[i] = copy("");
 		++i;
@@ -2222,7 +2140,7 @@ return( 1 );
 	*_ival = (int) (ival | getc(ttf));
 return( 1 );
     }
-    LogError("Unexpected value in dictionary %d\n", ch );
+    LogError(_("Unexpected value in dictionary %d\n"), ch );
     *_ival = 0;
 return( 0 );
 }
@@ -2237,7 +2155,7 @@ static void skipcfft2thing(FILE *ttf) {
     /*  cff stack, as there are no examples of this, it's hard to guess */
     int ch;
 
-    LogError( "FontForge does not support type2 programs embedded in CFF dict indeces.\n" );
+    LogError( _("FontForge does not support type2 programs embedded in CFF dict indeces.\n") );
     forever {
 	ch = getc(ttf);
 	if ( ch>=247 && ch<=254 )
@@ -2377,7 +2295,7 @@ return;
 	    subs->values[i][j] = '\0';
 	} else {
 	    if ( !err )
-		LogError( "Bad subroutine INDEX in cff font.\n" );
+		LogError( _("Bad subroutine INDEX in cff font.\n" ));
 	    err = true;
 	    subs->lens[i] = 1;
 	    subs->values[i] = galloc(2);
@@ -2423,7 +2341,7 @@ static struct topdicts *readcfftopdict(FILE *ttf, char *fontname, int len) {
 	if ( ret==3 && oval==31 /* "T2" operator, can have 0 arguments */ ) {
 	    skipcfft2thing(ttf);
 	} else if ( sp==0 )
-	    LogError( "No argument to operator\n" );
+	    LogError( _("No argument to operator\n") );
 	else if ( ret==3 ) switch( oval ) {
 	  case 0:
 	    td->version = stack[sp-1];
@@ -2491,7 +2409,7 @@ static struct topdicts *readcfftopdict(FILE *ttf, char *fontname, int len) {
 	    td->private_offset = stack[1];
 	  break;
 	  case (12<<8)+20:
-	    LogError( "FontForge does not support synthetic fonts\n" );
+	    LogError( _("FontForge does not support synthetic fonts\n") );
 	    td->synthetic_base = stack[sp-1];
 	  break;
 	  case (12<<8)+21:
@@ -2505,7 +2423,7 @@ static struct topdicts *readcfftopdict(FILE *ttf, char *fontname, int len) {
 		td->basefontblend[i] = stack[i];
 	  break;
 	  case (12<<8)+24:
-	    LogError( "FontForge does not support type2 multiple master fonts\n" );
+	    LogError( _("FontForge does not support type2 multiple master fonts\n") );
 	    td->nMasters = stack[0];
 	    td->nAxes = sp-4;
 	    memcpy(td->weightvector,stack+1,(sp-4)*sizeof(real));
@@ -2548,10 +2466,10 @@ static struct topdicts *readcfftopdict(FILE *ttf, char *fontname, int len) {
 	    td->sid_fontname = stack[sp-1];
 	  break;
 	  case (12<<8)+39:
-	    LogError("FontForge does not support Chameleon fonts\n");;
+	    LogError(_("FontForge does not support Chameleon fonts\n"));;
 	  break;
 	  default:
-	    LogError("Unknown operator in %s: %x\n", fontname, oval );
+	    LogError(_("Unknown operator in %s: %x\n"), fontname, oval );
 	  break;
 	}
     }
@@ -2582,7 +2500,7 @@ static void readcffprivate(FILE *ttf, struct topdicts *td) {
 	if ( ret==3 && oval==31 /* "T2" operator, can have 0 arguments */ ) {
 	    skipcfft2thing(ttf);
 	} else if ( sp==0 && oval!=6 && oval!=7 && oval!=8 && oval!=9 && oval !=(12<<8)+12 && oval !=(12<<8)+13)
-	    LogError( "No argument to operator %d in private dict\n", oval );
+	    LogError( _("No argument to operator %d in private dict\n"), oval );
 	else if ( ret==3 ) switch( oval ) {
 	  case 6:
 	    for ( i=0; i<sp && i<14; ++i ) {
@@ -2670,7 +2588,7 @@ static void readcffprivate(FILE *ttf, struct topdicts *td) {
 	    td->nominalwidthx = stack[sp-1];
 	  break;
 	  default:
-	    LogError("Unknown operator in %s: %x\n", td->fontname, oval );
+	    LogError(_("Unknown operator in %s: %x\n"), td->fontname, oval );
 	  break;
 	}
     }
@@ -2711,7 +2629,7 @@ return( NULL );
     else if ( sid<nStdStrings )
 return( cffnames[sid] );
     else if ( sid-nStdStrings>scnt ) {
-	LogError( "Bad sid %d (must be less than %d)\n", sid, scnt+nStdStrings );
+	LogError( _("Bad sid %d (must be less than %d)\n"), sid, scnt+nStdStrings );
 return( NULL );
     } else
 return( strings[sid-nStdStrings]);
@@ -2772,7 +2690,7 @@ return;						/* Use cids instead */
 		}
 	    }
 	} else
-	    LogError( "Unexpected encoding format in cff: %d\n", format );
+	    LogError( _("Unexpected encoding format in cff: %d\n"), format );
 	if ( format&0x80 ) {
 	    cnt = getc(ttf);
 	    for ( i=0; i<cnt; ++i ) {
@@ -2894,7 +2812,7 @@ static void readcffset(FILE *ttf,struct topdicts *dict) {
 		    dict->charset[i++] = ++first;
 	    }
 	} else
-	    LogError( "Unexpected charset format in cff: %d\n", format );
+	    LogError( _("Unexpected charset format in cff: %d\n"), format );
     }
     while ( i<len ) dict->charset[i++] = 0;
 }
@@ -2915,14 +2833,14 @@ static uint8 *readfdselect(FILE *ttf,int numglyphs) {
 	    end = getushort(ttf);
 	    for ( j=first; j<end; ++j ) {
 		if ( j>=numglyphs )
-		    LogError( "Bad fdselect\n" );
+		    LogError( _("Bad fdselect\n") );
 		else
 		    fdselect[j] = fd;
 	    }
 	    first = end;
 	}
     } else {
-	LogError( "Didn't understand format for fdselect %d\n", format );
+	LogError( _("Didn't understand format for fdselect %d\n"), format );
     }
 return( fdselect );
 }
@@ -3251,9 +3169,7 @@ static void cidfigure(struct ttfinfo *info, struct topdicts *dict,
 	    else
 		sf->glyphs[cid]->width += subdicts[j]->nominalwidthx;
 	}
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GProgressNext();
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 	gwwv_progress_next();
 #endif
     }
@@ -3273,7 +3189,7 @@ static int readcffglyphs(FILE *ttf,struct ttfinfo *info) {
 
     fseek(ttf,info->cff_start,SEEK_SET);
     if ( getc(ttf)!='\1' ) {		/* Major version */
-	LogError( "CFF version mismatch\n" );
+	LogError( _("CFF version mismatch\n" ));
 return( 0 );
     }
     getc(ttf);				/* Minor version */
@@ -3370,7 +3286,7 @@ static void readttfwidths(FILE *ttf,struct ttfinfo *info) {
 	/* lsb = */ getushort(ttf);
     }
     if ( i==0 )
-	LogError( "Invalid ttf hmtx table (or hhea), numOfLongMetrics is 0\n" );
+	LogError( _("Invalid ttf hmtx table (or hhea), numOfLongMetrics is 0\n") );
 	
     for ( j=i; j<info->glyph_cnt; ++j ) {
 	if ( info->chars[j]!=NULL ) {		/* In a ttc file we may skip some */
@@ -3405,7 +3321,7 @@ static void readttfvwidths(FILE *ttf,struct ttfinfo *info) {
 	}
     }
     if ( i==0 )
-	LogError( "Invalid ttf vmtx table (or vhea), numOfLongVerMetrics is 0\n" );
+	LogError( _("Invalid ttf vmtx table (or vhea), numOfLongVerMetrics is 0\n") );
 	
     for ( j=i; j<info->glyph_cnt; ++j ) {
 	if ( info->chars[j]!=NULL )		/* In a ttc file we may skip some */
@@ -3502,7 +3418,7 @@ static int SubtableIsntSupported(FILE *ttf,uint32 offset,int platform,int specif
 
     format = getushort(ttf);
     if ( format<0 || (format&1) || format>12 ) {
-	LogError( "Encoding subtable for platform=%d, specific=%d has an unsupported format %d.\n",
+	LogError( _("Encoding subtable for platform=%d, specific=%d has an unsupported format %d.\n"),
 		platform, specific, format );
 	ret = true;
     }
@@ -3514,7 +3430,7 @@ static int SubtableIsntSupported(FILE *ttf,uint32 offset,int platform,int specif
 	len = getlong(ttf);
     }
     if ( len==0 ) {
-	LogError( "Encoding subtable for platform=%d, specific=%d has a 0 length subtable.\n",
+	LogError( _("Encoding subtable for platform=%d, specific=%d has a 0 length subtable.\n"),
 		platform, specific );
 	ret = true;
     }
@@ -3717,14 +3633,14 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 			if ( justinuse && (uint16) (j+delta[i])<info->glyph_cnt )
 			    info->inuse[(uint16) (j+delta[i])] = true;
 			else if ( (uint16) (j+delta[i])>=info->glyph_cnt || info->chars[(uint16) (j+delta[i])]==NULL )
-			    LogError( "Attempt to encode missing glyph %d to %d (0x%x)\n",
+			    LogError( _("Attempt to encode missing glyph %d to %d (0x%x)\n"),
 				    (uint16) (j+delta[i]), modenc(j,mod), modenc(j,mod));
 			else {
 			    int uenc = umodenc(j,mod);
 			    int lenc = modenc(j,mod);
 			    if ( uenc!=-1 && used[uenc] ) {
 				if ( !badencwarned ) {
-				    LogError( "Multiple glyphs map to the same unicode encoding U+%04X, only one will be used\n", uenc );
+				    LogError( _("Multiple glyphs map to the same unicode encoding U+%04X, only one will be used\n"), uenc );
 			            badencwarned = true;
 				}
 			    } else {
@@ -3746,7 +3662,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 			else {
 			    /* This happened in mingliu.ttc(PMingLiU) */
 			    if ( !justinuse )
-				LogError( "Glyph index out of bounds. Was %d, must be less than %d.\n In attempt to associate a glyph with encoding %x in segment %d\n with platform=%d, specific=%d (in 'cmap')\n",
+				LogError( _("Glyph index out of bounds. Was %d, must be less than %d.\n In attempt to associate a glyph with encoding %x in segment %d\n with platform=%d, specific=%d (in 'cmap')\n"),
 					temp, glyph_tot, j, i, info->platform, info->specific );
 			    index = 0;
 			}
@@ -3757,19 +3673,19 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 			        /*  MS Chinese fonts (kaiu.ttf) the index */
 			        /*  goes out of bounds. and MS's ttf dump */
 			        /*  program says it is treated as 0 */
-				LogError( "Attempt to encode missing glyph %d to %d (0x%x)\n",
+				LogError( _("Attempt to encode missing glyph %d to %d (0x%x)\n"),
 					index, modenc(j,mod), modenc(j,mod));
 			    else if ( justinuse )
 				info->inuse[index] = 1;
 			    else if ( info->chars[index]==NULL )
-				LogError( "Attempt to encode missing glyph %d to %d (0x%x)\n",
+				LogError( _("Attempt to encode missing glyph %d to %d (0x%x)\n"),
 					index, modenc(j,mod), modenc(j,mod));
 			    else {
 				int uenc = umodenc(j,mod);
 				int lenc = modenc(j,mod);
 				if ( uenc!=-1 && used[uenc] ) {
 				    if ( !badencwarned ) {
-					LogError( "Multiple glyphs map to the same unicode encoding U+%04X, only one will be used\n", uenc );
+					LogError( _("Multiple glyphs map to the same unicode encoding U+%04X, only one will be used\n"), uenc );
 					badencwarned = true;
 				    }
 				} else {
@@ -3783,7 +3699,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 			}
 		    }
 		} else
-		    LogError( "Use of a range offset of 0xffff to mean a missing glyph in cmap table\n" );
+		    LogError( _("Use of a range offset of 0xffff to mean a missing glyph in cmap table\n") );
 	    }
 	    free(glyphs);
 	    free(rangeOffset);
@@ -3963,7 +3879,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 		    for ( i=start; i<=end; ++i ) {
 			if ( startglyph+i-start >= info->glyph_cnt ||
 				info->chars[startglyph+i-start]==NULL ) {
-			    LogError( "Bad font: Encoding data out of range.\n" );
+			    LogError( _("Bad font: Encoding data out of range.\n") );
 		    break;
 			} else {
 			    info->chars[startglyph+i-start]->unicodeenc = i;
@@ -4071,10 +3987,10 @@ return( -1 );
 	    if ( info->complainedmultname )
 		/* Don't do it again */;
 	    else if ( info->chars[i]->name!=NULL && strcmp(info->chars[i]->name,nm)==0 )
-		LogError( "Warning: Glyph %d has the same name (%s) as Glyph %d\n",
+		LogError( _("Warning: Glyph %d has the same name (%s) as Glyph %d\n"),
 			i, nm, glyphid );
 	    else
-		LogError( "Warning: Glyph %d is named %s which should mean it is mapped to\n Unicode U+%04X, but Glyph %d already has that encoding.\n",
+		LogError( _("Warning: Glyph %d is named %s which should mean it is mapped to\n Unicode U+%04X, but Glyph %d already has that encoding.\n"),
 			glyphid, nm, uni, i);
 	    info->complainedmultname = true;
 return( -1 );
@@ -4092,9 +4008,7 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
     extern const char *ttfstandardnames[];
     int notdefwarned = false;
 
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressChangeLine2R(_STR_ReadingNames);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
     gwwv_progress_change_line2(_("Reading Names"));
 #endif
 
@@ -4186,7 +4100,7 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	    /* no name */
 	    if ( !notdefwarned ) {
 		notdefwarned = true;
-		LogError( "Glyph %d is called \".notdef\", a singularly inept choice of name (only glyph 0\n may be called .notdef)\nFontForge will rename it.\n", i );
+		LogError( _("Glyph %d is called \".notdef\", a singularly inept choice of name (only glyph 0\n may be called .notdef)\nFontForge will rename it.\n"), i );
 	    }
 	    free(info->chars[i]->name);
 	    info->chars[i]->name = NULL;
@@ -4202,9 +4116,7 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	    name = NULL;
 	} else
 	    name = StdGlyphName(buffer,info->chars[i]->unicodeenc,info->uni_interp);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GProgressNext();
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 	gwwv_progress_next();
 #endif
 	info->chars[i]->name = copy(name);
@@ -4236,15 +4148,11 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	else
 	    sprintf( buffer, "glyph%d", i );
 	info->chars[i]->name = copy(buffer);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GProgressNext();
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 	gwwv_progress_next();
 #endif
     }
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressNextStage();
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
     gwwv_progress_next_stage();
 #endif
 }
@@ -4288,7 +4196,7 @@ return( -1 );
     }
     for ( refs=sc->layers[ly_fore].refs; refs!=NULL; refs=refs->next ) {
 	if ( refs==bound ) {
-	    LogError( "Invalid point match. Point would be after this reference.\n" );
+	    LogError( _("Invalid point match. Point would be after this reference.\n") );
 return( 0x800000 );
 	}
 	ret = ttfFindPointInSC(refs->sc,pnum-last,pos,NULL);
@@ -4309,7 +4217,7 @@ static void ttfPointMatch(SplineChar *sc,RefChar *rf) {
 
     if ( ttfFindPointInSC(sc,rf->match_pt_base,&sofar,rf)!=-1 ||
 	    ttfFindPointInSC(rf->sc,rf->match_pt_ref,&inref,NULL)!=-1 ) {
-	LogError( "Could not match points in composite glyph (%d to %d) when adding %s to %s\n",
+	LogError( _("Could not match points in composite glyph (%d to %d) when adding %s to %s\n"),
 		rf->match_pt_base, rf->match_pt_ref, rf->sc->name, sc->name);
 return;
     }
@@ -4353,22 +4261,16 @@ return( true );
 static void ttfFixupReferences(struct ttfinfo *info) {
     int i;
 
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressChangeLine2R(_STR_FixingupReferences);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
     gwwv_progress_change_line2(_("Fixing up References"));
 #endif
     for ( i=0; i<info->glyph_cnt; ++i ) {
 	ttfFixupRef(info->chars,i);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GProgressNext();
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 	gwwv_progress_next();
 #endif
     }
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressNextStage();
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
     gwwv_progress_next_stage();
 #endif
 }
@@ -4380,7 +4282,7 @@ static void TtfCopyTableBlindly(struct ttfinfo *info,FILE *ttf,
     if ( start==0 || len==0 )
 return;
     if ( len>0x1000000 ) {
-	LogError( "Unlikely length for table, so I'm ignoring it. %u\n", len );
+	LogError( _("Unlikely length for table, so I'm ignoring it. %u\n"), len );
 return;
     }
 
@@ -4398,9 +4300,7 @@ static int readttf(FILE *ttf, struct ttfinfo *info, char *filename) {
     char *oldloc;
     int i;
 
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressChangeStages(3);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
     gwwv_progress_change_stages(3);
 #endif
     if ( !readttfheader(ttf,info,filename,&info->chosenname)) {
@@ -4408,9 +4308,7 @@ return( 0 );
     }
     oldloc = setlocale(LC_NUMERIC,"C");		/* TrueType doesn't need this but opentype dictionaries do */
     readttfpreglyph(ttf,info);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressChangeTotal(info->glyph_cnt);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
     gwwv_progress_change_total(info->glyph_cnt);
 #endif
 
@@ -4423,22 +4321,23 @@ return( 0 );
     if ( !info->onlystrikes &&
 	    info->glyphlocations_start!=0 && info->glyph_start!=0 &&
 	    info->cff_start!=0 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	static int buts[] = { _STR_TTFGlyf, _STR_OTFCFF, _STR_Cancel, 0 };
-	int choice = GWidgetAskR(_STR_PickFont,buts,0,2,_STR_GlyfAndCFF);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	int buts[4];
+	char *buts[4];
 	buts[0] = _("TTF 'glyf'");
 	buts[1] = _("OTF 'CFF '");
-	buts[2] = GTK_STOCK_CANCEL;
 	buts[3] = NULL;
-	int choice = gwwv_ask(_("Pick a font, any font..."),buts,0,2,_("This font contains both a TrueType 'glyf' table and an OpenType 'CFF ' table. FontForge can only deal with one at a time, please pick which one you want to use"));
+#if defined(FONTFORGE_CONFIG_GDRAW)
+	buts[2] = _("_Cancel");
+	int choice = gwwv_ask(_("Pick a font, any font..."),(const char **) buts,0,2,_("This font contains both a TrueType 'glyf' table and an OpenType 'CFF ' table. FontForge can only deal with one at a time, please pick which one you want to use"));
+#elif defined(FONTFORGE_CONFIG_GTK)
+	buts[2] = GTK_STOCK_CANCEL;
+	int choice = gwwv_ask(_("Pick a font, any font..."),(const char **) buts,0,2,_("This font contains both a TrueType 'glyf' table and an OpenType 'CFF ' table. FontForge can only deal with one at a time, please pick which one you want to use"));
 #else
 	int choice = 0;
 #endif
-	if ( choice==2 )
+	if ( choice==2 ) {
+	    setlocale(LC_NUMERIC,oldloc);
 return( 0 );
-	else if ( choice==0 )
+	} else if ( choice==0 )
 	    info->cff_start=0;
 	else
 	    info->glyph_start = info->glyphlocations_start = 0;
@@ -4468,10 +4367,10 @@ return( 0 );
     if ( info->bitmapdata_start!=0 && info->bitmaploc_start!=0 )
 	TTFLoadBitmaps(ttf,info,info->onlyonestrike);
     else if ( info->onlystrikes )
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR( _STR_NoBitmaps, _STR_NoBitmapsInTTF, filename==NULL ? "<unknown>" : filename );
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 	gwwv_post_error( _("No Bitmap Strikes"), _("No (useable) bitmap strikes in this TTF font: %s"), filename==NULL ? "<unknown>" : filename );
+#else
+	;
 #endif
     if ( info->onlystrikes && info->bitmaps==NULL ) {
 	free(info->chars);
@@ -5091,7 +4990,7 @@ char **NamesReadCFF(char *filename) {
     if ( cff==NULL )
 return( NULL );
     if ( getc(cff)!='\1' ) {		/* Major version */
-	LogError( "CFF version mismatch\n" );
+	LogError( _("CFF version mismatch\n") );
 	fclose(cff);
 return( NULL );
     }
@@ -5110,7 +5009,7 @@ char **NamesReadTTF(char *filename) {
     int32 version, cnt, *offsets;
     int i,j;
     char **ret = NULL;
-    unichar_t *utemp;
+    char *temp;
 
     if ( ttf==NULL )
 return( NULL );
@@ -5123,20 +5022,18 @@ return( NULL );
 	    offsets[i] = getlong(ttf);
 	ret = galloc((cnt+1)*sizeof(char *));
 	for ( i=j=0; i<cnt; ++i ) {
-	    utemp = TTFGetFontName(ttf,offsets[i],0);
-	    if ( utemp!=NULL )
-		ret[j++] = cu_copy(utemp);
-	    free(utemp);
+	    temp = TTFGetFontName(ttf,offsets[i],0);
+	    if ( temp!=NULL )
+		ret[j++] = temp;
 	}
 	ret[j] = NULL;
 	free(offsets);
     } else {
-	utemp = TTFGetFontName(ttf,0,0);
-	if ( utemp!=NULL ) {
+	temp = TTFGetFontName(ttf,0,0);
+	if ( temp!=NULL ) {
 	    ret = galloc(2*sizeof(char *));
-	    ret[0] = cu_copy(utemp);
+	    ret[0] = temp;
 	    ret[1] = NULL;
-	    free(utemp);
 	}
     }
     fclose(ttf);

@@ -1108,22 +1108,12 @@ static int PIDownloadFont(PI *pi) {
 
     pi->fontfile = tmpfile();
     if ( pi->fontfile==NULL ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_FailedOpenTemp,_STR_FailedOpenTemp);
-#elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Failed to open temporary output file"),_("Failed to open temporary output file"));
-#endif
 return(false);
     }
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressStartIndicatorR(10,_STR_PrintingFont,_STR_PrintingFont,
-	    _STR_GeneratingPostscriptFont,pi->sf->glyphcnt,1);
-    GProgressEnableStop(false);
-#elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_start_indicator(10,_("Printing Font"),_("Printing Font"),
 	    _("Generating Postscript Font"),pi->sf->glyphcnt,1);
     gwwv_progress_enable_stop(false);
-#endif
     if ( pi->printtype==pt_pdf && pi->sf->multilayer ) {
 	/* These need to be done in line as pdf objects */
 	/* I leave fontfile open as a flag, even though we don't use it */
@@ -1142,18 +1132,10 @@ return(false);
 		ff_pfa,ps_flag_identitycidmap,pi->map))
 	error = true;
 
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressEndIndicator();
-#elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_end_indicator();
-#endif
 
     if ( error ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_FailedGenPost,_STR_FailedGenPost );
-#elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Failed to generate postscript font"),_("Failed to generate postscript font") );
-#endif
 	fclose(pi->fontfile);
 return(false);
     }
@@ -1393,11 +1375,7 @@ static void PIFontDisplay(PI *pi) {
 	    ;
     
 	if ( pi->chline==0 )
-#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_notice(_("Print Failed"),_("Warning: Font contained no glyphs"));
-#else
-	    GWidgetPostNoticeR(_STR_PrintFailed,_STR_NoGlyphs);
-#endif
 	else
 	    dump_trailer(pi);
     }
@@ -2233,17 +2211,13 @@ static int PG_OK(GGadget *g, GEvent *e) {
 	int err=false;
 	int copies, pgwidth, pgheight;
 
-	copies = GetIntR(pi->setup,CID_Copies,_STR_Copies,&err);
+	copies = GetInt8(pi->setup,CID_Copies,_("_Copies:"),&err);
 	if ( err )
 return(true);
 
 	if ( GGadgetIsChecked(GWidgetGetControl(pi->setup,CID_Other)) &&
 		*_GGadgetGetTitle(GWidgetGetControl(pi->setup,CID_OtherCmd))=='\0' ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_NoCommandSpecified,_STR_NoCommandSpecified);
-#elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("No Command Specified"),_("No Command Specified"));
-#endif
 return(true);
 	}
 
@@ -2412,16 +2386,12 @@ static int PageSetup(PI *pi) {
     };
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(_STR_PageSetup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = _("Page Setup");
-#endif
+    wattrs.utf8_window_title = _("Page Setup");
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,250));
     pos.height = GDrawPointsToPixels(NULL,174);
@@ -2469,7 +2439,8 @@ static int PageSetup(PI *pi) {
     gcd[2].gd.handle_controlevent = PG_RadioSet;
     gcd[2].creator = GRadioCreate;
 
-    label[3].text = (unichar_t *) _STR_ToFile;
+    label[3].text = (unichar_t *) _("To _File");
+    label[3].text_is_1byte = true;
     label[3].text_in_resource = true;
     gcd[3].gd.label = &label[3];
     gcd[3].gd.mnemonic = 'F';
@@ -2479,7 +2450,8 @@ static int PageSetup(PI *pi) {
     gcd[3].gd.handle_controlevent = PG_RadioSet;
     gcd[3].creator = GRadioCreate;
 
-    label[4].text = (unichar_t *) _STR_ToPDFFile;
+    label[4].text = (unichar_t *) _("To P_DF File");
+    label[4].text_is_1byte = true;
     label[4].text_in_resource = true;
     gcd[4].gd.label = &label[4];
     gcd[4].gd.mnemonic = 'F';
@@ -2489,15 +2461,16 @@ static int PageSetup(PI *pi) {
     gcd[4].gd.handle_controlevent = PG_RadioSet;
     gcd[4].creator = GRadioCreate;
 
-    label[5].text = (unichar_t *) _STR_Other2;
+    label[5].text = (unichar_t *) _("_Other");
+    label[5].text_is_1byte = true;
     label[5].text_in_resource = true;
     gcd[5].gd.label = &label[5];
     gcd[5].gd.mnemonic = 'O';
     gcd[5].gd.pos.x = gcd[1].gd.pos.x; gcd[5].gd.pos.y = 22+gcd[1].gd.pos.y; 
-    gcd[5].gd.flags = gg_visible | gg_enabled;
+    gcd[5].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     gcd[5].gd.cid = CID_Other;
     gcd[5].gd.handle_controlevent = PG_RadioSet;
-    gcd[5].gd.popup_msg = GStringGetResource(_STR_PrintOtherPopup,NULL);
+    gcd[5].gd.popup_msg = (unichar_t *) _("Any other command with all its arguments.\nThe command must expect to deal with a postscript\nfile which it will find by reading its standard input.");
     gcd[5].creator = GRadioCreate;
 
     if ( (pt=pi->printtype)==pt_unknown ) pt = pt_lp;
@@ -2516,7 +2489,8 @@ static int PageSetup(PI *pi) {
     gcd[6].gd.cid = CID_OtherCmd;
     gcd[6].creator = GTextFieldCreate;
 
-    label[7].text = (unichar_t *) _STR_PageSize;
+    label[7].text = (unichar_t *) _("Page_Size:");
+    label[7].text_is_1byte = true;
     label[7].text_in_resource = true;
     gcd[7].gd.label = &label[7];
     gcd[7].gd.mnemonic = 'S';
@@ -2550,7 +2524,8 @@ static int PageSetup(PI *pi) {
     gcd[8].creator = GListFieldCreate;
 
 
-    label[9].text = (unichar_t *) _STR_Copies;
+    label[9].text = (unichar_t *) _("_Copies:");
+    label[9].text_is_1byte = true;
     label[9].text_in_resource = true;
     gcd[9].gd.label = &label[9];
     gcd[9].gd.mnemonic = 'C';
@@ -2571,7 +2546,8 @@ static int PageSetup(PI *pi) {
     gcd[10].creator = GTextFieldCreate;
 
 
-    label[11].text = (unichar_t *) _STR_Printer;
+    label[11].text = (unichar_t *) _("_Printer:");
+    label[11].text_is_1byte = true;
     label[11].text_in_resource = true;
     gcd[11].gd.label = &label[11];
     gcd[11].gd.mnemonic = 'P';
@@ -2596,7 +2572,8 @@ static int PageSetup(PI *pi) {
     gcd[13].gd.pos.x = 30-3; gcd[13].gd.pos.y = gcd[12].gd.pos.y+36;
     gcd[13].gd.pos.width = -1; gcd[13].gd.pos.height = 0;
     gcd[13].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[13].text = (unichar_t *) _STR_OK;
+    label[13].text = (unichar_t *) _("_OK");
+    label[13].text_is_1byte = true;
     label[13].text_in_resource = true;
     gcd[13].gd.mnemonic = 'O';
     gcd[13].gd.label = &label[13];
@@ -2606,7 +2583,8 @@ static int PageSetup(PI *pi) {
     gcd[14].gd.pos.x = -30; gcd[14].gd.pos.y = gcd[13].gd.pos.y+3;
     gcd[14].gd.pos.width = -1; gcd[14].gd.pos.height = 0;
     gcd[14].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[14].text = (unichar_t *) _STR_Cancel;
+    label[14].text = (unichar_t *) _("_Cancel");
+    label[14].text_is_1byte = true;
     label[14].text_in_resource = true;
     gcd[14].gd.label = &label[14];
     gcd[14].gd.mnemonic = 'C';
@@ -2747,23 +2725,13 @@ static void DoPrinting(PI *pi,char *filename,unichar_t *sample) {
 	PIChars(pi);
     rewind(pi->out);
     if ( ferror(pi->out) )
-#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Print Failed"),_("Failed to generate postscript in file %s"),
 		filename==NULL?"temporary":filename );
-#else
-	GWidgetErrorR(_STR_PrintFailed,_STR_FailedGenPostFile,
-		filename==NULL?"temporary":filename );
-#endif
     if ( pi->printtype!=pt_file && pi->printtype!=pt_pdf )
 	QueueIt(pi);
     if ( fclose(pi->out)!=0 )
-#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Print Failed"),_("Failed to generate postscript in file %s"),
 		filename==NULL?"temporary":filename );
-#else
-	GWidgetErrorR(_STR_PrintFailed,_STR_FailedGenPostFile,
-		filename==NULL?"temporary":filename );
-#endif
 }
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -2797,12 +2765,9 @@ static int PRT_OK(GGadget *g, GEvent *e) {
 	int err = false;
 	unichar_t *sample;
 	int di = pi->fv!=NULL?0:pi->mv!=NULL?2:1;
-	unichar_t *ret;
+	char *ret;
 	char *file;
-	static unichar_t filter[] = { '*','.','p','s',  '\0' };
-	static unichar_t filterpdf[] = { '*','.','p','d','f',  '\0' };
 	char buf[100];
-	unichar_t ubuf[100];
 
 	pi->pt = GGadgetIsChecked(GWidgetGetControl(pi->gw,CID_Chars))? pt_chars:
 		GGadgetIsChecked(GWidgetGetControl(pi->gw,CID_Sample))? pt_fontsample:
@@ -2810,21 +2775,17 @@ static int PRT_OK(GGadget *g, GEvent *e) {
 		pt_fontdisplay;
 	if ( pi->pt==pt_fontdisplay || pi->pt==pt_fontsample ) {
 	    if ( pi->pt==pt_fontdisplay )
-		pi->pointsize = GetIntR(pi->gw,CID_PointSize,_STR_Pointsize,&err);
+		pi->pointsize = GetInt8(pi->gw,CID_PointSize,_("_Pointsize:"),&err);
 	    else {
 		pi->pointsizes = ParseBitmapSizes(GWidgetGetControl(pi->gw,CID_PointSize),
-			_STR_Pointsize,&err);
+			_("_Pointsize:"),&err);
 		if ( pi->pointsizes!=NULL )
 		    pi->pointsize = pi->pointsizes[0];
 	    }
 	    if ( err )
 return(true);
 	    if ( pi->pointsize<1 || pi->pointsize>200 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_InvalidPointsize,_STR_InvalidPointsize);
-#elif defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Invalid point size"),_("Invalid point size"));
-#endif
 return(true);
 	    }
 	}
@@ -2835,24 +2796,15 @@ return(true);
 	if ( pi->printtype==pt_file || pi->printtype==pt_pdf ) {
 	    sprintf(buf,"pr-%.90s.%s", pi->sf->fontname,
 		    pi->printtype==pt_file?"ps":"pdf");
-	    uc_strcpy(ubuf,buf);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    ret = GWidgetSaveAsFile(GStringGetResource(_STR_PrintToFile,NULL),ubuf,
-		    pi->printtype==pt_file ? filter : filterpdf,NULL,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    ret = GWidgetSaveAsFile(_("Print To File..."),ubuf,filter,NULL,NULL);
-#endif
+	    ret = gwwv_save_filename(_("Print To File..."),buf,
+		    pi->printtype==pt_pdf?"*.pdf":"*.ps",NULL,NULL);
 	    if ( ret==NULL )
 return(true);
-	    file = u2def_copy(ret);
+	    file = utf82def_copy(ret);
 	    free(ret);
 	    pi->out = fopen(file,"wb");
 	    if ( pi->out==NULL ) {
-#if defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Print Failed"),_("Failed to open file %s for output"), file);
-#else
-		GWidgetErrorR(_STR_PrintFailed,_STR_CouldntOpenOutput, file);
-#endif
 		free(file);
 return(true);
 	    }
@@ -2860,11 +2812,7 @@ return(true);
 	    file = NULL;
 	    pi->out = tmpfile();
 	    if ( pi->out==NULL ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_FailedOpenTemp,_STR_FailedOpenTemp);
-#elif defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Failed to open temporary output file"),_("Failed to open temporary output file"));
-#endif
 return(true);
 	    }
 	}
@@ -3995,16 +3943,12 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     PIInit(&pi,fv,sc,mv);
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(_STR_Print,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = _("Print...");
-#endif
+    wattrs.utf8_window_title = _("Print...");
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,310));
     pos.height = GDrawPointsToPixels(NULL,330);
@@ -4013,19 +3957,16 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
 
-    label[0].text = (unichar_t *) _STR_FullFont;
+    label[0].text = (unichar_t *) _("_Full Font Display");
+    label[0].text_is_1byte = true;
     label[0].text_in_resource = true;
     gcd[0].gd.label = &label[0];
     gcd[0].gd.mnemonic = 'F';
     gcd[0].gd.pos.x = 12; gcd[0].gd.pos.y = 6; 
-    gcd[0].gd.flags = gg_visible | gg_enabled;
+    gcd[0].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     gcd[0].gd.cid = CID_Display;
     gcd[0].gd.handle_controlevent = PRT_RadioSet;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[0].gd.popup_msg = GStringGetResource(_STR_FullFontPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[0].gd.popup_msg = _("Displays all the glyphs in the font on a rectangular grid at the given point size");
-#endif
+    gcd[0].gd.popup_msg = (unichar_t *) _("Displays all the glyphs in the font on a rectangular grid at the given point size");
     gcd[0].creator = GRadioCreate;
 
     cnt = 1;
@@ -4033,22 +3974,20 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
 	cnt = FVSelCount(fv);
     else if ( mv!=NULL )
 	cnt = mv->charcnt;
-    label[1].text = (unichar_t *) (cnt==1?_STR_FullPageGlyph:_STR_FullPageGlyphs);
+    label[1].text = (unichar_t *) (cnt==1?_("Full Pa_ge Glyph"):_("Full Pa_ge Glyphs"));
+    label[1].text_is_1byte = true;
     label[1].text_in_resource = true;
     gcd[1].gd.label = &label[1];
     gcd[1].gd.mnemonic = 'C';
     gcd[1].gd.pos.x = gcd[0].gd.pos.x; gcd[1].gd.pos.y = 18+gcd[0].gd.pos.y; 
-    gcd[1].gd.flags = (cnt==0 ? gg_visible : (gg_visible | gg_enabled));
+    gcd[1].gd.flags = (cnt==0 ? (gg_visible | gg_utf8_popup ): (gg_visible | gg_enabled | gg_utf8_popup));
     gcd[1].gd.cid = CID_Chars;
     gcd[1].gd.handle_controlevent = PRT_RadioSet;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[1].gd.popup_msg = GStringGetResource(_STR_FullPageGlyphPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[1].gd.popup_msg = _("Displays all the selected characters, each on its own page, at an extremely large point size");
-#endif
+    gcd[1].gd.popup_msg = (unichar_t *) _("Displays all the selected characters, each on its own page, at an extremely large point size");
     gcd[1].creator = GRadioCreate;
 
-    label[2].text = (unichar_t *) (cnt==1?_STR_MultiSizeGlyph:_STR_MultiSizeGlyphs);
+    label[2].text = (unichar_t *) (cnt==1?_("_Multi Size Glyph"):_("_Multi Size Glyphs"));
+    label[2].text_is_1byte = true;
     label[2].text_in_resource = true;
     gcd[2].gd.label = &label[2];
     gcd[2].gd.mnemonic = 'M';
@@ -4056,26 +3995,19 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     gcd[2].gd.flags = gcd[1].gd.flags;
     gcd[2].gd.cid = CID_MultiSize;
     gcd[2].gd.handle_controlevent = PRT_RadioSet;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[2].gd.popup_msg = GStringGetResource(_STR_MultiSizeGlyphPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[2].gd.popup_msg = _("Displays all the selected characters, at several different point sizes");
-#endif
+    gcd[2].gd.popup_msg = (unichar_t *) _("Displays all the selected characters, at several different point sizes");
     gcd[2].creator = GRadioCreate;
 
-    label[3].text = (unichar_t *) _STR_SampleText;
+    label[3].text = (unichar_t *) _("_Sample Text");
+    label[3].text_is_1byte = true;
     label[3].text_in_resource = true;
     gcd[3].gd.label = &label[3];
     gcd[3].gd.mnemonic = 'S';
     gcd[3].gd.pos.x = gcd[0].gd.pos.x; gcd[3].gd.pos.y = 18+gcd[2].gd.pos.y; 
-    gcd[3].gd.flags = gg_visible | gg_enabled;
+    gcd[3].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     gcd[3].gd.cid = CID_Sample;
     gcd[3].gd.handle_controlevent = PRT_RadioSet;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[3].gd.popup_msg = GStringGetResource(_STR_SampleTextPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[3].gd.popup_msg = _("Prints the text below at the specified point size(s)");
-#endif
+    gcd[3].gd.popup_msg = (unichar_t *) _("Prints the text below at the specified point size(s)");
     gcd[3].creator = GRadioCreate;
     /*if ( pi.iscid ) gcd[3].gd.flags = gg_visible;*/
 
@@ -4084,7 +4016,8 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     gcd[pdefs[di].pt].gd.flags |= gg_cb_on;
 
 
-    label[4].text = (unichar_t *) _STR_Pointsize;
+    label[4].text = (unichar_t *) _("_Pointsize:");
+    label[4].text_is_1byte = true;
     label[4].text_in_resource = true;
     gcd[4].gd.label = &label[4];
     gcd[4].gd.mnemonic = 'P';
@@ -4105,7 +4038,8 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     gcd[5].creator = GTextFieldCreate;
 
 
-    label[6].text = (unichar_t *) _STR_SampleTextC;
+    label[6].text = (unichar_t *) _("Sample _Text:");
+    label[6].text_is_1byte = true;
     label[6].text_in_resource = true;
     gcd[6].gd.label = &label[6];
     gcd[6].gd.mnemonic = 'T';
@@ -4129,7 +4063,8 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     gcd[8].gd.pos.x = 235; gcd[8].gd.pos.y = 12;
     gcd[8].gd.pos.width = -1; gcd[8].gd.pos.height = 0;
     gcd[8].gd.flags = gg_visible | gg_enabled ;
-    label[8].text = (unichar_t *) _STR_Setup;
+    label[8].text = (unichar_t *) _("S_etup");
+    label[8].text_is_1byte = true;
     label[8].text_in_resource = true;
     gcd[8].gd.mnemonic = 'e';
     gcd[8].gd.label = &label[8];
@@ -4140,7 +4075,8 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     gcd[9].gd.pos.x = 30-3; gcd[9].gd.pos.y = gcd[7].gd.pos.y+gcd[7].gd.pos.height+6;
     gcd[9].gd.pos.width = -1; gcd[9].gd.pos.height = 0;
     gcd[9].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[9].text = (unichar_t *) _STR_OK;
+    label[9].text = (unichar_t *) _("_OK");
+    label[9].text_is_1byte = true;
     label[9].text_in_resource = true;
     gcd[9].gd.mnemonic = 'O';
     gcd[9].gd.label = &label[9];
@@ -4151,7 +4087,8 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     gcd[10].gd.pos.x = 310-GIntGetResource(_NUM_Buttonsize)-30; gcd[10].gd.pos.y = gcd[9].gd.pos.y+3;
     gcd[10].gd.pos.width = -1; gcd[10].gd.pos.height = 0;
     gcd[10].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[10].text = (unichar_t *) _STR_Cancel;
+    label[10].text = (unichar_t *) _("_Cancel");
+    label[10].text_is_1byte = true;
     label[10].text_in_resource = true;
     gcd[10].gd.label = &label[10];
     gcd[10].gd.mnemonic = 'C';
@@ -4246,22 +4183,14 @@ void ScriptPrint(FontView *fv,int type,int32 *pointsizes,char *samplefile,
 	}
 	pi.out = fopen(outputfile,"wb");
 	if ( pi.out==NULL ) {
-#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Print Failed"),_("Failed to open file %s for output"), outputfile);
-#else
-	    GWidgetErrorR(_STR_PrintFailed,_STR_CouldntOpenOutput, outputfile);
-#endif
 return;
 	}
     } else {
 	outputfile = NULL;
 	pi.out = tmpfile();
 	if ( pi.out==NULL ) {
-#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Failed to open temporary output file"),_("Failed to open temporary output file"));
-#else
-	    GWidgetErrorR(_STR_FailedOpenTemp,_STR_FailedOpenTemp);
-#endif
 return;
 	}
     }

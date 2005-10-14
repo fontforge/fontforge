@@ -129,7 +129,7 @@ return( builtins[i].op );
 #if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad Token"), _("Bad token \"%.30s\"\nnear ...%40s"), buffer, c->cur );
 #else
-	GWidgetErrorR(_STR_BadToken, _STR_BadNameToken, buffer, c->cur );
+	gwwv_post_error(_("Bad Token"), _("Bad token \"%.30s\"\nnear ...%40s"), buffer, c->cur );
 #endif
 	c->had_error = true;
 	while (( ch = *(c->cur++))==' ' );
@@ -179,7 +179,7 @@ return( op_eq );
 #if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\" got \"%.10s\"\nnear ...%40s"), "==", "=" , c->cur );
 #else
-	GWidgetErrorR(_STR_BadToken, _STR_BadTokenExpected, "==", "=" , c->cur );
+	gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\" got \"%.10s\"\nnear ...%40s"), "==", "=" , c->cur );
 #endif
 	c->had_error = true;
 return( op_eq );
@@ -191,7 +191,7 @@ return( op_or );
 #if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\" got \"%.10s\"\nnear ...%40s"), "||", "|" , c->cur );
 #else
-	GWidgetErrorR(_STR_BadToken, _STR_BadTokenExpected, "||", "|" , c->cur );
+	gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\" got \"%.10s\"\nnear ...%40s"), "||", "|" , c->cur );
 #endif
 	c->had_error = true;
 return( op_or );
@@ -203,7 +203,7 @@ return( op_and );
 #if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\" got \"%.10s\"\nnear ...%40s"), "&&", "&" , c->cur );
 #else
-	GWidgetErrorR(_STR_BadToken, _STR_BadTokenExpected, "&&", "&" , c->cur );
+	gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\" got \"%.10s\"\nnear ...%40s"), "&&", "&" , c->cur );
 #endif
 	c->had_error = true;
 return( op_and );
@@ -215,7 +215,7 @@ return( ch );
 #if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad Token"), _("Bad token. got \"%c\"\nnear ...%40s"), ch , c->cur );
 #else
-	GWidgetErrorR(_STR_BadToken, _STR_BadTokenChar, ch , c->cur );
+	gwwv_post_error(_("Bad Token"), _("Bad token. got \"%1$c\"\nnear ...%2$40s"), ch , c->cur );
 #endif
 	c->had_error = true;
 	*val = 0;
@@ -253,7 +253,7 @@ return( ret );
 #if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), ")" , c->cur );
 #else
-	    GWidgetErrorR(_STR_BadToken, _STR_BadTokenExpectedChar, ")" , c->cur );
+	    gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), ")" , c->cur );
 #endif
 	    c->had_error = true;
 	}
@@ -270,7 +270,7 @@ return(ret );
 #if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), "(" , c->cur );
 #else
-	    GWidgetErrorR(_STR_BadToken, _STR_BadTokenExpectedChar, "(" , c->cur );
+	    gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), "(" , c->cur );
 #endif
 	    c->had_error = true;
 	}
@@ -281,7 +281,7 @@ return(ret );
 #if defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), "," , c->cur );
 #else
-		GWidgetErrorR(_STR_BadToken, _STR_BadTokenExpectedChar, "," , c->cur );
+		gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), "," , c->cur );
 #endif
 	    }
 	    ret->op2 = getexpr(c);
@@ -291,7 +291,7 @@ return(ret );
 #if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), ")" , c->cur );
 #else
-	    GWidgetErrorR(_STR_BadToken, _STR_BadTokenExpectedChar, ")" , c->cur );
+	    gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), ")" , c->cur );
 #endif
 	    c->had_error = true;
 	}
@@ -308,7 +308,7 @@ return( ret );
 #if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad Token"), _("Unexpected token.\nbefore ...%40s") , c->cur );
 #else
-	GWidgetErrorR(_STR_BadToken, _STR_UnexpectedToken , c->cur );
+	gwwv_post_error(_("Bad Token"), _("Unexpected token.\nbefore ...%40s") , c->cur );
 #endif
 	c->had_error = true;
 	ret = gcalloc(1,sizeof(struct expr));
@@ -430,7 +430,7 @@ static struct expr *getexpr(struct context *c) {
 #if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), ":" , c->cur );
 #else
-	    GWidgetErrorR(_STR_BadToken, _STR_BadTokenExpectedChar, ":" , c->cur );
+	    gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), ":" , c->cur );
 #endif
 	    c->had_error = true;
 	}
@@ -453,7 +453,7 @@ static struct expr *parseexpr(struct context *c,char *str) {
 #if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad Token"), _("Unexpected token after expression end.\nbefore ...%40s") , c->cur );
 #else
-	GWidgetErrorR(_STR_BadToken, _STR_UnexpectedTokenAtEnd , c->cur );
+	gwwv_post_error(_("Bad Token"), _("Unexpected token after expression end.\nbefore ...%40s") , c->cur );
 #endif
     }
     if ( c->had_error ) {
@@ -488,7 +488,7 @@ return( !evaluate_expr(c,e->op1) );
 #if defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Bad Value"),_("Attempt to take logarithem of %g in %.30s"), val1, c->sc->name );
 #else
-		GWidgetErrorR(_STR_BadValue,_STR_BadLogarithem, val1, c->sc->name );
+		gwwv_post_error(_("Bad Value"),_("Attempt to take logarithem of %1$g in %2$.30s"), val1, c->sc->name );
 #endif
 		c->had_error = true;
 return( 0 );
@@ -499,7 +499,7 @@ return( log(val1));
 #if defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Bad Value"),_("Attempt to take the square root of %g in %.30s"), val1, c->sc->name );
 #else
-		GWidgetErrorR(_STR_BadValue,_STR_BadSqrt, val1, c->sc->name );
+		gwwv_post_error(_("Bad Value"),_("Attempt to take the square root of %1$g in %2$.30s"), val1, c->sc->name );
 #endif
 		c->had_error = true;
 return( 0 );
@@ -534,7 +534,7 @@ return( evaluate_expr(c,e->op1) * evaluate_expr(c,e->op2) );
 #if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Bad Value"),_("Attempt divide by 0 in %.30s"), c->sc->name );
 #else
-	    GWidgetErrorR(_STR_BadValue,_STR_DivideByZero, c->sc->name );
+	    gwwv_post_error(_("Bad Value"),_("Attempt divide by 0 in %.30s"), c->sc->name );
 #endif
 	    c->had_error = true;
 return( 0 );
@@ -833,12 +833,12 @@ void NonLinearDlg(FontView *fv,CharView *cv) {
     memset(&d,'\0',sizeof(d));
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.window_title = GStringGetResource(_STR_NonLinearTransform,NULL);
+    wattrs.utf8_window_title = _("_Non Linear Transform...");
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,200));
     pos.height = GDrawPointsToPixels(NULL,97);
@@ -847,12 +847,12 @@ void NonLinearDlg(FontView *fv,CharView *cv) {
     memset(gcd,0,sizeof(gcd));
     memset(label,0,sizeof(label));
 
-    label[0].text = (unichar_t *) _STR_XExpr;
-    label[0].text_in_resource = true;
+    label[0].text = (unichar_t *) _("X Expr:");
+    label[0].text_is_1byte = true;
     gcd[0].gd.label = &label[0];
     gcd[0].gd.pos.x = 10; gcd[0].gd.pos.y = 8;
-    gcd[0].gd.flags = gg_visible | gg_enabled;
-    gcd[0].gd.popup_msg = GStringGetResource(_STR_ExprPopup,NULL);
+    gcd[0].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[0].gd.popup_msg = (unichar_t *) _("These expressions may contain the operators +,-,*,/,%,^ (which means raise to the power of here), and ?: It may also contain a few standard functions. Basic terms are real numbers, x and y.\nExamples:\n x^3+2.5*x^2+5\n (x-300)*(y-200)/100\n y+sin(100*x)");
     gcd[0].creator = GLabelCreate;
 
     if ( lastx!=NULL )
@@ -863,16 +863,16 @@ void NonLinearDlg(FontView *fv,CharView *cv) {
     }
     gcd[1].gd.label = &label[1];
     gcd[1].gd.pos.x = 55; gcd[1].gd.pos.y = 5; gcd[1].gd.pos.width = 135;
-    gcd[1].gd.flags = gg_visible | gg_enabled;
-    gcd[1].gd.popup_msg = GStringGetResource(_STR_ExprPopup,NULL);
+    gcd[1].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[1].gd.popup_msg = (unichar_t *) _("These expressions may contain the operators +,-,*,/,%,^ (which means raise to the power of here), and ?: It may also contain a few standard functions. Basic terms are real numbers, x and y.\nExamples:\n x^3+2.5*x^2+5\n (x-300)*(y-200)/100\n y+sin(100*x)");
     gcd[1].creator = GTextFieldCreate;
 
-    label[2].text = (unichar_t *) _STR_YExpr;
-    label[2].text_in_resource = true;
+    label[2].text = (unichar_t *) _("Y Expr:");
+    label[2].text_is_1byte = true;
     gcd[2].gd.label = &label[2];
     gcd[2].gd.pos.x = 10; gcd[2].gd.pos.y = gcd[0].gd.pos.y+26;
-    gcd[2].gd.flags = gg_visible | gg_enabled;
-    gcd[2].gd.popup_msg = GStringGetResource(_STR_ExprPopup,NULL);
+    gcd[2].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[2].gd.popup_msg = (unichar_t *) _("These expressions may contain the operators +,-,*,/,%,^ (which means raise to the power of here), and ?: It may also contain a few standard functions. Basic terms are real numbers, x and y.\nExamples:\n x^3+2.5*x^2+5\n (x-300)*(y-200)/100\n y+sin(100*x)");
     gcd[2].creator = GLabelCreate;
 
     if ( lastx!=NULL )
@@ -884,14 +884,15 @@ void NonLinearDlg(FontView *fv,CharView *cv) {
     gcd[3].gd.label = &label[3];
     gcd[3].gd.pos.x = gcd[1].gd.pos.x; gcd[3].gd.pos.y = gcd[1].gd.pos.y+26;
     gcd[3].gd.pos.width = gcd[1].gd.pos.width;
-    gcd[3].gd.flags = gg_visible | gg_enabled;
-    gcd[3].gd.popup_msg = GStringGetResource(_STR_ExprPopup,NULL);
+    gcd[3].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[3].gd.popup_msg = (unichar_t *) _("These expressions may contain the operators +,-,*,/,%,^ (which means raise to the power of here), and ?: It may also contain a few standard functions. Basic terms are real numbers, x and y.\nExamples:\n x^3+2.5*x^2+5\n (x-300)*(y-200)/100\n y+sin(100*x)");
     gcd[3].creator = GTextFieldCreate;
 
     gcd[4].gd.pos.x = 30-3; gcd[4].gd.pos.y = gcd[3].gd.pos.y+30;
     gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
     gcd[4].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[4].text = (unichar_t *) _STR_OK;
+    label[4].text = (unichar_t *) _("_OK");
+    label[4].text_is_1byte = true;
     label[4].text_in_resource = true;
     gcd[4].gd.label = &label[4];
     gcd[4].gd.cid = true;
@@ -900,7 +901,8 @@ void NonLinearDlg(FontView *fv,CharView *cv) {
     gcd[5].gd.pos.x = -30; gcd[5].gd.pos.y = gcd[4].gd.pos.y+3;
     gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
     gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[5].text = (unichar_t *) _STR_Cancel;
+    label[5].text = (unichar_t *) _("_Cancel");
+    label[5].text_is_1byte = true;
     label[5].text_in_resource = true;
     gcd[5].gd.label = &label[5];
     gcd[5].gd.cid = false;
@@ -948,16 +950,16 @@ void NonLinearDlg(FontView *fv,CharView *cv) {
 }
 
 static GTextInfo originx[] = {
-    { (unichar_t *) _STR_GlyphOrigin, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) _STR_CenterOfSelection, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) _STR_LastPress, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) _STR_Value, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Glyph Origin"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Center of Selection"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Last Press"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Value"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }};
 static GTextInfo originy[] = {
-    { (unichar_t *) _STR_GlyphOrigin, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) _STR_CenterOfSelection, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) _STR_LastPress, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) _STR_Value, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Glyph Origin"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Center of Selection"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Last Press"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Value"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }};
 #define CID_XType	1001
 #define CID_YType	1002
@@ -1035,6 +1037,15 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     char xval[40], yval[40], zval[40], dval[40], tval[40], dirval[40];
     double x,y,z,dv,tilt,dir;
     int err;
+    static int done = false;
+
+    if ( !done ) {
+	done = true;
+	for ( i=0; originx[i].text!=NULL; ++i )
+	    originx[i].text = (unichar_t *) _((char *) originx[i].text);
+	for ( i=0; originy[i].text!=NULL; ++i )
+	    originy[i].text = (unichar_t *) _((char *) originy[i].text);
+    }
 
     *pov = def;
     pov->x *= emsize; pov->y *= emsize; pov->z *= emsize; pov->d *= emsize;
@@ -1046,12 +1057,12 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     memset(&d,'\0',sizeof(d));
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.window_title = GStringGetResource(_STR_PoVProj,NULL);
+    wattrs.utf8_window_title = _("_Point of View Projection...");
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,240));
     pos.height = GDrawPointsToPixels(NULL,216);
@@ -1061,14 +1072,15 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     memset(label,0,sizeof(label));
 
     k=0;
-    label[k].text = (unichar_t *) _STR_ViewPoint;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("View Point");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = 8;
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k++].creator = GLabelCreate;
 
-    label[k].text = (unichar_t *) _STR_X;
+    label[k].text = (unichar_t *) _("_X");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y + 16;
@@ -1095,7 +1107,8 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     gcd[k].gd.cid = CID_XValue;
     gcd[k++].creator = GTextFieldCreate;
 
-    label[k].text = (unichar_t *) _STR_Y;
+    label[k].text = (unichar_t *) _("_Y");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = gcd[k-3].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y + 28;
@@ -1122,8 +1135,8 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     gcd[k].gd.handle_controlevent = PoV_Vanish;
     gcd[k++].creator = GTextFieldCreate;
 
-    label[k].text = (unichar_t *) _STR_DistanceToDrawingPlane;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Distance to drawing plane:");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y + 28;
     gcd[k].gd.flags = gg_visible | gg_enabled;
@@ -1139,8 +1152,8 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     gcd[k].gd.cid = CID_ZValue;
     gcd[k++].creator = GTextFieldCreate;
 
-    label[k].text = (unichar_t *) _STR_DistanceToProjectionPlane;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Distance to projection plane:");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = gcd[k-2].gd.pos.x; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y + 24;
     gcd[k].gd.flags = gg_visible | gg_enabled;
@@ -1156,8 +1169,8 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     gcd[k].gd.cid = CID_DValue;
     gcd[k++].creator = GTextFieldCreate;
 
-    label[k].text = (unichar_t *) _STR_DrawingPlaneTilt;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Drawing plane tilt:");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = gcd[k-2].gd.pos.x; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y + 24;
     gcd[k].gd.flags = gg_visible | gg_enabled;
@@ -1173,15 +1186,15 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     gcd[k].gd.cid = CID_Tilt;
     gcd[k++].creator = GTextFieldCreate;
 
-    label[k].text = (unichar_t *) _STR_DegreeMark;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) U_("°");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+gcd[k-1].gd.pos.width+3; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y;
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k++].creator = GLabelCreate;
 
-    label[k].text = (unichar_t *) _STR_DirectionOfGaze;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Direction of gaze:");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = gcd[k-3].gd.pos.x; gcd[k].gd.pos.y = gcd[k-3].gd.pos.y + 24;
     gcd[k].gd.flags = gg_visible | gg_enabled;
@@ -1197,34 +1210,35 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     gcd[k].gd.cid = CID_GazeDirection;
     gcd[k++].creator = GTextFieldCreate;
 
-    label[k].text = (unichar_t *) _STR_DegreeMark;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) U_("°");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+gcd[k-1].gd.pos.width+3; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y;
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k++].creator = GLabelCreate;
 
-    label[k].text = (unichar_t *) _STR_VanishingPoint;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Vanishing Point:");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+18;
-    gcd[k].gd.flags = gg_visible | gg_enabled;
-    gcd[k].gd.popup_msg = GStringGetResource(_STR_PopupVanish,NULL);
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[k].gd.popup_msg = (unichar_t *) _("This is the approximate location of the vanishing point.\nIt does not include the offset induced by \"Center of selection\"\nnor \"Last Press\".");
     gcd[k++].creator = GLabelCreate;
 
     label[k].text = (unichar_t *) "123456.,123456.";
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 160; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
-    gcd[k].gd.flags = gg_visible | gg_enabled;
-    gcd[k].gd.popup_msg = GStringGetResource(_STR_PopupVanish,NULL);
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[k].gd.popup_msg = (unichar_t *) _("This is the approximate location of the vanishing point.\nIt does not include the offset induced by \"Center of selection\"\nnor \"Last Press\".");
     gcd[k].gd.cid = CID_Vanish;
     gcd[k++].creator = GLabelCreate;
 
     gcd[k].gd.pos.x = 30-3; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+18;
     gcd[k].gd.pos.width = -1; gcd[k].gd.pos.height = 0;
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[k].text = (unichar_t *) _STR_OK;
+    label[k].text = (unichar_t *) _("_OK");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = true;
@@ -1233,7 +1247,8 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     gcd[k].gd.pos.x = -30; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+3;
     gcd[k].gd.pos.width = -1; gcd[k].gd.pos.height = 0;
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[k].text = (unichar_t *) _STR_Cancel;
+    label[k].text = (unichar_t *) _("_Cancel");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = false;
@@ -1255,12 +1270,12 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
 return( -1 );
 	    }
 	    err = false;
-	    x = GetRealR(d.gw,CID_XValue,_STR_X,&err);
-	    y = GetRealR(d.gw,CID_YValue,_STR_Y,&err);
-	    z = GetRealR(d.gw,CID_ZValue,_STR_DistanceToDrawingPlane,&err);
-	    dv = GetRealR(d.gw,CID_DValue,_STR_DistanceToProjectionPlane,&err);
-	    tilt = GetRealR(d.gw,CID_Tilt,_STR_DrawingPlaneTilt,&err);
-	    dir = GetRealR(d.gw,CID_GazeDirection,_STR_DirectionOfGaze,&err);
+	    x = GetReal8(d.gw,CID_XValue,_("_X"),&err);
+	    y = GetReal8(d.gw,CID_YValue,_("_Y"),&err);
+	    z = GetReal8(d.gw,CID_ZValue,_("Distance to drawing plane:"),&err);
+	    dv = GetReal8(d.gw,CID_DValue,_("Distance to projection plane:"),&err);
+	    tilt = GetReal8(d.gw,CID_Tilt,_("Drawing plane tilt:"),&err);
+	    dir = GetReal8(d.gw,CID_GazeDirection,_("Direction of gaze:"),&err);
 	    if ( err ) {
 		d.done = d.ok = false;
     continue;
@@ -1378,7 +1393,7 @@ void FVPointOfView(FontView *fv,struct pov_data *pov) {
 		fv->selected[i] )
 	++cnt;
 # ifdef FONTFORGE_CONFIG_GDRAW
-    GProgressStartIndicatorR(10,_STR_Projecting,_STR_Projecting,0,cnt,1);
+    gwwv_progress_start_indicator(10,_("Projecting..."),_("Projecting..."),0,cnt,1);
 # elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_start_indicator(10,_("Projecting..."),_("Projecting..."),0,cnt,1);
 # endif

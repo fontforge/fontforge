@@ -1,4 +1,4 @@
-#include "basics.h"
+#include "pfaedit.h"		/* For LogError */
 
 /* These subroutines are code by Adobe for this exact use (from T1_Spec.pdf) */
 
@@ -511,7 +511,7 @@ return( false );
 	    else if ( sub_num<14 )
 		osubs[sub_num] = CopyLines(lines,l,false);
 	    else if ( sub_num==14 )
-		LogError( "Too many subroutines. We can deal with at most 14 (0-13)\n" );
+		LogError( _("Too many subroutines. We can deal with at most 14 (0-13)\n") );
 	    ++sub_num;
 	    l = 0;
 	} else {

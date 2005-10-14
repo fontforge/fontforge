@@ -47,7 +47,7 @@ struct node {
     uint16 cnt;
     struct node *children, *parent;
     void (*build)(struct node *,struct att_dlg *);
-    unichar_t *label;
+    char *label;		/* utf8 */
     uint32 tag;
     union sak {
 	SplineChar *sc;
@@ -98,7 +98,7 @@ static void BuildMarkedLigatures(struct node *node,struct att_dlg *att) {
     AnchorClass *ac = node->parent->parent->u.ac, *ac2;
     int classcnt, i, j, max, k;
     AnchorPoint *ap;
-    unichar_t ubuf[60];
+    char buf[90];
 
     for ( ac2=ac, classcnt=0; ac2!=NULL &&
 	    ac2->feature_tag==ac->feature_tag &&
@@ -114,13 +114,9 @@ static void BuildMarkedLigatures(struct node *node,struct att_dlg *att) {
 	for ( i=0, ac2=ac; i<classcnt; ++i, ac2=ac2->next ) {
 	    for ( ap=sc->anchor; ap!=NULL && (ap->type!=at_baselig || ap->anchor!=ac2 || ap->lig_index!=k); ap=ap->next );
 	    if ( ap!=NULL ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		u_sprintf(ubuf,GStringGetResource(_STR_MarkLigComponentNamePos,NULL),
-#elif defined(FONTFORGE_CONFIG_GTK)
-		u_sprintf(ubuf,_("Component %d %.30s (%d,%d)"),
-#endif
+		sprintf(buf,_("Component %d %.30s (%d,%d)"),
 			k, ac2->name, (int) ap->me.x, (int) ap->me.y );
-		node->children[j].label = u_copy(ubuf);
+		node->children[j].label = copy(buf);
 		node->children[j++].parent = node;
 	    }
 	}
@@ -133,7 +129,7 @@ static void BuildMarkedChars(struct node *node,struct att_dlg *att) {
     AnchorClass *ac = node->parent->parent->u.ac, *ac2;
     int classcnt, i, j;
     AnchorPoint *ap;
-    unichar_t ubuf[60];
+    char buf[80];
 
     for ( ac2=ac, classcnt=0; ac2!=NULL &&
 	    ac2->feature_tag==ac->feature_tag &&
@@ -144,13 +140,9 @@ static void BuildMarkedChars(struct node *node,struct att_dlg *att) {
     for ( i=j=0, ac2=ac; i<classcnt; ++i, ac2=ac2->next ) {
 	for ( ap=sc->anchor; ap!=NULL && (!(ap->type==at_basechar || ap->type==at_basemark) || ap->anchor!=ac2); ap=ap->next );
 	if ( ap!=NULL ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    u_sprintf(ubuf,GStringGetResource(_STR_MarkAnchorNamePos,NULL), ac2->name,
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    u_sprintf(ubuf,_("%.30s (%d,%d)"), ac2->name,
-#endif
+	    sprintf(buf,"%.30s (%d,%d)", ac2->name,
 		    (int) ap->me.x, (int) ap->me.y );
-	    node->children[j].label = u_copy(ubuf);
+	    node->children[j].label = copy(buf);
 	    node->children[j++].parent = node;
 	}
     }
@@ -161,28 +153,20 @@ static void BuildBase(struct node *node,SplineChar **bases,enum anchor_type at, 
     int i;
 
     node->parent = parent;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    node->label = u_copy(GStringGetResource(at==at_basechar?_STR_BaseGlyphs:
-#elif defined(FONTFORGE_CONFIG_GTK)
-    node->label = u_copy(at==at_basechar?_("Base Glyphs")
-#endif
-					    at==at_baselig?_STR_BaseLigatures:
-			                    _STR_BaseMarks,NULL));
+    node->label = copy(at==at_basechar?_("Base Glyphs"):
+			at==at_baselig?_("Base Ligatures"):
+			_("Base Marks"));
     for ( i=0; bases[i]!=NULL; ++i );
     if ( i==0 ) {
 	node->cnt = 1;
 	node->children = gcalloc(2,sizeof(struct node));
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	node->children[0].label = u_copy(GStringGetResource(_STR_Empty,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	node->children[0].label = u_copy(_("Empty"));
-#endif
+	node->children[0].label = copy(_("Empty"));
 	node->children[0].parent = node;
     } else {
 	node->cnt = i;
 	node->children = gcalloc(i+1,sizeof(struct node));
 	for ( i=0; bases[i]!=NULL; ++i ) {
-	    node->children[i].label = uc_copy(bases[i]->name);
+	    node->children[i].label = copy(bases[i]->name);
 	    node->children[i].parent = node;
 	    node->children[i].u.sc = bases[i];
 	    node->children[i].build = at==at_baselig?BuildMarkedLigatures:BuildMarkedChars;
@@ -192,38 +176,26 @@ static void BuildBase(struct node *node,SplineChar **bases,enum anchor_type at, 
 
 static void BuildMark(struct node *node,SplineChar **marks,AnchorClass *ac, struct node *parent) {
     int i;
-    unichar_t ubuf[60];
+    char buf[80];
     AnchorPoint *ap;
 
     node->parent = parent;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    u_sprintf(ubuf,GStringGetResource(_STR_MarkClassS,NULL),ac->name);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    u_sprintf(ubuf,_("Mark Class %.20s"),ac->name);
-#endif
-    node->label = u_copy(ubuf);
+    sprintf(buf,_("Mark Class %.20s"),ac->name);
+    node->label = copy(buf);
     for ( i=0; marks[i]!=NULL; ++i );
     if ( i==0 ) {
 	node->cnt = 1;
 	node->children = gcalloc(2,sizeof(struct node));
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	node->children[0].label = u_copy(GStringGetResource(_STR_Empty,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	node->children[0].label = u_copy(_("Empty"));
-#endif
+	node->children[0].label = copy(_("Empty"));
 	node->children[0].parent = node;
     } else {
 	node->cnt = i;
 	node->children = gcalloc(i+1,sizeof(struct node));
 	for ( i=0; marks[i]!=NULL; ++i ) {
 	    for ( ap=marks[i]->anchor; ap!=NULL && (ap->type!=at_mark || ap->anchor!=ac); ap=ap->next );
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    u_sprintf(ubuf,GStringGetResource(_STR_MarkCharNamePos,NULL), marks[i]->name,
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    u_sprintf(ubuf,_("%.30s (%d,%d)"), marks[i]->name,
-#endif
+	    sprintf(buf,_("%.30s (%d,%d)"), marks[i]->name,
 		    (int) ap->me.x, (int) ap->me.y );
-	    node->children[i].label = u_copy(ubuf);
+	    node->children[i].label = copy(buf);
 	    node->children[i].parent = node;
 	}
     }
@@ -237,7 +209,7 @@ static void BuildAnchorLists(struct node *node,struct att_dlg *att,uint32 script
     SplineChar ***marks;
     int *subcnts;
     SplineFont *sf = att->sf;
-    unichar_t ubuf[60];
+    char buf[80];
 
     if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
 
@@ -246,18 +218,14 @@ static void BuildAnchorLists(struct node *node,struct att_dlg *att,uint32 script
 	if ( entryexit==NULL ) {
 	    node->children = gcalloc(2,sizeof(struct node));
 	    node->cnt = 1;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    node->children[0].label = u_copy(GStringGetResource(_STR_Empty,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    node->children[0].label = u_copy(_("Empty"));
-#endif
+	    node->children[0].label = copy(_("Empty"));
 	    node->children[0].parent = node;
 	} else {
 	    for ( cnt=0; entryexit[cnt]!=NULL; ++cnt );
 	    node->children = gcalloc(cnt+1,sizeof(struct node));
 	    for ( cnt=0; entryexit[cnt]!=NULL; ++cnt ) {
 		node->children[cnt].u.sc = entryexit[cnt];
-		node->children[cnt].label = uc_copy(entryexit[cnt]->name);
+		node->children[cnt].label = copy(entryexit[cnt]->name);
 		node->children[cnt].parent = node;
 		for ( ent=ext=NULL, ap=entryexit[cnt]->anchor; ap!=NULL; ap=ap->next ) {
 		    if ( ap->anchor==ac ) {
@@ -271,26 +239,16 @@ static void BuildAnchorLists(struct node *node,struct att_dlg *att,uint32 script
 		node->children[cnt].children = gcalloc((1+(ent!=NULL)+(ext!=NULL)),sizeof(struct node));
 		i = 0;
 		if ( ent!=NULL ) {
-		    u_snprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),
-#if defined(FONTFORGE_CONFIG_GDRAW)
-			    GStringGetResource(_STR_Entry,NULL),
-#elif defined(FONTFORGE_CONFIG_GTK)
-			    _("Entry (%d,%d)"),
-#endif
-			    ent->me.x, ent->me.y);
-		    node->children[cnt].children[i].label = u_copy(ubuf);
+		    snprintf(buf,sizeof(buf), _("Entry (%d,%d)"),
+			    (int) ent->me.x, (int) ent->me.y);
+		    node->children[cnt].children[i].label = copy(buf);
 		    node->children[cnt].children[i].parent = &node->children[cnt];
 		    ++i;
 		}
 		if ( ext!=NULL ) {
-		    u_snprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),
-#if defined(FONTFORGE_CONFIG_GDRAW)
-			    GStringGetResource(_STR_Exit,NULL),
-#elif defined(FONTFORGE_CONFIG_GTK)
-			    _("Exit (%d,%d)"),
-#endif
-			    ext->me.x, ext->me.y);
-		    node->children[cnt].children[i].label = u_copy(ubuf);
+		    snprintf(buf,sizeof(buf), _("Exit (%d,%d)"),
+			    (int) ext->me.x, (int) ext->me.y);
+		    node->children[cnt].children[i].label = copy(buf);
 		    node->children[cnt].children[i].parent = &node->children[cnt];
 		    ++i;
 		}
@@ -338,7 +296,7 @@ static void BuildKC2(struct node *node,struct att_dlg *att) {
     struct node *seconds;
     int index=node->u.index,i,cnt, len;
     char buf[32];
-    unichar_t *name;
+    char *name;
 
     for ( i=1,cnt=0; i<kc->second_cnt; ++i )
 	if ( kc->offsets[index*kc->second_cnt+i]!=0 && strlen(kc->seconds[i])!=0 )
@@ -350,9 +308,9 @@ static void BuildKC2(struct node *node,struct att_dlg *att) {
     for ( i=1; i<kc->second_cnt; ++i ) if ( kc->offsets[index*kc->second_cnt+i]!=0 && strlen(kc->seconds[i])!=0 ) {
 	sprintf( buf, "%d ", kc->offsets[index*kc->second_cnt+i]);
 	len = strlen(buf)+strlen(kc->seconds[i])+1;
-	name = galloc(len*sizeof(unichar_t));
-	uc_strcpy(name,buf);
-	uc_strcat(name,kc->seconds[i]);
+	name = galloc(len);
+	strcpy(name,buf);
+	strcat(name,kc->seconds[i]);
 	seconds[cnt].label = name;
 	seconds[cnt].parent = node;
 	seconds[cnt].build = NULL;
@@ -383,7 +341,7 @@ static void BuildKC(struct node *node,struct att_dlg *att) {
 	}
 	if ( cnt2==0 || strlen(kc->firsts[i])==0 )
     continue;
-	firsts[cnt].label = uc_copy(kc->firsts[i]);
+	firsts[cnt].label = copy(kc->firsts[i]);
 	firsts[cnt].parent = node;
 	firsts[cnt].build = BuildKC2;
 	firsts[cnt++].u.index = i;
@@ -424,7 +382,7 @@ static void BuildKerns2(struct node *node,struct att_dlg *att,
 	    if ( SLIMatches(_sf,kp->sli,script,lang) ) {
 		if ( j ) {
 		    sprintf( buf, "%.40s %d", kp->sc->name, kp->off );
-		    chars[i].label = uc_copy(buf);
+		    chars[i].label = copy(buf);
 		    chars[i].parent = node;
 		}
 		++i;
@@ -474,7 +432,7 @@ static void BuildKerns(struct node *node,struct att_dlg *att,uint32 script,uint3
 		    if ( SLIMatches(_sf,kp->sli,script,lang) ) {
 			if ( j ) {
 			    chars[tot].u.sc = sf->glyphs[i];
-			    chars[tot].label = uc_copy(sf->glyphs[i]->name);
+			    chars[tot].label = copy(sf->glyphs[i]->name);
 			    chars[tot].build = build;
 			    chars[tot].parent = node;
 			}
@@ -527,8 +485,7 @@ static void BuildFeatures(struct node *node,struct att_dlg *att,
     int i,j,k, maxc, tot, maxl, len;
     SplineFont *_sf = att->sf, *sf;
     SplineChar *sc;
-    unichar_t *ubuf;
-    char buf[200];
+    char *lbuf;
     struct node *chars;
     PST *pst;
 
@@ -561,30 +518,28 @@ static void BuildFeatures(struct node *node,struct att_dlg *att,
 			  (!ispos && (pst->type!=pst_position && pst->type!=pst_pair))) ) {
 		    if ( SLIMatches(sf,pst->script_lang_index,script,lang)) {
 			if ( chars ) {
-			    uc_strcpy(ubuf,sc->name);
+			    strcpy(lbuf,sc->name);
 			    if ( pst->type==pst_position ) {
-				sprintf(buf," dx=%d dy=%d dx_adv=%d dy_adv=%d",
+				sprintf(lbuf+strlen(lbuf)," dx=%d dy=%d dx_adv=%d dy_adv=%d",
 					pst->u.pos.xoff, pst->u.pos.yoff,
 					pst->u.pos.h_adv_off, pst->u.pos.v_adv_off );
-				uc_strcat(ubuf,buf);
 			    } else if ( pst->type==pst_pair ) {
-				sprintf(buf," %.50s dx=%d dy=%d dx_adv=%d dy_adv=%d | dx=%d dy=%d dx_adv=%d dy_adv=%d",
+				sprintf(lbuf+strlen(lbuf)," %.50s dx=%d dy=%d dx_adv=%d dy_adv=%d | dx=%d dy=%d dx_adv=%d dy_adv=%d",
 					pst->u.pair.paired,
 					pst->u.pair.vr[0].xoff, pst->u.pair.vr[0].yoff,
 					pst->u.pair.vr[0].h_adv_off, pst->u.pair.vr[0].v_adv_off,
 					pst->u.pair.vr[1].xoff, pst->u.pair.vr[1].yoff,
 					pst->u.pair.vr[1].h_adv_off, pst->u.pair.vr[1].v_adv_off );
-				uc_strcat(ubuf,buf);
 			    } else {
 				if ( !PSTAllComponentsExist(_sf,pst->u.subs.variant ))
 		continue;
 				if ( pst->type==pst_ligature )
-				    uc_strcat(ubuf, " <= " );
+				    strcat(lbuf, " <= " );
 				else
-				    uc_strcat(ubuf, " => " );
-				uc_strcat(ubuf,pst->u.subs.variant);
+				    strcat(lbuf, " => " );
+				strcat(lbuf,pst->u.subs.variant);
 			    }
-			    chars[tot].label = u_copy(ubuf);
+			    chars[tot].label = copy(lbuf);
 			    chars[tot].parent = node;
 			} else {
 			    if ( pst->type==pst_position )
@@ -604,13 +559,12 @@ static void BuildFeatures(struct node *node,struct att_dlg *att,
 	if ( tot==0 )
 return;
 	if ( chars==NULL ) {
-	    ubuf = galloc(maxl*sizeof(unichar_t));
+	    lbuf = galloc(maxl*sizeof(unichar_t));
 	    chars = gcalloc(tot+1,sizeof(struct node));
 	}
     }
     node->children = chars;
     node->cnt = tot;
-    free(ubuf);
 }
 
 static void BuildMorxFeatures(struct node *node,struct att_dlg *att) {
@@ -619,8 +573,8 @@ static void BuildMorxFeatures(struct node *node,struct att_dlg *att) {
 }
 
 #if defined(FONTFORGE_CONFIG_GDRAW)
-unichar_t *TagFullName(SplineFont *sf,uint32 tag, int ismac) {
-    unichar_t ubuf[100], *end = ubuf+sizeof(ubuf)/sizeof(ubuf[0]), *setname;
+char *TagFullName(SplineFont *sf,uint32 tag, int ismac) {
+    char ubuf[200], *end = ubuf+sizeof(ubuf), *setname;
     int j,k;
     extern GTextInfo *pst_tags[];
 
@@ -629,19 +583,18 @@ unichar_t *TagFullName(SplineFont *sf,uint32 tag, int ismac) {
 	ismac = (tag>>24)<' ' || (tag>>24)>0x7e;
 
     if ( ismac ) {
-	char buf[30];
-	sprintf( buf, "<%d,%d> ", tag>>16,tag&0xffff );
-	uc_strcpy(ubuf, buf );
+	sprintf( ubuf, "<%d,%d> ", tag>>16,tag&0xffff );
 	if ( (setname = PickNameFromMacName(FindMacSettingName(sf,tag>>16,tag&0xffff)))!=NULL ) {
-	    u_strcat( ubuf, setname );
+	    strcat( ubuf, setname );
 	    free( setname );
 	}
     } else {
 	int stag = tag;
+	CharInfoInit();
 	if ( tag==CHR('n','u','t','f') )	/* early name that was standardize later as... */
 	    stag = CHR('a','f','r','c');	/*  Stood for nut fractions. "nut" meaning "fits in an en" in old typography-speak => vertical fractions rather than diagonal ones */
 	if ( tag==REQUIRED_FEATURE ) {
-	    u_strcpy(ubuf,GStringGetResource(_STR_RequiredFeature,NULL));
+	    strcpy(ubuf,_("Required Feature"));
 	} else {
 	    for ( k=0; pst_tags[k]!=NULL; ++k ) {
 		for ( j=0; pst_tags[k][j].text!=NULL && stag!=(uint32) pst_tags[k][j].userdata; ++j );
@@ -656,12 +609,12 @@ unichar_t *TagFullName(SplineFont *sf,uint32 tag, int ismac) {
 	    ubuf[5] = '\'';
 	    ubuf[6] = ' ';
 	    if ( pst_tags[k]!=NULL )
-		u_strncpy(ubuf+7, GStringGetResource((uint32) pst_tags[k][j].text,NULL),end-ubuf-7);
+		strncpy(ubuf+7, (char *) pst_tags[k][j].text,end-ubuf-7);
 	    else
 		ubuf[7]='\0';
 	}
     }
-return( u_copy( ubuf ));
+return( copy( ubuf ));
 }
 #elif defined(FONTFORGE_CONFIG_GTK)
 #endif
@@ -813,7 +766,7 @@ static void BuildFPSTRule(struct node *node,struct att_dlg *att) {
     int len, i, j;
     struct node *lines;
     char buf[200], *space, *pt, *start, *spt;
-    unichar_t *upt;
+    char *upt;
     SplineFont *sf = att->sf;
 
     for ( i=0; i<2; ++i ) {
@@ -823,10 +776,10 @@ static void BuildFPSTRule(struct node *node,struct att_dlg *att) {
 	  case pst_glyphs:
 	    if ( r->u.glyph.back!=NULL && *r->u.glyph.back!='\0' ) {
 		if ( i ) {
-		    sprintf(buf, "Backtrack Match: " );
-		    lines[len].label = galloc((strlen(buf)+strlen(r->u.glyph.back)+1)*sizeof(unichar_t));
-		    uc_strcpy(lines[len].label,buf);
-		    upt = lines[len].label+u_strlen(lines[len].label);
+		    sprintf(buf, _("Backtrack Match: ") );
+		    lines[len].label = galloc((strlen(buf)+strlen(r->u.glyph.back)+1));
+		    strcpy(lines[len].label,buf);
+		    upt = lines[len].label+strlen(lines[len].label);
 		    for ( pt=r->u.glyph.back+strlen(r->u.glyph.back); pt>r->u.glyph.back; pt=start ) {
 			for ( start = pt-1; start>=r->u.glyph.back&& *start!=' '; --start );
 			for ( spt=start+1; spt<pt; )
@@ -839,19 +792,19 @@ static void BuildFPSTRule(struct node *node,struct att_dlg *att) {
 		++len;
 	    }
 	    if ( i ) {
-		sprintf(buf, "Match: " );
-		lines[len].label = galloc((strlen(buf)+strlen(r->u.glyph.names)+1)*sizeof(unichar_t));
-		uc_strcpy(lines[len].label,buf);
-		uc_strcat(lines[len].label,r->u.glyph.names);
+		sprintf(buf, _("Match: ") );
+		lines[len].label = galloc((strlen(buf)+strlen(r->u.glyph.names)+1));
+		strcpy(lines[len].label,buf);
+		strcat(lines[len].label,r->u.glyph.names);
 		lines[len].parent = node;
 	    }
 	    ++len;
 	    if ( r->u.glyph.fore!=NULL && *r->u.glyph.fore!='\0' ) {
 		if ( i ) {
-		    sprintf(buf, "Lookahead Match: " );
-		    lines[len].label = galloc((strlen(buf)+strlen(r->u.glyph.fore)+1)*sizeof(unichar_t));
-		    uc_strcpy(lines[len].label,buf);
-		    uc_strcat(lines[len].label,r->u.glyph.fore);
+		    sprintf(buf, _("Lookahead Match: ") );
+		    lines[len].label = galloc((strlen(buf)+strlen(r->u.glyph.fore)+1));
+		    strcpy(lines[len].label,buf);
+		    strcat(lines[len].label,r->u.glyph.fore);
 		    lines[len].parent = node;
 		}
 		++len;
@@ -861,12 +814,12 @@ static void BuildFPSTRule(struct node *node,struct att_dlg *att) {
 	    if ( r->u.class.bcnt!=0 ) {
 		if ( i ) {
 		    space = pt = galloc(100+7*r->u.class.bcnt);
-		    strcpy(space, r->u.class.bcnt==1 ? "Backtrack class: " : "Backtrack classes: " );
+		    strcpy(space, P_("Backtrack class: ","Backtrack classes: ",r->u.class.bcnt));
 		    pt += strlen(space);
 		    for ( j=r->u.class.bcnt-1; j>=0; --j ) {
 			sprintf( pt, "%d ", r->u.class.bclasses[j] );
 			pt += strlen( pt );
-			lines[len].label = uc_copy(space);
+			lines[len].label = copy(space);
 			lines[len].parent = node;
 		    }
 		    free(space);
@@ -875,12 +828,12 @@ static void BuildFPSTRule(struct node *node,struct att_dlg *att) {
 	    }
 	    if ( i ) {
 		space = pt = galloc(100+7*r->u.class.ncnt);
-		strcpy(space, r->u.class.ncnt==1 ? "Class: " : "Classes: " );
+		strcpy(space, P_("Class","Classes",r->u.class.ncnt));
 		pt += strlen(space);
 		for ( j=0; j<r->u.class.ncnt; ++j ) {
 		    sprintf( pt, "%d ", r->u.class.nclasses[j] );
 		    pt += strlen( pt );
-		    lines[len].label = uc_copy(space);
+		    lines[len].label = copy(space);
 		    lines[len].parent = node;
 		}
 		free(space);
@@ -889,12 +842,12 @@ static void BuildFPSTRule(struct node *node,struct att_dlg *att) {
 	    if ( r->u.class.fcnt!=0 ) {
 		if ( i ) {
 		    space = pt = galloc(100+7*r->u.class.fcnt);
-		    strcpy(space, r->u.class.fcnt==1 ? "Lookahead class: " : "Lookahead classes: " );
+		    strcpy(space, P_("Lookahead class: ","Lookahead classes: ",r->u.class.fcnt));
 		    pt += strlen(space);
 		    for ( j=0; j<r->u.class.fcnt; ++j ) {
 			sprintf( pt, "%d ", r->u.class.fclasses[j] );
 			pt += strlen( pt );
-			lines[len].label = uc_copy(space);
+			lines[len].label = copy(space);
 			lines[len].parent = node;
 		    }
 		    free(space);
@@ -906,30 +859,30 @@ static void BuildFPSTRule(struct node *node,struct att_dlg *att) {
 	  case pst_reversecoverage:
 	    for ( j=r->u.coverage.bcnt-1; j>=0; --j ) {
 		if ( i ) {
-		    sprintf(buf, "Back coverage %d: ", -j-1);
-		    lines[len].label = galloc((strlen(buf)+strlen(r->u.coverage.bcovers[j])+1)*sizeof(unichar_t));
-		    uc_strcpy(lines[len].label,buf);
-		    uc_strcat(lines[len].label,r->u.coverage.bcovers[j]);
+		    sprintf(buf, _("Back coverage %d: "), -j-1);
+		    lines[len].label = galloc((strlen(buf)+strlen(r->u.coverage.bcovers[j])+1));
+		    strcpy(lines[len].label,buf);
+		    strcat(lines[len].label,r->u.coverage.bcovers[j]);
 		    lines[len].parent = node;
 		}
 		++len;
 	    }
 	    for ( j=0; j<r->u.coverage.ncnt; ++j ) {
 		if ( i ) {
-		    sprintf(buf, "Coverage %d: ", j);
-		    lines[len].label = galloc((strlen(buf)+strlen(r->u.coverage.ncovers[j])+1)*sizeof(unichar_t));
-		    uc_strcpy(lines[len].label,buf);
-		    uc_strcat(lines[len].label,r->u.coverage.ncovers[j]);
+		    sprintf(buf, _("Coverage %d: "), j);
+		    lines[len].label = galloc((strlen(buf)+strlen(r->u.coverage.ncovers[j])+1));
+		    strcpy(lines[len].label,buf);
+		    strcat(lines[len].label,r->u.coverage.ncovers[j]);
 		    lines[len].parent = node;
 		}
 		++len;
 	    }
 	    for ( j=0; j<r->u.coverage.fcnt; ++j ) {
 		if ( i ) {
-		    sprintf(buf, "Lookahead coverage %d: ", j+r->u.coverage.ncnt);
-		    lines[len].label = galloc((strlen(buf)+strlen(r->u.coverage.fcovers[j])+1)*sizeof(unichar_t));
-		    uc_strcpy(lines[len].label,buf);
-		    uc_strcat(lines[len].label,r->u.coverage.fcovers[j]);
+		    sprintf(buf, _("Lookahead coverage %d: "), j+r->u.coverage.ncnt);
+		    lines[len].label = galloc((strlen(buf)+strlen(r->u.coverage.fcovers[j])+1));
+		    strcpy(lines[len].label,buf);
+		    strcat(lines[len].label,r->u.coverage.fcovers[j]);
 		    lines[len].parent = node;
 		}
 		++len;
@@ -942,10 +895,10 @@ static void BuildFPSTRule(struct node *node,struct att_dlg *att) {
 	  case pst_coverage:
 	    for ( j=0; j<r->lookup_cnt; ++j ) {
 		if ( i ) {
-		    sprintf(buf, "Apply at %d '%c%c%c%c'", r->lookups[j].seq,
+		    sprintf(buf, _("Apply at %d '%c%c%c%c'"), r->lookups[j].seq,
 			    r->lookups[j].lookup_tag>>24, (r->lookups[j].lookup_tag>>16)&0xff,
 			    (r->lookups[j].lookup_tag>>8)&0xff, r->lookups[j].lookup_tag&0xff );
-		    lines[len].label = uc_copy(buf);
+		    lines[len].label = copy(buf);
 		    lines[len].parent = node;
 		    lines[len].tag = r->lookups[j].lookup_tag;
 		    FigureBuild(&lines[len],r->lookups[j].lookup_tag,sf);
@@ -955,10 +908,10 @@ static void BuildFPSTRule(struct node *node,struct att_dlg *att) {
 	  break;
 	  case pst_reversecoverage:
 	    if ( i ) {
-		sprintf(buf, "Replacement: " );
-		lines[len].label = galloc((strlen(buf)+strlen(r->u.rcoverage.replacements)+1)*sizeof(unichar_t));
-		uc_strcpy(lines[len].label,buf);
-		uc_strcat(lines[len].label,r->u.rcoverage.replacements);
+		sprintf(buf, _("Replacement: ") );
+		lines[len].label = galloc((strlen(buf)+strlen(r->u.rcoverage.replacements)+1));
+		strcpy(lines[len].label,buf);
+		strcat(lines[len].label,r->u.rcoverage.replacements);
 		lines[len].parent = node;
 	    }
 	    ++len;
@@ -976,48 +929,49 @@ static void BuildFPST(struct node *node,struct att_dlg *att) {
     int len, i, j;
     struct node *lines;
     char buf[200];
-    static char *type[] = { "Contextual Positioning", "Contextual Substitution",
-	    "Chaining Positioning", "Chaining Substitution",
-	    "Reverse Chaining Subs" };
-    static char *format[] = { "glyphs", "classes", "coverage", "coverage" };
+    static char *type[] = { N_("Contextual Positioning"), N_("Contextual Substitution"),
+	    N_("Chaining Positioning"), N_("Chaining Substitution"),
+	    N_("Reverse Chaining Subs") };
+    static char *format[] = { N_("glyphs"), N_("classes"), N_("coverage"), N_("coverage") };
 
     lines = NULL;
     for ( i=0; i<2; ++i ) {
 	len = 0;
 
 	if ( i ) {
-	    sprintf(buf, "%s by %s", type[fpst->type-pst_contextpos], format[fpst->format]);
-	    lines[len].label = uc_copy(buf);
+	    sprintf(buf, _("%s by %s"), _(type[fpst->type-pst_contextpos]),
+		    _(format[fpst->format]));
+	    lines[len].label = copy(buf);
 	    lines[len].parent = node;
 	}
 	++len;
 	if ( fpst->format==pst_class ) {
 	    for ( j=1; j<fpst->bccnt ; ++j ) {
 		if ( i ) {
-		    sprintf(buf, "Backtrack class %d: ", j);
-		    lines[len].label = galloc((strlen(buf)+strlen(fpst->bclass[j])+1)*sizeof(unichar_t));
-		    uc_strcpy(lines[len].label,buf);
-		    uc_strcat(lines[len].label,fpst->bclass[j]);
+		    sprintf(buf, _("Backtrack class %d: "), j);
+		    lines[len].label = galloc((strlen(buf)+strlen(fpst->bclass[j])+1));
+		    strcpy(lines[len].label,buf);
+		    strcat(lines[len].label,fpst->bclass[j]);
 		    lines[len].parent = node;
 		}
 		++len;
 	    }
 	    for ( j=1; j<fpst->nccnt ; ++j ) {
 		if ( i ) {
-		    sprintf(buf, "Class %d: ", j);
-		    lines[len].label = galloc((strlen(buf)+strlen(fpst->nclass[j])+1)*sizeof(unichar_t));
-		    uc_strcpy(lines[len].label,buf);
-		    uc_strcat(lines[len].label,fpst->nclass[j]);
+		    sprintf(buf, _("Class %d: "), j);
+		    lines[len].label = galloc((strlen(buf)+strlen(fpst->nclass[j])+1));
+		    strcpy(lines[len].label,buf);
+		    strcat(lines[len].label,fpst->nclass[j]);
 		    lines[len].parent = node;
 		}
 		++len;
 	    }
 	    for ( j=1; j<fpst->fccnt ; ++j ) {
 		if ( i ) {
-		    sprintf(buf, "Lookahead class %d: ", j);
-		    lines[len].label = galloc((strlen(buf)+strlen(fpst->fclass[j])+1)*sizeof(unichar_t));
-		    uc_strcpy(lines[len].label,buf);
-		    uc_strcat(lines[len].label,fpst->fclass[j]);
+		    sprintf(buf, _("Lookahead class %d: "), j);
+		    lines[len].label = galloc((strlen(buf)+strlen(fpst->fclass[j])+1));
+		    strcpy(lines[len].label,buf);
+		    strcat(lines[len].label,fpst->fclass[j]);
 		    lines[len].parent = node;
 		}
 		++len;
@@ -1025,8 +979,8 @@ static void BuildFPST(struct node *node,struct att_dlg *att) {
 	}
 	for ( j=0; j<fpst->rule_cnt; ++j ) {
 	    if ( i ) {
-		sprintf(buf, "Rule %d", j);
-		lines[len].label = uc_copy(buf);
+		sprintf(buf, _("Rule %d"), j);
+		lines[len].label = copy(buf);
 		lines[len].parent = node;
 		lines[len].u.index = j;
 		lines[len].build = BuildFPSTRule;
@@ -1045,12 +999,12 @@ static void BuildASM(struct node *node,struct att_dlg *att) {
     int len, i, j, k, scnt = 0;
     struct node *lines;
     char buf[200], *space;
-    static char *type[] = { "Indic Reordering", "Contextual Substitution",
-	    "Ligatures", "<undefined>", "Simple Substitution",
-	    "Glyph Insertion", "<undefined>",  "<undefined>", "<undefined>",
-	    "<undefined>", "<undefined>", "<undefined>","<undefined>",
-	    "<undefined>", "<undefined>", "<undefined>", "<undefined>",
-	    "Kern by State" };
+    static char *type[] = { N_("Indic Reordering"), N_("Contextual Substitution"),
+	    N_("Ligatures"), N_("<undefined>"), N_("Simple Substitution"),
+	    N_("Glyph Insertion"), N_("<undefined>"),  N_("<undefined>"), N_("<undefined>"),
+	    N_("<undefined>"), N_("<undefined>"), N_("<undefined>"),N_("<undefined>"),
+	    N_("<undefined>"), N_("<undefined>"), N_("<undefined>"), N_("<undefined>"),
+	    N_("Kern by State") };
     uint32 *subs=NULL;
 
     if ( sm->type == asm_context ) {
@@ -1076,42 +1030,42 @@ static void BuildASM(struct node *node,struct att_dlg *att) {
 	len = 0;
 
 	if ( i ) {
-	    lines[len].label = uc_copy(type[sm->type]);
+	    lines[len].label = copy(_(type[sm->type]));
 	    lines[len].parent = node;
 	}
 	++len;
 	for ( j=4; j<sm->class_cnt ; ++j ) {
 	    if ( i ) {
-		sprintf(buf, "Class %d: ", j);
-		lines[len].label = galloc((strlen(buf)+strlen(sm->classes[j])+1)*sizeof(unichar_t));
-		uc_strcpy(lines[len].label,buf);
-		uc_strcat(lines[len].label,sm->classes[j]);
+		sprintf(buf, _("Class %d: "), j);
+		lines[len].label = galloc((strlen(buf)+strlen(sm->classes[j])+1));
+		strcpy(lines[len].label,buf);
+		strcat(lines[len].label,sm->classes[j]);
 		lines[len].parent = node;
 	    }
 	    ++len;
 	}
 	for ( j=0; j<sm->state_cnt; ++j ) {
 	    if ( i ) {
-		sprintf(space, "State %4d Next: ", j );
+		sprintf(space, _("State %4d Next: "), j );
 		for ( k=0; k<sm->class_cnt; ++k )
 		    sprintf( space+strlen(space), "%5d", sm->state[j*sm->class_cnt+k].next_state );
-		lines[len].label = uc_copy(space);
+		lines[len].label = copy(space);
 		lines[len].parent = node;
 		lines[len].monospace = true;
 	    }
 	    ++len;
 	    if ( i ) {
-		sprintf(space, "State %4d Flags:", j );
+		sprintf(space, _("State %4d Flags:"), j );
 		for ( k=0; k<sm->class_cnt; ++k )
 		    sprintf( space+strlen(space), " %04x", sm->state[j*sm->class_cnt+k].flags );
-		lines[len].label = uc_copy(space);
+		lines[len].label = copy(space);
 		lines[len].parent = node;
 		lines[len].monospace = true;
 	    }
 	    ++len;
 	    if ( sm->type==asm_context ) {
 		if ( i ) {
-		    sprintf(space, "State %4d Mark: ", j );
+		    sprintf(space, _("State %4d Mark: "), j );
 		    for ( k=0; k<sm->class_cnt; ++k )
 			if ( sm->state[j*sm->class_cnt+k].u.context.mark_tag==0 )
 			    strcat(space,"     ");
@@ -1121,13 +1075,13 @@ static void BuildASM(struct node *node,struct att_dlg *att) {
 				    (sm->state[j*sm->class_cnt+k].u.context.mark_tag>>16)&0xff,
 				    (sm->state[j*sm->class_cnt+k].u.context.mark_tag>>8)&0xff,
 				    sm->state[j*sm->class_cnt+k].u.context.mark_tag&0xff );
-		    lines[len].label = uc_copy(space);
+		    lines[len].label = copy(space);
 		    lines[len].parent = node;
 		    lines[len].monospace = true;
 		}
 		++len;
 		if ( i ) {
-		    sprintf(space, "State %4d Cur:  ", j );
+		    sprintf(space, _("State %4d Cur:  "), j );
 		    for ( k=0; k<sm->class_cnt; ++k )
 			if ( sm->state[j*sm->class_cnt+k].u.context.cur_tag==0 )
 			    strcat(space,"     ");
@@ -1137,7 +1091,7 @@ static void BuildASM(struct node *node,struct att_dlg *att) {
 				    (sm->state[j*sm->class_cnt+k].u.context.cur_tag>>16)&0xff,
 				    (sm->state[j*sm->class_cnt+k].u.context.cur_tag>>8)&0xff,
 				    sm->state[j*sm->class_cnt+k].u.context.cur_tag&0xff );
-		    lines[len].label = uc_copy(space);
+		    lines[len].label = copy(space);
 		    lines[len].parent = node;
 		    lines[len].monospace = true;
 		}
@@ -1146,10 +1100,10 @@ static void BuildASM(struct node *node,struct att_dlg *att) {
 	}
 	for ( j=0; j<scnt; ++j ) {
 	    if ( i ) {
-		sprintf(buf, "Nested Substitution '%c%c%c%c'",
+		sprintf(buf, _("Nested Substitution '%c%c%c%c'"),
 			subs[j]>>24, (subs[j]>>16)&0xff,
 			(subs[j]>>8)&0xff, subs[j]&0xff );
-		lines[len].label = uc_copy(buf);
+		lines[len].label = copy(buf);
 		lines[len].parent = node;
 		lines[len].tag = subs[j];
 		lines[len].build = BuildFeature__;
@@ -1318,7 +1272,7 @@ static void BuildGSUBscript(struct node *node,struct att_dlg *att) {
     int i,j,k,l;
     struct node *langnodes;
     extern GTextInfo languages[];
-    unichar_t ubuf[100];
+    char buf[100];
 
     /* Build the list of languages that are used in this script */
     /* Don't bother to check whether they actually get used */
@@ -1358,24 +1312,20 @@ return;
     lang_max = j;
     for ( i=0; i<lang_max; ++i ) {
 	for ( j=0; languages[j].text!=NULL && langnodes[i].tag!=(uint32) languages[j].userdata; ++j );
-	ubuf[0] = '\'';
-	ubuf[1] = langnodes[i].tag>>24;
-	ubuf[2] = (langnodes[i].tag>>16)&0xff;
-	ubuf[3] = (langnodes[i].tag>>8)&0xff;
-	ubuf[4] = langnodes[i].tag&0xff;
-	ubuf[5] = '\'';
-	ubuf[6] = ' ';
+	buf[0] = '\'';
+	buf[1] = langnodes[i].tag>>24;
+	buf[2] = (langnodes[i].tag>>16)&0xff;
+	buf[3] = (langnodes[i].tag>>8)&0xff;
+	buf[4] = langnodes[i].tag&0xff;
+	buf[5] = '\'';
+	buf[6] = ' ';
 	if ( languages[j].text!=NULL ) {
-	    u_strcpy(ubuf+7,GStringGetResource((uint32) languages[j].text,NULL));
-	    uc_strcat(ubuf," ");
+	    strcpy(buf+7,(char *) languages[j].text);
+	    strcat(buf," ");
 	} else
-	    ubuf[7]='\0';
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	u_strcat(ubuf,GStringGetResource(_STR_OTFLanguage,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	u_strcat(ubuf,_("Language"));
-#endif
-	langnodes[i].label = u_copy(ubuf);
+	    buf[7]='\0';
+	strcat(buf,_("Language"));
+	langnodes[i].label = copy(buf);
 	langnodes[i].build = BuildGSUBlang;
 	langnodes[i].parent = node;
     }
@@ -1387,17 +1337,16 @@ static void BuildMClass(struct node *node,struct att_dlg *att) {
     SplineFont *_sf = att->sf;
     struct node *glyphs;
     int i;
-    unichar_t *temp;
+    char *temp;
 
     node->children = glyphs = gcalloc(_sf->mark_class_cnt,sizeof(struct node));
     node->cnt = _sf->mark_class_cnt-1;
     for ( i=1; i<_sf->mark_class_cnt; ++i ) {
 	glyphs[i-1].parent = node;
-	temp = galloc((strlen(_sf->mark_classes[i]) + u_strlen(_sf->mark_class_names[i]) + 4)*
-		sizeof(unichar_t));
-	u_strcpy(temp,_sf->mark_class_names[i]);
-	uc_strcat(temp,": ");
-	uc_strcat(temp,_sf->mark_classes[i]);
+	temp = galloc((strlen(_sf->mark_classes[i]) + strlen(_sf->mark_class_names[i]) + 4));
+	strcpy(temp,_sf->mark_class_names[i]);
+	strcat(temp,": ");
+	strcat(temp,_sf->mark_classes[i]);
 	glyphs[i-1].label = temp;
     }
 }
@@ -1425,7 +1374,7 @@ return;
 	if ( pst->u.lcaret.carets[j]!=0 ) {
 	    sprintf( buffer,"%d", pst->u.lcaret.carets[j] );
 	    lcars[i].parent = node;
-	    lcars[i++].label = uc_copy(buffer);
+	    lcars[i++].label = copy(buffer);
 	}
     }
 }
@@ -1457,7 +1406,7 @@ static void BuildLcar(struct node *node,struct att_dlg *att) {
 			glyphs[lcnt].parent = node;
 			glyphs[lcnt].build = BuildLCarets;
 			glyphs[lcnt].u.sc = sf->glyphs[i];
-			glyphs[lcnt].label = uc_copy(sf->glyphs[i]->name);
+			glyphs[lcnt].label = copy(sf->glyphs[i]->name);
 		    }
 		    ++lcnt;
 		}
@@ -1506,13 +1455,13 @@ static void BuildGdefs(struct node *node,struct att_dlg *att) {
 		if ( chars!=NULL ) {
 		    int gdefc = gdefclass(sc);
 		    sprintf(buffer,"%.70s %s", sc->name,
-			gdefc==0 ? "Not classified" :
-			gdefc==1 ? "Base" :
-			gdefc==2 ? "Ligature" :
-			gdefc==3 ? "Mark" :
-			    "Componant" );
+			gdefc==0 ? _("Not classified") :
+			gdefc==1 ? _("Base") :
+			gdefc==2 ? _("Ligature") :
+			gdefc==3 ? _("Mark") :
+			    _("Componant") );
 		    chars[ccnt].parent = node;
-		    chars[ccnt].label = uc_copy(buffer);;
+		    chars[ccnt].label = copy(buffer);;
 		}
 		++ccnt;
 	    }
@@ -1568,17 +1517,17 @@ static void BuildGDEF(struct node *node,struct att_dlg *att) {
 	node->children = gcalloc(gdef+lcar+mclass+1,sizeof(struct node));
 	node->cnt = gdef+lcar+mclass;
 	if ( gdef ) {
-	    node->children[0].label = uc_copy("Glyph Definition Sub-Table");
+	    node->children[0].label = copy(_("Glyph Definition Sub-Table"));
 	    node->children[0].build = BuildGdefs;
 	    node->children[0].parent = node;
 	}
 	if ( lcar ) {
-	    node->children[gdef].label = uc_copy("Ligature Caret Sub-Table");
+	    node->children[gdef].label = copy(_("Ligature Caret Sub-Table"));
 	    node->children[gdef].build = BuildLcar;
 	    node->children[gdef].parent = node;
 	}
 	if ( mclass ) {
-	    node->children[gdef+lcar].label = uc_copy("Mark Attachment Classes");
+	    node->children[gdef+lcar].label = copy(_("Mark Attachment Classes"));
 	    node->children[gdef+lcar].build = BuildMClass;
 	    node->children[gdef+lcar].parent = node;
 	}
@@ -1620,13 +1569,13 @@ static void BuildOpticalBounds(struct node *node,struct att_dlg *att) {
 		if ( chars!=NULL ) {
 		    strncpy(buffer,sc->name,70);
 		    if ( left!=NULL )
-			sprintf(buffer+strlen(buffer), "  Left Bound=%d",
+			sprintf(buffer+strlen(buffer), _("  Left Bound=%d"),
 				left->u.pos.xoff );
 		    if ( right!=NULL )
-			sprintf(buffer+strlen(buffer), "  Right Bound=%d",
+			sprintf(buffer+strlen(buffer), _("  Right Bound=%d"),
 				-right->u.pos.h_adv_off );
 		    chars[ccnt].parent = node;
-		    chars[ccnt].label = uc_copy(buffer);
+		    chars[ccnt].label = copy(buffer);
 		}
 		++ccnt;
 	    }
@@ -1679,27 +1628,27 @@ static void BuildProperties(struct node *node,struct att_dlg *att) {
 		} else if ( sc->ttf_glyph!=-1 ) {
 		    int prop = props[sc->ttf_glyph], offset;
 		    sprintf( buffer, "%.70s  dir=%s", sc->name,
-			(prop&0x7f)==0 ? "Strong Left to Right":
-			(prop&0x7f)==1 ? "Strong Right to Left":
-			(prop&0x7f)==2 ? "Arabic Right to Left":
-			(prop&0x7f)==3 ? "European Number":
-			(prop&0x7f)==4 ? "European Number Seperator":
-			(prop&0x7f)==5 ? "European Number Terminator":
-			(prop&0x7f)==6 ? "Arabic Number":
-			(prop&0x7f)==7 ? "Common Number Seperator":
-			(prop&0x7f)==8 ? "Block Seperator":
-			(prop&0x7f)==9 ? "Segment Seperator":
-			(prop&0x7f)==10 ? "White Space":
-			(prop&0x7f)==11 ? "Neutral":
-			    "<Unknown direction>" );
+			(prop&0x7f)==0 ? _("Strong Left to Right"):
+			(prop&0x7f)==1 ? _("Strong Right to Left"):
+			(prop&0x7f)==2 ? _("Arabic Right to Left"):
+			(prop&0x7f)==3 ? _("European Number"):
+			(prop&0x7f)==4 ? _("European Number Seperator"):
+			(prop&0x7f)==5 ? _("European Number Terminator"):
+			(prop&0x7f)==6 ? _("Arabic Number"):
+			(prop&0x7f)==7 ? _("Common Number Seperator"):
+			(prop&0x7f)==8 ? _("Block Seperator"):
+			(prop&0x7f)==9 ? _("Segment Seperator"):
+			(prop&0x7f)==10 ? _("White Space"):
+			(prop&0x7f)==11 ? _("Neutral"):
+			    _("<Unknown direction>") );
 		    if ( prop&0x8000 )
-			strcat(buffer,"  Floating accent");
+			strcat(buffer,_("  Floating accent"));
 		    if ( prop&0x4000 )
-			strcat(buffer,"  Hang left");
+			strcat(buffer,_("  Hang left"));
 		    if ( prop&0x2000 )
-			strcat(buffer,"  Hang right");
+			strcat(buffer,_("  Hang right"));
 		    if ( prop&0x80 )
-			strcat(buffer,"  Attach right");
+			strcat(buffer,_("  Attach right"));
 		    if ( prop&0x1000 ) {
 			offset = (prop&0xf00)>>8;
 			if ( offset&0x8 )
@@ -1707,19 +1656,19 @@ static void BuildProperties(struct node *node,struct att_dlg *att) {
 			if ( offset>0 ) {
 			    for ( k=i+offset; k<sf->glyphcnt; ++k )
 				if ( sf->glyphs[k]!=NULL && sf->glyphs[k]->ttf_glyph==sc->ttf_glyph+offset ) {
-				    sprintf( buffer+strlen(buffer), "  Mirror=%.30s", sf->glyphs[k]->name );
+				    sprintf( buffer+strlen(buffer), _("  Mirror=%.30s"), sf->glyphs[k]->name );
 			    break;
 				}
 			} else {
 			    for ( k=i+offset; k>=0; --k )
 				if ( sf->glyphs[k]!=NULL && sf->glyphs[k]->ttf_glyph==sc->ttf_glyph+offset ) {
-				    sprintf( buffer+strlen(buffer), "  Mirror=%.30s", sf->glyphs[k]->name );
+				    sprintf( buffer+strlen(buffer), _("  Mirror=%.30s"), sf->glyphs[k]->name );
 			    break;
 				}
 			}
 		    }
 		    chars[ccnt].parent = node;
-		    chars[ccnt++].label = uc_copy(buffer);
+		    chars[ccnt++].label = copy(buffer);
 		}
 	    }
 	}
@@ -1749,7 +1698,7 @@ static void BuildTable(struct node *node,struct att_dlg *att) {
     SplineChar *sc;
     PST *pst;
     KernPair *kp;
-    unichar_t ubuf[120];
+    char buf[120];
     AnchorClass *ac;
     int isv;
     FPST *fpst;
@@ -1882,24 +1831,20 @@ return;
 
     for ( i=0; i<script_max; ++i ) {
 	for ( j=0; scripts[j].text!=NULL && scriptnodes[i].tag!=(uint32) scripts[j].userdata; ++j );
-	ubuf[0] = '\'';
-	ubuf[1] = scriptnodes[i].tag>>24;
-	ubuf[2] = (scriptnodes[i].tag>>16)&0xff;
-	ubuf[3] = (scriptnodes[i].tag>>8)&0xff;
-	ubuf[4] = scriptnodes[i].tag&0xff;
-	ubuf[5] = '\'';
-	ubuf[6] = ' ';
+	buf[0] = '\'';
+	buf[1] = scriptnodes[i].tag>>24;
+	buf[2] = (scriptnodes[i].tag>>16)&0xff;
+	buf[3] = (scriptnodes[i].tag>>8)&0xff;
+	buf[4] = scriptnodes[i].tag&0xff;
+	buf[5] = '\'';
+	buf[6] = ' ';
 	if ( scripts[j].text!=NULL ) {
-	    u_strcpy(ubuf+7,GStringGetResource((uint32) scripts[j].text,NULL));
-	    uc_strcat(ubuf," ");
+	    strcpy(buf+7,(char*) scripts[j].text);
+	    strcat(buf," ");
 	} else
-	    ubuf[7]='\0';
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	u_strcat(ubuf,GStringGetResource(_STR_OTFScript,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	u_strcat(ubuf,_("Script"));
-#endif
-	scriptnodes[i].label = u_copy(ubuf);
+	    buf[7]='\0';
+	strcat(buf,_("Script"));
+	scriptnodes[i].label = copy(buf);
 	scriptnodes[i].build = iskern ? BuildKernScript :
 				isvkern ? BuildVKernScript :
 				ismorx ? BuildMorxScript :
@@ -1934,7 +1879,7 @@ return;
 	    scriptnodes[i+j].parent = node;
 	    scriptnodes[i+j].build = BuildASM;
 	    scriptnodes[i+j].u.sm = sm;
-	    scriptnodes[i+j].label = uc_copy("Kern by State Machine");
+	    scriptnodes[i+j].label = copy(_("Kern by State Machine"));
 	    ++j;
 	}
 	qsort(scriptnodes+i,j,sizeof(struct node),compare_tag);
@@ -2035,34 +1980,30 @@ static void BuildTop(struct att_dlg *att) {
 
     if ( hasgsub+hasgpos+hasgdef+hasmorx+haskern+haslcar+hasopbd+hasprop==0 ) {
 	tables = gcalloc(2,sizeof(struct node));
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	tables[0].label = u_copy(GStringGetResource(_STR_NoAdvancedTypography,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	tables[0].label = u_copy(_("No Advanced Typography"));
-#endif
+	tables[0].label = copy(_("No Advanced Typography"));
     } else {
 	tables = gcalloc((hasgsub||hasgpos||hasgdef)+
 	    (hasmorx||haskern||haslcar||hasopbd||hasprop||hasvkern||haskc||hasvkc)+1,sizeof(struct node));
 	i=0;
 	if ( hasgsub || hasgpos || hasgdef) {
-	    tables[i].label = uc_copy("OpenType Tables");
+	    tables[i].label = copy(_("OpenType Tables"));
 	    tables[i].children_checked = true;
 	    tables[i].children = gcalloc(hasgsub+hasgpos+hasgdef+1,sizeof(struct node));
 	    tables[i].cnt = hasgsub + hasgpos + hasgdef;
 	    if ( hasgdef ) {
-		tables[i].children[0].label = uc_copy("'GDEF' Glyph Definition Table");
+		tables[i].children[0].label = copy(_("'GDEF' Glyph Definition Table"));
 		tables[i].children[0].tag = CHR('G','D','E','F');
 		tables[i].children[0].build = BuildGDEF;
 		tables[i].children[0].parent = &tables[i];
 	    }
 	    if ( hasgpos ) {
-		tables[i].children[hasgdef].label = uc_copy("'GPOS' Glyph Positioning Table");
+		tables[i].children[hasgdef].label = copy(_("'GPOS' Glyph Positioning Table"));
 		tables[i].children[hasgdef].tag = CHR('G','P','O','S');
 		tables[i].children[hasgdef].build = BuildTable;
 		tables[i].children[hasgdef].parent = &tables[i];
 	    }
 	    if ( hasgsub ) {
-		tables[i].children[hasgdef+hasgpos].label = uc_copy("'GSUB' Glyph Substitution Table");
+		tables[i].children[hasgdef+hasgpos].label = copy(_("'GSUB' Glyph Substitution Table"));
 		tables[i].children[hasgdef+hasgpos].tag = CHR('G','S','U','B');
 		tables[i].children[hasgdef+hasgpos].build = BuildTable;
 		tables[i].children[hasgdef+hasgpos].parent = &tables[i];
@@ -2071,63 +2012,59 @@ static void BuildTop(struct att_dlg *att) {
 	}
 	if ( hasmorx || haskern || hasvkern || haslcar || hasopbd || hasprop ) {
 	    int j = 0;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    tables[i].label = u_copy(GStringGetResource(_STR_AppleAdvancedTypography,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    tables[i].label = u_copy(_("Apple Advanced Typography"));
-#endif
+	    tables[i].label = copy(_("Apple Advanced Typography"));
 	    tables[i].children_checked = true;
 	    tables[i].children = gcalloc(hasmorx+haskern+haslcar+hasopbd+hasprop+hasvkern+haskc+hasvkc+1,sizeof(struct node));
 	    tables[i].cnt = hasmorx+haskern+hasopbd+hasprop+haslcar+hasvkern+haskc+hasvkc;
 	    if ( haskern ) {
 		tables[i].children[j].label = hasvkern||haskc||hasvkc ?
-				uc_copy("'kern' Horizontal Kerning Sub-Table") :
-				uc_copy("'kern' Horizontal Kerning Table");
+				copy(_("'kern' Horizontal Kerning Sub-Table")) :
+				copy(_("'kern' Horizontal Kerning Table"));
 		tables[i].children[j].tag = CHR('k','e','r','n');
 		tables[i].children[j].build = BuildTable;
 		tables[i].children[j++].parent = &tables[i];
 	    }
 	    for ( kc = _sf->kerns; kc!=NULL; kc=kc->next ) {
-		tables[i].children[j].label = uc_copy("'kern' Horizontal Kerning Class");
+		tables[i].children[j].label = copy(_("'kern' Horizontal Kerning Class"));
 		tables[i].children[j].tag = CHR('k','e','r','n');
 		tables[i].children[j].u.kc = kc;
 		tables[i].children[j].build = BuildKC;
 		tables[i].children[j++].parent = &tables[i];
 	    }
 	    if ( hasvkern ) {
-		tables[i].children[j].label = haskern ? uc_copy("'kern' Vertical Kerning Sub-Table") :
-				uc_copy("'kern' Vertical Kerning Table");
+		tables[i].children[j].label = haskern ? copy(_("'kern' Vertical Kerning Sub-Table")) :
+				copy(_("'kern' Vertical Kerning Table"));
 		tables[i].children[j].tag = CHR('v','k','r','n');
 		tables[i].children[j].build = BuildTable;
 		tables[i].children[j++].parent = &tables[i];
 	    }
 	    for ( kc = _sf->vkerns; kc!=NULL; kc=kc->next ) {
-		tables[i].children[j].label = uc_copy("'kern' Vertical Kerning Class");
+		tables[i].children[j].label = copy(_("'kern' Vertical Kerning Class"));
 		tables[i].children[j].tag = CHR('k','e','r','n');
 		tables[i].children[j].u.kc = kc;
 		tables[i].children[j].build = BuildKC;
 		tables[i].children[j++].parent = &tables[i];
 	    }
 	    if ( haslcar ) {
-		tables[i].children[j].label = uc_copy("'lcar' Ligature Caret Table");
+		tables[i].children[j].label = copy(_("'lcar' Ligature Caret Table"));
 		tables[i].children[j].tag = CHR('l','c','a','r');
 		tables[i].children[j].build = BuildLcar;
 		tables[i].children[j++].parent = &tables[i];
 	    }
 	    if ( hasmorx ) {
-		tables[i].children[j].label = uc_copy("'morx' Glyph Extended Metamorphasis Table");
+		tables[i].children[j].label = copy(_("'morx' Glyph Extended Metamorphasis Table"));
 		tables[i].children[j].tag = CHR('m','o','r','x');
 		tables[i].children[j].build = BuildTable;
 		tables[i].children[j++].parent = &tables[i];
 	    }
 	    if ( hasopbd ) {
-		tables[i].children[j].label = uc_copy("'opbd' Optical Bounds Table");
+		tables[i].children[j].label = copy(_("'opbd' Optical Bounds Table"));
 		tables[i].children[j].tag = CHR('o','p','b','d');
 		tables[i].children[j].build = BuildOpticalBounds;
 		tables[i].children[j++].parent = &tables[i];
 	    }
 	    if ( hasprop ) {
-		tables[i].children[j].label = uc_copy("'prop' Glyph Properties Table");
+		tables[i].children[j].label = copy(_("'prop' Glyph Properties Table"));
 		tables[i].children[j].tag = CHR('p','r','o','p');
 		tables[i].children[j].build = BuildProperties;
 		tables[i].children[j++].parent = &tables[i];
@@ -2146,7 +2083,7 @@ static int _SizeCnt(struct att_dlg *att,struct node *node, int lpos,int depth) {
     if ( node->monospace )
 	GDrawSetFont(att->v,att->monofont);
     node->lpos = lpos++;
-    len = 5+8*depth+ att->as + 5 + GDrawGetTextWidth(att->v,node->label,-1,NULL);
+    len = 5+8*depth+ att->as + 5 + GDrawGetText8Width(att->v,node->label,-1,NULL);
     if ( len>att->maxl ) att->maxl = len;
     if ( node->monospace )
 	GDrawSetFont(att->v,att->font);
@@ -2249,7 +2186,7 @@ static void AttExpose(struct att_dlg *att,GWindow pixmap,GRect *rect) {
 	}
 	if ( node->monospace )
 	    GDrawSetFont(pixmap,att->monofont);
-	GDrawDrawText(pixmap,r.x+r.width+5,y,node->label,-1,NULL,fg);
+	GDrawDrawText8(pixmap,r.x+r.width+5,y,node->label,-1,NULL,fg);
 	if ( node->monospace )
 	    GDrawSetFont(pixmap,att->font);
 	node = NodeNext(node,&depth);
@@ -2299,31 +2236,22 @@ static void pututf8(uint32 ch,FILE *file) {
     }
 }
 
-static unichar_t txt[] = { '*','.','t','x','t',  '\0' };
 static void AttSave(struct att_dlg *att) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    unichar_t *ret = GWidgetSaveAsFile(GStringGetResource(_STR_Save,NULL),NULL,
-#elif defined(FONTFORGE_CONFIG_GTK)
-    unichar_t *ret = GWidgetSaveAsFile(_("Save"),NULL,
-#endif
-	    txt,NULL,NULL);
+    char *ret = gwwv_save_filename(_("Save"),NULL,
+	    "*.txt",NULL,NULL);
     char *cret;
     FILE *file;
-    unichar_t *pt;
+    char *pt;
     struct node *node;
     int depth=0, d;
 
     if ( ret==NULL )
 return;
-    cret = u2def_copy(ret);
+    cret = utf82def_copy(ret);
     free(ret);
     file = fopen(cret,"w");
     if ( file==NULL ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_SaveFailed,_STR_SaveFailed,cret);
-#elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Save Failed"),_("Save Failed"),cret);
-#endif
 	free(cret);
 return;
     }
@@ -2349,7 +2277,7 @@ return;
 	else
 	    pututf8('+',file);
 	for ( pt=node->label; *pt; ++pt )
-	    pututf8(*pt,file);
+	    putc(*pt,file);
 	pututf8('\n',file);
 	node = NodeNext(node,&depth);
     }
@@ -2362,7 +2290,7 @@ static void AttSaveM(GWindow gw, GMenuItem *mi,GEvent *e) {
 }
 
 static GMenuItem att_popuplist[] = {
-    { { (unichar_t *) _STR_Save, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'S' }, 'S', ksm_control, NULL, NULL, AttSaveM },
+    { { (unichar_t *) N_("_Save"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'S' }, 'S', ksm_control, NULL, NULL, AttSaveM },
     { NULL }
 };
 
@@ -2574,8 +2502,14 @@ return( GGadgetDispatchEvent(att->vsb,event));
       case et_char:
 return( AttChar(att,event));
       case et_mousedown:
-	if ( event->u.mouse.button==3 )
+	if ( event->u.mouse.button==3 ) {
+	    static int done=false;
+	    if ( !done ) {
+		done = true;
+		att_popuplist[0].ti.text = (unichar_t *) _( (char *)att_popuplist[0].ti.text);
+	    }
 	    GMenuCreatePopupMenu(gw,event, att_popuplist);
+	}
       break;
       case et_mouseup:
 	AttMouse(att,event);
@@ -2640,17 +2574,13 @@ void ShowAtt(SplineFont *sf) {
     att.sf = sf;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.is_dlg = true;
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(_STR_ShowAtt,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = _("Show ATT");
-#endif
+    wattrs.utf8_window_title = _("Show ATT");
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,GGadgetScale(200));
     pos.height = GDrawPointsToPixels(NULL,300);
@@ -2697,7 +2627,8 @@ void ShowAtt(SplineFont *sf) {
     gcd[2].gd.pos.x = (pos.width-sbsize-GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor))/2;
     gcd[2].gd.pos.y = pos.height+sbsize+5;
     gcd[2].gd.flags = gg_visible | gg_enabled | gg_but_default | gg_but_cancel | gg_pos_in_pixels;
-    label[2].text = (unichar_t *) _STR_OK;
+    label[2].text = (unichar_t *) _("_OK");
+    label[2].text_is_1byte = true;
     label[2].text_in_resource = true;
     gcd[2].gd.label = &label[2];
     gcd[2].creator = GButtonCreate;

@@ -1234,7 +1234,6 @@ static GTextInfo *ConvertableItems(SplineFont *sf) {
     FPST *fpst;
     int i;
     static int types[] = { pst_contextsub, pst_chainsub };
-    static const unichar_t nullstr[] = { 0 };
     char buffer[100];
 
     if ( sliflags!=NULL ) {
@@ -1269,7 +1268,7 @@ static GTextInfo *ConvertableItems(SplineFont *sf) {
 		ret = grealloc(ret,((max+=10)+1)*sizeof(GTextInfo));
 		memset(ret+max,0,11*sizeof(GTextInfo));
 	    }
-	    ret[cur].text = ClassName(nullstr,fpst->tag,fpst->flags,
+	    ret[cur].text = ClassName("",fpst->tag,fpst->flags,
 		fpst->script_lang_index, -1, -1,false,sf);
 	    ret[cur].checked = false;
 	    ret[cur].disabled = !FPSTisMacable(sf,fpst,false);
@@ -1302,11 +1301,7 @@ return( false );
 	    if ( *end=='>' ) ++end;
 	    for ( ; isspace(*end); ++end );
 	    if ( *end!='\0' ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_BadFeatureSetting,_STR_BadFeatureSetting);
-#elif defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Bad Feature Setting"),_("Bad Feature Setting"));
-#endif
 return( true );
 	    }
 	}
@@ -1340,16 +1335,12 @@ static int GetFeatureSetting(SplineFont *sf, unichar_t *text,
     memset(&d,0,sizeof(d));
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(_STR_ConvertFromOpenType,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = _("Convert from OpenType...");
-#endif
+    wattrs.utf8_window_title = _("Convert from OpenType...");
     pos.x = pos.y = 0;
     pos.width = GDrawPointsToPixels(NULL,200);
     pos.height = GDrawPointsToPixels(NULL,96);
@@ -1360,8 +1351,8 @@ static int GetFeatureSetting(SplineFont *sf, unichar_t *text,
 
     k=0;
 
-    label[k].text = (unichar_t *) _STR_FeatureSettingFor;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Feature/Setting for:");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = 5;
     gcd[k].gd.flags = gg_visible | gg_enabled;
@@ -1379,7 +1370,8 @@ static int GetFeatureSetting(SplineFont *sf, unichar_t *text,
     gcd[k].gd.u.list = d.mactags = AddMacFeatures(NULL,pst_max,sf);
     gcd[k++].creator = GListFieldCreate;
 
-    label[k].text = (unichar_t *) _STR_OK;
+    label[k].text = (unichar_t *) _("_OK");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 30; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+26;
@@ -1388,7 +1380,8 @@ static int GetFeatureSetting(SplineFont *sf, unichar_t *text,
     gcd[k].gd.cid = true;
     gcd[k++].creator = GButtonCreate;
 
-    label[k].text = (unichar_t *) _STR_Cancel;
+    label[k].text = (unichar_t *) _("_Cancel");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = -30; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+3;
@@ -1486,11 +1479,7 @@ ASM *SMConvertDlg(SplineFont *sf) {
     int k;
 
     if ( cvts==NULL ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_NothingToConvert,_STR_NothingToConvert);
-#elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Nothing to Convert"),_("Nothing to Convert"));
-#endif
 return( NULL );
     }
 
@@ -1498,16 +1487,12 @@ return( NULL );
     d.sf = sf;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(_STR_ConvertFromOpenType,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = _("Convert from OpenType...");
-#endif
+    wattrs.utf8_window_title = _("Convert from OpenType...");
     pos.x = pos.y = 0;
     pos.width = GDrawPointsToPixels(NULL,180);
     pos.height = GDrawPointsToPixels(NULL,200);
@@ -1526,8 +1511,8 @@ return( NULL );
     gcd[k].gd.u.list = cvts;
     gcd[k++].creator = GListCreate;
 
-    label[k].text = (unichar_t *) _STR_Convert;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Convert...");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 30; gcd[k].gd.pos.y = 168-3;
     gcd[k].gd.flags = gg_visible /*| gg_enabled*/ | gg_but_default;
@@ -1535,7 +1520,8 @@ return( NULL );
     gcd[k].gd.cid = CID_Convert;
     gcd[k++].creator = GButtonCreate;
 
-    label[k].text = (unichar_t *) _STR_Cancel;
+    label[k].text = (unichar_t *) _("_Cancel");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = -30; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+3;
@@ -1563,22 +1549,22 @@ return( d.ret );
 /* ****************************** Edit a State ****************************** */
 /* ************************************************************************** */
 GTextInfo indicverbs_list[] = {
-    { (unichar_t *) _STR_NoChange, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) "Ax => xA", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) "xD => Dx", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) "AxD => DxA", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) "ABx => xAB", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) "ABx => xBA", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) "xCD => CDx", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) "xCD => DCx", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) "AxCD => CDxA", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) "AxCD => DCxA", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) "ABxD => DxAB", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) "ABxD => DxBA", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) "ABxCD => CDxAB", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) "ABxCD => CDxBA", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) "ABxCD => DCxAB", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) "ABxCD => DCxBA", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("No Change"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Ax => xA"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("xD => Dx"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("AxD => DxA"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("ABx => xAB"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("ABx => xBA"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("xCD => CDx"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("xCD => DCx"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("AxCD => CDxA"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("AxCD => DCxA"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("ABxD => DxAB"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("ABxD => DxBA"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("ABxCD => CDxAB"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("ABxCD => CDxBA"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("ABxCD => DCxAB"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("ABxCD => DCxBA"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
     { NULL }
 };
 
@@ -1614,22 +1600,18 @@ static void SMD_Fillup(SMD *smd) {
     int state = smd->st_pos/smd->class_cnt;
     int class = smd->st_pos%smd->class_cnt;
     struct asm_state *this = &smd->states[smd->st_pos];
-    unichar_t buffer[100], *temp;
+    char buffer[100], *temp;
     char buf[100];
     int j;
     GGadget *list = GWidgetGetControl( smd->gw, CID_Classes );
     GTextInfo *ti = GGadgetGetListItem(list,class);
 
-    u_snprintf(buffer,sizeof(buffer)/sizeof(buffer[0]),
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GStringGetResource(_STR_StateClass,NULL), state, ti->text );
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    _("State %d,  %.40s"), state, ti->text );
-#endif
-    GGadgetSetTitle(GWidgetGetControl(smd->editgw,CID_StateClass),buffer);
+    snprintf(buffer,sizeof(buffer)/sizeof(buffer[0]),
+	    _("State %d,  %.40s"), state, (temp = u2utf8_copy(ti->text)) );
+    free(temp);
+    GGadgetSetTitle8(GWidgetGetControl(smd->editgw,CID_StateClass),buffer);
     sprintf(buf,"%d", this->next_state );
-    uc_strcpy(buffer,buf);
-    GGadgetSetTitle(GWidgetGetControl(smd->editgw,CID_NextState),buffer);
+    GGadgetSetTitle8(GWidgetGetControl(smd->editgw,CID_NextState),buf);
 
     GGadgetSetChecked(GWidgetGetControl(smd->editgw,CID_Flag4000),
 	    this->flags&0x4000?0:1);
@@ -1649,35 +1631,31 @@ static void SMD_Fillup(SMD *smd) {
 		this->flags&0x0800?1:0);
 	GGadgetSetChecked(GWidgetGetControl(smd->editgw,CID_Flag0400),
 		this->flags&0x0400?1:0);
-	temp = uc_copy(this->u.insert.mark_ins);
+	temp = this->u.insert.mark_ins;
 	buffer[0]='\0';
-	GGadgetSetTitle(GWidgetGetControl(smd->editgw,CID_InsMark),temp==NULL?buffer:temp);
-	free(temp);
-	temp = uc_copy(this->u.insert.cur_ins);
-	buffer[0]='\0';
-	GGadgetSetTitle(GWidgetGetControl(smd->editgw,CID_InsCur),temp==NULL?buffer:temp);
-	free(temp);
+	GGadgetSetTitle8(GWidgetGetControl(smd->editgw,CID_InsMark),temp==NULL?buffer:temp);
+	temp = this->u.insert.cur_ins;
+	GGadgetSetTitle8(GWidgetGetControl(smd->editgw,CID_InsCur),temp==NULL?buffer:temp);
     } else if ( smd->sm->type==asm_kern ) {
 	buf[0] = '\0';
 	for ( j=0; j<this->u.kern.kcnt; ++j )
 	    sprintf( buf+strlen(buf), "%d ", this->u.kern.kerns[j]);
 	if ( buf[0]!='\0' && buf[strlen(buf)-1]==' ' )
 	    buf[strlen(buf)-1] = '\0';
-	uc_strcpy(buffer,buf);
-	GGadgetSetTitle(GWidgetGetControl(smd->editgw,CID_Kerns),buffer);
+	GGadgetSetTitle8(GWidgetGetControl(smd->editgw,CID_Kerns),buf);
     } else {
 	buffer[0] = this->u.context.mark_tag>>24;
 	buffer[1] = (this->u.context.mark_tag>>16)&0xff;
 	buffer[2] = (this->u.context.mark_tag>>8)&0xff;
 	buffer[3] = (this->u.context.mark_tag)&0xff;
 	buffer[4] = 0;
-	GGadgetSetTitle(GWidgetGetControl(smd->editgw,CID_TagMark),buffer);
+	GGadgetSetTitle8(GWidgetGetControl(smd->editgw,CID_TagMark),buffer);
 	buffer[0] = this->u.context.cur_tag>>24;
 	buffer[1] = (this->u.context.cur_tag>>16)&0xff;
 	buffer[2] = (this->u.context.cur_tag>>8)&0xff;
 	buffer[3] = (this->u.context.cur_tag)&0xff;
 	buffer[4] = 0;
-	GGadgetSetTitle(GWidgetGetControl(smd->editgw,CID_TagCur),buffer);
+	GGadgetSetTitle8(GWidgetGetControl(smd->editgw,CID_TagCur),buffer);
     }
 
     GGadgetSetEnabled(GWidgetGetControl(smd->editgw,CID_Up), state!=0 );
@@ -1697,7 +1675,7 @@ static int SMD_DoChange(SMD *smd) {
     int kerns;
     int oddcomplain=false;
 
-    ns = GetIntR(smd->editgw,CID_NextState,_STR_NextState,&err);
+    ns = GetInt8(smd->editgw,CID_NextState,_("Next State:"),&err);
     if ( err )
 return( false );
     flags = 0;
@@ -1717,23 +1695,15 @@ return( false );
 	break;
 	    kbuf[kerns] = u_strtol(ret,&end,10);
 	    if ( end==ret ) {
-		ProtestR(_STR_KernValues);
+		Protest8(_("Kern Values:"));
 return( false );
 	    } else if ( kerns>=8 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_TooManyKerns,_STR_AtMost8Kerns);
-#elif defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Too Many Kerns"),_("At most 8 kerning values may be specified here"));
-#endif
 return( false );
 	    } else if ( kbuf[kerns]&1 ) {
 		kbuf[kerns] &= ~1;
 		if ( !oddcomplain )
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		    GWidgetPostNoticeR(_STR_KernsMustBeEven,_STR_KernsMustBeEven);
-#elif defined(FONTFORGE_CONFIG_GTK)
 		    gwwv_post_notice(_("Kerning values must be even"),_("Kerning values must be even"));
-#endif
 		oddcomplain = true;
 	    }
 	    ++kerns;
@@ -1755,11 +1725,7 @@ return( false );
 	if ( *ret=='\0' )
 	    /* That's ok */;
 	else if ( u_strlen(ret)!=4 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_TagMustBe4,_STR_TagMustBe4);
-#elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Tag must be 4 characters long"),_("Tag must be 4 characters long"));
-#endif
 return( false );
 	} else
 	    mtag = (ret[0]<<24)|(ret[1]<<16)|(ret[2]<<8)|ret[3];
@@ -1767,11 +1733,7 @@ return( false );
 	if ( *ret=='\0' )
 	    /* That's ok */;
 	else if ( u_strlen(ret)!=4 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_TagMustBe4,_STR_TagMustBe4);
-#elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Tag must be 4 characters long"),_("Tag must be 4 characters long"));
-#endif
 return( false );
 	} else
 	    ctag = (ret[0]<<24)|(ret[1]<<16)|(ret[2]<<8)|ret[3];
@@ -1780,35 +1742,37 @@ return( false );
 	this->u.context.mark_tag = mtag;
 	this->u.context.cur_tag = ctag;
     } else {
+	char *foo;
+
 	if ( GGadgetIsChecked(GWidgetGetControl(smd->editgw,CID_Flag2000)) ) flags |= 0x2000;
 	if ( GGadgetIsChecked(GWidgetGetControl(smd->editgw,CID_Flag1000)) ) flags |= 0x1000;
 	if ( GGadgetIsChecked(GWidgetGetControl(smd->editgw,CID_Flag0800)) ) flags |= 0x0800;
 	if ( GGadgetIsChecked(GWidgetGetControl(smd->editgw,CID_Flag0400)) ) flags |= 0x0400;
 
-	if ( !CCD_NameListCheck(smd->sf,GGadgetGetTitle(GWidgetGetControl(smd->editgw,CID_InsMark)),false,_STR_MissingGlyphName))
+	foo = GGadgetGetTitle8(GWidgetGetControl(smd->editgw,CID_InsMark));
+	if ( !CCD_NameListCheck(smd->sf,foo,false,_("Missing Glyph Name"))) {
+	    free(foo);
 return( false );
+	}
+	free(foo);
 
 	mins = copy_count(smd->editgw,CID_InsMark,&cnt);
 	if ( cnt>31 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_TooManyGlyphs,_STR_AtMost31Glyphs);
-#elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Too Many Glyphs"),_("At most 31 glyphs may be specified in an insert list"));
-#endif
 	    free(mins);
 return( false );
 	}
 	flags |= cnt<<5;
 
-	if ( !CCD_NameListCheck(smd->sf,GGadgetGetTitle(GWidgetGetControl(smd->editgw,CID_InsCur)),false,_STR_MissingGlyphName))
+	foo = GGadgetGetTitle8(GWidgetGetControl(smd->editgw,CID_InsCur));
+	if ( !CCD_NameListCheck(smd->sf,foo,false,_("Missing Glyph Name"))) {
+	    free(foo);
 return( false );
+	}
+	free(foo);
 	cins = copy_count(smd->editgw,CID_InsCur,&cnt);
 	if ( cnt>31 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_TooManyGlyphs,_STR_AtMost31Glyphs);
-#elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Too Many Glyphs"),_("At most 31 glyphs may be specified in an insert list"));
-#endif
 	    free(mins);
 	    free(cins);
 return( false );
@@ -1897,22 +1861,19 @@ static void SMD_EditState(SMD *smd) {
     GTextInfo label[23];
     GRect pos;
     int k, listk, new_cnt;
-    unichar_t stateclass[100];
+    char stateclass[100];
+    static int indicv_done = false;
 
     smd->edit_done = false;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.is_dlg = true;
     wattrs.restrict_input_to_me = true;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(_STR_EditStateTransition,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = _("Edit State Transition");
-#endif
+    wattrs.utf8_window_title = _("Edit State Transition");
     pos.x = pos.y = 0;
     pos.width = GDrawPointsToPixels(NULL,GGadgetScale(SMDE_WIDTH));
     pos.height = GDrawPointsToPixels(NULL,SMDE_HEIGHT);
@@ -1922,26 +1883,18 @@ static void SMD_EditState(SMD *smd) {
     memset(label,0,sizeof(label));
     k = 0; listk = -1;
 
-    u_snprintf(stateclass,sizeof(stateclass)/sizeof(stateclass[0]),
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GStringGetResource(_STR_StateClass,NULL), 999,
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    _("State %d,  %.40s"), 999,
-#endif
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GStringGetResource(_STR_MacEverythingElse,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    _("Class 1: {Everything Else}"));
-#endif
-    label[k].text = stateclass;
+    snprintf(stateclass,sizeof(stateclass), _("State %d,  %.40s"),
+	    999, _("Class 1: {Everything Else}" ));
+    label[k].text = (unichar_t *) stateclass;
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = 5;
     gcd[k].gd.flags = gg_enabled|gg_visible;
     gcd[k].gd.cid = CID_StateClass;
     gcd[k++].creator = GLabelCreate;
 
-    label[k].text = (unichar_t *) _STR_NextState;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Next State:");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+13+4;
     gcd[k].gd.flags = gg_enabled|gg_visible;
@@ -1952,18 +1905,18 @@ static void SMD_EditState(SMD *smd) {
     gcd[k].gd.cid = CID_NextState;
     gcd[k++].creator = GTextFieldCreate;
 
-    label[k].text = (unichar_t *) _STR_AdvanceToNextGlyph;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Advance To Next Glyph");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+24;
     gcd[k].gd.flags = gg_enabled|gg_visible;
     gcd[k].gd.cid = CID_Flag4000;
     gcd[k++].creator = GCheckBoxCreate;
 
-    label[k].text = (unichar_t *) (smd->sm->type==asm_kern?_STR_PushCurrentGlyph:
-				   smd->sm->type!=asm_indic?_STR_MarkCurrentGlyph:
-					    _STR_MarkCurrentGlyphAsFirst);
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) (smd->sm->type==asm_kern?_("Push Current Glyph"):
+				   smd->sm->type!=asm_indic?_("Mark Current Glyph"):
+					    _("Mark Current Glyph As First"));
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+16;
     gcd[k].gd.flags = gg_enabled|gg_visible;
@@ -1971,8 +1924,13 @@ static void SMD_EditState(SMD *smd) {
     gcd[k++].creator = GCheckBoxCreate;
 
     if ( smd->sm->type==asm_indic ) {
-	label[k].text = (unichar_t *) _STR_MarkCurrentGlyphAsLast;
-	label[k].text_in_resource = true;
+	if ( !indicv_done ) {
+	    for ( k=0; indicverbs_list[k].text!=NULL; ++k )
+		indicverbs_list[k].text = (unichar_t *) _((char *) indicverbs_list[k].text );
+	    indicv_done = true;
+	}
+	label[k].text = (unichar_t *) _("Mark Current Glyph As Last");
+	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+16;
 	gcd[k].gd.flags = gg_enabled|gg_visible;
@@ -1985,40 +1943,40 @@ static void SMD_EditState(SMD *smd) {
 	gcd[k].gd.cid = CID_IndicVerb;
 	gcd[k++].creator = GListButtonCreate;
     } else if ( smd->sm->type==asm_insert ) {
-	label[k].text = (unichar_t *) _STR_CurrentGlyphIsKashida;
-	label[k].text_in_resource = true;
+	label[k].text = (unichar_t *) _("Current Glyph Is Kashida Like");
+	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+16;
 	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k].gd.cid = CID_Flag2000;
 	gcd[k++].creator = GCheckBoxCreate;
 
-	label[k].text = (unichar_t *) _STR_MarkedGlyphIsKashida;
-	label[k].text_in_resource = true;
+	label[k].text = (unichar_t *) _("Marked Glyph Is Kashida Like");
+	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+16;
 	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k].gd.cid = CID_Flag1000;
 	gcd[k++].creator = GCheckBoxCreate;
 
-	label[k].text = (unichar_t *) _STR_InsertBeforeCurrentGlyph;
-	label[k].text_in_resource = true;
+	label[k].text = (unichar_t *) _("Insert Before Current Glyph");
+	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+16;
 	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k].gd.cid = CID_Flag0800;
 	gcd[k++].creator = GCheckBoxCreate;
 
-	label[k].text = (unichar_t *) _STR_InsertBeforeMarkedGlyph;
-	label[k].text_in_resource = true;
+	label[k].text = (unichar_t *) _("Insert Before Marked Glyph");
+	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+16;
 	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k].gd.cid = CID_Flag0400;
 	gcd[k++].creator = GCheckBoxCreate;
 
-	label[k].text = (unichar_t *) _STR_MarkInsert;
-	label[k].text_in_resource = true;
+	label[k].text = (unichar_t *) _("Mark Insert:");
+	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+26;
 	gcd[k].gd.flags = gg_enabled|gg_visible;
@@ -2029,8 +1987,8 @@ static void SMD_EditState(SMD *smd) {
 	gcd[k].gd.cid = CID_InsMark;
 	gcd[k++].creator = GTextFieldCreate;
 
-	label[k].text = (unichar_t *) _STR_CurrentInsert;
-	label[k].text_in_resource = true;
+	label[k].text = (unichar_t *) _("Current Insert:");
+	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+30;
 	gcd[k].gd.flags = gg_enabled|gg_visible;
@@ -2041,8 +1999,8 @@ static void SMD_EditState(SMD *smd) {
 	gcd[k].gd.cid = CID_InsCur;
 	gcd[k++].creator = GTextFieldCreate;
     } else if ( smd->sm->type==asm_kern ) {
-	label[k].text = (unichar_t *) _STR_KernValues;
-	label[k].text_in_resource = true;
+	label[k].text = (unichar_t *) _("Kern Values:");
+	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+26;
 	gcd[k].gd.flags = gg_enabled|gg_visible;
@@ -2053,8 +2011,8 @@ static void SMD_EditState(SMD *smd) {
 	gcd[k].gd.cid = CID_Kerns;
 	gcd[k++].creator = GTextFieldCreate;
     } else {
-	label[k].text = (unichar_t *) _STR_MarkSubs;
-	label[k].text_in_resource = true;
+	label[k].text = (unichar_t *) _("Mark Subs:");
+	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+26;
 	gcd[k].gd.flags = gg_enabled|gg_visible;
@@ -2066,8 +2024,8 @@ static void SMD_EditState(SMD *smd) {
 	gcd[k].gd.cid = CID_TagMark;
 	gcd[k++].creator = GListFieldCreate;
 
-	label[k].text = (unichar_t *) _STR_CurrentSubs;
-	label[k].text_in_resource = true;
+	label[k].text = (unichar_t *) _("Current Subs:");
+	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+30;
 	gcd[k].gd.flags = gg_enabled|gg_visible;
@@ -2080,7 +2038,8 @@ static void SMD_EditState(SMD *smd) {
 	gcd[k++].creator = GListFieldCreate;
     }
 
-    label[k].text = (unichar_t *) _STR_UpArrow;
+    label[k].text = (unichar_t *) U_("_Up↑");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = (SMDE_WIDTH-GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor))/2;
@@ -2091,7 +2050,8 @@ static void SMD_EditState(SMD *smd) {
     gcd[k].gd.handle_controlevent = SMDE_Arrow;
     gcd[k++].creator = GButtonCreate;
 
-    label[k].text = (unichar_t *) _STR_LeftArrow;
+    label[k].text = (unichar_t *) U_("←_Left");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = SMDE_HEIGHT-SMD_DIRDROP+13;
@@ -2101,7 +2061,8 @@ static void SMD_EditState(SMD *smd) {
     gcd[k].gd.handle_controlevent = SMDE_Arrow;
     gcd[k++].creator = GButtonCreate;
 
-    label[k].text = (unichar_t *) _STR_RightArrow;
+    label[k].text = (unichar_t *) U_("_Right→");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = -10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
@@ -2111,7 +2072,8 @@ static void SMD_EditState(SMD *smd) {
     gcd[k].gd.handle_controlevent = SMDE_Arrow;
     gcd[k++].creator = GButtonCreate;
 
-    label[k].text = (unichar_t *) _STR_DownArrow;
+    label[k].text = (unichar_t *) U_("↓_Down");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = gcd[k-3].gd.pos.x; gcd[k].gd.pos.y = SMDE_HEIGHT-SMD_DIRDROP+26;
@@ -2121,7 +2083,8 @@ static void SMD_EditState(SMD *smd) {
     gcd[k].gd.handle_controlevent = SMDE_Arrow;
     gcd[k++].creator = GButtonCreate;
 
-    label[k].text = (unichar_t *) _STR_OK;
+    label[k].text = (unichar_t *) _("_OK");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 30-3; gcd[k].gd.pos.y = SMDE_HEIGHT-SMD_CANCELDROP-3;
@@ -2130,7 +2093,8 @@ static void SMD_EditState(SMD *smd) {
     gcd[k].gd.cid = CID_Ok;
     gcd[k++].creator = GButtonCreate;
 
-    label[k].text = (unichar_t *) _STR_Cancel;
+    label[k].text = (unichar_t *) _("_Cancel");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = -30; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+3;
@@ -2252,40 +2216,47 @@ static int SMD_Prev(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static unichar_t *AddClass(int class_num,const unichar_t *text,int freetext) {
-    unichar_t buf[40];
+static unichar_t *AddClass(int class_num,char *text,int freetext) {
+    char buf[80];
     unichar_t *ret;
 
-    u_snprintf(buf,sizeof(buf)/sizeof(buf[0]),
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GStringGetResource(_STR_Class_d,NULL),class_num);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    _("Class %d"),class_num);
-#endif
-    ret = galloc((u_strlen(buf)+u_strlen(text)+4)*sizeof(unichar_t));
-    u_strcpy(ret,buf);
+    snprintf(buf,sizeof(buf)/sizeof(buf[0]), _("Class %d"),class_num);
+    ret = galloc((strlen(buf)+strlen(text)+4)*sizeof(unichar_t));
+    utf82u_strcpy(ret,buf);
+    uc_strcat(ret,": ");
+    utf82u_strcpy(ret+u_strlen(ret),text);
+    if ( freetext )
+	free((unichar_t *) text);
+return( ret );
+}
+
+
+static unichar_t *UAddClass(int class_num,const unichar_t *text,int freetext) {
+    char buf[80];
+    unichar_t *ret;
+
+    snprintf(buf,sizeof(buf)/sizeof(buf[0]), _("Class %d"),class_num);
+    ret = galloc((strlen(buf)+u_strlen(text)+4)*sizeof(unichar_t));
+    utf82u_strcpy(ret,buf);
     uc_strcat(ret,": ");
     u_strcat(ret,text);
     if ( freetext )
 	free((unichar_t *) text);
 return( ret );
 }
-
 static int SMD_Next(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	SMD *smd = GDrawGetUserData(GGadgetGetWindow(g));
-	const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(smd->gw,CID_GlyphList));
+	char *ret = GGadgetGetTitle8(GWidgetGetControl(smd->gw,CID_GlyphList));
 	unichar_t *temp;
 	GGadget *list = GWidgetGetControl( smd->gw, CID_Classes );
 	int32 len;
 
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	if ( !CCD_NameListCheck(smd->sf,ret,true,_STR_BadClass) ||
-#elif defined(FONTFORGE_CONFIG_GTK)
-	if ( !CCD_NameListCheck(smd->sf,ret,true,_("Bad Class") ||
-#endif
-		CCD_InvalidClassList(ret,list,smd->isedit))
+	if ( !CCD_NameListCheck(smd->sf,ret,true,_("Bad Class")) ||
+		CCD_InvalidClassList(ret,list,smd->isedit)) {
+	    free(ret);
 return( true );
+	}
 
 	if ( smd->isedit ) {
 	    int cn = GGadgetGetFirstListSelectedItem(list);
@@ -2357,7 +2328,7 @@ static void SMD_GListDelSelected(GGadget *list) {
 	*new[j] = *old[i];
 	upt = uc_strstr(new[j]->text,": ");
 	if ( upt==NULL ) upt = new[j]->text; else upt += 2;
-	new[j]->text = AddClass(j,upt,false);
+	new[j]->text = UAddClass(j,upt,false);
 	++j;
     }
     new[j] = gcalloc(1,sizeof(GTextInfo));
@@ -2460,11 +2431,7 @@ return( SMD_Next(g,e));
 	} else if ( sm->type==asm_kern ) {	/* Kerns don't get feature/settings */
 	    sm->feature = sm->setting = 0xffff;
 	} else {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_BadFeatureSetting,_STR_BadFeatureSetting);
-#elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Bad Feature Setting"),_("Bad Feature Setting"));
-#endif
 return( true );
 	}
 	
@@ -2532,17 +2499,9 @@ return;
 	    u_strncpy(space+len,upt,(sizeof(space)/sizeof(space[0]))-1 - len);
 	} else if ( event->u.mouse.x<smd->xstart2 ) {
 	    if ( s==0 )
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		u_strcat(space,GStringGetResource(_STR_StartOfInput,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-		u_strcat(space,_("{Start of Input}"));
-#endif
+		utf82u_strcat(space,_("{Start of Input}"));
 	    else if ( s==1 )
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		u_strcat(space,GStringGetResource(_STR_StartOfLine,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-		u_strcat(space,_("{Start of Line}"));
-#endif
+		utf82u_strcat(space,_("{Start of Line}"));
 	}
 	if ( space[0]=='\0' )
 return;
@@ -2945,9 +2904,9 @@ return( true );
 }
 
 SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
-    static int titles[2][3] = {
-	{ _STR_EditIndic, _STR_EditContextSub, _STR_EditInsert },
-	{ _STR_NewIndic, _STR_NewContextSub, _STR_NewInsert }};
+    static char *titles[2][3] = {
+	{ N_("Edit Indic Rearrangement"), N_("Edit Contextual Substitution"), N_("Edit Contextual Glyph Insertion") },
+	{ N_("New Indic Rearrangement"), N_("New Contextual Substitution"), N_("New Contextual Glyph Insertion") }};
     SMD *smd = gcalloc(1,sizeof(SMD));
     GRect pos, subpos;
     GWindow gw;
@@ -2982,13 +2941,13 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     smd->index = sm->type==asm_indic ? 0 : sm->type==asm_context ? 1 : 2;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.is_dlg = true;
     wattrs.restrict_input_to_me = false;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.window_title = GStringGetResource(titles[smd->isnew][smd->index],NULL);
+    wattrs.utf8_window_title = _(titles[smd->isnew][smd->index]);
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,GGadgetScale(SMD_WIDTH));
     pos.height = GDrawPointsToPixels(NULL,SMD_HEIGHT);
@@ -2998,8 +2957,8 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     memset(label,0,sizeof(label));
     k = 0;
 
-    label[k].text = (unichar_t *) _STR_FeatureSetting;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Feature, Setting:");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = 5;
     gcd[k].gd.flags = gg_enabled|gg_visible;
@@ -3017,8 +2976,8 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     gcd[k].gd.cid = CID_FeatSet;
     gcd[k++].creator = GListFieldCreate;
 
-    label[k].text = (unichar_t *) _STR_RightToLeft;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Right To Left");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 150; gcd[k].gd.pos.y = 5;
     gcd[k].gd.flags = gg_enabled|gg_visible | (sm->flags&0x4000?gg_cb_on:0);
@@ -3030,8 +2989,8 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
 	gcd[k-3].gd.flags = gg_enabled;
     }
 
-    label[k].text = (unichar_t *) _STR_VerticalOnly;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Vertical Only");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 150; gcd[k].gd.pos.y = 5+16;
     gcd[k].gd.flags = gg_enabled|gg_visible | (sm->flags&0x8000?gg_cb_on:0);
@@ -3052,7 +3011,8 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     gcd[k].gd.cid = CID_Classes;
     gcd[k++].creator = GListCreate;
 
-    label[k].text = (unichar_t *) _STR_New;
+    label[k].text = (unichar_t *) _("_New");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+gcd[k-1].gd.pos.height+10;
@@ -3062,7 +3022,8 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     gcd[k].gd.cid = CID_New;
     gcd[k++].creator = GButtonCreate;
 
-    label[k].text = (unichar_t *) _STR_Edit;
+    label[k].text = (unichar_t *) _("_Edit");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 5+blen+space; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
@@ -3072,7 +3033,8 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     gcd[k].gd.cid = CID_Edit;
     gcd[k++].creator = GButtonCreate;
 
-    label[k].text = (unichar_t *) _STR_Delete;
+    label[k].text = (unichar_t *) _("_Delete");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+blen+space; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
@@ -3110,7 +3072,8 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     smd->width = gcd[k-1].gd.pos.width;
     smd->xstart = 5;
 
-    label[k].text = (unichar_t *) _STR_OK;
+    label[k].text = (unichar_t *) _("_OK");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 30-3; gcd[k].gd.pos.y = SMD_HEIGHT-SMD_CANCELDROP-3;
@@ -3120,7 +3083,8 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     gcd[k].gd.cid = CID_Ok;
     gcd[k++].creator = GButtonCreate;
 
-    label[k].text = (unichar_t *) _STR_Cancel;
+    label[k].text = (unichar_t *) _("_Cancel");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = -30; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+3;
@@ -3143,28 +3107,12 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
 
     {
 	GGadget *list = GWidgetGetControl(smd->gw,CID_Classes);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GListAppendLine(list,GStringGetResource(_STR_EndOfText,NULL),false);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	GListAppendLine(list,_("Class 0: {End of Text}"),false);
-#endif
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GListAppendLine(list,GStringGetResource(_STR_MacEverythingElse,NULL),false);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	GListAppendLine(list,_("Class 1: {Everything Else}"),false);
-#endif
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GListAppendLine(list,GStringGetResource(_STR_DeletedGlyph,NULL),false);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	GListAppendLine(list,_("Class 2: {Deleted Glyph}"),false);
-#endif
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GListAppendLine(list,GStringGetResource(_STR_EndOfLine,NULL),false);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	GListAppendLine(list,_("Class 3: {End of Line}"),false);
-#endif
+	GListAppendLine8(list,_("Class 0: {End of Text}"),false);
+	GListAppendLine8(list,_("Class 1: {Everything Else}"),false);
+	GListAppendLine8(list,_("Class 2: {Deleted Glyph}"),false);
+	GListAppendLine8(list,_("Class 3: {End of Line}"),false);
 	for ( k=4; k<sm->class_cnt; ++k ) {
-	    unichar_t *temp = AddClass(k,uc_copy(sm->classes[k]),true);
+	    unichar_t *temp = AddClass(k,sm->classes[k],true);
 	    GListAppendLine(list,temp,false);
 	    free(temp);
 	}
@@ -3178,32 +3126,24 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     memset(label,0,sizeof(label));
     k = 0;
 
-    label[k].text = (unichar_t *) _STR_Set;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Set");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = 5;
     gcd[k].gd.pos.width = -1;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[k].gd.popup_msg = GStringGetResource(_STR_SetGlyphsFromSelectionPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[k].gd.popup_msg = _("Set this glyph list to be the characters selected in the fontview");
-#endif
-    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Set this glyph list to be the characters selected in the fontview");
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     gcd[k].gd.handle_controlevent = SMD_FromSelection;
     gcd[k].gd.cid = CID_Set;
     gcd[k++].creator = GButtonCreate;
 
-    label[k].text = (unichar_t *) _STR_Select_nom;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Select");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 70; gcd[k].gd.pos.y = 5;
     gcd[k].gd.pos.width = -1;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gcd[k].gd.popup_msg = GStringGetResource(_STR_SelectFromGlyphsPopup,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gcd[k].gd.popup_msg = _("Set the fontview's selection to be the characters named here");
-#endif
-    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Set the fontview's selection to be the characters named here");
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     gcd[k].gd.handle_controlevent = SMD_ToSelection;
     gcd[k].gd.cid = CID_Select;
     gcd[k++].creator = GButtonCreate;
@@ -3214,7 +3154,8 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     gcd[k].gd.cid = CID_GlyphList;
     gcd[k++].creator = GTextAreaCreate;
 
-    label[k].text = (unichar_t *) _STR_PrevArrow;
+    label[k].text = (unichar_t *) _("< _Prev");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 30; gcd[k].gd.pos.y = SMD_HEIGHT-SMD_CANCELDROP;
@@ -3224,7 +3165,8 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     gcd[k].gd.cid = CID_Prev;
     gcd[k++].creator = GButtonCreate;
 
-    label[k].text = (unichar_t *) _STR_NextArrow;
+    label[k].text = (unichar_t *) _("_Next >");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = -30+3; gcd[k].gd.pos.y = SMD_HEIGHT-SMD_CANCELDROP;
