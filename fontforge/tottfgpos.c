@@ -2549,7 +2549,7 @@ static void g___HandleNested(FILE *lfile,SplineFont *sf,int gpos,
 #if defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Multiple Lookups"),_("Multiple lookups were generated for nested anchor tag '%s', only one will be used"),buf);
 #else
-		GWidgetErrorR(_STR_MultipleLookup,_STR_MultipleLookupLong,buf);
+		gwwv_post_error(_("Multiple Lookups"),_("Multiple lookups were generated for nested anchor tag '%s', only one will be used"),buf);
 #endif
 	    new->next = *nested;
 	    *nested = new;
@@ -2557,7 +2557,7 @@ static void g___HandleNested(FILE *lfile,SplineFont *sf,int gpos,
 #if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Missing Lookup"),_("A nested lookup with tag '%s' could not be found. The generated font will not be useable. Try Element->Find Problems"),buf);
 #else
-	    GWidgetErrorR(_STR_MissingLookup,_STR_MissingLookupLong,buf);
+	    gwwv_post_error(_("Missing Lookup"),_("A nested lookup with tag '%s' could not be found. The generated font will not be useable. Try Element->Find Problems"),buf);
 #endif
 	}
 	chunkfree(pp,sizeof(struct postponedlookup));
@@ -4234,17 +4234,13 @@ void OrderTable(SplineFont *sf,uint32 table_tag) {
     free(merged);
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.is_dlg = true;
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    wattrs.window_title = GStringGetResource(_STR_SetGSUBOrder,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    wattrs.window_title = _("Set GSUB/morx Ordering");
-#endif
+    wattrs.utf8_window_title = _("Set GSUB/morx Ordering");
     pos.x = pos.y = 0;
     pos.width = GDrawPointsToPixels(NULL,GGadgetScale(20)+2*GIntGetResource(_NUM_Buttonsize));
     pos.height = GDrawPointsToPixels(NULL,195);
@@ -4266,14 +4262,16 @@ void OrderTable(SplineFont *sf,uint32 table_tag) {
 
     gcd[1].gd.pos.x = -5; gcd[1].gd.pos.y = 5;
     gcd[1].gd.pos.width = -1;
-    label[1].text = (unichar_t *) _STR_Top;
+    label[1].text = (unichar_t *) _("_Top");
+    label[1].text_is_1byte = true;
     label[1].text_in_resource = true;
     gcd[1].gd.label = &label[1];
     gcd[1].gd.flags = (gg_visible | gg_enabled);
     gcd[1].creator = GButtonCreate;
 
     gcd[2].gd.pos.x = -5; gcd[2].gd.pos.y = 35; gcd[2].gd.pos.width = -1;
-    label[2].text = (unichar_t *) _STR_Up;
+    label[2].text = (unichar_t *) _("_Up");
+    label[2].text_is_1byte = true;
     label[2].text_in_resource = true;
     gcd[2].gd.label = &label[2];
     gcd[2].gd.flags = (gg_visible | gg_enabled);
@@ -4281,14 +4279,16 @@ void OrderTable(SplineFont *sf,uint32 table_tag) {
 
     gcd[3].gd.pos.x = -5; gcd[3].gd.pos.y = 65;
     gcd[3].gd.pos.width = -1;
-    label[3].text = (unichar_t *) _STR_Down;
+    label[3].text = (unichar_t *) _("_Down");
+    label[3].text_is_1byte = true;
     label[3].text_in_resource = true;
     gcd[3].gd.label = &label[3];
     gcd[3].gd.flags = (gg_visible | gg_enabled);
     gcd[3].creator = GButtonCreate;
 
     gcd[4].gd.pos.x = -5; gcd[4].gd.pos.y = 95; gcd[4].gd.pos.width = -1;
-    label[4].text = (unichar_t *) _STR_Bottom;
+    label[4].text = (unichar_t *) _("_Bottom");
+    label[4].text_is_1byte = true;
     label[4].text_in_resource = true;
     gcd[4].gd.label = &label[4];
     gcd[4].gd.flags = (gg_visible | gg_enabled);
@@ -4300,7 +4300,8 @@ void OrderTable(SplineFont *sf,uint32 table_tag) {
     gcd[5].creator = GLineCreate;
 
     gcd[6].gd.pos.x = -5; gcd[6].gd.pos.y = 130; gcd[6].gd.pos.width = -1;
-    label[6].text = (unichar_t *) _STR_Remove;
+    label[6].text = (unichar_t *) _("Re_move");
+    label[6].text_is_1byte = true;
     label[6].text_in_resource = true;
     gcd[6].gd.label = &label[6];
     gcd[6].gd.flags = (gg_visible | gg_enabled);
@@ -4308,14 +4309,16 @@ void OrderTable(SplineFont *sf,uint32 table_tag) {
 
     gcd[7].gd.pos.x = 2; gcd[7].gd.pos.y = gcd[0].gd.pos.y+gcd[0].gd.pos.height+5;
     gcd[7].gd.pos.width = -1;
-    label[7].text = (unichar_t *) _STR_OK;
+    label[7].text = (unichar_t *) _("_OK");
+    label[7].text_is_1byte = true;
     label[7].text_in_resource = true;
     gcd[7].gd.label = &label[7];
     gcd[7].gd.flags = (gg_visible | gg_enabled | gg_but_default);
     gcd[7].creator = GButtonCreate;
 
     gcd[8].gd.pos.x = -5; gcd[8].gd.pos.y = gcd[7].gd.pos.y+3; gcd[8].gd.pos.width = -1;
-    label[8].text = (unichar_t *) _STR_Cancel;
+    label[8].text = (unichar_t *) _("_Cancel");
+    label[8].text_is_1byte = true;
     label[8].text_in_resource = true;
     gcd[8].gd.label = &label[8];
     gcd[8].gd.flags = (gg_visible | gg_enabled | gg_but_cancel);

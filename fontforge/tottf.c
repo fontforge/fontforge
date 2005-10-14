@@ -1393,16 +1393,12 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
     int i, cnt;
     int fixed = gi->fixed_width;
 
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressChangeStages(2+gi->strikecnt);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_change_stages(2+gi->strikecnt);
 #endif
     QuickBlues(sf,&gi->bd);
     /*FindBlues(sf,gi->blues,NULL);*/
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressNextStage();
-#elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_next_stage();
 #endif
 
@@ -1457,11 +1453,7 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
 	    }
 	}
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	if ( !GProgressNext())
-#elif defined(FONTFORGE_CONFIG_GTK)
 	if ( !gwwv_progress_next())
-#endif
 return( false );
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
@@ -1951,30 +1943,22 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at,int subfont,
     hasblue = PSDictHasEntry(sf->private,"BlueValues")!=NULL;
     hash = PSDictHasEntry(sf->private,"StdHW")!=NULL;
     hasv = PSDictHasEntry(sf->private,"StdVW")!=NULL;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressChangeStages(2+autohint_before_generate+!hasblue);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_change_stages(2+autohint_before_generate+!hasblue);
 #endif
     if ( autohint_before_generate ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GProgressChangeLine1R(_STR_AutoHintingFont);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	gwwv_progress_change_line1(_("Auto Hinting Font..."));
 #endif
 	SplineFontAutoHint(sf);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GProgressNextStage();
-#elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	gwwv_progress_next_stage();
 #endif
     }
 
     if ( !hasblue ) {
 	FindBlues(sf,bluevalues,otherblues);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	GProgressNextStage();
-#elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	gwwv_progress_next_stage();
 #endif
     }
@@ -1997,9 +1981,7 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at,int subfont,
 	    else if ( snapcnt[i]>snapcnt[mi] ) mi = i;
 	if ( mi!=-1 ) stdvw[0] = stemsnapv[mi];
     }
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressChangeLine1R(_STR_SavingOpenTypeFont);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_change_line1(_("Saving OpenType Font"));
 #endif
 
@@ -2547,9 +2529,7 @@ static int dumptype2glyphs(SplineFont *sf,struct alltabs *at) {
     dumpcffheader(sf,at->cfff);
     dumpcffnames(sf,at->cfff);
     dumpcffcharset(sf,at);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressChangeStages(2+at->gi.strikecnt);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_change_stages(2+at->gi.strikecnt);
 #endif
     if ((subrs = SplineFont2Subrs2(sf,at->gi.flags))==NULL )
@@ -2557,9 +2537,7 @@ return( false );
     dumpcffprivate(sf,at,-1,subrs->next);
     if ( subrs->next!=0 )
 	_dumpcffstrings(at->private,subrs);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    GProgressNextStage();
-#elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_next_stage();
 #endif
     at->charstrings = dumpcffstrings(SplineFont2Chrs2(sf,at->nomwid,at->defwid,subrs,at->gi.flags,at->gi.bygid,at->gi.gcnt));
@@ -3469,11 +3447,13 @@ static void dumpc2ustr(FILE *file,char *str) {
 }
 #endif
 
-static void dumpustr(FILE *file,unichar_t *str) {
+static void dumpustr(FILE *file,char *utf8_str) {
+    unichar_t *ustr = utf82u_copy(utf8_str), *pt=ustr;
     do {
-	putc(*str>>8,file);
-	putc(*str&0xff,file);
-    } while ( *str++!='\0' );
+	putc(*pt>>8,file);
+	putc(*pt&0xff,file);
+    } while ( *pt++!='\0' );
+    free(ustr);
 }
 
 static void dumppstr(FILE *file,char *str) {
@@ -3491,11 +3471,11 @@ void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf) {
     char buffer[200];
 
     if ( dummy->names[ttf_copyright]==NULL || *dummy->names[ttf_copyright]=='\0' )
-	dummy->names[ttf_copyright] = uc_copy(sf->copyright);
+	dummy->names[ttf_copyright] = copy(sf->copyright);
     if ( dummy->names[ttf_family]==NULL || *dummy->names[ttf_family]=='\0' )
-	dummy->names[ttf_family] = uc_copy(sf->familyname);
+	dummy->names[ttf_family] = copy(sf->familyname);
     if ( dummy->names[ttf_subfamily]==NULL || *dummy->names[ttf_subfamily]=='\0' )
-	dummy->names[ttf_subfamily] = uc_copy(SFGetModifiers(sf));
+	dummy->names[ttf_subfamily] = copy(SFGetModifiers(sf));
     if ( dummy->names[ttf_uniqueid]==NULL || *dummy->names[ttf_uniqueid]=='\0' ) {
 	time(&now);
 	tm = localtime(&now);
@@ -3503,10 +3483,10 @@ void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf) {
 		BDFFoundry?BDFFoundry:TTFFoundry?TTFFoundry:"FontForge 1.0",
 		sf->fullname!=NULL?sf->fullname:sf->fontname,
 		tm->tm_mday, tm->tm_mon+1, tm->tm_year+1900 );
-	dummy->names[ttf_uniqueid] = uc_copy(buffer);
+	dummy->names[ttf_uniqueid] = copy(buffer);
     }
     if ( dummy->names[ttf_fullname]==NULL || *dummy->names[ttf_fullname]=='\0' )
-	dummy->names[ttf_fullname] = uc_copy(sf->fullname);
+	dummy->names[ttf_fullname] = copy(sf->fullname);
     if ( dummy->names[ttf_version]==NULL || *dummy->names[ttf_version]=='\0' ) {
 	if ( sf->subfontcnt!=0 )
 	    sprintf( buffer, "Version %f ", sf->cidversion );
@@ -3514,10 +3494,10 @@ void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf) {
 	    sprintf(buffer,"Version %.20s ", sf->version);
 	else
 	    strcpy(buffer,"Version 1.0" );
-	dummy->names[ttf_version] = uc_copy(buffer);
+	dummy->names[ttf_version] = copy(buffer);
     }
     if ( dummy->names[ttf_postscriptname]==NULL || *dummy->names[ttf_postscriptname]=='\0' )
-	dummy->names[ttf_postscriptname] = uc_copy(sf->fontname);
+	dummy->names[ttf_postscriptname] = copy(sf->fontname);
 }
 
 typedef struct {
@@ -3551,7 +3531,7 @@ return( mn1->lang - mn2->lang );
 return( mn1->strid-mn2->strid );
 }
 
-static void AddEncodedName(NamTab *nt,unichar_t *uniname,uint16 lang,uint16 strid) {
+static void AddEncodedName(NamTab *nt,char *utf8name,uint16 lang,uint16 strid) {
     NameEntry *ne;
     int maclang, macenc= -1, specific;
     char *macname = NULL;
@@ -3570,8 +3550,8 @@ static void AddEncodedName(NamTab *nt,unichar_t *uniname,uint16 lang,uint16 stri
     ne->lang     = lang;
     ne->strid    = strid;
     ne->offset   = ftell(nt->strings);
-    ne->len      = 2*u_strlen(uniname);
-    dumpustr(nt->strings,uniname);
+    ne->len      = 2*utf82u_strlen(utf8name);
+    dumpustr(nt->strings,utf8name);
     ++ne;
 
     if ( nt->format==ff_ttfsym ) {
@@ -3593,7 +3573,7 @@ static void AddEncodedName(NamTab *nt,unichar_t *uniname,uint16 lang,uint16 stri
 #endif
 
 	macenc = MacEncFromMacLang(maclang);
-	macname = UnicodeToMacStr(uniname,macenc,maclang);
+	macname = Utf8ToMacStr(utf8name,macenc,maclang);
 	if ( macname!=NULL ) {
 	    ne->platform = 1;		/* apple non-unicode encoding */
 	    ne->specific = macenc;	/* whatever */
@@ -3639,16 +3619,17 @@ static void AddEncodedName(NamTab *nt,unichar_t *uniname,uint16 lang,uint16 stri
 	    if ( enc==NULL )
 		--ne;
 	    else {
-		outlen = 3*u_strlen(uniname)+10;
+		unichar_t *uin = utf82u_copy(utf8name);
+		outlen = 3*strlen(utf8name)+10;
 		out = space = galloc(outlen+2);
-		in = (char *) uniname; inlen = 2*u_strlen(uniname);
+		in = (char *) uin; inlen = 2*u_strlen(uin);
 		iconv(enc->fromunicode,NULL,NULL,NULL,NULL);	/* should not be needed, but just in case */
 		iconv(enc->fromunicode,&in,&inlen,&out,&outlen);
 		out[0] = '\0'; out[1] = '\0';
 		ne->offset = ftell(nt->strings);
 		ne->len    = strlen(space);
 		dumpstr(nt->strings,space);
-		free(space);
+		free(space); free(uin);
 	    }
 	}
 	++ne;
@@ -3945,51 +3926,31 @@ return( NULL );		/* Doesn't have the single byte entries */
     if ( base2!=-1 ) {
 	for ( i=base; i<=basebound && i<map->enccount; ++i )
 	    if ( map->map[i]!=-1 && SCWorthOutputting(sf->glyphs[map->map[i]])) {
-#if defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Bad Encoding"),_("There is a single byte character (%d) using one of the slots needed for double byte characters"),i);
-#else
-		GWidgetErrorR(_STR_BadEncoding,_STR_ExtraneousSingleByte,i);
-#endif
 	break;
 	    }
 	if ( i==basebound+1 )
 	    for ( i=base2; i<256 && i<map->enccount; ++i )
 		if ( map->map[i]!=-1 && SCWorthOutputting(sf->glyphs[map->map[i]])) {
-#if defined(FONTFORGE_CONFIG_GTK)
 		    gwwv_post_error(_("Bad Encoding"),_("There is a single byte character (%d) using one of the slots needed for double byte characters"),i);
-#else
-		    GWidgetErrorR(_STR_BadEncoding,_STR_ExtraneousSingleByte,i);
-#endif
 	    break;
 		}
     } else {
 	for ( i=base; i<=256 && i<map->enccount; ++i )
 	    if ( map->map[i]!=-1 && SCWorthOutputting(sf->glyphs[map->map[i]])) {
-#if defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Bad Encoding"),_("There is a single byte character (%d) using one of the slots needed for double byte characters"),i);
-#else
-		GWidgetErrorR(_STR_BadEncoding,_STR_ExtraneousSingleByte,i);
-#endif
 	break;
 	    }
     }
     for ( i=256; i<(base<<8) && i<map->enccount; ++i )
 	if ( map->map[i]!=-1 && SCWorthOutputting(sf->glyphs[map->map[i]])) {
-#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Bad Encoding"),_("There is a character (%d) which cannot be encoded"),i);
-#else
-	    GWidgetErrorR(_STR_BadEncoding,_STR_OutOfEncoding,i);
-#endif
     break;
 	}
     if ( i==(base<<8) && base2==-1 )
 	for ( i=((basebound+1)<<8); i<0x10000 && i<map->enccount; ++i )
 	    if ( map->map[i]!=-1 && SCWorthOutputting(sf->glyphs[map->map[i]])) {
-#if defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Bad Encoding"),_("There is a character (%d) which cannot be encoded"),i);
-#else
-		GWidgetErrorR(_STR_BadEncoding,_STR_OutOfEncoding,i);
-#endif
 	break;
 	    }
 
@@ -4020,11 +3981,7 @@ return( NULL );		/* Doesn't have the single byte entries */
 	for ( i=0; i<lbase; ++i )
 	    if ( !complained && map->map[i+j]!=-1 &&
 		    SCWorthOutputting(sf->glyphs[map->map[i+j]])) {
-#if defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Bad Encoding"),_("There is a character (%d) which is not normally in the encoding"),i+j);
-#else
-		GWidgetErrorR(_STR_BadEncoding,_STR_NotNormallyEncoded,i+j);
-#endif
 		complained = true;
 	    }
 	if ( isbig5 ) {
@@ -4032,11 +3989,7 @@ return( NULL );		/* Doesn't have the single byte entries */
 	    for ( i=0x7f; i<0xa1; ++i )
 		if ( !complained && map->map[i+j]!=-1 &&
 			SCWorthOutputting(sf->glyphs[map->map[i+j]])) {
-#if defined(FONTFORGE_CONFIG_GTK)
 		    gwwv_post_error(_("Bad Encoding"),_("There is a character (%d) which is not normally in the encoding"),i+j);
-#else
-		    GWidgetErrorR(_STR_BadEncoding,_STR_NotNormallyEncoded,i+j);
-#endif
 		    complained = true;
 		}
 	}
@@ -4365,31 +4318,23 @@ static void dumpcmap(struct alltabs *at, SplineFont *sf,enum fontformat format) 
 	}
     }
     if ( sf->subfontcnt==0 && !anyglyphs ) {
-#if defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_error(_("No Encoded Glyphs"),_("This font contains no glyphs at all."));
-#else
-	GWidgetErrorR(_STR_NoEncodedGlyphs,_STR_NoGlyphs);
-#endif
+	gwwv_post_error(_("No Encoded Glyphs"),_("Warning: Font contained no glyphs"));
     }
     if ( sf->subfontcnt==0 && format!=ff_ttfsym) {
 	if ( i==0 && anyglyphs ) {
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	    if ( map->enccount<=256 ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-		static int buts[] = { _STR_Yes, _STR_No, 0 };
-		if ( GWidgetAskR(_STR_NoEncodedGlyphs,buts,0,1,_STR_NoUnicodeEncodingUseSymbol)==0 )
-#elif defined(FONTFORGE_CONFIG_GTK)
+		char *buts[3];
+		buts[0] = _("_Yes"); buts[1] = _("_No"); buts[2] = NULL;
+#else
 		static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_NO, NULL };
-		if ( gwwv_ask(_("No Encoded Glyphs"),buts,0,1,_("This font contains no glyphs with unicode encodings.\nWould you like to use a \"Symbol\" encoding instead of Unicode?"))==0 )
 #endif
+		if ( gwwv_ask(_("No Encoded Glyphs"),(const char **) buts,0,1,_("This font contains no glyphs with unicode encodings.\nWould you like to use a \"Symbol\" encoding instead of Unicode?"))==0 )
 		    format = ff_ttfsym;
 	    } else
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-#if defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("No Encoded Glyphs"),_("This font contains no glyphs with unicode encodings.\nYou will probably not be able to use the output."));
-#else
-		GWidgetErrorR(_STR_NoEncodedGlyphs,_STR_NoUnicodeEncoding);
-#endif
 	}
     }
 
@@ -5383,7 +5328,7 @@ static void DumpGlyphToNameMap(char *fontname,SplineFont *sf) {
 
     file = fopen(newname,"wb");
     if ( file==NULL ) {
-	LogError( "Failed to open glyph to name map file for writing: %s\n", newname );
+	LogError( _("Failed to open glyph to name map file for writing: %s\n"), newname );
 	free(newname);
 return;
     }
@@ -5547,7 +5492,7 @@ static void dumphex(struct hexout *hexout,FILE *temp,int length) {
     int i, ch, ch1;
 
     if ( length&1 )
-	LogError( "Table length should not be odd\n" );
+	LogError( _("Table length should not be odd\n") );
 
     while ( length>65534 ) {
 	dumphex(hexout,temp,65534);

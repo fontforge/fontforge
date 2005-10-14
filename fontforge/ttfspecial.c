@@ -27,6 +27,7 @@
 #include "pfaedit.h"
 #include <utype.h>
 #include <ustring.h>
+#include <gdraw.h>		/* For COLOR_DEFAULT */
 
 #include "ttf.h"
 
@@ -102,7 +103,8 @@ static void PfEd_GlyphComments(SplineFont *sf, struct PfEd_subtabs *pfed,
     uint32 offset;
     SplineChar *sc, *sc2;
     FILE *cmnt;
-    unichar_t *upt;
+    char *upt;
+    uint32 uch;
 
     any = 0;
     for ( i=0; i<sf->glyphcnt; ++i ) {
@@ -153,7 +155,7 @@ return;
 			    putlong(cmnt,0);
 			else {
 			    putlong(cmnt,offset);
-			    offset += sizeof(unichar_t)*(u_strlen(sc->comment)+1);
+			    offset += sizeof(unichar_t)*(utf82u_strlen(sc->comment)+1);
 			}
 		    }
 		    putlong(cmnt,offset);	/* Guard data, to let us calculate the string lengths */
@@ -161,8 +163,14 @@ return;
 		    for ( ; i<=last; ++i ) {
 			if ( gi->bygid[i]==-1 || (sc=sf->glyphs[gi->bygid[i]])->comment==NULL )
 		    continue;
-			for ( upt = sc->comment; *upt; ++upt )
-			    putshort(cmnt,*upt);
+			for ( upt = sc->comment; (uch = utf8_ildb((const char **) &upt))!='\0'; ) {
+			    if ( uch<0x10000 )
+				putshort(cmnt,uch);
+			    else {
+				putshort(cmnt,0xd800|(uch/0x400));
+				putshort(cmnt,0xdc00|(uch&0x3ff));
+			    }
+			}
 			putshort(cmnt,0);
 		    }
 		}
@@ -285,16 +293,29 @@ return;			/* Bad version number */
     *pt = '\0';
 }
 
-static unichar_t *ReadUnicodeStr(FILE *ttf,uint32 offset,int len) {
-    unichar_t *pt, *str, *end;
+static char *ReadUnicodeStr(FILE *ttf,uint32 offset,int len) {
+    char *pt, *str;
+    uint32 uch, uch2;
+    int i;
 
-    pt = str = galloc(len);
-    end = str+len/2;
+    len>>=1;
+    pt = str = galloc(3*len);
     fseek(ttf,offset,SEEK_SET);
-    while ( pt<end )
-	*pt++ = getushort(ttf);
-    *pt = 0;
-return( str );
+    for ( i=0; i<len; ++i ) {
+	uch = getushort(ttf);
+	if ( uch>=0xd800 && uch<0xdc00 ) {
+	    uch2 = getushort(ttf);
+	    if ( uch2>=0xdc00 && uch2<0xe000 )
+		uch = ((uch-0xd800)<<10) | (uch2&0x3ff);
+	    else {
+		pt = utf8_idpb(pt,uch);
+		uch = uch2;
+	    }
+	}
+	pt = utf8_idpb(pt,uch);
+    }
+    *pt++ = 0;
+return( grealloc(str,pt-str) );
 }
     
 static void pfed_readglyphcomments(FILE *ttf,struct ttfinfo *info,uint32 base) {
@@ -312,7 +333,7 @@ return;			/* Bad version number */
 	grange[i].end = getushort(ttf);
 	grange[i].offset = getlong(ttf);
 	if ( grange[i].start>grange[i].end || grange[i].end>info->glyph_cnt ) {
-	    LogError( "Bad glyph range specified in glyph comment subtable of PfEd table\n" );
+	    LogError( _("Bad glyph range specified in glyph comment subtable of PfEd table\n") );
 	    grange[i].start = 1; grange[i].end = 0;
 	}
     }
@@ -340,7 +361,7 @@ return;			/* Bad version number */
 	end = getushort(ttf);
 	col = getlong(ttf);
 	if ( start>end || end>info->glyph_cnt )
-	    LogError( "Bad glyph range specified in colour subtable of PfEd table\n" );
+	    LogError( _("Bad glyph range specified in colour subtable of PfEd table\n") );
 	else {
 	    for ( j=start; j<=end; ++j )
 		info->chars[j]->color = col;
@@ -374,7 +395,7 @@ return;
 	pfed_readcolours(ttf,info,info->pfed_start+tagoff[i].offset);
       break;
       default:
-	LogError( "Unknown subtable '%c%c%c%c' in 'PfEd' table, ignored\n",
+	LogError( _("Unknown subtable '%c%c%c%c' in 'PfEd' table, ignored\n"),
 		tagoff[i].tag>>24, (tagoff[i].tag>>16)&0xff, (tagoff[i].tag>>8)&0xff, tagoff[i].tag&0xff );
       break;
     }
@@ -688,7 +709,7 @@ return;
 	TeX_readSubSuper(ttf,info,info->tex_start+tagoff[i].offset);
       break;
       default:
-	LogError( "Unknown subtable '%c%c%c%c' in 'TeX ' table, ignored\n",
+	LogError( _("Unknown subtable '%c%c%c%c' in 'TeX ' table, ignored\n"),
 		tagoff[i].tag>>24, (tagoff[i].tag>>16)&0xff, (tagoff[i].tag>>8)&0xff, tagoff[i].tag&0xff );
       break;
     }

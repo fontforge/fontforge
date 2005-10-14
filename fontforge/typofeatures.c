@@ -568,7 +568,7 @@ static void SF_AddAnchor(SplineFont *tosf,AnchorClass *ac, struct copycontext *c
     *newac = *ac;
     if ( ac->script_lang_index == SLI_NESTED )
 	newac->feature_tag = ConvertNestedTag(tosf, fromsf,cc->nested_map, ac->feature_tag);
-    newac->name = u_copy(ac->name);
+    newac->name = copy(ac->name);
     newac->script_lang_index = SFConvertSLI(fromsf,ac->script_lang_index,tosf,NULL);
     tosf->changed = true;
     newac->next = tosf->anchor;
@@ -1071,7 +1071,9 @@ static GMenuItem *TIListToMI(GTextInfo *ti,void (*moveto)(struct gwindow *base,s
     mi = gcalloc((i+1), sizeof(GMenuItem));
     for ( i=0; ti[i].text!=NULL || ti[i].line ; ++i ) {
 	mi[i].ti = ti[i];
-	if ( !mi[i].ti.text_in_resource )
+	if ( mi[i].ti.text_is_1byte )
+	    mi[i].ti.text = (unichar_t *) copy((char *) mi[i].ti.text);
+	else if ( !mi[i].ti.text_in_resource )
 	    mi[i].ti.text = u_copy(mi[i].ti.text);
 	mi[i].ti.bg = mi[i].ti.fg = COLOR_DEFAULT;
 	mi[i].moveto = moveto;
@@ -1083,11 +1085,11 @@ return( mi );
 static GMenuItem *TagMenu(SplineFont *sf) {
     GMenuItem *top;
     extern GTextInfo *pst_tags[];
-    static const int names[] = { _STR_SimpSubstitution, _STR_AltSubstitutions, _STR_MultSubstitution,
-	    _STR_Ligatures, _STR_ContextSub, _STR_ChainSub, _STR_ReverseChainSub,
-	    _STR_SimpPos, _STR_PairPos, _STR_ContextPos, _STR_ChainPos,
-	    -1,
-	    _STR_MacFeatures, 0 };
+    static const char *names[] = { N_("Simple Substitution"), N_("Alternate Substitutions"), N_("Multiple Substitution"),
+	    N_("_Ligatures"), N_("Context Sub"), N_("Chain Sub"), N_("Reverse Chain Sub"),
+	    N_("Simple Position"), N_("Pairwise Position"), N_("Context Pos"), N_("Chain Pos"),
+	    (char *) -1,
+	    N_("Mac Features"), 0 };
     static const int indeces[] = { pst_substitution, pst_alternate, pst_multiple, pst_ligature,
 	    pst_contextsub, pst_chainsub, pst_reversesub,
 	    pst_position, pst_pair, pst_contextpos, pst_chainpos,
@@ -1097,9 +1099,9 @@ static GMenuItem *TagMenu(SplineFont *sf) {
 
     for ( i=0; names[i]!=0; ++i );
     top = gcalloc((i+1),sizeof(GMenuItem));
-    for ( i=0; names[i]!=-1; ++i ) {
-	top[i].ti.text = (unichar_t *) names[i];
-	top[i].ti.text_in_resource = true;
+    for ( i=0; names[i]!=(char *) -1; ++i ) {
+	top[i].ti.text = (unichar_t *) _(names[i]);
+	top[i].ti.text_is_1byte = true;
 	top[i].ti.fg = top[i].ti.bg = COLOR_DEFAULT;
 	top[i].sub = TIListToMI(pst_tags[indeces[i]-1],SFD_OpenTypeTag);
     }
@@ -1108,7 +1110,7 @@ static GMenuItem *TagMenu(SplineFont *sf) {
     top[i++].ti.line = true;
 
     top[i].ti.text = (unichar_t *) names[i];
-    top[i].ti.text_in_resource = true;
+    top[i].ti.text_is_1byte = true;
     top[i].ti.fg = top[i].ti.bg = COLOR_DEFAULT;
     mac = AddMacFeatures(NULL,pst_max,sf);
     top[i].sub = TIListToMI(mac,SFD_MacTag);
@@ -1179,7 +1181,7 @@ static int SFD_ParseSelect(struct sf_dlg *d,int off,struct select_res *res) {
 	res->tag = (ret[0]<<24) | (ret[1]<<16) | (ret[2]<<8) | ret[3];
     } else {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_BadTag,_STR_TagMustBe4);
+	gwwv_post_error(_("Bad Tag"),_("Tag must be 4 characters long"));
 #elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad Tag"),_("Tag must be 4 characters long"));
 #endif
@@ -1208,7 +1210,8 @@ static int AddSelect(GGadgetCreateData *gcd, GTextInfo *label, int k, int y,
 	int off, SplineFont *sf ) {
     int j;
 
-    label[k].text = (unichar_t *) _STR_TagC;
+    label[k].text = (unichar_t *) _("_Tag:");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = y+4; 
@@ -1228,7 +1231,8 @@ static int AddSelect(GGadgetCreateData *gcd, GTextInfo *label, int k, int y,
     gcd[k].gd.handle_controlevent = SFD_TagMenu;
     gcd[k++].creator = GButtonCreate;
 
-    label[k].text = (unichar_t *) _STR_ScriptAndLangC;
+    label[k].text = (unichar_t *) _("_Script & Languages:");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+26; 
@@ -1246,8 +1250,8 @@ static int AddSelect(GGadgetCreateData *gcd, GTextInfo *label, int k, int y,
 
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+28;
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_cb_on;
-    label[k].text = (unichar_t *) _STR_AnyFlags;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Any Flags");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_AnyFlags+off;
     gcd[k].gd.handle_controlevent = SFD_RadioChanged;
@@ -1255,8 +1259,8 @@ static int AddSelect(GGadgetCreateData *gcd, GTextInfo *label, int k, int y,
 
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+15;
     gcd[k].gd.flags = gg_visible | gg_enabled ;
-    label[k].text = (unichar_t *) _STR_TheseFlags;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("These Flags");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TheseFlags+off;
     gcd[k].gd.handle_controlevent = SFD_RadioChanged;
@@ -1264,32 +1268,32 @@ static int AddSelect(GGadgetCreateData *gcd, GTextInfo *label, int k, int y,
 
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+15;
     gcd[k].gd.flags = gg_visible;
-    label[k].text = (unichar_t *) _STR_RightToLeft;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Right To Left");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_R2L+off;
     gcd[k++].creator = GCheckBoxCreate;
 
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+15;
     gcd[k].gd.flags = gg_visible;
-    label[k].text = (unichar_t *) _STR_IgnoreBaseGlyphs;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Ignore Base Glyphs");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_IgnBase+off;
     gcd[k++].creator = GCheckBoxCreate;
 
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+15;
     gcd[k].gd.flags = gg_visible;
-    label[k].text = (unichar_t *) _STR_IgnoreLigatures;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Ignore Ligatures");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_IgnLig+off;
     gcd[k++].creator = GCheckBoxCreate;
 
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+15;
     gcd[k].gd.flags = gg_visible;
-    label[k].text = (unichar_t *) _STR_IgnoreCombiningMarks;
-    label[k].text_in_resource = true;
+    label[k].text = (unichar_t *) _("Ignore Combining Marks");
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_IgnMark+off;
     gcd[k++].creator = GCheckBoxCreate;
@@ -1357,7 +1361,9 @@ return( true );
 
 static int SelectFeatureDlg(SplineFont *sf,enum selectfeaturedlg_type type) {
     struct sf_dlg d;
-    static const int titles[] = { _STR_RemoveFeature, _STR_RetagFeature, _STR_CopyFeatureToFont };
+    static const char *titles[] = { N_("R_emove Feature(s)..."),
+	    N_("Re_tag Feature(s)..."),
+	    N_("_Copy Feature(s) To Font...") };
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
@@ -1372,13 +1378,13 @@ static int SelectFeatureDlg(SplineFont *sf,enum selectfeaturedlg_type type) {
     d.which = type;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.is_dlg = true;
     wattrs.restrict_input_to_me = true;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.window_title = GStringGetResource(titles[type],NULL);
+    wattrs.utf8_window_title = _(titles[type]);
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,GGadgetScale(200));
     pos.height = GDrawPointsToPixels(NULL,type==sfd_remove ? 225 :
@@ -1396,8 +1402,8 @@ static int SelectFeatureDlg(SplineFont *sf,enum selectfeaturedlg_type type) {
 	gcd[k].gd.flags = gg_visible | gg_enabled;
 	gcd[k++].creator = GLineCreate;
 
-	label[k].text = (unichar_t *) _STR_RetagWith;
-	label[k].text_in_resource = true;
+	label[k].text = (unichar_t *) _("Retag with...");
+	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = 20; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+5;
 	gcd[k].gd.flags = gg_enabled|gg_visible;
@@ -1410,8 +1416,8 @@ static int SelectFeatureDlg(SplineFont *sf,enum selectfeaturedlg_type type) {
 	gcd[k].gd.flags = gg_visible | gg_enabled;
 	gcd[k++].creator = GLineCreate;
 
-	label[k].text = (unichar_t *) _STR_ToFont;
-	label[k].text_in_resource = true;
+	label[k].text = (unichar_t *) _("To Font:");
+	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+5;
 	gcd[k].gd.flags = gg_enabled|gg_visible;
@@ -1431,7 +1437,8 @@ static int SelectFeatureDlg(SplineFont *sf,enum selectfeaturedlg_type type) {
     if ( type==sfd_copyto )
 	y = gcd[k-1].gd.pos.y+gcd[k-1].gd.pos.height+7;
 
-    label[k].text = (unichar_t *) _STR_OK;
+    label[k].text = (unichar_t *) _("_OK");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 30-3; gcd[k].gd.pos.y = y;
@@ -1440,7 +1447,8 @@ static int SelectFeatureDlg(SplineFont *sf,enum selectfeaturedlg_type type) {
     gcd[k].gd.handle_controlevent = SFD_Ok;
     gcd[k++].creator = GButtonCreate;
 
-    label[k].text = (unichar_t *) _STR_Cancel;
+    label[k].text = (unichar_t *) _("_Cancel");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = -30; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+3;
@@ -1482,7 +1490,7 @@ static int SelectFeatureDlg(SplineFont *sf,enum selectfeaturedlg_type type) {
 	    GTextInfo *sel = GGadgetGetListItemSelected(GWidgetGetControl(d.gw,CID_FontList));
 	    if ( sel==NULL ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-		GWidgetErrorR(_STR_NoSelectedFont,_STR_NoSelectedFont);
+		gwwv_post_error(_("No Selected Font"),_("No Selected Font"));
 #elif defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("No Selected Font"),_("No Selected Font"));
 #endif
@@ -1500,7 +1508,7 @@ return( ret );
 void SFRemoveFeatureDlg(SplineFont *sf) {
     if ( !SelectFeatureDlg(sf,sfd_remove))
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_NoFeaturesRemoved,_STR_NoFeaturesRemoved);
+	gwwv_post_error(_("No Features Removed"),_("No Features Removed"));
 #elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("No Features Removed"),_("No Features Removed"));
 #endif
@@ -1509,7 +1517,7 @@ void SFRemoveFeatureDlg(SplineFont *sf) {
 void SFCopyFeatureToFontDlg(SplineFont *sf) {
     if ( !SelectFeatureDlg(sf,sfd_copyto))
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_NoFeaturesCopied,_STR_NoFeaturesCopied);
+	gwwv_post_error(_("No Features Copied"),_("No Features Copied"));
 #elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("No Features Copied"),_("No Features Copied"));
 #endif
@@ -1518,7 +1526,7 @@ void SFCopyFeatureToFontDlg(SplineFont *sf) {
 void SFRetagFeatureDlg(SplineFont *sf) {
     if ( !SelectFeatureDlg(sf,sfd_retag))
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetErrorR(_STR_NoFeaturesRetagged,_STR_NoFeaturesRetagged);
+	gwwv_post_error(_("No Features Retagged"),_("No Features Retagged"));
 #elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("No Features Retagged"),_("No Features Retagged"));
 #endif

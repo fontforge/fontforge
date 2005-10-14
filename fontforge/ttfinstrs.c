@@ -571,16 +571,12 @@ return;
     GDrawRequestExpose(iv->gw,NULL,false);
 }
 
-static void IVError(InstrDlg *iv,int msg,int offset) {
+static void IVError(InstrDlg *iv,char *msg,int offset) {
 
     GTextFieldSelect(iv->text,offset,offset);
     GTextFieldShow(iv->text,offset);
     GWidgetIndicateFocusGadget(iv->text);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    GWidgetErrorR(_STR_ParseError,msg);
-#elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_post_error(_("Parse Error"),msg);
-#endif
 }
 
 static int IVParse(InstrDlg *iv) {
@@ -599,7 +595,7 @@ static int IVParse(InstrDlg *iv) {
 	    if ( isdigit( *pt ) || *pt=='-' ) {
 		val = u_strtol(pt,&end,0);
 		if ( val>32767 || val<-32768 ) {
-		    IVError(iv,_STR_InvalidShort,pt-text);
+		    IVError(iv,_("A value must be between [-32768,32767]"),pt-text);
 return( false );
 		}
 		numberstack[npos++] = val;
@@ -608,14 +604,14 @@ return( false );
 		pt += 3;
 		while ( *pt==' ' || *pt=='\t' ) ++pt;
 		if ( *pt!='(' ) {
-		    IVError(iv,_STR_MissingLParenCvt,pt-text);
+		    IVError(iv,_("Missing left paren in command to get a cvt index"),pt-text);
 return( false );
 		}
 		temp = u_strtol(pt+1,&end,0);
 		pt = end;
 		while ( *pt==' ' || *pt=='\t' ) ++pt;
 		if ( *pt!=')' ) {
-		    IVError(iv,_STR_MissingRParenCvt,pt-text);
+		    IVError(iv,_("Missing right paren in command to get a cvt index"),pt-text);
 return( false );
 		}
 		numberstack[npos++] = TTF__getcvtval(iv->instrdata->sf,temp);
@@ -630,9 +626,9 @@ return( false );
 	if ( push_left==-1 ) {
 	    /* we need a push count */
 	    if ( npos==0 )
-		IVError(iv,_STR_NeedPushCount,pt-text);
+		IVError(iv,_("Expected a number for a push count"),pt-text);
 	    else if ( numberstack[0]>255 || numberstack[0]<=0 ) {
-		IVError(iv,_STR_InvalidPushCount,pt-text);
+		IVError(iv,_("The push count must be a number between 0 and 255"),pt-text);
 return( false );
 	    } else {
 		nread = 1;
@@ -641,7 +637,7 @@ return( false );
 	    }
 	}
 	if ( push_left!=0 && push_left<npos-nread && *pt=='\n' ) {
-	    IVError(iv,_STR_ExtraPushes,pt-text);
+	    IVError(iv,_("More pushes specified than needed"),pt-text);
 return( false );
 	}
 	while ( push_left>0 && nread<npos ) {
@@ -649,7 +645,7 @@ return( false );
 		instrs[icnt++] = numberstack[nread]>>8;
 		instrs[icnt++] = numberstack[nread++]&0xff;
 	    } else if ( numberstack[0]>255 || numberstack[0]<0 ) {
-		IVError(iv,_STR_InvalidUnsignedByte,pt-text);
+		IVError(iv,_("A value to be pushed by a byte push must be between 0 and 255"),pt-text);
 return( false );
 	    } else
 		instrs[icnt++] = numberstack[nread++];
@@ -658,7 +654,7 @@ return( false );
 	if ( *pt=='\n' )
     continue;
 	if ( push_left>0 ) {
-	    IVError(iv,_STR_MissingPushes,pt-text);
+	    IVError(iv,_("Missing pushes"),pt-text);
 return( false );
 	}
 	while ( nread<npos ) {
@@ -702,11 +698,11 @@ return( false );
 	    val = u_strtol(brack+1,&bend,2);	/* Stuff in brackets should be in binary */
 	    while ( *bend==' ' || *bend=='\t' ) ++bend;
 	    if ( *bend!=']' ) {
-		IVError(iv,_STR_MissingRBracket,pt-text);
+		IVError(iv,_("Missing right bracket in command (or bad binary value in bracket)"),pt-text);
 return( false );
 	    }
 	    if ( val>=32 ) {
-		IVError(iv,_STR_BracketNumTooBig,pt-text);
+		IVError(iv,_("Bracketted value is too large"),pt-text);
 return( false );
 	    }
 	    i += val;
@@ -1160,7 +1156,7 @@ static int iv_e_h(GWindow gw, GEvent *event) {
 return( true );
 }
 
-static void InstrDlgCreate(struct instrdata *id,unichar_t *title) {
+static void InstrDlgCreate(struct instrdata *id,char *title) {
     InstrDlg *iv = gcalloc(1,sizeof(*iv));
     GRect pos;
     GWindow gw;
@@ -1188,12 +1184,12 @@ static void InstrDlgCreate(struct instrdata *id,unichar_t *title) {
 	ttf_icon = GDrawCreateBitmap(NULL,ttf_width,ttf_height,ttf_bits);
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_icon;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_icon;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.window_title = title;
+    wattrs.utf8_window_title = title;
     wattrs.icon = ttf_icon;
     pos.x = pos.y = 0;
     if ( GIntGetResource(_NUM_Buttonsize)>65 )
@@ -1208,25 +1204,27 @@ static void InstrDlgCreate(struct instrdata *id,unichar_t *title) {
     memset(&gd,0,sizeof(gd));
     gd.pos.x = 5; gd.pos.y = 105;
     gd.pos.width = -1;
-    label.text = (unichar_t *) _STR_OK;
+    label.text = (unichar_t *) _("_OK");
+    label.text_is_1byte = true;
     label.text_in_resource = true;
     gd.label = &label;
     gd.flags = gg_visible|gg_enabled|gg_but_default;
     iv->ok = GButtonCreate(gw,&gd,iv);
     gd.pos.x = -8; gd.pos.y += 3;
     gd.pos.width = -1;
-    label.text = (unichar_t *) _STR_Cancel;
+    label.text = (unichar_t *) _("_Cancel");
+    label.text_is_1byte = true;
     label.text_in_resource = true;
     gd.label = &label;
     gd.flags = gg_visible|gg_enabled|gg_but_cancel;
     iv->cancel = GButtonCreate(gw,&gd,iv);
 
-    label.text = (unichar_t *) _STR_Edit;
+    label.text = (unichar_t *) _("_Edit");
+    label.text_is_1byte = true;
     label.text_in_resource = true;
     gd.flags = gg_visible|gg_enabled;
     iv->edit = GButtonCreate(gw,&gd,iv);
-    label.text = (unichar_t *) _STR_Parse;
-    label.text_in_resource = true;
+    label.text = (unichar_t *) _("_Parse");
     gd.flags = gg_enabled;
     iv->parse = GButtonCreate(gw,&gd,iv);
 
@@ -1270,7 +1268,7 @@ static void InstrDlgCreate(struct instrdata *id,unichar_t *title) {
 
 void SCEditInstructions(SplineChar *sc) {
     struct instrdata *id;
-    unichar_t title[100];
+    char title[100];
     CharView *cv;
 
     /* In a multiple master font, the instructions for all glyphs reside in */
@@ -1299,11 +1297,7 @@ return;
     id->instrs = galloc(id->max+1);
     if ( sc->ttf_instrs!=NULL )
 	memcpy(id->instrs,sc->ttf_instrs,id->instr_cnt);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    u_sprintf(title,GStringGetResource(_STR_TTFInstructionsFor,NULL),sc->name);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    u_sprintf(title,_("TrueType Instructions for %.50s"),sc->name);
-#endif
+    sprintf(title,_("TrueType Instructions for %.50s"),sc->name);
     InstrDlgCreate(id,title);
 }
 
@@ -1387,11 +1381,7 @@ return( true );
     val = u_strtol(ret,&end,10);
     if ( *ret=='\0' || *end!='\0' || val<-32768 || val>32767 ) {
 	if ( showerr )
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_BadNumber,_STR_BadNumber);
-#elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Bad Number"),_("Bad Number"));
-#endif
 return( false );
     }
     oldval = sv->edits[sv->active];
@@ -1423,23 +1413,20 @@ static int SV_ChangeLength(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	ShortView *sv = GDrawGetUserData(GGadgetGetWindow(g));
 	char buffer[12];
-	unichar_t ubuf[12], *ret, *e;
+	char *ret, *e;
 	int val,i;
 
 	sprintf( buffer, "%d", sv->len/2 );
-	uc_strcpy(ubuf,buffer);
-	ret = GWidgetAskStringR(_STR_ChangeLength, ubuf,_STR_EnterNewLength);
+	ret = gwwv_ask_string(_("Change Length"), buffer,_("How many entries should there be in the cvt table?"));
 	if ( ret==NULL )
 return( true );		/* Cancelled */
-	val = u_strtol(ret,&e,10);
+	val = strtol(ret,&e,10);
 	if ( *e || val<0 || val>65535 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetErrorR(_STR_BadNumber,_STR_BadNumber);
-#elif defined(FONTFORGE_CONFIG_GTK)
+	    free(ret);
 	    gwwv_post_error(_("Bad Number"),_("Bad Number"));
-#endif
 return( false );
 	}
+	free(ret);
 	if ( val*2>sv->len ) {
 	    sv->edits = grealloc(sv->edits,val*2);
 	    for ( i=sv->len/2; i<val; ++i )
@@ -1701,7 +1688,7 @@ return( true );
 /* cvt table */
 static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
     ShortView *sv = gcalloc(1,sizeof(ShortView));
-    unichar_t title[60];
+    char title[60];
     GRect pos, subpos, gsize;
     GWindow gw;
     GWindowAttrs wattrs;
@@ -1721,10 +1708,8 @@ static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
     sf->cvt_dlg = sv;
     sv->tag = tag;
 
-    if ( tab==NULL && sf->mm!=NULL && sf->mm->apple ) {
-	sf = sf->mm->normal;
-	tab = SFFindTable(sf,tag);
-    }
+    if ( tab==NULL && sf->mm!=NULL && sf->mm->apple )
+	tab = SFFindTable(sf->mm->normal,tag);
     if ( tab!=NULL ) {
 	sv->len = tab->len;
 	sv->edits = galloc(tab->len+1);
@@ -1740,14 +1725,14 @@ static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
     title[2] = (tag>>8 )&0xff;
     title[3] = (tag    )&0xff;
     title[4] = ' ';
-    uc_strncpy(title+5, sf->fontname, sizeof(title)/sizeof(title[0])-6);
+    strncpy(title+5, sf->fontname, sizeof(title)/sizeof(title[0])-6);
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_icon;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_icon;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.window_title = title;
+    wattrs.utf8_window_title = title;
     wattrs.icon = ttf_icon;
     pos.x = pos.y = 0;
     if ( GIntGetResource(_NUM_Buttonsize)>60 )
@@ -1761,7 +1746,8 @@ static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
     memset(&lab,0,sizeof(lab));
     gd.pos.x = 5; gd.pos.y = 105;
     gd.pos.width = -1;
-    lab.text = (unichar_t *) _STR_OK;
+    lab.text = (unichar_t *) _("_OK");
+    lab.text_is_1byte = true;
     lab.text_in_resource = true;
     gd.label = &lab;
     gd.flags = gg_visible|gg_enabled|gg_but_default;
@@ -1769,13 +1755,14 @@ static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
     sv->ok = GButtonCreate(gw,&gd,sv);
     gd.pos.x = -8; gd.pos.y += 3;
     gd.pos.width = -1;
-    lab.text = (unichar_t *) _STR_Cancel;
+    lab.text = (unichar_t *) _("_Cancel");
+    lab.text_is_1byte = true;
     lab.text_in_resource = true;
     gd.label = &lab;
     gd.flags = gg_visible|gg_enabled|gg_but_cancel;
     gd.handle_controlevent = SV_Cancel;
     sv->cancel = GButtonCreate(gw,&gd,sv);
-    lab.text = (unichar_t *) _STR_ChangeLength;
+    lab.text = (unichar_t *) _("Change Length");
     gd.pos.width = 90;
     gd.flags = gg_visible|gg_enabled;
     gd.handle_controlevent = SV_ChangeLength;
@@ -1837,7 +1824,14 @@ int SFCloseAllInstrs(SplineFont *sf) {
     int changed;
     char name[12], *npt;
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    static int buts[] = { _STR_OK, _STR_Cancel, 0 };
+    static char *buts[3];
+    static int done = false;
+
+    if ( !done ) {
+	buts[0] = _("_OK");
+	buts[1] = _("_Cancel");
+	done = true;
+    }
 #elif defined(FONTFORGE_CONFIG_GTK)
     static char *buts[] = { GTK_STOCK_OK, GTK_STOCK_CANCEL, NULL };
 #endif
@@ -1861,11 +1855,7 @@ int SFCloseAllInstrs(SplineFont *sf) {
 		npt = name;
 	    }
 	    GDrawRaise(id->id->gw);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    if ( GWidgetAskR(_STR_InstrChanged,buts,0,1,_STR_AskInstrChanged,npt)==1 )
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    if ( gwwv_ask(_("Instructions were changed"),buts,0,1,_("The instructions for %.80s have changed. Do you want to lose those changes?"),npt)==1 )
-#endif
+	    if ( gwwv_ask(_("Instructions were changed"),(const char **) buts,0,1,_("The instructions for %.80s have changed. Do you want to lose those changes?"),npt)==1 )
 return( false );
 	}
 	GDrawDestroyWindow(id->id->gw);
@@ -1877,11 +1867,7 @@ return( false );
 	    name[6] = 0;
 	    npt = name;
 	    GDrawRaise(sf->cvt_dlg->gw);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    if ( GWidgetAskR(_STR_InstrChanged,buts,0,1,_STR_AskInstrChanged,npt)==1 )
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    if ( gwwv_ask(_("Instructions were changed"),buts,0,1,_("The instructions for %.80s have changed. Do you want to lose those changes?"),npt)==1 )
-#endif
+	    if ( gwwv_ask(_("Instructions were changed"),(const char **) buts,0,1,_("The instructions for %.80s have changed. Do you want to lose those changes?"),npt)==1 )
 return( false );
 	}
 	GDrawDestroyWindow(sf->cvt_dlg->gw);
@@ -1893,6 +1879,7 @@ return( false );
 return( true );
 }
 
+/* Maxp table editor (or that subset of it that ff can't figure out) */
 struct maxp_data {
     GWindow gw;
     SplineFont *sf;
@@ -1925,12 +1912,12 @@ static int Maxp_OK(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	mp = GDrawGetUserData(GGadgetGetWindow(g));
-	zones = GetIntR(mp->gw,CID_Zones,_STR_Zones,&err);
-	tp = GetIntR(mp->gw,CID_TPoints,_STR_TwilightPntCnt,&err);
-	store = GetIntR(mp->gw,CID_Storage,_STR_Storage,&err);
-	stack = GetIntR(mp->gw,CID_SEl,_STR_StackDepth,&err);
-	fd = GetIntR(mp->gw,CID_FDefs,_STR_FDEFs,&err);
-	id = GetIntR(mp->gw,CID_IDefs,_STR_IDEFs,&err);
+	zones = GetInt8(mp->gw,CID_Zones,_("Zones"),&err);
+	tp = GetInt8(mp->gw,CID_TPoints,_("Twilight Zone Point Count"),&err);
+	store = GetInt8(mp->gw,CID_Storage,_("Storage"),&err);
+	stack = GetInt8(mp->gw,CID_SEl,_("Max Stack Depth"),&err);
+	fd = GetInt8(mp->gw,CID_FDefs,_("Max # Functions"),&err);
+	id = GetInt8(mp->gw,CID_IDefs,_("Max Instruction Defines"),&err);
 	if ( err )
 return( true );
 	mp->done = true;
@@ -1976,7 +1963,7 @@ return( true );
 }
 
 static void maxpCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
-    unichar_t title[60];
+    char title[60];
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
@@ -2006,14 +1993,14 @@ static void maxpCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
     title[2] = (tag>>8 )&0xff;
     title[3] = (tag    )&0xff;
     title[4] = ' ';
-    uc_strncpy(title+5, sf->fontname, sizeof(title)/sizeof(title[0])-6);
+    strncpy(title+5, sf->fontname, sizeof(title)-6);
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.window_title = title;
+    wattrs.utf8_window_title = title;
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.is_dlg = true;
@@ -2026,7 +2013,7 @@ static void maxpCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
     memset(gcd,0,sizeof(gcd));
 
 	k=0;
-	label[k].text = (unichar_t *) _STR_Zones;
+	label[k].text = (unichar_t *) _("_Zones:");
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = 16; 
@@ -2044,7 +2031,7 @@ static void maxpCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
 	gcd[k].gd.cid = CID_Zones;
 	gcd[k++].creator = GTextFieldCreate;
 
-	label[k].text = (unichar_t *) _STR_TwilightPntCnt;
+	label[k].text = (unichar_t *) _("_Twilight Pnt Cnt:");
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = 120; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y; 
@@ -2062,7 +2049,7 @@ static void maxpCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
 	gcd[k].gd.cid = CID_TPoints;
 	gcd[k++].creator = GTextFieldCreate;
 
-	label[k].text = (unichar_t *) _STR_StorageC;
+	label[k].text = (unichar_t *) _("St_orage:");
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = gcd[k-4].gd.pos.x; gcd[k].gd.pos.y = gcd[k-3].gd.pos.y+24+6; 
@@ -2080,7 +2067,7 @@ static void maxpCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
 	gcd[k].gd.cid = CID_Storage;
 	gcd[k++].creator = GTextFieldCreate;
 
-	label[k].text = (unichar_t *) _STR_StackDepth;
+	label[k].text = (unichar_t *) _("Max _Stack Depth:");
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = gcd[k-4].gd.pos.x; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y; 
@@ -2098,7 +2085,7 @@ static void maxpCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
 	gcd[k].gd.cid = CID_SEl;
 	gcd[k++].creator = GTextFieldCreate;
 
-	label[k].text = (unichar_t *) _STR_FDEFs;
+	label[k].text = (unichar_t *) _("_FDEF");
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = gcd[k-4].gd.pos.x; gcd[k].gd.pos.y = gcd[k-3].gd.pos.y+24+6; 
@@ -2115,7 +2102,7 @@ static void maxpCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
 	gcd[k].gd.cid = CID_FDefs;
 	gcd[k++].creator = GTextFieldCreate;
 
-	label[k].text = (unichar_t *) _STR_IDEFs;
+	label[k].text = (unichar_t *) _("_IDEFs");
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = gcd[k-4].gd.pos.x; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y; 
@@ -2167,7 +2154,7 @@ void SFEditTable(SplineFont *sf, uint32 tag) {
     struct instrdata *id;
     struct ttf_table *tab;
     char name[12];
-    unichar_t title[100];
+    char title[100];
 
     /* In multiple master fonts the 'fpgm' and 'prep' tables are stored in the*/
     /*  normal instance of the font. The other instances must share it */
@@ -2199,11 +2186,7 @@ return;
 	name[0] = name[5] = '\'';
 	name[1] = tag>>24; name[2] = (tag>>16)&0xff; name[3] = (tag>>8)&0xff; name[4] = tag&0xff;
 	name[6] = 0;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	u_sprintf(title,GStringGetResource(_STR_TTFInstructionsFor,NULL),name);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	u_sprintf(title,_("TrueType Instructions for %.50s"),name);
-#endif
+	sprintf(title,_("TrueType Instructions for %.50s"),name);
 	InstrDlgCreate(id,title);
     } else {
 	if ( sf->cvt_dlg!=NULL ) {

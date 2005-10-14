@@ -491,7 +491,7 @@ return( false );
 	    font->glyphs[gid]->sc->unicodeenc == ' ' )
 	spacesize = font->glyphs[gid]->width;
     if ( badch!=-1 )
-	LogError( "At pixelsize %d the character %s either starts before the origin or extends beyond the advance width.\n",
+	LogError( _("At pixelsize %d the character %s either starts before the origin or extends beyond the advance width.\n"),
 		font->pixelsize, font->glyphs[badch]->sc->name );
     SFDefaultOS2Info(&pfminfo,font->sf,font->sf->fontname);
     widbytes = avgwid+spacesize;
@@ -581,7 +581,7 @@ return( false );
     lputshort(file,widbytes);
 
     if ( ftell(file)-startpos != datapos ) {
-	LogError( "Internal error in creating FNT. file offset wrong\n" );
+	LogError( _("Internal error in creating FNT. file offset wrong\n") );
 	complained = true;
     }
 
@@ -609,7 +609,7 @@ return( false );
 		}
 	    }
 	    if ( ftell(file)-startpos != datapos+widbytes && !complained ) {
-		LogError( "Internal error in creating FNT. file offset wrong in bitmap data\n" );
+		LogError( _("Internal error in creating FNT. file offset wrong in bitmap data\n") );
 		complained = true;
 	    }
 	}
@@ -639,7 +639,7 @@ int FONFontDump(char *filename,BDFFont *font, EncMap *map, int res) {
 
     file = fopen(filename,"wb");
     if ( file==NULL ) {
-	LogError( "Can't open %s\n", filename );
+	LogError( _("Can't open %s\n"), filename );
 return( 0 );
     }
     ret = _FONFontDump(file,font,map,res);

@@ -91,9 +91,16 @@ return;
     sub = gcalloc(cnt+1,sizeof(GMenuItem));
     memcpy(sub,base,precnt*sizeof(struct gmenuitem));
     for ( i=0; sub[i].ti.text!=NULL || sub[i].ti.line; ++i ) {
-	if ( sub[i].ti.text_in_resource )
+	if ( sub[i].ti.text_is_1byte && sub[i].ti.text_in_resource) {
+	    sub[i].ti.text = utf82u_mncopy((char *) sub[i].ti.text,&sub[i].ti.mnemonic);
+	    sub[i].ti.text_is_1byte = sub[i].ti.text_in_resource = false;
+	} else if ( sub[i].ti.text_is_1byte ) {
+	    sub[i].ti.text = utf82u_copy((char *) sub[i].ti.text);
+	    sub[i].ti.text_is_1byte = false;
+	} else if ( sub[i].ti.text_in_resource ) {
 	    sub[i].ti.text = u_copy(GStringGetResource((intpt) sub[i].ti.text,NULL));
-	else
+	    sub[i].ti.text_in_resource = false;
+	} else
 	    sub[i].ti.text = u_copy(sub[i].ti.text);
     }
     cnt = precnt;
@@ -224,6 +231,11 @@ void _aplistbuild(struct gmenuitem *top,SplineFont *sf,
     GMenuItem *mi, *sub;
     AnchorClass *ac;
 
+    if ( top->sub!=NULL ) {
+	GMenuItemArrayFree(top->sub);
+	top->sub = NULL;
+    }
+
     cnt = 0;
     for ( ac = sf->anchor; ac!=NULL; ac=ac->next ) ++cnt;
     if ( cnt==0 )
@@ -235,11 +247,7 @@ void _aplistbuild(struct gmenuitem *top,SplineFont *sf,
     mi->ti.userdata = (void *) (-1);
     mi->ti.bg = mi->ti.fg = COLOR_DEFAULT;
     mi->invoke = func;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    mi->ti.text = u_copy(GStringGetResource(_STR_All,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-    mi->ti.text = u_copy(_("All"));
-#endif
+    mi->ti.text = utf82u_copy(_("All"));
     if ( cnt==1 )
 	mi->ti.disabled = true;
     else {
@@ -252,7 +260,7 @@ void _aplistbuild(struct gmenuitem *top,SplineFont *sf,
 	mi->ti.userdata = (void *) ac;
 	mi->ti.bg = mi->ti.fg = COLOR_DEFAULT;
 	mi->invoke = func;
-	mi->ti.text = u_copy(ac->name);
+	mi->ti.text = utf82u_copy(ac->name);
     }
     top->sub = sub;
 }
@@ -444,4 +452,19 @@ void _aplistbuild(GtkMenuItem *menuitem,SplineFont *sf,
     }
 }
 # endif
+
+void mbDoGetText(GMenuItem *mb) {
+    /* perform gettext substitutions on this menu and all sub menus */
+    int i;
+
+    if ( mb==NULL )
+return;
+    for ( i=0; mb[i].ti.text!=NULL || mb[i].ti.line || mb[i].ti.image!=NULL; ++i ) {
+	if ( mb[i].ti.text!=NULL ) {
+	    mb[i].ti.text = (unichar_t *) _((char *) mb[i].ti.text);
+	    if ( mb[i].sub!=NULL )
+		mbDoGetText(mb[i].sub);
+	}
+    }
+}
 #endif

@@ -38,97 +38,60 @@ extern void cygwin_conv_to_full_posix_path(const char *win,char *unx);
 extern void cygwin_conv_to_full_win32_path(const char *unx,char *win);
 #endif
 
-void Protest(char *label) {
-    char buffer[80];
-    unichar_t ubuf[80];
-    sprintf( buffer, "Bad Number in %s", label );
-    uc_strcpy(ubuf,buffer);
-    GWidgetPostNotice(ubuf,ubuf);
+void Protest8(char *label) {
+    char buf[80];
+
+    snprintf( buf, sizeof(buf),_("Bad Number in %s"), label);
+    if ( buf[strlen(buf)-1]==' ' )
+	buf[strlen(buf)-1]='\0';
+    if ( buf[strlen(buf)-1]==':' )
+	buf[strlen(buf)-1]='\0';
+    gwwv_post_notice(buf,buf);
 }
 
-real GetReal(GWindow gw,int cid,char *name,int *err) {
-    const unichar_t *txt; unichar_t *end;
-    double val;
-
-    txt = _GGadgetGetTitle(GWidgetGetControl(gw,cid));
-    val = u_strtod(txt,&end);
-    if ( *end!='\0' ) {
-	GTextFieldSelect(GWidgetGetControl(gw,cid),0,-1);
-	Protest(name);
-	*err = true;
-    }
-return( val );
-}
-
-int GetInt(GWindow gw,int cid,char *name,int *err) {
-    const unichar_t *txt; unichar_t *end;
-    int val;
-
-    txt = _GGadgetGetTitle(GWidgetGetControl(gw,cid));
-    val = u_strtol(txt,&end,10);
-    if ( *end!='\0' ) {
-	GTextFieldSelect(GWidgetGetControl(gw,cid),0,-1);
-	Protest(name);
-	*err = true;
-    }
-return( val );
-}
-
-void ProtestR(int labelr) {
-    unichar_t ubuf[80];
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    u_strcpy(ubuf,GStringGetResource(_STR_Badnumberin,NULL));
-#elif defined(FONTFORGE_CONFIG_GTK)
-    u_strcpy(ubuf,_("Bad Number in "));
-#endif
-    u_strcat(ubuf,GStringGetResource(labelr,NULL));
-    if ( ubuf[u_strlen(ubuf)-1]==' ' )
-	ubuf[u_strlen(ubuf)-1]='\0';
-    if ( ubuf[u_strlen(ubuf)-1]==':' )
-	ubuf[u_strlen(ubuf)-1]='\0';
-    GWidgetPostNotice(ubuf,ubuf);
-}
-
-real GetCalmRealR(GWindow gw,int cid,int namer,int *err) {
-    const unichar_t *txt; unichar_t *end;
+real GetCalmReal8(GWindow gw,int cid,char *name,int *err) {
+    char *txt, *end;
     real val;
 
-    txt = _GGadgetGetTitle(GWidgetGetControl(gw,cid));
-    val = u_strtod(txt,&end);
+    txt = GGadgetGetTitle8(GWidgetGetControl(gw,cid));
+    val = strtod(txt,&end);
     if ( *txt=='-' && end==txt && txt[1]=='\0' )
-return( 0 );
+	end = txt+1;
     if ( *end!='\0' ) {
 	GDrawBeep(NULL);
 	*err = true;
     }
+    free(txt);
 return( val );
 }
 
-real GetRealR(GWindow gw,int cid,int namer,int *err) {
-    const unichar_t *txt; unichar_t *end;
+real GetReal8(GWindow gw,int cid,char *name,int *err) {
+    char *txt, *end;
     real val;
 
-    txt = _GGadgetGetTitle(GWidgetGetControl(gw,cid));
-    val = u_strtod(txt,&end);
+    txt = GGadgetGetTitle8(GWidgetGetControl(gw,cid));
+    val = strtod(txt,&end);
     if ( *end!='\0' ) {
 	GTextFieldSelect(GWidgetGetControl(gw,cid),0,-1);
-	ProtestR(namer);
+	Protest8(name);
 	*err = true;
     }
+    free(txt);
 return( val );
 }
 
-int GetIntR(GWindow gw,int cid,int namer,int *err) {
-    const unichar_t *txt; unichar_t *end;
+int GetInt8(GWindow gw,int cid,char *name,int *err) {
+    char *txt, *end;
     int val;
 
-    txt = _GGadgetGetTitle(GWidgetGetControl(gw,cid));
-    val = u_strtol(txt,&end,10);
+    txt = GGadgetGetTitle8(GWidgetGetControl(gw,cid));
+    val = strtol(txt,&end,10);
     if ( *end!='\0' ) {
 	GTextFieldSelect(GWidgetGetControl(gw,cid),0,-1);
-	ProtestR(namer);
+	Protest8(name);
 	*err = true;
     }
+    free(txt);
 return( val );
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
@@ -163,35 +126,35 @@ return( NULL );
     }
     dlen = sizeof(programindicator);
     if ( (err=RegQueryValueEx(hkey_exten,"",NULL,&type,(uint8 *)programindicator,&dlen))!=ERROR_SUCCESS ) {
-	LogError( "Failed to default value of exten \"%s\".\n Error=%ld", exten, err );
+	LogError( _("Failed to default value of exten \"%s\".\n Error=%ld"), exten, err );
 	RegCloseKey(hkey_exten);
 return( NULL );
     }
     RegCloseKey(hkey_exten);
 
     if ( RegOpenKeyEx(HKEY_CLASSES_ROOT,programindicator,0,KEY_READ,&hkey_prog)!=ERROR_SUCCESS ) {
-	LogError( "Failed to find program \"%s\"\n", programindicator );
+	LogError( _("Failed to find program \"%s\"\n"), programindicator );
 return( NULL );
     }
     if ( RegOpenKeyEx(hkey_prog,"shell",0,KEY_READ,&hkey_shell)!=ERROR_SUCCESS ) {
-	LogError( "Failed to find \"%s->shell\"\n", programindicator );
+	LogError( _("Failed to find \"%s->shell\"\n"), programindicator );
 	RegCloseKey(hkey_prog);
 return( NULL );
     }
     if ( RegOpenKeyEx(hkey_shell,"open",0,KEY_READ,&hkey_open)!=ERROR_SUCCESS ) {
-	LogError( "Failed to find \"%s->shell->open\"\n", programindicator );
+	LogError( _("Failed to find \"%s->shell->open\"\n"), programindicator );
 	RegCloseKey(hkey_prog); RegCloseKey(hkey_shell);
 return( NULL );
     }
     if ( RegOpenKeyEx(hkey_open,"command",0,KEY_READ,&hkey_command)!=ERROR_SUCCESS ) {
-	LogError( "Failed to find \"%s->shell->open\"\n", programindicator );
+	LogError( _("Failed to find \"%s->shell->open\"\n"), programindicator );
 	RegCloseKey(hkey_prog); RegCloseKey(hkey_shell); RegCloseKey(hkey_command);
 return( NULL );
     }
 
     dlen = sizeof(programpath);
     if ( RegQueryValueEx(hkey_command,"",NULL,&type,(uint8 *)programpath,&dlen)!=ERROR_SUCCESS ) {
-	LogError( "Failed to find default for \"%s->shell->open->command\"\n", programindicator );
+	LogError( _("Failed to find default for \"%s->shell->open->command\"\n"), programindicator );
 	RegCloseKey(hkey_prog); RegCloseKey(hkey_shell); RegCloseKey(hkey_open); RegCloseKey(hkey_command);
 return( NULL );
     }
@@ -214,7 +177,7 @@ static void do_windows_browser(char *fullspec) {
 #if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("No Browser"),_("Could not find a browser. Set the BROWSER environment variable to point to one"));
 #else
-	GWidgetErrorR(_STR_NoBrowser,_STR_NoBrowserLong);
+	gwwv_post_error(_("No Browser"),_("Could not find a browser. Set the BROWSER environment variable to point to one"));
 #endif
 return;
     }
@@ -353,7 +316,7 @@ void help(char *file) {
 #if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("No Browser"),_("Could not find a browser. Set the BROWSER environment variable to point to one"));
 #else
-	GWidgetErrorR(_STR_NoBrowser,_STR_NoBrowserLong);
+	gwwv_post_error(_("No Browser"),_("Could not find a browser. Set the BROWSER environment variable to point to one"));
 #endif
 return;
     }
@@ -436,7 +399,7 @@ return;
 	    pt, fullspec);
 	system(temp);
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetPostNoticeR(_STR_LeaveX,_STR_LeaveXLong);
+	gwwv_post_notice(_("Leave X"),_("A browser is probably running in the native Mac windowing system. You must leave the X environment to view it. Try Cmd-Opt-A"));
 #elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_notice(_("Leave X"),_("A browser is probably running in the native Mac windowing system. You must leave the X environment to view it. Try Cmd-Opt-A"));
 #endif
@@ -448,7 +411,7 @@ return;
 	sprintf( temp, "open \"%s\" &", fullspec );
 	system(temp);
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	GWidgetPostNoticeR(_STR_LeaveX,_STR_LeaveXLong);
+	gwwv_post_notice(_("Leave X"),_("A browser is probably running in the native Mac windowing system. You must leave the X environment to view it. Try Cmd-Opt-A"));
 #elif defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_notice(_("Leave X"),_("A browser is probably running in the native Mac windowing system. You must leave the X environment to view it. Try Cmd-Opt-A"));
 #endif
@@ -596,7 +559,6 @@ return( true );
 
 static int warningsv_e_h(GWindow gw, GEvent *event) {
     int i;
-    unichar_t ubuffer[200];
 
     if (( event->type==et_mouseup || event->type==et_mousedown ) &&
 	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
@@ -607,9 +569,7 @@ return( GGadgetDispatchEvent(errdata.vsb,event));
       case et_expose:
 	  GDrawSetFont(gw,errdata.font);
 	  for ( i=0; i<errdata.linecnt && i+errdata.offtop<errdata.cnt; ++i ) {
-	      uc_strncpy(ubuffer,errdata.errlines[i+errdata.offtop],sizeof(ubuffer)/sizeof(ubuffer[0]));
-	      ubuffer[sizeof(ubuffer)/sizeof(ubuffer[0])-1] = 0;
-	      GDrawDrawText(gw,3,i*errdata.fh+errdata.as,ubuffer,-1,NULL,0x000000);
+	      GDrawDrawText8(gw,3,i*errdata.fh+errdata.as,errdata.errlines[i+errdata.offtop],-1,NULL,0x000000);
 	  }
       break;
       case et_char:
@@ -647,12 +607,12 @@ static void CreateErrorWindow(void) {
     GDrawGetSize(GDrawGetRoot(NULL),&size);
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_isdlg|wam_positioned;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_isdlg|wam_positioned;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.is_dlg = true;
     wattrs.cursor = ct_pointer;
     wattrs.positioned = true;
-    wattrs.window_title = GStringGetResource(_STR_Warnings,NULL);
+    wattrs.utf8_window_title = _("Warnings");
     pos.width = GDrawPointsToPixels(NULL,GGadgetScale(400));
     pos.height = 5*errdata.fh;
     pos.x = size.width - pos.width - 10;

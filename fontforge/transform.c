@@ -77,24 +77,24 @@ typedef struct transdata {
 #define TBlock_XStart	130
 
 static GTextInfo origin[] = {
-    { (unichar_t *) _STR_GlyphOrigin, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) _STR_CenterOfSelection, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) _STR_LastPress, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Glyph Origin"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Center of Selection"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Last Press"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }};
 
 static int selcid[] = { 0, CID_XMove, CID_Angle, CID_Scale, CID_XScale, 0, CID_SkewAng, CID_XAxis };
 static GTextInfo transformtypes[] = {
-    { (unichar_t *) _STR_DoNothing, NULL, 0, 0, (void *) 0x1000, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) _STR_MoveDDD, NULL, 0, 0, (void *) 0x1, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) _STR_RotateDDD, NULL, 0, 0, (void *) 0x2, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) _STR_ScaleUniformlyDDD, NULL, 0, 0, (void *) 0x4, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) _STR_ScaleDDD, NULL, 0, 0, (void *) 0x8, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) _STR_FlipDDD, NULL, 0, 0, (void *) 0x10, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) _STR_SkewDDD, NULL, 0, 0, (void *) 0x20, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) _STR_Rotate3dDDD, NULL, 0, 0, (void *) 0x40, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) _STR_MoveByRulerDDD, NULL, 0, 0, (void *) 0x401, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) _STR_RotateByRulerDDD, NULL, 0, 0, (void *) 0x402, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) _STR_SkewByRulerDDD, NULL, 0, 0, (void *) 0x420, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Do Nothing"), NULL, 0, 0, (void *) 0x1000, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Move..."), NULL, 0, 0, (void *) 0x1, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Rotate..."), NULL, 0, 0, (void *) 0x2, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Scale Uniformly..."), NULL, 0, 0, (void *) 0x4, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Scale..."), NULL, 0, 0, (void *) 0x8, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Flip..."), NULL, 0, 0, (void *) 0x10, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Skew..."), NULL, 0, 0, (void *) 0x20, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Rotate 3D Around..."), NULL, 0, 0, (void *) 0x40, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Move by Ruler..."), NULL, 0, 0, (void *) 0x401, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Rotate by Ruler..."), NULL, 0, 0, (void *) 0x402, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Skew by Ruler..."), NULL, 0, 0, (void *) 0x420, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }};
 
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
@@ -158,12 +158,12 @@ static int Trans_OK(GGadget *g, GEvent *e) {
 	      case 0:		/* Do Nothing */
 	      break;
 	      case 1:		/* Move */
-		trans[4] = GetRealR(tw,CID_XMove,_STR_XMovement,&err);
-		trans[5] = GetRealR(tw,CID_YMove,_STR_YMovement,&err);
+		trans[4] = GetReal8(tw,CID_XMove,_("X Movement"),&err);
+		trans[5] = GetReal8(tw,CID_YMove,_("Y Movement"),&err);
 		bvts[bvpos].x = trans[4]; bvts[bvpos].y = trans[5]; bvts[bvpos++].func = bvt_transmove;
 	      break;
 	      case 2:		/* Rotate */
-		angle = GetRealR(tw,CID_Angle,_STR_RotationAngle,&err);
+		angle = GetReal8(tw,CID_Angle,_("Rotation Angle"),&err);
 		if ( GGadgetIsChecked( GWidgetGetControl(tw,CID_Clockwise)) )
 		    angle = -angle;
 		if ( fmod(angle,90)!=0 )
@@ -180,12 +180,12 @@ static int Trans_OK(GGadget *g, GEvent *e) {
 		trans[2] = -(trans[1] = sin(angle));
 	      break;
 	      case 3:		/* Scale Uniformly */
-		trans[0] = trans[3] = GetRealR(tw,CID_Scale,_STR_ScaleFactor,&err)/100.0;
+		trans[0] = trans[3] = GetReal8(tw,CID_Scale,_("Scale Factor"),&err)/100.0;
 		bvts[0].func = bvt_none;		/* Bad trans=> No trans */
 	      break;
 	      case 4:		/* Scale */
-		trans[0] = GetRealR(tw,CID_XScale,_STR_XScaleFactor,&err)/100.0;
-		trans[3] = GetRealR(tw,CID_YScale,_STR_YScaleFactor,&err)/100.0;
+		trans[0] = GetReal8(tw,CID_XScale,_("X Scale Factor"),&err)/100.0;
+		trans[3] = GetReal8(tw,CID_YScale,_("Y Scale Factor"),&err)/100.0;
 		bvts[0].func = bvt_none;		/* Bad trans=> No trans */
 	      break;
 	      case 5:		/* Flip */
@@ -198,7 +198,7 @@ static int Trans_OK(GGadget *g, GEvent *e) {
 		}
 	      break;
 	      case 6:		/* Skew */
-		angle = GetRealR(tw,CID_SkewAng,_STR_SkewAngle,&err);
+		angle = GetReal8(tw,CID_SkewAng,_("Skew Angle"),&err);
 		if ( GGadgetIsChecked( GWidgetGetControl(tw,CID_Clockwise)) )
 		    angle = -angle;
 		angle *= 3.1415926535897932/180;
@@ -206,8 +206,8 @@ static int Trans_OK(GGadget *g, GEvent *e) {
 		skewselect(&bvts[bvpos],trans[2]); ++bvpos;
 	      break;
 	      case 7:		/* 3D rotate */
-		angle =  GetRealR(tw,CID_XAxis,_STR_RotationAboutXAxis,&err) * 3.1415926535897932/180;
-		angle2 = GetRealR(tw,CID_YAxis,_STR_RotationAboutYAxis,&err) * 3.1415926535897932/180;
+		angle =  GetReal8(tw,CID_XAxis,_("Rotation about X Axis"),&err) * 3.1415926535897932/180;
+		angle2 = GetReal8(tw,CID_YAxis,_("Rotation about Y Axis"),&err) * 3.1415926535897932/180;
 		trans[0] = cos(angle2);
 		trans[3] = cos(angle );
 		bvts[0].func = bvt_none;		/* Bad trans=> No trans */
@@ -252,7 +252,7 @@ return(true);
 
 	if (( transform[1]!=0 || transform[2]!=0 ) && !warned ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	    GWidgetPostNoticeR(_STR_Warning,_STR_RotateSkewWarning);
+	    gwwv_post_notice(_("Warning"),_("After rotating or skewing a glyph you should probably apply Element->Add Extrema"));
 #elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_notice(_("Warning"),_("After rotating or skewing a character you should probably apply Element->Add Extrema"));
 #endif
@@ -346,6 +346,16 @@ static void MakeTransBlock(TransData *td,int bnum) {
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[23];
     GTextInfo label[23];
+    static int done = false;
+
+    if ( !done ) {
+	int i;
+	for ( i=0; transformtypes[i].text!=NULL; ++i )
+	    transformtypes[i].text = (unichar_t *) _((char *) transformtypes[i].text);
+	for ( i=0; origin[i].text!=NULL; ++i )
+	    origin[i].text = (unichar_t *) _((char *) origin[i].text);
+	done = true;
+    }
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor;
@@ -370,7 +380,8 @@ static void MakeTransBlock(TransData *td,int bnum) {
     transformtypes[bnum==0].selected = true;
     transformtypes[bnum!=0].selected = false;
 
-    label[1].text = (unichar_t *) _STR_X;
+    label[1].text = (unichar_t *) _("_X");
+    label[1].text_is_1byte = true;
     label[1].text_in_resource = true;
     gcd[1].gd.label = &label[1];
     gcd[1].gd.pos.x = TBlock_XStart; gcd[1].gd.pos.y = 15; 
@@ -388,7 +399,8 @@ static void MakeTransBlock(TransData *td,int bnum) {
     gcd[2].gd.cid = CID_XMove;
     gcd[2].creator = GTextFieldCreate;
 
-    label[3].text = (unichar_t *) _STR_Y;
+    label[3].text = (unichar_t *) _("_Y");
+    label[3].text_is_1byte = true;
     label[3].text_in_resource = true;
     gcd[3].gd.label = &label[3];
     gcd[3].gd.pos.x = TBlock_XStart+70; gcd[3].gd.pos.y = 15; 
@@ -433,8 +445,8 @@ static void MakeTransBlock(TransData *td,int bnum) {
     gcd[7].gd.cid = CID_Scale;
     gcd[7].creator = GTextFieldCreate;
 
-    label[8].text = (unichar_t *) _STR_DegreesClockwise;
-    label[8].text_in_resource = true;
+    label[8].text = (unichar_t *) U_("° Clockwise");
+    label[8].text_is_1byte = true;
     gcd[8].gd.label = &label[8];
     gcd[8].gd.pos.x = TBlock_XStart+53; gcd[8].gd.pos.y = 2; gcd[8].gd.pos.height = 12;
     gcd[8].gd.flags = gg_enabled;
@@ -442,8 +454,8 @@ static void MakeTransBlock(TransData *td,int bnum) {
     gcd[8].gd.cid = CID_Clockwise;
     gcd[8].creator = GRadioCreate;
 
-    label[9].text = (unichar_t *) _STR_DegreesWithershins;	/* deiseal */
-    label[9].text_in_resource = true;
+    label[9].text = (unichar_t *) U_("° Withershins");	/* deiseal */
+    label[9].text_is_1byte = true;
     gcd[9].gd.label = &label[9];
     gcd[9].gd.pos.x = TBlock_XStart+53; gcd[9].gd.pos.y = 17; gcd[9].gd.pos.height = 12;
     gcd[9].gd.flags = gg_enabled | gg_cb_on;
@@ -469,8 +481,8 @@ static void MakeTransBlock(TransData *td,int bnum) {
     gcd[11].gd.cid = CID_SkewAng;
     gcd[11].creator = GTextFieldCreate;
 
-    label[12].text = (unichar_t *) _STR_Horizontal;
-    label[12].text_in_resource = true;
+    label[12].text = (unichar_t *) _("Horizontal");
+    label[12].text_is_1byte = true;
     gcd[12].gd.label = &label[12];
     gcd[12].gd.pos.x = TBlock_XStart; gcd[12].gd.pos.y = 2; gcd[12].gd.pos.height = 12;
     gcd[12].gd.flags = gg_enabled | gg_cb_on;
@@ -478,8 +490,8 @@ static void MakeTransBlock(TransData *td,int bnum) {
     gcd[12].gd.cid = CID_Horizontal;
     gcd[12].creator = GRadioCreate;
 
-    label[13].text = (unichar_t *) _STR_Vertical;
-    label[13].text_in_resource = true;
+    label[13].text = (unichar_t *) _("Vertical");
+    label[13].text_is_1byte = true;
     gcd[13].gd.label = &label[13];
     gcd[13].gd.pos.x = TBlock_XStart; gcd[13].gd.pos.y = 17; gcd[13].gd.pos.height = 12;
     gcd[13].gd.flags = gg_enabled;
@@ -487,8 +499,8 @@ static void MakeTransBlock(TransData *td,int bnum) {
     gcd[13].gd.cid = CID_Vertical;
     gcd[13].creator = GRadioCreate;
 
-    label[14].text = (unichar_t *) _STR_PercentMark;
-    label[14].text_in_resource = true;
+    label[14].text = (unichar_t *) _("%");
+    label[14].text_is_1byte = true;
     gcd[14].gd.label = &label[14];
     gcd[14].gd.pos.x = TBlock_XStart+51; gcd[14].gd.pos.y = 15; 
     gcd[14].gd.flags = gg_enabled;
@@ -496,8 +508,8 @@ static void MakeTransBlock(TransData *td,int bnum) {
     gcd[14].gd.cid = CID_XPercent;
     gcd[14].creator = GLabelCreate;
 
-    label[15].text = (unichar_t *) _STR_PercentMark;
-    label[15].text_in_resource = true;
+    label[15].text = (unichar_t *) _("%");
+    label[15].text_is_1byte = true;
     gcd[15].gd.label = &label[15];
     gcd[15].gd.pos.x = TBlock_XStart+121; gcd[15].gd.pos.y = 15; 
     gcd[15].gd.flags = gg_enabled;
@@ -505,8 +517,8 @@ static void MakeTransBlock(TransData *td,int bnum) {
     gcd[15].gd.cid = CID_YPercent;
     gcd[15].creator = GLabelCreate;
 
-    label[16].text = (unichar_t *) _STR_DegreeMark;
-    label[16].text_in_resource = true;
+    label[16].text = (unichar_t *) U_("°");
+    label[16].text_is_1byte = true;
     gcd[16].gd.label = &label[16];
     gcd[16].gd.pos.x = TBlock_XStart+51; gcd[16].gd.pos.y = 15; 
     gcd[16].gd.flags = gg_enabled;
@@ -514,8 +526,8 @@ static void MakeTransBlock(TransData *td,int bnum) {
     gcd[16].gd.cid = CID_XDegree;
     gcd[16].creator = GLabelCreate;
 
-    label[17].text = (unichar_t *) _STR_DegreeMark;
-    label[17].text_in_resource = true;
+    label[17].text = (unichar_t *) U_("°");
+    label[17].text_is_1byte = true;
     gcd[17].gd.label = &label[17];
     gcd[17].gd.pos.x = TBlock_XStart+121; gcd[17].gd.pos.y = 15; 
     gcd[17].gd.flags = gg_enabled;
@@ -572,16 +584,12 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 
     if ( td.gw==NULL ) {
 	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
 	wattrs.event_masks = ~(1<<et_charup);
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	wattrs.window_title = GStringGetResource(_STR_Transform,NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	wattrs.window_title = _("Transform...");
-#endif
+	wattrs.utf8_window_title = _("Transform...");
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,TBlock_Width));
@@ -603,7 +611,8 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 
 	    gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = y;
 	    gcd[i].gd.flags = (enableback&1) ? (gg_visible | gg_enabled) : gg_visible;
-	    label[i].text = (unichar_t *) _STR_TransformBackground;
+	    label[i].text = (unichar_t *) _("Transform _Background Too");
+	    label[i].text_is_1byte = true;
 	    label[i].text_in_resource = true;
 	    gcd[i].gd.label = &label[i];
 	    gcd[i].gd.cid = CID_DoBackground;
@@ -613,7 +622,8 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 	    gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = y;
 	    gcd[i].gd.flags = gg_visible | (enableback&2 ? gg_enabled : 0) |
 		    (enableback&4 ? gg_cb_on : 0);
-	    label[i].text = (unichar_t *) _STR_TransformKernClass;
+	    label[i].text = (unichar_t *) _("Transform kerning _classes too");
+	    label[i].text_is_1byte = true;
 	    label[i].text_in_resource = true;
 	    gcd[i].gd.label = &label[i];
 	    gcd[i].gd.cid = CID_DoKerns;
@@ -624,8 +634,8 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 	    gcd[i].gd.flags = gg_visible |
 		    (enableback&1 ? gg_enabled : 0) |
 		    (enableback&2 ? gg_cb_on : 0);
-	    label[i].text = (unichar_t *) _STR_TransformSimplePosPair;
-	    label[i].text_in_resource = true;
+	    label[i].text = (unichar_t *) _("Transform simple positioning features & _kern pairs");
+	    label[i].text_is_1byte = true;
 	    gcd[i].gd.label = &label[i];
 	    gcd[i].gd.cid = CID_DoSimplePos;
 	    gcd[i++].creator = GCheckBoxCreate;
@@ -633,7 +643,8 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 
 	    gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = y;
 	    gcd[i].gd.flags = gg_visible | gg_enabled;
-	    label[i].text = (unichar_t *) _STR_RoundToInt;
+	    label[i].text = (unichar_t *) _("Round To _Int");
+	    label[i].text_is_1byte = true;
 	    label[i].text_in_resource = true;
 	    gcd[i].gd.label = &label[i];
 	    gcd[i].gd.cid = CID_Round2Int;
@@ -643,7 +654,8 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 	gcd[i].gd.pos.x = 30-3; gcd[i].gd.pos.y = y;
 	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
 	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[i].text = (unichar_t *) _STR_OK;
+	label[i].text = (unichar_t *) _("_OK");
+	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.mnemonic = 'O';
 	gcd[i].gd.label = &label[i];
@@ -653,7 +665,8 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 	gcd[i].gd.pos.x = -30; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+3;
 	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
 	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[i].text = (unichar_t *) _STR_Cancel;
+	label[i].text = (unichar_t *) _("_Cancel");
+	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.mnemonic = 'C';
