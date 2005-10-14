@@ -362,6 +362,7 @@ return( to );
 #if HAVE_ICONV_H
 static char *old_local_name=NULL;
 static iconv_t to_unicode=(iconv_t) (-1), from_unicode=(iconv_t) (-1);
+static iconv_t to_utf8=(iconv_t) (-1), from_utf8=(iconv_t) (-1);
 
 static int my_iconv_setup(void) {
     if ( iconv_local_encoding_name==NULL ) {
@@ -376,6 +377,8 @@ return(false);
 return( to_unicode!=(iconv_t) (-1) );
     free(old_local_name);
     old_local_name = copy(iconv_local_encoding_name);
+    to_utf8 = iconv_open("UTF-8",iconv_local_encoding_name);
+    from_utf8 = iconv_open(iconv_local_encoding_name,"UTF-8");
     to_unicode = iconv_open("UCS2",iconv_local_encoding_name);
     if ( to_unicode!=(iconv_t) (-1) )
 	from_unicode = iconv_open(iconv_local_encoding_name,"UCS2");
@@ -384,7 +387,7 @@ return( to_unicode!=(iconv_t) (-1) );
 	to_unicode = iconv_open("UCS-2-INTERNAL",iconv_local_encoding_name);
 	from_unicode = iconv_open(iconv_local_encoding_name,"UCS-2-INTERNAL");
     }
-    if ( to_unicode == (iconv_t) (-1) ) {
+    if ( to_unicode == (iconv_t) (-1) || to_utf8 == (iconv_t) (-1) ) {
 	fprintf( stderr, "iconv failed to understand encoding %s (or perhaps UCS2)\n",
 		iconv_local_encoding_name);
 return( false );
@@ -479,5 +482,62 @@ return( to );
 	to[len] = '\0';
 	to[len+1] = '\0';
     }
+return( ret );
+}
+
+char *def2utf8_copy(const char *from) {
+    int len;
+    char *ret;
+    unichar_t *temp, *uto;
+
+    if ( from==NULL )
+return( NULL );
+    len = strlen(from);
+#if HAVE_ICONV_H
+    if ( my_iconv_setup() ) {
+	size_t in_left = len, out_left = 2*len;
+	char *cto = (char *) galloc(3*(len+1)), *cret = cto;
+	iconv(to_utf8, (char **) &from, &in_left, &cto, &out_left);
+	*cto++ = '\0';
+	*cto++ = '\0';
+return( cret );
+    }
+#endif
+    uto = galloc(2*len+2);
+    temp = encoding2u_strncpy(uto,from,len,local_encoding);
+    if ( temp==NULL ) {
+	free( uto );
+return( NULL );
+    }
+    uto[len] = '\0';
+    ret = u2utf8_copy(uto);
+    free(uto);
+return( ret );
+}
+
+char *utf82def_copy(const char *ufrom) {
+    int len;
+    char *ret;
+    unichar_t *u2from;
+
+    if ( ufrom==NULL )
+return( NULL );
+    len = strlen(ufrom);
+#if HAVE_ICONV_H
+    if ( my_iconv_setup() ) {
+	size_t in_left = 2*len, out_left = 3*len;
+	char *cfrom = (char *) ufrom, *cto, *to;
+	cto = to = galloc(3*len+2);
+	iconv(from_utf8, &cfrom, &in_left, &cto, &out_left);
+	*cto++ = '\0';
+	*cto++ = '\0';
+return( to );
+    }
+#endif
+    if ( local_encoding==e_utf8 )
+return( copy( ufrom ));		/* Well that's easy */
+    u2from = utf82u_copy(ufrom);
+    ret = u2def_copy(u2from);
+    free(u2from);
 return( ret );
 }
