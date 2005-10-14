@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 19-Sep-2005 -->
+  <!-- AP: Last modified: 12-Oct-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
   <TITLE>FontForge</TITLE>
   <LINK REL="icon" href="../ffanvil16.png">
@@ -236,9 +236,9 @@ FontForge の能力を拡張するために追加したいかもしれない外部ライブラリ/プログラム�
 <P>
 <!--You can download a <A HREF="fontforge-20041012-1.src.rpm">source RPM</A>:
 Version: 12-Oct-2004<BR>--> <!--You can download the
-<A HREF="fontforge_full-20050919.tar.bz2">source tree </A>in one .tgz file: Version
-19-September-2005<BR>
-<A HREF="http://fontforge.sourceforge.net/fontforge_full-20050919.tar.bz2">ソースツリー</A> (2005年9月19日版) を 1 個の .tar.bz2 ファイルとしてダウンロードすることができます。<BR>
+<A HREF="fontforge_full-20051012.tar.bz2">source tree </A>in one tarball:
+Version 12-October-2005<BR> -->
+<A HREF="http://fontforge.sourceforge.net/fontforge_full-20051012.tar.bz2">ソースツリー</A> (2005年10月12日版) を 1 個の .tar.bz2 ファイルとしてダウンロードすることができます。<BR>
 <!--Or you can go to the
 <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/">cvs
 tree</A> and get the most recent version. (This may be delayed by 24 hours)-->
@@ -493,6 +493,15 @@ bitmap fonts that fontforge uses -->
   <LI>
     <A HREF="http://canopus.iacp.dvo.ru/~panov/cm-unicode/">Computer Modern Unicode
     fonts</A>
+  <LI>
+<!--<A HREF="http://eyegene.ophthy.med.umich.edu/unicode/fontguide/">Unicode
+    Font Guide for Free/Libre Open Source Operating Systems</A> -->
+    <A HREF="http://eyegene.ophthy.med.umich.edu/unicode/fontguide/">自由な OSのための Unicode フォントガイド</A>
+      <HR>
+  <LI>
+<!--<A HREF="nonBMP/index.html">FontForge's conventions for non-BMP unicode bitmap
+    fonts</A>-->
+    <A HREF="nonBMP/index.html">FontForge の、 BMP 外の Unicode ビットマップフォントの扱い方</a>
 </UL>
 <H2>
 <!--<A NAME="docs">Documentation</A>-->
@@ -501,8 +510,8 @@ bitmap fonts that fontforge uses -->
 <P>
 <!--
 All the documentation files in this directory bundled up into one
-<A HREF="fontforge_htdocs-20050909.tgz">tgz file</A> 9-September-2005.<BR>-->
-すべての文書ファイルは 1 個の <A HREF="http://fontforge.sourceforge.net/fontforge_htdocs-20050909.tgz">tgz ファイル</A> (2005年9月9日版) にまとめられています。<BR>
+<A HREF="fontforge_htdocs-20051012.tgz">tgz file</A> 12-October-2005.<BR>-->
+すべての文書ファイルは 1 個の <A HREF="http://fontforge.sourceforge.net/fontforge_htdocs-20051012.tgz">tgz ファイル</A> (2005年10月12日版) にまとめられています。<BR>
 以下の手順でインストールすれば、FontForge は F1 を押したときに文書を見つけることができるでしょう (つまり、FontForge は Web を見に行く前に /usr/local/share/doc/fontforge を探します)。
 <BLOCKQUOTE>
   <PRE>$ mkdir -p /usr/local/share/doc/fontforge
@@ -1366,9 +1375,10 @@ which company has given me the free time to write this program. -->
 	-- TrueType/OpenType フォントの内容をダンプします。いくつかのエラーチェックも同時に行います。
       <LI>
 	<A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/fonttools/pcl2ttf.c">pcl2ttf</A>
-<!--	-- Reads a pcl file (to go to an HP printer) and extracts any truetype fonts
-	in it. -->
-	-- (HP のプリンタに送るための) pcl ファイルを読み込み、そこに含まれるすべての TrueType フォントを取り出します。
+<!--	- - Reads a pcl file (to go to an HP printer) and extracts any truetype or
+	bitmap fonts in it. (the bitmap fonts become bdf files, the truetype fonts
+	become ttf files). -->
+	-- (HP のプリンタに送るための) pcl ファイルを読み込み、そこに含まれるすべての TrueType ビットマップフォントを取り出します (ビットマップフォントは BDF ファイルに出力され、TrueType フォントは TTF ファイルに出力されます)。
     </UL>
   <LI>
 <!--font organizers-->
@@ -1377,6 +1387,10 @@ which company has given me the free time to write this program. -->
       <LI>
 	<A HREF="http://freshmeat.net/projects/fontlinge/">fontlinge</A>
     </UL>
+  <LI>
+<!--<A HREF="http://eyegene.ophthy.med.umich.edu/unicode/fontguide/">Unicode
+    Font Guide for Free/Libre Open Source Operating Systems</A> -->
+    <A HREF="http://eyegene.ophthy.med.umich.edu/unicode/fontguide/">自由な OSのための Unicode フォントガイド</A>
   <LI>
 <!--<A HREF="otherlinks.html">Other related links...</A>
     <A HREF="otherlinks.html">その他の関連リンク...</A>

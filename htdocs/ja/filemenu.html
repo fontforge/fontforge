@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-Dec-2000 -->
-  <!-- AP: Last modified: 10-Mar-2005 -->
+  <!-- AP: Last modified: 12-Oct-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
 <!--<TITLE>The File Menu</TITLE>-->
     <TITLE>ファイルメニュー</TITLE>
@@ -135,6 +135,19 @@
     have it on. But if a crash happens then, turn it off (and the crash should
     not repeat, but some functionality will be lost). -->
     <A NAME="type3-import">Type3</A> フォントを取り込むときは、FontForge はいくつかの事柄を質問します。本来はこれらの質問は不要なはずですが、世の中はそう完全ではなく、FontForge も不完全なプログラムなのです。ある特殊な場合には FontForge はパスの重複を取り除こうとすると異常終了してしまいます。重複除去の機能は太さのある線として表現されたパスを解釈する場合に重要なので、通常はそれを使用可能にするべきです。しかし、プログラムが異常終了する場合はその機能を停止してください (この場合プログラムはクラッシュしないはずですが、いくつかの機能は使用できません)。
+    <P>
+<!--Not all font formats that fontforge supports have standard extensions. Mac
+    resource forks are one example, postscript cid, type0 and type3 fonts are
+    another. FontForge can still open these formats, even if it fails to display
+    the file. You can always type the file name in yourself if you don't see
+    it in the file list. -->
+    FontForge がサポートする全てのファイルフォーマットが標準的な拡張子をもっているわけではありません。Mac のリソースファイルがその一例ですし、他にも PostScript CID フォントや Type1, Type3 フォントがそうです。FontForge はそれらのファイルが表示されていない場合でも、それらのフォーマットのファイルを開くことができます。ファイルリスト内に表示されていない場合、ファイル名を自分で打ち込むことが常に可能です。
+    <P>
+<!--FontForge can also read (many) fonts out of a pdf file. FontForge usually
+    does not list pdf files (because they aren't really designed as mechanisms
+    for transporting fonts), but you can always type in the name of one directly
+    (or use the [Filter] button to display *.pdf). -->
+    FontForge は、PDF ファイルから (多数の) フォントを読み込むこともできます。FontForge は通常は PDF ファイルをリスト表示に含めません (なぜなら、それらは本当はフォントを転送するための機能として設計されている分けではないからです) が、それを直接タイプ入力することは常に可能です (または *.pdf を表示するために [フィルタ] ボタンを押してください)。
   <DT>
 <!--<A NAME="Recent">Recent</A>-->
     <A NAME="Recent">最近開いたファイル(T)</A>
@@ -314,19 +327,19 @@
     <A NAME="Merge-kern">カーニング情報の統合(M)...</A>
   <DD>
 <!--Only available in the font view window. This command will allow you to search
-    for an afm, tfm or mac resource file containing kerning pairs for the specified
-    font. In many cases it will not be needed because when FontForge opens a
-    .pfa or .pfb font it will automagically search for an appropriate .afm file
-    in the same place. But sometimes afm files are stored in other directories.
-    And sometimes you want to import information from TeX, from mac resource
-    files or from windows pfm filew.<BR>-->
-    フォントビューウィンドウでのみ使用可能です。このコマンドは指定されたフォントに対応する AFM, TFM または カーニングペアを含む Mac のリソースファイルを検索します。FontForge は .pfa または .pfb ファイルを開く時に適切な .afm ファイルが同じ場所にあるかの検索を自動的に行うので、これはたいていの場合必要ありません。しかし AFM ファイルは別のディレクトリに格納されている場合もあります。そういうわけで、情報を TeX, Mac のリソースファイルや Windows の pfm ファイルから読み込みたい場合も時にはあります。<BR>
+    for an afm, ofm, tfm, pfm or mac resource file containing kerning pairs for
+    the specified font. In many cases it will not be needed because when FontForge
+    opens a .pfa or .pfb font it will automagically search for an appropriate
+    .afm file in the same place. But sometimes afm files are stored in other
+    directories. And sometimes you want to import information from TeX, from
+    mac resource files or from windows pfm files.<BR> -->
+    フォントビューウィンドウでのみ使用可能です。このコマンドは指定されたフォントに対応する AFM, OFM, TFM, PFM または カーニングペアを含む Mac のリソースファイルを検索します。FontForge は .pfa または .pfb ファイルを開く時に適切な .afm ファイルが同じ場所にあるかの検索を自動的に行うので、これはたいていの場合必要ありません。しかし AFM ファイルは別のディレクトリに格納されている場合もあります。そういうわけで、情報を TeX, Mac のリソースファイルや Windows の pfm ファイルから読み込みたい場合も時にはあります。<BR>
 <!--<FONT COLOR="Red"><SMALL><STRONG>NOTE: </STRONG></SMALL></FONT>FontForge
-    is unable to read an encoding from tfm files or from mac resource files,
+    is unable to read an encoding from tfm/ofm files or from mac resource files,
     it is your responsibility to ensure that the encoding of your font matches
     that of the tfm file <EM>BEFORE</EM> merging kerning information. This is
     unfortunate, sorry.-->
-    <FONT COLOR="Red"><SMALL><STRONG>注意: </STRONG></SMALL></FONT>FontForge は TFM や Mac のリソースファイルからエンコーディングを読み込むことはできません。編集中のフォントのエンコーディングが、TFM ファイルのそれと一致しているかどうかを、カーニング情報を取り込む<EM>前に</EM>確認するのはあなたの責任です。不幸なことで、申し訳なくは思いますが。
+    <FONT COLOR="Red"><SMALL><STRONG>注意: </STRONG></SMALL></FONT>FontForge は TFM/OFM や Mac のリソースファイルからエンコーディングを読み込むことはできません。編集中のフォントのエンコーディングが、TFM ファイルのそれと一致しているかどうかを、カーニング情報を取り込む<EM>前に</EM>確認するのはあなたの責任です。不幸なことで、申し訳なくは思いますが。
     <P>
 <!--Note: When loading a postscript font from a mac resource file, the associated
     kerning data will be found in the FOND stored with a bitmap font for this
