@@ -25,7 +25,7 @@ fontforge_OBJECTS =  autohint.o autosave.o autowidth.o bitmapdlg.o \
  splinesaveafm.o splinestroke.o splineutil.o splineutil2.o stamp.o \
  start.o tottf.o transform.o uiutil.o utils.o windowmenu.o  \
  zapfnomen.o othersubrs.o autotrace.o openfontdlg.o encoding.o print.o \
- problems.o pfaedit-ui.o metafont.o alignment.o parsettfbmf.o \
+ problems.o metafont.o alignment.o parsettfbmf.o \
  macbinary.o crctab.o scripting.o freetype.o gotodlg.o search.o \
  combinations.o tilepath.o sftextfield.o displayfonts.o ikarus.o \
  cvhand.o cvfreehand.o simplifydlg.o winfonts.o tottfgpos.o tottfaat.o \
@@ -47,9 +47,9 @@ LIBS = -L../libs $(X_LIBS) ../libs/libgdraw.a ../libs/libgunicode.a \
     $(X_PRE_LIBS) $(X_11LIB) $(X_EXTRA_LIBS) @LIBS@ $(STATIC_LIBS) -lm
 DLIBS = ../libs/libgunicode.a @LIBS@ -lm
 
-all: pfaedit-en.ui fontforge sfddiff
+all: fontforge
 
-fontforge: nomen.h $(fontforge_OBJECTS)
+fontforge: $(fontforge_OBJECTS)
 	$(CC) -o fontforge $(fontforge_OBJECTS) $(LIBS)
 
 sfddiff: $(DIFFOBJS)
@@ -63,19 +63,17 @@ acorn2sfd: $(ACORNOBJS)
 splinerefigure.o: $(srcdir)/splinerefigure.c
 	$(CC) -g -c -o splinerefigure.o $(_CFLAGS) $(srcdir)/splinerefigure.c
 
-#this makes all the .ui files but wildcarding doesn't work too well if the
-# files don't exist.
-nomen.h pfaedit-ui.c pfaedit-en.ui: $(srcdir)/nomen-*.c makenomenh.c
-	$(CC) -o makenomenh $(CFLAGS) $(srcdir)/makenomenh.c $(LIBS)
-	-ln -s $(srcdir)/nomen-*.c .
-	./makenomenh
-	mv pfaedit-ui-en.c pfaedit-ui.c
-
 clean:
-	-rm -f *.o fontforge *.ui nomen.h pfaedit-ui.c makenomenh _nomen-*.c sfddiff acorn2sfd
+	-rm -f *.o fontforge sfddiff acorn2sfd po/*.mo
 
 distclean cleaner: clean
 	-rm -f Makefile
-	-for i in nomen.*.c; do \
-	  test -L $$i && rm $$i; \
-	done;
+
+# xgettext has caniptions and strips any non-ASCII characters from my strings
+# but I do occasionally want to use unicode characters (TeX, arrows, Increment)
+# so I have put these messages in utf8.pot which I manage by hand. non-ASCII
+# strings work just fine as keys. It does mean that my pot files should be
+# viewed in utf8 though.
+fontforge.pot: *.c utf8.pot
+	xgettext -k_ -kN_ -kS_ -kP_:1,2 -ofontforge.pot *.c ../gdraw/*.c
+	cat utf8.pot >> fontforge.pot

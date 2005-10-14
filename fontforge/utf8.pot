@@ -1,0 +1,183 @@
+
+
+
+# This file (or this section of the main file) contains the
+#  fontforge messages which use non-ASCII characters.
+#  xgettext doesn't like them, so I have to find them manually.
+#  it is encoded in utf-8
+
+#: autowidth.c
+msgid "Α-ΡΣ-Ωα-ω"
+msgstr ""
+
+#: autowidth.c
+msgid "ЂЄ-ІЈ-ЋЏ-ИК-Яа-ик-яђє-іј-ћџ"
+msgstr ""
+
+#: autowidth.c
+msgid "α-ω.,:;-"
+msgstr ""
+
+#: autowidth.c
+msgid "Α-ΡΣ-Ωα-ω.,:;-"
+msgstr ""
+
+#: autowidth.c
+msgid "а-ик-яђє-іј-ћџ.,:;-"
+msgstr ""
+
+#: autowidth.c
+msgid "ЂЄ-ІЈ-ЋЏ-ИК-Яа-ик-яђє-іј-ћџ.,:;-"
+msgstr ""
+
+#: bitmapview.c
+msgid "_Rotate 90° CW"
+msgstr ""
+
+#: bitmapview.c
+msgid "Rotate _90° CCW"
+msgstr ""
+
+#: bitmapview.c
+msgid "Rotate _180°"
+msgstr ""
+
+#: charinfo.c
+msgid "Brāhmī"
+msgstr ""
+
+#: charinfo.c
+msgid "Hanunóo"
+msgstr ""
+
+#: charinfo.c
+msgid "Kharoṣṭhī"
+msgstr ""
+
+#: charinfo.c
+msgid "Lepcha (Róng)"
+msgstr ""
+
+#: charinfo.c
+msgid "Malayālam"
+msgstr ""
+
+#: charinfo.c
+msgid "∆X:"
+msgstr ""
+
+#: charinfo.c
+msgid "∆Y:"
+msgstr ""
+
+#: charinfo.c
+msgid "∆XAdvance:"
+msgstr ""
+
+#: charinfo.c
+msgid "∆YAdvance:"
+msgstr ""
+
+#: charinfo.c, fontinfo.c
+msgid "ΤεΧ"
+msgstr ""
+
+#: charview.c, savefontdlg.c
+msgid "PostScript®"
+msgstr ""
+
+#: cvgetinfo.c, nonlineartrans.c, transform.c
+msgid "°"
+msgstr ""
+
+#: fontinfo.c
+msgid "ΤεΧ Base (8r)"
+msgstr ""
+
+#: fontinfo.c
+msgid "French Réunion"
+msgstr ""
+
+#: fontinfo.c
+msgid "French Côte d'Ivoire"
+msgstr ""
+
+#: fontinfo.c
+msgid "ΤεΧ Text"
+msgstr ""
+
+#: fontinfo.c
+msgid "ΤεΧ Math"
+msgstr ""
+
+#: fontinfo.c
+msgid "ΤεΧ Math Ext"
+msgstr ""
+
+#: fontview.c
+msgid "Replace Å"
+msgstr ""
+
+#: fontview.c
+msgid "Are you sure you want to replace Å?\nThe ring will not join to the A."
+msgstr ""
+
+#: problems.c
+msgid "_X near¹"
+msgstr ""
+
+#: problems.c
+msgid "_Y near¹"
+msgstr ""
+
+#: problems.c
+msgid "Hint _Width Near¹"
+msgstr ""
+
+#: problems.c
+msgid "Y near¹ _standard heights"
+msgstr ""
+
+#: problems.c
+msgid "_Points near¹ hint edges"
+msgstr ""
+
+#: problems.c
+msgid "¹ \"_Near\" means within"
+msgstr ""
+
+#: savefontdlg.c
+msgid "The AFM file contains metrics information that many word-processors will read when using a PostScript® font."
+msgstr ""
+
+#: savefontdlg.c
+msgid "The PFM file contains information Windows needs to install a PostScript® font."
+msgstr ""
+
+#: savefontdlg.c
+msgid "The tfm and enc files contain information TeX needs to install a PostScript® font."
+msgstr ""
+
+#: statemachine.c
+msgid "_Up↑"
+msgstr ""
+
+#: statemachine.c
+msgid "←_Left"
+msgstr ""
+
+#: statemachine.c
+msgid "_Right→"
+msgstr ""
+
+#: statemachine.c
+msgid "↓_Down"
+msgstr ""
+
+#: transform.c
+msgid "° Clockwise"
+msgstr ""
+
+#: transform.c
+msgid "° Withershins"
+msgstr ""

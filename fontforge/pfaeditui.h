@@ -87,10 +87,10 @@ extern void InitCursors(void);
 extern real GetReal(GWindow gw,int cid,char *name,int *err);
 extern int GetInt(GWindow gw,int cid,char *name,int *err);
 extern void Protest(char *label);
-extern real GetCalmRealR(GWindow gw,int cid,int namer,int *err);
-extern real GetRealR(GWindow gw,int cid,int namer,int *err);
-extern int GetIntR(GWindow gw,int cid,int namer,int *err);
-extern void ProtestR(int labelr);
+extern real GetCalmReal8(GWindow gw,int cid,char *namer,int *err);
+extern real GetReal8(GWindow gw,int cid,char *namer,int *err);
+extern int GetInt8(GWindow gw,int cid,char *namer,int *err);
+extern void Protest8(char *labelr);
 */
 
 /* I would like these to be const ints, but gcc doesn't treat them as consts */
@@ -156,10 +156,10 @@ extern void InitCursors(void);
 extern real GetReal(GWindow gw,int cid,char *name,int *err);
 extern int GetInt(GWindow gw,int cid,char *name,int *err);
 extern void Protest(char *label);
-extern real GetCalmRealR(GWindow gw,int cid,int namer,int *err);
-extern real GetRealR(GWindow gw,int cid,int namer,int *err);
-extern int GetIntR(GWindow gw,int cid,int namer,int *err);
-extern void ProtestR(int labelr);
+extern real GetCalmReal8(GWindow gw,int cid,char *namer,int *err);
+extern real GetReal8(GWindow gw,int cid,char *namer,int *err);
+extern int GetInt8(GWindow gw,int cid,char *namer,int *err);
+extern void Protest8(char *labelr);
 
 /* I would like these to be const ints, but gcc doesn't treat them as consts */
 #define et_sb_halfup et_sb_thumbrelease+1
