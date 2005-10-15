@@ -2122,12 +2122,12 @@ static struct ligkern *TfmAddKern(KernPair *kp,struct ligkern *last,double *kern
 return( new );
 }
 
-static struct ligkern *TfmAddLiga(LigList *l,struct ligkern *last,EncMap *map) {
+static struct ligkern *TfmAddLiga(LigList *l,struct ligkern *last,EncMap *map,int maxc) {
     struct ligkern *new;
 
-    if ( map->backmap[l->lig->u.lig.lig->orig_pos]>=256 )
+    if ( map->backmap[l->lig->u.lig.lig->orig_pos]>=maxc )
 return( last );
-    if ( l->components==NULL ||  map->backmap[l->components->sc->orig_pos]>=256 ||
+    if ( l->components==NULL ||  map->backmap[l->components->sc->orig_pos]>=maxc ||
 	    l->components->next!=NULL )
 return( last );
     new = gcalloc(1,sizeof(struct ligkern));
@@ -2413,7 +2413,7 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map
     LigList *l;
     int style, any;
     uint32 *lkarray;
-    struct ligkern *o_lkarray;
+    struct ligkern *o_lkarray=NULL;
     PST *pst;
     char *familyname;
     int anyITLC;
@@ -2600,7 +2600,7 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map
     if ( kcnt!=0 )
 	kerns = galloc(kcnt*sizeof(double));
     kcnt = lkcnt = 0;
-    memset(ligkerns,0,maxc*sizeof(struct ligkern));
+    memset(ligkerns,0,maxc*sizeof(struct ligkern *));
     for ( i=0; i<maxc && i<map->enccount; ++i ) {
 	if ( map->map[i]!=-1 && SCWorthOutputting(sf->glyphs[map->map[i]])) {
 	    SplineChar *sc = sf->glyphs[map->map[i]];
@@ -2609,7 +2609,7 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map
 			map->backmap[kp->sc->orig_pos]<maxc )
 		    ligkerns[i] = TfmAddKern(kp,ligkerns[i],kerns,&kcnt,map,maxc);
 	    for ( l=sc->ligofme; l!=NULL; l=l->next )
-		ligkerns[i] = TfmAddLiga(l,ligkerns[i],map);
+		ligkerns[i] = TfmAddLiga(l,ligkerns[i],map,maxc);
 	    if ( ligkerns[i]!=NULL ) {
 		tags[i] = 1;
 		for ( lk=ligkerns[i]; lk!=NULL; lk=lk->next )
@@ -2872,7 +2872,7 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map
     SFLigatureCleanup(sf);
     SFKernCleanup(sf,false);
 
-    if ( maxc>=256 ) {
+    if ( maxc>256 ) {
 	free( o_lkarray );
 	free( ligkerns );
 	free( widths );
