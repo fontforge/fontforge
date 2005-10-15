@@ -445,8 +445,10 @@ return( NULL );
     }
     /* Find the biggest font, and adjust the metrics to match */
     for ( bdf = sf->bitmaps; bdf->next!=NULL; bdf = bdf->next );
-    for ( i=0; i<sf->glyphcnt ; ++i ) if ( sf->glyphs[i]!=NULL && bdf->glyphs[i]!=NULL )
+    for ( i=0; i<sf->glyphcnt ; ++i ) if ( sf->glyphs[i]!=NULL && bdf->glyphs[i]!=NULL ) {
 	sf->glyphs[i]->width = rint(bdf->glyphs[i]->width*1000.0/bdf->pixelsize);
+	sf->glyphs[i]->widthset = true;
+    }
     sf->onlybitmaps = true;
 return( sf );
 }

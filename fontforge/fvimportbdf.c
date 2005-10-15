@@ -1634,8 +1634,10 @@ return(false);
 return( false );
     for ( i=0; i<cnt; ++i ) {
 	int swidth = getformint32(file,format);
-	if ( b->glyphs[i]->sc!=NULL )
+	if ( b->glyphs[i]->sc!=NULL ) {
 	    b->glyphs[i]->sc->width = swidth;
+	    b->glyphs[i]->sc->widthset = true;
+	}
     }
 return( true );
 }
