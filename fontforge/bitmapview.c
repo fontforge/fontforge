@@ -792,8 +792,10 @@ static void BVSetWidth(BitmapView *bv, int x) {
 		tot += bdf->glyphs[bc->orig_pos]->width*1000/(bdf->ascent+bdf->descent);
 		++cnt;
 	    }
-	if ( cnt!=0 )
-	    bv->fv->sf->glyphs[bc->orig_pos]->width = tot/cnt;
+	if ( cnt!=0 ) {
+	    bc->sc->width = tot/cnt;
+	    bc->sc->widthset = true;
+	}
 	BCCharChangedUpdate(bc);
     }
 }

@@ -1077,6 +1077,8 @@ void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,int32 *sizes) {
 	bl = BDFAddDefaultGlyphs(bdf, at->format);
 	cur = ttfdumpstrikelocs(at->bloc,at->bdat,bdf,bl,&at->gi);
 	BDFCleanupDefaultGlyphs(bdf);
+	if ( cur==NULL )
+    continue;
 	if ( head==NULL )
 	    head = cur;
 	else

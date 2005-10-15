@@ -3089,6 +3089,11 @@ return( 0 );
 	bdf->glyphs[bfc->orig_pos] = NULL;
 	BDFCharFree(bfc);
     }
+/* This fixes a bug: We didn't set "widthset" on splinechars when reading in */
+/*  winfonts. We should set it now on any bitmaps worth outputting to make up*/
+/*  for that. Eventually we should have good sfd files and can remove this */
+    else if ( bfc->sc->width!=bdf->sf->ascent + bdf->sf->descent )
+	bfc->sc->widthset = true;
 return( 1 );
 }
 

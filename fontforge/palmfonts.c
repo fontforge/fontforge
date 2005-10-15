@@ -89,10 +89,12 @@ static SplineFont *MakeContainer(struct font *fn, char *family, char *style) {
     for ( i=fn->first; i<=fn->last; ++i ) if ( fn->chars[i].width!=-1 ) {
 	sc = SFMakeChar(sf,map,i);
 	sc->width = fn->chars[i].width*em/fn->frectheight;
+	sc->widthset = true;
     }
     sc = SFMakeChar(sf,map,256);
     free(sc->name); sc->name = copy(".notdef");
     sc->width = fn->chars[i].width*em/fn->frectheight;
+    sc->widthset = true;
 return( sf );
 }
 
