@@ -2014,6 +2014,7 @@ static void maxpCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
 
 	k=0;
 	label[k].text = (unichar_t *) _("_Zones:");
+	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = 16; 
@@ -2032,6 +2033,7 @@ static void maxpCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
 	gcd[k++].creator = GTextFieldCreate;
 
 	label[k].text = (unichar_t *) _("_Twilight Pnt Cnt:");
+	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = 120; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y; 
@@ -2051,6 +2053,7 @@ static void maxpCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
 
 	label[k].text = (unichar_t *) _("St_orage:");
 	label[k].text_in_resource = true;
+	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = gcd[k-4].gd.pos.x; gcd[k].gd.pos.y = gcd[k-3].gd.pos.y+24+6; 
 	gcd[k].gd.flags = gg_enabled|gg_visible;
@@ -2069,6 +2072,7 @@ static void maxpCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
 
 	label[k].text = (unichar_t *) _("Max _Stack Depth:");
 	label[k].text_in_resource = true;
+	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = gcd[k-4].gd.pos.x; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y; 
 	gcd[k].gd.flags = gg_enabled|gg_visible;
@@ -2087,6 +2091,7 @@ static void maxpCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
 
 	label[k].text = (unichar_t *) _("_FDEF");
 	label[k].text_in_resource = true;
+	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = gcd[k-4].gd.pos.x; gcd[k].gd.pos.y = gcd[k-3].gd.pos.y+24+6; 
 	gcd[k].gd.flags = gg_enabled|gg_visible;
@@ -2104,6 +2109,7 @@ static void maxpCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
 
 	label[k].text = (unichar_t *) _("_IDEFs");
 	label[k].text_in_resource = true;
+	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = gcd[k-4].gd.pos.x; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y; 
 	gcd[k].gd.flags = gg_enabled|gg_visible;
@@ -2123,8 +2129,9 @@ static void maxpCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
     gcd[k].gd.pos.x = 20-3; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+35-3;
     gcd[k].gd.pos.width = -1; gcd[k].gd.pos.height = 0;
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[k].text = (unichar_t *) _STR_OK;
+    label[k].text = (unichar_t *) _("_OK");
     label[k].text_in_resource = true;
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.handle_controlevent = Maxp_OK;
     gcd[k++].creator = GButtonCreate;
@@ -2132,7 +2139,8 @@ static void maxpCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
     gcd[k].gd.pos.x = -20; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+3;
     gcd[k].gd.pos.width = -1; gcd[k].gd.pos.height = 0;
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[k].text = (unichar_t *) _STR_Cancel;
+    label[k].text = (unichar_t *) _("_Cancel");
+    label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.handle_controlevent = Maxp_Cancel;
