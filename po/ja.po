@@ -8734,6 +8734,9 @@ msgstr "新規(_N)..."
 msgid "_None"
 msgstr "なし(_N)"
 
+msgid "Interpretation|None"
+msgstr "なし(_N)"
+
 msgid "GGadget|ButtonSize|55"
 msgstr "80"
 

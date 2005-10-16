@@ -8224,6 +8224,9 @@ msgstr "_Nueva..."
 msgid "_None"
 msgstr "_Ninguna"
 
+msgid "Interpretation|None"
+msgstr "Ninguna"
+
 msgid "GGadget|ButtonSize|55"
 msgstr "70"
 
