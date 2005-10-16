@@ -311,58 +311,96 @@ static void LigatureNew(SplineChar *sc3,SplineChar *sc1,SplineChar *sc2) {
 /* ************************************************************************** */
 /* **************************** Reading TFM files *************************** */
 /* ************************************************************************** */
+struct tfmdata {
+    int file_len;
+    int head_len;
+    int first, last;
+    int width_size;
+    int height_size;
+    int depth_size;
+    int italic_size;
+    int ligkern_size;
+    int kern_size;
+    int esize;
+    int param_size;
+
+    uint8 *kerntab;
+    uint8 *ligkerntab;
+    uint8 *ext;
+    uint8 *ictab;
+    uint8 *dptab;
+    uint8 *httab;
+    uint8 *widtab;
+
+    int *charlist;
+};
+
 static void tfmDoLigKern(SplineFont *sf, int enc, int lk_index,
-	uint8 *ligkerntab, uint8 *kerntab,EncMap *map) {
+	struct tfmdata *tfmd,EncMap *map) {
     int enc2, k_index;
     SplineChar *sc1, *sc2, *sc3;
     real off;
 
     if ( enc>=map->enccount || map->map[enc]==-1 || (sc1=sf->glyphs[map->map[enc]])==NULL )
 return;
+    if ( enc<tfmd->first || enc>tfmd->last )
+return;
+    if ( lk_index>=tfmd->ligkern_size )
+return;
 
-    if ( ligkerntab[lk_index*4+0]>128 )		/* Special case to get big indeces */
-	lk_index = 256*ligkerntab[lk_index*4+2] + ligkerntab[lk_index*4+3];
+    if ( tfmd->ligkerntab[lk_index*4+0]>128 )		/* Special case to get big indeces */
+	lk_index = 256*tfmd->ligkerntab[lk_index*4+2] + tfmd->ligkerntab[lk_index*4+3];
 
     while ( 1 ) {
-	enc2 = ligkerntab[lk_index*4+1];
-	if ( enc2>=map->enccount || map->map[enc2]==-1 || (sc2=sf->glyphs[map->map[enc2]])==NULL )
+	if ( lk_index>=tfmd->ligkern_size )
+return;
+	enc2 = tfmd->ligkerntab[lk_index*4+1];
+	if ( enc2>=map->enccount || map->map[enc2]==-1 || (sc2=sf->glyphs[map->map[enc2]])==NULL ||
+		enc2<tfmd->first || enc2>tfmd->last )
 	    /* Not much we can do. can't kern to a non-existant char */;
-	else if ( ligkerntab[lk_index*4+2]>=128 ) {
-	    k_index = ((ligkerntab[lk_index*4+2]-128)*256+ligkerntab[lk_index*4+3])*4;
+	else if ( tfmd->ligkerntab[lk_index*4+2]>=128 ) {
+	    k_index = ((tfmd->ligkerntab[lk_index*4+2]-128)*256+
+		    tfmd->ligkerntab[lk_index*4+3])*4;
+	    if ( k_index>tfmd->kern_size )
+return;
 	    off = (sf->ascent+sf->descent) *
-		    ((kerntab[k_index]<<24) + (kerntab[k_index+1]<<16) +
-			(kerntab[k_index+2]<<8) + kerntab[k_index+3])/
+		    ((tfmd->kerntab[k_index]<<24) + (tfmd->kerntab[k_index+1]<<16) +
+			(tfmd->kerntab[k_index+2]<<8) + tfmd->kerntab[k_index+3])/
 		    (double) 0x100000;
  /* printf( "%s(%d) %s(%d) -> %g\n", sc1->name, sc1->enc, sc2->name, sc2->enc, off); */
 	    KPInsert(sc1,sc2,rint(off),false);
-	} else if ( ligkerntab[lk_index*4+2]==0 &&
-		ligkerntab[lk_index*4+3]<map->enccount &&
-		map->map[ligkerntab[lk_index*4+3]]!=-1 &&
-		(sc3=sf->glyphs[map->map[ligkerntab[lk_index*4+3]]])!=NULL ) {
+	} else if ( tfmd->ligkerntab[lk_index*4+2]==0 &&
+		tfmd->ligkerntab[lk_index*4+3]<map->enccount &&
+		tfmd->ligkerntab[lk_index*4+3]>=tfmd->first &&
+		tfmd->ligkerntab[lk_index*4+3]<=tfmd->last &&
+		map->map[tfmd->ligkerntab[lk_index*4+3]]!=-1 &&
+		(sc3=sf->glyphs[map->map[tfmd->ligkerntab[lk_index*4+3]]])!=NULL ) {
 	    LigatureNew(sc3,sc1,sc2);
 	}
-	if ( ligkerntab[lk_index*4]>=128 )
+	if ( tfmd->ligkerntab[lk_index*4]>=128 )
     break;
-	lk_index += ligkerntab[lk_index*4] + 1;
+	lk_index += tfmd->ligkerntab[lk_index*4] + 1;
     }
 }
 
-static void tfmDoCharList(SplineFont *sf,int i,int *charlist,EncMap *map) {
+static void tfmDoCharList(SplineFont *sf,int i,struct tfmdata *tfmd,EncMap *map) {
     int used[256], ucnt, len, was;
     char *components;
 
-    if ( i>=map->enccount || map->map[i]==-1 || sf->glyphs[map->map[i]]==NULL )
+    if ( i>=map->enccount || map->map[i]==-1 || sf->glyphs[map->map[i]]==NULL ||
+	    i<tfmd->first || i>tfmd->last )
 return;
 
     ucnt = 0, len=0;
     while ( i!=-1 ) {
-	if ( i<map->enccount && map->map[i]!=-1 && sf->glyphs[map->map[i]]!=NULL ) {
+	if ( i<map->enccount && map->map[i]!=-1 && sf->glyphs[map->map[i]]!=NULL &&
+		i>=tfmd->first && i<=tfmd->last ) {
 	    used[ucnt++] = map->map[i];
 	    len += strlen(sf->glyphs[map->map[i]]->name)+1;
 	}
 	was = i;
-	i = charlist[i];
-	charlist[was] = -1;
+	i = tfmd->charlist[i];
+	tfmd->charlist[was] = -1;
     }
     if ( ucnt<=1 )
 return;
@@ -377,12 +415,17 @@ return;
 	    sf->glyphs[used[0]]);
 }
 
-static void tfmDoExten(SplineFont *sf,int i,uint8 *ext,EncMap *map) {
+static void tfmDoExten(SplineFont *sf,int i,struct tfmdata *tfmd,int left,EncMap *map) {
     int j, len, k, gid, gid2;
     char *names[4], *components;
+    uint8 *ext;
 
     if ( i>=map->enccount || (gid=map->map[i])==-1 || sf->glyphs[gid]==NULL )
 return;
+    if ( left>=tfmd->esize )
+return;
+
+    ext = tfmd->ext + 4*left;
 
     names[0] = names[1] = names[2] = names[3] = ".notdef";
     for ( j=len=0; j<4; ++j ) {
@@ -414,9 +457,7 @@ return;
 int LoadKerningDataFromTfm(SplineFont *sf, char *filename,EncMap *map) {
     FILE *file = fopen(filename,"rb");
     int i, tag, left, ictag;
-    uint8 *ligkerntab, *kerntab, *ext, *ictab, *httab, *dptab, *widtab;
-    int head_len, first, last, width_size, height_size, depth_size, italic_size,
-	    ligkern_size, kern_size, esize, param_size;
+    struct tfmdata tfmd;
     int charlist[256];
     int is_math;
     int width, height, depth;
@@ -424,54 +465,56 @@ int LoadKerningDataFromTfm(SplineFont *sf, char *filename,EncMap *map) {
 
     if ( file==NULL )
 return( 0 );
-    /* file length = */ getushort(file);
-    head_len = getushort(file);
-    first = getushort(file);
-    last = getushort(file);
-    width_size = getushort(file);
-    height_size = getushort(file);
-    depth_size = getushort(file);
-    italic_size = getushort(file);
-    ligkern_size = getushort(file);
-    kern_size = getushort(file);
-    esize = getushort(file);
-    param_size = getushort(file);
-    if ( first-1>last || last>=256 ) {
+    tfmd.file_len = getushort(file);
+    tfmd.head_len = getushort(file);
+    tfmd.first = getushort(file);
+    tfmd.last = getushort(file);
+    tfmd.width_size = getushort(file);
+    tfmd.height_size = getushort(file);
+    tfmd.depth_size = getushort(file);
+    tfmd.italic_size = getushort(file);
+    tfmd.ligkern_size = getushort(file);
+    tfmd.kern_size = getushort(file);
+    tfmd.esize = getushort(file);
+    tfmd.param_size = getushort(file);
+    if ( tfmd.first-1>tfmd.last || tfmd.last>=256 ) {
 	fclose(file);
 return( 0 );
     }
-    kerntab = gcalloc(kern_size,sizeof(int32));
-    ligkerntab = gcalloc(ligkern_size,sizeof(int32));
-    ext = gcalloc(esize,sizeof(int32));
-    ictab = gcalloc(italic_size,sizeof(int32));
-    dptab = gcalloc(depth_size,sizeof(int32));
-    httab = gcalloc(height_size,sizeof(int32));
-    widtab = gcalloc(width_size,sizeof(int32));
+    tfmd.kerntab = gcalloc(tfmd.kern_size,sizeof(int32));
+    tfmd.ligkerntab = gcalloc(tfmd.ligkern_size,sizeof(int32));
+    tfmd.ext = gcalloc(tfmd.esize,sizeof(int32));
+    tfmd.ictab = gcalloc(tfmd.italic_size,sizeof(int32));
+    tfmd.dptab = gcalloc(tfmd.depth_size,sizeof(int32));
+    tfmd.httab = gcalloc(tfmd.height_size,sizeof(int32));
+    tfmd.widtab = gcalloc(tfmd.width_size,sizeof(int32));
+    tfmd.charlist = charlist;
+
     fseek( file,(6+1)*sizeof(int32),SEEK_SET);
     sf->design_size = (5*getlong(file)+(1<<18))>>19;	/* TeX stores as <<20, adobe in decipoints */
     fseek( file,
-	    (6+head_len+(last-first+1))*sizeof(int32),
+	    (6+tfmd.head_len+(tfmd.last-tfmd.first+1))*sizeof(int32),
 	    SEEK_SET);
-    fread( widtab,1,width_size*sizeof(int32),file);
-    fread( httab,1,height_size*sizeof(int32),file);
-    fread( dptab,1,depth_size*sizeof(int32),file);
-    fread( ictab,1,italic_size*sizeof(int32),file);
-    fread( ligkerntab,1,ligkern_size*sizeof(int32),file);
-    fread( kerntab,1,kern_size*sizeof(int32),file);
-    fread( ext,1,esize*sizeof(int32),file);
-    for ( i=0; i<22 && i<param_size; ++i )
+    fread( tfmd.widtab,1,tfmd.width_size*sizeof(int32),file);
+    fread( tfmd.httab,1,tfmd.height_size*sizeof(int32),file);
+    fread( tfmd.dptab,1,tfmd.depth_size*sizeof(int32),file);
+    fread( tfmd.ictab,1,tfmd.italic_size*sizeof(int32),file);
+    fread( tfmd.ligkerntab,1,tfmd.ligkern_size*sizeof(int32),file);
+    fread( tfmd.kerntab,1,tfmd.kern_size*sizeof(int32),file);
+    fread( tfmd.ext,1,tfmd.esize*sizeof(int32),file);
+    for ( i=0; i<22 && i<tfmd.param_size; ++i )
 	sf->texdata.params[i] = getlong(file);
-    if ( param_size==22 ) sf->texdata.type = tex_math;
-    else if ( param_size==13 ) sf->texdata.type = tex_mathext;
-    else if ( param_size>=7 ) sf->texdata.type = tex_text;
+    if ( tfmd.param_size==22 ) sf->texdata.type = tex_math;
+    else if ( tfmd.param_size==13 ) sf->texdata.type = tex_mathext;
+    else if ( tfmd.param_size>=7 ) sf->texdata.type = tex_text;
 
     /* Fields in tfm files have different meanings for math fonts */
     is_math = sf->texdata.type == tex_mathext || sf->texdata.type == tex_math;
 
     memset(charlist,-1,sizeof(charlist));
 
-    fseek( file, (6+head_len)*sizeof(int32), SEEK_SET);
-    for ( i=first; i<=last; ++i ) {
+    fseek( file, (6+tfmd.head_len)*sizeof(int32), SEEK_SET);
+    for ( i=tfmd.first; i<=tfmd.last; ++i ) {
 	width = getc(file);
 	height = getc(file);
 	depth = height&0xf; height >>= 4;
@@ -480,35 +523,40 @@ return( 0 );
 	ictag>>=2;
 	left = getc(file);
 	if ( tag==1 )
-	    tfmDoLigKern(sf,i,left,ligkerntab,kerntab,map);
+	    tfmDoLigKern(sf,i,left,&tfmd,map);
 	else if ( tag==2 )
 	    charlist[i] = left;
 	else if ( tag==3 )
-	    tfmDoExten(sf,i,ext+left,map);
+	    tfmDoExten(sf,i,&tfmd,left,map);
 	if ( map->map[i]!=-1 && sf->glyphs[map->map[i]]!=NULL ) {
 	    SplineChar *sc = sf->glyphs[map->map[i]];
 /* TFtoPL says very clearly: The actual width of a character is */
 /*  width[width_index], in design-size units. It is not in design units */
 /*  it is stored as a fraction of the design size in a fixed word */
-	    sc->tex_height = BigEndianWord(httab+4*height)*scale;
-	    sc->tex_depth = BigEndianWord(dptab+4*depth)*scale;
+	    if ( height<tfmd.height_size )
+		sc->tex_height = BigEndianWord(tfmd.httab+4*height)*scale;
+	    if ( depth<tfmd.depth_size )
+		sc->tex_depth = BigEndianWord(tfmd.dptab+4*depth)*scale;
 	    if ( !is_math ) {
-		if ( ictag!=0 )
-		    tfmDoItalicCor(sf,i,BigEndianWord(ictab+4*ictag)*scale,map);
+		if ( ictag!=0 && ictag<tfmd.italic_size )
+		    tfmDoItalicCor(sf,i,BigEndianWord(tfmd.ictab+4*ictag)*scale,map);
 		/* we ignore the width. I trust the real width in the file more */
 	    } else {
-		sc->tex_sub_pos = BigEndianWord(widtab+4*width)*scale;
-		sc->tex_super_pos = BigEndianWord(ictab+4*ictag)*scale;
+		if ( width<tfmd.width_size )
+		    sc->tex_sub_pos = BigEndianWord(tfmd.widtab+4*width)*scale;
+		if ( ictag!=0 && ictag<tfmd.italic_size )
+		    sc->tex_super_pos = BigEndianWord(tfmd.ictab+4*ictag)*scale;
 	    }
 	}
     }
 
-    for ( i=first; i<=last; ++i ) {
+    for ( i=tfmd.first; i<=tfmd.last; ++i ) {
 	if ( charlist[i]!=-1 )
-	    tfmDoCharList(sf,i,charlist,map);
+	    tfmDoCharList(sf,i,&tfmd,map);
     }
     
-    free( ligkerntab); free(kerntab); free(ext); free(ictab);
+    free( tfmd.ligkerntab); free(tfmd.kerntab); free(tfmd.ext); free(tfmd.ictab);
+    free( tfmd.dptab ); free( tfmd.httab ); free( tfmd.widtab );
     fclose(file);
 return( 1 );
 }
@@ -516,41 +564,52 @@ return( 1 );
 /* ************************************************************************** */
 /* **************************** Reading OFM files *************************** */
 /* ************************************************************************** */
-#define LKShort(index,off) (((ligkerntab+8*index+2*off)[0]<<8)|(ligkerntab+8*index+2*off)[1])
+#define LKShort(index,off) (((tfmd->ligkerntab+8*index+2*off)[0]<<8)|(tfmd->ligkerntab+8*index+2*off)[1])
 
 /* almost the same as the tfm version except that we deal with shorts rather */
 /*  than bytes */
 static void ofmDoLigKern(SplineFont *sf, int enc, int lk_index,
-	uint8 *ligkerntab, uint8 *kerntab,EncMap *map) {
+	struct tfmdata *tfmd,EncMap *map) {
     int enc2, k_index;
     SplineChar *sc1, *sc2, *sc3;
     real off;
 
     if ( enc>=map->enccount || map->map[enc]==-1 || (sc1=sf->glyphs[map->map[enc]])==NULL )
 return;
+    if ( enc<tfmd->first || enc>tfmd->last )
+return;
+    if ( lk_index>=2*tfmd->ligkern_size )
+return;
 
-    if ( LKShort(lk_index,0)>32768 )		/* Special case to get big indeces */
+    if ( LKShort(lk_index,0)>128 )		/* Special case to get big indeces */
 	lk_index = 65536*LKShort(lk_index,2) + LKShort(lk_index,3);
 
     while ( 1 ) {
+	if ( lk_index>=2*tfmd->ligkern_size )
+return;
 	enc2 = LKShort(lk_index,1);
-	if ( enc2>=map->enccount || map->map[enc2]==-1 || (sc2=sf->glyphs[map->map[enc2]])==NULL )
+	if ( enc2>=map->enccount || map->map[enc2]==-1 || (sc2=sf->glyphs[map->map[enc2]])==NULL ||
+		enc2<tfmd->first || enc2>tfmd->last )
 	    /* Not much we can do. can't kern to a non-existant char */;
-	else if ( LKShort(lk_index,2)>=32768 ) {
-	    k_index = ((LKShort(lk_index,2)-32768)*65536+LKShort(lk_index,3))*4;
+	else if ( LKShort(lk_index,2)>=128 ) {
+	    k_index = ((LKShort(lk_index,2)-128)*65536+LKShort(lk_index,3))*4;
+	    if ( k_index>tfmd->kern_size )
+return;
 	    off = (sf->ascent+sf->descent) *
-		    ((kerntab[k_index]<<24) + (kerntab[k_index+1]<<16) +
-			(kerntab[k_index+2]<<8) + kerntab[k_index+3])/
+		    ((tfmd->kerntab[k_index]<<24) + (tfmd->kerntab[k_index+1]<<16) +
+			(tfmd->kerntab[k_index+2]<<8) + tfmd->kerntab[k_index+3])/
 		    (double) 0x100000;
  /* printf( "%s(%d) %s(%d) -> %g\n", sc1->name, sc1->enc, sc2->name, sc2->enc, off); */
 	    KPInsert(sc1,sc2,rint(off),false);
 	} else if ( LKShort(lk_index,2)==0 &&
 		LKShort(lk_index,3)<map->enccount &&
+		LKShort(lk_index,3)>=tfmd->first &&
+		LKShort(lk_index,3)<=tfmd->last &&
 		map->map[LKShort(lk_index,3)]!=-1 &&
 		(sc3=sf->glyphs[map->map[LKShort(lk_index,3)]])!=NULL ) {
 	    LigatureNew(sc3,sc1,sc2);
 	}
-	if ( LKShort(lk_index,0)>=32768 )
+	if ( LKShort(lk_index,0)>=128 )
     break;
 	lk_index += LKShort(lk_index,0) + 1;
     }
@@ -562,12 +621,17 @@ return;
 
 /* almost the same as the tfm version except that we deal with shorts rather */
 /*  than bytes */
-static void ofmDoExten(SplineFont *sf,int i,uint8 *ext,EncMap *map) {
+static void ofmDoExten(SplineFont *sf,int i,struct tfmdata *tfmd,int left,EncMap *map) {
     int j, len, k, gid, gid2;
     char *names[4], *components;
+    uint8 *ext;
 
     if ( i>=map->enccount || (gid=map->map[i])==-1 || sf->glyphs[gid]==NULL )
 return;
+    if ( left>=2*tfmd->esize )
+return;
+
+    ext = tfmd->ext + 4*left;
 
     names[0] = names[1] = names[2] = names[3] = ".notdef";
     for ( j=len=0; j<4; ++j ) {
@@ -589,38 +653,36 @@ return;
 int LoadKerningDataFromOfm(SplineFont *sf, char *filename,EncMap *map) {
     FILE *file = fopen(filename,"rb");
     int i, tag, left, ictag;
-    uint8 *ligkerntab, *kerntab, *ext, *ictab, *httab, *dptab, *widtab;
-    int head_len, first, last, width_size, height_size, depth_size, italic_size,
-	    ligkern_size, kern_size, esize, param_size, file_len, font_dir, level;
+    int level, font_dir;
     int is_math;
     int width, height, depth;
     real scale = (sf->ascent+sf->descent)/(double) (1<<20);
-    int *charlist;
+    struct tfmdata tfmd;
 
     if ( file==NULL )
 return( 0 );
     /* No one bothered to mention this in the docs, but there appears to be */
     /*  an initial 0 in an ofm file. I wonder if that is the level? */
     level = getlong(file);
-    file_len = getlong(file);
-    head_len = getlong(file);
-    first = getlong(file);
-    last = getlong(file);
-    width_size = getlong(file);
-    height_size = getlong(file);
-    depth_size = getlong(file);
-    italic_size = getlong(file);
-    ligkern_size = getlong(file);
-    kern_size = getlong(file);
-    esize = getlong(file);
-    param_size = getlong(file);
+    tfmd.file_len = getlong(file);
+    tfmd.head_len = getlong(file);
+    tfmd.first = getlong(file);
+    tfmd.last = getlong(file);
+    tfmd.width_size = getlong(file);
+    tfmd.height_size = getlong(file);
+    tfmd.depth_size = getlong(file);
+    tfmd.italic_size = getlong(file);
+    tfmd.ligkern_size = getlong(file);
+    tfmd.kern_size = getlong(file);
+    tfmd.esize = getlong(file);
+    tfmd.param_size = getlong(file);
     font_dir = getlong(file);
-    if ( first-1>last || last>=65536 ) {
+    if ( tfmd.first-1>tfmd.last || tfmd.last>=65536 ) {
 	fclose(file);
 return( 0 );
     }
-    if ( file_len!=14+head_len+2*(last-first+1)+width_size+height_size+depth_size+
-	    italic_size+2*ligkern_size+kern_size+2*esize+param_size || level!=0 ) {
+    if ( tfmd.file_len!=14+tfmd.head_len+2*(tfmd.last-tfmd.first+1)+tfmd.width_size+tfmd.height_size+tfmd.depth_size+
+	    tfmd.italic_size+2*tfmd.ligkern_size+tfmd.kern_size+2*tfmd.esize+tfmd.param_size || level!=0 ) {
 	int nco, ncw, npc, nki, nwi, nkf, nwf, nkm,nwm, nkr, nwr, nkg, nwg, nkp, nwp;
 	int level1=0;
 	nco = getlong(file);
@@ -638,8 +700,8 @@ return( 0 );
 	nwg = getlong(file);
 	nkp = getlong(file);
 	nwp = getlong(file);
-	level1 = file_len==29+head_len+ncw+width_size+height_size+depth_size+
-	    italic_size+2*ligkern_size+kern_size+2*esize+param_size +
+	level1 = tfmd.file_len==29+tfmd.head_len+ncw+tfmd.width_size+tfmd.height_size+tfmd.depth_size+
+	    tfmd.italic_size+2*tfmd.ligkern_size+tfmd.kern_size+2*tfmd.esize+tfmd.param_size +
 	    nki + nwi + nkf + nwf + nkm + nwm + nkr + nwr + nkg + nwg + nkp + nwp;
 	/* Level 2 appears to have the same structure as level 1 */
 	if ( level1 )
@@ -649,40 +711,40 @@ return( 0 );
 	fclose(file);
 return( 0 );
     }
-	
-    kerntab = gcalloc(kern_size,sizeof(int32));
-    ligkerntab = gcalloc(ligkern_size,2*sizeof(int32));
-    ext = gcalloc(esize,2*sizeof(int32));
-    ictab = gcalloc(italic_size,sizeof(int32));
-    dptab = gcalloc(depth_size,sizeof(int32));
-    httab = gcalloc(height_size,sizeof(int32));
-    widtab = gcalloc(width_size,sizeof(int32));
+
+    tfmd.kerntab = gcalloc(tfmd.kern_size,sizeof(int32));
+    tfmd.ligkerntab = gcalloc(tfmd.ligkern_size,2*sizeof(int32));
+    tfmd.ext = gcalloc(tfmd.esize,2*sizeof(int32));
+    tfmd.ictab = gcalloc(tfmd.italic_size,sizeof(int32));
+    tfmd.dptab = gcalloc(tfmd.depth_size,sizeof(int32));
+    tfmd.httab = gcalloc(tfmd.height_size,sizeof(int32));
+    tfmd.widtab = gcalloc(tfmd.width_size,sizeof(int32));
     fseek( file,(14+1)*sizeof(int32),SEEK_SET);
     sf->design_size = (5*getlong(file)+(1<<18))>>19;	/* TeX stores as <<20, adobe in decipoints */
     fseek( file,
-	    (14+head_len+2*(last-first+1))*sizeof(int32),
+	    (14+tfmd.head_len+2*(tfmd.last-tfmd.first+1))*sizeof(int32),
 	    SEEK_SET);
-    fread( widtab,1,width_size*sizeof(int32),file);
-    fread( httab,1,height_size*sizeof(int32),file);
-    fread( dptab,1,depth_size*sizeof(int32),file);
-    fread( ictab,1,italic_size*sizeof(int32),file);
-    fread( ligkerntab,1,ligkern_size*2*sizeof(int32),file);
-    fread( kerntab,1,kern_size*sizeof(int32),file);
-    fread( ext,1,esize*2*sizeof(int32),file);
-    for ( i=0; i<22 && i<param_size; ++i )
+    fread( tfmd.widtab,1,tfmd.width_size*sizeof(int32),file);
+    fread( tfmd.httab,1,tfmd.height_size*sizeof(int32),file);
+    fread( tfmd.dptab,1,tfmd.depth_size*sizeof(int32),file);
+    fread( tfmd.ictab,1,tfmd.italic_size*sizeof(int32),file);
+    fread( tfmd.ligkerntab,1,tfmd.ligkern_size*2*sizeof(int32),file);
+    fread( tfmd.kerntab,1,tfmd.kern_size*sizeof(int32),file);
+    fread( tfmd.ext,1,tfmd.esize*2*sizeof(int32),file);
+    for ( i=0; i<22 && i<tfmd.param_size; ++i )
 	sf->texdata.params[i] = getlong(file);
-    if ( param_size==22 ) sf->texdata.type = tex_math;
-    else if ( param_size==13 ) sf->texdata.type = tex_mathext;
-    else if ( param_size>=7 ) sf->texdata.type = tex_text;
+    if ( tfmd.param_size==22 ) sf->texdata.type = tex_math;
+    else if ( tfmd.param_size==13 ) sf->texdata.type = tex_mathext;
+    else if ( tfmd.param_size>=7 ) sf->texdata.type = tex_text;
 
     /* Fields in tfm files have different meanings for math fonts */
     is_math = sf->texdata.type == tex_mathext || sf->texdata.type == tex_math;
 
-    charlist = galloc(65536*sizeof(int32));
-    memset(charlist,-1,65536*sizeof(int32));
+    tfmd.charlist = galloc(65536*sizeof(int32));
+    memset(tfmd.charlist,-1,65536*sizeof(int32));
 
-    fseek( file, (14+head_len)*sizeof(int32), SEEK_SET);
-    for ( i=first; i<=last; ++i ) {
+    fseek( file, (14+tfmd.head_len)*sizeof(int32), SEEK_SET);
+    for ( i=tfmd.first; i<=tfmd.last; ++i ) {
 	width = getushort(file);
 	height = getc(file);
 	depth = getc(file);
@@ -690,36 +752,41 @@ return( 0 );
 	tag = getc(file)&0x3;		/* Remaining 6 bytes are "reserved for future use" I think */
 	left = getushort(file);
 	if ( tag==1 )
-	    ofmDoLigKern(sf,i,left,ligkerntab,kerntab,map);
+	    ofmDoLigKern(sf,i,left,&tfmd,map);
 	else if ( tag==2 )
-	    charlist[i] = left;
+	    tfmd.charlist[i] = left;
 	else if ( tag==3 )
-	    ofmDoExten(sf,i,ext+left,map);
+	    ofmDoExten(sf,i,&tfmd,left,map);
 	if ( map->map[i]!=-1 && sf->glyphs[map->map[i]]!=NULL ) {
 	    SplineChar *sc = sf->glyphs[map->map[i]];
 /* TFtoPL says very clearly: The actual width of a character is */
 /*  width[width_index], in design-size units. It is not in design units */
 /*  it is stored as a fraction of the design size in a fixed word */
-	    sc->tex_height = BigEndianWord(httab+4*height)*scale;
-	    sc->tex_depth = BigEndianWord(dptab+4*depth)*scale;
+	    if ( height<tfmd.height_size )
+		sc->tex_height = BigEndianWord(tfmd.httab+4*height)*scale;
+	    if ( depth<tfmd.depth_size )
+		sc->tex_depth = BigEndianWord(tfmd.dptab+4*depth)*scale;
 	    if ( !is_math ) {
-		if ( ictag!=0 )
-		    tfmDoItalicCor(sf,i,BigEndianWord(ictab+4*ictag)*scale,map);
+		if ( ictag!=0 && ictag<tfmd.italic_size )
+		    tfmDoItalicCor(sf,i,BigEndianWord(tfmd.ictab+4*ictag)*scale,map);
 		/* we ignore the width. I trust the real width in the file more */
 	    } else {
-		sc->tex_sub_pos = BigEndianWord(widtab+4*width)*scale;
-		sc->tex_super_pos = BigEndianWord(ictab+4*ictag)*scale;
+		if ( width<tfmd.width_size )
+		    sc->tex_sub_pos = BigEndianWord(tfmd.widtab+4*width)*scale;
+		if ( ictag!=0 && ictag<tfmd.italic_size )
+		    sc->tex_super_pos = BigEndianWord(tfmd.ictab+4*ictag)*scale;
 	    }
 	}
     }
 
-    for ( i=first; i<=last; ++i ) {
-	if ( charlist[i]!=-1 )
-	    tfmDoCharList(sf,i,charlist,map);
+    for ( i=tfmd.first; i<=tfmd.last; ++i ) {
+	if ( tfmd.charlist[i]!=-1 )
+	    tfmDoCharList(sf,i,&tfmd,map);
     }
     
-    free( ligkerntab); free(kerntab); free(ext); free(ictab);
-    free( charlist );
+    free( tfmd.ligkerntab); free(tfmd.kerntab); free(tfmd.ext); free(tfmd.ictab);
+    free( tfmd.dptab ); free( tfmd.httab ); free( tfmd.widtab );
+    free( tfmd.charlist );
     fclose(file);
 return( 1 );
 }
@@ -2116,7 +2183,7 @@ static struct ligkern *TfmAddKern(KernPair *kp,struct ligkern *last,double *kern
 	new->op = 128 + (i>>8);
     } else {
 	new->remainder = i&0xffff;
-	new->op = 32768 + (i>>16);
+	new->op = 128 + (i>>16);
     }
     new->next = last;
 return( new );
@@ -2690,11 +2757,11 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map
 			lkindex[i] = lkcnt;
 		    else {
 			o_lkarray[former[i]].skip |= lkcnt-former[i]-1;
-			if ( lkcnt-former[i]-1 >= 32768 )
+			if ( lkcnt-former[i]-1 >= 128 )
 			    IError( " generating lig/kern array, jump too far.\n" );
 		    }
 		    former[i] = lkcnt;
-		    o_lkarray[lkcnt].skip = lk->next==NULL ? 32768U : 0U;
+		    o_lkarray[lkcnt].skip = lk->next==NULL ? 128U : 0U;
 		    o_lkarray[lkcnt].other_char = lk->other_char;
 		    o_lkarray[lkcnt].op = lk->op;
 		    o_lkarray[lkcnt++].remainder = lk->remainder;
@@ -2708,7 +2775,7 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map
 	    for ( i=0; i<maxc; ++i ) if ( ligkerns[i]!=NULL ) {
 		lkindex[i] = lkcnt;
 		/* long pointer into big ligkern array */
-		o_lkarray[lkcnt].skip = 32768+1;
+		o_lkarray[lkcnt].skip = 128+1;
 		o_lkarray[lkcnt].other_char = 0;
 		o_lkarray[lkcnt].op = lkcnt2>>16;
 		o_lkarray[lkcnt++].remainder = lkcnt2&0xffff;
@@ -2717,7 +2784,7 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map
 		    /* Here we will always skip to the next record, so the	*/
 		    /* skip_byte will always be 0 (well, or 128 for stop)	*/
 		    former[i] = lkcnt;
-		    o_lkarray[lkcnt2].skip = (lknext==NULL?32768:0);
+		    o_lkarray[lkcnt2].skip = (lknext==NULL?128:0);
 		    o_lkarray[lkcnt2].other_char = lk->other_char;
 		    o_lkarray[lkcnt2].op = lk->op;
 		    o_lkarray[lkcnt2++].remainder = lk->remainder;
