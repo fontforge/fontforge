@@ -6633,7 +6633,7 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 		i<sizeof(vwlist)/sizeof(vwlist[0])-1 && bdf!=NULL;
 		++i, bdf = bdf->next ) {
 	    if ( BDFDepth(bdf)==1 )
-		printf( buffer, _("%d pixel bitmap"), bdf->pixelsize );
+		sprintf( buffer, _("%d pixel bitmap"), bdf->pixelsize );
 	    else
 		sprintf( buffer, _("%d@%d pixel bitmap"),
 			bdf->pixelsize, BDFDepth(bdf) );
