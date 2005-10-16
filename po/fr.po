@@ -6423,8 +6423,8 @@ msgstr "Codage défectueux"
 
 #: fontinfo.c:88
 #, fuzzy
-msgid "Interpretation|_None"
-msgstr "_Aucune"
+msgid "Interpretation|None"
+msgstr "Aucune"
 
 #: fontinfo.c:89
 msgid "Adobe Public Use Defs."
