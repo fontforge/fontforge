@@ -39,8 +39,9 @@ DIFFOBJS = sfddiff.o sfd.o diffstubs.o stamp.o
 ACORNOBJS = acorn2sfd.o sfd.o diffstubs.o psunicodenames.o stamp.o
 
 _CFLAGS = -I$(top_srcdir)/inc -I$(srcdir) -I. @WFLAGS@ $(X_CFLAGS) \
-    @DEFS@ '-DSHAREDIR="$(sharedir)"' -DLIBDIR='"$(libdir)"'
-CFLAGS = @CFLAGS@ @CPPFLAGS@ $(_CFLAGS)
+    @DEFS@ '-DSHAREDIR="$(sharedir)"' -DLIBDIR='"$(libdir)"' \
+    @CPPFLAGS@
+CFLAGS = @CFLAGS@ $(_CFLAGS)
 
 LDFLAGS = @LDFLAGS@
 LIBS = -L../libs $(X_LIBS) ../libs/libgdraw.a ../libs/libgunicode.a \
@@ -60,6 +61,7 @@ acorn2sfd: $(ACORNOBJS)
 
 # The slight error introduced occasionally by optimization turns out to have
 # disasterous effects. This file may not be compiled with the optimizer.
+# On the other hand we do need CPPFLAGS to get the right includes...
 splinerefigure.o: $(srcdir)/splinerefigure.c
 	$(CC) -g -c -o splinerefigure.o $(_CFLAGS) $(srcdir)/splinerefigure.c
 
