@@ -46,7 +46,7 @@ CFLAGS = @CFLAGS@ $(_CFLAGS)
 LDFLAGS = @LDFLAGS@
 LIBS = -L../libs $(X_LIBS) ../libs/libgdraw.a ../libs/libgunicode.a \
     $(X_PRE_LIBS) $(X_11LIB) $(X_EXTRA_LIBS) @LIBS@ $(STATIC_LIBS) -lm
-DLIBS = ../libs/libgunicode.a @LIBS@ -lm
+DLIBS = ../libs/libgunicode.a @LIBS@ $(STATIC_LIBS) -lm
 
 all: fontforge
 
