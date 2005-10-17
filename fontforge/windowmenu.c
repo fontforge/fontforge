@@ -31,6 +31,8 @@
 # ifdef FONTFORGE_CONFIG_GDRAW
 #  include "ustring.h"
 
+extern void GMenuItemArrayFree(struct gmenuitem *mi);
+
 static void WindowSelect(GWindow base,struct gmenuitem *mi,GEvent *e) {
     GDrawRaise(mi->ti.userdata);
 }
@@ -198,7 +200,6 @@ return;
 /* Builds up a menu containing any user defined scripts */
 void MenuScriptsBuild(GWindow base,struct gmenuitem *mi,GEvent *e) {
     int i;
-    extern void GMenuItemArrayFree(struct gmenuitem *mi);
     GMenuItem *sub;
 
     if ( mi->sub!=NULL ) {
