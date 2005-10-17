@@ -589,6 +589,7 @@ int main( int argc, char **argv ) {
 #endif
 
     bindtextdomain("FontForge", getLocaleDir());
+    bind_textdomain_codeset("FontForge","UTF-8");
     textdomain("FontForge");
 #if !defined( FONTFORGE_CONFIG_GTK )
     GResourceUseGetText();
