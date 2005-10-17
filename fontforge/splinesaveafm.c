@@ -663,6 +663,7 @@ int LoadKerningDataFromOfm(SplineFont *sf, char *filename,EncMap *map) {
 return( 0 );
     /* No one bothered to mention this in the docs, but there appears to be */
     /*  an initial 0 in an ofm file. I wonder if that is the level? */
+    /* according to the ofm2opl source, it is the level */
     level = getlong(file);
     tfmd.file_len = getlong(file);
     tfmd.head_len = getlong(file);
@@ -704,7 +705,7 @@ return( 0 );
 	    tfmd.italic_size+2*tfmd.ligkern_size+tfmd.kern_size+2*tfmd.esize+tfmd.param_size +
 	    nki + nwi + nkf + nwf + nkm + nwm + nkr + nwr + nkg + nwg + nkp + nwp;
 	/* Level 2 appears to have the same structure as level 1 */
-	if ( level1 )
+	if ( level1 || level==1 || level==2 )
 	    gwwv_post_error(_("Unlikely Ofm File"),_("This looks like a level1 (or level2) ofm. FontForge only supports level0 files, and can't read a real level1 file."));
 	else
 	    gwwv_post_error(_("Unlikely Ofm File"),_("This doesn't look like an ofm file, I don't know how to read it."));
@@ -2457,6 +2458,31 @@ return;
     sf->texdata.params[21] = rint(.25*(1<<20));
 }
 
+static int OfmGuessDirection(SplineFont *sf) {
+    /* I'm only going to worry about L2R or R2L. Japanese can be either L2R or*/
+    /*  T2B so it seems stupid for the font to claim it is one or the other */
+    int i, l2rcnt=0, r2lcnt=0;
+    SplineChar *sc;
+
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL && sc->unicodeenc!=-1 ) {
+	if ( sc->unicodeenc>0x10000 ) {
+	    if ( SCRightToLeft(sc))
+		++r2lcnt;
+	    else
+		++l2rcnt;
+	} else if ( isrighttoleft(sc->unicodeenc) )
+	    ++r2lcnt;
+	else if ( islefttoright(sc->unicodeenc) )
+	    ++l2rcnt;
+	else
+	    /* Neutrals, or weakly oriented characters. Don't count them */;
+    }
+    if ( r2lcnt>l2rcnt )
+return( 2 );	/* In omega this means Top, Right */
+
+return( 0 );	/* In omega this means Top, Left */
+}
+
 static int _OTfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map,int maxc) {
     struct tfm_header header;
     char *full=NULL, *encname;
@@ -2824,8 +2850,18 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map
 	putshort(tfm,ecnt);
 	putshort(tfm,pcnt);
     } else {
-	int font_dir = 0;		/* What's this? */
+	int font_dir = 0;
+	    /* According to ofm2opl sources fontdir is: */
+	    /*  0=>TL, 1=>LT, 2=>TR, 3=>LB, 4=>BL, 5=>RT, 6=>BR, 7=>RB */
+	    /* And if bit 3 (8) is set then we have something called NFONTDIR */
+	    /*  no idea what that means */
+	    /* TL Means start at the top left of the page (standard L 2 R) */
+	    /* TR Means start at the top right of the page (standard R 2 L) */
+	    /* And I think RT is appropriate for vertical Japanese */
+	    /* (bit three might mean the reversed direction of English inside */
+	    /*  mongolian. It doesn't seem appropriate in a font though) */
 	putlong(tfm,0);		/* Undocumented entry. Perhaps the level? */
+				/* ofm2opl says it is the level */
 	putlong(tfm,
 		14+		/* Table of contents size */
 		18 +		/* header size */
@@ -2849,6 +2885,7 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map
 	putlong(tfm,kcnt);
 	putlong(tfm,ecnt);
 	putlong(tfm,pcnt);
+	font_dir = OfmGuessDirection(sf);
 	putlong(tfm,font_dir);
     }
 	    /* header */
