@@ -2458,9 +2458,12 @@ return;
     sf->texdata.params[21] = rint(.25*(1<<20));
 }
 
+#if 0
 static int OfmGuessDirection(SplineFont *sf) {
     /* I'm only going to worry about L2R or R2L. Japanese can be either L2R or*/
     /*  T2B so it seems stupid for the font to claim it is one or the other */
+    /* Ah. It appears that omega realized this. All ofm files have fontdir=0 */
+    /*  even if they are arabic only */
     int i, l2rcnt=0, r2lcnt=0;
     SplineChar *sc;
 
@@ -2482,6 +2485,7 @@ return( 2 );	/* In omega this means Top, Right */
 
 return( 0 );	/* In omega this means Top, Left */
 }
+#endif
 
 static int _OTfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map,int maxc) {
     struct tfm_header header;
@@ -2860,6 +2864,8 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map
 	    /* And I think RT is appropriate for vertical Japanese */
 	    /* (bit three might mean the reversed direction of English inside */
 	    /*  mongolian. It doesn't seem appropriate in a font though) */
+	    /* HOWEVER, all the ofm files I've seen, including arabic only ones*/
+	    /*  set fontdir to 0 (TL). So I shall too */
 	putlong(tfm,0);		/* Undocumented entry. Perhaps the level? */
 				/* ofm2opl says it is the level */
 	putlong(tfm,
@@ -2885,7 +2891,9 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map
 	putlong(tfm,kcnt);
 	putlong(tfm,ecnt);
 	putlong(tfm,pcnt);
+#if 0
 	font_dir = OfmGuessDirection(sf);
+#endif
 	putlong(tfm,font_dir);
     }
 	    /* header */
