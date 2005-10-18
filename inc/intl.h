@@ -38,6 +38,10 @@
 # define _(str)			(str)
 # define P_(str1,str_non1,n)	((n)==1?str1:str_non1)
 # define U_(str)		(str)
+
+# define bindtextdomain(domain,dir)
+# define bind_textdomain_codeset(domain,enc)
+# define textdomain(domain)
 #endif
 /* For messages including utf8 sequences that need gettext_noop treatment */
 #define NU_(str)	(str)
