@@ -1527,23 +1527,16 @@ static SplineSet *SVGParsePoly(xmlNodePtr poly, int isgon) {
 return( NULL );
 
     x = strtod(pts,&end);
-    if ( *end!=',' ) {
-	_xmlFree(pts);
-return( NULL );
-    }
-    y = strtod(end+1,&end);
+    while ( isspace(*end) || *end==',' ) ++end;
+    y = strtod(end,&end);
     while ( isspace(*end)) ++end;
 
     cur = chunkalloc(sizeof(SplineSet));
     cur->first = cur->last = SplinePointCreate(x,y);
     while ( *end ) {
 	x = strtod(end,&end);
-	if ( *end!=',' ) {
-	    _xmlFree(pts);
-	    SplinePointListFree(cur);
-return( NULL );
-	}
-	y = strtod(end+1,&end);
+	while ( isspace(*end) || *end==',' ) ++end;
+	y = strtod(end,&end);
 	while ( isspace(*end)) ++end;
 	sp = SplinePointCreate(x,y);
 	SplineMake(cur->last,sp,false);
