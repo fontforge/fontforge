@@ -299,43 +299,40 @@ static void unexpected(Context *c,enum token_type got) {
 
 static void error( Context *c, char *msg ) {
     char *t1 = script2utf8_copy(msg);
-    char *loc = utf82def_copy(t1);
+    char *ufile = def2utf8_copy(c->filename);
 
     /* All of fontforge's internal errors are in ASCII where there is */
     /*  no difference between latin1 and utf8. User errors are a different */
     /*  matter */
 
     if ( c->lineno!=0 )
-	LogError( _("%s line: %d %s\n"), c->filename, c->lineno, loc );
+	LogError( _("%s line: %d %s\n"), ufile, c->lineno, t1 );
     else
-	LogError( "%s: %s\n", c->filename, loc );
+	LogError( "%s: %s\n", ufile, t1 );
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( !no_windowing_ui ) {
-	char *temp = def2utf8_copy(c->filename);
-	gwwv_post_error(NULL,"%s: %d  %s",temp, c->lineno, t1 );
-	free(temp);
+	gwwv_post_error(NULL,"%s: %d  %s",ufile, c->lineno, t1 );
     }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-    free(loc); free(t1);
+    free(ufile); free(t1);
     traceback(c);
 }
 
 static void errors( Context *c, char *msg, char *name) {
     char *t1 = script2utf8_copy(msg);
-    char *loc1 = utf82def_copy(t1);
     char *t2 = script2utf8_copy(name);
-    char *loc2 = utf82def_copy(t2);
+    char *ufile = def2utf8_copy(c->filename);
 
     if ( c->lineno!=0 )
-	LogError( _("%s line: %d %s: %s\n"), c->filename, c->lineno, loc1, loc2 );
+	LogError( _("%s line: %d %s: %s\n"), ufile, c->lineno, t1, t2 );
     else
-	LogError( "%s: %s: %s\n", c->filename, loc1, loc2 );
+	LogError( "%s: %s: %s\n", ufile, t1, t2 );
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( !no_windowing_ui ) {
-	gwwv_post_error(NULL,"%s: %d %s: %s",c->filename, c->lineno, t1, t2 );
+	gwwv_post_error(NULL,"%s: %d %s: %s",ufile, c->lineno, t1, t2 );
     }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-    free(loc1); free(loc2); free(t1); free(t2);
+    free(ufile); free(t1); free(t2);
     traceback(c);
 }
 
