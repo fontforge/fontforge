@@ -475,9 +475,17 @@ void AnchorClassDecompose(SplineFont *sf,AnchorClass *_ac, int classcnt, int *su
 			    if ( ac->type!=act_mkmk )
 		break;
 			} else if ( test->type!=at_centry && test->type!=at_cexit ) {
-			    if ( heads[test->type].glyphs!=NULL )
-				heads[test->type].glyphs[heads[test->type].cnt] = sf->glyphs[gid];
-			    ++heads[test->type].cnt;
+			    if ( heads[test->type].glyphs!=NULL ) {
+			    /* If we have multiple mark classes, we may use the same base glyph */
+			    /* with more than one mark class. But it should only appear once in */
+			    /* the output */
+				if ( heads[test->type].cnt==0 ||
+					 heads[test->type].glyphs[heads[test->type].cnt-1]!=sf->glyphs[gid] ) {
+				    heads[test->type].glyphs[heads[test->type].cnt] = sf->glyphs[gid];
+				    ++heads[test->type].cnt;
+				}
+			    } else
+				++heads[test->type].cnt;
 			    if ( ac->type!=act_mkmk )
 		break;
 			}
@@ -491,7 +499,9 @@ void AnchorClassDecompose(SplineFont *sf,AnchorClass *_ac, int classcnt, int *su
 	for ( i=0; i<4; ++i )
 	    if ( heads[i].cnt!=0 ) {
 		heads[i].glyphs = galloc((heads[i].cnt+1)*sizeof(SplineChar *));
-		heads[i].glyphs[heads[i].cnt] = NULL;
+		/* I used to set glyphs[cnt] to NULL here. But it turns out */
+		/*  cnt may be an overestimate on the first pass. So we can */
+		/*  only set it at the end of the second pass */
 		heads[i].cnt = 0;
 	    }
 	for ( k=0; k<classcnt; ++k ) if ( subcnts[k]!=0 ) {
@@ -500,6 +510,9 @@ void AnchorClassDecompose(SplineFont *sf,AnchorClass *_ac, int classcnt, int *su
 	    subcnts[k] = 0;
 	}
     }
+    for ( i=0; i<4; ++i )
+	if ( heads[i].glyphs!=NULL )
+	    heads[i].glyphs[heads[i].cnt] = NULL;
 
     *base = heads[at_basechar].glyphs;
     *lig  = heads[at_baselig].glyphs;
