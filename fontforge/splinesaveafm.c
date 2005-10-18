@@ -2776,7 +2776,7 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map
 	}
     } else {
 	o_lkarray = gcalloc(lkcnt,sizeof(struct ligkern));
-	if ( sccnt<32768 ) {
+	if ( sccnt<128 ) {
 	    lkcnt = 0;
 	    do {
 		any = false;
