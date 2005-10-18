@@ -2248,14 +2248,14 @@ static void AttSave(struct att_dlg *att) {
     if ( ret==NULL )
 return;
     cret = utf82def_copy(ret);
-    free(ret);
     file = fopen(cret,"w");
+    free(cret);
     if ( file==NULL ) {
-	gwwv_post_error(_("Save Failed"),_("Save Failed"),cret);
-	free(cret);
+	gwwv_post_error(_("Save Failed"),_("Save Failed"),ret);
+	free(ret);
 return;
     }
-    free(cret);
+    free(ret);
 
     pututf8(0xfeff,file);	/* Zero width something or other. Marks this as unicode, utf8 */
     node = NodeFindLPos(att->tables,0,&depth);

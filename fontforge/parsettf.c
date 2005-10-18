@@ -889,20 +889,20 @@ return;
 	/* Mac string doesn't match mac unicode string */
 	if ( !IsSubSetOf(str,cur->names[id]) )
 	    LogError( _("Warning: Mac and Unicode entries in the 'name' table differ for the\n %s string in the language %s\n Mac String: %s\nWindows String: %s\n"),
-		    utf82def_copy(TTFNameIds(id)),utf82def_copy(MSLangString(language)),
-		    utf82def_copy(str),utf82def_copy(cur->names[id]));		/* Memory leak */
+		    TTFNameIds(id),MSLangString(language),
+		    str,cur->names[id]);
 	else
 	    LogError( _("Warning: Mac string is a subset of the Unicode string in the 'name' table\n for the %s string in the %s language.\n"),
-		    utf82def_copy(TTFNameIds(id)),utf82def_copy(MSLangString(language)));
+		    TTFNameIds(id),MSLangString(language));
 	free(str);
     } else if ( plat==3 && (cur->frommac[id/32] & (1<<(id&0x1f))) ) {
 	if ( !IsSubSetOf(cur->names[id],str) )
 	    LogError( _("Warning: Mac and Windows entries in the 'name' table differ for the\n %s string in the language %s\n Mac String: %s\nWindows String: %s\n"),
-		    utf82def_copy(TTFNameIds(id)),utf82def_copy(MSLangString(language)),
-		    utf82def_copy(cur->names[id]),utf82def_copy(str));		/* Memory leak */
+		    TTFNameIds(id),MSLangString(language),
+		    cur->names[id],str);
 	else
 	    LogError( _("Warning: Mac string is a subset of the Unicode string in the 'name' table\n for the %s string in the %s language.\n"),
-		    utf82def_copy(TTFNameIds(id)),utf82def_copy(MSLangString(language)));
+		    TTFNameIds(id),MSLangString(language));
 	free(cur->names[id]);
 	cur->names[id] = str;
 	cur->frommac[id/32] &= ~(1<<(id&0x1f));

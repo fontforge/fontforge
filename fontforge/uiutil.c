@@ -689,16 +689,20 @@ return;
 
 void LogError(const char *format,...) {
     va_list ap;
+    char buffer[400], *str;
 
     va_start(ap,format);
+    vsnprintf(buffer,sizeof(buffer),format,ap);
 #if defined( FONTFORGE_CONFIG_NO_WINDOWING_UI )
-    vfprintf(stderr,format,ap);
+    str = utf82def_copy(buffer);
+    fprintf(stderr,"%s",str);
+    free(str);
 #else
-    if ( no_windowing_ui )
-	vfprintf(stderr,format,ap);
-    else {
-	char buffer[300];
-	vsnprintf(buffer,sizeof(buffer),format,ap);
+    if ( no_windowing_ui ) {
+	str = utf82def_copy(buffer);
+	fprintf(stderr,"%s",str);
+	free(str);
+    } else {
 	if ( !ErrorWindowExists())
 	    CreateErrorWindow();
 	AppendToErrorWindow(buffer);
