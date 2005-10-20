@@ -13,7 +13,7 @@ fontforge_OBJECTS =  alignment.obj,autohint.obj,autosave.obj,autowidth.obj,\
  splinesaveafm.obj,splinestroke.obj,splineutil.obj,splineutil2.obj,stamp.obj,\
  start.obj,tottf.obj,transform.obj,uiutil.obj,utils.obj,windowmenu.obj, \
  zapfnomen.obj,othersubrs.obj,autotrace.obj,openfontdlg.obj,encoding.obj,print.obj,\
- problems.obj,pfaedit-ui-en.obj,crctab.obj,macbinary.obj,scripting.obj
+ problems.obj,crctab.obj,macbinary.obj,scripting.obj
  
 fontforge_OBJECTS2=displayfonts.obj,combinations.obj,sftextfield.obj,ikarus.obj,\
         cvfreehand.obj,cvhand.obj,simplifydlg.obj,winfonts.obj,freetype.obj,\
@@ -25,21 +25,11 @@ fontforge_OBJECTS2=displayfonts.obj,combinations.obj,sftextfield.obj,ikarus.obj,
 	parsettfvar.obj,tottfvar.obj,pua.obj,stemdb.obj,anchorsaway.obj,\
 	palmfonts.obj,cvdgloss.obj,groups.obj,parsepdf.obj
 
-fontforge.exe : nomen.h $(fontforge_OBJECTS) $(fontforge_OBJECTS2) xlib.opt
+fontforge.exe : $(fontforge_OBJECTS) $(fontforge_OBJECTS2) xlib.opt
         library/create tmp.olb $(fontforge_OBJECTS)
         library tmp.olb $(fontforge_OBJECTS2)
         link/exec=fontforge.exe start,tmp/lib,[-.libs]LIBGDRAW/lib,\
         LIBGUNICODE/lib,[]xlib.opt/opt
-
-
-nomen.h : makenomenh.exe
-        run makenomenh
-
-
-makenomenh.exe : makenomenh.obj
-        link makenomenh,[-.libs]LIBGDRAW/lib,LIBGUNICODE/lib,[]xlib.opt/opt
-
-makenomenh.obj : makenomenh.c
 
 alignment.obj : alignment.c
 autohint.obj : autohint.c
@@ -106,7 +96,6 @@ openfontdlg.obj : openfontdlg.c
 encoding.obj : encoding.c
 print.ob : print.c
 problems.obj : problems.c
-pfaedit-ui-en.obj : pfaedit-ui-en.c
 crctab.obj : crctab.c
 macbinary.obj : macbinary.c
 scripting.obj : scripting.c
