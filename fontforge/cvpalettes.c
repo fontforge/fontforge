@@ -2013,12 +2013,12 @@ static void CVPopupSelectInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
 void CVToolsPopup(CharView *cv, GEvent *event) {
     GMenuItem mi[125];
     int i, j, anysel;
-    static char *selectables[] = { N_("Get _Info..."), N_("Open Reference"), N_("_Add Anchor"), 0 };
+    static char *selectables[] = { N_("Get Info..."), N_("Open Reference"), N_("Add Anchor"), NULL };
 
     memset(mi,'\0',sizeof(mi));
     for ( i=0;i<16; ++i ) {
 	mi[i].ti.text = (unichar_t *) _(popupsres[i]);
-	mi[i].ti.text_in_resource = true;
+	mi[i].ti.text_is_1byte = true;
 	mi[i].ti.fg = COLOR_DEFAULT;
 	mi[i].ti.bg = COLOR_DEFAULT;
 	mi[i].mid = i;
@@ -2031,6 +2031,7 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
 	mi[i++].ti.bg = COLOR_DEFAULT;
 	for ( j=0;j<3; ++j, ++i ) {
 	    mi[i].ti.text = (unichar_t *) editablelayers[j];
+	    mi[i].ti.text_in_resource = true;
 	    mi[i].ti.text_is_1byte = true;
 	    mi[i].ti.fg = COLOR_DEFAULT;
 	    mi[i].ti.bg = COLOR_DEFAULT;
