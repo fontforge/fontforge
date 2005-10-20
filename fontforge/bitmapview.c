@@ -1569,7 +1569,7 @@ static void BVWindowMenuBuild(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     WindowMenuBuild(gw,mi,e,wnmenu);
 }
 
-char *BVFlipNames[] = { N_("Flip _Horizontally"), N_("Flip _Vertically"), NU_("_Rotate 90° CW"), NU_("Rotate _90° CCW"), NU_("Rotate _180°"), N_("_Skew...") };
+char *BVFlipNames[] = { N_("Flip Horizontally"), N_("Flip Vertically"), NU_("Rotate 90° CW"), NU_("Rotate 90° CCW"), NU_("Rotate 180°"), N_("Skew...") };
 
 static GMenuItem dummyitem[] = { { (unichar_t *) N_("_New"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'N' }, NULL };
 static GMenuItem fllist[] = {
