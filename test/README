@@ -1,9 +1,9 @@
 This is a minimal testsuite for fontforge. I expect it will grow with time.
 
 You can execute the tests by:
-  $ <testdir>/runtests <pfaedit>
+  $ <testdir>/runtests <fontforge>
 (where <testdir> is the directory of the testsuite, and <pfaedit> is the
- pathspec of the pfaedit program)
+ pathspec of the fontforge program)
 
 Before you execute any of the tests you must download the test fonts.
 I do not provide these because most of them aren't my work. If you can't find
@@ -14,12 +14,22 @@ These fonts must be placed in <testdir>/fonts/
 
 test001.pe
   Caliban.sfd		http://pfaedit.sf.net/sfds/Caliban.sfd.gz
-  mingliu.ttc		(any other ttc file would do)
+  Zapfino-4.0d3.dfont
+  Zapfino-4.1d6.dfont
+
+test002.pe
   HanSans-Bold.otf	(any other cid-keyed otf file would do)
+
+test003.pe
   MunhwaGothic-Bold	ftp://ftp.ora.com/pub/examples/nutshell/ujip/adobe/samples/MunhwaGothic-Bold
 			(any other cid-keyed non-otf file would do)
-test002.pe
-  GillSans.dfont	Provided on Mac OS/X (but any truetype font would do)
+test004.pe
+  mingliu.ttc		(any other ttc file would do)
+
+test005.pe
+  VKern.sfd
+
+...
 
 ================================================================================
 
