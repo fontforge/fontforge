@@ -1242,6 +1242,9 @@ extern void SFAddGlyphAndEncode(SplineFont *sf,SplineChar *sc,EncMap *basemap, i
 extern GMenuItem *GetEncodingMenu(void (*func)(GWindow,GMenuItem *,GEvent *),
 	Encoding *current);
 
+struct instrdlg;
+uint8 *_IVParse(struct instrdlg *iv, char *text, int *len);
+
 #ifdef FONTFORGE_CONFIG_GDRAW
 extern GMenuItem helplist[];
 #endif
