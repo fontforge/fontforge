@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 12-Oct-2005 -->
+  <!-- AP: Last modified: 20-Oct-2005 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -1474,12 +1474,70 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     as a utf8 encoded string. Combinations which are not present will be returned
     as "".
   <DT>
-    <A HREF="fontinfo.html#Panose">SetPanose</A>(array)<BR>
-    SetPanose(index,value)
+    <A HREF="fontinfo.html#Panose">SetPanose</A>(array) SetPanose(index,value)
   <DD>
     This sets the panose values for the font. Either it takes an array of 10
     integers and sets all the values, or it takes two integer arguments and sets
     <CODE>font.panose[index] = value</CODE>
+  <DT>
+    <A HREF="fontinfo.html#TTF-Values">SetOS2Value</A>(field-name,field-value)
+  <DD>
+    This sets one of the fields of the OS/2 table to the given value. The field-name
+    must be one of the strings listed below:
+    <P>
+    <CODE>Weight, Width, FSType, IBMFamily, VendorID, Panose,<BR>
+    WinAscent, WinAscentIsOffset</CODE>
+    <P>
+    These are equivalent to the WinAscent field &amp; []Offset check box in
+    <A HREF="fontinfo.html#TTF-Values">Font Info-&gt;OS/2-&gt;Misc. </A>Where
+    WinAscentOffset controls whether WinAscent is treated as an absolute number
+    or as relative to the expected number.
+    <P>
+    <CODE>WinDescent, WinDescentIsOffset,<BR>
+    TypoAscent, TypoAscentIsOffset,<BR>
+    TypoDescent, TypoDescentIsOffset,<BR>
+    HHeadAscent, HHeadAscentIsOffset,<BR>
+    HHeadDescent, HHeadDescentIsOffset,<BR>
+    TypoLineGap, HHeadLineGap, VHeadLineGap,<BR>
+    SubXSize, SubYSize, SubXOffset, SubYOffset</CODE>
+    <P>
+    Sets the Subscript x/y sizes/offsets.
+    <P>
+    <CODE>SupXSize, SupYSize, SupXOffset, SupYOffset</CODE>
+    <P>
+    Sets the Superscript x/y sizes/offsets.
+    <P>
+    <CODE>StrikeOutSize, StrikeOutPos</CODE>
+    <P>
+    <P>
+    Usually the second argument is an integer but <CODE>VendorID</CODE> takes
+    a 4 character ASCII string, and <CODE>Panose</CODE> takes a 10 element integer
+    array.
+  <DT>
+    <A HREF="fontinfo.html#TTF-Values">GetOS2Value</A>(field-name)
+  <DD>
+    The argument takes the same set of tag strings. <CODE>VendorId</CODE> returns
+    a string, and <CODE>Panose</CODE> returns an array. The others return integers.
+  <DT>
+    <A HREF="fontinfo.html#Private">SetPrivateValue</A>(key-name,value)
+  <DD>
+    Changes (or Adds) an entry to the font's private dictionary with the given
+    key and given value. Both arguments must be strings. The key may be anything,
+    it is not limited to any set of expected keys.
+  <DT>
+    <A HREF="fontinfo.html#Private">GetPrivateValue</A>(key-name)
+  <DD>
+    Returns the string in the private dictionary which matches the given key.
+    If the key isn't in the dictionary it explodes.
+  <DT>
+    <A HREF="fontinfo.html#Private">HasPrivateValue</A>(key-name)
+  <DD>
+    Returns whether a key is in the dictionary.
+  <DT>
+    <A HREF="fontinfo.html#Private">RemovePrivateValue</A>(key-name)
+  <DD>
+    Removes a key (and associated value) from the dictionary. Returns whether
+    the key was in the dictionary.
   <DT>
     SetUniqueID(value)
   <DD>
