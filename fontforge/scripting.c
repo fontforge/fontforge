@@ -2803,6 +2803,276 @@ static void bSetPanose(Context *c) {
     c->curfv->sf->pfminfo.pfmset = true;
     c->curfv->sf->changed = true;
 }
+
+static void setint16(int16 *val,Context *c) {
+    if ( c->a.vals[2].type!=v_int )
+	error(c,"Bad argument type");
+    *val = c->a.vals[2].u.ival;
+}
+
+static void setss16(int16 *val,SplineFont *sf,Context *c) {
+    if ( c->a.vals[2].type!=v_int )
+	error(c,"Bad argument type");
+    *val = c->a.vals[2].u.ival;
+    sf->pfminfo.subsuper_set = true;
+}
+
+static void bSetOS2Value(Context *c) {
+    int i;
+    SplineFont *sf = c->curfv->sf;
+
+    if ( c->a.argc<3 )
+	error( c, "Wrong number of arguments");
+    if ( c->a.vals[1].type!=v_str )
+	error(c,"Bad argument type");
+
+    SFDefaultOS2Info(&sf->pfminfo,sf,sf->fontname);
+
+    if ( strmatch(c->a.vals[1].u.sval,"Weight")==0 ) {
+	setint16(&sf->pfminfo.weight,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"Width")==0 ) {
+	setint16(&sf->pfminfo.width,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"FSType")==0 ) {
+	setint16(&sf->pfminfo.fstype,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"IBMFamily")==0 ) {
+	setint16(&sf->pfminfo.os2_family_class,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"VendorID")==0 ) {
+	char *pt1, *pt2;
+	if ( c->a.vals[2].type!=v_str )
+	    error(c,"Bad argument type");
+	else if ( strlen(c->a.vals[2].u.sval)>4 )
+	    error(c,"VendorID string limited to 4 (ASCII) characters");
+	pt1 = c->a.vals[2].u.sval;
+	pt2 = sf->pfminfo.os2_vendor;
+	memset(pt2,' ',4);
+	while ( *pt1!='\0' )
+	    *pt2++ = *pt1++;
+    } else if ( strmatch(c->a.vals[1].u.sval,"WinAscent")==0 ) {
+	setint16(&sf->pfminfo.os2_winascent,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"WinAscentIsOffset")==0 ) {
+	if ( c->a.vals[2].type!=v_int )
+	    error(c,"Bad argument type");
+	sf->pfminfo.winascent_add = c->a.vals[2].u.ival;
+    } else if ( strmatch(c->a.vals[1].u.sval,"WinDescent")==0 ) {
+	setint16(&sf->pfminfo.os2_windescent,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"WinDescentIsOffset")==0 ) {
+	if ( c->a.vals[2].type!=v_int )
+	    error(c,"Bad argument type");
+	sf->pfminfo.windescent_add = c->a.vals[2].u.ival;
+    } else if ( strmatch(c->a.vals[1].u.sval,"typoAscent")==0 ) {
+	setint16(&sf->pfminfo.os2_typoascent,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"typoAscentIsOffset")==0 ) {
+	if ( c->a.vals[2].type!=v_int )
+	    error(c,"Bad argument type");
+	sf->pfminfo.typoascent_add = c->a.vals[2].u.ival;
+    } else if ( strmatch(c->a.vals[1].u.sval,"typoDescent")==0 ) {
+	setint16(&sf->pfminfo.os2_typodescent,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"typoDescentIsOffset")==0 ) {
+	if ( c->a.vals[2].type!=v_int )
+	    error(c,"Bad argument type");
+	sf->pfminfo.typodescent_add = c->a.vals[2].u.ival;
+    } else if ( strmatch(c->a.vals[1].u.sval,"typoLineGap")==0 ) {
+	setint16(&sf->pfminfo.os2_typolinegap,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"hheadAscent")==0 ) {
+	setint16(&sf->pfminfo.hhead_ascent,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"hheadAscentIsOffset")==0 ) {
+	if ( c->a.vals[2].type!=v_int )
+	    error(c,"Bad argument type");
+	sf->pfminfo.hheadascent_add = c->a.vals[2].u.ival;
+    } else if ( strmatch(c->a.vals[1].u.sval,"hheadDescent")==0 ) {
+	setint16(&sf->pfminfo.hhead_descent,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"hheadDescentIsOffset")==0 ) {
+	if ( c->a.vals[2].type!=v_int )
+	    error(c,"Bad argument type");
+	sf->pfminfo.hheaddescent_add = c->a.vals[2].u.ival;
+    } else if ( strmatch(c->a.vals[1].u.sval,"LineGap")==0 || strmatch(c->a.vals[1].u.sval,"HHeadLineGap")==0 ) {
+	setint16(&sf->pfminfo.linegap,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"VLineGap")==0 || strmatch(c->a.vals[1].u.sval,"VHeadLineGap")==0 ) {
+	setint16(&sf->pfminfo.vlinegap,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"Panose")==0 ) {
+	if ( c->a.vals[2].type!=v_arr && c->a.vals[2].type!=v_arrfree )
+	    error(c,"Bad argument type");
+	if ( c->a.vals[2].u.aval->argc!=10 )
+	    error(c,"Wrong size of array");
+	if ( c->a.vals[2].u.aval->vals[0].type!=v_int )
+	    error(c,"Bad argument sub-type");
+	for ( i=0; i<10; ++i ) {
+	    if ( c->a.vals[2].u.aval->vals[i].type!=v_int )
+		error(c,"Bad argument sub-type");
+	    sf->pfminfo.panose[i] =  c->a.vals[2].u.aval->vals[i].u.ival;
+	}
+	sf->pfminfo.panose_set = true;
+    } else if ( strmatch(c->a.vals[1].u.sval,"SubXSize")==0 ) {
+	setss16(&sf->pfminfo.os2_subxsize,sf,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"SubYSize")==0 ) {
+	setss16(&sf->pfminfo.os2_subysize,sf,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"SubXOffset")==0 ) {
+	setss16(&sf->pfminfo.os2_subxoff,sf,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"SubYOffset")==0 ) {
+	setss16(&sf->pfminfo.os2_subyoff,sf,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"supXSize")==0 ) {
+	setss16(&sf->pfminfo.os2_supxsize,sf,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"supYSize")==0 ) {
+	setss16(&sf->pfminfo.os2_supysize,sf,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"supXOffset")==0 ) {
+	setss16(&sf->pfminfo.os2_supxoff,sf,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"supYOffset")==0 ) {
+	setss16(&sf->pfminfo.os2_supyoff,sf,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"StrikeOutSize")==0 ) {
+	setss16(&sf->pfminfo.os2_strikeysize,sf,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"StrikeOutPos")==0 ) {
+	setss16(&sf->pfminfo.os2_strikeypos,sf,c);
+    } else {
+	errors(c,"Unknown OS/2 field: ", c->a.vals[1].u.sval );
+    }
+    sf->pfminfo.pfmset = true;
+    sf->changed = true;
+}
+
+static void os2getint(int val,Context *c) {
+    c->return_val.type = v_int;
+    c->return_val.u.ival = val;
+}
+
+static void bGetOS2Value(Context *c) {
+    int i;
+    SplineFont *sf = c->curfv->sf;
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments");
+    if ( c->a.vals[1].type!=v_str )
+	error(c,"Bad argument type");
+
+    if ( strmatch(c->a.vals[1].u.sval,"Weight")==0 ) {
+	os2getint(sf->pfminfo.weight,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"Width")==0 ) {
+	os2getint(sf->pfminfo.width,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"FSType")==0 ) {
+	os2getint(sf->pfminfo.fstype,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"IBMFamily")==0 ) {
+	os2getint(sf->pfminfo.os2_family_class,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"VendorID")==0 ) {
+	c->return_val.type = v_str;
+	c->return_val.u.sval = copyn(sf->pfminfo.os2_vendor,4);
+    } else if ( strmatch(c->a.vals[1].u.sval,"WinAscent")==0 ) {
+	os2getint(sf->pfminfo.os2_winascent,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"WinAscentIsOffset")==0 ) {
+	os2getint(sf->pfminfo.winascent_add,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"WinDescent")==0 ) {
+	os2getint(sf->pfminfo.os2_windescent,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"WinDescentIsOffset")==0 ) {
+	os2getint(sf->pfminfo.windescent_add,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"typoAscent")==0 ) {
+	os2getint(sf->pfminfo.os2_typoascent,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"typoAscentIsOffset")==0 ) {
+	os2getint(sf->pfminfo.typoascent_add,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"typoDescent")==0 ) {
+	os2getint(sf->pfminfo.os2_typodescent,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"typoDescentIsOffset")==0 ) {
+	os2getint(sf->pfminfo.typodescent_add,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"typoLineGap")==0 ) {
+	os2getint(sf->pfminfo.os2_typolinegap,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"hheadAscent")==0 ) {
+	os2getint(sf->pfminfo.hhead_ascent,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"hheadAscentIsOffset")==0 ) {
+	os2getint(sf->pfminfo.hheadascent_add,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"hheadDescent")==0 ) {
+	os2getint(sf->pfminfo.hhead_descent,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"hheadDescentIsOffset")==0 ) {
+	os2getint(sf->pfminfo.hheaddescent_add,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"LineGap")==0 || strmatch(c->a.vals[1].u.sval,"HHeadLineGap")==0 ) {
+	os2getint(sf->pfminfo.linegap,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"VLineGap")==0 || strmatch(c->a.vals[1].u.sval,"VHeadLineGap")==0 ) {
+	os2getint(sf->pfminfo.vlinegap,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"Panose")==0 ) {
+	c->return_val.type = v_arrfree;
+	c->return_val.u.aval = galloc(sizeof(Array));
+	c->return_val.u.aval->argc = 10;
+	c->return_val.u.aval->vals = galloc((10+1)*sizeof(Val));
+	for ( i=0; i<10; ++i ) {
+	    c->return_val.u.aval->vals[i].type = v_int;
+	    c->return_val.u.aval->vals[i].u.ival = sf->pfminfo.panose[i];
+	}
+    } else if ( strmatch(c->a.vals[1].u.sval,"SubXSize")==0 ) {
+	os2getint(sf->pfminfo.os2_subxsize,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"SubYSize")==0 ) {
+	os2getint(sf->pfminfo.os2_subysize,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"SubXOffset")==0 ) {
+	os2getint(sf->pfminfo.os2_subxoff,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"SubYOffset")==0 ) {
+	os2getint(sf->pfminfo.os2_subyoff,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"supXSize")==0 ) {
+	os2getint(sf->pfminfo.os2_supxsize,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"supYSize")==0 ) {
+	os2getint(sf->pfminfo.os2_supysize,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"supXOffset")==0 ) {
+	os2getint(sf->pfminfo.os2_supxoff,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"supYOffset")==0 ) {
+	os2getint(sf->pfminfo.os2_supyoff,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"StrikeOutSize")==0 ) {
+	os2getint(sf->pfminfo.os2_strikeysize,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"StrikeOutPos")==0 ) {
+	os2getint(sf->pfminfo.os2_strikeypos,c);
+    } else {
+	errors(c,"Unknown OS/2 field: ", c->a.vals[1].u.sval );
+    }
+}
+
+static void bSetPrivateValue(Context *c) {
+    SplineFont *sf = c->curfv->sf;
+
+    if ( c->a.argc!=3 )
+	error( c, "Wrong number of arguments");
+    if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str )
+	error(c,"Bad argument type");
+    if ( sf->private == NULL ) {
+	sf->private = gcalloc(1,sizeof(struct psdict));
+	sf->private->cnt = 10;
+	sf->private->keys = gcalloc(10,sizeof(char *));
+	sf->private->values = gcalloc(10,sizeof(char *));
+    }
+    PSDictChangeEntry(sf->private,c->a.vals[1].u.sval,c->a.vals[2].u.sval);
+    c->curfv->sf->changed = true;
+}
+
+static void bHasPrivateValue(Context *c) {
+    SplineFont *sf = c->curfv->sf;
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments");
+    if ( c->a.vals[1].type!=v_str )
+	error(c,"Bad argument type");
+    c->return_val.type = v_int;
+    c->return_val.u.ival = 0;
+    if ( PSDictHasEntry(sf->private,c->a.vals[1].u.sval)!=NULL )	/* this works if sf->private==NULL */
+	c->return_val.u.ival = 1;
+}
+
+static void bRemovePrivateValue(Context *c) {
+    SplineFont *sf = c->curfv->sf;
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments");
+    if ( c->a.vals[1].type!=v_str )
+	error(c,"Bad argument type");
+    c->return_val.type = v_int;
+    /* this works if sf->private==NULL */
+    if ( (c->return_val.u.ival = PSDictRemoveEntry(sf->private,c->a.vals[1].u.sval)) )
+	c->curfv->sf->changed = true;
+}
+
+static void bGetPrivateValue(Context *c) {
+    SplineFont *sf = c->curfv->sf;
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments");
+    if ( c->a.vals[1].type!=v_str )
+	error(c,"Bad argument type");
+    c->return_val.type = v_str;
+    c->return_val.u.sval = copy(PSDictHasEntry(sf->private,c->a.vals[1].u.sval));
+    if ( c->return_val.u.sval==NULL )
+	errors(c,"This font does not contain the given key in its private dictionary: ", c->a.vals[1].u.sval);
+}
  
 static void bSetUniqueID(Context *c) {
 
@@ -5741,6 +6011,12 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "SetItalicAngle", bSetItalicAngle },
     { "SetMacStyle", bSetMacStyle },
     { "SetPanose", bSetPanose },
+    { "SetOS2Value", bSetOS2Value },
+    { "GetOS2Value", bGetOS2Value },
+    { "SetPrivateValue", bSetPrivateValue },
+    { "GetPrivateValue", bGetPrivateValue },
+    { "HasPrivateValue", bHasPrivateValue },
+    { "RemovePrivateValue", bRemovePrivateValue },
     { "SetUniqueID", bSetUniqueID },
     { "SetTeXParams", bSetTeXParams },
     { "GetTeXParam", bGetTeXParam },
