@@ -4919,6 +4919,24 @@ static void FVAutoInstr(FontView *fv) {
 # endif
 }
 
+static void FVClearInstrs(FontView *fv) {
+    SplineChar *sc;
+    int i, gid;
+
+    if ( !SFCloseAllInstrs(fv->sf))
+return;
+
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
+	    (gid = fv->map->map[i])!=-1 && SCWorthOutputting((sc = fv->sf->glyphs[gid])) ) {
+	if ( sc->ttf_instrs_len!=0 ) {
+	    free(sc->ttf_instrs);
+	    sc->ttf_instrs = NULL;
+	    sc->ttf_instrs_len = 0;
+	    SCCharChangedUpdate(sc);
+	}
+    }
+}
+
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 # ifdef FONTFORGE_CONFIG_GDRAW
 static void FVMenuAutoInstr(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -4982,21 +5000,7 @@ static void FVMenuClearInstrs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 void FontViewMenu_ClearInstrs(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
-    SplineChar *sc;
-    int i, gid;
-
-    if ( !SFCloseAllInstrs(fv->sf))
-return;
-
-    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
-	    (gid = fv->map->map[i])!=-1 && SCWorthOutputting((sc = fv->sf->glyphs[gid])) ) {
-	if ( sc->ttf_instrs_len!=0 ) {
-	    free(sc->ttf_instrs);
-	    sc->ttf_instrs = NULL;
-	    sc->ttf_instrs_len = 0;
-	    SCCharChangedUpdate(sc);
-	}
-    }
+    FVClearInstrs(fv);
 }
 #endif
 
@@ -10415,6 +10419,9 @@ void FVFakeMenus(FontView *fv,int cmd) {
       break;
       case 205:
 	FVDontAutoHint(fv);
+      break;
+      case 206:
+	FVClearInstrs(fv);
       break;
     }
 }

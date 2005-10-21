@@ -573,19 +573,21 @@ return;
 
 static void IVError(InstrDlg *iv,char *msg,int offset) {
 
-    GTextFieldSelect(iv->text,offset,offset);
-    GTextFieldShow(iv->text,offset);
-    GWidgetIndicateFocusGadget(iv->text);
+    if ( iv!=NULL ) {
+	GTextFieldSelect(iv->text,offset,offset);
+	GTextFieldShow(iv->text,offset);
+	GWidgetIndicateFocusGadget(iv->text);
+    }
     gwwv_post_error(_("Parse Error"),msg);
 }
 
-static int IVParse(InstrDlg *iv) {
+uint8 *_IVParse(InstrDlg *iv, char *text, int *len) {
     short numberstack[256];
     int npos=0, nread, i;
     int push_left=0, push_size=0;
-    const unichar_t *text = _GGadgetGetTitle(iv->text), *pt;
-    unichar_t *end, *bend, *brack;
-    int icnt=0, imax=u_strlen(text)/2, val, temp;
+    char *pt;
+    char *end, *bend, *brack;
+    int icnt=0, imax=strlen(text)/2, val, temp;
     uint8 *instrs = galloc(imax);
 
     for ( pt = text; *pt ; ++pt ) {
@@ -593,26 +595,26 @@ static int IVParse(InstrDlg *iv) {
 	while ( npos<256 ) {
 	    while ( *pt==' ' || *pt=='\t' ) ++pt;
 	    if ( isdigit( *pt ) || *pt=='-' ) {
-		val = u_strtol(pt,&end,0);
+		val = strtol(pt,&end,0);
 		if ( val>32767 || val<-32768 ) {
 		    IVError(iv,_("A value must be between [-32768,32767]"),pt-text);
-return( false );
+return( NULL );
 		}
 		numberstack[npos++] = val;
 		pt = end;
-	    } else if ( uc_strnmatch(pt,"cvt",3)==0 ) {
+	    } else if ( strnmatch(pt,"cvt",3)==0 ) {
 		pt += 3;
 		while ( *pt==' ' || *pt=='\t' ) ++pt;
 		if ( *pt!='(' ) {
 		    IVError(iv,_("Missing left paren in command to get a cvt index"),pt-text);
-return( false );
+return( NULL );
 		}
-		temp = u_strtol(pt+1,&end,0);
+		temp = strtol(pt+1,&end,0);
 		pt = end;
 		while ( *pt==' ' || *pt=='\t' ) ++pt;
 		if ( *pt!=')' ) {
 		    IVError(iv,_("Missing right paren in command to get a cvt index"),pt-text);
-return( false );
+return( NULL );
 		}
 		numberstack[npos++] = TTF__getcvtval(iv->instrdata->sf,temp);
 		++pt;
@@ -629,7 +631,7 @@ return( false );
 		IVError(iv,_("Expected a number for a push count"),pt-text);
 	    else if ( numberstack[0]>255 || numberstack[0]<=0 ) {
 		IVError(iv,_("The push count must be a number between 0 and 255"),pt-text);
-return( false );
+return( NULL );
 	    } else {
 		nread = 1;
 		instrs[icnt++] = numberstack[0];
@@ -638,7 +640,7 @@ return( false );
 	}
 	if ( push_left!=0 && push_left<npos-nread && *pt=='\n' ) {
 	    IVError(iv,_("More pushes specified than needed"),pt-text);
-return( false );
+return( NULL );
 	}
 	while ( push_left>0 && nread<npos ) {
 	    if ( push_size==2 ) {
@@ -646,7 +648,7 @@ return( false );
 		instrs[icnt++] = numberstack[nread++]&0xff;
 	    } else if ( numberstack[0]>255 || numberstack[0]<0 ) {
 		IVError(iv,_("A value to be pushed by a byte push must be between 0 and 255"),pt-text);
-return( false );
+return( NULL );
 	    } else
 		instrs[icnt++] = numberstack[nread++];
 	    --push_left;
@@ -655,7 +657,7 @@ return( false );
     continue;
 	if ( push_left>0 ) {
 	    IVError(iv,_("Missing pushes"),pt-text);
-return( false );
+return( NULL );
 	}
 	while ( nread<npos ) {
 	    i = nread;
@@ -686,24 +688,24 @@ return( false );
 	    }
 	}
 	brack = NULL;
-	for ( end=(unichar_t *) pt; *end!='\n' && *end!=' ' && *end!='\0'; ++end )
+	for ( end= pt; *end!='\n' && *end!=' ' && *end!='\0'; ++end )
 	    if ( *end=='[' || *end=='_' ) brack=end;
 	for ( i=0; i<256; ++i )
-	    if ( uc_strnmatch(pt,instrnames[i],end-pt)==0 && end-pt==strlen(instrnames[i]))
+	    if ( strnmatch(pt,instrnames[i],end-pt)==0 && end-pt==strlen(instrnames[i]))
 	break;
 	if ( i==256 && brack!=NULL ) {
 	    for ( i=0; i<256; ++i )
-		if ( uc_strnmatch(pt,instrnames[i],brack-pt+1)==0 ) 
+		if ( strnmatch(pt,instrnames[i],brack-pt+1)==0 ) 
 	    break;
-	    val = u_strtol(brack+1,&bend,2);	/* Stuff in brackets should be in binary */
+	    val = strtol(brack+1,&bend,2);	/* Stuff in brackets should be in binary */
 	    while ( *bend==' ' || *bend=='\t' ) ++bend;
 	    if ( *bend!=']' ) {
 		IVError(iv,_("Missing right bracket in command (or bad binary value in bracket)"),pt-text);
-return( false );
+return( NULL );
 	    }
 	    if ( val>=32 ) {
 		IVError(iv,_("Bracketted value is too large"),pt-text);
-return( false );
+return( NULL );
 	    }
 	    i += val;
 	}
@@ -721,6 +723,20 @@ return( false );
 	if ( *pt=='\0' )
     break;
     }
+    *len = icnt;
+return( grealloc(instrs,icnt));
+}
+
+static int IVParse(InstrDlg *iv) {
+    char *text = GGadgetGetTitle8(iv->text);
+    int icnt=0, i;
+    uint8 *instrs;
+
+    instrs = _IVParse(iv, text, &icnt);
+    free(text);
+
+    if ( instrs==NULL )
+return( false );
     if ( icnt!=iv->instrdata->instr_cnt )
 	iv->instrdata->changed = true;
     else {
@@ -735,7 +751,7 @@ return( true );
     free( iv->instrdata->instrs );
     iv->instrdata->instrs = instrs;
     iv->instrdata->instr_cnt = icnt;
-    iv->instrdata->max = imax;
+    iv->instrdata->max = icnt;
     iv->instrdata->changed = true;
     free(iv->instrdata->bts );
     iv->instrdata->bts = NULL;

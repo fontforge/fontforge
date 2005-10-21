@@ -42,6 +42,7 @@
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #endif
+#include "ttf.h"
 
 static int verbose = -1;
 int no_windowing_ui = false;
@@ -2821,7 +2822,7 @@ static void bSetOS2Value(Context *c) {
     int i;
     SplineFont *sf = c->curfv->sf;
 
-    if ( c->a.argc<3 )
+    if ( c->a.argc!=3 )
 	error( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_str )
 	error(c,"Bad argument type");
@@ -3018,60 +3019,80 @@ static void bGetOS2Value(Context *c) {
     }
 }
 
-static void bSetPrivateValue(Context *c) {
+static void bSetMaxpValue(Context *c) {
     SplineFont *sf = c->curfv->sf;
+    struct ttf_table *tab;
 
     if ( c->a.argc!=3 )
 	error( c, "Wrong number of arguments");
-    if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str )
+    if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_int )
 	error(c,"Bad argument type");
-    if ( sf->private == NULL ) {
-	sf->private = gcalloc(1,sizeof(struct psdict));
-	sf->private->cnt = 10;
-	sf->private->keys = gcalloc(10,sizeof(char *));
-	sf->private->values = gcalloc(10,sizeof(char *));
+
+    tab = SFFindTable(sf,CHR('m','a','x','p'));
+    if ( tab==NULL ) {
+	tab = chunkalloc(sizeof(struct ttf_table));
+	tab->next = sf->ttf_tables;
+	sf->ttf_tables = tab;
+	tab->tag = CHR('m','a','x','p');
     }
-    PSDictChangeEntry(sf->private,c->a.vals[1].u.sval,c->a.vals[2].u.sval);
-    c->curfv->sf->changed = true;
+    if ( tab->len<32 ) {
+	tab->data = grealloc(tab->data,32);
+	memset(tab->data+tab->len,0,32-tab->len);
+	tab->data[15] = 2;			/* Default zones to 2 */
+	tab->len = tab->maxlen = 32;
+    }
+    if ( strmatch(c->a.vals[1].u.sval,"Zones")==0 )
+	memputshort(tab->data,7*sizeof(uint16),c->a.vals[2].u.ival);
+    else if ( strmatch(c->a.vals[1].u.sval,"TwilightPntCnt")==0 )
+	memputshort(tab->data,8*sizeof(uint16),c->a.vals[2].u.ival);
+    else if ( strmatch(c->a.vals[1].u.sval,"StorageCnt")==0 )
+	memputshort(tab->data,9*sizeof(uint16),c->a.vals[2].u.ival);
+    else if ( strmatch(c->a.vals[1].u.sval,"MaxStackDepth")==0 )
+	memputshort(tab->data,12*sizeof(uint16),c->a.vals[2].u.ival);
+    else if ( strmatch(c->a.vals[1].u.sval,"FDEFs")==0 )
+	memputshort(tab->data,10*sizeof(uint16),c->a.vals[2].u.ival);
+    else if ( strmatch(c->a.vals[1].u.sval,"IDEFs")==0 )
+	memputshort(tab->data,11*sizeof(uint16),c->a.vals[2].u.ival);
+    else
+	errors(c,"Unknown 'maxp' field: ", c->a.vals[1].u.sval );
 }
 
-static void bHasPrivateValue(Context *c) {
+static void bGetMaxpValue(Context *c) {
     SplineFont *sf = c->curfv->sf;
+    struct ttf_table *tab;
+    uint8 *data, dummy[32];
 
     if ( c->a.argc!=2 )
 	error( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_str )
 	error(c,"Bad argument type");
+
+    memset(dummy,0,32);
+    dummy[15] = 2;
+    tab = SFFindTable(sf,CHR('m','a','x','p'));
+    if ( tab==NULL )
+	data = dummy;
+    else if ( tab->len<32 ) {
+	memcpy(dummy,tab->data,tab->len);
+	data = dummy;
+    } else
+	data = tab->data;
+
     c->return_val.type = v_int;
-    c->return_val.u.ival = 0;
-    if ( PSDictHasEntry(sf->private,c->a.vals[1].u.sval)!=NULL )	/* this works if sf->private==NULL */
-	c->return_val.u.ival = 1;
-}
-
-static void bRemovePrivateValue(Context *c) {
-    SplineFont *sf = c->curfv->sf;
-
-    if ( c->a.argc!=2 )
-	error( c, "Wrong number of arguments");
-    if ( c->a.vals[1].type!=v_str )
-	error(c,"Bad argument type");
-    c->return_val.type = v_int;
-    /* this works if sf->private==NULL */
-    if ( (c->return_val.u.ival = PSDictRemoveEntry(sf->private,c->a.vals[1].u.sval)) )
-	c->curfv->sf->changed = true;
-}
-
-static void bGetPrivateValue(Context *c) {
-    SplineFont *sf = c->curfv->sf;
-
-    if ( c->a.argc!=2 )
-	error( c, "Wrong number of arguments");
-    if ( c->a.vals[1].type!=v_str )
-	error(c,"Bad argument type");
-    c->return_val.type = v_str;
-    c->return_val.u.sval = copy(PSDictHasEntry(sf->private,c->a.vals[1].u.sval));
-    if ( c->return_val.u.sval==NULL )
-	errors(c,"This font does not contain the given key in its private dictionary: ", c->a.vals[1].u.sval);
+    if ( strmatch(c->a.vals[1].u.sval,"Zones")==0 )
+	c->return_val.u.ival = memushort(data,32,7*sizeof(uint16));
+    else if ( strmatch(c->a.vals[1].u.sval,"TwilightPntCnt")==0 )
+	c->return_val.u.ival = memushort(data,32,8*sizeof(uint16));
+    else if ( strmatch(c->a.vals[1].u.sval,"StorageCnt")==0 )
+	c->return_val.u.ival = memushort(data,32,9*sizeof(uint16));
+    else if ( strmatch(c->a.vals[1].u.sval,"MaxStackDepth")==0 )
+	c->return_val.u.ival = memushort(data,32,12*sizeof(uint16));
+    else if ( strmatch(c->a.vals[1].u.sval,"FDEFs")==0 )
+	c->return_val.u.ival = memushort(data,32,10*sizeof(uint16));
+    else if ( strmatch(c->a.vals[1].u.sval,"IDEFs")==0 )
+	c->return_val.u.ival = memushort(data,32,11*sizeof(uint16));
+    else
+	errors(c,"Unknown 'maxp' field: ", c->a.vals[1].u.sval );
 }
  
 static void bSetUniqueID(Context *c) {
@@ -4275,10 +4296,224 @@ static void bAutoInstr(Context *c) {
     FVFakeMenus(c->curfv,202);
 }
 
+static void TableAddInstrs(SplineFont *sf, uint32 tag,int replace,
+	uint8 *instrs,int icnt) {
+    struct ttf_table *tab;
+
+    for ( tab=sf->ttf_tables; tab!=NULL && tab->tag!=tag; tab=tab->next );
+
+    if ( replace && tab!=NULL ) {
+	free(tab->data);
+	tab->data = NULL;
+	tab->len = tab->maxlen = 0;
+    }
+    if ( icnt==0 )
+return;
+    if ( tab==NULL ) {
+	tab = chunkalloc(sizeof( struct ttf_table ));
+	tab->tag = tag;
+	tab->next = sf->ttf_tables;
+	sf->ttf_tables = tab;
+    }
+    if ( tab->data==NULL ) {
+	tab->data = galloc(icnt);
+	memcpy(tab->data,instrs,icnt);
+	tab->len = icnt;
+    } else {
+	uint8 *newi = galloc(icnt+tab->len);
+	memcpy(newi,tab->data,tab->len);
+	memcpy(newi+tab->len,instrs,icnt);
+	free(tab->data);
+	tab->data = newi;
+	tab->len += icnt;
+    }
+    tab->maxlen = tab->len;
+}
+
+static void GlyphAddInstrs(SplineChar *sc,int replace,
+	uint8 *instrs,int icnt) {
+
+    if ( replace ) {
+	free(sc->ttf_instrs);
+	sc->ttf_instrs = NULL;
+	sc->ttf_instrs_len = 0;
+    }
+    if ( icnt==0 )
+return;
+    if ( sc->ttf_instrs==NULL ) {
+	sc->ttf_instrs = galloc(icnt);
+	memcpy(sc->ttf_instrs,instrs,icnt);
+	sc->ttf_instrs_len = icnt;
+    } else {
+	uint8 *newi = galloc(icnt+sc->ttf_instrs_len);
+	memcpy(newi,sc->ttf_instrs,sc->ttf_instrs_len);
+	memcpy(newi+sc->ttf_instrs_len,instrs,icnt);
+	free(sc->ttf_instrs);
+	sc->ttf_instrs = newi;
+	sc->ttf_instrs_len += icnt;
+    }
+}
+
+static void bAddInstrs(Context *c) {
+    int replace;
+    SplineChar *sc = NULL;
+    int icnt;
+    uint8 *instrs;
+    uint32 tag=0;
+    SplineFont *sf = c->curfv->sf;
+    int i;
+    EncMap *map = c->curfv->map;
+
+    if ( c->a.argc!=4 )
+	error( c, "Wrong number of arguments");
+    if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_int || c->a.vals[3].type!=v_str )
+	error( c, "Bad argument type" );
+    replace = c->a.vals[2].u.ival;
+    if ( strcmp(c->a.vals[1].u.sval,"fpgm")==0 )
+	tag = CHR('f','p','g','m');
+    else if ( strcmp(c->a.vals[1].u.sval,"prep")==0 )
+	tag = CHR('p','r','e','p');
+    else if ( c->a.vals[1].u.sval[0]!='\0' ) {
+	sc = SFGetChar(sf,-1,c->a.vals[1].u.sval);
+	if ( sc==NULL )
+	    errors( c, "Character/Table not found", c->a.vals[1].u.sval );
+    }
+
+    instrs = _IVParse(NULL,c->a.vals[3].u.sval,&icnt);
+    if ( instrs==NULL )
+	error( c, "Failed to parse instructions" );
+    if ( tag!=0 )
+	TableAddInstrs(sf,tag,replace,instrs,icnt);
+    else if ( sc!=NULL )
+	GlyphAddInstrs(sc,replace,instrs,icnt);
+    else {
+	for ( i=0; i<map->enccount; ++i ) if ( c->curfv->selected[i] ) {
+	    int gid = map->map[i];
+	    if ( gid!=-1 && sf->glyphs[gid]!=NULL )
+		GlyphAddInstrs(sf->glyphs[gid],replace,instrs,icnt);
+	}
+    }
+}
+
+static void bFindOrAddCvtIndex(Context *c) {
+    int sign_matters=0;
+    SplineFont *sf = c->curfv->sf;
+
+    if ( c->a.argc<2 || c->a.argc>3 )
+	error( c, "Wrong number of arguments");
+    if ( c->a.vals[1].type!=v_int || (c->a.argc==3 && c->a.vals[2].type!=v_int ))
+	error( c, "Bad argument type" );
+    if ( c->a.argc )
+	sign_matters = c->a.vals[2].u.ival;
+    c->return_val.type = v_int;
+    if ( sign_matters )
+	c->return_val.u.ival = TTF__getcvtval(sf,c->a.vals[1].u.ival);
+    else
+	c->return_val.u.ival = TTF_getcvtval(sf,c->a.vals[1].u.ival);
+}
+
+static void bGetCvtAt(Context *c) {
+    SplineFont *sf = c->curfv->sf;
+    struct ttf_table *tab;
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments");
+    if ( c->a.vals[1].type!=v_int )
+	error( c, "Bad argument type" );
+    for ( tab=sf->ttf_tables; tab!=NULL && tab->tag!=CHR('c','v','t',' '); tab=tab->next );
+    if ( tab==NULL || c->a.vals[1].u.ival>=tab->len/2 )
+	error(c,"Cvt table is either not present or too short");
+    c->return_val.type = v_int;
+    c->return_val.u.ival = memushort(tab->data,tab->len,
+	    sizeof(uint16)*c->a.vals[1].u.ival);
+}
+
+static void bReplaceCvtAt(Context *c) {
+    SplineFont *sf = c->curfv->sf;
+    struct ttf_table *tab;
+
+    if ( c->a.argc!=3 )
+	error( c, "Wrong number of arguments");
+    if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int )
+	error( c, "Bad argument type" );
+    for ( tab=sf->ttf_tables; tab!=NULL && tab->tag!=CHR('c','v','t',' '); tab=tab->next );
+    if ( tab==NULL || c->a.vals[1].u.ival>=tab->len/2 )
+	error(c,"Cvt table is either not present or too short");
+    memputshort(tab->data,sizeof(uint16)*c->a.vals[1].u.ival,
+	    c->a.vals[2].u.ival);
+}
+
+static void bPrivateToCvt(Context *c) {
+    if ( c->a.argc!=1 )
+	error( c, "Wrong number of arguments");
+    CVT_ImportPrivate(c->curfv->sf);
+}
+
 static void bClearHints(Context *c) {
     if ( c->a.argc!=1 )
 	error( c, "Wrong number of arguments");
     FVFakeMenus(c->curfv,201);
+}
+
+static void bClearInstrs(Context *c) {
+    if ( c->a.argc!=1 )
+	error( c, "Wrong number of arguments");
+    FVFakeMenus(c->curfv,206);
+}
+
+static void bClearTable(Context *c) {
+    uint32 tag;
+    uint8 _tag[4];
+    SplineFont *sf = c->curfv->sf;
+    struct ttf_table *table, *prev;
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments");
+    if ( c->a.vals[1].type!=v_str )
+	error( c, "Bad argument type" );
+    if ( strlen(c->a.vals[1].u.sval)>4 || *c->a.vals[1].u.sval=='\0' )
+	error( c, "Table tag must be a 4 character ASCII string");
+    _tag[0] = c->a.vals[1].u.sval[0]<<24;
+    _tag[1] = _tag[2] = _tag[3] = ' ';
+    if ( c->a.vals[1].u.sval[1]!='\0' ) {
+	_tag[1] = c->a.vals[1].u.sval[1];
+	if ( c->a.vals[1].u.sval[2]!='\0' ) {
+	    _tag[2] = c->a.vals[1].u.sval[2];
+	    if ( c->a.vals[1].u.sval[3]!='\0' )
+		_tag[3] = c->a.vals[1].u.sval[3];
+	}
+    }
+    tag = (_tag[0]<<24) | (_tag[1]<<16) | (_tag[2]<<8) | _tag[3];
+
+    prev = NULL;
+    for ( table = sf->ttf_tables; table!=NULL; prev=table, table=table->next )
+	if ( table->tag==tag )
+    break;
+
+    c->return_val.type = v_int;
+    c->return_val.u.ival = (table!=NULL);
+    if ( table!=NULL ) {
+	if ( prev==NULL )
+	    sf->ttf_tables = table->next;
+	else
+	    prev->next = table->next;
+	free(table->data);
+	chunkfree(table,sizeof(*table));
+    } else {
+	prev = NULL;
+	for ( table = sf->ttf_tab_saved; table!=NULL; prev=table, table=table->next )
+	    if ( table->tag==tag )
+	break;
+	if ( table!=NULL ) {
+	    c->return_val.u.ival = true;
+	    if ( prev==NULL )
+		sf->ttf_tab_saved = table->next;
+	    else
+		prev->next = table->next;
+	    free(table->data);
+	    chunkfree(table,sizeof(*table));
+	}
+    }
 }
 
 static void _AddHint(Context *c,int ish) {
@@ -4436,6 +4671,19 @@ static void bChangePrivateEntry(Context *c) {
     }
     PSDictChangeEntry(sf->private,key,val);
     free(key); free(val);
+}
+
+static void bHasPrivateEntry(Context *c) {
+    SplineFont *sf = c->curfv->sf;
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments");
+    if ( c->a.vals[1].type!=v_str )
+	error(c,"Bad argument type");
+    c->return_val.type = v_int;
+    c->return_val.u.ival = 0;
+    if ( PSDictHasEntry(sf->private,c->a.vals[1].u.sval)!=NULL )	/* this works if sf->private==NULL */
+	c->return_val.u.ival = 1;
 }
 
 static void bGetPrivateEntry(Context *c) {
@@ -6013,10 +6261,8 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "SetPanose", bSetPanose },
     { "SetOS2Value", bSetOS2Value },
     { "GetOS2Value", bGetOS2Value },
-    { "SetPrivateValue", bSetPrivateValue },
-    { "GetPrivateValue", bGetPrivateValue },
-    { "HasPrivateValue", bHasPrivateValue },
-    { "RemovePrivateValue", bRemovePrivateValue },
+    { "SetMaxpValue", bSetMaxpValue },
+    { "GetMaxpValue", bGetMaxpValue },
     { "SetUniqueID", bSetUniqueID },
     { "SetTeXParams", bSetTeXParams },
     { "GetTeXParam", bGetTeXParam },
@@ -6078,8 +6324,6 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "bSubstitutionPoints", bSubstitutionPoints },
     { "bAutoCounter", bAutoCounter },
     { "bDontAutoHint", bDontAutoHint },
-    { "AutoInstr", bAutoInstr },
-    { "ClearHints", bClearHints },
     { "AddHHint", bAddHHint },
     { "AddVHint", bAddVHint },
     { "ClearCharCounterMasks", bClearCharCounterMasks },
@@ -6087,7 +6331,17 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "ReplaceCharCounterMasks", bReplaceCharCounterMasks },
     { "ClearPrivateEntry", bClearPrivateEntry },
     { "ChangePrivateEntry", bChangePrivateEntry },
+    { "HasPrivateEntry", bHasPrivateEntry },
     { "GetPrivateEntry", bGetPrivateEntry },
+    { "AutoInstr", bAutoInstr },
+    { "AddInstrs", bAddInstrs },
+    { "FindOrAddCvtIndex", bFindOrAddCvtIndex },
+    { "GetCvtAt", bGetCvtAt },
+    { "ReplaceCvtAt", bReplaceCvtAt },
+    { "PrivateToCvt", bPrivateToCvt },
+    { "ClearInstrs", bClearInstrs },
+    { "ClearTable", bClearTable },
+    { "ClearHints", bClearHints },
     { "SelectBitmap", bSelectBitmap },
     { "SetWidth", bSetWidth },
     { "SetVWidth", bSetVWidth },
@@ -6314,6 +6568,8 @@ return( c->tok );
 			ch = '\\';
 		    } else if ( ch==EOF )
 			ch = '\\';
+		    else if ( ch=='n' )
+			ch = '\n';
 		}
 		if ( pt<end )
 		    *pt++ = ch;
