@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 20-Oct-2005 -->
+  <!-- AP: Last modified: 22-Oct-2005 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -1519,25 +1519,15 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     The argument takes the same set of tag strings. <CODE>VendorId</CODE> returns
     a string, and <CODE>Panose</CODE> returns an array. The others return integers.
   <DT>
-    <A HREF="fontinfo.html#Private">SetPrivateValue</A>(key-name,value)
+    SetMaxpValue(field-name,value)
   <DD>
-    Changes (or Adds) an entry to the font's private dictionary with the given
-    key and given value. Both arguments must be strings. The key may be anything,
-    it is not limited to any set of expected keys.
+    The field-name must be a string and one of: <CODE>Zones, TwilightPntCnt,
+    StorageCnt, MaxStackDepth, FDEFs,</CODE> or <CODE>IDEFs</CODE>. Value must
+    be an integer.
   <DT>
-    <A HREF="fontinfo.html#Private">GetPrivateValue</A>(key-name)
+    GetMaxpValue(field-name)
   <DD>
-    Returns the string in the private dictionary which matches the given key.
-    If the key isn't in the dictionary it explodes.
-  <DT>
-    <A HREF="fontinfo.html#Private">HasPrivateValue</A>(key-name)
-  <DD>
-    Returns whether a key is in the dictionary.
-  <DT>
-    <A HREF="fontinfo.html#Private">RemovePrivateValue</A>(key-name)
-  <DD>
-    Removes a key (and associated value) from the dictionary. Returns whether
-    the key was in the dictionary.
+    Field name must be as above.
   <DT>
     SetUniqueID(value)
   <DD>
@@ -2146,6 +2136,50 @@ ApplySubstitution("*","*","vrt2")
     <A HREF="hintsmenu.html#AutoInstr">AutoInstr</A>()
   <DD>
   <DT>
+    AddInstrs(thingamy,replace,instrs)
+  <DD>
+    Where thingamy is a string, either "fpgm" or "prep" in which case it refers
+    to that truetype table (which will be created if need be), or a glyph-name
+    in which case it refers to that glyph, or a null string in which case any
+    selected characters will be used.<BR>
+    Where replace is an integer. If zero then the instructions will be appended
+    to any already present. If non-zero then the instructions will replace those
+    already present.<BR>
+    And instrs is a string containing fontforge's human readable version of tt
+    instructions, as "<CODE>IUP[x]\nIUP[y]</CODE>"
+  <DT>
+    ClearInstrs()
+  <DD>
+    From selected glyphs
+  <DT>
+    ClearTable(tag)
+  <DD>
+    Removes the table named tag. This may be 'fpgm', 'prep, 'cvt ', 'maxp' or
+    any user defined tables. It returns 1 if it found (and removed) the table,
+    0 if the table was not present.
+  <DT>
+    FindOrAddCvtIndex(value[,sign-matters])
+  <DD>
+    Returns the index in the cvt table of the given value. If the value does
+    not exist in the table it will be added, and an index at the end of the table
+    will be returned. Most tt instructions ignore the sign of items in the cvt
+    table, but a few care. Usually this command stores the absolute value of
+    value, but if sign-matters is present and non-zero a negative value can be
+    looked up (or added).
+  <DT>
+    ReplaceCvtAt(index,value)
+  <DD>
+    Change the cvt table at the given index to have the new value.
+  <DT>
+    GetCvtAt(index)
+  <DD>
+    Return the value in the cvt table at the given index.
+  <DT>
+    PrivateToCvt()
+  <DD>
+    Adds the standard numeric entries in the Private dictionary into the cvt
+    table.
+  <DT>
     <A HREF="hintsmenu.html#ClearHints">ClearHints</A>()
   <DD>
   <DT>
@@ -2198,6 +2232,10 @@ ApplySubstitution("*","*","vrt2")
   <DD>
     Returns the entry indexed by key in the private dictionary. All return values
     will be strings. If an entry does not exist a null string is returned.
+  <DT>
+    HasPrivateEntry(key)
+  <DD>
+    Returns whether key exists in the private dictionary. 
   <DT>
     <A NAME="SelectBitmap">SelectBitmap</A>(size)
   <DD>
