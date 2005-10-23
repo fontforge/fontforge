@@ -501,7 +501,7 @@ static int AskSizeBits(int *pixelsize,int *bitsperpixel) {
     gcd[5].creator = GButtonCreate;
 
     gcd[6].gd.pos.x = 2; gcd[6].gd.pos.y = 2;
-    gcd[6].gd.pos.width = pos.width-4; gcd[22].gd.pos.height = pos.height-2;
+    gcd[6].gd.pos.width = pos.width-4; gcd[6].gd.pos.height = pos.height-2;
     gcd[6].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
     gcd[6].creator = GGroupCreate;
 
