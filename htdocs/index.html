@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 12-Oct-2005 -->
+  <!-- AP: Last modified: 23-Oct-2005 -->
   <TITLE>FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -20,14 +20,44 @@ requests/etc. between<BR>
 <P>
 <FONT COLOR="Red"><STRONG>FontForge</STRONG></FONT> -- An outline font editor
 that lets you create your own postscript, truetype, opentype, cid-keyed,
-multi-master, cff, svg and bitmap (bdf) fonts, or edit existing ones. Also
-lets you convert one format to another. FontForge has support for many macintosh
-font formats.
+multi-master, cff, svg and bitmap (bdf, FON, NFNT) fonts, or edit existing
+ones. Also lets you convert one format to another. FontForge has support
+for many macintosh font formats.
 <P>
 FontForge's user interface has been localized for: (English), Russian, Japanese,
-French, Italian, Spanish.
+French, Italian, Spanish.<BR>
+This website itself has been translated into Japanese
+<A HREF="ja/"><IMG SRC="flags/Nisshoki-Japan.png" WIDTH="39" HEIGHT="26"></A>
+and the tutorial into (traditional)
+Chinese<A HREF="http://edt1023.sayya.org/fontforge/editexample.html"><IMG
+    SRC="flags/taiwan.png" WIDTH="39" HEIGHT="26"></A>
 <P>
-Contents
+I have been told this page looks like incomprehensible engineering technobable
+to some people. Sorry about that. The most important things are:
+<UL>
+  <LI>
+    <A HREF="overview.html">Online User &amp; Reference manual</A>
+  <LI>
+    <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=111040">Application
+    Download</A>
+    <TABLE CELLSPACING="6" CELLPADDING="2">
+      <CAPTION>
+	System specific notes
+      </CAPTION>
+      <TR>
+	<TD><P ALIGN=Center>
+	  Unix/Linux<BR>
+	  Not needed</TD>
+	<TD>&nbsp; &nbsp; &nbsp; <A HREF="MacOSX.html#binary">Mac</A></TD>
+	<TD>&nbsp; &nbsp; &nbsp; <A HREF="faq.html#windows">MS/Windows</A></TD>
+	<TD>&nbsp; &nbsp; &nbsp;
+	  <A HREF="ftp://nchrem.tnw.tudelft.nl/pfaedit/">VMS</A></TD>
+      </TR>
+    </TABLE>
+</UL>
+<P>
+<P>
+Full Contents
 <A HREF="ja/"><IMG SRC="flags/Nisshoki-Japan.png" WIDTH="39" HEIGHT="26"></A>
 <UL>
   <LI>
@@ -36,23 +66,29 @@ Contents
     (<A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=114329">downloadable</A>)--
     Shorter tutorial <A HREF="editexample.html">html</A> -
     <A HREF="fontforge-tutorial.pdf">pdf</A> - <A HREF="tutorial.tgz">example
-    files</A>
+    files</A><BR>
+    <A HREF="ja/overview.html"><IMG SRC="manual-ja.png" WIDTH="268" HEIGHT="18"
+	BORDER="0"></A> &nbsp; &nbsp;
+    <A HREF="http://edt1023.sayya.org/fontforge/editexample.html"><IMG SRC="tutorial-zh_TW.png"
+	WIDTH="35" HEIGHT="18" BORDER="0"></A>
   <LI>
     <A HREF="http://sourceforge.net/projects/fontforge/">SourceForge Project
     page</A> / SourceForge
     <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338">File
     Release System</A>
   <LI>
-    <A HREF="#downloads">Downloads</A>
+    Downloads
     <UL>
+      <LI>
+	<FONT COLOR="Red"><STRONG><BIG>Primary location to find both executable &amp;
+	source:
+	<A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338">File
+	Release System</A></BIG></STRONG></FONT>
       <LI>
 	<A HREF="index.html#binary">Binary</A>
       <LI>
 	<A HREF="index.html#source">Source</A> (tarball)
 	<UL>
-	  <LI>
-	    <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338">File
-	    Release System</A>
 	  <LI>
 	    <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/">Browse
 	    the CVS tree</A>
@@ -141,7 +177,7 @@ let me know when you do</A>.
     <A HREF="fontforge-solaris-20041012.tgz">Download fontforge Solaris 8.0 Sparc
     </A>executable Version: 12-Oct-2004 (no XIM support, no freetype, no SVG
     import)
-    <UL>-->
+    <UL>-->(packages available for various systems)
   <LI>
     Apostolos Syropoulos has a Solaris x86 package at
     <A HREF="http://ocean1.ee.duth.gr/Solaris/PfaEdit.pkg.gz">his site</A>
@@ -179,11 +215,14 @@ FontForge's capabilities.
 <P>
 <!--You can download a <A HREF="fontforge-20041012-1.src.rpm">source RPM</A>:
 Version: 12-Oct-2004<BR>--> You can download the
-<A HREF="fontforge_full-20051012.tar.bz2">source tree </A>in one tarball:
-Version 12-October-2005<BR>
+<A HREF="fontforge_full-20051021.tar.bz2">source tree </A>in one tarball:
+Version 21-October-2005<BR>
 Or you can go to the
 <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/">cvs
-tree</A> and get the most recent version. (This may be delayed by 24 hours)
+tree</A> and get the most recent version. (This may be delayed by 24
+hours)<BR>
+Experimental version using GNU gettext:
+<A HREF="fontforge_gettext-20051020.tar.bz2">tarball</A> Version 20-October-2005
 <H4>
   <A NAME="Anonymous-cvs">Anonymous cvs</A>
 </H4>
@@ -249,12 +288,13 @@ they are available from:
     To parse SVG files and fonts
   <LI>
     <A HREF="http://libuninameslist.sf.net">libuninameslist</A><BR>
-    To display unicode names and annotations. And to know what
+    To display unicode names and annotations.
   <LI>
     <A HREF="http://www.gnu.org/software/libiconv/">libiconv</A><BR>
-    For systems with no built-in iconv(). If not present FontForge contains a
-    minimal version of the library which allows it to work. If used you must
-    compile with <CODE>--enable-extra-encodings</CODE>, FontForge requires Shift-JIS.
+    Only important for systems with no built-in iconv(). If not present FontForge
+    contains a minimal version of the library which allows it to work. If you
+    do use libiconv you must configure it with
+    <CODE>--enable-extra-encodings</CODE>, as FontForge requires Shift-JIS.
   <LI>
     <A HREF="http://freetype.sf.net/">freetype</A><BR>
     To do a better job rasterizing bitmaps, and to enable the truetype debugger
@@ -264,15 +304,21 @@ they are available from:
 	  freetype with the byte code interpreter enabled. This is disabled by default
 	  because it infringes on certain
 	  <A HREF="http://freetype.sourceforge.net/patents.html">patents granted to
-	  Apple</A>. If you have a license from Apple then you may enable the interpreter
-	  by setting the appropriate macro in .../include/freetype/config/ftoption.h
-	  before you build the library (see the README.UNX file on the top level of
-	  the freetype distribution).
+	  Apple</A>. If you have a license from Apple (or live in a country where these
+	  patents do not apply) then you may enable the interpreter by setting the
+	  appropriate macro in .../include/freetype/config/ftoption.h before you build
+	  the library (see the README.UNX file on the top level of the freetype
+	  distribution).
 	  <P>
-	  FontForge needs to have the freetype source directories available when it
-	  is built (there are some include files there which it depends on)</TD>
+	  To enable the truetype debugger, FontForge needs to have the freetype source
+	  directories available when it is built (there are some include files there
+	  which it depends on)</TD>
       </TR>
     </TABLE>
+  <LI>
+    <A HREF="http://www.cygwin.com/">cygwin</A><BR>
+    To build or run on a MS Windows system you need the cygwin environment and
+    libraries.
 </UL>
 <P>
 <TABLE BORDER CELLPADDING="2">
@@ -529,8 +575,8 @@ license</A>".
   <A NAME="Lacks">Lacks</A>
 </H2>
 <P>
-FontForge is by no means complete. And probably doesn't work very well. Be
-prepared to save frequently and always work on a copy of the original.
+FontForge is by no means complete. And probably has some bugs. Be prepared
+to save frequently and consider working on a copy of the original.
 <UL>
   <LI>
     No attempt has been made to be efficient.
@@ -539,11 +585,7 @@ prepared to save frequently and always work on a copy of the original.
     the instructions will be stored and used as long as no significant changes
     happen to the character they are associated with.
   <LI>
-    No attempt has been made to retain the change-over points for hint substitution.
-    FontForge will refigure this when it saves the font.
-  <LI>
-    Many type 3 fonts will not be read in correctly (those generated by fontforge
-    should always be acceptable)
+    Many type 3 fonts will not be read in correctly
   <LI>
     Importing a type0 font loses the encoding. FontForge only imports simple
     type0 fonts (such as those made by itself), will get confused if there's
@@ -611,9 +653,9 @@ and rarely appear on this list.
     Some truetype fonts (kaiu and mingliu) do not store the correct outline.
     Instead they rely on using the instructions to move points around to generate
     the outline. The outline does not appear to be grid-fit at all, just positioned.
-    FontForge will not read the instructions. In most fonts this would be the
-    wrong thing to do, and I don't know how I could tell when it needs to be
-    done...
+    FontForge apply the instructions when loading. In most fonts this would be
+    the wrong thing to do, and I don't know how I could tell when it needs to
+    be done...
   <LI>
     After adding the Johab encoding 23/Nov/01, any old fonts (in sfd files) which
     had a unicode encoding will suddenly claim to have a Johab encoding. I don't
@@ -673,8 +715,7 @@ can. Please post bugs to:
     <EM>My writing leaves much to be desired</EM>. Anyone who can make my
     documentation more readable is encouraged to do so. (or who wishes to translate
     it into other languages, or who wishes to put it into a more flexable format,
-    KANOU has a <A HREF="http://khdd.net/fontforge-jman/">Japanese version</A>
-    under construction)
+    KANOU has a <A HREF="http://khdd.net/fontforge-jman/">Japanese version</A>)
   <LI>
     <I>I also have a brief tutorial in <A HREF="fontforge-tutorial.pdf">pdf
     format</A>.</I> This could also be translated into other languages (and would
@@ -695,6 +736,11 @@ can. Please post bugs to:
       <LI>
 	Italian is provided by Claudio Beccari
       <LI>
+	Spanish is provided by <A HREF="mailto:wecharri@yahoo.com">Walter Echarri</A>
+      <LI>
+	A Catalan and a (Brazillian) Portugese translation are being worked on by
+	Javier Candeira and Gustavo Paolo respectively.
+      <LI>
 	I've also created a very minimal German translations that lapses into English,
 	anyone who wants to take this on is encouraged to do so.
       <LI>
@@ -703,10 +749,11 @@ can. Please post bugs to:
     </UL>
   <LI>
     <EM>Different font formats</EM><BR>
-    FontForge supports Type1, truetype and opentype fonts (to greater and lesser
-    extents), also bdf and NFNT for bitmaps<BR>
+    FontForge supports Type1, truetype, opentype and svg fonts, also bdf and
+    NFNT for bitmaps<BR>
     FontForge will sort-of accept metafont files (essentially it runs metafont
     and autotraces the result). It won't produce .mf files<BR>
+    FontForge will read (but not produce) Ikarus files<BR>
     FontForge will read acorn font files with a helper app.<BR>
     But there are other formats out there that I can't find descriptions of:
     <UL>
@@ -718,7 +765,7 @@ can. Please post bugs to:
     else wanted to they might code them better than I...
     <UL>
       <LI>
-	Remove overlap
+	Remove overlap (might be fixed now)
       <LI>
 	Autokern (might be fixed now)
       <LI>
