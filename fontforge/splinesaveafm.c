@@ -2721,7 +2721,7 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map
     for ( i=sccnt=0; i<maxc && i<map->enccount; ++i )
 	if ( ligkerns[i]!=NULL )
 	    ++sccnt;
-    if ( sccnt>=maxc/2 )	/* We need to use the special extension mechanism */
+    if ( sccnt>=128 )	/* We need to use the special extension mechanism */
 	lkcnt += sccnt;
     memset(former,-1,maxc*sizeof(int));
     memset(lkindex,0,maxc*sizeof(uint16));
