@@ -4,32 +4,55 @@ CAVEAT
 
 BEFORE INSTALLATION
  Before you install fontforge under Mac OS/X you should first install the X
- window system. This is available at:
-	http://www.osxgnu.org/
- or
-	http://www.apple.com/macosx/x11/download/
+ window system.
+
+ In 10.3 this was optional software provided by apple, if it is not
+ already on your system you must insert the third install CD that came
+ with your system and install the X11User package.
+
+ I think 10.4 installs X11 by default.
 
  It is possible to use fontforge without X, but in this case there is no user
  interface and you are limited to running scripts. (see below for details)
 
+ X11 (or XDarwnin on old systems) lives in the Utilities folder of the
+ Applications folder.
+
 INSTALLATION NOTES:
-    Download the appropriate binary from
-        http://fontforge.sourceforge.net/MacOSX.html#binary
-    There should be a mac package there which will do the installation for you.
-    You may need to add /usr/local/bin to your PATH environment variable (and
+    Download the PPC package (the sitx file) from
+	http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=111040
+    This should be automatically expanded, and the install started.
+    After the install has completed it should have added a FontForge
+	entry to the X11 Applications menu.
+
+    If this did not happen automatically, you can do this yourself:
+	Start X11
+	Select Applications->Customize Menu
+	Then press the (Add) button in the dialog which appears
+	Double click in the left-most section of the blank line which just
+	 appeared and then type "FontForge"
+	Press the tab key and type "/usr/local/bin/fontforge"
+	Press the tab key again and type "f"
+	Then press (Done)
+
+    If you like to use the command line, you might want to
+    add /usr/local/bin to your PATH environment variable (and
     /usr/local/share/man to your MANPATH environment variable).
-    If your shell is tcsh (or csh), edit ~/.cshrc and add:
-        setenv PATH ${PATH}:/usr/local/bin
-        if ( "$MANPATH" == "" ) then
-            setenv MANPATH /usr/local/man
-        else
-            setenv MANPATH ${MANPATH}:/usr/local/share/man
-        endif
     If your shell is bash then edit your ~/.bashrc and add
-        PATH=${PATH}:/usr/local/bin   
+        PATH=${PATH}:/usr/local/bin ; export PATH
         MANPATH=${MANPATH:-}:/usr/local/share/man ; export MANPATH
     At least one person also needed to define DYLD_LIBRARY_PATH to contain
     /usr/local/lib
+
+RUNNING
+    Before you can start FontForge you must start X11. It resides in the
+    Utilities folder of the Applications folder. Double click on it.
+
+    On the X11 menubar is a menu called "Applications". Click on this.
+    You should see an entry for FontForge (if you do not, reread the
+    previous section). Click on this.
+    FontForge will start and provide you with a font-file browser. Which
+    also includes the ability to create a new font.
 
 BUILDING
     Just download the file fontforge_full-*.tar.bz2 which you will find on
@@ -90,7 +113,7 @@ DEPENDENCIES
  is obtained if you enable the bytecode interpreter (but note: you must
  have a license from Apple to do this). Instructions for doing so are
  in the file README.UNX in the freetype distribution.
- *** FontForge also needs to have the freetype sources available to it      ***
+ *** FontForge also needs to have the freetype sources available to it    ***
  *** when it builds (it needs some internal include files). The configure ***
  *** script can usually figure this out, but it is very time-consuming    ***
  *** you might want to say $ ./configure --with-freetype-src=<dir>	  ***
@@ -106,15 +129,15 @@ BUILDING without X11
     if your system lacks X (in which case configure should figure that out and
     do it automagically). But if, for some strange reason you wish to build a
     non-X version on a machine with X type:
-        $ configure --without-x
-    during the build process instead of "$ configure"      
+        $ ./configure --without-x
+    during the build process instead of "$ ./configure"      
 
-RUNNING
+RUNNING from the command line
  Before running FontForge you must start XDarwin. It lives in the Applications
  folder, and you start it by double clicking on it.
  You can start fontforge either from one of the xterms it creates, or from a 
  Terminal window. If you start from a Terminal window you must first type:
-$ setenv DISPLAY :0
+$ DISPLAY=:0 ; export DISPLAY
 
 $ fontforge -new
  Creates a new font
@@ -128,8 +151,9 @@ $ fontforge -script script-file [script arguments]
  Starts fontforge up without bringing up any windows. It will run the script-file
  (passing it any other arguments given on the command line) and then exit.
 
-Either the Command (Apple, Cloverleaf) key or the Control key may be used for
-invoking menu items (that is both ^Q and Cmd-Q will cause FontForge to quit).
+The Control & Option keys must be used for invoking menu items. If you try
+to use Cmd-Q (rather than Cntl-Q) you will quit out of X11, and not just
+fontforge.
 
 CAVEATS
  1) FontForge does not conform to Apple's Human Interface Guidelines, and never
@@ -147,13 +171,15 @@ FONTS UNDER Mac OS/X
  Macintosh fonts live in /Library/Fonts, /System/Library/Fonts or
  ~/Library/Fonts. On Mac OS/X FontForge can edit .dfont and resource fork      
  fonts. On other systems FontForge can only edit Mac .dfonts (the concept
- of a resource fork is Mac specific).
+ of a resource fork is Mac specific -- but FontForge on a linux system can
+ read a resource out of a macbinary or binhex file).
 
  (X11 fonts on the mac are completely seperate from the mac fonts.       
  they reside somewhere in the X tree).
 
 FONTS UNDER Mac OS/9
- Note Bene: As far as I know FontForge has not been ported to Mac OS/9 (or 8 or 7)
+ Note Bene: As far as I know FontForge has not been ported to Mac OS/9
+ (or 8 or 7)
 
  Fonts live in :System Folder:Fonts: They are stored in resource forks, which
  means that if you want to work with them you must first wrap them up with 
