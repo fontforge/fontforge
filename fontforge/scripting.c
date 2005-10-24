@@ -66,7 +66,7 @@ typedef struct array {
     Val *vals;
 } Array;
 
-#define TOK_MAX	100
+#define TOK_MAX	256
 enum token_type { tt_name, tt_string, tt_number, tt_unicode, tt_real,
 	tt_lparen, tt_rparen, tt_comma, tt_eos,		/* eos is end of statement, semicolon, newline */
 	tt_lbracket, tt_rbracket,
