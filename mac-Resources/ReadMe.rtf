@@ -1,0 +1,211 @@
+{\rtf1\mac\ansicpg10000\cocoartf102
+{\fonttbl\f0\fswiss\fcharset77 Helvetica-Bold;\f1\fswiss\fcharset77 Helvetica;\f2\fmodern\fcharset77 Courier;
+}
+{\colortbl;\red255\green255\blue255;}
+\margl1440\margr1440\vieww12000\viewh14400\viewkind0
+\pard\ql\qnatural
+
+\f0\b\fs24 \cf0 BEFORE INSTALLATION
+\f1\b0 \
+ Before you install fontforge under Mac OS/X you should first install the X\
+ window system.\
+\
+ In 10.3 this was optional software provided by Apple, if it is not\
+ already on your system you must insert the third install CD that came\
+ with your system and install the X11User package.\
+\
+ I think 10.4 installs X11 by default.\
+\
+ It is possible to use fontforge without X, but in this case there is no user\
+ interface and you are limited to running scripts. (see below for details)\
+\
+ X11 (or XDarwnin on old systems) lives in the Utilities folder of the\
+ Applications folder.\
+\
+
+\f0\b INSTALLATION NOTES:
+\f1\b0 \
+     Download the PPC package (the sitx file) from\
+	http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=111040\
+    This should be automatically expanded, and the install started.\
+    After the install has completed it should have added a FontForge entry to the X11 Applications menu.\
+\
+    If this did not happen automatically, you can do this yourself:\
+\pard\fi500\ql\qnatural
+\cf0 Start X11\
+Select Applications->Customize Menu\
+Then press the (Add) button in the dialog which appears\
+Double click in the left-most section of the blank line which just appeared and then type "FontForge"\
+Press the tab key and type "/usr/local/bin/fontforge"\
+Press the tab key again and type "f"\
+Then press (Done)\
+\pard\ql\qnatural
+\cf0 \
+    If you like to use the command line, you might want to\
+    add /usr/local/bin to your PATH environment variable (and\
+    /usr/local/share/man to your MANPATH environment variable).\
+    If your shell is bash then edit your ~/.bashrc and add\
+        PATH=$\{PATH\}:/usr/local/bin ; export PATH\
+        MANPATH=$\{MANPATH:-\}:/usr/local/share/man ; export MANPATH\
+    At least one person also needed to define DYLD_LIBRARY_PATH to contain\
+    /usr/local/lib\
+\
+
+\f0\b RUNNING
+\f1\b0 \
+    Before you can start FontForge you must start X11. It resides in the\
+    Utilities folder of the Applications folder. Double click on it.\
+\
+    On the X11 menubar is a menu called "Applications". Click on this.\
+    You should see an entry for FontForge (if you do not, reread the\
+    previous section). Click on this.\
+    FontForge will start and provide you with a font-file browser, which\
+    also includes the ability to create a new font.\
+\
+
+\f0\b BUILDING
+\f1\b0 \
+    Just download the file fontforge_full-*.tgz which you will find on\
+       
+\f2  http://fontforge.sourceforge.net/index.html#source\
+
+\f1     Move it somewhere appropriate (/usr/local/src perhaps?) and type:\
+
+\f2         $ gunzip fontforge_full-*.tgz ; tar xf fontforge_full-*.tar\
+        $ cd fontforge*\
+        $ configure\
+        $ make\
+        $ sudo make install\
+
+\f1 \
+\pard\ql\qnatural
+
+\f0\b\fs20 \cf0 More complex installations\
+\pard\ql\qnatural
+
+\f1\b0\fs24 \cf0     "make install" will also install a few other things which are not part of\
+    the standard package, but which are useful for some people.\
+    CIDMAPS:\
+        If you are going to be editing CID keyed fonts you should also down-\
+        load my cidmap files from\
+                
+\f2 http://fontforge.sourceforge.net/cidmaps.tgz\
+
+\f1         put that file in the same place as you put fontforge_full*.tgz, then\
+
+\f2             $ mkdir -p fontforge/cidmaps\
+            $ mv cidmaps.tgz fontforge/cidmaps\
+            $ cd fontforge/cidmaps\
+            $ gunzip *.tgz ; tar xf *.tar\
+            $ cd ../..\
+
+\f1         And then proceed to do the normal install.\
+        Or install them manually:\
+
+\f2             # mkdir -p /usr/local/share/fontforge\
+            # mv fontforge/cidmaps/* /usr/local/share/fontforge\
+
+\f1     
+\f0\b DOCUMENTATION:\
+
+\f1\b0         You can choose to install FontForge's documentation on your system, then\
+        pressing the [Help] or [F1] key within FontForge will go to the local\
+        docs rather than those on the web.\
+        Download the doc bundle from\
+            
+\f2 http://fontforge.sourceforge.net/index.html#docs\
+
+\f1         Then (assuming you have not changed the install prefix)\
+
+\f2             # mkdir -p /usr/local/share/doc/fontforge\
+            # mv fontforge_htdocs-*.tgz /usr/local/share/doc/fontforge\
+            # cd /usr/local/share/doc/fontforge\
+            # gunzip *.tgz; tar xf *.tar\
+
+\f1 \
+
+\f0\b BUILDING without X11\
+
+\f1\b0     FontForge can be built without X11. You will probably only want to do this\
+    if your system lacks X (in which case configure should figure that out and\
+    do it automagically). But if, for some strange reason you wish to build a\
+    non-X version on a machine with X type:\
+        
+\f2 $ configure --without-x\
+
+\f1     during the build process instead of "$ configure"      \
+
+\f0\b \
+RUNNING from the command line\
+
+\f1\b0  Before running FontForge you must start X11. It lives in the Applications\
+ folder, and you start it by double clicking on it.\
+ You can start fontforge either from one of the xterms it creates, or from a \
+ Terminal window. If you start from a Terminal window you must first type:\
+
+\f2 $ DISPLAY=:0 ; export DISPLAY\
+\
+$ fontforge -new\
+
+\f1  Creates a new font\
+
+\f2 $ fontforge -nosplash\
+
+\f1  (No splash screen in case you have a very slow X connection)\
+
+\f2 $ fontforge font.pfa font2.pfb font3.ttf font4.otf font4.sfd\
+
+\f1  Opens those fonts (sfd files are fontforge's own spline font database files)\
+
+\f2 $ fontforge
+\f1 \
+ Brings up a file picker dlg.\
+
+\f2 $ fontforge -script script-file [script arguments]\
+
+\f1  Starts fontforge up without bringing up any windows. It will run the script-file\
+ (passing it any other arguments given on the command line) and then exit.\
+\
+The Control & Option keys must be used for invoking menu items. If you try\
+to use Cmd-Q (rather than Cntl-Q) you will quit out of X11, and not just\
+fontforge.\
+\
+
+\f0\b CAVEATS\
+
+\f1\b0  1) FontForge does not conform to Apple's Human Interface Guidelines, and never\
+    will.\
+\
+Please report any bugs to\
+        
+\f2 fontforge-devel@lists.sourceforge.net
+\f1 \
+\
+
+\f0\b DOCUMENTATION\
+
+\f1\b0         
+\f2 http://fontforge.sourceforge.net/overview.html\
+
+\f1 \
+
+\f0\b FONTS UNDER Mac OS/X
+\f1\b0 \
+ Macintosh fonts live in /Library/Fonts, /System/Library/Fonts or\
+ ~/Library/Fonts. On Mac OS/X FontForge can edit .dfont and resource fork      \
+ fonts. On other systems FontForge can only edit Mac .dfonts (the concept\
+ of a resource fork is Mac specific).\
+\
+ (X11 fonts on the mac are completely seperate from the mac fonts.       \
+ they reside somewhere in the X tree).\
+\
+
+\f0\b FONTS UNDER Mac OS/9
+\f1\b0 \
+ Note Bene: As far as I know FontForge has not been ported to Mac OS/9 (or 8 or 7)\
+\
+ Fonts live in :System Folder:Fonts: They are stored in resource forks, which\
+ means that if you want to work with them you must first wrap them up with \
+ either macbinary or binhex (Fetch may be used to do either conversion as you\
+ transfer the font to a different system to edit it).\
+}
