@@ -4519,7 +4519,7 @@ static void bClearTable(Context *c) {
 	error( c, "Bad argument type" );
     if ( strlen(c->a.vals[1].u.sval)>4 || *c->a.vals[1].u.sval=='\0' )
 	error( c, "Table tag must be a 4 character ASCII string");
-    _tag[0] = c->a.vals[1].u.sval[0]<<24;
+    _tag[0] = c->a.vals[1].u.sval[0];
     _tag[1] = _tag[2] = _tag[3] = ' ';
     if ( c->a.vals[1].u.sval[1]!='\0' ) {
 	_tag[1] = c->a.vals[1].u.sval[1];
