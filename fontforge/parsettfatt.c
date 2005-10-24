@@ -1815,7 +1815,7 @@ return;
     max = 20;
     glyph2s = galloc(max*sizeof(uint16));
     for ( i=0; glyphs[i]!=0xffff; ++i ) {
-	PST *sub;
+	PST *alt;
 	fseek(ttf,stoffset+offsets[i],SEEK_SET);
 	cnt = getushort(ttf);
 	if ( feof(ttf)) {
@@ -1853,14 +1853,14 @@ return;
 	    for ( j=0; j<cnt; ++j )
 		info->inuse[glyph2s[j]] = 1;
 	} else if ( info->chars[glyphs[i]]!=NULL && !bad ) {
-	    sub = chunkalloc(sizeof(PST));
-	    sub->type = lu_type==2?pst_multiple:pst_alternate;
-	    sub->tag = sub->tag;
-	    sub->script_lang_index = sub->script_lang_index;
-	    sub->flags = sub->flags;
-	    sub->next = info->chars[glyphs[i]]->possub;
-	    info->chars[glyphs[i]]->possub = sub;
-	    pt = sub->u.subs.variant = galloc(len+1);
+	    alt = chunkalloc(sizeof(PST));
+	    alt->type = lu_type==2?pst_multiple:pst_alternate;
+	    alt->tag = sub->tag;
+	    alt->script_lang_index = sub->script_lang_index;
+	    alt->flags = sub->flags;
+	    alt->next = info->chars[glyphs[i]]->possub;
+	    info->chars[glyphs[i]]->possub = alt;
+	    pt = alt->u.subs.variant = galloc(len+1);
 	    *pt = '\0';
 	    for ( j=0; j<cnt; ++j ) {
 		strcat(pt,info->chars[glyph2s[j]]->name);
@@ -2332,7 +2332,7 @@ static struct lookup_subtable *tagSubLookupsWithScript(struct scripts *scripts,
     struct scripts *s;
     struct feature *feat;
 
-    for ( fcnt=0; features[fcnt].tag!=0; ++fcnt );
+    for ( fcnt=0; features[fcnt].tag!=0 || features[fcnt].lcnt!=0; ++fcnt );
     for ( lcnt=lstmax=0; lookups[lcnt].offset!=0; ++lcnt )
 	lstmax += lookups[lcnt].subtabcnt;
     subs = gcalloc(lstmax+1,sizeof(struct lookup_subtable));
