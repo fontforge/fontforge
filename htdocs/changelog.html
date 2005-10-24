@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 29-Sep-2005 -->
+  <!-- AP: Last modified: 23-Oct-2005 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -15,6 +15,97 @@ Changes since the last release may be found by performing a "cvs log" command
 on the file stamp.c.
 <P>
 <UL>
+  <LI>
+    23-Oct-2005
+    <UL>
+      <LI>
+	Try to make the Mac install a bit more mac-like by adding an entry to the
+	X11 Applications menu rather than expecting users to start fontforge from
+	the command line.
+      <LI>
+	David Binderman points out an out of bounds array reference in cvexport which
+	has been there for years. Gleep.
+      <LI>
+	Add scripting commands for manipulating ttf instructions.
+	<P>
+	I added the following new scripting functions:
+	<UL>
+	  <LI>
+	    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SetMaxpValue("item-name",
+	    value)
+	  <LI>
+	    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GetMaxpValue("item-name")
+	  <LI>
+	    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ClearInstrs()
+	  <LI>
+	    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ClearTable(tag)
+	  <LI>
+	    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AddInstrs(thingamy,replace,instrs)
+	  <LI>
+	    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FindOrAddCvtIndex(value[,sign-matters])
+	  <LI>
+	    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ReplaceCvtAt(index,value)
+	  <LI>
+	    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GetCvtAt(index)
+	  <LI>
+	    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PrivateToCvt()
+	</UL>
+      <LI>
+	Daniel Gillmor points out there is no way to set the OS/2 Width field from
+	a script. He then provided a patch with two new functions which does this.
+	I realize there is no way to set any of the OS/2 values (except panose),
+	and there should be (and to retrieve them too).
+	<P>
+	I added the following new scripting functions:
+	<UL>
+	  <LI>
+	    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SetOS2Value("item-name",
+	    value)
+	  <LI>
+	    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GetOS2Value("item-name")
+	  <LI>
+	    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SetPrivateValue("item-key","item-value")
+	  <LI>
+	    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GetPrivateValue("item-key")
+	  <LI>
+	    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HasPrivateValue("item-key")
+	  <LI>
+	    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RemovePrivateValue("item-key")
+	</UL>
+      <LI>
+	A number of fixes for ofm files.
+      <LI>
+	When outputting mark-to-base lookups with multiple anchor classes, ff would
+	put a base glyph in the coverage table several times if it was used by several
+	mark classes. Bad.
+    </UL>
+  <LI>
+    18-Oct-2005
+    <UL>
+      <LI>
+	KANOU points out that I was using too strict a rule for parsing svg polygons.
+      <LI>
+	OFM output was not working in fonts with lots of kerning combinations.
+    </UL>
+  <LI>
+    16-Oct-2005
+    <UL>
+      <LI>
+	A number of fixes for ofm files.
+      <LI>
+	Add default 'nukt' "ligature" substitutions to appropriate Devanagari characters
+    </UL>
+  <LI>
+    15-Oct-2005
+    <UL>
+      <LI>
+	The patch to the routine determining what glyphs got output broke bitmap
+	only fonts.
+      <LI>
+	Ofm files didn't contain ligatures.
+      <LI>
+	The ofm patch broke tfm output.
+    </UL>
   <LI>
     12-Oct-2005
     <UL>
@@ -961,10 +1052,9 @@ on the file stamp.c.
       <LI>
 	Problems parsing some bare cff fonts.
     </UL>
-  <LI>
-    <A HREF="oldchangelog.html">Earlier Changes </A>
-  <LI>
-    <A HREF="pfaeditchangelog.html">Changes to PfaEdit (predecessor to
-    FontForge)</A>
 </UL>
+<P>
+<A HREF="oldchangelog.html">Earlier Changes </A><BR>
+<A HREF="pfaeditchangelog.html">Changes to PfaEdit (predecessor to
+FontForge)</A>
 </BODY></HTML>
