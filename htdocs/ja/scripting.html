@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 12-Oct-2005 -->
+  <!-- AP: Last modified: 22-Oct-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
 <!--<TITLE>Writing scripts to change fonts in FontForge</TITLE>-->
     <TITLE>FontForge でフォントを変更するためのスクリプトの書き方</TITLE>
@@ -2043,8 +2043,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     現在の値を UTF-8 で符号化された文字列として返します。
     値が存在しない引数の組合せに対しては、"" を返します。
   <DT>
-    <A HREF="fontinfo.html#Panose">SetPanose</A>(array)<BR>
-    SetPanose(index,value)
+    <A HREF="fontinfo.html#Panose">SetPanose</A>(array) SetPanose(index,value)
   <DD>
 <!--This sets the panose values for the font. Either it takes an array of 10
     integers and sets all the values, or it takes two integer arguments and sets
@@ -2054,6 +2053,63 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
     2 個の整数を引数として
     <CODE>font.panose[index] = value</CODE>
     とする設定を行うかのどちらかが可能です。
+  <DT>
+    <A HREF="fontinfo.html#TTF-Values">SetOS2Value</A>(field-name,field-value)
+  <DD>
+<!--This sets one of the fields of the OS/2 table to the given value. The field-name
+    must be one of the strings listed below: -->
+    この関数は field-name で指定した名前をもつ OS/2 テーブルのフィールドに値を設定します。field-name はフィールド名を表す以下のいずれかの文字列でなければなりません:
+    <P>
+    <CODE>Weight, Width, FSType, IBMFamily, VendorID, Panose,<BR>
+    WinAscent, WinAscentIsOffset</CODE>
+    <P>
+<!--These are equivalent to the WinAscent field &amp; []Offset check box in
+    <A HREF="fontinfo.html#TTF-Values">Font Info-&gt;OS/2-&gt;Misc. </A>Where
+    WinAscentOffset controls whether WinAscent is treated as an absolute number
+    or as relative to the expected number. -->
+    これらは <A HREF="fontinfo.html#TTF-Values">フォント情報(F)→[OS/2]→[メトリック]</A> にある <CODE>Win Ascent のオフセット</CODE> フィールドと <CODE>[] オフセットを指定</CODE> チェックボックスと等価です。ここで WinAscentIsOffset は、WinAscent が絶対値として扱われるか、予期される数値に対する相対値かを指定します。
+    <P>
+    <CODE>WinDescent, WinDescentIsOffset,<BR>
+    TypoAscent, TypoAscentIsOffset,<BR>
+    TypoDescent, TypoDescentIsOffset,<BR>
+    HHeadAscent, HHeadAscentIsOffset,<BR>
+    HHeadDescent, HHeadDescentIsOffset,<BR>
+    TypoLineGap, HHeadLineGap, VHeadLineGap,<BR>
+    SubXSize, SubYSize, SubXOffset, SubYOffset</CODE>
+    <P>
+<!--Sets the Subscript x/y sizes/offsets. -->
+    下つき文字の X/Y 方向のサイズ/オフセットを設定します。
+    <P>
+    <CODE>SupXSize, SupYSize, SupXOffset, SupYOffset</CODE>
+    <P>
+<!--Sets the Superscript x/y sizes/offsets. -->
+    上つき文字の X/Y 方向のサイズ/オフセットを設定します。
+    <P>
+    <CODE>StrikeOutSize, StrikeOutPos</CODE>
+    <P>
+    <P>
+<!--Usually the second argument is an integer but <CODE>VendorID</CODE> takes
+    a 4 character ASCII string, and <CODE>Panose</CODE> takes a 10 element integer
+    array. -->
+    第 2 引数は通常整数ですが、<CODE>VendorID</CODE> の場合は 4 文字の ASCII 文字列、<CODE>Panose</CODE> の場合は 10 個の整数要素を含んだ 1 個の配列を第 2 引数に指定します。
+  <DT>
+    <A HREF="fontinfo.html#TTF-Values">GetOS2Value</A>(field-name)
+  <DD>
+<!--The argument takes the same set of tag strings. <CODE>VendorId</CODE> returns
+    a string, and <CODE>Panose</CODE> returns an array. The others return integers. -->
+    引数に使用可能な値のセットはは上記のタグ文字列と同じです。<CODE>VendorId</CODE> は文字列を、<CODE>Panose</CODE> は配列を返します。その他の場合整数を返します。
+  <DT>
+    SetMaxpValue(field-name,value)
+  <DD>
+<!--The field-name must be a string and one of: <CODE>Zones, TwilightPntCnt,
+    StorageCnt, MaxStackDepth, FDEFs,</CODE> or <CODE>IDEFs</CODE>. Value must
+    be an integer. -->
+    引数 field-name は文字列で、以下のいずれかの値をとります: <CODE>Zones, TwilightPntCnt, StorageCnt, MaxStackDepth, FDEFs,</CODE> または <CODE>IDEFs</CODE>です。引数 value は整数値でなければなりません。
+  <DT>
+    GetMaxpValue(field-name)
+  <DD>
+<!--Field name must be as above. -->
+    引数 field-name は上に挙げた値のどれかでなければなりません。
   <DT>
     SetUniqueID(value)
   <DD>
@@ -2858,6 +2914,59 @@ ApplySubstitution("*","*","vrt2")
     <A HREF="hintsmenu.html#AutoInstr">AutoInstr</A>()
   <DD>
   <DT>
+    AddInstrs(thingamy,replace,instrs)
+  <DD>
+<!--Where thingamy is a string, either "fpgm" or "prep" in which case it refers
+    to that truetype table (which will be created if need be), or a glyph-name
+    in which case it refers to that glyph, or a null string in which case any
+    selected characters will be used.<BR> -->
+    引数 thingamy は文字列で、"fpgm", "prep" または何らかのグリフ名、もしくは空文字列でなければなりません。"fpgm" または "prep" の場合、それぞれ同名の TrueType テーブルを参照します (必要に応じて作成されます)。特定のグリフを参照するときにはそのグリフのグリフ名を指定します。選択中の任意の文字を使用する場合には、空文字列を指定します。<BR>
+<!--Where replace is an integer. If zero then the instructions will be appended
+    to any already present. If non-zero then the instructions will replace those
+    already present.<BR> -->
+    引数 replace は整数です。値が 0 の場合、既に存在する命令の後ろに instr で指定された命令を付け加えます。値が非 0 の場合、既に存在する命令を消去し、指定された命令に置き換えます。
+<!--And instrs is a string containing fontforge's human readable version of tt
+    instructions, as "<CODE>IUP[x]\nIUP[y]</CODE>" -->
+    最後の instr は FontForge の人間可読な形式の TrueType 命令文字列で、例えば "<CODE>IUP[x]\nIUP[y]</CODE>" のような形で指定します。
+  <DT>
+    ClearInstrs()
+  <DD>
+<!--From selected glyphs-->
+    選択中のグリフから命令を削除します。
+  <DT>
+    ClearTable(tag)
+  <DD>
+<!--Removes the table named tag. This may be 'fpgm', 'prep, 'cvt ', 'maxp' or
+    any user defined tables. It returns 1 if it found (and removed) the table,
+    0 if the table was not present. -->
+    tag で指定した名前をもつテーブルを削除します。テーブル名として指定できるのは、'fpgm', 'prep, 'cvt ', 'maxp' またはユーザ定義のテーブルの名前です。テーブルが見つかった (そして削除された) ときには 1 を返し、テーブルが存在しない場合には 0 を返します。
+  <DT>
+    FindOrAddCvtIndex(value[,sign-matters])
+  <DD>
+<!--Returns the index in the cvt table of the given value. If the value does
+    not exist in the table it will be added, and an index at the end of the table
+    will be returned. Most tt instructions ignore the sign of items in the cvt
+    table, but a few care. Usually this command stores the absolute value of
+    value, but if sign-matters is present and non-zero a negative value can be
+    looked up (or added). -->
+    引数 value で指定した値が cvt テーブル内に含まれるインデックスを返します。テーブル内に value が存在しない場合、それを追加してから、テーブルの末尾要素のインデックスを返します。ほとんどの TrueType 命令は cvt テーブル内の項目の符号を無視しますが、値に意味がある命令がいくつかあります。通常このコマンドは値の絶対値を格納しますが、引数 sign-matters が存在し、0 以外の値の場合、負の値を参照 (または追加) することができます。
+  <DT>
+    ReplaceCvtAt(index,value)
+  <DD>
+<!--Change the cvt table at the given index to have the new value.-->
+    cvt テーブルの index 番目の項目に value で指定した新しい値を設定します。
+  <DT>
+    GetCvtAt(index)
+  <DD>
+<!--Return the value in the cvt table at the given index.-->
+    引数 index で指定した位置にある cvt テーブルの項目値を返します。
+  <DT>
+    PrivateToCvt()
+  <DD>
+<!--Adds the standard numeric entries in the Private dictionary into the cvt
+    table. -->
+    Private 辞書情報に含まれる標準の数値項目を cvt テーブルに追加します。
+  <DT>
     <A HREF="hintsmenu.html#ClearHints">ClearHints</A>()
   <DD>
   <DT>
@@ -2938,6 +3047,11 @@ ApplySubstitution("*","*","vrt2")
     プライベート辞書から key をキーにもつ値を返します。
     すべての返り値は文字列です。
     該当する項目が辞書に存在しない場合、空文字列を返します。
+  <DT>
+    HasPrivateEntry(key)
+  <DD>
+<!--Returns whether key exists in the private dictionary.  -->
+    Private 辞書に key で指定した名前のキーが存在するかどうかを返します。
   <DT>
     <A NAME="SelectBitmap">SelectBitmap</A>(size)
   <DD>
