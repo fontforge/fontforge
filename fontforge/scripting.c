@@ -1116,6 +1116,52 @@ static void bFileAccess(Context *c) {
     c->return_val.u.ival = access(c->a.vals[1].u.sval,c->a.argc==3 ? c->a.vals[2].u.ival : R_OK );
 }
 
+static void bLoadFileToString(Context *c) {
+    FILE *f;
+    int len;
+
+    if ( c->a.argc!=2 )
+	error( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type!=v_str )
+	error( c, "Bad type of argument" );
+    c->return_val.type = v_str;
+    f = fopen(c->a.vals[1].u.sval,"rb");
+    if ( f==NULL )
+	c->return_val.u.sval = copy("");
+    else {
+	fseek(f,0,SEEK_END);
+	len = ftell(f);
+	rewind(f);
+	c->return_val.u.sval = galloc(len+1);
+	len = fread(c->return_val.u.sval,1,len,f);
+	c->return_val.u.sval[len]='\0';
+	fclose(f);
+    }
+}
+
+static void bWriteStringToFile(Context *c) {
+    FILE *f;
+    int append = 0;
+
+    if ( c->a.argc!=3 && c->a.argc!=4 )
+	error( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type!=v_str && c->a.vals[2].type!=v_str )
+	error( c, "Bad type of argument" );
+    else if ( c->a.argc==4 ) {
+	if ( c->a.vals[3].type!=v_int )
+	    error( c, "Bad type of argument" );
+	append = c->a.vals[3].u.ival;
+    }
+    f = fopen(c->a.vals[2].u.sval,append?"ab":"wb");
+    c->return_val.type = v_int;
+    if ( f==NULL )
+	c->return_val.u.ival = -1;
+    else {
+	c->return_val.u.ival = fwrite(c->a.vals[1].u.sval,1,strlen(c->a.vals[1].u.sval),f);
+	fclose(f);
+    }
+}
+
 /* **** File menu **** */
 
 static void bQuit(Context *c) {
@@ -6189,6 +6235,8 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "Utf8", bUtf8, 1 },
     { "Rand", bRand, 1 },
     { "FileAccess", bFileAccess, 1 },
+    { "LoadStringFromFile", bLoadFileToString, 1 },
+    { "WriteStringToFile", bWriteStringToFile, 1 },
 /* File menu */
     { "Quit", bQuit, 1 },
     { "FontsInFile", bFontsInFile, 1 },
