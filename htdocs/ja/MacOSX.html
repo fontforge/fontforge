@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 06-Dec-2002 -->
-  <!-- AP: Last modified: 27-Dec-2004 -->
+  <!-- AP: Last modified: 23-Oct-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
 <!--<TITLE>Special issues for FontForge on Mac OS/X</TITLE>-->
     <TITLE>Mac OS X 上での FontForge に関する特別な事柄</TITLE>
@@ -79,43 +79,39 @@ $ sudo make install
 </BLOCKQUOTE>
 <H2>
 <!-- Installing the Mac OS/X <A NAME="binary">binary</A> distribution -->
-     Mac OS X へのバイナリのインストール方法
+     Mac OS X への<A NAME="binary">バイナリ</A>のインストール方法
 </H2>
 <P>
 <!--
 Before installing FontForge you should ensure that you have X windows up
 and running. Apple now ships this with new Macs, but it is optional software
-(CD 3) and you must explicitly request it by customizing your install. You
-can also get this <A HREF="http://www.apple.com/macosx/x11/download/">from
+(CD 3) and you must explicitly request it by customizing your install (request
+the X11User package). You can also get this
+<A HREF="http://www.apple.com/macosx/x11/download/">from
 apple</A>, or from <A HREF="http://www.osxgnu.org/">the GNU Mac OS/X site</A>.
-(Or you can download the package built without X, which has no user interface
-but will let you run scripts). -->
+(Or you can build fontforge without X, and end up with no user interface
+but the ability to run scripts). -->
 FontForge をインストールする前に、X ウィンドウシステム (X11) があなたのシステム上で稼働しているかを確認するべきです。
-現在、Apple は X11 を Mac と一緒に出荷しています。
-これを <A HREF="http://www.apple.com/macosx/x11/download/">Apple から</A>か、または <A HREF="http://www.osxgnu.org/">GNU の Mac OS X サイト</A>からダウンロードすることもできます。
-(別の方法として、X なしでビルドされたバイナリをダウンロードすることもできます。これはユーザインターフェースを持っていませんが、スクリプトを実行することはできます。)
+現在、Apple は X11 を Mac と一緒に出荷していますが、(CD 3 の) 選択インストールされるソフトウェアなので、インストール内容をカスタマイズ (X11User パッケージを追加) する必要があります。これを <A HREF="http://www.apple.com/macosx/x11/download/">Apple から</A>か、または <A HREF="http://www.osxgnu.org/">GNU の Mac OS X サイト</A>からダウンロードすることもできます。
+(別の方法として、X なしの FontForge をビルドすることもできます。それにはユーザインターフェースはありませんが、スクリプトを実行する機能はあります。)
 <P>
 <!--
 After that you should just be able to unpack the packages provided in the
 <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338">File
-Release area.</A>. -->
-それが終わったらすぐに、<A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338">ファイルリリース場所</A>で公開されているパッケージを展開することができるはずです。
++Release area.</A> You want the PPC (power PC) version, which has a name like:
++<CODE>FontForge-xxxxxxxx.pkg.sitx</CODE> (where xxxxxxxx is the version). -->
+それが終わったらすぐに、<A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338">ファイルリリース場所</A>で公開されているパッケージを展開することができるはずです。必要なのは PPC (Power PC) バージョンで、<CODE>FontForge-xxxxxxxx.pkg.sitx</CODE> という名前がついています (ここで xxxxxxxx はバージョンです)。
+<P>
+<!--
+You should download this, a process that will automagically expand the package
+and start the installer. -->
+ダウンロードを行うと、パッケージを拡張し、インストーラを起動する処理が自動的に実行されます。
 <P>
 <!--
 These packages install into /usr/local/bin. You may need to add that to your
 PATH environment variable, and do something similar for MANPATH: -->
 これらのパッケージは /usr/local/bin にインストールを行います。
 おそらく、PATH 環境変数に値を加え、MANPATH にも同様の追加をしたほうが便利でしょう:
-<BLOCKQUOTE>
-  <PRE>$ vi ~/.cshrc
-setenv PATH /usr/local/bin:$PATH
-setenv MANPATH /usr/local/share/man:$MANPATH
-</PRE>
-</BLOCKQUOTE>
-<P>
-<!--
-If your shell is bash -->
-bash を使用しているなら、以下のようになります。
 <BLOCKQUOTE>
   <PRE>$ vi ~/.bashrc
 PATH=/usr/local/bin:$PATH ; export PATH
@@ -134,38 +130,33 @@ FontForgeの能力を拡張するためにシステムに追加するといいライブラリ・プログラムに�
 </H2>
 <P>
 <!--
-The X server (XDarwin) must be running before FontForge can start. XDarwin
-lives in the Applications folder and may be started by double clicking on
-it. -->
-FontForge を実行できるようにするには、あらかじめ X サーバ (XDarwin) を立ち上げておく必要があります。
-XDarwin は Applications フォルダにあるので、ダブルクリックで実行することができます。
+The X server X11 (or XDarwin in older releases) must be running before FontForge
+can start. X11 lives in the Utilities sub-folder of the Applications folder
+and may be started by double clicking on it. -->
+FontForge を実行できるようにするには、あらかじめ X11 という名前の X サーバ (古いバージョンでは XDarwin) を立ち上げておく必要があります。
+X11 は Applications フォルダにあるので、ダブルクリックで実行することができます。
 <P>
 <!--
-You may start FontForge either from an xterm or from a Terminal window. If
-you start it from a Terminal window you must first type:<BR> -->
-FontForge は xterm からもターミナルウィンドウからも実行することができます。
-ターミナルウィンドウから実行する時は、まず以下のように打ち込む必要があります。<BR>
-$ setenv DISPLAY :0
+The first time you start X11, go to the applications menu and select "Customize
+Menu..."<BR>
+then press the (Add) button in the dialog which appears<BR>
+double click in the left-most section of the blank line which just appeared
+and then type "FontForge"<BR>
+press the tab key and type "/usr/local/bin/fontforge"<BR>
+press the tab key again and type "f"<BR>
+then press (Done) -->
+X11 を最初に起動したときは、Applications メニューに移動して、"Customize Menu..." を選択します。<BR>
+表示されたダイアログ内の [Add] ボタンを押します。
+今現れたばかりの空白行の左端の部分をダブルクリックし、"FontForge" とキー入力します。<BR>
+Tab キーを押し、"/usr/local/bin/fontforge" とキー入力します。<BR>
+Tab キーをもう一度押し、"f" キーを押します。<BR>
+それから [Done] を押します。
 <P>
 <!--
-The default window manager (twm) doesn't work well with FontForge when X
-is running in rootless mode. -->
-デフォルトのウィンドウマネージャ (twm) は、X がルートレスモードで動いている時にはうまく動作しません。
+After that you may start FontForge by selecting FontForge from the X11
+Applications menu. -->
+この準備を行うと、X11 アプリケーションメニューから "FontForge" を選択することにより、FontForge を起動することができるようになります。
 <P>
-<!--
-FontForge allows the window manager to position its windows for it, and twm
-does this by allowing the user to click anywhere on the screen to position
-the upper left corner of the new window. Unfortunately unless X has a window
-under the location where you want the upper left corner to be Aqua will put
-X into the background and steal the click from X. -->
-FontForge はウィンドウマネージャがウィンドウの位置を変えることを許しており、twm では、ユーザが画面の任意の位置でクリックすると、新しく作られたウィンドウの左上端が指定されたことになって位置変更が行われます。
-不幸なことに、X がその下にウィンドウを開いていないと、Aqua は X をバックグラウンドにやって X からのクリックを奪い取ってしまいます。
-<P>
-<!--
-<FONT COLOR="Red"><STRONG>You can only open a window if you position it so
-that it's upper left corner is on one of X's already existing
-windows.</STRONG></FONT> -->
-<FONT COLOR="Red"><STRONG>ウィンドウの位置を決めないと、そのウィンドウを開くことができませんので、そのウィンドウの左上の位置は、X11 の既に存在するウィンドウに重なることになります。</STRONG></FONT>
 <H2>
 <!-- Caveats for Mac OS/X -->
      Mac OS X に関する注意

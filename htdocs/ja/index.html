@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 12-Oct-2005 -->
+  <!-- AP: Last modified: 23-Oct-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
   <TITLE>FontForge</TITLE>
   <LINK REL="icon" href="../ffanvil16.png">
@@ -22,20 +22,62 @@ requests/etc. between<BR>
 <!--
 <FONT COLOR="Red"><STRONG>FontForge</STRONG></FONT> -- An outline font editor
 that lets you create your own postscript, truetype, opentype, cid-keyed,
-multi-master, cff, svg and bitmap (bdf) fonts, or edit existing ones. Also
-lets you convert one format to another. FontForge has support for many macintosh
-font formats. -->
-<FONT COLOR="Red"><STRONG>FontForge</STRONG></FONT> -- あなた自身の PostScript, Openype, CID, マルチプルマスター、CFF, SVG およびビットマップ (BDF) フォントを作成したり、既存のフォントを編集したりすることができるアウトラインフォントエディタ。あるフォーマットから別のフォーマットに変換することもできます。FontForge はさまざまな Macintosh のファイルフォーマットをサポートしています。
+multi-master, cff, svg and bitmap (bdf, FON, NFNT) fonts, or edit existing
+ones. Also lets you convert one format to another. FontForge has support
+for many macintosh font formats. -->
+<FONT COLOR="Red"><STRONG>FontForge</STRONG></FONT> -- あなた自身の PostScript, Openype, CID, マルチプルマスター、CFF, SVG およびビットマップ (BDF, FON, NFNT) フォントを作成したり、既存のフォントを編集したりすることができるアウトラインフォントエディタ。あるフォーマットから別のフォーマットに変換することもできます。FontForge はさまざまな Macintosh のファイルフォーマットをサポートしています。
 <P>
 <!--
 FontForge's user interface has been localized for: (English), Russian, Japanese,
-French, Italian, Spanish. -->
-FontForge のユーザインタフェースは以下の言語版が用意されています: (英語)・ロシア語・日本語・フランス語・イタリア語・スペイン語。
+French, Italian, Spanish.<BR>-->
+FontForge のユーザインタフェースは以下の言語版が用意されています: (英語)・ロシア語・日本語・フランス語・イタリア語・スペイン語。<BR>
+<!--This website itself has been translated into Japanese
+<A HREF="ja/"><IMG SRC="flags/Nisshoki-Japan.png" WIDTH="39" HEIGHT="26"></A>
+and the tutorial into (traditional) Chinese
+<A HREF="http://edt1023.sayya.org/fontforge/editexample.html"><IMG SRC="flags/taiwan.png"
+    WIDTH="39" HEIGHT="26"></A> -->
+<a href="../index.html">この Web サイト</a>そのものは日本語
+<A HREF="index.html"><IMG SRC="../flags/Nisshoki-Japan.png" WIDTH="39" HEIGHT="26"></A>
+に翻訳されているほか、チュートリアルが (繁体字) 中国語
+<A HREF="http://edt1023.sayya.org/fontforge/editexample.html"><IMG SRC="../flags/taiwan.png"
+    WIDTH="39" HEIGHT="26"></A>
+に翻訳されています。
 <P>
 <!--
-Contents -->
-目次
-<A HREF="http://fontforge.sourceforge.net/"><IMG SRC="../flags/StarsStripes.gif" WIDTH="39" HEIGHT="26"><IMG SRC="../flags/UnionJack.gif" WIDTH="39" HEIGHT="26"></A>
+I have been told this page looks like incomprehensible engineering technobable
+to some people. Sorry about that. The most important things are: -->
+一部の人にはこのページが理解不能な工学的テクノバブルに見えるとの指摘を受けました。申し訳ありません。一番重要な事柄は:
+<UL>
+  <LI>
+<!--<A HREF="overview.html">Online User &amp; Reference manual</A>-->
+    <A HREF="overview.html">ユーザ &amp; リファレンスマニュアル</A>
+  <LI>
+<!--<A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=111040">Application
+    Download</A> -->
+    <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=111040">アプリケーションのダウンロード</A>
+    <TABLE CELLSPACING="6" CELLPADDING="2">
+      <CAPTION>
+<!--	System specific notes -->
+	各システム固有の注意点
+      </CAPTION>
+      <TR>
+	<TD><P ALIGN=Center>
+	  Unix/Linux<BR>
+<!--	  Not needed</TD>-->
+	  特になし</TD>
+	<TD>&nbsp; &nbsp; &nbsp; <A HREF="MacOSX.html#binary">Mac</A></TD>
+	<TD>&nbsp; &nbsp; &nbsp; <A HREF="faq.html#windows">MS/Windows</A></TD>
+	<TD>&nbsp; &nbsp; &nbsp;
+	  <A HREF="ftp://nchrem.tnw.tudelft.nl/pfaedit/">VMS</A></TD>
+      </TR>
+    </TABLE>
+</UL>
+<P>
+<P>
+<!--
+Full Contents -->
+総目次
+<A HREF="../index.html"><IMG SRC="../flags/StarsStripes.gif" WIDTH="39" HEIGHT="26"><IMG SRC="../flags/UnionJack.gif" WIDTH="39" HEIGHT="26"></A>
 <A HREF="index.html"><IMG SRC="../flags/Nisshoki-Japan.png"
     WIDTH="39" HEIGHT="26"></A>
 <A HREF="http://edt1023.sayya.org/fontforge/"><IMG SRC="../flags/taiwan.png"
@@ -47,8 +89,14 @@ Contents -->
     (<A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=114329">downloadable</A>)- -
     Shorter tutorial <A HREF="editexample.html">html</A> -
     <A HREF="fontforge-tutorial.pdf">pdf</A> - <A HREF="tutorial.tgz">example
-    files</A> -->
-    <BIG><A HREF="overview.html">ユーザ &amp; リファレンス マニュアル</A>。</BIG> (ここから<A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=114329">ダウンロード可能</A> -- より短いチュートリアルの <A HREF="editexample.html">HTML</a> - <A HREF="http://fontforge.sourceforge.net/fontforge-tutorial.pdf">PDF <small>(英語)</small></A> - <A HREF="http://fontforge.sourceforge.net/tutorial.tgz">サンプルファイル</a>
+    files</A><BR> -->
+    <BIG><A HREF="../overview.html">User &amp; Reference Manual</A>.</BIG> (ここから<A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=114329">ダウンロード可能</A> -- より短いチュートリアルの <A HREF="editexample.html">HTML</a> - <A HREF="http://fontforge.sourceforge.net/fontforge-tutorial.pdf">PDF</A> - <A HREF="http://fontforge.sourceforge.net/tutorial.tgz">サンプルファイル</A></BR>
+<!--<A HREF="ja/overview.html"><IMG SRC="manual-ja.png" WIDTH="268" HEIGHT="18"
+	BORDER="0"></A> &nbsp; &nbsp; -->
+    <A HREF="overview.html">ユーザ&amp;リファレンスマニュアル</A> &nbsp; &nbsp;
+<!--<A HREF="http://edt1023.sayya.org/fontforge/editexample.html"><IMG SRC="tutorial-zh_TW.png"
+	WIDTH="35" HEIGHT="18" BORDER="0"></A> -->
+    <A HREF="http://edt1023.sayya.org/fontforge/editexample.html">教學</A>
   <LI>
 <!--<A HREF="http://sourceforge.net/projects/fontforge/">SourceForge Project
     page</A> / SourceForge
@@ -56,9 +104,16 @@ Contents -->
     Release System</A> -->
     <A HREF="http://sourceforge.net/projects/fontforge/">SourceForge のプロジェクトページ</A> / SourceForge の <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338">ファイルリリースシステム</A>
   <LI>
-<!--<A HREF="#downloads">Downloads</A>-->
-    <A HREF="#downloads">ダウンロード</A>
+<!--Downloads-->
+    ダウンロード
     <UL>
+      <LI>
+<!--	<FONT COLOR="Red"><STRONG><BIG>Primary location to find both executable &amp;
+	source:
+	<A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338">File
+	Release System</A></BIG></STRONG></FONT> -->
+	<FONT COLOR="Red"><STRONG><BIG>実行ファイル・ソースともに、一次配布元は
+	<A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338">ファイルリリースシステム</A>です。</BIG></STRONG></FONT>
       <LI>
 <!--	<A HREF="index.html#binary">Binary</A> -->
 	<A HREF="index.html#binary">バイナリ</A>
@@ -66,10 +121,6 @@ Contents -->
 <!--	<A HREF="index.html#source">Source</A> (tarball) -->
 	<A HREF="index.html#source">ソース</A> (tarball)
 	<UL>
-	  <LI>
-<!--	    <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338">File
-	    Release System</A> -->
-	    <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338">ファイルリリースシステム</A>
 	  <LI>
 <!--	    <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/">Browse
 	    the CVS tree</A> -->
@@ -188,7 +239,8 @@ let me know when you do</A>. -->
     <A HREF="fontforge-solaris-20041012.tgz">Download fontforge Solaris 8.0 Sparc
     </A>executable Version: 12-Oct-2004 (no XIM support, no freetype, no SVG
     import)
-    <UL>-->
+    <UL>--><!--(packages available for various systems)-->
+               (各種システム用のパッケージが入手可能です)
   <LI>
 <!--Apostolos Syropoulos has a Solaris x86 package at
     <A HREF="http://ocean1.ee.duth.gr/Solaris/PfaEdit.pkg.gz">his site</A> -->
@@ -236,13 +288,18 @@ FontForge の能力を拡張するために追加したいかもしれない外部ライブラリ/プログラム�
 <P>
 <!--You can download a <A HREF="fontforge-20041012-1.src.rpm">source RPM</A>:
 Version: 12-Oct-2004<BR>--> <!--You can download the
-<A HREF="fontforge_full-20051012.tar.bz2">source tree </A>in one tarball:
-Version 12-October-2005<BR> -->
-<A HREF="http://fontforge.sourceforge.net/fontforge_full-20051012.tar.bz2">ソースツリー</A> (2005年10月12日版) を 1 個の .tar.bz2 ファイルとしてダウンロードすることができます。<BR>
+<A HREF="fontforge_full-20051021.tar.bz2">source tree </A>in one tarball:
+Version 21-October-2005<BR> -->
+<A HREF="http://fontforge.sourceforge.net/fontforge_full-20051021.tar.bz2">ソースツリー</A> (2005年10月21日版) を 1 個の .tar.bz2 ファイルとしてダウンロードすることができます。<BR>
 <!--Or you can go to the
 <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/">cvs
-tree</A> and get the most recent version. (This may be delayed by 24 hours)-->
-または、<A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/">CVS ツリー</A>からより新しいバージョンを入手することができます (更新が 24 時間遅延することがあります)。
+tree</A> and get the most recent version. (This may be delayed by 24 hours)<BR>-->
+または、<A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/">CVS ツリー</A>からより新しいバージョンを入手することができます (更新が 24 時間遅延することがあります)。<BR>
+<!--
+Experimental version using GNU gettext:
+<A HREF="fontforge_gettext-20051020.tar.bz2">tarball</A> Version 20-October-2005 -->
+GNU gettext を利用した実験版: 
+<A HREF="fontforge_gettext-20051020.tar.bz2">tarball</A> 2005年10月21日版
 <H4> 
 <!--<A NAME="Anonymous-cvs">Anonymous cvs</A> -->
     <A NAME="Anonymous-cvs">匿名 CVS</A>
@@ -328,14 +385,15 @@ they are available from: -->
     SVG ファイルとフォントを読み込むために必要。
   <LI>
     <A HREF="http://libuninameslist.sf.net">libuninameslist</A><BR>
-<!--To display unicode names and annotations. And to know what-->
-    Unicode 文字名と注釈を表示し、文字が何であるか知るために必要。
+<!--To display unicode names and annotations. -->
+    Unicode 文字名と注釈を表示するために必要。
   <LI>
-    <A HREF="http://www.gnu.org/software/libiconv/">libiconv</A><BR>
-<!--For systems with no built-in iconv(). If not present FontForge contains a
-    minimal version of the library which allows it to work. If used you must
-    compile with <CODE>--enable-extra-encodings</CODE>, FontForge requires Shift-JIS.-->
-    iconv() が組み込まれていないシステムのために。存在しない場合は、FontForge は動作に必要な最低限のバージョンのライブラリを組み込みます。これを使用する場合は、<CODE>--enable-extra-encodings</CODE> をつけてコンパイルしてください。FontForge はシフト JIS を必要とします。
+<!--<A HREF="http://www.gnu.org/software/libiconv/">libiconv</A><BR>
+    Only important for systems with no built-in iconv(). If not present FontForge
+    contains a minimal version of the library which allows it to work. If you
+    do use libiconv you must configure it with
+    <CODE>- -enable-extra-encodings</CODE>, as FontForge requires Shift-JIS. -->
+これが必要なのは組み込みの iconv() をもたないシステムだけです。これが存在しない場合のために、FontForge は動作するのに必要な最小限のバージョンのライブラリを含んでいます。FontForge はシフト JIS を必要とするので、libiconv を使用する場合は、その作成時に configure を <CODE>--enable-extra-encodings</CODE> つきで実行する必要があります。
   <LI>
     <A HREF="http://freetype.sf.net/">freetype</A><BR>
 <!--To do a better job rasterizing bitmaps, and to enable the truetype debugger-->
@@ -346,18 +404,24 @@ they are available from: -->
 	  freetype with the byte code interpreter enabled. This is disabled by default
 	  because it infringes on certain
 	  <A HREF="http://freetype.sourceforge.net/patents.html">patents granted to
-	  Apple</A>. If you have a license from Apple then you may enable the interpreter
-	  by setting the appropriate macro in .../include/freetype/config/ftoption.h
-	  before you build the library (see the README.UNX file on the top level of
-	  the freetype distribution). 
+	  Apple</A>. If you have a license from Apple (or live in a country where these
+	  patents do not apply) then you may enable the interpreter by setting the
+	  appropriate macro in .../include/freetype/config/ftoption.h before you build
+	  the library (see the README.UNX file on the top level of the freetype
+	  distribution). -->
+	<TD BGCOLOR="#ffff00">いくつかの FontForge のコマンドは、あなたのインストールしている FreeType が、バイトコードインタプリタを使用可能にしてコンパイルされたかどうかに依存します。この機能は、<A HREF="http://freetype.sourceforge.net/patents.html">Apple に与えられた</A>特許に抵触するため、デフォルトではオフにされています。あなたが Apple から使用許諾を受けている (またはそれらの特許が適用されない国に住んでいる) ならば、ライブラリをビルドする前に、.../include/freetype/config/ftoption.h の適切なマクロを設定して、その機能を使用可能にすることができます (FreeType の配布物に入っている README.UNX ファイルを参照してください)。
 	  <P>
-	  FontForge needs to have the freetype source directories available when it
-	  is built (there are some include files there which it depends on)</TD>-->
-	<TD BGCOLOR="#ffff00">いくつかの FontForge のコマンドは、あなたのインストールしている FreeType が、バイトコードインタプリタを使用可能にしてコンパイルされたかどうかに依存します。この機能は、<A HREF="http://freetype.sourceforge.net/patents.html">Apple に与えられた</A>特許に抵触するため、デフォルトではオフにされています。あなたが Apple から使用許諾を受けているならば、ライブラリをビルドする前に、.../include/freetype/config/ftoption.h の適切なマクロを設定して、その機能を使用可能にすることができます (FreeType の配布物に入っている README.UNX ファイルを参照してください)。
-	  <P>
-	  FontForge をビルドするときには、FreeType のソースディレクトリをアクセス可能にしておく必要があります (依存するインクルードファイルがいくつかあります)。</TD>
+<!--	  To enable the truetype debugger, FontForge needs to have the freetype source
+	  directories available when it is built (there are some include files there
+	  which it depends on)</TD> -->
+	  TrueType デバッガを有効にするためには、FontForge のコンパイル時に FreeType のソースディレクトリにアクセス可能になっている必要があります (依存するインクルードファイルがいくつかあります)。</TD>
       </TR>
     </TABLE>
+  <LI>
+    <A HREF="http://www.cygwin.com/">cygwin</A><BR>
+<!--To build or run on a MS Windows system you need the cygwin environment and
+    libraries. -->
+    MS Windows システム上でのビルドまたは実行には cygwin の環境とライブラリを必要とします。
 </UL>
 <P>
 <TABLE BORDER CELLPADDING="2">
@@ -655,9 +719,9 @@ license</A>". -->
 </H2>
 <P>
 <!--
-FontForge is by no means complete. And probably doesn't work very well. Be
-prepared to save frequently and always work on a copy of the original. -->
-FontForge は決して完全ではありません。それに、おそらくうまく動かない点があるでしょう。頻繁にファイルを保存し、常にオリジナルのコピーに対して作業を行うようにしてください。
+FontForge is by no means complete. And probably has some bugs. Be prepared
+to save frequently and consider working on a copy of the original. -->
+FontForge は決して完全ではありません。それに、おそらくバグがいくつか残っているでしょう。頻繁にファイルを保存し、オリジナルのコピーに対して作業を行うことを考慮してください。
 <UL>
   <LI>
 <!--No attempt has been made to be efficient.-->
@@ -668,13 +732,8 @@ FontForge は決して完全ではありません。それに、おそらくうまく動かない点があるでし
     happen to the character they are associated with. -->
     TrueType の命令 (ヒント) を解釈する試みは全く行わず、命令はそのまま格納され、そのヒントに伴う文字に対して重要な変更が行われないかぎり使用されます。
   <LI>
-<!--No attempt has been made to retain the change-over points for hint substitution.
-    FontForge will refigure this when it saves the font. -->
-    ヒント置換の切り替え点を保存しようとはしません。FontForge はフォントの保存時にこれを再構成します。
-  <LI>
-<!--Many type 3 fonts will not be read in correctly (those generated by fontforge
-    should always be acceptable) -->
-    多くの Type 3 フォントは正しく読み込まれません (FontForge が出力したものは常に読み込み可能であるべきですが)。
+<!--Many type 3 fonts will not be read in correctly -->
+    正しく読み込まれない Type 3 フォントがたくさんあります。
   <LI>
 <!--Importing a type0 font loses the encoding. FontForge only imports simple
     type0 fonts (such as those made by itself), will get confused if there's
@@ -774,10 +833,10 @@ and rarely appear on this list. -->
 <!--Some truetype fonts (kaiu and mingliu) do not store the correct outline.
     Instead they rely on using the instructions to move points around to generate
     the outline. The outline does not appear to be grid-fit at all, just positioned.
-    FontForge will not read the instructions. In most fonts this would be the
-    wrong thing to do, and I don't know how I could tell when it needs to be
-    done... -->
-    いくつかの TrueType フォント (kaiu や minliu) は、正確なアウトラインを内部に含んでいません。その代り、それらはアウトラインを生成するときに、命令を利用して点を移動する処理に依存しています。アウトラインのグリッド合わせはまったく行われず、単に配置を行うだけのようです。FontForge は命令を読み込みません。ほとんどのフォントではこれは行ってはならないと思われますが、いつ命令を処理するべきかをどうやったら判別できるのか私には分かりません…。
+    FontForge apply the instructions when loading. In most fonts this would be
+    the wrong thing to do, and I don't know how I could tell when it needs to
+    be done... -->
+    いくつかの TrueType フォント (kaiu や minliu) は、正確なアウトラインを内部に含んでいません。その代り、それらはアウトラインを生成するときに、命令を利用して点を移動する処理に依存しています。アウトラインのグリッド合わせはまったく行われず、単に配置を行うだけのようです。FontForge は命令を読み込み時に適用します。ほとんどのフォントではこれは行ってはならないと思われますが、いつ命令を処理するべきかをどうやったら判別できるのか私には分かりません…。
   <LI>
 <!--After adding the Johab encoding 23/Nov/01, any old fonts (in sfd files) which
     had a unicode encoding will suddenly claim to have a Johab encoding. I don't
@@ -852,9 +911,8 @@ can. Please post bugs to: -->
 <!--<EM>My writing leaves much to be desired</EM>. Anyone who can make my
     documentation more readable is encouraged to do so. (or who wishes to translate
     it into other languages, or who wishes to put it into a more flexable format,
-    KANOU has a <A HREF="http://khdd.net/fontforge-jman/">Japanese version</A>
-    under construction) -->
-    <EM>私の書き物には不十分な点がたくさん残っています</EM>。私の文書をより読みやすくすることのできる人はどなたでも歓迎します。(または、別の言語に翻訳する人やより柔軟なフォーマットに変換したい人も。狩野は<A HREF="http://khdd.net/fontforge-jman/">日本語版</A>を作成中です)。
+    KANOU has a <A HREF="http://khdd.net/fontforge-jman/">Japanese version</A>) -->
+    <EM>私の書き物には不十分な点がたくさん残っています</EM>。私の文書をより読みやすくすることのできる人はどなたでも歓迎します。(または、別の言語に翻訳する人やより柔軟なフォーマットに変換したい人も。)
   <LI>
 <!--<I>I also have a brief tutorial in <A HREF="fontforge-tutorial.pdf">pdf
     format</A>.</I> This could also be translated into other languages (and would
@@ -882,6 +940,13 @@ can. Please post bugs to: -->
 <!--	Italian is provided by Claudio Beccari -->
 	イタリア語版は Claudio Beccari が提供しています。
       <LI>
+<!--	Spanish is provided by <A HREF="mailto:wecharri@yahoo.com">Walter Echarri</A> -->
+	スペイン語版は <A HREF="mailto:wecharri@yahoo.com">Walter Echarri</A> が提供しています。
+      <LI>
+<!--	A Catalan and a (Brazillian) Portugese translation are being worked on by
+	Javier Candeira and Gustavo Paolo respectively. -->
+	カタルーニャ語版の翻訳は Javier Candeira が、(ブラジルの) ポルトガル語版は Gustavo Paolo が作業中です。
+      <LI>
 <!--	I've also created a very minimal German translations that lapses into English,
 	anyone who wants to take this on is encouraged to do so. -->
 	私はほんの最小限のドイツ語訳をひどい英語訛りで作成しましたが、これを引き継ぐつもりの方はどなたでも歓迎します。
@@ -893,14 +958,16 @@ can. Please post bugs to: -->
   <LI>
 <!--<EM>Different font formats</EM><BR>-->
     <EM>別のファイルフォーマット</EM><BR>
-<!--FontForge supports Type1, truetype and opentype fonts (to greater and lesser
-    extents), also bdf and NFNT for bitmaps<BR>
+<!--FontForge supports Type1, truetype, opentype and svg fonts, also bdf and
+    NFNT for bitmaps<BR>
     FontForge will sort-of accept metafont files (essentially it runs metafont
     and autotraces the result). It won't produce .mf files<BR>
+    FontForge will read (but not produce) Ikarus files<BR>
     FontForge will read acorn font files with a helper app.<BR>
     But there are other formats out there that I can't find descriptions of: -->
-    FontForge は Type1, TrueType および (広義・狭義の) OpenType フォント、それに加えてビットマップでは BDF と NFNT をサポートしています。<BR>
+    FontForge は Type1, TrueType, OpenType および SVG フォント、それに加えてビットマップでは BDF と NFNT をサポートしています。<BR>
     FontForge はある意味で METAFONT ファイルを読み込むことができます (本質的には METAFONT を実行して結果を自動トレースします)。.mf ファイルは出力しません。<BR>
+    FontForge は Ikarus ファイルを読み込むことができます (が書き出しません)<BR>
     FontForge は補助アプリケーションを使って acorn フォントを読み込みます。<BR>
     しかし私が解説を見つけることのできないその他のフォーマットがあります:
     <UL>
@@ -914,8 +981,8 @@ can. Please post bugs to: -->
     <EM>あまりよく動かないコマンド</EM>がいくつかあり、誰か他の人がやる気をだしてくれれば、私より上手なコードを書くでしょう……。
     <UL>
       <LI>
-<!--	Remove overlap -->
-	重複除去
+<!--	Remove overlap (might be fixed now) -->
+	重複除去 (現在は修正済みのはずです)
       <LI>
 <!--	Autokern (might be fixed now) -->
 	自動カーニング (現在は修正済みのはずです)
