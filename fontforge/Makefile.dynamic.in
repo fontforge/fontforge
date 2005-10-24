@@ -84,6 +84,10 @@ install:
 # so I have put these messages in utf8.pot which I manage by hand. non-ASCII
 # strings work just fine as keys. It does mean that my pot files should be
 # viewed in utf8 though.
+
+# I am told that new versions of xgettext support an option --from-code=UTF-8
+# unfortunately this works on none of the systems I use, and I haven't found
+# it documented. If it worked I would not need utf8.pot.
 fontforge.pot: *.c utf8.pot
 	xgettext -k_ -kN_ -kS_ -kP_:1,2 -ofontforge.pot *.c ../gdraw/*.c
 	cat utf8.pot >> fontforge.pot
