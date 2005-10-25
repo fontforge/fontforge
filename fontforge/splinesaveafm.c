@@ -2193,6 +2193,8 @@ return( new );
 static struct ligkern *TfmAddLiga(LigList *l,struct ligkern *last,EncMap *map,int maxc) {
     struct ligkern *new;
 
+    if ( l->lig->tag!=CHR('l','i','g','a') && l->lig->tag!=CHR('r','l','i','g'))
+return( last );
     if ( map->backmap[l->lig->u.lig.lig->orig_pos]>=maxc )
 return( last );
     if ( l->components==NULL ||  map->backmap[l->components->sc->orig_pos]>=maxc ||
@@ -2651,7 +2653,10 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map
 		heights[i] = sc->tex_depth*scale;
 	    if ( depths[i]<0 ) depths[i] = 0;		/* Werner says depth should never be negative. Something about how accents are positioned */
 	    if ( !is_math ) {
-		widths[i] = sc->width*scale;
+		if ( sc->width==0 )
+		    widths[i] = 1;	/* TeX/Omega use a 0 width as a flag for non-existant character. Stupid. So zero width glyphs must be given the smallest posible non-zero width, to ensure they exists. GRRR. */
+		else
+		    widths[i] = sc->width*scale;
 		if ( (pst=SCFindPST(sc,pst_position,CHR('I','T','L','C'),-1,-1))!=NULL )
 		    italics[i] = pst->u.pos.h_adv_off*scale;
 		else if ( (style&sf_italic) && b.maxx>sc->width && !anyITLC )
