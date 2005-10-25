@@ -2,7 +2,7 @@ Name:        fontforge
 Version:     030730
 Release:     1
 Summary:     A PostScript font editor
-Copyright:   BSD
+License:     BSD
 Group:       Applications/Publishing
 Icon:        pfaicon.gif
 Source0:     http://fontforge.sourceforge.net/fontforge_full-%{version}.tgz

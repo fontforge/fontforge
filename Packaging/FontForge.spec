@@ -2,7 +2,7 @@ Name:        fontforge
 Version:     20041203
 Release:     1
 Summary:     An outline font editor
-Copyright:   BSD
+License:     BSD
 Group:       Applications/Publishing
 Icon:        ffanvil32.gif
 Source0:     http://fontforge.sourceforge.net/fontforge_full-%{version}.tgz

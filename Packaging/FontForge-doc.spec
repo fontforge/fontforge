@@ -2,7 +2,7 @@ Name:        FontForge-doc
 Version:     020208
 Release:     1
 Summary:     Docs for FontForge, a PostScript font editor
-Copyright:   BSD
+License:     BSD
 Group:       Documentation
 #Group:       Applications/Publishing
 Icon:        pfaicon.gif
