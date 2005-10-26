@@ -28,8 +28,12 @@ INSTALLATION NOTES:
 	doinstall      -- a script to install everything into the right
 			   places
     You should:
+        (open a cygwin terminal window)
+	(change the directory ("cd") into the directory containing the
+	 downloaded package)
+	(then type)
 	$ bunzip2 fontforge_cygwin*.tar.bz2
-	$ tar xfz fontforge_cygwin-*.tar
+	$ tar xf fontforge_cygwin-*.tar
 	$ cd fontforge
 	$ ./doinstall
 
@@ -88,7 +92,8 @@ More complex installations
 	    $ gunzip *.tgz ; tar xf *.tar
 	    $ cd ../..
 	And then proceed to do the normal install.
-    DOCUMENTATION:
+
+DOCUMENTATION:
 	You can choose to install FontForge's documentation on your system, then
 	pressing the [Help] or [F1] key within FontForge will go to the local
 	docs rather than those on the web.
@@ -106,6 +111,9 @@ DEPENDENCIES
      http://www.libpng.org/pub/png/libpng.html
 	 http://www.gzip.org/zlib/
      http://prtr-13.ucsc.edu/~badger/software/libungif/index.shtml
+
+ If you want to edit svg fonts you must install libxml2 from:
+ 	http://xmlsoft.org/
 
  FontForge also makes use of libuninameslist to be found at:
      http://libuninameslist.sf.net/
