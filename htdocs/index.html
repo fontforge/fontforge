@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 23-Oct-2005 -->
+  <!-- AP: Last modified: 27-Oct-2005 -->
   <TITLE>FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -31,12 +31,7 @@ This website itself has been translated into Japanese
 and the tutorial into (traditional) Chinese
 <A HREF="http://edt1023.sayya.org/fontforge/editexample.html"><IMG SRC="flags/taiwan.png"
     WIDTH="39" HEIGHT="26"></A>
-<P>
-I have been told this page looks like incomprehensible engineering technobable
-to some people. Sorry about that. The most important things are:
 <UL>
-  <LI>
-    <A HREF="overview.html">Online User &amp; Reference manual</A>
   <LI>
     <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=111040">Application
     Download</A>
@@ -46,20 +41,13 @@ to some people. Sorry about that. The most important things are:
       </CAPTION>
       <TR>
 	<TD><P ALIGN=Center>
-	  Unix/Linux<BR>
-	  Not needed</TD>
-	<TD>&nbsp; &nbsp; &nbsp; <A HREF="MacOSX.html#binary">Mac</A></TD>
-	<TD>&nbsp; &nbsp; &nbsp; <A HREF="faq.html#windows">MS/Windows</A></TD>
-	<TD>&nbsp; &nbsp; &nbsp;
-	  <A HREF="ftp://nchrem.tnw.tudelft.nl/pfaedit/">VMS</A></TD>
+	  <A HREF="nix-install.html">Unix/Linux</A></TD>
+	<TD>&nbsp; &nbsp; &nbsp; <A HREF="mac-install.html">Mac</A></TD>
+	<TD>&nbsp; &nbsp; &nbsp; <A HREF="ms-install.html">MS/Windows</A></TD>
+	<TD>&nbsp; &nbsp; &nbsp; <A HREF="vms-install.html">VMS</A></TD>
+	<TD>&nbsp; &nbsp; &nbsp; <A HREF="source-build.html">from source</A></TD>
       </TR>
     </TABLE>
-</UL>
-<P>
-<P>
-Full Contents
-<A HREF="ja/"><IMG SRC="flags/Nisshoki-Japan.png" WIDTH="39" HEIGHT="26"></A>
-<UL>
   <LI>
     <A HREF="overview.html"><BIG>User &amp; Reference
     manual</BIG></A><BIG>.</BIG>
@@ -77,39 +65,46 @@ Full Contents
     <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338">File
     Release System</A>
   <LI>
-    Downloads
-    <UL>
-      <LI>
-	<FONT COLOR="Red"><STRONG><BIG>Primary location to find both executable &amp;
-	source:
-	<A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338">File
-	Release System</A></BIG></STRONG></FONT>
-      <LI>
-	<A HREF="index.html#binary">Binary</A>
-      <LI>
-	<A HREF="index.html#source">Source</A> (tarball)
-	<UL>
-	  <LI>
-	    <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/">Browse
-	    the CVS tree</A>
-	  <LI>
-	    <A HREF="#Anonymous-cvs">Brief description of other ways to get CVS</A>
-	  <LI>
-	    <A HREF="http://www.cvshome.org/docs/manual/">CVS Manual</A>
-	</UL>
-      <LI>
-	<A HREF="#image-libs">External libraries used (but not required)</A>
-      <LI>
-	<A HREF="#cidmaps">Helper files for editing CID keyed fonts</A>
-      <LI>
-	<A HREF="index.html#suggested-fonts">Suggested fonts</A>
-      <LI>
-	<A HREF="wacom.html">Configuring a wacom tablet</A>
-      <LI>
-	<A HREF="#docs">Documentation</A>
-      <LI>
-	<A HREF="sfds/index.html">A library sfd fonts</A>
-    </UL>
+    <A HREF="source-build.html#Dependencies">Dependencies</A>
+  <LI>
+    <A HREF="source-build.html#cidmaps">Helper files for editing CID keyed
+    fonts</A>
+  <LI>
+    <A HREF="source-build.html#suggested-fonts">Suggested fonts</A>
+  <LI>
+    <A HREF="wacom.html">Configuring a wacom tablet</A>
+  <LI>
+    <A HREF="source-build.html#Documentation">Documentation</A>
+  <LI>
+    <A HREF="sfds/index.html">A library sfd fonts</A>
+  <LI>
+    <A HREF="#license">License</A>
+  <LI>
+    <A HREF="changelog.html#change-log">Change Log</A>
+    (<A HREF="oldchangelog.html">older changes</A>, even
+    <A HREF="pfaeditchangelog.html">older changes -- to PfaEdit</A>)
+  <LI>
+    <A HREF="faqFS.html">FAQ</A>
+  <LI>
+    <A HREF="#Mail">Mailing Lists</A>
+  <LI>
+    <A HREF="index.html#Lacks">Things missing...</A>
+  <LI>
+    <A HREF="#known-bugs">Known Bugs</A>
+  <LI>
+    <A HREF="#bugs">Reporting Bugs</A>
+  <LI>
+    <A HREF="#assistance">How else you can help</A>
+  <LI>
+    <A HREF="future.html">Future Improvements</A>
+  <LI>
+    <A HREF="#Acknowledgements">Acknowledgements</A>
+  <LI>
+    <A HREF="bibliography.html#Formats">Font File Formats </A>(standards)
+  <LI>
+    <A HREF="bibliography.html#Unicode">Unicode</A>
+  <LI>
+    <A HREF="bibliography.html#Books">Books</A>
   <LI>
     Companion programs
     <UL>
@@ -121,418 +116,12 @@ Full Contents
 	<A HREF="fontutils.html">random font utilities</A>
     </UL>
   <LI>
-    <A HREF="#license">License</A>
-  <LI>
-    <A HREF="future.html">Future Improvements</A>
-  <LI>
-    <A HREF="changelog.html#change-log">Change Log</A>
-    (<A HREF="oldchangelog.html">older changes</A>, even
-    <A HREF="pfaeditchangelog.html">older changes -- to PfaEdit</A>)
-  <LI>
-    <A HREF="faqFS.html">FAQ</A>
-  <LI>
-    <A HREF="index.html#Lacks">Things missing...</A>
-  <LI>
-    <A HREF="#Mail">Mailing Lists</A>
-  <LI>
-    <A HREF="#known-bugs">Known Bugs</A>
-  <LI>
-    <A HREF="#bugs">Reporting Bugs</A>
-  <LI>
-    <A HREF="#assistance">How else you can help</A>
-  <LI>
-    <A HREF="#Acknowledgements">Acknowledgements</A>
-  <LI>
-    <A HREF="bibliography.html#Formats">Font File Formats </A>(standards)
-  <LI>
-    <A HREF="bibliography.html#Unicode">Unicode</A>
-  <LI>
-    <A HREF="bibliography.html#Books">Books</A>
-  <LI>
     <A HREF="#tools">Related tools</A>
 </UL>
 <P>
 I have no one to do QA for me except users on the net, so this is essentially
 (and eternally) beta software. Expect to find bugs. <A HREF="#bugs">Please
 let me know when you do</A>.
-<H2>
-  <A NAME="binary">Binary</A> distributions:
-</H2>
-<UL>
-  <!--  <LI>
-  <A HREF="fontforge-20041012.tgz">Download fontforge linux-i386 Redhat 9.0
-  </A><A NAME="downloads">executable</A> Version: 29-May-2004-->
-  <LI>
-    <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338">File
-    Release System</A>
-    <!--  <LI>
-    <A HREF="fontforge-20041012-1.i386.rpm">Download fontforge linux-i386 binary
-    rpm</A>. Version: 12-Oct-2004 (Redhat 9.0)
-
-    <LI>
-    <A HREF="pfaedit-030226-1.ppc.rpm">Download pfaedit linux-ppc SUSE 7.1
-    </A>binary rpm Version: 26-Feb-2003
-
-    <LI>
-    <A HREF="fontforge-solaris-20041012.tgz">Download fontforge Solaris 8.0 Sparc
-    </A>executable Version: 12-Oct-2004 (no XIM support, no freetype, no SVG
-    import)
-    <UL>-->(packages available for various systems)
-  <LI>
-    Apostolos Syropoulos has a Solaris x86 package at
-    <A HREF="http://ocean1.ee.duth.gr/Solaris/PfaEdit.pkg.gz">his site</A>
-  <LI>
-    <A HREF="http://packages.debian.org/unstable/x11/fontforge.html">A debian
-    package is available at the debian site.</A>
-  <LI>
-    <A HREF="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/fonts/fontforge/README.html">A
-    netbsd package is available at the netbsd site.</A>
-  <LI>
-    <!--<A HREF="MacOSX.html#binary">A Mac OS/X distribution</A>. Version
-    12-Oct-2004<BR>-->
-    How to install <A HREF="MacOSX.html#binary">FontForge on Mac OS/X</A>
-  <LI>
-    <!--<A HREF="fontforge_cygwin-20041012.tgz">A cygwin version</A> (for ms
-    windows
-    32). Version: 12-Oct-2004<BR>-->
-    How to install <A HREF="faq.html#windows">FontForge under windows</A>
-  <LI>
-    <A HREF="ftp://nchrem.tnw.tudelft.nl/pfaedit/">An OpenVMS executable </A>(by
-    Jacob Jansen) 
-      <HR>
-  <LI>
-    FontForge used to be called PfaEdit. Previous releases may be found at
-    <A HREF="http://pfaedit.sf.net/oldindex.html">http://pfaedit.sf.net/oldindex.html</A><BR>
-    &nbsp;
-</UL>
-<P>
-See the <A HREF="index.html#Dependencies">dependencies</A> section below
-for external libraries/programs you may want to add to your system to enhance
-FontForge's capabilities.
-<H2>
-  <A NAME="source">Source</A> distribution
-</H2>
-<P>
-<!--You can download a <A HREF="fontforge-20041012-1.src.rpm">source RPM</A>:
-Version: 12-Oct-2004<BR>--> You can download the
-<A HREF="fontforge_full-20051021.tar.bz2">source tree </A>in one tarball:
-Version 21-October-2005<BR>
-Or you can go to the
-<A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/">cvs
-tree</A> and get the most recent version. (This may be delayed by 24 hours)<BR>
-Experimental version using GNU gettext:
-<A HREF="fontforge_gettext-20051020.tar.bz2">tarball</A> Version 20-October-2005
-<H4>
-  <A NAME="Anonymous-cvs">Anonymous cvs</A>
-</H4>
-<P>
-To download the entire source package (including documentation), create a
-new directory, cd into it and use anonymous cvs (with no password):
-<PRE>$ cvs -d:pserver:anonymous@cvs1.sourceforge.net:/cvsroot/fontforge login
-CVS password:
-$ cvs -d:pserver:anonymous@cvs1.sourceforge.net:/cvsroot/fontforge checkout fontforge
-</PRE>
-<P>
-Or see <A HREF="http://sourceforge.net/cvs/?group_id=103338">sourceforge's
-description </A>for more information (their information is out of date, the
-correct server is cvs1.sf.net not cvs.sf.net)
-<H2>
-  <A NAME="Dependencies">Dependencies</A>
-</H2>
-<P>
-If you want to do autotracing around character images you should also download
-either
-<UL>
-  <LI>
-    Martin Weber's <A HREF="http://sourceforge.net/projects/autotrace/">autotrace
-    program.</A>
-  <LI>
-    Peter Selinger's <A HREF="http://potrace.sf.net/">potrace</A>
-</UL>
-<P>
-If you want to edit <A NAME="cidmaps">CID keyed </A>fonts you need these
-<A HREF="cidmaps.tgz">character set descriptions</A>. (These were last updated
-22-Dec-2004)
-<P>
-You might want a copy of this extension to FontForge's built in
-<A HREF="Encodings.ps.gz">character set encodings.</A>
-<P>
-With the appropriate <A NAME="image-libs">libraries</A>, FontForge can import
-png, tiff, and gif images to act as character backgrounds for tracing purposes
-(FontForge can import bmp and xbm formats without external libraries). With
-libxml2 FontForge can read SVG fonts. With the freetype library FontForge
-will do a better job making bitmap characters for you. None is required for
-the proper compilation/execution of FontForge, if the libraries are not present
-they will not be used. If your machine doesn't have them and you want them
-they are available from:
-<UL>
-  <LI>
-    Image Libraries (to allow FontForge to import images in those formats)
-    <UL>
-      <LI>
-	<A HREF="http://www.libpng.org/pub/png/libpng.html">libpng</A> (and required
-	helper <A HREF="http://www.gzip.org/zlib/">zlib</A>)
-      <LI>
-	<A HREF="http://www.libtiff.org/">libtiff</A>
-      <LI>
-	<A HREF="http://gnuwin32.sourceforge.net/packages/libungif.htm">libungif</A>
-      <LI>
-	<A HREF="http://www.ijg.org/">libjpeg</A>
-    </UL>
-    <P>
-    Under Mac OS/X these libraries are available from the
-    <A HREF="http://fink.sourceforge.net/">fink project</A>.
-  <LI>
-    <A HREF="http://xmlsoft.org/">libxml2</A><BR>
-    To parse SVG files and fonts
-  <LI>
-    <A HREF="http://libuninameslist.sf.net">libuninameslist</A><BR>
-    To display unicode names and annotations.
-  <LI>
-    <A HREF="http://www.gnu.org/software/libiconv/">libiconv</A><BR>
-    Only important for systems with no built-in iconv(). If not present FontForge
-    contains a minimal version of the library which allows it to work. If you
-    do use libiconv you must configure it with
-    <CODE>--enable-extra-encodings</CODE>, as FontForge requires Shift-JIS.
-  <LI>
-    <A HREF="http://freetype.sf.net/">freetype</A><BR>
-    To do a better job rasterizing bitmaps, and to enable the truetype debugger
-    <TABLE BORDER CELLPADDING="6" WIDTH="50%" ALIGN=CENTER>
-      <TR>
-	<TD BGCOLOR="#ffff00">Some of FontForge's commands depend on your compiling
-	  freetype with the byte code interpreter enabled. This is disabled by default
-	  because it infringes on certain
-	  <A HREF="http://freetype.sourceforge.net/patents.html">patents granted to
-	  Apple</A>. If you have a license from Apple (or live in a country where these
-	  patents do not apply) then you may enable the interpreter by setting the
-	  appropriate macro in .../include/freetype/config/ftoption.h before you build
-	  the library (see the README.UNX file on the top level of the freetype
-	  distribution).
-	  <P>
-	  To enable the truetype debugger, FontForge needs to have the freetype source
-	  directories available when it is built (there are some include files there
-	  which it depends on)</TD>
-      </TR>
-    </TABLE>
-  <LI>
-    <A HREF="http://www.cygwin.com/">cygwin</A><BR>
-    To build or run on a MS Windows system you need the cygwin environment and
-    libraries.
-</UL>
-<P>
-<TABLE BORDER CELLPADDING="2">
-  <CAPTION>
-    Versions of shared libraries in my builds
-  </CAPTION>
-  <TR>
-    <TD></TD>
-    <TD>libpng</TD>
-    <TD>libtiff</TD>
-    <TD>libungif</TD>
-    <TD>libjpeg</TD>
-    <TD>libxml2</TD>
-    <TD>libuninameslist</TD>
-    <TD>freetype</TD>
-  </TR>
-  <TR>
-    <TD>i386 linux builds</TD>
-    <TD>3.1.2.2<BR>
-      =1.2.2</TD>
-    <TD>3.5<BR>
-      =20011128</TD>
-    <TD>4.1.0<BR>
-      =4</TD>
-    <TD>62.0.0<BR>
-      =62 (6b)</TD>
-    <TD>2.5.4<BR>
-      =2.5.4</TD>
-    <TD>0.0.1</TD>
-    <TD>6.3.3<BR>
-      =2.1.9</TD>
-  </TR>
-  <TR>
-    <TD>solaris builds</TD>
-    <TD>2<BR>
-      =1.0.8</TD>
-    <TD>3<BR>
-      =19970127</TD>
-    <TD>
-	<HR>
-    </TD>
-    <TD>6<BR>
-      =62 (6b)</TD>
-    <TD>
-	<HR>
-    </TD>
-    <TD>
-	<HR>
-    </TD>
-    <TD>
-	<HR>
-    </TD>
-  </TR>
-  <TR>
-    <TD>Mac OS/X builds</TD>
-    <TD>(static)</TD>
-    <TD>
-	<HR>
-    </TD>
-    <TD>(static)</TD>
-    <TD>(static)</TD>
-    <TD>2.5.0<BR>
-      =2.5.0</TD>
-    <TD>
-	<HR>
-    </TD>
-    <TD>6.3.3<BR>
-      =2.1.4</TD>
-  </TR>
-  <TR>
-    <TD></TD>
-    <TD></TD>
-    <TD></TD>
-    <TD></TD>
-    <TD></TD>
-    <TD></TD>
-    <TD></TD>
-    <TD></TD>
-  </TR>
-</TABLE>
-<P>
-Normally FontForge depends on the X11 windowing system, but if you are just
-interested in the scripting engine (with no user interface), it may be built
-on systems without X (the configure script should figure this out).
-<P>
-FontForge has been ported to the following systems (at some point in its
-life)
-<UL>
-  <LI>
-    Linux (obviously, (redhat, debian, suse, mandrake),
-    386,spark,arm,alpha,ia64,m68k,mips,mipsel,powerpc,s390)
-  <LI>
-    Solaris
-  <LI>
-    Irix
-  <LI>
-    FreeBsd
-  <LI>
-    NetBsd
-  <LI>
-    Mac OS/X
-  <LI>
-    OpenVMS7.3 for Alpha
-  <LI>
-    <A HREF="http://cygwin.com/">cygwin</A> with X running on top of MS windows.
-</UL>
-<P>
-<A NAME="suggested-fonts">You</A> might also want to pull down some unicode
-bitmap fonts that fontforge uses
-<UL>
-  <LI>
-    <A HREF="http://bibliofile.duhs.duke.edu/gww/fonts/Monospace/index.html">my
-    monospace fonts</A>
-  <LI>
-    <A HREF="http://bibliofile.duhs.duke.edu/gww/fonts/Caliban/index.html">my
-    sans-serif font</A>
-  <LI>
-    <A HREF="http://czyborra.com/unifont/">The unifont</A>
-  <LI>
-    <A HREF="http://clr.nmsu.edu/~mleisher/cu.html">ClearlyU's font</A>
-  <LI>
-    <A HREF="http://www.nongnu.org/freefont/">The FreeFont project</A>
-  <LI>
-    <A HREF="http://www.cl.cam.ac.uk/~mgk25/ucs-fonts.html">X fixed</A>
-  <LI>
-    <A HREF="http://canopus.iacp.dvo.ru/~panov/cm-unicode/">Computer Modern Unicode
-    fonts</A>
-  <LI>
-    <A HREF="http://eyegene.ophthy.med.umich.edu/unicode/fontguide/">Unicode
-    Font Guide for Free/Libre Open Source Operating Systems</A> 
-      <HR>
-  <LI>
-    <A HREF="nonBMP/index.html">FontForge's conventions for non-BMP unicode bitmap
-    fonts</A>
-</UL>
-<H2>
-  <A NAME="docs">Documentation</A>
-</H2>
-<P>
-All the documentation files in this directory bundled up into one
-<A HREF="fontforge_htdocs-20051012.tgz">tgz file</A> 12-October-2005.<BR>
-If you do the following then FontForge will find the docs for you when you
-press F1 (ie. FontForge it will look in /usr/local/share/doc/fontforge before
-it looks on the web):
-<BLOCKQUOTE>
-  <PRE>$ mkdir -p /usr/local/share/doc/fontforge
-$ cd /usr/local/share/doc/fontforge
-$ gunzip fontforge_htdocs-*.tgz
-$ tar xf fontforge_htdocs-*.tar
-$ rm fontforge_htdocs-*.tar
-</PRE>
-</BLOCKQUOTE>
-<P>
-Or you can just browse the <A HREF="overview.html">docs online</A>. (Always
-current)
-<H2>
-  <A NAME="Building">Building</A> it
-</H2>
-<BLOCKQUOTE>
-  <PRE>$ bunzip2 fontforge_full-*.tar.bz2
-$ tar xf fontforge_full*.tar
-$ cd fontforge-*
-$ configure
-$ make
-$ su
-# make install
-</PRE>
-</BLOCKQUOTE>
-<P>
-FontForge now compiles dynamic libraries by default. If you would rather
-not deal with dynamic libraries (or if the compiler generates internal compiler
-errors when asked to generate PIC code, as Mac OS/X did in older versions)
-then use<BR>
-<CODE>&nbsp; &nbsp; &nbsp; &nbsp; $ configure.static</CODE><BR>
-instead and things should be configured for static libraries.
-<P>
-If you want access to <A HREF="multilayer.html">type3 editing
-capabilities</A><BR>
-<CODE>&nbsp; &nbsp; &nbsp; &nbsp; $ configure --with-multilayer<BR>
-</CODE>(this has the disadvantage of using even more memory that FontForge
-normally does, so it is off by default)
-<H2>
-  <A NAME="Installing">Installing</A> it
-</H2>
-<P>
-The executable tarball contains a shell script doinstall
-<BLOCKQUOTE>
-  <PRE>$ bunzip2 fontforge-*.tar.bz2
-$ tar xf fontforge-*.tar
-$ cd fontforge
-$ su
-# doinstall
-</PRE>
-</BLOCKQUOTE>
-<P>
-See above on how to install using the makefile.
-<H2>
-  Running it
-</H2>
-<P>
-<KBD>$ fontforge font.pfa font2.pfb font3.sfd font4.ttf font5.otf font6.gsf
-font7.bdf</KBD> <BR>
-will start fontforge looking at the fonts you specify on the command line.
-It can read either pfb or pfa fonts, and some ps fonts (type 0 fonts based
-on a type 1 dictionary) as well as truetype fonts, non-CID open type fonts
-and bitmap fonts.<BR>
-<KBD>$ fontforge -new</KBD><BR>
-will cause fontforge to create a new font (in iso-8859-1 encoding)<BR>
-<KBD>$ fontforge</KBD><BR>
-will open up a file picker dialog and allow you to browse till you've found
-a font file (or have created a new one). <KBD>$ fontforge -script script.pe
-fonts...</KBD><BR>
-This will invoke fontforge in a non-interactive mode, and have it run the
-named script. Any further arguments on the command line will be passed as
-arguments to the script and processed (or not) by it.
 <H2>
   License
 </H2>
@@ -571,31 +160,6 @@ This is essentially the
 "<A HREF="http://www.law.yi.org/~sfllaw/talks/bsd.pdf">revised BSD
 license</A>".
 <H2>
-  <A NAME="Lacks">Lacks</A>
-</H2>
-<P>
-FontForge is by no means complete. And probably has some bugs. Be prepared
-to save frequently and consider working on a copy of the original.
-<UL>
-  <LI>
-    No attempt has been made to be efficient.
-  <LI>
-    No attempt has been made to interpret truetype instructions (hints), instead
-    the instructions will be stored and used as long as no significant changes
-    happen to the character they are associated with.
-  <LI>
-    Many type 3 fonts will not be read in correctly
-  <LI>
-    Importing a type0 font loses the encoding. FontForge only imports simple
-    type0 fonts (such as those made by itself), will get confused if there's
-    more than one font with a chars dictionary.
-  <LI>
-    FontForge's support for the VORG table output is limited.
-  <LI>
-    FontForge's support for <A HREF="gposgsub.html#AAT">Apple's Advanced Typography
-    tables</A> (AAT) is limited.
-</UL>
-<H2>
   <A NAME="Mail">Mailing Lists</A>
 </H2>
 <P>
@@ -632,6 +196,31 @@ your email address.</BIG></STRONG></FONT>
     fontforge-announce -- used (by me) to report major changes, etc.<BR>
     To subscribe, look at
     <A HREF="http://lists.sourceforge.net/lists/listinfo/fontforge-announce">http://lists.sourceforge.net/lists/listinfo/fontforge-announce</A>
+</UL>
+<H2>
+  <A NAME="Lacks">Lacks</A>
+</H2>
+<P>
+FontForge is by no means complete. And probably has some bugs. Be prepared
+to save frequently and consider working on a copy of the original.
+<UL>
+  <LI>
+    No attempt has been made to be efficient.
+  <LI>
+    No attempt has been made to interpret truetype instructions (hints), instead
+    the instructions will be stored and used as long as no significant changes
+    happen to the character they are associated with.
+  <LI>
+    Many type 3 fonts will not be read in correctly
+  <LI>
+    Importing a type0 font loses the encoding. FontForge only imports simple
+    type0 fonts (such as those made by itself), will get confused if there's
+    more than one font with a chars dictionary.
+  <LI>
+    FontForge's support for the VORG table output is limited.
+  <LI>
+    FontForge's support for <A HREF="gposgsub.html#AAT">Apple's Advanced Typography
+    tables</A> (AAT) is limited.
 </UL>
 <H2>
   <A NAME="known-bugs">Bugs</A>

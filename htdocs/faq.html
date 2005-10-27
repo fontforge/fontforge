@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 31-Jul-2005 -->
+  <!-- AP: Last modified: 27-Oct-2005 -->
   <TITLE>Frequently Asked Questions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -692,8 +692,8 @@ $ xset fp+ `pwd`
       <DT>
 	Mac OS/X
       <DD>
-	On Mac OS/X you can run <A TARGET="_top" HREF="MacOSX.html#Running">FontForge
-	directly</A> (if you've got <A TARGET="_top" HREF="MacOSX.html#binary">XDarwin
+	On Mac OS/X you can run <A TARGET="_top" HREF="running.html#mac">FontForge
+	directly</A> (if you've got <A HREF="mac-install.html#Before">X11
 	installed</A>). OS/X has several font formats, some fonts are stored in the
 	old format (see above), while others are stored as data fork resources. The
 	data fork font files generally have the extension ".dfont". On a Mac FontForge
@@ -704,7 +704,7 @@ $ xset fp+ `pwd`
 	requires that an bitmap font in NFNT format be present before it will use
 	a resource-based postscript font. (It is probably not the NFNT resource which
 	is required, but the FOND which goes along with it. But I'm not going to
-	write something to produce a bare FOND resource).
+	write something to produce a bare FOND resource -- nothing else does either).
     </DL>
   <DT>
     <B><A NAME="How-family">How do I create a mac font family? (How do I get
@@ -748,9 +748,9 @@ $ xset fp+ `pwd`
     Under ATSUI, on the other hand, a family seems to consist of all fonts in
     a given resources file which have the same FamilyName.
     <P>
-    In order that a family be useful under both systems, Apple appears to several
-    FONDs inside such a font file. Each FOND contains a sub-family of related
-    fonts. The 'FOND's appear to be distributed as follows:
+    In order that a family be useful under both systems, Apple appears to place
+    several FONDs inside such a font file. Each FOND contains a sub-family of
+    related fonts. The 'FOND's appear to be distributed as follows:
     <P>
     Suppose you have a family of fonts with the following styles:<BR>
     Regular, Bold, Italic, Bold-Italic, Condense, Condense-Italic, Oblique, Light,
@@ -790,63 +790,7 @@ $ xset fp+ `pwd`
   <DT>
     <B>How do I edit fonts on MS <A NAME="windows">windows</A>?</B>
   <DD>
-    To run FontForge under MS windows you must first install the
-    <A TARGET="_top" HREF="http://www.cygwin.com/">cygwin environment</A>.
-    <UL>
-      <LI>
-	First download the setup.exe program from
-	<A TARGET="_top" HREF="http://www.cygwin.com/">http://www.cygwin.com/</A>
-      <LI>
-	Run it. It will ask you what components of cygwin you wish to install
-      <LI>
-	You will need the base components, the X window system, xorg-x11-base, and
-	xterm (NOTE: These are separate packages)
-      <LI>
-	Once you have cygwin installed, start it. This should give you a terminal
-	window running bash (a unix shell)
-      <LI>
-	Download the <A TARGET="_top" HREF="index.html#binary">cygwin version of
-	FontForge</A>, and move it to whatever directory you think most appropriate
-	(<CODE>/usr/local/bin</CODE> is a reasonable choice)
-	<BLOCKQUOTE>
-	  <PRE>$ mkdir -p /usr/local/share/fontforge /usr/local/bin /usr/local/man/man1
-$ cd /tmp
-$ tar xfzv fontforge_cygwin*.tar
-$ cd fontforge
-$ mv *.ui /usr/local/share/fontforge
-$ mv fontforge.1 /usr/local/man/man1
-$ mv fontforge.exe /usr/local/bin
-</PRE>
-	</BLOCKQUOTE>
-	<P>
-	Then edit the file ~/.bashrc by (or by whatever other tool you prefer):
-	<BLOCKQUOTE>
-	  <PRE>$ cat &gt;&gt; ~/.bashrc
-PATH=${PATH}:/usr/local/bin ; export PATH
-MANPATH=${MANPATH:-}:/usr/local/man ; export MANPATH
-^D
-</PRE>
-	</BLOCKQUOTE>
-      <LI>
-	Then each time you want to run fontforge, type:
-	<BLOCKQUOTE>
-	  <PRE>$ xinit
-</PRE>
-	</BLOCKQUOTE>
-      <LI>
-	This should bring up X in a large window that covers the screen and within
-	that should be a subwindow, an xterm, running bash.
-      <LI>
-	From the xterm you should be able start FontForge.
-	<BLOCKQUOTE>
-	  <PRE>$ fontforge -new
-</PRE>
-	</BLOCKQUOTE>
-    </UL>
-    <P>
-    If you want to be able to build FontForge under cygwin, you will need to
-    grab some other cygwin components, like gcc, the image processing libraries,
-    freetype, etc.
+    See the <A HREF="ms-install.html">MS Windows install instructions</A>.
   <DT>
     <B><A NAME="Bad-Windows-Fonts">Why don't my fonts work on windows?</A></B>
   <DD>
@@ -1399,8 +1343,8 @@ MANPATH=${MANPATH:-}:/usr/local/man ; export MANPATH
     check for the existance of these libraries until you actually try to load
     an image. If the library has not been installed on your system it will give
     the above error (and fail to load the image).<BR>
-    The <A HREF="index.html#Dependencies" TARGET="_top">Dependencies</A> section
-    of the main page describes how to find these libraries.<BR>
+    The <A HREF="source-build.html#Dependencies" TARGET="_top">Dependencies</A>
+    section of the main page describes how to find these libraries.<BR>
     If the libraries are installed and you still get this message try setting
     your LD_LIBRARY_PATH variable to the directory containing the library in
     question (On the mac this is DYLD_LIBRARY_PATH).

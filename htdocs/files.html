@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 24-Nov-2002 -->
-  <!-- AP: Last modified: 13-Oct-2004 -->
+  <!-- AP: Last modified: 27-Oct-2005 -->
   <TITLE>Files used by FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -19,15 +19,19 @@
       <HR>
     <DL>
       <DT>
-	~/.FontForge/prefs
+	~/.PfaEdit/prefs
       <DD>
 	This file contains user preference settings.
       <DT>
-	~/.FontForge/Encodings.ps
+	~/.PfaEdit/groups
+      <DD>
+	This file contains groups as defined by Encoding-&gt;Define Groups...
+      <DT>
+	~/.PfaEdit/Encodings.ps
       <DD>
 	If there are any user defined encodings they reside in this file.
       <DT>
-	~/.FontForge/autosave
+	~/.PfaEdit/autosave
       <DD>
 	This directory contains the files used to drive the crash-recovery process.
 	When FontForge is running there will be one file in this directory corresponding
@@ -44,7 +48,13 @@
   <DT>
     /usr/local/share/fontforge/*.ui
   <DD>
-    These files contain translations of the ui for various locales.
+    These files contain translations of the ui for various locales. (used by
+    fontforge before November 2005)
+  <DT>
+    /usr/local/share/locale/??/LC_MESSAGES/FontForge.mo
+  <DD>
+    Contain translations of the ui for various locales. (used after November
+    2005)
   <DT>
     /usr/local/share/fontforge/*.cidmap
   <DD>
@@ -53,8 +63,9 @@
   <DT>
     /usr/local/share/doc/fontforge/*.html
   <DD>
-    Optional location for online documentation. <A HREF="index.html#docs">You
-    can pull down a compressed archive from here.</A>
+    Optional location for online documentation.
+    <A HREF="source-build.html#Documentation">You can pull down a compressed
+    archive from here.</A>
 </DL>
 <P>
 <P>
