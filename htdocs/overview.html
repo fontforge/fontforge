@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 18-Sep-2005 -->
+  <!-- AP: Last modified: 27-Oct-2005 -->
   <TITLE>FontForge -- An outline font editor for PostScript&reg;, TrueType
   and OpenType fonts</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
@@ -186,7 +186,7 @@
   <LI>
     <A HREF="license.html">License and Copyright</A>
   <LI>
-    <A HREF="index.html">Download</A>
+    <A HREF="nix-install.html">Download</A>
 </UL>
 <H2>
   See Also
@@ -236,117 +236,23 @@ FontForge allows you to create and modify postscript, truetype and opentype
 fonts. You can save fonts in many different outline formats, and generate
 bitmaps.
 <H3>
-  <A NAME="Installing">Installing</A> a binary
+  <A NAME="Installing">Installing</A> or building fontforge
 </H3>
-<UL>
-  <LI>
-    <A HREF="index.html#binary">Copy the distribution </A>to some directory on
-    your machine
-  <LI>
-    <KBD>$ gunzip fontforge-*.tgz</KBD>
-  <LI>
-    <KBD>$ tar xfv fontforge.tar</KBD>
-  <LI>
-    <KBD>$ cp fontforge /usr/local/bin</KBD>
-    <!--<LI>
-    <KBD>$ cp *.so* /usr/local/lib</KBD>
-    <LI>
-    <KBD>$ setenv LD_LIBRARY_PATH /usr/local/lib:$LD_LIBRARY_PATH</KBD>-->
-  <LI>
-    <KBD>$ vi README</KBD>
-</UL>
-<H3>
-  Building from a source distribution
-</H3>
-<UL>
-  <LI>
-    Copy the <A HREF="index.html#source">complete source archive</A> to some
-    directory on your machine
-  <LI>
-    <KBD>$ gunzip *.tgz</KBD>
-  <LI>
-    <KBD>$ tar xf fontforge_full.tar</KBD>
-  <LI>
-    <KBD>$ cd fontforge </KBD>
-  <LI>
-    <KBD>$ configure</KBD>
-  <LI>
-    <KBD>$ make</KBD>
-  <LI>
-    <KBD>$ make install</KBD>
-</UL>
+<TABLE CELLSPACING="6" CELLPADDING="2">
+  <CAPTION>
+    System specific install procedures
+  </CAPTION>
+  <TR>
+    <TD><P ALIGN=Center>
+      <A HREF="nix-install.html">Unix/Linux</A></TD>
+    <TD>&nbsp; &nbsp; &nbsp; <A HREF="mac-install.html">Mac</A></TD>
+    <TD>&nbsp; &nbsp; &nbsp; <A HREF="ms-install.html">MS/Windows</A></TD>
+    <TD>&nbsp; &nbsp; &nbsp; <A HREF="vms-install.html">VMS</A></TD>
+    <TD>&nbsp; &nbsp; &nbsp; <A HREF="source-build.html">from source</A></TD>
+  </TR>
+</TABLE>
 <P>
-Obviously you may choose to place the executable somewhere other than
-/usr/local/bin.
-<P>
-(If you have already pulled down the sources and just want to update to a
-new version then you only need to pull down those archives which have changed)
-<P>
-You may also want to pull down some extra fonts
-<UL>
-  <LI>
-    <A HREF="http://bibliofile.duhs.duke.edu/gww/fonts/Monospace/index.html">my
-    monospace fonts</A>
-  <LI>
-    <A HREF="http://bibliofile.duhs.duke.edu/gww/fonts/Caliban/index.html">my
-    sans-serif font</A>
-  <LI>
-    <A HREF="http://czyborra.com/unifont/">The unifont</A>
-  <LI>
-    <A HREF="http://clr.nmsu.edu/~mleisher/cu.html">ClearlyU's font</A>
-  <LI>
-    <A HREF="http://www.cl.cam.ac.uk/~mgk25/ucs-fonts.html">X fixed</A>
-</UL>
-<P>
-To install these, put them in a directory
-<UL>
-  <LI>
-    $ mkfontdir
-  <LI>
-    $ xset fp+ `pwd`
-</UL>
-<P>
-Again you should make sure that the xset line happens whenever X is started
-on your machine (put it in your .xsession file).
-<H3>
-  <A NAME="Starting">Starting the program</A>
-</H3>
-<DL>
-  <DT>
-    <CODE>$ fontforge -new</CODE>
-  <DD>
-    Will create a new postscript font with the ISO 8859-1 encoding (the international
-    encoding standard for western europe, and the standard for most X fonts)
-    and open a <A HREF="#FontView">font view </A>which will allow you to edit
-    that font.
-  <DT>
-    <CODE>$ fontforge fontname</CODE>
-  <DD>
-    Will open a <A HREF="#FontView">font view</A> looking at the font you selected.
-    This may be a binary or ascii postscript type1 font (.pfa, .pfb or .gsf
-    extensions), one of fontforge's spline font database files
-    (.<A HREF="sfd.html">sfd</A> extension), a postscript type 0 font (.ps extension,
-    though the encoding will probably be lost here), a truetype font (.ttf or
-    .ttc extension), an Open Type font (.otf) a mac resource file (.bin, .hqx
-    or .dfont), or even a bitmap font (.bdf).
-    <P>
-    More than one fontname may be specified on the command line.
-  <DT>
-    <CODE>$ fontforge "gulim.ttc(GulimChe)"</CODE>
-  <DD>
-    If a file format supports several fonts within the file (.ttc or mac resource
-    files) then you may specify which font you want by following the filename
-    with the font name in parentheses.
-  <DT>
-    <CODE>$ fontforge</CODE>
-  <DD>
-    Will open a file picker dialog and allow you to browse your disk to find
-    the appropriate font file, or create a new one.
-</DL>
-<P>
-On Mac OS/X you must start XDarwin before you can start fontforge. See the
-<A HREF="MacOSX.html#Running">Mac specific notes</A> for more info.<BR>
-On windows under cygwin you must again start X first
+<A HREF="running.html">Running fontforge</A>
 <H3>
   <A NAME="intro">Introductory</A> concepts: Fonts, Splines, Lines, Points
   and Paths
