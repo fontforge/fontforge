@@ -1,0 +1,79 @@
+#!/bin/bash
+
+case "@HOST@" in
+
+*-apple-darwin*)
+#Add FontForge to the X11 applications menu, so that mac users don't have
+# to deal with xterms or messing around with paths
+#Mac OS/X 10.1 did not have plutil (it didn't have X11 either)
+if test -d ~/Library/Preferences -a -e /usr/bin/plutil ; then
+  if test \! -e ~/Library/Preferences/com.apple.x11.plist ; then
+    cat <<EOF >~/Library/Preferences/com.apple.x11.plist
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>apps_menu</key>
+	<array>
+		<array>
+			<string>Terminal</string>
+			<string>xterm</string>
+			<string>n</string>
+		</array>
+		<array>
+			<string>FontForge</string>
+			<string>@prefix@/bin/fontforge</string>
+			<string>f</string>
+		</array>
+	</array>
+</dict>
+</plist>
+EOF
+    plutil -convert binary1 ~/Library/Preferences/com.apple.x11.plist
+  elif grep -q fontforge ~/Library/Preferences/com.apple.x11.plist ; then
+    cat </dev/null >/dev/null
+# It's already in the menu, no need to add it
+  else
+    if grep -q "xml version=" ~/Library/Preferences/com.apple.x11.plist ; then
+# It's already in xml format
+      cp ~/Library/Preferences/com.apple.x11.plist /tmp/x11.xml
+    else
+      plutil -convert xml1 -o /tmp/x11.xml ~/Library/Preferences/com.apple.x11.plist
+    fi
+    if grep -q apps_menu ~/Library/Preferences/com.apple.x11.plist ; then
+      cat >/tmp/fontforge-sed-script <<EOF
+/apps_menu/ { N
+a \\
+		<array>\\
+			<string>FontForge</string>\\
+			<string>@prefix@/bin/fontforge</string>\\
+			<string>f</string>\\
+		</array>
+}
+EOF
+    else
+      cat >/tmp/fontforge-sed-script <<EOF
+/<dict/ a \\
+	<key>apps_menu</key>\\
+	<array>\\
+		<array>\\
+			<string>Terminal</string>\\
+			<string>xterm</string>\\
+			<string>n</string>\\
+		</array>\\
+		<array>\\
+			<string>FontForge</string>\\
+			<string>@prefix@/bin/fontforge</string>\\
+			<string>f</string>\\
+		</array>\\
+	</array>
+EOF
+    fi
+    sed -f /tmp/fontforge-sed-script /tmp/x11.xml >/tmp/x11_1.xml
+    plutil -convert binary1 -o ~/Library/Preferences/com.apple.x11.plist /tmp/x11_1.xml
+    rm -f /tmp/x11_1.xml /tmp/fontforge-sed-script /tmp/x11.xml
+  fi
+fi
+
+ ;;
+esac
