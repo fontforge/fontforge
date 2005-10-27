@@ -8,6 +8,8 @@ AC_PROG_INSTALL
 AC_DISABLE_STATIC
 AC_ENABLE_SHARED
 AC_CANONICAL_HOST
+AC_SUBST(HOST)
+HOST="$host"
 
 gww_define_caps_for_alt="dontknow"
 gww_nodynamic="no"
@@ -455,6 +457,7 @@ cp Unicode/Makefile.dynamic.in Unicode/Makefile.in
 cp gdraw/Makefile.dynamic.in gdraw/Makefile.in
 cp fontforge/Makefile.dynamic.in fontforge/Makefile.in
 AC_OUTPUT(Makefile Unicode/Makefile gdraw/Makefile fontforge/Makefile po/Makefile)
+AC_OUTPUT(systemspecific)
 if test -e umap >/dev/null 2>&1 ; then
   cp umap/Makefile.dynamic.in umap/Makefile.in
   AC_OUTPUT( umap/Makefile )

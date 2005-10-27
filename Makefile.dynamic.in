@@ -57,7 +57,7 @@ install_libs: libs
 
 install_docs:
 	mkdir -p $(docdir)
-	mkdir -p $(docdir)/flags
+	mkdir -p $(docdir)/flags $(docdir)/ja
 #explicit use of sh to make sure we don't invoke csh with different "if" syntax
 	-sh -c "if test -d htdocs/ja >/dev/null ; then mkdir -p $(docdir)/ja ; fi"
 	-cp htdocs/*.{html,png,gif,pdf} $(docdir)
@@ -65,17 +65,7 @@ install_docs:
 	-cp htdocs/ja/* $(docdir)/ja
 
 install_po:
-#There must be a better way to do this...
-	mkdir -p $(localedir)/es/LC_MESSAGES
-	cp po/es.mo $(localedir)/es/LC_MESSAGES/FontForge.mo
-	mkdir -p $(localedir)/fr/LC_MESSAGES
-	cp po/fr.mo $(localedir)/fr/LC_MESSAGES/FontForge.mo
-	mkdir -p $(localedir)/it/LC_MESSAGES
-	cp po/it.mo $(localedir)/it/LC_MESSAGES/FontForge.mo
-	mkdir -p $(localedir)/ru/LC_MESSAGES
-	cp po/ru.mo $(localedir)/ru/LC_MESSAGES/FontForge.mo
-	mkdir -p $(localedir)/ja/LC_MESSAGES
-	cp po/ja.mo $(localedir)/ja/LC_MESSAGES/FontForge.mo
+	( cd po ; make install )
 
 install: $(sharedir) all install_libs install_po
 # You may need to be root to do the install
@@ -95,6 +85,7 @@ install: $(sharedir) all install_libs install_po
 	cp $(srcdir)/fontforge/sfddiff.1 $(mandir)/man1
 #explicit use of sh to make sure we don't invoke csh with different "if" syntax
 	sh -c "if test -d htdocs >/dev/null ; then $(MAKE) install_docs ; fi"
+	sh < systemspecific
 
 uninstall:
 	-rm $(bindir)/fontforge
