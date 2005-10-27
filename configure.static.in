@@ -4,12 +4,15 @@ AC_INIT(fontforge/pfaedit.h)
 AC_PROG_CC
 AC_PROG_RANLIB
 
+AC_CANONICAL_HOST
+AC_SUBST(HOST)
+HOST="$host"
+
 gww_define_caps_for_alt="dontknow"
 gww_nodynamic="no"
 gww_needsstatic="no"
 
 
-AC_CANONICAL_HOST
 case "$host" in
 *-apple-darwin*) AC_DEFINE(NODYNAMIC)
 gww_nodynamic="yes"
@@ -322,6 +325,7 @@ cp Unicode/Makefile.static.in Unicode/Makefile.in
 cp gdraw/Makefile.static.in gdraw/Makefile.in
 cp fontforge/Makefile.static.in fontforge/Makefile.in
 AC_OUTPUT(Makefile Unicode/Makefile gdraw/Makefile fontforge/Makefile po/Makefile)
+AC_OUTPUT(systemspecific)
 if test -e umap >/dev/null 2>&1 ; then
   cp umap/Makefile.static.in umap/Makefile.in
   AC_OUTPUT( umap/Makefile )

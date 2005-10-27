@@ -1,3 +1,6 @@
+prefix = @prefix@
+localedir = $(prefix)/share/locale
+
 MOFILES = es.mo fr.mo it.mo ja.mo ru.mo zh_TW.mo
 
 .SUFFIXES:
@@ -7,3 +10,16 @@ all: $(MOFILES)
 
 .po.mo:
 	msgfmt -o $@ $<
+
+install:
+#There must be a better way to do this...
+	mkdir -p $(localedir)/es/LC_MESSAGES
+	cp es.mo $(localedir)/es/LC_MESSAGES/FontForge.mo
+	mkdir -p $(localedir)/fr/LC_MESSAGES
+	cp fr.mo $(localedir)/fr/LC_MESSAGES/FontForge.mo
+	mkdir -p $(localedir)/it/LC_MESSAGES
+	cp it.mo $(localedir)/it/LC_MESSAGES/FontForge.mo
+	mkdir -p $(localedir)/ru/LC_MESSAGES
+	cp ru.mo $(localedir)/ru/LC_MESSAGES/FontForge.mo
+	mkdir -p $(localedir)/ja/LC_MESSAGES
+	cp ja.mo $(localedir)/ja/LC_MESSAGES/FontForge.mo
