@@ -1447,13 +1447,15 @@ extern void SSOverlapClusterCpAngles(SplineSet *base,double within);
 extern void SplineCharMerge(SplineChar *sc,SplineSet **head,int type);
 extern void SPLNearlyHvCps(SplineChar *sc,SplineSet *ss,double err);
 extern void SPLNearlyHvLines(SplineChar *sc,SplineSet *ss,double err);
+extern int  SPLNearlyLines(SplineChar *sc,SplineSet *ss,double err);
 extern void SplinePointListSimplify(SplineChar *sc,SplinePointList *spl,
 	struct simplifyinfo *smpl);
 extern SplineSet *SplineCharSimplify(SplineChar *sc,SplineSet *head,
 	struct simplifyinfo *smpl);
 extern SplineSet *SplineSetJoin(SplineSet *start,int doall,real fudge,int *changed);
 enum ae_type { ae_all, ae_between_selected, ae_only_good };
-extern Spline *SplineAddExtrema(Spline *s,int always,real bound,DBounds *b);
+extern Spline *SplineAddExtrema(Spline *s,int always,real lenbound,
+	real offsetbound,DBounds *b);
 extern void SplineSetAddExtrema(SplineSet *ss,enum ae_type between_selected, SplineFont *sf);
 extern void SplineCharAddExtrema(SplineSet *head,enum ae_type between_selected,SplineFont *sf);
 extern SplineSet *SplineCharRemoveTiny(SplineChar *sc,SplineSet *head);

@@ -1722,6 +1722,77 @@ void SPLNearlyHvLines(SplineChar *sc,SplineSet *ss,double err) {
     }
 }
 
+/* Does this spline deviate from a straight line between its endpoints by more*/
+/*  than err?								      */
+/* Rotate the spline so that the line between the endpoints is horizontal,    */
+/*  then find the maxima/minima of the y spline (this is the deviation)	      */
+/*  check that that is less than err					      */
+static int SplineCloseToLinear(Spline *s, double err) {
+    double angle;
+    double co,si, t1, t2, y;
+    SplinePoint from, to;
+    Spline sp;
+    BasePoint bp;
+
+    from = *s->from; to = *s->to;
+    to.me.x -= from.me.x; to.me.y -= from.me.y;
+    to.prevcp.x -= from.me.x; to.prevcp.y -= from.me.y;
+    from.nextcp.x -= from.me.x ; from.nextcp.y -= from.me.y;
+    from.me.x = from.me.y = 0;
+    angle = atan2(to.me.y, to.me.x);
+
+    si = sin(angle); co = cos(angle);
+    bp.x =  to.me.x*co + to.me.y*si;
+    bp.y = -to.me.x*si + to.me.y*co;
+    to.me = bp;
+
+    bp.x =  to.prevcp.x*co + to.prevcp.y*si;
+    bp.y = -to.prevcp.x*si + to.prevcp.y*co;
+    to.prevcp = bp;
+
+    bp.x =  from.nextcp.x*co + from.nextcp.y*si;
+    bp.y = -from.nextcp.x*si + from.nextcp.y*co;
+    from.nextcp = bp;
+
+    memset(&sp,0,sizeof(Spline));
+    sp.from = &from; sp.to = &to;
+    sp.order2 = s->order2;
+    SplineRefigure(&sp);
+    SplineFindExtrema(&sp.splines[1],&t1,&t2);
+
+    if ( t1==-1 )
+return( true );
+
+    y = ((sp.splines[1].a*t1 + sp.splines[1].b)*t1 + sp.splines[1].c)*t1 + sp.splines[1].d;
+    if ( y>err || y<-err )
+return( false );
+
+    if ( t2==-1 )
+return( true );
+    y = ((sp.splines[1].a*t2 + sp.splines[1].b)*t2 + sp.splines[1].c)*t2 + sp.splines[1].d;
+return( y<=err && y>=-err );
+}
+
+int SPLNearlyLines(SplineChar *sc,SplineSet *ss,double err) {
+    Spline *s, *first=NULL;
+    int changed = false;
+
+    for ( s = ss->first->next; s!=NULL && s!=first; s=s->to->next ) {
+	if ( first==NULL ) first = s;
+	if ( s->islinear )
+	    /* Nothing to be done */;
+	else if ( s->knownlinear || SplineCloseToLinear(s,err)) {
+	    s->from->nextcp = s->from->me;
+	    s->from->nonextcp = true;
+	    s->to->prevcp = s->to->me;
+	    s->to->noprevcp = true;
+	    SplineRefigure(s);
+	    changed = true;
+	}
+    }
+return( changed );
+}
+
 static void SPLForceLines(SplineChar *sc,SplineSet *ss,double bump_size) {
     Spline *s, *first=NULL;
     SplinePoint *sp;
@@ -2203,7 +2274,8 @@ SplineSet *SplineCharRemoveTiny(SplineChar *sc,SplineSet *head) {
 return( head );
 }
 
-Spline *SplineAddExtrema(Spline *s,int always,real bound, DBounds *b) {
+Spline *SplineAddExtrema(Spline *s,int always,real lenbound, real offsetbound,
+	DBounds *b) {
     /* First find the extrema, if any */
     double t[4], min;
     int p, i,j, p_s;
@@ -2215,8 +2287,8 @@ Spline *SplineAddExtrema(Spline *s,int always,real bound, DBounds *b) {
 	xlen = (s->from->me.x-s->to->me.x);
 	ylen = (s->from->me.y-s->to->me.y);
 	len = xlen*xlen + ylen*ylen;
-	bound *= bound;
-	if ( len < bound ) {
+	lenbound *= lenbound;
+	if ( len < lenbound ) {
 	    len = SplineLength(s);
 	    len *= len;
 	}
@@ -2235,13 +2307,17 @@ return(s);
 	    }
 	} else if ( s->splines[0].b!=0 )
 	    t[p++] = -s->splines[0].c/(2*s->splines[0].b);
-	if ( !always && len<bound ) {
+	if ( !always ) {
 	    /* Generally we are only interested in extrema on long splines, or */
 	    /* extrema which are extrema for the entire contour, not just this */
 	    /* spline */
+	    /* Also extrema which are very close to one of the end-points can */
+	    /*  be ignored. */
 	    for ( i=0; i<p; ++i ) {
 		real x = ((s->splines[0].a*t[i]+s->splines[0].b)*t[i]+s->splines[0].c)*t[i]+s->splines[0].d;
-		if ( x>b->minx && x<b->maxx ) {
+		if (( x>b->minx && x<b->maxx  && len<lenbound ) ||
+			( x-s->from->me.x<offsetbound && x-s->from->me.x>-offsetbound) ||
+			( x-s->to->me.x<offsetbound && x-s->to->me.x>-offsetbound)) {
 		    --p;
 		    for ( j=i; j<p; ++j )
 			t[j] = t[j+1];
@@ -2260,10 +2336,12 @@ return(s);
 	    }
 	} else if ( s->splines[1].b!=0 )
 	    t[p++] = -s->splines[1].c/(2*s->splines[1].b);
-	if ( !always && len<bound ) {
+	if ( !always ) {
 	    for ( i=p_s; i<p; ++i ) {
 		real y = ((s->splines[1].a*t[i]+s->splines[1].b)*t[i]+s->splines[1].c)*t[i]+s->splines[1].d;
-		if ( y>b->miny && y<b->maxy ) {
+		if (( y>b->miny && y<b->maxy && len<lenbound ) ||
+			( y-s->from->me.y<offsetbound && y-s->from->me.y>-offsetbound) ||
+			( y-s->to->me.y<offsetbound && y-s->to->me.y>-offsetbound)) {
 		    --p;
 		    for ( j=i; j<p; ++j )
 			t[j] = t[j+1];
@@ -2307,19 +2385,21 @@ void SplineSetAddExtrema(SplineSet *ss,enum ae_type between_selected, SplineFont
     Spline *s, *first;
     DBounds b;
     int always = true;
-    real bound = 0;
+    real lenbound = 0;
+    real offsetbound;
 
     if ( between_selected==ae_only_good ) {
 	SplineSetQuickBounds(ss,&b);
-	bound = (sf->ascent+sf->descent)/32.0;
+	lenbound = (sf->ascent+sf->descent)/32.0;
 	always = false;
+	offsetbound = 1.0;
     }
 
     first = NULL;
     for ( s = ss->first->next; s!=NULL && s!=first; s = s->to->next ) {
 	if ( between_selected!=ae_between_selected ||
 		(s->from->selected && s->to->selected))
-	    s = SplineAddExtrema(s,always,bound,&b);
+	    s = SplineAddExtrema(s,always,lenbound,offsetbound,&b);
 	if ( first==NULL ) first = s;
     }
 }
