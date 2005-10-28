@@ -3971,6 +3971,36 @@ static void bNearlyHvLines(Context *c) {
     }
 }
 
+static void bNearlyLines(Context *c) {
+    FontView *fv = c->curfv;
+    int i, layer, gid;
+    SplineSet *spl;
+    SplineFont *sf = fv->sf;
+    real err = 1;
+
+    if ( c->a.argc>2 )
+	error( c, "Too many arguments" );
+    else if ( c->a.argc>1 ) {
+	if ( c->a.vals[1].type==v_int )
+	    err = c->a.vals[1].u.ival;
+	else if ( c->a.vals[1].type==v_real )
+	    err = c->a.vals[1].u.fval;
+	else
+	    error( c, "Bad type for argument" );
+    }
+    for ( i=0; i<c->curfv->map->enccount; ++i ) if ( (gid=c->curfv->map->map[i])!=-1 && sf->glyphs[gid]!=NULL && fv->selected[i] ) {
+	SplineChar *sc = sf->glyphs[gid];
+	int changed = false;
+	SCPreserveState(sc,false);
+	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+	    for ( spl = sc->layers[layer].splines; spl!=NULL; spl=spl->next )
+		changed |= SPLNearlyLines(sc,spl,err);
+	}
+	if ( changed )
+	    SCCharChangedUpdate(sc);
+    }
+}
+
 static void bAddExtrema(Context *c) {
     if ( c->a.argc!=1 )
 	error( c, "Wrong number of arguments");
@@ -6344,6 +6374,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "Simplify", bSimplify },
     { "NearlyHvCps", bNearlyHvCps },
     { "NearlyHvLines", bNearlyHvLines },
+    { "NearlyLines", bNearlyLines },
     { "AddExtrema", bAddExtrema },
     { "RoundToInt", bRoundToInt },
     { "RoundToCluster", bRoundToCluster },
