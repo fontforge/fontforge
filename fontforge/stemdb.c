@@ -1010,6 +1010,8 @@ static void TickSplinesBetween(struct glyphdata *gd, struct splinesteminfo *ssi,
 	s2 = pd2->nextedge;
 	t2 = pd2->next_e_t;
     }
+    if ( s1==NULL || s2==NULL )
+return;
     if ( !Parallel(&gd->points[s1->from->ttfindex].nextunit,&stem->unit))
 return;
     if ( !Parallel(&gd->points[s2->from->ttfindex].nextunit,&stem->unit))
