@@ -1290,6 +1290,7 @@ static int FVSelCount(FontView *fv) {
 	char *buts[3];
 	buts[0] = _("_OK");
 	buts[1] = _("_Cancel");
+	buts[2] = NULL;
 #elif defined(FONTFORGE_CONFIG_GTK)
 	static char *buts[] = { GTK_STOCK_OK, GTK_STOCK_CANCEL, NULL };
 #endif
