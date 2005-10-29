@@ -639,6 +639,16 @@ it it isn't displayed. Simply type in the name of the file containing it.
 (or, if you prefer, type a "*" in the textfield and then press the [Filter]
 button. This should show you all files).
 <P>
+<FONT COLOR="Red"><STRONG>Caveat: </STRONG></FONT>FontForge does not use
+the Command key to invoke menu items. (Any use of the Command key is intercepted
+by X11, so Command-Q will quit out of X11 (and abort fontforge), it will
+not quit fontforge cleanly)
+<P>
+<FONT COLOR="Red"><STRONG>Caveat: </STRONG></FONT>FontForge was written assuming
+the availability of a three button mouse. X11 simulates this by creating
+a virtual three button mouse where the middle button is invoked by Option-Mouse
+click and the right button by Command-Mouse click.
+<P>
 If the Applications menu does not contain a "FontForge" entry, you can add
 one yourself:
 <UL>
