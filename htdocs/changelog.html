@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 23-Oct-2005 -->
+  <!-- AP: Last modified: 28-Oct-2005 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
 </HEAD>
@@ -15,6 +15,39 @@ Changes since the last release may be found by performing a "cvs log" command
 on the file stamp.c.
 <P>
 <UL>
+  <LI>
+    28-Oct-2005
+    <UL>
+      <LI>
+	More work on the mac install procdure.
+      <LI>
+	Redo the install documentation on the website &amp; in the readmes
+      <LI>
+	Add a hack to the directory browser so that on cygwin getting a directory
+	listing of "/" will include the magic (fake) directory /cygdrive (which gives
+	access to the rest of the PC)
+      <LI>
+	Add a new scripting funtion: NearlyLines to convert almost linear splines
+	to linear.
+      <LI>
+	Tweak AddExtrema so that it doesn't create Extrema points which are too close
+	to the endpoints.
+      <LI>
+	I was dumping all opentype ligatures into an ofm(tfm) file. But I should
+	probably only add 'liga' and 'rlig' ligatures.
+      <LI>
+	Omega has a bug where it thinks 0 width glyphs do not exist. Which means
+	it thinks none of the combining accents, etc. exist. So force the width of
+	any zero width glyphs to be the smallest positive width.
+      <LI>
+	When reading ttf/otf fonts, FF gave alternate substitutions (and multiple
+	subs?) a tag of 0.
+      <LI>
+	Add two scripting routines to allow people to read &amp; write strings from
+	and to files. One string per file.
+      <LI>
+	The ClearTable scripting command parsed the table's tag incorrectly.
+    </UL>
   <LI>
     23-Oct-2005
     <UL>
