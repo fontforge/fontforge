@@ -143,7 +143,6 @@ MANPATH=${MANPATH:-}:/usr/local/man ; export MANPATH
     </BLOCKQUOTE>
   <LI>
     Then each time you want to run fontforge, type:
-  <LI>
     <BLOCKQUOTE>
       <PRE>$ xinit
 </PRE>
@@ -152,8 +151,13 @@ MANPATH=${MANPATH:-}:/usr/local/man ; export MANPATH
     This should bring up X in a large window that covers the screen and within
     that should be a subwindow, an xterm, running bash.
   <LI>
-    From the xterm you should be able start FontForge.
+    From the xterm you should first start a window manager:
+    <BLOCKQUOTE>
+      <PRE>$ twm &amp;
+</PRE>
+    </BLOCKQUOTE>
   <LI>
+    And then you will be able start FontForge.
     <BLOCKQUOTE>
       <PRE>$ fontforge -new
 </PRE>
@@ -667,6 +671,13 @@ Open a cygwin window and type
 This should create a task window that covers your entire screen, inside of
 which there should be an xterm (sort of like the cygwin window earlier).
 Be prepared to type commands in this window.
+<P>
+The first command you must type will start a window manager (which allows
+you to move windows around and gives you title bars)
+<BLOCKQUOTE>
+  <PRE>$ twm &amp;
+</PRE>
+</BLOCKQUOTE>
 <H3>
   <A NAME="Starting">Starting</A> fontforge from the command line
 </H3>
