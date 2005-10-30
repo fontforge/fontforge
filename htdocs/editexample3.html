@@ -2,192 +2,196 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jan-2003 -->
-  <!-- AP: Last modified: 21-Mar-2005 -->
+  <!-- AP: Last modified: 29-Oct-2005 -->
   <TITLE>Consistent serifs and stem widths</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
-<H1 ALIGN=Center>
-  Tutorial #3
-</H1>
-<UL>
-  <LI>
-    <A HREF="editexample.html#FontCreate">Font Creation</A>
-  <LI>
-    <A HREF="editexample.html#CharCreate">Creating a glyph (tracing outlines)</A>
-  <LI>
-    <A HREF="editexample2.html#Navigating">Navigating to other glyphs</A>
-  <LI>
-    <A HREF="editexample2.html#Creating-o">On to the next glyph (consistent
-    directions)</A>
-  <LI>
-    <A HREF="editexample3.html#consistent-stems">Consistent serifs and stem
-    widths</A>
-  <LI>
-    <A HREF="editexample4.html#accents">Building accented glyphs</A>
-  <LI>
-    <A HREF="editexample4.html#ligature">Building a ligature</A>
-  <LI>
-    <A HREF="editexample5.html#metrics">Examining metrics</A>
-  <LI>
-    <A HREF="editexample5.html#Kerning">Kerning</A>
-  <LI>
-    <A HREF="editexample6.html#Variants">Glyph variants</A>
-  <LI>
-    <A HREF="editexample6.html#Marks">Anchoring marks</A>
-  <LI>
-    <A HREF="editexample6-5.html#Conditional">Conditional features</A>
-  <LI>
-    <A HREF="editexample7.html#checking">Checking your font</A>
-  <LI>
-    <A HREF="editexample7.html#generating">Generating it</A>
-  <LI>
-    <A HREF="editexample7.html#Families">Font Families</A>
-  <LI>
-    <A HREF="editexample7.html#summary">Final Summary</A>
-  <LI>
-    <A HREF="scriptnotes.html#Special">Notes on various scripts</A>
-</UL>
-<H2>
-  <A NAME="consistent-stems">Creating </A>letters with consistent stem widths,
-  serifs and heights.
-</H2>
-<P>
-Many Latin (Greek, Cyrillic) fonts have serifs, special terminators at the
-end of stems. And in almost all LGC fonts there should only be a small number
-of stem widths used (ie. the vertical stem of "l" and "i" should probably
-be the same).
-<P>
-FontForge does not have a good way to enforce consistency, but it does have
-various commands to help you check for it, and to find discrepancies.
-<P>
-Let us start with the letter "l" and go through the familiar process of importing
-a bitmap and defining it's outline.
-<TABLE BORDER CELLPADDING="2" WIDTH=600>
-  <TR VALIGN="Bottom">
-    <TD WIDTH=140><P ALIGN=Center>
-      <IMG SRC="l1.png" WIDTH="35" HEIGHT="153"></TD>
-    <TD WIDTH=140><IMG SRC="l2.png" WIDTH="134" HEIGHT="101"></TD>
-    <TD WIDTH=140><IMG SRC="l3.png" WIDTH="134" HEIGHT="101"></TD>
-    <TD WIDTH=140><IMG SRC="l4.png" WIDTH="134" HEIGHT="101"></TD>
-  </TR>
-  <TR VALIGN="Top">
-    <TD>The imported image</TD>
-    <TD>Use the magnify tool to examine the bottom serif, and note that it is
-      symmetric left to right.</TD>
-    <TD>Outline the right half of the serif</TD>
-    <TD>select the outline, invoke <CODE>Edit -&gt; Copy</CODE> then <CODE>Edit
-      -&gt; Paste</CODE>, and finally <CODE>Element -&gt; Transform</CODE> and
-      select <CODE>Flip</CODE> (from the pull down list) and <CODE>check
-      Horizontal</CODE></TD>
-  </TR>
-  <TR VALIGN="Bottom">
-    <TD><IMG SRC="l5.png" WIDTH="134" HEIGHT="101"></TD>
-    <TD><IMG SRC="l6.png" WIDTH="134" HEIGHT="101"></TD>
-    <TD><IMG SRC="l7.png" WIDTH="134" HEIGHT="101"></TD>
-    <TD><P ALIGN=Center>
-      <IMG SRC="l8.png" WIDTH="35" HEIGHT="153"></TD>
-  </TR>
-  <TR VALIGN="Top">
-    <TD>Drag the flipped serif over to the left until it snuggles up against
-      the left edge of the glyph</TD>
-    <TD COLSPAN=2>Deselect the path, and select one end point and drag it until
-      it is on top of the end point of the other half</TD>
-    <TD>Finish off the glyph</TD>
-  </TR>
-  <TR VALIGN="Bottom">
-    <TD></TD>
-    <TD><IMG SRC="l9.png" WIDTH="134" HEIGHT="101"></TD>
-    <TD><IMG SRC="l10.png" WIDTH="134" HEIGHT="101"></TD>
-    <TD></TD>
-  </TR>
-  <TR VALIGN="Top">
-    <TD>But let's do two more things. First let's measure the stem width, and
-      second let's mark the height of the "l"</TD>
-    <TD>Select the ruler tool from the tool palette, and drag it from one edge
-      of the stem to the other. A little window pops up showing the width is 58
-      units, the drag direction is 180 degrees, and the drag was -58 units
-      horizontally, and 0 units vertically.</TD>
-    <TD>Go to the layers palette and select the Guide radio box (this makes the
-      guide layer editable). Then draw a line at the top of the "l", this line
-      will be visible in all glyphs and marks the ascent height of this font.</TD>
-    <TD></TD>
-  </TR>
-</TABLE>
-<P>
-Now let's do "i". This glyph looks very much like a short "l" with a dot
-on top. So let's copy the "l" into the "i"; this will automatically give
-us the right stem width and the correct advance width. The copy may be done
-either from the font view (by selecting the square with the "l" in it and
-pressing <CODE>Edit-&gt;Copy</CODE>) or from the outline view (by
-<CODE>Edit-&gt;Select All </CODE>and <CODE>Edit-&gt;Copy</CODE>). Similarly
-the Paste may be done either in the font view (by selecting the "i" square
-and pressing <CODE>Edit-&gt;Paste</CODE>) or the outline view (by opening
-the "i" glyph and pressing <CODE>Edit-&gt;Paste</CODE>).
-<TABLE BORDER CELLPADDING="2" WIDTH=600>
-  <TR>
-    <TD><P ALIGN=Center>
-      <IMG SRC="i1.png" WIDTH="50" HEIGHT="170"></TD>
-    <TD><P ALIGN=Center>
-      <IMG SRC="i2.png" WIDTH="111" HEIGHT="170"></TD>
-    <TD><P ALIGN=Center>
-      <IMG SRC="i3.png" WIDTH="111" HEIGHT="170"></TD>
-    <TD><P ALIGN=Center>
-      <IMG SRC="i4.png" WIDTH="111" HEIGHT="170"></TD>
-  </TR>
-  <TR VALIGN="Top">
-    <TD>Import the "i" image, and copy the "l" glyph.</TD>
-    <TD>Select the top serif of the l</TD>
-    <TD>drag it down to the right height</TD>
-    <TD>go to the guide layer and add a line at the x-height</TD>
-  </TR>
-</TABLE>
-<P>
-<IMG SRC="o5.png" WIDTH="85" HEIGHT="101" ALIGN="Right">Let's look briefly
-back at the "o" we built before. You may notice that the "o" reaches a little
-above the guide line we put in to mark the x-height (and a little below the
-baseline). This is called overshoot and is an attempt to remedy an optical
-illusion. A curve actually needs to rise about 3% (of its diameter) above
-the x-height for it to appear on the x-height.<BR CLEAR=ALL>
-<P>
-Let's look at "k". Again we will copy an "l" into it and import its image.
-<TABLE BORDER CELLPADDING="2" WIDTH=600>
-  <TR>
-    <TD><P ALIGN=Center>
-      <IMG SRC="k1.png" WIDTH="87" HEIGHT="151"></TD>
-    <TD><P ALIGN=Center>
-      <IMG SRC="k2.png" WIDTH="87" HEIGHT="151"></TD>
-    <TD><P ALIGN=Center>
-      <IMG SRC="k3.png" WIDTH="87" HEIGHT="151"></TD>
-  </TR>
-  <TR VALIGN="Top">
-    <TD>Import the "k" image and copy the "l" glyph. Note that the x-height line
-      matches the "k" (as we would hope). Also note that the width of the "l" is
-      inappropriate for "k" so we'll have to select it and drag it over.</TD>
-    <TD>Select the knife tool from the palette, and cut the stem of the "l" shape
-      at appropriate points for "k".</TD>
-    <TD>Remove the splines between the cut points. An easy way to do this is
-      to grab the spline itself, (which selects its end points) and then do
-      <CODE>Edit -&gt; Clear</CODE>.</TD>
-  </TR>
-  <TR>
-    <TD><P ALIGN=Center>
-      <IMG SRC="k4.png" WIDTH="87" HEIGHT="151"></TD>
-    <TD><P ALIGN=Center>
-      <IMG SRC="k5.png" WIDTH="87" HEIGHT="151"></TD>
-    <TD><P ALIGN=Center>
-      <IMG SRC="k6.png" WIDTH="87" HEIGHT="151"></TD>
-  </TR>
-  <TR VALIGN="Top">
-    <TD>Select the end points and convert them into corner points with <CODE>Point
-      -&gt; Corner</CODE>.</TD>
-    <TD>Then draw in the outer contour.</TD>
-    <TD>And the inner contour. Finally do an <CODE>Edit -&gt; Select All </CODE>and
-      an <CODE>Element -&gt; Correct Direction</CODE>.</TD>
-  </TR>
-</TABLE>
-<P>
-<P ALIGN=Center>
--- <A HREF="editexample2.html">Prev</A> -- <A HREF="overview.html">TOC</A>
--- <A HREF="editexample4.html">Next</A> --
+<DIV id="in">
+  <H1 ALIGN=Center>
+    Tutorial #3
+  </H1>
+  <UL>
+    <LI>
+      <A HREF="editexample.html#FontCreate">Font Creation</A>
+    <LI>
+      <A HREF="editexample.html#CharCreate">Creating a glyph (tracing outlines)</A>
+    <LI>
+      <A HREF="editexample2.html#Navigating">Navigating to other glyphs</A>
+    <LI>
+      <A HREF="editexample2.html#Creating-o">On to the next glyph (consistent
+      directions)</A>
+    <LI>
+      <A HREF="editexample3.html#consistent-stems">Consistent serifs and stem
+      widths</A>
+    <LI>
+      <A HREF="editexample4.html#accents">Building accented glyphs</A>
+    <LI>
+      <A HREF="editexample4.html#ligature">Building a ligature</A>
+    <LI>
+      <A HREF="editexample5.html#metrics">Examining metrics</A>
+    <LI>
+      <A HREF="editexample5.html#Kerning">Kerning</A>
+    <LI>
+      <A HREF="editexample6.html#Variants">Glyph variants</A>
+    <LI>
+      <A HREF="editexample6.html#Marks">Anchoring marks</A>
+    <LI>
+      <A HREF="editexample6-5.html#Conditional">Conditional features</A>
+    <LI>
+      <A HREF="editexample7.html#checking">Checking your font</A>
+    <LI>
+      <A HREF="editexample7.html#generating">Generating it</A>
+    <LI>
+      <A HREF="editexample7.html#Families">Font Families</A>
+    <LI>
+      <A HREF="editexample7.html#summary">Final Summary</A>
+    <LI>
+      <A HREF="scriptnotes.html#Special">Notes on various scripts</A>
+  </UL>
+  <H2>
+    <A NAME="consistent-stems">Creating </A>letters with consistent stem widths,
+    serifs and heights.
+  </H2>
+  <P>
+  Many Latin (Greek, Cyrillic) fonts have serifs, special terminators at the
+  end of stems. And in almost all LGC fonts there should only be a small number
+  of stem widths used (ie. the vertical stem of "l" and "i" should probably
+  be the same).
+  <P>
+  FontForge does not have a good way to enforce consistency, but it does have
+  various commands to help you check for it, and to find discrepancies.
+  <P>
+  Let us start with the letter "l" and go through the familiar process of importing
+  a bitmap and defining it's outline.
+  <TABLE BORDER CELLPADDING="2" WIDTH=600>
+    <TR VALIGN="Bottom">
+      <TD WIDTH=140><P ALIGN=Center>
+	<IMG SRC="l1.png" WIDTH="35" HEIGHT="153"></TD>
+      <TD WIDTH=140><IMG SRC="l2.png" WIDTH="134" HEIGHT="101"></TD>
+      <TD WIDTH=140><IMG SRC="l3.png" WIDTH="134" HEIGHT="101"></TD>
+      <TD WIDTH=140><IMG SRC="l4.png" WIDTH="134" HEIGHT="101"></TD>
+    </TR>
+    <TR VALIGN="Top">
+      <TD>The imported image</TD>
+      <TD>Use the magnify tool to examine the bottom serif, and note that it is
+	symmetric left to right.</TD>
+      <TD>Outline the right half of the serif</TD>
+      <TD>select the outline, invoke <CODE>Edit -&gt; Copy</CODE> then <CODE>Edit
+	-&gt; Paste</CODE>, and finally <CODE>Element -&gt; Transform</CODE> and
+	select <CODE>Flip</CODE> (from the pull down list) and <CODE>check
+	Horizontal</CODE></TD>
+    </TR>
+    <TR VALIGN="Bottom">
+      <TD><IMG SRC="l5.png" WIDTH="134" HEIGHT="101"></TD>
+      <TD><IMG SRC="l6.png" WIDTH="134" HEIGHT="101"></TD>
+      <TD><IMG SRC="l7.png" WIDTH="134" HEIGHT="101"></TD>
+      <TD><P ALIGN=Center>
+	<IMG SRC="l8.png" WIDTH="35" HEIGHT="153"></TD>
+    </TR>
+    <TR VALIGN="Top">
+      <TD>Drag the flipped serif over to the left until it snuggles up against
+	the left edge of the glyph</TD>
+      <TD COLSPAN=2>Deselect the path, and select one end point and drag it until
+	it is on top of the end point of the other half</TD>
+      <TD>Finish off the glyph</TD>
+    </TR>
+    <TR VALIGN="Bottom">
+      <TD></TD>
+      <TD><IMG SRC="l9.png" WIDTH="134" HEIGHT="101"></TD>
+      <TD><IMG SRC="l10.png" WIDTH="134" HEIGHT="101"></TD>
+      <TD></TD>
+    </TR>
+    <TR VALIGN="Top">
+      <TD>But let's do two more things. First let's measure the stem width, and
+	second let's mark the height of the "l"</TD>
+      <TD>Select the ruler tool from the tool palette, and drag it from one edge
+	of the stem to the other. A little window pops up showing the width is 58
+	units, the drag direction is 180 degrees, and the drag was -58 units
+	horizontally, and 0 units vertically.</TD>
+      <TD>Go to the layers palette and select the Guide radio box (this makes the
+	guide layer editable). Then draw a line at the top of the "l", this line
+	will be visible in all glyphs and marks the ascent height of this font.</TD>
+      <TD></TD>
+    </TR>
+  </TABLE>
+  <P>
+  Now let's do "i". This glyph looks very much like a short "l" with a dot
+  on top. So let's copy the "l" into the "i"; this will automatically give
+  us the right stem width and the correct advance width. The copy may be done
+  either from the font view (by selecting the square with the "l" in it and
+  pressing <CODE>Edit-&gt;Copy</CODE>) or from the outline view (by
+  <CODE>Edit-&gt;Select All </CODE>and <CODE>Edit-&gt;Copy</CODE>). Similarly
+  the Paste may be done either in the font view (by selecting the "i" square
+  and pressing <CODE>Edit-&gt;Paste</CODE>) or the outline view (by opening
+  the "i" glyph and pressing <CODE>Edit-&gt;Paste</CODE>).
+  <TABLE BORDER CELLPADDING="2" WIDTH=600>
+    <TR>
+      <TD><P ALIGN=Center>
+	<IMG SRC="i1.png" WIDTH="50" HEIGHT="170"></TD>
+      <TD><P ALIGN=Center>
+	<IMG SRC="i2.png" WIDTH="111" HEIGHT="170"></TD>
+      <TD><P ALIGN=Center>
+	<IMG SRC="i3.png" WIDTH="111" HEIGHT="170"></TD>
+      <TD><P ALIGN=Center>
+	<IMG SRC="i4.png" WIDTH="111" HEIGHT="170"></TD>
+    </TR>
+    <TR VALIGN="Top">
+      <TD>Import the "i" image, and copy the "l" glyph.</TD>
+      <TD>Select the top serif of the l</TD>
+      <TD>drag it down to the right height</TD>
+      <TD>go to the guide layer and add a line at the x-height</TD>
+    </TR>
+  </TABLE>
+  <P>
+  <IMG SRC="o5.png" WIDTH="85" HEIGHT="101" ALIGN="Right">Let's look briefly
+  back at the "o" we built before. You may notice that the "o" reaches a little
+  above the guide line we put in to mark the x-height (and a little below the
+  baseline). This is called overshoot and is an attempt to remedy an optical
+  illusion. A curve actually needs to rise about 3% (of its diameter) above
+  the x-height for it to appear on the x-height.<BR CLEAR=ALL>
+  <P>
+  Let's look at "k". Again we will copy an "l" into it and import an appropriate
+  image.
+  <TABLE BORDER CELLPADDING="2" WIDTH=600>
+    <TR>
+      <TD><P ALIGN=Center>
+	<IMG SRC="k1.png" WIDTH="87" HEIGHT="151"></TD>
+      <TD><P ALIGN=Center>
+	<IMG SRC="k2.png" WIDTH="87" HEIGHT="151"></TD>
+      <TD><P ALIGN=Center>
+	<IMG SRC="k3.png" WIDTH="87" HEIGHT="151"></TD>
+    </TR>
+    <TR VALIGN="Top">
+      <TD>Import the "k" image and copy the "l" glyph. Note that the x-height line
+	matches the "k" (as we would hope). Also note that the width of the "l" is
+	inappropriate for "k" so we'll have to select it and drag it over.</TD>
+      <TD>Select the knife tool from the palette, and cut the stem of the "l" shape
+	at appropriate points for "k".</TD>
+      <TD>Remove the splines between the cut points. An easy way to do this is
+	to grab the spline itself, (which selects its end points) and then do
+	<CODE>Edit -&gt; Clear</CODE>.</TD>
+    </TR>
+    <TR>
+      <TD><P ALIGN=Center>
+	<IMG SRC="k4.png" WIDTH="87" HEIGHT="151"></TD>
+      <TD><P ALIGN=Center>
+	<IMG SRC="k5.png" WIDTH="87" HEIGHT="151"></TD>
+      <TD><P ALIGN=Center>
+	<IMG SRC="k6.png" WIDTH="87" HEIGHT="151"></TD>
+    </TR>
+    <TR VALIGN="Top">
+      <TD>Select the end points and convert them into corner points with <CODE>Point
+	-&gt; Corner</CODE>.</TD>
+      <TD>Then draw in the outer contour.</TD>
+      <TD>And the inner contour. Finally do an <CODE>Edit -&gt; Select All </CODE>and
+	an <CODE>Element -&gt; Correct Direction</CODE>.</TD>
+    </TR>
+  </TABLE>
+  <P>
+  <P ALIGN=Center>
+  -- <A HREF="editexample2.html">Prev</A> -- <A HREF="overview.html">TOC</A>
+  -- <A HREF="editexample4.html">Next</A> --
+</DIV>
 </BODY></HTML>
