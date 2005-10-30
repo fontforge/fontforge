@@ -1,0 +1,6 @@
+ BODY { margin: 20px 50px 200px 50px; background: #ccc; color: #000}
+ BODY#sidebar { margin: 3pt 3pt 3pt 3pt; background: #eee; color: #000}
+ BODY#framed { margin: 10px 20px 10px 20px; background: #eee; color: #000}
+ A:hover { text-decoration: none; background-color: #eee }
+ #in { background: #fff; border: 1px solid #f00; padding: 30px }
+ #framed-in { background: #fff; border: 1px solid #f00; padding: 10px }

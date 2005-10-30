@@ -6,8 +6,10 @@
   <TITLE>FontForge -- An outline font editor for PostScript&reg;, TrueType
   and OpenType fonts</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
+<DIV id="in">
 <H1 Align=Center>
   FontForge<BR>
   <SMALL>An Outline Font Editor</SMALL><A HREF="ja/overview.html"><BR>
@@ -273,7 +275,7 @@ Most of the time we will not deal with stroked fonts directly (the
 turn them into outlines), but if you wish to edit stroked fonts, see the
 section on <A HREF="multilayer.html">multi-layered editing</A>.
 <TABLE BORDER CELLPADDING="2">
-  <TR>
+  <TR VALIGN=Top>
     <TD><P ALIGN=Center>
       <I><IMG WIDTH="117" HEIGHT="201" SRC="outlinechar.png"></I><BR>
       A glyph's outline</TD>
@@ -421,11 +423,20 @@ while TrueType calls it "Instructing" a font.
 <H4>
   What's OpenType?
 </H4>
+<P>Unfortunately the word "OpenType" has come to have two meanings. 
 <P>
-Open Type is just a postscript font put into a truetype format -- From the
+The first describes the spline format of the font. In this sense
+Open Type is just a postscript font put into a truetype file format -- From the
 outside it looks like a truetype font except that the outline descriptions
-are postscript Type2 font descriptions rather than TrueType. (Actually any
-truetype font can be called an OpenType font. OpenType is a superset of TrueType)
+are postscript Type2 font descriptions rather than TrueType.
+<P>
+In the second sense of the word OpenType refers to a set of tables containing
+advanced typographic information. These tables may be added to either fonts
+specified with quadratic splines (truetype) or fonts with cubic splines.
+<P>
+To make things even more confusing the OpenType specification includes the
+old TrueType specification, so technically any TrueType font can be called
+an OpenType font.
 <H4>
   What's SVG?
 </H4>
@@ -525,7 +536,7 @@ to draw small fonts.
     the BlueValues and StemSnap settings in the
     <A HREF="fontinfo.html#Private">private dictionary</A>. BlueValues provides
     a list of vertical zones in which interesting things happen (so in a latin
-    font this might include the ascender height, the cap-height, the x-height
+    font this might include the ascender height, the cap-height, the x-height, the baseline
     and the descender height. At small point sizes everything within one of these
     zones will snap to the same height, while at larger point sizes the heights
     will be slightly different (for instance an "o" and an "x" usually have slightly
@@ -649,7 +660,7 @@ as the one being built.
   </UL>
 </BLOCKQUOTE>
 <P>
-In TrueType may be skewed and rotated as well as translated, and may be scaled
+In TrueType references may be skewed and rotated as well as translated, and may be scaled
 as long as it is by an amount less than 2.
 <BLOCKQUOTE>
   <STRONG><SMALL><SMALL>Technical and confusing:</SMALL></SMALL></STRONG> So
@@ -869,4 +880,5 @@ to see things arranged vertically.
 <P>
 <P ALIGN=Center>
 -- <A HREF="editexample.html">Next</A> --
+</DIV>
 </BODY></HTML>
