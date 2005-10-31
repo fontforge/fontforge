@@ -1,6 +1,11 @@
- BODY { margin: 20px 50px 200px 50px; background: #ccc; color: #000}
+ BODY { margin: 1em 1.5em 20em 1.5em; background: #ccc; color: #000 font: -1pt serif }
  BODY#sidebar { margin: 3pt 3pt 3pt 3pt; background: #eee; color: #000}
- BODY#framed { margin: 10px 20px 10px 20px; background: #eee; color: #000}
- A:hover { text-decoration: none; background-color: #eee }
- #in { background: #fff; border: 1px solid #f00; padding: 30px }
+ BODY#framed { margin: .5em 1em 4em 1em; background: #eee; color: #000}
+ A:link { color: #333; text-decoration: underline }
+ A:visited { color: #333; text-decoration: underline }
+ A:hover { text-decoration: none; color: #000; background-color: #eee }
+ A:active { color: #5e0000 }
+ A { text-decoration: none }
+ #in { background: #fff; border: 1px solid #f00; padding: 1em }
  #framed-in { background: #fff; border: 1px solid #f00; padding: 10px }
+ H1 { display: inline }
