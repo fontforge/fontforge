@@ -2,169 +2,171 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 19-Sep-2005 -->
+  <!-- AP: Last modified: 31-Oct-2005 -->
   <TITLE>Get Info</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
 <DIV id="in">
-<H1 ALIGN=Center>
-  Get Info
-</H1>
-<P>
-In the Outline View the Get Info command can generate one of four different
-dialogs depending on what is selected. If a single thing is selected, and
-that thing is a point then the point info dialog is brought up, if it is
-a reference then the reference dialog is brought up, if it is a background
-image then the image dialog is brought up. If it is an anchor point then
-the anchor point dialog is brought up.
-<H2>
-  Point Info
-</H2>
-<P>
-<IMG SRC="pointinfo.png" WIDTH="321" HEIGHT="495" ALIGN="Right"> This shows
-information about the current point. The Base position is where the point
-itself is.
-<P>
-The Next CP shows both the location of the next control point, and the offset
-to that point from the base (and whether this setting is the default for
-that point, if this point is the last on an open contour then the [] Default
-button will be grey), underneath the offsets it shows the same information
-in a different format -- as a distance from the point itself, and the angle
-to it.
-<P>
-The Prev CP does the same for the previous control point.
-<P>
-You may change any of these and the change is reflected in the outline view.
-Your changes are constrained by the point type (for instance with tangent
-points, you may not change the angle fields as these are fixed).
-<P>
-You may also change whether a point is a curve, corner or tangent point (Caution:
-Changing from a corner point to a curve point and back to a corner point
-is NOT a no op. It may change the control points) You may move on to the
-next or previous point on the path, or the next/previous point of the current
-contour. If you cancel then all changes to all points are canceled.
-<P>
-The colors of the labels reflect the colors of the items they refer to. The
-point itself will be drawn in red, the previous control point will be drawn
-in magenta and the next control point will be drawn in dull cyan.
-<BR CLEAR=ALL>
-<H3>
-  <IMG SRC="hintmaskinfo.png" WIDTH="321" HEIGHT="459" ALIGN="Right"><A NAME="HintMask">Hint</A>
-  Mask
-</H3>
-<P>
-<IMG SRC="charwithhintmask.png" WIDTH="309" HEIGHT="322" ALIGN="Left">If
-you want to control what hints are active at a given point (and at all subsequent
-points until an new hintmask is given) you can use the hint mask pane. This
-provides you with a list of all hints in the current glyph, you should select
-the ones which you want active.
-<P>
-As you select hints, the glyph view will darken those hints so you can see
-what you've selected.
-<P>
-Points with circles drawn around them have hintmasks.
-<P>
-According to Adobe's documentation you should never have two hints which
-conflict active at the same time. FontForge will warn you if you do this.
-Unfortunately there are fonts (even fonts from Adobe) which do not follow
-this rule, so I have made this a warning rather than an error.
-<P>
-Remember to hold the control key down when making disjoint selections.
-<P>
-Sadly the direction in which hintmasks apply is backwards from what you would
-expect (the hintmask applies to this point an all previous points on the
-contour, rather than all subsequent ones).
-<H4>
-  Active Hints
-</H4>
-<P>
-This looks just like the hint mask, except you cannot change anything it
-in. It shows you what hints are currently selected at this point. If a point
-has a hint mask then the two will be identical.<BR Clear=All>
-<H2>
-  <IMG SRC="agetinfo.png" WIDTH="226" HEIGHT="389" ALIGN="Right"><A NAME="Anchors">Anchor
-  Points</A> Info
-</H2>
-<P>
-This dialog shows the selected <A HREF="overview.html#Anchors">anchor point</A>
-with the anchor class, location, type and (for ligatures) the ligature index.
-You may change any of these attributes (as long as your changes are reasonable).
-You may create new points or delete the current one. As with normal points
-above you may step through all the anchor points in your glyph.
-<P>
-In a truetype font you can force the anchor to track a contour point in the
-truetype glyph. This point can then be manipulated with truetype instructions
-to grid fit it properly with the current rasterization.
-<P>
-Anchor points may also be created with the
-<A HREF="pointmenu.html#AddAnchor">Point-&gt;Add Anchor</A> command.
-<BR Clear=All>
-<H2>
-  <IMG SRC="rgetinfo.png" WIDTH="317" HEIGHT="389" ALIGN="Right"><A NAME="GetReferenceInfo">Reference</A>
-  Info
-</H2>
-<P>
-This dialog shows the name of the selected reference, its encoding in the
-font and its postscript transformation matrix. You may alter the transformation
-matrix if you desire.
-<P>
-The transformation matrix maps points in the glyph being refered to into
-their location in the current glyph: <BR>
-<CODE>&nbsp; &nbsp; x<SUB>current</SUB> = TM[1,1]*x<SUB>ref</SUB> +
-TM[2,1]*y<SUB>ref</SUB> + TM[3,1]<BR>
-&nbsp; &nbsp; y<SUB>current</SUB> = TM[1,2]*y<SUB>ref</SUB> +
-TM[2,2]*y<SUB>ref</SUB> + TM[3,2]</CODE>
-<P>
-The Use My Metrics checkbox is useful in truetype fonts where it forces the
-metrics (width) of a composite glyph (for exampe acute a) is the same as
-the metrics of one of its components (for example a). This is especially
-important in fonts containing instructions that might modify a glyph's width.
-<P>
-The Round To Grid checkbox is also used in truetype hints and indicates that
-the translation should be rounded to the rasterizer's grid before being applied
-to the points of the reference. This means that the grid-fitting done by
-the reference's instructions will still be useful in the composite.
-<P>
-In a truetype font a reference may be positioned by matching two points,
-one in the base character, and one in the reference itself. In the example
-at right, the reference to "acute" will be moved until point 2 in "acute"
-is at the same place as point 0 in whatever the base glyph might be. The
-glory of this method is that the truetype instructions assocated with the
-glyphs can move these points around to an appropriate location for the current
-pixelsize.
-<P>
-Points in a composite glyph are numbered by counting the points of the first
-component, adding 4 (for the 4 phantom (metric) points), then counting the
-points in the second composite, adding 4, etc. The first composite is the
-one which is drawn first, not the one which is added first. The Base numbering
-scheme is from the full composite, while the reference point is numbered
-by the current reference. The current reference must be drawn after the base
-point. You may use <A HREF="elementmenu.html#Order">Element-&gt;Order</A>
-to reorder the references.
-<P>
-(You should probably not set Round To Grid when doing point matching)
-<P>
-The [Show] button will open a glyph outline view showing the glyph being
-referred to.<BR CLEAR=ALL>
-<H2>
-  Image Info
-</H2>
-<P>
-This dialog gives the offset to the lower left corner of the image and the
-scale factors applied to the image. Currently you may not alter anything
-here, it is purely informational.
-<P>
-See Also:
-<UL>
-  <LI>
-    <A HREF="fontinfo.html">The font info dialog</A>
-  <LI>
-    <A HREF="charinfo.html">The glyph info dialog</A>
-</UL>
-<P ALIGN=Center>
--- <A HREF="elementmenu.html">Prev</A> -- <A HREF="overview.html">TOC</A>
--- <A HREF="elementmenu.html">Next</A> --
+  <H1 ALIGN=Center>
+    Get Info
+  </H1>
+  <P>
+  In the Outline View the Get Info command can generate one of four different
+  dialogs depending on what is selected. If a single thing is selected, and
+  that thing is a point then the <A HREF="getinfo.html#Point">point info
+  </A>dialog is brought up, if it is a reference then the
+  <A HREF="getinfo.html#GetReferenceInfo">reference dialog</A> is brought up,
+  if it is a background image then the <A HREF="getinfo.html#Image">image
+  dialog</A> is brought up. If it is an anchor point then the
+  <A HREF="getinfo.html#Anchors">anchor point </A>dialog is brought up.
+  <H2>
+    <A NAME="Point">Point</A> Info
+  </H2>
+  <P>
+  <IMG SRC="pointinfo.png" WIDTH="321" HEIGHT="495" ALIGN="Right"> This shows
+  information about the current point. The Base position is where the point
+  itself is.
+  <P>
+  The Next CP shows both the location of the next control point, and the offset
+  to that point from the base (and whether this setting is the default for
+  that point, if this point is the last on an open contour then the [] Default
+  button will be grey), underneath the offsets it shows the same information
+  in a different format -- as a distance from the point itself, and the angle
+  to it.
+  <P>
+  The Prev CP does the same for the previous control point.
+  <P>
+  You may change any of these and the change is reflected in the outline view.
+  Your changes are constrained by the point type (for instance with tangent
+  points, you may not change the angle fields as these are fixed).
+  <P>
+  You may also change whether a point is a curve, corner or tangent point (Caution:
+  Changing from a corner point to a curve point and back to a corner point
+  is NOT a no op. It may change the control points) You may move on to the
+  next or previous point on the path, or the next/previous point of the current
+  contour. If you cancel then all changes to all points are canceled.
+  <P>
+  The colors of the labels reflect the colors of the items they refer to. The
+  point itself will be drawn in red, the previous control point will be drawn
+  in magenta and the next control point will be drawn in dull cyan.
+  <BR CLEAR=ALL>
+  <H3>
+    <IMG SRC="hintmaskinfo.png" WIDTH="321" HEIGHT="459" ALIGN="Right"><A NAME="HintMask">Hint</A>
+    Mask
+  </H3>
+  <P>
+  <IMG SRC="charwithhintmask.png" WIDTH="309" HEIGHT="322" ALIGN="Left">If
+  you want to control what hints are active at a given point (and at all subsequent
+  points until an new hintmask is given) you can use the hint mask pane. This
+  provides you with a list of all hints in the current glyph, you should select
+  the ones which you want active.
+  <P>
+  As you select hints, the glyph view will darken those hints so you can see
+  what you've selected.
+  <P>
+  Points with circles drawn around them have hintmasks.
+  <P>
+  According to Adobe's documentation you should never have two hints which
+  conflict active at the same time. FontForge will warn you if you do this.
+  Unfortunately there are fonts (even fonts from Adobe) which do not follow
+  this rule, so I have made this a warning rather than an error.
+  <P>
+  Remember to hold the control key down when making disjoint selections.
+  <P>
+  Sadly the direction in which hintmasks apply is backwards from what you would
+  expect (the hintmask applies to this point an all previous points on the
+  contour, rather than all subsequent ones).
+  <H4>
+    Active Hints
+  </H4>
+  <P>
+  This looks just like the hint mask, except you cannot change anything it
+  in. It shows you what hints are currently selected at this point. If a point
+  has a hint mask then the two will be identical.<BR Clear=All>
+  <H2>
+    <IMG SRC="agetinfo.png" WIDTH="226" HEIGHT="389" ALIGN="Right"><A NAME="Anchors">Anchor
+    Points</A> Info
+  </H2>
+  <P>
+  This dialog shows the selected <A HREF="overview.html#Anchors">anchor point</A>
+  with the anchor class, location, type and (for ligatures) the ligature index.
+  You may change any of these attributes (as long as your changes are reasonable).
+  You may create new points or delete the current one. As with normal points
+  above you may step through all the anchor points in your glyph.
+  <P>
+  In a truetype font you can force the anchor to track a contour point in the
+  truetype glyph. This point can then be manipulated with truetype instructions
+  to grid fit it properly with the current rasterization.
+  <P>
+  Anchor points may also be created with the
+  <A HREF="pointmenu.html#AddAnchor">Point-&gt;Add Anchor</A> command.
+  <BR Clear=All>
+  <H2>
+    <IMG SRC="rgetinfo.png" WIDTH="317" HEIGHT="389" ALIGN="Right"><A NAME="GetReferenceInfo">Reference</A>
+    Info
+  </H2>
+  <P>
+  This dialog shows the name of the selected reference, its encoding in the
+  font and its postscript transformation matrix. You may alter the transformation
+  matrix if you desire.
+  <P>
+  The transformation matrix maps points in the glyph being refered to into
+  their location in the current glyph: <BR>
+  <CODE>&nbsp; &nbsp; x<SUB>current</SUB> = TM[1,1]*x<SUB>ref</SUB> +
+  TM[2,1]*y<SUB>ref</SUB> + TM[3,1]<BR>
+  &nbsp; &nbsp; y<SUB>current</SUB> = TM[1,2]*y<SUB>ref</SUB> +
+  TM[2,2]*y<SUB>ref</SUB> + TM[3,2]</CODE>
+  <P>
+  The Use My Metrics checkbox is useful in truetype fonts where it forces the
+  metrics (width) of a composite glyph (for exampe acute a) is the same as
+  the metrics of one of its components (for example a). This is especially
+  important in fonts containing instructions that might modify a glyph's width.
+  <P>
+  The Round To Grid checkbox is also used in truetype hints and indicates that
+  the translation should be rounded to the rasterizer's grid before being applied
+  to the points of the reference. This means that the grid-fitting done by
+  the reference's instructions will still be useful in the composite.
+  <P>
+  In a truetype font a reference may be positioned by matching two points,
+  one in the base character, and one in the reference itself. In the example
+  at right, the reference to "acute" will be moved until point 2 in "acute"
+  is at the same place as point 0 in whatever the base glyph might be. The
+  glory of this method is that the truetype instructions assocated with the
+  glyphs can move these points around to an appropriate location for the current
+  pixelsize.
+  <P>
+  Points in a composite glyph are numbered by counting the points of the first
+  component, adding 4 (for the 4 phantom (metric) points), then counting the
+  points in the second composite, adding 4, etc. The first composite is the
+  one which is drawn first, not the one which is added first. The Base numbering
+  scheme is from the full composite, while the reference point is numbered
+  by the current reference. The current reference must be drawn after the base
+  point. You may use <A HREF="elementmenu.html#Order">Element-&gt;Order</A>
+  to reorder the references.
+  <P>
+  (You should probably not set Round To Grid when doing point matching)
+  <P>
+  The [Show] button will open a glyph outline view showing the glyph being
+  referred to.<BR CLEAR=ALL>
+  <H2>
+    <A NAME="Image">Image</A> Info
+  </H2>
+  <P>
+  This dialog gives the offset to the lower left corner of the image and the
+  scale factors applied to the image. Currently you may not alter anything
+  here, it is purely informational.
+  <P>
+  See Also:
+  <UL>
+    <LI>
+      <A HREF="fontinfo.html">The font info dialog</A>
+    <LI>
+      <A HREF="charinfo.html">The glyph info dialog</A>
+  </UL>
+  <P ALIGN=Center>
+  -- <A HREF="elementmenu.html">Prev</A> -- <A HREF="overview.html">TOC</A>
+  -- <A HREF="elementmenu.html">Next</A> --
 </DIV>
 </BODY></HTML>
