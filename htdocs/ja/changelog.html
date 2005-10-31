@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 23-Oct-2005 -->
+  <!-- AP: Last modified: 28-Oct-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
 <!--<TITLE>Change log for FontForge</TITLE> -->
     <TITLE>FontForge の変更履歴</TITLE>
@@ -20,6 +20,50 @@ on the file stamp.c. -->
 最新のリリース以降の変更点は、ファイル stamp.c を "cvs log" コマンドで調べれば分かります。
 <P>
 <UL>
+  <LI>
+<!--28-Oct-2005-->
+    2005年10月28日
+    <UL>
+      <LI>
+<!--	More work on the mac install procdure. -->
+	Mac のインストール手順に関する追加作業。
+      <LI>
+<!--	Redo the install documentation on the website &amp; in the readmes -->
+	Web サイトと README の類のインストール文書を書き直し。
+      <LI>
+<!--	Add a hack to the directory browser so that on cygwin getting a directory
+	listing of "/" will include the magic (fake) directory /cygdrive (which gives
+	access to the rest of the PC) -->
+	cygwin では、"/" をリストアップすると (実体の無い) 特殊ディレクトリ /cygdrive を含めるようにするようなハックをディレクトリブラウザへに追加 (これにより、PC でディスク全体へのアクセスが可能になります)。
+      <LI>
+<!--	Add a new scripting funtion: NearlyLines to convert almost linear splines
+	to linear. -->
+	スクリプト関数 NearlyLines() を追加。ほとんど直線に近いスプラインを直線に変換します。
+       <LI>
+<!--	Tweak AddExtrema so that it doesn't create Extrema points which are too close
+	to the endpoints. --
+	AddExtrema() を小修正し、極値の点が端点にあまりに近すぎるときは追加しないようにしました。
+      <LI>
+<!--	I was dumping all opentype ligatures into an ofm(tfm) file. But I should
+	probably only add 'liga' and 'rlig' ligatures. -->
+	今までは、すべての OpenType 合字を OFM (TFM) ファイルに書き出していました。しかし、おそらく 'liga' と 'rlig' 合字のみを追加するべきでしょう。
+      <LI>
+<!--	Omega has a bug where it thinks 0 width glyphs do not exist. Which means
+	it thinks none of the combining accents, etc. exist. So force the width of
+	any zero width glyphs to be the smallest positive width. -->
+	Omega には、幅 0 のグリフが存在しないと考えるバグがありました。その結果、結合アクセントなどをすべて存在しないと誤認することになります。そういうわけで、全ての 0 幅グリフを最小の正の値をもっているものと強制することにしました。
+      <LI>
+<!--	When reading ttf/otf fonts, FF gave alternate substitutions (and multiple
+	subs?) a tag of 0. -->
+	TTF/OTF フォントを読み込むとき、FF は選択型置換 (および複数置換にも?) に 0 番目のタグを付与していました。
+      <LI>
+<!--	Add two scripting routines to allow people to read &amp; write strings from
+	and to files. One string per file. -->
+	ファイルからの文字列を読み込み・書き出しを可能にするための 2 つのスクリプト処理ルーチンを追加しました。
+      <LI>
+<!--	The ClearTable scripting command parsed the table's tag incorrectly. -->
+	ClearTable() スクリプトコマンドにおけるテーブルタグの解析が間違っていました。
+    </UL>
   <LI>
 <!--23-Oct-2005-->
     2005年10月23日

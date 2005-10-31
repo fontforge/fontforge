@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 31-Jul-2005 -->
+  <!-- AP: Last modified: 27-Oct-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
 <!--<TITLE>Frequently Asked Questions</TITLE>-->
     <TITLE>よくある質問</TITLE>
@@ -889,21 +889,21 @@ $ xset fp+ `pwd`
 <!--	Mac OS/X -->
 	Mac OS X
       <DD>
-<!--	On Mac OS/X you can run <A TARGET="_top" HREF="MacOSX.html#Running">FontForge
-	directly</A> (if you've got <A TARGET="_top" HREF="MacOSX.html#binary">XDarwin
+<!--	On Mac OS/X you can run <A TARGET="_top" HREF="running.html#mac">FontForge
+	directly</A> (if you've got <A HREF="mac-install.html#Before">X11
 	installed</A>). OS/X has several font formats, some fonts are stored in the
 	old format (see above), while others are stored as data fork resources. The
 	data fork font files generally have the extension ".dfont". On a Mac FontForge
 	is able to edit both formats directly. OS/X also supports normal .otf and
 	.ttf font files. -->
-	Mac OS X では (<A TARGET="_top" HREF="MacOSX.html#binary">XDarwin がインストールしてあれば</A>) <A TARGET="_top" HREF="MacOSX.html#Running">FontForge を直接起動する</A>ことができます。OS X にはいくつかのフォントフォーマットがあり、いくつかのフォントは古いフォーマット (上記参照) で格納されており、一方そのたのものはデータフォークリソースとして格納されています。データフォークフォントファイルの拡張子は、ふつう ".dfont" です。Mac では、FontForge はどちらのフォーマットも直接編集できます。OS X は通常の .otf および .ttf 形式のフォントファイルもサポートしています。
+	Mac OS X では (<A TARGET="_top" HREF="running.html#mac">XDarwin がインストールしてあれば</A>) <A TARGET="_top" HREF="mac-install.html#Before">FontForge を直接起動する</A>ことができます。OS X にはいくつかのフォントフォーマットがあり、いくつかのフォントは古いフォーマット (上記参照) で格納されており、一方そのたのものはデータフォークリソースとして格納されています。データフォークフォントファイルの拡張子は、ふつう ".dfont" です。Mac では、FontForge はどちらのフォーマットも直接編集できます。OS X は通常の .otf および .ttf 形式のフォントファイルもサポートしています。
 	<P>
 <!--	Mac OS/X does not seem to support the old NFNT bitmap format, but it still
 	requires that an bitmap font in NFNT format be present before it will use
 	a resource-based postscript font. (It is probably not the NFNT resource which
 	is required, but the FOND which goes along with it. But I'm not going to
-	write something to produce a bare FOND resource). -->
-	Mac OS X は NFNT ビットマップフォーマットをサポートしていないようです。それでも未だに、リソースベースの PostScript を使用する際には NFNT フォーマットのビットマップフォントが含まれている必要があります (おそらく、実際に必要なのは NFNT リソースではなくてそれに付随する FOND リソースだと思いますが、裸の FOND リソースを出力する何らかのデータを書き出すようにする予定はありません)。
+	write something to produce a bare FOND resource - - nothing else does either). -->
+	Mac OS X は古い NFNT ビットマップフォーマットをサポートしていないようです。それでも未だに、リソースベースの PostScript を使用する際には NFNT フォーマットのビットマップフォントが含まれている必要があります (おそらく、実際に必要なのは NFNT リソースではなくてそれに付随する FOND リソースだと思いますが、裸の FOND リソースを出力する何らかのデータを書き出すようにする予定はありません――その他のも同様にありません)。
     </DL>
   <DT>
 <!--<B><A NAME="How-family">How do I create a mac font family? (How do I get
@@ -953,9 +953,9 @@ $ xset fp+ `pwd`
     a given resources file which have the same FamilyName. -->
     一方、ATSUI の下では、ファミリーは同じ FamilyName をもつ一定のリソースファイルに含まれるすべてのフォントから構成されているようです。
     <P>
-<!--In order that a family be useful under both systems, Apple appears to several
-    FONDs inside such a font file. Each FOND contains a sub-family of related
-    fonts. The 'FOND's appear to be distributed as follows: -->
+<!--In order that a family be useful under both systems, Apple appears to place
+    several FONDs inside such a font file. Each FOND contains a sub-family of
+    related fonts. The 'FOND's appear to be distributed as follows:
     どちらのシステムでもファミリーが役に立つようにするに、Apple は 1 個のフォントファイルに 2, 3 の FOND を格納しているようです。各 FOND には関連するフォントのサブファミリーが含まれています。それらの 'FOND' は以下のように分散しているようです:
     <P>
 <!--Suppose you have a family of fonts with the following styles:<BR> -->
@@ -1006,74 +1006,8 @@ $ xset fp+ `pwd`
 <!--<B>How do I edit fonts on MS <A NAME="windows">windows</A>?</B>-->
     <B>MS <A NAME="windows">Windows</A> でフォントを編集するにはどうすればよいか?</B>
   <DD>
-<!--To run FontForge under MS windows you must first install the
-    <A TARGET="_top" HREF="http://www.cygwin.com/">cygwin environment</A>. -->
-    FontForge を MS Windows で実行するには、まず最初に <A TARGET="_top" HREF="http://www.cygwin.com/">cygwin の実行環境</A> をインストールしなければなりません。
-    <UL>
-      <LI>
-<!--	First download the setup.exe program from
-	<A TARGET="_top" HREF="http://www.cygwin.com/">http://www.cygwin.com/</A> -->
-	まずプログラム setup.exe を <A TARGET="_top" HREF="http://www.cygwin.com/">http://www.cygwin.com/</A> からダウンロードする。
-      <LI>
-<!--	Run it. It will ask you what components of cygwin you wish to install -->
-	setup.exe を実行する。cygwin のコンポーネント群からどれをインストールしたいのかかを質問してくるはずである。
-      <LI>
-<!--	You will need the base components, the X window system, xorg-x11-base, and
-	xterm (NOTE: These are separate packages) -->
-	必ず、base コンポーネント、X ウィンドウシステム、xorg-x11-base および xterm はインストールしなければなりません (注意: これらは別々のパッケージです)。
-      <LI>
-<!--	Once you have cygwin installed, start it. This should give you a terminal
-	window running bash (a unix shell) -->
-	既に cygwin をインストールしてあるなら、それを起動してください。それにより、bash (Unix シェルの一種) を実行中の端末ウィンドウが 1 つ立ち上がるはずです。
-      <LI>
-<!--	Download the <A TARGET="_top" HREF="index.html#binary">cygwin version of
-	FontForge</A>, and move it to whatever directory you think most appropriate
-	(<CODE>/usr/local/bin</CODE> is a reasonable choice) -->
-	<A TARGET="_top" HREF="index.html#binary">cygwin 版の FontForge</A> をダウンロードし、どこか一番適切だとあなたが考えたディレクトリ (<CODE>/usr/local/bin</CODE> は妥当な選択の 1 つです) に移動してください。
-	<BLOCKQUOTE>
-	  <PRE>$ mkdir -p /usr/local/share/fontforge /usr/local/bin /usr/local/man/man1
-$ cd /tmp
-$ tar xfzv fontforge_cygwin*.tar
-$ cd fontforge
-$ mv *.ui /usr/local/share/fontforge
-$ mv fontforge.1 /usr/local/man/man1
-$ mv fontforge.exe /usr/local/bin
-</PRE>
-	</BLOCKQUOTE>
-	<P>
-<!--	Then edit the file ~/.bashrc by (or by whatever other tool you prefer): -->
-	次に、~/.bashrc を以下の手順で (またはその他の好みのツールを使っても構いません) 編集します:
-	<BLOCKQUOTE>
-	  <PRE>$ cat &gt;&gt; ~/.bashrc
-PATH=${PATH}:/usr/local/bin ; export PATH
-MANPATH=${MANPATH:-}:/usr/local/man ; export MANPATH
-^D
-</PRE>
-	</BLOCKQUOTE>
-      <LI>
-<!--	Then each time you want to run fontforge, type:-->
-	それからは、FontForge を起動するたびごとに、
-	<BLOCKQUOTE>
-	  <PRE>$ xinit
-</PRE>
-	</BLOCKQUOTE>
-      <LI>
-<!--	This should bring up X in a large window that covers the screen and within
-	that should be a subwindow, an xterm, running bash. -->
-	と打ってください。これにより、画面全体を覆う大きなウィンドウに X が起動し、そこには、bash を実行する xterm がサブウィンドウとして出ているはずです。
-      <LI>
-<!--	From the xterm you should be able start FontForge. -->
-	xterm から FontForge を起動できるようになっているはずです。
-	<BLOCKQUOTE>
-	  <PRE>$ fontforge -new
-</PRE>
-	</BLOCKQUOTE>
-    </UL>
-    <P>
-<!--If you want to be able to build FontForge under cygwin, you will need to
-    grab some other cygwin components, like gcc, the image processing libraries,
-    freetype, etc. -->
-    あなたが cygwin 環境で FontForge をビルドできるようにしたいならば、gcc や画像処理ライブラリ、freetype などのいくつかの cygwin コンポーネントを取得する必要があるでしょう。
+<!--See the <A HREF="ms-install.html">MS Windows install instructions</A>. -->
+    <A HREF="ms-install.html">MS Windows へのインストール手順</A> を参照してください。
   <DT>
 <!--<B><A NAME="Bad-Windows-Fonts">Why don't my fonts work on windows?</A></B>-->
     <B><A NAME="Bad-Windows-Fonts">なぜ自作のフォントが Windowsで使えないのか?</A></B>
@@ -1779,13 +1713,13 @@ MANPATH=${MANPATH:-}:/usr/local/man ; export MANPATH
     check for the existance of these libraries until you actually try to load
     an image. If the library has not been installed on your system it will give
     the above error (and fail to load the image).<BR>
-    The <A HREF="index.html#Dependencies" TARGET="_top">Dependencies</A> section
-    of the main page describes how to find these libraries.<BR>
+    The <A HREF="source-build.html#Dependencies" TARGET="_top">Dependencies</A>
+    section of the main page describes how to find these libraries.<BR>
     If the libraries are installed and you still get this message try setting
     your LD_LIBRARY_PATH variable to the directory containing the library in
     question (On the mac this is DYLD_LIBRARY_PATH). -->
     FontForge は、画像の読み込みをいくつかの動的ライブラリに頼っています。それらのライブラリの存在は、画像を実際に読み込もうとするまでチェックされません。あなたのシステム上にそのライブラリがインストールされていない場合、上記のエラーが表示されます (そして画像の読み込みは失敗します)。<BR>
-    メインページの <A HREF="index.html#Dependencies" TARGET="_top">依存性</A> のセクションには、それらのライブラリがどこで入手できるかの説明があります。<BR>
+    構築方法説明ページの<A HREF="source-build.html#Dependencies" TARGET="_top">依存性</A> のセクションには、それらのライブラリがどこで入手できるかの説明があります。<BR>
     ライブラリがインストールされていて、それでもそのメッセージが表示される場合、LD_LIBRARY_PATH 環境変数に、問題となるライブラリを含むディレクトリを指定してみてください (Mac では、この環境変数は DYLD_LIBRARY_PATH となります)。
   <DT>
 <!--<B><A NAME="complex-eps">Why does fontforge say "EPS file is too complex

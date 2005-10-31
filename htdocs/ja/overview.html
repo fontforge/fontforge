@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 18-Sep-2005 -->
+  <!-- AP: Last modified: 27-Oct-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
 <!--
   <TITLE>FontForge -- An outline font editor for PostScript&reg;, TrueType
@@ -276,8 +276,8 @@
 <!--<A HREF="license.html">License and Copyright</A> -->
     <A HREF="license.html">ライセンスと著作権</A>
   <LI>
-<!--<A HREF="index.html">Download</A> -->
-    <A HREF="index.html">ダウンロード</A>
+<!--<A HREF="nix-install.html">Download</A> -->
+    <A HREF="nix-install.html">ダウンロード</A>
 </UL>
 <H2>
 <!--See Also-->
@@ -365,160 +365,28 @@ bitmaps.
 FontForge を使うと PostScript, TrueType および OpenType フォントの作成・編集ができます。
 さまざまな種類のアウトラインフォントのフォーマットでフォントを保存することができ、ビットマップの生成が可能です。
 <H3>
-<!-- <A NAME="Installing">Installing</A> a binary -->
-     バイナリの<A NAME="Installing">インストール</A>
+<!-- <A NAME="Installing">Installing</A> or building fontforge -->
+     FontForge の<A NAME="Installing">インストール</A>および構築方法
 </H3>
-<UL>
-  <LI>
-<!--
-    <A HREF="index.html#binary">Copy the distribution </A>to some directory on
-    your machine
--->
-    あなたの計算機の適当なディレクトリに<A HREF="index.html#binary">配布物をコピー</A>してください。
-  <LI>
-    <KBD>$ gunzip fontforge-*.tgz</KBD>
-  <LI>
-    <KBD>$ tar xfv fontforge.tar</KBD>
-  <LI>
-    <KBD>$ cp fontforge /usr/local/bin</KBD>
-    <!--<LI>
-    <KBD>$ cp *.so* /usr/local/lib</KBD>
-    <LI>
-    <KBD>$ setenv LD_LIBRARY_PATH /usr/local/lib:$LD_LIBRARY_PATH</KBD>-->
-  <LI>
-    <KBD>$ vi README</KBD>
-</UL>
-<H3>
-<!--
-  Building from a source distribution
--->
-  ソース配布からのビルド
-</H3>
-<UL>
-  <LI>
-<!--
-    Copy the <A HREF="index.html#source">complete source archive</A> to some
-    directory on your machine
--->
-    あなたの計算機の適当なディレクトリに<A HREF="index.html#source">完全なソースアーカイブ</A>をダウンロードしてください。
-  <LI>
-    <KBD>$ gunzip *.tgz</KBD>
-  <LI>
-    <KBD>$ tar xf fontforge_full.tar</KBD>
-  <LI>
-    <KBD>$ cd fontforge </KBD>
-  <LI>
-    <KBD>$ configure</KBD>
-  <LI>
-    <KBD>$ make</KBD>
-  <LI>
-    <KBD>$ make install</KBD>
-</UL>
+<TABLE CELLSPACING="6" CELLPADDING="2">
+  <CAPTION>
+<!--System specific install procedures-->
+    各システム固有のインストール手順:
+  </CAPTION>
+  <TR>
+    <TD><P ALIGN=Center>
+      <A HREF="nix-install.html">Unix/Linux</A></TD>
+    <TD>&nbsp; &nbsp; &nbsp; <A HREF="mac-install.html">Mac</A></TD>
+    <TD>&nbsp; &nbsp; &nbsp; <A HREF="ms-install.html">MS/Windows</A></TD>
+    <TD>&nbsp; &nbsp; &nbsp; <A HREF="vms-install.html">VMS</A></TD>
+<!--<TD>&nbsp; &nbsp; &nbsp; <A HREF="source-build.html">from source</A></TD>-->
+    <TD>&nbsp; &nbsp; &nbsp; <A HREF="source-build.html">ソースからの構築方法</A></TD>
+  </TR>
+</TABLE>
 <P>
 <!--
-Obviously you may choose to place the executable somewhere other than
-/usr/local/bin.
--->
-言うまでもなく、実行ファイルをどこか /usr/local/bin 以外の場所にインストールすることもできます。
-<P>
-<!--
-(If you have already pulled down the sources and just want to update to a
-new version then you only need to pull down those archives which have changed)
--->
-(もし、あなたが過去にソースをダウンロードしたことがあって、それを新しいバージョンに更新したいだけならば、ダウンロードする必要があるのは変更のあったアーカイブだけです)
-<P>
-<!--
-You may also want to pull down some extra fonts -->
-それに加えて、いくつかのフォントをダウンロードしたくなるかもしれません。
-<UL>
-  <LI>
-    <A HREF="http://bibliofile.duhs.duke.edu/gww/fonts/Monospace/index.html">my
-    monospace fonts</A>
-  <LI>
-    <A HREF="http://bibliofile.duhs.duke.edu/gww/fonts/Caliban/index.html">my
-    sans-serif font</A>
-  <LI>
-    <A HREF="http://czyborra.com/unifont/">The unifont</A>
-  <LI>
-    <A HREF="http://clr.nmsu.edu/~mleisher/cu.html">ClearlyU's font</A>
-  <LI>
-    <A HREF="http://www.cl.cam.ac.uk/~mgk25/ucs-fonts.html">X fixed</A>
-</UL>
-<P>
-<!-- To install these, put them in a directory -->
-これらをインストールするには、それらを 1 個のディレクトリにまとめて移し、そのディレクトリで以下の操作を行います。
-<UL>
-  <LI>
-    $ mkfontdir
-  <LI>
-    $ xset fp+ `pwd`
-</UL>
-<P>
-<!--
-Again you should make sure that the xset line happens whenever X is started
-on your machine (put it in your .xsession file).
--->
-X を起動したときにはいつも xset の実行が行われるようになっているか、もう一度確認したほうがいいでしょう
-(自分の .xsession ファイルに書き足しましょう)。
-<H3>
-<!-- <A NAME="Starting">Starting the program</A> -->
-     <A NAME="Starting">プログラムの起動法</A>
-</H3>
-<DL>
-  <DT>
-    <CODE>$ fontforge -new</CODE>
-  <DD>
-<!--
-    Will create a new postscript font with the ISO 8859-1 encoding (the international
-    encoding standard for western europe, and the standard for most X fonts)
-    and open a <A HREF="#FontView">font view </A>which will allow you to edit
-    that font.
--->
-    新規に、ISO 8859-1 エンコーディング (西ヨーロッパで用いられるエンコーディングの国際規格で、ほとんどの X フォントがこれに基づいています) の PostScript フォントを作成し、フォントの編集操作が行える<A HREF="#FontView">フォントビュー</A>を開きます。
-  <DT>
-    <CODE>$ fontforge fontname</CODE>
-  <DD>
-<!--
-    Will open a <A HREF="#FontView">font view</A> looking at the font you selected.
-    This may be a binary or ascii postscript type1 font (.pfa, .pfb or .gsf
-    extensions), one of fontforge's spline font database files
-    (.<A HREF="sfd.html">sfd</A> extension), a postscript type 0 font (.ps extension,
-    though the encoding will probably be lost here), a truetype font (.ttf or
-    .ttc extension), an Open Type font (.otf) a mac resource file (.bin, .hqx
-    or .dfont), or even a bitmap font (.bdf).
--->
-    選択したフォントを表示する<A HREF="#FontView">フォントビュー</A>を開きます。
-    ここで指定できるのは、バイナリまたは ASCII フォーマットの PostScript Type1 フォント (拡張子 .pfa, .pfb または .gsf)、PfaEdit のスプラインフォントデータベースファイル (拡張子 .<A HREF="sfd.html">sfd</A>), PostScript Type 0 フォント (拡張子 .ps, ただしこの場合エンコーディングはふつう失われます), TrueType フォント (拡張子 .ttf または .ttc), OpenType フォント (.otf), Mac のリソースファイル (.bin, .hqx または .dfont), それに加えてビットマップフォント (.bdf) も読み込むことができます。
-    <P>
-<!--
-    More than one fontname may be specified on the command line. -->
-    コマンドラインでは fontname に複数のフォントを指定することができます。
-  <DT>
-    <CODE>$ fontforge "gulim.ttc(GulimChe)"</CODE>
-  <DD>
-<!--
-    If a file format supports several fonts within the file (.ttc or mac resource
-    files) then you may specify which font you want by following the filename
-    with the font name in parentheses.
--->
-    ファイル内にいくつものフォントを格納することができるファイルフォーマット 
-(.ttc や Mac のリソースファイル) の場合、ファイル名の後ろに括弧で囲ったフォント名を入れることによってどのフォントを使うかを指定することができます。
-  <DT>
-    <CODE>$ fontforge</CODE>
-  <DD>
-<!--
-    Will open a file picker dialog and allow you to browse your disk to find
-    the appropriate font file, or create a new one.-->
-    ファイル選択ダイアログが開き、適切なフォントファイルを探すためにディスクをブラウズしたり、新しいフォントを作成したりできます。
-</DL>
-<P>
-<!--
-On Mac OS/X you must start XDarwin before you can start fontforge. See the
-<A HREF="MacOSX.html#Running">Mac specific notes</A> for more info.<BR>
-On windows under cygwin you must again start X first
--->
-Mac OS/X では、fontforge を起動する前に XDarwin を起動しておかなければなりません。より詳しい情報は、<A HREF="MacOSX.html#Running">Mac 固有の注意点</A> を参照してください。<BR>
-Windows でも同様に、最初に X を cygwin から起動しておく必要があります。
+<A HREF="running.html">Running fontforge</A>-->
+<A HREF="running.html">FontForge の起動方法</A>
 <H3>
 <!-- <A NAME="intro">Introductory</A> concepts: Fonts, Splines, Lines, Points
      and Paths -->
