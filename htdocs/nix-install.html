@@ -2,227 +2,227 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 26-Oct-2005 -->
-  <!-- AP: Last modified: 28-Oct-2005 -->
+  <!-- AP: Last modified: 31-Oct-2005 -->
   <TITLE>FontForge install procedures for unix/linux based systems</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
 <DIV id="in">
-<H1 ALIGN=Center>
-  FontForge install procedures<BR>
-  <SMALL>for unix/linux based systems</SMALL>
-</H1>
-<UL>
-  <LI>
-    <A HREF="#Installing">Installing from a pre-built unix package</A>
-    <UL>
-      <LI>
-	<A HREF="#Obtaining">Obtaining one of my pre-built packages</A>
-	<UL>
-	  <LI>
-	    <A HREF="#Elsewhere">Obtaining a package from another source</A>
-	</UL>
-      <LI>
-	<A HREF="#rpm">Installing from an rpm</A> (linux)
-      <LI>
-	<A HREF="#executable">Installing from an executable tarball</A> (solaris)
-      <LI>
-	<A HREF="#package">What's in a package (in case you are interested)</A>
-      <LI>
-	<A HREF="#Ports">Ports that I am aware of</A>
-    </UL>
-  <LI>
-    <A HREF="mac-install.html">Installing on a Mac</A>
-  <LI>
-    <A HREF="ms-install.html">Installing on MS/Windows</A>
-  <LI>
-    <A HREF="vms-install.html">Installing on VMS</A>
-  <LI>
-    <A HREF="source-build.html#source">Building and installing from source</A>
-  <LI>
-    <A HREF="source-build.html#Dependencies">Dependencies (external libraries/helper
-    programs)</A>
-  <LI>
-    <A HREF="source-build.html#Documentation">Installing documentation</A>
-  <LI>
-    <A HREF="running.html">Running FontForge</A>
-</UL>
-<H2>
-  <A NAME="Installing">Installing</A> from a pre-built package
-</H2>
-<H3>
-  <A NAME="Obtaining">Obtaining</A> one of my pre-built packages
-</H3>
-<P>
-I post pre-built packages for i386 linux systems and for Sparc Solaris systems.
-These can be found on
-<A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=111040">sourceforge's
-file release system</A>. There's a certain amount of pother involved in using
-this system, but you get the file eventually.
-<UL>
-  <LI>
-    If you follow the
-    <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=111040">link
-    above </A>you will end up on a page showing many releases of FontForge for
-    many systems<BR>
-    in most cases you will want the most recent release.
-  <LI>
-    Then click on the executable package you want to download:
-    <UL>
-      <LI>
-	For i386 linux you will want the rpm file for the i386 (This happens to have
-	been built on RedHat 9, but it should work on any i386 linux system that
-	supports rpm -- RedHat, Fedora, Suse, Mandrake, etc.)
-      <LI>
-	For Sparc Solaris you will want the tar.bz2 file for sparc.
-    </UL>
-  <LI>
-    Then you have the joy of choosing a mirror site (pick one that's on the same
-    continent you are) and click on the little icon in the download column
-  <LI>
-    Then you wait. After a bit you get another copy of this same page. After
-    an even longer time your browser notices that you've started a download.
-</UL>
-<H4>
-  <A NAME="Elsewhere">Obtaining</A> a package from another source
-</H4>
-<P>
-Most of the linux distributions have packages for fontforge. These will often
-be a little older than my packages, but perhaps more stable. I shall not
-try to provide a complete list, but I am aware of the following sites:
-<UL>
-  <LI>
-    <A HREF="http://packages.debian.org/unstable/x11/fontforge.html">debian</A>
-    -- has builds for (alpha, amd64, arm, hppa, hurd-i386, i386, ia64, m68k,
-    mips, mipsel, ppc, s390, sparc)
-  <LI>
-    <A HREF="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/fonts/fontforge/README.html">netbsd</A>
-    -- has builds for (alpha, i386, ppc, sparc, x86_64)
-  <LI>
-    <A HREF="http://www.rpmfind.com/">rpmfind</A> -- will point you toward builds
-    for Fedora, Suse, Mandrake, and others
-  <LI>
-    Apostolos Syropoulos has a Solaris x86 package at
-    <A HREF="http://ocean1.ee.duth.gr/Solaris/PfaEdit.pkg.gz">his site</A>
-  <LI>
-    <A HREF="mac-install.html">Mac OS/X </A>-- Although the Mac is now a unix
-    system its install procedure is sufficiently different that I have a page
-    devoted to it specifically.
-</UL>
-<H3>
-  Installing from an <A NAME="rpm">rpm</A>
-</H3>
-<P>
-The i386 package I provide, and many of the linux packages others provide
-are "rpm" files.
-<P>
-Installing an rpm package is relatively straight forward. You will need to
-be root. Move to the directory containing the downloaded rpm, and then type
-(do not type the "$"):
-<BLOCKQUOTE>
-  <PRE># rpm -i fontforge-*.rpm
+  <H1 ALIGN=Center>
+    FontForge install procedures<BR>
+    <SMALL>for unix/linux based systems</SMALL>
+  </H1>
+  <UL>
+    <LI>
+      <A HREF="#Installing">Installing from a pre-built unix package</A>
+      <UL>
+	<LI>
+	  <A HREF="#Obtaining">Obtaining one of my pre-built packages</A>
+	  <UL>
+	    <LI>
+	      <A HREF="#Elsewhere">Obtaining a package from another source</A>
+	  </UL>
+	<LI>
+	  <A HREF="#rpm">Installing from an rpm</A> (linux)
+	<LI>
+	  <A HREF="#executable">Installing from an executable tarball</A> (solaris)
+	<LI>
+	  <A HREF="#package">What's in a package (in case you are interested)</A>
+	<LI>
+	  <A HREF="#Ports">Ports that I am aware of</A>
+      </UL>
+    <LI>
+      <A HREF="mac-install.html">Installing on a Mac</A>
+    <LI>
+      <A HREF="ms-install.html">Installing on MS/Windows</A>
+    <LI>
+      <A HREF="vms-install.html">Installing on VMS</A>
+    <LI>
+      <A HREF="source-build.html#source">Building and installing from source</A>
+    <LI>
+      <A HREF="source-build.html#Dependencies">Dependencies (external libraries/helper
+      programs)</A>
+    <LI>
+      <A HREF="source-build.html#Documentation">Installing documentation</A>
+    <LI>
+      <A HREF="running.html">Running FontForge</A>
+  </UL>
+  <H2>
+    <A NAME="Installing">Installing</A> from a pre-built package
+  </H2>
+  <H3>
+    <A NAME="Obtaining">Obtaining</A> one of my pre-built packages
+  </H3>
+  <P>
+  I post pre-built packages for i386 linux systems and for Sparc Solaris systems.
+  These can be found on
+  <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=111040">sourceforge's
+  file release system</A>. There's a certain amount of pother involved in using
+  this system, but you get the file eventually.
+  <UL>
+    <LI>
+      If you follow the
+      <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=111040">link
+      above </A>you will end up on a page showing many releases of FontForge for
+      many systems<BR>
+      in most cases you will want the most recent release.
+    <LI>
+      Then click on the executable package you want to download:
+      <UL>
+	<LI>
+	  For i386 linux you will want the rpm file for the i386 (This happens to have
+	  been built on RedHat 9, but it should work on any i386 linux system that
+	  supports rpm -- RedHat, Fedora, Suse, Mandrake, etc.)
+	<LI>
+	  For Sparc Solaris you will want the tar.bz2 file for sparc.
+      </UL>
+    <LI>
+      Then you have the joy of choosing a mirror site (pick one that's on the same
+      continent you are) and click on the little icon in the download column
+    <LI>
+      Then you wait. After a bit you get another copy of this same page. After
+      an even longer time your browser notices that you've started a download.
+  </UL>
+  <H4>
+    <A NAME="Elsewhere">Obtaining</A> a package from another source
+  </H4>
+  <P>
+  Most of the linux distributions have packages for fontforge. These will often
+  be a little older than my packages, but perhaps more stable. I shall not
+  try to provide a complete list, but I am aware of the following sites:
+  <UL>
+    <LI>
+      <A HREF="http://packages.debian.org/unstable/x11/fontforge.html">debian</A>
+      -- has builds for (alpha, amd64, arm, hppa, hurd-i386, i386, ia64, m68k,
+      mips, mipsel, ppc, s390, sparc)
+    <LI>
+      <A HREF="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/fonts/fontforge/README.html">netbsd</A>
+      -- has builds for (alpha, i386, ppc, sparc, x86_64)
+    <LI>
+      <A HREF="http://www.rpmfind.com/">rpmfind</A> -- will point you toward builds
+      for Fedora, Suse, Mandrake, and others
+    <LI>
+      Apostolos Syropoulos has a Solaris x86 package at
+      <A HREF="http://ocean1.ee.duth.gr/Solaris/PfaEdit.pkg.gz">his site</A>
+    <LI>
+      <A HREF="mac-install.html">Mac OS/X </A>-- Although the Mac is now a unix
+      system its install procedure is sufficiently different that I have a page
+      devoted to it specifically.
+  </UL>
+  <H3>
+    Installing from an <A NAME="rpm">rpm</A>
+  </H3>
+  <P>
+  The i386 package I provide, and many of the linux packages others provide
+  are "rpm" files.
+  <P>
+  Installing an rpm package is relatively straight forward. You will need to
+  be root. Move to the directory containing the downloaded rpm, and then type
+  (do not type the "$" or "#"):
+  <BLOCKQUOTE>
+    <PRE># rpm -i fontforge-*.rpm
 </PRE>
-</BLOCKQUOTE>
-<P>
-If you've already installed fontforge and are updating an earlier version
-then you should type:
-<BLOCKQUOTE>
-  <PRE># rpm -U fontforge-*.rpm
+  </BLOCKQUOTE>
+  <P>
+  If you've already installed fontforge and are updating an earlier version
+  then you should type:
+  <BLOCKQUOTE>
+    <PRE># rpm -U fontforge-*.rpm
 </PRE>
-</BLOCKQUOTE>
-<H3>
-  Installing from an <A NAME="executable">executable</A> tarball
-</H3>
-<P>
-The solaris package I provide is a bzipped tarball (that is, it has an extension
-of ".tar.bz2"). You will probably need to be root for some of this process.
-Move to the directory containing the downloaded tarball and type (do not
-type the "$"):
-<BLOCKQUOTE>
-  <PRE>$ bunzip2 fontforge-*.tar.bz2
+  </BLOCKQUOTE>
+  <H3>
+    Installing from an <A NAME="executable">executable</A> tarball
+  </H3>
+  <P>
+  The solaris package I provide is a bzipped tarball (that is, it has an extension
+  of ".tar.bz2"). You will probably need to be root for some of this process.
+  Move to the directory containing the downloaded tarball and type (do not
+  type the "$" or "#"):
+  <BLOCKQUOTE>
+    <PRE>$ bunzip2 fontforge-*.tar.bz2
 $ tar xf fontforge-*.tar
 $ cd fontforge
 $ su
 # ./doinstall
 </PRE>
-</BLOCKQUOTE>
-<P>
-(Older versions may have an extension of .tgz. In this case you would replace
-the first two lines with "<CODE>$ tar xfz fontforge-*.tgz</CODE>")
-<P>
-<FONT COLOR="Red"><STRONG>Caveat:</STRONG></FONT> My packages generally install
-to /usr/local, and this may not be in your default PATH. You may need to
-add a line like
-<BLOCKQUOTE>
-  <PRE>PATH=$PATH:/usr/local/bin ; export PATH
+  </BLOCKQUOTE>
+  <P>
+  (Older versions may have an extension of .tgz. In this case you would replace
+  the first two lines with "<CODE>$ tar xfz fontforge-*.tgz</CODE>")
+  <P>
+  <FONT COLOR="Red"><STRONG>Caveat:</STRONG></FONT> My packages generally install
+  to /usr/local, and this may not be in your default PATH. You may need to
+  add a line like
+  <BLOCKQUOTE>
+    <PRE>PATH=$PATH:/usr/local/bin ; export PATH
 </PRE>
-</BLOCKQUOTE>
-<P>
-to your ~/.bashrc file (or equivalent if you use a different shell).
-<H3>
-  What's in a <A NAME="package">package</A>
-</H3>
-<P>
-Just in case you are interested. My packages contain:
-<UL>
-  <LI>
-    fontforge -- the executable itself
-  <LI>
-    libgunicode*.so -- a shared library containing functions for manipulating
-    UCS2 strings, and various data about unicode code points.
-  <LI>
-    libgdraw*.so -- the graphics and widget library used by fontforge
-  <LI>
-    pfaedit-ui.{es,fr,it,ja,ru} -- translated strings to provide a user interface
-    for non-English users.
-  <LI>
-    *.cidmap -- not present in all packages. These are useful when editing CID-keyed
-    Asian fonts.
-  <LI>
-    README*
-  <LI>
-    fontforge.1 -- a manual page for fontforge
-</UL>
-<H3>
-  <A NAME="Ports">Ports</A> that I am aware of
-</H3>
-<P>
-FontForge has been ported to the following systems (at some point in its
-life)
-<UL>
-  <LI>
-    Linux (obviously, (redhat, debian, suse, mandrake),
-    386,spark,arm,alpha,ia64,m68k,mips,mipsel,powerpc,s390)
-  <LI>
-    Solaris
-  <LI>
-    Irix
-  <LI>
-    FreeBsd
-  <LI>
-    NetBsd
-  <LI>
-    Mac OS/X
-  <LI>
-    OpenVMS7.3 for Alpha
-  <LI>
-    <A HREF="http://cygwin.com/">cygwin</A> with X running on top of MS windows.
-</UL>
-<P>
-<P>
-  <HR>
-<UL>
-  <LI>
-    <A HREF="source-build.html#source">Building and installing from source</A>
-  <LI>
-    <A HREF="source-build.html#Dependencies">Dependencies (external libraries/helper
-    programs)</A>
-  <LI>
-    <A HREF="source-build.html#Documentation">Installing documentation</A>
-  <LI>
-    <A HREF="running.html">Running FontForge</A>
-</UL>
-<P>
+  </BLOCKQUOTE>
+  <P>
+  to your ~/.bashrc file (or equivalent if you use a different shell).
+  <H3>
+    What's in a <A NAME="package">package</A>
+  </H3>
+  <P>
+  Just in case you are interested. My packages contain:
+  <UL>
+    <LI>
+      fontforge -- the executable itself
+    <LI>
+      libgunicode*.so -- a shared library containing functions for manipulating
+      UCS2 strings, and various data about unicode code points.
+    <LI>
+      libgdraw*.so -- the graphics and widget library used by fontforge
+    <LI>
+      pfaedit-ui.{es,fr,it,ja,ru} -- translated strings to provide a user interface
+      for non-English users.
+    <LI>
+      *.cidmap -- not present in all packages. These are useful when editing CID-keyed
+      Asian fonts.
+    <LI>
+      README*
+    <LI>
+      fontforge.1 -- a manual page for fontforge
+  </UL>
+  <H3>
+    <A NAME="Ports">Ports</A> that I am aware of
+  </H3>
+  <P>
+  FontForge has been ported to the following systems (at some point in its
+  life)
+  <UL>
+    <LI>
+      Linux (obviously, (redhat, debian, suse, mandrake),
+      386,spark,arm,alpha,ia64,m68k,mips,mipsel,powerpc,s390)
+    <LI>
+      Solaris
+    <LI>
+      Irix
+    <LI>
+      FreeBsd
+    <LI>
+      NetBsd
+    <LI>
+      Mac OS/X
+    <LI>
+      OpenVMS7.3 for Alpha
+    <LI>
+      <A HREF="http://cygwin.com/">cygwin</A> with X running on top of MS windows.
+  </UL>
+  <P>
+  <P>
+    <HR>
+  <UL>
+    <LI>
+      <A HREF="source-build.html#source">Building and installing from source</A>
+    <LI>
+      <A HREF="source-build.html#Dependencies">Dependencies (external libraries/helper
+      programs)</A>
+    <LI>
+      <A HREF="source-build.html#Documentation">Installing documentation</A>
+    <LI>
+      <A HREF="running.html">Running FontForge</A>
+  </UL>
+  <P>
 </DIV>
 </BODY></HTML>
