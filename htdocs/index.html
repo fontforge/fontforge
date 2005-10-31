@@ -2,752 +2,753 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 27-Oct-2005 -->
+  <!-- AP: Last modified: 31-Oct-2005 -->
   <TITLE>FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
 <DIV id="in">
-<H1 ALIGN=Center>
-  <IMG SRC="ffanvil32.png" WIDTH="32" HEIGHT="32" ALIGN="Left"><A href="http://sourceforge.net"><IMG
-      src="http://sourceforge.net/sflogo.php?group_id=25752&amp;type=1" width="88"
-      height="31" border="0" alt="SourceForge Logo" ALIGN=right> </A> FontForge
-</H1>
-<HR>
-<!-- <P ALIGN=Center>
-<FONT COLOR="Red"><BIG><B>I will not be responding to bug reports/feature
-requests/etc. between<BR>
-22 June and 29 June (I'll be at
+  <H1 ALIGN=Center>
+    <IMG SRC="ffanvil32.png" WIDTH="32" HEIGHT="32" ALIGN="Left"><A href="http://sourceforge.net"><IMG
+	src="http://sourceforge.net/sflogo.php?group_id=25752&amp;type=1" width="88"
+	height="31" border="0" alt="SourceForge Logo" ALIGN=right> </A> FontForge
+  </H1>
+  <P>
+    <HR>
+  <!-- <P ALIGN=Center>
+  <FONT COLOR="Red"><BIG><B>I will not be responding to bug reports/feature
+  requests/etc. between<BR>
+  22 June and 29 June (I'll be at
 <A HREF="http://omega.enstb.org/eurotex2003/">EuroTeX</A>)</B></BIG></FONT> -->
-<P>
-<FONT COLOR="Red"><STRONG>FontForge</STRONG></FONT> -- An outline font editor
-that lets you create your own postscript, truetype, opentype, cid-keyed,
-multi-master, cff, svg and bitmap (bdf, FON, NFNT) fonts, or edit existing
-ones. Also lets you convert one format to another. FontForge has support
-for many macintosh font formats.
-<P>
-FontForge's user interface has been localized for: (English), Russian, Japanese,
-French, Italian, Spanish.<BR>
-This website itself has been translated into Japanese
-<A HREF="ja/"><IMG SRC="flags/Nisshoki-Japan.png" WIDTH="39" HEIGHT="26"></A>
-and the tutorial into (traditional) Chinese
-<A HREF="http://edt1023.sayya.org/fontforge/editexample.html"><IMG SRC="flags/taiwan.png"
-    WIDTH="39" HEIGHT="26"></A>
-<UL>
-  <LI>
-    <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=111040">Application
-    Download</A>
-    <TABLE CELLSPACING="6" CELLPADDING="2">
-      <CAPTION>
-	System specific notes
-      </CAPTION>
-      <TR>
-	<TD><P ALIGN=Center>
-	  <A HREF="nix-install.html">Unix/Linux</A></TD>
-	<TD>&nbsp; &nbsp; &nbsp; <A HREF="mac-install.html">Mac</A></TD>
-	<TD>&nbsp; &nbsp; &nbsp; <A HREF="ms-install.html">MS/Windows</A></TD>
-	<TD>&nbsp; &nbsp; &nbsp; <A HREF="vms-install.html">VMS</A></TD>
-	<TD>&nbsp; &nbsp; &nbsp; <A HREF="source-build.html">from source</A></TD>
-      </TR>
-    </TABLE>
-  <LI>
-    <A HREF="overview.html"><BIG>User &amp; Reference
-    manual</BIG></A><BIG>.</BIG>
-    (<A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=114329">downloadable</A>)--
-    Shorter tutorial <A HREF="editexample.html">html</A> -
-    <A HREF="fontforge-tutorial.pdf">pdf</A> - <A HREF="tutorial.tgz">example
-    files</A><BR>
-    <A HREF="ja/overview.html"><IMG SRC="manual-ja.png" WIDTH="268" HEIGHT="18"
-	BORDER="0"></A> &nbsp; &nbsp;
-    <A HREF="http://edt1023.sayya.org/fontforge/editexample.html"><IMG SRC="tutorial-zh_TW.png"
-	WIDTH="35" HEIGHT="18" BORDER="0"></A>
-  <LI>
-    <A HREF="http://sourceforge.net/projects/fontforge/">SourceForge Project
-    page</A> / SourceForge
-    <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338">File
-    Release System</A>
-  <LI>
-    <A HREF="source-build.html#Dependencies">Dependencies</A>
-  <LI>
-    <A HREF="source-build.html#cidmaps">Helper files for editing CID keyed
-    fonts</A>
-  <LI>
-    <A HREF="source-build.html#suggested-fonts">Suggested fonts</A>
-  <LI>
-    <A HREF="wacom.html">Configuring a wacom tablet</A>
-  <LI>
-    <A HREF="source-build.html#Documentation">Documentation</A>
-  <LI>
-    <A HREF="sfds/index.html">A library sfd fonts</A>
-  <LI>
-    <A HREF="#license">License</A>
-  <LI>
-    <A HREF="changelog.html#change-log">Change Log</A>
-    (<A HREF="oldchangelog.html">older changes</A>, even
-    <A HREF="pfaeditchangelog.html">older changes -- to PfaEdit</A>)
-  <LI>
-    <A HREF="faqFS.html">FAQ</A>
-  <LI>
-    <A HREF="#Mail">Mailing Lists</A>
-  <LI>
-    <A HREF="index.html#Lacks">Things missing...</A>
-  <LI>
-    <A HREF="#known-bugs">Known Bugs</A>
-  <LI>
-    <A HREF="#bugs">Reporting Bugs</A>
-  <LI>
-    <A HREF="#assistance">How else you can help</A>
-  <LI>
-    <A HREF="future.html">Future Improvements</A>
-  <LI>
-    <A HREF="#Acknowledgements">Acknowledgements</A>
-  <LI>
-    <A HREF="bibliography.html#Formats">Font File Formats </A>(standards)
-  <LI>
-    <A HREF="bibliography.html#Unicode">Unicode</A>
-  <LI>
-    <A HREF="bibliography.html#Books">Books</A>
-  <LI>
-    Companion programs
-    <UL>
-      <LI>
-	<A HREF="sfddiff.html">sfddiff man page</A>
-      <LI>
-	<A HREF="acorn2sfd.html">acorn2sfd man page</A>
-      <LI>
-	<A HREF="fontutils.html">random font utilities</A>
-    </UL>
-  <LI>
-    <A HREF="#tools">Related tools</A>
-</UL>
-<P>
-I have no one to do QA for me except users on the net, so this is essentially
-(and eternally) beta software. Expect to find bugs. <A HREF="#bugs">Please
-let me know when you do</A>.
-<H2>
-  License
-</H2>
-<BLOCKQUOTE>
+  <P>
+  <FONT COLOR="Red"><STRONG>FontForge</STRONG></FONT> -- An outline font editor
+  that lets you create your own postscript, truetype, opentype, cid-keyed,
+  multi-master, cff, svg and bitmap (bdf, FON, NFNT) fonts, or edit existing
+  ones. Also lets you convert one format to another. FontForge has support
+  for many macintosh font formats.
+  <P>
+  FontForge's user interface has been localized for: (English), Russian, Japanese,
+  French, Italian, Spanish.<BR>
+  This website itself has been translated into Japanese
+  <A HREF="ja/"><IMG SRC="flags/Nisshoki-Japan.png" WIDTH="39" HEIGHT="26"></A>
+  and the tutorial into (traditional) Chinese
+  <A HREF="http://edt1023.sayya.org/fontforge/editexample.html"><IMG SRC="flags/taiwan.png"
+      WIDTH="39" HEIGHT="26"></A>
+  <UL>
+    <LI>
+      <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=111040">Application
+      Download</A>
+      <TABLE CELLSPACING="6" CELLPADDING="2">
+	<CAPTION>
+	  System specific notes
+	</CAPTION>
+	<TR>
+	  <TD><P ALIGN=Center>
+	    <A HREF="nix-install.html">Unix/Linux</A></TD>
+	  <TD>&nbsp; &nbsp; &nbsp; <A HREF="mac-install.html">Mac</A></TD>
+	  <TD>&nbsp; &nbsp; &nbsp; <A HREF="ms-install.html">MS/Windows</A></TD>
+	  <TD>&nbsp; &nbsp; &nbsp; <A HREF="vms-install.html">VMS</A></TD>
+	  <TD>&nbsp; &nbsp; &nbsp; <A HREF="source-build.html">from source</A></TD>
+	</TR>
+      </TABLE>
+    <LI>
+      <A HREF="overview.html"><BIG>User &amp; Reference
+      manual</BIG></A><BIG>.</BIG>
+      (<A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=114329">downloadable</A>)--
+      Shorter tutorial <A HREF="editexample.html">html</A> -
+      <A HREF="fontforge-tutorial.pdf">pdf</A> - <A HREF="tutorial.tgz">example
+      files</A><BR>
+      <A HREF="ja/overview.html"><IMG SRC="manual-ja.png" WIDTH="268" HEIGHT="18"
+	  BORDER="0"></A> &nbsp; &nbsp;
+      <A HREF="http://edt1023.sayya.org/fontforge/editexample.html"><IMG SRC="tutorial-zh_TW.png"
+	  WIDTH="35" HEIGHT="18" BORDER="0"></A>
+    <LI>
+      <A HREF="http://sourceforge.net/projects/fontforge/">SourceForge Project
+      page</A> / SourceForge
+      <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338">File
+      Release System</A>
+    <LI>
+      <A HREF="source-build.html#Dependencies">Dependencies</A>
+    <LI>
+      <A HREF="source-build.html#cidmaps">Helper files for editing CID keyed
+      fonts</A>
+    <LI>
+      <A HREF="source-build.html#suggested-fonts">Suggested fonts</A>
+    <LI>
+      <A HREF="wacom.html">Configuring a wacom tablet</A>
+    <LI>
+      <A HREF="source-build.html#Documentation">Documentation</A>
+    <LI>
+      <A HREF="sfds/index.html">A library sfd fonts</A>
+    <LI>
+      <A HREF="#license">License</A>
+    <LI>
+      <A HREF="changelog.html#change-log">Change Log</A>
+      (<A HREF="oldchangelog.html">older changes</A>, even
+      <A HREF="pfaeditchangelog.html">older changes -- to PfaEdit</A>)
+    <LI>
+      <A HREF="faqFS.html">FAQ</A>
+    <LI>
+      <A HREF="#Mail">Mailing Lists</A>
+    <LI>
+      <A HREF="index.html#Lacks">Things missing...</A>
+    <LI>
+      <A HREF="#known-bugs">Known Bugs</A>
+    <LI>
+      <A HREF="#bugs">Reporting Bugs</A>
+    <LI>
+      <A HREF="#assistance">How else you can help</A>
+    <LI>
+      <A HREF="future.html">Future Improvements</A>
+    <LI>
+      <A HREF="#Acknowledgements">Acknowledgements</A>
+    <LI>
+      <A HREF="bibliography.html#Formats">Font File Formats </A>(standards)
+    <LI>
+      <A HREF="bibliography.html#Unicode">Unicode</A>
+    <LI>
+      <A HREF="bibliography.html#Books">Books</A>
+    <LI>
+      Companion programs
+      <UL>
+	<LI>
+	  <A HREF="sfddiff.html">sfddiff man page</A>
+	<LI>
+	  <A HREF="acorn2sfd.html">acorn2sfd man page</A>
+	<LI>
+	  <A HREF="fontutils.html">random font utilities</A>
+      </UL>
+    <LI>
+      <A HREF="#tools">Related tools</A>
+  </UL>
+  <P>
+  I have no one to do QA for me except users on the net, so this is essentially
+  (and eternally) beta software. Expect to find bugs. <A HREF="#bugs">Please
+  let me know when you do</A>.
+  <H2>
+    License
+  </H2>
   <BLOCKQUOTE>
-    <A NAME="license">Copyright</A> &copy; 2000,2001,2002,2003,2004,2005 by George
-    Williams
-    <P>
-    Redistribution and use in source and binary forms, with or without modification,
-    are permitted provided that the following conditions are met:
-    <P>
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    <P>
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
-    <P>
-    The name of the author may not be used to endorse or promote products derived
-    from this software without specific prior written permission.
-    <P>
-    THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
-    WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-    MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
-    EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-    EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
-    OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-    STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
-    OF SUCH DAMAGE.
+    <BLOCKQUOTE>
+      <A NAME="license">Copyright</A> &copy; 2000,2001,2002,2003,2004,2005 by George
+      Williams
+      <P>
+      Redistribution and use in source and binary forms, with or without modification,
+      are permitted provided that the following conditions are met:
+      <P>
+      Redistributions of source code must retain the above copyright notice, this
+      list of conditions and the following disclaimer.
+      <P>
+      Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
+      and/or other materials provided with the distribution.
+      <P>
+      The name of the author may not be used to endorse or promote products derived
+      from this software without specific prior written permission.
+      <P>
+      THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+      WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+      MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+      EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+      EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+      OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+      INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+      STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+      ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
+      OF SUCH DAMAGE.
+    </BLOCKQUOTE>
   </BLOCKQUOTE>
-</BLOCKQUOTE>
-<P>
-This is essentially the
-"<A HREF="http://www.law.yi.org/~sfllaw/talks/bsd.pdf">revised BSD
-license</A>".
-<H2>
-  <A NAME="Mail">Mailing Lists</A>
-</H2>
-<P>
-There are currently three mailing lists established for FontForge. You may
-subscribe to any of them on sourceforge:
-<A HREF="http://sourceforge.net/mail/?group_id=103338">http://sourceforge.net/mail/?group_id=103338</A>.
-You may not post to a list until you have subscribed (sorry about that, but
-we were getting too much spam).
-<P>
-<FONT COLOR="Red"><STRONG><BIG>Caveat: Posting to these mailing lists exposes
-your email address.</BIG></STRONG></FONT>
-<UL>
-  <LI>
-    <A HREF="mailto:fontforge-devel@lists.sourceforge.net">fontforge-devel</A>
-    -- for reporting bugs, requesting features and such<BR>
-    To subscribe, look at
-    <A HREF="http://lists.sourceforge.net/lists/listinfo/fontforge-devel">http://lists.sourceforge.net/lists/listinfo/fontforge-devel</A><BR>
-    For archives, look at
-    <A HREF="http://sourceforge.net/mailarchive/forum.php?forum=fontforge-devel">http://sourceforge.net/mailarchive/forum.php?forum=fontforge-devel</A>
-  <LI>
-    <A HREF="mailto:fontforge-testcases@lists.sourceforge.net">fontforge-testcases
-    </A>-- To send large test cases to me<BR>
-    Do not subscribe to this list.<BR>
-    For archives, look at
-    <A HREF="http://sourceforge.net/mailarchive/forum.php?forum=fontforge-testcases">http://sourceforge.net/mailarchive/forum.php?forum=fontforge-testcases</A>
-  <LI>
-    <A HREF="mailto:fontforge-users@lists.sourceforge.net">fontforge-users </A>--
-    for general discussion of fontforge<BR>
-    To subscribe, look at
-    <A HREF="http://lists.sourceforge.net/lists/listinfo/fontforge-users">http://lists.sourceforge.net/lists/listinfo/fontforge-users</A><BR>
-    For archives, look at
-    <A HREF="http://sourceforge.net/mailarchive/forum.php?forum=fontforge-users">http://sourceforge.net/mailarchive/forum.php?forum=fontforge-users</A>
-  <LI>
-    fontforge-announce -- used (by me) to report major changes, etc.<BR>
-    To subscribe, look at
-    <A HREF="http://lists.sourceforge.net/lists/listinfo/fontforge-announce">http://lists.sourceforge.net/lists/listinfo/fontforge-announce</A>
-</UL>
-<H2>
-  <A NAME="Lacks">Lacks</A>
-</H2>
-<P>
-FontForge is by no means complete. And probably has some bugs. Be prepared
-to save frequently and consider working on a copy of the original.
-<UL>
-  <LI>
-    No attempt has been made to be efficient.
-  <LI>
-    No attempt has been made to interpret truetype instructions (hints), instead
-    the instructions will be stored and used as long as no significant changes
-    happen to the character they are associated with.
-  <LI>
-    Many type 3 fonts will not be read in correctly
-  <LI>
-    Importing a type0 font loses the encoding. FontForge only imports simple
-    type0 fonts (such as those made by itself), will get confused if there's
-    more than one font with a chars dictionary.
-  <LI>
-    FontForge's support for the VORG table output is limited.
-  <LI>
-    FontForge's support for <A HREF="gposgsub.html#AAT">Apple's Advanced Typography
-    tables</A> (AAT) is limited.
-</UL>
-<H2>
-  <A NAME="known-bugs">Bugs</A>
-</H2>
-<P>
-This list includes the gross bugs that I'm aware of but don't know how to
-fix. Minor bugs get reported to me and are generally fixed within a week
-and rarely appear on this list.
-<UL>
-  <LI>
-    My truetype hinting is still bad. Especially for diagonals.
-    <UL>
-      <LI>
-	R C van Dalen's <A HREF="http://home.kabelfoon.nl/~slam/fonts/">truetype
-	hinting utilities may be helpful here.</A>
-    </UL>
-  <LI>
-    Some truetype fonts (kaiu and mingliu) do not store the correct outline.
-    Instead they rely on using the instructions to move points around to generate
-    the outline. The outline does not appear to be grid-fit at all, just positioned.
-    FontForge apply the instructions when loading. In most fonts this would be
-    the wrong thing to do, and I don't know how I could tell when it needs to
-    be done...
-  <LI>
-    After adding the Johab encoding 23/Nov/01, any old fonts (in sfd files) which
-    had a unicode encoding will suddenly claim to have a Johab encoding. I don't
-    see a way around this at the moment. Just reencode them as unicode and all
-    should be well.
-  <LI>
-    I'm told AutoKern doesn't work too well. <SMALL>(I may have fixed this, but
-    I'm not sure)</SMALL>
-  <LI>
-    FontForge is confused by small splines, on the order of one em unit. If you
-    need something that small, scale the font up by a factor of 2 or more (including
-    the ascent and descent).
-  <LI>
-    There is a fundamental problem when importing a type3 font (or an eps file).
-    In an most postscript programs each contour is stroked or filled individually,
-    but in a type1 character, all contours are filled together. This can lead
-    to unexpected side-effects if contours overlap. (configuring fontforge for
-    <A HREF="multilayer.html">mutlilayered</A> editing can help with this)
-  <LI>
-    The MetaFont command doesn't work well.
-  <LI>
-    On linux boxes the dashed lines representing hints or the outlines of references
-    get screwed up. I think this is a bug in the XServer on linux (it doesn't
-    happen on other systems) but I have not examined it closely.
-  <LI>
-    FontForge will not copy and paste large (&gt;XServer transfer (4Meg on my
-    machine)) clipboards of text.
-  <LI>
-    Under gnome mnemonics in menus don't work. Personally I consider this a bug
-    in gnome.
-  <LI>
-    Under gnome, docked palettes don't work the first time. Personally I consider
-    this a bug in gnome.
-  <LI>
-    Under kde, iconifying a FontForge window crashes the button bar at the bottom
-    of the screen. Personally I consider this a bug in kde.
-  <LI>
-    FontForge only produces an approximation to the OS/2 Codepages fields.
-  <LI>
-    ???
-</UL>
-<H2>
-  Reporting <A NAME="bugs">bugs</A>...
-</H2>
-<P>
-I'm sure you'll find some. If you can isolate it and come up with a reproducible
-minimal case, that would be great. The executable has symbols in it so if
-you run it in gdb you should be able to get a stack trace... Do what you
-can. Please post bugs to:
-<P>
-<A HREF="mailto:fontforge-devel@lists.sourceforge.net">fontforge-devel@lists.sourceforge.net</A>
-<H2>
-  <A NAME="assistance">How else you can help.</A>
-</H2>
-<UL>
-  <LI>
-    <EM>My writing leaves much to be desired</EM>. Anyone who can make my
-    documentation more readable is encouraged to do so. (or who wishes to translate
-    it into other languages, or who wishes to put it into a more flexable format,
-    KANOU has a <A HREF="http://khdd.net/fontforge-jman/">Japanese version</A>)
-  <LI>
-    <I>I also have a brief tutorial in <A HREF="fontforge-tutorial.pdf">pdf
-    format</A>.</I> This could also be translated into other languages (and would
-    be a simpler job than trying to translate the entire website, here is the
-    <A HREF="fontforge-tutorial.tex">TeX source</A> if you wish to attempt it).
-  <LI>
-    <EM>The UI can be translated into different languages.</EM> Unfortunately
-    it does not use gnu gettext.
-    <UL>
-      <LI>
-	English I take care of
-      <LI>
-	Russian is provided by Valek Filippov.
-      <LI>
-	Japanese is provided by KANOU Hiroki.
-      <LI>
-	French is provided by Pierre Hanser and Yannis Haralambous.
-      <LI>
-	Italian is provided by Claudio Beccari
-      <LI>
-	Spanish is provided by <A HREF="mailto:wecharri@yahoo.com">Walter Echarri</A>
-      <LI>
-	A Catalan and a (Brazillian) Portugese translation are being worked on by
-	Javier Candeira and Gustavo Paolo respectively.
-      <LI>
-	I've also created a very minimal German translations that lapses into English,
-	anyone who wants to take this on is encouraged to do so.
-      <LI>
-	Any other language additions would be great (the entire UI does not need
-	to be translated, any subset is a help)
-    </UL>
-  <LI>
-    <EM>Different font formats</EM><BR>
-    FontForge supports Type1, truetype, opentype and svg fonts, also bdf and
-    NFNT for bitmaps<BR>
-    FontForge will sort-of accept metafont files (essentially it runs metafont
-    and autotraces the result). It won't produce .mf files<BR>
-    FontForge will read (but not produce) Ikarus files<BR>
-    FontForge will read acorn font files with a helper app.<BR>
-    But there are other formats out there that I can't find descriptions of:
-    <UL>
-      <LI>
-	Microsoft FON files (bitmap font resource files for windows)
-    </UL>
-  <LI>
-    There are certain c<EM>ommands which don't work very well </EM>and if someone
-    else wanted to they might code them better than I...
-    <UL>
-      <LI>
-	Remove overlap (might be fixed now)
-      <LI>
-	Autokern (might be fixed now)
-      <LI>
-	Metafont
-      <LI>
-	generating instructions to do hinting in truetype (especially hints for diagonal
-	stems)
-    </UL>
-  <LI>
-    <I>References</I>
-    <UL>
-      <LI>
-	I'd like to provide a reasonable bibliography, please suggest some good relevant
-	books.
-      <LI>
-	Are there any other programs or websites that I should be mentioning?
-    </UL>
-  <LI>
-    <I>Tests</I>
-    <UL>
-      <LI>
-	I've just started working on a very
-	<A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/test/">simplistic
-	testsuite</A>-- more to weed out crashes in the underlying engine, than to
-	make sure it produces the right results. If anyone has a better idea for
-	an automated suite, or would like to contribute tests to the current stuff,
-	please let me know.
-    </UL>
-  <LI>
-    <I>QA</I>
-    <UL>
-      <LI>
-	I don't.<BR>
-	I find QA boring, and since no one is paying me for this I don't do very
-	much. This is obviously a problem. If anyone wants to undertake to do QA
-	<A HREF="mailto:fontforge-devel@lists.sourceforge.net">for me</A> (or several
-	anyones) I'd be delighted.
-    </UL>
-  <LI>
-    <I>Printing tests</I>
-    <UL>
-      <LI>
-	I'm always on the look out for short copyright free texts for printing. I'm
-	looking for samples from languages I don't have anything on, or in styles
-	that I don't have.<BR>
-	I'm also interested in phrases equivalent to "The quick brown fox jumps over
-	the lazy dog." (pangrams). These are short sentences which use every letter
-	in the script.
-    </UL>
-  <LI>
-    <I>Indic information</I>
-    <UL>
-      <LI>
-	Indic languages have a series of special ligature features in opentype. I
-	believe that FontForge could probably generate some of these by default but
-	I don't know enough to say which. If you are familiar with indic scripts
-	could you give me a list of conversions in a format like
-	<BLOCKQUOTE>
-	  <PRE>
+  <P>
+  This is essentially the
+  "<A HREF="http://www.law.yi.org/~sfllaw/talks/bsd.pdf">revised BSD
+  license</A>".
+  <H2>
+    <A NAME="Mail">Mailing Lists</A>
+  </H2>
+  <P>
+  There are currently three mailing lists established for FontForge. You may
+  subscribe to any of them on sourceforge:
+  <A HREF="http://sourceforge.net/mail/?group_id=103338">http://sourceforge.net/mail/?group_id=103338</A>.
+  You may not post to a list until you have subscribed (sorry about that, but
+  we were getting too much spam).
+  <P>
+  <FONT COLOR="Red"><STRONG><BIG>Caveat: Posting to these mailing lists exposes
+  your email address.</BIG></STRONG></FONT>
+  <UL>
+    <LI>
+      <A HREF="mailto:fontforge-devel@lists.sourceforge.net">fontforge-devel</A>
+      -- for reporting bugs, requesting features and such<BR>
+      To subscribe, look at
+      <A HREF="http://lists.sourceforge.net/lists/listinfo/fontforge-devel">http://lists.sourceforge.net/lists/listinfo/fontforge-devel</A><BR>
+      For archives, look at
+      <A HREF="http://sourceforge.net/mailarchive/forum.php?forum=fontforge-devel">http://sourceforge.net/mailarchive/forum.php?forum=fontforge-devel</A>
+    <LI>
+      <A HREF="mailto:fontforge-testcases@lists.sourceforge.net">fontforge-testcases
+      </A>-- To send large test cases to me<BR>
+      Do not subscribe to this list.<BR>
+      For archives, look at
+      <A HREF="http://sourceforge.net/mailarchive/forum.php?forum=fontforge-testcases">http://sourceforge.net/mailarchive/forum.php?forum=fontforge-testcases</A>
+    <LI>
+      <A HREF="mailto:fontforge-users@lists.sourceforge.net">fontforge-users </A>--
+      for general discussion of fontforge<BR>
+      To subscribe, look at
+      <A HREF="http://lists.sourceforge.net/lists/listinfo/fontforge-users">http://lists.sourceforge.net/lists/listinfo/fontforge-users</A><BR>
+      For archives, look at
+      <A HREF="http://sourceforge.net/mailarchive/forum.php?forum=fontforge-users">http://sourceforge.net/mailarchive/forum.php?forum=fontforge-users</A>
+    <LI>
+      fontforge-announce -- used (by me) to report major changes, etc.<BR>
+      To subscribe, look at
+      <A HREF="http://lists.sourceforge.net/lists/listinfo/fontforge-announce">http://lists.sourceforge.net/lists/listinfo/fontforge-announce</A>
+  </UL>
+  <H2>
+    <A NAME="Lacks">Lacks</A>
+  </H2>
+  <P>
+  FontForge is by no means complete. And probably has some bugs. Be prepared
+  to save frequently and consider working on a copy of the original.
+  <UL>
+    <LI>
+      No attempt has been made to be efficient.
+    <LI>
+      No attempt has been made to interpret truetype instructions (hints), instead
+      the instructions will be stored and used as long as no significant changes
+      happen to the character they are associated with.
+    <LI>
+      Many type 3 fonts will not be read in correctly
+    <LI>
+      Importing a type0 font loses the encoding. FontForge only imports simple
+      type0 fonts (such as those made by itself), will get confused if there's
+      more than one font with a chars dictionary.
+    <LI>
+      FontForge's support for the VORG table output is limited.
+    <LI>
+      FontForge's support for <A HREF="gposgsub.html#AAT">Apple's Advanced Typography
+      tables</A> (AAT) is limited.
+  </UL>
+  <H2>
+    <A NAME="known-bugs">Bugs</A>
+  </H2>
+  <P>
+  This list includes the gross bugs that I'm aware of but don't know how to
+  fix. Minor bugs get reported to me and are generally fixed within a week
+  and rarely appear on this list.
+  <UL>
+    <LI>
+      My truetype hinting is still bad. Especially for diagonals.
+      <UL>
+	<LI>
+	  R C van Dalen's <A HREF="http://home.kabelfoon.nl/~slam/fonts/">truetype
+	  hinting utilities may be helpful here.</A>
+      </UL>
+    <LI>
+      Some truetype fonts (kaiu and mingliu) do not store the correct outline.
+      Instead they rely on using the instructions to move points around to generate
+      the outline. The outline does not appear to be grid-fit at all, just positioned.
+      FontForge apply the instructions when loading. In most fonts this would be
+      the wrong thing to do, and I don't know how I could tell when it needs to
+      be done...
+    <LI>
+      After adding the Johab encoding 23/Nov/01, any old fonts (in sfd files) which
+      had a unicode encoding will suddenly claim to have a Johab encoding. I don't
+      see a way around this at the moment. Just reencode them as unicode and all
+      should be well.
+    <LI>
+      I'm told AutoKern doesn't work too well. <SMALL>(I may have fixed this, but
+      I'm not sure)</SMALL>
+    <LI>
+      FontForge is confused by small splines, on the order of one em unit. If you
+      need something that small, scale the font up by a factor of 2 or more (including
+      the ascent and descent).
+    <LI>
+      There is a fundamental problem when importing a type3 font (or an eps file).
+      In an most postscript programs each contour is stroked or filled individually,
+      but in a type1 character, all contours are filled together. This can lead
+      to unexpected side-effects if contours overlap. (configuring fontforge for
+      <A HREF="multilayer.html">mutlilayered</A> editing can help with this)
+    <LI>
+      The MetaFont command doesn't work well.
+    <LI>
+      On linux boxes the dashed lines representing hints or the outlines of references
+      get screwed up. I think this is a bug in the XServer on linux (it doesn't
+      happen on other systems) but I have not examined it closely.
+    <LI>
+      FontForge will not copy and paste large (&gt;XServer transfer (4Meg on my
+      machine)) clipboards of text.
+    <LI>
+      Under gnome mnemonics in menus don't work. Personally I consider this a bug
+      in gnome.
+    <LI>
+      Under gnome, docked palettes don't work the first time. Personally I consider
+      this a bug in gnome.
+    <LI>
+      Under kde, iconifying a FontForge window crashes the button bar at the bottom
+      of the screen. Personally I consider this a bug in kde.
+    <LI>
+      FontForge only produces an approximation to the OS/2 Codepages fields.
+    <LI>
+      ???
+  </UL>
+  <H2>
+    Reporting <A NAME="bugs">bugs</A>...
+  </H2>
+  <P>
+  I'm sure you'll find some. If you can isolate it and come up with a reproducible
+  minimal case, that would be great. The executable has symbols in it so if
+  you run it in gdb you should be able to get a stack trace... Do what you
+  can. Please post bugs to:
+  <P>
+  <A HREF="mailto:fontforge-devel@lists.sourceforge.net">fontforge-devel@lists.sourceforge.net</A>
+  <H2>
+    <A NAME="assistance">How else you can help.</A>
+  </H2>
+  <UL>
+    <LI>
+      <EM>My writing leaves much to be desired</EM>. Anyone who can make my
+      documentation more readable is encouraged to do so. (or who wishes to translate
+      it into other languages, or who wishes to put it into a more flexable format,
+      KANOU has a <A HREF="ja/index.html">Japanese version</A>)
+    <LI>
+      <I>I also have a brief tutorial in <A HREF="fontforge-tutorial.pdf">pdf
+      format</A>.</I> This could also be translated into other languages (and would
+      be a simpler job than trying to translate the entire website, here is the
+      <A HREF="fontforge-tutorial.tex">TeX source</A> if you wish to attempt it).
+    <LI>
+      <EM>The UI can be translated into different languages.</EM> Unfortunately
+      it does not use gnu gettext.
+      <UL>
+	<LI>
+	  English I take care of
+	<LI>
+	  Russian is provided by Valek Filippov.
+	<LI>
+	  Japanese is provided by KANOU Hiroki.
+	<LI>
+	  French is provided by Pierre Hanser and Yannis Haralambous.
+	<LI>
+	  Italian is provided by Claudio Beccari
+	<LI>
+	  Spanish is provided by <A HREF="mailto:wecharri@yahoo.com">Walter Echarri</A>
+	<LI>
+	  A Catalan and a (Brazillian) Portugese translation are being worked on by
+	  Javier Candeira and Gustavo Paolo respectively.
+	<LI>
+	  I've also created a very minimal German translations that lapses into English,
+	  anyone who wants to take this on is encouraged to do so.
+	<LI>
+	  Any other language additions would be great (the entire UI does not need
+	  to be translated, any subset is a help)
+      </UL>
+    <LI>
+      <EM>Different font formats</EM><BR>
+      FontForge supports Type1, truetype, opentype and svg fonts, also bdf and
+      NFNT for bitmaps<BR>
+      FontForge will sort-of accept metafont files (essentially it runs metafont
+      and autotraces the result). It won't produce .mf files<BR>
+      FontForge will read (but not produce) Ikarus files<BR>
+      FontForge will read acorn font files with a helper app.<BR>
+      But there are other formats out there that I can't find descriptions of:
+      <UL>
+	<LI>
+	  Microsoft FON files (bitmap font resource files for windows)
+      </UL>
+    <LI>
+      There are certain c<EM>ommands which don't work very well </EM>and if someone
+      else wanted to they might code them better than I...
+      <UL>
+	<LI>
+	  Remove overlap (might be fixed now)
+	<LI>
+	  Autokern (might be fixed now)
+	<LI>
+	  Metafont
+	<LI>
+	  generating instructions to do hinting in truetype (especially hints for diagonal
+	  stems)
+      </UL>
+    <LI>
+      <I>References</I>
+      <UL>
+	<LI>
+	  I'd like to provide a reasonable bibliography, please suggest some good relevant
+	  books.
+	<LI>
+	  Are there any other programs or websites that I should be mentioning?
+      </UL>
+    <LI>
+      <I>Tests</I>
+      <UL>
+	<LI>
+	  I've just started working on a very
+	  <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/test/">simplistic
+	  testsuite</A>-- more to weed out crashes in the underlying engine, than to
+	  make sure it produces the right results. If anyone has a better idea for
+	  an automated suite, or would like to contribute tests to the current stuff,
+	  please let me know.
+      </UL>
+    <LI>
+      <I>QA</I>
+      <UL>
+	<LI>
+	  I don't.<BR>
+	  I find QA boring, and since no one is paying me for this I don't do very
+	  much. This is obviously a problem. If anyone wants to undertake to do QA
+	  <A HREF="mailto:fontforge-devel@lists.sourceforge.net">for me</A> (or several
+	  anyones) I'd be delighted.
+      </UL>
+    <LI>
+      <I>Printing tests</I>
+      <UL>
+	<LI>
+	  I'm always on the look out for short copyright free texts for printing. I'm
+	  looking for samples from languages I don't have anything on, or in styles
+	  that I don't have.<BR>
+	  I'm also interested in phrases equivalent to "The quick brown fox jumps over
+	  the lazy dog." (pangrams). These are short sentences which use every letter
+	  in the script.
+      </UL>
+    <LI>
+      <I>Indic information</I>
+      <UL>
+	<LI>
+	  Indic languages have a series of special ligature features in opentype. I
+	  believe that FontForge could probably generate some of these by default but
+	  I don't know enough to say which. If you are familiar with indic scripts
+	  could you give me a list of conversions in a format like
+	  <BLOCKQUOTE>
+	    <PRE>
 U+0066 + U+0069 =&gt; U+FB01 'liga'
 </PRE>
-	</BLOCKQUOTE>
-    </UL>
-</UL>
-<H2>
-  <A NAME="Acknowledgements">Acknowledgements</A>
-</H2>
-<P>
-The sample text in File-&gt;Print comes from <A HREF="quotations.html">many
-sources</A>.
-<P>
-The following people have helped debug fontforge. Many thanks! (actually
-the list should be far longer than this)
-<UL>
-  <LI>
-    Tom Harvey
-  <LI>
-    Ken Chilton
-  <LI>
-    <A HREF="">Gerhard Killesreiter</A>
-  <LI>
-    Alexander Kotelnikov
-  <LI>
-    <A HREF="http://ucsb.edu/">University of California, Santa Barbara</A><BR>
-    (which has several times let me use some of their machines to do builds and
-    find bugs if I didn't have the requisite system at home).
-  <LI>
-    <A HREF="http://rcswww.urz.tu-dresden.de/~koloska/">Uwe Koloska</A>
-  <LI>
-    Max Neunhoeffer
-  <LI>
-    Martin Giese
-  <LI>
-    E.J. Neafsey
-  <LI>
-    Norvell Spearman
-  <LI>
-    Stefan Fendt
-  <LI>
-    <A HREF="http://www.mp3.com/aurora-australis/">Harald ?Gleis?</A>
-  <LI>
-    Valek Filippov
-  <LI>
-    Pasi Eronen
-  <LI>
-    <A HREF="http://jeff.cs.mcgill.ca/~luc/">Luc Devroye</A>
-  <LI>
-    <A HREF="">Scott Pakin</A>
-  <LI>
-    Robert Brady
-  <LI>
-    Dung Ta Quang
-  <LI>
-    Sivan Toledo
-  <LI>
-    Gerhard Schellhorn
-  <LI>
-    MinGyoon
-  <LI>
-    Olaf Rogalsky
-  <LI>
-    <A HREF="http://baruch.ev-en.org/">Baruch Even</A>
-  <LI>
-    Volker Gering
-  <LI>
-    Torsten Bronger
-  <LI>
-    Jacob Jansen
-  <LI>
-    Ulrich Klauer
-  <LI>
-    <A HREF="http://canopus.iacp.dvo.ru/~panov/">Andrey V. Panov</A>
-  <LI>
-    Edward G.J. Lee
-  <LI>
-    Werner LEMBERG
-  <LI>
-    KANOU Hiroki
-  <LI>
-    Pierre Hanser
-  <LI>
-    Claudio Beccari
-  <LI>
-    Yannis Haralambous
-  <LI>
-    Walter Echarri<BR>
-    &nbsp;
-  <LI>
-    And many others!
-</UL>
-<P>
-I owe David Turner (and everyone else) of
-<A HREF="http://freetype.sf.net/">FreeType</A> a debt for providing an API
-which allows me to debug truetype instructions. Also he came up with the
-name "FontForge".
-<P>
-FontForge was inspired by AltSys's
-<A HREF="http://www.macromedia.com/software/fontographer/">Fontographer</A>
-now placed in graceful retirement by MacroMedia.
-<P>
-My father inspired a general interest in typography (though he is interested
-in renaissance printing techniques rather than computers).
-<P>
-And finally I owe thanks to Linda Dozier, David Cole and everyone at NaviSoft
-which company has given me the free time to write this program.
-<H2>
-  Related <A NAME="tools">Tools</A>
-</H2>
-<UL>
-  <LI>
-    BDF editors
-    <UL>
-      <LI>
-	<A HREF="http://crl.nmsu.edu/~mleisher/xmbdfed.html">xmbdfed</A> -- bdf editor.
-      <LI>
-	<A HREF="http://www.gnu.org/software/gfe/gfe.html">gfe</A> -- GNU font editor.
-	Eventually supposed to support other formats
-      <LI>
-	fstobdf -- Part of the X distribution, reads a font from the server and generates
-	a bdf file from it.
-    </UL>
-  <LI>
-    Postscript/ttf font editors
-    <UL>
-      <LI>
-	<A HREF="http://www.typeforum.de/modules.php?op=modload&amp;name=Downloads&amp;file=index&amp;req=gettit&amp;lid=50">Manutius</A>
-	-- (only for windows, German UI, Type1 fonts)
-      <LI>
-	<A HREF="http://www.cs.usyd.edu.au/~matty/Spif/">spif</A> -- under development
-	(open source)
-      <LI>
-	<A HREF="http://www.levien.com/gfonted/">gfonted</A> -- under development
-	(open source)
-      <LI>
-	<A HREF="http://doubletype.sf.net/">DoubleType</A> -- Java based open source
-	truetype designer
-      <LI>
-	<A HREF="http://cgm.cs.mcgill.ca/~luc/editors.html">Luc Devroye's page of
-	links to font creation programs</A>
-      <LI>
-	<A HREF="http://pfaedit.sf.net/">pfaedit</A> -- The old name for fontforge
-	  <HR>
-      <LI>
-	<A HREF="http://www.fontlab.com/">Fontographer</A> -- my favorite, has not
-	been updated since1996 but has recently been purchased by FontLab who promise
-	an update in 2006 (<FONT COLOR="Red"><STRONG>proprietary</STRONG></FONT>)
-      <LI>
-	<A HREF="http://www.fontlab.com/">FontLab</A> -- Said to have really good
-	tools for hinting truetype.
-	(<FONT COLOR="Red"><STRONG>proprietary</STRONG></FONT>)
-	<UL>
-	  <LI>
-	    <A HREF="http://www.fontlab.com/">AsiaFont Studio</A> -- FontLab for big
-	    fonts (<FONT COLOR="Red"><STRONG>proprietary</STRONG></FONT>)
-	</UL>
-      <LI>
-	<A HREF="http://www.fontmaster.nl/english/">FontMaster</A> (used to be
-	<A HREF="http://www.urwpp.de/english/home.html">Ikarus</A> )-- Top of the
-	line font creation software.
-	(<FONT COLOR="Red"><STRONG>proprietary</STRONG></FONT>)
-      <LI>
-	<A HREF="http://www.high-logic.com/fcp.html">Font Creator </A>-- TrueType
-	editor. (<FONT COLOR="Red"><STRONG>proprietary</STRONG></FONT>)
-      <LI>
-	<A HREF="http://www.CR8.netfirms.com/">CR8Type</A> -- TrueType font editor
-	(<FONT COLOR="Red"><STRONG>proprietary</STRONG></FONT>)
-    </UL>
-  <LI>
-    Automated font creation by template
-    <UL>
-      <LI>
-	<A HREF="http://www.stiligt.se/">stiligt</A> (swedish)
-    </UL>
-  <LI>
-    MetaFont -- Knuth's font generation which produces bitmaps from a program
-    based on splines (&amp; other TeX utilities)
-    <UL>
-      <LI>
-	<A HREF="http://www.tug.org/">(available with the TeX package)</A>
-      <LI>
-	<A HREF="http://cm.bell-labs.com/who/hobby/MetaPost.html">MetaPost</A>, Uses
-	the metafont language to produce PostScript pictures.
-      <LI>
-	<A HREF="ftp://bob.eps.gda.pl/pub/metatype1/">MetaType1</A>, Which attempts
-	to generate a type1 font directly from the metafont splines (I think)
-      <LI>
-	<A HREF="http://textrace.sf.net/">TeXTrace</A>, generates pfb fonts from
-	TeX fonts by rasterizing at high res and then autotracing them
-      <LI>
-	<A HREF="ftp://ftp.radio-msu.net/pub/tex/tex-archive/fonts/utilities/mf2ps/">mftops</A>,
-	similar
-      <LI>
-	<A HREF="http://www.cs.uu.nl/~hanwen/mftrace/index.html">mftrace</A>, traces
-	pk fonts (bitmap images) and creates pfb/pfa files. (formerly called pktrace)
-    </UL>
-  <LI>
-    Postscript utilities
-    <UL>
-      <LI>
-	<A HREF="http://gfontview.sourceforge.net/">gfontview</A> -- displays a
-	postscript/ttf font
-      <LI>
-	<A HREF="http://rpmfind.net/linux/RPM/contrib/libc6/i386/gglyph-0.1.3-1.i386.html">gglyph</A>
-	-- another font displayer
-      <LI>
-	<A HREF="http://www.lcdf.org/type/">t1utils</A> -- Type 1 utility programs
-	&amp; multiple master utilities
-      <LI>
-	<A HREF="ftp://metalab.unc.edu/pub/Linux/X11/xutils/type1inst-0.6.1.tar.gz">Type1inst</A>
-	-- helps to install type 1 fonts under X and ghostscript
-      <LI>
-	<A HREF="http://ttf2pt1.sourceforge.net/">ttf2pt1</A> -- Converts truetype
-	to type1 postscript fonts and generates hints
-      <LI>
-	<A HREF="http://ftp.giga.or.at/pub/nih/ttftot42/">ttftot42</A> -- Converts
-	truetype to type42 postscript fonts.
-      <LI>
-	<A HREF="http://textrace.sf.net/">type1fix</A> -- (part of the TeXtrace package).
-	Used to make some Type1 fonts work with ATM.
-      <LI>
-	<A HREF="http://bibliofile.duhs.duke.edu/gww/FreeWare/MyToys.html">my stuff
-	</A>-- Type 1 decoders and converters. True Type &amp; open type decoder.
-    </UL>
-  <LI>
-    TrueType utilities
-    <UL>
-      <LI>
-	Rogier C van Dalen has written
-	<A HREF="http://home.kabelfoon.nl/~slam/fonts/">a set of utilities for viewing
-	and hinting truetype fonts</A>
-      <LI>
-	<A HREF="http://www.letterror.com/code/ttx/">TTX</A> provides an opensource
-	way of editing all the strange tables in a opentype font (by converting them
-	from/to XML)
-      <LI>
-	Microsoft provides a bunch of stuff (for windows only of course)
-	<UL>
-	  <LI>
-	    <A HREF="http://www.microsoft.com/typography/tools/tools.htm">Various tools</A>
-	  <LI>
-	    <A HREF="http://www.microsoft.com/typography/property/fpedit.htm">Font Properties
-	    Editor</A>
-	  <LI>
-	    <A HREF="http://www.microsoft.com/typography/creators.htm">Font instructors</A>
-	  <LI>
-	    <A HREF="http://www.microsoft.com/typography/developers/dsig/dsig.htm">Font
-	    signer</A> (will produce a DSIG (digital signature) table for the font. You
-	    need to get a key from verisign first)
-	</UL>
-      <LI>
-	And Adobe provides a
-	<A HREF="http://partners.adobe.com/asn/tech/type/otfdk/">Font Developer Kit</A>
-	(mostly for setting opentype tables I think)
-      <LI>
-	<A HREF="http://developer.apple.com/fonts/Tools/">And Apple does too</A>
-	(mac only)
-      <LI>
-	<A HREF="http://developer.apple.com/fonts/OSXTools.html">And some OS/X
-	tools</A> (mac only)
-    </UL>
-  <LI>
-    Other font creation tools
-    <UL>
-      <LI>
-	<A HREF="http://cgm.cs.mcgill.ca/~luc/palm.html">Palm pilot font converters</A>
-      <LI>
-	<A HREF="http://www.ank.com.ar/fonts/">pcf to windows fon converter</A>
-      <LI>
-	<A HREF="http://www.tardis.ed.ac.uk/~ajcd/winnt/">bdf to windows fon converter
-	(BDFtoFON)</A>
-      <LI>
-	<A HREF="http://nafe.sf.net/">nafe</A> -- text based psf font utilities
-    </UL>
-  <LI>
-    Font manipulation libraries
-    <UL>
-      <LI>
-	<A HREF="http://just.letterror.com/ltrwiki/RoboFab">RoboFab</A> -- Font library
-	for python
-    </UL>
-  <LI>
-    Rasterizers
-    <UL>
-      <LI>
-	<A HREF="http://freetype.sourceforge.net/">FreeType's Rasterizer</A> (used
-	to be just truetype, handles almost anything now)
-      <LI>
-	<A HREF="http://gnuwin32.sourceforge.net/packages/t1lib.htm">t1lib</A> --
-	Type1 Rasterizer
-    </UL>
-  <LI>
-    Other font tools of mine
-    <UL>
-      <LI>
-	<A HREF="http://fondu.sf.net/">fondu</A> -- Unwraps fonts from mac resource
-	files (this includes dfonts). Produces ttf, pfb and bdf files for 'sfnt',
-	'POST' and 'NFNT' resources
-      <LI>
-	<A HREF="http://mensis.sf.net/">mensis</A> -- Allows the user much finer
-	control over some truetype tables than is provided by FontForge.
-      <LI>
-	<A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/fonttools/showttf.c">showttf</A>
-	-- Dumps the contents of a truetype/opentype font. Does some error checking
-	too.
-      <LI>
-	<A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/fonttools/pcl2ttf.c">pcl2ttf</A>
-	-- Reads a pcl file (to go to an HP printer) and extracts any truetype or
-	bitmap fonts in it. (the bitmap fonts become bdf files, the truetype fonts
-	become ttf files).
-    </UL>
-  <LI>
-    font organizers
-    <UL>
-      <LI>
-	<A HREF="http://freshmeat.net/projects/fontlinge/">fontlinge</A>
-    </UL>
-  <LI>
-    <A HREF="http://eyegene.ophthy.med.umich.edu/unicode/fontguide/">Unicode
-    Font Guide for Free/Libre Open Source Operating Systems</A>
-  <LI>
-    <A HREF="otherlinks.html">Other related links...</A>
-</UL>
-<P>
-If you know of a tool you think should be on this list, please
-<A HREF="mailto:fontforge-devel@lists.sourceforge.net">let me know</A>. I
-did my research a couple of years ago and expect it is out of date.
-<P ALIGN=Center>
-<P ALIGN=Center>
-<A HREF="http://bibliofile.duhs.duke.edu/gww/FreeWare/MyToys.html"><IMG SRC="http://bibliofile.duhs.duke.edu/gww/FreeWare/../uparrow.gif"
-    WIDTH="30" HEIGHT="30"></A> <A href="http://sourceforge.net">
-<IMG src="http://sourceforge.net/sflogo.php?group_id=25752&amp;type=1" width="88"
-    height="31" border="0" alt="SourceForge Logo"> </A>
+	  </BLOCKQUOTE>
+      </UL>
+  </UL>
+  <H2>
+    <A NAME="Acknowledgements">Acknowledgements</A>
+  </H2>
+  <P>
+  The sample text in File-&gt;Print comes from <A HREF="quotations.html">many
+  sources</A>.
+  <P>
+  The following people have helped debug fontforge. Many thanks! (actually
+  the list should be far longer than this)
+  <UL>
+    <LI>
+      Tom Harvey
+    <LI>
+      Ken Chilton
+    <LI>
+      <A HREF="">Gerhard Killesreiter</A>
+    <LI>
+      Alexander Kotelnikov
+    <LI>
+      <A HREF="http://ucsb.edu/">University of California, Santa Barbara</A><BR>
+      (which has several times let me use some of their machines to do builds and
+      find bugs if I didn't have the requisite system at home).
+    <LI>
+      <A HREF="http://rcswww.urz.tu-dresden.de/~koloska/">Uwe Koloska</A>
+    <LI>
+      Max Neunhoeffer
+    <LI>
+      Martin Giese
+    <LI>
+      E.J. Neafsey
+    <LI>
+      Norvell Spearman
+    <LI>
+      Stefan Fendt
+    <LI>
+      <A HREF="http://www.mp3.com/aurora-australis/">Harald ?Gleis?</A>
+    <LI>
+      Valek Filippov
+    <LI>
+      Pasi Eronen
+    <LI>
+      <A HREF="http://jeff.cs.mcgill.ca/~luc/">Luc Devroye</A>
+    <LI>
+      <A HREF="">Scott Pakin</A>
+    <LI>
+      Robert Brady
+    <LI>
+      Dung Ta Quang
+    <LI>
+      Sivan Toledo
+    <LI>
+      Gerhard Schellhorn
+    <LI>
+      MinGyoon
+    <LI>
+      Olaf Rogalsky
+    <LI>
+      <A HREF="http://baruch.ev-en.org/">Baruch Even</A>
+    <LI>
+      Volker Gering
+    <LI>
+      Torsten Bronger
+    <LI>
+      Jacob Jansen
+    <LI>
+      Ulrich Klauer
+    <LI>
+      <A HREF="http://canopus.iacp.dvo.ru/~panov/">Andrey V. Panov</A>
+    <LI>
+      Edward G.J. Lee
+    <LI>
+      Werner LEMBERG
+    <LI>
+      KANOU Hiroki
+    <LI>
+      Pierre Hanser
+    <LI>
+      Claudio Beccari
+    <LI>
+      Yannis Haralambous
+    <LI>
+      Walter Echarri<BR>
+      &nbsp;
+    <LI>
+      And many others!
+  </UL>
+  <P>
+  I owe David Turner (and everyone else) of
+  <A HREF="http://freetype.sf.net/">FreeType</A> a debt for providing an API
+  which allows me to debug truetype instructions. Also he came up with the
+  name "FontForge".
+  <P>
+  FontForge was inspired by AltSys's
+  <A HREF="http://www.macromedia.com/software/fontographer/">Fontographer</A>
+  now placed in graceful retirement by MacroMedia.
+  <P>
+  My father inspired a general interest in typography (though he is interested
+  in renaissance printing techniques rather than computers).
+  <P>
+  And finally I owe thanks to Linda Dozier, David Cole and everyone at NaviSoft
+  which company has given me the free time to write this program.
+  <H2>
+    Related <A NAME="tools">Tools</A>
+  </H2>
+  <UL>
+    <LI>
+      BDF editors
+      <UL>
+	<LI>
+	  <A HREF="http://crl.nmsu.edu/~mleisher/xmbdfed.html">xmbdfed</A> -- bdf editor.
+	<LI>
+	  <A HREF="http://www.gnu.org/software/gfe/gfe.html">gfe</A> -- GNU font editor.
+	  Eventually supposed to support other formats
+	<LI>
+	  fstobdf -- Part of the X distribution, reads a font from the server and generates
+	  a bdf file from it.
+      </UL>
+    <LI>
+      Postscript/ttf font editors
+      <UL>
+	<LI>
+	  <A HREF="http://www.typeforum.de/modules.php?op=modload&amp;name=Downloads&amp;file=index&amp;req=gettit&amp;lid=50">Manutius</A>
+	  -- (only for windows, German UI, Type1 fonts)
+	<LI>
+	  <A HREF="http://www.cs.usyd.edu.au/~matty/Spif/">spif</A> -- under development
+	  (open source)
+	<LI>
+	  <A HREF="http://www.levien.com/gfonted/">gfonted</A> -- under development
+	  (open source)
+	<LI>
+	  <A HREF="http://doubletype.sf.net/">DoubleType</A> -- Java based open source
+	  truetype designer
+	<LI>
+	  <A HREF="http://cgm.cs.mcgill.ca/~luc/editors.html">Luc Devroye's page of
+	  links to font creation programs</A>
+	<LI>
+	  <A HREF="http://pfaedit.sf.net/">pfaedit</A> -- The old name for fontforge
+	    <HR>
+	<LI>
+	  <A HREF="http://www.fontlab.com/">Fontographer</A> -- my favorite, has not
+	  been updated since1996 but has recently been purchased by FontLab who promise
+	  an update in 2006 (<FONT COLOR="Red"><STRONG>proprietary</STRONG></FONT>)
+	<LI>
+	  <A HREF="http://www.fontlab.com/">FontLab</A> -- Said to have really good
+	  tools for hinting truetype.
+	  (<FONT COLOR="Red"><STRONG>proprietary</STRONG></FONT>)
+	  <UL>
+	    <LI>
+	      <A HREF="http://www.fontlab.com/">AsiaFont Studio</A> -- FontLab for big
+	      fonts (<FONT COLOR="Red"><STRONG>proprietary</STRONG></FONT>)
+	  </UL>
+	<LI>
+	  <A HREF="http://www.fontmaster.nl/english/">FontMaster</A> (used to be
+	  <A HREF="http://www.urwpp.de/english/home.html">Ikarus</A> )-- Top of the
+	  line font creation software.
+	  (<FONT COLOR="Red"><STRONG>proprietary</STRONG></FONT>)
+	<LI>
+	  <A HREF="http://www.high-logic.com/fcp.html">Font Creator </A>-- TrueType
+	  editor. (<FONT COLOR="Red"><STRONG>proprietary</STRONG></FONT>)
+	<LI>
+	  <A HREF="http://www.CR8.netfirms.com/">CR8Type</A> -- TrueType font editor
+	  (<FONT COLOR="Red"><STRONG>proprietary</STRONG></FONT>)
+      </UL>
+    <LI>
+      Automated font creation by template
+      <UL>
+	<LI>
+	  <A HREF="http://www.stiligt.se/">stiligt</A> (swedish)
+      </UL>
+    <LI>
+      MetaFont -- Knuth's font generation which produces bitmaps from a program
+      based on splines (&amp; other TeX utilities)
+      <UL>
+	<LI>
+	  <A HREF="http://www.tug.org/">(available with the TeX package)</A>
+	<LI>
+	  <A HREF="http://cm.bell-labs.com/who/hobby/MetaPost.html">MetaPost</A>, Uses
+	  the metafont language to produce PostScript pictures.
+	<LI>
+	  <A HREF="ftp://bob.eps.gda.pl/pub/metatype1/">MetaType1</A>, Which attempts
+	  to generate a type1 font directly from the metafont splines (I think)
+	<LI>
+	  <A HREF="http://textrace.sf.net/">TeXTrace</A>, generates pfb fonts from
+	  TeX fonts by rasterizing at high res and then autotracing them
+	<LI>
+	  <A HREF="ftp://ftp.radio-msu.net/pub/tex/tex-archive/fonts/utilities/mf2ps/">mftops</A>,
+	  similar
+	<LI>
+	  <A HREF="http://www.cs.uu.nl/~hanwen/mftrace/index.html">mftrace</A>, traces
+	  pk fonts (bitmap images) and creates pfb/pfa files. (formerly called pktrace)
+      </UL>
+    <LI>
+      Postscript utilities
+      <UL>
+	<LI>
+	  <A HREF="http://gfontview.sourceforge.net/">gfontview</A> -- displays a
+	  postscript/ttf font
+	<LI>
+	  <A HREF="http://rpmfind.net/linux/RPM/contrib/libc6/i386/gglyph-0.1.3-1.i386.html">gglyph</A>
+	  -- another font displayer
+	<LI>
+	  <A HREF="http://www.lcdf.org/type/">t1utils</A> -- Type 1 utility programs
+	  &amp; multiple master utilities
+	<LI>
+	  <A HREF="ftp://metalab.unc.edu/pub/Linux/X11/xutils/type1inst-0.6.1.tar.gz">Type1inst</A>
+	  -- helps to install type 1 fonts under X and ghostscript
+	<LI>
+	  <A HREF="http://ttf2pt1.sourceforge.net/">ttf2pt1</A> -- Converts truetype
+	  to type1 postscript fonts and generates hints
+	<LI>
+	  <A HREF="http://ftp.giga.or.at/pub/nih/ttftot42/">ttftot42</A> -- Converts
+	  truetype to type42 postscript fonts.
+	<LI>
+	  <A HREF="http://textrace.sf.net/">type1fix</A> -- (part of the TeXtrace package).
+	  Used to make some Type1 fonts work with ATM.
+	<LI>
+	  <A HREF="http://bibliofile.duhs.duke.edu/gww/FreeWare/MyToys.html">my stuff
+	  </A>-- Type 1 decoders and converters. True Type &amp; open type decoder.
+      </UL>
+    <LI>
+      TrueType utilities
+      <UL>
+	<LI>
+	  Rogier C van Dalen has written
+	  <A HREF="http://home.kabelfoon.nl/~slam/fonts/">a set of utilities for viewing
+	  and hinting truetype fonts</A>
+	<LI>
+	  <A HREF="http://www.letterror.com/code/ttx/">TTX</A> provides an opensource
+	  way of editing all the strange tables in a opentype font (by converting them
+	  from/to XML)
+	<LI>
+	  Microsoft provides a bunch of stuff (for windows only of course)
+	  <UL>
+	    <LI>
+	      <A HREF="http://www.microsoft.com/typography/tools/tools.htm">Various tools</A>
+	    <LI>
+	      <A HREF="http://www.microsoft.com/typography/property/fpedit.htm">Font Properties
+	      Editor</A>
+	    <LI>
+	      <A HREF="http://www.microsoft.com/typography/creators.htm">Font instructors</A>
+	    <LI>
+	      <A HREF="http://www.microsoft.com/typography/developers/dsig/dsig.htm">Font
+	      signer</A> (will produce a DSIG (digital signature) table for the font. You
+	      need to get a key from verisign first)
+	  </UL>
+	<LI>
+	  And Adobe provides a
+	  <A HREF="http://partners.adobe.com/asn/tech/type/otfdk/">Font Developer Kit</A>
+	  (mostly for setting opentype tables I think)
+	<LI>
+	  <A HREF="http://developer.apple.com/fonts/Tools/">And Apple does too</A>
+	  (mac only)
+	<LI>
+	  <A HREF="http://developer.apple.com/fonts/OSXTools.html">And some OS/X
+	  tools</A> (mac only)
+      </UL>
+    <LI>
+      Other font creation tools
+      <UL>
+	<LI>
+	  <A HREF="http://cgm.cs.mcgill.ca/~luc/palm.html">Palm pilot font converters</A>
+	<LI>
+	  <A HREF="http://www.ank.com.ar/fonts/">pcf to windows fon converter</A>
+	<LI>
+	  <A HREF="http://www.tardis.ed.ac.uk/~ajcd/winnt/">bdf to windows fon converter
+	  (BDFtoFON)</A>
+	<LI>
+	  <A HREF="http://nafe.sf.net/">nafe</A> -- text based psf font utilities
+      </UL>
+    <LI>
+      Font manipulation libraries
+      <UL>
+	<LI>
+	  <A HREF="http://just.letterror.com/ltrwiki/RoboFab">RoboFab</A> -- Font library
+	  for python
+      </UL>
+    <LI>
+      Rasterizers
+      <UL>
+	<LI>
+	  <A HREF="http://freetype.sourceforge.net/">FreeType's Rasterizer</A> (used
+	  to be just truetype, handles almost anything now)
+	<LI>
+	  <A HREF="http://gnuwin32.sourceforge.net/packages/t1lib.htm">t1lib</A> --
+	  Type1 Rasterizer
+      </UL>
+    <LI>
+      Other font tools of mine
+      <UL>
+	<LI>
+	  <A HREF="http://fondu.sf.net/">fondu</A> -- Unwraps fonts from mac resource
+	  files (this includes dfonts). Produces ttf, pfb and bdf files for 'sfnt',
+	  'POST' and 'NFNT' resources
+	<LI>
+	  <A HREF="http://mensis.sf.net/">mensis</A> -- Allows the user much finer
+	  control over some truetype tables than is provided by FontForge.
+	<LI>
+	  <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/fonttools/showttf.c">showttf</A>
+	  -- Dumps the contents of a truetype/opentype font. Does some error checking
+	  too.
+	<LI>
+	  <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/fonttools/pcl2ttf.c">pcl2ttf</A>
+	  -- Reads a pcl file (to go to an HP printer) and extracts any truetype or
+	  bitmap fonts in it. (the bitmap fonts become bdf files, the truetype fonts
+	  become ttf files).
+      </UL>
+    <LI>
+      font organizers
+      <UL>
+	<LI>
+	  <A HREF="http://freshmeat.net/projects/fontlinge/">fontlinge</A>
+      </UL>
+    <LI>
+      <A HREF="http://eyegene.ophthy.med.umich.edu/unicode/fontguide/">Unicode
+      Font Guide for Free/Libre Open Source Operating Systems</A>
+    <LI>
+      <A HREF="otherlinks.html">Other related links...</A>
+  </UL>
+  <P>
+  If you know of a tool you think should be on this list, please
+  <A HREF="mailto:fontforge-devel@lists.sourceforge.net">let me know</A>. I
+  did my research a couple of years ago and expect it is out of date.
+  <P ALIGN=Center>
+  <P ALIGN=Center>
+  <A HREF="http://bibliofile.duhs.duke.edu/gww/FreeWare/MyToys.html"><IMG SRC="http://bibliofile.duhs.duke.edu/gww/FreeWare/../uparrow.gif"
+      WIDTH="30" HEIGHT="30"></A> <A href="http://sourceforge.net">
+  <IMG src="http://sourceforge.net/sflogo.php?group_id=25752&amp;type=1" width="88"
+      height="31" border="0" alt="SourceForge Logo"> </A>
 </DIV>
 </BODY></HTML>
