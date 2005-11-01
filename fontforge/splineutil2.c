@@ -2386,13 +2386,13 @@ void SplineSetAddExtrema(SplineSet *ss,enum ae_type between_selected, SplineFont
     DBounds b;
     int always = true;
     real lenbound = 0;
-    real offsetbound;
+    real offsetbound=0;
 
     if ( between_selected==ae_only_good ) {
 	SplineSetQuickBounds(ss,&b);
 	lenbound = (sf->ascent+sf->descent)/32.0;
 	always = false;
-	offsetbound = 1.0;
+	offsetbound = .5;
     }
 
     first = NULL;
