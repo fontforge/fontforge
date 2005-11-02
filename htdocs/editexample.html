@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 29-Oct-2005 -->
+  <!-- AP: Last modified: 2-Nov-2005 -->
   <TITLE>Steps to creating a font...</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -75,16 +75,20 @@
   <P>
   Give the font a name with the <CODE><A HREF="fontinfo.html">Font
   Info</A></CODE> command from the <CODE>Element</CODE> menu. You use this
-  same command to change the encoding (ie what characters are available in
-  the font), set the copyright message and change the ascent and descent (the
-  sum of these two determines the size of the em square for the font, and by
-  convention is 1000 for postscript fonts, a power of two (often 2048 or 4096)
-  for truetype fonts and 15,000 for Ikarus fonts). <SMALL>(Also if you are
-  planning on making a truetype font you might want to check the Quadratic
+  same command to set the copyright message and change the ascent and descent
+  (the sum of these two determines the size of the em square for the font,
+  and by convention is 1000 for postscript fonts, a power of two (often 2048
+  or 4096) for truetype fonts and 15,000 for Ikarus fonts). <SMALL>(Also if
+  you are planning on making a truetype font you might want to check the Quadratic
   Splines checkbox to use the native truetype format. Editing is a little more
   difficult in this mode though)</SMALL>
   <P>
   <IMG SRC="fontinfo.png" WIDTH="376" HEIGHT="608">
+  <P>
+  You may also wish to use Encoding-&gt;Reencode to change what characters
+  are available in your font. FontForge generally creates new fonts with an
+  ISO-8859-1, which contains (most of) the characters needed for Western Europe
+  (the latin letters, some accented letters, digits, and symbols).
   <H2>
     <A NAME="CharCreate">Creating a glyph</A>
   </H2>
@@ -179,6 +183,33 @@
   <IMG SRC="C10.png" WIDTH="266" HEIGHT="279">
   <P>
   And we are done with this glyph.
+  <P>
+  If you are mathematically inclined you may be interested in the coordinates
+  that fontforge shows in the upper left of the window. Generally you can draw
+  glyphs quite happily without bothering about these, but for those who are
+  interested here is some basic info:
+  <UL>
+    <LI>
+      Each glyph has its own coordinate system.
+    <LI>
+      The vertical origin is the font's baseline (the line on which most latin
+      letters rest)
+    <LI>
+      The horizontal origin is the place where drawing the glyph will commence.
+      In the example above what gets drawn initially is empty space, that is fairly
+      common, and that empty space (the distance from the origin to the left edge
+      of the glyph) is called the left side bearing.
+    <LI>
+      The units of the coordinate system are determined by the em-size of the font.
+      This is the sum of the font's ascent and descent. In the example above the
+      font's ascent is 800 and descent is 200, and the ascent line (the one just
+      above the top of the "C") is 800 units from the baseline, while the descent
+      line is 200 units below.
+    <LI>
+      So a position of 282,408 (as above) means that the cursor is 282 units right
+      of the horizontal origin and 408 units above the baseline (or halfway between
+      baseline and ascent).
+  </UL>
   <P ALIGN=Center>
   -- <A HREF="overview.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
   <A HREF="editexample2.html">Next</A> --
