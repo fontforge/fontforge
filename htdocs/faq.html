@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 31-Oct-2005 -->
+  <!-- AP: Last modified: 2-Nov-2005 -->
   <TITLE>Frequently Asked Questions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -50,6 +50,8 @@
 	<LI>
 	  <A HREF="#linespace">How do I set the line spacing on a font?</A>
       </UL>
+    <LI>
+      <A HREF="#em-units">How big will my glyph be? (What are em-units?)</A>
   </UL>
   <H2>
     Using FontForge &amp; Installing fonts on various systems
@@ -456,6 +458,34 @@
 	      use one of the above methods.
 	  </UL>
       </UL>
+    <DT>
+      <A NAME="em-units"><B>How big will my glyphs be?</B></A>
+    <DD>
+      Unfortunately this seemingly simple question cannot be answered. Your glyphs
+      may be any size. Outline glyphs may be scaled and even bitmap glyphs will
+      be different sizes depending on the screen resolution.
+      <P>
+      Suppose instead that you have an outline font that you draw at 12 points.
+      Then we can answer the question.
+      <P>
+      Suppose you have a dash glyph that is 500 internal units long, and the font
+      has an em-size of 1000 units. Then your glyph will be 500/1000 * 12 = 6points
+      long. On a 72 dpi screen this will mean the dash is 6 pixels long.
+      <P>
+      <B>What are em-units? (internal units?)</B>
+      <P>
+      When you create your font you can use
+      <A HREF="fontinfo.html#PS-General" TARGET="_top">Element-&gt;Font
+      Info-&gt;General</A> to provide an em-size for your font. This is the sum
+      of the typographic ascent and descent (in the days of metal fonts, the height
+      of the metal slugs, the baseline to baseline distance). Generally the em-size
+      will be 1000 or 2048. This gives you the number of internal units (also called
+      em-units) used to represent em.
+      <P>
+      Within fontforge outline glyphs are displayed using the coordinate system
+      established here. See also the
+      <A HREF="overview.html#em-unit" TARGET="_top">section on em-units in the
+      overview.</A>
     <DT>
       <A NAME="font-install"><B>How do I install the fonts once I've made
       them?</B></A>
