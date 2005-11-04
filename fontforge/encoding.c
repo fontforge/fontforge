@@ -297,6 +297,13 @@ return( &unicodefull );
 	iconv_name = "ISO-2022-CN";
     else if ( strcasecmp(name,"wansung")==0 )
 	iconv_name = "EUC-KR";
+    else if ( strcasecmp(name,"EUC-CN")==0 ) {
+	iconv_name = name;
+	name = "gb2312pk";
+    } else if ( strcasecmp(name,"EUC-KR")==0 ) {
+	iconv_name = name;
+	name = "wansung";
+    }
 
 /* Escape sequences:					*/
 /*	ISO-2022-CN:     \e $ ) A ^N			*/
