@@ -541,6 +541,8 @@ typedef struct enc {
     char *iconv_name;	/* For compatibility to old versions we might use a different name from that used by iconv. */
     iconv_t *tounicode;
     iconv_t *fromunicode;
+    int (*tounicode_func)(char **);
+    int (*fromunicode_func)(int);
 } Encoding;
 
 enum uni_interp { ui_unset= -1, ui_none, ui_adobe, ui_greek, ui_japanese,

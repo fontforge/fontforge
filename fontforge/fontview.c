@@ -7723,6 +7723,18 @@ return( -1 );
 return( to[0] );
 	else if ( tpt-(char *) to == 4 && to[0]>=0xd800 && to[0]<0xdc00 && to[1]>=0xdc00 )
 return( ((to[0]-0xd800)<<10) + (to[1]-0xdc00) + 0x10000 );
+    } else if ( encname->tounicode_func!=NULL ) {
+	char encbuf[3], *pt;
+	if ( enc<0x80 ) {
+	    encbuf[0] = enc;
+	    encbuf[1] = 0;
+	} else {
+	    encbuf[0] = enc>>8;
+	    encbuf[1] = enc&0xff;
+	    encbuf[2] = 0;
+	}
+	pt = encbuf;
+return( (encname->tounicode_func)(&pt) );
     }
 return( -1 );
 }
@@ -7772,6 +7784,11 @@ return( (to[enc->iso_2022_escape_len]<<8) | to[enc->iso_2022_escape_len+1] );
 	    if ( tpt-(char *) to == 2 )
 return( (to[0]<<8) | to[1] );
 	}
+    } else if ( enc->fromunicode_func!=NULL ) {
+	i = (enc->fromunicode_func)(uni);
+	if ( i==-1 )
+return( -1 );
+return( i&0xffff );
     }
 return( -1 );
 }

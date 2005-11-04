@@ -97,6 +97,13 @@
 /*  and increments the advance width by the advance width of the clipboard    */
 
 
+/* Someone asked for encoding GB12345. Neither libiconv nor iconv supports it.*/
+/*									      */
+/* #define FONTFORGE_CONFIG_GB12345					      */
+/*									      */
+/* Can be set from configure --with-gb12345				      */
+
+
 /* I doubt anyone but me will be interested in the tile path command, so I    */
 /*  don't include code for it by default, but if you do want it simply define */
 /*  the following macro							      */
