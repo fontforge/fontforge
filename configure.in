@@ -117,6 +117,16 @@ AC_ARG_WITH(iconv,
    fi
  ])
 
+AC_SUBST(FF_EXTRA_FILES)
+AC_ARG_WITH(gb12345,
+ [  --with-gb12345   Include the GB 12345 encoding],
+ [
+   if test "$withval" \!= "no" ; then
+     FF_EXTRA_FILES="gb12345.o"
+     AC_DEFINE(FONTFORGE_CONFIG_GB12345,1)
+   fi
+ ])
+
 
 AC_SEARCH_LIBS(dlopen, dl) dnl some systems have this in libc (Darwin uses dyld)
 AC_SEARCH_LIBS(inet_aton, resolv) dnl some systems have this in libc

@@ -115,7 +115,18 @@ static Encoding unicodefull = { "UnicodeFull", 17*65536, NULL, NULL, &unicodebmp
 static Encoding adobestd = { "AdobeStandard", 256, unicode_from_adobestd, AdobeStandardEncoding, &unicodefull,
 										  1, 1, 1, 1, 0, 0, 0, 0, 0, 0 };
 static Encoding symbol = { "Symbol", 256, unicode_from_MacSymbol, NULL, &adobestd,1, 1, 1, 1, 0, 0, 0, 0, 0, 0 };
+
+#ifdef FONTFORGE_CONFIG_GB12345
+extern int euc_gb12345_to_uni(char **_s);
+extern int uni_to_euc_gb12345(int u);
+
+static Encoding euc_gb12345 = { "GB12345-EUC", 65536, NULL, NULL, &symbol,1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    {0,0,0,0,0,0,0,0}, 0, 0, 255, NULL, NULL, NULL,
+    euc_gb12345_to_uni, uni_to_euc_gb12345};
+Encoding *enclist = &euc_gb12345;
+#else
 Encoding *enclist = &symbol;
+#endif
 
 const char *FindUCS2Name(void) {
     /* Iconv and libiconv use different names for UCS2. Just great. Perhaps */
@@ -2780,7 +2791,10 @@ GTextInfo encodingtypes[] = {
     { (unichar_t *) N_("KSC 5601-1987 (Korean)"), NULL, 0, 0, (void *) "ksc5601", NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Johab (Korean)"), NULL, 0, 0, (void *) "johab", NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("GB 2312 (Simp. Chinese)"), NULL, 0, 0, (void *) "gb2312", NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Packed GB 2312 (Chinese)"), NULL, 0, 0, (void *) "gb2312pk", NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("EUC GB 2312 (Chinese)"), NULL, 0, 0, (void *) "gb2312pk", NULL, 0, 0, 0, 0, 0, 0, 1},
+#ifdef FONTFORGE_CONFIG_GB12345
+    { (unichar_t *) N_("EUC-GB12345"), NULL, 0, 0, (void *) "GB12345-EUC", NULL, 0, 0, 0, 0, 0, 0, 1, 0},
+#endif
     { (unichar_t *) N_("Big5 (Trad. Chinese)"), NULL, 0, 0, (void *) "big5", NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Big5 HKSCS (Trad. Chinese)"), NULL, 0, 0, (void *) "big5hkscs", NULL, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
