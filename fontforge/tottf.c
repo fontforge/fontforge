@@ -3597,6 +3597,7 @@ static void AddEncodedName(NamTab *nt,char *utf8name,uint16 lang,uint16 strid) {
     specific =  nt->encoding_name->is_korean ? 5 :	/* Wansung, korean */
 		nt->encoding_name->is_japanese ? 2 :	/* SJIS */
 		nt->encoding_name->is_simplechinese ? 3 :/* packed gb2312, don't know the real name */
+		strmatch(nt->encoding_name->enc_name,"EUC-GB12345")==0 ? 3 :/* Lie */
 		nt->encoding_name->is_tradchinese ? 4 :	/* Big5, traditional Chinese */
 			-1;
     if ( specific != -1 ) {
