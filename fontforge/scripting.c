@@ -6940,6 +6940,39 @@ static void docall(Context *c,char *name,Val *val) {
     *val = sub.return_val;
 }
 
+static void buildarray(Context *c,Val *val) {
+    /* Be prepared for c->donteval */
+    Val *body;
+    int cnt, max;
+    int tok;
+
+    tok = NextToken(c);
+    if ( tok==tt_rbracket )
+	error(c,"This array doesn't have any elements");
+    else {
+	backuptok(c);
+	max = 0;
+	body = NULL;
+	for ( cnt=0; tok!=tt_rbracket; ++cnt ) {
+	    if ( cnt>=max )
+		body = grealloc(body,(max+=20)*sizeof(Val));
+	    expr(c,&body[cnt]);
+	    tok = NextToken(c);
+	    if ( tok!=tt_comma )
+		expect(c,tt_rbracket,tok);
+	}
+    }
+    if ( c->donteval ) {
+	free(body);
+	val->type = v_void;
+    } else {
+	val->type = v_arrfree;
+	val->u.aval = galloc(sizeof(Array));
+	val->u.aval->argc = cnt;
+	val->u.aval->vals = grealloc(body,cnt*sizeof(Val));
+    }
+}
+
 static void handlename(Context *c,Val *val) {
     char name[TOK_MAX+1];
     enum token_type tok;
@@ -7158,6 +7191,8 @@ static void term(Context *c,Val *val) {
 	expr(c,val);
 	tok = NextToken(c);
 	expect(c,tt_rparen,tok);
+    } else if ( tok==tt_lbracket ) {
+	buildarray(c,val);
     } else if ( tok==tt_number || tok==tt_unicode || tok==tt_real ) {
 	*val = c->tok_val;
     } else if ( tok==tt_string ) {
