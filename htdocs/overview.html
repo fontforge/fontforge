@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 2-Nov-2005 -->
+  <!-- AP: Last modified: 6-Nov-2005 -->
   <TITLE>FontForge -- An outline font editor for PostScript&reg;, TrueType
   and OpenType fonts</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
@@ -260,20 +260,44 @@
     Paths and the em-unit
   </H3>
   <P>
-  What is a postscript font? What is a bitmap font?
+  Most simply a font is a collection of glyphs. But computer fonts must contain
+  more than this, at the least they must also contain information on how to
+  map an input string of bytes into an output display of visual glyphs. This
+  mapping is called an encoding. Many fonts will also contain rules for how
+  adjacent glyphs should be arranged. For instance, in fonts for the latin
+  alphabet, there is often a rule saying that if "f" and "i" are adjacent then
+  a special glyph, a ligature of "f" and "i" should be used instead. Fonts
+  for latin letters generally do not require such rules (but can be enhanced
+  by them), fonts for other scripts like arabic require them.
   <P>
-  Each character (or to be more precise, each glyph) in a font has a shape
-  and there are various ways of describing that shape on a computer. Postscript
-  and truetype fonts generally describe the outline of the shape and then color
-  in the interior of that outline, this coloring process is called rasterizing.
-  On the other hand a bitmap font describes each glyph by drawing a picture
-  of that character on a rectangular grid of pixels. There is a third type,
-  a stroked font, where each stem of the glyph is represented by one line down
-  the center of the stem, and the line is later drawn with a certain width.
-  Most of the time we will not deal with stroked fonts directly (the
-  <A HREF="elementmenu.html#Expand">Expand Stroke</A> command can be used to
-  turn them into outlines), but if you wish to edit stroked fonts, see the
-  section on <A HREF="multilayer.html">multi-layered editing</A>.
+  What's the difference between a character and a glyph?
+  <P>
+  A character is a concept and a glyph is a reification of that concept. The
+  letter "A" is a character, while<IMG SRC="As.png" WIDTH="220" HEIGHT="33">
+  are all glyphs that represent an "A". In latin fonts there is often a single
+  glyph for every character and a single character for every glyph, but not
+  always -- in renaissance printing there were two glyphs for a lower-case
+  s, <IMG SRC="short-long-s.png" WIDTH="17" HEIGHT="12">the short and the long
+  s. A ligature is an example of a glyph that represents two (or more) characters.
+  In arabic most of the letters (characters) have at least four different glyphs,
+  the appropriate glyph being determined by the letters around it. Here are
+  four forms of the arabic character "seen"
+  <IMG SRC="arabic-seen.png" WIDTH="108" HEIGHT="17" ALIGN="Middle">.
+  <P>
+  What is an outline font? What is a bitmap font?
+  <P>
+  Each glyph in a font has a shape and there are various ways of describing
+  that shape on a computer. Postscript and truetype fonts generally describe
+  the outline of the shape and then color in the interior of that outline,
+  this coloring process is called rasterizing. On the other hand a bitmap font
+  describes each glyph by drawing a picture of that character on a rectangular
+  grid of pixels. There is a third type, a stroked font, where each stem of
+  the glyph is represented by one line down the center of the stem, and the
+  line is later drawn with a certain width. Most of the time we will not deal
+  with stroked fonts directly (the <A HREF="elementmenu.html#Expand">Expand
+  Stroke</A> command can be used to turn them into outlines), but if you wish
+  to edit stroked fonts, see the section on
+  <A HREF="multilayer.html">multi-layered editing</A>.
   <TABLE BORDER CELLPADDING="2">
     <TR VALIGN=Top>
       <TD><P ALIGN=Center>
@@ -312,7 +336,7 @@
   and lines are joined together to make a path. There are several possible
   ways to make these joins as is shown in the example to the right. In each
   case we have three points in approximately the same relative positions. The
-  three points are joined by splines or lines, but the type of joins alter
+  three points are joined by splines or lines, but the type of joins alters
   the appearance of the connections.
   <P>
   In the first case there are no control points and the result is two straight
@@ -326,8 +350,8 @@
   The third case is a curved point and is represented by a circle.
   <P>
   <IMG SRC="quadraticspline.gif" WIDTH="127" HEIGHT="92" ALIGN="Left">FontForge
-  can also edit <A NAME="quadratic">quadratic</A> splines (these are the splines
-  used in truetype fonts), here there is only one control point, and it controls
+  can also edit <A NAME="quadratic">quadratic</A> splines (the splines used
+  in truetype fonts), here there is only one control point and it controls
   the slopes at both end-points. Because of this quadratic splines cannot bend
   in as many ways as cubic splines (the first spline above left would need
   at least two quadratic splines to draw), and you will often need more splines
@@ -371,10 +395,10 @@
   12points. If the font is displayed at 18points then an em will be 18points.
   (traditionally a 12 point font is one where the metal slugs are 12 points
   tall -- or where the baseline to baseline spacing of unleaded text is 12
-  points, so an em was the size of the metal.). 
+  points, so an em was the size of the metal.).
   <P>
   When designing an outline font, you can no longer think in terms of points
-  -- these fonts are scaleable and can be any point-size. You must think in
+  -- these fonts are scalable and can be any point-size. You must think in
   terms of the em and fractions of the em. When you create a font you choose
   how many internal units (called "em-units") to use to represent 1 em. In
   most PostScript fonts there are 1000 units to the em, TrueType fonts often
@@ -431,17 +455,16 @@
     <A NAME="PT">TrueType</A> vs. PostScript vs OpenType vs SVG fonts
   </H3>
   <P>
-  FontForge can produce both TrueType and PostScript fonts. What's the difference?
+  FontForge can produce many font types. What's the difference?
   <P>
-  PostScript is based on a <A HREF="bezier.html">cubic spline</A> technology
-  described above, while TrueType is based on a
-  <A HREF="bezier.html">quadratic</A> technology. Cubic splines are generally
-  easier to edit (more shapes are possible with them). Any quadratic spline
-  can be converted to a cubic spline with essentially no loss. A cubic spline
-  can be converted to a quadratic with arbitrary precision, but there will
-  be a slight loss of accuracy in most cases. This means it is easy to convert
-  TrueType outlines to PostScript outlines, harder to convert PostScript to
-  TrueType.
+  PostScript is based on a <A HREF="bezier.html">cubic spline</A> technology,
+  while TrueType is based on a <A HREF="bezier.html">quadratic</A> technology.
+  Cubic splines are generally easier to edit (more shapes are possible with
+  them). Any quadratic spline can be converted to a cubic spline with essentially
+  no loss. A cubic spline can be converted to a quadratic with arbitrary precision,
+  but there will be a slight loss of accuracy in most cases. This means it
+  is easy to convert TrueType outlines to PostScript outlines, harder to convert
+  PostScript to TrueType.
   <P>
   Within FontForge a font may contain either cubic or quadratic splines. These
   are converted to the appropriate format when a font is generated.
@@ -657,7 +680,7 @@
   outlines.
   <P>
   In both TrueType and PostScript a glyph may not contain both splines and
-  references, it must be wholy one or the other. If you mix splines and references
+  references, it must be wholly one or the other. If you mix splines and references
   FontForge will convert all references to splines during font generation.
   <P>
   In PostScript characters refered to must be in the Adobe Standard Encoding,
