@@ -3,14 +3,13 @@
 # This file is distributed under the same license as FontForge.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: fontforge\n"
 "POT-Creation-Date: 2005-08-29 17:43+0800\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <ru.c@li.org>\n"
+"PO-Revision-Date: 2005-11-06 23:46+0300\n"
+"Last-Translator: Valek Filippov <frob at df.ru>\n"
+"Language-Team: Russian <ru@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -113,7 +112,7 @@ msgid "_Revert File"
 msgstr "Восст. файл(_R)"
 
 msgid "Revert Gl_yph"
-msgstr "Revert Gl_yph"
+msgstr "Восст. символ (_Y)"
 
 msgid "S_ave as..."
 msgstr "Сохранить как...(_A)"
@@ -239,7 +238,7 @@ msgid "Deselect _Width"
 msgstr "Снять выделение ширины(_W)"
 
 msgid "Deselect _VWidth"
-msgstr "Deselect _VWidth"
+msgstr "Снять выделение в.ширины (_W)"
 
 msgid "_Undo"
 msgstr "Откат(_U)"
@@ -284,7 +283,7 @@ msgid "_Merge"
 msgstr "Объединить(_M)"
 
 msgid "_Elide"
-msgstr "Elide"
+msgstr ""
 
 msgid "_Join"
 msgstr "Соединить(_J)"
@@ -293,7 +292,7 @@ msgid "U_nlink Reference"
 msgstr "Разымен. ссылку(_N)"
 
 msgid "_Select by Color"
-msgstr "Выбрать цвет(_S)"
+msgstr "Выбрать по цвету(_S)"
 
 msgid "Remo_ve Undoes"
 msgstr "Удалить откаты(_E)"
@@ -326,22 +325,22 @@ msgid "_Expand Stroke..."
 msgstr "Расширить штрих...(_E)"
 
 msgid "Tile _Path..."
-msgstr "Tile _Path..."
+msgstr ""
 
 msgid "_Remove Overlap"
-msgstr "Удалить пересечения(_V)"
+msgstr "Удалить пересечения(_R)"
 
 msgid "_Find Intersections"
-msgstr "Найти пересечения"
+msgstr "Найти пересечения (_F)"
 
 msgid "_Simplify"
 msgstr "Упростить(_S)"
 
 msgid "Simplify More..."
-msgstr "Упростить ещё"
+msgstr "Упростить ещё..."
 
 msgid "Clea_nup Glyph"
-msgstr "Очистить символы(_S)"
+msgstr "Очистить символы(_N)"
 
 msgid "Add E_xtrema"
 msgstr "Добавить экстремумы(_X)"
@@ -353,25 +352,25 @@ msgid "_Average Points"
 msgstr "Средние точки(_A)"
 
 msgid "_Space Points"
-msgstr "_Space Points"
+msgstr ""
 
 msgid "Space _Regions..."
-msgstr "Space _Regions..."
+msgstr ""
 
 msgid "Make _Parallel..."
 msgstr "Сделать параллельной...(_P)"
 
 msgid "To _Int"
-msgstr "Округлить(_D)"
+msgstr "Округлить(_I)"
 
 msgid "_First"
-msgstr "Первый"
+msgstr "Первый (_F)"
 
 msgid "_Build Accented Glyph"
-msgstr "Сделать акцентир. символ(_U)"
+msgstr "Сделать акцентир. символ(_B)"
 
 msgid "Build _Composite Glyph"
-msgstr "Создать акцентир. символ(_U)"
+msgstr "Создать композит. символ(_C)"
 
 msgid "Cl_ockwise"
 msgstr "По часовой(_O)"
@@ -413,13 +412,13 @@ msgid "_Add HHint"
 msgstr "Добавить гориз.инстр.(_A)"
 
 msgid "Add VHi_nt"
-msgstr "Добавить верт.инстр.(_S)"
+msgstr "Добавить верт.инстр.(_N)"
 
 msgid "Add DHint"
-msgstr "Добавить диаг.инстр.(_T)"
+msgstr "Добавить диаг.инстр."
 
 msgid "Crea_te HHint..."
-msgstr "Создать гориз.инстр. ...(_R)"
+msgstr "Создать гориз.инстр. ...(_T)"
 
 msgid "Cr_eate VHint..."
 msgstr "Создать верт.инстр. ...(_E)"
@@ -443,13 +442,13 @@ msgid "Clear _Width MD"
 msgstr "Очистить мин.дист. по ширине(_W)"
 
 msgid "Add _x MD"
-msgstr "Добавить мин.дист. по _X"
+msgstr "Добавить мин.дист. по x (_X)"
 
 msgid "Add MD Here to _Width"
-msgstr "Добавить мин.дист. к ширине"
+msgstr "Добавить мин.дист. к ширине (_W)"
 
 msgid "Add _y MD"
-msgstr "Добавить мин.дист. по _Y"
+msgstr "Добавить мин.дист. по y (_Y)"
 
 msgid "_Round X"
 msgstr "Округлить X(_R)"
@@ -476,7 +475,7 @@ msgid "_Layers"
 msgstr "Слои(_L)"
 
 msgid "_Docked Palettes"
-msgstr "_Docked Palettes"
+msgstr ""
 
 msgid "_Shades"
 msgstr "Тени(_S)"
@@ -491,7 +490,7 @@ msgid "Set _Width..."
 msgstr "Установить ширину...(_W)"
 
 msgid "Set _Vertical Advance..."
-msgstr "Set _Vertical Advance..."
+msgstr ""
 
 msgid "Set _LBearing..."
 msgstr "Установить лев.границу...(_L)"
@@ -503,7 +502,7 @@ msgid "Remove Kern _Pairs"
 msgstr "Удалить пары подстройки апроша(_P)"
 
 msgid "_Merge Kern Info..."
-msgstr "Добавить пары подстройки апроша...(_M)"
+msgstr "Объединить инф. о парах подстройки апроша... (_M)"
 
 msgid "_24 pixel outline"
 msgstr "Контур _24 точки"
@@ -533,7 +532,7 @@ msgid "Glyph Info for %.40s"
 msgstr "Информ. о символе для %.40s"
 
 msgid "_Default ATT"
-msgstr "Default ATT"
+msgstr ""
 
 msgid "_Merge Fonts..."
 msgstr "Объединить шрифты...(_M)"
@@ -551,7 +550,7 @@ msgid "_Displayed Font"
 msgstr "Отображаемого шрифта(_D)"
 
 msgid "Glyph _Metadata"
-msgstr "Название символа(_N)"
+msgstr "Название символа(_M)"
 
 msgid "Auto _Kern..."
 msgstr "Автоподстройка апрошей...(_K)"
@@ -575,10 +574,10 @@ msgid "Hide _Grid"
 msgstr "Скрыть сетку(_G)"
 
 msgid "_Bigger Pixel Size"
-msgstr "_Bigger Pixel Size"
+msgstr ""
 
 msgid "_Smaller Pixel Size"
-msgstr "_Smaller Pixel Size"
+msgstr ""
 
 msgid "Flip _Horizontally"
 msgstr "Отразить горизонтально(_H)"
@@ -587,13 +586,13 @@ msgid "Flip _Vertically"
 msgstr "Отразить вертикально(_V)"
 
 msgid "_Rotate 90° CW"
-msgstr "Повернуть на 90╟ по час.(_R)"
+msgstr "Повернуть на 90° по час.(_R)"
 
 msgid "Rotate _90° CCW"
-msgstr "Повернуть на _90╟ против час."
+msgstr "Повернуть на _90° против час."
 
 msgid "Rotate _180°"
-msgstr "Повернуть на _180╟"
+msgstr "Повернуть на _180°"
 
 msgid "_Skew..."
 msgstr "Наклонить...(_S)"
@@ -614,10 +613,10 @@ msgid "Convert By C_Map"
 msgstr "Convert By C_Map"
 
 msgid "_Flatten"
-msgstr "_Flatten"
+msgstr ""
 
 msgid "Fl_attenByCMap"
-msgstr "Fl_attenByCMap"
+msgstr ""
 
 msgid "Insert F_ont..."
 msgstr "Вставить шрифт...(_O)"
@@ -632,7 +631,7 @@ msgid "C_ID Font Info..."
 msgstr "Информ. о шрифте C_ID..."
 
 msgid "Custom"
-msgstr "Другая"
+msgstr "Другой"
 
 msgid "Compacted"
 msgstr "Сжатый"
@@ -704,7 +703,7 @@ msgid "ISO 10646-1 (Unicode, Full)"
 msgstr "ISO 10646-1 (Unicode, Full)"
 
 msgid "ISO 10646-? (by plane) ..."
-msgstr "ISO 10646-? (by plane) ..."
+msgstr ""
 
 msgid "JIS 208 (Kanji)"
 msgstr "JIS 208 (Kanji)"
@@ -746,16 +745,16 @@ msgid "Bad Family Name"
 msgstr "Неподходящее название семейства"
 
 msgid "Ascent and Descent must be positive and their sum less than 16384"
-msgstr "Ascent and Descent must be positive and their sum less than 16384"
+msgstr ""
 
 msgid "Bad Ascent/Descent"
-msgstr "Bad Ascent/Descent"
+msgstr ""
 
 msgid "Font Information for %.90s"
 msgstr "Информация о шрифте %.90s"
 
 msgid "Which Unicode plane:"
-msgstr "Which Unicode plane:"
+msgstr ""
 
 msgid "_Family Name:"
 msgstr "Гарнитура:(_F)"
@@ -785,16 +784,16 @@ msgid "_Italic Angle:"
 msgstr "Угол наклона:(_I)"
 
 msgid "Underline _Position:"
-msgstr "Underline _Position:"
+msgstr ""
 
 msgid "_Height:"
 msgstr "Высота:(_H)"
 
 msgid "_Ascent:"
-msgstr "_Ascent:"
+msgstr ""
 
 msgid "_Descent:"
-msgstr "_Descent:"
+msgstr ""
 
 msgid "_Em Size:"
 msgstr "Размер \"_Em\":"
@@ -824,19 +823,19 @@ msgid "A Postscript name may not be a number"
 msgstr "Название Postscript не должно быть числом"
 
 msgid "Bad Font Family Name"
-msgstr "Bad Font Family Name"
+msgstr ""
 
 msgid "Bad Font Name"
-msgstr "Недопустимое название шрифта"
+msgstr ""
 
 msgid "Name too long, at most 63 characters"
 msgstr "Слишком длинное название; не больше 63 знаков"
 
 msgid "Bad Font Modifier Name"
-msgstr "Bad Font Modifier Name"
+msgstr ""
 
 msgid "A Postscript name should be ASCII\nand must not contain (){}[]<>%%/ or space\nand must be shorted than 63 characters"
-msgstr "A Postscript name should be ASCII\nand must not contain (){}[]<>%%/"
+msgstr ""
 
 msgid "Names"
 msgstr "Названия"
@@ -920,52 +919,52 @@ msgid "No More"
 msgstr "Больше нет"
 
 msgid "There are no more marks associated with this anchor class"
-msgstr "There are no more marks associated with this anchor class"
+msgstr ""
 
 msgid "There are no more base glyphs associated with this anchor class"
-msgstr "There are no more base characters associated with this anchor class"
+msgstr ""
 
 msgid "There are no marks associated with this anchor class"
-msgstr "There are no marks associated with this anchor class"
+msgstr ""
 
 msgid "There are no base glyphs associated with this anchor class"
-msgstr "There are no base characters associated with this anchor class"
+msgstr ""
 
 msgid "New anchor class"
-msgstr "New anchor class"
+msgstr ""
 
 msgid "Edit anchor class"
-msgstr "Edit anchor class"
+msgstr ""
 
 msgid "The name, %s, is already in use.\nIf you elect to continue these two anchor classes\nwill be merged when you press the OK button."
-msgstr "The name, %s, is already in use.\nIf you elect to continue these two anchor classes\nwill be merged when you press the OK button."
+msgstr ""
 
 msgid "The name, %s, is already in use with a different tag."
-msgstr "The name, %s, is already in use with a different tag."
+msgstr ""
 
 msgid "C_ontinue"
 msgstr "Продолжить(_O)"
 
 msgid "Anchor Classes"
-msgstr "Anchor Classes"
+msgstr ""
 
 msgid "Anchor Class Name:"
-msgstr "Anchor Class Name:"
+msgstr ""
 
 msgid "Feature tags must be exactly 4 ASCII characters"
-msgstr "Feature tags are limited to 4 ASCII characters"
+msgstr ""
 
 msgid "Only One"
 msgstr "Только один"
 
 msgid "There may be only one anchor class tagged with 'curs'"
-msgstr "There may be only one anchor class tagged with 'curs'"
+msgstr ""
 
 msgid "Can't do this change"
 msgstr "Невозможно сделать такое изменение"
 
 msgid "You may not change the tag on an anchor class to or from 'curs'"
-msgstr "You may not change the tag on an anchor class to or from 'curs'"
+msgstr ""
 
 msgid "Above Base Mark"
 msgstr "Над отметкой основы"
@@ -977,7 +976,7 @@ msgid "Mark Positioning"
 msgstr "Размещение отметки"
 
 msgid "Mark to Mark"
-msgstr "Mark to Mark"
+msgstr ""
 
 msgid "Private Key"
 msgstr "Приватный ключ"
@@ -989,76 +988,76 @@ msgid "_Add"
 msgstr "Добавить(_A)"
 
 msgid "Ultra-Condensed (50%)"
-msgstr "Сверхузкий (50%)"
+msgstr "Ультра узкий (50%)"
 
 msgid "Extra-Condensed (62.5%)"
-msgstr "Extra-Condensed (62.5%)"
+msgstr "Экстра узкий (62.5%)"
 
 msgid "Condensed (75%)"
 msgstr "Узкий (75%)"
 
 msgid "Semi-Condensed (87.5%)"
-msgstr "Semi-Condensed (87.5%)"
+msgstr "Сжатый (87.5%)"
 
 msgid "Medium (100%)"
 msgstr "Обычный (100%)"
 
 msgid "Semi-Expanded (112.5%)"
-msgstr "Semi-Expanded (112.5%)"
+msgstr "Полурастянутый (112.5%)"
 
 msgid "Expanded (125%)"
-msgstr "Expanded (125%)"
+msgstr "Растянутый (125%)"
 
 msgid "Extra-Expanded (150%)"
-msgstr "Extra-Expanded (150%)"
+msgstr "Экстра растянутый (150%)"
 
 msgid "Ultra-Expanded (200%)"
-msgstr "Ultra-Expanded (200%)"
+msgstr "Ультра растянутый (200%)"
 
 msgid "100 Thin"
-msgstr "100 Thin"
+msgstr "100 Тонкий"
 
 msgid "200 Extra-Light"
-msgstr "200 Extra-Light"
+msgstr "200 Очень светлый"
 
 msgid "300 Light"
-msgstr "300 Light"
+msgstr "300 Светлый"
 
 msgid "400 Book"
-msgstr "400 Book"
+msgstr "400 Книжный"
 
 msgid "500 Medium"
-msgstr "500 Medium"
+msgstr "500 Средний"
 
 msgid "600 Demi-Bold"
-msgstr "600 Demi-Bold"
+msgstr "600 Полужирный"
 
 msgid "700 Bold"
-msgstr "700 Bold"
+msgstr "700 Жирный"
 
 msgid "800 Heavy"
-msgstr "800 Heavy"
+msgstr "800 Очень жирный"
 
 msgid "900 Black"
-msgstr "900 Black"
+msgstr "900 Чёрный"
 
 msgid "Can this font be embedded in a downloadable (pdf)\ndocument and if so what behaviors are permitted on\nboth the document and the font.\nThis field is often called \"FSType\" and is\navailabe in CID-keyed postscript fonts as well\nas truetype and opentype fonts"
-msgstr "Может ли этот шрифт быть включён в скачиваемый (pdf)\nдокумент и если так, какие действия разрешены в отношении\nдокумента и шрифта."
+msgstr ""
 
 msgid "_Embeddable"
 msgstr "Встраиваемый(_E)"
 
 msgid "Sets the linegap field in the hhea table, used on the mac"
-msgstr "Sets the linegap field in both the OS/2 and hhea tables"
+msgstr ""
 
 msgid "HHead _Line Gap:"
-msgstr "Line Gap:(_R)"
+msgstr ""
 
 msgid "Sets the linegap field in the vhea table.\nThis is the horizontal spacing between rows\nof vertically set text."
-msgstr "Sets the linegap field in the vhea table.\nThis is the horizontal spacing between rows\nof vertically set text."
+msgstr ""
 
 msgid "VHead _Column Spacing:"
-msgstr "Column Spacing:"
+msgstr ""
 
 msgid "Never Embed/No Editing"
 msgstr "Не встраиваемый и не редактируемый"
@@ -1073,13 +1072,13 @@ msgid "Installable Font"
 msgstr "Устанавливаемый шрифт"
 
 msgid "No Subsetting"
-msgstr "No Subsetting"
+msgstr ""
 
 msgid "If set then the entire font must be\nembedded in a document when any character is.\nOtherwise the document creator need\nonly include the glyphs it uses."
-msgstr "If set then the entire font must be\nembedded in a document when any character is.\nOtherwise the document creator need\nonly include the characters it uses."
+msgstr ""
 
 msgid "Only Embed Bitmaps"
-msgstr "Только растры"
+msgstr ""
 
 msgid "Only Bitmaps may be embedded\nOutline descriptions may not be\n(if font file contains no bitmaps\nthen nothing may be embedded)"
 msgstr "Только растровые шрифты могут быть встроены,\nа описания контуров -- нет.\n(Если файл шрифта не содержит растровых вариантов\nто ничего не может быть встроено)"
@@ -1100,283 +1099,283 @@ msgid "Any"
 msgstr "Любой"
 
 msgid "No Fit"
-msgstr "No Fit"
+msgstr ""
 
 msgid "Text & Display"
-msgstr "Text & Display"
+msgstr ""
 
 msgid "Pictoral"
-msgstr "Pictoral"
+msgstr ""
 
 msgid "Cove"
-msgstr "Cove"
+msgstr ""
 
 msgid "Obtuse Cove"
-msgstr "Obtuse Cove"
+msgstr ""
 
 msgid "Square Cove"
-msgstr "Square Cove"
+msgstr ""
 
 msgid "Obtuse Square Cove"
-msgstr "Obtuse Square Cove"
+msgstr ""
 
 msgid "Square"
-msgstr "Square"
+msgstr ""
 
 msgid "Thin"
-msgstr "Thin"
+msgstr ""
 
 msgid "Bone"
-msgstr "Bone"
+msgstr ""
 
 msgid "Exaggerated"
-msgstr "Exaggerated"
+msgstr ""
 
 msgid "Triangle"
-msgstr "Triangle"
+msgstr ""
 
 msgid "Normal Sans"
-msgstr "Normal Sans"
+msgstr ""
 
 msgid "Obtuse Sans"
-msgstr "Obtuse Sans"
+msgstr ""
 
 msgid "Perp Sans"
-msgstr "Perp Sans"
+msgstr ""
 
 msgid "Flared"
-msgstr "Flared"
+msgstr ""
 
 msgid "Rounded"
-msgstr "Rounded"
+msgstr ""
 
 msgid "Very Light"
-msgstr "Very Light"
+msgstr ""
 
 msgid "Light"
-msgstr "Light"
+msgstr ""
 
 msgid "Book"
-msgstr "Book"
+msgstr ""
 
 msgid "Medium"
-msgstr "Medium"
+msgstr ""
 
 msgid "Demi"
-msgstr "Demi"
+msgstr ""
 
 msgid "Bold"
-msgstr "Bold"
+msgstr ""
 
 msgid "Heavy"
-msgstr "Heavy"
+msgstr ""
 
 msgid "Black"
-msgstr "Black"
+msgstr ""
 
 msgid "Nord"
-msgstr "Nord"
+msgstr ""
 
 msgid "Old Style"
-msgstr "Old Style"
+msgstr ""
 
 msgid "Modern"
-msgstr "Modern"
+msgstr ""
 
 msgid "Even Width"
-msgstr "Even Width"
+msgstr ""
 
 msgid "Expanded"
-msgstr "Expanded"
+msgstr ""
 
 msgid "Condensed"
-msgstr "Condensed"
+msgstr ""
 
 msgid "Very Expanded"
-msgstr "Very Expanded"
+msgstr ""
 
 msgid "Very Condensed"
-msgstr "Very Condensed"
+msgstr ""
 
 msgid "Monospaced"
-msgstr "Monospaced"
+msgstr ""
 
 msgid "Very Low"
-msgstr "Very Low"
+msgstr ""
 
 msgid "Low"
-msgstr "Low"
+msgstr ""
 
 msgid "Medium Low"
-msgstr "Medium Low"
+msgstr ""
 
 msgid "Medium High"
-msgstr "Medium High"
+msgstr ""
 
 msgid "High"
-msgstr "High"
+msgstr ""
 
 msgid "Very High"
-msgstr "Very High"
+msgstr ""
 
 msgid "Gradual/Diagonal"
-msgstr "Gradual/Diagonal"
+msgstr ""
 
 msgid "Gradual/Transitional"
-msgstr "Gradual/Transitional"
+msgstr ""
 
 msgid "Gradual/Vertical"
-msgstr "Gradual/Vertical"
+msgstr ""
 
 msgid "Gradual/Horizontal"
-msgstr "Gradual/Horizontal"
+msgstr ""
 
 msgid "Rapid/Vertical"
-msgstr "Rapid/Vertical"
+msgstr ""
 
 msgid "Rapid/Horizontal"
-msgstr "Rapid/Horizontal"
+msgstr ""
 
 msgid "Instant/Vertical"
-msgstr "Instant/Vertical"
+msgstr ""
 
 msgid "Normal/Contact"
-msgstr "Normal/Contact"
+msgstr ""
 
 msgid "Normal/Weighted"
-msgstr "Normal/Weighted"
+msgstr ""
 
 msgid "Normal/Boxed"
-msgstr "Normal/Boxed"
+msgstr ""
 
 msgid "Normal/Flattened"
-msgstr "Normal/Flattened"
+msgstr ""
 
 msgid "Normal/Rounded"
-msgstr "Normal/Rounded"
+msgstr ""
 
 msgid "Normal/Off-Center"
-msgstr "Normal/Off-Center"
+msgstr ""
 
 msgid "Normal/Square"
-msgstr "Normal/Square"
+msgstr ""
 
 msgid "Oblique/Contact"
-msgstr "Oblique/Contact"
+msgstr ""
 
 msgid "Oblique/Weighted"
-msgstr "Oblique/Weighted"
+msgstr ""
 
 msgid "Oblique/Boxed"
-msgstr "Oblique/Boxed"
+msgstr ""
 
 msgid "Oblique/Flattened"
-msgstr "Oblique/Flattened"
+msgstr ""
 
 msgid "Oblique/Rounded"
-msgstr "Oblique/Rounded"
+msgstr ""
 
 msgid "Oblique/Off-Center"
-msgstr "Oblique/Off-Center"
+msgstr ""
 
 msgid "Oblique/Square"
-msgstr "Oblique/Square"
+msgstr ""
 
 msgid "Straight Arms/Horizontal"
-msgstr "Straight Arms/Horizontal"
+msgstr ""
 
 msgid "Straight Arms/Wedge"
-msgstr "Straight Arms/Wedge"
+msgstr ""
 
 msgid "Straight Arms/Vertical"
-msgstr "Straight Arms/Vertical"
+msgstr ""
 
 msgid "Straight Arms/Single Serif"
-msgstr "Straight Arms/Single Serif"
+msgstr ""
 
 msgid "Straight Arms/Double Serif"
-msgstr "Straight Arms/Double Serif"
+msgstr ""
 
 msgid "Non-Straight Arms/Horizontal"
-msgstr "Non-Straight Arms/Horizontal"
+msgstr ""
 
 msgid "Non-Straight Arms/Wedge"
-msgstr "Non-Straight Arms/Wedge"
+msgstr ""
 
 msgid "Non-Straight Arms/Vertical"
-msgstr "Non-Straight Arms/Vertical"
+msgstr ""
 
 msgid "Non-Straight Arms/Single Serif"
-msgstr "Non-Straight Arms/Single Serif"
+msgstr ""
 
 msgid "Non-Straight Arms/Double Serif"
-msgstr "Non-Straight Arms/Double Serif"
+msgstr ""
 
 msgid "Standard/Trimmed"
-msgstr "Standard/Trimmed"
+msgstr ""
 
 msgid "Standard/Pointed"
-msgstr "Standard/Pointed"
+msgstr ""
 
 msgid "Standard/Serifed"
-msgstr "Standard/Serifed"
+msgstr ""
 
 msgid "High/Trimmed"
-msgstr "High/Trimmed"
+msgstr ""
 
 msgid "High/Pointed"
-msgstr "High/Pointed"
+msgstr ""
 
 msgid "High/Serifed"
-msgstr "High/Serifed"
+msgstr ""
 
 msgid "Constant/Trimmed"
-msgstr "Constant/Trimmed"
+msgstr ""
 
 msgid "Constant/Pointed"
-msgstr "Constant/Pointed"
+msgstr ""
 
 msgid "Constant/Serifed"
-msgstr "Constant/Serifed"
+msgstr ""
 
 msgid "Low/Trimmed"
-msgstr "Low/Trimmed"
+msgstr ""
 
 msgid "Low/Pointed"
-msgstr "Low/Pointed"
+msgstr ""
 
 msgid "Low/Serifed"
-msgstr "Low/Serifed"
+msgstr ""
 
 msgid "Constant/Small"
-msgstr "Constant/Small"
+msgstr ""
 
 msgid "Constant/Standard"
-msgstr "Constant/Standard"
+msgstr ""
 
 msgid "Constant/Large"
-msgstr "Constant/Large"
+msgstr ""
 
 msgid "Ducking/Small"
-msgstr "Ducking/Small"
+msgstr ""
 
 msgid "Ducking/Standard"
-msgstr "Ducking/Standard"
+msgstr ""
 
 msgid "Ducking/Large"
-msgstr "Ducking/Large"
+msgstr ""
 
 msgid "Width _Class"
-msgstr "Width _Class"
+msgstr ""
 
 msgid "_Weight Class"
-msgstr "_Weight Class"
+msgstr ""
 
 msgid "P_FM Family"
-msgstr "P_FM Семейство"
+msgstr ""
 
 msgid "_Family"
-msgstr "Гарнитура(_F)"
+msgstr "Гарнитура (_F)"
 
 msgid "_Serifs"
 msgstr "Засечки(_S)"
@@ -1394,13 +1393,13 @@ msgid "Stroke _Variation"
 msgstr "Вариации штриха(_V)"
 
 msgid "_Arm Style"
-msgstr "_Arm Style"
+msgstr ""
 
 msgid "_Letterform"
-msgstr "_Letterform"
+msgstr ""
 
 msgid "_Midline"
-msgstr "_Midline"
+msgstr ""
 
 msgid "_X-Height"
 msgstr "_X-Height"
@@ -1427,7 +1426,7 @@ msgid "Designer"
 msgstr "Дизайнер"
 
 msgid "Descriptor"
-msgstr "Descriptor"
+msgstr ""
 
 msgid "Vendor URL"
 msgstr "URL производителя"
@@ -1448,7 +1447,7 @@ msgid "Preferred Styles"
 msgstr "Предпочтительные стили"
 
 msgid "Compatable Full"
-msgstr "Compatable Full"
+msgstr ""
 
 msgid "_Sample Text"
 msgstr "Образец текста(_S)"
@@ -1457,91 +1456,91 @@ msgid "Translate Style"
 msgstr "Перевести стиль"
 
 msgid "Arabic Saudi Arabia"
-msgstr "Арабский ar"
+msgstr "Арабский"
 
 msgid "Chinese (Taiwan)"
-msgstr "Китайский zh_CN"
+msgstr "Китайский (Тайвань)"
 
 msgid "Flemish (Belgian Dutch)"
-msgstr "Голандский nl_BE"
+msgstr "Фламандский (Бельгийский голандский)"
 
 msgid "English (British)"
-msgstr "Британский английский en_UK"
+msgstr "Британский английский"
 
 msgid "English (US)"
-msgstr "Американский английский en_US"
+msgstr "Американский английский"
 
 msgid "English (Canada)"
-msgstr "Канадский английский en_CA"
+msgstr "Канадский английский"
 
 msgid "English (Australian)"
-msgstr "Австралийский английский en_AU"
+msgstr "Австралийский английский"
 
 msgid "English (New Zeeland)"
-msgstr "Новозеландский английский en_NZ"
+msgstr "Новозеландский английский"
 
 msgid "English (Irish)"
-msgstr "Ирландский английский en_IE"
+msgstr "Ирландский английский"
 
 msgid "Finish"
-msgstr "Финский fi_FI"
+msgstr "Финский"
 
 msgid "French French"
-msgstr "Французский fr_FR"
+msgstr "Французский"
 
 msgid "French Belgium"
-msgstr "Бельгийский французский fr_BE"
+msgstr "Бельгийский французский"
 
 msgid "French Canadian"
-msgstr "Канадский французский fr_CA"
+msgstr "Канадский французский"
 
 msgid "French Swiss"
-msgstr "Швейцарский французский fr_CH"
+msgstr "Швейцарский французский"
 
 msgid "French Luxembourg"
-msgstr "Люксембургский французский fr_LU"
+msgstr "Люксембургский французский"
 
 msgid "German German"
-msgstr "Немецкий de_DE"
+msgstr "Немецкий"
 
 msgid "German Swiss"
-msgstr "Швейцарский немецкий de_CH"
+msgstr "Швейцарский немецкий"
 
 msgid "German Austrian"
-msgstr "Австрийский немецкий de_AT"
+msgstr "Австрийский немецкий"
 
 msgid "German Luxembourg"
-msgstr "Люксембургский немецкий de_LU"
+msgstr "Люксембургский немецкий"
 
 msgid "German Liechtenstein"
-msgstr "Лихтенштейнский немецкий de_LI"
+msgstr "Лихтенштейнский немецкий"
 
 msgid "Italian Swiss"
-msgstr "Швейцарский итальянский it_CH"
+msgstr "Швейцарский итальянский"
 
 msgid "Norwegian (Bokmal)"
-msgstr "Норвежский Bokmal no_NO"
+msgstr "Норвежский книжный"
 
 msgid "Norwegian (Nynorsk)"
-msgstr "Норвежский Nynorsk no_NO"
+msgstr "Норвежский современный"
 
 msgid "Português Português"
-msgstr "Португальский pt_PT"
+msgstr "Португальский"
 
 msgid "Português Brasil"
-msgstr "Бразильский португальский pt_BR"
+msgstr "Бразильский португальский"
 
 msgid "Spanish (Traditional)"
-msgstr "Испанский es_ES"
+msgstr "Испанский традиционный"
 
 msgid "Spanish Mexico"
-msgstr "Мексиканский испанский es_MX"
+msgstr "Мексиканский испанский"
 
 msgid "Spanish (Modern)"
-msgstr "EspaЯol EspaЯol es_ES"
+msgstr "Испанский современный"
 
 msgid "Swedish (Sweden)"
-msgstr "Шведский sv_SE"
+msgstr "Шведский"
 
 msgid "Format:"
 msgstr "Формат:"
@@ -1559,7 +1558,7 @@ msgid "The PFM file contains information Windows needs to install a PostScript®
 msgstr "Файл PFM содержит информацию необходимую Windows для установки шрифта PostScript."
 
 msgid "Apple and MS/Adobe differ about the format of truetype and opentype files\nThis allows you to select which standard to follow for your font.\nThe main differences are:\n The requirements for the 'postscript' name in the name table conflict\n Bitmap data are stored in different tables\n Scaled composite characters are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop"
-msgstr "Apple и MS/Adobe используют разные форматы файлов truetype и opentype\nВы можете выбрать какому стандарту следовать для вашего шрифта."
+msgstr ""
 
 msgid "No Outline Font"
 msgstr "Без контурного"
@@ -1604,7 +1603,7 @@ msgid "You are attempting to save a CID font in a non-CID format. This is ok, bu
 msgstr "Вы пытаетесь сохранить шрифт CID не в формате CID. Это допустимо, но означает, что будет сохранён только текущий вложенный шрифт.\nВы действительно хотите этого?"
 
 msgid "Pixel List"
-msgstr "Pixel List"
+msgstr ""
 
 msgid "Encoding Too Large"
 msgstr "Слишком большая кодировка"
@@ -1622,13 +1621,13 @@ msgid "Guess each font's resolution based on its pixel size"
 msgstr "Определять разрешение каждого шрифта на основе его размеров"
 
 msgid "Find Sub Font Definition file"
-msgstr "Find Sub Font Definition file"
+msgstr ""
 
 msgid "No Sub Font Definition file"
-msgstr "No Sub Font Definition file"
+msgstr ""
 
 msgid "PS Glyph Names"
-msgstr "PS Названия"
+msgstr "Названия символов в PS"
 
 msgid "Do you want the font file to contain the names of each glyph in the font?"
 msgstr "Хотите, чтобы файл шрифта содержал названия каждого символа в шрифте?"
@@ -1643,31 +1642,31 @@ msgid "This looks like one of FontForge's SplineFont DataBase files.\nNot one of
 msgstr "This looks like one of FontForge's SplineFont DataBase files.\nNot one of TeX's SubFont Definition files.\nAn unfortunate confusion of extensions."
 
 msgid "Bad Mac Family"
-msgstr "Bad Mac Family"
+msgstr ""
 
 msgid "To generate a Mac family file, the current font must have plain (Normal, Regular, etc.) style, and there must be other open fonts with the same family name."
-msgstr "To generate a Mac family file, the current font must have plain (Normal, Regular, etc.) style, and there must be other open fonts with the same family name."
+msgstr ""
 
 msgid "There are two open fonts with the current family name and the same style. %.30s and %.30hs"
-msgstr "There are two open fonts with the current family name and the same style. %.30s and %.30hs"
+msgstr ""
 
 msgid "The font %1$.30s has a different encoding than that of %2$.30hs"
-msgstr "The font %1$.30s has a different encoding than that of %2$.30hs"
+msgstr ""
 
 msgid "Notdef name"
-msgstr "Notdef name"
+msgstr ""
 
 msgid "The glyph at encoding %d is named \".notdef\" but contains an outline. Because it is called \".notdef\" it will not be included in the generated font. You may give it a new name using Element->Glyph Info. Do you wish to continue font generation (and omit this glyph)?"
-msgstr "The character at encoding %d is named \".notdef\" but contains an outline. Because it is called \".notdef\" it will not be included in the generated font. You may give it a new name using Element->Char Info. Do you wish to continue font generation (and omit this character)?"
+msgstr ""
 
 msgid "Non-standard Em-Size"
-msgstr "Non-standard Em-Size"
+msgstr "Нестандартный размер \"Em\""
 
 msgid "The convention is that PostScript fonts should have an Em-Size of 1000. But this font has a size of %d. This is not an error, but you might consider altering the Em-Size with the Element->Font Info->PS General dialog.\nDo you wish to continue to generate your font in spite of this?"
-msgstr "The convention is that PostScript fonts should have an Em-Size of 1000. But this font has a size of %d. This is not an error, but you might consider altering the Em-Size with the Element->Font Info->PS General dialog.\nDo you wish to continue to generate your font in spite of this?"
+msgstr ""
 
 msgid "The convention is that TrueType fonts should have an Em-Size which is a power of 2. But this font has a size of %d. This is not an error, but you might consider altering the Em-Size with the Element->Font Info->PS General dialog.\nDo you wish to continue to generate your font in spite of this?"
-msgstr "The convention is that TrueType fonts should have an Em-Size which is a power of 2. But this font has a size of %d. This is not an error, but you might consider altering the Em-Size with the Element->Font Info->PS General dialog.\nDo you wish to continue to generate your font in spite of this?"
+msgstr ""
 
 msgid "Round"
 msgstr "Круглый"
@@ -1685,7 +1684,7 @@ msgid "Could not find the glyph"
 msgstr "Не удалось найти символ"
 
 msgid "Could not find substitution glyph: %.40s"
-msgstr "Could not find substitution glyph: %.40s"
+msgstr ""
 
 msgid "_Don't Save"
 msgstr "Не сохранять(_D)"
@@ -1733,7 +1732,7 @@ msgid "Couldn't open font"
 msgstr "Не удалось открыть шрифт"
 
 msgid "%.100s is not in a known format (or is so badly corrupted as to be unreadable)"
-msgstr "Не удалось открыть шрифт (или он в неподходящем формате): %s"
+msgstr "Не удалось открыть шрифт (он в неподходящем формате или файл испорчен): %.100s"
 
 msgid "Save Failed"
 msgstr "Сбой сохранения"
@@ -1760,7 +1759,9 @@ msgid "Autotracing..."
 msgstr "Автотрассировка..."
 
 msgid "You are attempting to clear %.30s which is refered to by\nanother glyph. Are you sure you want to clear it?"
-msgstr "Вы пытаетесь очистить %.30s, который ссылается на\nдругой символ. Вы уверены в том что хотите очистить его?"
+msgstr ""
+"Вы пытаетесь очистить %.30s, на который ссылается другой символ.\n"
+"Вы уверены в том что хотите очистить его?"
 
 msgid "Unlink All"
 msgstr "Разыменовать все"
@@ -1772,7 +1773,7 @@ msgid "%d pixel bitmap"
 msgstr "Растр %d точек"
 
 msgid "%d@%d pixel bitmap"
-msgstr "%d@%d pixel bitmap"
+msgstr "Растр %d@%d"
 
 msgid "This font is marked with an FSType of 2 (Restricted\nLicense). That means it is not editable without the\npermission of the legal owner.\n\nDo you have such permission?"
 msgstr "Этот шрифт помечен как FSType 2 (Ограниченная\nЛицензия). Это означает, что его нельзя редактировать без\nразрешения законного владельца.\n\nУ вас есть такое разрешение?"
@@ -1784,16 +1785,16 @@ msgid "Please close font"
 msgstr "Пожалуйста, закройте шрифт"
 
 msgid "Please close %s before inserting it into a CID font"
-msgstr "Please close %s before inserting it into a CID font"
+msgstr ""
 
 msgid "Are you sure you wish to remove sub-font %1$.40s from the CID font %2$.40hs"
-msgstr "Are you sure you wish to remove sub-font %1$.40s from the CID font %2$.40hs"
+msgstr ""
 
 msgid "Flipped Reference"
 msgstr "Зеркальная ссылка"
 
 msgid "%.50s contains a flipped reference. This cannot be corrected as is. Would you like me to unlink it and then correct it?"
-msgstr "%.50s contains a flipped reference. This cannot be corrected as is. Would you like me to unlink it and then correct it?"
+msgstr ""
 
 msgid "Baseline"
 msgstr "Базовая линия"
@@ -1802,31 +1803,33 @@ msgid "Origin"
 msgstr "Нач.координат"
 
 msgid "Advance Width as a Bar"
-msgstr "Advance Width as a Bar"
+msgstr ""
 
 msgid "Advance Width as a Line"
-msgstr "Advance Width as a Line"
+msgstr ""
 
 msgid "Display the advance width as a bar under the glyph\nshowing the extent of the advance"
-msgstr "Display the advance width as a bar under the character\nshowing the extent of the advance"
+msgstr ""
 
 msgid "Display the advance width as a line\nperpendicular to the advance direction"
-msgstr "Display the advance width as a line\nperpendicular to the advance direction"
+msgstr ""
 
 msgid "Suffix:"
 msgstr "Суффикс:"
 
 msgid "Suffix to Tag..."
-msgstr "Suffix to Tag..."
+msgstr ""
 
 msgid "Building accented glyphs"
 msgstr "Создание акцентированных символов"
 
 msgid "Replace Å"
-msgstr "Заменить е"
+msgstr "Заменить Å"
 
 msgid "Are you sure you want to replace Å?\nThe ring will not join to the A."
-msgstr "Вы уверены в том, что хотите заменить е?\nКольцо не будет соединено с A."
+msgstr ""
+"Вы уверены в том, что хотите заменить Å?\n"
+"Кольцо не будет соединено с A."
 
 msgid "_Yes"
 msgstr "Да(_Y)"
@@ -1847,31 +1850,34 @@ msgid "Filled Ellipse"
 msgstr "Заполненный эллипс"
 
 msgid "Multiple"
-msgstr "Multiple"
+msgstr ""
 
 msgid "There is already a glyph with this Unicode encoding,\n(named %1$.40s, at local encoding %2$d)\nIs that what you want?"
-msgstr "There is already a character with this Unicode encoding,\n(named %1$.40s, at local encoding %2$d)\nIs that what you want?"
+msgstr ""
 
 msgid "There is already a glyph with this name,\ndo you want to swap names?"
-msgstr "There is already a character with this name,\ndo you want to swap names?"
+msgstr ""
 
 msgid "There is already a ligature made from these components,\n(named %1$.40s, at local encoding %2$d)\nIs that what you want?"
-msgstr "There is already a ligature made from these components,\n(named %1$.40s at local encoding %2$d)\nIs that what you want?"
+msgstr ""
 
 msgid "A ligature may not be made up of itself"
-msgstr "A ligature may not be made up of itself"
+msgstr ""
 
 msgid "The component \"%.20s\" is not in this font,\nIs that what you want?"
-msgstr "The componant %.40s is not in this font,\nIs that what you want?"
+msgstr ""
 
 msgid "This substitution is self-referential"
-msgstr "This substitution is self-referential"
+msgstr ""
 
 msgid "_Done"
 msgstr "Закрыть(_D)"
 
 msgid "If this glyph is a ligature,\nthen enter the names of the characters\ninto which it decomposes"
-msgstr "Если это лигатура,\nвведите названия символов\nиз которых она состоит"
+msgstr ""
+"Если это лигатура,\n"
+"введите названия символов,\n"
+"из которых она состоит"
 
 msgid "_Show"
 msgstr "Показать(_S)"
@@ -1928,16 +1934,16 @@ msgid "Components"
 msgstr "Компоненты"
 
 msgid "Pos"
-msgstr "Alt Pos"
+msgstr ""
 
 msgid "Subs"
-msgstr "Subs"
+msgstr ""
 
 msgid "Alt Subs"
-msgstr "Alt Subs"
+msgstr ""
 
 msgid "Mult Subs"
-msgstr "Mult Subs"
+msgstr ""
 
 msgid "U_nicode Name:"
 msgstr "Назв. U_nicode:"
@@ -1988,52 +1994,52 @@ msgid "Transformation Matrix Changed"
 msgstr "Матрица преобразования изменена"
 
 msgid "You have changed the transformation matrix, do you wish to use the new version?"
-msgstr "You have changed the transformation matrix, do you wish to use the new version?"
+msgstr ""
 
 msgid "The transformation matrix specifies how the points in\nthe source glyph should be transformed before\nthey are drawn in the current glyph.\n x(new) = tm[1,1]*x + tm[2,1]*y + tm[3,1]\n y(new) = tm[1,2]*x + tm[2,2]*y + tm[3,2]"
-msgstr "The transformation matrix specifies how the points in\nthe source character should be transformed before\nthey are drawn in the current character.\n x(new) = tm[1,1]*x + tm[2,1]*y + tm[3,1]\n y(new) = tm[1,2]*x + tm[2,2]*y + tm[3,2]"
+msgstr ""
 
 msgid "Make a new anchor class"
-msgstr "Make a new anchor class"
+msgstr ""
 
 msgid "I cannot find an unused anchor class\nto assign a new point to. If you\nwish a new anchor point you must\ndefine a new anchor class with\nElement->Font Info"
-msgstr "I cannot find an unused anchor class\nto assign a new point to. If you\nwish a new anchor point you must\ndefine a new anchor class with\nElement->Font Info"
+msgstr ""
 
 msgid "Base Glyph"
-msgstr "Base Glyph"
+msgstr ""
 
 msgid "Base Lig"
-msgstr "Base Lig"
+msgstr ""
 
 msgid "Base Mark"
-msgstr "Base Mark"
+msgstr ""
 
 msgid "CursEntry"
-msgstr "CursEntry"
+msgstr ""
 
 msgid "CursExit"
-msgstr "CursExit"
+msgstr ""
 
 msgid "Lig Index:"
-msgstr "Lig Index:"
+msgstr ""
 
 msgid "Last Anchor Point"
-msgstr "Last Anchor Point"
+msgstr ""
 
 msgid "You are deleting the last anchor point in this glyph.\nDoing so will cause this dialog to close, is that what you want?"
-msgstr "You are deleting the last anchor point in this character.\nDoing so will cause this dialog to close, is that what you want?"
+msgstr ""
 
 msgid "Class already used"
 msgstr "Класс уже используется"
 
 msgid "This anchor class already is associated with a point in this glyph"
-msgstr "This anchor class already is associated with a point in this character"
+msgstr ""
 
 msgid "Bad Class"
-msgstr "Bad Class"
+msgstr ""
 
 msgid "You may not change an anchor point to or from the 'curs' class"
-msgstr "You may not change an anchor point to or from the 'curs' class"
+msgstr ""
 
 msgid "_X:"
 msgstr "_X:"
@@ -2045,64 +2051,64 @@ msgid "Index in use"
 msgstr "Индекс используется"
 
 msgid "This ligature index is already in use"
-msgstr "This ligature index is already in use"
+msgstr ""
 
 msgid "Out Of Order"
-msgstr "Out Of Order"
+msgstr ""
 
 msgid "Marks within a ligature should be ordered with the direction of writing.\nThis one and %d are out of order."
-msgstr "Marks within a ligature should be ordered with the direction of writing.\nThis one and %d are out of order."
+msgstr ""
 
 msgid "Too Big"
-msgstr "Слишком большое"
+msgstr "Слишком большой"
 
 msgid "This index is much larger than the closest neighbor"
-msgstr "This index is much larger than the closest neighbor"
+msgstr ""
 
 msgid "Bad GPOS/GSUB"
-msgstr "Bad GPOS/GSUB"
+msgstr ""
 
 msgid "The string must start with a 4 character type field, be followed by a space, and then contain the information"
-msgstr "The string must start with a 4 character type field, be followed by a space, and then contain the information"
+msgstr ""
 
 msgid "Bad format for position data, expected four = characters with data"
-msgstr "Bad format for position data, expected four = characters with data"
+msgstr ""
 
 msgid "A simple substitution must have exactly one component"
-msgstr "A simple substitution must have exactly one component"
+msgstr ""
 
 msgid "New Position Variant"
-msgstr "New Position Variant"
+msgstr ""
 
 msgid "New Substitution Variant"
-msgstr "New Substitution Variant"
+msgstr ""
 
 msgid "New Alternate List"
-msgstr "New Alternate List"
+msgstr ""
 
 msgid "New Multiple List"
-msgstr "New Multiple List"
+msgstr ""
 
 msgid "New Ligature"
-msgstr "New Ligature"
+msgstr ""
 
 msgid "Edit Position Variant"
-msgstr "Edit Position Variant"
+msgstr ""
 
 msgid "Edit Substitution Variant"
-msgstr "Edit Substitution Variant"
+msgstr ""
 
 msgid "Edit Alternate List"
-msgstr "Edit Alternate List"
+msgstr ""
 
 msgid "Edit Multiple List"
-msgstr "Edit Multiple List"
+msgstr ""
 
 msgid "Edit Ligature"
-msgstr "Edit Ligature"
+msgstr ""
 
 msgid "Duplicate Tag"
-msgstr "Duplicate Tag"
+msgstr ""
 
 msgid "∆X:"
 msgstr "∆X:"
@@ -2111,16 +2117,16 @@ msgid "∆Y:"
 msgstr "∆Y:"
 
 msgid "∆XAdvance:"
-msgstr "∆XAdvance:"
+msgstr ""
 
 msgid "∆YAdvance:"
-msgstr "∆YAdvance:"
+msgstr ""
 
 msgid "Too Many Components"
 msgstr "Слишком много компонент"
 
 msgid "A simple substitution takes exactly one component, but you have provided several"
-msgstr "A simple substitution takes exactly one component, but you have provided several"
+msgstr ""
 
 msgid "Required Ligatures"
 msgstr "Требуемые лигатуры"
@@ -2129,76 +2135,76 @@ msgid "Standard Ligatures"
 msgstr "Стандартные лигатуры"
 
 msgid "Discretionary Ligatures"
-msgstr "Discretionary Ligatures"
+msgstr ""
 
 msgid "Historic Ligatures"
 msgstr "Исторические лигатуры"
 
 msgid "Diagonal Fractions"
-msgstr "Fraction Ligatures"
+msgstr "Диагональные дроби"
 
 msgid "Above Base Substitutions"
-msgstr "Above Base Substitutions"
+msgstr ""
 
 msgid "Vertical Fractions"
-msgstr "Alternate Fractions"
+msgstr "Вертикальные дроби"
 
 msgid "Akhand"
-msgstr "Akhand"
+msgstr ""
 
 msgid "Below Base Forms"
-msgstr "Below Base Forms"
+msgstr ""
 
 msgid "Below Base Substitutions"
-msgstr "Below Base Substitutions"
+msgstr ""
 
 msgid "Glyph Composition/Decomposition"
-msgstr "Glyph Composition/Decomposition"
+msgstr ""
 
 msgid "Half Forms"
-msgstr "Half Forms"
+msgstr ""
 
 msgid "Halant Forms"
-msgstr "Halant Forms"
+msgstr ""
 
 msgid "Leading Jamo Forms"
-msgstr "Leading Jamo Forms"
+msgstr ""
 
 msgid "Trailing Jamo Forms"
-msgstr "Trailing Jamo Forms"
+msgstr ""
 
 msgid "Vowel Jamo Forms"
-msgstr "Vowel Jamo Forms"
+msgstr ""
 
 msgid "Nukta Forms"
-msgstr "Nukta Forms"
+msgstr ""
 
 msgid "Pre Base Forms"
-msgstr "Pre Base Forms"
+msgstr ""
 
 msgid "Pre Base Substitutions"
-msgstr "Pre Base Substitutions"
+msgstr ""
 
 msgid "Post Base Forms"
-msgstr "Post Base Forms"
+msgstr ""
 
 msgid "Post Base Substitutions"
 msgstr "Post Base Substitutions"
 
 msgid "Reph Form"
-msgstr "Reph Form"
+msgstr ""
 
 msgid "Vattu Variants"
-msgstr "Vattu Variants"
+msgstr ""
 
 msgid "Case-Sensitive Forms"
-msgstr "Case-Sensitive Forms"
+msgstr ""
 
 msgid "Capital Spacing"
-msgstr "Capital Spacing"
+msgstr ""
 
 msgid "Alternative Half Widths"
-msgstr "Alternative Half Widths"
+msgstr ""
 
 msgid "Left Bounds"
 msgstr "Левые границы"
@@ -2207,10 +2213,10 @@ msgid "Optical Bounds"
 msgstr "Оптические границы"
 
 msgid "Proportional Alternate Metrics"
-msgstr "Proportional Alternate Metrics"
+msgstr ""
 
 msgid "Quarter Widths"
-msgstr "Quarter Widths"
+msgstr "Четверти ширин"
 
 msgid "Right Bounds"
 msgstr "Правые границы"
@@ -2219,190 +2225,190 @@ msgid "Third Widths"
 msgstr "Трети ширин"
 
 msgid "Alternate Vertical Metrics"
-msgstr "Alternate Vertical Metrics"
+msgstr ""
 
 msgid "Alternate Vertical Half Metrics"
-msgstr "Alternate Vertical Half Metrics"
+msgstr ""
 
 msgid "Proportional Alternate Vertical Metrics"
-msgstr "Proportional Alternate Vertical Metrics"
+msgstr ""
 
 msgid "Access All Alternates"
-msgstr "Access All Alternates"
+msgstr ""
 
 msgid "Above Base Forms"
-msgstr "Above Base Forms"
+msgstr ""
 
 msgid "Capitals to Petite Capitals"
-msgstr "Capitals to Petite Capitals"
+msgstr ""
 
 msgid "Capitals to Small Capitals"
-msgstr "Capitals to Small Capitals"
+msgstr ""
 
 msgid "Denominators"
-msgstr "Denominators"
+msgstr ""
 
 msgid "Expert Forms"
-msgstr "Expert Forms"
+msgstr ""
 
 msgid "Terminal Forms"
-msgstr "Terminal Forms"
+msgstr ""
 
 msgid "Full Widths"
-msgstr "Full Widths"
+msgstr ""
 
 msgid "Historical Forms"
-msgstr "Historical Forms"
+msgstr ""
 
 msgid "Horizontal Kana Alternatives"
-msgstr "Horizontal Kana Alternatives"
+msgstr ""
 
 msgid "Hanja to Hangul"
-msgstr "Hanja to Hangul"
+msgstr ""
 
 msgid "Half Widths"
-msgstr "Half Widths"
+msgstr ""
 
 msgid "Initial Forms"
-msgstr "Initial Forms"
+msgstr ""
 
 msgid "Isolated Forms"
-msgstr "Isolated Forms"
+msgstr ""
 
 msgid "Italics"
-msgstr "Italics"
+msgstr ""
 
 msgid "JIS78 Forms"
-msgstr "JIS78 Forms"
+msgstr ""
 
 msgid "JIS83 Forms"
-msgstr "JIS83 Forms"
+msgstr ""
 
 msgid "JIS90 Forms"
-msgstr "JIS90 Forms"
+msgstr ""
 
 msgid "Lining Figures"
-msgstr "Lining Figures"
+msgstr ""
 
 msgid "Localized Forms"
-msgstr "Localized Forms"
+msgstr ""
 
 msgid "Medial Forms"
-msgstr "Medial Forms"
+msgstr ""
 
 msgid "Mathematical Greek"
-msgstr "Mathematical Greek"
+msgstr ""
 
 msgid "Alternate Annotation Forms"
-msgstr "Alternate Annotation Forms"
+msgstr ""
 
 msgid "Numerators"
-msgstr "Numerators"
+msgstr ""
 
 msgid "Oldstyle Figures"
-msgstr "Oldstyle Figures"
+msgstr ""
 
 msgid "Ornaments"
 msgstr "Орнаменты"
 
 msgid "Lowercase to Petite Capitals"
-msgstr "Lowercase to Petite Capitals"
+msgstr ""
 
 msgid "Proportional Width"
-msgstr "Proportional Width"
+msgstr ""
 
 msgid "Right to Left Alternates"
-msgstr "Right to Left Alternates"
+msgstr ""
 
 msgid "Ruby Notational Forms"
-msgstr "Ruby Notational Forms"
+msgstr ""
 
 msgid "Stylistic Alternatives"
-msgstr "Stylistic Alternatives"
+msgstr ""
 
 msgid "Scientific Inferiors"
-msgstr "Scientific Inferiors"
+msgstr ""
 
 msgid "Lowercase to Small Capitals"
-msgstr "Lowercase to Small Capitals"
+msgstr ""
 
 msgid "Simplified Forms"
 msgstr "Упрощённые формы"
 
 msgid "Style Set 1"
-msgstr "Style Set 1"
+msgstr ""
 
 msgid "Style Set 2"
-msgstr "Style Set 2"
+msgstr ""
 
 msgid "Style Set 3"
-msgstr "Style Set 3"
+msgstr ""
 
 msgid "Style Set 4"
-msgstr "Style Set 4"
+msgstr ""
 
 msgid "Style Set 5"
-msgstr "Style Set 5"
+msgstr ""
 
 msgid "Subscript"
-msgstr "Subscript"
+msgstr ""
 
 msgid "Superscript"
-msgstr "Superscript"
+msgstr ""
 
 msgid "Swash"
-msgstr "Swash"
+msgstr ""
 
 msgid "Titling"
-msgstr "Titling"
+msgstr ""
 
 msgid "Traditional Name Forms"
-msgstr "Traditional Name Forms"
+msgstr ""
 
 msgid "Tabular Numbers"
-msgstr "Tabular Numbers"
+msgstr ""
 
 msgid "Traditional Forms"
-msgstr "Traditional Forms"
+msgstr ""
 
 msgid "Unicase"
-msgstr "Unicase"
+msgstr ""
 
 msgid "Vertical Alternates (obs)"
-msgstr "Vertical Alternates (obs)"
+msgstr ""
 
 msgid "Vertical Rotation & Alternates"
-msgstr "Vertical Rotation & Alternates"
+msgstr ""
 
 msgid "Vertical Kana Alternates"
-msgstr "Vertical Kana Alternates"
+msgstr ""
 
 msgid "Slashed Zero"
-msgstr "Slashed Zero"
+msgstr ""
 
 msgid "Final Glyph On Line"
-msgstr "Final Glyph On Line"
+msgstr ""
 
 msgid "Justification Alternatives"
-msgstr "Justification Alternatives"
+msgstr ""
 
 msgid "Randomize"
-msgstr "Randomize"
+msgstr ""
 
 msgid "Bopomofo"
-msgstr "Bopomofo"
+msgstr ""
 
 msgid "Braille"
-msgstr "Брайль"
+msgstr ""
 
 msgid "Byzantine Music"
-msgstr "Byzantine Music"
+msgstr ""
 
 msgid "Canadian Syllabics"
-msgstr "Canadian Syllabics"
+msgstr ""
 
 msgid "CJK Ideographic"
-msgstr "CJK Ideographic"
+msgstr ""
 
 msgid "Cyrillic"
 msgstr "Кириллица"
@@ -2414,94 +2420,94 @@ msgid "Ethiopic"
 msgstr "Эфиопский"
 
 msgid "Gurmukhi"
-msgstr "Gurmukhi"
+msgstr ""
 
 msgid "Hangul Jamo"
-msgstr "Hangul Jamo"
+msgstr ""
 
 msgid "Hangul"
-msgstr "Hangul"
+msgstr ""
 
 msgid "Hiragana & Katakana"
 msgstr "Хирагана & Катакана"
 
 msgid "Malayālam"
-msgstr "Malayalam"
+msgstr ""
 
 msgid "Myanmar"
-msgstr "Myanmar"
+msgstr ""
 
 msgid "Ogham"
-msgstr "Ogham"
+msgstr ""
 
 msgid "Runic"
-msgstr "Runic"
+msgstr "Руны"
 
 msgid "Sinhala"
-msgstr "Sinhala"
+msgstr ""
 
 msgid "Thaana"
-msgstr "Thaana"
+msgstr ""
 
 msgid "Yi"
-msgstr "Yi"
+msgstr ""
 
 msgid "_Script:"
-msgstr "_Script:"
+msgstr ""
 
 msgid "_Tag:"
-msgstr "_Tag:"
+msgstr ""
 
 msgid "Tag too long"
-msgstr "Tag too long"
+msgstr ""
 
 msgid "Script tags are limited to 4 ASCII characters"
-msgstr "Script tags are limited to 4 ASCII characters"
+msgstr ""
 
 msgid "Ignore Base Glyphs"
-msgstr "Ignore Base Glyphs"
+msgstr ""
 
 msgid "Ignore Ligatures"
-msgstr "Игнорировать лигатуры"
+msgstr ""
 
 msgid "Ignore Combining Marks"
-msgstr "Ignore Combining Marks"
+msgstr ""
 
 msgid "Duplicate pixelsize"
-msgstr "Duplicate pixelsize"
+msgstr ""
 
 msgid "The font database already contains a bitmap\nfont with this pixelsize (%d)\nDo you want to overwrite it?"
-msgstr "The font database already contains a bitmap\nfont with this pixelsize (%d)\nDo you want to overwrite it?"
+msgstr ""
 
 msgid "No Bitmap Font"
-msgstr "No Bitmap Font"
+msgstr ""
 
 msgid "Could not find a bitmap font in %s"
-msgstr "Could not find a bitmap font in %s"
+msgstr ""
 
 msgid "This will change both BlueValues and OtherBlues.\nDo you want to continue?"
-msgstr "This will change both BlueValues and OtherBlues.\nDo you want to continue?"
+msgstr ""
 
 msgid "This will change both StdHW and StemSnapH.\nDo you want to continue?"
-msgstr "This will change both StdHW and StemSnapH.\nDo you want to continue?"
+msgstr ""
 
 msgid "This will change both StdVW and StemSnapV.\nDo you want to continue?"
-msgstr "This will change both StdVW and StemSnapV.\nDo you want to continue?"
+msgstr ""
 
 msgid "Expected array\nProcede anyway?"
-msgstr "Expected array\nProcede anyway?"
+msgstr ""
 
 msgid "Expected number\nProcede anyway?"
-msgstr "Expected number\nProcede anyway?"
+msgstr ""
 
 msgid "Expected boolean\nProcede anyway?"
-msgstr "Expected boolean\nProcede anyway?"
+msgstr ""
 
 msgid "Expected code\nProcede anyway?"
-msgstr "Expected code\nProcede anyway?"
+msgstr ""
 
 msgid "Bad type"
-msgstr "Bad type"
+msgstr ""
 
 msgid "_Delete"
 msgstr "Удалить(_D)"
@@ -2513,88 +2519,90 @@ msgid "Default"
 msgstr "Исходный"
 
 msgid "Changing the width of a glyph\nchanges the widths of all accented\nglyphs based on it."
-msgstr "Changing the width of a character\nchanges the widths of all accented\ncharacters based on it."
+msgstr ""
 
 msgid "Changing the left side bearing\nof a glyph adjusts the lbearing\nof other references in all accented\nglyphs based on it."
-msgstr "Changing the left side bearing\nof a character adjusts the lbearing\nof other references in all accented\ncharacters based on it.'"
+msgstr ""
 
 msgid "Default encoding for\nnew fonts"
-msgstr "Исходная кодировка для новых шрифтов"
+msgstr ""
+"Исходная кодировка для\n"
+"новых шрифтов"
 
 msgid "Character set used by the local\nclipboard, filesystem, etc. (only\n8bit charsets currently supported\nhere)"
-msgstr "Character set used by the local\nclipboard, filesystem, etc. (only\n8bit charsets currently supported\nhere)"
+msgstr ""
 
 msgid "AutoHint before rasterizing"
 msgstr "Автоинструктирование перед растрированием"
 
 msgid "Name used for foundry field in bdf\nfont generation"
-msgstr "Name used for foundry field in bdf\nfont generation"
+msgstr ""
 
 msgid "Name used for Vendor ID field in\nttf (OS/2 table) font generation.\nMust be no more than 4 characters"
-msgstr "Name used for Vendor ID field in\nttf (OS/2 table) font generation.\nMust be no more than 4 characters"
+msgstr ""
 
 msgid "If specified this should be a space separated list of integers each\nless than 16777216 which uniquely identify your organization\nFontForge will generate a random number for the final component."
-msgstr "If specified this should be a space seperated list of integers each\nless than 16777216 which uniquely identify your organization\nFontForge will generate a random number for the final componant."
+msgstr ""
 
 msgid "Display rulers in the Outline Glyph View"
-msgstr "Display rulers in the Outline Character View"
+msgstr ""
 
 msgid "Have seperate controls for display horizontal and vertical hints."
-msgstr "Have seperate controls for display horizontal and vertical hints."
+msgstr ""
 
 msgid "In the Outline View, the Shift key constrains motion to be parallel to the ItalicAngle rather than the vertical."
-msgstr "In the Outline View, the Shift key constrains motion to be parallel to the ItalicAngle rather than the vertical."
+msgstr ""
 
 msgid "The percentage of an em by which an accent is offset from its base glyph in Build Accent"
-msgstr "The percentage of an em by which an accent is offset from its base character in Build Accent"
+msgstr ""
 
 msgid "When placing grave and acute accents above letters, should\nFontForge center them based on their full width, or\nshould it just center based on the lowest point\nof the accent."
-msgstr "When placing grave and acute accents above letters, should\nFontForge center them based on their full width, or\nshould it just center based on the lowest point\nof the accent."
+msgstr ""
 
 msgid "The number of em-units by which an arrow key will move a selected point"
-msgstr "The number of em-units by which an arrow key will move a selected point"
+msgstr ""
 
 msgid "Adobe has assigned the names Delta, Omega and mu\nto Increment, Ohm and micro signs respectively\nThis seems very odd to Greek font designers who use\nthe names to refer to letters of the alphabet.\nSetting this flags means that the alphabetic characters will\nbe named Delta.greek, Omega.greek and mu.greek."
-msgstr "Adobe has assigned the names Delta, Omega and mu\nto Increment, Ohm and micro signs respectively\nThis seems very odd to Greek font designers who use\nthe names to refer to letters of the alphabet.\nSetting this flags means that the alphabetic characters will\nbe named Delta.greek, Omega.greek and mu.greek."
+msgstr ""
 
 msgid "When the mouse pointer is within this many pixels\nof one of the various interesting features (baseline,\nwidth, grid splines, etc.) the pointer will snap\nto that feature."
-msgstr "When the mouse pointer is within this many pixels\nof one of the various interesting features (baseline,\nwidth, grid splines, etc.) the pointer will snap\nto that feature."
+msgstr ""
 
 msgid "The Edit->Join command will join points which are this close together\nA value of 0 means they must be coincident"
-msgstr "The Edit->Join command will join points which are this close together\nA value of 0 means they must be coincident"
+msgstr ""
 
 msgid "When generating a set of BDF fonts ask the user\nto specify the screen resolution of the fonts\notherwise FontForge will guess depending on the pixel size."
-msgstr "When generating a set of BDF fonts ask the user\nto specify the screen resolution of the fonts\notherwise FontForge will guess depending on the pixel size."
+msgstr ""
 
 msgid "Extra arguments for configuring the autotrace program\n(either autotrace or potrace)"
-msgstr "Extra arguments for configuring the autotrace program"
+msgstr ""
 
 msgid "Ask the user for autotrace arguments each time autotrace is invoked"
-msgstr "Ask the user for autotrace arguments each time autotrace is invoked"
+msgstr ""
 
 msgid "Commands to pass to mf (metafont) program, the filename will follow these"
-msgstr "Commands to pass to mf (metafont) program, the filename will follow these"
+msgstr ""
 
 msgid "Ask the user for mf commands each time mf is invoked"
-msgstr "Ask the user for mf commands each time mf is invoked"
+msgstr ""
 
 msgid "FontForge loads large images into the background of each glyph\nprior to autotracing them. You may retain those\nimages to look at after mf processing is complete, or\nremove them to save space"
-msgstr "FontForge loads large images into the background of each character\nprior to autotracing them. You may retain those\nimages to look at after mf processing is complete, or\nremove them to save space"
+msgstr ""
 
 msgid "MetaFont (mf) generates lots of verbiage to stdout.\nMost of the time I find it an annoyance but it is\nimportant to see if something goes wrong."
-msgstr "MetaFont (mf) generates lots of verbiage to stdout.\nMost of the time I find it an annoyance but it is\nimportant to see if something goes wrong."
+msgstr ""
 
 msgid "When generating a truetype or opentype font it is occasionally\nuseful to know the mapping between truetype glyph ids and\nglyph names. Setting this option will cause FontForge to\nproduce a file (with extension .g2n) containing those data."
-msgstr "When generating a truetype or opentype font it is occasionally\nuseful to know the mapping between truetype glyph ids and\ncharacter names. Setting this option will cause FontForge to\nproduce a file (with extension .g2n) containing those data."
+msgstr ""
 
 msgid "When loading a truetype or opentype font which has both a unicode\nand a CJK encoding table, use this flag to specify which\nshould be loaded for the font."
-msgstr "When loading a truetype or opentype font which has both a unicode\nand a CJK encoding table, use this flag to specify which\nshould be loaded for the font."
+msgstr ""
 
 msgid "When FontForge starts up it loads display related resources from a\nproperty on the screen. Sometimes it is useful to be able to store\nthese resources in a file. These resources are only read at start\nup, so changing this has no effect until the next time you start\nFontForge."
-msgstr "When FontForge starts up it loads display related resources from a\nproperty on the screen. Sometimes it is useful to be able to store\nthese resources in a file. These resources are only read at start\nup, so changing this has no effect until the next time you start\nFontForge."
+msgstr ""
 
 msgid "When copying glyphs from the font view, also copy the\nglyphs' metadata (name, encoding, comment, etc)."
-msgstr "When copying characters from the font view, also copy the\ncharacters' metadata (name, encoding, comment, etc)."
+msgstr ""
 
 msgid "Generic"
 msgstr "Общее"
@@ -2624,22 +2632,22 @@ msgid "..."
 msgstr "..."
 
 msgid "Menu name with no associated script"
-msgstr "Menu name with no associated script"
+msgstr ""
 
 msgid "Script with no associated menu name"
-msgstr "Script with no associated menu name"
+msgstr ""
 
 msgid "Prefs|App|Normally FontForge will find applications by searching for"
-msgstr "Обычно FontForge ищет приложения просматривая содержимое каталогов перечисленных"
+msgstr ""
 
 msgid "Prefs|App|them in your PATH environment variable, if you want"
-msgstr "в переменной PATH."
+msgstr ""
 
 msgid "Prefs|App|to alter that behavior you may set an environment"
-msgstr "Вы можете указать полный путь к приложениям использующимся в FontForge."
+msgstr ""
 
 msgid "Prefs|App|variable giving the full path spec of the application."
-msgstr "FontForge распознаёт BROWSER, MF и AUTOTRACE."
+msgstr ""
 
 msgid "Prefs|App|FontForge recognizes BROWSER, MF and AUTOTRACE."
 msgstr ""
@@ -2669,7 +2677,7 @@ msgid "_Move Points"
 msgstr "Переместить точки(_M)"
 
 msgid "When the hint's position is changed\nadjust the postion of any points\nwhich lie on that hint"
-msgstr "When the hint's position is changed\nadjust the postion of any points\nwhich lie on that hint"
+msgstr ""
 
 msgid "Create Hint..."
 msgstr "Создать инструкцию..."
@@ -2684,7 +2692,7 @@ msgid "Line Cap"
 msgstr "Конец линии"
 
 msgid "_Butt"
-msgstr "_Butt"
+msgstr ""
 
 msgid "_Round"
 msgstr "Круглый(_R)"
@@ -2714,34 +2722,34 @@ msgid "_Caligraphic"
 msgstr "Калиграфический(_C)"
 
 msgid "Pen _Angle:"
-msgstr "Pen _Angle:"
+msgstr ""
 
 msgid "_Height Ratio:"
-msgstr "_Height Ratio:"
+msgstr ""
 
 msgid "A caligraphic pen's nib has two dimensions, the width\n(which may be set by Stroke Width below) and a thickness\nor height. I express the height as a ratio to the width."
-msgstr "A caligraphic pen's nib has two dimensions, the width\n(which may be set by Stroke Width below) and a thickness\nor height. I express the height as a ratio to the width."
+msgstr ""
 
 msgid "Bad Stroke"
-msgstr "Bad Stroke"
+msgstr ""
 
 msgid "The stroke width is so big that the generated path\nmay intersect itself in %.100s"
-msgstr "The stroke width is so big that the generated path\nmay intersect itself in %.100s"
+msgstr ""
 
 msgid "Free Hand"
-msgstr "Free Hand"
+msgstr ""
 
 msgid "_Don't Expand"
 msgstr "Не расширять(_D)"
 
 msgid "The splines drawn with the freehand tool will not be expanded,\nonly the line itself will be generated."
-msgstr "The splines drawn with the freehand tool will not be expanded,\nonly the line itself will be generated."
+msgstr ""
 
 msgid "_Pressure:"
 msgstr "Нажим:(_P)"
 
 msgid "Press in this square with a wacom pressure sensitive tool\nto set the pressure end-point"
-msgstr "Press in this square with a wacom pressure sensitive tool\nto set the pressure end-point"
+msgstr ""
 
 msgid "Enter two glyph ranges"
 msgstr "Введите два диапазона символов"
@@ -2822,7 +2830,7 @@ msgid "Can't find autotrace"
 msgstr "Не удалось найти autotrace"
 
 msgid "Can't find autotrace program (set AUTOTRACE environment variable) or download from:\n  http://sf.net/projects/autotrace/"
-msgstr "Не удалось найти программу autotrace (установите переменную окружения AUTOTRACE)"
+msgstr "Не удалось найти программу autotrace (установите переменную окружения AUTOTRACE) или скачайте её: http://sf.net/projects/autotrace/"
 
 msgid "Additional arguments for autotrace program:"
 msgstr "Дополнительные аргументы для программы autotrace:"
@@ -2831,7 +2839,7 @@ msgid "Can't find mf"
 msgstr "Не найден mf"
 
 msgid "Can't find mf program -- metafont (set MF environment variable) or download from:\n  http://www.tug.org/\n  http://www.ctan.org/\nIt's part of the TeX distribution"
-msgstr "Can't find mf program -- metafont (set MF environment variable) or download from:\n  http://www.tug.org/\n  http://www.ctan.org/\nIt's part of the TeX distribution"
+msgstr ""
 
 msgid "Can't create temporary directory"
 msgstr "Не удалось создать временный каталог"
@@ -2855,13 +2863,13 @@ msgid "Current Glyph"
 msgstr "Текущий символ"
 
 msgid "Attempt to regenerate a pixel size that has not been created: "
-msgstr "Attempt to regenerate a pixel size that has not been created: "
+msgstr ""
 
 msgid "Pixel Sizes:"
-msgstr "Pixel Sizes:"
+msgstr ""
 
 msgid "The list of current pixel bitmap sizes"
-msgstr "The list of current pixel bitmap sizes"
+msgstr ""
 
 msgid " Removing a size will delete it."
 msgstr " Удаление размера удаляет растр."
@@ -2870,10 +2878,10 @@ msgid " Adding a size will create it."
 msgstr " Добавление размера создаёт растр."
 
 msgid " Adding a size will create it by scaling."
-msgstr " Adding a size will create it by scaling."
+msgstr ""
 
 msgid "Specify bitmap sizes to be regenerated"
-msgstr "Specify bitmap sizes to be regenerated"
+msgstr ""
 
 msgid "Point sizes on a 75 dpi screen"
 msgstr "Размер в точках на экране 75 dpi"
@@ -2906,55 +2914,55 @@ msgid "Scaling Bitmaps"
 msgstr "Масштабировать растры"
 
 msgid "%1$.80s at %2$d size %3$d from %4$.80hs"
-msgstr "%1$.80s at %2$d size %3$d from %4$.80hs"
+msgstr ""
 
 msgid "Recalculate Bitmaps"
 msgstr "Пересчитать растры"
 
 msgid "Enter the ratio of x-skew to y rise"
-msgstr "Enter the ratio of x-skew to y rise"
+msgstr ""
 
 msgid "Bad Number"
-msgstr "Bad Number"
+msgstr ""
 
 msgid "%1$.80s at %2$d from %3$.90hs"
-msgstr "%1$.80s at %2$d from %3$.90hs"
+msgstr ""
 
 msgid "Can't Find Glyph"
 msgstr "Невозможно найти глиф"
 
 msgid "The glyph, %.80s, can't be found in the sfd file"
-msgstr "The glyph, %.80s, can't be found in the sfd file"
+msgstr ""
 
 msgid "Problems With References"
 msgstr "Проблемы со ссылками"
 
 msgid "The character, %.40s, contained references, but the font's encoding has changed. I will probably not be able to map those references to the correct locations. If I proceed some references may be lost and others may link to incorrect characters. Do you want to proceed anyway?"
-msgstr "The character, %.40s, contained references, but the font's encoding has changed. I will probably not be able to map those references to the correct locations. If I proceed some references may be lost and others may link to incorrect characters. Do you want to proceed anyway?"
+msgstr ""
 
 msgid "Glyph Name Changed"
 msgstr "Изменено название глифа"
 
 msgid "The the name of glyph %.40s has changed. This is what I use to find the glyph in the file, so I cannot revert this glyph.\n(You will not be warned for subsequent glyphs)"
-msgstr "The the name of character %.40s has changed. This is what I use to find the glyph in the file, so I cannot revert this character.\n(You will not be warned for subsequent characters)"
+msgstr ""
 
 msgid "Not Foreground"
-msgstr "Not Foreground"
+msgstr ""
 
 msgid "References may be dragged only to the foreground layer"
-msgstr "References may be dragged only to the foreground layer"
+msgstr ""
 
 msgid "Pixel size?"
-msgstr "Pixel size?"
+msgstr ""
 
 msgid "Pixel size:"
-msgstr "Pixel size:"
+msgstr ""
 
 msgid "Bits/Pixel:"
-msgstr "Bits/Pixel:"
+msgstr ""
 
 msgid "The only valid values for bits/pixel are 1, 2, 4 or 8"
-msgstr "The only valid values for bits/pixel are 1, 2, 4 or 8"
+msgstr ""
 
 msgid "Can't find the file"
 msgstr "Не удалось найти файл"
@@ -2981,25 +2989,25 @@ msgid "More Images Than Selected Glyphs"
 msgstr "Больше изображений чем выбранных символов"
 
 msgid "Bad Template"
-msgstr "Bad Template"
+msgstr ""
 
 msgid "Bad template, no extension"
-msgstr "Bad template, no extension"
+msgstr ""
 
 msgid "Bad template, unrecognized format"
-msgstr "Bad template, unrecognized format"
+msgstr ""
 
 msgid "Unicode value not in font"
-msgstr "Unicode value not in font"
+msgstr ""
 
 msgid "Unicode value (%x) not in font, ignored"
-msgstr "Unicode value (%x) not in font, ignored"
+msgstr ""
 
 msgid "Encoding value not in font"
-msgstr "Encoding value not in font"
+msgstr ""
 
 msgid "Encoding value (%x) not in font, ignored"
-msgstr "Encoding value (%x) not in font, ignored"
+msgstr ""
 
 msgid "Image"
 msgstr "Изображение"
@@ -3011,10 +3019,10 @@ msgid "Mac Bitmap"
 msgstr "Mac Bitmap"
 
 msgid "Image Template"
-msgstr "Image Template"
+msgstr ""
 
 msgid "EPS Template"
-msgstr "EPS Template"
+msgstr ""
 
 msgid "As Background"
 msgstr "Как фон"
@@ -3026,13 +3034,13 @@ msgid "Only one font may be imported into the background"
 msgstr "Только один шрифт может быть импортирован в фон"
 
 msgid "Size of Points"
-msgstr "Size of Points"
+msgstr ""
 
 msgid "Regular"
-msgstr "Regular"
+msgstr ""
 
 msgid "Points:"
-msgstr "Points:"
+msgstr ""
 
 msgid "Round Rectangle Radius"
 msgstr "Радиус закруглений"
@@ -3047,10 +3055,10 @@ msgid "Number of star points/Polygon verteces"
 msgstr "Число лучей звезды/граней многоугольника"
 
 msgid "V"
-msgstr "V"
+msgstr "В"
 
 msgid "E"
-msgstr "E"
+msgstr "Р"
 
 msgid "Layer"
 msgstr "Слой"
@@ -3089,7 +3097,7 @@ msgid "Anchors"
 msgstr "Якоря"
 
 msgid "Blues"
-msgstr "Blues"
+msgstr ""
 
 msgid "Bitmap"
 msgstr "Растр"
@@ -3167,7 +3175,7 @@ msgid "N_o to All"
 msgstr "Нет для всех(_O)"
 
 msgid "The clipboard contains a bitmap glyph of size %s,\na size which is not in your database.\nWould you like to create a bitmap font of that size,\nor ignore this glyph?"
-msgstr "The clipboard contains a bitmap character of size %s,\na size which is not in your database.\nWould you like to create a bitmap font of that size,\nor ignore this character?"
+msgstr ""
 
 msgid "Pasting..."
 msgstr "Вставка..."
@@ -3182,10 +3190,10 @@ msgid "Bad Reference"
 msgstr "Неправильная ссылка"
 
 msgid "You are attempting to paste a reference to %1$s into %2$hs.\nBut %1$hs does not exist in this font.\nWould you like to copy the original splines (or delete the reference)?"
-msgstr "You are attempting to paste a reference to %1$s into %2$hs.\nBut %1$hs does not exist in this font.\nWould you like to copy the original splines (or delete the reference)?"
+msgstr ""
 
 msgid "You are attempting to paste a reference to %1$s into %2$hs.\nBut %1$hs does not exist in this font, nor can I find the original glyph refered to.\nIt will not be copied."
-msgstr "You are attempting to paste a reference to %1$s into %2$hs.\nBut %1$hs does not exist in this font, nor can I find the original character refered to.\nIt will not be copied."
+msgstr ""
 
 msgid "Don't _Warn Again"
 msgstr "Не предупреждать больше(_W)"
@@ -3194,25 +3202,25 @@ msgid "No Vertical Metrics"
 msgstr "Нет вертикальных метрик"
 
 msgid "This font does not have vertical metrics enabled\nUse Element->Font Info to enable them."
-msgstr "This font does not have vertical metrics enabled"
+msgstr ""
 
 msgid "Duplicate Anchor"
 msgstr "Создать копию якоря"
 
 msgid "There is already an anchor point named %1$.40s in %2$.40hs."
-msgstr "There is already an anchor point named %1$.40s in %2$.40hs."
+msgstr ""
 
 msgid "Anchor Lost"
 msgstr "Якорь потерян"
 
 msgid "At least one anchor point was lost when pasting from one font to another because no matching anchor class could be found in the new font."
-msgstr "At least one anchor point was lost when pasting from one font to another because no matching anchor class could be found in the new font."
+msgstr ""
 
 msgid "Converting Postscript"
 msgstr "Преобразование Postscript"
 
 msgid "Bad encoding file format"
-msgstr "Bad encoding file format"
+msgstr ""
 
 msgid "Please name this encoding"
 msgstr "Назовите эту кодировку"
@@ -3221,109 +3229,109 @@ msgid "Please name the %s encoding in this file"
 msgstr "Назовите %s кодировку этого файла"
 
 msgid "Please name the %dth encoding in this file"
-msgstr "Назовите %dый кодировку этого файла"
+msgstr "Назовите %d-ую кодировку этого файла"
 
 msgid "Second"
-msgstr "Второй"
+msgstr "Вторая"
 
 msgid "Third"
-msgstr "Третий"
+msgstr "Третья"
 
 msgid "Remove En_coding..."
-msgstr "Удалить кодировку"
+msgstr "Удалить кодировку..."
 
 msgid "_Load Encoding..."
-msgstr "Загрузить кодировку"
+msgstr "Загрузить кодировку..."
 
 msgid "Use CID Map"
-msgstr "Use CID Map"
+msgstr ""
 
 msgid "This font is based on the charset %1$.20s-%2$.20hs-%3$d, but the best I've been able to find is %1$.20hs-%2$.20hs-%4$d.\nShall I use that or let you search?"
-msgstr "This font is based on the charset %1$.20s-%2$.20hs-%3$d, but the best I've been able to find is %1$.20hs-%2$.20hs-%4$d.\nShall I use that or let you search?"
+msgstr ""
 
 msgid "_Use It"
-msgstr "_Use It"
+msgstr ""
 
 msgid "_Search"
 msgstr "Поиск(_S)"
 
 msgid "_Give Up"
-msgstr "_Give Up"
+msgstr ""
 
 msgid "No cidmap file..."
-msgstr "No cidmap file..."
+msgstr ""
 
 msgid "FontForge was unable to find a cidmap file for this font. It is not essential to have one, but some things will work better if you do. If you have not done so you might want to download the cidmaps from:\n   http://FontForge.sourceforge.net/cidmaps.tgz\nand then gunzip and untar them and move them to:\n  %.80s\n\nWould you like to search your local disk for an appropriate file?"
-msgstr "FontForge was unable to find a cidmap file for this font. It is not essential to have one, but some things will work better if you do. If you have not done so you might want to download the cidmaps from:\n   http://FontForge.sourceforge.net/cidmaps.tgz\nand then gunzip and untar them and move them to:\n  %.80s\n\nWould you like to search your local disk for an appropriate file?"
+msgstr ""
 
 msgid "Are you sure you don't want to use the cidmap I found?"
-msgstr "Are you sure you don't want to use the character set I found?"
+msgstr ""
 
 msgid "Find a cidmap file..."
-msgstr "Find a charset file..."
+msgstr ""
 
 msgid "_Browse..."
 msgstr "Просмотр...(_B)"
 
 msgid "Please select a CID ordering"
-msgstr "Please select a CID ordering"
+msgstr ""
 
 msgid "Extraneous glyphs"
-msgstr "Extraneous characters"
+msgstr ""
 
 msgid "The current encoding contains glyphs which I cannot map to CIDs.\nShould I delete them or add them to the end (where they may conflict with future ros definitions)?"
-msgstr "The current encoding contains characters which I cannot map to CIDs.\nShould I delete them or add them to the end (where they may conflict with future ros definitions)?"
+msgstr ""
 
 msgid "Find an adobe CMap file..."
-msgstr "Find an adobe CMap file..."
+msgstr ""
 
 msgid "Not a CID-keyed font"
-msgstr "Not a CID-keyed font"
+msgstr ""
 
 msgid "MultipleEncodingIgnored"
-msgstr "MultipleEncodingIgnored"
+msgstr ""
 
 msgid "The glyph at CID %d is mapped to more than %d encodings. Only the first %d are handled."
-msgstr "The glyph at CID %d is mapped to more than %d encodings. Only the first %d are handled."
+msgstr ""
 
 msgid "Missing Glyph..."
-msgstr "Missing Character..."
+msgstr ""
 
 msgid "Your font is missing the dotlessi glyph,\nplease add it and remake your accented glyphs"
-msgstr "Your font is missing the dotlessi character,\nplease add it and remake your accented characters"
+msgstr ""
 
 msgid "Your font is missing the dotlessj glyph,\nplease add it and remake your accented glyphs"
-msgstr "Your font is missing the dotlessj character,\nplease add it and remake your accented characters"
+msgstr ""
 
 msgid "Merging Problem"
-msgstr "Merging Problem"
+msgstr ""
 
 msgid "Merging a font with itself achieves nothing"
-msgstr "Merging a font with itself achieves nothing"
+msgstr ""
 
 msgid "When merging two CID keyed fonts, they must have the same Registry and Ordering, and the font being merged into (the mergee) must have a supplement which is at least as recent as the other's. Furthermore the mergee must have at least as many subfonts as the merger."
-msgstr "When merging two CID keyed fonts, they must have the same Registry and Ordering, and the font being merged into (the mergee) must have a supplement which is at least as recent as the other's. Furthermore the mergee must have at least as many subfonts as the merger."
+msgstr ""
 
 msgid "Other ..."
 msgstr "Другое ...(_O)"
 
 msgid "Font to merge into %.20s"
-msgstr "Font to merge into %.20s"
+msgstr ""
 
 msgid "Interpolating Problem"
-msgstr "Interpolating Problem"
+msgstr ""
 
 msgid "Interpolating a font with itself achieves nothing"
-msgstr "Interpolating a font with itself achieves nothing"
+msgstr ""
 
 msgid "Amount"
 msgstr "Величина"
 
 msgid "Interpolating between %.20s and:"
-msgstr "Interpolating between %.20s and:"
+msgstr ""
 
 msgid "by"
-msgstr "by"
+msgstr ""
 
 msgid "Set Width To:"
 msgstr "Установить ширину:"
@@ -3335,37 +3343,37 @@ msgid "Set RBearing To:"
 msgstr "Установить прав.границу:"
 
 msgid "Set Vert. Advance To:"
-msgstr "Set Vert. Advance To:"
+msgstr ""
 
 msgid "Increment Width By:"
-msgstr "Increment Width By:"
+msgstr ""
 
 msgid "Increment LBearing By:"
-msgstr "Increment LBearing By:"
+msgstr ""
 
 msgid "Increment RBearing By:"
-msgstr "Increment RBearing By:"
+msgstr ""
 
 msgid "Increment V. Adv. By:"
-msgstr "Increment V. Adv. By:"
+msgstr ""
 
 msgid "Scale Width By:"
-msgstr "Scale Width By:"
+msgstr ""
 
 msgid "Scale LBearing By:"
-msgstr "Scale LBearing By:"
+msgstr ""
 
 msgid "Scale RBearing By:"
-msgstr "Scale RBearing By:"
+msgstr ""
 
 msgid "Scale VAdvance By:"
-msgstr "Scale VAdvance By:"
+msgstr ""
 
 msgid "Plain"
-msgstr "Plain"
+msgstr ""
 
 msgid "What is the pixel size of the font in this file?"
-msgstr "What is the pixel size of the font in this file?"
+msgstr ""
 
 msgid "Couldn't open file"
 msgstr "Не удалось открыть файл"
@@ -3377,25 +3385,25 @@ msgid "Not a bdf file"
 msgstr "Не bdf файл"
 
 msgid "Not a bdf file %.200s"
-msgstr "Not a bdf file %.200s"
+msgstr ""
 
 msgid "Not a pk file"
 msgstr "Не pk файл"
 
 msgid "Not a (metafont) pk file %.200s"
-msgstr "Not a (metafont) pk file %.200s"
+msgstr ""
 
 msgid "Not a gf file"
-msgstr "Not a pk file"
+msgstr ""
 
 msgid "Not a (metafont) gf file %.200s"
-msgstr "Not a (metafont) gf file %.200s"
+msgstr ""
 
 msgid "Not a pcf file"
 msgstr "Не pcf файл"
 
 msgid "Not an X11 pcf file %.200s"
-msgstr "Not an X11 pcf file %.200s"
+msgstr ""
 
 msgid "Loading font from %.100s"
 msgstr "Загрузка шрифта из %.100s"
@@ -3476,79 +3484,79 @@ msgid "The control point right of the selected point is nearly vertical"
 msgstr "Контрольная точка справа от выделенной точки почти вертикальна"
 
 msgid "The control point right of the selected point is near the italic angle"
-msgstr "The control point right of the selected point is near the italic angle"
+msgstr ""
 
 msgid "The selected point is near a horizontal stem hint"
-msgstr "The selected point is near a horizontal stem hint"
+msgstr ""
 
 msgid "The selected point is near a vertical stem hint"
-msgstr "The selected point is near a vertical stem hint"
+msgstr ""
 
 msgid "This glyph contains a horizontal hint near the specified width"
-msgstr "This character contains a horizontal hint near the specified width"
+msgstr ""
 
 msgid "This glyph contains a vertical hint near the specified width"
-msgstr "This character contains a vertical hint near the specified width"
+msgstr ""
 
 msgid "This hint does not control any points"
 msgstr "Эта инструкция не управляет ни одной точкой"
 
 msgid "This hint has the wrong width for a stem3 hint"
-msgstr "This hint has the wrong width for a stem3 hint"
+msgstr ""
 
 msgid "The counters between these hints are not the same size, bad for a stem3 hint"
-msgstr "The counters between these hints are not the same size, bad for a stem3 hint"
+msgstr ""
 
 msgid "This glyph has four hints, but if this one were omitted it would fit a stem3 hint"
-msgstr "This character has four hints, but if this one were omitted it would fit a stem3 hint"
+msgstr ""
 
 msgid "This glyph can use a stem3 hint"
-msgstr "This character can use a stem3 hint"
+msgstr ""
 
 msgid "This path should have been drawn in a counter-clockwise direction"
-msgstr "This path should have been drawn in a counter-clockwise direction"
+msgstr ""
 
 msgid "This path should have been drawn in a clockwise direction"
-msgstr "This path should have been drawn in a clockwise direction"
+msgstr ""
 
 msgid "This reference has been flipped, so the paths in it are drawn backwards"
-msgstr "This reference has been flipped, so the paths in it are drawn backwards"
+msgstr ""
 
 msgid "This outline glyph is missing a bitmap version"
-msgstr "This outline character is missing a bitmap version"
+msgstr ""
 
 msgid "This blank outline glyph has an unexpected bitmap version"
-msgstr "This blank outline character has an unexpected bitmap version"
+msgstr ""
 
 msgid "This glyph's advance width is different from the standard width"
-msgstr "This character's advance width is different from the standard width"
+msgstr ""
 
 msgid "This glyph's vertical advance is different from the standard width"
-msgstr "This character's vertical advance is different from the standard width"
+msgstr ""
 
 msgid "The control point above the selected point is outside the spline segment"
-msgstr "The control point above the selected point is outside the spline segment"
+msgstr ""
 
 msgid "The control point below the selected point is outside the spline segment"
-msgstr "The control point below the selected point is outside the spline segment"
+msgstr ""
 
 msgid "The control point right of the selected point is outside the spline segment"
-msgstr "The control point right of the selected point is outside the spline segment"
+msgstr ""
 
 msgid "The control point left of the selected point is outside the spline segment"
-msgstr "The control point left of the selected point is outside the spline segment"
+msgstr ""
 
 msgid "This glyph is defined in more than one of the CID subfonts"
-msgstr "This character is defined in more than one of the CID subfonts"
+msgstr ""
 
 msgid "This glyph is not defined in any of the CID subfonts"
-msgstr "This character is not defined in any of the CID subfonts"
+msgstr ""
 
 msgid "Problem explanation"
 msgstr "Объяснение проблемы"
 
 msgid "Fix"
-msgstr "Исправ."
+msgstr "Исправить"
 
 msgid "_Stop"
 msgstr "Стоп(_S)"
@@ -3560,40 +3568,40 @@ msgid "O_pen Paths"
 msgstr "Открытые контуры(_P)"
 
 msgid "All paths should be closed loops, there should be no exposed endpoints"
-msgstr "All paths should be closed loops, there should be no exposed endpoints"
+msgstr ""
 
 msgid "Poin_ts too close"
 msgstr "Точки расположены слишком близко(_T)"
 
 msgid "If two adjacent points on the same path are less than a few\nemunits apart they will cause problems for some of FontForge's\ncommands. PostScript shouldn't care though."
-msgstr "If two adjacent points on the same path are less than a few\nemunits apart they will cause problems for some of FontForge's\ncommands. PostScript shouldn't care though."
+msgstr ""
 
 msgid "_X near¹"
-msgstr "_X возле"
+msgstr "_X возле¹"
 
 msgid "Allows you to check that vertical stems in several\nglyphs start at the same location."
-msgstr "Allows you to check that vertical stems in several\ncharacters start at the same location."
+msgstr ""
 
 msgid "_Y near¹"
-msgstr "_Y возле"
+msgstr "_Y возле¹"
 
 msgid "Allows you to check that horizontal stems in several\nglyphs start at the same location."
-msgstr "Allows you to check that horizontal stems in several\ncharacters start at the same location."
+msgstr ""
 
 msgid "Y near¹ _standard heights"
-msgstr "Y near _standard heights"
+msgstr ""
 
 msgid "Allows you to find points which are slightly\noff from the baseline, xheight,cap height,\nascender, descender heights."
-msgstr "Allows you to find points which are slightly\noff from the baseline, xheight,cap height,\nascender, descender heights."
+msgstr ""
 
 msgid "_Edges near horizontal/vertical"
 msgstr "Края почти горизонтальны/вертикальны(_E)"
 
 msgid "Edges near horizontal/vertical/italic"
-msgstr "Edges near horizontal/vertical/italic"
+msgstr ""
 
 msgid "Allows you to find lines which are almost,\nbut not quite horizontal or vertical\n(or at the italic angle)."
-msgstr "Allows you to find lines which are almost,\nbut not quite horizontal or vertical\n(or at the italic angle)."
+msgstr ""
 
 msgid "_Control Points near horizontal/vertical"
 msgstr "Управляющие точки почти горизонтальны/вертикальны(_C)"
@@ -3602,76 +3610,76 @@ msgid "Control Points near horizontal/vertical/italic"
 msgstr "Управляющие точки почти горизонтальны/вертикальны/под углом наклона шрифта"
 
 msgid "Allows you to find control points which are almost,\nbut not quite horizontal or vertical\nfrom their base point\n(or at the italic angle)."
-msgstr "Allows you to find control points which are almost,\nbut not quite horizontal or vertical\nfrom their base point\n(or at the italic angle)."
+msgstr ""
 
 msgid "Control Points _beyond spline"
-msgstr "Control Points _beyond spline"
+msgstr ""
 
 msgid "Allows you to find control points which when projected\nonto the line segment between the two end points lie\noutside of those end points"
-msgstr "Allows you to find control points which when projected\nonto the line segment between the two end points lie\noutside of those end points"
+msgstr ""
 
 msgid "_Hints controlling no points"
-msgstr "_Hints controlling no points"
+msgstr ""
 
 msgid "Ghostview (perhaps other interpreters) has a problem when a\nhint exists without any points that lie on it."
-msgstr "Ghostview (perhaps other interpreters) has a problem when a\nhint exists without any points that lie on it."
+msgstr ""
 
 msgid "_Points near¹ hint edges"
-msgstr "Точки возле краёв инструкции(_P)"
+msgstr "Точки возле¹ краёв инструкции(_P)"
 
 msgid "Often if a point is slightly off from a hint\nit is because a stem is made up\nof several segments, and one of them\nhas the wrong width."
-msgstr "Often if a point is slightly off from a hint\nit is because a stem is made up\nof several segments, and one of them\nhas the wrong width."
+msgstr ""
 
 msgid "Hint _Width Near¹"
-msgstr "Hint _Width Near"
+msgstr ""
 
 msgid "Allows you to check that stems have consistant widths.."
-msgstr "Allows you to check that stems have consistant widths.."
+msgstr ""
 
 msgid "Almost stem_3 hint"
-msgstr "Almost stem_3 hint"
+msgstr ""
 
 msgid "This checks if the glyph almost, but not exactly,\nconforms to the requirements for a stem3 hint.\nThat is, either vertically or horizontally, there must\nbe exactly three hints, and they must have the same\nwidth and they must be evenly spaced."
-msgstr "This checks if the character almost, but not exactly,\nconforms to the requirements for a stem3 hint.\nThat is, either vertically or horizontally, there must\nbe exactly three hints, and they must have the same\nwidth and they must be evenly spaced."
+msgstr ""
 
 msgid "_Show Exact *stem3"
-msgstr "_Show Exact *stem3"
+msgstr ""
 
 msgid "Shows when this glyph is exactly a stem3 hint"
-msgstr "Shows when this character is exactly a stem3 hint"
+msgstr ""
 
 msgid "Check _outermost paths clockwise"
-msgstr "Check _outermost paths clockwise"
+msgstr ""
 
 msgid "Postscript and TrueType require that paths be drawn\nin a clockwise direction. This lets you check that they\nare."
-msgstr "Postscript and TrueType require that paths be drawn\nin a clockwise direction. This lets you check that they\nare."
+msgstr ""
 
 msgid "Check flipped _references"
-msgstr "Check flipped _references"
+msgstr ""
 
 msgid "Postscript and TrueType require that paths be drawn\nin a clockwise direction. If you have a reference\nthat has been flipped then the paths in that reference will\nprobably be counter-clockwise. You should unlink it and do\nCorect direction on it."
-msgstr "Postscript and TrueType require that paths be drawn\nin a clockwise direction. If you have a reference\nthat has been flipped then the paths in that reference will\nprobably be counter-clockwise. You should unlink it and do\nCorect direction on it."
+msgstr ""
 
 msgid "Check missing _bitmaps"
-msgstr "Check missing _bitmaps"
+msgstr ""
 
 msgid "Are there any outline glyphs which don't have a bitmap version in one of the bitmap fonts?\nConversely are there any bitmap glyphs without a corresponding outline glyph?"
-msgstr "Are there any outline characters which don't have a bitmap version in one of the bitmap fonts?\nConversely are there any bitmap characters without a corresponding outline character?"
+msgstr ""
 
 msgid "Check for CIDs defined _twice"
-msgstr "Check f_or CIDs defined twice"
+msgstr ""
 
 msgid "Check whether a CID is defined in more than one sub-font"
-msgstr "Check whether a CID is defined in more than one sub-font"
+msgstr ""
 
 msgid "Check for _undefined CIDs"
-msgstr "Check f_or undefined CIDs"
+msgstr ""
 
 msgid "Check whether a CID is undefined in all sub-fonts"
-msgstr "Check whether a CID is undefined in all sub-fonts"
+msgstr ""
 
 msgid "¹ \"Near\" means within"
-msgstr "Points are \"Near\" if within"
+msgstr ""
 
 msgid "Near"
 msgstr "Возле"
@@ -3692,7 +3700,7 @@ msgid "Paths"
 msgstr "Контуры"
 
 msgid "Random"
-msgstr "Random"
+msgstr ""
 
 msgid "Points"
 msgstr "Точки"
@@ -3704,31 +3712,31 @@ msgid "Set All"
 msgstr "Установить все"
 
 msgid "Check Advance:"
-msgstr "Check Advance:"
+msgstr ""
 
 msgid "Check for glyphs whose advance width is not the displayed value."
-msgstr "Check for characters whose advance width is not the displayed value."
+msgstr ""
 
 msgid "Check VAdvance:"
-msgstr "Check VAdvance:"
+msgstr ""
 
 msgid "Check for glyphs whose vertical advance width is not the displayed value."
-msgstr "Check for characters whose vertical advance width is not the displayed value."
+msgstr ""
 
 msgid "_Meta Font..."
 msgstr "Меташрифт...(_M)"
 
 msgid "Counter Too Small"
-msgstr "Counter Too Small"
+msgstr ""
 
 msgid "A counter in %.30s was requested to be too small, it has been pegged at its minimum value"
-msgstr "A counter in %.30s was requested to be too small, it has been pegged at its minimum value"
+msgstr ""
 
 msgid "Simple"
-msgstr "Simple"
+msgstr ""
 
 msgid "Advanced"
-msgstr "Advanced"
+msgstr ""
 
 msgid "Embolden"
 msgstr "Утолщённый"
@@ -3740,25 +3748,25 @@ msgid "Expand"
 msgstr "Растянутый"
 
 msgid "Stems"
-msgstr "Stems"
+msgstr ""
 
 msgid "H Counters"
-msgstr "H Counters"
+msgstr ""
 
 msgid "V Counters"
 msgstr "V Counters"
 
 msgid "Scale Stems By:"
-msgstr "Scale Stems By:"
+msgstr ""
 
 msgid "Scale Counters By:"
-msgstr "Scale Counters By:"
+msgstr ""
 
 msgid "XHeight From:"
-msgstr "XHeight From:"
+msgstr ""
 
 msgid "To:"
-msgstr "To:"
+msgstr ""
 
 msgid "Metamorphosing Font..."
 msgstr "Преобразование шрифта..."
@@ -3767,7 +3775,7 @@ msgid "Pick a font, any font..."
 msgstr "Выбрать шрифт, любой шрифт..."
 
 msgid "There are multiple fonts in this file, pick one"
-msgstr "There are multiple fonts in this file, pick one"
+msgstr ""
 
 msgid "Auto Hinting Font..."
 msgstr "Автоинструктирование шрифта..."
@@ -3776,22 +3784,22 @@ msgid "Saving OpenType Font"
 msgstr "Сохранение шрифта OpenType"
 
 msgid "Load bitmap fonts?"
-msgstr "Load bitmap fonts?"
+msgstr ""
 
 msgid "Do you want to load the bitmap fonts embedded in this true/open type file?\n(And if so, which)"
-msgstr "Do you want to load the bitmap fonts embedded in this true/open type file?\n(And if so, which)"
+msgstr ""
 
 msgid "Bad Encoding"
-msgstr "Bad Encoding"
+msgstr ""
 
 msgid "There is a single byte character (%d) using one of the slots needed for double byte characters"
-msgstr "There is a single byte character (%d) using one of the slots needed for double byte characters"
+msgstr ""
 
 msgid "There is a character (%d) which cannot be encoded"
-msgstr "There is a character (%d) which cannot be encoded"
+msgstr ""
 
 msgid "There is a character (%d) which is not normally in the encoding"
-msgstr "There is a character (%d) which is not normally in the encoding"
+msgstr ""
 
 msgid "Rasterizing..."
 msgstr "Растеризация..."
@@ -3803,7 +3811,7 @@ msgid "Generating anti-alias font"
 msgstr "Создание сглаженного шрифта"
 
 msgid " pixels"
-msgstr " pixels"
+msgstr ""
 
 msgid "Printing Font"
 msgstr "Печать шрифта"
@@ -3824,7 +3832,7 @@ msgid "_Other"
 msgstr "Другое"
 
 msgid "Any other command with all its arguments.\nThe command must expect to deal with a postscript\nfile which it will find by reading its standard input."
-msgstr "Any other command with all its arguments.\nThe command must expect to deal with a postscript\nfile which it will find by reading its standard input."
+msgstr ""
 
 msgid "To _File"
 msgstr "В файл(_F)"
@@ -3848,7 +3856,7 @@ msgid "_Full Font Display"
 msgstr "Отобразить весь шрифт(_F)"
 
 msgid "Displays all the glyphs in the font on a rectangular grid at the given point size"
-msgstr "Displays all the glyphs in the font on a rectangular grid at the given point size"
+msgstr ""
 
 msgid "Full Pa_ge Glyph"
 msgstr "Символ во всю страницу(_C)"
@@ -3857,19 +3865,19 @@ msgid "Full Pa_ge Glyphs"
 msgstr "Символы во всю страницу(_C)"
 
 msgid "Displays all the selected glyphs, each on its own page, at an extremely large point size"
-msgstr "Displays all the selected glyphs, each on its own page, at an extremely large point size"
+msgstr ""
 
 msgid "_Multi Size Glyph"
-msgstr "_Multi Size Glyph"
+msgstr ""
 
 msgid "_Multi Size Glyphs"
-msgstr "_Multi Size Glyphs"
+msgstr ""
 
 msgid "Displays all the selected glyphs, at several different point sizes"
-msgstr "Displays all the selected glyphs, at several different point sizes"
+msgstr ""
 
 msgid "Prints the text below at the specified point size(s)"
-msgstr "Prints the text below at the specified point size(s)"
+msgstr ""
 
 msgid "Sample _Text:"
 msgstr "Образец текста:(_T)"
@@ -3881,10 +3889,10 @@ msgid "No Command Specified"
 msgstr "Не указана команда"
 
 msgid "Invalid point size"
-msgstr "Invalid point size"
+msgstr ""
 
 msgid "Coordinate along which to space"
-msgstr "Coordinate along which to space"
+msgstr ""
 
 msgid "_X"
 msgstr "_X"
@@ -3893,34 +3901,34 @@ msgid "_Y"
 msgstr "_Y"
 
 msgid "_Maximum distance between points in a region"
-msgstr "_Maximum distance between points in a region"
+msgstr ""
 
 msgid "Not enough lines"
-msgstr "Not enough lines"
+msgstr ""
 
 msgid "Can't Parallel"
-msgstr "Can't Parallel"
+msgstr ""
 
 msgid "These two lines share a common endpoint, I can't make them parallel"
-msgstr "These two lines share a common endpoint, I can't make them parallel"
+msgstr ""
 
 msgid "Reading Names"
 msgstr "Чтение названий"
 
 msgid "Fixing up References"
-msgstr "Fixing up References"
+msgstr ""
 
 msgid "No Bitmap Strikes"
-msgstr "No Bitmap Strikes"
+msgstr ""
 
 msgid "No (useable) bitmap strikes in this TTF font: %s"
-msgstr "No (useable) bitmap strikes in this TTF font: %s"
+msgstr ""
 
 msgid "Not in Collection"
-msgstr "Not in Collection"
+msgstr ""
 
 msgid "%s is not in %.100hs"
-msgstr "%s is not in %.100hs"
+msgstr ""
 
 msgid "Anchor-%d"
 msgstr "Безымянное-%d"
@@ -3956,43 +3964,43 @@ msgid "Negative Width"
 msgstr "Отрицательная ширина"
 
 msgid "Negative glyph widths are not allowed in TrueType\nDo you really want a negative width?"
-msgstr "Negative Glyph widths are not allowed in TrueType\nDo you really want a negative width?"
+msgstr ""
 
 msgid "_Hangul"
-msgstr "_Hangul"
+msgstr ""
 
 msgid "_New Composition..."
-msgstr "_New Composition..."
+msgstr ""
 
 msgid "_Modify Composition..."
-msgstr "_Modify Composition..."
+msgstr ""
 
 msgid "_Build Syllables"
-msgstr "_Build Syllables"
+msgstr ""
 
 msgid "Cho-Sung"
-msgstr "Cho-Sung"
+msgstr ""
 
 msgid "Jung-Sung"
-msgstr "Jung-Sung"
+msgstr ""
 
 msgid "Jong-Sung"
-msgstr "Jong-Sung"
+msgstr ""
 
 msgid "Cho-Sung:"
-msgstr "Cho-Sung:"
+msgstr ""
 
 msgid "Jung-Sung:"
-msgstr "Jung-Sung:"
+msgstr ""
 
 msgid "Jong-Sung:"
-msgstr "Jong-Sung:"
+msgstr ""
 
 msgid "_Mapping..."
-msgstr "_Mapping..."
+msgstr ""
 
 msgid "_Width"
-msgstr "Ширина...(_W)"
+msgstr "Ширина(_W)"
 
 msgid "_Width..."
 msgstr "Ширина...(_W)"
@@ -4004,22 +4012,22 @@ msgid "_Load From..."
 msgstr "Загрузить из...(_L)"
 
 msgid "Bad Number for Width"
-msgstr "Bad Number for Width"
+msgstr ""
 
 msgid "Bad Number for Group"
-msgstr "Bad Number for Group"
+msgstr ""
 
 msgid "Unused glyph variant"
-msgstr "Unused glyph variant"
+msgstr ""
 
 msgid "For group %d of %s, glyph variant %d is not used but %d is used.\nProcede anyway?"
-msgstr "For group %d of %s, glyph variant %d is not used but %d is used.\nProcede anyway?"
+msgstr ""
 
 msgid "No Rules"
-msgstr "No Rules"
+msgstr ""
 
 msgid "%.100s contains no composition rules"
-msgstr "%.100s contains no composition rules"
+msgstr ""
 
 msgid "Delete"
 msgstr "Удалить"
@@ -4028,13 +4036,13 @@ msgid "A_dd All"
 msgstr "Добавить все(_D)"
 
 msgid "_Display Compositions..."
-msgstr "_Display Compositions..."
+msgstr ""
 
 msgid "This varient of this jamo is not actually used"
-msgstr "This varient of this jamo is not actually used"
+msgstr ""
 
 msgid "Unicode %04X, Varient %d, %s"
-msgstr "Unicode %04X, Varient %d, %s"
+msgstr ""
 
 msgid "Building Korean Font"
 msgstr "Создание корейского шрифта"
@@ -4079,7 +4087,7 @@ msgid "Warning"
 msgstr "Внимание"
 
 msgid "After rotating or skewing a glyph you should probably apply Element->Add Extrema"
-msgstr "После поворота или наклона символа возможно надо использовать \"Элемент->Добавить экстремум\""
+msgstr "После поворота или наклона символа возможно надо использовать \"Элемент->Добавить экстремумы\""
 
 msgid "C_all..."
 msgstr "Запустить...(_A)"
@@ -4088,10 +4096,10 @@ msgid "Call Script"
 msgstr "Запустить скрипт"
 
 msgid "A free press discriminates\nagainst the illiterate."
-msgstr "A free press discriminates\nagainst the illiterate."
+msgstr ""
 
 msgid "Gaudeamus Ligature!"
-msgstr "Gaudiamus Ligature!"
+msgstr ""
 
 msgid "In the beginning was the letter..."
 msgstr "В начале было Слово..."
@@ -4115,13 +4123,13 @@ msgid "Rotating"
 msgstr "Вращение"
 
 msgid "Allow a match even if the search pattern has\nto be transformed by a combination of the\nfollowing transformations."
-msgstr "Allow a match even if the search pattern has\nto be transformed by a combination of the\nfollowing transformations."
+msgstr ""
 
 msgid "Search Selected Chars"
 msgstr "Поиск выделенных символов"
 
 msgid "Only search selected glyphs in the fontview\nNormally we search all glyphs in the font."
-msgstr "Only search selected characters in the fontview\nNormally we search all characters in the font."
+msgstr ""
 
 msgid "Find"
 msgstr "Найти"
@@ -4142,16 +4150,16 @@ msgid "Replace All"
 msgstr "Заменить все"
 
 msgid "The %1$s contains a reference to %2$.20hs which does not exist in the new font.\nShould I remove the reference?"
-msgstr "The %1$s contains a reference to %2$.20hs which does not exist in the new font.\nShould I remove the reference?"
+msgstr ""
 
 msgid "Not Found"
 msgstr "Не найдено"
 
 msgid "The search pattern was not found in the font %.100s"
-msgstr "The search pattern was not found in the font %.100s"
+msgstr ""
 
 msgid "The search pattern was not found again in the font %.100s"
-msgstr "The search pattern was not found again in the font %.100s"
+msgstr ""
 
 msgid "F_ind / Replace..."
 msgstr "Поиск / Замена(_I)"
@@ -4163,10 +4171,10 @@ msgid "Sort By:"
 msgstr "Сортировать по:"
 
 msgid "First Char"
-msgstr "Левый символ"
+msgstr "Первый символ"
 
 msgid "Second Char"
-msgstr "Правый символ"
+msgstr "Второй символ"
 
 msgid "Kern Size"
 msgstr "Размер керна"
@@ -4175,91 +4183,91 @@ msgid "C_enter"
 msgstr "По центру(_E)"
 
 msgid "The tile (in the clipboard) should be centered on the path"
-msgstr "The tile (in the clipboard) should be centered on the path"
+msgstr ""
 
 msgid "_Left"
 msgstr "Слева(_L)"
 
 msgid "The tile (in the clipboard) should be placed to the left of the path\nas the path is traced from its start point to its end"
-msgstr "The tile (in the clipboard) should be placed to the left of the path\nas the path is traced from its start point to its end"
+msgstr ""
 
 msgid "_Right"
 msgstr "Справа(_R)"
 
 msgid "The tile (in the clipboard) should be placed to the right of the path\nas the path is traced from its start point to its end"
-msgstr "The tile (in the clipboard) should be placed to the right of the path\nas the path is traced from its start point to its end"
+msgstr ""
 
 msgid "_Tile"
-msgstr "_Tile"
+msgstr ""
 
 msgid "Multiple copies of the selection should be tiled onto the path"
-msgstr "Multiple copies of the selection should be tiled onto the path"
+msgstr ""
 
 msgid "_Scale"
-msgstr "_Scale"
+msgstr ""
 
 msgid "The selection should be scaled so that it will cover the path's length"
-msgstr "The selection should be scaled so that it will cover the path's length"
+msgstr ""
 
 msgid "Sc_ale & Tile"
-msgstr "Sc_ale & Tile"
+msgstr ""
 
 msgid "An integral number of the selection will be used to cover the path\nAnd if the path length is not evenly divisible by the selection's\nheight then the selection should be scaled slightly."
-msgstr "An integral number of the selection will be used to cover the path\nAnd if the path length is not evenly divisible by the selection's\nheight then the selection should be scaled slightly."
+msgstr ""
 
 msgid "_AA"
-msgstr "_AA"
+msgstr ""
 
 msgid "AntiAlias (greymap) glyphs, or bitmap glyphs"
-msgstr "AntiAlias (greymap) characters, or bitmap characters"
+msgstr ""
 
 msgid "Specifies the pixel size of the glyphs on display"
-msgstr "Specifies the pixel size of the characters on display"
+msgstr ""
 
 msgid "Specifies file format used to pass the font to freetype\n  pfb -- is the standard postscript type1\n  ttf -- is truetype\n  httf-- is hinted truetype\n  otf -- is opentype\n  bitmap -- not passed to freetype for rendering\n    bitmap fonts must already be generated\n  FontForge -- uses FontForge's own rasterizer, not\n    freetype's. Only as last resort"
-msgstr "Specifies file format used to pass the font to freetype\n  pfb -- is the standard postscript type1\n  ttf -- is truetype\n  httf-- is hinted truetype\n  otf -- is opentype\n  bitmap -- not passed to freetype for rendering\n    bitmap fonts must already be generated\n  FontForge -- uses FontForge's own rasterizer, not\n    freetype's. Only as last resort"
+msgstr ""
 
 msgid "Bad Size"
-msgstr "Bad Size"
+msgstr ""
 
 msgid "Requested bitmap size not available in font. Font supports %s"
-msgstr "Requested bitmap size not available in font. Font supports %s"
+msgstr ""
 
 msgid "Bad Font"
-msgstr "Bad Font"
+msgstr ""
 
 msgid "Leave X"
-msgstr "Leave X"
+msgstr ""
 
 msgid "A browser is probably running in the native Mac windowing system. You must leave the X environment to view it. Try Cmd-Opt-A"
-msgstr "A browser is probably running in the native Mac windowing system. You must leave the X environment to view it. Try Cmd-Opt-A"
+msgstr ""
 
 msgid "The generated font won't work with ATM"
-msgstr "The generated font won't work with ATM"
+msgstr ""
 
 msgid "ATM requires that fonts be encoded with the Macintosh Latin encoding. This postscript font will print fine, but only the bitmap versions will be displayed on the screen"
-msgstr "ATM requires that fonts be encoded with the Macintosh Latin encoding. This postscript font will print fine, but only the bitmap versions will be displayed on the screen"
+msgstr ""
 
 msgid "Allow _removal of extrema"
 msgstr "Разрешить удаление экстремумов(_R)"
 
 msgid "Normally simplify will not remove points at the extrema of curves\n(both PostScript and TrueType suggest you retain these points)"
-msgstr "Normally simplify will not remove points at the extrema of curves\n(both PostScript and TrueType suggest you retain these points)"
+msgstr ""
 
 msgid "Allow _slopes to change"
-msgstr "Allow _slopes to change"
+msgstr ""
 
 msgid "Normally simplify will not change the slope of the contour at the points."
-msgstr "Normally simplify will not change the slope of the contour at the points."
+msgstr ""
 
 msgid "_Error Limit:"
 msgstr "Предельная ошибка:(_E)"
 
 msgid "em-units"
-msgstr "em-units"
+msgstr ""
 
 msgid "GGadget|ButtonSize|55"
-msgstr "70"
+msgstr ""
 
 msgid "GGadget|ScaleFactor|100"
-msgstr "140"
+msgstr ""
