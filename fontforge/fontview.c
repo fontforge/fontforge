@@ -2293,6 +2293,23 @@ void FontViewMenu_DeselectAll(GtkMenuItem *menuitem, gpointer user_data) {
 }
 
 # ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuSelectWorthOutputting(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_SelectWorthOutputting(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+    int i, gid;
+    EncMap *map = fv->map;
+    SplineFont *sf = fv->sf;
+
+    for ( i=0; i< map->enccount; ++i )
+	fv->selected[i] = ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL &&
+		SCWorthOutputting(sf->glyphs[gid]) );
+    GDrawRequestExpose(fv->v,NULL,false);
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
 static void FVMenuSelectChanged(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
@@ -2318,9 +2335,13 @@ void FontViewMenu_SelectHintingNeeded(GtkMenuItem *menuitem, gpointer user_data)
     int i, gid;
     EncMap *map = fv->map;
     SplineFont *sf = fv->sf;
+    int order2 = sf->order2;
 
     for ( i=0; i< map->enccount; ++i )
-	fv->selected[i] = ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && sf->glyphs[gid]->changedsincelasthinted );
+	fv->selected[i] = ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL &&
+		((!order2 && sf->glyphs[gid]->changedsincelasthinted ) ||
+		 ( order2 && sf->glyphs[gid]->layers[ly_fore].splines!=NULL &&
+		     sf->glyphs[gid]->ttf_instrs_len<=0 )) );
     GDrawRequestExpose(fv->v,NULL,false);
 }
 
@@ -6041,6 +6062,7 @@ static GMenuItem sllist[] = {
     { { (unichar_t *) N_("_Deselect All"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, GK_Escape, 0, NULL, NULL, FVMenuDeselectAll },
     { { (unichar_t *) N_("_Select by Color"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control, sclist },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) N_("_Glyphs Worth Outputting"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control, NULL,NULL, FVMenuSelectWorthOutputting },
     { { (unichar_t *) N_("_Changed Glyphs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control, NULL,NULL, FVMenuSelectChanged },
     { { (unichar_t *) N_("_Hinting Needed"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control, NULL,NULL, FVMenuSelectHintingNeeded },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
@@ -8601,7 +8623,10 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		bg = sc->color!=COLOR_DEFAULT?sc->color:0x808080;
 		GDrawFillRect(pixmap,&r,bg);
 	    }
-	    if ( sc->changedsincelasthinted && !sc->changed && !fv->sf->order2 ) {
+	    if ( !sc->changed &&
+		    ((!fv->sf->order2 && sc->changedsincelasthinted ) ||
+		     ( fv->sf->order2 && sc->layers[ly_fore].splines!=NULL &&
+			sc->ttf_instrs_len<=0 )) ) {
 		Color hintcol = 0x0000ff;
 		GDrawDrawLine(pixmap,r.x,r.y,r.x,r.y+r.height-1,hintcol);
 		GDrawDrawLine(pixmap,r.x+1,r.y,r.x+1,r.y+r.height-1,hintcol);

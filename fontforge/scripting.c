@@ -2246,6 +2246,7 @@ static void bSelectHintingNeeded(Context *c) {
     EncMap *map = fv->map;
     SplineFont *sf = fv->sf;
     int add = 0;
+    int order2 = sf->order2;
 
     if ( c->a.argc!=1 && c->a.argc!=2 )
 	error( c, "Too many arguments");
@@ -2257,10 +2258,42 @@ static void bSelectHintingNeeded(Context *c) {
 
     if ( add ) {
 	for ( i=0; i< map->enccount; ++i )
-	    fv->selected[i] |= ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && sf->glyphs[gid]->changedsincelasthinted );
+	    fv->selected[i] |= ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL &&
+		    ((!order2 && sf->glyphs[gid]->changedsincelasthinted ) ||
+		     ( order2 && sf->glyphs[gid]->layers[ly_fore].splines!=NULL &&
+			 sf->glyphs[gid]->ttf_instrs_len<=0 )) );
     } else {
 	for ( i=0; i< map->enccount; ++i )
-	    fv->selected[i] = ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && sf->glyphs[gid]->changedsincelasthinted );
+	    fv->selected[i] = ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL &&
+		    ((!order2 && sf->glyphs[gid]->changedsincelasthinted ) ||
+		     ( order2 && sf->glyphs[gid]->layers[ly_fore].splines!=NULL &&
+			 sf->glyphs[gid]->ttf_instrs_len<=0 )) );
+    }
+}
+
+static void bSelectWorthOutputting(Context *c) {
+    int i, gid;
+    FontView *fv = c->curfv;
+    EncMap *map = fv->map;
+    SplineFont *sf = fv->sf;
+    int add = 0;
+
+    if ( c->a.argc!=1 && c->a.argc!=2 )
+	error( c, "Too many arguments");
+    if ( c->a.argc==2 ) {
+	if ( c->a.vals[1].type!=v_int )
+	    error( c, "Bad type for argument" );
+	add = c->a.vals[1].u.ival;
+    }
+
+    if ( add ) {
+	for ( i=0; i< map->enccount; ++i )
+	    fv->selected[i] |= ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL &&
+		    SCWorthOutputting(sf->glyphs[gid]) );
+    } else {
+	for ( i=0; i< map->enccount; ++i )
+	    fv->selected[i] = ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL &&
+		    SCWorthOutputting(sf->glyphs[gid]) );
     }
 }
 
@@ -6315,6 +6348,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "SelectIf", bSelectIf },
     { "SelectChanged", bSelectChanged },
     { "SelectHintingNeeded", bSelectHintingNeeded },
+    { "SelectWorthOutputting", bSelectWorthOutputting },
     { "SelectByATT", bSelectByATT },
     { "SelectByColor", bSelectByColor },
     { "SelectByColour", bSelectByColor },
