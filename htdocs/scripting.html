@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 31-Oct-2005 -->
+  <!-- AP: Last modified: 6-Nov-2005 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -131,11 +131,14 @@
       <LI>
 	A string which may be enclosed in either double or single quotes. String
 	tokens are limited to 256 bytes. "\n" can be used to represent a newline
-	character.
+	character. (If you need longer strings use the concatenation operator).
       <LI>
 	a procedure to call or file to invoke.
       <LI>
 	an expression within parentheses
+      <LI>
+	a series of expressions (separated by commas) within brackets, as <CODE>[1,
+	2, 3, 5, 8]</CODE>, used to create an array.
     </UL>
     <P>
     There are three different comments supported:
