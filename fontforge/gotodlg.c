@@ -92,7 +92,7 @@ struct unicoderange {
     { "Ogham", 0x1680, 0x139f, 0x1680 },
     { "Runic", 0x16a0, 0x13ff, 0x16a0 },
     { "Tagalog", 0x1700, 0x171f, -1 },
-    { "Hanunóo", 0x1720, 0x173f, -1 },
+    { "HanunÃ³o", 0x1720, 0x173f, -1 },
     { "Buhid", 0x1740, 0x175f, -1 },
     { "Tagbanwa", 0x1760, 0x177f, -1 },
     { "Khmer", 0x1780, 0x17ff, -1 },
@@ -460,8 +460,8 @@ static int Goto_OK(GGadget *g, GEvent *e) {
 		d->done = true;
 	} else
 	    d->done = true;
+	free(ret);
     }
-    free(ret);
 return( true );
 }
 

@@ -2190,7 +2190,8 @@ static void BDFOrigFixup(BDFFont *bdf,int orig_cnt,SplineFont *sf) {
 
     for ( i=0; i<bdf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
 	glyphs[sf->glyphs[i]->orig_pos] = bdf->glyphs[i];
-	bdf->glyphs[i]->orig_pos = sf->glyphs[i]->orig_pos;
+	if ( bdf->glyphs[i]!=NULL )	/* Not all glyphs exist in a piecemeal font */
+	    bdf->glyphs[i]->orig_pos = sf->glyphs[i]->orig_pos;
     }
     free(bdf->glyphs);
     bdf->glyphs = glyphs;
