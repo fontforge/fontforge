@@ -4210,6 +4210,18 @@ return( false );
 	    break;
 	    }
 	}
+	if ( sc->unicodeenc!=unienc ) {
+	    struct splinecharlist *scl;
+	    int layer;
+	    RefChar *ref;
+
+	    for ( scl=sc->dependents; scl!=NULL; scl=scl->next ) {
+		for ( layer=ly_fore; layer<scl->sc->layer_cnt; ++layer )
+		    for ( ref = scl->sc->layers[layer].refs; ref!=NULL; ref=ref->next )
+			if ( ref->sc==sc )
+			    ref->unicode_enc = unienc;
+	    }
+	}
     }
     sc->unicodeenc = unienc;
     if ( sc->name==NULL || strcmp(name,sc->name)!=0 ) {
