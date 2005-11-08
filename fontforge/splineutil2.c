@@ -594,6 +594,33 @@ static int _ApproximateSplineFromPoints(SplinePoint *from, SplinePoint *to,
 return( ret );
 }
 
+static void TestForLinear(SplinePoint *from,SplinePoint *to) {
+    BasePoint off, cpoff, cpoff2;
+    double len, co, co2;
+
+    /* Did we make a line? */
+    off.x = to->me.x-from->me.x; off.y = to->me.y-from->me.y;
+    len = sqrt(off.x*off.x + off.y*off.y);
+    if ( len!=0 ) {
+	off.x /= len; off.y /= len;
+	cpoff.x = from->nextcp.x-from->me.x; cpoff.y = from->nextcp.y-from->me.y;
+	len = sqrt(cpoff.x*cpoff.x + cpoff.y*cpoff.y);
+	if ( len!=0 ) {
+	    cpoff.x /= len; cpoff.y /= len;
+	}
+	cpoff2.x = to->prevcp.x-from->me.x; cpoff2.y = to->prevcp.y-from->me.y;
+	len = sqrt(cpoff2.x*cpoff2.x + cpoff2.y*cpoff2.y);
+	if ( len!=0 ) {
+	    cpoff2.x /= len; cpoff2.y /= len;
+	}
+	co = cpoff.x*off.y - cpoff.y*off.x; co2 = cpoff2.x*off.y - cpoff2.y*off.x;
+	if ( co<.05 && co>-.05 && co2<.05 && co2>-.05 ) {
+	    from->nextcp = from->me; from->nonextcp = true;
+	    to->prevcp = to->me; to->noprevcp = true;
+	}
+    }
+}
+
 /* Find a spline which best approximates the list of intermediate points we */
 /*  are given. No attempt is made to fix the slopes */
 Spline *ApproximateSplineFromPoints(SplinePoint *from, SplinePoint *to,
@@ -621,8 +648,10 @@ return( spline );
 	to->prevcp = to->me;
 	to->noprevcp = true;
     }
+    TestForLinear(from,to);
     spline = SplineMake(from,to,order2);
-    if ( SplineIsLinear(spline)) {
+    if ( !spline->islinear && SplineIsLinear(spline)) {
+	IError("We missed a linear spline");
 	spline->islinear = from->nonextcp = to->noprevcp = true;
 	spline->from->nextcp = spline->from->me;
 	spline->to->prevcp = spline->to->me;
@@ -788,6 +817,7 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt,order2) );
 	    from->nonextcp = to->noprevcp = true;
 	    from->nextcp = from->me;
 	    to->prevcp = to->me;
+	    TestForLinear(from,to);
 	} else {
 	    /* If the slopes don't intersect then use a line */
 	    /*  (or if the intersection is patently absurd) */
@@ -968,6 +998,7 @@ return( SplineMake2(from,to));
 
     to->prevcp.x = to->me.x + offp*tounit.x; to->prevcp.y = to->me.y + offp*tounit.y;
     from->nextcp.x = from->me.x + offn*fromunit.x; from->nextcp.y = from->me.y + offn*fromunit.y;
+    TestForLinear(from,to);
     SplineRefigure(spline);
 
 return( spline );
