@@ -2582,7 +2582,8 @@ return;
     }
     if ( enc>=map->enccount )
 	map->enccount = enc+1;
-    map->map[enc] = orig_pos;
+    if ( enc!=-1 )
+	map->map[enc] = orig_pos;
 }
 
 static int orig_pos;
@@ -3059,6 +3060,10 @@ return( 0 );
     }
     if ( enc<0 ||xmax<xmin || ymax<ymin )
 return( 0 );
+    if ( orig==-1 ) {
+	bfc->sc = SFMakeChar(bdf->sf,map,enc);
+	orig = bfc->sc->orig_pos;
+    }
 
     bfc->orig_pos = orig;
     bfc->width = width;
