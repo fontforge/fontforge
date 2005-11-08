@@ -2224,6 +2224,17 @@ return(false);			/* Custom, it's whatever's there */
 	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
 	    if ( sf->glyphs[i]->orig_pos==-1 )
 		sf->glyphs[i]->orig_pos = enc_cnt++;
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	    struct splinecharlist *scl;
+	    int layer;
+	    RefChar *ref;
+
+	    for ( scl=sf->glyphs[i]->dependents; scl!=NULL; scl=scl->next ) {
+		for ( layer=ly_fore; layer<scl->sc->layer_cnt; ++layer )
+		    for ( ref = scl->sc->layers[layer].refs; ref!=NULL; ref=ref->next )
+			ref->orig_pos = ref->sc->orig_pos;
+	    }
+	}
 	for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
 	    fvs->map->ticked = false;
 	    if ( fvs->filled!=NULL ) fvs->filled->ticked = false;
@@ -2278,6 +2289,19 @@ return( true );
 	sf->glyphs[j]->unicodeenc = dummy.unicodeenc;
 	free(sf->glyphs[j]->name);
 	sf->glyphs[j]->name = copy(dummy.name);
+    }
+    /* We just changed the unicode values for most glyphs */
+    /* but any references to them will have the old values, and that's bad, so fix 'em up */
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	struct splinecharlist *scl;
+	int layer;
+	RefChar *ref;
+
+	for ( scl=sf->glyphs[i]->dependents; scl!=NULL; scl=scl->next ) {
+	    for ( layer=ly_fore; layer<scl->sc->layer_cnt; ++layer )
+		for ( ref = scl->sc->layers[layer].refs; ref!=NULL; ref=ref->next )
+		    ref->unicode_enc = ref->sc->unicodeenc;
+	}
     }
 return( true );
 }
