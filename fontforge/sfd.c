@@ -81,8 +81,9 @@ static char base64[64] = {
     putc(base64[ch&0x3f],sfd);
 }
 
-static void SFDDumpUTF7Str(FILE *sfd, const char *str) {
+static void SFDDumpUTF7Str(FILE *sfd, const char *_str) {
     int ch, prev_cnt=0, prev=0, in=0;
+    const unsigned char *str = (const unsigned char *) _str;
 
     putc('"',sfd);
     if ( str!=NULL ) while ( (ch = *str++)!='\0' ) {
