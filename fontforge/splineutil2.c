@@ -617,6 +617,15 @@ static void TestForLinear(SplinePoint *from,SplinePoint *to) {
 	if ( co<.05 && co>-.05 && co2<.05 && co2>-.05 ) {
 	    from->nextcp = from->me; from->nonextcp = true;
 	    to->prevcp = to->me; to->noprevcp = true;
+	} else {
+	    Spline temp;
+	    memset(&temp,0,sizeof(temp));
+	    temp.from = from; temp.to = to;
+	    temp.splines[0].a = 1;
+	    if ( SplineIsLinear(&temp)) {
+		from->nextcp = from->me; from->nonextcp = true;
+		to->prevcp = to->me; to->noprevcp = true;
+	    }
 	}
     }
 }
@@ -650,13 +659,6 @@ return( spline );
     }
     TestForLinear(from,to);
     spline = SplineMake(from,to,order2);
-    if ( !spline->islinear && SplineIsLinear(spline)) {
-	IError("We missed a linear spline");
-	spline->islinear = from->nonextcp = to->noprevcp = true;
-	spline->from->nextcp = spline->from->me;
-	spline->to->prevcp = spline->to->me;
-	SplineRefigure(spline);
-    }
 return( spline );
 }
 
