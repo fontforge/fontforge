@@ -57,6 +57,9 @@ powerpc-*-*linux*)
  dnl from another library as imported (stdout? strlen? fopen? malloc? X*)
  dnl Seems far too much work as I borrow freely from libc, X11, etc.
 
+ ./configure.static
+ exit
+
  AC_ENABLE_STATIC
  AC_DISABLE_SHARED
 
@@ -118,15 +121,6 @@ AC_ARG_WITH(iconv,
  ])
 
 AC_SUBST(FF_EXTRA_FILES)
-AC_ARG_WITH(gb12345,
- [  --with-gb12345   Include the GB 12345 encoding],
- [
-   if test "$withval" \!= "no" ; then
-     FF_EXTRA_FILES="gb12345.o"
-     AC_DEFINE(FONTFORGE_CONFIG_GB12345,1)
-   fi
- ])
-
 
 AC_SEARCH_LIBS(dlopen, dl) dnl some systems have this in libc (Darwin uses dyld)
 AC_SEARCH_LIBS(inet_aton, resolv) dnl some systems have this in libc
@@ -466,7 +460,8 @@ cp Makefile.dynamic.in Makefile.in
 cp Unicode/Makefile.dynamic.in Unicode/Makefile.in
 cp gdraw/Makefile.dynamic.in gdraw/Makefile.in
 cp fontforge/Makefile.dynamic.in fontforge/Makefile.in
-AC_OUTPUT(Makefile Unicode/Makefile gdraw/Makefile fontforge/Makefile po/Makefile)
+AC_OUTPUT(Makefile Unicode/Makefile gdraw/Makefile fontforge/Makefile)
+AC_OUTPUT(po/Makefile plugins/Makefile)
 AC_OUTPUT(systemspecific)
 if test -e umap >/dev/null 2>&1 ; then
   cp umap/Makefile.dynamic.in umap/Makefile.in
