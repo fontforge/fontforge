@@ -1,5 +1,4 @@
-extern int uni_to_euc_gb12345(int u);
-extern int euc_gb12345_to_uni(char **_s);
+#include "plugins.h"
 
 static const unsigned short __gb12345_to_ucs[] =
 {
@@ -4370,14 +4369,14 @@ static const unsigned short *__gb12345_from_ucs4[] = {
 };
 /* ************************************************ */
 
-int euc_gb12345_to_uni(char **_s) {
-    unsigned char **s = (unsigned char **) _s;
+static int euc_gb12345_to_uni(int enc) {
     int val;
-    if ( **s<0xa1 )
-return( *(*s)++ );
-    if ( (*s)[1]<0xa1 )
+
+    if ( enc<0xa1 )
+return( enc );
+    if ( (enc>>8)<0xa1 || (enc&0xff)<0xa1 )
 return( -1 );
-    val = (**s-0xa1)*94 + ((*s)[1]-0xa1);
+    val = ((enc>>8)-0xa1)*94 + ((enc&0xff)-0xa1);
     if ( val>=0x2058 )
 return( -1 );
     if ( __gb12345_to_ucs[val]==0 )
@@ -4385,7 +4384,7 @@ return( -1 );
 return( __gb12345_to_ucs[val] );
 }
 
-int uni_to_euc_gb12345(int u) {
+static int uni_to_euc_gb12345(int u) {
     int val;
     if ( u<0 || u>=65536 )
 return( -1 );
@@ -4394,5 +4393,13 @@ return( u );
     val = __gb12345_from_ucs4[u>>8][u&0xff];
     if ( val==0 )
 return( -1 );
-return( val | 0x2000000 );	/* 0x2000000 indicates needs 2 bytes */
+return( val );
+}
+
+int FontForgeInit(void) {
+    if ( !AddEncoding("EUC-GB12345",euc_gb12345_to_uni,uni_to_euc_gb12345,65535) ) {
+	LogError("Failed to add EUC-GB12345" );
+return( 0 );
+    }
+return( 1 );
 }

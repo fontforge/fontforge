@@ -33,6 +33,7 @@
 #include <gfile.h>
 #include <gio.h>
 #include <gresource.h>
+#include "plugins.h"
 
 static int32 tex_base_encoding[] = {
     0x0000, 0x02d9, 0xfb01, 0xfb02, 0x2044, 0x02dd, 0x0141, 0x0142,
@@ -116,17 +117,7 @@ static Encoding adobestd = { "AdobeStandard", 256, unicode_from_adobestd, AdobeS
 										  1, 1, 1, 1, 0, 0, 0, 0, 0, 0 };
 static Encoding symbol = { "Symbol", 256, unicode_from_MacSymbol, NULL, &adobestd,1, 1, 1, 1, 0, 0, 0, 0, 0, 0 };
 
-#ifdef FONTFORGE_CONFIG_GB12345
-extern int euc_gb12345_to_uni(char **_s);
-extern int uni_to_euc_gb12345(int u);
-
-static Encoding euc_gb12345 = { "GB12345-EUC", 65536, NULL, NULL, &symbol,1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    {0,0,0,0,0,0,0,0}, 0, 0, 255, NULL, NULL, NULL,
-    euc_gb12345_to_uni, uni_to_euc_gb12345};
-Encoding *enclist = &euc_gb12345;
-#else
 Encoding *enclist = &symbol;
-#endif
 
 const char *FindUCS2Name(void) {
     /* Iconv and libiconv use different names for UCS2. Just great. Perhaps */
@@ -434,6 +425,50 @@ return( enc );
 
 Encoding *FindOrMakeEncoding(const char *name) {
 return( _FindOrMakeEncoding(name,true));
+}
+
+/* Plugin API */
+int AddEncoding(char *name,EncFunc enc_to_uni,EncFunc uni_to_enc,int max) {
+    Encoding *enc;
+    int i;
+
+    for ( enc=enclist; enc!=NULL; enc=enc->next ) {
+	if ( strmatch(name,enc->enc_name)==0 ||
+		(enc->iconv_name!=NULL && strmatch(name,enc->iconv_name)==0)) {
+	    if ( enc->tounicode_func==NULL )
+return( 0 );			/* Failure */
+	    else {
+		enc->tounicode_func   = enc_to_uni;
+		enc->fromunicode_func = uni_to_enc;
+		enc->char_cnt	      = max;
+return( 2 );
+	    }
+	}
+    }
+
+    if ( strmatch(name,"unicode")==0 || strmatch(name,"iso10646")==0 || strmatch(name,"iso10646-1")==0 )
+return( 0 );			/* Failure */
+    if ( strmatch(name,"unicode4")==0 || strmatch(name,"ucs4")==0 )
+return( 0 );			/* Failure */
+
+    enc = chunkalloc(sizeof(Encoding));
+    enc->enc_name = copy(name);
+    enc->next = enclist;
+    enclist = enc;
+    enc->tounicode_func   = enc_to_uni;
+    enc->fromunicode_func = uni_to_enc;
+    enc->char_cnt	      = max;
+    for ( i=0; i<256 && i<max; ++i )
+	if ( enc_to_uni(i)!=-1 )
+    break;
+
+    if ( i<256 && i<max )
+	enc->has_1byte = true;
+    if ( max<256 )
+	enc->only_1byte = true;
+    else
+	enc->has_2byte = true;
+return( 1 );
 }
 
 static char *getPfaEditEncodings(void) {

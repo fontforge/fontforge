@@ -541,7 +541,7 @@ typedef struct enc {
     char *iconv_name;	/* For compatibility to old versions we might use a different name from that used by iconv. */
     iconv_t *tounicode;
     iconv_t *fromunicode;
-    int (*tounicode_func)(char **);
+    int (*tounicode_func)(int);
     int (*fromunicode_func)(int);
 } Encoding;
 

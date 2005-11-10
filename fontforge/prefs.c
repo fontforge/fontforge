@@ -706,6 +706,7 @@ void LoadPrefs(void) {
     char *pt;
     struct prefs_list *pl;
 
+    LoadPluginDir(NULL);
     LoadPfaEditEncodings();
     LoadGroupList();
 

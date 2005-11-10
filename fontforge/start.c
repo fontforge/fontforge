@@ -528,7 +528,7 @@ return( PREFIX "/share/locale" );
 return( sharedir );
 }
 
-int main( int argc, char **argv ) {
+int FontForgeMain( int argc, char **argv ) {
     extern const char *source_modtime_str;
     const char *load_prefs = getenv("FONTFORGE_LOADPREFS");
 #if !defined( FONTFORGE_CONFIG_NO_WINDOWING_UI )
