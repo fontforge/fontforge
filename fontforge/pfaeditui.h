@@ -30,6 +30,7 @@
 #include "pfaedit.h"
 
 extern void help(char *filename);
+extern int FontForgeMain( int argc, char **argv );
 
 #if defined(FONTFORGE_CONFIG_GTK)
 # include <gtk/gtk.h>
