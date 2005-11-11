@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 6-Nov-2005 -->
+  <!-- AP: Last modified: 10-Nov-2005 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -519,6 +519,23 @@ a[4][0] = "Nested array";
 	Sets the value of the preference item whose name is contained in str. If
 	the preference item has a real type then a second argument may be passed
 	and the value set will be val/val2.
+      <DT>
+	LoadPlugin(filename)
+      <DD>
+	Will load the <A HREF="plugins.html">fontforge plugin </A>stored in the given
+	file (this should be a shared library).
+      <DT>
+	LoadPluginDir([directory-name])
+      <DD>
+	Searches the given directory for things that look like fontforge plugins
+	and loads them. If directory is omitted then it will load the two default
+	directories:
+	<UL>
+	  <LI>
+	    /usr/local/share/fontforge/plugins
+	  <LI>
+	    ~/.PfaEdit/plugins
+	</UL>
       <DT>
 	DefaultOtherSubrs()
       <DD>
