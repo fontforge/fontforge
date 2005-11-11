@@ -50,7 +50,6 @@ install_libs: libs
 	#-rm $(libdir)/libgdraw.so* $(libdir)/libgunicode.so.*
 	$(LIBTOOL) --mode=install $(INSTALL) -c libgdraw.la $(libdir)/libgdraw.la
 	$(LIBTOOL) --mode=install $(INSTALL) -c libgunicode.la $(libdir)/libgunicode.la
-	$(LIBTOOL) --mode=install $(INSTALL) -c libfontforge.la $(libdir)/libfontforge.la
 	#cp .libs/*.so.*.* $(libdir)
 	$(LIBTOOL) --mode=finish $(libdir)
 	mkdir -p $(libdir)/pkgconfig
