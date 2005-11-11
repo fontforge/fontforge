@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 26-Oct-2005 -->
-  <!-- AP: Last modified: 31-Oct-2005 -->
+  <!-- AP: Last modified: 11-Nov-2005 -->
   <TITLE>FontForge install procedures for cygwin (MS/Windows)</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -51,7 +51,9 @@
   <P>
   You must insure that you have <A HREF="http://www.cygwin.com/">cygwin</A>
   installed on your system. Cygwin is free. (cygwin makes MS Windows look enough
-  like unix to allow fontforge to run there).
+  like unix to allow fontforge to run there). Getting all the bits of cygwin
+  seems to be the hardest part of installing fontforge -- probably because
+  it is the least expected part.
   <UL>
     <LI>
       First download the setup.exe program from
@@ -59,8 +61,39 @@
     <LI>
       Run it. It will ask you what components of cygwin you wish to install
     <LI>
-      You will need the base components, the X window system, xorg-x11-base, and
-      xterm (NOTE: These are separate packages)
+      You will need the default stuff, plus the X window system
+      <P>
+      Most of what you need you get by default. But you must explicitly request
+      X11. Scroll down the list of catagories:
+      <UL>
+	<LI>
+	  Near (or at) the bottom, click on the [+] beside X11. Then make sure the
+	  following are selected:
+	  <UL>
+	    <LI>
+	      X-startup-scripts
+	    <LI>
+	      XFree86-lib-compat
+	    <LI>
+	      xorg-x11-base
+	    <LI>
+	      xorg-x11-bin
+	    <LI>
+	      xorg-x11-dlls
+	    <LI>
+	      xorg-x11-lndir
+	    <LI>
+	      xorg-x11-etc
+	    <LI>
+	      xorg-x11-f100
+	    <LI>
+	      xorg-x11-libs-data
+	    <LI>
+	      xorg-x11-xwin
+	    <LI>
+	      xterm
+	  </UL>
+      </UL>
     <LI>
       Once you have cygwin installed, start it. This should give you a terminal
       window running bash (a unix shell)
