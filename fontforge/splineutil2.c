@@ -93,8 +93,43 @@ return( RealWithin(a,b,fudge));
 return( RealWithin(a/b,1.0,fudge));
 }
 
+static int MinMaxWithin(Spline *spline) {
+    double dx, dy;
+    int which;
+    double t1, t2;
+    double w;
+    /* We know that this "spline" is basically one dimensional. As long as its*/
+    /*  extrema are between the start and end points on that line then we can */
+    /*  treat it as a line. If the extrema are way outside the line segment */
+    /*  then it's a line that backtracks on itself */
+
+    if ( (dx = spline->to->me.x - spline->from->me.x)<0 ) dx = -dx;
+    if ( (dy = spline->to->me.y - spline->from->me.y)<0 ) dy = -dy;
+    which = dx<dy;
+    SplineFindExtrema(&spline->splines[which],&t1,&t2);
+    if ( t1==-1 )
+return( true );
+    w = ((spline->splines[which].a*t1 + spline->splines[which].b)*t1
+	     + spline->splines[which].c)*t1 + spline->splines[which].d;
+    if ( RealNear(w, (&spline->to->me.x)[which]) || RealNear(w, (&spline->from->me.x)[which]) )
+	/* Close enough */;
+    else if ( (w<(&spline->to->me.x)[which] && w<(&spline->from->me.x)[which]) ||
+	    (w>(&spline->to->me.x)[which] && w>(&spline->from->me.x)[which]) )
+return( false );		/* Outside */
+
+    w = ((spline->splines[which].a*t2 + spline->splines[which].b)*t2
+	     + spline->splines[which].c)*t2 + spline->splines[which].d;
+    if ( RealNear(w, (&spline->to->me.x)[which]) || RealNear(w, (&spline->from->me.x)[which]) )
+	/* Close enough */;
+    else if ( (w<(&spline->to->me.x)[which] && w<(&spline->from->me.x)[which]) ||
+	    (w>(&spline->to->me.x)[which] && w>(&spline->from->me.x)[which]) )
+return( false );		/* Outside */
+
+return( true );
+}
+
 int SplineIsLinear(Spline *spline) {
-    double t1,t2;
+    double t1,t2, t3,t4;
     int ret;
 
     if ( spline->knownlinear )
@@ -112,49 +147,41 @@ return( true );
     /* Vertical lines */
     if ( RealNear(spline->from->me.x,spline->to->me.x) ) {
 	ret = RealNear(spline->from->me.x,spline->from->nextcp.x) &&
-	    RealNear(spline->from->me.x,spline->to->prevcp.x) &&
-	    ((spline->from->nextcp.y >= spline->from->me.y &&
-	      spline->from->nextcp.y <= spline->to->me.y &&
-	      spline->to->prevcp.y >= spline->from->me.y &&
-	      spline->to->prevcp.y <= spline->to->me.y ) ||
-	     (spline->from->nextcp.y <= spline->from->me.y &&
-	      spline->from->nextcp.y >= spline->to->me.y &&
-	      spline->to->prevcp.y <= spline->from->me.y &&
-	      spline->to->prevcp.y >= spline->to->me.y ));
+	    RealNear(spline->from->me.x,spline->to->prevcp.x);
+	if ( ! ((spline->from->nextcp.y >= spline->from->me.y &&
+		  spline->from->nextcp.y <= spline->to->me.y &&
+		  spline->to->prevcp.y >= spline->from->me.y &&
+		  spline->to->prevcp.y <= spline->to->me.y ) ||
+		 (spline->from->nextcp.y <= spline->from->me.y &&
+		  spline->from->nextcp.y >= spline->to->me.y &&
+		  spline->to->prevcp.y <= spline->from->me.y &&
+		  spline->to->prevcp.y >= spline->to->me.y )) )
+	    ret = MinMaxWithin(spline);
     /* Horizontal lines */
     } else if ( RealNear(spline->from->me.y,spline->to->me.y) ) {
 	ret = RealNear(spline->from->me.y,spline->from->nextcp.y) &&
-	    RealNear(spline->from->me.y,spline->to->prevcp.y) &&
-	    ((spline->from->nextcp.x >= spline->from->me.x &&
-	      spline->from->nextcp.x <= spline->to->me.x &&
-	      spline->to->prevcp.x >= spline->from->me.x &&
-	      spline->to->prevcp.x <= spline->to->me.x) ||
-	     (spline->from->nextcp.x <= spline->from->me.x &&
-	      spline->from->nextcp.x >= spline->to->me.x &&
-	      spline->to->prevcp.x <= spline->from->me.x &&
-	      spline->to->prevcp.x >= spline->to->me.x));
+	    RealNear(spline->from->me.y,spline->to->prevcp.y);
+	if ( ! ((spline->from->nextcp.x >= spline->from->me.x &&
+		  spline->from->nextcp.x <= spline->to->me.x &&
+		  spline->to->prevcp.x >= spline->from->me.x &&
+		  spline->to->prevcp.x <= spline->to->me.x) ||
+		 (spline->from->nextcp.x <= spline->from->me.x &&
+		  spline->from->nextcp.x >= spline->to->me.x &&
+		  spline->to->prevcp.x <= spline->from->me.x &&
+		  spline->to->prevcp.x >= spline->to->me.x)) )
+	    ret = MinMaxWithin(spline);
     } else {
 	ret = true;
 	t1 = (spline->from->nextcp.y-spline->from->me.y)/(spline->to->me.y-spline->from->me.y);
-	if ( t1<0 || t1>1.0 )
-	    ret = false;
-	else {
-	    t2 = (spline->from->nextcp.x-spline->from->me.x)/(spline->to->me.x-spline->from->me.x);
-	    if ( t2<0 || t2>1.0 )
-		ret = false;
-	    ret = RealApprox(t1,t2);
-	}
+	t2 = (spline->from->nextcp.x-spline->from->me.x)/(spline->to->me.x-spline->from->me.x);
+	t3 = (spline->to->me.y-spline->to->prevcp.y)/(spline->to->me.y-spline->from->me.y);
+	t4 = (spline->to->me.x-spline->to->prevcp.x)/(spline->to->me.x-spline->from->me.x);
+	ret = (RealApprox(t1,t2) || (RealApprox(t1,0) && RealApprox(t2,0))) &&
+		(RealApprox(t3,t4) || (RealApprox(t3,0) && RealApprox(t4,0)));
 	if ( ret ) {
-	    t1 = (spline->to->me.y-spline->to->prevcp.y)/(spline->to->me.y-spline->from->me.y);
-	    if ( t1<0 || t1>1.0 )
-		ret = false;
-	    else {
-		t2 = (spline->to->me.x-spline->to->prevcp.x)/(spline->to->me.x-spline->from->me.x);
-		if ( t2<0 || t2>1.0 )
-		    ret = false;
-		else
-		    ret = RealApprox(t1,t2);
-	    }
+	    if ( t1<0 || t2<0 || t3<0 || t4<0 ||
+		    t1>1 || t2>1 || t3>1 || t4>1 )
+		ret = MinMaxWithin(spline);
 	}
     }
     spline->knowncurved = !ret;
@@ -621,7 +648,7 @@ static void TestForLinear(SplinePoint *from,SplinePoint *to) {
 	    Spline temp;
 	    memset(&temp,0,sizeof(temp));
 	    temp.from = from; temp.to = to;
-	    temp.splines[0].a = 1;
+	    SplineRefigure(&temp);
 	    if ( SplineIsLinear(&temp)) {
 		from->nextcp = from->me; from->nonextcp = true;
 		to->prevcp = to->me; to->noprevcp = true;
