@@ -20,30 +20,30 @@ X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
 STATIC_LIBS = @STATIC_LIBS@
 
-fontforge_LIBOBJECTS =  autohint.lo autosave.lo autowidth.lo bitmapdlg.lo \
- bitmapview.lo bvedit.lo charview.lo charviewicons.lo cursors.lo \
- cvaddpoints.lo cvexport.lo cvgetinfo.lo cvhints.lo cvimages.lo cvknife.lo \
- cvpalettes.lo cvpointer.lo cvruler.lo cvshapes.lo cvstroke.lo cvtranstools.lo \
- cvundoes.lo dumpbdf.lo dumppfa.lo fontinfo.lo fontview.lo fvcomposit.lo \
- fvfonts.lo fvimportbdf.lo fvmetrics.lo images.lo metricsview.lo \
- parsepfa.lo parsettf.lo prefs.lo psread.lo psunicodenames.lo savefontdlg.lo \
- sfd.lo splashimage.lo splinefill.lo splineoverlap.lo splinesave.lo \
- splinesaveafm.lo splinestroke.lo splineutil.lo splineutil2.lo stamp.lo \
- start.lo tottf.lo transform.lo uiutil.lo utils.lo windowmenu.lo  \
- zapfnomen.lo othersubrs.lo autotrace.lo openfontdlg.lo encoding.lo print.lo \
- problems.lo metafont.lo alignment.lo parsettfbmf.lo \
- macbinary.lo crctab.lo scripting.lo freetype.lo gotodlg.lo search.lo \
- combinations.lo tilepath.lo sftextfield.lo displayfonts.lo ikarus.lo \
- cvhand.lo cvfreehand.lo simplifydlg.lo winfonts.lo tottfgpos.lo tottfaat.lo \
- charinfo.lo splineorder2.lo genttfinstrs.lo ttfinstrs.lo cvgridfit.lo \
- cvdebug.lo showatt.lo kernclass.lo nonlineartrans.lo effects.lo \
- histograms.lo ttfspecial.lo svg.lo parsettfatt.lo contextchain.lo \
- macenc.lo statemachine.lo typofeatures.lo splinerefigure.lo mm.lo \
- parsettfvar.lo tottfvar.lo pua.lo stemdb.lo anchorsaway.lo palmfonts.lo \
- cvdgloss.lo groups.lo parsepdf.lo plugins.lo \
+fontforge_LIBOBJECTS =  autohint.o autosave.o autowidth.o bitmapdlg.o \
+ bitmapview.o bvedit.o charview.o charviewicons.o cursors.o \
+ cvaddpoints.o cvexport.o cvgetinfo.o cvhints.o cvimages.o cvknife.o \
+ cvpalettes.o cvpointer.o cvruler.o cvshapes.o cvstroke.o cvtranstools.o \
+ cvundoes.o dumpbdf.o dumppfa.o fontinfo.o fontview.o fvcomposit.o \
+ fvfonts.o fvimportbdf.o fvmetrics.o images.o metricsview.o \
+ parsepfa.o parsettf.o prefs.o psread.o psunicodenames.o savefontdlg.o \
+ sfd.o splashimage.o splinefill.o splineoverlap.o splinesave.o \
+ splinesaveafm.o splinestroke.o splineutil.o splineutil2.o stamp.o \
+ start.o tottf.o transform.o uiutil.o utils.o windowmenu.o  \
+ zapfnomen.o othersubrs.o autotrace.o openfontdlg.o encoding.o print.o \
+ problems.o metafont.o alignment.o parsettfbmf.o \
+ macbinary.o crctab.o scripting.o freetype.o gotodlg.o search.o \
+ combinations.o tilepath.o sftextfield.o displayfonts.o ikarus.o \
+ cvhand.o cvfreehand.o simplifydlg.o winfonts.o tottfgpos.o tottfaat.o \
+ charinfo.o splineorder2.o genttfinstrs.o ttfinstrs.o cvgridfit.o \
+ cvdebug.o showatt.o kernclass.o nonlineartrans.o effects.o \
+ histograms.o ttfspecial.o svg.o parsettfatt.o contextchain.o \
+ macenc.o statemachine.o typofeatures.o splinerefigure.o mm.o \
+ parsettfvar.o tottfvar.o pua.o stemdb.o anchorsaway.o palmfonts.o \
+ cvdgloss.o groups.o parsepdf.o plugins.o \
  @FF_EXTRA_FILES@
-DIFFOBJS = sfddiff.lo sfd.lo diffstubs.lo stamp.lo
-ACORNOBJS = acorn2sfd.lo sfd.lo diffstubs.lo psunicodenames.lo stamp.lo
+DIFFOBJS = sfddiff.o sfd.o diffstubs.o stamp.o
+ACORNOBJS = acorn2sfd.o sfd.o diffstubs.o psunicodenames.o stamp.o
 
 _CFLAGS = -I$(top_srcdir)/inc -I$(srcdir) -I. @WFLAGS@ $(X_CFLAGS) \
     @DEFS@ '-DSHAREDIR="$(sharedir)"' -DLIBDIR='"$(libdir)"' \
@@ -56,11 +56,8 @@ DLIBS = -rpath $(libdir) ../libgunicode.la @LIBS@ $(STATIC_LIBS) -lm
 
 all: fontforge
 
-../libfontforge.la: $(fontforge_LIBOBJECTS)
-	$(LIBTOOL) --mode=link $(CC) -o ../libfontforge.la $(fontforge_LIBOBJECTS) $(LIBS)
-
-fontforge: main.o ../libfontforge.la
-	$(LIBTOOL) --mode=link $(CC) -o fontforge main.o ../libfontforge.la $(LIBS)
+fontforge: main.o $(fontforge_LIBOBJECTS)
+	$(LIBTOOL) --mode=link $(CC) -export-dynamic -o fontforge main.o $(fontforge_LIBOBJECTS) $(LIBS)
 
 sfddiff: $(DIFFOBJS)
 	$(LIBTOOL) --mode=link $(CC) -o sfddiff $(DIFFOBJS) $(DLIBS)
@@ -71,15 +68,18 @@ acorn2sfd: $(ACORNOBJS)
 # The slight error introduced occasionally by optimization turns out to have
 # disasterous effects. This file may not be compiled with the optimizer.
 # On the other hand we do need CPPFLAGS to get the right includes...
+splinerefigure.o: $(srcdir)/splinerefigure.c
+	$(CC) -g -c -o splinerefigure.o $(_CFLAGS) $(srcdir)/splinerefigure.c
+
 splinerefigure.lo: $(srcdir)/splinerefigure.c
 	$(LIBTOOL) --mode=compile $(CC) -g -c -o splinerefigure.lo $(_CFLAGS) $(srcdir)/splinerefigure.c
 
-%.lo: %.c
-	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -c $<
+#%.o: %.c
+#	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -c $<
 
 
 clean:
-	-rm -f *.lo *.o fontforge sfddiff po/*.mo
+	-rm -f *.o *.o fontforge sfddiff po/*.mo
 	-rm -rf .libs
 
 distclean cleaner: clean

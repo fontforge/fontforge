@@ -28,10 +28,9 @@ _CFLAGS = -I$(top_srcdir)/inc -I$(srcdir) -I. -I$(top_srcdir)/fontforge \
 CFLAGS = @CFLAGS@ $(_CFLAGS)
 
 LIBS = -rpath $(libdir) $(X_LIBS) ../libgdraw.la ../libgunicode.la \
-    ../libfontforge.la \
     $(X_PRE_LIBS) $(X_11LIB) $(X_EXTRA_LIBS) @LIBS@ $(STATIC_LIBS) -L/usr/lib -lm
 
-PLUGINS = libgb12345.la
+PLUGINS = gb12345.la
 
 all: $(PLUGINS)
 
@@ -39,7 +38,7 @@ all: $(PLUGINS)
 	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -c $<
 
 %.la: %.lo
-	$(LIBTOOL) --mode=link $(CC) -o $@ $< $(LIBS)
+	$(LIBTOOL) --mode=link $(CC) -export-dynamic -module -o $@ $< $(LIBS)
 
 install: all
 	mkdir -p $(plugindir)
