@@ -6308,6 +6308,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "LoadStringFromFile", bLoadFileToString, 1 },
     { "WriteStringToFile", bWriteStringToFile, 1 },
     { "LoadPlugin", bLoadPlugin, 1 },
+    { "LoadPluginDir", bLoadPluginDir, 1 },
 /* File menu */
     { "Quit", bQuit, 1 },
     { "FontsInFile", bFontsInFile, 1 },

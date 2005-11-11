@@ -26,6 +26,7 @@
  */
 #include "pfaeditui.h"
 #include "groups.h"
+#include "plugins.h"
 #include <charset.h>
 #include <gfile.h>
 #include <gresource.h>
