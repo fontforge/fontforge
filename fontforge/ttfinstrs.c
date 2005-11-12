@@ -1300,6 +1300,13 @@ void SCEditInstructions(SplineChar *sc) {
 return;
     }
 
+    if ( sc->layers[ly_fore].refs!=NULL && sc->layers[ly_fore].splines!=NULL ) {
+	gwwv_post_error(_("Can't instruct this glyph"),
+		_("TrueType does not support mixed references and contours.\nIf you want instructions for %.30s you should either:\n * Unlink the reference(s)\n * Copy the inline contours into their own (unencoded\n    glyph) and make a reference to that."),
+		sc->name );
+return;
+    }
+
     for ( cv=sc->views; cv!=NULL; cv=cv->next ) {
 	sc = cv->sc;
 	cv->showpointnumbers = true;
