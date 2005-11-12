@@ -1,12 +1,13 @@
 <HTML>
 <HEAD>
-<!--   Created with AOLpress/2.0 -->
-<!--   AP: Created on: 18-Jan-2002 -->
-<!--   AP: Last modified: 28-Oct-2005 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
+<!-- Created with AOLpress/2.0 -->
+<!-- AP: Created on: 18-Jan-2002 -->
+<!-- AP: Last modified: 6-Nov-2005 -->
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Writing scripts to change fonts in FontForge</TITLE>-->
     <TITLE>FontForge でフォントを変更するためのスクリプトの書き方</TITLE>
   <LINK REL="icon" href="../ffanvil16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
 <DIV id="in">
@@ -194,14 +195,18 @@
     <LI>
 <!--  A string which may be enclosed in either double or single quotes. String
 	tokens are limited to 256 bytes. "\n" can be used to represent a newline
-	character. -->
-      二重引用符または一重引用符で囲まれた文字列。文字列トークンは 256 バイトまでに制限されています。改行文字を表すのに "\n" を使用することができます。
+	character. (If you need longer strings use the concatenation operator). -->
+      二重引用符または一重引用符で囲まれた文字列。文字列トークンは 256 バイトまでに制限されています。改行文字を表すのに "\n" を使用することができます。(より長い文字列が必要な場合、連結演算子を使用してください)。
     <LI>
 <!--  a procedure to call or file to invoke. -->
       手続きの呼び出しまたは実行するファイル
     <LI>
 <!--  an expression within parentheses -->
       括弧に囲まれた式
+    <LI>
+<!--  a series of expressions (separated by commas) within brackets, as <CODE>[1,
+      2, 3, 5, 8]</CODE>, used to create an array.
+      (カンマで区切られた) 式の列を角括弧に入れたもの。例えば、<CODE>[1, 2, 3, 5, 8]</CODE> のように。配列の作成に使用されます。
   </UL>
   <P>
 <!--   There are three different comments supported: -->
@@ -739,6 +744,25 @@ a[4][0] = "Nested array";
       the preference item has a real type then a second argument may be passed
       and the value set will be val/val2. -->
       名前 str をもつプリファレンスの項目値を設定します。プリファレンスの項目が実数型ならば、2 番目の引数を指定することができ、設定される値は val/val2 となります。
+      <DT>
+	LoadPlugin(filename)
+      <DD>
+<!--	Will load the <A HREF="plugins.html">fontforge plugin </A>stored in the given
+	file (this should be a shared library). -->
+	指定されたファイル (これは共有ライブラリでなければなりません) に格納されている <A HREF="plugins.html">FontForge プラグイン</A>を読み込みます。
+      <DT>
+	LoadPluginDir([directory-name])
+      <DD>
+<!--	Searches the given directory for things that look like fontforge plugins
+	and loads them. If directory is omitted then it will load the two default
+	directories: -->
+	指定されたディレクトリを検索し、FontForge プラグインらしき物を探して読み込みます。ディレクトリを指定しない場合、以下の 2 つのデフォルトディレクトリを読み込みます。
+	<UL>
+	  <LI>
+	    /usr/local/share/fontforge/plugins
+	  <LI>
+	    ~/.PfaEdit/plugins
+	</UL>
     <DT>
       DefaultOtherSubrs()
     <DD>

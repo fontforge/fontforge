@@ -3,12 +3,14 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 1-Mar-2003 -->
   <!-- AP: Last modified: 16-Apr-2004 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
   <LINK REL="icon" href="../ffanvil16.png">
 <!--<TITLE>Viewing and Editing truetype instructions in FontForge.</TITLE>-->
     <TITLE>FontForge で TrueType 命令を閲覧および編集する方法</TITLE>
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
+<DIV id="in">
 <TABLE ALIGN=RIGHT>
   <TR>
     <TD><IMG SRC="../ttfinstrs-view.png" WIDTH="277" HEIGHT="280"><BR>
@@ -89,11 +91,11 @@ a number. This will be replaced by the index in the 'cvt ' table of an entry
 which is (within one em-unit of) &lt;val&gt;. So <CODE>cvt(100)</CODE> would
 return the index in 'cvt ' of 100. If there is no such entry, FontForge will
 create one. -->
-式 <CODE>cvt(&lt;val&gt;)</CODE> を数値の変わりに用いることもできます。これらは (1 em ユニット以内の誤差で) &lt;val&gt; である項目の 'cvt ' テーブル内のインデックスに置換されます。例えば <CODE>cvt(100)</CODE> は、'cvt ' テーブル内での 100 のインデックスを返します。そのような項目が存在しない場合は、FontForge は項目を作成します。
+式 <CODE>cvt(&lt;val&gt;)</CODE> を数値の変わりに用いることもできます。これらは (1 em ユニット以内の誤差で) &lt;val&gt; である項目の&lsquo;cvt &rsquo;テーブル内のインデックスに置換されます。例えば <CODE>cvt(100)</CODE> は、&lsquo;cvt &rsquo;テーブル内での 100 のインデックスを返します。そのような項目が存在しない場合は、FontForge は項目を作成します。
 <H2>
   <IMG SRC="../editcvt.png" WIDTH="194" HEIGHT="320" ALIGN="Right"><!--Editing the
-  '<A NAME="cvt">cvt</A> ' table directly -->
-  '<A NAME="cvt">cvt</A> ' テーブルを直接編集する方法
+  &lsquo;<A NAME="cvt">cvt</A> &rsquo;table directly -->
+  &lsquo;<A NAME="cvt">cvt</A> &rsquo;テーブルを直接編集する方法
 </H2>
 <P>
 <!--
@@ -101,10 +103,11 @@ This dialog shows the initial contents of the 'cvt ' table (before it has
 been modified by the 'prep' program). It is simply a list of signed 16bit
 values. You may change any value by clicking on it and typing a new value.
 You may add new entries (at the end) with the [change length] button. -->
-このダイアログは 'cvt ' テーブルの初期の ('prep' プログラムで変更される前の) 内容を表示します。それは単純に符号つき 16 ビット値のリストです。値をクリックして、新しい値を入力することによって任意の値を変更することができます。新しい項目を (最後に) [長さを変更] ボタンを押すことによって変更可能です。
+このダイアログは&lsquo;cvt &rsquo;テーブルの初期の (&lsquo;prep&rsquo; プログラムで変更される前の) 内容を表示します。それは単純に符号つき 16 ビット値のリストです。値をクリックして、新しい値を入力することによって任意の値を変更することができます。新しい項目を (最後に) [長さを変更] ボタンを押すことによって変更可能です。
 <P>
 <!--
 (You may also use the "<CODE>cvt(&lt;val&gt;)</CODE>" notation described
 above to edit the cvt table.) -->
-(cvt テーブルを編集するのに、上記の "<CODE>cvt(&lt;val&gt;)</CODE>" 記法を使うこともできます。)
+(cvt テーブルを編集するのに、上記の“<CODE>cvt(&lt;val&gt;)</CODE>”記法を使うこともできます。)
+</DIV>
 </BODY></HTML>

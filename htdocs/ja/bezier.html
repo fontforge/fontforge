@@ -3,12 +3,14 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Dec-2000 -->
   <!-- AP: Last modified: 22-Mar-2005 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>B&eacute;zier Splines</TITLE>-->
     <TITLE>B&eacute;zier スプライン</TITLE>
   <LINK REL="icon" href="../ffanvil16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
+<DIV id="in">
 <H1 ALIGN=Center>
 <!--B&eacute;zier<SUP><SMALL><A HREF="#bezier">1</A></SMALL></SUP> Splines -->
     B&eacute;zier<SUP><SMALL><A HREF="#bezier">1</A></SMALL></SUP> スプライン
@@ -30,6 +32,7 @@ these only the linear, quadratic and cubic splines are interesting to us--
 those used by TrueType and PostScript. -->
 他の次数の B&eacute;zier スプラインを作成することも可能です。4 次スプラインでは 3 個の制御点が存在し、5 次スプラインでは 4 個の制御点が、という具合です。そのなかで我々が関心をもっているのは線形, 2 次と 3 次のスプラインです――それらは TrueType と PostScript で使用されています。
 <P>
+<!--
 The examples at left are cubic splines with two control points, each determining
 the slope at the nearest end point, while the example at right shows a quadratic
 spline with one control point used to determine the slopes at both end points.
@@ -177,9 +180,10 @@ points of the interval, and its control point is determined by the intersections
 of the lines tangent to the cubic at the start and end of the interval). -->
 3 次スプラインが与えられたとしましょう。スプライン上の 2 個の点に注目しましょう。その場合、それらの 2 点における傾きが求める値であるスプラインは、それら 2 個の点の間に 1 本しか引くことができません。(その 2 次曲線は、その区間の端点を端点とし、その制御点は、3 次曲線のその区間の始点と終点における接線の交点です)。
 <P>
+<!--
 Start from the end of the spline and every so often (ie. within the margin
 of error) check to see if the one permissible quadratic approximation actually
-matches the cubic closely enough .
+matches the cubic closely enough . -->
 スプライン上の片方の端点から始め、時折 (すなわち、許容誤差の範囲内で) ある許される 2 次近似が本当に、3 次曲線に十分密接に合致しているかをチェックします。
 <P>
 <!--
@@ -243,4 +247,5 @@ Pierre B&eacute;zier (1910-1999). -->
 <P ALIGN=Center>
 -- <A HREF="sfdformat.html">前</A> -- <A HREF="overview.html">目次</A> --
 <A HREF="corpchar.html">次</A> --
+</DIV>
 </BODY></HTML>

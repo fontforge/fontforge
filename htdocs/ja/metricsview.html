@@ -3,12 +3,14 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
   <!-- AP: Last modified: 22-Mar-2005 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>The Metrics View</TITLE>-->
     <TITLE>メトリックビュー</TITLE>
   <LINK REL="icon" href="../ffanvil16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
+<DIV id="in">
 <H1 ALIGN=Center>
 <!-- The Metrics View -->
      メトリックビュー
@@ -109,8 +111,7 @@ terminal, medial, isolated) determination will be done in the display area
 form you must enter the unicode code for that form (as opposed to the character
 for the letter), or use the
 <A HREF="viewmenu.html#Substitutions">View-&gt;Substitutions</A> command. -->
-<STRONG>もう一つ注意</STRONG>: 表示エリアでは、アラビア文字の合字や形 (語頭・語尾・語中または独立) の選択は行いません (上のテキストフィールドでは行われるはずですが)。
-正しい形を見たい場合は、(文字そのものではなく) 具体形に相当する Unicode の符号位置を入力するか、<A HREF="viewmenu.html#Substitutions">表示(V)→置換(S)</A> コマンドを使うかする必要があります。
+<STRONG>もう一つ注意</STRONG>: 表示エリアでは、アラビア文字の合字や形 (語頭・語尾・語中または独立) の選択は行いません (上のテキストフィールドでは行われるはずですが)。正しい形を見たい場合は、(文字そのものではなく) 具体形に相当する Unicode の符号位置を入力するか、<A HREF="viewmenu.html#Substitutions">表示(V)→置換(S)</A> コマンドを使うかする必要があります。
 <P>
 <IMG SRC="VerticalMetrics.png" WIDTH="360" HEIGHT="700" ALIGN="Right"><IMG
     SRC="../HebrewMetrics.png" WIDTH="511" HEIGHT="323">
@@ -120,7 +121,7 @@ You can make the window display vertical metrics and kerning by
 View-&gt;Vertical. (This is only available if your font has vertical metrics
 enabled, Element-&gt;Font Info-&gt;General-&gt;Has Vertical Metrics). In
 this mode you can change vertical width, vertical kerning, etc. -->
-表示(V)→縦書き(V) を選ぶと、ウィンドウに縦書きメトリックとカーニングを表示することができます (フォントに縦書きメトリックが存在する場合に限ります。エレメント(L)→フォント情報(F)→[一般情報]→[]縦書きメトリックが存在 をチェックする必要があります)。
+<CODE>表示(<U>V</U>)</CODE>→<CODE>縦書き(<U>V</U>)</CODE> を選ぶと、ウィンドウに縦書きメトリックとカーニングを表示することができます (フォントに縦書きメトリックが存在する場合に限ります。<CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)</CODE>→<CODE>[一般情報]</CODE>→<CODE>[]縦書きメトリックが存在</CODE> をチェックする必要があります)。
 このモードでは縦書きの字送り、カーニングなどを変更できます。
 <P>
 <!--
@@ -144,7 +145,8 @@ You may select one of these and see the effect of applying it.
 position, it will not display any modified advance widths. -->
 グリフを右ボタンでクリックすると、そのグリフに対して定義されている全ての単純位置指定 (GPOS タイプ 1) 機能を表示するポップアップメニューが現れます。
 そこからどれか 1 個を選択すると、その機能を適用した結果を見ることができます。
-<STRONG>制限事項</STRONG> FontForge は現在のところ位置の変更のみをサポートしており、送り幅の変更は表示にまったく反映されません。
+<BR>
+<STRONG>制限事項</STRONG>: FontForge は現在のところ位置の変更のみをサポートしており、送り幅の変更は表示にまったく反映されません。
 <H2>
 <!--<A NAME="Entering">Entering non-ASCII characters</A>-->
     <A NAME="Entering">非 ASCII 文字の入力法</A>
@@ -550,17 +552,14 @@ example A, &Agrave;, &Aacute;, &Acirc;, &Acirc;, &Atilde; and &Auml; probably
 all kern alike (but note that o and &ocirc; probably kern quite differently
 after a T), and rather than create separate kerning pairs for each of the
 "A"s above, they could all be placed in a class of glyphs which kern alike. -->
-同じカーニングが適用されるグリフのクラスを定義することが良策であることがしばしばあります。
-例えば、A と &Agrave;, &Aacute;, &Acirc;, &Acirc;, &Atilde;, &Auml; の各文字のグリフはおそらく同じカーニングが適用でき (ただし、o と &ocirc; は、T の後ろに来たときのカーニングが全く異なるだろうことに注意してください)、上に挙げた "A" の類にそれぞれ別々のカーニングペアを定義せずに、同じようにカーニングを行う文字のクラスに対して定義を行うことができるでしょう。
+同じカーニングが適用されるグリフのクラスを定義することが良策であることがしばしばあります。例えば、A と &Agrave;, &Aacute;, &Acirc;, &Acirc;, &Atilde;, &Auml; の各文字のグリフはおそらく同じカーニングが適用でき (ただし、o と &ocirc; は、T の後ろに来たときのカーニングが全く異なるだろうことに注意してください)、上に挙げた“A”の類にそれぞれ別々のカーニングペアを定義せずに、同じようにカーニングを行う文字のクラスに対して定義を行うことができるでしょう。
 <P>
 <IMG SRC="../kernbyclasses.png" ALIGN="Right" WIDTH="282" HEIGHT="263"><!--The
 Metrics-&gt;Kern By Class command provides an interface to this. It brings
 up a dialog showing the kerning classes currently defined for the font (it
 labels them according to the script in which they are active). You can create
 new classes, delete existing classes, or change existing classes.-->
-メトリック(M)→クラス毎のカーニング(X) コマンドが、それを行うインターフェイスです。
-このコマンドはフォントに現在定義されているカーニングクラスを表示したダイアログを起動します (その際、それがアクティブになるスクリプトに従ってラベルづけを行います)。
-新しいクラスの作成、既存のクラスの削除や既存のクラスの変更ができます。
+<CODE>メトリック(<U>M</U>)</CODE>→<CODE>クラス毎のカーニング(<U>X</U>)</CODE> コマンドが、それを行うインターフェイスです。このコマンドはフォントに現在定義されているカーニングクラスを表示したダイアログを起動します (その際、それがアクティブになるスクリプトに従ってラベルづけを行います)。新しいクラスの作成、既存のクラスの削除や既存のクラスの変更ができます。
 <P>
 <IMG SRC="../kerningclass.png" WIDTH="560" HEIGHT="579" ALIGN="Left"><!--Each kerning
 class needs a <A HREF="charinfo.html#Feature-Tag">script/language</A> combination
@@ -573,9 +572,7 @@ of two sets of classes - - one set for the first glyph of the pair and one
 for the second glyph of the pair. Under each list of classes are buttons
 for adding new classes, and editing or deleting old ones. A glyph class consists
 of a space separated list of glyph names. -->
-その下にあるのはより興味深い情報です。1 個のカーニングクラスは、実際には 2 個のクラスの組からなります―― 1 つはペアの先頭のグリフの組、もう 1 つはペアの 2 番目のグリフの組です。
-それぞれのクラスのリストの下には新クラスの追加・既存クラスの編集・削除を行うためのボタンがあります。
-個々のグリフクラスはグリフ名を空白で区切ったリストです。
+その下にあるのはより興味深い情報です。1 個のカーニングクラスは、実際には 2 個のクラスの組からなります―― 1 つはペアの先頭のグリフの組、もう 1 つはペアの 2 番目のグリフの組です。それぞれのクラスのリストの下には新クラスの追加・既存クラスの編集・削除を行うためのボタンがあります。個々のグリフクラスはグリフ名を空白で区切ったリストです。
 <P>
 <!--
 Pressing [New] or [Edit] displays another dlg containing a text field with
@@ -583,9 +580,7 @@ a list of glyph names. You may type in glyph names, or you may [Set] the
 glyph list to the names of the glyphs selected in the font view. Similarly
 the [Select] button will set the font view's selection to match the list
 of glyph names. -->
-[新規] または [編集] を押すと、グリフ名のリストがあるテキストフィールドを含む別のダイアログが表示されます。
-グリフ名をキー入力するか、[設定] ボタンを押してフォントビューで選択されたグリフの名前リストを使用することができます。
-同様に、[選択] ボタンを押すとフォントビューの選択内容を、そのグリフ名の一覧と同じものに設定します。
+<CODE>[新規(<U>N</U>)...]</CODE> または <CODE>[編集(<U>E</U>)...]</CODE> を押すと、グリフ名のリストがあるテキストフィールドを含む別のダイアログが表示されます。グリフ名をキー入力するか、<CODE>[設定(<U>S</U>)]</CODE> ボタンを押してフォントビューで選択されたグリフの名前リストを使用することができます。同様に、<CODE>[選択]</CODE> ボタンを押すとフォントビューの選択内容を、そのグリフ名の一覧と同じものに設定します。
 <P>
 <!--
 Class 0 is magic. You never set it, it contains any glyphs not mentioned
@@ -647,8 +642,7 @@ point sizes. Simply set the Display Size to a small, but common, value (say
 the "Device Table Correction" field, and this will change the spacing by
 that many pixels at the given display size (and no other). In the case above
 a correction of 1 would be appropriate for the 12px display.  -->
-もちろん、カーニング値を微妙に調節して、12 ピクセルで正しく見えるようにできたはずですが、今度は 14 ポイントで問題が起こるでしょう。そういうわけで、OpenType ではデバイステーブルという概念を導入し、このテーブルを用いて特定のポイントサイズで小さな修正ができるようにしています。
-単純にディスプレイサイズをよく使われる小さい値 (例えば 10-24) に設定して、カーニングを目で確かめてください。醜い結果が得られた場合、"デバイステーブル補正" フィールドに値を入力すると、指定された表示サイズのスペーシング (だけ) が指定したピクセル数だけ変更されます。上の例では、12 ピクセル表示では 1 ピクセルの補正が適切でしょう。
+もちろん、カーニング値を微妙に調節して、12 ピクセルで正しく見えるようにできたはずですが、今度は 14 ポイントで問題が起こるでしょう。そういうわけで、OpenType ではデバイステーブルという概念を導入し、このテーブルを用いて特定のポイントサイズで小さな修正ができるようにしています。単純にディスプレイサイズをよく使われる小さい値 (例えば 10-24) に設定して、カーニングを目で確かめてください。醜い結果が得られた場合、“<CODE>デバイステーブル補正</CODE>”フィールドに値を入力すると、指定された表示サイズのスペーシング (だけ) が指定したピクセル数だけ変更されます。上の例では、12 ピクセル表示では 1 ピクセルの補正が適切でしょう。
 <P>
 <!--
 Because small pixel sizes can be hard to examine you can change the magnification
@@ -661,7 +655,7 @@ in a number of other cases. The example above was for a kerning class.
 <A NAME="kernpair">Kerning pairs</A> may also have tables attached to them
 with the Element-&gt;Kern Pair Closeup dialog, which looks very similar to
 the Kerning Class dialog above. -->
-<A HREF="metricsview.html#DeviceTable">デバイステーブル</A>は他の多数の場合にも作成することができます。上の例はカーニングクラスに対するものでした。<A NAME="kernpair">カーニングペア</A>にも、上のカーニングクラスダイアログとよく似た エレメント(L)→カーニングペアの詳細 ダイアログが用意されています。
+<A HREF="metricsview.html#DeviceTable">デバイステーブル</A>は他の多数の場合にも作成することができます。上の例はカーニングクラスに対するものでした。<A NAME="kernpair">カーニングペア</A>にも、上のカーニングクラスダイアログとよく似た <CODE>エレメント(<U>L</U>)</CODE>→<CODE>カーニングペアの詳細</CODE> ダイアログが用意されています。
 <P ALIGN=Center>
 <IMG SRC="../kernpairclose.png" WIDTH="519" HEIGHT="289">
 <P>
@@ -671,4 +665,5 @@ the Kerning Class dialog above. -->
 <P ALIGN=Center>
 -- <A HREF="bitmapview.html">前</A> -- <A HREF="overview.html">目次</A>
 -- <A HREF="filemenu.html">次</A> --
+</DIV>
 </BODY></HTML>

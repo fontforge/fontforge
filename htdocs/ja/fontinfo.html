@@ -3,12 +3,14 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
   <!-- AP: Last modified: 4-Sep-2005 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Font Info</TITLE>-->
     <TITLE>フォント情報</TITLE>
   <LINK REL="icon" href="../ffanvil16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
+<DIV id="in">
 <H1 ALIGN=Center>
 <!--Font Info-->
     フォント情報
@@ -93,12 +95,12 @@ are for machines, this name can contain spaces (like "New Century Schoolbook-Bol
 Condensed"). Finally there is the weight name. All of these names should
 be in ASCII. If you wish to enter names with characters outside this range
 look at the <A HREF="#TTF-Names">TTF Names</A> Section. -->
-PostScript フォントには何種類かの異なる名前がついていますが、そのうちで重要なのは基本的に 2 つです: ファミリー名 (Times など) とフォント名 (ファミリー名に多数の修飾子をつけたもの。例えば Bold Italic Condensed などが後ろにつく。) です。フルネームは人間が読む目的でつけられていて、その他の機械が読むための項目と異なります。これは空白を含むことができます (例えば "New Century Schoolbook-Bold Condensed")。最後に、ウェイト名があります。これらの名前はすべて ASCII で書かなければなりません。この範囲に含まれない文字を含む名前をつけたい場合は、<A HREF="#TTF-Names">TTF 名</A>のセクションを参照してください。
+PostScript フォントには何種類かの異なる名前がついていますが、そのうちで重要なのは基本的に 2 つです: ファミリー名 (Times など) とフォント名 (ファミリー名に多数の修飾子をつけたもの。例えば Bold Italic Condensed などが後ろにつく) です。フルネームは人間が読む目的でつけられていて、その他の機械が読むための項目と異なります。これは空白を含むことができます (例えば“New Century Schoolbook-Bold Condensed”)。最後に、ウェイト名があります。これらの名前はすべて ASCII で書かなければなりません。この範囲に含まれない文字を含む名前をつけたい場合は、<A HREF="#TTF-Names">TTF 名</A>のセクションを参照してください。
 <P>
 <!--
 The copyright field can contain whatever you want to put there, but it's
 a good place to put a copyright. -->
-著作権(R) フィールドは何でも入力したいものを入力できる場所ですが、ここには著作権表示を記入するのがいいでしょう。
+<CODE>著作権(<U>R</U>)</CODE> フィールドは何でも入力したいものを入力できる場所ですが、ここには著作権表示を記入するのがいいでしょう。
 <P>
 <!--
 In most fonts the version field is a string (and so has minimal constraints
@@ -141,13 +143,13 @@ EM のサイズを変更したときには、すべてのアウトライン (およびカーニング情報) を古�
 The Italic Angle indicates the slant of the font. FontForge can attempt to
 guess a good value for you by looking at the stems of certain letters ("I"
 for instance). -->
-イタリックの傾き(I) は、フォントの傾きを表します。FontForge はいくつかの文字 (例えば "I") のステムを見ることにより、適切な値の推測を試みることができます。
+<CODE>イタリックの傾き(<U>I</U>)</CODE> は、フォントの傾きを表します。FontForge はいくつかの文字 (例えば“I”) のステムを見ることにより、適切な値の推測を試みることができます。
 <P>
 <!--
 The underline position and height provide a program using this font a hint
 as to where it should place a line if it wants to underline text printed
 in this font. -->
-下線の位置(P) と太さ(H) は、このフォントを使うプログラムが下線つきテキストをこのフォントで印字しようとするときに、線をどこに引くかに関するヒントを提供します。
+<CODE>下線の位置(<U>P</U>)</CODE> と <CODE>太さ(<U>H</U>)</CODE> は、このフォントを使うプログラムが下線つきテキストをこのフォントで印字しようとするときに、線をどこに引くかに関するヒントを提供します。
 <P>
 <!--
 <FONT COLOR="Red"><SMALL><STRONG>NOTE:</STRONG></SMALL></FONT>
@@ -185,7 +187,7 @@ will mean that when you generate a truetype or opentype font a vertical metrics
 table will be added. The Vertical Origin is the vertical offset from the
 origin of the design coordinate system to the origin for the purposes of
 vertical metrics.-->
-作成中のフォントに<A NAME="vertical">縦書き</A>メトリックが存在する場合 (一般には、これは CJK フォントをつくっているということですが) <CODE>[*] 縦書きメトリックが存在(V)</CODE> チェックボックスがチェックされます。これをチェックすると縦書きの基準点(O) フィールドが使用可能になり、それによって TrueType または OpenType フォントを出力するときに、縦書きメトリックテーブルが追加されることになります。縦書きの基準点は、デザイン座標系の原点から、縦書きメトリックで用いられる原点への垂直方向のオフセットです。
+作成中のフォントに<A NAME="vertical">縦書き</A>メトリックが存在する場合 (一般には、これは CJK フォントをつくっているということですが) <CODE>[*] 縦書きメトリックが存在(<U>V</U>)</CODE> チェックボックスがチェックされます。これをチェックすると <CODE>縦書きの基準点(<U>O</U>)</CODE> フィールドが使用可能になり、それによって TrueType または OpenType フォントを出力するときに、縦書きメトリックテーブルが追加されることになります。縦書きの基準点は、デザイン座標系の原点から、縦書きメトリックで用いられる原点への垂直方向のオフセットです。
 <P>
 <!--
 If you check <CODE>[*] Quadratic Splines </CODE>then FontForge will use quadratic
@@ -199,7 +201,7 @@ you get a clearer idea of what the outlines will look like. I find quadratic
 splines harder to edit with because each spline is less flexible (and a number
 of FontForge's commands will not work on them), but the advantage of actually
 seeing what your truetype font will look like may outweigh that.-->
-もし <CODE>[*] 2次スプライン(Q)</CODE> がチェックされていると、FontForge は 3 次 <A HREF="overview.html#spline">B&eacute;zier</A> スプラインでなく、2 次 <A HREF="overview.html#spline">B&eacute;zier</A> スプラインをこのフォントに使用します。言い替えれば、FontForge が PostScript (または OpenType) の曲線フォーマットではなく、TrueType 元来のフォーマットで編集を行うということです。FontForge がフォントを出力するとき、内部フォーマットがどちらであっても、そのフォントフォーマットが必要とする方式に変換を行いますので、これが間違って設定されていても問題は起こりません。しかし、これを正しく設定しておくことにより、アウトラインがどのように見えるかについてより明白に把握することができます。個人的経験では、2 次スプラインのほうが自由度が低く (かつ、FontForge の多くのコマンドが動作しない) ため、編集がいっそう困難ですが、TrueType フォントがどう表示されるかを実際に見ることの利点はそれに勝ります。
+もし <CODE>[*] 2次スプライン(<U>Q</U>)</CODE> がチェックされていると、FontForge は 3 次 <A HREF="overview.html#spline">B&eacute;zier</A> スプラインでなく、2 次 <A HREF="overview.html#spline">B&eacute;zier</A> スプラインをこのフォントに使用します。言い替えれば、FontForge が PostScript (または OpenType) の曲線フォーマットではなく、TrueType 元来のフォーマットで編集を行うということです。FontForge がフォントを出力するとき、内部フォーマットがどちらであっても、そのフォントフォーマットが必要とする方式に変換を行いますので、これが間違って設定されていても問題は起こりません。しかし、これを正しく設定しておくことにより、アウトラインがどのように見えるかについてより明白に把握することができます。個人的経験では、2 次スプラインのほうが自由度が低く (かつ、FontForge の多くのコマンドが動作しない) ため、編集がいっそう困難ですが、TrueType フォントがどう表示されるかを実際に見ることの利点はそれに勝ります。
 <P>
 <!--
 If you have configured FontForge for <A HREF="multilayer.html">multi-layered
@@ -228,7 +230,7 @@ of "Interpretation". There are several cases in which this field is useful. -->
   <LI>
 <!--Can cause FontForge to use the names "Delta.greek", "Omega.greek" and "mu.greek"
     for U+0396, U+03a9, U+03bc (instead of uni0396, etc.).-->
-    FontForge に U+0396, U+03a9, U+03bc にマッピングされたグリフに、(uni0396 などの名前ではなく) "Delta.greek", "Omega.greek" および "mu.greek" という名前を使用させることができます。
+    FontForge に U+0396, U+03a9, U+03bc にマッピングされたグリフに、(uni0396 などの名前ではなく)“Delta.greek”,“Omega.greek”および“mu.greek”という名前を使用させることができます。
   <LI>
 <!--Can cause FontForge to name glyphs in the public use area after Adobe's
     assignments to that area (ie. small caps, etc.) -->
@@ -282,14 +284,14 @@ entries in the dictionary will be closely linked and guessing at one will
 also guess at the value of the other (FontForge will warn you of this). In
 this case if FontForge were to guess the value of <CODE>BlueValues</CODE>
 it would also guess the value of <CODE>OtherBlues</CODE>. -->
-<CODE>[推測(G)]</CODE> ボタンが押せる状態のとき、FontForge は現在選択されている項目の妥当な値を推定することが可能だと判断しています。辞書に含まれる 2 つの項目が密接にリンクしていることはしばしばあり、1 つの値を推定するともう 1 つも推定が行われます (FontForge はこの状態に対して警告を発します)。この例では、FontForge が <CODE>BlueValues</CODE> を推定することになった場合は、<CODE>OtherBlues</CODE> の値の推定も同時に行われます。
+<CODE>[推測(<U>G</U>)]</CODE> ボタンが押せる状態のとき、FontForge は現在選択されている項目の妥当な値を推定することが可能だと判断しています。辞書に含まれる 2 つの項目が密接にリンクしていることはしばしばあり、1 つの値を推定するともう 1 つも推定が行われます (FontForge はこの状態に対して警告を発します)。この例では、FontForge が <CODE>BlueValues</CODE> を推定することになった場合は、<CODE>OtherBlues</CODE> の値の推定も同時に行われます。
 <P>
 <!--
 The [Hist] button is similar, it will bring up a
 <A HREF="histogram.html">dialog showing a histogram</A> of the values of
 an attribute of the font. The hope is that this will allow you to pick a
 good value for the entry. -->
-[柱状図(H)] ボタンも同様で、フォントのある属性の値を<A HREF="histogram.html">柱状グラフとして表示するダイアログ</A>を起動します。その項目の適切な値をフォント作成者が選ぶことができるように用意された機能です。
+<CODE>[柱状図(<U>H</U>)]</CODE> ボタンも同様で、フォントのある属性の値を<A HREF="histogram.html">柱状グラフとして表示するダイアログ</A>を起動します。その項目の適切な値をフォント作成者が選ぶことができるように用意された機能です。
 <P>
 <!--
 You may also delete an entry from the dictionary with the <CODE>[Remove]
@@ -297,7 +299,7 @@ You may also delete an entry from the dictionary with the <CODE>[Remove]
 to be present in any type1 font, but you may still delete them. FontForge
 will simply guess at a reasonable value when it needs to generate the
 font.<BR Clear=Right>-->
-また、<CODE>[削除(R)]</CODE> ボタンを押せば辞書から項目を削除できます。いくつかの項目 (<CODE>BlueValues</CODE> など) はすべての Type1 フォントで設定する必要がある項目ですが、それらの項目も削除することができます。FontForge はフォントを出力するために値が必要になったときに妥当な値を単純に推測します。
+また、<CODE>[削除(<U>R</U>)]</CODE> ボタンを押せば辞書から項目を削除できます。いくつかの項目 (<CODE>BlueValues</CODE> など) はすべての Type1 フォントで設定する必要がある項目ですが、それらの項目も削除することができます。FontForge はフォントを出力するために値が必要になったときに妥当な値を単純に推測します。
 <P>
 <IMG SRC="privatekey.png" WIDTH="276" HEIGHT="120" ALIGN="Left"><IMG SRC="privatekeymenu.png"
     WIDTH="276" HEIGHT="280" ALIGN="Right"><!--The <CODE>[Add]</CODE> button allows
@@ -306,7 +308,7 @@ value, and you will almost certainly need to provide an appropriate value
 for it. When you press <CODE>[Add]</CODE> a dialog pops up which allows you
 to enter the key's name. There is a pull down list of known keys (that aren't
 already in the dictionary), or you may add keys by typing them in. -->
-<CODE>[追加(A)]</CODE> ボタンを押すと値を追加することができます。どのキーも最初は 1 個の空白からなる値をもつものとして追加されるので、ほとんどの場合は後から適切な値を入力する必要があるでしょう。<CODE>[追加(A)]</CODE> を押すとキーの名前を入力できるダイアログが起動します。(まだ辞書に含まれていない) 既知のキーを含むプルダウンリストから選ぶか、または自分でキーをタイプ入力することができます。
+<CODE>[追加(<U>A</U>)]</CODE> ボタンを押すと値を追加することができます。どのキーも最初は 1 個の空白からなる値をもつものとして追加されるので、ほとんどの場合は後から適切な値を入力する必要があるでしょう。<CODE>[追加(<U>A</U>)]</CODE> を押すとキーの名前を入力できるダイアログが起動します。(まだ辞書に含まれていない) 既知のキーを含むプルダウンリストから選ぶか、または自分でキーをタイプ入力することができます。
 <P>
 <!--
 Certain keys affect things other than hints. The <CODE>lenIV</CODE> entry
@@ -383,7 +385,7 @@ Finally you may order lookups in the GSUB (or morx) table. -->
 These entries are only meaningful in TrueType and OpenType fonts (though
 the Embeddable entry (generally called FSType) will be set on CID keyed fonts
 even if they are not in an OpenType wrapper.<BR CLEAR=ALL> -->
-これらの項目は TrueType および OpenType フォントでのみ意味を持ちます (ただし、項目「埋め込み可能(E)」(一般に FSType と呼ばれています) は CID キー指定フォントでも設定することができ、OpenType ラッパに包まれていなくても使用可能です。<BR CLEAR=ALL>
+これらの項目は TrueType および OpenType フォントでのみ意味を持ちます (ただし、項目 <CODE>[埋め込み可能(<U>E</U>)]</CODE> (一般に FSType と呼ばれています) は CID キー指定フォントでも設定することができ、OpenType ラッパに包まれていなくても使用可能です。<BR CLEAR=ALL>
 <H3>
 <!--<CODE><A NAME="Order"><IMG SRC="../GSUB-Order.png" WIDTH="185" HEIGHT="294"
       ALIGN="Right">GSUB/morx</A></CODE> Ordering-->
@@ -399,7 +401,7 @@ they will appear at the bottom of the list (which may not be appropriate).
 You may select a feature name and use the buttons to move it up and down
 in the list. Things at the top of the list are executed first, things at
 the bottom last. -->
-このダイアログではワードプロセッサプログラムによってフォントの機能が実行されるときの順番を設定できます。OpenType または TrueType フォントから読み込んだ場合、元の順序が保存されます。新しく機能を追加するごとにリストの末尾に付け加えられます (これは適切ではないと思われます)。機能名を選択し、上へ(U) ボタンと 下へ(D) ボタンを使ってリスト内の順序を入れ換えることができます。リストの一番上にあるものが最初に実行され、リストの底にあるものが最後に実行されます。
+このダイアログではワードプロセッサプログラムによってフォントの機能が実行されるときの順番を設定できます。OpenType または TrueType フォントから読み込んだ場合、元の順序が保存されます。新しく機能を追加するごとにリストの末尾に付け加えられます (これは適切ではないと思われます)。機能名を選択し、<CODE>上へ(<U>U</U>)</CODE> ボタンと <CODE>下へ(<U>D</U>)</CODE> ボタンを使ってリスト内の順序を入れ換えることができます。リストの一番上にあるものが最初に実行され、リストの底にあるものが最後に実行されます。
 <P>
 <!--
 <FONT COLOR="Red"><STRONG>Caveat: </STRONG></FONT>Although the OpenType spec
@@ -423,7 +425,7 @@ will not always work. If you have a line with marks which are repositioned
 with GPOS, then the marks may be cropped, so Windows Ascent should include
 the maximum possible height of repositioned marks (or any other GPOS vertical
 repositioning feature). -->
-Windows の Ascent と Descent フィールドは、OpenType の仕様書であまりきちんと定義されていません。その文書では、Windows の "ANSI" グリフの最大幅を表現することとなっています。もしこの定義を使う場合、非 "ANSI" 文字は表示の上下が切り詰められてしまいます。表示が切れないようにするにはフォント全体の最大範囲を使用しなければなりません。ところがそれでも常にうまく良くわけではありません。GPOS によって位置が変更されたマークを含む行があると、そのマークが途中で切れることがあるので、Windows の Ascent は、マークの再配置機能  (または任意の他の GPOS の垂直再配置機能) が適用された可能な最大の高さを含んだ高さでなければなりません。
+Windows の Ascent と Descent フィールドは、OpenType の仕様書であまりきちんと定義されていません。その文書では、Windows の“ANSI”グリフの最大幅を表現することとなっています。もしこの定義を使う場合、非“ANSI”文字は表示の上下が切り詰められてしまいます。表示が切れないようにするにはフォント全体の最大範囲を使用しなければなりません。ところがそれでも常にうまく良くわけではありません。GPOS によって位置が変更されたマークを含む行があると、そのマークが途中で切れることがあるので、Windows の Ascent は、マークの再配置機能  (または任意の他の GPOS の垂直再配置機能) が適用された可能な最大の高さを含んだ高さでなければなりません。
 <P>
 <!--
 This is too complex (and too ill defined) for FontForge to figure out, instead
@@ -439,7 +441,7 @@ FontForge gives you a couple of options. -->
     of the font (which FontForge will compute for you when it saves the font).
     If you don't have a mark to base feature, then I recommend that you set the
     offsets to 0, and check the "[*] Is Offset" checkboxes. -->
-    または、フォントの高さと深さの最大値 (これはフォントを保存するときに FontForge が自動計算します) に加えるオフセットを指定することもできます。もしも、マークから基底文字への位置を指定する機能をまったく含まないならば、このオフセットを 0 にして、"[*] オフセットを指定" チェックボックスにチェックを入れることをお奨めします。
+    または、フォントの高さと深さの最大値 (これはフォントを保存するときに FontForge が自動計算します) に加えるオフセットを指定することもできます。もしも、マークから基底文字への位置を指定する機能をまったく含まないならば、このオフセットを 0 にして、“<CODE>[*] オフセットを指定</CODE>”チェックボックスにチェックを入れることをお奨めします。
 </OL>
 <P>
 <!--
@@ -459,13 +461,13 @@ and that is what Adobe recommends for these fields (they should sum to the
 Em-Size specified in the <A HREF="fontinfo.html#PS-General">General</A> pane).
 The Typographic Ascent should be the same as the font's Ascent, and the
 Typographic Descent should be the (negative) of the font's descent. -->
-伝統的な (ラテン文字の) タイポグラフィにおいては、行間にインテルを入れない時には 1em であるはずであり、Adobe はこのフィールドをそう設定することを推奨しています (2 つを合わせた値は <A HREF="fontinfo.html#PS-General">[一般]</A> タブで指定された em サイズと等しくするべきです)。組版上の高さはフォントの高さと同じに設定し、組版上の深さはフォントの深さ (と絶対値が同じ負の値) に設定するべきです。
+伝統的な (ラテン文字の) タイポグラフィにおいては、行間にインテルを入れない時には 1em であるはずであり、Adobe はこのフィールドをそう設定することを推奨しています (2 つを合わせた値は <A HREF="fontinfo.html#PS-General"><CODE>[一般]</CODE></A> タブで指定された em サイズと等しくするべきです)。組版上の高さはフォントの高さと同じに設定し、組版上の深さはフォントの深さ (と絶対値が同じ負の値) に設定するべきです。
 <P>
 <!--
 The "[*] Is Offset" checkboxes behave much as they do above, except they
 specify offsets from the font's ascent and descent rather than its bounding
 box. -->
-"[*] オフセットを使用" チェックボックスをセットした時に振舞いが変わる唯一の点は、フォントのバウンディングボックスではなく高さと深さからのオフセットを指定することで、他はだいたい同じです。
+“<CODE>[*] オフセットを使用</CODE>”チェックボックスをセットした時に振舞いが変わる唯一の点は、フォントのバウンディングボックスではなく高さと深さからのオフセットを指定することで、他はだいたい同じです。
 <P>
 <!--
 The Typographic descent should be a negative number, the ascent a positive
@@ -482,14 +484,14 @@ them in the 'hhea' table rather than the 'OS/2'. The HHead Ascent and Descent
 are used to specify clipping (in some applications) and line spacing. They
 behave very much the way the Win Ascent &amp; Descent behave (they are based
 on bounding box values). And the 'hhea' table has its own line gap field. -->
-Mac では同じ概念のために異なるフィールドの組を使用しており、'OS/2' テーブルではなく 'hhea' テーブルにその値を格納しています。hhea テーブルの高さおよび深さは、(いくつかのアプリケーションにおける) クリッピングと、ラインスペーシングを指定するのに用いられます。それらは (バウンディングボックスの値に基づいた) WinAscent と WinDescent と非常によく似た振舞いをします。また、'hhea' テーブルには独自の行間アキフィールドが存在します。
+Mac では同じ概念のために異なるフィールドの組を使用しており、&lsquo;OS/2&rsquo;テーブルではなく&lsquo;hhea&rsquo;テーブルにその値を格納しています。hhea テーブルの高さおよび深さは、(いくつかのアプリケーションにおける) クリッピングと、ラインスペーシングを指定するのに用いられます。それらは (バウンディングボックスの値に基づいた) WinAscent および WinDescent と非常によく似た振舞いをします。また、&lsquo;hhea&rsquo;テーブルには独自の行間アキフィールドが存在します。
 <P>
 <!--
 And if your font has vertical metrics enabled (See
 <A HREF="fontinfo.html#PS-General">General</A> above) you will be able to
 set the default spacing between vertical columns of text. (the equivalent
 to LineGap in vertical text).<BR CLEAR=ALL> -->
-フォントに縦書き用メトリックが含まれている場合 (上の「<A HREF="fontinfo.html#PS-General">一般情報</A>」を参照)、縦書きにおけるデフォルトの行間のアキ量を設定することができます (縦書きテキストにおける LineGap と等価です)。<BR CLEAR=ALL>
+フォントに縦書き用メトリックが含まれている場合 (上の <A HREF="fontinfo.html#PS-General"><CODE>[一般情報</CODE>]</A> を参照)、縦書きにおけるデフォルトの行間のアキ量を設定することができます (縦書きテキストにおける LineGap と等価です)。<BR CLEAR=ALL>
 <H2>
   <IMG SRC="fontinfo-subsup.png" WIDTH="325" HEIGHT="454" ALIGN="Right"><A
       NAME="TTF-SubSuper"><!--OS/2 Sub/Superscripts</A>-->
@@ -507,7 +509,7 @@ box on, then FontForge will generate some reasonable values on output (if
 nothing significant changes, it will use the values shown here). If you want
 control of these values, turn off the checkbox and the text fields will be
 enabled for you to change.<BR Clear=ALL> -->
-ほとんどのフォントでは実際にこれを制御する必要はありません。[*] デフォルト チェックボックスをチェックしたままにしておけば、FontForge は適切な値を出力時に生成します (特に大きな変更が何もなければ、右記の値を使用します)。これらの値を変更したい場合、チェックボックスのチェックを外せば、テキストフィールドが変更可能になります。
+ほとんどのフォントでは実際にこれを制御する必要はありません。<CODE>[*] デフォルト</CODE> チェックボックスをチェックしたままにしておけば、FontForge は適切な値を出力時に生成します (特に大きな変更が何もなければ、右記の値を使用します)。これらの値を変更したい場合、チェックボックスのチェックを外せば、テキストフィールドが変更可能になります。
 <H2>
   <IMG SRC="fontinfo-panose.png" WIDTH="325" HEIGHT="454" ALIGN="Right"><A
       NAME="Panose">Panose</A>
@@ -527,7 +529,7 @@ type docs</A>. Better information is available from
 <!--
 If you leave the [*] Default checkbox set then FontForge will generate reasonable
 values when the font is output, otherwise you may set these values manually. -->
-[*] デフォルト ダイアログのチェックが入ったままにしておくと、FontForge は適切な値を出力します。チェックを外すと、それらの値を手動で設定することができます。
+<CODE>[*] デフォルト</CODE> ダイアログのチェックが入ったままにしておくと、FontForge は適切な値を出力します。チェックを外すと、それらの値を手動で設定することができます。
 <P>
 <!--
 These entries are only meaningful for TrueType, OpenType and SVG
@@ -953,7 +955,7 @@ languages. -->
 +always work. So if your style in American English is "BoldItalic" then after
 +you create the appropriate strngs FontForge will default to "GrasItalique"
 +for French, "FettKursiv" for German,
-ある言語用のスタイル項目を作成すると、FontForge はアメリカ英語のスタイルからその言語に適切な項目に翻訳を行おうと試みます。これは上記の表を理解しますが、他の言語はありませんので常にうまく動くとは限りません。もしアメリカ英語で指定した項目が "BoldItalic" であれば、その後それに相当する文字列を作成したとき、FontForge は、フランス語であれば "GrasItalique"を、ドイツ語であれば "FettKursiv"を、ロシア語であれば "жхрныйсЙвный" を、スペイン語であれば "NigritaCursiva" をデフォルトの文字列として設定します。
+ある言語用のスタイル項目を作成すると、FontForge はアメリカ英語のスタイルからその言語に適切な項目に翻訳を行おうと試みます。これは上記の表を理解しますが、他の言語はありませんので常にうまく動くとは限りません。もしアメリカ英語で指定した項目が“BoldItalic”であれば、その後それに相当する文字列を作成したとき、FontForge は、フランス語であれば“GrasItalique”を、ドイツ語であれば“FettKursiv”を、ロシア語であれば“жхрныйсЙвный”を、スペイン語であれば“NigritaCursiva" をデフォルトの文字列として設定します。
 <P>
 <!--
 These names are only meaningful for TrueType and OpenType fonts. -->
@@ -971,7 +973,7 @@ accessible through the [More Params] button. The default values for the Math
 parameters are probably reasonable. <FONT COLOR="Red"><STRONG>The default
 values for the Math Extension parameters are probably
 unreasonable</STRONG></FONT>.-->
-これを使うと、TeX のフォントパラメータを記述することが可能です (これは METAFONT ブックの付録 F, 98-100 ページに説明があります)。フォントパラメータには 3 つの異なるタイプがあります。テキストフォント用、数学フォント用と数学拡張フォント用です。後の 2 つは [追加パラメータ] ボタンからアクセス可能です。数学パラメータのデフォルト値はおそらく適切だと思います。<FONT COLOR="Red"><STRONG>数学拡張パラメータのデフォルト値はおそらくデタラメだと思います。</STRONG></FONT>
+これを使うと、TeX のフォントパラメータを記述することが可能です (これは METAFONT ブックの付録 F, 98-100 ページに説明があります)。フォントパラメータには 3 つの異なるタイプがあります。テキストフォント用、数学フォント用と数学拡張フォント用です。後の 2 つは <CODE>[追加パラメータ]</CODE> ボタンからアクセス可能です。数学パラメータのデフォルト値はおそらく適切だと思います。<FONT COLOR="Red"><STRONG>数学拡張パラメータのデフォルト値はおそらくデタラメだと思います。</STRONG></FONT>
 <P>
 <!--
 These values are stored in tfm files (should you generate a tfm file with
@@ -1037,7 +1039,7 @@ Style Name. Note that font names are now something like
 complication, as far as s/he is concerned there is just a font called
 "Ambrosia-Regular" and all four of the above fonts are just instances of
 it. So the Style Name of all four fonts above should be "Regular"<BR Clear=All> -->
-上の例では、すべての異なるフォントが同じ "スタイル ID" という数値をもっています。この数値は任意の値を撮り、その ID をもつすべてのフォントを結びつけます (つまり、すべてのフォントが同じファミリーに属するようになります)。ただし、Ambrosia-Italic-Text はこれらと異なるスタイル ID をもつでしょう。同じスタイル ID をもつすべてのフォントは同じスタイル名をもつはずです。ここで、フォント名は例えば "Ambrosia-Regular-Heading" というような物ですが、ユーザはこんな複雑な名前に悩まされるべきではありません。ユーザの立場からは "Ambrosia-Regular" という 1 個のフォントがあるだけで、上の 4 つのフォントはどれもその具体例でしかありません。ですから、4 つのフォントのスタイル名はすべて "Regular" にすべきです <BR Clear=All>
+上の例では、すべての異なるフォントが同じ "スタイル ID" という数値をもっています。この数値は任意の値を撮り、その ID をもつすべてのフォントを結びつけます (つまり、すべてのフォントが同じファミリーに属するようになります)。ただし、Ambrosia-Italic-Text はこれらと異なるスタイル ID をもつでしょう。同じスタイル ID をもつすべてのフォントは同じスタイル名をもつはずです。ここで、フォント名は例えば“Ambrosia-Regular-Heading”というような物ですが、ユーザはこんな複雑な名前に悩まされるべきではありません。ユーザの立場からは“Ambrosia-Regular”という 1 個のフォントがあるだけで、上の 4 つのフォントはどれもその具体例でしかありません。ですから、4 つのフォントのスタイル名はすべて“Regular”にすべきです <BR Clear=All>
 <H2>
   <IMG SRC="fontinfo-comment.png" WIDTH="325" HEIGHT="320" ALIGN="Right"><!--<A
       NAME="Comment">Comment</A>-->
@@ -1048,7 +1050,7 @@ it. So the Style Name of all four fonts above should be "Regular"<BR Clear=All> 
 This allows you to keep track of arbitrary comments inside your font database.
 It does not correspond to any postscript or truetype entity. It is intended
 to store a changelog for the font itself, but could be used for other purposes... -->
-ここには作成したフォンとデータベースの任意のコメントを保存しておくことができます。対応する項目は PostScript フォントや TrueType には一切存在しません。フォントそれ自体の変更履歴をここに格納することを意図していますが、その他の目的にも使用することができます。
+ここには作成したフォントデータベースの任意のコメントを保存しておくことができます。対応する項目は PostScript フォントや TrueType には一切存在しません。フォントそれ自体の変更履歴をここに格納することを意図していますが、その他の目的にも使用することができます。
 <P>
 <!--
 Various font formats allow a random comment to be place in the font, but
@@ -1073,7 +1075,7 @@ to specify which marks should be considered in forming this ligature and
 which should be ignored.-->
 <IMG SRC="../fontinfo-markclasses.png" WIDTH="376" HEIGHT="636" ALIGN="Right"
     ALT="フォント情報のマーククラス">フォント内に含まれる各種のマークはクラス分けを行うことができます。私の知る限り、これが実際に使用されている例としては、インド系文字の再配置といくつかの文字をスキップして構成される合字を使用可能にするという用途があるだけです。
-各マーククラスには名前をつける必要があり、つけた名前は<A HREF="charinfo.html">エレメント(L)→グリフ情報(I)</A>→[合字]→[新規] ダイアログで、その合字の構築時にどのマークが認識され、どれが無視されるかを指定するのに用いることができます。
+各マーククラスには名前をつける必要があり、つけた名前は<A HREF="charinfo.html"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>グリフ情報(<U>I</U>)...</CODE></A>→<CODE>[合字]</CODE>→<CODE>[新規(<U>N</U>)]</CODE> ダイアログで、その合字の構築時にどのマークが認識され、どれが無視されるかを指定するのに用いることができます。
 <P>
 <!--
 From here you may add new classes, or edit old ones. -->
@@ -1097,7 +1099,7 @@ This sub-dialog allows you to control the
 classes need a name and a tag. Generally you want to use the default tag
 of 'mark' (but see the discussion in the
 <A HREF="overview.html#Anchors">overview</A> of when you might not). -->
-このサブダイアログでは、フォント内で使用されている <A HREF="overview.html#Anchors">アンカークラス</A> を制御することができます。アンカークラスは名前とタグを必要とします。一般的にはデフォルトのタグ 'mark' を使いたいと思うでしょう (どういう場合にそうすべきではないかについては、「<A HREF="overview.html#Anchors">概要</A>」の議論を参照してください。
+このサブダイアログでは、フォント内で使用されている <A HREF="overview.html#Anchors">アンカークラス</A> を制御することができます。アンカークラスは名前とタグを必要とします。一般的にはデフォルトのタグ&lsquo;mark&rsquo;を使いたいと思うでしょう (どういう場合にそうすべきではないかについては、「<A HREF="overview.html#Anchors">概要</A>」の議論を参照してください。
 <P>
 <!--
 From here you may add new classes, delete old ones or rename old ones. You
@@ -1140,13 +1142,13 @@ non-overlapping marks An example: there could be two types of marks that
 attach to the same set of letters, one attaching below and one above the
 letter, each would have its own anchor class, but you would tell FontForge
 to associate the two together by having them "Merge With" each other. -->
-OpenType フォントでは一般に、いくつかのアンカークラスがほぼ同じ基底グリフのセットを参照していて、それらの含むマークが重なり合わないときは、それらは 1 個の単位として扱われます。例としては: 同じグリフのセットに接続する 2 つのタイプのマークがあり、片方はグリフの下につき、もう片方は上につくとしましょう。しかし、その場合は両方のクラスにお互いに "まとめ先:" を指定することによって、FontForge に 2 つを連係させるべきでしょう。
+OpenType フォントでは一般に、いくつかのアンカークラスがほぼ同じ基底グリフのセットを参照していて、それらの含むマークが重なり合わないときは、それらは 1 個の単位として扱われます。例としては: 同じグリフのセットに接続する 2 つのタイプのマークがあり、片方はグリフの下につき、もう片方は上につくとしましょう。しかし、その場合は両方のクラスにお互いに“まとめ先:”を指定することによって、FontForge に 2 つを連係させるべきでしょう。
 <P>
 <!--
 FontForge recognizes a special feature tag ' RQD' to indicate that this feature
 is required for the given script/language. Such a feature will always be
 applied. -->
-FontForge は、この機能がある用字系/言語において必須であることを示すときに、特別な機能タグ ' RQD' を使用します。このような機能は常に適用されます。
+FontForge は、この機能がある用字系/言語において必須であることを示すときに、特別な機能タグ&lsquo; RQD&rsquo;を使用します。このような機能は常に適用されます。
 <P>
 <!--
 Anchor classes are only meaningful when generating a truetype (ttf or otf)
@@ -1174,13 +1176,13 @@ This dialog allows you to create a new contextual feature by pressing the
 the standard tag, script&amp;language combination, and flags, then (in a
 <A HREF="contextchain.html">separate dialog</A>) you will be prompted for
 the contents of the feature. -->
-このダイアログでは、[新規(N)] ボタンを押せば新しい文脈依存機能を作成することができます。この操作は 2 段階に分かれていて、最初は標準タグ、スクリプトと言語の組合せ、それとフラグを指定するように要求されます。次の段階では (<A HREF="contextchain.html">独立したダイアログで)</A>) その機能の内容を入力するように要求されます。
+このダイアログでは、<CODE>[新規(<U>N</U>)]</CODE> ボタンを押せば新しい文脈依存機能を作成することができます。この操作は 2 段階に分かれていて、最初は標準タグ、スクリプトと言語の組合せ、それとフラグを指定するように要求されます。次の段階では (<A HREF="contextchain.html">独立したダイアログで)</A>) その機能の内容を入力するように要求されます。
 <P>
 <!--
 The [Edit] button will allow you to change the tags, script and flags (it
 corresponds to the first part of [New]) and the [Edit Data] button allows
 you to change the contents of the feature. -->
-[編集(E)] ボタンを使うとタグ、スクリプトおよびフラグを変更することができ (これは [新規(N)] の最初の部分に対応しています)、[データを編集...] ボタンで機能の中身を変更することができます。
+<CODE>[編集(<U>E</U>)]</CODE> ボタンを使うとタグ、スクリプトおよびフラグを変更することができ (これは <CODE>[新規(<U>N</U>)]</CODE> の最初の部分に対応しています)、<CODE>[データを編集...]</CODE> ボタンで機能の中身を変更することができます。
 <P>
 <!--
 Contextual/chaining tables are only meaningful when generating a truetype
@@ -1206,11 +1208,11 @@ If you are happy with the default, just leave the Automatic button checked,
 if you wish to override check the button next to the list box. You may select
 any combination of styles (remember to hold down the control key to get multiple
 selections) except for one containing both "Condense" and "Expand". -->
-デフォルトの結果に満足している場合、自動 ボタンにチェックが入ったままにしておいてください。変更したい場合はリストボックスの隣のボタンにチェックを入れてください。"Condense" と "Expand" を同時に選べないことを除いては、好きなようにスタイルを組み合せて選ぶことができます (複数項目を選択する時には Control キーを押すことを忘れないでください)。
+デフォルトの結果に満足している場合、自動 ボタンにチェックが入ったままにしておいてください。変更したい場合はリストボックスの隣のボタンにチェックを入れてください。<CODE>字幅の縮小</CODE> と <CODE>字幅の拡大</CODE> を同時に選べないことを除いては、好きなようにスタイルを組み合せて選ぶことができます (複数項目を選択する時には Control キーを押すことを忘れないでください)。
 <P>
 <!--
 Note: If you want the style to be "Regular" then leave all styles unselected. -->
-注意: スタイルを "Regular" に設定したい場合は、すべてのスタイルを選択しない状態のままにしておきます。
+注意: スタイルを“Regular”に設定したい場合は、すべてのスタイルを選択しない状態のままにしておきます。
 <P>
 <!--
 The mac style is stored in the header of an sfnt (truetype or opentype font
@@ -1277,4 +1279,5 @@ See Also:-->
 <P ALIGN=Center>
 -- <A HREF="elementmenu.html">前</A> -- <A HREF="overview.html">目次</A>
 -- <A HREF="elementmenu.html">次</A> --
+</DIV>
 </BODY></HTML>

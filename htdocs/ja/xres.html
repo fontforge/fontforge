@@ -3,12 +3,14 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 21-Jan-2001 -->
   <!-- AP: Last modified: 3-Dec-2004 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>X Resources</TITLE>-->
     <TITLE>X リソース</TITLE>
   <LINK REL="icon" href="../ffanvil16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
+<DIV id="in">
 <H1 ALIGN=Center>
 <!--X Resources-->
     X リソース
@@ -23,7 +25,7 @@ it's all different. Sorry (a little anyway). -->
 <!--
 To use an X resource add a series of lines to your .Xdefaults file and then
 run "$ xrdb ~/.Xdefaults". For example: -->
-X リソースを使用するには、.Xdefaults ファイルにリソースを記述する行を書き並べてから、"$ xrdb ~/.Xdefaults" を実行します。例えば:
+X リソースを使用するには、.Xdefaults ファイルにリソースを記述する行を書き並べてから、“$ <CODE>xrdb ~/.Xdefaults</CODE>”を実行します。例えば:
 <BLOCKQUOTE>
   <PRE>Gdraw.ScreenWidthInches: 14.7
 Gdraw.GGadget.Popup.Font: 10pt helvetica
@@ -35,7 +37,7 @@ fontforge.FontView.FontFamily: Helvetica, GillSans
 <!--
 If a resource begins with "<CODE>Gdraw.</CODE>" or "<CODE>fontforge.</CODE>"
 then the program will look at it. -->
-リソースが "<CODE>Gdraw.</CODE>" または "<CODE>fontforge.</CODE>" で始まるときは、このプログラムはその内容を調べます。
+リソースが“<CODE>Gdraw.</CODE>”または“<CODE>fontforge.</CODE>”で始まるときは、このプログラムはその内容を調べます。
 <DL>
   <DT>
     <CODE>fontforge.FontView.FontFamily</CODE>
@@ -163,7 +165,7 @@ then the program will look at it. -->
   <DD>
 <!--Sets the color used to draw the advance width once it has been grid fit (if
     <CODE>View-&gt;Show Grid Fit</CODE> is on) -->
-    送り幅に対していちどグリッド合わせを行った後の線を表示するのに用いる色を設定します (<CODE>表示(V)→グリッド合わせを表示(W)</CODE> または が有効な場合)
+    送り幅に対していちどグリッド合わせを行った後の線を表示するのに用いる色を設定します (<CODE>表示(<U>V</U>)</CODE>→<CODE>グリッド合わせを表示(<U>W</U>)</CODE> が有効な場合)
   <DT>
     <CODE>fontforge.CharView.LigatureCaretColor</CODE>
   <DD>
@@ -174,25 +176,25 @@ then the program will look at it. -->
   <DD>
 <!--Sets the color used to draw the pixels of a rasterized bitmap (if
     <CODE>View-&gt;Show Grid Fit</CODE> or <CODE>Hints-&gt;Debug</CODE> is on) -->
-    ラスタライズしたビットマップの各ピクセルを表示するのに用いる色を設定します (<CODE>表示(V)→グリッド合わせを表示(W)</CODE> または <CODE>ヒント(H)→デバッグ(D)</CODE> が有効な場合)
+    ラスタライズしたビットマップの各ピクセルを表示するのに用いる色を設定します (<CODE>表示(<U>V</U>)</CODE>→<CODE>グリッド合わせを表示(<U>W</U>)</CODE> または <CODE>ヒント(<U>H</U>)</CODE>→<CODE>デバッグ(<U>D</U>)</CODE> が有効な場合)
   <DT>
     <CODE>fontforge.CharView.RasterNewColor</CODE>
   <DD>
 <!--Sets the color used to draw the pixels of a rasterized bitmap if they have
     recently been turned on (if <CODE>Hints-&gt;Debug</CODE> is on) -->
-    ラスタライズしたビットマップのうち、新しく塗りつぶされた各ピクセルを表示するのに用いる色を設定します (<CODE>ヒント(H)→デバッグ(D)</CODE> が有効な場合)
+    ラスタライズしたビットマップのうち、新しく塗りつぶされた各ピクセルを表示するのに用いる色を設定します (<CODE>ヒント(<U>H</U>)</CODE>→<CODE>デバッグ(<U>D</U>)</CODE> が有効な場合)
   <DT>
     <CODE>fontforge.CharView.RasterOldColor</CODE>
   <DD>
 <!--Sets the color used to draw the pixels of a rasterized bitmap f they have
     recently been turned off (if <CODE>Hints-&gt;Debug</CODE> is on) -->
-    ラスタライズしたビットマップのうち、塗りつぶさないように変更された各ピクセルを表示するのに用いる色を設定します (<CODE>ヒント(H)→デバッグ(D)</CODE> が有効な場合)
+    ラスタライズしたビットマップのうち、塗りつぶさないように変更された各ピクセルを表示するのに用いる色を設定します (<CODE>ヒント(<U>H</U>)</CODE>→<CODE>デバッグ(<U>D</U>)</CODE> が有効な場合)
   <DT>
     <CODE>fontforge.CharView.RasterGridColor</CODE>
   <DD>
 <!--Sets the color used to draw the pixel grid used by the rasterizer (if
     <CODE>View-&gt;Show Grid Fit</CODE> is on)-->
-    ピクセルのグリッドを表示するのに用いる色を設定します (<CODE>表示(V)→グリッド合わせを表示(W)</CODE> または <CODE>ヒント(H)→デバッグ(D)</CODE> が有効な場合)
+    ピクセルのグリッドを表示するのに用いる色を設定します (<CODE>表示(<U>V</U>)</CODE>→<CODE>グリッド合わせを表示(<U>W</U>)</CODE> または <CODE>ヒント(<U>H</U>)</CODE>→<CODE>デバッグ(<U>D</U>)</CODE> が有効な場合)
   <DT>
     <CODE>fontforge.CharView.ItalicCoordColor</CODE>
   <DD>
@@ -249,13 +251,13 @@ then the program will look at it. -->
   <DD>
 <!--Sets the color used to draw a horizontal stem hint when it is active in the
     review hints dlg. -->
-    水平ステムヒントが <CODE>ヒントを確認(R)</CODE> ダイアログで有効になっているときに、そのヒントを表示するのに用いる色を設定します。
+    水平ステムヒントが <CODE>ヒントを確認(<U>R</U>)</CODE> ダイアログで有効になっているときに、そのヒントを表示するのに用いる色を設定します。
   <DT>
     <CODE>fontforge.CharView.VHintActiveColor</CODE>
   <DD>
 <!--Sets the color used to draw a vertical stem hint when it is active in the
     review hints dlg.-->
-    垂直ステムヒントが <CODE>ヒントを確認(R)</CODE> ダイアログで有効になっているときに、そのヒントを表示するのに用いる色を設定します。
+    垂直ステムヒントが <CODE>ヒントを確認(<U>R</U>)</CODE> ダイアログで有効になっているときに、そのヒントを表示するのに用いる色を設定します。
   <DT>
     <CODE>fontforge.CharView.HFlexHintColor</CODE>
   <DD>
@@ -375,8 +377,7 @@ then the program will look at it. -->
     "DirectColor")<BR>
     FontForge will search for a visual with the given class (and possibly depth
     if the depth argument is specified too).-->
-    文字列 ("StaticGray", "GrayScale", "StaticColor", "PsuedoColor", "TrueColor",
-    "DirectColor" のどれか) です。<BR>
+    文字列 (“StaticGray”,“GrayScale”,“StaticColor”,“PsuedoColor”,“TrueColor”,“DirectColor”のどれか) です。<BR>
     FontForge は指定されたクラスに属するビジュアルを検索します (Depth 引数も指定されている場合は、色深度も一致するものを検索します)。
   <DT>
     <CODE>Gdraw.<A NAME="Colormap">Colormap</A></CODE>
@@ -384,7 +385,7 @@ then the program will look at it. -->
 <!--An string ("Current", "Copy", "Private")<BR>
     You can use this to control what FontForge does about the colormap on an
     8bit screen-->
-    文字列 ("Current", "Copy", "Private" のどれか) です。<BR>
+    文字列 (“Current”,“Copy”,“Private" のどれか) です。<BR>
     8 ビットスクリーン上で FontForge がカラーマップをどう扱うかをこの値で設定することができます。
     <UL>
       <LI>
@@ -546,14 +547,14 @@ then the program will look at it. -->
       <DD>
 <!--	one of "none", "box", "raised", "lowered", "engraved", "embossed", "double"<BR>
 	For a description of these see the css manual.-->
-	"none", "box", "raised", "lowered", "engraved", "embossed", "double" のどれかです。<BR>
+	“none”,“box”,“raised”,“lowered”,“engraved”,“embossed”,“double”のどれかです。<BR>
 	これらの説明については、CSS のマニュアルを参照してください。
       <DT>
 	<CODE>...Box.BorderShape</CODE>
       <DD>
 <!--	one of "rect", "roundrect", "ellipse", "diamond"<BR>
 	Describes the basic shape of the box. (some ggadgets must be in rectangles). -->
-	"rect", "roundrect", "ellipse", "diamond" のどれかです。<BR>
+	“rect”,“roundrect”,“ellipse”,“diamond”のどれかです。<BR>
 	ボックスの基本的な形を記述します (ある種の ggadete は長方形でなければなりません)。
       <DT>
 	<CODE>...Box.BorderWidth</CODE>
@@ -565,8 +566,8 @@ then the program will look at it. -->
       <DT>
 	<CODE>...Box.Padding</CODE>
       <DD>
-	An integer (points)<BR>
-	Specifies the padding between the interior of the box and the border
+<!--	An integer (points)<BR>
+	Specifies the padding between the interior of the box and the border -->
 	1 個の整数 (ポイント単位)。<BR>
 	ボックスの内側と境界線との間のパディングを指定します。
       <DT>
@@ -575,7 +576,7 @@ then the program will look at it. -->
 <!--	An integer (points)<BR>
 	Specifies the radius of a roundrect. Ignored for everything else. -->
 	1 個の整数 (ポイント単位)。<BR>
-	"roundrect" 指定時の角の半径を指定します。その他の場合は無視されます。
+	“roundrect”指定時の角の半径を指定します。その他の場合は無視されます。
       <DT>
 	<CODE>...Box.BorderInner</CODE>
       <DD>
@@ -822,7 +823,7 @@ then the program will look at it. -->
 	    指定なし -- デフォルトのポイントサイズが選ばれます。
 	  <LI>
 <!--	    a number followed by "pt" -- specifies the point size. -->
-	    数値の後に "pt"  -- ポイントサイズを指定します。
+	    数値の後に“pt”-- ポイントサイズを指定します。
 	</UL>
     </UL>
     <P>
@@ -860,7 +861,7 @@ compiled. But with X this may not always be appropriate. So the
 "<A HREF="xres.html#Keyboard">Gdraw.Keyboard</A>" resource above may be used
 to change this. (Currently this setting only control the labels that appear
 in menus for the hotkeys). -->
-今日のほとんどすべてのキーボードには、必要な修飾キーがありますが、どのキーが使用されるかはキーボードと OS に依存します (例えば、XDarwin と Suse Linux は、Mac キーボードで極めて異なる修飾キーを使っています)。通常は、これはメニュー (とニモニック) でしか意味をもちません。FontForge はコンパイルされた環境からキーボードを推測します。しかし、X ではこれは常に適切なわけではありません。そのために上で説明した "<A HREF="xres.html#Keyboard">Gdraw.Keyboard</A>" リソースを使ってそれを変更できるようになっています (現在のところ、この設定はメニュー内のホットキー表示のラベルを制御するに留まっています)。
+今日のほとんどすべてのキーボードには、必要な修飾キーがありますが、どのキーが使用されるかはキーボードと OS に依存します (例えば、XDarwin と Suse Linux は、Mac キーボードで極めて異なる修飾キーを使っています)。通常は、これはメニュー (とニモニック) でしか意味をもちません。FontForge はコンパイルされた環境からキーボードを推測します。しかし、X ではこれは常に適切なわけではありません。そのために上で説明した“<A HREF="xres.html#Keyboard"><CODE>Gdraw.Keyboard</CODE></A>”リソースを使ってそれを変更できるようになっています (現在のところ、この設定はメニュー内のホットキー表示のラベルを制御するに留まっています)。
 <P>
 <!--
 Mice are more problematic. On PCs we usually have two button mice and on
@@ -877,4 +878,5 @@ Mac では 3 ボタンマウスをシミュレートするよい方法が見つかりません……。
 <P ALIGN=Center>
 -- <A HREF="errrecovery.html">前</A> -- <A HREF="overview.html">目次</A>
 -- <A HREF="cliargs.html">次</A> --
+</DIV>
 </BODY></HTML>

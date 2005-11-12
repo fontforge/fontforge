@@ -3,12 +3,14 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-May-2001 -->
   <!-- AP: Last modified: 10-Oct-2004 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Printing</TITLE>-->
     <TITLE>印刷</TITLE>
   <LINK REL="icon" href="../ffanvil16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
+<DIV id="in">
 <H1 ALIGN=Center>
 <!--Printing-->
     印刷
@@ -52,19 +54,19 @@ Full Page Character and Multi Size Character buttons will print any selected
 characters in the font view, the current character in the outline view, and
 any characters displayed in the metrics view - - they will be greyed out if
 no characters are selected in the font view).-->
-右に表示されているのは [印刷] ダイアログです。上の 4 つの選択肢に対応するラジオボタンがあります ([ページいっぱいに文字を印刷] ボタンと [サイズを変えて文字を印刷] ボタンは、フォントビュー内で選択中のすべての文字とアウトラインビュー内の現在の文字、メトリックビューで表示中のすべての文字を印刷します――フォントビューで文字を選択していないときはこれらは選択できないように灰色表示になっています)。
+右に表示されているのは <CODE>[印刷]</CODE> ダイアログです。上の 4 つの選択肢に対応するラジオボタンがあります (<CODE>[ページいっぱいに文字を印刷]</CODE> ボタンと <CODE>[サイズを変えて文字を印刷]</CODE> ボタンは、フォントビュー内で選択中のすべての文字とアウトラインビュー内の現在の文字、メトリックビューで表示中のすべての文字を印刷します――フォントビューで文字を選択していないときはこれらは選択できないように灰色表示になっています)。
 <P>
 <!--
 The PointSize field applies to the Full Font Display and the Sample Text
 methods. For Sample Text you may enter several different pointsizes (separated
 by commas) to print the sample at different pointsizes. -->
-ポイントサイズ(P) フィールドは、フォント内の全文字を印刷(F) と サンプルテキスト の 2 つの方式のときに使用されます。サンプルテキスト印刷では、いくつかの異なるテキストサイズを (カンマで区切って) 入力して、サンプルを複数のポイントサイズで印刷することができます。
+<CODE>ポイントサイズ(<U>P</U>)</CODE> フィールドは、<CODE>フォント内の全文字を印刷(<U>F</U>)</CODE> と <CODE>サンプルテキスト</CODE> の 2 つの方式のときに使用されます。サンプルテキスト印刷では、いくつかの異なるテキストサイズを (カンマで区切って) 入力して、サンプルを複数のポイントサイズで印刷することができます。
 <P>
 <!--
 The Sample Text is fairly self-explanatory. The default sample text is geared
 to your font, if your font does not contain (for instance) greek characters,
 then the greek will not appear. Of course you may change it however you wish... -->
-「サンプルテキスト」というのは全くその名の通りです。デフォルトのサンプルテキストは印刷するフォントに合わせて表示されます。(例えば) フォントにギリシャ文字が含まれないときにはギリシャ語は現れません。もちろん、どうしても印刷したいならテキストを変更することはできますが……。
+「<CODE>サンプルテキスト</CODE>」は全くその名の通りの仕事をします。デフォルトのサンプルテキストは印刷するフォントに合わせて表示されます。(例えば) フォントにギリシャ文字が含まれないときにはギリシャ語は現れません。もちろん、どうしても印刷したいならテキストを変更することはできますが……。
 <P>
 <!--
 You may also save the sample text to a file by typing ^S within the textarea.
@@ -88,7 +90,7 @@ command must expect to find a postscript file on its standard input, if the
 command needs any arguments (a common example might be the "-" used by many
 commands to make them read standard input) they should be placed in the text
 field with the command name. -->
-結果を lp または lpr にキューするか、ghostview で直接表示するか、単純にファイルに出力するかを選ぶことができます。ファイルフォーマットは PostScript か PDF のどちらかを選ぶことができます (ファイルに送る場合、(ページ設定ダイアログではなく) 印刷ダイアログで [OK] を押した後でファイル名の入力を求められます。また、あなたが選んだ任意のコマンドに印刷結果を送ることもできます (「その他(O)」オプション)。このコマンドは標準入力から PostScript ファイルを見つけることを予期して作られたものでなければならず、もし、コマンドが何らかの引数を必要とするのであれば (ありふれた例としては、多くのコマンドが標準入力を読む指定のために "-" を使うというものを挙げられるでしょう)、それらもコマンド名と一緒にテキストフィールドに入力する必要があります。
+結果を lp または lpr にキューするか、ghostview で直接表示するか、単純にファイルに出力するかを選ぶことができます。ファイルフォーマットは PostScript か PDF のどちらかを選ぶことができます (ファイルに送る場合、(ページ設定ダイアログではなく) 印刷ダイアログで <CODE>[<U>O</U>K]</CODE> を押した後でファイル名の入力を求められます。また、あなたが選んだ任意のコマンドに印刷結果を送ることもできます (<CODE>[その他(<U>O</U>)]</CODE>オプション)。このコマンドは標準入力から PostScript ファイルを見つけることを予期して作られたものでなければならず、もし、コマンドが何らかの引数を必要とするのであれば (ありふれた例としては、多くのコマンドが標準入力を読む指定のために“-”を使うというものを挙げられるでしょう)、それらもコマンド名と一緒にテキストフィールドに入力する必要があります。
 <P>
 <!--
 FontForge knows about certain standard sizes of paper. If you want to use
@@ -99,12 +101,12 @@ FontForge はいくつかの用紙の標準サイズを知っています。リストにないサイズの用紙を
 FontForge will read your printcap file to get a list of printers. It also
 adds one magic entry "&lt;default&gt;" if you select this (or if you leave
 the printer blank) then lp or lpr will chose their default printer. -->
-FontForge は、プリンタのリストを得るためにシステム上の printcap ファイルを読み込みます。また、それに加えて特殊な項目が 1 個あり、"&lt;default;gt;" という項目を選ぶと (またはプリンタ欄を空白のままにしておくと) lp や lpr はデフォルトのプリンタを選択します。
+FontForge は、プリンタのリストを得るためにシステム上の printcap ファイルを読み込みます。また、それに加えて特殊な項目が 1 個あり、“&lt;default;gt;”という項目を選ぶと (またはプリンタ欄を空白のままにしておくと) lp や lpr はデフォルトのプリンタを選択します。
 <P>
 <!--
 The Printer and Copies arguments are not meaningful when using ghostview
 or printing to a file.  -->
-プリンタ(P) と 部数(C) 引数は、ghostview やファイルへの出力を選択したときは効果がありません。
+<CODE>プリンタ(<U>P</U>)</CODE> と <CODE>部数(<U>C</U>)</CODE> 引数は、ghostview やファイルへの出力を選択したときは効果がありません。
   <HR Clear=ALL>
 <P Clear=ALL>
 <!--
@@ -118,6 +120,7 @@ a copy. Copyright free, of cource, Preferably in a unicode encoding... -->
 <A HREF="quotations.html">サンプルの元ネタ</A>...
 <P>
 <P ALIGN=Center>
--- <A HREF="filemenu.html">ファイル(F) メニュー</A> -- <A HREF="overview.html">目次</A>
+-- <A HREF="filemenu.html"><CODE>ファイル(<U>F</U>)</CODE> メニュー</A> -- <A HREF="overview.html">目次</A>
 --
+</DIV>
 </BODY></HTML>

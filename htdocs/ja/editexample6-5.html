@@ -3,12 +3,14 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 21-Mar-2005 -->
   <!-- AP: Last modified: 22-Mar-2005 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Contextual features</TITLE>-->
     <TITLE>文脈依存の機能</TITLE>
   <LINK REL="icon" href="../ffanvil16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
+<DIV id="in">
 <H1 ALIGN=Center>
 <!--Tutorial #7-->
     チュートリアル (その 7)
@@ -103,7 +105,7 @@ other letters join near the baseline. Thus we need two variants for each
 glyph, one that joins (on the left) at the baseline (the default variant)
 and one which joins at the x-height. Let us call this second set of letters
 the ``high'' letters and name them ``a.high,'' ``b.high'' and so forth. -->
-インド系文字やアラビア文字の例を取り上げる代わりに、私がより慣れ親しんでいるものを例に取り上げることにしましょう。"b", "o", "v" と "w" は次の文字と x ハイトのあたりで接続し、その他の文字はすべてベースラインのそばで接続するようなラテン文字の筆記体フォントを組版する問題を考えてみます。この場合、各グリフにつき、ベースラインのあたり (の左側) に接続線があるデフォルトの字形と、x ハイトのところに接続線がある別字形との 2 種類の異字形が必要となります。この 2 番目のセットを "高い" 文字と呼び、それらの名前を "a.high", "b.high" … といった具合につけることにしましょう。
+インド系文字やアラビア文字の例を取り上げる代わりに、私がより慣れ親しんでいるものを例に取り上げることにしましょう。“b”,“o”,“v”と“w”は次の文字と x ハイトのあたりで接続し、その他の文字はすべてベースラインのそばで接続するようなラテン文字の筆記体フォントを組版する問題を考えてみます。この場合、各グリフにつき、ベースラインのあたり (の左側) に接続線があるデフォルトの字形と、x ハイトのところに接続線がある別字形との 2 種類の異字形が必要となります。この 2 番目のセットを“高い”文字と呼び、それらの名前を“a.high”,“b.high”… といった具合につけることにしましょう。
 <H3>
 <!--<A NAME="OpenType">OpenType</A> Example -->
     <A NAME="OpenType">OpenType</A> の例
@@ -116,7 +118,7 @@ the first will match a glyph in the ``bovw'' class followed by a glyph in
 the ``bovw'' class, while the second will match a glyph in the ``bovw'' class
 followed by any other letter. If either of these matches the second glyph
 should be transformed into its high variant. -->
-可能なグリフを 3 つのクラスに分けます: "bovw" の 4 文字、それ以外のすべての英字、そして英字以外のすべてのグリフです。2 つのパターンを作成する必要があります。第 1 のパターンは "bovw" クラスに含まれるグリフの後に "bovw" クラスのグリフが続く場合で、第 2 のパターンは "bovw" クラスの後にそれ以外の英字が続く場合です。これらのどちらかが一致するときには、2 番目のグリフを "高い" 異字形に変換する必要があります。
+可能なグリフを 3 つのクラスに分けます:“bovw”の 4 文字、それ以外のすべての英字、そして英字以外のすべてのグリフです。2 つのパターンを作成する必要があります。第 1 のパターンは“bovw”クラスに含まれるグリフの後に“bovw”クラスのグリフが続く場合で、第 2 のパターンは“bovw”クラスの後にそれ以外の英字が続く場合です。これらのどちらかが一致するときには、2 番目のグリフを“高い”異字形に変換する必要があります。
 <P>
 <!--
 The first thing we must do is create a simple substitution mapping each low
@@ -125,20 +127,20 @@ OpenType tag ``high.'' To define the substitution we use
 <A HREF="charinfo.html#substitution">Element -&gt; Glyph Info </A>as before
 except that here we use the special ``script / language'' called ``- - - Nested
 - - -'' (an option in the pulldown menu). -->
-まず最初に、各 "低い" 文字に、"高い" 異字形を対応づける単純置換を作成する必要があります。この置換を、"high" という 4 文字の OpenType タグで呼ぶことにしましょう。置換を定義するには、<A HREF="charinfo.html#substitution">エレメント(L)→グリフ情報(I)</A>を先ほどと同じように使用しますが、"用字系/言語" の組合せとして "― 入れ子 ―" という特殊な値を使用します (プルダウンメニューの選択肢の 1 つとして存在します)。
+まず最初に、各“低い”文字に、"高い”異字形を対応づける単純置換を作成する必要があります。この置換を、“high”という 4 文字の OpenType タグで呼ぶことにしましょう。置換を定義するには、<A HREF="charinfo.html#substitution"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>グリフ情報(<U>I</U>)...</CODE></A>を先ほどと同じように使用しますが、“<CODE>用字系/言語</CODE>”の組合せとして“<CODE>― 入れ子 ―</CODE>”という特殊な値を使用します (プルダウンメニューの選択肢の 1 つとして存在します)。
 <P>
 <IMG SRC="../ott1.png" WIDTH="261" HEIGHT="328" ALIGN="Right"><!--The tricky part
 is defining the context. This is done with the Contextual tab in the
 <A HREF="fontinfo.html#Contextual">Element -&gt; Font Info</A> dialog, revealing
 five different types of contextual behavior, we are interested in contextual
 chaining substitutions. -->
-注意を要する部分は、文脈定義のやりかたです。これは、<A HREF="fontinfo.html#Contextual">エレメント(L)→フォント情報(F)</A> ダイアログの [文脈依存] タブで行います。このダイアログでは 5 種類の文脈依存のふるまいが定義されていますが、今回の例で関係するのは、その中の [文脈依存連鎖依存の置換] です。
+注意を要する部分は、文脈定義のやりかたです。これは、<A HREF="fontinfo.html#Contextual"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE></A> ダイアログの <CODE>[文脈依存]</CODE> タブで行います。このダイアログでは 5 種類の文脈依存のふるまいが定義されていますが、今回の例で関係するのは、その中の <CODE>[文脈依存連鎖依存の置換]</CODE> です。
 <P>
 <!--
 You can add a new entry by pressing the [New] button. This brings up a series
 of dialogs, the first requests a four character OpenType tag and a script
 / language (much as we <A HREF="charinfo.html#Feature-Tag">saw earlier</A>). -->
-新しい項目を追加するときは [新規(N)] ボタンを押します。これにより、一連のダイアログを呼び出すことができます。最初のダイアログでは 4 文字の OpenType タグと用字系/言語の組合せ (<A HREF="charinfo.html#Feature-Tag">先ほどお見せした</A>とおりですが) を入力するように要求します。
+新しい項目を追加するときは <CODE>[新規(<U>N</U>)]</CODE> ボタンを押します。これにより、一連のダイアログを呼び出すことができます。最初のダイアログでは 4 文字の OpenType タグと用字系/言語の組合せ (<A HREF="charinfo.html#Feature-Tag">先ほどお見せした</A>とおりですが) を入力するように要求します。
 <P>
 <!--
 In this example we are using 'calt'. That seems an apropriate tag, until
@@ -149,7 +151,7 @@ It is frustrating that OpenType provides the capabilities needed to do wonderous
 things, and then to find that
 <A HREF="http://www.microsoft.com/typography/OpenType%20Dev/standard/shaping.mspx">MicroSoft</A>
 doesn't let that happen in Latin. -->
-この例では、我々は 'calt' を使います。これは適切なタグに見えますが、これがラテン文字では実装されていないことに気づくまでの話です。実際、ラテン文字で実装されている適切な機能は存在しないようです。この例でフォントを出力することはでき、それは構文的には正しいのですが、まったく何の効果もありません。素晴らしいことを行うのに必要な能力を OpenType が提供しているのに、<A HREF="http://www.microsoft.com/typography/OpenType%20Dev/standard/shaping.mspx">Microsoft</A> がラテン文字ではそれを使わせないということを知ると不満が溜まります。
+この例では、我々は&lsquo;calt&rsquo;を使います。これは適切なタグに見えますが、これがラテン文字では実装されていないことに気づくまでの話です。実際、ラテン文字で実装されている適切な機能は存在しないようです。この例でフォントを出力することはでき、それは構文的には正しいのですが、まったく何の効果もありません。素晴らしいことを行うのに必要な能力を OpenType が提供しているのに、<A HREF="http://www.microsoft.com/typography/OpenType%20Dev/standard/shaping.mspx">Microsoft</A> がラテン文字ではそれを使わせないということを知ると不満が溜まります。
 <P>
 <IMG SRC="../ott2_5.png" WIDTH="329" HEIGHT="263" ALIGN="Left"><!-- The next dialog
 allows you to specify the overall format of the substitution. We want a class
@@ -177,19 +179,19 @@ it easier to convert the substitution to Apple's format). The first line
 glyph in class 2, then location 0 - -the only location - - in the match string
 (that is the current glyph) should have simple substitution `high' applied
 to it. -->
-各グリフカテゴリはグリフをそれぞれ異なるクラスセットに分類することができますが、この例ではすべてのカテゴリで同じクラスを用いることにします (これにより、置換処理を Apple のフォーマットに変換するのがやりやすくなります)。最初の行 ("グリフリストのリスト" フィールドに含まれる) は、以下のように読みます: 「もし、クラス 1 に含まれる後戻りグリフ (現在のグリフの直前のグリフ) に続いて、クラス 2 に含まれる現在グリフが現れたならば、一致文字列 (これは現在グリフです) 中の位置 0 ――唯一の位置――には、単純置換 'high' を適用しなければならない」。
+各グリフカテゴリはグリフをそれぞれ異なるクラスセットに分類することができますが、この例ではすべてのカテゴリで同じクラスを用いることにします (これにより、置換処理を Apple のフォーマットに変換するのがやりやすくなります)。最初の行 (“グリフリストのリスト”フィールドに含まれる) は、以下のように読みます: 「もし、クラス 1 に含まれる後戻りグリフ (現在のグリフの直前のグリフ) に続いて、クラス 2 に含まれる現在グリフが現れたならば、一致文字列 (これは現在グリフです) 中の位置 0 ――唯一の位置――には、単純置換&lsquo;high&rsquo;を適用しなければならない」。
 <P>
 <!--
 If you look at the glyph class definitions you will see that class 1 includes
 those glyphs which must be followed by a high variant, so this seems reasonable. -->
-グリフクラス定義を見ると、クラス 1 には "高い" 異字形の後にくるグリフがあることが分かるので、この定義には納得がいきます。
+グリフクラス定義を見ると、クラス 1 には“高い”異字形の後にくるグリフがあることが分かるので、この定義には納得がいきます。
 <P>
 <!--
 The second line is similar except that it matches glyphs in class 1. Looking
 at the class definitions we see that classes 1 &amp; 2 include all the letters,
 so these two lines mean that if any letter follows one of ``bovw'' then that
 letter should be converted to its `high' variant. <BR CLEAR=ALL> -->
-2 行目もこれと同様ですが、クラス 1 が合致するところが異なります。クラス定義を見ると、クラス 1 と 2 にすべての英小文字が含まれていることが分かるので、これらの 2 行が意味することは、"bovw" のどれかの後に英小文字が来た場合、その文字は "高い" 異字形に変換しなければならないということです。<BR CLEAR=ALL>
+2 行目もこれと同様ですが、クラス 1 が合致するところが異なります。クラス定義を見ると、クラス 1 と 2 にすべての英小文字が含まれていることが分かるので、これらの 2 行が意味することは、“bovw”のどれかの後に英小文字が来た場合、その文字は“高い”異字形に変換しなければならないということです。<BR CLEAR=ALL>
 <P>
 <IMG SRC="../ott4.png" WIDTH="330" HEIGHT="357" ALIGN="Left"><!--To edit a glyph
 class simply double click on it. To create a new one press the [New] button
@@ -198,12 +200,12 @@ of all the glyphs in the current class. Pressing the [Select] button will
 set the selection in the font window to match the glyphs in the class, while
 the [Set] button will do the reverse and set the class to the selection in
 the font window. These provide a short cut to typing in a lot of glyph names. -->
-グリフクラスの編集は、その上でダブルクリックするだけで行うことができます。新しく作成するには、(クラスリストの下にある) [新規(N)] ボタンを押してください。これにより、現在のクラスに含まれる全グリフの名前を表示する別のダイアログが作成されます。[選択] ボタンを押すと、そのクラスに含まれている全グリフがフォントウィンドウ上で選択され、その反対に、[設定] ボタンを押すとフォントウィンドウ内で選択されている文字群がそのクラスの内容として設定されます。
+グリフクラスの編集は、その上でダブルクリックするだけで行うことができます。新しく作成するには、(クラスリストの下にある) <CODE>[新規(<U>N</U>)]</CODE> ボタンを押してください。これにより、現在のクラスに含まれる全グリフの名前を表示する別のダイアログが作成されます。<CODE>[選択]</CODE> ボタンを押すと、そのクラスに含まれている全グリフがフォントウィンドウ上で選択され、その反対に、<CODE>[設定]</CODE> ボタンを押すとフォントウィンドウ内で選択されている文字群がそのクラスの内容として設定されます。
 <P>
 <!--
 Pressing the [Next] button defines the class and returns to the overview
 dialog. <BR CLEAR=ALL> -->
-[次(N)] ボタンを押すと、クラスが定義され、概要ダイアログに戻ります。<BR CLEAR=ALL>
+<CODE>[次(<U>N</U>)]</CODE> ボタンを押すと、クラスが定義され、概要ダイアログに戻ります。<BR CLEAR=ALL>
 <P>
 <IMG SRC="../ott3.png" WIDTH="330" HEIGHT="357" ALIGN="Right"><!--To edit a pattern
 double click on it, or to create a new one press the [New] button (under
@@ -212,7 +214,7 @@ the List of lists). Again the pattern string is divided into three categories,
 the current one, the current one itself, and any glyphs after the current
 one. You choose which category of the pattern you are editing with the tabs
 at the top of the dialog. -->
-パターンを編集するにはその上でダブルクリックし、新しいパターンを作成するには (リストのリストの下にある)  [新規(N)] ボタンを押してください。ここでも、パターン文字列は 3 つのカテゴリに分割されています。
+パターンを編集するにはその上でダブルクリックし、新しいパターンを作成するには (リストのリストの下にある)  <CODE>[新規(<U>N</U>)]</CODE> ボタンを押してください。ここでも、パターン文字列は 3 つのカテゴリに分割されています。
 <IMG SRC="../ott5.png" WIDTH="330" HEIGHT="357" ALIGN="Left">
 現在のグリフに先行するグリフ群、現在のグリフそのもの、そして現在のグリフに続くグリフ群です。編集中のパターンのカテゴリーのどれを編集するかはダイアログの上にあるタブで選択できます。
 <P>
@@ -228,7 +230,7 @@ To edit a substitution double click on it, or to create a new one press the
 [New] button (under ``An ordered list...''). The sequence number specifies
 which glyph among the current glyphs should be modified, and the tag specifies
 a four character substitution name<BR CLEAR=ALL> -->
-置換を編集するにはその上でダブルクリックするを行ってください。また、新しい置換を追加するには ("並べ替え済みのリスト..." の下にある) [新規(N)] ボタンを押してください。シーケンス番号は、現在のグリフ群に含まれるどのグリフを変更するかを指定し、タグは 4 文字の置換名を指定します。<BR CLEAR=ALL>
+置換を編集するにはその上でダブルクリックするを行ってください。また、新しい置換を追加するには (“並べ替え済みのリスト...”の下にある) <CODE>[新規(<U>N</U>)]</CODE> ボタンを押してください。シーケンス番号は、現在のグリフ群に含まれるどのグリフを変更するかを指定し、タグは 4 文字の置換名を指定します。<BR CLEAR=ALL>
 <P>
 <!--
 <FONT COLOR="Red"><STRONG>A warning about contextual
@@ -251,7 +253,7 @@ behave when given input from that class. The behavior includes the ability
 to change to a different state, advancing the input to the next glyph, applying
 a substitution to either the current glyph or a previous one (the ``marked''
 glyph). -->
-Apple は有限状態機械で文脈を指定します。これは、本質的にはグリフのストリームを調べて、どの置換を適用するかを決定する小さなプログラムです。各状態機械には、グリフクラス定義 (OpenType の例で示したのとちょうど同じような) の集合と状態の集合があります。処理は、グリフストリームの先頭から、状態 0 で始まります。計算機は、現在のグリフがどのクラスに含まれるかを決定し、次に現在の状態を参照して、そのクラスからの入力が与えられたときにどのように振舞うかを調べます。振舞いの中には、別の状態への遷移可能性、入力を次のグリフへ進めること、置換を現在のグリフに適用するか以前のグリフ ("マークつき" グリフ) に適用するかが含まれます。
+Apple は有限状態機械で文脈を指定します。これは、本質的にはグリフのストリームを調べて、どの置換を適用するかを決定する小さなプログラムです。各状態機械には、グリフクラス定義 (OpenType の例で示したのとちょうど同じような) の集合と状態の集合があります。処理は、グリフストリームの先頭から、状態 0 で始まります。計算機は、現在のグリフがどのクラスに含まれるかを決定し、次に現在の状態を参照して、そのクラスからの入力が与えられたときにどのように振舞うかを調べます。振舞いの中には、別の状態への遷移可能性、入力を次のグリフへ進めること、置換を現在のグリフに適用するか以前のグリフ (“マークつき”グリフ) に適用するかが含まれます。
 <P>
 <IMG SRC="../sm-picture.png" WIDTH="386" HEIGHT="130" ALIGN="Right"><!-- Using the
 same example of a latin script font... We again need a simple substitution
@@ -263,7 +265,7 @@ the OpenType example). We want a state machine with two states (again Apple
 gives us an extra state for free, but we shall ignore that), one is the start
 state (the base state - - where nothing changes), and the other is the state
 where we've just read a glyph from the ``bovw'' class. <BR CLEAR=ALL> -->
-前と同じ、ラテン文字の筆記体フォントの例を使うことにしましょう……今回も各文字をその "高い" 別字形に置換する単純置換が必要となります。この処理は OpenType で行ったのと同じで、実際に同じ置換を使用することができます。今回もグリフを 3 つのクラスに分類します (Apple は、使用するかしないかにかかわらずいくつかの追加クラスを定義していますが、概念上 OpenType の例と同じ 3 つのクラスを使用します)。この場合、状態機械には 2 つの状態が必要で (これも追加の状態が Apple により定義済みですが、これも無視しましょう)、具体的には開始状態 (基本状態――変更は行いません) と、もう一つ、"bovw" クラスからグリフを読み込んだ直後の状態です。<BR CLEAR=ALL>
+前と同じ、ラテン文字の筆記体フォントの例を使うことにしましょう……今回も各文字をその“高い”別字形に置換する単純置換が必要となります。この処理は OpenType で行ったのと同じで、実際に同じ置換を使用することができます。今回もグリフを 3 つのクラスに分類します (Apple は、使用するかしないかにかかわらずいくつかの追加クラスを定義していますが、概念上 OpenType の例と同じ 3 つのクラスを使用します)。この場合、状態機械には 2 つの状態が必要で (これも追加の状態が Apple により定義済みですが、これも無視しましょう)、具体的には開始状態 (基本状態――変更は行いません) と、もう一つ、“bovw”クラスからグリフを読み込んだ直後の状態です。<BR CLEAR=ALL>
 <P>
 <IMG SRC="../asm1.png" WIDTH="261" HEIGHT="323" ALIGN="Left"><!-- Again we use the
 <A HREF="fontinfo.html#Mac-SM">Element -&gt; Font Info </A>dialog and the
@@ -271,7 +273,7 @@ Mac SM tag to look at the contextual substitutions available. Again there
 are several types of contextual behavior, and we are interested in contextual
 substitutions. Double clicking on a state machine, or pressing the [New]
 button provides an overview of the given state machine. -->
-ここでも<A HREF="fontinfo.html#Mac-SM">エレメント(L)→フォント情報(F)</A> ダイアログの [Mac状態機械] タグをクリックして、文脈依存の置換が利用できるようにします。前と同様、文脈依存の振舞いにはいくつかのタイプがあり、ここで興味があるのは文脈依存の置換です。状態機械の上でダブルクリックするか、[新規(N)] ボタンを押すと、指定した状態機械の概要が表示されます。
+ここでも <A HREF="fontinfo.html#Mac-SM"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE></A> ダイアログの <CODE>[Mac状態機械]</CODE> タブをクリックして、文脈依存の置換が利用できるようにします。前と同様、文脈依存の振舞いにはいくつかのタイプがあり、ここで興味があるのは文脈依存の置換です。状態機械の上でダブルクリックするか、<CODE>[新規(<U>N</U>)]</CODE> ボタンを押すと、指定した状態機械の概要が表示されます。
 <P>
 <IMG SRC="../asm2.png" WIDTH="309" HEIGHT="381" ALIGN="Right"><!-- At the top of
 the dialog we see a field specifying the feature / setting of the machine,
@@ -293,7 +295,7 @@ glyph), and it has received a glyph in class 4 (which is another ``bovw''
 glyph). In this case the next state will be state 2 again (we will have just
 read a new ``bovw'' glyph), read another glyph and apply the ``high''
 substitution to the current glyph. -->
-状態機械の遷移 (状態/クラスの組合せごとに 1 個の遷移が存在します) の上でクリックすると、状態遷移ダイアログが立ち上がります。指定された状態において指定されたクラスに含まれるグリフを受けつけたときにどのように振舞うかは、ここで制御します。この例では、状態 2 (これは、"bovw" グリフを読み込み済みであることを意味します) で、クラス 4 (これは "bovw" のグリフがもう 1 個来たことを意味します) に含まれるグリフを受け取ったところです。この場合、次の状態も再び状態 2 で (新しい "bovw" グリフを読み込んだ直後となるでしょう)、もう 1 字を読み込んで "high" 置換を現在のグリフに施すことになります。
+状態機械の遷移 (状態/クラスの組合せごとに 1 個の遷移が存在します) の上でクリックすると、状態遷移ダイアログが立ち上がります。指定された状態において指定されたクラスに含まれるグリフを受けつけたときにどのように振舞うかは、ここで制御します。この例では、状態 2 (これは、“bovw”グリフを読み込み済みであることを意味します) で、クラス 4 (これは“bovw”のグリフがもう 1 個来たことを意味します) に含まれるグリフを受け取ったところです。この場合、次の状態も再び状態 2 で (新しい“bovw”グリフを読み込んだ直後となるでしょう)、もう 1 字を読み込んで“high”置換を現在のグリフに施すことになります。
 <P>
 <!--
 At the bottom of the dialog are a series of buttons that allow you to navigate
@@ -303,10 +305,11 @@ through the transitions of the state machine. -->
 <!--
 Pressing [OK] many times will extract you from this chain of dialogs and
 add a new state machine to your font. -->
-[OK] を何度も押すとこのダイアログの連鎖から抜け、フォントに新しい状態機械を追加します。
+<CODE>[<U>O</U>K]</CODE> を何度も押すとこのダイアログの連鎖から抜け、フォントに新しい状態機械を追加します。
 <P>
 <P>
 <P ALIGN=Center>
 -- <A HREF="editexample6.html">前</A> -- <A HREF="overview.html">目次</A>
 -- <A HREF="editexample7.html">次</A> --
+</DIV>
 </BODY></HTML>

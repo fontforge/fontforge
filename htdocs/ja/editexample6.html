@@ -3,12 +3,14 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jan-2003 -->
   <!-- AP: Last modified: 21-Mar-2005 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>More advanced features, ligatures, mark positioning, glyph variants</TITLE>-->
     <TITLE>より高度な機能、合字、マークによる位置決め, 異体関係にあるグリフ</TITLE>
   <LINK REL="icon" href="../ffanvil16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
+<DIV id="in">
 <H1 ALIGN=Center>
 <!-- Tutorial #6 -->
      チュートリアル (その 6)
@@ -84,9 +86,7 @@ example is that every letter has both an upper case and a lower case variant.
 A more esoteric example would be that in renaissance times the long-s variant
 (of s) was used initially and medially in a word, while the short-s was only
 used at the end of a word. -->
-多くの用字系では、あるグリフに対して異体関係にあるグリフがいくつか存在します。
-ラテンアルファベットでは、最も自明な例はすべての文字が大文字と小文字の異体を含むということです。
-より秘教的な例としては、ルネッサンスの時代には長い s という s の異体字が単語の頭と中間で用いられ、短い s は単語の終わりでしか用いられなかったというものがあります。
+多くの用字系では、あるグリフに対して異体関係にあるグリフがいくつか存在します。ラテンアルファベットでは、最も自明な例はすべての文字が大文字と小文字の異体を含むということです。より秘教的な例としては、ルネッサンスの時代には長い s という s の異体字が単語の頭と中間で用いられ、短い s は単語の終わりでしか用いられなかったというものがあります。
 <P>
 <!--
 Most Arabic glyphs have four variants (initial, medial, final and isolated). -->
@@ -98,7 +98,7 @@ have the same advance width so that tables of numbers don't look ragged),
 proportional digits (where each digit has a width appropriate to its shape)
 and old-style or lower case digits
 (<IMG SRC="lcdigits.png" WIDTH="76" HEIGHT="18" ALIGN="Middle">). -->
-数字にはしばしば幾つかの異なる形が設けられることがあります: 表用数字 (すべての数字が同じアドバンス幅をもっていて、表の数値が不揃いに見えない), プロポーショナル数字 (各数字が、それにふさわしい幅をもつ) とオールドスタイル数字 (またの名を小文字数字) (<IMG SRC="../lcdigits.png" WIDTH="76" HEIGHT="18" ALIGN="Middle">) と呼ばれます。
+数字にはしばしば幾つかの異なる形が設けられることがあります: 表用数字 (すべての数字が同じ送り幅をもっていて、表の数値が不揃いに見えない), プロポーショナル数字 (各数字が、それにふさわしい幅をもつ) とオールドスタイル数字 (またの名を小文字数字) (<IMG SRC="../lcdigits.png" WIDTH="76" HEIGHT="18" ALIGN="Middle">) と呼ばれます。
 <P>
 <!--
 Some of these variants are built into the encodings (the upper and lower
@@ -118,17 +118,13 @@ get another dialog. In the Components field, enter "one.prop", select
 "Proportional Numbers" from the pull down list (it will turn into "pnum"),
 and select the script set you are interested in (a script of 'latn' and a
 language of 'dflt' will cover many cases). Then press <CODE>[OK]</CODE>. -->
-上で言及した数字の場合を考えましょう。"one" という名前のグリフが表用数字の 1 であり、"one.prop" というグリフがプロポーショナルな異体字を、"one.oldstyle" が小文字異体字を含んでいると仮定します。
-ここで、フォントビューから "one" を選択し、<CODE>エレメント(L)→文字情報(I)</CODE> のダイアログで <CODE>置換</CODE> タブを開いて <CODE>[新規]</CODE> ボタンを押します。
-新しいダイアログが出てきます。
-<CODE>構成要素</CODE> フィールドに "one.prop" と入力し、"プロポーショナル数字" をプルダウンリストから選択します (これは "pnum" となります)。
-それから興味のある用字系 (用字系 'latn' と言語 'dflt' は多くの場合にあてはまります) を選択します。最後に <CODE>[OK]</CODE> を押します。
+上で言及した数字の場合を考えましょう。“one”という名前のグリフが表用数字の 1 であり、“one.prop”というグリフがプロポーショナルな異体字を、“one.oldstyle" が小文字異体字を含んでいると仮定します。ここで、フォントビューから“one”を選択し、<CODE>エレメント(<U>L</U>)</CODE>→<CODE>グリフ情報(<U>I</U>)...</CODE> のダイアログで <CODE>[置換]</CODE> タブを開いて <CODE>[新規(<U>N</U>)...]</CODE> ボタンを押します。新しいダイアログが出てきますので、<CODE>構成要素</CODE> フィールドに“<CODE>one.prop</CODE>”と入力し、“<CODE>プロポーショナル数字</CODE>”を <CODE>タグ(<U>T</U>)</CODE> プルダウンリストから選択します (これは“<CODE>pnum</CODE>”となります)。それから興味のある用字系 (用字系&lsquo;latn&rsquo;と言語&lsquo;dflt&rsquo;は多くの場合にあてはまります) を選択します。最後に <CODE>[<U>O</U>K]</CODE> を押します。
 <P>
 <!--
 Some variant forms are built in to FontForge, and if you use
 <CODE>Element-&gt;Default ATT-&gt;(variant name)</CODE>, FontForge may be
 able to automate this process for you. -->
-幾つかの異体字は FontForge に組み込みで定義されているので、<CODE>エレメント(L)→デフォルト ATT→(異体字の名称)</CODE> を選択すれば、FontForge がこの手順を自動化して行ってくれるでしょう。
+幾つかの異体字は FontForge に組み込みで定義されているので、<CODE>エレメント(<U>L</U>)</CODE>→<CODE>組版機能(<U>Y</U>)</CODE>→<CODE>デフォルトのATT(<U>D</U>)</CODE>→<CODE>(異体字の分類名)</CODE> を選択すれば、FontForge がこの手順を自動化して行ってくれるでしょう。
 <P>
 <!--
 (Note: Type0, Type1 and Type3 PostScript fonts have no notation to handle
@@ -147,7 +143,6 @@ Substitution sub-tables, and to a lesser extent, Apple's contextual glyph
 substitution sub-table. This means that you can insert conditional variants
 into your font. <A HREF="editexample6-5.html#Conditional">The next page</A>
 ill go into this in greater detail. -->
-into your font. -->
 FontForge は OpenType の条件つき置換および連鎖的条件つき置換サブテーブルをサポートしており、Apple の条件つきグリフ置換サブテーブルの機能の一部をサポートしています。これは、条件つきの異体字をフォントに含めることができると言うことを意味します。これについては<A HREF="editexample6-5.html#Conditional">次のページ</A>で詳しく解説します。
 <H2>
 <!--<A NAME="Marks">Anchoring</A> marks -->
@@ -173,7 +168,7 @@ adjacent in the text the word-processor will know where to place the accent
 so that it rides above the "A". -->
 OpenType では (ここにはマイクロソフトの TrueType フォントも含まれます) すべての基底文字が接続するべきマークと、基底文字が接続するべきすべての文字を指定することが可能です。
 ですから、大文字 A の上部中央に、すべてのアクセント (アキュート、グレーブ、ウムラウト、サーカムフレックス、リング、キャロン…) の接続するべき場所を指定する 1 個のアンカーと、すべてアクセントの下にそれぞれのアンカーを置くことができます。
-そのため、2 個のグリフがテキスト内で隣り合って現れたときに、ワードプロセッサは "A" の上に重なるアクセントがどこに位置するのか知ることができます。
+そのため、2 個のグリフがテキスト内で隣り合って現れたときに、ワードプロセッサは“A”の上に重なるアクセントがどこに位置するのか知ることができます。
 <TABLE>
   <TR>
     <TD><IMG SRC="../a_with_anchor.png" WIDTH=104 HEIGHT=208></TD>
@@ -211,21 +206,21 @@ Classes</A> </CODE>dialog will allow you to do that. -->
 まだグリフの中にアンカーを作成できるようになっていない場合は、まず、このフォントがアンカーを含んでいることを FontForge に知らせなければなりません。
 接続のタイプごとにそれぞれ、<A HREF="overview.html#Anchors">アンカークラス</A> を作成する必要があります。
 ですから上の例の二つの型の接続 (一つは上、一つは下) をもつ A の場合、二つのアンカークラスを作成することになるでしょう。
-この作業は <CODE><A HREF="fontinfo.html#Anchors">エレメント(L)→フォント情報(F)→[アンカークラス]</A></CODE> ダイアログによって行えます。
+この作業は <A HREF="fontinfo.html#Anchors"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE>→<CODE>[アンカークラス]</A></CODE></A> ダイアログによって行えます。
 <P>
 <!--
 Then for each glyph in which an attachment will be made, you should first
 click at the point where the anchor is to be created and then bring up the
 <CODE><A HREF="pointmenu.html#AddAnchor">Point-&gt;Add Anchor</A></CODE>
 dialog. -->
-それから、接続点を作成するグリフの各々において、まずアンカーを作成する位置をクリックし、次に <CODE><A HREF="pointmenu.html#AddAnchor">点(P)→アンカーを追加(A)</A></CODE> ダイアログを呼び出す必要があります。
+それから、接続点を作成するグリフの各々において、まずアンカーを作成する場所に配置した点をクリックし、次に <A HREF="pointmenu.html#AddAnchor"><CODE>点(<U>P</U>)</CODE>→<CODE>アンカーを追加(<U>A</U>)...</CODE></A> ダイアログを呼び出す必要があります。
 <P>
 <!--
 You can examine (and correct) how a glyph fits to any others that combine
 with it by using the
 <CODE><A HREF="metricsmenu.html#AnchorControl">Metrics-&gt;Anchor
 Control...</A></CODE> command. -->
-<CODE><A HREF="metricsmenu.html#AnchorControl">メトリック(M)→アンカーの制御(A)...</A> コマンドを使えば、そのグリフが、他のグリフと組み合わされるときにどのように嵌まり合うかを確かめることができます。
+<CODE><A HREF="metricsmenu.html#AnchorControl">メトリック(<U>M</U>)</CODE>→<CODE>アンカーの制御(A)...</A></CODE> コマンドを使えば、そのグリフが、他のグリフと組み合わされるときにどのように嵌まり合うかを確かめることができます。
 <P>
 <!--
 <FONT COLOR="Red"><STRONG>A warning about mark attachments:</STRONG></FONT>
@@ -239,4 +234,5 @@ them for some scripts and not for others. -->
 <P ALIGN=Center>
 -- <A HREF="editexample5.html">前</A> -- <A HREF="overview.html">目次</A>
 -- <A HREF="editexample6-5.html">次</A> --
+</DIV>
 </BODY></HTML>

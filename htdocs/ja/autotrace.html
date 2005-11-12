@@ -3,12 +3,14 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 19-Feb-2004 -->
   <!-- AP: Last modified: 13-Oct-2004 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Autotracing bitmaps in FontForge</TITLE>-->
     <TITLE>FontForge でビットマップを自動トレースする方法</TITLE>
   <LINK REL="icon" href="../ffanvil16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
+<DIV id="in">
 <H1 ALIGN=Center>
 <!--Autotracing bitmaps in FontForge-->
     FontForge でビットマップを自動トレースする方法
@@ -130,7 +132,7 @@ you want to autotrace. There are several ways of doing this: -->
 	必要なグリフを選択する
       <LI>
 <!--	File-&gt;Import -->
-	ファイル(F)→取り込み(I)
+	<CODE>ファイル(<U>F</U>)</CODE>→<CODE>取り込み(<U>I</U>)</CODE>
       <LI>
 <!--	select Format=Image template -->
 	フォーマット として 画像テンプレート を選択する
@@ -140,7 +142,7 @@ you want to autotrace. There are several ways of doing this: -->
       <LI>
 <!--	This should load all images that match that template ("uni*.png") into the
 	appropriate glyph slot -->
-	これにより、テンプレート ("uni*.png") に一致するすべての画像を適切な個々のグリフに読み込みます。
+	これにより、テンプレート (“uni*.png”) に一致するすべての画像を適切な個々のグリフに読み込みます。
     </UL>
 </DL>
 <P>
@@ -154,7 +156,7 @@ program) -->
     自動トレースを行うグリフを選択する
   <LI>
 <!--Element-&gt;Autotrace-->
-    エレメント(L)→自動トレース(R)
+    <CODE>エレメント(<U>L</U>)</CODE>→<CODE>自動トレース(<U>R</U>)</CODE>
 </UL>
 <P>
 <!--
@@ -174,10 +176,11 @@ the shift key FontForge will use the same arguments it used last time.
 AutoTrace's arguments are described in "$ autotrace -help" or in the README
 file that came with the program. Please do not specify input/output files
 or formats. FontForge fills these in. -->
-Shift キーを押しながら、メニューから 自動トレース(R) を選ぶとプログラムに与える引数を入力するように促されます。Shift キーを押していないと、FontForge は全開し要したのと同じ引数を使用します。AutoTrace の引数は "$ autotrace -help" で見ることができますし、プログラムに添付されている README ファイルにもかかれています。入出力ファイルやフォーマットを指定しないでください。それらは FontForge が割り当てます。
+Shift キーを押しながら、メニューから <CODE>自動トレース(<U>R</U>)</CODE> を選ぶとプログラムに与える引数を入力するように促されます。Shift キーを押していないと、FontForge は全開し要したのと同じ引数を使用します。AutoTrace の引数は“$ <CODE>autotrace -help</CODE>”で見ることができますし、プログラムに添付されている README ファイルにもかかれています。入出力ファイルやフォーマットを指定しないでください。それらは FontForge が割り当てます。
 <P>
 <P>
 <P ALIGN=Center>
 -- <A HREF="elementmenu.html#AutoTrace">戻る</A> --
 <A HREF="overview.html">目次</A> --
+</DIV>
 </BODY></HTML>

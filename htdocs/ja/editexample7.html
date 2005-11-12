@@ -4,12 +4,14 @@
   <!-- AP: Created on: 27-Jan-2003 -->
   <!-- AP: Last modified: 21-Mar-2005 -->
   <LINK REL="icon" href="../ffanvil16.png">
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Final cleanup</TITLE> -->
     <TITLE>最終的な調整</TITLE>
   <!-- AP: Last modified: 2-Mar-2004 -->
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
+<DIV id="in">
 <H1 ALIGN=Center>
 <!-- Tutorial #8 -->
      チュートリアル (その 8)
@@ -83,7 +85,7 @@ it for inconsistencies. FontForge has a command,
 <A HREF="problems.html">Element-&gt;Find Problems</A> which is designed to
 find many common problems. -->
 フォントに含まれるすべてのグリフの作成を終えた後に、矛盾点のチェックをするべきです。
-FontForge には、多くのよくある問題を発見するために設計された <CODE><A HREF="problems.html">エレメント(L)→問題点を発見(O)</A></CODE> コマンドがあります。
+FontForge には、多くのよくある問題を発見するために設計された <A HREF="problems.html"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>問題点を発見(<U>O</U>)...</CODE></A> コマンドがあります。
 <P>
 <!--
 Simply select all the glyphs in the font and then bring up the Find Problems
@@ -137,8 +139,8 @@ bitmaps, or you can generate your bitmap fonts and then
 <A HREF="http://clr.nmsu.edu/~mleisher/download.html">use someone else's
 bitmap editor to clean them up</A>. -->
 この段階で、PostScript フォントに加えてビットマップも欲しくなるかも知れません (これは必須ではありません)。
-<CODE>エレメント(L)→使用するビットマップ(A)</CODE> を呼び出し、ビットマップを組み込みたいサイズを選択します (X と MS Windows ではピクセル数がポイントサイズと正確に一致しない場合があることにご注意ください)。
-それからビットマップエディタ (<CODE>ファイル(F)→ビットマップウィンドウを開く(B)</CODE> でビットマップを修整するか、ビットマップフォントを書き出してから<A HREF="http://clr.nmsu.edu/~mleisher/download.html">誰か他の人のビットマップエディタ</A>を使用して修整することができます。
+<CODE>エレメント(<U>L</U>)</CODE>→<CODE>使用するビットマップ(<U>A</U>)...</CODE> を呼び出し、ビットマップを組み込みたいサイズを選択します (X と MS Windows ではピクセル数がポイントサイズと正確に一致しない場合があることにご注意ください)。
+それからビットマップエディタ (<CODE>ウィンドウ(<U>W</U>)</CODE>→<CODE>ビットマップウィンドウを開く(<U>B</U>)</CODE> でビットマップを修整するか、ビットマップフォントを書き出してから<A HREF="http://clr.nmsu.edu/~mleisher/download.html">誰か他の人のビットマップエディタ</A>を使用して修整することができます。
 <P>
 <IMG SRC="BitmapView.png" WIDTH="271" HEIGHT="319">
 <H2>
@@ -161,8 +163,8 @@ a vast array of font formats, but in reality there are just several variants
 on a few basic font formats: PostScript Type 1, TrueType, OpenType (and for
 CJK fonts, also CID-keyed fonts). -->
 <IMG SRC="../generate.png" WIDTH="406" HEIGHT="411" ALIGN="Right">
-作成したフォントを標準的フォントフォーマットのどれかに変換したい場合は、<CODE>保存</CODE> ではなくて <CODE><A HREF="generate.html">ファイル→フォントを出力(G)</A></CODE> を使用しなければなりません。
-PfaEdit が表示するのはフォントフォーマットの膨大な羅列のように見えますが、実際には数種類の基本的なフォントフォーマット: PostScript Type1, TrueType, OpenType の変種があるだけです (CJK フォントでは、CID フォントもあります)。
+作成したフォントを標準的フォントフォーマットのどれかに変換したい場合は、<CODE>保存(<U>S</U>)</CODE> ではなくて <A HREF="generate.html"><CODE>ファイル(<U>F</U>)</CODE>→<CODE>フォントを出力(<U>G</U>)...</CODE></A> を使用しなければなりません。
+FontForge が表示するのはフォントフォーマットの膨大な羅列のように見えますが、実際には数種類の基本的なフォントフォーマット: PostScript Type1, TrueType, OpenType の変種があるだけです (CJK フォントでは、CID フォントもあります)。
 <P>
 <!--
 You also have a choice of bitmap formats. FontForge supports bdf (used by
@@ -190,17 +192,17 @@ all fonts should have the Family Name set to "Helvetica". The plain style
 could be called simply "Helvetica" or "Helvetica-Regular", the bold style
 "Helvetica-Bold", the oblique (Helvetica doesn't have a true italic)
 "Helvetica-Oblique", etc. -->
-同じファミリーに属する異なるスタイルのフォントは同じファミリー名を共有している必要があります (<CODE><A HREF="fontinfo.html">エレメント(L)→フォント情報(F)→名前</A></CODE> で設定します)。
+同じファミリーに属する異なるスタイルのフォントは同じファミリー名を共有している必要があります (<A HREF="fontinfo.html"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE>→<CODE>[名前]</CODE></A> で設定します)。
 フォント名はファミリー名の後ろに 1 個以上のスタイル名を、多くの場合はハイフンを挟んで付け加えたものです。
-ですからフォントファミリー "Helvetica" に属するフォントは全て "Helvetica" というファミリー名が設定されていなければなりません。
-通常の (plain) スタイルは単に "Helvetica" と "Helvetica-Regular" と、ボールドスタイルは "Helvetica-Bold" と、オブリーク (Helvetica には真のイタリックはありません) は "Helvetica-Oblique" という具合に命名されることになります。
+ですからフォントファミリー“Helvetica”に属するフォントは全て“Helvetica”というファミリー名が設定されていなければなりません。
+通常の (plain) スタイルは単に“Helvetica”または“Helvetica-Regular”となり、ボールドスタイルは“Helvetica-Bold”、オブリーク (Helvetica には真のイタリックはありません) は“Helvetica-Oblique”という具合に命名されることになります。
 <P>
 <!--
 FontForge has a command (which doesn't work well yet, but I hope to improve
 eventually) <A HREF="MetaFont.html">Element-&gt;MetaFont</A> which is designed
 to help you create a bold (condensed, expanded, etc.) style from a plain
 one. -->
-FontForge にはコマンド (現在はまだよく動きませんが、そのうち改良するつもりです)  <A HREF="MetaFont.html">エレメント(L)→MetaFont</A> があり、これはボールド (コンデンスト、エキスパンデド等) のスタイルを通常のフォントから作成するのを助けるように設計されています。
+FontForge にはコマンド (現在はまだよく動きませんが、そのうち改良するつもりです) <A HREF="MetaFont.html"><CODE>エレメント(<U>L</U>)</CODE>→<CODE><U>M</U>eta Font...</CODE></A> があり、これはボールド (コンデンスト、エキスパンデド等) のスタイルを通常のフォントから作成するのを助けるように設計されています。
 <P>
 <!--
 The <A HREF="transform.html">Element-&gt;Transform-&gt;Skew</A> command can
@@ -210,17 +212,17 @@ the "f" gains a descender as "<I>f</I>", the serifs on "ilm" etc. become
 rounded as "<I>ilm</I>" and there will probably be other subtle differences.
 Also, after having skewed a font you should
 <A HREF="elementmenu.html#Add-Extrema">Element-&gt;Add Extrema</A>. -->
-<A HREF="transform.html">エレメント(L)→変形(T)→傾き </A> コマンドは通常のフォントをオブリークのものに変換します。
-真のイタリックの作成は一般的にはもうすこし複雑で、"a" の形が "<I>a</I>" へと劇的に変わったり "f" にディセンダがついて "<I>f</I>" となったり, "ilm" のセリフが "<I>ilm</I>" のように丸められたりし、通常は他にも微妙な違いが生じます。
-また、フォントを傾けた後は <CODE><A HREF="elementmenu.html#Add-Extrema">エレメント(L)→極大点を追加(A)</A></CODE> を行うべきでしょう。
+<A HREF="transform.html"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>変形(<U>T</U>)</CODE>→<CODE>変形(<U>T</U>)...</CODE>→<CODE>傾き</CODE></A> コマンドは通常のフォントをオブリークのものに変換します。
+真のイタリックの作成は一般的にはもうすこし複雑で、“a”の形が“<I>a</I>”へと劇的に変わったり“f”にディセンダがついて“<I>f</I>”となったり,“ilm”のセリフが“<I>ilm</I>”のように丸められたりし、通常は他にも微妙な違いが生じます。
+また、フォントを傾けた後は <A HREF="elementmenu.html#Add-Extrema"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>極大点の追加(<U>X</U>)</CODE></A> を行うべきでしょう。
 <P>
 <!--
 If you already have a "Bold" and a "Plain" style of a font (and each glyph
 has the same number of points in the same order), you can use the
 <A HREF="elementmenu.html#Interpolate">Element-&gt;Interpolate Font </A>command
 to generate a "DemiBold" style. -->
-あるフォントの "Bold" と "Plain" の両スタイルが既に揃っているならば (また、各グリフが同じ順番で同じ個数の点を含むならば)、
-<A HREF="elementmenu.html#Interpolate">エレメント(L)→フォントの補間(I)</A> コマンドを使って "DemiBold" スタイルを生成することができます。
+あるフォントの“Bold" と“Plain”の両スタイルが既に揃っているならば (また、各グリフが同じ順番で同じ個数の点を含むならば)、
+<A HREF="elementmenu.html#Interpolate"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォントの補間(<U>L</U>)...</CODE></A> コマンドを使って“DemiBold”スタイルを生成することができます。
 <P>
 <!--
 TrueType fonts (and Windows) support a very fine gradation of stem thicknesses
@@ -230,7 +232,7 @@ you can set the weight to be any value between 0 and 999 (with plain generally
 being at 400 or 500, and Bold at 700). TrueType fonts also support a range
 of widths (while the Mac only supports condensed, plain and expanded). -->
 TrueType フォント (と Windows) はステムの太さに関する非常に細かいグラデーションをサポートしています (Mac は Plain と Bold の 2 種類しか理解しません)。
-<A HREF="fontinfo.html#TTF-Values">エレメント(L)→フォント情報(F)→OS/2</A> を選ぶと、0 から 999 までの任意の値を太さとして設定することができます (通常フォントは一般的に 400 から 500 の間で、Bold は 700 くらいです)。
+<A HREF="fontinfo.html#TTF-Values"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE>→<CODE>OS/2</CODE></A> を選ぶと、0 から 999 までの任意の値を太さとして設定することができます (通常フォントは一般的に 400 から 500 の間で、Bold は 700 くらいです)。
 TrueType は、幅の値も広範囲にサポートしています (Mac では condensed, plain と expanded しかサポートされてないのですが)。
 <P>
 <!--
@@ -255,7 +257,7 @@ they don't, it depends on the font format chosen). -->
 しかし Mac では現状は (これはもう過去の話かもしれません。現状は変化しつつあり新しい拡張について筆者はまだ理解していません) より複雑です。
 Mac は限られた範囲のスタイル (plain, italic, bold, outline, condensed, expanded とこれらの組み合わせ) のみをサポートし、これから外れる全ての物は別個のファミリーに分けられてしまいます。
 そのため、あるファミリーに属するさまざまなフォントへのポインタを保持する特別なテーブル (FOND といいます) を構築する必要があります。
-あるファミリーに含めたいすべてのフォントを開いてあれば (そしてそれらに正しい名前がついていれば) 通常フォントから <A HREF="filemenu.html#GenerateMac">ファイル(F)→Macファミリーを出力(G)</A> を選択することができます。
+あるファミリーに含めたいすべてのフォントを開いてあれば (そしてそれらに正しい名前がついていれば) 通常フォントから <A HREF="filemenu.html#GenerateMac"><CODE>ファイル(<U>F</U>)</CODE>→<CODE>Macファミリーを出力(<U>F</U>)...</CODE></A> を選択することができます。
 これにより、現在のフォントと同じファミリーに属すると FontForge が認識した全てのフォントを列挙し、ファミリーに属する全てのフォントファイルと一緒に FOND 構造体を書き出せるようにします (場合によっては全てのフォントは同じファイルに含まれ、場合によっては個別のファイルに書き出されます。これは選んだフォーマットによります)。
 <H2>
 <!--<A NAME="summary">Final</A> Summary -->
@@ -276,4 +278,5 @@ systems there is a fair amount work involved still. See the
 <P ALIGN=Center>
 -- <A HREF="editexample6-5.html">前</A> -- <A HREF="overview.html">目次</A>
 -- <A HREF="scriptnotes.html">次</A> --
+</DIV>
 </BODY></HTML>

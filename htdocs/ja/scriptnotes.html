@@ -3,12 +3,14 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jan-2003 -->
   <!-- AP: Last modified: 28-Mar-2005 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Special thoughts for special scripts</TITLE>-->
     <TITLE>特定の用字系において特に考慮すべき点</TITLE>
   <LINK REL="icon" href="../ffanvil16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
+<DIV id="in">
 <H1 ALIGN=Center>
 <!-- Tutorial #8 -->
      チュートリアル (その 8)
@@ -67,27 +69,28 @@
 </UL>
 <H2>
 <!--<A NAME="Special">Special </A>thoughts for special scripts -->
-    <A NAME="Special">特定の</A>スクリプトにおいて特に考慮すべき点
+    <A NAME="Special">特定の</A>用字系において特に考慮すべき点
 </H2>
 <P>
 <!--
 <A HREF="http://www.microsoft.com/typography/specs/default.htm">Microsoft</A>
 provides some information on what (opentype) features a word processor should
 support by default for certain scripts. -->
-<A HREF="http://www.microsoft.com/typography/specs/default.htm">Microsoft</A> は、ワードプロセッサが特定のスクリプトに対してデフォルトでどの (OpenType) 機能を用意するべきかに関するいくつかの情報を提供しています。
+<A HREF="http://www.microsoft.com/typography/specs/default.htm">Microsoft</A> は、ワードプロセッサが特定の用字系に対してデフォルトでどの (OpenType) 機能を用意するべきかに関するいくつかの情報を提供しています。
 <P>
 <!--
 <FONT COLOR="Red"><STRONG><BIG>Caveat:</BIG></STRONG></FONT> Just because
 a feature is documented and looks useful does not mean Uniscribe will use
 it for your script. Many Latin script fonts would like to use 'init', 'medi',
 'calt', etc. but none of these features is turned on by Uniscribe for Latin. -->
-<FONT COLOR="Red"><STRONG><BIG>警告:</BIG></STRONG></FONT> 機能が文書化されていて、有益そうに見えるからといって、Uniscribe が目的とする用字系でそれを使用するとは限りません。多くのラテン文字フォントは 'init', 'medi', 'calt' などを必要としますが、Uniscribe においては、これらの機能はどれもラテン文字では使用可能になっていません。
+<FONT COLOR="Red"><STRONG><BIG>警告:</BIG></STRONG></FONT> 機能が文書化されていて、有益そうに見えるからといって、Uniscribe が目的とする用字系でそれを使用するとは限りません。多くのラテン文字フォントは&lsquo;init&rsquo;, &lsquo;medi&rsquo;, &lsquo;calt&rsquo;などを必要としますが、Uniscribe においては、これらの機能はどれもラテン文字では使用可能になっていません。
 <P>
+<!--
 <FONT COLOR="Red"><STRONG><BIG>Caveat:</BIG></STRONG></FONT> Just because
 Uniscribe supports a feature that does not mean any given application will.
 Uniscribe (as of 2005) supports 'liga' for latin, but neither Word nor Office
-does.
-<FONT COLOR="Red"><STRONG><BIG>警告:</BIG></STRONG></FONT> Uniscribe がその機能をサポートしているからと言って、すべてのアプリケーションがそれを使用可能なわけではありません。 Uniscribe は (2005 年現在) ラテン文字で 'liga' をサポートしていますが、Word も Office もそれを処理しません。
+does. -->
+<FONT COLOR="Red"><STRONG><BIG>警告:</BIG></STRONG></FONT> Uniscribe がその機能をサポートしているからと言って、すべてのアプリケーションがそれを使用可能なわけではありません。 Uniscribe は (2005 年現在) ラテン文字で&lsquo;liga&rsquo;をサポートしていますが、Word も Office もそれを処理しません。
 <P>
 <!--
 <FONT COLOR="Red"><STRONG><BIG>Caveat:</BIG></STRONG></FONT> Uniscribe (MS
@@ -146,7 +149,7 @@ perhaps st). -->
 ラテンアルファベットにおいては特に複雑な点はあまりありません。ラテン文字のフォントは一般的に 1 バイトエンコーディングに収まり、フォントテーブルはありません (あってもごく少数です)。
 大量のアクセントつきグリフを組み立てる必要があります――またはマークから基底文字への位置指定を使用することができます。
 幾つかのグリフの組み合わせについてカーニングを作成するべきでしょう。
-いくつかの作成すべき合字 ("f" に関する ff, fi, fl, ffi, ffl や恐らく st も) があります。
+いくつかの作成すべき合字 (“f”に関する ff, fi, fl, ffi, ffl や恐らく st も) があります。
 <P>
 <!--
 You may want to add a set of smallcaps. If you do, Adobe has reserved a block
@@ -207,7 +210,7 @@ glyphs. Kerning should be generated. I am not aware of any standard ligatures. -
 <P>
 <!--
 Some languages need variant glyphs (specified with a 'loca' feature) -->
-いくつかの言語は異なるグリフを必要とします ('loca' 機能で指定します)
+いくつかの言語は異なるグリフを必要とします (&lsquo;loca&rsquo;機能で指定します)
 <UL>
   <LI>
 <!--
@@ -255,7 +258,7 @@ Right to left. -->
 Uniscribe supports the
 <A HREF="http://www.microsoft.com/typography/OpenType%20Dev/hebrew/shaping.mspx">following
 features</A> -->
-Uniscribe は<A HREF="http://www.microsoft.com/typography/OpenType%20Dev/hebrew/shaping.mspx">以下の機能をサポートしています。
+Uniscribe は<A HREF="http://www.microsoft.com/typography/OpenType%20Dev/hebrew/shaping.mspx">以下の機能</A>をサポートしています。
 <P>
 <!--
 Hebrew has a few final forms but no special tables are needed for these.
@@ -280,7 +283,7 @@ Uniscribe は<A HREF="http://www.microsoft.com/typography/otfntdev/indicot/shapin
 <P>
 <!--
 Indic scripts need a set of ligatures. -->
-インド系の各種スクリプトは一組の合字セットを必要とします。
+インド系の各種用字系は一組の合字セットを必要とします。
 <P>
 <!--
 (they probably need a lot more but I'm not aware of what) -->
@@ -305,8 +308,7 @@ alphabet. Generally fonts consist of a set of precomposed syllables. -->
 <!--
 Complications are introduced by the massive combinatorial explosion of all
 these syllables. These are eased in postscript by CID-keyed fonts. -->
-複雑さは、これら全ての音節の膨大な組合せ的爆発が原因です。
-これは、PostScript では CID-keyed フォントによって緩和されます。
+複雑さは、これら全ての音節の膨大な組合せ的爆発が原因です。これは、PostScript では CID キー指定フォントによって緩和されます。
 <P>
 <!--
 Vertical writing and left to right writing are used, and some glyphs have
@@ -325,7 +327,7 @@ Microsoft は、(私の知る限り) これらの用字系について記述していません。
 <!--
 Again a massive collection of glyphs is needed, and postscript uses CID keyed
 fonts to deal with this. -->
-これも膨大なグリフ集合が必要であり、PostScript では CID keyed フォントを使ってこれを扱っています。
+これも膨大なグリフ集合が必要であり、PostScript では CID キー指定フォントを使ってこれを扱っています。
 <P>
 <!--
 Vertical writing and left to right writing are used, and some characters
@@ -336,4 +338,5 @@ have a different orientation when drawn vertically (parentheses for example).
 <P ALIGN=Center>
 -- <A HREF="editexample7.html">前</A> -- <A HREF="overview.html">目次</A>
 -- <A HREF="fontview.html">次</A> --
+</DIV>
 </BODY></HTML>
