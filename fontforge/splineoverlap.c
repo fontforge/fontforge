@@ -628,7 +628,7 @@ return( ilist );
     if ( il!=NULL &&
 	    ((RealWithin(m2->tstart,t2,.01) && m2->start==il) ||
 	     (RealWithin(m2->tend,t2,.01) && m2->end==il)) )
-return( il );
+return( ilist );
 
     for ( il = ilist; il!=NULL; il=il->next ) {
 	if ( RealWithin(il->inter.x,inter->x,.01) && RealWithin(il->inter.y,inter->y,.01)) {
