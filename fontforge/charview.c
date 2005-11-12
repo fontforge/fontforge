@@ -6480,8 +6480,6 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.checked = cv->sc->manualhints;
 	  break;
 	  case MID_AutoInstr:
-	    mi->ti.disabled = !cv->sc->parent->order2 || multilayer;
-	  break;
 	  case MID_EditInstructions:
 	    mi->ti.disabled = !cv->fv->sf->order2 || multilayer;
 	  break;

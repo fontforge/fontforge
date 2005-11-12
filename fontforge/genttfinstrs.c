@@ -24,7 +24,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "pfaedit.h"
+#include "pfaeditui.h"
 #include <math.h>
 #include <utype.h>
 
@@ -1710,6 +1710,14 @@ void SCAutoInstr(SplineChar *sc, BlueData *bd) {
 
     if ( !sc->parent->order2 )
 return;
+
+    if ( sc->layers[ly_fore].refs!=NULL && sc->layers[ly_fore].splines!=NULL ) {
+	gwwv_post_error(_("Can't instruct this glyph"),
+		_("TrueType does not support mixed references and contours.\nIf you want instructions for %.30s you should either:\n * Unlink the reference(s)\n * Copy the inline contours into their own (unencoded\n    glyph) and make a reference to that."),
+		sc->name );
+return;
+    }
+
     if ( sc->ttf_instrs ) {
 	free(sc->ttf_instrs);
 	sc->ttf_instrs = NULL;
