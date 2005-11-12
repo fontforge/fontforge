@@ -3,12 +3,14 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jan-2003 -->
   <!-- AP: Last modified: 22-Mar-2005 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Building accented glyphs</TITLE> -->
     <TITLE>アクセントつきグリフの組み立て方</TITLE>
   <LINK REL="icon" href="../ffanvil16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
+<DIV id="in">
 <H1 ALIGN=Center>
 <!-- Tutorial #4 -->
      チュートリアル (その 4)
@@ -91,9 +93,9 @@ Then you open up "&Atilde;" and position the accent so that it appears properly
 centered over the A. -->
 
 いちばん分かりやすいメカニズムは単純なコピー&amp;ペーストです:
-グリフ "A" を<A HREF="editmenu.html#Copy">コピー</A>して "&Atilde;" に<A HREF="editmenu.html#Paste">貼り付け</A>、次にチルダアクセントを<A HREF="editmenu.html#Copy">コピー</A>して "&Atilde;" に<A HREF="editmenu.html#PasteInto">追加貼り付け</A>します。(追加貼り付けが貼り付けとは微妙に異なることに注意してください)。
-「<CODE>貼り付け(P)</CODE>」コマンドは貼り付けの前に文字を消去しますが、「<CODE>追加貼り付け</CODE>」コマンドは、その文字の元の内容にクリップボードの中身を付け加えます)。
-それから "&Atilde;" を開いてアクセントの位置を調整し、正しく A の上に中心が来るようにします。
+グリフ“A”を<A HREF="editmenu.html#Copy">コピー</A>して“&Atilde;”に<A HREF="editmenu.html#Paste">貼り付け</A>、次にチルダアクセントを<A HREF="editmenu.html#Copy">コピー</A>して“&Atilde;”に<A HREF="editmenu.html#PasteInto">追加貼り付け</A>します。(追加貼り付けが貼り付けとは微妙に異なることに注意してください)。
+<CODE>貼り付け(<U>P</U>)</CODE> コマンドは貼り付けの前に文字を消去しますが、<CODE>追加貼り付け</CODE> コマンドは、その文字の元の内容にクリップボードの中身を付け加えます)。
+それから "&Atilde;" を開いてアクセントの位置を調整し、A の真上に中心が来るようにします。
 <P>
 <!--
 This mechanism is not particularly efficient, if you change the shape of
@@ -102,19 +104,19 @@ from it. FontForge has the concept of a
 <A HREF="overview.html#References">Reference</A> to a glyph. So you can Copy
 a Reference to "A", and Paste it, the Copy a Reference to tilde and Paste
 it Into, and then again adjust the position of the accent over the A. -->
-このメカニズムは、文字 "A" の形を変更した場合には、特に非効率になります。その文字から組み立てられたすべてのアクセントつきグリフを構築し直さなければなりません。FontForge にはグリフへの<A HREF="overview.html#References">参照</A>という概念があります。ですから、A への参照をコピーし、貼りつけ、チルダへの参照をコピーして追加貼りつけし、それから A の上のアクセントの位置を再調整するという手順が使えます。
+このメカニズムは、文字“A”の形を変更した場合には、特に非効率になります。その文字から組み立てられたすべてのアクセントつきグリフを構築し直さなければなりません。FontForge にはグリフへの<A HREF="overview.html#References">参照</A>という概念があります。ですから、A への参照をコピーし、貼りつけ、チルダへの参照をコピーして追加貼りつけし、それから A の上のアクセントの位置を再調整するという手順が使えます。
 <P>
 <!--
 Then if you change the shape of the A the shape of the A in "&Atilde;" will
 be updated automagically - - as will the width of "&Atilde;". -->
-その後で A の形を変更しても、"&Atilde;" に含まれる A の形や "&Atilde;" の文字幅を、勝手に更新してくれます。
+その後で A の形を変更しても、“&Atilde;”に含まれる A の形や“&Atilde;”の文字幅を、勝手に更新してくれます。
 <P>
 <!--
 But FontForge knows that "&Atilde;" is built out of "A" and the tilde accent,
 and it can easily create your accented glyphs itself by placing the references
 in "&Atilde;" and then positioning the accent over the "A". (Unicode provides
 a database which lists the components of every accented glyph (in Unicode)).-->
-しかし FontForge は "&Atilde;" が "A" とチルダアクセントから造られていることを知っているので、これらの参照を "&Atilde"; に自動配置し、アクセントを "A" の真上に揃えることにより、アクセントつきグリフを簡単に作成することができます (Unicode 規格は、Unicode に含まれる各アクセントつきグリフの構成要素を列挙したデータベースを提供しています)。
+しかし FontForge は“&Atilde;”が“A”とチルダアクセントから造られていることを知っているので、これらの参照を“&Atilde;”に自動配置し、アクセントを“A”の真上に揃えることにより、アクセントつきグリフを簡単に作成することができます (Unicode 規格は、Unicode に含まれる各アクセントつきグリフの構成要素を列挙したデータベースを提供しています)。
 <P>
 <!--
 As an example, open the file: tutorial/Ambrosia.sfd, then select all the
@@ -122,9 +124,7 @@ glyphs at encodings 0xc0-0xff, and then press
 <A HREF="elementmenu.html#Accented">Element-&gt;Build-&gt;Build Accented</A>
 all the accented characters will magically appear (there are a few characters
 in this range which are not accented, and they will remain blank). -->
-例えば、ファイル tutorial/Ambrosia.sfd を開き、エンコーディングが 0xc0～0xff の範囲のすべてのグリフを選択して
-<CODE><A HREF="elementmenu.html#Accented">エレメント(L)→アクセントつき文字の組み立て</A></CODE>
-を押せば、すべてのアクセントつき文字がお任せで現れます (この範囲にはアクセントつき文字でない物が数文字ありますが、それらは空白のままになります)。
+例えば、ファイル <CODE>tutorial/Ambrosia.sfd</CODE> を開き、符号位置が 0xc0～0xff の範囲にあるすべてのグリフを選択して <A HREF="elementmenu.html#Accented"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>組み立て(<U>U</U>)</CODE>→<CODE>アクセントつきグリフを構築(<U>B</U>)</CODE></A> を押せば、すべてのアクセントつき文字がお任せで現れます (この範囲にはアクセントつき文字でない物が数文字ありますが、それらは空白のままになります)。
 <P>
 <!--
 FontForge has a heuristic for positioning accents (most accents are centered
@@ -134,7 +134,7 @@ accent will be placed over it rather than being centered over the glyph),
 so you should be prepared to look at your accented glyphs after creating
 them. You may need to adjust one or two (or you may even want to redesign
 your base glyphs slightly). -->
-FontForge はアクセントの位置を決める経験的方法 (ほとんどのアクセントはグリフの最も高い位置を中心として、その上に位置します) を用いますが、時々これは悪い結果を招きます (もし "u" の 2 つのステムの片方がもう片方よりもわずかに高ければ、アクセントはグリフの中央の上に来ないで高いステムの上に来てしまいます) ので、アクセントつきグリフを作成した後は、目で確かめる心構えが必要です。
+FontForge はアクセントの位置を決める経験的方法 (ほとんどのアクセントはグリフの最も高い位置を中心として、その上に配置する) を用いますが、時々これは悪い結果を招きます (もし“u”の 2 つのステムの片方がもう片方よりもわずかに高ければ、アクセントはグリフの中央の上に来ないで高いステムの上に来てしまいます) ので、アクセントつきグリフを作成した後は、目で確かめる心構えが必要です。
 <H2>
 <!--<A NAME="ligature">Creating</A> a ligature -->
     合字の<A NAME="ligature">作成</A>
@@ -151,7 +151,7 @@ FontForge cannot create a nice ligature for you, but what it can do is put
 all the components of the ligature into the glyph with
 <A HREF="elementmenu.html#Accented">Element-&gt;Build-&gt;Build Composite</A>.
 This makes it slightly easier (at least in latin) to design a ligature. -->
-FontForge があなたのために美しい合字を作ってくれることは不可能ですが、<CODE><A HREF="elementmenu.html#Accented">エレメント(L)→組み立て→合字の組み立て</A></CODE> を用いれば、その合字のすべての構成要素を 1 個のグリフ上に配置することが可能です。
+FontForge があなたのために美しい合字を作ってくれることは不可能ですが、<CODE><A HREF="elementmenu.html#Accented">エレメント(<U>L</U>)</CODE>→<CODE>組み立て(<U>U</U>)</CODE>→<CODE>複合グリフを構築(<U>C</U>)</A></CODE> を用いれば、その合字のすべての構成要素を 1 個のグリフ上に配置することが可能です。
 これで、合字のデザインが (少なくともラテン文字では) 少しは楽になります。
 <TABLE BORDER CELLPADDING="2">
   <CAPTION>
@@ -184,16 +184,16 @@ FontForge があなたのために美しい合字を作ってくれることは不可能ですが、<CODE><A H
       dialog to name the glyph and mark it as a ligature. Then use
       <A HREF="elementmenu.html#Accented">Element -&gt; Build -&gt; Build
       Composite</A> to insert references to the ligature components.</TD>-->
-    <TD>グリフの名前を決め、合字であることを指定するために <CODE><A HREF="elementmenu.html#CharInfo">エレメント(L)→グリフ情報(I)</A></CODE> ダイアログを使います。次に <CODE><A HREF="elementmenu.html#Accented">エレメント(L)→組み立て(U)→組合せ文字を組み立てる(C)</A></CODE> で合字の構成要素への参照を挿入します。</TD>
+    <TD>グリフの名前を決め、合字であることを指定するために <A HREF="elementmenu.html#CharInfo"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>グリフ情報(<U>I</U>)...</CODE></A> ダイアログを使います。次に <A HREF="elementmenu.html#Accented"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>組み立て(<U>U</U>)</CODE>→<CODE>複合グリフを構築(<U>C</U>)</CODE></A> で合字の構成要素への参照を挿入します。</TD>
 <!--<TD>Use the <A HREF="editmenu.html#Unlink">Edit-&gt; Unlink References</A>
       command to turn the references into a set of contours.</TD>-->
-    <TD><CODE><A HREF="editmenu.html#Unlink">編集(E)→参照を解除(N)</A> コマンドを使って、参照を輪郭線に変換します。</TD>
+    <TD><A HREF="editmenu.html#Unlink"><CODE>編集(<U>E</U>)</CODE>→<CODE>参照を解除(<U>N</U>)</CODE></A> コマンドを使って、参照を輪郭線に変換します。</TD>
 <!--<TD>Adjust the components so that they will look better together. Here the
       stem of the first f has been lowered.</TD>-->
     <TD>各要素がより揃って美しく見えるように調整します。ここでは最初の f のステムを下に動かしています。</TD>
 <!--<TD>Use the <A HREF="elementmenu.html#Remove">Element -&gt; Remove Overlap</A>
       command to clean up the glyph.</TD>-->
-    <TD><A HREF="elementmenu.html#Remove">エレメント(L)→重複を除去</A> コマンドを使って、グリフを整理します。</TD>
+    <TD><A HREF="elementmenu.html#Remove"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>重複を除去</A></CODE> コマンドを使って、グリフを整理します。</TD>
 <!--<TD>Finally drag the ligature caret lines from the origin to more appropriate
       places between the components.</TD>-->
     <TD>最後に合字キャレットの線を、原点からもっと適切な構成要素間の場所に動かします。</TD>
@@ -219,7 +219,7 @@ press the button and drag one of the caret lines to its correct location.
 しかし、ワードプロセッサーがこの機能を可能にするためには、フォントデザイナーが適切なキャレット位置として設定した地点についていくつかの情報を得る必要があります。
 FontForge は、あるグリフが合字であることが分かっている場合、合字要素の間に配置するのに十分な個数のキャレット位置境界線をその文字に挿入します。
 FontForge はこれらを原点に置きます。もしあなたがこれらを原点に置いたままにしている場合、FontForge はそれらを無視します。
-しかし、合字を作成し終えたら、ポインタツールで原点に位置する線を移動し、ボタンを押してキャレット行の一つを正しい位置に移動したいと思うでしょう。
+しかし、合字を作成し終えたら、ポインタツールで原点に位置する線を移動し、ボタンを押してキャレット行の一つを正しい位置に移動したほうがよいでしょう。
 (TrueType と OpenType のみがこれをサポートしています)。
 <P>
 <P>
@@ -233,7 +233,7 @@ ligatures in latin).
 tries to document </A>what features they apply for which scripts in Uniscribe,
 but that isn't very helpful since Word and Office have quite different behavior
 than the default. -->
-<FONT COLOR="Red"><STRONG><BIG>警告: </BIG></STRONG></FONT>OpenType エンジンは、現在の用字系において適正であると判断した時にかぎり、機能を適用します (ラテン文字では、Uniscribe は 'liga' 機能のみを適用します)。
+<FONT COLOR="Red"><STRONG><BIG>警告: </BIG></STRONG></FONT>OpenType エンジンは、現在の用字系において適正であると判断した時にかぎり、機能を適用します (ラテン文字では、Uniscribe は&lsquo;liga&rsquo;機能のみを適用します)。
 Microsoft は、Uniscribe においてどのスクリプトにどの機能を適用するかを<A HREF="http://www.microsoft.com/typography/specs/default.htm">文書化しようとしています</A>が、Word および Office はデフォルトと全く異なる振舞いをするため、これはほとんど参考になりません。さらに悪いことに、いくつかのアプリケーションはおそらく一切の機能を適用しないことを選んでいます (Word はラテン文字の合字処理を行いません)。
 Microsoft は、Uniscribe においてどのスクリプトにどの機能を適用するかを<A HREF="http://www.microsoft.com/typography/specs/default.htm">文書化しようとしています</A>が、Word および Office はデフォルトと全く異なる振舞いをするため、これはほとんど参考になりません。
 <!--
@@ -251,8 +251,7 @@ want to build a ligature out of Unicode 0D15, 0D4D and 0D15 then name it
 Unicode に含まれない合字が必要な場合、以下のようにすれば構築することができます。
 まず <A HREF="faq.html#new-name">エンコードされていないグリフをフォントに追加</A> し、グリフに名前をつけます (または Unicode フォントならば、私用領域のコードポイントを使用します)。
 名前は重要です。もしあなたが正確に名前を指定したならば、FontForge はそれが合字であり、どんな要素から構成されているかを知ることができるからです。
-グリフ "longs", "longs" と "l" からなる合字を作成したい場合には、"longs_longs_l" と名前をつけます。Unicode 0D15, 0D4D と 0D15 からなる合字を組み立てる場合には
-"uni0D15_uni0D4D_uni0D15" と命名します。
+グリフ“longs”,“longs”と“l”からなる合字を作成したい場合には、<CODE>“longs_longs_l”</CODE>と名前をつけます。Unicode 0D15, 0D4D と 0D15 からなる合字を組み立てる場合には<CODE>“uni0D15_uni0D4D_uni0D15”</CODE>と命名します。
 <P>
 <!--
 Once you have named your ligature, and inserted its components (with Build
@@ -271,7 +270,7 @@ You should see a line like:<BR>
 -->
 <IMG SRC="../charinfo-akhn.png" WIDTH="307" HEIGHT="401" ALT="Akhand 合字タイプに対する文字情報"
     ALIGN="Right">最後に、FontForge がこのグリフを合字として印づけたかどうか (および、合字ならば、正しい種類の合字かどうか) を確認しましょう。
-<CODE><A HREF="charinfo.html#ligature">エレメント(L)→グリフ情報(I)→合字(L)</A></CODE> ダイアログを呼び出してください。
+<CODE><A HREF="charinfo.html#ligature">エレメント(<U>L</U>)</CODE>→<CODE>グリフ情報(<U>I</U>)...</CODE>→<CODE>[合字]</A></CODE> サブダイアログを呼び出してください。
 以下のような行が表示されるでしょう:<BR>
 <TT>&nbsp; &nbsp; liga &nbsp;m longs longs l</TT><BR>
 <!--or <BR>-->
@@ -280,19 +279,20 @@ You should see a line like:<BR>
 <!--
 In the first case you might want to add an additional line (by pressing the
 [New...] button:<BR> -->
-最初のケースでは、([新規...] ボタンを押して行を追加したいと思うはずです:<BR>
+最初のケースでは、(<CODE>[新規...]</CODE> ボタンを押して以下のような行を追加したほうがいいかもしれません:<BR>
 <TT>&nbsp; &nbsp; liga &nbsp;m longs_longs l</TT><BR>
 <!--
 (assuming you have a longs_longs ligature already). While in the second case
 you might want to select the line, press the [Edit...] button and change
 the ligature type from 'liga' to 'akhn' (I don't know enough about Indic
 scripts to understand this distinction myself), yielding: <BR> -->
-(ここでは合字 longs_longs が既に作成済みだと仮定しています)。
-2 番目のケースでは、行を選択して [編集...] ボタンを押して合字のタイプを 'liga' から 'akhn' に変更する必要があるでしょう (私自身は、この違いを理解するほどのインド系用字系に関する十分な知識がありません)。結果はこうなります:<BR>
+(ここでは合字 <CODE>longs_longs</CODE> が既に作成済みだと仮定しています)。
+2 番目のケースでは、行を選択して <CODE>[編集...]</CODE> ボタンを押して合字のタイプを&lsquo;liga&rsquo;から&lsquo;akhn&rsquo;に変更する必要があるでしょう (私自身は、この違いを理解するほどのインド系用字系に関する十分な知識がありません)。結果はこうなります:<BR>
 <TT>&nbsp; &nbsp; akhn &nbsp;m uni0D15 uni0D4D uni0D15</TT>
 <P>
 <P>
 <P ALIGN=Center>
 -- <A HREF="editexample3.html">前</A> -- <A HREF="overview.html">目次</A>
 -- <A HREF="editexample5.html">次</A> --
+</DIV>
 </BODY></HTML>

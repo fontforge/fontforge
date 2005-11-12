@@ -3,12 +3,14 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Jan-2002 -->
   <!-- AP: Last modified: 7-Feb-2005 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Command Line Arguments</TITLE>-->
     <TITLE>コマンドライン引数</TITLE>
   <LINK REL="icon" href="../ffanvil16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
+<DIV id="in">
 <H1 ALIGN=Center>
 <!--Command Line Arguments-->
     コマンドライン引数
@@ -32,7 +34,7 @@ in parentheses, thus:<BR> -->
 <CODE>&nbsp; &nbsp; $ fontforge "gulim.ttc(GulimChe)"</CODE><BR>
 <!--
 will select the font GulimChe out of the font file gulim.ttc.-->
-とするとフォントファイル gulim.ttc から GulimChe を読み出します。
+とするとフォントファイル <CODE>gulim.ttc</CODE> から GulimChe を読み出します。
 <P>
 <!--
 FontForge recognizes the following options: -->
@@ -44,7 +46,7 @@ FontForge は以下のオプションを認識します:
 <!--If FontForge's first argument is "-c" then the argument that follows will
     be treated as a string containing scripting commands, and those commands
     will be executed. All remaining arguments will be passed to the script. -->
-    FontForge への最初の引数が "-c" である場合は、その次の引数はスクリプトのコマンドとして解釈され、続いてそのコマンドが実行されます。その後ろの引数はすべてそのスクリプトに渡されます。
+    FontForge への最初の引数が“-c”である場合は、その次の引数はスクリプトのコマンドとして解釈され、続いてそのコマンドが実行されます。その後ろの引数はすべてそのスクリプトに渡されます。
     <BLOCKQUOTE>
       <PRE>$ fontforge -c 'Open($1); Generate($2)' foo.sfd foo.ttf
 </PRE>
@@ -52,7 +54,7 @@ FontForge は以下のオプションを認識します:
     <P>
 <!--Will read a font from "foo.sfd" and then generate a truetype font from it
     called "foo.ttf"-->
-    を実行すると、"foo.sfd" からフォントを読み込み、"foo.ttf" という名前の TrueType フォントを出力します。
+    を実行すると、“foo.sfd”からフォントを読み込み、“foo.ttf”という名前の TrueType フォントを出力します。
   <DT>
     -cmap type
   <DD>
@@ -164,7 +166,7 @@ FontForge は以下のオプションを認識します:
     that fontforge may be used as an interpreter. Ie. you can create a fontforge
     script file and type its name to your shell and fontforge will be invoked
     to process that file as a script file (passing any arguments to it)). -->
-    FontForge に与えた最初の引数が "-script" である場合、その次の引数は<A HREF="scripting.html">スクリプトファイル</A>として扱われ、残りの引数すべてはそのスクリプトに引数として渡されます。("-script" 引数は省略可能です。その場合、最初の引数が実行可能ファイルであり、そのファイルの最初の行が "#!" で始まり、"fontforge" を含んでいなければなりません。これは、FontForge はインタプリタとして使用することができることを意味します。すなわち、FontForge スクリプトファイルを作成し、その名前をシェルに渡すと FonForge がそのファイルをスクリプトファイルとして処理するように起動されます (すべての引数がそれに渡されます)。
+    FontForge に与えた最初の引数が“-script”である場合、その次の引数は<A HREF="scripting.html">スクリプトファイル</A>として扱われ、残りの引数すべてはそのスクリプトに引数として渡されます。(“-script”引数は省略可能です。その場合、最初の引数が実行可能ファイルであり、そのファイルの最初の行が“#!”で始まり、“fontforge”を含んでいなければなりません。これは、FontForge はインタプリタとして使用することができることを意味します。すなわち、FontForge スクリプトファイルを作成し、その名前をシェルに渡すと FonForge がそのファイルをスクリプトファイルとして処理するように起動されます (すべての引数がそれに渡されます)。
   <DT>
     -sync
   <DD>
@@ -231,7 +233,7 @@ FontForge は以下の環境変数を調べます:
     not be loaded unless explicitly requested. If unset (or if set to any other
     value) then preferences will be loaded when ff starts up with a user interface,
     and will not be loaded if ff starts up executing a script. -->
-    環境設定項目の読み込みを制御します。"Always" の場合、環境設定項目はスクリプトの実行時にも読み込まれます。"Never" の場合、環境設定項目は明示的に要求しない限り読み込まれません。設定されていない場合 (または任意の他の値の場合)、環境設定は ff がユーザインターフェースを持って起動した時には読み込まれ、ff がスクリプトを実行する時には読み込まれないようになります。
+    環境設定項目の読み込みを制御します。“Always”の場合、環境設定項目はスクリプトの実行時にも読み込まれます。“Never”の場合、環境設定項目は明示的に要求しない限り読み込まれません。設定されていない場合 (または任意の他の値の場合)、環境設定は ff がユーザインターフェースを持って起動した時には読み込まれ、ff がスクリプトを実行する時には読み込まれないようになります。
 </DL>
 <P>
   <HR>
@@ -271,4 +273,5 @@ FontForge は以下の環境変数を調べます:
 <P ALIGN=Center>
 -- <A HREF="xres.html">前</A> -- <A HREF="overview.html">目次</A> --
 <A HREF="files.html">次</A> --
+</DIV>
 </BODY></HTML>

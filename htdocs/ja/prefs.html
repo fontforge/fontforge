@@ -3,12 +3,14 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 2-Sep-2002 -->
   <!-- AP: Last modified: 22-Mar-2005 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Preferences Dialog</TITLE>-->
     <TITLE>環境設定ダイアログ</TITLE>
   <LINK REL="icon" href="../ffanvil16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
+<DIV id="in">
 <H1 ALIGN=Center>
 <!--Preferences Dialog-->
     環境設定ダイアログ
@@ -132,14 +134,14 @@
 <!--The maximum distance between the endpoints of two splines before they will
     join with the Edit-&gt;Join command. This is measured in pixels in the char
     view and em-units elsewhere. -->
-    編集(E)→線の接合(J) コマンドで接合される 2 本のスプラインの、端点同士の最大距離。これはグリフビューではピクセル単位で、それ以外のすべての場所では em ユニット単位で指定します。
+    <CODE>編集(<U>E</U>)</CODE>→<CODE>線の接合(<U>J</U>)</CODE> コマンドで接合される 2 本のスプラインの、端点同士の最大距離。これはグリフビューではピクセル単位で、それ以外のすべての場所では em ユニット単位で指定します。
   <DT>
     <A NAME="CopyMetaData">CopyMetaData</A>
   <DD>
 <!--Controls the behavior of Edit-&gt;Copy from the fontview. Normally Copy does
     not copy a glyph's metadata (name, encoding, etc.) but if this is set then
     it will.-->
-    フォントビューでの 編集(E)→コピー(C) のふるまいを制御します。通常は、コピーを行ってもグリフのメタデータ (名前、エンコーディングなど) はコピーされませんが、このフラグが設定されていると、それらもコピーされます。
+    フォントビューでの <CODE>編集(<U>E</U>)</CODE>→<CODE>コピー(<U>C</U>)</CODE> のふるまいを制御します。通常は、コピーを行ってもグリフのメタデータ (名前、エンコーディングなど) はコピーされませんが、このフラグが設定されていると、それらもコピーされます。
   <DT>
     <A NAME="UndoDepth">UndoDepth</A>
   <DD>
@@ -182,7 +184,7 @@
 <!--The amount of space (as a percentage of the em-square) that should be placed
     between an accent and the glyph below it by the Build Accented Character
     command. -->
-    アクセントつきグリフを構築 (B) コマンドで、アクセントと下にくる文字の間に置くべき空白の量を (em 正方形に対する百分率で) 指定します。
+    <CODE>アクセントつきグリフを構築(<U>B</U>)</CODE> コマンドで、アクセントと下にくる文字の間に置くべき空白の量を (em 正方形に対する百分率で) 指定します。
   <DT>
     <A NAME="AccentCenterLowest">AccentCenterLowest</A>
   <DD>
@@ -220,7 +222,7 @@
     this string (which should consist of a set of numbers separated by spaces).
     Whenever a postscript font is generated then this last number will be incremented
     by 1. -->
-    基底 "<A HREF="http://partners.adobe.com/asn/tech/type/xuid.jsp">XUID</A>" です。ユーザの機関を一意に識別するものである必要があります。これが設定されていると、新規に作成されたすべてのフォントには、この文字列の後ろにランダムな数値を付け加えたものが XUID として設定されます (これは、空白で区切られた数値の列である必要があります)。PostScript フォントが出力されるたびに、この最後の数値は 1 ずつ増やされます。
+    基底“<A HREF="http://partners.adobe.com/asn/tech/type/xuid.jsp">XUID</A>”です。ユーザの機関を一意に識別するものである必要があります。これが設定されていると、新規に作成されたすべてのフォントには、この文字列の後ろにランダムな数値を付け加えたものが XUID として設定されます (これは、空白で区切られた数値の列である必要があります)。PostScript フォントが出力されるたびに、この最後の数値は 1 ずつ増やされます。
     <P>
 <!--I have registered with Adobe and they have assigned FontForge (actually PfaEdit)
     an extended unique id base of [1021]. When you first start FontForge, FontForge
@@ -322,7 +324,7 @@ name will be the name of this entry inside the script menu, and the
 to be invoked. The "..." button allows you to browse for script files, which
 I think have extension .pe (but which can have whatever extension you prefer
 if you don't like my conventions).<BR Clear=All> -->
-ダイアログの<A NAME="scripts">このセクション</A> では、<A HREF="filemenu.html#ScriptMenu">スクリプトメニュー</A>で表示される組み込みスクリプトを定義することができます。それぞれの項目には、それに付随するメニュー名とスクリプトファイルの 2 つがあります。メニュー名は、スクリプトメニュー内にこの項目が表示されるときの名前です。<A HREF="scripting.html">スクリプトファイル</A>のほうは、呼び出されるファイルのファイル名です。[...] ボタンを押すとスクリプトファイルを見ることができます。スクリプトファイルの拡張子としては .pe を想定しています (が、私が決めたこの慣習が気に食わない場合はどのような拡張子でも好きに使うことができます)。<BR Clear=All>
+ダイアログの<A NAME="scripts">このセクション</A> では、<A HREF="filemenu.html#ScriptMenu">スクリプトメニュー</A>で表示される組み込みスクリプトを定義することができます。それぞれの項目には、それに付随するメニュー名とスクリプトファイルの 2 つがあります。メニュー名は、スクリプトメニュー内にこの項目が表示されるときの名前です。<A HREF="scripting.html">スクリプトファイル</A>のほうは、呼び出されるファイルのファイル名です。<CODE>[...]</CODE> ボタンを押すとスクリプトファイルを見ることができます。スクリプトファイルの拡張子としては .pe を想定しています (が、私が決めたこの慣習が気に食わない場合はどのような拡張子でも好きに使うことができます)。<BR Clear=All>
 <P>
 <IMG SRC="../prefs-macfeat.png" WIDTH="282" HEIGHT="372" ALIGN="Right"><!--The
 <A NAME="Mac">Mac</A> Features dialog allows you to define a set of default
@@ -331,7 +333,7 @@ placed in the 'name' table whenever a feature/setting is used in a generated
 'morx' table. (Thus if you have some common ligatures in your font, then
 the "ligature" feature names, and the "common ligature" setting names will
 be added to the 'name' table). -->
-<A NAME="Mac">Mac</A> 機能ダイアログでは、Mac の機能と設定に対する (各言語の) デフォルト名称の組を設定することができます。ある機能/設定がフォントの 'morx' テーブルで使用されるときには常に、これらの名前は 'name' テーブルに格納されます (これにより例えば、フォントに一般的な合字がいくつか含まれている場合に、機能名「合字」と設定名「一般的な合字」を 'name' テーブルに含めることができます)。
+<A NAME="Mac">Mac</A> 機能ダイアログでは、Mac の機能と設定に対する (各言語の) デフォルト名称の組を設定することができます。ある機能/設定がフォントの&lsquo;morx&rsquo;テーブルで使用されるときには常に、これらの名前は&lsquo;name&rsquo;テーブルに格納されます (これにより例えば、フォントに一般的な合字がいくつか含まれている場合に、機能名「合字」と設定名「一般的な合字」を&lsquo;name&rsquo;テーブルに含めることができます)。
 <P>
 <!--
 You may also use this dialog to establish which setting(s) should be on by
@@ -339,7 +341,7 @@ default in a given feature and whether the feature only allows one setting
 to be on at a time (the settings are mutually exclusive). All of this data
 may be overridden by the similar dialog in the
 <A HREF="fontinfo.html#Mac-Features">Element-&gt;Font Info </A>dialog. -->
-このダイアログでは、ある機能においてどの設定がデフォルトであるかと、機能が同時には 1 個の設定しか使用できないかどうかを指定することもできます (これらの設定はどれか 1 つしか設定できません)。このデータのすべては、<A HREF="fontinfo.html#Mac-Features">エレメント(L)→フォント情報(I)</A> で呼び出せる同様のダイアログでも設定でき、そちらの設定が優先されます。
+このダイアログでは、ある機能においてどの設定がデフォルトであるかと、機能が同時には 1 個の設定しか使用できないかどうかを指定することもできます (これらの設定はどれか 1 つしか設定できません)。このデータのすべては、<A HREF="fontinfo.html#Mac-Features"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE></A> で呼び出せる同様のダイアログでも設定でき、そちらの設定が優先されます。
 <P>
 <!--
 <IMG SRC="macfeature.png" WIDTH="258" HEIGHT="369" ALT="Mac Feature dialog"
@@ -354,7 +356,7 @@ languages, and you should provide settings for the feature. -->
 <!--
 To add a new name press the [New] button under the name list and you will
 be prompted for a language and a name. -->
-新しい名前を追加するには、名前リストの下にある [新規(N)] ボタンを押せば言語と名前とを入力するように求められます。
+新しい名前を追加するには、名前リストの下にある <CODE>[新規(<U>N</U>)]</CODE> ボタンを押せば言語と名前とを入力するように求められます。
 <P>
 <!--
 To add a new setting press the [New] button under the setting list. The setting
@@ -362,7 +364,7 @@ dialog contains the numeric value of this setting (Apple has decreed that
 if the feature is not mutually exclusive, all settings must be even numbers),
 whether this setting is on by default, and then a list of names for the setting
 in as many languages as you like.<BR CLEAR=ALL> -->
-新しい設定を追加するには、設定リストの下にある [新規(N] ボタンを押してください。設定ダイアログにはこの設定に対応する数値 (Apple は、その機能が他の機能と両立できないものでないならば、すべての設定は偶数でなければならないと宣言しています)、この設定がデフォルトで有効かどうかと、いくらでも好きな言語で設定可能な設定名のリストが含まれています。
+新しい設定を追加するには、設定リストの下にある <CODE>[新規(<U>N</U>)]</CODE> ボタンを押してください。設定ダイアログにはこの設定に対応する数値 (Apple は、その機能が他の機能と両立できないものでないならば、すべての設定は偶数でなければならないと宣言しています)、この設定がデフォルトで有効かどうかと、いくらでも好きな言語で設定可能な設定名のリストが含まれています。
 <IMG SRC="../MacFeatName.png" ALIGN="Right" WIDTH="263" HEIGHT="125"><IMG SRC="../macFeatureSetting.png"
     WIDTH="263" HEIGHT="216" ALIGN="Left"><BR CLEAR=ALL>
 <P>
@@ -411,4 +413,5 @@ controlled by -->
 -- <A HREF="filemenu.html">前</A> -- <A HREF="overview.html">目次</A> --
 <A HREF="filemenu.html">次</A> --
 <P>
+</DIV>
 </BODY></HTML>

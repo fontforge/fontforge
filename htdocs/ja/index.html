@@ -2,966 +2,970 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 27-Oct-2005 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
+  <!-- AP: Last modified: 31-Oct-2005 -->
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
   <TITLE>FontForge</TITLE>
   <LINK REL="icon" href="../ffanvil16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
-<H1 ALIGN=Center>
-  <IMG SRC="../ffanvil32.png" WIDTH="32" HEIGHT="32" ALIGN="Left"><A href="http://sourceforge.net"><IMG
-      src="http://sourceforge.net/sflogo.php?group_id=25752&amp;type=1" width="88"
-      height="31" border="0" alt="SourceForge Logo" ALIGN=right> </A> FontForge
-</H1>
-<!-- <P ALIGN=Center>
-<FONT COLOR="Red"><BIG><B>I will not be responding to bug reports/feature
-requests/etc. between<BR>
-22 June and 29 June (I'll be at
-<A HREF="http://omega.enstb.org/eurotex2003/">EuroTeX</A>)</B></BIG></FONT> -->
-<P>
+<DIV id="in">
+  <H1 ALIGN=Center>
+    <IMG SRC="../ffanvil32.png" WIDTH="32" HEIGHT="32" ALIGN="Left"><A href="http://sourceforge.net"><IMG
+	src="http://sourceforge.net/sflogo.php?group_id=25752&amp;type=1" width="88"
+	height="31" border="0" alt="SourceForge Logo" ALIGN=right> </A> FontForge
+  </H1>
+<!--   <P ALIGN=Center>
+  <FONT COLOR="Red"><BIG><B>I will not be responding to bug reports/feature
+  requests/etc. between<BR>
+  22 June and 29 June (I'll be at
+  <A HREF="http://omega.enstb.org/eurotex2003/">EuroTeX</A>)</B></BIG></FONT> -->
+  <P>
 <!--
-<FONT COLOR="Red"><STRONG>FontForge</STRONG></FONT> -- An outline font editor
-that lets you create your own postscript, truetype, opentype, cid-keyed,
-multi-master, cff, svg and bitmap (bdf, FON, NFNT) fonts, or edit existing
-ones. Also lets you convert one format to another. FontForge has support
-for many macintosh font formats. -->
-<FONT COLOR="Red"><STRONG>FontForge</STRONG></FONT> -- あなた自身の PostScript, Openype, CID, マルチプルマスター、CFF, SVG およびビットマップ (BDF, FON, NFNT) フォントを作成したり、既存のフォントを編集したりすることができるアウトラインフォントエディタ。あるフォーマットから別のフォーマットに変換することもできます。FontForge はさまざまな Macintosh のファイルフォーマットをサポートしています。
-<P>
+  <FONT COLOR="Red"><STRONG>FontForge</STRONG></FONT> -- An outline font editor
+  that lets you create your own postscript, truetype, opentype, cid-keyed,
+  multi-master, cff, svg and bitmap (bdf, FON, NFNT) fonts, or edit existing
+  ones. Also lets you convert one format to another. FontForge has support
+  for many macintosh font formats. -->
+  <FONT COLOR="Red"><STRONG>FontForge</STRONG></FONT> -- あなた自身の PostScript, Openype, CID, マルチプルマスター、CFF, SVG およびビットマップ (BDF, FON, NFNT) フォントを作成したり、既存のフォントを編集したりすることができるアウトラインフォントエディタ。あるフォーマットから別のフォーマットに変換することもできます。FontForge はさまざまな Macintosh のファイルフォーマットをサポートしています。
+  <P>
 <!--
-FontForge's user interface has been localized for: (English), Russian, Japanese,
-French, Italian, Spanish.<BR>-->
-FontForge のユーザインタフェースは以下の言語版が用意されています: (英語)・ロシア語・日本語・フランス語・イタリア語・スペイン語。<BR>
-<!--This website itself has been translated into Japanese
-<A HREF="ja/"><IMG SRC="flags/Nisshoki-Japan.png" WIDTH="39" HEIGHT="26"></A>
-and the tutorial into (traditional) Chinese
-<A HREF="http://edt1023.sayya.org/fontforge/editexample.html"><IMG SRC="flags/taiwan.png"
-    WIDTH="39" HEIGHT="26"></A> -->
-<a href="../index.html">この Web サイト</a>そのものは日本語
-<A HREF="index.html"><IMG SRC="../flags/Nisshoki-Japan.png" WIDTH="39" HEIGHT="26"></A>
-に翻訳されているほか、チュートリアルが (繁体字) 中国語
-<A HREF="http://edt1023.sayya.org/fontforge/editexample.html"><IMG SRC="../flags/taiwan.png"
-    WIDTH="39" HEIGHT="26"></A>
-に翻訳されています。
-<P>
-<UL>
-  <LI>
-<!--<A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=111040">Application
-    Download</A> -->
-    <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=111040">アプリケーションのダウンロード</A>
-    <TABLE CELLSPACING="6" CELLPADDING="2">
-      <CAPTION>
-<!--	System specific notes -->
-	各システム固有の注意点
-      </CAPTION>
-      <TR>
-	<TD><P ALIGN=Center>
-	  <A HREF="nix-install.html">Unix/Linux</A></TD>
-	<TD>&nbsp; &nbsp; &nbsp; <A HREF="mac-install.html">Mac</A></TD>
-	<TD>&nbsp; &nbsp; &nbsp; <A HREF="ms-install.html">MS/Windows</A></TD>
-	<TD>&nbsp; &nbsp; &nbsp; <A HREF="vms-install.html">VMS</A></TD>
-<!--	<TD>&nbsp; &nbsp; &nbsp; <A HREF="source-build.html">from source</A></TD> -->
-	<TD>&nbsp; &nbsp; &nbsp; <A HREF="source-build.html">ソースの構築方法</A></TD>
-      </TR>
-    </TABLE>
-  <LI>
-<!--<A HREF="overview.html"><BIG>User &amp; Reference
-    manual</BIG></A><BIG>.</BIG>
-    (<A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=114329">downloadable</A>)- -
-    Shorter tutorial <A HREF="editexample.html">html</A> -
-    <A HREF="fontforge-tutorial.pdf">pdf</A> - <A HREF="tutorial.tgz">example
-    files</A><BR> -->
-    <BIG><A HREF="../overview.html">User &amp; Reference Manual</A>.</BIG> (ここから<A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=114329">ダウンロード可能</A>) -- より短いチュートリアルの <A HREF="editexample.html">HTML</a> - <A HREF="http://fontforge.sourceforge.net/fontforge-tutorial.pdf">PDF</A> - <A HREF="http://fontforge.sourceforge.net/tutorial.tgz">サンプルファイル</A></BR>
-<!--<A HREF="ja/overview.html"><IMG SRC="manual-ja.png" WIDTH="268" HEIGHT="18"
-	BORDER="0"></A> &nbsp; &nbsp; -->
-    <A HREF="overview.html">ユーザ&amp;リファレンスマニュアル</A> &nbsp; &nbsp;
-<!--<A HREF="http://edt1023.sayya.org/fontforge/editexample.html"><IMG SRC="tutorial-zh_TW.png"
-	WIDTH="35" HEIGHT="18" BORDER="0"></A> -->
-    <A HREF="http://edt1023.sayya.org/fontforge/editexample.html">教學</A>
-  <LI>
-<!--<A HREF="http://sourceforge.net/projects/fontforge/">SourceForge Project
-    page</A> / SourceForge
-    <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338">File
-    Release System</A> -->
-    <A HREF="http://sourceforge.net/projects/fontforge/">SourceForge のプロジェクトページ</A> / SourceForge の <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338">ファイルリリースシステム</A>
-  <LI>
-<!--<A HREF="source-build.html#Dependencies">Dependencies</A> -->
-    <A HREF="source-build.html#Dependencies">依存するファイル群</A>
-   <LI>
-<!--<A HREF="source-build.html#cidmaps">Helper files for editing CID keyed
-    fonts</A> -->
-    <A HREF="source-build.html#cidmaps">CID キー指定フォントの編集のための補助ファイル</A>
-  <LI>
-<!--<A HREF="source-build.html#suggested-fonts">Suggested fonts</A>-->
-    <A HREF="source-build.html#suggested-fonts">おすすめのフォント</A>
-  <LI>
-<!--<A HREF="wacom.html">Configuring a wacom tablet</A>-->
-    <A HREF="wacom.html">ワコム製タブレットの設定方法</A>
-  <LI>
-<!--<A HREF="source-build.html#Documentation">Documentation</A>-->
-    <A HREF="source-build.html#Documentation">文書のインストール方法</A>
-  <LI>
-<!--<A HREF="sfds/index.html">A library sfd fonts</A> -->
-    <A HREF="http://fontforge.sourceforge.net/sfds/index.html">SFD フォントのライブラリ</A>
-  <LI>
-<!--<A HREF="#license">License</A>-->
-    <A HREF="#license">ライセンス</A>
-  <LI>
-<!--<A HREF="future.html">Future Improvements</A>-->
-    <A HREF="future.html">将来の改良</A>
-  <LI>
-<!--<A HREF="changelog.html#change-log">Change Log</A>
-    (<A HREF="oldchangelog.html">older changes</A>, even
-    <A HREF="pfaeditchangelog.html">older changes - - to PfaEdit</A>)-->
-    <A HREF="changelog.html#change-log">変更履歴</A>
-    (<A HREF="oldchangelog.html">以前の変更</A>、さらに<A HREF="pfaeditchangelog.html">古い―PfaEditへの―変更</A>)
-  <LI>
-    <A HREF="faqFS.html">FAQ</A>
-  <LI>
-<!--<A HREF="#Mail">Mailing Lists</A>-->
-    <A HREF="#Mail">メーリングリスト</A>
-  <LI>
-<!--<A HREF="index.html#Lacks">Things missing...</A>-->
-    <A HREF="index.html#Lacks">欠けている機能...</A>
-  <LI>
-<!--<A HREF="#known-bugs">Known Bugs</A>-->
-    <A HREF="#known-bugs">既知のバグ</A>
-  <LI>
-<!--<A HREF="#bugs">Reporting Bugs</A>-->
-    <A HREF="#bugs">バグの報告方法</A>
-  <LI>
-<!--<A HREF="#assistance">How else you can help</A>-->
-    <A HREF="#assistance">あなたが手助けできるその他の方法</A>
-  <LI>
-<!--<A HREF="future.html">Future Improvements</A>-->
-    <A HREF="future.html">将来の改良予定</A>
-  <LI>
-<!--<A HREF="#Acknowledgements">Acknowledgements</A> -->
-    <A HREF="#Acknowledgements">謝辞</A>
-  <LI>
-<!--<A HREF="bibliography.html#Formats">Font File Formats </A>(standards) -->
-    <A HREF="bibliography.html#Formats">フォントファイルフォーマット</A> (規格)
-  <LI>
-    <A HREF="bibliography.html#Unicode">Unicode</A>
-  <LI>
-<!--<A HREF="bibliography.html#Books">Books</A>-->
-    <A HREF="bibliography.html#Books">書籍</A>
-  <LI>
-<!--Companion programs-->
-    付属プログラム
-    <UL>
-      <LI>
-	<A HREF="sfddiff.html">sfddiff man page</A>
-      <LI>
-	<A HREF="acorn2sfd.html">acorn2sfd man page</A>
-      <LI>
-	<A HREF="fontutils.html">random font utilities</A>
-    </UL>
-  <LI>
-<!--<A HREF="#tools">Related tools</A>-->
-    <A HREF="#tools">関連ツール</A>
-</UL>
-<H2>
-<!--License-->
-    ライセンス
-</H2>
-<BLOCKQUOTE>
+  FontForge's user interface has been localized for: (English), Russian, Japanese,
+  French, Italian, Spanish.<BR>-->
+  FontForge のユーザインタフェースは以下の言語版が用意されています: (英語)・ロシア語・日本語・フランス語・イタリア語・スペイン語。<BR>
+<!--  This website itself has been translated into Japanese
+  <A HREF="ja/"><IMG SRC="flags/Nisshoki-Japan.png" WIDTH="39" HEIGHT="26"></A>
+  and the tutorial into (traditional) Chinese
+  <A HREF="http://edt1023.sayya.org/fontforge/editexample.html"><IMG SRC="flags/taiwan.png"
+      WIDTH="39" HEIGHT="26"></A> -->
+  <a href="../index.html">この Web サイト</a>そのものは日本語
+  <A HREF="index.html"><IMG SRC="../flags/Nisshoki-Japan.png" WIDTH="39" HEIGHT="26"></A>
+  に翻訳されているほか、チュートリアルが (繁体字) 中国語
+  <A HREF="http://edt1023.sayya.org/fontforge/editexample.html"><IMG SRC="../flags/taiwan.png"
+      WIDTH="39" HEIGHT="26"></A>
+  に翻訳されています。
+  <P>
+  <UL>
+    <LI>
+<!--  <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=111040">Application
+      Download</A> -->
+      <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=111040">アプリケーションのダウンロード</A>
+      <TABLE CELLSPACING="6" CELLPADDING="2">
+	<CAPTION>
+<!--  	System specific notes -->
+	  各システム固有の注意点
+	</CAPTION>
+	<TR>
+	  <TD><P ALIGN=Center>
+	    <A HREF="nix-install.html">Unix/Linux</A></TD>
+	  <TD>&nbsp; &nbsp; &nbsp; <A HREF="mac-install.html">Mac</A></TD>
+	  <TD>&nbsp; &nbsp; &nbsp; <A HREF="ms-install.html">MS/Windows</A></TD>
+	  <TD>&nbsp; &nbsp; &nbsp; <A HREF="vms-install.html">VMS</A></TD>
+<!--  	<TD>&nbsp; &nbsp; &nbsp; <A HREF="source-build.html">from source</A></TD> -->
+	  <TD>&nbsp; &nbsp; &nbsp; <A HREF="source-build.html">ソースの構築方法</A></TD>
+	</TR>
+      </TABLE>
+    <LI>
+<!--  <A HREF="overview.html"><BIG>User &amp; Reference
+      manual</BIG></A><BIG>.</BIG>
+      (<A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=114329">downloadable</A>)- -
+      Shorter tutorial <A HREF="editexample.html">html</A> -
+      <A HREF="fontforge-tutorial.pdf">pdf</A> - <A HREF="tutorial.tgz">example
+      files</A><BR> -->
+      <BIG><A HREF="../overview.html">User &amp; Reference Manual</A>.</BIG> (ここから<A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=114329">ダウンロード可能</A>) -- より短いチュートリアルの <A HREF="editexample.html">HTML</a> - <A HREF="http://fontforge.sourceforge.net/fontforge-tutorial.pdf">PDF</A> - <A HREF="http://fontforge.sourceforge.net/tutorial.tgz">サンプルファイル</A></BR>
+<!--  <A HREF="ja/overview.html"><IMG SRC="manual-ja.png" WIDTH="268" HEIGHT="18"
+	  BORDER="0"></A> &nbsp; &nbsp; -->
+      <A HREF="overview.html">ユーザ&amp;リファレンスマニュアル</A> &nbsp; &nbsp;
+<!--  <A HREF="http://edt1023.sayya.org/fontforge/editexample.html"><IMG SRC="tutorial-zh_TW.png"
+	  WIDTH="35" HEIGHT="18" BORDER="0"></A> -->
+      <A HREF="http://edt1023.sayya.org/fontforge/editexample.html">教學</A>
+    <LI>
+<!--  <A HREF="http://sourceforge.net/projects/fontforge/">SourceForge Project
+      page</A> / SourceForge
+      <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338">File
+      Release System</A> -->
+      <A HREF="http://sourceforge.net/projects/fontforge/">SourceForge のプロジェクトページ</A> / SourceForge の <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338">ファイルリリースシステム</A>
+    <LI>
+<!--  <A HREF="source-build.html#Dependencies">Dependencies</A> -->
+      <A HREF="source-build.html#Dependencies">依存するファイル群</A>
+     <LI>
+<!--  <A HREF="source-build.html#cidmaps">Helper files for editing CID keyed
+      fonts</A> -->
+      <A HREF="source-build.html#cidmaps">CID キー指定フォントの編集のための補助ファイル</A>
+    <LI>
+<!--  <A HREF="source-build.html#suggested-fonts">Suggested fonts</A>-->
+      <A HREF="source-build.html#suggested-fonts">おすすめのフォント</A>
+    <LI>
+<!--  <A HREF="wacom.html">Configuring a wacom tablet</A>-->
+      <A HREF="wacom.html">ワコム製タブレットの設定方法</A>
+    <LI>
+<!--  <A HREF="source-build.html#Documentation">Documentation</A>-->
+      <A HREF="source-build.html#Documentation">文書のインストール方法</A>
+    <LI>
+<!--  <A HREF="sfds/index.html">A library sfd fonts</A> -->
+      <A HREF="http://fontforge.sourceforge.net/sfds/index.html">SFD フォントのライブラリ</A>
+    <LI>
+<!--  <A HREF="#license">License</A>-->
+      <A HREF="#license">ライセンス</A>
+    <LI>
+<!--  <A HREF="future.html">Future Improvements</A>-->
+      <A HREF="future.html">将来の改良</A>
+    <LI>
+<!--  <A HREF="changelog.html#change-log">Change Log</A>
+      (<A HREF="oldchangelog.html">older changes</A>, even
+      <A HREF="pfaeditchangelog.html">older changes - - to PfaEdit</A>)-->
+      <A HREF="changelog.html#change-log">変更履歴</A>
+      (<A HREF="oldchangelog.html">以前の変更</A>、さらに<A HREF="pfaeditchangelog.html">古い―PfaEditへの―変更</A>)
+    <LI>
+      <A HREF="faqFS.html">FAQ</A>
+    <LI>
+<!--  <A HREF="#Mail">Mailing Lists</A>-->
+      <A HREF="#Mail">メーリングリスト</A>
+    <LI>
+<!--  <A HREF="index.html#Lacks">Things missing...</A>-->
+      <A HREF="index.html#Lacks">欠けている機能...</A>
+    <LI>
+<!--  <A HREF="#known-bugs">Known Bugs</A>-->
+      <A HREF="#known-bugs">既知のバグ</A>
+    <LI>
+<!--  <A HREF="#bugs">Reporting Bugs</A>-->
+      <A HREF="#bugs">バグの報告方法</A>
+    <LI>
+<!--  <A HREF="#assistance">How else you can help</A>-->
+      <A HREF="#assistance">あなたが手助けできるその他の方法</A>
+    <LI>
+<!--  <A HREF="future.html">Future Improvements</A>-->
+      <A HREF="future.html">将来の改良予定</A>
+    <LI>
+<!--  <A HREF="#Acknowledgements">Acknowledgements</A> -->
+      <A HREF="#Acknowledgements">謝辞</A>
+    <LI>
+<!--  <A HREF="bibliography.html#Formats">Font File Formats </A>(standards) -->
+      <A HREF="bibliography.html#Formats">フォントファイルフォーマット</A> (規格)
+    <LI>
+      <A HREF="bibliography.html#Unicode">Unicode</A>
+    <LI>
+<!--  <A HREF="bibliography.html#Books">Books</A>-->
+      <A HREF="bibliography.html#Books">書籍</A>
+    <LI>
+<!--  Companion programs-->
+      付属プログラム
+      <UL>
+	<LI>
+	  <A HREF="sfddiff.html">sfddiff man page</A>
+	<LI>
+	  <A HREF="acorn2sfd.html">acorn2sfd man page</A>
+	<LI>
+	  <A HREF="fontutils.html">random font utilities</A>
+      </UL>
+    <LI>
+<!--  <A HREF="#tools">Related tools</A>-->
+      <A HREF="#tools">関連ツール</A>
+  </UL>
+  <H2>
+<!--  License-->
+      ライセンス
+  </H2>
   <BLOCKQUOTE>
-    <A NAME="license">Copyright</A> &copy; 2000,2001,2002,2003,2004,2005 by George
-    Williams
-    <P>
-    Redistribution and use in source and binary forms, with or without modification,
-    are permitted provided that the following conditions are met:
-    <P>
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    <P>
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
-    <P>
-    The name of the author may not be used to endorse or promote products derived
-    from this software without specific prior written permission.
-    <P>
-    THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
-    WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-    MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
-    EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-    EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
-    OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-    STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
-    OF SUCH DAMAGE.
+    <BLOCKQUOTE>
+      <A NAME="license">Copyright</A> &copy; 2000,2001,2002,2003,2004,2005 by George
+      Williams
+      <P>
+      Redistribution and use in source and binary forms, with or without modification,
+      are permitted provided that the following conditions are met:
+      <P>
+      Redistributions of source code must retain the above copyright notice, this
+      list of conditions and the following disclaimer.
+      <P>
+      Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
+      and/or other materials provided with the distribution.
+      <P>
+      The name of the author may not be used to endorse or promote products derived
+      from this software without specific prior written permission.
+      <P>
+      THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+      WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+      MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+      EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+      EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+      OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+      INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+      STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+      ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
+      OF SUCH DAMAGE.
+    </BLOCKQUOTE>
   </BLOCKQUOTE>
-</BLOCKQUOTE>
-<P>
+  <P>
 <!--
-This is essentially the
-"<A HREF="http://www.law.yi.org/~sfllaw/talks/bsd.pdf">revised BSD
-license</A>". -->
-これは本質的に "<A HREF="http://www.law.yi.org/~sfllaw/talks/bsd.pdf">修正 BSD ライセンス</A>" と同じです。
-<H2>
-<!--<A NAME="Mail">Mailing Lists</A>-->
-    <A NAME="Mail">メーリングリスト</A>
-</H2>
-<P>
+  This is essentially the
+  "<A HREF="http://www.law.yi.org/~sfllaw/talks/bsd.pdf">revised BSD
+  license</A>". -->
+  これは本質的に "<A HREF="http://www.law.yi.org/~sfllaw/talks/bsd.pdf">修正 BSD ライセンス</A>" と同じです。
+  <H2>
+<!--  <A NAME="Mail">Mailing Lists</A>-->
+      <A NAME="Mail">メーリングリスト</A>
+  </H2>
+  <P>
 <!--
-There are currently three mailing lists established for FontForge. You may
-subscribe to any of them on sourceforge:
-<A HREF="http://sourceforge.net/mail/?group_id=103338">http://sourceforge.net/mail/?group_id=103338</A>.
-You may not post to a list until you have subscribed (sorry about that, but
-we were getting too much spam). -->
-現在、FontForge のためのメーリングリストは 3 つ存在します。これらメーリングリストはすべて SourceForge で購読の設定ができます:
-<A HREF="http://sourceforge.net/mail/?group_id=103338">http://sourceforge.net/mail/?group_id=103338</A>.
-購読者以外は投稿することができません (申し訳ありませんが、あまりに多くの SPAM が来るものですから)。
-<P>
+  There are currently three mailing lists established for FontForge. You may
+  subscribe to any of them on sourceforge:
+  <A HREF="http://sourceforge.net/mail/?group_id=103338">http://sourceforge.net/mail/?group_id=103338</A>.
+  You may not post to a list until you have subscribed (sorry about that, but
+  we were getting too much spam). -->
+  現在、FontForge のためのメーリングリストは 3 つ存在します。これらメーリングリストはすべて SourceForge で購読の設定ができます:
+  <A HREF="http://sourceforge.net/mail/?group_id=103338">http://sourceforge.net/mail/?group_id=103338</A>.
+  購読者以外は投稿することができません (申し訳ありませんが、あまりに多くの SPAM が来るものですから)。
+  <P>
 <!--
-<FONT COLOR="Red"><STRONG><BIG>Caveat: Posting to these mailing lists exposes
-your email address.</BIG></STRONG></FONT> -->
-<FONT COLOR="Red"><STRONG><BIG>警告: これらのメーリングリストに投稿すると、あなたの電子メールアドレスが曝されることになります。</BIG></STRONG></FONT>
-<UL>
-  <LI>
-    <A HREF="mailto:fontforge-devel@lists.sourceforge.net">fontforge-devel</A>
-    -- <!--for reporting bugs, requesting features and such<BR>-->
-       バグ報告、機能追加などを行うための場所<BR>
-<!--To subscribe, look at-->
-    購読の方法は、
-    <A HREF="http://lists.sourceforge.net/lists/listinfo/fontforge-devel">http://lists.sourceforge.net/lists/listinfo/fontforge-devel</A><!--<BR>-->
-<!--For archives, look at-->
-    を参照してください。<BR>
-    過去のアーカイブは、
-    <A HREF="http://sourceforge.net/mailarchive/forum.php?forum=fontforge-devel">http://sourceforge.net/mailarchive/forum.php?forum=fontforge-devel</A>
-    を参照してください。
-  <LI>
-    <A HREF="mailto:fontforge-testcases@lists.sourceforge.net">fontforge-testcases
-    </A>-- <!--To send large test cases to me<BR>-->
-               作者に大きなテストケースを送るための場所<BR>
-<!--Do not subscribe to this list.<BR> -->
-    このリストを購読しないでください。<BR>
-<!--For archives, look at-->
-    過去のアーカイブは、
-    <A HREF="http://sourceforge.net/mailarchive/forum.php?forum=fontforge-testcases">http://sourceforge.net/mailarchive/forum.php?forum=fontforge-testcases</A>
-    を参照してください。
-  <LI>
-    <A HREF="mailto:fontforge-users@lists.sourceforge.net">fontforge-users </A>--
-<!--for general discussion of fontforge<BR>-->
-    FontForge に関する一般的な議論を行うための場所<BR>
-<!--To subscribe, look at-->
-    購読の方法は、
-    <A HREF="http://lists.sourceforge.net/lists/listinfo/fontforge-users">http://lists.sourceforge.net/lists/listinfo/fontforge-users</A><!--<BR>-->
-    を参照してください。<BR>
-<!--For archives, look at-->
-    過去のアーカイブは、
-    <A HREF="http://sourceforge.net/mailarchive/forum.php?forum=fontforge-users">http://sourceforge.net/mailarchive/forum.php?forum=fontforge-users</A>
-    を参照してください。
-  <LI>
-    fontforge-announce -- <!--used (by me) to report major changes, etc.<BR>-->
-                              (私が) 大きな変更点などを告知するための場所<BR>
-<!--To subscribe, look at -->
-    購読の方法は、
-    <A HREF="http://lists.sourceforge.net/lists/listinfo/fontforge-announce">http://lists.sourceforge.net/lists/listinfo/fontforge-announce</A>
-    を参照してください。
-</UL>
-<H2>
-<!--<A NAME="Lacks">Lacks</A> -->
-    <A NAME="Lacks">欠けている機能</A>
-</H2>
-<P>
+  <FONT COLOR="Red"><STRONG><BIG>Caveat: Posting to these mailing lists exposes
+  your email address.</BIG></STRONG></FONT> -->
+  <FONT COLOR="Red"><STRONG><BIG>警告: これらのメーリングリストに投稿すると、あなたの電子メールアドレスが曝されることになります。</BIG></STRONG></FONT>
+  <UL>
+    <LI>
+      <A HREF="mailto:fontforge-devel@lists.sourceforge.net">fontforge-devel</A>
+      -- <!--for reporting bugs, requesting features and such<BR>-->
+	 バグ報告、機能追加などを行うための場所<BR>
+<!--  To subscribe, look at-->
+      購読の方法は、
+      <A HREF="http://lists.sourceforge.net/lists/listinfo/fontforge-devel">http://lists.sourceforge.net/lists/listinfo/fontforge-devel</A><!--<BR>-->
+<!--  For archives, look at-->
+      を参照してください。<BR>
+      過去のアーカイブは、
+      <A HREF="http://sourceforge.net/mailarchive/forum.php?forum=fontforge-devel">http://sourceforge.net/mailarchive/forum.php?forum=fontforge-devel</A>
+      を参照してください。
+    <LI>
+      <A HREF="mailto:fontforge-testcases@lists.sourceforge.net">fontforge-testcases
+      </A>-- <!--To send large test cases to me<BR>-->
+	         作者に大きなテストケースを送るための場所<BR>
+<!--  Do not subscribe to this list.<BR> -->
+      このリストを購読しないでください。<BR>
+<!--  For archives, look at-->
+      過去のアーカイブは、
+      <A HREF="http://sourceforge.net/mailarchive/forum.php?forum=fontforge-testcases">http://sourceforge.net/mailarchive/forum.php?forum=fontforge-testcases</A>
+      を参照してください。
+    <LI>
+      <A HREF="mailto:fontforge-users@lists.sourceforge.net">fontforge-users </A>--
+<!--  for general discussion of fontforge<BR>-->
+      FontForge に関する一般的な議論を行うための場所<BR>
+<!--  To subscribe, look at-->
+      購読の方法は、
+      <A HREF="http://lists.sourceforge.net/lists/listinfo/fontforge-users">http://lists.sourceforge.net/lists/listinfo/fontforge-users</A><!--<BR>-->
+      を参照してください。<BR>
+<!--  For archives, look at-->
+      過去のアーカイブは、
+      <A HREF="http://sourceforge.net/mailarchive/forum.php?forum=fontforge-users">http://sourceforge.net/mailarchive/forum.php?forum=fontforge-users</A>
+      を参照してください。
+    <LI>
+      fontforge-announce -- <!--used (by me) to report major changes, etc.<BR>-->
+	                        (私が) 大きな変更点などを告知するための場所<BR>
+<!--  To subscribe, look at -->
+      購読の方法は、
+      <A HREF="http://lists.sourceforge.net/lists/listinfo/fontforge-announce">http://lists.sourceforge.net/lists/listinfo/fontforge-announce</A>
+      を参照してください。
+  </UL>
+  <H2>
+<!--  <A NAME="Lacks">Lacks</A> -->
+      <A NAME="Lacks">欠けている機能</A>
+  </H2>
+  <P>
 <!--
-FontForge is by no means complete. And probably has some bugs. Be prepared
-to save frequently and consider working on a copy of the original. -->
-FontForge は決して完全ではありません。それに、おそらくバグがいくつか残っているでしょう。頻繁にファイルを保存し、オリジナルのコピーに対して作業を行うことを考慮してください。
-<UL>
-  <LI>
-<!--No attempt has been made to be efficient.-->
-    効率的に動作するための努力を行っていません。
-  <LI>
-<!--No attempt has been made to interpret truetype instructions (hints), instead
-    the instructions will be stored and used as long as no significant changes
-    happen to the character they are associated with. -->
-    TrueType の命令 (ヒント) を解釈する試みは全く行わず、命令はそのまま格納され、そのヒントに伴う文字に対して重要な変更が行われないかぎり使用されます。
-  <LI>
-<!--Many type 3 fonts will not be read in correctly -->
-    正しく読み込まれない Type 3 フォントがたくさんあります。
-  <LI>
-<!--Importing a type0 font loses the encoding. FontForge only imports simple
-    type0 fonts (such as those made by itself), will get confused if there's
-    more than one font with a chars dictionary. -->
-    Type 0 フォントを取り込むとエンコーディングが失われます。FontForge は単純な Type 0 フォント (例えば FontForge 自身が作った物) のみを取り込みます。もし chars 辞書に 2 個以上のフォントが含まれていると混乱するでしょう。
-  <LI>
-<!--FontForge's support for the VORG table output is limited.-->
-    FontForge の VORG テーブル出力のサポートはには制限があります。
-  <LI>
-<!--FontForge's support for <A HREF="gposgsub.html#AAT">Apple's Advanced Typography
-    tables</A> (AAT) is limited. -->
-    FontForge の <A HREF="gposgsub.html#AAT">Apple 拡張組版テーブル</A> (AAT) のサポートには制限があります。
-</UL>
-<H2>
-<!--<A NAME="known-bugs">Bugs</A>-->
-    <A NAME="known-bugs">バグ</A>
-</H2>
-<P>
+  FontForge is by no means complete. And probably has some bugs. Be prepared
+  to save frequently and consider working on a copy of the original. -->
+  FontForge は決して完全ではありません。それに、おそらくバグがいくつか残っているでしょう。頻繁にファイルを保存し、オリジナルのコピーに対して作業を行うことを考慮してください。
+  <UL>
+    <LI>
+<!--  No attempt has been made to be efficient.-->
+      効率的に動作するための努力を行っていません。
+    <LI>
+<!--  No attempt has been made to interpret truetype instructions (hints), instead
+      the instructions will be stored and used as long as no significant changes
+      happen to the character they are associated with. -->
+      TrueType の命令 (ヒント) を解釈する試みは全く行わず、命令はそのまま格納され、そのヒントに伴う文字に対して重要な変更が行われないかぎり使用されます。
+    <LI>
+<!--  Many type 3 fonts will not be read in correctly -->
+      正しく読み込まれない Type 3 フォントがたくさんあります。
+    <LI>
+<!--  Importing a type0 font loses the encoding. FontForge only imports simple
+      type0 fonts (such as those made by itself), will get confused if there's
+      more than one font with a chars dictionary. -->
+      Type 0 フォントを取り込むとエンコーディングが失われます。FontForge は単純な Type 0 フォント (例えば FontForge 自身が作った物) のみを取り込みます。もし chars 辞書に 2 個以上のフォントが含まれていると混乱するでしょう。
+    <LI>
+<!--  FontForge's support for the VORG table output is limited.-->
+      FontForge の VORG テーブル出力のサポートはには制限があります。
+    <LI>
+<!--  FontForge's support for <A HREF="gposgsub.html#AAT">Apple's Advanced Typography
+      tables</A> (AAT) is limited. -->
+      FontForge の <A HREF="gposgsub.html#AAT">Apple 拡張組版テーブル</A> (AAT) のサポートには制限があります。
+  </UL>
+  <H2>
+<!--  <A NAME="known-bugs">Bugs</A>-->
+      <A NAME="known-bugs">バグ</A>
+  </H2>
+  <P>
 <!--
-This list includes the gross bugs that I'm aware of but don't know how to
-fix. Minor bugs get reported to me and are generally fixed within a week
-and rarely appear on this list. -->
-このリストには、私が気づいていてもどう直せばいいか分からない大量のバグが含まれています。小さなバグは私に報告されれば一般的に 1 週間以内に修正されるので、このリストに現れることはめったにありません。
-<UL>
-  <LI>
-<!--My truetype hinting is still bad. Especially for diagonals.-->
-    私の TrueType ヒントづけ機能はまだ不出来です。とくに斜めの線が。
-    <UL>
-      <LI>
-<!--	R C van Dalen's <A HREF="http://home.kabelfoon.nl/~slam/fonts/">truetype
-	hinting utilities may be helpful here.</A> -->
-	この用途には、R C van Dalen の <A HREF="http://home.kabelfoon.nl/~slam/fonts/">TrueType ヒントづけユーティリティが役立つと思います</A>。
-    </UL>
-  <LI>
-<!--Some truetype fonts (kaiu and mingliu) do not store the correct outline.
-    Instead they rely on using the instructions to move points around to generate
-    the outline. The outline does not appear to be grid-fit at all, just positioned.
-    FontForge apply the instructions when loading. In most fonts this would be
-    the wrong thing to do, and I don't know how I could tell when it needs to
-    be done... -->
-    いくつかの TrueType フォント (kaiu や minliu) は、正確なアウトラインを内部に含んでいません。その代り、それらはアウトラインを生成するときに、命令を利用して点を移動する処理に依存しています。アウトラインのグリッド合わせはまったく行われず、単に配置を行うだけのようです。FontForge は命令を読み込み時に適用します。ほとんどのフォントではこれは行ってはならないと思われますが、いつ命令を処理するべきかをどうやったら判別できるのか私には分かりません…。
-  <LI>
-<!--After adding the Johab encoding 23/Nov/01, any old fonts (in sfd files) which
-    had a unicode encoding will suddenly claim to have a Johab encoding. I don't
-    see a way around this at the moment. Just reencode them as unicode and all
-    should be well.-->
-    Johab エンコーディングを2001年11月23日に追加して以来、Unicode エンコーディングを使用していたすべての (SFD ファイルに保存された) フォントは、突然 Johab エンコーディングであると解釈されるようになってしまいました。今のところ、これによる問題は発見されていません。それを Unicode に符号化し直せば、まったく問題なく使用できます。
-  <LI>
-<!--I'm told AutoKern doesn't work too well. <SMALL>(I may have fixed this, but
-    I'm not sure)</SMALL> -->
-    自動カーニングがうまく行かないとの報告を受けています。<SMALL>(修正したはずですが、自信がありません)</SMALL>
-  <LI>
-<!--FontForge is confused by small splines, on the order of one em unit. If you
-    need something that small, scale the font up by a factor of 2 or more (including
-    the ascent and descent). -->
-    FontForge は、1 em ユニットよりも微小なスプラインがあると混乱を起こします。何らかの微小な図形が必要な場合、フォントを 2 倍かそれ以上の比率で (フォントの高さ・深さごと) 拡大してください。
-  <LI>
-<!--There is a fundamental problem when importing a type3 font (or an eps file).
-    In an most postscript programs each contour is stroked or filled individually,
-    but in a type1 character, all contours are filled together. This can lead
-    to unexpected side-effects if contours overlap. (configuring fontforge for
-    <A HREF="multilayer.html">mutlilayered</A> editing can help with this) -->
-    Type 3 フォント (または EPS ファイル) の取り込みには根本的な問題があります。ほとんどの PostScript プログラムでは、各輪郭は個別に描画または塗りつぶしが行われますが、Type 1 の 1 文字では、すべての輪郭は同時に塗りつぶされます。これは、輪郭が重なり合ったときに予期しない結果をもたらすことがあります (FontForge を<A HREF="multilayer.html">複数レイヤー</A>編集可能なように設定することは、問題解決の助けになるでしょう)。
-  <LI>
-<!--The MetaFont command doesn't work well.-->
-    MetaFont コマンドは良好に動作しません。
-  <LI>
-<!--On linux boxes the dashed lines representing hints or the outlines of references
-    get screwed up. I think this is a bug in the XServer on linux (it doesn't
-    happen on other systems) but I have not examined it closely. -->
-    Linux 機では、ヒントや参照されたアウトラインを表す点線は壊れています。これは、Linux の X サーバのバグだろうと思います (その他のシステムでは起こりません) が、私はこれを詳しくテストしていません。
-  <LI>
-<!--FontForge will not copy and paste large (&gt;XServer transfer (4Meg on my
-    machine)) clipboards of text. -->
-    FontForge は大きな (Xサーバの転送バッファ (私のシステムでは 4 メガです) より大きい) クリップボードのテキストをコピー &amp; ペーストすることができません。
-  <LI>
-<!--Under gnome mnemonics in menus don't work. Personally I consider this a bug
-    in gnome. -->
-    Gnome では、メニューのニモニックは動作しません。これは Gnome のバグだろうと個人的には考えています。
-  <LI>
-<!--Under gnome, docked palettes don't work the first time. Personally I consider
-    this a bug in gnome. -->
-    Gnome では、埋め込みパレットは 1 回目には動作しません。これは Gnome のバグだろうと個人的には考えています。
-  <LI>
-<!--Under kde, iconifying a FontForge window crashes the button bar at the bottom
-    of the screen. Personally I consider this a bug in kde. -->
-    KDE では、FontForge のウィンドウをアイコン化すると、画面の下部にあるボタンバーがクラッシュします。これは KDE のバグだろうと個人的には考えています。
-  <LI>
-<!--FontForge only produces an approximation to the OS/2 Codepages fields.-->
-    FontForge の出力する OS/2 テーブルの Codepages フィールドの値は厳密には正しくありません。
-  <LI>
-    ???
-</UL>
-<H2>
-<!--Reporting <A NAME="bugs">bugs</A>...-->
-    <A NAME="bugs">バグ</A>を報告するには……
-</H2>
-<P>
+  This list includes the gross bugs that I'm aware of but don't know how to
+  fix. Minor bugs get reported to me and are generally fixed within a week
+  and rarely appear on this list. -->
+  このリストには、私が気づいていてもどう直せばいいか分からない大量のバグが含まれています。小さなバグは私に報告されれば一般的に 1 週間以内に修正されるので、このリストに現れることはめったにありません。
+  <UL>
+    <LI>
+<!--  My truetype hinting is still bad. Especially for diagonals.-->
+      私の TrueType ヒントづけ機能はまだ不出来です。とくに斜めの線が。
+      <UL>
+	<LI>
+<!--  	R C van Dalen's <A HREF="http://home.kabelfoon.nl/~slam/fonts/">truetype
+	  hinting utilities may be helpful here.</A> -->
+	  この用途には、R C van Dalen の <A HREF="http://home.kabelfoon.nl/~slam/fonts/">TrueType ヒントづけユーティリティが役立つと思います</A>。
+      </UL>
+    <LI>
+<!--  Some truetype fonts (kaiu and mingliu) do not store the correct outline.
+      Instead they rely on using the instructions to move points around to generate
+      the outline. The outline does not appear to be grid-fit at all, just positioned.
+      FontForge apply the instructions when loading. In most fonts this would be
+      the wrong thing to do, and I don't know how I could tell when it needs to
+      be done... -->
+      いくつかの TrueType フォント (kaiu や minliu) は、正確なアウトラインを内部に含んでいません。その代り、それらはアウトラインを生成するときに、命令を利用して点を移動する処理に依存しています。アウトラインのグリッド合わせはまったく行われず、単に配置を行うだけのようです。FontForge は命令を読み込み時に適用します。ほとんどのフォントではこれは行ってはならないと思われますが、いつ命令を処理するべきかをどうやったら判別できるのか私には分かりません…。
+    <LI>
+<!--  After adding the Johab encoding 23/Nov/01, any old fonts (in sfd files) which
+      had a unicode encoding will suddenly claim to have a Johab encoding. I don't
+      see a way around this at the moment. Just reencode them as unicode and all
+      should be well.-->
+      Johab エンコーディングを2001年11月23日に追加して以来、Unicode エンコーディングを使用していたすべての (SFD ファイルに保存された) フォントは、突然 Johab エンコーディングであると解釈されるようになってしまいました。今のところ、これによる問題は発見されていません。それを Unicode に符号化し直せば、まったく問題なく使用できます。
+    <LI>
+<!--  I'm told AutoKern doesn't work too well. <SMALL>(I may have fixed this, but
+      I'm not sure)</SMALL> -->
+      自動カーニングがうまく行かないとの報告を受けています。<SMALL>(修正したはずですが、自信がありません)</SMALL>
+    <LI>
+<!--  FontForge is confused by small splines, on the order of one em unit. If you
+      need something that small, scale the font up by a factor of 2 or more (including
+      the ascent and descent). -->
+      FontForge は、1 em ユニットよりも微小なスプラインがあると混乱を起こします。何らかの微小な図形が必要な場合、フォントを 2 倍かそれ以上の比率で (フォントの高さ・深さごと) 拡大してください。
+    <LI>
+<!--  There is a fundamental problem when importing a type3 font (or an eps file).
+      In an most postscript programs each contour is stroked or filled individually,
+      but in a type1 character, all contours are filled together. This can lead
+      to unexpected side-effects if contours overlap. (configuring fontforge for
+      <A HREF="multilayer.html">mutlilayered</A> editing can help with this) -->
+      Type 3 フォント (または EPS ファイル) の取り込みには根本的な問題があります。ほとんどの PostScript プログラムでは、各輪郭は個別に描画または塗りつぶしが行われますが、Type 1 の 1 文字では、すべての輪郭は同時に塗りつぶされます。これは、輪郭が重なり合ったときに予期しない結果をもたらすことがあります (FontForge を<A HREF="multilayer.html">複数レイヤー</A>編集可能なように設定することは、問題解決の助けになるでしょう)。
+    <LI>
+<!--  The MetaFont command doesn't work well.-->
+      MetaFont コマンドは良好に動作しません。
+    <LI>
+<!--  On linux boxes the dashed lines representing hints or the outlines of references
+      get screwed up. I think this is a bug in the XServer on linux (it doesn't
+      happen on other systems) but I have not examined it closely. -->
+      Linux 機では、ヒントや参照されたアウトラインを表す点線は壊れています。これは、Linux の X サーバのバグだろうと思います (その他のシステムでは起こりません) が、私はこれを詳しくテストしていません。
+    <LI>
+<!--  FontForge will not copy and paste large (&gt;XServer transfer (4Meg on my
+      machine)) clipboards of text. -->
+      FontForge は大きな (Xサーバの転送バッファ (私のシステムでは 4 メガです) より大きい) クリップボードのテキストをコピー &amp; ペーストすることができません。
+    <LI>
+<!--  Under gnome mnemonics in menus don't work. Personally I consider this a bug
+      in gnome. -->
+      Gnome では、メニューのニモニックは動作しません。これは Gnome のバグだろうと個人的には考えています。
+    <LI>
+<!--  Under gnome, docked palettes don't work the first time. Personally I consider
+      this a bug in gnome. -->
+      Gnome では、埋め込みパレットは 1 回目には動作しません。これは Gnome のバグだろうと個人的には考えています。
+    <LI>
+<!--  Under kde, iconifying a FontForge window crashes the button bar at the bottom
+      of the screen. Personally I consider this a bug in kde. -->
+      KDE では、FontForge のウィンドウをアイコン化すると、画面の下部にあるボタンバーがクラッシュします。これは KDE のバグだろうと個人的には考えています。
+    <LI>
+<!--  FontForge only produces an approximation to the OS/2 Codepages fields.-->
+      FontForge の出力する OS/2 テーブルの Codepages フィールドの値は厳密には正しくありません。
+    <LI>
+      ???
+  </UL>
+  <H2>
+<!--  Reporting <A NAME="bugs">bugs</A>...-->
+      <A NAME="bugs">バグ</A>を報告するには……
+  </H2>
+  <P>
 <!--
-I'm sure you'll find some. If you can isolate it and come up with a reproducible
-minimal case, that would be great. The executable has symbols in it so if
-you run it in gdb you should be able to get a stack trace... Do what you
-can. Please post bugs to: -->
-あなたもいくつかのバグを見つけると思います。それを特定することができて、再現可能な最小の例を作ることができたならば素晴らしいことです。実行可能ファイルにはシンボルが含まれているので gdb で実行すればスタックトレースが得られるでしょう… あなた自身で可能なことをしてください。バグ報告は以下のアドレスまで:
-<P>
-<A HREF="mailto:fontforge-devel@lists.sourceforge.net">fontforge-devel@lists.sourceforge.net</A>
-<H2>
-<!--<A NAME="assistance">How else you can help.</A>-->
-    <A NAME="assistance">あなたが手助けできるその他の方法</A>
-</H2>
-<UL>
-  <LI>
-<!--<EM>My writing leaves much to be desired</EM>. Anyone who can make my
-    documentation more readable is encouraged to do so. (or who wishes to translate
-    it into other languages, or who wishes to put it into a more flexable format,
-    KANOU has a <A HREF="http://khdd.net/fontforge-jman/">Japanese version</A>) -->
-    <EM>私の書き物には不十分な点がたくさん残っています</EM>。私の文書をより読みやすくすることのできる人はどなたでも歓迎します。(または、別の言語に翻訳する人やより柔軟なフォーマットに変換したい人も。)
-  <LI>
-<!--<I>I also have a brief tutorial in <A HREF="fontforge-tutorial.pdf">pdf
-    format</A>.</I> This could also be translated into other languages (and would
-    be a simpler job than trying to translate the entire website, here is the
-    <A HREF="fontforge-tutorial.tex">TeX source</A> if you wish to attempt it). -->
-    <I>私は簡単なチュートリアルの <A HREF="fontforge-tutorial.pdf">PDF 版</A> も作成しました。</I>これも翻訳できるでしょう (Web サイト全体を翻訳するよりはずっと楽な作業でしょう。翻訳をするつもりでしたら、ここに <a HREF="fontforge-tutorial.tex">TeX ソース</A>があります)。
-  <LI>
-<!--<EM>The UI can be translated into different languages.</EM> Unfortunately
-    it does not use gnu gettext. -->
-    <EM>UI も別の言語に翻訳できます。</EM>残念ながらこれは GNU gettext を使っていません。
-    <UL>
-      <LI>
-<!--	English I take care of-->
-	英語版は私が保守しています。
-      <LI>
-<!--	Russian is provided by Valek Filippov.-->
-	ロシア語版は Valek Filippov が提供しています。
-      <LI>
-<!--	Japanese is provided by KANOU Hiroki.-->
-	日本語版は狩野宏樹が提供しています。
-      <LI>
-<!--	French is provided by Pierre Hanser and Yannis Haralambous. -->
-	フランス語版は Pierre Hanser と Yannis Haralambous が提供しています。
-      <LI>
-<!--	Italian is provided by Claudio Beccari -->
-	イタリア語版は Claudio Beccari が提供しています。
-      <LI>
-<!--	Spanish is provided by <A HREF="mailto:wecharri@yahoo.com">Walter Echarri</A> -->
-	スペイン語版は <A HREF="mailto:wecharri@yahoo.com">Walter Echarri</A> が提供しています。
-      <LI>
-<!--	A Catalan and a (Brazillian) Portugese translation are being worked on by
-	Javier Candeira and Gustavo Paolo respectively. -->
-	カタルーニャ語版の翻訳は Javier Candeira が、(ブラジルの) ポルトガル語版は Gustavo Paolo が作業中です。
-      <LI>
-<!--	I've also created a very minimal German translations that lapses into English,
-	anyone who wants to take this on is encouraged to do so. -->
-	私はほんの最小限のドイツ語訳をひどい英語訛りで作成しましたが、これを引き継ぐつもりの方はどなたでも歓迎します。
-      <LI>
-<!--	Any other language additions would be great (the entire UI does not need
-	to be translated, any subset is a help) -->
-	何かほかの言語の追加は素晴らしいでしょう (UI 全部を翻訳する必要はなく、どんな部分訳でも助けになるでしょう)
-    </UL>
-  <LI>
-<!--<EM>Different font formats</EM><BR>-->
-    <EM>別のファイルフォーマット</EM><BR>
-<!--FontForge supports Type1, truetype, opentype and svg fonts, also bdf and
-    NFNT for bitmaps<BR>
-    FontForge will sort-of accept metafont files (essentially it runs metafont
-    and autotraces the result). It won't produce .mf files<BR>
-    FontForge will read (but not produce) Ikarus files<BR>
-    FontForge will read acorn font files with a helper app.<BR>
-    But there are other formats out there that I can't find descriptions of: -->
-    FontForge は Type1, TrueType, OpenType および SVG フォント、それに加えてビットマップでは BDF と NFNT をサポートしています。<BR>
-    FontForge はある意味で METAFONT ファイルを読み込むことができます (本質的には METAFONT を実行して結果を自動トレースします)。.mf ファイルは出力しません。<BR>
-    FontForge は Ikarus ファイルを読み込むことができます (が書き出しません)<BR>
-    FontForge は補助アプリケーションを使って acorn フォントを読み込みます。<BR>
-    しかし私が解説を見つけることのできないその他のフォーマットがあります:
-    <UL>
-      <LI>
-<!--	Microsoft FON files (bitmap font resource files for windows) -->
-	Microsoft FON ファイル (Windows 用ビットマップフォントリソースファイル)
-    </UL>
-  <LI>
-<!--There are certain c<EM>ommands which don't work very well </EM>and if someone
-    else wanted to they might code them better than I... -->
-    <EM>あまりよく動かないコマンド</EM>がいくつかあり、誰か他の人がやる気をだしてくれれば、私より上手なコードを書くでしょう……。
-    <UL>
-      <LI>
-<!--	Remove overlap (might be fixed now) -->
-	重複除去 (現在は修正済みのはずです)
-      <LI>
-<!--	Autokern (might be fixed now) -->
-	自動カーニング (現在は修正済みのはずです)
-      <LI>
-	Metafont
-      <LI>
-<!--	generating instructions to do hinting in truetype (especially hints for diagonal
-	stems)-->
-	TrueType のヒントづけを行うための命令の生成 (特に、斜めのステムに対するヒント)
-    </UL>
-  <LI>
-<!--<I>References</I>-->
-    <I>参照文献</I>
-    <UL>
-      <LI>
-<!--	I'd like to provide a reasonable bibliography, please suggest some good relevant
-	books. -->
-	適切な書誌を提供したいと思いますので、関連する良書のご提案をお待ちしています。
-      <LI>
-<!--	Are there any other programs or websites that I should be mentioning? -->
-	ここで触れておくべき、プログラムや Web サイトはないでしょうか?
-    </UL>
-  <LI>
-<!--<I>Tests</I>-->
-    <I>テスト</I>
-    <UL>
-      <LI>
-<!--	I've just started working on a very
-	<A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/test/">simplistic
-	testsuite</A>-- more to weed out crashes in the underlying engine, than to
-	make sure it produces the right results. If anyone has a better idea for
-	an automated suite, or would like to contribute tests to the current stuff,
-	please let me know. -->
-	私は、非常に<A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/test/">単純なテストスイート</A>を書き始めたばかりです――基盤となるエンジンのクラッシュを取り除くためにはもっと多くのテストが、それが正しい結果を出力することを確かめるためにはさらに多くが必要です。自動化されたスイートに関する良案をどなたかお持ちであれば、または、現在のテストに追加のテストを提供したい方がいらっしゃれば、私にご連絡ください。
-    </UL>
-  <LI>
-<!--<I>QA</I>-->
-    <I>品質保証</I>
-    <UL>
-      <LI>
-<!--	I don't.<BR>
-	I find QA boring, and since no one is paying me for this I don't do very
-	much. This is obviously a problem. If anyone wants to undertake to do QA
-	<A HREF="mailto:fontforge-devel@lists.sourceforge.net">for me</A> (or several
-	anyones) I'd be delighted.-->
-	私はやりません。<BR>
-	私は品質保証が退屈な仕事だと知っていますし、誰も私にこの件で給料を払っているわけではないので、頑張るつもりはありません。明らかにこれは問題です。<A HREF="mailto:fontforge-devel@lists.sourceforge.net">私に代って</A>品質保証の仕事をs引き受けてくださる方 (または何人かの方々) がいらっしゃいましたら、大変嬉しい限りです。
-    </UL>
-  <LI>
-<!--<I>Printing tests</I>-->
-    <I>印字テスト</I>
-    <UL>
-      <LI>
-<!--	I'm always on the look out for short copyright free texts for printing. I'm
-	looking for samples from languages I don't have anything on, or in styles
-	that I don't have.<BR>
-	I'm also interested in phrases equivalent to "The quick brown fox jumps over
-	the lazy dog." (pangrams). These are short sentences which use every letter
-	in the script. -->
-	印刷用の、著作権フリーなテキストを常時探し求めています。まだ何もテキストのない言語、またはテキストのない文体のサンプルを探しています。<BR>
-	私はまた、英語の "The quick brown fox jumps over the lazy dog." のような「いろは文」にも興味があります。
-    </UL>
-  <LI>
-<!--<I>Indic information</I>-->
-    <I>インド系文字に関する情報</I>
-    <UL>
-      <LI>
-<!--	Indic languages have a series of special ligature features in opentype. I
-	believe that FontForge could probably generate some of these by default but
-	I don't know enough to say which. If you are familiar with indic scripts
-	could you give me a list of conversions in a format like -->
-	OpenType ではインドの諸言語のための一連の特殊合字機能が定義されています。FotnForge は恐らくこれらのいくつかはデフォルトで生成できると私は信じていますが、そう言い切れるほど十分な知識がありません。各種のインド系用字系に関する詳しい知識をお持ちであれば、変換の一覧表を
-	<BLOCKQUOTE>
-	  <PRE>
+  I'm sure you'll find some. If you can isolate it and come up with a reproducible
+  minimal case, that would be great. The executable has symbols in it so if
+  you run it in gdb you should be able to get a stack trace... Do what you
+  can. Please post bugs to: -->
+  あなたもいくつかのバグを見つけると思います。それを特定することができて、再現可能な最小の例を作ることができたならば素晴らしいことです。実行可能ファイルにはシンボルが含まれているので gdb で実行すればスタックトレースが得られるでしょう… あなた自身で可能なことをしてください。バグ報告は以下のアドレスまで:
+  <P>
+  <A HREF="mailto:fontforge-devel@lists.sourceforge.net">fontforge-devel@lists.sourceforge.net</A>
+  <H2>
+<!--  <A NAME="assistance">How else you can help.</A>-->
+      <A NAME="assistance">あなたが手助けできるその他の方法</A>
+  </H2>
+  <UL>
+    <LI>
+<!--  <EM>My writing leaves much to be desired</EM>. Anyone who can make my
+      documentation more readable is encouraged to do so. (or who wishes to translate
+      it into other languages, or who wishes to put it into a more flexable format,
+      KANOU has a <A HREF="ja/index.html">Japanese version</A>) -->
+      <EM>私の書き物には不十分な点がたくさん残っています</EM>。私の文書をより読みやすくすることのできる人はどなたでも歓迎します。(または、別の言語に翻訳する人やより柔軟なフォーマットに変換したい人も。狩野は<A href="index.html">日本語版</A>を作っています)
+    <LI>
+<!--  <I>I also have a brief tutorial in <A HREF="fontforge-tutorial.pdf">pdf
+      format</A>.</I> This could also be translated into other languages (and would
+      be a simpler job than trying to translate the entire website, here is the
+      <A HREF="fontforge-tutorial.tex">TeX source</A> if you wish to attempt it). -->
+      <I>私は簡単なチュートリアルの <A HREF="fontforge-tutorial.pdf">PDF 版</A> も作成しました。</I>これも翻訳できるでしょう (Web サイト全体を翻訳するよりはずっと楽な作業でしょう。翻訳をするつもりでしたら、ここに <a HREF="fontforge-tutorial.tex">TeX ソース</A>があります)。
+    <LI>
+<!--  <EM>The UI can be translated into different languages.</EM> Unfortunately
+      it does not use gnu gettext. -->
+      <EM>UI も別の言語に翻訳できます。</EM>残念ながらこれは GNU gettext を使っていません。
+      <UL>
+	<LI>
+<!--  	English I take care of-->
+	  英語版は私が保守しています。
+	<LI>
+<!--  	Russian is provided by Valek Filippov.-->
+	  ロシア語版は Valek Filippov が提供しています。
+	<LI>
+<!--  	Japanese is provided by KANOU Hiroki.-->
+	  日本語版は狩野宏樹が提供しています。
+	<LI>
+<!--  	French is provided by Pierre Hanser and Yannis Haralambous. -->
+	  フランス語版は Pierre Hanser と Yannis Haralambous が提供しています。
+	<LI>
+<!--  	Italian is provided by Claudio Beccari -->
+	  イタリア語版は Claudio Beccari が提供しています。
+	<LI>
+<!--  	Spanish is provided by <A HREF="mailto:wecharri@yahoo.com">Walter Echarri</A> -->
+	  スペイン語版は <A HREF="mailto:wecharri@yahoo.com">Walter Echarri</A> が提供しています。
+	<LI>
+<!--  	A Catalan and a (Brazillian) Portugese translation are being worked on by
+	  Javier Candeira and Gustavo Paolo respectively. -->
+	  カタルーニャ語版の翻訳は Javier Candeira が、(ブラジルの) ポルトガル語版は Gustavo Paolo が作業中です。
+	<LI>
+<!--  	I've also created a very minimal German translations that lapses into English,
+	  anyone who wants to take this on is encouraged to do so. -->
+	  私はほんの最小限のドイツ語訳をひどい英語訛りで作成しましたが、これを引き継ぐつもりの方はどなたでも歓迎します。
+	<LI>
+<!--  	Any other language additions would be great (the entire UI does not need
+	  to be translated, any subset is a help) -->
+	  何かほかの言語の追加は素晴らしいでしょう (UI 全部を翻訳する必要はなく、どんな部分訳でも助けになるでしょう)
+      </UL>
+    <LI>
+<!--  <EM>Different font formats</EM><BR>-->
+      <EM>別のファイルフォーマット</EM><BR>
+<!--  FontForge supports Type1, truetype, opentype and svg fonts, also bdf and
+      NFNT for bitmaps<BR>
+      FontForge will sort-of accept metafont files (essentially it runs metafont
+      and autotraces the result). It won't produce .mf files<BR>
+      FontForge will read (but not produce) Ikarus files<BR>
+      FontForge will read acorn font files with a helper app.<BR>
+      But there are other formats out there that I can't find descriptions of: -->
+      FontForge は Type1, TrueType, OpenType および SVG フォント、それに加えてビットマップでは BDF と NFNT をサポートしています。<BR>
+      FontForge はある意味で METAFONT ファイルを読み込むことができます (本質的には METAFONT を実行して結果を自動トレースします)。.mf ファイルは出力しません。<BR>
+      FontForge は Ikarus ファイルを読み込むことができます (が書き出しません)<BR>
+      FontForge は補助アプリケーションを使って acorn フォントを読み込みます。<BR>
+      しかし私が解説を見つけることのできないその他のフォーマットがあります:
+      <UL>
+	<LI>
+<!--  	Microsoft FON files (bitmap font resource files for windows) -->
+	  Microsoft FON ファイル (Windows 用ビットマップフォントリソースファイル)
+      </UL>
+    <LI>
+<!--  There are certain c<EM>ommands which don't work very well </EM>and if someone
+      else wanted to they might code them better than I... -->
+      <EM>あまりよく動かないコマンド</EM>がいくつかあり、誰か他の人がやる気をだしてくれれば、私より上手なコードを書くでしょう……。
+      <UL>
+	<LI>
+<!--  	Remove overlap (might be fixed now) -->
+	  重複除去 (現在は修正済みのはずです)
+	<LI>
+<!--  	Autokern (might be fixed now) -->
+	  自動カーニング (現在は修正済みのはずです)
+	<LI>
+	  Metafont
+	<LI>
+<!--  	generating instructions to do hinting in truetype (especially hints for diagonal
+	  stems)-->
+	  TrueType のヒントづけを行うための命令の生成 (特に、斜めのステムに対するヒント)
+      </UL>
+    <LI>
+<!--  <I>References</I>-->
+      <I>参照文献</I>
+      <UL>
+	<LI>
+<!--  	I'd like to provide a reasonable bibliography, please suggest some good relevant
+	  books. -->
+	  適切な書誌を提供したいと思いますので、関連する良書のご提案をお待ちしています。
+	<LI>
+<!--  	Are there any other programs or websites that I should be mentioning? -->
+	  ここで触れておくべき、プログラムや Web サイトはないでしょうか?
+      </UL>
+    <LI>
+<!--  <I>Tests</I>-->
+      <I>テスト</I>
+      <UL>
+	<LI>
+<!--  	I've just started working on a very
+	  <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/test/">simplistic
+	  testsuite</A>-- more to weed out crashes in the underlying engine, than to
+	  make sure it produces the right results. If anyone has a better idea for
+	  an automated suite, or would like to contribute tests to the current stuff,
+	  please let me know. -->
+	  私は、非常に<A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/test/">単純なテストスイート</A>を書き始めたばかりです――基盤となるエンジンのクラッシュを取り除くためにはもっと多くのテストが、それが正しい結果を出力することを確かめるためにはさらに多くが必要です。自動化されたスイートに関する良案をどなたかお持ちであれば、または、現在のテストに追加のテストを提供したい方がいらっしゃれば、私にご連絡ください。
+      </UL>
+    <LI>
+<!--  <I>QA</I>-->
+      <I>品質保証</I>
+      <UL>
+	<LI>
+<!--  	I don't.<BR>
+	  I find QA boring, and since no one is paying me for this I don't do very
+	  much. This is obviously a problem. If anyone wants to undertake to do QA
+	  <A HREF="mailto:fontforge-devel@lists.sourceforge.net">for me</A> (or several
+	  anyones) I'd be delighted.-->
+	  私はやりません。<BR>
+	  私は品質保証が退屈な仕事だと知っていますし、誰も私にこの件で給料を払っているわけではないので、頑張るつもりはありません。明らかにこれは問題です。<A HREF="mailto:fontforge-devel@lists.sourceforge.net">私に代って</A>品質保証の仕事をs引き受けてくださる方 (または何人かの方々) がいらっしゃいましたら、大変嬉しい限りです。
+      </UL>
+    <LI>
+<!--  <I>Printing tests</I>-->
+      <I>印字テスト</I>
+      <UL>
+	<LI>
+<!--  	I'm always on the look out for short copyright free texts for printing. I'm
+	  looking for samples from languages I don't have anything on, or in styles
+	  that I don't have.<BR>
+	  I'm also interested in phrases equivalent to "The quick brown fox jumps over
+	  the lazy dog." (pangrams). These are short sentences which use every letter
+	  in the script. -->
+	  印刷用の、著作権フリーなテキストを常時探し求めています。まだ何もテキストのない言語、またはテキストのない文体のサンプルを探しています。<BR>
+	  私はまた、英語の "The quick brown fox jumps over the lazy dog." のような「いろは文」にも興味があります。
+      </UL>
+    <LI>
+<!--  <I>Indic information</I>-->
+      <I>インド系文字に関する情報</I>
+      <UL>
+	<LI>
+<!--  	Indic languages have a series of special ligature features in opentype. I
+	  believe that FontForge could probably generate some of these by default but
+	  I don't know enough to say which. If you are familiar with indic scripts
+	  could you give me a list of conversions in a format like -->
+	  OpenType ではインドの諸言語のための一連の特殊合字機能が定義されています。FotnForge は恐らくこれらのいくつかはデフォルトで生成できると私は信じていますが、そう言い切れるほど十分な知識がありません。各種のインド系用字系に関する詳しい知識をお持ちであれば、変換の一覧表を
+	  <BLOCKQUOTE>
+	    <PRE>
 U+0066 + U+0069 =&gt; U+FB01 'liga'
 </PRE>
-	</BLOCKQUOTE>
-	のようなフォーマットでご提供いただけないでしょうか。
-    </UL>
-</UL>
-<H2>
-<!--<A NAME="Acknowledgements">Acknowledgements</A> -->
-    <A NAME="Acknowledgements">謝辞</A>
-</H2>
-<P>
+	  </BLOCKQUOTE>
+	  のようなフォーマットでご提供いただけないでしょうか。
+      </UL>
+  </UL>
+  <H2>
+<!--  <A NAME="Acknowledgements">Acknowledgements</A> -->
+      <A NAME="Acknowledgements">謝辞</A>
+  </H2>
+  <P>
 <!--
-The sample text in File-&gt;Print comes from <A HREF="quotations.html">many
-sources</A>. -->
-ファイル(F)→印刷(P) のサンプルテキストは<A HREF="quotations.html">多くの引用元</A>に由来します。
-<P>
+  The sample text in File-&gt;Print comes from <A HREF="quotations.html">many
+  sources</A>. -->
+  ファイル(F)→印刷(P) のサンプルテキストは<A HREF="quotations.html">多くの引用元</A>に由来します。
+  <P>
 <!--
-The following people have helped debug fontforge. Many thanks! (actually
-the list should be far longer than this) -->
-以下の方々が FontForge をデバッグするのを手伝ってくれました。本当にありがとう! (本当はこのリストにはこれよりもっと長いはずです)。
-<UL>
-  <LI>
-    Tom Harvey
-  <LI>
-    Ken Chilton
-  <LI>
-    <A HREF="">Gerhard Killesreiter</A>
-  <LI>
-    Alexander Kotelnikov
-  <LI>
-<!--<A HREF="http://ucsb.edu/">University of California, Santa Barbara</A><BR>
-    (which has several times let me use some of their machines to do builds and
-    find bugs if I didn't have the requisite system at home). -->
-    <A HREF="http://ucsb.edu/">カリフォルニア州立大学サンタバーバラ校</A><BR>
-    (ビルドとバグの発見を行うために、必要なシステムが私の家にないときに何回かマシンを使わせてくださいました)
-  <LI>
-    <A HREF="http://rcswww.urz.tu-dresden.de/~koloska/">Uwe Koloska</A>
-  <LI>
-    Max Neunhoeffer
-  <LI>
-    Martin Giese
-  <LI>
-    E.J. Neafsey
-  <LI>
-    Norvell Spearman
-  <LI>
-    Stefan Fendt
-  <LI>
-    <A HREF="http://www.mp3.com/aurora-australis/">Harald ?Gleis?</A>
-  <LI>
-    Valek Filippov
-  <LI>
-    Pasi Eronen
-  <LI>
-    <A HREF="http://jeff.cs.mcgill.ca/~luc/">Luc Devroye</A>
-  <LI>
-    <A HREF="">Scott Pakin</A>
-  <LI>
-    Robert Brady
-  <LI>
-    Dung Ta Quang
-  <LI>
-    Sivan Toledo
-  <LI>
-    Gerhard Schellhorn
-  <LI>
-    MinGyoon
-  <LI>
-    Olaf Rogalsky
-  <LI>
-    <A HREF="http://baruch.ev-en.org/">Baruch Even</A>
-  <LI>
-    Volker Gering
-  <LI>
-    Torsten Bronger
-  <LI>
-    Jacob Jansen
-  <LI>
-    Ulrich Klauer
-  <LI>
-    <A HREF="http://canopus.iacp.dvo.ru/~panov/">Andrey V. Panov</A>
-  <LI>
-<!--Edward G.J. Lee -->
-    Edward G.J. Lee (李果正)
-  <LI>
-    Werner LEMBERG
-  <LI>
-<!--KANOU Hiroki-->
-    狩野 宏樹
-  <LI>
-    Pierre Hanser
-  <LI>
-    Claudio Beccari
-  <LI>
-    Yannis Haralambous
-  <LI>
-    Walter Echarri<BR>
-    &nbsp;
-  <LI>
-<!--And many others!-->
-    その他多くの方々!
-</UL>
-<P>
-<!--
-I owe David Turner (and everyone else) of
-<A HREF="http://freetype.sf.net/">FreeType</A> a debt for providing an API
-which allows me to debug truetype instructions. Also he came up with the
-name "FontForge". -->
-私が TrueType 命令をデバッグできているのは、<A HREF="http://freetype.sf.net/">FreeType</A> の David Turner (および他の多数の方々) が、そのための API を提供してくれたおかげです。また、彼は "FontForge" という名前の提案者でもあります。
-<P>
-<!--
-FontForge was inspired by AltSys's
-<A HREF="http://www.macromedia.com/software/fontographer/">Fontographer</A>
-now placed in graceful retirement by MacroMedia. -->
-FontForge は、現在円満退職して MacroMedia にいる、AltSys の <A HREF="http://www.macromedia.com/software/fontographer/">Fontographer</A> に鼓舞されています
-<P>
-<!--
-My father inspired a general interest in typography (though he is interested
-in renaissance printing techniques rather than computers). -->
-私の父はタイポグラフィに関する一般的な興味を喚起してくれました (彼はコンピュータよりもルネッサンスの印刷技術の方に興味があるのですが)。
-<P>
-<!--
-And finally I owe thanks to Linda Dozier, David Cole and everyone at NaviSoft
-which company has given me the free time to write this program. -->
-そして、最後に私は Linda Dozier, David Cole および、このプログラムを書くための自由な時間を私にくれた NaviSoft の全員に感謝しなければなりません。
-<H2>
-<!--Related <A NAME="tools">Tools</A>-->
-    関連する<A NAME="tools">ツール</A>
-</H2>
-<UL>
-  <LI>
-<!--BDF editors-->
-    BDF エディタ
-    <UL>
-      <LI>
-<!--	<A HREF="http://crl.nmsu.edu/~mleisher/xmbdfed.html">xmbdfed</A> -- bdf editor.-->
-	<A HREF="http://crl.nmsu.edu/~mleisher/xmbdfed.html">xmbdfed</A> -- bdf エディタ。
-      <LI>
-<!--	<A HREF="http://www.gnu.org/software/gfe/gfe.html">gfe</A> -- GNU font editor.
-	Eventually supposed to support other formats -->
-<!--	<A HREF="http://www.gnu.org/software/gfe/gfe.html">gfe</A> -- GNU フォントエディタ。そのうち他のフォーマットもサポートするようになると思われます。
-      <LI>
-<!--	fstobdf -- Part of the X distribution, reads a font from the server and generates
-	a bdf file from it. -->
-	fstobdf -- X の配布物に含まれています。フォントをサーバから読み込み、それを元に BDF ファイルを作成します。
-    </UL>
-  <LI>
-<!--Postscript/ttf font editors-->
-    PostScript/TTF フォントエディタ
-    <UL>
-      <LI>
-	<A HREF="http://www.typeforum.de/modules.php?op=modload&amp;name=Downloads&amp;file=index&amp;req=gettit&amp;lid=50">Manutius</A>
-<!--	-- (only for windows, German UI, Type1 fonts)-->
-	-- (Windows、ドイツ語 UI、Type1 フォント専用)
-      <LI>
-<!--	<A HREF="http://www.cs.usyd.edu.au/~matty/Spif/">spif</A> -- under development
-	(open source) -->
-	<A HREF="http://www.cs.usyd.edu.au/~matty/Spif/">spif</A> -- 開発中 (オープンソース)
-      <LI>
-<!--	<A HREF="http://www.levien.com/gfonted/">gfonted</A> -- under development
-	(open source) -->
-	<A HREF="http://www.levien.com/gfonted/">gfonted</A> -- 開発中 (オープンソース)
-      <LI>
-<!--	<A HREF="http://doubletype.sf.net/">DoubleType</A> -- Java based open source
-	truetype designer -->
-	<A HREF="http://doubletype.sf.net/">DoubleType</A> -- Java ベースのオープンソース TrueType デザイン用ソフト
-      <LI>
-<!--	<A HREF="http://cgm.cs.mcgill.ca/~luc/editors.html">Luc Devroye's page of
-	links to font creation programs</A> -->
-	<A HREF="http://cgm.cs.mcgill.ca/~luc/editors.html">Luc Devroye による、各種フォント作成プログラムへのリンクページ</A>
-      <LI>
-<!--	<A HREF="http://pfaedit.sf.net/">pfaedit</A> -- The old name for fontforge -->
-	<A HREF="http://pfaedit.sf.net/">PfaEdit</A> -- FontForge の旧名称</A>
-	  <HR>
-      <LI>
-<!--	<A HREF="http://www.fontlab.com/">Fontographer</A> - - my favorite, has not
-	been updated since1996 but has recently been purchased by FontLab who promise
-	an update in 2006 (<FONT COLOR="Red"><STRONG>proprietary</STRONG></FONT>) -->
-	<A HREF="http://www.fontlab.com/">Fontographer</A> -- 私のお気に入りで、1996 年以来更新されていなかったが、2006 年の新版を約束する FontLab に最近買収された (<FONT COLOR="Red"><STRONG>商用</STRONG></FONT>)
-	</UL>
-      <LI>
-<!--	<A HREF="http://www.fontlab.com/">FontLab</A> -- Said to have really good
-	tools for hinting truetype. -->
-	<A HREF="http://www.fontlab.com/">FontLab</A> -- TrueType のヒントづけには非常に優れたツールと言われている
-<!--	(<FONT COLOR="Red"><STRONG>proprietary</STRONG></FONT>) -->
-	(<FONT COLOR="Red"><STRONG>商用</STRONG></FONT>)
-	<UL>
-	  <LI>
-<!--	    <A HREF="http://www.fontlab.com/">AsiaFont Studio</A> - - FontLab for big
-	    fonts (<FONT COLOR="Red"><STRONG>proprietary</STRONG></FONT>) -->
-	    <A HREF="http://www.fontlab.com/">AsiaFont Studio</A> -- 大きなフォント用の FontLab (<FONT COLOR="Red"><STRONG>商用</STRONG></FONT>)
-      <LI>
-<!--	<A HREF="http://www.fontmaster.nl/english/">FontMaster</A> (used to be
-	<A HREF="http://www.urwpp.de/english/home.html">Ikarus</A> )-- Top of the
-	line font creation software.-->
-	<A HREF="http://www.fontmaster.nl/english/">FontMaster</A> (かつて <A HREF="http://www.urwpp.de/english/home.html">Ikarus</A> と呼ばれていた) -- 最高級品のフォント作成ソフトウェア。
-<!--	(<FONT COLOR="Red"><STRONG>proprietary</STRONG></FONT>) -->
-	(<FONT COLOR="Red"><STRONG>商用</STRONG></FONT>)
-      <LI>
-<!--	<A HREF="http://www.CR8.netfirms.com/">CR8Type</A> - - TrueType font editor
-	(<FONT COLOR="Red"><STRONG>proprietary</STRONG></FONT>) -->
-	<A HREF="http://www.CR8.netfirms.com/">CR8Type</A> -- TrueType フォントエディタ (<FONT COLOR="Red"><STRONG>商用</STRONG></FONT>)	
-    </UL>
-  <LI>
-<!--Automated font creation by template -->
-    テンプレートによる自動フォント生成
-   <UL>
+  The following people have helped debug fontforge. Many thanks! (actually
+  the list should be far longer than this) -->
+  以下の方々が FontForge をデバッグするのを手伝ってくれました。本当にありがとう! (本当はこのリストにはこれよりもっと長いはずです)。
+  <UL>
     <LI>
-<!--<A HREF="http://www.stiligt.se/">stiligt</A> (swedish)-->
-    <A HREF="http://www.stiligt.se/">stiligt</A> (スウェーデン語)
-   </UL>
-  <LI>
-<!--MetaFont -- Knuth's font generation which produces bitmaps from a program
-    based on splines (&amp; other TeX utilities) -->
-    METAFONT ― スプラインに基づいたプログラムからビットマップを生成する、Knuth の開発したフォント生成機 (また、それと関連する TeX のユーティリティ)
-    <UL>
-      <LI>
-<!--	<A HREF="http://www.tug.org/">(available with the TeX package)</A> -->
-	<A HREF="http://www.tug.org/">(TeX のパッケージに含まれています)</A>
-      <LI>
-<!--	<A HREF="http://cm.bell-labs.com/who/hobby/MetaPost.html">MetaPost</A>, Uses
-	the metafont language to produce PostScript pictures. -->
-	<A HREF="http://cm.bell-labs.com/who/hobby/MetaPost.html">MetaPost</A>, PostScript の図形描画のために METAFONT 言語を使用します。
-      <LI>
-<!--	<A HREF="ftp://bob.eps.gda.pl/pub/metatype1/">MetaType1</A>, Which attempts
-	to generate a type1 font directly from the metafont splines (I think) -->
-	<A HREF="ftp://bob.eps.gda.pl/pub/metatype1/">MetaType1</A>, METAFONT のスプラインから Type 1 フォントを直接出力する試み (だと思います)
-      <LI>
-<!--	<A HREF="http://textrace.sf.net/">TeXTrace</A>, generates pfb fonts from
-	TeX fonts by rasterizing at high res and then autotracing them -->
-	<A HREF="http://textrace.sf.net/">TeXTrace</A>, TeX フォントを高解像度でラスタライズしてから自動トレースして PFB フォントを出力します。
-      <LI>
-<!--	<A HREF="ftp://ftp.radio-msu.net/pub/tex/tex-archive/fonts/utilities/mf2ps/">mftops</A>,
-	similar -->
-	<A HREF="ftp://ftp.radio-msu.net/pub/tex/tex-archive/fonts/utilities/mf2ps/">mftops</A>, これも同様
-      <LI>
-<!--	<A HREF="http://www.cs.uu.nl/~hanwen/mftrace/index.html">mftrace</A>, traces
-	pk fonts (bitmap images) and creates pfb/pfa files. (formerly called pktrace) -->
-	<A HREF="http://www.cs.uu.nl/~hanwen/mftrace/index.html">mftrace</A>, pk フォント (ビットマップ画像) をトレースして PFB/PFA ファイルを作成します (かつては pktrace と呼ばれていました)。
-    </UL>
-  <LI>
-<!--Postscript utilities-->
-    PostScript フォントのユーティリティ
-    <UL>
-      <LI>
-<!--	<A HREF="http://gfontview.sourceforge.net/">gfontview</A> -- displays a
-	postscript/ttf font -->
-	<A HREF="http://gfontview.sourceforge.net/">gfontview</A> -- PostScript/TTF フォントを表示します。
-      <LI>
-	<A HREF="http://rpmfind.net/linux/RPM/contrib/libc6/i386/gglyph-0.1.3-1.i386.html">gglyph</A>
-<!--	-- another font displayer -->
-	-- もう一つのフォントソフトウェア
-      <LI>
-<!--	<A HREF="http://www.lcdf.org/type/">t1utils</A> -- Type 1 utility programs
-	&amp; multiple master utilities -->
-	<A HREF="http://www.lcdf.org/type/">t1utils</A> -- Type 1 ユーティリティプログラムおよび、マルチプルマスターのユーティリティ
-      <LI>
-	<A HREF="ftp://metalab.unc.edu/pub/Linux/X11/xutils/type1inst-0.6.1.tar.gz">Type1inst</A>
-<!--	-- helps to install type 1 fonts under X and ghostscript -->
-	-- Type 1 フォントの X と ghostscript へのインストールを手助けします。
-      <LI>
-<!--	<A HREF="http://ttf2pt1.sourceforge.net/">ttf2pt1</A> -- Converts truetype
-	to type1 postscript fonts and generates hints
-	<A HREF="http://ttf2pt1.sourceforge.net/">ttf2pt1</A> -- TrueType を Type 1 PostScript フォントに変換し、ヒントを出力します。
-      <LI>
-<!--	<A HREF="http://ftp.giga.or.at/pub/nih/ttftot42/">ttftot42</A> -- Converts
-	truetype to type42 postscript fonts. -->
-	<A HREF="http://ftp.giga.or.at/pub/nih/ttftot42/">ttftot42</A> -- TrueType を Type 42 PostScript フォントに変換します。
-      <LI>
-<!--	<A HREF="http://textrace.sf.net/">type1fix</A> -- (part of the TeXtrace package).
-	Used to make some Type1 fonts work with ATM. -->
-	<A HREF="http://textrace.sf.net/">type1fix</A> -- (TeXtrace パッケージの一部です)。Type 1 フォントを ATM で動作するようにします。
-      <LI>
-<!--	<A HREF="http://bibliofile.duhs.duke.edu/gww/FreeWare/MyToys.html">my stuff
-	</A>-- Type 1 decoders and converters. True Type &amp; open type decoder. -->
-	<A HREF="http://bibliofile.duhs.duke.edu/gww/FreeWare/MyToys.html">自作の品々</A> -- Type 1 デコーダおよびコンバータ。TrueType &amp; OpenType のデコーダ。
-    </UL>
-  <LI>
-<!--TrueType utilities-->
-    TrueType のユーティリティ
-    <UL>
-      <LI>
-<!--	Rogier C van Dalen has written
-	<A HREF="http://home.kabelfoon.nl/~slam/fonts/">a set of utilities for viewing
-	and hinting truetype fonts</A> -->
-	Rogier C van Dalen は、<A HREF="http://home.kabelfoon.nl/~slam/fonts/">TrueType フォントの表示とヒントづけを行うための一連のユーティリティ</a>を書いています。
-      <LI>
-<!--	<A HREF="http://www.letterror.com/code/ttx/">TTX</A> provides an opensource
-	way of editing all the strange tables in a opentype font (by converting them
-	from/to XML) -->
-	<A HREF="http://www.letterror.com/code/ttx/">TTX</A> は OpenType フォントに含まれるあらゆる変てこなテーブルを (XML との相互変換を行うことによって) 編集することを可能にするオープンソースソフトウェアです。
-      <LI>
-<!--	Microsoft provides a bunch of stuff (for windows only of course) -->
-	Microsoft は多数の品々を提供しています (当然 Windows 専用です)。
-	<UL>
-	  <LI>
-<!--	    <A HREF="http://www.microsoft.com/typography/tools/tools.htm">Various tools</A> -->
-	    <A HREF="http://www.microsoft.com/typography/tools/tools.htm">各種のツール</A>
-	  <LI>
-<!--	    <A HREF="http://www.microsoft.com/typography/property/fpedit.htm">Font Properties
-	    Editor</A> -->
-	    <A HREF="http://www.microsoft.com/typography/property/fpedit.htm">フォント属性エディタ</A>
-	  <LI>
-<!--	    <A HREF="http://www.microsoft.com/typography/creators.htm">Font instructors</A>-->
-	    <A HREF="http://www.microsoft.com/typography/creators.htm">フォントインストラクタ</A>
-	  <LI>
-<!--	    <A HREF="http://www.microsoft.com/typography/developers/dsig/dsig.htm">Font
-	    signer</A> (will produce a DSIG (digital signature) table for the font. You
-	    need to get a key from verisign first) -->
-	    <A HREF="http://www.microsoft.com/typography/developers/dsig/dsig.htm">フォント署名機</A> (フォントの DSIG (デジタル署名) テーブルを出力します。あらかじめ、Verisign からキーを取得する必要があります。
-	</UL>
-      <LI>
-<!--	And Adobe provides a
-	<A HREF="http://partners.adobe.com/asn/tech/type/otfdk/">Font Developer Kit</A>
-	(mostly for setting opentype tables I think) -->
-	Adobe も、<A HREF="http://partners.adobe.com/asn/tech/type/otfdk/">フォント開発者キット</A>を提供しています (ほとんどは OpenType のテーブルを設定するための物だと思います。)
-      <LI>
-<!--	<A HREF="http://developer.apple.com/fonts/Tools/">And Apple does too</A>
-	(mac only) -->
-	<A HREF="http://developer.apple.com/fonts/Tools/">Apple もまた提供しています</A> (Mac 専用)
-      <LI>
-<!--	<A HREF="http://developer.apple.com/fonts/OSXTools.html">And some OS/X
-	tools</A> (mac only) -->
-	<A HREF="http://developer.apple.com/fonts/OSXTools.html">OS X 用のツールもいくつかあります (Mac 専用)
-    </UL>
-  <LI>
-<!--Other font creation tools-->
-    その他のフォント制作ツール
-    <UL>
-      <LI>
-<!--	<A HREF="http://cgm.cs.mcgill.ca/~luc/palm.html">Palm pilot font converters</A> -->
-	<A HREF="http://cgm.cs.mcgill.ca/~luc/palm.html">Palm pilot 用の各種フォントコンバータ</A>
-      <LI>
-<!--	<A HREF="http://www.ank.com.ar/fonts/">pcf to windows fon converter</A> -->
-    <A HREF="http://www.ank.com.ar/fonts/">pcf から Windows の fon 形式へのコンバータ</A>
-      <LI>
-<!--	<A HREF="http://www.tardis.ed.ac.uk/~ajcd/winnt/">bdf to windows fon converter
-	(BDFtoFON)</A> -->
-    <A HREF="http://www.tardis.ed.ac.uk/~ajcd/winnt/">bdf から Windows の fon 形式へのコンバータ (BDFtoFON)</A>
-      <LI>
-<!--	<A HREF="http://nafe.sf.net/">nafe</A> - - text based psf font utilities -->
-	<A HREF="http://nafe.sf.net/">nafe</A> -- テキストベースの psf フォントユーティリティ
-    </UL>
-  <LI>
-<!--Font manipulation libraries-->
-    フォント操作ライブラリ
-    <UL>
-      <LI>
-<!--	<A HREF="http://just.letterror.com/ltrwiki/RoboFab">RoboFab</A> -- Font library
-	for python -->
-	<A HREF="http://just.letterror.com/ltrwiki/RoboFab">RoboFab</A> -- Python 用のフォントライブラリ
-    </UL>
-  <LI>
-<!--Rasterizers-->
-    ラスタライザ
-    <UL>
-      <LI>
-<!--	<A HREF="http://freetype.sourceforge.net/">FreeType's Rasterizer</A> (used
-	to be just truetype, handles almost anything now)
-	<A HREF="http://freetype.sourceforge.net/">FreeType のラスタライザ</A> (かつては TrueType 専用でしたが、現在はほとんど何でも扱えます)
-      <LI>
-<!--	<A HREF="http://gnuwin32.sourceforge.net/packages/t1lib.htm">t1lib</A> --
-	Type1 Rasterizer -->
-	<A HREF="http://gnuwin32.sourceforge.net/packages/t1lib.htm">t1lib</A> -- Type 1 ラスタライザ
-    </UL>
-  <LI>
-<!--Other font tools of mine-->
-    私の作ったその他のフォントツール
-    <UL>
-      <LI>
-<!--	<A HREF="http://fondu.sf.net/">fondu</A> -- Unwraps fonts from mac resource
-	files (this includes dfonts). Produces ttf, pfb and bdf files for 'sfnt',
-	'POST' and 'NFNT' resources -->
-	<A HREF="http://fondu.sf.net/">fondu</A> -- Mac のリソースファイル (これには dfont も含まれます) を開梱します。'sfnt', 'POST' および 'NFNT' リソースに対応する TTF, PFB および BDF ファイルを出力します。
-      <LI>
-<!--	<A HREF="http://mensis.sf.net/">mensis</A> -- Allows the user much finer
-	control over some truetype tables than is provided by FontForge. -->
-	<A HREF="http://mensis.sf.net/">mensis</A> -- Truetype のいくつかのテーブルに対して、FontForge が提供する機能よりもずっと詳細にユーザが調整できます。
-      <LI>
-	<A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/fonttools/showttf.c">showttf</A>
-<!--	-- Dumps the contents of a truetype/opentype font. Does some error checking
-	too. -->
-	-- TrueType/OpenType フォントの内容をダンプします。いくつかのエラーチェックも同時に行います。
-      <LI>
-	<A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/fonttools/pcl2ttf.c">pcl2ttf</A>
-<!--	- - Reads a pcl file (to go to an HP printer) and extracts any truetype or
-	bitmap fonts in it. (the bitmap fonts become bdf files, the truetype fonts
-	become ttf files). -->
-	-- (HP のプリンタに送るための) pcl ファイルを読み込み、そこに含まれるすべての TrueType ビットマップフォントを取り出します (ビットマップフォントは BDF ファイルに出力され、TrueType フォントは TTF ファイルに出力されます)。
-    </UL>
-  <LI>
-<!--font organizers-->
-    フォント整理ツール
-    <UL>
-      <LI>
-	<A HREF="http://freshmeat.net/projects/fontlinge/">fontlinge</A>
-    </UL>
-  <LI>
-<!--<A HREF="http://eyegene.ophthy.med.umich.edu/unicode/fontguide/">Unicode
-    Font Guide for Free/Libre Open Source Operating Systems</A> -->
-    <A HREF="http://eyegene.ophthy.med.umich.edu/unicode/fontguide/">自由な OSのための Unicode フォントガイド</A>
-  <LI>
-<!--<A HREF="otherlinks.html">Other related links...</A>
-    <A HREF="otherlinks.html">その他の関連リンク...</A>
-</UL>
-<P>
+      Tom Harvey
+    <LI>
+      Ken Chilton
+    <LI>
+      <A HREF="">Gerhard Killesreiter</A>
+    <LI>
+      Alexander Kotelnikov
+    <LI>
+<!--  <A HREF="http://ucsb.edu/">University of California, Santa Barbara</A><BR>
+      (which has several times let me use some of their machines to do builds and
+      find bugs if I didn't have the requisite system at home). -->
+      <A HREF="http://ucsb.edu/">カリフォルニア州立大学サンタバーバラ校</A><BR>
+      (ビルドとバグの発見を行うために、必要なシステムが私の家にないときに何回かマシンを使わせてくださいました)
+    <LI>
+      <A HREF="http://rcswww.urz.tu-dresden.de/~koloska/">Uwe Koloska</A>
+    <LI>
+      Max Neunhoeffer
+    <LI>
+      Martin Giese
+    <LI>
+      E.J. Neafsey
+    <LI>
+      Norvell Spearman
+    <LI>
+      Stefan Fendt
+    <LI>
+      <A HREF="http://www.mp3.com/aurora-australis/">Harald ?Gleis?</A>
+    <LI>
+      Valek Filippov
+    <LI>
+      Pasi Eronen
+    <LI>
+      <A HREF="http://jeff.cs.mcgill.ca/~luc/">Luc Devroye</A>
+    <LI>
+      <A HREF="">Scott Pakin</A>
+    <LI>
+      Robert Brady
+    <LI>
+      Dung Ta Quang
+    <LI>
+      Sivan Toledo
+    <LI>
+      Gerhard Schellhorn
+    <LI>
+      MinGyoon
+    <LI>
+      Olaf Rogalsky
+    <LI>
+      <A HREF="http://baruch.ev-en.org/">Baruch Even</A>
+    <LI>
+      Volker Gering
+    <LI>
+      Torsten Bronger
+    <LI>
+      Jacob Jansen
+    <LI>
+      Ulrich Klauer
+    <LI>
+      <A HREF="http://canopus.iacp.dvo.ru/~panov/">Andrey V. Panov</A>
+    <LI>
+<!--  Edward G.J. Lee -->
+      Edward G.J. Lee (李果正)
+    <LI>
+      Werner LEMBERG
+    <LI>
+<!--  KANOU Hiroki-->
+      狩野 宏樹
+    <LI>
+      Pierre Hanser
+    <LI>
+      Claudio Beccari
+    <LI>
+      Yannis Haralambous
+    <LI>
+      Walter Echarri<BR>
+      &nbsp;
+    <LI>
+<!--  And many others!-->
+      その他多くの方々!
+  </UL>
+  <P>
 <!--
-If you know of a tool you think should be on this list, please
-<A HREF="mailto:fontforge-devel@lists.sourceforge.net">let me know</A>. I did
-my research a couple of years ago and expect it is out of date. -->
-このリストに含めるべきツールをご存知でしたら、<A HREF="mailto:fontforge-devel@lists.sourceforge.net">私にご連絡ください</A>。私が調査を行ったのは 2 年も前のことなので、この情報は古びてしまっていることでしょう。
-<P ALIGN=Center>
-<P ALIGN=Center>
-<A HREF="http://bibliofile.duhs.duke.edu/gww/FreeWare/MyToys.html"><IMG SRC="http://bibliofile.duhs.duke.edu/gww/FreeWare/../uparrow.gif"
-    WIDTH="30" HEIGHT="30"></A> <A href="http://sourceforge.net">
+  I owe David Turner (and everyone else) of
+  <A HREF="http://freetype.sf.net/">FreeType</A> a debt for providing an API
+  which allows me to debug truetype instructions. Also he came up with the
+  name "FontForge". -->
+  私が TrueType 命令をデバッグできているのは、<A HREF="http://freetype.sf.net/">FreeType</A> の David Turner (および他の多数の方々) が、そのための API を提供してくれたおかげです。また、彼は "FontForge" という名前の提案者でもあります。
+  <P>
 <!--
-<IMG src="http://sourceforge.net/sflogo.php?group_id=25752&amp;type=1" width="88"
-    height="31" border="0" alt="SourceForge Logo"> </A>-->
-<IMG src="http://sourceforge.net/sflogo.php?group_id=25752&amp;type=1" width="88"
-    height="31" border="0" alt="SourceForge ロゴ"> </A>
+  FontForge was inspired by AltSys's
+  <A HREF="http://www.macromedia.com/software/fontographer/">Fontographer</A>
+  now placed in graceful retirement by MacroMedia. -->
+  FontForge は、現在円満退職して MacroMedia にいる、AltSys の <A HREF="http://www.macromedia.com/software/fontographer/">Fontographer</A> に鼓舞されています
+  <P>
+<!--
+  My father inspired a general interest in typography (though he is interested
+  in renaissance printing techniques rather than computers). -->
+  私の父はタイポグラフィに関する一般的な興味を喚起してくれました (彼はコンピュータよりもルネッサンスの印刷技術の方に興味があるのですが)。
+  <P>
+<!--
+  And finally I owe thanks to Linda Dozier, David Cole and everyone at NaviSoft
+  which company has given me the free time to write this program. -->
+  そして、最後に私は Linda Dozier, David Cole および、このプログラムを書くための自由な時間を私にくれた NaviSoft の全員に感謝しなければなりません。
+  <H2>
+<!--  Related <A NAME="tools">Tools</A>-->
+      関連する<A NAME="tools">ツール</A>
+  </H2>
+  <UL>
+    <LI>
+<!--  BDF editors-->
+      BDF エディタ
+      <UL>
+	<LI>
+<!--  	<A HREF="http://crl.nmsu.edu/~mleisher/xmbdfed.html">xmbdfed</A> -- bdf editor.-->
+	  <A HREF="http://crl.nmsu.edu/~mleisher/xmbdfed.html">xmbdfed</A> -- bdf エディタ。
+	<LI>
+<!--  	<A HREF="http://www.gnu.org/software/gfe/gfe.html">gfe</A> -- GNU font editor.
+	  Eventually supposed to support other formats -->
+<!--  	<A HREF="http://www.gnu.org/software/gfe/gfe.html">gfe</A> -- GNU フォントエディタ。そのうち他のフォーマットもサポートするようになると思われます。
+	<LI>
+<!--  	fstobdf -- Part of the X distribution, reads a font from the server and generates
+	  a bdf file from it. -->
+	  fstobdf -- X の配布物に含まれています。フォントをサーバから読み込み、それを元に BDF ファイルを作成します。
+      </UL>
+    <LI>
+<!--  Postscript/ttf font editors-->
+      PostScript/TTF フォントエディタ
+      <UL>
+	<LI>
+	  <A HREF="http://www.typeforum.de/modules.php?op=modload&amp;name=Downloads&amp;file=index&amp;req=gettit&amp;lid=50">Manutius</A>
+<!--  	-- (only for windows, German UI, Type1 fonts)-->
+	  -- (Windows、ドイツ語 UI、Type1 フォント専用)
+	<LI>
+<!--  	<A HREF="http://www.cs.usyd.edu.au/~matty/Spif/">spif</A> -- under development
+	  (open source) -->
+	  <A HREF="http://www.cs.usyd.edu.au/~matty/Spif/">spif</A> -- 開発中 (オープンソース)
+	<LI>
+<!--  	<A HREF="http://www.levien.com/gfonted/">gfonted</A> -- under development
+	  (open source) -->
+	  <A HREF="http://www.levien.com/gfonted/">gfonted</A> -- 開発中 (オープンソース)
+	<LI>
+<!--  	<A HREF="http://doubletype.sf.net/">DoubleType</A> -- Java based open source
+	  truetype designer -->
+	  <A HREF="http://doubletype.sf.net/">DoubleType</A> -- Java ベースのオープンソース TrueType デザイン用ソフト
+	<LI>
+<!--  	<A HREF="http://cgm.cs.mcgill.ca/~luc/editors.html">Luc Devroye's page of
+	  links to font creation programs</A> -->
+	  <A HREF="http://cgm.cs.mcgill.ca/~luc/editors.html">Luc Devroye による、各種フォント作成プログラムへのリンクページ</A>
+	<LI>
+<!--  	<A HREF="http://pfaedit.sf.net/">pfaedit</A> -- The old name for fontforge -->
+	  <A HREF="http://pfaedit.sf.net/">PfaEdit</A> -- FontForge の旧名称</A>
+	    <HR>
+	<LI>
+<!--  	<A HREF="http://www.fontlab.com/">Fontographer</A> - - my favorite, has not
+	  been updated since1996 but has recently been purchased by FontLab who promise
+	  an update in 2006 (<FONT COLOR="Red"><STRONG>proprietary</STRONG></FONT>) -->
+	  <A HREF="http://www.fontlab.com/">Fontographer</A> -- 私のお気に入りで、1996 年以来更新されていなかったが、2006 年の新版を約束する FontLab に最近買収された (<FONT COLOR="Red"><STRONG>商用</STRONG></FONT>)
+	  </UL>
+	<LI>
+<!--  	<A HREF="http://www.fontlab.com/">FontLab</A> -- Said to have really good
+	  tools for hinting truetype. -->
+	  <A HREF="http://www.fontlab.com/">FontLab</A> -- TrueType のヒントづけには非常に優れたツールと言われている
+<!--  	(<FONT COLOR="Red"><STRONG>proprietary</STRONG></FONT>) -->
+	  (<FONT COLOR="Red"><STRONG>商用</STRONG></FONT>)
+	  <UL>
+	    <LI>
+<!--  	    <A HREF="http://www.fontlab.com/">AsiaFont Studio</A> - - FontLab for big
+	      fonts (<FONT COLOR="Red"><STRONG>proprietary</STRONG></FONT>) -->
+	      <A HREF="http://www.fontlab.com/">AsiaFont Studio</A> -- 大きなフォント用の FontLab (<FONT COLOR="Red"><STRONG>商用</STRONG></FONT>)
+	<LI>
+<!--  	<A HREF="http://www.fontmaster.nl/english/">FontMaster</A> (used to be
+	  <A HREF="http://www.urwpp.de/english/home.html">Ikarus</A> )-- Top of the
+	  line font creation software.-->
+	  <A HREF="http://www.fontmaster.nl/english/">FontMaster</A> (かつて <A HREF="http://www.urwpp.de/english/home.html">Ikarus</A> と呼ばれていた) -- 最高級品のフォント作成ソフトウェア。
+<!--  	(<FONT COLOR="Red"><STRONG>proprietary</STRONG></FONT>) -->
+	  (<FONT COLOR="Red"><STRONG>商用</STRONG></FONT>)
+	<LI>
+<!--  	<A HREF="http://www.CR8.netfirms.com/">CR8Type</A> - - TrueType font editor
+	  (<FONT COLOR="Red"><STRONG>proprietary</STRONG></FONT>) -->
+	  <A HREF="http://www.CR8.netfirms.com/">CR8Type</A> -- TrueType フォントエディタ (<FONT COLOR="Red"><STRONG>商用</STRONG></FONT>)	
+      </UL>
+    <LI>
+<!--  Automated font creation by template -->
+      テンプレートによる自動フォント生成
+     <UL>
+      <LI>
+<!--  <A HREF="http://www.stiligt.se/">stiligt</A> (swedish)-->
+      <A HREF="http://www.stiligt.se/">stiligt</A> (スウェーデン語)
+     </UL>
+    <LI>
+<!--  MetaFont -- Knuth's font generation which produces bitmaps from a program
+      based on splines (&amp; other TeX utilities) -->
+      METAFONT ― スプラインに基づいたプログラムからビットマップを生成する、Knuth の開発したフォント生成機 (また、それと関連する TeX のユーティリティ)
+      <UL>
+	<LI>
+<!--  	<A HREF="http://www.tug.org/">(available with the TeX package)</A> -->
+	  <A HREF="http://www.tug.org/">(TeX のパッケージに含まれています)</A>
+	<LI>
+<!--  	<A HREF="http://cm.bell-labs.com/who/hobby/MetaPost.html">MetaPost</A>, Uses
+	  the metafont language to produce PostScript pictures. -->
+	  <A HREF="http://cm.bell-labs.com/who/hobby/MetaPost.html">MetaPost</A>, PostScript の図形描画のために METAFONT 言語を使用します。
+	<LI>
+<!--  	<A HREF="ftp://bob.eps.gda.pl/pub/metatype1/">MetaType1</A>, Which attempts
+	  to generate a type1 font directly from the metafont splines (I think) -->
+	  <A HREF="ftp://bob.eps.gda.pl/pub/metatype1/">MetaType1</A>, METAFONT のスプラインから Type 1 フォントを直接出力する試み (だと思います)
+	<LI>
+<!--  	<A HREF="http://textrace.sf.net/">TeXTrace</A>, generates pfb fonts from
+	  TeX fonts by rasterizing at high res and then autotracing them -->
+	  <A HREF="http://textrace.sf.net/">TeXTrace</A>, TeX フォントを高解像度でラスタライズしてから自動トレースして PFB フォントを出力します。
+	<LI>
+<!--  	<A HREF="ftp://ftp.radio-msu.net/pub/tex/tex-archive/fonts/utilities/mf2ps/">mftops</A>,
+	  similar -->
+	  <A HREF="ftp://ftp.radio-msu.net/pub/tex/tex-archive/fonts/utilities/mf2ps/">mftops</A>, これも同様
+	<LI>
+<!--  	<A HREF="http://www.cs.uu.nl/~hanwen/mftrace/index.html">mftrace</A>, traces
+	  pk fonts (bitmap images) and creates pfb/pfa files. (formerly called pktrace) -->
+	  <A HREF="http://www.cs.uu.nl/~hanwen/mftrace/index.html">mftrace</A>, pk フォント (ビットマップ画像) をトレースして PFB/PFA ファイルを作成します (かつては pktrace と呼ばれていました)。
+      </UL>
+    <LI>
+<!--  Postscript utilities-->
+      PostScript フォントのユーティリティ
+      <UL>
+	<LI>
+<!--  	<A HREF="http://gfontview.sourceforge.net/">gfontview</A> -- displays a
+	  postscript/ttf font -->
+	  <A HREF="http://gfontview.sourceforge.net/">gfontview</A> -- PostScript/TTF フォントを表示します。
+	<LI>
+	  <A HREF="http://rpmfind.net/linux/RPM/contrib/libc6/i386/gglyph-0.1.3-1.i386.html">gglyph</A>
+<!--  	-- another font displayer -->
+	  -- もう一つのフォントソフトウェア
+	<LI>
+<!--  	<A HREF="http://www.lcdf.org/type/">t1utils</A> -- Type 1 utility programs
+	  &amp; multiple master utilities -->
+	  <A HREF="http://www.lcdf.org/type/">t1utils</A> -- Type 1 ユーティリティプログラムおよび、マルチプルマスターのユーティリティ
+	<LI>
+	  <A HREF="ftp://metalab.unc.edu/pub/Linux/X11/xutils/type1inst-0.6.1.tar.gz">Type1inst</A>
+<!--  	-- helps to install type 1 fonts under X and ghostscript -->
+	  -- Type 1 フォントの X と ghostscript へのインストールを手助けします。
+	<LI>
+<!--  	<A HREF="http://ttf2pt1.sourceforge.net/">ttf2pt1</A> -- Converts truetype
+	  to type1 postscript fonts and generates hints
+	  <A HREF="http://ttf2pt1.sourceforge.net/">ttf2pt1</A> -- TrueType を Type 1 PostScript フォントに変換し、ヒントを出力します。
+	<LI>
+<!--  	<A HREF="http://ftp.giga.or.at/pub/nih/ttftot42/">ttftot42</A> -- Converts
+	  truetype to type42 postscript fonts. -->
+	  <A HREF="http://ftp.giga.or.at/pub/nih/ttftot42/">ttftot42</A> -- TrueType を Type 42 PostScript フォントに変換します。
+	<LI>
+<!--  	<A HREF="http://textrace.sf.net/">type1fix</A> -- (part of the TeXtrace package).
+	  Used to make some Type1 fonts work with ATM. -->
+	  <A HREF="http://textrace.sf.net/">type1fix</A> -- (TeXtrace パッケージの一部です)。Type 1 フォントを ATM で動作するようにします。
+	<LI>
+<!--  	<A HREF="http://bibliofile.duhs.duke.edu/gww/FreeWare/MyToys.html">my stuff
+	  </A>-- Type 1 decoders and converters. True Type &amp; open type decoder. -->
+	  <A HREF="http://bibliofile.duhs.duke.edu/gww/FreeWare/MyToys.html">自作の品々</A> -- Type 1 デコーダおよびコンバータ。TrueType &amp; OpenType のデコーダ。
+      </UL>
+    <LI>
+<!--  TrueType utilities-->
+      TrueType のユーティリティ
+      <UL>
+	<LI>
+<!--  	Rogier C van Dalen has written
+	  <A HREF="http://home.kabelfoon.nl/~slam/fonts/">a set of utilities for viewing
+	  and hinting truetype fonts</A> -->
+	  Rogier C van Dalen は、<A HREF="http://home.kabelfoon.nl/~slam/fonts/">TrueType フォントの表示とヒントづけを行うための一連のユーティリティ</a>を書いています。
+	<LI>
+<!--  	<A HREF="http://www.letterror.com/code/ttx/">TTX</A> provides an opensource
+	  way of editing all the strange tables in a opentype font (by converting them
+	  from/to XML) -->
+	  <A HREF="http://www.letterror.com/code/ttx/">TTX</A> は OpenType フォントに含まれるあらゆる変てこなテーブルを (XML との相互変換を行うことによって) 編集することを可能にするオープンソースソフトウェアです。
+	<LI>
+<!--  	Microsoft provides a bunch of stuff (for windows only of course) -->
+	  Microsoft は多数の品々を提供しています (当然 Windows 専用です)。
+	  <UL>
+	    <LI>
+<!--  	    <A HREF="http://www.microsoft.com/typography/tools/tools.htm">Various tools</A> -->
+	      <A HREF="http://www.microsoft.com/typography/tools/tools.htm">各種のツール</A>
+	    <LI>
+<!--  	    <A HREF="http://www.microsoft.com/typography/property/fpedit.htm">Font Properties
+	      Editor</A> -->
+	      <A HREF="http://www.microsoft.com/typography/property/fpedit.htm">フォント属性エディタ</A>
+	    <LI>
+<!--  	    <A HREF="http://www.microsoft.com/typography/creators.htm">Font instructors</A>-->
+	      <A HREF="http://www.microsoft.com/typography/creators.htm">フォントインストラクタ</A>
+	    <LI>
+<!--  	    <A HREF="http://www.microsoft.com/typography/developers/dsig/dsig.htm">Font
+	      signer</A> (will produce a DSIG (digital signature) table for the font. You
+	      need to get a key from verisign first) -->
+	      <A HREF="http://www.microsoft.com/typography/developers/dsig/dsig.htm">フォント署名機</A> (フォントの DSIG (デジタル署名) テーブルを出力します。あらかじめ、Verisign からキーを取得する必要があります。
+	  </UL>
+	<LI>
+<!--  	And Adobe provides a
+	  <A HREF="http://partners.adobe.com/asn/tech/type/otfdk/">Font Developer Kit</A>
+	  (mostly for setting opentype tables I think) -->
+	  Adobe も、<A HREF="http://partners.adobe.com/asn/tech/type/otfdk/">フォント開発者キット</A>を提供しています (ほとんどは OpenType のテーブルを設定するための物だと思います。)
+	<LI>
+<!--  	<A HREF="http://developer.apple.com/fonts/Tools/">And Apple does too</A>
+	  (mac only) -->
+	  <A HREF="http://developer.apple.com/fonts/Tools/">Apple もまた提供しています</A> (Mac 専用)
+	<LI>
+<!--  	<A HREF="http://developer.apple.com/fonts/OSXTools.html">And some OS/X
+	  tools</A> (mac only) -->
+	  <A HREF="http://developer.apple.com/fonts/OSXTools.html">OS X 用のツールもいくつかあります (Mac 専用)
+      </UL>
+    <LI>
+<!--  Other font creation tools-->
+      その他のフォント制作ツール
+      <UL>
+	<LI>
+<!--  	<A HREF="http://cgm.cs.mcgill.ca/~luc/palm.html">Palm pilot font converters</A> -->
+	  <A HREF="http://cgm.cs.mcgill.ca/~luc/palm.html">Palm pilot 用の各種フォントコンバータ</A>
+	<LI>
+<!--  	<A HREF="http://www.ank.com.ar/fonts/">pcf to windows fon converter</A> -->
+      <A HREF="http://www.ank.com.ar/fonts/">pcf から Windows の fon 形式へのコンバータ</A>
+	<LI>
+<!--  	<A HREF="http://www.tardis.ed.ac.uk/~ajcd/winnt/">bdf to windows fon converter
+	  (BDFtoFON)</A> -->
+      <A HREF="http://www.tardis.ed.ac.uk/~ajcd/winnt/">bdf から Windows の fon 形式へのコンバータ (BDFtoFON)</A>
+	<LI>
+<!--  	<A HREF="http://nafe.sf.net/">nafe</A> - - text based psf font utilities -->
+	  <A HREF="http://nafe.sf.net/">nafe</A> -- テキストベースの psf フォントユーティリティ
+      </UL>
+    <LI>
+<!--  Font manipulation libraries-->
+      フォント操作ライブラリ
+      <UL>
+	<LI>
+<!--  	<A HREF="http://just.letterror.com/ltrwiki/RoboFab">RoboFab</A> -- Font library
+	  for python -->
+	  <A HREF="http://just.letterror.com/ltrwiki/RoboFab">RoboFab</A> -- Python 用のフォントライブラリ
+      </UL>
+    <LI>
+<!--  Rasterizers-->
+      ラスタライザ
+      <UL>
+	<LI>
+<!--  	<A HREF="http://freetype.sourceforge.net/">FreeType's Rasterizer</A> (used
+	  to be just truetype, handles almost anything now)
+	  <A HREF="http://freetype.sourceforge.net/">FreeType のラスタライザ</A> (かつては TrueType 専用でしたが、現在はほとんど何でも扱えます)
+	<LI>
+<!--  	<A HREF="http://gnuwin32.sourceforge.net/packages/t1lib.htm">t1lib</A> --
+	  Type1 Rasterizer -->
+	  <A HREF="http://gnuwin32.sourceforge.net/packages/t1lib.htm">t1lib</A> -- Type 1 ラスタライザ
+      </UL>
+    <LI>
+<!--  Other font tools of mine-->
+      私の作ったその他のフォントツール
+      <UL>
+	<LI>
+<!--  	<A HREF="http://fondu.sf.net/">fondu</A> -- Unwraps fonts from mac resource
+	  files (this includes dfonts). Produces ttf, pfb and bdf files for 'sfnt',
+	  'POST' and 'NFNT' resources -->
+	  <A HREF="http://fondu.sf.net/">fondu</A> -- Mac のリソースファイル (これには dfont も含まれます) を開梱します。'sfnt', 'POST' および 'NFNT' リソースに対応する TTF, PFB および BDF ファイルを出力します。
+	<LI>
+<!--  	<A HREF="http://mensis.sf.net/">mensis</A> -- Allows the user much finer
+	  control over some truetype tables than is provided by FontForge. -->
+	  <A HREF="http://mensis.sf.net/">mensis</A> -- Truetype のいくつかのテーブルに対して、FontForge が提供する機能よりもずっと詳細にユーザが調整できます。
+	<LI>
+	  <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/fonttools/showttf.c">showttf</A>
+<!--  	-- Dumps the contents of a truetype/opentype font. Does some error checking
+	  too. -->
+	  -- TrueType/OpenType フォントの内容をダンプします。いくつかのエラーチェックも同時に行います。
+	<LI>
+	  <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/fonttools/pcl2ttf.c">pcl2ttf</A>
+<!--  	- - Reads a pcl file (to go to an HP printer) and extracts any truetype or
+	  bitmap fonts in it. (the bitmap fonts become bdf files, the truetype fonts
+	  become ttf files). -->
+	  -- (HP のプリンタに送るための) pcl ファイルを読み込み、そこに含まれるすべての TrueType ビットマップフォントを取り出します (ビットマップフォントは BDF ファイルに出力され、TrueType フォントは TTF ファイルに出力されます)。
+      </UL>
+    <LI>
+<!--  font organizers-->
+      フォント整理ツール
+      <UL>
+	<LI>
+	  <A HREF="http://freshmeat.net/projects/fontlinge/">fontlinge</A>
+      </UL>
+    <LI>
+<!--  <A HREF="http://eyegene.ophthy.med.umich.edu/unicode/fontguide/">Unicode
+      Font Guide for Free/Libre Open Source Operating Systems</A> -->
+      <A HREF="http://eyegene.ophthy.med.umich.edu/unicode/fontguide/">自由な OSのための Unicode フォントガイド</A>
+    <LI>
+<!--  <A HREF="otherlinks.html">Other related links...</A>
+      <A HREF="otherlinks.html">その他の関連リンク...</A>
+  </UL>
+  <P>
+<!--
+  If you know of a tool you think should be on this list, please
+  <A HREF="mailto:fontforge-devel@lists.sourceforge.net">let me know</A>. I did
+  my research a couple of years ago and expect it is out of date. -->
+  このリストに含めるべきツールをご存知でしたら、<A HREF="mailto:fontforge-devel@lists.sourceforge.net">私にご連絡ください</A>。私が調査を行ったのは 2 年も前のことなので、この情報は古びてしまっていることでしょう。
+  <P ALIGN=Center>
+  <P ALIGN=Center>
+  <A HREF="http://bibliofile.duhs.duke.edu/gww/FreeWare/MyToys.html"><IMG SRC="http://bibliofile.duhs.duke.edu/gww/FreeWare/../uparrow.gif"
+      WIDTH="30" HEIGHT="30"></A> <A href="http://sourceforge.net">
+<!--
+  <IMG src="http://sourceforge.net/sflogo.php?group_id=25752&amp;type=1" width="88"
+      height="31" border="0" alt="SourceForge Logo"> </A>-->
+  <IMG src="http://sourceforge.net/sflogo.php?group_id=25752&amp;type=1" width="88"
+      height="31" border="0" alt="SourceForge ロゴ"> </A>
+</DIV>
 </BODY></HTML>
+  

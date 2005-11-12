@@ -3,12 +3,14 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Sep-2002 -->
   <!-- AP: Last modified: 12-Oct-2005 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Generate Font Dialog</TITLE>-->
     <TITLE>フォント出力ダイアログ</TITLE>
   <LINK REL="icon" href="../ffanvil16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
+<DIV id="in">
 <H1 ALIGN=Center>
 <!--Generate Font Dialog-->
     フォント出力ダイアログ
@@ -46,7 +48,7 @@ The outline types are: -->
     fonts yet, cancel this dlg and use
     <A HREF="elementmenu.html#Bitmaps">Element-&gt;Bitmaps Available</A> to generate
     a bitmap font, and then retry this dlg.-->
-    <FONT COLOR="Red"><STRONG><BIG>注意:</BIG></STRONG></FONT> Mac が PostScript フォントを認識するには、ビットマップフォントを NFNT フォーマットで出力して同じディレクトリに置く必要があります。ビットマップフォントをまだ作成していないなら、このダイアログをキャンセルして <A HREF="elementmenu.html#Bitmaps">エレメント(L)→使用するビットマップ(A)</A> を使用してビットマップを作成してからまたこのダイアログに戻って来てください。
+    <FONT COLOR="Red"><STRONG><BIG>注意:</BIG></STRONG></FONT> Mac が PostScript フォントを認識するには、ビットマップフォントを NFNT フォーマットで出力して同じディレクトリに置く必要があります。ビットマップフォントをまだ作成していないなら、このダイアログをキャンセルして <A HREF="elementmenu.html#Bitmaps"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>使用するビットマップ(<U>A</U>)</CODE></A> を使用してビットマップを作成してからまたこのダイアログに戻って来てください。
     <P>
 <!--<FONT COLOR="Red"><STRONG><BIG>NOTE:</BIG></STRONG></FONT> Apple implies
     that this format is depreciated and therefore it may not work in future versions.-->
@@ -90,7 +92,7 @@ The outline types are: -->
   <LI>
 <!--PostScript CFF font, this is the format that lives inside the 'CFF ' table
     of an opentype font. It is a valid font format in its own right. -->
-    PostScript CFF フォント。これは OpenType フォントの 'CFF ' テーブルの中身で使われているフォーマットです。それ自身としては正しいフォントフォーマットではありません。
+    PostScript CFF フォント。これは OpenType フォントの&lsquo;CFF &rsquo;テーブルの中身で使われているフォーマットです。それ自身としては正しいフォントフォーマットではありません。
   <LI>
 <!--True Type. The instructions (hinting) are probably not very good. No diagonal
     stems are hinted. Instructing is based on the hints used for postscript,
@@ -116,7 +118,7 @@ The outline types are: -->
   <LI>
 <!--True Type dfont format, a truetype font wrapped up in a mac dfont (data fork
     resource file). Mac OS/X font. -->
-    dfont フォーマットの TrueType。Mac の dfont (データフォークリソースファイル) で包まれた TrueType フォントです。Mac OS/X のフォント形式です。
+    dfont フォーマットの TrueType。Mac の dfont (データフォークリソースファイル) で包まれた TrueType フォントです。Mac OS X のフォント形式です。
   <LI>
 <!--Open Type. Officially Open Type includes True Type, but Open Type True Type
     fonts are no different from plain True Type fonts, so they might as well
@@ -171,7 +173,7 @@ The outline types are: -->
     <FONT COLOR="Red"><STRONG>However</STRONG></FONT>, the mac still needs at
     least one NFNT in order to find an type1 font. Even though the bitmap is
     required, it will not be used. Odd. -->
-    <FONT COLOR="Red"><STRONG><BIG>注意:</BIG></STRONG></FONT> Mac OS/X は NFNT ビットマップをサポートしないようです (私の試した限りでは動かせませんでした)。<STRONG>それにもかかわらず</STRONG></FONT>, Mac は Type1 フォントを認識するためにはいまだに NFNT を最低 1 個は必要とするようです。ビットマップが必要なのに、使われないのです。変ですね。
+    <FONT COLOR="Red"><STRONG><BIG>注意:</BIG></STRONG></FONT> Mac OS X は NFNT ビットマップをサポートしないようです (私の試した限りでは動かせませんでした)。<STRONG>それにもかかわらず</STRONG></FONT>, Mac は Type1 フォントを認識するためにはいまだに NFNT を最低 1 個は必要とするようです。ビットマップが必要なのに、使われないのです。変ですね。
   <LI>
 <!--Windows FNT - - this needs to be processed somehow with the windows resource
     compiler to create a FON file. I don't have enough info to do this myself
@@ -203,13 +205,13 @@ Not all are enabled at all times.-->
 <!--[] Round - - Round all coordinates to integral values. If this is not checked
     then Type1 fonts will be output with 2 decimal digits of precision, and Type2
     fonts with 16 binary digits (~4 decimal digits) when needed. -->
-    [] 整数値に変換 -- すべての座標値を整数に丸めます。これにチェックが入っていない場合は必要に応じて、Type1 フォントは小数点以下第 2 位までの制度で出力され、Type2 フォントは 2 進数で 16 桁までの精度 (10 進数で約 4 桁に相当) で出力されます。
+    <CODE>[] 整数値に変換</CODE> -- すべての座標値を整数に丸めます。これにチェックが入っていない場合は必要に応じて、Type1 フォントは小数点以下第 2 位までの制度で出力され、Type2 フォントは 2 進数で 16 桁までの精度 (10 進数で約 4 桁に相当) で出力されます。
   <LI>
 <!--[] Hints - - Include PostScript hints in the output file -->
-    [] ヒント -- PostScript のヒントを出力ファイルに含めます。
+    <CODE>[] ヒント</CODE> -- PostScript のヒントを出力ファイルに含めます。
   <LI>
 <!--[] Flex Hints -- Include PostScript flex hints in the output file -->
-    [] Flexヒント -- PostScript の flex ヒントを出力ファイルに含めます。
+    <CODE>[] Flexヒント</CODE> -- PostScript の flex ヒントを出力ファイルに含めます。
   <LI>
 <!--[] AFM - - Generate an adobe font metrics file (controls generation of .amfm
     files for multiple master fonts too)<BR>
@@ -217,15 +219,15 @@ Not all are enabled at all times.-->
     this is not what you want, use the
     <A HREF="scripting.html#ControlAfmLigatureOutput">ControlAfmLigatureOutput</A>
     scripting command. -->
-    [] AFMを出力 -- Adobe フォントメトリックファイルを出力します (マルチプルマスターフォントでは、.amfm ファイルの出力も制御します)<BR>
+    <CODE>[] AFMを出力</CODE> -- Adobe フォントメトリックファイルを出力します (マルチプルマスターフォントでは、.amfm ファイルの出力も制御します)<BR>
     注意: AFM ファイルに出力されるのは 'liga' と 'rlig' 合字のみです。この動作を変更したいときは、スクリプト用コマンド <A HREF="scripting.html#ControlAfmLigatureOutput">ControlAfmLigatureOutput</A> を使用してください。
   <LI>
 <!--[] PFM -- Generate a windows printer font metrics file -->
-    [] PFMを出力 -- Windows のプリンタフォントメトリックファイルを出力します。
+    <CODE>[] PFMを出力</CODE> -- Windows のプリンタフォントメトリックファイルを出力します。
   <LI>
 <!--[] <A NAME="TFM">TFM</A> - - Generate a TeX font metrics file (and a TeX enc
     encoding file)  -->
-    [] <A NAME="TFM">TFM</A>とENCを出力 -- TeX のフォントメトリックファイル (および TeX の enc エンコーディングファイル) を出力します。
+    <CODE>[] <A NAME="TFM">TFM</A>とENCを出力</CODE> -- TeX のフォントメトリックファイル (および TeX の enc エンコーディングファイル) を出力します。
       <HR>
   <LI>
 <!--[] Hints - - Include truetype hints in a truetype font. NOTE: This used to
@@ -234,7 +236,7 @@ Not all are enabled at all times.-->
     truetype font they will probably be reasonable. If they have been generated
     with FontForge's AutoInstr menu command they will probably make your font
     uglier. -->
-    [] ヒント(I) -- TrueType のヒントを TrueType フォントに含めます。注意: これは以前は劣悪な TrueType 命令を出力していましたが、現在ではグリフとともに格納されている何らかの命令があったときに、それを挿入するだけにとどめています。それが他の TrueType フォントから読み込まれた物ならば、おそらく適切な物でしょう。もしそれらが FontForge の自動命令づけメニューコマンドによって生成された物ならば、おそらくフォントは余計汚くなるでしょう。
+    <CODE>[] ヒント(<U>I</U>)</CODE> -- TrueType のヒントを TrueType フォントに含めます。注意: これは以前は劣悪な TrueType 命令を出力していましたが、現在ではグリフとともに格納されている何らかの命令があったときに、それを挿入するだけにとどめています。それが他の TrueType フォントから読み込まれた物ならば、おそらく適切な物でしょう。もしそれらが FontForge の自動命令づけメニューコマンドによって生成された物ならば、おそらくフォントは余計汚くなるでしょう。
     <UL>
       <LI>
 <!--	R C van Dalen's <A HREF="http://home.kabelfoon.nl/~slam/fonts/">truetype
@@ -243,13 +245,13 @@ Not all are enabled at all times.-->
     </UL>
   <LI>
 <!--[] PSNames - - Include the full 'post' (postscript name) table in the font -->
-    [] PostScriptグリフ名 -- 完全版の 'post' テーブルをフォントに含めます。 
+    <CODE>[] PostScriptグリフ名</CODE> -- 完全版の&lsquo;post&rsquo;テーブルをフォントに含めます。 
   <LI>
 <!--[] <A NAME="AppleMode">Apple</A> - - Apple and MS/Adobe disagree on the format
     of a ttf font. This is annoying. Checking this box means the font will be
     generated according to Apple's desires, leaving it unchecked means according
     to MS/Adobe's desires. Currently this controls: -->
-    [] <A NAME="AppleMode">Appleの仕様</A> -- Apple と MS/Adobe では、TTF のフォーマットに相違があります。これは煩わしいことです。このボックスにチェックを入れるとフォントを Apple の希望に沿って出力し、空にしておくと MS/Adobe の希望に沿って出力します。現在これによって以下の事柄が制御されます:
+    <CODE>[] <A NAME="AppleMode">Appleの仕様</A></CODE> -- Apple と MS/Adobe では、TTF のフォーマットに相違があります。これは煩わしいことです。このボックスにチェックを入れるとフォントを Apple の希望に沿って出力し、空にしておくと MS/Adobe の希望に沿って出力します。現在これによって以下の事柄が制御されます:
     <UL>
       <LI>
 <!--	The bitmap tables (Apple calls it 'bdat', MS/Adobe 'EBDT'. The data in them
@@ -258,12 +260,12 @@ Not all are enabled at all times.-->
       <LI>
 <!--	The PostScript name in the 'name' table (Apple says there must be either
 	0 or 1 of them, MS/Adobe say any value other than 1) -->
-	'name' テーブル内の PostScript 名 (Apple は、0 か 1 のどちらかでなければならないと言い、MS/Adobe は 1 以外の任意の値と言っています)
+	&lsquo;name&rsquo;テーブル内の PostScript 名 (Apple は、0 か 1 のどちらかでなければならないと言い、MS/Adobe は 1 以外の任意の値と言っています)
       <LI>
 <!--	Apple and MS/Adobe also differ on the way references (components) are scaled.
 	Luckily there is another way to disambiguate this case (and references are
 	rarely scaled anyway). -->
-	Apple と MS/Adobe は、参照 (部品) を拡大・縮小する方法に関しても違いがあります。好運にもこの場合は曖昧さを取り除く別の方法があります (おまけに、参照はが拡大・縮小されることは滅多にありません)。
+	Apple と MS/Adobe は、参照 (部品) を拡大・縮小する方法に関しても違いがあります。好運にもこの場合は曖昧さを取り除く別の方法があります (おまけに、参照が拡大・縮小されることは滅多にありません)。
       <LI>
 <!--	The GDEF, GPOS, GSUB and prop, lcar, kern, opbd, morx, feat tables. Apple
 	does not support GPOS/GSUB tables. MicroSoft still supports kern tables for
@@ -281,28 +283,28 @@ Not all are enabled at all times.-->
     all of OpenType so Apple's behavior is likely to be
     <FONT COLOR="Red"><STRONG>WRONG</STRONG></FONT>). -->
     [] OpenTypeの仕様 -- ここにチェックが入っている場合、フォント内には OpenType で使用されるテーブルが作成されます。ここと [] Apple の仕様 の両方にチェックが入っている場合、フォントには 2 組のテーブルが格納され、Apple は片方のセットを参照し、他の皆はもう片方を参照するでしょう。
-    (<FONT COLOR="Red"><STRONG><BIG>警告</BIG></STRONG></FONT>: 上記の記述が正しいのは、10.4 ("Tiger") より前のバージョンに限られます。OS X 10.4 からは、Apple は OpenType テーブルが存在する時はそれを使用し、AAT テーブルを無視するようになりました。残念ながら Apple は OpenType の善機能を実装していないので、Apple 機上での振舞いはおそらく<FONT COLOR="Red"><STRONG>間違った</STRONG></FONT>)ものとなるでしょう。
+    (<FONT COLOR="Red"><STRONG><BIG>警告</BIG></STRONG></FONT>: 上記の記述が正しいのは、10.4 (“Tiger”) より前のバージョンに限られます。OS X 10.4 からは、Apple は OpenType テーブルが存在する時はそれを使用し、AAT テーブルを無視するようになりました。残念ながら Apple は OpenType の全機能を実装していないので、Apple 機上での振舞いはおそらく<FONT COLOR="Red"><STRONG>間違った</STRONG></FONT>)ものとなるでしょう。
   <LI>
 <!--[] Save Comments - - I have added my own table
     ('<A HREF="non-standard.html#PfEd">PfEd</A>') in the truetype format in which
     I can store whatever data I want. Checking this box saves all the glyph comments
     into the output file. -->
-    [] コメントを保存 -- 私は、自分が保存したいデータの全部を格納するために自分専用のテーブル ('<A HREF="non-standard.html#PfEd">PfEd</A>') を追加しました。このボックスにチェックが入っていると、グリフのコメントをすべて出力ファイルに保存します。
+    <CODE>[] コメントを保存</CODE> -- 私は、自分が保存したいデータの全部を格納するために自分専用のテーブル (&lsquo;<A HREF="non-standard.html#PfEd">PfEd</A>&rsquo;) を追加しました。このボックスにチェックが入っていると、グリフのコメントをすべて出力ファイルに保存します。
   <LI>
 <!--[] Save Colors - - Save the glyph colors in the
     '<A HREF="non-standard.html#PfEd">PfEd</A>' table as well. -->
-    [] 色を保存 -- グリフの色を同様に '<A HREF="non-standard.html#PfEd">PfEd</A>' テーブルに保存します。
+    <CODE>[] 色を保存</CODE> -- グリフの色を同様に&lsquo;<A HREF="non-standard.html#PfEd">PfEd</A>&rsquo;テーブルに保存します。
   <LI>
 <!--[] TeX - - Save TeX metrics in the '<A HREF="non-standard.html#TeX">TeX</A>
     ' table -->
-    [] TeX -- TeX のメトリックを '<A HREF="non-standard.html#TeX">TeX</A>' テーブルに保存します。
+    <CODE>[] TeX</CODE> -- TeX のメトリックを&lsquo;<A HREF="non-standard.html#TeX">TeX</A>&rsquo;テーブルに保存します。
   <LI>
 <!--[] Output Glyph Map - - Output a file (with extension .g2n) mapping TrueType
     (OpenType) glyph IDs to glyphnames (and possibly to unicode values) -->
-    [] グリフマップを出力 -- TrueType (OpenType) グリフ ID をグリフ名 (及び、可能であれば Unicode 値) に対応づけるファイルを (拡張子 .g2n で) 出力します。
+    <CODE>[] グリフマップを出力</CODE> -- TrueType (OpenType) グリフ ID をグリフ名 (及び、可能であれば Unicode 値) に対応づけるファイルを (拡張子 .g2n で) 出力します。
   <LI>
 <!--[] Output OFM &amp; CFG -- Output metrics files for Omega -->
-    [] Output OFM &amp; CFG -- Output metrics files for Omega
+    <CODE>[] OFM と CFG を出力</CODE> -- Omega 用のメトリックファイルを出力します。
 </UL>
 <P>
 <!--
@@ -314,7 +316,7 @@ will use johab, JIS208 and SJIS fonts will use SJIS, Big5 will use big5 encoding
 Fonts with a "Full Unicode" encoding will have both a 2 byte unicode encoding
 table and a 4 byte table. OpenType CID keyed fonts will be saved with Unicode
 encoding. -->
-TTF (と OpenType) フォントは通常 Unicode エンコーディングで出力され、それに加えて小さな Macintosh 用の MacRoman エンコーディングのテーブル (および Macintosh の Unicode エンコーディングのコピー) も出力されます――例外は以下の通りです: Symbol フォントは Symbol エンコーディングを使用し、KSC5601 と Wansung のフォントは Wansung を使用し、Johab フォントは johab を、JIS208 と SJIS のフォントは SJIS を、Big5 のフォントは big5 エンコーディングを使用します。"Full Unicode" エンコーディングを持つフォントは、2 バイトの Unicode エンコーディングテーブルと 4 バイトのテーブルの両方を含むことができます。OpenType 形式の CID フォントは Unicode エンコーディングで保存されます。
+TTF (と OpenType) フォントは通常 Unicode エンコーディングで出力され、それに加えて小さな Macintosh 用の MacRoman エンコーディングのテーブル (および Macintosh の Unicode エンコーディングのコピー) も出力されます――例外は以下の通りです: Symbol フォントは Symbol エンコーディングを使用し、KS C 5601 と Wansung のフォントは Wansung を使用し、Johab フォントは johab を、JIS X 0208 と SJIS のフォントは SJIS を、Big5 のフォントは big5 エンコーディングを使用します。“Full Unicode”エンコーディングを持つフォントは、2 バイトの Unicode エンコーディングテーブルと 4 バイトのテーブルの両方を含むことができます。OpenType 形式の CID フォントは Unicode エンコーディングで保存されます。
 <P>
 <!--
 Postscript fonts are generated in whatever encoding the font is using (except
@@ -357,7 +359,7 @@ Mac OS X では、PostScript フォントを含むリソースフォントを生成するとき、filename
 <!--
 The bitmap sizes must all be present in the font database. AntiAliased fonts
 can be indicated by following the pixelsize by "@&lt;depth&gt;" (ie. "@8"). -->
-出力するビットマップサイズはフォントデータベースにすべて存在しなければなりません。アンチエイリアス処理したフォントは、ピクセルサイズの後ろに "@&lt;depth&gt;" (例: "@8") を付け加えることによって指定することができます。
+出力するビットマップサイズはフォントデータベースにすべて存在しなければなりません。アンチエイリアス処理したフォントは、ピクセルサイズの後ろに“@&lt;depth&gt;”(例:“@8”) を付け加えることによって指定することができます。
 <P>
 <!--
 If you are generating a bdf font then you will be prompted for a resolution
@@ -371,14 +373,14 @@ font, or a set of tables containing typographic information -- here the OpenType
 mode refers to the typographic tables) then FontForge will generate
 <A HREF="gposgsub.html">GPOS, GSUB, and GDEF tables</A>. These contain kerning,
 ligature information, arabic forms data, anchor points, etc. -->
-OpenType モードを設定して TrueType または OpenType フォントを出力すると (注意: "OpenType" という用語は 2 つの意味があります。PostScript フォントに対する TrueType ラッパという意味と、組版用の情報を含んだテーブルのセットの意味です。――ここで言う OpenType モードとはテーブルのセットのことです) FontForge は <A HREF="gposgsub.html">GPOS, GSUB および GDEF テーブル</A>を出力します。これらはカーニング、合字情報、アラビア文字の位置依存の形情報、アンカーポイントなどを含みます。
+OpenType モードを設定して TrueType または OpenType フォントを出力すると (注意:“OpenType”という用語は 2 つの意味があります。PostScript フォントに対する TrueType ラッパという意味と、組版用の情報を含んだテーブルのセットの意味です。――ここで言う OpenType モードとはテーブルのセットのことです) FontForge は <A HREF="gposgsub.html">GPOS, GSUB および GDEF テーブル</A>を出力します。これらはカーニング、合字情報、アラビア文字の位置依存の形情報、アンカーポイントなどを含みます。
 <P>
 <!--
 Apple does not support these OpenType layout tables. If you set Apple mode
 <A HREF="gposgsub.html#AAT">'kern', 'opbd', 'morx', 'feat', 'lcar' and 'prop'
 </A>tables may be generated instead. (and a couple of other small differences
 will appear). -->
-Apple はこれらの OpenType レイアウトテーブルをサポートしていません。Apple モードを設定したときには、その代りに <A HREF="gposgsub.html#AAT">'kern', 'opbd', 'morx', 'feat', 'lcar' および 'prop'</A> テーブルを出力します。(それに加え、その他の小さな相違点が 2, 3 表れます。)
+Apple はこれらの OpenType レイアウトテーブルをサポートしていません。Apple モードを設定したときには、その代りに <A HREF="gposgsub.html#AAT">&lsquo;kern&rsquo;,&lsquo;opbd&rsquo;,&lsquo;morx&rsquo;,&lsquo;feat&rsquo;,&lsquo;lcar&rsquo; および&lsquo;prop&rsquo;</A> テーブルを出力します。(それに加え、その他の小さな相違点が 2, 3 表れます。)
 <P>
 <!--
 If you set both Apple and OpenType then both sets of tables will be generated.
@@ -387,7 +389,7 @@ will only contain pair-wise kerning (no kerning classes, no kerning by state
 machine). This is the kind of kerning available in the original truetype
 spec (from which both Apple and OpenType have diverged, but which both still
 support). -->
-Apple と OpenType の両方を設定している場合、両方のテーブルセットが出力されます。どちらも設定していない場合、'kern' テーブルのみが出力され、そこにはペア単位のカーニングのみが含まれます (カーニングクラスや状態機械によるカーニングは含まれません)。これはオリジナルの TrueType の仕様に存在した種類のカーニングです (そこから Apple と OpenType の仕様は岐れましたが、どちらも今なおサポートしています)。
+Apple と OpenType の両方を設定している場合、両方のテーブルセットが出力されます。どちらも設定していない場合、&lsquo;kern&rsquo;テーブルのみが出力され、そこにはペア単位のカーニングのみが含まれます (カーニングクラスや状態機械によるカーニングは含まれません)。これはオリジナルの TrueType の仕様に存在した種類のカーニングです (そこから Apple と OpenType の仕様は岐れましたが、どちらも今なおサポートしています)。
   <HR>
 <H2>
 <!--Generate <A NAME="Mac-Family">Mac</A> Family-->
@@ -403,7 +405,7 @@ Because this dialog is for Mac families, only Mac formats are supported. -->
 Right above the [Save] button is a list of all fonts that FontForge thinks
 should be included in this family, along with their bitmap info. If you don't
 want a font to be in the family simply uncheck its checkbox. -->
-[保存(S)] ボタンのそばには、このファミリーに含まれると FontForge が考えた全フォントのリストが、そのビットマップ情報と一緒に表示されています。そのファミリーに含めたくないフォントがある場合は、そのチェックボックスを空にしてください。
+<CODE>[保存(<U>S</U>)]</CODE> ボタンのそばには、このファミリーに含まれると FontForge が考えた全フォントのリストが、そのビットマップ情報と一緒に表示されています。そのファミリーに含めたくないフォントがある場合は、そのチェックボックスを空にしてください。
 <P>
 <!--
 The font styles that are allowed in a family are limited by the capabilities
@@ -413,7 +415,7 @@ does not support the concepts of "Light", "Black" (if there is already a
 FontForge will be able to figure out a font's style from its fontname, but
 in some cases you may wish to override this by setting the
 <A HREF="fontinfo.html#Mac-Style">mac style </A>directly in fontinfo. -->
-ファミリー内で使用可能なフォントスタイルは、特定のタイプにつき一つのスタイルのみが使用可能で、"Light" や "Black" といったスタイル (既に "Bold" スタイルがある場合) や "Oblique" (既に "Italic" がある場合) スタイルをサポートしていない 'FOND' リソースの限界により制約されています。一般的に、FontForge はフォント名からそのフォントのスタイルを推測することが出来ますが、場合によってはその設定をフォント情報ダイアログの <A HREF="fontinfo.html#Mac-Style">Mac スタイル</A>で上書きしたくなることがあるでしょう。
+ファミリー内で使用可能なフォントスタイルは、特定のタイプにつき一つのスタイルのみが使用可能で、“Light”や“Black”といったスタイル (既に“Bold”スタイルがある場合) や“Oblique”(既に“Italic”がある場合) スタイルをサポートしていない&lsquo;FOND&rsquo;リソースの限界により制約されています。一般的に、FontForge はフォント名からそのフォントのスタイルを推測することが出来ますが、場合によってはその設定をフォント情報ダイアログの <A HREF="fontinfo.html#Mac-Style">Mac スタイル</A>で上書きしたくなることがあるでしょう。
 <P>
 <!--
 For information on creating mac font families beyond the capabilities of
@@ -451,4 +453,5 @@ FontForge は通常第 1 のフォーマットを出力しますが、複数レイヤーまたはストローク�
 <P ALIGN=Center>
 -- <A HREF="filemenu.html">前</A> -- <A HREF="overview.html">目次</A> --
 <A HREF="filemenu.html">次</A> --
+</DIV>
 </BODY></HTML>

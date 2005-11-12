@@ -3,12 +3,14 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jul-2003 -->
   <!-- AP: Last modified: 22-Mar-2005 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>FontForge's math</TITLE>-->
     <TITLE>FontForge の数学</TITLE>
   <LINK REL="icon" href="../ffanvil16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
+<DIV id="in">
 <H1 ALIGN=Center>
 <!--FontForge's math-->
     FontForge の数学
@@ -33,7 +35,7 @@ commands, but many others rely on the same technique. Let us consider the
 case of the Merge command, suppose we have the following splines and we wish
 to remove the middle point and generate a new spline that approximates the
 original two: -->
-FontForge の多くのコマンドで、点の列をスプラインに当てはめる必要が生じます。それらのうち最も自明なのは 編集(E)→合併(M) と エレメント(L)→単純化(S) コマンドですが、しかし同種の技法に依存しているコマンドは他にも多数あります。合併(M) コマンドの場合を検討することにします。以下のスプラインがあったとして、中央の点を削除して、オリジナルの 2 本のスプラインを近似する新しい 1 本のスプラインを生成したいのだとしましょう。
+FontForge の多くのコマンドで、点の列をスプラインに当てはめる必要が生じます。それらのうち最も自明なのは <CODE>編集(<U>E</U>)</CODE>→<CODE>合併(<U>M</U>)</CODE> と <CODE>エレメント(<U>L</U>)</CODE>→<CODE>単純化(<U>S</U>)</CODE> コマンドですが、しかし同種の技法に依存しているコマンドは他にも多数あります。<CODE>合併(<U>M</U>)</CODE> コマンドの場合を検討することにします。以下のスプラインがあったとして、中央の点を削除して、オリジナルの 2 本のスプラインを近似する新しい 1 本のスプラインを生成したいのだとしましょう。
 <P>
 &nbsp; &nbsp; &nbsp;
 <IMG SRC="../mergepre.png" WIDTH="192" HEIGHT="120" ALIGN="Middle"> =&gt;
@@ -119,7 +121,7 @@ And similarly for y. So this gives us 12 equations and 8 unknowns, so we're
 a bit over-specified. Well it must be a spline, so we need the first four
 equations, and then I use the bottom two equations for x, and the corresponding
 two for y. -->
-そして y についても同様の関係が成り立ちます。それによって、この数式から我々は 12 個の等式と 8 個の未知数を得る個とができるわけですが、少し指定が多すぎたことになります。さて、これはスプラインでなければならないので、最初の 4 個の等式は必須です。その他に私が使用するのは x に関する下の 2 個の等式と、それに対応する y に関する 2 個の等式です。
+そして y についても同様の関係が成り立ちます。それによって、この数式から我々は 12 個の等式と 8 個の未知数を得ることができるわけですが、少し指定が多すぎたことになります。さて、これはスプラインでなければならないので、最初の 4 個の等式は必須です。その他に私が使用するのは x に関する下の 2 個の等式と、それに対応する y に関する 2 個の等式です。
 <H3>
 <!--Why that didn't work -->
     これがうまくいかない理由
@@ -418,4 +420,5 @@ FontForge does not support this. I don't see a good UI for it. (MetaFont
 fonts can be drawn with such a pen). -->
 FontForge はこれをサポートしていません。よい UI が思いつきません。(MetaFont のフォントはこのようなペンで描くことができます)。
 <P>
+</DIV>
 </BODY></HTML>

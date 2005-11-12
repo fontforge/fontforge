@@ -3,12 +3,14 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
   <!-- AP: Last modified: 10-Mar-2004 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>The Hints Menu</TITLE>-->
     <TITLE>ヒントメニュー</TITLE>
   <LINK REL="icon" href="../ffanvil16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
+<DIV id="in">
 <H1 ALIGN=Center>
 <!--The Hints Menu-->
     ヒントメニュー
@@ -24,25 +26,25 @@ This menu is only present in the outline glyph view and the font view. <BR>-->
 <UL>
   <LI>
 <!--<A HREF="#AutoHint">AutoHint</A>-->
-    <A HREF="#AutoHint">自動ヒント(H)</A>
+    <A HREF="#AutoHint">自動ヒント(<U>H</U>)</A>
   <LI>
 <!--<A HREF="#SubstitutionPt">Hint Substitution Pts</A>-->
-    <A HREF="#SubstitutionPt">ヒントが置換する点(S)</A>
+    <A HREF="#SubstitutionPt">ヒントが置換する点(<U>S</U>)</A>
   <LI>
 <!--<A HREF="#Counter">Auto Counter</A>-->
-    <A HREF="#Counter">自動カウンタヒント(C)</A>
+    <A HREF="#Counter">自動カウンタヒント(<U>C</U>)</A>
   <LI>
 <!--<A HREF="hintsmenu.html#DontAutoHint">Don't AutoHint</A>-->
-    <A HREF="#DontAutoHint">自動ヒントを停止(D)</A>
+    <A HREF="#DontAutoHint">自動ヒントを停止(<U>D</U>)</A>
   <LI>
 <!--<A HREF="#AutoInstr">AutoInstr</A>-->
-    <A HREF="#AutoInstr">ヒント命令の自動生成(I)</A>
+    <A HREF="#AutoInstr">ヒント命令の自動生成(<U>I</U>)</A>
   <LI>
 <!--<A HREF="#EditInstrs">Edit Instructions...</A>-->
     <A HREF="#EditInstrs">ヒント命令の編集(E)...</A>
   <LI>
 <!--<A HREF="#Debug">Debug...</A>-->
-    <A HREF="#Debug">デバッグ(D)</A>
+    <A HREF="#Debug">デバッグ(<U>D</U>)</A>
   <LI>
 <!--<A HREF="#Editfpgm">Edit fpgm...</A>-->
     <A HREF="#Editfpgm">'fpgm'テーブルを編集...</A>
@@ -54,31 +56,31 @@ This menu is only present in the outline glyph view and the font view. <BR>-->
     <A HREF="#Editcvt">'cvt 'テーブルを編集...</A>
   <LI>
 <!--<A HREF="#ClearHints">Clear Hints</A>-->
-    <A HREF="#ClearHints">ヒントを削除(C)</A>
+    <A HREF="#ClearHints">ヒントを削除(<U>C</U>)</A>
   <LI>
 <!--<A HREF="#ClearInstrs">Clear Instructions</A>-->
     <A HREF="#ClearInstrs">ヒント命令を削除</A>
   <LI>
 <!--<A HREF="#Clear">Clear HStem</A>-->
-    <A HREF="#Clear">水平ステムヒントを削除(C)</A>
+    <A HREF="#Clear">水平ステムヒントを削除(<U>C</U>)</A>
   <LI>
 <!--<A HREF="#ClearV">Clear VStem</A>-->
-    <A HREF="#ClearV">垂直ステムヒントを削除(V)</A>
+    <A HREF="#ClearV">垂直ステムヒントを削除(<U>V</U>)</A>
   <LI>
 <!--<A HREF="#HHint">Add HHint</A>-->
-    <A HREF="#HHint">水平ヒントを追加(A)</A>
+    <A HREF="#HHint">水平ヒントを追加(<U>A</U>)</A>
   <LI>
 <!--<A HREF="#VHint">Add VHint</A>-->
-    <A HREF="#VHint">垂直ヒントを追加(V)</A>
+    <A HREF="#VHint">垂直ヒントを追加(<U>V</U>)</A>
   <LI>
 <!--<A HREF="#Create">Create HHint</A>-->
-    <A HREF="#Create">水平ヒントを作成(R)</A>
+    <A HREF="#Create">水平ヒントを作成(<U>R</U>)</A>
   <LI>
 <!--<A HREF="#CreateV">Create VHint</A>-->
     <A HREF="#CreateV">垂直ヒントを作成</A>
   <LI>
 <!--<A HREF="#Review">Review Hints</A>-->
-    <A HREF="#Review">ヒントを確認(R)</A>
+    <A HREF="#Review">ヒントを確認(<U>R</U>)</A>
   <LI>
 <!--<A HREF="#HStem-Hist">Histograms</A>-->
     <A HREF="#Histgrams">柱状グラフ</A>
@@ -97,18 +99,18 @@ This menu is only present in the outline glyph view and the font view. <BR>-->
 <DL>
   <DT>
 <!--<A NAME="AutoHint">AutoHint</A>-->
-    <A NAME="AutoHint">自動ヒント(H)</A>
+    <A NAME="AutoHint">自動ヒント(<U>H</U>)</A>
   <DD>
 <!--The Auto Hint command causes FontForge to throw away any existing hints for
     the glyph and guess an new ones. In the outline view this operates on the
     current glyph, in the font view it operates on all selected glyphs.<BR>-->
-    自動ヒント(H) コマンドを使うと、FontForge はそのグリフに設定された既存のヒントを放棄して新しく推測したヒントを追加します。アウトライングリフビューでは現在のグリフに対してこれを行い、フォントビューでは選択中のすべてのグリフに対して行います。<BR>
+    <CODE>自動ヒント(<U>H</U>)</CODE> コマンドを使うと、FontForge はそのグリフに設定された既存のヒントを放棄して新しく推測したヒントを追加します。アウトライングリフビューでは現在のグリフに対してこれを行い、フォントビューでは選択中のすべてのグリフに対して行います。<BR>
 <!--FontForge will do a better job hinting a font if you have previously set
     the BlueValues, StdVW and StdHW fields in
     <A HREF="fontinfo.html#Private">Element-&gt;Font Info-&gt;PS Private</A>.
     These in turn depend on the hints so it is best to autohint the entire font,
     then set the above values, and then autohint the font again.-->
-    FontForge は、<A HREF="fontinfo.html#Private">エレメント(L)→フォント情報(F)→PSプライベート辞書</A> BlueValues, StdVW, STDHW フィールドをあらかじめ設定しておくと、より高品質なヒントづけ処理を行います。これらの値もヒントに依存するので、まずフォント全体に自動ヒントづけを行い、それから上記の値を設定し、最後にフォントを再び自動ヒントづけすると、最も良い結果が得られます。
+    FontForge は、<A HREF="fontinfo.html#Private"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)</CODE>→<CODE>[PSプライベート辞書]</CODE></A> の <CODE>BlueValues</CODE>, <CODE>StdVW</CODE>, <CODE>STDHW</CODE> フィールドをあらかじめ設定しておくと、より高品質なヒントづけ処理を行います。これらの値もヒントに依存するので、まずフォント全体に自動ヒントづけを行い、それから上記の値を設定し、最後にフォントを再び自動ヒントづけすると、最も良い結果が得られます。
   <DT>
 <!--Hint <A NAME="SubstitutionPt">Substitution</A> Pts-->
     ヒントが<A NAME="SubstitutionPt">置換</A>する点(S)
@@ -119,14 +121,14 @@ This menu is only present in the outline glyph view and the font view. <BR>-->
     フォントビューでこのコマンドを実行すると、選択中の全てのグリフに対して置換が行われる点を表示します。アウトライングリフビューでは、現在のヒントセットを使用して現在のグリフで置換が行われる点を表示します。
   <DT>
 <!--Auto <A NAME="Counter">Counter</A>-->
-    <A NAME="Counter">自動カウンタヒント(C)</A>
+    <A NAME="Counter">自動カウンタヒント(<U>C</U>)</A>
   <DD>
 <!--Attempt to figure out counter groups for the selected glyphs (font view)
     or the current glyph (outline glyph view).-->
     選択中のグリフのカウンタグループを表示しようと試みます (フォントビューの場合)。または現在のグリフのカウンタグループを表示しようと試みます (アウトライングリフビューの場合)。
   <DT>
 <!--<A NAME="DontAutoHint">Don</A>'t AutoHint-->
-    <A NAME="DontAutoHint">自動ヒントを停止(D)</A>
+    <A NAME="DontAutoHint">自動ヒントを停止(<U>D</U>)</A>
   <DD>
 <!--Tells FontForge not to do any implicit hinting on the selected glyphs. (FontForge
     will normally perform an autohint on a glyph if the glyph's contours have
@@ -137,19 +139,19 @@ This menu is only present in the outline glyph view and the font view. <BR>-->
     contours have changed since it was last hinted and the user has not explicitly
     changed the hints). The user may turn this flag off by invoking AutoHint
     explicitly.-->
-    選択中のグリフに対し、FontForge が暗黙のヒントづけをまったく行わないように指示します。(通常の場合は FontForge は、あるグリフに最後にヒントづけが行われて以来ユーザが明示的な変更をヒントに行わなかった場合、そのグリフを変更したときには自動ヒントづけを行います)。ユーザは、自動ヒント(H) を明示的に呼び出すことによりこのフラグをオフにすることができます。
+    選択中のグリフに対し、FontForge が暗黙のヒントづけをまったく行わないように指示します。(通常の場合は FontForge は、あるグリフに最後にヒントづけが行われて以来ユーザが明示的な変更をヒントに行わなかった場合、そのグリフを変更したときには自動ヒントづけを行います)。ユーザは、<CODE>自動ヒント(<U>H</U>)</CODE> を明示的に呼び出すことによりこのフラグをオフにすることができます。
     <P>
 <!--In the outline glyph view, behavior is a bit more complicated. This command
     will toggle the current setting of the "Don't AutoHint" flag. If the flag
     is currently on the menu entry will be checked.-->
-    アウトライングリフビューでは、そのふるまいはもう少し複雑です。このコマンドは現在の「自動ヒントを停止(D)」フラグの現在の設定を反転します。このフラグがメニューメニュー項目にある場合、そこにチェックマークが表示されます。
+    アウトライングリフビューでは、そのふるまいはもう少し複雑です。このコマンドは現在の <CODE>自動ヒントを停止(<U>D</U>)</CODE> フラグの現在の設定を反転します。このフラグがメニューメニュー項目にある場合、そこにチェックマークが表示されます。
   <DT>
 <!--<A NAME="AutoInstr">AutoInstr</A>-->
-    <A NAME="AutoInstr">ヒント命令の自動生成(I)</A>
+    <A NAME="AutoInstr">ヒント命令の自動生成(<U>I</U>)</A>
   <DD>
 <!--The Auto Instr command is only available in quadratic fonts and is used to
     generate truetype instructions. It doesn't do a good job. -->
-    ヒント命令の自動生成(I) コマンドは 2 次スプラインからなるフォントでのみ使用可能で、TrueType 命令を生成するのに用いられます。これは品質の良いヒントを出力できません。
+    <CODE>ヒント命令の自動生成(<U>I</U>)</CODE> コマンドは 2 次スプラインからなるフォントでのみ使用可能で、TrueType 命令を生成するのに用いられます。これは品質の良いヒントを出力できません。
   <DT>
 <!--<A NAME="EditInstrs">Edit Instructions...</A>-->
     <A NAME="EditInstrs">ヒント命令の編集(E)...</A>
@@ -160,7 +162,7 @@ This menu is only present in the outline glyph view and the font view. <BR>-->
     これはアウトラインビューとフォントビューに限られ、2 次スプラインからなるフォントでのみ使用可能です。<A HREF="ttfinstrs.html">このダイアログ</A>はこのグリフに付随する任意の TrueType 命令を表示し、それらを編集することができます。
   <DT>
 <!--<A NAME="Debug">Debug</A>... -->
-    <A NAME="Debug">デバッグ(D)</A>...
+    <A NAME="Debug">デバッグ(<U>D</U>)</A>...
   <DD>
 <!--Only available in the outline view, and only if you have linked with a version
     of freetype with the bytecode interpreter and only in quadratic fonts. This
@@ -173,7 +175,7 @@ This menu is only present in the outline glyph view and the font view. <BR>-->
 <!--Only available in the font view, and only in quadratic fonts.
     <A HREF="ttfinstrs.html">This dialog</A> shows any truetype instructions
     in the 'fpgm' table, and allows you to edit them.-->
-    これはフォントビューに限られ、2 次スプラインからなるフォントに限られます。<A HREF="ttfinstrs.html">このダイアログ</A>では 'fpgm' テーブルに含まれる任意の TrueType 命令を表示し、それを編集することができます。
+    これはフォントビューに限られ、2 次スプラインからなるフォントに限られます。<A HREF="ttfinstrs.html">このダイアログ</A>では&lsquo;fpgm&rsquo;テーブルに含まれる任意の TrueType 命令を表示し、それを編集することができます。
   <DT>
 <!--<A NAME="Editprep">Edit prep...</A>-->
     <A NAME="Editprep">'prep'テーブルを編集...</A>
@@ -181,7 +183,7 @@ This menu is only present in the outline glyph view and the font view. <BR>-->
 <!--Only available in the font view, and only in quadratic fonts.
     <A HREF="ttfinstrs.html">This dialog</A> shows any truetype instructions
     in the 'prep' table, and allows you to edit them. -->
-    これはフォントビューに限られ、2 次スプラインからなるフォントに限られます。<A HREF="ttfinstrs.html">このダイアログ</A>では 'prep' テーブルに含まれる任意の TrueType 命令を表示し、それを編集することができます。
+    これはフォントビューに限られ、2 次スプラインからなるフォントに限られます。<A HREF="ttfinstrs.html">このダイアログ</A>では&lsquo;prep&rsquo;テーブルに含まれる任意の TrueType 命令を表示し、それを編集することができます。
   <DT>
 <!--<A NAME="Editcvt">Edit cvt...</A>-->
     <A NAME="Editcvt">'cvt 'テーブルを編集...</A>
@@ -189,10 +191,10 @@ This menu is only present in the outline glyph view and the font view. <BR>-->
 <!--Only available in the font view, and only in quadratic fonts.
     <A HREF="ttfinstrs.html#cvt">This dialog</A> shows the initial values in
     the 'cvt ' table, and allows you to edit them. -->
-    これはフォントビューに限られ、2 次スプラインからなるフォントに限られます。<A HREF="ttfinstrs.html#cvt">このダイアログ</A>では 'cvt ' テーブルの初期値を表示し、それを編集することができます。
+    これはフォントビューに限られ、2 次スプラインからなるフォントに限られます。<A HREF="ttfinstrs.html#cvt">このダイアログ</A>では&lsquo;cvt &rsquo;テーブルの初期値を表示し、それを編集することができます。
   <DT>
 <!--<A NAME="ClearHints">Clear Hints</A>-->
-    <A NAME="ClearHints">ヒントを削除(C)</A>
+    <A NAME="ClearHints">ヒントを削除(<U>C</U>)</A>
   <DD>
 <!--Clears all hints in all selected glyph.-->
     選択中のグリフの全てのヒントを消去します。
@@ -204,13 +206,13 @@ This menu is only present in the outline glyph view and the font view. <BR>-->
     選択中のグリフに伴う任意の TrueType 命令を消去します。
   <DT>
 <!--<A NAME="Clear">Clear</A> HStem-->
-    <A NAME="Clear">水平ステムヒントを削除(C)</A>
+    <A NAME="Clear">水平ステムヒントを削除(<U>C</U>)</A>
   <DD>
 <!--Removes all Horizontal Stem hints from the current glyph.-->
     現在のグリフからすべての水平ステムヒントを削除します。
   <DT>
 <!--<A NAME="ClearV">Clear</A> VStem-->
-    <A NAME="ClearV">垂直ステムヒントを削除(V)</A>
+    <A NAME="ClearV">垂直ステムヒントを削除(<U>V</U>)</A>
   <DD>
 <!--Removes all Vertical Stem hints.-->
     すべての垂直ステムヒントを削除します。
@@ -224,7 +226,7 @@ This menu is only present in the outline glyph view and the font view. <BR>-->
     2 個 (ちょうど 2 個に限る) の点が選択されていて、それらの y 座標が異なる場合、下の点から始まり上の点で終わる水平ステムヒントを作成します。
   <DT>
 <!--Add <A NAME="VHint">VHint</A>-->
-    <A NAME="VHint">垂直ヒントを追加(V)</A>
+    <A NAME="VHint">垂直ヒントを追加(<U>V</U>)</A>
   <DD>
 <!--If there are two points selected (exactly two) and if they have different
     x positions, then this will create a Vertical Stem Hint starting at the leftmost
@@ -232,7 +234,7 @@ This menu is only present in the outline glyph view and the font view. <BR>-->
     2 個 (ちょうど 2 個に限る) の点が選択されていて、それらの x 座標が異なる場合、左の点から始まり右の点で終わる垂直ステムヒントを作成します。
   <DT>
 <!--<A NAME="Create">Create</A>--> HHint
-    <A NAME="Create">水平ヒントを作成(R)</A>
+    <A NAME="Create">水平ヒントを作成(<U>R</U>)</A>
   <DD>
 <!--Brings up a dialog allowing you to specify exactly where and how wide you
     want a Horizontal Stem Hint.-->
@@ -246,7 +248,7 @@ This menu is only present in the outline glyph view and the font view. <BR>-->
     垂直ステムヒントがどこから始まり、どれだけの幅をもつかを正確に指定できるダイアログを起動します。
   <DT>
 <!--<A NAME="Review">Review</A>--> Hints
-    ヒントを<A NAME="Review">確認(R)</A>
+    ヒントを<A NAME="Review">確認(<U>R</U>)</A>
     <IMG SRC="../ReviewHints.png" WIDTH="383" HEIGHT="410" ALIGN="Right">
   <DD>
 <!--Brings up a dialog allowing you to examine (and modify) all horizontal/vertical
@@ -289,35 +291,35 @@ This menu is only present in the outline glyph view and the font view. <BR>-->
 <UL>
   <LI>
 <!--<A HREF="filemenu.html">File</A>-->
-    <A HREF="filemenu.html">ファイル(F)</A>
+    <A HREF="filemenu.html">ファイル(<U>F</U>)</A>
   <LI>
 <!--<A HREF="editmenu.html">Edit</A>-->
-    <A HREF="editmenu.html">編集(E)</A>
+    <A HREF="editmenu.html">編集(<U>E</U>)</A>
   <LI>
 <!--<A HREF="pointmenu.html">Point</A>-->
-    <A HREF="pointmenu.html">点(P)</A>
+    <A HREF="pointmenu.html">点(<U>P</U>)</A>
   <LI>
 <!--<A HREF="elementmenu.html">Element</A>-->
-    <A HREF="elementmenu.html">エレメント(L)</A>
+    <A HREF="elementmenu.html">エレメント(<U>L</U>)</A>
   <LI>
 <!--<A HREF="hintsmenu.html">Hints</A>-->
-    <A HREF="hintsmenu.html">ヒント(H)</A>
+    <A HREF="hintsmenu.html">ヒント(<U>H</U>)</A>
   <LI>
 <!--<A HREF="viewmenu.html">View</A>-->
-    <A HREF="viewmenu.html">表示(V)</A>
+    <A HREF="viewmenu.html">表示(<U>V</U>)</A>
   <LI>
 <!--<A HREF="metricsmenu.html">Metrics</A>-->
-    <A HREF="metricsmenu.html">メトリック(M)</A>
+    <A HREF="metricsmenu.html">メトリック(<U>M</U>)</A>
   <LI>
     <A HREF="cidmenu.html">CID</A>
   <LI>
     <A HREF="mmmenu.html">MM</A>
   <LI>
 <!--<A HREF="windowmenu.html">Window</A>-->
-    <A HREF="windowmenu.html">ウィンドウ(W)</A>
+    <A HREF="windowmenu.html">ウィンドウ(<U>W</U>)</A>
   <LI>
 <!--<A HREF="helpmenu.html">Help</A>-->
-    <A HREF="helpmenu.html">ヘルプ(H)</A>
+    <A HREF="helpmenu.html">ヘルプ(<U>H</U>)</A>
   <LI>
 <!--<A HREF="HotKeys.html">Hot Keys</A>-->
     <A HREF="HotKeys.html">ホットキー一覧</A>
@@ -325,4 +327,5 @@ This menu is only present in the outline glyph view and the font view. <BR>-->
 -- <A HREF="elementmenu.html">前</A> -- <A HREF="overview.html">目次</A>
 -- <A HREF="viewmenu.html">次</A> --
 <P>
+</DIV>
 </BODY></HTML>

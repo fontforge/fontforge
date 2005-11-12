@@ -3,12 +3,14 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jan-2003 -->
   <!-- AP: Last modified: 21-Mar-2005 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=shift-jis">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Creating the letter "o" - - consistant directions</TITLE>-->
     <TITLE>文字 "o" の作成――矛盾の無いパスの向き</TITLE>
   <LINK REL="icon" href="../ffanvil16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
+<DIV id="in">
 <H1 ALIGN=Center>
 <!-- Tutorial #2 -->
      チュートリアル (その 2)
@@ -77,8 +79,7 @@
 The font view provides one way of navigating around the glyphs in a font.
 Simple scroll around it until you find the glyph you need and then double
 click on it to open a window looking at that glyph. -->
-フォントビューは、フォント内のグリフを呼び出すための一つの方法を提供します。
-単純に、あなたが必要とするグリフがみつかるまで画面をスクロールしてから、そのグリフをダブルクリックして、グリフを見るためのウィンドウを開いてください。
+フォントビュー (表示画面) は、フォント内のグリフを呼び出すための一つの方法を提供します。単純に、あなたが必要とするグリフがみつかるまで画面をスクロールしてから、そのグリフをダブルクリックして、グリフを見るためのウィンドウを開いてください。
 <P>
 <!--
 Typing a glyph will move to that glyph. -->
@@ -92,20 +93,18 @@ a simple dialog which will allow you to move directly to any glyph for which
 you know the name (or encoding). If your font is a Unicode font, then this
 dialog will also allow you to find glyphs by block name (ie. Hebrew rather
 than Alef). -->
-しかしながらある種のフォントは巨大で (中国語や日本語・韓国語のフォントは数千から数万字にも及ぶグリフを含みます) フォントビューをスクロールして回るのはグリフを探す方法としては非効率です。
-<CODE>表示(V)→移動(G)</CODE> を実行するとダイアログが表示され、そこでグリフの名前 (または文字符号) を入力すれば、目的の文字に直接移動することができます。
-あなたのフォントが Unicode フォントであるなら、グリフを探すときにこのダイアログにブロック名を入力することができます (例: Alef でなく Hebrew と入力できる)。
+しかしながらある種のフォントは巨大で (中国語や日本語・韓国語のフォントは数千から数万字にも及ぶグリフを含みます) フォントビューをスクロールして回るのはグリフを探す方法としては非効率です。<CODE>表示(<U>V</U>)</CODE>→<CODE>移動(<U>G</U>)</CODE> を実行するとダイアログが表示され、そこでグリフの名前 (または文字符号) を入力すれば、目的の文字に直接移動することができます。あなたのフォントが Unicode フォントであるなら、グリフを探すときにこのダイアログにブロック名を入力することができます (例: Alef でなく Hebrew と入力できる)。
 <P>
 <!--
 The simplest way to navigate is just to go to the next or previous glyph.
 And <CODE>View-&gt;Next Char</CODE> and <CODE>View-&gt;Prev Char</CODE> will
 do exactly that. -->
-いちばん単純な呼び出し方法は、前後の文字に移動することです。これらの操作は、<CODE>表示(V)→次のグリフ(N)</CODE> と <CODE>表示(V)→前のグリフ(N)</CODE> でできます。
+いちばん単純な呼び出し方法は、前後の文字に移動することです。これらの操作は、<CODE>表示(<U>V</U>)</CODE>→<CODE>次のグリフ(<U>N</U>)</CODE> と <CODE>表示(<U>V</U>)</CODE>→<CODE>前のグリフ(<U>P</U>)</CODE> でできます。
 <H2>
 <!--
   <A NAME="Creating-o">Creating </A>the letter "o" - - consistent directions
 -->
-  文字“o”の <A NAME="Creating-o">作成</A>-- 矛盾の無いパスの向き
+  文字“o”の <A NAME="Creating-o">作成</A>――矛盾の無いパスの向き
 </H2>
 <P>
 <!--
@@ -116,20 +115,16 @@ some idea of how much white space there should be around it. If your images
 are exactly one em high then FontForge will scale them automatically to be
 the right size. So in the following examples all the images have exactly
 the right amount of white-space around them to fit perfectly in an em. -->
-さきほどの例では、文字のビットマップは画像の大きさいっぱいに描かれていました。
-そのため FontForge に画像を取り込んだ時、最初にプログラム内で拡大/縮小を行う必要がありました。
-しかし一般的には、文字の画像を作成する時には、その周りにどれだけの空白を置くかをあらかじめ想定しているのがふつうです。
-画像の高さがちょうど全角 (em) に等しい場合、FontForge は正しいサイズに自動的に拡大/縮小します。
-これ以降の例では、全ての画像は、全角にぴったり一致するだけの空白を文字の周りに含んでいるものとします。
+さきほどの例では、文字のビットマップは画像の大きさいっぱいに描かれていました。そのため FontForge に画像を取り込んだ時、最初にプログラム内で拡大/縮小を行う必要がありました。しかし一般的には、文字の画像を作成する時には、その周りにどれだけの空白を置くかをあらかじめ想定しているのがふつうです。画像の高さがちょうど全角 (em) に等しい場合、FontForge は正しいサイズに自動的に拡大/縮小します。これ以降の例では、全ての画像は、全角にぴったり一致するだけの空白を文字の周りに含んでいるものとします。
 <P>
 <!--
 For the next example double click on the square in the font view that should
 contain "o", and import "o_Ambrosia.png" into it. -->
-次の例を表示するには、フォントビュー内で "o" を含んでいるマスをダブルクリックして "o_Ambrosia.png" を取り込んでください。
+次の例を表示するには、フォントビュー内で“o”を含んでいるマスをダブルクリックして“o_Ambrosia.png”を取り込んでください。
 <TABLE BORDER CELLPADDING="2">
   <CAPTION>
 <!--Stages in editing "o" -->
-    文字 "o" の編集の各段階
+    文字“o”の編集の各段階
   </CAPTION>
   <TR>
     <TD><IMG SRC="../o1.png" WIDTH="190" HEIGHT="287"></TD>
@@ -146,8 +141,7 @@ and TrueType require that the outer boundary of a glyph be drawn in a certain
 direction (they happen to be opposite from each other, which is a mild
 annoyance), within FontForge all outer boundaries must be drawn clockwise,
 while all inner boundaries must be drawn counter-clockwise. -->
-最初のアウトラインは時計回りに、2 番目を反時計回りに描かれていることに注意してください。
-PostScript・TrueTypeのどちらにおいてもグリフの輪郭は特定の向きに描かれなくてはならないことに決まっており (ちょっと面倒なことに、これらは互いに逆方向になっています)、FontForge では外側の輪郭線はすべて時計回りに、内側の輪郭線はすべて反時計回りでなくてはなりません。
+最初のアウトラインは時計回りに、2 番目を反時計回りに描かれていることに注意してください。PostScript・TrueTypeのどちらにおいてもグリフの輪郭は特定の向きに描かれなくてはならないことに決まっており (ちょっと面倒なことに、これらは互いに逆方向になっています)、FontForge では外側の輪郭線はすべて時計回りに、内側の輪郭線はすべて反時計回りでなくてはなりません。
 <P>
 <!--
 If you fail to alternate directions between outer and inner boundaries you
@@ -155,8 +149,7 @@ may get results like the one on the left
 <IMG SRC="o-baddir.png" WIDTH="51" HEIGHT="28">. If you fail to draw the
 outer contour in a clockwise fashion the errors are more subtle, but will
 generally result in a less pleasing result once the glyph has been rasterized. -->
-外側の輪郭と内側の輪郭を逆向きにするのを忘れた場合、この図 <IMG SRC="../o-baddir.png" WIDTH="51" HEIGHT="28"> の左側のような結果が得られるでしょう。
-外側を時計回りにするということを忘れた場合は、エラーはもっと軽微なものですが、それでも一般的には、グリフをラスタライズする必要が生じた時にあまり愉快ではない結果が得られるでしょう。
+外側の輪郭と内側の輪郭を逆向きにするのを忘れた場合、この図 <IMG SRC="../o-baddir.png" WIDTH="51" HEIGHT="28"> の左側のような結果が得られるでしょう。外側を時計回りにするということを忘れた場合は、エラーはもっと軽微なものですが、それでも一般的には、グリフをラスタライズする必要が生じた時にあまり愉快ではない結果が得られるでしょう。
 <P>
 <!--
 <SMALL><STRONG>TECHNICAL AND CONFUSING</STRONG>: the exact behavior of
@@ -166,8 +159,7 @@ the "non-zero" rule. The description given above is for the "non-zero" rule.
 The "even-odd" rule would fill the "o" correctly no matter which way the
 paths were drawn (though there would probably be subtle problems with
 hinting).</SMALL> -->
-<SMALL><STRONG>技術的で分かりにくい事柄</STRONG>: ラスタライザの正確なふるまいは様々です。
-初期の PostScript ラスタライザは「非ゼロ巻き数ルール」を使っていましたが、最近のものは「奇偶ルール」を使います。TrueType は「非ゼロルール」です。上で行った説明は「非ゼロルール」です。「奇偶ルール」の場合、パスがどちら向きであっても問題なく "o" は正確に表示されます (ただしヒント処理のときに微妙な問題をひき起こすでしょう)。</SMALL>
+<SMALL><STRONG>技術的で分かりにくい事柄</STRONG>: ラスタライザの正確なふるまいは様々です。初期の PostScript ラスタライザは「非ゼロ巻き数ルール」を使っていましたが、最近のものは「奇偶ルール」を使います。TrueType は「非ゼロルール」です。上で行った説明は「非ゼロルール」です。「奇偶ルール」の場合、パスがどちら向きであっても問題なく“o”は正確に表示されます (ただしヒント処理のときに微妙な問題をひき起こすでしょう)。</SMALL>
 <P>
 <!--
 <SMALL>Filling using the <A NAME="even-odd">even-odd </A>rules that a line
@@ -178,22 +170,17 @@ filled. If the number is odd the pixel is filled. In the
 contour crossings in a clockwise direction add 1 to the crossing count,
 counter-clockwise contours subtract 1. If the result is 0 the pixel is not
 filled, any other result will fill it.</SMALL> -->
-<SMALL><A NAME="even-odd">奇偶</A>ルールを用いた塗りつぶしは、現在のピクセルから (任意の方向に) 直線を引き、輪郭線と交差する回数を数えるというものです。
-この回数が偶数なら、ピクセルは塗りつぶしません。
-回数が奇数ならピクセルを塗りつぶします。
-<A NAME="non-zero">非ゼロ</A>巻き数ルールでも同じ線を引きます。
-時計回りの輪郭線と交差するたびに交差回数に 1 を加え、反時計回りの線に交差するたびに 1 を引きます。
-結果が 0 ならば、ピクセルは塗りつぶさず、それ以外の値ならば塗りつぶします。
-</SMALL>
+<SMALL><A NAME="even-odd">奇偶</A>ルールを用いた塗りつぶしは、現在のピクセルから (任意の方向に) 直線を引き、輪郭線と交差する回数を数えるというものです。この回数が偶数なら、ピクセルは塗りつぶしません。回数が奇数ならピクセルを塗りつぶします。<A NAME="non-zero">非ゼロ</A>巻き数ルールでも同じ線を引きます。時計回りの輪郭線と交差するたびに交差回数に 1 を加え、反時計回りの線に交差するたびに 1 を引きます。結果が 0 ならば、ピクセルは塗りつぶさず、それ以外の値ならば塗りつぶします。</SMALL>
 <P>
 <!--
 The command <CODE><A HREF="elementmenu.html#Correct">Element-&gt;Correct
 Direction</A></CODE> will look at each selected contour, figure out whether
 it qualifies as an outer or inner contour and will reverse the drawing direction
 when the contour is drawn incorrectly. -->
-<CODE><A HREF="elementmenu.html#Correct">エレメント(L)→アウトラインの向きを修正(C)</A></CODE> コマンドは、選択された各輪郭を眺め、それが外側になるか内側になるかを判断し、輪郭線が間違って逆向きに描かれている場合にはその向きを逆転させます。
+<A HREF="elementmenu.html#Correct"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>アウトラインの向きを修正(<U>C</U>)</A></CODE> コマンドは、選択された各輪郭を眺め、それが外側になるか内側になるかを判断し、輪郭線が間違って逆向きに描かれている場合にはその向きを逆転させます。
 <P>
 <P ALIGN=Center>
 -- <A HREF="editexample.html">前</A> -- <A HREF="overview.html">目次</A>
 -- <A HREF="editexample3.html">次</A> --
+</DIV>
 </BODY></HTML>
