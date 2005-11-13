@@ -1286,6 +1286,7 @@ void SCEditInstructions(SplineChar *sc) {
     struct instrdata *id;
     char title[100];
     CharView *cv;
+    RefChar *ref;
 
     /* In a multiple master font, the instructions for all glyphs reside in */
     /*  the "normal" instance of the font. The instructions are the same for */
@@ -1304,6 +1305,19 @@ return;
 	gwwv_post_error(_("Can't instruct this glyph"),
 		_("TrueType does not support mixed references and contours.\nIf you want instructions for %.30s you should either:\n * Unlink the reference(s)\n * Copy the inline contours into their own (unencoded\n    glyph) and make a reference to that."),
 		sc->name );
+return;
+    }
+    for ( ref = sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
+	if ( ref->transform[0]>=2 || ref->transform[0]<-2 ||
+		ref->transform[1]>=2 || ref->transform[1]<-2 ||
+		ref->transform[2]>=2 || ref->transform[2]<-2 ||
+		ref->transform[3]>=2 || ref->transform[3]<-2 )
+    break;
+    }
+    if ( ref!=NULL ) {
+	gwwv_post_error(_("Can't instruct this glyph"),
+		_("TrueType does not support references which\nare scaled by more than 200%%.  But %1$.30s\nhas been in %2$.30s. Any instructions\nadded would be meaningless."),
+		ref->sc->name, sc->name );
 return;
     }
 
