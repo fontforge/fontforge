@@ -2,242 +2,255 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 27-Jun-2005 -->
+  <!-- AP: Last modified: 13-Nov-2005 -->
   <TITLE>The Hints Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
 <DIV id="in">
-<H1 ALIGN=Center>
-  The Hints Menu
-</H1>
-<P>
-This menu is only present in the outline glyph view and the font view. <BR>
-<A HREF="hinting.html">A more detailed description of the hinting UI</A>.
-<P>
-<UL>
-  <LI>
-    <A HREF="#AutoHint">AutoHint</A>
-  <LI>
-    <A HREF="#SubstitutionPt">Hint Substitution Pts</A>
-  <LI>
-    <A HREF="#Counter">Auto Counter</A>
-  <LI>
-    <A HREF="hintsmenu.html#DontAutoHint">Don't AutoHint</A>
-  <LI>
-    <A HREF="#AutoInstr">AutoInstr</A>
-  <LI>
-    <A HREF="#EditInstrs">Edit Instructions...</A>
-  <LI>
-    <A HREF="#Debug">Debug...</A>
-  <LI>
-    <A HREF="#Editfpgm">Edit fpgm...</A>
-  <LI>
-    <A HREF="#Editprep">Edit prep...</A>
-  <LI>
-    <A HREF="#Editcvt">Edit cvt...</A>
-  <LI>
-    <A HREF="#ClearHints">Clear Hints</A>
-  <LI>
-    <A HREF="#ClearInstrs">Clear Instructions</A>
-  <LI>
-    <A HREF="#Clear">Clear HStem</A>
-  <LI>
-    <A HREF="#ClearV">Clear VStem</A>
-  <LI>
-    <A HREF="#HHint">Add HHint</A>
-  <LI>
-    <A HREF="#VHint">Add VHint</A>
-  <LI>
-    <A HREF="#Create">Create HHint</A>
-  <LI>
-    <A HREF="#CreateV">Create VHint</A>
-  <LI>
-    <A HREF="#Review">Review Hints</A>
-  <LI>
-    <A HREF="#HStem-Hist">Histograms</A>
-    <UL>
-      <LI>
-	<A HREF="hintsmenu.html#HStem-Hist">HStem</A>
-      <LI>
-	<A HREF="hintsmenu.html#VStem-Hist">VStem</A>
-      <LI>
-	<A HREF="hintsmenu.html#Blue-Hist">BlueValues</A>
-    </UL>
-</UL>
-<P>
-<DL>
-  <DT>
-    <A NAME="AutoHint">AutoHint</A>
-  <DD>
-    The Auto Hint command causes FontForge to throw away any existing hints for
-    the glyph and guess an new ones. In the outline view this operates on the
-    current glyph, in the font view it operates on all selected glyphs.<BR>
-    FontForge will do a better job hinting a font if you have previously set
-    the BlueValues, StdVW and StdHW fields in
-    <A HREF="fontinfo.html#Private">Element-&gt;Font Info-&gt;PS Private</A>.
-    These in turn depend on the hints so it is best to autohint the entire font,
-    then set the above values, and then autohint the font again.
-  <DT>
-    Hint <A NAME="SubstitutionPt">Substitution</A> Pts
-  <DD>
-    In the font view this figures substitution points for all selected glyphs.
-    In the outline glyph view, this figures substitution points for the current
-    glyph using the current hint set.
-  <DT>
-    Auto <A NAME="Counter">Counter</A>
-  <DD>
-    Attempt to figure out counter groups for the selected glyphs (font view)
-    or the current glyph (outline glyph view).
-  <DT>
-    <A NAME="DontAutoHint">Don</A>'t AutoHint
-  <DD>
-    Tells FontForge not to do any implicit hinting on the selected glyphs. (FontForge
-    will normally perform an autohint on a glyph if the glyph's contours have
-    changed since it was last hinted and the user has not explicitly changed
-    the hints). The user may turn this flag off by invoking AutoHint explicitly.
-    <P>
-    In the outline glyph view, behavior is a bit more complicated. This command
-    will toggle the current setting of the "Don't AutoHint" flag. If the flag
-    is currently on the menu entry will be checked.
-  <DT>
-    <A NAME="AutoInstr">AutoInstr</A>
-  <DD>
-    The Auto Instr command is only available in quadratic fonts and is used to
-    generate truetype instructions. It doesn't do a good job.
-  <DT>
-    <A NAME="EditInstrs">Edit Instructions...</A>
-  <DD>
-    Only available in the outline and font views, and only in quadratic fonts.
-    <A HREF="ttfinstrs.html">This dialog</A> shows any truetype instructions
-    associated with this glyph, and allows you to edit them.
-  <DT>
-    <A NAME="Debug">Debug</A>...
-  <DD>
-    Only available in the outline view, and only if you have linked with a version
-    of freetype with the bytecode interpreter and only in quadratic fonts. This
-    allows you to <A HREF="charview.html#Debugging">debug truetype programs</A>.
-  <DT>
-    <A NAME="Editfpgm">Edit fpgm...</A>
-  <DD>
-    Only available in the font view, and only in quadratic fonts.
-    <A HREF="ttfinstrs.html">This dialog</A> shows any truetype instructions
-    in the 'fpgm' table, and allows you to edit them.
-  <DT>
-    <A NAME="Editprep">Edit prep...</A>
-  <DD>
-    Only available in the font view, and only in quadratic fonts.
-    <A HREF="ttfinstrs.html">This dialog</A> shows any truetype instructions
-    in the 'prep' table, and allows you to edit them.
-  <DT>
-    <A NAME="Editcvt">Edit cvt...</A>
-  <DD>
-    Only available in the font view, and only in quadratic fonts.
-    <A HREF="ttfinstrs.html#cvt">This dialog</A> shows the initial values in
-    the 'cvt ' table, and allows you to edit them.
-  <DT>
-    <A NAME="ClearHints">Clear Hints</A>
-  <DD>
-    Clears all hints in all selected glyphs.
-  <DT>
-    <A NAME="ClearInstrs">Clear Instructions</A>
-  <DD>
-    Clears any truetype instructions associated with the selected glyphs.
-  <DT>
-    <A NAME="Clear">Clear</A> HStem
-  <DD>
-    Removes all Horizontal Stem hints from the current glyph.
-  <DT>
-    <A NAME="ClearV">Clear</A> VStem
-  <DD>
-    Removes all Vertical Stem hints.
-  <DT>
-    Add <A NAME="HHint">HHint</A>
-  <DD>
-    If there are two points selected (exactly two) and if they have different
-    y positions, then this will create a Horizontal Stem Hint starting at the
-    lower one of the two going up to the upper one.
-  <DT>
-    Add <A NAME="VHint">VHint</A>
-  <DD>
-    If there are two points selected (exactly two) and if they have different
-    x positions, then this will create a Vertical Stem Hint starting at the leftmost
-    one of the two going right to the rightmost one.
-  <DT>
-    <A NAME="Create">Create</A> HHint
-  <DD>
-    Brings up a dialog allowing you to specify exactly where and how wide you
-    want a Horizontal Stem Hint.
-  <DT>
-    <A NAME="CreateV">Create</A> VHint
-  <DD>
-    Brings up a dialog allowing you to specify exactly where and how wide you
-    want a Vertical Stem Hint.
-  <DT>
-    <A NAME="Review">Review</A>
-    Hints<IMG SRC="ReviewHints.png" WIDTH="383" HEIGHT="410" ALIGN="Right">
-  <DD>
-    Brings up a dialog allowing you to examine (and modify) all horizontal/vertical
-    stem hints. The currently active hint is picked out in either dark blue or
-    dark green.
-</DL>
-<P>
-<BR CLEAR=All>
-<H2 ALIGN=Center>
-  The <A NAME="Histogram">Histograms</A> SubMenu
-</H2>
-<DL>
-  <DT>
-    <A NAME="HStem-Hist">HStem</A>
-  <DD>
-    Brings up a <A HREF="histogram.html">dialog</A> displaying a histogram of
-    the horizontal stem widths of all selected glyphs.
-  <DT>
-    <A NAME="VStem-Hist">VStem</A>
-  <DD>
-    Brings up a <A HREF="histogram.html">dialog</A> displaying a histogram of
-    the vertical stem widths of all selected glyphs.
-  <DT>
-    <A NAME="Blue-Hist">BlueValues</A>
-  <DD>
-    Brings up a <A HREF="histogram.html">dialog</A> displaying a histogram of
-    the vertical maxima and minima of all selected glyphs.
-</DL>
-<H2>
-  Other menus
-</H2>
-<UL>
-  <LI>
-    <A HREF="filemenu.html">File</A>
-  <LI>
-    <A HREF="editmenu.html">Edit</A>
-  <LI>
-    <A HREF="pointmenu.html">Point</A>
-  <LI>
-    <A HREF="elementmenu.html">Element</A>
-  <LI>
-    <A HREF="hintsmenu.html">Hints</A>
-  <LI>
-    <A HREF="encodingmenu.html">Encoding</A>
-  <LI>
-    <A HREF="viewmenu.html">View</A>
-  <LI>
-    <A HREF="metricsmenu.html">Metrics</A>
-  <LI>
-    <A HREF="cidmenu.html">CID</A>
-  <LI>
-    <A HREF="mmmenu.html">MM</A>
-  <LI>
-    <A HREF="windowmenu.html">Window</A>
-  <LI>
-    <A HREF="helpmenu.html">Help</A>
-  <LI>
-    <A HREF="HotKeys.html">Hot Keys</A>
-</UL>
-<P ALIGN=Center>
--- <A HREF="elementmenu.html">Prev</A> -- <A HREF="overview.html">TOC</A>
--- <A HREF="encodingmenu.html">Next</A> --
-<P>
+  <H1 ALIGN=Center>
+    The Hints Menu
+  </H1>
+  <P>
+  This menu is only present in the outline glyph view and the font view. <BR>
+  <A HREF="hinting.html">A more detailed description of the hinting UI</A>.
+  <P>
+  <UL>
+    <LI>
+      <A HREF="#AutoHint">AutoHint</A>
+    <LI>
+      <A HREF="#SubstitutionPt">Hint Substitution Pts</A>
+    <LI>
+      <A HREF="#Counter">Auto Counter</A>
+    <LI>
+      <A HREF="hintsmenu.html#DontAutoHint">Don't AutoHint</A>
+    <LI>
+      <A HREF="#AutoInstr">AutoInstr</A>
+    <LI>
+      <A HREF="#EditInstrs">Edit Instructions...</A>
+    <LI>
+      <A HREF="#Debug">Debug...</A>
+    <LI>
+      <A HREF="#Editfpgm">Edit fpgm...</A>
+    <LI>
+      <A HREF="#Editprep">Edit prep...</A>
+    <LI>
+      <A HREF="#Editcvt">Edit cvt...</A>
+    <LI>
+      <A HREF="#ClearHints">Clear Hints</A>
+    <LI>
+      <A HREF="#ClearInstrs">Clear Instructions</A>
+    <LI>
+      <A HREF="#Clear">Clear HStem</A>
+    <LI>
+      <A HREF="#ClearV">Clear VStem</A>
+    <LI>
+      <A HREF="#HHint">Add HHint</A>
+    <LI>
+      <A HREF="#VHint">Add VHint</A>
+    <LI>
+      <A HREF="#Create">Create HHint</A>
+    <LI>
+      <A HREF="#CreateV">Create VHint</A>
+    <LI>
+      <A HREF="#Review">Review Hints</A>
+    <LI>
+      <A HREF="#HStem-Hist">Histograms</A>
+      <UL>
+	<LI>
+	  <A HREF="hintsmenu.html#HStem-Hist">HStem</A>
+	<LI>
+	  <A HREF="hintsmenu.html#VStem-Hist">VStem</A>
+	<LI>
+	  <A HREF="hintsmenu.html#Blue-Hist">BlueValues</A>
+      </UL>
+  </UL>
+  <P>
+  <DL>
+    <DT>
+      <A NAME="AutoHint">AutoHint</A>
+    <DD>
+      The Auto Hint command causes FontForge to throw away any existing hints for
+      the glyph and guess an new ones. In the outline view this operates on the
+      current glyph, in the font view it operates on all selected glyphs.<BR>
+      FontForge will do a better job hinting a font if you have previously set
+      the BlueValues, StdVW and StdHW fields in
+      <A HREF="fontinfo.html#Private">Element-&gt;Font Info-&gt;PS Private</A>.
+      These in turn depend on the hints so it is best to autohint the entire font,
+      then set the above values, and then autohint the font again.
+    <DT>
+      Hint <A NAME="SubstitutionPt">Substitution</A> Pts
+    <DD>
+      In the font view this figures substitution points for all selected glyphs.
+      In the outline glyph view, this figures substitution points for the current
+      glyph using the current hint set.
+    <DT>
+      Auto <A NAME="Counter">Counter</A>
+    <DD>
+      Attempt to figure out counter groups for the selected glyphs (font view)
+      or the current glyph (outline glyph view).
+    <DT>
+      <A NAME="DontAutoHint">Don</A>'t AutoHint
+    <DD>
+      Tells FontForge not to do any implicit hinting on the selected glyphs. (FontForge
+      will normally perform an autohint on a glyph if the glyph's contours have
+      changed since it was last hinted and the user has not explicitly changed
+      the hints). The user may turn this flag off by invoking AutoHint explicitly.
+      <P>
+      In the outline glyph view, behavior is a bit more complicated. This command
+      will toggle the current setting of the "Don't AutoHint" flag. If the flag
+      is currently on the menu entry will be checked.
+    <DT>
+      <A NAME="AutoInstr">AutoInstr</A>
+    <DD>
+      The Auto Instr command is only available in quadratic fonts and is used to
+      generate truetype instructions. It doesn't do a good job.
+    <DT>
+      <A NAME="EditInstrs">Edit Instructions...</A>
+    <DD>
+      Only available in the outline and font views, and only in quadratic fonts.
+      <A HREF="ttfinstrs.html">This dialog</A> shows any truetype instructions
+      associated with this glyph, and allows you to edit them.<BR>
+      Note there are some glyphs for which you cannot write instructions if they
+      contain references that cannot be represented in TrueType. If a glyph contains
+      a reference that is scaled by a factor of 2 or more, or if a glyph contains
+      both a reference and a contour then you may not generate instructions for
+      it. You can either:
+      <UL>
+	<LI>
+	  Unlink all references
+	<LI>
+	  (in the case of a glyph with references and contours) Place all the contours
+	  into a new glyph and make a reference to that glyph. (So the composite glyph
+	  will now contain only references).
+      </UL>
+    <DT>
+      <A NAME="Debug">Debug</A>...
+    <DD>
+      Only available in the outline view, and only if you have linked with a version
+      of freetype with the bytecode interpreter and only in quadratic fonts. This
+      allows you to <A HREF="charview.html#Debugging">debug truetype programs</A>.
+    <DT>
+      <A NAME="Editfpgm">Edit fpgm...</A>
+    <DD>
+      Only available in the font view, and only in quadratic fonts.
+      <A HREF="ttfinstrs.html">This dialog</A> shows any truetype instructions
+      in the 'fpgm' table, and allows you to edit them.
+    <DT>
+      <A NAME="Editprep">Edit prep...</A>
+    <DD>
+      Only available in the font view, and only in quadratic fonts.
+      <A HREF="ttfinstrs.html">This dialog</A> shows any truetype instructions
+      in the 'prep' table, and allows you to edit them.
+    <DT>
+      <A NAME="Editcvt">Edit cvt...</A>
+    <DD>
+      Only available in the font view, and only in quadratic fonts.
+      <A HREF="ttfinstrs.html#cvt">This dialog</A> shows the initial values in
+      the 'cvt ' table, and allows you to edit them.
+    <DT>
+      <A NAME="ClearHints">Clear Hints</A>
+    <DD>
+      Clears all hints in all selected glyphs.
+    <DT>
+      <A NAME="ClearInstrs">Clear Instructions</A>
+    <DD>
+      Clears any truetype instructions associated with the selected glyphs.
+    <DT>
+      <A NAME="Clear">Clear</A> HStem
+    <DD>
+      Removes all Horizontal Stem hints from the current glyph.
+    <DT>
+      <A NAME="ClearV">Clear</A> VStem
+    <DD>
+      Removes all Vertical Stem hints.
+    <DT>
+      Add <A NAME="HHint">HHint</A>
+    <DD>
+      If there are two points selected (exactly two) and if they have different
+      y positions, then this will create a Horizontal Stem Hint starting at the
+      lower one of the two going up to the upper one.
+    <DT>
+      Add <A NAME="VHint">VHint</A>
+    <DD>
+      If there are two points selected (exactly two) and if they have different
+      x positions, then this will create a Vertical Stem Hint starting at the leftmost
+      one of the two going right to the rightmost one.
+    <DT>
+      <A NAME="Create">Create</A> HHint
+    <DD>
+      Brings up a dialog allowing you to specify exactly where and how wide you
+      want a Horizontal Stem Hint.
+    <DT>
+      <A NAME="CreateV">Create</A> VHint
+    <DD>
+      Brings up a dialog allowing you to specify exactly where and how wide you
+      want a Vertical Stem Hint.
+    <DT>
+      <A NAME="Review">Review</A>
+      Hints<IMG SRC="ReviewHints.png" WIDTH="383" HEIGHT="410" ALIGN="Right">
+    <DD>
+      Brings up a dialog allowing you to examine (and modify) all horizontal/vertical
+      stem hints. The currently active hint is picked out in either dark blue or
+      dark green.
+  </DL>
+  <P>
+  <BR CLEAR=All>
+  <H2 ALIGN=Center>
+    The <A NAME="Histogram">Histograms</A> SubMenu
+  </H2>
+  <DL>
+    <DT>
+      <A NAME="HStem-Hist">HStem</A>
+    <DD>
+      Brings up a <A HREF="histogram.html">dialog</A> displaying a histogram of
+      the horizontal stem widths of all selected glyphs.
+    <DT>
+      <A NAME="VStem-Hist">VStem</A>
+    <DD>
+      Brings up a <A HREF="histogram.html">dialog</A> displaying a histogram of
+      the vertical stem widths of all selected glyphs.
+    <DT>
+      <A NAME="Blue-Hist">BlueValues</A>
+    <DD>
+      Brings up a <A HREF="histogram.html">dialog</A> displaying a histogram of
+      the vertical maxima and minima of all selected glyphs.
+  </DL>
+  <H2>
+    Other menus
+  </H2>
+  <UL>
+    <LI>
+      <A HREF="filemenu.html">File</A>
+    <LI>
+      <A HREF="editmenu.html">Edit</A>
+    <LI>
+      <A HREF="pointmenu.html">Point</A>
+    <LI>
+      <A HREF="elementmenu.html">Element</A>
+    <LI>
+      <A HREF="hintsmenu.html">Hints</A>
+    <LI>
+      <A HREF="encodingmenu.html">Encoding</A>
+    <LI>
+      <A HREF="viewmenu.html">View</A>
+    <LI>
+      <A HREF="metricsmenu.html">Metrics</A>
+    <LI>
+      <A HREF="cidmenu.html">CID</A>
+    <LI>
+      <A HREF="mmmenu.html">MM</A>
+    <LI>
+      <A HREF="windowmenu.html">Window</A>
+    <LI>
+      <A HREF="helpmenu.html">Help</A>
+    <LI>
+      <A HREF="HotKeys.html">Hot Keys</A>
+  </UL>
+  <P ALIGN=Center>
+  -- <A HREF="elementmenu.html">Prev</A> -- <A HREF="overview.html">TOC</A>
+  -- <A HREF="encodingmenu.html">Next</A> --
+  <P>
 </DIV>
 </BODY></HTML>
