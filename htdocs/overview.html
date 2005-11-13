@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 10-Nov-2005 -->
+  <!-- AP: Last modified: 13-Nov-2005 -->
   <TITLE>FontForge -- An outline font editor for PostScript&reg;, TrueType
   and OpenType fonts</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
@@ -659,80 +659,32 @@
   would have to recopy it.
   <P>
   FontForge has three commands for manipulating references, and one higher
-  level command for building accented glyphs. The Edit-&gt;Copy Reference command
-  will put a reference to the current glyph into the clipboard, which a subsequent
-  Edit-&gt;Paste command will install as a reference. The Edit-&gt;Unlink Reference
-  command will turn a reference in a glyph into it's component splines. The
-  Element-&gt;Get Info command (when applied to a reference) will bring up
-  a dialog showing you what glyph is referred to, and allowing you to bring
-  up an editing window on that glyph. Finally the <CODE>Element-&gt;Build Accented
-  Glyphs</CODE> command will figure out what glyphs should be refered to to
-  build this composite glyph, and then will make those references and position
+  level command for building accented glyphs. The
+  <CODE><A HREF="editmenu.html#Reference">Edit-&gt;Copy Reference</A></CODE>
+  command will put a reference to the current glyph into the clipboard, which
+  a subsequent
+  <CODE><A HREF="editmenu.html#Paste">Edit-&gt;Paste</A></CODE> command will
+  install as a reference. The
+  <CODE><A HREF="editmenu.html#Unlink">Edit-&gt;Unlink Reference</A>
+  </CODE>command will turn a reference in a glyph into it's component splines.
+  The <CODE><A HREF="elementmenu.html#Info">Element-&gt;Get Info</A>
+  </CODE>command (when applied to a reference) will bring up a dialog showing
+  you what glyph is referred to, and allowing you to bring up an editing window
+  on that glyph. Finally the
+  <CODE><A HREF="elementmenu.html#Accented">Element-&gt;Build-&gt;Accented
+  Glyphs</A></CODE> command will figure out what glyphs should be refered to
+  to build this composite glyph, and then will make those references and position
   them appropriately. So if "&agrave;" were selected and you did a
-  <CODE>Element-&gt;Build Accented Glyphs</CODE> command, the FontForge would
-  make a reference to "a" and another to "`", and place the accent above the
-  letter, and centered on it.
+  <A HREF="elementmenu.html#Accented"><CODE>Element-&gt;Build-&gt;Accented
+  Glyphs</CODE> </A>command, FontForge would make a reference to "a" and another
+  to "`", and place the accent above the letter, and centered on it.
   <P>
-  Sadly life is not quite that simple. Both PostScript and TrueType place
-  restrictions on what kinds of glyphs may be referenced, worse they make different
-  restrictions. About the only restriction FontForge makes is that it won't
-  let you put a reference to a glyph inside itself. When generating a font,
-  if it finds a situation where it can't use a refered glyph as a reference
-  it will fix it up somehow, usually this means replacing it with the equivalent
-  outlines.
-  <P>
-  In both TrueType and PostScript a glyph may not contain both splines and
-  references, it must be wholly one or the other. If you mix splines and references
-  FontForge will convert all references to splines during font generation.
-  <P>
-  In PostScript characters refered to must be in the Adobe Standard Encoding,
-  which includes all of the Ascii characters, a collection of accents and certain
-  ligatures. One of the referenced glyphs may be translated, but neither may
-  be rotated, skewed or scaled. There must be exactly two referenced glyphs,
-  and the reference glyph which is not translated must have the same width
-  as the one being built.
-  <BLOCKQUOTE>
-    <STRONG><SMALL><SMALL>Technical and confusing:</SMALL></SMALL></STRONG> FontForge
-    has some tricks it can use to improve things. If you are working on U+04D2
-    (Cyrillic capital letter A with diaeresis) and you make it out of U+0410
-    (Cyrillic capital letter A) and U+00A8 (diaeresis) and U+0410 is itself a
-    reference to U+0041 (Latin capital letter A), then FontForge will generate
-    a postscript font where U+04D2 is a composite of U+0041 and U+00A8, both
-    of which are in the Adobe Set (while U+0410 is not). Again when generating
-    U+0410 FontForge will make it be a composite of U+0041 and U+0020 (space)
-    so as to get exactly two glyphs.
-    <P>
-    <STRONG><SMALL><SMALL>Technical and confusing:</SMALL></SMALL></STRONG> If
-    that fails FontForge will attempt to put the referenced glyphs into subroutines
-    and then invoke those. This only works if the glyphs in question either:
-    <UL>
-      <LI>
-	Have no overlapping hints (don't need hint substitution) and don't require
-	flex hints
-      <LI>
-	Or (if there are overlapping hints or flex hints) if the glyph in question
-	is not translated and has the same left side bearing as the glyph refering
-	to it (which is often the case)
-    </UL>
-  </BLOCKQUOTE>
-  <P>
-  In TrueType references may be skewed and rotated as well as translated, and
-  may be scaled as long as it is by an amount less than 2.
-  <BLOCKQUOTE>
-    <STRONG><SMALL><SMALL>Technical and confusing:</SMALL></SMALL></STRONG> So
-    in the example above a generated TrueType font would also have U+04D2 composed
-    of U+0041 and U+00A8.
-  </BLOCKQUOTE>
-  <P>
-  In OpenType (actually Postscript type2 fonts) things are different again.
-  There is no direct support for references. FontForge will produce something
-  which will allow for the space saving that references provide (by using
-  subroutines), but it will not be able to detect what's a reference and what
-  isn't when it reads the font in. Any glyph which does not itself contain
-  a reference may be in a reference, but only translations are allowed on those
-  references, and as above either the glyphs must not have any overlapping
-  hints (flex hints are ok here) or must not be translated and none of the
-  other references may have any hints at all.
+  Sadly life is not quite that simple. The references FontForge uses internally
+  cannot always be converted into something equivalent in the output font.
+  Generally this causes no problems (it just makes the font a little bigger,
+  but it has implications for instructing TrueType, and, to a lesser extent,
+  hinting PostScript. Most people can ignore this, but if you are interested
+  <A HREF="ref-caveats.html">follow this link</A>.
   <H3>
     <A NAME="Scripts">Scripts</A>
   </H3>
