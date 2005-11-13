@@ -673,7 +673,7 @@ static void AppendToErrorWindow(char *buffer) {
 }
 
 int ErrorWindowExists(void) {
-return( errdata.gw!=NULL && GDrawIsVisible(errdata.gw) );
+return( errdata.gw!=NULL );
 }
 
 void ShowErrorWindow(void) {
