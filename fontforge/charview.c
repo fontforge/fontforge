@@ -1350,7 +1350,7 @@ static void CVDrawGridRaster(CharView *cv, GWindow pixmap, DRect *clip ) {
 
 	pixel.width = pixel.height = grid_spacing*cv->scale+1;
 	if ( cv->raster!=NULL ) {
-	    if ( cv->raster->num_greys!=2 ) {
+	    if ( cv->raster->num_greys>2 ) {
 		clut[0] = GDrawGetDefaultBackground(NULL);
 		for ( i=1; i<256; ++i ) {
 		    clut[i] = ( (COLOR_RED(clut[0])*(0xff-i)/0xff)<<16 ) |
@@ -1371,7 +1371,7 @@ static void CVDrawGridRaster(CharView *cv, GWindow pixmap, DRect *clip ) {
 		    i = cv->raster->as-ii; j = jj-cv->raster->lb;
 		    if ( i<0 || i>=cv->raster->rows || j<0 || j>=cv->raster->cols )
 			r = 0;
-		    else if ( cv->raster->num_greys==2 )
+		    else if ( cv->raster->num_greys<=2 )
 			r = cv->raster->bitmap[i*cv->raster->bytes_per_row+(j>>3)] & (1<<(7-(j&7)));
 		    else
 			r = cv->raster->bitmap[i*cv->raster->bytes_per_row+j];
@@ -1381,7 +1381,7 @@ static void CVDrawGridRaster(CharView *cv, GWindow pixmap, DRect *clip ) {
 			i = cv->oldraster->as-ii; j = jj-cv->oldraster->lb;
 			if ( i<0 || i>=cv->oldraster->rows || j<0 || j>=cv->oldraster->cols )
 			    or = 0;
-			else if ( cv->raster->num_greys==2 )
+			else if ( cv->raster->num_greys<=2 )
 			    or = cv->oldraster->bitmap[i*cv->oldraster->bytes_per_row+(j>>3)] & (1<<(7-(j&7)));
 			else
 			    or = cv->oldraster->bitmap[i*cv->oldraster->bytes_per_row+j];
@@ -1389,7 +1389,7 @@ static void CVDrawGridRaster(CharView *cv, GWindow pixmap, DRect *clip ) {
 		    if ( r || or ) {
 			pixel.x = jj*grid_spacing*cv->scale + cv->xoff;
 			pixel.y = cv->height-cv->yoff - rint(ii*grid_spacing*cv->scale);
-			if ( cv->raster->num_greys==2 )
+			if ( cv->raster->num_greys<=2 )
 			    GDrawFillRect(pixmap,&pixel,(r && or) ? rastercol : r ? rasternewcol : rasteroldcol );
 			else
 			    GDrawFillRect(pixmap,&pixel,(r-or>-16 && r-or<16) ? clut[r] : rasterdiffcol );
