@@ -1764,12 +1764,14 @@ extern void FreeTypeFreeContext(void *freetypecontext);
 extern SplineSet *FreeType_GridFitChar(void *single_glyph_context,
 	int enc, real ptsize, int dpi, int16 *width, SplineChar *sc);
 extern struct freetype_raster *FreeType_GetRaster(void *single_glyph_context,
-	int enc, real ptsize, int dpi);
+	int enc, real ptsize, int dpi,int depth);
 extern BDFChar *SplineCharFreeTypeRasterizeNoHints(SplineChar *sc,
 	int pixelsize,int depth);
 extern BDFFont *SplineFontFreeTypeRasterizeNoHints(SplineFont *sf,int pixelsize,int depth);
 extern void FreeType_FreeRaster(struct freetype_raster *raster);
 extern struct freetype_raster *DebuggerCurrentRasterization(SplineSet *spl,real grid_spacing);
+struct TT_ExecContextRec_;
+extern struct freetype_raster *DebuggerCurrentGreys(struct  TT_ExecContextRec_ *exc);
 
 extern int UniFromName(const char *name,enum uni_interp interp, Encoding *encname);
 # ifdef FONTFORGE_CONFIG_GTK
