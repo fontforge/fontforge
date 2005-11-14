@@ -80,6 +80,7 @@ static Color rastercol = 0xa0a0a0;
 static Color rasternewcol = 0x909090;
 static Color rasteroldcol = 0xc0c0c0;
 static Color rastergridcol = 0xb0b0ff;
+static Color rasterdiffcol = 0x008000;
 static Color italiccoordcol = 0x909090;
 static Color metricslabelcol = 0x00000;
 static Color hintlabelcol = 0x00ffff;
@@ -127,6 +128,7 @@ static void CVColInit( void ) {
 	{ "RasterNewColor", rt_color, &rasternewcol },
 	{ "RasterOldColor", rt_color, &rasteroldcol },
 	{ "RasterGridColor", rt_color, &rastergridcol },
+	{ "RasterDiffColor", rt_color, &rasterdiffcol },
 	{ "ItalicCoordColor", rt_color, &italiccoordcol },
 	{ "MetricsLabelColor", rt_color, &metricslabelcol },
 	{ "HintLabelColor", rt_color, &hintlabelcol },
@@ -1344,9 +1346,18 @@ static void CVDrawGridRaster(CharView *cv, GWindow pixmap, DRect *clip ) {
 	real grid_spacing = (cv->sc->parent->ascent+cv->sc->parent->descent) / (real) cv->ft_ppem;
 	int max,jmax,ii,i,jj,j;
 	int minx, maxx, miny, maxy, r,or;
+	Color clut[256];
 
 	pixel.width = pixel.height = grid_spacing*cv->scale+1;
 	if ( cv->raster!=NULL ) {
+	    if ( cv->raster->num_greys!=2 ) {
+		clut[0] = GDrawGetDefaultBackground(NULL);
+		for ( i=1; i<256; ++i ) {
+		    clut[i] = ( (COLOR_RED(clut[0])*(0xff-i)/0xff)<<16 ) |
+			    ( (COLOR_GREEN(clut[0])*(0xff-i)/0xff)<<8 ) |
+			    ( (COLOR_BLUE(clut[0])*(0xff-i)/0xff) );
+		}
+	    }
 	    minx = cv->raster->lb; maxx = minx+cv->raster->cols;
 	    maxy = cv->raster->as; miny = maxy-cv->raster->rows;
 	    if ( cv->oldraster!=NULL ) {
@@ -1360,21 +1371,28 @@ static void CVDrawGridRaster(CharView *cv, GWindow pixmap, DRect *clip ) {
 		    i = cv->raster->as-ii; j = jj-cv->raster->lb;
 		    if ( i<0 || i>=cv->raster->rows || j<0 || j>=cv->raster->cols )
 			r = 0;
-		    else
+		    else if ( cv->raster->num_greys==2 )
 			r = cv->raster->bitmap[i*cv->raster->bytes_per_row+(j>>3)] & (1<<(7-(j&7)));
-		    if ( cv->oldraster==NULL )
+		    else
+			r = cv->raster->bitmap[i*cv->raster->bytes_per_row+j];
+		    if ( cv->oldraster==NULL || cv->oldraster->num_greys!=cv->raster->num_greys)
 			or = r;
 		    else {
 			i = cv->oldraster->as-ii; j = jj-cv->oldraster->lb;
 			if ( i<0 || i>=cv->oldraster->rows || j<0 || j>=cv->oldraster->cols )
 			    or = 0;
-			else
+			else if ( cv->raster->num_greys==2 )
 			    or = cv->oldraster->bitmap[i*cv->oldraster->bytes_per_row+(j>>3)] & (1<<(7-(j&7)));
+			else
+			    or = cv->oldraster->bitmap[i*cv->oldraster->bytes_per_row+j];
 		    }
 		    if ( r || or ) {
 			pixel.x = jj*grid_spacing*cv->scale + cv->xoff;
 			pixel.y = cv->height-cv->yoff - rint(ii*grid_spacing*cv->scale);
-			GDrawFillRect(pixmap,&pixel,(r && or) ? rastercol : r ? rasternewcol : rasteroldcol );
+			if ( cv->raster->num_greys==2 )
+			    GDrawFillRect(pixmap,&pixel,(r && or) ? rastercol : r ? rasternewcol : rasteroldcol );
+			else
+			    GDrawFillRect(pixmap,&pixel,(r-or>-16 && r-or<16) ? clut[r] : rasterdiffcol );
 		    }
 		}
 	    }

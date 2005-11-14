@@ -331,7 +331,7 @@ typedef struct charview {
     PST *lcarets;
     int16 nearcaret;
 	/* freetype results display */
-    int16 ft_dpi, ft_ppem, ft_gridfitwidth;
+    int16 ft_dpi, ft_ppem, ft_gridfitwidth, ft_depth;
     real ft_pointsize;
     SplineSet *gridfit;
     struct freetype_raster *raster, *oldraster;

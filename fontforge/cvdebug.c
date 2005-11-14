@@ -87,16 +87,29 @@ static void DVRasterExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 	GImage gi;
 	struct _GImage base;
 	GClut clut;
+	int i;
 
 	memset(&gi,'\0',sizeof(gi));
 	memset(&base,'\0',sizeof(base));
 	memset(&clut,'\0',sizeof(clut));
 	gi.u.image = &base;
-	base.image_type = it_mono;
 	base.clut = &clut;
-	clut.clut_len = 2;
-	clut.clut[0] = GDrawGetDefaultBackground(NULL);
-	clut.trans_index = 0;
+	if ( cv->raster->num_greys==2 ) {
+	    base.image_type = it_mono;
+	    clut.clut_len = 2;
+	    clut.clut[0] = GDrawGetDefaultBackground(NULL);
+	    clut.trans_index = 0;
+	} else {
+	    base.image_type = it_index;
+	    clut.clut_len = 256;
+	    clut.clut[0] = GDrawGetDefaultBackground(NULL);
+	    for ( i=1; i<256; ++i ) {
+		clut.clut[i] = ( (COLOR_RED(clut.clut[0])*(0xff-i)/0xff)<<16 ) |
+			( (COLOR_GREEN(clut.clut[0])*(0xff-i)/0xff)<<8 ) |
+			( (COLOR_BLUE(clut.clut[0])*(0xff-i)/0xff) );
+	    }
+	    clut.trans_index = 0;
+	}
 	base.data = cv->raster->bitmap;
 	base.bytes_per_line = cv->raster->bytes_per_row;
 	base.width = cv->raster->cols;
@@ -629,6 +642,9 @@ static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
 	dv->id.instrs = NULL;
 	dv->id.instr_cnt = 0;
 	IIReinit(&dv->ii,-1);
+	if ( cv->oldraster!=NULL )
+	    FreeType_FreeRaster(cv->oldraster);
+	cv->oldraster = NULL;
     } else if ( !SameInstructionSet(dv,exc) || dv->last_npoints!=exc->pts.n_points ) {
 	ChangeCode(dv,exc);
     } else
@@ -652,8 +668,11 @@ static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
 	cv->oldraster = cv->raster;
 	SplinePointListsFree(cv->gridfit);
 	cv->gridfit = SplineSetsFromPoints(&exc->pts,dv->scale,dv->active_refs);
-	cv->raster = DebuggerCurrentRasterization(cv->gridfit,
-		(cv->sc->parent->ascent+cv->sc->parent->descent) / (real) cv->ft_ppem);
+	if ( cv->ft_depth==2 )
+	    cv->raster = DebuggerCurrentRasterization(cv->gridfit,
+		    (cv->sc->parent->ascent+cv->sc->parent->descent) / (real) cv->ft_ppem);
+	else
+	    cv->raster = DebuggerCurrentGreys(exc);
 	if ( exc->pts.n_points<=2 )
 	    cv->ft_gridfitwidth = 0;
 	/* suport for vertical phantom pts */
@@ -694,8 +713,20 @@ static void DVDefaultRaster(DebugView *dv) {
     cv->oldraster = cv->raster;
     SplinePointListsFree(cv->gridfit);
     cv->gridfit = NULL;
-    cv->raster = DebuggerCurrentRasterization(cv->sc->layers[ly_fore].splines,
-		(cv->sc->parent->ascent+cv->sc->parent->descent) / (real) cv->ft_ppem);
+    if ( cv->ft_depth==2 ) {
+	cv->raster = DebuggerCurrentRasterization(cv->sc->layers[ly_fore].splines,
+		    (cv->sc->parent->ascent+cv->sc->parent->descent) / (real) cv->ft_ppem);
+    } else {
+	void *single_glyph_context;
+	SplineFont *sf = cv->sc->parent;
+	single_glyph_context = _FreeTypeFontContext(sf,cv->sc,NULL,
+		sf->order2?ff_ttf:ff_otf,0,NULL);
+	if ( single_glyph_context!=NULL ) {
+	    cv->raster = FreeType_GetRaster(single_glyph_context,cv->sc->orig_pos,
+		    cv->ft_pointsize, cv->ft_dpi, cv->ft_depth );
+	    FreeTypeFreeContext(single_glyph_context);
+	}
+    }
     cv->ft_gridfitwidth = 0;
 
     if ( cv!=NULL )
@@ -816,7 +847,7 @@ static GMenuItem popupwindowlist[] = {
     { { (unichar_t *) N_("Registers"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 0, 0, '\0' }, '\0', 0, NULL, NULL, DVMenuCreate, MID_Registers },
     { { (unichar_t *) N_("Stack"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 0, 0, '\0' }, '\0', 0, NULL, NULL, DVMenuCreate, MID_Stack },
     { { (unichar_t *) N_("Storage"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 0, 0, '\0' }, '\0', 0, NULL, NULL, DVMenuCreate, MID_Storage },
-    { { (unichar_t *) N_("Points:"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 0, 0, '\0' }, '\0', 0, NULL, NULL, DVMenuCreate, MID_Points },
+    { { (unichar_t *) N_("Points"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 0, 0, '\0' }, '\0', 0, NULL, NULL, DVMenuCreate, MID_Points },
     { { (unichar_t *) N_("Cvt"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 0, 0, '\0' }, '\0', 0, NULL, NULL, DVMenuCreate, MID_Cvt },
     { { (unichar_t *) N_("Raster"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 0, 0, '\0' }, '\0', 0, NULL, NULL, DVMenuCreate, MID_Raster },
     { { (unichar_t *) N_("Gloss"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 0, 0, '\0' }, '\0', 0, NULL, NULL, DVMenuCreate, MID_Gloss },

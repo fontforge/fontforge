@@ -30,7 +30,7 @@
 #include <gkeysym.h>
 #include <math.h>
 
-static int dpi=72; static double pointsize=12;
+static int dpi=72, depth=2; static double pointsize=12;
 
 static int last_fpgm = false;
 
@@ -62,7 +62,7 @@ return;
     if ( cv->sc->layers[ly_fore].refs!=NULL )
 	SCNumberPoints(cv->sc);
     cv->raster = FreeType_GetRaster(single_glyph_context,cv->sc->orig_pos,
-	    cv->ft_pointsize, cv->ft_dpi );
+	    cv->ft_pointsize, cv->ft_dpi, cv->ft_depth );
     cv->gridfit = FreeType_GridFitChar(single_glyph_context,cv->sc->orig_pos,
 	    cv->ft_pointsize, cv->ft_dpi, &cv->ft_gridfitwidth,
 	    cv->sc );
@@ -76,6 +76,7 @@ return;
 #define CID_DPI		1002
 #define CID_ShowGrid	1003
 #define CID_Debugfpgm	1004
+#define CID_BW		1005
 
 typedef struct ftsizedata {
     unsigned int done: 1;
@@ -87,22 +88,23 @@ typedef struct ftsizedata {
 static int FtPpem_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	FtSizeData *fsd = GDrawGetUserData(GGadgetGetWindow(g));
-	int _dpi;
+	int _dpi, _depth;
 	real ptsize;
 	int err = 0, bit;
 	CharView *cv = fsd->cv;
 
 	ptsize = GetReal8(fsd->gw,CID_PointSize,_("_Pointsize:"),&err);
 	_dpi = GetInt8(fsd->gw,CID_DPI,_("D_PI:"),&err);
+	_depth = GGadgetIsChecked(GWidgetGetControl(fsd->gw,CID_BW)) ? 2 : 8;
 	if ( err )
 return(true);
 
 	bit = GGadgetIsChecked(GWidgetGetControl(fsd->gw,CID_ShowGrid));
 	last_fpgm = GGadgetIsChecked(GWidgetGetControl(fsd->gw,CID_Debugfpgm));
-	cv->ft_pointsize = ptsize; cv->ft_dpi = _dpi;
+	cv->ft_pointsize = ptsize; cv->ft_dpi = _dpi; cv->ft_depth = _depth;
 	cv->ft_ppem = rint(cv->ft_pointsize*cv->ft_dpi/72.0);
 
-	dpi = _dpi; pointsize = ptsize;
+	dpi = _dpi; pointsize = ptsize; depth = _depth;
 
 	SplinePointListsFree(cv->gridfit); cv->gridfit = NULL;
 	FreeType_FreeRaster(cv->raster); cv->raster = NULL;
@@ -148,8 +150,8 @@ void CVFtPpemDlg(CharView *cv,int debug) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[10];
-    GTextInfo label[10];
+    GGadgetCreateData gcd[12];
+    GTextInfo label[12];
     FtSizeData fsd;
     char buffer[20], buffer2[20];
 
@@ -167,7 +169,7 @@ void CVFtPpemDlg(CharView *cv,int debug) {
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,190));
-    pos.height = GDrawPointsToPixels(NULL,90);
+    pos.height = GDrawPointsToPixels(NULL,106);
     fsd.gw = gw = GDrawCreateTopWindow(NULL,&pos,fsd_e_h,&fsd,&wattrs);
 
     memset(&label,0,sizeof(label));
@@ -190,7 +192,7 @@ void CVFtPpemDlg(CharView *cv,int debug) {
     gcd[1].gd.cid = CID_PointSize;
     gcd[1].creator = GTextFieldCreate;
 
-    label[2].text = (unichar_t *) _("D_PI:");
+    label[2].text = (unichar_t *) _("_DPI:");
     label[2].text_is_1byte = true;
     label[2].text_in_resource = true;
     gcd[2].gd.label = &label[2];
@@ -207,7 +209,7 @@ void CVFtPpemDlg(CharView *cv,int debug) {
     gcd[3].gd.cid = CID_DPI;
     gcd[3].creator = GTextFieldCreate;
 
-    gcd[4].gd.pos.x = 20-3; gcd[4].gd.pos.y = 17+37;
+    gcd[4].gd.pos.x = 20-3; gcd[4].gd.pos.y = 17+37+16;
     gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
     gcd[4].gd.flags = gg_visible | gg_enabled | gg_but_default;
     label[4].text = (unichar_t *) _("_OK");
@@ -218,7 +220,7 @@ void CVFtPpemDlg(CharView *cv,int debug) {
     gcd[4].gd.handle_controlevent = FtPpem_OK;
     gcd[4].creator = GButtonCreate;
 
-    gcd[5].gd.pos.x = -20; gcd[5].gd.pos.y = 17+37+3;
+    gcd[5].gd.pos.x = -20; gcd[5].gd.pos.y = gcd[4].gd.pos.y+3;
     gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
     gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
     label[5].text = (unichar_t *) _("_Cancel");
@@ -251,10 +253,27 @@ void CVFtPpemDlg(CharView *cv,int debug) {
     gcd[7].gd.cid = CID_Debugfpgm;
     gcd[7].creator = GCheckBoxCreate;
 
-    gcd[8].gd.pos.x = 5; gcd[8].gd.pos.y = 17+31;
+    gcd[8].gd.pos.x = 5; gcd[8].gd.pos.y = 17+31+16;
     gcd[8].gd.pos.width = 190-10;
     gcd[8].gd.flags = gg_enabled|gg_visible;
     gcd[8].creator = GLineCreate;
+
+    label[9].text = (unichar_t *) _("_Mono");
+    label[9].text_is_1byte = true;
+    label[9].text_in_resource = true;
+    gcd[9].gd.label = &label[9];
+    gcd[9].gd.pos.x = 20; gcd[9].gd.pos.y = 14+31; 
+    gcd[9].gd.flags = depth==2 ? (gg_enabled|gg_visible|gg_cb_on) : (gg_enabled|gg_visible);
+    gcd[9].gd.cid = CID_BW;
+    gcd[9].creator = GRadioCreate;
+
+    label[10].text = (unichar_t *) _("_Anti-Aliased");
+    label[10].text_is_1byte = true;
+    label[10].text_in_resource = true;
+    gcd[10].gd.label = &label[10];
+    gcd[10].gd.pos.x = 80; gcd[10].gd.pos.y = gcd[9].gd.pos.y; 
+    gcd[10].gd.flags = depth!=2 ? (gg_enabled|gg_visible|gg_cb_on) : (gg_enabled|gg_visible);
+    gcd[10].creator = GRadioCreate;
 
     GGadgetsCreate(gw,gcd);
 

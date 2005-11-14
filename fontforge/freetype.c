@@ -68,7 +68,7 @@ void FreeTypeFreeContext(void *freetypecontext) {
 }
 
 struct freetype_raster *FreeType_GetRaster(void *single_glyph_context,
-	int enc, real ptsize, int dpi) {
+	int enc, real ptsize, int dpi, int depth) {
 return( NULL );
 }
 
@@ -610,6 +610,7 @@ static void FT_ClosePath(struct ft_context *context) {
     }
 }
 
+/* The cvs version (2.2.0?) defines FT_MoveTo as having const FT_Vector * */
 static int FT_MoveTo(FT_Vector *to,void *user) {
     struct ft_context *context = user;
 
@@ -756,7 +757,7 @@ return( NULL );
 }
 
 struct freetype_raster *FreeType_GetRaster(void *single_glyph_context,
-	int enc, real ptsize, int dpi) {
+	int enc, real ptsize, int dpi, int depth) {
     FT_GlyphSlot slot;
     struct freetype_raster *ret;
     FTC *ftc = (FTC *) single_glyph_context;
@@ -771,7 +772,7 @@ return( NULL );	/* Error Return */
 return( NULL );
 
     slot = ((FT_Face) (ftc->face))->glyph;
-    if ( _FT_Render_Glyph(slot,ft_render_mode_mono))
+    if ( _FT_Render_Glyph(slot,depth==2 ? ft_render_mode_mono :ft_render_mode_normal ))
 return( NULL );
 
     if ( slot->bitmap.pixel_mode!=ft_pixel_mode_mono &&
@@ -1650,6 +1651,69 @@ return( NULL );
     FreeMonotonics(ms);
 return( ret );
 }
+
+struct freetype_raster *DebuggerCurrentGreys(TT_ExecContext exc) {
+    FT_Outline outline;
+    FT_Bitmap bitmap;
+    int i, err, k,j;
+    DBounds b;
+    struct freetype_raster *ret;
+
+    outline.n_contours = exc->pts.n_contours;
+    outline.tags = exc->pts.tags;
+    outline.contours = exc->pts.contours;
+    /* Rasterizer gets unhappy if we give it the phantom points */
+    outline.n_points = /*exc->pts.n_points*/  outline.contours[outline.n_contours - 1] + 1;
+    outline.points = exc->pts.cur;
+    outline.flags = FT_OUTLINE_NONE;
+
+    b.minx = b.maxx = outline.points[0].x;
+    b.miny = b.maxy = outline.points[0].y;
+    for ( i=1; i<outline.n_points; ++i ) {
+	if ( outline.points[i].x>b.maxx ) b.maxx = outline.points[i].x;
+	if ( outline.points[i].x<b.minx ) b.minx = outline.points[i].x;
+	if ( outline.points[i].y>b.maxy ) b.maxy = outline.points[i].y;
+	if ( outline.points[i].y<b.miny ) b.miny = outline.points[i].y;
+    }
+
+    memset(&bitmap,0,sizeof(bitmap));
+    bitmap.rows = (((int) (b.maxy-b.miny))>>6)+2;
+    bitmap.width = (((int) (b.maxx-b.minx))>>6)+2;
+    bitmap.pitch = bitmap.width;
+    bitmap.num_grays = 256;
+    bitmap.pixel_mode = ft_pixel_mode_grays;
+    bitmap.buffer = gcalloc(bitmap.pitch*bitmap.rows,sizeof(uint8));
+
+    err = (_FT_Outline_Get_Bitmap)(context,&outline,&bitmap);
+
+    ret = galloc(sizeof(struct freetype_raster));
+    /* I'm not sure why I need these, but it seems I do */
+	for ( k=0; k<(((int) (b.maxy-b.miny))>>6); ++k ) {
+	    for ( j=bitmap.pitch-1; j>=0 && bitmap.buffer[k*bitmap.pitch+j]==0; --j );
+	    if ( j!=-1 )
+	break;
+	}
+	if ( k!=(((int) (b.maxy-b.miny))>>6) )
+	    b.maxy += k<<6;
+	for ( j=0; j<bitmap.pitch; ++j ) {
+	    for ( k=(((int) (b.maxy-b.miny))>>6)-1; k>=0; --k ) {
+		if ( bitmap.buffer[k*bitmap.pitch+j]!=0 )
+	    break;
+	    }
+	    if ( k!=-1 )
+	break;
+	}
+	b.minx -= j*64;
+    ret->as = ceil(b.maxy/64.0);
+    ret->lb = floor(b.minx/64.0);
+    ret->rows = bitmap.rows;
+    ret->cols = bitmap.width;
+    ret->bytes_per_row = bitmap.pitch;
+    ret->num_greys = 256;
+    ret->bitmap = bitmap.buffer;
+return( ret );
+}
+    
 #else
 struct debugger_context;
 
