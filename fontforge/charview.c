@@ -80,7 +80,6 @@ static Color rastercol = 0xa0a0a0;
 static Color rasternewcol = 0x909090;
 static Color rasteroldcol = 0xc0c0c0;
 static Color rastergridcol = 0xb0b0ff;
-static Color rasterdiffcol = 0x008000;
 static Color italiccoordcol = 0x909090;
 static Color metricslabelcol = 0x00000;
 static Color hintlabelcol = 0x00ffff;
@@ -128,7 +127,6 @@ static void CVColInit( void ) {
 	{ "RasterNewColor", rt_color, &rasternewcol },
 	{ "RasterOldColor", rt_color, &rasteroldcol },
 	{ "RasterGridColor", rt_color, &rastergridcol },
-	{ "RasterDiffColor", rt_color, &rasterdiffcol },
 	{ "ItalicCoordColor", rt_color, &italiccoordcol },
 	{ "MetricsLabelColor", rt_color, &metricslabelcol },
 	{ "HintLabelColor", rt_color, &hintlabelcol },
@@ -1392,7 +1390,7 @@ static void CVDrawGridRaster(CharView *cv, GWindow pixmap, DRect *clip ) {
 			if ( cv->raster->num_greys<=2 )
 			    GDrawFillRect(pixmap,&pixel,(r && or) ? rastercol : r ? rasternewcol : rasteroldcol );
 			else
-			    GDrawFillRect(pixmap,&pixel,(r-or>-16 && r-or<16) ? clut[r] : rasterdiffcol );
+			    GDrawFillRect(pixmap,&pixel,(r-or>-16 && r-or<16) ? clut[r] : (clut[r]&0x00ff00) );
 		    }
 		}
 	    }
