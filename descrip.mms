@@ -5,3 +5,5 @@ all :
 	mms
 	set def [-.fontforge]
 	mms
+	set def [-.plugins]
+	mms

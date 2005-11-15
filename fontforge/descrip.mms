@@ -23,12 +23,12 @@ fontforge_OBJECTS2=displayfonts.obj,combinations.obj,sftextfield.obj,ikarus.obj,
 	histograms.obj,ttfspecial.obj,svg.obj,parsettfatt.obj,contextchain.obj,\
 	macenc.obj,statemachine.obj,typofeatures.obj,splinerefigure.obj,mm.obj,\
 	parsettfvar.obj,tottfvar.obj,pua.obj,stemdb.obj,anchorsaway.obj,\
-	palmfonts.obj,cvdgloss.obj,groups.obj,parsepdf.obj
+	palmfonts.obj,cvdgloss.obj,groups.obj,parsepdf.obj,plugins.obj
 
-fontforge.exe : $(fontforge_OBJECTS) $(fontforge_OBJECTS2) xlib.opt
+fontforge.exe : main.obj $(fontforge_OBJECTS) $(fontforge_OBJECTS2) xlib.opt
         library/create tmp.olb $(fontforge_OBJECTS)
         library tmp.olb $(fontforge_OBJECTS2)
-        link/exec=fontforge.exe start,tmp/lib,[-.libs]LIBGDRAW/lib,\
+        link/exec=fontforge.exe main,tmp/lib,[-.libs]LIBGDRAW/lib,\
         LIBGUNICODE/lib,[]xlib.opt/opt
 
 alignment.obj : alignment.c
@@ -142,3 +142,5 @@ palmfonts.obj : palmfonts.c
 cvdgloss.obj : cvdgloss.c
 groups.obj : groups.c
 parsepdf.obj : parsepdf.c
+plugins.obj : plugins.c
+main.obj : main.c
