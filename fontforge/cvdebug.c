@@ -29,6 +29,7 @@
 #include <math.h>
 #include <gkeysym.h>
 #include <ustring.h>
+#include <gresource.h>
 
 int debug_wins = dw_registers|dw_stack;
 
@@ -49,6 +50,22 @@ void CVDebugPointPopup(CharView *cv) {
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include "ttinterp.h"
+
+static Color rasterbackcol = 0xffffff;
+
+static int debuggercolsinited = false;
+
+static void DebugColInit( void ) {
+    GResStruct debugcolors[] = {
+	{ "Background", rt_color, &rasterbackcol },
+	{ NULL }
+    };
+    if ( debuggercolsinited )
+return;
+    rasterbackcol = GDrawGetDefaultBackground(screen_display);
+    GResourceFind( debugcolors, "DVRaster.");
+    debuggercolsinited = true;
+}
 
 static int DVBpCheck(struct instrinfo *ii, int ip) {
     DebugView *dv = (ii->userdata);
@@ -75,7 +92,7 @@ static void DVRasterExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
     GRect r;
 
     GDrawGetSize(dv->raster,&r);
-    GDrawFillRect(pixmap,&event->u.expose.rect,GDrawGetDefaultBackground(screen_display));
+    GDrawFillRect(pixmap,&event->u.expose.rect,rasterbackcol);
     em = cv->ft_ppem;
     x = (r.width - em)/2;
     y = (r.height - em)/2 + em*cv->sc->parent->ascent/(cv->sc->parent->ascent+cv->sc->parent->descent);
@@ -97,12 +114,12 @@ static void DVRasterExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 	if ( cv->raster->num_greys==2 ) {
 	    base.image_type = it_mono;
 	    clut.clut_len = 2;
-	    clut.clut[0] = GDrawGetDefaultBackground(NULL);
+	    clut.clut[0] = rasterbackcol;
 	    clut.trans_index = 0;
 	} else {
 	    base.image_type = it_index;
 	    clut.clut_len = 256;
-	    clut.clut[0] = GDrawGetDefaultBackground(NULL);
+	    clut.clut[0] = rasterbackcol;
 	    for ( i=1; i<256; ++i ) {
 		clut.clut[i] = ( (COLOR_RED(clut.clut[0])*(0xff-i)/0xff)<<16 ) |
 			( (COLOR_GREEN(clut.clut[0])*(0xff-i)/0xff)<<8 ) |
@@ -1873,6 +1890,8 @@ void CVDebugFree(DebugView *dv) {
 		CVInfoDraw(cv,cv->gw);
 	    }
 	}
+    DebugColInit();
+
 	dv->cv = NULL;
     }
 }
