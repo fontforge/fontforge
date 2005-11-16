@@ -858,9 +858,17 @@ return( SplineMake2(from,to));
     }
     /* From here down we are only working with cubic splines */
 
-    tounit.x = to->prevcp.x-to->me.x; tounit.y = to->prevcp.y-to->me.y;
+    if ( !to->noprevcp ) {
+	tounit.x = to->prevcp.x-to->me.x; tounit.y = to->prevcp.y-to->me.y;
+    } else {
+	tounit.x = to->me.x-to->nextcp.x; tounit.y = to->me.y-to->nextcp.y;
+    }
     tlen = sqrt(tounit.x*tounit.x + tounit.y*tounit.y);
-    fromunit.x = from->nextcp.x-from->me.x; fromunit.y = from->nextcp.y-from->me.y;
+    if ( !from->nonextcp ) {
+	fromunit.x = from->nextcp.x-from->me.x; fromunit.y = from->nextcp.y-from->me.y;
+    } else {
+	fromunit.x = from->me.x-from->prevcp.x; fromunit.y = from->me.y-from->prevcp.y;
+    }
     flen = sqrt(fromunit.x*fromunit.x + fromunit.y*fromunit.y);
     if ( tlen==0 || flen==0 ) {
 	if ( from->next!=NULL )
