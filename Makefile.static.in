@@ -60,14 +60,14 @@ install: $(sharedir) all install_libs install_po
 	mkdir -p $(mandir)/man1
 	mkdir -p $(sharedir)
 	cp fontforge/fontforge $(bindir)
-	cp fontforge/sfddiff $(bindir)
+	-cp fontforge/sfddiff $(bindir)
 #	cp fontforge/pfaedit-*.ui $(sharedir)
 #The next line will fail for most installs. If you have downloaded the cidmaps
 # this will install them. If you haven't it won't. You only need the cidmaps
 # if you are editing CID keyed files (and even then you can live without them
 	-cp $(srcdir)/cidmap/*.cidmap $(sharedir) >/dev/null 2>&1
 	cp $(srcdir)/fontforge/fontforge.1 $(mandir)/man1
-	cp $(srcdir)/fontforge/sfddiff.1 $(mandir)/man1
+	-cp $(srcdir)/fontforge/sfddiff.1 $(mandir)/man1
 	mkdir -p $(libdir)/pkgconfig
 	$(LIBTOOL) $(INSTALL) -c fontforge.pc $(libdir)/pkgconfig
 #explicit use of sh to make sure we don't invoke csh with different "if" syntax
