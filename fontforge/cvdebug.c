@@ -2068,8 +2068,7 @@ void CVDebugPointPopup(CharView *cv) {
     FT_Vector *pts;
     int i,l,n;
     int32 x,y,fudge;
-    char cspace[110];
-    static unichar_t space[110];
+    char cspace[210];
     extern float snapdistance;
 
     if ( exc==NULL )
@@ -2122,10 +2121,8 @@ void CVDebugPointPopup(CharView *cv) {
 		xx/64.0, yy/64.0,
 		(r->org[i].x+r->org[l].x)*dv->scale/2.0, (r->org[i].y+r->org[l].y)*dv->scale/2.0 );
     }
-    uc_strcpy(space,cspace);
+  goto showit;
 
-    GGadgetPreparePopup(cv->v,space);
-return;
   no_point:
 #if defined( _NO_SNPRINTF ) || defined( __VMS )
     sprintf(cspace,
@@ -2133,8 +2130,39 @@ return;
     snprintf(cspace,sizeof(cspace),
 #endif
 		"%.2f, %.2f", cv->info.x/dv->scale/64.0, cv->info.y/dv->scale/64.0 );
-    uc_strcpy(space,cspace);
-    GGadgetPreparePopup(cv->v,space);
+
+  showit:
+    if ( cv->raster!=NULL && cv->raster->num_greys>2 ) {
+	int x = cv->info.x/dv->scale/64.0 - cv->raster->lb;
+	int y = cv->raster->as-cv->info.y/dv->scale/64.0;
+	int val;
+	if ( x<0 || x>=cv->raster->cols || y<0 || y>=cv->raster->cols )
+	    val = 0;	/* Not in raster */
+	else
+	    val = cv->raster->bitmap[y*cv->raster->bytes_per_row+x];
+#if defined( _NO_SNPRINTF ) || defined( __VMS )
+	sprintf(cspace+strlen(cspace),
+#else
+	snprintf(cspace+strlen(cspace),sizeof(cspace)-strlen(cspace),
+#endif
+		"\nRaster grey=0x%02x", val );
+    }
+    if ( cv->oldraster!=NULL && cv->oldraster->num_greys>2 ) {
+	int x = cv->info.x/dv->scale/64.0 - cv->oldraster->lb;
+	int y = cv->oldraster->as-cv->info.y/dv->scale/64.0;
+	int val;
+	if ( x<0 || x>=cv->oldraster->cols || y<0 || y>=cv->oldraster->cols )
+	    val = 0;
+	else
+	    val = cv->oldraster->bitmap[y*cv->oldraster->bytes_per_row+x];
+#if defined( _NO_SNPRINTF ) || defined( __VMS )
+	sprintf(cspace+strlen(cspace),
+#else
+	snprintf(cspace+strlen(cspace),sizeof(cspace)-strlen(cspace),
+#endif
+		"\nOld Raster grey=0x%02x", val );
+    }
+    GGadgetPreparePopup8(cv->v,cspace);
 }
 #endif
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
