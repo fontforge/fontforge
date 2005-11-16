@@ -858,13 +858,13 @@ return( SplineMake2(from,to));
     }
     /* From here down we are only working with cubic splines */
 
-    if ( !to->noprevcp ) {
+    if ( !to->noprevcp || to->pointtype == pt_corner ) {
 	tounit.x = to->prevcp.x-to->me.x; tounit.y = to->prevcp.y-to->me.y;
     } else {
 	tounit.x = to->me.x-to->nextcp.x; tounit.y = to->me.y-to->nextcp.y;
     }
     tlen = sqrt(tounit.x*tounit.x + tounit.y*tounit.y);
-    if ( !from->nonextcp ) {
+    if ( !from->nonextcp || from->pointtype == pt_corner ) {
 	fromunit.x = from->nextcp.x-from->me.x; fromunit.y = from->nextcp.y-from->me.y;
     } else {
 	fromunit.x = from->me.x-from->prevcp.x; fromunit.y = from->me.y-from->prevcp.y;
