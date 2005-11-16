@@ -94,6 +94,8 @@ extern char *mf_args;			/* in autotrace.c */
 static int glyph_2_name_map=0;		/* was in tottf.c, now a flag in savefont options dlg */
 extern int coverageformatsallowed;	/* in tottfgpos.c */
 extern int debug_wins;			/* in cvdebug.c */
+extern int gridfit_dpi, gridfit_depth;	/* in cvgridfit.c */
+extern float gridfit_pointsize;		/* in cvgridfit.c */
 unichar_t *script_menu_names[SCRIPT_MENU_MAX];
 char *script_filenames[SCRIPT_MENU_MAX];
 static char *xdefs_filename;
@@ -332,6 +334,9 @@ static struct prefs_list {
 	{ "StarPercent", pr_real, &star_percent, NULL, NULL, '\0', NULL, 1 },
 	{ "CoverageFormatsAllowed", pr_int, &coverageformatsallowed, NULL, NULL, '\0', NULL, 1 },
 	{ "DebugWins", pr_int, &debug_wins, NULL, NULL, '\0', NULL, 1 },
+	{ "GridFitDpi", pr_int, &gridfit_dpi, NULL, NULL, '\0', NULL, 1 },
+	{ "GridFitDepth", pr_int, &gridfit_depth, NULL, NULL, '\0', NULL, 1 },
+	{ "GridFitPointSize", pr_real, &gridfit_pointsize, NULL, NULL, '\0', NULL, 1 },
 	{ NULL }
 },
  oldnames[] = {

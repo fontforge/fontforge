@@ -30,7 +30,7 @@
 #include <gkeysym.h>
 #include <math.h>
 
-static int dpi=72, depth=2; static double pointsize=12;
+int gridfit_dpi=72, gridfit_depth=2; float gridfit_pointsize=12;
 
 static int last_fpgm = false;
 
@@ -104,7 +104,8 @@ return(true);
 	cv->ft_pointsize = ptsize; cv->ft_dpi = _dpi; cv->ft_depth = _depth;
 	cv->ft_ppem = rint(cv->ft_pointsize*cv->ft_dpi/72.0);
 
-	dpi = _dpi; pointsize = ptsize; depth = _depth;
+	gridfit_dpi = _dpi; gridfit_pointsize = ptsize; gridfit_depth = _depth;
+	SavePrefs();
 
 	SplinePointListsFree(cv->gridfit); cv->gridfit = NULL;
 	FreeType_FreeRaster(cv->raster); cv->raster = NULL;
@@ -183,7 +184,7 @@ void CVFtPpemDlg(CharView *cv,int debug) {
     gcd[0].gd.flags = gg_enabled|gg_visible;
     gcd[0].creator = GLabelCreate;
 
-    sprintf( buffer, "%g", pointsize );
+    sprintf( buffer, "%g", gridfit_pointsize );
     label[1].text = (unichar_t *) buffer;
     label[1].text_is_1byte = true;
     gcd[1].gd.label = &label[1];
@@ -200,7 +201,7 @@ void CVFtPpemDlg(CharView *cv,int debug) {
     gcd[2].gd.flags = gg_enabled|gg_visible;
     gcd[2].creator = GLabelCreate;
 
-    sprintf( buffer2, "%d", dpi );
+    sprintf( buffer2, "%d", gridfit_dpi );
     label[3].text = (unichar_t *) buffer2;
     label[3].text_is_1byte = true;
     gcd[3].gd.label = &label[3];
@@ -263,7 +264,7 @@ void CVFtPpemDlg(CharView *cv,int debug) {
     label[9].text_in_resource = true;
     gcd[9].gd.label = &label[9];
     gcd[9].gd.pos.x = 20; gcd[9].gd.pos.y = 14+31; 
-    gcd[9].gd.flags = depth==2 ? (gg_enabled|gg_visible|gg_cb_on) : (gg_enabled|gg_visible);
+    gcd[9].gd.flags = gridfit_depth==2 ? (gg_enabled|gg_visible|gg_cb_on) : (gg_enabled|gg_visible);
     gcd[9].gd.cid = CID_BW;
     gcd[9].creator = GRadioCreate;
 
@@ -272,7 +273,7 @@ void CVFtPpemDlg(CharView *cv,int debug) {
     label[10].text_in_resource = true;
     gcd[10].gd.label = &label[10];
     gcd[10].gd.pos.x = 80; gcd[10].gd.pos.y = gcd[9].gd.pos.y; 
-    gcd[10].gd.flags = depth!=2 ? (gg_enabled|gg_visible|gg_cb_on) : (gg_enabled|gg_visible);
+    gcd[10].gd.flags = gridfit_depth!=2 ? (gg_enabled|gg_visible|gg_cb_on) : (gg_enabled|gg_visible);
     gcd[10].creator = GRadioCreate;
 
     GGadgetsCreate(gw,gcd);
