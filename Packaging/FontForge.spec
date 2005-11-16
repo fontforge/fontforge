@@ -43,7 +43,6 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root)
 %{_bindir}/fontforge
-%{_bindir}/sfddiff
 %{_libdir}/libgunicode.*
 %{_libdir}/libgdraw.*
 %{_libdir}/pkgconfig/fontforge.pc
