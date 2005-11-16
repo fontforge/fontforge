@@ -80,6 +80,7 @@ static Color rastercol = 0xa0a0a0;
 static Color rasternewcol = 0x909090;
 static Color rasteroldcol = 0xc0c0c0;
 static Color rastergridcol = 0xb0b0ff;
+static Color rasterdarkcol = 0x606060;
 static Color italiccoordcol = 0x909090;
 static Color metricslabelcol = 0x00000;
 static Color hintlabelcol = 0x00ffff;
@@ -127,6 +128,7 @@ static void CVColInit( void ) {
 	{ "RasterNewColor", rt_color, &rasternewcol },
 	{ "RasterOldColor", rt_color, &rasteroldcol },
 	{ "RasterGridColor", rt_color, &rastergridcol },
+	{ "RasterDarkColor", rt_color, &rasterdarkcol },
 	{ "ItalicCoordColor", rt_color, &italiccoordcol },
 	{ "MetricsLabelColor", rt_color, &metricslabelcol },
 	{ "HintLabelColor", rt_color, &hintlabelcol },
@@ -1349,11 +1351,16 @@ static void CVDrawGridRaster(CharView *cv, GWindow pixmap, DRect *clip ) {
 	pixel.width = pixel.height = grid_spacing*cv->scale+1;
 	if ( cv->raster!=NULL ) {
 	    if ( cv->raster->num_greys>2 ) {
+		int rb, gb, bb, rd, gd, bd;
 		clut[0] = GDrawGetDefaultBackground(NULL);
+		rb = COLOR_RED(clut[0]); gb = COLOR_GREEN(clut[0]); bb = COLOR_BLUE(clut[0]);
+		rd = COLOR_RED(rasterdarkcol)-rb;
+		gd = COLOR_GREEN(rasterdarkcol)-gb;
+		bd = COLOR_BLUE(rasterdarkcol)-bb;
 		for ( i=1; i<256; ++i ) {
-		    clut[i] = ( (COLOR_RED(clut[0])*(0xff-i)/0xff)<<16 ) |
-			    ( (COLOR_GREEN(clut[0])*(0xff-i)/0xff)<<8 ) |
-			    ( (COLOR_BLUE(clut[0])*(0xff-i)/0xff) );
+		    clut[i] = ( (rb +rd*(i)/0xff)<<16 ) |
+			    ( (gb+gd*(i)/0xff)<<8 ) |
+			    ( (bb+bd*(i)/0xff) );
 		}
 	    }
 	    minx = cv->raster->lb; maxx = minx+cv->raster->cols;
