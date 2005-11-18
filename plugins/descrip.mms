@@ -1,7 +1,7 @@
 CFLAGS=/nowarn/incl=([-.inc],[-.fontforge])/name=(as_is,short)/define=("NODYNAMIC=1",\
         "FONTFORGE_CONFIG_DEVICETABLES=1")
 
-gb12345.exe : gb12345.obj [-.fontforge]tmp.olb
+gb12345.exe : gb12345.obj [-.fontforge]lff.opt
 	@ WRITE_ SYS$OUTPUT "  generating gb12345.opt"
 	@ OPEN_/WRITE FILE  gb12345.opt
 	@ WRITE_ FILE "!"
@@ -14,8 +14,7 @@ gb12345.exe : gb12345.obj [-.fontforge]tmp.olb
 	@ $(MMS)$(MMSQUALIFIERS)/ignore=warning gb12345_vms
 	@ WRITE_ SYS$OUTPUT "  linking gb12345.exe ..."
 	@ LINK_/NODEB/SHARE=gb12345.exe/MAP=gb12345.map/FULL gb12345.opt/opt,\
-	[-.fontforge]tmp.olb/lib,[-.libs]LIBGDRAW/lib,LIBGUNICODE/lib,\
-	[-.fontforge]xlib.opt/opt
+	gb12345_vms.opt/opt,[-.fontforge]lff.opt/opt
 
 gb12345_vms :
 	@ WRITE_ SYS$OUTPUT "  generating gb12345.map ..."
