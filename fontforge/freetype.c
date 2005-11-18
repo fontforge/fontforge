@@ -1591,68 +1591,7 @@ int DebuggingFpgm(struct debugger_context *dc) {
 return( dc->debug_fpgm );
 }
 
-static void GridSetMonotonics(Monotonic *ms,Monotonic **space, uint8 *row,
-	double y, double x,int width, real grid_spacing) {
-    int i, b, winding;
-    Monotonic *m;
-
-    MonotonicFindAt(ms,1,y,space);
-    winding = 0;
-    b = 0;
-    for ( i=0; space[i]!=NULL; ++i ) {
-	m = space[i];
-	while ( x<m->other && b<width ) {
-	    if ( winding )
-		row[b>>3] |= 0x80>>(b&7);
-	    ++b;
-	    x += grid_spacing;
-	}
-	if ( m->yup ) ++winding; else --winding;
-    }
-    if ( winding!=0 )
-	fprintf( stderr, "Winding did not return to 0 when y=%g\n", y );
-}
-
-struct freetype_raster *DebuggerCurrentRasterization(SplineSet *spl,real grid_spacing) {
-    /* Do a very simple rasterization (no dropout work, etc.) based on testing*/
-    /*  whether the center of each grid point is within the splineset */
-    DBounds b;
-    Monotonic *ms, *m, **space;
-    struct freetype_raster *ret;
-    int cnt, i;
-
-    if ( spl==NULL )
-return( NULL );
-
-    SplineSetFindBounds(spl,&b);
-
-    ret = galloc(sizeof(struct freetype_raster));
-    ret->as = ceil(b.maxy/grid_spacing);
-    ret->lb = floor(b.minx/grid_spacing);
-    ret->rows = ret->as - floor(b.miny/grid_spacing) +1;
-    ret->cols = ceil(b.maxx/grid_spacing) - ret->lb +1;
-    ret->bytes_per_row = (ret->cols+7)/8;
-    ret->num_greys = 2;
-	/* Can't find any description of freetype's bitendianness */
-	/* But the obvious seems to work */
-    ret->bitmap = gcalloc(ret->rows*ret->bytes_per_row,1);
-
-    ms = SSsToMContours(spl,over_remove);	/* second argument is meaningless here */
-    for ( m=ms, cnt=0; m!=NULL; m=m->linked, ++cnt );
-    space = galloc((cnt+2)*sizeof(Monotonic*));
-
-    for ( i=0; i<ret->rows; ++i ) {
-	GridSetMonotonics(ms,space,ret->bitmap+i*ret->bytes_per_row,
-		(ret->as-i)*grid_spacing-grid_spacing/2,
-		ret->lb*grid_spacing+grid_spacing/2,ret->cols, grid_spacing);
-    }
-
-    free(space);
-    FreeMonotonics(ms);
-return( ret );
-}
-
-struct freetype_raster *DebuggerCurrentGreys(TT_ExecContext exc) {
+struct freetype_raster *DebuggerCurrentRaster(TT_ExecContext exc,int depth) {
     FT_Outline outline;
     FT_Bitmap bitmap;
     int i, err, k,j;
@@ -1679,9 +1618,15 @@ struct freetype_raster *DebuggerCurrentGreys(TT_ExecContext exc) {
     memset(&bitmap,0,sizeof(bitmap));
     bitmap.rows = (((int) (b.maxy-b.miny))>>6)+2;
     bitmap.width = (((int) (b.maxx-b.minx))>>6)+2;
-    bitmap.pitch = bitmap.width;
-    bitmap.num_grays = 256;
-    bitmap.pixel_mode = ft_pixel_mode_grays;
+    if ( depth==8 ) {
+	bitmap.pitch = bitmap.width;
+	bitmap.num_grays = 256;
+	bitmap.pixel_mode = ft_pixel_mode_grays;
+    } else {
+	bitmap.pitch = (bitmap.width+7)>>3;
+	bitmap.num_grays = 0;
+	bitmap.pixel_mode = ft_pixel_mode_mono;
+    }
     bitmap.buffer = gcalloc(bitmap.pitch*bitmap.rows,sizeof(uint8));
 
     err = (_FT_Outline_Get_Bitmap)(context,&outline,&bitmap);
@@ -1695,13 +1640,24 @@ struct freetype_raster *DebuggerCurrentGreys(TT_ExecContext exc) {
 	}
 	if ( k!=(((int) (b.maxy-b.miny))>>6) )
 	    b.maxy += k<<6;
-	for ( j=0; j<bitmap.pitch; ++j ) {
-	    for ( k=(((int) (b.maxy-b.miny))>>6)-1; k>=0; --k ) {
-		if ( bitmap.buffer[k*bitmap.pitch+j]!=0 )
+	if ( depth==8 ) {
+	    for ( j=0; j<bitmap.pitch; ++j ) {
+		for ( k=(((int) (b.maxy-b.miny))>>6)-1; k>=0; --k ) {
+		    if ( bitmap.buffer[k*bitmap.pitch+j]!=0 )
+		break;
+		}
+		if ( k!=-1 )
 	    break;
 	    }
-	    if ( k!=-1 )
-	break;
+	} else {
+	    for ( j=0; j<bitmap.pitch; ++j ) {
+		for ( k=(((int) (b.maxy-b.miny))>>6)-1; k>=0; --k ) {
+		    if ( bitmap.buffer[k*bitmap.pitch+(j>>3)]&(0x80>>(j&7)) )
+		break;
+		}
+		if ( k!=-1 )
+	    break;
+	    }
 	}
 	b.minx -= j*64;
     ret->as = ceil(b.maxy/64.0);
@@ -1709,7 +1665,7 @@ struct freetype_raster *DebuggerCurrentGreys(TT_ExecContext exc) {
     ret->rows = bitmap.rows;
     ret->cols = bitmap.width;
     ret->bytes_per_row = bitmap.pitch;
-    ret->num_greys = 256;
+    ret->num_greys = bitmap.num_grays;
     ret->bitmap = bitmap.buffer;
 return( ret );
 }

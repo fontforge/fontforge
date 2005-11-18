@@ -111,7 +111,7 @@ static void DVRasterExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 	memset(&clut,'\0',sizeof(clut));
 	gi.u.image = &base;
 	base.clut = &clut;
-	if ( cv->raster->num_greys==2 ) {
+	if ( cv->raster->num_greys<=2 ) {
 	    base.image_type = it_mono;
 	    clut.clut_len = 2;
 	    clut.clut[0] = rasterbackcol;
@@ -685,11 +685,7 @@ static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
 	cv->oldraster = cv->raster;
 	SplinePointListsFree(cv->gridfit);
 	cv->gridfit = SplineSetsFromPoints(&exc->pts,dv->scale,dv->active_refs);
-	if ( cv->ft_depth==2 )
-	    cv->raster = DebuggerCurrentRasterization(cv->gridfit,
-		    (cv->sc->parent->ascent+cv->sc->parent->descent) / (real) cv->ft_ppem);
-	else
-	    cv->raster = DebuggerCurrentGreys(exc);
+	cv->raster = DebuggerCurrentRaster(exc,cv->ft_depth);
 	if ( exc->pts.n_points<=2 )
 	    cv->ft_gridfitwidth = 0;
 	/* suport for vertical phantom pts */
@@ -724,25 +720,20 @@ static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
 /*  splines) */
 static void DVDefaultRaster(DebugView *dv) {
     CharView *cv = dv->cv;
+    void *single_glyph_context;
+    SplineFont *sf = cv->sc->parent;
 
     if ( cv->oldraster!=NULL )
 	FreeType_FreeRaster(cv->oldraster);
     cv->oldraster = cv->raster;
     SplinePointListsFree(cv->gridfit);
     cv->gridfit = NULL;
-    if ( cv->ft_depth==2 ) {
-	cv->raster = DebuggerCurrentRasterization(cv->sc->layers[ly_fore].splines,
-		    (cv->sc->parent->ascent+cv->sc->parent->descent) / (real) cv->ft_ppem);
-    } else {
-	void *single_glyph_context;
-	SplineFont *sf = cv->sc->parent;
-	single_glyph_context = _FreeTypeFontContext(sf,cv->sc,NULL,
-		sf->order2?ff_ttf:ff_otf,0,NULL);
-	if ( single_glyph_context!=NULL ) {
-	    cv->raster = FreeType_GetRaster(single_glyph_context,cv->sc->orig_pos,
-		    cv->ft_pointsize, cv->ft_dpi, cv->ft_depth );
-	    FreeTypeFreeContext(single_glyph_context);
-	}
+    single_glyph_context = _FreeTypeFontContext(sf,cv->sc,NULL,
+	    sf->order2?ff_ttf:ff_otf,0,NULL);
+    if ( single_glyph_context!=NULL ) {
+	cv->raster = FreeType_GetRaster(single_glyph_context,cv->sc->orig_pos,
+		cv->ft_pointsize, cv->ft_dpi, cv->ft_depth );
+	FreeTypeFreeContext(single_glyph_context);
     }
     cv->ft_gridfitwidth = 0;
 

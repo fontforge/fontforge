@@ -1769,9 +1769,8 @@ extern BDFChar *SplineCharFreeTypeRasterizeNoHints(SplineChar *sc,
 	int pixelsize,int depth);
 extern BDFFont *SplineFontFreeTypeRasterizeNoHints(SplineFont *sf,int pixelsize,int depth);
 extern void FreeType_FreeRaster(struct freetype_raster *raster);
-extern struct freetype_raster *DebuggerCurrentRasterization(SplineSet *spl,real grid_spacing);
 struct TT_ExecContextRec_;
-extern struct freetype_raster *DebuggerCurrentGreys(struct  TT_ExecContextRec_ *exc);
+extern struct freetype_raster *DebuggerCurrentRaster(struct  TT_ExecContextRec_ *exc,int depth);
 
 extern int UniFromName(const char *name,enum uni_interp interp, Encoding *encname);
 # ifdef FONTFORGE_CONFIG_GTK
