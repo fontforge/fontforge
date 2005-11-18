@@ -1,4 +1,4 @@
-/* Vague support for two different shared library formats */
+/* Vague support for several different shared library formats */
 /* Everyone but the mac uses a varient of dlopen, while the mac uses NSAddImage */
 /* Under cygwin the shared libs have very strange names which bare little */
 /*  resemblance to what we expect. GNU creates a .la file that tells us what */
@@ -23,8 +23,12 @@
 #    define dlopen(name,foo) libtool_laopen(name,foo)
 void *libtool_laopen(const char *filename, int flags);
 #   endif
-#   define SO_EXT	".so"
-#   define DL_CONST
+#ifdef __VMS
+# define SO_EXT	".exe"
+#else
+# define SO_EXT	".so"
+#endif
+#define DL_CONST
 #  endif
 
 #endif
