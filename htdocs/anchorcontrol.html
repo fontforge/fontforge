@@ -2,66 +2,66 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-Jan-2005 -->
-  <!-- AP: Last modified: 18-Apr-2005 -->
+  <!-- AP: Last modified: 6-Nov-2005 -->
   <TITLE>The Anchor Control dialog</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
 <DIV id="in">
-<H1 ALIGN=Center>
-  The Anchor Control dialog
-</H1>
-<P>
-<IMG SRC="anchorcontrol-base.png" WIDTH="506" HEIGHT="323" ALIGN="Right">You
-invoke this dialog from the outline glyph view by selecting an anchor point
-in that glyph and selecting <CODE>Metrics-&gt;Anchor Control</CODE>. In the
-example at right, the arabic letter Hamza was chosen. In the first pane of
-the dialog are various controls, next to that is a pane displaying the letter
-Hamza and showing the anchor point relative to that letter. You may move
-the anchor point arround to position it as you wish.<BR CLEAR=ALL>
-<P>
-After this there is a scrollable region containing multiple sub-panes. Each
-sub-pane contains one combination of Hamza and a mark that fits on top of
-it. If you click in one of these sub-panes, FontForge brings up another Anchor
-Control dialog but this time looking at the mark you
-selected.<IMG SRC="anchorcontrol-mark.png" WIDTH="408" HEIGHT="323" ALIGN="Left">
-Here we clicked on the Fathatan mark, and we now see all the base letters
-that fit underneath it. This dialog now gives you control of the anchor point
-in the Fathatan mark.
-<P>
-You may control the pixelsize used to display the combinations. Sometimes
-it is important to get a close up view of a small pixelsize (which may be
-quite different from looking at a larger pixelsize).
-<P>
-You can also enter the anchor point's location by manual typing in the X,Y
-textfields at right.
-<H2>
-  Device Tables
-</H2>
-<P>
-You can also create something called a "<A NAME="DeviceTable">Device
-Table</A>", a name which is not very informative. When a font is rasterized
-at small pixel sizes rounding errors become important, and this is particularly
-true of mark positioning, where there are four things that get rounded: The
-locations of the each glyph's outlines (to fit them to a pixel grid), and
-the locations of the anchor points of each glyph. The result is that something
-which looks perfectly positioned at 150pixels may be either too close or
-too far apart at 12pixels.
-<P>
-You could adjust the anchor point's location slightly until it looked right
-at 12pixels, of course, but that might break it at 14 pixels. So OpenType
-has the concept of a Device Table which allows you to add small corrections
-at particular point sizes. Simply set the Size to a small, but common, value
-(say 10-24) and examine the positioning. If the results are ugly then type
-a value into the appropriate <CODE>Cor</CODE>(rection) field, and this will
-change the spacing by that many pixels at the given display size (and no
-other).
-<P>
-Note it may sometimes be better to define a correction in the matching glyph
-rather than the current one. Corrections will apply to all glyphs matched
-with the current one.
-<P ALIGN=Center>
--- <A HREF="metricsmenu.html">Back</A> --
+  <H1 ALIGN=Center>
+    The Anchor Control dialog
+  </H1>
+  <P>
+  <IMG SRC="anchorcontrol-base.png" WIDTH="506" HEIGHT="323" ALIGN="Right">You
+  invoke this dialog from the outline glyph view by selecting an anchor point
+  in that glyph and selecting <CODE>Metrics-&gt;Anchor Control</CODE>. In the
+  example at right, the arabic letter Hamza was chosen. In the first pane of
+  the dialog are various controls, next to that is a pane displaying the letter
+  Hamza and showing the anchor point relative to that letter. You may move
+  the anchor point around to position it as you wish.<BR CLEAR=ALL>
+  <P>
+  After this there is a scrollable region containing multiple sub-panes. Each
+  sub-pane contains one combination of Hamza and a mark that fits on top of
+  it. If you click in one of these sub-panes, FontForge brings up another Anchor
+  Control dialog but this time looking at the mark you
+  selected.<IMG SRC="anchorcontrol-mark.png" WIDTH="408" HEIGHT="323" ALIGN="Left">
+  Here we clicked on the Fathatan mark, and we now see all the base letters
+  that fit underneath it. This dialog now gives you control of the anchor point
+  in the Fathatan mark.
+  <P>
+  You may control the pixelsize used to display the combinations. Sometimes
+  it is important to get a close up view of a small pixelsize (which may be
+  quite different from looking at a larger pixelsize).
+  <P>
+  You can also enter the anchor point's location by manual typing in the X,Y
+  textfields at right.
+  <H2>
+    Device Tables
+  </H2>
+  <P>
+  You can also create something called a "<A NAME="DeviceTable">Device
+  Table</A>", a name which is not very informative. When a font is rasterized
+  at small pixel sizes rounding errors become important, and this is particularly
+  true of mark positioning, where there are four things that get rounded: The
+  locations of the each glyph's outlines (to fit them to a pixel grid), and
+  the locations of the anchor points of each glyph. The result is that something
+  which looks perfectly positioned at 150pixels may be either too close or
+  too far apart at 12pixels.
+  <P>
+  You could adjust the anchor point's location slightly until it looked right
+  at 12pixels, of course, but that might break it at 14 pixels. So OpenType
+  has the concept of a Device Table which allows you to add small corrections
+  at particular point sizes. Simply set the Size to a small, but common, value
+  (say 10-24) and examine the positioning. If the results are ugly then type
+  a value into the appropriate <CODE>Cor</CODE>(rection) field, and this will
+  change the spacing by that many pixels at the given display size (and no
+  other).
+  <P>
+  Note it may sometimes be better to define a correction in the matching glyph
+  rather than the current one. Corrections will apply to all glyphs matched
+  with the current one.
+  <P ALIGN=Center>
+  -- <A HREF="metricsmenu.html">Back</A> --
 </DIV>
 </BODY></HTML>
