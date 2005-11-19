@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 2-Nov-2005 -->
+  <!-- AP: Last modified: 18-Nov-2005 -->
   <TITLE>Frequently Asked Questions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -58,6 +58,20 @@
   </H2>
   <UL>
     <LI>
+      How do I install FontForge on:
+      <TABLE CELLSPACING="6" CELLPADDING="2">
+	<TR>
+	  <TD><P ALIGN=Center>
+	    <A HREF="nix-install.html" TARGET="_top">Unix/Linux</A></TD>
+	  <TD>&nbsp; &nbsp;<A HREF="mac-install.html" TARGET="_top">Mac</A></TD>
+	  <TD>&nbsp; &nbsp;<A HREF="ms-install.html" TARGET="_top">MS/Windows</A></TD>
+	  <TD>&nbsp; &nbsp;<A HREF="vms-install.html" TARGET="_top">VMS</A></TD>
+	  <TD>&nbsp; &nbsp;<A HREF="source-build.html" TARGET="_top">from source</A></TD>
+	</TR>
+      </TABLE>
+    <LI>
+      <A HREF="#Minimum">Minimum requirements</A>
+    <LI>
       <A HREF="#font-install">How do I install the fonts once I've made them?</A>
     <LI>
       <A HREF="faq.html#Bad-Windows-Install">Why won't FontForge's fonts install
@@ -96,6 +110,10 @@
     <LI>
       <A HREF="faq.html#bitmap-outline">Converting from a bitmap format to an
       outline</A>
+    <LI>
+      <A HREF="#AAT2OT">Converting from Apple's Advanced Typography to OpenType</A>
+    <LI>
+      <A HREF="#OT2AAT">Converting from OT to AAT</A>
   </UL>
   <H2>
     Questions about Hints and TrueType Instructions
@@ -225,6 +243,9 @@
     <LI>
       <A TARGET="_top" HREF="index.html#known-bugs">Where can I find a list of
       known bugs in FontForge?</A>
+    <LI>
+      <A HREF="#memory">My system keeps crashing because FontForge keeps running
+      out of memory. What can I do about it?</A>
     <LI>
       <A HREF="#Unstable">Why is FontForge so unstable?</A>
   </UL>
@@ -486,6 +507,19 @@
       established here. See also the
       <A HREF="overview.html#em-unit" TARGET="_top">section on em-units in the
       overview.</A>
+    <DT>
+      <A NAME="Minimum"><B>Minimum requirements</B></A>
+    <DD>
+      This depends heavily on what you want to do. FontForge is mainly limited
+      by memory (though screen real estate can be a problem too)
+      <UL>
+	<LI>
+	  If you are interested in scripts with no more than few hundred simple glyphs
+	  (like the latin alphabet) then 192Mb is more than enough.
+	<LI>
+	  If you are doing serious editing of CJK fonts then 512Mb is on the low end
+	  of useablity.
+      </UL>
     <DT>
       <A NAME="font-install"><B>How do I install the fonts once I've made
       them?</B></A>
@@ -953,6 +987,29 @@ $ xset fp+ `pwd`
 	<LI>
 	  File-&gt;Generate Fonts
       </UL>
+    <DT>
+      <A NAME="AAT2OT"><B>Converting from Apple's Advanced Typography to
+      OpenType</B></A>
+    <DD>
+      There are a number of similarities between the results achieved by these
+      formats, but the overlap is not total. Most conversions will lose some
+      information.<BR>
+      The simple answer is that this is pretty much automatic. You load an apple
+      font, and then Generate an equivalent font with the [*] OpenType checkbox
+      checked in the Options dialog.<BR>
+      FontForge will convert any non-contextual features where Apple's feature/setting
+      matches an OpenType feature. (This includes non-contextual ligatures even
+      though they live in a contextual format). For more information see the section
+      on this <A HREF="gposgsub.html#Conversion" TARGET="_top">interconversion</A>.
+    <DT>
+      <B><A NAME="OT2AAT">Converting from OpenType to AAT</A></B>
+    <DD>
+      Again this is mostly automatic. Load an OpenType font, and Generate an equivalent
+      font with the [*] Apple checkbox checked in the Options dialog.<BR>
+      FontForge is capable of converting some contextual OpenType tables to AAT.
+      Non-contextual features which match an Apple feature/setting will be converted
+      too. For more information see the section on this
+      <A HREF="gposgsub.html#Conversion" TARGET="_top">interconversion</A>.
     <DT>
       <A NAME="hint-subs"><B>How do I make FontForge use hint substitution?</B></A>
     <DD>
@@ -1487,6 +1544,21 @@ $ xset fp+ `pwd`
       The afm files produced by ttf2afm don't conform to
       <A TARGET="_top" HREF="http://partners.adobe.com/asn/developer/PDFS/TN/5004.AFM_Spec.pdf">Adobe's
       specifications</A>.
+    <DT>
+      <A NAME="memory"><B>My system keeps crashing because FontForge keeps running
+      out of memory. What can I do about it?</B></A>
+    <DD>
+      If you are editing large fonts, FontForge may run out of memory. All too
+      often when FF runs out of memory, the kernel will crash rather than report
+      an error condition. FontForge does check for failure to allocate and attempts
+      to free up some chunks of memory when this happens -- I've never seen this
+      code activated though.
+      <P>
+      FontForge does provide a mechanism which might help you avoid this. FontForge
+      generally wastes a lot of memory keeping undoes around. You can clear undoes
+      associated with a glyph with the Edit-&gt;Remove Undoes command. You can
+      also limit the number of undoes that will be stored with each glyph with
+      the File-&gt;Preferences-&gt;Editing-&gt;UndoDepth.
     <DT>
       <A NAME="Unstable"><B>Why is FontForge so unstable?</B></A>
     <DD>

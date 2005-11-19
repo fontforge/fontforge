@@ -2,686 +2,695 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 21-Jan-2001 -->
-  <!-- AP: Last modified: 3-Dec-2004 -->
+  <!-- AP: Last modified: 18-Nov-2005 -->
   <TITLE>X Resources</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
 <DIV id="in">
-<H1 ALIGN=Center>
-  X Resources
-</H1>
-<P>
-Every X application has an inordinate number of resources that you can tweak.
-This one is no exception. However I don't follow standard conventions, so
-it's all different. Sorry (a little anyway).
-<P>
-To use an X resource add a series of lines to your .Xdefaults file and then
-run "$ xrdb ~/.Xdefaults". For example:
-<BLOCKQUOTE>
-  <PRE>Gdraw.ScreenWidthInches: 14.7
+  <H1 ALIGN=Center>
+    X Resources
+  </H1>
+  <P>
+  Every X application has an inordinate number of resources that you can tweak.
+  This one is no exception. However I don't follow standard conventions, so
+  it's all different. Sorry (a little anyway).
+  <P>
+  To use an X resource add a series of lines to your .Xdefaults file and then
+  run "$ xrdb ~/.Xdefaults". For example:
+  <BLOCKQUOTE>
+    <PRE>Gdraw.ScreenWidthInches: 14.7
 Gdraw.GGadget.Popup.Font: 10pt helvetica
 Gdraw.Background: white
 fontforge.FontView.FontFamily: Helvetica, GillSans
 </PRE>
-</BLOCKQUOTE>
-<P>
-If a resource begins with "<CODE>Gdraw.</CODE>" or "<CODE>fontforge.</CODE>"
-then the program will look at it.
-<DL>
-  <DT>
-    <CODE>fontforge.FontView.FontFamily</CODE>
-  <DD>
-    A list of font family names to be used in the font view to display an example
-    character over each user character.
-  <DT>
-    <CODE>fontforge.FontView.SerifFamily</CODE>
-  <DD>
-    A list of font family names to be used in the font view to display an example
-    character over each user character when the character is one of the stylized
-    variants in U+1D400-U+1D7FF. Used for characters that should be drawn with
-    a serif font.
-  <DT>
-    <CODE>fontforge.FontView.ScriptFamily</CODE>
-  <DD>
-    <IMG SRC="script-A.png" WIDTH="29" HEIGHT="25" ALIGN="Right">A list of font
-    family names to be used in the font view to display an example character
-    over each user character when the character is one of the stylized variants
-    in U+1D400-U+1D7FF. Used for characters that should be drawn with a script
-    font.
-  <DT>
-    <CODE>fontforge.FontView.FrakturFamily</CODE>
-  <DD>
-    <IMG SRC="fraktur-A.png" WIDTH="25" HEIGHT="21" ALIGN="Right">A list of font
-    family names to be used in the font view to display an example character
-    over each user character when the character is one of the stylized variants
-    in U+1D400-U+1D7FF. Used for characters that should be drawn with a fraktur
-    font.
-  <DT>
-    <CODE>fontforge.FontView.DoubleStruckFamily</CODE>
-  <DD>
-    <IMG SRC="doublestruck-B.png" WIDTH="20" HEIGHT="21" ALIGN="Right">A list
-    of font family names to be used in the font view to display an example character
-    over each user character when the character is one of the stylized variants
-    in U+1D400-U+1D7FF. Used for characters that should be drawn with a double-struck
-    font.
-  <DT>
-    <CODE>fontforge.FontView.SansFamily</CODE>
-  <DD>
-    A list of font family names to be used in the font view to display an example
-    character over each user character when the character is one of the stylized
-    variants in U+1D400-U+1D7FF. Used for characters that should be drawn with
-    a sans-serif font.
-  <DT>
-    <CODE>fontforge.FontView.MonoFamily</CODE>
-  <DD>
-    A list of font family names to be used in the font view to display an example
-    character over each user character when the character is one of the stylized
-    variants in U+1D400-U+1D7FF. Used for characters that should be drawn with
-    a monospaced font.
-  <DT>
-    <CODE>fontforge.CharView.InfoFamily</CODE>
-  <DD>
-    A list of font family names to be used in the outline and bitmap character
-    views for information messages.
-  <DT>
-    <CODE>fontforge.CharView.PointColor</CODE>
-  <DD>
-    Sets the color used to draw curved, corner or tangent points in the outline
-    character view.
-  <DT>
-    <CODE>fontforge.CharView.FirstPointColor</CODE>
-  <DD>
-    Sets the color of the first point on a contour.
-  <DT>
-    <CODE>fontforge.CharView.SelectedPointColor</CODE>
-  <DD>
-    Sets the color used to draw selected curved, corner or tangent points in
-    the outline character view.
-  <DT>
-    <CODE>fontforge.CharView.SelectedPointWidth</CODE>
-  <DD>
-    Sets the width of the line used to outline selected curved, corner or tangent
-    points in the outline character view.
-  <DT>
-    <CODE>fontforge.CharView.ExtremePointColor</CODE>
-  <DD>
-    Sets the color of a point which is an extremum.
-  <DT>
-    <CODE>fontforge.CharView.NextCPColor</CODE>
-  <DD>
-    Sets the color used to draw the "Next" control point.
-  <DT>
-    <CODE>fontforge.CharView.PrevCPColor</CODE>
-  <DD>
-    Sets the color used to draw the "Previous" control point.
-  <DT>
-    <CODE>fontforge.CharView.SelectedCPColor</CODE>
-  <DD>
-    Sets the color used to draw a control point that has been selected.
-  <DT>
-    <CODE>fontforge.CharView.CoordinateLineColor</CODE>
-  <DD>
-    Sets the color used to draw the coordinate axes.
-  <DT>
-    <CODE>fontforge.CharView.WidthColor</CODE>
-  <DD>
-    Sets the color used to draw the advance width line.
-  <DT>
-    <CODE>fontforge.CharView.WidthSelColor</CODE>
-  <DD>
-    Sets the color used to draw the advance width if it is selected.
-  <DT>
-    <CODE>fontforge.CharView.GridFitWidthColor</CODE>
-  <DD>
-    Sets the color used to draw the advance width once it has been grid fit (if
-    <CODE>View-&gt;Show Grid Fit</CODE> is on)
-  <DT>
-    <CODE>fontforge.CharView.LigatureCaretColor</CODE>
-  <DD>
-    Sets the color used to draw ligature caret lines.
-  <DT>
-    <CODE>fontforge.CharView.RasterColor</CODE>
-  <DD>
-    Sets the color used to draw the pixels of a rasterized bitmap (if
-    <CODE>View-&gt;Show Grid Fit</CODE> or <CODE>Hints-&gt;Debug</CODE> is on)
-  <DT>
-    <CODE>fontforge.CharView.RasterNewColor</CODE>
-  <DD>
-    Sets the color used to draw the pixels of a rasterized bitmap if they have
-    recently been turned on (if <CODE>Hints-&gt;Debug</CODE> is on)
-  <DT>
-    <CODE>fontforge.CharView.RasterOldColor</CODE>
-  <DD>
-    Sets the color used to draw the pixels of a rasterized bitmap f they have
-    recently been turned off (if <CODE>Hints-&gt;Debug</CODE> is on)
-  <DT>
-    <CODE>fontforge.CharView.RasterGridColor</CODE>
-  <DD>
-    Sets the color used to draw the pixel grid used by the rasterizer (if
-    <CODE>View-&gt;Show Grid Fit</CODE> or <CODE>Hints-&gt;Debug</CODE> is on)
-  <DT>
-    <CODE>fontforge.CharView.ItalicCoordColor</CODE>
-  <DD>
-    Sets the color used to draw various horizontal metrics lines when they have
-    been skewed appropriately for an italic font.
-  <DT>
-    <CODE>fontforge.CharView.MetricsLabelColor</CODE>
-  <DD>
-    Sets the color used to label metrics lines
-  <DT>
-    <CODE>fontforge.CharView.HintLabelColor</CODE>
-  <DD>
-    Sets the color used to label hint lines (and blue value lines)
-  <DT>
-    <CODE>fontforge.CharView.BlueValuesStippledCol</CODE>
-  <DD>
-    Sets the color used to draw the BlueValues and OtherBlues zones.
-  <DT>
-    <CODE>fontforge.CharView.FamilyBlueStippledColor</CODE>
-  <DD>
-    Sets the color used to draw the FamilyBlueValues and FamilyOtherBlues zones.
-  <DT>
-    <CODE>fontforge.CharView.MDHintColor</CODE>
-  <DD>
-    Sets the color used to draw minimum distance hints
-  <DT>
-    <CODE>fontforge.CharView.DHintColor</CODE>
-  <DD>
-    Sets the color used to draw diagonal hints
-  <DT>
-    <CODE>fontforge.CharView.HHintColor</CODE>
-  <DD>
-    Sets the color used to draw horizontal stem hints
-  <DT>
-    <CODE>fontforge.CharView.VHintColor</CODE>
-  <DD>
-    Sets the color used to draw vertical stem hints
-  <DT>
-    <CODE>fontforge.CharView.ConflictHintColor</CODE>
-  <DD>
-    Sets the color used to draw hints when they conflict
-  <DT>
-    <CODE>fontforge.CharView.HHintActiveColor</CODE>
-  <DD>
-    Sets the color used to draw a horizontal stem hint when it is active in the
-    review hints dlg.
-  <DT>
-    <CODE>fontforge.CharView.VHintActiveColor</CODE>
-  <DD>
-    Sets the color used to draw a vertical stem hint when it is active in the
-    review hints dlg.
-  <DT>
-    <CODE>fontforge.CharView.HFlexHintColor</CODE>
-  <DD>
-    Sets the color used to draw the halo around horizontal flex hints
-  <DT>
-    <CODE>fontforge.CharView.VFlexHintColor</CODE>
-  <DD>
-    Sets the color used to draw the halo around vertical flex hints.
-  <DT>
-    <CODE>fontforge.CharView.AnchorColor</CODE>
-  <DD>
-    Sets the color used to draw an anchor point
-  <DT>
-    <CODE>fontforge.CharView.TemplateOutlineColor</CODE>
-  <DD>
-    Sets the color used to draw a template outline. (not currently used)
-  <DT>
-    <CODE>fontforge.CharView.OldOutlineColor</CODE>
-  <DD>
-    Sets the color used to draw the original outline of a set of splines being
-    transformed with one of the transform tools (flip, rotate, scale, etc.)
-  <DT>
-    <CODE>fontforge.CharView.TransformOriginColor</CODE>
-  <DD>
-    Sets the color used to draw the origin of the current transformation.
-  <DT>
-    <CODE>fontforge.CharView.GuideOutlineColor</CODE>
-  <DD>
-    Sets the color used to draw outlines in the Guide layer.
-  <DT>
-    <CODE>fontforge.CharView.GridFitOutlineColor</CODE>
-  <DD>
-    Sets the color used to draw outlines which have been gridfit (this should
-    probably be the same as BackgroundOutlineColor as both are in the background
-    layer).
-  <DT>
-    <CODE>fontforge.CharView.BackgroundOutlineColor</CODE>
-  <DD>
-    Sets the color used to draw background outlines.
-  <DT>
-    <CODE>fontforge.CharView.ForegroundOutlineColor</CODE>
-  <DD>
-    Sets the color used to draw foreground outlines.
-  <DT>
-    <CODE>fontforge.CharView.BackgroundImageColor</CODE>
-  <DD>
-    Sets the color used to draw background images.
-  <DT>
-    <CODE>fontforge.CharView.FillColor</CODE>
-  <DD>
-    Sets the color used to draw a character's fill
-  <DT>
-    <CODE>fontforge.CharView.TraceColor</CODE>
-  <DD>
-    Sets the color used to draw the trace of the freehand tool.
-  <DT>
-    <CODE>Gdraw.ScreenWidthCentimeters</CODE>
-  <DD>
-    A double. (centimeters)<BR>
-    X usually does not know the physical width of a screen (it knows the logical,
-    pixel width). Gdraw's internals are based on points rather than pixels, and
-    it will sometimes pick a font that is too small or too large if it relies
-    on X's idea of how wide the screen is.
-  <DT>
-    <CODE>Gdraw.ScreenWidthInches</CODE>
-  <DD>
-    A double. (inches)<BR>
-    Same as the above, except measured in inches.
-  <DT>
-    <CODE>Gdraw.ScreenWidthPixels</CODE>
-  <DD>
-    An integer (pixels)<BR>
-    When X creates a virtual screen it may not be possible for Gdraw to find
-    the actual number of pixels on the screen. This again will throw off point
-    calculations.
-  <DT>
-    <CODE>Gdraw.ScreenHeightPixels</CODE>
-  <DD>
-    An integer (pixels)<BR>
-    When X creates a virtual screen it may not be possible for Gdraw to find
-    the actual number of pixels on the screen. This is not used in point
-    calculations.
-  <DT>
-    <CODE>Gdraw.Depth</CODE>
-  <DD>
-    An integer (1, 8, 16, 32)<BR>
-    You can use this to request a different depth than the default one. Not all
-    servers will support all depths. If FontForge can't find a visual with the
-    desired depth it will use the default depth.
-  <DT>
-    <CODE>Gdraw.VisualClass</CODE>
-  <DD>
-    A string ("StaticGray", "GrayScale", "StaticColor", "PsuedoColor", "TrueColor",
-    "DirectColor")<BR>
-    FontForge will search for a visual with the given class (and possibly depth
-    if the depth argument is specified too).
-  <DT>
-    <CODE>Gdraw.<A NAME="Colormap">Colormap</A></CODE>
-  <DD>
-    An string ("Current", "Copy", "Private")<BR>
-    You can use this to control what FontForge does about the colormap on an
-    8bit screen
-    <UL>
-      <LI>
-	Current -- FontForge will attempt to allocate its colors in the current colormap.
-      <LI>
-	Copy -- FontForge will allocate what colors it can and then copy the current
-	color map into a private copy. This means FontForge has access to a much
-	wider range of colors, and (as long as the shared colormap doesn't change)
-	FontForge's colormap will match that of the rest of the screen.
-      <LI>
-	Private -- FontForge will allocate a private colormap and set the colors
-	just as it wants them. It will almost certainly not match the shared colormap.
-    </UL>
-  <DT>
-    <CODE>Gdraw.DoDithering</CODE>
-  <DD>
-    An integer (0 or 1)<BR>
-    You can use this to turn off dithering of images on an 8bit screen.
-  <DT>
-    <CODE>Gdraw.MultiClickTime</CODE>
-  <DD>
-    An integer (milliseconds)<BR>
-    The maximum amount of time allowed between two clicks for them to be considered
-    a double (triple, etc.) click.
-  <DT>
-    <CODE>Gdraw.MultiClickWiggle</CODE>
-  <DD>
-    An integer (pixels)<BR>
-    The maximum number of pixels the mouse is allowed to move between two clicks
-    and have them still be considered a double click.
-  <DT>
-    <CODE>Gdraw.TwoButtonFixup</CODE>
-  <DD>
-    A boolean<BR>
-    On a windows keyboard use the modifier key with the flag on it to simulate
-    mouse button 2 (middle button). If this key is depressed when a mouse button
-    is pressed or released then pretend it was button 2 that was pressed or release.
-  <DT>
-    <CODE>Gdraw.MacOSXCmd</CODE>
-  <DD>
-    A boolean<BR>
-    On Mac OS X the user will probably expect to use the Command (apple, cloverleaf)
-    key to control the menu (rather than the Control key). If this is set then
-    the command key will be mapped to the control key internally.
-  <DT>
-    <CODE>Gdraw.MultiClickWiggle</CODE>
-  <DD>
-    An integer (pixels)<BR>
-    The maximum number of pixels the mouse is allowed to move between two clicks
-    and have them still be considered a double click.
-  <DT>
-    <CODE>Gdraw.<A NAME="Keyboard">Keyboard</A></CODE>
-  <DD>
-    ibm | mac | sun | ppc | 0 | 1 | 2 | 3<BR>
-    Allows you to specify the type of keyboard. Currently this is only relevent
-    when generating menus. The modifier keys are in different locations on different
-    keyboards (under different operating systems) and if FontForge knows what
-    keyboard you are using it can make the hot-keys have better labels.
-    <UL>
-      <LI>
-	ibm | 0<BR>
-	Uses the Control and Alt keys
-      <LI>
-	mac | 1<BR>
-	Uses the Command and Option keys (Mac OS/X, Mac keyboard)
-      <LI>
-	ppc | 3<BR>
-	Uses the Control and Command keys (Suse ppc linux, Mac keyboard)
-      <LI>
-	sun | 2<BR>
-	Uses the Control and Meta keys
-    </UL>
-  <DT>
-    <CODE>Gdraw.SelectionNotifyTimeout</CODE>
-  <DD>
-    An integer (seconds)<BR>
-    Gdraw will wait this many seconds after making a request for a selection
-    (ie. when doing a Paste). If it gets no responce after that period it reports
-    a failure.
-  <DT>
-    <CODE>Gdraw.Background</CODE>
-  <DD>
-    A <A HREF="#color">color</A><BR>
-    Gdraw will use this as the default background color for the windows.
-  <DT>
-    <CODE>Gdraw.Foreground</CODE>
-  <DD>
-    A <A HREF="#color">color</A><BR>
-    Gdraw will use this as the default foreground color for dialogs.
-  <DT>
-    <CODE>Gdraw.GGadget.Popup.Foreground</CODE>
-  <DD>
-    A <A HREF="#color">color</A><BR>
-    Specifies the foreground color of popup (tooltip) messages.
-  <DT>
-    <CODE>Gdraw.GGadget.Popup.Background</CODE>
-  <DD>
-    A <A HREF="#color">color</A><BR>
-    Specifies the background color of popup messages.
-  <DT>
-    <CODE>Gdraw.GGadget.Popup.Delay</CODE>
-  <DD>
-    An integer (milliseconds).<BR>
-    Specifies the amount of time the cursor must remain motionless before a popup
-    message pops up.
-  <DT>
-    <CODE>Gdraw.GGadget.Popup.LifeTime</CODE>
-  <DD>
-    An integer (milliseconds).<BR>
-    Specifies the length of time the message will display.
-  <DT>
-    <CODE>Gdraw.GGadget.Popup.Font</CODE>
-  <DD>
-    A <A HREF="#font">font</A><BR>
-    Specifies the font to use in a popup message.
-  <DT>
-    <CODE>Gdraw.GGadget...</CODE>
-  <DD>
-    Every ggadget in enclosed in a box. The following information may be supplied
-    for any box:
-    <DL>
-      <DT>
-	<CODE>...Box.BorderType</CODE>
-      <DD>
-	one of "none", "box", "raised", "lowered", "engraved", "embossed", "double"<BR>
-	For a description of these see the css manual.
-      <DT>
-	<CODE>...Box.BorderShape</CODE>
-      <DD>
-	one of "rect", "roundrect", "ellipse", "diamond"<BR>
-	Describes the basic shape of the box. (some ggadgets must be in rectangles).
-      <DT>
-	<CODE>...Box.BorderWidth</CODE>
-      <DD>
-	An integer (points)<BR>
-	Specifies the width of the box's border in points (NOT pixels)
-      <DT>
-	<CODE>...Box.Padding</CODE>
-      <DD>
-	An integer (points)<BR>
-	Specifies the padding between the interior of the box and the border
-      <DT>
-	<CODE>...Box.Radius</CODE>
-      <DD>
-	An integer (points)<BR>
-	Specifies the radius of a roundrect. Ignored for everything else.
-      <DT>
-	<CODE>...Box.BorderInner</CODE>
-      <DD>
-	A boolean (true, on or 1, false, off or 0)<BR>
-	Specifies whether a black line should be drawn inside the border.
-      <DT>
-	<CODE>...Box.BorderOuter</CODE>
-      <DD>
-	A boolean (true, on or 1, false, off or 0)<BR>
-	Specifies whether a black line should be drawn outside the border.
-      <DT>
-	<CODE>...Box.ActiveInner</CODE>
-      <DD>
-	A boolean (true, on or 1, false, off or 0)<BR>
-	Specifies whether a yellow line should be drawn inside the border when the
-	gadget is active (not all gadgets support this).
-      <DT>
-	<CODE>...Box.DoDepressedBackground</CODE>
-      <DD>
-	A boolean (true, on or 1, false, off or 0)<BR>
-	Changes the color of the background while a button is depressed.
-      <DT>
-	<CODE>...Box.BorderBrightest</CODE>
-      <DD>
-	A <A HREF="#color">color</A><BR>
-	The color of the brightest edge of the border (usually the left edge)
-      <DT>
-	<CODE>...Box.BorderBrighter</CODE>
-      <DD>
-	A <A HREF="#color">color</A><BR>
-	The color of the next to brightest edge of the border (usually the top edge)
-      <DT>
-	<CODE>...Box.BorderDarkest</CODE>
-      <DD>
-	A <A HREF="#color">color</A><BR>
-	The color of the darkest edge of the border (usually the right edge)
-      <DT>
-	<CODE>...Box.BorderDarker</CODE>
-      <DD>
-	A <A HREF="#color">color</A><BR>
-	The color of the next to next to darkest edge of the border. (usually the
-	bottom edge)
-      <DT>
-	<CODE>...Box.NormalBackground</CODE>
-      <DD>
-	A <A HREF="#color">color</A><BR>
-	The color of a normal background (not disabled, not depressed)
-      <DT>
-	<CODE>...Box.NormalForeground</CODE>
-      <DD>
-	A <A HREF="#color">color</A><BR>
-	The color of a normal foreground (not disabled)
-      <DT>
-	<CODE>...Box.DisabledBackground</CODE>
-      <DD>
-	A <A HREF="#color">color</A><BR>
-	The color of a disabled background .
-      <DT>
-	<CODE>...Box.DisabledForeground</CODE>
-      <DD>
-	A <A HREF="#color">color</A><BR>
-	The color of a normal foreground.
-      <DT>
-	<CODE>...Box.ActiveBorder</CODE>
-      <DD>
-	A <A HREF="#color">color</A><BR>
-	The color of an ActiveInner border.
-      <DT>
-	<CODE>...Box.PressedBackground</CODE>
-      <DD>
-	A <A HREF="#color">color</A><BR>
-	The color of a depressed background.
-      <DT>
-	<CODE>...Font</CODE>
-      <DD>
-	A <A HREF="#font">font</A><BR>
-	Specifies the default font for a ggadget.
-    </DL>
-  <DT>
-    <CODE>Gdraw.GButton...<BR>
-    Gdraw.GLabel...<BR>
-    Gdraw.GRadio...<BR>
-    Gdraw.GCheckBox...<BR>
-    Gdraw.GTextField...<BR>
-    Gdraw.GList...<BR>
-    Gdraw.GScrollBar...<BR>
-    Gdraw.GScrollBarThumb...<BR>
-    Gdraw.GGroup...<BR>
-    Gdraw.GLine...<BR>
-    Gdraw.GMenu...<BR>
-    Gdraw.GMenuBar...<BR>
-    Gdraw.GTabSet...</CODE>
-  <DD>
-    As above.<BR>
-    Specifies the box, font, color, etc. for this particular type of ggadget.
-  <DT>
-    <CODE>Gdraw.GScrollBar.Width</CODE>
-  <DD>
-    An integer (points)<BR>
-    Specifies the scrollbar width in points (for horizontal scrollbars it specifies
-    the height)
-  <DT>
-    <CODE>Gdraw.GMenu.Grab</CODE>
-  <DD>
-    A boolean<BR>
-    Controls whether menus do pointer grabs. Debugging is easier if they don't.
-    Default is for them to do grabs.
-  <DT>
-    <CODE>Gdraw.GWidget.BrokenPalettes</CODE>
-  <DD>
-    A boolean<BR>
-    On many window managers the palette code doesn't work (they steal focus from
-    menus, they don't track the main window properly, ...). Use this resource
-    to turn off the broken bits. The results are non-optimal, but they should
-    be functional. (this is now irrelevant to fontforge)
-  <DT>
-    ...
-</DL>
-<P>
-<DL>
-  <DT>
-    <A NAME="color">Colors</A>
-  <DD>
-    Colors may be specified as:
-    <UL>
-      <LI>
-	rgb(r%,g%,b%)<BR>
-	where r, g, and b are doubles between 0% and 100%
-      <LI>
-	r g b<BR>
-	where r, g, and b are integers between 0 and 255
-      <LI>
-	#rgb<BR>
-	where r, g, and b are hex digits between 0 and 15 (0xf)
-      <LI>
-	#rrggbb<BR>
-	where rr, gg, bb are hex numbers between 0x00 and 0xff
-      <LI>
-	#rrrrggggbbbb<BR>
-	where rrrr, gggg, bbbb are hex numbers between 0x0000 and 0xffff
-      <LI>
-	or one of the color names accepted on the net (red, green, blue, cyan, magenta,
-	yellow, white, black, maroon, olive, navy, purple, lime, aqua, teal, fuchsia,
-	silver)
-    </UL>
-  <DT>
-    <A NAME="font">Fonts</A>
-  <DD>
-    A font may be specified as:<BR>
-    &lt;boldness&gt; &lt;italicness&gt; &lt;pointsize&gt;
-    &lt;familyname&gt;<BR>
-    (I know the order looks a bit weird but that's what is used by css).
-    <UL>
-      <LI>
-	&lt;boldness&gt; can be:
-	<UL>
-	  <LI>
-	    nothing -- the font is not bold
-	  <LI>
-	    bold -- the font is bold
-	  <LI>
-	    a number -- (between 0 and 999), a numeric value that gives some idea of
-	    how bold the font should be. 200 would be a light font, 400 an normal font,
-	    700 a bold font and 999 and ultra-black font.
-	</UL>
-      <LI>
-	&lt;italicness&gt; can be:
-	<UL>
-	  <LI>
-	    nothing -- the font is not italic
-	  <LI>
-	    italic -- the font is italic
-	  <LI>
-	    oblique -- the font is oblique (italic)
-	</UL>
-      <LI>
-	&lt;pointsize&gt; can be:
-	<UL>
-	  <LI>
-	    nothing -- a default point size is chosen
-	  <LI>
-	    a number followed by "pt" -- specifies the point size.
-	</UL>
-    </UL>
-    <P>
-    Examples
-    <UL>
-      <LI>
-	bold 14pt helvetica<BR>
-	Helvetica Bold at 14 points
-      <LI>
-	italic 10pt times<BR>
-	Times italic at 10 points
-    </UL>
-</DL>
-<P>
-<H2>
-  <A NAME="Keyboards">Keyboards and Mice.</A>
-</H2>
-<P>
-FontForge assumes that your keyboard has a control key and some equivalent
-of a meta key. FontForge works best with a three button mouse.
-<P>
-Almost all keyboards now-a-days will have the needed modifier keys, but which
-key is used for what will depend on the keyboard and the OS (for instance
-XDarwin and suse linux use quite different mappings for the modifier keys
-on the mac keyboard). Usually this is only relevant for menus (and mnemonics).
-FontForge tries to guess the keyboard from the environment in which it was
-compiled. But with X this may not always be appropriate. So the
-"<A HREF="xres.html#Keyboard">Gdraw.Keyboard</A>" resource above may be used
-to change this. (Currently this setting only control the labels that appear
-in menus for the hotkeys).
-<P>
-Mice are more problematic. On PCs we usually have two button mice and on
-mac single button mice. Many linuxes that run on a PC will give you an option
-of simulating the middle button of the mouse by depressing the left and right
-buttons simultaneously. FontForge will also allow you to simulate it by holding
-down the super key (usually this is the one with the picture of a windows
-flag on it) while depressing either mouse button.
-<P>
-On the mac I don't see any good way of simulating a three button mouse...
-<P ALIGN=Center>
--- <A HREF="errrecovery.html">Prev</A> -- <A HREF="overview.html">TOC</A>
--- <A HREF="cliargs.html">Next</A> --
+  </BLOCKQUOTE>
+  <P>
+  If a resource begins with "<CODE>Gdraw.</CODE>" or "<CODE>fontforge.</CODE>"
+  then the program will look at it.
+  <DL>
+    <DT>
+      <CODE>fontforge.FontView.FontFamily</CODE>
+    <DD>
+      A list of font family names to be used in the font view to display an example
+      character over each user character.
+    <DT>
+      <CODE>fontforge.FontView.SerifFamily</CODE>
+    <DD>
+      A list of font family names to be used in the font view to display an example
+      character over each user character when the character is one of the stylized
+      variants in U+1D400-U+1D7FF. Used for characters that should be drawn with
+      a serif font.
+    <DT>
+      <CODE>fontforge.FontView.ScriptFamily</CODE>
+    <DD>
+      <IMG SRC="script-A.png" WIDTH="29" HEIGHT="25" ALIGN="Right">A list of font
+      family names to be used in the font view to display an example character
+      over each user character when the character is one of the stylized variants
+      in U+1D400-U+1D7FF. Used for characters that should be drawn with a script
+      font.
+    <DT>
+      <CODE>fontforge.FontView.FrakturFamily</CODE>
+    <DD>
+      <IMG SRC="fraktur-A.png" WIDTH="25" HEIGHT="21" ALIGN="Right">A list of font
+      family names to be used in the font view to display an example character
+      over each user character when the character is one of the stylized variants
+      in U+1D400-U+1D7FF. Used for characters that should be drawn with a fraktur
+      font.
+    <DT>
+      <CODE>fontforge.FontView.DoubleStruckFamily</CODE>
+    <DD>
+      <IMG SRC="doublestruck-B.png" WIDTH="20" HEIGHT="21" ALIGN="Right">A list
+      of font family names to be used in the font view to display an example character
+      over each user character when the character is one of the stylized variants
+      in U+1D400-U+1D7FF. Used for characters that should be drawn with a double-struck
+      font.
+    <DT>
+      <CODE>fontforge.FontView.SansFamily</CODE>
+    <DD>
+      A list of font family names to be used in the font view to display an example
+      character over each user character when the character is one of the stylized
+      variants in U+1D400-U+1D7FF. Used for characters that should be drawn with
+      a sans-serif font.
+    <DT>
+      <CODE>fontforge.FontView.MonoFamily</CODE>
+    <DD>
+      A list of font family names to be used in the font view to display an example
+      character over each user character when the character is one of the stylized
+      variants in U+1D400-U+1D7FF. Used for characters that should be drawn with
+      a monospaced font.
+    <DT>
+      <CODE>fontforge.CharView.InfoFamily</CODE>
+    <DD>
+      A list of font family names to be used in the outline and bitmap character
+      views for information messages.
+    <DT>
+      <CODE>fontforge.CharView.PointColor</CODE>
+    <DD>
+      Sets the color used to draw curved, corner or tangent points in the outline
+      character view.
+    <DT>
+      <CODE>fontforge.CharView.FirstPointColor</CODE>
+    <DD>
+      Sets the color of the first point on a contour.
+    <DT>
+      <CODE>fontforge.CharView.SelectedPointColor</CODE>
+    <DD>
+      Sets the color used to draw selected curved, corner or tangent points in
+      the outline character view.
+    <DT>
+      <CODE>fontforge.CharView.SelectedPointWidth</CODE>
+    <DD>
+      Sets the width of the line used to outline selected curved, corner or tangent
+      points in the outline character view.
+    <DT>
+      <CODE>fontforge.CharView.ExtremePointColor</CODE>
+    <DD>
+      Sets the color of a point which is an extremum.
+    <DT>
+      <CODE>fontforge.CharView.NextCPColor</CODE>
+    <DD>
+      Sets the color used to draw the "Next" control point.
+    <DT>
+      <CODE>fontforge.CharView.PrevCPColor</CODE>
+    <DD>
+      Sets the color used to draw the "Previous" control point.
+    <DT>
+      <CODE>fontforge.CharView.SelectedCPColor</CODE>
+    <DD>
+      Sets the color used to draw a control point that has been selected.
+    <DT>
+      <CODE>fontforge.CharView.CoordinateLineColor</CODE>
+    <DD>
+      Sets the color used to draw the coordinate axes.
+    <DT>
+      <CODE>fontforge.CharView.WidthColor</CODE>
+    <DD>
+      Sets the color used to draw the advance width line.
+    <DT>
+      <CODE>fontforge.CharView.WidthSelColor</CODE>
+    <DD>
+      Sets the color used to draw the advance width if it is selected.
+    <DT>
+      <CODE>fontforge.CharView.GridFitWidthColor</CODE>
+    <DD>
+      Sets the color used to draw the advance width once it has been grid fit (if
+      <CODE>View-&gt;Show Grid Fit</CODE> is on)
+    <DT>
+      <CODE>fontforge.CharView.LigatureCaretColor</CODE>
+    <DD>
+      Sets the color used to draw ligature caret lines.
+    <DT>
+      <CODE>fontforge.CharView.RasterColor</CODE>
+    <DD>
+      Sets the color used to draw the pixels of a rasterized bitmap (if
+      <CODE>View-&gt;Show Grid Fit</CODE> or <CODE>Hints-&gt;Debug</CODE> is on)
+    <DT>
+      <CODE>fontforge.CharView.RasterNewColor</CODE>
+    <DD>
+      Sets the color used to draw the pixels of a rasterized bitmap if they have
+      recently been turned on (if <CODE>Hints-&gt;Debug</CODE> is on)
+    <DT>
+      <CODE>fontforge.CharView.RasterOldColor</CODE>
+    <DD>
+      Sets the color used to draw the pixels of a rasterized bitmap f they have
+      recently been turned off (if <CODE>Hints-&gt;Debug</CODE> is on)
+    <DT>
+      <CODE>fontforge.CharView.RasterGridColor</CODE>
+    <DD>
+      Sets the color used to draw the pixel grid used by the rasterizer (if
+      <CODE>View-&gt;Show Grid Fit</CODE> or <CODE>Hints-&gt;Debug</CODE> is on)
+    <DT>
+      <CODE>fontforge.CharView.RasterDarkColor</CODE>
+    <DD>
+      When doing anti-aliased debugging, sets the color used for the darkest pixel.
+      Other pixels will be interpolated between this and the background.
+    <DT>
+      <CODE>fontforge.CharView.ItalicCoordColor</CODE>
+    <DD>
+      Sets the color used to draw various horizontal metrics lines when they have
+      been skewed appropriately for an italic font.
+    <DT>
+      <CODE>fontforge.CharView.MetricsLabelColor</CODE>
+    <DD>
+      Sets the color used to label metrics lines
+    <DT>
+      <CODE>fontforge.CharView.HintLabelColor</CODE>
+    <DD>
+      Sets the color used to label hint lines (and blue value lines)
+    <DT>
+      <CODE>fontforge.CharView.BlueValuesStippledCol</CODE>
+    <DD>
+      Sets the color used to draw the BlueValues and OtherBlues zones.
+    <DT>
+      <CODE>fontforge.CharView.FamilyBlueStippledColor</CODE>
+    <DD>
+      Sets the color used to draw the FamilyBlueValues and FamilyOtherBlues zones.
+    <DT>
+      <CODE>fontforge.CharView.MDHintColor</CODE>
+    <DD>
+      Sets the color used to draw minimum distance hints
+    <DT>
+      <CODE>fontforge.CharView.DHintColor</CODE>
+    <DD>
+      Sets the color used to draw diagonal hints
+    <DT>
+      <CODE>fontforge.CharView.HHintColor</CODE>
+    <DD>
+      Sets the color used to draw horizontal stem hints
+    <DT>
+      <CODE>fontforge.CharView.VHintColor</CODE>
+    <DD>
+      Sets the color used to draw vertical stem hints
+    <DT>
+      <CODE>fontforge.CharView.ConflictHintColor</CODE>
+    <DD>
+      Sets the color used to draw hints when they conflict
+    <DT>
+      <CODE>fontforge.CharView.HHintActiveColor</CODE>
+    <DD>
+      Sets the color used to draw a horizontal stem hint when it is active in the
+      review hints dlg.
+    <DT>
+      <CODE>fontforge.CharView.VHintActiveColor</CODE>
+    <DD>
+      Sets the color used to draw a vertical stem hint when it is active in the
+      review hints dlg.
+    <DT>
+      <CODE>fontforge.CharView.HFlexHintColor</CODE>
+    <DD>
+      Sets the color used to draw the halo around horizontal flex hints
+    <DT>
+      <CODE>fontforge.CharView.VFlexHintColor</CODE>
+    <DD>
+      Sets the color used to draw the halo around vertical flex hints.
+    <DT>
+      <CODE>fontforge.CharView.AnchorColor</CODE>
+    <DD>
+      Sets the color used to draw an anchor point
+    <DT>
+      <CODE>fontforge.CharView.TemplateOutlineColor</CODE>
+    <DD>
+      Sets the color used to draw a template outline. (not currently used)
+    <DT>
+      <CODE>fontforge.CharView.OldOutlineColor</CODE>
+    <DD>
+      Sets the color used to draw the original outline of a set of splines being
+      transformed with one of the transform tools (flip, rotate, scale, etc.)
+    <DT>
+      <CODE>fontforge.CharView.TransformOriginColor</CODE>
+    <DD>
+      Sets the color used to draw the origin of the current transformation.
+    <DT>
+      <CODE>fontforge.CharView.GuideOutlineColor</CODE>
+    <DD>
+      Sets the color used to draw outlines in the Guide layer.
+    <DT>
+      <CODE>fontforge.CharView.GridFitOutlineColor</CODE>
+    <DD>
+      Sets the color used to draw outlines which have been gridfit (this should
+      probably be the same as BackgroundOutlineColor as both are in the background
+      layer).
+    <DT>
+      <CODE>fontforge.CharView.BackgroundOutlineColor</CODE>
+    <DD>
+      Sets the color used to draw background outlines.
+    <DT>
+      <CODE>fontforge.CharView.ForegroundOutlineColor</CODE>
+    <DD>
+      Sets the color used to draw foreground outlines.
+    <DT>
+      <CODE>fontforge.CharView.BackgroundImageColor</CODE>
+    <DD>
+      Sets the color used to draw background images.
+    <DT>
+      <CODE>fontforge.CharView.FillColor</CODE>
+    <DD>
+      Sets the color used to draw a character's fill
+    <DT>
+      <CODE>fontforge.CharView.TraceColor</CODE>
+    <DD>
+      Sets the color used to draw the trace of the freehand tool.
+    <DT>
+      <CODE>fontforge.DVRaster.Background</CODE>
+    <DD>
+      Sets the background color of the raster window in the debugger.
+    <DT>
+      <CODE>Gdraw.ScreenWidthCentimeters</CODE>
+    <DD>
+      A double. (centimeters)<BR>
+      X usually does not know the physical width of a screen (it knows the logical,
+      pixel width). Gdraw's internals are based on points rather than pixels, and
+      it will sometimes pick a font that is too small or too large if it relies
+      on X's idea of how wide the screen is.
+    <DT>
+      <CODE>Gdraw.ScreenWidthInches</CODE>
+    <DD>
+      A double. (inches)<BR>
+      Same as the above, except measured in inches.
+    <DT>
+      <CODE>Gdraw.ScreenWidthPixels</CODE>
+    <DD>
+      An integer (pixels)<BR>
+      When X creates a virtual screen it may not be possible for Gdraw to find
+      the actual number of pixels on the screen. This again will throw off point
+      calculations.
+    <DT>
+      <CODE>Gdraw.ScreenHeightPixels</CODE>
+    <DD>
+      An integer (pixels)<BR>
+      When X creates a virtual screen it may not be possible for Gdraw to find
+      the actual number of pixels on the screen. This is not used in point
+      calculations.
+    <DT>
+      <CODE>Gdraw.Depth</CODE>
+    <DD>
+      An integer (1, 8, 16, 32)<BR>
+      You can use this to request a different depth than the default one. Not all
+      servers will support all depths. If FontForge can't find a visual with the
+      desired depth it will use the default depth.
+    <DT>
+      <CODE>Gdraw.VisualClass</CODE>
+    <DD>
+      A string ("StaticGray", "GrayScale", "StaticColor", "PsuedoColor", "TrueColor",
+      "DirectColor")<BR>
+      FontForge will search for a visual with the given class (and possibly depth
+      if the depth argument is specified too).
+    <DT>
+      <CODE>Gdraw.<A NAME="Colormap">Colormap</A></CODE>
+    <DD>
+      An string ("Current", "Copy", "Private")<BR>
+      You can use this to control what FontForge does about the colormap on an
+      8bit screen
+      <UL>
+	<LI>
+	  Current -- FontForge will attempt to allocate its colors in the current colormap.
+	<LI>
+	  Copy -- FontForge will allocate what colors it can and then copy the current
+	  color map into a private copy. This means FontForge has access to a much
+	  wider range of colors, and (as long as the shared colormap doesn't change)
+	  FontForge's colormap will match that of the rest of the screen.
+	<LI>
+	  Private -- FontForge will allocate a private colormap and set the colors
+	  just as it wants them. It will almost certainly not match the shared colormap.
+      </UL>
+    <DT>
+      <CODE>Gdraw.DoDithering</CODE>
+    <DD>
+      An integer (0 or 1)<BR>
+      You can use this to turn off dithering of images on an 8bit screen.
+    <DT>
+      <CODE>Gdraw.MultiClickTime</CODE>
+    <DD>
+      An integer (milliseconds)<BR>
+      The maximum amount of time allowed between two clicks for them to be considered
+      a double (triple, etc.) click.
+    <DT>
+      <CODE>Gdraw.MultiClickWiggle</CODE>
+    <DD>
+      An integer (pixels)<BR>
+      The maximum number of pixels the mouse is allowed to move between two clicks
+      and have them still be considered a double click.
+    <DT>
+      <CODE>Gdraw.TwoButtonFixup</CODE>
+    <DD>
+      A boolean<BR>
+      On a windows keyboard use the modifier key with the flag on it to simulate
+      mouse button 2 (middle button). If this key is depressed when a mouse button
+      is pressed or released then pretend it was button 2 that was pressed or release.
+    <DT>
+      <CODE>Gdraw.MacOSXCmd</CODE>
+    <DD>
+      A boolean<BR>
+      On Mac OS X the user will probably expect to use the Command (apple, cloverleaf)
+      key to control the menu (rather than the Control key). If this is set then
+      the command key will be mapped to the control key internally.
+    <DT>
+      <CODE>Gdraw.MultiClickWiggle</CODE>
+    <DD>
+      An integer (pixels)<BR>
+      The maximum number of pixels the mouse is allowed to move between two clicks
+      and have them still be considered a double click.
+    <DT>
+      <CODE>Gdraw.<A NAME="Keyboard">Keyboard</A></CODE>
+    <DD>
+      ibm | mac | sun | ppc | 0 | 1 | 2 | 3<BR>
+      Allows you to specify the type of keyboard. Currently this is only relevent
+      when generating menus. The modifier keys are in different locations on different
+      keyboards (under different operating systems) and if FontForge knows what
+      keyboard you are using it can make the hot-keys have better labels.
+      <UL>
+	<LI>
+	  ibm | 0<BR>
+	  Uses the Control and Alt keys
+	<LI>
+	  mac | 1<BR>
+	  Uses the Command and Option keys (Mac OS/X, Mac keyboard)
+	<LI>
+	  ppc | 3<BR>
+	  Uses the Control and Command keys (Suse ppc linux, Mac keyboard)
+	<LI>
+	  sun | 2<BR>
+	  Uses the Control and Meta keys
+      </UL>
+    <DT>
+      <CODE>Gdraw.SelectionNotifyTimeout</CODE>
+    <DD>
+      An integer (seconds)<BR>
+      Gdraw will wait this many seconds after making a request for a selection
+      (ie. when doing a Paste). If it gets no responce after that period it reports
+      a failure.
+    <DT>
+      <CODE>Gdraw.Background</CODE>
+    <DD>
+      A <A HREF="#color">color</A><BR>
+      Gdraw will use this as the default background color for the windows.
+    <DT>
+      <CODE>Gdraw.Foreground</CODE>
+    <DD>
+      A <A HREF="#color">color</A><BR>
+      Gdraw will use this as the default foreground color for dialogs.
+    <DT>
+      <CODE>Gdraw.GGadget.Popup.Foreground</CODE>
+    <DD>
+      A <A HREF="#color">color</A><BR>
+      Specifies the foreground color of popup (tooltip) messages.
+    <DT>
+      <CODE>Gdraw.GGadget.Popup.Background</CODE>
+    <DD>
+      A <A HREF="#color">color</A><BR>
+      Specifies the background color of popup messages.
+    <DT>
+      <CODE>Gdraw.GGadget.Popup.Delay</CODE>
+    <DD>
+      An integer (milliseconds).<BR>
+      Specifies the amount of time the cursor must remain motionless before a popup
+      message pops up.
+    <DT>
+      <CODE>Gdraw.GGadget.Popup.LifeTime</CODE>
+    <DD>
+      An integer (milliseconds).<BR>
+      Specifies the length of time the message will display.
+    <DT>
+      <CODE>Gdraw.GGadget.Popup.Font</CODE>
+    <DD>
+      A <A HREF="#font">font</A><BR>
+      Specifies the font to use in a popup message.
+    <DT>
+      <CODE>Gdraw.GGadget...</CODE>
+    <DD>
+      Every ggadget in enclosed in a box. The following information may be supplied
+      for any box:
+      <DL>
+	<DT>
+	  <CODE>...Box.BorderType</CODE>
+	<DD>
+	  one of "none", "box", "raised", "lowered", "engraved", "embossed", "double"<BR>
+	  For a description of these see the css manual.
+	<DT>
+	  <CODE>...Box.BorderShape</CODE>
+	<DD>
+	  one of "rect", "roundrect", "ellipse", "diamond"<BR>
+	  Describes the basic shape of the box. (some ggadgets must be in rectangles).
+	<DT>
+	  <CODE>...Box.BorderWidth</CODE>
+	<DD>
+	  An integer (points)<BR>
+	  Specifies the width of the box's border in points (NOT pixels)
+	<DT>
+	  <CODE>...Box.Padding</CODE>
+	<DD>
+	  An integer (points)<BR>
+	  Specifies the padding between the interior of the box and the border
+	<DT>
+	  <CODE>...Box.Radius</CODE>
+	<DD>
+	  An integer (points)<BR>
+	  Specifies the radius of a roundrect. Ignored for everything else.
+	<DT>
+	  <CODE>...Box.BorderInner</CODE>
+	<DD>
+	  A boolean (true, on or 1, false, off or 0)<BR>
+	  Specifies whether a black line should be drawn inside the border.
+	<DT>
+	  <CODE>...Box.BorderOuter</CODE>
+	<DD>
+	  A boolean (true, on or 1, false, off or 0)<BR>
+	  Specifies whether a black line should be drawn outside the border.
+	<DT>
+	  <CODE>...Box.ActiveInner</CODE>
+	<DD>
+	  A boolean (true, on or 1, false, off or 0)<BR>
+	  Specifies whether a yellow line should be drawn inside the border when the
+	  gadget is active (not all gadgets support this).
+	<DT>
+	  <CODE>...Box.DoDepressedBackground</CODE>
+	<DD>
+	  A boolean (true, on or 1, false, off or 0)<BR>
+	  Changes the color of the background while a button is depressed.
+	<DT>
+	  <CODE>...Box.BorderBrightest</CODE>
+	<DD>
+	  A <A HREF="#color">color</A><BR>
+	  The color of the brightest edge of the border (usually the left edge)
+	<DT>
+	  <CODE>...Box.BorderBrighter</CODE>
+	<DD>
+	  A <A HREF="#color">color</A><BR>
+	  The color of the next to brightest edge of the border (usually the top edge)
+	<DT>
+	  <CODE>...Box.BorderDarkest</CODE>
+	<DD>
+	  A <A HREF="#color">color</A><BR>
+	  The color of the darkest edge of the border (usually the right edge)
+	<DT>
+	  <CODE>...Box.BorderDarker</CODE>
+	<DD>
+	  A <A HREF="#color">color</A><BR>
+	  The color of the next to next to darkest edge of the border. (usually the
+	  bottom edge)
+	<DT>
+	  <CODE>...Box.NormalBackground</CODE>
+	<DD>
+	  A <A HREF="#color">color</A><BR>
+	  The color of a normal background (not disabled, not depressed)
+	<DT>
+	  <CODE>...Box.NormalForeground</CODE>
+	<DD>
+	  A <A HREF="#color">color</A><BR>
+	  The color of a normal foreground (not disabled)
+	<DT>
+	  <CODE>...Box.DisabledBackground</CODE>
+	<DD>
+	  A <A HREF="#color">color</A><BR>
+	  The color of a disabled background .
+	<DT>
+	  <CODE>...Box.DisabledForeground</CODE>
+	<DD>
+	  A <A HREF="#color">color</A><BR>
+	  The color of a normal foreground.
+	<DT>
+	  <CODE>...Box.ActiveBorder</CODE>
+	<DD>
+	  A <A HREF="#color">color</A><BR>
+	  The color of an ActiveInner border.
+	<DT>
+	  <CODE>...Box.PressedBackground</CODE>
+	<DD>
+	  A <A HREF="#color">color</A><BR>
+	  The color of a depressed background.
+	<DT>
+	  <CODE>...Font</CODE>
+	<DD>
+	  A <A HREF="#font">font</A><BR>
+	  Specifies the default font for a ggadget.
+      </DL>
+    <DT>
+      <CODE>Gdraw.GButton...<BR>
+      Gdraw.GLabel...<BR>
+      Gdraw.GRadio...<BR>
+      Gdraw.GCheckBox...<BR>
+      Gdraw.GTextField...<BR>
+      Gdraw.GList...<BR>
+      Gdraw.GScrollBar...<BR>
+      Gdraw.GScrollBarThumb...<BR>
+      Gdraw.GGroup...<BR>
+      Gdraw.GLine...<BR>
+      Gdraw.GMenu...<BR>
+      Gdraw.GMenuBar...<BR>
+      Gdraw.GTabSet...</CODE>
+    <DD>
+      As above.<BR>
+      Specifies the box, font, color, etc. for this particular type of ggadget.
+    <DT>
+      <CODE>Gdraw.GScrollBar.Width</CODE>
+    <DD>
+      An integer (points)<BR>
+      Specifies the scrollbar width in points (for horizontal scrollbars it specifies
+      the height)
+    <DT>
+      <CODE>Gdraw.GMenu.Grab</CODE>
+    <DD>
+      A boolean<BR>
+      Controls whether menus do pointer grabs. Debugging is easier if they don't.
+      Default is for them to do grabs.
+    <DT>
+      <CODE>Gdraw.GWidget.BrokenPalettes</CODE>
+    <DD>
+      A boolean<BR>
+      On many window managers the palette code doesn't work (they steal focus from
+      menus, they don't track the main window properly, ...). Use this resource
+      to turn off the broken bits. The results are non-optimal, but they should
+      be functional. (this is now irrelevant to fontforge)
+    <DT>
+      ...
+  </DL>
+  <P>
+  <DL>
+    <DT>
+      <A NAME="color">Colors</A>
+    <DD>
+      Colors may be specified as:
+      <UL>
+	<LI>
+	  rgb(r%,g%,b%)<BR>
+	  where r, g, and b are doubles between 0% and 100%
+	<LI>
+	  r g b<BR>
+	  where r, g, and b are integers between 0 and 255
+	<LI>
+	  #rgb<BR>
+	  where r, g, and b are hex digits between 0 and 15 (0xf)
+	<LI>
+	  #rrggbb<BR>
+	  where rr, gg, bb are hex numbers between 0x00 and 0xff
+	<LI>
+	  #rrrrggggbbbb<BR>
+	  where rrrr, gggg, bbbb are hex numbers between 0x0000 and 0xffff
+	<LI>
+	  or one of the color names accepted on the net (red, green, blue, cyan, magenta,
+	  yellow, white, black, maroon, olive, navy, purple, lime, aqua, teal, fuchsia,
+	  silver)
+      </UL>
+    <DT>
+      <A NAME="font">Fonts</A>
+    <DD>
+      A font may be specified as:<BR>
+      &lt;boldness&gt; &lt;italicness&gt; &lt;pointsize&gt;
+      &lt;familyname&gt;<BR>
+      (I know the order looks a bit weird but that's what is used by css).
+      <UL>
+	<LI>
+	  &lt;boldness&gt; can be:
+	  <UL>
+	    <LI>
+	      nothing -- the font is not bold
+	    <LI>
+	      bold -- the font is bold
+	    <LI>
+	      a number -- (between 0 and 999), a numeric value that gives some idea of
+	      how bold the font should be. 200 would be a light font, 400 an normal font,
+	      700 a bold font and 999 and ultra-black font.
+	  </UL>
+	<LI>
+	  &lt;italicness&gt; can be:
+	  <UL>
+	    <LI>
+	      nothing -- the font is not italic
+	    <LI>
+	      italic -- the font is italic
+	    <LI>
+	      oblique -- the font is oblique (italic)
+	  </UL>
+	<LI>
+	  &lt;pointsize&gt; can be:
+	  <UL>
+	    <LI>
+	      nothing -- a default point size is chosen
+	    <LI>
+	      a number followed by "pt" -- specifies the point size.
+	  </UL>
+      </UL>
+      <P>
+      Examples
+      <UL>
+	<LI>
+	  bold 14pt helvetica<BR>
+	  Helvetica Bold at 14 points
+	<LI>
+	  italic 10pt times<BR>
+	  Times italic at 10 points
+      </UL>
+  </DL>
+  <P>
+  <H2>
+    <A NAME="Keyboards">Keyboards and Mice.</A>
+  </H2>
+  <P>
+  FontForge assumes that your keyboard has a control key and some equivalent
+  of a meta key. FontForge works best with a three button mouse.
+  <P>
+  Almost all keyboards now-a-days will have the needed modifier keys, but which
+  key is used for what will depend on the keyboard and the OS (for instance
+  XDarwin and suse linux use quite different mappings for the modifier keys
+  on the mac keyboard). Usually this is only relevant for menus (and mnemonics).
+  FontForge tries to guess the keyboard from the environment in which it was
+  compiled. But with X this may not always be appropriate. So the
+  "<A HREF="xres.html#Keyboard">Gdraw.Keyboard</A>" resource above may be used
+  to change this. (Currently this setting only control the labels that appear
+  in menus for the hotkeys).
+  <P>
+  Mice are more problematic. On PCs we usually have two button mice and on
+  mac single button mice. Many linuxes that run on a PC will give you an option
+  of simulating the middle button of the mouse by depressing the left and right
+  buttons simultaneously. FontForge will also allow you to simulate it by holding
+  down the super key (usually this is the one with the picture of a windows
+  flag on it) while depressing either mouse button.
+  <P>
+  On the mac I don't see any good way of simulating a three button mouse...
+  <P ALIGN=Center>
+  -- <A HREF="errrecovery.html">Prev</A> -- <A HREF="overview.html">TOC</A>
+  -- <A HREF="cliargs.html">Next</A> --
 </DIV>
 </BODY></HTML>
