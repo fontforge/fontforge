@@ -2,1194 +2,1196 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 30-May-2005 -->
+  <!-- AP: Last modified: 18-Nov-2005 -->
   <TITLE>Advanced Typography tables</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
 <DIV id="in">
-<H1 ALIGN=Center>
-  Advanced Typography Tables
-</H1>
-<P>
-These differ between OpenType (originally called TrueType Open) and Apple
-(GX or Apple Advanced Typography). My support for both OpenType and Apple
-is incomplete.
-<UL>
-  <LI>
-    <A HREF="#opentype">The <B><CODE>GPOS</CODE></B>,
-    <B><CODE>GSUB</CODE></B> and <B><CODE>GDEF</CODE></B> opentype tables</A>
-  <LI>
-    <A HREF="#AAT">Apple Advanced Typography</A>
-  <LI>
-    <A HREF="#Conversion">What features can be converted between OpenType and
-    AAT?</A>
-  <LI>
-    <A HREF="TrueOpenTables.html">other true type and open type tables</A>
-  <LI>
-    <A HREF="#Unsupported">What is unsupported</A>
-  <LI>
-    <A HREF="non-standard.html">FontForge's non-standard extensions</A>
-</UL>
-<H2>
-  The <B><CODE>GPOS,</CODE></B> <B><CODE>GSUB</CODE></B> and
-  <B><CODE>GDEF</CODE></B> <A NAME="opentype">opentype</A> tables
-</H2>
-<P>
-These two tables are used for positioning and substituting glyphs. The GPOS
-table can control things like: kerning, accent positioning, cursive joining,
-etc. The GSUB table can control things like: ligatures, arabic forms, vertical
-rotation, conversion to small caps, indic glyph rearrangement, etc.
-<P>
-This page assumes basic familiarity with the abilities of the tables, for
-more information on them read, study and inwardly digest the opentype docs
-on:
-<UL>
-  <LI>
-    <A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats.html">The
-    header for both GPOS and GSUB</A>
-  <LI>
-    <A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats2.html">The
-    GPOS table</A>, for positioning glyphs
-  <LI>
-    <A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats1.html">The
-    GSUB table</A>, for substituting glyphs
-  <LI>
-    <A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats5.html">The
-    GDEF table</A>, for classifying glyphs and for providing a ligature caret
-    table
-  <LI>
-    <A HREF="http://partners.adobe.com/public/developer/opentype/index_tag3.html">The
-    list of feature tags supported by opentype</A>
-  <LI>
-    <A HREF="http://partners.adobe.com/public/developer/opentype/index_tag1.html">The
-    list of script tags supported by opentype</A>
-  <LI>
-    <A HREF="http://partners.adobe.com/public/developer/opentype/index_tag2.html">The
-    list of language tags supported by opentype</A>
-</UL>
-<P>
-The basic idea of the GPOS and GSUB tables is that each script (or language
-within a script) has a set of "features" that are available to it. A feature
-in turn is associated with a lookup which contains data for the feature.
-An example of a script is 'latn' for latin, 'arab' for arabic, 'hani' for
-chinese ideographs. Two examples of features are 'kern' which provides kerning
-information between pairs of glyphs and 'init' which will transform one set
-of glyphs to another when those glyphs are at the beginning of a word.
-<P>
-FontForge <A HREF="gposgsub.html#Unsupported">does not support </A>the full
-range of possibilities inherent in these tables.
-<H3>
-  The <B><CODE><A NAME="GPOS">GPOS</A></CODE></B> table
-</H3>
-<P>
-FontForge will read the following sub tables of the GPOS table:
-<TABLE Border=1>
-  <TR>
-    <TH></TH>
-    <TH>name</TH>
-    <TH>Reading support</TH>
-    <TH>Writing support</TH>
-  </TR>
-  <TR>
-    <TD>1</TD>
-    <TD>single adjustment</TD>
-    <TD>This sub-table allows the font designer to change the metrics of a specific
-      glyph. The feature tag will provide a context in which the change should
-      occur. For instance the 'tnum' (tabular numbers) feature could change a
-      proportionally spaced digit by adjusting its advance width to be some set
-      value and then centering the digit (by adjusting the left side bearing) within
-      the new width.</TD>
-    <TD>These can be created with the <A HREF="charinfo.html">Element-&gt;Char
-      Info</A>-&gt;Position command.</TD>
-  </TR>
-  <TR>
-    <TD>2</TD>
-    <TD>pair adjustment</TD>
-    <TD>This sub-table allows the font designer to change the metrics of a specific
-      pair of glyph. The most common use of this is for kerning where the advance
-      width of the first glyph is altered depending on which glyph follows it.
-      But the table is more general than that and could support mark (accent, vowel)
-      positioning over a base glyph (though that is more efficiently done with
-      the mark to base subtable).</TD>
-    <TD>'kern' feature s may be created from the <A HREF="metricsview.html">Metrics
-      View</A>. 'vkrn' with
-      <A HREF="metricsmenu.html#VKernFromHKern">Metrics-&gt;VKern From HKern</A>.</TD>
-  </TR>
-  <TR>
-    <TD>3</TD>
-    <TD>cursive attachment</TD>
-    <TD>This sub-table allows the font designer to force adjacent glyphs to join
-      at specific points. It can be used to generate the slanted script style needed
-      for Urdu.</TD>
-    <TD>Only the 'curs' feature is supported for this sub-table. These may be
-      created with the <A HREF="pointmenu.html#AddAnchor">Points-&gt;Add Anchor</A>
-      command</TD>
-  </TR>
-  <TR>
-    <TD>4</TD>
-    <TD>mark to base</TD>
-    <TD>This sub-table allows the font designer to specify how mark glyphs (accents,
-      vowel signs, etc.) are positioned over base glyphs. Every glyph can have
-      an attachment point and the mark's attachment point will be placed on the
-      base's attachment point so the two join properly. See my
-      <A HREF="overview.html#Anchors">example</A> in the overview.</TD>
-    <TD>These may be created with the
-      <A HREF="pointmenu.html#AddAnchor">Points-&gt;Add Anchor</A> command</TD>
-  </TR>
-  <TR>
-    <TD>5</TD>
-    <TD>mark to ligature</TD>
-    <TD>This sub-table is very similar to the previous one except that the base
-      glyph is a ligature and may have several different points at which the same
-      type of accent may be placed.</TD>
-    <TD>These may be created with the
-      <A HREF="pointmenu.html#AddAnchor">Points-&gt;Add Anchor</A> command</TD>
-  </TR>
-  <TR>
-    <TD>6</TD>
-    <TD>mark to mark</TD>
-    <TD>This sub-table is very similar to the previous two except that the base
-      glyph is itself a mark. This may be used when a glyph has two accents each
-      of which would normally be placed at the same attachment point on a base
-      glyph. The second accent will be place relative to the first accent rather
-      than to the base glyph.</TD>
-    <TD>These may be created with the
-      <A HREF="pointmenu.html#AddAnchor">Points-&gt;Add Anchor</A> command</TD>
-  </TR>
-  <TR>
-    <TD>7</TD>
-    <TD>contextual positioning</TD>
-    <TD>This sub-table allows the font designer to control the positioning of
-      glyphs when they occur within a specific string (or class of strings). For
-      instance this table could say "when you see a digit followed by the string
-      "th" then raise the "th" into a superscript position"</TD>
-    <TD>These may be created with the
-      <A HREF="fontinfo.html#Contextual">Element-&gt;Font Info-&gt;Contextual
-      </A>command</TD>
-  </TR>
-  <TR>
-    <TD>8</TD>
-    <TD>chaining contextual positioning</TD>
-    <TD>This is a slightly more complex version of the above, it doesn't really
-      add new capabilities, but it does provide a more logical approach to the
-      issue.</TD>
-    <TD>These may be created with the
-      <A HREF="fontinfo.html#Contextual">Element-&gt;Font Info-&gt;Contextual
-      </A>command</TD>
-  </TR>
-  <TR>
-    <TD>9</TD>
-    <TD>extension positioning</TD>
-    <TD>This is used to allow for a GPOS table which is bigger than 64k. Its
-      use should be quite invisible to the font designer</TD>
-    <TD>FontForge uses this sub-table when needed.</TD>
-  </TR>
-  <TR>
-    <TD>10+</TD>
-    <TD>reserved for future use</TD>
-    <TD></TD>
-    <TD>FontForge does not support these sub-tables yet.<BR>
-      (nor does anyone)</TD>
-  </TR>
-</TABLE>
-<P>
-FontForge also has built into it knowledge on how to provide default values
-for some features that use these tables. See
-<A HREF="elementmenu.html#DefaultATT">Element-&gt;Default ATT</A> command
-for that.
-<P>
-FontForge will retain the order of features in the GPOS table and when a
-font is generated the order should be the same as it was before.
-<H3>
-  The <B><CODE><A NAME="GSUB">GSUB</A></CODE></B> table
-</H3>
-<P>
-FontForge will read the following sub tables of the GSUB table:
-<TABLE Border=1>
-  <TR>
-    <TH></TH>
-    <TH>name</TH>
-    <TH>Reading support</TH>
-    <TH>Writing support</TH>
-  </TR>
-  <TR>
-    <TD>1</TD>
-    <TD>single substitution</TD>
-    <TD>This sub-table allows the font designer to change from one glyph to another,
-      with a context provided by the feature tag. For example many scripts have
-      letters which have a different form at the end of a word than they do within
-      (this is true of every letter in arabic, several in hebrew, lower case sigma
-      in greek, and the long-s/short-s pair in renaissance latin). So the 'fina'
-      feature would map the normal form into the final form, and the word processing
-      program would do a lookup at the end of each word to see if a transformation
-      was needed.</TD>
-    <TD>These can be created with the <A HREF="charinfo.html">Element-&gt;Char
-      Info</A>-&gt;Substitution command.</TD>
-  </TR>
-  <TR>
-    <TD>2</TD>
-    <TD>multiple substitution</TD>
-    <TD>This sub-table allows the font designer to replace one glyph by a series
-      of others. This is generally used for rather technical layout issues.</TD>
-    <TD>These can be created with the <A HREF="charinfo.html">Element-&gt;Char
-      Info</A>-&gt;Multiple Substitution command.</TD>
-  </TR>
-  <TR>
-    <TD>3</TD>
-    <TD>alternate substitution</TD>
-    <TD>This sub-table allows the font designer to have a series of "alternates"
-      for each glyph. One common example would be an italic font which had several
-      swash variants for each capital letter. The word processing program would
-      allow the user to choose which variant was appropriate</TD>
-    <TD>These can be created with the <A HREF="charinfo.html">Element-&gt;Char
-      Info</A>-&gt;Alternate Substitution command.</TD>
-  </TR>
-  <TR>
-    <TD>4</TD>
-    <TD>ligature substitution</TD>
-    <TD>This sub-table allows the font designer to replace a string of glyphs
-      with another glyph. A common example is a ligature where the string
-      <IMG SRC="f+i.png" WIDTH="24" HEIGHT="25" ALIGN="Middle"> is replaced by
-      the <IMG SRC="fi.png" WIDTH="20" HEIGHT="25" ALIGN="Middle"> ligature.</TD>
-    <TD>These can be created with the <A HREF="charinfo.html">Element-&gt;Char
-      Info</A>-&gt;Ligature command.</TD>
-  </TR>
-  <TR>
-    <TD>5</TD>
-    <TD>contextual substitution</TD>
-    <TD>This subtable allows for a string of glyphs to replace another string
-      of glyphs (or class of strings of glyphs)</TD>
-    <TD>These may be created with the
-      <A HREF="fontinfo.html#Contextual">Element-&gt;Font Info-&gt;Contextual
-      </A>command</TD>
-  </TR>
-  <TR>
-    <TD>6</TD>
-    <TD>chaining contextual substitution</TD>
-    <TD>This is a slightly more complex version of the above, it doesn't really
-      add new capabilities, but it does provide a more logical approach to the
-      issue.</TD>
-    <TD>These may be created with the
-      <A HREF="fontinfo.html#Contextual">Element-&gt;Font Info-&gt;Contextual
-      </A>command</TD>
-  </TR>
-  <TR>
-    <TD>7</TD>
-    <TD>extension positioning</TD>
-    <TD>This is used to allow for a GSUB table which is bigger than 64k. Its
-      use should be quite invisible to the font designer</TD>
-    <TD>FontForge uses this sub-table when needed.</TD>
-  </TR>
-  <TR>
-    <TD>8</TD>
-    <TD>reverse chaining contextual single substitution</TD>
-    <TD>This allows glyph substitutions to happen in reverse order, and it a
-      variant of the chaining contextual subtable.</TD>
-    <TD>These may be created with the
-      <A HREF="fontinfo.html#Contextual">Element-&gt;Font Info-&gt;Contextual
-      </A>command</TD>
-  </TR>
-  <TR>
-    <TD>9+</TD>
-    <TD>reserved for future use</TD>
-    <TD></TD>
-    <TD>FontForge does not support these sub-tables yet.<BR>
-      (nor does anyone)</TD>
-  </TR>
-</TABLE>
-<P>
-FontForge also has built into it knowledge on how to provide default values
-for some features that use these tables. See
-<A HREF="elementmenu.html#DefaultATT">Element-&gt;Default ATT</A> command
-for that.
-<P>
-FontForge can produce some of these tables, but the text layout/word processing
-program used has to look up the tables and do the actual work of rearranging
-the glyphs.
-<P>
-FontForge will retain the order of features in the GSUB table, and the user
-may adjust it with the <A HREF="fontinfo.html#Order">Element-&gt;Font Info</A>
-command.
-<H3>
-  The <B><CODE><A NAME="GDEF">GDEF</A> </CODE></B>table
-</H3>
-<P>
-FontForge will read ligature carets out of a GDEF table.
-<P>
-It will generate a GDEF table containing a glyph class definition sub-table
-(if needed) or a ligature caret sub-table (if needed).
-<H2>
-  <A NAME="AAT">Apple</A> Advanced Typography
-</H2>
-<P>
-As above I do not go deeply into the abilities of these tables, for more
-information see Apple's docs:
-<UL>
-  <LI>
-    <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6kern.html">The
-    'kern' table</A>
-  <LI>
-    <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6lcar.html">The
-    'lcar' (ligature caret) table</A>
-  <LI>
-    <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6morx.html">The
-    'morx' (extended glyph metamorphosis) table</A>
-    <UL>
-      <LI>
-	<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6mort.html">The
-	'mort' (older version of 'morx') table</A>
-      <LI>
-	<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6feat.html">The
-	'feat' (feature) table</A>
-      <LI>
-	<A HREF="http://developer.apple.com/fonts/Registry/index.html">Apple's Font
-	Feature registry</A>
-      <LI>
-	<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6Tables.html">Description
-	of the subtables of the 'mort'/'morx' tables</A>
-    </UL>
-  <LI>
-    <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6opbd.html">The
-    'opbd' (optical bounds) table</A>
-  <LI>
-    <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6prop.html">The
-    'prop' (glyph properties) table</A>
-</UL>
-<P>
-FontForge will current read and produce (if Apple mode is set in font generation)
-the following tables:
-<TABLE BORDER CELLPADDING="2">
-  <CAPTION>
-    Apple tables corresponding vaguely to <A HREF="#GDEF">GDEF</A>
-  </CAPTION>
-  <TR>
-    <TH>tag</TH>
-    <TH>name</TH>
-    <TH>Reading support</TH>
-    <TH>Writing support</TH>
-  </TR>
-  <TR>
-    <TD><CODE>'lcar'</CODE></TD>
-    <TD>ligature caret table</TD>
-    <TD>FontForge will read ligature carets</TD>
-    <TD>FontForge will produce this table if the user has specified ligature
-      carets</TD>
-  </TR>
-  <TR>
-    <TD><CODE>'prop'</CODE></TD>
-    <TD>glyph properties table</TD>
-    <TD>FontForge will read this table to figure out which glyphs are hebrew
-      and arabic, and which have 'r2la' substitutions.</TD>
-    <TD>FontForge will generate this table if the font contains some right to
-      left glyphs.</TD>
-  </TR>
-</TABLE>
-<P>
-<TABLE BORDER CELLPADDING="2">
-  <CAPTION>
-    Apple tables corresponding vaguely to <A HREF="#GPOS">GPOS</A>
-  </CAPTION>
-  <TR>
-    <TH>tag</TH>
-    <TH>name</TH>
-    <TH>Reading support</TH>
-    <TH>Writing support</TH>
-  </TR>
-  <TR>
-    <TD><CODE>'kern'</CODE></TD>
-    <TD>kerning table</TD>
-    <TD>FontForge will read horizontal/vertical kerning pairs and classes. FontForge
-      can read contextual kerning information too into a state machine.</TD>
-    <TD>FontForge will produce this if the font contains kerning data -- kerning
-      pairs, kerning by classes, and kerning by state machine.</TD>
-  </TR>
-  <TR>
-    <TD><CODE>'opbd'</CODE></TD>
-    <TD>Optical bounds table</TD>
-    <TD>FontForge will read optical bounds</TD>
-    <TD>FontForge will produce this table if the user has specified right and
-      left bounds as simple positions ('lfbd' and 'rtbd').</TD>
-  </TR>
-</TABLE>
-<P>
-<P>
-FontForge has support for the <CODE>'mort'</CODE> and
-<CODE>'<A NAME="morx">morx</A>'</CODE> tables (Glyph metamorphosis and extended
-glyph metamorphosis tables). These correspond vaguely to the
-<A HREF="#GSUB">GSUB</A> table. Note: Any feature type/setting combinations
-which correspond directly to an open type feature will be converted to the
-opentype tag when read in. It will be converted back to a feature/setting
-when an apple font is generated (use
-<A HREF="prefs.html#Mac">File-&gt;Preferences</A> to extend FontForge's mapping
-from feature type/setting to opentype tags).
-<TABLE BORDER CELLPADDING="2">
-  <CAPTION>
-    Sub tables of <CODE>'mort'</CODE> or <CODE>'morx'</CODE>
-  </CAPTION>
-  <TR>
-    <TH></TH>
-    <TH>name</TH>
-    <TH>Reading support</TH>
-    <TH>Writing support</TH>
-  </TR>
-  <TR>
-    <TD>0</TD>
-    <TD>Indic style rearrangement</TD>
-    <TD>FontForge can read these and stores them as state machines (which can
-      be edited with <A HREF="fontinfo.html#Mac-SM">Font Info</A>)</TD>
-    <TD>Any indic state machines will be output in the generated font.</TD>
-  </TR>
-  <TR>
-    <TD>1</TD>
-    <TD>contextual glyph substitution</TD>
-    <TD>FontForge can read these and stores them as state machines (which can
-      be edited with <A HREF="fontinfo.html#Mac-SM">Font Info</A>)</TD>
-    <TD>If the font contains any state machines they will be output here. If
-      there are no state machines then the following conversions of opentype features
-      will be done:
+  <H1 ALIGN=Center>
+    Advanced Typography Tables
+  </H1>
+  <P>
+  These differ between OpenType (originally called TrueType Open) and Apple
+  (GX or Apple Advanced Typography). My support for both OpenType and Apple
+  is incomplete.
+  <UL>
+    <LI>
+      <A HREF="#opentype">The <B><CODE>GPOS</CODE></B>,
+      <B><CODE>GSUB</CODE></B> and <B><CODE>GDEF</CODE></B> opentype tables</A>
+    <LI>
+      <A HREF="#AAT">Apple Advanced Typography</A>
+    <LI>
+      <A HREF="#Conversion">What features can be converted between OpenType and
+      AAT?</A>
+    <LI>
+      <A HREF="TrueOpenTables.html">other true type and open type tables</A>
+    <LI>
+      <A HREF="#Unsupported">What is unsupported</A>
+    <LI>
+      <A HREF="non-standard.html">FontForge's non-standard extensions</A>
+  </UL>
+  <H2>
+    The <B><CODE>GPOS,</CODE></B> <B><CODE>GSUB</CODE></B> and
+    <B><CODE>GDEF</CODE></B> <A NAME="opentype">opentype</A> tables
+  </H2>
+  <P>
+  These two tables are used for positioning and substituting glyphs. The GPOS
+  table can control things like: kerning, accent positioning, cursive joining,
+  etc. The GSUB table can control things like: ligatures, arabic forms, vertical
+  rotation, conversion to small caps, indic glyph rearrangement, etc.
+  <P>
+  This page assumes basic familiarity with the abilities of the tables, for
+  more information on them read, study and inwardly digest the opentype docs
+  on:
+  <UL>
+    <LI>
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats.html">The
+      header for both GPOS and GSUB</A>
+    <LI>
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats2.html">The
+      GPOS table</A>, for positioning glyphs
+    <LI>
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats1.html">The
+      GSUB table</A>, for substituting glyphs
+    <LI>
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats5.html">The
+      GDEF table</A>, for classifying glyphs and for providing a ligature caret
+      table
+    <LI>
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_tag3.html">The
+      list of feature tags supported by opentype</A>
+    <LI>
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_tag1.html">The
+      list of script tags supported by opentype</A>
+    <LI>
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_tag2.html">The
+      list of language tags supported by opentype</A>
+  </UL>
+  <P>
+  The basic idea of the GPOS and GSUB tables is that each script (or language
+  within a script) has a set of "features" that are available to it. A feature
+  in turn is associated with a lookup which contains data for the feature.
+  An example of a script is 'latn' for latin, 'arab' for arabic, 'hani' for
+  chinese ideographs. Two examples of features are 'kern' which provides kerning
+  information between pairs of glyphs and 'init' which will transform one set
+  of glyphs to another when those glyphs are at the beginning of a word.
+  <P>
+  FontForge <A HREF="gposgsub.html#Unsupported">does not support </A>the full
+  range of possibilities inherent in these tables.
+  <H3>
+    The <B><CODE><A NAME="GPOS">GPOS</A></CODE></B> table
+  </H3>
+  <P>
+  FontForge will read the following sub tables of the GPOS table:
+  <TABLE Border=1>
+    <TR>
+      <TH></TH>
+      <TH>name</TH>
+      <TH>Reading support</TH>
+      <TH>Writing support</TH>
+    </TR>
+    <TR>
+      <TD>1</TD>
+      <TD>single adjustment</TD>
+      <TD>This sub-table allows the font designer to change the metrics of a specific
+	glyph. The feature tag will provide a context in which the change should
+	occur. For instance the 'tnum' (tabular numbers) feature could change a
+	proportionally spaced digit by adjusting its advance width to be some set
+	value and then centering the digit (by adjusting the left side bearing) within
+	the new width.</TD>
+      <TD>These can be created with the <A HREF="charinfo.html">Element-&gt;Char
+	Info</A>-&gt;Position command.</TD>
+    </TR>
+    <TR>
+      <TD>2</TD>
+      <TD>pair adjustment</TD>
+      <TD>This sub-table allows the font designer to change the metrics of a specific
+	pair of glyph. The most common use of this is for kerning where the advance
+	width of the first glyph is altered depending on which glyph follows it.
+	But the table is more general than that and could support mark (accent, vowel)
+	positioning over a base glyph (though that is more efficiently done with
+	the mark to base subtable).</TD>
+      <TD>'kern' feature s may be created from the <A HREF="metricsview.html">Metrics
+	View</A>. 'vkrn' with
+	<A HREF="metricsmenu.html#VKernFromHKern">Metrics-&gt;VKern From HKern</A>.</TD>
+    </TR>
+    <TR>
+      <TD>3</TD>
+      <TD>cursive attachment</TD>
+      <TD>This sub-table allows the font designer to force adjacent glyphs to join
+	at specific points. It can be used to generate the slanted script style needed
+	for Urdu.</TD>
+      <TD>Only the 'curs' feature is supported for this sub-table. These may be
+	created with the <A HREF="pointmenu.html#AddAnchor">Points-&gt;Add Anchor</A>
+	command</TD>
+    </TR>
+    <TR>
+      <TD>4</TD>
+      <TD>mark to base</TD>
+      <TD>This sub-table allows the font designer to specify how mark glyphs (accents,
+	vowel signs, etc.) are positioned over base glyphs. Every glyph can have
+	an attachment point and the mark's attachment point will be placed on the
+	base's attachment point so the two join properly. See my
+	<A HREF="overview.html#Anchors">example</A> in the overview.</TD>
+      <TD>These may be created with the
+	<A HREF="pointmenu.html#AddAnchor">Points-&gt;Add Anchor</A> command</TD>
+    </TR>
+    <TR>
+      <TD>5</TD>
+      <TD>mark to ligature</TD>
+      <TD>This sub-table is very similar to the previous one except that the base
+	glyph is a ligature and may have several different points at which the same
+	type of accent may be placed.</TD>
+      <TD>These may be created with the
+	<A HREF="pointmenu.html#AddAnchor">Points-&gt;Add Anchor</A> command</TD>
+    </TR>
+    <TR>
+      <TD>6</TD>
+      <TD>mark to mark</TD>
+      <TD>This sub-table is very similar to the previous two except that the base
+	glyph is itself a mark. This may be used when a glyph has two accents each
+	of which would normally be placed at the same attachment point on a base
+	glyph. The second accent will be place relative to the first accent rather
+	than to the base glyph.</TD>
+      <TD>These may be created with the
+	<A HREF="pointmenu.html#AddAnchor">Points-&gt;Add Anchor</A> command</TD>
+    </TR>
+    <TR>
+      <TD>7</TD>
+      <TD>contextual positioning</TD>
+      <TD>This sub-table allows the font designer to control the positioning of
+	glyphs when they occur within a specific string (or class of strings). For
+	instance this table could say "when you see a digit followed by the string
+	"th" then raise the "th" into a superscript position"</TD>
+      <TD>These may be created with the
+	<A HREF="fontinfo.html#Contextual">Element-&gt;Font Info-&gt;Contextual
+	</A>command</TD>
+    </TR>
+    <TR>
+      <TD>8</TD>
+      <TD>chaining contextual positioning</TD>
+      <TD>This is a slightly more complex version of the above, it doesn't really
+	add new capabilities, but it does provide a more logical approach to the
+	issue.</TD>
+      <TD>These may be created with the
+	<A HREF="fontinfo.html#Contextual">Element-&gt;Font Info-&gt;Contextual
+	</A>command</TD>
+    </TR>
+    <TR>
+      <TD>9</TD>
+      <TD>extension positioning</TD>
+      <TD>This is used to allow for a GPOS table which is bigger than 64k. Its
+	use should be quite invisible to the font designer</TD>
+      <TD>FontForge uses this sub-table when needed.</TD>
+    </TR>
+    <TR>
+      <TD>10+</TD>
+      <TD>reserved for future use</TD>
+      <TD></TD>
+      <TD>FontForge does not support these sub-tables yet.<BR>
+	(nor does anyone)</TD>
+    </TR>
+  </TABLE>
+  <P>
+  FontForge also has built into it knowledge on how to provide default values
+  for some features that use these tables. See
+  <A HREF="elementmenu.html#DefaultATT">Element-&gt;Default ATT</A> command
+  for that.
+  <P>
+  FontForge will retain the order of features in the GPOS table and when a
+  font is generated the order should be the same as it was before.
+  <H3>
+    The <B><CODE><A NAME="GSUB">GSUB</A></CODE></B> table
+  </H3>
+  <P>
+  FontForge will read the following sub tables of the GSUB table:
+  <TABLE Border=1>
+    <TR>
+      <TH></TH>
+      <TH>name</TH>
+      <TH>Reading support</TH>
+      <TH>Writing support</TH>
+    </TR>
+    <TR>
+      <TD>1</TD>
+      <TD>single substitution</TD>
+      <TD>This sub-table allows the font designer to change from one glyph to another,
+	with a context provided by the feature tag. For example many scripts have
+	letters which have a different form at the end of a word than they do within
+	(this is true of every letter in arabic, several in hebrew, lower case sigma
+	in greek, and the long-s/short-s pair in renaissance latin). So the 'fina'
+	feature would map the normal form into the final form, and the word processing
+	program would do a lookup at the end of each word to see if a transformation
+	was needed.</TD>
+      <TD>These can be created with the <A HREF="charinfo.html">Element-&gt;Char
+	Info</A>-&gt;Substitution command.</TD>
+    </TR>
+    <TR>
+      <TD>2</TD>
+      <TD>multiple substitution</TD>
+      <TD>This sub-table allows the font designer to replace one glyph by a series
+	of others. This is generally used for rather technical layout issues.</TD>
+      <TD>These can be created with the <A HREF="charinfo.html">Element-&gt;Char
+	Info</A>-&gt;Multiple Substitution command.</TD>
+    </TR>
+    <TR>
+      <TD>3</TD>
+      <TD>alternate substitution</TD>
+      <TD>This sub-table allows the font designer to have a series of "alternates"
+	for each glyph. One common example would be an italic font which had several
+	swash variants for each capital letter. The word processing program would
+	allow the user to choose which variant was appropriate</TD>
+      <TD>These can be created with the <A HREF="charinfo.html">Element-&gt;Char
+	Info</A>-&gt;Alternate Substitution command.</TD>
+    </TR>
+    <TR>
+      <TD>4</TD>
+      <TD>ligature substitution</TD>
+      <TD>This sub-table allows the font designer to replace a string of glyphs
+	with another glyph. A common example is a ligature where the string
+	<IMG SRC="f+i.png" WIDTH="24" HEIGHT="25" ALIGN="Middle"> is replaced by
+	the <IMG SRC="fi.png" WIDTH="20" HEIGHT="25" ALIGN="Middle"> ligature.</TD>
+      <TD>These can be created with the <A HREF="charinfo.html">Element-&gt;Char
+	Info</A>-&gt;Ligature command.</TD>
+    </TR>
+    <TR>
+      <TD>5</TD>
+      <TD>contextual substitution</TD>
+      <TD>This subtable allows for a string of glyphs to replace another string
+	of glyphs (or class of strings of glyphs)</TD>
+      <TD>These may be created with the
+	<A HREF="fontinfo.html#Contextual">Element-&gt;Font Info-&gt;Contextual
+	</A>command</TD>
+    </TR>
+    <TR>
+      <TD>6</TD>
+      <TD>chaining contextual substitution</TD>
+      <TD>This is a slightly more complex version of the above, it doesn't really
+	add new capabilities, but it does provide a more logical approach to the
+	issue.</TD>
+      <TD>These may be created with the
+	<A HREF="fontinfo.html#Contextual">Element-&gt;Font Info-&gt;Contextual
+	</A>command</TD>
+    </TR>
+    <TR>
+      <TD>7</TD>
+      <TD>extension positioning</TD>
+      <TD>This is used to allow for a GSUB table which is bigger than 64k. Its
+	use should be quite invisible to the font designer</TD>
+      <TD>FontForge uses this sub-table when needed.</TD>
+    </TR>
+    <TR>
+      <TD>8</TD>
+      <TD>reverse chaining contextual single substitution</TD>
+      <TD>This allows glyph substitutions to happen in reverse order, and it a
+	variant of the chaining contextual subtable.</TD>
+      <TD>These may be created with the
+	<A HREF="fontinfo.html#Contextual">Element-&gt;Font Info-&gt;Contextual
+	</A>command</TD>
+    </TR>
+    <TR>
+      <TD>9+</TD>
+      <TD>reserved for future use</TD>
+      <TD></TD>
+      <TD>FontForge does not support these sub-tables yet.<BR>
+	(nor does anyone)</TD>
+    </TR>
+  </TABLE>
+  <P>
+  FontForge also has built into it knowledge on how to provide default values
+  for some features that use these tables. See
+  <A HREF="elementmenu.html#DefaultATT">Element-&gt;Default ATT</A> command
+  for that.
+  <P>
+  FontForge can produce some of these tables, but the text layout/word processing
+  program used has to look up the tables and do the actual work of rearranging
+  the glyphs.
+  <P>
+  FontForge will retain the order of features in the GSUB table, and the user
+  may adjust it with the <A HREF="fontinfo.html#Order">Element-&gt;Font Info</A>
+  command.
+  <H3>
+    The <B><CODE><A NAME="GDEF">GDEF</A> </CODE></B>table
+  </H3>
+  <P>
+  FontForge will read ligature carets out of a GDEF table.
+  <P>
+  It will generate a GDEF table containing a glyph class definition sub-table
+  (if needed) or a ligature caret sub-table (if needed).
+  <H2>
+    <A NAME="AAT">Apple</A> Advanced Typography
+  </H2>
+  <P>
+  As above I do not go deeply into the abilities of these tables, for more
+  information see Apple's docs:
+  <UL>
+    <LI>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6kern.html">The
+      'kern' table</A>
+    <LI>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6lcar.html">The
+      'lcar' (ligature caret) table</A>
+    <LI>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6morx.html">The
+      'morx' (extended glyph metamorphosis) table</A>
       <UL>
 	<LI>
-	  FontForge will generate a <A NAME="cursive-connection">cursive connection
-	  </A>feature using this subtable type if the font contains 'init', 'medi',
-	  'fina' or 'isol' simple substitutions.
+	  <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6mort.html">The
+	  'mort' (older version of 'morx') table</A>
 	<LI>
-	  In <A HREF="gposgsub.html#sometimes">some cases</A> FontForge is able to
-	  convert an OpenType Contextual/Chaining substitution table into an Apple
-	  contextual glyph substitution table.
+	  <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6feat.html">The
+	  'feat' (feature) table</A>
+	<LI>
+	  <A HREF="http://developer.apple.com/fonts/Registry/index.html">Apple's Font
+	  Feature registry</A>
+	<LI>
+	  <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6Tables.html">Description
+	  of the subtables of the 'mort'/'morx' tables</A>
       </UL>
-    </TD>
-  </TR>
-  <TR>
-    <TD>2</TD>
-    <TD>ligature substitution</TD>
-    <TD>FontForge can read the unconditional information from these and stores
-      them as opentype ligatures (which can be edited with
-      <A HREF="charinfo.html#features">Char Info</A>).</TD>
-    <TD>If there are any ligatures with an apple feature/setting (or which have
-      an opentype tag which can be converted to an apple feature/setting) then
-      this table will be output.</TD>
-  </TR>
-  <TR>
-    <TD>4</TD>
-    <TD>non-contextual glyph substitution</TD>
-    <TD>FontForge can read these and stores them as opentype simple substitutions
-      (which can be edited with <A HREF="charinfo.html#features">Char Info</A>)</TD>
-    <TD>If there are any substitutions with an apple feature/setting (or which
-      have an opentype tag which can be converted to an apple feature/setting)
-      then this table will be output.</TD>
-  </TR>
-  <TR>
-    <TD>5</TD>
-    <TD>contextual glyph insertion</TD>
-    <TD>FontForge can read these and stores them as state machines (which can
-      be edited with <A HREF="fontinfo.html#Mac-SM">Font Info</A>)</TD>
-    <TD>Any glyph insertion state machines will be output in the generated font.</TD>
-  </TR>
-</TABLE>
-<H3>
-  What features can be <A NAME="Conversion">interconverted</A> between OpenType
-  and AAT?
-</H3>
-<P>
-Some features have almost the same meaning in OpenType and AAT (although
-they are expressed quite differently), others are similar enough that they
-can sometimes be converted, and others have essentially no common ground.
-<P>
-<TABLE BORDER CELLPADDING="2">
-  <TR>
-    <TH>OT Table</TH>
-    <TH>AAT Table</TH>
-    <TH><P ALIGN=Left>
-      Description</TH>
-  </TR>
-  <TR>
-    <TD VALIGN="Top"><P ALIGN=Center>
-      GDEF</TD>
-    <TD VALIGN="Top"><P ALIGN=Center>
-      lcar</TD>
-    <TD>The ligature caret information in both 'GDEF' and 'lcar' is essentially
-      identical and FontForge has no trouble reading both and converting from one
-      to the other.</TD>
-  </TR>
-  <TR>
-    <TD><P ALIGN=Center>
-      GPOS</TD>
-    <TD><P ALIGN=Center>
-      kern</TD>
-    <TD>In most cases kerning information can be converted from one format to
-      another. Both provide support for vertical kerning and right to left kerning.
-      Both provide support for kerning by glyph pair and kerning by classes.
-      <P>
-      OpenType allows kerning commands to be supplied via a contextual chaining
-      feature, Apple allows them to be controled by a state machine. FontForge
-      supports both, but does not interconvert.</TD>
-  </TR>
-  <TR>
-    <TD><P ALIGN=Center>
-      GPOS</TD>
-    <TD><P ALIGN=Center>
-      opbd</TD>
-    <TD>The GPOS features 'lfbd' and 'rtbd' provide the information needed to
-      generate an Apple opbd table. If FontForge reads a font with an opbd table
-      it will generate appropriate 'lfbd' and 'rtbd' features. If FontForge generates
-      a font in apple mode that has these features it will create an opbd table.</TD>
-  </TR>
-  <TR>
-    <TD><P ALIGN=Center>
-      GPOS</TD>
-    <TD>
-	<HR>
-    </TD>
-    <TD>I am not aware of any way to convert other GPOS features to AAT.</TD>
-  </TR>
-  <TR>
-    <TD><P ALIGN=Center>
-      GSUB</TD>
-    <TD><P ALIGN=Center>
-      morx</TD>
-    <TD ROWSPAN=2>The 'mort' and 'morx' tables have the same capabilities ('mort'
-      tables are an old format and Apple currently encourages that 'morx' tables
-      be used instead). FontForge can read either one, but only generates 'morx'
-      tables. Interconversion depends on specific feature types and the sub-table
-      formats, see below</TD>
-  </TR>
-  <TR>
-    <TD><P ALIGN=Center>
-      GSUB</TD>
-    <TD><P ALIGN=Center>
-      mort</TD>
-  </TR>
-</TABLE>
-<H4>
-  An analysis of GSUB and morx sub-tables and feature tags
-</H4>
-<P>
-OpenType uses a four character feature tag (like 'liga') while Apple uses
-two numbers to represent a feature setting (&lt;1,2&gt;). For FontForge to
-be able to inter-convert an OpenType feature into an Apple feature there
-must first be a correspondence between the two naming conventions. Sometimes
-there is an easy direct conversion (above 'liga' and &lt;1,2&gt; both represent
-"Common Ligatures") but far more often there is none. See
-<A HREF="gposgsub.html#OT-Mac-features">below</A> for a list of the tags
-and feature settings that FontForge considers similar enough to interconvert.
-<P>
-GSUB tables have 7 sub-table formats, while morx tables have 5.
-<TABLE BORDER CELLPADDING="2">
-  <TR>
-    <TH>GSUB<BR>
-      sub-<BR>
-      table</TH>
-    <TH>morx<BR>
-      sub-<BR>
-      table</TH>
-    <TH><P ALIGN=Left>
-      Description</TH>
-  </TR>
-  <TR>
-    <TD VALIGN="Top"><P ALIGN=Center>
-      Single</TD>
-    <TD VALIGN="Top"><P ALIGN=Center>
-      Non-<BR>
-      Contextual<BR>
-      Glyph</TD>
-    <TD>These two sub-tables have almost exactly the same capabilities. Each
-      allows one glyph to be substituted for another. The morx sub-table also allows
-      a glyph to be deleted, while the GSUB sub-table does not.</TD>
-  </TR>
-  <TR>
-    <TD VALIGN="Top"><P ALIGN=Center>
-      Multiple</TD>
-    <TD></TD>
-    <TD>This GSUB subtable allows a single glyph to be replaced by multiple glyphs.
-      It has some similarities to Apple's Glyph Insertion sub-table except:
+    <LI>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6opbd.html">The
+      'opbd' (optical bounds) table</A>
+    <LI>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6prop.html">The
+      'prop' (glyph properties) table</A>
+  </UL>
+  <P>
+  FontForge will current read and produce (if Apple mode is set in font generation)
+  the following tables:
+  <TABLE BORDER CELLPADDING="2">
+    <CAPTION>
+      Apple tables corresponding vaguely to <A HREF="#GDEF">GDEF</A>
+    </CAPTION>
+    <TR>
+      <TH>tag</TH>
+      <TH>name</TH>
+      <TH>Reading support</TH>
+      <TH>Writing support</TH>
+    </TR>
+    <TR>
+      <TD><CODE>'lcar'</CODE></TD>
+      <TD>ligature caret table</TD>
+      <TD>FontForge will read ligature carets</TD>
+      <TD>FontForge will produce this table if the user has specified ligature
+	carets</TD>
+    </TR>
+    <TR>
+      <TD><CODE>'prop'</CODE></TD>
+      <TD>glyph properties table</TD>
+      <TD>FontForge will read this table to figure out which glyphs are hebrew
+	and arabic, and which have 'r2la' substitutions.</TD>
+      <TD>FontForge will generate this table if the font contains some right to
+	left glyphs.</TD>
+    </TR>
+  </TABLE>
+  <P>
+  <TABLE BORDER CELLPADDING="2">
+    <CAPTION>
+      Apple tables corresponding vaguely to <A HREF="#GPOS">GPOS</A>
+    </CAPTION>
+    <TR>
+      <TH>tag</TH>
+      <TH>name</TH>
+      <TH>Reading support</TH>
+      <TH>Writing support</TH>
+    </TR>
+    <TR>
+      <TD><CODE>'kern'</CODE></TD>
+      <TD>kerning table</TD>
+      <TD>FontForge will read horizontal/vertical kerning pairs and classes. FontForge
+	can read contextual kerning information too into a state machine.</TD>
+      <TD>FontForge will produce this if the font contains kerning data -- kerning
+	pairs, kerning by classes, and kerning by state machine.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>'opbd'</CODE></TD>
+      <TD>Optical bounds table</TD>
+      <TD>FontForge will read optical bounds</TD>
+      <TD>FontForge will produce this table if the user has specified right and
+	left bounds as simple positions ('lfbd' and 'rtbd').</TD>
+    </TR>
+  </TABLE>
+  <P>
+  <P>
+  FontForge has support for the <CODE>'mort'</CODE> and
+  <CODE>'<A NAME="morx">morx</A>'</CODE> tables (Glyph metamorphosis and extended
+  glyph metamorphosis tables). These correspond vaguely to the
+  <A HREF="#GSUB">GSUB</A> table. Note: Any feature type/setting combinations
+  which correspond directly to an open type feature will be converted to the
+  opentype tag when read in. It will be converted back to a feature/setting
+  when an apple font is generated (use
+  <A HREF="prefs.html#Mac">File-&gt;Preferences</A> to extend FontForge's mapping
+  from feature type/setting to opentype tags).
+  <TABLE BORDER CELLPADDING="2">
+    <CAPTION>
+      Sub tables of <CODE>'mort'</CODE> or <CODE>'morx'</CODE>
+    </CAPTION>
+    <TR>
+      <TH></TH>
+      <TH>name</TH>
+      <TH>Reading support</TH>
+      <TH>Writing support</TH>
+    </TR>
+    <TR>
+      <TD>0</TD>
+      <TD>Indic style rearrangement</TD>
+      <TD>FontForge can read these and stores them as state machines (which can
+	be edited with <A HREF="fontinfo.html#Mac-SM">Font Info</A>)</TD>
+      <TD>Any indic state machines will be output in the generated font.</TD>
+    </TR>
+    <TR>
+      <TD>1</TD>
+      <TD>contextual glyph substitution</TD>
+      <TD>FontForge can read these and stores them as state machines (which can
+	be edited with <A HREF="fontinfo.html#Mac-SM">Font Info</A>)</TD>
+      <TD>If the font contains any state machines they will be output here. If
+	there are no state machines then the following conversions of opentype features
+	will be done:
+	<UL>
+	  <LI>
+	    FontForge will generate a <A NAME="cursive-connection">cursive connection
+	    </A>feature using this subtable type if the font contains 'init', 'medi',
+	    'fina' or 'isol' simple substitutions.
+	  <LI>
+	    In <A HREF="gposgsub.html#sometimes">some cases</A> FontForge is able to
+	    convert an OpenType Contextual/Chaining substitution table into an Apple
+	    contextual glyph substitution table.
+	</UL>
+      </TD>
+    </TR>
+    <TR>
+      <TD>2</TD>
+      <TD>ligature substitution</TD>
+      <TD>FontForge can read the unconditional information from these and stores
+	them as opentype ligatures (which can be edited with
+	<A HREF="charinfo.html#features">Char Info</A>).</TD>
+      <TD>If there are any ligatures with an apple feature/setting (or which have
+	an opentype tag which can be converted to an apple feature/setting) then
+	this table will be output.</TD>
+    </TR>
+    <TR>
+      <TD>4</TD>
+      <TD>non-contextual glyph substitution</TD>
+      <TD>FontForge can read these and stores them as opentype simple substitutions
+	(which can be edited with <A HREF="charinfo.html#features">Char Info</A>)</TD>
+      <TD>If there are any substitutions with an apple feature/setting (or which
+	have an opentype tag which can be converted to an apple feature/setting)
+	then this table will be output.</TD>
+    </TR>
+    <TR>
+      <TD>5</TD>
+      <TD>contextual glyph insertion</TD>
+      <TD>FontForge can read these and stores them as state machines (which can
+	be edited with <A HREF="fontinfo.html#Mac-SM">Font Info</A>)</TD>
+      <TD>Any glyph insertion state machines will be output in the generated font.</TD>
+    </TR>
+  </TABLE>
+  <H3>
+    What features can be <A NAME="Conversion">interconverted</A> between OpenType
+    and AAT?
+  </H3>
+  <P>
+  Some features have almost the same meaning in OpenType and AAT (although
+  they are expressed quite differently), others are similar enough that they
+  can sometimes be converted, and others have essentially no common ground.
+  <P>
+  <TABLE BORDER CELLPADDING="2">
+    <TR>
+      <TH>OT Table</TH>
+      <TH>AAT Table</TH>
+      <TH><P ALIGN=Left>
+	Description</TH>
+    </TR>
+    <TR>
+      <TD VALIGN="Top"><P ALIGN=Center>
+	GDEF</TD>
+      <TD VALIGN="Top"><P ALIGN=Center>
+	lcar</TD>
+      <TD>The ligature caret information in both 'GDEF' and 'lcar' is essentially
+	identical and FontForge has no trouble reading both and converting from one
+	to the other.</TD>
+    </TR>
+    <TR>
+      <TD><P ALIGN=Center>
+	GPOS</TD>
+      <TD><P ALIGN=Center>
+	kern</TD>
+      <TD>In most cases kerning information can be converted from one format to
+	another. Both provide support for vertical kerning and right to left kerning.
+	Both provide support for kerning by glyph pair and kerning by classes.
+	<P>
+	OpenType allows kerning commands to be supplied via a contextual chaining
+	feature, Apple allows them to be controled by a state machine. FontForge
+	supports both, but does not interconvert.</TD>
+    </TR>
+    <TR>
+      <TD><P ALIGN=Center>
+	GPOS</TD>
+      <TD><P ALIGN=Center>
+	opbd</TD>
+      <TD>The GPOS features 'lfbd' and 'rtbd' provide the information needed to
+	generate an Apple opbd table. If FontForge reads a font with an opbd table
+	it will generate appropriate 'lfbd' and 'rtbd' features. If FontForge generates
+	a font in apple mode that has these features it will create an opbd table.
+	Similarly when FontForge reads an opbd table it will create 'lfbd' and 'rtbd'
+	features.</TD>
+    </TR>
+    <TR>
+      <TD><P ALIGN=Center>
+	GPOS</TD>
+      <TD>
+	  <HR>
+      </TD>
+      <TD>I am not aware of any way to convert other GPOS features to AAT.</TD>
+    </TR>
+    <TR>
+      <TD><P ALIGN=Center>
+	GSUB</TD>
+      <TD><P ALIGN=Center>
+	morx</TD>
+      <TD ROWSPAN=2>The 'mort' and 'morx' tables have the same capabilities ('mort'
+	tables are an old format and Apple currently encourages that 'morx' tables
+	be used instead). FontForge can read either one, but only generates 'morx'
+	tables. Interconversion depends on specific feature types and the sub-table
+	formats, see below</TD>
+    </TR>
+    <TR>
+      <TD><P ALIGN=Center>
+	GSUB</TD>
+      <TD><P ALIGN=Center>
+	mort</TD>
+    </TR>
+  </TABLE>
+  <H4>
+    An analysis of GSUB and morx sub-tables and feature tags
+  </H4>
+  <P>
+  OpenType uses a four character feature tag (like 'liga') while Apple uses
+  two numbers to represent a feature setting (&lt;1,2&gt;). For FontForge to
+  be able to inter-convert an OpenType feature into an Apple feature there
+  must first be a correspondence between the two naming conventions. Sometimes
+  there is an easy direct conversion (above 'liga' and &lt;1,2&gt; both represent
+  "Common Ligatures") but far more often there is none. See
+  <A HREF="gposgsub.html#OT-Mac-features">below</A> for a list of the tags
+  and feature settings that FontForge considers similar enough to interconvert.
+  <P>
+  GSUB tables have 7 sub-table formats, while morx tables have 5.
+  <TABLE BORDER CELLPADDING="2">
+    <TR>
+      <TH>GSUB<BR>
+	sub-<BR>
+	table</TH>
+      <TH>morx<BR>
+	sub-<BR>
+	table</TH>
+      <TH><P ALIGN=Left>
+	Description</TH>
+    </TR>
+    <TR>
+      <TD VALIGN="Top"><P ALIGN=Center>
+	Single</TD>
+      <TD VALIGN="Top"><P ALIGN=Center>
+	Non-<BR>
+	Contextual<BR>
+	Glyph</TD>
+      <TD>These two sub-tables have almost exactly the same capabilities. Each
+	allows one glyph to be substituted for another. The morx sub-table also allows
+	a glyph to be deleted, while the GSUB sub-table does not.</TD>
+    </TR>
+    <TR>
+      <TD VALIGN="Top"><P ALIGN=Center>
+	Multiple</TD>
+      <TD></TD>
+      <TD>This GSUB subtable allows a single glyph to be replaced by multiple glyphs.
+	It has some similarities to Apple's Glyph Insertion sub-table except:
+	<UL>
+	  <LI>
+	    the 'morx' sub-table always leaves the current glyph in the glyph stream,
+	    while this sub-table need not
+	  <LI>
+	    the 'morx' sub-table is contextual while this sub-table is never. (But if
+	    this sub-table is wrapped inside a Context or Chaining Context subtable the
+	    result can be contextual).
+	</UL>
+      </TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TD VALIGN="Top"><P ALIGN=Center>
+	Glyph<BR>
+	Insertion</TD>
+      <TD>This morx subtable allows a string of glyphs to be inserted before or
+	after the current glyph (the current glyph always remains). This sub-table
+	is contextual (ie. the insertion can be restricted to certain contexts).
+	It bears some similarities to the GSUB Multiple subtable above.</TD>
+    </TR>
+    <TR>
+      <TD VALIGN="Top">Alternate</TD>
+      <TD></TD>
+      <TD>This GSUB subtable allows a single glyph to be replaced by any one of
+	several alternatives (presumably with help from a word processor's UI). An
+	example of this would be a character which had several swash variants. There
+	is nothing like this in the 'morx' table.</TD>
+    </TR>
+    <TR>
+      <TD VALIGN="Top"><P ALIGN=Center>
+	Ligature</TD>
+      <TD VALIGN="Top"><P ALIGN=Center>
+	Ligature</TD>
+      <TD>Both formats have ligature sub-tables. The 'GSUB' version is unconditional
+	(the ligature is always applied -- though a ligature substitution could be
+	embedded in an OpenType contextual substitution to make it condtional). The
+	'morx' version can be contextual (though in fonts I have examined it is usually
+	uncontextual). FontForge only supports unconditional ligatures.
+	<P>
+	FontForge can read all the unconditional ligatures from a 'morx' sub-table.
+	FontForge loses all contextual ligatures.
+	<P>
+	In OpenType, contextual ligatures can be built by wrapping a ligature sub-table
+	inside a Context or Chaining Context subtable.</TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TD VALIGN="Top"><P ALIGN=Center>
+	Contextual<BR>
+	Glyph</TD>
+      <TD>This morx subtable allows single glyph substitutions to be applied within
+	certain contexts. At first glance it seems that this could be converted into
+	an opentype Context subtable, <A HREF="gposgsub.html#sometimes">but this
+	is rarely the case</A>.</TD>
+    </TR>
+    <TR>
+      <TD><P ALIGN=Center>
+	Context</TD>
+      <TD></TD>
+      <TD ROWSPAN="2" VALIGN="Top">These GSUB subtables allow any collection of
+	other substitutions to be applied contextually. At first glance one might
+	think that these (with appropriate nested substitutions) might be converted
+	to 'morx' contextual glyph substitutions, contextual ligatures, or even glyph
+	insertion. <A HREF="gposgsub.html#sometimes">Unfortunately this is rarely
+	the case</A>.</TD>
+    </TR>
+    <TR>
+      <TD><P ALIGN=Center>
+	Chaining<BR>
+	Context</TD>
+      <TD></TD>
+    </TR>
+    <TR VALIGN="Top">
+      <TD><P ALIGN=Center>
+	Reverse<BR>
+	Chaining<BR>
+	Context</TD>
+      <TD></TD>
+      <TD>This GSUB subtable is applied backwards to the stream of glyphs, it allows
+	a single glyph substitution per contextual match. There is nothing like it
+	in 'morx'.</TD>
+    </TR>
+    <TR VALIGN="Top">
+      <TD></TD>
+      <TD><P ALIGN=Center>
+	Indic<BR>
+	Rearrange-<BR>
+	ment</TD>
+      <TD>This 'morx' subtable allows for several glyphs to interchange their positions
+	in the glyph stream. There is nothing like it in GSUB (or GPOS for that matter).</TD>
+    </TR>
+  </TABLE>
+  <H4>
+    Why do contextual glyph substitutions only <A NAME="sometimes">sometimes</A>
+    get generated in AAT?
+  </H4>
+  <P>
+  Sadly OpenType and AAT provide disjoint capabilities when it comes to contextual
+  matching. AAT is more capable in some areas, OpenType more capable in others.
+  FontForge is able to convert an OpenType contextual substitution into an
+  AAT one if FontForge can detect that the OpenType substitution does not use
+  capabilities beyond those of AAT. Currently this means:
+  <UL>
+    <LI>
+      There is an apple feature which matches the otf tag
+    <LI>
+      And one of the following is true:
+      <OL>
+	<LI>
+	  Either
+	  <UL>
+	    <LI>
+	      The sub-table is in coverage format
+	    <LI>
+	      The sub-table contains either exactly one nested single glyph replacement
+	      substitution, or<BR>
+	      it contains exactly two single glyph replacements and one of them refers
+	      to the last glyph matched (and the other does not)
+	  </UL>
+	<LI>
+	  or
+	  <UL>
+	    <LI>
+	      The sub-table is in either glyph or class format
+	    <LI>
+	      If in class format then either the backtrack and lookahead classes must be
+	      the same as the main class, or they must not be used.
+	    <LI>
+	      If a rule has a substitution at a given glyph position, then all rules which
+	      match the current rule up to that glyph position must also have a substitution
+	      at that position.
+	    <LI>
+	      A rule with exactly one substitution is acceptable<BR>
+	      A rule with one substitution in the middle and one substitution on the last
+	      glyph is acceptable.<BR>
+	      A rule may contain more substitutions only if there is another rule which
+	      matches it exactly up to the internal substitution.<BR>
+	      So the following rule set is valid:
+	      <TABLE BORDER CELLPADDING="2">
+		<TR>
+		  <TH>Rule</TH>
+		  <TD>a</TD>
+		  <TD>b</TD>
+		  <TD>c</TD>
+		  <TD>d</TD>
+		  <TD>e</TD>
+		  <TD>f</TD>
+		</TR>
+		<TR>
+		  <TH>Rule</TH>
+		  <TD>a</TD>
+		  <TD>b</TD>
+		  <TD>c</TD>
+		  <TD>d</TD>
+		  <TD></TD>
+		  <TD></TD>
+		</TR>
+		<TR>
+		  <TH>Rule</TH>
+		  <TD>a</TD>
+		  <TD>b</TD>
+		  <TD></TD>
+		  <TD></TD>
+		  <TD></TD>
+		  <TD></TD>
+		</TR>
+		<TR>
+		  <TH>Substitutions</TH>
+		  <TD>A</TD>
+		  <TD>B</TD>
+		  <TD>C</TD>
+		  <TD>D</TD>
+		  <TD>E</TD>
+		  <TD>F</TD>
+		</TR>
+	      </TABLE>
+	      <P>
+	      So the third rule will match an "ab" and convert them to "AB" (and this is
+	      valid because we have one internal and one final substitution and that's
+	      ok), then if that "ab" is followed by "cd" then rule 2 kicks in and will
+	      replace the "cd" with "CD" (again this has one internal and one final
+	      substitution, which is ok), and if that is followed by "ef" then they will
+	      be converted to "EF".
+	      <P>
+	      The following is not valid:
+	      <TABLE BORDER CELLPADDING="2">
+		<TR>
+		  <TH>Substitution</TH>
+		  <TD></TD>
+		  <TD>B</TD>
+		  <TD></TD>
+		</TR>
+		<TR>
+		  <TH>Rule</TH>
+		  <TD>a</TD>
+		  <TD>b</TD>
+		  <TD>c</TD>
+		</TR>
+		<TR>
+		  <TD COLSPAN=4>
+		      <HR>
+		  </TD>
+		</TR>
+		<TR>
+		  <TH>Rule</TH>
+		  <TD>a</TD>
+		  <TD>b</TD>
+		  <TD></TD>
+		</TR>
+		<TR>
+		  <TH>Substitution</TH>
+		  <TD>A</TD>
+		  <TD></TD>
+		  <TD></TD>
+		</TR>
+	      </TABLE>
+	      <P>
+	      The two rules have substitutions at different places and that can't be expressed
+	      in an Apple state machine given that they have the same glyphs.
+	  </UL>
+      </OL>
+  </UL>
+  <P>
+  FontForge does not even try to convert an AAT contextual glyph substitution
+  sub-table, too few of these can be expressed in OpenType to make it worth
+  while.
+  <P>
+  NOTE: It would be possible to convert more lookups to state machines if FontForge
+  were willing to:
+  <OL>
+    <LI>
+      Use several state machines to represent complicated lookups
+    <LI>
+      Add additional glyphs to the font to be used as temporary state flags.
+  </OL>
+  <P>
+  FontForge will do neither of these.
+  <H4>
+    <FONT COLOR="Red">BUG</FONT>
+  </H4>
+  <P>
+  There is a subtle bug involved in converting a chaining contextual substitution
+  into an Apple contextual glyph substitution. AAT does not have the concept
+  of a backtrack list, this means that substitutions may occur in a different
+  order.
+  <H4>
+    Why can't all contextual/chaining tables be
+    <A NAME="not-converted">converted</A>?
+  </H4>
+  <P>
+  Well, obviously there are some thing that just aren't present. The concept
+  of contextual positioning is missing from AAT, while Indic rearrangement
+  is missing from OpenType. So let's concentrate on contextual substitutions,
+  which both appear to support. The argument that follows is based on the
+  capabilities of contextual matching, it applies equally to contextual ligatures,
+  glyph insertion, glyph substitution and kerning, the examples given are only
+  of glyph substitution because it is easier to represent (and because FontForge
+  is only willing to convert contextual glyph substitutions) But even here,
+  there is a very basic mismatch in concepts between the way OpenType and Apple
+  specify contextual substitutions. Consider the following contextual substitution
+  in a glyph list format:
+  <TABLE BORDER CELLPADDING="2">
+    <TR>
+      <TH>Initial Sequence</TH>
+      <TD>a</TD>
+      <TD>b</TD>
+      <TD>c</TD>
+      <TD>d</TD>
+    </TR>
+    <TR>
+      <TH><P ALIGN=Left>
+	Replace With</TH>
+      <TD>&nbsp;</TD>
+      <TD>B</TD>
+      <TD>C</TD>
+      <TD>&nbsp;</TD>
+    </TR>
+  </TABLE>
+  <P>
+  Now in OpenType this means if you find the sequence "abcd" then replace the
+  "b" with "B" and the "c" with "C". But this can't be expressed in an Apple
+  state machine. In OpenType the match is done first, and then the substitutions
+  occur. In a state machine the substitutions have to be done (almost) concurrently
+  with the match and so must happen whether the final "d" is present or not.
+  (Note I'm using a glyph sequence because it is easier to display in an example.
+  The same problem applies if the substitution is expressed by classes or by
+  coverage tables)
+  <P>
+  Consider the following table with two glyph strings
+  <TABLE BORDER CELLPADDING="2">
+    <TR>
+      <TH>Initial Sequence</TH>
+      <TD>a</TD>
+      <TD><P ALIGN=Center>
+	b</TD>
+      <TD><P ALIGN=Center>
+	c</TD>
+      <TD>d</TD>
+    </TR>
+    <TR>
+      <TH><P ALIGN=Left>
+	Replace With</TH>
+      <TD>&nbsp;</TD>
+      <TD><P ALIGN=Center>
+	B</TD>
+      <TD></TD>
+      <TD>&nbsp;</TD>
+    </TR>
+    <TR>
+      <TH>Initial Sequence</TH>
+      <TD>a</TD>
+      <TD><P ALIGN=Center>
+	b</TD>
+      <TD><P ALIGN=Center>
+	c</TD>
+      <TD>e&nbsp;</TD>
+    </TR>
+    <TR>
+      <TH><P ALIGN=Left>
+	Replace With</TH>
+      <TD>&nbsp;</TD>
+      <TD></TD>
+      <TD><P ALIGN=Center>
+	&nbsp;C</TD>
+      <TD>&nbsp;</TD>
+    </TR>
+  </TABLE>
+  <P>
+  So replace the "b" if the final "d" is present, otherwise replace the "c".
+  Again this cannot be expressed in Apple's state machines.
+  <P>
+  Finally consider
+  <TABLE BORDER CELLPADDING="2">
+    <TR>
+      <TH>Initial Sequence</TH>
+      <TD><P ALIGN=Center>
+	a</TD>
+      <TD><P ALIGN=Center>
+	b</TD>
+      <TD><P ALIGN=Center>
+	c</TD>
+      <TD>d</TD>
+    </TR>
+    <TR>
+      <TH><P ALIGN=Left>
+	Replace With</TH>
+      <TD>&nbsp;</TD>
+      <TD><P ALIGN=Center>
+      </TD>
+      <TD>C</TD>
+      <TD>&nbsp;</TD>
+    </TR>
+    <TR>
+      <TH>Initial Sequence</TH>
+      <TD><P ALIGN=Center>
+	b</TD>
+      <TD><P ALIGN=Center>
+	c</TD>
+      <TD><P ALIGN=Center>
+	e</TD>
+      <TD></TD>
+    </TR>
+    <TR>
+      <TH><P ALIGN=Left>
+	Replace With</TH>
+      <TD><P ALIGN=Center>
+	B&nbsp;</TD>
+      <TD></TD>
+      <TD><P ALIGN=Center>
+	&nbsp;</TD>
+      <TD>&nbsp;</TD>
+    </TR>
+  </TABLE>
+  <P>
+  If this substitution is given the sequence "abce" it cannot work in AAT.
+  When it reads the "a" it will start down the "abcd" branch, the match will
+  not fail until it looks for the "d" and finds "e" instead. At that point
+  it is too late to switch to the "bce" substitution (which does match) because
+  the "b" glyph will not have been marked as a substitution location.
+  <P>
+    <HR>
+  On the other hand, Apple's state machines can express things that OpenType
+  tables cannot (again I'm restricting myself to contextual glyph substitutions).
+  Consider the case of a swash glyph at the beginning (or end) of a word. Let
+  us say that a word begins when a letter appears at the start of input or
+  following a whitespace character. But OpenType has no way of expressing "start
+  of input" (or end of input) in a contextual/chaining context, whereas Apple's
+  state machines do.
+  <P>
+  Since Apple's glyph substitutions can delete glyphs a contextual glyph
+  substitution table can create two character ligatures (one glyph is converted
+  to the ligature and the other is deleted), while OpenType tables must use
+  a ligature substitution to do this.
+  <P>
+  Finally an AAT state machine can match a general regular expression, while
+  OpenType tables can only match fixed length strings. Suppose you were typesetting
+  mathematics and wanted a substitution which would convert an arbitrary digit
+  string following a variable into a subscript (so x23 should become
+  x<SMALL><SUB>23</SUB></SMALL>). It is easy to write a state machine which
+  will keep substituting as long as it gets more digits, but you'd need an
+  infinite number of OpenType rules to have the same expressive power.
+  <P>
+  These examples probably seem fairly contrived, and (except for the swash
+  one) they are. But they illustrate the point that the two formats have very
+  different expressive capabilities and it is NOT possible to write a converter
+  which will take any input in one format and produce an equivalent output
+  in the other.
+  <H3>
+    Apple and OpenType features
+  </H3>
+  <TABLE BORDER CELLPADDING="2">
+    <CAPTION>
+      Correspondences between Apple and OpenType
+      <A NAME="OT-Mac-features">features</A><BR>
+      (that I support)
+    </CAPTION>
+    <TR>
+      <TH>Apple Feature Setting</TH>
+      <TH>OpenType Feature Name</TH>
+      <TH>OpenType Tag</TH>
+    </TR>
+    <TR>
+      <TD>Required Ligatures</TD>
+      <TD>Required Ligatures</TD>
+      <TD>rlig</TD>
+    </TR>
+    <TR>
+      <TD>Common Ligatures</TD>
+      <TD>Standard Ligatures</TD>
+      <TD>liga</TD>
+    </TR>
+    <TR>
+      <TD>Rare Ligatures</TD>
+      <TD>Discretionary</TD>
+      <TD>dlig</TD>
+    </TR>
+    <TR>
+      <TD>Fractions</TD>
+      <TD>Fractions</TD>
+      <TD>frac</TD>
+    </TR>
+    <TR>
+      <TD COLSPAN=3>
+	  <HR>
+      </TD>
+    </TR>
+    <TR>
+      <TD>Contextual Alternatives</TD>
+      <TD>Cursive connection</TD>
+      <TD>calt</TD>
+    </TR>
+    <TR>
+      <TD COLSPAN=3>
+	  <HR>
+      </TD>
+    </TR>
+    <TR>
+      <TD>Vertical Forms</TD>
+      <TD>Vertical Rotation 2</TD>
+      <TD>vrt2</TD>
+    </TR>
+    <TR>
+      <TD>Monospace numbers</TD>
+      <TD>Tabular numbers</TD>
+      <TD>tnum</TD>
+    </TR>
+    <TR>
+      <TD>Superscript</TD>
+      <TD>Superscript</TD>
+      <TD>sups</TD>
+    </TR>
+    <TR>
+      <TD>Subscript</TD>
+      <TD>Subscript</TD>
+      <TD>subs</TD>
+    </TR>
+    <TR>
+      <TD>Proportional Text</TD>
+      <TD>Proportional Widths</TD>
+      <TD>pwid</TD>
+    </TR>
+    <TR>
+      <TD>Half-width Text</TD>
+      <TD>Half Width</TD>
+      <TD>hwid</TD>
+    </TR>
+    <TR>
+      <TD>Full-width Text</TD>
+      <TD>Full Width</TD>
+      <TD>fwid</TD>
+    </TR>
+    <TR>
+      <TD>Traditional Characters</TD>
+      <TD>Traditional</TD>
+      <TD>trad</TD>
+    </TR>
+    <TR>
+      <TD>Simplified Characters</TD>
+      <TD>Simplified</TD>
+      <TD>smpl</TD>
+    </TR>
+    <TR>
+      <TD>JIS 1978 Characters</TD>
+      <TD>JIS 1978 Characters</TD>
+      <TD>jp78</TD>
+    </TR>
+    <TR>
+      <TD>JIS 1983 Characters</TD>
+      <TD>JIS 1983 Characters</TD>
+      <TD>jp83</TD>
+    </TR>
+    <TR>
+      <TD>JIS 1990 Characters</TD>
+      <TD>JIS 1990 Characters</TD>
+      <TD>jp90</TD>
+    </TR>
+  </TABLE>
+  <P>
+  FontForge will retain the order of features in the morx table, and the user
+  may adjust it with the <A HREF="fontinfo.html#Order">Element-&gt;Font Info</A>
+  command. (this is the same list as that used for GSUB table. GSUB features
+  that don't correspond to mac features will be ignored).
+  <H2>
+    What is <A NAME="Unsupported">Unsupported</A>?
+  </H2>
+  <P>
+  FontForge does not (yet) support all the advanced typographic features available
+  in either opentype or apple advanced typography.
+  <H3>
+    OpenType
+  </H3>
+  <UL>
+    <LI>
+      FontForge does not support using truetype points to control positioning
+    <LI>
+      FontForge does not support some of the more esoteric uses of the lookup flags.
+    <LI>
+      FontForge does not provide an attachment list subtable nor a MarkAttachClassDef
+      subtable of the GDEF table.
+    <LI>
+      FontForge does not support the BASE and JUST tables
+    <LI>
+      FontForge has minimal support for VORG
+  </UL>
+  <P>
+  <A HREF="TrueOpenTables.html">See here for a complete list of supported
+  tables</A>.
+  <H3>
+    Apple Advanced Typography
+  </H3>
+  <UL>
+    <LI>
+      FontForge will never generate a 'mort' table. It can read 'mort' tables,
+      but it will only produce 'morx' tables.
+    <LI>
+      FontForge is unable to parse contextual ligatures. It can find ligatures
+      which start from state 0, but it will not find ligatures which start from
+      other states (that is, which are contextual)
+    <LI>
+      FontForge does not support the following Apple specific tables
       <UL>
 	<LI>
-	  the 'morx' sub-table always leaves the current glyph in the glyph stream,
-	  while this sub-table need not
+	  acnt (accent attachment)
 	<LI>
-	  the 'morx' sub-table is contextual while this sub-table is never. (But if
-	  this sub-table is wrapped inside a Context or Chaining Context subtable the
-	  result can be contextual).
+	  bsln (baseline)
+	<LI>
+	  fdsc (font descriptor)
+	<LI>
+	  fmtx (font metrics)
+	<LI>
+	  hsty (horizontal style)
+	<LI>
+	  just (justification)
+	<LI>
+	  trak (tracking)
+	<LI>
+	  Zapf (glyph reference)
       </UL>
-    </TD>
-  </TR>
-  <TR>
-    <TD></TD>
-    <TD VALIGN="Top"><P ALIGN=Center>
-      Glyph<BR>
-      Insertion</TD>
-    <TD>This morx subtable allows a string of glyphs to be inserted before or
-      after the current glyph (the current glyph always remains). This sub-table
-      is contextual (ie. the insertion can be restricted to certain contexts).
-      It bears some similarities to the GSUB Multiple subtable above.</TD>
-  </TR>
-  <TR>
-    <TD VALIGN="Top">Alternate</TD>
-    <TD></TD>
-    <TD>This GSUB subtable allows a single glyph to be replaced by any one of
-      several alternatives (presumably with help from a word processor's UI). An
-      example of this would be a character which had several swash variants. There
-      is nothing like this in the 'morx' table.</TD>
-  </TR>
-  <TR>
-    <TD VALIGN="Top"><P ALIGN=Center>
-      Ligature</TD>
-    <TD VALIGN="Top"><P ALIGN=Center>
-      Ligature</TD>
-    <TD>Both formats have ligature sub-tables. The 'GSUB' version is unconditional
-      (the ligature is always applied -- though a ligature substitution could be
-      embedded in an OpenType contextual substitution to make it condtional). The
-      'morx' version can be contextual (though in all fonts I have examined it
-      is also uncontextual). FontForge only supports unconditional ligatures.
-      <P>
-      FontForge can read all the unconditional ligatures from a 'morx' sub-table.
-      FontForge loses all contextual ligatures.
-      <P>
-      In OpenType, contextual ligatures can be built by wrapping a ligature sub-table
-      inside a Context or Chaining Context subtable.</TD>
-  </TR>
-  <TR>
-    <TD></TD>
-    <TD VALIGN="Top"><P ALIGN=Center>
-      Contextual<BR>
-      Glyph</TD>
-    <TD>This morx subtable allows single glyph substitutions to be applied within
-      certain contexts. At first glance it seems that this could be converted into
-      an opentype Context subtable, <A HREF="gposgsub.html#sometimes">but this
-      is rarely the case</A>.</TD>
-  </TR>
-  <TR>
-    <TD><P ALIGN=Center>
-      Context</TD>
-    <TD></TD>
-    <TD ROWSPAN="2" VALIGN="Top">These GSUB subtables allow any collection of
-      other substitutions to be applied contextually. At first glance one might
-      think that these (with appropriate nested substitutions) might be converted
-      to 'morx' contextual glyph substitutions, contextual ligatures, or even glyph
-      insertion. <A HREF="gposgsub.html#sometimes">Unfortunately this is rarely
-      the case</A>.</TD>
-  </TR>
-  <TR>
-    <TD><P ALIGN=Center>
-      Chaining<BR>
-      Context</TD>
-    <TD></TD>
-  </TR>
-  <TR VALIGN="Top">
-    <TD><P ALIGN=Center>
-      Reverse<BR>
-      Chaining<BR>
-      Context</TD>
-    <TD></TD>
-    <TD>This GSUB subtable is applied backwards to the stream of glyphs, it allows
-      a single glyph substitution per contextual match. There is nothing like it
-      in 'morx'.</TD>
-  </TR>
-  <TR VALIGN="Top">
-    <TD></TD>
-    <TD><P ALIGN=Center>
-      Indic<BR>
-      Rearrange-<BR>
-      ment</TD>
-    <TD>This 'morx' subtable allows for several glyphs to interchange their positions
-      in the glyph stream. There is nothing like it in GSUB (or GPOS for that matter).</TD>
-  </TR>
-</TABLE>
-<H4>
-  Why do contextual glyph substitutions only <A NAME="sometimes">sometimes</A>
-  get generated in AAT?
-</H4>
-<P>
-Sadly OpenType and AAT provide disjoint capabilities when it comes to contextual
-matching. AAT is more capable in some areas, OpenType more capable in others.
-FontForge is able to convert an OpenType contextual substitution into an
-AAT one if FontForge can detect that the OpenType substitution does not use
-capabilities beyond those of AAT. Currently this means:
-<UL>
-  <LI>
-    There is an apple feature which matches the otf tag
-  <LI>
-    And one of the following is true:
-    <OL>
-      <LI>
-	Either
-	<UL>
-	  <LI>
-	    The sub-table is in coverage format
-	  <LI>
-	    The sub-table contains either exactly one nested single glyph replacement
-	    substitution, or<BR>
-	    it contains exactly two single glyph replacements and one of them refers
-	    to the last glyph matched (and the other does not)
-	</UL>
-      <LI>
-	or
-	<UL>
-	  <LI>
-	    The sub-table is in either glyph or class format
-	  <LI>
-	    If in class format then either the backtrack and lookahead classes must be
-	    the same as the main class, or they must not be used.
-	  <LI>
-	    If a rule has a substitution at a given glyph position, then all rules which
-	    match the current rule up to that glyph position must also have a substitution
-	    at that position.
-	  <LI>
-	    A rule with exactly one substitution is acceptable<BR>
-	    A rule with one substitution in the middle and one substitution on the last
-	    glyph is acceptable.<BR>
-	    A rule may contain more substitutions only if there is another rule which
-	    matches it exactly up to the internal substitution.<BR>
-	    So the following rule set is valid:
-	    <TABLE BORDER CELLPADDING="2">
-	      <TR>
-		<TH>Rule</TH>
-		<TD>a</TD>
-		<TD>b</TD>
-		<TD>c</TD>
-		<TD>d</TD>
-		<TD>e</TD>
-		<TD>f</TD>
-	      </TR>
-	      <TR>
-		<TH>Rule</TH>
-		<TD>a</TD>
-		<TD>b</TD>
-		<TD>c</TD>
-		<TD>d</TD>
-		<TD></TD>
-		<TD></TD>
-	      </TR>
-	      <TR>
-		<TH>Rule</TH>
-		<TD>a</TD>
-		<TD>b</TD>
-		<TD></TD>
-		<TD></TD>
-		<TD></TD>
-		<TD></TD>
-	      </TR>
-	      <TR>
-		<TH>Substitutions</TH>
-		<TD>A</TD>
-		<TD>B</TD>
-		<TD>C</TD>
-		<TD>D</TD>
-		<TD>E</TD>
-		<TD>F</TD>
-	      </TR>
-	    </TABLE>
-	    <P>
-	    So the third rule will match an "ab" and convert them to "AB" (and this is
-	    valid because we have one internal and one final substitution and that's
-	    ok), then if that "ab" is followed by "cd" then rule 2 kicks in and will
-	    replace the "cd" with "CD" (again this has one internal and one final
-	    substitution, which is ok), and if that is followed by "ef" then they will
-	    be converted to "EF".
-	    <P>
-	    The following is not valid:
-	    <TABLE BORDER CELLPADDING="2">
-	      <TR>
-		<TH>Substitution</TH>
-		<TD></TD>
-		<TD>B</TD>
-		<TD></TD>
-	      </TR>
-	      <TR>
-		<TH>Rule</TH>
-		<TD>a</TD>
-		<TD>b</TD>
-		<TD>c</TD>
-	      </TR>
-	      <TR>
-		<TD COLSPAN=4>
-		    <HR>
-		</TD>
-	      </TR>
-	      <TR>
-		<TH>Rule</TH>
-		<TD>a</TD>
-		<TD>b</TD>
-		<TD></TD>
-	      </TR>
-	      <TR>
-		<TH>Substitution</TH>
-		<TD>A</TD>
-		<TD></TD>
-		<TD></TD>
-	      </TR>
-	    </TABLE>
-	    <P>
-	    The two rules have substitutions at different places and that can't be expressed
-	    in an Apple state machine given that they have the same glyphs.
-	</UL>
-    </OL>
-</UL>
-<P>
-FontForge does not even try to convert an AAT contextual glyph substitution
-sub-table, too few of these can be expressed in OpenType to make it worth
-while.
-<P>
-NOTE: It would be possible to convert more lookups to state machines if FontForge
-were willing to:
-<OL>
-  <LI>
-    Use several state machines to represent complicated lookups
-  <LI>
-    Add additional glyphs to the font to be used as temporary state flags.
-</OL>
-<P>
-FontForge will do neither of these.
-<H4>
-  <FONT COLOR="Red">BUG</FONT>
-</H4>
-<P>
-There is a subtle bug involved in converting a chaining contextual substitution
-into an Apple contextual glyph substitution. AAT does not have the concept
-of a backtrack list, this means that substitutions may occur in a different
-order.
-<H4>
-  Why can't all contextual/chaining tables be
-  <A NAME="not-converted">converted</A>?
-</H4>
-<P>
-Well, obviously there are some thing that just aren't present. The concept
-of contextual positioning is missing from AAT, while Indic rearrangement
-is missing from OpenType. So let's concentrate on contextual substitutions,
-which both appear to support. The argument that follows is based on the
-capabilities of contextual matching, it applies equally to contextual ligatures,
-glyph insertion, glyph substitution and kerning, the examples given are only
-of glyph substitution because it is easier to represent (and because FontForge
-is only willing to convert contextual glyph substitutions) But even here,
-there is a very basic mismatch in concepts between the way OpenType and Apple
-specify contextual substitutions. Consider the following contextual substitution
-in a glyph list format:
-<TABLE BORDER CELLPADDING="2">
-  <TR>
-    <TH>Initial Sequence</TH>
-    <TD>a</TD>
-    <TD>b</TD>
-    <TD>c</TD>
-    <TD>d</TD>
-  </TR>
-  <TR>
-    <TH><P ALIGN=Left>
-      Replace With</TH>
-    <TD>&nbsp;</TD>
-    <TD>B</TD>
-    <TD>C</TD>
-    <TD>&nbsp;</TD>
-  </TR>
-</TABLE>
-<P>
-Now in OpenType this means if you find the sequence "abcd" then replace the
-"b" with "B" and the "c" with "C". But this can't be expressed in an Apple
-state machine. In OpenType the match is done first, and then the substitutions
-occur. In a state machine the substitutions have to be done (almost) concurrently
-with the match and so must happen whether the final "d" is present or not.
-(Note I'm using a glyph sequence because it is easier to display in an example.
-The same problem applies if the substitution is expressed by classes or by
-coverage tables)
-<P>
-Consider the following table with two glyph strings
-<TABLE BORDER CELLPADDING="2">
-  <TR>
-    <TH>Initial Sequence</TH>
-    <TD>a</TD>
-    <TD><P ALIGN=Center>
-      b</TD>
-    <TD><P ALIGN=Center>
-      c</TD>
-    <TD>d</TD>
-  </TR>
-  <TR>
-    <TH><P ALIGN=Left>
-      Replace With</TH>
-    <TD>&nbsp;</TD>
-    <TD><P ALIGN=Center>
-      B</TD>
-    <TD></TD>
-    <TD>&nbsp;</TD>
-  </TR>
-  <TR>
-    <TH>Initial Sequence</TH>
-    <TD>a</TD>
-    <TD><P ALIGN=Center>
-      b</TD>
-    <TD><P ALIGN=Center>
-      c</TD>
-    <TD>e&nbsp;</TD>
-  </TR>
-  <TR>
-    <TH><P ALIGN=Left>
-      Replace With</TH>
-    <TD>&nbsp;</TD>
-    <TD></TD>
-    <TD><P ALIGN=Center>
-      &nbsp;C</TD>
-    <TD>&nbsp;</TD>
-  </TR>
-</TABLE>
-<P>
-So replace the "b" if the final "d" is present, otherwise replace the "c".
-Again this cannot be expressed in Apple's state machines.
-<P>
-Finally consider
-<TABLE BORDER CELLPADDING="2">
-  <TR>
-    <TH>Initial Sequence</TH>
-    <TD><P ALIGN=Center>
-      a</TD>
-    <TD><P ALIGN=Center>
-      b</TD>
-    <TD><P ALIGN=Center>
-      c</TD>
-    <TD>d</TD>
-  </TR>
-  <TR>
-    <TH><P ALIGN=Left>
-      Replace With</TH>
-    <TD>&nbsp;</TD>
-    <TD><P ALIGN=Center>
-    </TD>
-    <TD>C</TD>
-    <TD>&nbsp;</TD>
-  </TR>
-  <TR>
-    <TH>Initial Sequence</TH>
-    <TD><P ALIGN=Center>
-      b</TD>
-    <TD><P ALIGN=Center>
-      c</TD>
-    <TD><P ALIGN=Center>
-      e</TD>
-    <TD></TD>
-  </TR>
-  <TR>
-    <TH><P ALIGN=Left>
-      Replace With</TH>
-    <TD><P ALIGN=Center>
-      B&nbsp;</TD>
-    <TD></TD>
-    <TD><P ALIGN=Center>
-      &nbsp;</TD>
-    <TD>&nbsp;</TD>
-  </TR>
-</TABLE>
-<P>
-If this substitution is given the sequence "abce" it cannot work in AAT.
-When it reads the "a" it will start down the "abcd" branch, the match will
-not fail until it looks for the "d" and finds "e" instead. At that point
-it is too late to switch to the "bce" substitution (which does match) because
-the "b" glyph will not have been marked as a substitution location.
-<P>
-  <HR>
-On the other hand, Apple's state machines can express things that OpenType
-tables cannot (again I'm restricting myself to contextual glyph substitutions).
-Consider the case of a swash glyph at the beginning (or end) of a word. Let
-us say that a word begins when a letter appears at the start of input or
-following a whitespace character. But OpenType has no way of expressing "start
-of input" (or end of input) in a contextual/chaining context, whereas Apple's
-state machines do.
-<P>
-Since Apple's glyph substitutions can delete glyphs a contextual glyph
-substitution table can create two character ligatures (one glyph is converted
-to the ligature and the other is deleted), while OpenType tables must use
-a ligature substitution to do this.
-<P>
-Finally an AAT state machine can match a general regular expression, while
-OpenType tables can only match fixed length strings. Suppose you were typesetting
-mathematics and wanted a substitution which would convert an arbitrary digit
-string following a variable into a subscript (so x23 should become
-x<SMALL><SUB>23</SUB></SMALL>). It is easy to write a state machine which
-will keep substituting as long as it gets more digits, but you'd need an
-infinite number of OpenType rules to have the same expressive power.
-<P>
-These examples probably seem fairly contrived, and (except for the swash
-one) they are. But they illustrate the point that the two formats have very
-different expressive capabilities and it is NOT possible to write a converter
-which will take any input in one format and produce an equivalent output
-in the other.
-<H3>
-  Apple and OpenType features
-</H3>
-<TABLE BORDER CELLPADDING="2">
-  <CAPTION>
-    Correspondences between Apple and OpenType
-    <A NAME="OT-Mac-features">features</A><BR>
-    (that I support)
-  </CAPTION>
-  <TR>
-    <TH>Apple Feature Setting</TH>
-    <TH>OpenType Feature Name</TH>
-    <TH>OpenType Tag</TH>
-  </TR>
-  <TR>
-    <TD>Required Ligatures</TD>
-    <TD>Required Ligatures</TD>
-    <TD>rlig</TD>
-  </TR>
-  <TR>
-    <TD>Common Ligatures</TD>
-    <TD>Standard Ligatures</TD>
-    <TD>liga</TD>
-  </TR>
-  <TR>
-    <TD>Rare Ligatures</TD>
-    <TD>Discretionary</TD>
-    <TD>dlig</TD>
-  </TR>
-  <TR>
-    <TD>Fractions</TD>
-    <TD>Fractions</TD>
-    <TD>frac</TD>
-  </TR>
-  <TR>
-    <TD COLSPAN=3>
-	<HR>
-    </TD>
-  </TR>
-  <TR>
-    <TD>Contextual Alternatives</TD>
-    <TD>Cursive connection</TD>
-    <TD>calt</TD>
-  </TR>
-  <TR>
-    <TD COLSPAN=3>
-	<HR>
-    </TD>
-  </TR>
-  <TR>
-    <TD>Vertical Forms</TD>
-    <TD>Vertical Rotation 2</TD>
-    <TD>vrt2</TD>
-  </TR>
-  <TR>
-    <TD>Monospace numbers</TD>
-    <TD>Tabular numbers</TD>
-    <TD>tnum</TD>
-  </TR>
-  <TR>
-    <TD>Superscript</TD>
-    <TD>Superscript</TD>
-    <TD>sups</TD>
-  </TR>
-  <TR>
-    <TD>Subscript</TD>
-    <TD>Subscript</TD>
-    <TD>subs</TD>
-  </TR>
-  <TR>
-    <TD>Proportional Text</TD>
-    <TD>Proportional Widths</TD>
-    <TD>pwid</TD>
-  </TR>
-  <TR>
-    <TD>Half-width Text</TD>
-    <TD>Half Width</TD>
-    <TD>hwid</TD>
-  </TR>
-  <TR>
-    <TD>Full-width Text</TD>
-    <TD>Full Width</TD>
-    <TD>fwid</TD>
-  </TR>
-  <TR>
-    <TD>Traditional Characters</TD>
-    <TD>Traditional</TD>
-    <TD>trad</TD>
-  </TR>
-  <TR>
-    <TD>Simplified Characters</TD>
-    <TD>Simplified</TD>
-    <TD>smpl</TD>
-  </TR>
-  <TR>
-    <TD>JIS 1978 Characters</TD>
-    <TD>JIS 1978 Characters</TD>
-    <TD>jp78</TD>
-  </TR>
-  <TR>
-    <TD>JIS 1983 Characters</TD>
-    <TD>JIS 1983 Characters</TD>
-    <TD>jp83</TD>
-  </TR>
-  <TR>
-    <TD>JIS 1990 Characters</TD>
-    <TD>JIS 1990 Characters</TD>
-    <TD>jp90</TD>
-  </TR>
-</TABLE>
-<P>
-FontForge will retain the order of features in the morx table, and the user
-may adjust it with the <A HREF="fontinfo.html#Order">Element-&gt;Font Info</A>
-command. (this is the same list as that used for GSUB table. GSUB features
-that don't correspond to mac features will be ignored).
-<H2>
-  What is <A NAME="Unsupported">Unsupported</A>?
-</H2>
-<P>
-FontForge does not (yet) support all the advanced typographic features available
-in either opentype or apple advanced typography.
-<H3>
-  OpenType
-</H3>
-<UL>
-  <LI>
-    FontForge does not support using truetype points to control positioning
-  <LI>
-    FontForge does not support some of the more esoteric uses of the lookup flags.
-  <LI>
-    FontForge does not provide an attachment list subtable nor a MarkAttachClassDef
-    subtable of the GDEF table.
-  <LI>
-    FontForge does not support the BASE and JUST tables
-  <LI>
-    FontForge has minimal support for VORG
-</UL>
-<P>
-<A HREF="TrueOpenTables.html">See here for a complete list of supported
-tables</A>.
-<H3>
-  Apple Advanced Typography
-</H3>
-<UL>
-  <LI>
-    FontForge will never generate a 'mort' table. It can read 'mort' tables,
-    but it will only produce 'morx' tables.
-  <LI>
-    FontForge is unable to parse contextual ligatures. It can find ligatures
-    which start from state 0, but it will not find ligatures which start from
-    other states (that is, which are contextual)
-  <LI>
-    FontForge does not support the following Apple specific tables
-    <UL>
-      <LI>
-	acnt (accent attachment)
-      <LI>
-	bsln (baseline)
-      <LI>
-	fdsc (font descriptor)
-      <LI>
-	fmtx (font metrics)
-      <LI>
-	hsty (horizontal style)
-      <LI>
-	just (justification)
-      <LI>
-	trak (tracking)
-      <LI>
-	Zapf (glyph reference)
-    </UL>
-</UL>
-<P>
-<A HREF="TrueOpenTables.html">See here for a complete list of supported
-tables</A>.
-<P>
-<P ALIGN=Center>
--- <A HREF="generate.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
-<A HREF="filemenu.html">Next</A> --
+  </UL>
+  <P>
+  <A HREF="TrueOpenTables.html">See here for a complete list of supported
+  tables</A>.
+  <P>
+  <P ALIGN=Center>
+  -- <A HREF="generate.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
+  <A HREF="filemenu.html">Next</A> --
 </DIV>
 </BODY></HTML>

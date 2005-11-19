@@ -2,46 +2,77 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Oct-2005 -->
-  <!-- AP: Last modified: 27-Oct-2005 -->
+  <!-- AP: Last modified: 18-Nov-2005 -->
   <TITLE>FontForge install procedures for VMS</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
 <DIV id="in">
-<H1 ALIGN=Center>
-  FontForge install procedures<BR>
-  <SMALL>for VMS</SMALL>
-</H1>
-<UL>
-  <LI>
-    <A HREF="#Installing">Installing from a pre-built vms package</A>
-  <LI>
-    <A HREF="nix-install.html">Installing on a unix/linux system</A>
-  <LI>
-    <A HREF="mac-install.html">Installing on a mac</A>
-  <LI>
-    <A HREF="ms-install.html">Installing on MS/Windows</A>
-  <LI>
-    <A HREF="source-build.html">Building and installing from source</A>
-  <LI>
-    <A HREF="source-build.html#Dependencies">Dependencies (external libraries/helper
-    programs)</A>
-  <LI>
-    <A HREF="source-build.html#Documentation">Installing documentation</A>
-  <LI>
-    <A HREF="running.html">Running FontForge</A>
-</UL>
-<H2>
-  <A NAME="Installing">Installing</A> from a VMS package
-</H2>
-<P>
-I'm afraid I have absolutely no idea what you need to do. All I can say is
-that Jacob Jansen has provided a vms package at:
-<UL>
-  <LI>
-    <A HREF="ftp://nchrem.tnw.tudelft.nl/pfaedit/">An OpenVMS executable</A>
-</UL>
-<P>
+  <H1 ALIGN=Center>
+    FontForge install procedures<BR>
+    <SMALL>for VMS</SMALL>
+  </H1>
+  <UL>
+    <LI>
+      <A HREF="#Installing">Installing from a pre-built vms package</A>
+    <LI>
+      <A HREF="nix-install.html">Installing on a unix/linux system</A>
+    <LI>
+      <A HREF="mac-install.html">Installing on a mac</A>
+    <LI>
+      <A HREF="ms-install.html">Installing on MS/Windows</A>
+    <LI>
+      <A HREF="source-build.html">Building and installing from source</A>
+    <LI>
+      <A HREF="source-build.html#Dependencies">Dependencies (external libraries/helper
+      programs)</A>
+    <LI>
+      <A HREF="source-build.html#Documentation">Installing documentation</A>
+    <LI>
+      <A HREF="running.html">Running FontForge</A>
+  </UL>
+  <H2>
+    <A NAME="Installing">Installing</A> from a VMS package
+  </H2>
+  <P>
+  I'm afraid I have absolutely no idea what you need to do. All I can say is
+  that Jacob Jansen has provided a vms package at:
+  <UL>
+    <LI>
+      <A HREF="ftp://nchrem.tnw.tudelft.nl/pfaedit/">An OpenVMS executable</A>
+    <LI>
+      <A HREF="ftp://nchrem.tnw.tudelft.nl/openvms/software2.html#FONTFORGE">With
+      some information on dependencies</A>
+  </UL>
+  <P>
+  He has provided the following notes:
+  <P>
+  Notes for VMS created on 17 November 2005
+  <P>
+  Compilation :
+  <UL>
+    <LI>
+      -use MMS or MMK in the main directory (the one containing this file)
+    <LI>
+      -Ignore all messages about undefined symbols during linking of the shareable
+      images. I have no idea how to supress them.
+  </UL>
+  <P>
+  To use :
+  <UL>
+    <LI>
+      the file [.libs]libfontforge.exe should be in a directory defined by the
+      logical SYS$SHARE. So either copy it to it or redefine it i.e.: assign
+      dev:[fontforge.fontforge.fontforge.libs],sys$sysroot:[syslib] sys$share
+    <LI>
+      To use the plugins (an example is in the [.plugins] directory) you have to
+      create a logical FONTFORGE$PLUGINS pointing to all directories to be scanned
+      for plugins i.e. define/job/trans=(concealed)/nolog fontforge$plugins
+      dev:[fontforge.fontforge.fontforge.plugins.] Note that the final "." before
+      the "]" is essential. Note that both logicals FONTFORGE$PLUGINS and SYS$SHARE
+      can be defined system-wide, for a group of users or for a single user only.
+  </UL>
+  <P>
 </DIV>
 </BODY></HTML>
