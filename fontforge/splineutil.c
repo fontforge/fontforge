@@ -1790,6 +1790,12 @@ return( str );
 	    *rpt++ = *str++;
     }
     *rpt = '\0';
+    if ( !utf8_valid(ret)) {
+	/* Assume latin1, convert to utf8 */
+	rpt = latin1_2_utf8_copy(ret);
+	free(ret);
+	ret = rpt;
+    }
 return(ret);
 }
 
@@ -1815,7 +1821,7 @@ return( ret );
 static void SplineFontMetaData(SplineFont *sf,struct fontdict *fd) {
     int em;
 
-    sf->fontname = copy(fd->cidfontname?fd->cidfontname:fd->fontname);
+    sf->fontname = utf8_verify_copy(fd->cidfontname?fd->cidfontname:fd->fontname);
     sf->display_size = -default_fv_font_size;
     sf->display_antialias = default_fv_antialias;
     if ( fd->fontinfo!=NULL ) {

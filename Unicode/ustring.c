@@ -719,30 +719,33 @@ return( utf8buf );
 }
 
 uint32 utf8_ildb(const char **_text) {
-    uint32 val;
+    uint32 val= -1;
     int ch;
     const uint8 *text = (const uint8 *) *_text;
     /* Increment and load character */
 
     if ( (ch = *text++)<0x80 ) {
 	val = ch;
+    } else if ( ch<=0xbf ) {
+	/* error */
     } else if ( ch<=0xdf ) {
-	if ( *text<0x80 )
-return( -1 );
-	val = ((ch&0x1f)<<6) | (*text++&0x3f);
+	if ( *text>=0x80 && *text<0xc0 )
+	    val = ((ch&0x1f)<<6) | (*text++&0x3f);
     } else if ( ch<=0xef ) {
-	if ( *text<0x80 || text[1]<0x80 )
-return( -1 );
-	val = ((ch&0xf)<<12) | ((text[0]&0x3f)<<6) | (text[1]&0x3f);
-	text += 2;
+	if ( *text>=0x80 && *text<0xc0 && text[1]>=0x80 && text[1]<0xc0 ) {
+	    val = ((ch&0xf)<<12) | ((text[0]&0x3f)<<6) | (text[1]&0x3f);
+	    text += 2;
+	}
     } else {
 	int w = ( ((ch&0x7)<<2) | ((text[0]&0x30)>>4) )-1, w2;
 	w = (w<<6) | ((text[0]&0xf)<<2) | ((text[1]&0x30)>>4);
 	w2 = ((text[1]&0xf)<<6) | (text[2]&0x3f);
 	val = w*0x400 + w2 + 0x10000;
-	if ( *text<0x80 || text[1]<0x80 || text[2]<0x80 )
-return( -1 );
-	text += 3;
+	if ( *text<0x80 || text[1]<0x80 || text[2]<0x80 ||
+		*text>=0xc0 || text[1]>=0xc0 || text[2]>=0xc0 )
+	    val = -1;
+	else
+	    text += 3;
     }
     *_text = text;
 return( val );
@@ -788,6 +791,17 @@ return( utf8_text+2 );
 return( utf8_text+3 );
     else
 return( utf8_text+4 );
+}
+
+int utf8_valid(const char *str) {
+    /* Is this a valid utf8 string? */
+    int ch;
+
+    while ( (ch=utf8_ildb(&str))!='\0' )
+	if ( ch==-1 )
+return( false );
+
+return( true );
 }
 
 char *utf8_db(char *utf8_text) {

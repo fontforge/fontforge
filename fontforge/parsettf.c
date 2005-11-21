@@ -948,65 +948,6 @@ return( false );
 return( *str=='\0' );
 }
 
-static char *removeaccents(char *_str) {
-    /* Postscript really wants ASCII, so if we can make it ascii without too */
-    /*  much loss, let's do so */
-    unsigned char *str = (unsigned char *) _str, *pt = str;
-    while ( *pt ) {
-	if ( *pt>=0xc0 && *pt<=0xc5 )
-	    *pt = 'A';
-	else if ( *pt>=0xe0 && *pt<=0xe5 )
-	    *pt = 'a';
-	else if ( *pt==0xc6 || *pt==0xe6 || *pt==0xdf ) {
-	    unsigned char *temp = galloc(strlen((char *) str)+2);
-	    strcpy((char *) temp,(char *) str);
-	    if ( *pt==0xc6 ) {
-		temp[pt-str] = 'A';
-		temp[pt-str+1] = 'E';
-	    } else if ( *pt==0e6 ) {
-		temp[pt-str] = 'a';
-		temp[pt-str+1] = 'e';
-	    } else {
-		temp[pt-str] = 's';
-		temp[pt-str+1] = 's';
-	    }
-	    strcpy((char *) temp+(pt-str)+2,(char *) pt+1);
-	    pt = temp+(pt-str)+1;
-	    free(str);
-	    str = temp;
-	} else if ( *pt==0xc7 )
-	    *pt = 'C';
-	else if ( *pt==0xe7 )
-	    *pt = 'c';
-	else if ( *pt>=0xc8 && *pt<=0xcb )
-	    *pt = 'E';
-	else if ( *pt>=0xe8 && *pt<=0xeb )
-	    *pt = 'e';
-	else if ( *pt>=0xcc && *pt<=0xcf )
-	    *pt = 'I';
-	else if ( *pt>=0xec && *pt<=0xef )
-	    *pt = 'i';
-	else if ( *pt==0xd1 )
-	    *pt = 'N';
-	else if ( *pt==0xf1 )
-	    *pt = 'n';
-	else if ( (*pt>=0xd2 && *pt<=0xd6 ) || *pt==0xd8 )
-	    *pt = 'O';
-	else if ( (*pt>=0xf2 && *pt<=0xf6 ) || *pt==0xf8 )
-	    *pt = 'o';
-	else if ( *pt>=0xd9 && *pt<=0xdc )
-	    *pt = 'U';
-	else if ( *pt>=0xf9 && *pt<=0xfc )
-	    *pt = 'u';
-	else if ( *pt>=0xdd )
-	    *pt = 'Y';
-	else if ( *pt==0xfd || *pt==0xff )
-	    *pt = 'y';
-	++pt;
-    }
-return( (char *) str );
-}
-
 static char *FindLangEntry(struct ttfinfo *info, int id ) {
     /* Look for an entry with string id */
     /* we prefer english, if we can't find english look for something in ascii */
@@ -1021,9 +962,10 @@ static char *FindLangEntry(struct ttfinfo *info, int id ) {
     if ( cur==NULL )
 	for ( cur=info->names; cur!=NULL && !is_ascii(cur->names[id]); cur=cur->next );
     if ( cur==NULL )
+	for ( cur=info->names; cur!=NULL && cur->names[id]==NULL; cur=cur->next );
+    if ( cur==NULL )
 return( NULL );
-    ret = copy(cur->names[id]);
-    ret = removeaccents(ret);
+    ret = copy(cur->names[id]);	
 return( ret );
 }
 
@@ -2946,7 +2888,7 @@ static SplineFont *cffsffillup(struct topdicts *subdict, char **strings,
     int emsize;
     static int nameless;
 
-    sf->fontname = copy(getsid(subdict->sid_fontname,strings,scnt));
+    sf->fontname = utf8_verify_copy(getsid(subdict->sid_fontname,strings,scnt));
     if ( sf->fontname==NULL ) {
 	char buffer[40];
 	sprintf(buffer,"UntitledSubFont_%d", ++nameless );
@@ -2960,13 +2902,13 @@ static SplineFont *cffsffillup(struct topdicts *subdict, char **strings,
     sf->ascent = .8*emsize;
     sf->descent = emsize - sf->ascent;
     if ( subdict->copyright!=-1 )
-	sf->copyright = copy(getsid(subdict->copyright,strings,scnt));
+	sf->copyright = utf8_verify_copy(getsid(subdict->copyright,strings,scnt));
     else
-	sf->copyright = copy(getsid(subdict->notice,strings,scnt));
-    sf->familyname = copy(getsid(subdict->familyname,strings,scnt));
-    sf->fullname = copy(getsid(subdict->fullname,strings,scnt));
-    sf->weight = copy(getsid(subdict->weight,strings,scnt));
-    sf->version = copy(getsid(subdict->version,strings,scnt));
+	sf->copyright = utf8_verify_copy(getsid(subdict->notice,strings,scnt));
+    sf->familyname = utf8_verify_copy(getsid(subdict->familyname,strings,scnt));
+    sf->fullname = utf8_verify_copy(getsid(subdict->fullname,strings,scnt));
+    sf->weight = utf8_verify_copy(getsid(subdict->weight,strings,scnt));
+    sf->version = utf8_verify_copy(getsid(subdict->version,strings,scnt));
     sf->italicangle = subdict->italicangle;
     sf->upos = subdict->underlinepos;
     sf->uwidth = subdict->underlinewidth;
@@ -3001,28 +2943,28 @@ static void cffinfofillup(struct ttfinfo *info, struct topdicts *dict,
     if ( dict->copyright!=-1 || dict->notice!=-1 )
 	free( info->copyright );
     if ( dict->copyright!=-1 )
-	info->copyright = copy(getsid(dict->copyright,strings,scnt));
+	info->copyright = utf8_verify_copy(getsid(dict->copyright,strings,scnt));
     else if ( dict->notice!=-1 )
-	info->copyright = copy(getsid(dict->notice,strings,scnt));
+	info->copyright = utf8_verify_copy(getsid(dict->notice,strings,scnt));
     if ( dict->familyname!=-1 ) {
 	free(info->familyname);
-	info->familyname = copy(getsid(dict->familyname,strings,scnt));
+	info->familyname = utf8_verify_copy(getsid(dict->familyname,strings,scnt));
     }
     if ( dict->fullname!=-1 ) {
 	free(info->fullname);
-	info->fullname = copy(getsid(dict->fullname,strings,scnt));
+	info->fullname = utf8_verify_copy(getsid(dict->fullname,strings,scnt));
     }
     if ( dict->weight!=-1 ) {
 	free(info->weight);
-	info->weight = copy(getsid(dict->weight,strings,scnt));
+	info->weight = utf8_verify_copy(getsid(dict->weight,strings,scnt));
     }
     if ( dict->version!=-1 ) {
 	free(info->version);
-	info->version = copy(getsid(dict->version,strings,scnt));
+	info->version = utf8_verify_copy(getsid(dict->version,strings,scnt));
     }
     if ( dict->fontname!=NULL ) {
 	free(info->fontname);
-	info->fontname = copy(dict->fontname);
+	info->fontname = utf8_verify_copy(dict->fontname);
     }
     info->italicAngle = dict->italicangle;
     info->upos = dict->underlinepos;
@@ -4757,11 +4699,11 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 	sf->uniqueid = info->fd->uniqueid;
 	sf->xuid = XUIDFromFD(info->fd->xuid);
 	if ( info->fd->fontinfo!=NULL ) {
-	    sf->familyname = copy(info->fd->fontinfo->familyname);
-	    sf->fullname = copy(info->fd->fontinfo->fullname);
-	    sf->copyright = copy(info->fd->fontinfo->notice);
-	    sf->weight = copy(info->fd->fontinfo->weight);
-	    sf->version = copy(info->fd->fontinfo->version);
+	    sf->familyname = utf8_verify_copy(info->fd->fontinfo->familyname);
+	    sf->fullname = utf8_verify_copy(info->fd->fontinfo->fullname);
+	    sf->copyright = utf8_verify_copy(info->fd->fontinfo->notice);
+	    sf->weight = utf8_verify_copy(info->fd->fontinfo->weight);
+	    sf->version = utf8_verify_copy(info->fd->fontinfo->version);
 	    sf->italicangle = info->fd->fontinfo->italicangle;
 	    sf->upos = info->fd->fontinfo->underlineposition*(sf->ascent+sf->descent);
 	    sf->uwidth = info->fd->fontinfo->underlinethickness*(sf->ascent+sf->descent);

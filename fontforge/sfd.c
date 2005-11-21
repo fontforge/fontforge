@@ -1665,6 +1665,14 @@ static char *getquotedeol(FILE *sfd) {
 	ch = getc(sfd);
     }
     *pt='\0';
+    /* these strings should be in utf8 now, but some old sfd files might have */
+    /* latin1. Not a severe problems because they SHOULD be in ASCII. So any */
+    /* non-ascii strings are erroneous anyway */
+    if ( !utf8_valid(str) ) {
+	pt = latin1_2_utf8_copy(str);
+	free(str);
+	str = pt;
+    }
 return( str );
 }
 
