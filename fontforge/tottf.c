@@ -3468,6 +3468,18 @@ static void dumppstr(FILE *file,char *str) {
     fwrite(str,sizeof(char),strlen(str),file);
 }
 
+char *utf8_verify_copy(const char *str) {
+    /* When given a postscript string it SHOULD be in ASCII. But it will often*/
+    /* contain a copyright symbol (sometimes in latin1, sometimes in macroman)*/
+    /* unfortunately both encodings use 0xa9 for copyright so we can't distinguish */
+    /* guess that it's latin1 (or that copyright is the only odd char which */
+    /* means a latin1 conversion will work for macs too). */
+
+    if ( utf8_valid(str))
+return( copy(str));		/* Either in ASCII (good) or appears to be utf8*/
+return( latin1_2_utf8_copy(str));
+}
+
 /* Oh. If the encoding is symbol (platform=3, specific=0) then Windows won't */
 /*  accept the font unless the name table also has entries for (3,0). I'm not */
 /*  sure if this is the case for the CJK encodings (docs don't mention that) */
@@ -3478,11 +3490,11 @@ void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf) {
     char buffer[200];
 
     if ( dummy->names[ttf_copyright]==NULL || *dummy->names[ttf_copyright]=='\0' )
-	dummy->names[ttf_copyright] = copy(sf->copyright);
+	dummy->names[ttf_copyright] = utf8_verify_copy(sf->copyright);
     if ( dummy->names[ttf_family]==NULL || *dummy->names[ttf_family]=='\0' )
-	dummy->names[ttf_family] = copy(sf->familyname);
+	dummy->names[ttf_family] = utf8_verify_copy(sf->familyname);
     if ( dummy->names[ttf_subfamily]==NULL || *dummy->names[ttf_subfamily]=='\0' )
-	dummy->names[ttf_subfamily] = copy(SFGetModifiers(sf));
+	dummy->names[ttf_subfamily] = utf8_verify_copy(SFGetModifiers(sf));
     if ( dummy->names[ttf_uniqueid]==NULL || *dummy->names[ttf_uniqueid]=='\0' ) {
 	time(&now);
 	tm = localtime(&now);
@@ -3493,7 +3505,7 @@ void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf) {
 	dummy->names[ttf_uniqueid] = copy(buffer);
     }
     if ( dummy->names[ttf_fullname]==NULL || *dummy->names[ttf_fullname]=='\0' )
-	dummy->names[ttf_fullname] = copy(sf->fullname);
+	dummy->names[ttf_fullname] = utf8_verify_copy(sf->fullname);
     if ( dummy->names[ttf_version]==NULL || *dummy->names[ttf_version]=='\0' ) {
 	if ( sf->subfontcnt!=0 )
 	    sprintf( buffer, "Version %f ", sf->cidversion );
@@ -3504,7 +3516,7 @@ void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf) {
 	dummy->names[ttf_version] = copy(buffer);
     }
     if ( dummy->names[ttf_postscriptname]==NULL || *dummy->names[ttf_postscriptname]=='\0' )
-	dummy->names[ttf_postscriptname] = copy(sf->fontname);
+	dummy->names[ttf_postscriptname] = utf8_verify_copy(sf->fontname);
 }
 
 typedef struct {

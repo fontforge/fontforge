@@ -1815,6 +1815,8 @@ extern ASM *ASMFromFPST(SplineFont *sf,FPST *fpst,int ordered);
 extern struct sliflag { uint16 sli, flags; } *SFGetFormsList(SplineFont *sf,int test_dflt);
 extern int SFAnyConvertableSM(SplineFont *sf);
 
+extern char *utf8_verify_copy(const char *str);
+
 extern char *MacStrToUtf8(const char *str,int macenc,int maclang);
 extern char *Utf8ToMacStr(const char *ustr,int macenc,int maclang);
 extern uint8 MacEncFromMacLang(int maclang);
