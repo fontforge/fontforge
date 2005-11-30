@@ -36,8 +36,8 @@ fontforge.exe : main.obj lff.opt xlib.opt [-.libs]libfontforge.exe
         LIBGUNICODE/lib,[]xlib.opt/opt
 
 [-.libs]libfontforge.exe : $(fontforge_OBJECTS) $(fontforge_OBJECTS1)\
-	$(fontforge_OBJECTS2) $(fontforge_OBJECTS4) $(fontforge_OBJECTS5)\
-	$(fontforge_OBJECTS6) $(fontforge_OBJECTS7)
+	$(fontforge_OBJECTS2) $(fontforge_OBJECTS3) $(fontforge_OBJECTS4)\
+	$(fontforge_OBJECTS5) $(fontforge_OBJECTS6) $(fontforge_OBJECTS7)
 	@ WRITE_ SYS$OUTPUT "  generating lff1.opt"
 	@ OPEN_/WRITE FILE  lff1.opt
 	@ WRITE_ FILE "!"
