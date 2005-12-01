@@ -187,16 +187,18 @@ return( false );
 	if ( (basept!=-1) ^ (refpt!=-1) ) {
 	    gwwv_post_error(_("Bad Point Match"),_("Both points must be specified, or neither"));
 	}
-	if ( ttfFindPointInSC(ci->cv->sc,basept,&inbase,ci->rf)!=-1 ) {
-	    gwwv_post_error(_("Bad Point Match"),_("Couldn't find base point"));
+	if ( basept!=-1 ) {
+	    if ( ttfFindPointInSC(ci->cv->sc,basept,&inbase,ci->rf)!=-1 ) {
+		gwwv_post_error(_("Bad Point Match"),_("Couldn't find base point"));
 return( false );
-	} else if ( ttfFindPointInSC(ci->rf->sc,refpt,&inref,NULL)!=-1 ) {
-	    gwwv_post_error(_("Bad Point Match"),_("Couldn't find point in reference"));
+	    } else if ( ttfFindPointInSC(ci->rf->sc,refpt,&inref,NULL)!=-1 ) {
+		gwwv_post_error(_("Bad Point Match"),_("Couldn't find point in reference"));
 return( false );
+	    }
+	    /* Override user specified value */
+	    trans[4] = inbase.x-inref.x;
+	    trans[5] = inbase.y-inref.y;
 	}
-	/* Override user specified value */
-	trans[4] = inbase.x-inref.x;
-	trans[5] = inbase.y-inref.y;
     }
 
     for ( i=0; i<6 && ref->transform[i]==trans[i]; ++i );
