@@ -4373,7 +4373,11 @@ return( 0 );
     if ( info->tex_start!=0 )
 	tex_read(ttf,info);
     setlocale(LC_NUMERIC,oldloc);
-    ttfFixupReferences(info);
+    if ( !info->onlystrikes && info->glyphlocations_start!=0 && info->glyph_start!=0 )
+	ttfFixupReferences(info);
+    /* Can't fix up any postscript references until we create a SplineFont */
+    /*  so the check for cff is delayed. Generally there aren't any cff refs */
+    /*  anyway */
 return( true );
 }
 
