@@ -712,7 +712,9 @@ void LoadPrefs(void) {
     char *pt;
     struct prefs_list *pl;
 
+#if !defined(NODYNAMIC)
     LoadPluginDir(NULL);
+#endif
     LoadPfaEditEncodings();
     LoadGroupList();
 
