@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT RANLIB ac_ct_RANLIB build build_cpu build_vendor build_os host host_cpu host_vendor host_os HOST CPP EGREP X_CFLAGS X_PRE_LIBS X_LIBS X_EXTRA_LIBS X_11LIB STATIC_LIBS VERSION WFLAGS LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT RANLIB ac_ct_RANLIB build build_cpu build_vendor build_os host host_cpu host_vendor host_os HOST FF_EXTRA_FILES CPP EGREP X_CFLAGS X_PRE_LIBS X_LIBS X_EXTRA_LIBS X_11LIB STATIC_LIBS VERSION WFLAGS LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -2492,6 +2492,8 @@ if test "${with_iconv+set}" = set; then
    fi
 
 fi;
+
+
 
 
 echo "$as_me:$LINENO: checking for library containing dlopen" >&5
@@ -8096,6 +8098,7 @@ s,@host_cpu@,$host_cpu,;t t
 s,@host_vendor@,$host_vendor,;t t
 s,@host_os@,$host_os,;t t
 s,@HOST@,$HOST,;t t
+s,@FF_EXTRA_FILES@,$FF_EXTRA_FILES,;t t
 s,@CPP@,$CPP,;t t
 s,@EGREP@,$EGREP,;t t
 s,@X_CFLAGS@,$X_CFLAGS,;t t
@@ -9029,6 +9032,7 @@ s,@host_cpu@,$host_cpu,;t t
 s,@host_vendor@,$host_vendor,;t t
 s,@host_os@,$host_os,;t t
 s,@HOST@,$HOST,;t t
+s,@FF_EXTRA_FILES@,$FF_EXTRA_FILES,;t t
 s,@CPP@,$CPP,;t t
 s,@EGREP@,$EGREP,;t t
 s,@X_CFLAGS@,$X_CFLAGS,;t t
@@ -9965,6 +9969,7 @@ s,@host_cpu@,$host_cpu,;t t
 s,@host_vendor@,$host_vendor,;t t
 s,@host_os@,$host_os,;t t
 s,@HOST@,$HOST,;t t
+s,@FF_EXTRA_FILES@,$FF_EXTRA_FILES,;t t
 s,@CPP@,$CPP,;t t
 s,@EGREP@,$EGREP,;t t
 s,@X_CFLAGS@,$X_CFLAGS,;t t
@@ -10901,6 +10906,7 @@ s,@host_cpu@,$host_cpu,;t t
 s,@host_vendor@,$host_vendor,;t t
 s,@host_os@,$host_os,;t t
 s,@HOST@,$HOST,;t t
+s,@FF_EXTRA_FILES@,$FF_EXTRA_FILES,;t t
 s,@CPP@,$CPP,;t t
 s,@EGREP@,$EGREP,;t t
 s,@X_CFLAGS@,$X_CFLAGS,;t t
