@@ -361,7 +361,7 @@ return;
 	else if ( tfmd->ligkerntab[lk_index*4+2]>=128 ) {
 	    k_index = ((tfmd->ligkerntab[lk_index*4+2]-128)*256+
 		    tfmd->ligkerntab[lk_index*4+3])*4;
-	    if ( k_index>tfmd->kern_size )
+	    if ( k_index>4*tfmd->kern_size )
 return;
 	    off = (sf->ascent+sf->descent) *
 		    ((tfmd->kerntab[k_index]<<24) + (tfmd->kerntab[k_index+1]<<16) +
