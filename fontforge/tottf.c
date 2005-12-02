@@ -3475,6 +3475,9 @@ char *utf8_verify_copy(const char *str) {
     /* guess that it's latin1 (or that copyright is the only odd char which */
     /* means a latin1 conversion will work for macs too). */
 
+    if ( str==NULL )
+return( NULL );
+
     if ( utf8_valid(str))
 return( copy(str));		/* Either in ASCII (good) or appears to be utf8*/
 return( latin1_2_utf8_copy(str));
