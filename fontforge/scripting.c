@@ -1154,7 +1154,7 @@ static void bLoadPlugin(Context *c) {
     LoadPlugin(name);
     free(name);
 #else
-    error(c,"This version of fontforge does not support plugins");
+    ScriptError(c,"This version of fontforge does not support plugins");
 #endif
 }
 
@@ -1172,7 +1172,7 @@ static void bLoadPluginDir(Context *c) {
 #if !defined(NODYNAMIC)
     LoadPluginDir(dir);
 #else
-    error(c,"This version of fontforge does not support plugins");
+    ScriptError(c,"This version of fontforge does not support plugins");
 #endif
     free(dir);
 }
