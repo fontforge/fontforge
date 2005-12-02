@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 20-Nov-2005 -->
+  <!-- AP: Last modified: 1-Dec-2005 -->
   <TITLE>FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -123,6 +123,8 @@
       </UL>
     <LI>
       <A HREF="#tools">Related tools</A>
+    <LI>
+      <A HREF="index.html#font-devel">Open Source Font development efforts</A>
   </UL>
   <P>
   I have no one to do QA for me except users on the net, so this is essentially
@@ -207,15 +209,11 @@
     <A NAME="Lacks">Lacks</A>
   </H2>
   <P>
-  FontForge is by no means complete. And probably has some bugs. Be prepared
+  FontForge is by no means perfect. And probably has some bugs. Be prepared
   to save frequently and consider working on a copy of the original.
   <UL>
     <LI>
       No attempt has been made to be efficient.
-    <LI>
-      No attempt has been made to interpret truetype instructions (hints), instead
-      the instructions will be stored and used as long as no significant changes
-      happen to the character they are associated with.
     <LI>
       Many type 3 fonts will not be read in correctly
     <LI>
@@ -223,10 +221,10 @@
       type0 fonts (such as those made by itself), will get confused if there's
       more than one font with a chars dictionary.
     <LI>
-      FontForge's support for the VORG table output is limited.
+      FontForge's does not support contextual ligatures for Apple Advanced Typography
+      (AAT) fonts
     <LI>
-      FontForge's support for <A HREF="gposgsub.html#AAT">Apple's Advanced Typography
-      tables</A> (AAT) is limited.
+      There are a number of opentype/AAT tables which FontForge does NOT support.
   </UL>
   <H2>
     <A NAME="known-bugs">Bugs</A>
@@ -745,30 +743,34 @@ U+0066 + U+0069 =&gt; U+FB01 'liga'
       <A HREF="http://eyegene.ophthy.med.umich.edu/unicode/fontguide/">Unicode
       Font Guide for Free/Libre Open Source Operating Systems</A>
     <LI>
-      Open Source font development efforts:
-      <UL>
-	<LI>
-	  <A HREF="http://dejavu.sf.net/">DejaVu</A> -- extension of bitstream Vera
-	  to cyrillic &amp; greek.
-	<LI>
-	  <A HREF="http://savannah.nongnu.org/projects/freefont/">Free UCS Outline
-	  Fonts</A> -- A set of free OpenType fonts covering ISO 10646/Unicode character
-	  set..
-	<LI>
-	  <A HREF="http://www.engl.virginia.edu/OE/junicode/junicode.html">JUnicode</A>
-	  -- A free (GPL) font especially for scholars working with European medieval
-	  texts
-	<LI>
-	  <A HREF="http://www.typeforge.net/">TypeForge</A> -- a site for collaborative
-	  font development.
-      </UL>
-    <LI>
       <A HREF="otherlinks.html">Other related links...</A>
   </UL>
   <P>
   If you know of a tool you think should be on this list, please
   <A HREF="mailto:fontforge-devel@lists.sourceforge.net">let me know</A>. I
   did my research a couple of years ago and expect it is out of date.
+  <H2>
+    Open Source <A NAME="font-devel">font developm</A>ent efforts
+  </H2>
+  <UL>
+    <LI>
+      <A HREF="http://dejavu.sf.net/">DejaVu</A> -- extension of bitstream Vera
+      to cyrillic &amp; greek.
+    <LI>
+      <A HREF="http://savannah.nongnu.org/projects/freefont/">Free UCS Outline
+      Fonts</A> -- A set of free OpenType fonts covering ISO 10646/Unicode character
+      set..
+    <LI>
+      <A HREF="http://canopus.iacp.dvo.ru/~panov/cm-unicode/">Computer Modern Unicode
+      </A>-- Outline based version of Knuth's TeX fonts, extended to unicode.
+    <LI>
+      <A HREF="http://www.engl.virginia.edu/OE/junicode/junicode.html">JUnicode</A>
+      -- A free (GPL) font especially for scholars working with European medieval
+      texts
+    <LI>
+      <A HREF="http://www.typeforge.net/">TypeForge</A> -- a site for collaborative
+      font development.
+  </UL>
   <P ALIGN=Center>
   <P ALIGN=Center>
   <A HREF="http://bibliofile.duhs.duke.edu/gww/FreeWare/MyToys.html"><IMG SRC="http://bibliofile.duhs.duke.edu/gww/FreeWare/../uparrow.gif"
