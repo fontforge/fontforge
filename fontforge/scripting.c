@@ -1148,10 +1148,14 @@ static void bLoadPlugin(Context *c) {
 	ScriptError( c, "Wrong number of arguments" );
     else if ( c->a.vals[1].type!=v_str )
 	ScriptError( c, "Bad type of argument" );
+#if !defined(NODYNAMIC)
     _name = script2utf8_copy(c->a.vals[1].u.sval);
     name = utf82def_copy(_name); free(_name);
     LoadPlugin(name);
     free(name);
+#else
+    error(c,"This version of fontforge does not support plugins");
+#endif
 }
 
 static void bLoadPluginDir(Context *c) {
@@ -1165,7 +1169,11 @@ static void bLoadPluginDir(Context *c) {
 	_dir = script2utf8_copy(c->a.vals[1].u.sval);
 	dir = utf82def_copy(_dir); free(_dir);
     }
+#if !defined(NODYNAMIC)
     LoadPluginDir(dir);
+#else
+    error(c,"This version of fontforge does not support plugins");
+#endif
     free(dir);
 }
 

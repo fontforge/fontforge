@@ -25,6 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#if !defined(NODYNAMIC)
+
 #include "plugins.h"
 #include "dynamic.h"
 
@@ -110,3 +112,4 @@ return;
     }
     closedir(diro);
 }
+#endif
