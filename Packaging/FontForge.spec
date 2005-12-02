@@ -1,5 +1,5 @@
 Name:        fontforge
-Version:     20041203
+Version:     20051201
 Release:     1
 Summary:     An outline font editor
 License:     BSD
@@ -49,7 +49,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/fontforge
 %{_mandir}/man1/fontforge.1*
 %{_mandir}/man1/sfddiff.1*
-%doc LICENSE README
+%{_bindir}/../share/locale/*/LC_MESSAGES/FontForge.mo
+%doc LICENSE README-Unix.html
 
 %changelog
 * Wed Nov 27 2002 Scott Pakin <pakin@uiuc.edu>
