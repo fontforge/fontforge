@@ -65,6 +65,8 @@ AC_ARG_WITH(iconv,
    fi
  ])
 
+AC_SUBST(FF_EXTRA_FILES)
+
 AC_SEARCH_LIBS(dlopen, dl) dnl some systems have this in libc
 AC_SEARCH_LIBS(inet_aton, resolv) dnl some systems have this in libc
 if test "$gww_uselessiconv" = "no" ; then
