@@ -4692,6 +4692,20 @@ return( NULL );
 	    int i;
 	    for ( i=0; i<sf->mm->instance_count; ++i )
 		sf->mm->instances[i]->filename = copy(filename);
+	} else if ( !sf->onlybitmaps ) {
+/* Jonathyn Bet'nct points out that once you edit in an outline window, even */
+/*  if by mistake, your onlybitmaps status is gone for good */
+/* Regenerate it if the font has no splines, refs, etc. */
+	    int i;
+	    SplineChar *sc;
+	    for ( i=sf->glyphcnt-1; i>=0; --i )
+		if ( (sc = sf->glyphs[i])!=NULL &&
+			(sc->layer_cnt!=2 ||
+			 sc->layers[ly_fore].splines!=NULL ||
+			 sc->layers[ly_fore].refs!=NULL ))
+	     break;
+	     if ( i==-1 )
+		 sf->onlybitmaps = true;
 	}
     }
     fclose(sfd);
