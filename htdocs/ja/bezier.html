@@ -160,7 +160,7 @@ which are in the middle of a pixel (ie. with an x or y value ending in 1/2).
 These will also introduce rounding errors when converted to postscript, but
 here the solution is simple: Scale the em-square of the font by a factor
 of 2 and the problem vanishes). -->
-(Anish Mehta から、TrueType ではピクセルの中間に位置する点を指定する (すなわち、x や y の値が 1/2 の端数をもつ) ことができるという指摘を受けました。これも PostScript への変換を行うときに丸め誤差を持ち込む原因となり得ます。しかし解決方法は単純です: フォント野 EM 正方形を 2 倍に拡大すれば、問題はなくなります)。
+(Anish Mehta から、TrueType ではピクセルの中間に位置する点を指定する (すなわち、x や y の値が 1/2 の端数をもつ) ことができるという指摘を受けました。これも PostScript への変換を行うときに丸め誤差を持ち込む原因となり得ます。しかし解決方法は単純です: フォントの EM 正方形を 2 倍に拡大すれば、問題はなくなります)。
 <H2>
 <!--Converting Postscript to TrueType-->
     PostScript を TrueType に変換する方法
@@ -204,7 +204,7 @@ It may, of course, happen that the "cubic" we are given is actually a quadratic
 (if it's third degree term is 0), the most likely cause is that the font
 came from a truetype source. In that case the control point for the quadratic
 is at: -->
-もちろん、場合によっては、与えられた "3 次曲線" が実際には 2 次曲線であることもあります (3 次の項が 0 である場合)。その最もありふれた原因は、そのフォントの元データが TrueType である場合です。この場合、2 次曲線の制御点は以下のようになります:
+もちろん、場合によっては、与えられた“3 次曲線”が実際には 2 次曲線であることもあります (3 次の項が 0 である場合)。その最もありふれた原因は、そのフォントの元データが TrueType である場合です。この場合、2 次曲線の制御点は以下のようになります:
 <BLOCKQUOTE>
   QP<SUB>1</SUB> = CP<SUB>0</SUB> + 3/2 * (CP<SUB>1</SUB> - CP<SUB>0</SUB>)
 </BLOCKQUOTE>
@@ -215,7 +215,7 @@ points of inflection (which quadratic splines cannot have) and forcing breaks
 there. To my eye this actually makes the result worse, it uses more points
 and the approximation does not look as close as it does when ignoring the
 points of inflection. So I ignore them. -->
-私がネット上で読んだ他の情報源では、3 次スプラインに変曲点 (これは 2 次曲線には存在しません) があるかどうかをチェックし、そこで強制的に分割することを提案しています。私の目には、この方法は実際にはより悪い結果をもたらすように見えます。より多くの点が必要になり、近似結果は、変曲点を無視したときほど元の線に近くないように見えます。そういうわけで、私はこれを無視することにしました。
+私がネット上で読んだ他の情報源では、3 次スプラインに変曲点 (これは 2 次曲線には存在しません) があるかどうかをチェックし、そこで強制的に分割することを提案しています。私の目には、この方法は実際にはより悪い結果をもたらすように見えます。より多くの点が必要になり、近似結果は、変曲点を無視したときほど元の線に近くないように見えます。そういうわけで、その提案は無視することにしました。
 <H2>
 <!--Open Type, another solution-->
     OpenType, もう一つの解決法
@@ -245,7 +245,7 @@ Pierre B&eacute;zier (1910-1999). -->
 <SUP><A NAME="bezier">1 </A></SUP>B&eacute;zier スプラインは Pierre B&eacute;zier (1910-1999) によって開発されました。
 <P>
 <P ALIGN=Center>
--- <A HREF="sfdformat.html">前</A> -- <A HREF="overview.html">目次</A> --
-<A HREF="corpchar.html">次</A> --
+― <A HREF="sfdformat.html">前</A> ― <A HREF="overview.html">目次</A> ―
+<A HREF="corpchar.html">次</A> ―
 </DIV>
 </BODY></HTML>

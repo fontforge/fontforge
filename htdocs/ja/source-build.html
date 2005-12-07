@@ -160,7 +160,7 @@ approach to the file system than Windows. A filename like
 <CODE>/cygdrive/c/windows/fonts/arial.ttf </CODE>under cygwin (backslashes
 are replaced by slashes, and the initial drive "<CODE>C:</CODE>" becomes
 "<CODE>/cygdrive/c</CODE>"-->
-<FONT COLOR="Red"><STRONG>警告: </STRONG></FONT>cygwin は Windows と異なるファイルシステムへのアプローチをとっています。<CODE>C:\windows\fonts\arial.ttf</CODE> のようなファイル名は cygwin では <CODE>/cygdrive/c/windows/fonts/arial.ttf </CODE> という名前が付けられます (バックスラッシュはスラッシュに置き換えられ、先頭のドライブ名 "<CODE>C:</CODE>" は "<CODE>/cygdrive/c</CODE>" に置き換えられます。
+<FONT COLOR="Red"><STRONG>警告: </STRONG></FONT>cygwin は Windows と異なるファイルシステムへのアプローチをとっています。<CODE>C:\windows\fonts\arial.ttf</CODE> のようなファイル名は cygwin では <CODE>/cygdrive/c/windows/fonts/arial.ttf </CODE> という名前が付けられます (バックスラッシュはスラッシュに置き換えられ、先頭のドライブ名“<CODE>C:</CODE>”は“<CODE>/cygdrive/c</CODE>”に置き換えられます。
 <P>
 <!--
 Having done that you should now be ready to build. Open a cygwin terminal
@@ -207,7 +207,7 @@ After you have downloaded one of these packages, either copy the tarball
 to where you are, or move to the directory containing the tarball (I can't
 provide explicit instructions here, because I don't know where your browser
 put the file) and type (do not type "$"): -->
-これらのパッケージのどれかをダウンロードしたら、tarball をカレントディレクトリに移動するか、tarball があるディレクトリに移動 (私はあなたのブラウザがどこにファイルをダウンロードするか知らないので、ここで明白な手順を説明することはできません) して、以下のようにタイプしてください ("$" はタイプしません)
+これらのパッケージのどれかをダウンロードしたら、tarball をカレントディレクトリに移動するか、tarball があるディレクトリに移動 (私はあなたのブラウザがどこにファイルをダウンロードするか知らないので、ここで明白な手順を説明することはできません) して、以下のようにタイプしてください (“$”はタイプしません)
 <BLOCKQUOTE>
   <PRE>$ bunzip2 fontforge*.tar.bz2
 $ tar xf fontforge*.tar
@@ -224,7 +224,7 @@ cvs is a nifty set of utilities which allows concurrent access to a source
 tree by many users. To set up your own (local) copy of the cvs tree (including
 documentation), create a new directory, cd into it and type the following
 (do not type "$", when it asks for a password, just hit return): -->
-cvs は、多くのユーザがソースツリーを同時並行的に編集することができる便利な一連のユーティリティです。(ローカルな) あなた自身の (文書を含む) CVS ツリーのコピーを得るには、以下のようにタイプします ("$" をタイプしてはいけません。パスワードを聞かれたら、Returen キーだけを押してください):
+cvs は、多くのユーザがソースツリーを同時並行的に編集することができる便利な一連のユーティリティです。(ローカルな) あなた自身の (文書を含む) CVS ツリーのコピーを得るには、以下のようにタイプします (“$”をタイプしてはいけません。パスワードを聞かれたら、Returen キーだけを押してください):
 <BLOCKQUOTE>
   <PRE>$ cvs -d:pserver:anonymous@cvs1.sourceforge.net:/cvsroot/fontforge login
 CVS password:
@@ -264,7 +264,7 @@ Now you have the source installed on your system and you should be positioned
 at the top directory of that tree. You need to configure your package (this
 is a little program that figures out how to use your system), and then build
 it (do not type the "$"): -->
-ここまでの手順で、ソースのシステムへのインストールは済んでおり、現在そのトップディレクトリにいるはずです。あなたは、configure (こ、システムをどのように使うかを指定するごく小さなプログラムです) を実行してパッケージの設定をしてから、プログラムを構築する必要があります ("$" はタイプしません):
+ここまでの手順で、ソースのシステムへのインストールは済んでおり、現在そのトップディレクトリにいるはずです。あなたは、configure (こ、システムをどのように使うかを指定するごく小さなプログラムです) を実行してパッケージの設定をしてから、プログラムを構築する必要があります (“$”はタイプしません):
 <BLOCKQUOTE>
   <PRE>$ ./configure
 $ make
@@ -380,7 +380,7 @@ to type -->
 <!--
 Again you will probably need to be root to do this install too. Use either
 "su" or "sudo" as appropriate for your system (<A HREF="#su">see above</A>). -->
-この場合にも、インストールを行うためには root になる必要があります。あなたのシステムに応じて "su" か "sudo" のどちらか適切なコマンドを使用してください (<A HREF="#su">上記</A>を参照のこと)
+この場合にも、インストールを行うためには root になる必要があります。あなたのシステムに応じて“su”か“sudo”のどちらか適切なコマンドを使用してください (<A HREF="#su">上記</A>を参照のこと)
 <H2>
 <!--<A NAME="Dependencies">Dependencies</A> (external libraries/helper programs)-->
     <A NAME="Dependencies">依存性</A> (外部ライブラリ/補助プログラム)
@@ -419,7 +419,7 @@ You might want this addition to FontForge's built in
 <A HREF="Encodings.ps.gz">character set encodings.</A> Use FontForge's
 Encoding-&gt;Load Encoding command to add these encodings to the Encoding
 Menu. -->
-FontForge 組み込みの<A HREF="http://fontforge.sourceforge.net/Encodings.ps.gz">文字セットエンコーディング</A>にこれを追加したいかもしれません。FontForge の「エンコーディング(N)→エンコーディングを読み込む」コマンドを使用してこれらのエンコーディングを追加することができます。
+FontForge 組み込みの<A HREF="http://fontforge.sourceforge.net/Encodings.ps.gz">文字セットエンコーディング</A>にこれを追加したいかもしれません。FontForge の <CODE>エンコーディング(<U>N</U>)</CODE>→<CODE>エンコーディングを読み込み(<U>L</U>)</CODE> コマンドを使用してこれらのエンコーディングを追加することができます。
 <P>
 <!--
 With the appropriate libraries, FontForge can import png, tiff, and gif images
@@ -686,7 +686,7 @@ your machine (put it in your .xsession file). -->
       <LI>
 <!--	The cvs tree contains a sub-sub-directory called htdocs/ja containing the
 	Japanese translation of the manual -->
-	CVS ツリーには、マニュアルの日本語訳語を含む htdocs/ja/ という名前のサブサブディレクトリがあります。
+	CVS ツリーには、マニュアルの日本語訳を含む htdocs/ja/ という名前のサブサブディレクトリがあります。
     </UL>
     <P>
 <!--See the general comments on the <A HREF="#src-cvs">cvs tree </A>to see how

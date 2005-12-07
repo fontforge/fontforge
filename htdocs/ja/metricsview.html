@@ -111,7 +111,7 @@ terminal, medial, isolated) determination will be done in the display area
 form you must enter the unicode code for that form (as opposed to the character
 for the letter), or use the
 <A HREF="viewmenu.html#Substitutions">View-&gt;Substitutions</A> command. -->
-<STRONG>もう一つ注意</STRONG>: 表示エリアでは、アラビア文字の合字や形 (語頭・語尾・語中または独立) の選択は行いません (上のテキストフィールドでは行われるはずですが)。正しい形を見たい場合は、(文字そのものではなく) 具体形に相当する Unicode の符号位置を入力するか、<A HREF="viewmenu.html#Substitutions">表示(V)→置換(S)</A> コマンドを使うかする必要があります。
+<STRONG>もう一つ注意</STRONG>: 表示エリアでは、アラビア文字の合字や形 (語頭・語尾・語中または独立) の選択は行いません (上のテキストフィールドでは行われるはずですが)。正しい形を見たい場合は、(文字そのものではなく) 具体形に相当する Unicode の符号位置を入力するか、<A HREF="viewmenu.html#Substitutions"><CODE>表示(<U>V</U>)</CODE>→<CODE>置換一覧(<U>S</U>)</CODE></A> コマンドを使うかする必要があります。
 <P>
 <IMG SRC="VerticalMetrics.png" WIDTH="360" HEIGHT="700" ALIGN="Right"><IMG
     SRC="../HebrewMetrics.png" WIDTH="511" HEIGHT="323">
@@ -121,7 +121,7 @@ You can make the window display vertical metrics and kerning by
 View-&gt;Vertical. (This is only available if your font has vertical metrics
 enabled, Element-&gt;Font Info-&gt;General-&gt;Has Vertical Metrics). In
 this mode you can change vertical width, vertical kerning, etc. -->
-<CODE>表示(<U>V</U>)</CODE>→<CODE>縦書き(<U>V</U>)</CODE> を選ぶと、ウィンドウに縦書きメトリックとカーニングを表示することができます (フォントに縦書きメトリックが存在する場合に限ります。<CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)</CODE>→<CODE>[一般情報]</CODE>→<CODE>[]縦書きメトリックが存在</CODE> をチェックする必要があります)。
+<CODE>表示(<U>V</U>)</CODE>→<CODE>縦書き(<U>V</U>)</CODE> を選ぶと、ウィンドウに縦書きメトリックとカーニングを表示することができます (フォントに縦書きメトリックが存在する場合に限ります。<CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE>→<CODE>[一般情報]</CODE>→<CODE>[]縦書きメトリックが存在</CODE> をチェックする必要があります)。
 このモードでは縦書きの字送り、カーニングなどを変更できます。
 <P>
 <!--
@@ -559,7 +559,7 @@ Metrics-&gt;Kern By Class command provides an interface to this. It brings
 up a dialog showing the kerning classes currently defined for the font (it
 labels them according to the script in which they are active). You can create
 new classes, delete existing classes, or change existing classes.-->
-<CODE>メトリック(<U>M</U>)</CODE>→<CODE>クラス毎のカーニング(<U>X</U>)</CODE> コマンドが、それを行うインターフェイスです。このコマンドはフォントに現在定義されているカーニングクラスを表示したダイアログを起動します (その際、それがアクティブになるスクリプトに従ってラベルづけを行います)。新しいクラスの作成、既存のクラスの削除や既存のクラスの変更ができます。
+<CODE>メトリック(<U>M</U>)</CODE>→<CODE>クラス毎のカーニング(<U>N</U>)...</CODE> コマンドが、それを行うインターフェイスです。このコマンドはフォントに現在定義されているカーニングクラスを表示したダイアログを起動します (その際、それがアクティブになるスクリプトに従ってラベルづけを行います)。新しいクラスの作成、既存のクラスの削除や既存のクラスの変更ができます。
 <P>
 <IMG SRC="../kerningclass.png" WIDTH="560" HEIGHT="579" ALIGN="Left"><!--Each kerning
 class needs a <A HREF="charinfo.html#Feature-Tag">script/language</A> combination
@@ -614,7 +614,7 @@ true of kerning, there are three things that get rounded: The locations of
 the outlines (to fit them to a pixel grid), the advance widths of the glyphs,
 and the kerning value itself. The result is that something which looks perfectly
 kerned at 150pixels may be either too close or too far apart at 12pixels -->
-また、"<A NAME="DeviceTable">デバイステーブル</A>" というものを作成することができます。この名前からはそれが何だかよく分かりません。フォントを小さなピクセルサイズでラスタライズする時、丸め誤差が非常に重要になります。とくにカーニングでは、丸めの対象になるのがアウトラインの位置 (それらをピクセルグリッドに合わせるため)と、グリフの送り幅およびカーニング値そのものの 3 つあるため、事態はとくに深刻です。その結果、150 ピクセルで完璧にカーニングが行われていたものが 12 ピクセルで近すぎたり遠すぎたりすることになります。
+また、“<A NAME="DeviceTable">デバイステーブル</A>”というものを作成することができます。この名前からはそれが何だかよく分かりません。フォントを小さなピクセルサイズでラスタライズする時、丸め誤差が非常に重要になります。とくにカーニングでは、丸めの対象になるのがアウトラインの位置 (それらをピクセルグリッドに合わせるため)と、グリフの送り幅およびカーニング値そのものの 3 つあるため、事態はとくに深刻です。その結果、150 ピクセルで完璧にカーニングが行われていたものが 12 ピクセルで近すぎたり遠すぎたりすることになります。
 <TABLE ALIGN=CENTER CELLPADDING="2">
   <TR>
     <TD><IMG SRC="../kern-We-150.png" WIDTH="170" HEIGHT="131"></TD>
@@ -663,7 +663,7 @@ the Kerning Class dialog above. -->
 <P>
 <P>
 <P ALIGN=Center>
--- <A HREF="bitmapview.html">前</A> -- <A HREF="overview.html">目次</A>
--- <A HREF="filemenu.html">次</A> --
+― <A HREF="bitmapview.html">前</A> ― <A HREF="overview.html">目次</A>
+― <A HREF="filemenu.html">次</A> ―
 </DIV>
 </BODY></HTML>

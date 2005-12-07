@@ -95,7 +95,7 @@ centered over the A. -->
 いちばん分かりやすいメカニズムは単純なコピー&amp;ペーストです:
 グリフ“A”を<A HREF="editmenu.html#Copy">コピー</A>して“&Atilde;”に<A HREF="editmenu.html#Paste">貼り付け</A>、次にチルダアクセントを<A HREF="editmenu.html#Copy">コピー</A>して“&Atilde;”に<A HREF="editmenu.html#PasteInto">追加貼り付け</A>します。(追加貼り付けが貼り付けとは微妙に異なることに注意してください)。
 <CODE>貼り付け(<U>P</U>)</CODE> コマンドは貼り付けの前に文字を消去しますが、<CODE>追加貼り付け</CODE> コマンドは、その文字の元の内容にクリップボードの中身を付け加えます)。
-それから "&Atilde;" を開いてアクセントの位置を調整し、A の真上に中心が来るようにします。
+それから“&Atilde;”を開いてアクセントの位置を調整し、A の真上に中心が来るようにします。
 <P>
 <!--
 This mechanism is not particularly efficient, if you change the shape of
@@ -151,7 +151,7 @@ FontForge cannot create a nice ligature for you, but what it can do is put
 all the components of the ligature into the glyph with
 <A HREF="elementmenu.html#Accented">Element-&gt;Build-&gt;Build Composite</A>.
 This makes it slightly easier (at least in latin) to design a ligature. -->
-FontForge があなたのために美しい合字を作ってくれることは不可能ですが、<CODE><A HREF="elementmenu.html#Accented">エレメント(<U>L</U>)</CODE>→<CODE>組み立て(<U>U</U>)</CODE>→<CODE>複合グリフを構築(<U>C</U>)</A></CODE> を用いれば、その合字のすべての構成要素を 1 個のグリフ上に配置することが可能です。
+FontForge があなたのために美しい合字を作ってくれることは不可能ですが、<A HREF="elementmenu.html#Accented"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>組み立て(<U>U</U>)</CODE>→<CODE>複合グリフを構築(<U>C</U>)</CODE></A> を用いれば、その合字のすべての構成要素を 1 個のグリフ上に配置することが可能です。
 これで、合字のデザインが (少なくともラテン文字では) 少しは楽になります。
 <TABLE BORDER CELLPADDING="2">
   <CAPTION>
@@ -193,7 +193,7 @@ FontForge があなたのために美しい合字を作ってくれることは不可能ですが、<CODE><A H
     <TD>各要素がより揃って美しく見えるように調整します。ここでは最初の f のステムを下に動かしています。</TD>
 <!--<TD>Use the <A HREF="elementmenu.html#Remove">Element -&gt; Remove Overlap</A>
       command to clean up the glyph.</TD>-->
-    <TD><A HREF="elementmenu.html#Remove"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>重複を除去</A></CODE> コマンドを使って、グリフを整理します。</TD>
+    <TD><A HREF="elementmenu.html#Remove"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>重複処理(<U>V</U>)</CODE>→重なり合う図形を結合(<U>R</U>)</A> コマンドを使って、グリフを整理します。</TD>
 <!--<TD>Finally drag the ligature caret lines from the origin to more appropriate
       places between the components.</TD>-->
     <TD>最後に合字キャレットの線を、原点からもっと適切な構成要素間の場所に動かします。</TD>
@@ -270,7 +270,7 @@ You should see a line like:<BR>
 -->
 <IMG SRC="../charinfo-akhn.png" WIDTH="307" HEIGHT="401" ALT="Akhand 合字タイプに対する文字情報"
     ALIGN="Right">最後に、FontForge がこのグリフを合字として印づけたかどうか (および、合字ならば、正しい種類の合字かどうか) を確認しましょう。
-<CODE><A HREF="charinfo.html#ligature">エレメント(<U>L</U>)</CODE>→<CODE>グリフ情報(<U>I</U>)...</CODE>→<CODE>[合字]</A></CODE> サブダイアログを呼び出してください。
+<A HREF="charinfo.html#ligature"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>グリフ情報(<U>I</U>)...</CODE>→<CODE>[合字]</CODE></A> サブダイアログを呼び出してください。
 以下のような行が表示されるでしょう:<BR>
 <TT>&nbsp; &nbsp; liga &nbsp;m longs longs l</TT><BR>
 <!--or <BR>-->
@@ -279,7 +279,7 @@ You should see a line like:<BR>
 <!--
 In the first case you might want to add an additional line (by pressing the
 [New...] button:<BR> -->
-最初のケースでは、(<CODE>[新規...]</CODE> ボタンを押して以下のような行を追加したほうがいいかもしれません:<BR>
+最初のケースでは、(<CODE>[新規(<U>N</U>)...]</CODE> ボタンを押して以下のような行を追加したほうがいいかもしれません:<BR>
 <TT>&nbsp; &nbsp; liga &nbsp;m longs_longs l</TT><BR>
 <!--
 (assuming you have a longs_longs ligature already). While in the second case
@@ -287,12 +287,12 @@ you might want to select the line, press the [Edit...] button and change
 the ligature type from 'liga' to 'akhn' (I don't know enough about Indic
 scripts to understand this distinction myself), yielding: <BR> -->
 (ここでは合字 <CODE>longs_longs</CODE> が既に作成済みだと仮定しています)。
-2 番目のケースでは、行を選択して <CODE>[編集...]</CODE> ボタンを押して合字のタイプを&lsquo;liga&rsquo;から&lsquo;akhn&rsquo;に変更する必要があるでしょう (私自身は、この違いを理解するほどのインド系用字系に関する十分な知識がありません)。結果はこうなります:<BR>
+2 番目のケースでは、行を選択して <CODE>[編集(<U>E</U>)...]</CODE> ボタンを押して合字のタイプを&lsquo;liga&rsquo;から&lsquo;akhn&rsquo;に変更する必要があるでしょう (私自身は、この違いを理解するほどのインド系用字系に関する十分な知識がありません)。結果はこうなります:<BR>
 <TT>&nbsp; &nbsp; akhn &nbsp;m uni0D15 uni0D4D uni0D15</TT>
 <P>
 <P>
 <P ALIGN=Center>
--- <A HREF="editexample3.html">前</A> -- <A HREF="overview.html">目次</A>
--- <A HREF="editexample5.html">次</A> --
+― <A HREF="editexample3.html">前</A> ― <A HREF="overview.html">目次</A>
+― <A HREF="editexample5.html">次</A> ―
 </DIV>
 </BODY></HTML>

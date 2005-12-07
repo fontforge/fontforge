@@ -38,7 +38,7 @@ be edited in isolation. -->
 <!--
 A new font may be converted to a multi-layered font by selecting
 Element-&gt;Font Info-&gt;General-&gt;Multi Layered Editing. -->
-新しいフォントは エレメント(L)→フォント情報(F)→複数レイヤー編集 を選択すれば、複数レイヤフォントに変換することができます。
+新しいフォントは <CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE>→<CODE>[一般情報]</CODE>→<CODE>複数レイヤーフォント(<U>M</U>)</CODE> を選択すれば、複数レイヤフォントに変換することができます。
 <H2>
   <IMG SRC="../charview-multilayer.png" WIDTH="348" HEIGHT="571" ALIGN="Right"><!--Multi
   Layered editing in the outline view-->
@@ -135,7 +135,7 @@ layer will be filled, then it will be output with an imagemask command (the
 bitmap will be drawn with the fill color), otherwise the image will be drawn
 with the colors specified in the image (Transparent images are not supported
 here). -->
-Type3 フォントでは画像を使用できます (SVG フォントではできません)。<A HREF="filemenu.html#Import">ファイル(F)→取り込み(I)</A>コマンドで画像を好きな前面レイヤに読み込むことができます。画像がビットマップ画像であり、それが置かれたレイヤで塗りつぶしモードの描画を行う場合、その画像は imagemask コマンドによって出力され (ビットマップは塗りつぶし色で描画されます)、それ以外の場合は画像で指定されている色で描画されます (ここでは透明画像はサポートされていません)。
+Type3 フォントでは画像を使用できます (SVG フォントではできません)。<A HREF="filemenu.html#Import"><CODE>ファイル(<U>F</U>)</CODE>→<CODE>取り込み(<U>I</U>)...</CODE></A>コマンドで画像を好きな前面レイヤに読み込むことができます。画像がビットマップ画像であり、それが置かれたレイヤで塗りつぶしモードの描画を行う場合、その画像は imagemask コマンドによって出力され (ビットマップは塗りつぶし色で描画されます)、それ以外の場合は画像で指定されている色で描画されます (ここでは透明画像はサポートされていません)。
 <P>
 <!--
 FontForge will not skew, flip or rotate images. -->
@@ -162,7 +162,7 @@ in the layer, or you may specify that the color should be inherited (in
 conventional fonts the color will be inherited so that the font user can
 specify the font's color). If you do want to specify a color, use a 6 hex-digit
 rgb value "#rrggbb". -->
-レイヤ内のストロークや塗りつぶしに用いられる色のどちらも指定することができますし、指定された色を引き継ぐこともできます (通常のフォントでは色は引き継がれるので、ユーザは色を指定することができます)。自分で色を指定したい場合、16 進 6 桁の RGB 値 "#rrggbb" を使用してください。
+レイヤ内のストロークや塗りつぶしに用いられる色のどちらも指定することができますし、指定された色を引き継ぐこともできます (通常のフォントでは色は引き継がれるので、ユーザは色を指定することができます)。自分で色を指定したい場合、16 進 6 桁の RGB 値“#rrggbb”を使用してください。
 <P>
 <!--
 SVG fonts may include an opacity level (type3 fonts may not). 0 is fully
@@ -185,7 +185,7 @@ If the list has an odd number of elements, then this time through the first
 entry indicates that many units should be skipped. So "10" would mean a line
 which alternates being drawn every 10 units, while "20 10" would draw 20
 units, skip 10, draw 20 and so on. -->
-線は破線にすることもできます。破線パターンは数値のリストによって指定されます。リスト内の最初の数値は、指定した em ユニット分の長さの線の素片を引くことを示し、次の数値はその em ユニット分だけのすき間が空くことを表します。3 番目は線が引かれ、以下同様に解釈されます。リストの最後まで使われると、再び先頭に戻ります。リストの要素が奇数個である場合、2 回目には最初の要素が破線の隙間の大きさを表します。ですから "10" という指定は、10 ユニットごとに入れ替わる破線を表し、"20 10" は 20 ユニット描画し、10 ユニットの隙間が空き、20 ユニット描画し……と続く破線になります。
+線は破線にすることもできます。破線パターンは数値のリストによって指定されます。リスト内の最初の数値は、指定した em ユニット分の長さの線の素片を引くことを示し、次の数値はその em ユニット分だけのすき間が空くことを表します。3 番目は線が引かれ、以下同様に解釈されます。リストの最後まで使われると、再び先頭に戻ります。リストの要素が奇数個である場合、2 回目には最初の要素が破線の隙間の大きさを表します。ですから“10”という指定は、10 ユニットごとに入れ替わる破線を表し、“20 10”は 20 ユニット描画し、10 ユニットの隙間が空き、20 ユニット描画し……と続く破線になります。
 <P>
 <!--
 Finally a stroke needs to know how to treat the ends of paths, and how to
@@ -200,7 +200,7 @@ is quite poor. (it does not rasterize dash) -->
 FontForge のラスタライズは、望ましいとはとても言えません。フルカラーをサポートしていません (すべての色を灰色の濃淡に置き換えます) し、ストローク描画アルゴリズムは非常に稚拙です。(ラスタライザは、破線の描画を行いません)
 <P>
 <P ALIGN=Center>
--- <A HREF="charview.html">戻る</A> -- <A HREF="overview.html">目次</A> --
+― <A HREF="charview.html">戻る</A> ＠_ <A HREF="overview.html">目次</A> ―
 <P>
 <P>
 </DIV>

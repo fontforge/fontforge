@@ -332,7 +332,7 @@
 	<P ALIGN=Right>
 <!--    <SMALL>- - A. A. Milne, 1928<BR>
 	The House At Pooh Corner</SMALL></TD> -->
-	<SMALL>-- A. A. ミルン, 1928 年<BR>
+	<SMALL>― A. A. ミルン, 1928 年<BR>
 	『プー横丁にたった家』<BR>
 	(石井桃子訳)</SMALL></TD>
     </TR>
@@ -428,7 +428,7 @@
   Stroke</A> command can be used to turn them into outlines), but if you wish
   to edit stroked fonts, see the section on
   <A HREF="multilayer.html">multi-layered editing</A>. -->
-  フォント内の各グリフは 1 個の図形ですが、計算機上での図形の表現にはいろいろな方法があります。PostScript および TrueType 形式のフォントでは一般に、図形のアウトラインを描画してから、そのアウトラインの内部を塗りつぶします。この塗りつぶし処理のことを ラスタ化 (ラスタライズ) と言います。それに対して、ビットマップフォントはピクセル (画素) が長方形に並んだグリッドを塗りつぶして各グリフを表現しています。ストロークフォントという第 3 のタイプもあり、グリフの各ステム (画線) をその中心を通る線によって表現し、後でその線を所定の幅でなぞり描きします。ほとんどの場合、ストロークフォントを直接扱うことはしません (<A HREF="elementmenu.html#Expand"><CODE>輪郭を太らせる(<U>E</U>)</CODE></A> コマンドを使うと、ストロークをアウトラインに変換することができます) が、ストロークフォントを編集したい場合には<A HREF="multilayer.html">複数レイヤ編集</A>のセクションを参照してください。
+  フォント内の各グリフは 1 個の図形ですが、計算機上での図形の表現にはいろいろな方法があります。PostScript および TrueType 形式のフォントでは一般に、図形のアウトラインを描画してから、そのアウトラインの内部を塗りつぶします。この塗りつぶし処理のことを ラスタ化 (ラスタライズ) と言います。それに対して、ビットマップフォントはピクセル (画素) が長方形に並んだグリッドを塗りつぶして各グリフを表現しています。ストロークフォントという第 3 のタイプもあり、グリフの各ステム (画線) をその中心を通る線によって表現し、後でその線を所定の幅でなぞり描きします。ほとんどの場合、ストロークフォントを直接扱うことはしません (<A HREF="elementmenu.html#Expand"><CODE>輪郭を太らせる(<U>E</U>)...</CODE></A> コマンドを使うと、ストロークをアウトラインに変換することができます) が、ストロークフォントを編集したい場合には<A HREF="multilayer.html">複数レイヤ編集</A>のセクションを参照してください。
   <TABLE BORDER CELLPADDING="2">
     <TR VALIGN=Top>
       <TD><P ALIGN=Center>
@@ -664,7 +664,7 @@
   <P>
 <!--
   Unfortunately the word "OpenType" has come to have two meanings. -->
-  残念なことに "OpenType" という単語には 2 つの意味があります。
+  残念なことに“OpenType”という単語には 2 つの意味があります。
   <P>
 <!--
   The first describes the spline format of the font. In this sense Open Type
@@ -794,7 +794,7 @@
       change the current set of hints. The Hints-&gt;Hint Substitution Pts command
       will also figure where hint changes should occur, and the Hint Mask pane
       of the Point Info dialog gives the user direct control over this. -->
-      ヒントの最初のバージョンでは、ヒント同士が重なり合うことはできませんでした。つまり、ほとんどのセリフを記述することができなかったということです。Adobe はその後、グリフの異なる部分ごとに重なり合わないヒントのセットを使用可能にする、ヒント置換というメカニズムを開発しました。これでも完全にヒントづけられない図形は存在しますが、ヒント置換は 1 つの改良でした。<CODE>ヒント(<U>H</U>)</CODE>→<CODE>自動ヒント(<U>H</U>)</CODE> コマンドは、ステムの重なり合いを検出し、現在のヒントセットをどう変えるべきかを表示します。<CODE>ヒント(<U>H</U>)</CODE>→<CODE>ヒントが置換する点(<U>S</U>)</CODE> コマンドも、どこでヒントの変更が起こるかを表示し、<CODE>[点の情報]</CODE> ダイアログの <CODE>[ヒントマスク]</CODE> タブでユーザがそれを直接制御できるようにします。
+      ヒントの最初のバージョンでは、ヒント同士が重なり合うことはできませんでした。つまり、ほとんどのセリフを記述することができなかったということです。Adobe はその後、グリフの異なる部分ごとに重なり合わないヒントのセットを使用可能にする、ヒント置換というメカニズムを開発しました。これでも完全にヒントづけられない図形は存在しますが、ヒント置換は 1 つの改良でした。<CODE>ヒント(<U>I</U>)</CODE>→<CODE>自動ヒント(<U>H</U>)</CODE> コマンドは、ステムの重なり合いを検出し、現在のヒントセットをどう変えるべきかを表示します。<CODE>ヒント(<U>I</U>)</CODE>→<CODE>ヒントが置換する点(<U>S</U>)</CODE> コマンドも、どこでヒントの変更が起こるかを表示し、<CODE>[点の情報]</CODE> ダイアログの <CODE>[ヒントマスク]</CODE> タブでユーザがそれを直接制御できるようにします。
       <P>
 <!--  Most recently Adobe has provide a means to control the counters, the spaces
       between stems, in a glyph. The original Type1 description provided support
@@ -829,8 +829,8 @@
       <A HREF="fontinfo.html#Private">Element-&gt; FontInfo-&gt; Private</A> to
       set this array. After AutoHinting you should regenerate the StemSnaps (also
       at Element-&gt; FontInfo-&gt; Private). -->
-      <A NAME="HintOrder">FontForge</A> の<A HREF="hintsmenu.html#AutoHint">自動ヒント</A>コマンドは、BlueValues が設定されているとより適切に動作します。ですから、自動ヒントづけを実行する前に、<A HREF="fontinfo.html#Private"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE>→[PS Private辞書]</A>でこの配列に値を設定してください。
-  自動ヒントづけが終った後、StemSnap を再生成する必要があるでしょう (これも、<CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE>→[PS Private辞書]にあります)。
+      <A NAME="HintOrder">FontForge</A> の<A HREF="hintsmenu.html#AutoHint">自動ヒント</A>コマンドは、BlueValues が設定されているとより適切に動作します。ですから、自動ヒントづけを実行する前に、<A HREF="fontinfo.html#Private"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE>→<CODE>[PS Private辞書]</CODE></A>でこの配列に値を設定してください。
+  自動ヒントづけが終った後、StemSnap を再生成する必要があるでしょう (これも、<CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE>→<CODE>[PS Private辞書]</CODE>にあります)。
     <DT>
       <H4>
 <!--	<A NAME="TrueType">True</A> Type -->
@@ -840,7 +840,8 @@
       <TABLE ALIGN=Right>
 	<TR>
 	  <TD ALIGN=Center><IMG SRC="../GridFitM.png" WIDTH="246" HEIGHT="241"><BR>
-	    Grid Fit M</TD>
+<!--	    Grid Fit M</TD> -->
+	    M のグリッド合わせ</TD>
 	</TR>
       </TABLE>
       <P>
@@ -860,7 +861,7 @@
       serifs that are attached to vertical stems and providing hints for them as
       well. It also uses the equivalent of the PostScript BlueValues to generate
       cvt entries that force glyphs to have the same height at small pointsizes. -->
-      FontForge の TrueType ヒントづけ (厳密に言えば「命令づけ」) の機能は非常に原始的で、PostScript でも用いられているステムヒントに基づいています。これらのヒントは、どのポイントをどこに移動するか決定するのに使います。それは直角方向ステムの概念をサポートし、それらにヒントづけを行ってそれらのステムがほぼ同じ幅をとるようにします。それに加えいくつかの追加の作業として、垂直ステムに接合したセリフを検出し、それにも同様にヒントづけを行います。ヒントづけ機能には、PostScript の BlueValues と等価物を、小さなポイントサイズでグリフを同じ高さに強制的に揃える cvt エントリを生成するのに使います。
+      FontForge の TrueType ヒントづけ (厳密に言えば「命令づけ」) の機能は非常に原始的で、PostScript でも用いられているステムヒントに基づいています。これらのヒントは、どのポイントをどこに移動するか決定するのに使います。それは直角方向ステムの概念をサポートし、それらにヒントづけを行ってそれらのステムがほぼ同じ幅をとるようにします。それに加えいくつかの追加の作業として、垂直ステムに接合したセリフを検出し、それにも同様にヒントづけを行います。ヒントづけ機能には、PostScript の BlueValues の等価物を、小さなポイントサイズでグリフを同じ高さに強制的に揃える cvt エントリを生成するのに使います。
       <P>
 <!--  I am not happy with the instructions I generate for TrueType.-->
       私は、TrueType 用に生成している命令の品質に満足していません。
@@ -905,7 +906,7 @@
   <CODE>Element-&gt;Build Accented Glyphs</CODE> command, the FontForge would
   make a reference to "a" and another to "`", and place the accent above the
   letter, and centered on it. -->
-  FontForge は参照を取り扱う 3 種類のコマンドを持っており、アクセントつきグリフを作成するための、より高水準のコマンドを 1 個備えています。<CODE>編集(<U>E</U>)</CODE>→<CODE>参照をコピー(<U>O</U>)</CODE> コマンドは、現在のグリフへの参照をクリップボードにコピーし、次に <CODE>編集(<U>E</U>)</CODE>→<CODE>ペースト(<U>P</U>)</CODE> コマンドを使えば参照を張り付けることができます。<CODE>編集(<U>E</U>)</CODE>→<CODE>参照を解除(<U>N</U>)</CODE>コマンドは、別のグリフへの参照を、そのグリフを構成するスプラインに変換します。<CODE>エレメント(<U>L</U>)</CODE>→<CODE>情報を見る(<U>I</U>)</CODE> コマンドは、(参照に適用されたときは)どのグリフが参照されているかを示すダイアログを表示し、そこから、そのグリフに対する編集ウィンドウを呼び出すことができます。そのグリフへの参照を部品となるスプラインとして別のグリフに張り付けることができます。<CODE>エレメント(<U>L</U>)</CODE>→<CODE>組み立て(<U>U</U>)</CODE>→<CODE>アクセントつきグリフを構築(<U>B</U>)</CODE>コマンドは、この複合グリフを構築するのにどのグリフを参照するべきかを検出し、それからそれらのグリフへの参照を作成し、適切な位置に配置します。もし仮に“&agrave;”を選択し、<CODE>エレメント(<U>L</U>)</CODE>→<CODE>組み立て(<U>U</U>)</CODE>→<CODE>アクセントつきグリフを構築(<U>B</U>)</CODE> コマンドを実行した場合、FontForge は“a”への参照と“`”への参照を作成し、アクセントをグリフの上に置き、中央に揃えることになります。
+  FontForge は参照を取り扱う 3 種類のコマンドを持っており、アクセントつきグリフを作成するための、より高水準のコマンドを 1 個備えています。<CODE>編集(<U>E</U>)</CODE>→<CODE>参照をコピー(<U>O</U>)</CODE> コマンドは、現在のグリフへの参照をクリップボードにコピーし、次に <CODE>編集(<U>E</U>)</CODE>→<CODE>貼り付け(<U>P</U>)</CODE> コマンドを使えば参照を貼り付けることができます。<CODE>編集(<U>E</U>)</CODE>→<CODE>参照を解除(<U>N</U>)</CODE>コマンドは、別のグリフへの参照を、そのグリフを構成するスプラインに変換します。<CODE>エレメント(<U>L</U>)</CODE>→<CODE>情報を見る(<U>I</U>)</CODE> コマンドは、(参照に適用されたときは)どのグリフが参照されているかを示すダイアログを表示し、そこから、そのグリフに対する編集ウィンドウを呼び出すことができます。そのグリフへの参照を部品となるスプラインとして別のグリフに張り付けることができます。<CODE>エレメント(<U>L</U>)</CODE>→<CODE>組み立て(<U>U</U>)</CODE>→<CODE>アクセントつきグリフを構築(<U>B</U>)</CODE>コマンドは、この複合グリフを構築するのにどのグリフを参照するべきかを検出し、それからそれらのグリフへの参照を作成し、適切な位置に配置します。もし仮に“&agrave;”を選択し、<CODE>エレメント(<U>L</U>)</CODE>→<CODE>組み立て(<U>U</U>)</CODE>→<CODE>アクセントつきグリフを構築(<U>B</U>)</CODE> コマンドを実行した場合、FontForge は“a”への参照と“`”への参照を作成し、アクセントをグリフの上に置き、中央に揃えることになります。
   <P>
 <!--
   Sadly life is not quite that simple. Both PostScript and TrueType place
@@ -915,7 +916,7 @@
   if it finds a situation where it can't use a refered glyph as a reference
   it will fix it up somehow, usually this means replacing it with the equivalent
   outlines. -->
-  悲しいことに、人生はそれほど単純ではありません。PostScript と TrueType では、どの種類のグリフを参照することができるかについての制約があり、さらに悪いことにはそれらの制約条件には違いがあるのです。FontForge が作成する唯一の制約は、あるグリフへの参照をそのグリフ自身の中に置いてはならないというものだけです。フォントを生成するときに、参照されたグリフが参照として使えないような状況を発見したならば、プログラムは何らかの方法によってそれを解決しようとします。通常は、参照をそれと等価なアウトラインに置き換えることになります。
+  悲しいことに、人生はそれほど単純ではありません。PostScript と TrueType では、どの種類のグリフを参照することができるかについての制約があり、さらに悪いことにはそれらの制約条件には違いがあるのです。FontForge が課している唯一の制約は、あるグリフへの参照をそのグリフ自身の中に置いてはならないというものだけです。フォントを生成するときに、参照されたグリフが参照として使えないような状況を発見したならば、プログラムは何らかの方法によってそれを解決しようとします。通常は、参照をそれと等価なアウトラインに置き換えることになります。
   <P>
 <!--
   In both TrueType and PostScript a glyph may not contain both splines and
@@ -941,7 +942,7 @@
     of which are in the Adobe Set (while U+0410 is not). Again when generating
     U+0410 FontForge will make it be a composite of U+0041 and U+0020 (space)
     so as to get exactly two glyphs. -->
-    <STRONG><SMALL><SMALL>技術的で分かりにくい事柄:</SMALL></SMALL></STRONG>FontForge には、作業を楽にするある種のトリックが組み込まれています。例えば、U+04D2 (ダイエレシスつきキリル大文字 A) を作成しているところで、それを U+0410 (キリル大文字 A) と U+00A8 (ダイエレシス) から作り、U+0410 それ自身は U+0041 (ラテン大文字 A) への参照だとしましょう。その場合は FontForge は U+04D2 が U+0041 と U+00A8 (これらは U+0410 と異なり、両方とも Adobe 文字集合に含まれます) の組合せとして表現されたフォントを出力します。また、U+0410 を出力するときは、FontForge はそれをちょうど 2 個のグリフを組み立てたものにするために、U+0041 と U+0020 (空白) の組合せとして出力します。
+    <STRONG><SMALL><SMALL>技術的で分かりにくい事柄:</SMALL></SMALL></STRONG> FontForge には、作業を楽にするある種のトリックが組み込まれています。例えば、U+04D2 (ダイエレシスつきキリル大文字 A) を作成しているところで、それを U+0410 (キリル大文字 A) と U+00A8 (ダイエレシス) から作り、U+0410 それ自身は U+0041 (ラテン大文字 A) への参照だとしましょう。その場合は FontForge は U+04D2 が U+0041 と U+00A8 (これらは U+0410 と異なり、両方とも Adobe 文字集合に含まれます) の組合せとして表現されたフォントを出力します。また、U+0410 を出力するときは、FontForge はそれをちょうど 2 個のグリフを組み立てたものにするために、U+0041 と U+0020 (空白) の組合せとして出力します。
     <P>
 <!--<STRONG><SMALL><SMALL>Technical and confusing:</SMALL></SMALL></STRONG> If
     that fails FontForge will attempt to put the referenced glyphs into subroutines
@@ -1016,7 +1017,7 @@
   Finally, mark to mark allows you to position two marks with respect to each
   other (as you might need to do in vietnamese or hebrew where you may get
   several marks for one glyph). -->
-  アンカーポイントを使うと 2 つ (またはそれ以上) のグリフの配置を細かく調節することができます。アンカーに基づいた接続のスタイルはいくつか異なるものがあります。筆記体、マークから基底グリフへ、マークから合字へ、そしてマークからマークへの位置指定です。最初のスタイルは、あるグリフから出る線が次のグリフの書き始めとなるような流麗な手書き文字 (筆記体) においてグリフ同士をつなぐためのものです。2 番目のスタイルは、グリフ群の内の 1 つが基底グリフとなって通常通り配置され、残りのグリフが典型的にはダイアクリティックや母音記号として、各グリフのアンカーポイント同士が重なり合うように配置されます。マークから合字グリフへの接続は、マークから基底グリフへの接続と同様ですが、マークが接続するのが合字のどの要素かによってそれぞれ異なる複数のアンカーポイントをもつことができます。最後に、マークからマークへの位置指定を使用すると、2 個のマークを相互の位置関係によって指定することができます (ベトナム語やヘブライ文字など、複数のマークを 1 個のグリフに追加できる場合に必要となるでしょう)。
+  アンカーポイントを使うと 2 つ (またはそれ以上) のグリフの配置を細かく調節することができます。アンカーに基づいた接続のスタイルはいくつか異なるものがあります。筆記体、マークから基底グリフへ、マークから合字へ、そしてマークからマークへの位置指定です。最初のスタイルは、あるグリフから出る線が次のグリフの書き始めとなるような流麗な手書き文字 (筆記体) においてグリフ同士をつなぐためのものです。2 番目のスタイルでは、グリフ群の内の 1 つが基底グリフとなって通常通り配置され、残りのグリフが典型的にはダイアクリティックや母音記号として、各グリフのアンカーポイント同士が重なり合うように配置されます。マークから合字グリフへの接続は、マークから基底グリフへの接続と同様ですが、マークが接続するのが合字のどの要素かによってそれぞれ異なる複数のアンカーポイントをもつことができます。最後に、マークからマークへの位置指定を使用すると、2 個のマークを相互の位置関係によって指定することができます (ベトナム語やヘブライ文字など、複数のマークを 1 個のグリフに追加できる場合に必要となるでしょう)。
   <P>
 <!--
   That is badly said. Consider the following two glyphs and how they are joined
@@ -1035,7 +1036,7 @@
 <!--
   The grave accent has been raised and moved to the right so that its anchor
   point is positioned where the anchor from "a" was. -->
-  グレーブアクセントは上にずらされてから右に移動し、そのアンカーポイントは "a" にあるアンカーポイントの位置に合わせられます。
+  グレーブアクセントは上にずらされてから右に移動し、そのアンカーポイントは“a”にあるアンカーポイントの位置に合わせられます。
   <P>
 <!--
   FontForge does not compose these glyphs (well, it can, but that's a completely
@@ -1064,7 +1065,7 @@
   languages should probably be left as 'mark' for mark to base or mark to ligature
   connections. For cursive connections, use the tag 'curs', and for mark to
   mark connections use 'mkmk'. -->
-  フォントは、<A HREF="fontinfo.html#Anchors"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)</CODE></A>で指定可能なアンカークラスのリストを含むことができます。アンカークラスは名前 (上の例ではクラスは“Top”と呼ばれています)、タグ、スクリプトのセットとそれが適用される言語および、アンカーの型からなります。タグは <A HREF="gposgsub.html">GPOS</A> テーブルの文脈において意味を持ちます。インドの言語のフォントを作っているのでなければ、おそらくマークとして配置され、マークから基底文字またはマークから合字への接続位置の指定に用いられるでしょう。筆記体の接続のためには、タグ &lsquo;curs&rsquo; を使用し、マークからマークへの接続には &lsquo;mkmk&rsquo; を使用します。
+  フォントは、<A HREF="fontinfo.html#Anchors"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE></A>で指定可能なアンカークラスのリストを含むことができます。アンカークラスは名前 (上の例ではクラスは“Top”と呼ばれています)、タグ、スクリプトのセットとそれが適用される言語および、アンカーの型からなります。タグは <A HREF="gposgsub.html">GPOS</A> テーブルの文脈において意味を持ちます。インドの言語のフォントを作っているのでなければ、おそらくマークとして配置され、マークから基底文字またはマークから合字への接続位置の指定に用いられるでしょう。筆記体の接続のためには、タグ&lsquo;curs&rsquo;を使用し、マークからマークへの接続には&lsquo;mkmk&rsquo;を使用します。
   <P>
 <!--
   Cursive attachments are a little different from the other attachment types.
@@ -1087,7 +1088,7 @@
   with a "Top" anchor point. So instead of specifying the exact composed form
   for all possible combinations we specify far fewer anchor points for the
   same effect. -->
-  1 個のグリフが複数のアンカーポイントを含むことは可能ですが、各アンカークラスについて 1 個に限られます (ただし、合字グリフは 1 クラスあたり 2 個以上を含むことができ、&lsquo;curs&rsquo; クラスは 2 個含んでいる必要があります)。アンカーポイントは <CODE>点(<U>P</U>)</CODE>→<CODE>アンカーを追加(<U>A</U>)</CODE> コマンドで作成できます。このときアンカークラスを選択し、このアンカーポイントが基底グリフに対するものなのかマークグリフに対するものなのかを指定し、位置を決める必要があります。例えば上の例では、“a”のアンカーポイントはクラス“Top”をもち、基底グリフに対する物であり、一方“grave”のアンカーポイントもクラス“Top”ですが、マークグリフに対する物です。“Top”アンカーポイントをもつ基底グリフはすべて、“Top”アンカーポイントをもつマークグリフと合成することができます。それにより、すべての可能な組合せに対して正確な組合せ形を指定する代わりに、ずっと少ない個数のアンカーポイントで同じ効果を得ることができます。
+  1 個のグリフが複数のアンカーポイントを含むことは可能ですが、各アンカークラスについて 1 個に限られます (ただし、合字グリフは 1 クラスあたり 2 個以上を含むことができ、&lsquo;curs&rsquo;クラスは 2 個含んでいる必要があります)。アンカーポイントは <CODE>点(<U>P</U>)</CODE>→<CODE>アンカーを追加(<U>A</U>)</CODE> コマンドで作成できます。このときアンカークラスを選択し、このアンカーポイントが基底グリフに対するものなのかマークグリフに対するものなのかを指定し、位置を決める必要があります。例えば上の例では、“a”のアンカーポイントはクラス“Top”をもち、基底グリフに対する物であり、一方“grave”のアンカーポイントもクラス“Top”ですが、マークグリフに対する物です。“Top”アンカーポイントをもつ基底グリフはすべて、“Top”アンカーポイントをもつマークグリフと合成することができます。それにより、すべての可能な組合せに対して正確な組合せ形を指定する代わりに、ずっと少ない個数のアンカーポイントで同じ効果を得ることができます。
   <P>
 <!--
   But life is not really that simple. Ligatures may need several anchor points
@@ -1251,6 +1252,6 @@
   <P>
   <P>
   <P ALIGN=Center>
-  -- <A HREF="editexample.html">次</A> --
+  ― <A HREF="editexample.html">次</A> ―
 </DIV>
 </BODY></HTML>

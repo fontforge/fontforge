@@ -98,7 +98,7 @@ a .dfont file). -->
 <!--
 FontForge does not support the old 'fbit' font format for CJK encodings (but
 then neither does the Mac any more so that's probably not an issue). -->
-FontForge は、CJK 符号化方式のための古い 'fbit' フォントフォーマットをサポートしていません (今は Mac でもサポートしていないので、これが問題となることはないでしょう)。
+FontForge は、CJK 符号化方式のための古い&lsquo;fbit&rsquo;フォントフォーマットをサポートしていません (今は Mac でもサポートしていないので、これが問題となることはないでしょう)。
 <P>
 <!--
 When an 'sfnt' resource contains a font with a multibyte encoding (CJK or
@@ -107,8 +107,7 @@ unicode) then the 'FOND' does not have entries for all the characters. The
 and the 'FOND' will contain information on just that subset of the font.
 (I have determined this empirically, I have seen no documentation on the
 subject) -->
-'sfnt' リソースにマルチバイトエンコーディング (CJK または Unicode) のフォントが含まれている場合、'FOND' にはすべての文字に対応する項目が含まれていないことになります。'sfnt' には (常に?) マルチバイトエンコーディングのほかにMacRoman エンコーディングが含まれ、'FOND' にはフォントのそのサブセットに関する情報のみが含まれます。
-(これは私が実験により見つけたのもので、これに関する文書はまだ見たことがありません)。
+&lsquo;sfnt&rsquo;リソースにマルチバイトエンコーディング (CJK または Unicode) のフォントが含まれている場合、&lsquo;FOND&rsquo;にはすべての文字に対応する項目が含まれていないことになります。&lsquo;sfnt&rsquo;には (常に?) マルチバイトエンコーディングのほかに MacRoman エンコーディングが含まれ、&lsquo;FOND&rsquo;にはフォントのそのサブセットに関する情報のみが含まれます。(これは私が実験により見つけたのもので、これに関する文書はまだ見たことがありません)。
 <P>
 <!--
 Currently bitmap fonts for multibyte encodings are stored inside an sfnt
@@ -118,14 +117,14 @@ strike. Each resource is 26 bytes long (which means they contain the FontRec
 structure but no data tables) and are flagged by having rowWords set to 0.
 (I have determined this empirically, I have seen no documentation on the
 subject) -->
-現在のところマルチバイトエンコーディングのビットマップフォントは 'bloc' および 'bdat' テーブルの sfnt (TrueType) リソースに格納されています。このような場合には、リソースファイルにはダミーの 'NFNT' リソースが、それぞれにたいして 1 つずつ含まれています。
+現在のところマルチバイトエンコーディングのビットマップフォントは&lsquo;bloc&rsquo;および&lsquo;bdat&rsquo;テーブルの sfnt (TrueType) リソースに格納されています。このような場合には、リソースファイルにはダミーの&lsquo;NFNT&rsquo;リソースが、それぞれにたいして 1 つずつ含まれています。
 各リソースの長さは 26 バイトで (これは、FontRec 構造体が含まれているがデータテーブルは含まれていないことを示します) rowWords が 0 であるというフラグが立っています。
 (これは私が実験により見つけたのもので、これに関する文書はまだ見たことがありません)。
 <P>
 <!--
 When a 'sfnt' resource contains only bitmaps (and no glyph outlines) it is
 sometimes called an 'sbit'. -->
-'sfnt' リソースがビットマップのみを含んでいる (かつ、グリフアウトラインを含まない) 場合、それは 'sbit' と呼ばれる場合がたまにあります。
+&lsquo;sfnt&rsquo;リソースがビットマップのみを含んでいる (かつ、グリフアウトラインを含まない) 場合、それは&lsquo;sbit&rsquo;と呼ばれる場合がたまにあります。
 <H2>
 <!--Resource forks on Mac OS/X-->
     Mac OS X におけるリソースフォーク
@@ -135,7 +134,6 @@ sometimes called an 'sbit'. -->
 The unix filename for the resource fork of the file "foo" is "foo/rsrc".
 (I was told this and it appears to be correct, I have seen no documentation
 on the subject) -->
-ファイル "foo" のリソースフォークの Unix ファイル名は "foo/rsrc" です。
-(これは人に聞いた話で実際にそうであるようです。私はこれに関する文書をまだ見たことがありません)
+ファイル“foo”のリソースフォークの Unix ファイル名は“foo/rsrc”です。(これは人に聞いた話で実際にそうであるようです。私はこれに関する文書をまだ見たことがありません)
 </DIV>
 </BODY></HTML>

@@ -35,7 +35,7 @@ The dialog is composed of many different sub dialogs. -->
     <A HREF="fontinfo.html#PS-General">一般情報</A>
   <LI>
 <!--<A HREF="fontinfo.html#Private">PostScript Private Dictionary</A>-->
-    <A HREF="fontinfo.html#Private">PostScript プライベート辞書</A>
+    <A HREF="fontinfo.html#Private">PostScript の Private 辞書</A>
   <LI>
     <A HREF="fontinfo.html#TTF-Values">OS/2</A>
     <UL>
@@ -244,7 +244,7 @@ of "Interpretation". There are several cases in which this field is useful. -->
 </UL>
 <H2>
 <!--<A NAME="Private">Private</A> - - <SMALL>(font-wide postscript hinting)</SMALL>-->
-    <A NAME="Private">PostScript Private 辞書</A> -- <SMALL>(フォント全体に適用される PostScript のヒント)</SMALL>
+    <A NAME="Private">PostScript の Private 辞書</A> ― <SMALL>(フォント全体に適用される PostScript のヒント)</SMALL>
 </H2>
 <P>
 <IMG SRC="fontinfo-private.png" WIDTH="325" HEIGHT="454" ALIGN="Right"><!--This
@@ -336,18 +336,18 @@ settings live in the 'OS/2' table of a truetype or opentype font. The pane also 
 a few pieces of data that do not live in the 'OS/2' table but are logically
 related.
 This sub dialog contains a few settings important on Windows platforms. -->
-このサブダイアログには、Windows プラットフォームで重要となる設定値が含まれており、それらの設定のほとんどは TrueType および OpenType フォントの 'OS/2' テーブルに含まれています。このタブには、'OS/2' テーブルに含まれてはいないものの論理的に関連するいくつかの設定も含まれています。
+このサブダイアログには、Windows プラットフォームで重要となる設定値が含まれており、それらの設定のほとんどは TrueType および OpenType フォントの&lsquo;OS/2&rsquo;テーブルに含まれています。このタブには、&lsquo;OS/2&rsquo;テーブルに含まれてはいないものの論理的に関連するいくつかの設定も含まれています。
 <P>
 <!--
 The weight class provides a numeric value describing the boldness of the
 font. A normal face will usually have a boldness of 400, and a bold face
 will usually be 700. This must be a number between 100 and 900. -->
-Weight Class は、フォントの太さを表す数値を示します。標準の書体は太さ 400 とし、ボールド体は太さ 700 とするのが通例です。この値は 100 から 900 の間の整数でなければなりません。
+<CODE>ウェイトクラス(<U>W</U>)</CODE> は、フォントの太さを表す数値を示します。標準の書体は太さ 400 とし、ボールド体は太さ 700 とするのが通例です。この値は 100 から 900 の間の整数でなければなりません。
 <P>
 <!--
 The width class allows you to provide a numeric value saying how condensed
 or expanded this font is. -->
-項目 Width Class では、このフォントの文字幅がどれだけ圧縮されているか、または拡大されているかを表す数値を示すことができます。
+項目 <CODE>幅のクラス(<U>C</U>)</CODE> では、このフォントの文字幅がどれだけ圧縮されているか、または拡大されているかを表す数値を示すことができます。
 <P>
 <!--
 The PFM Family is used when generating PFM files and classifies the font
@@ -435,7 +435,7 @@ FontForge gives you a couple of options. -->
   <LI>
 <!--You may set WinAscent and WinDescent directly. Turn off the "[ ] Is Offset"
     checkboxes and any value you provide will be used as is.-->
-    WinAscent と WinDescent を直接指定することができます。"[ ] オフセットを指定" チェックボックスをオフにすれば、あなたが入力した値がそのまま使われます。
+    WinAscent と WinDescent を直接指定することができます。<CODE>“[ ] オフセットを指定”</CODE>チェックボックスをオフにすれば、あなたが入力した値がそのまま使われます。
   <LI>
 <!--Or you may specify an offset to be added to the maximum ascent and descent
     of the font (which FontForge will compute for you when it saves the font).
@@ -568,7 +568,7 @@ Names pane. You may not remove these strings, and if you wish to modify them
 you must first detach them from the PostScript. In the example at right the
 strings bound to PostScript are shown in red (Copyright, Family, Styles),
 while Fullname and Version have been detached and modified. -->
-いくつかの英語の文字列 (Copyright, Family, Styles, Fullname, Version) は常に存在します。それらを明示的に設定していない場合、[名前] タブで設定された等価な PostScript 文字列から (おそらく変更を加えたうえで) コピーされます。これらの文字列は削除できません。また、これらを変更したい場合は、まず PostScript との対応を切り離す必要があります。右の例では PostScript と対応づけられた文字列 (Copyright, Family, Styles) は赤で表示されており、Fullname と Version は対応を切り離したうえで変更されています。
+いくつかの英語の文字列 (Copyright, Family, Styles, Fullname, Version) は常に存在します。それらを明示的に設定していない場合、<CODE>[名前]</CODE> タブで設定された等価な PostScript 文字列から (おそらく変更を加えたうえで) コピーされます。これらの文字列は削除できません。また、これらを変更したい場合は、まず PostScript との対応を切り離す必要があります。右の例では PostScript と対応づけられた文字列 (Copyright, Family, Styles) は赤で表示されており、Fullname と Version は対応を切り離したうえで変更されています。
 <P>
 <!--
 You may change the language of a string by clicking the mouse on the language
@@ -632,7 +632,7 @@ The various strings and a brief description of their meanings are: -->
   <DD>
 <!--This should (in English) have values like "BoldItalicCondensed". This is
     the most likely string to change in different languages. -->
-    これは (英語では) "BoldItalicCondensed" のような値となるはずです。これは言語ごとに変更される可能性が最も高い文字列です。
+    これは (英語では)“BoldItalicCondensed”のような値となるはずです。これは言語ごとに変更される可能性が最も高い文字列です。
   <DT>
 <!--Fullname-->
     フルネーム
@@ -949,12 +949,12 @@ languages. -->
 (上の表を拡張/訂正するための情報はどんなものでも <A HREF="mailto:pfaedit@users.sourceforge.net">pfaedit@users.sourceforge.net</A> に知らせていただければ非常に助かります)
 <P>
 <!--
-+When you create a Style entry for an language, FontForge will attempt to
-+translate the American English style into something appropriate for that
-+language. It understands the above table, but not other languages so it won't
-+always work. So if your style in American English is "BoldItalic" then after
-+you create the appropriate strngs FontForge will default to "GrasItalique"
-+for French, "FettKursiv" for German,
+When you create a Style entry for an language, FontForge will attempt to
+translate the American English style into something appropriate for that
+language. It understands the above table, but not other languages so it won't
+always work. So if your style in American English is "BoldItalic" then after
+you create the appropriate strngs FontForge will default to "GrasItalique"
+for French, "FettKursiv" for German, -->
 ある言語用のスタイル項目を作成すると、FontForge はアメリカ英語のスタイルからその言語に適切な項目に翻訳を行おうと試みます。これは上記の表を理解しますが、他の言語はありませんので常にうまく動くとは限りません。もしアメリカ英語で指定した項目が“BoldItalic”であれば、その後それに相当する文字列を作成したとき、FontForge は、フランス語であれば“GrasItalique”を、ドイツ語であれば“FettKursiv”を、ロシア語であれば“жхрныйсЙвный”を、スペイン語であれば“NigritaCursiva" をデフォルトの文字列として設定します。
 <P>
 <!--
@@ -1039,7 +1039,7 @@ Style Name. Note that font names are now something like
 complication, as far as s/he is concerned there is just a font called
 "Ambrosia-Regular" and all four of the above fonts are just instances of
 it. So the Style Name of all four fonts above should be "Regular"<BR Clear=All> -->
-上の例では、すべての異なるフォントが同じ "スタイル ID" という数値をもっています。この数値は任意の値を撮り、その ID をもつすべてのフォントを結びつけます (つまり、すべてのフォントが同じファミリーに属するようになります)。ただし、Ambrosia-Italic-Text はこれらと異なるスタイル ID をもつでしょう。同じスタイル ID をもつすべてのフォントは同じスタイル名をもつはずです。ここで、フォント名は例えば“Ambrosia-Regular-Heading”というような物ですが、ユーザはこんな複雑な名前に悩まされるべきではありません。ユーザの立場からは“Ambrosia-Regular”という 1 個のフォントがあるだけで、上の 4 つのフォントはどれもその具体例でしかありません。ですから、4 つのフォントのスタイル名はすべて“Regular”にすべきです <BR Clear=All>
+上の例では、すべての異なるフォントが同じ“スタイル ID”という数値をもっています。この数値は任意の値を撮り、その ID をもつすべてのフォントを結びつけます (つまり、すべてのフォントが同じファミリーに属するようになります)。ただし、Ambrosia-Italic-Text はこれらと異なるスタイル ID をもつでしょう。同じスタイル ID をもつすべてのフォントは同じスタイル名をもつはずです。ここで、フォント名は例えば“Ambrosia-Regular-Heading”というような物ですが、ユーザはこんな複雑な名前に悩まされるべきではありません。ユーザの立場からは“Ambrosia-Regular”という 1 個のフォントがあるだけで、上の 4 つのフォントはどれもその具体例でしかありません。ですから、4 つのフォントのスタイル名はすべて“Regular”にすべきです <BR Clear=All>
 <H2>
   <IMG SRC="fontinfo-comment.png" WIDTH="325" HEIGHT="320" ALIGN="Right"><!--<A
       NAME="Comment">Comment</A>-->
@@ -1142,7 +1142,7 @@ non-overlapping marks An example: there could be two types of marks that
 attach to the same set of letters, one attaching below and one above the
 letter, each would have its own anchor class, but you would tell FontForge
 to associate the two together by having them "Merge With" each other. -->
-OpenType フォントでは一般に、いくつかのアンカークラスがほぼ同じ基底グリフのセットを参照していて、それらの含むマークが重なり合わないときは、それらは 1 個の単位として扱われます。例としては: 同じグリフのセットに接続する 2 つのタイプのマークがあり、片方はグリフの下につき、もう片方は上につくとしましょう。しかし、その場合は両方のクラスにお互いに“まとめ先:”を指定することによって、FontForge に 2 つを連係させるべきでしょう。
+OpenType フォントでは一般に、いくつかのアンカークラスがほぼ同じ基底グリフのセットを参照していて、それらの含むマークが重なり合わないときは、それらは 1 個の単位として扱われます。例としては: 同じグリフのセットに接続する 2 つのタイプのマークがあり、片方はグリフの下につき、もう片方は上につくとしましょう。しかし、その場合は両方のクラスにお互いに“<CODE>まとめ先:</CODE>”を指定することによって、FontForge に 2 つを連係させるべきでしょう。
 <P>
 <!--
 FontForge recognizes a special feature tag ' RQD' to indicate that this feature
@@ -1277,7 +1277,7 @@ See Also:-->
     <A HREF="contextchain.html">文脈依存 / 文脈連鎖依存ダイアログ</A>
 </UL>
 <P ALIGN=Center>
--- <A HREF="elementmenu.html">前</A> -- <A HREF="overview.html">目次</A>
--- <A HREF="elementmenu.html">次</A> --
+― <A HREF="elementmenu.html">前</A> ― <A HREF="overview.html">目次</A>
+― <A HREF="elementmenu.html">次</A> ―
 </DIV>
 </BODY></HTML>

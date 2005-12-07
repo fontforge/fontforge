@@ -48,7 +48,7 @@
     <A HREF="#PrevDef">前の定義済みグリフ(<U>A</U>)</A>
   <LI>
 <!--<A HREF="viewmenu.html#Former">Former Glyph</A>-->
-    <A HREF="#Former">以前のグリフ</A>
+    <A HREF="#Former">前に編集したグリフ(<U>E</U>)</A>
   <LI>
 <!--<A HREF="#Substitutions">Substitutions</A>-->
     <A HREF="#Substitutions">置換一覧(<U>S</U>)</A>
@@ -69,10 +69,10 @@
     <A HREF="#ShowATT">ATTを表示(<U>S</U>)</A>
   <LI>
 <!--<A HREF="#DspSubs">Display Substitutions</A>-->
-    <A HREF="#DspSubs">置換グリフを表示(<U>S</U>)</A>
+    <A HREF="#DspSubs">置換グリフを表示(<U>U</U>)...</A>
   <LI>
 <!--Combinations-->
-    複合グリフを表示(B)
+    複合グリフを表示(<U>B</U>)
     <UL>
       <LI>
 <!--	<A HREF="#KernPairs">Kern Pairs</A>-->
@@ -99,7 +99,7 @@
 	<A HREF="#GlyphLabel">Unicode による(<U>U</U>)</A>
       <LI>
 <!--	<A HREF="#GlyphLabel">Encoding</A> -->
-	<A HREF="#GlyphLabel">符号位置による(<U>E</U>)</A>
+	<A HREF="#GlyphLabel">符号位置(16進)による(<U>E</U>)</A>
     </UL>
   <LI>
 <!--<A HREF="#HMetrics">View H. Metrics...</A>-->
@@ -144,7 +144,7 @@
     <UL>
       <LI>
 <!--	None -->
-	なし
+	なし(<U>N</U>)
       <LI>
 	TrueType
       <LI>
@@ -248,24 +248,25 @@
     前のグリフ(P) と同様ですが、フォント内の前の定義済みグリフに移動する点が異なります。
   <DT>
 <!--<A NAME="Former">Former Glyph</A>-->
-    <A NAME="Former">以前のグリフ</A>
+    <A NAME="Former">前に編集したグリフ(<U>E</U>)</A>
   <DD>
 <!--Changes the glyph window to look at whatever glyph was being edited there
     before this one (one level of history). -->
     現在の文字よりも 1 つ前に何らかの編集を行った (編集履歴で 1 段階前の) グリフを探して、グリフウィンドウを更新します。
   <DT>
 <!--<A NAME="Substitutions">Substitutions</A>-->
-    <A NAME="Substitutions">置換一覧(<U>S</U>)</A>
+    <A NAME="Substitutions">置換一覧(<U>S</U>)...</A>
   <DD>
 <!--Brings up a sub menu showing all the GSUB type 1 and type 3 substitutions
     (simple and alternate) you have defined for the selected glyph and allows
     you to change the glyph as directed by the substitution. Also contains an
     entry to return you to the original glyph. -->
+    (訳注: メトリックビューのみ)<BR>
     選択中のグリフに対して定義されている GSUB のタイプ 1 と 3 の置換 (単純置換と選択型置換) のすべてを表示するサブメニューを表示し、置換先のグリフを編集することができます。オリジナルのグリフに戻るための項目も表示されています。
     <P>
 <!--Substitutions may be set with the <A HREF="charinfo.html">Element-&gt;Glyph
     Info</A> command. -->
-    置換の設定は <A HREF="charinfo.html"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>グリフ情報(<U>I</U>)</CODE></A> コマンドで行うことができます。
+    置換の設定は <A HREF="charinfo.html"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>グリフ情報(<U>I</U>)...</CODE></A> コマンドで行うことができます。
   <DT>
 <!--<A NAME="Goto">Goto</A><BR>
     Replace Glyph...-->
@@ -359,7 +360,7 @@
     フォントビューでのみ使用可能です。FontForge がサポートする高度な組版機能に関するテーブル (GPOS/GSUB または morx/kern) を表示する<A HREF="showatt.html">ダイアログ</A>を起動します。
   <DT>
 <!--<A NAME="DspSubs">Display Substitutions</A>-->
-    <A NAME="DspSubs">置換グリフを表示(<U>S</U>)</A>
+    <A NAME="DspSubs">置換グリフを表示(<U>U</U>)...</A>
   <DD>
 <!--Only in the font view. This allows you to select a simple substitution, any
     glyph with that substitution attached will be displayed as the substituted
@@ -407,7 +408,7 @@
 	<P>
 <!--	If invoked from the outline glyph view it will provide a list of all anchored
 	combinations involving that character. -->
-	アウトライングリフビューから呼び出したときは、すべてのそのグリフに関するすべてのアンカーつき組合せを表示します。
+	アウトライングリフビューから呼び出したときは、そのグリフに関するすべてのアンカーつき組合せを表示します。
       <DT>
 <!--	<A NAME="Ligatures">Ligatures</A> -->
 	<A NAME="Ligatures">合字(<U>L</U>)</A>
@@ -419,7 +420,7 @@
 	このコマンドは、すべての合字とそれらを構成するグリフの名前を表示するダイアログを起動します (アウトライングリフビューから呼び出したときは、そのグリフを含むすべての合字のリストを表示します)。表示された項目の上でクリックすると、その合字を表示するウィンドウを起動します。
     </DL>
   <DT>
-<!--<A NAME="GlyphLabel">Label Glyph By</A>
+<!--<A NAME="GlyphLabel">Label Glyph By</A>-->
     <A NAME="GlyphLabel">グリフへのラベルづけ(<U>L</U>)</A>
   <DD>
 <!--In the font view each glyph has a label above it. This may be either:-->
@@ -610,6 +611,7 @@
   <DT>
 <!--<A NAME="Smaller">Smaller</A> Pixel Size-->
     <A NAME="Smaller">ピクセルサイズ縮小(<U>S</U>)</A>
+  <DD>
 <!--In the bitmap view this displays the current glyph in next smaller bitmap
     font (if there is one) -->
     ビットマップビューでは、現在のビットマップフォントの次に小さなビットマップフォント (があれば) で現在のグリフを表示します。
@@ -682,7 +684,8 @@
     <A HREF="elementmenu.html">エレメント(<U>L</U>)</A>
   <LI>
 <!--<A HREF="hintsmenu.html">Hints</A>-->
-    <A HREF="hintsmenu.html">ヒント(<U>H</U>)</A>
+    <A HREF="hintsmenu.html">ヒント(<U>I</U>)</A>
+    <LI> <A HREF="encodingmenu.html">エンコーディング(<U>N</U>)</A>
   <LI>
 <!--<A HREF="viewmenu.html">View</A>-->
     <A HREF="viewmenu.html">表示(<U>V</U>)</A>
@@ -690,7 +693,7 @@
 <!--<A HREF="metricsmenu.html">Metrics</A>-->
     <A HREF="metricsmenu.html">メトリック(<U>M</U>)</A>
   <LI>
-    <A HREF="cidmenu.html">CID</A>
+    <A HREF="cidmenu.html"><U>C</U>ID</A>
   <LI>
     <A HREF="mmmenu.html">MM</A>
   <LI>
@@ -704,8 +707,8 @@
     <A HREF="HotKeys.html">ホットキー一覧</A>
 </UL>
 <P ALIGN=Center>
--- <A HREF="hintsmenu.html">前</A> -- <A HREF="overview.html">目次</A> --
-<A HREF="metricsmenu.html">次</A> --
+― <A HREF="encodingmenu.html">前</A> ― <A HREF="overview.html">目次</A> ―
+<A HREF="metricsmenu.html">次</A> ―
 <P>
 </DIV>
 </BODY></HTML>

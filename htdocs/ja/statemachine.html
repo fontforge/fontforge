@@ -53,7 +53,7 @@ this are user defined. In the example at right there is one user defined
 class and it contains the letters in the latin alphabet. Any other glyphs
 in the font (the digits for example) will automatically be assigned to class
 1 ("{Everything Else}"). -->
-Mac では 4 個の定義済みクラスが存在します。1 個は入力の終わりを意味するもので、1 個は他のどこでも指定しないグリフに対応し、1 個は特別な "deleted" グリフ (Apple 式では、削除を指示したばあい、常に即座に削除するのではなく、そのグリフを後で削除することを指定する特殊な印をグリフストリーム内に保持することがあります) に該当し、最後のクラスはテキスト行の末尾に対応するものです。これら 4 つに続く任意のクラスはユーザが定義したものです。
+Mac では 4 個の定義済みクラスが存在します。1 個は入力の終わりを意味するもので、1 個は他のどこでも指定しないグリフに対応し、1 個は特別な“deleted”グリフ (Apple 式では、削除を指示したばあい、常に即座に削除するのではなく、そのグリフを後で削除することを指定する特殊な印をグリフストリーム内に保持することがあります) に該当し、最後のクラスはテキスト行の末尾に対応するものです。これら 4 つに続く任意のクラスはユーザが定義したものです。
 <P>
 <!--
 The state machine itself is shown as a two dimensional matrix of transition,
@@ -104,7 +104,7 @@ next glyph. For indic tables there is a third flag shown, "L" =&gt; the current
 glyph is the last glyph of the indic rearrangement, while for kerning tables
 there is a "P" flag indicating that the current glyph should be pushed onto
 the kerning stack. -->
-どの状態遷移でも、最初の行は次に移る状態を表します。次の行はフラグの集まりで、意味は以下の通りです: "M"⇒現在の文字に印づけがされる (この意味は後で説明します)、"A"⇒処理は次のグリフに進む。インド系のテーブルでは 3 番目のフラグがあります: "L"⇒現在のグリフはインド系文字の再配置の最後のグリフである。カーニングテーブルでは、現在のグリフをカーニングスタックに積むことを表す "P" フラグが存在します。
+どの状態遷移でも、最初の行は次に移る状態を表します。次の行はフラグの集まりで、意味は以下の通りです:“M”⇒現在の文字に印づけがされる (この意味は後で説明します)、“A”⇒処理は次のグリフに進む。インド系のテーブルでは 3 番目のフラグがあります:“L”⇒現在のグリフはインド系文字の再配置の最後のグリフである。カーニングテーブルでは、現在のグリフをカーニングスタックに積むことを表す“P”フラグが存在します。
 <P>
 <!--
 The last two lines have varied meanings depending on the type of the state
@@ -115,7 +115,7 @@ machine. -->
 <!--For Indic transitions the two lines should be appended to get the indic
     rearrangement verb (in the example above that would be "Ax =&gt; xA" meaning
     that the first glyph marked should be moved after the last glyph marked) -->
-    インド系の状態遷移では、この 2 行はインド系再配置動詞を得るために追加されます (上の例は "Ax =&gt; xA" という表示で、印づけされた最初のグリフが印づけされた最後のグリフの後に移動するという意味です)。
+    インド系の状態遷移では、この 2 行はインド系再配置動詞を得るために追加されます (上の例は“Ax ⇒ xA”という表示で、印づけされた最初のグリフが印づけされた最後のグリフの後に移動するという意味です)。
   <LI>
 <!--For contextual transitions the two lines specify the names (as 4 character
     tags) of nested substitutions. The first one is applied to the last glyph
@@ -126,7 +126,7 @@ machine. -->
     flag, I believe the substitution applies to the glyph that was previously
     marked, and not to the current glyph. (Apple doesn't document
     this)<FONT COLOR="Red"><BR> -->
-    ある状態遷移が "印つき置換" と "現在のグリフに印をつける" フラグの両方をもっていた場合、現在のグリフではなく、前回印づけされたグリフに置換が適用されるのだと私は解釈しています。(Apple の文書にはこれに関する記述がありません)<BR>
+    ある状態遷移が“印つき置換”と“現在のグリフに印をつける”フラグの両方をもっていた場合、現在のグリフではなく、前回印づけされたグリフに置換が適用されるのだと私は解釈しています。(Apple の文書にはこれに関する記述がありません)<BR>
 <FONT COLOR="Red">
 <!--<STRONG>Caveat: </STRONG></FONT>Apple's 'mort' format was not designed to
     allow fonteditors to figure out what a state machine did. FontForge can usually
@@ -134,7 +134,7 @@ machine. -->
     but it will often include extraneous glyph substitutions when a substitution
     applies to a marked glyph. These should not be harmful (they should never
     get invoked) but they are annoying ('morx' tables should not have this problem). -->
-    <STRONG>警告: </STRONG></FONT>Apple の 'mort' フォーマットは、状態機械が何を行ったかをフォントエディタが表示できるように設計されていません。FontForge は多くの場合は現在のグリフにどの置換が適用されるかをうまく推測できますが、マークつきグリフに置換が適用される場合は余分なグリフ置換が含まれることがしばしばあります。これらは有害ではありません (それらが起動されることは決してありません) が、煩わしい余計物ではあります ('morx' テーブルにはこのような問題は無いはずです)。
+    <STRONG>警告: </STRONG></FONT>Apple の&lsquo;mort&rsquo;フォーマットは、状態機械が何を行ったかをフォントエディタが表示できるように設計されていません。FontForge は多くの場合は現在のグリフにどの置換が適用されるかをうまく推測できますが、マークつきグリフに置換が適用される場合は余分なグリフ置換が含まれることがしばしばあります。これらは有害ではありません (それらが起動されることは決してありません) が、煩わしい余計物ではあります (&lsquo;morx&rsquo;テーブルにはこのような問題は無いはずです)。
   <LI>
 <!--For insertion transitions the lines specify the glyphs that are to be inserted.
     The first line applies to the marked glyph, the second line to current glyph
@@ -147,7 +147,7 @@ machine. -->
 <!--For kerning transitions the first line shows the first (few) kerning values,
     the second line shows either "..." if there are more kerning values, or
     nothing.<BR> -->
-    カーニングの状態遷移においては、最初の行が最初の (2, 3 の) カーニング値を表し、2 行目は、表示しきれないカーニング値があることを示す "..." か、何も表示しないかのどちらかです。<BR>
+    カーニングの状態遷移においては、最初の行が最初の (2, 3 の) カーニング値を表し、2 行目は、表示しきれないカーニング値があることを示す“...”か、何も表示しないかのどちらかです。<BR>
 <!--Note: The number of kerning values
     <FONT COLOR="Red"><STRONG>MUST</STRONG></FONT> match the number of glyphs
     pushed on the kern stack, or your application crashes. -->
@@ -161,17 +161,16 @@ read Apple's documentation -->
 <UL>
   <LI>
 <!--On the-->
-    <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6morx.html">'morx'</A>
-<!--and-->
-    および
+<!--<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6morx.html">'morx'</A>
+    and
     <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6mort.html">'mort'</A>
-<!--tables -->
-    テーブルについて
+    tables -->
+   &lsquo;<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6morx.html">morx</A>&rsquo;および&lsquo;<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6mort.html">mort</A>&rsquo;テーブルについて
   <LI>
-<!--On the-->
+<!--On the
     <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6kern.html">'kern'</A>
-<!--table (format 1)-->
-    テーブル (フォーマット 1) について
+    table (format 1) -->
+    &lsquo;<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6kern.html">kern</A>&rsquo;テーブル (フォーマット 1) について
   <LI>
 <!--<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6Tables.html#StateTables">On
     state machines in general</A> -->
@@ -179,7 +178,7 @@ read Apple's documentation -->
   <LI>
 <!--<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6feat.html">The
     'feat' (feature) table</A> -->
-    <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6feat.html">'feat' (機能) テーブル</A>
+    <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6feat.html">&lsquo;feat&rsquo;(機能) テーブル</A>
   <LI>
 <!--<A HREF="http://developer.apple.com/fonts/Registry/index.html">Apple's Font
     Feature registry</A>-->
@@ -204,7 +203,7 @@ important if the desired change for a given glyph depends on what glyphs
 follow it. In that case when we reach an interesting glyph we "mark" it,
 and then, after reading a few more glyphs when we know what to do, we apply
 a transformation to the marked glyph. -->
-状態機械の多くは "印づけされた" グリフの概念をもっています。これは、与えられたグリフに対する望ましい変更が、その後ろに来るグリフによって異なる場合に重要な意味をもちます。そのような場合、興味深いグリフにたどり着いたときにそれに "印づけ" を行い、その後、2, 3 の追加のグリフを読んで、何を行うべきかが判明した後に、マークづけしたグリフに変換を適用します。
+状態機械の多くは“印づけされた”グリフの概念をもっています。これは、与えられたグリフに対する望ましい変更が、その後ろに来るグリフによって異なる場合に重要な意味をもちます。そのような場合、興味深いグリフにたどり着いたときにそれに“印づけ”を行い、その後、2, 3 の追加のグリフを読んで、何を行うべきかが判明した後に、マークづけしたグリフに変換を適用します。
 <TABLE BORDER CELLPADDING="2">
   <TR>
 <!--<TH>Indic</TH>-->
@@ -227,16 +226,16 @@ a transformation to the marked glyph. -->
       refers to the marked glyph as "A", the last glyph as "D" and everything in
       between as "x", so this would change the glyph stream to<BR>
       &nbsp; &nbsp; dbcaef</TD> -->
-      "印づけ" されたグリフの他に、インド系の変換においては "最後" のグリフという概念があります。"印づけ" されたグリフと "最後" のグリフの間に適用可能な変換が 16 種類あります。<BR>
+      “印づけ”されたグリフの他に、インド系の変換においては“最後”のグリフという概念があります。“印づけ”されたグリフと“最後”のグリフの間に適用可能な変換が 16 種類あります。<BR>
       &nbsp; &nbsp; abcdef<BR>
-      のようなグリフストリームを考えてみましょう。ここで "a" が "印づけ" された文字で、"d" が "最後" の文字であるとすると、状態遷移 "AxD =&gt; DxA" は印づけられたグリフを "A"、最後のグリフを "D"、そしてその間のすべての文字を "x" として参照するので、これによりグリフストリームは<BR>
+      のようなグリフストリームを考えてみましょう。ここで“a”が“印づけ”された文字で、“d”が“最後”の文字であるとすると、状態遷移“AxD ⇒ DxA”は印づけられたグリフを“A”、最後のグリフを“D”、そしてその間のすべての文字を“x”として参照するので、これによりグリフストリームは<BR>
       &nbsp; &nbsp; dbcaef<BR>
       に変更されます。</TD>
 <!--<TD>This can apply a substitution to the current glyph, a different substitution
       to the marked glyph, and it may mark the current glyph. The substitutions
       are indicated by 4 character tags and should be "Nested" substitutions which
       may be created by the Element-&gt;Char Info dialog.</TD> -->
-    <TD>この機能は現在のグリフへの置換と、印づけされたグリフに対する別の置換をを適用することができ、また、現在のグリフに印づけを行うことができます。置換は 4 文字のタグによって表され、エレメント(L)→文字情報 ダイアログで作成することが可能な "入れ子の" 置換でなければなりません。
+    <TD>この機能は現在のグリフへの置換と、印づけされたグリフに対する別の置換をを適用することができ、また、現在のグリフに印づけを行うことができます。置換は 4 文字のタグによって表され、<CODE>エレメント(<U>L</U>)→グリフ情報(<U>I</U>)...</CODE> ダイアログで作成することが可能な“入れ子の”置換でなければなりません。
 <!--<TD>This can insert a string (up to 31 glyphs) before or after the current
       and the marked glyphs.</TD> -->
     <TD>この機能は (31 個までののグリフからなる) 文字列を現在のグリフおよびマークづけされたグリフの前後に挿入することができます。</TD>
@@ -252,10 +251,10 @@ a transformation to the marked glyph. -->
       enter<BR>
       &nbsp; &nbsp; -300 0<BR>
       as kerning values.</TD> -->
-    <TD>カーニングでは 1 個の "印づけ" されたグリフは存在せず、その代わりにスタックに 8 個までのグリフを積んでおいて、それらのグリフに適用される一連のカーニング値を後で指定する個とができます (そのため、他の機能で印を表すフラグは "Mark" の頭文字 "M" であるのに対し、この機能では "Push" の頭文字 "P" となっています)。いちどすべてのグリフを積んだ後で、一連のカーニング値を適用する個とができます。スタックに積んだ各グリフごとに値 1 個が対応します。これは、いくつのグリフがカーニングを施されるかを示す数値です。
+    <TD>カーニングでは 1 個の“印づけ”されたグリフは存在せず、その代わりにスタックに 8 個までのグリフを積んでおいて、それらのグリフに適用される一連のカーニング値を後で指定する個とができます (そのため、他の機能で印を表すフラグは“Mark”の頭文字“M”であるのに対し、この機能では“Push”の頭文字“P”となっています)。いちどすべてのグリフを積んだ後で、一連のカーニング値を適用することができます。スタックに積んだ各グリフごとに値 1 個が対応します。これは、いくつのグリフがカーニングを施されるかを示す数値です。
       例えば、グリフストリームが<BR>
       &nbsp; &nbsp; F."<BR>
-      であったとして、"." を -300, """ を 0 em ユニットだけカーニングしたい場合、カーニング値を<BR>
+      であったとして、“.”を -300,“"”を 0 em ユニットだけカーニングしたい場合、カーニング値を<BR>
       &nbsp; &nbsp; -300 0<BR>
       と指定することになります。
   </TR>
@@ -315,11 +314,11 @@ The dialog should change to be like the one at right. The text field contains
 a list of the names of the glyphs in this class. Pressing the [Set] button
 will set that field to any selected glyphs in the font view. Pressing the
 [Select] button will change the selection in the font view to match the glyphs
-in the text.<BR Clear=ALL>
+in the text.<BR Clear=ALL> -->
 <IMG SRC="../statemachine-class.png" WIDTH="490" HEIGHT="587" ALT="「状態マシンへのクラス追加」ダイアログ" ALIGN="RIGHT">
-新しいクラスを追加したいときは、ダイアログの下の [新規] ボタンを押してください。クラスを編集したい場合は、そのクラスをダブルクリックしてください。ダイアログの表示が右に示したように変更されるはずです。テキストフィールドには、個のクラスに属するグリフ名のリストが含まれています。[設定] ボタンを押すとフォントビュー内で選択中のすべての文字からなるリストに変更されます。[選択] ボタンを押すとフォントビュー内の選択文字がテキストフィールド内のグリフと一致するように変更されます。
+新しいクラスを追加したいときは、ダイアログの下の <CODE>[新規(<U>N</U>)]</CODE> ボタンを押してください。クラスを編集したい場合は、そのクラスをダブルクリックしてください。ダイアログの表示が右に示したように変更されるはずです。テキストフィールドには、個のクラスに属するグリフ名のリストが含まれています。<CODE>[セット]</CODE> ボタンを押すとフォントビュー内で選択中のすべての文字からなるリストに変更されます。<CODE>[選択]</CODE> ボタンを押すとフォントビュー内の選択文字がテキストフィールド内のグリフと一致するように変更されます。<BR Clear=ALL> 
 <P>
 <P ALIGN=Center>
--- <A HREF="fontinfo.html">上</A> -- <A HREF="overview.html">目次</A> --
+― <A HREF="fontinfo.html">上</A> ― <A HREF="overview.html">目次</A> ―
 </DIV>
 </BODY></HTML>

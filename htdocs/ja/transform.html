@@ -38,55 +38,55 @@ You may apply several different transformations at once: -->
 <DL>
   <DT>
 <!--Do Nothing-->
-    何もしない
+    <CODE>何もしない</CODE>
   <DD>
 <!--A very simple transformation.-->
     この上なく単純な変換です。
   <DT>
 <!--Move-->
-    移動
+    <CODE>移動...</CODE>
   <DD>
 <!--You may move the selection an arbitrary amount in the x and y directions-->
     選択範囲を、x 軸および y 軸方向に任意の距離だけ移動できます。
   <DT>
 <!--Rotate-->
-    回転
+    <CODE>回転...</CODE>
   <DD>
 <!--You may rotate the selection an arbitrary number of degrees.-->
     選択範囲を任意の度数だけ回転できます。
   <DT>
 <!--Scale-->
-    拡大・縮小
+    <CODE>拡大・縮小...</CODE>
   <DD>
 <!--You may scale the two coordinates differently-->
     両方の座標軸に沿って、異なる比率で拡大・縮小できます。
   <DT>
 <!--Scale Uniformly-->
-    一様に拡大・縮小
+    <CODE>一様に拡大・縮小...</CODE>
   <DD>
 <!--You may scale the two coordinates the same amount (which can of course be
     done above, but it's slightly easier only to set one number). -->
     2 つの座標軸を同じ比率で拡大・縮小できます (もちろん上の方法でもできますが、1 個の数値だけを指定するほうがわずかに簡単です)。
   <DT>
 <!--Flip-->
-    反転
+    <CODE>反転...</CODE>
   <DD>
 <!--You may flip either horizontally or vertically<FONT COLOR="Red"><BR>
     <STRONG>Note: After flipping an outline you will almost certainly want to
     apply <A HREF="elementmenu.html#Correct">Element-&gt;Correct
     Direction</A>.</STRONG></FONT> -->
     水平または垂直に反転することができます<BR>
-    <FONT COLOR="Red"><STRONG>注意: アウトラインを反転した場合、ほとんど確実に <A HREF="elementmenu.html#Correct">エレメント(L)→アウトラインの向きを修正(C)</A> を適用する必要が生じるでしょう。</STRONG></FONT>
+    <FONT COLOR="Red"><STRONG>注意: アウトラインを反転した場合、ほとんど確実に <A HREF="elementmenu.html#Correct"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>アウトラインの向きを修正(<U>C</U>)</CODE></A> を適用する必要が生じるでしょう。</STRONG></FONT>
   <DT>
 <!--Skew-->
-    傾き
+    <CODE>傾き...</CODE>
   <DD>
 <!--You may skew the selection a certain number of degrees (to create an oblique
     font for example). -->
     選択範囲を指定した度数だけ傾けることができます (例えば斜体フォントの作成に使えます)。
   <DT>
 <!--Rotate 3D Around...-->
-    3 次元の回転...
+    <CODE>3次元の回転...</CODE>
   <DD>
 <!--You may do a three dimensional rotation of the glyph around either the X
     axis or the Y axis. This operation is immediately followed by a projection
@@ -99,21 +99,21 @@ You may apply several different transformations at once: -->
     回転の後に射影を行っても、その角度の正負によらず同じ結果が得られます (だから 時計回り/反時計回り のオプションはここにはありません)。
   <DT>
 <!--Move by Ruler-->
-    ものさしを使って移動
+    <CODE>ものさしを使って移動...</CODE>
   <DD>
 <!--Fill in the amount to move from the x and y offsets of the last measurements
     made with the <A HREF="charview.html#Ruler">ruler tool</A>. -->
     <A HREF="charview.html#Ruler">ものさしツール</A>で最後に行った移動の x および y 方向のオフセットを移動量の欄に入力します。
   <DT>
 <!--Rotate by Ruler-->
-    ものさしを使って回転
+    <CODE>ものさしを使って回転...</CODE>
   <DD>
 <!--Fill in the rotation angle from the angle of the last measurements made with
     the <A HREF="charview.html#Ruler">ruler tool</A>. -->
     <A HREF="charview.html#Ruler">ものさしツール</A>で最後に行った移動の角度を回転角度の欄に入力します。
   <DT>
 <!--Skew by Ruler -->
-    ものさしを使って変形
+    <CODE>ものさしを使って変形...</CODE>
   <DD>
 <!--Fill in the skew angle from the angle of the last measurements made with
     the <A HREF="charview.html#Ruler">ruler tool</A>. -->
@@ -126,7 +126,7 @@ is set to all fonts, then the transformation will also be applied to the
 bitmaps. Not all of these transforms can be mapped to ones on the bitmap
 font (arbitrary rotations, scales, etc. do not map). Only rotations by 90
 degrees, flips, skews and moves will be approximated on the bitmap glyphs. -->
-フォントビューで作業中の場合、もし  <A HREF="editmenu.html#From">コピー元の指定(F)<A> が すべてのフォント(A) に設定されているならば、変換操作はビットマップにも適用されます。全ての変換がビットマップに適用できるわけではありません (任意の角度の回転、拡大・縮小などは適用できません)。90 度単位の回転、反転、傾きと移動のみがビットマップグリフに近似的に適用されます。
+フォントビューで作業中の場合、もし  <A HREF="editmenu.html#From"><CODE>コピー元の指定(<U>F</U>)</CODE><A> が <CODE>すべてのフォント(<U>A</U>)</CODE> に設定されているならば、変換操作はビットマップにも適用されます。全ての変換がビットマップに適用できるわけではありません (任意の角度の回転、拡大・縮小などは適用できません)。90 度単位の回転、反転、傾きと移動のみがビットマップグリフに近似的に適用されます。
 </A>
 <P>
 <!--
@@ -142,12 +142,12 @@ If you are in the font view or the outline view and there is no selection
 (and you are in the foreground) there is a "[] Transform Background Too"
 check box. If you check this then anything in the background will be transformed
 with the foreground. -->
-操作をフォントビューかアウトラインビューで行い、そのとき何も選択されていない (そして編集しているのが前面である) 場合、"[] 背景も一緒に変換する(B)" というチェックボックスが出てきます。この項目にチェックを入れると、背景のすべての物も前面と一緒に座標変換されます。
+操作をフォントビューかアウトラインビューで行い、そのとき何も選択されていない (そして編集しているのが前面である) 場合、“[] 背景も一緒に変換する(<U>B</U>)</CODE>”というチェックボックスが出てきます。この項目にチェックを入れると、背景のすべての物も前面と一緒に座標変換されます。
 <P>
 <!--
 If you check [] Round to Int then after the transformation has been applied
 everything will be rounded to an integer value. -->
-"[] 整数値に変換(D)" にチェックが入っていると、変更が適用された後にすべての座標値が整数値に丸められます。
+“<CODE>[] 整数値に変換(<U>D</U>)</CODE>”にチェックが入っていると、変更が適用された後にすべての座標値が整数値に丸められます。
 <P>
 <!--
 Transformations in the Outline glyph view are not applied to any bitmaps.
@@ -174,7 +174,7 @@ Expressions may be made up of the usual C operators: "+", "-", "*", "/",
 and "? :" as well as "^" which means "raise to the power of". They may also
 contain the standard functions: "log", "exp", "sqrt", "sin", "cos", "tan",
 "atan2", "abs", "rint", "floor", "ceil". -->
-数式を組み立てるのに使える演算子は、 C と同じ意味をもつ、以下の演算子 ("+", "-", "*", "/", "%", "!", "==", "&lt;", "&gt;", "&lt;=", "&gt;=", "!=", "&amp;&amp;", "||" および "? :") に加えて、 冪乗を表す "^" です。数式には、以下の標準関数を使用することもできます: "log", "exp", "sqrt", "sin", "cos", "tan", "atan2", "abs", "rint", "floor", "ceil".
+数式を組み立てるのに使える演算子は、 C と同じ意味をもつ、以下の演算子 (“+”,“-”,“*”,“/”,“%”,“!”,“==”,“&lt;”,“&gt;”,“&lt;=”,“&gt;=”,“!=”,“&amp;&amp;”,“||" および“? :”) に加えて、 冪乗を表す“^”です。数式には、以下の標準関数を使用することもできます:“log”,“exp”,“sqrt”,“sin”,“cos”,“tan”,“atan2”,“abs”,“rint”,“floor”,“ceil”.
 <P>
 <!--
 Note: In non-linear transformations the result is only an approximation to
@@ -222,9 +222,9 @@ The dialog also calculates the location of the vanishing point as you change
 fields (Note: It cannot figure out meta information like "Center of Selection",
 so whenever the eye is positioned with this value, it just assumes a value
 of 0 for that coordinate. -->
-このダイアログは、入力値を変更するごとに消失点の位置を再計算します (注意: 「選択領域の中心点」のようなメタ情報は算出することはできず、その座標の 0 にあると単純に仮定しています)。
+このダイアログは、入力値を変更するごとに消失点の位置を再計算します (注意: 「<CODE>選択領域の中心点</CODE>」のようなメタ情報は算出することはできず、その座標の 0 にあると単純に仮定しています)。
 <P ALIGN=Center>
--- <A HREF="elementmenu.html">前</A> -- <A HREF="overview.html">目次</A>
--- <A HREF="elementmenu.html">次</A> --
+― <A HREF="elementmenu.html">前</A> ― <A HREF="overview.html">目次</A>
+― <A HREF="elementmenu.html">次</A> ―
 </DIV>
 </BODY></HTML>

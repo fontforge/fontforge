@@ -25,7 +25,7 @@
   if it is a background image then the <A HREF="getinfo.html#Image">image
   dialog</A> is brought up. If it is an anchor point then the
   <A HREF="getinfo.html#Anchors">anchor point </A>dialog is brought up. -->
-  アウトラインビューでは、<CODE>情報を得る(I)</CODE> コマンドを実行すると、その時選択している内容によって異なる 4 種類のダイアログを生成することができます。1 個の物だけを選択している場合、それが点であれば <A HREF="getinfo.html#Point">点の情報</A> ダイアログが起動し、参照であれば <A HREF="getinfo.html#GetReferenceInfo">参照</A> ダイアログが起動し、背景画像であれば <A HREF="getinfo.html#Image">画像</A> ダイアログが起動します。選択されているのがアンカーポイント 1 個だけのときは <A HREF="getinfo.html#Anchors">アンカーポイント</A> ダイアログが起動します。
+  アウトラインビューでは、<CODE>情報を得る(I)</CODE> コマンドを実行すると、その時選択している内容によって異なる 4 種類のダイアログを生成することができます。1 個の物だけを選択している場合、それが点であれば <A HREF="getinfo.html#Point"><CODE>点の情報</CODE></A> ダイアログが起動し、参照であれば <A HREF="getinfo.html#GetReferenceInfo"><CODE>参照</CODE></A> ダイアログが起動し、背景画像であれば <A HREF="getinfo.html#Image"><CODE>画像</CODE></A> ダイアログが起動します。選択されているのがアンカーポイント 1 個だけのときは <A HREF="getinfo.html#Anchors"><CODE>アンカーポイント</CODE></A> ダイアログが起動します。
   <H2>
 <!--  <A NAME="Point">Point</A> Info-->
       <A NAME="Point">点</A>の情報
@@ -34,7 +34,7 @@
   <IMG SRC="pointinfo.png" WIDTH="277" HEIGHT="370" ALIGN="Right"><!-- This shows
   information about the current point. The Base position is where the point
   itself is. -->
-  ここでは現在の点に関する情報を表示します。基準(B) は、その点自身の置かれた位置を表します。
+  ここでは現在の点に関する情報を表示します。<CODE>基準(<U>B</U>)</CODE> は、その点自身の置かれた位置を表します。
   <P>
 <!--
   The Next CP shows both the location of the next control point, and the offset
@@ -43,17 +43,17 @@
   button will be grey), underneath the offsets it shows the same information
   in a different format -- as a distance from the point itself, and the angle 
   to it. -->
-  次の点: は次の制御点の位置と、基準点からのオフセット (および、その位置設定がその点に対するデフォルトかどうか。もしその点が開いたパスの最後に位置する場合は、[]デフォルト ボタンは灰色表示になります) の両方を表示します。その下に表示されているのは、同じ情報を異なる表現――点自体からの距離と、その角度――で表した物です。
+  次の点: は次の制御点の位置と、基準点からのオフセット (および、その位置設定がその点に対するデフォルトかどうか。もしその点が開いたパスの最後に位置する場合は、<CODE>[]デフォルト</CODE> ボタンは灰色表示になります) の両方を表示します。その下に表示されているのは、同じ情報を異なる表現――点自体からの距離と、その角度――で表した物です。
   <P>
 <!--
   The Prev CP does the same for the previous control point. -->
-  前の点: は同じ情報を前の制御点に対して表示します。
+  <CODE>前の点:</CODE> は同じ情報を前の制御点に対して表示します。
   <P>
 <!--
   You may change any of these and the change is reflected in the outline view.
   Your changes are constrained by the point type (for instance with tangent
   points, you may not change the angle fields as these are fixed). -->
-  これらの値はすべて変更可能で、変更はアウトラインビューに反映されます。可能な変更は、点の型によって制約されています (例えば、曲線の開始点では 角度 フィールドは固定されているので変更できません。
+  これらの値はすべて変更可能で、変更はアウトラインビューに反映されます。可能な変更は、点の型によって制約されています (例えば、曲線の開始点では <CODE>角度</CODE> フィールドは固定されているので変更できません。
   <P>
 <!--
   You may also change whether a point is a curve, corner or tangent point (Caution:
@@ -141,7 +141,7 @@
 <!--
   Anchor points may also be created with the
   <A HREF="pointmenu.html#AddAnchor">Point-&gt;Add Anchor</A> command.-->
-  アンカーポイントは <A HREF="pointmenu.html#AddAnchor">点(P)→アンカーを追加(A)</A> コマンドで作成することもできます。
+  アンカーポイントは <A HREF="pointmenu.html#AddAnchor"><CODE>点(<U>P</U>)</CODE>→<CODE>アンカーを追加(<U>A</U>)</CODE></A> コマンドで作成することもできます。
   <BR Clear=All>
   <H2>
     <IMG SRC="rgetinfo.png" WIDTH="273" HEIGHT="292" ALIGN="Right"><!--<A NAME="GetReferenceInfo">Reference</A>
@@ -186,7 +186,7 @@
   glory of this method is that the truetype instructions assocated with the
   glyphs can move these points around to an appropriate location for the current
   pixelsize. -->
-  TrueType フォントでは、参照の位置指定を、基底文字と参照それ自体から 1 個ずつ選んだ 2 個の点を重ね合わせることによって行うことができます。右の例では、参照 "acute" は、基底グリフ (その如何を問わず) の点 0 に "acute" の点 2 が重なり合うまで移動されます。個の方法の素晴らしいところは、グリフに付随する TrueType 命令が、現在のピクセルサイズにふさわしい位置までそれらの点を移動することができることです。
+  TrueType フォントでは、参照の位置指定を、基底文字と参照それ自体から 1 個ずつ選んだ 2 個の点を重ね合わせることによって行うことができます。右の例では、参照“acute”は、基底グリフ (その如何を問わず) の点 0 に“acute”の点 2 が重なり合うまで移動されます。この方法の素晴らしいところは、グリフに付随する TrueType 命令が、現在のピクセルサイズにふさわしい位置までそれらの点を移動することができることです。
   <P>
 <!--
   Points in a composite glyph are numbered by counting the points of the first
@@ -197,16 +197,16 @@
   by the current reference. The current reference must be drawn after the base
   point. You may use <A HREF="elementmenu.html#Order">Element-&gt;Order</A>
   to reorder the references. -->
-  複合グリフに含まれる点は、最初の要素に含まれる点の個数を数え、それに 4 (ファントム (メトリック)ポイント 4 個分) を加える、次に 2 番目の構成要素の点の個数を数え、4 をくわえ、というようにして番号づけされます。最初の構成要素は最初に描画される要素であり、最初に追加される要素ではありません。基底グリフの番号づけ方式は複合グリフ全体に由来しますが、参照点は現在の参照により番号づけられた物を用います。現在の参照は基底文字の後に描画しなければなりません。参照の並び順は<A HREF="elementmenu.html#Order">エレメント(L)→順序</A>を使って変更することができます。
+  複合グリフに含まれる点は、最初の要素に含まれる点の個数を数え、それに 4 (ファントム (メトリック) ポイント 4 個分) を加える、次に 2 番目の構成要素の点の個数を数え、4 をくわえ、というようにして番号づけされます。最初の構成要素は最初に描画される要素であり、最初に追加される要素ではありません。基底グリフの番号づけ方式は複合グリフ全体に由来しますが、参照点は現在の参照により番号づけられた物を用います。現在の参照は基底文字の後に描画しなければなりません。参照の並び順は<A HREF="elementmenu.html#Order"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>順序</CODE></A>を使って変更することができます。
   <P>
 <!--
   (You should probably not set Round To Grid when doing point matching) -->
-  (おそらく、点の重ね合わせを行う時は、[*]グリッド単位に丸める をチェックしておくべきでしょう)
+  (おそらく、点の重ね合わせを行う時は、<CODE>[*]グリッド単位に丸める</CODE> をチェックしておくべきでしょう)
   <P>
 <!--
   The [Show] button will open a glyph outline view showing the character being
   referred to.<BR CLEAR=ALL> -->
-  [表示(S)] ボタンを押すと、参照されているグリフのアウトラインビューを開きます。
+  <CODE>[表示(<U>S</U>)]</CODE> ボタンを押すと、参照されているグリフのアウトラインビューを開きます。
   <H2>
 <!--  <A NAME="Image">Image</A> Info-->
       <A NAME="Image">画像</A>情報
@@ -230,8 +230,8 @@
       <A HREF="charinfo.html">グリフ情報ダイアログ</A>
   </UL>
   <P ALIGN=Center>
-  -- <A HREF="elementmenu.html">前</A> -- <A HREF="overview.html">目次</A>
-  -- <A HREF="elementmenu.html">次</A> --
+  ― <A HREF="elementmenu.html">前</A> ― <A HREF="overview.html">目次</A>
+  ― <A HREF="elementmenu.html">次</A> ―
 </DIV>
 </BODY></HTML>
   

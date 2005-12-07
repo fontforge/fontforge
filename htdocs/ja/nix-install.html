@@ -127,15 +127,15 @@
 <!--  <A HREF="http://packages.debian.org/unstable/x11/fontforge.html">debian</A>
       - - has builds for (alpha, amd64, arm, hppa, hurd-i386, i386, ia64, m68k,
       mips, mipsel, ppc, s390, sparc) -->
-      <A HREF="http://packages.debian.org/unstable/x11/fontforge.html">Debian</A> -- (alpha, amd64, arm, hppa, hurd-i386, i386, ia64, m68k, mips, mipsel, ppc, s390, sparc) 用の各ビルドがあります。
+      <A HREF="http://packages.debian.org/unstable/x11/fontforge.html">Debian</A> ― (alpha, amd64, arm, hppa, hurd-i386, i386, ia64, m68k, mips, mipsel, ppc, s390, sparc) 用の各ビルドがあります。
     <LI>
 <!--  <A HREF="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/fonts/fontforge/README.html">netbsd</A>
       - - has builds for (alpha, i386, ppc, sparc, x86_64) -->
-      <A HREF="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/fonts/fontforge/README.html">NetBSD</A> -- (alpha, i386, ppc, sparc, x86_64) 用の各ビルドがあります。
+      <A HREF="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/fonts/fontforge/README.html">NetBSD</A> ― (alpha, i386, ppc, sparc, x86_64) 用の各ビルドがあります。
     <LI>
 <!--  <A HREF="http://www.rpmfind.com/">rpmfind</A> - - will point you toward builds
       for Fedora, Suse, Mandrake, and others -->
-      <A HREF="http://www.rpmfind.com/">rpmfind</A> -- Fedora, SUSE, Mandrake などのためのビルドを指摘します。
+      <A HREF="http://www.rpmfind.com/">rpmfind</A> ― Fedora, SUSE, Mandrake などのためのビルドを指摘します。
     <LI>
 <!--  Apostolos Syropoulos has a Solaris x86 package at
       <A HREF="http://ocean1.ee.duth.gr/Solaris/PfaEdit.pkg.gz">his site</A> -->
@@ -154,13 +154,13 @@
 <!--  
   The i386 package I provide, and many of the linux packages others provide
   are "rpm" files. -->
-  私が提供する i386 用パッケージと、多くの他の Linux 用パッケージは "rpm" ファイルです。
+  私が提供する i386 用パッケージと、多くの他の Linux 用パッケージは“rpm”ファイルです。
   <P>
 <!--  
   Installing an rpm package is relatively straight forward. You will need to
   be root. Move to the directory containing the downloaded rpm, and then type
   (do not type the "$" or "#"): -->
-  rpm パッケージのインストールは比較的単純な作業です。まず root になる必要があります。rpm を含むディレクトリに移動し、以下のようにタイプします ("$" や"#" はタイプしません):
+  rpm パッケージのインストールは比較的単純な作業です。まず root になる必要があります。rpm を含むディレクトリに移動し、以下のようにタイプします (“<CODE>$</CODE>”や“<CODE>#</CODE>” はタイプしません):
   <BLOCKQUOTE>
     <PRE># rpm -i fontforge-*.rpm
   </PRE>
@@ -184,7 +184,7 @@
   of ".tar.bz2"). You will probably need to be root for some of this process.
   Move to the directory containing the downloaded tarball and type (do not
   type the "$" or "#"): -->
-  私の提供する Solaris パッケージは bzip 圧縮された tarball です (つまり、ファイルの拡張子は ".tar.bz2" です)。この手順を行うためには root になる必要があるでしょう。ダウンロード した tarball を含むディレクトリに移動して以下のようにタイプしてください ("$" や "#" は入力しません):
+  私の提供する Solaris パッケージは bzip 圧縮された tarball です (つまり、ファイルの拡張子は“.tar.bz2”です)。この手順を行うためには root になる必要があるでしょう。ダウンロード した tarball を含むディレクトリに移動して以下のようにタイプしてください (“<CODE>$</CODE>”や“<CODE>#</CODE>”は入力しません):
   <BLOCKQUOTE>
     <PRE>$ bunzip2 fontforge-*.tar.bz2
   $ tar xf fontforge-*.tar
@@ -197,7 +197,7 @@
 <!--  
   (Older versions may have an extension of .tgz. In this case you would replace
   the first two lines with "<CODE>$ tar xfz fontforge-*.tgz</CODE>") -->
-  (より古いバージョンは .tgz という拡張子がついているはずです。その場合、最初の 2 行を "<CODE>$ tar xfz fontforge-*.tgz</CODE>" という行に置き換える必要があるでしょう)
+  (より古いバージョンは .tgz という拡張子がついているはずです。その場合、最初の 2 行を“<CODE>$ tar xfz fontforge-*.tgz</CODE>”という行に置き換える必要があるでしょう)
   <P>
 <!--  
   <FONT COLOR="Red"><STRONG>Caveat:</STRONG></FONT> My packages generally install
@@ -225,13 +225,16 @@
 <!--  fontforge - - the executable itself -->
       fontforge ― 実行ファイルそのもの
     <LI>
-      libgunicode*.so -- a shared library containing functions for manipulating
-      UCS2 strings, and various data about unicode code points.
+<!--  libgunicode*.so - - a shared library containing functions for manipulating
+      UCS2 strings, and various data about unicode code points. -->
+      libgunicode*.so ― UCS2 文字列を操作するための関数と、Unicode 符号位置に関するさまざまなデータを含む共有ライブラリ
     <LI>
-      libgdraw*.so -- the graphics and widget library used by fontforge
+<!--  libgdraw*.so - - the graphics and widget library used by fontforge -->
+      libgdraw*.so ― FontForge が使用するグラフィックとウィジェットのライブラリ
     <LI>
-      pfaedit-ui.{es,fr,it,ja,ru} -- translated strings to provide a user interface
-      for non-English users.
+<!--  pfaedit-ui.{es,fr,it,ja,ru} - - translated strings to provide a user interface
+      for non-English users. -->
+      pfaedit-ui.{es,fr,it,ja,ru} ― 英語以外のユーザ用にユーザインタフェースを提供するための翻訳文字列
     <LI>
 <!--  *.cidmap - - not present in all packages. These are useful when editing CID-keyed
       Asian fonts. -->
