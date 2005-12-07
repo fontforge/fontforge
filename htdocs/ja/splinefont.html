@@ -38,7 +38,7 @@ The <A HREF="#SplineFont">SplineFont</A> consists of a bunch of
 <!--	a series of paths (called <A HREF="#SplinePointList">SplineSet</A>s or
 	<A HREF="#SplinePointList">SplinePointList</A> sorry, I gave the data structure
 	two different names) -->
-	一連のパス (<A HREF="#SplinePointList">SplineSet</A> または <A HREF="#SplinePointList">SplinePointList</A> と呼ばれます――同じデータ構造に 2 つの個となる名前をつけてしまって申し訳ありません)
+	一連のパス (<A HREF="#SplinePointList">SplineSet</A> または <A HREF="#SplinePointList">SplinePointList</A> と呼ばれます――同じデータ構造に 2 つの異なる名前をつけてしまって申し訳ありません)
       <LI>
 <!--	a series of references to other characters (called
 	<A HREF="#RefChar">RefChar</A>s) -->
@@ -99,7 +99,7 @@ The <A HREF="#SplineFont">SplineFont</A> consists of a bunch of
 Every SplineChar has a name associated with it, a unicode encoding and a
 local encoding (So 'A' will probably have both a unicode encoding and a local
 encoding of 0x0041). -->
-各 SplineChar には名前ならびに、Unicode の符号位置とローカルエンコーディングがつけられています (例えば 'A' は通常 Unicode 符号位置とローカルエンコーディングの両方で 0x0041 という値をもつでしょう)。
+各 SplineChar には名前ならびに、Unicode の符号位置とローカルエンコーディングがつけられています (例えば&lsquo;A&rsquo;は通常 Unicode 符号位置とローカルエンコーディングの両方で 0x0041 という値をもつでしょう)。
 <P>
 <!--
 A SplineSet consists of a start point and an end point, and whatever splines
@@ -121,7 +121,7 @@ spline are coincident with their respective SplinePoints. -->
 <!--
 A <A HREF="#BDFFont">BDFFont</A> consists of a bunch of
 <A HREF="#BDFChar">BDFChars</A>, each containing -->
-1 個の<A HREF="#BDFFont">BDFFont</A> は多数の <A HREF="#BDFChar">BDFChar</A> からなります。各 BDFChar は以下のものを含みます:
+1 個の <A HREF="#BDFFont">BDFFont</A> は多数の <A HREF="#BDFChar">BDFChar</A> からなります。各 BDFChar は以下の物を含みます:
 <UL>
   <LI>
 <!--a bitmap-->
@@ -222,7 +222,7 @@ An integer point. -->
 <!--
 A double point. This provides the location of
 <A HREF="#SplinePoint">SplinePoints</A> and their control points. -->
-倍精度浮動小数の座標値をもつ点です。<A HREF="#SplinePoint">SplinePoints</A>およびその制御点の位置情報を与えます。
+倍精度浮動小数の座標値をもつ点です。<A HREF="#SplinePoint">SplinePoint</A> およびその制御点の位置情報を与えます。
 <BLOCKQUOTE>
   <PRE>typedef struct tpoint {
     double x;
@@ -236,7 +236,7 @@ A double point. This provides the location of
 A double point with a "t" value. Indicates where that location occurs on
 a spline. (the start point itself is a t=0, the end point at t=1, intermediate
 points have intermediate values). Used when trying to approximate new splines. -->
-浮動小数座標の点に "t" 値を加えたものです。スプライン上の位置を表します。(開始点自身は t=0 で、終点は t=1 となり、中間点はその中間の値をとります)。新しいスプラインを近似しようとするときに使用します。
+浮動小数座標の点に“t”値を加えたものです。スプライン上の位置を表します。(開始点自身は t=0 で、終点は t=1 となり、中間点はその中間の値をとります)。新しいスプラインを近似しようとするときに使用します。
 <BLOCKQUOTE>
   <PRE>typedef struct dbounds {
     double minx, maxx;
@@ -384,7 +384,7 @@ current font. A linked list of BitmapView structures all of which look at
 this bitmap (so any changes to this bitmap need to cause a redraw in all
 views). A set of undoes and redoes. A flag indicating whether the thing has
 been changed since it was last saved to disk. -->
-基本的なビットマップ文字の構造体です。ビットマップの作成時に用いられる SplineChar へのリンクが存在します。次に来るのはビットマップのバウンディングボックス、文字の幅 (もちろんピクセル単位です)、ビットマップ配列の行ごとのバイト数、ビットマップを含む配列へのポインタです。ビットマップは 8 ビットごとに、左端のビットが最上位ビットになる 1 バイトにパックした形式で格納されます。すべての行は新しいバイト境界から始まります。各行には (xmax-xmin+1) ビットが含まれ、その大きさは (xmax-xmin+8) / 8 バイトになります。ビット値 1 はそのビットを塗りつぶすことを表し、0 はそのビットが透明であることを表します。その次に来るのが、現在のフォントにおける符号位置の値ですす。このビットマップを参照するすべての BitmapView 構造体のリンクトリストです (ですから、このビットマップへの任意の変更はすべてのビューで再描画を引きおこします)。一連のアンドゥとリドゥです。最後にディスクに保存を行ってから何か変更を行ったかを示すフラグです。
+基本的なビットマップ文字の構造体です。ビットマップの作成時に用いられる SplineChar へのリンクが存在します。次に来るのはビットマップのバウンディングボックス、文字の幅 (もちろんピクセル単位です)、ビットマップ配列の行ごとのバイト数、ビットマップを含む配列へのポインタです。ビットマップは 8 ビットごとに、左端のビットが最上位ビットになる 1 バイトにパックした形式で格納されます。すべての行は新しいバイト境界から始まります。各行には (xmax-xmin+1) ビットが含まれ、その大きさは (xmax-xmin+8) / 8 バイトになります。ビット値 1 はそのビットを塗りつぶすことを表し、0 はそのビットが透明であることを表します。その次に来るのが、現在のフォントにおける符号位置の値ですす。このビットマップを参照するすべての BitmapView 構造体のリンクトリストです (ですから、このビットマップへの任意の変更はすべてのビューで再描画を引き起こします)。一連のアンドゥとリドゥです。最後にディスクに保存を行ってから何か変更を行ったかを示すフラグです。
 <P>
 <!--
 Up to this point I've been talking about bitmaps. It is also possible to
@@ -396,7 +396,7 @@ There is a clut for this in the BDFFont (it's the same for every character),
 but basically 0=&gt;transparent, (2^n-1) =&gt;fully drawn, other values are
 shades of grey between. Currently my anti-alias fonts contain values 0-15
 but the code can handle up to 0-255 if desired. (0-15 seems fine to my eye). -->
-ここまで、私はビットマップについて話していました。バイトマップを使用することも可能です。データ構造はまったく同じですが、各ピクセルがビットではなくバイトで表される点が異なります。現在のところこれは <A HREF="views.html#FontView">FontView</A> におけるアンチエイリアス表示にのみ用いられていますが、将来はこれを用いてさらに他の事を行えるようにするつもりです (訳註:現在グレイマップ編集はサポートされています)。
+上記の説明は、ビットマップについてのものでました。ここにはバイトマップも格納可能です。データ構造はまったく同じですが、各ピクセルがビットではなくバイトで表される点が異なります。現在のところこれは <A HREF="views.html#FontView">FontView</A> におけるアンチエイリアス表示にのみ用いられていますが、将来はこれを用いてさらに他の事を行えるようにするつもりです (訳註:現在グレイマップ編集はサポートされています)。
 そのために、BDFFont には clut フィールド (これはすべての文字において同じ値です) が存在しますが、基本的には 0=&gt;透明、(2^n-1) =&gt;完全に塗りつぶし を意味し、その他の値は中間の灰色の濃淡を表します。現在のところ私のアンチエイリアスフォントは 0～15 の値を使用していますが、プログラム上は必要なら 0～255 を扱う事ができます (私の目には 0～15 で十分美しく見えます)。
 <P>
 <!--
@@ -466,7 +466,7 @@ user has not touched the control points then they will have their default
 values, and when the user moves the point around fontforge will update the
 control points appropriately, if they do not have default values then fontforge
 will only offset them. -->
-SplinePoint は、"me" が指定する位置に置かれています。次の <A HREF="#Spline">Spline</A> に付随する制御点は nextfp に置かれ、前の Spline に付随する制御点は prevcp に置かれています。それに続き、simplify 処理がテストする 2 個のフラグがあります。nextcp が縮退している (すなわち、me と同じ場所にある) 場合 nonextcp がセットされます。prevcp もそれと同様です。ユーザが制御点の位置を操作していない場合、それらはデフォルト値をもっており、ユーザが点を移動したときには FontForge は制御点の位置を適切に設定しますが、それがデフォルト値と異なるときには FontForge はそれらを単純にオフセットするだけです。
+SplinePoint は、“me”で指定された位置に置かれています。次の <A HREF="#Spline">Spline</A> に付随する制御点は nextfp に置かれ、前の Spline に付随する制御点は prevcp に置かれています。それに続き、simplify 処理がテストする 2 個のフラグがあります。nextcp が縮退している (すなわち、me と同じ場所にある) 場合 nonextcp がセットされます。prevcp もそれと同様です。ユーザが制御点の位置を操作していない場合、それらはデフォルト値をもっており、ユーザが点を移動したときには FontForge は制御点の位置を適切に設定しますが、それがデフォルト値と異なるときには FontForge はそれらを単純にオフセットするだけです。
 <P>
 <!--
 If the point is selected then that bit will be set. -->
@@ -614,7 +614,7 @@ The checked field is used to insure that we don't have any loops (ie. on
 characters which refer to themselves). The selected field indicates that
 the reference is selected. The bb field provides a transformed bounding box.
 And the sc field points to the SplineChar we are referring to. -->
-<A HREF="#SplineChar">SplineChar</A> は他の文字への参照を含むことができます。例えば、"Agrave" は "A" と "grave" への参照を含みます。符号位置を表す値には 3 つの異なる種類があり、local_enc は常に最新の状態を保っています。adobe_enc は、Adobe 標準エンコーディングにおける符号位置を表し、Type 1 フォントの seac コマンドで使用されます。この値が -1 であるときにはこの文字が Adobe エンコーディングに含まれていないことを表し、その場合は、Type1 フォントの中でこの文字への参照を行うことはできなくなります (TrueType にはこの制限はありませんが、他の制限があります)。transform[] は、PostScript の標準変換行列です (3 行 2 列)。最初の 2 行が標準的な回転/拡大縮小/反転/傾き…変換を行い、最後の行は平行移動を指定します。(PostScript と TrueType のどちらにも、可能な座標変換の種類に対する制限があります)。splines フィールドは参照された文字を描画するための簡便な方法を提供します。これは、参照された文字のすべてのスプラインに変換行列を的aょ鵜したものです。参照された文字は複数存在する可能性があり、それらは next フィールドによりリンクしています。checked フィールドは、ループが存在しないか (例えば、自分自身を参照している文字がないか) どうかを確めるために使用します。selected フィールドは、参照が選択されていることを示します。bb フィールドは座標変換を施したバウンディグボックスを提供します。そして、sc フィールドは、参照している SplineChar を指し示します。
+<A HREF="#SplineChar">SplineChar</A> は他の文字への参照を含むことができます。例えば、“Agrave”は“A”と“grave”への参照を含みます。符号位置を表す値には 3 つの異なる種類があり、local_enc は常に最新の状態を保っています。adobe_enc は、Adobe 標準エンコーディングにおける符号位置を表し、Type 1 フォントの seac コマンドで使用されます。この値が -1 であるときにはこの文字が Adobe エンコーディングに含まれていないことを表し、その場合は、Type1 フォントの中でこの文字への参照を行うことはできなくなります (TrueType にはこの制限はありませんが、他の制限があります)。transform[] は、PostScript の標準変換行列です (3 行 2 列)。最初の 2 行が標準的な回転/拡大縮小/反転/傾き…変換を行い、最後の行は平行移動を指定します。(PostScript と TrueType のどちらにも、可能な座標変換の種類に対する制限があります)。splines フィールドは参照された文字を描画するための簡便な方法を提供します。これは、参照された文字のすべてのスプラインに変換行列を適用したものです。参照された文字は複数存在する可能性があり、それらは next フィールドによりリンクしています。checked フィールドは、ループが存在しないか (例えば、自分自身を参照している文字がないか) どうかを確めるために使用します。selected フィールドは、参照が選択されていることを示します。bb フィールドは座標変換を施したバウンディグボックスを提供します。そして、sc フィールドは、参照している SplineChar を指し示します。
 <BLOCKQUOTE>
   <PRE>typedef struct kernpair {
     struct splinechar *sc;
@@ -730,7 +730,7 @@ time we update our autosave database we should write this character to it.
 Widthset means the user has changed the width. If we didn't have this bit
 we might think that an em space had nothing in it (instead of having an em-space
 in it). -->
-すべての文字には名前があります (時には ".notdef" の場合もありますが、その値はここに格納されています)。現在のフォント内における位置 (エンコーディング)、Unicode のコードポイント (Unicode に存在しないことを表す値 -1 になることがあります) があります。各文字の幅は width に格納されます。その後ろの 2 個のフィールドはフォントを適切なフォーマットで読み込みまたは保存する時にのみ意味があります。lbearing は seac コマンドを扱うために必要で、ttf_glyph は TTF フォントを書き出す時にいろいろな用途で使用します。splines フィールドは、すべての前面パス (<A HREF="#SplinePointList">SplinePointLists</A>) を与えます。hints は水平ステムと垂直ステムです。この文字が参照している一連の文字、これも前面にあるもののみです。その次に来るのはこの SplineChar を表示しているすべての <A HREF="views.html#CharView">CharViews</A> のリンクトリストです (この文字が変更されたら、それらすべてが変更を反映して更新する必要があります)。この文字を含む <A HREF="#SplineFont">SplineFont</A>へのポインタがあります。以下の一連のビットがあります: changed は、最後にディスクへ保存を行って以降その文字が更新されたことを意味します。changedsincelasthhinted は、水平ヒントの自動ヒントづけを行わなければならないことを意味し、changedsincevhinted は垂直ヒントに対するものです。manualhints は、ユーザがヒントづけを自分で制御する選択をしたことを意味し、ユーザの明示的な指示がなければ自動ヒントを行ってはなりません。ticked は、参照された文字の無限ループを避けるための印づけです。changed_since_autosave は、次回自動セーブデータベースを更新する時、この文字をそこに含める必要があることを示します。widthset は、ユーザが幅を変更したことを意味します。このビットをセットしていない時、幅 em の空白には (文字 em スペースを示すのではなく) 何も含まれていないと考える必要があります。
+すべての文字には名前があります (時には“.notdef”の場合もありますが、その値はここに格納されています)。現在のフォント内における位置 (エンコーディング)、Unicode のコードポイント (Unicode に存在しないことを表す値 -1 になることがあります) があります。各文字の幅は width に格納されます。その後ろの 2 個のフィールドはフォントを適切なフォーマットで読み込みまたは保存する時にのみ意味があります。lbearing は seac コマンドを扱うために必要で、ttf_glyph は TTF フォントを書き出す時にいろいろな用途で使用します。splines フィールドは、すべての前面パス (<A HREF="#SplinePointList">SplinePointLists</A>) を与えます。hints は水平ステムと垂直ステムです。この文字が参照している一連の文字、これも前面にあるもののみです。その次に来るのはこの SplineChar を表示しているすべての <A HREF="views.html#CharView">CharViews</A> のリンクトリストです (この文字が変更されたら、それらすべてが変更を反映して更新する必要があります)。この文字を含む <A HREF="#SplineFont">SplineFont</A>へのポインタがあります。以下の一連のビットがあります: changed は、最後にディスクへ保存を行って以降その文字が更新されたことを意味します。changedsincelasthhinted は、水平ヒントの自動ヒントづけを行わなければならないことを意味し、changedsincevhinted は垂直ヒントに対するものです。manualhints は、ユーザがヒントづけを自分で制御する選択をしたことを意味し、ユーザの明示的な指示がなければ自動ヒントを行ってはなりません。ticked は、参照された文字の無限ループを避けるための印づけです。changed_since_autosave は、次回自動セーブデータベースを更新する時、この文字をそこに含める必要があることを示します。widthset は、ユーザが幅を変更したことを意味します。このビットをセットしていない時、幅 em の空白には (文字 em スペースを示すのではなく) 何も含まれていないと考える必要があります。
 <P>
 <!--
 If a SplineChar is refered to in another character, then when we change the
@@ -753,7 +753,7 @@ Finally kerns provides a list of kerning data for any special characters
 that follow this one. For instance the combination "VA" might need kerning,
 then the SplineChar representing "V" would have a pointer to a
 <A HREF="#KernPair">KernPair</A> with data on "A". -->
-最後の kerns は、この文字に続くすべての特別扱いされる文字のカーニングデータのリストを提供します。例えば "VA" の組合せはカーニングを必要とするでしょう。その場合、"V" を表す SplineChar には、"A" に関するデータをもつ <A HREF="#KernPair">KernPair</A> へのポインタが含まれるはずです。
+最後の kerns は、この文字に続くすべての特別扱いされる文字のカーニングデータのリストを提供します。例えば“VA”の組合せはカーニングを必要とするでしょう。その場合、“V”を表す SplineChar には、“A”に関するデータをもつ <A HREF="#KernPair">KernPair</A> へのポインタが含まれるはずです。
 <BLOCKQUOTE>
   <PRE>typedef struct splinefont {
     char *fontname, *fullname, *familyname, *weight;

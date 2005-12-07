@@ -100,7 +100,7 @@ An example of a script is 'latn' for latin, 'arab' for arabic, 'hani' for
 chinese ideographs. Two examples of features are 'kern' which provides kerning
 information between pairs of glyphs and 'init' which will transform one set
 of glyphs to another when those glyphs are at the beginning of a word.-->
-GPOS テーブルと GSUB テーブルの基本的アイディアは、各スクリプト (またはあるスクリプトを使用する言語) が、それらの文字に適用可能な "機能" の組をもっているという考えです。個々の機能はそれぞれが、その機能のためのデータを含む 1 個の索引に付随しています。用字系の例としては、ラテン文字の&lsquo;latn&rsquo;, アラビア文字の&lsquo;arab&rsquo;, 漢字の&lsquo;hani&rsquo;が挙げられます。機能の例を 2 つ挙げれば、グリフの対の間のカーニング情報を提供する&lsquo;kern&rsquo;や、ある一連のグリフを、単語の先頭に来たときに用いる別のグリフに置き換える&lsquo;init&rsquo;があります。
+GPOS テーブルと GSUB テーブルの基本的アイディアは、各スクリプト (またはあるスクリプトを使用する言語) が、それらの文字に適用可能な“機能”の組をもっているという考えです。個々の機能はそれぞれが、その機能のためのデータを含む 1 個の索引に付随しています。用字系の例としては、ラテン文字の&lsquo;latn&rsquo;, アラビア文字の&lsquo;arab&rsquo;, 漢字の&lsquo;hani&rsquo;が挙げられます。機能の例を 2 つ挙げれば、グリフの対の間のカーニング情報を提供する&lsquo;kern&rsquo;や、ある一連のグリフを、単語の先頭に来たときに用いる別のグリフに置き換える&lsquo;init&rsquo;があります。
 <P>
 <!--
 FontForge <A HREF="gposgsub.html#Unsupported">does not support </A>the full
@@ -169,7 +169,7 @@ FontForge は GPOS テーブルの以下のサブテーブルを読み込みます:
 <!--<TD>Only the 'curs' feature is supported for this sub-table. These may be
       created with the <A HREF="pointmenu.html#AddAnchor">Points-&gt;Add Anchor</A>
       command</TD>-->
-    <TD>このサブテーブルでサポートされているのは&lsquo;curs&rsquo;機能だけです。これは、<A HREF="pointmenu.html#AddAnchor"><CODE>点(<U>P</U>)</CODE>→<CODE>アンカーを追加(<U>A</U>)</CODE></A> コマンドによって作成できます。
+    <TD>このサブテーブルでサポートされているのは&lsquo;curs&rsquo;機能だけです。これは、<A HREF="pointmenu.html#AddAnchor"><CODE>点(<U>P</U>)</CODE>→<CODE>アンカーを追加(<U>A</U>)...</CODE></A> コマンドによって作成できます。
   </TR>
   <TR>
     <TD>4</TD>
@@ -184,7 +184,7 @@ FontForge は GPOS テーブルの以下のサブテーブルを読み込みます:
     <TD>フォントデザイナーは、このサブテーブルを使ってマーク (アクセント、母音記号など) グリフを基底グリフの上にどう配置するかを指定することができます。各グリフには接続点とを設定することができ、マークの接続点は基底グリフの接続点に重ね合わせられ、それによって それら正しく接続することになります。「概要」で示した私の<A HREF="overview.html#Anchors">例</A>をご覧ください。</TD>
 <!--<TD>These may be created with the
       <A HREF="pointmenu.html#AddAnchor">Points-&gt;Add Anchor</A> command</TD> -->
-    <TD>これらは <A HREF="pointmenu.html#AddAnchor"><CODE>点(<U>P</U>)</CODE>→<CODE>アンカーを追加(<U>A</U>)</CODE></A> コマンドで作成することができます。</TD>
+    <TD>これらは <A HREF="pointmenu.html#AddAnchor"><CODE>点(<U>P</U>)</CODE>→<CODE>アンカーを追加(<U>A</U>)...</CODE></A> コマンドで作成することができます。</TD>
   </TR>
   <TR>
     <TD>5</TD>
@@ -196,7 +196,7 @@ FontForge は GPOS テーブルの以下のサブテーブルを読み込みます:
     <TD>このサブテーブルは前のものと非常によく似ていますが、基底グリフが合字であって、同じタイプのアクセントを置くことができるいくつかの異なる点が存在してよいいことです。</TD>
 <!--<TD>These may be created with the
       <A HREF="pointmenu.html#AddAnchor">Points-&gt;Add Anchor</A> command</TD> -->
-    <TD>これらは <A HREF="pointmenu.html#AddAnchor"><CODE>点(<U>P</U>)</CODE>→<CODE>アンカーを追加(<U>A</U>)</CODE></A> コマンドで作成することができます。</TD>
+    <TD>これらは <A HREF="pointmenu.html#AddAnchor"><CODE>点(<U>P</U>)</CODE>→<CODE>アンカーを追加(<U>A</U>)...</CODE></A> コマンドで作成することができます。</TD>
   </TR>
   <TR>
     <TD>6</TD>
@@ -210,7 +210,7 @@ FontForge は GPOS テーブルの以下のサブテーブルを読み込みます:
     <TD>このサブテーブルは上の 2 つに非常によく似ていますが、基底グリフそのものがマークであってもよい点が異なります。これは基底グリフに 2 個のアクセントが接続し、それらが基底グリフに対して同じ接続点をもっている場合に使用することができます。2 番目のアクセントは基底グリフからではなく、最初のアクセントからの相対位置によって配置されることになります。</TD>
 <!--<TD>These may be created with the
       <A HREF="pointmenu.html#AddAnchor">Points-&gt;Add Anchor</A> command</TD> -->
-    <TD>これらは <A HREF="pointmenu.html#AddAnchor"><CODE>点(<U>P</U>)</CODE>→<CODE>アンカーを追加(<U>A</U>)</CODE></A> コマンドで作成することができます。</TD>
+    <TD>これらは <A HREF="pointmenu.html#AddAnchor"><CODE>点(<U>P</U>)</CODE>→<CODE>アンカーを追加(<U>A</U>)...</CODE></A> コマンドで作成することができます。</TD>
   </TR>
   <TR>
     <TD>7</TD>
@@ -265,7 +265,7 @@ FontForge also has built into it knowledge on how to provide default values
 for some features that use these tables. See
 <A HREF="elementmenu.html#DefaultATT">Element-&gt;Default ATT</A> command
 for that. -->
-FontForge には、これらのテーブルを使用するいくつかの機能に対して、どのようにデフォルト値を与えるべきかの知識が組み込まれています。これに関しては、<A HREF="elementmenu.html#DefaultATT"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>デフォルトのATT(<U>D</U>)</CODE></A> コマンドを参照してください。
+FontForge には、これらのテーブルを使用するいくつかの機能に対して、どのようにデフォルト値を与えるべきかの知識が組み込まれています。これに関しては、<A HREF="elementmenu.html#DefaultATT"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>組版機能(<U>Y</U>)</CODE>→<CODE>デフォルトのATT(<U>D</U>)</CODE></A> コマンドを参照してください。
 <P>
 <!--
 FontForge will retain the order of features in the GPOS table and when a
@@ -337,7 +337,7 @@ FontForge は以下のサブテーブルを GSUB テーブルから読み込みます:
       with another glyph. A common example is a ligature where the string
       <IMG SRC="f+i.png" WIDTH="24" HEIGHT="25" ALIGN="Middle"> is replaced by
       the <IMG SRC="fi.png" WIDTH="20" HEIGHT="25" ALIGN="Middle"> ligature.</TD> -->
-    <TD>フォントデザイナーはこのサブテーブルを使って、複数のグリフの並びを別の 1 個のグリフに置き換えることができます。よくある例としては、<IMG SRC="../f+i.png" WIDTH="24" HEIGHT="25" ALIGN="Middle"> というグリフの並びが合字 <IMG SRC="fi.png" WIDTH="20" HEIGHT="25" ALIGN="Middle"> に置き換えられるなどの合字処理があります。</TD>
+    <TD>フォントデザイナーはこのサブテーブルを使って、複数のグリフの並びを別の 1 個のグリフに置き換えることができます。よくある例としては、<IMG SRC="../f+i.png" WIDTH="24" HEIGHT="25" ALIGN="Middle"> というグリフの並びが合字 <IMG SRC="../fi.png" WIDTH="20" HEIGHT="25" ALIGN="Middle"> に置き換えられるなどの合字処理があります。</TD>
 <!--<TD>These can be created with the <A HREF="charinfo.html">Element-&gt;Char
       Info</A>-&gt;Ligature command.</TD> -->
     <TD>これらは <A HREF="charinfo.html"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>グリフ情報(<U>I</U>)...</CODE>→<CODE>[合字]</CODE></A> コマンドで作成することができます。</TD>
@@ -357,7 +357,7 @@ FontForge は以下のサブテーブルを GSUB テーブルから読み込みます:
   <TR>
     <TD>6</TD>
 <!--<TD>chaining contextual substitution</TD>-->
-    <TD>連鎖型文脈依存の置換</TD>
+    <TD>文脈連鎖依存の置換</TD>
 <!--<TD>This is a slightly more complex version of the above, it doesn't really
       add new capabilities, but it does provide a more logical approach to the
       issue.</TD> -->
@@ -568,7 +568,7 @@ opentype tag when read in. It will be converted back to a feature/setting
 when an apple font is generated (use
 <A HREF="prefs.html#Mac">File-&gt;Preferences</A> to extend FontForge's mapping
 from feature type/setting to opentype tags). -->
-FontFonge には <CODE>&lsquo;mort&rsquo;</CODE>  (グリフ変形) テーブルと <CODE>&lsquo;<A NAME="morx">morx</A>&rsquo;</CODE> (拡張グリフ変形) テーブルのサポートが含まれています。これらは大まかに <A HREF="#GSUB">GSUB</A> テーブルと対応しています。注意: OpenType の昨日に直接対応するすべての任意の機能タイプ/設定の組合せは、読み込み時に OpenType タグに変換されます。それが機能/設定の対に書き戻されるのは、Apple 対応のフォントを生成したとき (FontForge の機能/設定から OpenType タグへの対応表を拡張するには、<A HREF="prefs.html#Mac"><CODE>ファイル(<U>F</U>)</CODE>→<CODE>環境設定(<U>E</U>)</CODE></A> を使用してください)。
+FontFonge には <CODE>&lsquo;mort&rsquo;</CODE>  (グリフ変形) テーブルと <CODE>&lsquo;<A NAME="morx">morx</A>&rsquo;</CODE> (拡張グリフ変形) テーブルのサポートが含まれています。これらは大まかに <A HREF="#GSUB">GSUB</A> テーブルと対応しています。注意: OpenType の昨日に直接対応するすべての任意の機能タイプ/設定の組合せは、読み込み時に OpenType タグに変換されます。それが機能/設定の対に書き戻されるのは、Apple 対応のフォントを生成したとき (FontForge の機能/設定から OpenType タグへの対応表を拡張するには、<A HREF="prefs.html#Mac"><CODE>ファイル(<U>F</U>)</CODE>→<CODE>環境設定(<U>E</U>)...</CODE></A> を使用してください)。
 <TABLE BORDER CELLPADDING="2">
   <CAPTION>
 <!--Sub tables of <CODE>'mort'</CODE> or <CODE>'morx'</CODE>-->
@@ -609,7 +609,7 @@ FontFonge には <CODE>&lsquo;mort&rsquo;</CODE>  (グリフ変形) テーブルと <CODE>&l
 <!--	  FontForge will generate a <A NAME="cursive-connection">cursive connection
 	  </A>feature using this subtable type if the font contains 'init', 'medi',
 	  'fina' or 'isol' simple substitutions. -->
-	  FontForge は、フォントに 'init', 'medi', 'fina' または 'isol' による単純置換が含まれていれば、このサブテーブルを使って<A NAME="cursive-connection">筆記体の接続</A>機能を書き出します。
+	  FontForge は、フォントに&lsquo;init&rsquo;,&lsquo;medi&rsquo;,&lsquo;fina&rsquo;または&lsquo;isol&rsquo;による単純置換が含まれていれば、このサブテーブルを使って<A NAME="cursive-connection">筆記体の接続</A>機能を書き出します。
 	<LI>
 <!--	  In <A HREF="gposgsub.html#sometimes">some cases</A> FontForge is able to
 	  convert an OpenType Contextual/Chaining substitution table into an Apple
@@ -730,7 +730,7 @@ can sometimes be converted, and others have essentially no common ground. -->
       be used instead). FontForge can read either one, but only generates 'morx'
       tables. Interconversion depends on specific feature types and the sub-table
       formats, see below</TD>-->
-    <TD ROWSPAN=2>'mort' および&lsquo;morx&rsquo;テーブルは同じ機能をもっています ('mort' テーブルは古いフォーマットで、Apple は現在それの代わりに&lsquo;morx&rsquo;を用いることを推奨しています)。FontForge はどちらも読み込むことはできますが、&lsquo;morx&rsquo;テーブルのみを出力します。相互変換ができるかどうかは個別の機能タイプおよびサブテーブルに依存します。以下を参照してください:
+    <TD ROWSPAN=2>&lsquo;mort&rsquo;および&lsquo;morx&rsquo;テーブルは同じ機能をもっています (&lsquo;mort&rsquo;テーブルは古いフォーマットで、Apple は現在それの代わりに&lsquo;morx&rsquo;を用いることを推奨しています)。FontForge はどちらも読み込むことはできますが、&lsquo;morx&rsquo;テーブルのみを出力します。相互変換ができるかどうかは個別の機能タイプおよびサブテーブルに依存します。以下を参照してください:
   </TR>
   <TR>
     <TD><P ALIGN=Center>
@@ -1537,7 +1537,7 @@ tables</A>. -->
 <A HREF="TrueOpenTables.html">対応している機能の完全なリストについては、ここを参照して下さい</A>。
 <P>
 <P ALIGN=Center>
--- <A HREF="generate.html">前</A> -- <A HREF="overview.html">目次</A> --
-<A HREF="filemenu.html">次</A> --
+― <A HREF="generate.html">前</A> ― <A HREF="overview.html">目次</A> ―
+<A HREF="filemenu.html">次</A> ―
 </DIV>
 </BODY></HTML>

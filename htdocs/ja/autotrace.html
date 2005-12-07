@@ -64,7 +64,7 @@ you want to autotrace. There are several ways of doing this: -->
 	(おそらく、新しいフォントで作業を始めたいとお考えでしょうが、違うかもしれません)
       <LI>
 <!--	File-&gt;Import -->
-	ファイル(F)→取り込み(I)
+	<CODE>ファイル(<U>F</U>)</CODE>→<CODE>取り込み(<U>I</U>)...</CODE>
       <LI>
 <!--	select the bitmap font type (bdf, FON, embedded in a ttf file, TeX bitmap
 	(GF, PK), etc.) -->
@@ -105,10 +105,10 @@ you want to autotrace. There are several ways of doing this: -->
 	背景レイヤーを有効にする (これは通常不要です)
       <LI>
 <!--	File-&gt;Import -->
-	ファイル(F)→取り込み(I)
+	<CODE>ファイル(<U>F</U>)</CODE>→<CODE>取り込み(<U>I</U>)...</CODE>
       <LI>
 <!--	select Format=Image (this will show you any image format that fontforge supports) -->
-	フォーマット として 画像 を選択する (FontForge がサポートする全ての画像フォーマットが表示されます)。
+	<CODE>フォーマット</CODE> として <CODE>画像</CODE> を選択する (FontForge がサポートする全ての画像フォーマットが表示されます)。
       <LI>
 <!--	Select your file -->
 	ファイルを選択する
@@ -125,20 +125,20 @@ you want to autotrace. There are several ways of doing this: -->
     U+0041 (LATIN CAPITAL LETTER A) through U+0049 (LATIN CAPITAL LETTER J) then
     create files called "uni0041.png", "uni0042.png", ... "uni0049.png" containing
     the images for the appropriate characters, then (from the Font View) -->
-    複数の画像ファイルがある場合、それらを 1 回のコマンドで読み込むことができますが、そのためには適切な名前をつけておかねばなりません。フォントに Unicode 文字 U+0041 (LATIN CAPITAL LETTER A) から U+0049 (LATIN CAPITAL LETTER J) までが含まれている場合、それぞれの文字の画像を含む "uni0041.png", "uni0042.png", … "uni0049.png" というファイルを作成して、それから
+    複数の画像ファイルがある場合、それらを 1 回のコマンドで読み込むことができますが、そのためには適切な名前をつけておかねばなりません。フォントに Unicode 文字 U+0041 (LATIN CAPITAL LETTER A) から U+0049 (LATIN CAPITAL LETTER J) までが含まれている場合、それぞれの文字の画像を含む“uni0041.png”,“uni0042.png”, …“uni0049.png”というファイルを作成して、それから
     <UL>
       <LI>
 <!--	Select the requisite glyphs -->
 	必要なグリフを選択する
       <LI>
 <!--	File-&gt;Import -->
-	<CODE>ファイル(<U>F</U>)</CODE>→<CODE>取り込み(<U>I</U>)</CODE>
+	<CODE>ファイル(<U>F</U>)</CODE>→<CODE>取り込み(<U>I</U>)...</CODE>
       <LI>
 <!--	select Format=Image template -->
 	フォーマット として 画像テンプレート を選択する
       <LI>
 <!--	select the first of your images, "uni0041.png" -->
-	画像の最初のファイルを選択する
+	画像の最初のファイル“uni0041.png”を選択する
       <LI>
 <!--	This should load all images that match that template ("uni*.png") into the
 	appropriate glyph slot -->
@@ -176,11 +176,11 @@ the shift key FontForge will use the same arguments it used last time.
 AutoTrace's arguments are described in "$ autotrace -help" or in the README
 file that came with the program. Please do not specify input/output files
 or formats. FontForge fills these in. -->
-Shift キーを押しながら、メニューから <CODE>自動トレース(<U>R</U>)</CODE> を選ぶとプログラムに与える引数を入力するように促されます。Shift キーを押していないと、FontForge は全開し要したのと同じ引数を使用します。AutoTrace の引数は“$ <CODE>autotrace -help</CODE>”で見ることができますし、プログラムに添付されている README ファイルにもかかれています。入出力ファイルやフォーマットを指定しないでください。それらは FontForge が割り当てます。
+Shift キーを押しながら、メニューから <CODE>自動トレース(<U>R</U>)</CODE> を選ぶとプログラムに与える引数を入力するように促されます。Shift キーを押していないと、FontForge は全開し要したのと同じ引数を使用します。AutoTrace の引数は“$ <CODE>autotrace -help</CODE>”で見ることができますし、プログラムに添付されている README ファイルにも書かれています。入出力ファイルやフォーマットを指定しないでください。それらは FontForge が割り当てます。
 <P>
 <P>
 <P ALIGN=Center>
--- <A HREF="elementmenu.html#AutoTrace">戻る</A> --
-<A HREF="overview.html">目次</A> --
+― <A HREF="elementmenu.html#AutoTrace">戻る</A> ―
+<A HREF="overview.html">目次</A> ―
 </DIV>
 </BODY></HTML>

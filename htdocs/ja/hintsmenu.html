@@ -41,10 +41,10 @@ This menu is only present in the outline glyph view and the font view. <BR>-->
     <A HREF="#AutoInstr">ヒント命令の自動生成(<U>I</U>)</A>
   <LI>
 <!--<A HREF="#EditInstrs">Edit Instructions...</A>-->
-    <A HREF="#EditInstrs">ヒント命令の編集(E)...</A>
+    <A HREF="#EditInstrs">ヒント命令の編集(<U>E</U>)...</A>
   <LI>
 <!--<A HREF="#Debug">Debug...</A>-->
-    <A HREF="#Debug">デバッグ(<U>D</U>)</A>
+    <A HREF="#Debug">デバッグ(<U>D</U>)...</A>
   <LI>
 <!--<A HREF="#Editfpgm">Edit fpgm...</A>-->
     <A HREF="#Editfpgm">'fpgm'テーブルを編集...</A>
@@ -74,23 +74,23 @@ This menu is only present in the outline glyph view and the font view. <BR>-->
     <A HREF="#VHint">垂直ヒントを追加(<U>V</U>)</A>
   <LI>
 <!--<A HREF="#Create">Create HHint</A>-->
-    <A HREF="#Create">水平ヒントを作成(<U>R</U>)</A>
+    <A HREF="#Create">水平ヒントを作成(<U>T</U>)...</A>
   <LI>
 <!--<A HREF="#CreateV">Create VHint</A>-->
-    <A HREF="#CreateV">垂直ヒントを作成</A>
+    <A HREF="#CreateV">垂直ヒントを作成(<U>E)</U>...</A>
   <LI>
 <!--<A HREF="#Review">Review Hints</A>-->
-    <A HREF="#Review">ヒントを確認(<U>R</U>)</A>
+    <A HREF="#Review">ヒントを確認(<U>R</U>)...</A>
   <LI>
 <!--<A HREF="#HStem-Hist">Histograms</A>-->
-    <A HREF="#Histgrams">柱状グラフ</A>
+    <A HREF="#Histgram">柱状グラフ</A>
     <UL>
       <LI>
 <!--	<A HREF="hintsmenu.html#HStem-Hist">HStem</A>-->
-	<A HREF="#HStem-Hist">水平ステム</A>
+	<A HREF="#HStem-Hist">水平ステム(<U>H</U>)</A>
       <LI>
 <!--	<A HREF="hintsmenu.html#VStem-Hist">VStem</A>-->
-	<A HREF="#VStem-Hist">垂直ステム</A>
+	<A HREF="#VStem-Hist">垂直ステム(<U>V</U>)</A>
       <LI>
 	<A HREF="hintsmenu.html#Blue-Hist">BlueValues</A>
     </UL>
@@ -110,10 +110,10 @@ This menu is only present in the outline glyph view and the font view. <BR>-->
     <A HREF="fontinfo.html#Private">Element-&gt;Font Info-&gt;PS Private</A>.
     These in turn depend on the hints so it is best to autohint the entire font,
     then set the above values, and then autohint the font again.-->
-    FontForge は、<A HREF="fontinfo.html#Private"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)</CODE>→<CODE>[PSプライベート辞書]</CODE></A> の <CODE>BlueValues</CODE>, <CODE>StdVW</CODE>, <CODE>STDHW</CODE> フィールドをあらかじめ設定しておくと、より高品質なヒントづけ処理を行います。これらの値もヒントに依存するので、まずフォント全体に自動ヒントづけを行い、それから上記の値を設定し、最後にフォントを再び自動ヒントづけすると、最も良い結果が得られます。
+    FontForge は、<A HREF="fontinfo.html#Private"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE>→<CODE>[PS Private辞書]</CODE></A> の <CODE>BlueValues</CODE>, <CODE>StdVW</CODE>, <CODE>STDHW</CODE> フィールドをあらかじめ設定しておくと、より高品質なヒントづけ処理を行います。これらの値もヒントに依存するので、まずフォント全体に自動ヒントづけを行い、それから上記の値を設定し、最後にフォントを再び自動ヒントづけすると、最も良い結果が得られます。
   <DT>
 <!--Hint <A NAME="SubstitutionPt">Substitution</A> Pts-->
-    ヒントが<A NAME="SubstitutionPt">置換</A>する点(S)
+    ヒントが<A NAME="SubstitutionPt">置換</A>する点(<U>S</U>)
   <DD>
 <!--In the font view this figures substitution points for all selected glyphs.
     In the outline glyph view, this figures substitution points for the current
@@ -154,7 +154,7 @@ This menu is only present in the outline glyph view and the font view. <BR>-->
     <CODE>ヒント命令の自動生成(<U>I</U>)</CODE> コマンドは 2 次スプラインからなるフォントでのみ使用可能で、TrueType 命令を生成するのに用いられます。これは品質の良いヒントを出力できません。
   <DT>
 <!--<A NAME="EditInstrs">Edit Instructions...</A>-->
-    <A NAME="EditInstrs">ヒント命令の編集(E)...</A>
+    <A NAME="EditInstrs">ヒント命令の編集(<U>E</U>)...</A>
   <DD>
 <!--Only available in the outline and font views, and only in quadratic fonts.
     <A HREF="ttfinstrs.html">This dialog</A> shows any truetype instructions
@@ -218,7 +218,7 @@ This menu is only present in the outline glyph view and the font view. <BR>-->
     すべての垂直ステムヒントを削除します。
   <DT>
 <!--Add <A NAME="HHint">HHint</A>-->
-    <A NAME="HHint">水平ヒント</A>を追加(A)
+    <A NAME="HHint">水平ヒント</A>を追加(<U>A</U>)
   <DD>
 <!--If there are two points selected (exactly two) and if they have different
     y positions, then this will create a Horizontal Stem Hint starting at the
@@ -233,22 +233,22 @@ This menu is only present in the outline glyph view and the font view. <BR>-->
     one of the two going right to the rightmost one.-->
     2 個 (ちょうど 2 個に限る) の点が選択されていて、それらの x 座標が異なる場合、左の点から始まり右の点で終わる垂直ステムヒントを作成します。
   <DT>
-<!--<A NAME="Create">Create</A>--> HHint
-    <A NAME="Create">水平ヒントを作成(<U>R</U>)</A>
+<!--<A NAME="Create">Create</A> HHint -->
+    <A NAME="Create">水平ヒントを作成(<U>T</U>)...</A>
   <DD>
 <!--Brings up a dialog allowing you to specify exactly where and how wide you
     want a Horizontal Stem Hint.-->
     水平ステムヒントがどこから始まり、どれだけの幅をもつかを正確に指定できるダイアログを起動します。
   <DT>
-<!--<A NAME="CreateV">Create</A>--> VHint
-    <A NAME="CreateV">垂直ヒントを作成</A>
+<!--<A NAME="CreateV">Create</A> VHint -->
+    <A NAME="CreateV">垂直ヒントを作成(<U>E</U>)...</A>
   <DD>
 <!--Brings up a dialog allowing you to specify exactly where and how wide you
     want a Vertical Stem Hint.-->
     垂直ステムヒントがどこから始まり、どれだけの幅をもつかを正確に指定できるダイアログを起動します。
   <DT>
-<!--<A NAME="Review">Review</A>--> Hints
-    ヒントを<A NAME="Review">確認(<U>R</U>)</A>
+<!--<A NAME="Review">Review</A> Hints -->
+    ヒントを<A NAME="Review">確認(<U>R</U>)...</A>
     <IMG SRC="../ReviewHints.png" WIDTH="383" HEIGHT="410" ALIGN="Right">
   <DD>
 <!--Brings up a dialog allowing you to examine (and modify) all horizontal/vertical
@@ -265,14 +265,14 @@ This menu is only present in the outline glyph view and the font view. <BR>-->
 <DL>
   <DT>
 <!--<A NAME="HStem-Hist">HStem</A>-->
-    <A NAME="HStem-Hist">水平ステム</A>
+    <A NAME="HStem-Hist">水平ステム(<U>H</U>)</A>
   <DD>
 <!--Brings up a <A HREF="histogram.html">dialog</A> displaying a histogram of
     the horizontal stem widths of all selected glyph.-->
     選択中のすべてのグリフに含まれる水平ステムの幅の柱状グラフを表示する<A HREF="histogram.html">ダイアログ</A>を起動します。
   <DT>
 <!--<A NAME="VStem-Hist">VStem</A>-->
-    <A NAME="VStem-Hist">垂直ステム</A>
+    <A NAME="VStem-Hist">垂直ステム(<U>V</U>)</A>
   <DD>
 <!--Brings up a <A HREF="histogram.html">dialog</A> displaying a histogram of
     the vertical stem widths of all selected glyphs.-->
@@ -303,7 +303,8 @@ This menu is only present in the outline glyph view and the font view. <BR>-->
     <A HREF="elementmenu.html">エレメント(<U>L</U>)</A>
   <LI>
 <!--<A HREF="hintsmenu.html">Hints</A>-->
-    <A HREF="hintsmenu.html">ヒント(<U>H</U>)</A>
+    <A HREF="hintsmenu.html">ヒント(<U>I</U>)</A>
+    <LI> <A HREF="encodingmenu.html">エンコーディング(<U>N</U>)</A>
   <LI>
 <!--<A HREF="viewmenu.html">View</A>-->
     <A HREF="viewmenu.html">表示(<U>V</U>)</A>
@@ -311,7 +312,7 @@ This menu is only present in the outline glyph view and the font view. <BR>-->
 <!--<A HREF="metricsmenu.html">Metrics</A>-->
     <A HREF="metricsmenu.html">メトリック(<U>M</U>)</A>
   <LI>
-    <A HREF="cidmenu.html">CID</A>
+    <A HREF="cidmenu.html"><U>C</U>ID</A>
   <LI>
     <A HREF="mmmenu.html">MM</A>
   <LI>
@@ -324,8 +325,8 @@ This menu is only present in the outline glyph view and the font view. <BR>-->
 <!--<A HREF="HotKeys.html">Hot Keys</A>-->
     <A HREF="HotKeys.html">ホットキー一覧</A>
 <P ALIGN=Center>
--- <A HREF="elementmenu.html">前</A> -- <A HREF="overview.html">目次</A>
--- <A HREF="viewmenu.html">次</A> --
+― <A HREF="elementmenu.html">前</A> ― <A HREF="overview.html">目次</A>
+― <A HREF="encodingmenu.html">次</A> ―
 <P>
 </DIV>
 </BODY></HTML>

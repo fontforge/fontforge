@@ -135,7 +135,7 @@ explanation: -->
     the font parameters. These values are usually in TeX fix_word format where
     there is a binary point after the first 20 binary digits (so to get the number
     divide by (1&lt;&lt;20)). -->
-    これらは TeX のフォントパラメータ (およびいくつかの同種の情報) です。最初の数値は 1, 2 または 3 で、フォントがテキスト、数学または数学拡張フォントのどれであるかを示します。次の数値はデザインポイントサイズ (×(1≪20)) です。その後にフォントパラメータが続きます。これらの数値は通常 TeX の fix_word フォーマットで表されます。このフォーマットでは 2 進数で先頭 20 桁目に小数点が来ます (ですから、実際の数値を得るためには (1≪20) で割ってください)。
+    これらは TeX のフォントパラメータ (およびいくつかの同種の情報) です。最初の数値は 1, 2 または 3 で、フォントがテキスト、数学または数学拡張フォントのどれであるかを示します。次の数値はデザインポイントサイズ (×(1&lt;&lt;20)) です。その後にフォントパラメータが続きます。これらの数値は通常 TeX の fix_word フォーマットで表されます。このフォーマットでは 2 進数で先頭 20 桁目に小数点が来ます (ですから、実際の数値を得るためには (1&lt;&lt;20) で割ってください)。
   <DT>
     DisplaySize
   <DD>
@@ -143,7 +143,7 @@ explanation: -->
     the font in fontviews (it may be changed of course). Negative numbers mean
     to rasterize the display from the outlines, positive numbers mean to use
     a prebuilt bitmap font of that size. -->
-    これは、フォントビュー内でフォントを表示する際のデフォルトとして用いられる、1 em あたりのピクセル数です (もちろん変更可能です)。負の数字は、アウトラインをラスタライズして表示することを意味し、正の数字は、そのサイズに一致する作成済のビットマップを使用することを意味します。
+    これは、フォントビュー内でフォントを表示する際のデフォルトとして用いられる、1 em あたりのピクセル数です (もちろん変更可能です)。負の数字は、アウトラインをラスタライズして表示することを意味し、正の数字は、そのサイズに一致する作成済みのビットマップを使用することを意味します。
   <DT>
     AntiAlias
   <DD>
@@ -155,7 +155,7 @@ explanation: -->
   <DD>
 <!--Controls whether Fit to Em is checked by default in a fontview that displays
     this font. -->
-    このフォントを表示するフォントビューで、表示を全角に固定(F) にデフォルトでチェックを入れておくか。
+    このフォントを表示するフォントビューで、<CODE>表示を全角に固定(<U>F</U>)</CODE> にデフォルトでチェックを入れておくか。
   <DT>
     WinInfo
   <DD>
@@ -171,7 +171,7 @@ explanation: -->
 <!--For normal fonts this will be one of the names (or a close approximation
     thereto) that appears in the Encoding pulldown list. CID keyed fonts will
     not have encodings. Instead they'll have something like: -->
-    普通のフォントでは、これは エンコーディング(E) プルダウンリストに表示される名前のどれかと同じ (か、それに非常に近い) ものとなるでしょう。CID キー指定フォントは、Encoding 行を含まず、以下のようなものが含まれるでしょう。
+    普通のフォントでは、これは <CODE>エンコーディング(<U>E</U>)</CODE> プルダウンリストに表示される名前のどれかと同じ (か、それに非常に近い) ものとなるでしょう。CID キー指定フォントは、Encoding 行を含まず、以下のようなものが含まれるでしょう。
 </DL>
 <BLOCKQUOTE>
   <PRE>Registry: Adobe
@@ -211,7 +211,7 @@ in the example below, FF will figure out what it thinks
 <CODE>HheadAscent</CODE> should be and then add "0" to it to get the value
 stored in a truetype font's OS/2 table. However if the Offset flag is set
 to 0 (false) then the Ascent would be used exactly as specified. -->
-以下の項目は OS/2 および hhea テーブルからも取得されますが、それらは僅かにより複雑です。それらのキーワードは対になっているので <CODE>HheadAscent</CODE> と <CODE>HheadAOffset</CODE> は一緒に動作します。*Offset キーワードが 1 (真) である場合、もう片方のキーワードは、FontForge が正しい値として認識する値を基準とした相対値として扱われます。その場合 FontForge は適切と思われる値を計算して、それにキーワードで指定された値を加えます。ですから以下の例では、FF は TrueType フォントの OS/2 テーブルに格納された値を得るために <CODE>HheadAscent</CODE> に "0" を加えるべきと考えます。その一方、Offset フラグが 0 (偽) に設定されている場合、アセントの値は指定されたとおりの物が使用されます。
+以下の項目は OS/2 および hhea テーブルからも取得されますが、それらは僅かにより複雑です。それらのキーワードは対になっているので <CODE>HheadAscent</CODE> と <CODE>HheadAOffset</CODE> は一緒に動作します。*Offset キーワードが 1 (真) である場合、もう片方のキーワードは、FontForge が正しい値として認識する値を基準とした相対値として扱われます。その場合 FontForge は適切と思われる値を計算して、それにキーワードで指定された値を加えます。ですから以下の例では、FF は TrueType フォントの OS/2 テーブルに格納された値を得るために <CODE>HheadAscent</CODE> に“0”を加えるべきと考えます。その一方、Offset フラグが 0 (偽) に設定されている場合、アセントの値は指定されたとおりの物が使用されます。
 <BLOCKQUOTE>
   <PRE>HheadAscent: 0
 HheadAOffset: 1
@@ -282,7 +282,7 @@ next line says the entry is again only active for one script, but that this
 time any of the four languages 'DEU ', 'ROM ', 'VIT ' or the default language
 apply to it. And the last line gives an example of an entry that is active
 for several scripts with several languages. -->
-最初の行は、用字系・言語項目が 3 セット存在することを示し、その後の 3 行にそれらの項目が含まれます。2 行目は、この項目が有効になるのがただ 1 個の用字系 ('latn') のみで、なおかつ言語が 'ROM ' であるときに限られることを示します。その次の行も 1 個の用字系のみに対して有効であることを示しますが、今度は 4 個の言語 ('DEU ', 'ROM ', 'VIT ' またはデフォルト言語) に対して適用されることを表します。最後の行では、複数の用字系と複数の言語において有効となる項目の例を示しています。
+最初の行は、用字系・言語項目が 3 セット存在することを示し、その後の 3 行にそれらの項目が含まれます。2 行目は、この項目が有効になるのがただ 1 個の用字系 (&lsquo;latn&rsquo;) のみで、なおかつ言語が&lsquo;ROM &rsquo;であるときに限られることを示します。その次の行も 1 個の用字系のみに対して有効であることを示しますが、今度は 4 個の言語 (&lsquo;DEU &rsquo;,&lsquo;ROM &rsquo;,&lsquo;VIT &rsquo;またはデフォルト言語) に対して適用されることを表します。最後の行では、複数の用字系と複数の言語において有効となる項目の例を示しています。
 <P>
 <!--
 OpenType features are stored with an index into this list. If a feature has
@@ -292,7 +292,7 @@ scripts. A special script index of 65535 is used to mean that this feature
 is "Nested", that is it is never activated by itself, but its activation
 is controlled by a contextual or contextual chaining lookup (which in turn
 will have its own script language index). -->
-OpenType 機能はこのリスト内のインデックスを用いて格納されます。この場合、ある機能がインデックス "0" であるならば、その機能はルーマニア語のラテン文字表記のときにのみ有効になります。インデックスが 2 であるならば、その機能はキリル文字・ギリシャ文字およびラテン文字に対して有効になるわけです。その機能が「入れ子」になった物であることを表すための特別な用字系インデックスとして、65535 を使っています。これはそれ自体で起動されることは決してなく、文脈依存または文脈依存連鎖の照合  (これ自体は、独自の用字系・言語インデックスを備えています) によって起動が制御されるものです。
+OpenType 機能はこのリスト内のインデックスを用いて格納されます。この場合、ある機能がインデックス“0”であるならば、その機能はルーマニア語のラテン文字表記のときにのみ有効になります。インデックスが 2 であるならば、その機能はキリル文字・ギリシャ文字およびラテン文字に対して有効になるわけです。その機能が「入れ子」になった物であることを表すための特別な用字系インデックスとして、65535 を使っています。これはそれ自体で起動されることは決してなく、文脈依存または文脈依存連鎖の照合  (これ自体は、独自の用字系・言語インデックスを備えています) によって起動が制御されるものです。
 <P>
 <!--
 If your font has any kerning classes -->
@@ -330,7 +330,7 @@ of them in fact. This specifies the amount of kerning that should be placed
 between a characters of the given classes of left and right characters (ie.
 if char1 was in left class 2 and char2 was in right class 4 then we would
 index this array with 3*&lt;char2 class cnt&gt; + 4). -->
-最初の行は、このカーニングクラスに含まれる先頭文字のクラスが 31 種類存在し、第二文字のクラスが 64 種類存在することを表しています。これは、上記の用字系・言語リストの項目 2 に対して有効になります。<A HREF="charinfo.html#lookup-flags">OpenType フラグ</A> は 0 となります。次の行は、最初の文字 (クラス 0 は予約済みで、決して定義する必要がないので、この番号は 1 となります) の先頭文字クラスは文字 "F" 1 文字からなることを表します ("F" の前にある数字は行の文字数です。これは SFD ファイルの処理速度の向上に役立ちますが、それ自体で意味を持つ情報ではありません)。次の行は、先頭文字のクラス 2 で、より多くの文字を含んでいるため文字列長も長くなっています。30 個の項目が続いた後に、第二文字のクラスが始まります。これは、先頭文字のクラスと全く同様です。第二文字のクラスを全部定義し終わった後に、多数(正確には &lt;先頭文字クラスの個数×第二文字クラスの個数&gt;) の数値からなる 1 個の配列が来ます。これは、該当するクラスの対における左右の文字間に施されるカーニングの量を指定しています (例えば、文字1 が先頭文字クラス 2 に属し、文字2 が第二文字クラス 4 に属している場合、この配列のインデックス 3×&lt;文字2 のクラス番号&gt; + 4 で指定することになります)
+最初の行は、このカーニングクラスに含まれる先頭文字のクラスが 31 種類存在し、第二文字のクラスが 64 種類存在することを表しています。これは、上記の用字系・言語リストの項目 2 に対して有効になります。<A HREF="charinfo.html#lookup-flags">OpenType フラグ</A> は 0 となります。次の行は、最初の文字 (クラス 0 は予約済みで、決して定義する必要がないので、この番号は 1 となります) の先頭文字クラスは文字“F”1 文字からなることを表します (“F”の前にある数字は行の文字数です。これは SFD ファイルの処理速度の向上に役立ちますが、それ自体で意味を持つ情報ではありません)。次の行は、先頭文字のクラス 2 で、より多くの文字を含んでいるため文字列長も長くなっています。30 個の項目が続いた後に、第二文字のクラスが始まります。これは、先頭文字のクラスと全く同様です。第二文字のクラスを全部定義し終わった後に、多数(正確には &lt;先頭文字クラスの個数×第二文字クラスの個数&gt;) の数値からなる 1 個の配列が来ます。これは、該当するクラスの対における左右の文字間に施されるカーニングの量を指定しています (例えば、文字1 が先頭文字クラス 2 に属し、文字2 が第二文字クラス 4 に属している場合、この配列のインデックス 3×&lt;文字2 のクラス番号&gt; + 4 で指定することになります)
 <P>
 <!--
 If your fontforge has been configured with device table support you may find
@@ -379,7 +379,7 @@ lines will provide 4360 bytes of data, packed in
 data and packs it into ASCII without too much expansion. See the PostScript
 Reference Manual (3rd edition, pages 131-132) for a description of this packing,
 or <CODE>$&nbsp;man&nbsp;btoa</CODE>). -->
-最初の行は、'prep' テーブルの長さが 4360 バイトであることを表します。後ろに続く行には、4360 バイトのデータが <A HREF="#ASCII85Encode">ASCII85Encode<SUP>1</SUP></A> (入力されたバイナリデータをあまりサイズを大きくしないで ASCII にパックします。この方式の説明は、PostScript リファレンスマニュアル (第3版、原書 131～132 ページ) を参照するか、<CODE>$&nbsp;man&nbsp;btoa</CODE> で調べてください) にパックされて納められています。
+最初の行は、&lsquo;prep&rsquo;テーブルの長さが 4360 バイトであることを表します。後ろに続く行には、4360 バイトのデータが <A HREF="#ASCII85Encode">ASCII85Encode<SUP>1</SUP></A> (入力されたバイナリデータをあまりサイズを大きくしないで ASCII にパックします。この方式の説明は、PostScript リファレンスマニュアル (第3版、原書 131～132 ページ) を参照するか、<CODE>$&nbsp;man&nbsp;btoa</CODE> で調べてください) にパックされて納められています。
 <P>
 <!--
 The <CODE>LangName</CODE> entries represent the TrueType name table: the
@@ -410,7 +410,7 @@ There is an Anchor Class named "top" which has feature tag 'mark', opentype
 flags 4, a script lang index of 7, and it should be merged with other anchor
 classes marked with "1". The next class is named "bottom", the next "Anchor-2"
 and so forth. (Anchor class names are output in UTF7) -->
-ここには "top" という名前で、機能タグ "mark" を含み、OpenType フラグが 4 で、用字系/言語インデックスが 7 であるアンカークラスが存在し、これが "1" と印づけられた他のアンカークラスと併合すべきであることを示します。次のクラスは "bottom" という名前で、その次は "Anchor-2" という名前で、以下同様に続きます。(アンカークラス名は UTF7 で出力されます)
+ここには“top”という名前で、機能タグ“mark”を含み、OpenType フラグが 4 で、用字系/言語インデックスが 7 であるアンカークラスが存在し、これが“1”と印づけられた他のアンカークラスと併合すべきであることを示します。次のクラスは“bottom”という名前で、その次は“Anchor-2”という名前で、以下同様に続きます。(アンカークラス名は UTF-7 で出力されます)
 <P>
 <!--
 Contextual or contextual chaining lookups are also stored in the font header.
@@ -419,7 +419,7 @@ The are introduced by one of the keywords: "ContextPos", "ContextSub",
 chaining lookups may check previous glyphs (called backtracking), current
 glyphs and lookahead glyphs, while Contextual lookups only check for a string
 of current glyphs. There are four formats:<BR> -->
-文脈依存または文脈依存連鎖の照合も、フォントヘッダに格納されます。それらはキーワード "ContextPos", "ContextSub", "ChainPos", "ChainSub" または "ReverseChain" で始まり、キーワード "ENDFPST" で終了します。文脈依存の照合は現在位置にあるグリフ列を所定の文字列群と照合することしかできませんが、文脈依存連鎖の照合は現在のグリフ、および先読みグリフだけでなく先行するグリフをチェックすることができます (これをバックトラックといいます)。このフォーマットには 4 種類あります。<BR>
+文脈依存または文脈依存連鎖の照合も、フォントヘッダに格納されます。それらはキーワード“ContextPos”,“ContextSub”,“ChainPos”,“ChainSub”または“ReverseChain”で始まり、キーワード“ENDFPST”で終了します。文脈依存の照合は現在位置にあるグリフ列を所定の文字列群と照合することしかできませんが、文脈依存連鎖の照合は現在のグリフ、および先読みグリフだけでなく先行するグリフをチェックすることができます (これをバックトラックといいます)。このフォーマットには 4 種類あります。<BR>
 <!-- By coverage tables -->
 適用範囲テーブルによる方法
 <BLOCKQUOTE>
@@ -439,7 +439,7 @@ opentype flags are 0, script/lang index is 0, the feature tag is 'abvs'.
 There are no classes, no backtracking classes and no lookahead classes defined
 (it's by coverage table). There is one rule. (For a greater explanation of
 these cryptic comments see the OpenType specs on contextual lookups). -->
-これは適用範囲クラスによる単純文脈連鎖依存の置換を定義しています。OpenType フラグは 0, 用字系/言語インデックスは 0 で、機能タグは 'abvs' です。クラスもバックトラッククラスも先読みクラスも定義されていません (適用範囲テーブルで指定しています)。ルールが 1 個あります (これらの暗号のようなコメントのより詳しい説明については、OpenType 仕様書の、文脈依存照合 (contextual lookup) について述べた箇所を調べてください)。
+これは適用範囲クラスによる単純文脈連鎖依存の置換を定義しています。OpenType フラグは 0, 用字系/言語インデックスは 0 で、機能タグは&lsquo;abvs&rsquo;です。クラスもバックトラッククラスも先読みクラスも定義されていません (適用範囲テーブルで指定しています)。ルールが 1 個あります (これらの暗号のようなコメントのより詳しい説明については、OpenType 仕様書の、文脈依存照合 (contextual lookup) について述べた箇所を調べてください)。
 <P>
 <!--
 Then follows the first rule. The first line, "1 1 0", says how many coverage
@@ -448,13 +448,13 @@ and how many in the lookahead list (0). Then we get the one normal coverage
 table, which describes a single glyph (uni0C40). Then one backtracking coverage
 table which also defines one glyph (glyph388). Finally there is one sequence
 lookup, at normal position 0, we should apply the substitution named '0013'. -->
-その後に最初のルールが続きます。1 行目の "1 1 0" というのは、何個の適用範囲テーブルが通常リスト (1 個)、バックトラックリスト (1 個) および先読みリスト (0 個) が含まれているかを表します。その次にあるのが 1 個の通常適用範囲テーブルで、これは 1 個のグリフ (uni0C40) を記述しています。続いて 1 個のバックトラック適用範囲テーブルがあり、これも 1 個のグリフ  (glyph388) を定義しています。最後にあるのが 1 個の連鎖型照合で、通常位置 0 において '0013' という名前の置換を適用する必要があることを表します。
+その後に最初のルールが続きます。1 行目の“1 1 0”というのは、何個の適用範囲テーブルが通常リスト (1 個)、バックトラックリスト (1 個) および先読みリスト (0 個) が含まれているかを表します。その次にあるのが 1 個の通常適用範囲テーブルで、これは 1 個のグリフ (uni0C40) を記述しています。続いて 1 個のバックトラック適用範囲テーブルがあり、これも 1 個のグリフ  (glyph388) を定義しています。最後にあるのが 1 個の連鎖型照合で、通常位置 0 において&lsquo;0013&rsquo;という名前の置換を適用する必要があることを表します。
 <P>
 <!--
 That is to say: If we find the glyph stream "glyph388 uni0C40", then it will
 match this lookup and we should apply substitution '0013' (found elsewhere)
 to uni0C40. -->
-一言で言うとこうなります: グリフの連鎖 "glyph388 uni0C40" が見つかったら、それはこの照合に一致し、その時は (よそで定義されている) 置換 '0013' を uni0C40 に適用すること。
+一言で言うとこうなります: グリフの連鎖“glyph388 uni0C40”が見つかったら、それはこの照合に一致し、その時は (よそで定義されている) 置換&lsquo;0013&rsquo;を uni0C40 に適用すること。
 <P>
 <!--
 By classes -->
@@ -485,13 +485,13 @@ not defined in another class". So we define class 1 to be "b,o,v,..." and
 class 2 to be "a,c,d,e,...". And then we define the backtracking classes
 (which here happen to be the same as the classes for the normal match, but
 that isn't always the case). -->
-これは、クラスによる文脈連鎖型置換を 1 つ定義しています。最初の行のフォーマットは上で説明したのと同じです。ここでは通常の一致に対する 3 つのクラスとバックトラックによる一致に対する 3 つのクラスが定義されています。その後ろの 4 行はクラスを定義しています。クラスによるカーニングの場合と同じく、クラス 0 は明示的に定義する必要はなく、「他のクラスのどれにも定義されていない任意のグリフ」として暗黙に定義されます。そこで、クラス 1 を "b,o,v,…" と定義し、クラス 2 を "a,c,d,e,…" と定義することになります。次に、クラス群のバックトラックを定義します（ここでは通常の一致のためのクラスとたまたま同じですが、常にそうであるわけではありません)。
+これは、クラスによる文脈連鎖型置換を 1 つ定義しています。最初の行のフォーマットは上で説明したのと同じです。ここでは通常の一致に対する 3 つのクラスとバックトラックによる一致に対する 3 つのクラスが定義されています。その後ろの 4 行はクラスを定義しています。クラスによるカーニングの場合と同じく、クラス 0 は明示的に定義する必要はなく、「他のクラスのどれにも定義されていない任意のグリフ」として暗黙に定義されます。そこで、クラス 1 を“b,o,v,…”と定義し、クラス 2 を“a,c,d,e,…”と定義することになります。次に、クラス群のバックトラックを定義します（ここでは通常の一致のためのクラスとたまたま同じですが、常にそうであるわけではありません)。
 <P>
 <!--
 The one rule says that if we get something in normal class 2 following something
 in backtracking class 1 (that is, if we get something like "ba" or "oc")
 then apply substitution 'high' -->
-ルールの 1 つでは、通常クラス 2 に含まれる何かの後にバックトラッククラス 1 が来た場合 (つまり、"ba" や "oc" のような何らかの文字列がある場合) 置換 'high' を適用しています。
+ルールの 1 つでは、通常クラス 2 に含まれる何かの後にバックトラッククラス 1 が来た場合 (つまり、“ba”や“oc”のような何らかの文字列がある場合) 置換&lsquo;high&rsquo;を適用しています。
 <P>
 <!--
 By glyphs -->
@@ -510,7 +510,7 @@ EndFPST
 <!--
 Again we have one rule. That rule says that if we get the sequence of glyphs
 "c b D e" then we should apply substitution 'rig1' to glyph "D". -->
-この例でも 1 個のルールが定義されています。このルールでは、グリフの連鎖 "c b D e" が存在した場合、置換 'rig1' をグリフ "D" に適用するように指示しています。-->
+この例でも 1 個のルールが定義されています。このルールでは、グリフの連鎖“c b D e”が存在した場合、置換&lsquo;rig1&rsquo;をグリフ“D”に適用するように指示しています。
 <P>
 <!--
 And finally by reverse coverage tables -->
@@ -535,7 +535,7 @@ by uni0C40.alt -->
 There may be apple state machines. These are introduced by one of the keywords:
 "MacIndic", "MacContext", "MacInsert" and "MacKern", and they are terminated
 with "EndASM". -->
-Apple 状態機械を含めることができます。それはキーワード "MacIndic", "MacContext", "MacInsert" または "MacKern" で始まり、"EndASM" で終了します。
+Apple 状態機械を含めることができます。それはキーワード“MacIndic”,“MacContext”,“MacInsert”または“MacKern”で始まり、“EndASM”で終了します。
 <BLOCKQUOTE>
   <PRE>MacContext: 2,2 16384 9 5
   Class: 320 yehhamzaabovearabic beharabic teharabic theharabic jeemarabic haharabic khaharabic seenarabic sheenarabic sadarabic dadarabic taharabic zaharabic ainarabic ghainarabic feharabic qafarabic kafarabic lamarabic meemarabic noonarabic heharabic alefmaksuraarabic yeharabic peharabic tteharabic tcheharabic veharabic gafarabic
@@ -582,7 +582,7 @@ also be other arguments depending on the type of the state machine. -->
       to be applied to the marked glyph, one to be applied to the current glyph
       (the special substitution "~" means do nothing and is used as a place holder).
       See above.</TD> -->
-    <TD>このフォーマットは 2 個の置換の名前を潜在的に含みます。1 個はマーク付きグリフに適用される物で、もう 1 個は現在のグリフに適用される物です (特殊な置換 "~" は何もしないことを意味し、プレースホルダとして用いられます。</TD>
+    <TD>このフォーマットは 2 個の置換の名前を潜在的に含みます。1 個はマーク付きグリフに適用される物で、もう 1 個は現在のグリフに適用される物です (特殊な置換“~”は何もしないことを意味し、プレースホルダとして用いられます。</TD>
   </TR>
   <TR>
     <TD VALIGN="Top">MacInsert</TD>
@@ -600,7 +600,7 @@ also be other arguments depending on the type of the state machine. -->
       line indicates that "fi" and "q" should be insert at the marked glyph and
       no characters at the current glyph. The flags determine whether characters
       are insert before or after the glyph.</TD> -->
-      最初の行は、マーク付きグリフの箇所には挿入する物がなにも無いが、現在グリフの位置には "a" と "b" を挿入することを表しています。2 行目は "fi" と "q" はマーク付きグリフの位置に挿入され、現在グリフの位置には何も挿入しないことを表します。グリフの前に文字を挿入するか、後ろに挿入するかはフラグによって決まります。</TD>
+      最初の行は、マーク付きグリフの箇所には挿入する物がなにも無いが、現在グリフの位置には“a”と“b”を挿入することを表しています。2 行目は“fi”と“q”はマーク付きグリフの位置に挿入され、現在グリフの位置には何も挿入しないことを表します。グリフの前に文字を挿入するか、後ろに挿入するかはフラグによって決まります。</TD>
   </TR>
   <TR>
     <TD VALIGN="Top">MacKern</TD>
@@ -623,7 +623,7 @@ itself -->
 <!--
 This line says that FontForge has generated 1 tag, the generated tag is used
 for a substitution lookup (sb=&gt;substitution), and the tag is 'rig1'. -->
-この行は、FontForge が 1 個のタグを生成しており、生成されたタグは置換参照に用いられ (sb⇒substitution)、そのタグ名が 'rig1' であることを表しています。
+この行は、FontForge が 1 個のタグを生成しており、生成されたタグは置換参照に用いられ (sb⇒substitution)、そのタグ名が&lsquo;rig1&rsquo;であることを表しています。
 <P>
 <!--
 There may be a list of Mac Feature/Setting names -->
@@ -710,20 +710,20 @@ EndChar
 The first line names the character, the next line gives the encoding, first
 in the current font, then in unicode, and finally the original position (GID).
 Then the advance width. -->
-in the current font, then in unicode. Then the advance width. -->
-最初の行では文字名を定義しています。次の行では文字符号を定義していて、最初に現在のフォント内の符号値があり、次に Unicode での符号値がきて、最後にフォント独自の位置 (GID) が来ます。それから。次の行に送り幅が来ます。
+最初の行では文字名を定義しています。次の行では文字符号を定義していて、最初に現在のフォント内の符号値があり、次に Unicode での符号値がきて、最後にフォント独自の位置 (GID) が来ます。それから、次の行に送り幅が来ます。
 <P>
 <!--
 Then a set of flags (there are currently four flags: "H" =&gt; the character
 has been changed since last hinted, "M" the character's hints have been adjusted
 manually, "W" the width has been set explicitly, and "O" =&gt; the character
 was open when last saved). -->
-その次の行にフラグ文字を並べた文字列が来ます (現在 4 つのフラグが定義されています: "H" ⇒ 最後にヒント付けを行って以降文字が変更された、"M" ⇒ 文字のヒントが手動で調整された、"W" ⇒ 幅がユーザの指定で設定された、および "O" ⇒ 最後に保存したときにその文字が開いていた)
+その次の行にフラグ文字を並べた文字列が来ます (現在 4 つのフラグが定義されています:“H”⇒ 最後にヒント付けを行って以降文字が変更された、“M”⇒ 文字のヒントが手動で調整された、“W”⇒ 幅がユーザの指定で設定された、および“O”⇒ 最後に保存したときにその文字が開いていた)
 <P>
+<!--
 Then horizontal and vertical (postscript) stem hints (set of several two
 number pairs, the first number in the pair is the location of the stem, the
 next number is the width of the stem, the numbers in brokets (&lt;&gt;) indicate
-where the hint is valid).
+where the hint is valid). -->
 次に水平および垂直方向の (PostScript) ステムヒントが来ます (いくつかの 2 個の数値対の集まりで、対の最初の数値はステムの位置を表し、次の数値がステムの幅を表し、角括弧 (&lt;&gt;) で囲まれた数値対はそのヒントがどこで有効かを表します)。
 <P>
 <!--
@@ -813,7 +813,7 @@ So the first two points have hint masks "xc0" and "xa0", these masks may
 be (almost) arbitrarily long, depending on the number of hints in the glyph.
 "xc0" means that the first two hints are active (0x80 &amp; 0x40) while "xa0"
 means that the first and third are (0x80 and 0x20). -->
-ここでは最初の 2 個の点はヒントマスク "xc0" および "xa0"  を含みます。これらのマスクはグリフ内のヒントの個数に応じて (ほとんど) 任意の長さを持つことができます。"xc0" は、最初の 2 個のヒント (0x80 と 0x40) が有効になっていることを示し、 "xa0" は、最初と 3 番目 (0x80 と 0x20) が有効であることを意味します。
+ここでは最初の 2 個の点はヒントマスク“xc0”および“xa0”を含みます。これらのマスクはグリフ内のヒントの個数に応じて (ほとんど) 任意の長さを持つことができます。“xc0”は、最初の 2 個のヒント (0x80 と 0x40) が有効になっていることを示し、“xa0”は、最初と 3 番目 (0x80 と 0x20) が有効であることを意味します。
 <P>
 <!--
 A set of splines in the background is similar, it will be introduced by a
@@ -855,7 +855,7 @@ file sfd.c and search for image2rle to see how it is done. The image is
 compressed using rle and then output as above, only now there is one more
 parameter on the "Image:" line which gives the number of bytes to be read
 from the data stream. -->
-ビットマップデータはランレングスエンコーディングで圧縮されます。これの詳細を説明するつもりはありませんので、それを理解する必要がある場合はファイル sfd.c から image2rle を検索して、どう処理を行っているかを調べることをお勧めします。画像はランレングスエンコーディング (RLE) で圧縮され、上記の形式で出力されます。この場合のみ、"Image:" にはデータストリームから読み込まれるバイト数を表すもう 1 つのパラメータが必要となります。
+ビットマップデータはランレングスエンコーディングで圧縮されます。これの詳細を説明するつもりはありませんので、それを理解する必要がある場合はファイル sfd.c から image2rle を検索して、どう処理を行っているかを調べることをお勧めします。画像はランレングスエンコーディング (RLE) で圧縮され、上記の形式で出力されます。この場合のみ、“Image:”にはデータストリームから読み込まれるバイト数を表すもう 1 つのパラメータが必要となります。
 <P>
 <!--
 A character need not contain any splines: -->
@@ -942,7 +942,7 @@ stems) are in the group, yielding a counter mask of 0x38. If we were to add
 four more VStem hints to the glyph, making nine hints in all, then the mask
 would have to be given as 0x3800 (because two bytes are needed to accommodate
 nine bits).-->
-この例では、CounterMasks: 行は 1 個のカウンタグループを (最初の引数で) 宣言しています。"38" (およびそれに続く他のすべての値) は、16 進表記のビットマスクで、グループを表しています。ビットマスクのサイズは常に 8 の倍数です (つまり、16 進数は常に偶数桁となります)。マスク内の最上位ビットは、最初のステムヒントが存在する(1) か存在しない(0) かを表します。2 番目の上位ビットは同様に 2 番目のヒントに相当し、以下同様です。どのヒントにも対応しない余計な下位ビットはすべて無視されます。(最下位ビットでなく最上位ビットから始めるのは奇妙だと私も知っていますが、これは Adobe の技術的決定です)。ここでは、3 番目 (0x20), 4 番目 (0x10) および 5 番目 (0x08) のステムヒントがグループ内に存在し、カウンタマスク値は 0x38 となっています。グリフに 4 個の VSTEM ヒントを追加した場合、全部でヒントは 9 個となるので、マスクは 0x3800 となります (9 ビットを格納するには 2 バイト必要だからです)。
+この例では、CounterMasks: 行は 1 個のカウンタグループを (最初の引数で) 宣言しています。“38”(およびそれに続く他のすべての値) は、16 進表記のビットマスクで、グループを表しています。ビットマスクのサイズは常に 8 の倍数です (つまり、16 進数は常に偶数桁となります)。マスク内の最上位ビットは、最初のステムヒントが存在する(1) か存在しない(0) かを表します。2 番目の上位ビットは同様に 2 番目のヒントに相当し、以下同様です。どのヒントにも対応しない余計な下位ビットはすべて無視されます。(最下位ビットでなく最上位ビットから始めるのは奇妙だと私も知っていますが、これは Adobe の技術的決定です)。ここでは、3 番目 (0x20), 4 番目 (0x10) および 5 番目 (0x08) のステムヒントがグループ内に存在し、カウンタマスク値は 0x38 となっています。グリフに 4 個の VSTEM ヒントを追加した場合、全部でヒントは 9 個となるので、マスクは 0x3800 となります (9 ビットを格納するには 2 バイト必要だからです)。
 <P>
 <!--
 If a font has been loaded from a truetype file it may containing hinting
@@ -1017,7 +1017,7 @@ If the user has set the glyph class -->
 <!--
 Where the number is 1 more than the 'GDEF' glyph class it represents. (so
 the 2 above means a base glyph (class 1)). -->
-この番号は、それが表す 'GDEF' グリフクラスよりも 1 つ大きい値になっています (ですから、この例の 2 はベースグリフ (クラス 1) を意味します)
+この番号は、それが表す&lsquo;GDEF&rsquo;グリフクラスよりも 1 つ大きい値になっています (ですから、この例の 2 はベースグリフ (クラス 1) を意味します)
 <P>
 <!--
 If the character is the first in any kern pairs (not a pair defined by a
@@ -1111,7 +1111,7 @@ Instead of having a single "Fore"ground layer, multilayered fonts have
 things like filling and stroking info for this layer, within each layer are
 a splineset, a list of references and a list of images (any or all may be
 omitted). The syntax for these is the same as in the normal case above. -->
-複数レイヤフォントは "Fore" で前面レイヤを 1 個定義するだけでなく、複数のレイヤをもつ (ことが可能な) もので、各レイヤには、そのレイヤの塗りつぶしや太線のような物を指定する Layer: 行が存在し、各レイヤにはスプラインセット、参照のリストや画像のリストが含まれます (これらの任意の物を省略することができます)。これらの構文は、上で説明した通常の場合と同じです。
+複数レイヤフォントは“Fore”で前面レイヤを 1 個定義するだけでなく、複数のレイヤをもつ (ことが可能な) もので、各レイヤには、そのレイヤの塗りつぶしや太線のような物を指定する Layer: 行が存在し、各レイヤにはスプラインセット、参照のリストや画像のリストが含まれます (これらの任意の物を省略することができます)。これらの構文は、上で説明した通常の場合と同じです。
 <BLOCKQUOTE>
   <PRE>LayerCount: 3
 Layer: 1  1 1 1  #fffffffe 1  #fffffffe 1 40 round round [1 0 0 1] []
@@ -1290,7 +1290,7 @@ Finally we have the actual instance fonts.  -->
 <!--
 Fonts with information for Apple's '*var' tables ('fvar', 'gvar', 'avar'
 and 'cvar') have a slightly different format: -->
-Apple の '*var' テーブル群 ('fvar', 'gvar', 'avar' および 'cvar') の情報を含むフォントはわずかにフォーマットが異なります。
+Apple の&lsquo;*var&rsquo;テーブル群 (&lsquo;fvar&rsquo;,&lsquo;gvar&rsquo;,&lsquo;avar&rsquo;および&lsquo;cvar&rsquo;) の情報を含むフォントはわずかにフォーマットが異なります。
 <BLOCKQUOTE>
   <PRE>MMCounts: 8 2 1 10
 MMAxis: Weight Width
@@ -1321,7 +1321,7 @@ The MMWeights field is irrelevant for Apple. Each axis has a set of names,
 for that axis translated into various languages. Finally Apple allows certain
 points in design space to be given names, here the point Weight=3.2, Width=1
 is named "Black" or "Tr&eacute;s gras". -->
-Adobe のフォーマットでは、座標は区間 [0, 1] をとりますが、Apple のフォーマットでは範囲は [-1, 1] となります。Adobe では一般に、軸ごとに 2 個のインスタンスを(極値で) 指定しますが、Apple では 3 つ (極値と、0 におけるデフォルトの設定) を想定しています。ですから Adobe 方式の 2 軸のフォントでは通常 4 個のインスタンスとデフォルトの版を含むことになりますが、Apple 方式のフォントでは 8 個のインスタンスとデフォルトの版を含むことになります。MMWeights フィールドは、Apple では不適切です。各軸には 1 組の名前があり、各種の言語に翻訳されたその軸の名前を表します。最後に、Apple ではデザイン空間上のいくつかの点に名前をつけることができます。ここでは Weight=3.2, Width=1 の点には "Black" または "Tr&eacute;s gras"という名前がつけられています。
+Adobe のフォーマットでは、座標は区間 [0, 1] をとりますが、Apple のフォーマットでは範囲は [-1, 1] となります。Adobe では一般に、軸ごとに 2 個のインスタンスを(極値で) 指定しますが、Apple では 3 つ (極値と、0 におけるデフォルトの設定) を想定しています。ですから Adobe 方式の 2 軸のフォントでは通常 4 個のインスタンスとデフォルトの版を含むことになりますが、Apple 方式のフォントでは 8 個のインスタンスとデフォルトの版を含むことになります。MMWeights フィールドは、Apple では不適切です。各軸には 1 組の名前があり、各種の言語に翻訳されたその軸の名前を表します。最後に、Apple ではデザイン空間上のいくつかの点に名前をつけることができます。ここでは Weight=3.2, Width=1 の点には“Black”または“Tr&eacute;s gras”という名前がつけられています。
 <H2>
 <!--<A NAME="Autosave-Format">Autosave Format</A>-->
     <A NAME="Autosave-Format">自動保存フォーマット</A>
@@ -1356,15 +1356,15 @@ Bitmaps are not preserved. Grid changes are not preserved. -->
 ビットマップは保存されません。グリッドの変更は保存されません。
 <P>
 <P ALIGN=Center>
--- <A HREF="src.html">前</A> -- <A HREF="overview.html">目次</A> --
-<A HREF="bezier.html">次</A> --
+― <A HREF="src.html">前</A> ― <A HREF="overview.html">目次</A> ―
+<A HREF="bezier.html">次</A> ―
 <P ALIGN=Left>
 <!--
 <A NAME="ASCII85Encode"><SUP>1</SUP>ASCII85Encode</A>: an encoding which
 takes 4 binary bytes and converts them to 5 ASCII characters between '!'
 and 'u'. Suppose we have 4 binary bytes: (b1 b2 b3 b4) then we want to find
 (c1 c2 c3 c4 c5) such that: -->
-<A NAME="ASCII85Encode"><SUP>1</SUP>ASCII85Encode</A>: 4 バイトのバイナリを '!' から 'u' までの ASCII 文字 5 文字に変換する符号化方式の一つです。バイナリ 4 バイト (b1 b2 b3 b4) があるとして、それに対して次の条件を満たす (c1 c2 c3 c4 c5) を探すことを考えましょう:
+<A NAME="ASCII85Encode"><SUP>1</SUP>ASCII85Encode</A>: 4 バイトのバイナリを&lsquo;!&rsquo;から&lsquo;u&rsquo;までの ASCII 文字 5 文字に変換する符号化方式の一つです。バイナリ 4 バイト (b1 b2 b3 b4) があるとして、それに対して次の条件を満たす (c1 c2 c3 c4 c5) を探すことを考えましょう:
 <BLOCKQUOTE>
   <PRE><I>b<SUB>1</SUB> * 256<SUP>3</SUP>  +  b<SUB>2</SUB> * 256<SUP>2</SUP>  +  b<SUB>3</SUB> * 256  +  b<SUB>4</SUB> =</I>
 <I>	c<SUB>1</SUB> * 85<SUP>4</SUP>  +  c<SUB>2</SUB> * 85<SUP>3</SUP>  +  c<SUB>3</SUB> * 85<SUP>2</SUP>  +  c<SUB>4</SUB> * 85  +  c<SUB>5</SUB></I>
@@ -1375,7 +1375,7 @@ and 'u'. Suppose we have 4 binary bytes: (b1 b2 b3 b4) then we want to find
 The final output is obtained by adding 33 ('!') to each of the
 <I>c<SUB>i</SUB></I>. If all four bytes are 0, then rather than writing '!!!!!',
 the letter 'z' may be used instead. -->
-最終的な出力は、<I>c<SUB>i</SUB></I> のそれぞれの値に 33 ('!') を加えることによって得られます。4 つのバイトがすべて 0 の場合、'!!!!!' を書き出さないで代わりに文字 'z' を使うことができます。
+最終的な出力は、<I>c<SUB>i</SUB></I> のそれぞれの値に 33 (&lsquo;!&rsquo;) を加えることによって得られます。4 つのバイトがすべて 0 の場合、&lsquo;!!!!!&rsquo;を書き出さないで代わりに文字&lsquo;z&rsquo;を使うことができます。
 <P>
 <!--
 Unfortunately, not all streams of binary data have a length divisible by
@@ -1383,7 +1383,7 @@ Unfortunately, not all streams of binary data have a length divisible by
 <I>4-n</I> zero bytes to the data stream, and apply the above transformation
 (without the 'z' special case for all zeros), and output <I>n+1 </I>of the
 <I>c<SUB>i</SUB></I> bytes. -->
-残念ながら、バイナリデータのストリームの長さは必ずしも 4 で割り切れるわけではありません。そこで、一連のデータの最後に <I>n</I> バイトが残っていたとしましょう。その場合、<I>4-n</I> 個のゼロバイトをデータストリームの末尾に付け加え、上記の変換を適用し (すべてゼロの場合に 'z' を出力する特別な処理を除く)、<I>c<SUB>i</SUB></I> のバイト列のうち最初の <I>n+1</I> 個を出力します。
+残念ながら、バイナリデータのストリームの長さは必ずしも 4 で割り切れるわけではありません。そこで、一連のデータの最後に <I>n</I> バイトが残っていたとしましょう。その場合、<I>4-n</I> 個のゼロバイトをデータストリームの末尾に付け加え、上記の変換を適用し (すべてゼロの場合に&lsquo;z&rsquo;を出力する特別な処理を除く)、<I>c<SUB>i</SUB></I> のバイト列のうち最初の <I>n+1</I> 個を出力します。
 <P>
 <!--
 So to encode a single 0 byte we would: -->
@@ -1391,16 +1391,16 @@ So to encode a single 0 byte we would: -->
 <UL>
   <LI>
 <!--append 3 additional 0 bytes (n==1 =&gt; add 4-1=3 bytes)-->
-    3 個の追加の 0 を後ろに追加する (n==1 =&gt; 4-1=3 バイトを追加)
+    3 個の追加の 0 を後ろに追加する (n==1 ⇒ 4-1=3 バイトを追加)
   <LI>
 <!--find that all the <I>c<SUB>i</SUB></I> were also zero-->
     すべての <I>c<SUB>i</SUB></I> が 0 になる
   <LI>
 <!--add '!' to each (all are now '!')-->
-    それぞれに '!' を加える (全バイトが '!' になる)
+    それぞれに&lsquo;!&rsquo;を加える (全バイトが&lsquo;!&rsquo;になる)
   <LI>
-<!--output two '!' (n+1 = 2)-->
-    2 個の '!' を追加する (n+1 = 2 だから)
+<!--output two&lsquo;!&rsquo;(n+1 = 2)-->
+    2 個の&lsquo;!&rsquo;を追加する (n+1 = 2 だから)
 </UL>
 <P>
 </DIV>

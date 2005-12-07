@@ -133,7 +133,7 @@ two. But it has one flaw: There is no constraint placed on the slopes, and
 (surprisingly) the slopes at the end-points of the above method are not close
 enough to those of the original, and the human eye can now detect the join
 between this generated spline and the two that connect to it. -->
-上記の行列は、オリジナルの 2 本のよい近似となる曲線を導き出します。しかしこの方法には 1 つの欠陥があります:傾きに関する制約が存在せず、そして (驚くべきことに) 上記の手法によって得られる端点における傾きは、オリジナルの傾きと十分に近くはならないので、人間の目には、生成されたスプラインと、それに接続するスプラインとの間の接合部分が見えてしまいます。
+上記の行列は、オリジナルの 2 本のよい近似となる曲線を導き出します。しかしこの方法には 1 つの欠陥があります: 傾きに関する制約が存在せず、そして (驚くべきことに) 上記の手法によって得られる端点における傾きは、オリジナルの傾きと十分に近くはならないので、人間の目には、生成されたスプラインと、それに接続するスプラインとの間の接合部分が見えてしまいます。
 <P>
 <!--
 I tried constraining the slopes by adding new yet more equations to our over
@@ -271,7 +271,7 @@ the two splines. -->
 PostScript supports several variants on the theme of a circular pen, and
 FontForge tries to emulate them all. Basically PostScript "stroke"s a path
 at a certain width by: -->
-PostScript は、円形のペンという主題に関するいくつかの変数をサポートしており、FontForge はこれらのすべてをエミュレートしようと試みています。基本的に、PostScript はある一定の線幅 width を持つパスを以下のようにして"ストローク"処理を行います:
+PostScript は、円形のペンという主題に関するいくつかの変数をサポートしており、FontForge はこれらのすべてをエミュレートしようと試みています。基本的に、PostScript はある一定の線幅 width を持つパスを以下のようにして“ストローク”処理を行います:
 <P>
 <!--
 at every location on the curve<BR>
@@ -383,7 +383,7 @@ will always be stroked by the same end-point, which is a fixed distance from
 the center of the pen, so all we need to do is translate the original spline
 by this distance (and then fix it up so that t goes from [0,1], but that's
 another easy transformation). -->
-困難な点の中間を処理するときは、人生は全く簡単になります。線の縁は常に同じ頂点によって描画され、ペンの中央から固定された距離に位置するので、オリジナルのスプラインをその距離だけ平行移動すればすべて完了です (それから、t が [0,1] の範囲にはいるように補正を行う必要がありますが、これは別の単純な変換で処理可能です)
+困難な点の中間を処理するときは、人生は全く簡単になります。線の縁は常に同じ頂点によって描画され、ペンの中央から固定された距離に位置するので、オリジナルのスプラインをその距離だけ平行移動すればすべて完了です (それから、t が [0,1] の範囲に入るように補正を行う必要がありますが、これは別の単純な変換で処理可能です)
 <P>
 <!--
 When we reach a point where the spline's slope is parallel to one edge of

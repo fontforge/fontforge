@@ -193,7 +193,7 @@
     (not too well). BitmapViews can only import images into their foreground.
     I think only bitmaps but I forget. FontViews can import bdf fonts into their
     list of bitmaps. -->
-    CharView, BitmapView, または FontView への取り込みを行うコードを含みます。当初は、これは CharView への画像取り込みだけを行っていましたが、現在ではその名前を越えて成長しています。CharView には画像 (gif, png, tiff, jpeg,xbm, xpm, sun raster, windows bmp, ...) を背景に取り込むことができます。これをクリップボードから使えるようにしたいのですが、クリップボードに画像を複製する標準的な方法が何なのか知りません。その他、(非常に限定された) eps ファイルと xfig (あまりうまくいきません) の取り込みが可能です。BitmapView には画像を前面に取り込むことしかできません。私はビットマップのみを考えていますが、私は忘れます。FontView は BDF フォントをビットマップのリストに取り込みます。
+    CharView, BitmapView, または FontView への取り込みを行うコードを含みます。当初は、これは CharView への画像取り込みだけを行っていましたが、現在ではその名前を越えて成長しています。CharView には画像 (gif, png, tiff, jpeg, xbm, xpm, sun raster, windows bmp, …) を背景に取り込むことができます。これをクリップボードから使えるようにしたいのですが、クリップボードに画像を複製する標準的な方法が何なのか知りません。その他、(非常に限定された) eps ファイルと xfig (あまりうまくいきません) の取り込みが可能です。BitmapView には画像を前面に取り込むことしかできません。私はビットマップのみを考えていますが、私は忘れます。FontView は BDF フォントをビットマップのリストに取り込みます。
   <DT>
     cvknife.c
   <DD>
@@ -220,14 +220,14 @@
   <DD>
 <!--The dispatch file for mouse events when one of the shape tools (rectangle,
     ellipse, polygon, star) is selected. -->
-  <DT>
+  <DD>
     図形ツール (長方形、楕円、多角形、星形) のいずれかが選択されているときのマウスイベントのディスパッチファイルです。
   <DT>
     cvstroke.c
   <DD>
 <!--The dialog for the expand stroke command. Also some of the routines which
     do the work. See also splinestroke.c -->
-    輪郭を太らせる(E) コマンド用のダイアログです。その作業を行うためのいくつかのルーチンも含まれています。splinestroke.c も参照してください。
+    <CODE>輪郭を太らせる(<U>E</U>)...</CODE> コマンド用のダイアログです。その作業を行うためのいくつかのルーチンも含まれています。splinestroke.c も参照してください。
   <DT>
     cvtranstools.c
   <DD>
@@ -274,7 +274,7 @@
   <DD>
 <!--Contains the dialogs and the functions for the Merge Fonts and Interpolate
     Fonts commands -->
-    フォントの統合(M) コマンドと フォントの補間(L) コマンドのダイアログとその機能を含みます。
+    <CODE>フォントの統合(<U>M</U>)...</CODE> コマンドと <CODE>フォントの補間(<U>L</U>)...</CODE> コマンドのダイアログとその機能を含みます。
   <DT>
     fvimportbdf.c
   <DD>
@@ -343,7 +343,7 @@
     savefontdlg.c
   <DD>
 <!--Dialog and dispatcher for the Generate Fonts command.-->
-    フォントを出力(S) コマンドのダイアログとディスパッチャです。
+    <CODE>フォントを出力(<U>G</U>)...</CODE> コマンドのダイアログとディスパッチャです。
   <DT>
     sfd.c
   <DD>
@@ -395,7 +395,7 @@
     fonts. Copies SplinePointLists. Transforms SplinePointLists. Solves (approximates
     a solution) cubic equations. Finds points of inflection. Figures out if a
     point is "near" a spline. -->
-    ユーティリティルーチンの束です。PostScript Type1 文字列を SplineChar に変換します。バウンディングボックスを計算します。参照と依存性の更新を処理します。描画のためのスプラインの直線近似を計算します。時計回り・反時計回りを検出します。PostScript/TTF フォントの読み込み時に適切な点のタイプを推測します。SplinePointList をコピーします。SplienPointList を座標変換します。3 次方程式を (近似的に) 解きます。編曲点を検出します。点がスプラインに対して "近い" かどうかを算出します。
+    ユーティリティルーチンの束です。PostScript Type1 文字列を SplineChar に変換します。バウンディングボックスを計算します。参照と依存性の更新を処理します。描画のためのスプラインの直線近似を計算します。時計回り・反時計回りを検出します。PostScript/TTF フォントの読み込み時に適切な点のタイプを推測します。SplinePointList をコピーします。SplienPointList を座標変換します。3 次方程式を (近似的に) 解きます。編曲点を検出します。点がスプラインに対して“近い”かどうかを算出します。
   <DT>
     splineutil2.c
   <DD>
@@ -413,7 +413,7 @@
     user has not set the control points him/herself when that point is moved).
     Determines if any point on a path is selected. Reverses the direction of
     a closed path. -->
-    さらに追加のユーティリティ関数です。スプラインが平行であるかどうかを決定します (制御点が縮退していないときですら、直線をトレースするときに尖った点ができることがあります。例えば、両方の制御点が端点の間の点にあるときです)。2 本のスプラインの交点を (近似的に) 発見します。点の列からスプラインを近似します (MergePoint や、スプラインへの点の挿入、その他多くの処理で使用されます)。合併(M) コマンドそのもの。単純化(S) コマンド。小さすぎるスプライン (これらは重複除去ルーチンを混乱させるので、すべての処理を行う前に削除しければなりません) を削除するコマンド。新しい SplineFont を作成するルーチン。tangent point (曲線の開始点) で、その点の制御点を移動したときにも、その方向が正しいことを保証するためのルーチン。新しい点 (および、点が動かされたときに、その点に制御点を設定していなかった場合）の制御点として適切なデフォルト値を算出するルーチン。パス上の任意の点が選択されたかどうかの決定。閉じたパスの反転。
+    さらに追加のユーティリティ関数です。スプラインが平行であるかどうかを決定します (制御点が縮退していないときですら、直線をトレースするときに尖った点ができることがあります。例えば、両方の制御点が端点の間の点にあるときです)。2 本のスプラインの交点を (近似的に) 発見します。点の列からスプラインを近似します (MergePoint や、スプラインへの点の挿入、その他多くの処理で使用されます)。<CODE>合併(<U>M</U>)</CODE> コマンドそのもの。<CODE>単純化(<U>S</U>)</CODE> コマンド。小さすぎるスプライン (これらは重複除去ルーチンを混乱させるので、すべての処理を行う前に削除しければなりません) を削除するコマンド。新しい SplineFont を作成するルーチン。tangent point (曲線の開始点) で、その点の制御点を移動したときにも、その方向が正しいことを保証するためのルーチン。新しい点 (および、点が動かされたときに、その点に制御点を設定していなかった場合）の制御点として適切なデフォルト値を算出するルーチン。パス上の任意の点が選択されたかどうかの決定。閉じたパスの反転。
   <DT>
     stamp.c
   <DD>
@@ -465,7 +465,7 @@
 </DL>
 <P>
 <P ALIGN=Center>
--- <A HREF="files.html">前</A> -- <A HREF="overview.html">目次</A> --
-<A HREF="sfdformat.html">次</A> --
+― <A HREF="files.html">前</A> ― <A HREF="overview.html">目次</A> ―
+<A HREF="sfdformat.html">次</A> ―
 </DIV>
 </BODY></HTML>

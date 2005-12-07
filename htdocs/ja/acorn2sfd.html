@@ -33,7 +33,7 @@ An Acorn RISC/OS font directory should contain two or three files, one named
 will not be known). <I>acorn2sfd</I> will read both files and generate an
 sfd file from them (which <A HREF="overview.html">FontForge</A> can turn
 into TrueType or Postscript). -->
-1 個の Acorn RISC/OS フォントディレクトリには、2 個または 3 個のファイルが含まれます。1 個は <CODE>Outlines*</CODE> という名前で、もう 1 個は <CODE>Intmetric?</CODE> という名前です (<CODE>Intmetrics</CODE> ファイルは省略可能で、その場合送り幅は不明となります)。<I>acorn2sfd</I> は両方のファイルを読み込み、それらを元に (<A HREF="overview.html">FontForge</A> によって TrueType または PostScript フォントに変換可能な) SFD ファイルを生成します。
+1 個の Acorn RISC/OS フォントディレクトリには、2 個または 3 個のファイルが含まれます。1 個は <CODE>Outlines</CODE>* という名前で、もう 1 個は <CODE>Intmetric</CODE>? という名前です (<CODE>Intmetric</CODE> ファイルは省略可能で、その場合送り幅は不明となります)。<I>acorn2sfd</I> は両方のファイルを読み込み、それらを元に (<A HREF="overview.html">FontForge</A> によって TrueType または PostScript フォントに変換可能な) SFD ファイルを生成します。
 <P>
 <!--
 If the <CODE>Outlines</CODE> file ends in a digit (<CODE>Outlines0</CODE>)
@@ -49,7 +49,7 @@ initial subset of Unicode. -->
 stroked version of the character, specifying this option will include it
 in the sfd file (you may then want to invoke FontForge's Expand Stroke command
 on it). -->
-<CODE>-includestrokes</CODE> <I>acorn2sfd</I> は通常、文字の二次的ストローク化処理を行なったバージョンを捨てますが、個のオプションを指定するとそれを SFD ファイルに含めます (その後で FontForge の 輪郭を太らせる(E) コマンドを呼び出す必要があるでしょう)。
+<CODE>-includestrokes</CODE> <I>acorn2sfd</I> は通常、文字の二次的ストローク化処理を行なったバージョンを捨てますが、このオプションを指定するとそれを SFD ファイルに含めます (その後で FontForge の <CODE>輪郭を太らせる(<U>E</U>)...</CODE> コマンドを呼び出す必要があるでしょう)。
 <P>
 <!--
 <CODE>-help</CODE> will provide a mini description and will list the available
@@ -58,7 +58,7 @@ options. -->
 <P>
 <!--
 <CODE>-usage</CODE> will list the available options. -->
-<CODE>-usage</CODE> は使用可能なオプション一覧を表示します。
+<CODE>-usage</CODE> は、使用可能なオプション一覧を表示します。
 <P>
 <!--
 <CODE>-version</CODE> will display the current version of <EM>acorn2sfd</EM>
@@ -73,7 +73,7 @@ options. -->
 <!--Acorn fonts use a different fill rule than either PostScript or TrueType.
     You should run Element-&gt;Correct Direction on the sfd file after converting
     it. -->
-    Acorn フォントは PostScript や TrueType と個となる塗りつぶしルールを使用しています。変換を行なった後で エレメント(L)→アウトラインの向きを修正(C) を実行する必要があるでしょう。
+    Acorn フォントは PostScript や TrueType と異なる塗りつぶしルールを使用しています。変換を行なった後で <CODE>エレメント(<U>L</U>)</CODE>→<CODE>アウトラインの向きを修正(<U>C</U>)</CODE> を実行する必要があるでしょう。
   <LI>
 <!--Most Acorn fonts I've seen on the web are zipped up with a non-standard zip.
     Don't expect <I>acorn2sfd</I> to be able to unzip them. -->

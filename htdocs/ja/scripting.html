@@ -81,7 +81,7 @@
   a "filename" for stdin. (If you build FontForge without X11 then fontforge
   will attempt to read a script file from <CODE>stdin</CODE> if none is given
   on the command line.) -->
-  FontForge に標準入力からスクリプトを読み込ませたい場合は、"-" を標準入力を表すファイル名として使用することができます。
+  FontForge に標準入力からスクリプトを読み込ませたい場合は、“-”を標準入力を表すファイル名として使用することができます。
   (もし FontForge を X11 無しで作成した場合、コマンドラインに何も指定しなければ、FontForge はスクリプトを標準入力から読もうと試みます。)
   <P>
 <!--
@@ -89,7 +89,7 @@
   <CODE>File-&gt;Execute Script</CODE>, and you can use the Preference Dlg
   to define a set of frequently used scripts which can be invoked directly
   by menu. -->
-  また、FontForge を使用中に、<CODE>ファイル(F)→スクリプトを実行(X)</CODE>メニューを用いてスクリプトを起動することもできますし、頻繁に用いるスクリプトをプリファレンスダイアログで登録してメニューから直接起動可能なように設定することもできます。
+  また、FontForge を使用中に、<CODE>ファイル(<U>F</U>)</CODE>→<CODE>スクリプトを実行(<U>X</U>)...</CODE> メニューを用いてスクリプトを起動することもできますし、頻繁に用いるスクリプトをプリファレンスダイアログで登録してメニューから直接起動可能なように設定することもできます。
   <P>
 <!--
   The scripting language provides access to much of the functionality found
@@ -119,19 +119,19 @@
       フォントのコード変換を行う。
     <LI>
 <!--  Place a reference to Latin "A" at Cyrillic "A" -->
-      ラテン文字 "A" への参照をキリル文字 "А" に配置する
+      ラテン文字“A”への参照をキリル文字“А”に配置する
     <LI>
 <!--  Copy Latin "R" to Cyrillic "YA" -->
-      ラテン文字 "R" をキリル文字 "Я" にコピーする
+      ラテン文字“R”をキリル文字“Я”にコピーする
     <LI>
 <!--  Flip "YA" horizontally -->
-      "Я" を水平方向に反転する
+      “Я”を水平方向に反転する
     <LI>
 <!--  Correct its direction -->
       パスの向きを修正する
     <LI>
 <!--  ... and so forth -->
-      …等々
+      ……等々
   </UL>
   <H2>
 <!--  Scripting <A NAME="Language">Language</A>-->
@@ -147,7 +147,7 @@
   スクリプトの構文は、C とシェルコマンドを混ぜ合わせた物にかなり似ています。
   各ファイルは手続きに対応します。
   シェルスクリプトと同様に、スクリプトファイルに渡された引数は
-  $1, $2, …, $n いう識別子で用いることができます。
+  $1, $2, …, $n という識別子で用いることができます。
   $0 はスクリプトそれ自身です。
   $argc は引数の個数を表します。
   $argv[&lt;式&gt;] の形で、コマンドの引数を配列としてアクセスすることができます。
@@ -159,23 +159,23 @@
     <LI>
 <!--  A variable name (like "$1" or "i" or "@fontvar" or "_global")<BR>
       The scope of the variable depends on the initial character of its name. -->
-      変数名 (例えば "$1" や "i" や "@fontvar" や "_global" のような)<BR>
+      変数名 (例えば“$1”や“i”や“@fontvar”や“_global”のような)<BR>
       変数のスコープは、名前の 1 文字目によって決まります。
       <UL>
 	<LI>
 <!--  	A '$' signifies that it is a built-in variable. The user cannot create any
   	new variables beginning with '$'. Some, but not all, of these may be assigned
   	to. -->
-  	'$' は組み込み変数を示します。ユーザは '$' で始まる変数を新しく作ることはできません。それらの一部 (全部ではありません) は、値を代入することができます。
+  	&lsquo;$&rsquo;は組み込み変数を示します。ユーザは&lsquo;$&rsquo;で始まる変数を新しく作ることはできません。それらの一部 (全部ではありません) は、値を代入することができます。
 	<LI>
 <!--  	A '_' signifies that the variable is global, it is always available. You
   	can use these to store context across different script files (or to access
   	data within nested script files). -->
-  	'_' はグローバル変数を示します。これは常に利用可能です。これらは、異なるスクリプトファイル間で (または、ネストしたスクリプトファイル内で) 共通のコンテキストを格納するのに用いることができます。
+  	&lsquo;_&rsquo;はグローバル変数を示します。これは常に利用可能です。これらは、異なるスクリプトファイル間で (または、ネストしたスクリプトファイル内で) 共通のコンテキストを格納するのに用いることができます。
 	<LI>
 <!--  	A '@' signifies that the variable is associated with the font. Any two scripts
   	looking at the same font will have access to the same variables. -->
-  	'@' は、変数がフォントに固有の物であることを示します。同じフォントを参照する 2 つのスクリプトは常に同じ変数にアクセスします。
+  	&lsquo;@&rsquo;は、変数がフォントに固有の物であることを示します。同じフォントを参照する 2 つのスクリプトは常に同じ変数にアクセスします。
 	<LI>
 <!--  	A variable which begins with a letter is a local variable. It is only meaningful
   	within the current script file. Nested script files may have different variables
@@ -188,10 +188,10 @@
     <LI>
 <!--  a unicode code point (which has a prefix of "0u" or "0U" and is followed
       by a string of hex digits. This is only used by the select command. -->
-      Unicode のコードポイント (プレフィクス "0u" または "0U" の後ろに 16 進数表をつないだもの)。これは Select() コマンドでのみ使うことができます。
+      Unicode のコードポイント (プレフィクス“0u”または“0U”の後ろに 16 進数表をつないだもの)。これは Select() コマンドでのみ使うことができます。
     <LI>
 <!--  a real number (in "C" locale format - - "." as the decimal point character)-->
-      実数 ("C" ロケールの書式 -- 小数点は ".")
+      実数 (“C”ロケールの書式 ― 小数点は“.”)
     <LI>
 <!--  A string which may be enclosed in either double or single quotes. String
 	tokens are limited to 256 bytes. "\n" can be used to represent a newline
@@ -214,13 +214,13 @@
   <UL>
     <LI>
 <!--  Starting with a "#" character and proceeding to end of line -->
-      文字 "#" から行末まで
+      文字“#”から行末まで
     <LI>
 <!--  Starting with "//" and proceeding to end of line -->
-      "//" から行末まで
+      “//”から行末まで
     <LI>
 <!--  Starting with "/*" and proceeding to "*/" -->
-      "/*" から "*/" まで
+      “/*”から“*/”まで
   </UL>
   <P>
 <!--
@@ -285,7 +285,7 @@
   "and" and "or" has been simplified, as has that of the assignment operators.
   -->
   カンマ演算子、"?:" 演算子が存在しないことに注意してください。
-  "AND", "OR" と、代入演算子の優先順位は、単純化されています。
+  “AND”,“OR”と、代入演算子の優先順位は単純化されています。
   <P>
 <!--
   Procedure calls may be applied either to a name token, or to a string. If
@@ -310,10 +310,10 @@
   <CODE>&nbsp; &nbsp; i=3</CODE><BR>
   could be used to define "i" as a variable. Variables are limited in scope
   to the current file, they will not be inherited by called procedures. -->
-  変数は、値を代入することによって ("=" のみで) 作成することができます。
+  変数は、値を代入することによって (“=”のみで) 作成することができます。
   ですから<BR>
   <CODE>&nbsp; &nbsp; i=3</CODE><BR>
-  によって、"i" の変数定義を行うことができます。変数のスコープは現在のファイルのみに限定されているので、呼び出された手続きには引き継がれません。
+  によって、“i”の変数定義を行うことができます。変数のスコープは現在のファイルのみに限定されているので、呼び出された手続きには引き継がれません。
   <P>
 <!--
   A statement may be -->
@@ -399,7 +399,7 @@ endloop
   </BLOCKQUOTE>
   <P>
 <!--
-  FontForge maintains the concept of a "current font"-- almost all commands
+  FontForge maintains the concept of a "current font"- - almost all commands
   refer only to the current font (and require that there be a font). If you
   start a script with File-&gt;Execute Script, the font you were editing will
   be current, otherwise there will be no initial current font. The Open(),
@@ -407,7 +407,7 @@ endloop
   a list of all fonts that are currently open. This list is in no particular
   order. The list starts with $firstfont. -->
   FontForge には「カレントフォント」という概念があります――ほぼ全てのコマンドはカレントフォントのみを参照します (ですから、カレントフォントが定義されている必要があります)。
-  「ファイル(F)→スクリプトの実行(M)」でスクリプトを起動した場合、現在編集中のフォントがカレントフォントとなり、そうでなければ初期状態ではカレントフォントは存在しません。
+  <CODE>ファイル(<U>F</U>)</CODE>→<CODE>スクリプトを実行(<U>X</U>)...</CODE> でスクリプトを起動した場合、現在編集中のフォントがカレントフォントとなり、そうでなければ初期状態ではカレントフォントは存在しません。
   カレントフォントを変更するには Open() と New(), Close() の各コマンドを使います。
   FontForge は、現在開かれたフォントのリストも保持しています。
   このリストの並び順にはとくに意味はありません。
@@ -417,13 +417,13 @@ endloop
   Similarly when working with cid keyed fonts, FontForge works in the "current
   sub font", and most commands refer to this font. The CIDChangeSubFont() command
   can alter that. -->
-  同様に、CID-Keyed フォントを操作する時には、FontForge の操作対象は「現在のサブフォント」であり、ほとんどのコマンドはそのフォントを参照します。それを変更するのには CIDChageSubFont() を使うことができます。
+  同様に、CID キー指定フォントを操作する時には、FontForge の操作対象は「現在のサブフォント」であり、ほとんどのコマンドはそのフォントを参照します。それを変更するのには CIDChageSubFont() を使うことができます。
   <P>
 <!--
   All builtin <A NAME="variables">variables</A> begin with "$", you may not
   create any variables that start with "$" yourself (though you may assign
   to (some) already existing ones) -->
-  全ての組み込み<A NAME="variables">変数</A> は "$" で始まるので、自分で新しく "$" で始まる変数を作ることはできません (既存の変数 (の一部) に値を代入することはできますが)。
+  全ての組み込み<A NAME="variables">変数</A> は“$”で始まるので、自分で新しく“$”で始まる変数を作ることはできません (既存の変数 (の一部) に値を代入することはできますが)。
   <UL>
     <LI>
 <!--  <CODE>$0 </CODE>the current script filename -->
@@ -446,7 +446,7 @@ endloop
       <CODE>$argv </CODE>により、全ての引数を配列としてアクセスすることができます
     <LI>
 <!--  <CODE>$curfont </CODE>the name of the filename in which the current font
-      resides -->>
+      resides -->
       <CODE>$curfont </CODE>カレントフォントが含まれているファイルの名前
     <LI>
 <!--  <CODE>$firstfont </CODE>the name of the filename of the font which is first
@@ -481,7 +481,7 @@ endloop
     <LI>
 <!--  <CODE>$fondname </CODE>if set this name indicates what FOND the current font
       should be put in under Generate Mac Family.-->
-      <CODE>$fondname </CODE>これがセットされている場合、カレントフォントを Macファミリーを出力(G) で出力したときの FOND の名前
+      <CODE>$fondname </CODE>これがセットされている場合、カレントフォントを <CODE>Macファミリーを出力(<U>F</U>)</CODE> で出力したときの FOND の名前
     <LI>
 <!--  <CODE>$weight </CODE>the name contained in the postscript Weight field-->
       <CODE>$weight </CODE>postscript の Weight フィールドに含まれる名前
@@ -554,7 +554,7 @@ endloop
 <!--  <CODE>$version</CODE> returns a string containing the current version of
       fontforge. This should look something like "020817". -->
       <CODE>$version</CODE> 現在実行中の FontForge のバージョンを含む文字列を返します。
-      この値は "020817" のような書式です。
+      この値は“020817”のような書式です。
     <LI>
 <!--  <CODE>$</CODE>&lt;<A NAME="Preference">Preference</A> Item&gt; (for example
       <CODE>$AutoHint</CODE>) allows you to examine the value of that preference
@@ -708,6 +708,7 @@ a[4][0] = "Nested array";
 <!--  Parses as much of str as possible and returns the offset to the first character
       that could not be parsed. -->
       文字列 str をできるだけ長く字句解析して、解析不可能な最初の文字のオフセットを返します。
+    <DT>
       Strtod(str)
     <DD>
 <!--  Converts a string to a real number. -->
@@ -783,7 +784,7 @@ a[4][0] = "Nested array";
 	<LI>
 <!--  	Each subroutine should be preceded by a line starting with '%%%%' (there
   	may be more stuff after that) -->
-  	各サブルーチンの前には '%%%%' (この後ろにさらに文字があってもよい) で始まる行がついていなければならない。
+  	各サブルーチンの前には&lsquo;%%%%&rsquo;(この後ろにさらに文字があってもよい) で始まる行がついていなければならない。
 	<LI>
 <!--  	Subroutines should come in the obvious order, and must have the expected
   	meaning. -->
@@ -794,7 +795,7 @@ a[4][0] = "Nested array";
   	flex ヒントを使いたくない場合、最初の 3 個のサブルーチンは "{}" にセットすること。
 	<LI>
 <!--  	You may specify at most 14 subroutines (0-13) -->
-  	最大 14 個のサブルーチン (0-13) が指定できる。
+  	最大 14 個のサブルーチン (0～13) が指定できる。
 	<LI>
 <!--  	Any text before the first subroutine will be treated as a copyright notice. -->
   	最初のサブルーチンの前の任意のテキストは著作権表示として扱われる。
@@ -839,7 +840,7 @@ a[4][0] = "Nested array";
       on failure otherwise the number of bytes written. -->
       "Filename" で指定した名前をもつファイルを作成し、文字列をそのファイルへ書き出します。append フラグが指定されていて 0 でない値の場合は、文字列はファイルの末尾に追加されます。この関数は null で終端された文字列を扱うものであり、バイト配列を扱いません。失敗時には -1 を返し、成功時には書き出されたバイト数を返します。
       <DT>
-<!--  ReadStringFromFile("filename")
+      LoadStringFromFile("filename")
       <DD>
 <!--  Reads the entire file into a string. Returns a null string for a non-existant
       or empty file. The returned string will have enough bytes allocated to hold
@@ -988,13 +989,7 @@ a[4][0] = "Nested array";
       svg files, etc) may contain several. If the file contains no fonts (or the
       file doesn't exist, or the fonts aren't named), a zero length array is returned.
       It does not open the font. It can execute without a current font. -->
-      ファイル内に含まれる全てのフォント名を含む文字列の配列を返します。
-      ほとんどのファイルはフォント 1 個のみを含みますが、物によっては
-      (Mac のフォントスーツケース、dfont, TTC ファイル、SVG ファイルなど)
-      は複数のフォントを含むことができます。ファイルにフォントが含まれていない場合
-      (またはファイルが存在しないか、フォントに名前がついていない場合)
-      長さ 0 の配列が返されます。
-      これはフォントを開きません。カレントフォントが無くても実行可能です。
+      ファイル内に含まれる全てのフォント名を含む文字列の配列を返します。ほとんどのファイルはフォント 1 個のみを含みますが、物によって (Mac のフォントスーツケース、dfont, TTC ファイル、SVG ファイルなど) は複数のフォントを含むことができます。ファイルにフォントが含まれていない場合 (またはファイルが存在しないか、フォントに名前がついていない場合) 長さ 0 の配列が返されます。これはフォントを開きません。カレントフォントが無くても実行可能です。
     <DT>
       Open(filename[,flags])
     <DD>
@@ -1017,8 +1012,7 @@ a[4][0] = "Nested array";
 	<LI>
 <!--  	1 =&gt; the user does have the appropriate license to examine the font no
   	matter what the fstype setting is. -->
-  	1 =&gt; ユーザは fstype の設定に無関係に、
-  	フォントを操作することができる合法なライセンスを持っている
+  	1 ⇒ ユーザは fstype の設定に無関係に、フォントを操作することができる合法なライセンスを持っている
       </UL>
     <DT>
       <A HREF="filemenu.html#New">New</A>()
@@ -1030,9 +1024,7 @@ a[4][0] = "Nested array";
     <DD>
 <!--  This frees up any memory taken up by the current font and drops it off the
       list of loaded fonts. After this executes there will be no current font. -->
-      カレントフォントが占有しているメモリを全て開放し、
-      読み込み済みのフォントのリストからカレントフォントを除外します。
-      これを実行した後、カレントフォントは存在しない状態となります。
+      カレントフォントが占有しているメモリを全て解放し、読み込み済みのフォントのリストからカレントフォントを除外します。これを実行した後、カレントフォントは存在しない状態となります。
     <DT>
       <A HREF="filemenu.html#Save">Save</A>([filename])
     <DD>
@@ -1060,7 +1052,7 @@ a[4][0] = "Nested array";
   	.bin (Mac のバイナリラッパに格納した Mac の postscript (pfb) リソース)<BR>
 <!--  	.res (on the Mac itself FontForge will put the result directly into a font
   	suitcase file, and the extension should be ".res" rather than ".bin") -->
-  	.res (Mac 上で実行した場合は、FontForge はフォントスーツケースに直接ファイルを書き出し、拡張子は ".bin" ではなく ".res" となります)
+  	.res (Mac 上で実行した場合は、FontForge はフォントスーツケースに直接ファイルを書き出し、拡張子は“.bin”ではなく“.res”となります)
   	<P>
 <!--  	Note: you must also create a bitmap font in NFNT format or the mac will not
   	recognize your postscript font. -->
@@ -1071,7 +1063,7 @@ a[4][0] = "Nested array";
   	256 characters, making use of the fifth argument to determine how this is
   	done). The "%s" will be replaced by the fontnumber specified in the
   	mult-sfd-file. -->
-  	*%s*.pf[ab] (ここでは単に拡張子だけでない指定が必要となります。フォント名には "%s" が含まれていなければなりません) (1 個の巨大なフォントを、それぞれ 256 文字を含む複数の pfb フォントに分割します。この時、どのようにこれを行うかは 5 番目の引数によって決まります)。"%s" は、複合 SFD ファイル内で割り当てられるフォント番号に置き換えられます。
+  	*%s*.pf[ab] (ここでは単に拡張子だけでない指定が必要となります。フォント名には“%s”が含まれていなければなりません) (1 個の巨大なフォントを、それぞれ 256 文字を含む複数の pfb フォントに分割します。この時、どのようにこれを行うかは 5 番目の引数によって決まります)。“%s”は、複合 SFD ファイル内で割り当てられるフォント番号に置き換えられます。
 	<LI>
 <!--  	.mm.pfa (multiple master font in ascii format) -->
   	.mm.pfa (ASCII フォーマットのマルチプルマスターフォント)
@@ -1107,7 +1099,7 @@ a[4][0] = "Nested array";
   	.ttf.bin (Mac のバイナリラッパに格納した TrueType  リソース)<BR>
 <!--  	suit (on the Mac itself FontForge will put the result directly into a font
   	suitcase file, and the extension should be ".suit" not ".ttf.bin") -->
-  	suit (Mac 上で実行した場合は、FontForge は結果を直接フォントスーツケースファイルに書き出し、拡張子は ".ttf.bin" ではなく ".suit" になります)
+  	suit (Mac 上で実行した場合は、FontForge は結果を直接フォントスーツケースファイルに書き出し、拡張子は“.ttf.bin”ではなく“.suit”になります)
 	<LI>
 <!--  	.dfont (a mac truetype resource in a dfont file) -->
   	.dfont (dfont ファイルに含まれた Mac の TrueType リソース)
@@ -1129,7 +1121,7 @@ a[4][0] = "Nested array";
   	&lt;拡張子無し&gt; アウトラインフォントを全く書き出したくない場合
   	(その代り、ビットマップかメトリックファイルの名前だけを指定する)
   	空の拡張子を指定してください (つまり、<CODE>"Times."</CODE> であって
-  	<CODE>"Times"</CODE> ではありません――出力されるビットマップフォントは、その型に応じて適切な拡張子がつけられます。"." は単なる飾りです)。
+  	<CODE>"Times"</CODE> ではありません――出力されるビットマップフォントは、その型に応じて適切な拡張子がつけられます。“.”は単なる飾りです)。
       </UL>
       <P>
 <!--  If present, bitmaptype may be one of: -->
@@ -1141,8 +1133,7 @@ a[4][0] = "Nested array";
 <!--  	ttf (for EBDT/bdat table in truetype/opentype) -->
   	ttf (TrueType/OpenType フォント内の EBDT/bdat テーブル)
 	<LI>
-<!--  	sbit (for EBDT/bdat table in truetype without any outline font) -->
-  +	sbit (for bdat table in truetype without any outline font in a dfont wrapper)
+<!--	sbit (for bdat table in truetype without any outline font in a dfont wrapper) -->
   	sbit (dfont ラッパに包まれたアウトラインフォントを含まない TrueType フォント内の bdat テーブル)
 	<LI>
 <!--  	bin (for nfnt in macbinary) -->
@@ -1178,7 +1169,7 @@ a[4][0] = "Nested array";
       ask for them). If you wish to output bitmaps you must first create them with
       the <A HREF="#BitmapsAvail">BitmapsAvail</A> scripting command or
       <A HREF="elementmenu.html#Bitmaps">Element-&gt;Bitmaps Avail</A>. -->
-      注意: ビットマップ出力を指定した場合、現在のフォントデータベースに含まれる全てのサイズが出力されますが、このコマンドはビットマップを作成しませんので、フォントデータベースにビットマップが全く含まれない場合、（ビットマップを出力するように指定したとしても) 全く出力されません。ビットマップの出力を行いたい場合、あらかじめ <A HREF="#BitmapsAvail">BitmapsAvail</A> スクリプトコマンドか <A HREF="elementmenu.html#Bitmaps">エレメント(L)→使用するビットマップ(A)</A> を使ってビットマップを作成する必要があります。
+      注意: ビットマップ出力を指定した場合、現在のフォントデータベースに含まれる全てのサイズが出力されますが、このコマンドはビットマップを作成しませんので、フォントデータベースにビットマップが全く含まれない場合、（ビットマップを出力するように指定したとしても) 全く出力されません。ビットマップの出力を行いたい場合、あらかじめ <A HREF="#BitmapsAvail">BitmapsAvail</A> スクリプトコマンドか <A HREF="elementmenu.html#Bitmaps"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>使用するビットマップ(<U>A</U>)</CODE></A> を使ってビットマップを作成する必要があります。
       <P>
 <!--  fmflags controls -->
       AFM や PFM ファイルを出力するかどうかは、fmflags で制御できます。
@@ -1186,24 +1177,24 @@ a[4][0] = "Nested array";
 	<LI>
 <!--  	-1 =&gt; default (generate an afm file for postscript fonts, never generate
   	a pfm file, full 'post' table, ttf hints) -->
-  	-1 =&gt; デフォルト (PostScript フォントが用いる AFM ファイルを出力し、
-  	PFM ファイルは出力せず、完全な 'post' テーブルと TTF のヒントを作成します)
+  	-1 ⇒ デフォルト (PostScript フォントが用いる AFM ファイルを出力し、
+  	PFM ファイルは出力せず、完全な&lsquo;post&rsquo;テーブルと TTF のヒントを作成します)
 	<LI>
 <!--  	fmflags&amp;1 =&gt; generate an afm file (if you are generating a multiple
   	master font then setting this flag means you get several afm files (one for
   	each master design, and one for the default version of the font) and an amfm
   	file) -->
-  	fmflags&amp;1 =&gt; AFM ファイルを出力する (マルチプルマスターフォントを出力する場合、このフラグをセットすると、いくつかの AFM ファイル (マスターデザインごとに 1 ファイル、フォントのデフォルトバージョンに対してもう 1 ファイル) と amfm ファイルを出力するという意味になります) 
+  	fmflags&amp;1 ⇒ AFM ファイルを出力する (マルチプルマスターフォントを出力する場合、このフラグをセットすると、いくつかの AFM ファイル (マスターデザインごとに 1 ファイル、フォントのデフォルトバージョンに対してもう 1 ファイル) と amfm ファイルを出力するという意味になります) 
 	<LI>
 <!--  	fmflags&amp;2 =&gt; generate a pfm file -->
-  	fmflags&amp;2 =&gt; PFM ファイルを出力する
+  	fmflags&amp;2 ⇒ PFM ファイルを出力する
 	<LI>
 <!--  	fmflags&amp;4 =&gt; generate a short 'post' table with no glyph name info
   	in it. -->
-  	fmflags&amp;4 =&gt; グリフ名の情報を含まない簡素な 'post' テーブルを出力する
+  	fmflags&amp;4 ⇒ グリフ名の情報を含まない簡素な&lsquo;post&rsquo;テーブルを出力する
 	<LI>
 <!--  	fmflags&amp;8 =&gt; do not include ttf instructions -->
-  	fmflags&amp;8 =&gt; TTF のインストラクションを含めない
+  	fmflags&amp;8 ⇒ TTF のインストラクションを含めない
 	<LI>
 <!--  	fmflags&amp;0x10 =&gt; where apple and ms/adobe differ about the format of
   	a true/open type file, use apple's definition (otherwise use ms/adobe)<BR>
@@ -1211,32 +1202,22 @@ a[4][0] = "Nested array";
   	'bdat', ms/adobe 'EBDT'), the PostScript name in the 'name' table (Apple
   	says it must occur exactly once, ms/adobe say at least twice), and whether
   	morx/feat/kern/opbd/prop/lcar or GSUB/GPOS/GDEF tables are generated. -->
-  	fmflags&amp;16 =&gt; Apple と MS/Adobe の間で
-  	    TrueType/OpenType の定義が異なる場合、Apple の定義を用いる
-  	    (指定しない場合は MS/Adobe の定義)<BR>
-  	現在のところ、これが影響するのは、
-  	フォント内に格納されるビットマップのフォーマット (Apple は 
-  	'bdat' というテーブルを、MS/Adobe は 'EBDT' というテーブルを用います),
-  	'name' テーブル内の PostScript 名 
-  	(Apple は、1 回しか出現してはならないと指示しているのに対し,
-  	MS/Adobe は最低 2 回は出現するように指示しています) および
-  	morx/feat/kern/opbd/prop/lcar または GSUB/GPOS/GDEF
-  	テーブルのどちらを作成するかという点です。
+  	fmflags&amp;0x10 ⇒ Apple と MS/Adobe の間で TrueType/OpenType の定義が異なる場合、Apple の定義を用いる (指定しない場合は MS/Adobe の定義)<BR>
+  	現在のところ、これが影響するのは、フォント内に格納されるビットマップのフォーマット (Apple は&lsquo;bdat&rsquo;というテーブルを、MS/Adobe は&lsquo;EBDT&rsquo;というテーブルを用います)、&lsquo;name&rsquo;テーブル内の PostScript 名 (Apple は、1 回しか出現してはならないと指示しているのに対し、MS/Adobe は最低 2 回は出現するように指示しています) および morx/feat/kern/opbd/prop/lcar テーブルと GSUB/GPOS/GDEF テーブルのどちらを作成するかという点です。
 	<LI>
 <!--  	fmflags&amp;0x20 =&gt; generate a '<A HREF="non-standard.html#PfEd">PfEd</A>'
   	table and store glyph comments -->
-  	fmflags&amp;0x20 =&gt; '<A HREF="non-standard.html#PfEd">PfEd</A>'
-  	テーブルを作成し、グリフへのコメントを格納します。
+  	fmflags&amp;0x20 ⇒&lsquo;<A HREF="non-standard.html#PfEd">PfEd</A>&rsquo;テーブルを作成し、グリフへのコメントを格納します。
 	<LI>
 <!--  	fmflags&amp;0x40 =&gt; generate a '<A HREF="non-standard.html#PfEd">PfEd</A>'
   	table and store glyph colors -->
-  	fmflags&amp;0x40 =&gt; '<A HREF="non-standard.html#PfEd">PfEd</A>'
+  	fmflags&amp;0x40 ⇒ '<A HREF="non-standard.html#PfEd">PfEd</A>'
   	テーブルを作成し、グリフの色を格納します。
 	<LI>
 <!--  	fmflags&amp;0x80 =&gt; generate tables so the font will work on both Apple
   	and MS platforms. 
   	and MS platforms.<BR> -->
-  	fmflags&amp;0x80 =&gt; Apple と MS のプラットフォームの両方で動作するようにテーブルを作成します。<BR>
+  	fmflags&amp;0x80 ⇒ Apple と MS のプラットフォームの両方で動作するようにテーブルを作成します。<BR>
 <!--  	Apple has screwed up and in Mac 10.4 (Tigger), if OpenType tables are present
   	in a font then the AAT tables will be ignored -- or so I'm told (I can't
   	test this myself). Unfortunately Apple does not implement all of OpenType,
@@ -1245,29 +1226,29 @@ a[4][0] = "Nested array";
 	<LI>
 <!--  	If you want neither OpenType nor Apple tables (just an old fashioned 'kern'
   	table and nothing else) then set both 0x80 and 0x10. -->
-  	OpenType と Apple のテーブルのどちらも必要ない場合 (昔ながらの 'kern' テーブルだけが必要で他は要らない場合)、0x80 と 0x10 の両方をセットしてください。
+  	OpenType と Apple のテーブルのどちらも必要ない場合 (昔ながらの&lsquo;kern&rsquo;テーブルだけが必要で他は要らない場合)、0x80 と 0x10 の両方をセットしてください。
 	<LI>
 <!--  	fmflags&amp;0x100 =&gt; generate a glyph map file (GID=&gt;glyph name, unicode
   	map). The map file will have extension ".g2n". -->
-  	fmflags&amp;0x100 =&gt; グリフマップファイル (GID=&gt;グリフ名, Unicode への対応表) を作成します。このマップファイルの拡張子は ".g2n" になります。
+  	fmflags&amp;0x100 ⇒ グリフマップファイル (GID=&gt;グリフ名, Unicode への対応表) を作成します。このマップファイルの拡張子は“.g2n”になります。
 <!--  	fmflags&amp;0x200 =&gt; generate a '<A HREF="non-standard.html#TeX">TeX</A>
   	' table containing (most) TeX font metrics information -->
-	  fmflags&amp;0x200 =&gt; TeX のフォントメトリック情報を含む '<A HREF="non-standard.html#TeX">TeX</A>' テーブルを生成します。
+	  fmflags&amp;0x200 ⇒ TeX のフォントメトリック情報を含む&lsquo;<A HREF="non-standard.html#TeX">TeX</A>&rsquo;テーブルを出力します。
 	<LI>
 <!--  	fmflags&amp;0x400 =&gt; generate an ofm file (for omega) -->
-  	fmflags&amp;0x400 =&gt; (Omega 用の) OFM ファイルを出力します。
+  	fmflags&amp;0x400 ⇒ (Omega 用の) OFM ファイルを出力します。
 	<LI>
 <!--  	fmflags&amp;0x10000 =&gt; generate a tfm file -->
-  	fmflags&amp;0x10000 =&gt; TFM ファイルを出力します。
+  	fmflags&amp;0x10000 ⇒ TFM ファイルを出力します。
 	<LI>
 <!--  	fmflags&amp;0x40000 =&gt; do not do flex hints -->
-  	fmflags&amp;0x40000 =&gt; flex ヒントを格納しません。
+  	fmflags&amp;0x40000 ⇒ flex ヒントを格納しません。
 	<LI>
 <!--  	fmflags&amp;0x80000 =&gt; do not include postscript hints -->
-  	fmflags&amp;0x80000 =&gt; PostScript のヒントを一切格納しません。
+  	fmflags&amp;0x80000 ⇒ PostScript のヒントを一切格納しません。
 	<LI>
 <!--  	fmflags&amp;0x200000 =&gt; round postscript coordinates -->
-  	fmflags&amp;0x200000 =&gt; PostScript の座標値を整数に丸めます。
+  	fmflags&amp;0x200000 ⇒ PostScript の座標値を整数に丸めます。
       </UL>
       <P>
 <!--  res controls the resolution of generated bdf fonts. A value of -1 means fontforge
@@ -1281,7 +1262,7 @@ a[4][0] = "Nested array";
       <A HREF="Big5.txt">Here is an example</A>. If this file is not present FontForge
       will go through its default search process to find a file for the encoding,
       and if it fails the fonts will not be saved. -->
-      filename に "%s" が含まれ、".pf[ab]" のいずれかの拡張子をもつ場合、"複合 sfd ファイル" が存在するはずです。これは現在のエンコーディングからサブフォントへのマッピングを含むファイルの名前です。<A HREF="Big5.txt">一例をここに示します</A>。このファイルが存在しない場合、FontForge はフォントのエンコーディングに対応するファイルを探す標準の探索プロセスを行い、それが失敗した時はフォントは保存されません。
+      filename に“%s”が含まれ、“.pf[ab]”のいずれかの拡張子をもつ場合、“複合 sfd ファイル”が存在するはずです。これは現在のエンコーディングからサブフォントへのマッピングを含むファイルの名前です。<A HREF="Big5.txt">一例をここに示します</A>。このファイルが存在しない場合、FontForge はフォントのエンコーディングに対応するファイルを探す標準の探索プロセスを行い、それが失敗した時はフォントは保存されません。
     <DT>
       <A HREF="filemenu.html#GenerateMac">GenerateFamily</A>(filename,bitmaptype,fmflags,array-of-font-filenames)
     <DD>
@@ -1347,19 +1328,19 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
       <UL>
 	<LI>
 <!--  	If the extension is ".bdf" then a bdf font will be imported -->
-  	拡張子が ".bdf" の場合、BDF フォントを取り込みます。
+  	拡張子が“.bdf”の場合、BDF フォントを取り込みます。
 	<LI>
 <!--  	If the extension is ".pcf" then a pcf font will be imported. -->
-  	拡張子が ".pcf" の場合、PCF フォントを取り込みます。
+  	拡張子が“.pcf”の場合、PCF フォントを取り込みます。
 	<LI>
 <!--  	If the extension is ".ttf" then the EBDT or bdat table of the ttf file will
   	be searched for bitmap fonts -->
-	  拡張子が ".ttf" の場合、TTF ファイルの EBDT または bdat
+	  拡張子が“.ttf”の場合、TTF ファイルの EBDT または bdat
   	テーブルからビットマップフォントを検索します。
 	<LI>
-<!--  	If the extension is "pk" then a metafont pk (bitmap font) file will be import
+<!--  	If the extension is“pk”then a metafont pk (bitmap font) file will be import
   	and by default placed in the background -->
-	  拡張子が ".pk" の場合、METAFONT から作成された pk (ビットマップフォント)
+	  拡張子が“.pk”の場合、METAFONT から作成された pk (ビットマップフォント)
   	ファイルが取り込まれます。デフォルトでは背面に配置されます。
 	<LI>
 <!--  	Otherwise if the extension is an image extension, and any loaded images will
@@ -1370,7 +1351,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
 <!--  	    If the filename contains a "*" then it should be a recognized template in
   	    which case all images which match that template will be loaded appropriately
   	    and stored in the background -->
-  	    filename に "*" が含まれている場合、その文字列はファイル名のテンプレートであると認識され、
+  	    filename に“*”が含まれている場合、その文字列はファイル名のテンプレートであると認識され、
   	    それにマッチした全てのファイルが適切に読み込まれ、背面に配置されるでしょう。
   	  <LI>
 <!--  	    Otherwise there may be several filenames (separated by semicolons), the first
@@ -1384,11 +1365,11 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
   	into the foreground. The file may be specified as for images (except the
   	extension should be "eps" rather than an image extension). FontForge is limited
   	in its ability to read eps files. -->
-	  拡張子が ".eps" ならば、EPS ファイルが前面にマージされます。ファイルは画像として指定することができます (ファイル名に画像ファイルの拡張子でなく ".eps" がついている点だけが異なります)。
+	  拡張子が“.eps”ならば、EPS ファイルが前面にマージされます。ファイルは画像として指定することができます (ファイル名に画像ファイルの拡張子でなく“.eps”がついている点だけが異なります)。
   	FontForge の EPS ファイル読み込み能力は、非常に制限されています。
 	<LI>
 <!--  	If the extension is "svg" then an svg file will be read into the foreground. -->
-  	拡張子が "svg" ならば SVG ファイルが前面に読み込まれます。
+  	拡張子が“svg”ならば SVG ファイルが前面に読み込まれます。
       </UL>
       <P>
 <!--  If present the second argument must be an integer, if the first argument
@@ -1404,13 +1385,13 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
       <UL>
 	<LI>
 <!--  	8 =&gt; correct direction -->
-  	8 =&gt; パスの向きを修正します。
+  	8 ⇒ パスの向きを修正します。
 	<LI>
 <!--  	4 =&gt; attempt to handle TeX erasers (stroking with a white pen) -->
-  	4 =&gt; TeX の消しゴム (白ペンによるストローク) を適用しようと試みます。
+  	4 ⇒ TeX の消しゴム (白ペンによるストローク) を適用しようと試みます。
 	<LI>
 <!--  	2 =&gt; remove overlap -->
-  	2 =&gt; パスの重複を除去します。
+  	2 ⇒ パスの重複を除去します。
       </UL>
     <DT>
       <A HREF="filemenu.html#Export">Export</A>(format[,bitmap-size])
@@ -1424,45 +1405,35 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
 	<LI>
 <!--  	eps - - the selected glyphs will have their splines output into eps files.
   	The files will be named "&lt;glyph-name&gt;_&lt;font-name&gt;.eps". -->
-  	eps -- 選択中のグリフのアウトラインを EPS ファイルに書き出します。
-  	ファイル名は "&lt;グリフ名&gt;_&lt;フォント名&gt;.eps" となります。
+  	eps ― 選択中のグリフのアウトラインを EPS ファイルに書き出します。ファイル名は“&lt;グリフ名&gt;_&lt;フォント名&gt;.eps”となります。  	
 	<LI>
 <!--  	pdf - - the selected glyphss will have their splines output into pdf files.
   	The files will be named "&lt;glyph-name&gt;_&lt;font-name&gt;.pdf". -->
-  	pdf -- 選択中のグリフのアウトラインを PDF ファイルに書き出します。
-  	ファイル名は "&lt;グリフ名&gt;_&lt;フォント名&gt;.pdf" となります。
+  	pdf ― 選択中のグリフのアウトラインを PDF ファイルに書き出します。ファイル名は“&lt;グリフ名&gt;_&lt;フォント名&gt;.pdf”となります。
 	<LI>
 <!--  	svg - - the selected glyphs will have their splines output into svg files.
   	The files will be named "&lt;glyph-name&gt;_&lt;font-name&gt;.svg". -->
-  	svg -- 選択中のグリフのアウトラインを SVG ファイルに書き出します。
-  	ファイル名は "&lt;グリフ名&gt;_&lt;フォント名&gt;.svg" となります。
+  	svg ― 選択中のグリフのアウトラインを SVG ファイルに書き出します。ファイル名は“&lt;グリフ名&gt;_&lt;フォント名&gt;.svg”となります。
 	<LI>
 <!--  	fig - - the selected glyphs will have their splines converted (badly)
   	into xfig files. The files will be named
   	"&lt;glyph-name&gt;_&lt;font-name&gt;.fig". -->
-  	fig -- 選択中のグリフのアウトラインを (不十分に) xfig ファイルに書き出します。
-  	ファイル名は "&lt;グリフ名&gt;_&lt;フォント名&gt;.fig" となります。
+  	fig ― 選択中のグリフのアウトラインを (不十分に) xfig ファイルに書き出します。ファイル名は“&lt;グリフ名&gt;_&lt;フォント名&gt;.fig”となります。
 	<LI>
 <!--  	xbm - - The second argument specifies a bitmap font size, the selected glyphs
   	in that bitmap font will be output as xbm files. The files will be named
   	"&lt;glyph-name&gt;_&lt;font-name&gt;.xbm". -->
-  	xbm -- 2 番目の引数にビットマップフォントのサイズを指定します。
-  	ビットマップフォント内の選択中の文字が XBM ファイルに書き出されます。
-  	ファイル名は "&lt;グリフ名&gt;_&lt;フォント名&gt;.xbm" となります。
+  	xbm ― 2 番目の引数にビットマップフォントのサイズを指定します。ビットマップフォント内の選択中の文字が XBM ファイルに書き出されます。ファイル名は“&lt;グリフ名&gt;_&lt;フォント名&gt;.xbm”となります。
 	<LI>
 <!--  	bmp - - The second argument specifies a bitmap font size, the selected glyphs
   	in that bitmap font will be output as bmp files. The files will be named
   	"&lt;glyph-name&gt;_&lt;font-name&gt;.bmp". -->
-  	bmp -- 2 番目の引数にビットマップフォントのサイズを指定します。
-  	ビットマップフォント内の選択中のグリフが BMP ファイルに書き出されます。
-  	ファイル名は "&lt;グリフ名&gt;_&lt;フォント名&gt;.bmp" となります。
+  	bmp ― 2 番目の引数にビットマップフォントのサイズを指定します。ビットマップフォント内の選択中のグリフが BMP ファイルに書き出されます。ファイル名は“&lt;グリフ名&gt;_&lt;フォント名&gt;.bmp”となります。
 	<LI>
 <!--  	png - - The second argument specifies a bitmap font size, the selected characters
   	in that bitmap font will be output as png files. The files will be named
   	"&lt;glyph-name&gt;_&lt;font-name&gt;.png". -->
-  	png -- 2 番目の引数にビットマップフォントのサイズを指定します。
-  	ビットマップフォント内の選択中のグリフが PNG ファイルに書き出されます。
-  	ファイル名は "&lt;グリフ名&gt;_&lt;フォント名&gt;.png" となります。
+  	png ― 2 番目の引数にビットマップフォントのサイズを指定します。ビットマップフォント内の選択中のグリフが PNG ファイルに書き出されます。ファイル名は“&lt;グリフ名&gt;_&lt;フォント名&gt;.png”となります。
       </UL>
       <P>
 <!--  The format may consist entirely of the filetype (above), or it may include
@@ -1480,22 +1451,22 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
       <UL>
 	<LI>
 <!--  	%n - - inserts the glyph name (or the first 40 characters of it for long names) -->
-  	%n -- グリフ名を挿入します (名前が長い場合、最初の 40 文字のみ)
+  	%n ― グリフ名を挿入します (名前が長い場合、最初の 40 文字のみ)。
 	<LI>
 <!--  	%f - - inserts the font name (or the first 40 characters)
-  	%f -- フォント名を挿入します (または最初の 40 文字)
+  	%f ― フォント名 (または最初の 40 文字) を挿入します。
 	<LI>
 <!--  	%e - - inserts the glyph's encoding as a decimal integer -->
-  	%e -- グリフの符号位置を 10 進数で挿入します。
+  	%e ― グリフの符号位置を 10 進数で挿入します。
 	<LI>
 <!--  	%u - - inserts the glyph's unicode code point in lower case hex -->
-  	%u -- グリフの Unicode コードポイントを小文字 16 進数で挿入します。
+  	%u ― グリフの Unicode コードポイントを小文字 16 進数で挿入します。
 	<LI>
 <!--  	%U - - inserts the glyph's unicode code point in upper case hex -->
-  	%U -- グリフの Unicode コードポイントを大文字 16 進数で挿入します。
+  	%U ― グリフの Unicode コードポイントを大文字 16 進数で挿入します。
 	<LI>
 <!--  	%% - - inserts a single '%' -->
-  	%% -- 1 個の '%' を挿入します。
+  	%% ― 1 個の&lsquo;%&rsquo;を挿入します。
       </UL>
     <DT>
       <A HREF="filemenu.html#Merge-kern">MergeKern</A>(filename)
@@ -1514,22 +1485,22 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
       <UL>
 	<LI>
 <!--  	0 =&gt; print with lp -->
-  	0 =&gt; lp で印刷
+  	0 ⇒ lp で印刷
 	<LI>
 <!--  	1 =&gt; print with lpr -->
-  	1 =&gt; lpr で印刷
+  	1 ⇒ lpr で印刷
 	<LI>
 <!--  	2 =&gt; output to ghostview -->
-  	2 =&gt; ghostview に出力
+  	2 ⇒ ghostview に出力
 	<LI>
 <!--  	3 =&gt; output to PostScript file -->
-  	3 =&gt; PostScript ファイルに出力
+  	3 ⇒ PostScript ファイルに出力
 	<LI>
 <!--  	4 =&gt; other printing command -->
-  	4 =&gt; その他の印刷コマンド
+  	4 ⇒ その他の印刷コマンド
 	<LI>
 <!--  	5 =&gt; output to a pdf file -->
-  	5 =&gt; PDF ファイルに出力
+  	5 ⇒ PDF ファイルに出力
       </UL>
       <P>
 <!--  If the type is 4 (other) and the second argument is specified, then the second
@@ -1660,7 +1631,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
       glyph as the first character of the two. The (made up) feature '_krn' will
       match any kerning pair that has the currently selected glyph as the last
       character of the two. Similary for 'vkrn' and '_vkn'. -->
-      機能 'kern' は現在選択中のグリフを 2 文字のうち最初の文字として含む全てのカーニングペアにマッチします。(架空の) 機能 '_krn' は、現在選択中の文字を 2 文字のうち最後の文字として含む全てのカーニングペアにマッチします。'vkrn' と '_vkn' も同様です。
+      機能&lsquo;kern&rsquo;は現在選択中のグリフを 2 文字のうち最初の文字として含む全てのカーニングペアにマッチします。(架空の) 機能&lsquo;_krn&rsquo;は、現在選択中の文字を 2 文字のうち最後の文字として含む全てのカーニングペアにマッチします。&lsquo;vkrn&rsquo;と&lsquo;_vkn&rsquo;も同様です。
     <DT>
       <A HREF="editmenu.html#Paste">Paste</A>
     <DD>
@@ -1754,7 +1725,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
 	  Unicode の PostScript 名 (現在のフォントのエンコーディングに変換されます)
 	<LI>
 <!--  	a unicode code point (0u61) which gets mapped to the current font's encoding -->
-  	Unicode のコードポイント (例: 0u61) これは、(現在のフォントのエンコーディングに変換されます)
+  	Unicode の符号位置 (例: 0u61) これは、(現在のフォントのエンコーディングに変換されます)
 	<LI>
 <!--  	If Select is given exactly one argument and that argument is an array then
   	the selection will be set to that specified in the array. So array[0] would
@@ -1762,18 +1733,14 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
   	have a different number of elements from that number of glyphs in the font
   	but should otherwise be in the same format as that returned by the $selection
   	psuedo-variable. -->
-	  Select に与えた引数が 1 個だけで、その引数が配列であるならば、グリフの選択範囲は配列で指定された物となります。
-  	array[0] は符号位置 0 にあるグリフの選択を表し、以下の文字も同様です。
-  	配列の要素数と、フォント内に含まれるグリフの個数は同じである必要はありませんが、個数が違う場合には、$selection 疑似変数が返すのと同じフォーマットである必要があります。
+	Select に与えた引数が 1 個だけで、その引数が配列であるならば、グリフの選択範囲は配列で指定された物となります。array[0] は符号位置 0 にあるグリフの選択を表し、以下の文字も同様です。配列の要素数と、フォント内に含まれるグリフの個数は同じである必要はありませんが、個数が違う場合には、$selection 疑似変数が返すのと同じフォーマットである必要があります。
       </UL>
     <DT>
       SelectMore(arg1, arg2, ...)
     <DD>
 <!--  The same as the previous command except that it does not clear the selection
       initially, so it extends the current selection -->
-      so it extends the current selection. -->
       上のコマンドと同じですが、このコマンドは選択中の文字を最初に消去しないので、現在選択中の範囲を拡張します。
-      The same as the previous command except that it does not clear the selection
     <DT>
       SelectFewer(arg1, arg2, ...)
     <DD>
@@ -1800,17 +1767,17 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
       <UL>
 	<LI>
 <!--  	0 =&gt; there were no errors but no glyphs were selected -->
-  	0 =&gt; エラーが発生していないが、選択されたグリフが 1 個もない。
+  	0 ⇒ エラーが発生していないが、選択されたグリフが 1 個もない。
 	<LI>
 <!--  	&lt;a positive number&gt; =&gt; there were no errors and this many glyphs
   	were selected -->
   	&lt;正の整数&gt; =&gt; エラーは発生せず、この値と同じ個数のグリフが選択された。
 	<LI>
 <!--  	-2 =&gt; there was an error and no glyphs were selected -->
-  	-2 =&gt; エラーが発生し、グリフが 1 個も選択されなかった。
+  	-2 ⇒ エラーが発生し、グリフが 1 個も選択されなかった。
 	<LI>
 <!--  	-1 =&gt; there was an error and at least one glyphs was selected before that. -->
-  	-1 =&gt; エラーが発生し、それまでに少なくとも 1 個のグリフが選択された。
+  	-1 ⇒ エラーが発生し、それまでに少なくとも 1 個のグリフが選択された。
       </UL>
     <DT>
       <A HREF="editmenu.html#SelChanged">SelectChanged</A>([merge]) 
@@ -1927,7 +1894,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
       "f_i". Reencoding to AdobeStandard will move this glyph to the right slot,
       and then name it "fi". -->
       注意: グリフ名によって指定されるエンコーディングがいくつかあります (例えば、ユーザ定義のエンコーディングは PostScript エンコーディング配列として指定されます) が、その他の物は Unicode の符号位置のリストとして指定されます (AdobeStandard および TeX、符号位置で指定したユーザ定義のエンコーディングを除くほとんど全ての組み込みエンコーディングの場合)。
-  グリフ名によって定義されたエンコーディングを再符号化した時、ff は最初にグリフを適切なスロットに移動し、次に、不正な名前を持つ全てのグリフを強制的に正しい名前に変更します。この最も明らかな例は fi 合字です: AdobeStandard は、これは "fi" と命名しなければならないとしていますが、最近のフォントでは "f_i" と呼ぶのが一般的です。AdobeStandard に符号化変換を行うとグリフは正しい位置に移動され、その後に "fi" という名前に変更されます。
+  グリフ名によって定義されたエンコーディングを再符号化した時、ff は最初にグリフを適切なスロットに移動し、次に、不正な名前を持つ全てのグリフを強制的に正しい名前に変更します。この最も明らかな例は fi 合字です: AdobeStandard は、これは“fi”と命名しなければならないとしていますが、最近のフォントでは“f_i”と呼ぶのが一般的です。AdobeStandard に符号化変換を行うとグリフは正しい位置に移動され、その後に“fi”という名前に変更されます。
     <DT>
       SetCharCnt(cnt)
     <DD>
@@ -2111,7 +2078,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
       <A HREF="fontinfo.html#TTF-Values">Font Info-&gt;OS/2-&gt;Misc. </A>Where
       WinAscentOffset controls whether WinAscent is treated as an absolute number
       or as relative to the expected number. -->
-      これらは <A HREF="fontinfo.html#TTF-Values">フォント情報(F)→[OS/2]→[メトリック]</A> にある <CODE>Win Ascent のオフセット</CODE> フィールドと <CODE>[] オフセットを指定</CODE> チェックボックスと等価です。ここで WinAscentIsOffset は、WinAscent が絶対値として扱われるか、予期される数値に対する相対値かを指定します。
+      これらは <A HREF="fontinfo.html#TTF-Values"><CODE>フォント情報(<U>F</U>)</CODE>→<CODE>[OS/2]</CODE>→<CODE>[メトリック]</CODE></A> にある <CODE>Win Ascent のオフセット</CODE> フィールドと <CODE>[] オフセットを指定</CODE> チェックボックスと等価です。ここで WinAscentIsOffset は、WinAscent が絶対値として扱われるか、予期される数値に対する相対値かを指定します。
       <P>
       <CODE>WinDescent, WinDescentIsOffset,<BR>
       TypoAscent, TypoAscentIsOffset,<BR>
@@ -2262,9 +2229,7 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
       substitution- - that is it will find the variant glyph specified in the
       substitution and replace the current glyph with the variant, and clear the
       variant. -->
-      3 個の引数はすべて、4 文字を越えない文字列でなくてはなりません (4 文字より短い文字列は、後ろに空白が追加されます)。
-      このコマンドは、選択中の各グリフに対して、そのグリフの置換リストを検索し、 tag で指定されたタグを持つ (それに加え、スクリプトと言語の組合せがその置換に一致する) 置換が見つかった場合に置換を実行します ― 
-      すなわち、置換によって指定された異体字グリフを探して現在のグリフをそれで置き換え、異体字グリフを消去します。
+      3 個の引数はすべて、4 文字を越えない文字列でなくてはなりません (4 文字より短い文字列は、後ろに空白が追加されます)。このコマンドは、選択中の各グリフに対して、そのグリフの置換リストを検索し、tag で指定されたタグを持つ (それに加え、スクリプトと言語の組合せがその置換に一致する) 置換が見つかった場合に置換を実行します ― すなわち、置換によって指定された異体字グリフを探して現在のグリフをそれで置き換え、異体字グリフを消去します。
       <P>
 <!--  FontForge recognizes the string "*" as a wildcard for both the script and
       the language (not for the tag though). So if you wish to replace all glyphs
@@ -2345,12 +2310,12 @@ ApplySubstitution("*","*","vrt2")
     <DT>
       MoveReference(delta-x,delta-y,[refname/ref-unicode]+)
     <DD>
-      References may be identified either by a string containing the name of the
+<!--  References may be identified either by a string containing the name of the
       glyph being refered to, or an integer containing the unicode code point of
       the glyph being refered to, there may be an arbetrary (positive) number of
       references specified. Each selected glyph will be searched for references
       that match the name/unicode-values given, all references found will be moved
-      by the specified offsets.
+      by the specified offsets. -->
       参照は、参照されるグリフの名前を含む文字列か、参照されるグリフの Unicode 符号位置を含む整数によって指定できます。(1 個以上の) 任意の個数の参照される参照を指定することができます。選択された各文字に対して、引数で指定した名前または Unicode 値にマッチする参照を検索します。見つかったすべての参照は指定したオフセットだけ移動されます。
       <BLOCKQUOTE>
 	<PRE>MoveReference(300,0,"acute",0xb4)
@@ -2434,60 +2399,59 @@ ApplySubstitution("*","*","vrt2")
       最初のフォーマットでは、線端は "butt", 線の結びは "round" と見なされます。<BR>
 <!--  A value of 1 for remove internal/external will remove the internal contour,
       a value of 2 will remove the external contour.<BR> -->
-      "remove internal/external" フラグの値が 1 であれば内側の輪郭を除去し、
+      “remove internal/external”フラグの値が 1 であれば内側の輪郭を除去し、
       2 であれば外側の輪郭を除去します。
 <!--  The first three calls simulate the PostScript "stroke" command, the two final
       simulate a caligraphic pen. -->
-      最初の 3 つの呼び出しは PostScript の "stroke" コマンドをシミュレートし、後ろ 2 つはカリグラフィ的なペンをシミュレートします。
+      最初の 3 つの呼び出しは PostScript の“stroke”コマンドをシミュレートし、後ろ 2 つはカリグラフィ的なペンをシミュレートします。
       <DL>
 	<DT>
-  	Width
+	  Width
 	<DD>
-<!--  	In the PostScript "stoke" command the width is the distance between the two
-  	generated curves. To be more precise, at ever point on the original curve,
-  	a point will be added to each of the new curves at width/2 units as measured
-  	on a vector normal to the direction of the original curve at that point.<BR>
-  	In a caligraphic pen, the width is the width of the pen used to draw the
-  	curve. -->
-	  PostScript の "stroke" コマンドでは、width は作成される 2 本の線の間の距離です。
-	  より正確に言うと、オリジナルの曲線のすべての点に対して、その点における曲線の向きに垂直なベクトルに沿って width/2 ユニットだけ離れた点が追加されます。
-	  カリグラフィ的なペンでは、width は、曲線を描くのに使われるペンの太さです。
+<!--	  In the PostScript "stoke" command the width is the distance between the two
+	  generated curves. To be more precise, at ever point on the original curve,
+	  a point will be added to each of the new curves at width/2 units as measured
+	  on a vector normal to the direction of the original curve at that point.<BR>
+	  In a caligraphic pen, the width is the width of the pen used to draw the
+	  curve. -->
+	  PostScript の "stroke" コマンドでは、width は作成される 2 本の線の間の距離です。より正確に言うと、オリジナルの曲線のすべての点に対して、その点における曲線の向きに垂直なベクトルに沿って width/2 ユニットだけ離れた点が追加されます。カリグラフィ的なペンでは、width は、曲線を描くのに使われるペンの太さです。
 	<DT>
-  	Line-cap
+	  Line-cap
 	<DD>
-<!--  	Can have one of three values: 0=&gt; butt, 1=&gt;round, 2=&gt;square -->
-	  以下の 3 つのうちいずれかの値です: 0=&gt; butt, 1=&gt;round, 2=&gt;square
+<!--	  Can have one of three values: 0=&gt; butt, 1=&gt;round, 2=&gt;square -->
+	  以下の 3 つのうちいずれかの値です: 0 ⇒ butt, 1 ⇒ round, 2 ⇒ square
 	<DT>
-  	Line-join
+	  Line-join
 	<DD>
-<!--  	Can have one of three values: 0=&gt;miter, 1=&gt;round, 2=&gt;bevel -->
-	  以下の 3 つのうちいずれかの値です: 0=&gt;miter, 1=&gt;round, 2=&gt;bevel
+<!--	  Can have one of three values: 0=&gt;miter, 1=&gt;round, 2=&gt;bevel -->
+	  以下の 3 つのうちいずれかの値です: 0 ⇒ miter, 1 ⇒ round, 2 ⇒ bevel
 	<DT>
-  	caligraphic-angle
+	  caligraphic-angle
 	<DD>
-<!--  	the (fixed) angle at which the pen is held. -->
+<!--	  the (fixed) angle at which the pen is held. -->
 	  ペンを保持する (固定の) 角度です。
 	<DT>
-  	height-numerator/denominator
+	  height-numerator/denominator
 	<DD>
-  	These two values specify a ratio between the height and the width<BR>
-  	height = numerator * width / denominator<BR>
-  	(the scripting language only deals in integers, so when fractions are needed
-  	this kludge is used)
-  	これらの 2 つの値は高さと幅のあいだの比率を指定します。
-  	高さ = numerator * width / denominator<BR>
-  	(スクリプト言語で扱えるのは整数のみなので、分数が必要なときにはこのような彌縫策を使っています)
+<!--	  These two values specify a ratio between the height and the width<BR>
+	  height = numerator * width / denominator<BR>
+	  (the scripting language only deals in integers, so when fractions are needed
+	  this kludge is used) -->
+	  これらの 2 つの値は高さと幅のあいだの比率を指定します。<BR>
+	  高さ = numerator * width / denominator<BR>
+	  (スクリプト言語で扱えるのは整数のみなので、分数が必要なときにはこのような彌縫策を使っています)
 	<DT>
-  	remove internal/external contour flags
+<!--	  remove internal/external contour flags -->
+	  remove internal/external contour フラグ
 	<DD>
-<!--  	1 =&gt; remove internal contour<BR>
-  	2=&gt; remove external contour<BR>
-  	(you may not remove both contours)<BR>
-  	4 =&gt; run remove overlap on result (buggy) -->
-  	1 =&gt; 内側の輪郭を削除する<BR>
-  	2 =&gt; 外側の輪郭を削除する<BR>
-  	(両方の輪郭を削除することができます)<BR>
-  	4 =&gt; 結果に重複除去を施す (不安定)
+<!--	  1 =&gt; remove internal contour<BR>
+	  2=&gt; remove external contour<BR>
+	  (you may not remove both contours)<BR>
+	  4 =&gt; run remove overlap on result (buggy) -->
+	  1 ⇒ 内側の輪郭を削除する<BR>
+	  2 ⇒ 外側の輪郭を削除する<BR>
+	  (両方の輪郭を削除することができます)<BR>
+	  4 ⇒ 結果に重複除去を施す (不安定)
       </DL>
     <DT>
       <A HREF="elementmenu.html#Outline">Outline</A>(width)
@@ -2497,7 +2461,7 @@ ApplySubstitution("*","*","vrt2")
       it produces what the mac calls the "Outline Style". -->
       選択中のすべてのグリフを指定された幅で (グリフの内側で) 縁どりします。
       グリフのバウンディングボックスは変更されません。
-      言い替えれば、Mac でいう "Outline Style" を生成します。
+      言い替えれば、Mac でいう“Outline Style”を生成します。
     <DT>
       <A HREF="elementmenu.html#Inline">Inline</A>(width,gap)
     <DD>
@@ -2535,8 +2499,6 @@ ApplySubstitution("*","*","vrt2")
       <A HREF="elementmenu.html#Simplify">Simplify</A>()<BR>
       Simplify(flags,error[,tan_bounds[,bump_size[,error_denom,line_len_max]]])
     <DD>
-<!--  With no arguments it does the obvious. If flags is -1 it does a Cleanup,
-      otherwise flags should be a bitwise or of -->
 <!--  With no arguments it does the obvious. If flags is -1 it does a
       <A HREF="elementmenu.html#Cleanup">Cleanup</A>, otherwise flags should be
       a bitwise or of -->
@@ -2560,8 +2522,8 @@ ApplySubstitution("*","*","vrt2")
   	16 ― 線からコブを取り除く
       </UL>
       <P>
-      The error argument is the number of font units by which the modified path
-      is allowed to stray from the true path.<BR>
+<!--  The error argument is the number of font units by which the modified path
+      is allowed to stray from the true path.<BR> -->
       引数 error は、変更されたパスがフォント座標系で本来のパスから何ユニットまでかけ離れてよいかを指定します。<BR>
 <!--  The tan_bounds argument specifies the tangent of the angle between the curves
       at which smoothing will stop (argument is multiplied by .01 before use).<BR>-->
@@ -2588,7 +2550,7 @@ ApplySubstitution("*","*","vrt2")
       <TABLE CELLPADDING="2">
 	<TR>
 <!--  	<TD>.1</TD>-->
-<!--  	<TD>0.1</TD>-->
+	<TD>0.1</TD>
 <!--  	<TD>if no arguments are given</TD> -->
   	<TD>引数を指定していない場合</TD>
 	</TR>
@@ -2608,9 +2570,9 @@ ApplySubstitution("*","*","vrt2")
     <DT>
       NearlyHvLines([error[,err-denom]])
     <DD>
-      Checks for lines which are almost, but not quite horzontal or vertical (where
+<!--  Checks for lines which are almost, but not quite horzontal or vertical (where
       almost means (say) that <CODE>abs( (end point).x - (start point).x ) &lt;
-      error</CODE>, where error is either:
+      error</CODE>, where error is either: -->
       水平線か垂直線に非常に近いものの、完全には一致しない線があるかどうかをチェックします (これは、(例えば) <CODE>abs( (end point).x - (start point).x ) &lt; error</CODE> であることとほとんど同義です。) ここで error は以下のいずれかです;
       <TABLE CELLPADDING="2">
 	<TR>
@@ -2649,7 +2611,7 @@ ApplySubstitution("*","*","vrt2")
       argument is specified then it rounds like <CODE>rint(factor * x) /
       factor</CODE>, in other words if you set factor to 100 then it will round
       to hundredths. -->
-      すべての点/ヒント/参照オフセットの座標値を整数に丸めます。引数 "factor" を指定した場合、<CODE>rint(factor * x) / factor</CODE> の式に従って丸めを行います。要するに、factor を 100 に設定すると 100 分の 1 単位で座標値を丸めます。
+      すべての点/ヒント/参照オフセットの座標値を整数に丸めます。引数“factor”を指定した場合、<CODE>rint(factor * x) / factor</CODE> の式に従って丸めを行います。要するに、factor を 100 に設定すると 100 分の 1 単位で座標値を丸めます。
     <DT>
       <A HREF="elementmenu.html#Cluster">RoundToCluster</A>([within[,max]])
     <DD>
@@ -2657,7 +2619,7 @@ ApplySubstitution("*","*","vrt2")
       coordinates will be bundled together. Max indicates how many "within"s from
       the center point it will go if there are a chain of points each within "within"
       of the previous one. So -->
-      最初の 2 個の引数は、近い座標を互いにまとめる値を示します。max は前の点から距離 "within" 以内に含まれる点の連鎖があるときに、中心点からのどれだけ多くの "within" を認めるかを指示します。
+      最初の 2 個の引数は、近い座標を互いにまとめる値を示します。max は前の点から距離“within”以内に含まれる点の連鎖があるときに、中心点からの何個までの“within”を纏めるかを指定します。
       <BLOCKQUOTE>
 	<PRE> RoundToCluster(.1,5)
 </PRE>
@@ -2666,7 +2628,7 @@ ApplySubstitution("*","*","vrt2")
 <!--  Will merge coordinates within .1 em-unit of each other. A sequence like
       <CODE>-.1,-.05,0,.05,.1,.15</CODE> will all be merged together because each
       is within .1 of the next, and none is more than .5 from the center. -->
-      は、相互に 0.1 em ユニット以内の距離にある座標値をまとめます。<CODE>-0.1,-0.05,0,0.05,0.1,0.15</CODE> のような並びはすべてまとめられます。これは、各々が次の 0.1 以内にあり、どれも中心から 0.5 以上離れていないからです。
+      は、相互に 0.1 em ユニット以内の距離にある座標値をまとめます。<CODE>-0.1,-0.05,0,0.05,0.1,0.15</CODE> のような並びはすべてまとめられます。これは、各々が次の 0.1 以内にあり、どれも中心から 5 個以上離れていないからです。
     <DT>
       <A HREF="elementmenu.html#AutoTrace">AutoTrace</A>()
     <DD>
@@ -2703,10 +2665,8 @@ ApplySubstitution("*","*","vrt2")
       The third arg should be a 4 character opentype feature tag (or apple
       feature/setting). -->
       選択中の 1 個のグリフに対して 1 個のAdvanced Typography 機能を追加します。
-      最初の引数は Position, Pair, Substitution, AltSubs, MultSubs, Ligature 
-      のいずれかです。
-      2 番目の引数 script-lang は用字系・言語リストで、
-      4 文字のスクリプト名の後ろに、言語名をカンマ区切りで並べたリスト――または特別な値 "Nested" ――が続きます
+      最初の引数は Position, Pair, Substitution, AltSubs, MultSubs, Ligature のいずれかです。
+      2 番目の引数 script-lang は用字系・言語リストで、4 文字のスクリプト名の後ろに、言語名をカンマ区切りで並べたリスト――または特別な値“Nested”――が続きます
       (言語リストは波括弧 { } で 囲みます)。例:<BR>
       <CODE>&nbsp; &nbsp; grek{dflt} latn{dflt,VIT ,ROM }</CODE><BR>
       3 番目の引数 tag は 4 文字の OpenType 機能タグです。
@@ -2718,22 +2678,22 @@ ApplySubstitution("*","*","vrt2")
       <UL>
 	<LI>
 <!--  	0x0001 =&gt; RightToLeft -->
-  	0x0001 =&gt; 右から左へ
+  	0x0001 ⇒ 右から左へ
 	<LI>
 <!--  	0x0002 =&gt; IgnoreBaseGlyphs -->
-  	0x0002 =&gt; 基底文字を無視する
+  	0x0002 ⇒ 基底文字を無視する
 	<LI>
 <!--  	0x0004 =&gt; IgnoreLigatures -->
-  	0x0004 =&gt; 合字を無視する
+  	0x0004 ⇒ 合字を無視する
 	<LI>
 <!--  	0x0008 =&gt; IgnoreMarks -->
-  	0x0008 =&gt; マークを無視する
+  	0x0008 ⇒ マークを無視する
 	<LI>
 <!--  	0x00F0 =&gt; not defined -->
-  	0x00F0 =&gt; 未定義
+  	0x00F0 ⇒ 未定義
 	<LI>
 <!--  	0xFF00 =&gt; not supported -->
-  	0xFF00 =&gt; 未サポート
+  	0xFF00 ⇒ 未サポート
       </UL>
       <P>
 <!--  The remaining argument(s) vary depending on the value of the first (type)
@@ -2938,14 +2898,14 @@ ApplySubstitution("*","*","vrt2")
       have the "USE-MY-METRICS" bit set on any of those references, and if one
       of those references has the same width as the current glyph, and has an identity
       transformation matrix, then set the bit on that reference. -->
-      選択中のすべてのグリフを調べます。参照を含むグリフが存在し、その参照のどれもが "USE-MY-METRICS" ビットを含んでいない場合、もしもそれらの参照のうちのどれかが現在のグリフと幅が同じで、その文字の変換行列が恒等変換行列である場合、その参照にビットをセットします。
+      選択中のすべてのグリフを調べます。参照を含むグリフが存在し、その参照のどれもが“USE-MY-METRICS”ビットを含んでいない場合、もしもそれらの参照のうちのどれかが現在のグリフと幅が同じで、その文字の変換行列が恒等変換行列である場合、その参照にビットをセットします。
     <DT>
       DefaultRoundToGrid()
     <DD>
 <!--  Looks at all selected glyphs, if any reference is not positioned by point
       matching, then FontForge will set the truetype "ROUND-TO-GRID" flag for the
       reference. -->
-      選択中のすべてのグリフを調べます。どの参照も点の照合によって位置指定されていない場合、FontForge はその参照に対し、 TrueType の "ROUND-TO-GRID" フラグをセットします。
+      選択中のすべてのグリフを調べます。どの参照も点の照合によって位置指定されていない場合、FontForge はその参照に対し、 TrueType の“ROUND-TO-GRID”フラグをセットします。
     <DT>
 	<HR>
     <DT>
@@ -2990,7 +2950,7 @@ ApplySubstitution("*","*","vrt2")
 <!--  Removes the table named tag. This may be 'fpgm', 'prep, 'cvt ', 'maxp' or
       any user defined tables. It returns 1 if it found (and removed) the table,
       0 if the table was not present. -->
-      tag で指定した名前をもつテーブルを削除します。テーブル名として指定できるのは、'fpgm', 'prep, 'cvt ', 'maxp' またはユーザ定義のテーブルの名前です。テーブルが見つかった (そして削除された) ときには 1 を返し、テーブルが存在しない場合には 0 を返します。
+      tag で指定した名前をもつテーブルを削除します。テーブル名として指定できるのは、&lsquo;fpgm&rsquo;,&lsquo;prep&rsquo;,&lsquo;cvt &rsquo;,&lsquo;maxp&rsquo;またはユーザ定義のテーブルの名前です。テーブルが見つかった (そして削除された) ときには 1 を返し、テーブルが存在しない場合には 0 を返します。
     <DT>
       FindOrAddCvtIndex(value[,sign-matters])
     <DD>
@@ -3174,9 +3134,7 @@ ApplySubstitution("*","*","vrt2")
 <!--  Guesses at the widths of all selected glyphs so that two adjacent "I" glyphs
       will appear to be spacing em-units apart. (if spacing is the negative of
       the em-size (sum of ascent and descent) then a default value will be used). -->
-      選択中のすべてのグリフの幅を推測します。
-      これにより、2 個の隣り合う "I" の字が spacing ユニットだけ離れて配置されます。
-      (spacing が em サイズ (アセント("高さ")とディセント("深さ")の和) の反数の場合、デフォルト値を使用します)
+      選択中のすべてのグリフの幅を推測します。これにより、2 個の隣り合う“I”の字が spacing ユニットだけ離れて配置されます。 (spacing が em サイズ (アセント(“高さ”)とディセント(“深さ”)の和) の反数の場合、デフォルト値を使用します)
     <DT>
       <A HREF="metricsmenu.html#Kern">AutoKern</A>(spacing,threshold[,kernfile])
     <DD>
@@ -3309,13 +3267,13 @@ ApplySubstitution("*","*","vrt2")
       <A HREF="cidmenu.html#Flatten">CIDFlatten</A>()
     <DD>
 <!--  Flattens a cid-keyed font. -->
-      CID フォントを平坦化 (すべてのサブフォントを 1 個に統合) します
+      CID フォントを単一化 (すべてのサブフォントを 1 個に統合) します
     <DT>
       <A HREF="cidmenu.html#FlattenCMap">CIDFlattenByCMap</A>(cmap-filename)
     <DD>
 <!--  Flattens a cid-keyed font, producing a font encoded with the result of the
       CMAP file. -->
-      CID フォントを平坦化し、指定した CMap ファイルによってエンコードした結果を返します。
+      CID フォントを単一化し、指定した CMap ファイルによってエンコードした結果を返します。
     <DT>
       <A HREF="cidmenu.html#Convert">ConvertToCID</A>(registry, ordering, supplement)
     <DD>
@@ -3379,138 +3337,138 @@ ApplySubstitution("*","*","vrt2")
       返される情報は、文字列 str に依存します (意味は見てのとおりです):
       <UL>
 	<LI>
-<!--  	"Name" returns the glyph's name -->
-  	"Name" はグリフの名前を返します。
+<!--  	  "Name" returns the glyph's name -->
+	  “Name”はグリフの名前を返します。
 	<LI>
-<!--  	"Unicode" returns the glyph's unicode encoding -->
-  	"Unicode" はグリフの Unicode エンコーディング値を返します。
+<!--	  "Unicode" returns the glyph's unicode encoding -->
+	  “Unicode”はグリフの Unicode エンコーディング値を返します。
 	<LI>
-<!--  	"Encoding" returns the glyph's encoding in the current font -->
-  	"Encoding" はグリフのカレントフォント内の符号位置を返します。
+<!--	  "Encoding" returns the glyph's encoding in the current font -->
+	  “Encoding”はグリフのカレントフォント内の符号位置を返します。
 	<LI>
-<!--  	"Width" returns the glyph's width -->
-  	"Width" はグリフの幅を返します。
+<!--	  "Width" returns the glyph's width -->
+	  “Width”はグリフの幅を返します。
 	<LI>
-<!--  	"VWidth" returns the glyph's Vertical width -->
-  	"VWidth" はグリフの全高 (縦書き時の送り幅) を返します。
+<!--	  "VWidth" returns the glyph's Vertical width -->
+	"VWidth" はグリフの全高 (縦書き時の送り幅) を返します。
 	<LI>
 <!--      "TeXHeight" returns the tex_height field (a value of 0x7fff indicates that
-  	a default value will be used) -->
-  	"TeXHeight" は tex_height フィールドを返します (値 0x7fff は、デフォルト値が使用されることを表します)。
+	  a default value will be used) -->
+	  “TeXHeight”は tex_height フィールドを返します (値 0x7fff は、デフォルト値が使用されることを表します)。
 	<LI>
-<!--  	"TeXDepth" returns the tex_depth field (a value of 0x7fff indicates that
-  	a default value will be used) -->
-  	"TeXDepth" は tex_depth フィールドを返します (値 0x7fff は、デフォルト値が使用されることを表します)。
+<!--	  "TeXDepth" returns the tex_depth field (a value of 0x7fff indicates that
+	  a default value will be used) -->
+	  “TeXDepth”は tex_depth フィールドを返します (値 0x7fff は、デフォルト値が使用されることを表します)。
 	<LI>
-<!--  	"TeXSubPos" returns the tex_sub_pos field (a value of 0x7fff indicates that
-  	a default value will be used) -->
-  	"TeXSubPos" は tex_sub_pos フィールドを返します (値 0x7fff は、デフォルト値が使用されることを表します)。
+<!--	  "TeXSubPos" returns the tex_sub_pos field (a value of 0x7fff indicates that
+	  a default value will be used) -->
+	  “TeXSubPos”は tex_sub_pos フィールドを返します (値 0x7fff は、デフォルト値が使用されることを表します)。
 	<LI>
-<!--  	"TeXSuperPos" returns the tex_super_pos field (a value of 0x7fff indicates
-  	that a default value will be used) -->
-  	"TeXSuperPos" は tex_super_pos フィールドを返します (値 0x7fff は、デフォルト値が使用されることを表します)。
+<!--	  "TeXSuperPos" returns the tex_super_pos field (a value of 0x7fff indicates
+	  that a default value will be used) -->
+	  “TeXSuperPos”は tex_super_pos フィールドを返します (値 0x7fff は、デフォルト値が使用されることを表します)。
 	<LI>
-<!--  	"LBearing" returns the glyph's left side bearing -->
-  	"LBearing" はグリフの左サイドベアリングを返します。
+<!--	  "LBearing" returns the glyph's left side bearing -->
+	  “LBearing”はグリフの左サイドベアリングを返します。
 	<LI>
-<!--  	"RBearing" returns the glyph's right side bearing -->
-  	"RBearing" はグリフの右サイドベアリングを返します。
+<!--	  "RBearing" returns the glyph's right side bearing -->
+	  “RBearing”はグリフの右サイドベアリングを返します。
 	<LI>
-<!--  	"BBox" returns a 4 element array containing [minimum-x-value, minimum-y-value,
-  	maximum-x-value, maximum-y-value] of the glyph. -->
-  	"BBox" はグリフアウトラインの [xの最小値, yの最小値, xの最大値, yの最大値] を含む 4 要素の配列を返します。
+<!--	  "BBox" returns a 4 element array containing [minimum-x-value, minimum-y-value,
+	  maximum-x-value, maximum-y-value] of the glyph. -->
+	  “BBox”はグリフアウトラインの [xの最小値, yの最小値, xの最大値, yの最大値] を含む 4 要素の配列を返します。
 	<LI>
-<!--  	"Kern" (there must be a second argument here which specifies another glyph
-  	as in Select()) Returns the kern offset between the two glyphs (or 0 if none). -->
-  	"Kern" (この場合、もう一つのグリフを 2 番目の引数として	Select() と同じ方法で指定しなければなりません) は、2 個のグリフの間のカーニングオフセット (存在しない場合は 0) を返します。
+<!--	  "Kern" (there must be a second argument here which specifies another glyph
+	  as in Select()) Returns the kern offset between the two glyphs (or 0 if none). -->
+	  “Kern”(この場合、もう一つのグリフを 2 番目の引数として	Select() と同じ方法で指定しなければなりません) は、2 個のグリフの間のカーニングオフセット (存在しない場合は 0) を返します。
 	<LI>
-<!--  	"VKern" (there must be a second argument here which specifies another glyph
-  	as in Select()) Returns the vertical kern offset between the two glyphs (or
-  	0 if none). -->
-  	"VKern" (この場合、もう一つのグリフを 2 番目の引数として Select() と同じ方法で指定しなければなりません)	は、2 個のグリフの間の縦書き用カーニングオフセット (存在しない場合は 0) を返します。
+<!--	  "VKern" (there must be a second argument here which specifies another glyph
+	  as in Select()) Returns the vertical kern offset between the two glyphs (or
+	  0 if none). -->
+	  “VKern”(この場合、もう一つのグリフを 2 番目の引数として Select() と同じ方法で指定しなければなりません)	は、2 個のグリフの間の縦書き用カーニングオフセット (存在しない場合は 0) を返します。
 	<LI>
-<!--  	"Xextrema" (there must be a second argument here which specifies the vertical
-  	position) Returns a two element array containing the minimum and maximum
-  	horizontal positions on the contours of the glyph at the given vertical position.
-  	If the position is beyond the glyph's bounding box the minimum value will
-  	be set to 1 and the max to 0 (ie. max&lt;min which is impossible). -->
-  	"Xextrema" (垂直方向の位置を指定する 2 番目の引数が存在しなければなりません) は、指定した垂直方向の位置における、グリフの輪郭の水平方向の最小値と最大値の 2 要素を含む配列を返します。指定した位置がグリフのバウンディングボックスの外側にあるときは、最小値が 1・最大値が 0 (つまり、最大値&lt;最小値 という現実にありえない結果) となります。
+<!--	  "Xextrema" (there must be a second argument here which specifies the vertical
+	  position) Returns a two element array containing the minimum and maximum
+	  horizontal positions on the contours of the glyph at the given vertical position.
+	  If the position is beyond the glyph's bounding box the minimum value will
+	  be set to 1 and the max to 0 (ie. max&lt;min which is impossible). -->
+	  “Xextrema”(垂直方向の位置を指定する 2 番目の引数が存在しなければなりません) は、指定した垂直方向の位置における、グリフの輪郭の水平方向の最小値と最大値の 2 要素を含む配列を返します。指定した位置がグリフのバウンディングボックスの外側にあるときは、最小値が 1・最大値が 0 (つまり、最大値&lt;最小値 という現実にありえない結果) となります。
 	<LI>
-<!--  	"Yextrema" (there must be a second argument here which specifies the horizontal
-  	position) Returns a two element array containing the minimum and maximum
-  	vertical positions on the contours of the glyph at the given horizontal position.
-  	If the position is beyond the glyph's bounding box the minimum value will
-  	be set to 1 and the max to 0 (ie. max&lt;min which is impossible). -->
-  	"Xextrema" (水平方向の位置を指定する 2 番目の引数が存在しなければなりません) は、指定した水平方向の位置における、グリフの輪郭の垂直方向の最小値と最大値の 2 要素を含む配列を返します。指定した位置がグリフのバウンディングボックスの外側にあるときは、最小値が 1・最大値が 0 (つまり、最大値&lt;最小値 という現実にありえない結果) となります。
+<!--	  "Yextrema" (there must be a second argument here which specifies the horizontal
+	  position) Returns a two element array containing the minimum and maximum
+	  vertical positions on the contours of the glyph at the given horizontal position.
+	  If the position is beyond the glyph's bounding box the minimum value will
+	  be set to 1 and the max to 0 (ie. max&lt;min which is impossible). -->
+	  “Xextrema”(水平方向の位置を指定する 2 番目の引数が存在しなければなりません) は、指定した水平方向の位置における、グリフの輪郭の垂直方向の最小値と最大値の 2 要素を含む配列を返します。指定した位置がグリフのバウンディングボックスの外側にあるときは、最小値が 1・最大値が 0 (つまり、最大値&lt;最小値 という現実にありえない結果) となります。
 	<LI>
-<!--  	"Color" returns the glyph's color as a 24bit rgb value (or -2 if no color
-  	has been assigned to the glyph). -->
-  	"Color" はグリフの色を 24 ビット RGB 値 (そのグリフに色が設定されていない場合は -2) で返します。
+<!--	  "Color" returns the glyph's color as a 24bit rgb value (or -2 if no color
+	  has been assigned to the glyph). -->
+	  “Color”はグリフの色を 24 ビット RGB 値 (そのグリフに色が設定されていない場合は -2) で返します。
 	<LI>
-<!--  	"Comment" returns the glyph's comment (it will be converted from unicode
-  	into the default encoding). -->
-  	"Comment" はグリフに設定されたコメントを返します (Unicode からデフォルトエンコーディングに変換されます)。
+<!--	  "Comment" returns the glyph's comment (it will be converted from unicode
+	  into the default encoding). -->
+	  “Comment”はグリフに設定されたコメントを返します (Unicode からデフォルトエンコーディングに変換されます)。
 	<LI>
-<!--  	"Changed" returns whether the glyph has been changed since the last save
-  	or load. -->
-  	"Changed" は、最後に保存または読み込みを行った後でグリフが変更されたかどうかを返します。
+<!--	  "Changed" returns whether the glyph has been changed since the last save
+	  or load. -->
+	  “Changed”は、最後に保存または読み込みを行った後でグリフが変更されたかどうかを返します。
 	<LI>
-<!--  	"DontAutoHint" returns the status of the "Don't AutoHint" flag. -->
-  	"DontAutoHint" は、"Don't AutoHint" フラグの状態を返します。
+<!--	  "DontAutoHint" returns the status of the "Don't AutoHint" flag. -->
+	  “DontAutoHint”は、"Don't AutoHint" フラグの状態を返します。
 	<LI>
-<!--  	"Position" takes three additional arguments, a script, a language and a tag
-  	(all 4 character strings) and returns whether the glyph has a Position alternate
-  	with that tag. -->
+<!--	  "Position" takes three additional arguments, a script, a language and a tag
+	  (all 4 character strings) and returns whether the glyph has a Position alternate
+	  with that tag. -->
 	<LI>
-  	"Position" は 3 個の追加の引数 script, language と tag (これらはすべて 4 文字からなる文字列です) をとり、そのグリフに tag で指定されたタグをもつ位置変更が存在するかどうかを返します。
+	  “Position”は 3 個の追加の引数 script, language と tag (これらはすべて 4 文字からなる文字列です) をとり、そのグリフに tag で指定されたタグをもつ位置変更が存在するかどうかを返します。
 	<LI>
-<!--  	"Pair" takes three additional arguments, a script, a language and a tag (all
-  	4 character strings) and returns whether the glyph has a Pairwise positioning
-  	alternate with that tag. -->
-  	"Pair" は 3 個の追加の引数 script, language と tag (これらはすべて 4 文字からなる文字列です) をとり、そのグリフに、tag で指定されたタグをもつペア単位の位置変更が存在するかどうかを返します。
+<!--	  "Pair" takes three additional arguments, a script, a language and a tag (all
+	  4 character strings) and returns whether the glyph has a Pairwise positioning
+	  alternate with that tag. -->
+	  “Pair”は 3 個の追加の引数 script, language と tag (これらはすべて 4 文字からなる文字列です) をとり、そのグリフに、tag で指定されたタグをもつペア単位の位置変更が存在するかどうかを返します。
 	<LI>
-<!--  	"Substitution" takes three additional arguments, a script, a language and
-  	a tag (all 4 character strings) and returns the name of the Simple Substitution
-  	alternate with that tag (or a null string if there is none). -->
-  	"Substitution" は 3 個の追加の引数 script, language と tag (これらはすべて 4 文字からなる文字列です) をとり、選択中の文字の単純置換文字で tag で指定されたタグをもつものの名前を返します (存在しない場合は空文字列を返します)。
+<!--	  "Substitution" takes three additional arguments, a script, a language and
+	  a tag (all 4 character strings) and returns the name of the Simple Substitution
+	  alternate with that tag (or a null string if there is none). -->
+	  “Substitution”は 3 個の追加の引数 script, language と tag (これらはすべて 4 文字からなる文字列です) をとり、選択中の文字の単純置換文字で tag で指定されたタグをもつものの名前を返します (存在しない場合は空文字列を返します)。
 	<LI>
-<!--  	"AltSubs" takes three additional arguments, a script, a language and a tag
-  	(all 4 character strings) and returns a space separated list of the names
-  	of all alternate substitutions with that tag (or a null string if there is none). -->
-  	"AltSubs" は 3 個の追加の引数 script, language と tag (これらはすべて 4 文字からなる文字列です) をとり、選択中のグリフの tag で指定されたタグをもつ選択型置換文字の名前を空白で区切って列挙したリストとして返します (存在しない場合は空文字列を返します)。
+<!--	  "AltSubs" takes three additional arguments, a script, a language and a tag
+	  (all 4 character strings) and returns a space separated list of the names
+	  of all alternate substitutions with that tag (or a null string if there is none). -->
+	  “AltSubs”は 3 個の追加の引数 script, language と tag (これらはすべて 4 文字からなる文字列です) をとり、選択中のグリフの tag で指定されたタグをもつ選択型置換文字の名前を空白で区切って列挙したリストとして返します (存在しない場合は空文字列を返します)。
 	<LI>
-<!--  	"MultSubs" takes three additional arguments, a script, a language and a tag
-  	(all 4 character strings) and returns a space separated list of all the names
-  	of all glyphs this glyph gets decomposed into with that tag (or a null string
-  	if there is none). -->
-  	"MultSubs" は 3 個の追加の引数 script, language と tag (これらはすべて 4 文字からなる文字列です) をとり、選択中のグリフを tag で指定されたタグで分解した時の文字の名前を順番に並べた空白区切りのリストとして返します (存在しない場合は空文字列を返します)。
+<!--	  "MultSubs" takes three additional arguments, a script, a language and a tag
+	  (all 4 character strings) and returns a space separated list of all the names
+	  of all glyphs this glyph gets decomposed into with that tag (or a null string
+	  if there is none). -->
+	  “MultSubs”は 3 個の追加の引数 script, language と tag (これらはすべて 4 文字からなる文字列です) をとり、選択中のグリフを tag で指定されたタグで分解した時の文字の名前を順番に並べた空白区切りのリストとして返します (存在しない場合は空文字列を返します)。
 	<LI>
-<!--  	"Ligature" takes three additional arguments, a script, a language and a tag
-  	(all 4 character strings) and returns a space separated list of the names
-  	of all components with that tag (or a null string if there is none). -->
-  	"Ligature" は 3 個の追加の引数 script, language と tag (これらはすべて 4 文字からなる文字列です) をとり、選択中のグリフの全構成要素を順番に並べた空白区切りリストとして返します (存在しない場合は空文字列を返します)。
+<!--	  "Ligature" takes three additional arguments, a script, a language and a tag
+	  (all 4 character strings) and returns a space separated list of the names
+	  of all components with that tag (or a null string if there is none). -->
+	  “Ligature”は 3 個の追加の引数 script, language と tag (これらはすべて 4 文字からなる文字列です) をとり、選択中のグリフの全構成要素を順番に並べた空白区切りリストとして返します (存在しない場合は空文字列を返します)。
 	<LI>
-<!--  	"GlyphIndex" returns the index of the current glyph in the ttf 'glyf' table,
-  	or -1 if it has been created since. This value may change when a
-  	truetype/opentype font is generated (to the index in the generated font). -->
-  	"GlyphIndex" は、TrueType フォントの 'glyf' 内で選択中のグリフが位置するインデックスを返します。グリフが後から作成された場合は -1 を返します。
-  	この値は、TrueType/OpenType フォントが生成された時には (生成されたフォント内のインデックスに) 変更される可能性があります。
+<!--	  "GlyphIndex" returns the index of the current glyph in the ttf 'glyf' table,
+	  or -1 if it has been created since. This value may change when a
+	  truetype/opentype font is generated (to the index in the generated font). -->
+	  “GlyphIndex”は、TrueType フォントの 'glyf' 内で選択中のグリフが位置するインデックスを返します。グリフが後から作成された場合は -1 を返します。
+	  この値は、TrueType/OpenType フォントが生成された時には (生成されたフォント内のインデックスに) 変更される可能性があります。
 	<LI>
-<!--  	"LayerCount" returns the number of layers in the glyph. This will always
-  	be 2 (foreground &amp; background) except in the case of a multilayered font. -->
-  	"LayerCount" はグリフに含まれるレイヤの個数を返します。マルチレイヤフォント以外では、この値は常に (前面と背面で) 2 が返されます。
+<!--	  "LayerCount" returns the number of layers in the glyph. This will always
+	  be 2 (foreground &amp; background) except in the case of a multilayered font. -->
+	  “LayerCount”はグリフに含まれるレイヤの個数を返します。マルチレイヤフォント以外では、この値は常に (前面と背面で) 2 が返されます。
 	<LI>
-<!--  	"RefCount" returns the number of references in the glyph -->
-  	"RefCount" はグリフ内の参照の個数を返します。
+<!--	  "RefCount" returns the number of references in the glyph -->
+	  “RefCount”はグリフ内の参照の個数を返します。
 	<LI>
-<!--  	"RefNames" returns an array containing the names of all glyphs refered to.
-  	This may contain 0 elements. This may contain a glyph twice ("colon" might
-  	refer twice to period) -->
-  	"RefNames" は、参照している全グリフの名前を含む 1 個の配列を返します。この配列の要素数が 0 であることもあります。この配列には同一のグリフを 2 回含むことがあります ("colon" はピリオドを 2 回参照するでしょう)。
+<!--	  "RefNames" returns an array containing the names of all glyphs refered to.
+	  This may contain 0 elements. This may contain a glyph twice ("colon" might
+	  refer twice to period) -->
+	  “RefNames”は、参照している全グリフの名前を含む 1 個の配列を返します。この配列の要素数が 0 であることもあります。この配列には同一のグリフを 2 回含むことがあります ("colon" はピリオドを 2 回参照するでしょう)。
 	<LI>
-<!--  	"RefTransform" returns an array of arrays. The bottom most arrays are 6 element
-  	(real) transformation matrices which are applied to their respective glyphs. -->
-  	"RefTransform" は配列の配列を返します。いちばん下の配列は、それぞれ対応するグリフに適用される 6 要素の (実数値) 変換行列です。
+<!--	  "RefTransform" returns an array of arrays. The bottom most arrays are 6 element
+	  (real) transformation matrices which are applied to their respective glyphs. -->
+	  “RefTransform”は配列の配列を返します。いちばん下の配列は、それぞれ対応するグリフに適用される 6 要素の (実数値) 変換行列です。
       </UL>
       <P>
 <!--      Examples: -->
@@ -3547,57 +3505,57 @@ verta = CharInfo("Substitution","*","dflt","vrt2")
       strings (or the special string "*" which acts as a wildcard). It returns
       an Array of Arrays (with one entry for each feature which matches the arguments).
       If nothing matches a 0 length array will be returned. -->
-      あらかじめグリフを 1 個だけ選択しておく必要があります。そのグリフに付随する GPOS/GSUB 機能に関する情報を返します (クラスベースのカーニングや文脈依存の機能に関する情報は返しません――フォント全体に適用される情報は何も表示しません――選択中のグリフに関連する物のみです)。引数は 4 文字の文字列 (またはワイルドカードとして用いられる "*") でなければなりません。この関数は配列の配列を返します (引数にマッチした各機能ごとに配列の 1 項目が割り当てられます)。何もマッチしなければ、長さ 0 の配列が返されます。
+      あらかじめグリフを 1 個だけ選択しておく必要があります。そのグリフに付随する GPOS/GSUB 機能に関する情報を返します (クラスベースのカーニングや文脈依存の機能に関する情報は返しません――フォント全体に適用される情報は何も表示しません――選択中のグリフに関連する物のみです)。引数は 4 文字の文字列 (またはワイルドカードとして用いられる“*”) でなければなりません。この関数は配列の配列を返します (引数にマッチした各機能ごとに配列の 1 項目が割り当てられます)。何もマッチしなければ、長さ 0 の配列が返されます。
       <P>
 <!--  Each sub-array contains the following information-->
       それぞれの部分配列には以下の情報が含まれています。
       <UL>
 	<LI>
-<!--  	The feature tag (a string) -->
-  	機能タグ (文字列)
+<!--	  The feature tag (a string) -->
+	  機能タグ (文字列)
 	<LI>
-<!--  	The script/language string of this feature -->
-  	この機能の用字系/言語文字列
+<!--	  The script/language string of this feature -->
+	  この機能の用字系/言語文字列
 	<LI>
-<!--  	The type (As a string, One of <CODE>Position, Pair, Substitution, AltSubs,
-  	MultSubs </CODE>or<CODE> Ligature</CODE>) -->
-  	タイプ (<CODE>Position, Pair, Substitution, AltSubs, MultSubs</CODE> または <CODE>Ligature</CODE> のどれかの文字列)
+<!--	  The type (As a string, One of <CODE>Position, Pair, Substitution, AltSubs,
+	  MultSubs </CODE>or<CODE> Ligature</CODE>) -->
+	  タイプ (<CODE>Position, Pair, Substitution, AltSubs, MultSubs</CODE> または <CODE>Ligature</CODE> のどれかの文字列)
       </UL>
       <P>
 <!--  The remaining entries depend on the type. -->
       以下の項目はタイプによって異なります。
       <DL>
 	<DT>
-<!--  	For Positions -->
-  	"Position" の場合
+<!--	  For Positions -->
+	  “Position”の場合
 	<DD>
-<!--  	There will be 4 numbers indicating respectively the contents of a GPOS value
-  	record (dx,dy,d_horizontal_advance,d_vertical_advance) -->
-  	それぞれが GPOS 値レコードの内容を表す 4 個の数値 (dx,dy,d_horizontal_advance,d_vertical_advance)
+<!--	  There will be 4 numbers indicating respectively the contents of a GPOS value
+	  record (dx,dy,d_horizontal_advance,d_vertical_advance) -->
+	  それぞれが GPOS 値レコードの内容を表す 4 個の数値 (dx,dy,d_horizontal_advance,d_vertical_advance)
 	<DT>
-<!--  	For Pairs -->
-  	"Pair" の場合
+<!--	  For Pairs -->
+	  “Pair”の場合
 	<DD>
-<!--  	A string containing the name of the other glyph in the pair -->
-  	ペアに含まれるもう片方のグリフの名前を含む 1 個の文字列
-  	<P>
-<!--  	A list of 8 numbers indicating the contents of two GPOS value records (the
-  	first four numbers control the current glyph, the next four numbers control
-  	the second glyph) -->
-  	それぞれが GPOS 値レコードの内容を表す 8 個の数値 (最初の 4 個は現在のグリフを制御し、その後ろの 4 個の数値は 2 番目のグリフを制御します)
+<!--	  A string containing the name of the other glyph in the pair -->
+	  ペアに含まれるもう片方のグリフの名前を含む 1 個の文字列
+	  <P>
+<!--	  A list of 8 numbers indicating the contents of two GPOS value records (the
+	  first four numbers control the current glyph, the next four numbers control
+	  the second glyph) -->
+	  それぞれが GPOS 値レコードの内容を表す 8 個の数値 (最初の 4 個は現在のグリフを制御し、その後ろの 4 個の数値は 2 番目のグリフを制御します)
 	<DT>
-<!--  	For Substitutions -->
-  	"Substitution" の場合
+<!--	  For Substitutions -->
+	  “Substitution”の場合
 	<DD>
-<!--  	A string containing the name of a glyph with which the current glyph is to
-  	be replaced. -->
-  	現在のグリフを置き換えるべきグリフ名を含む 1 個の文字列
+<!--	  A string containing the name of a glyph with which the current glyph is to
+	  be replaced. -->
+	  現在のグリフを置き換えるべきグリフ名を含む 1 個の文字列
 	<DT>
-<!--  	For the others -->
-  	その他の場合
+<!--	  For the others -->
+	  その他の場合
 	<DD>
-<!--  	A set of glyph names, one for each component. -->
-  	各要素に 1 個ずつグリフ名が格納されます。
+<!--	  A set of glyph names, one for each component. -->
+	  各要素に 1 個ずつグリフ名が格納されます。
       </DL>
       <P>
 <!--  Examples:-->
@@ -3640,7 +3598,7 @@ verta = CharInfo("Substitution","*","dflt","vrt2")
       その他のプロジェクトで使用されているスクリプト
       <UL>
 	<LI>
-  	<A HREF="http://sourceforge.net/projects/x-symbol/">x-symbol</A>
+	  <A HREF="http://sourceforge.net/projects/x-symbol/">x-symbol</A>
       </UL>
   </UL>
   <H3>
@@ -3752,8 +3710,8 @@ Quit(0);
   script the appropriate text to text to invoke it will be placed in the text
   area. -->
   このダイアログにより、FontForge の中でスクリプトを直接打ち込んで実行することができます。
-  もちろん、一番多いケースは、実行したいスクリプトが既にどこかに存在する場合でしょう。そのために [呼び出す(A)] ボタンがダイアログの下についています。
-  [呼び出す(A)] ボタンを押すと、*.pe の拡張子を持つファイルを探すためのファイル選択ダイアログが現れます (ワイルドカードシーケンスを入力して [フィルタ] ボタンを押すことにより、これを変更することができます)。
+  もちろん、一番多いケースは、実行したいスクリプトが既にどこかに存在する場合でしょう。そのために <CODE>[呼び出す(<U>A</U>)]</CODE> ボタンがダイアログの下についています。
+  <CODE>[呼び出す(<U>A</U>)]</CODE> ボタンを押すと、*.pe の拡張子を持つファイルを探すためのファイル選択ダイアログが現れます (ワイルドカードシーケンスを入力して <CODE>[フィルタ]</CODE> ボタンを押すことにより、これを変更することができます)。
   スクリプトを選択すると、そのスクリプトを起動するためのコマンドがダイアログのテキストエリアに挿入されます。
   <P>
 <!--
@@ -3771,17 +3729,14 @@ Quit(0);
   Scripts tag. In this dialog are ten possible entries, each one should have
   a name (to be displayed in the menu) and an associated script file to be
   run. -->
-  頻繁に使うスクリプトのリストを、プリファレンスダイアログを用いて作成することができます。
-  <CODE><A HREF="prefs.html#scripts">ファイル(F)→環境設定(E)</A></CODE>
-  を起動し、<CODE>[スクリプトメニュー]</CODE> タブを選択してください。
-  このダイアログには、10 個の入力可能な項目があり、それぞれに名前 (これがメニュー内に表示されます) と、それを指定した時に実行されるスクリプトファイル名の入力欄が含まれています。
+  頻繁に使うスクリプトのリストを、プリファレンスダイアログを用いて作成することができます。<CODE><A HREF="prefs.html#scripts">ファイル(<U>F</U>)</CODE>→<CODE>環境設定(<U>E</U>)...</A></CODE> を起動し、<CODE>[スクリプトメニュー]</CODE> タブを選択してください。このダイアログには、10 個の入力可能な項目があり、それぞれに名前 (これがメニュー内に表示されます) と、それを指定した時に実行されるスクリプトファイル名の入力欄が含まれています。
   <P>
 <!--
   After you have set up your preferences you can invoke scripts from the font
   view, either directly from the menu (File-&gt;Scripts-&gt;&lt;your name&gt;)
   or by a hot key. The first script you added will be invoked by Cnt-Alt-1,
   then second by Cnt-Alt-2, and the tenth by Cnt-Alt-0. -->
-  プリファレンスを設定した後、フォントビューからスクリプトを起動することができます。起動には、メニューから直接 (<CODE>ファイル(F)→スクリプトメニュー→(設定した名前)</CODE>) 起動するか、ホットキーを使用することができます。
+  プリファレンスを設定した後、フォントビューからスクリプトを起動することができます。起動には、メニューから直接 (<CODE>ファイル(<U>F</U>)</CODE>→<CODE>スクリプトメニュー</CODE>→<CODE><I>(設定した名前)</I></CODE>) 起動するか、ホットキーを使用することができます。
   最初に追加したスクリプトは Ctl-Alt-1, 2 番目は Ctl-Alt-2 で起動でき、10 番目は Ctl-Alt-0 となります。
   <P>
 <!--
@@ -3790,8 +3745,7 @@ Quit(0);
   スクリプト内でのカレントフォントは、常に、それを呼び出したフォントにセットされます。
   <P>
   <P ALIGN=Center>
-  -- <A HREF="HotKeys.html">前</A> -- <A HREF="overview.html">目次</A> --
-  <A HREF="PfaEdit-TeX.html">次</A> --
+  ― <A HREF="HotKeys.html">前</A> ― <A HREF="overview.html">目次</A> ―
+  <A HREF="PfaEdit-TeX.html">次</A> ―
 </DIV>
 </BODY></HTML>
-  

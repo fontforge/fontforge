@@ -17,7 +17,7 @@ These dialogs manipulate features which already exist. See the
 <A HREF="fontinfo.html#Contextual">Element-&gt;Font Info</A> and
 <A HREF="charinfo.html#features">Element-&gt;Char Info</A> dialogs for
 information on how to create these features in the first place. -->
-これらのダイアログは、既存の組版機能を操作します。最初にこれらの機能を作成する方法については、<A HREF="fontinfo.html#Contextual">エレメント(L)→フォント情報(F)</A> および <A HREF="charinfo.html#features">エレメント(L)→グリフ情報(I)</A> ダイアログを参照してください。
+これらのダイアログは、既存の組版機能を操作します。最初にこれらの機能を作成する方法については、<A HREF="fontinfo.html#Contextual"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE></A> および <A HREF="charinfo.html#features"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>グリフ情報(<U>I</U>)...</CODE></A> ダイアログを参照してください。
 <H2>
 <!--<IMG SRC="/copyfeatures.png" WIDTH="282" HEIGHT="503" ALT="Copy Feature(s) to Font dialog"
       ALIGN="Right"><A NAME="Copy-Feat">Copy Feature(s) to Font...</A> -->
@@ -36,7 +36,7 @@ and its flags. -->
 If you leave the Tag field blank then it will match any tag. Similarly you
 may select either a specific set of scripts and languages or "Any Script".
 And a specific set of flags, or Any flags. -->
-タグ(T) フィールドが空白のままだと、すべてのタグに一致することになります。同様に、特定の用字系・言語を選ぶ代わりに "任意の用字系" を指定することができます。また、特定のフラグのセットを選ぶ代わりに、"任意のフラグ" を指定することができます。 
+<CODE>タグ(<U>T</U>)</CODE> フィールドが空白のままだと、すべてのタグに一致することになります。同様に、特定の用字系・言語を選ぶ代わりに“<CODE>任意の用字系</CODE>”を指定することができます。また、特定のフラグのセットを選ぶ代わりに、“<CODE>任意のフラグ</CODE>”を指定することができます。 
 <P>
 <!--
 Finally you must select the font (or fonts) to which you wish the information
@@ -65,10 +65,11 @@ feature/setting), the scripts and languages to which it applies, and its
 flags. -->
 このダイアログを使用すると、1 個の機能または関連する機能群をフォントから削除することができます。機能は OpenType タグ (または Apple の機能/設定) と、それが適用される用字系と言語、並びにそのフラグによって選択可能です。
 <P>
+<!--
 If you leave the Tag field blank then it will match any tag. Similarly you
 may select either a specific set of scripts and languages or "Any Script".
-And a specific set of flags, or Any flags.
-タグ(T) フィールドが空白のままだと、すべてのタグに一致することになります。同様に、特定の用字系・言語を選ぶ代わりに "任意の用字系" を指定することができます。また、特定のフラグのセットか "任意のフラグ" のどちらかを指定できます。 
+And a specific set of flags, or Any flags. -->
+<CODE>タグ(<U>T</U>)</CODE> フィールドが空白のままだと、すべてのタグに一致することになります。同様に、特定の用字系・言語を選ぶ代わりに“任意の用字系”を指定することができます。また、特定のフラグのセットか“任意のフラグ”のどちらかを指定できます。 
 <P>
 <!--
 The example at right will remove all common ligatures that apply to the latin
@@ -97,7 +98,7 @@ to which it applies, and its flags. -->
 If you leave the Tag field blank then it will match any tag. Similarly you
 may select either a specific set of scripts and languages or "Any Script".
 And a specific set of flags, or Any flags. -->
-タグ(T) フィールドが空白のままだと、すべてのタグに一致することになります。同様に、特定の用字系・言語を選ぶ代わりに "任意の用字系" を指定することができます。また、特定のフラグのセットか "任意のフラグ" のどちらかを指定できます。 
+<CODE>タグ(<U>T</U>)</CODE> フィールドが空白のままだと、すべてのタグに一致することになります。同様に、特定の用字系・言語を選ぶ代わりに“<CODE>任意の用字系</CODE>”を指定することができます。また、特定のフラグのセットか“<CODE>任意のフラグ</CODE>”のどちらかを指定できます。 
 <P>
 <!--
 In the second half of the dialog you select the same information to specify
@@ -106,13 +107,13 @@ with the opentype tag 'isol' will be retagged with the apple feature/setting
 &lt;2,2&gt; (Cursive connection). Anything left unspecified in the second
 half will remain unchanged (so the script and flags are both unspecified
 at right). -->
-ダイアログの下半分では、これと同じ種類の情報を、どのように置き換えるかを選択することができます。右のダイアログでは、OpenType タグ 'isol' がついたすべての文字を Apple 機能/設定 &lt;2,2&gt; (筆記体の接続) に再設定しています。下半分では、何も指定しなかった部分は変更されずに残ります (右の例で用字系とフラグを両方とも指定していないのはそのためです)。
+ダイアログの下半分では、これと同じ種類の情報を、どのように置き換えるかを選択することができます。右のダイアログでは、OpenType タグ&lsquo;isol&rsquo;がついたすべての文字を Apple 機能/設定 &lt;2,2&gt; (筆記体の接続) に再設定しています。下半分では、何も指定しなかった部分は変更されずに残ります (右の例で用字系とフラグを両方とも指定していないのはそのためです)。
 <P>
 <!--
 (This does not retag kerning information)<BR CLEAR=ALL> -->
 (これはカーニング情報にはタグをつけ直ししません)<BR CLEAR=ALL>
 <P ALIGN=Center>
--- <A HREF="elementmenu.html">前</A> -- <A HREF="overview.html">目次</A>
---
+― <A HREF="elementmenu.html">前</A> ― <A HREF="overview.html">目次</A>
+―
 </DIV>
 </BODY></HTML>

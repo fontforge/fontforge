@@ -64,7 +64,7 @@ TFM ファイルを出力する前に、以下の手順のいくつかを実行しなければなりません。
     フォントのパラメータを設定する
   <DD>
 <!--Do this with Element-&gt;Font Info-&gt;TeX. -->
-    これは、<CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)</CODE>→<CODE>[TeX]</CODE> で行います。
+    これは、<CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE>→<CODE>[ΤεΧ]</CODE> で行います。
   <DT>
 <!--Optionally set <A NAME="Italic">Italic</A> Correction values for glyphs-->
     必要に応じて、グリフの<A NAME="Italic">イタリック</A>補正値を入力する
@@ -78,7 +78,7 @@ TFM ファイルを出力する前に、以下の手順のいくつかを実行しなければなりません。
 	イタリック補正を含むべきグリフを選択する
       <LI>
 <!--	Element-&gt;Char Info-&gt;Alt Pos -->
-	<CODE>エレメント(<U>L</U>)</CODE>→<CODE>文字情報(<U>I</U>)→<CODE>[別の位置]</CODE> タブを選ぶ
+	<CODE>エレメント(<U>L</U>)</CODE>→<CODE>グリフ情報(<U>I</U>)...→<CODE>[選択型の置換]</CODE> タブを選ぶ
       <LI>
 <!--	Press [New] -->
 	<CODE>[新規(<U>N</U>)]</CODE> を押す
@@ -102,14 +102,14 @@ TFM ファイルを出力する前に、以下の手順のいくつかを実行しなければなりません。
 	<CODE>エレメント(<U>L</U>)</CODE>→<CODE>文字情報(<U>I</U>)</CODE>→<CODE>[別の位置]</CODE> タブを選ぶ
       <LI>
 <!--	Press [New] -->
-	<CODE>[新規(<U>N</U>)]</CODE> を押す
+	<CODE>[新規(<U>N</U>)...]</CODE> を押す
       <LI>
 <!--	Set the tag to <CODE>TeX Glyphlist</CODE> from the pulldown list -->
 	プルダウンリスト <CODE>タグ(<U>T</U>)</CODE> で <CODE>TeXグリフリスト</CODE> を選ぶ
       <LI>
 <!--	Type the names of all the other glyphs in the charlist into the Components
 	field<BR>
-	文字リストに含まれる他の全てのグリフの名前を <CODE>[構成要素]</CODE> フィールドに入力する<BR>
+	文字リストに含まれる他の全てのグリフの名前を <CODE>構成要素</CODE> フィールドに入力する<BR>
 <!--	So if the charlist is for left parenthesis<BR> -->
 	例えば、左括弧に対する文字リストの場合:<BR>
 <!--	You would select the lparen glyph and might type in "lparen.big lparen.bigger
@@ -126,7 +126,7 @@ TFM ファイルを出力する前に、以下の手順のいくつかを実行しなければなりません。
 	(the largest one) -->
 	そのグリフが TeX グリフリストに存在する場合、グリフリストの最後のグリフ (インデックスが最大の文字) をセレクトする
       <LI>
-	Element-&gt;Char Info-&gt;Mult Subs
+<!--	Element-&gt;Char Info-&gt;Mult Subs -->
 	<CODE>エレメント(<U>L</U>)</CODE>→<CODE>文字情報(<U>I</U>)</CODE>→<CODE>[複数の置換先]</CODE> タブを選ぶ
       <LI>
 <!--	Press [New] -->
@@ -145,7 +145,7 @@ TFM ファイルを出力する前に、以下の手順のいくつかを実行しなければなりません。
 	You would select the lparen.biggest glyph and might type in "lparen.top
 	lparen.mid lparen.bottom lparen.ext" -->
 	例えば、左括弧に対応する拡張リストの場合:
-	lparen.biggest を選択し、"lparen.top lparen.mid lparen.bottom lparen.ext" と入力することになる。
+	lparen.biggest を選択し、“<CODE>lparen.top lparen.mid lparen.bottom lparen.ext</CODE>" と入力することになる。
     </UL>
 </DL>
 <P>
@@ -162,8 +162,9 @@ Enc check box. -->
 満足の行くまでこれを行ったならば、TFM ファイルを出力する準備ができています。
 <CODE>ファイル(<U>F</U>)</CODE>→<CODE>フォントを出力(<U>G</U>)</CODE> で出てくるプルダウンリストから PostScript エンコーディングのどれか 1 つを選び、<CODE>[オプション]</CODE> ボタンを押して <CODE>[*]TFMとENCを出力</CODE> チェックボックスをオンにします。
 <P>
+<!--
 I'm not sure what you <EM>do</EM> with these files yet, but this should create
-them.
+them. -->
 あなたがこれらのファイルを使って何を<EM>行う</EM>のか筆者は完全に理解していませんが、それらはこの手順で作成できるでしょう。
 <H3>
 <!--<A NAME="TeX-Install">Installing a type1 (pfb) postscript font for TeX</A> -->
@@ -315,7 +316,7 @@ on the web: -->
     are called 6a), greek or CJK fonts yet. -->
     筆者は、キリル文字やギリシャ文字、CJK のフォントをどう扱うかについてはまだ知りません (キリル文字の T2 エンコーディングは 6a と言うことだけは知っています)。
   <LI>
-<1--Here's some info on how to use fonts once they are installed:
+<!--Here's some info on how to use fonts once they are installed:
     <A HREF="http://www-h.eng.cam.ac.uk/help/tpl/textprocessing/fonts.html">LaTeX
     and fonts</A> -->
     インストールされたフォントをどう使うかについていくつかの情報があります。
@@ -349,16 +350,16 @@ I did the following: -->
     <UL>
       <LI>
 <!--	f -- made by a small font vendor, public domain, etc. -->
-	f - - 小さなフォントベンダの製品やパブリックドメインのフォントなど
+	f ― 小さなフォントベンダの製品やパブリックドメインのフォントなど
       <LI>
 <!--	cu - - abbreviation for the family name "Cupola" -->
-	cu -- ファミリー名 "Cupola" の略称
+	cu ― ファミリー名“Cupola”の略称
       <LI>
 <!--	r - - roman face -->
-	r -- ローマン体
+	r ― ローマン体
       <LI>
 <!--	8a - - Adobe Standard Encoding -->
-	8a -- Adobe 標準エンコーディング
+	8a ― Adobe 標準エンコーディング
     </UL>
   <LI>
 <!--I applied the following script: -->
@@ -397,7 +398,7 @@ vptovf $file
 done
 <!--
 # Get rid of stuff we don't need any more -->
-# もう必要でなくなったゴミを削除します。
+# もう必要でなくなったゴミを削除します
 rm fi.tex *.mtx *.pl *.vpl
 <!--
 # create the directories we need for the various components -->
@@ -452,7 +453,7 @@ echo という記述を適切な場所に追加してください。
 </PRE>
 </UL>
 <P ALIGN=Center>
--- <A HREF="scripting.html">前</A> -- <A HREF="overview.html">目次</A> --
-<A HREF="locale.html">次</A> --
+― <A HREF="scripting.html">前</A> ― <A HREF="overview.html">目次</A> ―
+<A HREF="locale.html">次</A> ―
 </DIV>
 </BODY></HTML>

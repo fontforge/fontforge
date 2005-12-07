@@ -165,7 +165,7 @@ then the program will look at it. -->
   <DD>
 <!--Sets the color used to draw the advance width once it has been grid fit (if
     <CODE>View-&gt;Show Grid Fit</CODE> is on) -->
-    送り幅に対していちどグリッド合わせを行った後の線を表示するのに用いる色を設定します (<CODE>表示(<U>V</U>)</CODE>→<CODE>グリッド合わせを表示(<U>W</U>)</CODE> が有効な場合)
+    送り幅に対していちどグリッド合わせを行った後の線を表示するのに用いる色を設定します (<CODE>表示(<U>V</U>)</CODE>→<CODE>グリッド合わせを表示(<U>W</U>)...</CODE> が有効な場合)
   <DT>
     <CODE>fontforge.CharView.LigatureCaretColor</CODE>
   <DD>
@@ -176,25 +176,25 @@ then the program will look at it. -->
   <DD>
 <!--Sets the color used to draw the pixels of a rasterized bitmap (if
     <CODE>View-&gt;Show Grid Fit</CODE> or <CODE>Hints-&gt;Debug</CODE> is on) -->
-    ラスタライズしたビットマップの各ピクセルを表示するのに用いる色を設定します (<CODE>表示(<U>V</U>)</CODE>→<CODE>グリッド合わせを表示(<U>W</U>)</CODE> または <CODE>ヒント(<U>H</U>)</CODE>→<CODE>デバッグ(<U>D</U>)</CODE> が有効な場合)
+    ラスタライズしたビットマップの各ピクセルを表示するのに用いる色を設定します (<CODE>表示(<U>V</U>)</CODE>→<CODE>グリッド合わせを表示(<U>W</U>)...</CODE> または <CODE>ヒント(<U>I</U>)</CODE>→<CODE>デバッグ(<U>D</U>)...</CODE> が有効な場合)
   <DT>
     <CODE>fontforge.CharView.RasterNewColor</CODE>
   <DD>
 <!--Sets the color used to draw the pixels of a rasterized bitmap if they have
     recently been turned on (if <CODE>Hints-&gt;Debug</CODE> is on) -->
-    ラスタライズしたビットマップのうち、新しく塗りつぶされた各ピクセルを表示するのに用いる色を設定します (<CODE>ヒント(<U>H</U>)</CODE>→<CODE>デバッグ(<U>D</U>)</CODE> が有効な場合)
+    ラスタライズしたビットマップのうち、新しく塗りつぶされた各ピクセルを表示するのに用いる色を設定します (<CODE>ヒント(<U>I</U>)</CODE>→<CODE>デバッグ(<U>D</U>)...</CODE> が有効な場合)
   <DT>
     <CODE>fontforge.CharView.RasterOldColor</CODE>
   <DD>
 <!--Sets the color used to draw the pixels of a rasterized bitmap f they have
     recently been turned off (if <CODE>Hints-&gt;Debug</CODE> is on) -->
-    ラスタライズしたビットマップのうち、塗りつぶさないように変更された各ピクセルを表示するのに用いる色を設定します (<CODE>ヒント(<U>H</U>)</CODE>→<CODE>デバッグ(<U>D</U>)</CODE> が有効な場合)
+    ラスタライズしたビットマップのうち、塗りつぶさないように変更された各ピクセルを表示するのに用いる色を設定します (<CODE>ヒント(<U>I</U>)</CODE>→<CODE>デバッグ(<U>D</U>)...</CODE> が有効な場合)
   <DT>
     <CODE>fontforge.CharView.RasterGridColor</CODE>
   <DD>
 <!--Sets the color used to draw the pixel grid used by the rasterizer (if
     <CODE>View-&gt;Show Grid Fit</CODE> is on)-->
-    ピクセルのグリッドを表示するのに用いる色を設定します (<CODE>表示(<U>V</U>)</CODE>→<CODE>グリッド合わせを表示(<U>W</U>)</CODE> または <CODE>ヒント(<U>H</U>)</CODE>→<CODE>デバッグ(<U>D</U>)</CODE> が有効な場合)
+    ピクセルのグリッドを表示するのに用いる色を設定します (<CODE>表示(<U>V</U>)</CODE>→<CODE>グリッド合わせを表示(<U>W</U>)...</CODE> または <CODE>ヒント(<U>I</U>)</CODE>→<CODE>デバッグ(<U>D</U>)...</CODE> が有効な場合)
   <DT>
     <CODE>fontforge.CharView.ItalicCoordColor</CODE>
   <DD>
@@ -389,18 +389,18 @@ then the program will look at it. -->
     8 ビットスクリーン上で FontForge がカラーマップをどう扱うかをこの値で設定することができます。
     <UL>
       <LI>
-<!--	Current -- FontForge will attempt to allocate its colors in the current colormap. -->
-	Current -- FontForge は現在のカラーマップに存在する色を割り当てようと試みます。
+<!--	Current - - FontForge will attempt to allocate its colors in the current colormap. -->
+	Current ― FontForge は現在のカラーマップに存在する色を割り当てようと試みます。
       <LI>
-<!--	Copy -- FontForge will allocate what colors it can and then copy the current
+<!--	Copy - - FontForge will allocate what colors it can and then copy the current
 	color map into a private copy. This means FontForge has access to a much
 	wider range of colors, and (as long as the shared colormap doesn't change)
 	FontForge's colormap will match that of the rest of the screen. -->
-	Copy -- FontForge は、割り当て可能な色を割り当ててから、現在のカラーマップをプライベートなコピーに複製します。これにより、FontForge がより多くの範囲の色にアクセスすることができ、(共有カラーマップが変更されないかぎり) FontForge のカラーマップは画面上の他の色と一致することになります。
+	Copy ― FontForge は、割り当て可能な色を割り当ててから、現在のカラーマップをプライベートなコピーに複製します。これにより、FontForge がより多くの範囲の色にアクセスすることができ、(共有カラーマップが変更されないかぎり) FontForge のカラーマップは画面上の他の色と一致することになります。
       <LI>
-<!--	Private -- FontForge will allocate a private colormap and set the colors
+<!--	Private - - FontForge will allocate a private colormap and set the colors
 	just as it wants them. It will almost certainly not match the shared colormap. -->
-	Private -- FontForge はプライベートなカラーマップを割り当て、必要な色を単純に割り当てていきます。これはほぼ確実に共有カラーマップと一致しないでしょう。
+	Private ― FontForge はプライベートなカラーマップを割り当て、必要な色を単純に割り当てていきます。これはほぼ確実に共有カラーマップと一致しないでしょう。
     </UL>
   <DT>
     <CODE>Gdraw.DoDithering</CODE>
@@ -789,41 +789,41 @@ then the program will look at it. -->
 	&lt;太さ&gt; は以下のいずれかです:
 	<UL>
 	  <LI>
-<!--	    nothing -- the font is not bold-->
-	    指定なし -- フォントはボールド体ではない
+<!--	    nothing - - the font is not bold-->
+	    指定なし ― フォントはボールド体ではない
 	  <LI>
-<!--	    bold -- the font is bold -->
-	    bold -- フォントはボールド体である
+<!--	    bold - - the font is bold -->
+	    bold ― フォントはボールド体である
 	  <LI>
-<!--	    a number -- (between 0 and 999), a numeric value that gives some idea of
+<!--	    a number - - (between 0 and 999), a numeric value that gives some idea of
 	    how bold the font should be. 200 would be a light font, 400 an normal font,
 	    700 a bold font and 999 and ultra-black font. -->
-	    1 個の数値 -- (0 ～999), そのフォントがどの程度太くあるべきかの何らかの考えを示す整数値。200 なら細字フォント、400 は通常フォント、700 がボールド体のフォントで、999 なら超極太フォントとなるでしょう。
+	    1 個の数値 ― (0 ～999), そのフォントがどの程度太くあるべきかの何らかの考えを示す整数値。200 なら細字フォント、400 は通常フォント、700 がボールド体のフォントで、999 なら超極太フォントとなるでしょう。
 	</UL>
       <LI>
 <!--	&lt;italicness&gt; can be:-->
 	&lt;傾き&gt; は以下のいずれかです:
 	<UL>
 	  <LI>
-<!--	    nothing -- the font is not italic -->
-	    指定なし -- フォントはイタリック体ではない
+<!--	    nothing - - the font is not italic -->
+	    指定なし ― フォントはイタリック体ではない
 	  <LI>
-<!--	    italic -- the font is italic -->
-	    italic -- フォントはイタリック体である
+<!--	    italic - - the font is italic -->
+	    italic ― フォントはイタリック体である
 	  <LI>
 <!--	    oblique -- the font is oblique (italic) -->
-	    oblique -- フォントはオブリーク体 (italic)である
+	    oblique ― フォントはオブリーク体 (italic)である
 	</UL>
       <LI>
 <!--	&lt;pointsize&gt; can be: -->
 	&lt;ポイントサイズ&gt; は以下のいずれかです:
 	<UL>
 	  <LI>
-<!--	    nothing -- a default point size is chosen -->
-	    指定なし -- デフォルトのポイントサイズが選ばれます。
+<!--	    nothing - - a default point size is chosen -->
+	    指定なし ― デフォルトのポイントサイズが選ばれます。
 	  <LI>
-<!--	    a number followed by "pt" -- specifies the point size. -->
-	    数値の後に“pt”-- ポイントサイズを指定します。
+<!--	    a number followed by "pt" - - specifies the point size. -->
+	    数値と、その後の“pt”― ポイントサイズを指定します。
 	</UL>
     </UL>
     <P>
@@ -876,7 +876,7 @@ flag on it) while depressing either mouse button. -->
 On the mac I don't see any good way of simulating a three button mouse... -->
 Mac では 3 ボタンマウスをシミュレートするよい方法が見つかりません……。
 <P ALIGN=Center>
--- <A HREF="errrecovery.html">前</A> -- <A HREF="overview.html">目次</A>
--- <A HREF="cliargs.html">次</A> --
+― <A HREF="errrecovery.html">前</A> ― <A HREF="overview.html">目次</A>
+― <A HREF="cliargs.html">次</A> ―
 </DIV>
 </BODY></HTML>

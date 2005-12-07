@@ -48,7 +48,7 @@ counters of equal sizes on the right. These form two independent counter
 groups, and FontForge's Hints-&gt;Auto Counter command will generate a counter
 description for each of them. You may also control the counters directly
 by using the Counters pane of the Element-&gt;Char Info dialog. -->
-現在の PostScript の仕様により、FontForge は相対カウンタサイズを制御することができます。カウンタとは、隣接するステムの間の空間のことです。左の例では、偏を構成する水平ステムの間に、サイズの等しい 2 個のカウンタが存在し、旁の側には 3 個の均等なステムが存在します。これらは 2 個の独立したカウンタグループを構成しており、FontForge の ヒント(H)→自動カウンタヒント(C) コマンドを実行するとそのそれぞれに対するカウンタ記述が生成されます。カウンタの大きさは、エレメント(L)→文字情報(I) ダイアログの [カウンタ] ペインで直接指定することもできます。
+現在の PostScript の仕様により、FontForge は相対カウンタサイズを制御することができます。カウンタとは、隣接するステムの間の空間のことです。左の例では、偏を構成する水平ステムの間に、サイズの等しい 2 個のカウンタが存在し、旁の側には 3 個の均等なステムが存在します。これらは 2 個の独立したカウンタグループを構成しており、FontForge の <CODE>ヒント(<U>I</U>)</CODE>→<CODE>自動カウンタヒント(<U>C</U>)</CODE> コマンドを実行するとそのそれぞれに対するカウンタ記述が生成されます。カウンタの大きさは、<CODE>エレメント(<U>L</U>)</CODE>→<CODE>グリフ情報(<U>I</U>)...</CODE> ダイアログの <CODE>[カウンタ]</CODE> ペインで直接指定することもできます。
 <P>
 <!--
 Counters spaces appear between vertical stems too, and in this case FontForge
@@ -85,7 +85,7 @@ FontForge's AutoHint command can be used to figure out horizontal and vertical
 stem hints. It will also find hint substitution points (if any are needed),
 and will check for the simple counter description allowed by OpenType for
 non-Asian fonts (the equivalent of h/vstem3 hints in type1 fonts). -->
-FontForge の 自動ヒント(H) コマンドを使うと、水平ステムヒントおよび垂直ステムヒントを算出することができます。また、ヒント置換を行なう点も (必要な場合) 発見され、アジア以外の OpenType フォントで使用可能な、単純なカウンタ記述 (これは Type1 フォントの h/vstem3 ヒントと等価です) のチェックが行なわれます。
+FontForge の <CODE>自動ヒント(<U>H</U>)</CODE> コマンドを使うと、水平ステムヒントおよび垂直ステムヒントを算出することができます。また、ヒント置換を行なう点も (必要な場合) 発見され、アジア以外の OpenType フォントで使用可能な、単純なカウンタ記述 (これは Type1 フォントの h/vstem3 ヒントと等価です) のチェックが行なわれます。
 <P>
 <!--
 Whenever you change a glyph FontForge keeps track of that fact that the hints
@@ -99,7 +99,7 @@ automagically regenerate them. -->
 This may not always be appropriate. You can turn this off in general with
 the HintForGen preference item. You may turn it off for an individual glyph
 with the Hints-&gt;Don't AutoHint command. -->
-この動作が余計なお世話である場合もあるでしょう。環境設定項目 HintForGen を設定すると、フォント全体でこれをオフにすることができます。ヒント(H)→自動ヒントを停止(D) コマンドで個別のグリフに対してオフにすることができます。
+この動作が余計なお世話である場合もあるでしょう。環境設定項目 HintForGen を設定すると、フォント全体でこれをオフにすることができます。<CODE>ヒント(<U>I</U>)</CODE>→<CODE>自動ヒントを停止(<U>D</U>)</CODE> コマンドで個別のグリフに対してオフにすることができます。
 <H2>
 <!--Manual Hinting -->
     手動ヒントづけ
@@ -116,7 +116,7 @@ to be useless and will remove them. If you find that FontForge is removing
 a hint that you think is important then invoke Hint-&gt;AutoHint with the
 shift key held down, this will tell FontForge not to prune any of the stems.
 You may then use Review Hints to prune things yourself. -->
-自動ヒント(H) コマンドはグリフ内のすべてのステムを抽出します。そのうちの一部が不要であると判断されれば削除されます。あなたが重要だと考えるヒントを FontForge が削除しているのに気づいたときは、Shift キーを押したまま ヒント(H)→自動ヒント(H) を呼び出すと、FontForge にステムの削除を一切行わないように通知したこと名になります。その後、手動でヒントを削除するには ヒントを確認(R) を使用してください。
+<CODE>自動ヒント(<U>H</U>)</CODE> コマンドはグリフ内のすべてのステムを抽出します。そのうちの一部が不要であると判断されれば削除されます。あなたが重要だと考えるヒントを FontForge が削除しているのに気づいたときは、Shift キーを押したまま <CODE>ヒント(<U>I</U>)</CODE>→<CODE>自動ヒント(<U>H</U>)</CODE> を呼び出すと、FontForge にステムの削除を一切行わないように通知したこと名になります。その後、手動でヒントを削除するには <CODE>ヒントを確認(<U>R</U>)...</CODE> を使用してください。
 <P>
 <!--
 If you find that you must create your own hints, FontForge will only allow
@@ -161,7 +161,7 @@ commands, that glyph will be marked "Don't AutoHint" until you explicitly
 call the AutoHint command on it. You may also explicitly use the
 Hints-&gt;Don't AutoHint command to turn off FontForge's automatic hinting
 attempts. -->
-グリフのヒントに手動で変更を加えれば、グリフは「自動ヒントを停止」と印づけされ、その文字に明示的に 自動ヒント(H) コマンドを呼ばない限り
+グリフのヒントに手動で変更を加えれば、グリフは「自動ヒントを停止」と印づけされ、その文字に明示的に <CODE>自動ヒント(<U>H</U>)</CODE> コマンドを呼ばない限り
 <P>
 <!--
 You may also manually -->
@@ -189,7 +189,7 @@ out where hint substitution should occur, but if this isn't good enough you
 may do it manually with the <A HREF="getinfo.html#HintMask">Element-&gt;Get
 Info</A> command (when the selection is a single point to which you want
 to attach a hintmask). -->
-FontForge の ヒント(H)→ヒントが置換する点(S) コマンドは、ヒント置換が起こる点を自動的に検出しますが、これが十分うまく働いていないときは、(ヒントマスクに所属させたい点 1 個だけをあらかじめ選択してあれば) <A HREF="getinfo.html#HintMask">エレメント(L)→情報を得る(I)</A> コマンドから手動で設定を行うことができます。
+FontForge の <CODE>ヒント(<U>I</U>)</CODE>→<CODE>ヒントが置換する点(<U>S</U>)</CODE> コマンドは、ヒント置換が起こる点を自動的に検出しますが、これが十分うまく働いていないときは、(ヒントマスクに所属させたい点 1 個だけをあらかじめ選択してあれば) <A HREF="getinfo.html#HintMask"><CODE>エレメント(<U>L</U>)<CODE>→<CODE>情報を得る(<U>I</U>)</CODE></A> コマンドから手動で設定を行うことができます。
 <P>
 <!--
 If a glyph has conflicting hints then the first point in the glyph (the first
@@ -223,7 +223,7 @@ selections.<BR CLEAR=ALL> -->
 <!--
 FontForge also has a Hints-&gt;Auto Counter command which tries to figure
 out what stems form a counter group. -->
-FontForge には、カウンタグループを構成するステムを検出するための ヒント(H)→自動カウンタヒント(C) コマンドも用意されています。
+FontForge には、カウンタグループを構成するステムを検出するための <CODE>ヒント(<U>I</U>)</CODE>→<CODE>自動カウンタヒント(<U>C</U>)</CODE> コマンドも用意されています。
 <P>
 <!--
 Again you can do this manually, with the
@@ -231,7 +231,7 @@ Again you can do this manually, with the
 Info dialog. When creating a new counter group you are presented with a dialog
 very similar to the one above in which you must select a set of hints that
 bound a set of counters. -->
-この場合も、エレメント(L)→グリフ情報(I) の <A HREF="charinfo.html#CounterMasks">カウンタ</A> ペーンを使用して、手動で設定を行うことができます。新しいカウンタグループの作成をするときには、上の例と非常によく似たダイアログが提示され、そこでは輪郭の組合せと結びつけられる一連のヒントを選択する必要があります。
+この場合も、<CODE>エレメント(<U>L</U>)</CODE>→<CODE>グリフ情報(<U>I</U>)</CODE> の <A HREF="charinfo.html#CounterMasks"><CODE>[カウンタ]</CODE></A> タブを使用して、手動で設定を行うことができます。新しいカウンタグループの作成をするときには、上の例と非常によく似たダイアログが提示され、そこでは輪郭の組合せと結びつけられる一連のヒントを選択する必要があります。
 <H2>
 <!--Hints and previously existing fonts.-->
     ヒントと以前存在したフォント
@@ -364,7 +364,7 @@ I find the hint documentation inadequate for me to do a good job at hinting. -->
     hints work? Is a hint meaningful if there are no points associated with it?
     As in the "O" at right, where the two vertical stems have no points associated
     with them. -->
-    ヒントはどのように動作するのか? ヒントに付随する点が存在しないとき、そのヒントは有効なのか? (右の例の "O" のように、2 本の垂直ヒントがそれに伴う点をもたない場合)。
+    ヒントはどのように動作するのか? ヒントに付随する点が存在しないとき、そのヒントは有効なのか? (右の例の“O”のように、2 本の垂直ヒントがそれに伴う点をもたない場合)。
   <LI>
 <!--Is it meaningful for a hint to have points only on one side of it? Can reasonable
     hints be written for the serif cap above left? -->
@@ -376,6 +376,6 @@ I find the hint documentation inadequate for me to do a good job at hinting. -->
 TrueType</A>.<BR>
 <A HREF="hintsmenu.html">Hinting menu.</A> -->
 <A HREF="overview.html#Hints">Postscript と TrueType でのヒント処理の概要</A>.<BR>
-<A HREF="hintsmenu.html">ヒントづけメニュー</A>
+<A HREF="hintsmenu.html"><CODE>ヒント(<U>I</U>)</CODE>メニュー</A>
 </DIV>
 </BODY></HTML>
