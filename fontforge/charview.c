@@ -6050,6 +6050,7 @@ static void _CVCenterCP(CharView *cv) {
     SplinePointList *spl;
     SplinePoint *sp;
     int changed = false;
+    enum movething { mt_pt, mt_ncp, mt_pcp } movething = mt_pt;
 
     for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
 	for ( sp=spl->first; ; ) {
@@ -6061,10 +6062,34 @@ static void _CVCenterCP(CharView *cv) {
 			CVPreserveState(cv);
 			changed = true;
 		    }
-		    sp->me.x = (sp->nextcp.x+sp->prevcp.x)/2;
-		    sp->me.y = (sp->nextcp.y+sp->prevcp.y)/2;
-		    SplineRefigure(sp->prev);
-		    SplineRefigure(sp->next);
+		    switch ( movething ) {
+		      case mt_pt:
+			sp->me.x = (sp->nextcp.x+sp->prevcp.x)/2;
+			sp->me.y = (sp->nextcp.y+sp->prevcp.y)/2;
+			SplineRefigure(sp->prev);
+			SplineRefigure(sp->next);
+		      break;
+		      case mt_ncp:
+			sp->nextcp.x = sp->me.x - (sp->prevcp.x-sp->me.x);
+			sp->nextcp.y = sp->me.y - (sp->prevcp.y-sp->me.y);
+			if ( sp->next->order2 ) {
+			    sp->next->to->prevcp = sp->nextcp;
+			    sp->next->to->noprevcp = false;
+			}
+			SplineRefigure(sp->prev);
+			SplineRefigureFixup(sp->next);
+		      break;
+		      case mt_pcp:
+			sp->prevcp.x = sp->me.x - (sp->nextcp.x-sp->me.x);
+			sp->prevcp.y = sp->me.y - (sp->nextcp.y-sp->me.y);
+			if ( sp->prev->order2 ) {
+			    sp->prev->from->nextcp = sp->prevcp;
+			    sp->prev->from->nonextcp = false;
+			}
+			SplineRefigureFixup(sp->prev);
+			SplineRefigure(sp->next);
+		      break;
+		    }
 		}
 	    }
 	    if ( sp->next==NULL )

@@ -1013,8 +1013,13 @@ return;
 			    IntersectLinesClip(&to->nextcp,&new,&to->me,&next->prevcp,&next->me)) {
 			next->prevcp = to->nextcp;
 			SplineRefigure2(to->next);
-		    } else
+		    } else {
 			to->nextcp = new;
+			if ( to->next!=NULL ) {
+			    to->next->to->prevcp = new;
+			    SplineRefigure(to->next);
+			}
+		    }
 		}
 	    }
 	} else if ( to->pointtype==pt_tangent ) {
