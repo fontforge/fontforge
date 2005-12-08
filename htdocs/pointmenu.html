@@ -2,108 +2,116 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 27-Jun-2005 -->
+  <!-- AP: Last modified: 8-Dec-2005 -->
   <TITLE>The Point Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
 <DIV id="in">
-<H1 ALIGN=Center>
-  The Point Menu
-</H1>
-<P>
-This menu is only available in the Outline Character View.
-<P>
-<UL>
-  <LI>
-    <A HREF="#Curve">Curve</A>
-  <LI>
-    <A HREF="#Corner">Corner</A>
-  <LI>
-    <A HREF="#Tangent">Tangent</A>
-  <LI>
-    <A HREF="#Make-First">Make First</A>
-  <LI>
-    <A HREF="#AddAnchor">Add Anchor Point...</A>
-  <LI>
-    <A HREF="#MkLine">Make Line</A>
-</UL>
-<P>
-<DL>
-  <DT>
-    <A NAME="Curve">Curve</A>
-  <DD>
-    If all the selected points are Curve points then this entry will be checked.
-    Selecting it will change all selected points to be Curve points.
-  <DT>
-    <A NAME="Corner">Corner</A>
-  <DD>
-    If all the selected points are Corner points then this entry will be checked.
-    Selecting it will change all selected points to be Corner points.
-  <DT>
-    <A NAME="Tangent">Tangent</A>
-  <DD>
-    If all the selected points are Tangent points then this entry will be checked.
-    Selecting it will change all selected points to be Tangent points.
-  <DT>
-    <A NAME="Make-First">Make First</A>
-  <DD>
-    Only present in the outline view. If exactly one point is selected and it
-    is on a closed path and it is not the "first point" of that path, then it
-    will become the first point.
-  <DT>
-    <A NAME="AddAnchor">Add Anchor Point...</A>
-  <DD>
-    <IMG SRC="agetinfo.png" WIDTH="226" HEIGHT="329" ALIGN="Right">This command
-    adds a new <A HREF="overview.html#Anchors">anchor point</A> to the glyph.
-    The last click in the window provides a default location for the point.
-    <P>
-    See <A HREF="overview.html#Anchors">the overview</A> and the
-    <A HREF="getinfo.html#Anchors">Element-&gt;Get Info command</A> for more
-    info.
-  <DT>
-    <A NAME="MkLine">Make Line</A>
-  <DD>
-    If two adjacent points are selected then make the spline between them into
-    a straight line. If a point is selected and has no adjacent selected points
-    then make its control points be on top of the point
-</DL>
-<P>
-<H2>
-  Other menus
-</H2>
-<UL>
-  <LI>
-    <A HREF="filemenu.html">File</A>
-  <LI>
-    <A HREF="editmenu.html">Edit</A>
-  <LI>
-    <A HREF="pointmenu.html">Point</A>
-  <LI>
-    <A HREF="elementmenu.html">Element</A>
-  <LI>
-    <A HREF="hintsmenu.html">Hints</A>
-  <LI>
-    <A HREF="encodingmenu.html">Encoding</A>
-  <LI>
-    <A HREF="viewmenu.html">View</A>
-  <LI>
-    <A HREF="metricsmenu.html">Metrics</A>
-  <LI>
-    <A HREF="cidmenu.html">CID</A>
-  <LI>
-    <A HREF="mmmenu.html">MM</A>
-  <LI>
-    <A HREF="windowmenu.html">Window</A>
-  <LI>
-    <A HREF="helpmenu.html">Help</A>
-  <LI>
-    <A HREF="HotKeys.html">Hot Keys</A>
-</UL>
-<P ALIGN=Center>
--- <A HREF="editmenu.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
-<A HREF="elementmenu.html">Next</A> --
-<P>
+  <H1 ALIGN=Center>
+    The Point Menu
+  </H1>
+  <P>
+  This menu is only available in the Outline Character View.
+  <P>
+  <UL>
+    <LI>
+      <A HREF="#Curve">Curve</A>
+    <LI>
+      <A HREF="#Corner">Corner</A>
+    <LI>
+      <A HREF="#Tangent">Tangent</A>
+    <LI>
+      <A HREF="#Make-First">Make First</A>
+    <LI>
+      <A HREF="#AddAnchor">Add Anchor Point...</A>
+    <LI>
+      <A HREF="#MkLine">Make Line</A>
+    <LI>
+      <A HREF="#CenterCP">Center Between Control Points</A>
+  </UL>
+  <P>
+  <DL>
+    <DT>
+      <A NAME="Curve">Curve</A>
+    <DD>
+      If all the selected points are Curve points then this entry will be checked.
+      Selecting it will change all selected points to be Curve points.
+    <DT>
+      <A NAME="Corner">Corner</A>
+    <DD>
+      If all the selected points are Corner points then this entry will be checked.
+      Selecting it will change all selected points to be Corner points.
+    <DT>
+      <A NAME="Tangent">Tangent</A>
+    <DD>
+      If all the selected points are Tangent points then this entry will be checked.
+      Selecting it will change all selected points to be Tangent points.
+    <DT>
+      <A NAME="Make-First">Make First</A>
+    <DD>
+      Only present in the outline view. If exactly one point is selected and it
+      is on a closed path and it is not the "first point" of that path, then it
+      will become the first point.
+    <DT>
+      <A NAME="AddAnchor">Add Anchor Point...</A>
+    <DD>
+      <IMG SRC="agetinfo.png" WIDTH="226" HEIGHT="389" ALIGN="Right">This command
+      adds a new <A HREF="overview.html#Anchors">anchor point</A> to the glyph.
+      The last click in the window provides a default location for the point.
+      <P>
+      See <A HREF="overview.html#Anchors">the overview</A> and the
+      <A HREF="getinfo.html#Anchors">Element-&gt;Get Info command</A> for more
+      info.
+    <DT>
+      <A NAME="MkLine">Make Line</A>
+    <DD>
+      If two adjacent points are selected then make the spline between them into
+      a straight line. If a point is selected and has no adjacent selected points
+      then make its control points be on top of the point
+    <DT>
+      <A NAME="CenterCP">Center Between Control Points</A>
+    <DD>
+      In truetype, if an on-curve point is centered between its control points,
+      then that point may be omitted when written to the output file. This command
+      allows you to create such a point more easily.<BR CLEAR=ALL>
+  </DL>
+  <P>
+  <H2>
+    Other menus
+  </H2>
+  <UL>
+    <LI>
+      <A HREF="filemenu.html">File</A>
+    <LI>
+      <A HREF="editmenu.html">Edit</A>
+    <LI>
+      <A HREF="pointmenu.html">Point</A>
+    <LI>
+      <A HREF="elementmenu.html">Element</A>
+    <LI>
+      <A HREF="hintsmenu.html">Hints</A>
+    <LI>
+      <A HREF="encodingmenu.html">Encoding</A>
+    <LI>
+      <A HREF="viewmenu.html">View</A>
+    <LI>
+      <A HREF="metricsmenu.html">Metrics</A>
+    <LI>
+      <A HREF="cidmenu.html">CID</A>
+    <LI>
+      <A HREF="mmmenu.html">MM</A>
+    <LI>
+      <A HREF="windowmenu.html">Window</A>
+    <LI>
+      <A HREF="helpmenu.html">Help</A>
+    <LI>
+      <A HREF="HotKeys.html">Hot Keys</A>
+  </UL>
+  <P ALIGN=Center>
+  -- <A HREF="editmenu.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
+  <A HREF="elementmenu.html">Next</A> --
+  <P>
 </DIV>
 </BODY></HTML>
