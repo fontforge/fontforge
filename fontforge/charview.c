@@ -4111,6 +4111,7 @@ return( true );
 #define MID_Curve	2303
 #define MID_MakeFirst	2304
 #define MID_MakeLine	2305
+#define MID_CenterCP	2306
 #define MID_AddAnchor	2310
 #define MID_AutoHint	2400
 #define MID_ClearHStem	2401
@@ -5266,7 +5267,7 @@ static void CVMenuPointType(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 static void cv_ptlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
-    int type = -2, cnt=0;
+    int type = -2, cnt=0, ccp_cnt=0;
     SplinePointList *spl, *sel=NULL;
     Spline *spline, *first;
     SplinePoint *selpt=NULL;
@@ -5278,6 +5279,8 @@ static void cv_ptlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	    selpt = spl->first; ++cnt;
 	    if ( type==-2 ) type = spl->first->pointtype;
 	    else if ( type!=spl->first->pointtype ) type = -1;
+	    if ( !spl->first->nonextcp && !spl->first->noprevcp && spl->first->prev!=NULL )
+		++ccp_cnt;
 	}
 	for ( spline=spl->first->next; spline!=NULL && spline!=first && type!=-1; spline = spline->to->next ) {
 	    if ( spline->to->selected ) {
@@ -5285,6 +5288,8 @@ static void cv_ptlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 		else if ( type!=spline->to->pointtype ) type = -1;
 		selpt = spline->to;
 		sel = spl; ++cnt;
+		if ( !spline->to->nonextcp && !spline->to->noprevcp && spline->to->next!=NULL )
+		    ++ccp_cnt;
 	    }
 	    if ( first == NULL ) first = spline;
 	}
@@ -5309,6 +5314,9 @@ static void cv_ptlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_MakeLine:
 	    mi->ti.disabled = cnt==0;
+	  break;
+	  case MID_CenterCP:
+	    mi->ti.disabled = ccp_cnt==0;
 	  break;
 #if 0
 	  case MID_AddAnchor:
@@ -6036,6 +6044,44 @@ static void _CVMenuMakeLine(CharView *cv) {
 static void CVMenuMakeLine(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     _CVMenuMakeLine(cv);
+}
+
+static void _CVCenterCP(CharView *cv) {
+    SplinePointList *spl;
+    SplinePoint *sp;
+    int changed = false;
+
+    for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
+	for ( sp=spl->first; ; ) {
+	    if ( sp->selected && sp->prev!=NULL && sp->next!=NULL &&
+		    !sp->noprevcp && !sp->nonextcp ) {
+		if ( sp->me.x != (sp->nextcp.x+sp->prevcp.x)/2 ||
+			sp->me.y != (sp->nextcp.y+sp->prevcp.y)/2 ) {
+		    if ( !changed ) {
+			CVPreserveState(cv);
+			changed = true;
+		    }
+		    sp->me.x = (sp->nextcp.x+sp->prevcp.x)/2;
+		    sp->me.y = (sp->nextcp.y+sp->prevcp.y)/2;
+		    SplineRefigure(sp->prev);
+		    SplineRefigure(sp->next);
+		}
+	    }
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==spl->first )
+	break;
+	}
+    }
+
+    if ( changed )
+	CVCharChangedUpdate(cv);
+}
+
+static void CVMenuCenterCP(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    _CVCenterCP(cv);
 }
 
 void CVAddAnchor(CharView *cv) {
@@ -6943,6 +6989,7 @@ static GMenuItem ptlist[] = {
     { { (unichar_t *) N_("_Add Anchor"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, '0', ksm_control, NULL, NULL, CVMenuAddAnchor, MID_AddAnchor },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("Make _Line"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, '\0', ksm_control, NULL, NULL, CVMenuMakeLine, MID_MakeLine },
+    { { (unichar_t *) N_("Center _Between Control Points"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, '\0', ksm_control, NULL, NULL, CVMenuCenterCP, MID_CenterCP },
     { NULL }
 };
 
