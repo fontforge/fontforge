@@ -640,10 +640,15 @@ static int GMenuSpecialKeys(struct gmenu *m, unichar_t keysym, GEvent *event) {
 	GMenuDestroy(m);
 return( true );
       case GK_Return:
-	if ( m->mi[m->line_with_mouse].sub!=NULL && m->child==NULL ) {
+	if ( m->line_with_mouse==-1 ) {
+	    int ns=0;
+	    while ( ns<m->mcnt && (m->mi[ns].ti.disabled || m->mi[ns].ti.line)) ++ns;
+	    if ( ns<m->mcnt )
+		GMenuChangeSelection(m,ns,event);
+	} else if ( m->mi[m->line_with_mouse].sub!=NULL &&
+		m->child==NULL ) {
 	    m->child = GMenuCreateSubMenu(m,m->mi[m->line_with_mouse].sub,
 		    m->disabled || m->mi[m->line_with_mouse].ti.disabled);
-return( true );
 	} else {
 	    int i = m->line_with_mouse;
 	    if ( !m->disabled && !m->mi[i].ti.disabled && !m->mi[i].ti.line ) {
@@ -654,8 +659,8 @@ return( true );
 		    (m->mi[i].invoke)(m->owner,&m->mi[i],event);
 	    } else
 		GMenuDismissAll(m);
-return( true );
 	}
+return( true );
       case GK_Left: case GK_KP_Left:
 	if ( m->parent!=NULL ) {
 	    GMenuDestroy(m);
