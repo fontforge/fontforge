@@ -122,6 +122,7 @@ return(true);
 	}
 	CVLayersSet(cv);
 	fsd->done = true;
+	SCRefreshTitles(cv->sc);
     }
 return( true );
 }

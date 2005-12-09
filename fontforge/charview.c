@@ -1841,6 +1841,8 @@ static char *CVMakeTitles(CharView *cv,char *buf) {
 	strcat(buf, " ");
 	latin1_2_utf8_strcpy(buf+strlen(buf), _UnicodeNameAnnot[sc->unicodeenc>>16][(sc->unicodeenc>>8)&0xff][sc->unicodeenc&0xff].name);
     }
+    if ( cv->show_ft_results || cv->dv )
+	sprintf(buf+strlen(buf), " (%gpt, %ddpi)", cv->ft_pointsize, cv->ft_dpi );
 return( title );
 }
 
@@ -1851,10 +1853,12 @@ void SCRefreshTitles(SplineChar *sc) {
 
     if ( sc->views==NULL )
 return;
-    title = CVMakeTitles(sc->views,buf);
-    for ( cv = sc->views; cv!=NULL; cv=cv->next )
+    for ( cv = sc->views; cv!=NULL; cv=cv->next ) {
+	title = CVMakeTitles(cv,buf);
+	/* Could be different if one window is debugging and one is not */
 	GDrawSetWindowTitles8(cv->gw,buf,title);
-    free(title);
+	free(title);
+    }
 }
 
 void CVChangeSC(CharView *cv, SplineChar *sc ) {
