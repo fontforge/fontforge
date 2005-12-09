@@ -1594,7 +1594,7 @@ return( dc->debug_fpgm );
 struct freetype_raster *DebuggerCurrentRaster(TT_ExecContext exc,int depth) {
     FT_Outline outline;
     FT_Bitmap bitmap;
-    int i, err, k, first,j;
+    int i, err, k, first;
     DBounds b;
     struct freetype_raster *ret;
 
@@ -1646,7 +1646,7 @@ struct freetype_raster *DebuggerCurrentRaster(TT_ExecContext exc,int depth) {
     err = (_FT_Outline_Get_Bitmap)(context,&outline,&bitmap);
 
     ret = galloc(sizeof(struct freetype_raster));
-#if 1
+#if 0
     /* I'm not sure why I need these, but it seems I do */
 	for ( k=0; k<(((int) (b.maxy-b.miny))>>6); ++k ) {
 	    for ( j=bitmap.pitch-1; j>=0 && bitmap.buffer[k*bitmap.pitch+j]==0; --j );
