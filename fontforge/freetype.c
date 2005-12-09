@@ -1594,7 +1594,7 @@ return( dc->debug_fpgm );
 struct freetype_raster *DebuggerCurrentRaster(TT_ExecContext exc,int depth) {
     FT_Outline outline;
     FT_Bitmap bitmap;
-    int i, err, k,j;
+    int i, err, k, first,j;
     DBounds b;
     struct freetype_raster *ret;
 
@@ -1608,11 +1608,25 @@ struct freetype_raster *DebuggerCurrentRaster(TT_ExecContext exc,int depth) {
 
     b.minx = b.maxx = outline.points[0].x;
     b.miny = b.maxy = outline.points[0].y;
-    for ( i=1; i<outline.n_points; ++i ) {
-	if ( outline.points[i].x>b.maxx ) b.maxx = outline.points[i].x;
-	if ( outline.points[i].x<b.minx ) b.minx = outline.points[i].x;
-	if ( outline.points[i].y>b.maxy ) b.maxy = outline.points[i].y;
-	if ( outline.points[i].y<b.miny ) b.miny = outline.points[i].y;
+    first = true;
+    for ( k=0; k<outline.n_contours; ++k ) {
+	if ( outline.contours[k] - (k==0?-1:outline.contours[k-1])>1 ) {
+	    /* Single point contours are used for things like point matching */
+	    /*  for anchor points, etc. and do not contribute to the bounding */
+	    /*  box */
+	    i = (k==0?0:(outline.contours[k-1]+1));
+	    if ( first ) {
+		b.minx = b.maxx = outline.points[i].x;
+		b.miny = b.maxy = outline.points[i++].y;
+		first = false;
+	    }
+	    for ( ; i<=outline.contours[k]; ++i ) {
+		if ( outline.points[i].x>b.maxx ) b.maxx = outline.points[i].x;
+		if ( outline.points[i].x<b.minx ) b.minx = outline.points[i].x;
+		if ( outline.points[i].y>b.maxy ) b.maxy = outline.points[i].y;
+		if ( outline.points[i].y<b.miny ) b.miny = outline.points[i].y;
+	    }
+	}
     }
 
     memset(&bitmap,0,sizeof(bitmap));
@@ -1632,6 +1646,7 @@ struct freetype_raster *DebuggerCurrentRaster(TT_ExecContext exc,int depth) {
     err = (_FT_Outline_Get_Bitmap)(context,&outline,&bitmap);
 
     ret = galloc(sizeof(struct freetype_raster));
+#if 1
     /* I'm not sure why I need these, but it seems I do */
 	for ( k=0; k<(((int) (b.maxy-b.miny))>>6); ++k ) {
 	    for ( j=bitmap.pitch-1; j>=0 && bitmap.buffer[k*bitmap.pitch+j]==0; --j );
@@ -1662,6 +1677,11 @@ struct freetype_raster *DebuggerCurrentRaster(TT_ExecContext exc,int depth) {
 	b.minx -= j*64;
     ret->as = ceil(b.maxy/64.0);
     ret->lb = floor(b.minx/64.0);
+#else
+printf ( "rows=%d miny=%g maxy=%g, minx=%g\n", bitmap.rows, b.miny, b.maxy, b.minx );
+    ret->as = bitmap.rows + rint(b.miny/64.0);
+    ret->lb = rint(b.minx/64.0);
+#endif
     ret->rows = bitmap.rows;
     ret->cols = bitmap.width;
     ret->bytes_per_row = bitmap.pitch;
