@@ -9,6 +9,7 @@
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
+<div id="in">
 <P>
 <!--
 Different font formats place different restrictions on the use of references.
@@ -93,12 +94,13 @@ Let us examine the most common font formats: -->
     With Reference</A> after loading a Type1 font. -->
     FontForge は&lsquo;seac&rsquo;を参照の定義と解釈しますが、サブルーチン呼出しは参照とは見なしません。いったん Type1 フォントを読み込んでから <A HREF="editmenu.html#ReplaceRef"><CODE>編集(<U>E</U>)</CODE>→<CODE>参照に置換</CODE></A> を使用してください。
   <DT>
-    Type2 ("OpenType")
+<!--Type2 ("OpenType") -->
+    Type2 (“OpenType”)
   <DD>
 <!--As above references may only be translated (not scaled, rotated, etc.). Type2
     does not have anything equivalent to the 'seac' instruction but does support
     subroutines. -->
-    Type1 と同様に、参照は平行移動のみが可能 (拡大/縮小、回転などは不可) です。Type2 は“seac’命令と等価なメカニズムは全く存在しませんが、サブルーチンはサポートしています。
+    Type1 と同様に、参照は平行移動のみが可能 (拡大/縮小、回転などは不可) です。Type2 は&lsquo;seac&rsquo;命令と等価なメカニズムは全く存在しませんが、サブルーチンはサポートしています。
     <P>
 <!--Here a referenced glyph can be put into a subroutine if it contains no hint
     substitutions, or if it is not translated and none of the other components
@@ -122,4 +124,5 @@ Let us examine the most common font formats: -->
     参照を取り扱う手軽な方法は存在しないようです。
 </DL>
 <P>
+</div>
 </BODY></HTML>

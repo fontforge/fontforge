@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 2-Nov-2005 -->
+  <!-- AP: Last modified: 30-Nov-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Frequently Asked Questions</TITLE>-->
     <TITLE>よくある質問</TITLE>
@@ -30,7 +30,7 @@
     <LI>
 <!--  <A HREF="#font-editor">Why a font editor, aren't there enough fonts
       already?</A>-->
-      <A HREF="#font-editor">なぜフォントエディタを? もう十分にフォントはあるのでは?</A>
+      <A HREF="#font-editor">なぜフォントエディタを作るのですか? もう十分にフォントはあるのではないですか?</A>
       <UL>
         <LI>
 <!--	  <A HREF="#write">Why did I write it?</A>-->
@@ -54,19 +54,23 @@
   <UL>
     <LI>
 <!--  <A HREF="#legal">Is it legal to modify a font? Is it ethical?</A> -->
-      <A HREF="#legal">フォントを改変することは合法か? 倫理上の問題はないのか?</A>
+      <A HREF="#legal">フォントを改変することは合法ですか? 倫理上の問題はありませんか?</A>
     <LI>
 <!--  <A HREF="#pointsize">What is a 12point font?</A> (What measurement of the
       font determines the point size) -->
-      <A HREF="#pointsize">12 ポイントのフォントとは何か?</A> (ポイントサイズは、フォントのどこを計って決めるのか?)
+      <A HREF="#pointsize">12 ポイントのフォントとは何ですか?</A> (ポイントサイズは、フォントのどこを計って決めるのですか?)
       <UL>
         <LI>
 <!--	  <A HREF="#linespace">How do I set the line spacing on a font?</A> -->
-	  <A HREF="#linespace">フォントの行間を設定するにはどうすればよいか?</A>
+	  <A HREF="#linespace">フォントの行間はどうやって設定するのですか?</A>
       </UL>
     <LI>
 <!--  <A HREF="#em-units">How big will my glyph be? (What are em-units?)</A>-->
-      <A HREF="#em-units">私のグリフはどのくらいの大きさになるのか? (em ユニットとは何か?)</A>
+      <A HREF="#em-units">私のグリフはどのくらいの大きさになりますか? (em ユニットとは何ですか?)</A>
+    <LI>
+<!--  <A HREF="#license" TARGET="faq">What's a good license to use on an open source
+      font?</A> -->
+      <A HREF="#license" TARGET="faq">オープンソースのフォントに適したライセンスはどれですか?</A>
   </UL>
   <H2>
 <!--  Using FontForge &amp; Installing fonts on various systems-->
@@ -74,12 +78,34 @@
   </H2>
   <UL>
     <LI>
+<!-- How do I install FontForge on: -->
+     FontForge を、
+      <TABLE CELLSPACING="6" CELLPADDING="2">
+	<TR>
+	  <TD><P ALIGN=Center>
+<!--	    <A HREF="nix-install.html" TARGET="_top">Unix/Linux</A></TD> -->
+	    <A HREF="nix-install.html" TARGET="_top">Unix/Linux</A> に</TD>
+<!--	  <TD>&nbsp; &nbsp;<A HREF="mac-install.html" TARGET="_top">Mac</A></TD> -->
+	  <TD>&nbsp; &nbsp;<A HREF="mac-install.html" TARGET="_top">Mac</A> に</TD>
+<!--	  <TD>&nbsp; &nbsp;<A HREF="ms-install.html" TARGET="_top">MS/Windows</A></TD> -->
+	  <TD>&nbsp; &nbsp;<A HREF="ms-install.html" TARGET="_top">MS Windows</A> に</TD>
+<!--	  <TD>&nbsp; &nbsp;<A HREF="vms-install.html" TARGET="_top">VMS</A></TD> -->
+	  <TD>&nbsp; &nbsp;<A HREF="vms-install.html" TARGET="_top">VMS</A> に</TD>
+<!--	  <TD>&nbsp; &nbsp;<A HREF="source-build.html" TARGET="_top">from source</A></TD> -->
+	  <TD>&nbsp; &nbsp;<A HREF="source-build.html" TARGET="_top">ソースから</A></TD>
+	</TR>
+      </TABLE>
+    にインストールするにはどうすればいいですか?
+    <LI>
+<!--  <A HREF="#Minimum">Minimum requirements</A> -->
+      <A HREF="#Minimum">システムの最小構成</A>
+    <LI>
 <!--  <A HREF="#font-install">How do I install the fonts once I've made them?</A>-->
-      <A HREF="#font-install">自分が作ったフォントをどうやってインストールすればいいのか?</A>
+      <A HREF="#font-install">自分が作ったフォントはどうやってインストールするのですか?</A>
     <LI>
 <!--  <A HREF="faq.html#Bad-Windows-Install">Why won't FontForge's fonts install
       on some MS Windows systems</A>-->
-      <A HREF="faq.html#Bad-Windows-Install">どうして FontForge で作ったフォントが MS Windows のシステムにインストールできないことがあるのか</A>
+      <A HREF="faq.html#Bad-Windows-Install">どうして FontForge で作ったフォントが MS Windows のシステムにインストールできないことがあるのですか?</A>
     <LI>
 <!--  <A HREF="#How-mac">How do I edit fonts from my macintoy?</A>-->
       <A HREF="#How-mac">マク用のフォントを編集するにはどうすればいいの?</A>
@@ -87,23 +113,23 @@
         <LI>
 <!--	  <A HREF="#How-family">How do I create a mac font family? (How do I get the
 	  mac to group my fonts so that the italic and bold styles work)?</A>-->
-	  <A HREF="#How-family">どうすれば Mac のフォントファミリーを作れるのか? (フォントをグループ化して、イタリックやボールドのスタイル指定が動作するようにするにはどうしたらいいか?</A>
+	  <A HREF="#How-family">Mac のフォントファミリーはどうやって作るのですか? (フォントをグループ化して、イタリックやボールドのスタイル指定を有効にする方法は?)</A>
         <LI>
 <!--	  <A HREF="#Mac-ATM">Why doesn't ATM work with my fonts?</A> -->
-	  <A HREF="#Mac-ATM">なぜ自作のフォントが ATM でうまく使えないのか?</A>
+	  <A HREF="#Mac-ATM">なぜ自作のフォントが ATM でうまく使えないのですか?</A>
       </UL>
     <LI>
 <!--  <A HREF="#windows">How do I edit fonts on MS windows?</A> -->
-      <A HREF="#windows">MS Windows でフォントを編集するにはどうすればよいか?</A>
+      <A HREF="#windows">MS Windows でフォントを編集するにはどうすればよいですか?</A>
       <UL>
         <LI>
 <!--	  <A HREF="faq.html#Bad-Windows-Fonts">Why don't my fonts work on windows?</A> -->
-	  <A HREF="#Bad-Windows-Fonts">なぜ自作のフォントが Windowsで使えないのか?</A>
+	  <A HREF="#Bad-Windows-Fonts">私が作ったフォントが Windowsで使えないのはなぜですか?</A>
       </UL>
     <LI>
 <!--  <A HREF="#otf-diffs">I generated an opentype (or truetype) font and windows
       wouldn't install it. Why not?</A> -->
-      <A HREF="#otf-diffs">OpenType フォントを生成したが、Windows にはインストールできない。なぜできないのか?</A>
+      <A HREF="#otf-diffs">OpenType フォントを出力したけど Windows にインストールされません。なぜですか?</A>
   </UL>
   <H2>
 <!--  Font Conversions-->
@@ -125,6 +151,12 @@
 <!--  <A HREF="faq.html#bitmap-outline">Converting from a bitmap format to an
       outline</A> -->
       <A HREF="faq.html#bitmap-outline">ビットマップからアウトラインへの変換方法</A>
+    <LI>
+<!--  <A HREF="#AAT2OT">Converting from Apple's Advanced Typography to OpenType</A> -->
+      <A HREF="#AAT2OT">Apple 高度組版機能 (AAT) から OpenType への変換方法</A>
+    <LI>
+<!--  <A HREF="#OT2AAT">Converting from OT to AAT</A> -->
+      <A HREF="#OT2AAT">OT から AAT への変換方法</A>
   </UL>
   <H2>
 <!--  Questions about Hints and TrueType Instructions -->
@@ -133,24 +165,24 @@
   <UL>
     <LI>
 <!--  <A HREF="#hint-subs">How do I make it use hint substitution?</A> -->
-      <A HREF="#hint-subs">FontForge がヒント置換を行うようにするにはどうすればいいか?</A>
+      <A HREF="#hint-subs">FontForge がヒント置換を行うようにするにはどうすればいいですか?</A>
     <LI>
 <!--  <A HREF="#flex-hints">How do I make it use flex hints?</A> -->
-      <A HREF="#flex-hints">FontForge が flex ヒントを使うようにするにはどうすればいいか?</A>
+      <A HREF="#flex-hints">FontForge が flex ヒントを使うようにするにはどうすればいいですか?</A>
       <UL>
         <LI>
 <!--	  <A HREF="#flex2">How can I tell if it is going to use flex hints?</A> -->
-	  <A HREF="#flex2">flex ヒントが使われるかどうかはどうすれば分かるのか?</A></B>
+	  <A HREF="#flex2">flex ヒントが使われるかどうかはどうすれば分かりますか?</A>
       </UL>
     <LI>
 <!--  <A HREF="#fuzzy">My glyphs are all perfectly hinted, why do some stems have
       different widths (or appear fuzzy, or fade away completely)?</A> -->
-      <A HREF="#fuzzy">どのグリフも完璧にヒントづけしたのに、幅が揃わない (またはぼやけて見えたり完全に掠れて見えなかったりする) ステムがあるのはなぜか?</A>
+      <A HREF="#fuzzy">どのグリフも完璧にヒントづけしたのに、幅が揃わない (またはぼやけて見えたり完全に掠れて見えなかったりする) ステムがあるのはなぜですか?</A>
     <LI>
 <!--  <A HREF="#ttf-degrade">I loaded a ttf font, made a few changes and generated
       a new font. The changed glyphs don't look anywhere near as nice as the originals.
       Why?</A> -->
-      <A HREF="#ttf-degrade">TTF フォントを読み込んで、2,3 箇所修正してから新しいフォントを出力した。変更したグリフはどこから見てもオリジナルと比べて見劣りする。なぜか?</A>
+      <A HREF="#ttf-degrade">TTF フォントを読み込んで、2,3 箇所修正してから新しいフォントを出力しました。変更したグリフがどう見てもオリジナルと比べて見劣りするのはなぜですか?</A>
   </UL>
   <H2>
 <!--  Questions about <A HREF="bibliography.html" TARGET="_top">Font Formats</A>-->
@@ -160,48 +192,48 @@
     <LI>
 <!--  <A HREF="faq.html#Open-difference">What's the difference between OpenType
       and PostScript (or TrueType) fonts?</A> -->
-      <A HREF="#Open-difference">OpenType と PostScript (や TrueType) フォントはどこが違うのか?</A>
+      <A HREF="#Open-difference">OpenType と PostScript (や TrueType) フォントはどう違うのですか?</A>
     <LI>
 <!--  <A HREF="faq.html#AAT-Open">What is the difference between AAT (Apple Advanced
       Typography) and OpenType?</A> -->
-      <A HREF="faq.html#AAT-Open">AAT (Apple Advanced Typography) と OpenType はどこが違うのか?</A>
+      <A HREF="faq.html#AAT-Open">AAT (Apple Advanced Typography) と OpenType はどう違うのですか?</A>
     <LI>
 <!--  <A HREF="#Tiger-Open">Why does a font, which worked fine under 10.3 fail
       on Mac 10.4 (Tiger)?</A> -->
-      <A HREF="#Tiger-Open">Mac OS X 10.3 でうまく動いていたフォントが 10.4 (Tiger) で動かないのはなぜか?</A>
+      <A HREF="#Tiger-Open">Mac OS X 10.3 でうまく動いていたフォントが 10.4 (Tiger) で動かないのはなぜですか?</A>
     <LI>
 <!--  <A HREF="#cidmaps">What on earth are the cidmap files, and should I care
       about them?</A> -->
-      <A HREF="#cidmaps">cidmap ファイルって一体全体何のこと、知らないと何かまずいことがある?</A>
+      <A HREF="#cidmaps">cidmap ファイルって一体全体何ですか、知らないと何かまずいことがありますか?</A>
       <UL>
         <LI>
 <!--	  <A TARGET="_top" HREF="cidmenu.html#CID">(What is a CID-keyed font?)</A> -->
-	  <A TARGET="_top" HREF="cidmenu.html#CID">(CID キー指定フォントとは何か?)</A>
+	  <A TARGET="_top" HREF="cidmenu.html#CID">(CID キー指定フォントとは何ですか?)</A>
       </UL>
     <LI>
 <!--  <A HREF="faq.html#TeX">Why doesn't TeX work with my fonts?</A>-->
-      <A HREF="#TeX">自作のフォントが TeX で使えないのはなぜか?</A>
+      <A HREF="#TeX">自作のフォントが TeX で使えないのはなぜですか?</A>
       <UL>
         <LI>
 <!--	  <A HREF="#mf-files">Why doesn't FontForge let me edit an '.mf' file?</A> -->
-	  <A HREF="#mf-files">FontForge で&lsquo;.mf&rsquo;ファイルを編集できないのはなぜか?</A>
+	  <A HREF="#mf-files">なぜ FontForge では&lsquo;.mf&rsquo;ファイルを編集できないのですか?</A>
       </UL>
     <LI>
 <!--  <A HREF="#Open-size">Why isn't my Open Type font much smaller than the .pfb
       file?</A> -->
-      <A HREF="#Open-size">自作の OpenType フォントが .pfb ファイルよりもずっと小さくならないのはなぜか?</A>
+      <A HREF="#Open-size">自作の OpenType フォントが .pfb ファイルよりもずっと小さくならないのはなぜですか?</A>
     <LI>
 <!--  <A HREF="#Missing-Refs">When I load an otf or a type1 font most of my references
       have been replaced by inline copies. How do I get my references back?</A> -->
-      <A HREF="#Missing-Refs">OTF または Type1 フォントを読み込んだ時、ほとんどすべての参照がインラインのコピーに置き換えられてしまう。元の参照を復元するにはどうすればいいか?</A>
+      <A HREF="#Missing-Refs">OTF または Type1 フォントを読み込んだ時、ほとんどすべての参照がインラインのコピーに置き換えられてしまいます。元の参照を復元するにはどうすればいいですか?</A>
     <LI>
 <!--  <A HREF="#kern-info">Does FontForge read in the old kerning information from
       fonts?</A> -->
-      <A HREF="#kern-info">FontForge は元のカーニング情報をフォントから読み込むのか?</A>
+      <A HREF="#kern-info">FontForge は元のカーニング情報をフォントから読み込みますか?</A>
     <LI>
 <!--  <A HREF="#mensis">How do I set a particular bit in the OS/2 table (or any
       other)?</A> -->
-      <A HREF="#mensis">OS/2 テーブル (または別のどれか) の特定のビットをセットするにはどうすればいいか?</A>
+      <A HREF="#mensis">OS/2 テーブル (または別のどれか) の特定のビットをセットするにはどうすればいいですか?</A>
   </UL>
   <H2>
 <!--  Mathematical questions-->
@@ -210,15 +242,15 @@
   <UL>
     <LI>
 <!--  <A HREF="#simplify">Does the simplify command lose accuracy?</A> -->
-      <A HREF="#simplify"><CODE>単純化(<U>S</U>)</CODE> コマンドを使うと文字の正確度が落ちるのか?</A>
+      <A HREF="#simplify"><CODE>単純化(<U>S</U>)</CODE> コマンドを使うと文字の正確度が落ちますか?</A>
     <LI>
 <!--  <A HREF="#cubic-quadratic">How does FontForge convert a cubic spline into
       a quadratic spline for truetype?</A> -->
-      <A HREF="#cubic-quadratic">FontForge では、どうやって 3 次スプラインを TrueType で用いられる 2 次スプラインに変換しているのか?</A>
+      <A HREF="#cubic-quadratic">FontForge では、3 次スプラインから TrueType の 2 次スプラインへの変換をどう処理しているのですか?</A>
     <LI>
 <!--  <A HREF="#quadratic-cubic">How does FontForge convert a quadratic spline
       into a cubic (when reading truetype)?</A> -->
-      <A HREF="#quadratic-cubic">FontForge は (TrueType を読み込む際に) どのようにして 2 次スプラインを 3 次に変換しているのか?</A>
+      <A HREF="#quadratic-cubic">FontForge は (TrueType を読み込む際に) どのようにして 2 次スプラインを 3 次に変換しているのですか?</A>
   </UL>
   <H2>
 <!--  Image file questions-->
@@ -228,11 +260,11 @@
     <LI>
 <!--  <A HREF="#dynamic-lib">Why does fontforge say "Error loading dynamic library"
       when trying to import an image file?</A> -->
-      <A HREF="#dynamic-libs">画像ファイルを取り込もうとすると、FontForge が“Error loading dynamic library”と表示するのはなぜか?</A>
+      <A HREF="#dynamic-libs">画像ファイルを取り込もうとすると、FontForge が“Error loading dynamic library”と表示するのはなぜですか?</A>
     <LI>
 <!--  <A HREF="#complex-eps">Why does fontforge say "EPS file is too complex to
       be understood"?</A> -->
-      <A HREF="#complex-eps">FontForge が“EPSファイルが複雑すぎて理解できません”と表示するのはなぜか?</A>
+      <A HREF="#complex-eps">FontForge が“EPSファイルが複雑すぎて理解できません”と表示するのはなぜですか?</A>
   </UL>
   <H2>
 <!--  Random questions -->
@@ -241,63 +273,67 @@
   <UL>
     <LI>
 <!--  <A HREF="#monospace">How do I mark a font as monospaced?</A>-->
-      <A HREF="#monospace">フォントを等幅であると設定するにはどうすればいいのか?</A>
+      <A HREF="#monospace">フォントを等幅だと見せかけたいのですが、どうすればいいですか?</A>
     <LI>
 <!--  <A HREF="#new-encoding">How do I tell fontforge about a new encoding?</A>-->
-      <A HREF="#new-encoding">FontForge に新しいエンコーディングを追加するにはどうすればいいか?</A>
+      <A HREF="#new-encoding">FontForge への新しいエンコーディングの追加はどうやるのですか?</A>
     <LI>
 <!--  <A HREF="#new-name">How do I add a glyph with a new name?</A> -->
-      <A HREF="#new-name">新しい名前のグリフを追加するにはどうすればいいか?</A>
+      <A HREF="#new-name">新しい名前をつけたグリフの追加はどうやるのですか?</A>
     <LI>
 <!--  <A HREF="#glyphnames">Why does fontforge give some glyphs the wrong name?</A>
-      <A HREF="#glyphnames">FontForge がいくつかのグリフに間違った名前をつけるはなぜか?</A>
+      <A HREF="#glyphnames">FontForge がいくつかのグリフに間違った名前をつけるのはなぜですか?</A>
     <LI>
 <!--  <A HREF="#save-no-change">After I generate a font and quit, why does FontForge
       ask if I want to save the font? I didn't change anything.</A> -->
-      <A HREF="#save-no-change">フォントを生成した後に終了しようとすると、フォントを保存するかどうか FontForge が訊いてくるのはなぜか? 私は何も変更していないのに。</A>
+      <A HREF="#save-no-change">フォントを生成した後に終了しようとすると、フォントを保存するかどうか FontForge が訊いてくるのはなぜですか? 私は何も変更していないのですが。</A>
     <LI>
 <!--  <A HREF="#minify-iconify">Why does my window get iconified when I want to
       minify the view?</A> -->
-      <A HREF="#minify-iconify">ビューを縮小しようとすると、ウィンドウがアイコン化されてしまうのはなぜか?</A>
+      <A HREF="#minify-iconify">ビューを縮小しようとすると、ウィンドウがアイコン化されてしまうのはなぜですか?</A>
     <LI>
 <!--  <A HREF="#no-mu">Why isn't there a character named "mu" in my greek font?</A>
       (or "Delta", or "Omega", or "pi1") -->
-      <A HREF="#no-mu">作成したギリシャ語フォントに“mu”(または“Delta”,“Omega”,“pi1”) という名前の文字が見当たらないのはなぜか?</A>
+      <A HREF="#no-mu">作成したギリシャ語フォントに“mu”(または“Delta”,“Omega”,“pi1”) という名前の文字が見当たらないのはなぜですか?</A>
     <LI>
 <!--  <A HREF="#no-copy-names">Why doesn't Edit-&gt;Copy copy glyph names as well
       as glyph info?</A> -->
-      <A HREF="#no-copy-names"><CODE>編集(<U>E</U>)</CODE>→<CODE>コピー(<U>C</U>)</CODE> で、グリフ情報と一緒にグリフ名がコピーされないのはなぜか?</A>
+      <A HREF="#no-copy-names"><CODE>編集(<U>E</U>)</CODE>→<CODE>コピー(<U>C</U>)</CODE> で、グリフ情報と一緒にグリフ名がコピーされないのはなぜですか?</A>
     <LI>
 <!--  <A HREF="#copy-names">Why does Edit-&gt;Paste complain about name
       duplication?</A> -->
-      <A HREF="#copy-names"><CODE>編集(<U>E</U>)</CODE>→<CODE>貼り付け(<U>P</U>)</CODE> を行うと、名前が重複していると怒られるのはなぜか?</A>
+      <A HREF="#copy-names"><CODE>編集(<U>E</U>)</CODE>→<CODE>貼り付け(<U>P</U>)</CODE> を行うと、名前が重複していると怒られるのはなぜですか?</A>
     <LI>
 <!--  <A HREF="faq.html#default-char">How do I set the default glyph of a font?</A> -->
-      <A HREF="#default-char">フォントのデフォルトグリフを設定するにはどうすればいいか?</A>
+      <A HREF="#default-char">どうすればフォントのデフォルトグリフを設定できますか?</A>
     <LI>
 <!--  <A HREF="#mingliu">I looked at kaiu.ttf or mingliu.ttf and the outlines looked
       nothing like the correct glyphs. What's wrong?</A> -->
-      <A HREF="#mingliu">kaiu.ttf や mingliu.ttf を開いてみると、アウトラインは正しいグリフと全然違って見える。何がまずいのか?</A>
+      <A HREF="#mingliu">kaiu.ttf や mingliu.ttf を開いてみると、正しいグリフと全然違ったアウトラインが表示されます。何がまずいのですか?</A>
     <LI>
 <!--  <A HREF="#greek-accents">When I use Element-&gt;Build Accented Glyph to build
       one of the Extended Greek glyphs (U+1F00-U+1FFF) FontForge picks the wrong
       accents. Why?</A> -->
-      <A HREF="#greek-accents">ギリシャ文字拡張 (U+1F00～U+1FFF) のグリフを作るために <CODE>エレメント(<U>L</U>)</CODE>→<CODE>組み立て(<U>U</U>)</CODE>→<CODE>アクセントつきグリフを構築(<U>B</U>)</CODE> を使用すると、FontForge は間違ったグリフを選ぶのはなぜか?</A>
+      <A HREF="#greek-accents">ギリシャ文字拡張 (U+1F00～U+1FFF) のグリフを作るために <CODE>エレメント(<U>L</U>)</CODE>→<CODE>組み立て(<U>U</U>)</CODE>→<CODE>アクセントつきグリフを構築(<U>B</U>)</CODE> を使用すると、間違ったグリフが選択されるのはなぜですか?</A>
     <LI>
 <!--  <A HREF="#u-accents">When I use Element-&gt;Build Accented Glyph to build
       accents over "u" or "y" I get the accent over one of the stems not centered
       on the glyph. Why?</A> -->
-      <A HREF="#u-accents">“u”や“y”の上にアクセントをつけるために <CODE>エレメント(<U>L</U>)</CODE>→<CODE>組み立て(<U>U</U>)</CODE>→<CODE>アクセントつきグリフを構築(<U>B</U>)</CODE> を使用すると、アクセントがどちらかのステムの真上に来てしまい、グリフの中央に来ないのはなぜか?</A>
+      <A HREF="#u-accents">“u”や“y”の上にアクセントをつけるために <CODE>エレメント(<U>L</U>)</CODE>→<CODE>組み立て(<U>U</U>)</CODE>→<CODE>アクセントつきグリフを構築(<U>B</U>)</CODE> を使用すると、アクセントがどちらかのステムの真上に来てしまい、グリフの中央に来ないのはなぜですか?</A>
     <LI>
 <!--  <A HREF="#ttf2afm">Why does ttf2afm crash on FontForge ttf files?</A>-->
-      <A HREF="#ttf2afm">FontForge が出力した TTF ファイルを処理すると ttf2afm がクラッシュするのはなぜか?</A>
+      <A HREF="#ttf2afm">FontForge が出力した TTF ファイルを処理すると ttf2afm がクラッシュするのはなぜですか?</A>
     <LI>
 <!--  <A TARGET="_top" HREF="index.html#known-bugs">Where can I find a list of
       known bugs in FontForge?</A>-->
-      <A TARGET="_top" HREF="index.html#known-bugs">FontForge の既知のバグのリストはどこに行けば見つかるのか?</A>
+      <A TARGET="_top" HREF="index.html#known-bugs">FontForge の既知のバグのリストはどこにありますか?</A>
+     <LI>
+<!--  <A HREF="#memory">My system keeps crashing because FontForge keeps running
+      out of memory. What can I do about it?</A> -->
+      <A HREF="#memory">FontForge がメモリを使い尽くしてクラッシュしてばかりいます。何か対処方法はありますか?</A>
     <LI>
 <!--  <A HREF="#Unstable">Why is FontForge so unstable?</A>-->
-      <A HREF="#Unstable">なぜ FontForge はとても不安定なのか?</A>
+      <A HREF="#Unstable">なぜ FontForge はとても不安定なのですか?</A>
   </UL>
   <P>
     <HR>
@@ -305,7 +341,7 @@
     <DT>
 <!--  <A NAME="font-editor"><B>Why a font editor, aren't there enough fonts
       already?</B></A>-->
-      <A NAME="font-editor"><B>なぜフォントエディタを? もう十分にフォントはあるのでは?</B></A>
+      <A NAME="font-editor"><B>なぜフォントエディタを作るのですか? もう十分にフォントはあるのではないですか?</B></A>
     <DD>
 <!--  Well... no. Otherwise I wouldn't be writing this.-->
       それは……違います。もしそうなら私はこのソフトを書いたりしませんでした。
@@ -321,7 +357,7 @@
 <!--	  Even for latin, traditionally each new style of art and architecture has
 	  an associated style of fonts. New fonts are always being created to reflect
 	  the esthetics of the times. -->
-	  ラテン文字ですら、伝統的には芸術や建築に新しいスタイルが生まれるごとにそれに伴う書体のスタイルが新しく作られました。現代では、時代の美意識を反映するために常に新しいフォントが作られています。
+	  ラテン文字ですら、芸術や建築に新しいスタイルが生まれるごとにそれに伴う書体のスタイルが新しく作られてきた伝統があります。現代では、時代の美意識を反映するために常に新しいフォントが作られています。
         <LI>
 <!--	  Computer font technology is constantly changing. A font-format that was useful
 	  10 years ago may not be so now. -->
@@ -335,7 +371,7 @@
 	      不足の合字
 	    <LI>
 <!--	      Missing accented glyphs -->
-	      不足のアクセントつき文字
+	      不足のアクセントつきグリフ
 	    <LI>
 <!--	      No matching cyrillic or greek glyphs -->
 	      それに合うキリル文字又はギリシャ文字のグリフ
@@ -461,7 +497,7 @@
       上に書いたのは私の個人的な経験に基づいた個人的な意見で、なぜ<I>私が</I> C++ を使わないかの説明です。あなたの意見はこれとは違うでしょう、C++ コンパイラを書くのに 5 年間を費した人はほとんどいませんから。
     <DT>
 <!--  <A NAME="legal"><B>Is it legal to modify a font? Is it ethical?</B></A>-->
-      <A NAME="legal"><B>フォントを改変することは合法か? 倫理上の問題はないのか?</B></A>
+      <A NAME="legal"><B>フォントを改変することは合法ですか? 倫理上の問題はありませんか?</B></A>
     <DD>
 <!--  Legal matters vary from country to country (and perhaps within countries).
       You really should consult a lawyer for a definitive answer. Here are some
@@ -503,11 +539,11 @@
       <P>
 <!--  I would welcome any additions or corrections here, as well as info on the
       laws governing fonts in other countries. -->
-      追加、または訂正があれば歓迎します。その他の国でフォントに関する規定のある法律についてに情報も歓迎します。
+      追加、または訂正があれば歓迎します。その他の国でフォントに関する規定のある法律についての情報も歓迎します。
     <DT>
 <!--  <A NAME="pointsize"><B>What is a 12 point font?</B></A> <B>(What measurement
       of the font determines the point size?)</B> -->
-      <A NAME="pointsize"><B>12 ポイントのフォントとは何か?</B></A> <B>(ポイントサイズは、フォントのどこを計って決めるのか?)</B>
+      <A NAME="pointsize"><B>12 ポイントのフォントとは何ですか?</B></A> <B>(ポイントサイズは、フォントのどこを計って決めるのですか?)</B>
     <DD>
       <IMG SRC="../pointsize.png" WIDTH="147" HEIGHT="96" ALIGN="Right"><!--A font is
       12 points high if the distance between the baselines of two adjacent lines
@@ -543,7 +579,7 @@
       (もちろん、現在ではほとんどのヨーロッパ人はデスクトップソフトウェア上でパイカポイントを使うことを強いられており、ほとんどのコンピュータフォントは現在アクセントつきグリフを含んでいます。ですからこれらの区別とその必然性は消え去ったと言えるでしょう)。
     <DT>
 <!--  <A NAME="linespace"><B>How do I set the line spacing on a font?</B></A>-->
-      <A NAME="linespace"><B>フォントの行間を設定するにはどうすればよいか?</B></A>
+      <A NAME="linespace"><B>フォントの行間はどうやって設定するのですか?</B></A>
     <DD>
 <!--  It depends on the kind of font you are generating, the operating system under
       which you are running, and luck. -->
@@ -582,7 +618,7 @@
 <!--	      (The clipping region should be bigger than the bounding box if a GPOS lookup
 	      could move a glyph so that it extended beyond the bounding box (mark to base
 	      is likely to cause problems). I'm not sure how this applies to cursive
-  +	    positioning in Urdu where GPOS lookups can make lines arbetrarily tall) -->
+	      positioning in Urdu where GPOS lookups can make lines arbetrarily tall) -->
 	      (GPOS の位置指定によってグリフがバウンディングボックスからはみ出る位置に移動する場合は、クリッピング領域はバウンディングボックスよりも大きくする必要があります (マークから基底文字への参照が問題を起こすようです)。GPOS によって行がいくらでも高くなる可能性があるウルドゥー語の筆記体ではこれがどのように当てはまるのかについてはよく分かりません)
 	    <LI>
 <!--	      On linux<BR>
@@ -594,7 +630,7 @@
     </UL>
     <DT>
 <!--  <A NAME="em-units"><B>How big will my glyphs be?</B></A>-->
-      <A NAME="em-units"><B>私のグリフはどのくらいの大きさになるのか?</B></A>
+      <A NAME="em-units"><B>私のグリフはどのくらいの大きさになりますか?</B></A>
     <DD>
 <!--  Unfortunately this seemingly simple question cannot be answered. Your glyphs
       may be any size. Outline glyphs may be scaled and even bitmap glyphs will
@@ -628,9 +664,53 @@
       overview.</A> -->
       FontForge の内部では、アウトライングリフはここで確定した座標系を使用して表示されます。<A HREF="overview.html#em-unit" TARGET="_top">概説の em ユニットに関するセクション</A> も参照してください。
     <DT>
+<!--  <B><A NAME="license">What's a good license to use on an open source
+      font?</A></B> -->
+      <B><A NAME="license">オープンソースのフォントに適したライセンスはどれですか?</A></B>
+    <DD>
+<!--  Many fonts have been released under one of the licenses designed for open
+      source programs - - -->
+      多くのフォントがオープンソースのプログラムのために設計されたライセンスのどれかで公開されています――
+<!--  <A HREF="http://www.opensource.org/licenses" TARGET="_top">see the Open Source
+      list of approved licenses </A>- - but these generally do not meet the specific
+      needs of font designers. I know of two licenses specifically produced for
+      fonts: -->
+      <A HREF="http://www.opensource.org/licenses" TARGET="_top">Open Source Initiative による認定済みライセンスのリスト</A>をご覧ください――しかし、これらは一般的に、フォントデザイナーに固有の要望を満たしません。フォント専用に作成されたライセンスを私は 2 つ知っています:
+      <UL>
+	<LI>
+<!--	  <A HREF="http://www.gnome.org/fonts/#Final_Bitstream_Vera_fonts" TARGET="_top">The
+	  license Bitstream used to release the Vera fonts</A> -->
+	  <A HREF="http://www.gnome.org/fonts/#Final_Bitstream_Vera_fonts" TARGET="_top">Bitstream が Vera フォントを公開するために作ったライセンス</A>
+	<LI>
+<!--	  <A HREF="http://scripts.sil.org/OFL" TARGET="_top">The Open Font License
+	  from SIL</A> -->
+	  <A HREF="http://scripts.sil.org/OFL" TARGET="_top">SIL による Open Font License</A>
+      </UL>
+    <DT>
+<!--  <A NAME="Minimum"><B>Minimum requirements</B></A> -->
+      <A NAME="Minimum"><B>システムの最小構成</B></A>
+    <DD>
+<!--  This depends heavily on what you want to do. FontForge is mainly limited
+      by memory (though screen real estate can be a problem too) -->
+      これは、あなたが何をやりたいかに大きく依存します。FontForge にとっての最大の制約はメモリです (画面のピクセル数も制限になる可能性がありますが)
+      <UL>
+	<LI>
+<!--	  If you are interested in scripts with no more than few hundred simple glyphs
+	  (like the latin alphabet) then 192Mb is more than enough. -->
+	  (ラテンアルファベットのような) たかだか数百個の単純なグリフを含む用字系にのみ興味があるならば、192MB で十分すぎるでしょう。
+	<LI>
+<!--	  If you are doing serious editing of CJK fonts then 512Mb is on the low end
+	  of useablity. -->
+	  CJK フォントの本格的に編集を行うなら、512MB が使いものになる最低限の容量でしょう。
+      </UL>
+      <P>
+<!--  FontForge requires a color (or grey-scale) monitor - - black &amp; white will
+      not suffice. -->
+      FontForge はカラー (またはグレイスケール) モニタを必要とします―白黒 2 色だけでは足りません。
+    <DT>
 <!--  <A NAME="font-install"><B>How do I install the fonts once I've made
       them?</B></A> -->
-      <A NAME="font-install"><B>自分が作ったフォントをどうやってインストールすればいいのか?</B></A>
+      <A NAME="font-install"><B>自分が作ったフォントはどうやってインストールするのですか?</B></A>
     <DD>
 <!--  Well it rather depends on what system you are working on, and what type of
       font you've got: -->
@@ -808,7 +888,7 @@ $ xset fp+ `pwd`
     <DT>
 <!--  <A NAME="Bad-Windows-Install"><B>Why won't FontForge's fonts install on some
       MS Windows machines?</B></A>-->
-      <A NAME="Bad-Windows-Install"><B>どうして FontForge で作ったフォントが MS Windows のシステムにインストールできないことがあるのか?</B></A>
+      <A NAME="Bad-Windows-Install"><B>どうして FontForge で作ったフォントが MS Windows のシステムにインストールできないことがあるのですか?</B></A>
     <DD>
 <!--  Do <FONT COLOR="Red"><STRONG>NOT</STRONG></FONT> generate a font directly
       into the \windows\fonts directory. Generate the font into a different directory
@@ -948,7 +1028,7 @@ $ xset fp+ `pwd`
     <DT>
 <!--  <B><A NAME="How-family">How do I create a mac font family? (How do I get
       the mac to group my fonts so that the italic and bold styles work)?</A></B> -->
-      <B><A NAME="How-family">どうすれば Mac のフォントファミリーを作れるのか? (フォントをグループ化して、イタリックやボールドのスタイル指定が動作するようにするにはどうしたらいいか?</A></B>
+      <B><A NAME="How-family">Mac のフォントファミリーはどうやって作るのですか? (フォントをグループ化して、イタリックやボールドのスタイル指定が動作する方法は?)</A></B>
     <DD>
 <!--  For the Style menu in most mac applications to work on your fonts, you must
       create a font family. You do this with the
@@ -1009,7 +1089,7 @@ $ xset fp+ `pwd`
 <!--  For each of these use
       <A HREF="fontinfo.html#FONDName" TARGET="_top">Element-&gt;Font
       Info-&gt;Mac</A> to set the FondName field to the font's family name. -->
-      これらのそれぞれに、<A HREF="fontinfo.html#FONDName" TARGET="_top"><CODE>エレメント(<U>L</U>)→<CODE>フォント情報(<U>F</U>)...</CODE>→<CODE>[Mac]</CODE></A> を用いて、フォントのファミリー名に使われる FOND 名を設定すること。
+      これらのそれぞれに、<A HREF="fontinfo.html#FONDName" TARGET="_top"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE>→<CODE>[Mac]</CODE></A> を用いて、フォントのファミリー名に使われる FOND 名を設定すること。
       <P>
 <!--  Change the fondname of the other styles, so that the Oblique style has Oblique
       in the fond name, the two Light styles have Light in the fond name, and so
@@ -1027,7 +1107,7 @@ $ xset fp+ `pwd`
       この設定が終わったら、<A HREF="filemenu.html#GenerateMac"><CODE>Macファミリーを出力(<U>F</U>)...</CODE></A> コマンドを実行すれば、すべてのフォントを適切な FOND に格納し、すべての FOND を Mac が正しく解釈できるはずの 1 個のファイルに出力することができるでしょう。
     <DT>
 <!--  <B><A NAME="Mac-ATM">Why doesn't ATM work on my fonts?</A></B>-->
-      <B><A NAME="Mac-ATM">なぜ自作のフォントが ATM でうまく使えないのか?</A></B>
+      <B><A NAME="Mac-ATM">なぜ自作のフォントが ATM でうまく使えないのですか?</A></B>
     <DD>
 <!--  Insure that the font has an encoding of Macintosh Latin when you generate
       it. -->
@@ -1044,13 +1124,13 @@ $ xset fp+ `pwd`
       もし、フォントを Macintosh Latin 以外のエンコーディングで出力した場合には、Mac のデフォルトの動作では、その PostScript フォントが Macintosh Latin 符号化方式を含んでいると強制的に解釈します。このふるまいを停止する機能が存在しますが、それを停止してしまうと ATM はまったく動かなくなるでしょう。
     <DT>
 <!--  <B>How do I edit fonts on MS <A NAME="windows">windows</A>?</B>-->
-      <B>MS <A NAME="windows">Windows</A> でフォントを編集するにはどうすればよいか?</B>
+      <B>MS <A NAME="windows">Windows</A> でフォントを編集するにはどうすればよいですか?</B>
     <DD>
 <!--  See the <A HREF="ms-install.html">MS Windows install instructions</A>. -->
       <A HREF="ms-install.html">MS Windows へのインストール手順</A> を参照してください。
     <DT>
 <!--  <B><A NAME="Bad-Windows-Fonts">Why don't my fonts work on windows?</A></B>-->
-      <B><A NAME="Bad-Windows-Fonts">なぜ自作のフォントが Windowsで使えないのか?</A></B>
+      <B><A NAME="Bad-Windows-Fonts">私が作ったフォントが Windowsで使えないのはなぜですか?</A></B>
     <DD>
 <!--  Here's one possibility: Windows sometimes (and I don't know when) insists
       on having a name for the font in the appropriate language (ie. a Japanese
@@ -1066,7 +1146,7 @@ $ xset fp+ `pwd`
 <!--  <A NAME="Missing-Refs"><B>When I load an otf or a type1 font most of my
       references have been replaced by inline copies. How do I get my references
       back?</B></A>-->
-      <A NAME="Missing-Refs"><B>OTF または Type1 フォントを読み込んだ時、ほとんどすべての参照がインラインのコピーに置き換えられてしまう。元の参照を復元するにはどうすればいいか?</B></A>
+      <A NAME="Missing-Refs"><B>OTF または Type1 フォントを読み込んだ時、ほとんどすべての参照がインラインのコピーに置き換えられてしまいます。元の参照を復元するにはどうすればいいですか?</B></A>
     <DD>
 <!--  It is very difficult to figure out old references when loading postscript
       fonts. Instead FontForge has a special command,
@@ -1077,7 +1157,7 @@ $ xset fp+ `pwd`
     <DT>
 <!--  <B><A NAME="kern-info">Does FontForge read in the old kerning information
       from fonts?</A></B>-->
-      <B><A NAME="kern-info">FontForge は元のカーニング情報をフォントから読み込むのか?</A></B>
+      <B><A NAME="kern-info">FontForge は元のカーニング情報をフォントから読み込みますか?</A></B>
     <DD>
 <!--  This question needs to be broken down into cases:-->
       この質問はいくつかの場合に分けて答える必要があります:
@@ -1215,8 +1295,38 @@ $ xset fp+ `pwd`
 	  <CODE>ファイル(<U>F</U>)</CODE>→<CODE>フォントを出力(<U>G</U>)...</CODE>
       </UL>
     <DT>
+<!--  <A NAME="AAT2OT"><B>Converting from Apple's Advanced Typography to
+      OpenType</B></A>  -->
+      <A NAME="AAT2OT"><B>Apple 高度組版機能 (AAT) から OpenType への変換方法</B></A>
+    <DD>
+<!--  There are a number of similarities between the results achieved by these
+      formats, but the overlap is not total. Most conversions will lose some
+      information.<BR> -->
+      これらのフォーマットによって得られる結果の間には多数の類似性がありますが、完全に重なり合うわけではありません。ほとんどの場合、変換を行うと何らかの情報が失われるでしょう。<BR>
+<!--  The simple answer is that this is pretty much automatic. You load an apple
+      font, and then Generate an equivalent font with the [*] OpenType checkbox
+      checked in the Options dialog.<BR> -->
+      答えは単純で、まったく自動的に行われます。Apple 形式のフォントを読み込んでから <CODE>フォントを出力(<U>G</U>)...</CODE> を選択し、<CODE>オプション</CODE> ダイアログの <CODE>[*] OpenType</CODE> チェックボックスをチェックして、等価なフォントを出力します。<BR>
+<!--  FontForge will convert any non-contextual features where Apple's feature/setting
+      matches an OpenType feature. (This includes non-contextual ligatures even
+      though they live in a contextual format). For more information see the section
+      on this <A HREF="gposgsub.html#Conversion" TARGET="_top">interconversion</A>. -->
+      FontForge は、文脈非依存の機能が Apple の機能/設定と一致する OpenType 機能が存在するときには必ず変換を行います。(文脈非依存の合字は、文脈依存フォーマットに格納されている場合でも変換が行われます)。これに関するより詳しい情報については、<A HREF="gposgsub.html#Conversion" TARGET="_top">相互変換</A>のセクションを参照してください。
+    <DT>
+<!--  <B><A NAME="OT2AAT">Converting from OpenType to AAT</A></B> -->
+      <B><A NAME="OT2AAT">OT から AAT への変換方法</A></B>
+    <DD>
+<!--  Again this is mostly automatic. Load an OpenType font, and Generate an equivalent
+      font with the [*] Apple checkbox checked in the Options dialog.<BR> -->
+      これもほとんど自動的に行われます。OpenType フォントを読み込んでから <CODE>フォントを出力(<U>G</U>)...</CODE> を選択し、<CODE>オプション</CODE> ダイアログで <CODE>[*] Apple</CODE> をチェックします。<BR>
+<!--  FontForge is capable of converting some contextual OpenType tables to AAT.
+      Non-contextual features which match an Apple feature/setting will be converted
+      too. For more information see the section on this
+      <A HREF="gposgsub.html#Conversion" TARGET="_top">interconversion</A>. -->
+      FontForge は、一部の文脈依存の OpenType テーブルを AAT に変換することができます。 Apple の機能/設定に一致する物がある文脈非依存の機能も変換対称となります。これに関するより詳しい情報は、<A HREF="gposgsub.html#Conversion" TARGET="_top">相互変換</A>のセクションを参照してください。
+    <DT>
 <!--  <A NAME="hint-subs"><B>How do I make FontForge use hint substitution?</B></A> -->
-      <A NAME="hint-subs"><B>FontForge がヒント置換を行うようにするにはどうすればいいか?</B></A>
+      <A NAME="hint-subs"><B>FontForge がヒント置換を行うようにするにはどうすればいいですか?</B></A>
     <DD>
 <!--  It happens automagically. <BR>
       Or you can control the where hint sets change by selecting a point and choosing
@@ -1226,7 +1336,7 @@ $ xset fp+ `pwd`
       または、点を選択してから <A HREF="getinfo.html#HintMask" TARGET="_top"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>情報を得る(<U>I</U>)...</CODE>→<CODE>[ヒントマスク]</CODE></A> を選択すれば、ヒントセットが変更される場所を制御することができます。
     <DT>
 <!--  <A NAME="flex-hints"><B>How do I make FontForge use flex hints?</B></A>-->
-      <A NAME="flex-hints"><B>FontForge が flex ヒントを使うようにするにはどうすればいいか?</B></A>
+      <A NAME="flex-hints"><B>FontForge が flex ヒントを使うようにするにはどうすればいいですか?</B></A>
     <DD>
 <!--  It happens automagically. FontForge will generate flex hints in situations
       where it is appropriate to do so. You don't need to do anything. If flex
@@ -1245,7 +1355,7 @@ $ xset fp+ `pwd`
     <DT>
 <!--  <A NAME="fuzzy"><B>My glyphs are all perfectly hinted, why do some stems
       have different widths (or appear fuzzy, or fade away completely)?</B></A> -->
-      <A NAME="fuzzy"><B>どのグリフも完璧にヒントづけしたのに、幅が揃わない (またはぼやけて見えたり完全に掠れて見えなかったりする) ステムがあるのはなぜか?</B></A>
+      <A NAME="fuzzy"><B>どのグリフも完璧にヒントづけしたのに、幅が揃わない (またはぼやけて見えたり完全に掠れて見えなかったりする) ステムがあるのはなぜですか?</B></A>
     <DD>
 <!--  Both PostScript and TrueType require that glyphs be drawn in a clockwise
       fashion. Some rasterizers don't care. But other rasterizers will have
@@ -1258,7 +1368,7 @@ $ xset fp+ `pwd`
     <DT>
 <!--  <A NAME="mensis"><B>How do I set a particular bit in the OS/2 table (or any
       other)?</B></A> -->
-      <A NAME="mensis"><B>OS/2 テーブル (または別のどれか) の特定のビットをセットするにはどうすればいいか?</B></A>
+      <A NAME="mensis"><B>OS/2 テーブル (または別のどれか) の特定のビットをセットするにはどうすればいいですか?</B></A>
     <DD>
 <!--  FontForge does not do this, but I have written a companion program,
       <A HREF="http://mensis.sf.net/">mensis</A> (Latin for: "to or for, by, with
@@ -1267,7 +1377,7 @@ $ xset fp+ `pwd`
       FontForge はその機能はありませんが、私は <A HREF="http://mensis.sf.net/">mensis</A> (ラテン語で「テーブルに(のために,によって,から)」の意味) というテーブルにビット単位のアクセスができる補助プログラムを書きました。これは UI とスクリプトアクセスの両方を提供しています。
     <DT>
 <!--  <B><A NAME="monospace">How do I mark a font as monospaced?</A></B>-->
-      <B><A NAME="monospace">フォントを等幅であると設定するにはどうすればいいのか?</A></B>
+      <B><A NAME="monospace">フォントを等幅だと見せかけたいのですが、どうすればいいですか?</A></B>
     <DD>
 <!--  You don't. Just insure that all the glyphs in the font have the same width
       and then FontForge will automatically mark it as monospaced for you. (If
@@ -1278,7 +1388,7 @@ $ xset fp+ `pwd`
       Info-&gt;OS/2-&gt;Panose</A>) then set the Proportion field to Monospaced.
       This is necessary but not sufficient to mark the font as a whole as monospaced. -->
       それはできません。フォント内の全てのグリフが同じ幅を持つようにすれば、FontForge はそれを等幅であると印づけます。(実際に等幅でないフォントを等幅と印づけると、一部のラスタライザでは結果がおかしくなります)。<BR>
-      もし自分でフォントの PANOSE 値を (<A HREF="fontinfo.html#Panose" TARGET="_top"><CODE>エレメント(<U>L</U>)→<CODE>フォント情報(<U>F</U>)...</CODE>→<CODE>[OS/2]</CODE>→<CODE>[Panose]</CODE></A> で) 設定したいならば、<CODE>幅の比率(<U>P</U>)</CODE> フィールドを <CODE>Monospaced</CODE> に設定してください。これは、フォントを全体として等幅であると設定するために必要ですが、これだけでは十分ではありません。
+      もし自分でフォントの PANOSE 値を (<A HREF="fontinfo.html#Panose" TARGET="_top"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE>→<CODE>[OS/2]</CODE>→<CODE>[Panose]</CODE></A> で) 設定したいならば、<CODE>幅の比率(<U>P</U>)</CODE> フィールドを <CODE>Monospaced</CODE> に設定してください。これは、フォントを全体として等幅であると設定するために必要ですが、これだけでは十分ではありません。
       <P>
 <!--  If you are unsure whether all the glyphs in your font have the same advance
       width use <A HREF="problems.html#Advance">Element-&gt;Find
@@ -1293,7 +1403,7 @@ $ xset fp+ `pwd`
     <DT>
 <!--  <A NAME="new-encoding"><B>How I do tell fontforge about a new
       encoding</B></A>-->
-      <A NAME="new-encoding"><B>FontForge に新しいエンコーディングを追加するにはどうすればいいか?</B></A>
+      <A NAME="new-encoding"><B>FontForge への新しいエンコーディングの追加はどうやるのですか?</B></A>
     <DD>
 <!--  First ask yourself if you really need a new encoding? If you are using OpenType
       or TrueType fonts you can usually get by with the standard unicode encoding.
@@ -1353,7 +1463,7 @@ $ xset fp+ `pwd`
       ファイルを作成したら、FontForge のエンコーディングリストに <CODE>エンコーディング(<U>N</U>)</CODE>→<CODE>エンコーディングを読み込み(<U>L</U>)...</CODE> でこれを追加し、それからお好きなフォントにそれを適用してください。
     <DT>
 <!--  <A NAME="new-name"><B>How do I add a glyph with a new name?</B></A>-->
-      <A NAME="new-name"><B>新しい名前のグリフを追加するにはどうすればいいか?</B></A>
+      <A NAME="new-name"><B>新しい名前をつけたグリフの追加はどうやるのですか?</B></A>
     <DD>
 <!--  Let's say you wanted to add a "dotlessi" glyph to an ISO-8859-1 font (this
       encoding does not include dotlessi). There are two ways to approach the problem: -->
@@ -1400,7 +1510,7 @@ $ xset fp+ `pwd`
     <DT>
 <!--  <A NAME="glyphnames"><B>Why does FontForge give some of my glyphs the wrong
       name?</B></A> -->
-      <A NAME="glyphnames"><B>FontForge がいくつかのグリフに間違った名前をつけるのはなぜか?</B></A>
+      <A NAME="glyphnames"><B>FontForge がいくつかのグリフに間違った名前をつけるのはなぜですか?</B></A>
     <DD>
 <!--   FontForge's naming conventions are those specified in
       <A HREF="http://partners.adobe.com/public/developer/opentype/index_glyph.html">Adobe's
@@ -1451,7 +1561,7 @@ $ xset fp+ `pwd`
     <DT>
 <!--  <A NAME="Open-size"><B>Why isn't my Open Type font much smaller than the
       .pfb file?</B></A> -->
-      <A NAME="Open-size"><B>自作の OpenType フォントが .pfb ファイルよりもずっと小さくならないのはなぜか?</B></A>
+      <A NAME="Open-size"><B>自作の OpenType フォントが .pfb ファイルよりもずっと小さくならないのはなぜですか?</B></A>
     <DD>
 <!--  This is probably because you didn't round to int before saving the font.
       FontForge will save the font using fixed point numbers which take up a lot
@@ -1460,7 +1570,7 @@ $ xset fp+ `pwd`
     <DT>
 <!--  <A NAME="Open-difference"><B>What's the difference between OpenType and
       PostScript (or TrueType) fonts?</B></A> -->
-      <A NAME="Open-difference"><B>OpenType と PostScript (や TrueType) フォントはどこが違うのか?</B></A>
+      <A NAME="Open-difference"><B>OpenType と PostScript (や TrueType) フォントはどう違うのですか?</B></A>
     <DD>
 <!--  Both PostScript and TrueType define a file format and a glyph format. OpenType
       uses the TrueType file format with a PostScript glyph format (actually OpenType
@@ -1482,7 +1592,7 @@ $ xset fp+ `pwd`
     <DT>
 <!--  <A NAME="AAT-Open"><B>What is the difference between AAT (Apple Advanced
       Typography) and OpenType?</B></A> -->
-      <A NAME="AAT-Open"><B>AAT (Apple Advanced Typography) と OpenType はどこが違うのか?</B></A>
+      <A NAME="AAT-Open"><B>AAT (Apple Advanced Typography) と OpenType はどう違うのですか?</B></A>
     <DD>
 <!--  Both of these are extensions to the basic TrueType font which can contain
       information for laying out complex scripts (like Arabic or Indic scripts)
@@ -1503,7 +1613,7 @@ $ xset fp+ `pwd`
     <DT>
 <!--  <A NAME="Tiger-Open"><B>Why does a font, which worked fine under 10.3 fail
       on Mac 10.4 (Tiger)?</B></A> -->
-      <A NAME="Tiger-Open"><B>Mac OS X 10.3 でうまく動いていたフォントが 10.4 (Tiger) で動かないのはなぜか?</B></A>
+      <A NAME="Tiger-Open"><B>Mac OS X 10.3 でうまく動いていたフォントが 10.4 (Tiger) で動かないのはなぜですか?</B></A>
     <DD>
 <!--  With Tiger (Mac OS/X.4) Apple added some support for OpenType. Some OpenType
       features are converted (at runtime) into AAT features. This is good, but
@@ -1517,7 +1627,7 @@ $ xset fp+ `pwd`
     <DT>
 <!--  <A NAME="save-no-change"><B>After I generate a font and quit, why does FontForge
       ask if I want to save the font? I didn't change anything.</B></A> -->
-      <A NAME="save-no-change"><B>フォントを生成した後に終了しようとすると、フォントを保存するかどうか FontForge が訊いてくるのはなぜか? 私は何も変更していないのに。</B></A>
+      <A NAME="save-no-change"><B>フォントを生成した後に終了しようとすると、フォントを保存するかどうか FontForge が訊いてくるのはなぜですか? 私は何も変更していないのですが。</B></A>
     <DD>
 <!--  There are two reasons why this might be happening.-->
       なぜこういう事が起こることがあるのかには、2 つの理由があります。
@@ -1538,7 +1648,7 @@ $ xset fp+ `pwd`
       </OL>
     <DT>
 <!--  <B><A NAME="TeX">Why doesn't TeX work with my fonts?</A></B>-->
-      <B><A NAME="TeX">自作のフォントが TeX で使えないのはなぜか?</A></B>
+      <B><A NAME="TeX">自作のフォントが TeX で使えないのはなぜですか?</A></B>
     <DD>
 <!--  I'm a total novice with TeX. I am told that TeX (or some part of the TeX
       chain, dvips perhaps) expects fonts to be encoded in TeX base Encoding --
@@ -1550,7 +1660,7 @@ $ xset fp+ `pwd`
     <DT>
 <!--  <A NAME="mf-files"><B>Why doesn't FontForge let me edit an '.mf'
       file?</B></A> -->
-      <A NAME="mf-files"><B>FontForge で '.mf' ファイルを編集できないのはなぜか?</B></A>
+      <A NAME="mf-files"><B>なぜ FontForge では&lsquo;mf&rsquo;ファイルを編集できないのですか?</B></A>
     <DD>
 <!--  As Knuth said "(the problem with WSYWYG is that...) What you see is
       <I>all</I> you get." FontForge suffers from this. -->
@@ -1590,7 +1700,7 @@ $ xset fp+ `pwd`
     <DT>
 <!--  <A NAME="minify-iconify"><B>Why does my window get iconified when I want
       to minify the view?</B></A> -->
-      <A NAME="minify-iconify"><B>ビューを縮小しようとすると、ウィンドウがアイコン化されてしまうのはなぜか?</B></A>
+      <A NAME="minify-iconify"><B>ビューを縮小しようとすると、ウィンドウがアイコン化されてしまうのはなぜですか?</B></A>
     <DD>
 <!--  Some window managers (gnome-sawtooth for one) steal meta (alt) clicks from
       FontForge. So you can't use meta-middle-click to minify a glyph, you have
@@ -1599,7 +1709,7 @@ $ xset fp+ `pwd`
     <DT>
 <!--  <A NAME="no-mu"><B>Why isn't there a character named "mu" in my greek
       font?</B></A> -->
-      <A NAME="no-mu"><B>作成したギリシャ語フォントに“mu”という名前の文字が見当たらないのはなぜか?</B></A>
+      <A NAME="no-mu"><B>作成したギリシャ語フォントに“mu”という名前の文字が見当たらないのはなぜですか?</B></A>
     <DD>
 <!--  Adobe was thinking more of backwards compatibility than sense when they assigned
       the names of the greek letters in their unicode encoding. Thus the name "mu"
@@ -1615,7 +1725,7 @@ $ xset fp+ `pwd`
     <DT>
 <!--  <A NAME="no-copy-names"><B>Why doesn't Edit-&gt;Copy copy glyph names as
       well as glyph info?</B></A> -->
-      <A NAME="no-copy-names"><B><CODE>編集(<U>E</U>)</CODE>→<CODE>コピー(<U>C</U>)</CODE> で、グリフ情報と一緒にグリフ名がコピーされないのはなぜか?</B></A>
+      <A NAME="no-copy-names"><B><CODE>編集(<U>E</U>)</CODE>→<CODE>コピー(<U>C</U>)</CODE> で、グリフ情報と一緒にグリフ名がコピーされないのはなぜですか?</B></A>
     <DD>
 <!--  Firstly because I believe that any attempt to copy a glyph's name will almost
       certainly be better done by defining a custom
@@ -1633,14 +1743,14 @@ $ xset fp+ `pwd`
     <DT>
 <!--  <A NAME="copy-names"><B>Why does Edit-&gt;Paste complain about name
       duplication?</B></A> -->
-      <A NAME="copy-names"><B><CODE>編集(<U>E</U>)</CODE>→<CODE>貼り付け(<U>P</U>)</CODE> を行うと、名前が重複していると怒られるのはなぜか?</B></A>
+      <A NAME="copy-names"><B><CODE>編集(<U>E</U>)</CODE>→<CODE>貼り付け(<U>P</U>)</CODE> を行うと、名前が重複していると怒られるのはなぜですか?</B></A>
     <DD>
 <!--  Because you have Edit-&gt;Copy From-&gt;Copy Metadata checked. Uncheck it. -->
       <CODE>編集(<U>E</U>)</CODE>→<CODE>コピー元の指定(<U>F</U>)</CODE>→<CODE>グリフのメタデータ(<U>M</U>)</CODE> にチェックが入っているとそうなります。チェックを外してください。
     <DT>
 <!--  <A NAME="cidmaps"><B>What on earth are cidmap files and should I care about
       them?</B></A>-->
-      <A NAME="cidmaps"><B>cidmap ファイルって一体全体何のこと、知らないと何かまずいことがある?</B></A>
+      <A NAME="cidmaps"><B>cidmap ファイルって一体全体何ですか、知らないと何かまずいことがありますか?</B></A>
     <DD>
 <!--  Some background:-->
       いくつかの背景的事情を説明します:
@@ -1683,7 +1793,7 @@ $ xset fp+ `pwd`
       要するに、cidmap ファイルが役に立つのは、CJK の CID フォントの作業を行う人だけです。
     <DT>
 <!--  <B>Does the <A NAME="simplify">simplify</A> command lose accuracy?</B>-->
-      <B><A NAME="simplify"><CODE>単純化(<U>S</U>)</CODE></A> コマンドを使うと文字の正確度が落ちるのか?</B>
+      <B><A NAME="simplify"><CODE>単純化(<U>S</U>)</CODE></A> コマンドを使うと文字の正確度が落ちますか?</B>
     <DD>
 <!--  Yes it does.<BR>
       But not much.<BR>
@@ -1726,7 +1836,7 @@ $ xset fp+ `pwd`
     <DT>
 <!--  <A NAME="cubic-quadratic"><B>How does FontForge convert a cubic spline into
       a quadratic spline for truetype?</B></A> -->
-      <A NAME="cubic-quadratic"><B>FontForge では、どうやって 3 次スプラインを TrueType で用いられる 2 次スプラインに変換しているのか?</B></A>
+      <A NAME="cubic-quadratic"><B>FontForge では、3 次スプラインから TrueType の 2 次スプラインへの変換をどう処理しているのですか?</B></A>
     <DD>
 <!--  Again this can involve a loss of accuracy.<BR> -->
       この場合も、正確度の低下が伴います。<BR>
@@ -1743,7 +1853,7 @@ $ xset fp+ `pwd`
     <DT>
 <!--  <A NAME="quadratic-cubic"><B>How does FontForge convert a quadratic spline
       into a cubic (when reading truetype)?</B></A> -->
-      <A NAME="quadratic-cubic"><B>FontForge は (TrueType を読み込む際に) どのようにして 2 次スプラインを 3 次に変換しているのか?</B></A>
+      <A NAME="quadratic-cubic"><B>FontForge は (TrueType を読み込む際に) どのようにして 2 次スプラインを 3 次に変換しているのですか?</B></A>
     <DD>
 <!--  This is easy since any quadratic spline can already be represented as a cubic,
       it will just happen that the cubic term is always 0. -->
@@ -1751,7 +1861,7 @@ $ xset fp+ `pwd`
     <DT>
 <!--  <B><A NAME="dynamic-libs">Why does fontforge say "Error loading dynamic library"
       when trying to import an image file?</A></B> -->
-      <B><A NAME="dynamic-libs">画像ファイルを取り込もうとすると、FontForge が“Error loading dynamic library”と表示するのはなぜか?</A></B>
+      <B><A NAME="dynamic-libs">画像ファイルを取り込もうとすると、FontForge が“Error loading dynamic library”と表示するのはなぜですか?</A></B>
     <DD>
 <!--  FontForge depends on certain dynamic libraries to load images. It does not
       check for the existance of these libraries until you actually try to load
@@ -1768,7 +1878,7 @@ $ xset fp+ `pwd`
     <DT>
 <!--  <B><A NAME="complex-eps">Why does fontforge say "EPS file is too complex
       to be understood"?</A></B> -->
-      <B><A NAME="complex-eps">FontForge が“EPSファイルが複雑すぎて理解できません”と表示するのはなぜか?</A></B>
+      <B><A NAME="complex-eps">FontForge が“EPSファイルが複雑すぎて理解できません”と表示するのはなぜですか?</A></B>
     <DD>
 <!--  (Well because it is a misquotation of Shakespeare, and how could I pass that
       up? <I>Much Ado About Nothing, V . i. 217</I>)<BR>
@@ -1784,7 +1894,7 @@ $ xset fp+ `pwd`
       EPS ファイルを読み込むほとんどのプログラムは、それらをブラックボックスとして扱っています。それらはファイルをメモリに読み込んで、変更を加えずに PostScript プリンタに出力するだけです。残念ながら FontForge はそうするわけにはいきません。FontForge はそれを理解して、EPS ファイルからより単純なフォーマットに変換する必要があるのです (フォントが使用することができるコマンドは EPS ファイルよりはるかに少数です)。そのため、ほとんどのプログラムと異なり、FontForge は各 EPS ファイルを解釈する必要があります――ですが PostScript の全てを解釈するのは莫大な作業を要するので、ff が理解できる PS は限られています。ときどき、扱うことができないファイルに出会うでしょう。
     <DT>
 <!--  <A NAME="default-char"><B>How do I set the default glyph of a font?</B></A> -->
-      <A NAME="default-char"><B>フォントのデフォルトグリフを設定するにはどうすればいいか?</B></A>
+      <A NAME="default-char"><B>どうすればフォントのデフォルトグリフを設定できますか?</B></A>
     <DD>
 <!--  If the glyph at encoding 0 is named ".notdef" and if it contains some splines
       (but no references) then it will be used as the default glyph (that is the
@@ -1794,7 +1904,7 @@ $ xset fp+ `pwd`
 <!--  <A NAME="ttf-degrade"><B>I loaded a ttf font, made a few changes and generated
       a new font. The changed glyphs don't look anywhere near as nice as the originals.
       Why?</B></A> -->
-      <A NAME="ttf-degrade"><B>TTF フォントを読み込んで、2,3 箇所修正してから新しいフォントを出力した。変更したグリフはどこから見てもオリジナルと比べて見劣りする。なぜか?</B></A>
+      <A NAME="ttf-degrade"><B>TTF フォントを読み込んで、2,3 箇所修正してから新しいフォントを出力しました。変更したグリフがどう見てもオリジナルと比べて見劣りするのはなぜですか?</B></A>
     <DD>
 <!--  Unfortunately FontForge does not hint truetype fonts at all well. And when
       FontForge reads in a truetype font it saves all the hinting (instructions)
@@ -1809,9 +1919,10 @@ $ xset fp+ `pwd`
       don't match the horizontals/verticals). So if you want this to happen you
       must explicitly call the Hints-&gt;AutoInstr command. -->
       FontForge は垂直・水平方向のステムにはヒントをつけることができますが、斜めのステムにはヒントづけできません。FontForge のヒントづけの試みによって、 (斜めのステムが水平・垂直と整合しなくなって) グリフの品質がかえって悪くなることも珍しくありません。そういうわけで、ヒントづけをしてほしい場合には、<CODE>ヒント(<U>I</U>)</CODE>→<CODE>ヒント命令の自動生成(<U>I</U>)</CODE> をあからさまに呼び出さなければなりません。
+    <DT>
 <!--  <A NAME="otf-diffs"><B>I generated an opentype font and windows wouldn't
       install it. Why not?</B></A> -->
-      <A NAME="otf-diffs"><B>OpenType フォントを生成したが、Windows にはインストールできない。なぜできないのか?</B></A>
+      <A NAME="otf-diffs"><B>OpenType フォントを出力したけど、Windows にインストールされません。なぜですか?</B></A>
     <DD>
 <!--  Unfortunately Apple and MicroSoft (and Adobe) do not agree on the proper
       format for open and truetype fonts. FontForge has a check box on the Generate
@@ -1841,7 +1952,7 @@ $ xset fp+ `pwd`
     <DT>
 <!--  <A NAME="mingliu"><B>I looked at kaiu.ttf or mingliu.ttf and the outlines
       looked nothing like the correct glyphs. What's wrong?</B></A> -->
-      <A NAME="mingliu"><B>kaiu.ttf や mingliu.ttf を開いてみると、アウトラインは正しいグリフと全然違って見える。何がまずいのか?</B></A>
+      <A NAME="mingliu"><B>kaiu.ttf や mingliu.ttf を開いてみると、正しいグリフと全然違ったアウトラインが表示されます。何がまずいのですか?</B></A>
     <DD>
 <!--  Some truetype fonts (kaiu and mingliu are examples) do not store the correct
       outline. Instead they rely on using the instructions to move points around
@@ -1854,7 +1965,7 @@ $ xset fp+ `pwd`
 <!--  <A NAME="greek-accents"><B>When I use Element-&gt;Build Accented Glyph to
       build one of the Extended Greek glyphs (U+1F00-U+1FFF) FontForge picks the
       wrong accents. Why?</B></A> -->
-      <A NAME="greek-accents"><B>ギリシャ文字拡張 (U+1F00～U+1FFF) のグリフを作るために <CODE>エレメント(<U>L</U>)</CODE>→<CODE>アクセントつきグリフを構築(<U>B</U>)</CODE> を使用すると、FontForge は間違ったグリフを選ぶのはなぜか?</B></A>
+      <A NAME="greek-accents"><B>ギリシャ文字拡張 (U+1F00～U+1FFF) のグリフを作るために <CODE>エレメント(<U>L</U>)</CODE>→<CODE>アクセントつきグリフを構築(<U>B</U>)</CODE> を使用すると、間違ったグリフが選択されるのはなぜですか?</B></A>
     <DD>
 <!--  For some reason Unicode has unified greek and latin accents even though they
       don't look at all alike. When FontForge follows the simplistic unicode
@@ -1867,7 +1978,7 @@ $ xset fp+ `pwd`
 <!--  <A NAME="u-accents"><B>When I use Element-&gt;Build Accented Glyph to build
       accents over "u" or "y" I get the accent over one of the stems not centered
       on the glyph. Why?</B></A> -->
-      <A NAME="u-accents"><B>“u”や“y”の上にアクセントをつけるために <CODE>エレメント(<U>L</U>)</CODE>→<CODE>組み立て(<U>U</U>)</CODE>→<CODE>アクセントつきグリフを構築(<U>B</U>)</CODE> を使用すると、アクセントがどちらかのステムの真上に来てしまい、グリフの中央に来ないのはなぜか?</B></A>
+      <A NAME="u-accents"><B>“u”や“y”の上にアクセントをつけるために <CODE>エレメント(<U>L</U>)</CODE>→<CODE>組み立て(<U>U</U>)</CODE>→<CODE>アクセントつきグリフを構築(<U>B</U>)</CODE> を使用すると、アクセントがどちらかのステムの真上に来てしまい、グリフの中央に来ないのはなぜですか?</B></A>
     <DD>
 <!--  One of your stems is a little taller than the other. FontForge centers accents
       over the tallest point on the glyph. If there are several points with the
@@ -1879,7 +1990,7 @@ $ xset fp+ `pwd`
       全てのステムの高さを同じに揃えれば、アクセントは正しく中央に配置されるでしょう。
     <DT>
 <!--  <A NAME="ttf2afm"><B>Why does ttf2afm crash on FontForge ttf files?</B></A> -->
-      <A NAME="ttf2afm"><B>FontForge が出力した TTF ファイルを処理すると ttf2afm がクラッシュするのはなぜか?</B></A>
+      <A NAME="ttf2afm"><B>FontForge が出力した TTF ファイルを処理すると ttf2afm がクラッシュするのはなぜですか?</B></A>
     <DD>
 <!--  I don't know. The ttf2afm that was distributed with my redhat 7.3 linux certainly
       did crash. When I downloaded the source from
@@ -1893,8 +2004,26 @@ $ xset fp+ `pwd`
       だから、これは ttf2afm のバグで、既に修正されているに違いないと思います。<BR>
       ttf2afm によって出力された AFM ファイルは、<A TARGET="_top" HREF="http://partners.adobe.com/asn/developer/PDFS/TN/5004.AFM_Spec.pdf">Adobe の仕様</A>に適合していません。
     <DT>
+<!--  <A NAME="memory"><B>My system keeps crashing because FontForge keeps running
+      out of memory. What can I do about it?</B></A> -->
+      <A NAME="memory"><B>FontForge がメモリを使い尽くしてクラッシュしてばかりいます。何か対処方法はありますか?</B></A>
+    <DD>
+<!--  If you are editing large fonts, FontForge may run out of memory. All too
+      often when FF runs out of memory, the kernel will crash rather than report
+      an error condition. FontForge does check for failure to allocate and attempts
+      to free up some chunks of memory when this happens - - I've never seen this
+      code activated though. -->
+      大きなフォントを編集していると、FontForge がメモリを使い尽くすことがあります。FF がメモリを使い果たすと、カーネルがエラー状態を報告しないでクラッシュしてしまう環境がほとんどです。FontForge は、メモリの割り付け失敗を検出し、それが発生したときには、メモリの塊をいくつか解放しようとします――ですが、これが実際に呼び出されるのを見たことがありません。
+      <P>
+<!--  FontForge does provide a mechanism which might help you avoid this. FontForge
+      generally wastes a lot of memory keeping undoes around. You can clear undoes
+      associated with a glyph with the Edit-&gt;Remove Undoes command. You can
+      also limit the number of undoes that will be stored with each glyph with
+      the File-&gt;Preferences-&gt;Editing-&gt;UndoDepth. -->
+      FontForge は、これを避ける助けとなる可能性のある機能を提供しています。一般に、FontForge はアンドゥ履歴を保持するために大量のメモリを浪費しています。<CODE>編集(<U>E</U>)</CODE>→<CODE>アンドゥ履歴のクリア(<U>V</U>)</CODE> を呼び出せば、グリフのアンドゥ履歴をクリアすることができます。また、各グリフに対して格納されるアンドゥ情報の個数を、<CODE>ファイル(<U>F</U>)</CODE>→<CODE>環境設定(<U>E</U>)...</CODE>→<CODE>[編集]</CODE>→<CODE>UndoDepth</CODE> で制限することができます。
+    <DT>
 <!--  <A NAME="Unstable"><B>Why is FontForge so unstable?</B></A>-->
-      <A NAME="Unstable"><B>なぜ FontForge はとても不安定なのか?</B></A>
+      <A NAME="Unstable"><B>なぜ FontForge はとても不安定なのですか?</B></A>
     <DD>
 <!--  I don't bother much with doing QA. This is a problem. I don't enjoy doing
       it, and no one is paying me to do it, so little gets done.<BR>
