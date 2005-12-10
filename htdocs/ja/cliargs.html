@@ -15,23 +15,26 @@
 <!--Command Line Arguments-->
     コマンドライン引数
 </H1>
-<P>
-<CODE>$ fontforge [-options] [filenames]<BR>
-$ fontforge [-script] scriptfile [arguments]<BR>
-$ fontforge -c script-string [arguments]</CODE>
+<BLOCKQUOTE>
+<PRE>$ fontforge [-options] [filenames]
+$ fontforge [-script] scriptfile [arguments]
+$ fontforge -c script-string [arguments]</PRE>
+</BLOCKQUOTE>
 <P>
 <!--
 The filenames may specify any number of files in one of the font formats
 that FontForge recognizes (various postscript formats, truetype, opentype,
 mac resource, bitmap). -->
-filenames には、FontForge が認識する任意のフォントフォーマット (各種の PostScript フォーマット、TrueType, OpenType, Mac リソース、ビットマップ) のファイルを任意の個数指定する事ができます。
+filenames には、FontForge が認識する任意のフォントフォーマット (各種の PostScript フォーマット、TrueType, OpenType, Mac リソース、ビットマップ, SVG 等) のファイルを任意の個数指定することができます。
 <P>
 <!--
 Some files (.ttc or mac resource) may contain more than one outline font.
 You may pick which font you want by following the filename with the fontname
 in parentheses, thus:<BR> -->
 いくつかのファイル (.ttc または Mac のリソース) は 1 個より多くのアウトラインフォントを含むことができます。どのフォントを読み込みたいかを、ファイル名の後に続けて、括弧でくくってフォント名を書くことによって指定することができます。例えば:
-<CODE>&nbsp; &nbsp; $ fontforge "gulim.ttc(GulimChe)"</CODE><BR>
+<BLOCKQUOTE>
+<PRE>$ fontforge "gulim.ttc(GulimChe)"</PRE></BLOCKQUOTE>
+<P>
 <!--
 will select the font GulimChe out of the font file gulim.ttc.-->
 とするとフォントファイル <CODE>gulim.ttc</CODE> から GulimChe を読み出します。
@@ -104,8 +107,8 @@ FontForge は以下のオプションを認識します:
 	Control キーと Alt キーを使用します。
       <LI>
 	mac | 1<BR>
-<!--	Uses the Command and Option keys (Mac OS/X, Mac keyboard) -->
-	Command キーと Option キーを使用します (Mac OS X, Mac キーボード)。
+<!--	Uses the Control and Option keys (Mac OS/X, Mac keyboard) -->
+	Control キーと Option キーを使用します (Mac OS X, Mac キーボード)。
       <LI>
 	ppc | 3<BR>
 <!--	Uses the Control and Command keys (Suse ppc linux, Mac keyboard) -->

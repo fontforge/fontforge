@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 31-Oct-2005 -->
+  <!-- AP: Last modified: 1-Dec-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
   <TITLE>FontForge</TITLE>
   <LINK REL="icon" href="../ffanvil16.png">
@@ -35,15 +35,17 @@
   FontForge のユーザインタフェースは以下の言語版が用意されています: (英語)・ロシア語・日本語・フランス語・イタリア語・スペイン語。<BR>
 <!--  This website itself has been translated into Japanese
   <A HREF="ja/"><IMG SRC="flags/Nisshoki-Japan.png" WIDTH="39" HEIGHT="26"></A>
-  and the tutorial into (traditional) Chinese
+  and the tutorial into traditional Chinese
   <A HREF="http://edt1023.sayya.org/fontforge/editexample.html"><IMG SRC="flags/taiwan.png"
-      WIDTH="39" HEIGHT="26"></A> -->
+      WIDTH="39" HEIGHT="26"></A> A Portuguese translation has been started
+  <A HREF="http://usrdoc.com/ff/web/index.html"><IMG SRC="flags/BrasilFlag.png"
+      WIDTH="39" HEIGHT="28"></A> -->
   <a href="../index.html">この Web サイト</a>そのものは日本語
   <A HREF="index.html"><IMG SRC="../flags/Nisshoki-Japan.png" WIDTH="39" HEIGHT="26"></A>
-  に翻訳されているほか、チュートリアルが (繁体字) 中国語
+  に翻訳されているほか、チュートリアルが繁体字中国語
   <A HREF="http://edt1023.sayya.org/fontforge/editexample.html"><IMG SRC="../flags/taiwan.png"
-      WIDTH="39" HEIGHT="26"></A>
-  に翻訳されています。
+      WIDTH="39" HEIGHT="26"></A> 
+  に翻訳されています。ポルトガル語版 <A HREF="http://usrdoc.com/ff/web/index.html"><IMG SRC="../flags/BrasilFlag.png" WIDTH="39" HEIGHT="28"></A>の翻訳が始まりました。
   <P>
   <UL>
     <LI>
@@ -164,6 +166,9 @@
     <LI>
 <!--  <A HREF="#tools">Related tools</A>-->
       <A HREF="#tools">関連ツール</A>
+    <LI>
+<!--  <A HREF="index.html#font-devel">Open Source Font development efforts</A> -->
+      <A HREF="index.html#font-devel">オープンソースのフォント開発運動</A>
   </UL>
   <H2>
 <!--  License-->
@@ -273,18 +278,13 @@
   </H2>
   <P>
 <!--
-  FontForge is by no means complete. And probably has some bugs. Be prepared
+  FontForge is by no means perfect. And probably has some bugs. Be prepared
   to save frequently and consider working on a copy of the original. -->
   FontForge は決して完全ではありません。それに、おそらくバグがいくつか残っているでしょう。頻繁にファイルを保存し、オリジナルのコピーに対して作業を行うことを考慮してください。
   <UL>
     <LI>
 <!--  No attempt has been made to be efficient.-->
       効率的に動作するための努力を行っていません。
-    <LI>
-<!--  No attempt has been made to interpret truetype instructions (hints), instead
-      the instructions will be stored and used as long as no significant changes
-      happen to the character they are associated with. -->
-      TrueType の命令 (ヒント) を解釈する試みは全く行わず、命令はそのまま格納され、そのヒントに伴う文字に対して重要な変更が行われないかぎり使用されます。
     <LI>
 <!--  Many type 3 fonts will not be read in correctly -->
       正しく読み込まれない Type 3 フォントがたくさんあります。
@@ -294,12 +294,12 @@
       more than one font with a chars dictionary. -->
       Type 0 フォントを取り込むとエンコーディングが失われます。FontForge は単純な Type 0 フォント (例えば FontForge 自身が作った物) のみを取り込みます。もし chars 辞書に 2 個以上のフォントが含まれていると混乱するでしょう。
     <LI>
-<!--  FontForge's support for the VORG table output is limited.-->
-      FontForge の VORG テーブル出力のサポートはには制限があります。
+<!-- FontForge's does not support contextual ligatures for Apple Advanced Typography
+     (AAT) fonts -->
+     FontForge は Apple 高度組版 (AAT) フォントの文脈依存な合字をサポートしていません。
     <LI>
-<!--  FontForge's support for <A HREF="gposgsub.html#AAT">Apple's Advanced Typography
-      tables</A> (AAT) is limited. -->
-      FontForge の <A HREF="gposgsub.html#AAT">Apple 高度組版機能テーブル</A> (AAT) のサポートには制限があります。
+<!--  There are a number of opentype/AAT tables which FontForge does NOT support. -->
+      FontForge がサポートして<em>いない</em> OpenType/AAT テーブルはたくさんあります。
   </UL>
   <H2>
 <!--  <A NAME="known-bugs">Bugs</A>-->
@@ -836,6 +836,12 @@ U+0066 + U+0069 =&gt; U+FB01 'liga'
 	  and hinting truetype fonts</A> -->
 	  Rogier C van Dalen は、<A HREF="http://home.kabelfoon.nl/~slam/fonts/">TrueType フォントの表示とヒントづけを行うための一連のユーティリティ</a>を書いています。
 	<LI>
+<!--	  Peter Baker has a (non-released) programming language called xgridfit for
+	  hinting truetype fonts. It is currently available bundled with his
+	  <A HREF="http://www.engl.virginia.edu/OE/junicode/junicode-src.tar.gz">junicode
+	  font</A>. -->
+	  Peter Baker は xgridfit という名の (未発表の) プログラミング言語を持っています。現在のところ、彼による <A HREF="http://www.engl.virginia.edu/OE/junicode/junicode-src.tar.gz">junicode フォント</A>に同梱された形でのみ入手可能です。
+	<LI>
 <!--	  <A HREF="http://www.letterror.com/code/ttx/">TTX</A> provides an opensource
 	  way of editing all the strange tables in a opentype font (by converting them
 	  from/to XML) -->
@@ -960,6 +966,34 @@ U+0066 + U+0069 =&gt; U+FB01 'liga'
   <A HREF="mailto:fontforge-devel@lists.sourceforge.net">let me know</A>. I did
   my research a couple of years ago and expect it is out of date. -->
   このリストに含めるべきツールをご存知でしたら、<A HREF="mailto:fontforge-devel@lists.sourceforge.net">私にご連絡ください</A>。私が調査を行ったのは 2 年も前のことなので、この情報は古びてしまっていることでしょう。
+  <H2>
+<!--Open Source <A NAME="font-devel">font developm</A>ent efforts -->
+    オープンソース<A NAME="font-devel">フォントの開発</A>運動
+  </H2>
+  <UL>
+    <LI>
+<!--  <A HREF="http://dejavu.sf.net/">DejaVu</A> - - extension of bitstream Vera
+      to cyrillic &amp; greek. -->
+      <A HREF="http://dejavu.sf.net/">DejaVu</A> ― Bitstream Vera のキリルおよびギリシャ文字への拡張
+    <LI>
+<!--  <A HREF="http://savannah.nongnu.org/projects/freefont/">Free UCS Outline
+      Fonts</A> - - A set of free OpenType fonts covering ISO 10646/Unicode character
+      set.. -->
+      <A HREF="http://savannah.nongnu.org/projects/freefont/">Free UCS Outline Fonts</A> ― ISO 10646/Unicode 文字セットをカバーする 1 組のフリーな OpenType フォント
+    <LI>
+<!--  <A HREF="http://canopus.iacp.dvo.ru/~panov/cm-unicode/">Computer Modern Unicode
+      </A>- - Outline based version of Knuth's TeX fonts, extended to unicode. -->
+      <A HREF="http://canopus.iacp.dvo.ru/~panov/cm-unicode/">Computer Modern Unicode</A> ― Knuth の TeX フォントのアウトラインベースの版。Unicode 拡張あり。
+    <LI>
+<!--  <A HREF="http://www.engl.virginia.edu/OE/junicode/junicode.html">JUnicode</A>
+      - - A free (GPL) font especially for scholars working with European medieval
+      texts -->
+      <A HREF="http://www.engl.virginia.edu/OE/junicode/junicode.html">JUnicode</A> ― ヨーロッパ中世のテキストを取り扱う学者に特に向いている、自由な (GPL の) フォント
+    <LI>
+<!--  <A HREF="http://www.typeforge.net/">TypeForge</A> - - a site for collaborative
+      font development. -->
+      <A HREF="http://www.typeforge.net/">TypeForge</A> ― 協業によるフォント開発のためのサイト。
+  </UL>
   <P ALIGN=Center>
   <P ALIGN=Center>
   <A HREF="http://bibliofile.duhs.duke.edu/gww/FreeWare/MyToys.html"><IMG SRC="http://bibliofile.duhs.duke.edu/gww/FreeWare/../uparrow.gif"
