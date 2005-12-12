@@ -547,12 +547,12 @@ return;
 	/* Draw Nothing */;
     else if ( sp->pointtype==pt_curve ) {
 	--r.x; --r.y; r.width +=2; r.height += 2;
-	if ( sp->selected )
+	if ( sp->selected || (sp->ttfindex==0xffff && cv->fv->sf->order2))
 	    GDrawDrawElipse(pixmap,&r,col);
 	else
 	    GDrawFillElipse(pixmap,&r,col);
     } else if ( sp->pointtype==pt_corner ) {
-	if ( sp->selected )
+	if ( sp->selected || (sp->ttfindex==0xffff && cv->fv->sf->order2))
 	    GDrawDrawRect(pixmap,&r,col);
 	else
 	    GDrawFillRect(pixmap,&r,col);
@@ -598,7 +598,7 @@ return;
 	    gp[2].x = gp[0].x; gp[2].y = gp[0].y-ydiff;
 	}
 	gp[3] = gp[0];
-	if ( sp->selected )
+	if ( sp->selected || (sp->ttfindex==0xffff && cv->fv->sf->order2) )
 	    GDrawDrawPoly(pixmap,gp,4,col);
 	else
 	    GDrawFillPoly(pixmap,gp,4,col);

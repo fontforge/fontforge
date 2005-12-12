@@ -880,6 +880,8 @@ void SplineRefigure2(Spline *spline) {
 }
 
 void SplineRefigure(Spline *spline) {
+    if ( spline==NULL )
+return;
     if ( spline->order2 )
 	SplineRefigure2(spline);
     else
