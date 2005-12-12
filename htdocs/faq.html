@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 30-Nov-2005 -->
+  <!-- AP: Last modified: 11-Dec-2005 -->
   <TITLE>Frequently Asked Questions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -234,13 +234,13 @@
       <A HREF="#mingliu">I looked at kaiu.ttf or mingliu.ttf and the outlines looked
       nothing like the correct glyphs. What's wrong?</A>
     <LI>
-      <A HREF="#greek-accents">When I use Element-&gt;Build Accented Glyph to build
-      one of the Extended Greek glyphs (U+1F00-U+1FFF) FontForge picks the wrong
-      accents. Why?</A>
+      <A HREF="#greek-accents">When I use Element-&gt;Build-&gt;Build Accented
+      Glyph to build one of the Extended Greek glyphs (U+1F00-U+1FFF) FontForge
+      picks the wrong accents. Why?</A>
     <LI>
-      <A HREF="#u-accents">When I use Element-&gt;Build Accented Glyph to build
-      accents over "u" or "y" I get the accent over one of the stems not centered
-      on the glyph. Why?</A>
+      <A HREF="#u-accents">When I use Element-&gt;Build-&gt;Build Accented Glyph
+      to build accents over "u" or "y" I get the accent over one of the stems not
+      centered on the glyph. Why?</A>
     <LI>
       <A HREF="#ttf2afm">Why does ttf2afm crash on FontForge ttf files?</A>
     <LI>
@@ -518,8 +518,8 @@
       source programs --
       <A HREF="http://www.opensource.org/licenses" TARGET="_top">see the Open Source
       list of approved licenses </A>-- but these generally do not meet the specific
-      needs of font designers. I know of two licenses specifically produced for
-      fonts:
+      needs of font designers. I know of two Open Source style licenses specifically
+      produced for fonts:
       <UL>
 	<LI>
 	  <A HREF="http://www.gnome.org/fonts/#Final_Bitstream_Vera_fonts" TARGET="_top">The
@@ -999,7 +999,7 @@ $ xset fp+ `pwd`
 	      Be sure to check the <CODE>[] Into Background</CODE> checkbox
 	  </UL>
 	<LI>
-	  Edit-&gt;Select All
+	  Edit-&gt;Select-&gt;Select All
 	<LI>
 	  Element-&gt;Autotrace
 	<LI>
@@ -1146,8 +1146,8 @@ $ xset fp+ `pwd`
 </PRE>
       </BLOCKQUOTE>
       <P>
-      Now load this file into FontForge's list of encodings with Element-&gt;Font
-      Info-&gt;Encoding-&gt;Load, and then apply it to whatever fonts you want.
+      Now load this file into FontForge's list of encodings with Encoding-&gt;Load
+      Encoding, and then apply it to whatever fonts you want.
     <DT>
       <A NAME="new-name"><B>How do I add a glyph with a new name?</B></A>
     <DD>
@@ -1173,7 +1173,7 @@ $ xset fp+ `pwd`
 	  Press <CODE>OK</CODE><BR>
 	  Now draw the dotlessi glyph in the selected glyph slot<BR>
 	  Bring up <CODE>Encoding-&gt;Reencode </CODE>again<BR>
-	  Change the <CODE>Encoding</CODE> back to whatever it was
+	  Change the encoding back to whatever it was
       </OL>
     <DT>
       <A NAME="glyphnames"><B>Why does FontForge give some of my glyphs the wrong
@@ -1415,9 +1415,9 @@ $ xset fp+ `pwd`
       If this level of accuracy is not good enough then (In the outline view):
       <UL>
 	<LI>
-	  Edit-&gt;Select All
+	  Edit-&gt;Select-&gt;Select All
 	<LI>
-	  Element-&gt;Transform
+	  Element-&gt;Transform-&gt;Transform
 	<LI>
 	  Scale Uniformly: 1000%
 	<LI>
@@ -1425,7 +1425,7 @@ $ xset fp+ `pwd`
 	<LI>
 	  Simplify
 	<LI>
-	  Element-&gt;Transform
+	  Element-&gt;Transform-&gt;Transform
 	<LI>
 	  Scale Uniformly: 10%
 	<LI>
@@ -1536,9 +1536,9 @@ $ xset fp+ `pwd`
       the font. In most fonts this would be the wrong thing to do, and I don't
       know how I could tell when it needs to be done...
     <DT>
-      <A NAME="greek-accents"><B>When I use Element-&gt;Build Accented Glyph to
-      build one of the Extended Greek glyphs (U+1F00-U+1FFF) FontForge picks the
-      wrong accents. Why?</B></A>
+      <A NAME="greek-accents"><B>When I use Element-&gt;Build-&gt;Build Accented
+      Glyph to build one of the Extended Greek glyphs (U+1F00-U+1FFF) FontForge
+      picks the wrong accents. Why?</B></A>
     <DD>
       For some reason Unicode has unified greek and latin accents even though they
       don't look at all alike. When FontForge follows the simplistic unicode
@@ -1547,9 +1547,9 @@ $ xset fp+ `pwd`
       if you fill these code points with the appropriate accents then FontForge
       will use these rather than the latin accents.
     <DT>
-      <A NAME="u-accents"><B>When I use Element-&gt;Build Accented Glyph to build
-      accents over "u" or "y" I get the accent over one of the stems not centered
-      on the glyph. Why?</B></A>
+      <A NAME="u-accents"><B>When I use Element-&gt;Build-&gt;Build Accented Glyph
+      to build accents over "u" or "y" I get the accent over one of the stems not
+      centered on the glyph. Why?</B></A>
     <DD>
       One of your stems is a little taller than the other. FontForge centers accents
       over the tallest point on the glyph. If there are several points with the

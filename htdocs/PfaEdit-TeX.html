@@ -2,256 +2,256 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jan-2003 -->
-  <!-- AP: Last modified: 22-Mar-2005 -->
+  <!-- AP: Last modified: 11-Dec-2005 -->
   <TITLE>Using FontForge with TeX</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
 <DIV id="in">
-<H1 ALIGN=Center>
-  <A NAME="TeX">FontForge and TeX</A>
-</H1>
-<P>
-FontForge has a number of features built in to it to deal with TeX.
-<P>
-It can read "pk" and "gf" bitmap files and
-<A HREF="elementmenu.html#AutoTrace">autotrace</A> them to generate outline
-fonts. It can even invoke metafont directly on a ".mf" file, generate a "gf"
-bitmap from that, autotrace it and generate an outline font.
-<P>
-It can read ligature, kerning information from a ".tfm" file. It can create
-a tfm file.
-<P>
-The <A HREF="Encodings.ps.gz">encodings</A> file has a number of standard
-TeX encodings built in to it.
-<P>
-For large CJK truetype fonts it can read a sub-font definition file as defined
-in the ttf2tfm man page and <A HREF="generate.html">generate</A> a series
-of postscript type-1 fonts based on those two.
-<P>
-In consultation with the lilypond group we have designed a new
-<A HREF="non-standard.html">SFNT table 'TeX </A>' for storing TeX specific
-information in True/OpenType files.
-<H3>
-  Generating a tfm file (and an enc file).
-</H3>
-<P>
-Before you generate a tfm file you should perform some of the following
-<DL>
-  <DT>
-    Set the font parameters
-  <DD>
-    Do this with Element-&gt;Font Info-&gt;TeX.
-  <DT>
-    Optionally set <A NAME="Italic">Italic</A> Correction values for glyphs
-  <DD>
-    (FontForge will generate default values for italic fonts, so you only need
-    do this if FontForge gets it wrong).
-    <UL>
-      <LI>
-	Select a glyph which should have an Italic Correction
-      <LI>
-	Element-&gt;Char Info-&gt;Alt Pos
-      <LI>
-	Press [New]
-      <LI>
-	Set the tag to <CODE>Italic Correction</CODE> from the pulldown list
-      <LI>
-	Set the XAdvance to the italic correction
-    </UL>
-  <DT>
-    Optionally set any <A NAME="charlist">glyphlists</A>
-  <DD>
-    <UL>
-      <LI>
-	Select the first glyph in the glyphlist (the smallest one)
-      <LI>
-	Element-&gt;Char Info-&gt;Alt Subs
-      <LI>
-	Press [New]
-      <LI>
-	Set the tag to <CODE>TeX Glyphlist</CODE> from the pulldown list
-      <LI>
-	Type the names of all the other glyphs in the glyphlist into the Components
-	field<BR>
-	So if the charlist is for left parenthesis<BR>
-	You would select the lparen glyph and might type in "lparen.big lparen.bigger
-	lparen.biggest"
-    </UL>
-  <DT>
-    Optionally set any <A NAME="extension">extension</A> glyphs.
-  <DD>
-    <UL>
-      <LI>
-	If the glyph is in a charlist then Select the last glyph in the glyphlist
-	(the largest one)
-      <LI>
-	Element-&gt;Char Info-&gt;Mult Subs
-      <LI>
-	Press [New]
-      <LI>
-	Set the tag to <CODE>TeX Extension list </CODE>from the pulldown list
-      <LI>
-	Type the names of the glyphs that this glyph decomposes into in the order:
-	top middle bottom extension<BR>
-	If a field is not present use .notdef<BR>
-	So if the extension list is for left parenthesis<BR>
-	You would select the lparen.biggest glyph and might type in "lparen.top
-	lparen.mid lparen.bottom lparen.ext"
-    </UL>
-</DL>
-<P>
-Note: When FontForge does a File-&gt;Merge Kern Info on a tfm file, it will
-set these values appropriately.
-<P>
-Having done this to your satisfaction you are ready to generate a tfm file.
-Go to File-&gt;Generate Fonts, select one of the postscript encodings from
-the pulldown list, press the [Options] button and turn on the [*] Tfm &amp;
-Enc check box.
-<P>
-I'm not sure what you <EM>do</EM> with these files yet, but this should create
-them.
-<H3>
-  <A NAME="TeX-Install">Installing a type1 (pfb) postscript font for TeX</A>
-</H3>
-<P>
-I am a novice TeX/LaTeX user so my comments should be taken with a grain
-of salt. I did manage to get this process to work on my own system.
-<P>
-Installing a PostScript font for TeX is more complicated than one would hope
-(and so far I've only figured out how to install a Latin font). Instead of
-just moving the font file to some standard directory you must:
-<UL>
-  <LI>
-    &lt;configure TeX so that it is prepared for local additions&gt;
-  <LI>
-    Rename the font file so that the filename is in a format TeX understands<BR>
-    (I'm told this isn't required, but I couldn't get things to work without
-    doing this. Perhaps I have an old system. Perhaps I didn't try hard enough)
-  <LI>
-    Create several helper files that TeX will use for its own purposes
-  <LI>
-    Move each file type into its own special directory
-  <LI>
-    Optionally: Create a package file to make it easy for LaTeX to find the font
-  <LI>
-    Optionally: Move the package file into its own directory
-  <LI>
-    Use the updmap script or manually:
-    <UL>
-      <LI>
-	Update dvips's configuration files so that it knows where to look for the
-	postscript fonts
-      <LI>
-	Optionally: Update pdftex's configuration files so that it knows where to
-	look too.
-    </UL>
-</UL>
-<P>
-I suggest that before you read further you look at the following resources
-on the web:
-<UL>
-  <LI>
-    It is possible to add your fonts to the standard TeX directory structure,
-    but the TeX guru's frown on this as it makes updating TeX difficult. They
-    suggest instead that you make all your changes in some parallel directory
-    and provide they instructions on how to go about doing this at:
-    <A HREF="http://www.ctan.org/installationadvice/">Installation advice for
-    TeX fonts and directories</A>. They also provide an example of a font
-    installation but that is better explained in
-    <A HREF="http://www.ctan.org/tex-archive/info/Type1fonts/fontinstallationguide.pdf">the
-    LaTeX font-faq</A>.
-  <LI>
-    Old versions of TeX (ie. mine) are still worried about the old 8 character
-    limitation on DOS filenames. This means that the tools I was using don't
-    accept understandable filenames instead they require a format described in
-    <A HREF="http://www.tug.org/fontname/html/index.html">TeX font file naming
-    conventions</A>. If you are creating your own fonts this boils down to:
-    <UL>
-      <LI>
-	the first letter of the font should be "f" (which means the font wasn't made
-	by one of the big-name font vendors)
-      <LI>
-	the next two letters are some abbreviation of the family-name for your font
-      <LI>
-	the next letter (or two) should be "r" for a roman font, "i" for italic,
-	"o" for oblique, "b" for bold, and "bi" for bold italic
-      <LI>
-	the last two letters should be "8a" (which means your font is in Adobe Standard
-	Encoding. And your font <EM>must be</EM> in that encoding or things don't
-	work).<BR>
-	(Again I am told that you can use any encoding as long as you register it
-	with TeX. I was unable to get this to work. But my system is out of date)
-    </UL>
-  <LI>
-    Finally
-    <A HREF="http://www.ctan.org/tex-archive/info/Type1fonts/fontinstallationguide.pdf">the
-    LaTeX font-faq</A> describes the gory details of how to go about installing
-    the font. It's only (minor) drawback is that it assumes you are installing
-    a font from Adobe. That is easily glossed over it means that:
-    <UL>
-      <LI>
-	fonts from Adobe should have font names beginning with "p" rather than "f".
-      <LI>
-	the translation from adobe's font-families to 2 character abbreviations has
-	already been done, when using an adobe font you look the family up in a table
-	to get the 2 character abbreviation, when creating your own font you make
-	up your own.
-      <LI>
-	the vendor directory for adobe is "adobe", but the vendor directory for fonts
-	you make should be "public"
-      <LI>
-	(I hope these comments will make sense after you've read the above links)
-    </UL>
-  <LI>
-    I've not tried to work with truetype fonts, but here's a document that talks
-    about it to some extent. <A HREF="http://www.radamir.com/tex/ttf-tex.htm">LaTeX
-    and TTF</A>
-  <LI>
-    If you are interested in the basics, here's the documentation on
-    <A HREF="http://www.ctan.org/tex-archive/fonts/utilities/fontinst/doc/fontinst.ps">fontinst</A>
-    itself.
-  <LI>
-    I don't know how to deal with cyrillic (except that cyrillic T2 encodings
-    are called 6a), greek or CJK fonts yet.
-  <LI>
-    Here's some info on how to use fonts once they are installed:
-    <A HREF="http://www-h.eng.cam.ac.uk/help/tpl/textprocessing/fonts.html">LaTeX
-    and fonts</A>
-</UL>
-<P>
-<P>
-I did the following:
-<UL>
-  <LI>
-    I created a directory structure as described in
-    <A HREF="http://www.ctan.org/installationadvice/">Installation advice</A>
-    (and also in
-    <A HREF="http://www.ctan.org/tex-archive/info/Type1fonts/fontinstallationguide.pdf">the
-    LaTeX font-faq</A>).
-  <LI>
-    I made a font (which I will call Cupola), initially I encoded it with the
-    TeX Base Encoding (this was to make sure I had all the characters I needed)
-  <LI>
-    Then just before generating it I reencoded it into Adobe Standard Encoding
-    (because TeX's fontinst routine expects that)
-  <LI>
-    I generated the font naming it "fcur8a.pfb" which means:
-    <UL>
-      <LI>
-	f -- made by a small font vendor, public domain, etc.
-      <LI>
-	cu -- abbreviation for the family name "Cupola"
-      <LI>
-	r -- roman face
-      <LI>
-	8a -- Adobe Standard Encoding
-    </UL>
-  <LI>
-    I applied the following script:
-    <BLOCKQUOTE>
-    <PRE>#!/bin/bash
+  <H1 ALIGN=Center>
+    <A NAME="TeX">FontForge and TeX</A>
+  </H1>
+  <P>
+  FontForge has a number of features built in to it to deal with TeX.
+  <P>
+  It can read "pk" and "gf" bitmap files and
+  <A HREF="elementmenu.html#AutoTrace">autotrace</A> them to generate outline
+  fonts. It can even invoke metafont directly on a ".mf" file, generate a "gf"
+  bitmap from that, autotrace it and generate an outline font.
+  <P>
+  It can read ligature, kerning information from a ".tfm" file. It can create
+  a tfm file.
+  <P>
+  The <A HREF="Encodings.ps.gz">encodings</A> file has a number of standard
+  TeX encodings built in to it.
+  <P>
+  For large CJK truetype fonts it can read a sub-font definition file as defined
+  in the ttf2tfm man page and <A HREF="generate.html">generate</A> a series
+  of postscript type-1 fonts based on those two.
+  <P>
+  In consultation with the lilypond group we have designed a new
+  <A HREF="non-standard.html">SFNT table 'TeX </A>' for storing TeX specific
+  information in True/OpenType files.
+  <H3>
+    Generating a tfm file (and an enc file).
+  </H3>
+  <P>
+  Before you generate a tfm file you should perform some of the following
+  <DL>
+    <DT>
+      Set the font parameters
+    <DD>
+      Do this with Element-&gt;Font Info-&gt;TeX.
+    <DT>
+      Optionally set <A NAME="Italic">Italic</A> Correction values for glyphs
+    <DD>
+      (FontForge will generate default values for italic fonts, so you only need
+      do this if FontForge gets it wrong).
+      <UL>
+	<LI>
+	  Select a glyph which should have an Italic Correction
+	<LI>
+	  Element-&gt;Glyph Info-&gt;Alt Pos
+	<LI>
+	  Press [New]
+	<LI>
+	  Set the tag to <CODE>Italic Correction</CODE> from the pulldown list
+	<LI>
+	  Set the XAdvance to the italic correction
+      </UL>
+    <DT>
+      Optionally set any <A NAME="charlist">glyphlists</A>
+    <DD>
+      <UL>
+	<LI>
+	  Select the first glyph in the glyphlist (the smallest one)
+	<LI>
+	  Element-&gt;Glyph Info-&gt;Alt Subs
+	<LI>
+	  Press [New]
+	<LI>
+	  Set the tag to <CODE>TeX Glyphlist</CODE> from the pulldown list
+	<LI>
+	  Type the names of all the other glyphs in the glyphlist into the Components
+	  field<BR>
+	  So if the charlist is for left parenthesis<BR>
+	  You would select the lparen glyph and might type in "lparen.big lparen.bigger
+	  lparen.biggest"
+      </UL>
+    <DT>
+      Optionally set any <A NAME="extension">extension</A> glyphs.
+    <DD>
+      <UL>
+	<LI>
+	  If the glyph is in a charlist then Select the last glyph in the glyphlist
+	  (the largest one)
+	<LI>
+	  Element-&gt;Glyph Info-&gt;Mult Subs
+	<LI>
+	  Press [New]
+	<LI>
+	  Set the tag to <CODE>TeX Extension list </CODE>from the pulldown list
+	<LI>
+	  Type the names of the glyphs that this glyph decomposes into in the order:
+	  top middle bottom extension<BR>
+	  If a field is not present use .notdef<BR>
+	  So if the extension list is for left parenthesis<BR>
+	  You would select the lparen.biggest glyph and might type in "lparen.top
+	  lparen.mid lparen.bottom lparen.ext"
+      </UL>
+  </DL>
+  <P>
+  Note: When FontForge does a File-&gt;Merge Kern Info on a tfm file, it will
+  set these values appropriately.
+  <P>
+  Having done this to your satisfaction you are ready to generate a tfm file.
+  Go to File-&gt;Generate Fonts, select one of the postscript encodings from
+  the pulldown list, press the [Options] button and turn on the [*] Tfm &amp;
+  Enc check box.
+  <P>
+  I'm not sure what you <EM>do</EM> with these files yet, but this should create
+  them.
+  <H3>
+    <A NAME="TeX-Install">Installing a type1 (pfb) postscript font for TeX</A>
+  </H3>
+  <P>
+  I am a novice TeX/LaTeX user so my comments should be taken with a grain
+  of salt. I did manage to get this process to work on my own system.
+  <P>
+  Installing a PostScript font for TeX is more complicated than one would hope
+  (and so far I've only figured out how to install a Latin font). Instead of
+  just moving the font file to some standard directory you must:
+  <UL>
+    <LI>
+      &lt;configure TeX so that it is prepared for local additions&gt;
+    <LI>
+      Rename the font file so that the filename is in a format TeX understands<BR>
+      (I'm told this isn't required, but I couldn't get things to work without
+      doing this. Perhaps I have an old system. Perhaps I didn't try hard enough)
+    <LI>
+      Create several helper files that TeX will use for its own purposes
+    <LI>
+      Move each file type into its own special directory
+    <LI>
+      Optionally: Create a package file to make it easy for LaTeX to find the font
+    <LI>
+      Optionally: Move the package file into its own directory
+    <LI>
+      Use the updmap script or manually:
+      <UL>
+	<LI>
+	  Update dvips's configuration files so that it knows where to look for the
+	  postscript fonts
+	<LI>
+	  Optionally: Update pdftex's configuration files so that it knows where to
+	  look too.
+      </UL>
+  </UL>
+  <P>
+  I suggest that before you read further you look at the following resources
+  on the web:
+  <UL>
+    <LI>
+      It is possible to add your fonts to the standard TeX directory structure,
+      but the TeX guru's frown on this as it makes updating TeX difficult. They
+      suggest instead that you make all your changes in some parallel directory
+      and provide they instructions on how to go about doing this at:
+      <A HREF="http://www.ctan.org/installationadvice/">Installation advice for
+      TeX fonts and directories</A>. They also provide an example of a font
+      installation but that is better explained in
+      <A HREF="http://www.ctan.org/tex-archive/info/Type1fonts/fontinstallationguide.pdf">the
+      LaTeX font-faq</A>.
+    <LI>
+      Old versions of TeX (ie. mine) are still worried about the old 8 character
+      limitation on DOS filenames. This means that the tools I was using don't
+      accept understandable filenames instead they require a format described in
+      <A HREF="http://www.tug.org/fontname/html/index.html">TeX font file naming
+      conventions</A>. If you are creating your own fonts this boils down to:
+      <UL>
+	<LI>
+	  the first letter of the font should be "f" (which means the font wasn't made
+	  by one of the big-name font vendors)
+	<LI>
+	  the next two letters are some abbreviation of the family-name for your font
+	<LI>
+	  the next letter (or two) should be "r" for a roman font, "i" for italic,
+	  "o" for oblique, "b" for bold, and "bi" for bold italic
+	<LI>
+	  the last two letters should be "8a" (which means your font is in Adobe Standard
+	  Encoding. And your font <EM>must be</EM> in that encoding or things don't
+	  work).<BR>
+	  (Again I am told that you can use any encoding as long as you register it
+	  with TeX. I was unable to get this to work. But my system is out of date)
+      </UL>
+    <LI>
+      Finally
+      <A HREF="http://www.ctan.org/tex-archive/info/Type1fonts/fontinstallationguide.pdf">the
+      LaTeX font-faq</A> describes the gory details of how to go about installing
+      the font. It's only (minor) drawback is that it assumes you are installing
+      a font from Adobe. That is easily glossed over it means that:
+      <UL>
+	<LI>
+	  fonts from Adobe should have font names beginning with "p" rather than "f".
+	<LI>
+	  the translation from adobe's font-families to 2 character abbreviations has
+	  already been done, when using an adobe font you look the family up in a table
+	  to get the 2 character abbreviation, when creating your own font you make
+	  up your own.
+	<LI>
+	  the vendor directory for adobe is "adobe", but the vendor directory for fonts
+	  you make should be "public"
+	<LI>
+	  (I hope these comments will make sense after you've read the above links)
+      </UL>
+    <LI>
+      I've not tried to work with truetype fonts, but here's a document that talks
+      about it to some extent. <A HREF="http://www.radamir.com/tex/ttf-tex.htm">LaTeX
+      and TTF</A>
+    <LI>
+      If you are interested in the basics, here's the documentation on
+      <A HREF="http://www.ctan.org/tex-archive/fonts/utilities/fontinst/doc/fontinst.ps">fontinst</A>
+      itself.
+    <LI>
+      I don't know how to deal with cyrillic (except that cyrillic T2 encodings
+      are called 6a), greek or CJK fonts yet.
+    <LI>
+      Here's some info on how to use fonts once they are installed:
+      <A HREF="http://www-h.eng.cam.ac.uk/help/tpl/textprocessing/fonts.html">LaTeX
+      and fonts</A>
+  </UL>
+  <P>
+  <P>
+  I did the following:
+  <UL>
+    <LI>
+      I created a directory structure as described in
+      <A HREF="http://www.ctan.org/installationadvice/">Installation advice</A>
+      (and also in
+      <A HREF="http://www.ctan.org/tex-archive/info/Type1fonts/fontinstallationguide.pdf">the
+      LaTeX font-faq</A>).
+    <LI>
+      I made a font (which I will call Cupola), initially I encoded it with the
+      TeX Base Encoding (this was to make sure I had all the characters I needed)
+    <LI>
+      Then just before generating it I reencoded it into Adobe Standard Encoding
+      (because TeX's fontinst routine expects that)
+    <LI>
+      I generated the font naming it "fcur8a.pfb" which means:
+      <UL>
+	<LI>
+	  f -- made by a small font vendor, public domain, etc.
+	<LI>
+	  cu -- abbreviation for the family name "Cupola"
+	<LI>
+	  r -- roman face
+	<LI>
+	  8a -- Adobe Standard Encoding
+      </UL>
+    <LI>
+      I applied the following script:
+      <BLOCKQUOTE>
+	<PRE>#!/bin/bash
 # You will need to change the next two lines to suit your font.
 # You may need to change the two after that as well.
 BASE=fcu
@@ -316,11 +316,12 @@ echo Make a copy "(or a link)" of $LOCALTEXMF/dvips/config/$BASE.map
 echo and edit pdftex.cfg and insert
 echo "p +$BASE.map"
 echo at the appropriate place in it too.
-</PRE></BLOCKQUOTE>
-  <LI>
-</UL>
-<P ALIGN=Center>
--- <A HREF="scripting.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
-<A HREF="locale.html">Next</A> --
+</PRE>
+      </BLOCKQUOTE>
+    <LI>
+  </UL>
+  <P ALIGN=Center>
+  -- <A HREF="scripting.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
+  <A HREF="locale.html">Next</A> --
 </DIV>
 </BODY></HTML>

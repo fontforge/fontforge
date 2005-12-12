@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 13-Nov-2005 -->
-  <!-- AP: Last modified: 13-Nov-2005 -->
+  <!-- AP: Last modified: 11-Dec-2005 -->
   <TITLE>Caveats about References</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -23,8 +23,8 @@ Let us examine the most common font formats:
   <DD>
     In TrueType any glyph may be referenced, and TrueType supports almost a full
     range of linear transformations that may be applied to a reference, however
-    if a reference is scaled by 200% or more (or -200%) it cannot be represented
-    in TrueType.
+    if a reference is scaled by 200% or more (or -200% or less) it cannot be
+    represented in TrueType.
     <P>
     TrueType also does not support mixing outlines and references.
     <P>
@@ -34,7 +34,7 @@ Let us examine the most common font formats:
     <P>
     This means that any instructions in the glyph itself will be meaningless,
     and any instructions in referred glyphs will not be executed.<BR>
-    NOTE: Just because it general transformations are supported, it isn't always
+    NOTE: Just because general transformations are supported, it isn't always
     a good idea to use them. If you flip a reference, the rasterizer will probably
     have difficulties with it (its contours will run in the wrong direction).
     If you rotate a reference any instructions inside it will not work well.
@@ -42,18 +42,18 @@ Let us examine the most common font formats:
     Type1
   <DD>
     Type1 (and Type2) fonts have the basic limitation that the only transformation
-    that may be applied to a reference is translation no scaling, rotating, flipping
-    are allowed. Type1 fonts have two different mechanisms for using references.
-    The first is the simplest to describe.
+    that may be applied to a reference is translation no scaling, rotating or
+    flipping are allowed. Type1 fonts have two different mechanisms for using
+    references. The first is the simplest to describe.
     <P>
     If you have a glyph which contains exactly two references to characters which
     are themselves part of the Adobe Standard Encoding, and one of those references
     has an identity transformation matrix applied to it (that is, it is not moved,
     scaled, rotated, flipped, etc.) and the width of the composite glyph is the
     same as the width of this referred glyph and the other is only translated
-    (possibly by 0, but not scaled, rotated, flipped, etc.), and there are no
-    contours THEN FontForge can generate two references (this is done with the
-    'seac' instruction). CID-keyed fonts do not support this.<BR>
+    (possibly by 0, but not scaled, rotated, flipped, etc.) THEN FontForge can
+    generate two references (this is done with the 'seac' instruction). CID-keyed
+    fonts do not support this.<BR>
     The implications of this are that this form of referencing is useless for
     non-latin scripts (except for glyphs shared by latin and another script,
     Greek and Cyrillic often share the glyph used for latin A).<BR>
@@ -63,7 +63,7 @@ Let us examine the most common font formats:
     <P>
     The second format is more general in some ways but has more arcane restrictions
     imposed on it. PostScript fonts have the concept of "subroutines" which can
-    be used to define the contours of several glyphs. FontForge algorithm is
+    be used to define the contours of several glyphs. FontForge's algorithm is
     quite complex and can depend on what other glyphs are refered to. But basically
     if a glyph contains no hint substitutions, nor flex hints it can be put into
     a subroutine. If it does contain these it can be put into a subroutine if
@@ -74,14 +74,15 @@ Let us examine the most common font formats:
     (assuming it is a glyph with references) in a subroutine.
     <P>
     FontForge will recognize 'seac' as defining references, but it does not recognize
-    subroutine calls. Use <A HREF="editmenu.html#ReplaceRef">Element-&gt;Replace
+    subroutine calls. Use <A HREF="editmenu.html#ReplaceRef">Edit-&gt;Replace
     With Reference</A> after loading a Type1 font.
   <DT>
     Type2 ("OpenType")
   <DD>
     As above references may only be translated (not scaled, rotated, etc.). Type2
-    does not have anything equivalent to the 'seac' instruction but does support
-    subroutines.
+    does not have anything equivalent to the 'seac' instruction (well, it sort
+    of does, but the instruction is depreciated and FontForge will not generate
+    it) but does support subroutines.
     <P>
     Here a referenced glyph can be put into a subroutine if it contains no hint
     substitutions, or if it is not translated and none of the other components
@@ -89,8 +90,8 @@ Let us examine the most common font formats:
     or nothing affair.
     <P>
     FontForge will not recognize any references when loading a Type2 (otf, cff,
-    cef, gai) font. Use <A HREF="editmenu.html#ReplaceRef">Element-&gt;Replace
-    With Reference</A> after loading the font.
+    cef, gai) font. Use <A HREF="editmenu.html#ReplaceRef">Edit-&gt;Replace With
+    Reference</A> after loading the font.
   <DT>
     Type3
   <DD>

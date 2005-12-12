@@ -2,70 +2,70 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 23-Jul-2002 -->
-  <!-- AP: Last modified: 2-Mar-2004 -->
-  <LINK REL="icon" href="ffanvil16.png">
+  <!-- AP: Last modified: 11-Dec-2005 -->
   <TITLE>acorn2sfd -- A program for comparing fonts</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
 <DIV id="in">
-<H1 ALIGN=Center>
-  acorn2sfd<BR>
-  <SMALL>A program for comparing fonts</SMALL>
-</H1>
-<P>
-<CODE>acorn2sfd [-version] [-help] {acorndir ...}</CODE>
-<P>
-<EM>acorn2sfd</EM> will take several Acorn RISC/OS font directories and convert
-them into <A HREF="overview.html">FontForge</A>'s sfd files.
-<P>
-An Acorn RISC/OS font directory should contain two or three files, one named
-<CODE>Outlines*</CODE> and one named <CODE>Intmetric?</CODE> (the
-<CODE>Intmetrics</CODE> file may be omitted, in which case the advance widths
-will not be known). <I>acorn2sfd</I> will read both files and generate an
-sfd file from them (which <A HREF="overview.html">FontForge</A> can turn
-into TrueType or Postscript).
-<P>
-If the <CODE>Outlines</CODE> file ends in a digit (<CODE>Outlines0</CODE>)
-then a third file named <CODE>Base&lt;digit&gt;*</CODE> will be searched
-for in the directory (if not found there then in
-<CODE>&lt;acorndir&gt;/../Encodings</CODE>), and if found encoding information
-will be read from it. If not found then the font will be assumed to be an
-initial subset of Unicode.
-<P>
-<CODE>-includestrokes</CODE> <I>acorn2sfd</I> normally throws out the secondary
-stroked version of the character, specifying this option will include it
-in the sfd file (you may then want to invoke FontForge's Expand Stroke command
-on it).
-<P>
-<CODE>-help</CODE> will provide a mini description and will list the available
-options.
-<P>
-<CODE>-usage</CODE> will list the available options.
-<P>
-<CODE>-version</CODE> will display the current version of <EM>acorn2sfd</EM>
-(a six digit string containing the date stamp of the source files).
-<H3>
-  Bugs
-</H3>
-<UL>
-  <LI>
-    Acorn fonts use a different fill rule than either PostScript or TrueType.
-    You should run Element-&gt;Correct Direction on the sfd file after converting
-    it.
-  <LI>
-    Most Acorn fonts I've seen on the web are zipped up with a non-standard zip.
-    Don't expect <I>acorn2sfd</I> to be able to unzip them.
-  <LI>
-    Acorn hinting data are lost.
-</UL>
-<H3>
-  See Also
-</H3>
-<P>
-<A HREF="overview.html">FontForge</A>
-<P>
-<A HREF="http://www.pinknoise.demon.co.uk/Docs/Arc/Fonts/Formats.html">Acorn
-Font Documentation</A>
+  <H1 ALIGN=Center>
+    acorn2sfd<BR>
+    <SMALL>Converter from Acor RISC/OS fonts</SMALL>
+  </H1>
+  <P>
+  <CODE>acorn2sfd [-version] [-help] {acorndir ...}</CODE>
+  <P>
+  <EM>acorn2sfd</EM> will take several Acorn RISC/OS font directories and convert
+  them into <A HREF="overview.html">FontForge</A>'s sfd files.
+  <P>
+  An Acorn RISC/OS font directory should contain two or three files, one named
+  <CODE>Outlines*</CODE> and one named <CODE>Intmetric?</CODE> (the
+  <CODE>Intmetrics</CODE> file may be omitted, in which case the advance widths
+  will not be known). <I>acorn2sfd</I> will read both files and generate an
+  sfd file from them (which <A HREF="overview.html">FontForge</A> can turn
+  into TrueType or Postscript).
+  <P>
+  If the <CODE>Outlines</CODE> file ends in a digit (<CODE>Outlines0</CODE>)
+  then a third file named <CODE>Base&lt;digit&gt;*</CODE> will be searched
+  for in the directory (if not found there then in
+  <CODE>&lt;acorndir&gt;/../Encodings</CODE>), and if found encoding information
+  will be read from it. If not found then the font will be assumed to be an
+  initial subset of Unicode.
+  <P>
+  <CODE>-includestrokes</CODE> <I>acorn2sfd</I> normally throws out the secondary
+  stroked version of the character, specifying this option will include it
+  in the sfd file (you may then want to invoke FontForge's Expand Stroke command
+  on it).
+  <P>
+  <CODE>-help</CODE> will provide a mini description and will list the available
+  options.
+  <P>
+  <CODE>-usage</CODE> will list the available options.
+  <P>
+  <CODE>-version</CODE> will display the current version of <EM>acorn2sfd</EM>
+  (a six digit string containing the date stamp of the source files).
+  <H3>
+    Bugs
+  </H3>
+  <UL>
+    <LI>
+      Acorn fonts use a different fill rule than either PostScript or TrueType.
+      You should run Element-&gt;Correct Direction on the sfd file after converting
+      it.
+    <LI>
+      Most Acorn fonts I've seen on the web are zipped up with a non-standard zip.
+      Don't expect <I>acorn2sfd</I> to be able to unzip them.
+    <LI>
+      Acorn hinting data are lost.
+  </UL>
+  <H3>
+    See Also
+  </H3>
+  <P>
+  <A HREF="overview.html">FontForge</A>
+  <P>
+  <A HREF="http://www.pinknoise.demon.co.uk/Docs/Arc/Fonts/Formats.html">Acorn
+  Font Documentation</A>
 </DIV>
 </BODY></HTML>
