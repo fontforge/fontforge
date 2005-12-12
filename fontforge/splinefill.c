@@ -1239,6 +1239,7 @@ return( NULL );
     bdfc->ymax = es.mmax;
     if ( sc!=NULL ) {
 	bdfc->width = rint(sc->width*pixelsize / (real) (sc->parent->ascent+sc->parent->descent));
+	bdfc->vwidth = rint(sc->vwidth*pixelsize / (real) (sc->parent->ascent+sc->parent->descent));
 	bdfc->orig_pos = sc->orig_pos;
     }
     bdfc->bitmap = es.bitmap;

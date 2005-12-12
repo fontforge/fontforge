@@ -146,6 +146,7 @@ return;
 	    bdfc->ymin = -bdf->descent;
 	    bdfc->ymax = bdf->ascent-1;
 	    bdfc->width = density*fn->chars[index].width/72;
+	    bdfc->vwidth = pixelsize;
 	    bdfc->bytes_per_line = ((bdfc->xmax-bdfc->xmin)>>3) + 1;
 	    bdfc->bitmap = gcalloc(bdfc->bytes_per_line*(density*fn->frectheight)/72,sizeof(uint8));
 	    bdfc->orig_pos = gid;

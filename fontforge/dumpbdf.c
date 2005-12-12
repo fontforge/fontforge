@@ -215,13 +215,14 @@ static void BDFDumpChar(FILE *file,BDFFont *font,BDFChar *bdfc,int enc,
 	fprintf( file, "STARTCHAR %s.dup%d\n", bdfc->sc->name, ++*dups );
 
     fprintf( file, "ENCODING %d\n", enc );
+    /* We specify a default value only for fonts with vertical metrics */
     if ( !font->sf->hasvmetrics || bdfc->sc->width!=em ) {
 	fprintf( file, "SWIDTH %d 0\n", bdfc->sc->width*1000/em );
 	fprintf( file, "DWIDTH %d 0\n", bdfc->width );
     }
-    if ( font->sf->hasvmetrics && bdfc->sc->vwidth!=em ) {
+    if ( font->sf->hasvmetrics && (bdfc->sc->vwidth!=em || bdfc->vwidth!=font->pixelsize) ) {
 	fprintf( file, "SWIDTH1 %d 0\n", bdfc->sc->vwidth*1000/em );
-	fprintf( file, "DWIDTH1 %d 0\n", (bdfc->sc->vwidth*font->pixelsize+em/2)/em );
+	fprintf( file, "DWIDTH1 %d 0\n", bdfc->vwidth );
 	if ( font->sf->vertical_origin!=bdfc->sc->parent->vertical_origin )	/* For CID fonts */
 	    fprintf( file, "VVECTOR %d,%d\n", 500, 1000*bdfc->sc->parent->vertical_origin/
 		    (bdfc->sc->parent->ascent+bdfc->sc->parent->descent)  );
@@ -341,13 +342,13 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,EncMap *map, char *encoding, 
     fprintf( file, "FONTBOUNDINGBOX %d %d %d %d\n", fbb_width, fbb_height, fbb_lbearing, fbb_descent);
     if ( font->sf->hasvmetrics ) {
 	fprintf( file, "METRICSSET 2\n" );	/* Both horizontal and vertical metrics */
-	fprintf( file, "SWIDTH 1000\n" );	/* Default advance width value */
-	fprintf( file, "DWIDTH %d\n", font->pixelsize ); /* Default advance width value */
-	fprintf( file, "SWIDTH1 1000\n" );	/* Default advance width value */
-	fprintf( file, "DWIDTH1 %d\n", font->pixelsize ); /* Default advance width value */
-	fprintf( file, "VVECTOR %d,%d\n", 500, 1000*font->sf->vertical_origin/
-		(font->sf->ascent+font->sf->descent)  );
-		/* Spec doesn't say if vvector is in scaled or unscaled units */
+	fprintf( file, "SWIDTH 1000 0\n" );	/* Default advance width value */
+	fprintf( file, "DWIDTH %d 0\n", font->pixelsize ); /* Default advance width value */
+	fprintf( file, "SWIDTH1 1000 0\n" );	/* Default advance width value */
+	fprintf( file, "DWIDTH1 %d 0\n", font->pixelsize ); /* Default advance width value */
+	fprintf( file, "VVECTOR %d,%d\n", font->pixelsize/2, font->ascent  );
+		/* Spec doesn't say if vvector is in afm(S) or pixel(D) units */
+		/*  but there is an implication that it is in pixel units */
 		/*  offset from horizontal origin to vertical orig */
     }
     /* the 2.2 spec says we can omit SWIDTH/DWIDTH from character metrics if we */

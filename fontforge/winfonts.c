@@ -340,6 +340,7 @@ return( false );
 	bdfc->ymin = fntheader.ascent-fntheader.height;
 	bdfc->ymax = fntheader.ascent-1;
 	bdfc->width = charinfo[i].width;
+	bdfc->vwidth = bdf->pixelsize;
 	bdfc->bytes_per_line = (bdfc->xmax>>3)+1;
 	bdfc->bitmap = gcalloc(bdfc->bytes_per_line*fntheader.height,sizeof(uint8));
 	bdfc->orig_pos = gid;

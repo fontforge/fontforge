@@ -2400,6 +2400,7 @@ static BDFChar *NFNTCvtBitmap(struct MacFontRec *font,int index,SplineFont *sf,i
     bdfc->ymin = -font->descent;
     bdfc->ymax = font->ascent-1;
     bdfc->width = font->offsetWidths[index]&0xff;
+    bdfc->vwidth = font->ascent + font->descent;
     bdfc->bytes_per_line = ((bdfc->xmax-bdfc->xmin)>>3) + 1;
     bdfc->bitmap = gcalloc(bdfc->bytes_per_line*font->fRectHeight,sizeof(uint8));
     bdfc->orig_pos = gid;

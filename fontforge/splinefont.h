@@ -512,6 +512,7 @@ typedef struct bdfchar {
     unsigned int byte_data: 1;		/* for anti-aliased chars entries are grey-scale bytes not bw bits */
     unsigned int widthgroup: 1;		/* for ttf bitmap output */
     uint8 depth;			/* for ttf bitmap output */
+    uint16 vwidth;
     BDFFloat *selection;
 } BDFChar;
 
