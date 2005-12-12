@@ -2872,8 +2872,9 @@ return( true );
 static void instrcheck(SplineChar *sc) {
     uint8 *instrs = sc->ttf_instrs==NULL && sc->parent->mm!=NULL && sc->parent->mm->apple ?
 		sc->parent->mm->normal->glyphs[sc->orig_pos]->ttf_instrs : sc->ttf_instrs;
+    struct splinecharlist *dep;
 
-    if ( instrs==NULL )
+    if ( instrs==NULL && sc->dependents==NULL )
 return;
     /* If the points are no longer in order then the instructions are not valid */
     /*  (because they'll refer to the wrong points) and should be removed */
@@ -2883,7 +2884,12 @@ return;
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	SCMarkInstrDlgAsChanged(sc);
 #endif	/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-return;
+	for ( dep=sc->dependents; dep!=NULL; dep=dep->next ) {
+	    RefChar *ref;
+	    for ( ref=dep->sc->layers[ly_fore].refs; ref!=NULL && ref->sc!=sc; ref=ref->next );
+	    for ( ; ref!=NULL ; ref=ref->next )
+		ref->point_match = false;
+	}
     }
 }
 
