@@ -743,8 +743,17 @@ return( any );
 void CVAdjustControl(CharView *cv,BasePoint *cp, BasePoint *to) {
     SplinePoint *sp = cv->p.sp;
     BasePoint *othercp = cp==&sp->nextcp?&sp->prevcp:&sp->nextcp;
+    int refig = false;
 
-    if ( sp->pointtype==pt_corner ) {
+    if ( sp->ttfindex==0xffff && cv->fv->sf->order2 ) {
+	/* If the point itself is implied, then it's the control points that */
+	/*  are fixed. Moving a CP should move the implied point so that it */
+	/*  continues to be in the right place */
+	sp->me.x = (to->x+othercp->x)/2;
+	sp->me.y = (to->y+othercp->y)/2;
+	*cp = *to;
+	refig = true;
+    } else if ( sp->pointtype==pt_corner ) {
 	cp->x = to->x;
 	cp->y = to->y;
     } else if ( sp->pointtype==pt_curve ) {
@@ -788,6 +797,27 @@ void CVAdjustControl(CharView *cv,BasePoint *cp, BasePoint *to) {
 	    }
 	}
     }
+
+    if ( cv->fv->sf->order2 ) {
+	if ( cp==&sp->nextcp && sp->next!=NULL ) {
+	    SplinePoint *osp = sp->next->to;
+	    if ( osp->ttfindex==0xffff ) {
+		osp->prevcp = *to;
+		osp->me.x = (to->x+osp->nextcp.x)/2;
+		osp->me.y = (to->y+osp->nextcp.y)/2;
+		SplineRefigure(osp->next);
+	    }
+	} else if ( cp==&sp->prevcp && sp->prev!=NULL ) {
+	    SplinePoint *osp = sp->prev->from;
+	    if ( osp->ttfindex==0xffff ) {
+		osp->nextcp = *to;
+		osp->me.x = (to->x+osp->prevcp.x)/2;
+		osp->me.y = (to->y+osp->prevcp.y)/2;
+		SplineRefigure(osp->prev);
+	    }
+	}
+    }
+
     if ( cp->x==sp->me.x && cp->y==sp->me.y ) {
 	if ( cp==&sp->nextcp ) sp->nonextcp = true;
 	else sp->noprevcp = true;
@@ -811,6 +841,10 @@ void CVAdjustControl(CharView *cv,BasePoint *cp, BasePoint *to) {
 	    sp->prev->from->nonextcp = false;
 	}
 	SplineRefigureFixup(sp->prev);
+    }
+    if ( refig ) {
+	SplineRefigure(sp->prev);
+	SplineRefigure(sp->next);
     }
     CVSetCharChanged(cv,true);
 }
