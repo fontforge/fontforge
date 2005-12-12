@@ -254,6 +254,7 @@ static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b,EncMap *map,int dep
     char name[40], tok[100];
     int enc=-1, width=defs->dwidth, xmin=0, xmax=0, ymin=0, ymax=0, hsz, vsz;
     int swidth= defs->swidth, swidth1=defs->swidth1;
+    int vwidth = defs->dwidth1;
     int i,ch;
     uint8 *pt, *end, *eol;
 
@@ -275,6 +276,8 @@ static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b,EncMap *map,int dep
 	    if ( enc<-1 ) enc = -1;
 	} else if ( strcmp(tok,"DWIDTH")==0 )
 	    fscanf(bdf,"%d %*d",&width);
+	else if ( strcmp(tok,"DWIDTH1")==0 )
+	    fscanf(bdf,"%d %*d",&vwidth);
 	else if ( strcmp(tok,"SWIDTH")==0 )
 	    fscanf(bdf,"%d %*d",&swidth);
 	else if ( strcmp(tok,"SWIDTH1")==0 )
@@ -306,6 +309,7 @@ return;
 	bc->xmax = xmax;
 	bc->ymax = ymax;
 	bc->width = width;
+	bc->vwidth = vwidth;
 	if ( depth==1 ) {
 	    bc->bytes_per_line = ((xmax-xmin)>>3) + 1;
 	    bc->byte_data = false;
@@ -797,6 +801,7 @@ return( false );
     bc->ymin = min_r;
     bc->ymax = max_r>min_r? max_r : min_r;
     bc->width = dx;
+    bc->vwidth = b->pixelsize;
     bc->bytes_per_line = ((bc->xmax-bc->xmin+8)>>3);
     bc->bitmap = gcalloc(bc->bytes_per_line*(bc->ymax-bc->ymin+1),1);
 
@@ -1045,6 +1050,7 @@ return( 0 );
     bc->xmax = w-1-hoff;
     bc->ymin = voff-h+1;
     bc->width = dx;
+    bc->vwidth = b->pixelsize;
     bc->bytes_per_line = ((w+7)>>3);
     bc->bitmap = gcalloc(bc->bytes_per_line*h,1);
 
@@ -1663,6 +1669,7 @@ return( false );
 	b->glyphs[i]->ymax = metrics[i].ascent-1;
 	/*if ( metrics[i].ascent==0 ) b->glyphs[i]->ymax = 0;*/ /*??*/
 	b->glyphs[i]->width = metrics[i].width;
+	b->glyphs[i]->vwidth = b->pixelsize;	/* pcf doesn't support vmetrics */
 	b->glyphs[i]->bytes_per_line = ((b->glyphs[i]->xmax-b->glyphs[i]->xmin)>>3) + 1;
 	b->glyphs[i]->bitmap = galloc(b->glyphs[i]->bytes_per_line*(b->glyphs[i]->ymax-b->glyphs[i]->ymin+1));
 	b->glyphs[i]->orig_pos = -1;
@@ -1811,6 +1818,8 @@ return( NULL );
 	}
 	pixelsize = slurp_header(bdf,&ascent,&descent,&enc,family,mods,full,
 		&depth,foundry,fontname,comments,&defs,&upos,&uwidth);
+	if ( defs.dwidth == 0 ) defs.dwidth = pixelsize;
+	if ( defs.dwidth1 == 0 ) defs.dwidth1 = pixelsize;
     }
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( pixelsize==-1 )
@@ -2217,6 +2226,7 @@ return;			/* No images */
 	bdfc->orig_pos = i;
 	bdfc->depth = 1;
 	bdfc->width = rint(sc->width/scale);
+	bdfc->vwidth = rint(sc->vwidth/scale);
 	if ( (il = sc->layers[ly_fore].images)==NULL )
 	    bdfc->bitmap = galloc(1);
 	else {

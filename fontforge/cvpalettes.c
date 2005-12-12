@@ -2588,6 +2588,7 @@ void BVToolsSetCursor(BitmapView *bv, int state,char *device) {
 	tools[bvt_minify] = ct_magminus;
 	tools[bvt_eyedropper] = ct_eyedropper;
 	tools[bvt_setwidth] = ct_setwidth;
+	tools[bvt_setvwidth] = ct_updown;
 	tools[bvt_rect] = ct_rect;
 	tools[bvt_filledrect] = ct_filledrect;
 	tools[bvt_elipse] = ct_elipse;

@@ -486,6 +486,7 @@ static BDFChar *BdfCFromBitmap(FT_Bitmap *bitmap, int bitmap_left,
     bdfc->depth = depth;
     if ( sc!=NULL ) {
 	bdfc->width = rint(sc->width*pixelsize / (real) (sc->parent->ascent+sc->parent->descent));
+	bdfc->vwidth = rint(sc->vwidth*pixelsize / (real) (sc->parent->ascent+sc->parent->descent));
 	bdfc->orig_pos = sc->orig_pos;
     }
     bdfc->bytes_per_line = bitmap->pitch;

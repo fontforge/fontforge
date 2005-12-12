@@ -80,7 +80,7 @@ return;
 	big.hadvance = getc(ttf);
 	big.vbearingX = 0;
 	big.vbearingY = 0;
-	big.vadvance = 0;
+	big.vadvance = bdf->pixelsize;
 	metrics = &big;
 	if ( imageformat==8 )
 	    /* pad = */ getc(ttf);
@@ -137,6 +137,7 @@ return;
     bdf->glyphs[info->chars[gid]->orig_pos] = bdfc;
 
     bdfc->width = metrics->hadvance;
+    bdfc->vwidth = metrics->vadvance;
     bdfc->xmin = metrics->hbearingX;
     bdfc->xmax = bdfc->xmin+metrics->width-1;
     bdfc->ymax = metrics->hbearingY-1;
@@ -492,8 +493,8 @@ static struct bdfcharlist bl[3];
 static struct bdfcharlist *BDFAddDefaultGlyphs(BDFFont *bdf, int format) {
     /* when I dump out the glyf table I add 3 glyphs at the start. One is glyph*/
     /*  0, the one used when there is no match, and the other two are varients*/
-    /*  on space. There will never be glyphs 1 and 2 in the font. There might */
-    /*  be a glyph 0. Add the ones that don't exist */
+    /*  on space. These might or might not be in the font.  Add the ones that */
+    /*  don't exist */
     int width, w, i, j, bit, blpos=0;
     SplineFont *sf = bdf->sf;
     int notdefpos = -1, nullpos = -1, nmretpos = -1;
@@ -529,8 +530,10 @@ static struct bdfcharlist *BDFAddDefaultGlyphs(BDFFont *bdf, int format) {
 	if ( width<4 ) w=4; else w=width;
 	sc0.width = w*(sf->ascent+sf->descent)/bdf->pixelsize;
 	sc0.widthset = true;
+	sc0.vwidth = (sf->ascent+sf->descent);
 	glyph0.sc = &sc0;
 	glyph0.width = w;
+	glyph0.vwidth = bdf->pixelsize;
 	if ( BDFDepth(bdf)!=1 ) {
 	    glyph0.bytes_per_line = 1;	/* Needs to be 1 or BCRegularizeBitmap gets upset */
 	    glyph0.ymax = 1;
@@ -563,9 +566,11 @@ static struct bdfcharlist *BDFAddDefaultGlyphs(BDFFont *bdf, int format) {
 	sc1.parent = sc2.parent = sf;
 	sc1.width = sc2.width = width*(sf->ascent+sf->descent)/bdf->pixelsize;
 	sc1.widthset = sc2.widthset = 1;
+	sc1.vwidth = sc2.vwidth = (sf->ascent+sf->descent);
 	glyph1.sc = &sc1; glyph2.sc = &sc2;
 	/* xmin and so forth are zero, and are already clear */
 	glyph1.width = glyph2.width = width;
+	glyph1.vwidth = glyph2.vwidth = bdf->pixelsize;
 	glyph1.bytes_per_line = glyph2.bytes_per_line = 1;	/* Needs to be 1 or BCRegularizeBitmap gets upset */
 	glyph1.bitmap = glyph2.bitmap = (uint8 *) "";
 	glyph1.orig_pos = 1; glyph2.orig_pos = 2;
@@ -598,12 +603,28 @@ static void ttfdumpsmallmetrics(FILE *bdat, BDFChar *bc) {
     putc(bc->width,bdat);			/* advance width */
 }
 
-static int32 ttfdumpf1bchar(FILE *bdat, BDFChar *bc,BDFFont *bdf) {
+static void ttfdumpbigmetrics(FILE *bdat, BDFChar *bc) {
+
+    /* dump big metrics */
+    putc(bc->ymax-bc->ymin+1,bdat);		/* height */
+    putc(bc->xmax-bc->xmin+1,bdat);		/* width */
+    putc(bc->xmin,bdat);			/* horiBearingX */
+    putc(bc->ymax+1,bdat);			/* horiBearingY */
+    putc(bc->width,bdat);			/* advance width */
+    putc(-bc->width/2,bdat);			/* vertBearingX */
+    putc(0,bdat);				/* vertBearingY */
+    putc(bc->vwidth,bdat);			/* vert advance width */
+}
+
+static int32 ttfdumpf1_6bchar(FILE *bdat, BDFChar *bc,BDFFont *bdf) {
     /* format 1 character dump. small metrics, byte aligned data */
     int32 pos = ftell(bdat);
     int r,c,val;
 
-    ttfdumpsmallmetrics(bdat,bc);
+    if ( bdf->sf->hasvmetrics )
+	ttfdumpbigmetrics(bdat,bc);
+    else
+	ttfdumpsmallmetrics(bdat,bc);
 
     /* dump image */
     for ( r=0; r<=bc->ymax-bc->ymin; ++r ) {
@@ -633,12 +654,15 @@ static int32 ttfdumpf1bchar(FILE *bdat, BDFChar *bc,BDFFont *bdf) {
 return( pos );
 }
 
-static int32 ttfdumpf2bchar(FILE *bdat, BDFChar *bc,BDFFont *bdf) {
+static int32 ttfdumpf2_7bchar(FILE *bdat, BDFChar *bc,BDFFont *bdf) {
     /* format 2 character dump. small metrics, bit aligned data */
     int32 pos = ftell(bdat);
     int r,c,ch,bit,sh;
 
-    ttfdumpsmallmetrics(bdat,bc);
+    if ( bdf->sf->hasvmetrics )
+	ttfdumpbigmetrics(bdat,bc);
+    else
+	ttfdumpsmallmetrics(bdat,bc);
 
     /* dump image */
     ch = 0; bit = 0x80; sh=7;
@@ -878,7 +902,8 @@ return(NULL);
 	    for ( j=i+1; j<gi->gcnt; ++j ) {
 		if ( gi->bygid[j]!=-1 && (bc2=bdf->glyphs[gi->bygid[j]])!=NULL &&
 			(bc2->xmin<0 || bc2->xmax>bc->width || bc2->ymin<-bdf->descent ||
-			bc2->ymax>=bdf->ascent || bc2->width!=bc->width ||
+			bc2->ymax>=bdf->ascent ||
+			bc2->width!=bc->width || bc2->vwidth!=bc->vwidth ||
 			bc2->sc->ttf_glyph!=bc->sc->ttf_glyph+cnt ))
 	    break;
 		++cnt;
@@ -930,7 +955,7 @@ return(NULL);
 		if ( gi->bygid[j]==-1 || (bc2=bdf->glyphs[gi->bygid[j]])==NULL )
 	    break;
 		else if ( bc2->widthgroup!=bc->widthgroup ||
-			(bc->widthgroup && bc->width!=bc2->width) )
+			(bc->widthgroup && (bc->width!=bc2->width || bc->vwidth!=bc2->vwidth)) )
 	    break;
 		else {
 		    ++cnt;
@@ -942,21 +967,25 @@ return(NULL);
 
 	if ( !bc->widthgroup ) {
 	    putshort(subtables,1);	/* index format, 4byte offset, no metrics here */
-	    if ( depth!=8 )
+	    if ( bdf->sf->hasvmetrics && depth!=8 )
+		putshort(subtables,7);	/* data format, big metrics, bit aligned */
+	    else if ( bdf->sf->hasvmetrics )
+		putshort(subtables,6);	/* data format, big metrics, byte aligned */
+	    else if ( depth!=8 )
 		putshort(subtables,2);	/* data format, short metrics, bit aligned */
 	    else
 		putshort(subtables,1);	/* data format, short metrics, byte aligned */
 	    base = ftell(bdat);
 	    putlong(subtables,base);	/* start of glyphs in bdat */
 	    if ( depth!=8 )
-		putlong(subtables,ttfdumpf2bchar(bdat,bc,bdf)-base);
+		putlong(subtables,ttfdumpf2_7bchar(bdat,bc,bdf)-base);
 	    else
-		putlong(subtables,ttfdumpf1bchar(bdat,bc,bdf)-base);
+		putlong(subtables,ttfdumpf1_6bchar(bdat,bc,bdf)-base);
 	    for ( j=i+1; j<=final ; ++j ) if ( (bc2=bdf->glyphs[gi->bygid[j]])!=NULL ) {
 		if ( depth!=8 )
-		    putlong(subtables,ttfdumpf2bchar(bdat,bc2,bdf)-base);
+		    putlong(subtables,ttfdumpf2_7bchar(bdat,bc2,bdf)-base);
 		else
-		    putlong(subtables,ttfdumpf1bchar(bdat,bc2,bdf)-base);
+		    putlong(subtables,ttfdumpf1_6bchar(bdat,bc2,bdf)-base);
 	    }
 	    putlong(subtables,ftell(bdat)-base);	/* Length of last entry */
 	} else {
@@ -982,7 +1011,7 @@ return(NULL);
 	    putc(bc->width,subtables);			/* advance width */
 	    putc(-bc->width/2,subtables);		/* vertBearingX */
 	    putc(0,subtables);				/* vertBearingY */
-	    putc(bdf->ascent+bdf->descent,subtables);	/* advance height */
+	    putc(bc->vwidth,subtables);			/* advance height */
 	    ttfdumpf5bchar(bdat,bc,&met,bdf);
 	    for ( j=i+1; j<=final ; ++j ) if ( (bc2=bdf->glyphs[gi->bygid[j]])!=NULL ) {
 		ttfdumpf5bchar(bdat,bc2,&met,bdf);

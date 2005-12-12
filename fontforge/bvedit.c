@@ -745,6 +745,10 @@ return( NULL );
 	new->width = rint(new->sc->width*dto/(new->sc->parent->ascent+new->sc->parent->descent)+.5);
     else
 	new->width = rint(old->width*dto/from+.5);
+    if ( new->sc!=NULL && new->sc->vwidth != new->sc->parent->ascent+new->sc->parent->descent )
+	new->vwidth = rint(new->sc->vwidth*dto/(new->sc->parent->ascent+new->sc->parent->descent)+.5);
+    else
+	new->vwidth = rint(old->vwidth*dto/from+.5);
     new->bytes_per_line = (new->xmax-new->xmin)/8+1;
     new->bitmap = gcalloc((new->ymax-new->ymin+1)*new->bytes_per_line,sizeof(char));
     new->orig_pos = old->orig_pos;
@@ -806,6 +810,10 @@ return( NULL );
 	new->width = rint(new->sc->width*dto/(new->sc->parent->ascent+new->sc->parent->descent)+.5);
     else
 	new->width = rint(old->width*dto/from+.5);
+    if ( new->sc!=NULL && new->sc->vwidth != new->sc->parent->ascent+new->sc->parent->descent )
+	new->vwidth = rint(new->sc->vwidth*dto/(new->sc->parent->ascent+new->sc->parent->descent)+.5);
+    else
+	new->vwidth = rint(old->vwidth*dto/from+.5);
     if ( to_depth==1 ) {
 	new->bytes_per_line = (new->xmax-new->xmin)/8+1;
 	new->bitmap = gcalloc((new->ymax-new->ymin+1)*new->bytes_per_line,sizeof(char));

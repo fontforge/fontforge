@@ -508,6 +508,9 @@ static void BVExpose(BitmapView *bv, GWindow pixmap, GEvent *event ) {
 		bv->width,-bv->yoff+bv->height+bv->bdf->descent*bv->scale,0x404040);
 	GDrawDrawLine(pixmap,bv->xoff+0*bv->scale,0, bv->xoff+0*bv->scale,bv->height,0x404040);
 	GDrawDrawLine(pixmap,bv->xoff+bv->bc->width*bv->scale,0, bv->xoff+bv->bc->width*bv->scale,bv->height,0x000000);
+	if ( bv->bdf->sf->hasvmetrics )
+	    GDrawDrawLine(pixmap,0,-bv->yoff+bv->height-(bv->bdf->ascent-bc->vwidth)*bv->scale,
+		    bv->width,-bv->yoff+bv->height-(bv->bdf->ascent-bc->vwidth)*bv->scale,0x000000);
     }
     if ( bv->showoutline ) {
 	Color col = bv->bc->byte_data ? 0x008800 : 0x004400;
@@ -800,6 +803,27 @@ static void BVSetWidth(BitmapView *bv, int x) {
     }
 }
 
+static void BVSetVWidth(BitmapView *bv, int y) {
+    int tot, cnt;
+    BDFFont *bdf;
+    BDFChar *bc = bv->bc;
+
+    if ( bv->fv->sf->onlybitmaps && bv->fv->sf->hasvmetrics ) {
+	bc->vwidth = bv->bdf->ascent-y;
+	tot=0; cnt=0;
+	for ( bdf = bv->fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
+	    if ( bdf->glyphs[bc->orig_pos]) {
+		tot += bdf->glyphs[bc->orig_pos]->vwidth*1000/(bdf->ascent+bdf->descent);
+		++cnt;
+	    }
+	if ( cnt!=0 ) {
+	    bc->sc->vwidth = tot/cnt;
+	    bc->sc->widthset = true;
+	}
+	BCCharChangedUpdate(bc);
+    }
+}
+
 int BVColor(BitmapView *bv) {
     int div = 255/((1<<BDFDepth(bv->bdf))-1);
 return ( (bv->color+div/2)/div );
@@ -878,11 +902,19 @@ return;
 		event->u.mouse.x-bv->xoff < bc->width*bv->scale+3 ) {
 	    bv->active_tool = bvt_setwidth;
 	    BVToolsSetCursor(bv,event->u.mouse.state|(1<<(7+event->u.mouse.button)), event->u.mouse.device );
+	} else if ( bc->sc->parent->onlybitmaps && bc->sc->parent->hasvmetrics &&
+		bv->height-event->u.mouse.y-bv->yoff > (bv->bdf->ascent-bc->vwidth)*bv->scale-3 &&
+		bv->height-event->u.mouse.y-bv->yoff < (bv->bdf->ascent-bc->vwidth)*bv->scale+3 ) {
+	    bv->active_tool = bvt_setvwidth;
+	    BVToolsSetCursor(bv,event->u.mouse.state|(1<<(7+event->u.mouse.button)), event->u.mouse.device );
 	}
 	BCCharUpdate(bc);
       break;
       case bvt_setwidth:
 	BVSetWidth(bv,x);
+      break;
+      case bvt_setvwidth:
+	BVSetVWidth(bv,y);
       break;
     }
 }
@@ -972,6 +1004,9 @@ return;			/* Not pressed */
       case bvt_setwidth:
 	BVSetWidth(bv,x);
       break;
+      case bvt_setvwidth:
+	BVSetVWidth(bv,y);
+      break;
     }
 }
 
@@ -1018,6 +1053,9 @@ static void BVMouseUp(BitmapView *bv, GEvent *event) {
       break;
       case bvt_setwidth:
 	BVSetWidth(bv,x);
+      break;
+      case bvt_setvwidth:
+	BVSetVWidth(bv,y);
       break;
     }
     bv->active_tool = bvt_none;
@@ -1173,6 +1211,7 @@ return( true );
 #define MID_Revert	2702
 #define MID_Recent	2703
 #define MID_SetWidth	2601
+#define MID_SetVWidth	2602
 
 #define MID_Warnings	3000
 
@@ -1358,21 +1397,32 @@ static void BVMenuSetWidth(GWindow gw,struct gmenuitem *mi,GEvent *g) {
 
     if ( !bv->fv->sf->onlybitmaps )
 return;
-    sprintf( buffer,"%d",bv->bc->width);
-    ret = gwwv_ask_string(_("Set _Width..."),buffer,_("Set _Width..."));
+    if ( mi->mid==MID_SetWidth ) {
+	sprintf( buffer,"%d",bv->bc->width);
+	ret = gwwv_ask_string(_("Set Width..."),buffer,_("Set Width..."));
+    } else {
+	sprintf( buffer,"%d",bv->bc->vwidth);
+	ret = gwwv_ask_string(_("Set Vertical Width..."),buffer,_("Set Vertical Width..."));
+    }
     if ( ret==NULL )
 return;
     val = strtol(ret,NULL,10);
     free(ret);
     if ( val<0 )
 return;
-    bv->bc->width = val;
+    if ( mi->mid==MID_SetWidth )
+	bv->bc->width = val;
+    else
+	bv->bc->vwidth = val;
     BCCharChangedUpdate(bv->bc);
     for ( bdf=bv->fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 	if ( bdf->pixelsize > mysize )
 return;
     if ( (sc=bv->fv->sf->glyphs[bv->bc->orig_pos])!=NULL ) {
-	sc->width = val*(sc->parent->ascent+sc->parent->descent)/mysize;
+	if ( mi->mid==MID_SetWidth )
+	    sc->width = val*(sc->parent->ascent+sc->parent->descent)/mysize;
+	else
+	    sc->vwidth = val*(sc->parent->ascent+sc->parent->descent)/mysize;
 	SCCharChangedUpdate(sc);
     }
 }
@@ -1543,6 +1593,9 @@ static void mtlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_SetWidth:
 	    mi->ti.disabled = !bv->fv->sf->onlybitmaps;
 	  break;
+	  case MID_SetVWidth:
+	    mi->ti.disabled = !bv->fv->sf->onlybitmaps || !bv->fv->sf->hasvmetrics;
+	  break;
 	}
     }
 }
@@ -1659,6 +1712,7 @@ static GMenuItem vwlist[] = {
 
 static GMenuItem mtlist[] = {
     { { (unichar_t *) N_("Set _Width..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'W' }, 'L', ksm_control|ksm_shift, NULL, NULL, BVMenuSetWidth, MID_SetWidth },
+    { { (unichar_t *) N_("Set _Vertical Width..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'W' }, 'L', ksm_control|ksm_shift, NULL, NULL, BVMenuSetWidth, MID_SetVWidth },
     { NULL }
 };
 

@@ -28,6 +28,7 @@
 #include "splinefont.h"
 #include "gdraw.h"
 #include "ustring.h"
+#include <math.h>
 #include <utype.h>
 #include <unistd.h>
 #include <locale.h>
@@ -896,9 +897,12 @@ static void SFDDumpBitmapChar(FILE *sfd,BDFChar *bfc, int enc,int *newgids) {
     struct enc85 encrypt;
     int i;
 
-    fprintf(sfd, "BDFChar: %d %d %d %d %d %d %d\n",
+    fprintf(sfd, "BDFChar: %d %d %d %d %d %d %d",
 	    newgids!=NULL ? newgids[bfc->orig_pos] : bfc->orig_pos, enc,
 	    bfc->width, bfc->xmin, bfc->xmax, bfc->ymin, bfc->ymax );
+    if ( bfc->sc->parent->hasvmetrics )
+	fprintf(sfd, " %d", bfc->vwidth);
+    putc('\n',sfd);
     memset(&encrypt,'\0',sizeof(encrypt));
     encrypt.sfd = sfd;
     for ( i=0; i<=bfc->ymax-bfc->ymin; ++i ) {
@@ -3036,7 +3040,7 @@ static int SFDGetBitmapChar(FILE *sfd,BDFFont *bdf) {
     BDFChar *bfc;
     struct enc85 dec;
     int i, enc, orig;
-    int width,xmax,xmin,ymax,ymin;
+    int width,xmax,xmin,ymax,ymin, vwidth=-1;
     EncMap *map;
     int ch;
 
@@ -3066,6 +3070,11 @@ return( 0 );
 	width = enc;
 	enc = orig;
 	orig = map->map[enc];
+    } else {
+	while ( (ch=getc(sfd))==' ');
+	ungetc(ch,sfd);
+	if ( ch!='\n' && ch!='\r' )
+	    getint(sfd,&vwidth);
     }
     if ( enc<0 ||xmax<xmin || ymax<ymin )
 return( 0 );
@@ -3080,6 +3089,8 @@ return( 0 );
     bfc->xmax = xmax; bfc->xmin = xmin;
     bdf->glyphs[orig] = bfc;
     bfc->sc = bdf->sf->glyphs[orig];
+    bfc->vwidth = vwidth!=-1 ? vwidth :
+	    rint(bfc->sc->vwidth*bdf->pixelsize / (real) (bdf->sf->ascent+bdf->sf->descent));
     if ( bdf->clut==NULL ) {
 	bfc->bytes_per_line = (bfc->xmax-bfc->xmin)/8 +1;
 	bfc->depth = 1;
