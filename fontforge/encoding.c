@@ -2651,8 +2651,10 @@ void SFAddGlyphAndEncode(SplineFont *sf,SplineChar *sc,EncMap *basemap, int base
 	for ( bdf = sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
 	    if ( sf->glyphcnt+1>=bdf->glyphmax )
 		bdf->glyphs = grealloc(bdf->glyphs,(bdf->glyphmax=sf->glyphmax)*sizeof(BDFChar *));
-	    memset(bdf->glyphs+bdf->glyphcnt,0,(sf->glyphcnt-bdf->glyphcnt)*sizeof(BDFChar *));
-	    bdf->glyphcnt = sf->glyphcnt;
+	    if ( sf->glyphcnt>bdf->glyphcnt ) {
+		memset(bdf->glyphs+bdf->glyphcnt,0,(sf->glyphcnt-bdf->glyphcnt)*sizeof(BDFChar *));
+		bdf->glyphcnt = sf->glyphcnt;
+	    }
 	}
 	for ( fv=sf->fv; fv!=NULL; fv = fv->nextsame ) {
 	    EncMap *map = fv->map;
