@@ -14,7 +14,10 @@ libgdraw_OBJECTS =  choosericons.obj,divisors.obj,drawboxborder.obj,\
  gtextfield.obj,gtextinfo.obj,gwidgets.obj,gxdraw.obj
 
 CFLAGS=/nowarn/incl=([-.inc])/name=(as_is,short)\
-	/define=("NOTHREADS=1","_NO_XKB=1","NODYNAMIC=1")
+	/define=("NOTHREADS=1","_NO_XKB=1","_STATIC_LIBFREETYPE=1",\
+	"_STATIC_LIBPNG=1",\
+	"_STATIC_LIBUNINAMESLIST=1","_STATIC_LIBXML=1",\
+	"_STATIC_LIBUNGIF=1","_STATIC_LIBJPEG=1","_STATIC_LIBTIFF=1")
 
 all : [-.libs]libgdraw.olb
 	write sys$output "gdraw finished"

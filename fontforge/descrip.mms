@@ -1,4 +1,7 @@
-CFLAGS=/nowarn/incl=([-.inc])/name=(as_is,short)/define=("NODYNAMIC=1",\
+CFLAGS=/nowarn/incl=([-.inc])/name=(as_is,short)/define=(\
+	"_STATIC_LIBFREETYPE=1","_STATIC_LIBPNG=1",\
+	"_STATIC_LIBUNINAMESLIST=1","_STATIC_LIBXML=1",\
+	"_STATIC_LIBUNGIF=1","_STATIC_LIBJPEG=1","_STATIC_LIBTIFF=1",\
         "FONTFORGE_CONFIG_DEVICETABLES=1","PLUGINDIR=""/FONTFORGE$PLUGINS""")
 
 fontforge_OBJECTS =  alignment.obj,autohint.obj,autosave.obj,autowidth.obj,\

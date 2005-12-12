@@ -2,7 +2,10 @@ libgunicode_OBJECTS =  ArabicForms.obj,alphabet.obj,backtrns.obj,char.obj,\
 	cjk.obj,memory.obj,ucharmap.obj,unialt.obj,ustring.obj,\
 	utype.obj,usprintf.obj,gwwiconv.obj
 
-CFLAGS=/incl=([-.inc])/name=(as_is,short)/nowarn/define=("NODYNAMIC=1")
+CFLAGS=/incl=([-.inc])/name=(as_is,short)/nowarn/define=(\
+	"_STATIC_LIBFREETYPE=1","_STATIC_LIBPNG=1",\
+	"_STATIC_LIBUNINAMESLIST=1","_STATIC_LIBXML=1",\
+	"_STATIC_LIBUNGIF=1","_STATIC_LIBJPEG=1","_STATIC_LIBTIFF=1")
 
 all : [-.libs]libgunicode.olb
 	write sys$output "unicode finished"
