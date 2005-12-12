@@ -748,7 +748,15 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 	    ilist = AddIntersection(ilist,m1,m2,t1o,t2o,&pt);
 	}
 #endif
-	for ( y+=diff; y<=b.maxy; y += diff ) {
+	for ( y+=diff; ; y += diff ) {
+	    /* I used to say y<=b.maxy in the above for statement. */
+	    /*  that seemed to get rounding errors on the mac, so we do it */
+	    /*  like this now: */
+	    if ( y>b.maxy ) {
+		if ( y<b.maxy+diff/4 ) y = b.maxy;
+		else
+	break;
+	    }
 	    t1 = BoundIterateSplineSolve(&m1->s->splines[1],m1->tstart,m1->tend,y,error);
 	    t2 = BoundIterateSplineSolve(&m2->s->splines[1],m2->tstart,m2->tend,y,error);
 	    if ( t1==-1 || t2==-1 )
@@ -824,7 +832,12 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 	}
 #endif
 	y1 = y2 = 0;
-	for ( x+=diff; x<=b.maxx; x += diff ) {
+	for ( x+=diff; ; x += diff ) {
+	    if ( x>b.maxx ) {
+		if ( x<b.maxx+diff/4 ) x = b.maxx;
+		else
+	break;
+	    }
 	    t1 = BoundIterateSplineSolve(&m1->s->splines[0],m1->tstart,m1->tend,x,error);
 	    t2 = BoundIterateSplineSolve(&m2->s->splines[0],m2->tstart,m2->tend,x,error);
 	    if ( t1==-1 || t2==-1 )
