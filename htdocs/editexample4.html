@@ -2,205 +2,205 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jan-2003 -->
-  <!-- AP: Last modified: 22-Mar-2005 -->
+  <!-- AP: Last modified: 11-Dec-2005 -->
   <TITLE>Building accented glyphs</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
 <DIV id="in">
-<H1 ALIGN=Center>
-  Tutorial #4
-</H1>
-<UL>
-  <LI>
-    <A HREF="editexample.html#FontCreate">Font Creation</A>
-  <LI>
-    <A HREF="editexample.html#CharCreate">Creating a glyph (tracing outlines)</A>
-  <LI>
-    <A HREF="editexample2.html#Navigating">Navigating to other glyphs</A>
-  <LI>
-    <A HREF="editexample2.html#Creating-o">On to the next glyph (consistent
-    directions)</A>
-  <LI>
-    <A HREF="editexample3.html#consistent-stems">Consistent serifs and stem
-    widths</A>
-  <LI>
-    <A HREF="editexample4.html#accents">Building accented glyphs</A>
-  <LI>
-    <A HREF="editexample4.html#ligature">Building a ligature</A>
-  <LI>
-    <A HREF="editexample5.html#metrics">Examining metrics</A>
-  <LI>
-    <A HREF="editexample5.html#Kerning">Kerning</A>
-  <LI>
-    <A HREF="editexample6.html#Variants">Glyph variants</A>
-  <LI>
-    <A HREF="editexample6.html#Marks">Anchoring marks</A>
-  <LI>
-    <A HREF="editexample6-5.html#Conditional">Conditional features</A>
-  <LI>
-    <A HREF="editexample7.html#checking">Checking your font</A>
-  <LI>
-    <A HREF="editexample7.html#generating">Generating it</A>
-  <LI>
-    <A HREF="editexample7.html#Families">Font Families</A>
-  <LI>
-    <A HREF="editexample7.html#summary">Final Summary</A>
-  <LI>
-    <A HREF="scriptnotes.html#Special">Notes on various scripts</A>
-</UL>
-<H2>
-  <A NAME="accents">Building</A> accented glyphs
-</H2>
-<P>
-Latin, Greek and Cyrillic all have a large complement of accented glyphs.
-FontForge provides several ways to build accented glyphs out of base glyphs.
-<P>
-The most obvious mechanism is simple copy and paste:
-<A HREF="editmenu.html#Copy">Copy</A> the letter "A" and
-<A HREF="editmenu.html#Paste">Paste</A> it to "&Atilde;" then
-<A HREF="editmenu.html#Copy">copy</A> the tilde accent and
-<A HREF="editmenu.html#PasteInto">Paste it Into</A> "&Atilde;" (note Paste
-Into is subtly different from Paste. Paste clears out the glyph before pasting,
-while Paste Into merges what was in the glyph with the what is in the clipboard).
-Then you open up "&Atilde;" and position the accent so that it appears properly
-centered over the A.
-<P>
-This mechanism is not particularly efficient, if you change the shape of
-the letter "A" you will need to regenerate all the accented glyphs built
-from it. FontForge has the concept of a
-<A HREF="overview.html#References">Reference</A> to a glyph. So you can Copy
-a Reference to "A", and Paste it, the Copy a Reference to tilde and Paste
-it Into, and then again adjust the position of the accent over the A.
-<P>
-Then if you change the shape of the A the shape of the A in "&Atilde;" will
-be updated automagically -- as will the width of "&Atilde;".
-<P>
-But FontForge knows that "&Atilde;" is built out of "A" and the tilde accent,
-and it can easily create your accented glyphs itself by placing the references
-in "&Atilde;" and then positioning the accent over the "A". (Unicode provides
-a database which lists the components of every accented glyph (in Unicode)).
-<P>
-As an example, open the file: tutorial/Ambrosia.sfd, then select all the
-glyphs at encodings 0xc0-0xff, and then press
-<A HREF="elementmenu.html#Accented">Element-&gt;Build-&gt;Build Accented</A>
-all the accented glyphs will magically appear (there are a few glyphs in
-this range which are not accented, and they will remain blank).
-<P>
-FontForge has a heuristic for positioning accents (most accents are centered
-over the highest point of the glyph), sometimes this will produce bad results
-(if the one of the two stems of "u" is slightly taller than the other the
-accent will be placed over it rather than being centered over the glyph),
-so you should be prepared to look at your accented glyphs after creating
-them. You may need to adjust one or two (or you may even want to redesign
-your base glyphs slightly).
-<H2>
-  <A NAME="ligature">Creating</A> a ligature
-</H2>
-<P>
-Unicode contains a number of ligature glyphs (in latin we have: &AElig;,
-OE, fi, etc. while in arabic there are hundreds). Again Unicode provides
-a database listing the components of each standard ligature.
-<P>
-FontForge cannot create a nice ligature for you, but what it can do is put
-all the components of the ligature into the glyph with
-<A HREF="elementmenu.html#Accented">Element-&gt;Build-&gt;Build Composite</A>.
-This makes it slightly easier (at least in latin) to design a ligature.
-<TABLE BORDER CELLPADDING="2">
-  <CAPTION>
-    Steps to building a ligature
-  </CAPTION>
-  <TR>
-    <TD><P ALIGN=Center>
-      <IMG SRC="ffi-refs.png" ALT="ffi ligature as references" WIDTH="154" HEIGHT="277"></TD>
-    <TD><P ALIGN=Center>
-      <IMG SRC="ffi-unlink.png" WIDTH="154" HEIGHT="277" ALT="ffi after unlinking references"></TD>
-    <TD><P ALIGN=Center>
-      <IMG SRC="ffi-moved.png" WIDTH="154" HEIGHT="277" ALT="ffi after lowering first f"></TD>
-    <TD><P ALIGN=Center>
-      <IMG SRC="ffi-rmoverlap.png" ALT="ffi after doing remove overlap" WIDTH="154"
-	  HEIGHT="277"></TD>
-    <TD><P ALIGN=Center>
-      <IMG SRC="ffi-caret.png" ALT="ffi after adjusting ligature carets" WIDTH="154"
-	  HEIGHT="277"></TD>
-  </TR>
-  <TR VALIGN="Top">
-    <TD>Use the <A HREF="elementmenu.html#CharInfo">Element -&gt; Char Info</A>
-      dialog to name the glyph and mark it as a ligature. Then use
-      <A HREF="elementmenu.html#Accented">Element -&gt; Build -&gt; Build
-      Composite</A> to insert references to the ligature components.</TD>
-    <TD>Use the <A HREF="editmenu.html#Unlink">Edit-&gt; Unlink References</A>
-      command to turn the references into a set of contours.</TD>
-    <TD>Adjust the components so that they will look better together. Here the
-      stem of the first f has been lowered.</TD>
-    <TD>Use the <A HREF="elementmenu.html#Remove">Element -&gt; Remove Overlap</A>
-      command to clean up the glyph.</TD>
-    <TD>Finally drag the ligature caret lines from the origin to more appropriate
-      places between the components.</TD>
-  </TR>
-</TABLE>
-<P>
-Some word processors will allow the editing caret to be placed inside a ligature
-(with a caret position between each component of the ligature). This means
-that the user of that word processor does not need to know s/he is dealing
-with a ligature and sees behavior very similar to what s/he would see if
-the components were present. But if the word processor is to be able to do
-this it must have some information from the font designer giving the locations
-of appropriate caret positions. As soon as FontForge notices that a glyph
-is a ligature it will insert in it enough caret location lines to fit between
-the ligature's components. FontForge places these on the origin, if you leave
-them on the origin FontForge will ignore them. But once you have built your
-ligature you might want to move the pointer tool over to the origin line,
-press the button and drag one of the caret lines to its correct location.
-(Only TrueType and OpenType support this).
-<P>
-<FONT COLOR="Red"><STRONG><BIG>CAVEAT: </BIG></STRONG></FONT>OpenType engines
-will only apply features which they believe are appropriate for the current
-script (in Latin scripts, Uniscribe will apply 'liga'). Even worse, some
-applications may choose not to apply any features ever (Word does not do
-ligatures in latin).
-<A HREF="http://www.microsoft.com/typography/specs/default.htm">Microsoft
-tries to document </A>what features they apply for which scripts in Uniscribe,
-but that isn't very helpful since Word and Office have quite different behavior
-than the default.
-<P>
-There are a good many ligatures needed for the indic scripts, but Unicode
-does not provide an encoding for them. If you wish to build a ligature that
-is not part of Unicode you may do so. First <A HREF="faq.html#new-name">add
-an unencoded glyph to your font</A> (or if your font is a Unicode font, use
-a code point in the private use area), and name the glyph. The name is important,
-if you name it correctly FontForge will be able to figure out that it is
-a ligature and what its components are. If you want to build a ligature out
-of the glyphs "longs", "longs" and "l" then name it "longs_longs_l", if you
-want to build a ligature out of Unicode 0D15, 0D4D and 0D15 then name it
-"uni0D15_uni0D4D_uni0D15".
-<P>
-Once you have named your ligature, and inserted its components (with Build
-Composite), you probably want to open the glyph,
-<A HREF="editmenu.html#Unlink">Unlink your References</A> and edit them to
-make a pleasing shape (as above).
-<P>
-<IMG SRC="charinfo-akhn.png" WIDTH="307" HEIGHT="401" ALT="Char Info for Akhand ligature type"
-    ALIGN="Right">Finally you should check that FontForge has marked your glyph
-as a ligature (and, if so, as the right kind of ligature). Bring up the
-<A HREF="charinfo.html#ligature">Element-&gt;Char Info-&gt;Ligature</A> dialog.
-You should see a line like:<BR>
-<TT>&nbsp; &nbsp; liga &nbsp;m longs longs l</TT><BR>
-or <BR>
-<TT>&nbsp; &nbsp; liga &nbsp;m uni0D15 uni0D4D uni0D15</TT><BR>
-In the first case you might want to add an additional line (by pressing the
-[New...] button:<BR>
-<TT>&nbsp; &nbsp; liga &nbsp;m longs_longs l</TT><BR>
-(assuming you have a longs_longs ligature already). While in the second case
-you might want to select the line, press the [Edit...] button and change
-the ligature type from 'liga' to 'akhn' (I don't know enough about Indic
-scripts to understand this distinction myself), yielding: <BR>
-<TT>&nbsp; &nbsp; akhn &nbsp;m uni0D15 uni0D4D uni0D15</TT>
-<P>
-<P>
-<P ALIGN=Center>
--- <A HREF="editexample3.html">Prev</A> -- <A HREF="overview.html">TOC</A>
--- <A HREF="editexample5.html">Next</A> --
+  <H1 ALIGN=Center>
+    Tutorial #4
+  </H1>
+  <UL>
+    <LI>
+      <A HREF="editexample.html#FontCreate">Font Creation</A>
+    <LI>
+      <A HREF="editexample.html#CharCreate">Creating a glyph (tracing outlines)</A>
+    <LI>
+      <A HREF="editexample2.html#Navigating">Navigating to other glyphs</A>
+    <LI>
+      <A HREF="editexample2.html#Creating-o">On to the next glyph (consistent
+      directions)</A>
+    <LI>
+      <A HREF="editexample3.html#consistent-stems">Consistent serifs and stem
+      widths</A>
+    <LI>
+      <A HREF="editexample4.html#accents">Building accented glyphs</A>
+    <LI>
+      <A HREF="editexample4.html#ligature">Building a ligature</A>
+    <LI>
+      <A HREF="editexample5.html#metrics">Examining metrics</A>
+    <LI>
+      <A HREF="editexample5.html#Kerning">Kerning</A>
+    <LI>
+      <A HREF="editexample6.html#Variants">Glyph variants</A>
+    <LI>
+      <A HREF="editexample6.html#Marks">Anchoring marks</A>
+    <LI>
+      <A HREF="editexample6-5.html#Conditional">Conditional features</A>
+    <LI>
+      <A HREF="editexample7.html#checking">Checking your font</A>
+    <LI>
+      <A HREF="editexample7.html#generating">Generating it</A>
+    <LI>
+      <A HREF="editexample7.html#Families">Font Families</A>
+    <LI>
+      <A HREF="editexample7.html#summary">Final Summary</A>
+    <LI>
+      <A HREF="scriptnotes.html#Special">Notes on various scripts</A>
+  </UL>
+  <H2>
+    <A NAME="accents">Building</A> accented glyphs
+  </H2>
+  <P>
+  Latin, Greek and Cyrillic all have a large complement of accented glyphs.
+  FontForge provides several ways to build accented glyphs out of base glyphs.
+  <P>
+  The most obvious mechanism is simple copy and paste:
+  <A HREF="editmenu.html#Copy">Copy</A> the letter "A" and
+  <A HREF="editmenu.html#Paste">Paste</A> it to "&Atilde;" then
+  <A HREF="editmenu.html#Copy">copy</A> the tilde accent and
+  <A HREF="editmenu.html#PasteInto">Paste it Into</A> "&Atilde;" (note Paste
+  Into is subtly different from Paste. Paste clears out the glyph before pasting,
+  while Paste Into merges what was in the glyph with the what is in the clipboard).
+  Then you open up "&Atilde;" and position the accent so that it appears properly
+  centered over the A.
+  <P>
+  This mechanism is not particularly efficient, if you change the shape of
+  the letter "A" you will need to regenerate all the accented glyphs built
+  from it. FontForge has the concept of a
+  <A HREF="overview.html#References">Reference</A> to a glyph. So you can Copy
+  a Reference to "A", and Paste it, the Copy a Reference to tilde and Paste
+  it Into, and then again adjust the position of the accent over the A.
+  <P>
+  Then if you change the shape of the A the shape of the A in "&Atilde;" will
+  be updated automagically -- as will the width of "&Atilde;".
+  <P>
+  But FontForge knows that "&Atilde;" is built out of "A" and the tilde accent,
+  and it can easily create your accented glyphs itself by placing the references
+  in "&Atilde;" and then positioning the accent over the "A". (Unicode provides
+  a database which lists the components of every accented glyph (in Unicode)).
+  <P>
+  As an example, open the file: tutorial/Ambrosia.sfd, then select all the
+  glyphs at encodings 0xc0-0xff, and then press
+  <A HREF="elementmenu.html#Accented">Element-&gt;Build-&gt;Build Accented</A>
+  all the accented glyphs will magically appear (there are a few glyphs in
+  this range which are not accented, and they will remain blank).
+  <P>
+  FontForge has a heuristic for positioning accents (most accents are centered
+  over the highest point of the glyph), sometimes this will produce bad results
+  (if the one of the two stems of "u" is slightly taller than the other the
+  accent will be placed over it rather than being centered over the glyph),
+  so you should be prepared to look at your accented glyphs after creating
+  them. You may need to adjust one or two (or you may even want to redesign
+  your base glyphs slightly).
+  <H2>
+    <A NAME="ligature">Creating</A> a ligature
+  </H2>
+  <P>
+  Unicode contains a number of ligature glyphs (in latin we have: &AElig;,
+  OE, fi, etc. while in arabic there are hundreds). Again Unicode provides
+  a database listing the components of each standard ligature.
+  <P>
+  FontForge cannot create a nice ligature for you, but what it can do is put
+  all the components of the ligature into the glyph with
+  <A HREF="elementmenu.html#Accented">Element-&gt;Build-&gt;Build Composite</A>.
+  This makes it slightly easier (at least in latin) to design a ligature.
+  <TABLE BORDER CELLPADDING="2">
+    <CAPTION>
+      Steps to building a ligature
+    </CAPTION>
+    <TR>
+      <TD><P ALIGN=Center>
+	<IMG SRC="ffi-refs.png" ALT="ffi ligature as references" WIDTH="154" HEIGHT="277"></TD>
+      <TD><P ALIGN=Center>
+	<IMG SRC="ffi-unlink.png" WIDTH="154" HEIGHT="277" ALT="ffi after unlinking references"></TD>
+      <TD><P ALIGN=Center>
+	<IMG SRC="ffi-moved.png" WIDTH="154" HEIGHT="277" ALT="ffi after lowering first f"></TD>
+      <TD><P ALIGN=Center>
+	<IMG SRC="ffi-rmoverlap.png" ALT="ffi after doing remove overlap" WIDTH="154"
+	    HEIGHT="277"></TD>
+      <TD><P ALIGN=Center>
+	<IMG SRC="ffi-caret.png" ALT="ffi after adjusting ligature carets" WIDTH="154"
+	    HEIGHT="277"></TD>
+    </TR>
+    <TR VALIGN="Top">
+      <TD>Use the <A HREF="elementmenu.html#CharInfo">Element -&gt; Glyph Info</A>
+	dialog to name the glyph and mark it as a ligature. Then use
+	<A HREF="elementmenu.html#Accented">Element -&gt; Build -&gt; Build
+	Composite</A> to insert references to the ligature components.</TD>
+      <TD>Use the <A HREF="editmenu.html#Unlink">Edit-&gt; Unlink References</A>
+	command to turn the references into a set of contours.</TD>
+      <TD>Adjust the components so that they will look better together. Here the
+	stem of the first f has been lowered.</TD>
+      <TD>Use the <A HREF="elementmenu.html#Remove">Element -&gt; Remove Overlap</A>
+	command to clean up the glyph.</TD>
+      <TD>Finally drag the ligature caret lines from the origin to more appropriate
+	places between the components.</TD>
+    </TR>
+  </TABLE>
+  <P>
+  Some word processors will allow the editing caret to be placed inside a ligature
+  (with a caret position between each component of the ligature). This means
+  that the user of that word processor does not need to know s/he is dealing
+  with a ligature and sees behavior very similar to what s/he would see if
+  the components were present. But if the word processor is to be able to do
+  this it must have some information from the font designer giving the locations
+  of appropriate caret positions. As soon as FontForge notices that a glyph
+  is a ligature it will insert in it enough caret location lines to fit between
+  the ligature's components. FontForge places these on the origin, if you leave
+  them on the origin FontForge will ignore them. But once you have built your
+  ligature you might want to move the pointer tool over to the origin line,
+  press the button and drag one of the caret lines to its correct location.
+  (Only TrueType and OpenType support this).
+  <P>
+  <FONT COLOR="Red"><STRONG><BIG>CAVEAT: </BIG></STRONG></FONT>OpenType engines
+  will only apply features which they believe are appropriate for the current
+  script (in Latin scripts, Uniscribe will apply 'liga'). Even worse, some
+  applications may choose not to apply any features ever (Word does not do
+  ligatures in latin).
+  <A HREF="http://www.microsoft.com/typography/specs/default.htm">Microsoft
+  tries to document </A>what features they apply for which scripts in Uniscribe,
+  but that isn't very helpful since Word and Office have quite different behavior
+  than the default.
+  <P>
+  There are a good many ligatures needed for the indic scripts, but Unicode
+  does not provide an encoding for them. If you wish to build a ligature that
+  is not part of Unicode you may do so. First <A HREF="faq.html#new-name">add
+  an unencoded glyph to your font</A> (or if your font is a Unicode font, use
+  a code point in the private use area), and name the glyph. The name is important,
+  if you name it correctly FontForge will be able to figure out that it is
+  a ligature and what its components are. If you want to build a ligature out
+  of the glyphs "longs", "longs" and "l" then name it "longs_longs_l", if you
+  want to build a ligature out of Unicode 0D15, 0D4D and 0D15 then name it
+  "uni0D15_uni0D4D_uni0D15".
+  <P>
+  Once you have named your ligature, and inserted its components (with Build
+  Composite), you probably want to open the glyph,
+  <A HREF="editmenu.html#Unlink">Unlink your References</A> and edit them to
+  make a pleasing shape (as above).
+  <P>
+  <IMG SRC="charinfo-akhn.png" WIDTH="307" HEIGHT="401" ALT="Char Info for Akhand ligature type"
+      ALIGN="Right">Finally you should check that FontForge has marked your glyph
+  as a ligature (and, if so, as the right kind of ligature). Bring up the
+  <A HREF="charinfo.html#ligature">Element-&gt;Glyph Info-&gt;Ligature</A>
+  dialog. You should see a line like:<BR>
+  <TT>&nbsp; &nbsp; liga &nbsp;m longs longs l</TT><BR>
+  or <BR>
+  <TT>&nbsp; &nbsp; liga &nbsp;m uni0D15 uni0D4D uni0D15</TT><BR>
+  In the first case you might want to add an additional line (by pressing the
+  [New...] button:<BR>
+  <TT>&nbsp; &nbsp; liga &nbsp;m longs_longs l</TT><BR>
+  (assuming you have a longs_longs ligature already). While in the second case
+  you might want to select the line, press the [Edit...] button and change
+  the ligature type from 'liga' to 'akhn' (I don't know enough about Indic
+  scripts to understand this distinction myself), yielding: <BR>
+  <TT>&nbsp; &nbsp; akhn &nbsp;m uni0D15 uni0D4D uni0D15</TT>
+  <P>
+  <P>
+  <P ALIGN=Center>
+  -- <A HREF="editexample3.html">Prev</A> -- <A HREF="overview.html">TOC</A>
+  -- <A HREF="editexample5.html">Next</A> --
 </DIV>
 </BODY></HTML>

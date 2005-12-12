@@ -2,170 +2,170 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jan-2003 -->
-  <!-- AP: Last modified: 21-Mar-2005 -->
+  <!-- AP: Last modified: 11-Dec-2005 -->
   <TITLE>More advanced features, ligatures, mark positioning, glyph variants</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
 <DIV id="in">
-<H1 ALIGN=Center>
-  Tutorial #6
-</H1>
-<UL>
-  <LI>
-    <A HREF="editexample.html#FontCreate">Font Creation</A>
-  <LI>
-    <A HREF="editexample.html#CharCreate">Creating a glyph (tracing outlines)</A>
-  <LI>
-    <A HREF="editexample2.html#Navigating">Navigating to other glyphs</A>
-  <LI>
-    <A HREF="editexample2.html#Creating-o">On to the next glyph (consistent
-    directions)</A>
-  <LI>
-    <A HREF="editexample3.html#consistent-stems">Consistent serifs and stem
-    widths</A>
-  <LI>
-    <A HREF="editexample4.html#accents">Building accented glyphs</A>
-  <LI>
-    <A HREF="editexample4.html#ligature">Building a ligature</A>
-  <LI>
-    <A HREF="editexample5.html#metrics">Examining metrics</A>
-  <LI>
-    <A HREF="editexample5.html#Kerning">Kerning</A>
-  <LI>
-    <A HREF="editexample6.html#Variants">Glyph variants</A>
-    <UL>
-      <LI>
-	<A HREF="editexample6.html#Conditional">Conditional variants</A>
-    </UL>
-  <LI>
-    <A HREF="editexample6.html#Marks">Anchoring marks</A>
-  <LI>
-    <A HREF="editexample6-5.html#Conditional">Conditional features</A>
-  <LI>
-    <A HREF="editexample7.html#checking">Checking your font</A>
-  <LI>
-    <A HREF="editexample7.html#generating">Generating it</A>
-  <LI>
-    <A HREF="editexample7.html#Families">Font Families</A>
-  <LI>
-    <A HREF="editexample7.html#summary">Final Summary</A>
-  <LI>
-    <A HREF="scriptnotes.html#Special">Notes on various scripts</A>
-</UL>
-<H2>
-  <A NAME="Variants">Glyph</A> Variants
-</H2>
-<P>
-In many scripts glyphs have several variant glyphs. In latin the most obvious
-example is that every letter has both an upper case and a lower case variant.
-A more esoteric example would be that in renaissance times the long-s variant
-(of s) was used initially and medially in a word, while the short-s was only
-used at the end of a word.
-<P>
-Most Arabic glyphs have four variants (initial, medial, final and isolated).
-<P>
-The digits often have several variants: tabular digits (where all digits
-have the same advance width so that tables of numbers don't look ragged),
-proportional digits (where each digit has a width appropriate to its shape)
-and old-style or lower case digits
-(<IMG SRC="lcdigits.png" WIDTH="76" HEIGHT="18" ALIGN="Middle">).
-<P>
-Some of these variants are built into the encodings (the upper and lower
-case distinction is), but in other cases you should provide extra information
-in the font so that the word processor can be aware of the variants (Arabic
-is midway between the two, the various forms are in the encoding, but you
-need to provide extra information as well).
-<P>
-Let us consider the case of the digits mentioned above. Assume that the glyph
-called "one" contains the tabular variant of one, the glyph "one.prop" contains
-the proportional variant and "one.oldstyle" contains the lower-case variant.
-Then select "one" from the fontview, <CODE>Edit-&gt;Char Info</CODE>, select
-the <CODE>Subs</CODE> tab and press the <CODE>[New] </CODE>button. You should
-get another dialog. In the Components field, enter "one.prop", select
-"Proportional Numbers" from the pull down list (it will turn into "pnum"),
-and select the script set you are interested in (a script of 'latn' and a
-language of 'dflt' will cover many cases). Then press <CODE>[OK]</CODE>.
-<P>
-Some variant forms are built in to FontForge, and if you use
-<CODE>Element-&gt;Default ATT-&gt;(variant name)</CODE>, FontForge may be
-able to automate this process for you.
-<P>
-(Note: Type0, Type1 and Type3 PostScript fonts have no notation to handle
-this. You need to be creating an OpenType or TrueType font for these variants
-to be output).
-<H3>
-  <A NAME="Conditional">Conditional</A> Variants
-</H3>
-<P>
-FontForge supports OpenType's Contextual Substitution and Chaining Contextual
-Substitution sub-tables, and to a lesser extent, Apple's contextual glyph
-substitution sub-table. This means that you can insert conditional variants
-into your font. <A HREF="editexample6-5.html#Conditional">The next page</A>
-will go into this in greater detail.
-<H2>
-  <A NAME="Marks">Anchoring</A> marks
-</H2>
-<P>
-Some scripts (Arabic, Hebrew) need vowel marks placed around the main text
-glyphs. Other scripts (some variants of Latin and Greek) have so many possible
-accent combinations that having preassembled glyphs for all combinations
-is unwieldy.
-<P>
-In OpenType (which includes MicroSoft's TrueType fonts) it is possible to
-indicate on all base glyphs where marks should attach, and on all marks where
-the base glyphs should attach. Thus one could put an anchor centered above
-a capital-A indicating that all accents (acute, grave, umlaut, circumflex,
-tilde, macron, ring, caron, ...) should attach there, and underneath all
-the accents one could put another anchor so that when the two glyphs are
-adjacent in the text the word-processor will know where to place the accent
-so that it rides above the "A".
-<TABLE>
-  <TR>
-    <TD><IMG SRC="a_with_anchor.png" WIDTH=104 HEIGHT=208></TD>
-    <TD>+</TD>
-    <TD><IMG SRC="grave_with_anchor.png" WIDTH=66 HEIGHT=208></TD>
-    <TD>=&gt;</TD>
-    <TD><IMG SRC="agrave_anchored.png" WIDTH=104 HEIGHT=208></TD>
-  </TR>
-</TABLE>
-<P>
-Not all accents ride centered above the letter (the dot and ogonek ride below
-the letter), so you may need more than one anchor for different styles of
-attachment.
-<P>
-Finally some letters can have multiple attachments, unicode U+1EA4, for example,
-is an A with a circumflex and an acute. Normally the circumflex and the acute
-will attach at the same point, which would be ugly and confusing. Instead
-we create a different kind of anchor, a mark to mark anchor, on the circumflex
-and allow the acute accent to attach to that.
-<P>
-Before one can create an anchor in a glyph one must notify FontForge that
-this font will have anchors. You must create an
-<A HREF="overview.html#Anchors">anchor class</A> for each type of attachment
-(thus in the case of A above with two types of attachments (one above and
-one below) you would create two anchor classes. The
-<CODE><A HREF="fontinfo.html#Anchors">Element-&gt;Font Info-&gt;Anchor
-Classes</A> </CODE>dialog will allow you to do that.
-<P>
-Then for each glyph in which an attachment will be made, you should first
-click at the point where the anchor is to be created and then bring up the
-<CODE><A HREF="pointmenu.html#AddAnchor">Point-&gt;Add Anchor</A></CODE>
-dialog.
-<P>
-You can examine (and correct) how a glyph fits to any others that combine
-with it by using the
-<CODE><A HREF="metricsmenu.html#AnchorControl">Metrics-&gt;Anchor
-Control...</A></CODE> command.
-<P>
-<FONT COLOR="Red"><STRONG>A warning about mark attachments:</STRONG></FONT>
-Not all software supports them. And even more confusing software may support
-them for some scripts and not for others.
-<P>
-<P>
-<P ALIGN=Center>
--- <A HREF="editexample5.html">Prev</A> -- <A HREF="overview.html">TOC</A>
--- <A HREF="editexample6-5.html">Next</A> --
+  <H1 ALIGN=Center>
+    Tutorial #6
+  </H1>
+  <UL>
+    <LI>
+      <A HREF="editexample.html#FontCreate">Font Creation</A>
+    <LI>
+      <A HREF="editexample.html#CharCreate">Creating a glyph (tracing outlines)</A>
+    <LI>
+      <A HREF="editexample2.html#Navigating">Navigating to other glyphs</A>
+    <LI>
+      <A HREF="editexample2.html#Creating-o">On to the next glyph (consistent
+      directions)</A>
+    <LI>
+      <A HREF="editexample3.html#consistent-stems">Consistent serifs and stem
+      widths</A>
+    <LI>
+      <A HREF="editexample4.html#accents">Building accented glyphs</A>
+    <LI>
+      <A HREF="editexample4.html#ligature">Building a ligature</A>
+    <LI>
+      <A HREF="editexample5.html#metrics">Examining metrics</A>
+    <LI>
+      <A HREF="editexample5.html#Kerning">Kerning</A>
+    <LI>
+      <A HREF="editexample6.html#Variants">Glyph variants</A>
+      <UL>
+	<LI>
+	  <A HREF="editexample6.html#Conditional">Conditional variants</A>
+      </UL>
+    <LI>
+      <A HREF="editexample6.html#Marks">Anchoring marks</A>
+    <LI>
+      <A HREF="editexample6-5.html#Conditional">Conditional features</A>
+    <LI>
+      <A HREF="editexample7.html#checking">Checking your font</A>
+    <LI>
+      <A HREF="editexample7.html#generating">Generating it</A>
+    <LI>
+      <A HREF="editexample7.html#Families">Font Families</A>
+    <LI>
+      <A HREF="editexample7.html#summary">Final Summary</A>
+    <LI>
+      <A HREF="scriptnotes.html#Special">Notes on various scripts</A>
+  </UL>
+  <H2>
+    <A NAME="Variants">Glyph</A> Variants
+  </H2>
+  <P>
+  In many scripts glyphs have several variant glyphs. In latin the most obvious
+  example is that every letter has both an upper case and a lower case variant.
+  A more esoteric example would be that in renaissance times the long-s variant
+  (of s) was used initially and medially in a word, while the short-s was only
+  used at the end of a word.
+  <P>
+  Most Arabic glyphs have four variants (initial, medial, final and isolated).
+  <P>
+  The digits often have several variants: tabular digits (where all digits
+  have the same advance width so that tables of numbers don't look ragged),
+  proportional digits (where each digit has a width appropriate to its shape)
+  and old-style or lower case digits
+  (<IMG SRC="lcdigits.png" WIDTH="76" HEIGHT="18" ALIGN="Middle">).
+  <P>
+  Some of these variants are built into the encodings (the upper and lower
+  case distinction is), but in other cases you should provide extra information
+  in the font so that the word processor can be aware of the variants (Arabic
+  is midway between the two, the various forms are in the encoding, but you
+  need to provide extra information as well).
+  <P>
+  Let us consider the case of the digits mentioned above. Assume that the glyph
+  called "one" contains the tabular variant of one, the glyph "one.prop" contains
+  the proportional variant and "one.oldstyle" contains the lower-case variant.
+  Then select "one" from the fontview, <CODE>Edit-&gt;Glyph Info</CODE>, select
+  the <CODE>Subs</CODE> tab and press the <CODE>[New] </CODE>button. You should
+  get another dialog. In the Components field, enter "one.prop", select
+  "Proportional Numbers" from the pull down list (it will turn into "pnum"),
+  and select the script set you are interested in (a script of 'latn' and a
+  language of 'dflt' will cover many cases). Then press <CODE>[OK]</CODE>.
+  <P>
+  Some variant forms are built in to FontForge, and if you use
+  <CODE>Element-&gt;Typo. Features-&gt;Default ATT-&gt;(variant name)</CODE>,
+  FontForge may be able to automate this process for you.
+  <P>
+  (Note: Type0, Type1 and Type3 PostScript fonts have no notation to handle
+  this. You need to be creating an OpenType or TrueType font for these variants
+  to be output).
+  <H3>
+    <A NAME="Conditional">Conditional</A> Variants
+  </H3>
+  <P>
+  FontForge supports OpenType's Contextual Substitution and Chaining Contextual
+  Substitution sub-tables, and to a lesser extent, Apple's contextual glyph
+  substitution sub-table. This means that you can insert conditional variants
+  into your font. <A HREF="editexample6-5.html#Conditional">The next page</A>
+  will go into this in greater detail.
+  <H2>
+    <A NAME="Marks">Anchoring</A> marks
+  </H2>
+  <P>
+  Some scripts (Arabic, Hebrew) need vowel marks placed around the main text
+  glyphs. Other scripts (some variants of Latin and Greek) have so many possible
+  accent combinations that having preassembled glyphs for all combinations
+  is unwieldy.
+  <P>
+  In OpenType (which includes MicroSoft's TrueType fonts) it is possible to
+  indicate on all base glyphs where marks should attach, and on all marks where
+  the base glyphs should attach. Thus one could put an anchor centered above
+  a capital-A indicating that all accents (acute, grave, umlaut, circumflex,
+  tilde, macron, ring, caron, ...) should attach there, and underneath all
+  the accents one could put another anchor so that when the two glyphs are
+  adjacent in the text the word-processor will know where to place the accent
+  so that it rides above the "A".
+  <TABLE>
+    <TR>
+      <TD><IMG SRC="a_with_anchor.png" WIDTH=104 HEIGHT=208></TD>
+      <TD>+</TD>
+      <TD><IMG SRC="grave_with_anchor.png" WIDTH=66 HEIGHT=208></TD>
+      <TD>=&gt;</TD>
+      <TD><IMG SRC="agrave_anchored.png" WIDTH=104 HEIGHT=208></TD>
+    </TR>
+  </TABLE>
+  <P>
+  Not all accents ride centered above the letter (the dot and ogonek ride below
+  the letter), so you may need more than one anchor for different styles of
+  attachment.
+  <P>
+  Finally some letters can have multiple attachments, unicode U+1EA4, for example,
+  is an A with a circumflex and an acute. Normally the circumflex and the acute
+  will attach at the same point, which would be ugly and confusing. Instead
+  we create a different kind of anchor, a mark to mark anchor, on the circumflex
+  and allow the acute accent to attach to that.
+  <P>
+  Before one can create an anchor in a glyph one must notify FontForge that
+  this font will have anchors. You must create an
+  <A HREF="overview.html#Anchors">anchor class</A> for each type of attachment
+  (thus in the case of A above with two types of attachments (one above and
+  one below) you would create two anchor classes. The
+  <CODE><A HREF="fontinfo.html#Anchors">Element-&gt;Font Info-&gt;Anchor
+  Classes</A> </CODE>dialog will allow you to do that.
+  <P>
+  Then for each glyph in which an attachment will be made, you should first
+  click at the point where the anchor is to be created and then bring up the
+  <CODE><A HREF="pointmenu.html#AddAnchor">Point-&gt;Add Anchor</A></CODE>
+  dialog.
+  <P>
+  You can examine (and correct) how a glyph fits to any others that combine
+  with it by using the
+  <CODE><A HREF="metricsmenu.html#AnchorControl">Metrics-&gt;Anchor
+  Control...</A></CODE> command.
+  <P>
+  <FONT COLOR="Red"><STRONG>A warning about mark attachments:</STRONG></FONT>
+  Not all software supports them. And even more confusing software may support
+  them for some scripts and not for others.
+  <P>
+  <P>
+  <P ALIGN=Center>
+  -- <A HREF="editexample5.html">Prev</A> -- <A HREF="overview.html">TOC</A>
+  -- <A HREF="editexample6-5.html">Next</A> --
 </DIV>
 </BODY></HTML>

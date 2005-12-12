@@ -2,150 +2,150 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 23-Feb-2004 -->
-  <!-- AP: Last modified: 22-Mar-2005 -->
+  <!-- AP: Last modified: 11-Dec-2005 -->
   <TITLE>Multi Layered Editing of Type3 and SVG fonts</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
 <DIV id="in">
-<H1 ALIGN=Center>
-  Multi Layered Editing of Type3 and SVG fonts
-</H1>
-<P>
-Normal builds of fontforge do not have this mode enabled (it can eat up a
-lot of memory), if you wish to edit type3 fonts then configure fontforge
-with
-<BLOCKQUOTE>
-  <PRE>$ configure --with-multilayer
+  <H1 ALIGN=Center>
+    Multi Layered Editing of Type3 and SVG fonts
+  </H1>
+  <P>
+  Normal builds of fontforge do not have this mode enabled (it can eat up a
+  lot of memory), if you wish to edit type3 fonts then configure fontforge
+  with
+  <BLOCKQUOTE>
+    <PRE>$ configure --with-multilayer
 $ make
 $ make install
 </PRE>
-</BLOCKQUOTE>
-<P>
-If you have done this, then loading a type3 font (or an svg font organized
-in a similar fashion) will cause FontForge to retain information on each
-stroke and fill command. Each command is placed in a separate layer and may
-be edited in isolation.
-<P>
-A new font may be converted to a multi-layered font by selecting
-Element-&gt;Font Info-&gt;General-&gt;Multi Layered Editing.
-<H2>
-  <IMG SRC="charview-multilayer.png" WIDTH="348" HEIGHT="571" ALIGN="Right">Multi
-  Layered editing in the outline view
-</H2>
-<P>
-In the image at left we have a glyph drawn by stroking two paths. One layer
-(containing one of the paths) is currently selected and is drawn in full.
-All its points are editable. The other layer is shown as a dashed line.
-<P>
-The Layer palette looks a little different here. There is no hinting information
-(hints are irrelevant in type3 fonts), instead there are two named layers
-(background and grid) which behave pretty much as they
-<A HREF="charview.html">normally</A> do. They may be made active by clicking
-on their names. They may be made invisible by turning off the check box
-associated with them.
-<P>
-Under these two are the layers that make up the glyph in the font. Each layer
-is identified by a small picture of what that layer looks like when rasterized.
-Clicking on the layer makes it editable.
-<P>
-The layers are ordered in the list as they will be drawn on the screen. The
-topmost layer is drawn first, the bottommost is drawn last. Regions drawn
-earlier will be overwritten by Regions drawn later.
-<P>
-Double clicking on a layer brings up the <A HREF="#Layer">Layer Info
-dialog</A>.
-<P>
-Clicking with the right button brings up the layer menu which contains:
-<DL>
-  <DT>
-    Layer Info...
-  <DD>
-    Brings up the <A HREF="multilayer.html#Layer">Layer Info</A> dialog on the
-    current layer (same as double clicking)
-  <DT>
-    New Layer...
-  <DD>
-    Creates a new layer and brings up the <A HREF="multilayer.html#Layer">Layer
-    Info</A> dialog to describe it. (the new layer will appear at the bottom
-    of the layer list and will be drawn last)
-  <DT>
-    Del Layer
-  <DD>
-    Deletes the current layer (you may not delete the last layer in a glyph)
-  <DT>
-    First
-  <DD>
-    Make the current layer the first one to be drawn.
-  <DT>
-    Earlier
-  <DD>
-    Make the current layer be drawn earlier. (swaps it with the layer above it)
-  <DT>
-    Later
-  <DD>
-    Makes the current layer be drawn later. (swaps it with the layer below it)
-  <DT>
-    Last
-  <DD>
-    Makes the current layer be drawn last.
-</DL>
-<P>
-Images are allowed in Type3 fonts (but not in svg fonts). You can use the
-<A HREF="filemenu.html#Import">File-&gt;Import</A> command to load an image
-into any of the foreground layers. If the image is a bitmap image and the
-layer will be filled, then it will be output with an imagemask command (the
-bitmap will be drawn with the fill color), otherwise the image will be drawn
-with the colors specified in the image (Transparent images are not supported
-here).
-<P>
-FontForge will not skew, flip or rotate images.
-<H2>
-  <IMG SRC="layerdlg.png" WIDTH="421" HEIGHT="498" ALIGN="Right">The
-  <A NAME="Layer">Layer</A> dialog
-</H2>
-<P>
-This dialog describes various attributes of the way the splines in the current
-layer are drawn.
-<P>
-A layer may be either stroked or filled. Or both. Or neither (layers containing
-only images need not be filled or stroked).
-<P>
-You may either specify a color to be used for stroking or filling the splines
-in the layer, or you may specify that the color should be inherited (in
-conventional fonts the color will be inherited so that the font user can
-specify the font's color). If you do want to specify a color, use a 6 hex-digit
-rgb value "#rrggbb".
-<P>
-SVG fonts may include an opacity level (type3 fonts may not). 0 is fully
-transparent, 1.0 is fully opaque, .5 is translucent. Again this value may
-be inherited from the environment.
-<P>
-A stroke has a width (which again may be inherited, but probably should not
-be). Strokes are drawn using a circular pen. An elliptical pen may be specified
-by giving a transformation matrix here.
-<P>
-A line may be dashed. Dash patterns are specified as a list of numbers, the
-first number in the list will draw a line segment at most that many em-units,
-the next number will skip that many em-units, the third will be drawn, and
-so on. After then entire list has been used, it will start again at the begining.
-If the list has an odd number of elements, then this time through the first
-entry indicates that many units should be skipped. So "10" would mean a line
-which alternates being drawn every 10 units, while "20 10" would draw 20
-units, skip 10, draw 20 and so on.
-<P>
-Finally a stroke needs to know how to treat the ends of paths, and how to
-join non-tangent path-segments.
-<P>
-<P>
-FontForge's rasterization leaves much to be desired. It does not support
-full color (rounding everything to a shade of grey), and its stroking algorithm
-is quite poor (it does not rasterize dashes).
-<P>
-<P ALIGN=Center>
--- <A HREF="charview.html">Back</A> -- <A HREF="overview.html">TOC</A> --
-<P>
-<P>
+  </BLOCKQUOTE>
+  <P>
+  If you have done this, then loading a type3 font (or an svg font organized
+  in a similar fashion) will cause FontForge to retain information on each
+  stroke and fill command. Each command is placed in a separate layer and may
+  be edited in isolation.
+  <P>
+  A new font may be converted to a multi-layered font by selecting
+  Element-&gt;Font Info-&gt;General-&gt;Multi Layered Font.
+  <H2>
+    <IMG SRC="charview-multilayer.png" WIDTH="348" HEIGHT="571" ALIGN="Right">Multi
+    Layered editing in the outline view
+  </H2>
+  <P>
+  In the image at left we have a glyph drawn by stroking two paths. One layer
+  (containing one of the paths) is currently selected and is drawn in full.
+  All its points are editable. The other layer is shown as a dashed line.
+  <P>
+  The Layer palette looks a little different here. There is no hinting information
+  (hints are irrelevant in type3 fonts), instead there are two named layers
+  (background and grid) which behave pretty much as they
+  <A HREF="charview.html">normally</A> do. They may be made active by clicking
+  on their names. They may be made invisible by turning off the check box
+  associated with them.
+  <P>
+  Under these two are the layers that make up the glyph in the font. Each layer
+  is identified by a small picture of what that layer looks like when rasterized.
+  Clicking on the layer makes it editable.
+  <P>
+  The layers are ordered in the list as they will be drawn on the screen. The
+  topmost layer is drawn first, the bottommost is drawn last. Regions drawn
+  earlier will be overwritten by Regions drawn later.
+  <P>
+  Double clicking on a layer brings up the <A HREF="#Layer">Layer Info
+  dialog</A>.
+  <P>
+  Clicking with the right button brings up the layer menu which contains:
+  <DL>
+    <DT>
+      Layer Info...
+    <DD>
+      Brings up the <A HREF="multilayer.html#Layer">Layer Info</A> dialog on the
+      current layer (same as double clicking)
+    <DT>
+      New Layer...
+    <DD>
+      Creates a new layer and brings up the <A HREF="multilayer.html#Layer">Layer
+      Info</A> dialog to describe it. (the new layer will appear at the bottom
+      of the layer list and will be drawn last)
+    <DT>
+      Del Layer
+    <DD>
+      Deletes the current layer (you may not delete the last layer in a glyph)
+    <DT>
+      First
+    <DD>
+      Make the current layer the first one to be drawn.
+    <DT>
+      Earlier
+    <DD>
+      Make the current layer be drawn earlier. (swaps it with the layer above it)
+    <DT>
+      Later
+    <DD>
+      Makes the current layer be drawn later. (swaps it with the layer below it)
+    <DT>
+      Last
+    <DD>
+      Makes the current layer be drawn last.
+  </DL>
+  <P>
+  Images are allowed in Type3 fonts (but not in svg fonts). You can use the
+  <A HREF="filemenu.html#Import">File-&gt;Import</A> command to load an image
+  into any of the foreground layers. If the image is a bitmap image and the
+  layer will be filled, then it will be output with an imagemask command (the
+  bitmap will be drawn with the fill color), otherwise the image will be drawn
+  with the colors specified in the image (Transparent images are not supported
+  here).
+  <P>
+  FontForge will not skew, flip or rotate images.
+  <H2>
+    <IMG SRC="layerdlg.png" WIDTH="421" HEIGHT="498" ALIGN="Right">The
+    <A NAME="Layer">Layer</A> dialog
+  </H2>
+  <P>
+  This dialog describes various attributes of the way the splines in the current
+  layer are drawn.
+  <P>
+  A layer may be either stroked or filled. Or both. Or neither (layers containing
+  only images need not be filled or stroked).
+  <P>
+  You may either specify a color to be used for stroking or filling the splines
+  in the layer, or you may specify that the color should be inherited (in
+  conventional fonts the color will be inherited so that the font user can
+  specify the font's color). If you do want to specify a color, use a 6 hex-digit
+  rgb value "#rrggbb".
+  <P>
+  SVG fonts may include an opacity level (type3 fonts may not). 0 is fully
+  transparent, 1.0 is fully opaque, .5 is translucent. Again this value may
+  be inherited from the environment.
+  <P>
+  A stroke has a width (which again may be inherited, but probably should not
+  be). Strokes are drawn using a circular pen. An elliptical pen may be specified
+  by giving a transformation matrix here.
+  <P>
+  A line may be dashed. Dash patterns are specified as a list of numbers, the
+  first number in the list will draw a line segment at most that many em-units,
+  the next number will skip that many em-units, the third will be drawn, and
+  so on. After then entire list has been used, it will start again at the begining.
+  If the list has an odd number of elements, then this time through the first
+  entry indicates that many units should be skipped. So "10" would mean a line
+  which alternates being drawn every 10 units, while "20 10" would draw 20
+  units, skip 10, draw 20 and so on.
+  <P>
+  Finally a stroke needs to know how to treat the ends of paths, and how to
+  join non-tangent path-segments.
+  <P>
+  <P>
+  FontForge's rasterization leaves much to be desired. It does not support
+  full color (rounding everything to a shade of grey), and its stroking algorithm
+  is quite poor (it does not rasterize dashes).
+  <P>
+  <P ALIGN=Center>
+  -- <A HREF="charview.html">Back</A> -- <A HREF="overview.html">TOC</A> --
+  <P>
+  <P>
 </DIV>
 </BODY></HTML>

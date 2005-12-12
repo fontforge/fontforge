@@ -2,227 +2,227 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jan-2003 -->
-  <!-- AP: Last modified: 28-Mar-2005 -->
+  <!-- AP: Last modified: 11-Dec-2005 -->
   <TITLE>Special thoughts for special scripts</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
 <DIV id="in">
-<H1 ALIGN=Center>
-  Tutorial #8
-</H1>
-<UL>
-  <LI>
-    <A HREF="editexample.html#FontCreate">Font Creation</A>
-  <LI>
-    <A HREF="editexample.html#CharCreate">Creating a glyph (tracing outlines)</A>
-  <LI>
-    <A HREF="editexample2.html#Navigating">Navigating to other glyphs</A>
-  <LI>
-    <A HREF="editexample2.html#Creating-o">On to the next glyph (consistent
-    directions)</A>
-  <LI>
-    <A HREF="editexample3.html#consistent-stems">Consistent serifs and stem
-    widths</A>
-  <LI>
-    <A HREF="editexample4.html#accents">Building accented glyphs</A>
-  <LI>
-    <A HREF="editexample4.html#ligature">Building a ligature</A>
-  <LI>
-    <A HREF="editexample5.html#metrics">Examining metrics</A>
-  <LI>
-    <A HREF="editexample5.html#Kerning">Kerning</A>
-  <LI>
-    <A HREF="editexample6.html#Variants">Glyph variants</A>
-  <LI>
-    <A HREF="editexample6.html#Marks">Anchoring marks</A>
-  <LI>
-    <A HREF="editexample7.html#checking">Checking your font</A>
-  <LI>
-    <A HREF="editexample7.html#generating">Generating it</A>
-  <LI>
-    <A HREF="editexample7.html#Families">Font Families</A>
-  <LI>
-    <A HREF="editexample7.html#summary">Final Summary</A>
-  <LI>
-    <A HREF="scriptnotes.html#Special">Notes on various scripts</A>
-</UL>
-<H2>
-  <A NAME="Special">Special </A>thoughts for special scripts
-</H2>
-<P>
-<A HREF="http://www.microsoft.com/typography/specs/default.htm">Microsoft</A>
-provides some information on what (opentype) features a word processor should
-support by default for certain scripts.
-<P>
-<FONT COLOR="Red"><STRONG><BIG>Caveat:</BIG></STRONG></FONT> Just because
-a feature is documented and looks useful does not mean Uniscribe will use
-it for your script. Many Latin script fonts would like to use 'init', 'medi',
-'calt', etc. but none of these features is turned on by Uniscribe for Latin.
-<P>
-<FONT COLOR="Red"><STRONG><BIG>Caveat:</BIG></STRONG></FONT> Just because
-Uniscribe supports a feature that does not mean any given application will.
-Uniscribe (as of 2005) supports 'liga' for latin, but neither Word nor Office
-does.
-<P>
-<FONT COLOR="Red"><STRONG><BIG>Caveat:</BIG></STRONG></FONT> Uniscribe (MS
-unicode text layout routines) may ignore either the GPOS or the GSUB table
-depending on the script, and may even refuse to use the font at all if it
-doesn't have the right stuff in GPOS/GSUB. A Hebrew font must have both a
-GPOS and a GSUB. If it doesn't the font is not used. A latin font need not
-have either, but if it doesn't have GSUB then GPOS won't be used. So now
-if one table is present and the other isn't, FontForge will generate a dummy
-version of the other.
-<P>
-Sergey Malkin from MicroSoft tells me:
-<BLOCKQUOTE>
-  Each shaping engine in Uniscribe can decide on its requirements for layout
-  tables - some of them require both GSUB and GPOS, in some cases any table
-  present is enough, or it can work without any table.
+  <H1 ALIGN=Center>
+    Special thoughts for special scripts
+  </H1>
+  <UL>
+    <LI>
+      <A HREF="editexample.html#FontCreate">Font Creation</A>
+    <LI>
+      <A HREF="editexample.html#CharCreate">Creating a glyph (tracing outlines)</A>
+    <LI>
+      <A HREF="editexample2.html#Navigating">Navigating to other glyphs</A>
+    <LI>
+      <A HREF="editexample2.html#Creating-o">On to the next glyph (consistent
+      directions)</A>
+    <LI>
+      <A HREF="editexample3.html#consistent-stems">Consistent serifs and stem
+      widths</A>
+    <LI>
+      <A HREF="editexample4.html#accents">Building accented glyphs</A>
+    <LI>
+      <A HREF="editexample4.html#ligature">Building a ligature</A>
+    <LI>
+      <A HREF="editexample5.html#metrics">Examining metrics</A>
+    <LI>
+      <A HREF="editexample5.html#Kerning">Kerning</A>
+    <LI>
+      <A HREF="editexample6.html#Variants">Glyph variants</A>
+    <LI>
+      <A HREF="editexample6.html#Marks">Anchoring marks</A>
+    <LI>
+      <A HREF="editexample7.html#checking">Checking your font</A>
+    <LI>
+      <A HREF="editexample7.html#generating">Generating it</A>
+    <LI>
+      <A HREF="editexample7.html#Families">Font Families</A>
+    <LI>
+      <A HREF="editexample7.html#summary">Final Summary</A>
+    <LI>
+      <A HREF="scriptnotes.html#Special">Notes on various scripts</A>
+  </UL>
+  <H2>
+    <A NAME="Special">Special </A>thoughts for special scripts
+  </H2>
   <P>
-  Sometimes, purpose of the check is to determine if font is supporting particular
-  script - if required tables are not there font is just rejected by this shaping
-  engine. Sometimes, shaping engine can not just reject the font because there
-  are fonts using older shaping technologies we still have to support, so it
-  uses some logic when to fallback to legacy layout code.
+  <A HREF="http://www.microsoft.com/typography/specs/default.htm">Microsoft</A>
+  provides some information on what (opentype) features a word processor should
+  support by default for certain scripts.
   <P>
-  In your case this is Hebrew, where both tables are required to use OpenType
-  processing. Arabic requires both tables too, Latin requires GSUB to execute
-  GPOS. But in general, if you have both tables you should be safe with any
-  script to get fully featured OpenType shaping.
-</BLOCKQUOTE>
-<H3>
-  Latin
-</H3>
-<P>
-Uniscribe supports the
-<A HREF="http://www.microsoft.com/typography/OpenType%20Dev/standard/shaping.mspx">following
-features</A>
-<P>
-There are not many special complications in latin. Latin fonts can generally
-fit in a single byte encoding with no (or few) font tables. There are a plethora
-of accented glyphs which could be built -- or you could use mark to base
-positioning. Kerning should be generated for some glyph combinations. A few
-ligatures need to be generated (the "f" ligatures: ff, fi, fl, ffi, ffl and
-perhaps st).
-<P>
-You may want to add a set of smallcaps. Adobe has reserved a block in the
-private use area for latin small-caps -- this is now depreciated.
-<P>
-Some languages have specific requirements of their own
-<UL>
-  <LI>
-    <A HREF="http://studweb.euv-frankfurt-o.de/twardoch/f/en/typo/ogonek/kreska.html">For
-    Polish</A>
-</UL>
-<H3>
-  Greek
-</H3>
-<P>
-Uniscribe supports the
-<A HREF="http://www.microsoft.com/typography/OpenType%20Dev/standard/shaping.mspx">following
-features</A>
-<P>
-Greek also does not have many complications. Modern Greek fonts generally
-fit in a single byte encoding. For modern greek are a few accented glyphs
-that need to be built, while for polytonic greek there are many -- mark to
-base &amp; mark to mark are options. Kerning should be generated. I am not
-aware of any standard ligatures for modern greek (ancient greek had ligatures
-and variants on some of the glyphs though).
-<P>
-Small caps are again an option, and I have reserved a block in the private
-use area for them -- again this is depreciated.
-<H3>
-  Cyrillic
-</H3>
-<P>
-Uniscribe supports the
-<A HREF="http://www.microsoft.com/typography/OpenType%20Dev/standard/shaping.mspx">following
-features</A>
-<P>
-Cyrillic fonts also fit in a single byte encoding. There are a few accented
-glyphs. Kerning should be generated. I am not aware of any standard ligatures.
-<P>
-Some languages need variant glyphs (specified with a 'loca' feature)
-<UL>
-  <LI>
-    <A HREF="http://jankojs.tripod.com/SerbianCyr.htm">Serbian/Macedonian</A>
-</UL>
-<H3>
-  Arabic
-</H3>
-<P>
-Uniscribe supports the
-<A HREF="http://www.microsoft.com/typography/OpenType%20Dev/arabic/shaping.mspx">following
-features</A>
-<P>
-Arabic needs a complete set of initial, medial, final and isolated forms
--- Unicode has reserved space for these. Arabic also needs a vast set of
-ligatures -- Unicode has reserved space for many, but I'd guess that extra
-ligatures will be needed sometimes. Arabic also needs a set of mark (mark
-to base, mark to ligature) attachments to position vowels above letters.
-Arabic may need a glyph decomposition table.
-<P>
-I'm told that in good Arabic typography there need to be many more than 4
-forms per glyph. I'm not sure how this should be supported.
-<P>
-Right to left.
-<H3>
-  Hebrew
-</H3>
-<P>
-Uniscribe supports the
-<A HREF="http://www.microsoft.com/typography/OpenType%20Dev/hebrew/shaping.mspx">following
-features</A>
-<P>
-Hebrew has a few final forms but no special tables are needed for these.
-Hebrew may need kerning. Hebrew should have a set of mark (mark to base)
-tables to position vowels over letters. Hebrew may need a glyph decomposition
-table. I am not aware of any needed ligatures.
-<P>
-Right to left
-<H3>
-  Indic scripts
-</H3>
-<P>
-Uniscribe supports the
-<A HREF="http://www.microsoft.com/typography/otfntdev/indicot/shaping.aspx">following
-features</A>
-<P>
-Indic scripts need a set of ligatures.
-<P>
-(they probably need a lot more but I'm not aware of what)
-<H3>
-  Korean Hangul
-</H3>
-<P>
-Uniscribe supports the
-<A HREF="http://www.microsoft.com/typography/OpenType%20Dev/hangul/shaping.mspx">following
-features</A>
-<P>
-The Hangul script consists of a set of syllables built out of a phonetic
-alphabet. Generally fonts consist of a set of precomposed syllables.
-<P>
-Complications are introduced by the massive combinatorial explosion of all
-these syllables. These are eased in postscript by CID-keyed fonts.
-<P>
-Vertical writing and left to right writing are used, and some glyphs have
-a different orientation when drawn vertically (parentheses for example).
-<H3>
-  Japanese and Chinese (and Korean Hanja)
-</H3>
-<P>
-MicroSoft does not describe these scripts (that I can find).
-<P>
-Again a massive collection of glyphs is needed, and postscript uses CID keyed
-fonts to deal with this.
-<P>
-Vertical writing and left to right writing are used, and some glyphs have
-a different orientation when drawn vertically (parentheses for example).
-<P>
-<P ALIGN=Center>
--- <A HREF="editexample7.html">Prev</A> -- <A HREF="overview.html">TOC</A>
--- <A HREF="fontview.html">Next</A> --
+  <FONT COLOR="Red"><STRONG><BIG>Caveat:</BIG></STRONG></FONT> Just because
+  a feature is documented and looks useful does not mean Uniscribe will use
+  it for your script. Many Latin script fonts would like to use 'init', 'medi',
+  'calt', etc. but none of these features is turned on by Uniscribe for Latin.
+  <P>
+  <FONT COLOR="Red"><STRONG><BIG>Caveat:</BIG></STRONG></FONT> Just because
+  Uniscribe supports a feature that does not mean any given application will.
+  Uniscribe (as of 2005) supports 'liga' for latin, but neither Word nor Office
+  does.
+  <P>
+  <FONT COLOR="Red"><STRONG><BIG>Caveat:</BIG></STRONG></FONT> Uniscribe (MS
+  unicode text layout routines) may ignore either the GPOS or the GSUB table
+  depending on the script, and may even refuse to use the font at all if it
+  doesn't have the right stuff in GPOS/GSUB. A Hebrew font must have both a
+  GPOS and a GSUB. If it doesn't the font is not used. A latin font need not
+  have either, but if it doesn't have GSUB then GPOS won't be used. So now
+  if one table is present and the other isn't, FontForge will generate a dummy
+  version of the other.
+  <P>
+  Sergey Malkin from MicroSoft tells me:
+  <BLOCKQUOTE>
+    Each shaping engine in Uniscribe can decide on its requirements for layout
+    tables - some of them require both GSUB and GPOS, in some cases any table
+    present is enough, or it can work without any table.
+    <P>
+    Sometimes, purpose of the check is to determine if font is supporting particular
+    script - if required tables are not there font is just rejected by this shaping
+    engine. Sometimes, shaping engine can not just reject the font because there
+    are fonts using older shaping technologies we still have to support, so it
+    uses some logic when to fallback to legacy layout code.
+    <P>
+    In your case this is Hebrew, where both tables are required to use OpenType
+    processing. Arabic requires both tables too, Latin requires GSUB to execute
+    GPOS. But in general, if you have both tables you should be safe with any
+    script to get fully featured OpenType shaping.
+  </BLOCKQUOTE>
+  <H3>
+    Latin
+  </H3>
+  <P>
+  Uniscribe supports the
+  <A HREF="http://www.microsoft.com/typography/OpenType%20Dev/standard/shaping.mspx">following
+  features</A>
+  <P>
+  There are not many special complications in latin. Latin fonts can generally
+  fit in a single byte encoding with no (or few) font tables. There are a plethora
+  of accented glyphs which could be built -- or you could use mark to base
+  positioning. Kerning should be generated for some glyph combinations. A few
+  ligatures need to be generated (the "f" ligatures: ff, fi, fl, ffi, ffl and
+  perhaps st).
+  <P>
+  You may want to add a set of smallcaps. Adobe has reserved a block in the
+  private use area for latin small-caps -- this is now depreciated.
+  <P>
+  Some languages have specific requirements of their own
+  <UL>
+    <LI>
+      <A HREF="http://studweb.euv-frankfurt-o.de/twardoch/f/en/typo/ogonek/kreska.html">For
+      Polish</A>
+  </UL>
+  <H3>
+    Greek
+  </H3>
+  <P>
+  Uniscribe supports the
+  <A HREF="http://www.microsoft.com/typography/OpenType%20Dev/standard/shaping.mspx">following
+  features</A>
+  <P>
+  Greek also does not have many complications. Modern Greek fonts generally
+  fit in a single byte encoding. For modern greek are a few accented glyphs
+  that need to be built, while for polytonic greek there are many -- mark to
+  base &amp; mark to mark are options. Kerning should be generated. I am not
+  aware of any standard ligatures for modern greek (ancient greek had ligatures
+  and variants on some of the glyphs though).
+  <P>
+  Small caps are again an option, and I have reserved a block in the private
+  use area for them -- again this is depreciated.
+  <H3>
+    Cyrillic
+  </H3>
+  <P>
+  Uniscribe supports the
+  <A HREF="http://www.microsoft.com/typography/OpenType%20Dev/standard/shaping.mspx">following
+  features</A>
+  <P>
+  Cyrillic fonts also fit in a single byte encoding. There are a few accented
+  glyphs. Kerning should be generated. I am not aware of any standard ligatures.
+  <P>
+  Some languages need variant glyphs (specified with a 'loca' feature)
+  <UL>
+    <LI>
+      <A HREF="http://jankojs.tripod.com/SerbianCyr.htm">Serbian/Macedonian</A>
+  </UL>
+  <H3>
+    Arabic
+  </H3>
+  <P>
+  Uniscribe supports the
+  <A HREF="http://www.microsoft.com/typography/OpenType%20Dev/arabic/shaping.mspx">following
+  features</A>
+  <P>
+  Arabic needs a complete set of initial, medial, final and isolated forms
+  -- Unicode has reserved space for these. Arabic also needs a vast set of
+  ligatures -- Unicode has reserved space for many, but I'd guess that extra
+  ligatures will be needed sometimes. Arabic also needs a set of mark (mark
+  to base, mark to ligature) attachments to position vowels above letters.
+  Arabic may need a glyph decomposition table.
+  <P>
+  I'm told that in good Arabic typography there need to be many more than 4
+  forms per glyph. I'm not sure how this should be supported.
+  <P>
+  Right to left.
+  <H3>
+    Hebrew
+  </H3>
+  <P>
+  Uniscribe supports the
+  <A HREF="http://www.microsoft.com/typography/OpenType%20Dev/hebrew/shaping.mspx">following
+  features</A>
+  <P>
+  Hebrew has a few final forms but no special tables are needed for these.
+  Hebrew may need kerning. Hebrew should have a set of mark (mark to base)
+  tables to position vowels over letters. Hebrew may need a glyph decomposition
+  table. I am not aware of any needed ligatures.
+  <P>
+  Right to left
+  <H3>
+    Indic scripts
+  </H3>
+  <P>
+  Uniscribe supports the
+  <A HREF="http://www.microsoft.com/typography/otfntdev/indicot/shaping.aspx">following
+  features</A>
+  <P>
+  Indic scripts need a set of ligatures.
+  <P>
+  (they probably need a lot more but I'm not aware of what)
+  <H3>
+    Korean Hangul
+  </H3>
+  <P>
+  Uniscribe supports the
+  <A HREF="http://www.microsoft.com/typography/OpenType%20Dev/hangul/shaping.mspx">following
+  features</A>
+  <P>
+  The Hangul script consists of a set of syllables built out of a phonetic
+  alphabet. Generally fonts consist of a set of precomposed syllables.
+  <P>
+  Complications are introduced by the massive combinatorial explosion of all
+  these syllables. These are eased in postscript by CID-keyed fonts.
+  <P>
+  Vertical writing and left to right writing are used, and some glyphs have
+  a different orientation when drawn vertically (parentheses for example).
+  <H3>
+    Japanese and Chinese (and Korean Hanja)
+  </H3>
+  <P>
+  MicroSoft does not describe these scripts (that I can find).
+  <P>
+  Again a massive collection of glyphs is needed, and postscript uses CID keyed
+  fonts to deal with this.
+  <P>
+  Vertical writing and left to right writing are used, and some glyphs have
+  a different orientation when drawn vertically (parentheses for example).
+  <P>
+  <P ALIGN=Center>
+  -- <A HREF="editexample7.html">Prev</A> -- <A HREF="overview.html">TOC</A>
+  -- <A HREF="fontview.html">Next</A> --
 </DIV>
 </BODY></HTML>
