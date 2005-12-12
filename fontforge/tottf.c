@@ -3129,7 +3129,9 @@ docs are wrong.
     if ( format==ff_ttfsym )	/* MS Symbol font has this set to zero. Does it matter? */
 	memset(os2->unicoderange,0,sizeof(os2->unicoderange));
 
-    if ( TTFFoundry!=NULL )
+    if ( sf->pfminfo.pfmset )
+	strncpy(os2->achVendID,sf->pfminfo.os2_vendor,4);
+    else if ( TTFFoundry!=NULL )
 	strncpy(os2->achVendID,TTFFoundry,4);
     else
 	memcpy(os2->achVendID,"PfEd",4);
