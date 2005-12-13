@@ -2,7 +2,7 @@
 <HEAD>
 <!-- Created with AOLpress/2.0 -->
 <!-- AP: Created on: 18-Jan-2002 -->
-<!-- AP: Last modified: 6-Nov-2005 -->
+<!-- AP: Last modified: 11-Dec-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Writing scripts to change fonts in FontForge</TITLE>-->
     <TITLE>FontForge でフォントを変更するためのスクリプトの書き方</TITLE>
@@ -2408,8 +2408,8 @@ ApplySubstitution("*","*","vrt2")
 	<DT>
 	  Width
 	<DD>
-<!--	  In the PostScript "stoke" command the width is the distance between the two
-	  generated curves. To be more precise, at ever point on the original curve,
+<!--	  In the PostScript "stroke" command the width is the distance between the
+	  two generated curves. To be more precise, at ever point on the original curve,
 	  a point will be added to each of the new curves at width/2 units as measured
 	  on a vector normal to the direction of the original curve at that point.<BR>
 	  In a caligraphic pen, the width is the width of the pen used to draw the
@@ -2621,7 +2621,7 @@ ApplySubstitution("*","*","vrt2")
       of the previous one. So -->
       最初の 2 個の引数は、近い座標を互いにまとめる値を示します。max は前の点から距離“within”以内に含まれる点の連鎖があるときに、中心点からの何個までの“within”を纏めるかを指定します。
       <BLOCKQUOTE>
-	<PRE> RoundToCluster(.1,5)
+	<PRE> RoundToCluster(.1,.5)
 </PRE>
       </BLOCKQUOTE>
       <P>
@@ -2947,7 +2947,7 @@ ApplySubstitution("*","*","vrt2")
     <DT>
       ClearTable(tag)
     <DD>
-<!--  Removes the table named tag. This may be 'fpgm', 'prep, 'cvt ', 'maxp' or
+<!--  Removes the table named tag. This may be 'fpgm', 'prep', 'cvt ', 'maxp' or
       any user defined tables. It returns 1 if it found (and removed) the table,
       0 if the table was not present. -->
       tag で指定した名前をもつテーブルを削除します。テーブル名として指定できるのは、&lsquo;fpgm&rsquo;,&lsquo;prep&rsquo;,&lsquo;cvt &rsquo;,&lsquo;maxp&rsquo;またはユーザ定義のテーブルの名前です。テーブルが見つかった (そして削除された) ときには 1 を返し、テーブルが存在しない場合には 0 を返します。
@@ -3696,8 +3696,8 @@ Quit(0);
 </PRE>
   </BLOCKQUOTE>
   <H2>
-<!--  The <A NAME="Execute">Execute</A> Script dialog -->
-      「<A NAME="Execute">スクリプトを実行</A>」ダイアログ
+<!--The <A NAME="Execute">Execute</A> Script dialog -->
+    「<A NAME="Execute">スクリプトを実行</A>」ダイアログ
   </H2>
   <P>
 <!--
