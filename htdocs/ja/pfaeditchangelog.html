@@ -66,214 +66,274 @@
     2004年2月29日
     <UL>
       <LI>
-	FontForge could crash if given a bad 'cmap' subtable
+<!--	FontForge could crash if given a bad 'cmap' subtable -->
+	不正な&lsquo;cmap&rsquo;サブテーブルが与えられた時に、FontForge がクラッシュする可能性がありました。
       <LI>
-	Clean up generation of OS/2 a bit
+<!--	Clean up generation of OS/2 a bit -->
+	OS/2 テーブルの生成部を少し整理。
       <LI>
-	Pass motion events to windows even when a dlg is active (so that the mouse
-	location will be shown in an outline window when the Point info dlg is active).
+<!--	Pass motion events to windows even when a dlg is active (so that the mouse
+	location will be shown in an outline window when the Point info dlg is active). -->
+	ダイアログがアクティブな時でも、移動イベントをウィンドウに渡すようにしました (それにより、点の情報ダイアログがアクティブな時でもアウトラインウィンドウ上にマウス位置が表示されるようになりました)。
       <LI>
-	Put in a comment about changing to FontForge in the copyright notice the
-	program prints at start up.
+<!--	Put in a comment about changing to FontForge in the copyright notice the
+	program prints at start up. -->
+	プログラム起動時に表示される著作権表示に、FontForge への名称変更に関するコメントを追加。
       <LI>
-	The "preflight" script on the mac had problems if the program had never been
-	installed before
+<!--	The "preflight" script on the mac had problems if the program had never been
+	installed before -->
+	プログラムの初回インストール時に、Mac の“preflight”スクリプトに問題がありました。
     </UL>
   <LI>
 <!--27-Feb-2004-->
     2004年2月27日
     <UL>
       <LI>
-	Redid the way menus respond to arrow keys
+<!--	Redid the way menus respond to arrow keys -->
+	メニューが矢印キーに反応する方法をやり直しました。
       <LI>
-	a multilayer enabled FontForge would crash when editing a normal font.
+<!--	a multilayer enabled FontForge would crash when editing a normal font. -->
+	複数レイヤ編集可能な FontForge で通常フォントを編集するとクラッシュしていました。
     </UL>
   <LI>
 <!--24-Feb-2004-->
     2004年2月24日
     <UL>
       <LI>
-	Remove the AddHint command and replace it with AddHHint and AddVHint.
+<!--	Remove the AddHint command and replace it with AddHHint and AddVHint. -->
+	AddHint() コマンドを削除し、AddHHint() と AddVHint() に置き換え。
       <LI>
-	FontForge would crash when generating a mac family with NFNT bitmaps.
+<!--	FontForge would crash when generating a mac family with NFNT bitmaps. -->
+	NFNT ビットマップを含む Mac ファミリーを生成すると FontForge がクラッシュしていました。
       <LI>
-	Added support of exporting a character into PDF format.
+<!--	Added support of exporting a character into PDF format. -->
+	1 個の文字を PDF フォーマットに書き出す機能を追加。
       <LI>
-	Oh dear, I was figuring out hintmasks in the wrong direction (because PS
+<!--	Oh dear, I was figuring out hintmasks in the wrong direction (because PS
 	splines get reversed before output, so I now reverse them during the hintmask
-	calculation too).
+	calculation too). -->
+	おや、ヒントマスクを逆向きに指定していました (PS スプラインを出力前に反転しているからです。だからヒントマスク計算も処理中に反転するようにしました)。
       <LI>
-	At Werner's suggestion, added code to show what hints are currently active
-	at a point.
+<!--	At Werner's suggestion, added code to show what hints are currently active
+	at a point. -->
+	Werner の示唆により、ヒントが現在そのある点の上でアクティブかどうかを表示するコードを追加。
       <LI>
-	At Werner's suggestion added code to show what points are affected by a hintmask
+<!--	At Werner's suggestion added code to show what points are affected by a hintmask -->
+	Werner の示唆により、ヒントマスクによりどの点が影響を受けるかを表示するコードを追加。
       <LI>
-	Added support for real editing of type3 (and svg) fonts. Support for editing
+<!--	Added support for real editing of type3 (and svg) fonts. Support for editing
 	stroked paths, different fill colors, multiple stroke/fill operations, etc.
 	Because this involves a lot of extra overhead it is wrong for people who
 	want to edit CJK fonts, so this mode is off by default. It may be turned
-	on by
+	on by -->
+	Type3 (および SVG) フォントを実際に編集できる機能を追加。太さのあるパス、線と異なる塗り潰し色、複数の stroke/fill 操作など。これを有効にすると多くのオーバーヘッドが必要になるので、CJK フォントを編集したい人は使用しない方がいいだろうと考えられるため、デフォルトではこの機能はオフにしてあります。これを有効にする場合は
 	<BLOCKQUOTE>
 	  <PRE>$ configure --with-multilayer
 </PRE>
 	</BLOCKQUOTE>
+	と設定すること。
       <LI>
-	FontForge failed to interpret h/vstem3 commands properly when building a
-	hintmask (when reading a type1 font with hint substitution)
+<!--	FontForge failed to interpret h/vstem3 commands properly when building a
+	hintmask (when reading a type1 font with hint substitution) -->
+	FontForge は (ヒント置換を含む Type1 フォントの読み込み時に) ヒントマスクを構築するとき、コマンド hstem3 と vstem3 を正しく解釈できていませんでした。
     </UL>
   <LI>
 <!--11-Feb-2004-->
     2004年2月11日
     <UL>
       <LI>
-	FontForge would crash when saving a non-multi master font.
+<!--	FontForge would crash when saving a non-multi master font. -->
+	非マルチプルマスターフォントの保存時に FontForge がクラッシュを起こす可能性がありました。
       <LI>
-	Adding new scripting commands ClearCharCounterMasks, SetCharCounterMask
+<!--	Adding new scripting commands ClearCharCounterMasks, SetCharCounterMask -->
+	スクリプトコマンド ClearCharCounterMasks(), SetCharCounterMask() を新たに追加。
     </UL>
   <LI>
 <!--10-Feb-2004-->
     2004年2月10日
     <UL>
       <LI>
-	FontForge could produce bad tfm files.
+<!--	FontForge could produce bad tfm files. -->
+	FontForge が不正な TFM ファイルを生成する可能性がありました。
       <LI>
-	Added CheckForAnchorClass scripting command
+<!--	Added CheckForAnchorClass scripting command -->
+	スクリプトコマンド CheckForAnchorClass() を追加。
       <LI>
-	Added SetFontHasVerticalMetrics scripting command.
+<!--	Added SetFontHasVerticalMetrics scripting command. -->
+	SetFonthasVerticalMetrics スクリプトコマンドを追加。
       <LI>
-	FontForge would crash if asked to generate a contextual lookup which refered
+<!--	FontForge would crash if asked to generate a contextual lookup which refered
 	to a lookup which only was activated by a character(s) which was not worth
-	outputting.
+	outputting. -->
+	中身のない文字のみを置き換え対象とする照合を参照している文脈依存参照があると、その出力時に FontForge がクラッシュしていました。
       <LI>
-	FontForge did the wrong thing when evaluating the PostScript "index" command
-	(it returned the wrong value from the stack (stack index off by one))
+<!--	FontForge did the wrong thing when evaluating the PostScript "index" command
+	(it returned the wrong value from the stack (stack index off by one)) -->
+	FontForge は PostScript の“index”コマンドを誤って解釈していました (スタックから (インデックスが 1 個ずれた場所から) の間違った値を返していました)。
       <LI>
-	Added support for the PostScript "for" loop.
+<!--	Added support for the PostScript "for" loop. -->
+	PostScriptの“for”ループのサポートを追加。
       <LI>
-	I have created a simple (1 axis) Multiple Master Type1 font with FontForge.
-	It works with both ghostview and freetype.
+<!--	I have created a simple (1 axis) Multiple Master Type1 font with FontForge.
+	It works with both ghostview and freetype. -->
+	単純な (1 軸の) マルチプルマスター Type1 フォントを FontForge で作成しました。ghostview と FreeType の両方で動作しています。
       <LI>
-	FontForge would crash when generating a ttf file from an sfd file which contain
+<!--	FontForge would crash when generating a ttf file from an sfd file which contain
 	an invalid script/lang index. Put in code to warn user about this, and in
-	some cases to correct it.
+	some cases to correct it. -->
+	不正な用字系/言語インデックスを含む SFD ファイルから TTF を出力しようとすると、FontForge がクラッシュしていました。ユーザにこれを警告するコードを追加し、いくつかの場合にそれを修正するようにしました。
       <LI>
-	FontForge had problems reading sfd files in the old point count format, this
-	meant we still got bad point count errors.
+<!--	FontForge had problems reading sfd files in the old point count format, this
+	meant we still got bad point count errors. -->
+	FontForge が以前用いていた点の個数を表現する書式をもつ SFD ファイルからの読み込みに問題がありました。要するに、点の数え方のひどい間違いがまだ残っていたということです。
       <LI>
-	FontForge wrote bad sfd files if there were countermasks (all the contours
-	of the glyph would be lost)
+<!--	FontForge wrote bad sfd files if there were countermasks (all the contours
+	of the glyph would be lost) -->
+	FontForge はカウンタマスクが存在するときに不正な SFD ファイルを書き出していました (グリフの全輪郭が失われていました)。
       <LI>
-	I finally figured out why FontForge kept crashing when palettes were docked
-	and an outline view was closed.
+<!--	I finally figured out why FontForge kept crashing when palettes were docked
+	and an outline view was closed. -->
+	パレットを連結してからアウトラインビューを閉じると FontForge がクラッシュするのは何故なのか、ようやく突き止めました。
       <LI>
-	Fixed various crashes in Interpolate fonts
+<!--	Fixed various crashes in Interpolate fonts -->
+	フォントの補間処理で起こるさまざまなクラッシュを修正。
       <LI>
-	FontForge had problems with using subroutines to express references in PostScript
-	(introduced 30-Jan)
+<!--	FontForge had problems with using subroutines to express references in PostScript
+	(introduced 30-Jan) -->
+	PostScript で参照を表現するためにサブルーチンを使用する方法に、(1月30日以来) 問題がありました。
       <LI>
-	Added a new scripting commands AddHint and ReplaceCharCounterMasks.
+<!--	Added a new scripting commands AddHint and ReplaceCharCounterMasks. -->
+	スクリプトコマンド AddHint() と ReplaceCharCounterMask を新たに追加。
     </UL>
   <LI>
 <!--4-Feb-2004-->
     2004年2月4日
     <UL>
       <LI>
-	Make it illegal to select both "Condense" and "Extend" in the mac style.
+<!--	Make it illegal to select both "Condense" and "Extend" in the mac style. -->
+	Mac スタイルで“Condense”と“Extend”を同時に選べないように変更。
     </UL>
   <LI>
 <!--3-Feb-2004-->
     2004年2月3日
     <UL>
       <LI>
-	Point Info dlg crashed on the mac
+<!--	Point Info dlg crashed on the mac -->
+	Mac で、点の情報ダイアログがクラッシュを引き起こしていました。
       <LI>
-	Add UI control over Mac Style through the Font Info dlg
+<!--	Add UI control over Mac Style through the Font Info dlg -->
+	フォント情報ダイアログに Mac Stle を制御できる UI を追加。
       <LI>
-	more prep work for mm fonts
+<!--	more prep work for mm fonts -->
+	マルチプルマスターフォントの prep テーブルに関する追加作業。
     </UL>
   <LI>
 <!--2-Feb-2004-->
     2004年2月2日
     <UL>
       <LI>
-	Generating a postscript font from a database with quadratic splines didn't
-	work
+<!--	Generating a postscript font from a database with quadratic splines didn't
+	work -->
+	2 次スプラインを含むデータベースからの PostScript フォントの出力が動作していませんでした。
       <LI>
-	FontForge crashed on a font with two /CharStrings entries
+<!--	FontForge crashed on a font with two /CharStrings entries -->
+	/CharStrings が 2 個含まれるフォントを読むと FontForge がクラッシュしていました。
       <LI>
-	Small tweak to menubar behavior given left/right arrow (for Werner)
+<!--	Small tweak to menubar behavior given left/right arrow (for Werner) -->
+	左/右向き矢印を押した時のメニューバーのふるまいを (Werner のために) 微調整。
       <LI>
-	Composite glyphs created with seac (type1) had the wrong transformation for
-	the accent.
+<!--	Composite glyphs created with seac (type1) had the wrong transformation for
+	the accent. -->
+	seac (Type1 の) つきで作成された複合グリフにおいて、アクセントの変形が間違っていました。
       <LI>
-	more prep work for mm fonts
+<!--	more prep work for mm fonts -->
+	マルチプルマスターフォントの prep テーブルの追加作業。
       <LI>
-	Still have problems with ttf point counts
+<!--	Still have problems with ttf point counts -->
+	TTF の点の個数をまだ数え間違えていました。
       <LI>
-	If a user loaded a ttf file and made it monospace and then generated it as
-	ttf, all glyphs except the .notdef had an advance width of 0
+<!--	If a user loaded a ttf file and made it monospace and then generated it as
+	ttf, all glyphs except the .notdef had an advance width of 0 -->
+	ユーザが TTF を読み込んで等幅に設定し、それから TTF として出力すると、.notdef 以外の文字の送り幅がすべて 0 になっていました。
     </UL>
   <LI>
 <!--1-Feb-2004-->
     2004年2月1日
     <UL>
       <LI>
-	sfd reader had a bug. Went into an infinite loop if a hintmask contained
-	any of the characters [a-fA-F].
+<!--	sfd reader had a bug. Went into an infinite loop if a hintmask contained
+	any of the characters [a-fA-F]. -->
+	SFD 読み込みルーチンにバグがありました。ヒントマスクに文字 [a-fA-F] のいずれかの文字が含まれていると無限ループに陥っていました。
     </UL>
   <LI>
 <!--31-Jan-2004-->
     2004年1月31日
     <UL>
       <LI>
-	In Type2 output, when putting a glyph into a subroutine, if that glyph had
+<!--	In Type2 output, when putting a glyph into a subroutine, if that glyph had
 	no conflicts but had a hintmask fontforge produced a bad font (which crashed
-	FontForge when it tried to read it in).
+	FontForge when it tried to read it in). -->
+	Type2 の出力において、グリフをサブルーチンに登録するときに、そのグリフに衝突がなく、かつ 1 個のヒントマスクが存在したとき、FontForge は不正なフォントを出力していました (FontForge がそれを再び読み込もうとするとクラッシュしていました)。
       <LI>
-	configure script still wasn't working on solaris (or mac with libiconv probably)
+<!--	configure script still wasn't working on solaris (or mac with libiconv probably) -->
+	configure スクリプトがまだ Solaris で動作していませんでした (libiconv を含む Mac でもおそらく同様でしょう)。
     </UL>
   <LI>
 <!--30-Jan-2004-->
     2004年1月30日
     <UL>
       <LI>
-	The kerning state machine addition broke the indic state machine dialog
+<!--	The kerning state machine addition broke the indic state machine dialog -->
+	カーニング状態機械の追加により、インド系文字の状態機械ダイアログが壊されていました。
       <LI>
-	The mac docs claim that the 'feat' table should be sorted by feature id.
+<!--	The mac docs claim that the 'feat' table should be sorted by feature id.
 	But if you do this WorldText can't find features. All Apple fonts seem to
 	be sorted by the order the features are used in the 'morx' table's chains.
-	WorldText works if you do this.
+	WorldText works if you do this. -->
+	Mac の文書は、&lsquo;feat&rsquo;テーブルは機能 ID 順にソートされていなければならないと主張します。しかし、その通りにすると WorldText はそれらの機能を検出することができません。どの Apple フォントでも、機能が&lsquo;morx&rsquo;テーブルの連鎖で使用される順番に従ってソートされているようです。その通りにすると WorldText は動作します。
       <LI>
-	Yannis proposed several extensions to the State Machine editor, most notably
-	the ability to move the edit dialog with Up/Down/Left/Right buttons.
+<!--	Yannis proposed several extensions to the State Machine editor, most notably
+	the ability to move the edit dialog with Up/Down/Left/Right buttons. -->
+	状態マシンエディタへのいくつかの拡張を Yannis が提案しました。とくに重要なのは、編集ダイアログの中で Up/Down/Left/Right ボタンで移動できる機能です。
       <LI>
-	I had the feature settings for Linguistic Rearrangement and Vertical Subs.
-	reversed.
+<!--	I had the feature settings for Linguistic Rearrangement and Vertical Subs.
+	reversed. -->
+	「言語学的再配置」と「縦書き置換」の機能設定が逆になっていました。
       <LI>
-	In some cases I wasn't outputting anything to turn a feature off.
+<!--	In some cases I wasn't outputting anything to turn a feature off. -->
+	機能をオフにするための出力を何も行っていない場合がいくつかありました。
       <LI>
-	Fixed many problems with kerning state machine dlg
+<!--	Fixed many problems with kerning state machine dlg -->
+	カーニング状態機械ダイアログに関する多くの問題を修正。
       <LI>
-	Fixed several problems with insertion state machines
+<!--	Fixed several problems with insertion state machines -->
+	挿入状態機械に関するいくつかの問題を修正。
       <LI>
-	Fixed several problems with reading in state machines.
+<!--	Fixed several problems with reading in state machines. -->
+	状態機械の読み込みに関するいくつかの問題を修正。
       <LI>
-	Added SetMacStyle() to give the user control over how mac families are built.
+<!--	Added SetMacStyle() to give the user control over how mac families are built. -->
+	Mac ファミリーの構築方法を制御するための SetMacStyle() コマンドを追加。
       <LI>
-	Added a fflush after doing Print()s in scripting
+<!--	Added a fflush after doing Print()s in scripting -->
+	スクリプト処理内の Print() を行った後に fflush の呼び出しを追加。
       <LI>
-	FontForge would crash when given an extremely long real number in a cff
-	dictionary (in this case the font itself was in error)
+<!--	FontForge would crash when given an extremely long real number in a cff
+	dictionary (in this case the font itself was in error) -->
+	CFF 辞書が極端に桁数の多い実数値を含んでいると、FontForge がクラッシュしていました (この場合、フォントそのものが間違っていますが)。
       <LI>
-	FontForge did not copy a bitmap character's width when it copied the bitmap.
+<!--	FontForge did not copy a bitmap character's width when it copied the bitmap. -->
+	FontForge は、ビットマップからのコピーを行った時にビットマップ文字の幅をコピーしていませんでした。
       <LI>
-	Char Info didn't handle pairwise positioning properly.
+<!--	Char Info didn't handle pairwise positioning properly. -->
+	グリフ情報ダイアログがペア単位の位置指定を正しく取り扱っていませんでした。
       <LI>
-	Some more pangrams from
+<!--	Some more pangrams from
 	<A HREF="http://shair.net/misc/txt/pangram.en">http://shair.net/misc/txt/pangram.en</A>
-	(link provided by David Shaal)
+	(link provided by David Shaal) -->
+	<A HREF="http://shair.net/misc/txt/pangram.en">http://shair.net/misc/txt/pangram.en</A> (David Shaal の提供した情報によるリンク) から、追加の全文字使用文を追加。
       <LI>
-	My old approach to hint substitution caused problems with multiple master
+<!--	My old approach to hint substitution caused problems with multiple master
 	fonts. So now I keep track of which points are substitution points and what
 	the hint masks are at those points. There is a new command which will
 	automatically figure out these points, and the user may control them directly
@@ -282,152 +342,201 @@
 	masks in from otf file (I did not implement this for type1s), there is a
 	new command to try and make a guess as to what they should be, and the user
 	may control them directly through Element-&gt;Char Info. (new scripting commands,
-	SubstitutionPoints() and AutoCounter() do the obvious).
+	SubstitutionPoints() and AutoCounter() do the obvious). -->
+	ヒント置換に関する私の以前のアプローチは、マルチプルマスターフォントで問題を引き起こしていました。そういうわけで、どの点が置換点で、その点にはどのヒントマスクがあるのかを記録しておくように変更しました。それらの点を自動的に検出する新しいコマンドを追加したので、ユーザが点の情報ダイアログ (エレメント→情報を得る) でそれを直接制御できるようになりました。それと同時に、同様の事がカウンタマスクに対しても可能になるようにする必要がある事に気づいたので、FontForeg はカウンタマスクを OTF ファイルから読み込みます (Type1 に対してはこれを実装していません)。新しいコマンドは、正しい値について推測を行い、ユーザはそれをエレメント→グリフ情報で直接編集できます (新しいスクリプトコマンド SubstitutionPoints() と AutoCounter() はその名のとおりの処理を行います)。
       <LI>
-	Added a Hints-&gt;Don't AutoHint command to mark a character as having hints
+<!--	Added a Hints-&gt;Don't AutoHint command to mark a character as having hints
 	the user likes which should not be modified until the user explicitly calls
-	AutoHint(). (and a matching scripting command).
+	AutoHint(). (and a matching scripting command). -->
+	ある文字がユーザの思い通りのヒントを含んでいて、ユーザが自分で AutoHint() を呼ぶまでは更新してはならないことを表す ヒント(H)→自動ヒントを停止(D) コマンド (と、それに対応するスクリプトコマンド) を追加。
       <LI>
-	Added ability to control whether a PostScript font (type1&amp;type2) is output
-	with rounding.
+<!--	Added ability to control whether a PostScript font (type1&amp;type2) is output
+	with rounding. -->
+	PostScript フォント (Type1 と Type2) を出力時に座標を丸めるかを制御する機能を追加。
       <LI>
-	FontForge could generate a bad 'post' table for bitmap only fonts.
+<!--	FontForge could generate a bad 'post' table for bitmap only fonts. -->
+	FontForge は、ビットマップのみのフォントに対し、壊れた&lsquo;post&rsquo;テーブルを出力する可能性がありました。
       <LI>
-	FontForge didn't allow you to create two pairwise positioning items with
-	the same tag.
+<!--	FontForge didn't allow you to create two pairwise positioning items with
+	the same tag. -->
+	FontForge では、同じタグを含むペア単位の位置指定を 2 つ作成することができませんでした。
       <LI>
-	Hungarian names for mac features and for some standard names like "Bold",
-	etc. provided by Laszlo Karoly.
+<!--	Hungarian names for mac features and for some standard names like "Bold",
+	etc. provided by Laszlo Karoly. -->
+	Mac の機能名と“Bold”などのいくつかの標準的な名称のハンガリー語訳を追加。Laszlo Karoly の提供。
       <LI>
-	Pierre HANSER noticed that if FontForge mapped a single glyph to two encodings
-	then bitmap generation through freetype got confused.
+<!--	Pierre HANSER noticed that if FontForge mapped a single glyph to two encodings
+	then bitmap generation through freetype got confused. -->
+	FontForge が 1 個の文字に 2 つのエンコーディングを対応させているとき、FreeType を用いたビットマップ生成が混乱を来していることに Pierre HANSER が気づきました。
       <LI>
-	If a font contained a non-.notdef character at encoding 0, then generating
-	an opentype font from it had a fair chance of crashing.
+<!--	If a font contained a non-.notdef character at encoding 0, then generating
+	an opentype font from it had a fair chance of crashing. -->
+	フォントのエンコーディング 0 に .notdef 以外の文字が含まれていると、それから OpenType フォントを生成した時にかなりの高率でクラッシュしていました。
       <LI>
-	Added a couple of new select menu items: Select-&gt;Contours, Select-&gt;First
-	Point, Next Contour
+<!--	Added a couple of new select menu items: Select-&gt;Contours, Select-&gt;First
+	Point, Next Contour -->
+	選択に関するメニュー項目を 2 個追加: 選択(S)→輪郭全体(C)、選択→最初の端点(F), 次の端点(N)。
       <LI>
-	Added a new sub-menu to allow ordering contours within a glyph. This is almost
+<!--	Added a new sub-menu to allow ordering contours within a glyph. This is almost
 	totally useless (the final look of the character should not be affected by
 	the order in which the contours are drawn), but for multiple master fonts,
-	the contour list must have the same ordering in corresponding glyphs.
+	the contour list must have the same ordering in corresponding glyphs. -->
+	文字内の輪郭の順序を設定することができるサブメニューを追加。これはほとんど無意味 (最終的な文字の表示は、それを構成する輪郭をどの順序で描画したかには影響されないはず) ですが、マルチプルマスターフォントにおいては、対応するグリフ内では輪郭リストの順序が同じでなければなりません。
     </UL>
   <LI>
 <!--11-Jan-2003-->
-    2003年1月11日
+    2004年1月11日
     <UL>
       <LI>
-	A patch for reading broken mac tables got lost. I've reinstated it.
+<!--	A patch for reading broken mac tables got lost. I've reinstated it. -->
+	壊れた Mac テーブルからの読み込みに関するパッチが失われていたので、パッチを当て直しました。
     </UL>
   <LI>
 <!--10-Jan-2003-->
-    2003年1月10日
+    2004年1月10日
     <UL>
       <LI>
-	FontForge would crash when asked to use the truetype debugger on fpgm
+<!--	FontForge would crash when asked to use the truetype debugger on fpgm -->
+	TrueType デバッガを fpgm に適用しようとすると FontForge がクラッシュを起こしていました。
       <LI>
-	FontForge always coloured the background of debugger windows grey.
+<!--	FontForge always coloured the background of debugger windows grey. -->
+	FontForge デバッガウィンドウの背景色が常に灰色になっていました。
       <LI>
-	The Points window did not show any points.
+<!--	The Points window did not show any points. -->
+	点ウィンドウがまったく点を表示していませんでした。
       <LI>
-	Changed the Points window and the character view to show whether a point
-	has a watch point set on it.
+<!--	Changed the Points window and the character view to show whether a point
+	has a watch point set on it. -->
+	点ウィンドウを変更し、グリフビューで、個別の点にウォッチポイントが設定されているかどうかを表示するようにしました。
       <LI>
-	Display the code range ('fpgm'/'prep'/Glyph) in the character's info line
-	when debugging.
+<!--	Display the code range ('fpgm'/'prep'/Glyph) in the character's info line
+	when debugging. -->
+	グリフのデバッグ中に情報表示行にコード範囲 (&lsquo;fpgm&rsquo;/&lsquo;prep&rsquo;/グリフ) を表示するようにしました。
       <LI>
-	When creating a 'fpgm'/'prep' table we created one with some garbage instructions
-	in it.
+<!--	When creating a 'fpgm'/'prep' table we created one with some garbage instructions
+	in it. -->
+	&lsquo;fpgm&rsquo;/&lsquo;prep&rsquo; テーブルの作成時に、ゴミ命令が含まれたテーブルを作っていました。
       <LI>
-	Somehow I neglected to put in a dlg for editing the 'cvt ' table. This has
-	been rectified.
+<!--	Somehow I neglected to put in a dlg for editing the 'cvt ' table. This has
+	been rectified. -->
+	なぜだか、&lsquo;cvt &rsquo;テーブル編集用のダイアログを入れ忘れていました。修正しました。
       <LI>
-	There was a bug in the postscript interpreter (the thing used for reading
+<!--	There was a bug in the postscript interpreter (the thing used for reading
 	.eps files and type3 fonts) and transforming a point by a matrix with diagonal
-	entries (rotation, skew, etc.) gave the wrong value.
+	entries (rotation, skew, etc.) gave the wrong value. -->
+	PostScript インタプリタ (の、.eps ファイルと Type フォントの読み込みに用いる部分) にバグがあり、斜め成分を持った変換行列 (回転・傾きなど) で点を座標変換すると間違った値を返していました。
       <LI>
-	Added code to preserve more of the PS graphic state when eps file does a
-	gsave
+<!--	Added code to preserve more of the PS graphic state when eps file does a
+	gsave -->
+	EPS ファイルが gsave を行う時により多くの PS グラフィック状態を保存するためのコードを追加。
       <LI>
-	Merge Fonts would crash when merging a font with references into an empty
-	font
+<!--	Merge Fonts would crash when merging a font with references into an empty
+	font -->
+	フォントの併合(M) が、空のフォントへの参照を含むフォントを併合するとクラッシュしていました。
       <LI>
-	I wasn't providing default values for width/weight classes in the OS/2 table
+<!--	I wasn't providing default values for width/weight classes in the OS/2 table -->
+	OS/2 テーブルの幅/ウェイトクラスにデフォルト値を設定していませんでした。
       <LI>
-	The bitmap dlg could write one byte beyond the area allocated in some cases.
+<!--	The bitmap dlg could write one byte beyond the area allocated in some cases. -->
+	いくつかの場合に、ビットマップダイアログが割り付けたメモリより 1 バイト多く書き込む可能性がありました。
       <LI>
-	Changed the outline character popup menu to include an Add Anchor Point entry
+<!--	Changed the outline character popup menu to include an Add Anchor Point entry -->
+	アウトライン文字ポップアップメニューを変更し、「アンカーポイントを追加」という項目を追加。
       <LI>
-	The Ligature index wasn't correctly enabled in some cases.
+<!-	The Ligature index wasn't correctly enabled in some cases. -->
+	合字インデックスが正しく設定されない場合がいくつかありました。
       <LI>
-	Add little arrows near the first point of each contour (in the outline character
-	view) showing the direction of the contour.
+<!--	Add little arrows near the first point of each contour (in the outline character
+	view) showing the direction of the contour. -->
+	(アウトライングリフビューの) 各輪郭の最初の点のそばに、輪郭の向きを表す小さな矢印を追加
       <LI>
-	The mac's interpretation of the CFF spec is very picky, but correct. If a
+<!--	The mac's interpretation of the CFF spec is very picky, but correct. If a
 	font contained no references then FontForge would generate an empty subroutine
 	index. This is wrong. There should be no subroutine index, rather than an
 	empty one. (Strangely, global subroutines have the reverse requirement. Stupid).
 	Now if there are no references, then FontForge will not generate a local
-	subroutine index.
+	subroutine index. -->
+	Mac は、CFF の仕様を非常に厳格に、しかし正しく解釈しています。フォントが参照を含まない場合、FontForge は空のサブルーチンインデックスを出力していました。これは間違いでした。空のサブルーチンインデックスを書き出すのではなく、一切書き出さないのが正しいのです (奇妙なことに、グローバルサブルーチンはその反対でなければなりません。腐ってますねえ)。参照が存在しない場合、ローカルサブルーチンを出力しないように FontForge を変更しました。
       <LI>
-	Yannis Haralambous has corrected the French UI.
+<!--	Yannis Haralambous has corrected the French UI. -->
+	Yannis Haralambous がフランス語の UI を修正しました。
       <LI>
-	Three new scripting commands: AddAnchorClass, AddAnchorPoint, RemoveAnchorClass
+<!--	Three new scripting commands: AddAnchorClass, AddAnchorPoint, RemoveAnchorClass -->
+	新しいスクリプトコマンドを 3 つ追加: AddAnchorClass(), AddAnchorPoint(), RemoveAnchorClass()。
       <LI>
-	Show ATT did not show glyph classes properly.
+<!--	Show ATT did not show glyph classes properly. -->
+	ATTを表示(S)はグリフクラスを正しく表示していませんでした。
       <LI>
-	Made scripting dlg be resizable.
+<!--	Made scripting dlg be resizable. -->
+	スクリプトダイアログをサイズ可変にしました。
       <LI>
-	Save As &amp; Import dlgs looked bad in French. Various other improvements
-	to make things look better on non-english systems.
+<!--	Save As &amp; Import dlgs looked bad in French. Various other improvements
+	to make things look better on non-english systems. -->
+	ファイル名を指定して保存(A) と 取り込み(I) の両ダイアログはフランス語での見栄か箍編でした。非英語システムでの見栄えが向上するためのその他の改良を多数行いました。
       <LI>
-	Added the ability to set the glyph class from Char Info.
+<!-- 	Added the ability to set the glyph class from Char Info. -->
+	グリフ情報ダイアログでグリフクラスを設定できる機能を追加。
       <LI>
-	FontsInFile did not work on pfb files (nor on cff)
+<!--	FontsInFile did not work on pfb files (nor on cff) -->
+	FontsInFile() は PFB ファイル (と、CFF) で動いていませんでした。
       <LI>
-	Opening a mac resource file with multiple FONDs from a script would crash.
+<!--	Opening a mac resource file with multiple FONDs from a script would crash. -->
+	複数の FOND をもつ Mac リソースファイルをスクリプトから開くとクラッシュしていました。
       <LI>
-	In Font Info-&gt;TTF Names the languages now appear in unicode ordering no
+<!--	In Font Info-&gt;TTF Names the languages now appear in unicode ordering no
 	matter what the locale (used to be the langs were in alphabetical ordering
-	for English, even if they were actually French)
+	for English, even if they were actually French) -->
+	フォント情報(I)→[TTF名] で、ロケール名によらず言語を Unicode 順に並べるようにしました (今までは言語は、たとえフランス語ロケールであったとしても、英語でのアルファベット順に並べられていました)。
     </UL>
   <LI>
 <!--2-Jan-2004-->
     2004年1月2日
     <UL>
       <LI>
-	More accurate round joints in stroking.
+<!--	More accurate round joints in stroking. -->
+	ストローク処理で線の接合部の丸めの精度を向上。
       <LI>
-	Better approximations to splines which turn through 180 degrees or more
+<!--	Better approximations to splines which turn through 180 degrees or more -->
+	180°以上転回するスプラインの近似を改善。
       <LI>
-	Support for reading cff files.
+<!--	Support for reading cff files. -->
+	CFF ファイルの読み込みをサポート。
       <LI>
-	Yet more problems counting ttf points
+<!--	Yet more problems counting ttf points -->
+	TTF の点の数え方にまだ問題がありました。
       <LI>
-	Update copyright notices.
+<!--	Update copyright notices. -->
+	著作権表示を更新。
       <LI>
-	Add code to protect FontForge against reading bad Apple lookup tables (I
+<!--	Add code to protect FontForge against reading bad Apple lookup tables (I
 	think the Zapfino.dfont that ships with 10.3 has two bad lookups, but perhaps
-	I just don't understand them).
+	I just don't understand them). -->
+	FontForge が不正な Apple 照合テーブルを読んだ時の保護コードを追加 (私が思うには、10.3 付属の Zapfino.dfont には 2 個の不正な照合が含まれていると思いますが、私が単に仕様を誤解しているだけの可能性が高いです)。
       <LI>
-	Try harder to avoid using 'DFLT' script when coming up with a default script
-	for glyphs with no innate script.
+<!--	Try harder to avoid using 'DFLT' script when coming up with a default script
+	for glyphs with no innate script. -->
+	本来的な用字系を持たないグリフに対するデフォルト用字系に&lsquo;DFLT&rsquo;用字系を使用するのを避ける場合を以前より増やしてみました。
       <LI>
-	Add a Find Problems to detect 'DFLT'
+<!--	Add a Find Problems to detect 'DFLT' -->
+	問題点を発見 ダイアログに&lsquo;DFLT&rsquo;の検出を追加。
       <LI>
-	I've been generating bad Simple Positioning subtables for GPOS all along.
+<!--	I've been generating bad Simple Positioning subtables for GPOS all along. -->
+	ずっと以前から、不正な GPOS 単純位置指定サブテーブルを出力していました。
       <LI>
-	Be pickier about what glyph names I let the user choose.
+<!--	Be pickier about what glyph names I let the user choose. -->
+	ユーザが設定するグリフ名のチェックの厳格化。
       <LI>
-	On cygwin (perhaps elsewhere, but I was never able to find the bug elsewhere)
+<!--	On cygwin (perhaps elsewhere, but I was never able to find the bug elsewhere)
 	if you invoked one command from the menu while another was still executing,
-	then fontforge would probably crash.
+	then fontforge would probably crash. -->
+	Cygwin 上では (おそらく他でもそうでしょうが、私は今まで他のどこでもこのバグに気づきませんでした)、他のコマンド実行が終わっていないうちにメニューからコマンドを起動すると、FontForge がほぼ確実にクラッシュしていました。
       <LI>
-	Support for reading and writing bare cff files.
+<!--	Support for reading and writing bare cff files. -->
+	裸の CFF ファイルの読み書きをサポート。
       <LI>
-	Build Accents crashed when asked to build accented chars for iacute, etc.
-	in a font without dotlessi.
+<!--	Build Accents crashed when asked to build accented chars for iacute, etc.
+	in a font without dotlessi. -->
+	アクセントつき文字の構築(B) は、dotlessi が含まれていないフォントで iacute 等のアクセントつき文字を構築しようとするとクラッシュしていました。
     </UL>
   <LI>
 <!--28-Dec-2003-->
