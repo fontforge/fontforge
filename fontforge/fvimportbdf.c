@@ -408,12 +408,14 @@ return( enc );
 static int slurp_header(FILE *bdf, int *_as, int *_ds, Encoding **_enc,
 	char *family, char *mods, char *full, int *depth, char *foundry,
 	char *fontname, char *comments, struct metrics *defs,
-	int *upos, int *uwidth) {
+	int *upos, int *uwidth, BDFFont *dummy) {
     int pixelsize = -1;
     int ascent= -1, descent= -1, enc, cnt;
-    char tok[100], encname[100], weight[100], italic[100];
+    char tok[100], encname[100], weight[100], italic[100], buffer[300], *buf;
     int ch;
     int found_copyright=0;
+    int inprops=false;
+    int pcnt=0, pmax=0;
 
     *depth = 1;
     encname[0]= '\0'; family[0] = '\0'; weight[0]='\0'; italic[0]='\0'; full[0]='\0';
@@ -427,21 +429,62 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, Encoding **_enc,
 #endif
     break;
 	}
+	if ( strcmp(tok,"STARTPROPERTIES")==0 ) {
+	    int cnt;
+	    inprops = true;
+	    fscanf(bdf, "%d", &cnt );
+	    if ( pcnt+cnt>=pmax )
+		dummy->props = grealloc(dummy->props,(pmax=pcnt+cnt)*sizeof(BDFProperties));
+	    /* But it isn't a property itself */
+    continue;
+	} else if ( strcmp(tok,"ENDPROPERTIES")==0 ) {
+	    inprops = false;
+    continue;
+	}
+	fgets(buffer,sizeof(buffer),bdf );
+	buf = buffer;
+	{
+	    int val;
+	    char *end, *eol;
+
+	    if ( pcnt>=pmax )
+		dummy->props = grealloc(dummy->props,(pmax=pcnt+10)*sizeof(BDFProperties));
+	    dummy->props[pcnt].name = copy(tok);
+	    while ( *buf==' ' || *buf=='\t' ) ++buf;
+	    for ( eol=buf+strlen(buf)-1; eol>=buf && isspace(*eol); --eol);
+	    eol[1] ='\0';
+	    val = strtol(buf,&end,10);
+	    if ( *end=='\0' && buf<=eol ) {
+		dummy->props[pcnt].u.val = val;
+		dummy->props[pcnt].type = prt_int;
+	    } else if ( *buf=='"' ) {
+		++buf;
+		if ( *eol=='"' ) *eol = '\0';
+		dummy->props[pcnt].u.str = copy(buf);
+		dummy->props[pcnt].type = prt_string;
+	    } else {
+		dummy->props[pcnt].u.atom = copy(buf);
+		dummy->props[pcnt].type = prt_atom;
+	    }
+	    if ( inprops )
+		dummy->props[pcnt].type |= prt_property;
+	    ++pcnt;
+	}
+    
 	if ( strcmp(tok,"FONT")==0 ) {
-	    if ( fscanf(bdf," -%*[^-]-%[^-]-%[^-]-%[^-]-%*[^-]-", family, weight, italic )!=0 ) {
+	    if ( sscanf(buf,"-%*[^-]-%[^-]-%[^-]-%[^-]-%*[^-]-", family, weight, italic )!=0 ) {
 		while ( (ch = getc(bdf))!='-' && ch!='\n' && ch!=EOF );
 		if ( ch=='-' ) {
 		    fscanf(bdf,"%d", &pixelsize );
 		    if ( pixelsize<0 ) pixelsize = -pixelsize;	/* An extra - screwed things up once... */
 		}
 	    } else {
-		gettoken(bdf,tok,sizeof(tok));
-		if ( *tok!='\0' && !isdigit(*tok))
-		    strcpy(family,tok);
+		if ( *buf!='\0' && !isdigit(*buf))
+		    strcpy(family,buf);
 	    }
 	} else if ( strcmp(tok,"SIZE")==0 ) {
 	    int size, res;
-	    fscanf(bdf, "%d %d %d", &size, &res, &res );
+	    sscanf(buf, "%d %d %d", &size, &res, &res );
 	    if ( pixelsize==-1 )
 		pixelsize = rint( size*res/72.0 );
 	    while ((ch = getc(bdf))==' ' || ch=='\t' );
@@ -450,84 +493,62 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, Encoding **_enc,
 		fscanf(bdf, "%d", depth);
 	} else if ( strcmp(tok,"BITSPERPIXEL")==0 ||
 		strcmp(tok,"BITS_PER_PIXEL")==0 ) {
-	    fscanf(bdf, "%d", depth);
+	    sscanf(buf, "%d", depth);
 	} else if ( strcmp(tok,"QUAD_WIDTH")==0 && pixelsize==-1 )
-	    fscanf(bdf, "%d", &pixelsize );
+	    sscanf(buf, "%d", &pixelsize );
 	    /* For Courier the quad is not an em */
 	else if ( strcmp(tok,"RESOLUTION_X")==0 )
-	    fscanf(bdf, "%d", &defs->res );
+	    sscanf(buf, "%d", &defs->res );
 	else if ( strcmp(tok,"FONT_ASCENT")==0 )
-	    fscanf(bdf, "%d", &ascent );
+	    sscanf(buf, "%d", &ascent );
 	else if ( strcmp(tok,"FONT_DESCENT")==0 )
-	    fscanf(bdf, "%d", &descent );
+	    sscanf(buf, "%d", &descent );
 	else if ( strcmp(tok,"UNDERLINE_POSITION")==0 )
-	    fscanf(bdf, "%d", upos );
+	    sscanf(buf, "%d", upos );
 	else if ( strcmp(tok,"UNDERLINE_THICKNESS")==0 )
-	    fscanf(bdf, "%d", uwidth );
+	    sscanf(buf, "%d", uwidth );
 	else if ( strcmp(tok,"SWIDTH")==0 )
-	    fscanf(bdf, "%d", &defs->swidth );
+	    sscanf(buf, "%d", &defs->swidth );
 	else if ( strcmp(tok,"SWIDTH1")==0 )
-	    fscanf(bdf, "%d", &defs->swidth1 );
+	    sscanf(buf, "%d", &defs->swidth1 );
 	else if ( strcmp(tok,"DWIDTH")==0 )
-	    fscanf(bdf, "%d", &defs->dwidth );
+	    sscanf(buf, "%d", &defs->dwidth );
 	else if ( strcmp(tok,"DWIDTH1")==0 )
-	    fscanf(bdf, "%d", &defs->dwidth1 );
+	    sscanf(buf, "%d", &defs->dwidth1 );
 	else if ( strcmp(tok,"METRICSSET")==0 )
-	    fscanf(bdf, "%d", &defs->metricsset );
+	    sscanf(buf, "%d", &defs->metricsset );
 	else if ( strcmp(tok,"VVECTOR")==0 )
-	    fscanf(bdf, "%*d %d", &defs->vertical_origin );
+	    sscanf(buf, "%*d %d", &defs->vertical_origin );
 	else if ( strcmp(tok,"FOUNDRY")==0 )
-	    fscanf(bdf, " \"%[^\"]", foundry );
+	    sscanf(buf, "%[^\"]", foundry );
 	else if ( strcmp(tok,"FONT_NAME")==0 )
-	    fscanf(bdf, " \"%[^\"]", fontname );
+	    sscanf(buf, "%[^\"]", fontname );
 	else if ( strcmp(tok,"CHARSET_REGISTRY")==0 )
-	    fscanf(bdf, " \"%[^\"]", encname );
+	    sscanf(buf, "%[^\"]", encname );
 	else if ( strcmp(tok,"CHARSET_ENCODING")==0 ) {
 	    enc = 0;
-	    if ( fscanf(bdf, " \"%d", &enc )!=1 )
-		fscanf(bdf, "%d", &enc );
+	    if ( sscanf(buf, " %d", &enc )!=1 )
+		sscanf(buf, "%d", &enc );
 	} else if ( strcmp(tok,"FAMILY_NAME")==0 ) {
-	    ch = getc(bdf);
-	    ch = getc(bdf); ungetc(ch,bdf);
-	    fscanf(bdf, " \"%[^\"]", family );
+	    strcpy(family,buf);
 	} else if ( strcmp(tok,"FULL_NAME")==0 ) {
-	    ch = getc(bdf);
-	    ch = getc(bdf); ungetc(ch,bdf);
-	    fscanf(bdf, " \"%[^\"]", full );
+	    strcpy(full,buf);
 	} else if ( strcmp(tok,"WEIGHT_NAME")==0 )
-	    fscanf(bdf, " \"%[^\"]", weight );
+	    strcpy(weight,buf);
 	else if ( strcmp(tok,"SLANT")==0 )
-	    fscanf(bdf, " \"%[^\"]", italic );
+	    strcpy(italic,buf);
 	else if ( strcmp(tok,"COPYRIGHT")==0 ) {
-	    char *pt = comments;
-	    char *eoc = comments+1000-1;
-	    while ((ch=getc(bdf))==' ' || ch=='\t' );
-	    if ( ch=='"' ) ch = getc(bdf);
-	    while ( ch!='\n' && ch!='\r' && ch!=EOF ) {
-		if ( pt<eoc )
-		    *pt++ = ch;
-		ch = getc(bdf);
-	    }
-	    if ( pt>comments && pt[-1]=='\"' ) --pt;
-	    *pt = '\0';
-	    ungetc('\n',bdf);
+	    strcpy(comments,buf);
 	    found_copyright = true;
 	} else if ( strcmp(tok,"COMMENT")==0 && !found_copyright ) {
 	    char *pt = comments+strlen(comments);
 	    char *eoc = comments+1000-1;
-	    while ((ch=getc(bdf))==' ' || ch=='\t' );
-	    while ( ch!='\n' && ch!='\r' && ch!=EOF ) {
-		if ( pt<eoc )
-		    *pt++ = ch;
-		ch = getc(bdf);
-	    }
-	    if ( pt<eoc )
-		*pt++ = '\n';
-	    *pt = '\0';
-	    ungetc('\n',bdf);
+	    strncpy(pt,buf,eoc-pt);
+	    *eoc ='\0';
 	}
-	while ( (ch=getc(bdf))!='\n' && ch!='\r' && ch!=EOF );
     }
+    dummy->prop_cnt = pcnt;
+
     if ( pixelsize==-1 && ascent!=-1 && descent!=-1 )
 	pixelsize = ascent+descent;
     else if ( pixelsize!=-1 ) {
@@ -1315,7 +1336,7 @@ return( true );
 }
 
 static int pcf_properties(FILE *file,struct toc *toc, int *_as, int *_ds,
-	Encoding **_enc, char *family, char *mods, char *full) {
+	Encoding **_enc, char *family, char *mods, char *full, BDFFont *dummy) {
     int pixelsize = -1;
     int ascent= -1, descent= -1, enc=0;
     char encname[100], weight[100], italic[100];
@@ -1351,8 +1372,16 @@ return(-2);
     }
 
     /* the properties here are almost exactly the same as the bdf ones */
+    /* except that FONT is a pcf property, and SIZE etc. aren't mentioned */
+
+    dummy->prop_cnt = cnt;
+    dummy->props = galloc(cnt*sizeof(BDFProperties));
+
     for ( i=0; i<cnt; ++i ) {
+	dummy->props[i].name = copy(props[i].name);
 	if ( props[i].isStr ) {
+	    dummy->props[i].u.str = copy(props[i].value);
+	    dummy->props[i].type  = prt_string | prt_property;
 	    if ( strcmp(props[i].name,"FAMILY_NAME")==0 )
 		strcpy(family,props[i].value);
 	    else if ( strcmp(props[i].name,"WEIGHT_NAME")==0 )
@@ -1366,6 +1395,7 @@ return(-2);
 	    else if ( strcmp(props[i].name,"CHARSET_ENCODING")==0 )
 		enc = strtol(props[i].value,NULL,10);
 	    else if ( strcmp(props[i].name,"FONT")==0 ) {
+		dummy->props[i].type = prt_atom;
 		if ( sscanf(props[i].value,"-%*[^-]-%[^-]-%[^-]-%[^-]-%*[^-]-",
 			family, weight, italic )!=0 ) {
 		    for ( pt = props[i].value, dash_cnt=0; *pt && dash_cnt<7; ++pt )
@@ -1375,6 +1405,8 @@ return(-2);
 		}
 	    }
 	} else {
+	    dummy->props[i].u.val = props[i].val;
+	    dummy->props[i].type  = prt_int | prt_property;
 	    if ( strcmp(props[i].name,"PIXEL_SIZE")==0 ||
 		    ( pixelsize==-1 && strcmp(props[i].name,"QUAD_WIDTH")==0 ))
 		pixelsize = props[i].val;
@@ -1757,6 +1789,44 @@ return( ret );
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
+static void BDFForceEnc(SplineFont *sf, EncMap *map) {
+/* jisx0208, jisx0212, ISO10646, ISO8859 */
+    int i;
+    BDFFont *bdf = sf->bitmaps;
+    static struct bdf_2_ff_enc { char *bdf, *ff; } bdf_2_ff_enc[] = {
+	/* A map between bdf encoding names and my internal ones */
+	{ "iso10646", "unicode" },
+	{ "unicode", "unicode" },
+	{ "jisx0208", "jis208" },
+	{ "jisx0212", "jis212" },
+	{ "jisx0201", "jis201" },
+	{ NULL }};
+    char *fn, *pt;
+    Encoding *enc;
+
+    for ( i=0; i<bdf->prop_cnt; ++i )
+	if ( strcmp("FONT",bdf->props[i].name)==0 )
+    break;
+    if ( i==bdf->prop_cnt || (bdf->props[i].type&~prt_property)==prt_int ||
+	    (bdf->props[i].type&~prt_property)==prt_uint )
+return;
+    fn = bdf->props[i].u.str;
+    for ( pt = fn+strlen(fn)-1; pt>fn && *pt!='-'; --pt );
+    for ( --pt; pt>fn && *pt!='-'; --pt );
+    enc = NULL;
+    if ( pt>fn )
+	enc = FindOrMakeEncoding(pt+1);
+    if ( enc==NULL ) {
+	for ( i=0; bdf_2_ff_enc[i].bdf!=NULL; ++i )
+	    if ( strstrmatch(bdf->props[i].u.str,bdf_2_ff_enc[i].bdf)!=NULL ) {
+		enc = FindOrMakeEncoding(bdf_2_ff_enc[i].ff);
+	break;
+	    }
+    }
+    if ( enc!=NULL )
+	SFForceEncoding(sf,map,enc);
+}
+
 static BDFFont *SFImportBDF(SplineFont *sf, char *filename,int ispk, int toback,
 	EncMap *map) {
     FILE *bdf;
@@ -1769,6 +1839,10 @@ static BDFFont *SFImportBDF(SplineFont *sf, char *filename,int ispk, int toback,
     int depth=1;
     struct metrics defs;
     int upos= (int) 0x80000000, uwidth = (int) 0x80000000;
+    BDFFont dummy;
+    int ch;
+
+    memset(&dummy,0,sizeof(dummy));
 
     defs.swidth = defs.swidth1 = -1; defs.dwidth=defs.dwidth1=0;
     defs.metricsset = 0; defs.vertical_origin = 0;
@@ -1804,7 +1878,7 @@ return( NULL );
 	    gwwv_post_error(_("Not a pcf file"), _("Not an X11 pcf file %.200s"), filename );
 return( NULL );
 	}
-	pixelsize = pcf_properties(bdf,toc,&ascent,&descent,&enc,family,mods,full);
+	pixelsize = pcf_properties(bdf,toc,&ascent,&descent,&enc,family,mods,full,&dummy);
 	if ( pixelsize==-2 ) {
 	    fclose(bdf); free(toc);
 	    gwwv_post_error(_("Not a pcf file"), _("Not an X11 pcf file %.200s"), filename );
@@ -1816,8 +1890,9 @@ return( NULL );
 	    gwwv_post_error(_("Not a bdf file"), _("Not a bdf file %.200s"), filename );
 return( NULL );
 	}
+	while ( (ch=getc(bdf))!='\n' && ch!='\r' && ch!=EOF );
 	pixelsize = slurp_header(bdf,&ascent,&descent,&enc,family,mods,full,
-		&depth,foundry,fontname,comments,&defs,&upos,&uwidth);
+		&depth,foundry,fontname,comments,&defs,&upos,&uwidth,&dummy);
 	if ( defs.dwidth == 0 ) defs.dwidth = pixelsize;
 	if ( defs.dwidth1 == 0 ) defs.dwidth1 = pixelsize;
     }
@@ -1857,6 +1932,7 @@ return( NULL );
     if ( b!=NULL ) {
 	if ( !alreadyexists(pixelsize)) {
 	    fclose(bdf); free(toc);
+	    BDFPropsFree(&dummy);
 return( NULL );
 	}
     }
@@ -1884,6 +1960,9 @@ return( NULL );
 	    SFOrderBitmapList(sf);
 	}
     }
+    BDFPropsFree(b);
+    b->prop_cnt = dummy.prop_cnt;
+    b->props = dummy.props;
     free(b->foundry);
     b->foundry = ( foundry[0]=='\0' ) ? NULL : copy(foundry);
     if ( ispk==1 ) {
@@ -1908,6 +1987,9 @@ return( NULL );
     }
     fclose(bdf); free(toc);
     sf->changed = true;
+    if ( sf->bitmaps!=NULL && sf->bitmaps->next==NULL && dummy.prop_cnt>0 &&
+	    map->enc == &custom )
+	BDFForceEnc(sf,map);
 return( b );
 }
 

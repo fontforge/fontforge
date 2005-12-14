@@ -924,21 +924,30 @@ static void SFDDumpBitmapChar(FILE *sfd,BDFChar *bfc, int enc,int *newgids) {
 static void SFDDumpBitmapFont(FILE *sfd,BDFFont *bdf,EncMap *encm,int *newgids) {
     int i;
 
-#if defined(FONTFORGE_CONFIG_GDRAW)
     gwwv_progress_next_stage();
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gwwv_progress_next_stage();
-#endif
     fprintf( sfd, "BitmapFont: %d %d %d %d %d %s\n", bdf->pixelsize, bdf->glyphcnt,
 	    bdf->ascent, bdf->descent, BDFDepth(bdf), bdf->foundry?bdf->foundry:"" );
+    if ( bdf->prop_cnt>0 ) {
+	fprintf( sfd, "BDFStartProperties: %d\n", bdf->prop_cnt );
+	for ( i=0; i<bdf->prop_cnt; ++i ) {
+	    fprintf(sfd,"%s %d ", bdf->props[i].name, bdf->props[i].type );
+	    switch ( bdf->props[i].type&~prt_property ) {
+	      case prt_int: case prt_uint:
+		fprintf(sfd, "%d\n", bdf->props[i].u.val );
+	      break;
+	      case prt_string: case prt_atom:
+		fprintf(sfd, "\"%s\"\n", bdf->props[i].u.str );
+	      break;
+	    }
+	}
+	fprintf( sfd, "BDFEndProperties\n" );
+    }
+    if ( bdf->res>20 )
+	fprintf( sfd, "Resolution: %d\n", bdf->res );
     for ( i=0; i<bdf->glyphcnt; ++i ) {
 	if ( bdf->glyphs[i]!=NULL )
 	    SFDDumpBitmapChar(sfd,bdf->glyphs[i],encm->backmap[i],newgids);
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	gwwv_progress_next();
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gwwv_progress_next();
-#endif
     }
     fprintf( sfd, "EndBitmapFont\n" );
 }
@@ -3036,6 +3045,36 @@ return( sc );
     }
 }
 
+static int SFDGetBitmapProps(FILE *sfd,BDFFont *bdf,char *tok) {
+    int pcnt;
+    int i;
+
+    if ( getint(sfd,&pcnt)!=1 || pcnt<=0 )
+return( 0 );
+    bdf->prop_cnt = pcnt;
+    bdf->props = galloc(pcnt*sizeof(BDFProperties));
+    for ( i=0; i<pcnt; ++i ) {
+	if ( getname(sfd,tok)!=1 )
+    break;
+	if ( strcmp(tok,"BDFEndProperties")==0 )
+    break;
+	bdf->props[i].name = copy(tok);
+	getint(sfd,&bdf->props[i].type);
+	switch ( bdf->props[i].type&~prt_property ) {
+	  case prt_int: case prt_uint:
+	    getint(sfd,&bdf->props[i].u.val);
+	  break;
+	  case prt_string: case prt_atom:
+	    geteol(sfd,tok);
+	    if ( tok[strlen(tok)-1]=='"' ) tok[strlen(tok)-1] = '\0';
+	    bdf->props[i].u.str = copy(tok[0]=='"'?tok+1:tok);
+	  break;
+	}
+    }
+    bdf->prop_cnt = i;
+return( 1 );
+}
+
 static int SFDGetBitmapChar(FILE *sfd,BDFFont *bdf) {
     BDFChar *bfc;
     struct enc85 dec;
@@ -3165,7 +3204,13 @@ return( 0 );
     bdf->glyphs = gcalloc(bdf->glyphcnt,sizeof(BDFChar *));
 
     while ( getname(sfd,tok)==1 ) {
-	if ( strcmp(tok,"BDFChar:")==0 )
+	if ( strcmp(tok,"BDFStartProperties:")==0 )
+	    SFDGetBitmapProps(sfd,bdf,tok);
+	else if ( strcmp(tok,"BDFEndProperties")==0 )
+	    /* Do Nothing */;
+	else if ( strcmp(tok,"Resolution:")==0 )
+	    getint(sfd,&bdf->res);
+	else if ( strcmp(tok,"BDFChar:")==0 )
 	    SFDGetBitmapChar(sfd,bdf);
 	else if ( strcmp(tok,"EndBitmapFont")==0 )
     break;

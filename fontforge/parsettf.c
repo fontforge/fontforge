@@ -573,6 +573,9 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 	  case CHR('T','e','X',' '):
 	    info->tex_start = offset;
 	  break;
+	  case CHR('B','D','F',' '):
+	    info->bdf_start = offset;
+	  break;
 
 	    /* Apple's mm fonts */
 	  case CHR('g','v','a','r'):

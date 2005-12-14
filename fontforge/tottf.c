@@ -5018,6 +5018,12 @@ return( false );
 	at->tabdir.tabs[i++].length = at->texlen;
     }
 
+    if ( at->bdf!=NULL ) {
+	at->tabdir.tabs[i].tag = CHR('B','D','F',' ');
+	at->tabdir.tabs[i].data = at->bdf;
+	at->tabdir.tabs[i++].length = at->bdflen;
+    }
+
     if ( at->vorgf!=NULL ) {
 	at->tabdir.tabs[i].tag = CHR('V','O','R','G');
 	at->tabdir.tabs[i].data = at->vorgf;

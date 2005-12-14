@@ -929,7 +929,7 @@ return( false );
 return( true );
 }
 
-static int AskResolution(int bf) {
+static int AskResolution(int bf,BDFFont *bdf) {
     GRect pos;
     static GWindow bdf_gw, fon_gw;
     GWindow gw;
@@ -937,6 +937,11 @@ static int AskResolution(int bf) {
     GGadgetCreateData gcd[10];
     GTextInfo label[10];
     int done=-3;
+    int def_res = -1;
+    char buf[20];
+
+    if ( bdf!=NULL )
+	def_res = bdf->res;
 
     if ( no_windowing_ui )
 return( -1 );
@@ -976,6 +981,8 @@ return( -1 );
 	gcd[1].gd.mnemonic = (bf==bf_bdf ? '7' : '9');
 	gcd[1].gd.pos.x = 20; gcd[1].gd.pos.y = 13+7;
 	gcd[1].gd.flags = gg_enabled|gg_visible;
+	if ( (bf==bf_bdf ? 75 : 96)==def_res )
+	    gcd[1].gd.flags |= gg_cb_on;
 	gcd[1].gd.cid = 75;
 	gcd[1].creator = GRadioCreate;
 
@@ -985,6 +992,8 @@ return( -1 );
 	gcd[2].gd.mnemonic = '1';
 	gcd[2].gd.pos.x = 20; gcd[2].gd.pos.y = gcd[1].gd.pos.y+17; 
 	gcd[2].gd.flags = gg_enabled|gg_visible;
+	if ( (bf==bf_bdf ? 100 : 120)==def_res )
+	    gcd[2].gd.flags |= gg_cb_on;
 	gcd[2].gd.cid = 100;
 	gcd[2].creator = GRadioCreate;
 
@@ -993,7 +1002,9 @@ return( -1 );
 	label[3].text_in_resource = true;
 	gcd[3].gd.label = &label[3];
 	gcd[3].gd.pos.x = 20; gcd[3].gd.pos.y = gcd[2].gd.pos.y+17;
-	gcd[3].gd.flags = gg_enabled|gg_visible|gg_cb_on|gg_utf8_popup;
+	gcd[3].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	if ( !((gcd[1].gd.flags|gcd[2].gd.flags)&gg_cb_on) )
+	    gcd[3].gd.flags |= gg_cb_on;
 	gcd[3].gd.cid = -1;
 	gcd[3].gd.popup_msg = (unichar_t *) _("Guess each font's resolution based on its pixel size");
 	gcd[3].creator = GRadioCreate;
@@ -1008,6 +1019,10 @@ return( -1 );
 	gcd[4].creator = GRadioCreate;
 
 	label[5].text = (unichar_t *) (bf == bf_bdf ? "96" : "72");
+	if ( def_res>0 ) {
+	    sprintf( buf, "%d", def_res );
+	    label[5].text = (unichar_t *) buf;
+	}
 	label[5].text_is_1byte = true;
 	gcd[5].gd.label = &label[5];
 	gcd[5].gd.pos.x = 70; gcd[5].gd.pos.y = gcd[4].gd.pos.y-3; gcd[5].gd.pos.width = 40;
@@ -1089,7 +1104,7 @@ static int WriteBitmaps(char *filename,SplineFont *sf, int32 *sizes,int res,
 
     if ( bf!=bf_ptype3 && ask_user_for_resolution && res==0x80000000 ) {
 	gwwv_progress_pause_timer();
-	res = AskResolution(bf);
+	res = AskResolution(bf,sf->bitmaps);
 	gwwv_progress_resume_timer();
 	if ( res==-2 )
 return( false );
@@ -2391,6 +2406,7 @@ return;
     if ( uc_strcmp(pt-4, ".ttf.bin" )==0 ) pt -= 4;
     if ( uc_strcmp(pt-4, ".otf.dfont" )==0 ) pt -= 4;
     if ( uc_strncmp(pt-2, "%s", 2 )==0 ) pt -= 2;
+    if ( uc_strncmp(pt-2, "-*", 2 )==0 ) pt -= 2;
     uc_strcpy(pt,bitmapextensions[bf]);
     GGadgetSetTitle(d->gfc,dup);
     free(dup);
