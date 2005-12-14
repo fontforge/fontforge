@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 11-Dec-2005 -->
+  <!-- AP: Last modified: 12-Dec-2005 -->
   <TITLE>Outline Glyph View</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -47,6 +47,9 @@
   or dull-cyan xs at the end of a similarly colored line. (in a curved point
   the control points will be collinear). (the "Next" control point will be
   drawn dull cyan, and the Prev point will be magenta).
+  <P>
+  In a TrueType font, an on-curve point can be implied between two control
+  points. FontForge will draw these with an open circle.
   <P>
   The initial point in a contour will be drawn in green, and beside it will
   be a tiny arrow pointing in the direction of the contour.
@@ -201,7 +204,8 @@
   point of another open path, then the two will be merged into one (If you
   don't want open paths to merge, hold down the
   <A HREF="charview.html#alt-meta-capslock">Alt/meta/caps-lock</A> key). If
-  you drag a control point then it will be moved.
+  you drag a control point then it will be moved (if you drag a control point
+  defining an implied point, then the implied point(s) will also be moved).
   <P>
   If you selected a spline, then dragging it will drag the location on the
   spline where you pressed the mouse (so you are changing the shape of the
