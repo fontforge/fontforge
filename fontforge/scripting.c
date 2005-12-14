@@ -3343,6 +3343,38 @@ static void bSetCharComment(Context *c) {
     c->curfv->sf->changed = true;
 }
 
+static void bSetGlyphChanged(Context *c) {
+    int i, gid;
+    int changed_or_not, changed_any = false;
+    FontView *fv = c->curfv;
+    EncMap *map = fv->map;
+    SplineFont *sf = fv->sf;
+
+    if ( c->a.argc!=2 )
+	ScriptError( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_int )
+	ScriptError(c,"Bad argument type");
+    changed_or_not = c->a.vals[1].u.ival ? true : false;
+
+    for ( i=0; i< map->enccount; ++i ) {
+	gid = map->map[i];
+	if ( gid!=-1 && sf->glyphs[gid]!= NULL ) {
+            if ( fv->selected[i] ) {
+		sf->glyphs[gid]->changed = changed_or_not;
+		sf->glyphs[gid]->changedsincelasthinted = changed_or_not;
+		sf->glyphs[gid]->changed_since_autosave = changed_or_not;
+		sf->glyphs[gid]->changed_since_search = changed_or_not;
+		sf->glyphs[gid]->namechanged = changed_or_not;
+	    }
+	    if ( sf->glyphs[gid]->changed )
+		changed_any = true;
+	}
+    }
+    sf->changed = changed_any;
+    sf->changed_since_autosave = changed_any;
+    sf->changed_since_xuidchanged = changed_any;
+}
+
 static void bApplySubstitution(Context *c) {
     uint32 tags[3];
     int i;
@@ -6401,6 +6433,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "SetCharComment", bSetCharComment },
     { "BitmapsAvail", bBitmapsAvail },
     { "BitmapsRegen", bBitmapsRegen },
+    { "SetGlyphChanged", bSetGlyphChanged },
     { "ApplySubstitution", bApplySubstitution },
     { "Transform", bTransform },
     { "HFlip", bHFlip },
