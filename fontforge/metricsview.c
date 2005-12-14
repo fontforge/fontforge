@@ -3591,14 +3591,14 @@ return;
 		    MVDoSelect(mv,within);
 		}
 	    }
-	} else if ( !mv->right_to_left &&
+	} else if ( !mv->right_to_left && mv->charcnt>=1 &&
 		event->u.mouse.x<mv->perchar[mv->charcnt-1].dx+mv->perchar[mv->charcnt-1].dwidth+mv->perchar[mv->charcnt-1].kernafter+mv->perchar[mv->charcnt-1].hoff+3 ) {
 	    mv->pressed = mv->pressedwidth = true;
 	    GDrawSetCursor(mv->gw,ct_rbearing);
 	    mv->cursor = ct_rbearing;
 	    if ( !mv->perchar[mv->charcnt-1].selected )
 		    MVDoSelect(mv,mv->charcnt-1);
-	} else if ( mv->right_to_left &&
+	} else if ( mv->right_to_left && mv->charcnt>=1 &&
 		event->u.mouse.x>mv->dwidth - (mv->perchar[mv->charcnt-1].dx+mv->perchar[mv->charcnt-1].dwidth+mv->perchar[mv->charcnt-1].kernafter+mv->perchar[mv->charcnt-1].hoff+3) ) {
 	    mv->pressed = mv->pressedwidth = true;
 	    GDrawSetCursor(mv->gw,ct_rbearing);
