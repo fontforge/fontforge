@@ -316,11 +316,7 @@ return;
     {
 	spl = SplinePointListInterpretPS(ps,flags,sc->parent->strokedfont);
 	if ( spl==NULL ) {
-#if defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_error(_("Too Complex or Bad"),_("I'm sorry this file is too complex for me to understand (or is erroneous)"));
-#else
 	    gwwv_post_error( _("Too Complex or Bad"), _("I'm sorry this file is too complex for me to understand (or is erroneous, or is empty)") );
-#endif
 return;
 	}
 	if ( sc->parent->order2 )
@@ -353,12 +349,12 @@ return;
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-static void SCImportPS(SplineChar *sc,int layer,char *path,int flags) {
+static void SCImportPS(SplineChar *sc,int layer,char *path,int doclear, int flags) {
     FILE *ps = fopen(path,"r");
 
     if ( ps==NULL )
 return;
-    SCImportPSFile(sc,layer,ps,false,flags);
+    SCImportPSFile(sc,layer,ps,doclear,flags);
     fclose(ps);
 }
 
@@ -380,11 +376,7 @@ void SCImportSVG(SplineChar *sc,int layer,char *path,int doclear) {
 	    if ( espl->first->next->order2!=sc->parent->order2 )
 		spl = SplineSetsConvertOrder(spl,sc->parent->order2);
 	if ( spl==NULL ) {
-#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Too Complex or Bad"),_("I'm sorry this file is too complex for me to understand (or is erroneous)"));
-#else
-	    gwwv_post_error( _("Too Complex or Bad"), _("I'm sorry this file is too complex for me to understand (or is erroneous, or is empty)") );
-#endif
 return;
 	}
 	for ( espl=spl; espl->next!=NULL; espl = espl->next );
@@ -394,8 +386,10 @@ return;
 	    SCPreserveLayer(sc,layer,false);
 	    head = &sc->layers[layer].splines;
 	}
-	if ( doclear )
+	if ( doclear ) {
 	    SplinePointListsFree(*head);
+	    *head = NULL;
+	}
 	espl->next = *head;
 	*head = spl;
     }
@@ -1113,25 +1107,9 @@ int FVImportImages(FontView *fv,char *path,int format,int toback, int flags) {
 	if ( format==fv_image ) {
 	    image = GImageRead(start);
 	    if ( image==NULL ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
 		gwwv_post_error(_("Bad image file"),_("Bad image file: %.100s"),start);
-#elif defined(FONTFORGE_CONFIG_GTK)
-		gwwv_post_error(_("Bad image file"),_("Bad image file: %.100s"),start);
-#endif
 return(false);
 	    }
-#if 0
-	    base = image->list_len==0?image->u.image:image->u.images[0];
-	    if ( base->image_type!=it_mono ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		gwwv_post_error(_("Bad image file"),_("Bad image file, not a bitmap: %.100s"),start);
-#elif defined(FONTFORGE_CONFIG_GTK)
-		gwwv_post_error(_("Bad image file"),_("Bad image file, not a bitmap: %.100s"),start);
-#endif
-		GImageDestroy(image);
-return(false);
-	    }
-#endif
 	    ++tot;
 #ifdef FONTFORGE_CONFIG_TYPE3
 	    SCAddScaleImage(sc,image,true,toback?ly_back:ly_fore);
@@ -1140,11 +1118,11 @@ return(false);
 #endif
 #ifndef _NO_LIBXML
 	} else if ( format==fv_svg ) {
-	    SCImportSVG(sc,toback?ly_back:ly_fore,start,false);
+	    SCImportSVG(sc,toback?ly_back:ly_fore,start,flags&sf_clearbeforeinput);
 	    ++tot;
 #endif
 	} else if ( format==fv_eps ) {
-	    SCImportPS(sc,toback?ly_back:ly_fore,start,flags);
+	    SCImportPS(sc,toback?ly_back:ly_fore,start,flags&sf_clearbeforeinput,flags&~sf_clearbeforeinput);
 	    ++tot;
 	}
 	if ( endpath==NULL )
@@ -1152,17 +1130,9 @@ return(false);
 	start = endpath+1;
     }
     if ( tot==0 )
-#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Nothing Selected"),_("You must select a glyph before you can import an image into it"));
-#else
-	gwwv_post_error(_("Nothing Selected"),_("You must select a glyph before you can import an image into it"));
-#endif
     else if ( endpath!=NULL )
-#if defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_error(_("More Images Than Selected Characters"),_("More Images Than Selected Characters"));
-#else
 	gwwv_post_error(_("More Images Than Selected Glyphs"),_("More Images Than Selected Glyphs"));
-#endif
 return( true );
 }
 
@@ -1181,11 +1151,7 @@ int FVImportImageTemplate(FontView *fv,char *path,int format,int toback, int fla
     ext = strrchr(path,'.');
     name = strrchr(path,'/');
     if ( ext==NULL ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	gwwv_post_error(_("Bad Template"),_("Bad template, no extension"));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_error(_("Bad Template"),_("Bad template, no extension"));
-#endif
 return( false );
     }
     if ( name==NULL ) name=path-1;
@@ -1193,11 +1159,7 @@ return( false );
     else if ( name[1]=='c' ) isc = true;
     else if ( name[1]=='e' ) ise = true;
     else {
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	gwwv_post_error(_("Bad Template"),_("Bad template, unrecognized format"));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_error(_("Bad Template"),_("Bad template, unrecognized format"));
-#endif
 return( false );
     }
     if ( name<path )
@@ -1208,11 +1170,7 @@ return( false );
     }
 
     if ( (dir = opendir(dirname))==NULL ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	    gwwv_post_error(_("Nothing Loaded"),_("Nothing Loaded"));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_error(_("Nothing Loaded"),_("Nothing Loaded"));
-#endif
 return( false );
     }
     
@@ -1233,11 +1191,7 @@ return( false );
 	if ( isu ) {
 	    i = SFFindSlot(fv->sf,fv->map,val,NULL);
 	    if ( i==-1 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
 		gwwv_post_error(_("Unicode value not in font"),_("Unicode value (%x) not in font, ignored"),val);
-#elif defined(FONTFORGE_CONFIG_GTK)
-		gwwv_post_error(_("Unicode value not in font"),_("Unicode value (%x) not in font, ignored"),val);
-#endif
     continue;
 	    }
 	    sc = SFMakeChar(fv->sf,fv->map,i);
@@ -1245,11 +1199,7 @@ return( false );
 	    if ( val<fv->map->enccount ) {
 		/* It's there */;
 	    } else {
-#if defined(FONTFORGE_CONFIG_GDRAW)
 		gwwv_post_error(_("Encoding value not in font"),_("Encoding value (%x) not in font, ignored"),val);
-#elif defined(FONTFORGE_CONFIG_GTK)
-		gwwv_post_error(_("Encoding value not in font"),_("Encoding value (%x) not in font, ignored"),val);
-#endif
     continue;
 	    }
 	    sc = SFMakeChar(fv->sf,fv->map,val);
@@ -1257,20 +1207,12 @@ return( false );
 	if ( format==fv_imgtemplate ) {
 	    image = GImageRead(start);
 	    if ( image==NULL ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
 		gwwv_post_error(_("Bad image file"),_("Bad image file: %.100s"),start);
-#elif defined(FONTFORGE_CONFIG_GTK)
-		gwwv_post_error(_("Bad image file"),_("Bad image file: %.100s"),start);
-#endif
     continue;
 	    }
 	    base = image->list_len==0?image->u.image:image->u.images[0];
 	    if ( base->image_type!=it_mono ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
 		gwwv_post_error(_("Bad image file"),_("Bad image file, not a bitmap: %.100s"),start);
-#elif defined(FONTFORGE_CONFIG_GTK)
-		gwwv_post_error(_("Bad image file"),_("Bad image file, not a bitmap: %.100s"),start);
-#endif
 		GImageDestroy(image);
     continue;
 	    }
@@ -1282,20 +1224,16 @@ return( false );
 #endif
 #ifndef _NO_LIBXML
 	} else if ( format==fv_svgtemplate ) {
-	    SCImportSVG(sc,toback?ly_back:ly_fore,start,false);
+	    SCImportSVG(sc,toback?ly_back:ly_fore,start,flags&sf_clearbeforeinput);
 	    ++tot;
 #endif
 	} else {
-	    SCImportPS(sc,toback?ly_back:ly_fore,start,flags);
+	    SCImportPS(sc,toback?ly_back:ly_fore,start,flags&sf_clearbeforeinput,flags&~sf_clearbeforeinput);
 	    ++tot;
 	}
     }
     if ( tot==0 )
-#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Nothing Loaded"),_("Nothing Loaded"));
-#else
-	gwwv_post_error(_("Nothing Loaded"),_("Nothing Loaded"));
-#endif
 return( true );
 }
 
