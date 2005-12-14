@@ -2609,8 +2609,10 @@ void SFAddEncodingSlot(SplineFont *sf,int gid) {
 static int MapAddEnc(SplineFont *sf,SplineChar *sc,EncMap *basemap, EncMap *map,int baseenc, int gid) {
     int any = false, enc;
 
-    if ( gid>=map->backmax )
+    if ( gid>=map->backmax ) {
 	map->backmap = grealloc(map->backmap,(map->backmax+=10)*sizeof(int));
+	memset(map->backmap+map->backmax-10,-1,10*sizeof(int));
+    }
     if ( map->enc->psnames!=NULL ) {
 	/* Check for multiple encodings */
 	for ( enc = map->enc->char_cnt-1; enc>=0; --enc ) {
