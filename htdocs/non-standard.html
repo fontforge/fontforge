@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 30-Jun-2003 -->
-  <!-- AP: Last modified: 11-Dec-2005 -->
+  <!-- AP: Last modified: 13-Dec-2005 -->
   <TITLE>Non standard extensions used by FontForge in True/Open Type</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -42,7 +42,9 @@
     <LI>
       <A HREF="non-standard.html#PfEd">'PfEd' the FontForge extensions table</A>
     <LI>
-      <A HREF="#TeX">'TeX ' the TeX metrics table</A> 
+      <A HREF="#TeX">'TeX ' the TeX metrics table</A>
+    <LI>
+      <A HREF="#BDF">'BDF ' the BDF properties table</A> 
 	<HR>
     <LI>
       (<A HREF="TrueOpenTables.html">standard tables</A>)
@@ -363,9 +365,9 @@
       </TR>
     </TABLE>
     <P>
-    I store these values as fix_words and <EMPH><EM>not</EM></EMPH> as em-units
-    because their meaning is not constrained by the spec and the
-    <CODE>Slant</CODE> parameter (at the least) can not be converted to em-units.
+    I store these values as fix_words and <EM>not</EM> as em-units because their
+    meaning is not constrained by the spec and the <CODE>Slant</CODE> parameter
+    (at the least) can not be converted to em-units.
     <P>
     I have defined the following 4-letter parameter tags
     <TABLE BORDER CELLPADDING="2">
@@ -521,6 +523,73 @@
       </TR>
     </TABLE>
     <P>
+  </BLOCKQUOTE>
+  <H2>
+    '<A NAME="BDF">BDF </A>' -- the BDF properties table
+  </H2>
+  <BLOCKQUOTE>
+    The table begins with a table header containing a version number and a count
+    of strikes
+    <TABLE CELLPADDING="2" BGCOLOR="#8080ff">
+      <TR>
+	<TD>uint16</TD>
+	<TD>version</TD>
+	<TD>currently 0x0001</TD>
+      </TR>
+      <TR>
+	<TD>uint16</TD>
+	<TD>strike-count</TD>
+	<TD></TD>
+      </TR>
+      <TR>
+	<TD>uint32</TD>
+	<TD>offset to string table</TD>
+	<TD>(from start of BDF table)</TD>
+      </TR>
+    </TABLE>
+    <P>
+    This is followed by an entry for each strike identifying how many properties
+    that strike has.
+    <TABLE CELLPADDING="2" BGCOLOR="#8080ff">
+      <TR>
+	<TD>uint16</TD>
+	<TD>ppem</TD>
+	<TD></TD>
+      </TR>
+      <TR>
+	<TD>uint16</TD>
+	<TD>property-count</TD>
+	<TD></TD>
+      </TR>
+    </TABLE>
+    <P>
+    Then there will be the properties, first there with be property-count[1]
+    properties from the first strike, then property-count[2] properties for the
+    second, etc. Each property looks like:
+    <TABLE CELLPADDING="2" BGCOLOR="#8080ff">
+      <TR>
+	<TD>uint32</TD>
+	<TD>name</TD>
+	<TD>offset into the string table of the property's name</TD>
+      </TR>
+      <TR>
+	<TD>uint16</TD>
+	<TD>type</TD>
+	<TD>0=&gt;string<BR>
+	  1=&gt;atom<BR>
+	  2=&gt;int<BR>
+	  3=&gt;uint<BR>
+	  0x10 may be ored into one of the above types to indicate a real property</TD>
+      </TR>
+      <TR>
+	<TD>uint32</TD>
+	<TD>value</TD>
+	<TD>For strings and atoms, this is an offset into the string table<BR>
+	  for integers it is the value itself</TD>
+      </TR>
+    </TABLE>
+    <P>
+    The string table is a series of ASCII bytes. Each string is NUL terminated.
   </BLOCKQUOTE>
 </DIV>
 </BODY></HTML>

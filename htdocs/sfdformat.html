@@ -2,74 +2,74 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 2-Oct-2005 -->
+  <!-- AP: Last modified: 13-Dec-2005 -->
   <TITLE>Spline Font Database File Format</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
 <DIV id="in">
-<H1 ALIGN=Center>
-  Spline Font Database
-</H1>
-<P>
-<FONT COLOR="Red"><STRONG>This page is often grievously out of date. It was
-a fair approximation to reality on 10 August 2005.</STRONG></FONT> Even if
-out of date it should be helpful, but if you really need to know the current
-format look at
-<A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/fontforge/sfd.c">sfd.c</A>
-and see what it parses. Some descriptions of esoteric features are not complete,
-but I hope they give you enough hints that you can figure the format out
-(especially after looking it up in sfd.c)
-<P>
-FontForge's <A HREF="sfd.html">sfd</A> files are ASCII files (so they can
-be copied easily across the internet and so that diffs are somewhat meaningful).
-They contain a full description of your font.
-<P>
-They are vaguely modeled on bdf files. The first few lines contain general
-font properties, then there's a section for each character, then a section
-for each bitmap font.
-<UL>
-  <LI>
-    <A HREF="sfdformat.html#Font-Header">Font Header</A>
-  <LI>
-    <A HREF="sfdformat.html#Outline-Char-Data">Outline Character Data</A>
-  <LI>
-    <A HREF="sfdformat.html#Bitmap-Fonts">Bitmap Fonts</A>
-  <LI>
-    <A HREF="sfdformat.html#CID-keyed-fonts">CID keyed fonts</A>
-  <LI>
-    <A HREF="sfdformat.html#Multiple-Master-fonts">Multiple Master fonts</A>
-  <LI>
-    <A HREF="sfdformat.html#Autosave-Format">AutoSave Format</A>
-</UL>
-<P>
-<FONT COLOR="Red"><STRONG><BIG>WARNING: </BIG></STRONG></FONT>It is tempting
-to cut and paste information from one sfd file to another. This is usually
-ok, but there are a couple of cases than need to be avoided:
-<UL>
-  <LI>
-    If you copy a glyph with truetype instructions, those instructions may call
-    subroutines defined in the old font but not the new. Unexpected things may
-    happen when the glyph is grid fit (including system crashes)
-  <LI>
-    If you copy a substitution (ligature, kern, contextual chaining, ...) item
-    from one font to another, the substitution contains an index into a table
-    of script/languages maintained by the font. Bad things (FontForge crashes)
-    can happen if these tables do not match.
-  <LI>
-    If you copy a glyph containing references these are done by glyph index (which
-    is probably different from font to font). You may end up refering to the
-    wrong glyph.
-</UL>
-<H3>
-  <A NAME="Font-Header">Font Header</A>
-</H3>
-<P>
-Here is an example of what the first few lines look like (order is largely
-irrelevant within this section):
-<BLOCKQUOTE>
-  <PRE>SplineFontDB: 1.0
+  <H1 ALIGN=Center>
+    Spline Font Database
+  </H1>
+  <P>
+  <FONT COLOR="Red"><STRONG>This page is often grievously out of date. It was
+  a fair approximation to reality on 13 December 2005.</STRONG></FONT> Even
+  if out of date it should be helpful, but if you really need to know the current
+  format look at
+  <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/fontforge/sfd.c">sfd.c</A>
+  and see what it parses. Some descriptions of esoteric features are not complete,
+  but I hope they give you enough hints that you can figure the format out
+  (especially after looking it up in sfd.c)
+  <P>
+  FontForge's <A HREF="sfd.html">sfd</A> files are ASCII files (so they can
+  be copied easily across the internet and so that diffs are somewhat meaningful).
+  They contain a full description of your font.
+  <P>
+  They are vaguely modeled on bdf files. The first few lines contain general
+  font properties, then there's a section for each character, then a section
+  for each bitmap font.
+  <UL>
+    <LI>
+      <A HREF="sfdformat.html#Font-Header">Font Header</A>
+    <LI>
+      <A HREF="sfdformat.html#Outline-Char-Data">Outline Character Data</A>
+    <LI>
+      <A HREF="sfdformat.html#Bitmap-Fonts">Bitmap Fonts</A>
+    <LI>
+      <A HREF="sfdformat.html#CID-keyed-fonts">CID keyed fonts</A>
+    <LI>
+      <A HREF="sfdformat.html#Multiple-Master-fonts">Multiple Master fonts</A>
+    <LI>
+      <A HREF="sfdformat.html#Autosave-Format">AutoSave Format</A>
+  </UL>
+  <P>
+  <FONT COLOR="Red"><STRONG><BIG>WARNING: </BIG></STRONG></FONT>It is tempting
+  to cut and paste information from one sfd file to another. This is usually
+  ok, but there are a couple of cases than need to be avoided:
+  <UL>
+    <LI>
+      If you copy a glyph with truetype instructions, those instructions may call
+      subroutines defined in the old font but not the new. Unexpected things may
+      happen when the glyph is grid fit (including system crashes)
+    <LI>
+      If you copy a substitution (ligature, kern, contextual chaining, ...) item
+      from one font to another, the substitution contains an index into a table
+      of script/languages maintained by the font. Bad things (FontForge crashes)
+      can happen if these tables do not match.
+    <LI>
+      If you copy a glyph containing references these are done by glyph index (which
+      is probably different from font to font). You may end up refering to the
+      wrong glyph.
+  </UL>
+  <H3>
+    <A NAME="Font-Header">Font Header</A>
+  </H3>
+  <P>
+  Here is an example of what the first few lines look like (order is largely
+  irrelevant within this section):
+  <BLOCKQUOTE>
+    <PRE>SplineFontDB: 1.0
 FontName: Ambrosia
 FullName: Ambrosia
 FamilyName: Ambrosia
@@ -93,68 +93,68 @@ OnlyBitmaps: 0
 MacStyle: 0
 TeXData: 1 10485760 0 269484 134742 89828 526385 1048576 89828
 </PRE>
-</BLOCKQUOTE>
-<P>
-The first line just identifies the file as an sfd file. The next few lines
-give the various different names that postscript allows fonts to have. Then
-some fairly self-explanatory items (if they don't make sense, look them up
-in the <A HREF="fontinfo.html">font info</A> dlg). A few things need some
-explanation:
-<DL>
-  <DT>
-    TeXData
-  <DD>
-    These are the TeX font parameters (and some similar info). The first number
-    is 1,2 or 3 and indicates that the font is a text, math or math ext font.
-    The next number is the design pointsize (times (1&lt;&lt;20)). Then follow
-    the font parameters. These values are usually in TeX fix_word format where
-    there is a binary point after the first 20 binary digits (so to get the number
-    divide by (1&lt;&lt;20)).
-  <DT>
-    DisplaySize
-  <DD>
-    This is the number of pixels per em that will be used by default to display
-    the font in fontviews (it may be changed of course). Negative numbers mean
-    to rasterize the display from the outlines, positive numbers mean to use
-    a prebuilt bitmap font of that size.
-  <DT>
-    AntiAlias
-  <DD>
-    Whether the fontview should display the font as antialiased or black and
-    white. (AntiAliased looks better, but will be slower)
-  <DT>
-    FitToEm
-  <DD>
-    Controls whether Fit to Em is checked by default in a fontview that displays
-    this font.
-  <DT>
-    WinInfo
-  <DD>
-    Has three pieces of data on the default display of windows containing this
-    font. The first datum says that the window should be scrolled so that glyph
-    at encoding 64 should be visible, the second that the window should have
-    16 character columns horizontally, and the last that there should be 4 character
-    rows vertically.
-  <DT>
-    Encoding
-  <DD>
-    For normal fonts this will be one of the names (or a close approximation
-    thereto) that appears in the Encoding pulldown list. CID keyed fonts will
-    not have encodings. Instead they'll have something like:
-</DL>
-<BLOCKQUOTE>
-  <PRE>Registry: Adobe
+  </BLOCKQUOTE>
+  <P>
+  The first line just identifies the file as an sfd file. The next few lines
+  give the various different names that postscript allows fonts to have. Then
+  some fairly self-explanatory items (if they don't make sense, look them up
+  in the <A HREF="fontinfo.html">font info</A> dlg). A few things need some
+  explanation:
+  <DL>
+    <DT>
+      TeXData
+    <DD>
+      These are the TeX font parameters (and some similar info). The first number
+      is 1,2 or 3 and indicates that the font is a text, math or math ext font.
+      The next number is the design pointsize (times (1&lt;&lt;20)). Then follow
+      the font parameters. These values are usually in TeX fix_word format where
+      there is a binary point after the first 20 binary digits (so to get the number
+      divide by (1&lt;&lt;20)).
+    <DT>
+      DisplaySize
+    <DD>
+      This is the number of pixels per em that will be used by default to display
+      the font in fontviews (it may be changed of course). Negative numbers mean
+      to rasterize the display from the outlines, positive numbers mean to use
+      a prebuilt bitmap font of that size.
+    <DT>
+      AntiAlias
+    <DD>
+      Whether the fontview should display the font as antialiased or black and
+      white. (AntiAliased looks better, but will be slower)
+    <DT>
+      FitToEm
+    <DD>
+      Controls whether Fit to Em is checked by default in a fontview that displays
+      this font.
+    <DT>
+      WinInfo
+    <DD>
+      Has three pieces of data on the default display of windows containing this
+      font. The first datum says that the window should be scrolled so that glyph
+      at encoding 64 should be visible, the second that the window should have
+      16 character columns horizontally, and the last that there should be 4 character
+      rows vertically.
+    <DT>
+      Encoding
+    <DD>
+      For normal fonts this will be one of the names (or a close approximation
+      thereto) that appears in the Encoding pulldown list. CID keyed fonts will
+      not have encodings. Instead they'll have something like:
+  </DL>
+  <BLOCKQUOTE>
+    <PRE>Registry: Adobe
 Ordering: japan1
 Supplement: 4
 CIDVersion: 1.2
 </PRE>
-</BLOCKQUOTE>
-<P>
-Some fonts will have some TrueType information in them too (look at the
-<A HREF="http://www.microsoft.com/typography/tt/tt.htm">truetype spec</A>
-for the meanings of these, they usually live in the OS/2, hhea, or vhea tables).
-<BLOCKQUOTE>
-  <PRE>FSType: 4
+  </BLOCKQUOTE>
+  <P>
+  Some fonts will have some TrueType information in them too (look at the
+  <A HREF="http://www.microsoft.com/typography/tt/tt.htm">truetype spec</A>
+  for the meanings of these, they usually live in the OS/2, hhea, or vhea tables).
+  <BLOCKQUOTE>
+    <PRE>FSType: 4
 PFMFamily: 17
 TTFWeight: 400
 TTFWidth: 5
@@ -165,20 +165,20 @@ VLineGap: 0
 OS2Vendor: 'PfEd'
 OS2FamilyClass: 2050
 </PRE>
-</BLOCKQUOTE>
-<P>
-These items also come from the OS/2 and hhea tables but are slightly more
-complex. The keywords are paired, so <CODE>HheadAscent</CODE> and
-<CODE>HheadAOffset</CODE> work together. If the offset keyword is 1 (true)
-then the other keyword is treated as a value relative to what FontForge thinks
-should be the correct value, FontForge will calculate what it thinks the
-value should be and then will add the value specified in the keyword. So
-in the example below, FF will figure out what it thinks
-<CODE>HheadAscent</CODE> should be and then add "0" to it to get the value
-stored in a truetype font's OS/2 table. However if the Offset flag is set
-to 0 (false) then the Ascent would be used exactly as specified.
-<BLOCKQUOTE>
-  <PRE>HheadAscent: 0
+  </BLOCKQUOTE>
+  <P>
+  These items also come from the OS/2 and hhea tables but are slightly more
+  complex. The keywords are paired, so <CODE>HheadAscent</CODE> and
+  <CODE>HheadAOffset</CODE> work together. If the offset keyword is 1 (true)
+  then the other keyword is treated as a value relative to what FontForge thinks
+  should be the correct value, FontForge will calculate what it thinks the
+  value should be and then will add the value specified in the keyword. So
+  in the example below, FF will figure out what it thinks
+  <CODE>HheadAscent</CODE> should be and then add "0" to it to get the value
+  stored in a truetype font's OS/2 table. However if the Offset flag is set
+  to 0 (false) then the Ascent would be used exactly as specified.
+  <BLOCKQUOTE>
+    <PRE>HheadAscent: 0
 HheadAOffset: 1
 HheadDescent: 0
 HheadDOffset: 1
@@ -191,15 +191,15 @@ OS2WinAOffset: 1
 OS2WinDescent: 0
 OS2WinDOffset: 1
 </PRE>
-</BLOCKQUOTE>
-<P>
-These represent different definitions of ascent and descent that are stored
-in various places in the truetype file (Horizontal header and OS/2 tables).
-<P>
-The OS/2 table contains information on the position of subscripts, superscripts
-and strike throughs:
-<BLOCKQUOTE>
-  <PRE>OS2SubXSize: 1351
+  </BLOCKQUOTE>
+  <P>
+  These represent different definitions of ascent and descent that are stored
+  in various places in the truetype file (Horizontal header and OS/2 tables).
+  <P>
+  The OS/2 table contains information on the position of subscripts, superscripts
+  and strike throughs:
+  <BLOCKQUOTE>
+    <PRE>OS2SubXSize: 1351
 OS2SubYSize: 1228
 OS2SubXOff: 0
 OS2SubYOff: -446
@@ -210,49 +210,49 @@ OS2SupYOff: 595
 OS2StrikeYSize: 143
 OS2StrikeYPos: 614
 </PRE>
-</BLOCKQUOTE>
-<P>
-The MacStyle field (if present) indicates whether the font is bold, italic,
-condensed, extended, etc.
-<P>
-Some fonts will have Postscript specific information contained in the Private
-dictionary
-<BLOCKQUOTE>
-  <PRE>BeginPrivate: 1
+  </BLOCKQUOTE>
+  <P>
+  The MacStyle field (if present) indicates whether the font is bold, italic,
+  condensed, extended, etc.
+  <P>
+  Some fonts will have Postscript specific information contained in the Private
+  dictionary
+  <BLOCKQUOTE>
+    <PRE>BeginPrivate: 1
 BlueValues 23 [-19 0 502 517 750 768]
 EndPrivate
 </PRE>
-</BLOCKQUOTE>
-<P>
-If the font has any opentype features it will have a list of
-<A HREF="charinfo.html#ScriptLang">script language</A> entries:
-<BLOCKQUOTE>
-  <PRE>ScriptLang: 3
+  </BLOCKQUOTE>
+  <P>
+  If the font has any opentype features it will have a list of
+  <A HREF="charinfo.html#ScriptLang">script language</A> entries:
+  <BLOCKQUOTE>
+    <PRE>ScriptLang: 3
  1 latn 1 ROM   
  1 latn 4 DEU  ROM  VIT  dflt 
  3 cyrl 1 dflt grek 1 dflt latn 5 DEU  ROM  TRK  VIT  dflt
 </PRE>
-</BLOCKQUOTE>
-<P>
-The first line says that there are 3 sets of script lang entries and they
-follow on the next three lines. The next line says that this entry is only
-active for one script ('latn') and then only if the language is 'ROM '. The
-next line says the entry is again only active for one script, but that this
-time any of the four languages 'DEU ', 'ROM ', 'VIT ' or the default language
-apply to it. And the last line gives an example of an entry that is active
-for several scripts with several languages.
-<P>
-OpenType features are stored with an index into this list. If a feature has
-index "0" then that feature is only active for the latin script in the Romanian
-language. If it has index 2 it will be active for cyrillic, greek and latin
-scripts. A special script index of 65535 is used to mean that this feature
-is "Nested", that is it is never activated by itself, but its activation
-is controlled by a contextual or contextual chaining lookup (which in turn
-will have its own script language index).
-<P>
-If your font has any kerning classes
-<BLOCKQUOTE>
-  <PRE>KernClass: 31 64 2 0
+  </BLOCKQUOTE>
+  <P>
+  The first line says that there are 3 sets of script lang entries and they
+  follow on the next three lines. The next line says that this entry is only
+  active for one script ('latn') and then only if the language is 'ROM '. The
+  next line says the entry is again only active for one script, but that this
+  time any of the four languages 'DEU ', 'ROM ', 'VIT ' or the default language
+  apply to it. And the last line gives an example of an entry that is active
+  for several scripts with several languages.
+  <P>
+  OpenType features are stored with an index into this list. If a feature has
+  index "0" then that feature is only active for the latin script in the Romanian
+  language. If it has index 2 it will be active for cyrillic, greek and latin
+  scripts. A special script index of 65535 is used to mean that this feature
+  is "Nested", that is it is never activated by itself, but its activation
+  is controlled by a contextual or contextual chaining lookup (which in turn
+  will have its own script language index).
+  <P>
+  If your font has any kerning classes
+  <BLOCKQUOTE>
+    <PRE>KernClass: 31 64 2 0
  1 F
  41 L Lacute glyph78 Lcommaaccent Ldot Lslash
  1 P
@@ -265,38 +265,38 @@ If your font has any kerning classes
  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -130 0 0 0 0 0 0 0 0 0 0 -145 0 -115 0 0 0 0 -65 0 -140 -120 -120
 ...
 </PRE>
-</BLOCKQUOTE>
-<P>
-The first line says that this Kerning Class has 31 different classes for
-the first character, and 64 for the second. It is active for entry 2 in the
-script lang list above. The <A HREF="charinfo.html#lookup-flags">OpenType
-flags </A>will be 0. The next line says that the first character class of
-the first character (numbered 1, class 0 is reserved and never needs to be
-defined) consists of only one character "F" (the number in front is the string
-length of the line. It speeds up processing the sfd file but has no semantic
-content). The next line is for class 2 of the first character, it has more
-characters in it and a longer string length. After 30 entries we start on
-the classes for the second character. They look exactly like classes for
-the first character. After all the second character classes have been defined
-we have an array of numbers, &lt;char1 class cnt&gt;*&lt;char2 class cnt&gt;
-of them in fact. This specifies the amount of kerning that should be placed
-between a characters of the given classes of left and right characters (ie.
-if char1 was in left class 2 and char2 was in right class 4 then we would
-index this array with 3*&lt;char2 class cnt&gt; + 4).
-<P>
-If your fontforge has been configured with device table support you may find
-<A HREF="#device-table">device</A> tables interspersed among the kerning
-offsets array:
-<BLOCKQUOTE>
-  <PRE>...
+  </BLOCKQUOTE>
+  <P>
+  The first line says that this Kerning Class has 31 different classes for
+  the first character, and 64 for the second. It is active for entry 2 in the
+  script lang list above. The <A HREF="charinfo.html#lookup-flags">OpenType
+  flags </A>will be 0. The next line says that the first character class of
+  the first character (numbered 1, class 0 is reserved and never needs to be
+  defined) consists of only one character "F" (the number in front is the string
+  length of the line. It speeds up processing the sfd file but has no semantic
+  content). The next line is for class 2 of the first character, it has more
+  characters in it and a longer string length. After 30 entries we start on
+  the classes for the second character. They look exactly like classes for
+  the first character. After all the second character classes have been defined
+  we have an array of numbers, &lt;char1 class cnt&gt;*&lt;char2 class cnt&gt;
+  of them in fact. This specifies the amount of kerning that should be placed
+  between a characters of the given classes of left and right characters (ie.
+  if char1 was in left class 2 and char2 was in right class 4 then we would
+  index this array with 3*&lt;char2 class cnt&gt; + 4).
+  <P>
+  If your fontforge has been configured with device table support you may find
+  <A HREF="#device-table">device</A> tables interspersed among the kerning
+  offsets array:
+  <BLOCKQUOTE>
+    <PRE>...
 0 {} 0 {} 0 {} ...
 -145 {12-13 -1,1} -145 {} -130 {8-9 -1,-1} ...
 </PRE>
-</BLOCKQUOTE>
-<P>
-The order of opentype features within GPOS/GSUB tables may be stored:
-<BLOCKQUOTE>
-  <PRE>TableOrder: GPOS 4
+  </BLOCKQUOTE>
+  <P>
+  The order of opentype features within GPOS/GSUB tables may be stored:
+  <BLOCKQUOTE>
+    <PRE>TableOrder: GPOS 4
 	'subs'
 	'sinf'
 	'mark'
@@ -305,60 +305,60 @@ TableOrder: GSUB 2
 	'frac'
 	'nutf'
 </PRE>
-</BLOCKQUOTE>
-<P>
-If the font contains ttf hinting, then the file may contain unparsed truetype
-tables (understanding ttf hinting is beyond FontForge's abilities, but it
-can at least preserve the data):
-<BLOCKQUOTE>
-  <PRE>TtfTable: prep 4360
+  </BLOCKQUOTE>
+  <P>
+  If the font contains ttf hinting, then the file may contain unparsed truetype
+  tables (understanding ttf hinting is beyond FontForge's abilities, but it
+  can at least preserve the data):
+  <BLOCKQUOTE>
+    <PRE>TtfTable: prep 4360
 5S;o3()It?eJ8r@H[HSJH[H^@!b&amp;BQ*?Vcm@'XSh+1MACZ&gt;Up/\,o1+Ca't2!&lt;ocH+Wn2p"@,t&amp;
 +Wo+[()Is6G8:u7D/^7,*,KO/(E=N5!=s)LCMjn,:Mp3:DSL&amp;j05dG#cY`hLCN"!&lt;CBO$@s(_ZX
 ...
 </PRE>
-</BLOCKQUOTE>
-<P>
-The first line says that the 'prep' table is 4360 bytes long. Subsequent
-lines will provide 4360 bytes of data, packed in
-<A HREF="#ASCII85Encode">ASCII85Encode<SUP>1</SUP></A> (which takes binary
-data and packs it into ASCII without too much expansion. See the PostScript
-Reference Manual (3rd edition, pages 131-132) for a description of this packing,
-or <CODE>$&nbsp;man&nbsp;btoa</CODE>).
-<P>
-The <CODE>LangName</CODE> entries represent the TrueType name table: the
-number represents the language and is followed by a list of strings encoded
-in UTF-7. The first string corresponds to ID=0 (Copyright), the second to
-ID=1 (Family), ... trailing empty strings will be omitted. In the American
-English language (1033) section, if one of these names exactly matches the
-equivalent postscript item then that name will be omitted (this makes it
-easier to handle updates, users only have to change the copyright in one
-place)
-<BLOCKQUOTE>
-  <PRE>LangName: 1033 "" "" "Regular" "GWW:Caliban Regular: Version 1.0" "" "Version 1.0"
+  </BLOCKQUOTE>
+  <P>
+  The first line says that the 'prep' table is 4360 bytes long. Subsequent
+  lines will provide 4360 bytes of data, packed in
+  <A HREF="#ASCII85Encode">ASCII85Encode<SUP>1</SUP></A> (which takes binary
+  data and packs it into ASCII without too much expansion. See the PostScript
+  Reference Manual (3rd edition, pages 131-132) for a description of this packing,
+  or <CODE>$&nbsp;man&nbsp;btoa</CODE>).
+  <P>
+  The <CODE>LangName</CODE> entries represent the TrueType name table: the
+  number represents the language and is followed by a list of strings encoded
+  in UTF-7. The first string corresponds to ID=0 (Copyright), the second to
+  ID=1 (Family), ... trailing empty strings will be omitted. In the American
+  English language (1033) section, if one of these names exactly matches the
+  equivalent postscript item then that name will be omitted (this makes it
+  easier to handle updates, users only have to change the copyright in one
+  place)
+  <BLOCKQUOTE>
+    <PRE>LangName: 1033 "" "" "Regular" "GWW:Caliban Regular: Version 1.0" "" "Version 1.0"
 LangName: 1032 "" "" "+A5oDsQ09A78DvQ05A7oDrAAA"
 </PRE>
-</BLOCKQUOTE>
-<P>
-If your font has any anchor classes:
-<BLOCKQUOTE>
-  <PRE>AnchorClass: "top" mark 4 7 1 "bottom" mark 4 7 1 "Anchor-2" mark 4 7 1 "Anchor-3" mark 4 7 2 "Anchor-4" mark 4 7 2 "Anchor-5" mark 4 7 3 "Anchor-6" mark 4 7 4 
+  </BLOCKQUOTE>
+  <P>
+  If your font has any anchor classes:
+  <BLOCKQUOTE>
+    <PRE>AnchorClass: "top" mark 4 7 1 "bottom" mark 4 7 1 "Anchor-2" mark 4 7 1 "Anchor-3" mark 4 7 2 "Anchor-4" mark 4 7 2 "Anchor-5" mark 4 7 3 "Anchor-6" mark 4 7 4 
 </PRE>
-</BLOCKQUOTE>
-<P>
-There is an Anchor Class named "top" which has feature tag 'mark', opentype
-flags 4, a script lang index of 7, and it should be merged with other anchor
-classes marked with "1". The next class is named "bottom", the next "Anchor-2"
-and so forth. (Anchor class names are output in UTF7)
-<P>
-Contextual or contextual chaining lookups are also stored in the font header.
-The are introduced by one of the keywords: "ContextPos", "ContextSub",
-"ChainPos", "ChainSub" and "ReverseChain", and are ended by "EndFPST". Contextual
-chaining lookups may check previous glyphs (called backtracking), current
-glyphs and lookahead glyphs, while Contextual lookups only check for a string
-of current glyphs. There are four formats:<BR>
-By coverage tables
-<BLOCKQUOTE>
-  <PRE>ChainSub: coverage 0 0 'abvs' 0 0 0 1
+  </BLOCKQUOTE>
+  <P>
+  There is an Anchor Class named "top" which has feature tag 'mark', opentype
+  flags 4, a script lang index of 7, and it should be merged with other anchor
+  classes marked with "1". The next class is named "bottom", the next "Anchor-2"
+  and so forth. (Anchor class names are output in UTF7)
+  <P>
+  Contextual or contextual chaining lookups are also stored in the font header.
+  The are introduced by one of the keywords: "ContextPos", "ContextSub",
+  "ChainPos", "ChainSub" and "ReverseChain", and are ended by "EndFPST". Contextual
+  chaining lookups may check previous glyphs (called backtracking), current
+  glyphs and lookahead glyphs, while Contextual lookups only check for a string
+  of current glyphs. There are four formats:<BR>
+  By coverage tables
+  <BLOCKQUOTE>
+    <PRE>ChainSub: coverage 0 0 'abvs' 0 0 0 1
  1 1 0
   Coverage: 7 uni0C40
   BCoverage: 8 glyph388
@@ -366,28 +366,28 @@ By coverage tables
   SeqLookup: 0 '0013'
 EndFPST
 </PRE>
-</BLOCKQUOTE>
-<P>
-This defines a simple context chaining substitution by coverage class. The
-opentype flags are 0, script/lang index is 0, the feature tag is 'abvs'.
-There are no classes, no backtracking classes and no lookahead classes defined
-(it's by coverage table). There is one rule. (For a greater explanation of
-these cryptic comments see the OpenType specs on contextual lookups).
-<P>
-Then follows the first rule. The first line, "1 1 0", says how many coverage
-tables there are in the normal list (1), how many in the backtrack list (1)
-and how many in the lookahead list (0). Then we get the one normal coverage
-table, which describes a single glyph (uni0C40). Then one backtracking coverage
-table which also defines one glyph (glyph388). Finally there is one sequence
-lookup, at normal position 0, we should apply the substitution named '0013'.
-<P>
-That is to say: If we find the glyph stream "glyph388 uni0C40", then it will
-match this lookup and we should apply substitution '0013' (found elsewhere)
-to uni0C40.
-<P>
-By classes
-<BLOCKQUOTE>
-  <PRE>ChainSub: class 0 0 'calt' 3 3 0 1
+  </BLOCKQUOTE>
+  <P>
+  This defines a simple context chaining substitution by coverage class. The
+  opentype flags are 0, script/lang index is 0, the feature tag is 'abvs'.
+  There are no classes, no backtracking classes and no lookahead classes defined
+  (it's by coverage table). There is one rule. (For a greater explanation of
+  these cryptic comments see the OpenType specs on contextual lookups).
+  <P>
+  Then follows the first rule. The first line, "1 1 0", says how many coverage
+  tables there are in the normal list (1), how many in the backtrack list (1)
+  and how many in the lookahead list (0). Then we get the one normal coverage
+  table, which describes a single glyph (uni0C40). Then one backtracking coverage
+  table which also defines one glyph (glyph388). Finally there is one sequence
+  lookup, at normal position 0, we should apply the substitution named '0013'.
+  <P>
+  That is to say: If we find the glyph stream "glyph388 uni0C40", then it will
+  match this lookup and we should apply substitution '0013' (found elsewhere)
+  to uni0C40.
+  <P>
+  By classes
+  <BLOCKQUOTE>
+    <PRE>ChainSub: class 0 0 'calt' 3 3 0 1
   Class: 52 b o v w b.high o.high v.high w.high r.alt.high r.alt
   Class: 43 a c d e f g h i j k l m n p q r s t u x y z
   BClass: 52 b o v w b.high o.high v.high w.high r.alt.high r.alt
@@ -400,25 +400,25 @@ By classes
   SeqLookup: 0 'high'
 EndFPST
 </PRE>
-</BLOCKQUOTE>
-<P>
-This defines a context chaining substitution, by classes. The format of the
-first line is the same as described above. Here we have three classes for
-the normal match and three for the backtracking match, and one rule. The
-next 4 lines define the classes. As with kerning by classes, class 0 does
-not need to be explicitly defined, it is implicitly defined to be "any glyph
-not defined in another class". So we define class 1 to be "b,o,v,..." and
-class 2 to be "a,c,d,e,...". And then we define the backtracking classes
-(which here happen to be the same as the classes for the normal match, but
-that isn't always the case).
-<P>
-The one rule says that if we get something in normal class 2 following something
-in backtracking class 1 (that is, if we get something like "ba" or "oc")
-then apply substitution 'high'
-<P>
-By glyphs
-<BLOCKQUOTE>
-  <PRE>ChainSub: glyph 0 1 'calt' 0 0 0 1
+  </BLOCKQUOTE>
+  <P>
+  This defines a context chaining substitution, by classes. The format of the
+  first line is the same as described above. Here we have three classes for
+  the normal match and three for the backtracking match, and one rule. The
+  next 4 lines define the classes. As with kerning by classes, class 0 does
+  not need to be explicitly defined, it is implicitly defined to be "any glyph
+  not defined in another class". So we define class 1 to be "b,o,v,..." and
+  class 2 to be "a,c,d,e,...". And then we define the backtracking classes
+  (which here happen to be the same as the classes for the normal match, but
+  that isn't always the case).
+  <P>
+  The one rule says that if we get something in normal class 2 following something
+  in backtracking class 1 (that is, if we get something like "ba" or "oc")
+  then apply substitution 'high'
+  <P>
+  By glyphs
+  <BLOCKQUOTE>
+    <PRE>ChainSub: glyph 0 1 'calt' 0 0 0 1
  String: 1 D
  BString: 3 c b
  FString: 1 e
@@ -426,14 +426,14 @@ By glyphs
   SeqLookup: 0 'rigl'
 EndFPST
 </PRE>
-</BLOCKQUOTE>
-<P>
-Again we have one rule. That rule says that if we get the sequence of glyphs
-"c b D e" then we should apply substitution 'rig1' to glyph "D".
-<P>
-And finally by reverse coverage tables
-<BLOCKQUOTE>
-  <PRE>ChainSub: revcov 0 0 'foo ' 0 0 0 1
+  </BLOCKQUOTE>
+  <P>
+  Again we have one rule. That rule says that if we get the sequence of glyphs
+  "c b D e" then we should apply substitution 'rig1' to glyph "D".
+  <P>
+  And finally by reverse coverage tables
+  <BLOCKQUOTE>
+    <PRE>ChainSub: revcov 0 0 'foo ' 0 0 0 1
  1 1 0
   Coverage: 7 uni0C40
   BCoverage: 8 glyph388
@@ -441,16 +441,16 @@ And finally by reverse coverage tables
   Replace: 11 uni0C40.alt
 EndFPST
 </PRE>
-</BLOCKQUOTE>
-<P>
-Which says that when glyph388 precedes uni0C40 then uni0C40 should be replaced
-by uni0C40.alt
-<P>
-There may be apple state machines. These are introduced by one of the keywords:
-"MacIndic", "MacContext", "MacInsert" and "MacKern", and they are terminated
-with "EndASM".
-<BLOCKQUOTE>
-  <PRE>MacContext: 2,2 16384 9 5
+  </BLOCKQUOTE>
+  <P>
+  Which says that when glyph388 precedes uni0C40 then uni0C40 should be replaced
+  by uni0C40.alt
+  <P>
+  There may be apple state machines. These are introduced by one of the keywords:
+  "MacIndic", "MacContext", "MacInsert" and "MacKern", and they are terminated
+  with "EndASM".
+  <BLOCKQUOTE>
+    <PRE>MacContext: 2,2 16384 9 5
   Class: 320 yehhamzaabovearabic beharabic teharabic theharabic jeemarabic haharabic khaharabic seenarabic sheenarabic sadarabic dadarabic taharabic zaharabic ainarabic ghainarabic feharabic qafarabic kafarabic lamarabic meemarabic noonarabic heharabic alefmaksuraarabic yeharabic peharabic tteharabic tcheharabic veharabic gafarabic
   Class: 227 noonghunnaarabic alefmaddaabovearabic alefhamzaabovearabic wawhamzaabovearabic alefhamzabelowarabic alefarabic tehmarbutaarabic dalarabic thalarabic reharabic zainarabic wawarabic ddalarabic rreharabic jeharabic yehbarreearabic
   Class: 201 shaddakasraarabic shaddakasratanarabic shaddafathaarabic shaddadammaarabic shaddadammatanarabic fathatanarabic dammatanarabic kasratanarabic fathaarabic dammaarabic kasraarabic shaddaarabic sukunarabic
@@ -466,67 +466,67 @@ with "EndASM".
  ...
 EndASM
 </PRE>
-</BLOCKQUOTE>
-<P>
-The state machine begins with a line defining what mac feature,setting invokes
-it, some mac flags, the number of classes, and number of states in the machine.
-The first four states on the mac are predefined, so we start with class 4
-(yehhamzaabovearabic...). Finally there will be &lt;number of
-classes&gt;*&lt;number of states&gt; lines describing transitions. We begin
-with the transition for state 0, class 0, then the transition for state 0,
-class 1, ...
-<P>
-Each transition contains the next state to go to, a set of flags. There may
-also be other arguments depending on the type of the state machine.
-<TABLE BORDER CELLPADDING="2">
-  <TR>
-    <TD VALIGN="Top">MacIndic</TD>
-    <TD>This format has no additional arguments</TD>
-  </TR>
-  <TR>
-    <TD VALIGN="Top">MacContext</TD>
-    <TD>This format potentially contains the names of two substitutions. One
-      to be applied to the marked glyph, one to be applied to the current glyph
-      (the special substitution "~" means do nothing and is used as a place holder).
-      See above.</TD>
-  </TR>
-  <TR>
-    <TD VALIGN="Top">MacInsert</TD>
-    <TD>This format contains two glyph lists, each preceded by a number indicating
-      how many bytes follow.
-      <BLOCKQUOTE>
-	<PRE>2 0 <B>0 3 a b</B>
+  </BLOCKQUOTE>
+  <P>
+  The state machine begins with a line defining what mac feature,setting invokes
+  it, some mac flags, the number of classes, and number of states in the machine.
+  The first four states on the mac are predefined, so we start with class 4
+  (yehhamzaabovearabic...). Finally there will be &lt;number of
+  classes&gt;*&lt;number of states&gt; lines describing transitions. We begin
+  with the transition for state 0, class 0, then the transition for state 0,
+  class 1, ...
+  <P>
+  Each transition contains the next state to go to, a set of flags. There may
+  also be other arguments depending on the type of the state machine.
+  <TABLE BORDER CELLPADDING="2">
+    <TR>
+      <TD VALIGN="Top">MacIndic</TD>
+      <TD>This format has no additional arguments</TD>
+    </TR>
+    <TR>
+      <TD VALIGN="Top">MacContext</TD>
+      <TD>This format potentially contains the names of two substitutions. One
+	to be applied to the marked glyph, one to be applied to the current glyph
+	(the special substitution "~" means do nothing and is used as a place holder).
+	See above.</TD>
+    </TR>
+    <TR>
+      <TD VALIGN="Top">MacInsert</TD>
+      <TD>This format contains two glyph lists, each preceded by a number indicating
+	how many bytes follow.
+	<BLOCKQUOTE>
+	  <PRE>2 0 <B>0 3 a b</B>
 0 32768 <B>4 fi q 0</B>
 </PRE>
-      </BLOCKQUOTE>
-      <P>
-      The first line indicates that no characters should be insert at the marked
-      glyph but that "a" and "b" should be insert at the current glyph. The second
-      line indicates that "fi" and "q" should be insert at the marked glyph and
-      no characters at the current glyph. The flags determine whether characters
-      are insert before or after the glyph.</TD>
-  </TR>
-  <TR>
-    <TD VALIGN="Top">MacKern</TD>
-    <TD>This format contains a list of kerning offsets. First is a count field
-      saying how many numbers follow, then a list of numbers which adjust the kerning
-      for glyphs that have previously been pushed on the kerning stack.</TD>
-  </TR>
-</TABLE>
-<P>
-The GenTags entry describes a list of feature tags that FontForge has generated
-itself
-<BLOCKQUOTE>
-  <PRE>GenTags: 1 sb'rigl'
+	</BLOCKQUOTE>
+	<P>
+	The first line indicates that no characters should be insert at the marked
+	glyph but that "a" and "b" should be insert at the current glyph. The second
+	line indicates that "fi" and "q" should be insert at the marked glyph and
+	no characters at the current glyph. The flags determine whether characters
+	are insert before or after the glyph.</TD>
+    </TR>
+    <TR>
+      <TD VALIGN="Top">MacKern</TD>
+      <TD>This format contains a list of kerning offsets. First is a count field
+	saying how many numbers follow, then a list of numbers which adjust the kerning
+	for glyphs that have previously been pushed on the kerning stack.</TD>
+    </TR>
+  </TABLE>
+  <P>
+  The GenTags entry describes a list of feature tags that FontForge has generated
+  itself
+  <BLOCKQUOTE>
+    <PRE>GenTags: 1 sb'rigl'
 </PRE>
-</BLOCKQUOTE>
-<P>
-This line says that FontForge has generated 1 tag, the generated tag is used
-for a substitution lookup (sb=&gt;substitution), and the tag is 'rig1'.
-<P>
-There may be a list of Mac Feature/Setting names
-<BLOCKQUOTE>
-  <PRE>MacFeat: 0 0 0
+  </BLOCKQUOTE>
+  <P>
+  This line says that FontForge has generated 1 tag, the generated tag is used
+  for a substitution lookup (sb=&gt;substitution), and the tag is 'rig1'.
+  <P>
+  There may be a list of Mac Feature/Setting names
+  <BLOCKQUOTE>
+    <PRE>MacFeat: 0 0 0
 MacName: 0 0 24 "All Typographic Features"
 MacSetting: 0
 MacName: 0 0 12 "All Features"
@@ -538,13 +538,13 @@ MacSetting: 2
 MacName: 0 0 16 "Common Ligatures"
 MacFeat: 2 1 2
 </PRE>
-</BLOCKQUOTE>
-<P>
-There may be a Grid entry near the top of the font, this specifies the splines
-to be drawn in the grid layer for the font, <A HREF="#splineset">see below
-for a description of the splineset format</A>:
-<BLOCKQUOTE>
-  <PRE>Grid
+  </BLOCKQUOTE>
+  <P>
+  There may be a Grid entry near the top of the font, this specifies the splines
+  to be drawn in the grid layer for the font, <A HREF="#splineset">see below
+  for a description of the splineset format</A>:
+  <BLOCKQUOTE>
+    <PRE>Grid
 678 -168 m 5
  -40 -168 l 5
 -678 729 m 1
@@ -553,22 +553,22 @@ for a description of the splineset format</A>:
  1452 525 l 1
 EndSplineSet
 </PRE>
-</BLOCKQUOTE>
-<H3>
-  <A NAME="Outline-Char-Data">Outline Character Data</A>
-</H3>
-<P>
-Then for non-CID fonts you should find a line like:
-<BLOCKQUOTE>
-  <PRE>BeginChars: 285 253
+  </BLOCKQUOTE>
+  <H3>
+    <A NAME="Outline-Char-Data">Outline Character Data</A>
+  </H3>
+  <P>
+  Then for non-CID fonts you should find a line like:
+  <BLOCKQUOTE>
+    <PRE>BeginChars: 285 253
 </PRE>
-</BLOCKQUOTE>
-<P>
-This means that the font's encoding has room for 285 characters and that
-there are a total of 253 glyphs defined (usually control characters are not
-defined). A character looks like:
-<BLOCKQUOTE>
-  <PRE>StartChar: exclam
+  </BLOCKQUOTE>
+  <P>
+  This means that the font's encoding has room for 285 characters and that
+  there are a total of 253 glyphs defined (usually control characters are not
+  defined). A character looks like:
+  <BLOCKQUOTE>
+    <PRE>StartChar: exclam
 Encoding: 33 33 3
 Width: 258
 Flags: 
@@ -594,95 +594,95 @@ Fore
 EndSplineSet
 EndChar
 </PRE>
-</BLOCKQUOTE>
-<P>
-The first line names the character, the next line gives the encoding, first
-in the current font, then in unicode, and finally the original position (GID).
-Then the advance width.
-<P>
-Then a set of flags (there are currently four flags: "H" =&gt; the character
-has been changed since last hinted, "M" the character's hints have been adjusted
-manually, "W" the width has been set explicitly, and "O" =&gt; the character
-was open when last saved).
-<P>
-Then horizontal and vertical (postscript) stem hints (set of several two
-number pairs, the first number in the pair is the location of the stem, the
-next number is the width of the stem, the numbers in brokets (&lt;&gt;) indicate
-where the hint is valid).
-<P>
-For fonts with vertical metrics there may also be a
-<BLOCKQUOTE>
-  <PRE>VWidth: 1000
+  </BLOCKQUOTE>
+  <P>
+  The first line names the character, the next line gives the encoding, first
+  in the current font, then in unicode, and finally the original position (GID).
+  Then the advance width.
+  <P>
+  Then a set of flags (there are currently four flags: "H" =&gt; the character
+  has been changed since last hinted, "M" the character's hints have been adjusted
+  manually, "W" the width has been set explicitly, and "O" =&gt; the character
+  was open when last saved).
+  <P>
+  Then horizontal and vertical (postscript) stem hints (set of several two
+  number pairs, the first number in the pair is the location of the stem, the
+  next number is the width of the stem, the numbers in brokets (&lt;&gt;) indicate
+  where the hint is valid).
+  <P>
+  For fonts with vertical metrics there may also be a
+  <BLOCKQUOTE>
+    <PRE>VWidth: 1000
 </PRE>
-</BLOCKQUOTE>
-<P>
-specifying the vertical advance width.
-<P>
-The entry <CODE>Fore</CODE> starts the foreground
-<A NAME="splineset">splines</A>, they are encoded as postscript commands
-with moveto abbreviated to m, curveto to c and lineto to l (lower case el).
-The digit after after the letter is a set of flags whose bits have the following
-meanings:
-<TABLE CELLPADDING="2">
-  <TR>
-    <TH>mask</TH>
-    <TH>meaning</TH>
-  </TR>
-  <TR>
-    <TD>0x3</TD>
-    <TD>indicates whether the point is curve (0), corner (1) or tangent (2).</TD>
-  </TR>
-  <TR>
-    <TD>0x4</TD>
-    <TD>point selected</TD>
-  </TR>
-  <TR>
-    <TD>0x8</TD>
-    <TD>point has default next control point</TD>
-  </TR>
-  <TR>
-    <TD>0x10</TD>
-    <TD>pont has default prev control point</TD>
-  </TR>
-  <TR>
-    <TD>0x20</TD>
-    <TD>point is to be rounded in x (truetype hinting. doesn't really work)</TD>
-  </TR>
-  <TR>
-    <TD>0x40</TD>
-    <TD>point is to be rounded in y (truetype hinting. doesn't really work)</TD>
-  </TR>
-  <TR>
-    <TD>0x80</TD>
-    <TD>point was interpolated between two control points (when<BR>
-      read from a ttf file) and so has no point number of its own</TD>
-  </TR>
-</TABLE>
-<P>
-Splines for a truetype font will have two additional numbers after the flags.
-These are the truetype point numbers for the point itself and for the subsequent
-control point. If the value is -1 then this point has no number.
-<P>
-Splines for a font with hint substitution will have a hint mask after any
-point before which hint substitution occurs,
-<BLOCKQUOTE>
-  <PRE>459 422 m 1xc0
+  </BLOCKQUOTE>
+  <P>
+  specifying the vertical advance width.
+  <P>
+  The entry <CODE>Fore</CODE> starts the foreground
+  <A NAME="splineset">splines</A>, they are encoded as postscript commands
+  with moveto abbreviated to m, curveto to c and lineto to l (lower case el).
+  The digit after after the letter is a set of flags whose bits have the following
+  meanings:
+  <TABLE CELLPADDING="2">
+    <TR>
+      <TH>mask</TH>
+      <TH>meaning</TH>
+    </TR>
+    <TR>
+      <TD>0x3</TD>
+      <TD>indicates whether the point is curve (0), corner (1) or tangent (2).</TD>
+    </TR>
+    <TR>
+      <TD>0x4</TD>
+      <TD>point selected</TD>
+    </TR>
+    <TR>
+      <TD>0x8</TD>
+      <TD>point has default next control point</TD>
+    </TR>
+    <TR>
+      <TD>0x10</TD>
+      <TD>pont has default prev control point</TD>
+    </TR>
+    <TR>
+      <TD>0x20</TD>
+      <TD>point is to be rounded in x (truetype hinting. doesn't really work)</TD>
+    </TR>
+    <TR>
+      <TD>0x40</TD>
+      <TD>point is to be rounded in y (truetype hinting. doesn't really work)</TD>
+    </TR>
+    <TR>
+      <TD>0x80</TD>
+      <TD>point was interpolated between two control points (when<BR>
+	read from a ttf file) and so has no point number of its own</TD>
+    </TR>
+  </TABLE>
+  <P>
+  Splines for a truetype font will have two additional numbers after the flags.
+  These are the truetype point numbers for the point itself and for the subsequent
+  control point. If the value is -1 then this point has no number.
+  <P>
+  Splines for a font with hint substitution will have a hint mask after any
+  point before which hint substitution occurs,
+  <BLOCKQUOTE>
+    <PRE>459 422 m 1xc0
  339 442 l 1xa0
  312 243 l 1
 </PRE>
-</BLOCKQUOTE>
-<P>
-So the first two points have hint masks "xc0" and "xa0", these masks may
-be (almost) arbitrarily long, depending on the number of hints in the glyph.
-"xc0" means that the first two hints are active (0x80 &amp; 0x40) while "xa0"
-means that the first and third are (0x80 and 0x20).
-<P>
-A set of splines in the background is similar, it will be introduced by a
-<CODE>Back</CODE> entry.
-<P>
-While a background image is stored in the following horrible format:
-<BLOCKQUOTE>
-  <PRE>StartChar: A
+  </BLOCKQUOTE>
+  <P>
+  So the first two points have hint masks "xc0" and "xa0", these masks may
+  be (almost) arbitrarily long, depending on the number of hints in the glyph.
+  "xc0" means that the first two hints are active (0x80 &amp; 0x40) while "xa0"
+  means that the first and third are (0x80 and 0x20).
+  <P>
+  A set of splines in the background is similar, it will be introduced by a
+  <CODE>Back</CODE> entry.
+  <P>
+  While a background image is stored in the following horrible format:
+  <BLOCKQUOTE>
+    <PRE>StartChar: A
 ...
 Image: 167 301 0 21 2 1 23 753 2.53892 2.53892
 J:N0SYd"0-qu?]szzz!!#7`s7cQozzz!!!!(s8Viozzzz"98E!zzzz!!3-"rVuouzzz!!!'"
@@ -692,31 +692,31 @@ z5QCc`s82is!!!!`s8W,gz!WW3"s8W&amp;uzJ,fQKp](9o!!iQ(s8W-!z!&lt;&lt;*!s7cQo!!",@s
 EndImage
 EndChar
 </PRE>
-</BLOCKQUOTE>
-<P>
-Where the numbers on the image line mean respectively: width (of image in
-pixels), height, image type (0=&gt;mono, 1=&gt;indexed, 2=&gt;true), bytes
-per line, number of color entries in the color table, the index in the color
-table of the transparent color (or for true color images the transparent
-color itself), the x and y coordinates of the upper left corner of the image,
-the x and y scale factors to convert image pixels into character units. Then
-follows a bunch of binary data encoded using Adobe's Encode85 filter (See
-the PostScript Reference manual for a description). These data contain all
-the colors in the color table followed by a dump of the image pixel data.
-<P>
-Bitmap data will be compressed by run length encoding. I'm not going to go
-into that in detail, if you want to understand it I suggest you look at the
-file sfd.c and search for image2rle to see how it is done. The image is
-compressed using rle and then output as above, only now there is one more
-parameter on the "Image:" line which gives the number of bytes to be read
-from the data stream.
-<P>
-In multilayered fonts the foreground layers may contain images too. They
-are stored in the same way.
-<P>
-A character need not contain any splines:
-<BLOCKQUOTE>
-  <PRE>StartChar: semicolon
+  </BLOCKQUOTE>
+  <P>
+  Where the numbers on the image line mean respectively: width (of image in
+  pixels), height, image type (0=&gt;mono, 1=&gt;indexed, 2=&gt;true), bytes
+  per line, number of color entries in the color table, the index in the color
+  table of the transparent color (or for true color images the transparent
+  color itself), the x and y coordinates of the upper left corner of the image,
+  the x and y scale factors to convert image pixels into character units. Then
+  follows a bunch of binary data encoded using Adobe's Encode85 filter (See
+  the PostScript Reference manual for a description). These data contain all
+  the colors in the color table followed by a dump of the image pixel data.
+  <P>
+  Bitmap data will be compressed by run length encoding. I'm not going to go
+  into that in detail, if you want to understand it I suggest you look at the
+  file sfd.c and search for image2rle to see how it is done. The image is
+  compressed using rle and then output as above, only now there is one more
+  parameter on the "Image:" line which gives the number of bytes to be read
+  from the data stream.
+  <P>
+  In multilayered fonts the foreground layers may contain images too. They
+  are stored in the same way.
+  <P>
+  A character need not contain any splines:
+  <BLOCKQUOTE>
+    <PRE>StartChar: semicolon
 Encoding: 59 59
 Width: 264
 Flags: 
@@ -726,40 +726,40 @@ Refer: 33 44 N 1 0 0 1 0 0 1
 Refer: 35 46 N 1 0 0 1 0 414 2
 EndChar
 </PRE>
-</BLOCKQUOTE>
-<P>
-Above is one with just references to other characters (a semi-colon is drawn
-here by drawing a comma and stacking a period on top of it). The first number
-is the glyph index of the character being refered to (in the current font
-of course), the next number is the unicode code point, the N says the reference
-is not selected (An "S" indicates it is selected), the following 6 numbers
-are a postscript transformation matrix, the one for comma (unicode 44) is
-the identity matrix, while the one for period (unicode 46) just translates
-it vertically 414 units. The final number is a set of truetype flags:
-<UL>
-  <LI>
-    1 =&gt; Use My Metrics
-  <LI>
-    2 =&gt; Round to Grid
-  <LI>
-    4 =&gt; Position reference by point match (rather than by offset)<BR>
-    If this is set there will be two additional numbers, the first indicating
-    the point number in the base glyph, and the second the point number in the
-    current reference.
-</UL>
-<P>
-Old versions of sfd files will use the format:
-<BLOCKQUOTE>
-  <PRE>Ref: 44 44 N 1 0 0 1 0 0
+  </BLOCKQUOTE>
+  <P>
+  Above is one with just references to other characters (a semi-colon is drawn
+  here by drawing a comma and stacking a period on top of it). The first number
+  is the glyph index of the character being refered to (in the current font
+  of course), the next number is the unicode code point, the N says the reference
+  is not selected (An "S" indicates it is selected), the following 6 numbers
+  are a postscript transformation matrix, the one for comma (unicode 44) is
+  the identity matrix, while the one for period (unicode 46) just translates
+  it vertically 414 units. The final number is a set of truetype flags:
+  <UL>
+    <LI>
+      1 =&gt; Use My Metrics
+    <LI>
+      2 =&gt; Round to Grid
+    <LI>
+      4 =&gt; Position reference by point match (rather than by offset)<BR>
+      If this is set there will be two additional numbers, the first indicating
+      the point number in the base glyph, and the second the point number in the
+      current reference.
+  </UL>
+  <P>
+  Old versions of sfd files will use the format:
+  <BLOCKQUOTE>
+    <PRE>Ref: 44 44 N 1 0 0 1 0 0
 Ref: 46 46 N 1 0 0 1 0 414
 </PRE>
-</BLOCKQUOTE>
-<P>
-Where the first number gives the refered components' encoding.
-<P>
-A postscript glyph may also contain countermasks:
-<BLOCKQUOTE>
-  <PRE>StartChar: m
+  </BLOCKQUOTE>
+  <P>
+  Where the first number gives the refered components' encoding.
+  <P>
+  A postscript glyph may also contain countermasks:
+  <BLOCKQUOTE>
+    <PRE>StartChar: m
 Encoding: 109 109 77
 Width: 785
 HStem: 0 18&lt;28 224 292 488 566 752&gt; 445 27&lt;280 296 542 558&gt;
@@ -768,105 +768,105 @@ CounterMasks: 1 38
 ...
 EndChar
 </PRE>
-</BLOCKQUOTE>
-<P>
-The CounterMasks line in this example declares one counter group (first
-argument). The "38" (and any other values following it) is a bitmask, given
-in hex, that describes a group. The size of the bitmask is always a multiple
-of eight (i.e. always an even number of hex digits). The highest-order bit
-in the mask specifies whether the first stem hint is present (1) or absent
-(0) in the counter group. The second-highest-order bit does the same for
-the second hint, and so on. Any extra low-order bits not corresponding to
-any hint are ignored. (I know, starting from the high bit instead of the
-low bit seems strange, but that was Adobe's design decision.) Here, the third
-(0x20), fourth (0x10) and fifth (0x08) stem hints (i.e. the three vertical
-stems) are in the group, yielding a counter mask of 0x38. If we were to add
-four more VStem hints to the glyph, making nine hints in all, then the mask
-would have to be given as 0x3800 (because two bytes are needed to accommodate
-nine bits).
-<P>
-If a font has been loaded from a truetype file it may containing hinting
-information (FontForge does not attempt to understand truetype hints, just
-to preserve them)
-<BLOCKQUOTE>
-  <PRE>TtfInstrs: 107
+  </BLOCKQUOTE>
+  <P>
+  The CounterMasks line in this example declares one counter group (first
+  argument). The "38" (and any other values following it) is a bitmask, given
+  in hex, that describes a group. The size of the bitmask is always a multiple
+  of eight (i.e. always an even number of hex digits). The highest-order bit
+  in the mask specifies whether the first stem hint is present (1) or absent
+  (0) in the counter group. The second-highest-order bit does the same for
+  the second hint, and so on. Any extra low-order bits not corresponding to
+  any hint are ignored. (I know, starting from the high bit instead of the
+  low bit seems strange, but that was Adobe's design decision.) Here, the third
+  (0x20), fourth (0x10) and fifth (0x08) stem hints (i.e. the three vertical
+  stems) are in the group, yielding a counter mask of 0x38. If we were to add
+  four more VStem hints to the glyph, making nine hints in all, then the mask
+  would have to be given as 0x3800 (because two bytes are needed to accommodate
+  nine bits).
+  <P>
+  If a font has been loaded from a truetype file it may containing hinting
+  information (FontForge does not attempt to understand truetype hints, just
+  to preserve them)
+  <BLOCKQUOTE>
+    <PRE>TtfInstrs: 107
 5Xtqo&amp;gTLA(_S)TQj!Kq"UP8&lt;!&lt;rr:&amp;$QcW!"K,K&amp;kWe?(^pl]#mUY&lt;!s\f7"U&gt;G:!%\s-3WRec
 $pP.r$uZOWNsl$t"H&gt;'?EW%CM&amp;Cer:&amp;f3P&gt;eEnad5&lt;Qq=rQYuk3AE2g&gt;q7E*
 EndTtf
 </PRE>
-</BLOCKQUOTE>
-<P>
-This is 107 bytes of ASCII85Encode encoded binary data.
-<P>
-If the character contains Anchor Points these will be included:
-<BLOCKQUOTE>
-  <PRE>AnchorPoint: "bottom" 780 -60 basechar 0
+  </BLOCKQUOTE>
+  <P>
+  This is 107 bytes of ASCII85Encode encoded binary data.
+  <P>
+  If the character contains Anchor Points these will be included:
+  <BLOCKQUOTE>
+    <PRE>AnchorPoint: "bottom" 780 -60 basechar 0
 AnchorPoint: "top" 803 1487 basechar 0
 </PRE>
-</BLOCKQUOTE>
-<P>
-the point names the anchor class it belongs to (in UTF-7), its location,
-what type of point it is (basechar, mark, baselig, basemark, entry, exit),
-and for ligatures a number indicating which ligature component it refers
-to. If you have configured fontforge with support for device tables, you
-may also see:
-<BLOCKQUOTE>
-  <PRE>AnchorPoint: "bottom" 780 -60 basechar 0 {12-13 -1,-1} {8-14 1,0,-1,-1,-2,-2,-2}
+  </BLOCKQUOTE>
+  <P>
+  the point names the anchor class it belongs to (in UTF-7), its location,
+  what type of point it is (basechar, mark, baselig, basemark, entry, exit),
+  and for ligatures a number indicating which ligature component it refers
+  to. If you have configured fontforge with support for device tables, you
+  may also see:
+  <BLOCKQUOTE>
+    <PRE>AnchorPoint: "bottom" 780 -60 basechar 0 {12-13 -1,-1} {8-14 1,0,-1,-1,-2,-2,-2}
 </PRE>
-</BLOCKQUOTE>
-<P>
-Where the items in braces are horizontal/vertical
-<A NAME="device-table">device</A> tables. The first indicates that the
-(horizontal) device table applies to pixel sizes 12 through 13 with pixel
-adjustments of -1 pixel each. The second indicates a vertical device table
-applies to pixel sizes 8 through 14 with pixel adjustments of 1, 0, -1, -1,
--2, -2, -2 pixels.
-<P>
-Finally a TrueType font may position an anchor point based on a normal point
-within the glyph (if this is done a device table may not be present).
-<BLOCKQUOTE>
-  <PRE>AnchorPoint: "bottom" 780 -60 basechar 0 23
+  </BLOCKQUOTE>
+  <P>
+  Where the items in braces are horizontal/vertical
+  <A NAME="device-table">device</A> tables. The first indicates that the
+  (horizontal) device table applies to pixel sizes 12 through 13 with pixel
+  adjustments of -1 pixel each. The second indicates a vertical device table
+  applies to pixel sizes 8 through 14 with pixel adjustments of 1, 0, -1, -1,
+  -2, -2, -2 pixels.
+  <P>
+  Finally a TrueType font may position an anchor point based on a normal point
+  within the glyph (if this is done a device table may not be present).
+  <BLOCKQUOTE>
+    <PRE>AnchorPoint: "bottom" 780 -60 basechar 0 23
 </PRE>
-</BLOCKQUOTE>
-<P>
-Indicates that this anchor point will be positioned at the same location
-(which is normally 780,-60 but which might be moved by an instruction) as
-truetype point 23.
-<P>
-If the user has set the glyph class
-<BLOCKQUOTE>
-  <PRE>GlyphClass: 2
+  </BLOCKQUOTE>
+  <P>
+  Indicates that this anchor point will be positioned at the same location
+  (which is normally 780,-60 but which might be moved by an instruction) as
+  truetype point 23.
+  <P>
+  If the user has set the glyph class
+  <BLOCKQUOTE>
+    <PRE>GlyphClass: 2
 </PRE>
-</BLOCKQUOTE>
-<P>
-Where the number is 1 more than the 'GDEF' glyph class it represents. (so
-the 2 above means a base glyph (class 1)).
-<P>
-If the character is the first in any kern pairs (not a pair defined by a
-kern class, however)
-<BLOCKQUOTE>
-  <PRE>KernsSLIFO: 60 -100 1 0 {12-13 -1,-1} 63 -92 1 0 70 -123 1 0 45 -107 1 0 76 -107 1 0
+  </BLOCKQUOTE>
+  <P>
+  Where the number is 1 more than the 'GDEF' glyph class it represents. (so
+  the 2 above means a base glyph (class 1)).
+  <P>
+  If the character is the first in any kern pairs (not a pair defined by a
+  kern class, however)
+  <BLOCKQUOTE>
+    <PRE>KernsSLIFO: 60 -100 1 0 {12-13 -1,-1} 63 -92 1 0 70 -123 1 0 45 -107 1 0 76 -107 1 0
 </PRE>
-</BLOCKQUOTE>
-<P>
-Where each kern pair is represented by 4 numbers (and an optional
-<A HREF="sfdformat.html#device-table">device</A> table, see above). The first
-is the original position of the second character (in the current font), the
-next is the horizontal kerning amount, then the script lang index, and finally
-the open type flags. Then we start over with the next kernpair.
-<P>
-Old sfd files may contain a slightly different format:
-<BLOCKQUOTE>
-  <PRE>KernsSLIF: 114 -100 1 0 {12-13 -1,-1} 117 -92 1 0 101 -123 1 0 97 -107 1 0 111 -107 1 0
+  </BLOCKQUOTE>
+  <P>
+  Where each kern pair is represented by 4 numbers (and an optional
+  <A HREF="sfdformat.html#device-table">device</A> table, see above). The first
+  is the original position of the second character (in the current font), the
+  next is the horizontal kerning amount, then the script lang index, and finally
+  the open type flags. Then we start over with the next kernpair.
+  <P>
+  Old sfd files may contain a slightly different format:
+  <BLOCKQUOTE>
+    <PRE>KernsSLIF: 114 -100 1 0 {12-13 -1,-1} 117 -92 1 0 101 -123 1 0 97 -107 1 0 111 -107 1 0
 </PRE>
-</BLOCKQUOTE>
-<P>
-where the first number is the encoding of the second glyph in the kern pair.
-<P>
-Data that are to go into other GPOS, GSUB or GDEF sub-tables are stored like
-this:
-<BLOCKQUOTE>
-  <PRE>Position: 12 0 'sinf' dx=0 dy=-900 dh=0 dv=0
+  </BLOCKQUOTE>
+  <P>
+  where the first number is the encoding of the second glyph in the kern pair.
+  <P>
+  Data that are to go into other GPOS, GSUB or GDEF sub-tables are stored like
+  this:
+  <BLOCKQUOTE>
+    <PRE>Position: 12 0 'sinf' dx=0 dy=-900 dh=0 dv=0
 PairPos: 12 0 'dist' B dx=0 dy=0 dh=0 dv=0  dx=-10 dy=0 dh=0 dv=0
 Ligature: 12 0 'frac' one slash four
 Substitution: 12 3 'smcp' agrave.sc
@@ -875,47 +875,47 @@ MultipleSubs: 12 0 'ccmp' a grave
 Ligature: 12 4 'liga' f f
 LCarets: 0 0 '    ' 1 650 
 </PRE>
-</BLOCKQUOTE>
-<P>
-In most of these lines the first two numbers provide a script lang index
-and a set of opentype flags (except for LCarets where they are ignored).
-This is followed by an opentype tag (also ignored for ligature carets). A
-simple position change is expressed by the amount of movement of the glyph
-and of the glyph's advance width. A pairwise positioning controls the positioning
-of two adjacent glyphs (kerning is a special case of this). A ligature contains
-the names of the characters that make it up. A simple substitution contains
-the name of the character that it will become. An alternate sub contains
-the list of characters that the user may choose from. A multiple substitution
-contains the characters the current glyph is to be decomposed into. A ligature
-caret contains a count of the number of carets defined, and the a list of
-the locations of those carets.
-<P>
-A glyph may have an arbitrary comment associated with it, this will be output
-in UTF-7
-<BLOCKQUOTE>
-  <PRE>Comment: Hi
+  </BLOCKQUOTE>
+  <P>
+  In most of these lines the first two numbers provide a script lang index
+  and a set of opentype flags (except for LCarets where they are ignored).
+  This is followed by an opentype tag (also ignored for ligature carets). A
+  simple position change is expressed by the amount of movement of the glyph
+  and of the glyph's advance width. A pairwise positioning controls the positioning
+  of two adjacent glyphs (kerning is a special case of this). A ligature contains
+  the names of the characters that make it up. A simple substitution contains
+  the name of the character that it will become. An alternate sub contains
+  the list of characters that the user may choose from. A multiple substitution
+  contains the characters the current glyph is to be decomposed into. A ligature
+  caret contains a count of the number of carets defined, and the a list of
+  the locations of those carets.
+  <P>
+  A glyph may have an arbitrary comment associated with it, this will be output
+  in UTF-7
+  <BLOCKQUOTE>
+    <PRE>Comment: Hi
 </PRE>
-</BLOCKQUOTE>
-<P>
-or a color
-<BLOCKQUOTE>
-  <PRE>Colour: ff0000
+  </BLOCKQUOTE>
+  <P>
+  or a color
+  <BLOCKQUOTE>
+    <PRE>Colour: ff0000
 </PRE>
-</BLOCKQUOTE>
-<H4>
-  Outline character extensions for multilayered fonts (type3)
-</H4>
-<P>
-(these are only supported if FontForge has been configured for multi-layered
-editing)
-<P>
-Instead of having a single "Fore"ground layer, multilayered fonts have
-(potentially) several layers, each one introduced by a Layer line which specifies
-things like filling and stroking info for this layer, within each layer are
-a splineset, a list of references and a list of images (any or all may be
-omitted). The syntax for these is the same as in the normal case above.
-<BLOCKQUOTE>
-  <PRE>LayerCount: 3
+  </BLOCKQUOTE>
+  <H4>
+    Outline character extensions for multilayered fonts (type3)
+  </H4>
+  <P>
+  (these are only supported if FontForge has been configured for multi-layered
+  editing)
+  <P>
+  Instead of having a single "Fore"ground layer, multilayered fonts have
+  (potentially) several layers, each one introduced by a Layer line which specifies
+  things like filling and stroking info for this layer, within each layer are
+  a splineset, a list of references and a list of images (any or all may be
+  omitted). The syntax for these is the same as in the normal case above.
+  <BLOCKQUOTE>
+    <PRE>LayerCount: 3
 Layer: 1  1 1 1  #fffffffe 1  #fffffffe 1 40 round round [1 0 0 1] []
 SplineSet
 ...
@@ -925,57 +925,78 @@ SplineSet
 ...
 EndSplineSet
 </PRE>
-</BLOCKQUOTE>
-<P>
-The LayerCount line gives the number of layers in the glyph (the background
-layer is layer 0, so this number is one more than the number of layers that
-will actually be specified -- the background layer is still specified the
-way it was before, but is included in this count). This line is not required,
-if omitted (or wrong) FontForge will figure that out.
-<P>
-The Layer line contains too much information. First is a number saying which
-layer, next are three booleans, the first specifies whether to fill the splineset
-(or use an imagemask for images), the second whether to stroke the splineset,
-the third is currently pretty much meaningless. Next follows the RGB value
-of the fill color (the special value of #fffffffe means the the color is
-inherited), then the opacity (the special value -1 means inherited), then
-the stroke color and opacity. Then the stroke width (again -1 means inherited),
-the linejoin type (miter, round, bevel, inherited), the linecap type (butt,
-round,square,inherited), the transformation matrix to be applied to the pen
-and finally the dash array.
-<P>
-Any SplineSet, Ref, Images between this Layer and the next (or the end of
-the character) are part of this layer.
-<H3>
-  <A NAME="Bitmap-Fonts">Bitmap Fonts</A>
-</H3>
-<P>
-After all the outline characters have been described there is an EndChars
-entry and then follow any bitmap fonts:
-<BLOCKQUOTE>
-  <PRE>EndChars
+  </BLOCKQUOTE>
+  <P>
+  The LayerCount line gives the number of layers in the glyph (the background
+  layer is layer 0, so this number is one more than the number of layers that
+  will actually be specified -- the background layer is still specified the
+  way it was before, but is included in this count). This line is not required,
+  if omitted (or wrong) FontForge will figure that out.
+  <P>
+  The Layer line contains too much information. First is a number saying which
+  layer, next are three booleans, the first specifies whether to fill the splineset
+  (or use an imagemask for images), the second whether to stroke the splineset,
+  the third is currently pretty much meaningless. Next follows the RGB value
+  of the fill color (the special value of #fffffffe means the the color is
+  inherited), then the opacity (the special value -1 means inherited), then
+  the stroke color and opacity. Then the stroke width (again -1 means inherited),
+  the linejoin type (miter, round, bevel, inherited), the linecap type (butt,
+  round,square,inherited), the transformation matrix to be applied to the pen
+  and finally the dash array.
+  <P>
+  Any SplineSet, Ref, Images between this Layer and the next (or the end of
+  the character) are part of this layer.
+  <H3>
+    <A NAME="Bitmap-Fonts">Bitmap Fonts</A>
+  </H3>
+  <P>
+  After all the outline characters have been described there is an EndChars
+  entry and then follow any bitmap fonts:
+  <BLOCKQUOTE>
+    <PRE>EndChars
 BitmapFont: 12 285 10 2 1
+BDFStartProperties: 2
+COMMENT 0 "This is a bdf comment property"
+FONT_DESCENT 18 2
+BDFEndProperties
+Resolution: 75
 BDFChar: 32 3 0 0 0 0
 z
-BDFChar: 33 3 0 1 0 9
+BDFChar: 3 33 3 0 1 0 9
 ^d(.M5X7S"!'gMa
 </PRE>
-</BLOCKQUOTE>
-<P>
-The bitmap font line contains the following numbers: the pixelsize of the
-font, the number of potential characters in the font, the ascent and the
-descent of the font and the depth of font (number of bits in a pixel). This
-is followed by a list of bitmap characters, the bitmap character line contains
-the following numbers: the encoding (local), the width, the minimum x value,
-the minimum y value, the maximum x value and the maximum y value. This is
-followed by another set of binary data encoded as above there will be
-(ymax-ymin+1)* ((xmax-xmin+8)/8) (unencoded) bytes, there is no color table
-here (the high order bit comes first in the image, set bits should be colored
-black, clear bits transparent).
-<P>
-A bitmap font is ended by:
-<BLOCKQUOTE>
-  <PRE>EndBitmapFont
+  </BLOCKQUOTE>
+  <P>
+  The bitmap font line contains the following numbers: the pixelsize of the
+  font, the number of potential characters in the font, the ascent and the
+  descent of the font and the depth of font (number of bits in a pixel). 
+  <P>
+  Optionally there may be a set of BDF properties. If there are any properties
+  there will be a line "BDFStartProperties:" with a count of properties. There
+  should be that many property lines, and then a "BDFEndProperties" line. Each
+  property is of the form:<BR>
+  <CODE>&lt;NAME&gt; &lt;TYPE&gt; &lt;VALUE&gt;</CODE><BR>
+  Where &lt;NAME&gt; is the property name, &lt;TYPE&gt; is 0 for a string,
+  1 for an atom, 2 for an int, 3 for an unsigned int. In addition
+  &lt;TYPE&gt; may have a 16 ored to one of the above values indicating the
+  line is a true property (rather than information from somewhere else in the
+  BDF header). &lt;VALUE&gt; will either be a quoted string or an integer.
+  <P>
+  Optionally there may be a resolution line, which specifies the design resolution
+  of the font.
+  <P>
+  This is followed by a list of bitmap characters, the bitmap character line
+  contains the following numbers: the original position, the encoding (local),
+  the width, the minimum x value, the minimum y value, the maximum x value
+  and the maximum y value. If the bitmap font has vertical metrics there will
+  also be a vwidth. This is followed by another set of binary data encoded
+  as above. There will be (ymax-ymin+1)* ((xmax-xmin)/(8/depth)+1) (unencoded)
+  bytes, there is no color table here (the high order bit comes first in the
+  image, set bits should be colored black, clear bits transparent).
+  <P>
+  A bitmap font is ended by:
+  <BLOCKQUOTE>
+    <PRE>EndBitmapFont
 BitmapFont: 17 285 14 3 1
 BDFChar: 0 17 0 0 0 0
 z
@@ -983,37 +1004,37 @@ z
 EndBitmapFont
 EndSplineFont
 </PRE>
-</BLOCKQUOTE>
-<H3>
-  <A NAME="CID-keyed-fonts">CID keyed fonts</A>
-</H3>
-<P>
-A CID font is saved slighlty differently. It begins with the normal font
-header which contains the information in the top level CID font dictionary.
-As mentioned above this will include special keys that specify the CID charset
-(registry, ordering, supplement). It will also include:
-<BLOCKQUOTE>
-  <PRE>CIDVersion: 2.0
+  </BLOCKQUOTE>
+  <H3>
+    <A NAME="CID-keyed-fonts">CID keyed fonts</A>
+  </H3>
+  <P>
+  A CID font is saved slighlty differently. It begins with the normal font
+  header which contains the information in the top level CID font dictionary.
+  As mentioned above this will include special keys that specify the CID charset
+  (registry, ordering, supplement). It will also include:
+  <BLOCKQUOTE>
+    <PRE>CIDVersion: 2.0
 BeginSubFonts: 5 8318
 </PRE>
-</BLOCKQUOTE>
-<P>
-The <CODE>CIDVersion</CODE> is self-explanatory. The
-<CODE>BeginSubFonts</CODE> line says that there are 5 subfonts the largest
-of which contains slots for 8318 characters (again some of these may not
-be defined). This will be followed by a list of the subfonts (dumped out
-just like normal fonts) and their characters. Only the top level font will
-contain any bitmap characters, anchor classes, etc.
-<H3>
-  <A NAME="Multiple-Master-fonts">Multiple Master fonts</A>
-</H3>
-<P>
-Multiple master fonts start with a different style of file header, and are
-followed by a set of sub fonts. If the mm font has 4 instances then there
-will be 5 subfonts (one for each instance, and one for the blended font).
-The font header looks like:
-<BLOCKQUOTE>
-  <PRE>SplineFontDB: 1.0
+  </BLOCKQUOTE>
+  <P>
+  The <CODE>CIDVersion</CODE> is self-explanatory. The
+  <CODE>BeginSubFonts</CODE> line says that there are 5 subfonts the largest
+  of which contains slots for 8318 characters (again some of these may not
+  be defined). This will be followed by a list of the subfonts (dumped out
+  just like normal fonts) and their characters. Only the top level font will
+  contain any bitmap characters, anchor classes, etc.
+  <H3>
+    <A NAME="Multiple-Master-fonts">Multiple Master fonts</A>
+  </H3>
+  <P>
+  Multiple master fonts start with a different style of file header, and are
+  followed by a set of sub fonts. If the mm font has 4 instances then there
+  will be 5 subfonts (one for each instance, and one for the blended font).
+  The font header looks like:
+  <BLOCKQUOTE>
+    <PRE>SplineFontDB: 1.0
 MMCounts: 4 2 0 0
 MMAxis: Weight Width
 MMPositions: 0 0 1 0 0 1 1 1
@@ -1037,35 +1058,35 @@ exch 50 sub 1400 div
 EndMMSubroutine
 BeginMMFonts: 5 0
 </PRE>
-</BLOCKQUOTE>
-<P>
-The "MMCounts" line gives the number of instances (4) and the number of axes
-(2) in this font also whether it is an apple distortable font (0) and if
-so the number of named styles (0) in that font. The "MMAxis" line gives the
-names of the axes. The MMPositions line is an array of real numbers (with
-instance_count*axis_count elements) describing the coordinates of each instance
-along each axis. The MMWeights line provides the weights (blends) of the
-instance fonts to which, when interpolated, yield the default font. There
-will be one AxisMap line for each axis, it provides the mapping from design
-space to normalized space. The first line
-<BLOCKQUOTE>
-  <PRE>MMAxisMap: 0 2 0=&gt;50 1=&gt;1450
+  </BLOCKQUOTE>
+  <P>
+  The "MMCounts" line gives the number of instances (4) and the number of axes
+  (2) in this font also whether it is an apple distortable font (0) and if
+  so the number of named styles (0) in that font. The "MMAxis" line gives the
+  names of the axes. The MMPositions line is an array of real numbers (with
+  instance_count*axis_count elements) describing the coordinates of each instance
+  along each axis. The MMWeights line provides the weights (blends) of the
+  instance fonts to which, when interpolated, yield the default font. There
+  will be one AxisMap line for each axis, it provides the mapping from design
+  space to normalized space. The first line
+  <BLOCKQUOTE>
+    <PRE>MMAxisMap: 0 2 0=&gt;50 1=&gt;1450
 </PRE>
-</BLOCKQUOTE>
-<P>
-says that axis 0 has two mapping points. One is at normalized position 0
-and corresponds to design position 50, the other is at normalized position
-1 and corresponds to design position 1450. There are two subroutines stored
-here, both are simple postscript. The first is the /NormalizeDesignVector
-routine and the second is the /ConvertDesignVector routine.
-<P>
-Finally we have the actual instance fonts. 
-  <HR>
-<P>
-Fonts with information for Apple's '*var' tables ('fvar', 'gvar', 'avar'
-and 'cvar') have a slightly different format:
-<BLOCKQUOTE>
-  <PRE>MMCounts: 8 2 1 10
+  </BLOCKQUOTE>
+  <P>
+  says that axis 0 has two mapping points. One is at normalized position 0
+  and corresponds to design position 50, the other is at normalized position
+  1 and corresponds to design position 1450. There are two subroutines stored
+  here, both are simple postscript. The first is the /NormalizeDesignVector
+  routine and the second is the /ConvertDesignVector routine.
+  <P>
+  Finally we have the actual instance fonts. 
+    <HR>
+  <P>
+  Fonts with information for Apple's '*var' tables ('fvar', 'gvar', 'avar'
+  and 'cvar') have a slightly different format:
+  <BLOCKQUOTE>
+    <PRE>MMCounts: 8 2 1 10
 MMAxis: Weight Width
 MMPositions: 1 0 -1 0 0 1 0 -1 -1 -1 1 -1 1 1 -1 1
 MMWeights: 0 0 0 0 0 0 0 0
@@ -1082,76 +1103,76 @@ MacName: 0 0 5 "Black"
 MacName: 0 1 9 "Tr\217s gras"
 ...
 </PRE>
-</BLOCKQUOTE>
-<P>
-In Adobe's format coordinates range between [0,1], while in Apple's format
-they range [-1,1]. Adobe generally specifies 2 instances per axis (at the
-extrema) while Apple expects 3 (the extrema and the default setting at 0).
-So a two axis font for Adobe will normally contain 4 instances and a default
-version, while one for Apple will contain 8 instances and a default version.
-The MMWeights field is irrelevant for Apple. Each axis has a set of names,
-for that axis translated into various languages. Finally Apple allows certain
-points in design space to be given names, here the point Weight=3.2, Width=1
-is named "Black" or "Tr&eacute;s gras".
-<H2>
-  <A NAME="Autosave-Format">Autosave Format</A>
-</H2>
-<P>
-<A HREF="errrecovery.html">Error recovery</A> files are saved in
-~/.FontForge/autosave, they have quite random looking names and end in .asfd.
-They look very similar to .sfd files above.
-<P>
-If an asfd file starts with a line:
-<BLOCKQUOTE>
-  <PRE>Base: /home/gww/myfonts/fontforge/Ambrosia.sfd
+  </BLOCKQUOTE>
+  <P>
+  In Adobe's format coordinates range between [0,1], while in Apple's format
+  they range [-1,1]. Adobe generally specifies 2 instances per axis (at the
+  extrema) while Apple expects 3 (the extrema and the default setting at 0).
+  So a two axis font for Adobe will normally contain 4 instances and a default
+  version, while one for Apple will contain 8 instances and a default version.
+  The MMWeights field is irrelevant for Apple. Each axis has a set of names,
+  for that axis translated into various languages. Finally Apple allows certain
+  points in design space to be given names, here the point Weight=3.2, Width=1
+  is named "Black" or "Tr&eacute;s gras".
+  <H2>
+    <A NAME="Autosave-Format">Autosave Format</A>
+  </H2>
+  <P>
+  <A HREF="errrecovery.html">Error recovery</A> files are saved in
+  ~/.FontForge/autosave, they have quite random looking names and end in .asfd.
+  They look very similar to .sfd files above.
+  <P>
+  If an asfd file starts with a line:
+  <BLOCKQUOTE>
+    <PRE>Base: /home/gww/myfonts/fontforge/Ambrosia.sfd
 </PRE>
-</BLOCKQUOTE>
-<P>
-Then it is assumed to be a list of changes applied to that file (which may
-be an sfd file or a font file). If it does not start with a
-"<CODE>Base:</CODE>" line then it is assumed to be a new font. The next line
-contains the encoding, as above. The next line is a <CODE>BeginChars</CODE>
-line. The number given on the line is not the number of characters in the
-file, but is the maximum number that could appear in the font. Then follows
-a list of all changed characters in the font (in the format described above).
-<P>
-Bitmaps are not preserved. Grid changes are not preserved.
-<P>
-<P ALIGN=Center>
--- <A HREF="src.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
-<A HREF="bezier.html">Next</A> --
-<P ALIGN=Left>
-<A NAME="ASCII85Encode"><SUP>1</SUP>ASCII85Encode</A>: an encoding which
-takes 4 binary bytes and converts them to 5 ASCII characters between '!'
-and 'u'. Suppose we have 4 binary bytes: (b1 b2 b3 b4) then we want to find
-(c1 c2 c3 c4 c5) such that:
-<BLOCKQUOTE>
-  <PRE><I>b<SUB>1</SUB> * 256<SUP>3</SUP>  +  b<SUB>2</SUB> * 256<SUP>2</SUP>  +  b<SUB>3</SUB> * 256  +  b<SUB>4</SUB> =</I>
+  </BLOCKQUOTE>
+  <P>
+  Then it is assumed to be a list of changes applied to that file (which may
+  be an sfd file or a font file). If it does not start with a
+  "<CODE>Base:</CODE>" line then it is assumed to be a new font. The next line
+  contains the encoding, as above. The next line is a <CODE>BeginChars</CODE>
+  line. The number given on the line is not the number of characters in the
+  file, but is the maximum number that could appear in the font. Then follows
+  a list of all changed characters in the font (in the format described above).
+  <P>
+  Bitmaps are not preserved. Grid changes are not preserved.
+  <P>
+  <P ALIGN=Center>
+  -- <A HREF="src.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
+  <A HREF="bezier.html">Next</A> --
+  <P ALIGN=Left>
+  <A NAME="ASCII85Encode"><SUP>1</SUP>ASCII85Encode</A>: an encoding which
+  takes 4 binary bytes and converts them to 5 ASCII characters between '!'
+  and 'u'. Suppose we have 4 binary bytes: (b1 b2 b3 b4) then we want to find
+  (c1 c2 c3 c4 c5) such that:
+  <BLOCKQUOTE>
+    <PRE><I>b<SUB>1</SUB> * 256<SUP>3</SUP>  +  b<SUB>2</SUB> * 256<SUP>2</SUP>  +  b<SUB>3</SUB> * 256  +  b<SUB>4</SUB> =</I>
 <I>	c<SUB>1</SUB> * 85<SUP>4</SUP>  +  c<SUB>2</SUB> * 85<SUP>3</SUP>  +  c<SUB>3</SUB> * 85<SUP>2</SUP>  +  c<SUB>4</SUB> * 85  +  c<SUB>5</SUB></I>
 </PRE>
-</BLOCKQUOTE>
-<P>
-The final output is obtained by adding 33 ('!') to each of the
-<I>c<SUB>i</SUB></I>. If all four bytes are 0, then rather than writing '!!!!!',
-the letter 'z' may be used instead.
-<P>
-Unfortunately, not all streams of binary data have a length divisible by
-4. So at the end of the run, assume there are <I>n</I> bytes left over. Append
-<I>4-n</I> zero bytes to the data stream, and apply the above transformation
-(without the 'z' special case for all zeros), and output <I>n+1 </I>of the
-<I>c<SUB>i</SUB></I> bytes.
-<P>
-So to encode a single 0 byte we would:
-<UL>
-  <LI>
-    append 3 additional 0 bytes (n==1 =&gt; add 4-1=3 bytes)
-  <LI>
-    find that all the <I>c<SUB>i</SUB></I> were also zero
-  <LI>
-    add '!' to each (all are now '!')
-  <LI>
-    output two '!' (n+1 = 2)
-</UL>
-<P>
+  </BLOCKQUOTE>
+  <P>
+  The final output is obtained by adding 33 ('!') to each of the
+  <I>c<SUB>i</SUB></I>. If all four bytes are 0, then rather than writing '!!!!!',
+  the letter 'z' may be used instead.
+  <P>
+  Unfortunately, not all streams of binary data have a length divisible by
+  4. So at the end of the run, assume there are <I>n</I> bytes left over. Append
+  <I>4-n</I> zero bytes to the data stream, and apply the above transformation
+  (without the 'z' special case for all zeros), and output <I>n+1 </I>of the
+  <I>c<SUB>i</SUB></I> bytes.
+  <P>
+  So to encode a single 0 byte we would:
+  <UL>
+    <LI>
+      append 3 additional 0 bytes (n==1 =&gt; add 4-1=3 bytes)
+    <LI>
+      find that all the <I>c<SUB>i</SUB></I> were also zero
+    <LI>
+      add '!' to each (all are now '!')
+    <LI>
+      output two '!' (n+1 = 2)
+  </UL>
+  <P>
 </DIV>
 </BODY></HTML>
