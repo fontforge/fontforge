@@ -174,6 +174,8 @@ struct ttfinfo {
     uint32 pfed_start;
 		/* TeX  -- TeX table, also non-standard */
     uint32 tex_start;
+		/* BDF  -- BDF properties, also non-standard */
+    uint32 bdf_start;
 
 		/* Apple Advanced Typography Tables */
     uint32 prop_start;
@@ -571,6 +573,8 @@ struct alltabs {
     int pfedlen;
     FILE *tex;
     int texlen;
+    FILE *bdf;
+    int bdflen;
     FILE *gvar;
     int gvarlen;
     FILE *fvar;
@@ -733,6 +737,9 @@ extern void pfed_read(FILE *ttf,struct ttfinfo *info);
 	/* The TeX table, to contain stuff the TeX people want */
 extern void tex_dump(struct alltabs *at, SplineFont *sf);
 extern void tex_read(FILE *ttf,struct ttfinfo *info);
+	/* The BDF table, to contain bdf properties the X people want */
+extern int ttf_bdf_dump(SplineFont *sf,struct alltabs *at,int32 *sizes);
+extern void ttf_bdf_read(FILE *ttf,struct ttfinfo *info);
 
 
     /* Parsing advanced typography */

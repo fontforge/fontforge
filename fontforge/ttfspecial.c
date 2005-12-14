@@ -485,8 +485,10 @@ static uint32 tex_mathext_params[] = {
     TeX_BigOpSpace5,
     0};
 
+/* ************************************************************************** */
 /* *************************    The 'TeX ' table    ************************* */
 /* *************************         Output         ************************* */
+/* ************************************************************************** */
 
 static void TeX_dumpFontParams(SplineFont *sf, struct TeX_subtabs *tex ) {
     FILE *fprm;
@@ -712,5 +714,198 @@ return;
 	LogError( _("Unknown subtable '%c%c%c%c' in 'TeX ' table, ignored\n"),
 		tagoff[i].tag>>24, (tagoff[i].tag>>16)&0xff, (tagoff[i].tag>>8)&0xff, tagoff[i].tag&0xff );
       break;
+    }
+}
+
+/* ************************************************************************** */
+/* *************************    The 'BDF ' table    ************************* */
+/* *************************         Output         ************************* */
+/* ************************************************************************** */
+
+/* the BDF table is used to store BDF properties so that we can do round trip */
+/* conversion from BDF->otb->BDF without losing anything. */
+/* Format:
+	USHORT	version		: 'BDF' table version number, must be 0x0001
+	USHORT	strikeCount	: number of strikes in table
+	ULONG	stringTable	: offset (from start of BDF table) to string table
+
+followed by an array of 'strikeCount' descriptors that look like: 
+	USHORT	ppem		: vertical pixels-per-EM for this strike
+	USHORT	num_items	: number of items (properties and atoms), max is 255
+
+this array is followed by 'strikeCount' value sets. Each "value set" is 
+an array of (num_items) items that look like:
+	ULONG	item_name	: offset in string table to item name
+	USHORT	item_type	: item type: 0 => non-property string (e.g. COMMENT)
+					     1 => non-property atom (e.g. FONT)
+					     2 => non-property int32
+					     3 => non-property uint32
+					  0x10 => flag for a property, ored
+						  with above value types)
+	ULONG	item_value	: item value. 
+				strings	 => an offset into the string table
+					  to the corresponding string,
+					  without the surrending double-quotes
+
+				atoms	 => an offset into the string table
+
+				integers => the corresponding 32-bit value
+Then the string table of null terminated strings. These strings should be in
+ASCII.
+*/
+
+#define AMAX	50
+
+int ttf_bdf_dump(SplineFont *sf,struct alltabs *at,int32 *sizes) {
+    FILE *strings;
+    struct atomoff { char *name; int pos; } atomoff[AMAX];
+    int acnt=0;
+    int spcnt = 0;
+    int i,j,k;
+    BDFFont *bdf;
+    long pos;
+
+    for ( i=0; sizes[i]!=0; ++i ) {
+	for ( bdf=sf->bitmaps; bdf!=NULL && (bdf->pixelsize!=(sizes[i]&0xffff) || BDFDepth(bdf)!=(sizes[i]>>16)); bdf=bdf->next );
+	if ( bdf!=NULL && bdf->prop_cnt!=0 )
+	    ++spcnt;
+    }
+    if ( spcnt==0 )	/* No strikes with properties */
+return(true);
+	
+    at->bdf = tmpfile();
+    strings = tmpfile();
+
+    putshort(at->bdf,0x0001);
+    putshort(at->bdf,spcnt);
+    putlong(at->bdf,0);		/* offset to string table */
+
+    for ( i=0; sizes[i]!=0; ++i ) {
+	for ( bdf=sf->bitmaps; bdf!=NULL && (bdf->pixelsize!=(sizes[i]&0xffff) || BDFDepth(bdf)!=(sizes[i]>>16)); bdf=bdf->next );
+	if ( bdf!=NULL && bdf->prop_cnt!=0 ) {
+	    putshort(at->bdf,bdf->pixelsize);
+	    putshort(at->bdf,bdf->prop_cnt);
+	}
+    }
+
+    for ( i=0; sizes[i]!=0; ++i ) {
+	for ( bdf=sf->bitmaps; bdf!=NULL && (bdf->pixelsize!=(sizes[i]&0xffff) || BDFDepth(bdf)!=(sizes[i]>>16)); bdf=bdf->next );
+	if ( bdf!=NULL && bdf->prop_cnt!=0 ) {
+	    for ( j=0; j<bdf->prop_cnt; ++j ) {
+		/* Try to reuse keyword names in string space */
+		for ( k=0 ; k<acnt; ++k ) {
+		    if ( strcmp(atomoff[k].name,bdf->props[j].name)==0 )
+		break;
+		}
+		if ( k>=acnt && k<AMAX ) {
+		    atomoff[k].name = bdf->props[j].name;
+		    atomoff[k].pos = ftell(strings);
+		    ++acnt;
+		    fwrite(atomoff[k].name,1,strlen(atomoff[k].name)+1,strings);
+		}
+		if ( k<acnt )
+		    putlong(at->bdf,atomoff[k].pos);
+		else {
+		    putlong(at->bdf,ftell(strings));
+		    fwrite(bdf->props[j].name,1,strlen(bdf->props[j].name)+1,strings);
+		}
+		putshort(at->bdf,bdf->props[j].type);
+		if ( (bdf->props[j].type & ~prt_property)==prt_string ||
+			(bdf->props[j].type & ~prt_property)==prt_atom ) {
+		    putlong(at->bdf,ftell(strings));
+		    fwrite(bdf->props[j].u.str,1,strlen(bdf->props[j].u.str)+1,strings);
+		} else {
+		    putlong(at->bdf,bdf->props[j].u.val);
+		}
+	    }
+	}
+    }
+
+    pos = ftell(at->bdf);
+    fseek(at->bdf,4,SEEK_SET);
+    putlong(at->bdf,pos);
+    fseek(at->bdf,0,SEEK_END);
+
+    if ( !ttfcopyfile(at->bdf,strings,pos,"BDF string table"))
+return( false );
+
+    at->bdflen = ftell( at->bdf );
+
+    /* Align table */
+    if ( at->bdflen&1 )
+	putc('\0',at->bdf);
+    if ( (at->bdflen+1)&2 )
+	putshort(at->bdf,0);
+
+return( true );
+}
+
+/* *************************    The 'BDF ' table    ************************* */
+/* *************************          Input         ************************* */
+
+static char *getstring(FILE *ttf,long start) {
+    long here = ftell(ttf);
+    int len, ch;
+    char *str, *pt;
+
+    fseek(ttf,start,SEEK_SET);
+    for ( len=1; (ch=getc(ttf))>0 ; ++len );
+    fseek(ttf,start,SEEK_SET);
+    pt = str = galloc(len);
+    while ( (ch=getc(ttf))>0 )
+	*pt++ = ch;
+    *pt = '\0';
+    fseek(ttf,here,SEEK_SET);
+return( str );
+}
+
+void ttf_bdf_read(FILE *ttf,struct ttfinfo *info) {
+    int strike_cnt, i,j;
+    long string_start;
+    struct bdfinfo { BDFFont *bdf; int cnt; } *bdfinfo;
+    BDFFont *bdf;
+
+    if ( info->bdf_start==0 )
+return;
+    fseek(ttf,info->bdf_start,SEEK_SET);
+    if ( getushort(ttf)!=1 )
+return;
+    strike_cnt = getushort(ttf);
+    string_start = getlong(ttf) + info->bdf_start;
+
+    bdfinfo = galloc(strike_cnt*sizeof(struct bdfinfo));
+    for ( i=0; i<strike_cnt; ++i ) {
+	int ppem, num_items;
+	ppem = getushort(ttf);
+	num_items = getushort(ttf);
+	for ( bdf=info->bitmaps; bdf!=NULL; bdf=bdf->next )
+	    if ( bdf->pixelsize==ppem )
+	break;
+	bdfinfo[i].bdf = bdf;
+	bdfinfo[i].cnt = num_items;
+    }
+
+    for ( i=0; i<strike_cnt; ++i ) {
+	if ( (bdf = bdfinfo[i].bdf) ==NULL )
+	    fseek(ttf,10*bdfinfo[i].cnt,SEEK_CUR);
+	else {
+	    bdf->prop_cnt = bdfinfo[i].cnt;
+	    bdf->props = galloc(bdf->prop_cnt*sizeof(BDFProperties));
+	    for ( j=0; j<bdf->prop_cnt; ++j ) {
+		long name = getlong(ttf);
+		int type = getushort(ttf);
+		long value = getlong(ttf);
+		bdf->props[j].type = type;
+		bdf->props[j].name = getstring(ttf,string_start+name);
+		switch ( type&~prt_property ) {
+		  case prt_int: case prt_uint:
+		    bdf->props[j].u.val = value;
+		  break;
+		  case prt_string: case prt_atom:
+		    bdf->props[j].u.str = getstring(ttf,string_start+value);
+		  break;
+		}
+	    }
+	}
     }
 }

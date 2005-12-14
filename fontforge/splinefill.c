@@ -1800,6 +1800,18 @@ return;
     chunkfree(bdfc,sizeof(BDFChar));
 }
 
+void BDFPropsFree(BDFFont *bdf) {
+    int i;
+
+    for ( i=0; i<bdf->prop_cnt; ++i ) {
+	free(bdf->props[i].name);
+	if ( (bdf->props[i].type&~prt_property)==prt_string ||
+		 (bdf->props[i].type&~prt_property)==prt_atom )
+	     free(bdf->props[i].u.str);
+     }
+     free( bdf->props );
+}
+
 void BDFFontFree(BDFFont *bdf) {
     int i;
 

@@ -565,6 +565,18 @@ typedef struct encmap {		/* A per-font map of encoding to glyph id */
     unsigned int ticked: 1;
 } EncMap;
 
+enum property_type { prt_string, prt_atom, prt_int, prt_uint, prt_property=0x10 };
+
+typedef struct bdfprops {
+    char *name;		/* These include both properties (like SLANT) and non-properties (like FONT) */
+    int type;
+    union {
+	char *str;
+	char *atom;
+	int val;
+    } u;
+} BDFProperties;
+
 typedef struct bdffont {
     struct splinefont *sf;
     int glyphcnt, glyphmax;	/* used & allocated sizes of glyphs array */
@@ -579,7 +591,9 @@ typedef struct bdffont {
     char *foundry;
     int res;
     void *freetype_context;
-    int truesize;		/* for bbsized fonts */
+    uint16 truesize;		/* for bbsized fonts */
+    int16 prop_cnt;
+    BDFProperties *props;
 } BDFFont;
 
 #define HntMax	96		/* PS says at most 96 hints */
@@ -1412,10 +1426,12 @@ extern BDFFont *SplineFontPieceMeal(SplineFont *sf,int pixelsize,int flags,void 
 extern void BDFCharFindBounds(BDFChar *bc,IBounds *bb);
 extern BDFFont *BitmapFontScaleTo(BDFFont *old, int to);
 extern void BDFCharFree(BDFChar *bdfc);
+extern void BDFPropsFree(BDFFont *bdf);
 extern void BDFFontFree(BDFFont *bdf);
 extern int  PSBitmapDump(char *filename,BDFFont *font, EncMap *map);
 extern int  BDFFontDump(char *filename,BDFFont *font, EncMap *map, int res);
 extern int  FONFontDump(char *filename,BDFFont *font, EncMap *map, int res);
+extern FILE *BDFDefaults(BDFFont *bdf, EncMap *map);
 /* Two lines intersect in at most 1 point */
 /* Two quadratics intersect in at most 4 points */
 /* Two cubics intersect in at most 9 points */ /* Plus an extra space for a trailing -1 */

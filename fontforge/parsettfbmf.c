@@ -480,6 +480,8 @@ return;
 #endif
     }
     free(sizes); free(sel);
+
+    ttf_bdf_read(ttf,info);
 }
 
 /* ************************************************************************** */
@@ -1089,17 +1091,9 @@ void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,int32 *sizes) {
 	dumpbitmapSizeTable(at->bloc,&space);
 
     /* Dump out the strikes... */
-#if defined(FONTFORGE_CONFIG_GDRAW)
     gwwv_progress_change_line1(_("Saving Bitmap Font(s)"));
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gwwv_progress_change_line1(_("Saving Bitmap Font(s)"));
-#endif
     for ( i=0; sizes[i]!=0; ++i ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	gwwv_progress_next_stage();
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gwwv_progress_next_stage();
-#endif
 	for ( bdf=sf->bitmaps; bdf!=NULL && (bdf->pixelsize!=(sizes[i]&0xffff) || BDFDepth(bdf)!=(sizes[i]>>16)); bdf=bdf->next );
 	if ( bdf==NULL )
     continue;
@@ -1138,11 +1132,8 @@ void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,int32 *sizes) {
     if ( ftell(at->bloc)&2 )
 	putshort(at->bloc,0);
 
-#if defined(FONTFORGE_CONFIG_GDRAW)
     gwwv_progress_change_line1(_("Saving TrueType Font"));
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gwwv_progress_change_line1(_("Saving TrueType Font"));
-#endif
+    ttf_bdf_dump(sf,at,sizes);
 }
 
 static BDFFont *BDFSelect(SplineFont *sf,int32 *sizes,int wanted ) {
