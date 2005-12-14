@@ -452,6 +452,7 @@ static void DrawPoint(CharView *cv, GWindow pixmap, SplinePoint *sp,
     Color col = sp==spl->first ? firstpointcol : pointcol, subcol;
     int pnum;
     char buf[12]; unichar_t ubuf[12];
+    int isfake;
 
     if ( cv->markextrema && !sp->nonextcp && !sp->noprevcp &&
 	    ((sp->nextcp.x==sp->me.x && sp->prevcp.x==sp->me.x) ||
@@ -543,16 +544,28 @@ return;
     r.width = r.height = 5;
     if ( sp->selected )
 	GDrawSetLineWidth(pixmap,selectedpointwidth);
+    isfake = false;
+    if ( cv->fv->sf->order2 && cv->drawmode==dm_fore ) {
+	int mightbe_fake = sp->me.x==(sp->nextcp.x+sp->prevcp.x)/2 &&
+			   sp->me.y==(sp->nextcp.y+sp->prevcp.y)/2 ;
+        if ( !mightbe_fake && sp->ttfindex==0xffff )
+	    sp->ttfindex = 0xfffe;	/* if we have no instructions we won't call instrcheck and won't notice when a point stops being fake */
+	else if ( mightbe_fake && cv->sc->ttf_instrs_len==0 )
+	    /* some instructions actually move points that could otherwise */
+	    /*  have been implied. */
+	    sp->ttfindex = 0xffff;
+	isfake = sp->ttfindex==0xffff;
+    }
     if ( onlynumber )
 	/* Draw Nothing */;
     else if ( sp->pointtype==pt_curve ) {
 	--r.x; --r.y; r.width +=2; r.height += 2;
-	if ( sp->selected || (sp->ttfindex==0xffff && cv->fv->sf->order2))
+	if ( sp->selected || isfake )
 	    GDrawDrawElipse(pixmap,&r,col);
 	else
 	    GDrawFillElipse(pixmap,&r,col);
     } else if ( sp->pointtype==pt_corner ) {
-	if ( sp->selected || (sp->ttfindex==0xffff && cv->fv->sf->order2))
+	if ( sp->selected || isfake )
 	    GDrawDrawRect(pixmap,&r,col);
 	else
 	    GDrawFillRect(pixmap,&r,col);
@@ -598,7 +611,7 @@ return;
 	    gp[2].x = gp[0].x; gp[2].y = gp[0].y-ydiff;
 	}
 	gp[3] = gp[0];
-	if ( sp->selected || (sp->ttfindex==0xffff && cv->fv->sf->order2) )
+	if ( sp->selected || isfake )
 	    GDrawDrawPoly(pixmap,gp,4,col);
 	else
 	    GDrawFillPoly(pixmap,gp,4,col);
