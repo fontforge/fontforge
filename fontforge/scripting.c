@@ -7776,6 +7776,8 @@ static void doforeach(Context *c) {
     i = 0;
 
     while ( 1 ) {
+	if ( c->returned )
+    break;
 	if ( !c->donteval )	/* On a dry run go through loop once */
 	    while ( i<selsize && i<c->curfv->map->enccount && !sel[i]) ++i;
 	if ( i>=selsize || i>=c->curfv->map->enccount )
@@ -7816,6 +7818,8 @@ static void dowhile(Context *c) {
     int nest;
 
     while ( 1 ) {
+	if ( c->returned )
+    break;
 	tok=NextToken(c);
 	expect(c,tt_lparen,tok);
 	val.type = v_void;
