@@ -250,6 +250,7 @@ static int GI_Show(GGadget *g, GEvent *e) {
 	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
 	if ( ci->changed ) {
 	    char *buts[4];
+	    int ans;
 	    buts[0] = _("C_hange");
 	    buts[1] = _("_Retain");
 #if defined(FONTFORGE_CONFIG_GTK)
@@ -258,7 +259,7 @@ static int GI_Show(GGadget *g, GEvent *e) {
 	    buts[2] = _("_Cancel");
 #endif
 	    buts[3] = NULL;
-	    int ans = gwwv_ask(_("Transformation Matrix Changed"),(const char **)buts,0,2,_("You have changed the transformation matrix, do you wish to use the new version?"));
+	    ans = gwwv_ask(_("Transformation Matrix Changed"),(const char **)buts,0,2,_("You have changed the transformation matrix, do you wish to use the new version?"));
 	    if ( ans==2 )
 return( true );
 	    else if ( ans==0 ) {
