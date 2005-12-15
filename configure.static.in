@@ -14,8 +14,7 @@ gww_needsstatic="no"
 
 
 case "$host" in
-*-apple-darwin*) AC_DEFINE(NODYNAMIC)
-gww_nodynamic="yes"
+*-apple-darwin*)
 AC_DEFINE(_CursorsMustBe16x16)
 AC_DEFINE(_Keyboard,1)
 AC_DEFINE(__Mac,1)
@@ -32,8 +31,6 @@ AC_DEFINE(_Keyboard,2)
 AC_DEFINE(_BrokenBitmapImages)
 AC_DEFINE(_ModKeysAutoRepeat)
 AC_DEFINE(__CygWin,1)
-AC_DEFINE(NODYNAMIC)
-gww_nodynamic="yes"
 gww_needsstatic="yes"
  ;;
 esac
@@ -72,6 +69,8 @@ AC_SEARCH_LIBS(inet_aton, resolv) dnl some systems have this in libc
 if test "$gww_uselessiconv" = "no" ; then
  AC_SEARCH_LIBS(libiconv, iconv) dnl linux has iconv in libc, mac,solaris have libiconv in libiconv, and a define to map iconv() to libiconv(), so we can't do the obvious check
 fi
+
+AC_CHECK_FUNC(tzset,:,AC_DEFINE(_NO_TZSET))
 
 AC_CHECK_HEADERS([ieeefp.h])
 
