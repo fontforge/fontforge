@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 16-Sep-2001 -->
-  <!-- AP: Last modified: 22-Dec-2004 -->
+  <!-- AP: Last modified: 14-Dec-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Changes to pfaedit (predecessor to fontforge)</TITLE> -->
     <TITLE>PfaEdit (FontForge の旧名称) への変更点</TITLE>
@@ -384,7 +384,7 @@
 	文字内の輪郭の順序を設定することができるサブメニューを追加。これはほとんど無意味 (最終的な文字の表示は、それを構成する輪郭をどの順序で描画したかには影響されないはず) ですが、マルチプルマスターフォントにおいては、対応するグリフ内では輪郭リストの順序が同じでなければなりません。
     </UL>
   <LI>
-<!--11-Jan-2003-->
+<!--11-Jan-2004-->
     2004年1月11日
     <UL>
       <LI>
@@ -392,7 +392,7 @@
 	壊れた Mac テーブルからの読み込みに関するパッチが失われていたので、パッチを当て直しました。
     </UL>
   <LI>
-<!--10-Jan-2003-->
+<!--10-Jan-2004-->
     2004年1月10日
     <UL>
       <LI>
@@ -543,37 +543,48 @@
     2003年12月28日
     <UL>
       <LI>
-	RemoveATT scripting command didn't work if the third argument were "*"
+<!--	RemoveATT scripting command didn't work if the third argument were "*" -->
+	RemoveATT スクリプトコマンドに 3 番目の引数として "*" を指定したときに動作してていませんでした。
       <LI>
-	FontForge's clipping in the character view left something to be desired.
+<!--	FontForge's clipping in the character view left something to be desired. -->
+	FontForge のグリフビュー内でクリッピング操作を行ったときにゴミが残ることがありました。
       <LI>
-	Make Meta-Arrow move selected points by 10 times what Arrow would move them
-	by.
+<!--	Make Meta-Arrow move selected points by 10 times what Arrow would move them
+	by. -->
+	Meta キーと同時に矢印キーを押すと、選択された点を矢印キー単独で押したときの 10 倍の距離だけ移動するようにしました。
       <LI>
-	Grabbed the feature ordering for GPOS/GSUB specified on the
+<!--	Grabbed the feature ordering for GPOS/GSUB specified on the
 	<A HREF="http://www.microsoft.com/typography/specs/default.htm">microsoft
-	site</A> and taught it to FontForge.
+	site</A> and taught it to FontForge. -->
+	GPOS/GSUB での昨日の並び順を <A HREF="http://www.microsoft.com/typography/specs/default.htm">Microsoft のサイト</a>から取得し、FontForge にその知識を組み込みました。
       <LI>
-	Change the Point Info dlg
+<!--	Change the Point Info dlg -->
+	点の情報ダイアログの変更
 	<UL>
 	  <LI>
-	    to allow the user to control the point type from there.
+<!--	    to allow the user to control the point type from there. -->
+	    このダイアログで点のタイプを設定できるようにしました。
 	  <LI>
-	    to enforce constraints on control points (ie. the control points of a curve
-	    point must be in line with the point itself)
+<!--	    to enforce constraints on control points (ie. the control points of a curve
+	    point must be in line with the point itself) -->
+	    制御点に関する制約を課すようにしました (例えば、曲線上の点の両側の制御点は、元の点と一直線になるようにするなど)。
 	  <LI>
-	    by adding an alternated mode of entering data, by distance and angle (rather
-	    than just offset)
+<!--	    by adding an alternated mode of entering data, by distance and angle (rather
+	    than just offset) -->
+	    データ入力に (オフセット指定に加え) 距離と角度を指定して行うもう一つのモードを付け加えました。
 	</UL>
       <LI>
-	Some MF fonts have glyph names with characters which aren't allowed in PostScript
-	names
+<!--	Some MF fonts have glyph names with characters which aren't allowed in PostScript
+	names -->
+	いくつかの MF フォントのグリフ名には、PostScript 名として許されない文字が含まれています。
       <LI>
-	FontForge failed to set widthset when it read in glyphs from a windows FNT
-	(FON) file. This meant that some glyphs might be ignored.
+<!--	FontForge failed to set widthset when it read in glyphs from a windows FNT
+	(FON) file. This meant that some glyphs might be ignored. -->
+	FontForge は、Windows の FNT (FON) ファイルからグリフを読み込む時に文字幅設定に失敗していました。これにより、幾つかのグリフが無視される危険性がありました。
       <LI>
-	The context chaining dialog had a bad test for valid glyph names and complained
-	about any name containing digits
+<!--	The context chaining dialog had a bad test for valid glyph names and complained
+	about any name containing digits -->
+	文脈連鎖ダイアログで間違ったチェックを行っており、数字を含む正しいグリフ名に対しエラーメッセージが出力されていました。
       <LI>
 	The histogram dlg would crash if the mouse moved across it when the window
 	was so wide that it could contain more stem widths than were actually in

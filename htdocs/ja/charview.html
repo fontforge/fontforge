@@ -1,7 +1,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 11-Dec-2005 -->
+  <!-- AP: Last modified: 12-Dec-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Outline Glyph View</TITLE>-->
     <TITLE>アウトライングリフビュー</TITLE>
@@ -61,6 +61,11 @@
   the control points will be collinear). (the "Next" control point will be
   drawn dull cyan, and the Prev point will be magenta). -->
   グリフを構成する点には 3 つのタイプがあります。角の点は塗りつぶされた正方形で、曲線上の点は塗りつぶされた円で、そして (曲線と直線の) 接点は塗りつぶされた三角形で表されます。点が選択されたときには白抜きの正方形・円・三角形になり、隣接する制御点がマゼンタと鈍いシアンの×印として、同じ色の直線の端に表示されます (曲線上の点の場合、制御点はちょうど反対方向になります)。（「次」の制御点が鈍いシアンで、前の制御点がマゼンタになります)。
+  <P>
+<!--
+  In a TrueType font, an on-curve point can be implied between two control
+  points. FontForge will draw these with an open circle. -->
+  TrueType フォントでは、曲線上の点が 2 個の制御点の中点にあるときは、暗黙の位置指定を行うことができます。FontForge はそれらの点を開いた円として描画します。
   <P>
 <!--
   The initial point in a contour will be drawn in green, and beside it will
@@ -260,9 +265,11 @@
   and drag the mouse then it and everything else selected will be moved. If
   you drag an open path and one of the end points happens to fall on the end
   point of another open path, then the two will be merged into one (If you
-  don't want open paths to merge, hold down the Alt key). If you drag a control
-  point then it will be moved. -->
-  何かが選択されている状態のとき、それをドラッグして動かすことができます。何かを選択してマウスをドラッグすると、それと同時に選択された全ての物が移動します。開いたパスをドラッグしてその端点の 1 つが他の開いたパスと重なる場所に来た場合、2 本のパスは 1 本に融合されます (開いたパスが融合されることを避けたい場合は、Alt キーを押してください)。制御点をドラッグすると、その制御点が移動します。
+  don't want open paths to merge, hold down the
+  <A HREF="charview.html#alt-meta-capslock">Alt/meta/caps-lock</A> key). If
+  you drag a control point then it will be moved (if you drag a control point
+  defining an implied point, then the implied point(s) will also be moved). -->
+  何かが選択されている状態のとき、それをドラッグして動かすことができます。何かを選択してマウスをドラッグすると、それと同時に選択された全ての物が移動します。開いたパスをドラッグしてその端点の 1 つが他の開いたパスと重なる場所に来た場合、2 本のパスは 1 本に融合されます (開いたパスが融合されることを避けたい場合は、<A HREF="charview.html#alt-meta-capslock">Alt/Meta/CapsLock</A> キーを押してください)。制御点をドラッグすると、その制御点が移動します (暗黙の点を定義する制御点を移動すると、暗黙の点も一緒に移動します)。
   <P>
 <!--
   If you selected a spline, then dragging it will drag the location on the

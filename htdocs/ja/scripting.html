@@ -1058,7 +1058,7 @@ a[4][0] = "Nested array";
   	recognize your postscript font. -->
   	注意: これと同時にビットマップフォントを NFNT フォーマットで出力しなければなりません。これを行わないと出力した PostScript フォントは Mac に認識されません。
 	<LI>
-  	*%s*.pf[ab] (here more than just an extension is required, the font name
+<!--  	*%s*.pf[ab] (here more than just an extension is required, the font name
   	must contain a "%s") (splits a big font up into multiple pfb fonts each with
   	256 characters, making use of the fifth argument to determine how this is
   	done). The "%s" will be replaced by the fontnumber specified in the
@@ -2190,6 +2190,12 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
       is converted via the current encoding to unicode. -->
       現在選択されているグリフに comment で指定したコメントを設定します。
       コメントは現在のエンコーディングから Unicode に変換されます。
+    <DT>
+      SetGlyphChanged(flag)
+    <DD>
+<!--  If flag is 1 sets all selected glyphs to be changed, if flag is 0 sets them
+      unchanged. -->
+      flag が 1 の場合、選択中の全グリフを変更されたものとします。フラグが 0 の場合、変更されていないものと設定します。
     <DT>
       <A HREF="elementmenu.html#Bitmaps" NAME="BitmapsAvail">BitmapsAvail</A>(sizes)
     <DD>

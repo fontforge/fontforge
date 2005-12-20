@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 30-Jun-2003 -->
-  <!-- AP: Last modified: 11-Dec-2005 -->
+  <!-- AP: Last modified: 13-Dec-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Non standard extensions used by FontForge in True/Open Type</TITLE> -->
     <TITLE>FontForge が使用する TrueType/OpenType への非標準の拡張</TITLE>
@@ -57,8 +57,11 @@
 <!--  <A HREF="non-standard.html#PfEd">'PfEd' the FontForge extensions table</A>-->
       <A HREF="non-standard.html#PfEd">&lsquo;PfEd&rsquo; (FontForge の拡張テーブル)</A>
     <LI>
-<!--  <A HREF="#TeX">'TeX ' the TeX metrics table</A>-->
+<!--  <A HREF="#TeX">'TeX ' the TeX metrics table</A> -->
       <A HREF="#TeX">&lsquo;TeX &rsquo; (TeX メトリックテーブル)</A>
+    <LI>
+<!--  <A HREF="#BDF">'BDF ' the BDF properties table</A> -->
+      <A HREF="#BDF">&lsquo;BDF &rsquo; (BDF 属性テーブル)</A>
     <LI>
 <!--  (<A HREF="TrueOpenTables.html">standard tables</A>) -->
       (<A HREF="TrueOpenTables.html">標準のテーブル</A>)
@@ -444,11 +447,10 @@
       </TR>
     </TABLE>
     <P>
-<!--I store these values as fix_words and <EMPH><EM>not</EM></EMPH> as em-units
-    because their meaning is not constrained by the spec and the
-    <CODE>Slant</CODE> parameter (at the least) can not be converted to em-units.
-  -->
-    これらの値は TFM ファイルの fix_word で格納されており、em ユニット単位の値では<EMPH><EM>ありません</EM></EMPH>。なぜなら、この値の意味は仕様で規定されておらず、(少なくとも) <CODE>Slant</CODE>パラメータは em ユニットに変換できないからです。
+<!--I store these values as fix_words and <EM>not</EM> as em-units because their
+    meaning is not constrained by the spec and the <CODE>Slant</CODE> parameter
+    (at the least) can not be converted to em-units. -->
+    これらの値は TFM ファイルの fix_word で格納されており、em ユニット単位の値では<EM>ありません</EM>。なぜなら、この値の意味は仕様で規定されておらず、(少なくとも) <CODE>Slant</CODE>パラメータは em ユニットに変換できないからです。
     <P>
 <!--I have defined the following 4-letter parameter tags -->
     定義済みの 4 文字のパラメータタグは以下のとおりです。
@@ -635,6 +637,96 @@
       </TR>
     </TABLE>
     <P>
+  </BLOCKQUOTE>
+  <H2>
+<!--'<A NAME="BDF">BDF </A>' - - the BDF properties table -->
+    &lsquo;<A NAME="BDF">BDF </A>&rsquo; ― BDF 属性テーブル
+  </H2>
+  <BLOCKQUOTE>
+<!--The table begins with a table header containing a version number and a count
+    of strikes -->
+    このテーブルはバージョン番号とサイズ違いの個数を含むヘッダから始まります。
+    <TABLE CELLPADDING="2" BGCOLOR="#8080ff">
+      <TR>
+	<TD>uint16</TD>
+<!--	<TD>version</TD> -->
+	<TD>バージョン</TD>
+<!--	<TD>currently 0x0001</TD> -->
+	<TD>現在は 0x0001</TD>
+      </TR>
+      <TR>
+	<TD>uint16</TD>
+<!--	<TD>strike-count</TD> -->
+	<TD>サイズ違いの個数</TD>
+	<TD></TD>
+      </TR>
+      <TR>
+	<TD>uint32</TD>
+<!--	<TD>offset to string table</TD> -->
+	<TD>文字列テーブルへのオフセット</TD>
+<!--	<TD>(from start of BDF table)</TD> -->
+	<TD>(BDF テーブルの先頭から数えた値)</TD>
+      </TR>
+    </TABLE>
+    <P>
+<!--This is followed by an entry for each strike identifying how many properties
+    that strike has. -->
+    それに続き、各サイズごとに、それぞれ何個の属性が含まれるかを識別するデータ項目が続きます。
+    <TABLE CELLPADDING="2" BGCOLOR="#8080ff">
+      <TR>
+	<TD>uint16</TD>
+<!--	<TD>ppem</TD> -->
+	<TD>EM あたりピクセル数</TD>
+	<TD></TD>
+      </TR>
+      <TR>
+	<TD>uint16</TD>
+<!--	<TD>property-count</TD> -->
+	<TD>配列 property-count (属性の個数)</TD>
+	<TD></TD>
+      </TR>
+    </TABLE>
+    <P>
+<!--Then there will be the properties, first there with be property-count[1]
+    properties from the first strike, then property-count[2] properties for the
+    second, etc. Each property looks like: -->
+    その次に属性の値が置かれます。まず最初のビットマップサイズの属性が property-count[1] 個だけ並び、次に property-count[2] 個の属性が、というように並びます。各属性の形式は以下のとおりです:
+    <TABLE CELLPADDING="2" BGCOLOR="#8080ff">
+      <TR>
+	<TD>uint32</TD>
+<!--	<TD>name</TD> -->
+	<TD>名前</TD>
+<!--	<TD>offset into the string table of the property's name</TD> -->
+	<TD>属性名の文字列テーブルにおけるオフセット</TD>
+      </TR>
+      <TR>
+	<TD>uint16</TD>
+<!--	<TD>type</TD> -->
+	<TD>データ型</TD>
+<!--	<TD>0=&gt;string<BR>
+	  1=&gt;atom<BR>
+	  2=&gt;int<BR>
+	  3=&gt;uint<BR> -->
+	<TD>0 ⇒ 文字列<BR>
+	  1 ⇒ アトム<BR>
+	  2 ⇒ 整数<BR>
+	  3 ⇒ 正整数<BR>
+<!--	  0x10 may be ored into one of the above types to indicate a real property</TD> -->
+	  真の属性であることを示すために上のどれかの値と 0x10 との or を取った値も許されます。
+      </TR>
+      <TR>
+	<TD>uint32</TD>
+<!--	<TD>value</TD> -->
+	<TD>値</TD>
+<!--	<TD>For strings and atoms, this is an offset into the string table<BR>
+	  for integers it is the value itself</TD> -->
+	<TD>文字列とアトムの場合、文字列テーブル内のオフセット値を格納<BR>
+	  整数では値をそのまま格納</TD>
+      </TR>
+    </TABLE>
+    <P>
+<!--The string table is a series of ASCII bytes. Each string is NUL terminated. -->
+    文字列テーブルは ASCII のバイト列を並べたものです。各文字列は NUL で終端されています。
   </BLOCKQUOTE>
 </DIV>
 </BODY></HTML>
