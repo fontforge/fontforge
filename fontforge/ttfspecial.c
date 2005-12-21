@@ -754,6 +754,58 @@ Then the string table of null terminated strings. These strings should be in
 ASCII.
 */
 
+/* Internally FF stores BDF comments as one psuedo property per line. As you */
+/*  might expect. But FreeType merges them into one large lump with newlines */
+/*  between lines. Which means that BDF tables created by FreeType will be in*/
+/*  that format. So we might as well be compatible. We will pack & unpack    */
+/*  comment lines */
+
+static int BDFPropCntMergedComments(BDFFont *bdf) {
+    int i, cnt;
+
+    cnt = 0;
+    for ( i=0; i<bdf->prop_cnt; ++i ) {
+	++cnt;
+	if ( strmatch(bdf->props[i].name,"COMMENT")==0 )
+    break;
+    }
+    for ( ; i<bdf->prop_cnt; ++i ) {
+	if ( strmatch(bdf->props[i].name,"COMMENT")==0 )
+    continue;
+	++cnt;
+    }
+return( cnt );
+}
+
+static char *MergeComments(BDFFont *bdf) {
+    int len, i;
+    char *str;
+
+    len = 0;
+    for ( i=0; i<bdf->prop_cnt; ++i ) {
+	if ( strmatch(bdf->props[i].name,"COMMENT")==0 &&
+		((bdf->props[i].type & ~prt_property)==prt_string ||
+		 (bdf->props[i].type & ~prt_property)==prt_atom ))
+	    len += strlen( bdf->props[i].u.atom ) + 1;
+    }
+    if ( len==0 )
+return( copy( "" ));
+
+    str = galloc( len+1 );
+    len = 0;
+    for ( i=0; i<bdf->prop_cnt; ++i ) {
+	if ( strmatch(bdf->props[i].name,"COMMENT")==0 &&
+		((bdf->props[i].type & ~prt_property)==prt_string ||
+		 (bdf->props[i].type & ~prt_property)==prt_atom )) {
+	    strcpy(str+len,bdf->props[i].u.atom );
+	    len += strlen( bdf->props[i].u.atom ) + 1;
+	    str[len-1] = '\n';
+	}
+    }
+    str[len-1] = '\0';
+return( str );
+}
+    
 #define AMAX	50
 
 int ttf_bdf_dump(SplineFont *sf,struct alltabs *at,int32 *sizes) {
@@ -784,14 +836,18 @@ return(true);
 	for ( bdf=sf->bitmaps; bdf!=NULL && (bdf->pixelsize!=(sizes[i]&0xffff) || BDFDepth(bdf)!=(sizes[i]>>16)); bdf=bdf->next );
 	if ( bdf!=NULL && bdf->prop_cnt!=0 ) {
 	    putshort(at->bdf,bdf->pixelsize);
-	    putshort(at->bdf,bdf->prop_cnt);
+	    putshort(at->bdf,BDFPropCntMergedComments(bdf));
 	}
     }
 
     for ( i=0; sizes[i]!=0; ++i ) {
 	for ( bdf=sf->bitmaps; bdf!=NULL && (bdf->pixelsize!=(sizes[i]&0xffff) || BDFDepth(bdf)!=(sizes[i]>>16)); bdf=bdf->next );
 	if ( bdf!=NULL && bdf->prop_cnt!=0 ) {
+	    int saw_comment=0;
+	    char *str;
 	    for ( j=0; j<bdf->prop_cnt; ++j ) {
+		if ( strmatch(bdf->props[j].name,"COMMENT")==0 && saw_comment )
+	    continue;
 		/* Try to reuse keyword names in string space */
 		for ( k=0 ; k<acnt; ++k ) {
 		    if ( strcmp(atomoff[k].name,bdf->props[j].name)==0 )
@@ -809,11 +865,16 @@ return(true);
 		    putlong(at->bdf,ftell(strings));
 		    fwrite(bdf->props[j].name,1,strlen(bdf->props[j].name)+1,strings);
 		}
+		str = bdf->props[j].u.str;
+		if ( strmatch(bdf->props[j].name,"COMMENT")==0 )
+		    str = MergeComments(bdf);
 		putshort(at->bdf,bdf->props[j].type);
 		if ( (bdf->props[j].type & ~prt_property)==prt_string ||
 			(bdf->props[j].type & ~prt_property)==prt_atom ) {
 		    putlong(at->bdf,ftell(strings));
-		    fwrite(bdf->props[j].u.str,1,strlen(bdf->props[j].u.str)+1,strings);
+		    fwrite(str,1,strlen(str)+1,strings);
+		    if ( str!=bdf->props[j].u.str )
+			free(str);
 		} else {
 		    putlong(at->bdf,bdf->props[j].u.val);
 		}
@@ -859,8 +920,38 @@ static char *getstring(FILE *ttf,long start) {
 return( str );
 }
 
+/* COMMENTS get stored all in one lump by freetype. De-lump them */
+static int CheckForNewlines(BDFFont *bdf,int k) {
+    char *pt, *start;
+    int cnt, i;
+
+    for ( cnt=0, pt = bdf->props[k].u.atom; *pt; ++pt )
+	if ( *pt=='\n' )
+	    ++cnt;
+    if ( cnt==0 )
+return( k );
+
+    bdf->prop_cnt += cnt;
+    bdf->props = grealloc(bdf->props, bdf->prop_cnt*sizeof( BDFProperties ));
+
+    pt = strchr(bdf->props[k].u.atom,'\n');
+    *pt = '\0'; ++pt;
+    for ( i=1; i<=cnt; ++i ) {
+	start = pt;
+	while ( *pt!='\n' && *pt!='\0' ) ++pt;
+	bdf->props[k+i].name = copy(bdf->props[k].name);
+	bdf->props[k+i].type = bdf->props[k].type;
+	bdf->props[k+i].u.atom = copyn(start,pt-start);
+	if ( *pt=='\n' ) ++pt;
+    }
+    pt = copy( bdf->props[k].u.atom );
+    free( bdf->props[k].u.atom );
+    bdf->props[k].u.atom = pt;
+return( k+cnt );
+}
+
 void ttf_bdf_read(FILE *ttf,struct ttfinfo *info) {
-    int strike_cnt, i,j;
+    int strike_cnt, i,j,k;
     long string_start;
     struct bdfinfo { BDFFont *bdf; int cnt; } *bdfinfo;
     BDFFont *bdf;
@@ -891,18 +982,19 @@ return;
 	else {
 	    bdf->prop_cnt = bdfinfo[i].cnt;
 	    bdf->props = galloc(bdf->prop_cnt*sizeof(BDFProperties));
-	    for ( j=0; j<bdf->prop_cnt; ++j ) {
+	    for ( j=k=0; j<bdfinfo[i].cnt; ++j, ++k ) {
 		long name = getlong(ttf);
 		int type = getushort(ttf);
 		long value = getlong(ttf);
-		bdf->props[j].type = type;
-		bdf->props[j].name = getstring(ttf,string_start+name);
+		bdf->props[k].type = type;
+		bdf->props[k].name = getstring(ttf,string_start+name);
 		switch ( type&~prt_property ) {
 		  case prt_int: case prt_uint:
-		    bdf->props[j].u.val = value;
+		    bdf->props[k].u.val = value;
 		  break;
 		  case prt_string: case prt_atom:
-		    bdf->props[j].u.str = getstring(ttf,string_start+value);
+		    bdf->props[k].u.str = getstring(ttf,string_start+value);
+		    k = CheckForNewlines(bdf,k);
 		  break;
 		}
 	    }
