@@ -230,14 +230,16 @@ static void BDFDumpChar(FILE *file,BDFFont *font,BDFChar *bdfc,int enc,
 	fprintf( file, "SWIDTH %d 0\n", bdfc->sc->width*1000/em );
     if ( !(defs->metricssets&MS_Hor) || bdfc->width!=defs->dwidth )
 	fprintf( file, "DWIDTH %d 0\n", bdfc->width );
-    if ( !(defs->metricssets&MS_Vert) || bdfc->sc->vwidth!=defs->swidth1 )
-	fprintf( file, "SWIDTH1 %d 0\n", bdfc->sc->vwidth*1000/em );
-    if ( !(defs->metricssets&MS_Vert) || bdfc->vwidth!=defs->dwidth1 )
-	fprintf( file, "DWIDTH1 %d 0\n", bdfc->vwidth );
-    if ( font->sf->hasvmetrics &&	/* For CID fonts */
-	    font->sf->vertical_origin!=bdfc->sc->parent->vertical_origin ) {
-	    fprintf( file, "VVECTOR %d,%d\n", 500, 1000*bdfc->sc->parent->vertical_origin/
-		    (bdfc->sc->parent->ascent+bdfc->sc->parent->descent)  );
+    if ( font->sf->hasvmetrics ) {
+	if ( !(defs->metricssets&MS_Vert) || bdfc->sc->vwidth!=defs->swidth1 )
+	    fprintf( file, "SWIDTH1 %d 0\n", bdfc->sc->vwidth*1000/em );
+	if ( !(defs->metricssets&MS_Vert) || bdfc->vwidth!=defs->dwidth1 )
+	    fprintf( file, "DWIDTH1 %d 0\n", bdfc->vwidth );
+	if ( 	/* For CID fonts */
+		font->sf->vertical_origin!=bdfc->sc->parent->vertical_origin ) {
+		fprintf( file, "VVECTOR %d,%d\n", 500, 1000*bdfc->sc->parent->vertical_origin/
+			(bdfc->sc->parent->ascent+bdfc->sc->parent->descent)  );
+	}
     }
     fprintf( file, "BBX %d %d %d %d\n", bdfc->xmax-bdfc->xmin+1, bdfc->ymax-bdfc->ymin+1,
 	    bdfc->xmin, bdfc->ymin );
