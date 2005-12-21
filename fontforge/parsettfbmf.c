@@ -227,7 +227,7 @@ return;
     gwwv_progress_next();
 #endif
 }
-    
+
 static void readttfbitmapfont(FILE *ttf,struct ttfinfo *info,
 	struct ttfsizehead *head, BDFFont *bdf) {
     int i, j, g;
@@ -964,7 +964,7 @@ return(NULL);
 		    final = j;
 		}
 	    }
-	    cur->last = final;
+	    cur->last = bdf->glyphs[gi->bygid[final]]->sc->ttf_glyph;
 	}
 
 	if ( !bc->widthgroup ) {
