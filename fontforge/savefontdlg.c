@@ -1728,7 +1728,7 @@ return( WriteMultiplePSFont(sf,newname,sizes,res,NULL,map));
     else if ( oldformatstate!=ff_none )
 	flags = old_otf_flags;
     else
-	flags = old_ttf_flags;
+	flags = old_ttf_flags&~(ttf_flag_ofm);
     if ( oldformatstate<=ff_cffcid && oldbitmapstate==bf_otb )
 	flags = old_psotb_flags;
 
@@ -2447,6 +2447,7 @@ return( true );
 	if ( uc_strcmp(pt-4, ".otf.dfont" )==0 ) pt -= 4;
 	if ( uc_strcmp(pt-4, ".cid.t42" )==0 ) pt -= 4;
 	if ( uc_strncmp(pt-2, "%s", 2 )==0 ) pt -= 2;
+	if ( uc_strncmp(pt-2, "-*", 2 )==0 ) pt -= 2;
 	uc_strcpy(pt,extensions[format]);
 	GGadgetSetTitle(d->gfc,dup);
 	free(dup);
