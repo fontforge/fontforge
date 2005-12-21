@@ -3475,7 +3475,7 @@ return( 0 );
 	cnt = ICAddInter(cnt,foundpos,foundt1,foundt2,s1,s2,t1,t2);
     forever {
 	t1 += t1diff;
-	if (( t1max>t1min && t1>=t1max ) || (t1max<t1min && t1<=t1max) || cnt>3 )
+	if (( t1max>t1min && t1>t1max ) || (t1max<t1min && t1<t1max) || cnt>3 )
     break;
 	m = ((s1->splines[major].a*t1+s1->splines[major].b)*t1+
 			s1->splines[major].c)*t1+s1->splines[major].d;

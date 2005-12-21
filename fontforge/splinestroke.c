@@ -864,11 +864,7 @@ static int DoIntersect_Splines(struct strokedspline *before,
 	si->gottoobig = si->gottoobiglocal = true;
 	if ( !si->toobigwarn ) {
 	    si->toobigwarn = true;
-#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error( _("Bad Stroke"), _("The stroke width is so big that the generated path\nmay intersect itself in %.100s"),
-#else
-	    gwwv_post_error( _("Bad Stroke"), _("The stroke width is so big that the generated path\nmay intersect itself in %.100s"),
-#endif
 		    sc==NULL?"<nameless char>": sc->name );
 	}
     }
