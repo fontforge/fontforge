@@ -149,7 +149,9 @@ enum fchooserret GFileChooserDefFilter(GGadget *g,GDirEntry *ent,const unichar_t
 
     if ( uc_strcmp(ent->name,".")==0 )	/* Don't show the current directory entry */
 return( fc_hide );
-    if ( !showhidden && ent->name[0]=='.' && uc_strcmp(ent->name,"..")!=0 )
+    if ( gfc->wildcard!=NULL && *gfc->wildcard=='.' )
+	/* If they asked for hidden files, show them */;
+    else if ( !showhidden && ent->name[0]=='.' && uc_strcmp(ent->name,"..")!=0 )
 return( fc_hide );
     if ( ent->isdir )			/* Show all other directories */
 return( fc_show );
@@ -592,12 +594,12 @@ static void GFCRefresh(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     free(dir);
 }
 
-static unichar_t showhiddenfiles[] = { 'S','h','o','w',' ','H','i','d','d','e','n',' ','F','i','l','e','s',  '\0' };
 static GMenuItem gfcpopupmenu[] = {
-    { { showhiddenfiles, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 0, 0, 0, 'H' }, '\0', ksm_control, NULL, NULL, GFCHideToggle },
-    { { (unichar_t *) "Refresh File List", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'H' }, '\0', ksm_control, NULL, NULL, GFCRefresh },
+    { { (unichar_t *) N_("Show Hidden Files"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 0, 0, 'H' }, '\0', ksm_control, NULL, NULL, GFCHideToggle },
+    { { (unichar_t *) N_("Refresh File List"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'H' }, '\0', ksm_control, NULL, NULL, GFCRefresh },
     NULL
 };
+static int gotten=false;
 
 /* Routine to be called as the mouse moves across the dlg */
 void GFileChooserPopupCheck(GGadget *g,GEvent *e) {
@@ -625,6 +627,11 @@ void GFileChooserPopupCheck(GGadget *g,GEvent *e) {
 	for ( i=0; gfcpopupmenu[i].ti.text!=NULL || gfcpopupmenu[i].ti.line; ++i )
 	    gfcpopupmenu[i].ti.userdata = gfc;
 	gfcpopupmenu[0].ti.checked = showhidden;
+	if ( !gotten ) {
+	    gotten = true;
+	    gfcpopupmenu[0].ti.text = (unichar_t *) _( (char *) gfcpopupmenu[0].ti.text);
+	    gfcpopupmenu[1].ti.text = (unichar_t *) _( (char *) gfcpopupmenu[1].ti.text);
+	}
 	GMenuCreatePopupMenu(g->base,e, gfcpopupmenu);
     }
 }
