@@ -718,8 +718,8 @@ return( NULL );
 return( utf8buf );
 }
 
-uint32 utf8_ildb(const char **_text) {
-    uint32 val= -1;
+int32 utf8_ildb(const char **_text) {
+    int32 val= -1;
     int ch;
     const uint8 *text = (const uint8 *) *_text;
     /* Increment and load character */
