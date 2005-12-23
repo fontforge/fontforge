@@ -89,7 +89,7 @@ extern int32 *utf82u32_strncpy(int32 *ubuf,const char *utf8buf,int len);
 extern int32 *utf82u32_copy(const char *utf8buf);
 extern char *u322utf8_copy(const int32 *ubuf);
 extern char *u322utf8_strncpy(char *utf8buf, const int32 *ubuf,int len);
-extern uint32 utf8_ildb(const char **utf8_text);
+extern int32 utf8_ildb(const char **utf8_text);
 extern char *utf8_idpb(char *utf8_text,uint32 ch);
 extern char *utf8_db(char *utf8_text);
 extern char *utf8_ib(char *utf8_text);
