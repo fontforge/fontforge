@@ -70,8 +70,8 @@ Autokern has similar ideas, but is simpler:
 	Again check for overlap (<dspace>/4 in any zone)
     Kerning by the left character can always propigate to dependents
     Kerning by the right char should not
-	(ie. A and À kern the same with V
-	 but V kerns differently with e and è-- the accent gets in the way)
+	(ie. A and Ã€ kern the same with V
+	 but V kerns differently with e and Ã©-- the accent gets in the way)
     No, I think it is better not to propigate kerning.
 */
 

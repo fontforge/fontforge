@@ -1747,7 +1747,7 @@ static void _SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, SplineChar *rs
     /*  a combo, find what it is based on */
     if ( (temp = SFGetAlternate(sf,basech,NULL,false))!=NULL && haschar(sf,*temp))
 	baserch = *temp;
-    /* Similarly in Ø or ø, we really want to base the accents on O or o */
+    /* Similarly in Ã˜ or Ã¸, we really want to base the accents on O or o */
     if ( baserch==0xf8 ) baserch = 'o';
     else if ( baserch==0xd8 ) baserch = 'O';
 

@@ -252,6 +252,6 @@
 /*  spline is transformed into a new spline, but some transformations require */
 /*  that a spline be broken into components and each of those transformed eg: */
 /*  "x' = x, y' = y+sin(x)" would not produce anything useful when applied to */
-/*  a long line segment like [0,100]···[100,100], but if that were broken up  */
+/*  a long line segment like [0,100]...[100,100], but if that were broken up  */
 /*  into sub-segments each pi long the results would be much better */
 #endif

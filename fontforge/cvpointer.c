@@ -33,7 +33,7 @@ extern int stop_at_join;
 /* if they changed the width, then change the width on all bitmap chars of */
 /*  ours, and if we are a letter, then change the width on all chars linked */
 /*  to us which had the same width that we used to have (so if we change the */
-/*  width of A, we'll also change that of Á and Â and ... */
+/*  width of A, we'll also change that of Ã€ and Ã„ and ... */
 void SCSynchronizeWidth(SplineChar *sc,real newwidth, real oldwidth, FontView *flagfv) {
     BDFFont *bdf;
     struct splinecharlist *dlist;
