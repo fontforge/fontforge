@@ -144,7 +144,7 @@ int _ExportPDF(FILE *pdf,SplineChar *sc) {
 
     oldloc = setlocale(LC_NUMERIC,"C");
 
-    fprintf( pdf, "%%PDF-1.4\n%%\201â\202\203\n" );	/* Header comment + binary comment */
+    fprintf( pdf, "%%PDF-1.4\n%%\201\342\202\203\n" );	/* Header comment + binary comment */
     /* Every document contains a catalog which points to a page tree, which */
     /*  in our case, points to a single page */
     objlocs[1] = ftell(pdf);
