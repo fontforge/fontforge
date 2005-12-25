@@ -655,7 +655,7 @@ return;
 return;
     }
 
-    for ( item=enclist; item!=NULL; item = item->next ) if ( !item->builtin ) {
+    for ( item=enclist; item!=NULL; item = item->next ) if ( !item->builtin && item->tounicode_func==NULL ) {
 	fprintf( file, "/%s [\n", item->enc_name );
 	if ( item->psnames==NULL )
 	    fprintf( file, "%% Use codepoints.\n" );
