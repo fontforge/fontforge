@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "POT-Creation-Date: 2005-08-29 17:43+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Last-Translator: KANOU Hiroki <kanou@khdd.net>\n"
 "Language-Team: LANGUAGE <ja.c@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -19,20 +19,35 @@ msgstr ""
 msgid "_OK"
 msgstr "_OK"
 
+msgid "OK"
+msgstr "OK"
+
 msgid "_Cancel"
 msgstr "キャンセル(_C)"
+
+msgid "Cancel"
+msgstr "キャンセル"
 
 msgid "_Open"
 msgstr "開く(_O)"
 
+msgid "Open"
+msgstr "開く"
+
 msgid "_Save"
 msgstr "保存(_S)"
+
+msgid "Save"
+msgstr "保存"
 
 msgid "_Filter"
 msgstr "フィルタ(_F)"
 
 msgid "_New"
 msgstr "新規(_N)"
+
+msgid "New"
+msgstr "新規"
 
 msgid "Replace"
 msgstr "上書き"
@@ -82,6 +97,9 @@ msgstr "メトリック(_M)"
 msgid "_Window"
 msgstr "ウィンドウ(_W)"
 
+msgid "Window"
+msgstr "ウィンドウ"
+
 msgid "_Help"
 msgstr "ヘルプ(_H)"
 
@@ -115,8 +133,14 @@ msgstr "印刷(_P)..."
 msgid "_Display..."
 msgstr "組見本を表示(_D)..."
 
+msgid "Display..."
+msgstr "組見本を表示..."
+
 msgid "E_xecute Script..."
 msgstr "スクリプトを実行(_X)..."
+
+msgid "Execute Script..."
+msgstr "スクリプトを実行..."
 
 msgid "_Revert File"
 msgstr "ファイルを再読込(_R)"
@@ -139,11 +163,17 @@ msgstr "Macファミリーを出力(_F)..."
 msgid "_Import..."
 msgstr "取り込み(_I)..."
 
+msgid "Import..."
+msgstr "取り込み..."
+
 msgid "_Close"
 msgstr "閉じる(_C)"
 
 msgid "Pr_eferences..."
 msgstr "環境設定(_E)..."
+
+msgid "Preferences..."
+msgstr "環境設定..."
 
 msgid "_Quit"
 msgstr "終了(_Q)"
@@ -178,6 +208,9 @@ msgstr "置換一覧(_S)"
 msgid "_Revert Substitution"
 msgstr "置換を戻す(_R)"
 
+msgid "Revert Substitution"
+msgstr "置換を戻す"
+
 msgid "_Goto"
 msgstr "移動(_G)"
 
@@ -204,6 +237,9 @@ msgstr "定義済みのグリフのみ表示(_C)"
 
 msgid "Display By _Groups..."
 msgstr "グループ毎の表示(_G)..."
+
+msgid "Display By Groups..."
+msgstr "グループ毎の表示..."
 
 msgid "D_efine Groups..."
 msgstr "グループを定義(_E)..."
@@ -246,6 +282,9 @@ msgstr "縦書きメトリックの表示法(_V)..."
 
 msgid "_Show ATT"
 msgstr "ATTを表示(_S)"
+
+msgid "Show ATT"
+msgstr "ATTを表示"
 
 msgid "Display S_ubstitutions..."
 msgstr "置換グリフを表示(_U)..."
@@ -430,8 +469,14 @@ msgstr "置換一覧(_S)..."
 msgid "Bitm_aps Available..."
 msgstr "使用するビットマップ(_A)..."
 
+msgid "Bitmaps Available..."
+msgstr "使用するビットマップ..."
+
 msgid "Regenerate _Bitmaps..."
 msgstr "ビットマップの再生成(_B)..."
+
+msgid "Regenerate Bitmaps..."
+msgstr "ビットマップの再生成..."
 
 msgid "Autot_race"
 msgstr "自動トレース(_R)"
@@ -446,16 +491,22 @@ msgid "_Point of View Projection..."
 msgstr "透視変換(_P)..."
 
 msgid "_Non Linear Transform..."
-msgstr "非線形の変形...(_N)"
+msgstr "非線形の変形(_N)..."
 
 msgid "_Expand Stroke..."
 msgstr "輪郭を太らせる(_E)..."
+
+msgid "Expand Stroke..."
+msgstr "輪郭を太らせる..."
 
 msgid "Center Line"
 msgstr "中心線"
 
 msgid "Tile _Path..."
 msgstr "パスのタイル敷き(_P)..."
+
+msgid "Tile Path..."
+msgstr "パスのタイル敷き..."
 
 msgid "O_verlap"
 msgstr "重複処理(_V)"
@@ -474,6 +525,9 @@ msgstr "交点を見つける(_F)"
 
 msgid "_Simplify"
 msgstr "単純化(_S)"
+
+msgid "Simplify"
+msgstr "単純化"
 
 msgid "Simplify More..."
 msgstr "さらに単純化"
@@ -495,6 +549,9 @@ msgstr "点の間隔を均等に(_S)"
 
 msgid "Space _Regions..."
 msgstr "グループ間を均等に(_R)..."
+
+msgid "Space Regions..."
+msgstr "グループ間を均等に..."
 
 msgid "Make _Parallel..."
 msgstr "平行に(_P)..."
@@ -562,6 +619,9 @@ msgstr "アウトラインの向きを修正(_C)"
 msgid "C_orner"
 msgstr "角の点(_O)"
 
+msgid "Corner"
+msgstr "角の点"
+
 msgid "_Curve"
 msgstr "曲線上の点(_C)"
 
@@ -591,6 +651,9 @@ msgstr "ヒント命令の編集(_E)..."
 
 msgid "_Debug..."
 msgstr "デバッグ(_D)..."
+
+msgid "_Debug"
+msgstr "デバッグ(_D)"
 
 msgid "Edit 'fpgm'..."
 msgstr "'fpgm'テーブルを編集..."
@@ -643,6 +706,9 @@ msgstr "垂直ヒントを作成(_E)..."
 msgid "_Review Hints..."
 msgstr "ヒントを確認(_R)..."
 
+msgid "Review Hints..."
+msgstr "ヒントを確認..."
+
 msgid "_MinimumDistance"
 msgstr "最小距離(_M)"
 
@@ -688,14 +754,23 @@ msgstr "パレット(_P)"
 msgid "_Tools"
 msgstr "ツール(_T)"
 
+msgid "Tools"
+msgstr "ツール"
+
 msgid "_Layers"
 msgstr "レイヤー(_L)"
+
+msgid "Layers"
+msgstr "レイヤー"
 
 msgid "_Docked Palettes"
 msgstr "パレットを連結表示(_D)"
 
 msgid "_Shades"
 msgstr "階調(_S)"
+
+msgid "Shades"
+msgstr "階調"
 
 msgid "_Center in Width"
 msgstr "幅の中央に(_C)"
@@ -727,6 +802,9 @@ msgstr "カーニング情報の統合(_M)..."
 msgid "_Anchor Control..."
 msgstr "アンカーの制御(_A)..."
 
+msgid "Anchor Control..."
+msgstr "アンカーの制御..."
+
 msgid "_Label Glyph By"
 msgstr "グリフへのラベルづけ(_L)"
 
@@ -756,6 +834,12 @@ msgstr "_72 pixel outline"
 
 msgid "_96 pixel outline"
 msgstr "_96 pixel outline"
+
+msgid "_Mono"
+msgstr "白黒(_M)"
+
+msgid "_Anti-Aliased"
+msgstr "アンチエイリアス(_A)"
 
 msgid "_Anti Alias"
 msgstr "アンチエイリアス(_A)"
@@ -793,8 +877,14 @@ msgstr "機能タグをつけ直す(_T)..."
 msgid "_Merge Fonts..."
 msgstr "フォントの統合(_M)..."
 
+msgid "Merge Fonts..."
+msgstr "フォントの統合..."
+
 msgid "Interpo_late Fonts..."
 msgstr "フォントの補間(_L)..."
+
+msgid "Interpolate Fonts..."
+msgstr "フォントの補間..."
 
 msgid "Copy _From"
 msgstr "コピー元の指定(_F)"
@@ -813,6 +903,9 @@ msgstr "自動カーニング(_K)..."
 
 msgid "Ker_n By Classes..."
 msgstr "クラス毎のカーニング(_N)..."
+
+msgid "Kern By Classes..."
+msgstr "クラス毎のカーニング..."
 
 msgid "Kern Pair Closeup..."
 msgstr "カーニングペアの詳細..."
@@ -847,6 +940,9 @@ msgstr "グリッドを表示(_G)"
 msgid "Hide _Grid"
 msgstr "グリッドを隠す(_G)"
 
+msgid "Hide Grid"
+msgstr "グリッドを隠す"
+
 msgid "_Bigger Pixel Size"
 msgstr "ピクセルサイズ拡大(_B)"
 
@@ -870,6 +966,9 @@ msgstr "_180°回転"
 
 msgid "_Skew..."
 msgstr "傾き(_S)..."
+
+msgid "Skew"
+msgstr "傾き"
 
 msgid "_Make First"
 msgstr "開始点に設定(_M)"
@@ -915,6 +1014,9 @@ msgstr "マルチプルマスター情報(_I)..."
 
 msgid "_Create MM..."
 msgstr "MMを作成(_C)..."
+
+msgid "Create MM..."
+msgstr "MMを作成..."
 
 msgid "MM _Validity Check"
 msgstr "MMが正しいか検査(_V)"
@@ -1208,7 +1310,7 @@ msgid "_UniqueID:"
 msgstr "_UniqueID:"
 
 msgid "_Version:"
-msgstr "バージョン:(_V)"
+msgstr "バージョン(_V):"
 
 msgid "Has _Vertical Metrics"
 msgstr "縦書きメトリックが存在(_V)"
@@ -1649,7 +1751,6 @@ msgid ""
 "field 0 and check \"[*] Is Offset\" in most cases."
 msgstr "これはMacにおける行間を指定します.\n(深さフィールドは一般的に負の値です)\n\"[] オフセットを指定\"にチェックが入って\nいない場合,入力した任意の値がそのままhheaテーブルで使われます. ほとんどの場合,\nこのフィールドを0に設定し,\n\"[*] オフセットを指定\"にチェックを\n入れておくべきでしょう."
 
-#: fontinfo.c:5229 fontinfo.c:5532
 msgid "HHead Ascent:"
 msgstr "hheaテーブルでの高さ"
 
@@ -1664,6 +1765,9 @@ msgstr "hheaの深さのオフセット"
 
 msgid "_Set GSUB/morx Ordering"
 msgstr "G_SUB/morxの順序を設定"
+
+msgid "Set GSUB/morx Ordering"
+msgstr "GSUB/morxの順序を設定"
 
 msgid "Sub/Super"
 msgstr "上つき/下つき"
@@ -2471,7 +2575,7 @@ msgstr "フランス語(モナコ)"
 msgid "French West Indies"
 msgstr "フランス語(西インド諸島)"
 
-msgid "French Reunion"
+msgid "French Réunion"
 msgstr "フランス語(レユニオン)"
 
 msgid "French D.R. Congo"
@@ -2498,7 +2602,7 @@ msgstr "フランス語(ハイチ)"
 msgid "French North Africa"
 msgstr "フランス語(北アフリカ)"
 
-msgid "French Réunion"
+msgid "French Runion"
 msgstr "フランス語(レユニオン)"
 
 msgid "Fulfulde"
@@ -2567,13 +2671,13 @@ msgstr "ノルウェー語(ニューノシュク)"
 msgid "Papiamentu"
 msgstr "パピアメント語"
 
-msgid "Portugu❹s Portugu❹s"
+msgid "Portugues Portugues"
 msgstr "ポルトガル語(ポルトガル)"
 
 msgid "Portugese Portugal"
 msgstr "ポルトガル語(ポルトガル)"
 
-msgid "Portugu❹s Brasil"
+msgid "Portugues Brasil"
 msgstr "ポルトガル語(ブラジル)"
 
 msgid "Portuguese Brasil"
@@ -2967,13 +3071,13 @@ msgstr "TFMとENCを出力"
 msgid "Output OFM & CFG"
 msgstr "OFMとCFGを出力"
 
-msgid "The AFM file contains metrics information that many word-processors will read when using a PostScript⑩ font."
+msgid "The AFM file contains metrics information that many word-processors will read when using a PostScript\xa9 font."
 msgstr "AFMファイルには, 多くのワープロがPostScriptフォント\n使用時に読み込むメトリック情報が含まれています."
 
-msgid "The PFM file contains information Windows needs to install a PostScript⑩ font."
+msgid "The PFM file contains information Windows needs to install a PostScript\xa9 font."
 msgstr "PFMファイルには, PostScriptフォントをインストール\nするときにWindowsが必要とする情報が含まれています."
 
-msgid "The tfm and enc files contain information TeX needs to install a PostScript⑩ font."
+msgid "The tfm and enc files contain information TeX needs to install a PostScript\xa9 font."
 msgstr "TFM,ENCの両ファイルには, PostScriptフォントをインストール\nするときにTeXが必要とする情報が含まれています."
 
 msgid ""
@@ -3148,7 +3252,7 @@ msgid "Notdef name"
 msgstr "名前が.notdefです"
 
 msgid "The glyph at encoding %d is named \".notdef\" but contains an outline. Because it is called \".notdef\" it will not be included in the generated font. You may give it a new name using Element->Glyph Info. Do you wish to continue font generation (and omit this glyph)?"
-msgstr "エンコーディング%d のグリフは\".notdef\"という名前がついています. 名前が\".notdef\"になっているために,生成されたフォントにはこのグリフは含まれません. 「エレメント(L)」→「グリフ情報(I)」で新しい名前をつけることができます. (このグリフは出力されませんが)フォントの生成を続けますか?"
+msgstr "エンコーディング%d のグリフは\".notdef\"という名前がついています. 名前が\".notdef\"になっているために,生成されたフォントにはこのグリフは含まれません. エレメント(L)→グリフ情報(I) で新しい名前をつけることができます. (このグリフは出力されませんが)フォントの生成を続けますか?"
 
 msgid "Non-standard Em-Size"
 msgstr "非標準のEMサイズ"
@@ -3156,12 +3260,12 @@ msgstr "非標準のEMサイズ"
 msgid ""
 "The convention is that PostScript fonts should have an Em-Size of 1000. But this font has a size of %d. This is not an error, but you might consider altering the Em-Size with the Element->Font Info->PS General dialog.\n"
 "Do you wish to continue to generate your font in spite of this?"
-msgstr "通例,PostScriptフォントはEMの大きさを1000グリッドに設定することになっていますが,このフォントは%dグリッドとなっています. これはエラーではありませんが,EMサイズを「エレメント(L)」→「フォント情報(I)」→[PS一般]ダイアログで変更することを検討すべきでしょう.\nそれでもフォントをこのまま出力しますか?"
+msgstr "通例,PostScriptフォントはEMの大きさを1000グリッドに設定することになっていますが,このフォントは%dグリッドとなっています. これはエラーではありませんが,EMサイズを エレメント(L)→フォント情報(F)→[一般情報] ダイアログで変更することを検討すべきでしょう.\nそれでもフォントをこのまま出力しますか?"
 
 msgid ""
 "The convention is that TrueType fonts should have an Em-Size which is a power of 2. But this font has a size of %d. This is not an error, but you might consider altering the Em-Size with the Element->Font Info->PS General dialog.\n"
 "Do you wish to continue to generate your font in spite of this?"
-msgstr "通例,PostScriptフォントはEMの大きさを2の冪乗に設定することになっていますが,このフォントは%dグリッドとなっています. これはエラーではありませんが,全角グリッドを「エレメント(L)」→「フォント情報(I)」→[PS一般]ダイアログで変更することを検討すべきでしょう.\nそれでもフォントをこのまま出力しますか?"
+msgstr "通例,PostScriptフォントはEMの大きさを2の冪乗に設定することになっていますが,このフォントは%dグリッドとなっています. これはエラーではありませんが,全角グリッドを エレメント(L)→フォント情報(F)→[一般情報] ダイアログで変更することを検討すべきでしょう.\nそれでもフォントをこのまま出力しますか?"
 
 msgid "Not integral"
 msgstr "整数ではありません"
@@ -3175,7 +3279,7 @@ msgid ""
 "on the entire font."
 msgstr "このフォントには少なくとも1つ非整数の座標が含まれています.\nこれは仕様上全く問題ありませんが,普通ではありませんし\n生成されるフォントのサイズを増加させます.\nフォント全体に対して エレメント(l)→整数値に変換(d) を\n適用することを試してみてはどうでしょうか."
 
-msgid "PostScript⑩"
+msgid "PostScript\xa9"
 msgstr "PostScript"
 
 msgid "TrueType"
@@ -3270,10 +3374,10 @@ msgid "Missing Bitmap"
 msgstr "ビットマップがありません"
 
 msgid "Attempt to save a pixel size that has not been created (%d@%d)"
-msgstr "作成されていないサイズ(%d@%d)のビットマップを出力しようとしています."
+msgstr "未作成のサイズ (%d@%d) のビットマップを保存しようとしています."
 
 msgid "Attempt to regenerate a pixel size that has not been created (%d@%d)"
-msgstr "作成されていないサイズ(%d@%d)のビットマップの作成を試してみてください."
+msgstr "未作成のサイズ (%d@%d) のビットマップを再生成しようとしました."
 
 msgid "Currently, FontForge only supports bitmap (not bytemap) type3 output"
 msgstr "現在のところ,FontForgeはType3出力ではビットマップだけをサポートしています(バイトマップは出力できません)"
@@ -3386,8 +3490,18 @@ msgid ""
 "another glyph. Are you sure you want to clear it?"
 msgstr "他のグリフから参照されているグリフ %.30s を消去しようとしています.\n本当に消去してよろしいですか?"
 
+msgid ""
+"You are attempting to clear %.30s which is refered to by\n"
+"another character. Are you sure you want to clear it?"
+msgstr ""
+"他の文字から参照されている文字 %.30s を消去しようとしています.\n"
+"本当に消去してよろしいですか?"
+
 msgid "Unlink All"
 msgstr "リンクをすべて解除"
+
+msgid "_Unlink"
+msgstr "リンクを解除(_U)"
 
 msgid "Unlink"
 msgstr "リンクを解除"
@@ -3493,6 +3607,9 @@ msgstr "を置き換えてよろしいですか?\nリングはAと接続しな�
 
 msgid "_Yes"
 msgstr "はい(_Y)"
+
+msgid "Yes"
+msgstr "はい"
 
 msgid "_No"
 msgstr "いいえ(_N)"
@@ -3786,6 +3903,9 @@ msgstr "この値はおそらく範囲外です."
 
 msgid "Value out of range"
 msgstr "範囲外の値です."
+
+msgid "Out of Range"
+msgstr "範囲外です."
 
 msgid "Transformation Matrix"
 msgstr "変換行列"
@@ -4093,7 +4213,7 @@ msgid "Left Bounds"
 msgstr "左の境界"
 
 msgid "Optical Bounds"
-msgstr "視角的境界"
+msgstr "視覚的境界"
 
 msgid "Proportional Alternate Metrics"
 msgstr "プロポーショナル代替メトリック"
@@ -4356,7 +4476,7 @@ msgstr "ブリス表意記号"
 msgid "Bopomofo"
 msgstr "注音字母"
 
-msgid "Br⒐hm"
+msgid "Br\xc4\x81hm\xc4\xab"
 msgstr "ブラーフミー文字"
 
 msgid "Braille"
@@ -4464,7 +4584,7 @@ msgstr "マヤ神聖文字"
 msgid "Meroitic"
 msgstr "メロエ文字"
 
-msgid "Malay⒐lam"
+msgid "Malay\xc4\x81lam"
 msgstr "マラヤーラム文字"
 
 msgid "Myanmar"
@@ -5637,8 +5757,11 @@ msgstr "ビットマップフォントが %s から見つかりませんでし�
 msgid "Too Complex or Bad"
 msgstr "複雑すぎるか不正です"
 
-msgid "I'm sorry this file is too complex for me to understand (or is erroneous, or is empty)"
+msgid "I'm sorry this file is too complex for me to understand (or is erroneous)"
 msgstr "申し訳ありませんがこのファイルは複雑すぎて解釈できません(または壊れています)"
+
+msgid "I'm sorry this file is too complex for me to understand (or is erroneous, or is empty)"
+msgstr "申し訳ありませんがこのファイルは複雑すぎて解釈できません(または壊れているか空です)"
 
 msgid ""
 "This will change both BlueValues and OtherBlues.\n"
@@ -6014,6 +6137,12 @@ msgstr "機能(_F):"
 msgid "_Off:"
 msgstr "オフ(_O):"
 
+msgid "Off"
+msgstr "オフ"
+
+msgid "On"
+msgstr "オン"
+
 msgid "_Mutex"
 msgstr "相互排除(_M)"
 
@@ -6051,6 +6180,9 @@ msgstr "サイズ(_S):"
 
 msgid "_HStem"
 msgstr "水平ステム(_H)"
+
+msgid "HStem"
+msgstr "水平ステム"
 
 msgid "_VStem"
 msgstr "垂直ステム(_V)"
@@ -6120,6 +6252,9 @@ msgstr "ペンを変形(_T):"
 
 msgid "_Stroke"
 msgstr "ストローク(_S)"
+
+msgid "Stroke"
+msgstr "ストローク"
 
 msgid "Opacity:"
 msgstr "透明度:"
@@ -6342,7 +6477,7 @@ msgid "Attempt to regenerate a pixel size that has not been created: "
 msgstr "指定されていないピクセル数のグリフの再生成を試みる: "
 
 msgid "Pixel Sizes:"
-msgstr "Pixel Sizes:"
+msgstr "ピクセルサイズ一覧:"
 
 msgid "The list of current pixel bitmap sizes"
 msgstr "現在含まれるビットマップのピクセル数のリスト"
@@ -6601,6 +6736,9 @@ msgstr "背面(_B)"
 msgid "_Guide"
 msgstr "ガイド(_G)"
 
+msgid "Guide"
+msgstr "ガイド"
+
 msgid "Layer Info..."
 msgstr "レイヤー情報..."
 
@@ -6729,8 +6867,14 @@ msgstr "ビットマップ貼りつけ"
 msgid "Yes to _All"
 msgstr "全部はい(_A)"
 
+msgid "Yes to All"
+msgstr "全部はい"
+
 msgid "N_o to All"
 msgstr "全部いいえ(_O)"
+
+msgid "No to All"
+msgstr "全部いいえ"
 
 msgid ""
 "The clipboard contains a bitmap glyph of size %s,\n"
@@ -6745,7 +6889,13 @@ msgstr "ペースト中..."
 msgid "Self-referential glyph"
 msgstr "グリフが自己参照しています."
 
+msgid "Self-referential character"
+msgstr "グリフが自己参照しています."
+
 msgid "Attempt to make a glyph that refers to itself"
+msgstr "自分自身を参照するグリフを作ろうとしました."
+
+msgid "Attempt to make a character that refers to itself"
 msgstr "自分自身を参照するグリフを作ろうとしました."
 
 msgid "Bad Reference"
@@ -6763,8 +6913,21 @@ msgid ""
 "It will not be copied."
 msgstr "%1$s への参照を %2$hs に貼りつけようとしていますが,\nこのフォントには %1$hs は存在せず, 参照された元のグリフも見つかりません.\nコピーは行われません."
 
+msgid ""
+"You are attempting to paste a reference to %1$s into %2$s.\n"
+"But %1$s does not exist in this font, nor can I find the original character "
+"refered to.\n"
+"It will not be copied."
+msgstr ""
+"%1$s への参照を %2$hs に貼りつけようとしていますが,この\n"
+"フォントには %1$hs は存在せず, 参照された元のグリフも見つかりません.\n"
+"コピーは行われません."
+
 msgid "Don't _Warn Again"
 msgstr "今後は警告しない(_W)"
+
+msgid "Don't Warn Again"
+msgstr "今後は警告しない"
 
 msgid "No Vertical Metrics"
 msgstr "縦書きメトリックがありません."
@@ -6871,6 +7034,9 @@ msgstr "cidmapファイルを発見しました..."
 msgid "_Browse..."
 msgstr "ファイルを見る(_B)..."
 
+msgid "Browse..."
+msgstr "ファイルを見る..."
+
 msgid "Please select a CID ordering"
 msgstr "CIDフォントのグリフ集合名 (ordering) を指定してください."
 
@@ -6920,7 +7086,19 @@ msgid "Other ..."
 msgstr "その他 ..."
 
 msgid "Font to merge into %.20s"
-msgstr "%.20s と合併するフォント."
+msgstr "%.20s と合併するフォント"
+
+msgid "In character %s, could not find reference to %s\n"
+msgstr "文字 %s において, %s への参照を見つけることができませんでした.\n"
+
+msgid "In character %s, there are too few points on a path in the base\n"
+msgstr "文字 %s において, 基底グリフのパスに含まれる点の個数が少なすぎます.\n"
+
+msgid "In character %s, there are too many points on a path in the base\n"
+msgstr "文字 %s において, 基底グリフのパスに含まれる点の個数が多すぎます.\n"
+
+msgid "Different settings on whether to stroke in layer %d of %s\n"
+msgstr "レイヤー %d (%s の) でストロークをどう行うかの設定が異なります.\n"
 
 msgid "Interpolating Problem"
 msgstr "補間処理中に問題が発生しました."
@@ -7008,6 +7186,12 @@ msgstr "GFファイルではありません"
 
 msgid "Not a (metafont) gf file %.200s"
 msgstr "%.200sは(metafontから作られる)GFファイルではありません."
+
+msgid "Unexpected EOF in gf\n"
+msgstr "GFファイルが途中で切れています\n"
+
+msgid "Uninterpreted code in gf: %d\n"
+msgstr "GFファイルの位置 %d に予想外のコードがありました\n"
 
 msgid "Not a pcf file"
 msgstr "PCFファイルではありません."
@@ -7277,7 +7461,7 @@ msgid ""
 "commands. PostScript shouldn't care though."
 msgstr "同じパス上の2つの隣り合う点が2,3ユニットより\n近くにある場合,FontForgeの一部のコマンドで問題が生ずる\nおそれがあります.\nただし, PostScriptインタプリタには影響ありません."
 
-msgid "_X near⑯"
+msgid "_X near\xc2\xb9"
 msgstr "近接する_X"
 
 msgid ""
@@ -7285,7 +7469,7 @@ msgid ""
 "glyphs start at the same location."
 msgstr "いくつかのグリフの中に, 同じ位置から始まる垂直ステムがあるかどうかをチェックします."
 
-msgid "_Y near⑯"
+msgid "_Y near\xe2\x91\xaf"
 msgstr "近接する_Y"
 
 msgid ""
@@ -7293,7 +7477,7 @@ msgid ""
 "glyphs start at the same location."
 msgstr "いくつかのグリフの中に, 同じ位置から始まる水平ステムがあるかどうかをチェックします."
 
-msgid "Y near⑯ _standard heights"
+msgid "Y near\xe2\x91\xaf _standard heights"
 msgstr "標準の高さの近くのY座標(_S)"
 
 msgid ""
@@ -7344,7 +7528,7 @@ msgid ""
 "hint exists without any points that lie on it."
 msgstr "Ghostviewは (おそらくその他のインタプリタも)\n点が1個も上に載っていないヒントが存在すると\n問題を生じます."
 
-msgid "_Points near⑯ hint edges"
+msgid "_Points near\xe2\xa1\x9f hint edges"
 msgstr "ヒント端に近い点(_P)"
 
 msgid ""
@@ -7354,7 +7538,7 @@ msgid ""
 "has the wrong width."
 msgstr "点があるヒントから僅かに離れている場合, その多くは\n1本のステムが複数の部分からなり, 一部が間違った幅を持っているのが\n原因です."
 
-msgid "Hint _Width Near⑯"
+msgid "Hint _Width.Near\xe2\x91\xaf"
 msgstr "ヒント幅のぶれ量(_W)"
 
 msgid "Allows you to check that stems have consistant widths.."
@@ -7486,7 +7670,7 @@ msgid ""
 "point to make a significant difference in the shape of the curve."
 msgstr "制御点は,主たる点との距離が近すぎて曲線の形を変える\n役に立たない場合,無意味なものとされます"
 
-msgid "⑯ \"Near\" means within"
+msgid "\xe2\x91\xaf \"Near\" means within"
 msgstr " \"近く\"と判断される距離(_N)"
 
 msgid "Near"
@@ -7563,6 +7747,9 @@ msgstr "複数のグリフが同じ名前を持っていないかチェックし
 
 msgid "_Meta Font..."
 msgstr "_Meta Font..."
+
+msgid "Meta Font..."
+msgstr "Meta Font..."
 
 msgid "Counter Too Small"
 msgstr "カウンタ幅が小さすぎます"
@@ -7831,6 +8018,12 @@ msgstr "TTCに含まれません."
 msgid "%s is not in %.100hs"
 msgstr "%s は %.100hs に含まれません."
 
+msgid "%s is not in %.100s"
+msgstr "%s は %.100s に含まれません."
+
+msgid "%1$s is not in %2$.100s"
+msgstr "%1$s は %2$.100s に含まれません."
+
 msgid "Anchor-%d"
 msgstr "Untitled-%d"
 
@@ -7854,8 +8047,14 @@ msgid ""
 "Which do you prefer?"
 msgstr "'name'テーブルには %s を表す(少なくとも)2つの文字列が言語%sに対して存在します. 最初は '%.12s...' で、2番目は '%.12s... です'.\nどちらを残しますか?"
 
+msgid "First to _All"
+msgstr "常に最初を選択(_A)"
+
 msgid "First to All"
 msgstr "常に最初を選択"
+
+msgid "Second _to All"
+msgstr "常に2番目を選択(_T)"
 
 msgid "Second to All"
 msgstr "常に2番目を選択"
@@ -8052,6 +8251,9 @@ msgstr "Y軸の周りを回転"
 msgid "Skew Angle"
 msgstr "傾き角"
 
+msgid "Skew Ratio"
+msgstr "傾きの比率"
+
 msgid "X Scale Factor"
 msgstr "X方向の拡大率"
 
@@ -8142,6 +8344,13 @@ msgid ""
 "Only search selected glyphs in the fontview\n"
 "Normally we search all glyphs in the font."
 msgstr "フォント表示画面で選択されたグリフのみを検索対象とします.\n通常はフォント内の全グリフから検索します."
+
+msgid ""
+"Only search selected characters in the fontview\n"
+"Normally we search all characters in the font."
+msgstr ""
+"フォント表示画面で選択された文字のみを検索対象とします.\n"
+"通常はフォント内の全文字から検索します."
 
 msgid "Find"
 msgstr "検索"
@@ -8248,7 +8457,13 @@ msgstr "階調表示(_A)"
 msgid "AntiAlias (greymap) glyphs, or bitmap glyphs"
 msgstr "グリフを階調表示(グレイマップで)するか, ビットマップ表示かを指定します."
 
+msgid "AntiAlias (greymap) characters, or bitmap characters"
+msgstr "グリフを階調表示(グレイマップで)するか, ビットマップ表示かを指定します."
+
 msgid "Specifies the pixel size of the glyphs on display"
+msgstr "画面上のグリフのピクセルサイズを指定します"
+
+msgid "Specifies the pixel size of the characters on display"
 msgstr "画面上のグリフのピクセルサイズを指定します"
 
 msgid ""
@@ -8434,6 +8649,9 @@ msgstr "_IDEF:"
 msgid "D_PI:"
 msgstr "D_PI:"
 
+msgid "_DPI:"
+msgstr "_DPI:"
+
 msgid "Show _Grid Fit"
 msgstr "グリッド合わせを表示(_G)"
 
@@ -8445,9 +8663,6 @@ msgstr "バイトコードインタプリタがありません"
 
 msgid "These results are those of the freetype autohinter. They do not reflect the truetype instructions."
 msgstr "これらの結果はFreeTypeの自動ヒントづけ機能によるものです. これはTrueTypeのヒント命令を反映していません"
-
-msgid "_Debug"
-msgstr "デバッグ(_D)"
 
 msgid "Debug _fpgm/prep"
 msgstr "_fpgm/prepをデバッグ"
@@ -8551,7 +8766,7 @@ msgid "No Advanced Typography"
 msgstr "Advanced Typography無し"
 
 msgid "Apple Advanced Typography"
-msgstr "Apple Advanced Typography"
+msgstr "Apple 高度組版機能"
 
 msgid "Empty"
 msgstr "空"
@@ -8589,8 +8804,23 @@ msgstr "用字系"
 msgid "Required Feature"
 msgstr "必須の機能"
 
+msgid "Freetype rasterization failed.\n"
+msgstr "FreeTypeでのラスタライズに失敗しました.\n"
+
 msgid "This kerning pair (%.20s and %.20hs) is currently part of a kerning class with a 0 offset for this combination. Would you like to alter this kerning class entry (or create a kerning pair for just these two glyphs)?"
 msgstr "このカーニングペア(%.20sと%.20hs)は現在,\nこの組み合わせに対するオフセットが0となっている\nカーニングクラスの一部です.\nカーニングクラスのこの項目を変更してよろしいですか\n(それとも,この2個のグリフだけを含む新しい\nカーニングペアを作成しますか)?"
+
+msgid ""
+"This kerning pair (%.20s and %.20s) is currently part of a kerning class "
+"with a 0 offset for this combination. Would you like to alter this kerning "
+"class entry (or create a kerning pair for just these two glyphs)?"
+msgstr ""
+"このカーニングペア(%.20sと%.20s)は現在,\n"
+"この組み合わせに対するオフセットが0となっている\n"
+"カーニングクラスの一部です.\n"
+"カーニングクラスのこの項目を変更してよろしいですか\n"
+"(それとも,この2個のグリフだけを含む新しいカーニング\n"
+"ペアを作成しますか)?"
 
 msgid "Use Kerning Class?"
 msgstr "カーニングクラスを使用しますか?"
@@ -8677,7 +8907,7 @@ msgid "From this"
 msgstr "このクラスから"
 
 msgid "Please select a script"
-msgstr "スクリプトを選択してください"
+msgstr "用字系を選択してください"
 
 msgid "Class 0"
 msgstr "クラス0"
@@ -8780,10 +9010,19 @@ msgstr "間隔(_G):"
 msgid "Outlining glyphs"
 msgstr "縁どり文字"
 
+msgid "Outlining characters"
+msgstr "縁どり文字"
+
 msgid "Inlining glyphs"
 msgstr "インライン文字"
 
+msgid "Inlining characters"
+msgstr "インライン文字"
+
 msgid "Shadowing glyphs"
+msgstr "影文字"
+
+msgid "Shadowing characters"
 msgstr "影文字"
 
 msgid "Shadow Length:"
@@ -8834,6 +9073,14 @@ msgstr "選択グリフが少なすぎます"
 
 msgid "There are so few glyphs selected that it seems unlikely to me that you will get a representative sample of this aspect of your font. If you deselect everything the command will apply to all glyphs in the font"
 msgstr "選択したグリフが少なすぎて,このフォントの特徴を知るにはサンプルが不足しているようです. すべて選択解除すれば,フォント内の全グリフに対して適用されます"
+
+msgid ""
+"There are so few characters selected that it seems unlikely to me that you "
+"will get a representative sample of this aspect of your font. If you "
+"deselect everything the command will apply to all characters in the font"
+msgstr ""
+"選択した文字が少なすぎて,このフォントの特徴を知るにはサンプルが不足している"
+"ようです. すべて選択解除すれば,フォント内の全文字に対して適用されます"
 
 msgid "By Glyphs"
 msgstr "グリフで指定"
@@ -9029,9 +9276,18 @@ msgid ""
 msgstr "クラスメンバー \"%.20s\" はこのフォントには存在しません.\nこれでよろしいですか?"
 
 msgid ""
+"The coverage table member \"%.20s\" is not in this font,\n"
+"Is that what you want?"
+msgstr ""
+"範囲テーブルメンバー \"%.20s\" はこのフォントには存在しません.\n"
+"これでよろしいですか?"
+
+msgid ""
 "There is no glyph named \"%.20s\" in this font,\n"
 "Is that what you want?"
-msgstr "このフォントには \"%.20s\" というグリフはありません.\nこれでよろしいですか?"
+msgstr ""
+"このフォントには \"%.20s\" というグリフはありません.\n"
+"これでよろしいですか?"
 
 msgid "Bad Match Class Number"
 msgstr "一致クラス番号が間違っています"
@@ -9381,7 +9637,6 @@ msgstr "ケチュア語(ボリビア)"
 msgid "Quecha Ecuador"
 msgstr "ケチュア語(エクアドル)"
 
-#: fontinfo.c:754
 msgid "Quecha Peru"
 msgstr "ケチュア語(ペルー)"
 
@@ -9619,6 +9874,13 @@ msgstr "このマルチプルマスターフォントには%1$d個のインス�
 msgid "The fonts %1$.30s and %2$.30hs have a different number of glyphs or different encodings"
 msgstr "フォント%1$.30sと%2$.30hsは,含まれるグリフの個数かエンコーディングに食い違いがあります"
 
+msgid ""
+"The fonts %1$.30s and %2$.30s have a different number of glyphs or different "
+"encodings"
+msgstr ""
+"フォント%1$.30sと%2$.30sは,含まれるグリフの個数かエンコーディングに食い違い"
+"があります"
+
 msgid "The fonts %1$.30s and %2$.30hs use different types of splines (one quadratic, one cubic)"
 msgstr "フォント%1$.30sと%2$.30hsはスプラインの次数が異なります(片方が2次,片方が3次)"
 
@@ -9710,7 +9972,7 @@ msgid "Various errors occurred at the selected glyphs"
 msgstr "選択中のグリフでさまざまなエラーが発生しました"
 
 msgid "The following error occurred on the selected glyphs: %.100s"
-msgstr "千卓中のグリフで以下のエラーが発生しました: %.100s"
+msgstr "選択中のグリフで以下のエラーが発生しました: %.100s"
 
 msgid "You may specify the new instance of this font"
 msgstr "このフォントの新しいインスタンスを指定する必要があります"
@@ -9888,6 +10150,13 @@ msgstr "補正:"
 msgid "Unexpected density"
 msgstr "密度が想定外の値です"
 
+msgid ""
+"One of the bitmap fonts, %1$d, specified is not an integral scale up of the "
+"smallest font, %2$d (or is too large a factor)"
+msgstr ""
+"指定されたビットマップフォントの1つである%1$dが,最小のフォント%2$dの整数倍ではあ"
+"りません(または倍率が大きすぎます)."
+
 msgid "One of the bitmap fonts, %d, specified is not an integral scale up of the smallest font, %d (or is too large a factor)"
 msgstr "指定されたビットマップフォントの1つである%dが,最小のフォント%dの整数倍ではありません(または倍率が大きすぎます)."
 
@@ -9897,17 +10166,37 @@ msgstr "メトリックが不正です"
 msgid "One of the fonts %d,%d is missing glyph %d"
 msgstr "フォント%d,%dのどちらかにグリフ%dがありません"
 
+msgid "One of the fonts %1$d,%2$d is missing glyph %3$d"
+msgstr "フォント%1$d,%2$dのどちらかにグリフ%3$dがありません"
+
 msgid "In font %d the glyph %.30hs either starts before 0, or extends after the advance width or is above the ascent or below the descent"
 msgstr "フォント%dに含まれるグリフ%.30hsは左端が0よりも小さいか,送り幅よりも右・高さよりも上・深さよりも下のいずれかにはみ出しています"
 
+msgid ""
+"In font %d the glyph %.30s either starts before 0, or extends after the "
+"advance width or is above the ascent or below the descent"
+msgstr ""
+"フォント%dに含まれるグリフ%.30sは左端が0よりも小さいか,送り幅よりも"
+"右・高さよりも上・深さよりも下のいずれかにはみ出しています"
+
 msgid "In font %d the advance width of glyph %.30hs does not scale the base advance width properly, it shall be forced to the proper value"
 msgstr "フォント%dに含まれるグリフ%.30hsの送り幅は,基本フォントの送り幅に正確に縮小することができません. 適正な値に強制的に変更されます."
+
+msgid ""
+"In font %1$d the advance width of glyph %2$.30s does not scale the base "
+"advance width properly, it shall be forced to the proper value"
+msgstr ""
+"フォント%1$dに含まれるグリフ%2$.30sの送り幅は,基本フォントの送り幅に"
+"正確に縮小することができません. 適正な値に強制的に変更されます."
 
 msgid "Advance width of glyph %.30s must be less than 127"
 msgstr "グリフ%.30sの送り幅は127未満でなければなりません"
 
 msgid "Only the first 256 glyphs in the encoding will be used"
 msgstr "エンコーディングの先頭に含まれる256文字のみが使用されます"
+
+msgid "Choose a file format..."
+msgstr "ファイルフォーマットを選択してください..."
 
 msgid "What type(s) of palm font records do you want?"
 msgstr "どの種類のPalmフォントレコードが必要か?"
@@ -9955,7 +10244,6 @@ msgid ""
 "desired."
 msgstr "グリフは名前またはUnicode符号位置のいずれかで識別可能です.\n一般的には,この選択はタイプ入力の内容によって行われます.\n\"A\"とタイプすると名前によって識別されます.\n\"U+0041\"と入力するとグリフは符号位置で識別されます。グリフを選択範囲から呼び出す時には,\nどちらのフォーマットが望ましいかを指定する必要があります."
 
-#: groups.c:1364
 msgid "Identify by"
 msgstr "識別基準"
 
@@ -9991,3 +10279,1408 @@ msgstr "80"
 
 msgid "GGadget|ScaleFactor|100"
 msgstr "115"
+
+msgid "Corrections must be between -128 and 127 (and should be smaller)"
+msgstr "補正値は-128〜127の範囲の(なるべく小さな)値でなければなりません"
+
+msgid "Can't open %s\n"
+msgstr "%s を開くことができません.\n"
+
+msgid "Failed to write %s\n"
+msgstr "%s の書き出しに失敗しました.\n"
+
+msgid "Bad bounding box for %s.\n"
+msgstr "%s のバウンディングボックスが不正です.\n"
+
+msgid "FontForge does not support this bit depth %d (must be 1,2,4,8,16,32)\n"
+msgstr "FontForge は %d ビットの諧調深度はサポートしていません(1,2,4,8,16,32のいずれかでなければなりません)\n"
+
+msgid "Duplicate repeat row count in char %d of pk file\n"
+msgstr "PKファイルの文字 %d で, 繰返し列番号が重複しています\n"
+
+msgid ""
+"The character, %d, was not read properly (or pk file is in bad format)\n"
+" At %ld should be %d, off by %ld\n"
+msgstr ""
+"文字 %d を正しく読み込めませんでした (またはPKファイルのフォーマットが不正です)\n"
+" 位置 %ld は %d であるはずで、%ld だけずれています\n"
+
+msgid "Can't instruct this glyph"
+msgstr "このグリフに命令が追加できません"
+
+msgid ""
+"TrueType does not support mixed references and contours.\n"
+"If you want instructions for %.30s you should either:\n"
+" * Unlink the reference(s)\n"
+" * Copy the inline contours into their own (unencoded\n"
+"    glyph) and make a reference to that."
+msgstr ""
+"TrueTypeでは参照と輪郭を同じグリフに含めることができません.\n"
+"%.30s に命令を追加したいならば, 以下のいずれかが必要です:\n"
+" * リンクを解除する\n"
+" * グリフ内の輪郭を独立した(文字符号を持たない)グリフに\n"
+"     コピーして, そのグリフへの参照を作成する."
+
+msgid ""
+"TrueType does not support references which\n"
+"are scaled by more than 200%%.  But %1$.30s\n"
+"has been in %2$.30s. Any instructions\n"
+"added would be meaningless."
+msgstr ""
+
+msgid ""
+"Unparsed characters found after end of groups file (last line parsed was %"
+"d).\n"
+msgstr ""
+
+msgid "Groups"
+msgstr "グループ"
+
+msgid "Define Groups"
+msgstr "グループを定義"
+
+msgid ""
+"This is probably a valid URW font, but it is in a format (%c%c) which "
+"FontForge\n"
+"does not support. FontForge only supports 'IK' format fonts.\n"
+msgstr ""
+"これはおそらく正規のURWフォントでしょうが, FontForgeがサポートして\n"
+"いないフォーマット(%c%c)です. FontForge は'IK'フォーマットの\n"
+"フォントのみをサポートしています.\n"
+
+msgid ""
+"This looks like an ikarus format which I have seen examples of, but for "
+"which\n"
+"I have no documentation. FontForge does not support it yet.\n"
+msgstr ""
+"これは私が実例を見たことのあるIkarusフォーマットのように見えますが,"
+"それに関する文書を持っていません. FontForgeではまだサポートしていません.\n"
+
+msgid "Unexpected size for name section of URW font (expected 55, got %d)\n"
+msgstr "URLフォントのnameセクションが想定外のサイズです (55の筈ですが%dとなっています)\n"
+
+msgid "Unexpected size for font info section of URW font (expected 12, got %d)\n"
+msgstr "URWフォントのフォント情報セクションが想定外の値です (12の筈ですが%dとなっています)\n"
+
+msgid "Move selected class up"
+msgstr "選択したクラスを上へ"
+
+msgid "Move selected class down"
+msgstr "選択したクラスを下へ"
+
+msgid "Warning: %s(%s) is both extended and condensed. That's impossible.\n"
+msgstr "警告: %s(%s) はエクステンディドかつコンデンストです. それは不可能です.\n"
+
+msgid "Warning: Both extended and condensed. That's impossible.\n"
+msgstr "警告: エクステンディドとコンデンストを同時指定しています. それは不可能です.\n"
+
+msgid "Can't open temporary file for postscript output\n"
+msgstr "PostScript出力のための一時ファイルを開けません\n"
+
+msgid "Can't open temporary file for truetype output.\n"
+msgstr "TrueType出力のための一時ファイルを開けません\n"
+
+msgid "can't create temporary file\n"
+msgstr "一時ファイルを作成できません.\n"
+
+msgid "Missing POST resource %u\n"
+msgstr "POSTリソース%uがありません\n"
+
+msgid "Out of memory\n"
+msgstr "メモリ不足です\n"
+
+msgid "No kerning table for %s\n"
+msgstr "%sのカーニングテーブルがありません\n"
+
+msgid "Couldn't find a font file named %s\n"
+msgstr "%s という名前のビットマップフォントが見つかりませんでした.\n"
+
+msgid "%s is a mac resource file but contains no postscript or truetype fonts\n"
+msgstr "%sはMacのリソースファイルですが,PostScript,TrueTypeどちらのフォントも含まれていません\n"
+
+msgid "Too many subroutines. We can deal with at most 14 (0-13)\n"
+msgstr "サブルーチンが多すぎます. 最大14個(0〜13)までしか扱えません\n"
+
+msgid "Warning: Byte swapped font mark in palm font.\n"
+msgstr "警告: Palmフォントのフォントマークのバイト順が反転しています.\n"
+
+msgid "Warning: Font Bucket version 4 treated as 0.\n"
+msgstr "警告: Font Bucket Version の 4 は 0 として扱います.\n"
+
+msgid "A pdf stream object is missing a Length attribute"
+msgstr "PDFストリームオブジェクトに /Length 属性がありません"
+
+msgid "Unsupported filter: %s"
+msgstr "フィルタ %s はサポートしていません"
+
+msgid "Bad number, infinity or nan: %s\n"
+msgstr "%sは不正な数値(無限大または非数)です\n"
+
+msgid "No mark in ] (close array)\n"
+msgstr "] (配列の終了) にマークがありません\n"
+
+msgid "Syntax error in parsing type3 glyph: %s"
+msgstr "Type3 グリフ %s の解析中に構文エラーが発生"
+
+msgid "Syntax errors while parsing Type3 font headers"
+msgstr "Type3フォトのヘッダを解析中に構文エラーが発生"
+
+msgid ""
+"The font %s is one of the standard fonts. It isn't actually in the file."
+msgstr "フォント%sは標準フォントの1つです. 実際にはファイル内に含まれていません."
+
+msgid "Unable to parse the pdf objects that make up %s"
+msgstr "%sをマークアップするPDFオブジェクトが解析できません"
+
+msgid "Doesn't look like a valid pdf file, couldn't find xref section"
+msgstr "正しいPDFファイルに見えません. xref セクションが見つかりません"
+
+msgid "This pdf file has no fonts"
+msgstr "この PDF ファイルにはフォントが含まれていません"
+
+msgid "Invalid hex digit in sfnts array\n"
+msgstr "sfnts 配列に不正な16進文字列が含まれています\n"
+
+msgid "Invalid character outside of string in sfnts array\n"
+msgstr "sfnts 配列内の文字列以外の場所に不正な文字が含まれています\n"
+
+msgid "Index too big (must be <%d) |%s"
+msgstr "インデックスが大きすぎます(%d未満でなければなりません) |%s"
+
+msgid "Didn't understand |%s"
+msgstr "%sが理解できませんでした"
+
+msgid "No name for CharStrings dictionary |%s"
+msgstr "CharStrings辞書%sに名前がありません"
+
+msgid "Too many entries in CharStrings dictionary |%s"
+msgstr "CharStrings辞書%sの項目が多すぎます"
+
+msgid "Ignoring duplicate /CharStrings entry\n"
+msgstr "/CharStringsの重複した項目を無視します\n"
+
+msgid "Ignoring duplicate /Subrs entry\n"
+msgstr "/Subrsの重複した項目を無視します\n"
+
+msgid ""
+"This font contains a \"UniqueId\" variable, but the correct name for it is\n"
+"\t\"UniqueID\" (postscript is case concious)\n"
+msgstr ""
+"このフォントには \"UniqueId\" という名の変数がありますが, 正しくは"
+"\t\"UniqueID\" です (PostScriptでは大文字と小文字は区別されます)\n"
+
+msgid "Bad CharString. Does not include lenIV bytes.\n"
+msgstr "CharStringが不正です. lenIV のバイト数が含まれていません\n"
+
+msgid "Duplicate definition of subroutine %d\n"
+msgstr "サブルーチン %d が重複定義されています\n"
+
+msgid "Shouldn't be in addinfo |%s"
+msgstr "%s は addinfo の中にあってはなりません"
+
+msgid "Invalid FD (%d) assigned to CID %d.\n"
+msgstr "FD (%d) が CID %d に不正に代入されています.\n"
+
+msgid "Bad CID offset for CID %d\n"
+msgstr "CID %d の CID オフセットが不正です\n"
+
+msgid "Failed to parse the StartData command properly\n"
+msgstr "StartData コマンドを正しく解析できませんでした\n"
+
+msgid "Failed to parse the StartData command properly, bad cnt\n"
+msgstr "StartDataコマンドを正しく解析できず, 個数が不正です\n"
+
+msgid "Cannot open a temporary file\n"
+msgstr "一時ファイルを開けません\n"
+
+msgid "Cannot open %s\n"
+msgstr "%sを開けません\n"
+
+msgid ""
+"The truetype encoding specified by platform=%d specific=%d (which we map to %"
+"s) is not supported by your version of iconv(3).\n"
+msgstr ""
+"プラットフォームID=%d, 固有ID=%d で指定されたTrueType エンコーディング (%s に"
+"変換されます) はインストールされている iconv(3) ではサポートされていません\n"
+
+msgid ""
+"Interesting, I've never seen an example of this type of font, could you\n"
+"send me a copy of %s?\n"
+"Thanks\n"
+"  gww@silcom.com\n"
+msgstr ""
+"これは興味深い. 私はこのタイプのフォントの実例を見たことがないのです.\n"
+"%s のコピーを送っていただいてもよろしいでしょうか?\n"
+"                                                     敬具\n"
+"                                                     gww@silcom.com\n"
+
+msgid ""
+"The fontname begins with the utf8 byte order sequence. This is illegal. %s"
+msgstr ""
+"フォント名 %s の先頭に UTF-8 のバイトオーダマークがついています. これは間違いです."
+
+msgid ""
+"Warning: Mac and Unicode entries in the 'name' table differ for the\n"
+" %s string in the language %s\n"
+" Mac String: %s\n"
+"Windows String: %s\n"
+msgstr ""
+"警告: 'name' テーブルの Mac と Unicode の項目で文字列 %s が言語 %s\n"
+"      版において一致しません.\n"
+" Mac の文字列: %s\n"
+" Unicode の文字列: %s\n"
+
+msgid ""
+"Warning: Mac string is a subset of the Unicode string in the 'name' table\n"
+" for the %s string in the %s language.\n"
+msgstr ""
+"警告: 'name' テーブルの文字列 %s の %s 言語版において,\n"
+"Mac 文字列は Unicode の文字列のサブセットです\n"
+
+msgid ""
+"Warning: Mac and Windows entries in the 'name' table differ for the\n"
+" %s string in the language %s\n"
+" Mac String: %s\n"
+"Windows String: %s\n"
+msgstr ""
+"警告: 'name' テーブルの Mac と Windows の項目で文字列 %s が言語 %s\n"
+"      版において一致しません.\n"
+" Mac の文字列: %s\n"
+" Windows の文字列: %s\n"
+
+msgid "Use _First"
+msgstr "最初を使う(_F)"
+
+msgid "Use _Second"
+msgstr "2番目を使う(_S)"
+
+msgid "Bad tt font: contour ends make no sense in glyph %d.\n"
+msgstr "不正なTrueTypeフォント: グリフ %d の輪郭の終端は無意味です.\n"
+
+msgid "Reached end of file when reading simple glyph\n"
+msgstr "単純グリフの読込み中にファイル終端に達しました.\n"
+
+msgid "Empty composite %d\n"
+msgstr "複合文字 %d が空です\n"
+
+msgid "Bad flags value, implied MORE components at end of glyph %d\n"
+msgstr "フラグの値が不正です. グリフ %d の末尾に ま だ 構成要素があることになっています\n"
+
+msgid "Reference to glyph %d out of bounds when parsing 'glyf' table.\n"
+msgstr "'glyf'テーブルの解析中に, 境界を超えたグリフ %d への参照に出会いました.\n"
+
+msgid "Glyph %d attempts to reference glyph %d which is outside the font\n"
+msgstr "グリフ %d がフォントのグリフ数を超えるグリフ %d を参照しようとしました\n"
+
+msgid "Reached end of file when reading composit glyph\n"
+msgstr "合成グリフの読み込み中にファイルの終端に到達しました\n"
+
+msgid ""
+"Bad glyph (%d), its definition extends beyond the end of the glyf table\n"
+msgstr "不正なグリフ(%d)があります. その定義がglyfテーブルの末尾を超えています\n"
+
+msgid "Bad glyph (%d), disordered 'loca table (start comes after end)\n"
+msgstr "不正なグリフ(%d)があります. 'loca' テーブルが乱れています (開始位置が終了位置の後にあります)\n"
+
+msgid "Bad glyph (%d), its definition extends beyond the space allowed for it\n"
+msgstr "不正なグリフ(%d)があります. グリフの定義が許される空間を超えています\n"
+
+msgid "Bad CFF name INDEX\n"
+msgstr "CFF の name INDEX が不正です\n"
+
+msgid "Unexpected value in dictionary %d\n"
+msgstr "辞書 %d に不正な値が含まれています\n"
+
+msgid ""
+"FontForge does not support type2 programs embedded in CFF dict indeces.\n"
+msgstr ""
+"FontForge は CFF dictインデックスに埋め込まれた Type2 プログラムはサポートしていません\n"
+
+msgid "Bad subroutine INDEX in cff font.\n"
+msgstr "CFF フォント内に不正なサブルーチンインデックスがあります.\n"
+
+msgid "No argument to operator\n"
+msgstr "演算子に引数がありません\n"
+
+msgid "FontForge does not support synthetic fonts\n"
+msgstr "FontForge は合成フォントをサポートしていません\n"
+
+msgid "FontForge does not support type2 multiple master fonts\n"
+msgstr "FontForge は Type2 マルチプルマスターフォントをサポートしていません\n"
+
+msgid "FontForge does not support Chameleon fonts\n"
+msgstr "FontForge は Chameleon フォントをサポートしていません\n"
+
+msgid "Unknown operator in %s: %x\n"
+msgstr "%s に未知の演算子 %x があります\n"
+
+msgid "No argument to operator %d in private dict\n"
+msgstr "Private 辞書内の演算子 %d に引数がありません\n"
+
+msgid "Bad sid %d (must be less than %d)\n"
+msgstr "サブルーチンID %d は不正です (%d 未満でなければなりません)\n"
+
+msgid "Unexpected encoding format in cff: %d\n"
+msgstr "CFF にないはずのエンコーディングフォーマット %d が使われています\n"
+
+msgid "Unexpected charset format in cff: %d\n"
+msgstr "CFF にないはずの文字セットフォーマット %d が使われています\n"
+
+msgid "Bad fdselect\n"
+msgstr "fdselect が不正です\n"
+
+msgid "Didn't understand format for fdselect %d\n"
+msgstr "fdselect %d のフォーマットが理解できませんでした\n"
+
+msgid "CFF version mismatch\n"
+msgstr "CFF のバージョンが合っていません\n"
+
+msgid "Invalid ttf hmtx table (or hhea), numOfLongMetrics is 0\n"
+msgstr "TTF の hmtx (または hhea) テーブルが不正です. numOfLongMetrics が 0 になっています\n"
+
+msgid "Invalid ttf vmtx table (or vhea), numOfLongVerMetrics is 0\n"
+msgstr "TTF の vmtx (または vhea) テーブルが不正です. numOvLongVerMetrics が 0 になっています\n"
+
+msgid "Encoding subtable for platform=%d, specific=%d has an unsupported format %d.\n"
+msgstr ""
+"プラットフォームID=%d, 固有ID=%d のエンコーディングサブテーブルが,"
+"未サポートのフォーマット %d で書かれています.\n"
+
+msgid ""
+"Encoding subtable for platform=%d, specific=%d has a 0 length subtable.\n"
+msgstr ""
+"プラットフォームID=%d, 固有ID=%d のエンコーディングサブテーブルに,"
+"長さ 0 のサブテーブルが含まれています.\n"
+
+msgid "Attempt to encode missing glyph %d to %d (0x%x)\n"
+msgstr "存在しないグリフ %d を %d (0x%x) に符号化しようとしています\n"
+
+msgid ""
+"Multiple glyphs map to the same unicode encoding U+%04X, only one will be "
+"used\n"
+msgstr ""
+"複数のグリフが同一の Unicode 符号位置 U+%04X に対応づけられています. "
+"このうちの片方だけが使用されます\n"
+
+msgid ""
+"Glyph index out of bounds. Was %d, must be less than %d.\n"
+" In attempt to associate a glyph with encoding %x in segment %d\n"
+" with platform=%d, specific=%d (in 'cmap')\n"
+msgstr ""
+"グリフインデックスが範囲外の %d という値でしたが, %d 未満でなければなりません.\n"
+"  エンコーディング %x というグリフ (('cmap' の)セグメント %d の中にある."
+"  そのプラットフォームID=%d, 固有ID=%d) を対応づけようとしている時に"
+"  発見しました.\n"
+
+msgid "Use of a range offset of 0xffff to mean a missing glyph in cmap table\n"
+msgstr "cmap テーブル中では範囲オフセット 0xffff は存在しないグリフを表します\n"
+msgid "Bad font: Encoding data out of range.\n"
+msgstr "不正なフォント: エンコーディングデータが範囲外です.\n"
+
+msgid "Warning: Glyph %d has the same name (%s) as Glyph %d\n"
+msgstr "警告: グリフ %d は名前 (%s) がグリフ %d と重複しています\n"
+
+msgid ""
+"Warning: Glyph %d is named %s which should mean it is mapped to\n"
+" Unicode U+%04X, but Glyph %d already has that encoding.\n"
+msgstr ""
+"警告: グリフ %d は %s という名前がついていますが, この名前はそのグリフが\n"
+"  Unicode U+%04X に符号化されるという意味ですが, しかしその位置にはすでに\n"
+"  グリフ %d があります.\n"
+
+msgid ""
+"Glyph %d is called \".notdef\", a singularly inept choice of name (only "
+"glyph 0\n"
+" may be called .notdef)\n"
+"FontForge will rename it.\n"
+msgstr ""
+"グリフ %d は \".notdef\" という名前で, この名前だけはグリフ名として使用"
+"できません (.notdef という名前が付けられるのはグリフ 0 だけです)\n"
+"FontForge は自動的に名称変更を行います.\n"
+
+msgid "Invalid point match. Point would be after this reference.\n"
+msgstr "点の一致が不正です. 点はこの参照の後にあるはずです.\n"
+
+msgid ""
+"Could not match points in composite glyph (%d to %d) when adding %s to %s\n"
+msgstr ""
+"複合グリフ (%d から %d へ) 内で, %s を %s に追加する時に点を一致させる"
+"ことができません\n"
+
+msgid "Unlikely length for table, so I'm ignoring it. %u\n"
+msgstr "テーブルの長さに見えないので, %u を無視することにします\n"
+
+msgid "Bad Apple Kern Class\n"
+msgstr "Apple カーニングクラスが不正です\n"
+
+msgid "Class index out of range %d (must be <%d)\n"
+msgstr ""
+"クラスインデックスが範囲外の %d にあります (%d 未満でなければなりません)\n"
+
+msgid "coverage table extends beyond end of table\n"
+msgstr "範囲テーブルが親テーブルの末尾をはみ出しています\n"
+
+msgid "Bad count.\n"
+msgstr "個数が間違っています.\n"
+
+msgid "End of file found in coverage table.\n"
+msgstr "範囲テーブルの途中でファイルが終わっていまます\n"
+
+msgid "Bad coverage table. Glyph %d out of range [0,%d)\n"
+msgstr "範囲テーブルが不正です. グリフ %d が [0,%d) の範囲外です\n"
+
+msgid "Bad coverage table. Glyph range %d-%d out of range [0,%d)\n"
+msgstr "範囲テーブルが不正です. グリフ範囲 %d-%d が [0,%d) の範囲外です\n"
+
+msgid "Bad format for coverage table %d\n"
+msgstr "範囲テーブルのフォーマットが %d という不正な値です\n"
+
+msgid "Bad class def table. start=%d cnt=%d, max glyph=%d\n"
+msgstr "クラス定義テーブルが不正です. 先頭=%d, 個数=%d, 最大グリフ=%d\n"
+
+msgid "Class definition table extends beyond end of table\n"
+msgstr "クラス定義テーブルが親テーブルの末尾を超えています\n"
+
+msgid "Bad class def table. Glyph range %d-%d out of range [0,%d)\n"
+msgstr ""
+"クラス定義テーブルが不正です. グリフ範囲 %d-%d が範囲 [0,%d) を超えています\n"
+
+msgid "Unknown class table format: %d\n"
+msgstr "クラステーブルフォーマット %d には見覚えがありません\n"
+
+msgid "Nonsensical class assigned to a glyph-- class=%d is too big. Glyph=%d\n"
+msgstr "無意味なクラスがグリフに割り当てられています―クラス=%dは大きすぎます. グリフ=%d\n"
+
+msgid "Bad device table\n"
+msgstr "デバイステーブルが不正です\n"
+
+msgid "Bad pair position: glyphs %d & %d should have been < %d\n"
+msgstr "ペア位置指定が不正です: グリフ %d と %d は %d 未満でなければなりません\n"
+
+msgid "Bad kern pair: glyphs %d & %d should have been < %d\n"
+msgstr "カーニングペアが不正です: グリフ %d と %d は %d 未満でなければなりません\n"
+
+msgid "Bad mark table.\n"
+msgstr "マークテーブルが不正です.\n"
+
+msgid "Class out of bounds in GPOS mark sub-table\n"
+msgstr "GPOS マークサブテーブル内のクラスが範囲外です\n"
+
+msgid "Bad base table.\n"
+msgstr "baseテーブルが不正です\n"
+
+msgid "Bad ligature base table.\n"
+msgstr "合字baseテーブルが不正です.\n"
+
+msgid "Bad ligature anchor count.\n"
+msgstr "合字アンカーの個数が不正です.\n"
+
+msgid ""
+"Attempt to reference lookup %d (within a contextual lookup), but there are\n"
+" only %d lookups in %s\n"
+msgstr ""
+"照合 %d を (文脈依存照合の中で) 参照しようとしましたが, %d 個しか %s に\n"
+"照合が含まれていません\n"
+
+msgid "Bad contextual or chaining sub table. Glyph %d out of range [0,%d)\n"
+msgstr "文脈依存/文脈連鎖依存サブテーブルが不正です. グリフ %d が範囲 [0,%d) を超えています\n"
+
+msgid ""
+"Attempt to apply a lookup to a location out of the range of this contextual\n"
+" lookup seq=%d max=%d\n"
+msgstr ""
+"この文脈依存照合の範囲外の位置に照合を適用しようとしました\n"
+"  seq=%d max=%d\n"
+
+msgid "Unexpected end of file in contextual chaining subtable.\n"
+msgstr "文脈依存サブテーブルの途中でファイルが終わっています.\n"
+
+msgid "Bad count in context chaining sub-table.\n"
+msgstr "文脈連鎖サブテーブル内の個数が間違っています.\n"
+
+msgid "Bad count in contextual chaining sub-table.\n"
+msgstr "文脈連鎖サブテーブル内の個数が間違っています.\n"
+
+msgid "Bad class count in contextual chaining sub-table.\n"
+msgstr "文脈連鎖サブテーブル内のクラス番号\n"
+
+msgid ""
+"Attempt to apply a lookup to a location out of the range of this contextual\n"
+" lookup seq=%d, max=%d\n"
+msgstr ""
+"この文脈依存照合の範囲外の位置に照合を適用しようとしました\n"
+"  seq=%d max=%d\n"
+
+msgid "End of file in context chaining subtable.\n"
+msgstr "文脈連鎖サブテーブルの途中でファイルが終わっています.\n"
+
+msgid "Bad substitution glyph: %d not less than %d\n"
+msgstr "置換グリフが不正です: %d が %d 未満の値ではありません\n"
+
+msgid "Unexpected end of file in GSUB sub-table.\n"
+msgstr "GSUB サブテーブルの途中でファイルが終わっています.\n"
+
+msgid ""
+"Coverage table specifies a different number of glyphs than the sub-table "
+"expects.\n"
+msgstr ""
+"範囲テーブルはサブテーブルから予想されるのと異なる個数のグリフを"
+"指定しています.\n"
+
+msgid "Bad Multiple/Alternate substitution glyph %d not less than %d\n"
+msgstr "複数/選択可能置換グリフ %d が不正です. %d 未満ではありません\n"
+
+msgid "Unexpected end of file in GSUB ligature sub-table.\n"
+msgstr "GSUB 合字サブテーブルの途中でファイルが終わっています.\n"
+
+msgid "Bad ligature glyph %d not less than %d\n"
+msgstr "合字グリフ %d が不正です. %d 未満ではありません\n"
+
+msgid ""
+"Unlikely count of ligature components (%d), I suspect this ligature sub-\n"
+" table is garbage, I'm giving up on it.\n"
+msgstr ""
+"合字要素の個数が考えられない値 (%d) です. この合字サブテーブルにはゴミが\n"
+"入っているのかと思います. このデータの解析は諦めることにします.\n"
+
+msgid "Bad ligature component glyph %d not less than %d (in ligature %d)\n"
+msgstr "合字要素グリフ %d が不正です. %d 未満ではありません (於 合字 %d 中)\n"
+
+msgid ""
+"Bad reverse contextual chaining substitution glyph: %d is not less than %d\n"
+msgstr "前方文脈連鎖依存置換グリフが不正です: %d が %d 未満ではありません\n"
+
+msgid ""
+"This font, %s, has multiple GPOS 'size' features. I'm not sure how to "
+"interpret that. I shall pick one arbetrarily.\n"
+msgstr ""
+"このフォント %s は複数の GPOS 'size' 機能を含んでいます. これをどう解釈"
+"したらよいのか解りません. 適当に 1 個を取り出すことにします.\n"
+
+msgid "Too many scripts %d\n"
+msgstr "用字系が多すぎます (%d 個)\n"
+
+msgid "Too many features %d\n"
+msgstr "カーニングが多すぎます (%d 個)\n"
+
+msgid "Bad lookup count in feature.\n"
+msgstr "機能に含まれる照合番号が不正です.\n"
+
+msgid "Too many lookups %d\n"
+msgstr "表引きが多すぎます (%d 個)\n"
+
+msgid "Lookup out of bounds in feature table.\n"
+msgstr "機能テーブルの境界を跨いだ照合があります.\n"
+
+msgid "Feature out of bounds in script table.\n"
+msgstr "用字系テーブルの境界を跨いだ機能があります.\n"
+
+msgid "Required feature out of bounds in script table.\n"
+msgstr "必須の機能が用字系テーブルの境界を跨いでいます.\n"
+
+msgid ""
+"This font is erroneous it has a GPOS extension subtable that points to\n"
+"another extension sub-table.\n"
+msgstr ""
+"このフォントには, GPOS 拡張サブテーブルが他の拡張サブテーブルを参照している"
+"間違いがあります\n"
+
+msgid "Unknown GPOS sub-table type: %d\n"
+msgstr "GPOS サブテーブルタイプ %d は未知の値です\n"
+
+msgid "Subtable extends beyond end of GPOS table\n"
+msgstr "サブテーブルが GPOS テーブルの終わりを越えて延びています\n"
+
+msgid ""
+"This font is erroneous it has a GSUB extension subtable that points to\n"
+"another extension sub-table.\n"
+msgstr ""
+"このフォントには, GSUB 拡張サブテーブルが他の拡張サブテーブルを参照している"
+"間違いがあります\n"
+
+msgid "Unknown GSUB sub-table type: %d\n"
+msgstr "GSUB サブテーブルタイプ %d は未知の値です\n"
+
+msgid "Subtable extends beyond end of GSUB table\n"
+msgstr "サブテーブルが GSUB テーブルの終わりを越えて延びています\n"
+
+msgid "!!!! Unknown caret format %d !!!!\n"
+msgstr "!!!! キャレットフォーマット %d は未知の値です!!!!\n"
+
+msgid ""
+"Bad lookup table format=2 (%d/%d), first=%d last=%d total glyphs in font=%d\n"
+msgstr ""
+"フォーマット 2 (%d/%d) の照合テーブルが壊れています."
+"最初=%d 最後=%d フォント内の全グリフ数=%d\n"
+
+msgid ""
+"Bad lookup table format=4 (%d/%d), first=%d last=%d total glyphs in font=%d\n"
+msgstr ""
+"フォーマット 4 (%d/%d) の照合テーブルが壊れています."
+"最初=%d 最後=%d フォント内の全グリフ数=%d\n"
+
+msgid "Bad lookup table format=6, first=%d total glyphs in font=%d\n"
+msgstr ""
+"フォーマット 6 の照合テーブルが壊れています."
+"最初=%d 最後=%d フォント内の全グリフ数=%d\n"
+
+msgid "Bad lookup table format=8, first=%d cnt=%d total glyphs in font=%d\n"
+msgstr ""
+"フォーマット 8 の照合テーブルが壊れています."
+"最初=%d 個数=%d フォント内の全グリフ数=%d\n"
+
+msgid "Invalid lookup table format. %d\n"
+msgstr "照合テーブルフォーマット %d は不正な値です\n"
+
+msgid "Glyph out of bounds in 'prop' table %d\n"
+msgstr "'prop' テーブル %d の境界を越えたグリフがあります\n"
+
+msgid "Glyph out of bounds in 'lcar' table %d\n"
+msgstr "'lcar' テーブル %d の境界を越えたグリフがあります\n"
+
+msgid "Glyph out of bounds in 'opbd' table %d\n"
+msgstr "'opbd' テーブル %d の境界を越えたグリフがあります\n"
+
+msgid "Glyph out of bounds in 'mort'/'morx' table %d\n"
+msgstr "'mort'/'morx' テーブル %d の境界を越えたグリフがあります\n"
+
+msgid "Substitute glyph out of bounds in 'mort'/'morx' table %d\n"
+msgstr "'mort'/'morx' テーブル %d の境界を越えた置換先グリフがあります\n"
+
+msgid "Bad font, offset out of bounds.\n"
+msgstr "不正なフォントです. オフセットが境界を越えています\n"
+
+msgid "Invalid ligature offset\n"
+msgstr "合字オフセットが不正です\n"
+
+msgid "Attempt to make a ligature for glyph %d out of "
+msgstr "グリフ %d の合字を以下の物から作ろうとしました: "
+
+msgid "Bad font: Ligature glyph %d is missing\n"
+msgstr "不正なフォント: 合字グリフ %d が欠けています\n"
+
+msgid ""
+"In an attempt to process the ligatures of this font, I've concluded\n"
+"that the state machine in Apple's mort/morx table is\n"
+"(like the learned constable) too cunning to be understood.\n"
+"I shall give up on it. Your ligatures may be incomplete.\n"
+msgstr ""
+"このフォント内の合字を処理しようとしている最中に, Apple の mort/morx \n"
+"テーブル内に含まれている状態機械が (学識ある城主の如く) 理解するには\n"
+"あまりに狡猾すぎることに思い至りました. これの解釈は諦めます. \n"
+"全ての合字を解釈できなかった可能性があります.\n"
+
+msgid "Attempt to make a ligature for (non-existent) glyph %d out of "
+msgstr "以下のグリフから (存在しない) グリフ %d の合字を作成しようとしました: "
+
+msgid "Bad mort ligature table. Not long enough\n"
+msgstr "mort 合字テーブルが不正です. 長さが足りません\n"
+
+msgid "Bad class in state machine.\n"
+msgstr "状態機械に不正なクラスが含まれています.\n"
+
+msgid "Bad glyph count in mort table.\n"
+msgstr "mort テーブル内のグリフの個数が不正です.\n"
+
+msgid ""
+"It looks to me as though there's a morx sub-table with more than 1000\n"
+" transitions. Which makes me think there's probably an error\n"
+msgstr ""
+"これは私には, 1000 個を超える状態遷移を含む morx サブテーブルが存在する\n"
+"ように見えます. これはおそらく間違いなのではないかと思われます\n"
+
+msgid ""
+"It looks to me as though there's a morx sub-table with more than 1000\n"
+" states. Which makes me think there's probably an error\n"
+msgstr ""
+"これは私には, 1000 個を超える状態を含む morx サブテーブルが存在する\n"
+"ように見えます. これはおそらく間違いなのではないかと思われます\n"
+
+msgid "Unexpected end of file found in morx chain.\n"
+msgstr "morx 連鎖の途中でファイルが突然切れています\n"
+
+msgid "Bad kern pair glyphs %d & %d must be less than %d\n"
+msgstr "カーニングペアグリフ %d と %d が不正です. これらは %d未満でなければなりません\n"
+
+msgid ""
+"This font has a format 1 kerning table (a state machine).\n"
+"PfaEdit doesn't parse these\n"
+"Could you send a copy of %s to gww@silcom.com?  Thanks.\n"
+msgstr ""
+"このフォントにはフォーマット 1 のカーニングテーブル (状態機械) が含まれて\n"
+"います. PfaEdit はそれらを解析しません.\n"
+"もしよろしければ, フォントのコピーを gww@silcom.com までお送り\n"
+"いただけませんでしょうか?\n"
+
+msgid "Kerning subtable 3 says the glyph count is %d, but maxp says %d\n"
+msgstr "カーニングサブテーブル 3 にはグリフの個数は %d 個だとありますが, maxp は %d 個だとしています\n"
+
+msgid "End of file in feat table.\n"
+msgstr "feat テーブルの途中でファイルが切れています.\n"
+
+msgid "Load Bitmap Fonts"
+msgstr "ビットマップフォントを読み込む"
+
+msgid "Hmm, this 'fvar' table has more count/size pairs than I expect\n"
+msgstr "ふむ, この 'fvar' テーブルは予想されるより多くの個数/サイズペアが含まれています\n"
+
+msgid ""
+"Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it\n"
+msgstr ""
+"ふむ, この 'fvar' テーブルの個数/サイズペアは少なすぎますので, 解析を中止します\n"
+
+msgid "Hmm, this 'fvar' table has no axes, that doesn't make sense.\n"
+msgstr ""
+"ふむ, この 'fvar' テーブルにはデザイン軸が無いので意味をなしません.\n"
+
+msgid "Hmm, this 'fvar' table has more axes than FontForge can handle.\n"
+msgstr ""
+"ふむ, この 'fvar' テーブルには FontForge が扱える限界より多くのデザイン軸が"
+"含まれています.\n"
+
+msgid ""
+"Hmm, this 'fvar' table has an unexpected size for an axis, I shan't parse "
+"it\n"
+msgstr ""
+"ふむ, この 'fvar' テーブルに含まれる軸のサイズが予期に反する値なので,"
+"解析を中止します.\n"
+
+msgid ""
+"Hmm, this 'fvar' table has an unexpected size for an instance, I shan't "
+"parse it\n"
+msgstr ""
+"ふむ, この 'fvar' テーブルに含まれるインスタンスのサイズが予期に反する"
+"値なので, 解析を中止します.\n"
+
+msgid "Hmm, this 'fvar' table is too short\n"
+msgstr "ふむ, この 'fvar' テーブルは小さすぎます\n"
+
+msgid ""
+"Hmm, the axis count in the 'avar' table is different from that in the 'fvar' "
+"table.\n"
+msgstr "ふむ, 'avar' テーブル内の軸の本数が 'fvar' テーブルの値と異なります.\n"
+
+msgid "Hmm, the the 'avar' table is too long.\n"
+msgstr "ふむ, 'avar' テーブルが大きすぎます\n"
+
+msgid "Mismatched local and shared tuple flags.\n"
+msgstr "ローカルタプルフラグと共有タプルフラグが一致しません\n"
+
+msgid "Incorrect number of deltas in glyph %d (%s)\n"
+msgstr "グリフ %d (%s) のデルタの個数が不正です\n"
+
+msgid ""
+"Hmm, the axis count in the 'gvar' table is different from that in the 'fvar' "
+"table.\n"
+msgstr "ふむ, 'gvar' テーブル内の軸の本数が 'fvar' テーブルの値と異なります.\n"
+
+msgid "Hmm, no global tuples specified in the 'gvar' table.\n"
+msgstr "ふむ, 'gvar' テーブル内でグローバルタプルが指定されていません.\n"
+
+msgid ""
+"Hmm, too many global tuples specified in the 'gvar' table.\n"
+" FontForge only supports %d\n"
+msgstr ""
+"ふむ, 'gvar' テーブル内で指定されたグローバルタプルが多すぎます.\n"
+" FontForge は %d 個しかサポートしていません\n"
+
+msgid ""
+"Hmm, more glyph variation data specified than there are glyphs in font.\n"
+msgstr ""
+"ふむ, フォント内に存在するよりも多くのグリフバリエーションデータが指定されています.\n"
+
+msgid ""
+"Warning: Glyph %d contains either private or intermediate tuple data.\n"
+" FontForge supports neither.\n"
+msgstr ""
+"警告: グリフ %d はプライベートまたは中間タプルデータを含んでいます.\n"
+"  FontForge はどちらもサポートしていません.\n"
+
+msgid "Incorrect number of deltas in cvt\n"
+msgstr "cvt に含まれる delta の個数が不正です\n"
+
+msgid ""
+"Warning: 'cvar' contains intermediate tuple data.\n"
+" FontForge doesn't support this.\n"
+msgstr ""
+"警告: 'cvar' には中間タプルデータが含まれています.\n"
+"  FontForge はこれをサポートしていません\n"
+
+msgid "Can't back up with nothing on stack\n"
+msgstr "スタック上にバックアップする物が何もありません\n"
+
+msgid "Attempt to back up twice\n"
+msgstr "バックアップを 2 回行おうとしました\n"
+
+msgid "Use of \"exit\" when not in a loop\n"
+msgstr "ループの中にいないのに \"exit\" を使おうとしました\n"
+
+msgid "Use of \"stop\" when not in a stopped\n"
+msgstr "stopped 状態でないのに \"stop\" を使おうとしました\n"
+
+msgid "Attempt to invert a singular matrix\n"
+msgstr "特異行列の逆行列を求めようとしました\n"
+
+msgid "Key for a def must be a string or name literal\n"
+msgstr "def のキーは文字列または名前リテラルでなければなりません\n"
+
+msgid "Value out of bounds in spline.\n"
+msgstr "スプライン内に範囲外の値が含まれています.\n"
+
+msgid "Unknown character after backslash in literal string.\n"
+msgstr "文字列リテラル内で, バックスラッシュの後に不明な文字が含まれています.\n"
+
+msgid "Unknown string type\n"
+msgstr "文字列型が不明です\n"
+
+msgid "FontForge does not support dictionary based imagemask operators.\n"
+msgstr "FontForge は辞書ベースの imagemask 演算子をサポートしていません.\n"
+
+msgid ""
+"Fourth argument of imagemask must be a 6-element transformation matrix.\n"
+msgstr "imagemask の 4 番目の引数は 6 要素からなる変換行列でなければなりません.\n"
+
+msgid "Third argument of imagemask must be a boolean.\n"
+msgstr "imagemask の 3 番目の引数は boolean でなければなりません.\n"
+
+msgid "First and second arguments of imagemask must be integers.\n"
+msgstr "imagemask の最初の 2 個の引数は整数でなければなりません.\n"
+
+msgid ""
+"Width or height arguments to imagemask contain invalid values\n"
+"(either negative or they require more data than provided).\n"
+msgstr ""
+"imagemask 演算子の width または height 引数の値が正しくありません\n"
+"(負の値か, 与えられた値よりも多くの値を必要としています).\n"
+
+msgid "Divide by zero in postscript code.\n"
+msgstr "PostScript コードの中で 0 による除算を行いました.\n"
+
+msgid "Can't compare arrays\n"
+msgstr "配列を比較することはできません\n"
+
+msgid ""
+"This version of FontForge does not support the imagemask operator.\n"
+"For support configure --with-multilayer.\n"
+msgstr ""
+"このバージョンの FontForge は imagemask 演算子をサポートしていません.\n"
+"サポートするには, configure --with-multilayer を実行して構築してください.\n"
+
+msgid "No mark in counttomark\n"
+msgstr "counttomark にマークがありません\n"
+
+msgid "No mark in cleartomark\n"
+msgstr "cleartomark にマークがありません\n"
+
+msgid "Nothing on stack to print\n"
+msgstr "スタック上に印字できる物が何もありません\n"
+
+msgid "Warning: Unable to parse token %s, some features may be lost\n"
+msgstr "警告: トークン %s を解析できません. 機能がいくつか失われるでしょう\n"
+
+msgid "We don't understand this font\n"
+msgstr "このフォントを解釈することができません\n"
+
+msgid "Stack got too big in %s\n"
+msgstr "グリフ %s 内でスタックが大きくなりすぎました\n"
+
+msgid "Stack underflow on vstem3 in %s\n"
+msgstr "グリフ %s 内の vstem3 演算子がスタックアンダーフローを起こしました\n"
+
+msgid "Stack underflow on hstem3 in %s\n"
+msgstr "グリフ %s 内の hstem3 演算子がスタックアンダーフローを起こしました\n"
+
+msgid "Stack underflow on seac in %s\n"
+msgstr "グリフ %s 内の seac 演算子がスタックアンダーフローを起こしました\n"
+
+msgid "Reference encoding out of bounds in %s\n"
+msgstr "グリフ %s 内の参照のエンコーディングが境界を超えています\n"
+
+msgid "Stack underflow on sbw in %s\n"
+msgstr "グリフ %s 内の sbw 演算子がスタックアンダーフローを起こしました\n"
+
+msgid "Stack underflow on unary operator in %s\n"
+msgstr "グリフ %s 内の単項演算子がスタックアンダーフローを起こしました\n"
+
+msgid "Stack underflow on binary operator in %s\n"
+msgstr "グリフ %s 内の二項演算子がスタックアンダーフローを起こしました\n"
+
+msgid "Stack underflow on ifelse in %s\n"
+msgstr "グリフ %s 内の ifelse 演算子がスタックアンダーフローを起こしました\n"
+
+msgid "Type2 fonts do not support the Type1 callothersubrs operator"
+msgstr "Type2 フォントは Type1 の callothersubrs 演算子をサポートしていません"
+
+msgid "Stack underflow on callothersubr in %s\n"
+msgstr "グリフ %s 内の callothersubr 演算子がスタックアンダーフローを起こしました\n"
+
+msgid "Bad flex subroutine in %s\n"
+msgstr "グリフ %s に不正な flex サブルーチンが含まれています\n"
+
+msgid "No previous point on path in curveto from flex 0 in %s\n"
+msgstr "グリフ %s の flex0 からの curveto に, 直前の点が存在しません\n"
+
+msgid "No previous point on path in lineto from flex 0 in %s\n"
+msgstr "グリフ %s の flex0 からの lineto に, 直前の点が存在しません\n"
+
+msgid "Attempt to use a multiple master subroutine in a non-mm font in %s.\n"
+msgstr "グリフ %s で, マルチプルマスターサブルーチンを通常フォントで使おうとしました.\n"
+
+msgid ""
+"Multiple master subroutine called with the wrong number of arguments in %s.\n"
+msgstr "グリフ %s で, マルチプルマスターサブルーチンの呼出し時の引数の個数が間違っています.\n"
+
+msgid "Too few items on stack for put in %s\n"
+msgstr "グリフ %s で, スタック上の要素の個数が put を実行するのに少なすぎます\n"
+
+msgid "Reference to transient memory out of bounds in put in %s\n"
+msgstr "グリフ %s 内の put 演算子による一時メモリへの参照が境界を超えています\n"
+
+msgid "Too few items on stack for get in %s\n"
+msgstr "グリフ %s で, スタック上の要素の個数が get を実行するのに少なすぎます\n"
+
+msgid "Pop stack underflow on pop in %s\n"
+msgstr "グリフ %s の pop で、スタックアンダーフローが発生しました\n"
+
+msgid "Index out of range in %s\n"
+msgstr "グリフ %s に範囲外のインデックスが含まれています\n"
+
+msgid "roll out of range in %s\n"
+msgstr "グリフ %s で範囲外の領域をローテートしようとしました\n"
+
+msgid "Stack underflow on setcurrentpoint in %s\n"
+msgstr "グリフ %s 内の setcurrentpoint 演算子がスタックアンダーフローを起こしました\n"
+
+msgid "No previous point on path in flex operator in %s\n"
+msgstr "グリフ %s 内の flex 演算子で, パスの直前の点が存在しません\n"
+
+msgid "Uninterpreted opcode 12,%d in %s\n"
+msgstr "グリフ%s 内に解釈できない演算子 12,%d があります\n"
+
+msgid "Stack underflow on hstem in %s\n"
+msgstr "グリフ %s 内の hstem 演算子がスタックアンダーフローを起こしました\n"
+
+msgid "Stack underflow on vstem in %s\n"
+msgstr "グリフ %s 内の vstem 演算子がスタックアンダーフローを起こしました\n"
+
+msgid "Stack underflow on hsbw in %s\n"
+msgstr "グリフ %s 内の hsbw 演算子がスタックアンダーフローを起こしました\n"
+
+msgid "Stack underflow on rlineto/rmoveto in %s\n"
+msgstr "グリフ %s 内の hlineto/rmoveto 演算子がスタックアンダーフローを起こしました\n"
+
+msgid "Stack underflow on hlineto/hmoveto in %s\n"
+msgstr "グリフ %s 内の hlineto/hmoveto 演算子がスタックアンダーフローを起こしました\n"
+
+msgid "Stack underflow on vlineto/vmoveto in %s\n"
+msgstr "グリフ %s 内の vlineto/vmoveto 演算子がスタックアンダーフローを起こしました\n"
+
+msgid "No previous point on path in lineto in %s\n"
+msgstr "グリフ %s 内の lineto 演算子がスタックアンダーフローを起こしました\n"
+
+msgid "Stack underflow on rrcurveto in %s\n"
+msgstr "グリフ %s 内の rrcurveto 演算子がスタックアンダーフローを起こしました\n"
+
+msgid "Stack underflow on hhcurveto in %s\n"
+msgstr "グリフ %s 内の hhcurveto 演算子がスタックアンダーフローを起こしました\n"
+
+msgid "Stack underflow on hvcurveto in %s\n"
+msgstr "グリフ %s 内の hvcurveto 演算子がスタックアンダーフローを起こしました\n"
+
+msgid "Stack underflow on vhcurveto in %s\n"
+msgstr "グリフ %s 内の vhcurveto 演算子がスタックアンダーフローを起こしました\n"
+
+msgid "No previous point on path in curveto in %s\n"
+msgstr "グリフ %s 内の curveto 演算子で, パスの直前の点が存在しません\n"
+
+msgid "Stack underflow on callsubr in %s\n"
+msgstr "グリフ %s 内の callsubr 演算子がスタックアンダーフローを起こしました\n"
+
+msgid "Too many subroutine calls in %s\n"
+msgstr "グリフ %s 内のサブルーチン呼出しが多すぎます\n"
+
+msgid "Subroutine number out of bounds in %s\n"
+msgstr "グリフ %s 内で, サブルーチン番号が境界を超えています\n"
+
+msgid "return when not in subroutine in %s\n"
+msgstr "グリフ %s 内で, サブルーチンの中でないのに return しようとしました\n"
+
+msgid "Attempt to use a multiple master subroutine in a non-mm font.\n"
+msgstr "マルチプルマスターサブルーチンを通常フォントで使おうとしました.\n"
+
+msgid "Too few items on stack for blend in %s\n"
+msgstr "グリフ %s 内で, スタック上に置かれたデータの個数が blend を実行するのに少なすぎます\n"
+
+msgid "Use of obsolete blend operator.\n"
+msgstr "廃止された blend 演算子を使用しています.\n"
+
+msgid "Uninterpreted opcode %d in %s\n"
+msgstr "グリフ%s 内に解釈できない演算子 %d があります\n"
+
+msgid "end of subroutine reached with no return in %s\n"
+msgstr "グリフ %s で, return が呼ばれないままサブルーチンが終わっています\n"
+
+msgid "Called from...\n"
+msgstr "呼出し元は...\n"
+
+msgid " %s: line %d\n"
+msgstr "%s: %d 行目\n"
+
+msgid "%s: %d Expected %s, got %s"
+msgstr "%s: %d は %s となるはずですが %s となっています"
+
+msgid "%1$s: %2$d. Expected %3$s got %4$s"
+msgstr "%1$s: %2$d. %3$s となるはずが %4$s となっています"
+
+msgid "%s: %d Unexpected %s found"
+msgstr "%s: %d で予期しない %s が見つかりました"
+
+msgid "%s line: %d %s\n"
+msgstr "%s 行目: %d %s\n"
+
+msgid "%s line: %d %s: %s\n"
+msgstr "%s 行目: %d %s: %s\n"
+
+msgid "Attention"
+msgstr "注意"
+
+msgid "Warning: %s has a different family name than does %s (GenerateFamily)\n"
+msgstr "警告: %s のファミリー名は %s (GenerateFamily) と異なります\n"
+
+msgid "%s(%s) and %s(%s) 0x%x in FOND %s\n"
+msgstr "%s(%s) および %s(%s) 0x%x という相違が FOND %s にあります\n"
+
+msgid "Warning: No characters selected in AddHint(%d,%d,%d)\n"
+msgstr "警告: AddHint(%d,%d,%d) で文字が選択されていません\n"
+
+msgid "Warning: %dth axis value (%g) is outside the allowed range [%g,%g]\n"
+msgstr "警告: %d 番目の軸の値 (%g) は可能な範囲 [%g,%g] の外にあります\n"
+
+msgid "Unexpected PST type in GetPosSub (%d).\n"
+msgstr "GetPosSub (%d) 内に予期しないの PST 型が含まれています.\n"
+
+msgid "%s:%d Unexpected character %c (%d)\n"
+msgstr "%s:%d 予期しない文字 %c (%d)\n"
+
+msgid ""
+"Warning: This version of FontForge does not contain extended type3/svg "
+"support\n"
+" needed for this font.\n"
+"Reconfigure with --with-type3.\n"
+msgstr ""
+"警告: このバージョンの FontForge は, このフォントが必要とする 拡張 Type3/SVG "
+"  サポートを含んでいません.\n"
+"  configure --with-type3 を実行して FontForge を再構築してください.\n"
+
+msgid "Could not open"
+msgstr "開くことができませんでした"
+
+msgid "Could not open %.100s"
+msgstr "%.100s を開くことができませんでした"
+
+msgid "Backtrack Match: "
+msgstr "バックトラック一致: "
+
+msgid "Match: "
+msgstr "一致"
+
+msgid "Lookahead Match: "
+msgstr "前方参照一致: "
+
+msgid "Backtrack class: "
+msgstr "バックトラッククラス: "
+
+msgid "Class"
+msgstr "クラス"
+
+msgid "Lookahead class: "
+msgstr "前方参照クラス: "
+
+msgid "Back coverage %d: "
+msgstr "逆引き範囲 %d:"
+
+msgid "Coverage %d: "
+msgstr "範囲 %d: "
+
+msgid "Lookahead coverage %d: "
+msgstr "前方参照型範囲指定 %d: "
+
+msgid "Apply at %d '%c%c%c%c'"
+msgstr "%d にある '%c%c%c%c' を適用"
+
+msgid "Replacement: "
+msgstr "置換先: "
+
+msgid "%s by %s"
+msgstr "%s by %s"
+
+msgid "Backtrack class %d: "
+msgstr "バックトラッククラス %d: "
+
+msgid "Class %d: "
+msgstr "クラス %d: "
+
+msgid "Lookahead class %d: "
+msgstr "前方参照クラス %d: "
+
+msgid "Rule %d"
+msgstr "ルール %d"
+
+msgid "State %4d Next: "
+msgstr "状態 %4d 次:"
+
+msgid "State %4d Flags:"
+msgstr "状態 %4d フラグ:"
+
+msgid "State %4d Mark: "
+msgstr "状態 %4d マーク:"
+
+msgid "State %4d Cur:  "
+msgstr "状態 %4d 現在: "
+
+msgid "Nested Substitution '%c%c%c%c'"
+msgstr "入れ子置換 '%c%c%c%c'"
+
+msgid "Not classified"
+msgstr "分類無し"
+
+# 'Component'?
+msgid "Componant"
+msgstr "構成要素"
+
+msgid "Glyph Definition Sub-Table"
+msgstr "グリフ定義サブテーブル"
+
+msgid "Ligature Caret Sub-Table"
+msgstr "合字キャレットサブテーブル"
+
+msgid "Mark Attachment Classes"
+msgstr "マーク接続クラス"
+
+msgid "  Left Bound=%d"
+msgstr "  左の境界=%d"
+
+msgid "  Right Bound=%d"
+msgstr "  右の境界=%d"
+
+msgid "Strong Left to Right"
+msgstr "左から右へ(強制的)"
+
+msgid "Strong Right to Left"
+msgstr "右から左へ(強制的)"
+
+msgid "Arabic Right to Left"
+msgstr "右から左へ(アラビア語)"
+
+msgid "European Number"
+msgstr "ヨーロッパ式数字:"
+
+msgid "European Number Seperator"
+msgstr "算用数字の桁区切り"
+
+msgid "European Number Terminator"
+msgstr "算用数字の小数点"
+
+msgid "Arabic Number"
+msgstr "アラビア数字"
+
+msgid "Common Number Seperator"
+msgstr "一般的な数値区切り"
+
+msgid "Block Seperator"
+msgstr "ブロック区切り"
+
+msgid "Segment Seperator"
+msgstr "セグメント区切り"
+
+msgid "White Space"
+msgstr "空白文字"
+
+msgid "Neutral"
+msgstr "中立"
+
+msgid "<Unknown direction>"
+msgstr "<方向不明>"
+
+msgid "  Floating accent"
+msgstr "  遊離アクセント"
+
+msgid "  Hang left"
+msgstr "  左にはみ出る"
+
+msgid "  Hang right"
+msgstr "  右にはみ出る"
+
+msgid "  Attach right"
+msgstr "  右に接続"
+
+msgid "  Mirror=%.30s"
+msgstr "  鏡像=%.30s"
+
+msgid "Kern by State Machine"
+msgstr "状態機械によるカーニング"
+
+msgid "OpenType Tables"
+msgstr "OpenTypeテーブル"
+
+msgid "'GDEF' Glyph Definition Table"
+msgstr "'GDEF' グリフ定義テーブル"
+
+msgid "'GPOS' Glyph Positioning Table"
+msgstr "'GPOS' グリフ位置指定テーブル"
+
+msgid "'GSUB' Glyph Substitution Table"
+msgstr "'GSUB' グリフ置換テーブル"
+
+msgid "'kern' Horizontal Kerning Sub-Table"
+msgstr "'kern' 横書きカーニングサブテーブル"
+
+msgid "'kern' Horizontal Kerning Table"
+msgstr "'kern' 横書きカーニングテーブル"
+
+msgid "'kern' Horizontal Kerning Class"
+msgstr "'kern' 横書きカーニングクラス"
+
+msgid "'kern' Vertical Kerning Sub-Table"
+msgstr "'kern' 縦書きカーニングサブテーブル"
+
+msgid "'kern' Vertical Kerning Table"
+msgstr "'kern' 縦書きカーニングテーブル"
+
+msgid "'kern' Vertical Kerning Class"
+msgstr "'kern' 縦書きカーニングクラス"
+
+msgid "'lcar' Ligature Caret Table"
+msgstr "'lcar' 合字キャレットテーブル"
+
+msgid "'morx' Glyph Extended Metamorphasis Table"
+msgstr "'morx' グリフ拡張変形テーブル"
+
+msgid "'opbd' Optical Bounds Table"
+msgstr "'opbd' 視覚的境界テーブル"
+
+msgid "'prop' Glyph Properties Table"
+msgstr "'prop' グリフ属性テーブル"
+
+msgid "%d pixels"
+msgstr "%d ピクセル"
+
+msgid "Number out of range: %g in type2 output (must be [-65536,65535])\n"
+msgstr "数値が範囲外です: Type2 出力に %g が含まれています ([-65536,65535] の範囲内でなければなりません)\n"
+
+msgid "Unlikely Ofm File"
+msgstr "OFM ファイルではないようです"
+
+msgid ""
+"This looks like a level1 (or level2) ofm. FontForge only supports level0 "
+"files, and can't read a real level1 file."
+msgstr ""
+"これはレベル 1 (またはレベル 2) OFM のように見えます. FontForge がサポート"
+"しているのはレベル 0 ファイルのみであり, 真のレベル 1 ファイルは読み込めません"
+
+msgid "This doesn't look like an ofm file, I don't know how to read it."
+msgstr "これは OFM ファイルではないようです. これを読み込む方法が解りません."
+
+msgid "Couldn't find referenced character \"%s\" in %s\n"
+msgstr "被参照文字 \"%s\" (%s 内の) を参照できません\n"
+
+msgid "Multiple master font with more than 16 instances\n"
+msgstr "マルチプルマスターフォントのインスタンスが 16 個を超えています\n"
+
+msgid "Multiple master font with more than 4 axes\n"
+msgstr "マルチプルマスターフォントの軸の本数が 4 軸を超えています.\n"
+
+msgid "Too many axis positions specified in /BlendDesignPositions.\n"
+msgstr "/BlendDesignPositions で指定された軸の位置が多すぎます.\n"
+
+msgid ""
+"Too many mapping data points specified in /BlendDesignMap for axis %s.\n"
+msgstr "軸 %s の /BlendDesignMap で指定された写像データの点が多すぎます.\n"
+
+msgid "Bad value for blend in /BlendDesignMap for axis %s.\n"
+msgstr "軸 %s の /BlendDesignMap 内の値が間違っています.\n"
+
+msgid "Bad few values in /BlendDesignMap for axis %s.\n"
+msgstr "軸 %s の /BlendDesingmap の値が少なすぎて不正です.\n"
+
+msgid "Could not parse a CID font, %sCIDFontType %d, %sfonttype %d\n"
+msgstr "%sCIDFontType %d, %sfonttype %d の CID フォントを解析できません\n"
+
+msgid "CID format doesn't contain what we expected it to.\n"
+msgstr "CID フォーマットのデータに予想されるデータが含まれていません.\n"
+
+msgid "Warning: Unreasonably big splines. They will be ignored.\n"
+msgstr "警告: 異常に巨大なスプラインが含まれています. それらは無視します.\n"
+
+msgid "Unknown type '%c' found in path specification\n"
+msgstr "パス指定の中に未知のタイプ '%c' が含まれています\n"
+
+msgid "Failed to parse color %s\n"
+msgstr "色 %s の構文解析に失敗しました\n"
+
+msgid "This font does not specify units-per-em\n"
+msgstr "このフォントには em ユニット数の指定がありません\n"
+
+msgid "This font does not specify font-face\n"
+msgstr "このフォントには font-face の指定がありません\n"
+
+msgid "Can't find libxml2.\n"
+msgstr "libxml2 が見つかりません.\n"
+
+msgid "This file contains no SVG fonts.\n"
+msgstr "このファイルには SVG フォントが含まれていません.\n"
+
+msgid "%s does not contain an <svg> element at the top\n"
+msgstr "%s の最上位エレメントとして <svg> が含まれていません\n"
+
+msgid "Failed to open glyph to name map file for writing: %s\n"
+msgstr "名前マップファイル %s を, グリフ名を書込むために開くのに失敗しました\n"
+
+msgid "Table length should not be odd\n"
+msgstr "テーブルの長さは奇数であってはなりません\n"
+
+msgid "Bad glyph range specified in glyph comment subtable of PfEd table\n"
+msgstr "PfEd テーブルのグリフコメントサブテーブルで指定されたグリフ範囲が不正です\n"
+
+msgid "Bad glyph range specified in colour subtable of PfEd table\n"
+msgstr "PfEd テーブルの色サブテーブルで指定されたグリフ範囲が不正です\n"
+
+msgid "Unknown subtable '%c%c%c%c' in 'PfEd' table, ignored\n"
+msgstr "'PfEd' テーブルに '%c%c%c%c' という不明なサブテーブルがあります. 無視しました\n"
+
+msgid "Unknown subtable '%c%c%c%c' in 'TeX ' table, ignored\n"
+msgstr "'TeX ' テーブルに '%c%c%c%c' という不明なサブテーブルがあります. 無視しました\n"
+
+msgid ""
+"Failed to default value of exten \"%s\".\n"
+" Error=%ld"
+msgstr ""
+"拡張子 \"%s\". のデフォルト値が分かりません.\n"
+"  エラー=%ld"
+
+msgid "Failed to find program \"%s\"\n"
+msgstr "\"%s\"にプログラムが見つかりませんでした.\n"
+
+msgid "Failed to find \"%s->shell\"\n"
+msgstr "\"%s->shell\" が見つかりませんでした\n"
+
+msgid "Failed to find \"%s->shell->open\"\n"
+msgstr "\"%s->shell->open\" が見つかりませんでした\n"
+
+msgid "Failed to find default for \"%s->shell->open->command\"\n"
+msgstr "\"%s->shell->open->command\" が見つかりませんでした\n"
+
+msgid "Internal Error: "
+msgstr "内部エラー: "
+
+msgid ""
+"At pixelsize %d the character %s either starts before the origin or extends "
+"beyond the advance width.\n"
+msgstr ""
+"ピクセルサイズ %d で, 文字 %s が原点より前から始まっているか, 送り幅の外に飛び出ています.\n"
+
+msgid "Internal error in creating FNT. file offset wrong\n"
+msgstr "FMT 作成時に内部エラーが発生しました. ファイルオフセットが誤っています\n"
+
+msgid "Internal error in creating FNT. file offset wrong in bitmap data\n"
+msgstr "FMT 作成時に内部エラーが発生しました. ビットマップデータ内のファイルオフセットが誤っています\n"
