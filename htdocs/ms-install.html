@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 26-Oct-2005 -->
-  <!-- AP: Last modified: 13-Nov-2005 -->
+  <!-- AP: Last modified: 24-Dec-2005 -->
   <TITLE>FontForge install procedures for cygwin (MS/Windows)</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -151,17 +151,17 @@
     <LI>
       Now type (do not type the "$"):
       <BLOCKQUOTE>
-	<PRE>$ bunzip2 fontforge_cygwin-*.tar.bz2
-$ tar xf fontforge_cygwin-*.tar
-$ cd fontforge
-$ ./doinstall
+	<PRE><FONT COLOR="Gray">$ </FONT>bunzip2 fontforge_cygwin-*.tar.bz2
+<FONT COLOR="Gray">$ </FONT>tar xf fontforge_cygwin-*.tar
+<FONT COLOR="Gray">$ </FONT>cd fontforge
+<FONT COLOR="Gray">$ </FONT>./doinstall
 </PRE>
       </BLOCKQUOTE>
     <LI>
       Then edit the file ~/.bashrc by (again do not type "$", use control-D (^D)
       to end):
       <BLOCKQUOTE>
-	<PRE>$ cat &gt;&gt; ~/.bashrc
+	<PRE><FONT COLOR="Gray">$ </FONT>cat &gt;&gt; ~/.bashrc
 PATH=${PATH}:/usr/local/bin ; export PATH
 MANPATH=${MANPATH:-}:/usr/local/man ; export MANPATH
 ^D
@@ -169,9 +169,8 @@ MANPATH=${MANPATH:-}:/usr/local/man ; export MANPATH
       </BLOCKQUOTE>
     <LI>
       Then each time you want to run fontforge, type:
-
       <BLOCKQUOTE>
-	<PRE>$ xinit
+	<PRE><FONT COLOR="Gray">$ </FONT>xinit
 </PRE>
       </BLOCKQUOTE>
     <LI>
@@ -180,13 +179,13 @@ MANPATH=${MANPATH:-}:/usr/local/man ; export MANPATH
     <LI>
       From the xterm you first start a window manager
       <BLOCKQUOTE>
-	<PRE>$ twm &amp;
+	<PRE><FONT COLOR="Gray">$ </FONT>twm &amp;
 </PRE>
       </BLOCKQUOTE>
     <LI>
       And then you should be able start FontForge.
       <BLOCKQUOTE>
-	<PRE>$ fontforge -new
+	<PRE><FONT COLOR="Gray">$ </FONT>fontforge -new
 </PRE>
       </BLOCKQUOTE>
   </UL>

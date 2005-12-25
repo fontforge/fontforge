@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 26-Oct-2005 -->
-  <!-- AP: Last modified: 31-Oct-2005 -->
+  <!-- AP: Last modified: 24-Dec-2005 -->
   <TITLE>FontForge install procedures for unix/linux based systems</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -121,14 +121,14 @@
   be root. Move to the directory containing the downloaded rpm, and then type
   (do not type the "$" or "#"):
   <BLOCKQUOTE>
-    <PRE># rpm -i fontforge-*.rpm
+    <PRE><FONT COLOR="Gray"># </FONT>rpm -i fontforge-*.rpm
 </PRE>
   </BLOCKQUOTE>
   <P>
   If you've already installed fontforge and are updating an earlier version
   then you should type:
   <BLOCKQUOTE>
-    <PRE># rpm -U fontforge-*.rpm
+    <PRE><FONT COLOR="Gray"># </FONT>rpm -U fontforge-*.rpm
 </PRE>
   </BLOCKQUOTE>
   <H3>
@@ -140,16 +140,17 @@
   Move to the directory containing the downloaded tarball and type (do not
   type the "$" or "#"):
   <BLOCKQUOTE>
-    <PRE>$ bunzip2 fontforge-*.tar.bz2
-$ tar xf fontforge-*.tar
-$ cd fontforge
-$ su
-# ./doinstall
+    <PRE><FONT COLOR="Gray">$ </FONT>bunzip2 fontforge-*.tar.bz2
+<FONT COLOR="Gray">$ </FONT>tar xf fontforge-*.tar
+<FONT COLOR="Gray">$ </FONT>cd fontforge
+<FONT COLOR="Gray">$ </FONT>su
+<FONT COLOR="Gray"># </FONT>./doinstall
 </PRE>
   </BLOCKQUOTE>
   <P>
   (Older versions may have an extension of .tgz. In this case you would replace
-  the first two lines with "<CODE>$ tar xfz fontforge-*.tgz</CODE>")
+  the first two lines with "<CODE><FONT COLOR="Gray">$ </FONT>tar xfz
+  fontforge-*.tgz</CODE>")
   <P>
   <FONT COLOR="Red"><STRONG>Caveat:</STRONG></FONT> My packages generally install
   to /usr/local, and this may not be in your default PATH. You may need to
