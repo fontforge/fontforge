@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Oct-2005 -->
-  <!-- AP: Last modified: 11-Nov-2005 -->
+  <!-- AP: Last modified: 24-Dec-2005 -->
   <TITLE>FontForge install procedures for cygwin (MS/Windows)</TITLE>
 </HEAD>
 <BODY>
@@ -51,6 +51,8 @@
       <LI>
 	<A HREF="#doc-tar">Installing a documentation tarball</A>
     </UL>
+  <LI>
+    <A HREF="README-MS.html#PATH">Some notes on the PATH variable</A>
   <LI>
     <A HREF="#run-cygwin">Running FontForge</A>
   <LI>
@@ -159,17 +161,17 @@ cygwin gave you)
     Now type (<SMALL>The "$" or "#" are example prompts from the computer. Do
     not type them yourself</SMALL>):
     <BLOCKQUOTE>
-      <PRE>$ bunzip2 fontforge_cygwin-*.tar.bz2
-$ tar xf fontforge_cygwin-*.tar
-$ cd fontforge
-$ ./doinstall
+      <PRE><FONT COLOR="Gray">$ </FONT>bunzip2 fontforge_cygwin-*.tar.bz2
+<FONT COLOR="Gray">$ </FONT>tar xf fontforge_cygwin-*.tar
+<FONT COLOR="Gray">$ </FONT>cd fontforge
+<FONT COLOR="Gray">$ </FONT>./doinstall
 </PRE>
     </BLOCKQUOTE>
   <LI>
     Then edit the file ~/.bashrc by (end this by typing control-D):
   <LI>
     <BLOCKQUOTE>
-      <PRE>$ cat &gt;&gt; ~/.bashrc
+      <PRE><FONT COLOR="Gray">$ </FONT>cat &gt;&gt; ~/.bashrc
 PATH=${PATH}:/usr/local/bin ; export PATH
 MANPATH=${MANPATH:-}:/usr/local/man ; export MANPATH
 ^D
@@ -178,7 +180,7 @@ MANPATH=${MANPATH:-}:/usr/local/man ; export MANPATH
   <LI>
     Then each time you want to run fontforge, type:
     <BLOCKQUOTE>
-      <PRE>$ xinit
+      <PRE><FONT COLOR="Gray">$ </FONT>xinit
 </PRE>
     </BLOCKQUOTE>
   <LI>
@@ -187,13 +189,13 @@ MANPATH=${MANPATH:-}:/usr/local/man ; export MANPATH
   <LI>
     From the xterm you should first start a window manager:
     <BLOCKQUOTE>
-      <PRE>$ twm &amp;
+      <PRE><FONT COLOR="Gray">$ </FONT>twm &amp;
 </PRE>
     </BLOCKQUOTE>
   <LI>
     And then you will be able start FontForge.
     <BLOCKQUOTE>
-      <PRE>$ fontforge -new
+      <PRE><FONT COLOR="Gray">$ </FONT>fontforge -new
 </PRE>
     </BLOCKQUOTE>
 </UL>
@@ -277,9 +279,9 @@ provide explicit instructions here, because I don't know where your browser
 put the file) and type (<SMALL>The "$" or "#" are example prompts from the
 computer. Do not type them yourself</SMALL>):
 <BLOCKQUOTE>
-  <PRE>$ bunzip2 fontforge*.tar.bz2
-$ tar xf fontforge*.tar
-$ cd fontforge-*
+  <PRE><FONT COLOR="Gray">$ </FONT>bunzip2 fontforge*.tar.bz2
+<FONT COLOR="Gray">$ </FONT>tar xf fontforge*.tar
+<FONT COLOR="Gray">$ </FONT>cd fontforge-*
 </PRE>
 </BLOCKQUOTE>
 <H4>
@@ -291,20 +293,20 @@ tree by many users. To set up your own (local) copy of the cvs tree (including
 documentation), create a new directory, cd into it and type the following
 (when it asks for a password, just hit return):
 <BLOCKQUOTE>
-  <PRE>$ cvs -d:pserver:anonymous@cvs1.sourceforge.net:/cvsroot/fontforge login
+  <PRE><FONT COLOR="Gray">$ </FONT>cvs -d:pserver:anonymous@cvs1.sourceforge.net:/cvsroot/fontforge login
 CVS password:
-$ cvs -d:pserver:anonymous@cvs1.sourceforge.net:/cvsroot/fontforge checkout fontforge
-$ cd fontforge
+<FONT COLOR="Gray">$ </FONT>cvs -d:pserver:anonymous@cvs1.sourceforge.net:/cvsroot/fontforge checkout fontforge
+<FONT COLOR="Gray">$ </FONT>cd fontforge
 </PRE>
 </BLOCKQUOTE>
 <P>
 Once you have established a directory you may update it to obtain the most
 recent version of the source by typing:
 <BLOCKQUOTE>
-  <PRE>$ cd fontforge
-$ cvs -d:pserver:anonymous@cvs1.sourceforge.net:/cvsroot/fontforge login
+  <PRE><FONT COLOR="Gray">$ </FONT>cd fontforge
+<FONT COLOR="Gray">$ </FONT>cvs -d:pserver:anonymous@cvs1.sourceforge.net:/cvsroot/fontforge login
 CVS password:
-$ cvs -d:pserver:anonymous@cvs1.sourceforge.net:/cvsroot/fontforge update
+<FONT COLOR="Gray">$ </FONT>cvs -d:pserver:anonymous@cvs1.sourceforge.net:/cvsroot/fontforge update
 </PRE>
 </BLOCKQUOTE>
 <P>
@@ -324,15 +326,15 @@ at the top directory of that tree. You need to configure your package (this
 is a little program that figures out how to use your system), and then build
 it:
 <BLOCKQUOTE>
-  <PRE>$ ./configure
-$ make
+  <PRE><FONT COLOR="Gray">$ </FONT>./configure
+<FONT COLOR="Gray">$ </FONT>make
 </PRE>
 </BLOCKQUOTE>
 <P>
 <A NAME="su">Having</A> done this you will probably want to install what
 you have built. This should be done as root:
 <BLOCKQUOTE>
-  <PRE>$ su
+  <PRE><FONT COLOR="Gray">$ </FONT>su
 password: ******
 # make install
 </PRE>
@@ -340,7 +342,7 @@ password: ******
 <P>
 On the mac the process is slightly different:
 <BLOCKQUOTE>
-  <PRE>$ sudo make install
+  <PRE><FONT COLOR="Gray">$ </FONT>sudo make install
 password: ******
 </PRE>
 </BLOCKQUOTE>
@@ -351,7 +353,7 @@ password: ******
 The configure script allows you to turn off and on various features of fontforge
 that might not be appropriate for your system. Type
 <BLOCKQUOTE>
-  <PRE>$ configure --help
+  <PRE><FONT COLOR="Gray">$ </FONT>configure --help
 </PRE>
 </BLOCKQUOTE>
 <P>
@@ -366,7 +368,7 @@ scripting language is described in detail
 <A HREF="http://fontforge.sf.net/scripting.html">in the section on
 scripting.</A>
 <BLOCKQUOTE>
-  <PRE>$ configure --without-x
+  <PRE><FONT COLOR="Gray">$ </FONT>configure --without-x
 </PRE>
 </BLOCKQUOTE>
 <H4>
@@ -377,7 +379,7 @@ If you do want to edit PostScript type3 fonts, you can configure fontforge
 to give you access to more drawing modes than are generally available in
 fonts.
 <BLOCKQUOTE>
-  <PRE>$ configure --with-multilayer
+  <PRE><FONT COLOR="Gray">$ </FONT>configure --with-multilayer
 </PRE>
 </BLOCKQUOTE>
 <H4>
@@ -387,7 +389,7 @@ fonts.
 If you do want to create device tables (which allow you to fix up kerning
 data at a specific pixel size) in OpenType fonts
 <BLOCKQUOTE>
-  <PRE>$ configure --with-devicetables
+  <PRE><FONT COLOR="Gray">$ </FONT>configure --with-devicetables
 </PRE>
 </BLOCKQUOTE>
 <H4>
@@ -396,7 +398,7 @@ data at a specific pixel size) in OpenType fonts
 <P>
 If you want to install fontforge in a different directory (say in /usr/bin)
 <BLOCKQUOTE>
-  <PRE>$ configure --prefix=/usr
+  <PRE><FONT COLOR="Gray">$ </FONT>configure --prefix=/usr
 </PRE>
 </BLOCKQUOTE>
 <H4>
@@ -624,8 +626,8 @@ bitmap fonts that fontforge uses
 <P>
 To install these, put them in a directory, and in that directory type:
 <BLOCKQUOTE>
-  <PRE>    $ mkfontdir
-    $ xset fp+ `pwd`
+  <PRE>    <FONT COLOR="Gray">$ </FONT>mkfontdir
+    <FONT COLOR="Gray">$ </FONT>xset fp+ `pwd`
 </PRE>
 </BLOCKQUOTE>
 <P>
@@ -674,7 +676,7 @@ is available online.</A>
 Once you have downloaded the documentation tarball as described above, you
 should move to the directory containing it, and type:
 <BLOCKQUOTE>
-  <PRE>$ su
+  <PRE><FONT COLOR="Gray">$ </FONT>su
 password: ******
 # mkdir -p /usr/local/share/doc/fontforge
 # mv fontforge_htdocs*.tgz /usr/local/share/doc/fontforge
@@ -699,7 +701,7 @@ Before you can start fontforge on cygwin you must start the X11 server.
 <P>
 Open a cygwin window and type
 <BLOCKQUOTE>
-  <PRE>$ xinit
+  <PRE><FONT COLOR="Gray">$ </FONT>xinit
 </PRE>
 </BLOCKQUOTE>
 <P>
@@ -710,14 +712,79 @@ Be prepared to type commands in this window.
 The first command you must type will start a window manager (which allows
 you to move windows around and gives you title bars)
 <BLOCKQUOTE>
-  <PRE>$ twm &amp;
+  <PRE><FONT COLOR="Gray">$ </FONT>twm &amp;
+</PRE>
+</BLOCKQUOTE>
+<H3>
+  Notes on the <A NAME="PATH">PATH</A> variable
+</H3>
+<P>
+On most systems fontforge will install itself into <KBD>/usr/local/bin</KBD>
+(that's the standard place for optional software), and this is not always
+in the default search path for commands (grrrr). Which means you might have
+everything properly installed, but nothing actually works. If you see messages
+like <KBD>"fontforge: command not found."</KBD> this has (probably) happened
+to you.
+<P>
+So what do you do?
+<P>
+You need to set the PATH environment variable so that it includes /usr/local/bin.
+The value of the PATH variable is a set of directories separated by colons.
+<BLOCKQUOTE>
+  <PRE><FONT COLOR="Gray">$ </FONT>echo $PATH
+/home/gww/bin:/usr/bin:/bin:/usr/X11R6/bin:/sbin
+</PRE>
+</BLOCKQUOTE>
+<P>
+Unfortunately there are two ways of doing this because there are two different
+conventions used by unix shells. Type:
+<BLOCKQUOTE>
+  <PRE><FONT COLOR="Gray">$ </FONT>echo $SHELL
+/bin/bash
+</PRE>
+</BLOCKQUOTE>
+<P>
+If the name of your shell is <KBD>bash</KBD> (as above), <KBD>ksh</KBD> or
+<KBD>sh</KBD> then you want to type
+<BLOCKQUOTE>
+  <PRE><FONT COLOR="Gray">$ </FONT>PATH=/usr/local/bin:$PATH ; export PATH
+</PRE>
+</BLOCKQUOTE>
+<P>
+If the name of your shell is <KBD>tcsh</KBD> or <KBD>csh</KBD> then you say
+<BLOCKQUOTE>
+  <PRE><FONT COLOR="Gray">$ </FONT>setenv PATH /usr/local/bin:$PATH
+</PRE>
+</BLOCKQUOTE>
+<P>
+But you'd have to do that every time you logged in. Instead you want this
+included in the shell's initialization. Again there are two cases, for the
+<KBD>bash</KBD> family of shells you want to edit the file
+<KBD>~/.profile</KBD> while for the <KBD>csh</KBD> family you want to edit
+the file <KBD>~/.login</KBD>. On a bash system the following command is generally
+sufficient:
+<BLOCKQUOTE>
+  <PRE><FONT COLOR="Gray">$ </FONT>cat &gt;&gt;~/.profile
+PATH=/usr/local/bin:$PATH ; export PATH
+^D
+</PRE>
+</BLOCKQUOTE>
+<P>
+(where <KBD>^D</KBD> represents control-D, obtained by holding down the control
+key while depressing <KBD>d</KBD>. <BR>
+And for the csh family you would type:
+<BLOCKQUOTE>
+  <PRE><FONT COLOR="Gray">$ </FONT>cat &gt;&gt;~/.login
+setenv PATH /usr/local/bin:$PATH
+^D
 </PRE>
 </BLOCKQUOTE>
 <H3>
   <A NAME="Starting">Starting</A> fontforge from the command line
 </H3>
 <BLOCKQUOTE>
-  <KBD>$ fontforge font.pfa font2.sfd font3.ttf font4.otf </KBD>
+  <KBD><FONT COLOR="Gray">$ </FONT>fontforge font.pfa font2.sfd font3.ttf font4.otf
+  </KBD>
 </BLOCKQUOTE>
 <P>
 will start fontforge looking at the fonts you specify on the command line.
@@ -725,18 +792,18 @@ It can read either pfb or pfa fonts, and some ps fonts (type 0 fonts based
 on a type 1 dictionary) as well as truetype fonts, open type fonts and many
 other formats.
 <BLOCKQUOTE>
-  <KBD>$ fontforge -new</KBD>
+  <KBD><FONT COLOR="Gray">$ </FONT>fontforge -new</KBD>
 </BLOCKQUOTE>
 <P>
 will cause fontforge to create a new font (in iso-8859-1 encoding)
 <BLOCKQUOTE>
-  <KBD>$ fontforge</KBD>
+  <KBD><FONT COLOR="Gray">$ </FONT>fontforge</KBD>
 </BLOCKQUOTE>
 <P>
 will open up a file picker dialog and allow you to browse till you've found
 a font file (or have created a new one).
 <BLOCKQUOTE>
-  <KBD>$ fontforge -script script.pe fonts...</KBD>
+  <KBD><FONT COLOR="Gray">$ </FONT>fontforge -script script.pe fonts...</KBD>
 </BLOCKQUOTE>
 <P>
 This will invoke fontforge in a non-interactive mode, and have it run the
