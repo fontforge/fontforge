@@ -17814,6 +17814,13 @@ if test "$STATIC_LIBS" != ""; then
   echo Non DlOpenable or Static Libraries: $STATIC_LIBS
 fi
 
+if ! echo $PATH | tr : \\n | grep -x $prefix/bin >/dev/null ; then
+ echo " *******************************************************************"
+ echo " * You do not have $prefix/bin in your PATH environment variable   *"
+ echo " *******************************************************************"
+ echo
+fi
+
 if test "$no_x" = "yes"; then
  echo " *******************************************************************"
  echo " * This version of fontforge will only run scripts. No X libraries *"
@@ -17831,6 +17838,7 @@ if test "$no_x" = "yes"; then
   echo " with a user interface"
   ;;
  esac
+ echo
 fi
 if test "$gww_has_gettext" = "no"; then
  echo " *******************************************************************"
