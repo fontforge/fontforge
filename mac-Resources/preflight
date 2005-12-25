@@ -2,3 +2,4 @@
 mkdir -p /usr/local/lib
 cd /usr/local/lib
 sh -c "rm -f libgunicode*.dylib libgdraw*.dylib"
+exit 0

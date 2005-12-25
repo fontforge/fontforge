@@ -73,3 +73,4 @@ EOF
     rm -f /tmp/x11_1.xml /tmp/fontforge-sed-script /tmp/x11.xml
   fi
 fi
+exit 0
