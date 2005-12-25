@@ -346,16 +346,6 @@ static void MakeTransBlock(TransData *td,int bnum) {
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[23];
     GTextInfo label[23];
-    static int done = false;
-
-    if ( !done ) {
-	int i;
-	for ( i=0; transformtypes[i].text!=NULL; ++i )
-	    transformtypes[i].text = (unichar_t *) _((char *) transformtypes[i].text);
-	for ( i=0; origin[i].text!=NULL; ++i )
-	    origin[i].text = (unichar_t *) _((char *) origin[i].text);
-	done = true;
-    }
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor;
@@ -576,6 +566,16 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
     GGadget *orig;
     BasePoint junk;
     GTextInfo **ti;
+    static int done = false;
+
+    if ( !done ) {
+	int i;
+	for ( i=0; transformtypes[i].text!=NULL; ++i )
+	    transformtypes[i].text = (unichar_t *) _((char *) transformtypes[i].text);
+	for ( i=0; origin[i].text!=NULL; ++i )
+	    origin[i].text = (unichar_t *) _((char *) origin[i].text);
+	done = true;
+    }
 
     td.userdata = data;
     td.transfunc = transfunc;
