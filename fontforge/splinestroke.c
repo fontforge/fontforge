@@ -1184,7 +1184,7 @@ static void SPFigurePlusCP(SplinePoint *sp,double t,Spline *spline,int isnext) {
 	sp->nonextcp = false;
     } else {
 	sp->prevcp = dummy.nextcp;
-	sp->noprevcp = true;
+	sp->noprevcp = false;
     }
 }
 
