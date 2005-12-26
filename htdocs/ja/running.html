@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 26-Oct-2005 -->
-  <!-- AP: Last modified: 30-Oct-2005 -->
+  <!-- AP: Last modified: 24-Dec-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Starting fontforge</TITLE>-->
     <TITLE>FontForge の起動方法</TITLE>
@@ -12,8 +12,8 @@
 <BODY>
 <DIV id="in">
   <H1 ALIGN=Center>
-<!--  Starting fontforge-->
-      FontForge の起動方法
+<!--Starting fontforge-->
+    FontForge の起動方法
   </H1>
   <UL>
     <LI>
@@ -49,6 +49,9 @@
 <!--	  <A HREF="running.html#cygwin">Before starting fontforge on cygwin</A>-->
 	  <A HREF="running.html#cygwin">cygwin で FontForge を起動する前に</A>
 	<LI>
+<!--	  <A HREF="running.html#PATH">Notes on the PATH variable</A> -->
+	  <A HREF="running.html#PATH">環境変数 PATH に関する注意</A>
+	<LI>
 <!--	  <A HREF="running.html#Starting">Starting fontforge from the command line</A> -->
 	  <A HREF="running.html#Starting">コマンドラインから FontForge を起動する方法</A>
 	<LI>
@@ -57,12 +60,12 @@
       </UL>
   </UL>
   <H2>
-<!--  Starting <A NAME="FontForge">FontForge</A>-->
-      <A NAME="FontForge">FontForge</A> の起動方法
+<!--Starting <A NAME="FontForge">FontForge</A>-->
+    <A NAME="FontForge">FontForge</A> の起動方法
   </H2>
   <H3>
-<!--  Before starting fontforge on <A NAME="cygwin">cygwin</A>-->
-      <A NAME="cygwin">cygwin</A> で FontForge を起動する前に
+<!--Before starting fontforge on <A NAME="cygwin">cygwin</A>-->
+    <A NAME="cygwin">cygwin</A> で FontForge を起動する前に
   </H3>
   <P>
 <!--
@@ -73,8 +76,8 @@
   Open a cygwin window and type -->
   cygwin のウィンドウを開いて以下を実行します:
   <BLOCKQUOTE>
-    <PRE>$ xinit
-  </PRE>
+    <PRE><FONT COLOR="Gray">$ </FONT>xinit
+</PRE>
   </BLOCKQUOTE>
   <P>
 <!--
@@ -87,15 +90,97 @@
   You should then type -->
   それから以下を実行するべきでしょう:
   <BLOCKQUOTE>
-    <PRE>$ twm &amp;
-  </PRE>
+    <PRE><FONT COLOR="Gray">$ </FONT>twm &amp;
+</PRE>
   </BLOCKQUOTE>
   <H3>
-<!--  <A NAME="Starting">Starting</A> fontforge from the command line-->
-      コマンドラインから FontForge を<A NAME="Starting">起動する方法</A>
+<!--Notes on the <A NAME="PATH">PATH</A> variable-->
+    環境変数 <A NAME="PATH">PATH</A> に関する注意
+  </H3>
+  <P>
+<!--
+  On most systems fontforge will install itself into <KBD>/usr/local/bin</KBD>
+  (that's the standard place for optional software), and this is not always
+  in the default search path for commands (grrrr). Which means you might have
+  everything properly installed, but nothing actually works. If you see messages
+  like <KBD>"fontforge: command not found."</KBD> this has (probably) happened
+  to you.-->
+  ほとんどのシステムでは、FontForge は <KBD>/usr/local/bin</KBD> にインストールされるのですが (これは追加のソフトウェアの標準的な置き場所です)、ここはデフォルトのコマンドサーチパスに登録されているとは限らないのです (ガルルル)。その場合、インストールは全て正しく行われたにも関わらず、実際には何も起動しないということになります。もし、“<KBD>fontforge: command not found.</KBD>”とか“<KBD>fontforge: コマンドが見つかりません.</KBD>”のようなメッセージが表示されたならば、(おそらく) そのような事が起こっているのです。
+  <P>
+<!--
+  So what do you do? -->
+  ならどうすればいいのでしょう?
+  <P>
+<!--
+  You need to set the PATH environment variable so that it includes /usr/local/bin.
+  The value of the PATH variable is a set of directories separated by colons. -->
+  環境変数 PATH を /usr/local/bin を含むように設定する必要があります。PATH 変数の値は、ディレクトリをコロン (:) で区切って並べたものです。
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>echo $PATH
+/home/gww/bin:/usr/bin:/bin:/usr/X11R6/bin:/sbin
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+<!--
+  Unfortunately there are two ways of doing this because there are two different
+  conventions used by unix shells. Type: -->
+  不幸なことに、Unix シェルには 2 つの異なる流儀に分かれているため、これを設定する方法は 2 つあるのです。以下のようにして確かめてください:
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>echo $SHELL
+/bin/bash
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+<!--
+  If the name of your shell is <KBD>bash</KBD> (as above), <KBD>ksh</KBD> or
+  <KBD>sh</KBD> then you want to type -->
+  現在使っているシェルの名前が (上の例のように) <KBD>bash</KBD>, <KBD>ksh</KBD> または <KBD>sh</KBD> と表示されたならば、次のように設定するのがいいでしょう:
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>PATH=/usr/local/bin:$PATH ; export PATH
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+<!--
+  If the name of your shell is <KBD>tcsh</KBD> or <KBD>csh</KBD> then you say -->
+  あなたの使っているシェルが <KBD>tcsh</KBD> または <KBD>csh</KBD> ならば、以下のようにします:
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>setenv PATH /usr/local/bin:$PATH
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+<!--
+  But you'd have to do that every time you logged in. Instead you want this
+  included in the shell's initialization. Again there are two cases, for the
+  <KBD>bash</KBD> family of shells you want to edit the file
+  <KBD>~/.profile</KBD> while for the <KBD>csh</KBD> family you want to edit
+  the file <KBD>~/.login</KBD>. On a bash system the following command is generally
+  sufficient: -->
+  しかしこの方法ではログインするたびに上の手順を実行しなければなりません。そうしないで済むように、この処理をシェルの初期化手順に追加することができます。この場合もやり方は 2 つに分かれていて、<KBD>bash</KBD> とその仲間ではファイル <KBD>~/.profile</KBD> を編集するのに対し、<KBD>csh</KBD> と <KBD>tcsh</KBD> ではファイル <KBD>~/.login</KBD> を編集します。bash を使っている場合、一般に以下のコマンドを実行すればいいでしょう:
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>cat &gt;&gt;~/.profile
+PATH=/usr/local/bin:$PATH ; export PATH
+^D
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+<!--
+  (where <KBD>^D</KBD> represents control-D, obtained by holding down the control
+  key while depressing <KBD>d</KBD>. <BR>
+  And for the csh family you would type: -->
+  (ここで <KBD>^D</KBD> は Control-D のことで、Control (Ctrl) キーを押したまま離さずに <KBD>d</KBD> キーを押すことを表します。<BR>
+  csh の仲間の場合、以下のようにタイプします:
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>cat &gt;&gt;~/.login
+setenv PATH /usr/local/bin:$PATH
+^D
+</PRE>
+   </BLOCKQUOTE>
+  <H3>
+<!--<A NAME="Starting">Starting</A> fontforge from the command line-->
+    コマンドラインから FontForge を<A NAME="Starting">起動する方法</A>
   </H3>
   <BLOCKQUOTE>
-    <PRE>$ fontforge font.pfa font2.sfd font3.ttf font4.otf </PRE>
+    <PRE><FONT COLOR="Gray">$ </FONT>fontforge font.pfa font2.sfd font3.ttf font4.otf </PRE>
   </BLOCKQUOTE>
   <P>
 <!--
@@ -104,15 +189,23 @@
   on a type 1 dictionary) as well as truetype fonts, open type fonts and many
   other formats. -->
   これを実行すると、FontForge はコマンドラインで指定したフォントを探します。TrueType フォント、OpenType フォントだけでなく、PFB や PFA フォント、およびある種の PS フォント (Type1 辞書に基づく Type0 フォント) などの各種の異なるフォーマットのフォントを読み込むことができます。
+  <P>
+<!--
+  <SMALL>(If you get a message from your computer saying: "<KBD>fontforge:
+  Command not found</KBD>" you should read the
+  <A HREF="running.html#PATH">previous section</A>)</SMALL> -->
+  <SMALL>(もし、これを実行した時に:“<KBD>fontforge:Command not found</KBD>”や“<KBD>fontforge:コマンドが見つかりません</KBD>”というメッセージが端末に表示される場合、<A HREF="running.html#PATH">前のセクション</A>をお読みください)</SMALL>
   <BLOCKQUOTE>
-    <PRE>$ fontforge -new</PRE>
+    <PRE><FONT COLOR="Gray">$ </FONT>fontforge -new
+</PRE>
   </BLOCKQUOTE>
   <P>
 <!--
   will cause fontforge to create a new font (in iso-8859-1 encoding) -->
   このようにすると、FontForge は (ISO8859-1 エンコーディングの) 新しいフォントを作成します。
   <BLOCKQUOTE>
-    <PRE>$ fontforge</PRE>
+    <PRE><FONT COLOR="Gray">$ </FONT>fontforge
+</PRE>
   </BLOCKQUOTE>
   <P>
 <!--
@@ -120,7 +213,8 @@
   a font file (or have created a new one). -->
   とのみするとファイル選択ダイアログが開き、フォントファイルが見つかるまで (か、新規に作成するまで) ブラウズすることができます
   <BLOCKQUOTE>
-    <PRE>$ fontforge -script script.pe fonts...</PRE>
+    <PRE><FONT COLOR="Gray">$ </FONT>fontforge -script script.pe fonts...
+</PRE>
   </BLOCKQUOTE>
   <P>
 <!--
@@ -134,8 +228,8 @@
   section on the command line</A>. -->
   指定可能な引数の完全なリストは、<A HREF="cliargs.html">コマンドラインのセクション</A>を参照してください。
   <H3>
-<!--  On the <A NAME="mac">mac</A>-->
-      <A NAME="mac">Mac</A> では
+<!--On the <A NAME="mac">mac</A>-->
+    <A NAME="mac">Mac</A> では
   </H3>
   <P>
 <!--

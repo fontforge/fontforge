@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 26-Oct-2005 -->
-  <!-- AP: Last modified: 13-Nov-2005 -->
+  <!-- AP: Last modified: 24-Dec-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>FontForge install procedures for cygwin (MS/Windows)</TITLE>-->
     <TITLE>FontForge の cygwin (MS-Windows) へのインストール手順</TITLE>
@@ -12,7 +12,7 @@
 <BODY>
 <DIV id="in">
   <H1 ALIGN=Center>
-<!--  FontForge install procedures<BR>
+<!--FontForge install procedures<BR>
     <SMALL>for cygwin under MS Windows</SMALL> -->
     <SMALL>MS-Windows 上の cygwin</SMALL> への<BR>
     FontForge のインストール手順
@@ -59,12 +59,12 @@
       <A HREF="running.html#cygwin">FontForge の起動方法</A>
   </UL>
   <H2>
-<!--  <A NAME="Installing">Installing</A> from a pre-built package-->
-      構築済みパッケージからの<A NAME="Installing">インストール方法</A>
+<!--<A NAME="Installing">Installing</A> from a pre-built package-->
+    構築済みパッケージからの<A NAME="Installing">インストール方法</A>
   </H2>
   <H3>
-<!--  <A NAME="Before">Before</A> you install-->
-      インストールする<A NAME="Before">前に</A>
+<!--<A NAME="Before">Before</A> you install-->
+    インストールする<A NAME="Before">前に</A>
   </H3>
   <P>
 <!--
@@ -133,8 +133,8 @@
       インストールが終わったら cygwin を実行してください。bash (Unix シェルの一種) を実行する端末ウィンドウが開くでしょう。
   </UL>
   <H3>
-<!--  <A NAME="Obtaining">Obtaining</A> one of my pre-built packages-->
-      構築済みのパッケージの<A NAME="Obtaining">入手方法</A>
+<!--<A NAME="Obtaining">Obtaining</A> one of my pre-built packages-->
+    構築済みのパッケージの<A NAME="Obtaining">入手方法</A>
   </H3>
   <P>
 <!--
@@ -171,8 +171,8 @@
       待ちます。しばらくすると、これと同じページが再び表示されます。ブラウザが、ダウンロードを開始したというメッセージを表示するのはそのずっと後です。
   </UL>
   <H3>
-<!--  <A NAME="install">Installing</A>-->
-      <A NAME="install">インストール方法</A>
+<!--<A NAME="install">Installing</A>-->
+    <A NAME="install">インストール方法</A>
   </H3>
   <P>
 <!--
@@ -193,10 +193,10 @@
 <!--  Now type (do not type the "$"): -->
       そうしたら以下のようにタイプします (“<CODE>$</CODE>”はタイプしません):
       <BLOCKQUOTE>
-	<PRE>$ bunzip2 fontforge_cygwin-*.tar.bz2
-$ tar xf fontforge_cygwin-*.tar
-$ cd fontforge
-$ ./doinstall
+	<PRE><FONT COLOR="Gray">$ </FONT>bunzip2 fontforge_cygwin-*.tar.bz2
+<FONT COLOR="Gray">$ </FONT>tar xf fontforge_cygwin-*.tar
+<FONT COLOR="Gray">$ </FONT>cd fontforge
+<FONT COLOR="Gray">$ </FONT>./doinstall
 </PRE>
       </BLOCKQUOTE>
     <LI>
@@ -205,7 +205,7 @@ $ ./doinstall
       それから以下のようにして、ファイル ~/.bashrc を編集します (ここでも“<CODE>$</CODE>”は入力しません。入力の終了には Control-D (^D) を使用します):
     <LI>
       <BLOCKQUOTE>
-	<PRE>$ cat &gt;&gt; ~/.bashrc
+	<PRE><FONT COLOR="Gray">$ </FONT>cat &gt;&gt; ~/.bashrc
 PATH=${PATH}:/usr/local/bin ; export PATH
 MANPATH=${MANPATH:-}:/usr/local/man ; export MANPATH
 ^D
@@ -215,7 +215,7 @@ MANPATH=${MANPATH:-}:/usr/local/man ; export MANPATH
 <!--  Then each time you want to run fontforge, type:-->
       その後、FontForge を使用するたびごとに、以下のように入力します:
       <BLOCKQUOTE>
-	<PRE>$ xinit
+	<PRE><FONT COLOR="Gray">$ </FONT>xinit
 </PRE>
       </BLOCKQUOTE>
     <LI>
@@ -227,20 +227,20 @@ MANPATH=${MANPATH:-}:/usr/local/man ; export MANPATH
 <!--  From the xterm you first start a window manager -->
       xterm 上からまずウィンドウマネージャを起動します:
       <BLOCKQUOTE>
-	<PRE>$ twm &amp;
+	<PRE><FONT COLOR="Gray">$ </FONT>twm &amp;
 </PRE>
       </BLOCKQUOTE>
 <!--  And then you should be able start FontForge.-->
       これで FontForge が起動可能になっているはずです。
     <LI>
       <BLOCKQUOTE>
-	<PRE>$ fontforge -new
+	<PRE><FONT COLOR="Gray">$ </FONT>fontforge -new
 </PRE>
       </BLOCKQUOTE>
   </UL>
   <H3>
-<!--  <A NAME="Notes">Notes</A>-->
-      <A NAME="Notes">注意点</A>
+<!--<A NAME="Notes">Notes</A>-->
+    <A NAME="Notes">注意点</A>
   </H3>
   <P>
 <!--
