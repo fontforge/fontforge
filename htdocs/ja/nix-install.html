@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 26-Oct-2005 -->
-  <!-- AP: Last modified: 31-Oct-2005 -->
+  <!-- AP: Last modified: 24-Dec-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>FontForge install procedures for unix/linux based systems</TITLE>-->
     <TITLE>Unix/Linux ベースのシステム上への FontForge のインストール手順</TITLE>
@@ -11,10 +11,10 @@
 <BODY>
 <DIV id="in">
   <H1 ALIGN=Center>
-<!--  FontForge install procedures<BR>
+<!--FontForge install procedures<BR>
     <SMALL>for unix/linux based systems</SMALL> -->
-      <SMALL>unix/linux ベースのシステム上への</SMALL><BR>
-      FontForge のインストール手順
+    <SMALL>unix/linux ベースのシステム上への</SMALL><BR>
+    FontForge のインストール手順
   </H1>
   <UL>
     <LI>
@@ -66,12 +66,12 @@
       <A HREF="running.html">FontForge の起動方法</A>
   </UL>
   <H2>
-<!--  <A NAME="Installing">Installing</A> from a pre-built package-->
-      構築済みパッケージからの<A NAME="Installing">インストール方法</A>
+<!--<A NAME="Installing">Installing</A> from a pre-built package-->
+    構築済みパッケージからの<A NAME="Installing">インストール方法</A>
   </H2>
   <H3>
-<!--  <A NAME="Obtaining">Obtaining</A> one of my pre-built packages-->
-      必要な構築済みパッケージの<A NAME="Obtaining">入手方法</A>
+<!--<A NAME="Obtaining">Obtaining</A> one of my pre-built packages-->
+    必要な構築済みパッケージの<A NAME="Obtaining">入手方法</A>
   </H3>
   <P>
 <!--
@@ -97,7 +97,7 @@
 	<LI>
 <!--      For i386 linux you will want the rpm file for the i386 (This happens to have
 	  been built on RedHat 9, but it should work on any i386 linux system that
-	  supports rpm -- RedHat, Fedora, Suse, Mandrake, etc.) -->
+	  supports rpm - - RedHat, Fedora, Suse, Mandrake, etc.) -->
 	  i386 Linux を使っているならば、i386 用の RPM ファイルをダウンロードするのがよいでしょう (これの構築はたまたま RedHat 9 上で行っていますが、RPM をサポートしている i386 上の Linux システム――RedHat, Fedora, Suse, Mandrake 等――ならどれでも動くはずです)。
 	<LI>
 <!--  	  For Sparc Solaris you will want the tar.bz2 file for sparc. -->
@@ -113,8 +113,8 @@
       待ちます。しばらくすると、これと同じページが再び表示されます。ブラウザが、ダウンロードを開始したというメッセージを表示するのはそのずっと後です。
   </UL>
   <H4>
-<!--  <A NAME="Elsewhere">Obtaining</A> a package from another source -->
-      他の提供元からのパッケージを<A NAME="Elsewhere">入手する</A>方法
+<!--<A NAME="Elsewhere">Obtaining</A> a package from another source -->
+    他の提供元からのパッケージを<A NAME="Elsewhere">入手する</A>方法
   </H4>
   <P>
 <!--
@@ -147,8 +147,8 @@
       <A HREF="mac-install.html">Mac OS X</A> ― 現在の Mac は Unix システムではありますが、インストール手順がかなり異なるので、それを専用に扱うページを作りました。
   </UL>
   <H3>
-<!--  Installing from an <A NAME="rpm">rpm</A>-->
-      <A NAME="rpm">RPM</A> からのインストール方法
+<!--Installing from an <A NAME="rpm">rpm</A>-->
+    <A NAME="rpm">RPM</A> からのインストール方法
   </H3>
   <P>
 <!--
@@ -162,8 +162,8 @@
   (do not type the "$" or "#"): -->
   rpm パッケージのインストールは比較的単純な作業です。まず root になる必要があります。rpm を含むディレクトリに移動し、以下のようにタイプします (“<CODE>$</CODE>”や“<CODE>#</CODE>” はタイプしません):
   <BLOCKQUOTE>
-    <PRE># rpm -i fontforge-*.rpm
-  </PRE>
+    <PRE><FONT COLOR="Gray"># </FONT>rpm -i fontforge-*.rpm
+</PRE>
   </BLOCKQUOTE>
   <P>
 <!--
@@ -171,12 +171,12 @@
   then you should type: -->
   もし FontForge が既にインストールされていて、古いバージョンをアップデートする場合は、以下のようにタイプする必要があります:
   <BLOCKQUOTE>
-    <PRE># rpm -U fontforge-*.rpm
-  </PRE>
+    <PRE><FONT COLOR="Gray"># </FONT>rpm -U fontforge-*.rpm
+</PRE>
   </BLOCKQUOTE>
   <H3>
-<!--  Installing from an <A NAME="executable">executable</A> tarball -->
-      <A NAME="executable">実行可能ファイル</A> の tarball からのインストール方法
+<!--Installing from an <A NAME="executable">executable</A> tarball -->
+    <A NAME="executable">実行可能ファイル</A> の tarball からのインストール方法
   </H3>
   <P>
 <!--
@@ -186,18 +186,19 @@
   type the "$" or "#"): -->
   私の提供する Solaris パッケージは bzip 圧縮された tarball です (つまり、ファイルの拡張子は“.tar.bz2”です)。この手順を行うためには root になる必要があるでしょう。ダウンロード した tarball を含むディレクトリに移動して以下のようにタイプしてください (“<CODE>$</CODE>”や“<CODE>#</CODE>”は入力しません):
   <BLOCKQUOTE>
-    <PRE>$ bunzip2 fontforge-*.tar.bz2
-  $ tar xf fontforge-*.tar
-  $ cd fontforge
-  $ su
-  # ./doinstall
-  </PRE>
+    <PRE><FONT COLOR="Gray">$ </FONT>bunzip2 fontforge-*.tar.bz2
+<FONT COLOR="Gray">$ </FONT>tar xf fontforge-*.tar
+<FONT COLOR="Gray">$ </FONT>cd fontforge
+<FONT COLOR="Gray">$ </FONT>su
+<FONT COLOR="Gray"># </FONT>./doinstall
+</PRE>
   </BLOCKQUOTE>
   <P>
 <!--
   (Older versions may have an extension of .tgz. In this case you would replace
-  the first two lines with "<CODE>$ tar xfz fontforge-*.tgz</CODE>") -->
-  (より古いバージョンは .tgz という拡張子がついているはずです。その場合、最初の 2 行を“<CODE>$ tar xfz fontforge-*.tgz</CODE>”という行に置き換える必要があるでしょう)
+  the first two lines with "<CODE><FONT COLOR="Gray">$ </FONT>tar xfz
+  fontforge-*.tgz</CODE>") -->
+  (より古いバージョンは .tgz という拡張子がついているはずです。その場合、最初の 2 行を“<CODE><FONT COLOR="Gray"$ </FONT>tar xfz fontforge-*.tgz</CODE>”という行に置き換える必要があるでしょう)
   <P>
 <!--
   <FONT COLOR="Red"><STRONG>Caveat:</STRONG></FONT> My packages generally install
@@ -206,15 +207,15 @@
   <FONT COLOR="Red"><STRONG>警告:</STRONG></FONT> 私のパッケージは一般に /usr/local へインストールを行いますが、デフォルトの PATH には一般にここは含まれていません。例えば
   <BLOCKQUOTE>
     <PRE>PATH=$PATH:/usr/local/bin ; export PATH
-  </PRE>
+</PRE>
   </BLOCKQUOTE>
   <P>
 <!--
   to your ~/.bashrc file (or equivalent if you use a different shell). -->
   のような記述 (またはあなたの使用する別のシェルで等価な操作) を ~/.bashrc に加えておく必要があるでしょう
   <H3>
-<!--  What's in a <A NAME="package">package</A>-->
-      <A NAME="package">パッケージの内容</A>
+<!--What's in a <A NAME="package">package</A>-->
+    <A NAME="package">パッケージの内容</A>
   </H3>
   <P>
 <!--
@@ -246,8 +247,8 @@
       fontforge.1 ― FontForge のマニュアルページ
   </UL>
   <H3>
-<!--  <A NAME="Ports">Ports</A> that I am aware of -->
-      私が存在を知っている<A NAME="Ports">移植版</A>
+<!--<A NAME="Ports">Ports</A> that I am aware of -->
+    私が存在を知っている<A NAME="Ports">移植版</A>
   </H3>
   <P>
 <!--

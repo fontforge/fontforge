@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 26-Oct-2005 -->
-  <!-- AP: Last modified: 11-Dec-2005 -->
+  <!-- AP: Last modified: 24-Dec-2005 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Building FontForge from source</TITLE>-->
     <TITLE>ソースから FontForge を構築する方法</TITLE>
@@ -11,8 +11,8 @@
 <BODY>
 <DIV id="in">
   <H1 ALIGN=Center>
-<!--  FontForge build procedures-->
-      FontForge の構築手順
+<!--FontForge build procedures-->
+    FontForge の構築手順
   </H1>
   <UL>
     <LI>
@@ -74,8 +74,7 @@
       <A HREF="running.html">FontForge の起動方法</A>
   </UL>
   <H2>
-<!--
-    Before you build (on a <A NAME="src-mac">mac</A>)-->
+<!--Before you build (on a <A NAME="src-mac">mac</A>)-->
     (<A NAME="src-mac">Mac</A> 上で) ソースを構築する前の準備
   </H2>
   <P>
@@ -127,8 +126,8 @@
   type commands in that window (I know, it's very un-mac-like). -->
   次に、コマンドを入力するために Terminal のウィンドウを起動する必要があります (Terminal アプリケーションも、Applications フォルダの Utilities サブフォルダにあります)。(とても Mac らしくない行為ですが)。
   <H2>
-<!--  Before you build (on <A NAME="src-MS">MS/Windows)</A>-->
-     (<A NAME="src-MS">MS-Windows 上で) 構築する前の準備
+<!--Before you build (on <A NAME="src-MS">MS/Windows)</A>-->
+    <A NAME="src-MS">MS-Windows 上で) 構築する前の準備
   </H2>
   <P>
 <!--
@@ -170,12 +169,12 @@
   window and be prepared to type commands in it. -->
   それが終ったら構築のための用意はすべて整いました。cygwin の端末ウィンドウを開けば、コマンドを入力する準備ができています。
   <H2>
-<!--  Building and installing from <A NAME="src-source">source</A>-->
-      <A NAME="src-source">ソース</A>からの構築・インストール方法
+<!--Building and installing from <A NAME="src-source">source</A>-->
+    <A NAME="src-source">ソース</A>からの構築・インストール方法
   </H2>
   <H3>
-<!--  Obtaining a source <A NAME="src-distribution">distribution</A>-->
-      ソース<A NAME="src-distribution">配布物</A>の入手方法
+<!--Obtaining a source <A NAME="src-distribution">distribution</A>-->
+    ソース<A NAME="src-distribution">配布物</A>の入手方法
   </H3>
   <P>
 <!--
@@ -212,14 +211,14 @@
   put the file) and type (do not type "$"): -->
   これらのパッケージのどれかをダウンロードしたら、tarball をカレントディレクトリに移動するか、tarball があるディレクトリに移動 (私はあなたのブラウザがどこにファイルをダウンロードするか知らないので、ここで明白な手順を説明することはできません) して、以下のようにタイプしてください (“$”はタイプしません)
   <BLOCKQUOTE>
-    <PRE>$ bunzip2 fontforge*.tar.bz2
-  $ tar xf fontforge*.tar
-  $ cd fontforge-*
-  </PRE>
+    <PRE><FONT COLOR="Gray">$ </FONT>bunzip2 fontforge*.tar.bz2
+<FONT COLOR="Gray">$ </FONT>tar xf fontforge*.tar
+<FONT COLOR="Gray">$ </FONT>cd fontforge-*
+</PRE>
   </BLOCKQUOTE>
   <H4>
-<!--  from the <A NAME="src-cvs">cvs</A> tree-->
-      <A NAME="src-cvs">cvs</A> ツリーから
+<!--from the <A NAME="src-cvs">cvs</A> tree-->
+    <A NAME="src-cvs">cvs</A> ツリーから
   </H4>
   <P>
 <!--
@@ -229,11 +228,11 @@
   (do not type "$", when it asks for a password, just hit return): -->
   cvs は、多くのユーザがソースツリーを同時並行的に編集することができる便利な一連のユーティリティです。(ローカルな) あなた自身の (文書を含む) CVS ツリーのコピーを得るには、以下のようにタイプします (“$”をタイプしてはいけません。パスワードを聞かれたら、Returen キーだけを押してください):
   <BLOCKQUOTE>
-    <PRE>$ cvs -d:pserver:anonymous@cvs1.sourceforge.net:/cvsroot/fontforge login
-  CVS password:
-  $ cvs -d:pserver:anonymous@cvs1.sourceforge.net:/cvsroot/fontforge checkout fontforge
-  $ cd fontforge
-  </PRE>
+    <PRE><FONT COLOR="Gray">$ </FONT>cvs -d:pserver:anonymous@cvs1.sourceforge.net:/cvsroot/fontforge login
+CVS password:
+<FONT COLOR="Gray">$ </FONT>cvs -d:pserver:anonymous@cvs1.sourceforge.net:/cvsroot/fontforge checkout fontforge
+<FONT COLOR="Gray">$ </FONT>cd fontforge
+</PRE>
   </BLOCKQUOTE>
   <P>
 <!--
@@ -241,11 +240,11 @@
   recent version of the source by typing: -->
   ディレクトリを一度作成したら、以下のようにタイプすれば最新のバージョンを得るための更新を行うことができます:
   <BLOCKQUOTE>
-    <PRE>$ cd fontforge
-  $ cvs -d:pserver:anonymous@cvs1.sourceforge.net:/cvsroot/fontforge login
-  CVS password:
-  $ cvs -d:pserver:anonymous@cvs1.sourceforge.net:/cvsroot/fontforge update
-  </PRE>
+    <PRE><FONT COLOR="Gray">$ </FONT>cd fontforge
+<FONT COLOR="Gray">$ </FONT>cvs -d:pserver:anonymous@cvs1.sourceforge.net:/cvsroot/fontforge login
+CVS password:
+<FONT COLOR="Gray">$ </FONT>cvs -d:pserver:anonymous@cvs1.sourceforge.net:/cvsroot/fontforge update
+</PRE>
   </BLOCKQUOTE>
   <P>
 <!--
@@ -258,8 +257,8 @@
   <A HREF="http://www.cvshome.org/docs/manual/">CVS manual</A>. -->
   それに加えて、<A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/">CVS ツリーをオンラインで閲覧</A> することもできます。また、より詳しい情報については、<A HREF="http://sourceforge.net/cvs/?group_id=103338">sourceforge の解説</A> (この情報は古くなっており、正しいサーバ名は cvs.sf.net ではなく cvs1.sf.net です) を参照するか、<A HREF="http://www.cvshome.org/docs/manual/">CVS のマニュアル</A>を参照してください。
   <H3>
-<!--  <A NAME="src-Building">Building</A> &amp; installing it-->
-      <A NAME="src-Building">構築</A>・インストールの手順
+<!--<A NAME="src-Building">Building</A> &amp; installing it-->
+    <A NAME="src-Building">構築</A>・インストールの手順
   </H3>
   <P>
 <!--
@@ -269,9 +268,9 @@
   it (do not type the "$"): -->
   ここまでの手順で、ソースのシステムへのインストールは済んでおり、現在そのトップディレクトリにいるはずです。あなたは、configure (こ、システムをどのように使うかを指定するごく小さなプログラムです) を実行してパッケージの設定をしてから、プログラムを構築する必要があります (“$”はタイプしません):
   <BLOCKQUOTE>
-    <PRE>$ ./configure
-  $ make
-  </PRE>
+    <PRE><FONT COLOR="Gray">$ </FONT>./configure
+<FONT COLOR="Gray">$ </FONT>make
+</PRE>
   </BLOCKQUOTE>
   <P>
 <!--
@@ -279,23 +278,23 @@
   you have built. This should be done as root: -->
   これが<A NAME="su">終ったら</A>おそらく、構築したものをインストールすることになるでしょう。これは root として行う必要があります:
   <BLOCKQUOTE>
-    <PRE>$ su
-  password: ******
-  # make install
-  </PRE>
+    <PRE><FONT COLOR="Gray">$ </FONT>su
+<FONT COLOR="Gray">password:</FONT> ******
+<FONT COLOR="Gray"># </FONT>make install
+</PRE>
   </BLOCKQUOTE>
   <P>
 <!--
   On the mac the process is slightly different: -->
   Mac ではこの手順とは僅かに異なります:
   <BLOCKQUOTE>
-    <PRE>$ sudo make install
-  password: ******
-  </PRE>
+    <PRE><FONT COLOR="Gray">$ </FONT>sudo make install
+<FONT COLOR="Gray">password:</FONT> ******
+</PRE>
   </BLOCKQUOTE>
   <H3>
-<!--  More complicated <A NAME="src-installs">installs</A>-->
-      より複雑な<A NAME="src-installs">インストール方法</A>
+<!--More complicated <A NAME="src-installs">installs</A>-->
+    より複雑な<A NAME="src-installs">インストール方法</A>
   </H3>
   <P>
 <!--
@@ -303,16 +302,16 @@
   that might not be appropriate for your system. Type -->
   configure スクリプトを使って、あなたのシステムでは不要な各種の FontForge の機能をオフにすることができます。下記の説明より詳しいオプション一覧は
   <BLOCKQUOTE>
-    <PRE>$ configure --help
-  </PRE>
+    <PRE><FONT COLOR="Gray">$ </FONT>configure --help
+</PRE>
   </BLOCKQUOTE>
   <P>
 <!--
   for a complete list of options. Some of the most useful are described below. -->
   で得ることができます。最も利用価値の高いものを以下にいくつか挙げます。
   <H4>
-<!--  Building fontforge without X-->
-      FontForge を X 抜きで構築するには
+<!--Building fontforge without X-->
+    FontForge を X 抜きで構築するには
   </H4>
   <P>
 <!--
@@ -322,12 +321,12 @@
   section on scripting.</A> -->
   X11 をシステム上にインストールしたくない場合は、フォント操作用のスクリプトを実行できるコマンドラインツールとして FontForge を使用することができます。FontForge のスクリプト言語は<A HREF="scripting.html">スクリプト処理のセクション</A>に書かれています。
   <BLOCKQUOTE>
-    <PRE>$ configure --without-x
-  </PRE>
+    <PRE><FONT COLOR="Gray">$ </FONT>configure --without-x
+</PRE>
   </BLOCKQUOTE>
   <H4>
-<!--  Building fontforge to edit type3 fonts-->
-      Type3 フォントが編集可能な FontForge を構築するには
+<!--Building fontforge to edit type3 fonts-->
+    Type3 フォントが編集可能な FontForge を構築するには
   </H4>
   <P>
 <!--
@@ -336,12 +335,12 @@
   fonts. -->
   PostScript Type3 フォントを編集したいならば、通常のフォントで使用可能な描画モードを超えるアクセスができるように FontForge を設定することによってそれができます。
   <BLOCKQUOTE>
-    <PRE>$ configure --with-multilayer
-  </PRE>
+    <PRE><FONT COLOR="Gray">$ </FONT>configure --with-multilayer
+</PRE>
   </BLOCKQUOTE>
   <H4>
-<!--  Building fontforge to edit device tables-->
-      デバイステーブルが編集可能な FontForge を構築するには
+<!--Building fontforge to edit device tables-->
+    デバイステーブルが編集可能な FontForge を構築するには
   </H4>
   <P>
 <!--
@@ -349,24 +348,23 @@
   data at a specific pixel size) in OpenType fonts -->
   OpenType フォントにデバイステーブル (これを使うと特定のピクセルサイズにおけるカーニングデータを補正できます) を作成したいならば、以下のようにします。
   <BLOCKQUOTE>
-    <PRE>$ configure --with-devicetables
-  </PRE>
+    <PRE><FONT COLOR="Gray">$ </FONT>configure --with-devicetables
+</PRE>
   </BLOCKQUOTE>
   <H4>
-<!--  Installing FontForge somewhere other than <CODE>/usr/local</CODE>-->
-      FontForge をどこか <CODE>/usr/local</CODE> 以外の所へインストールするには
+<!--Installing FontForge somewhere other than <CODE>/usr/local</CODE>-->
+    FontForge をどこか <CODE>/usr/local</CODE> 以外の所へインストールするには
   </H4>
   <P>
 <!--
   If you want to install fontforge in a different directory (say in /usr/bin) -->
   FontForge を通常と異なるディレクトリ (以下の例では /usr/bin) にインストールしたいときには:
   <BLOCKQUOTE>
-    <PRE>$ configure --prefix=/usr
-  </PRE>
+    <PRE><FONT COLOR="Gray">$ </FONT>configure --prefix=/usr
+</PRE>
   </BLOCKQUOTE>
   <H4>
-<!--
-    Installing <A NAME="installing-documentation-cvs">documentation</A> from
+<!--Installing <A NAME="installing-documentation-cvs">documentation</A> from
     the cvs tree -->
     CVS ツリーからの<A NAME="installing-documentation-cvs">文書</A>のインストール方法
   </H4>
@@ -376,8 +374,8 @@
   to type -->
   システム上に CVS ツリーのコピーがあるときには、以下のようにタイプします。
   <BLOCKQUOTE>
-    <PRE># make install_docs
-  </PRE>
+    <PRE><FONT COLOR="Gray"># </FONT>make install_docs
+</PRE>
   </BLOCKQUOTE>
   <P>
 <!--
@@ -385,8 +383,8 @@
   "su" or "sudo" as appropriate for your system (<A HREF="#su">see above</A>). -->
   この場合にも、インストールを行うためには root になる必要があります。あなたのシステムに応じて“su”か“sudo”のどちらか適切なコマンドを使用してください (<A HREF="#su">上記</A>を参照のこと)
   <H2>
-<!--  <A NAME="Dependencies">Dependencies</A> (external libraries/helper programs)-->
-      <A NAME="Dependencies">依存性</A> (外部ライブラリ/補助プログラム)
+<!--<A NAME="Dependencies">Dependencies</A> (external libraries/helper programs)-->
+    <A NAME="Dependencies">依存性</A> (外部ライブラリ/補助プログラム)
   </H2>
   <P>
 <!--
@@ -634,9 +632,9 @@
   To install these, put them in a directory, and in that directory type: -->
   これらをインストールするには、それをらどこかのディレクトリに置き、そのディレクトリで以下のようにタイプします:
   <BLOCKQUOTE>
-    <PRE>    $ mkfontdir
-      $ xset fp+ `pwd`
-  </PRE>
+    <PRE>    <FONT COLOR="Gray">$ </FONT>mkfontdir
+    <FONT COLOR="Gray">$ </FONT>xset fp+ `pwd`
+</PRE>
   </BLOCKQUOTE>
   <P>
 <!--
@@ -644,8 +642,8 @@
   your machine (put it in your .xsession file). -->
   あなたのマシン上で X を起動したときに常に xset を確実に実行するように設定するべきでしょう (あなたの .xsession ファイルに追加してください)
   <H2>
-<!--  <A NAME="Documentation">Documentation</A>-->
-      <A NAME="Documentation">文書</A>
+<!--<A NAME="Documentation">Documentation</A>-->
+    <A NAME="Documentation">文書</A>
   </H2>
   <P>
 <!--
@@ -705,8 +703,8 @@
       CVS ツリーから文書をインストールする方法については、<A HREF="#installing-documentation-cvs">CVS からの文書のインストール</A>のセクションを参照してください。
   </UL>
   <H3>
-<!--  <A NAME="doc-tar">Installing a documentation tarball</A>-->
-      <A NAME="doc-tar">文書の tarball をインストールする方法</A>
+<!--<A NAME="doc-tar">Installing a documentation tarball</A>-->
+    <A NAME="doc-tar">文書の tarball をインストールする方法</A>
   </H3>
   <P>
 <!--
@@ -714,13 +712,13 @@
   should move to the directory containing it, and type: -->
   上記の方法で文書の tarball をダウンロードしたら、それを含むディレクトリに移動し、以下のようにタイプします。
   <BLOCKQUOTE>
-    <PRE>$ su
-  password: ******
-  # mkdir -p /usr/local/share/doc/fontforge
-  # mv fontforge_htdocs*.tgz /usr/local/share/doc/fontforge
-  # tar xfz fontforge_htdocs*.tgz
-  # rm fontforge_htdocs*.tgz
-  </PRE>
+    <PRE><FONT COLOR="Gray">$ </FONT>su
+password: ******
+<FONT COLOR="Gray"># </FONT>mkdir -p /usr/local/share/doc/fontforge
+<FONT COLOR="Gray"># </FONT>mv fontforge_htdocs*.tgz /usr/local/share/doc/fontforge
+<FONT COLOR="Gray"># </FONT>tar xfz fontforge_htdocs*.tgz
+<FONT COLOR="Gray"># </FONT>rm fontforge_htdocs*.tgz
+</PRE>
   </BLOCKQUOTE>
   <P>
 <!--
