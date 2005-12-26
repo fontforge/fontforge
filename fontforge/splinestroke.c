@@ -1557,20 +1557,21 @@ return( ssplus );
 	/* I can't always detect an overlap, so let's always do the remove */
 		/* Sigh, no. That is still too dangerous */
 	/* Note: SSFixupOverlap will remove internal/external as needed */
+	SplineSetReverse(ssminus);
+	if ( ssplus != NULL )
+	    SplineSetReverse(ssplus);
 	if ( si->removeoverlapifneeded && si->gottoobiglocal && ssplus!=NULL )
 	    ssplus = SSFixupOverlap(si,sc,ssplus,ssminus);
 	else if ( si->removeinternal && ssplus!=NULL ) {
 	    SplinePointListFree(ssminus);
-	    SplineSetReverse(ssplus);
 	} else if ( si->removeexternal ) {
 	    SplinePointListFree(ssplus);
+	    SplineSetReverse(ssminus);
 	    ssplus = ssminus;
 	} else {
-	    SplineSetReverse(ssminus);
-	    if ( ssplus != NULL ) {
-		SplineSetReverse(ssplus);
+	    if ( ssplus != NULL )
 		ssplus->next = ssminus;
-	    } else
+	    else
 		ssplus = ssminus;
 	    /* I used to do a splineset correct dir here on both, but */
 	    /*  that doesn't work always if a contour self intersects */
