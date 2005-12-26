@@ -1447,6 +1447,9 @@ void FontViewMenu_MetaFont(GtkMenuItem *menuitem, gpointer user_data) {
 #define MID_AnchorPairs	2022
 #define MID_FitToEm	2023
 #define MID_DisplaySubs	2024
+#define MID_32x8	2025
+#define MID_16x4	2026
+#define MID_8x2		2027
 #define MID_CharInfo	2201
 #define MID_FindProblems 2216
 #define MID_MetaFont	2217
@@ -4528,6 +4531,39 @@ void FontViewMenu_PixelSize(GtkMenuItem *menuitem, gpointer user_data) {
     }
 }
 
+
+# if defined(FONTFORGE_CONFIG_GDRAW)
+static void FVMenuWSize(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    int h,v;
+    extern int default_fv_col_count, default_fv_row_count;
+
+    if ( mi->mid == MID_32x8 ) {
+	h = 32; v=8;
+    } else if ( mi->mid == MID_16x4 ) {
+	h = 16; v=4;
+    } else {
+	h = 8; v=2;
+    }
+    GDrawResize(fv->gw,
+	    h*fv->cbw+1+GDrawPointsToPixels(fv->gw,_GScrollBar_Width),
+	    v*fv->cbh+1+fv->mbh+fv->infoh);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_WindowSize(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+    G_CONST_RETURN gchar *name = gtk_widget_get_name(menuitem);
+    int h=8,v=2;
+    extern int default_fv_col_count, default_fv_row_count;
+
+    sscanf(name,"%dx%d", &h, &v );
+    gtk_widget_set_size_request(fv->v,h*fv->cbw+1,v*fv->cbh+1);
+# endif
+    fv->sf->desired_col_cnt = default_fv_col_count = h;
+    fv->sf->desired_row_cnt = default_fv_row_count = v;
+
+    SavePrefs();
+}
+
 # if defined(FONTFORGE_CONFIG_GDRAW)
 static void FVMenuGlyphLabel(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
@@ -6612,6 +6648,10 @@ static GMenuItem vwlist[] = {
     { { (unichar_t *) N_("S_how H. Metrics..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuShowMetrics, MID_ShowHMetrics },
     { { (unichar_t *) N_("Show _V. Metrics..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'V' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuShowMetrics, MID_ShowVMetrics },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) N_("32x8 cell window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, '2' }, '%', ksm_shift|ksm_control, NULL, NULL, FVMenuWSize, MID_32x8 },
+    { { (unichar_t *) N_("1_6x4 cell window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, '3' }, '^', ksm_shift|ksm_control, NULL, NULL, FVMenuWSize, MID_16x4 },
+    { { (unichar_t *) N_("_8x2  cell window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, '3' }, '*', ksm_shift|ksm_control, NULL, NULL, FVMenuWSize, MID_8x2 },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_24 pixel outline"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, '2' }, '2', ksm_control, NULL, NULL, FVMenuSize, MID_24 },
     { { (unichar_t *) N_("_36 pixel outline"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, '3' }, '3', ksm_control, NULL, NULL, FVMenuSize, MID_36 },
     { { (unichar_t *) N_("_48 pixel outline"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, '4' }, '4', ksm_control, NULL, NULL, FVMenuSize, MID_48 },
@@ -6703,6 +6743,15 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	  case MID_ShowVMetrics:
 	    /*mi->ti.checked = fv->showvmetrics;*/
 	    mi->ti.disabled = !sf->hasvmetrics;
+	  break;
+	  case MID_32x8:
+	    mi->ti.checked = (fv->rowcnt==8 && fv->colcnt==32);
+	  break;
+	  case MID_16x4:
+	    mi->ti.checked = (fv->rowcnt==4 && fv->colcnt==16);
+	  break;
+	  case MID_8x2:
+	    mi->ti.checked = (fv->rowcnt==2 && fv->colcnt==8);
 	  break;
 	  case MID_24:
 	    mi->ti.checked = (fv->show!=NULL && fv->show==fv->filled && fv->show->pixelsize==24);
