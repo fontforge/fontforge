@@ -566,6 +566,10 @@ void ParseEncodingFile(char *filename) {
 return;
     }
     ch = getc(file);
+    if ( ch==EOF ) {
+	fclose(file);
+return;
+    }
     ungetc(ch,file);
     if ( ch=='#' || ch=='0' )
 	head = ParseConsortiumEncodingFile(file);
