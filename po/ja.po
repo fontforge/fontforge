@@ -820,6 +820,15 @@ msgstr "Unicodeによる(_U)"
 msgid "_Encoding Hex"
 msgstr "符号位置(16進)による(_E)"
 
+msgid "32x8 cell window"
+msgstr "32×8マス表示"
+
+msgid "1_6x4 cell window"
+msgstr "1_6×4マス表示"
+
+msgid "_8x2  cell window"
+msgstr " _8×2マス表示"
+
 msgid "_24 pixel outline"
 msgstr "_24 pixel outline"
 
