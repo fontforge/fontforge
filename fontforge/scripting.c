@@ -3314,6 +3314,36 @@ static void bSetUnicodeValue(Context *c) {
     SCLigDefault(sc);
 }
 
+static void bSetGlyphClass(Context *c) {
+    SplineChar *sc;
+    int class, gid, i;
+
+    if ( c->a.argc!=2 )
+	ScriptError( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str )
+	ScriptError(c,"Bad argument type");
+    if ( strmatch(c->a.vals[1].u.sval,"automatic")==0 )
+	class = 0;
+    else if ( strmatch(c->a.vals[1].u.sval,"none")==0 )
+	class = 1;
+    else if ( strmatch(c->a.vals[1].u.sval,"base")==0 )
+	class = 2;
+    else if ( strmatch(c->a.vals[1].u.sval,"ligature")==0 )
+	class = 3;
+    else if ( strmatch(c->a.vals[1].u.sval,"mark")==0 )
+	class = 4;
+    else if ( strmatch(c->a.vals[1].u.sval,"component")==0 )
+	class = 5;
+    else
+	ScriptErrorString(c,"Unknown glyph class: ", c->a.vals[1].u.sval );
+
+    for ( i=0; i<c->curfv->map->enccount; ++i ) {
+	if ( c->curfv->selected[i] && (gid=c->curfv->map->map[i])!=-1 &&
+		(sc = c->curfv->sf->glyphs[gid])!=NULL )
+	    sc->glyph_class = class;
+    }
+}
+
 static void bSetCharColor(Context *c) {
     SplineFont *sf = c->curfv->sf;
     EncMap *map = c->curfv->map;
@@ -6443,6 +6473,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "GetTeXParam", bGetTeXParam },
     { "SetCharName", bSetCharName },
     { "SetUnicodeValue", bSetUnicodeValue },
+    { "SetGlyphClass", bSetGlyphClass },
     { "SetCharColor", bSetCharColor },
     { "SetCharComment", bSetCharComment },
     { "BitmapsAvail", bBitmapsAvail },
