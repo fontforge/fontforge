@@ -5783,12 +5783,8 @@ return;
 
 	ugcd[7].gd.pos.x = 85; ugcd[7].gd.pos.y = 83;
 	ugcd[7].gd.flags = gg_visible | gg_enabled;
-	ulabel[7].text = (unichar_t *) _("Set From Val_ue");
-	ulabel[7].text_is_1byte = true;
-	ulabel[7].text_in_resource = true;
 	ugcd[7].gd.cid = CID_GClass;
 	ugcd[7].gd.u.list = glyphclasses;
-	ugcd[7].gd.label = &ulabel[7];
 	ugcd[7].creator = GListButtonCreate;
 
 	ugcd[8].gd.pos.x = 12; ugcd[8].gd.pos.y = 117;
