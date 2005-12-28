@@ -5545,6 +5545,7 @@ static void bAddAnchorPoint(Context *c) {
     if ( t==NULL )
 	ScriptErrorString(c,"This font does not contain an anchor class with this name: ", c->a.vals[1].u.sval );
 
+    sc = GetOneSelChar(c);
     if ( strmatch(c->a.vals[2].u.sval,"mark")==0 )
 	type = at_mark;
     else if ( strmatch(c->a.vals[2].u.sval,"basechar")==0 )
@@ -5557,7 +5558,21 @@ static void bAddAnchorPoint(Context *c) {
 	type = at_centry;
     else if ( strmatch(c->a.vals[2].u.sval,"cursexit")==0 )
 	type = at_cexit;
-    else
+    else if ( strmatch(c->a.vals[2].u.sval,"default")==0 ) {
+	int val = IsAnchorClassUsed(sc,t);
+	PST *pst;
+	for ( pst = sc->possub; pst!=NULL && pst->type!=pst_ligature; pst=pst->next );
+	type = t->type==act_mark ? at_basechar :
+		t->type==act_mkmk ? at_basemark :
+		at_centry;
+	if ( val==-2 && t->type==act_curs )
+	    type = at_cexit;
+	else if (( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 &&
+		iscombining(sc->unicodeenc)) || sc->width==0 )
+	    type = at_mark;
+	else if ( pst!=NULL && type==at_basechar )
+	    type = at_baselig;
+    } else
 	ScriptErrorString(c,"Unknown type for anchor point: ", c->a.vals[2].u.sval );
 
     if ( type== at_baselig ) {
@@ -5578,7 +5593,6 @@ static void bAddAnchorPoint(Context *c) {
 	    ( (type==at_centry || type==at_cexit) && t->type!=act_curs ))
 	ScriptError(c,"Type of anchor class does not match type requested for anchor point" );
 
-    sc = GetOneSelChar(c);
     for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
 	if ( ap->anchor == t ) {
 	    if ( type==at_centry || type==at_cexit ) {

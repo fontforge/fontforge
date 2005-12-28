@@ -561,7 +561,7 @@ static void ImgGetInfo(CharView *cv, ImageList *img) {
     GDrawDestroyWindow(gi.gw);
 }
 
-static int IsAnchorClassUsed(SplineChar *sc,AnchorClass *an) {
+int IsAnchorClassUsed(SplineChar *sc,AnchorClass *an) {
     AnchorPoint *ap;
     int waslig=0, sawentry=0, sawexit=0;
 
@@ -596,7 +596,7 @@ AnchorClass *AnchorClassUnused(SplineChar *sc,int *waslig) {
     int val, maybelig;
     SplineFont *sf;
     /* Are there any anchors with this name? If so can't reuse it */
-    /*  unless they are ligature anchores */
+    /*  unless they are ligature anchors */
     /*  or 'curs' anchors, which allow exactly two points (entry, exit) */
     /*  or 'mkmk' anchors, which allow a mark to be both a base and an attach */
 
@@ -641,8 +641,8 @@ return(NULL);
 	ap->type = at_cexit;
     else if ( waslig==-3 || an->type==act_curs )
 	ap->type = at_centry;
-    else if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 &&
-	    iscombining(sc->unicodeenc))
+    else if (( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 &&
+	    iscombining(sc->unicodeenc)) || sc->width==0 )
 	ap->type = at_mark;
     else if ( an->type==act_mkmk )
 	ap->type = at_basemark;

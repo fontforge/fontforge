@@ -1291,6 +1291,7 @@ extern void AnchorPointsFree(AnchorPoint *kp);
 extern AnchorPoint *AnchorPointsCopy(AnchorPoint *alist);
 extern void SFRemoveAnchorClass(SplineFont *sf,AnchorClass *an);
 extern int AnchorClassesNextMerge(AnchorClass *ac);
+extern int IsAnchorClassUsed(SplineChar *sc,AnchorClass *an);
 extern AnchorPoint *APAnchorClassMerge(AnchorPoint *anchors,AnchorClass *into,AnchorClass *from);
 extern void AnchorClassMerge(SplineFont *sf,AnchorClass *into,AnchorClass *from);
 extern void AnchorClassesFree(AnchorClass *kp);
