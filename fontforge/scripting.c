@@ -5595,10 +5595,14 @@ static void bAddAnchorPoint(Context *c) {
 	type = t->type==act_mark ? at_basechar :
 		t->type==act_mkmk ? at_basemark :
 		at_centry;
-	if ( val==-2 && t->type==act_curs )
+	if ( val<-1 && t->type==act_mkmk )
+	    ap->type = val==-2 ? at_basemark : at_mark;
+	else if ( val==-2 && t->type==act_curs )
 	    type = at_cexit;
+	else if ( val==-3 || t->type==act_curs )
+	    ap->type = at_centry;
 	else if (( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 &&
-		iscombining(sc->unicodeenc)) || sc->width==0 )
+		iscombining(sc->unicodeenc)) || sc->width==0 || sc->glyph_class==2 /* base class+1 */ )
 	    type = at_mark;
 	else if ( pst!=NULL && type==at_basechar )
 	    type = at_baselig;

@@ -642,7 +642,7 @@ return(NULL);
     else if ( waslig==-3 || an->type==act_curs )
 	ap->type = at_centry;
     else if (( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 &&
-	    iscombining(sc->unicodeenc)) || sc->width==0 )
+	    iscombining(sc->unicodeenc)) || sc->width==0 || sc->glyph_class==2 /* base class+1 */)
 	ap->type = at_mark;
     else if ( an->type==act_mkmk )
 	ap->type = at_basemark;
