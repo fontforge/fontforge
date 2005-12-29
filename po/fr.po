@@ -3731,22 +3731,18 @@ msgid "VWidth"
 msgstr "Chasse verticale"
 
 #: charview.c:6678
-#, fuzzy
 msgid "Hide Points"
 msgstr "Masquer les points"
 
 #: charview.c:6678
-#, fuzzy
 msgid "Show Points"
 msgstr "Montrer les points"
 
 #: charview.c:6682
-#, fuzzy
 msgid "Hide Rulers"
 msgstr "Masquer règles"
 
 #: charview.c:6682
-#, fuzzy
 msgid "Show Rulers"
 msgstr "Montrer règles"
 
@@ -4219,10 +4215,6 @@ msgstr "Afficher les compositions...(_D)"
 msgid "Form_er Glyph"
 msgstr "Glyphe _ancien"
 
-#: charview.c:7159 charview.c:8023
-msgid "Hide Poin_ts"
-msgstr "Masquer les p_oints"
-
 #: charview.c:7160
 msgid "_Number Points"
 msgstr "_Numéroter les Points"
@@ -4245,7 +4237,7 @@ msgstr "Com_binaisons"
 
 #: charview.c:7168 charview.c:8028
 msgid "Hide _Rulers"
-msgstr "Masque_r règles"
+msgstr "Masquer _règles"
 
 #: charview.c:7254 mm.c:522 mm.c:524 mm.c:529 mm.c:531 mm.c:544 mm.c:546
 #: mm.c:556 mm.c:558 mm.c:565 mm.c:567 mm.c:577 mm.c:579 mm.c:589 mm.c:591
