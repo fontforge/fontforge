@@ -46,7 +46,7 @@ static unichar_t wildimg[] = { '*', '.', '{',
 't','i','f','f',',',
 't','i','f',',',
 #endif
-'x','b','m',',', 'b','m','p', '}', '\0' };
+'x','p','m',',', 'x','b','m',',', 'b','m','p', '}', '\0' };
 static unichar_t wildtemplate[] = { '{','u','n','i',',','u',',','c','i','d',',','e','n','c','}','[','0','-','9','a','-','f','A','-','F',']','*', '.', '{',
 #ifndef _NO_LIBUNGIF
 'g','i','f',',',
@@ -994,11 +994,7 @@ static void ImportImage(CharView *cv,char *path) {
 
     image = GImageRead(path);
     if ( image==NULL ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	gwwv_post_error(_("Bad image file"),_("Bad image file: %.100s"), path);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_error(_("Bad image file"),_("Bad image file: %.100s"), path);
-#endif
 return;
     }
     layer = ly_back;
@@ -1017,11 +1013,7 @@ static int BVImportImage(BitmapView *bv,char *path) {
 
     image = GImageRead(path);
     if ( image==NULL ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	gwwv_post_error(_("Bad image file"),_("Bad image file: %.100s"), path);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_error(_("Bad image file"),_("Bad image file: %.100s"), path);
-#endif
 return(false);
     }
     base = image->list_len==0?image->u.image:image->u.images[0];
@@ -1300,11 +1292,7 @@ return( true );
 	if ( d->fv!=NULL ) {
 	    int toback = GGadgetIsChecked(d->background);
 	    if ( toback && strchr(temp,';')!=NULL && format<3 )
-#if defined(FONTFORGE_CONFIG_GDRAW)
 		gwwv_post_error(_("Only One Font"),_("Only one font may be imported into the background"));
-#elif defined(FONTFORGE_CONFIG_GTK)
-		gwwv_post_error(_("Only One Font"),_("Only one font may be imported into the background"));
-#endif
 	    else if ( format==fv_bdf )
 		d->done = FVImportBDF(d->fv,temp,false, toback);
 	    else if ( format==fv_ttf )
