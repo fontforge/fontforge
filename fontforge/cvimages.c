@@ -58,7 +58,7 @@ static unichar_t wildtemplate[] = { '{','u','n','i',',','u',',','c','i','d',',',
 't','i','f','f',',',
 't','i','f',',',
 #endif
-'x','b','m',',', 'b','m','p', '}', '\0' };
+'x','p','m',',', 'x','b','m',',', 'b','m','p', '}', '\0' };
 /* Hmm. Mac seems to use the extension 'art' for eps files sometimes */
 static unichar_t wildepstemplate[] = { '{','u','n','i',',','u',',','c','i','d',',','e','n','c','}','[','0','-','9','a','-','f','A','-','F',']','*', '.', '{', 'p','s',',', 'e','p','s',',','a','r','t','}',  0 };
 static unichar_t wildsvgtemplate[] = { '{','u','n','i',',','u',',','c','i','d',',','e','n','c','}','[','0','-','9','a','-','f','A','-','F',']','*', '.', 's', 'v','g',  0 };
