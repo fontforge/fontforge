@@ -994,7 +994,7 @@ return;
     fprintf( pi->out, "%%%%LanguageLevel: %d\n", pi->fontfile==NULL?1:
 	    pi->iscid?3: pi->twobyte?2: 1 );
     fprintf( pi->out, "%%%%Orientation: Portrait\n" );
-    fprintf( pi->out, "%%%%Pages: atend\n" );
+    fprintf( pi->out, "%%%%Pages: (atend)\n" );
     if ( pi->pt==pt_fontdisplay ) {
 	fprintf( pi->out, "%%%%Title: Font Display for %s\n", pi->sf->fullname );
 	fprintf( pi->out, "%%%%DocumentSuppliedResources: font %s\n", pi->sf->fontname );
