@@ -1182,13 +1182,15 @@ static void startpage(PI *pi ) {
     if ( pi->printtype==pt_pdf ) {
 	pdf_addpage(pi);
 	fprintf(pi->out,"q 1 0 0 1 40 %d cm\n", pi->pageheight-54 );
-	fprintf( pi->out, "BT\n  /FTB 12 Tf\n  34 -54.84 Td\n" );
+	fprintf( pi->out, "BT\n  /FTB 12 Tf\n  193.2 -10.92 Td\n" );
+	fprintf(pi->out,"(Font Display for %s) Tj\n", pi->sf->fontname );
+	fprintf( pi->out, "-159.8 -43.98 Td\n" );
 	if ( pi->iscid && !pi->istype42cid)
 	    for ( i=0; i<pi->max; ++i )
-		fprintf(pi->out,"%d 0 TD (%d) Tj\n", (pi->pointsize+pi->extrahspace), i );
+		fprintf(pi->out,"%d 0 Td (%d) Tj\n", (pi->pointsize+pi->extrahspace), i );
 	else
 	    for ( i=0; i<pi->max; ++i )
-		fprintf(pi->out,"%d 0 TD (%X) Tj\n", (pi->pointsize+pi->extrahspace), i );
+		fprintf(pi->out,"%d 0 Td (%X) Tj\n", (pi->pointsize+pi->extrahspace), i );
 	fprintf( pi->out, "ET\n" );
 return;
     }
