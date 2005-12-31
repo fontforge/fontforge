@@ -1585,7 +1585,8 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
     dumpf(dumpchar,data,"%%!PS-AdobeFont-1.0: %s %s\n", sf->fontname, sf->version?sf->version:"" );
     if ( format==ff_ptype0 && (map->enc->is_unicodebmp || map->enc->is_unicodefull))
 	dumpf(dumpchar,data,"%%%%DocumentNeededResources: font ZapfDingbats\n" );
-    dumpf(dumpchar,data, "%%%%DocumentSuppliedResources: font %s\n", sf->fontname );
+/*  dumpf(dumpchar,data, "%%%%DocumentSuppliedResources: font %s\n", sf->fontname );*/
+/* Werner says the above is not appropriate */
     dumpfontcomments(dumpchar,data,sf,format);
 
     cnt = 0;
@@ -2289,7 +2290,8 @@ static int dumpcidstuff(FILE *out,SplineFont *cidmaster,int flags,EncMap *map) {
 
     fprintf( out, "%%!PS-Adobe-3.0 Resource-CIDFont\n" );
     fprintf( out, "%%%%DocumentNeededResources: ProcSet (CIDInit)\n" );
-    fprintf( out, "%%%%DocumentSuppliedResources: CIDFont (%s)\n", cidmaster->fontname );
+/*  fprintf( out, "%%%%DocumentSuppliedResources: CIDFont (%s)\n", cidmaster->fontname ); */
+/* Werner says this is inappropriate */
     fprintf( out, "%%%%IncludeResource: ProcSet (CIDInit)\n" );
     fprintf( out, "%%%%BeginResource: CIDFont (%s)\n", cidmaster->fontname );
     dumpfontcomments((DumpChar) fputc, out, cidmaster, ff_cid );
