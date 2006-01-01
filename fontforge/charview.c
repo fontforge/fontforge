@@ -2331,7 +2331,7 @@ static int CheckPoint(FindSel *fs, SplinePoint *sp, SplineSet *spl) {
 	if ( !fs->seek_controls )
 return( true );
     }
-    if ( sp->selected && fs->select_controls ) {
+    if ( (sp->selected && fs->select_controls) || fs->all_controls ) {
 	if ( fs->xl<=sp->nextcp.x && fs->xh>=sp->nextcp.x &&
 		fs->yl<=sp->nextcp.y && fs->yh >= sp->nextcp.y ) {
 	    fs->p->sp = sp;
@@ -2344,6 +2344,7 @@ return( true );
 		fs->p->cp.x = sp->me.x + (sp->me.x-sp->prevcp.x);
 		fs->p->cp.y = sp->me.y + (sp->me.y-sp->prevcp.y);
 	    }
+	    sp->selected = true;
 return( true );
 	} else if ( fs->xl<=sp->prevcp.x && fs->xh>=sp->prevcp.x &&
 		fs->yl<=sp->prevcp.y && fs->yh >= sp->prevcp.y ) {
@@ -2357,6 +2358,7 @@ return( true );
 		fs->p->cp.x = sp->me.x + (sp->me.x-sp->nextcp.x);
 		fs->p->cp.y = sp->me.y + (sp->me.y-sp->nextcp.y);
 	    }
+	    sp->selected = true;
 return( true );
 	}
     }
@@ -2652,6 +2654,7 @@ return;
     if ( cv->active_tool == cvt_pointer ) {
 	fs.select_controls = true;
 	if ( event->u.mouse.state&ksm_alt ) fs.seek_controls = true;
+	if ( cv->showpointnumbers && cv->fv->sf->order2 ) fs.all_controls = true;
 	cv->lastselpt = NULL;
 	_CVTestSelectFromEvent(cv,&fs);
 	fs.p = &cv->p;

@@ -531,6 +531,7 @@ typedef struct findsel {
     real xl,xh, yl, yh;	/* One pixel fudge factor */
     unsigned int select_controls: 1;	/* notice control points */
     unsigned int seek_controls: 1;	/* notice control points before base points */
+    unsigned int all_controls: 1;	/* notice control points even if the base points aren't selected (in truetype point numbering mode where all cps are visible) */
     real scale;
     PressedOn *p;
 } FindSel;
