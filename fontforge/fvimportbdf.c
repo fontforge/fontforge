@@ -1,4 +1,4 @@
-/* Copyright (C) 2000-2005 by George Williams */
+/* Copyright (C) 2000-2006 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -289,7 +289,9 @@ static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b,EncMap *map,int dep
 	} else if ( strcmp(tok,"BITMAP")==0 )
     break;
     }
-    if ( xmax<xmin || ymax<ymin ) {
+    if ( xmax+1==xmin && ymax+1==ymin )
+	/* Empty glyph */;
+    else if ( xmax<xmin || ymax<ymin ) {
 	LogError( _("Bad bounding box for %s.\n"), name );
 return;
     }
