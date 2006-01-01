@@ -1256,6 +1256,17 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 	    SplineMake(cur->last,cur->first,is_order2);
 	    cur->last = cur->first;
 	}
+	for ( sp=cur->first; ; ) {
+	    if ( !sp->nonextcp && !sp->noprevcp && sp->ttfindex!=0xffff &&
+		    RealWithin((sp->prevcp.x+sp->nextcp.x)/2, sp->me.x, .1 ) &&
+		    RealWithin((sp->prevcp.y+sp->nextcp.y)/2, sp->me.y, .1 ) )
+		sp->dontinterpolate = true;
+	    if ( sp->next==NULL )
+	break;
+	    sp=sp->next->to;
+	    if ( sp==cur->first )
+	break;
+	}
     }
 return( head );
 }

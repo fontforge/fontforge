@@ -1755,9 +1755,9 @@ return;
     gi.bd = bd;
     gi.fudge = (sc->parent->ascent+sc->parent->descent)/500;
 
-    cnt = contourcnt = 0;
-    for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next, ++contourcnt )
-	cnt = SSPointCnt(ss,cnt,false);
+    contourcnt = 0;
+    for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next, ++contourcnt );
+    cnt = SSTtfNumberPoints(sc->layers[ly_fore].splines);
 
     contourends = galloc((contourcnt+1)*sizeof(int));
     bp = galloc(cnt*sizeof(BasePoint));
@@ -1765,7 +1765,7 @@ return;
     contourcnt = cnt = 0;
     for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
 	touched[cnt] |= tf_startcontour;
-	cnt = SSAddPoints(ss,cnt,bp,NULL,false);
+	cnt = SSAddPoints(ss,cnt,bp,NULL);
 	touched[cnt-1] |= tf_endcontour;
 	contourends[contourcnt++] = cnt-1;
     }

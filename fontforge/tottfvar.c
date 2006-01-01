@@ -307,11 +307,9 @@ return( true );
 
 static int SCPointCount(SplineChar *sc) {
     int ptcnt=0;
-    SplineSet *ss;
     RefChar *r;
 
-    for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next )
-	ptcnt = SSPointCnt(ss,ptcnt,true);		/* We've set the points so that the point count is valid */
+    ptcnt = SSTtfNumberPoints(sc->layers[ly_fore].splines);
     for ( r=sc->layers[ly_fore].refs; r!=NULL ; r=r->next )
 	++ptcnt;
 return( ptcnt );
