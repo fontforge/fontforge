@@ -1679,7 +1679,6 @@ struct freetype_raster *DebuggerCurrentRaster(TT_ExecContext exc,int depth) {
     ret->as = ceil(b.maxy/64.0);
     ret->lb = floor(b.minx/64.0);
 #else
-printf ( "rows=%d miny=%g maxy=%g, minx=%g\n", bitmap.rows, b.miny, b.maxy, b.minx );
     ret->as = bitmap.rows + rint(b.miny/64.0);
     ret->lb = rint(b.minx/64.0);
 #endif
