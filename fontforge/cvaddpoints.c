@@ -276,14 +276,16 @@ return;			/* We clicked on the active point, that's a no-op */
 		    sp->nextcp.x = sp->me.x - (sp->prevcp.x-sp->me.x);
 		    sp->nextcp.y = sp->me.y - (sp->prevcp.y-sp->me.y);
 		    sp->nonextcp = false;
+		    sp->pointtype = pt_curve;
 		}
 	    }
 	    if ( base->nonextcp )
 		base->nextcpdef = true;
 	    SplineMake(base,sp,order2);
-	    if ( cv->active_tool!=cvt_pen )
+	    if ( cv->active_tool!=cvt_pen ) {
 		SplineCharDefaultNextCP(base);
-	    SplineCharDefaultPrevCP(sp);
+		SplineCharDefaultPrevCP(sp);
+	    }
 	    ss->last = sp;
 	} else if ( cv->p.spl==sel ) {
 	    /* Close the current spline set */
@@ -481,12 +483,19 @@ return;
     SCUpdateAll(cv->sc);
 }
 
-void CVMouseMovePen(CharView *cv, PressedOn *p) {
+void CVMouseMovePen(CharView *cv, PressedOn *p, GEvent *event) {
     SplinePoint *active = cv->active_sp;
 
     if ( active==NULL )
 return;
     if ( cv->info.x==active->nextcp.x && cv->info.y==active->nextcp.y )
+return;
+    /* In order2 fonts when the user clicks with the pen tool we'd like to */
+    /*  leave it with the default cp (ie. the cp which makes the current point*/
+    /*  implicit) rather than moving the cp to the base point and losing the */
+    /*  curve */
+    if ( cv->info.x==active->me.x && cv->info.y==active->me.y &&
+	    event->type==et_mouseup && cv->sc->parent->order2 )
 return;
     cv->lastselpt = cv->active_sp;
 
