@@ -545,7 +545,8 @@ return;
     if ( sp->selected )
 	GDrawSetLineWidth(pixmap,selectedpointwidth);
     isfake = false;
-    if ( cv->fv->sf->order2 && cv->drawmode==dm_fore ) {
+    if ( cv->fv->sf->order2 && cv->drawmode==dm_fore &&
+	    cv->sc->layers[ly_fore].refs==NULL ) {
 	int mightbe_fake = sp->me.x==(sp->nextcp.x+sp->prevcp.x)/2 &&
 			   sp->me.y==(sp->nextcp.y+sp->prevcp.y)/2 ;
         if ( !mightbe_fake && sp->ttfindex==0xffff )
@@ -618,9 +619,11 @@ return;
     }
     GDrawSetLineWidth(pixmap,0);
     if ( (cv->showpointnumbers || cv->show_ft_results|| cv->dv ) && sp->ttfindex!=0xffff ) {
-	sprintf( buf,"%d", sp->ttfindex );
-	uc_strcpy(ubuf,buf);
-	GDrawDrawText(pixmap,x,y-6,ubuf,-1,NULL,col);
+	if ( sp->ttfindex==0xfffe )
+	    strcpy(buf,"?");
+	else
+	    sprintf( buf,"%d", sp->ttfindex );
+	GDrawDrawText8(pixmap,x,y-6,buf,-1,NULL,col);
     }
     if ( !onlynumber ) {
 	if ((( sp->roundx || sp->roundy ) &&
@@ -2782,38 +2785,55 @@ int SCNumberPoints(SplineChar *sc) {
 		sc->parent->mm->normal->glyphs[sc->orig_pos]->ttf_instrs : sc->ttf_instrs;
 
     if ( sc->parent->order2 ) {		/* TrueType and its complexities. I ignore svg here */
-	for ( ss = sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
-	    starts_with_cp = (ss->first->ttfindex == pnum+1 || ss->first->ttfindex==0xffff) &&
-		    !ss->first->noprevcp;
-	    startcnt = pnum;
-	    if ( starts_with_cp ) ++pnum;
-	    for ( sp=ss->first; ; ) {
-		if ( ((instrs!=NULL && sp->ttfindex==0xffff) ||
-			( sp!=ss->first && !sp->nonextcp && !sp->noprevcp &&
-			 !sp->roundx && !sp->roundy && !sp->dontinterpolate &&
-			 instrs==NULL )) &&
-			(sp->nextcp.x+sp->prevcp.x)/2 == sp->me.x &&
-			(sp->nextcp.y+sp->prevcp.y)/2 == sp->me.y )
-		    sp->ttfindex = 0xffff;
-		else
-		    sp->ttfindex = pnum++;
-		if ( instrs!=NULL && sp->nextcpindex!=0xffff && sp->nextcpindex!=0xfffe ) {
-		    if ( sp->nextcpindex!=startcnt || !starts_with_cp )
-			sp->nextcpindex = pnum++;
-		} else if ( (instrs==NULL || sp->nextcpindex==0xfffe) && !sp->nonextcp ) {
-		    if ( sp->next!=NULL )
-			sp->nextcpindex = pnum++;
-		} else
-		    sp->nextcpindex = 0xffff;
-		if ( sp->next==NULL )
-	    break;
-		sp = sp->next->to;
-		if ( sp==ss->first )
-	    break;
+	if ( sc->layers[ly_fore].refs!=NULL ) {
+	    /* if there are references there can't be splines. So if we've got*/
+	    /*  splines mark all point numbers on them as meaningless */
+	    for ( ss = sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
+		for ( sp=ss->first; ; ) {
+		    sp->ttfindex = 0xfffe;
+		    if ( !sp->nonextcp )
+			sp->nextcpindex = 0xfffe;
+		    if ( sp->next==NULL )
+		break;
+		    sp = sp->next->to;
+		    if ( sp==ss->first )
+		break;
+		}
+	    }
+	    for ( ref = sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
+		pnum = SCRefNumberPoints2(ref,pnum);
+	} else {
+	    for ( ss = sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
+		starts_with_cp = (ss->first->ttfindex == pnum+1 || ss->first->ttfindex==0xffff) &&
+			!ss->first->noprevcp;
+		startcnt = pnum;
+		if ( starts_with_cp ) ++pnum;
+		for ( sp=ss->first; ; ) {
+		    if ( ((instrs!=NULL && sp->ttfindex==0xffff) ||
+			    ( sp!=ss->first && !sp->nonextcp && !sp->noprevcp &&
+			     !sp->roundx && !sp->roundy && !sp->dontinterpolate &&
+			     instrs==NULL )) &&
+			    (sp->nextcp.x+sp->prevcp.x)/2 == sp->me.x &&
+			    (sp->nextcp.y+sp->prevcp.y)/2 == sp->me.y )
+			sp->ttfindex = 0xffff;
+		    else
+			sp->ttfindex = pnum++;
+		    if ( instrs!=NULL && sp->nextcpindex!=0xffff && sp->nextcpindex!=0xfffe ) {
+			if ( sp->nextcpindex!=startcnt || !starts_with_cp )
+			    sp->nextcpindex = pnum++;
+		    } else if ( (instrs==NULL || sp->nextcpindex==0xfffe) && !sp->nonextcp ) {
+			if ( sp->next!=NULL )
+			    sp->nextcpindex = pnum++;
+		    } else
+			sp->nextcpindex = 0xffff;
+		    if ( sp->next==NULL )
+		break;
+		    sp = sp->next->to;
+		    if ( sp==ss->first )
+		break;
+		}
 	    }
 	}
-	for ( ref = sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
-	    pnum = SCRefNumberPoints2(ref,pnum);
     } else {		/* cubic (PostScript/SVG) splines */
 	int layer;
 	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
@@ -2851,7 +2871,7 @@ int SCPointsNumberedProperly(SplineChar *sc) {
 
     if ( sc->layers[ly_fore].splines!=NULL &&
 	    sc->layers[ly_fore].refs!=NULL )
-return( false );
+return( false );	/* TrueType can't represent this, so always remove instructions. They can't be meaningful */
 
     for ( ss = sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
 	starts_with_cp = (ss->first->ttfindex == pnum+1 || ss->first->ttfindex==0xffff) &&
@@ -2889,8 +2909,21 @@ static void instrcheck(SplineChar *sc) {
     uint8 *instrs = sc->ttf_instrs==NULL && sc->parent->mm!=NULL && sc->parent->mm->apple ?
 		sc->parent->mm->normal->glyphs[sc->orig_pos]->ttf_instrs : sc->ttf_instrs;
     struct splinecharlist *dep;
+    int any_ptnumbers_shown = false;
+    CharView *cv;
 
-    if ( instrs==NULL && sc->dependents==NULL )
+    if ( !sc->parent->order2 )
+return;
+
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    for ( cv=sc->views; cv!=NULL; cv=cv->next )
+	if ( cv->showpointnumbers ) {
+	    any_ptnumbers_shown = true;
+    break;
+	}
+#endif	/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+
+    if ( instrs==NULL && sc->dependents==NULL && !any_ptnumbers_shown )
 return;
     /* If the points are no longer in order then the instructions are not valid */
     /*  (because they'll refer to the wrong points) and should be removed */
@@ -2906,6 +2939,7 @@ return;
 	    for ( ; ref!=NULL ; ref=ref->next )
 		ref->point_match = false;
 	}
+	SCNumberPoints(sc);
     }
 }
 
@@ -2947,17 +2981,6 @@ return;
 }
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-static void ptcountcheck(SplineChar *sc) {
-    CharView *cv;
-
-    for ( cv = sc->views; cv!=NULL ; cv=cv->next ) {
-	if ( cv->showpointnumbers ) {
-	    SCNumberPoints(sc);
-    break;
-	}
-    }
-}
-
 void CVSetCharChanged(CharView *cv,int changed) {
     FontView *fv = cv->fv;
     SplineFont *sf = fv->sf;
@@ -2981,13 +3004,11 @@ void CVSetCharChanged(CharView *cv,int changed) {
 		sf->changed = true;
 		if ( fv->cidmaster!=NULL )
 		    fv->cidmaster->changed = true;
-		if ( sc->ttf_instrs )
-		    instrcheck(sc);
-		SCDeGridFit(sc);
-		ptcountcheck(sc);
 	    }
 	}
 	if ( changed ) {
+	    instrcheck(sc);
+	    SCDeGridFit(sc);
 	    if ( sc->parent->onlybitmaps )
 		/* Do nothing */;
 	    else if ( sc->parent->multilayer || sc->parent->strokedfont || sc->parent->order2 )
@@ -3076,11 +3097,9 @@ void _SCCharChangedUpdate(SplineChar *sc,int changed) {
 	    FVSetTitle(sf->fv);
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	if ( changed ) {
-	    if ( sc->ttf_instrs )
-		instrcheck(sc);
+	    instrcheck(sc);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	    SCDeGridFit(sc);
-	    ptcountcheck(sc);
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	}
 	if ( !sc->parent->onlybitmaps && !sc->parent->multilayer && !sc->parent->strokedfont && !sc->parent->order2 )
