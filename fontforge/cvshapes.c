@@ -94,6 +94,11 @@ return;
 	    last = SPMakeTo(&cv->info,pt_corner,last,order2);
 	} else {
 	    last->pointtype = pt_tangent;
+	    /* This isn't really right for quadratic splines */
+	    /* the curves aren't quarter circles. But I'm */
+	    /* guessing that radius is generally small enough */
+	    /* that the extra points (see elipse) will cause */
+	    /* worse rounding errors... !!!! */
 	    last = SPMakeTo(&cv->info,pt_tangent,last,order2);
 	    last = SPMakeTo(&cv->info,pt_tangent,last,order2);
 	    last = SPMakeTo(&cv->info,pt_tangent,last,order2);
