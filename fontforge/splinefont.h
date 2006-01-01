@@ -622,7 +622,8 @@ typedef struct splinepoint {
     uint16 ptindex;		/* Temporary value used by metafont routine */
     uint16 ttfindex;		/* Truetype point index */
 	/* Special values 0xffff => point implied by averaging control points */
-	/*		  0xfffe => point created with no real number */
+	/*		  0xfffe => point created with no real number yet */
+	/* (or perhaps point in context where no number is possible as in a glyph with points & refs) */
     uint16 nextcpindex;		/* Truetype point index */
     struct spline *next;
     struct spline *prev;
