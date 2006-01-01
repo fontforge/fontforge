@@ -1029,7 +1029,7 @@ extern int  CVMoveSelection(CharView *cv, real dx, real dy, uint32 input_state);
 extern int  CVTestSelectFromEvent(CharView *cv,GEvent *event);
 extern void CVMouseDownPoint(CharView *cv);
 extern void CVMouseMovePoint(CharView *cv,PressedOn *);
-extern void CVMouseMovePen(CharView *cv, PressedOn *p);
+extern void CVMouseMovePen(CharView *cv, PressedOn *p, GEvent *event);
 extern void CVMouseUpPoint(CharView *cv,GEvent *event);
 extern void CVMouseUpPointer(CharView *cv );
 extern int  CVMouseMovePointer(CharView *cv, GEvent *event);

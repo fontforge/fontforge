@@ -3325,7 +3325,7 @@ return;
 	CVMouseMovePoint(cv,&p);
       break;
       case cvt_pen:
-	CVMouseMovePen(cv,&p);
+	CVMouseMovePen(cv,&p,event);
       break;
       case cvt_ruler:
 	CVMouseMoveRuler(cv,event);
