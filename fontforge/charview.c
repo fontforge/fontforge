@@ -547,8 +547,9 @@ return;
     isfake = false;
     if ( cv->fv->sf->order2 && cv->drawmode==dm_fore &&
 	    cv->sc->layers[ly_fore].refs==NULL ) {
-	int mightbe_fake = sp->me.x==(sp->nextcp.x+sp->prevcp.x)/2 &&
-			   sp->me.y==(sp->nextcp.y+sp->prevcp.y)/2 ;
+	int mightbe_fake = RealWithin(sp->me.x,(sp->nextcp.x+sp->prevcp.x)/2,.1) &&
+			   RealWithin(sp->me.y,(sp->nextcp.y+sp->prevcp.y)/2,.1) ;
+	if ( sp->nonextcp || sp->noprevcp ) mightbe_fake = false;
         if ( !mightbe_fake && sp->ttfindex==0xffff )
 	    sp->ttfindex = 0xfffe;	/* if we have no instructions we won't call instrcheck and won't notice when a point stops being fake */
 	else if ( mightbe_fake && cv->sc->ttf_instrs_len==0 )
@@ -2813,8 +2814,8 @@ int SCNumberPoints(SplineChar *sc) {
 			    ( sp!=ss->first && !sp->nonextcp && !sp->noprevcp &&
 			     !sp->roundx && !sp->roundy && !sp->dontinterpolate &&
 			     instrs==NULL )) &&
-			    (sp->nextcp.x+sp->prevcp.x)/2 == sp->me.x &&
-			    (sp->nextcp.y+sp->prevcp.y)/2 == sp->me.y )
+			    RealWithin((sp->nextcp.x+sp->prevcp.x)/2, sp->me.x,.1) &&
+			    RealWithin((sp->nextcp.y+sp->prevcp.y)/2, sp->me.y,.1) )
 			sp->ttfindex = 0xffff;
 		    else
 			sp->ttfindex = pnum++;
@@ -2880,8 +2881,9 @@ return( false );	/* TrueType can't represent this, so always remove instructions
 	for ( sp=ss->first; ; ) {
 	    skipit = sp!=ss->first && !sp->nonextcp && !sp->noprevcp &&
 		    !sp->roundx && !sp->roundy && !sp->dontinterpolate &&
-		    (sp->nextcp.x+sp->prevcp.x)/2 == sp->me.x &&
-		    (sp->nextcp.y+sp->prevcp.y)/2 == sp->me.y;
+		    RealWithin((sp->nextcp.x+sp->prevcp.x)/2, sp->me.x, .1) &&
+		    RealWithin((sp->nextcp.y+sp->prevcp.y)/2, sp->me.y, .1);
+	    if ( sp->nonextcp || sp->noprevcp ) skipit = false;
 	    if ( sp->ttfindex==0xffff && skipit )
 		/* Doesn't count */;
 	    else if ( sp->ttfindex!=pnum )

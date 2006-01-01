@@ -324,6 +324,12 @@ return;			/* We clicked on the active point, that's a no-op */
 		for ( temp = cv->layerheads[cv->drawmode]->splines; temp->next!=cv->p.spl; temp = temp->next );
 		temp->next = cv->p.spl->next;
 	    }
+	    if ( order2 && (!RealNear(base->nextcp.x,sp->prevcp.x) ||
+		    !RealNear(base->nextcp.y,sp->prevcp.y)) ) {
+		base->nonextcp = sp->noprevcp = true;
+		base->nextcp = base->me;
+		sp->prevcp = sp->me;
+	    }
 	    SplineMake(base,sp,order2);
 	    if ( cv->active_tool!=cvt_pen )
 		SplineCharDefaultNextCP(base);
@@ -467,7 +473,7 @@ return;
     if ( !cv->recentchange ) CVPreserveState(cv);
 
     CVAdjustPoint(cv,active);
-    if (( active->next==NULL || active->prev==NULL ) && merge!=NULL &&
+    if (( active->next==NULL || active->prev==NULL ) && merge!=NULL && p->spl!=NULL &&
 	    merge!=active &&
 	    (merge->next==NULL || merge->prev==NULL )) {
 	CVMergeSplineSets(cv,active,activess,merge,p->spl);

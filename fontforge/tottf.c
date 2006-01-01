@@ -655,41 +655,6 @@ static SplineSet *SCttfApprox(SplineChar *sc) {
 return( head );
 }
 
-static int BadCount(SplineSet *ttfss) {
-    SplinePoint *sp, *first=NULL;
-    int cnt=0, starts_with_cp;
-    SplineSet *ss;
-
-    for ( ss = ttfss ; ss!=NULL; ss=ss->next ) {
-	starts_with_cp = (ss->first->ttfindex == cnt+1 || ss->first->ttfindex==0xffff) &&
-		!ss->first->noprevcp;
-
-	for ( sp=ss->first; sp!=first ; ) {
-	    if ( sp->ttfindex==0xfffe )
-return( true );
-	    else if ( sp->ttfindex!=0xffff ) {
-		if ( cnt!=sp->ttfindex )
-return( true );
-		cnt = sp->ttfindex+1;
-	    } else if (  sp==ss->first || sp->nonextcp || sp->noprevcp ||
-			(sp->dontinterpolate || sp->roundx || sp->roundy) ||
-			(sp->prevcp.x+sp->nextcp.x)/2!=sp->me.x ||
-			(sp->prevcp.y+sp->nextcp.y)/2!=sp->me.y ) {
-return( true );
-	    }
-	    if ( !sp->nonextcp ) ++cnt;
-	    if ( sp->next==NULL )
-	break;
-	    if ( first==NULL ) first = sp;
-	    sp = sp->next->to;
-	}
-
-	if ( starts_with_cp )	/* We'll have counted it twice */
-	    --cnt;
-    }
-return( false );
-}
-
 int SSPointCnt(SplineSet *ss,int startcnt, int has_instrs) {
     SplinePoint *sp, *first=NULL;
     int cnt;
@@ -700,8 +665,8 @@ int SSPointCnt(SplineSet *ss,int startcnt, int has_instrs) {
 	} else if ( (!has_instrs || sp->ttfindex==0xfffe) &&
 		    ( sp==ss->first || sp->nonextcp || sp->noprevcp ||
 		    (sp->dontinterpolate || sp->roundx || sp->roundy) ||
-		    (sp->prevcp.x+sp->nextcp.x)/2!=sp->me.x ||
-		    (sp->prevcp.y+sp->nextcp.y)/2!=sp->me.y )) {
+		    !RealWithin((sp->prevcp.x+sp->nextcp.x)/2, sp->me.x, .1 ) ||
+		    !RealWithin((sp->prevcp.y+sp->nextcp.y)/2, sp->me.y, .1 ) )) {
 	    ++cnt;
 	}
 	if ( has_instrs && sp->nextcpindex!=0xffff && sp->nextcpindex!=0xfffe ) {
@@ -1217,9 +1182,9 @@ return;
 	initforinstrs(sc);
 
     contourcnt = ptcnt = 0;
+    if ( isc->ttf_instrs==NULL && gi->has_instrs && sc->parent->order2 )
+	use_ptcnt = SCPointsNumberedProperly(sc);
     ttfss = SCttfApprox(sc);
-    if ( isc->ttf_instrs==NULL && gi->has_instrs )
-	use_ptcnt = !BadCount(ttfss);
     for ( ss=ttfss; ss!=NULL; ss=ss->next ) {
 	++contourcnt;
 	ptcnt = SSPointCnt(ss,ptcnt,use_ptcnt);
