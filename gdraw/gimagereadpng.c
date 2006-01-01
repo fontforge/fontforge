@@ -1,4 +1,4 @@
-/* Copyright (C) 2000-2005 by George Williams */
+/* Copyright (C) 2000-2006 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -56,6 +56,10 @@ static void (*_png_set_packing)(png_structp);
 static void (*_png_set_filler)(png_structp,png_uint_32,int);
 static void (*_png_read_image)(png_structp,png_bytep*);
 static void (*_png_read_end)(png_structp,png_infop);
+
+#ifndef RTLD_GLOBAL		/* OSF on Alpha doesn't define this */
+# define RTLD_GLOBAL 0
+#endif
 
 static int loadpng() {
     /* Oops someone might have libpng without libz. If we try to load libpng */
