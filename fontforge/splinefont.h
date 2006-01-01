@@ -615,7 +615,7 @@ typedef struct splinepoint {
     unsigned int flexx: 1;
     unsigned int roundx: 1;	/* For true type hinting */
     unsigned int roundy: 1;	/* For true type hinting */
-    unsigned int dontinterpolate: 1;	/* temporary in ttf output */
+    unsigned int dontinterpolate: 1;	/* in ttf, don't imply point by interpolating between cps */
     unsigned int ticked: 1;
     unsigned int watched: 1;
 	/* 1 bits left... */
@@ -1810,6 +1810,7 @@ extern void AnchorPosFree(AnchorPos *apos);
 
 extern int SFCloseAllInstrs(SplineFont *sf);
 extern void SCMarkInstrDlgAsChanged(SplineChar *sc);
+extern int SSTtfNumberPoints(SplineSet *ss);
 extern int  SCNumberPoints(SplineChar *sc);
 extern int  SCPointsNumberedProperly(SplineChar *sc);
 extern int  ttfFindPointInSC(SplineChar *sc,int pnum,BasePoint *pos,

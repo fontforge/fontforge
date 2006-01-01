@@ -348,7 +348,8 @@ static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
 	    fprintf(sfd, "%d", sp->pointtype|(sp->selected<<2)|
 			(sp->nextcpdef<<3)|(sp->prevcpdef<<4)|
 			(sp->roundx<<5)|(sp->roundy<<6)|
-			(sp->ttfindex==0xffff?(1<<7):0) );
+			(sp->ttfindex==0xffff?(1<<7):0)|
+			(sp->dontinterpolate<<8) );
 	    if ( order2 ) {
 		if ( sp->ttfindex!=0xfffe && sp->nextcpindex!=0xfffe ) {
 		    putc(',',sfd);
@@ -2145,6 +2146,7 @@ static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd) {
 	    pt->prevcpdef = val&0x10?1:0;
 	    pt->roundx = val&0x20?1:0;
 	    pt->roundy = val&0x40?1:0;
+	    pt->dontinterpolate = val&0x100?1:0;
 	    if ( val&0x80 )
 		pt->ttfindex = 0xffff;
 	    else
@@ -2608,6 +2610,29 @@ return;
 	map->map[enc] = orig_pos;
 }
 
+static void SCDefaultInterpolation(SplineChar *sc) {
+    SplineSet *cur;
+    SplinePoint *sp;
+    /* We used not to store the dontinterpolate bit. We used to use the */
+    /* presence or absence of instructions as that flag */
+
+    if ( sc->ttf_instrs_len!=0 ) {
+	for ( cur=sc->layers[ly_fore].splines; cur!=NULL; cur=cur->next ) {
+	    for ( sp=cur->first; ; ) {
+		if ( !sp->nonextcp && !sp->noprevcp && sp->ttfindex!=0xffff &&
+			RealWithin((sp->prevcp.x+sp->nextcp.x)/2, sp->me.x, .1 ) &&
+			RealWithin((sp->prevcp.y+sp->nextcp.y)/2, sp->me.y, .1 ) )
+		    sp->dontinterpolate = true;
+		if ( sp->next==NULL )
+	    break;
+		sp=sp->next->to;
+		if ( sp==cur->first )
+	    break;
+	    }
+	}
+    }
+}
+
 static int orig_pos;
 
 static SplineChar *SFDGetChar(FILE *sfd,SplineFont *sf) {
@@ -3038,6 +3063,8 @@ return( NULL );
 		sc = NULL;
 	    }
 #endif
+	    if ( sf->order2 )
+		SCDefaultInterpolation(sc);
 return( sc );
 	} else {
 	    geteol(sfd,tok);

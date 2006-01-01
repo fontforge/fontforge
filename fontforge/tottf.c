@@ -655,34 +655,6 @@ static SplineSet *SCttfApprox(SplineChar *sc) {
 return( head );
 }
 
-int SSPointCnt(SplineSet *ss,int startcnt, int has_instrs) {
-    SplinePoint *sp, *first=NULL;
-    int cnt;
-
-    for ( sp=ss->first, cnt=startcnt; sp!=first ; ) {
-	if ( has_instrs && sp->ttfindex!=0xffff && sp->ttfindex!=0xfffe ) {
-	    cnt = sp->ttfindex+1;
-	} else if ( (!has_instrs || sp->ttfindex==0xfffe) &&
-		    ( sp==ss->first || sp->nonextcp || sp->noprevcp ||
-		    (sp->dontinterpolate || sp->roundx || sp->roundy) ||
-		    !RealWithin((sp->prevcp.x+sp->nextcp.x)/2, sp->me.x, .1 ) ||
-		    !RealWithin((sp->prevcp.y+sp->nextcp.y)/2, sp->me.y, .1 ) )) {
-	    ++cnt;
-	}
-	if ( has_instrs && sp->nextcpindex!=0xffff && sp->nextcpindex!=0xfffe ) {
-	    if ( sp->nextcpindex!=startcnt )
-		cnt = sp->nextcpindex+1;
-	} else if ( !sp->nonextcp )
-	    ++cnt;
-	if ( sp->next==NULL )
-    break;
-	if ( first==NULL ) first = sp;
-	sp = sp->next->to;
-    }
-
-return( cnt );
-}
-
 #define _On_Curve	1
 #define _X_Short	2
 #define _Y_Short	4
@@ -690,31 +662,29 @@ return( cnt );
 #define _X_Same		0x10
 #define _Y_Same		0x20
 
-int SSAddPoints(SplineSet *ss,int ptcnt,BasePoint *bp, char *flags,
-	int has_instrs) {
+int SSAddPoints(SplineSet *ss,int ptcnt,BasePoint *bp, char *flags) {
     SplinePoint *sp, *first, *nextsp;
     int startcnt = ptcnt;
 
-    if ( has_instrs && ss->first->prev!=NULL &&
+    if ( ss->first->prev!=NULL &&
 	    ss->first->prev->from->nextcpindex==startcnt ) {
 	if ( flags!=NULL ) flags[ptcnt] = 0;
 	bp[ptcnt].x = rint(ss->first->prevcp.x);
 	bp[ptcnt++].y = rint(ss->first->prevcp.y);
-    } else if ( has_instrs && ss->first->ttfindex!=ptcnt && ss->first->ttfindex!=0xfffe )
+    } else if ( ss->first->ttfindex!=ptcnt && ss->first->ttfindex!=0xfffe )
 	IError("Unexpected point count in SSAddPoints" );
 
     first = NULL;
     for ( sp=ss->first; sp!=first ; ) {
-	if ( has_instrs && sp->ttfindex!=0xffff ) {
+	if ( sp->ttfindex!=0xffff ) {
 	    if ( flags!=NULL ) flags[ptcnt] = _On_Curve;
 	    bp[ptcnt].x = rint(sp->me.x);
 	    bp[ptcnt].y = rint(sp->me.y);
 	    sp->ttfindex = ptcnt++;
-	} else if ( !has_instrs &&
-		    ( sp==ss->first || sp->nonextcp || sp->noprevcp ||
+	} else if ( ( sp->nonextcp || sp->noprevcp ||
 		    (sp->dontinterpolate || sp->roundx || sp->roundy) ||
-		    (sp->prevcp.x+sp->nextcp.x)/2!=sp->me.x ||
-		    (sp->prevcp.y+sp->nextcp.y)/2!=sp->me.y )) {
+		    !RealWithin((sp->prevcp.x+sp->nextcp.x)/2, sp->me.x, .1) ||
+		    !RealWithin((sp->prevcp.y+sp->nextcp.y)/2, sp->me.y, .1) )) {
 	    /* If an on curve point is midway between two off curve points*/
 	    /*  it may be omitted and will be interpolated on read in */
 	    if ( flags!=NULL ) flags[ptcnt] = _On_Curve;
@@ -723,12 +693,11 @@ int SSAddPoints(SplineSet *ss,int ptcnt,BasePoint *bp, char *flags,
 	    sp->ttfindex = ptcnt++;
 	}
 	nextsp = sp->next!=NULL ? sp->next->to : NULL;
-	if ( has_instrs && sp->nextcpindex == startcnt )
+	if ( sp->nextcpindex == startcnt )
 	    /* This control point is actually our first point, not our last */
     break;
-	if ( (has_instrs && sp->nextcpindex !=0xffff && sp->nextcpindex!=0xfffe ) ||
-		(has_instrs && !sp->nonextcp && sp->nextcpindex==0xfffe ) ||
-		(!has_instrs && !sp->nonextcp )) {
+	if ( (sp->nextcpindex !=0xffff && sp->nextcpindex!=0xfffe ) ||
+		!sp->nonextcp ) {
 	    if ( flags!=NULL ) flags[ptcnt] = 0;
 	    bp[ptcnt].x = rint(sp->nextcp.x);
 	    bp[ptcnt++].y = rint(sp->nextcp.y);
@@ -1124,9 +1093,9 @@ static void dumpcomposite(SplineChar *sc, struct glyphinfo *gi) {
 	} else if ( flags&_SCALE ) {
 	    put2d14(gi->glyphs,ref->transform[0]);
 	}
-	for ( ss=ref->layers[0].splines, sptcnt=0; ss!=NULL ; ss=ss->next ) {
+	sptcnt = SSTtfNumberPoints(ref->layers[0].splines);
+	for ( ss=ref->layers[0].splines; ss!=NULL ; ss=ss->next ) {
 	    ++ctcnt;
-	    sptcnt = SSPointCnt(ss,sptcnt,ref->sc->ttf_instrs_len!=0 || gi->has_instrs );
 	}
 	if ( sc->parent->order2 )
 	    ptcnt += sptcnt;
@@ -1161,7 +1130,6 @@ static void dumpglyph(SplineChar *sc, struct glyphinfo *gi) {
     char *fs;
     SplineChar *isc = sc->ttf_instrs==NULL && sc->parent->mm!=NULL && sc->parent->mm->apple ?
 		sc->parent->mm->normal->glyphs[sc->orig_pos] : sc;
-    int use_ptcnt = isc->ttf_instrs!=NULL || gi->has_instrs;
 
 /* I haven't seen this documented, but ttf rasterizers are unhappy with a */
 /*  glyph that consists of a single point. Glyphs containing two single points*/
@@ -1181,13 +1149,10 @@ return;
     if ( isc->ttf_instrs!=NULL )
 	initforinstrs(sc);
 
-    contourcnt = ptcnt = 0;
-    if ( isc->ttf_instrs==NULL && gi->has_instrs && sc->parent->order2 )
-	use_ptcnt = SCPointsNumberedProperly(sc);
     ttfss = SCttfApprox(sc);
-    for ( ss=ttfss; ss!=NULL; ss=ss->next ) {
+    ptcnt = SSTtfNumberPoints(ttfss);
+    for ( ss=ttfss, contourcnt=0; ss!=NULL; ss=ss->next ) {
 	++contourcnt;
-	ptcnt = SSPointCnt(ss,ptcnt,use_ptcnt);
     }
     origptcnt = ptcnt;
 
@@ -1209,7 +1174,7 @@ return;
     fs = galloc(ptcnt);
     ptcnt = contourcnt = 0;
     for ( ss=ttfss; ss!=NULL; ss=ss->next ) {
-	ptcnt = SSAddPoints(ss,ptcnt,bp,fs,use_ptcnt);
+	ptcnt = SSAddPoints(ss,ptcnt,bp,fs);
 	putshort(gi->glyphs,ptcnt-1);
     }
     if ( ptcnt!=origptcnt )

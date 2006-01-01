@@ -549,12 +549,10 @@ return;
 	    cv->sc->layers[ly_fore].refs==NULL ) {
 	int mightbe_fake = RealWithin(sp->me.x,(sp->nextcp.x+sp->prevcp.x)/2,.1) &&
 			   RealWithin(sp->me.y,(sp->nextcp.y+sp->prevcp.y)/2,.1) ;
-	if ( sp->nonextcp || sp->noprevcp ) mightbe_fake = false;
+	if ( sp->nonextcp || sp->noprevcp || sp->dontinterpolate ) mightbe_fake = false;
         if ( !mightbe_fake && sp->ttfindex==0xffff )
 	    sp->ttfindex = 0xfffe;	/* if we have no instructions we won't call instrcheck and won't notice when a point stops being fake */
-	else if ( mightbe_fake && cv->sc->ttf_instrs_len==0 )
-	    /* some instructions actually move points that could otherwise */
-	    /*  have been implied. */
+	else if ( mightbe_fake )
 	    sp->ttfindex = 0xffff;
 	isfake = sp->ttfindex==0xffff;
     }
@@ -2776,14 +2774,50 @@ static int SCRefNumberPoints2(RefChar *ref,int pnum) {
 return( _SCRefNumberPoints2(&rss,ref->sc,pnum));
 }
 
+int SSTtfNumberPoints(SplineSet *ss) {
+    int pnum=0;
+    SplinePoint *sp;
+    int starts_with_cp, startcnt;
+
+    for ( ; ss!=NULL; ss=ss->next ) {
+	starts_with_cp = !ss->first->noprevcp &&
+		((ss->first->ttfindex == pnum+1 && ss->first->prev->from->nextcpindex==pnum ) ||
+		((ss->first->ttfindex==0xffff ||
+		    ( !ss->first->nonextcp && !ss->first->noprevcp &&
+		     !ss->first->roundx && !ss->first->roundy && !ss->first->dontinterpolate )) &&
+		    RealWithin((ss->first->nextcp.x+ss->first->prevcp.x)/2, ss->first->me.x,.1) &&
+		    RealWithin((ss->first->nextcp.y+ss->first->prevcp.y)/2, ss->first->me.y,.1) ));
+	startcnt = pnum;
+	if ( starts_with_cp )
+	    ss->first->prev->from->nextcpindex = pnum++;
+	for ( sp=ss->first; ; ) {
+	    if ( (sp->ttfindex==0xffff ||
+		    ( !sp->nonextcp && !sp->noprevcp &&
+		     !sp->roundx && !sp->roundy && !sp->dontinterpolate )) &&
+		    RealWithin((sp->nextcp.x+sp->prevcp.x)/2, sp->me.x,.1) &&
+		    RealWithin((sp->nextcp.y+sp->prevcp.y)/2, sp->me.y,.1) )
+		sp->ttfindex = 0xffff;
+	    else
+		sp->ttfindex = pnum++;
+	    if ( sp->nonextcp )
+		sp->nextcpindex = 0xffff;
+	    else if ( !starts_with_cp || sp->next->to!=ss->first )
+		sp->nextcpindex = pnum++;
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==ss->first )
+	break;
+	}
+    }
+return( pnum );
+}
+
 int SCNumberPoints(SplineChar *sc) {
     int pnum=0;
     SplineSet *ss;
     SplinePoint *sp;
-    int starts_with_cp, startcnt;
     RefChar *ref;
-    uint8 *instrs = sc->ttf_instrs==NULL && sc->parent->mm!=NULL && sc->parent->mm->apple ?
-		sc->parent->mm->normal->glyphs[sc->orig_pos]->ttf_instrs : sc->ttf_instrs;
 
     if ( sc->parent->order2 ) {		/* TrueType and its complexities. I ignore svg here */
 	if ( sc->layers[ly_fore].refs!=NULL ) {
@@ -2804,36 +2838,7 @@ int SCNumberPoints(SplineChar *sc) {
 	    for ( ref = sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
 		pnum = SCRefNumberPoints2(ref,pnum);
 	} else {
-	    for ( ss = sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
-		starts_with_cp = (ss->first->ttfindex == pnum+1 || ss->first->ttfindex==0xffff) &&
-			!ss->first->noprevcp;
-		startcnt = pnum;
-		if ( starts_with_cp ) ++pnum;
-		for ( sp=ss->first; ; ) {
-		    if ( ((instrs!=NULL && sp->ttfindex==0xffff) ||
-			    ( sp!=ss->first && !sp->nonextcp && !sp->noprevcp &&
-			     !sp->roundx && !sp->roundy && !sp->dontinterpolate &&
-			     instrs==NULL )) &&
-			    RealWithin((sp->nextcp.x+sp->prevcp.x)/2, sp->me.x,.1) &&
-			    RealWithin((sp->nextcp.y+sp->prevcp.y)/2, sp->me.y,.1) )
-			sp->ttfindex = 0xffff;
-		    else
-			sp->ttfindex = pnum++;
-		    if ( instrs!=NULL && sp->nextcpindex!=0xffff && sp->nextcpindex!=0xfffe ) {
-			if ( sp->nextcpindex!=startcnt || !starts_with_cp )
-			    sp->nextcpindex = pnum++;
-		    } else if ( (instrs==NULL || sp->nextcpindex==0xfffe) && !sp->nonextcp ) {
-			if ( sp->next!=NULL )
-			    sp->nextcpindex = pnum++;
-		    } else
-			sp->nextcpindex = 0xffff;
-		    if ( sp->next==NULL )
-		break;
-		    sp = sp->next->to;
-		    if ( sp==ss->first )
-		break;
-		}
-	    }
+	    pnum = SSTtfNumberPoints(sc->layers[ly_fore].splines);
 	}
     } else {		/* cubic (PostScript/SVG) splines */
 	int layer;
@@ -4159,6 +4164,8 @@ return( true );
 #define MID_MakeFirst	2304
 #define MID_MakeLine	2305
 #define MID_CenterCP	2306
+#define MID_ImplicitPt	2307
+#define MID_NoImplicitPt	2308
 #define MID_AddAnchor	2310
 #define MID_AutoHint	2400
 #define MID_ClearHStem	2401
@@ -5313,11 +5320,41 @@ static void CVMenuPointType(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     _CVMenuPointType(cv,mi);
 }
 
+static void _CVMenuImplicit(CharView *cv,struct gmenuitem *mi) {
+    SplinePointList *spl;
+    Spline *spline, *first;
+    int dontinterpolate = mi->mid==MID_NoImplicitPt;
+
+    if ( !cv->sc->parent->order2 )
+return;
+    CVPreserveState(cv);	/* We should only get here if there's a selection */
+    for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL ; spl = spl->next ) {
+	first = NULL;
+	if ( spl->first->selected ) {
+	    spl->first->dontinterpolate = dontinterpolate;
+	}
+	for ( spline=spl->first->next; spline!=NULL && spline!=first ; spline = spline->to->next ) {
+	    if ( spline->to->selected ) {
+		spline->to->dontinterpolate = dontinterpolate;
+	    }
+	    if ( first == NULL ) first = spline;
+	}
+    }
+    SCNumberPoints(cv->sc);
+    CVCharChangedUpdate(cv);
+}
+
+static void CVMenuImplicit(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    _CVMenuImplicit(cv,mi);
+}
+
 static void cv_ptlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
     int type = -2, cnt=0, ccp_cnt=0;
     SplinePointList *spl, *sel=NULL;
     Spline *spline, *first;
     SplinePoint *selpt=NULL;
+    int notimplicit = -1;
 
     for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL && type!=-1; spl = spl->next ) {
 	first = NULL;
@@ -5328,6 +5365,8 @@ static void cv_ptlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	    else if ( type!=spl->first->pointtype ) type = -1;
 	    if ( !spl->first->nonextcp && !spl->first->noprevcp && spl->first->prev!=NULL )
 		++ccp_cnt;
+	    if ( notimplicit==-1 ) notimplicit = spl->first->dontinterpolate;
+	    else if ( notimplicit!=spl->first->dontinterpolate ) notimplicit = -2;
 	}
 	for ( spline=spl->first->next; spline!=NULL && spline!=first && type!=-1; spline = spline->to->next ) {
 	    if ( spline->to->selected ) {
@@ -5337,6 +5376,8 @@ static void cv_ptlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 		sel = spl; ++cnt;
 		if ( !spline->to->nonextcp && !spline->to->noprevcp && spline->to->next!=NULL )
 		    ++ccp_cnt;
+		if ( notimplicit==-1 ) notimplicit = spline->to->dontinterpolate;
+		else if ( notimplicit!=spline->to->dontinterpolate ) notimplicit = -2;
 	    }
 	    if ( first == NULL ) first = spline;
 	}
@@ -5364,6 +5405,14 @@ static void cv_ptlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_CenterCP:
 	    mi->ti.disabled = ccp_cnt==0;
+	  break;
+	  case MID_ImplicitPt:
+	    mi->ti.disabled = !cv->sc->parent->order2;
+	    mi->ti.checked = notimplicit==0;
+	  break;
+	  case MID_NoImplicitPt:
+	    mi->ti.disabled = !cv->sc->parent->order2;
+	    mi->ti.checked = notimplicit==1;
 	  break;
 #if 0
 	  case MID_AddAnchor:
@@ -7057,6 +7106,9 @@ static GMenuItem ptlist[] = {
     { { (unichar_t *) N_("_Tangent"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'T' }, '4', ksm_control, NULL, NULL, CVMenuPointType, MID_Tangent },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Make First"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, '1', ksm_control, NULL, NULL, CVMenuMakeFirst, MID_MakeFirst },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) N_("Can Be _Interpolated"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'T' }, '\0', ksm_control, NULL, NULL, CVMenuImplicit, MID_ImplicitPt },
+    { { (unichar_t *) N_("Can't Be _Interpolated"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'T' }, '\0', ksm_control, NULL, NULL, CVMenuImplicit, MID_NoImplicitPt },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Add Anchor"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, '0', ksm_control, NULL, NULL, CVMenuAddAnchor, MID_AddAnchor },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
