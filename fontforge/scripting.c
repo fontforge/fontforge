@@ -6413,7 +6413,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "Import", bImport },
     { "Export", bExport },
     { "MergeKern", bMergeKern },
-    { "PrintSetup", bPrintSetup },
+    { "PrintSetup", bPrintSetup, 1 },
     { "PrintFont", bPrintFont },
 /* Edit Menu */
     { "Cut", bCut },
