@@ -36,7 +36,7 @@
 #include <gkeysym.h>
 
 enum { pt_lp, pt_lpr, pt_ghostview, pt_file, pt_other, pt_pdf, pt_unknown=-1 };
-int pagewidth = 595, pageheight=792; 	/* Minimum size for US Letter, A4 paper, should work for either */
+int pagewidth = 0, pageheight=0;
 char *printlazyprinter=NULL;
 char *printcommand=NULL;
 int printtype = pt_unknown;
@@ -72,6 +72,7 @@ typedef struct printinfo {
     unsigned int isunicodefull: 1;
     unsigned int overflow: 1;
     unsigned int done: 1;
+    unsigned int hadsize: 1;
     int ypos;
     int max;		/* max chars per line */
     int chline;		/* High order bits of characters we're outputting */
@@ -1013,7 +1014,8 @@ return;
     fprintf( pi->out, "%%%%EndComments\n\n" );
 
     fprintf( pi->out, "%%%%BeginSetup\n" );
-    fprintf( pi->out, "<< /PageSize [%d %d] >> setpagedevice\n", pi->pagewidth, pi->pageheight );
+    if ( pi->hadsize )
+	fprintf( pi->out, "<< /PageSize [%d %d] >> setpagedevice\n", pi->pagewidth, pi->pageheight );
 
     fprintf( pi->out, "%% <font> <encoding> font_remap <font>	; from the cookbook\n" );
     fprintf( pi->out, "/reencodedict 5 dict def\n" );
@@ -2175,6 +2177,14 @@ static void PIGetPrinterDefs(PI *pi) {
     pi->printtype = printtype;
     pi->printer = copy(printlazyprinter);
     pi->copies = 1;
+    if ( pi->pagewidth!=0 && pi->pageheight!=0 )
+	pi->hadsize = true;
+    else {
+	pi->pagewidth = 595;
+	pi->pageheight = 792;
+	/* numbers chosen to fit either A4 or US-Letter */
+	pi->hadsize = false;	/* But we don't want to do a setpagedevice on this because then some printers will wait until fed this odd page size */
+    }
 }
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
