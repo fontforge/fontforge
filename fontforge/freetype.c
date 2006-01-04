@@ -1015,7 +1015,6 @@ BDFChar *SplineCharFreeTypeRasterizeNoHints(SplineChar *sc,
 #ifdef FONTFORGE_CONFIG_TYPE3
     int i;
 #endif
-    int k, j;
     int cmax, pmax;
     real scale = pixelsize*(1<<6)/(double) (sc->parent->ascent+sc->parent->descent);
     BDFChar *bdfc;
@@ -1048,9 +1047,14 @@ return( NULL );
     b.minx *= scale; b.maxx *= scale;
     b.miny *= scale; b.maxy *= scale;
 
+    b.minx = (1<<6) * floor( b.minx * (1.0 / (1<<6)) );
+    b.miny = (1<<6) * floor( b.miny * (1.0 / (1<<6)) );
+    b.maxx = (1<<6) * ceil( b.maxx * (1.0 / (1<<6)) );
+    b.maxy = (1<<6) * ceil( b.maxy * (1.0 / (1<<6)) );
+
     memset(&bitmap,0,sizeof(bitmap));
-    bitmap.rows = (((int) (b.maxy-b.miny))>>6)+2;
-    bitmap.width = (((int) (b.maxx-b.minx))>>6)+2;
+    bitmap.rows = (((int) (b.maxy-b.miny))>>6);
+    bitmap.width = (((int) (b.maxx-b.minx))>>6);
     if ( depth==1 ) {
 	bitmap.pitch = (bitmap.width+7)>>3;
 	bitmap.num_grays = 2;
@@ -1152,13 +1156,6 @@ return( NULL );
     free(outline.contours);
     bdfc = NULL;
     if ( !err ) {
-	for ( k=0; k<(((int) (b.maxy-b.miny))>>6); ++k ) {
-	    for ( j=bitmap.pitch-1; j>=0 && bitmap.buffer[k*bitmap.pitch+j]==0; --j );
-	    if ( j!=-1 )
-	break;
-	}
-	if ( k!=(((int) (b.maxy-b.miny))>>6) )
-	    b.maxy += k<<6;
 	bdfc = BdfCFromBitmap(&bitmap, (((int) b.minx)+0x20)>>6, (((int) b.maxy)+0x20)>>6, pixelsize, depth, sc);
     }
     free( bitmap.buffer );
@@ -1630,9 +1627,15 @@ struct freetype_raster *DebuggerCurrentRaster(TT_ExecContext exc,int depth) {
 	}
     }
 
+    b.minx = (1<<6) * floor( b.minx * (1.0 / (1<<6)) );
+    b.miny = (1<<6) * floor( b.miny * (1.0 / (1<<6)) );
+    b.maxx = (1<<6) * ceil( b.maxx * (1.0 / (1<<6)) );
+    b.maxy = (1<<6) * ceil( b.maxy * (1.0 / (1<<6)) );
+
     memset(&bitmap,0,sizeof(bitmap));
-    bitmap.rows = (((int) (b.maxy-b.miny))>>6)+2;
-    bitmap.width = (((int) (b.maxx-b.minx))>>6)+2;
+    bitmap.rows = (((int) (b.maxy-b.miny))>>6);
+    bitmap.width = (((int) (b.maxx-b.minx))>>6);
+
     if ( depth==8 ) {
 	bitmap.pitch = bitmap.width;
 	bitmap.num_grays = 256;
