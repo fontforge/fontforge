@@ -29,6 +29,7 @@ libgdraw:
 	( cd gdraw ; $(MAKE) )
 
 pos:
+	-ln -s $(srcdir)/po/*.po po
 	( cd po ; $(MAKE) )
 
 clean:
