@@ -3090,9 +3090,11 @@ docs are wrong.
 	os2->lastcharindex = last;
 	OS2FigureCodePages(sf, os2->ulCodePage);
 	/* Herbert Duerr: */
-	/* Windows doesn't accept unicode encoded fonts which		*/
-	/* contains only symbols and thus only has a symbol codepage	*/
-	/* => use a OS/2 version which doesn't depend on codepages 	*/
+	/* Some old versions of Windows do not provide access to all    */
+	/* glyphs in a font if the fonts contains non-PUA symbols       */
+	/* and thus only has sets the codepage flag for symbol          */
+	/* => a workaround for this problem on Windows legacy versions  */
+	/* is to use an OS2-table version without codepage flags        */
 	/* GWW: */
 	/* This sounds to me like a windows bug rather than one in ff	*/
 	/*  and this is a work-around for windows. As far as I can tell	*/
