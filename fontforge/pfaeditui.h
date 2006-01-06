@@ -35,6 +35,7 @@ extern int FontForgeMain( int argc, char **argv );
 #if defined(FONTFORGE_CONFIG_GTK)
 # include <gtk/gtk.h>
 # include "interface.h"
+# include "callbacks.h"
 # include "support.h"
 # include "views.h"
 extern GdkCursor *ct_magplus, *ct_magminus, *ct_mypointer,

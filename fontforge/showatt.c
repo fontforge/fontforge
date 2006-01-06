@@ -2238,7 +2238,7 @@ static void pututf8(uint32 ch,FILE *file) {
 
 static void AttSave(struct att_dlg *att) {
     char *ret = gwwv_save_filename(_("Save"),NULL,
-	    "*.txt",NULL,NULL);
+	    "*.txt");
     char *cret;
     FILE *file;
     char *pt;

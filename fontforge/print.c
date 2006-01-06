@@ -2809,7 +2809,7 @@ return(true);
 	    sprintf(buf,"pr-%.90s.%s", pi->sf->fontname,
 		    pi->printtype==pt_file?"ps":"pdf");
 	    ret = gwwv_save_filename(_("Print To File..."),buf,
-		    pi->printtype==pt_pdf?"*.pdf":"*.ps",NULL,NULL);
+		    pi->printtype==pt_pdf?"*.pdf":"*.ps");
 	    if ( ret==NULL )
 return(true);
 	    file = utf82def_copy(ret);

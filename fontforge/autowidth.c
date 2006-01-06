@@ -1513,7 +1513,7 @@ return( true );
 	    ScriptSerifChecker(wi);
 	    InitCharPairs(wi);
 	} else {
-	    char *fn = gwwv_open_filename(_("Load Kern Pairs"), NULL, "*.txt", NULL,NULL);
+	    char *fn = gwwv_open_filename(_("Load Kern Pairs"), NULL, "*.txt", NULL);
 	    if ( fn==NULL ) {
 		GDrawSetVisible(gw,true);
 		wi->done = false;

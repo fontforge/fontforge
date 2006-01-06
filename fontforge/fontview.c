@@ -27,11 +27,13 @@
 #include "pfaeditui.h"
 #include "groups.h"
 #include "psfont.h"
-#ifndef FONTFORGE_CONFIG_GTK
+#include <gfile.h>
+#ifdef FONTFORGE_CONFIG_GTK
+#include <gtkutype.h>
+#else
 #include <ustring.h>
 #include <gkeysym.h>
 #include <utype.h>
-#include <gfile.h>
 #include <chardata.h>
 #include <gresource.h>
 #endif
@@ -136,13 +138,13 @@ void FVToggleCharChanged(SplineChar *sc) {
 # elif defined(FONTFORGE_CONFIG_GTK)
 		GdkGC *gc = fv->v->style->fg_gc[fv->v->state];
 		GdkGCValues values;
-		struct GdkColor bg;
+		GdkColor bg;
 		gdk_gc_get_values(gc,&values);
 		bg.pixel = -1;
 		if ( sc->color!=COLOR_DEFAULT ) {
-		    bg.red   = ((sc->color>>16)&0xff)<<8;
-		    bg.green = ((sc->color>>8 )&0xff)<<8;
-		    bg.blue  = ((sc->color    )&0xff)<<8;
+		    bg.red   = ((sc->color>>16)&0xff)*0x101;
+		    bg.green = ((sc->color>>8 )&0xff)*0x101;
+		    bg.blue  = ((sc->color    )&0xff)*0x101;
 		} else if ( sc->layers[ly_back].splines!=NULL || sc->layers[ly_back].images!=NULL )
 		    bg.red = bg.green = bg.blue = 0x8000;
 		else
@@ -205,8 +207,17 @@ return;
 		GDrawDrawLine(fv->v,r.x+r.width-1,r.y,r.x+r.width-1,r.y+r.height-1,hintcol);
 		GDrawDrawLine(fv->v,r.x+r.width-2,r.y,r.x+r.width-2,r.y+r.height-1,hintcol);
 # elif defined(FONTFORGE_CONFIG_GTK)
-		GdkGC *gc = fv->v->style->fg_gc[fv->v->state];
-		GdkGCValues values;
+		GdkColor hintcol;
+		GdkRectangle r;
+		hintcol.red = hintcol.green = 0;
+		hintcol.blue = 0xffff;
+		gdk_gc_set_rgb_fg_color(fv->gc,&hintcol);
+		r.x = j*fv->cbw+1; r.width = fv->cbw-1;
+		r.y = i*fv->cbh+1; r.height = fv->lab_height-1;
+		gdk_draw_line(GDK_DRAWABLE(fv->v),fv->gc,r.x,r.y,r.x,r.y+r.height-1);
+		gdk_draw_line(GDK_DRAWABLE(fv->v),fv->gc,r.x+1,r.y,r.x+1,r.y+r.height-1);
+		gdk_draw_line(GDK_DRAWABLE(fv->v),fv->gc,r.x+r.width-1,r.y,r.x+r.width-1,r.y+r.height-1);
+		gdk_draw_line(GDK_DRAWABLE(fv->v),fv->gc,r.x+r.width-2,r.y,r.x+r.width-2,r.y+r.height-1);
 # endif
 	    }
 	}
@@ -470,7 +481,7 @@ static int RevertAskChanged(char *fontname,char *filename) {
     buts[0] = _("_Revert");
     buts[1] = _("_Cancel");
 #elif defined(FONTFORGE_CONFIG_GTK)
-    buts[0] = GTK_STOCK_REVERT;
+    buts[0] = GTK_STOCK_REVERT_TO_SAVED;
     buts[1] = GTK_STOCK_CANCEL;
 #endif
     buts[2] = NULL;
@@ -517,12 +528,23 @@ int _FVMenuSaveAs(FontView *fv) {
     char *filename;
     int ok;
 
+# ifdef FONTFORGE_CONFIG_GDRAW
     if ( fv->cidmaster!=NULL && fv->cidmaster->filename!=NULL )
 	temp=def2utf8_copy(fv->cidmaster->filename);
     else if ( fv->sf->mm!=NULL && fv->sf->mm->normal->filename!=NULL )
 	temp=def2utf8_copy(fv->sf->mm->normal->filename);
     else if ( fv->sf->filename!=NULL )
 	temp=def2utf8_copy(fv->sf->filename);
+# elif defined(FONTFORGE_CONFIG_GTK)
+    gsize read, written;
+
+    if ( fv->cidmaster!=NULL && fv->cidmaster->filename!=NULL )
+	temp=g_filename_to_utf8(fv->cidmaster->filename,-1,&read,&written,NULL);
+    else if ( fv->sf->mm!=NULL && fv->sf->mm->normal->filename!=NULL )
+	temp=g_filename_to_utf8(fv->sf->mm->normal->filename,-1,&read,&written,NULL);
+    else if ( fv->sf->filename!=NULL )
+	temp=g_filename_to_utf8(fv->sf->filename,-1,&read,&written,NULL);
+#endif
     else {
 	SplineFont *sf = fv->cidmaster?fv->cidmaster:
 		fv->sf->mm!=NULL?fv->sf->mm->normal:fv->sf;
@@ -538,11 +560,15 @@ int _FVMenuSaveAs(FontView *fv) {
 	    strcat(temp,"MM");
 	strcat(temp,".sfd");
     }
-    ret = gwwv_save_filename(_("Save as..."),temp,NULL,NULL,NULL);
+    ret = gwwv_save_filename(_("Save as..."),temp,NULL);
     free(temp);
     if ( ret==NULL )
 return( 0 );
+# ifdef FONTFORGE_CONFIG_GDRAW
     filename = utf82def_copy(ret);
+# elif defined(FONTFORGE_CONFIG_GTK)
+    filename = g_filename_from_utf8(ret,-1,&read,&written,NULL);
+#endif
     free(ret);
     FVFlattenAllBitmapSelections(fv);
     ok = SFDWrite(filename,fv->sf,fv->map);
@@ -1099,8 +1125,8 @@ void MergeKernInfo(SplineFont *sf,EncMap *map) {
     static char wild[] = "*";	/* Mac resource files generally don't have extensions */
     static char wild2[] = "*";
 #endif
-    char *ret = gwwv_open_filename(_("Merge Kern Info"),
-	    sf->mm!=NULL?wild2:wild);
+    char *ret = gwwv_open_filename(_("Merge Kern Info"),NULL,
+	    sf->mm!=NULL?wild2:wild,NULL);
 
     if ( ret==NULL )		/* Cancelled */
 return;
@@ -1160,9 +1186,16 @@ char *GetPostscriptFontName(char *dir, int mult) {
     char *u_dir;
     char *temp;
 
+# ifdef FONTFORGE_CONFIG_GDRAW
     u_dir = def2utf8_copy(dir);
     ret = FVOpenFont(_("Open Font"), u_dir,wild,mimes,mult,true);
     temp = u2def_copy(ret);
+# elif defined(FONTFORGE_CONFIG_GTK)
+    gsize read, written;
+    u_dir = g_filename_to_utf8(dir,-1,&read,&written,NULL);
+    ret = FVOpenFont(_("Open Font"), u_dir,wild,mimes,mult,true);
+    temp = g_filename_from_utf8(ret,-1,&read,&written,NULL);
+#endif
 
     free(ret);
 return( temp );
@@ -1176,9 +1209,14 @@ void MergeKernInfo(SplineFont *sf,EncMap *map) {
     static char wild[] = "*";	/* Mac resource files generally don't have extensions */
     static char wild2[] = "*";
 #endif
-    char *ret = gwwv_open_filename(_("Merge Kern Info"),
-	    NULL,sf->mm!=NULL?wild2:wild,NULL,NULL);
+    char *ret = gwwv_open_filename(_("Merge Kern Info"),NULL,
+	    sf->mm!=NULL?wild2:wild,NULL);
+# ifdef FONTFORGE_CONFIG_GDRAW
     char *temp = utf82def_copy(ret);
+# elif defined(FONTFORGE_CONFIG_GTK)
+    gsize read, written;
+    char *temp = g_filename_to_utf8(ret,-1,&read,&written,NULL);
+#endif
 
     if ( temp==NULL )		/* Cancelled */
 return;
@@ -5187,10 +5225,11 @@ return;
     free(title);
     free(ititle);
 # elif defined(FONTFORGE_CONFIG_GTK)
-    unichar_t *title, *ititle, *temp;
+    char *title, *ititle, *temp;
     char *file=NULL;
     char *enc;
     int len;
+    gsize read, written;
 
     if ( fv->gw==NULL )		/* In scripting */
 return;
@@ -5211,8 +5250,11 @@ return;
     if ( fv->sf->changed )
 	strcat(title,"*");
     if ( file!=NULL ) {
+	char *temp;
 	strcat(title,"  ");
-	strcat(title,GFileNameTail(file));
+	temp = g_filename_to_utf8(GFileNameTail(file),-1,&read,&written,NULL);
+	strcat(title,temp);
+	free(temp);
     }
     strcat(title, " (" );
     strcat(title,enc);
@@ -9815,6 +9857,8 @@ FontView *FontViewCreate(SplineFont *sf) {
     fv->v = lookup_widget( fv->gw,"view" );
     status = lookup_widget( fv->gw,"status" );
     context = gtk_widget_get_pango_context( status );
+    fv->gc = gdk_gc_new( fv->v );
+    gdk_gc_copy(fv->gc,fv->v->style->fg_gc[fv->v->state]);
     font = pango_context_load_font( context, pango_context_get_font_description(context));
     fm = pango_font_get_metrics(font,NULL);
     as = pango_font_metrics_get_ascent(fm);
@@ -9836,9 +9880,10 @@ FontView *FontViewCreate(SplineFont *sf) {
 	GdkGC *gc = fv->v->style->fg_gc[fv->v->state];
 	GdkGCValues values;
 	gdk_gc_get_values(gc,&values);
-	default_background = ((values.background.red  &0xff00)<<8) |
-			     ((values.background.green&0xff00)   ) |
-			     ((values.background.blue &0xff00)>>8);
+	default_background = COLOR_CREATE(
+			     ((values.background.red  &0xff00)>>8) |
+			     ((values.background.green&0xff00)>>8) |
+			     ((values.background.blue &0xff00)>>8));
     }
 #elif defined(FONTFORGE_CONFIG_GDRAW)
     GRect pos;
@@ -10057,7 +10102,14 @@ return( NULL );
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     strcpy(ubuf,_("Loading font from "));
     len = strlen(ubuf);
+# ifdef FONTFORGE_CONFIG_GDRAW
     strncat(ubuf,temp = def2utf8_copy(GFileNameTail(fullname)),100);
+# elif defined(FONTFORGE_CONFIG_GTK)
+    {
+    gsize read, written;
+    strncat(ubuf,temp = g_filename_to_utf8(GFileNameTail(fullname),-1,&read,&written,NULL),100);
+    }
+#endif
     free(temp);
     ubuf[100+len] = '\0';
     gwwv_progress_start_indicator(fv_list==NULL?0:10,_("Loading..."),ubuf,_("Reading Glyphs"),0,1);
