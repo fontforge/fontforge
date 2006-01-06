@@ -138,7 +138,7 @@ static GTextInfo formattypes[] = {
     { (unichar_t *) N_("Open Type CID"), NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("Open Type CID (dfont)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("SVG font"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("No Outline Font"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("No Outline Font"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }
 };
 static GTextInfo bitmaptypes[] = {
@@ -156,7 +156,7 @@ static GTextInfo bitmaptypes[] = {
     { (unichar_t *) N_("OpenType Bitmap"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("Palm OS Bitmap"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("PS Type3 Bitmap"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("No Bitmap Fonts"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("No Bitmap Fonts"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }
 };
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
