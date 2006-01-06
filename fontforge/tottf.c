@@ -2921,7 +2921,7 @@ void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]) {
 	    CodePage[0] |= 1<<20;		/* traditional chinese */
 	else if ( sf->glyphs[i]->unicodeenc==0xacf4 )
 	    CodePage[0] |= 1<<21;		/* korean Johab */
-	else if ( sf->glyphs[i]->unicodeenc==0x2030 )
+	else if ( sf->glyphs[i]->unicodeenc==0x2030 && has_ascii )
 	    CodePage[0] |= 1U<<29;		/* mac roman */
 	else if ( sf->glyphs[i]->unicodeenc==0x2665 && has_ascii )
 	    CodePage[0] |= 1U<<30;		/* OEM */
@@ -2948,9 +2948,6 @@ void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]) {
 	else if ( sf->glyphs[i]->unicodeenc==0xfe && has_ascii )
 	    CodePage[1] |= 1<<22;		/* MS-DOS Icelandic */
     }
-
-    if ( CodePage[0]==0 )
-	CodePage[0] |= 1;
 }
 
 static void WinBB(SplineFont *sf,uint16 *winascent,uint16 *windescent,struct alltabs *at) {
@@ -3092,8 +3089,18 @@ docs are wrong.
 	os2->firstcharindex = first;
 	os2->lastcharindex = last;
 	OS2FigureCodePages(sf, os2->ulCodePage);
-	if ( os2->ulCodePage[0]==0 )
-	    os2->ulCodePage[0] |= 1;
+	/* Herbert Duerr: */
+	/* Windows doesn't accept unicode encoded fonts which		*/
+	/* contains only symbols and thus only has a symbol codepage	*/
+	/* => use a OS/2 version which doesn't depend on codepages 	*/
+	/* GWW: */
+	/* This sounds to me like a windows bug rather than one in ff	*/
+	/*  and this is a work-around for windows. As far as I can tell	*/
+	/*  ff is setting the codepage field properly, it's just that	*/
+	/*  windows doesn't interpret that bit correctly		*/
+	if( format!=ff_ttfsym )
+	    if( (os2->ulCodePage[0]&~(1U<<31))==0 && os2->ulCodePage[1]==0 )
+                os2->version = 0;
     }
 
     if ( format==ff_otf || format==ff_otfcid ) {
@@ -3283,8 +3290,10 @@ static void redoos2(struct alltabs *at) {
     putshort(at->os2f,at->os2.linegap);
     putshort(at->os2f,at->os2.winascent);
     putshort(at->os2f,at->os2.windescent);
+    if ( at->os2.version>=1 ) {
     putlong(at->os2f,at->os2.ulCodePage[0]);
     putlong(at->os2f,at->os2.ulCodePage[1]);
+    }
 
     if ( at->os2.version>=2 ) {
 	putshort(at->os2f,at->os2.xHeight);
