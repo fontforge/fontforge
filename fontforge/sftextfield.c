@@ -1006,7 +1006,7 @@ return( newpos );
 
 static void SFTextAreaImport(SFTextArea *st) {
     char *cret = gwwv_open_filename(_("Open"),NULL,
-	    "*.txt",NULL,NULL);
+	    "*.txt",NULL);
     unichar_t *str;
 
     if ( cret==NULL )
@@ -1023,8 +1023,7 @@ return;
 }
 
 static void SFTextAreaSave(SFTextArea *st) {
-    char *cret = gwwv_save_filename(_("Save"),NULL,
-	    "*.txt",NULL,NULL);
+    char *cret = gwwv_save_filename(_("Save"),NULL, "*.txt");
     FILE *file;
     unichar_t *pt;
 

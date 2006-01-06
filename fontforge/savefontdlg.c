@@ -1330,7 +1330,7 @@ return( NULL );
 
     /*if ( def==NULL )*/
 	def = "*.sfd";
-    ret = gwwv_open_filename(_("Find Sub Font Definition file"),NULL,"*.sfd",NULL,GFileChooserFilterWernerSFDs);
+    ret = gwwv_open_filename(_("Find Sub Font Definition file"),NULL,"*.sfd",GFileChooserFilterWernerSFDs);
 return( ret );
 }
 

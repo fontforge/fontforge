@@ -8257,7 +8257,7 @@ static int SD_Call(GGadget *g, GEvent *e) {
 	char *fn;
 	unichar_t *insert;
     
-	fn = gwwv_open_filename(_("Call Script"), NULL, "*", NULL, NULL);
+	fn = gwwv_open_filename(_("Call Script"), NULL, "*",NULL);
 	if ( fn==NULL )
 return(true);
 	insert = galloc((strlen(fn)+10)*sizeof(unichar_t));

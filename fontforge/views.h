@@ -31,6 +31,7 @@
 
 #if defined(FONTFORGE_CONFIG_GTK)
 # include <gtk/gtk.h>
+# include <gdk/gdk.h>
 #elif defined(FONTFORGE_CONFIG_GDRAW)
 # include <ggadget.h>
 #endif
@@ -157,7 +158,9 @@ struct instrinfo {
     int16 lstopped;
     int16 as, fh;
     struct instrdata *instrdata;
+#if defined(FONTFORGE_CONFIG_GDRAW)
     GFont *gfont;
+#endif
     int isel_pos;
     unsigned int showaddr: 1;
     unsigned int showhex: 1;
@@ -165,7 +168,11 @@ struct instrinfo {
     void *userdata;
     void (*selection_callback)(struct instrinfo *,int ip);
     int  (*bpcheck)(struct instrinfo *,int ip);
+#if defined(FONTFORGE_CONFIG_GTK)
+    int  (*handle_char)(struct instrinfo *,GdkEvent *e);
+#elif defined(FONTFORGE_CONFIG_GDRAW)
     int  (*handle_char)(struct instrinfo *,GEvent *e);
+#endif
 };
 
 enum debug_wins { dw_registers=0x1, dw_stack=0x2, dw_storage=0x4, dw_points=0x8,
@@ -468,6 +475,7 @@ typedef struct fontview {
     PangoFont **fontset;
     GtkWidget *vsb, *mb;
     guint pressed;			/* gtk timer id */
+    GdkGC *gc;
 #elif defined(FONTFORGE_CONFIG_GDRAW)
     GWindow gw, v;
     GFont **fontset;
@@ -802,19 +810,33 @@ extern int DebuggingFpgm(struct debugger_context *dc);
 
 extern int BitmapControl(FontView *fv,int32 *sizes,int isavail);
 
+#if defined(FONTFORGE_CONFIG_GTK)
+extern void ScriptPrint(FontView *fv,int type,int32 *pointsizes,char *samplefile,
+	char *sample, char *outputfile);
+extern char *PrtBuildDef( SplineFont *sf, int istwobyte );
+#elif defined(FONTFORGE_CONFIG_GDRAW)
 extern void ScriptPrint(FontView *fv,int type,int32 *pointsizes,char *samplefile,
 	unichar_t *sample, char *outputfile);
+extern unichar_t *PrtBuildDef( SplineFont *sf, int istwobyte );
+#endif
 
 extern char *Kern2Text(SplineChar *other,KernPair *kp,int isv);
 extern char *PST2Text(PST *pst,SplineFont *sf);
 
-extern void DropChars2Text(GWindow gw, GGadget *glyphs,GEvent *event);
 
 extern void FVStrokeItScript(FontView *fv, StrokeInfo *si);
 
+#if defined(FONTFORGE_CONFIG_GTK)
+extern void DropChars2Text(GdkWindow gw, GtkWidget *glyphs,GdkEvent *event);
+extern int FVParseSelectByPST(FontView *fv,int type,
+	const char *tags,const char *contents,
+	int search_type);
+#elif defined(FONTFORGE_CONFIG_GDRAW)
+extern void DropChars2Text(GWindow gw, GGadget *glyphs,GEvent *event);
 extern int FVParseSelectByPST(FontView *fv,int type,
 	const unichar_t *tags,const unichar_t *contents,
 	int search_type);
+#endif
 
 extern void FVSetWidthScript(FontView *fv,enum widthtype wtype,int val,int incr);
 
@@ -824,10 +846,18 @@ extern void skewselect(BVTFunc *bvtf,real t);
 
 extern int UserFeaturesDiffer(void);
 
-extern unichar_t *PrtBuildDef( SplineFont *sf, int istwobyte );
-
-extern unichar_t *ScriptLangLine(struct script_record *sr);
 extern int  SLICount(SplineFont *sf);
+#if defined(FONTFORGE_CONFIG_GTK)
+extern char *ScriptLangLine(struct script_record *sr);
+extern char *ClassName(const char *name,uint32 feature_tag,
+	uint16 flags, int script_lang_index, int merge_with, int act_type,
+	int macfeature,SplineFont *sf);
+extern char *DecomposeClassName(const char *clsnm, char **name,
+	uint32 *feature_tag, int *macfeature,
+	uint16 *flags, uint16 *script_lang_index,int *merge_with,int *act_type,
+	SplineFont *sf);
+#elif defined(FONTFORGE_CONFIG_GDRAW)
+extern unichar_t *ScriptLangLine(struct script_record *sr);
 extern unichar_t *ClassName(const char *name,uint32 feature_tag,
 	uint16 flags, int script_lang_index, int merge_with, int act_type,
 	int macfeature,SplineFont *sf);
@@ -835,6 +865,7 @@ extern unichar_t *DecomposeClassName(const unichar_t *clsnm, unichar_t **name,
 	uint32 *feature_tag, int *macfeature,
 	uint16 *flags, uint16 *script_lang_index,int *merge_with,int *act_type,
 	SplineFont *sf);
+#endif
 extern PST *AddSubs(PST *last,uint32 tag,char *name,uint16 flags,
 	uint16 sli,SplineChar *sc);
 
@@ -870,10 +901,6 @@ extern GTextInfo *AnchorClassesList(SplineFont *sf);
 extern GTextInfo **AnchorClassesLList(SplineFont *sf);
 extern GTextInfo **AnchorClassesSimpleLList(SplineFont *sf);
 extern GTextInfo *AddMacFeatures(GTextInfo *opentype,enum possub_type type,SplineFont *sf);
-#endif
-extern int SCAnyFeatures(SplineChar *sc);
-extern void SCCopyFeatures(SplineChar *sc);
-extern void CharInfoInit(void);
 extern unichar_t *AskNameTag(char *title,unichar_t *def,uint32 def_tag,uint16 flags,
 	int script_lang_index, enum possub_type type, SplineFont *sf, SplineChar *default_script,
 	int merge_with,int act_type);
@@ -887,11 +914,13 @@ extern GTextInfo *GListChangeLine(GGadget *list,int pos, const unichar_t *line);
 extern GTextInfo *GListAppendLine(GGadget *list,const unichar_t *line,int select);
 extern GTextInfo *GListChangeLine8(GGadget *list,int pos, const char *line);
 extern GTextInfo *GListAppendLine8(GGadget *list,const char *line,int select);
+#endif
+extern int SCAnyFeatures(SplineChar *sc);
+extern void SCCopyFeatures(SplineChar *sc);
+extern void CharInfoInit(void);
 extern void FontInfo(SplineFont *sf,int aspect,int sync);
 extern void FontInfoDestroy(FontView *fv);
 extern void FontMenuFontInfo(void *fv);
-extern void GFI_FinishContextNew(struct gfi_data *d,FPST *fpst, unichar_t *newname,
-	int success);
 extern void GFI_CCDEnd(struct gfi_data *d);
 extern struct enc *MakeEncoding(SplineFont *sf, EncMap *map);
 extern void LoadEncodingFile(void);
@@ -903,22 +932,21 @@ extern void FontViewReformatOne(FontView *fv);
 extern void FVShowFilled(FontView *fv);
 extern void FVChangeDisplayBitmap(FontView *fv,BDFFont *bdf);
 extern void FVDelay(FontView *fv,void (*func)(FontView *));
-#ifdef FONTFORGE_CONFIG_GDRAW
-extern void SCPreparePopup(GWindow gw,SplineChar *sc, struct remap *remap, int enc, int actualuni);
-#endif
 #if defined(FONTFORGE_CONFIG_GTK)
 #elif defined(FONTFORGE_CONFIG_GDRAW)
+extern void GFI_FinishContextNew(struct gfi_data *d,FPST *fpst, unichar_t *newname,
+	int success);
+extern void SCPreparePopup(GWindow gw,SplineChar *sc, struct remap *remap, int enc, int actualuni);
 extern void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 	Color fg, int dopoints, DRect *clip );
-#endif
-
-#if defined(FONTFORGE_CONFIG_GTK)
-#elif defined(FONTFORGE_CONFIG_GDRAW)
 extern GWindow CVMakeTools(CharView *cv);
 extern GWindow CVMakeLayers(CharView *cv);
 extern GWindow BVMakeTools(BitmapView *bv);
 extern GWindow BVMakeLayers(BitmapView *bv);
 extern int CVPaletteMnemonicCheck(GEvent *event);
+extern int TrueCharState(GEvent *event);
+extern void CVToolsPopup(CharView *cv, GEvent *event);
+extern void BVToolsPopup(BitmapView *bv, GEvent *event);
 #endif
 extern real CVRoundRectRadius(void);
 extern int CVRectElipseCenter(void);
@@ -926,11 +954,8 @@ extern void CVRectEllipsePosDlg(CharView *cv);
 extern real CVStarRatio(void);
 extern int CVPolyStarPoints(void);
 extern StrokeInfo *CVFreeHandInfo(void);
-extern int TrueCharState(GEvent *event);
 extern void BVToolsSetCursor(BitmapView *bv, int state,char *device);
 extern void CVToolsSetCursor(CharView *cv, int state,char *device);
-extern void CVToolsPopup(CharView *cv, GEvent *event);
-extern void BVToolsPopup(BitmapView *bv, GEvent *event);
 extern int CVPaletteIsVisible(CharView *cv,int which);
 extern void CVPaletteSetVisible(CharView *cv,int which,int visible);
 extern void CVPalettesRaise(CharView *cv);
@@ -969,6 +994,9 @@ extern void DrawAnchorPoint(GWindow pixmap,int x, int y,int selected);
 extern void DefaultY(GRect *pos);
 extern void CVDrawRubberRect(GWindow pixmap, CharView *cv);
 extern void CVInfoDraw(CharView *cv, GWindow pixmap );
+extern void CVChar(CharView *cv, GEvent *event );
+extern void PI_ShowHints(SplineChar *sc, GGadget *list, int set);
+extern GTextInfo *SCHintList(SplineChar *sc,HintMask *);
 #endif
 extern void CVResize(CharView *cv );
 extern CharView *CharViewCreate(SplineChar *sc,FontView *fv,int enc);
@@ -1004,8 +1032,6 @@ extern void CVTile(CharView *cv);
 extern void FVTile(FontView *fv);
 extern void SCCharInfo(SplineChar *sc,EncMap *map,int enc);
 extern void CharInfoDestroy(struct charinfo *ci);
-extern void PI_ShowHints(SplineChar *sc, GGadget *list, int set);
-extern GTextInfo *SCHintList(SplineChar *sc,HintMask *);
 extern void CVGetInfo(CharView *cv);
 extern void CVPGetInfo(CharView *cv);
 extern int  SCUsedBySubs(SplineChar *sc);
@@ -1023,34 +1049,36 @@ extern void SPChangePointType(SplinePoint *sp, int pointtype);
 extern void CVAdjustPoint(CharView *cv, SplinePoint *sp);
 extern void CVMergeSplineSets(CharView *cv, SplinePoint *active, SplineSet *activess,
 	SplinePoint *merge, SplineSet *mergess);
-extern void CVChar(CharView *cv, GEvent *event );
 extern void CVAdjustControl(CharView *cv,BasePoint *cp, BasePoint *to);
 extern int  CVMoveSelection(CharView *cv, real dx, real dy, uint32 input_state);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 extern int  CVTestSelectFromEvent(CharView *cv,GEvent *event);
-extern void CVMouseDownPoint(CharView *cv);
-extern void CVMouseMovePoint(CharView *cv,PressedOn *);
 extern void CVMouseMovePen(CharView *cv, PressedOn *p, GEvent *event);
 extern void CVMouseUpPoint(CharView *cv,GEvent *event);
-extern void CVMouseUpPointer(CharView *cv );
 extern int  CVMouseMovePointer(CharView *cv, GEvent *event);
 extern void CVMouseDownPointer(CharView *cv, FindSel *fs, GEvent *event);
-extern void CVCheckResizeCursors(CharView *cv);
 extern void CVMouseDownRuler(CharView *cv, GEvent *event);
 extern void CVMouseMoveRuler(CharView *cv, GEvent *event);
 extern void CVMouseUpRuler(CharView *cv, GEvent *event);
-extern void CVMouseDownHand(CharView *cv);
 extern void CVMouseMoveHand(CharView *cv, GEvent *event);
-extern void CVMouseUpHand(CharView *cv);
 extern void CVMouseDownFreeHand(CharView *cv, GEvent *event);
 extern void CVMouseMoveFreeHand(CharView *cv, GEvent *event);
 extern void CVMouseUpFreeHand(CharView *cv, GEvent *event);
+extern void CVMouseDownShape(CharView *cv,GEvent *event);
+extern void BVChar(BitmapView *cv, GEvent *event );
+#endif
+extern void CVMouseDownPoint(CharView *cv);
+extern void CVMouseMovePoint(CharView *cv,PressedOn *);
+extern void CVMouseUpPointer(CharView *cv );
+extern void CVCheckResizeCursors(CharView *cv);
+extern void CVMouseDownHand(CharView *cv);
+extern void CVMouseUpHand(CharView *cv);
 extern void CVMouseDownTransform(CharView *cv);
 extern void CVMouseMoveTransform(CharView *cv);
 extern void CVMouseUpTransform(CharView *cv);
 extern void CVMouseDownKnife(CharView *cv);
 extern void CVMouseMoveKnife(CharView *cv,PressedOn *);
 extern void CVMouseUpKnife(CharView *cv);
-extern void CVMouseDownShape(CharView *cv,GEvent *event);
 extern void CVMouseMoveShape(CharView *cv);
 extern void CVMouseUpShape(CharView *cv);
 #ifdef FONTFORGE_CONFIG_GDRAW
@@ -1092,7 +1120,6 @@ extern void BCGeneralFunction(BitmapView *bv,
 	void (*SetPoint)(BitmapView *,int x, int y, void *data),void *data);
 extern char *BVFlipNames[];
 extern void BVChangeBC(BitmapView *bv, BDFChar *bc, int fitit );
-extern void BVChar(BitmapView *cv, GEvent *event );
 
 extern void MVSetSCs(MetricsView *mv, SplineChar **scs);
 extern void MVRefreshChar(MetricsView *mv, SplineChar *sc);
@@ -1116,22 +1143,24 @@ extern void Prefs_ReplaceMacFeatures(GGadget *list);
 #endif
 
 #if defined(FONTFORGE_CONFIG_GTK)
+extern char *FVOpenFont(char *title, const char *defaultfile,
+	const char *initial_filter, char **mimetypes,int mult,int newok);
 #elif defined(FONTFORGE_CONFIG_GDRAW)
 extern void SCAutoTrace(SplineChar *sc,GWindow v,int ask);
-#endif
-
 extern unichar_t *FVOpenFont(char *title, const char *defaultfile,
 	const char *initial_filter, unichar_t **mimetypes,int mult,int newok);
+#endif
+
 
 extern void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv);
 
+#if defined(FONTFORGE_CONFIG_GTK)
+#elif defined(FONTFORGE_CONFIG_GDRAW)
 enum sftf_fonttype { sftf_pfb, sftf_ttf, sftf_httf, sftf_otf, sftf_bitmap, sftf_pfaedit };
 extern int SFTFSetFont(GGadget *g, int start, int end, SplineFont *sf,
 	enum sftf_fonttype, int size, int antialias);
 extern void SFTFRegisterCallback(GGadget *g, void *cbcontext,
 	void (*changefontcallback)(void *,SplineFont *,enum sftf_fonttype,int size,int aa));
-#if defined(FONTFORGE_CONFIG_GTK)
-#elif defined(FONTFORGE_CONFIG_GDRAW)
 extern GGadget *SFTextAreaCreate(struct gwindow *base, GGadgetData *gd,void *data);
 extern void DisplayDlg(SplineFont *sf);
 #endif
@@ -1158,8 +1187,8 @@ extern SearchView *SVCreate(FontView *fv);
 extern void SVCharViewInits(SearchView *sv);
 #ifdef FONTFORGE_CONFIG_GDRAW
 extern void SVMenuClose(GWindow gw,struct gmenuitem *mi,GEvent *e);
-#endif
 extern void SVChar(SearchView *sv, GEvent *event);
+#endif
 extern void SVMakeActive(SearchView *sv,CharView *cv);
 extern int SVAttachFV(FontView *fv,int ask_if_difficult);
 extern void SVDetachFV(FontView *fv);
@@ -1175,8 +1204,8 @@ extern void IIScrollTo(struct instrinfo *ii,int ip,int mark_stop);
 extern void IIReinit(struct instrinfo *ii,int ip);
 #ifdef FONTFORGE_CONFIG_GDRAW
 extern int ii_v_e_h(GWindow gw, GEvent *event);
-#endif
 extern void instr_scroll(struct instrinfo *ii,struct sbevent *sb);
+#endif
 
 extern void CVGridFitChar(CharView *cv);
 extern void CVFtPpemDlg(CharView *cv,int debug);
@@ -1184,13 +1213,17 @@ extern void SCDeGridFit(SplineChar *sc);
 
 extern void CVDebugReInit(CharView *cv,int restart_debug,int dbg_fpgm);
 extern void CVDebugFree(DebugView *dv);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 extern int DVChar(DebugView *dv, GEvent *e);
+#endif
 
 extern void ShowKernClasses(SplineFont *sf,MetricsView *mv,int isv);
 extern void KCLD_End(struct kernclasslistdlg *kcld);
 extern void KCLD_MvDetach(struct kernclasslistdlg *kcld,MetricsView *mv);
 extern void KernPairD(SplineFont *sf,SplineChar *sc1,SplineChar *sc2,int isv);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 extern void KCD_DrawGlyph(GWindow pixmap,int x,int baseline,BDFChar *bdfc,int mag);
+#endif
 
 extern void AnchorControl(SplineChar *sc,AnchorPoint *ap);
 
@@ -1202,13 +1235,15 @@ struct psdict;
 extern void SFHistogram(SplineFont *sf,struct psdict *private,uint8 *selected,
 	EncMap *map, enum hist_type which);
 
-extern GTextInfo **SFGenTagListFromType(struct gentagtype *gentags,enum possub_type type);
-extern struct contextchaindlg *ContextChainEdit(SplineFont *sf,FPST *fpst,
-	struct gfi_data *gfi,unichar_t *newname);
 extern void CCD_Close(struct contextchaindlg *ccd);
 extern int CCD_NameListCheck(SplineFont *sf,const char *ret,int empty_bad,char *title);
+#if defined(FONTFORGE_CONFIG_GDRAW)
+extern struct contextchaindlg *ContextChainEdit(SplineFont *sf,FPST *fpst,
+	struct gfi_data *gfi,unichar_t *newname);
+extern GTextInfo **SFGenTagListFromType(struct gentagtype *gentags,enum possub_type type);
 extern int CCD_InvalidClassList(char *ret,GGadget *list,int wasedit);
 extern char *cu_copybetween(const unichar_t *start, const unichar_t *end);
+#endif
 
 extern struct statemachinedlg *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d);
 extern void SMD_Close(struct statemachinedlg *smd);
@@ -1240,8 +1275,10 @@ extern void SFRemoveGlyph(SplineFont *sf,SplineChar *sc, int *flags);
 extern void FVAddEncodingSlot(FontView *fv,int gid);
 extern void SFAddEncodingSlot(SplineFont *sf,int gid);
 extern void SFAddGlyphAndEncode(SplineFont *sf,SplineChar *sc,EncMap *basemap, int baseenc);
+#if defined(FONTFORGE_CONFIG_GDRAW)
 extern GMenuItem *GetEncodingMenu(void (*func)(GWindow,GMenuItem *,GEvent *),
 	Encoding *current);
+#endif
 
 struct instrdlg;
 uint8 *_IVParse(struct instrdlg *iv, char *text, int *len);

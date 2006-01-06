@@ -898,7 +898,7 @@ void LoadEncodingFile(void) {
     char *fn;
     char *filename;
 
-    fn = gwwv_open_filename(_("Load Encoding"), NULL, filter, NULL,NULL);
+    fn = gwwv_open_filename(_("Load Encoding"), NULL, filter, NULL);
 #endif
     if ( fn==NULL )
 return;
@@ -1323,7 +1323,7 @@ return( maybe );
 	uret = NULL;
 	if ( buf[0]!='\0' && !no_windowing_ui ) {
 	    if ( sf!=NULL ) sf->loading_cid_map = true;
-	    uret = gwwv_open_filename(_("Find a cidmap file..."),NULL,buf,NULL,NULL);
+	    uret = gwwv_open_filename(_("Find a cidmap file..."),NULL,buf,NULL);
 	    if ( sf!=NULL ) sf->loading_cid_map = false;
 	}
 	if ( uret==NULL ) {
@@ -1557,7 +1557,7 @@ struct cidmap *AskUserForCIDMap(SplineFont *sf) {
     free(choices);
     if ( ret==0 ) {
 	filename = gwwv_open_filename(_("Find a cidmap file..."),NULL,
-		"?*-?*-[0-9]*.cidmap",NULL,NULL);
+		"?*-?*-[0-9]*.cidmap",NULL);
 	if ( filename==NULL )
 	    ret = -1;
     }
@@ -1935,7 +1935,7 @@ return( false );
     }
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( cmapname==NULL ) {
-	cmapname = gwwv_open_filename(_("Find an adobe CMap file..."),NULL,NULL,NULL,CMapFilter);
+	cmapname = gwwv_open_filename(_("Find an adobe CMap file..."),NULL,NULL,CMapFilter);
     }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     if ( cmapname==NULL )
@@ -2116,7 +2116,7 @@ SplineFont *MakeCIDMaster(SplineFont *sf,EncMap *oldmap,int bycmap,char *cmapfil
 	freeme = false;
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	if ( cmapfilename==NULL ) {
-	    cmapfilename = gwwv_open_filename(_("Find an adobe CMap file..."),NULL,NULL,NULL,CMapFilter);
+	    cmapfilename = gwwv_open_filename(_("Find an adobe CMap file..."),NULL,NULL,CMapFilter);
 	    freeme = true;
 	}
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

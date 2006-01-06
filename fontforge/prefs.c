@@ -890,7 +890,7 @@ static int Prefs_ScriptBrowse(GGadget *g, GEvent *e) {
 	char *cur = GGadgetGetTitle8(tf); char *ret;
 
 	if ( *cur=='\0' ) cur=NULL;
-	ret = gwwv_open_filename(_("Call Script"), cur, "*.pe", NULL,NULL);
+	ret = gwwv_open_filename(_("Call Script"), cur, "*.pe", NULL);
 	free(cur);
 	if ( ret==NULL )
 return(true);
@@ -907,7 +907,7 @@ static int Prefs_BrowseFile(GGadget *g, GEvent *e) {
 	char *cur = GGadgetGetTitle8(tf); char *ret;
 	struct prefs_list *pl = GGadgetGetUserData(tf);
 
-	ret = gwwv_open_filename(pl->name, *cur=='\0'? NULL : cur, NULL, NULL,NULL);
+	ret = gwwv_open_filename(pl->name, *cur=='\0'? NULL : cur, NULL, NULL);
 	free(cur);
 	if ( ret==NULL )
 return(true);
