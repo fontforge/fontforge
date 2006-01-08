@@ -6054,6 +6054,8 @@ return;
 	    c->return_val.u.ival = sc->orig_pos;
 	else if ( strmatch( c->a.vals[1].u.sval,"LayerCount")==0 )
 	    c->return_val.u.ival = sc->layer_cnt;
+	else if ( strmatch( c->a.vals[1].u.sval,"PointCount")==0 )
+	    c->return_val.u.ival = SCNumberPoints(sc);
 	else if ( strmatch( c->a.vals[1].u.sval,"RefCount")==0 ) {
 	    for ( i=0, layer=ly_fore; layer<sc->layer_cnt; ++layer )
 		for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next, ++i )
