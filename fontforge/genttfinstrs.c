@@ -1611,25 +1611,6 @@ return( instrs );
 }
 
 void initforinstrs(SplineChar *sc) {
-    SplineSet *ss;
-    SplinePoint *sp;
-    MinimumDistance *md;
-
-    for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
-	for ( sp=ss->first; ; ) {
-	    sp->dontinterpolate = false;
-	    if ( sp->next==NULL )
-	break;
-	    sp = sp->next->to;
-	    if ( sp == ss->first )
-	break;
-	}
-    }
-
-    for ( md=sc->md; md!=NULL; md=md->next ) {
-	if ( md->sp1!=NULL ) md->sp1->dontinterpolate = true;
-	if ( md->sp2!=NULL ) md->sp2->dontinterpolate = true;
-    }
 }
 
 static uint8 *dogeninstructions(SplineChar *sc, struct glyphinstrs *gi,
