@@ -4434,7 +4434,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    sf->gentags.tagtype = galloc(sf->gentags.tt_max*sizeof(struct tagtype));
 	    ch = getc(sfd);
 	    i = 0;
-	    while ( ch!='\n' ) {
+	    while ( ch!='\n' && ch!='\r' ) {
 		while ( ch==' ' ) ch = getc(sfd);
 		if ( ch=='\n' || ch==EOF )
 	    break;
