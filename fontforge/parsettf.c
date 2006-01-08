@@ -4796,6 +4796,8 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     if ( info->twobytesymbol )
 	/* rework ms symbol encodings */
 	SymbolFixup(info);
+    if ( info->map==NULL )		/* Can happen when reading a ttf from a pdf */
+	info->map = EncMapFromEncoding(sf,FindOrMakeEncoding("original"));
     if ( info->subfontcnt==0 )
 	PsuedoEncodeUnencoded(info->map,info);
     MapDoBack(info->map,info);
