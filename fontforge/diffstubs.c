@@ -410,6 +410,11 @@ return( true );
 return( false );
 }
 
+int RealWithin(real a,real b,real fudge) {
+
+return( b>=a-fudge && b<=a+fudge );
+}
+
 int SplineIsLinear(Spline *spline) {
     real t1,t2;
     int ret;
@@ -634,7 +639,7 @@ SplineFont *SplineFontEmpty(void) {
     SplineFont *sf;
     sf = gcalloc(1,sizeof(SplineFont));
     sf->pfminfo.fstype = -1;
-    sf->map->enc = &custom;
+     sf->map = EncMapNew(0,0,&custom);
 return( sf );
 }
 
