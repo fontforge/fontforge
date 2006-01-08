@@ -717,6 +717,7 @@ void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
     if ( cv->inactive )
 	dopoints = false;
 
+    GDrawSetFont(pixmap,cv->small);		/* For point numbers */
     for ( spl = set; spl!=NULL; spl = spl->next ) {
 	GPointList *gpl = MakePoly(cv,spl), *cur;
 	if ( dopoints>0 || (dopoints==-1 && cv->showpointnumbers) ) {
@@ -2733,11 +2734,21 @@ static int _SCRefNumberPoints2(SplineSet **_rss,SplineChar *sc,int pnum) {
     for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next, rss=rss->next ) {
 	if ( rss==NULL )		/* Can't happen */
     break;
-	starts_with_cp = ss->first->ttfindex==0xffff && !ss->first->noprevcp;
+	starts_with_cp = !ss->first->noprevcp &&
+		((ss->first->ttfindex == pnum+1 && ss->first->prev->from->nextcpindex==pnum ) ||
+		((ss->first->ttfindex==0xffff ||
+		    ( !ss->first->nonextcp && !ss->first->noprevcp &&
+		     !ss->first->roundx && !ss->first->roundy && !ss->first->dontinterpolate )) &&
+		    RealWithin((ss->first->nextcp.x+ss->first->prevcp.x)/2, ss->first->me.x,.1) &&
+		    RealWithin((ss->first->nextcp.y+ss->first->prevcp.y)/2, ss->first->me.y,.1) ));
 	startcnt = pnum;
 	if ( starts_with_cp ) ++pnum;
 	for ( sp = ss->first, rsp=rss->first; ; ) {
-	    if ( sp->ttfindex==0xffff )
+	    if ( (sp->ttfindex==0xffff ||
+		    ( !sp->nonextcp && !sp->noprevcp &&
+		     !sp->roundx && !sp->roundy && !sp->dontinterpolate )) &&
+		    RealWithin((sp->nextcp.x+sp->prevcp.x)/2, sp->me.x,.1) &&
+		    RealWithin((sp->nextcp.y+sp->prevcp.y)/2, sp->me.y,.1) )
 		rsp->ttfindex = 0xffff;
 	    else
 		rsp->ttfindex = pnum++;
