@@ -84,6 +84,43 @@ return( xrefpos );
     }
 }
 
+static int findkeyword(FILE *pdf, char *keyword) {
+    char buffer[60];
+    int len = strlen( keyword );
+    int ch, i;
+
+    for ( i=0; i<len; ++i )
+	buffer[i] = ch = getc(pdf);
+    if ( ch==EOF )
+return( false );
+    buffer[i] = 0;
+    forever {
+	if ( strcmp(buffer,keyword)==0 )
+return( true );
+	for ( i=1; i<len; ++i )
+	    buffer[i-1] = buffer[i];
+	buffer[len-1] = ch = getc(pdf);
+	if ( ch==EOF )
+return( false );
+    }
+}
+
+static int seektrailer(FILE *pdf, int *start, int *num) {
+    int prev_xref;
+
+    if ( !findkeyword(pdf,"trailer"))
+return( false );
+    if ( !findkeyword(pdf,"/Prev"))
+return( false );
+    if ( fscanf( pdf, "%d", &prev_xref )!=1 )
+return( false );
+    fseek(pdf, prev_xref, SEEK_SET );
+    if ( fscanf(pdf, "xref %d %d", start, num )!=2 )
+return( false );
+
+return( true );
+}
+
 static long *FindObjects(struct pdfcontext *pc) {
     FILE *pdf = pc->pdf;
     long xrefpos = FindXRef(pdf);
@@ -125,6 +162,7 @@ return( ret );
 return( ret );
 	}
 	if ( fscanf(pdf, "%d %d", &start, &num )!=2 )
+	    if ( !seektrailer(pdf, &start, &num))
 return( ret );
     }
 }
