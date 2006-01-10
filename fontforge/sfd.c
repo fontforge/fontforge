@@ -1063,7 +1063,7 @@ return;
     fprintf( sfd,"EndMacFeatures\n" );
 }
 
-static void SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map) {
+static void SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal) {
     int i, j, realcnt;
     BDFFont *bdf;
     struct ttflangname *ln;
@@ -1074,6 +1074,9 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map) {
     ASM *sm;
     int isv;
     int *newgids = NULL;
+
+    if ( normal!=NULL )
+	map = normal;
 
     fprintf(sfd, "FontName: %s\n", sf->fontname );
     if ( sf->fullname!=NULL )
@@ -1416,6 +1419,8 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map) {
 	fprintf(sfd, "CIDVersion: %g\n", sf->cidversion );	/* This is a number whereas "version" is a string */
     } else
 	SFDDumpEncoding(sfd,map->enc,"Encoding");
+    if ( normal!=NULL )
+	fprintf(sfd, "Compacted: 1\n" );
     fprintf( sfd, "UnicodeInterp: %s\n", unicode_interp_names[sf->uni_interp]);
 	
     if ( map->remap!=NULL ) {
@@ -1480,7 +1485,7 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map) {
 		max = sf->subfonts[i]->glyphcnt;
 	fprintf(sfd, "BeginSubFonts: %d %d\n", sf->subfontcnt, max );
 	for ( i=0; i<sf->subfontcnt; ++i )
-	    SFD_Dump(sfd,sf->subfonts[i],map);
+	    SFD_Dump(sfd,sf->subfonts[i],map,NULL);
 	fprintf(sfd, "EndSubFonts\n" );
     } else {
 	int enccount = map->enccount;
@@ -1533,7 +1538,7 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map) {
 	free(newgids);
 }
 
-static void SFD_MMDump(FILE *sfd,SplineFont *sf,EncMap *map) {
+static void SFD_MMDump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal) {
     MMSet *mm = sf->mm;
     int max, i, j;
 
@@ -1581,12 +1586,12 @@ static void SFD_MMDump(FILE *sfd,SplineFont *sf,EncMap *map) {
 	    max = mm->instances[i]->glyphcnt;
     fprintf(sfd, "BeginMMFonts: %d %d\n", mm->instance_count+1, max );
     for ( i=0; i<mm->instance_count; ++i )
-	SFD_Dump(sfd,mm->instances[i],map);
-    SFD_Dump(sfd,mm->normal,map);
+	SFD_Dump(sfd,mm->instances[i],map,normal);
+    SFD_Dump(sfd,mm->normal,map,normal);
     fprintf(sfd, "EndMMFonts\n" );
 }
 
-static void SFDDump(FILE *sfd,SplineFont *sf,EncMap *map) {
+static void SFDDump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal) {
     int i, realcnt;
     BDFFont *bdf;
 
@@ -1608,9 +1613,9 @@ static void SFDDump(FILE *sfd,SplineFont *sf,EncMap *map) {
 #endif
     fprintf(sfd, "SplineFontDB: %.1f\n", 1.0 );
     if ( sf->mm != NULL )
-	SFD_MMDump(sfd,sf->mm->normal,map);
+	SFD_MMDump(sfd,sf->mm->normal,map,normal);
     else
-	SFD_Dump(sfd,sf,map);
+	SFD_Dump(sfd,sf,map,normal);
 #if defined(FONTFORGE_CONFIG_GDRAW)
     gwwv_progress_end_indicator();
 #elif defined(FONTFORGE_CONFIG_GTK)
@@ -1618,7 +1623,7 @@ static void SFDDump(FILE *sfd,SplineFont *sf,EncMap *map) {
 #endif
 }
 
-int SFDWrite(char *filename,SplineFont *sf,EncMap *map) {
+int SFDWrite(char *filename,SplineFont *sf,EncMap *map,EncMap *normal) {
     FILE *sfd = fopen(filename,"w");
     char *oldloc;
 
@@ -1627,12 +1632,12 @@ return( 0 );
     oldloc = setlocale(LC_NUMERIC,"C");
     if ( sf->cidmaster!=NULL )
 	sf=sf->cidmaster;
-    SFDDump(sfd,sf,map);
+    SFDDump(sfd,sf,map,normal);
     setlocale(LC_NUMERIC,oldloc);
 return( !ferror(sfd) && fclose(sfd)==0 );
 }
 
-int SFDWriteBak(SplineFont *sf,EncMap *map) {
+int SFDWriteBak(SplineFont *sf,EncMap *map,EncMap *normal) {
     char *buf/*, *pt, *bpt*/;
 
     if ( sf->cidmaster!=NULL )
@@ -1653,7 +1658,7 @@ int SFDWriteBak(SplineFont *sf,EncMap *map) {
     rename(sf->filename,buf);
     free(buf);
 
-return( SFDWrite(sf->filename,sf,map));
+return( SFDWrite(sf->filename,sf,map,normal));
 }
 
 /* ********************************* INPUT ********************************** */
@@ -4209,6 +4214,10 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    /* old_encname =*/ (void) SFDGetEncoding(sfd,tok,sf);
 	} else if ( strmatch(tok,"UnicodeInterp:")==0 ) {
 	    sf->uni_interp = SFDGetUniInterp(sfd,tok,sf);
+	} else if ( strmatch(tok,"Compacted:")==0 ) {
+	    int temp;
+	    getint(sfd,&temp);
+	    sf->compacted = temp;
 	} else if ( strmatch(tok,"Registry:")==0 ) {
 	    geteol(sfd,tok);
 	    sf->cidregistry = copy(tok);
@@ -4761,11 +4770,7 @@ SplineFont *SFDRead(char *filename) {
     if ( sfd==NULL )
 return( NULL );
     oldloc = setlocale(LC_NUMERIC,"C");
-#if defined(FONTFORGE_CONFIG_GDRAW)
     gwwv_progress_change_stages(2);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gwwv_progress_change_stages(2);
-#endif
     if ( (version = SFDStartsCorrectly(sfd,tok)) )
 	sf = SFD_GetFont(sfd,NULL,tok);
     setlocale(LC_NUMERIC,oldloc);
