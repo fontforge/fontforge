@@ -466,6 +466,7 @@ typedef struct metricsview {
 enum fv_metrics { fvm_baseline=1, fvm_origin=2, fvm_advanceat=4, fvm_advanceto=8 };
 typedef struct fontview {
     EncMap *map;
+    EncMap *normal;		/* If this is not NULL then we have a compacted encoding in map, and this is the original */
     SplineFont *sf;
     BDFFont *show, *filled;
 #if defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)

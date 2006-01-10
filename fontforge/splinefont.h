@@ -969,6 +969,7 @@ typedef struct splinefont {
 						/*  I leave it in so as to avoid cluttering up code with #ifdefs */
     unsigned int strokedfont: 1;
     unsigned int new: 1;			/* A new and unsaved font */
+    unsigned int compacted: 1;	/* only used when opening a font */
     struct fontview *fv;
     enum uni_interp uni_interp;
     EncMap *map;		/* only used when opening a font to provide original default encoding */
@@ -1599,8 +1600,8 @@ extern Encoding *_FindOrMakeEncoding(const char *name,int make_it);
 extern Encoding *FindOrMakeEncoding(const char *name);
 extern void SFDDumpMacFeat(FILE *sfd,MacFeat *mf);
 extern MacFeat *SFDParseMacFeatures(FILE *sfd, char *tok);
-extern int SFDWrite(char *filename,SplineFont *sf,EncMap *map);
-extern int SFDWriteBak(SplineFont *sf,EncMap *map);
+extern int SFDWrite(char *filename,SplineFont *sf,EncMap *map,EncMap *normal);
+extern int SFDWriteBak(SplineFont *sf,EncMap *map,EncMap *normal);
 extern SplineFont *SFDRead(char *filename);
 extern SplineChar *SFDReadOneChar(SplineFont *sf,const char *name);
 extern char *TTFGetFontName(FILE *ttf,int32 offset,int32 off2);

@@ -1354,13 +1354,13 @@ static void bSave(Context *c) {
 	    ScriptError(c,"If an argument is given to Save it must be a filename");
 	t = script2utf8_copy(c->a.vals[1].u.sval);
 	locfilename = utf82def_copy(t);
-	if ( !SFDWrite(locfilename,sf,c->curfv->map))
+	if ( !SFDWrite(locfilename,sf,c->curfv->map,c->curfv->normal))
 	    ScriptError(c,"Save As failed" );
 	free(t); free(locfilename);
     } else {
 	if ( sf->filename==NULL )
 	    ScriptError(c,"This font has no associated sfd file yet, you must specify a filename" );
-	if ( !SFDWriteBak(sf,c->curfv->map) )
+	if ( !SFDWriteBak(sf,c->curfv->map,c->curfv->normal) )
 	    ScriptError(c,"Save failed" );
     }
 }
@@ -1393,7 +1393,7 @@ static void bGenerate(Context *c) {
     t = script2utf8_copy(c->a.vals[1].u.sval);
     locfilename = utf82def_copy(t);
     if ( !GenerateScript(sf,locfilename,bitmaptype,fmflags,res,subfontdirectory,
-	    NULL,c->curfv->map) )
+	    NULL,c->curfv->normal==NULL?c->curfv->map:c->curfv->normal) )
 	ScriptError(c,"Save failed");
     free(t); free(locfilename);
 }
@@ -1526,7 +1526,7 @@ static void bGenerateFamily(Context *c) {
     t = script2utf8_copy(c->a.vals[1].u.sval);
     locfilename = utf82def_copy(t);
     if ( !GenerateScript(sf,locfilename,bitmaptype,fmflags,-1,NULL,sfs,
-	    c->curfv->map) )
+	    c->curfv->normal==NULL?c->curfv->map:c->curfv->normal) )
 	ScriptError(c,"Save failed");
     free(t); free(locfilename);
     for ( cur=sfs; cur!=NULL; cur=sfs ) {

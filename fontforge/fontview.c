@@ -493,7 +493,7 @@ return( ret==0 );
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 int _FVMenuGenerate(FontView *fv,int family) {
     FVFlattenAllBitmapSelections(fv);
-return( SFGenerateFont(fv->sf,family,fv->map) );
+return( SFGenerateFont(fv->sf,family,fv->normal==NULL?fv->map:fv->normal) );
 }
 
 # ifdef FONTFORGE_CONFIG_GDRAW
@@ -571,7 +571,7 @@ return( 0 );
 #endif
     free(ret);
     FVFlattenAllBitmapSelections(fv);
-    ok = SFDWrite(filename,fv->sf,fv->map);
+    ok = SFDWrite(filename,fv->sf,fv->map,fv->normal);
     if ( ok ) {
 	SplineFont *sf = fv->cidmaster?fv->cidmaster:fv->sf->mm!=NULL?fv->sf->mm->normal:fv->sf;
 	free(sf->filename);
@@ -630,7 +630,7 @@ int _FVMenuSave(FontView *fv) {
 	ret = _FVMenuSaveAs(fv);
     else {
 	FVFlattenAllBitmapSelections(fv);
-	if ( !SFDWriteBak(sf,fv->map) )
+	if ( !SFDWriteBak(sf,fv->map,fv->normal) )
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	    gwwv_post_error(_("Save Failed"),_("Save Failed"));
 #endif
@@ -5194,8 +5194,8 @@ void FVSetTitle(FontView *fv) {
     if ( fv->gw==NULL )		/* In scripting */
 return;
 
-    enc = SFEncodingName(fv->sf,fv->map);
-    len = strlen(fv->sf->fontname)+1 + strlen(enc)+4;
+    enc = SFEncodingName(fv->sf,fv->normal?fv->normal:fv->map);
+    len = strlen(fv->sf->fontname)+1 + strlen(enc)+6;
     if ( fv->cidmaster!=NULL ) {
 	if ( (file = fv->cidmaster->filename)==NULL )
 	    file = fv->cidmaster->origname;
@@ -5216,6 +5216,7 @@ return;
 	free(temp);
     }
     uc_strcat(title, " (" );
+    if ( fv->normal ) uc_strcat(title,"><");
     uc_strcat(title,enc);
     uc_strcat(title, ")" );
     free(enc);
@@ -6499,15 +6500,22 @@ static void FVMenuRemoveUnused(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 
 static void FVMenuCompact(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    EncMap *map = fv->map;
-    int oldcount = map->enccount;
+    int oldcount = fv->map->enccount;
 
-    CompactEncMap(map,fv->sf);
+    if ( fv->normal!=NULL ) {
+	EncMapFree(fv->map);
+	fv->map = fv->normal;
+	fv->normal = NULL;
+    } else {
+	fv->normal = EncMapCopy(fv->map);
+	CompactEncMap(fv->map,fv->sf);
+    }
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     /* We reduced the encoding, so don't really need to reallocate the selection */
     /*  array. It's just bigger than it needs to be. */
-    if ( oldcount!=map->enccount )
+    if ( oldcount!=fv->map->enccount )
 	FontViewReformatOne(fv);
+    FVSetTitle(fv);
 #endif
 }
 
@@ -6621,7 +6629,7 @@ static void FVMenuRemoveEncoding(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 
 static GMenuItem enlist[] = {
     { { (unichar_t *) N_("_Reencode"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'E' }, '\0', ksm_shift|ksm_control, emptymenu, FVEncodingMenuBuild, NULL, MID_Reencode },
-    { { (unichar_t *) N_("_Compact"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuCompact, MID_Compact },
+    { { (unichar_t *) N_("_Compact"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuCompact, MID_Compact },
     { { (unichar_t *) N_("_Force Encoding"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, emptymenu, FVForceEncodingMenuBuild, NULL, MID_ForceReencode },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Add Encoding Slots..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuAddUnencoded, MID_AddUnencoded },
@@ -6652,6 +6660,9 @@ static void enlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
+	  case MID_Compact:
+	    mi->ti.checked = fv->normal!=NULL;
+	  break;
 	  case MID_Reencode: case MID_ForceReencode:
 	    mi->ti.disabled = fv->cidmaster!=NULL;
 	  break;
@@ -9806,7 +9817,16 @@ FontView *_FontViewCreate(SplineFont *sf) {
     }
     if ( sf->subfontcnt==0 ) {
 	fv->sf = sf;
-	fv->map = fv->nextsame==NULL ? sf->map : EncMapCopy(fv->nextsame->map);
+	if ( fv->nextsame!=NULL ) {
+	    fv->map = EncMapCopy(fv->nextsame->map);
+	    fv->normal = fv->nextsame->normal==NULL ? NULL : EncMapCopy(fv->nextsame->normal);
+	} else if ( sf->compacted ) {
+	    fv->normal = sf->map;
+	    fv->map = CompactEncMap(EncMapCopy(sf->map),sf);
+	} else {
+	    fv->map = sf->map;
+	    fv->normal = NULL;
+	}
     } else {
 	fv->cidmaster = sf;
 	for ( i=0; i<sf->subfontcnt; ++i )
