@@ -6435,6 +6435,9 @@ static void FVMenuAddUnencoded(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     int cnt, i;
     EncMap *map = fv->map;
 
+    if ( fv->normal!=NULL )
+return;
+
     /* Add unused unencoded slots in the map */
     ret = gwwv_ask_string(_("_Add Encoding Slots..."),"1",fv->cidmaster?_("How many CID slots do you wish to add?"):_("How many unencoded glyph slots do you wish to add?"));
     if ( ret==NULL )
@@ -6673,6 +6676,9 @@ static void enlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	  break;
 	  case MID_Reencode: case MID_ForceReencode:
 	    mi->ti.disabled = fv->cidmaster!=NULL;
+	  break;
+	  case MID_AddUnencoded:
+	    mi->ti.disabled = fv->normal!=NULL;
 	  break;
 	  case MID_DetachGlyphs: case MID_DetachAndRemoveGlyphs:
 	    mi->ti.disabled = !anyglyphs;
