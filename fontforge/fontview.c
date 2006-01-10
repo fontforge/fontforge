@@ -5594,6 +5594,10 @@ static void FVMenuReencode(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	EncMapFree(fv->map);
 	fv->map = map;
     }
+    if ( fv->normal!=NULL ) {
+	EncMapFree(fv->normal);
+	fv->normal = NULL;
+    }
     FVSetTitle(fv);
     FontViewReformatOne(fv);
 }
@@ -5608,6 +5612,10 @@ static void FVMenuForceEncode(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     if ( oldcnt < fv->map->enccount ) {
 	fv->selected = grealloc(fv->selected,fv->map->enccount);
 	memset(fv->selected+oldcnt,0,fv->map->enccount-oldcnt);
+    }
+    if ( fv->normal!=NULL ) {
+	EncMapFree(fv->normal);
+	fv->normal = NULL;
     }
     FVSetTitle(fv);
     FontViewReformatOne(fv);
