@@ -1434,6 +1434,8 @@ extern void BDFFontFree(BDFFont *bdf);
 extern int  PSBitmapDump(char *filename,BDFFont *font, EncMap *map);
 extern int  BDFFontDump(char *filename,BDFFont *font, EncMap *map, int res);
 extern int  FONFontDump(char *filename,BDFFont *font, EncMap *map, int res);
+extern void SFReplaceEncodingBDFProps(SplineFont *sf,EncMap *map);
+extern void SFReplaceFontnameBDFProps(SplineFont *sf);
 extern FILE *BDFDefaults(BDFFont *bdf, EncMap *map);
 /* Two lines intersect in at most 1 point */
 /* Two quadratics intersect in at most 4 points */
