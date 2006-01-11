@@ -2433,6 +2433,7 @@ static void bReencode(Context *c) {
     }
     free(c->curfv->selected);
     c->curfv->selected = gcalloc(c->curfv->map->enccount,sizeof(char));
+    SFReplaceEncodingBDFProps(c->curfv->sf,c->curfv->map);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( !no_windowing_ui )
 	FontViewReformatAll(c->curfv->sf);
@@ -2751,6 +2752,7 @@ static void _SetFontNames(Context *c,SplineFont *sf) {
 	free(sf->version);
 	sf->version = script2latin1_copy(c->a.vals[6].u.sval);
     }
+    SFReplaceFontnameBDFProps(c->curfv->sf);
 }
 
 static void bSetFontNames(Context *c) {

@@ -5598,6 +5598,7 @@ static void FVMenuReencode(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	EncMapFree(fv->normal);
 	fv->normal = NULL;
     }
+    SFReplaceEncodingBDFProps(fv->sf,fv->map);
     FVSetTitle(fv);
     FontViewReformatOne(fv);
 }
@@ -5617,6 +5618,7 @@ static void FVMenuForceEncode(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	EncMapFree(fv->normal);
 	fv->normal = NULL;
     }
+    SFReplaceEncodingBDFProps(fv->sf,fv->map);
     FVSetTitle(fv);
     FontViewReformatOne(fv);
 }

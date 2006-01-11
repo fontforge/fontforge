@@ -330,7 +330,7 @@ static void figureDefMetrics(BDFFont *font,struct metric_defaults *defs) {
     }
 }
 
-static int BdfPropHasKey(BDFFont *font,char *key,char *buffer, int len ) {
+static int BdfPropHasKey(BDFFont *font,const char *key,char *buffer, int len ) {
     int i;
 
     for ( i=0; i<font->prop_cnt; ++i ) if ( strcmp(font->props[i].name,key)==0 ) {
@@ -371,6 +371,81 @@ return;
     }
 }
 
+static void def_Charset_Col(SplineFont *sf,EncMap *map,char *encoding, char *buffer) {
+    uint32 codepages[2];
+    /* A buffer with 250 bytes should be more than big enough */
+
+    OS2FigureCodePages(sf,codepages);
+    buffer[0] = '\0';
+    if ( codepages[1]&(1U<<31) )
+	strcat(buffer , "ASCII " );
+    if ( (codepages[1]&(1U<<30)) )
+	strcat(buffer , "ISOLatin1Encoding " );
+    if ( (codepages[0]&2) )
+	strcat(buffer , "ISO8859-2 " );
+    if ( (codepages[0]&4) )
+	strcat(buffer , "ISO8859-5 " );
+    if ( (codepages[0]&8) )
+	strcat(buffer , "ISO8859-7 " );
+    if ( (codepages[0]&0x10) )
+	strcat(buffer , "ISO8859-9 " );
+    if ( (codepages[0]&0x20) )
+	strcat(buffer , "ISO8859-8 " );
+    if ( (codepages[0]&0x40) )
+	strcat(buffer , "ISO8859-6 " );
+    if ( (codepages[0]&0x80) )
+	strcat(buffer , "ISO8859-4 " );
+    if ( (codepages[0]&0x10000)  )
+	strcat(buffer , "ISO8859-11 " );
+    if ( (codepages[0]&0x20000) && (map->enc->is_unicodebmp || map->enc->is_unicodefull ))
+	strcat(buffer , "JISX0208.1997 " );
+    if ( (codepages[0]&0x40000) && (map->enc->is_unicodebmp || map->enc->is_unicodefull ) )
+	strcat(buffer , "GB2312.1980 " );
+    if ( (codepages[0]&0x80000) && (map->enc->is_unicodebmp || map->enc->is_unicodefull ))
+	strcat(buffer , "KSC5601.1992 " );
+    if ( (codepages[0]&0x100000) && (map->enc->is_unicodebmp || map->enc->is_unicodefull ))
+	strcat(buffer , "BIG5 " );
+    if ( (codepages[0]&0x80000000) )
+	strcat(buffer , "Symbol " );
+
+    strcat(buffer , encoding );
+}
+
+static void def_Charset_Enc(EncMap *map,char *encoding,char *reg,char *enc) {
+    char *pt;
+
+    if ( map->enc->is_custom || map->enc->is_original ) {
+	strcpy( reg, "FontSpecific" );
+	strcpy( enc, "0");
+    } else if ( (pt = strstr(map->enc->enc_name,"8859"))!=NULL ) {
+	strcpy( reg, "ISO8859" );
+	pt += 4;
+	if ( !isdigit(*pt)) ++pt;
+	strcpy(enc, pt );
+    } else if ( map->enc->is_unicodebmp || map->enc->is_unicodefull ) {
+	strcpy( reg, "ISO10646" );
+	strcpy( enc, "1" );
+    } else if ( strstr(map->enc->enc_name, "5601")!=NULL ) {
+	strcpy( reg, "KSC5601.1992" );
+	strcpy( enc, "3" );
+    } else if ( strstr(map->enc->enc_name, "2312")!=NULL ) {
+	strcpy( reg, "GB2312.1980" );
+	strcpy( enc, "0" );
+    } else if ( strstrmatch(map->enc->enc_name, "JISX0208")!=NULL ) {
+	strcpy( reg, "JISX0208.1997" );
+	strcpy( enc, "0" );
+    } else if ( strstrmatch(map->enc->enc_name, "JISX0208")!=NULL ) {
+	strcpy( reg, encoding );
+	pt = strchr( reg,'-');
+	if ( pt==NULL )
+	    strcpy( enc, "0" );
+	else {
+	    strcpy( enc, pt+1 );
+	    *pt = '\0';
+	}
+    }
+}
+
 static void BDFDumpHeader(FILE *file,BDFFont *font,EncMap *map, char *encoding,
 	int res, struct metric_defaults *defs) {
     int avg, cnt, pnt;
@@ -380,14 +455,13 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,EncMap *map, char *encoding,
     int x_h= -1, cap_h= -1, def_ch=-1;
     char fontname[300];
     int fbb_height, fbb_width, fbb_descent, fbb_lbearing;
-    char *pt;
-    uint32 codepages[2];
     char *sffn = *font->sf->fontname ? font->sf->fontname : "Untitled";
     int glyph_at_zero;
     int pcnt;
     int em = font->sf->ascent + font->sf->descent;
     int i;
     int old_pcnt = font->prop_cnt;
+    int has_reg, has_sets;
 
     if ( AllSame(font,&avg,&cnt))
 	mono="M";
@@ -501,12 +575,18 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,EncMap *map, char *encoding,
 		fprintf( file, "COMMENT \"%s\"\n", font->props[i].u.str );
     }
 
+    has_reg = has_sets = 0;
     for ( i=pcnt=0; i<font->prop_cnt; ++i ) {
-	if ( font->props[i].type&prt_property )
+	if ( font->props[i].type&prt_property ) {
 	    ++pcnt;
+	    if ( strcmp(font->props[i].name,"CHARSET_REGISTRY")==0 )
+		has_reg = true;
+	    if ( strcmp(font->props[i].name,"CHARSET_COLLECTIONS")==0 )
+		has_sets = true;
+	}
     }
     if ( pcnt!=0 ) {
-	fprintf( file, "STARTPROPERTIES %d\n", pcnt );
+	fprintf( file, "STARTPROPERTIES %d\n", pcnt+(!has_reg?2:0)+(!has_sets) );
 	for ( i=pcnt=0; i<font->prop_cnt; ++i ) {
 	    if ( font->props[i].type&prt_property ) {
 		fprintf( file, "%s ", font->props[i].name );
@@ -545,6 +625,7 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,EncMap *map, char *encoding,
 		GenerateGlyphRanges(font,NULL)+
 		(def_ch!=-1 || glyph_at_zero)+(font->clut!=NULL));
 	fprintf( file, "FONT_NAME \"%s\"\n", font->sf->fontname );
+	fprintf( file, "FULL_NAME \"%s\"\n", font->sf->fullname );
 	fprintf( file, "FONT_ASCENT %d\n", font->ascent );
 	fprintf( file, "FONT_DESCENT %d\n", font->descent );
 	fprintf( file, "UNDERLINE_POSITION %d\n", (int) font->sf->upos );
@@ -572,59 +653,6 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,EncMap *map, char *encoding,
 	fprintf( file, "AVERAGE_WIDTH %d\n", avg );
 	if ( font->clut!=NULL )
 	    fprintf( file, "BITS_PER_PIXEL %d\n", BDFDepth(font));
-	if ( map->enc->is_custom || map->enc->is_original )
-	    fprintf( file, "CHARSET_REGISTRY \"FontSpecific\"\n" );
-	else if ( strstr(map->enc->enc_name,"8859")!=NULL )
-	    fprintf( file, "CHARSET_REGISTRY \"ISO8859\"\n" );
-	else if ( map->enc->is_unicodebmp ||
-		map->enc->is_unicodefull )
-	    fprintf( file, "CHARSET_REGISTRY \"ISO10646\"\n" );
-	else
-	    fprintf( file, "CHARSET_REGISTRY \"%s\"\n", encoding );
-	if (( pt = strrchr(encoding,'-'))!=NULL )
-	    /* DoNothing */;
-	else if ( (pt = strstr(encoding,"8859"))!=NULL && isdigit(pt[4]))
-	    pt += 4;
-	else
-	    pt = "0";
-	fprintf( file, "CHARSET_ENCODING \"%s\"\n", pt );
-
-	OS2FigureCodePages(font->sf,codepages);
-	fprintf( file, "CHARSET_COLLECTIONS \"" );
-	if ( codepages[1]&(1U<<31) )
-	    fprintf( file, "ASCII " );
-	if ( (codepages[1]&(1U<<30)) )
-	    fprintf( file, "ISOLatin1Encoding " );
-	if ( (codepages[0]&2) )
-	    fprintf( file, "ISO8859-2 " );
-	if ( (codepages[0]&4) )
-	    fprintf( file, "ISO8859-5 " );
-	if ( (codepages[0]&8) )
-	    fprintf( file, "ISO8859-7 " );
-	if ( (codepages[0]&0x10) )
-	    fprintf( file, "ISO8859-9 " );
-	if ( (codepages[0]&0x20) )
-	    fprintf( file, "ISO8859-8 " );
-	if ( (codepages[0]&0x40) )
-	    fprintf( file, "ISO8859-6 " );
-	if ( (codepages[0]&0x80) )
-	    fprintf( file, "ISO8859-4 " );
-	if ( (codepages[0]&0x10000)  )
-	    fprintf( file, "ISO8859-11 " );
-	if ( (codepages[0]&0x20000) && (map->enc->is_unicodebmp || map->enc->is_unicodefull ))
-	    fprintf( file, "JISX0208.1997 " );
-	if ( (codepages[0]&0x40000) && (map->enc->is_unicodebmp || map->enc->is_unicodefull ) )
-	    fprintf( file, "GB2312.1980 " );
-	if ( (codepages[0]&0x80000) && (map->enc->is_unicodebmp || map->enc->is_unicodefull ))
-	    fprintf( file, "KSC5601.1992 " );
-	if ( (codepages[0]&0x100000) && (map->enc->is_unicodebmp || map->enc->is_unicodefull ))
-	    fprintf( file, "BIG5 " );
-	if ( (codepages[0]&0x80000000) )
-	    fprintf( file, "Symbol " );
-
-	fprintf( file, "%s\"\n", encoding );
-
-	fprintf( file, "FULL_NAME \"%s\"\n", font->sf->fullname );
 
 	if ( font->sf->copyright==NULL )
 	    fprintf( file, "COPYRIGHT \"\"\n" );
@@ -652,6 +680,18 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,EncMap *map, char *encoding,
 	/*  the obsolete _XFREE86_GLYPH_RANGES property, and if so this will */
 	/*  generate them */
 	GenerateGlyphRanges(font,file);
+    }
+    if ( !has_reg ) {
+	char reg[100], enc[40];
+	def_Charset_Enc(map,encoding,reg,enc);
+	fprintf( file, "CHARSET_REGISTRY \"%s\"\n", reg );
+	fprintf( file, "CHARSET_ENCODING \"%s\"\n", enc );
+    }
+
+    if ( !has_sets ) {
+	char buffer[250];
+	def_Charset_Col(font->sf,map,encoding, buffer);
+	fprintf( file, "CHARSET_COLLECTIONS \"%s\"\n", buffer );
     }
     fprintf( file, "ENDPROPERTIES\n" );
     fprintf( file, "CHARS %d\n", cnt );
@@ -694,6 +734,80 @@ int BDFFontDump(char *filename,BDFFont *font, EncMap *map, int res) {
 	fclose(file);
     }
 return( ret );
+}
+
+static int BDFPropReplace(BDFFont *bdf,const char *key, const char *value) {
+    int i;
+    char *pt;
+
+    for ( i=0; i<bdf->prop_cnt; ++i ) if ( strcmp(bdf->props[i].name,key)==0 ) {
+	switch ( bdf->props[i].type&~prt_property ) {
+	  case prt_string:
+	  case prt_atom:
+	    free( bdf->props[i].u.atom );
+	  break;
+	}
+	if ( (bdf->props[i].type&~prt_property)!=prt_atom )
+	    bdf->props[i].type = (bdf->props[i].type&prt_property)|prt_string;
+	pt = strchr(value,'\n');
+	if ( pt==NULL )
+	    bdf->props[i].u.str = copy(value);
+	else
+	    bdf->props[i].u.str = copyn(value,pt-value);
+return( true );
+    }
+return( false );
+}
+
+void SFReplaceEncodingBDFProps(SplineFont *sf,EncMap *map) {
+    BDFFont *bdf;
+    char buffer[250];
+    char reg[100], enc[40], *pt;
+    char *encodingname = EncodingName(map->enc);
+
+    def_Charset_Col(sf,map,encodingname, buffer);
+    def_Charset_Enc(map,encodingname,reg,enc);
+
+    for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+	BDFPropReplace(bdf,"CHARSET_REGISTRY", reg);
+	BDFPropReplace(bdf,"CHARSET_ENCODING", enc);
+	BDFPropReplace(bdf,"CHARSET_COLLECTIONS",buffer);
+	if ( BdfPropHasKey(bdf,"FONT",buffer,sizeof(buffer)) ) {
+	    pt = strrchr(buffer,'-');
+	    if ( pt!=NULL ) for ( --pt; pt>buffer && *pt!='-'; --pt );
+	    if ( pt>buffer ) {
+		sprintf( pt+1, "%s-%s", reg, enc);
+		BDFPropReplace(bdf,"FONT",buffer);
+	    }
+	}
+    }
+}
+
+void SFReplaceFontnameBDFProps(SplineFont *sf) {
+    BDFFont *bdf;
+    char buffer[250], *pt, *bpt;
+    char buffer2[300];
+
+    for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+	BDFPropReplace(bdf,"FONT_NAME", sf->fontname);
+	BDFPropReplace(bdf,"FAMILY_NAME", sf->familyname);
+	BDFPropReplace(bdf,"FULL_NAME", sf->fullname);
+	BDFPropReplace(bdf,"COPYRIGHT", sf->copyright);
+	if ( BdfPropHasKey(bdf,"FONT",buffer,sizeof(buffer)) ) {
+	    if ( buffer[0]=='-' ) {
+		for ( pt = buffer+1; *pt && *pt!='-'; ++pt );
+		if ( *pt=='-' ) {
+		    *pt = '\0';
+		    strcpy(buffer2,buffer);
+		    strcat(buffer2,"-");
+		    strcat(buffer2,sf->familyname);
+		    for ( ++pt ; *pt && *pt!='-'; ++pt );
+		    strcat(buffer2,pt);
+		    BDFPropReplace(bdf,"FONT",buffer2);
+		}
+	    }
+	}
+    }
 }
 
 FILE *BDFDefaults(BDFFont *bdf, EncMap *map) {

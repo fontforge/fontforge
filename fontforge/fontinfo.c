@@ -5495,6 +5495,8 @@ return(true);
 	sf->mark_class_names = d->mark_class_names;
 
 	GFI_Close(d);
+
+	SFReplaceFontnameBDFProps(sf);
     }
 return( true );
 }
