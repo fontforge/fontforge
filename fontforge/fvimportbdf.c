@@ -558,7 +558,7 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, Encoding **_enc,
 		sscanf(buf, "%d", &enc );
 	} else if ( strcmp(tok,"FAMILY_NAME")==0 ) {
 	    strcpy(family,buf);
-	} else if ( strcmp(tok,"FULL_NAME")==0 ) {
+	} else if ( strcmp(tok,"FULL_NAME")==0 || strcmp(tok,"FACE_NAME")==0 ) {
 	    strcpy(full,buf);
 	} else if ( strcmp(tok,"WEIGHT_NAME")==0 )
 	    strcpy(weight,buf);
