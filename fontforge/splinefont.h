@@ -1436,7 +1436,25 @@ extern int  BDFFontDump(char *filename,BDFFont *font, EncMap *map, int res);
 extern int  FONFontDump(char *filename,BDFFont *font, EncMap *map, int res);
 extern void SFReplaceEncodingBDFProps(SplineFont *sf,EncMap *map);
 extern void SFReplaceFontnameBDFProps(SplineFont *sf);
-extern FILE *BDFDefaults(BDFFont *bdf, EncMap *map);
+struct xlfd_components {
+    char foundry[80];
+    char family[100];
+    char weight[80];
+    char slant[40];
+    char setwidth[50];
+    char add_style[50];
+    int pixel_size;
+    int point_size;
+    int res_x;
+    int res_y;
+    char spacing[40];
+    int avg_width;
+    char cs_reg[80];		/* encoding */
+    char cs_enc[80];		/* encoding version? */
+    int char_cnt;
+};
+extern void XLFD_GetComponents(char *xlfd,struct xlfd_components *comp);
+extern void XLFD_CreateComponents(BDFFont *bdf,EncMap *map,int res,struct xlfd_components *comp);
 /* Two lines intersect in at most 1 point */
 /* Two quadratics intersect in at most 4 points */
 /* Two cubics intersect in at most 9 points */ /* Plus an extra space for a trailing -1 */
