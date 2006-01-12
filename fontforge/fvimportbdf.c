@@ -407,6 +407,31 @@ static Encoding *BDFParseEnc(char *encname, int encoff) {
 return( enc );
 }
 
+static int IsUnsignedBDFKey(char *key) {
+    /* X says that some properties are signed and some are unsigned */
+    /* neither bdf nor pcf supports this, but David (of freetype) */
+    /* thought the sfnt BDF table should include it */
+    /* Since these are X11 atom names, case is significant */
+    static char *unsigned_keys[] = {
+	"RESOLUTION_X",
+	"RESOLUTION_Y",
+	"RESOLUTION",		/* Depreciated */
+	"RELATIVE_SETWIDTH",
+	"RELATIVE_WEIGHT",
+	"WEIGHT",
+	"DESTINATION",
+	"DEFAULT_CHAR",
+	NULL
+    };
+    int i;
+
+    for ( i=0; unsigned_keys[i]!=NULL; ++i )
+	if ( strcmp(key,unsigned_keys[i])==0 )
+return( true );
+
+return( false );
+}
+
 static int slurp_header(FILE *bdf, int *_as, int *_ds, Encoding **_enc,
 	char *family, char *mods, char *full, int *depth, char *foundry,
 	char *fontname, char *comments, struct metrics *defs,
@@ -458,7 +483,7 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, Encoding **_enc,
 	    val = strtol(buf,&end,10);
 	    if ( *end=='\0' && buf<=eol ) {
 		dummy->props[pcnt].u.val = val;
-		dummy->props[pcnt].type = prt_int;
+		dummy->props[pcnt].type = IsUnsignedBDFKey(tok)?prt_uint:prt_int;
 	    } else if ( *buf=='"' ) {
 		++buf;
 		if ( *eol=='"' ) *eol = '\0';
@@ -499,7 +524,7 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, Encoding **_enc,
 	} else if ( strcmp(tok,"QUAD_WIDTH")==0 && pixelsize==-1 )
 	    sscanf(buf, "%d", &pixelsize );
 	    /* For Courier the quad is not an em */
-	else if ( strcmp(tok,"RESOLUTION_X")==0 )
+	else if ( strcmp(tok,"RESOLUTION_Y")==0 )	/* y value defines pointsize */
 	    sscanf(buf, "%d", &defs->res );
 	else if ( strcmp(tok,"FONT_ASCENT")==0 )
 	    sscanf(buf, "%d", &ascent );
@@ -1408,7 +1433,7 @@ return(-2);
 	    }
 	} else {
 	    dummy->props[i].u.val = props[i].val;
-	    dummy->props[i].type  = prt_int | prt_property;
+	    dummy->props[i].type  = (IsUnsignedBDFKey(dummy->props[i].name)?prt_uint:prt_int) | prt_property;
 	    if ( strcmp(props[i].name,"PIXEL_SIZE")==0 ||
 		    ( pixelsize==-1 && strcmp(props[i].name,"QUAD_WIDTH")==0 ))
 		pixelsize = props[i].val;
