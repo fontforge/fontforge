@@ -1009,7 +1009,7 @@ return(NULL);
 	    putc(met.ymax-met.ymin+1,subtables);	/* image height */
 	    putc(met.width,subtables);			/* image width */
 	    putc(met.xmin,subtables);			/* horiBearingX */
-	    putc(met.ymax,subtables);			/* horiBearingY */
+	    putc(met.ymax+1,subtables);			/* horiBearingY */
 	    putc(bc->width,subtables);			/* advance width */
 	    putc(-bc->width/2,subtables);		/* vertBearingX */
 	    putc(0,subtables);				/* vertBearingY */
