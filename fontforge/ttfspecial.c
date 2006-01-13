@@ -991,6 +991,11 @@ return;
 		switch ( type&~prt_property ) {
 		  case prt_int: case prt_uint:
 		    bdf->props[k].u.val = value;
+		    if ( strcmp(bdf->props[k].name,"FONT_ASCENT")==0 &&
+			    value<=bdf->pixelsize ) {
+			bdf->ascent = value;
+			bdf->descent = bdf->pixelsize-value;
+		    }
 		  break;
 		  case prt_string: case prt_atom:
 		    bdf->props[k].u.str = getstring(ttf,string_start+value);
