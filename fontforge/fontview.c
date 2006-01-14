@@ -1518,6 +1518,7 @@ void FontViewMenu_MetaFont(GtkMenuItem *menuitem, gpointer user_data) {
 #define MID_DefaultATT	2235
 #define MID_POV		2236
 #define MID_BuildDuplicates	2237
+#define MID_StrikeInfo	2238
 #define MID_Center	2600
 #define MID_Thirds	2601
 #define MID_SetWidth	2602
@@ -2505,6 +2506,21 @@ return;
 	    (fv->map->map[pos]==-1 || fv->sf->glyphs[fv->map->map[pos]]==NULL ))
 return;
     SCCharInfo(SFMakeChar(fv->sf,fv->map,pos),fv->map,pos);
+}
+
+# if defined(FONTFORGE_CONFIG_GDRAW)
+static void FVMenuBDFInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_BDFInfo(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+    if ( fv->sf->bitmaps==NULL )
+return;
+    if ( fv->show!=fv->filled )
+	SFBdfProperties(fv->sf,fv->map,fv->show);
+    else
+	SFBdfProperties(fv->sf,fv->map,NULL);
 }
 
 # if defined(FONTFORGE_CONFIG_GDRAW)
@@ -5899,6 +5915,9 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = anychars<0 || (gid = fv->map->map[anychars])==-1 ||
 		    (fv->cidmaster!=NULL && fv->sf->glyphs[gid]==NULL);
 	  break;
+	  case MID_StrikeInfo:
+	    mi->ti.disabled = fv->sf->bitmaps==NULL;
+	  break;
 	  case MID_FindProblems:
 	    mi->ti.disabled = anychars==-1;
 	  break;
@@ -6296,6 +6315,7 @@ static GMenuItem rndlist[] = {
 static GMenuItem ellist[] = {
     { { (unichar_t *) N_("_Font Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'F' }, 'F', ksm_control|ksm_shift, NULL, NULL, FVMenuFontInfo },
     { { (unichar_t *) N_("Glyph _Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, 'I', ksm_control, NULL, NULL, FVMenuCharInfo, MID_CharInfo },
+    { { (unichar_t *) N_("BDF Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuBDFInfo, MID_StrikeInfo },
     { { (unichar_t *) N_("T_ypo. Features"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'D' }, '\0', ksm_control|ksm_meta, aatlist, aatlistcheck },
     { { (unichar_t *) N_("S_how Dependent"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'D' }, 'I', ksm_control|ksm_meta, delist, delistcheck },
     { { (unichar_t *) N_("Find Pr_oblems..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, 'E', ksm_control, NULL, NULL, FVMenuFindProblems, MID_FindProblems },

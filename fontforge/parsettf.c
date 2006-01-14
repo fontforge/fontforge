@@ -4810,6 +4810,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     for ( bdf = info->bitmaps; bdf!=NULL; bdf = bdf->next ) {
 	bdf->sf = sf;
     }
+    SFDefaultAscent(sf);
 
     for ( i=0; i<info->glyph_cnt; ++i ) if ( info->chars[i]!=NULL ) {
 	SCOrderAP(info->chars[i]);
