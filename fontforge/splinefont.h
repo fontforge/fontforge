@@ -593,6 +593,7 @@ typedef struct bdffont {
     void *freetype_context;
     uint16 truesize;		/* for bbsized fonts */
     int16 prop_cnt;
+    int16 prop_max;		/* only used within bdfinfo dlg */
     BDFProperties *props;
 } BDFFont;
 
@@ -1431,11 +1432,14 @@ extern BDFFont *BitmapFontScaleTo(BDFFont *old, int to);
 extern void BDFCharFree(BDFChar *bdfc);
 extern void BDFPropsFree(BDFFont *bdf);
 extern void BDFFontFree(BDFFont *bdf);
+extern void SFDefaultAscent(SplineFont *sf);
 extern int  PSBitmapDump(char *filename,BDFFont *font, EncMap *map);
 extern int  BDFFontDump(char *filename,BDFFont *font, EncMap *map, int res);
 extern int  FONFontDump(char *filename,BDFFont *font, EncMap *map, int res);
 extern void SFReplaceEncodingBDFProps(SplineFont *sf,EncMap *map);
 extern void SFReplaceFontnameBDFProps(SplineFont *sf);
+extern int  IsUnsignedBDFKey(char *key);
+extern void BDFDefaultProps(BDFFont *bdf, EncMap *map, int res);
 struct xlfd_components {
     char foundry[80];
     char family[100];

@@ -103,6 +103,21 @@ from The Open Group.
 /*
  * Author:  Keith Packard, MIT X Consortium
  */
+void SFDefaultAscent(SplineFont *sf) {
+    if ( sf->onlybitmaps ) {
+	double scaled_sum=0, cnt=0;
+	int em = sf->ascent+sf->descent;
+	BDFFont *b;
+
+	for ( b=sf->bitmaps; b!=NULL; b=b->next ) {
+	    scaled_sum = (double) (em*b->ascent)/b->pixelsize;
+	    ++cnt;
+	}
+	if ( cnt!=0 )
+	sf->ascent = scaled_sum/cnt;
+	sf->descent = em - sf->ascent;
+    }
+}
 
 /* ******************************** BDF ************************************* */
 
@@ -405,31 +420,6 @@ static Encoding *BDFParseEnc(char *encname, int encoff) {
     if ( enc==NULL )
 	enc = &custom;
 return( enc );
-}
-
-static int IsUnsignedBDFKey(char *key) {
-    /* X says that some properties are signed and some are unsigned */
-    /* neither bdf nor pcf supports this, but David (of freetype) */
-    /* thought the sfnt BDF table should include it */
-    /* Since these are X11 atom names, case is significant */
-    static char *unsigned_keys[] = {
-	"RESOLUTION_X",
-	"RESOLUTION_Y",
-	"RESOLUTION",		/* Depreciated */
-	"RELATIVE_SETWIDTH",
-	"RELATIVE_WEIGHT",
-	"WEIGHT",
-	"DESTINATION",
-	"DEFAULT_CHAR",
-	NULL
-    };
-    int i;
-
-    for ( i=0; unsigned_keys[i]!=NULL; ++i )
-	if ( strcmp(key,unsigned_keys[i])==0 )
-return( true );
-
-return( false );
 }
 
 static int slurp_header(FILE *bdf, int *_as, int *_ds, Encoding **_enc,
@@ -2114,6 +2104,7 @@ static void SFMergeBitmaps(SplineFont *sf,BDFFont *strikes,EncMap *map) {
 	strikes = snext;
     }
     SFOrderBitmapList(sf);
+    SFDefaultAscent(sf);
 }
 
 static void SFAddToBackground(SplineFont *sf,BDFFont *bdf);
@@ -2272,6 +2263,7 @@ SplineFont *SFFromBDF(char *filename,int ispk,int toback) {
 	SFAddToBackground(sf,bdf);
     else
 	sf->changed = false;
+    SFDefaultAscent(sf);
 return( sf );
 }
 

@@ -1281,6 +1281,8 @@ extern GMenuItem *GetEncodingMenu(void (*func)(GWindow,GMenuItem *,GEvent *),
 	Encoding *current);
 #endif
 
+extern void SFBdfProperties(SplineFont *sf, EncMap *map, BDFFont *thisone);
+
 struct instrdlg;
 uint8 *_IVParse(struct instrdlg *iv, char *text, int *len);
 
