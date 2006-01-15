@@ -11,8 +11,6 @@ docdir = $(prefix)/share/doc/fontforge
 srcdir = @srcdir@
 top_builddir = .
 
-INSTALL = @INSTALL@
-
 all: fontforge
 
 libs: libgunicode libgdraw
@@ -70,7 +68,7 @@ install: $(sharedir) all install_libs install_po
 	cp $(srcdir)/fontforge/fontforge.1 $(mandir)/man1
 	-cp $(srcdir)/fontforge/sfddiff.1 $(mandir)/man1
 	mkdir -p $(libdir)/pkgconfig
-	$(LIBTOOL) $(INSTALL) -c fontforge.pc $(libdir)/pkgconfig
+	cp fontforge.pc $(libdir)/pkgconfig
 #explicit use of sh to make sure we don't invoke csh with different "if" syntax
 	sh -c "if test -d htdocs >/dev/null ; then $(MAKE) install_docs ; fi"
 	sh < systemspecific
