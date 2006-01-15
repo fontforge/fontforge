@@ -29,7 +29,8 @@
 
 #include "configure-pfaedit.h"
 #if defined( FONTFORGE_CONFIG_GTK )
-# include "gtkbasics.h"
+# include "basics.h"
+# include "gimage.h"
 # include <gtk/gtk.h>
 # include <gwwv.h>
 #else /*if defined( FONTFORGE_CONFIG_GDRAW )*/
@@ -99,8 +100,13 @@ extern Encoding *enclist;
 extern char *RecentFiles[RECENT_MAX];
 
 #define SCRIPT_MENU_MAX	10
+#if defined( FONTFORGE_CONFIG_GTK )
+extern char *script_menu_names[SCRIPT_MENU_MAX];
+#else
 extern unichar_t *script_menu_names[SCRIPT_MENU_MAX];
+#endif
 extern char *script_filenames[SCRIPT_MENU_MAX];
+
 
 extern MacFeat *default_mac_feature_map;
 
