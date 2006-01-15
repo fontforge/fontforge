@@ -31,7 +31,9 @@ AC_DEFINE(_Keyboard,2)
 AC_DEFINE(_BrokenBitmapImages)
 AC_DEFINE(_ModKeysAutoRepeat)
 AC_DEFINE(__CygWin,1)
-gww_needsstatic="yes"
+dnl on cygwin about half the libraries have no .la files so I can't figure out
+dnl how to load them at run time.
+gww_nodynamic="yes"
  ;;
 esac
 
@@ -244,30 +246,34 @@ if test "$gww_nodynamic" = "yes"; then
  if test "$gww_needsstatic" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -static"
  fi
- if test "$ac_cv_lib_ungif_DGifOpenFileName" = "yes"; then
+ if test "$ac_cv_lib_ungif_DGifOpenFileName" = "yes" -a ! -e /usr/lib/libungif.la ; then
   STATIC_LIBS="$STATIC_LIBS -lungif"
+  AC_DEFINE(_STATIC_LIBUNGIF)
  fi
- if test "$ac_cv_lib_png_png_create_read_struct" = "yes"; then
+ if test "$ac_cv_lib_png_png_create_read_struct" = "yes" -a "$ac_cv_lib_z_deflateEnd" = "yes" -a \( ! -e /usr/lib/libpng.la -o ! -e /usr/lib/libz.la \); then
   STATIC_LIBS="$STATIC_LIBS -lpng -lz"
+  AC_DEFINE(_STATIC_LIBPNG)
  fi
- if test "$ac_cv_lib_png12_png_create_read_struct" = "yes"; then
+ if test "$ac_cv_lib_png12_png_create_read_struct" = "yes" -a "$ac_cv_lib_z_deflateEnd" = "yes" -a \( ! -e /usr/lib/libpng12.la -o ! -e /usr/lib/libz.la \); then
   STATIC_LIBS="$STATIC_LIBS -lpng12 -lz"
+  AC_DEFINE(_STATIC_LIBPNG)
  fi
- if test "$ac_cv_lib_tiff_TIFFOpen" = "yes"; then
+ if test "$ac_cv_lib_tiff_TIFFOpen" = "yes" -a ! -e /usr/lib/libtiff.la; then
   STATIC_LIBS="$STATIC_LIBS -ltiff"
+  AC_DEFINE(_STATIC_LIBTIFF)
  fi
- if test "$ac_cv_lib_jpeg_jpeg_CreateDecompress" = "yes"; then
+ if test "$ac_cv_lib_jpeg_jpeg_CreateDecompress" = "yes" -a ! -e /usr/lib/libjpeg.la; then
   STATIC_LIBS="$STATIC_LIBS -ljpeg"
+  AC_DEFINE(_STATIC_LIBJPEG)
  fi
- if test "$ac_cv_lib_freetype_FT_New_Memory_Face" = "yes"; then
+ if test "$ac_cv_lib_freetype_FT_New_Memory_Face" = "yes" -a ! -e /usr/lib/libfreetype.la; then
   STATIC_LIBS="$STATIC_LIBS -lfreetype"
+  AC_DEFINE(_STATIC_LIBFREETYPE)
  fi
- if test "$ac_cv_lib_xml2_xmlParseFile" = "yes"; then
-  STATIC_LIBS="$STATIC_LIBS -lxml2"
- fi
- AC_CHECK_LIB(uninameslist, UnicodeNameAnnot, [
-   STATIC_LIBS="$STATIC_LIBS -luninameslist"
-   AC_DEFINE(_STATIC_LIBUNINAMESLIST) ] , AC_DEFINE(_NO_LIBUNINAMESLIST))
+ if test "$ac_cv_lib_xml2_xmlParseFile" = "yes" -a "$ac_cv_lib_z_deflateEnd" = "yes" -a \( ! -e /usr/lib/libxml2.la -o ! -e /usr/lib/libz.la \); then
+  STATIC_LIBS="$STATIC_LIBS -lxml2 -lz"
+  AC_DEFINE(_STATIC_LIBXML)
+fi
 fi
 AC_CHECK_LIB(intl, gettext, STATIC_LIBS="$STATIC_LIBS -lintl" ,HAVE_LIBINTL_H=0 ) 
 
