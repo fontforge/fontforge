@@ -1154,7 +1154,7 @@ static TPoint *SplinesFigureTPsBetween(SplinePoint *from, SplinePoint *to,
 return( tp );
 }
 
-static void SplinesRemoveBetween(SplineChar *sc, SplinePoint *from, SplinePoint *to,int type) {
+void SplinesRemoveBetween(SplineChar *sc, SplinePoint *from, SplinePoint *to,int type) {
     int tot;
     TPoint *tp;
     SplinePoint *np, oldfrom;
@@ -2346,7 +2346,8 @@ Spline *SplineAddExtrema(Spline *s,int always,real lenbound, real offsetbound,
 	DBounds *b) {
     /* First find the extrema, if any */
     double t[4], min;
-    int p, i,j, p_s;
+    uint8 rmfrom[4], rmto[4];
+    int p, i,j, p_s, mini;
     SplinePoint *sp;
     real len;
 
@@ -2361,6 +2362,9 @@ Spline *SplineAddExtrema(Spline *s,int always,real lenbound, real offsetbound,
 	    len *= len;
 	}
     }
+
+    memset(rmfrom,0,sizeof(rmfrom));
+    memset(rmto,0,sizeof(rmto));
 
     forever {
 	if ( s->knownlinear )
@@ -2381,15 +2385,21 @@ return(s);
 	    /* spline */
 	    /* Also extrema which are very close to one of the end-points can */
 	    /*  be ignored. */
+	    /* No they can't. But we need to remove the original point in this*/
+	    /*  case */
 	    for ( i=0; i<p; ++i ) {
 		real x = ((s->splines[0].a*t[i]+s->splines[0].b)*t[i]+s->splines[0].c)*t[i]+s->splines[0].d;
+		int close_from = ( x-s->from->me.x<offsetbound && x-s->from->me.x>-offsetbound);
+		int close_to = ( x-s->to->me.x<offsetbound && x-s->to->me.x>-offsetbound);
 		if (( x>b->minx && x<b->maxx  && len<lenbound ) ||
-			( x-s->from->me.x<offsetbound && x-s->from->me.x>-offsetbound) ||
-			( x-s->to->me.x<offsetbound && x-s->to->me.x>-offsetbound)) {
+			( always == ae_only_good && (close_from || close_to)) ) {
 		    --p;
 		    for ( j=i; j<p; ++j )
 			t[j] = t[j+1];
 		    --i;
+		} else {
+		    rmfrom[i] = close_from;
+		    rmto[i] = close_to;
 		}
 	    }
 	}
@@ -2407,13 +2417,17 @@ return(s);
 	if ( !always ) {
 	    for ( i=p_s; i<p; ++i ) {
 		real y = ((s->splines[1].a*t[i]+s->splines[1].b)*t[i]+s->splines[1].c)*t[i]+s->splines[1].d;
+		int close_from =( y-s->from->me.y<offsetbound && y-s->from->me.y>-offsetbound);
+		int close_to = ( y-s->to->me.y<offsetbound && y-s->to->me.y>-offsetbound);
 		if (( y>b->miny && y<b->maxy && len<lenbound ) ||
-			( y-s->from->me.y<offsetbound && y-s->from->me.y>-offsetbound) ||
-			( y-s->to->me.y<offsetbound && y-s->to->me.y>-offsetbound)) {
+			( always == ae_only_good && (close_from || close_to)) ) {
 		    --p;
 		    for ( j=i; j<p; ++j )
 			t[j] = t[j+1];
 		    --i;
+		} else {
+		    rmfrom[i] = close_from;
+		    rmto[i] = close_to;
 		}
 	    }
 	}
@@ -2424,8 +2438,11 @@ return(s);
 	for ( i=0; i<p; ++i ) {
 	    if ( t[i]<.0001 || t[i]>.9999 ) {
 		--p;
-		for ( j=i; j<p; ++j )
+		for ( j=i; j<p; ++j ) {
 		    t[j] = t[j+1];
+		    rmfrom[j] = rmfrom[j+1];
+		    rmto[j] = rmto[j+1];
+		}
 		--i;
 	    }
 	}
@@ -2434,12 +2451,16 @@ return(s);
 return(s);
 
 	/* Find the smallest of all the interesting points */
-	min = t[0];
+	min = t[0]; mini = 0;
 	for ( i=1; i<p; ++i ) {
-	    if ( t[i]<min )
+	    if ( t[i]<min ) {
 		min=t[i];
+		mini = i;
+	    }
 	}
 	sp = SplineBisect(s,min);
+	if ( rmfrom[mini] ) sp->prev->from->ticked = true;
+	if ( rmto[mini] ) sp->next->to->ticked = true;
 	s = sp->next;
 	if ( p==1 )
 return( s );
@@ -2449,18 +2470,28 @@ return( s );
     }
 }
 
-void SplineSetAddExtrema(SplineSet *ss,enum ae_type between_selected, SplineFont *sf) {
+void SplineSetAddExtrema(SplineChar *sc, SplineSet *ss,enum ae_type between_selected, SplineFont *sf) {
     Spline *s, *first;
     DBounds b;
     int always = true;
     real lenbound = 0;
     real offsetbound=0;
+    SplinePoint *sp, *nextp;
 
     if ( between_selected==ae_only_good ) {
 	SplineSetQuickBounds(ss,&b);
 	lenbound = (sf->ascent+sf->descent)/32.0;
 	always = false;
 	offsetbound = .5;
+	between_selected = ae_only_good_rm_later;
+	for ( sp = ss->first; ; ) {
+	    sp->ticked = false;
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==ss->first )
+	break;
+	}
     }
 
     first = NULL;
@@ -2470,13 +2501,28 @@ void SplineSetAddExtrema(SplineSet *ss,enum ae_type between_selected, SplineFont
 	    s = SplineAddExtrema(s,always,lenbound,offsetbound,&b);
 	if ( first==NULL ) first = s;
     }
+    if ( between_selected == ae_only_good_rm_later ) {
+	for ( sp = ss->first; ; ) {
+	    if ( sp->next==NULL )
+	break;
+	    nextp = sp->next->to;
+	    if ( sp->ticked ) {
+		if ( sp==ss->first )
+		    ss->first = ss->last = nextp;
+		SplinesRemoveBetween(sc,sp->prev->from,nextp,1);
+	    }
+	    sp = nextp;
+	    if ( sp==ss->first )
+	break;
+	}
+    }
 }
 
-void SplineCharAddExtrema(SplineSet *head,enum ae_type between_selected,SplineFont *sf) {
+void SplineCharAddExtrema(SplineChar *sc, SplineSet *head,enum ae_type between_selected,SplineFont *sf) {
     SplineSet *ss;
 
     for ( ss=head; ss!=NULL; ss=ss->next ) {
-	SplineSetAddExtrema(ss,between_selected,sf);
+	SplineSetAddExtrema(sc,ss,between_selected,sf);
     }
 }
 

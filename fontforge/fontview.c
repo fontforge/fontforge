@@ -3491,7 +3491,7 @@ static void FVAddExtrema(FontView *fv) {
 	sc->ticked = true;
 	SCPreserveState(sc,false);
 	for ( layer = ly_fore; layer<sc->layer_cnt; ++layer )
-	    SplineCharAddExtrema(sc->layers[layer].splines,ae_only_good,sc->parent);
+	    SplineCharAddExtrema(sc,sc->layers[layer].splines,ae_only_good,sc->parent);
 	SCCharChangedUpdate(sc);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	if ( !gwwv_progress_next())
