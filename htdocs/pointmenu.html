@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 8-Dec-2005 -->
+  <!-- AP: Last modified: 1-Jan-2006 -->
   <TITLE>The Point Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -24,6 +24,10 @@
       <A HREF="#Tangent">Tangent</A>
     <LI>
       <A HREF="#Make-First">Make First</A>
+    <LI>
+      <A HREF="#Interpolated">Can Be Interpolated</A>
+    <LI>
+      <A HREF="#NotInterpolated">Can't Be Interpolated</A>
     <LI>
       <A HREF="#AddAnchor">Add Anchor Point...</A>
     <LI>
@@ -51,9 +55,19 @@
     <DT>
       <A NAME="Make-First">Make First</A>
     <DD>
-      Only present in the outline view. If exactly one point is selected and it
-      is on a closed path and it is not the "first point" of that path, then it
-      will become the first point.
+      If exactly one point is selected and it is on a closed path and it is not
+      the "first point" of that path, then it will become the first point.
+    <DT>
+      Can Be <A NAME="Interpolated">Interpolated</A>
+    <DT>
+      Can't Be <A NAME="NotInterpolated">Interpolated</A>
+    <DD>
+      When editing truetype curves, an on-curve point can be omitted from the point
+      list that is stored in the output font if it happens to be exactly midway
+      between its two control points. This makes for slightly smaller files and
+      is generally a good thing. However if the point is interpolated then it cannot
+      be referred to in instructions (or reference point matching), so on rare
+      occasions you will need to be able to turn off this interpolation.
     <DT>
       <A NAME="AddAnchor">Add Anchor Point...</A>
     <DD>
