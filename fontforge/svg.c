@@ -738,6 +738,7 @@ return( NULL );
 /*		I want it to run on systems without libxml2		    */
 /* So one case boils down to linking against the standard names, while the  */
 /*  other does the link at run time if it's possible */
+/* On some systems (MS) we need to load libz before we can load libxml2	    */
 
 # if defined(_STATIC_LIBXML) || defined(NODYNAMIC)
 
@@ -772,6 +773,9 @@ static int libxml_init_base() {
 
     if ( xmltested )
 return( libxml!=NULL );
+
+    if ( dlopen("libz" SO_EXT,RTLD_GLOBAL|RTLD_LAZY)==NULL )
+return( false );
 
     libxml = dlopen( "libxml2" SO_EXT,RTLD_LAZY);
     xmltested = true;
