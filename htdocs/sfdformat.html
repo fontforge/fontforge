@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 13-Dec-2005 -->
+  <!-- AP: Last modified: 8-Jan-2006 -->
   <TITLE>Spline Font Database File Format</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -657,6 +657,10 @@ EndChar
       <TD>point was interpolated between two control points (when<BR>
 	read from a ttf file) and so has no point number of its own</TD>
     </TR>
+    <TR>
+      <TD>0x100</TD>
+      <TD>point should never be interpolated</TD>
+    </TR>
   </TABLE>
   <P>
   Splines for a truetype font will have two additional numbers after the flags.
@@ -969,7 +973,7 @@ BDFChar: 3 33 3 0 1 0 9
   <P>
   The bitmap font line contains the following numbers: the pixelsize of the
   font, the number of potential characters in the font, the ascent and the
-  descent of the font and the depth of font (number of bits in a pixel). 
+  descent of the font and the depth of font (number of bits in a pixel).
   <P>
   Optionally there may be a set of BDF properties. If there are any properties
   there will be a line "BDFStartProperties:" with a count of properties. There

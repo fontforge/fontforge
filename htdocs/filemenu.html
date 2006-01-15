@@ -2,351 +2,352 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-Dec-2000 -->
-  <!-- AP: Last modified: 12-Oct-2005 -->
+  <!-- AP: Last modified: 8-Jan-2006 -->
   <TITLE>The File Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
 <DIV id="in">
-<H1 ALIGN=Center>
-  The File Menu
-</H1>
-<UL>
-  <LI>
-    <A HREF="#New">New</A>
-  <LI>
-    <A HREF="#Open">Open</A>
-  <LI>
-    <A HREF="#Recent">Recent</A>
-  <LI>
-    <A HREF="#Close">Close</A>
-  <LI>
-    <A HREF="#Save">Save</A>
-  <LI>
-    <A HREF="#SaveAs">Save As...</A>
-  <LI>
-    <A HREF="#SaveAll">Save All</A>
-  <LI>
-    <A HREF="#Generate">Generate Fonts...</A>
-  <LI>
-    <A HREF="#GenerateMac">Generate Mac Family...</A>
-  <LI>
-    <A HREF="#Revert">Revert</A>
-  <LI>
-    <A HREF="#RevertGlyph">Revert Glyph</A>
-  <LI>
-    <A HREF="#Export">Export...</A>
-  <LI>
-    <A HREF="#Import">Import...</A>
-  <LI>
-    <A HREF="#Merge-kern">Merge Kern Info...</A>
-  <LI>
-    <A HREF="#Print">Print...</A>
-  <LI>
-    <A HREF="#Display">Display...</A>
-  <LI>
-    <A HREF="#Execute">Execute Script...</A>
-  <LI>
-    <A HREF="#ScriptMenu">Script Menu</A>
-  <LI>
-    <A HREF="#prefs">Preferences...</A>
-  <LI>
-    <A HREF="#Quit">Quit</A>
-</UL>
-<P>
-<DL>
-  <DT>
-    <A NAME="New">New</A>
-  <DD>
-    Creates a new font with (by default) ISO 8859-1 (Latin1) encoding. The default
-    encoding may be changed in the preference dlg.
-  <DT>
-    <A NAME="Open">Open</A>
-  <DD>
-    Brings up a file chooser and allows you to open a font in any of the formats
-    FontForge understands.
-    <P>
-    If you open a truetype font containing bitmaps then you will be asked if
-    you want to load some of the bitmaps as well as the outlines.
-    <P>
-    By default this dialog will display all files with extensions of pfa, pfb,
-    pt3, sfd, ttf, otf, otb, t42, cef, cff, gsf, ttc, svg, ik, mf and bdf (possibly
-    others as FontForge comes to support more formats). If you would also like
-    it to display .ps files then enter *.{pfa,pfb,ttf,otf,bdf,sfd,ps} and press
-    the Filter button. If you only want it to display sfd files enter *.sfd and
-    press Filter.<BR>
-    You may select multiple files (by holding down the shift or control keys
-    when clicking on them), and all selected files will be opened.<BR>
-    FontForge can open macbinary resource files containing postscript and truetype
-    fonts (it does not open bitmap fonts currently)<BR>
-    FontForge does not open Acorn RISC/OS files, but you can use
-    <I><A HREF="acorn2sfd.html">acorn2sfd</A></I> to convert them into an sfd
-    file which FontForge can then open.<BR>
-    If you have <A HREF="http://www.tug.org/"><I>mf </I></A>and
-    <I><A HREF="http://sourceforge.net/projects/autotrace/">autotrace</A>
-    </I>installed on your machine FontForge will process metafont's mf files
-    for you. But you might want to use <I>pktrace, mftrace</I> or some other
-    standalone program to do the job.
-    <P>
-    When FontForge opens a pdb file (one that contains palm bitmap fonts) it
-    will open the first font it finds. In most formats it will list the available
-    fonts in a file and ask which you want, but palm fonts contain no fontname
-    so there is no way to identify them.
-    <P>
-    When importing a <A NAME="type3-import">type3</A> font FontForge will ask
-    you a few questions. It shouldn't have to ask these questions, but this is
-    an imperfect world and FontForge an imperfect program. In some rare cases
-    FontForge will crash if it tries to do a remove overlap. The remove overlap
-    functionality is important for interpreting stroked paths so you really should
-    have it on. But if a crash happens then, turn it off (and the crash should
-    not repeat, but some functionality will be lost).
-    <P>
-    Not all font formats that fontforge supports have standard extensions. Mac
-    resource forks are one example, postscript cid, type0 and type3 fonts are
-    another. FontForge can still open these formats, even if it fails to display
-    the file. You can always type the file name in yourself if you don't see
-    it in the file list.
-    <P>
-    FontForge can also read (many) fonts out of a pdf file. FontForge usually
-    does not list pdf files (because they aren't really designed as mechanisms
-    for transporting fonts), but you can always type in the name of one directly
-    (or use the [Filter] button to display *.pdf).
-  <DT>
-    <A NAME="Recent">Recent</A>
-  <DD>
-    A submenu showing recently used sfd files.
-  <DT>
-    <A NAME="Close">Close</A>
-  <DD>
-    Closes the current window.
-    <P>
-    If this is a font view and the font has been changed, then it will ask whether
-    you want to save the font. It will also close any outline glyph, bitmap glyph
-    or metrics views associated with the font.
-  <DT>
-    <A NAME="Save">Save</A>
-  <DD>
-    Saves the current file. If it is associated with a spline font database it
-    will be saved there and a backup file will be created. If it is a new font,
-    or if the font has been read from a postscript font file, then a Save As
-    dialog will pop up.
-    <P>
-    If you are editing a font "Ambrosia.sfd" then the backup file will be called
-    "Ambrosia~.sfd".
-  <DT>
-    <A NAME="SaveAs">Save</A> As...
-  <DD>
-    Allows you to give a new name to the current spline font database. Pops up
-    a file picker.
-  <DT>
-    <A NAME="SaveAll">Save All</A>
-  <DD>
-    Saves all changed fonts. If any have not been named, it will pop up a Save
-    As file picker for that font.
-  <DT>
-    <A NAME="Generate">Generate</A> Fonts...
-  <DD>
-    <A HREF="generate.html">This generates font files</A>, both outline and bitmap.
-    You may choose not to generate either, you may generate an afm file or a
-    pfm file, you may select the type of postscript output, you may select which
-    pixelsizes of bitmap to generate. (See <A HREF="generate.html">that page
-    </A>for more info)
-  <DT>
-    <A NAME="GenerateMac">Generate</A> Mac Family...
-  <DD>
-    This is only available if there are multiple fonts open in the same family,
-    and if the current font is the "Plain" style of that family. It generates
-    a mac FOND structure containing references to all family members, NFNT, sfnt,
-    and POST resources for all selected faces. It brings up a
-    <A HREF="generate.html">dlg</A> very similar to the Generate fonts dialog,
-    but one that includes a list of all potential faces for family members.
-  <DT>
-    <A NAME="Revert">Revert</A>
-  <DD>
-    Rereads the font from the file on the disk. All changes are lost.
-  <DT>
-    <A NAME="RevertGlyph">Revert Glyph</A>
-  <DD>
-    Only available in the font and outline views. Rereads the font from the sfd
-    file on the disk searching for a glyph in that file with the same name as
-    the current glyph. All changes to this glyph will be lost (but if the glyph
-    has references then any changes made to the glyphs being refered to will
-    still be visible), <EM>this command may be undone.</EM>
-    <P>
-    So if you have changed the name of the glyph this command will fail.<BR>
-    If the font did not come from an sfd file this command will fail.<BR>
-    If the font has been reencoded and the glyph has references this command
-    may fail.<BR>
-    If you have made a global change to the font (like scaling it to a new em-size)
-    then the results may not be appropriate.
-  <DT>
-    <A NAME="Export">Export</A>...
-  <DD>
-    In the Outline view this allows you to export the splines that make up the
-    glyph into an encapsulated postscript (.eps), pdf, svg or xfig format (.fig
-    -- the conversion to fig format is not the best) file. You may also have
-    the glyph rasterized and output in either .xbm or .bmp (or png if you have
-    that library) formats (FontForge will prompt you for a pixelsize. bmp also
-    allows you to generate an anti-aliased image, and you will be prompted for
-    bits per pixel. 1 bit per pixel is a bitmap).
-    <P>
-    In the Bitmap view this allows you to export the current glyph as either
-    a .xbm or a .bmp (always as a bitmap) file.
-    <P>
-    This menu item is not available in the Font or Metrics Views.
-  <DT>
-    <A NAME="Import">Import</A>...
-  <DD>
-    In the Font View this allows you to import one or several bitmap fonts (from
-    a .bdf file or a ttf/otf/ttc file, TeX pk (gf) file, an X11 .pcf file or
-    a mac dfont) and merge it into the list of bitmap sizes stored in the database.
-    You may also load one bitmap font into the backgrounds of the outline glyphs
-    (So "A" from the bitmap font goes into the background of the "A" outline
-    glyph), this is to make tracing glyphs easier. Be careful, you need to load
-    a big bitmap for autotrace to be useful.
-    <FONT COLOR="Red"><SMALL><STRONG>NOTE: </STRONG></SMALL></FONT>FontForge
-    is unable to read an encoding from pk files, you will may need to set it
-    with "Force Encoding" after you've loaded the pk file.<BR>
-    You may also load images into the glyph backgrounds. There are two ways to
-    do this, you may either select several image files and they will be loaded
-    consecutively into selected glyphs, or you may select an image template and
-    all images whose filename match that template will be loaded into the backgrounds
-    of the appropriate glyphs. Image templates look like "uni*.png" or "enc*.gif"
-    or "cid*.tiff". You select the template by selecting a filename which matches
-    that template-- So if you select "uni1100.gif" then all image files which
-    start with "uni" and end with ".gif" and contain a valid unicode number will
-    be loaded and placed in the appropriate place. Files named "enc*" or "cid*"
-    are handled similarly except that they specify the current encoding (and
-    the number must be in decimal rather than hex).
-    <P>
-    If you are editing a <A HREF="multilayer.html">multi-layered font</A> (and
-    have a version of FontForge configured for it) then you can also import an
-    image into one of the foreground layers.
-    <P>
-    <SMALL>FontForge does best when given <A NAME="bitmapfiles">bitmap</A> images.
-    It will grey out the foreground and make the background transparent. It will
-    also compress them when it stores them in the sfd file. It will handle most
-    other image formats but does not try to optimize them in anyway. Please use
-    bitmaps here.</SMALL>
-    <P>
-    You may load an encapsulated postscript file (or rather the sub-set of postscript
-    that FontForge understands) into the foreground of glyphs. As with images
-    above this may import either depending on the selection or a template.<BR>
-    If you have libxml2 on your system then FontForge will also be able to import
-    svg files. As with postscript, only a subset of svg is understood).
-    <P>
-    In the Outline View this allows you to import an image into the background
-    (see the above remark about <A HREF="#bitmapfiles">bitmaps</A>, or import
-    eps or fig files into the foreground (the xfig conversion is really bad,
-    the eps conversion is very limited).
-    <P>
-    In the Bitmap View this allows you to import a bitmap image into the glyph.
-    <P>
-    This menu item is not available in the Metrics View<BR>
-    &nbsp; <BR>
-    In the font view you may select multiple files (by holding down the shift
-    or control keys when clicking on them), and all selected bitmap fonts will
-    be imported into the sfd.
-  <DT>
-    <A NAME="Merge-kern">Merge Kern Info...</A>
-  <DD>
-    Only available in the font view window. This command will allow you to search
-    for an afm, ofm, tfm, pfm or mac resource file containing kerning pairs for
-    the specified font. In many cases it will not be needed because when FontForge
-    opens a .pfa or .pfb font it will automagically search for an appropriate
-    .afm file in the same place. But sometimes afm files are stored in other
-    directories. And sometimes you want to import information from TeX, from
-    mac resource files or from windows pfm files.<BR>
-    <FONT COLOR="Red"><SMALL><STRONG>NOTE: </STRONG></SMALL></FONT>FontForge
-    is unable to read an encoding from tfm/ofm files or from mac resource files,
-    it is your responsibility to ensure that the encoding of your font matches
-    that of the tfm file <EM>BEFORE</EM> merging kerning information. This is
-    unfortunate, sorry.
-    <P>
-    Note: When loading a postscript font from a mac resource file, the associated
-    kerning data will be found in the FOND stored with a bitmap font for this
-    face. FontForge can't guess the name of this file when loading the font.
-    You must figure it out yourself.
-  <DT>
-    <A NAME="Print">Print</A>...
-  <DD>
-    Not available in the bitmap view. Allows you to print out all the glyphs
-    in the font, a text sample of the font, or specific glyphs at a very large
-    scale.<BR>
-    See the section on <A HREF="print.html">printing</A> for more information.
-  <DT>
-    <A NAME="Display">Display</A>...
-  <DD>
-    Not available in the bitmap view. Similar to print, except it displays what
-    you will see on the screen. You must have freetype on your system for it
-    to be of any use. See the section on <A HREF="display.html">display</A> for
-    more information.
-  <DT>
-    <A NAME="Execute">Execute</A> Script...
-  <DD>
-    Only in the font view. Brings up a dlg and allows you to enter a
-    <A HREF="scripting.html">script</A>, which could be just calling a prewritten
-    script file. There is a [Call] button in the dlg to help you locate any such
-    files. The default extension is "*.pe" (postscript edit) but you can change
-    that with the [Filter] button if you use something else.
-  <DT>
-    <A NAME="ScriptMenu">Script Menu</A>
-  <DD>
-    Only in the font view. You may define up to 10
-    <A HREF="scripting.html#menu">scripts</A> that you want to execute frequently
-    and place them in this menu. The scripts may also be invoked by short cut
-    with the first one being invoked by Control-Meta(Alt)-1, the second
-    Control-Meta-2, and the tenth by Control-Meta-0. The scripts are set in the
-    <A HREF="prefs.html#scripts">preferences dialog</A>
-  <DT>
-    <A NAME="prefs">Preferences...</A>
-  <DD>
-    This pops up a <A HREF="prefs.html">dialog allowing you to configure various
-    esoteric bits of fontforge</A>.
-    <P>
-    A number of things that might be controlled from a preference window are
-    controlled by <A HREF="xres.html">X Resources</A>.
-  <DT>
-    <A NAME="Quit">Quit</A>
-  <DD>
-    Exits the program, prompting you whether to save any changed fonts.
-</DL>
-<P>
-<H2>
-  Other menus
-</H2>
-<UL>
-  <LI>
-    <A HREF="filemenu.html">File</A>
-  <LI>
-    <A HREF="editmenu.html">Edit</A>
-  <LI>
-    <A HREF="pointmenu.html">Point</A>
-  <LI>
-    <A HREF="elementmenu.html">Element</A>
-  <LI>
-    <A HREF="hintsmenu.html">Hints</A>
-  <LI>
-    <A HREF="encodingmenu.html">Encoding</A>
-  <LI>
-    <A HREF="viewmenu.html">View</A>
-  <LI>
-    <A HREF="metricsmenu.html">Metrics</A>
-  <LI>
-    <A HREF="cidmenu.html">CID</A>
-  <LI>
-    <A HREF="mmmenu.html">MM</A>
-  <LI>
-    <A HREF="windowmenu.html">Window</A>
-  <LI>
-    <A HREF="helpmenu.html">Help</A>
-  <LI>
-    <A HREF="HotKeys.html">Hot Keys</A>
-</UL>
-<P ALIGN=Center>
--- <A HREF="metricsview.html">Prev</A> -- <A HREF="overview.html">TOC</A>
--- <A HREF="editmenu.html">Next</A> --
-<P>
+  <H1 ALIGN=Center>
+    The File Menu
+  </H1>
+  <UL>
+    <LI>
+      <A HREF="#New">New</A>
+    <LI>
+      <A HREF="#Open">Open</A>
+    <LI>
+      <A HREF="#Recent">Recent</A>
+    <LI>
+      <A HREF="#Close">Close</A>
+    <LI>
+      <A HREF="#Save">Save</A>
+    <LI>
+      <A HREF="#SaveAs">Save As...</A>
+    <LI>
+      <A HREF="#SaveAll">Save All</A>
+    <LI>
+      <A HREF="#Generate">Generate Fonts...</A>
+    <LI>
+      <A HREF="#GenerateMac">Generate Mac Family...</A>
+    <LI>
+      <A HREF="#Revert">Revert</A>
+    <LI>
+      <A HREF="#RevertGlyph">Revert Glyph</A>
+    <LI>
+      <A HREF="#Export">Export...</A>
+    <LI>
+      <A HREF="#Import">Import...</A>
+    <LI>
+      <A HREF="#Merge-kern">Merge Kern Info...</A>
+    <LI>
+      <A HREF="#Print">Print...</A>
+    <LI>
+      <A HREF="#Display">Display...</A>
+    <LI>
+      <A HREF="#Execute">Execute Script...</A>
+    <LI>
+      <A HREF="#ScriptMenu">Script Menu</A>
+    <LI>
+      <A HREF="#prefs">Preferences...</A>
+    <LI>
+      <A HREF="#Quit">Quit</A>
+  </UL>
+  <P>
+  <DL>
+    <DT>
+      <A NAME="New">New</A>
+    <DD>
+      Creates a new font with (by default) ISO 8859-1 (Latin1) encoding. The default
+      encoding may be changed in the preference dlg.
+    <DT>
+      <A NAME="Open">Open</A>
+    <DD>
+      Brings up a file chooser and allows you to open a font in any of the formats
+      FontForge understands.
+      <P>
+      If you open a truetype font containing bitmaps then you will be asked if
+      you want to load some of the bitmaps as well as the outlines.
+      <P>
+      By default this dialog will display all files with extensions of pfa, pfb,
+      pt3, sfd, ttf, otf, otb, t42, cef, cff, gsf, ttc, svg, ik, mf and bdf (possibly
+      others as FontForge comes to support more formats). If you would also like
+      it to display .ps files then enter *.{pfa,pfb,ttf,otf,bdf,sfd,ps} and press
+      the Filter button. If you only want it to display sfd files enter *.sfd and
+      press Filter.<BR>
+      You may select multiple files (by holding down the shift or control keys
+      when clicking on them), and all selected files will be opened.<BR>
+      FontForge can open macbinary resource files containing postscript and truetype
+      fonts (it does not open bitmap fonts currently)<BR>
+      FontForge does not open Acorn RISC/OS files, but you can use
+      <I><A HREF="acorn2sfd.html">acorn2sfd</A></I> to convert them into an sfd
+      file which FontForge can then open.<BR>
+      If you have <A HREF="http://www.tug.org/"><I>mf </I></A>and
+      <I><A HREF="http://sourceforge.net/projects/autotrace/">autotrace</A>
+      </I>installed on your machine FontForge will process metafont's mf files
+      for you. But you might want to use <I>pktrace, mftrace</I> or some other
+      standalone program to do the job.
+      <P>
+      When FontForge opens a pdb file (one that contains palm bitmap fonts) it
+      will open the first font it finds. In most formats it will list the available
+      fonts in a file and ask which you want, but palm fonts contain no fontname
+      so there is no way to identify them.
+      <P>
+      When importing a <A NAME="type3-import">type3</A> font FontForge will ask
+      you a few questions. It shouldn't have to ask these questions, but this is
+      an imperfect world and FontForge an imperfect program. In some rare cases
+      FontForge will crash if it tries to do a remove overlap. The remove overlap
+      functionality is important for interpreting stroked paths so you really should
+      have it on. But if a crash happens then, turn it off (and the crash should
+      not repeat, but some functionality will be lost).
+      <P>
+      Not all font formats that fontforge supports have standard extensions. Mac
+      resource forks are one example, postscript cid, type0 and type3 fonts are
+      another. FontForge can still open these formats, even if it fails to display
+      the file. You can always type the file name in yourself if you don't see
+      it in the file list.
+      <P>
+      FontForge can also read (many) fonts out of a pdf file. FontForge usually
+      does not list pdf files (because they aren't really designed as mechanisms
+      for transporting fonts and most such fonts will be incomplete due to subsetting
+      and other optimizations), but you can always type in the name of one directly
+      (or use the [Filter] button to display *.pdf).
+    <DT>
+      <A NAME="Recent">Recent</A>
+    <DD>
+      A submenu showing recently used sfd files.
+    <DT>
+      <A NAME="Close">Close</A>
+    <DD>
+      Closes the current window.
+      <P>
+      If this is a font view and the font has been changed, then it will ask whether
+      you want to save the font. It will also close any outline glyph, bitmap glyph
+      or metrics views associated with the font.
+    <DT>
+      <A NAME="Save">Save</A>
+    <DD>
+      Saves the current file. If it is associated with a spline font database it
+      will be saved there and a backup file will be created. If it is a new font,
+      or if the font has been read from a postscript font file, then a Save As
+      dialog will pop up.
+      <P>
+      If you are editing a font "Ambrosia.sfd" then the backup file will be called
+      "Ambrosia~.sfd".
+    <DT>
+      <A NAME="SaveAs">Save</A> As...
+    <DD>
+      Allows you to give a new name to the current spline font database. Pops up
+      a file picker.
+    <DT>
+      <A NAME="SaveAll">Save All</A>
+    <DD>
+      Saves all changed fonts. If any have not been named, it will pop up a Save
+      As file picker for that font.
+    <DT>
+      <A NAME="Generate">Generate</A> Fonts...
+    <DD>
+      <A HREF="generate.html">This generates font files</A>, both outline and bitmap.
+      You may choose not to generate either, you may generate an afm file or a
+      pfm file, you may select the type of postscript output, you may select which
+      pixelsizes of bitmap to generate. (See <A HREF="generate.html">that page
+      </A>for more info)
+    <DT>
+      <A NAME="GenerateMac">Generate</A> Mac Family...
+    <DD>
+      This is only available if there are multiple fonts open in the same family,
+      and if the current font is the "Plain" style of that family. It generates
+      a mac FOND structure containing references to all family members, NFNT, sfnt,
+      and POST resources for all selected faces. It brings up a
+      <A HREF="generate.html">dlg</A> very similar to the Generate fonts dialog,
+      but one that includes a list of all potential faces for family members.
+    <DT>
+      <A NAME="Revert">Revert</A>
+    <DD>
+      Rereads the font from the file on the disk. All changes are lost.
+    <DT>
+      <A NAME="RevertGlyph">Revert Glyph</A>
+    <DD>
+      Only available in the font and outline views. Rereads the font from the sfd
+      file on the disk searching for a glyph in that file with the same name as
+      the current glyph. All changes to this glyph will be lost (but if the glyph
+      has references then any changes made to the glyphs being refered to will
+      still be visible), <EM>this command may be undone.</EM>
+      <P>
+      So if you have changed the name of the glyph this command will fail.<BR>
+      If the font did not come from an sfd file this command will fail.<BR>
+      If the font has been reencoded and the glyph has references this command
+      may fail.<BR>
+      If you have made a global change to the font (like scaling it to a new em-size)
+      then the results may not be appropriate.
+    <DT>
+      <A NAME="Export">Export</A>...
+    <DD>
+      In the Outline view this allows you to export the splines that make up the
+      glyph into an encapsulated postscript (.eps), pdf, svg or xfig format (.fig
+      -- the conversion to fig format is not the best) file. You may also have
+      the glyph rasterized and output in either .xbm or .bmp (or png if you have
+      that library) formats (FontForge will prompt you for a pixelsize. bmp also
+      allows you to generate an anti-aliased image, and you will be prompted for
+      bits per pixel. 1 bit per pixel is a bitmap).
+      <P>
+      In the Bitmap view this allows you to export the current glyph as either
+      a .xbm or a .bmp (always as a bitmap) file.
+      <P>
+      This menu item is not available in the Font or Metrics Views.
+    <DT>
+      <A NAME="Import">Import</A>...
+    <DD>
+      In the Font View this allows you to import one or several bitmap fonts (from
+      a .bdf file or a ttf/otf/ttc file, TeX pk (gf) file, an X11 .pcf file or
+      a mac dfont) and merge it into the list of bitmap sizes stored in the database.
+      You may also load one bitmap font into the backgrounds of the outline glyphs
+      (So "A" from the bitmap font goes into the background of the "A" outline
+      glyph), this is to make tracing glyphs easier. Be careful, you need to load
+      a big bitmap for autotrace to be useful.
+      <FONT COLOR="Red"><SMALL><STRONG>NOTE: </STRONG></SMALL></FONT>FontForge
+      is unable to read an encoding from pk files, you will may need to set it
+      with "Force Encoding" after you've loaded the pk file.<BR>
+      You may also load images into the glyph backgrounds. There are two ways to
+      do this, you may either select several image files and they will be loaded
+      consecutively into selected glyphs, or you may select an image template and
+      all images whose filename match that template will be loaded into the backgrounds
+      of the appropriate glyphs. Image templates look like "uni*.png" or "enc*.gif"
+      or "cid*.tiff". You select the template by selecting a filename which matches
+      that template-- So if you select "uni1100.gif" then all image files which
+      start with "uni" and end with ".gif" and contain a valid unicode number will
+      be loaded and placed in the appropriate place. Files named "enc*" or "cid*"
+      are handled similarly except that they specify the current encoding (and
+      the number must be in decimal rather than hex).
+      <P>
+      If you are editing a <A HREF="multilayer.html">multi-layered font</A> (and
+      have a version of FontForge configured for it) then you can also import an
+      image into one of the foreground layers.
+      <P>
+      <SMALL>FontForge does best when given <A NAME="bitmapfiles">bitmap</A> images.
+      It will grey out the foreground and make the background transparent. It will
+      also compress them when it stores them in the sfd file. It will handle most
+      other image formats but does not try to optimize them in anyway. Please use
+      bitmaps here.</SMALL>
+      <P>
+      You may load an encapsulated postscript file (or rather the sub-set of postscript
+      that FontForge understands) into the foreground of glyphs. As with images
+      above this may import either depending on the selection or a template.<BR>
+      If you have libxml2 on your system then FontForge will also be able to import
+      svg files. As with postscript, only a subset of svg is understood).
+      <P>
+      In the Outline View this allows you to import an image into the background
+      (see the above remark about <A HREF="#bitmapfiles">bitmaps</A>, or import
+      eps or fig files into the foreground (the xfig conversion is really bad,
+      the eps conversion is very limited).
+      <P>
+      In the Bitmap View this allows you to import a bitmap image into the glyph.
+      <P>
+      This menu item is not available in the Metrics View<BR>
+      &nbsp; <BR>
+      In the font view you may select multiple files (by holding down the shift
+      or control keys when clicking on them), and all selected bitmap fonts will
+      be imported into the sfd.
+    <DT>
+      <A NAME="Merge-kern">Merge Kern Info...</A>
+    <DD>
+      Only available in the font view window. This command will allow you to search
+      for an afm, ofm, tfm, pfm or mac resource file containing kerning pairs for
+      the specified font. In many cases it will not be needed because when FontForge
+      opens a .pfa or .pfb font it will automagically search for an appropriate
+      .afm file in the same place. But sometimes afm files are stored in other
+      directories. And sometimes you want to import information from TeX, from
+      mac resource files or from windows pfm files.<BR>
+      <FONT COLOR="Red"><SMALL><STRONG>NOTE: </STRONG></SMALL></FONT>FontForge
+      is unable to read an encoding from tfm/ofm files or from mac resource files,
+      it is your responsibility to ensure that the encoding of your font matches
+      that of the tfm file <EM>BEFORE</EM> merging kerning information. This is
+      unfortunate, sorry.
+      <P>
+      Note: When loading a postscript font from a mac resource file, the associated
+      kerning data will be found in the FOND stored with a bitmap font for this
+      face. FontForge can't guess the name of this file when loading the font.
+      You must figure it out yourself.
+    <DT>
+      <A NAME="Print">Print</A>...
+    <DD>
+      Not available in the bitmap view. Allows you to print out all the glyphs
+      in the font, a text sample of the font, or specific glyphs at a very large
+      scale.<BR>
+      See the section on <A HREF="print.html">printing</A> for more information.
+    <DT>
+      <A NAME="Display">Display</A>...
+    <DD>
+      Not available in the bitmap view. Similar to print, except it displays what
+      you will see on the screen. You must have freetype on your system for it
+      to be of any use. See the section on <A HREF="display.html">display</A> for
+      more information.
+    <DT>
+      <A NAME="Execute">Execute</A> Script...
+    <DD>
+      Only in the font view. Brings up a dlg and allows you to enter a
+      <A HREF="scripting.html">script</A>, which could be just calling a prewritten
+      script file. There is a [Call] button in the dlg to help you locate any such
+      files. The default extension is "*.pe" (postscript edit) but you can change
+      that with the [Filter] button if you use something else.
+    <DT>
+      <A NAME="ScriptMenu">Script Menu</A>
+    <DD>
+      Only in the font view. You may define up to 10
+      <A HREF="scripting.html#menu">scripts</A> that you want to execute frequently
+      and place them in this menu. The scripts may also be invoked by short cut
+      with the first one being invoked by Control-Meta(Alt)-1, the second
+      Control-Meta-2, and the tenth by Control-Meta-0. The scripts are set in the
+      <A HREF="prefs.html#scripts">preferences dialog</A>
+    <DT>
+      <A NAME="prefs">Preferences...</A>
+    <DD>
+      This pops up a <A HREF="prefs.html">dialog allowing you to configure various
+      esoteric bits of fontforge</A>.
+      <P>
+      A number of things that might be controlled from a preference window are
+      controlled by <A HREF="xres.html">X Resources</A>.
+    <DT>
+      <A NAME="Quit">Quit</A>
+    <DD>
+      Exits the program, prompting you whether to save any changed fonts.
+  </DL>
+  <P>
+  <H2>
+    Other menus
+  </H2>
+  <UL>
+    <LI>
+      <A HREF="filemenu.html">File</A>
+    <LI>
+      <A HREF="editmenu.html">Edit</A>
+    <LI>
+      <A HREF="pointmenu.html">Point</A>
+    <LI>
+      <A HREF="elementmenu.html">Element</A>
+    <LI>
+      <A HREF="hintsmenu.html">Hints</A>
+    <LI>
+      <A HREF="encodingmenu.html">Encoding</A>
+    <LI>
+      <A HREF="viewmenu.html">View</A>
+    <LI>
+      <A HREF="metricsmenu.html">Metrics</A>
+    <LI>
+      <A HREF="cidmenu.html">CID</A>
+    <LI>
+      <A HREF="mmmenu.html">MM</A>
+    <LI>
+      <A HREF="windowmenu.html">Window</A>
+    <LI>
+      <A HREF="helpmenu.html">Help</A>
+    <LI>
+      <A HREF="HotKeys.html">Hot Keys</A>
+  </UL>
+  <P ALIGN=Center>
+  -- <A HREF="metricsview.html">Prev</A> -- <A HREF="overview.html">TOC</A>
+  -- <A HREF="editmenu.html">Next</A> --
+  <P>
 </DIV>
 </BODY></HTML>

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 8-Dec-2005 -->
+  <!-- AP: Last modified: 14-Jan-2006 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -18,8 +18,175 @@
   <P>
   <UL>
     <LI>
-      ???
+      14-Jan-2006
       <UL>
+	<LI>
+	  Change AddExtrema so that if an extremum is very close to an old point it
+	  will add the extremum and then remove the old point.
+	<LI>
+	  Redid how bdf properties were handled
+	  <UL>
+	    <LI>
+	      I had the definitions of some properties slightly wrong
+	    <LI>
+	      I was generating some obsolete properties
+	    <LI>
+	      When I generated CHARSET_ENCODING for iso8859 encodings I had an extraneous
+	      "-" in the value.
+	    <LI>
+	      retain the properties when loading a bdf, pcf font
+	    <LI>
+	      Add a dialog which gives user control over bdf properties
+	    <LI>
+	      design a 'BDF ' table for SFNT files which can contain bdf properties and
+	      make FontForge read and generate this table.
+	  </UL>
+	<LI>
+	  Ted Packard points out that I output "big metrics" in sfnts inconsistently.
+	  This patch should make them consistent and right.
+	<LI>
+	  Restore "compact" views to their old glory. Ie. they can now be uncompacted
+	  (and uncompaction happens automagically when generating a font).
+	<LI>
+	  When reading a GenTags: line from an sfd file stored with CRLF line terminators,
+	  the next line would be lost.
+	<LI>
+	  ff couldn't handle xrefs which were broken in bits in pdf files?
+	<LI>
+	  When reading a ttf font from a pdf file we found no encoding info. This caused
+	  us to crash because various routines expected an encoding map. Add a dummy
+	  (Original) map if not exists.
+	<LI>
+	  Wasn't numbering points in references properly.
+	<LI>
+	  Gleep! Ever since the gettext code went in, the Generate fonts dlg has refused
+	  to generate "No Outline Font" and "No Bitmap Font".
+	<LI>
+	  Herbert Duerr from OpenOffice tells me that their OpenSymbol.ttf font when
+	  produced by fontforge does not work on Win98. This is because Win98 doesn't
+	  like the codepages bits ff produces and refuses to use any glyphs in the
+	  font. He submitted a patch to make ff produce a version 0 OS/2 table (with
+	  no codepage info) for this font. Win98 will accept it then. His patch was
+	  against an earlier version of ff and needed to be modified for the current
+	  version.
+	<LI>
+	  Patch by Raph Levien which finally shows me how to use FT_Outline_Get_Bitmap
+	  properly.
+	<LI>
+	  If the user has never called PrintSetup (or if the user has not called PrintSetup
+	  this session and has not loaded prefs), then fontforge will invode setpagedevice
+	  on a pagesize which will fit on either A4 or US-Letter. The PS manual says
+	  a printer should refuse such a size unless it has paper within 5 points of
+	  it. So on printers which follow the spec (not mine) nothing will print as
+	  it waits for paper.
+	  <P>
+	  Now if the pagesize has not been set, don't specify a PageSize to setpagedevice.
+	<LI>
+	  The PrintSetup scripting command should not require a font.
+	<LI>
+	  Add a mechanism so that users can prevent ff from making a point implicit.
+	  Useful in that point needs to be instructed.
+	<LI>
+	  New copyright notices for 2006
+	<LI>
+	  Make the pen tool work better with quadratic splines (make it default to
+	  having control points which cause the point to be implicit).
+	<LI>
+	  Order2 elipses were not drawn accurately.
+	<LI>
+	  Point numbers sometimes didn't get properly renumbered after changes. If
+	  we have references &amp; splines in a (truetype) glyph then show the numbers
+	  as "?".
+	<LI>
+	  When a charview displays numbered (truetype) points, then it shows all the
+	  control points. But the control points are not selectable. This is not a
+	  good thing, so make them selectable.
+	<LI>
+	  The font display to pdf did not include a title at the top of each page.
+	<LI>
+	  Peter Denisevich points out that when we print something we say "%%Pages
+	  atend" instead of "%%Pages (atend)". And the latter is correct.
+	<LI>
+	  Werner points out that my type1 (and type1 cid) fonts contain a
+	  %%DocumentSuppliedResource line, and they should not. The next level up should
+	  do that when it includes the font.
+	<LI>
+	  Show .xpm files as images we support in import image dlg. We've always supported
+	  them, might as well show them.
+	<LI>
+	  Check the glyph class when deciding what anchor to use.
+	<LI>
+	  Anshuman Pandey wants to be able to set the glyph's GDEF class. I've never
+	  understood why the default behavior wasn't good enough, but it's easy to
+	  do.
+	<LI>
+	  One of the fields in Glyph Info had some garbage initialization.
+	<LI>
+	  Add a default anchor point type to the AddAnchorPoint scripting command.
+	  FF will try to guess an appropriate value.
+	<LI>
+	  Add some standard window sizes to the fontview window. I'm tired of having
+	  the windows sized to other people's standards whenever I review a bug.
+	<LI>
+	  There was a path through expand stroke where a control point was marked as
+	  non-e xistant by mistake.
+	<LI>
+	  Expand Stroke would leave contours with the reversed orientation if it had
+	  to do a remove overlap internally.
+	<LI>
+	  Oops. The routine to save the encoding prefs file could not handle an encoding
+	  plug-in.
+	<LI>
+	  KANOU points out that the origin pulldown list in the transform dlg was not
+	  being translated.
+	<LI>
+	  In the preference dlg all of the [...] file browsers had the title "Call
+	  Script" which isn't appropriate for most of them.
+	<LI>
+	  Typing .* and pressing [Filter] did not show hidden files in the file chooser.
+	<LI>
+	  the code to check for intersections failed to check if there were a crossover
+	  in the last tiny section of a spline before its end.
+	<LI>
+	  Was generating ofm files when creating bdf fonts. Seems unnecessary.
+	<LI>
+	  Was producing a EBLC table with bad first/last values for first glyphs.
+	<LI>
+	  Hmm. Not all systems have tzset. Add a configuration option for it.
+	<LI>
+	  In scripting, a return within a loop sent ff into an infinite loop.
+	<LI>
+	  Kanou's patch for adding a new flag to scripting Import, to clear out the
+	  layer first.
+	<LI>
+	  Patch from KANOU to add SetGlyphChanged scripting function.
+	<LI>
+	  If an implied point became real, this fact was not reflected on the display
+	  until the user forced a point renumbering.
+	<LI>
+	  A mouse click in an empty metrics view references garbage memory -- And crashed
+	  Kanou's session.
+	<LI>
+	  Loading a large bitmap font left bits of the backmap of the encoding map
+	  uninitialized.
+	<LI>
+	  Loading a pcf font caused a crash.
+	<LI>
+	  Moving the control points of an implied point should move the implied point.
+	  And we should indicate which points are implied so this behavior doesn't
+	  surprise.
+	<LI>
+	  Michal Nowakowski points out that renumbering points in a glyph should turn
+	  off point matching in references.
+	<LI>
+	  Add support for bitmaps with vertical metrics.
+	<LI>
+	  Wasn't storing the vendor id in the OS/2 table properly.
+	<LI>
+	  Rounding error present on PPC which was absent on *86 machines.
+	<LI>
+	  Werner would like pixel size info to show on the title of a charview when
+	  debugging.
 	<LI>
 	  Added a new menu command "Point-&gt;Center Between Control Points" for truetype.
 	<LI>

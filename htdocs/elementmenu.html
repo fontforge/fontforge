@@ -2,897 +2,904 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 22-Aug-2005 -->
+  <!-- AP: Last modified: 14-Jan-2006 -->
   <TITLE>The Element Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
 <DIV id="in">
-<H1 ALIGN=Center>
-  The Element Menu
-</H1>
-<P>
-<UL>
-  <LI>
-    <A HREF="#Font">Font Info</A>
-  <LI>
-    <A HREF="#CharInfo">Glyph Info</A>
-  <LI>
-    <A HREF="#Info">Get Info</A>
-  <LI>
-    Typographic Features
-    <UL>
-      <LI>
-	<A HREF="#Copy-Feat">Copy Feature(s) to Font</A>...
-      <LI>
-	<A HREF="#DefaultATT">Default ATT</A> (Advanced Typographic Tables)
-      <LI>
-	<A HREF="#Rm-All-Feat">Remove All Features</A>
-      <LI>
-	<A HREF="#Rm-Feat">Remove Feature(s)...</A>
-      <LI>
-	<A HREF="#Rm-Unused-Feat">Remove Unused Nested Features</A>
-      <LI>
-	<A HREF="#Retag-Feat">Retag Feature(s)...</A>
-    </UL>
-  <LI>
-    Show Dependencies
-    <UL>
-      <LI>
-	<A HREF="elementmenu.html#Dependencies">References</A>
-      <LI>
-	<A HREF="#DepSubs">Substitutions</A>
-    </UL>
-  <LI>
-    <A HREF="#Problems">Find Problems...</A>
-  <LI>
-    <A HREF="#Bitmaps">Bitmaps Available...</A>
-  <LI>
-    <A HREF="#Regenerate">Regenerate Bitmaps...</A>
-  <LI>
-    Transformatons
-    <UL>
-      <LI>
-	<A HREF="#Transform">Transform</A>...
-      <LI>
-	<A HREF="#PoV">Point of View Projection</A>...
-      <LI>
-	<A HREF="elementmenu.html#Non-Linear">Non-Linear Transform</A>...<BR>
-      <LI>
-	<A HREF="#Flip">Flip Horizontally</A>
-      <LI>
-	<A HREF="#FlipV">Flip Vertically</A>
-      <LI>
-	<A HREF="#Rotate">Rotate 90&#176; CW</A>
-      <LI>
-	<A HREF="#Rotate90CCW">Rotate 90&#176; CCW</A>
-      <LI>
-	<A HREF="#Rotate180">Rotate 180&#176;</A>
-      <LI>
-	<A HREF="#Skew">Skew</A>
-    </UL>
-  <LI>
-    <A HREF="#Expand">Expand Stroke...</A>
-  <LI>
-    Overlap
-    <UL>
-      <LI>
-	<A HREF="#Remove">Remove Overlap</A>
-      <LI>
-	<A HREF="#Intersect">Intersect</A>
-      <LI>
-	<A HREF="#Exclude">Exclude</A>
-      <LI>
-	<A HREF="#FindInter">Find Intersections</A>
-    </UL>
-  <LI>
-    Simplify
-    <UL>
-      <LI>
-	<A HREF="#Simplify">Simplify</A>
-      <LI>
-	Simplify More
-      <LI>
-	<A HREF="#Cleanup">Cleanup Glyphs</A>
-    </UL>
-  <LI>
-    <A HREF="elementmenu.html#Add-Extrema">Add Extrema</A>
-  <LI>
-    Effects
-    <UL>
-      <LI>
-	<A HREF="#Outline">Outline</A>
-      <LI>
-	<A HREF="#Inline">Inline</A>
-      <LI>
-	<A HREF="#Shadow">Shadow</A>
-      <LI>
-	<A HREF="#Wireframe">Wireframe</A>
-    </UL>
-  <LI>
-    <A HREF="#MetaFont">MetaFont...</A>
-  <LI>
-    <A HREF="#AutoTrace">AutoTrace</A>
-  <LI>
-    <A HREF="#Align">Align</A>
-    <UL>
-      <LI>
-	<A HREF="elementmenu.html#Average">Average Points</A>
-      <LI>
-	<A HREF="elementmenu.html#Space-Pts">Space Points</A>
-      <LI>
-	<A HREF="elementmenu.html#Space-Regions">Space Regions</A>
-      <LI>
-	<A HREF="#Parallel">Make Parallel</A>
-    </UL>
-  <LI>
-    Round
-    <UL>
-      <LI>
-	<A HREF="#Round">To Int</A>
-      <LI>
-	<A HREF="#Hundredths">To Hundredths</A>
-      <LI>
-	<A HREF="#Cluster">Cluster</A>
-    </UL>
-  <LI>
-    <A HREF="#Order">Order</A>
-    <UL>
-      <LI>
-	First
-      <LI>
-	Earlier
-      <LI>
-	Later
-      <LI>
-	Last
-    </UL>
-  <LI>
-    <A HREF="#Clockwise">Clockwise</A>
-  <LI>
-    <A HREF="#Counter">Counter-Clockwise</A>
-  <LI>
-    <A HREF="#Correct">Correct Direction</A>
-  <LI>
-    Build
-    <UL>
-      <LI>
-	<A HREF="#Accented">Build Accented Glyph</A>
-      <LI>
-	<A HREF="#Accented">Build Composite Glyph</A>
-      <LI>
-	<A HREF="#BuildDuplicate">Build Duplicate</A>
-    </UL>
-  <LI>
-    <A HREF="#Merge">Merge Fonts...</A>
-  <LI>
-    <A HREF="#Interpolate">Interpolate Fonts...</A>
-</UL>
-<P>
-There are also two menu entries which are not part of the default build but
-which may be configured by modifying <CODE>configure-fontforge.h</CODE> before
-compiling FontForge.
-<UL>
-  <LI>
-    <A HREF="#TilePath">Tile Path</A>
-  <LI>
-    <A HREF="#NonLinear">Non Linear Transform...</A>
-</UL>
-<P>
-<DL>
-  <DT>
-    <A NAME="Font">Font</A> Info
-  <DD>
-    In all views this brings up the <A HREF="fontinfo.html">Font Info
-    dialog</A>.<BR>
-    CID keyed fonts can set information on the CID font as a whole (rather than
-    just the current sub-font, which is what this command does) from
-    <A HREF="cidmenu.html#FontInfo">CID-&gt;CID Font Info</A>.
-  <DT>
-    Glyph <A NAME="CharInfo">Info</A>
-  <DD>
-    In the all views this brings up the <A HREF="charinfo.html#Character">Glyph
-    Info dialog</A>.
-  <DT>
-    Get <A NAME="Info">Info</A>
-  <DD>
-    In the outline view this brings up <A HREF="getinfo.html">one of four different
-    dialogs</A> (Point Info, Image Info, Reference Info, Anchor Point Info) depending
-    on what is selected.
-  <DT>
-    Typographic Features
-  <DD>
-    This sub-menu is only present in the font view and allows you to manipulate
-    GSUB/GPOS/morx features. If you wish to create them you should use
-    <A HREF="fontinfo.html">Font Info</A> or
-    <A HREF="charinfo.html#Character">Glyph Info</A>.
-    <DL>
-      <DT>
-	Copy <A NAME="Copy-Feat">Feature</A> to Font...
-      <DD>
-	<A HREF="typofeat.html#Copy-Feat">This dialog</A> allows you to copy a set
-	of features from one font to another.
-      <DT>
-	Default <A NAME="DefaultATT">ATT</A>
-      <DD>
-	In the font view this is a sub-menu which allows you to generate default
-	values for various features of the
-	<A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats2.html">GPOS</A>
-	and
-	<A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats1.html">GSUB</A>
-	tables.
-	<P>
-	The sub-menu consists of a list of feature names (and a few more generic
-	names like "All" which will provide defaults for everything it can figure
-	out, and "Ligatures" which will provide defaults for all ligatures). FontForge
-	will look for defaults for all selected glyphs. There is also one special
-	entry:
-	<DL>
-	  <DT>
-	    Suffix to Tag...
-	  <DD>
-	    In adobe's glyph naming conventions, alternate forms of glyphs may be named
-	    by appending a suffix to the normal glyph's name. Thus a swash variant of
-	    "A" might be named "A.swash".
-	    <P>
-	    Using this command you can tell FontForge to associate a given suffix with
-	    a feature tag. (in the above example you could associate ".swash" with 'swsh'
-	    -- except you don't need to, because FontForge already knows about that one).
-	    Select the letter "A", then enter the command, then "A" will be linked to
-	    "A.swash" as a 'swsh'.
-	</DL>
-      <DT>
-	<A NAME="Rm-All-Feat">Remove All Features</A>
-      <DD>
-	Removes all typographic features.
-      <DT>
-	<A NAME="Rm-Feat">Remove Feature(s)...</A>
-      <DD>
-	<A HREF="typofeat.html#Rm-Feat">This dialog</A> allows you to select which
-	features to remove.
-      <DT>
-	<A NAME="Rm-Nested-Feat">Remove Unused Nested Features</A>
-      <DD>
-	If there are any nested features which are not referred to within any
-	contextual/chaining feature nor apple state machine then this command will
-	remove them.
-      <DT>
-	<A NAME="Retag-Feat">Retag Feature(s)...</A>
-      <DD>
-	<A HREF="typofeat.html#Retag-Feat">This dialog</A> allows you to change the
-	opentype tag (or apple feature/setting) on a given feature.(This does not
-	retag kerning information).
-    </DL>
-  <DT>
-    Show Dependencies
-    <DL>
-      <DT>
-	<A NAME="Dependencies">References</A>...
-      <DD>
-	This dialog is not available in the bitmap view. It shows you what glyphs
-	contain a reference to the current glyph. You can open a window looking at
-	any of the dependent glyphs by selecting that glyph and pressing the [Show]
-	button.
-      <DT>
-	<A NAME="DepSubs">Substitutions</A>...
-      <DD>
-	Show any glyphs that have substitutions (ligatures, multiple subs, etc.)
-	which depend on the current glyph. So if you select "i", you might see that
-	"fi" depended on it as a ligature, and if you select "A.swash" you might
-	see that "A" depended on it as a 'swsh' alternate subs.
-    </DL>
-  <DT>
-    Find <A NAME="Problems">Problems</A>...
-  <DD>
-    This command is not present in the bitmap view. It will search for several
-    common problems. In the glyph view it will select anything that needs to
-    be fixed, in the font view it will check all selected glyphs and if any have
-    problems will open them and select the problems. It will post a message telling
-    you of each problem found. It brings up the <A HREF="problems.html">Find
-    Problem</A> dialog to let you choose what problems to look for.
-  <DT>
-    <A NAME="Bitmaps">Bitmaps</A> Available...
-  <DD>
-    This brings up a list of pixel sizes for bitmap fonts.<BR>
-    <IMG SRC="bitmapsavail.png" WIDTH="263" HEIGHT="366" ALIGN="Right"> If you
-    have bitmap fonts this will show their pixel sizes. If you remove a size
-    that is in the list then that font will be deleted from the sfd file. If
-    you add a size then that size font will be created and stored in the sfd
-    file.
-    <P>
-    FontForge deals in pixel sizes, not point sizes. The conversion between pixels
-    and points differs on different systems and indeed on different screens.
-    A point is (approximately) 1/72 of an inch, a pixel is however big a pixel
-    happens to be on your screen. Usually pixels range from about 1/72 of an
-    inch to about 1/144 of an inch. Different systems support different screen
-    resolutions as "standard", and FontForge tries to know about these standards.
-    <TABLE BORDER CELLPADDING="2" ALIGN=Center>
-      <CAPTION>
-	Some conversions between points and pixels
-      </CAPTION>
-      <TR>
-	<TH><P ALIGN=Left>
-	  <U>Screen Resolution</U><BR>
-	  Point Size</TH>
-	<TH>72dpi<BR>
-	  Mac</TH>
-	<TH>75dpi<BR>
-	  X</TH>
-	<TH>96dpi<BR>
-	  Win</TH>
-	<TH>100dpi<BR>
-	  X</TH>
-	<TH>120dpi<BR>
-	  Win</TH>
-      </TR>
-      <TR>
-	<TH>10pt</TH>
-	<TD>10</TD>
-	<TD>10</TD>
-	<TD>13</TD>
-	<TD>14</TD>
-	<TD>17</TD>
-      </TR>
-      <TR>
-	<TH>12pt</TH>
-	<TD>12</TD>
-	<TD>12~13</TD>
-	<TD>16</TD>
-	<TD>17</TD>
-	<TD>20</TD>
-      </TR>
-      <TR>
-	<TH>18pt</TH>
-	<TD>18</TD>
-	<TD>19</TD>
-	<TD>24</TD>
-	<TD>25</TD>
-	<TD>30</TD>
-      </TR>
-      <TR>
-	<TH>24pt</TH>
-	<TD>24</TD>
-	<TD>25</TD>
-	<TD>32</TD>
-	<TD>33</TD>
-	<TD>40</TD>
-      </TR>
-    </TABLE>
-    <P>
-    Sadly your screen will probably not match one of the standard screens precisely.
-    On X the standard resolutions are 75 and 100dpi, on MS Windows 96 and 120dpi,
-    and on the Mac 72dpi. This dialog provides the conversion between pixel size
-    and point sizes at these resolutions.
-    <P>
-    Normally the new glyphs are created by rasterizing the outline font. If your
-    system has the freetype2 library installed (and you checked the "Use FreeType"
-    box) then FontForge will use the FreeType rasterizer to generate bitmaps,
-    otherwise it will use FontForge's built-in rasterizer (which isn't as good,
-    but involves a little less overhead).
-    <P>
-    Finally, if you have no outline font then the new glyphs will be created
-    by scaling the (bitmap) font displayed in the font view.
-    <P>
-    In CID keyed fonts there will not be a set of bitmaps for each sub font,
-    instead the entire complex of sub-fonts share bitmaps.<BR Clear=Right>
-    <P>
-    <IMG SRC="greymapsavail.png" WIDTH="263" HEIGHT="366" ALIGN="Right">FontForge
-    also supports anti-aliased bitmap fonts, and you can use this dialog to generate
-    them. If you want to generate a 12 point anti-aliased font with 8 bits per
-    pixel you would type 12@8 into the dialog above. FontForge supports 1, 2,
-    4 and 8 bit per pixel fonts (a 1 bit per pixel font is a standard bitmap,
-    the others are greymaps).<BR>
-    (New greymaps can not be created by scaling old greymaps, if you wish to
-    generate a greymap font, you must have an outline font).
-  <DT>
-    <A NAME="Regenerate">Regenerate</A> Bitmaps...
-  <DD>
-    If you have changed the outline that a bitmap is based one then you should
-    (at some point) look into changing the bitmap too. This command allows you
-    to regenerate a subset of the glyphs in a given bitmap font. In the font
-    view you can regenerate all selected glyphs, while in the bitmap and outline
-    views you can regenerate the current glyph. You can pick what pixel sizes
-    should be regenerated too (unlike the above command, removing a bitmap size
-    from the regenerate list will not delete it).<BR>
-    As before, if you wish to change a greymap you should refer to it by
-    &lt;pixel-size&gt;@&lt;bits-per-pixel&gt;.
-  <DT>
-    Transformations
-  <DD>
-    This sub-menu has rather different choices in the bitmap view from the other
-    views. (Because bitmaps are discrete and the continous transformations of
-    splines are not meaningful).
-    <DL>
-      <DT>
-	<A NAME="Transform">Transform</A>...
-      <DD>
-	<A HREF="transform.html">In the Font and Outline Views this brings up the
-	transform dialog</A>. This provides the standard linear transformations you
-	expect to have available (rotation, scaling, translation, skewing).
-      <DT>
-	<A NAME="PoV">Point of View </A>Projection
-      <DD>
-	<A HREF="transform.html#PoV">This dialog </A>allows you to perform a perspective
-	transformation on your glyphs. (This is a non-linear transformation)
-      <DT>
-	<A NAME="Non-Linear">Non-Linear</A> Transform...
-      <DD>
-	<A HREF="transform.html#Non-Linear">This dialog</A> allows you to perform
-	a general transformation (which could be linear or which can be non-linear).
-	Essentially you provide two equations for how x and y should be mapped.<BR>
-      <DT>
-	<A NAME="Flip">Flip</A> Horizontally
-      <DD>
-	Flips the bitmap horizontally. (Only in bitmap view)
-      <DT>
-	<A NAME="FlipV">Flip</A> Vertically
-      <DD>
-	Flips the bitmap vertically. (Only in bitmap view)
-      <DT>
-	<A NAME="Rotate">Rotate</A> 90&#176; CW
-      <DD>
-	Rotates the bitmap 90&#176; clockwise. (Only in bitmap view)
-      <DT>
-	<A NAME="Rotate90CCW">Rotate</A> 90&#176; CCW
-      <DD>
-	Rotates the bitmap 90&#176; counter-clockwise. (Only in bitmap view)
-      <DT>
-	<A NAME="Rotate180">Rotate</A> 180&#176;
-      <DD>
-	Rotates the bitmap 180&#176; (Only in bitmap view)
-      <DT>
-	<A NAME="Skew">Skew</A>
-      <DD>
-	Allows you to specify a ratio by which to skew the bitmap 1:3 means for every
-	3 pixel rise in y, skew the bitmap one pixel horizontally. (Only in bitmap
-	view)
-    </DL>
-  <DT>
-    <A NAME="NonLinear">Non Linear </A>Transform...
-  <DD>
-    This command is not available in the default build, you must modify the file
-    <CODE>configure-fontforge.h</CODE> and then rebuild FontForge. This command
-    allows the user to specify a non-linear transformation as a pair of expressions
-    (the first specifies the transformation for the x coordinate, the second
-    for the y coordinate). These expressions may be fairly general functions
-    of x and y. See the <A HREF="scripting.html#NonLinear">scripting page</A>
-    for a description of the syntax.
-  <DT>
-    <A NAME="Expand">Expand</A> Stroke...
-  <DD>
-    Not in the bitmap view, not in quadratic (truetype) fonts. In the font view
-    it applies to all foreground splines in all selected glyphs. In the outline
-    view it applies to all paths that have at least one point selected (or if
-    no points are selected then it applies to all paths).<BR>
-    <IMG SRC="twolines.png" WIDTH="247" HEIGHT="247">
-    <IMG SRC="expandedlines.png" WIDTH="247" HEIGHT="247"><BR>
-    Above is a simple example of what expand stroke can do. It takes the two
-    open paths above left and turns them into the two closed paths right.<BR>
-    <IMG SRC="expandstroke.png" WIDTH="323" HEIGHT="488" ALIGN="Left"><BR>
-    The Expand Stroke dialog gives you control over various aspects of the expansion
-    process. You can chose a stroke width, how the ends of an open path should
-    be drawn, and how the path should look when two splines (or lines) join which
-    do not have the same slope (ie. at a corner point). Or you may choose to
-    have the path be that which would be traced by a calligraphic pen, or an
-    elliptical pen. For closed contours you may also choose to remove either
-    the generated contour which is inside the original, or that which is outside
-    (Note: Make sure your glyph is oriented correctly with
-    <A HREF="elementmenu.html#Correct">Edit-&gt;Correct Direction </A>before
-    removing a contour (if misoriented the wrong contour is removed)).
-    <P>
-    <A HREF="pfaeditmath.html#Stroke">How is this done?</A><BR CLEAR=ALL>
-  <DT>
-    <A NAME="TilePath">Tile Path</A>
-  <DD>
-    This command is not available in the default build, you must modify the file
-    <CODE>configure-fontforge.h</CODE> and then rebuild FontForge. Not available
-    in quadratic (truetype) fonts. This command takes the contents of the clipboard
-    and treats it as a tile which is applied to any selected contours.
-  <DT>
-    Overlap
-  <DD>
-    None of these is available in the bitmap view. None works on quadratic (truetype)
-    fonts<SUP><A HREF="#overlap-footnote">1</A></SUP>.
-    <DL>
-      <DT>
-	<A NAME="Remove">Remove</A> Overlap
-      <DD>
-	Not in the bitmap view, <EM>not available when the font has quadratic
-	splines</EM><SUP><A HREF="#overlap-footnote">1</A></SUP>. If two closed paths
-	intersect then there will be overlap. This will get rid of it, leaving one
-	closed path behind.
-	<P>
-	Make sure paths have the correct orientation. Consider the letter "O" with
-	two contours. If both contours run in the same direction then the inner path
-	will be removed (because the outer path overlaps it everywhere), but if the
-	contours run in oposite orientations then the inner path will be retained.
-	Things get very strange if you have intersecting paths with different
-	orientations.
-	<P>
-	<IMG SRC="expandedlines.png" WIDTH="247" HEIGHT="247">
-	<IMG SRC="overlappedlines.png" WIDTH="247" HEIGHT="247"><BR>
-	This command is probably the buggiest in FontForge. So before FontForge invokes
-	the command it will save the state to the error recovery file.<BR>
-	Warning: Splines which are tangent (or nearly so) cause problems. Points
-	which are close together can cause problems.
-	<P>
-	<SUP><A NAME="overlap-footnote">1</A></SUP><SMALL>If you wish to run remove
-	overlap on a truetype (quadratic) font, you must first use Element-&gt;Font
-	Info-&gt;General to convert it into a cubic font, do the remove overlap,
-	and then convert back to quadratic.</SMALL>
-      <DT>
-	<A NAME="Intersect">Intersect</A>
-      <DD>
-	<TABLE CELLPADDING="2">
-	  <TR>
-	    <TD><IMG SRC="exclude-pre.png" WIDTH="174" HEIGHT="174"></TD>
-	    <TD><IMG SRC="intersect-post.png" WIDTH="174" HEIGHT="174"></TD>
-	  </TR>
-	</TABLE>
-	<P>
-	This will remove everything not in the intersection of two regions.
-      <DT>
-	<A NAME="Exclude">Exclude</A>
-      <DD>
-	<TABLE CELLPADDING="2">
-	  <TR>
-	    <TD><IMG SRC="exclude-pre.png" WIDTH="174" HEIGHT="174"></TD>
-	    <TD><IMG SRC="exclude-post.png" WIDTH="174" HEIGHT="174"></TD>
-	  </TR>
-	</TABLE>
-	<P>
-	This will remove the selected contours from the unselected ones. Only available
-	in the outline glyph view.
-      <DT>
-	Find Intersections
-      <DD>
-	This finds the places where overlapping contours intersect and inserts points
-	at those locations.
-    </DL>
-  <DT>
-    Simplify
-  <DD>
-    <DL>
-      <DT>
-	<A NAME="Simplify">Simplify</A>
-      <DD>
-	Not in the bitmap view. If you have lots of points on a path, some of which
-	do not materially add to the path's shape, then this command will remove
-	the extraneous points. (It will not remove points where the slope at the
-	point is horizontal or vertical as postscript likes to have these points
-	present).
-	<P>
-	<A HREF="pfaeditmath.html#Approximating">How is this done?</A>
-      <DT>
-	Simplify More
-      <DD>
-	This is a variant of the simplify command. It brings up a dialog which gives
-	you control over what sorts of errors this simplification is allowed to induce.
-	You can control:
-	<UL>
-	  <LI>
-	    How far the simplified contour is allowed to stray from the original
-	  <LI>
-	    Whether to allow removal of extreme points
-	  <LI>
-	    Whether to allow the slope to change at points.
-	  <LI>
-	    Whether to make corner points into curve points (by adjusting the control
-	    points)
-	  <LI>
-	    Whether to flatten small bumps off of lines
-	  <LI>
-	    Whether to try to simplify straight lines at all
-	</UL>
-	<P>
-	Finally, you may specify whether this set of values should become the default
-	value for future Simplify commands
-      <DT>
-	<A NAME="Cleanup">Cleanup Glyph</A>
-      <DD>
-	This is a special case of the simplify command. In this case if there is
-	a spline which actually traces out a line but none the less has control points,
-	then this command will remove the control points. It will also cleanup zero
-	length splines.
-    </DL>
-  <DT>
-    <A NAME="Add-Extrema">Add Extrema</A>
-  <DD>
-    Not in the bitmap view. Both TrueType and Type1 say that there should be
-    points on the contour where it reaches its extreme horizontal and vertical
-    values. In the outline view, if any points are selected, this will add points
-    at all extrema on splines between selected points. In the font view, metrics
-    view (or if nothing is selected in the outline view) it will add extrema
-    to a spline if: 1) The spline is longer than the em-size/32, or 2) the entire
-    contour (rather than just the current spline) attains its maximum/minimum
-    value at this point.
-  <DT>
-    Effects
-  <DD>
-    Not in quadratic (truetype) fonts.
-    <DL>
-      <DT>
-	<A NAME="Outline">Outline</A>
-      <DD>
-	<IMG SRC="OutlineInline.png" WIDTH="146" HEIGHT="70" ALIGN="Right">Changes
-	the selected glyphs so that instead of being a solid block, only the outline
-	of the glyph is visible. The glyphs' bounding box will not change.
-      <DT>
-	<A NAME="Inline">Inline</A>
-      <DD>
-	Changes the selected glyphs so that the glyph is surrounded by an outline.
-	The glyphs' bounding box will not change.
-      <DT>
-	<A NAME="Shadow">Shadow</A>
-      <DD>
-	Changes the selected glyphs to give them each a
-	shadow.<IMG SRC="ShadowWireframe.png" WIDTH="171" HEIGHT="69" ALIGN="Right">
-	The user has control over the shadow size and angle.
-      <DT>
-	<A NAME="Wireframe">Wireframe</A>
-      <DD>
-	Changes the selected glyphs to give them a 3D wireframe look.
-    </DL>
-  <DT>
-    <A NAME="MetaFont">MetaFont</A>...
-  <DD>
-    This <A HREF="MetaFont.html">dialog</A> is only present in the font and outline
-    glyph views, not in quadratic (truetype) fonts. It allows you to make fonts
-    bolder or condensed. It doesn't work very well.<FONT COLOR="Red"><BR>
-    <STRONG>NOTE</STRONG></FONT>: It does <EM>not</EM> read TeX .mf files. The
-    name is chosen because it has some similarity in terms of features.
-  <DT>
-    <A NAME="AutoTrace">AutoTrace</A>
-  <DD>
-    This command is only available if you have downloaded Martin Weber's
-    <A HREF="http://sourceforge.net/projects/autotrace/">autotrace program</A>,
-    or Peter Selinger's <A HREF="http://potrace.sf.net/">potrace</A>. If you
-    have a background image in a glyph then autotrace will automagically trace
-    the outlines of that image. See <A HREF="autotrace.html">the section on
-    autotracing</A> for more information.
-  <DT>
-    <A NAME="Align">Align</A> menu
-  <DD>
-    This submenu is only present in the outline view, it allows you to align
-    points or to space them out along an axis.
-    <DL>
-      <DT>
-	<A NAME="Average">Average</A> Points
-      <DD>
-	This will look at all the selected points and find the coordinate with the
-	least change. Then it will average find the median point on that axis and
-	set all the selected points to have that value for the appropriate
-	coordinate.<BR>
-	So if you have a line which is almost horizontal, and select its endpoints
-	and apply this command it will be horizontal.<BR>
-	&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-	<IMG SRC="Constrain2_1.png" WIDTH="122" HEIGHT="90">&nbsp; &nbsp; &nbsp;
-	&nbsp; <IMG SRC="Constrain2_2.png" WIDTH="122" HEIGHT="90"><BR>
-	(if you select exactly two points, and they lie close to a 45 diagonal, then
-	they will be forced to the diagonal rather than to horizontal/vertical)
-      <DT>
-	<A NAME="Space-Pts">Space Points</A>
-      <DD>
-	If you have three or more points selected then FontForge will figure out
-	the coordinate that has the greatest change and will space the points out
-	regularly along that axis.<BR>
-	If you select one point (and that point is in the middle of a path) then
-	(internally) the point's location will be expressed in a coordinate system
-	which is rotated so that one axis is parallel to the line between the two
-	points that surround the selected point. The selected point will be moved
-	mid-way between the two on this axis, while it's other coordinate remains
-	fixed.<BR>
-	That's an extremely complicated way of saying: If the selected point is connected
-	to two points which are on a horizontal line, then the selected point's x
-	coordinate will be midway between the two, while its y coordinate remains
-	unchanged.<BR>
-	&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-	<IMG SRC="Constrain1_1.png" WIDTH="122" HEIGHT="90">&nbsp; &nbsp; &nbsp;
-	&nbsp; <IMG SRC="Constrain1_2.png" WIDTH="122" HEIGHT="90">
-      <DT>
-	<A NAME="Space-Regions">Space Regions</A>
-      <DD>
-	This is similar to the above command except that it allows you to make a
-	rather simple definition of a collection of points which should be moved
-	together. Each of these regions will be regularly spaced along the chosen
-	axis. A region is defined as a collection of points, each one of which is
-	within some maximum distance of at least one other point in the region. The
-	purpose of this is to allow you to space out the stems of the letter "m"
-	so that they regularly spaced horizontally. Sadly it won't work in many cases
-	because in a serifed font the serifs will often be closer to each other than
-	to their respective stems.<BR>
-	&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-	<IMG SRC="Spacem_1.png" WIDTH="140" HEIGHT="108"> &nbsp; &nbsp; &nbsp; &nbsp;
-	<IMG SRC="Spacem_2.png" WIDTH="145" HEIGHT="108">
-      <DT>
-	Make <A NAME="Parallel">Parallel</A>
-      <DD>
-	If four points are selected, and there are two lines between them, then FontForge
-	will make those lines parallel. If there are four lines between them (ie.
-	they form a quadrilateral, then FontForge will turn it into a parallelogram.
-	(note, this only works on lines, not on curved splines)<BR>
-	The last point selected will be the one moved (sometimes FontForge doesn't
-	remember which point was selected last, then it will just pick one randomly.
-	If you don't want that to happen, select your points and then single click
-	on the one you want moved).
-    </DL>
-  <DT>
-    Round
-  <DD>
-    <DL>
-      <DT>
-	<A NAME="Round">Round</A> to Int
-      <DD>
-	Not in the bitmap view. FontForge stores point locations as real numbers
-	(ie. it retains fractional values). TrueType only supports integral values
-	(And much of the time you want integral values in Type1 and Type2 fonts also
-	-- using real numbers makes font files bigger), so when generating the font
-	points are rounded to integral values. This command will round all selected
-	locations to the closest integer.
-      <DT>
-	Round to <A NAME="Hundredths">Hundredths</A>
-      <DD>
-	Not in bitmap or metrics views. FontForge's Type1 output is limited to hundredths
-	of an em-unit, even when rounding is turned off in the Generate [Options]
-	dialog.
-      <DT>
-	Round to <A NAME="Cluster">Cluster</A>
-      <DD>
-	Occasionally you want to make sure that coordinates which are close together
-	have the same value. This command will do that.
-    </DL>
-  <DT>
-    <A NAME="Order">Order</A>
-  <DD>
-    This changes the order in which contours, references and images are drawn.
-    It is almost useless because this order of contours and references does not
-    affect the final appearance of the glyph. The only relevance it has is when
-    interpolating fonts and in multiple master fonts. Here similar contours must
-    appear in the same order.
-    <P>
-    If you have a glyph which contains both contours and references, FontForge
-    does not specify whether references or contours are drawn first (or whether
-    the two are intermixed). If this matters to you, unlink your references.
-  <DT>
-    <A NAME="Clockwise">Clockwise</A>
-  <DD>
-    Only in the outline view. If all selected paths have a clockwise direction
-    then this will be checked. Selecting it will make all paths be clockwise.
-    <P>
-    If not paths are selected, or if all selected paths are open this will be
-    greyed out. I a selected path intersects itself results are indeterminate.
-  <DT>
-    <A NAME="Counter">Counter</A>-Clockwise
-  <DD>
-    Only in the outline view. If all selected paths have a counter-clockwise
-    direction then this will be checked. Selecting it will make all paths be
-    counter-clockwise.
-    <P>
-    If not paths are selected, or if all selected paths are open this will be
-    greyed out. I a selected path intersects itself results are indeterminate.
-  <DT>
-    <A NAME="Correct">Correct</A> Direction
-  <DD>
-    Not in the bitmap view. Sets the direction of outermost paths to be clockwise.
-    The next path crossed will be made counter-clockwise, the next clockwise,
-    etc.<BR>
-    This command may produce unexpected results if two splines cross.<BR>
-    If a glyph contains a flipped reference, this command will be unable to correct
-    the contours inside of the reference directly, instead it will offer to unlink
-    the reference after which it can treat its (former) contours like any others.
-  <DT>
-    Build <A NAME="Accented">Accented/Composite</A> Glyph
-  <DD>
-    Not in the bitmap view.
-    <P>
-    The first menu item will only build accented letters, the second will build
-    general composite glyphs (fractions, ligatures, digits inside parens, roman
-    numerals, etc.) as well.
-    <P>
-    If the current glyph is an accented glyph (and all the base glyphs and accents
-    have already been created) then this command will delete anything that is
-    currently in the foreground and put a reference to the base glyph and another
-    reference to the accent glyph into the foreground. So if the current glyph
-    were "&Agrave;" then a reference to "A" would be added to it, and a reference
-    to "`" would be centered above the "A". <BR>
-    If <A HREF="editmenu.html#From">Copy From</A> is set to All Fonts then any
-    bitmaps will have a similar process done (even in the outline glyph view).<BR>
-    A more complete description is given in the section on
-    <A HREF="accented.html">accented glyphs</A>.
-  <DT>
-    Build <A NAME="BuildDuplicate">Duplicate</A>
-  <DD>
-    Only in the font view.<BR>
-    Consider the letters "Alpha" and "A". Often these may be represented by the
-    same glyph. This command which change the encoding slightly so that the encoding
-    for U+0391 will refer to the glyph named "A". Note that this is subtly different
-    from refering to a glyph named "Alpha" which refers to another glyph named
-    "A".
-  <DT>
-    <A NAME="Merge">Merge</A> Fonts...
-  <DD>
-    Only in the font view. If you are building a unicode font you will often
-    want to merge in fonts with other encodings. You can, of course, cut and
-    paste from one to the other, but usually that needs to be done one glyph
-    at a time (because the encoding may not be ordered the same as Unicode).
-    Instead, if your fonts are properly encoded (with proper unicode names),
-    then the Merge Fonts command will put them into the right places in the current
-    font.
-    <P>
-    FontForge does the following when merging CID-keyed fonts:
-    <UL>
-      <LI>
-	If the font in the window (the mergee) is a normal font and the other font
-	(the merger) is a CID keyed font, then the merger font is effectively flattened
-	and the result merged into the mergee.
-      <LI>
-	If the mergee is a CID keyed font and the merger font is a normal font then
-	the merger font will be merged into whichever of the mergee's subfonts is
-	currently active.
-      <LI>
-	If both are CID keyed fonts, then they should:
-	<UL>
-	  <LI>
-	    Have the same registry and ordering
-	  <LI>
-	    The supplement number of the mergee should be at least as big as that of
-	    the merger
-	  <LI>
-	    The mergee should have at least as many subfonts as the merger.
-	</UL>
-	<P>
-	If these conditions be met then any CIDs from the merger which are not present
-	in the mergee will be merged into the same subfont of the mergee as they
-	came from in the merger.
-	<P>
-	This strikes me as somewhat problematic, but I can't think of a better solution.
-    </UL>
-  <DT>
-    <A NAME="Interpolate">Interpolate</A> Fonts...
-  <DD>
-    Only in the font view. If you have a bold font and a light font and would
-    like to create a medium font, then you can interpolate a font between the
-    two (or you can extrapolate a font that's even bolder or lighter). Your two
-    fonts must have the same sets of glyphs, and each glyph must have the same
-    number of paths (ordered similarly) and each path must have the same number
-    of points on it, and must have the same references.
-</DL>
-<P>
-<H2>
-  Other menus
-</H2>
-<UL>
-  <LI>
-    <A HREF="filemenu.html">File</A>
-  <LI>
-    <A HREF="editmenu.html">Edit</A>
-  <LI>
-    <A HREF="pointmenu.html">Point</A>
-  <LI>
-    <A HREF="elementmenu.html">Element</A>
-  <LI>
-    <A HREF="hintsmenu.html">Hints</A>
-  <LI>
-    <A HREF="encodingmenu.html">Encoding</A>
-  <LI>
-    <A HREF="viewmenu.html">View</A>
-  <LI>
-    <A HREF="metricsmenu.html">Metrics</A>
-  <LI>
-    <A HREF="cidmenu.html">CID</A>
-  <LI>
-    <A HREF="mmmenu.html">MM</A>
-  <LI>
-    <A HREF="windowmenu.html">Window</A>
-  <LI>
-    <A HREF="helpmenu.html">Help</A>
-  <LI>
-    <A HREF="HotKeys.html">Hot Keys</A>
-</UL>
-<P ALIGN=Center>
--- <A HREF="pointmenu.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
-<A HREF="hintsmenu.html">Next</A> --
-<P>
+  <H1 ALIGN=Center>
+    The Element Menu
+  </H1>
+  <P>
+  <UL>
+    <LI>
+      <A HREF="#Font">Font Info</A>...
+    <LI>
+      <A HREF="#CharInfo">Glyph Info</A>...
+    <LI>
+      <A HREF="elementmenu.html#BDF-Info">BDF Info...</A>
+    <LI>
+      <A HREF="#Info">Get Info</A>...
+    <LI>
+      Typographic Features
+      <UL>
+	<LI>
+	  <A HREF="#Copy-Feat">Copy Feature(s) to Font</A>...
+	<LI>
+	  <A HREF="#DefaultATT">Default ATT</A> (Advanced Typographic Tables)
+	<LI>
+	  <A HREF="#Rm-All-Feat">Remove All Features</A>
+	<LI>
+	  <A HREF="#Rm-Feat">Remove Feature(s)...</A>
+	<LI>
+	  <A HREF="#Rm-Unused-Feat">Remove Unused Nested Features</A>
+	<LI>
+	  <A HREF="#Retag-Feat">Retag Feature(s)...</A>
+      </UL>
+    <LI>
+      Show Dependencies
+      <UL>
+	<LI>
+	  <A HREF="elementmenu.html#Dependencies">References</A>
+	<LI>
+	  <A HREF="#DepSubs">Substitutions</A>
+      </UL>
+    <LI>
+      <A HREF="#Problems">Find Problems...</A>
+    <LI>
+      <A HREF="#Bitmaps">Bitmaps Available...</A>
+    <LI>
+      <A HREF="#Regenerate">Regenerate Bitmaps...</A>
+    <LI>
+      Transformatons
+      <UL>
+	<LI>
+	  <A HREF="#Transform">Transform</A>...
+	<LI>
+	  <A HREF="#PoV">Point of View Projection</A>...
+	<LI>
+	  <A HREF="elementmenu.html#Non-Linear">Non-Linear Transform</A>...<BR>
+	<LI>
+	  <A HREF="#Flip">Flip Horizontally</A>
+	<LI>
+	  <A HREF="#FlipV">Flip Vertically</A>
+	<LI>
+	  <A HREF="#Rotate">Rotate 90&#176; CW</A>
+	<LI>
+	  <A HREF="#Rotate90CCW">Rotate 90&#176; CCW</A>
+	<LI>
+	  <A HREF="#Rotate180">Rotate 180&#176;</A>
+	<LI>
+	  <A HREF="#Skew">Skew</A>
+      </UL>
+    <LI>
+      <A HREF="#Expand">Expand Stroke...</A>
+    <LI>
+      Overlap
+      <UL>
+	<LI>
+	  <A HREF="#Remove">Remove Overlap</A>
+	<LI>
+	  <A HREF="#Intersect">Intersect</A>
+	<LI>
+	  <A HREF="#Exclude">Exclude</A>
+	<LI>
+	  <A HREF="#FindInter">Find Intersections</A>
+      </UL>
+    <LI>
+      Simplify
+      <UL>
+	<LI>
+	  <A HREF="#Simplify">Simplify</A>
+	<LI>
+	  Simplify More
+	<LI>
+	  <A HREF="#Cleanup">Cleanup Glyphs</A>
+      </UL>
+    <LI>
+      <A HREF="elementmenu.html#Add-Extrema">Add Extrema</A>
+    <LI>
+      Effects
+      <UL>
+	<LI>
+	  <A HREF="#Outline">Outline</A>
+	<LI>
+	  <A HREF="#Inline">Inline</A>
+	<LI>
+	  <A HREF="#Shadow">Shadow</A>
+	<LI>
+	  <A HREF="#Wireframe">Wireframe</A>
+      </UL>
+    <LI>
+      <A HREF="#MetaFont">MetaFont...</A>
+    <LI>
+      <A HREF="#AutoTrace">AutoTrace</A>
+    <LI>
+      <A HREF="#Align">Align</A>
+      <UL>
+	<LI>
+	  <A HREF="elementmenu.html#Average">Average Points</A>
+	<LI>
+	  <A HREF="elementmenu.html#Space-Pts">Space Points</A>
+	<LI>
+	  <A HREF="elementmenu.html#Space-Regions">Space Regions</A>
+	<LI>
+	  <A HREF="#Parallel">Make Parallel</A>
+      </UL>
+    <LI>
+      Round
+      <UL>
+	<LI>
+	  <A HREF="#Round">To Int</A>
+	<LI>
+	  <A HREF="#Hundredths">To Hundredths</A>
+	<LI>
+	  <A HREF="#Cluster">Cluster</A>
+      </UL>
+    <LI>
+      <A HREF="#Order">Order</A>
+      <UL>
+	<LI>
+	  First
+	<LI>
+	  Earlier
+	<LI>
+	  Later
+	<LI>
+	  Last
+      </UL>
+    <LI>
+      <A HREF="#Clockwise">Clockwise</A>
+    <LI>
+      <A HREF="#Counter">Counter-Clockwise</A>
+    <LI>
+      <A HREF="#Correct">Correct Direction</A>
+    <LI>
+      Build
+      <UL>
+	<LI>
+	  <A HREF="#Accented">Build Accented Glyph</A>
+	<LI>
+	  <A HREF="#Accented">Build Composite Glyph</A>
+	<LI>
+	  <A HREF="#BuildDuplicate">Build Duplicate</A>
+      </UL>
+    <LI>
+      <A HREF="#Merge">Merge Fonts...</A>
+    <LI>
+      <A HREF="#Interpolate">Interpolate Fonts...</A>
+  </UL>
+  <P>
+  There are also two menu entries which are not part of the default build but
+  which may be configured by modifying <CODE>configure-fontforge.h</CODE> before
+  compiling FontForge.
+  <UL>
+    <LI>
+      <A HREF="#TilePath">Tile Path</A>
+    <LI>
+      <A HREF="#NonLinear">Non Linear Transform...</A>
+  </UL>
+  <P>
+  <DL>
+    <DT>
+      <A NAME="Font">Font</A> Info
+    <DD>
+      In all views this brings up the <A HREF="fontinfo.html">Font Info
+      dialog</A>.<BR>
+      CID keyed fonts can set information on the CID font as a whole (rather than
+      just the current sub-font, which is what this command does) from
+      <A HREF="cidmenu.html#FontInfo">CID-&gt;CID Font Info</A>.
+    <DT>
+      Glyph <A NAME="CharInfo">Info</A>
+    <DD>
+      In the all views this brings up the <A HREF="charinfo.html#Character">Glyph
+      Info dialog</A>.
+    <DT>
+      <A NAME="BDF-Info">BDF</A> Info
+    <DD>
+      If you have bitmaps in your font, then in the font view or bitmap view this
+      command will bring up the <A HREF="bdfinfo.html">BDF Info dialog.</A>
+    <DT>
+      Get <A NAME="Info">Info</A>
+    <DD>
+      In the outline view this brings up <A HREF="getinfo.html">one of four different
+      dialogs</A> (Point Info, Image Info, Reference Info, Anchor Point Info) depending
+      on what is selected.
+    <DT>
+      Typographic Features
+    <DD>
+      This sub-menu is only present in the font view and allows you to manipulate
+      GSUB/GPOS/morx features. If you wish to create them you should use
+      <A HREF="fontinfo.html">Font Info</A> or
+      <A HREF="charinfo.html#Character">Glyph Info</A>.
+      <DL>
+	<DT>
+	  Copy <A NAME="Copy-Feat">Feature</A> to Font...
+	<DD>
+	  <A HREF="typofeat.html#Copy-Feat">This dialog</A> allows you to copy a set
+	  of features from one font to another.
+	<DT>
+	  Default <A NAME="DefaultATT">ATT</A>
+	<DD>
+	  In the font view this is a sub-menu which allows you to generate default
+	  values for various features of the
+	  <A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats2.html">GPOS</A>
+	  and
+	  <A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats1.html">GSUB</A>
+	  tables.
+	  <P>
+	  The sub-menu consists of a list of feature names (and a few more generic
+	  names like "All" which will provide defaults for everything it can figure
+	  out, and "Ligatures" which will provide defaults for all ligatures). FontForge
+	  will look for defaults for all selected glyphs. There is also one special
+	  entry:
+	  <DL>
+	    <DT>
+	      Suffix to Tag...
+	    <DD>
+	      In adobe's glyph naming conventions, alternate forms of glyphs may be named
+	      by appending a suffix to the normal glyph's name. Thus a swash variant of
+	      "A" might be named "A.swash".
+	      <P>
+	      Using this command you can tell FontForge to associate a given suffix with
+	      a feature tag. (in the above example you could associate ".swash" with 'swsh'
+	      -- except you don't need to, because FontForge already knows about that one).
+	      Select the letter "A", then enter the command, then "A" will be linked to
+	      "A.swash" as a 'swsh'.
+	  </DL>
+	<DT>
+	  <A NAME="Rm-All-Feat">Remove All Features</A>
+	<DD>
+	  Removes all typographic features.
+	<DT>
+	  <A NAME="Rm-Feat">Remove Feature(s)...</A>
+	<DD>
+	  <A HREF="typofeat.html#Rm-Feat">This dialog</A> allows you to select which
+	  features to remove.
+	<DT>
+	  <A NAME="Rm-Nested-Feat">Remove Unused Nested Features</A>
+	<DD>
+	  If there are any nested features which are not referred to within any
+	  contextual/chaining feature nor apple state machine then this command will
+	  remove them.
+	<DT>
+	  <A NAME="Retag-Feat">Retag Feature(s)...</A>
+	<DD>
+	  <A HREF="typofeat.html#Retag-Feat">This dialog</A> allows you to change the
+	  opentype tag (or apple feature/setting) on a given feature.(This does not
+	  retag kerning information).
+      </DL>
+    <DT>
+      Show Dependencies
+      <DL>
+	<DT>
+	  <A NAME="Dependencies">References</A>...
+	<DD>
+	  This dialog is not available in the bitmap view. It shows you what glyphs
+	  contain a reference to the current glyph. You can open a window looking at
+	  any of the dependent glyphs by selecting that glyph and pressing the [Show]
+	  button.
+	<DT>
+	  <A NAME="DepSubs">Substitutions</A>...
+	<DD>
+	  Show any glyphs that have substitutions (ligatures, multiple subs, etc.)
+	  which depend on the current glyph. So if you select "i", you might see that
+	  "fi" depended on it as a ligature, and if you select "A.swash" you might
+	  see that "A" depended on it as a 'swsh' alternate subs.
+      </DL>
+    <DT>
+      Find <A NAME="Problems">Problems</A>...
+    <DD>
+      This command is not present in the bitmap view. It will search for several
+      common problems. In the glyph view it will select anything that needs to
+      be fixed, in the font view it will check all selected glyphs and if any have
+      problems will open them and select the problems. It will post a message telling
+      you of each problem found. It brings up the <A HREF="problems.html">Find
+      Problem</A> dialog to let you choose what problems to look for.
+    <DT>
+      <A NAME="Bitmaps">Bitmaps</A> Available...
+    <DD>
+      This brings up a list of pixel sizes for bitmap fonts.<BR>
+      <IMG SRC="bitmapsavail.png" WIDTH="263" HEIGHT="366" ALIGN="Right"> If you
+      have bitmap fonts this will show their pixel sizes. If you remove a size
+      that is in the list then that font will be deleted from the sfd file. If
+      you add a size then that size font will be created and stored in the sfd
+      file.
+      <P>
+      FontForge deals in pixel sizes, not point sizes. The conversion between pixels
+      and points differs on different systems and indeed on different screens.
+      A point is (approximately) 1/72 of an inch, a pixel is however big a pixel
+      happens to be on your screen. Usually pixels range from about 1/72 of an
+      inch to about 1/144 of an inch. Different systems support different screen
+      resolutions as "standard", and FontForge tries to know about these standards.
+      <TABLE BORDER CELLPADDING="2" ALIGN=Center>
+	<CAPTION>
+	  Some conversions between points and pixels
+	</CAPTION>
+	<TR>
+	  <TH><P ALIGN=Left>
+	    <U>Screen Resolution</U><BR>
+	    Point Size</TH>
+	  <TH>72dpi<BR>
+	    Mac</TH>
+	  <TH>75dpi<BR>
+	    X</TH>
+	  <TH>96dpi<BR>
+	    Win</TH>
+	  <TH>100dpi<BR>
+	    X</TH>
+	  <TH>120dpi<BR>
+	    Win</TH>
+	</TR>
+	<TR>
+	  <TH>10pt</TH>
+	  <TD>10</TD>
+	  <TD>10</TD>
+	  <TD>13</TD>
+	  <TD>14</TD>
+	  <TD>17</TD>
+	</TR>
+	<TR>
+	  <TH>12pt</TH>
+	  <TD>12</TD>
+	  <TD>12~13</TD>
+	  <TD>16</TD>
+	  <TD>17</TD>
+	  <TD>20</TD>
+	</TR>
+	<TR>
+	  <TH>18pt</TH>
+	  <TD>18</TD>
+	  <TD>19</TD>
+	  <TD>24</TD>
+	  <TD>25</TD>
+	  <TD>30</TD>
+	</TR>
+	<TR>
+	  <TH>24pt</TH>
+	  <TD>24</TD>
+	  <TD>25</TD>
+	  <TD>32</TD>
+	  <TD>33</TD>
+	  <TD>40</TD>
+	</TR>
+      </TABLE>
+      <P>
+      Sadly your screen will probably not match one of the standard screens precisely.
+      On X the standard resolutions are 75 and 100dpi, on MS Windows 96 and 120dpi,
+      and on the Mac 72dpi. This dialog provides the conversion between pixel size
+      and point sizes at these resolutions.
+      <P>
+      Normally the new glyphs are created by rasterizing the outline font. If your
+      system has the freetype2 library installed (and you checked the "Use FreeType"
+      box) then FontForge will use the FreeType rasterizer to generate bitmaps,
+      otherwise it will use FontForge's built-in rasterizer (which isn't as good,
+      but involves a little less overhead).
+      <P>
+      Finally, if you have no outline font then the new glyphs will be created
+      by scaling the (bitmap) font displayed in the font view.
+      <P>
+      In CID keyed fonts there will not be a set of bitmaps for each sub font,
+      instead the entire complex of sub-fonts share bitmaps.<BR Clear=Right>
+      <P>
+      <IMG SRC="greymapsavail.png" WIDTH="263" HEIGHT="366" ALIGN="Right">FontForge
+      also supports anti-aliased bitmap fonts, and you can use this dialog to generate
+      them. If you want to generate a 12 point anti-aliased font with 8 bits per
+      pixel you would type 12@8 into the dialog above. FontForge supports 1, 2,
+      4 and 8 bit per pixel fonts (a 1 bit per pixel font is a standard bitmap,
+      the others are greymaps).<BR>
+      (New greymaps can not be created by scaling old greymaps, if you wish to
+      generate a greymap font, you must have an outline font).
+    <DT>
+      <A NAME="Regenerate">Regenerate</A> Bitmaps...
+    <DD>
+      If you have changed the outline that a bitmap is based one then you should
+      (at some point) look into changing the bitmap too. This command allows you
+      to regenerate a subset of the glyphs in a given bitmap font. In the font
+      view you can regenerate all selected glyphs, while in the bitmap and outline
+      views you can regenerate the current glyph. You can pick what pixel sizes
+      should be regenerated too (unlike the above command, removing a bitmap size
+      from the regenerate list will not delete it).<BR>
+      As before, if you wish to change a greymap you should refer to it by
+      &lt;pixel-size&gt;@&lt;bits-per-pixel&gt;.
+    <DT>
+      Transformations
+    <DD>
+      This sub-menu has rather different choices in the bitmap view from the other
+      views. (Because bitmaps are discrete and the continous transformations of
+      splines are not meaningful).
+      <DL>
+	<DT>
+	  <A NAME="Transform">Transform</A>...
+	<DD>
+	  <A HREF="transform.html">In the Font and Outline Views this brings up the
+	  transform dialog</A>. This provides the standard linear transformations you
+	  expect to have available (rotation, scaling, translation, skewing).
+	<DT>
+	  <A NAME="PoV">Point of View </A>Projection
+	<DD>
+	  <A HREF="transform.html#PoV">This dialog </A>allows you to perform a perspective
+	  transformation on your glyphs. (This is a non-linear transformation)
+	<DT>
+	  <A NAME="Non-Linear">Non-Linear</A> Transform...
+	<DD>
+	  <A HREF="transform.html#Non-Linear">This dialog</A> allows you to perform
+	  a general transformation (which could be linear or which can be non-linear).
+	  Essentially you provide two equations for how x and y should be mapped.<BR>
+	<DT>
+	  <A NAME="Flip">Flip</A> Horizontally
+	<DD>
+	  Flips the bitmap horizontally. (Only in bitmap view)
+	<DT>
+	  <A NAME="FlipV">Flip</A> Vertically
+	<DD>
+	  Flips the bitmap vertically. (Only in bitmap view)
+	<DT>
+	  <A NAME="Rotate">Rotate</A> 90&#176; CW
+	<DD>
+	  Rotates the bitmap 90&#176; clockwise. (Only in bitmap view)
+	<DT>
+	  <A NAME="Rotate90CCW">Rotate</A> 90&#176; CCW
+	<DD>
+	  Rotates the bitmap 90&#176; counter-clockwise. (Only in bitmap view)
+	<DT>
+	  <A NAME="Rotate180">Rotate</A> 180&#176;
+	<DD>
+	  Rotates the bitmap 180&#176; (Only in bitmap view)
+	<DT>
+	  <A NAME="Skew">Skew</A>
+	<DD>
+	  Allows you to specify a ratio by which to skew the bitmap 1:3 means for every
+	  3 pixel rise in y, skew the bitmap one pixel horizontally. (Only in bitmap
+	  view)
+      </DL>
+    <DT>
+      <A NAME="NonLinear">Non Linear </A>Transform...
+    <DD>
+      This command is not available in the default build, you must modify the file
+      <CODE>configure-fontforge.h</CODE> and then rebuild FontForge. This command
+      allows the user to specify a non-linear transformation as a pair of expressions
+      (the first specifies the transformation for the x coordinate, the second
+      for the y coordinate). These expressions may be fairly general functions
+      of x and y. See the <A HREF="scripting.html#NonLinear">scripting page</A>
+      for a description of the syntax.
+    <DT>
+      <A NAME="Expand">Expand</A> Stroke...
+    <DD>
+      Not in the bitmap view, not in quadratic (truetype) fonts. In the font view
+      it applies to all foreground splines in all selected glyphs. In the outline
+      view it applies to all paths that have at least one point selected (or if
+      no points are selected then it applies to all paths).<BR>
+      <IMG SRC="twolines.png" WIDTH="247" HEIGHT="247">
+      <IMG SRC="expandedlines.png" WIDTH="247" HEIGHT="247"><BR>
+      Above is a simple example of what expand stroke can do. It takes the two
+      open paths above left and turns them into the two closed paths right.<BR>
+      <IMG SRC="expandstroke.png" WIDTH="323" HEIGHT="488" ALIGN="Left"><BR>
+      The Expand Stroke dialog gives you control over various aspects of the expansion
+      process. You can chose a stroke width, how the ends of an open path should
+      be drawn, and how the path should look when two splines (or lines) join which
+      do not have the same slope (ie. at a corner point). Or you may choose to
+      have the path be that which would be traced by a calligraphic pen, or an
+      elliptical pen. For closed contours you may also choose to remove either
+      the generated contour which is inside the original, or that which is outside
+      (Note: Make sure your glyph is oriented correctly with
+      <A HREF="elementmenu.html#Correct">Edit-&gt;Correct Direction </A>before
+      removing a contour (if misoriented the wrong contour is removed)).
+      <P>
+      <A HREF="pfaeditmath.html#Stroke">How is this done?</A><BR CLEAR=ALL>
+    <DT>
+      <A NAME="TilePath">Tile Path</A>
+    <DD>
+      This command is not available in the default build, you must modify the file
+      <CODE>configure-fontforge.h</CODE> and then rebuild FontForge. Not available
+      in quadratic (truetype) fonts. This command takes the contents of the clipboard
+      and treats it as a tile which is applied to any selected contours.
+    <DT>
+      Overlap
+    <DD>
+      None of these is available in the bitmap view. None works on quadratic (truetype)
+      fonts<SUP><A HREF="#overlap-footnote">1</A></SUP>.
+      <DL>
+	<DT>
+	  <A NAME="Remove">Remove</A> Overlap
+	<DD>
+	  Not in the bitmap view, <EM>not available when the font has quadratic
+	  splines</EM><SUP><A HREF="#overlap-footnote">1</A></SUP>. If two closed paths
+	  intersect then there will be overlap. This will get rid of it, leaving one
+	  closed path behind.
+	  <P>
+	  Make sure paths have the correct orientation. Consider the letter "O" with
+	  two contours. If both contours run in the same direction then the inner path
+	  will be removed (because the outer path overlaps it everywhere), but if the
+	  contours run in oposite orientations then the inner path will be retained.
+	  Things get very strange if you have intersecting paths with different
+	  orientations.
+	  <P>
+	  <IMG SRC="expandedlines.png" WIDTH="247" HEIGHT="247">
+	  <IMG SRC="overlappedlines.png" WIDTH="247" HEIGHT="247"><BR>
+	  This command is probably the buggiest in FontForge. So before FontForge invokes
+	  the command it will save the state to the error recovery file.<BR>
+	  Warning: Splines which are tangent (or nearly so) cause problems. Points
+	  which are close together can cause problems.
+	  <P>
+	  <SUP><A NAME="overlap-footnote">1</A></SUP><SMALL>If you wish to run remove
+	  overlap on a truetype (quadratic) font, you must first use Element-&gt;Font
+	  Info-&gt;General to convert it into a cubic font, do the remove overlap,
+	  and then convert back to quadratic.</SMALL>
+	<DT>
+	  <A NAME="Intersect">Intersect</A>
+	<DD>
+	  <TABLE CELLPADDING="2">
+	    <TR>
+	      <TD><IMG SRC="exclude-pre.png" WIDTH="174" HEIGHT="174"></TD>
+	      <TD><IMG SRC="intersect-post.png" WIDTH="174" HEIGHT="174"></TD>
+	    </TR>
+	  </TABLE>
+	  <P>
+	  This will remove everything not in the intersection of two regions.
+	<DT>
+	  <A NAME="Exclude">Exclude</A>
+	<DD>
+	  <TABLE CELLPADDING="2">
+	    <TR>
+	      <TD><IMG SRC="exclude-pre.png" WIDTH="174" HEIGHT="174"></TD>
+	      <TD><IMG SRC="exclude-post.png" WIDTH="174" HEIGHT="174"></TD>
+	    </TR>
+	  </TABLE>
+	  <P>
+	  This will remove the selected contours from the unselected ones. Only available
+	  in the outline glyph view.
+	<DT>
+	  Find Intersections
+	<DD>
+	  This finds the places where overlapping contours intersect and inserts points
+	  at those locations.
+      </DL>
+    <DT>
+      Simplify
+    <DD>
+      <DL>
+	<DT>
+	  <A NAME="Simplify">Simplify</A>
+	<DD>
+	  Not in the bitmap view. If you have lots of points on a path, some of which
+	  do not materially add to the path's shape, then this command will remove
+	  the extraneous points. (It will not remove points where the slope at the
+	  point is horizontal or vertical as postscript likes to have these points
+	  present).
+	  <P>
+	  <A HREF="pfaeditmath.html#Approximating">How is this done?</A>
+	<DT>
+	  Simplify More
+	<DD>
+	  This is a variant of the simplify command. It brings up a dialog which gives
+	  you control over what sorts of errors this simplification is allowed to induce.
+	  You can control:
+	  <UL>
+	    <LI>
+	      How far the simplified contour is allowed to stray from the original
+	    <LI>
+	      Whether to allow removal of extreme points
+	    <LI>
+	      Whether to allow the slope to change at points.
+	    <LI>
+	      Whether to make corner points into curve points (by adjusting the control
+	      points)
+	    <LI>
+	      Whether to flatten small bumps off of lines
+	    <LI>
+	      Whether to try to simplify straight lines at all
+	  </UL>
+	  <P>
+	  Finally, you may specify whether this set of values should become the default
+	  value for future Simplify commands
+	<DT>
+	  <A NAME="Cleanup">Cleanup Glyph</A>
+	<DD>
+	  This is a special case of the simplify command. In this case if there is
+	  a spline which actually traces out a line but none the less has control points,
+	  then this command will remove the control points. It will also cleanup zero
+	  length splines.
+      </DL>
+    <DT>
+      <A NAME="Add-Extrema">Add Extrema</A>
+    <DD>
+      Not in the bitmap view. Both TrueType and Type1 say that there should be
+      points on the contour where it reaches its extreme horizontal and vertical
+      values. In the outline view, if any points are selected, this will add points
+      at all extrema on splines between selected points. In the font view, metrics
+      view (or if nothing is selected in the outline view) it will add extrema
+      to a spline if: 1) The spline is longer than the em-size/32, or 2) the entire
+      contour (rather than just the current spline) attains its maximum/minimum
+      value at this point.
+    <DT>
+      Effects
+    <DD>
+      Not in quadratic (truetype) fonts.
+      <DL>
+	<DT>
+	  <A NAME="Outline">Outline</A>
+	<DD>
+	  <IMG SRC="OutlineInline.png" WIDTH="146" HEIGHT="70" ALIGN="Right">Changes
+	  the selected glyphs so that instead of being a solid block, only the outline
+	  of the glyph is visible. The glyphs' bounding box will not change.
+	<DT>
+	  <A NAME="Inline">Inline</A>
+	<DD>
+	  Changes the selected glyphs so that the glyph is surrounded by an outline.
+	  The glyphs' bounding box will not change.
+	<DT>
+	  <A NAME="Shadow">Shadow</A>
+	<DD>
+	  Changes the selected glyphs to give them each a
+	  shadow.<IMG SRC="ShadowWireframe.png" WIDTH="171" HEIGHT="69" ALIGN="Right">
+	  The user has control over the shadow size and angle.
+	<DT>
+	  <A NAME="Wireframe">Wireframe</A>
+	<DD>
+	  Changes the selected glyphs to give them a 3D wireframe look.
+      </DL>
+    <DT>
+      <A NAME="MetaFont">MetaFont</A>...
+    <DD>
+      This <A HREF="MetaFont.html">dialog</A> is only present in the font and outline
+      glyph views, not in quadratic (truetype) fonts. It allows you to make fonts
+      bolder or condensed. It doesn't work very well.<FONT COLOR="Red"><BR>
+      <STRONG>NOTE</STRONG></FONT>: It does <EM>not</EM> read TeX .mf files. The
+      name is chosen because it has some similarity in terms of features.
+    <DT>
+      <A NAME="AutoTrace">AutoTrace</A>
+    <DD>
+      This command is only available if you have downloaded Martin Weber's
+      <A HREF="http://sourceforge.net/projects/autotrace/">autotrace program</A>,
+      or Peter Selinger's <A HREF="http://potrace.sf.net/">potrace</A>. If you
+      have a background image in a glyph then autotrace will automagically trace
+      the outlines of that image. See <A HREF="autotrace.html">the section on
+      autotracing</A> for more information.
+    <DT>
+      <A NAME="Align">Align</A> menu
+    <DD>
+      This submenu is only present in the outline view, it allows you to align
+      points or to space them out along an axis.
+      <DL>
+	<DT>
+	  <A NAME="Average">Average</A> Points
+	<DD>
+	  This will look at all the selected points and find the coordinate with the
+	  least change. Then it will average find the median point on that axis and
+	  set all the selected points to have that value for the appropriate
+	  coordinate.<BR>
+	  So if you have a line which is almost horizontal, and select its endpoints
+	  and apply this command it will be horizontal.<BR>
+	  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+	  <IMG SRC="Constrain2_1.png" WIDTH="122" HEIGHT="90">&nbsp; &nbsp; &nbsp;
+	  &nbsp; <IMG SRC="Constrain2_2.png" WIDTH="122" HEIGHT="90"><BR>
+	  (if you select exactly two points, and they lie close to a 45 diagonal, then
+	  they will be forced to the diagonal rather than to horizontal/vertical)
+	<DT>
+	  <A NAME="Space-Pts">Space Points</A>
+	<DD>
+	  If you have three or more points selected then FontForge will figure out
+	  the coordinate that has the greatest change and will space the points out
+	  regularly along that axis.<BR>
+	  If you select one point (and that point is in the middle of a path) then
+	  (internally) the point's location will be expressed in a coordinate system
+	  which is rotated so that one axis is parallel to the line between the two
+	  points that surround the selected point. The selected point will be moved
+	  mid-way between the two on this axis, while it's other coordinate remains
+	  fixed.<BR>
+	  That's an extremely complicated way of saying: If the selected point is connected
+	  to two points which are on a horizontal line, then the selected point's x
+	  coordinate will be midway between the two, while its y coordinate remains
+	  unchanged.<BR>
+	  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+	  <IMG SRC="Constrain1_1.png" WIDTH="122" HEIGHT="90">&nbsp; &nbsp; &nbsp;
+	  &nbsp; <IMG SRC="Constrain1_2.png" WIDTH="122" HEIGHT="90">
+	<DT>
+	  <A NAME="Space-Regions">Space Regions</A>
+	<DD>
+	  This is similar to the above command except that it allows you to make a
+	  rather simple definition of a collection of points which should be moved
+	  together. Each of these regions will be regularly spaced along the chosen
+	  axis. A region is defined as a collection of points, each one of which is
+	  within some maximum distance of at least one other point in the region. The
+	  purpose of this is to allow you to space out the stems of the letter "m"
+	  so that they regularly spaced horizontally. Sadly it won't work in many cases
+	  because in a serifed font the serifs will often be closer to each other than
+	  to their respective stems.<BR>
+	  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+	  <IMG SRC="Spacem_1.png" WIDTH="140" HEIGHT="108"> &nbsp; &nbsp; &nbsp; &nbsp;
+	  <IMG SRC="Spacem_2.png" WIDTH="145" HEIGHT="108">
+	<DT>
+	  Make <A NAME="Parallel">Parallel</A>
+	<DD>
+	  If four points are selected, and there are two lines between them, then FontForge
+	  will make those lines parallel. If there are four lines between them (ie.
+	  they form a quadrilateral, then FontForge will turn it into a parallelogram.
+	  (note, this only works on lines, not on curved splines)<BR>
+	  The last point selected will be the one moved (sometimes FontForge doesn't
+	  remember which point was selected last, then it will just pick one randomly.
+	  If you don't want that to happen, select your points and then single click
+	  on the one you want moved).
+      </DL>
+    <DT>
+      Round
+    <DD>
+      <DL>
+	<DT>
+	  <A NAME="Round">Round</A> to Int
+	<DD>
+	  Not in the bitmap view. FontForge stores point locations as real numbers
+	  (ie. it retains fractional values). TrueType only supports integral values
+	  (And much of the time you want integral values in Type1 and Type2 fonts also
+	  -- using real numbers makes font files bigger), so when generating the font
+	  points are rounded to integral values. This command will round all selected
+	  locations to the closest integer.
+	<DT>
+	  Round to <A NAME="Hundredths">Hundredths</A>
+	<DD>
+	  Not in bitmap or metrics views. FontForge's Type1 output is limited to hundredths
+	  of an em-unit, even when rounding is turned off in the Generate [Options]
+	  dialog.
+	<DT>
+	  Round to <A NAME="Cluster">Cluster</A>
+	<DD>
+	  Occasionally you want to make sure that coordinates which are close together
+	  have the same value. This command will do that.
+      </DL>
+    <DT>
+      <A NAME="Order">Order</A>
+    <DD>
+      This changes the order in which contours, references and images are drawn.
+      It is almost useless because this order of contours and references does not
+      affect the final appearance of the glyph. The only relevance it has is when
+      interpolating fonts and in multiple master fonts. Here similar contours must
+      appear in the same order.
+      <P>
+      If you have a glyph which contains both contours and references, FontForge
+      does not specify whether references or contours are drawn first (or whether
+      the two are intermixed). If this matters to you, unlink your references.
+    <DT>
+      <A NAME="Clockwise">Clockwise</A>
+    <DD>
+      Only in the outline view. If all selected paths have a clockwise direction
+      then this will be checked. Selecting it will make all paths be clockwise.
+      <P>
+      If not paths are selected, or if all selected paths are open this will be
+      greyed out. I a selected path intersects itself results are indeterminate.
+    <DT>
+      <A NAME="Counter">Counter</A>-Clockwise
+    <DD>
+      Only in the outline view. If all selected paths have a counter-clockwise
+      direction then this will be checked. Selecting it will make all paths be
+      counter-clockwise.
+      <P>
+      If not paths are selected, or if all selected paths are open this will be
+      greyed out. I a selected path intersects itself results are indeterminate.
+    <DT>
+      <A NAME="Correct">Correct</A> Direction
+    <DD>
+      Not in the bitmap view. Sets the direction of outermost paths to be clockwise.
+      The next path crossed will be made counter-clockwise, the next clockwise,
+      etc.<BR>
+      This command may produce unexpected results if two splines cross.<BR>
+      If a glyph contains a flipped reference, this command will be unable to correct
+      the contours inside of the reference directly, instead it will offer to unlink
+      the reference after which it can treat its (former) contours like any others.
+    <DT>
+      Build <A NAME="Accented">Accented/Composite</A> Glyph
+    <DD>
+      Not in the bitmap view.
+      <P>
+      The first menu item will only build accented letters, the second will build
+      general composite glyphs (fractions, ligatures, digits inside parens, roman
+      numerals, etc.) as well.
+      <P>
+      If the current glyph is an accented glyph (and all the base glyphs and accents
+      have already been created) then this command will delete anything that is
+      currently in the foreground and put a reference to the base glyph and another
+      reference to the accent glyph into the foreground. So if the current glyph
+      were "&Agrave;" then a reference to "A" would be added to it, and a reference
+      to "`" would be centered above the "A". <BR>
+      If <A HREF="editmenu.html#From">Copy From</A> is set to All Fonts then any
+      bitmaps will have a similar process done (even in the outline glyph view).<BR>
+      A more complete description is given in the section on
+      <A HREF="accented.html">accented glyphs</A>.
+    <DT>
+      Build <A NAME="BuildDuplicate">Duplicate</A>
+    <DD>
+      Only in the font view.<BR>
+      Consider the letters "Alpha" and "A". Often these may be represented by the
+      same glyph. This command which change the encoding slightly so that the encoding
+      for U+0391 will refer to the glyph named "A". Note that this is subtly different
+      from refering to a glyph named "Alpha" which refers to another glyph named
+      "A".
+    <DT>
+      <A NAME="Merge">Merge</A> Fonts...
+    <DD>
+      Only in the font view. If you are building a unicode font you will often
+      want to merge in fonts with other encodings. You can, of course, cut and
+      paste from one to the other, but usually that needs to be done one glyph
+      at a time (because the encoding may not be ordered the same as Unicode).
+      Instead, if your fonts are properly encoded (with proper unicode names),
+      then the Merge Fonts command will put them into the right places in the current
+      font.
+      <P>
+      FontForge does the following when merging CID-keyed fonts:
+      <UL>
+	<LI>
+	  If the font in the window (the mergee) is a normal font and the other font
+	  (the merger) is a CID keyed font, then the merger font is effectively flattened
+	  and the result merged into the mergee.
+	<LI>
+	  If the mergee is a CID keyed font and the merger font is a normal font then
+	  the merger font will be merged into whichever of the mergee's subfonts is
+	  currently active.
+	<LI>
+	  If both are CID keyed fonts, then they should:
+	  <UL>
+	    <LI>
+	      Have the same registry and ordering
+	    <LI>
+	      The supplement number of the mergee should be at least as big as that of
+	      the merger
+	    <LI>
+	      The mergee should have at least as many subfonts as the merger.
+	  </UL>
+	  <P>
+	  If these conditions be met then any CIDs from the merger which are not present
+	  in the mergee will be merged into the same subfont of the mergee as they
+	  came from in the merger.
+	  <P>
+	  This strikes me as somewhat problematic, but I can't think of a better solution.
+      </UL>
+    <DT>
+      <A NAME="Interpolate">Interpolate</A> Fonts...
+    <DD>
+      Only in the font view. If you have a bold font and a light font and would
+      like to create a medium font, then you can interpolate a font between the
+      two (or you can extrapolate a font that's even bolder or lighter). Your two
+      fonts must have the same sets of glyphs, and each glyph must have the same
+      number of paths (ordered similarly) and each path must have the same number
+      of points on it, and must have the same references.
+  </DL>
+  <P>
+  <H2>
+    Other menus
+  </H2>
+  <UL>
+    <LI>
+      <A HREF="filemenu.html">File</A>
+    <LI>
+      <A HREF="editmenu.html">Edit</A>
+    <LI>
+      <A HREF="pointmenu.html">Point</A>
+    <LI>
+      <A HREF="elementmenu.html">Element</A>
+    <LI>
+      <A HREF="hintsmenu.html">Hints</A>
+    <LI>
+      <A HREF="encodingmenu.html">Encoding</A>
+    <LI>
+      <A HREF="viewmenu.html">View</A>
+    <LI>
+      <A HREF="metricsmenu.html">Metrics</A>
+    <LI>
+      <A HREF="cidmenu.html">CID</A>
+    <LI>
+      <A HREF="mmmenu.html">MM</A>
+    <LI>
+      <A HREF="windowmenu.html">Window</A>
+    <LI>
+      <A HREF="helpmenu.html">Help</A>
+    <LI>
+      <A HREF="HotKeys.html">Hot Keys</A>
+  </UL>
+  <P ALIGN=Center>
+  -- <A HREF="pointmenu.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
+  <A HREF="hintsmenu.html">Next</A> --
+  <P>
 </DIV>
 </BODY></HTML>
