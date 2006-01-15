@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Oct-2005 -->
-  <!-- AP: Last modified: 24-Dec-2005 -->
+  <!-- AP: Last modified: 14-Jan-2006 -->
   <TITLE>FontForge install procedures for macintosh</TITLE>
 </HEAD>
 <BODY>
@@ -66,22 +66,36 @@
 </H3>
 <P>
 You must insure that you have the the X11 server installed on your system.
-This process is slightly different on OS/X 10.3 &amp; 10.4
+Check and see if there is an application called X11 in the Utilities sub-folder
+of the Applications folder. If it is not present you must
 <DL>
   <DT>
     10.4
   <DD>
     <UL>
       <LI>
-	I believe the X server is now part of the default install. It lives in the
-	Utilities sub-folder of the Applications directory.
+	Open the Install DVD that came with your system.
+      <LI>
+	Scroll down to "Optional Installs" and open it.
+      <LI>
+	Keep clicking <CODE>Continue</CODE> until you get to the pane "Custom Install
+	on "Macintosh HD""
+      <LI>
+	Press the arrow beside "Applications so you get a list of them.
+      <LI>
+	Select X11
+      <LI>
+	Keep pressing <CODE>Continue</CODE>
     </UL>
   <DT>
     10.3
   <DT>
     <UL>
       <LI>
-	The X server lives in a package called X11User on the third install CD.
+	The X server lives in a package called X11User.pkg in the Packages folder
+	on the third install CD.
+      <LI>
+	Just double click on this file and follow its instructions to install X11
     </UL>
 </DL>
 <P>
@@ -156,8 +170,19 @@ installed on your system. This process is slightly different on OS/X 10.3
   <DD>
     <UL>
       <LI>
-	I believe the X server is now part of the default install. It lives in the
-	Utilities sub-folder of the Applications directory.
+	Open the Install DVD that came with your system.
+      <LI>
+	Scroll down to "Optional Installs" and open it.
+      <LI>
+	Keep clicking <CODE>Continue</CODE> until you get to the pane "Custom Install
+	on "Macintosh HD""
+      <LI>
+	Press the arrow beside "Applications" so you get a list of them.
+      <LI>
+	Select X11
+      <LI>
+	Keep pressing <CODE>Continue</CODE>
+	  <HR>
       <LI>
 	The Xcode toolchain is optional software on the install DVD. Simply insert
 	the disk and click on the XCode install icon.
@@ -629,7 +654,8 @@ to find documentation online.
 <P>
 Before you start fontforge on the mac you must start the X11 server. You
 can do this by opening the Applications folder, and then opening the Utilities
-folder, and then double-clicking on "X11".
+folder, and then double-clicking on "X11". (If you don't have X11 there then
+refer back to the <A HREF="#Before">instructions for installing it</A>)
 <P>
 Having done that there should be a menubar with a menu labeled "Applications".
 Click on this. There should be a "FontForge" entry in it. Selection FontForge
