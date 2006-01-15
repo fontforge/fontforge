@@ -31,6 +31,7 @@
 # include <ustring.h>
 #elif defined( FONTFORGE_CONFIG_GTK )
 # include "interface.h"
+# include "callbacks.h"
 # include "support.h"
 #endif
 #include <time.h>
@@ -212,8 +213,6 @@ struct delayed_event {
 
 #ifdef FONTFORGE_CONFIG_GTK
 
-static guint autosave_timer;
-
 static void splash_window_tooltip_fun( GtkWidget *splashw ) {
     static char *foolishness[] = {
 	"A free press discriminates\nagainst the illiterate.",
@@ -236,7 +235,7 @@ void ShowAboutScreen(void) {
 
     splashw = create_FontForgeSplash ();
     splash_window_tooltip_fun( splashw );
-    version = lookup_widget(FontView,"Version");
+    version = lookup_widget(splashw,"Version");
     if ( version!=NULL ) {
 #ifdef FONTFORGE_CONFIG_TYPE3
 	sprintf( buffer, "Version: %s (%s-ML)", source_modtime_str, source_version_str);
@@ -253,7 +252,7 @@ static int DoDelayedEvents(gpointer data) {
 
     if ( info!=NULL ) {
 	(info->func)(info->data);
-	chunkfree(info);
+	chunkfree(info,sizeof(struct delayed_event));
     }
 return( FALSE );		/* cancel timer */
 }
@@ -339,7 +338,7 @@ static int ParseArgs( gpointer data ) {
 	}
     }
     if ( !any )
-	MenuOpen(NULL,NULL,NULL);
+	Menu_Open(NULL,NULL);
 return( FALSE );	/* Cancel timer */
 }
 
@@ -571,9 +570,8 @@ int FontForgeMain( int argc, char **argv ) {
     else if ( *localeinfo.decimal_point!='.' ) coord_sep=" ";
     if ( getenv("FF_SCRIPT_IN_LATIN1") ) use_utf8_in_script=false;
 
-#ifdef FONTFORGE_CONFIG_GDRAW
-    GResourceAddResourceString(NULL,argv[0]);
-#elif defined( FONTFORGE_CONFIG_GTK )
+    GResourceSetProg(argv[0]);
+#if defined( FONTFORGE_CONFIG_GTK )
     gtk_set_locale ();
 
     home_dir = (gchar*) g_get_home_dir();
@@ -583,13 +581,14 @@ int FontForgeMain( int argc, char **argv ) {
 
     gtk_init (&argc, &argv);
 
-    add_pixmap_directory (PACKAGE_DATA_DIR "/" PACKAGE "/pixmaps");
-#else
-    GResourceSetProg(argv[0]);
+    add_pixmap_directory (PIXMAP_DIR);
 #endif
 
-    bindtextdomain("FontForge", getLocaleDir());
+#ifdef bindtextdomain
+#error bindtextdomain
+#endif
     bind_textdomain_codeset("FontForge","UTF-8");
+    bindtextdomain("FontForge", getLocaleDir());
     textdomain("FontForge");
 #if !defined( FONTFORGE_CONFIG_GTK )
     GResourceUseGetText();
@@ -620,13 +619,12 @@ int FontForgeMain( int argc, char **argv ) {
 	char *pt = argv[i];
 	if ( pt[0]=='-' && pt[1]=='-' )
 	    ++pt;
+# if defined( FONTFORGE_CONFIG_GTK )
+	if ( strcmp(pt,"-sync")==0 )
+	    gwwv_x11_synchronize();
+# else
 	if ( strcmp(pt,"-sync")==0 )
 	    GResourceAddResourceString("Gdraw.Synchronize: true",argv[0]);
-# if MyMemory
-	else if ( strcmp(pt,"-memory")==0 )
-	    __malloc_debug(5);
-# endif
-# ifdef FONTFORGE_CONFIG_GDRAW
 	else if ( strcmp(pt,"-depth")==0 && i<argc-1 )
 	    AddR(argv[0],"Gdraw.Depth", argv[++i]);
 	else if ( strcmp(pt,"-vc")==0 && i<argc-1 )
@@ -635,11 +633,15 @@ int FontForgeMain( int argc, char **argv ) {
 	    AddR(argv[0],"Gdraw.Colormap", argv[++i]);
 	else if ( strcmp(pt,"-keyboard")==0 && i<argc-1 )
 	    AddR(argv[0],"Gdraw.Keyboard", argv[++i]);
+	else if ( strcmp(pt,"-display")==0 && i<argc-1 )
+	    display = argv[++i];
+# endif
+# if MyMemory
+	else if ( strcmp(pt,"-memory")==0 )
+	    __malloc_debug(5);
 # endif
 	else if ( strcmp(pt,"-nosplash")==0 )
 	    splash = 0;
-	else if ( strcmp(pt,"-display")==0 && i<argc-1 )
-	    display = argv[++i];
 	else if ( strcmp(pt,"-recover")==0 && i<argc-1 ) {
 	    ++i;
 	    if ( strcmp(argv[i],"none")==0 )
@@ -675,7 +677,7 @@ int FontForgeMain( int argc, char **argv ) {
     if ( splash ) {
 	splashw = create_FontForgeSplash ();
 	splash_window_tooltip_fun( splashw );
-	notices = lookup_widget(FontView,"Notices");
+	notices = lookup_widget(splashw,"Notices");
 	if ( notices!=NULL )
 	    gtk_widget_hide(notices);
 	gtk_widget_show (splashw);
@@ -684,7 +686,7 @@ int FontForgeMain( int argc, char **argv ) {
     gtk_timeout_add(30*1000,_DoAutoSaves,NULL);		/* Check for autosave every 30 seconds */
 
     args.argc = argc; args.argv = argv; args.recover = recover;
-    gtk_timeout_add(30*1000,_DoAutoSaves,&args);
+    gtk_timeout_add(100,ParseArgs,&args);
 	/* Parse arguments within the main loop */
 
     gtk_main ();
