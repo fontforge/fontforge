@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 1-Jan-2006 -->
+  <!-- AP: Last modified: 5-Jan-2006 -->
   <TITLE>FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -34,9 +34,7 @@
   <A HREF="ja/"><IMG SRC="flags/Nisshoki-Japan.png" WIDTH="39" HEIGHT="26"></A>
   and the tutorial into traditional Chinese
   <A HREF="http://edt1023.sayya.org/fontforge/editexample.html"><IMG SRC="flags/taiwan.png"
-      WIDTH="39" HEIGHT="26"></A>. A Portuguese translation has been started
-  <A HREF="http://usrdoc.com/ff/web/index.html"><IMG SRC="flags/BrasilFlag.png"
-      WIDTH="39" HEIGHT="28"></A>
+      WIDTH="39" HEIGHT="26"></A>.
   <UL>
     <LI>
       <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=111040">Application
@@ -245,9 +243,9 @@
       Some truetype fonts (kaiu and mingliu) do not store the correct outline.
       Instead they rely on using the instructions to move points around to generate
       the outline. The outline does not appear to be grid-fit at all, just positioned.
-      FontForge apply the instructions when loading. In most fonts this would be
-      the wrong thing to do, and I don't know how I could tell when it needs to
-      be done...
+      FontForge does not apply the instructions when loading. In most fonts this
+      would be the wrong thing to do, and I don't know how I could tell when it
+      needs to be done...
     <LI>
       After adding the Johab encoding 23/Nov/01, any old fonts (in sfd files) which
       had a unicode encoding will suddenly claim to have a Johab encoding. I don't
@@ -295,10 +293,20 @@
   <P>
   I'm sure you'll find some. If you can isolate it and come up with a reproducible
   minimal case, that would be great. The executable has symbols in it so if
-  you run it in gdb you should be able to get a stack trace... Do what you
-  can. Please post bugs to:
-  <P>
-  <A HREF="mailto:fontforge-devel@lists.sourceforge.net">fontforge-devel@lists.sourceforge.net</A>
+  you run it in gdb you should be able to get a stack trace... Give me a test
+  case if possible. Do what you can.
+  <TABLE CELLPADDING="2">
+    <TR>
+      <TH><P ALIGN=Left>
+	Please post bugs to:</TH>
+      <TD><A HREF="mailto:fontforge-devel@lists.sourceforge.net">fontforge-devel@lists.sourceforge.net</A></TD>
+    </TR>
+    <TR>
+      <TH><P ALIGN=Left>
+	Post large testcases to:</TH>
+      <TD><A HREF="mailto:fontforge-testcases@lists.sourceforge.net">fontforge-testcases@lists.sourceforge.net</A></TD>
+    </TR>
+  </TABLE>
   <H2>
     <A NAME="assistance">How else you can help.</A>
   </H2>
@@ -330,8 +338,11 @@
 	<LI>
 	  Spanish is provided by <A HREF="mailto:wecharri@yahoo.com">Walter Echarri</A>
 	<LI>
-	  A Catalan and a (Brazillian) Portugese translation are being worked on by
-	  Javier Candeira and Gustavo Paolo respectively.
+	  A Catalan translation is being worked on by Javier Candeira.
+	<LI>
+	  Gustavo Paolo started a (Brazillian) Portugese translation translation but
+	  no longer has time to work on it. If any one would like to take it over please
+	  do so.
 	<LI>
 	  I've also created a very minimal German translations that lapses into English,
 	  anyone who wants to take this on is encouraged to do so.
@@ -341,8 +352,8 @@
       </UL>
     <LI>
       <EM>Different font formats</EM><BR>
-      FontForge supports Type1, truetype, opentype and svg fonts, also bdf and
-      NFNT for bitmaps<BR>
+      FontForge supports Type1, truetype, opentype, cff, type42, cid-keyed and
+      svg fonts, also bdf and NFNT for bitmaps<BR>
       FontForge will sort-of accept metafont files (essentially it runs metafont
       and autotraces the result). It won't produce .mf files<BR>
       FontForge will read (but not produce) Ikarus files<BR>
@@ -379,7 +390,7 @@
       <I>Tests</I>
       <UL>
 	<LI>
-	  I've just started working on a very
+	  I've have a very
 	  <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/test/">simplistic
 	  testsuite</A>-- more to weed out crashes in the underlying engine, than to
 	  make sure it produces the right results. If anyone has a better idea for
@@ -392,7 +403,8 @@
 	<LI>
 	  I don't.<BR>
 	  I find QA boring, and since no one is paying me for this I don't do very
-	  much. This is obviously a problem. If anyone wants to undertake to do QA
+	  much (I generally run it past my testsuite from time to time). This is obviously
+	  a problem. If anyone wants to undertake to do QA
 	  <A HREF="mailto:fontforge-devel@lists.sourceforge.net">for me</A> (or several
 	  anyones) I'd be delighted.
       </UL>
@@ -531,7 +543,10 @@ U+0066 + U+0069 =&gt; U+FB01 'liga'
       BDF editors
       <UL>
 	<LI>
-	  <A HREF="http://crl.nmsu.edu/~mleisher/xmbdfed.html">xmbdfed</A> -- bdf editor.
+	  <A HREF="http://crl.nmsu.edu/~mlesher/gbdfed.html">gbdfed</A> -- bdf
+	  editor<BR>
+	  Formerly called
+	  <A HREF="http://crl.nmsu.edu/~mleisher/xmbdfed.html">xmbdfed</A>
 	<LI>
 	  <A HREF="http://www.gnu.org/software/gfe/gfe.html">gfe</A> -- GNU font editor.
 	  Eventually supposed to support other formats

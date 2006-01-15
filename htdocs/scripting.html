@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 14-Dec-2005 -->
+  <!-- AP: Last modified: 8-Jan-2006 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -1003,8 +1003,11 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
       the foreground or the background layer of the glyph.
       <P>
       If there is a third argument it must also be an integer and provides a set
-      of flags controling the behavior of importing an EPS file.
+      of flags controling the behavior of importing an EPS (and in one case SVG
+      too) file.
       <UL>
+	<LI>
+	  16 =&gt; remove anything currently present (works for SVG &amp; EPS)
 	<LI>
 	  8 =&gt; correct direction
 	<LI>
@@ -1604,6 +1607,11 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
       set-from-value-flag is absent or is present and true then it will also set
       the name and the ligature string to match the value.
     <DT>
+      SetGlyphClass(class-name)
+    <DD>
+      Sets the class on all selected glyphs to be one of "automatic", "none", "base",
+      "ligature", "mark" or "component".
+    <DT>
       SetCharColor(color)
     <DD>
       Sets any currently selected glyphs to have the given color (expressed as
@@ -2055,9 +2063,10 @@ ApplySubstitution("*","*","vrt2")
     <DD>
       Adds an AnchorPoint to the currently selected glyph. The first argument is
       the name of the AnchorClass. The second should be one of the strings: "mark",
-      "basechar", "baselig", "basemark", "cursentry" or "cursexit". The next two
-      values specify the location of the point. The final argument is only present
-      for things of type "baselig".
+      "basechar", "baselig", "basemark", "cursentry" , "cursexit" or "default"
+      ("default" tries to guess an appropriate setting for you). The next two values
+      specify the location of the point. The final argument is only present for
+      things of type "baselig".
     <DT>
       <A HREF="elementmenu.html#Accented">BuildComposite</A>()
     <DD>
@@ -2578,6 +2587,9 @@ ApplySubstitution("*","*","vrt2")
 	  truetype/opentyp<B></B>e font is generated (to the index in the generated
 	  font).
 	<LI>
+	  "PointCount" returns the number of points in the glyph (this means different
+	  things in different modes).
+	<LI>
 	  "LayerCount" returns the number of layers in the glyph. This will always
 	  be 2 (foreground &amp; background) except in the case of a multilayered font.
 	<LI>
@@ -2594,13 +2606,13 @@ ApplySubstitution("*","*","vrt2")
       Examples:
       <BLOCKQUOTE>
 	<PRE>Select("A")
-lbearing = CharInfo("LBearing")
-kern = CharInfo("Kern","O")
+lbearing = GlyphInfo("LBearing")
+kern = GlyphInfo("Kern","O")
 Select(0u410)
 SetLBearing(lbearing)
 SetKern(0u41e,kern)
 Select("a")
-verta = CharInfo("Substitution","*","dflt","vrt2")
+verta = GlyphInfo("Substitution","*","dflt","vrt2")
 </PRE>
       </BLOCKQUOTE>
     <DT>
