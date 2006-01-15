@@ -34,13 +34,16 @@ fontforge_OBJECTS7=macenc.obj,statemachine.obj,typofeatures.obj,splinerefigure.o
 	parsettfvar.obj,tottfvar.obj,pua.obj,stemdb.obj,anchorsaway.obj,\
 	palmfonts.obj,cvdgloss.obj,groups.obj,parsepdf.obj,plugins.obj
 
+fontforge_OBJECTS8=bdfinfo.obj
+
 fontforge.exe : main.obj lff.opt xlib.opt [-.libs]libfontforge.exe
         link/exec=fontforge.exe main,lff/opt,[-.libs]LIBGDRAW/lib,\
         LIBGUNICODE/lib,[]xlib.opt/opt
 
 [-.libs]libfontforge.exe : $(fontforge_OBJECTS) $(fontforge_OBJECTS1)\
 	$(fontforge_OBJECTS2) $(fontforge_OBJECTS3) $(fontforge_OBJECTS4)\
-	$(fontforge_OBJECTS5) $(fontforge_OBJECTS6) $(fontforge_OBJECTS7)
+	$(fontforge_OBJECTS5) $(fontforge_OBJECTS6) $(fontforge_OBJECTS7)\
+	$(fontforge_OBJECTS8)
 	@ WRITE_ SYS$OUTPUT "  generating lff1.opt"
 	@ OPEN_/WRITE FILE  lff1.opt
 	@ WRITE_ FILE "!"
@@ -182,3 +185,4 @@ groups.obj : groups.c
 parsepdf.obj : parsepdf.c
 plugins.obj : plugins.c
 main.obj : main.c
+bdfinfo.obj : bdfinfo.c
