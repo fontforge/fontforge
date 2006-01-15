@@ -6017,7 +6017,7 @@ static void _CVMenuAddExtrema(CharView *cv) {
 
     (void) CVAnySel(cv,&anysel,NULL,NULL,NULL);
     CVPreserveState(cv);
-    SplineCharAddExtrema(cv->layerheads[cv->drawmode]->splines,
+    SplineCharAddExtrema(cv->sc,cv->layerheads[cv->drawmode]->splines,
 	    anysel?ae_between_selected:ae_only_good,cv->sc->parent);
     CVCharChangedUpdate(cv);
 }

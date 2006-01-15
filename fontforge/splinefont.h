@@ -1490,6 +1490,7 @@ extern int SSPointWithin(SplineSet *spl,BasePoint *pt);
 extern SplineSet *SSRemoveZeroLengthSplines(SplineSet *base);
 extern void SSRemoveStupidControlPoints(SplineSet *base);
 extern void SSOverlapClusterCpAngles(SplineSet *base,double within);
+extern void SplinesRemoveBetween(SplineChar *sc, SplinePoint *from, SplinePoint *to,int type);
 extern void SplineCharMerge(SplineChar *sc,SplineSet **head,int type);
 extern void SPLNearlyHvCps(SplineChar *sc,SplineSet *ss,double err);
 extern void SPLNearlyHvLines(SplineChar *sc,SplineSet *ss,double err);
@@ -1499,11 +1500,11 @@ extern void SplinePointListSimplify(SplineChar *sc,SplinePointList *spl,
 extern SplineSet *SplineCharSimplify(SplineChar *sc,SplineSet *head,
 	struct simplifyinfo *smpl);
 extern SplineSet *SplineSetJoin(SplineSet *start,int doall,real fudge,int *changed);
-enum ae_type { ae_all, ae_between_selected, ae_only_good };
+enum ae_type { ae_all, ae_between_selected, ae_only_good, ae_only_good_rm_later };
 extern Spline *SplineAddExtrema(Spline *s,int always,real lenbound,
 	real offsetbound,DBounds *b);
-extern void SplineSetAddExtrema(SplineSet *ss,enum ae_type between_selected, SplineFont *sf);
-extern void SplineCharAddExtrema(SplineSet *head,enum ae_type between_selected,SplineFont *sf);
+extern void SplineSetAddExtrema(SplineChar *sc,SplineSet *ss,enum ae_type between_selected, SplineFont *sf);
+extern void SplineCharAddExtrema(SplineChar *sc,SplineSet *head,enum ae_type between_selected,SplineFont *sf);
 extern SplineSet *SplineCharRemoveTiny(SplineChar *sc,SplineSet *head);
 extern SplineFont *SplineFontNew(void);
 extern char *GetNextUntitledName(void);
