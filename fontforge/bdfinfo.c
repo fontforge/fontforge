@@ -32,6 +32,7 @@
 #include <ustring.h>
 #include <utype.h>
 #include <math.h>
+#include <gkeysym.h>
 
 struct bdf_dlg_font {
     int old_prop_cnt;
@@ -1112,44 +1113,51 @@ return( true );
 return( true );
 }
 
+static void _BdfP_Up(struct bdf_dlg *bd) {
+    struct bdf_dlg_font *cur = bd->cur;
+    BDFFont *bdf = cur->bdf;
+    GRect r;
+    BDFProperties prop;
+    if ( cur->sel_prop<1 || cur->sel_prop>=bdf->prop_cnt )
+return;
+    prop = bdf->props[cur->sel_prop];
+    bdf->props[cur->sel_prop] = bdf->props[cur->sel_prop-1];
+    bdf->props[cur->sel_prop-1] = prop;
+    --cur->sel_prop;
+    GGadgetGetSize(bd->tf,&r);
+    GGadgetMove(bd->tf,r.x,r.y-(bd->fh+1));
+    BdfP_EnableButtons(bd);
+    GDrawRequestExpose(bd->v,NULL,false);
+}
+
 static int BdfP_Up(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	struct bdf_dlg *bd = GDrawGetUserData(GGadgetGetWindow(g));
-	struct bdf_dlg_font *cur = bd->cur;
-	BDFFont *bdf = cur->bdf;
-	GRect r;
-	BDFProperties prop;
-	if ( cur->sel_prop<1 || cur->sel_prop>=bdf->prop_cnt )
-return( true );
-	prop = bdf->props[cur->sel_prop];
-	bdf->props[cur->sel_prop] = bdf->props[cur->sel_prop-1];
-	bdf->props[cur->sel_prop-1] = prop;
-	--cur->sel_prop;
-	GGadgetGetSize(bd->tf,&r);
-	GGadgetMove(bd->tf,r.x,r.y-(bd->fh+1));
-	BdfP_EnableButtons(bd);
-	GDrawRequestExpose(bd->v,NULL,false);
+	_BdfP_Up( GDrawGetUserData(GGadgetGetWindow(g)));
     }
 return( true );
 }
 
+static void _BdfP_Down(struct bdf_dlg *bd) {
+    struct bdf_dlg_font *cur = bd->cur;
+    BDFFont *bdf = cur->bdf;
+    GRect r;
+    BDFProperties prop;
+    if ( cur->sel_prop<0 || cur->sel_prop>=bdf->prop_cnt-1 )
+return;
+    prop = bdf->props[cur->sel_prop];
+    bdf->props[cur->sel_prop] = bdf->props[cur->sel_prop+1];
+    bdf->props[cur->sel_prop+1] = prop;
+    ++cur->sel_prop;
+    GGadgetGetSize(bd->tf,&r);
+    GGadgetMove(bd->tf,r.x,r.y+(bd->fh+1));
+    BdfP_EnableButtons(bd);
+    GDrawRequestExpose(bd->v,NULL,false);
+return;
+}
+
 static int BdfP_Down(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	struct bdf_dlg *bd = GDrawGetUserData(GGadgetGetWindow(g));
-	struct bdf_dlg_font *cur = bd->cur;
-	BDFFont *bdf = cur->bdf;
-	GRect r;
-	BDFProperties prop;
-	if ( cur->sel_prop<0 || cur->sel_prop>=bdf->prop_cnt-1 )
-return( true );
-	prop = bdf->props[cur->sel_prop];
-	bdf->props[cur->sel_prop] = bdf->props[cur->sel_prop+1];
-	bdf->props[cur->sel_prop+1] = prop;
-	++cur->sel_prop;
-	GGadgetGetSize(bd->tf,&r);
-	GGadgetMove(bd->tf,r.x,r.y+(bd->fh+1));
-	BdfP_EnableButtons(bd);
-	GDrawRequestExpose(bd->v,NULL,false);
+	_BdfP_Down((struct bdf_dlg *) GDrawGetUserData(GGadgetGetWindow(g)));
     }
 return( true );
 }
@@ -1467,7 +1475,18 @@ return;
 }
 
 static int BdfP_Char(struct bdf_dlg *bd, GEvent *e) {
+    if ( bd->active || bd->cur->sel_prop==-1 )
 return( false );
+    switch ( e->u.chr.keysym ) {
+      case GK_Up: case GK_KP_Up:
+	_BdfP_Up(bd);
+return( true );
+      case GK_Down: case GK_KP_Down:
+	_BdfP_Down(bd);
+return( true );
+      default:
+return( false );
+    }
 }
 
 static int bdfpv_e_h(GWindow gw, GEvent *event) {
