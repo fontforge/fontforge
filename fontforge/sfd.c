@@ -213,7 +213,7 @@ return( NULL );
 		} else /* if ( prev_cnt == 1 ) */ {
 		    ch1 |= (prev<<24);
 		    prev = (ch1&0xffff);
-		    ch1 >>= 16;
+		    ch1 = (ch1>>16)&0xffff;
 		    prev_cnt = 2;
 		}
 		done = true;
