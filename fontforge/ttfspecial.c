@@ -866,8 +866,10 @@ return(true);
 		    fwrite(bdf->props[j].name,1,strlen(bdf->props[j].name)+1,strings);
 		}
 		str = bdf->props[j].u.str;
-		if ( strmatch(bdf->props[j].name,"COMMENT")==0 )
+		if ( strmatch(bdf->props[j].name,"COMMENT")==0 ) {
 		    str = MergeComments(bdf);
+		    saw_comment = true;
+		}
 		putshort(at->bdf,bdf->props[j].type);
 		if ( (bdf->props[j].type & ~prt_property)==prt_string ||
 			(bdf->props[j].type & ~prt_property)==prt_atom ) {
