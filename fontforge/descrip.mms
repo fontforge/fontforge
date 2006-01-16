@@ -1,5 +1,5 @@
 CFLAGS=/nowarn/incl=([-.inc])/name=(as_is,short)/define=(\
-	"_STATIC_LIBFREETYPE=1","_STATIC_LIBPNG=1",\
+	"_STATIC_LIBFREETYPE=1","_STATIC_LIBPNG=1","HAVE_LIBINTL_H=1",\
 	"_STATIC_LIBUNINAMESLIST=1","_STATIC_LIBXML=1",\
 	"_STATIC_LIBUNGIF=1","_STATIC_LIBJPEG=1","_STATIC_LIBTIFF=1",\
         "FONTFORGE_CONFIG_DEVICETABLES=1","PLUGINDIR=""/FONTFORGE$PLUGINS""")
@@ -59,6 +59,7 @@ fontforge.exe : main.obj lff.opt xlib.opt [-.libs]libfontforge.exe
 	@ WRITE_ FILE "$(fontforge_OBJECTS5)"
 	@ WRITE_ FILE "$(fontforge_OBJECTS6)"
 	@ WRITE_ FILE "$(fontforge_OBJECTS7)"
+	@ WRITE_ FILE "$(fontforge_OBJECTS8)"
 	@ CLOSE_ FILE
 	@ $(MMS)$(MMSQUALIFIERS)/ignore=warning lff_vms
 	@ WRITE_ SYS$OUTPUT "  linking libfontforge.exe ..."
