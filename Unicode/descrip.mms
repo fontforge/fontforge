@@ -3,7 +3,7 @@ libgunicode_OBJECTS =  ArabicForms.obj,alphabet.obj,backtrns.obj,char.obj,\
 	utype.obj,usprintf.obj,gwwiconv.obj
 
 CFLAGS=/incl=([-.inc])/name=(as_is,short)/nowarn/define=(\
-	"_STATIC_LIBFREETYPE=1","_STATIC_LIBPNG=1",\
+	"_STATIC_LIBFREETYPE=1","_STATIC_LIBPNG=1","HAVE_LIBINTL_H=1",\
 	"_STATIC_LIBUNINAMESLIST=1","_STATIC_LIBXML=1",\
 	"_STATIC_LIBUNGIF=1","_STATIC_LIBJPEG=1","_STATIC_LIBTIFF=1")
 

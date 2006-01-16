@@ -584,9 +584,6 @@ int FontForgeMain( int argc, char **argv ) {
     add_pixmap_directory (PIXMAP_DIR);
 #endif
 
-#ifdef bindtextdomain
-#error bindtextdomain
-#endif
     bind_textdomain_codeset("FontForge","UTF-8");
     bindtextdomain("FontForge", getLocaleDir());
     textdomain("FontForge");
