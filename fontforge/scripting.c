@@ -1671,9 +1671,9 @@ static void bImport(Context *c) {
 	    ScriptErrorString( c, "No extension in", filename);
     }
     back = 0; flags = -1;
-    if ( strmatch(ext,".bdf")==0 )
+    if ( strmatch(ext,".bdf")==0 || strmatch(ext-4,".bdf.gz")==0 )
 	format = fv_bdf;
-    else if ( strmatch(ext,".pcf")==0 )
+    else if ( strmatch(ext,".pcf")==0 || strmatch(ext-4,".pcf.gz")==0 )
 	format = fv_pcf;
     else if ( strmatch(ext,".ttf")==0 || strmatch(ext,".otf")==0 || strmatch(ext,".otb")==0 )
 	format = fv_ttf;
