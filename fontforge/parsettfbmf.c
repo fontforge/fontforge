@@ -39,6 +39,7 @@ struct ttfsizehead {
     int firstglyph, endglyph;
     int indexSubTableArrayOffset;
     int numIndexSubTables;
+    int ascent, descent;
 };
 
 struct bigmetrics {
@@ -372,7 +373,9 @@ void TTFLoadBitmaps(FILE *ttf,struct ttfinfo *info,int onlyone) {
 	sizes[j].numIndexSubTables = getlong(ttf);
 	if ( /* colorRef = */ getlong(ttf)!=0 )
 	    good = false;
-	for ( k=0; k<12; ++k ) getc(ttf);	/* Horizontal Line Metrics */
+	sizes[j].ascent = getc(ttf);
+	sizes[j].descent = getc(ttf);
+	for ( k=0; k<12-2; ++k ) getc(ttf);	/* Horizontal Line Metrics */
 	for ( k=0; k<12; ++k ) getc(ttf);	/* Vertical   Line Metrics */
 	sizes[j].firstglyph = getushort(ttf);
 	sizes[j].endglyph = getushort(ttf);
@@ -460,7 +463,10 @@ return;
 	bdf->glyphmax = bdf->glyphcnt;
 	bdf->glyphs = gcalloc(bdf->glyphcnt,sizeof(BDFChar *));
 	bdf->pixelsize = sizes[i].ppem;
-	bdf->ascent = (info->ascent*bdf->pixelsize + info->emsize/2)/info->emsize;
+	if ( sizes[i].ppem == sizes[i].ascent - sizes[i].descent )
+	    bdf->ascent = sizes[i].ascent;
+	else
+	    bdf->ascent = (info->ascent*bdf->pixelsize + info->emsize/2)/info->emsize;
 	bdf->descent = bdf->pixelsize - bdf->ascent;
 	bdf->res = -1;
 	if ( sizes[i].depth!=1 )
@@ -843,7 +849,7 @@ static void FillLineMetrics(struct bitmapSizeTable *size,BDFFont *bdf) {
 	}
     }
     size->hori.ascender = bdf->ascent;
-    size->hori.descender = bdf->descent;
+    size->hori.descender = -bdf->descent;
 
     /* There are some very cryptic pictures supposed to document the meaning */
     /*  of the metrics fields. MS and Apple use the same picture. The data */
