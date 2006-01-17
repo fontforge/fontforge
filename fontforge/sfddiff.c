@@ -434,7 +434,7 @@ static void dodiff( SplineFont *sf1, SplineFont *sf2, int checkhints,
 		}
 	    }
 	}
-	if ( !SFDWrite(outfilename,sf1,sf1->map) )
+	if ( !SFDWrite(outfilename,sf1,sf1->map,NULL) )
 	    fprintf( stderr, "Failed to write output file: %s\n", outfilename );
     }
 }
