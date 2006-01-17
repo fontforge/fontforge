@@ -824,8 +824,8 @@ static void FillLineMetrics(struct bitmapSizeTable *size,BDFFont *bdf) {
     first = true;
     for ( i=0; i<bdf->glyphcnt ; ++i ) if ( (bc=bdf->glyphs[i])!=NULL ) {
 	if ( first ) {
-	    size->hori.ascender = bc->ymax;
-	    size->hori.descender = bc->ymin;
+/*	    size->hori.ascender = bc->ymax+1;*/
+/*	    size->hori.descender = bc->ymin; */
 	    size->hori.widthMax = bc->xmax-bc->xmin+1;
 	    size->hori.minoriginsb = bc->xmin;
 	    size->hori.minAdvancesb = bc->width-bc->xmax;
@@ -833,15 +833,17 @@ static void FillLineMetrics(struct bitmapSizeTable *size,BDFFont *bdf) {
 	    size->hori.maxbeforebl = bc->ymax;
 	    first = false;
 	} else {
-	    if ( bc->ymax > size->hori.ascender ) size->hori.ascender = bc->ymax;
-	    if ( bc->ymin < size->hori.descender ) size->hori.descender = bc->ymin;
+/*	    if ( bc->ymax+1 > size->hori.ascender ) size->hori.ascender = bc->ymax+1; */
+/*	    if ( bc->ymin < size->hori.descender ) size->hori.descender = bc->ymin;   */
 	    if ( bc->xmax-bc->xmin+1 > size->hori.widthMax ) size->hori.widthMax = bc->xmax-bc->xmin+1;
 	    if ( bc->xmin < size->hori.minoriginsb ) size->hori.minoriginsb = bc->xmin;
 	    if ( bc->width-bc->xmax < size->hori.minAdvancesb ) size->hori.minAdvancesb = bc->width-bc->xmax;
 	    if ( bc->ymin < size->hori.minafterbl ) size->hori.minafterbl = bc->ymin;
-	    if ( bc->ymax > size->hori.maxbeforebl ) size->hori.maxbeforebl = bc->ymax;
+	    if ( bc->ymax+1 > size->hori.maxbeforebl ) size->hori.maxbeforebl = bc->ymax+1;
 	}
     }
+    size->hori.ascender = bdf->ascent;
+    size->hori.descender = bdf->descent;
 
     /* There are some very cryptic pictures supposed to document the meaning */
     /*  of the metrics fields. MS and Apple use the same picture. The data */
