@@ -236,7 +236,7 @@ return;
     }
 }
 
-static void SplinesRemoveBetween( Spline *spline, Spline *beyond, SplineSet *spl ) {
+static void _SplinesRemoveBetween( Spline *spline, Spline *beyond, SplineSet *spl ) {
     Spline *next;
 
     while ( spline!=NULL && spline!=beyond ) {
@@ -295,7 +295,7 @@ static SplineSet *SplinePointListTruncateAtY(SplineSet *spl,real y) {
 		spl->last = spline->from;
 		spline->from->next = NULL;
 		spl->first->prev = NULL;
-		SplinesRemoveBetween(spline,next,spl);
+		_SplinesRemoveBetween(spline,next,spl);
 	break;
 	    } else {
 		if ( spline==spl->first->next ) {
@@ -323,7 +323,7 @@ static SplineSet *SplinePointListTruncateAtY(SplineSet *spl,real y) {
 		    spl->next = ns->next;
 		    nprev = ns;
 		}
-		SplinesRemoveBetween(spline,next,spl);
+		_SplinesRemoveBetween(spline,next,spl);
 		spl = nprev;
 	    }
 	}
