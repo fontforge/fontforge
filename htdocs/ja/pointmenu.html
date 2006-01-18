@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 8-Dec-2005 -->
+  <!-- AP: Last modified: 1-Jan-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>The Point Menu</TITLE>-->
     <TITLE>点メニュー</TITLE>
@@ -33,6 +33,12 @@
     <LI>
 <!--  <A HREF="#Make-First">Make First</A>-->
       <A HREF="#Make-First">開始点に設定(<U>M</U>)</A>
+    <LI>
+<!--  <A HREF="#Interpolated">Can Be Interpolated</A> -->
+      <A HREF="#Interpolated">補間可能</A>
+    <LI>
+<!--  <A HREF="#NotInterpolated">Can't Be Interpolated</A> -->
+      <A HREF="#NotInterpolated">補間不可能</A>
     <LI>
 <!--  <A HREF="#AddAnchor">Add Anchor Point...</A>-->
       <A HREF="#AddAnchor">アンカーを追加(<U>A</U>)...</A>
@@ -70,10 +76,23 @@
 <!--  <A NAME="Make-First">Make First</A>-->
       <A NAME="Make-First">開始点に設定(<U>M</U>)</A>
     <DD>
-<!--  Only present in the outline view. If exactly one point is selected and it
-      is on a closed path and it is not the "first point" of that path, then it
-      will become the first point.-->
-      アウトラインビューでのみ表示されます。閉じたパスに含まれる点が 1 個だけ選択されていて、その点がパスの「最初の点」ではない場合、選択中の点がパスの最初の点に変更されます。
+<!--  If exactly one point is selected and it is on a closed path and it is not
+      the "first point" of that path, then it will become the first point. -->
+      閉じたパスに含まれる点が 1 個だけ選択されていて、その点がパスの「最初の点」ではない場合、選択中の点がパスの最初の点に変更されます。
+    <DT>
+<!--  Can Be <A NAME="Interpolated">Interpolated</A> -->
+      <A NAME="Interpolated">補間</A>可能
+    <DT>
+<!--  Can't Be <A NAME="NotInterpolated">Interpolated</A> -->
+      <A NAME="NotInterpolated">補間不</A>可能
+    <DD>
+<!--  When editing truetype curves, an on-curve point can be omitted from the point
+      list that is stored in the output font if it happens to be exactly midway
+      between its two control points. This makes for slightly smaller files and
+      is generally a good thing. However if the point is interpolated then it cannot
+      be referred to in instructions (or reference point matching), so on rare
+      occasions you will need to be able to turn off this interpolation. -->
+      TrueType の曲線を編集中に、曲線上の点がその両側にある制御点のちょうど中間にある場合、出力されるフォントに格納される点のリストではその点は省略可能です。これによりファイルが僅かに小さくなるので、一般的には望ましいことです。しかしながら、補間によって作成された点は、命令 (または参照点の対応づけ) の中で参照することができませんので、そのような稀な場合のために、この補間を行わないようにすることができる必要があるでしょう。
     <DT>
 <!--  <A NAME="AddAnchor">Add Anchor Point...</A>-->
       <A NAME="AddAnchor">アンカーを追加(<U>A</U>)...</A>

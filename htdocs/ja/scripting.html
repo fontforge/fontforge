@@ -1,8 +1,8 @@
 <HTML>
 <HEAD>
-<!-- Created with AOLpress/2.0 -->
-<!-- AP: Created on: 18-Jan-2002 -->
-<!-- AP: Last modified: 11-Dec-2005 -->
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 18-Jan-2002 -->
+  <!-- AP: Last modified: 8-Jan-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Writing scripts to change fonts in FontForge</TITLE>-->
     <TITLE>FontForge でフォントを変更するためのスクリプトの書き方</TITLE>
@@ -1380,9 +1380,13 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
       2 番目の引数が存在する時は、整数でなければならず、最初の引数がビットマップならば 2 番目の引数によって、ビットマップリストに追加するか (0) グリフの背面を埋めるか (1) が定まります。EPS および SVG ファイルでは、スプラインが前面に追加されるか、グリフの背面レイヤに追加するかがこの引数によって決まります。
       <P>
 <!--  If there is a third argument it must also be an integer and provides a set
-      of flags controling the behavior of importing an EPS file. -->
-      3 番目の引数が存在する場合、これも整数でならなければならず、EPS 取り込みのふるまいを制御するフラグの集まりとして扱われます。
+      of flags controling the behavior of importing an EPS (and in one case SVG
+      too) file. -->
+      3 番目の引数が存在する場合、これも整数でならなければならず、EPS (および、ある場合には SVG についても) の取り込みのふるまいを制御するフラグの集まりとして扱われます。
       <UL>
+	<LI>
+<!--	16 =&gt; remove anything currently present (works for SVG &amp; EPS) -->
+	16 ⇒ 現在存在するデータを全て削除する (SVG・EPS の両方で有効)
 	<LI>
 <!--  	8 =&gt; correct direction -->
   	8 ⇒ パスの向きを修正します。
@@ -2176,6 +2180,12 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
       現在選択されている文字に、name で指定した名前を設定します。
       set-from-name-flag がないか、true と指定されている場合は、その名前に一致する Unicode 値と合字文字列を指定します。
     <DT>
+      SetGlyphClass(class-name)
+    <DD>
+<!--  Sets the class on all selected glyphs to be one of "automatic", "none", "base",
+      "ligature", "mark" or "component". -->
+      選択中の全グリフのクラスを "automatic", "none", "base", "ligature", "mark" または "component" のいずれかに設定します。
+    <DT>
       SetCharColor(color)
     <DD>
 <!--  Sets any currently selected glyphs to have the given color (expressed as
@@ -2770,14 +2780,11 @@ ApplySubstitution("*","*","vrt2")
     <DD>
 <!--  Adds an AnchorPoint to the currently selected glyph. The first argument is
       the name of the AnchorClass. The second should be one of the strings: "mark",
-      "basechar", "baselig", "basemark", "cursentry" or "cursexit". The next two
-      values specify the location of the point. The final argument is only present
-      for things of type "baselig". -->
-      現在選択中のグリフにアンカーポイントを追加します。
-      最初の引数はアンカークラスの名前です。
-      2 番目は文字列 "mark", "basechar", "baselig", "basemark", "curseentry" または "cursexit" のどれか 1 つを指定します。
-      その後ろの 2 つの引数は点の位置を指定します。
-      最後の引数は、type が "baselig" のときにのみ使用します。
+      "basechar", "baselig", "basemark", "cursentry" , "cursexit" or "default"
+      ("default" tries to guess an appropriate setting for you). The next two values
+      specify the location of the point. The final argument is only present for
+      things of type "baselig". -->
+      現在選択中のグリフにアンカーポイントを追加します。最初の引数はアンカークラスの名前です。2 番目は文字列 "mark", "basechar", "baselig", "basemark", "curseentry", "cursexit" または "default" のどれか 1 つを指定します ("default" を指定すると、適切な値の推測を試みます)。その後ろの 2 つの引数は点の位置を指定します。最後の引数は、type が "baselig" のときにのみ使用します。
     <DT>
       <A HREF="elementmenu.html#Accented">BuildComposite</A>()
     <DD>
@@ -3460,6 +3467,10 @@ ApplySubstitution("*","*","vrt2")
 	  “GlyphIndex”は、TrueType フォントの 'glyf' 内で選択中のグリフが位置するインデックスを返します。グリフが後から作成された場合は -1 を返します。
 	  この値は、TrueType/OpenType フォントが生成された時には (生成されたフォント内のインデックスに) 変更される可能性があります。
 	<LI>
+<!--	  "PointCount" returns the number of points in the glyph (this means different
+	  things in different modes). -->
+	  "PointCount" はグリフ内の点の個数を返します (モードが異なるとこの個数は異なる意味合いをもちます)。
+	<LI>
 <!--	  "LayerCount" returns the number of layers in the glyph. This will always
 	  be 2 (foreground &amp; background) except in the case of a multilayered font. -->
 	  “LayerCount”はグリフに含まれるレイヤの個数を返します。マルチレイヤフォント以外では、この値は常に (前面と背面で) 2 が返されます。
@@ -3481,13 +3492,13 @@ ApplySubstitution("*","*","vrt2")
       例:
       <BLOCKQUOTE>
 	<PRE>Select("A")
-lbearing = CharInfo("LBearing")
-kern = CharInfo("Kern","O")
+lbearing = GlyphInfo("LBearing")
+kern = GlyphInfo("Kern","O")
 Select(0u410)
 SetLBearing(lbearing)
 SetKern(0u41e,kern)
 Select("a")
-verta = CharInfo("Substitution","*","dflt","vrt2")
+verta = GlyphInfo("Substitution","*","dflt","vrt2")
 </PRE>
       </BLOCKQUOTE>
     <DT>

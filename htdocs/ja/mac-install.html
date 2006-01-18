@@ -1,8 +1,8 @@
-<HTML>
+o<HTML>
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 26-Oct-2005 -->
-  <!-- AP: Last modified: 30-Oct-2005 -->
+  <!-- AP: Last modified: 14-Jan-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>FontForge install procedures for macintosh</TITLE>-->
     <TITLE>FontForge の Macintosh へのインストール手順</TITLE>
@@ -69,25 +69,45 @@
   <P>
 <!--
   You must insure that you have the the X11 server installed on your system.
-  This process is slightly different on OS/X 10.3 &amp; 10.4 -->
-  X11 サーバをシステム上に間違いなくインストールしておく必要があります。この手順は OS X 10.3 と 10.4 でわずかに異なります。
+  Check and see if there is an application called X11 in the Utilities sub-folder
+  of the Applications folder. If it is not present you must -->
+  X11 サーバをシステム上に間違いなくインストールしておく必要があります。アプリケーション フォルダの下の Utilities サブフォルダの中に X11 という名前のアプリケーションが存在するかどうか確認してください。それがない場合、以下の作業を行う必要があります。
   <DL>
     <DT>
       10.4
     <DD>
       <UL>
 	<LI>
-<!--	  I believe the X server is now part of the default install. It lives in the
-	  Utilities sub-folder of the Applications directory. -->
-	  X サーバはデフォルトでインストールされているはずです。それは Applications ディレクトリの Utility ディレクトリにあります。
+<!--	  Open the Install DVD that came with your system. -->
+	  システムに付属するインストール DVD を開きます。
+	<LI>
+<!--	  Scroll down to "Optional Installs" and open it. -->
+	  画面を下にスクロールして「追加インストール」を探し、それを開きます。
+	<LI>
+<!--	  Keep clicking <CODE>Continue</CODE> until you get to the pane "Custom Install
+	  on "Macintosh HD"" -->
+	  "Macintosh HD"の「カスタムインストール」画面が現れるまでクリックし続けます。
+	<LI>
+<!--	  Press the arrow beside "Applications" so you get a list of them. -->
+	  「アプリケーション」の横の矢印を押すと、内容一覧が表示されます。
+	<LI>
+<!--	  Select X11 -->
+	  X11 を選びます
+	<LI>
+<!--	  Keep pressing <CODE>Continue</CODE> -->
+	  <CODE>(続ける)</CODE> を押し続けます
       </UL>
     <DT>
       10.3
     <DD>
       <UL>
 	<LI>
-<!--	  The X server lives in a package called X11User on the third install CD. -->
-	  X サーバは 3 枚目のインストール CD の X11User というパッケージに含まれています。
+<!--	  The X server lives in a package called X11User.pkg in the Packages folder
+	  on the third install CD. -->
+	  X サーバは 3 枚目のインストール CD の Packages フォルダの下の X11User.pkg という名前のパッケージに含まれています。
+	<LI>
+<!--	  Just double click on this file and follow its instructions to install X11 -->
+	  そのファイルをダブルクリックして、X11 をインストールするための指示に従えば準備完了です。
       </UL>
   </DL>
   <P>
@@ -167,9 +187,9 @@
   <P>
 <!--
   Before you can start FontForge you must start the X11 server. You do this
-  by opening the Utilities sub-folder of the Applications folder and double
-  -clicking on X11. This will bring up a new menu bar, and under the Applications
-  menu you should find an entry for FontForge. -->
+  by opening the Utilities sub-folder of the Applications folder and
+  double-clicking on X11. This will bring up a new menu bar, and under the
+  Applications menu you should find an entry for FontForge. -->
   FontForge を実行できるようにするには、X11 サーバを起動しておく必要があります。これは、Applications フォルダの  Utilities サブフォルダを開いて、“X11”をダブルクリックすれば起動できます。新しいメニューバーが表示され、Applications メニューの下に FontForge という項目が表示されるでしょう。
   <P>
     <HR>

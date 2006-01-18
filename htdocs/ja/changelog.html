@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 8-Dec-2005 -->
+  <!-- AP: Last modified: 15-Jan-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Change log for FontForge</TITLE> -->
     <TITLE>FontForge の変更履歴</TITLE>
@@ -23,8 +23,243 @@
   <P>
   <UL>
     <LI>
-      ???
+<!--  15-Jan-2006 -->
+      2006年1月15日
       <UL>
+	<LI>
+<!--	  The change to fold all COMMENTS into one bdf property broke the sfnt 'BDF
+	  ' table routines. -->
+	  全ての COMMENT を 1 個の BDF 属性に折り畳む変更が、SFNT 内の 'BDF ' テーブルの処理ルーチンを壊していました。
+      </UL>
+    <LI>
+<!--  14-Jan-2006 -->
+      2006年1月15日
+      <UL>
+	<LI>
+<!--	  Change AddExtrema so that if an extremum is very close to an old point it
+	  will add the extremum and then remove the old point. -->
+	  AddExtrema を変更し、極値が古い点のごく近くにある場合、極値に点を追加して古い点を削除するようにしました。
+	<LI>
+<!--	  Redid how bdf properties were handled -->
+	  BDF 属性の扱いを書き直し。
+	  <UL>
+	    <LI>
+<!--	      I had the definitions of some properties slightly wrong -->
+	      いくつかの属性に対して、僅かに間違った定義を用いていました。
+	    <LI>
+<!--	      I was generating some obsolete properties -->
+	      いくつかの廃止された属性を出力していました。
+	    <LI>
+<!--	      When I generated CHARSET_ENCODING for iso8859 encodings I had an extraneous
+	      "-" in the value. -->
+	      CHARSET_ENCODING を ISO8859 の各種符号化方式で出力するとき、値に余分な "-" をつけていました。
+	    <LI>
+<!--	      retain the properties when loading a bdf, pcf font -->
+	      BDF, PCF フォントの読み込み時に属性を保持。
+	    <LI>
+<!--	      Add a dialog which gives user control over bdf properties -->
+	      BDF 属性を制御できるダイアログを追加。
+	    <LI>
+<!--	      design a 'BDF ' table for SFNT files which can contain bdf properties and
+	      make FontForge read and generate this table. -->
+	      BDF の属性を格納するための SFNT ファイル用の 'BDF ' テーブルを作成し、FontForge がこのテーブルを読み書きするようにしました。
+	  </UL>
+	<LI>
+<!--	  Ted Packard points out that I output "big metrics" in sfnts inconsistently.
+	  This patch should make them consistent and right. -->
+	  SFNT で "big metrics" を出力する条件判定に一貫性がないことを Ted Packard が指摘しました。個のパッチはそれを一貫してかつ正しく修正するはずです。
+	<LI>
+<!--	  Restore "compact" views to their old glory. Ie. they can now be uncompacted
+	  (and uncompaction happens automagically when generating a font). -->
+	  古き良き「コンパクト」表示を復活。つまり、コンパクト表示から直前の表示に戻せるようになりました (また、フォント生成時にコンパクト表示からの復元を自動的に行うようにしました)。
+	<LI>
+<!--	  When reading a GenTags: line from an sfd file stored with CRLF line terminators,
+	  the next line would be lost. -->
+	  GenTags: 行を、改行コードが CR+LF の SFD ファイルから読み込むときに、その次の行を失っていました。
+	<LI>
+<!--	  ff couldn't handle xrefs which were broken in bits in pdf files? -->
+	  ff は PDF ファイル内で分割されている xref テーブルを扱えなかったようです?
+	<LI>
+<!--	  When reading a ttf font from a pdf file we found no encoding info. This caused
+	  us to crash because various routines expected an encoding map. Add a dummy
+	  (Original) map if not exists. -->
+	  PDF ファイル内の TTF フォントを読み込むときにエンコーディング情報をうまく見つけられない場合には、多数のルーチンがエンコーディングマップがあることを想定しているので、それによってクラッシュが引き起こされていました。マップが見つからないときは ダミーの (オリジナル) マップを追加するようにしました。
+	<LI>
+<!--	  Wasn't numbering points in references properly. -->
+	  参照の中の点を正しく番号づけていませんでした。
+	<LI>
+<!--	  Gleep! Ever since the gettext code went in, the Generate fonts dlg has refused
+	  to generate "No Outline Font" and "No Bitmap Font". -->
+	  ウギャー!  gettext のコードを導入して以来、フォント出力ダイアログで「ビットマップフォント無し」と「アウトラインフォント無し」を選択できなくなっていました。
+	<LI>
+<!--	  Herbert Duerr from OpenOffice tells me that their OpenSymbol.ttf font when
+	  produced by fontforge does not work on Win98. This is because Win98 doesn't
+	  like the codepages bits ff produces and refuses to use any glyphs in the
+	  font. He submitted a patch to make ff produce a version 0 OS/2 table (with
+	  no codepage info) for this font. Win98 will accept it then. His patch was
+	  against an earlier version of ff and needed to be modified for the current
+	  version. -->
+	  OpenOffice の Herbert Duerr が、OpenSymbol.ttf フォントを FontForge で出力すると Win98 で動作しないと報告しました。これは、Win98 が ff の生成するコードページビットフィールドが気に食わず、フォント内の全グリフを使用するのを拒否しているせいでした。枯葉、FF が (コードページ情報を含まない) バージョン 0 の OS/2 テーブルを出力するようにするパッチを送りました。その場合、Win98 はそれを受け入れます。彼のパッチは以前の版に対する物だったので、最新版に当てるには修正の必要がありました。
+	<LI>
+<!--	  Patch by Raph Levien which finally shows me how to use FT_Outline_Get_Bitmap
+	  properly. -->
+	  Rach Levien からのパッチを見て、FT_Outline_Get_Bitmap を正しく利用する方法がとうとう分かりました。
+	<LI>
+<!--	  If the user has never called PrintSetup (or if the user has not called PrintSetup
+	  this session and has not loaded prefs), then fontforge will invode setpagedevice
+	  on a pagesize which will fit on either A4 or US-Letter. The PS manual says
+	  a printer should refuse such a size unless it has paper within 5 points of
+	  it. So on printers which follow the spec (not mine) nothing will print as
+	  it waits for paper. -->
+	  ユーザが PrintSetup を一度も呼んでいない場合 (またはユーザがこのセッションで PrintSetup を呼び出しておらず、かつ設定ファイルを読み込まないようにしているばあい), FontForge は A4 または US レターサイズに収まるように setpagedevice を呼び出します。PS マニュアルは、プリンタは、5 ポイント以内の誤差を持つ紙が存在しない場合、指定されたサイズを拒否するべきであるとしています。ですから、仕様に従うプリンタ (私のは違います) では、紙待ちをして何も印字されない結果となります。
+	  <P>
+<!--	  Now if the pagesize has not been set, don't specify a PageSize to setpagedevice. -->
+	  ページサイズが設定されていない場合、setpagedevice で PageSize を指定しないように変更しました。
+	<LI>
+<!--	  The PrintSetup scripting command should not require a font. -->
+	  スクリプトコマンド PrintSetup はフォントを開いていることを必須とするべきではありません。
+	<LI>
+<!--	  Add a mechanism so that users can prevent ff from making a point implicit.
+	  Useful in that point needs to be instructed. -->
+	  FF が点を暗黙の点に置き換えるのをユーザが禁止できるメカニズムを追加。その点に命令処理を施す場合に有益です。
+	<LI>
+<!--	  New copyright notices for 2006 -->
+	  2006 年になったので著作権表示を更新。
+	<LI>
+<!--	  Make the pen tool work better with quadratic splines (make it default to
+	  having control points which cause the point to be implicit). -->
+	  2 次スプラインでのペンツールの振舞いを改善 (点が暗黙の物となることができるように、デフォルトで制御点が存在するようにした)
+	<LI>
+<!--	  Order2 elipses were not drawn accurately. -->
+	  2 次曲線フォントで楕円が精確に描画されていませんでした。
+	<LI>
+<!--	  Point numbers sometimes didn't get properly renumbered after changes. If
+	  we have references &amp; splines in a (truetype) glyph then show the numbers
+	  as "?". -->
+	  変更を行った後、点番号の付け直しが正しく行われないことがときどきありました。1 個の (TrueType) グリフに参照とスプラインの両方が含まれている場合、番号が "?" で表示されます。
+	<LI>
+<!--	  When a charview displays numbered (truetype) points, then it shows all the
+	  control points. But the control points are not selectable. This is not a
+	  good thing, so make them selectable. -->
+	  charview が (TrueType の) 点番号を表示したとき、すべての制御点を同時に表示します。しかし制御点を選択することはできません。これは良い事ではないので、選択できるようにしました。
+	<LI>
+<!--	  The font display to pdf did not include a title at the top of each page. -->
+	  PDF へのフォント表示で、各ページの上欄にタイトルが入っていませんでした。
+	<LI>
+<!--	  Peter Denisevich points out that when we print something we say "%%Pages
+	  atend" instead of "%%Pages (atend)". And the latter is correct. -->
+	  印刷時に "%%Pages (atend)" ではなく "%%Pages atend" としていることを Peter Denisevich が指摘しました。前者が正しいのです。
+	<LI>
+<!--	  Werner points out that my type1 (and type1 cid) fonts contain a
+	  %%DocumentSuppliedResource line, and they should not. The next level up should
+	  do that when it includes the font. -->
+	  私の作った Type1 (および Type1 CID) フォントには %%DocumentSuppliedResource 行が含まれており、そうすべきではないことを Werner が指摘しました。それは後の段階で、フォントを取り込む時に追加すべき物です。
+	<LI>
+<!--	  Show .xpm files as images we support in import image dlg. We've always supported
+	  them, might as well show them. -->
+	  画像取り込みダイアログで、.xpm ファイルをサポート対象の画像として表示。それらは常にサポートされてきたので、その旨表示するべきです。
+	<LI>
+<!--	  Check the glyph class when deciding what anchor to use. -->
+	  どのアンカーを使用するかを決定する時にグリフクラスをチェック。
+	<LI>
+<!--	  Anshuman Pandey wants to be able to set the glyph's GDEF class. I've never
+	  understood why the default behavior wasn't good enough, but it's easy to
+	  do. -->
+	  Anshuman Pandey がグリフの GDEF クラスを設定できるように要望しました。デフォルトの振舞いが不十分であるのが何故かぜんぜん理解できませんでしたが、設定できるようにするのは簡単なことです。
+	<LI>
+<!--	  One of the fields in Glyph Info had some garbage initialization. -->
+	  グリフ情報ダイアログのフィールドの一つがゴミデータで初期化されていました。
+	<LI>
+<!--	  Add a default anchor point type to the AddAnchorPoint scripting command.
+	  FF will try to guess an appropriate value. -->
+	  AddAnchorPoint スクリプトコマンドにアンカー点タイプ default を追加。その場合、FF は適切な値を推測しようとします。	  
+	<LI>
+<!--	  Add some standard window sizes to the fontview window. I'm tired of having
+	  the windows sized to other people's standards whenever I review a bug. -->
+	  フォント表示ウィンドウに、幾つかの標準ウィンドウサイズを追加。バグを検証する時に、他の人の標準に合ったウィンドウを見るのが嫌になったのです。
+	<LI>
+<!--	  There was a path through expand stroke where a control point was marked as
+	  non-e xistant by mistake. -->
+	  輪郭拡張処理で、制御点が存在しないと誤って認識されるような処理の流れがありました。
+	<LI>
+<!--	  Expand Stroke would leave contours with the reversed orientation if it had
+	  to do a remove overlap internally. -->
+	  <CODE>輪郭を太らせる(B)</CODE> コマンドが内部的に重複除去処理を呼び出す必要がある場合、輪郭の無機が逆になる場合がありました。
+	<LI>
+<!--	  Oops. The routine to save the encoding prefs file could not handle an encoding
+	  plug-in. -->
+	  おっと。エンコーディングを設定ファイルに保存するルーチンがエンコーディングプラグインを考慮に入れていませんでした。
+	<LI>
+<!--	  KANOU points out that the origin pulldown list in the transform dlg was not
+	  being translated. -->
+	  変形ダイアログの原点プルダウンリストが翻訳されていないことを狩野が指摘しました。
+	<LI>
+<!--	  In the preference dlg all of the [...] file browsers had the title "Call
+	  Script" which isn't appropriate for most of them. -->
+	  環境設定ダイアログで [...] ファイルブラウザのすべてが "Call Script" というタイトルが付けられており、ほとんどの場合不適切でした。
+	<LI>
+<!--	  Typing .* and pressing [Filter] did not show hidden files in the file chooser. -->
+	  .* とタイプして [フィルタ] を押してもファイル選択ウィンドウに隠しファイルが表示されませんでした。
+	<LI>
+<!--	  the code to check for intersections failed to check if there were a crossover
+	  in the last tiny section of a spline before its end. -->
+	  交点をチェックするコードが、その終点の前の最後の小さな部分で交差が起こっているかどうかチェックできていませんでした。
+	<LI>
+<!--	  Was generating ofm files when creating bdf fonts. Seems unnecessary. -->
+	  BDF フォント作成時に OFM ファイルを出力していました。不要だと思います。
+	<LI>
+<!--	  Was producing a EBLC table with bad first/last values for first glyphs. -->
+	  最初のグリフの first/last 値が間違った EBLC テーブルを出力していました。
+	<LI>
+<!--	  Hmm. Not all systems have tzset. Add a configuration option for it. -->
+	  うーむ。すべてのシステムが tzset を持っているとは限らないのですね。これを検出する設定オプションをつけました。
+	<LI>
+<!--	  In scripting, a return within a loop sent ff into an infinite loop. -->
+	  スクリプト処理中にループ内で return すると ff を無限ループに陥れていました。
+	<LI>
+<!--	  Kanou's patch for adding a new flag to scripting Import, to clear out the
+	  layer first. -->
+	  スクリプト関数 Import() に、レイヤを最初にクリアするフラグを追加する狩野のパッチ。
+	<LI>
+<!--	  Patch from KANOU to add SetGlyphChanged scripting function. -->
+	  スクリプト関数 SetGlyphChanged() を追加する狩野によるパッチ。
+	<LI>
+<!--	  If an implied point became real, this fact was not reflected on the display
+	  until the user forced a point renumbering. -->
+	  暗黙の点が本物の点になった時、その点の再番号付けを強制するまでその事実が表示に反映されていませんでした。
+	<LI>
+<!--	  A mouse click in an empty metrics view references garbage memory - - And crashed
+	  Kanou's session. -->
+	  空のメトリックビューをマウスでクリックするとゴミメモリを参照して――狩野のセッションをクラッシュさせていました。
+	<LI>
+<!--	  Loading a large bitmap font left bits of the backmap of the encoding map
+	  uninitialized. -->
+	  大きなビットマップフォントを読み込むとエンコーディング対応表の逆変換表の最上位ビットが未初期化でした。
+	<LI>
+<!--	  Loading a pcf font caused a crash. -->
+          PCF フォントの読み込みでクラッシュを起こしていました。
+	<LI>
+<!--	  Moving the control points of an implied point should move the implied point.
+	  And we should indicate which points are implied so this behavior doesn't
+	  surprise. -->
+	  暗黙の点の制御点を移動するとその暗黙の点も移動することにするべきでした。どの点が暗黙の点であるかを示すことにしたので、この振舞いは思いがけないものではありません。
+	<LI>
+<!--	  Michal Nowakowski points out that renumbering points in a glyph should turn
+	  off point matching in references. -->
+	  点の番号をつけ直すと、参照に含まれる点の対応づけがずれることを Michal Nowakowski が指摘しました。
+	<LI>
+<!--	  Add support for bitmaps with vertical metrics. -->
+	  ビットマップの縦書きメトリックに対するサポートを追加。
+	<LI>
+<!--	  Wasn't storing the vendor id in the OS/2 table properly. -->
+	  ベンダ ID を OS/2 テーブルに正しく格納していませんでした。
+	<LI>
+<!--	  Rounding error present on PPC which was absent on *86 machines. -->
+	  *86 マシンに存在しない丸めエラーが PPC に存在しました。
+	<LI>
+<!--	  Werner would like pixel size info to show on the title of a charview when
+	  debugging. -->
+	  デバッグ中に charview のタイトルにピクセルサイズを表示したいと Werner が要望しました。
 	<LI>
 <!--	  Added a new menu command "Point-&gt;Center Between Control Points" for truetype. -->
 	  TrueType 用の新メニューコマンド“<CODE>点(<U>P</U>)</CODE>→<CODE>制御点の中間に移動(<U>B</U>)</CODE>”を追加。
