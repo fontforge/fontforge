@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 15-Jan-2006 -->
+  <!-- AP: Last modified: 17-Jan-2006 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -17,6 +17,21 @@
   on the file stamp.c.
   <P>
   <UL>
+    <LI>
+      17-Jan-2006
+      <UL>
+	<LI>
+	  Make the Import() scripting command accept {bdf,pcf}.gz files
+	<LI>
+	  Reading utf7 (ttf name) strings from an sfd file was broken if one of the
+	  characters had bit 15 (high bit) set and its position in the string mod 3
+	  was 1.
+	<LI>
+	  My horizontal line metrics in the sfnt bitmap strike header were incorrect
+	<LI>
+	  Use the horizontal line metrics (if they work) to set the ascent/descent
+	  of a bitmap strike.
+      </UL>
     <LI>
       15-Jan-2006
       <UL>
