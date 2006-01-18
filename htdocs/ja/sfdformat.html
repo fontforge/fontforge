@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 13-Dec-2005 -->
+  <!-- AP: Last modified: 8-Jan-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Spline Font Database File Format</TITLE>-->
     <TITLE>スプラインフォントデータベースファイルフォーマット</TITLE>
@@ -760,33 +760,37 @@ EndChar
     <TR>
       <TD>0x4</TD>
 <!--  <TD>point selected</TD>-->
-      <TD>点が選択されている</TD>
+      <TD>この点は選択されている</TD>
     </TR>
     <TR>
       <TD>0x8</TD>
 <!--  <TD>point has default next control point</TD>-->
-      <TD>点に、デフォルトの次の制御点が存在する</TD>
+      <TD>この点に、デフォルトの次の制御点が存在する</TD>
     </TR>
     <TR>
       <TD>0x10</TD>
 <!--  <TD>pont has default prev control point</TD>-->
-      <TD>点に、デフォルトの前の制御点が存在する</TD>
+      <TD>この点に、デフォルトの前の制御点が存在する</TD>
     </TR>
     <TR>
       <TD>0x20</TD>
 <!--  <TD>point is to be rounded in x (truetype hinting. doesn't really work)</TD>-->
-      <TD>点は x 方向に丸められる必要がある (TrueType のヒントづけです。実際には動作しません)</TD>
+      <TD>この点は x 方向に丸められる必要がある (TrueType のヒントづけです。実際には動作しません)</TD>
     </TR>
     <TR>
       <TD>0x40</TD>
 <!--  <TD>point is to be rounded in y (truetype hinting. doesn't really work)</TD>-->
-      <TD>点は y 方向に丸められる必要がある (TrueType のヒントづけです。実際には動作しません)</TD>
+      <TD>この点は y 方向に丸められる必要がある (TrueType のヒントづけです。実際には動作しません)</TD>
     </TR>
     <TR>
       <TD>0x80</TD>
 <!--  <TD>point was interpolated between two control points (when<BR>
 	read from a ttf file) and so has no point number of its own</TD> -->
-      <TD>点は (TTF ファイルからの読み込み時に)  2 個の制御点の中点に<BR>補間されたので、独自の点番号が存在しない</TD>
+      <TD>この点は (TTF ファイルからの読み込み時に)  2 個の制御点の中点に<BR>補間されたので、独自の点番号が存在しない</TD>
+    <TR>
+      <TD>0x100</TD>
+<!--  <TD>point should never be interpolated</TD> -->
+      <TD>この点は決して補間してはならない</TD>
     </TR>
   </TABLE>
   <P>
@@ -1177,7 +1181,7 @@ BDFChar: 3 33 3 0 1 0 9
 <!--
   The bitmap font line contains the following numbers: the pixelsize of the
   font, the number of potential characters in the font, the ascent and the
-  descent of the font and the depth of font (number of bits in a pixel).  -->
+  descent of the font and the depth of font (number of bits in a pixel). -->
   BitmapFont: 行には以下の数値が含まれます: フォントのピクセルサイズ、フォント内の可能な文字の個数、フォントの高さおよび深さおよび諧調 (1 ピクセルあたりのビット数) です。
   <P>
 <!--

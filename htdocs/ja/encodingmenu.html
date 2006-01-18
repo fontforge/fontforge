@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jun-2005 -->
-  <!-- AP: Last modified: 6-Aug-2005 -->
+  <!-- AP: Last modified: 15-Jan-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Encoding Menu</TITLE> -->
     <TITLE>エンコーディングメニュー</TITLE>
@@ -11,504 +11,506 @@
 </HEAD>
 <BODY>
 <DIV id="in">
-<H1 ALIGN=Center>
+  <H1 ALIGN=Center>
 <!--Encoding Menu -->
     エンコーディングメニュー
-</H1>
-<P>
+  </H1>
+  <P>
 <!--
-The Encoding menu is only found in the font view: -->
-エンコーディングメニューはフォントビューだけに存在します:
-<UL>
-  <LI>
-<!--<A HREF="encodingmenu.html#Reencode">Reencode &gt;</A>-->
-    <A HREF="encodingmenu.html#Reencode">エンコーディング変換(<U>R</U>) &gt;</A>
-    <UL>
-      <LI>
-<!--	various standard and user defined encodings-->
-	各種の標準およびユーザ定義のエンコーディングへ
-    </UL>
-  <LI>
-<!--<A HREF="#Compact">Compact</A>-->
-    <A HREF="#Compact">コンパクト化(<U>C</U>)</A>
-  <LI>
-<!--<A HREF="encodingmenu.html#Force">Force Encoding &gt;</A>-->
-    <A HREF="encodingmenu.html#Force">エンコーディングを強制(<U>F</U>) &gt;</A>
-    <UL>
-      <LI>
-<!--	various standard and user defined encodings-->
-	各種の標準およびユーザ定義のエンコーディングへ
-    </UL>
-  <LI>
-<!--<A HREF="#AddSlots">Add Encoding Slots...</A>-->
-    <A HREF="#AddSlots">エンコーディングスロットを追加(<U>A</U>)...</A>
-  <LI>
-<!--<A HREF="#RemoveSlots">Remove Unused Slots</A>-->
-    <A HREF="#RemoveSlots">未使用のスロットを削除(<U>U</U>)</A>
-  <LI>
-<!--<A HREF="encodingmenu.html#Detach">Detach Glyphs</A>-->
-    <A HREF="encodingmenu.html#Detach">グリフの切り離し(<U>D</U>)</A>
-  <LI>
-<!--<A HREF="encodingmenu.html#RemoveGlyphs">Detach &amp; Remove Glyphs...</A>-->
-    <A HREF="encodingmenu.html#RemoveGlyphs">グリフの切り離し・削除(<U>V</U>)...</A>
-  <LI>
-<!--<A HREF="#AddEnc">Add Encoding...</A>-->
-    <A HREF="#AddEnc">エンコーディングの名前を追加(<U>N</U>)...</A>
-  <LI>
-<!--<A HREF="#Load">Load Encoding...</A>-->
-    <A HREF="#Load">エンコーディングを読み込み(<U>L</U>)...</A>
-  <LI>
-<!--<A HREF="#Make">Make From Font</A>-->
-    <A HREF="#Make">フォントから作成(<U>K</U>)...</A>
-  <LI>
-<!--<A HREF="#RemoveEnc">Remove Encoding...</A>-->
-    <A HREF="#RemoveEnc">エンコーディングを削除(<U>C</U>)...</A>
-  <LI>
-<!--<A HREF="#Display">Display by Groups...</A>-->
-    <A HREF="#Display">グループ毎の表示(<U>G</U>)...</A>
-  <LI>
-<!--<A HREF="encodingmenu.html#Define">Define Groups...</A>-->
-    <A HREF="encodingmenu.html#Define">グループを定義(<U>E</U>)...</A>
-</UL>
-<DL>
-  <DT>
-<!--<A NAME="Reencode">Reencode</A>-->
-    <A NAME="Reencode">エンコーディング変換(<U>R</U>)</A>
-  <DD>
-<!--Has an attached sub-menu of standard and user defined encodings. The font's
-    current encoding will be indicated with a check mark. You may change the
-    encoding by selecting a different entry. -->
-    このメニューには標準およびユーザ定義のサブメニューが付属しています。フォントの現在のエンコーディングにはチェックマークがついています。別の項目を選択することによってエンコーディングを変換できます。
-    <P>
-<!--There are two slightly different formats an encoding can take. It can be
-    define by unicode code points, or it can be defined by glyph names. When
-    reencoding to an encoding defined by code points, the glyph with the matching
-    unicode value is placed in the encoding slot. When reencoding to an encoding
-    defined by glyph name, we first search for a glyph with the matching name
-    and use it, if not found we search for the glyph name's corresponding unicode
-    code point (if any) and if found we change its name to that specified by
-    the encoding. -->
-    エンコーディングは、2 つの僅かに異なる形式が可能です。それは Unicode の符号位置かグリフ名によって定義することができます。符号位置によって定義されたエンコーディングに変換したときは、それに一致する Unicode 値がエンコーディングスロットに割り当てられます。グリフ名によって定義されたエンコーディングに変換したときは、一致する名前をもつグリフを最初に検索し、見つかった場合はそれを使用します。見つからなかった場合は、グリフ名に対応する Unicode 符号位置 (があれば) を検索し、グリフがあればその名前をエンコーディングによって指定されている名前に変更します。
-    <P>
-<!--Example: Suppose we have a font containing a glyph named "uni0041", and an
-    encoding which maps U+0041-&gt;slot 65, then the glyph will be moved into
-    slot 65. If we have another encoding which maps "A" -&gt; slot 65, then (since
-    "A" has unicode value U+0041) our glyph will still be mapped to slot 65,
-    but in addition its name will be changed to "A".-->
-    例:“uni0041”という名前のグリフを含むフォントがあったとして、そのエンコーディングでは U+0041→スロット 65 に対応づけられていたとすると、グリフはスロット 65 に移動します。もし、“A”→スロット 65 への対応づけを行っている別のエンコーディングがあったとすると、(“A”の Unicode 値は U+0041 なので) エンコーディング変換後のグリフはスロット 65 に置かれたままですが、その名前は“A”に変更されます。
-  <DT>
-<!--<A NAME="Compact">Compact</A>-->
-    <A NAME="Compact">コンパクト化(<U>C</U>)</A>
-  <DD>
-<!--Remove any holes from the encoding so all the glyphs get smushed together. -->
-    エンコーディングからすべての隙間を取り除き、全グリフは一繋がりに押し潰されます。
-  <DT>
-<!--<A NAME="Force">Force</A> Encoding-->
-    エンコーディングを<A NAME="Force">強制</A>(<U>F</U>)
-  <DD>
-<!--Has the same sub-menu as above. Here we assume that the glyphs of the font
-    are currently encoded in the right order, but they have the wrong names (This
-    may seem odd, but it happens a lot). This command will change the names of
-    all the glyphs to match what they should be if the indicated encoding were
-    in force. -->
-    上記の …<CODE>変換(<U>R</U>)</CODE> と同じサブメニューを含みます。このメニューでは、フォント内のグリフが正しい順番に並んでいて、名前の方が間違っていると見なします (これは奇妙に感じますが、よくあることです)。このコマンドは、全てのグリフの名前を、エンコーディングで指定された名前に強制的に変更します。
-  <DT>
-<!--<A NAME="AddSlots">Add Encoding Slots.</A>..-->
-    <A NAME="AddSlots">エンコーディングスロットを追加(<U>A</U>)...</A>
-  <DD>
-<!--Add some extra slots at the end of the font into which you can put unencoded
-    glyphs (variant glyphs, etc.)-->
-    幾つかの追加スロットをフォントの末尾に追加します。それらはエンコーディングに含まれないグリフ (異体字グリフなど) を定義するのに使用できます。
-  <DT>
-<!--<A NAME="RemoveSlots">Remove Unused Slots</A>-->
-    <A NAME="RemoveSlots">未使用のスロットを削除(<U>U</U>)</A>
-  <DD>
-<!--Removes any unused slots from the end of the font. It does not remove unused
-    slots inside the font, that would screw up the encoding.-->
-    フォントの末尾にある任意の未使用スロットを削除します。フォントの途中にあるスロットは削除できません。それを行うとエンコーディングが壊れてしまいます。
-  <DT>
-<!--<A NAME="Detach">Detach Glyphs</A>-->
-    <A NAME="Detach">グリフの切り離し(<U>D</U>)</A>
-  <DD>
-<!--Detaches any selected encoding slots from their currently associated glyphs.
-    These slots will now be marked as unused. The glyphs will remain in the font,
-    just not encoded (If you reencode the font those glyphs will become visible
-    again). -->
-    選択した全てのエンコーディングスロットを、現在割り当てられているグリフからきりは生します。それらのスロットは未使用のものとマークされます。グリフはフォント内に残ります。文字符号が割り当てられていないだけです (エンコーディング変換を行うと、それらのグリフはまた見えるようになります)。
-  <DT>
-<!--<A NAME="RemoveGlyphs">Detach &amp; Remove Glyphs...</A>-->
-    <A NAME="RemoveGlyphs">グリフの切り離し・削除(<U>V</U>)...</A>
-  <DD>
-<!--Similar to the above except that any glyphs detached (which are not used
-    elsewhere in the encoding) will be removed from the font.-->
-    上と同様ですが、切り離されたグリフ (のうち、エンコーディングの他の箇所で使用されていない物) のすべてをフォントから削除します。
-  <DT>
-<!--<A NAME="AddEnc">Add Encoding Name.</A>..-->
-    <A NAME="AddEnc">エンコーディングの名前を追加(<U>N</U>)...</A>
-  <DD>
-<!--Requests an encoding name from the user and searches for it in the iconv()
-    database. It then adds that encoding to the menu. -->
-    ユーザにエンコーディング名を問い合わせ、それを iconv() データベースから検索します。それがあれば、そのエンコーディングをメニューに追加します。
-  <DT>
-<!--<A NAME="Load">Load Encoding</A>...-->
-    <A NAME="Load">エンコーディングを読み込み(<U>L</U>)...</A>
-  <DD>
-<!--Asks the user for a filename and attempts to load a user defined encoding
-    from that file. -->
-    ユーザにファイル名を問い合わせ、ユーザ定義のエンコーディングをそのファイルから読み込もうと試みます。
-  <DT>
-<!--<A NAME="Make">Make from Font.</A>..-->
-    <A NAME="Make">フォントから作成(<U>K</U>)...</A>
-  <DD>
-<!--Allows you to name the font's current encoding (if it isn't already named),
-    and add it to the encoding menu. -->
-    フォントの現在のエンコーディングに (既存の物と重ならない) 名前をつけ、エンコーディングメニューに追加することができます。
-  <DT>
-<!--<A NAME="RemoveEnc">Remove Encoding...</A>-->
-    <A NAME="RemoveEnc">エンコーディングを削除(<U>C</U>)...</A>
-  <DD>
-<!--Removes one of the user defined encodings from the menu.-->
-    ユーザ定義のエンコーディングを一つ削除します。
-  <DT>
-<!--<A NAME="Display">Display by Group</A>...-->
-    <A NAME="Display">グループ毎の表示(<U>G</U>)...</A>
-  <DD>
-<!--Allows you restrict the glyphs displayed in the font view to those in a user
-    defined <A HREF="groups.html">group</A> (specified in the next command). -->
-    フォントビューに表示されたフォントを、ユーザが定義した<A HREF="groups.html">グループ</A> (次のコマンドで定義できます) に制限します。
-  <DT>
-<!--<A NAME="Define">Define Groups</A>...-->
-    <A NAME="Define">グループを定義(<U>E</U>)...</A>
-  <DD>
-<!--Allows you to define <A HREF="groups.html">groups</A> of glyphs which
-    (presumably) have some meaningful connection to each other. -->
-    相互に何らかの繋がりをもつ (と見ることができる) グリフの<A HREF="groups.html">グループ</A>を定義することができます。
-</DL>
-<H2>
+  The Encoding menu is only found in the font view: -->
+  エンコーディングメニューはフォントビューだけに存在します:
+  <UL>
+    <LI>
+<!--  <A HREF="encodingmenu.html#Reencode">Reencode &gt;</A>-->
+      <A HREF="encodingmenu.html#Reencode">エンコーディング変換(<U>R</U>) &gt;</A>
+      <UL>
+	<LI>
+<!--	  various standard and user defined encodings-->
+	  各種の標準およびユーザ定義のエンコーディングへ
+      </UL>
+    <LI>
+<!--  <A HREF="#Compact">Compact</A>-->
+      <A HREF="#Compact">コンパクト化(<U>C</U>)</A>
+    <LI>
+<!--  <A HREF="encodingmenu.html#Force">Force Encoding &gt;</A>-->
+      <A HREF="encodingmenu.html#Force">エンコーディングを強制(<U>F</U>) &gt;</A>
+      <UL>
+	<LI>
+<!--	  various standard and user defined encodings-->
+	  各種の標準およびユーザ定義のエンコーディングへ
+      </UL>
+    <LI>
+<!--  <A HREF="#AddSlots">Add Encoding Slots...</A>-->
+      <A HREF="#AddSlots">エンコーディングスロットを追加(<U>A</U>)...</A>
+    <LI>
+<!--  <A HREF="#RemoveSlots">Remove Unused Slots</A>-->
+      <A HREF="#RemoveSlots">未使用のスロットを削除(<U>U</U>)</A>
+    <LI>
+<!--  <A HREF="encodingmenu.html#Detach">Detach Glyphs</A>-->
+      <A HREF="encodingmenu.html#Detach">グリフの切り離し(<U>D</U>)</A>
+    <LI>
+<!--  <A HREF="encodingmenu.html#RemoveGlyphs">Detach &amp; Remove Glyphs...</A>-->
+      <A HREF="encodingmenu.html#RemoveGlyphs">グリフの切り離し・削除(<U>V</U>)...</A>
+    <LI>
+<!--  <A HREF="#AddEnc">Add Encoding...</A>-->
+      <A HREF="#AddEnc">エンコーディングの名前を追加(<U>N</U>)...</A>
+    <LI>
+<!--  <A HREF="#Load">Load Encoding...</A>-->
+      <A HREF="#Load">エンコーディングを読み込み(<U>L</U>)...</A>
+    <LI>
+<!--  <A HREF="#Make">Make From Font</A>-->
+      <A HREF="#Make">フォントから作成(<U>K</U>)...</A>
+    <LI>
+<!--  <A HREF="#RemoveEnc">Remove Encoding...</A>-->
+      <A HREF="#RemoveEnc">エンコーディングを削除(<U>C</U>)...</A>
+    <LI>
+<!--  <A HREF="#Display">Display by Groups...</A>-->
+      <A HREF="#Display">グループ毎の表示(<U>G</U>)...</A>
+    <LI>
+<!--  <A HREF="encodingmenu.html#Define">Define Groups...</A>-->
+      <A HREF="encodingmenu.html#Define">グループを定義(<U>E</U>)...</A>
+  </UL>
+  <DL>
+    <DT>
+<!--  <A NAME="Reencode">Reencode</A>-->
+      <A NAME="Reencode">エンコーディング変換(<U>R</U>)</A>
+    <DD>
+<!--  Has an attached sub-menu of standard and user defined encodings. The font's
+      current encoding will be indicated with a check mark. You may change the
+      encoding by selecting a different entry. -->
+      このメニューには標準およびユーザ定義のサブメニューが付属しています。フォントの現在のエンコーディングにはチェックマークがついています。別の項目を選択することによってエンコーディングを変換できます。
+      <P>
+<!--  There are two slightly different formats an encoding can take. It can be
+      define by unicode code points, or it can be defined by glyph names. When
+      reencoding to an encoding defined by code points, the glyph with the matching
+      unicode value is placed in the encoding slot. When reencoding to an encoding
+      defined by glyph name, we first search for a glyph with the matching name
+      and use it, if not found we search for the glyph name's corresponding unicode
+      code point (if any) and if found we change its name to that specified by
+      the encoding. -->
+      エンコーディングは、2 つの僅かに異なる形式が可能です。それは Unicode の符号位置かグリフ名によって定義することができます。符号位置によって定義されたエンコーディングに変換したときは、それに一致する Unicode 値がエンコーディングスロットに割り当てられます。グリフ名によって定義されたエンコーディングに変換したときは、一致する名前をもつグリフを最初に検索し、見つかった場合はそれを使用します。見つからなかった場合は、グリフ名に対応する Unicode 符号位置 (があれば) を検索し、グリフがあればその名前をエンコーディングによって指定されている名前に変更します。
+      <P>
+<!--  Example: Suppose we have a font containing a glyph named "uni0041", and an
+      encoding which maps U+0041-&gt;slot 65, then the glyph will be moved into
+      slot 65. If we have another encoding which maps "A" -&gt; slot 65, then (since
+      "A" has unicode value U+0041) our glyph will still be mapped to slot 65,
+      but in addition its name will be changed to "A".-->
+      例:“uni0041”という名前のグリフを含むフォントがあったとして、そのエンコーディングでは U+0041→スロット 65 に対応づけられていたとすると、グリフはスロット 65 に移動します。もし、“A”→スロット 65 への対応づけを行っている別のエンコーディングがあったとすると、(“A”の Unicode 値は U+0041 なので) エンコーディング変換後のグリフはスロット 65 に置かれたままですが、その名前は“A”に変更されます。
+    <DT>
+<!--  <A NAME="Compact">Compact</A>-->
+      <A NAME="Compact">コンパクト化(<U>C</U>)</A>
+    <DD>
+<!--  Remove any holes from the encoding so all the glyphs get smushed together.
+      If the font is already compact, then selecting this again will restore the
+      original. -->
+      エンコーディングからすべての隙間を取り除き、全グリフは一繋がりに押し潰されます。フォントがすでにコンパクト化されている場合、もう一度これを選択するとオリジナルに復元します。
+    <DT>
+<!--  <A NAME="Force">Force</A> Encoding-->
+      エンコーディングを<A NAME="Force">強制</A>(<U>F</U>)
+    <DD>
+<!--  Has the same sub-menu as above. Here we assume that the glyphs of the font
+      are currently encoded in the right order, but they have the wrong names (This
+      may seem odd, but it happens a lot). This command will change the names of
+      all the glyphs to match what they should be if the indicated encoding were
+      in force. -->
+      上記の …<CODE>変換(<U>R</U>)</CODE> と同じサブメニューを含みます。このメニューでは、フォント内のグリフが正しい順番に並んでいて、名前の方が間違っていると見なします (これは奇妙に感じますが、よくあることです)。このコマンドは、全てのグリフの名前を、エンコーディングで指定された名前に強制的に変更します。
+    <DT>
+<!--  <A NAME="AddSlots">Add Encoding Slots.</A>..-->
+      <A NAME="AddSlots">エンコーディングスロットを追加(<U>A</U>)...</A>
+    <DD>
+<!--  Add some extra slots at the end of the font into which you can put unencoded
+      glyphs (variant glyphs, etc.)-->
+      幾つかの追加スロットをフォントの末尾に追加します。それらはエンコーディングに含まれないグリフ (異体字グリフなど) を定義するのに使用できます。
+    <DT>
+<!--  <A NAME="RemoveSlots">Remove Unused Slots</A>-->
+      <A NAME="RemoveSlots">未使用のスロットを削除(<U>U</U>)</A>
+    <DD>
+<!--  Removes any unused slots from the end of the font. It does not remove unused
+      slots inside the font, that would screw up the encoding.-->
+      フォントの末尾にある任意の未使用スロットを削除します。フォントの途中にあるスロットは削除できません。それを行うとエンコーディングが壊れてしまいます。
+    <DT>
+<!--  <A NAME="Detach">Detach Glyphs</A>-->
+      <A NAME="Detach">グリフの切り離し(<U>D</U>)</A>
+    <DD>
+<!--  Detaches any selected encoding slots from their currently associated glyphs.
+      These slots will now be marked as unused. The glyphs will remain in the font,
+      just not encoded (If you reencode the font those glyphs will become visible
+      again). -->
+      選択した全てのエンコーディングスロットを、現在割り当てられているグリフからきりは生します。それらのスロットは未使用のものとマークされます。グリフはフォント内に残ります。文字符号が割り当てられていないだけです (エンコーディング変換を行うと、それらのグリフはまた見えるようになります)。
+    <DT>
+<!--  <A NAME="RemoveGlyphs">Detach &amp; Remove Glyphs...</A>-->
+      <A NAME="RemoveGlyphs">グリフの切り離し・削除(<U>V</U>)...</A>
+    <DD>
+<!--  Similar to the above except that any glyphs detached (which are not used
+      elsewhere in the encoding) will be removed from the font.-->
+      上と同様ですが、切り離されたグリフ (のうち、エンコーディングの他の箇所で使用されていない物) のすべてをフォントから削除します。
+    <DT>
+<!--  <A NAME="AddEnc">Add Encoding Name.</A>..-->
+      <A NAME="AddEnc">エンコーディングの名前を追加(<U>N</U>)...</A>
+    <DD>
+<!--  Requests an encoding name from the user and searches for it in the iconv()
+      database. It then adds that encoding to the menu. -->
+      ユーザにエンコーディング名を問い合わせ、それを iconv() データベースから検索します。それがあれば、そのエンコーディングをメニューに追加します。
+    <DT>
+<!--  <A NAME="Load">Load Encoding</A>...-->
+      <A NAME="Load">エンコーディングを読み込み(<U>L</U>)...</A>
+    <DD>
+<!--  Asks the user for a filename and attempts to load a user defined encoding
+      from that file. (You can only load small encodings - - one byte encodings) -->
+      ユーザにファイル名を問い合わせ、ユーザ定義のエンコーディングをそのファイルから読み込もうと試みます。(読み込むことができるのは、小さなエンコーディング―― 1 バイトエンコーディングだけです)
+    <DT>
+<!--  <A NAME="Make">Make from Font.</A>..-->
+      <A NAME="Make">フォントから作成(<U>K</U>)...</A>
+    <DD>
+<!--  Allows you to name the font's current encoding (if it isn't already named),
+      and add it to the encoding menu. -->
+      フォントの現在のエンコーディングに (既存の物と重ならない) 名前をつけ、エンコーディングメニューに追加することができます。
+    <DT>
+<!--  <A NAME="RemoveEnc">Remove Encoding...</A>-->
+      <A NAME="RemoveEnc">エンコーディングを削除(<U>C</U>)...</A>
+    <DD>
+<!--  Removes one of the user defined encodings from the menu.-->
+      ユーザ定義のエンコーディングを一つ削除します。
+    <DT>
+<!--  <A NAME="Display">Display by Group</A>...-->
+      <A NAME="Display">グループ毎の表示(<U>G</U>)...</A>
+    <DD>
+<!--  Allows you restrict the glyphs displayed in the font view to those in a user
+      defined <A HREF="groups.html">group</A> (specified in the next command). -->
+      フォントビューに表示されたフォントを、ユーザが定義した<A HREF="groups.html">グループ</A> (次のコマンドで定義できます) に制限します。
+    <DT>
+<!--  <A NAME="Define">Define Groups</A>...-->
+      <A NAME="Define">グループを定義(<U>E</U>)...</A>
+    <DD>
+<!--  Allows you to define <A HREF="groups.html">groups</A> of glyphs which
+      (presumably) have some meaningful connection to each other. -->
+      相互に何らかの繋がりをもつ (と見ることができる) グリフの<A HREF="groups.html">グループ</A>を定義することができます。
+  </DL>
+  <H2>
 <!--General notes on encodings-->
     エンコーディングに関する一般的注意
-</H2>
-<P>
+  </H2>
+  <P>
 <!--
-Not all font formats support all encodings. SVG fonts will always be output
-in a unicode encoding, truetype fonts in either unicode or one of the CJK
-encodings, type1 fonts only support single byte encodings, etc. -->
-すべてのフォントフォーマットが全てのエンコーディングをサポートするわけではないことにご注意ください。SVG フォントは常に Unicode エンコーディングで出力され、TreuType では Unicode か CJK エンコーディングのどれかを選ぶことができ、Type1 フォントは 1 バイトエンコーディングしかサポートしていないなどです。
-<P>
+  Not all font formats support all encodings. SVG fonts will always be output
+  in a unicode encoding, truetype fonts in either unicode or one of the CJK
+  encodings, type1 fonts only support single byte encodings, etc. -->
+  すべてのフォントフォーマットが全てのエンコーディングをサポートするわけではないことにご注意ください。SVG フォントは常に Unicode エンコーディングで出力され、TreuType では Unicode か CJK エンコーディングのどれかを選ぶことができ、Type1 フォントは 1 バイトエンコーディングしかサポートしていないなどです。
+  <P>
 <!--
-In a CID keyed font you are not allowed to change the encoding (in essence
-because there is none), but there is an entry
-<A HREF="cidmenu.html#ChangeSup">CID-&gt;Change Supplement </A>which will
-display the Registry/Ordering information and allow you to change the supplement.-->
-CID キー指定フォントではエンコーディングを変更することはできません (本質的にエンコーディングが存在しないため) が、<A HREF="cidmenu.html#ChangeSup">CID→補遺番号を変更</A> コマンドでレジストリ/順序づけの情報を表示し、補遺番号を変更することができます。
-  <HR>
-<H3>
+  In a CID keyed font you are not allowed to change the encoding (in essence
+  because there is none), but there is an entry
+  <A HREF="cidmenu.html#ChangeSup">CID-&gt;Change Supplement </A>which will
+  display the Registry/Ordering information and allow you to change the supplement.-->
+  CID キー指定フォントではエンコーディングを変更することはできません (本質的にエンコーディングが存在しないため) が、<A HREF="cidmenu.html#ChangeSup">CID→補遺番号を変更</A> コマンドでレジストリ/順序づけの情報を表示し、補遺番号を変更することができます。
+    <HR>
+  <H3>
 <!--Built in <A NAME="Encodings">Encodings</A>-->
     組み込みの<A NAME="Encodings">エンコーディング</A>
-</H3>
-<P>
+  </H3>
+  <P>
 <!--
-FontForge knows about the following encodings by default: -->
-FontForge は、デフォルトで以下のエンコーディングについて知っています。
-<UL>
-  <LI>
-<!--ISO-8859-1 (Latin1) - - traditional encoding for western european characters.
-    Default encoding for http. Does not include the Euro sign.-->
-    ISO-8859-1 (Latin1) ― 西ヨーロッパの伝統的エンコーディングです。HTTP のデフォルトエンコーディングです。ユーロ記号は含まれません。
-  <LI>
-<!--ISO-8859-15 (Latin0) - - Replacement for Latin1. Does include the Euro. -->
-    ISO-8859-15 (Latin9) ― Latin1に代るコードです。ユーロ記号を含んでいます。
-  <LI>
-<!--ISO-8859-2 (Latin2) - - Central &amp; Eastern European (Czech, Hungarian,
-    Polish, Romanian, Croatian, Slovak, Slovnian.-->
-    ISO-8859-2 (Latin2) ― 中央および東ヨーロッパ (チェコ語、ハンガリー語、ポーランド語、ルーマニア語、クロアチア語、スロバキア語、スロベニア語)。
-  <LI>
-  <LI>
-<!--ISO-8859-3 (Latin3) - - Southern European (Esperanto, Maltese)-->
-    ISO-8859-3 (Latin3) ― 南ヨーロッパ (エスペラント、マルタ語)
-  <LI>
-<!--ISO-8859-4 (Latin4) - - Northern European (Estonian, Latvian, Lithuanian,
-    Greenlandic, Lappish) -->
-    ISO-8859-4 (Latin4) ― 北ヨーロッパ (エストニア語、ラトビア語、リトアニア語、グリーンランド語、ラップ語)
-  <LI>
-<!--ISO-8859-9 (Latin5) - - Turkish -->
-    (Latin5) ― トルコ語
-  <LI>
-<!--ISO-8859-10 (Latin6) - - Nordic (reworking of Latin4&amp;Latin1) -->
-    ISO-8859-10 (Latin6) ― 北欧諸語 (Latin4 と Latin1 の作り直し)
-  <LI>
-<!--ISO-8859-13 (Latin7) - - Another Baltic character set -->
-    ISO-8859-13 (Latin7) ― その他のバルト諸言語用の文字セット
-  <LI>
-<!--ISO-8859-14 (Latin8) - - Celtic (Gaelic &amp; Welsh) -->
-    ISO-8859-14 (Latin8) ― ケルト諸語 (ゲール語とウェールズ語)
-  <LI>
-    ISO-8859-5 (Cyrillic)
-  <LI>
-    ISO-8859-6 (Arabic)
-  <LI>
-    ISO-8859-7 (Greek)
-  <LI>
-<!--ISO-8859-8 (Hebrew) - - (and Yiddish) -->
-    ISO-8859-8 (Hebrew) ― (およびイディッシュ語)
-  <LI>
-<!--ISO-8859-11 (Thai) - - Also know as TIS 620<BR>
-    &lt;there is no ISO-8859-12&gt; -->
-    ISO-8859-11 (Thai) ― 別名TIS 620<BR>
-    &lt;ISO-8859-12 はありません&gt; 
-      <HR>
-  <LI>
-<!--KOI8-R - - Cyrillic -->
-    KOI8-R ― キリル文字
-  <LI>
-    Macintosh Roman
-  <LI>
-<!--Windows "ANSI" (CodePage1252)-->
-    Windows“ANSI”(CodePage1252)
-  <LI>
-<!--Adobe Standard-->
-    Adobe 標準
-  <LI>
-<!--Symbol-->
-    シンボル
-  <LI>
-    TeX Base 
-      <HR>
-  <LI>
-    ISO-10646-1 (Unicode, BMP)
-  <LI>
-    ISO-10646-1 (Unicode, Full)
-  <LI>
-<!--ISO-10646-? (Unicode, by plane)<BR>
-    (You can select a specific plane of unicode as an encoding (ie BMP, SMP,
-    SIP,...) -->
-    ISO-10646-? (Unicode, 面を指定)<BR>
-    (unicode の特定の面 (BMP, SMP, SIP など) を 1 つのエンコーディングとして選べます。    
-      <HR>
-  <LI>
-    SJIS
-  <LI>
-<!--JIS 208 - - Japanese Kanji (first 8000 characters)-->
-    JIS 208 ― 日本語の漢字 (最初の 8000 文字)
-  <LI>
-<!--JIS 212 - - Japanese Kanji (next 8000 characters)-->
-    JIS 212 ― 日本語の漢字 (次の 8000 文字)
-  <LI>
-    Wansung
-  <LI>
-<!--KSC 5601 - - Korean (this is the 94x94 version of KSC 5601)-->
-    KSC 5601 ― 韓国語 (これは KS C 5601 の 94×94 バージョンです)
-  <LI>
-    Johab
-  <LI>
-<!--GB 2312 - - Simplified Chinese -->
-    GB 2312 ― 簡体字中国語
-  <LI>
-<!--Packed GB 2312 - - (I don't know what the proper name for this is, ASCII for
-    bytes&lt;0x80, and GB 2312 EUC offset by 0x8080) -->
-    パック形式 GB 2312 ― (正確な名前は不明です。ASCII を 0x80 未満のバイトに割り当て、GB 2312 を 0x8080 だけオフセットした EUC)
-  <LI>
-<!--Big5 - - Traditional Chinese -->
-    Big5 ― 繁体字中国語
-      <HR>
-  <LI>
-<!--Custom - - An unknown encoding -->
-    Custom ― 不明なエンコーディング
-  <LI>
-<!--Original - - the glyph ordering used in the original font file.-->
-    Original ― オリジナルのフォントファイルで使用されているグリフ順
-</UL>
-<P>
+  FontForge knows about the following encodings by default: -->
+  FontForge は、デフォルトで以下のエンコーディングについて知っています。
+  <UL>
+    <LI>
+<!--  ISO-8859-1 (Latin1) - - traditional encoding for western european characters.
+      Default encoding for http. Does not include the Euro sign.-->
+      ISO-8859-1 (Latin1) ― 西ヨーロッパの伝統的エンコーディングです。HTTP のデフォルトエンコーディングです。ユーロ記号は含まれません。
+    <LI>
+<!--  ISO-8859-15 (Latin0) - - Replacement for Latin1. Does include the Euro. -->
+      ISO-8859-15 (Latin9) ― Latin1に代るコードです。ユーロ記号を含んでいます。
+    <LI>
+<!--  ISO-8859-2 (Latin2) - - Central &amp; Eastern European (Czech, Hungarian,
+      Polish, Romanian, Croatian, Slovak, Slovnian.-->
+      ISO-8859-2 (Latin2) ― 中央および東ヨーロッパ (チェコ語、ハンガリー語、ポーランド語、ルーマニア語、クロアチア語、スロバキア語、スロベニア語)。
+    <LI>
+    <LI>
+<!--  ISO-8859-3 (Latin3) - - Southern European (Esperanto, Maltese)-->
+      ISO-8859-3 (Latin3) ― 南ヨーロッパ (エスペラント、マルタ語)
+    <LI>
+<!--  ISO-8859-4 (Latin4) - - Northern European (Estonian, Latvian, Lithuanian,
+      Greenlandic, Lappish) -->
+      ISO-8859-4 (Latin4) ― 北ヨーロッパ (エストニア語、ラトビア語、リトアニア語、グリーンランド語、ラップ語)
+    <LI>
+<!--  ISO-8859-9 (Latin5) - - Turkish -->
+      (Latin5) ― トルコ語
+    <LI>
+<!--  ISO-8859-10 (Latin6) - - Nordic (reworking of Latin4&amp;Latin1) -->
+      ISO-8859-10 (Latin6) ― 北欧諸語 (Latin4 と Latin1 の作り直し)
+    <LI>
+<!--  ISO-8859-13 (Latin7) - - Another Baltic character set -->
+      ISO-8859-13 (Latin7) ― その他のバルト諸言語用の文字セット
+    <LI>
+<!--  ISO-8859-14 (Latin8) - - Celtic (Gaelic &amp; Welsh) -->
+      ISO-8859-14 (Latin8) ― ケルト諸語 (ゲール語とウェールズ語)
+    <LI>
+      ISO-8859-5 (Cyrillic)
+    <LI>
+      ISO-8859-6 (Arabic)
+    <LI>
+      ISO-8859-7 (Greek)
+    <LI>
+<!--  ISO-8859-8 (Hebrew) - - (and Yiddish) -->
+      ISO-8859-8 (Hebrew) ― (およびイディッシュ語)
+    <LI>
+<!--  ISO-8859-11 (Thai) - - Also know as TIS 620<BR>
+      &lt;there is no ISO-8859-12&gt; -->
+      ISO-8859-11 (Thai) ― 別名TIS 620<BR>
+      &lt;ISO-8859-12 はありません&gt; 
+	<HR>
+    <LI>
+<!--  KOI8-R - - Cyrillic -->
+      KOI8-R ― キリル文字
+    <LI>
+      Macintosh Roman
+    <LI>
+<!--  Windows "ANSI" (CodePage1252)-->
+      Windows“ANSI”(CodePage1252)
+    <LI>
+<!--  Adobe Standard-->
+      Adobe 標準
+    <LI>
+<!--  Symbol-->
+      シンボル
+    <LI>
+      TeX Base 
+	<HR>
+    <LI>
+      ISO-10646-1 (Unicode, BMP)
+    <LI>
+      ISO-10646-1 (Unicode, Full)
+    <LI>
+<!--  ISO-10646-? (Unicode, by plane)<BR>
+      (You can select a specific plane of unicode as an encoding (ie BMP, SMP,
+      SIP,...) -->
+      ISO-10646-? (Unicode, 面を指定)<BR>
+      (unicode の特定の面 (BMP, SMP, SIP など) を 1 つのエンコーディングとして選べます。    
+	<HR>
+    <LI>
+      SJIS
+    <LI>
+<!--  JIS 208 - - Japanese Kanji (first 8000 characters)-->
+      JIS 208 ― 日本語の漢字 (最初の 8000 文字)
+    <LI>
+<!--  JIS 212 - - Japanese Kanji (next 8000 characters)-->
+      JIS 212 ― 日本語の漢字 (次の 8000 文字)
+    <LI>
+      Wansung
+    <LI>
+<!--  KSC 5601 - - Korean (this is the 94x94 version of KSC 5601)-->
+      KSC 5601 ― 韓国語 (これは KS C 5601 の 94×94 バージョンです)
+    <LI>
+      Johab
+    <LI>
+<!--  GB 2312 - - Simplified Chinese -->
+      GB 2312 ― 簡体字中国語
+    <LI>
+<!--  Packed GB 2312 - - (I don't know what the proper name for this is, ASCII for
+      bytes&lt;0x80, and GB 2312 EUC offset by 0x8080) -->
+      パック形式 GB 2312 ― (正確な名前は不明です。ASCII を 0x80 未満のバイトに割り当て、GB 2312 を 0x8080 だけオフセットした EUC)
+    <LI>
+<!--  Big5 - - Traditional Chinese -->
+      Big5 ― 繁体字中国語
+	<HR>
+    <LI>
+<!--  Custom - - An unknown encoding -->
+      Custom ― 不明なエンコーディング
+    <LI>
+<!--  Original - - the glyph ordering used in the original font file.-->
+      Original ― オリジナルのフォントファイルで使用されているグリフ順
+  </UL>
+  <P>
 <!--
-Encoding sources:-->
-エンコーディングに関する情報源:
-<UL>
-  <LI>
-<!--<A HREF="http://czyborra.com/charsets/iso8859.html">ISO 8859 Alphabet Soup</A> -->
-    <A HREF="http://czyborra.com/charsets/iso8859.html">ISO 8859 アルファベットスープ</A>
-  <LI>
-<!--<A HREF="http://www.unicode.org/Public/MAPPINGS/">Unicode Mapping Tables</A>-->
-    <A HREF="http://www.unicode.org/Public/MAPPINGS/">Unicode の対応表</A>
-</UL>
-<P>
+  Encoding sources:-->
+  エンコーディングに関する情報源:
+  <UL>
+    <LI>
+<!--  <A HREF="http://czyborra.com/charsets/iso8859.html">ISO 8859 Alphabet Soup</A> -->
+      <A HREF="http://czyborra.com/charsets/iso8859.html">ISO 8859 アルファベットスープ</A>
+    <LI>
+<!--  <A HREF="http://www.unicode.org/Public/MAPPINGS/">Unicode Mapping Tables</A>-->
+      <A HREF="http://www.unicode.org/Public/MAPPINGS/">Unicode の対応表</A>
+  </UL>
+  <P>
 <!--
-<A HREF="http://www.unicode.org/charts/">An index to images of all the glyphs
-in unicode</A>. -->
-<A HREF="http://www.unicode.org/charts/">Unicode のグリフすべての画像へのインデックス</A>。
-<P>
-  <HR>
-<H3>
+  <A HREF="http://www.unicode.org/charts/">An index to images of all the glyphs
+  in unicode</A>. -->
+  <A HREF="http://www.unicode.org/charts/">Unicode のグリフすべての画像へのインデックス</A>。
+  <P>
+    <HR>
+  <H3>
 <!--<A NAME="User-def">User Defined Encodings</A>-->
     <A NAME="User-def">ユーザ定義のエンコーディング</A>
-</H3>
-<P>
+  </H3>
+  <P>
 <!--
-You can also add new encodings to the set that FontForge knows about. There
-are three menu items that manipulate a set of user defined encodings. As
-always these specify both a character set and an encoding. The encoding has
-a maximum of 256 entries, but the character set may be larger (up to 1024).
-This means that you can define a font with extra characters. Since postscript
-fonts can be reencoded at runtime this can be useful. -->
-FontForge が知っているエンコーディング一覧に新しいエンコーディングを追加することもできます。ユーザ定義のエンコーディング群を操作するためのボタンは 3 つ用意されています。標準のエンコーディングと同様に、これらは文字セットと符号化方式の両方を指定します。エンコーディングは最大 256 項目を含むことができますが、文字セットはそれより大きくても構いません (1024 文字まで)。これは、追加の文字を含むフォントを定義できるということです。PostScript フォントは実行時にエンコーディングを切り替えることができるので、これが役に立つ場合があります。
-<P>
+  You can also add new encodings to the set that FontForge knows about. There
+  are three menu items that manipulate a set of user defined encodings. As
+  always these specify both a character set and an encoding. The encoding has
+  a maximum of 256 entries, but the character set may be larger (up to 1024).
+  This means that you can define a font with extra characters. Since postscript
+  fonts can be reencoded at runtime this can be useful. -->
+  FontForge が知っているエンコーディング一覧に新しいエンコーディングを追加することもできます。ユーザ定義のエンコーディング群を操作するためのボタンは 3 つ用意されています。標準のエンコーディングと同様に、これらは文字セットと符号化方式の両方を指定します。エンコーディングは最大 256 項目を含むことができますが、文字セットはそれより大きくても構いません (1024 文字まで)。これは、追加の文字を含むフォントを定義できるということです。PostScript フォントは実行時にエンコーディングを切り替えることができるので、これが役に立つ場合があります。
+  <P>
 <!--
-The Load Encoding command allows you to load an encoding(s) from a file.
-Currently the file must either be in the format used by the unicode consortium
-for <A HREF="http://www.unicode.org/Public/MAPPINGS/ISO8859/">mapping ISO
-8859</A> encodings to unicode, or it must be a postscript encoding array.
-The first format looks like this:-->
-<CODE>エンコーディングを読み込む</CODE> コマンドを実行すると、エンコーディングをファイルから読み込むことができます。現在のところ、ファイルは Unicode Consortium が <A HREF="http://www.unicode.org/Public/MAPPINGS/ISO8859/">ISO 8859</A> の各エンコーディングを Unicode に対応づけるのに使っているフォーマットか、PostScript のエンコーディング配列でなければなりません。最初の形式は以下のような形です:
-<BLOCKQUOTE>
-  <PRE>0x20	0x0020	#	SPACE
-0x21	0x0021	#	EXCLAMATION MARK
-...
-</PRE>
-</BLOCKQUOTE>
-<P>
+  The Load Encoding command allows you to load an encoding(s) from a file.
+  Currently the file must either be in the format used by the unicode consortium
+  for <A HREF="http://www.unicode.org/Public/MAPPINGS/ISO8859/">mapping ISO
+  8859</A> encodings to unicode, or it must be a postscript encoding array.
+  The first format looks like this:-->
+  <CODE>エンコーディングを読み込む</CODE> コマンドを実行すると、エンコーディングをファイルから読み込むことができます。現在のところ、ファイルは Unicode Consortium が <A HREF="http://www.unicode.org/Public/MAPPINGS/ISO8859/">ISO 8859</A> の各エンコーディングを Unicode に対応づけるのに使っているフォーマットか、PostScript のエンコーディング配列でなければなりません。最初の形式は以下のような形です:
+  <BLOCKQUOTE>
+    <PRE>0x20	0x0020	#	SPACE
+  0x21	0x0021	#	EXCLAMATION MARK
+  ...
+  </PRE>
+  </BLOCKQUOTE>
+  <P>
 <!--
-A postscript file looks like: -->
-PostScript ファイルは以下のような形です:
-<BLOCKQUOTE>
-  <PRE>/TeXBase1Encoding [
- % 00
- /.notdef /dotaccent /fi /fl
- /fraction /hungarianumlaut /Lslash /lslash
- ...
-] def
-</PRE>
-</BLOCKQUOTE>
-<P>
+  A postscript file looks like: -->
+  PostScript ファイルは以下のような形です:
+  <BLOCKQUOTE>
+    <PRE>/TeXBase1Encoding [
+   % 00
+   /.notdef /dotaccent /fi /fl
+   /fraction /hungarianumlaut /Lslash /lslash
+   ...
+  ] def
+  </PRE>
+  </BLOCKQUOTE>
+  <P>
 <!--
-There may be more than one encoding in a postscript file. The encoding parser
-is not smart. It will only read arrays specified like this, don't try any
-of the innumerable other ways of specifying an array in postscript. -->
-PostScript ファイルには複数のエンコーディングを含めることができます。エンコーディングの読み込み処理は賢くありません。このような形で指定されたエンコーディングしか読み込めないので、PostScript で配列を指定する他の無数の方法を試みないでください。
-<P>
+  There may be more than one encoding in a postscript file. The encoding parser
+  is not smart. It will only read arrays specified like this, don't try any
+  of the innumerable other ways of specifying an array in postscript. -->
+  PostScript ファイルには複数のエンコーディングを含めることができます。エンコーディングの読み込み処理は賢くありません。このような形で指定されたエンコーディングしか読み込めないので、PostScript で配列を指定する他の無数の方法を試みないでください。
+  <P>
 <!--
-If the font has a custom encoding then the <CODE>Make From Font</CODE> menu
-item is enabled. This allows you to name the encoding you have defined for
-the current font. -->
-フォントにカスタムエンコーディングがある場合、<CODE>フォントから作成</CODE>メニューが選択できるようになります。これを使って、現在のフォントに対して定義したエンコーディングに名前をつけることができます。
-<P>
+  If the font has a custom encoding then the <CODE>Make From Font</CODE> menu
+  item is enabled. This allows you to name the encoding you have defined for
+  the current font. -->
+  フォントにカスタムエンコーディングがある場合、<CODE>フォントから作成</CODE>メニューが選択できるようになります。これを使って、現在のフォントに対して定義したエンコーディングに名前をつけることができます。
+  <P>
 <!--
-The <CODE>Remove Encoding</CODE> menu item brings up a list showing all the
-custom encodings and allows you to delete them. -->
-<CODE>エンコーディングを削除</CODE>メニューを選択すると、すべてのカスタムエンコーディングを列挙するリストが表示され、それらを削除することができます。
-<P>
-<P>
+  The <CODE>Remove Encoding</CODE> menu item brings up a list showing all the
+  custom encodings and allows you to delete them. -->
+  <CODE>エンコーディングを削除</CODE>メニューを選択すると、すべてのカスタムエンコーディングを列挙するリストが表示され、それらを削除することができます。
+  <P>
+  <P>
 <!--
-Here's an <A HREF="Encodings.ps.gz">example of a postscript encoding file</A>.
-It contains:-->
-ここに <A HREF="Encodings.ps.gz">PostScript エンコーディングファイルの例</A>があります。それには以下のエンコーディングが含まれています:
-<UL>
-  <LI>
-    TeXMathItalicEncoding
-  <LI>
-    TeXMathSymbolEncoding
-  <LI>
-    TeXMathExtensionEncoding 
-      <HR>
-  <LI>
-<!--IsoLatin - - (which specifies all the characters used in any of the ISO-Latin-*
-    fonts -->
-    IsoLatin ― (これは、ISO-Latin-* フォントのどれかに含まれる文字をすべて指定しています)
-      <HR>
-  <LI>
-<!--AdobeExpert - - (Which contains things like lower case numbers, small caps,
-    fractions, sub/superscript numbers, etc.) -->
-    AdobeExpert ― (これはノンライニング数字、小型大文字、分数、下つき/上つき数字などを含みます。)
-      <HR>
-  <LI>
-<!--CodePage1250 - - Microsoft's encoding for Central European characters -->
-    CodePage1250 ― Microsoft の中央ヨーロッパの諸文字用エンコーディング
-  <LI>
-<!--CodePage1251 - - Microsoft's Cyrillic encoding -->
-    CodePage1251 ― Microsoft のキリル文字エンコーディング
-  <LI>
-<!--CodePage1252 - - Microsoft's Western European encoding (a superset of Latin1.
-    Sometimes called "ANSI" though I can find no ANSI standard that it follows)-->
-    CodePage1252 ― Microsoft の西ヨーロッパ用エンコーディング (Latin1 のスーパーセット)。時に“ANSI”と呼ばれますが、これを定めた ANSI 規格の存在は見つかりません。
-  <LI>
-<!--CodePage1253 - - Microsoft's Greek encoding -->
-    CodePage1253 ― Microsoft のギリシャ語エンコーディング
-  <LI>
-<!--CodePage1254 - - Microsoft's Turkish encoding -->
-    CodePage1254 ― Microsoft のトルコ語エンコーディング
-  <LI>
-<!--CodePage1255 - - Microsoft's Hebrew encoding (an extension of ISO-8859-8)-->
-    CodePage1255 ― Microsoft のヘブライ語エンコーディング (ISO-8859-8 の拡張)。
-  <LI>
-    CodePage1256 ― Microsoft's Arabic encoding
-<!--CodePage1256 - - Microsoft's Arabic encoding -->
-  <LI>
-<!--CodePage1257 - - Microsoft's Baltic encoding -->
-    CodePage1257 ― Microsoft のバルト諸言語エンコーディング
-  <LI>
-<!--CodePage1258 - - Microsoft's Viet Namese encoding -->
-    CodePage1258 ― Microsoft のベトナム語エンコーディング
-  <LI>
-<!--CodePage874 - - Microsoft's Thai encoding -->
-    CodePage874 ― Microsoft のタイ語エンコーディング
-      <HR>
-  <LI>
-    MacCentralEuropean
-  <LI>
-    MacCyrillic
-  <LI>
-    MacGreek
-  <LI>
-    MacHebrew 
-      <HR>
-  <LI>
-<!--US-ASCII - - Not really useful by itself any more, but provides the first
-    128 characters of almost every other encoding.-->
-    US-ASCII ― それ自身ではもはや本当に役立つわけではありませんが、その他ほとんどすべてのエンコーディングの最初の 128 文字を提供します。
-</UL>
-<H2>
-<!-- Other menus -->
-     その他のメニュー
-</H2>
-<UL>
-  <LI>
-<!--<A HREF="filemenu.html">File</A>-->
-    <A HREF="filemenu.html">ファイル(<U>F</U>)</A>
-  <LI>
-<!--<A HREF="editmenu.html">Edit</A>-->
-    <A HREF="editmenu.html">編集(<U>E</U>)</A>
-  <LI>
-<!--<A HREF="pointmenu.html">Point</A>-->
-    <A HREF="pointmenu.html">点(<U>P</U>)</A>
-  <LI>
-<!--<A HREF="elementmenu.html">Element</A>-->
-    <A HREF="elementmenu.html">エレメント(<U>L</U>)</A>
-  <LI>
-<!--<A HREF="hintsmenu.html">Hints</A>-->
-    <A HREF="hintsmenu.html">ヒント(<U>I</U>)</A>
-  <LI>
-<!--<A HREF="encodingmenu.html">Encoding</A>-->
-    <A HREF="encodingmenu.html">エンコーディング(<U>N</U>)</A>
-  <LI>
-<!--<A HREF="viewmenu.html">View</A>-->
-    <A HREF="viewmenu.html">表示(<U>V</U>)</A>
-  <LI>
-<!--<A HREF="metricsmenu.html">Metrics</A>-->
-    <A HREF="metricsmenu.html">メトリック(<U>M</U>)</A>
-  <LI>
-    <A HREF="cidmenu.html"><U>C</U>ID</A>
-  <LI>
-    <A HREF="mmmenu.html">MM</A>
-  <LI>
-<!--<A HREF="windowmenu.html">Window</A>-->
-    <A HREF="windowmenu.html">ウィンドウ(<U>W</U>)</A>
-  <LI>
-<!--<A HREF="helpmenu.html">Help</A>-->
-    <A HREF="helpmenu.html">ヘルプ(<U>H</U>)</A>
-  <LI>
-<!--<A HREF="HotKeys.html">Hot Keys</A>-->
-    <A HREF="HotKeys.html">ホットキー一覧</A>
-</UL>
-<P ALIGN=Center>
-― <A HREF="hintsmenu.html">前</A> ― <A HREF="overview.html">目次</A> ―
-<A HREF="viewmenu.html">次</A> ―
+  Here's an <A HREF="Encodings.ps.gz">example of a postscript encoding file</A>.
+  It contains:-->
+  ここに <A HREF="Encodings.ps.gz">PostScript エンコーディングファイルの例</A>があります。それには以下のエンコーディングが含まれています:
+  <UL>
+    <LI>
+      TeXMathItalicEncoding
+    <LI>
+      TeXMathSymbolEncoding
+    <LI>
+      TeXMathExtensionEncoding 
+	<HR>
+    <LI>
+<!--  IsoLatin - - (which specifies all the characters used in any of the ISO-Latin-*
+      fonts -->
+      IsoLatin ― (これは、ISO-Latin-* フォントのどれかに含まれる文字をすべて指定しています)
+	<HR>
+    <LI>
+<!--  AdobeExpert - - (Which contains things like lower case numbers, small caps,
+      fractions, sub/superscript numbers, etc.) -->
+      AdobeExpert ― (これはノンライニング数字、小型大文字、分数、下つき/上つき数字などを含みます。)
+	<HR>
+    <LI>
+<!--  CodePage1250 - - Microsoft's encoding for Central European characters -->
+      CodePage1250 ― Microsoft の中央ヨーロッパの諸文字用エンコーディング
+    <LI>
+<!--  CodePage1251 - - Microsoft's Cyrillic encoding -->
+      CodePage1251 ― Microsoft のキリル文字エンコーディング
+    <LI>
+<!--  CodePage1252 - - Microsoft's Western European encoding (a superset of Latin1.
+      Sometimes called "ANSI" though I can find no ANSI standard that it follows)-->
+      CodePage1252 ― Microsoft の西ヨーロッパ用エンコーディング (Latin1 のスーパーセット)。時に“ANSI”と呼ばれますが、これを定めた ANSI 規格の存在は見つかりません。
+    <LI>
+<!--  CodePage1253 - - Microsoft's Greek encoding -->
+      CodePage1253 ― Microsoft のギリシャ語エンコーディング
+    <LI>
+<!--  CodePage1254 - - Microsoft's Turkish encoding -->
+      CodePage1254 ― Microsoft のトルコ語エンコーディング
+    <LI>
+<!--  CodePage1255 - - Microsoft's Hebrew encoding (an extension of ISO-8859-8)-->
+      CodePage1255 ― Microsoft のヘブライ語エンコーディング (ISO-8859-8 の拡張)。
+    <LI>
+      CodePage1256 ― Microsoft's Arabic encoding
+<!--  CodePage1256 - - Microsoft's Arabic encoding -->
+    <LI>
+<!--  CodePage1257 - - Microsoft's Baltic encoding -->
+      CodePage1257 ― Microsoft のバルト諸言語エンコーディング
+    <LI>
+<!--  CodePage1258 - - Microsoft's Viet Namese encoding -->
+      CodePage1258 ― Microsoft のベトナム語エンコーディング
+    <LI>
+<!--  CodePage874 - - Microsoft's Thai encoding -->
+      CodePage874 ― Microsoft のタイ語エンコーディング
+	<HR>
+    <LI>
+      MacCentralEuropean
+    <LI>
+      MacCyrillic
+    <LI>
+      MacGreek
+    <LI>
+      MacHebrew 
+	<HR>
+    <LI>
+<!--  US-ASCII - - Not really useful by itself any more, but provides the first
+      128 characters of almost every other encoding.-->
+      US-ASCII ― それ自身ではもはや本当に役立つわけではありませんが、その他ほとんどすべてのエンコーディングの最初の 128 文字を提供します。
+  </UL>
+  <H2>
+<!--   Other menus -->
+       その他のメニュー
+  </H2>
+  <UL>
+    <LI>
+<!--  <A HREF="filemenu.html">File</A>-->
+      <A HREF="filemenu.html">ファイル(<U>F</U>)</A>
+    <LI>
+<!--  <A HREF="editmenu.html">Edit</A>-->
+      <A HREF="editmenu.html">編集(<U>E</U>)</A>
+    <LI>
+<!--  <A HREF="pointmenu.html">Point</A>-->
+      <A HREF="pointmenu.html">点(<U>P</U>)</A>
+    <LI>
+<!--  <A HREF="elementmenu.html">Element</A>-->
+      <A HREF="elementmenu.html">エレメント(<U>L</U>)</A>
+    <LI>
+<!--  <A HREF="hintsmenu.html">Hints</A>-->
+      <A HREF="hintsmenu.html">ヒント(<U>I</U>)</A>
+    <LI>
+<!--  <A HREF="encodingmenu.html">Encoding</A>-->
+      <A HREF="encodingmenu.html">エンコーディング(<U>N</U>)</A>
+    <LI>
+<!--  <A HREF="viewmenu.html">View</A>-->
+      <A HREF="viewmenu.html">表示(<U>V</U>)</A>
+    <LI>
+<!--  <A HREF="metricsmenu.html">Metrics</A>-->
+      <A HREF="metricsmenu.html">メトリック(<U>M</U>)</A>
+    <LI>
+      <A HREF="cidmenu.html"><U>C</U>ID</A>
+    <LI>
+      <A HREF="mmmenu.html">MM</A>
+    <LI>
+<!--  <A HREF="windowmenu.html">Window</A>-->
+      <A HREF="windowmenu.html">ウィンドウ(<U>W</U>)</A>
+    <LI>
+<!--  <A HREF="helpmenu.html">Help</A>-->
+      <A HREF="helpmenu.html">ヘルプ(<U>H</U>)</A>
+    <LI>
+<!--  <A HREF="HotKeys.html">Hot Keys</A>-->
+      <A HREF="HotKeys.html">ホットキー一覧</A>
+  </UL>
+  <P ALIGN=Center>
+  ― <A HREF="hintsmenu.html">前</A> ― <A HREF="overview.html">目次</A> ―
+  <A HREF="viewmenu.html">次</A> ―
 </DIV>
 </BODY></HTML>
