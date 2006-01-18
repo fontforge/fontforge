@@ -862,6 +862,9 @@ msgstr "グリフ情報(_I)..."
 msgid "Glyph Info for %.40s"
 msgstr "グリフ %.40s に関する情報"
 
+msgid "BDF Info..."
+msgstr "BDF情報..."
+
 msgid "T_ypo. Features"
 msgstr "組版機能(_Y)"
 
@@ -979,11 +982,20 @@ msgstr "傾き(_S)..."
 msgid "Skew"
 msgstr "傾き"
 
+msgid "Can Be _Interpolated"
+msgstr "補間を許可する(_I)"
+
+msgid "Can't Be _Interpolated"
+msgstr "補間を許可しない(_I)"
+
 msgid "_Make First"
 msgstr "開始点に設定(_M)"
 
 msgid "Make _Line"
 msgstr "直線に変換(_L)"
+
+msgid "Center _Between Control Points"
+msgstr "制御点の中間に移動(_B)"
 
 msgid "_Add Anchor"
 msgstr "アンカーを追加(_A)..."
@@ -3581,6 +3593,9 @@ msgstr "カーニングメトリックの読込みに失敗しました"
 msgid "Failed to load kern data from %s"
 msgstr "カーニングデータを%sから読み込むのに失敗しました."
 
+msgid "Open Font"
+msgstr "フォントを開く"
+
 msgid "How many unencoded glyph slots do you wish to add?"
 msgstr "文字符号が割り当てられていないグリフスロットをいくつ追加しますか?"
 
@@ -3590,7 +3605,7 @@ msgstr "CIDスロットをいくつ追加しますか?"
 msgid ""
 "Are you sure you wish to remove these glyphs? This operation cannot be "
 "undone."
-msgstr "本当にこれらのグリフを削除してよろしいですか? 個の操作は取り消しできません."
+msgstr "本当にこれらのグリフを削除してよろしいですか? この操作は取り消しできません."
 
 msgid "Please specify a new supplement for %.20s-%.20s"
 msgstr "新しい補遺番号は%.20s〜%.20sのいずれかを指定してください."
@@ -4554,7 +4569,7 @@ msgstr "ハングル字母"
 msgid "Hangul"
 msgstr "ハングル音節文字"
 
-msgid "Hanuno"
+msgid "Hanunóo"
 msgstr "ハヌノー文字"
 
 msgid "Pahawh Hmong"
@@ -4569,14 +4584,14 @@ msgstr "イタリア古代(エトルリア,オスク等)文字"
 msgid "Kayah Li"
 msgstr "カヤー・リ文字"
 
-msgid "Kharoh"
+msgid " Kharoṣṭhī "
 msgstr "カローシュティー文字"
 
 msgid "Hiragana & Katakana"
 msgstr "平仮名と片仮名"
 
-msgid "Lepcha (Rng)"
-msgstr "レプチャ文字"
+msgid "Lepcha (Róng)"
+msgstr "レプチャ(ロン)文字"
 
 msgid "Linear A"
 msgstr "線文字A"
@@ -11693,3 +11708,24 @@ msgstr "FMT 作成時に内部エラーが発生しました. ファイルオフ
 
 msgid "Internal error in creating FNT. file offset wrong in bitmap data\n"
 msgstr "FMT 作成時に内部エラーが発生しました. ビットマップデータ内のファイルオフセットが誤っています\n"
+
+msgid "Not ASCII"
+msgstr "ASCII ではありません"
+
+msgid "All characters in the value must be in ASCII"
+msgstr "値に含まれる文字はすべて ASCII でなければなりません"
+
+msgid "Must be a number"
+msgstr "数値でなければなりません"
+
+msgid "Property|New..."
+msgstr "新規..."
+
+msgid "Strike Information for %.90s"
+msgstr "%.90s のストライク情報"
+
+msgid "Default All"
+msgstr "すべてデフォルトに"
+
+msgid "Default This"
+msgstr "この項目をデフォルトに"
