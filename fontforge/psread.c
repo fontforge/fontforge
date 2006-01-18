@@ -34,7 +34,9 @@
 #if defined(FONTFORGE_CONFIG_TYPE3) && !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 # include "views.h"		/* For CharView */
 #endif
-/* Solaris should include <ieeefp.h> */
+#ifdef HAVE_IEEEFP_H
+# include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
+#endif
 
 typedef struct _io {
     char *macro, *start;
