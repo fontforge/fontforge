@@ -49,3 +49,4 @@ extern GImage _GIcon_mac;
 extern GImage _GIcon_macttf;
 extern GImage _GIcon_compressed;
 extern GImage _GIcon_tar;
+extern GImage _GIcon_homefolder;
