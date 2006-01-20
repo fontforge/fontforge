@@ -144,13 +144,24 @@ return( false );
 	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
 	struct gfc_data *d = GDrawGetUserData(gw);
 return( GGadgetDispatchEvent((GGadget *) (d->gfc),event));
+    } else if ( event->type == et_resize ) {
+	GRect r, size;;
+	struct gfc_data *d = GDrawGetUserData(gw);
+	GDrawGetSize(gw,&size);
+	GGadgetGetSize(d->gfc,&r);
+	GGadgetResize(d->gfc,size.width-2*r.x,r.height);
     }
 return( event->type!=et_char );
 }
 
+# ifdef FONTFORGE_CONFIG_GTK
+char *FVOpenFont(char *title, const char *defaultfile,
+	const char *initial_filter, int mult) {
+#else
 unichar_t *FVOpenFont(char *title, const char *defaultfile,
 	const char *initial_filter, unichar_t **mimetypes,int mult,
 	int newok) {
+#endif
     GRect pos;
     int i, filter;
     GWindow gw;

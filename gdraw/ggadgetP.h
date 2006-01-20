@@ -344,6 +344,7 @@ typedef struct gfilechooser {
     /*enum fchooserret (*filter)(GGadget *chooser,struct gdirentry *file,const unichar_t *dir);*/
     struct giocontrol *outstanding;
     GCursor old_cursor;
+    GButton *up, *home;
 } GFileChooser;
 
 typedef struct rowcol {

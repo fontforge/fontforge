@@ -34,6 +34,8 @@
 #include "utype.h"
 #include "gicons.h"
 
+#include <stdlib.h>
+
 /* This isn't really a gadget, it's just a collection of gadgets with some glue*/
 /*  to make them work together. Therefore there are no expose routines here, */
 /*  nor mouse, nor key. That's all handled by the individual gadgets themselves*/
@@ -222,6 +224,8 @@ return( &_GIcon_core );
 return( &_GIcon_tar );
     if ( cu_strstartmatch("application/x-compressed",m) )
 return( &_GIcon_compressed );
+    if ( cu_strstartmatch("application/pdf",m) )
+return( &_GIcon_texthtml );
     if ( cu_strstartmatch("application/x-font/ttf",m) || cu_strstartmatch("application/x-font/otf",m))
 return( &_GIcon_ttf );
     if ( cu_strstartmatch("application/x-font/cid",m) )
@@ -594,6 +598,34 @@ static void GFCRefresh(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     free(dir);
 }
 
+static int GFileChooserHome(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	char *homedir = getenv("HOME");
+	if ( homedir==NULL )
+	    GGadgetSetEnabled(g,false);
+	else {
+	    unichar_t *dir = uc_copy(homedir);
+	    GFileChooser *gfc = (GFileChooser *) GGadgetGetUserData(g);
+	    GFileChooserScanDir(gfc,dir);
+	    free(dir);
+	}
+    }
+return( true );
+}
+
+static int GFileChooserUpDirButton(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GFileChooser *gfc = (GFileChooser *) GGadgetGetUserData(g);
+	unichar_t *dir, *newdir;
+	static unichar_t dotdot[] = { '.', '.',  0 };
+	dir = GFileChooserGetCurDir(gfc,-1);
+	newdir = u_GFileAppendFile(dir,dotdot,true);
+	GFileChooserScanDir(gfc,newdir);
+	free(dir); free(newdir);
+    }
+return( true );
+}
+
 static GMenuItem gfcpopupmenu[] = {
     { { (unichar_t *) N_("Show Hidden Files"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 0, 0, 'H' }, '\0', ksm_control, NULL, NULL, GFCHideToggle },
     { { (unichar_t *) N_("Refresh File List"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'H' }, '\0', ksm_control, NULL, NULL, GFCRefresh },
@@ -868,15 +900,15 @@ static void gfilechooser_resize(GGadget *g, int32 width, int32 height ) {
     GFileChooser *gfc = (GFileChooser *) g;
 
     if ( width!=gfc->g.r.width ) {
-	GGadgetMove(&gfc->directories->g,gfc->g.r.x,gfc->g.r.y);
-	GGadgetMove(&gfc->name->g,gfc->g.r.x,gfc->g.r.y+height-gfc->name->g.r.height);
+	GGadgetMove(&gfc->directories->g,gfc->g.r.x+(width-gfc->directories->g.r.width)/2,gfc->g.r.y);
+	GGadgetMove(&gfc->up->g,gfc->g.r.x+width-gfc->up->g.r.width-2,gfc->up->g.r.y);
 
-	GGadgetResize(&gfc->directories->g,width,gfc->directories->g.r.height);
+	GGadgetMove(&gfc->name->g,gfc->g.r.x,gfc->g.r.y+height-gfc->name->g.r.height);
 	GGadgetResize(&gfc->name->g,width,gfc->name->g.r.height);
     } else {
 	GGadgetMove(&gfc->name->g,gfc->name->g.r.x,gfc->g.r.y+height-gfc->name->g.r.height);
     }
-    GGadgetResize(&gfc->files->g,width,height-gfc->directories->g.r.height-gfc->name->g.r.height);
+    GGadgetResize(&gfc->files->g,width,height-gfc->directories->g.r.height-gfc->name->g.r.height-10);
     _ggadget_resize(g,width,height);
 }
 
@@ -925,6 +957,7 @@ struct gfuncs GFileChooser_funcs = {
 
 static void GFileChooserCreateChildren(GFileChooser *gfc, int flags) {
     GGadgetData gd;
+    GTextInfo label;
     int space = GDrawPointsToPixels(gfc->g.base,3);
 
     memset(&gd,'\0',sizeof(gd));
@@ -959,6 +992,23 @@ static void GFileChooserCreateChildren(GFileChooser *gfc, int flags) {
     gd.handle_controlevent = GFileChooserFListSelected;
     gfc->files = (GList *) GListCreate(gfc->g.base,&gd,gfc);
     gfc->files->g.contained = true;
+
+    memset(&gd,0,sizeof(gd));
+    memset(&label,0,sizeof(label));
+    gd.pos.x = gfc->g.r.x; gd.pos.y = gfc->g.r.y;
+    gd.pos.height = 0; gd.pos.width = 0;
+    gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
+    label.image = &_GIcon_homefolder;
+    gd.label = &label;
+    gd.handle_controlevent = GFileChooserHome;
+    gfc->home = (GButton *) GButtonCreate(gfc->g.base,&gd,gfc);
+    gfc->home->g.contained = true;
+
+    gd.pos.x = gfc->g.r.x + gfc->g.r.width - 16 - GDrawPointsToPixels(gfc->g.base,10);
+    label.image = &_GIcon_updir;
+    gd.handle_controlevent = GFileChooserUpDirButton;
+    gfc->up = (GButton *) GButtonCreate(gfc->g.base,&gd,gfc);
+    gfc->up->g.contained = true;
 }
 
 GGadget *GFileChooserCreate(struct gwindow *base, GGadgetData *gd,void *data) {

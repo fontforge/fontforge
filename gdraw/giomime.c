@@ -46,6 +46,7 @@ unichar_t imagepng[] = { 'i','m','a','g','e','/','p','n','g', '\0' };
 unichar_t imagesvg[] = { 'i','m','a','g','e','/','s','v','g','+','x','m','l', '\0' };
 unichar_t videoquick[] = { 'v','i','d','e','o','/','q','u','i','c','k','t','i','m','e', '\0' };
 unichar_t audiowav[] = { 'a','u','d','i','o','/','w','a','v', '\0' };
+unichar_t pdf[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','p','d','f', '\0' };
 unichar_t object[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','o','b','j','e','c','t', '\0' };
 unichar_t dir[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','n','a','v','i','d','i','r', '\0' };
 unichar_t core[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','c','o','r','e', '\0' };
@@ -126,7 +127,7 @@ return( texthtml );
     else if ( uc_strmatch(pt,".xml")==0 || uc_strmatch(pt,".xml~")==0 )
 return( textxml );
     else if ( uc_strmatch(pt,".pfa")==0 || uc_strmatch(pt,".pfb")==0 ||
-	    uc_strmatch(pt,".pt3")==0 )
+	    uc_strmatch(pt,".pt3")==0 || uc_strmatch(pt,".cff")==0 )
 return( textpsfont );
     else if ( uc_strmatch(pt,".sfd")==0 )
 return( textsfdfont );
@@ -141,6 +142,8 @@ return( fontcid );
 return( textps );
     else if ( uc_strmatch(pt,".bdf")==0 )
 return( textbdffont );
+    else if ( uc_strmatch(pt,".pdf")==0 )
+return( pdf );
     else if ( uc_strmatch(pt,".gif")==0 )
 return( imagegif );
     else if ( uc_strmatch(pt,".png")==0 )
