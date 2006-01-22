@@ -1890,6 +1890,19 @@ return( true );
 	    cursp->nextcpdef = false;
 	    GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_NextDef), false );
 	}
+	if ( cursp->pointtype==pt_curve && cursp->prev!=NULL ) {
+	    double plen, ntheta;
+	    double ndx, ndy;
+	    ndx = ci->cursp->nextcp.x-ci->cursp->me.x;
+	    ndy = ci->cursp->nextcp.y-ci->cursp->me.y;
+	    ntheta = atan2(ndy,ndx);
+	    plen = GetCalmReal8(ci->gw,CID_PrevR,_("Prev CP Dist"),&err);
+	    ci->cursp->prevcp.x = ci->cursp->me.x - plen*cos(ntheta);
+	    ci->cursp->prevcp.y = ci->cursp->me.y - plen*sin(ntheta);
+	    if ( ci->sc->parent->order2 )
+		SplinePointPrevCPChanged2(cursp,false);
+	    SplineRefigure(cursp->prev);
+	}
 	if ( ci->sc->parent->order2 )
 	    SplinePointNextCPChanged2(cursp,false);
 	if ( cursp->next!=NULL )
@@ -1944,6 +1957,19 @@ return( true );
 	if (( dx>.1 || dx<-.1 || dy>.1 || dy<-.1 ) && cursp->prevcpdef ) {
 	    cursp->prevcpdef = false;
 	    GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_PrevDef), false );
+	}
+	if ( cursp->pointtype==pt_curve && cursp->next!=NULL ) {
+	    double nlen, ptheta;
+	    double pdx, pdy;
+	    pdx = ci->cursp->prevcp.x-ci->cursp->me.x;
+	    pdy = ci->cursp->prevcp.y-ci->cursp->me.y;
+	    ptheta = atan2(pdy,pdx);
+	    nlen = GetCalmReal8(ci->gw,CID_NextR,_("Next CP Dist"),&err);
+	    ci->cursp->nextcp.x = ci->cursp->me.x - nlen*cos(ptheta);
+	    ci->cursp->nextcp.y = ci->cursp->me.y - nlen*sin(ptheta);
+	    if ( ci->sc->parent->order2 )
+		SplinePointNextCPChanged2(cursp,false);
+	    SplineRefigure(cursp->next);
 	}
 	if ( ci->sc->parent->order2 )
 	    SplinePointPrevCPChanged2(cursp,false);
