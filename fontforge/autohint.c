@@ -254,6 +254,7 @@ void FindBlues( SplineFont *sf, real blues[14], real otherblues[10]) {
 
     /* we'll accept values between +/- 1sd of the mean */
     /* array[0] == mean, array[1] == sd, array[2] == cnt, array[3]=min, array[4]==max */
+    if ( base[0]+base[1]<0 ) base[1] = -base[0];	/* Make sure 0 is within the base bluezone */
     caph[3] = caph[4] = 0;
     xh[3] = xh[4] = 0;
     ascenth[3] = ascenth[4] = 0;
