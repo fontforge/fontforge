@@ -1707,7 +1707,7 @@ return( true );
 	    arraystring(buffer,bluevalues,14);
 	    PSDictChangeEntry(private,"BlueValues",buffer);
 	    arraystring(buffer,otherblues,10);
-	    PSDictChangeEntry(sf->private,"OtherBlues",buffer);
+	    PSDictChangeEntry(private,"OtherBlues",buffer);
 	} else if ( strcmp(private->keys[sel],"StdHW")==0 ||
 		strcmp(private->keys[sel],"StemSnapH")==0 ) {
 	    if ( gwwv_ask(_("Guess"),(const char **) buts,0,1,_("This will change both StdHW and StemSnapH.\nDo you want to continue?"))==1 )
