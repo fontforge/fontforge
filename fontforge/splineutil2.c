@@ -1035,7 +1035,7 @@ return( SplineMake2(from,to));
 
     to->prevcp.x = to->me.x + offp*tounit.x; to->prevcp.y = to->me.y + offp*tounit.y;
     from->nextcp.x = from->me.x + offn*fromunit.x; from->nextcp.y = from->me.y + offn*fromunit.y;
-    TestForLinear(from,to);
+    /*TestForLinear(from,to);*/
     SplineRefigure(spline);
 
 return( spline );
