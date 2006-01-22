@@ -5275,7 +5275,7 @@ return( true );
 return( true );
 	    }
 	}
-	if ( order2!=sf->order2 && AskLoseUndoes())
+	if ( order2!=sf->order2 && sf->changed && AskLoseUndoes())
 return( true );
 	if ( order2!=sf->order2 && !SFCloseAllInstrs(sf))
 return( true );
