@@ -1035,6 +1035,10 @@ return( SplineMake2(from,to));
 
     to->prevcp.x = to->me.x + offp*tounit.x; to->prevcp.y = to->me.y + offp*tounit.y;
     from->nextcp.x = from->me.x + offn*fromunit.x; from->nextcp.y = from->me.y + offn*fromunit.y;
+    /* I used to check for a spline very close to linear (and if so, make it */
+    /*  linear). But in when stroking a path with an eliptical pen we transform*/
+    /*  the coordinate system and our normal definitions of "close to linear" */
+    /*  don't apply */
     /*TestForLinear(from,to);*/
     SplineRefigure(spline);
 
