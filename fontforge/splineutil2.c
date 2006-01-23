@@ -2395,15 +2395,17 @@ return(s);
 		real x = ((s->splines[0].a*t[i]+s->splines[0].b)*t[i]+s->splines[0].c)*t[i]+s->splines[0].d;
 		int close_from = ( x-s->from->me.x<offsetbound && x-s->from->me.x>-offsetbound);
 		int close_to = ( x-s->to->me.x<offsetbound && x-s->to->me.x>-offsetbound);
+		int remove_from = close_from  && s->from->pointtype==pt_curve && !s->from->noprevcp;
+		int remove_to = close_to  && s->to->pointtype==pt_curve && !s->to->nonextcp;
 		if (( x>b->minx && x<b->maxx  && len<lenbound ) ||
-			( always == ae_only_good && (close_from || close_to)) ) {
+			(close_from && !remove_from) || (close_to && !remove_to) ) {
 		    --p;
 		    for ( j=i; j<p; ++j )
 			t[j] = t[j+1];
 		    --i;
 		} else {
-		    rmfrom[i] = close_from;
-		    rmto[i] = close_to;
+		    rmfrom[i] = remove_from;
+		    rmto[i] = remove_to;
 		}
 	    }
 	}
@@ -2421,17 +2423,19 @@ return(s);
 	if ( !always ) {
 	    for ( i=p_s; i<p; ++i ) {
 		real y = ((s->splines[1].a*t[i]+s->splines[1].b)*t[i]+s->splines[1].c)*t[i]+s->splines[1].d;
-		int close_from =( y-s->from->me.y<offsetbound && y-s->from->me.y>-offsetbound);
-		int close_to = ( y-s->to->me.y<offsetbound && y-s->to->me.y>-offsetbound);
+		int close_from =( y-s->from->me.y<offsetbound && y-s->from->me.y>-offsetbound && s->from->pointtype==pt_curve && !s->from->noprevcp );
+		int close_to = ( y-s->to->me.y<offsetbound && y-s->to->me.y>-offsetbound && s->to->pointtype==pt_curve && !s->to->nonextcp );
+		int remove_from = close_from  && s->from->pointtype==pt_curve && !s->from->noprevcp;
+		int remove_to = close_to  && s->to->pointtype==pt_curve && !s->to->nonextcp;
 		if (( y>b->miny && y<b->maxy && len<lenbound ) ||
-			( always == ae_only_good && (close_from || close_to)) ) {
+			(close_from && !remove_from) || (close_to && !remove_to) ) {
 		    --p;
 		    for ( j=i; j<p; ++j )
 			t[j] = t[j+1];
 		    --i;
 		} else {
-		    rmfrom[i] = close_from;
-		    rmto[i] = close_to;
+		    rmfrom[i] = remove_from;
+		    rmto[i] = remove_to;
 		}
 	    }
 	}
