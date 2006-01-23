@@ -1044,6 +1044,8 @@ return( NULL );
 #endif
 
     SplineCharFindBounds(sc,&b);
+    if ( b.maxx-b.minx > 32767 ) b.maxx = b.minx+32767;
+    if ( b.maxy-b.miny > 32767 ) b.maxy = b.miny+32767;
     b.minx *= scale; b.maxx *= scale;
     b.miny *= scale; b.maxy *= scale;
 
