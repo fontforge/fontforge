@@ -422,11 +422,66 @@ static Encoding *BDFParseEnc(char *encname, int encoff) {
 return( enc );
 }
 
+static int default_ascent_descent(int *_as, int *_ds, int ascent, int descent,
+	int pixelsize, int pixel_size2, int point_size, int res,
+	char *filename) {
+
+    if ( pixelsize!=-1 && pixel_size2!=-1 && ascent!=-1 && descent!=-1 ) {
+	if ( pixelsize!=pixel_size2 || pixelsize!=ascent+descent ) {
+	    if ( pixelsize==pixel_size2 )
+		descent = pixelsize - ascent;
+	    else if ( pixel_size2==ascent+descent )
+		pixelsize = pixel_size2;
+	    else if ( pixelsize==ascent+descent )
+		;
+	    else {
+		pixelsize = rint( (pixelsize+pixel_size2+ascent+descent)/3.0 );
+		descent = pixelsize-ascent;
+	    }
+	    LogError(_("Various specifications of PIXEL_SIZE do not match in %s"), filename );
+	}
+    } else {
+	if ( pixelsize==-1 )
+	    pixelsize = pixel_size2;
+	if ( (ascent==-1) + (descent==-1) + (pixelsize==-1)>=2 &&
+		res!=-1 && point_size!=-1 )
+	    pixelsize = rint( point_size*res/720.0 );
+	if ( pixelsize==-1 && ascent!=-1 && descent!=-1 )
+	    pixelsize = ascent+descent;
+	else if ( pixelsize!=-1 ) {
+	    if ( ascent==-1 && descent!=-1 )
+		ascent = pixelsize - descent;
+	    else if ( ascent!=-1 )
+		descent = pixelsize -ascent;
+	}
+	if ( ascent!=-1 && descent!=-1 && pixelsize!=-1 ) {
+	    if ( pixelsize!=ascent+descent )
+		LogError(_("Pixel size does not match sum of Font ascent+descent in %s"), filename );
+	} else if ( pixelsize!=-1 ) {
+	    ascent = rint( (8*pixelsize)/10.0 );
+	    descent = pixelsize - ascent;
+	} else if ( ascent!=-1 ) {
+	    LogError(_("Guessing pixel size based on font ascent in %s"), filename );
+	    descent = ascent/4;
+	    pixelsize = ascent+descent;
+	} else if ( descent!=-1 ) {
+	    LogError(_("Guessing pixel size based on font descent in %s"), filename );
+	    ascent = 4*descent;
+	    pixelsize = ascent+descent;
+	} else {
+	    /* No info at all. We'll ask the user later */
+	}
+    }
+    *_as = ascent; *_ds=descent;
+return( pixelsize );
+}
+
 static int slurp_header(FILE *bdf, int *_as, int *_ds, Encoding **_enc,
 	char *family, char *mods, char *full, int *depth, char *foundry,
 	char *fontname, char *comments, struct metrics *defs,
-	int *upos, int *uwidth, BDFFont *dummy) {
-    int pixelsize = -1;
+	int *upos, int *uwidth, BDFFont *dummy,
+	char *filename) {
+    int pixelsize = -1, pixel_size2= -1, point_size = -1;
     int ascent= -1, descent= -1, enc, cnt;
     char tok[100], encname[100], weight[100], italic[100], buffer[300], *buf;
     int ch;
@@ -494,16 +549,21 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, Encoding **_enc,
 		if ( ch=='-' ) {
 		    fscanf(bdf,"%d", &pixelsize );
 		    if ( pixelsize<0 ) pixelsize = -pixelsize;	/* An extra - screwed things up once... */
+		    while ( (ch = getc(bdf))!='-' && ch!='\n' && ch!=EOF );
+		    if ( ch=='-' ) {
+			fscanf(bdf,"%d", &point_size );
+			if ( point_size<0 ) point_size = -point_size;
+		    }
 		}
 	    } else {
 		if ( *buf!='\0' && !isdigit(*buf))
 		    strcpy(family,buf);
 	    }
 	} else if ( strcmp(tok,"SIZE")==0 ) {
-	    int size, res;
-	    sscanf(buf, "%d %d %d", &size, &res, &res );
+	    int junk;
+	    sscanf(buf, "%d %d %d", &point_size, &junk, &defs->res );
 	    if ( pixelsize==-1 )
-		pixelsize = rint( size*res/72.0 );
+		pixelsize = rint( point_size*defs->res/72.0 );
 	    while ((ch = getc(bdf))==' ' || ch=='\t' );
 	    ungetc(ch,bdf);
 	    if ( isdigit(ch))
@@ -516,6 +576,10 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, Encoding **_enc,
 	    /* For Courier the quad is not an em */
 	else if ( strcmp(tok,"RESOLUTION_Y")==0 )	/* y value defines pointsize */
 	    sscanf(buf, "%d", &defs->res );
+	else if ( strcmp(tok,"POINT_SIZE")==0 )
+	    sscanf(buf, "%d", &point_size );
+	else if ( strcmp(tok,"PIXEL_SIZE")==0 )
+	    sscanf(buf, "%d", &pixel_size2 );
 	else if ( strcmp(tok,"FONT_ASCENT")==0 )
 	    sscanf(buf, "%d", &ascent );
 	else if ( strcmp(tok,"FONT_DESCENT")==0 )
@@ -566,15 +630,9 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, Encoding **_enc,
     }
     dummy->prop_cnt = pcnt;
 
-    if ( pixelsize==-1 && ascent!=-1 && descent!=-1 )
-	pixelsize = ascent+descent;
-    else if ( pixelsize!=-1 ) {
-	if ( ascent==-1 && descent!=-1 )
-	    ascent = pixelsize - descent;
-	else if ( ascent!=-1 )
-	    descent = pixelsize -ascent;
-    }
-    *_as = ascent; *_ds=descent;
+    pixelsize = default_ascent_descent(_as, _ds, ascent, descent, pixelsize,
+	    pixel_size2, point_size, defs->res, filename );
+
     *_enc = BDFParseEnc(encname,enc);
 
     if ( strmatch(italic,"I")==0 )
@@ -1353,8 +1411,9 @@ return( true );
 }
 
 static int pcf_properties(FILE *file,struct toc *toc, int *_as, int *_ds,
-	Encoding **_enc, char *family, char *mods, char *full, BDFFont *dummy) {
-    int pixelsize = -1;
+	Encoding **_enc, char *family, char *mods, char *full, BDFFont *dummy,
+	char *filename) {
+    int pixelsize = -1, point_size = -1, res = -1;
     int ascent= -1, descent= -1, enc=0;
     char encname[100], weight[100], italic[100];
     int cnt, i, format, strl, dash_cnt;
@@ -1431,6 +1490,10 @@ return(-2);
 		ascent = props[i].val;
 	    else if ( strcmp(props[i].name,"FONT_DESCENT")==0 )
 		descent = props[i].val;
+	    else if ( strcmp(props[i].name,"POINT_SIZE")==0 )
+		point_size = props[i].val;
+	    else if ( strcmp(props[i].name,"RESOLUTION_Y")==0 )
+		res = props[i].val;
 	    else if ( strcmp(props[i].name,"CHARSET_ENCODING")==0 )
 		enc = props[i].val;
 	}
@@ -1445,7 +1508,9 @@ return(-2);
 		pixelsize = ascent+descent;
 	}
     }
-    *_as = ascent; *_ds=descent;
+    pixelsize = default_ascent_descent(_as, _ds, ascent, descent, pixelsize,
+	    -1, point_size, res, filename );
+    
     *_enc = BDFParseEnc(encname,enc);
 
     if ( strmatch(italic,"I")==0 )
@@ -1895,7 +1960,7 @@ return( NULL );
 	    gwwv_post_error(_("Not a pcf file"), _("Not an X11 pcf file %.200s"), filename );
 return( NULL );
 	}
-	pixelsize = pcf_properties(bdf,toc,&ascent,&descent,&enc,family,mods,full,&dummy);
+	pixelsize = pcf_properties(bdf,toc,&ascent,&descent,&enc,family,mods,full,&dummy, filename);
 	if ( pixelsize==-2 ) {
 	    fclose(bdf); free(toc);
 	    gwwv_post_error(_("Not a pcf file"), _("Not an X11 pcf file %.200s"), filename );
@@ -1909,7 +1974,7 @@ return( NULL );
 	}
 	while ( (ch=getc(bdf))!='\n' && ch!='\r' && ch!=EOF );
 	pixelsize = slurp_header(bdf,&ascent,&descent,&enc,family,mods,full,
-		&depth,foundry,fontname,comments,&defs,&upos,&uwidth,&dummy);
+		&depth,foundry,fontname,comments,&defs,&upos,&uwidth,&dummy,filename);
 	if ( defs.dwidth == 0 ) defs.dwidth = pixelsize;
 	if ( defs.dwidth1 == 0 ) defs.dwidth1 = pixelsize;
     }
