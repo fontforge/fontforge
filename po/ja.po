@@ -4584,7 +4584,7 @@ msgstr "イタリア古代(エトルリア,オスク等)文字"
 msgid "Kayah Li"
 msgstr "カヤー・リ文字"
 
-msgid " Kharoṣṭhī "
+msgid "Kharoṣṭhī"
 msgstr "カローシュティー文字"
 
 msgid "Hiragana & Katakana"
