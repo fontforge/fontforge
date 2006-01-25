@@ -4741,19 +4741,27 @@ static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
 	    for ( bdf=sf->bitmaps; bdf!=NULL && (bdf->pixelsize!=(bsizes[i]&0xffff) || BDFDepth(bdf)!=(bsizes[i]>>16)); bdf=bdf->next );
 	    if ( bdf!=NULL )
 		bsizes[j++] = bsizes[i];
+	    else
+		gwwv_post_error(_("Missing bitmap strike"), _("The font database does not contain a bitmap of size %d and depth %d"), bsizes[i]&0xffff, bsizes[i]>>16 );
 	}
 	bsizes[j] = 0;
 	for ( i=0; bsizes[i]!=0; ++i );
 	at->gi.strikecnt = i;
 	if ( i==0 ) bsizes=NULL;
     }
-    
+
     if ( sf->subfonts!=NULL ) {
 	SFDummyUpCIDs(&at->gi,sf);	/* life is easier if we ignore the seperate fonts of a cid keyed fonts and treat it as flat */
     } else if ( format!=ff_none )
 	AssignTTFGlyph(&at->gi,sf,at->map,format==ff_otf);
-    else
+    else {
+	if ( bsizes==NULL ) {
+	    gwwv_post_error(_("No bitmap strikes"), _("No bitmap strikes"));
+	    AbortTTF(at,sf);
+return( false );
+	}
 	AssignTTFBitGlyph(&at->gi,sf,at->map,bsizes);
+    }
 
     at->maxp.version = 0x00010000;
     if ( format==ff_otf || format==ff_otfcid || (format==ff_none && at->applemode) )
