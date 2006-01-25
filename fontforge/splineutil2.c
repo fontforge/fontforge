@@ -2423,8 +2423,8 @@ return(s);
 	if ( !always ) {
 	    for ( i=p_s; i<p; ++i ) {
 		real y = ((s->splines[1].a*t[i]+s->splines[1].b)*t[i]+s->splines[1].c)*t[i]+s->splines[1].d;
-		int close_from =( y-s->from->me.y<offsetbound && y-s->from->me.y>-offsetbound && s->from->pointtype==pt_curve && !s->from->noprevcp );
-		int close_to = ( y-s->to->me.y<offsetbound && y-s->to->me.y>-offsetbound && s->to->pointtype==pt_curve && !s->to->nonextcp );
+		int close_from =( y-s->from->me.y<offsetbound && y-s->from->me.y>-offsetbound );
+		int close_to = ( y-s->to->me.y<offsetbound && y-s->to->me.y>-offsetbound );
 		int remove_from = close_from  && s->from->pointtype==pt_curve && !s->from->noprevcp;
 		int remove_to = close_to  && s->to->pointtype==pt_curve && !s->to->nonextcp;
 		if (( y>b->miny && y<b->maxy && len<lenbound ) ||
