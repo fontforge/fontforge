@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 17-Jan-2006 -->
+  <!-- AP: Last modified: 25-Jan-2006 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -17,6 +17,45 @@
   on the file stamp.c.
   <P>
   <UL>
+    <LI>
+      25-Jan-2006
+      <UL>
+	<LI>
+	  If you try to create a bitmap only sfnt but provide pixelsizes for no valid
+	  bitmap strikes, the fontforge would crash.
+	<LI>
+	  Chia points out that I should use the PIXEL_SIZE property to set a bdf font's
+	  pixelsize (instead of using font ascent+descent).
+	<LI>
+	  Trying to rasterize a glyph with a coordinate of 1e7 caused a crash.
+	<LI>
+	  The change to make Add Extrema remove points near the extrema failed to consider
+	  the possbility that some of those points might be corner.
+	<LI>
+	  In Gentium Roman, when searching for bluevalues, the baseline is further
+	  than 1 standard deviation from the mean of glyph ymin. Change the range searched
+	  so that 0 is always included.
+	<LI>
+	  In Font Info-&gt;PS Private, if we selected OtherBlues and pressed [Guess]
+	  it did not change the OtherBlues value.
+	<LI>
+	  The gettext patch change Histograms-&gt;Blue Values menu item into a line.
+	<LI>
+	  When changing the order of a font, ff would ask if you minded losing the
+	  undoes. There's no point in asking the question if the font hasn't been modified
+	  (it has no undoes).
+	<LI>
+	  The Point Info dlg should enforce that curved points cps are colinear (so
+	  if the user changes one cp, the dlg should change the other to be in the
+	  opposite direction.
+	<LI>
+	  There was a path though PointInfo that called SplineRefigure3, which meant
+	  that splines got marked as cubics even when they should have been quadratics.
+	<LI>
+	  Using a rotated elliptical pen in expand stroke did not work
+	<LI>
+	  Add a homedir button to the file chooser dialogs.
+      </UL>
     <LI>
       17-Jan-2006
       <UL>
