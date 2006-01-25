@@ -34,6 +34,9 @@
 #include "psfont.h"
 #include "sd.h"
 
+#ifdef HAVE_IEEEFP_H
+# include <ieeefp.h>		/* Solaris defines finite in ieeefp rather than math.h */
+#endif
 
 struct pdfcontext {
     char *tokbuf;
