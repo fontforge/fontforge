@@ -5244,7 +5244,7 @@ static int SplineRemoveAnnoyingExtrema1(Spline *s,int which,double err_sq) {
 	    prop = (c_/3) / ( (&s->from->nextcp.x)[which] - (&s->from->me.x)[which] );
 	    if ( prop<0 && (c_/3 < .1 && c_/3 > -.1))
 		(&s->to->prevcp.x)[which] = nextcp;
-	    else if ( prop>=0 ) {
+	    else if ( prop>=0 && prop<=1 ) {
 		s->from->nextcp.x = s->from->me.x + prop*(s->from->nextcp.x-s->from->me.x);
 		s->from->nextcp.y = s->from->me.y + prop*(s->from->nextcp.y-s->from->me.y);
 		s->from->nonextcp = (prop == 0);
@@ -5256,7 +5256,7 @@ static int SplineRemoveAnnoyingExtrema1(Spline *s,int which,double err_sq) {
 			( (&s->to->prevcp.x)[which] - (&s->to->me.x)[which] );
 	    if ( prop<0 && (prevcp - (&s->to->me.x)[which] < .1 && prevcp - (&s->to->me.x)[which] > -.1))
 		(&s->to->prevcp.x)[which] = prevcp;
-	    else if ( prop>=0 ) {
+	    else if ( prop>=0 && prop<=1 ) {
 		s->to->prevcp.x = s->to->me.x + prop*(s->to->prevcp.x-s->to->me.x);
 		s->to->prevcp.y = s->to->me.y + prop*(s->to->prevcp.y-s->to->me.y);
 		s->to->noprevcp = (prop == 0);
