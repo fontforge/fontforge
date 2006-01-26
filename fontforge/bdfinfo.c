@@ -207,7 +207,7 @@ return( font->props[i].u.atom );
 return( def );
 }
 
-static int BdfPropHasInt(BDFFont *font,const char *key, int def ) {
+int BdfPropHasInt(BDFFont *font,const char *key, int def ) {
     int i;
 
     for ( i=0; i<font->prop_cnt; ++i ) if ( strcmp(font->props[i].name,key)==0 ) {

@@ -848,8 +848,8 @@ static void FillLineMetrics(struct bitmapSizeTable *size,BDFFont *bdf) {
 	    if ( bc->ymax+1 > size->hori.maxbeforebl ) size->hori.maxbeforebl = bc->ymax+1;
 	}
     }
-    size->hori.ascender = bdf->ascent;
-    size->hori.descender = -bdf->descent;
+    size->hori.ascender = BdfPropHasInt(bdf,"FONT_ASCENT",bdf->ascent);
+    size->hori.descender = -BdfPropHasInt(bdf,"FONT_DESCENT",bdf->descent);
 
     /* There are some very cryptic pictures supposed to document the meaning */
     /*  of the metrics fields. MS and Apple use the same picture. The data */

@@ -1439,6 +1439,7 @@ extern int  FONFontDump(char *filename,BDFFont *font, EncMap *map, int res);
 extern void SFReplaceEncodingBDFProps(SplineFont *sf,EncMap *map);
 extern void SFReplaceFontnameBDFProps(SplineFont *sf);
 extern int  IsUnsignedBDFKey(char *key);
+extern int  BdfPropHasInt(BDFFont *font,const char *key, int def );
 extern void BDFDefaultProps(BDFFont *bdf, EncMap *map, int res);
 struct xlfd_components {
     char foundry[80];
