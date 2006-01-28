@@ -10698,6 +10698,7 @@ msgstr ""
 
 msgid "Use of a range offset of 0xffff to mean a missing glyph in cmap table\n"
 msgstr "cmap テーブル中では範囲オフセット 0xffff は存在しないグリフを表します\n"
+
 msgid "Bad font: Encoding data out of range.\n"
 msgstr "不正なフォント: エンコーディングデータが範囲外です.\n"
 
