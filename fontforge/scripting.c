@@ -2467,10 +2467,11 @@ return;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     } else {
 	c->curfv->selected = grealloc(c->curfv->selected,newcnt);
-	memset(c->curfv->selected+map->enccount,0,newcnt-map->enccount);
-	if ( newcnt>map->encmax )
+	if ( newcnt>map->encmax ) {
+	    memset(c->curfv->selected+map->enccount,0,newcnt-map->enccount);
 	    map->map = grealloc(map->map,(map->encmax=newcnt+10)*sizeof(int));
-	memset(map->map+map->enccount,-1,(newcnt-map->enccount)*sizeof(int));
+	    memset(map->map+map->enccount,-1,(newcnt-map->enccount)*sizeof(int));
+	}
     }
     map->enccount = newcnt;
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
