@@ -1900,7 +1900,7 @@ return;
 	enc = FindOrMakeEncoding(pt+1);
     if ( enc==NULL ) {
 	for ( i=0; bdf_2_ff_enc[i].bdf!=NULL; ++i )
-	    if ( strstrmatch(bdf->props[i].u.str,bdf_2_ff_enc[i].bdf)!=NULL ) {
+	    if ( strstrmatch(fn,bdf_2_ff_enc[i].bdf)!=NULL ) {
 		enc = FindOrMakeEncoding(bdf_2_ff_enc[i].ff);
 	break;
 	    }
