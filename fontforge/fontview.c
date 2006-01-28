@@ -8106,8 +8106,11 @@ static SplineChar *_SFMakeChar(SplineFont *sf,EncMap *map,int enc) {
 #endif
     extern const int cns14pua[], amspua[];
 
-    gid = map->map[enc];
-    if ( sf->subfontcnt!=0 ) {
+    if ( enc>=map->enccount )
+	gid = -1;
+    else
+	gid = map->map[enc];
+    if ( sf->subfontcnt!=0 && gid!=-1 ) {
 	ssf = NULL;
 	for ( j=0; j<sf->subfontcnt; ++j )
 	    if ( gid<sf->subfonts[j]->glyphcnt ) {
@@ -8164,7 +8167,10 @@ SplineChar *SFMakeChar(SplineFont *sf,EncMap *map, int enc) {
 
     if ( enc==-1 )
 return( NULL );
-    gid = map->map[enc];
+    if ( enc>=map->enccount )
+	gid = -1;
+    else
+	gid = map->map[enc];
     if ( sf->mm!=NULL && (gid==-1 || sf->glyphs[gid]==NULL) ) {
 	int j;
 	_SFMakeChar(sf->mm->normal,map,enc);
