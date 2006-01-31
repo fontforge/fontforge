@@ -595,34 +595,43 @@
 	glyphs by name or encoding. -->
 	メトリックビューの 表示(V) メニューに、ユーザが名前または符号位置を指定してグリフを挿入することができる 3 つのコマンドを追加。
       <LI>
-	Yannis points out that afm files produced on fonts with vertical metrics
+<!--	Yannis points out that afm files produced on fonts with vertical metrics
 	did not contain "WY" values (vertical advance width), also that the vkerns
-	in the file actually contained the values of horizontal kerns.
+	in the file actually contained the values of horizontal kerns. -->
+	縦書きメトリックを含むフォントから生成した AFM ファイルが "WY" (縦書きの送り幅) の値を含んでおらず、ファイル内の vkern の値が実際には横書きのカーニングの大きさが入っていることを Yannis が指摘しました。
       <LI>
-	The 'kern' table did not contain pairwise vertical kerns (it did contain
-	vertical kerning by class).
+<!--	The 'kern' table did not contain pairwise vertical kerns (it did contain
+	vertical kerning by class). -->
+	'kern' テーブルにはペア単位の縦書きカーニングが (クラス単位の縦書きカーニングが含まれていない場合) まったく含まれていませんでした。
       <LI>
-	The View-&gt;Substitutions sub menu of the metricsview was not being cleared
-	properly if the current glyph had no substitutions.
+<!--	The View-&gt;Substitutions sub menu of the metricsview was not being cleared
+	properly if the current glyph had no substitutions. -->
+	編集中のグリフに置換が含まれていない場合、メトリックビューの表示(V)→置換 サブメニューがただしく動作していませんでした。
       <LI>
-	Yannis wants the View-&gt;Substitutions menu to have a way to return to the
-	original glyph.
+<!--	Yannis wants the View-&gt;Substitutions menu to have a way to return to the
+	original glyph. -->
+	表示(V)→置換 メニューに、オリジナルのグリフに戻れる方法を追加するように Yannis が要求しました。
       <LI>
-	Yannis points out that the metricsview in vertical mode changed the top side
+<!--	Yannis points out that the metricsview in vertical mode changed the top side
 	bearing in an unexpected way. Also the vertical advance width did not refresh
-	the display properly.
+	the display properly. -->
+	縦書きモードでのメトリックビューが思いがけない方法で上サイドベアリングを変更していることを指摘しました。縦書きの送り幅も画面を適切に更新していませんでした。
       <LI>
-	Thanks to David Opstad, I now have an example of a format 1 kerning table
-	and have extended FontForge to support kerning by state machine.
+<!--	Thanks to David Opstad, I now have an example of a format 1 kerning table
+	and have extended FontForge to support kerning by state machine. -->
+	David Opstad のおかげで、フォーマット 1 のカーニングテーブルの実例を入手したので、FontForge に状態マシンによるカーニングのサポートを追加しました。
       <LI>
-	The code for generating and loading otb (OpenType bitmap) fonts was broken.
+<!--	The code for generating and loading otb (OpenType bitmap) fonts was broken. -->
+	OTB (OpenType ビットマップ) フォントの生成と読み込みを行うコードが壊れていました。
       <LI>
-	And the code for generating my own weird bitmap only fonts for windows had
-	some flaws too (different flaws).
+<!--	And the code for generating my own weird bitmap only fonts for windows had
+	some flaws too (different flaws). -->
+	自作の奇妙なビットマップのみのフォントを Windows 用に出力するためのコードに幾つかの (別個の) フラグ関連の欠陥がありました。
       <LI>
-	If I typed a character into a fontview (or char view) and the font did not
+<!--	If I typed a character into a fontview (or char view) and the font did not
 	contain the character, fontforge would not select that slot that encoded
-	the character, even if the character was in the encoding.
+	the character, even if the character was in the encoding. -->
+	フォントビュー (またはグリフビュー) 上で文字をタイプした時、フォントが文字を含んでいない場合、FontForge はその文字の符号位置に対応するスロットを (その符号位置にその文字がある場合でさえ) 選択していませんでした。
       <LI>
 	When loading a ps type3 font, make sure that the glyph name is available
 	when parsing glyphs so we can produce reasonable error msgs. (mostly this
@@ -656,7 +665,8 @@
 	When importing postscript (type3 fonts, eps files) counter-clockwise paths
 	which are both stroked and filled cause problems
       <LI>
-	Changed the version stamp of otb fonts from 'OTTO' to 1.0
+<!--	Changed the version stamp of otb fonts from 'OTTO' to 1.0 -->
+	OTB フォントのバージョンスタンプを 'OTTO' から 1.0 に変更。
     </UL>
   <LI>
 <!--10-Dec-2003-->
