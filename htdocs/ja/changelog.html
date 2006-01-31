@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 17-Jan-2006 -->
+  <!-- AP: Last modified: 25-Jan-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Change log for FontForge</TITLE> -->
     <TITLE>FontForge の変更履歴</TITLE>
@@ -23,7 +23,60 @@
   <P>
   <UL>
      <LI>
+    <LI>
+<!--   25-Jan-2006 -->
+       2006年1月17日
+      <UL>
+	<LI>
+<!--	  If you try to create a bitmap only sfnt but provide pixelsizes for no valid
+	  bitmap strikes, the fontforge would crash. -->
+	  ビットマップのみの SFNT を作成する時にフォント内に含まれるビットマップサイズと一致しないピクセルサイズを指定すると、FontForge がクラッシュしていました。
+	<LI>
+<!--	  Chia points out that I should use the PIXEL_SIZE property to set a bdf font's
+	  pixelsize (instead of using font ascent+descent). -->
+	  BDF フォントのピクセルサイズを設定するのに (フォントの ASCENT+DESCENT ではなく) PIXEL_SIZE を使用するべきであることを Chia が指摘しました。
+	<LI>
+<!--	  Trying to rasterize a glyph with a coordinate of 1e7 caused a crash. -->
+	  1e7 を超える座標を含むグリフを生成しようとするとクラッシュしていました。
+	<LI>
+<!--	  The change to make Add Extrema remove points near the extrema failed to consider
+	  the possbility that some of those points might be corner. -->
+	  極大点の追加(X) が極大点の側の点を削除するように変更した時、それらの点のどれかが角の点である場合のことを考慮していませんでした。
+	<LI>
+<!--	  In Gentium Roman, when searching for bluevalues, the baseline is further
+	  than 1 standard deviation from the mean of glyph ymin. Change the range searched
+	  so that 0 is always included. -->
+	  Gentium Roman では、BlueValues 値を検索した時に、ベースラインがグリフの y 座標の平均値の標準偏差 1 以内に含まれていませんでした。範囲を変更し、0 が常に含まれるようにしました。
+	<LI>
+<!--	  In Font Info-&gt;PS Private, if we selected OtherBlues and pressed [Guess]
+	  it did not change the OtherBlues value. -->
+	  フォント情報→[PS Privatet辞書] で、OtherBlues を選択して [推測] ボタンを押した時に、OtherBlues 値が変更されていませんでした。
+	<LI>
+<!--	  The gettext patch change Histograms-&gt;Blue Values menu item into a line. -->
+	  gettext 対応パッチがメニュー項目 柱状グラフ→BlueValues を線に変更していました。
+	<LI>
+<!--	  When changing the order of a font, ff would ask if you minded losing the
+	  undoes. There's no point in asking the question if the font hasn't been modified
+	  (it has no undoes). -->
+	  フォントの次数を変更した時に、FF はアンドゥ情報を失うことを尋ねていました。フォントが変更されていない場合は尋ねる必要がありません。
+	<LI>
+<!--	  The Point Info dlg should enforce that curved points cps are colinear (so
+	  if the user changes one cp, the dlg should change the other to be in the
+	  opposite direction. -->
+	  点の情報ダイアログは曲線上の点の制御点が同方向であるように強制する必要がありました (つまり、ユーザが片方の制御点を変更したら、ダイアログはもう片方をその逆向きに変更する必要がありました)。
+	<LI>
+<!--	  There was a path though PointInfo that called SplineRefigure3, which meant
+	  that splines got marked as cubics even when they should have been quadratics. -->
+	  PointInfo() から SplineRefigure3() を呼ぶような経路がありました。つまり、スプラインが 2 次でなければならない場合でも 3 次であるとマークされてしまう場合があったということです。
+	<LI>
+<!--	  Using a rotated elliptical pen in expand stroke did not work -->
+	  輪郭の拡大処理で、傾いた楕円形のペンがうまく動いていませんでした。
+	<LI>
+<!--	  Add a homedir button to the file chooser dialogs. -->
+	  ファイル選択ダイアログにホームディレクトリボタンを追加。
+      </UL>
 <!--   17-Jan-2006 -->
+       2006年1月17日
        <UL>
  	<LI>
 <!-- 	  Make the Import() scripting command accept {bdf,pcf}.gz files -->
