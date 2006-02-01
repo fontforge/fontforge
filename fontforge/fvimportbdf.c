@@ -35,13 +35,15 @@
 static char *cleancopy(char *name) {
     char *fpt, *tpt;
     char *temp = NULL;
+    char buf[200];
 
     fpt=tpt=name;
     /* Look for some common cases */
     /* Often bdf fonts name their glyphs things like "%" or "90". Neither is */
     /*  a good postscript name, so do something reasonable here */
-    if ( !isalpha(*(unsigned char *) fpt) && fpt[1]=='\0' && psunicodenames[*(unsigned char *) fpt]!=NULL )
-return( copy( psunicodenames[*(unsigned char *) fpt] ));
+    if ( !isalpha(*(unsigned char *) fpt) && fpt[0]>=' ' && /* fpt[0]<=0x7f &&*/
+	    fpt[1]=='\0' )
+return( copy( StdGlyphName(buf,*(unsigned char *) fpt,ui_none,(NameList *) -1)) );
     if ( isdigit(*fpt)) {
 	tpt = temp = galloc(strlen(name)+2);
 	*tpt++ = '$';
@@ -2061,7 +2063,15 @@ return( NULL );
 	}
     } else {
 	while ( gettoken(bdf,tok,sizeof(tok))!=-1 ) {
-	    if ( strcmp(tok,"STARTCHAR")==0 ) {
+	    if ( strcmp(tok,"COMMENT")==0 ) {
+		int ch;
+		while ( (ch=getc(bdf))!=EOF && ch!='\n' && ch!='\r' );
+		if ( ch=='\r' ) {
+		    ch = getc(bdf);
+		    if ( ch!='\n' )
+			ungetc(ch,bdf);
+		}
+	    } else if ( strcmp(tok,"STARTCHAR")==0 ) {
 		AddBDFChar(bdf,sf,b,map,depth,&defs,enc);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 		gwwv_progress_next();
