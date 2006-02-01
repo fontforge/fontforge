@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 11-Dec-2005 -->
+  <!-- AP: Last modified: 1-Feb-2006 -->
   <TITLE>Frequently Asked Questions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -97,6 +97,9 @@
     <LI>
       <A HREF="#otf-diffs">I generated an opentype (or truetype) font and windows
       wouldn't install it. Why not?</A>
+    <LI>
+      <A HREF="#DSIG">I have a truetype font with opentype tables, but windows
+      displays the "TT" (truetype) icon and not the "O" icon. Why?</A>
   </UL>
   <H2>
     Font Conversions
@@ -1525,6 +1528,14 @@ $ xset fp+ `pwd`
 	  And the tables containing advanced typographical features are completely
 	  different
       </UL>
+    <DT>
+      <A NAME="DSIG"><B>I have a truetype font with opentype tables, but windows
+      displays the "TT" (truetype) icon and not the "O" icon. Why?</B></A>
+    <DD>
+      As far as I can tell Windows will mark a truetype font with the "O" icon
+      if that font contains a 'DSIG' (Digital Signature) table. FontForge does
+      not produce digital signatures (I think they are of negative utility, and
+      anyway I don't know how to create them).
     <DT>
       <A NAME="mingliu"><B>I looked at kaiu.ttf or mingliu.ttf and the outlines
       looked nothing like the correct glyphs. What's wrong?</B></A>
