@@ -1211,17 +1211,20 @@ void MergeKernInfo(SplineFont *sf,EncMap *map) {
     static char wild[] = "*";	/* Mac resource files generally don't have extensions */
     static char wild2[] = "*";
 #endif
+#if defined(FONTFORGE_CONFIG_GTK)
+    gsize read, written;
+#endif
     char *ret = gwwv_open_filename(_("Merge Kern Info"),NULL,
 	    sf->mm!=NULL?wild2:wild,NULL);
-# ifdef FONTFORGE_CONFIG_GDRAW
-    char *temp = utf82def_copy(ret);
-# elif defined(FONTFORGE_CONFIG_GTK)
-    gsize read, written;
-    char *temp = g_filename_to_utf8(ret,-1,&read,&written,NULL);
-#endif
+    char *temp;
 
-    if ( temp==NULL )		/* Cancelled */
-return;
+    if ( ret==NULL )
+return;				/* Cancelled */
+# ifdef FONTFORGE_CONFIG_GDRAW
+    temp = utf82def_copy(ret);
+# elif defined(FONTFORGE_CONFIG_GTK)
+    temp = g_utf8_to_filename(ret,-1,&read,&written,NULL);
+#endif
 
     if ( !LoadKerningDataFromMetricsFile(sf,temp,map))
 	gwwv_post_error(_("Load of Kerning Metrics Failed"),_("Failed to load kern data from %s"), temp);
@@ -6655,7 +6658,11 @@ return;
 #endif
 }
 
+# ifdef FONTFORGE_CONFIG_GDRAW
 static void FVMenuAddEncodingName(GWindow gw,struct gmenuitem *mi, GEvent *e) {
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_AddEncodingName(GtkMenuItem *menuitem, gpointer user_data) {
+# endif
     char *ret;
     Encoding *enc;
 
@@ -6669,17 +6676,169 @@ return;
     free(ret);
 }
 
+# ifdef FONTFORGE_CONFIG_GDRAW
 static void FVMenuLoadEncoding(GWindow gw,struct gmenuitem *mi, GEvent *e) {
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_LoadEncoding(GtkMenuItem *menuitem, gpointer user_data) {
+# endif
     LoadEncodingFile();
 }
 
+# ifdef FONTFORGE_CONFIG_GDRAW
 static void FVMenuMakeFromFont(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_MakeFromFont(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
     (void) MakeEncoding(fv->sf,fv->map);
 }
 
+# ifdef FONTFORGE_CONFIG_GDRAW
 static void FVMenuRemoveEncoding(GWindow gw,struct gmenuitem *mi, GEvent *e) {
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_RemoveEncoding(GtkMenuItem *menuitem, gpointer user_data) {
+# endif
     RemoveEncoding();
+}
+
+static int isuniname(char *name) {
+    int i;
+    if ( name[0]!='u' || name[1]!='n' || name[2]!='i' )
+return( false );
+    for ( i=3; i<7; ++i )
+	if ( name[i]<'0' || (name[i]>'9' && name[i]<'A') || name[i]>'F' )
+return( false );
+    if ( name[7]!='\0' )
+return( false );
+
+return( true );
+}
+
+static int isuname(char *name) {
+    int i;
+    if ( name[0]!='u' )
+return( false );
+    for ( i=1; i<5; ++i )
+	if ( name[i]<'0' || (name[i]>'9' && name[i]<'A') || name[i]>'F' )
+return( false );
+    if ( name[5]!='\0' )
+return( false );
+
+return( true );
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuMakeNamelist(GWindow gw,struct gmenuitem *mi, GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_MakeNamelist(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+    gsize read, written;
+# endif
+    char buffer[1025];
+    char *filename, *temp;
+    FILE *file;
+    SplineChar *sc;
+    int i;
+
+    snprintf(buffer, sizeof(buffer),"%s/%s.nam", getPfaEditDir(buffer), fv->sf->fontname );
+# ifdef FONTFORGE_CONFIG_GDRAW
+    temp = def2utf8_copy(buffer);
+# elif defined(FONTFORGE_CONFIG_GTK)
+    temp = g_filename_to_utf8(buffer,-1,&read,&written,NULL);
+#endif
+    filename = gwwv_save_filename(_("Make Namelist"), temp,"*.nam");
+    free(temp);
+    if ( filename==NULL )
+return;
+# ifdef FONTFORGE_CONFIG_GDRAW
+    temp = utf82def_copy(filename);
+# elif defined(FONTFORGE_CONFIG_GTK)
+    temp = g_utf8_to_filename(filename,-1,&read,&written,NULL);
+#endif
+    file = fopen(temp,"w");
+    free(temp);
+    if ( file==NULL ) {
+	gwwv_post_error(_("Namelist creation failed"),_("Could not write %s"), filename);
+	free(filename);
+return;
+    }
+    for ( i=0; i<fv->sf->glyphcnt; ++i ) {
+	if ( (sc = fv->sf->glyphs[i])!=NULL && sc->unicodeenc!=-1 ) {
+	    if ( !isuniname(sc->name) && !isuname(sc->name ) )
+		fprintf( file, "0x%04X %s\n", sc->unicodeenc, sc->name );
+	}
+    }
+    fclose(file);
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuLoadNamelist(GWindow gw,struct gmenuitem *mi, GEvent *e) {
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_LoadNamelist(GtkMenuItem *menuitem, gpointer user_data) {
+    gsize read, written;
+# endif
+    /* Read in a name list and copy it into the prefs dir so that we'll find */
+    /*  it in the future */
+    /* Be prepared to update what we've already got if names match */
+    char buffer[1025];
+    char *ret = gwwv_open_filename(_("Load Namelist"),NULL,
+	    "*.nam",NULL);
+    char *temp, *pt;
+    char *buts[3];
+    FILE *old, *new;
+    int ch, ans;
+
+    if ( ret==NULL )
+return;				/* Cancelled */
+# ifdef FONTFORGE_CONFIG_GDRAW
+    temp = utf82def_copy(ret);
+# elif defined(FONTFORGE_CONFIG_GTK)
+    temp = g_utf8_to_filename(ret,-1,&read,&written,NULL);
+#endif
+    pt = strrchr(temp,'/');
+    if ( pt==NULL )
+	pt = temp;
+    else
+	++pt;
+    snprintf(buffer,sizeof(buffer),"%s/%s", getPfaEditDir(buffer), pt);
+    if ( access(buffer,F_OK)==0 ) {
+	buts[0] = _("_Replace");
+#if defined(FONTFORGE_CONFIG_GDRAW)
+	buts[1] = _("_Cancel");
+#elif defined(FONTFORGE_CONFIG_GTK)
+	buts[1] = GTK_STOCK_CANCEL;
+#endif
+	buts[2] = NULL;
+	ans = gwwv_ask( _("Replace"),(const char **) buts,0,1,_("A name list with this name already exists. Replace it?"));
+	if ( ans==1 ) {
+	    free(temp);
+	    free(ret);
+return;
+	}
+    }
+
+    old = fopen( temp,"r");
+    if ( old==NULL ) {
+	gwwv_post_error(_("No such file"),_("Could not read %s"), ret );
+	free(ret); free(temp);
+return;
+    }
+    free(ret); free(temp);
+    /* !!!!!! Parse the damn thing */
+    rewind(old);
+
+    new = fopen( buffer,"w");
+    if ( new==NULL ) {
+	gwwv_post_error(_("Create failed"),_("Could not write %s"), buffer );
+return;
+    }
+
+    while ( (ch=getc(old))!=EOF )
+	putc(ch,new);
+    fclose(old);
+    fclose(new);
 }
 
 static GMenuItem enlist[] = {
@@ -6699,6 +6858,11 @@ static GMenuItem enlist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("Display By _Groups..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuDisplayByGroups, MID_DisplayByGroups },
     { { (unichar_t *) N_("D_efine Groups..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuDefineGroups },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) N_("_Save Namelist of Font..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuMakeNamelist },
+    { { (unichar_t *) N_("L_oad Namelist..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuLoadNamelist },
+    { { (unichar_t *) N_("Rename Gl_yphs..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuMakeNamelist },
+    { { (unichar_t *) N_("Na_me Glyphs..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuMakeNamelist },
     { NULL }
 };
 
@@ -7962,76 +8126,6 @@ return( (enc->fromunicode_func)(uni) );
 return( -1 );
 }
 
-char *StdGlyphName(char *buffer, int uni,enum uni_interp interp) {
-    char *name = NULL;
-    int j;
-
-    if ( (uni>=0 && uni<' ') ||
-	    (uni>=0x7f && uni<0xa0) )
-	/* standard controls */;
-    else if ( uni!=-1  ) {
-	if ( uni>=0xe000 && uni<=0xf8ff &&
-		(interp==ui_trad_chinese || interp==ui_ams)) {
-	    extern const int cns14pua[], amspua[];
-	    const int *pua = interp==ui_trad_chinese ? cns14pua : amspua;
-	    if ( pua[uni-0xe000]!=0 )
-		uni = pua[uni-0xe000];
-	}
-	/* Adobe's standard names are wrong for: */
-	/* 0x2206 is named Delta, 0x394 should be */
-	/* 0x2126 is named Omega, 0x3A9 should be */
-	/* 0x00b5 is named mu, 0x3BC should be */
-	/* 0x0162 is named Tcommaaccent, 0x21A should be */
-	/* 0x0163 is named tcommaaccent, 0x21B should be */
-	/* 0xf6be is named dotlessj, 0x237 should be */
-	if ( uni==0x2206 || uni==0x2126 || uni==0x00b5 || uni==0x0162 ||
-		uni==0x0163 || uni==0xf6be )
-	    /* Don't use the standard names */;
-	else if ( uni<psunicodenames_cnt )
-	    name = (char *) psunicodenames[uni];
-	if ( name==NULL &&
-		(interp==ui_adobe || interp==ui_ams) &&
-		((uni>=0xe000 && uni<=0xf7ff ) ||
-		 (uni>=0xfb00 && uni<=0xfb06 ))) {
-	    int provenance = interp==ui_adobe ? 1 : 2;
-	    /* If we are using Adobe's interpretation of the private use */
-	    /*  area (which means small caps, etc. Then look for those */
-	    /*  names (also include the names for ligatures) */
-	    for ( j=0; psaltuninames[j].name!=NULL; ++j ) {
-		if ( psaltuninames[j].unicode == uni &&
-			psaltuninames[j].provenance == provenance ) {
-		    name = psaltuninames[j].name;
-	    break;
-		}
-	    }
-	}
-	if ( name==NULL ) {
-	    if ( uni==0x2d )
-		name = "hyphen-minus";
-	    else if ( uni==0xad )
-		name = "softhyphen";
-	    else if ( uni==0x00 )
-		name = ".notdef";
-	    else if ( uni==0xa0 )
-		name = "nonbreakingspace";
-	    else if ( uni==0x03bc && interp==ui_greek )
-		name = "mu.greek";
-	    else if ( uni==0x0394 && interp==ui_greek )
-		name = "Delta.greek";
-	    else if ( uni==0x03a9 && interp==ui_greek )
-		name = "Omega.greek";
-	    else {
-		if ( uni>=0x10000 )
-		    sprintf( buffer, "u%04X", uni);
-		else
-		    sprintf( buffer, "uni%04X", uni);
-		name = buffer;
-	    }
-	}
-    }
-return( name );
-}
-
 SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,EncMap *map,int i) {
     static char namebuf[100];
 #ifdef FONTFORGE_CONFIG_TYPE3
@@ -8060,7 +8154,7 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,EncMap *map,int i) {
 	    map->enc->psnames[i]!=NULL )
 	dummy->name = map->enc->psnames[i];
     else
-	dummy->name = StdGlyphName(namebuf,dummy->unicodeenc,sf->uni_interp);
+	dummy->name = (char *) StdGlyphName(namebuf,dummy->unicodeenc,sf->uni_interp,sf->for_new_glyphs);
     if ( dummy->name==NULL ) {
 	/*if ( dummy->unicodeenc!=-1 || i<256 )
 	    dummy->name = ".notdef";
@@ -8739,12 +8833,14 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 				    i);
 			    if ( uni!=-1 )
 				buf[0] = uni;
-			} else for ( i=0; i<psunicodenames_cnt; ++i )
-			    if ( psunicodenames[i]!=NULL && strncmp(sc->name,psunicodenames[i],n)==0 &&
-				    psunicodenames[i][n]=='\0' ) {
-				buf[0] = i;
-			break;
-			    }
+			} else {
+			    int uni;
+			    *pt = '\0';
+			    uni = UniFromName(sc->name,fv->sf->uni_interp,fv->map->enc);
+			    if ( uni!=-1 )
+				buf[0] = uni;
+			    *pt = '.';
+			}
 			if ( strstr(pt,".vert")!=NULL )
 			    rotated = UniGetRotatedGlyph(fv,sc,buf[0]!='?'?buf[0]:-1);
 			if ( buf[0]!='?' ) {

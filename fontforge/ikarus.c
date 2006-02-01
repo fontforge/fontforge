@@ -378,7 +378,7 @@ return;
 
 static void IkarusNameFromURWNumber(SplineChar *sc,int number) {
     int val;
-    char buf[20];
+    char buf[200];
 
     if ( !urw_inited )
 	InitURWTable();
@@ -387,12 +387,7 @@ static void IkarusNameFromURWNumber(SplineChar *sc,int number) {
     if ( number<sizeof(urwtable)/sizeof(urwtable[0]) ) {
 	sc->unicodeenc = val = urwtable[number];
 	if ( sc->unicodeenc!=-1 ) {
-	    if ( val<psunicodenames_cnt && psunicodenames[val]!=NULL )
-		sc->name = copy(psunicodenames[val]);
-	    else {
-		sprintf(buf,"uni%04X",val);
-		sc->name = copy(buf);
-	    }
+	    sc->name = copy(StdGlyphName(buf,sc->unicodeenc,ui_none,NULL));
 return;
 	}
     }

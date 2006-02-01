@@ -26,7 +26,7 @@ fontforge_LIBOBJECTS =  autohint.o autosave.o autowidth.o bitmapdlg.o \
  cvpalettes.o cvpointer.o cvruler.o cvshapes.o cvstroke.o cvtranstools.o \
  cvundoes.o dumpbdf.o dumppfa.o fontinfo.o fontview.o fvcomposit.o \
  fvfonts.o fvimportbdf.o fvmetrics.o images.o metricsview.o \
- parsepfa.o parsettf.o prefs.o psread.o psunicodenames.o savefontdlg.o \
+ parsepfa.o parsettf.o prefs.o psread.o namelist.o savefontdlg.o \
  sfd.o splashimage.o splinefill.o splineoverlap.o splinesave.o \
  splinesaveafm.o splinestroke.o splineutil.o splineutil2.o stamp.o \
  start.o tottf.o transform.o uiutil.o utils.o windowmenu.o  \

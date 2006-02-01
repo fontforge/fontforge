@@ -4071,7 +4071,7 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	    /* Do this later */;
 	    name = NULL;
 	} else
-	    name = StdGlyphName(buffer,info->chars[i]->unicodeenc,info->uni_interp);
+	    name = StdGlyphName(buffer,info->chars[i]->unicodeenc,info->uni_interp,NULL);
 #if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 	gwwv_progress_next();
 #endif

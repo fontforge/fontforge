@@ -546,6 +546,13 @@ typedef struct enc {
     int (*fromunicode_func)(int);
 } Encoding;
 
+typedef struct namelist {
+    struct namelist *basedon;
+    char *title;
+    const char ***unicode[17];
+    struct namelist *next;
+} NameList;
+
 enum uni_interp { ui_unset= -1, ui_none, ui_adobe, ui_greek, ui_japanese,
 	ui_trad_chinese, ui_simp_chinese, ui_korean, ui_ams };
 
@@ -973,6 +980,7 @@ typedef struct splinefont {
     unsigned int compacted: 1;	/* only used when opening a font */
     struct fontview *fv;
     enum uni_interp uni_interp;
+    NameList *for_new_glyphs;
     EncMap *map;		/* only used when opening a font to provide original default encoding */
     Layer grid;
     BDFFont *bitmaps;
@@ -1819,12 +1827,11 @@ struct TT_ExecContextRec_;
 extern struct freetype_raster *DebuggerCurrentRaster(struct  TT_ExecContextRec_ *exc,int depth);
 
 extern int UniFromName(const char *name,enum uni_interp interp, Encoding *encname);
-# ifdef FONTFORGE_CONFIG_GTK
-#  define uUniFromName UniFromName
-# else
-extern int uUniFromName(const unichar_t *name,enum uni_interp interp, Encoding *encname);
-#endif
-extern char *StdGlyphName(char *buffer, int uni, enum uni_interp interp);
+extern const char *StdGlyphName(char *buffer, int uni, enum uni_interp interp, NameList *for_this_font);
+extern char **AllGlyphNames(int uni, NameList *for_this_font);
+extern char **AllNamelistNames(void);
+extern NameList *DefaultNameListForNewFonts(void);
+extern NameList *NameListByName(char *name);
 
 extern void doversion(void);
 

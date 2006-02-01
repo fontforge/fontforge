@@ -2091,19 +2091,15 @@ return( sc );
 }
 
 static SplineChar *SVGParseGlyph(SplineFont *sf,xmlNodePtr glyph,int defh, int defv, int enc, int *flags) {
-    char buffer[40];
+    char buffer[400];
     SplineChar *sc = SVGParseGlyphArgs(glyph,defh,defv);
     sc->parent = sf;
     if ( sc->name==NULL ) {
-	if ( sc->unicodeenc==-1 )
+	if ( sc->unicodeenc==-1 ) {
 	    sprintf( buffer, "glyph%d", enc);
-	else if ( sc->unicodeenc>=0x10000 )
-	    sprintf( buffer, "u%04X", sc->unicodeenc );
-	else if ( psunicodenames[sc->unicodeenc]!=NULL )
-	    strcpy(buffer,psunicodenames[sc->unicodeenc]);
-	else
-	    sprintf( buffer, "uni%04X", sc->unicodeenc );
-	sc->name = copy(buffer);
+	    sc->name = copy(buffer);
+	} else
+	    sc->name = copy(StdGlyphName(buffer,sc->unicodeenc,ui_none,NULL));
     }
     SVGParseGlyphBody(sc,glyph,flags);
 return( sc );

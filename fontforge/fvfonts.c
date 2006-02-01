@@ -390,8 +390,7 @@ return ( -1 );
 /* Find the position in the current encoding where this code point/name should*/
 /*  be found. (or for unencoded glyphs where it is found). Returns -1 else */
 int SFFindSlot(SplineFont *sf, EncMap *map, int unienc, const char *name ) {
-    int index=-1, i, pos;
-    char *end;
+    int index=-1, pos;
 
     if ( (map->enc->is_custom || map->enc->is_compact ||
 	    map->enc->is_original) && unienc!=-1 ) {
@@ -423,19 +422,7 @@ int SFFindSlot(SplineFont *sf, EncMap *map, int unienc, const char *name ) {
 	SplineChar *sc = SFHashName(sf,name);
 	if ( sc!=NULL ) index = map->backmap[sc->orig_pos];
 	if ( index==-1 ) {
-	    unienc = -1;
-	    if ( name[0]=='u' && name[1]=='n' && name[2]=='i' && strlen(name)==7 ) {
-		if ( unienc=strtol(name+3,&end,16), *end!='\0' )
-		    unienc = -1;
-	    } else if ( (name[0]=='U' || name[1]=='0') && name[1]=='+' && (strlen( name )==6 || strlen(name)==7)) {
-		if ( unienc=strtol(name+2,&end,16), *end!='\0' )
-		    unienc = -1;
-	    } else if ( name[0]=='u' && strlen(name)<=7 ) {
-		if ( unienc=strtol(name+1,&end,16), *end!='\0' )
-		    unienc = -1;
-	    } else if ( name[1]=='\0' ) {
-		unienc = ((unsigned char *) name)[0];
-	    }
+	    unienc = UniFromName(name,sf->uni_interp,map->enc);
 	    if ( unienc!=-1 )
 return( SFFindSlot(sf,map,unienc,NULL));
 	    if ( map->enc->psnames!=NULL ) {
@@ -444,13 +431,6 @@ return( SFFindSlot(sf,map,unienc,NULL));
 			    strcmp(map->enc->psnames[index],name)==0 )
 return( index );
 	    }
-	    for ( unienc=psunicodenames_cnt-1; unienc>=0; --unienc )
-		if ( psunicodenames[unienc]!=NULL &&
-			strcmp(psunicodenames[unienc],name)==0 )
-return( SFFindSlot(sf,map,unienc,NULL));
-	    for ( i=0; psaltuninames[i].name!=NULL; ++i )
-		if ( strcmp(psaltuninames[i].name,name)==0 )
-return( SFFindSlot(sf,map,psaltuninames[i].unicode,NULL));
 	}
     }
 

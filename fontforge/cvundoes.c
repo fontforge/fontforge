@@ -1698,18 +1698,11 @@ static void PasteNonExistantRefCheck(SplineChar *sc,Undoes *paster,RefChar *ref,
     if ( fromsc==NULL ) {
 	if ( !(*refstate&0x4) ) {
 	    char *buts[3];
-	    char buf[10]; const char *name;
+	    char buf[80]; const char *name;
 	    if ( ref->unicode_enc==-1 )
 		name = "<Unknown>";
-	    else if ( ref->unicode_enc<psunicodenames_cnt && psunicodenames[ref->unicode_enc]!=NULL )
-		name = psunicodenames[ref->unicode_enc];
-	    else {
-		if ( ref->unicode_enc<0x10000 )
-		    sprintf( buf, "uni%04X", ref->unicode_enc );
-		else
-		    sprintf( buf, "u%04X", ref->unicode_enc );
-		name = buf;
-	    }
+	    else
+		name = StdGlyphName(buf,ref->unicode_enc,ui_none,(NameList *) -1);
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	    buts[0] = _("Don't Warn Again"); buts[1] = _("_OK"); buts[2] = NULL;
 #elif defined(FONTFORGE_CONFIG_GTK)

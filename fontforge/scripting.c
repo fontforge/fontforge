@@ -3253,7 +3253,7 @@ static void bSetTeXParams(Context *c) {
 
 static void bSetCharName(Context *c) {
     SplineChar *sc;
-    char *name, *end;
+    char *name;
     int uni;
     char *comment;
 
@@ -3267,17 +3267,7 @@ static void bSetCharName(Context *c) {
     comment = copy(sc->comment);
 
     if ( c->a.argc!=3 || c->a.vals[2].u.ival==-1 ) {
-	if ( name[0]=='u' && name[1]=='n' && name[2]=='i' && strlen(name)==7 &&
-		(uni = strtol(name+3,&end,16), *end=='\0'))
-	    /* Good */;
-	else if ( name[0]=='u' && strlen(name)<=7 &&
-		(uni = strtol(name+1,&end,16), *end=='\0'))
-	    /* Good */;
-	else {
-	    for ( uni=psunicodenames_cnt-1; uni>=0; --uni )
-		if ( psunicodenames[uni]!=NULL && strcmp(name,psunicodenames[uni])==0 )
-	    break;
-	}
+	uni = UniFromName(name,c->curfv->sf->uni_interp,c->curfv->map->enc);
     }
     SCSetMetaData(sc,name,uni,comment);
     SCLigDefault(sc);
@@ -3300,18 +3290,9 @@ static void bSetUnicodeValue(Context *c) {
     comment = copy(sc->comment);
 
     if ( c->a.argc!=3 || c->a.vals[2].u.ival ) {
+	char buffer[400];
 	free(name);
-	if ( uni>=0 && uni<psunicodenames_cnt && psunicodenames[uni]!=NULL )
-	    name = copy(psunicodenames[uni]);
-	else if (( uni>=32 && uni<0x7f ) || uni>=0xa1 ) {
-	    char buf[12];
-	    if ( uni<0x10000 )
-		sprintf( buf,"uni%04X", uni );
-	    else
-		sprintf( buf,"u%04X", uni );
-	    name = copy(buf);
-	} else
-	    name = copy(".notdef");
+	name = copy(StdGlyphName(buffer,uni,c->curfv->sf->uni_interp,c->curfv->sf->for_new_glyphs));
     }
     SCSetMetaData(sc,name,uni,comment);
     SCLigDefault(sc);

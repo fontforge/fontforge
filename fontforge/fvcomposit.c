@@ -1672,11 +1672,9 @@ static SplineChar *GetGoodAccentGlyph(SplineFont *sf, int uni, int basech,
 	    if ( uni>=BottomAccent && uni<=TopAccent ) {
 		apt = accents[uni-BottomAccent]; end = apt+sizeof(accents[0])/sizeof(accents[0][0]);
 		while ( test==NULL && apt<end ) {
-		    if ( psunicodenames[*apt]!=NULL ) {
-			sprintf( buffer,"%.70s.%s", psunicodenames[*apt], suffixes[i]);
-			if ( (test = SFGetChar(sf,-1,buffer))!=NULL )
-			    rsc = test;
-		    }
+		    sprintf( buffer,"%.70s.%s", StdGlyphName(buffer,*apt,ui_none,(NameList *) -1), suffixes[i]);
+		    if ( (test = SFGetChar(sf,-1,buffer))!=NULL )
+			rsc = test;
 		    if ( test==NULL ) {
 			sprintf( buffer,"uni%04X.%s", *apt, suffixes[i]);
 			if ( (test = SFGetChar(sf,-1,buffer))!=NULL )
@@ -1689,13 +1687,11 @@ static SplineChar *GetGoodAccentGlyph(SplineFont *sf, int uni, int basech,
 	if ( test==NULL && uni>=BottomAccent && uni<=TopAccent && isupper(basech)) {
 	    apt = accents[uni-BottomAccent]; end = apt+sizeof(accents[0])/sizeof(accents[0][0]);
 	    while ( test==NULL && apt<end ) {
-		if ( psunicodenames[*apt]!=NULL ) {
-		    sprintf( buffer,"%.70s", psunicodenames[*apt]);
-		    if ( islower(buffer[0])) {
-			buffer[0] = toupper(buffer[0]);
-			if ( (test = SFGetChar(sf,-1,buffer))!=NULL )
-			    rsc = test;
-		    }
+		sprintf( buffer,"%.70s.%s", StdGlyphName(buffer,*apt,ui_none,(NameList *) -1), suffixes[i]);
+		if ( islower(buffer[0])) {
+		    buffer[0] = toupper(buffer[0]);
+		    if ( (test = SFGetChar(sf,-1,buffer))!=NULL )
+			rsc = test;
 		}
 		++apt;
 	    }
