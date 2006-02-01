@@ -86,13 +86,13 @@ GTextInfo emsizes[] = {
 
 GTextInfo interpretations[] = {
     { (unichar_t *) N_("Interpretation|None"), NULL, 0, 0, (void *) ui_none, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Adobe Public Use Defs."), NULL, 0, 0, (void *) ui_adobe, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Greek"), NULL, 0, 0, (void *) ui_greek, NULL, 0, 0, 0, 0, 0, 0, 1},
+/*  { (unichar_t *) N_("Adobe Public Use Defs."), NULL, 0, 0, (void *) ui_adobe, NULL, 0, 0, 0, 0, 0, 0, 1}, */
+/*  { (unichar_t *) N_("Greek"), NULL, 0, 0, (void *) ui_greek, NULL, 0, 0, 0, 0, 0, 0, 1}, */
     { (unichar_t *) N_("Japanese"), NULL, 0, 0, (void *) ui_japanese, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Traditional Chinese"), NULL, 0, 0, (void *) ui_trad_chinese, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Simplified Chinese"), NULL, 0, 0, (void *) ui_simp_chinese, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Korean"), NULL, 0, 0, (void *) ui_korean, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("AMS Public Use"), NULL, 0, 0, (void *) ui_ams, NULL, 0, 0, 0, 0, 0, 0, 1},
+/*  { (unichar_t *) N_("AMS Public Use"), NULL, 0, 0, (void *) ui_ams, NULL, 0, 0, 0, 0, 0, 0, 1}, */
     { NULL }};
 GTextInfo macstyles[] = {
     { (unichar_t *) N_("Bold"), NULL, 0, 0, (void *) sf_bold, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -604,7 +604,7 @@ static struct ms_2_locales { char *loc_name; int local_id; } ms_2_locals[] = {
 static GTextInfo mslanguages[] = {
     { (unichar_t *) N_("Afrikaans"), NULL, 0, 0, (void *) 0x436, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Albanian"), NULL, 0, 0, (void *) 0x41c, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Amharic"), NULL, 0, 0, (void *) 0x45e, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Lang|Amharic"), NULL, 0, 0, (void *) 0x45e, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Arabic Saudi Arabia"), NULL, 0, 0, (void *) 0x401, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Arabic Iraq"), NULL, 0, 0, (void *) 0x801, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Arabic Egypt"), NULL, 0, 0, (void *) 0xc01, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -621,19 +621,19 @@ static GTextInfo mslanguages[] = {
     { (unichar_t *) N_("Arabic U.A.E."), NULL, 0, 0, (void *) 0x3801, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Arabic Bahrain"), NULL, 0, 0, (void *) 0x3c01, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Arabic Qatar"), NULL, 0, 0, (void *) 0x4001, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Armenian"), NULL, 0, 0, (void *) 0x42b, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Lang|Armenian"), NULL, 0, 0, (void *) 0x42b, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Assamese"), NULL, 0, 0, (void *) 0x44d, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Azeri (Latin)"), NULL, 0, 0, (void *) 0x42c, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Azeri (Cyrillic)"), NULL, 0, 0, (void *) 0x82c, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Basque"), NULL, 0, 0, (void *) 0x42d, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Byelorussian"), NULL, 0, 0, (void *) 0x423, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Bengali"), NULL, 0, 0, (void *) 0x445, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Lang|Bengali"), NULL, 0, 0, (void *) 0x445, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Bengali Bangladesh"), NULL, 0, 0, (void *) 0x845, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Bulgarian"), NULL, 0, 0, (void *) 0x402, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Burmese"), NULL, 0, 0, (void *) 0x455, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Catalan"), NULL, 0, 0, (void *) 0x403, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Cambodian"), NULL, 0, 0, (void *) 0x453, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Cherokee"), NULL, 0, 0, (void *) 0x45c, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Lang|Cherokee"), NULL, 0, 0, (void *) 0x45c, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Chinese (Taiwan)"), NULL, 0, 0, (void *) 0x404, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Chinese (PRC)"), NULL, 0, 0, (void *) 0x804, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Chinese (Hong Kong)"), NULL, 0, 0, (void *) 0xc04, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -666,7 +666,7 @@ static GTextInfo mslanguages[] = {
     { (unichar_t *) N_("English (Malasia)"), NULL, 0, 0, (void *) 0x4409, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Estonian"), NULL, 0, 0, (void *) 0x425, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Faeroese"), NULL, 0, 0, (void *) 0x438, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Farsi"), NULL, 0, 0, (void *) 0x429, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Lang|Farsi"), NULL, 0, 0, (void *) 0x429, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Filipino"), NULL, 0, 0, (void *) 0x464, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Finish"), NULL, 0, 0, (void *) 0x40b, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("French French"), NULL, 0, 0, (void *) 0x40c, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -690,18 +690,18 @@ static GTextInfo mslanguages[] = {
     { (unichar_t *) N_("Gaelic (Scottish)"), NULL, 0, 0, (void *) 0x43c, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Gaelic (Irish)"), NULL, 0, 0, (void *) 0x83c, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Galician"), NULL, 0, 0, (void *) 0x467, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Georgian"), NULL, 0, 0, (void *) 0x437, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Lang|Georgian"), NULL, 0, 0, (void *) 0x437, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("German German"), NULL, 0, 0, (void *) 0x407, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("German Swiss"), NULL, 0, 0, (void *) 0x807, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("German Austrian"), NULL, 0, 0, (void *) 0xc07, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("German Luxembourg"), NULL, 0, 0, (void *) 0x1007, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("German Liechtenstein"), NULL, 0, 0, (void *) 0x1407, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Greek"), NULL, 0, 0, (void *) 0x408, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Lang|Greek"), NULL, 0, 0, (void *) 0x408, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Guarani"), NULL, 0, 0, (void *) 0x474, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Gujarati"), NULL, 0, 0, (void *) 0x447, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Lang|Gujarati"), NULL, 0, 0, (void *) 0x447, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Hausa"), NULL, 0, 0, (void *) 0x468, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Hawaiian"), NULL, 0, 0, (void *) 0x475, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Hebrew"), NULL, 0, 0, (void *) 0x40d, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Lang|Hebrew"), NULL, 0, 0, (void *) 0x40d, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Hindi"), NULL, 0, 0, (void *) 0x439, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Hungarian"), NULL, 0, 0, (void *) 0x40e, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Ibibio"), NULL, 0, 0, (void *) 0x469, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -712,11 +712,11 @@ static GTextInfo mslanguages[] = {
     { (unichar_t *) N_("Italian"), NULL, 0, 0, (void *) 0x410, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Italian Swiss"), NULL, 0, 0, (void *) 0x810, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Japanese"), NULL, 0, 0, (void *) 0x411, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Kannada"), NULL, 0, 0, (void *) 0x44b, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Lang|Kannada"), NULL, 0, 0, (void *) 0x44b, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Kanuri"), NULL, 0, 0, (void *) 0x471, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Kashmiri (India)"), NULL, 0, 0, (void *) 0x860, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Kazakh"), NULL, 0, 0, (void *) 0x43f, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Khmer"), NULL, 0, 0, (void *) 0x453, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Lang|Khmer"), NULL, 0, 0, (void *) 0x453, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Kirghiz"), NULL, 0, 0, (void *) 0x440, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Konkani"), NULL, 0, 0, (void *) 0x457, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Korean"), NULL, 0, 0, (void *) 0x412, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -740,7 +740,7 @@ static GTextInfo mslanguages[] = {
     { (unichar_t *) N_("Nepali (India)"), NULL, 0, 0, (void *) 0x861, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Norwegian (Bokmal)"), NULL, 0, 0, (void *) 0x414, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Norwegian (Nynorsk)"), NULL, 0, 0, (void *) 0x814, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Oriya"), NULL, 0, 0, (void *) 0x448, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Lang|Oriya"), NULL, 0, 0, (void *) 0x448, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Oromo"), NULL, 0, 0, (void *) 0x472, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Papiamentu"), NULL, 0, 0, (void *) 0x479, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Pashto"), NULL, 0, 0, (void *) 0x463, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -764,7 +764,7 @@ static GTextInfo mslanguages[] = {
     { (unichar_t *) N_("Serbian (Latin)"), NULL, 0, 0, (void *) 0x81a, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Sindhi India"), NULL, 0, 0, (void *) 0x459, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Sindhi Pakistan"), NULL, 0, 0, (void *) 0x859, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Sinhalese"), NULL, 0, 0, (void *) 0x45b, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Lang|Sinhalese"), NULL, 0, 0, (void *) 0x45b, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Slovak"), NULL, 0, 0, (void *) 0x41b, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Slovenian"), NULL, 0, 0, (void *) 0x424, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Sorbian"), NULL, 0, 0, (void *) 0x42e, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -794,15 +794,15 @@ static GTextInfo mslanguages[] = {
     { (unichar_t *) N_("Swahili (Kenyan)"), NULL, 0, 0, (void *) 0x441, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Swedish (Sweden)"), NULL, 0, 0, (void *) 0x41d, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Swedish (Finland)"), NULL, 0, 0, (void *) 0x81d, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Syriac"), NULL, 0, 0, (void *) 0x45a, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Tagalog"), NULL, 0, 0, (void *) 0x464, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Lang|Syriac"), NULL, 0, 0, (void *) 0x45a, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Lang|Tagalog"), NULL, 0, 0, (void *) 0x464, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Tajik"), NULL, 0, 0, (void *) 0x428, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Tamazight (Arabic)"), NULL, 0, 0, (void *) 0x45f, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Tamazight (Latin)"), NULL, 0, 0, (void *) 0x85f, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Tamil"), NULL, 0, 0, (void *) 0x449, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Lang|Tamil"), NULL, 0, 0, (void *) 0x449, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Tatar (Tatarstan)"), NULL, 0, 0, (void *) 0x444, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Telugu"), NULL, 0, 0, (void *) 0x44a, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Thai"), NULL, 0, 0, (void *) 0x41e, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Lang|Telugu"), NULL, 0, 0, (void *) 0x44a, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Lang|Thai"), NULL, 0, 0, (void *) 0x41e, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Tibetan (PRC)"), NULL, 0, 0, (void *) 0x451, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Tibetan Bhutan"), NULL, 0, 0, (void *) 0x851, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Tigrinya Ethiopia"), NULL, 0, 0, (void *) 0x473, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -811,7 +811,7 @@ static GTextInfo mslanguages[] = {
     { (unichar_t *) N_("Tswana"), NULL, 0, 0, (void *) 0x432, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Turkish"), NULL, 0, 0, (void *) 0x41f, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Turkmen"), NULL, 0, 0, (void *) 0x442, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Uighur"), NULL, 0, 0, (void *) 0x480, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Lang|Uighur"), NULL, 0, 0, (void *) 0x480, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Ukrainian"), NULL, 0, 0, (void *) 0x422, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Urdu (Pakistan)"), NULL, 0, 0, (void *) 0x420, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Urdu (India)"), NULL, 0, 0, (void *) 0x820, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -821,7 +821,7 @@ static GTextInfo mslanguages[] = {
     { (unichar_t *) N_("Vietnamese"), NULL, 0, 0, (void *) 0x42a, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Welsh"), NULL, 0, 0, (void *) 0x452, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Xhosa"), NULL, 0, 0, (void *) 0x434, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Yi"), NULL, 0, 0, (void *) 0x478, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Lang|Yi"), NULL, 0, 0, (void *) 0x478, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Yiddish"), NULL, 0, 0, (void *) 0x43d, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Yoruba"), NULL, 0, 0, (void *) 0x46a, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Zulu"), NULL, 0, 0, (void *) 0x435, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -1038,6 +1038,7 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_Interpretation	1021
 #define CID_IsStrokedFont	1022
 #define CID_StrokeWidth		1023
+#define CID_Namelist	1024
 #define CID_XUID	1113
 #define CID_Human	1114
 
@@ -5135,7 +5136,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	int i,j, mcs;
 	int vmetrics, vorigin, namechange, order2;
 	int xuidchanged = false;
-	GTextInfo *pfmfam, *ibmfam, *fstype;
+	GTextInfo *pfmfam, *ibmfam, *fstype, *nlitem;
 	int32 len;
 	GTextInfo **ti;
 	int subs[4], super[4], strike[2];
@@ -5146,6 +5147,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	int multilayer = false;
 #endif
 	char os2_vendor[4];
+	NameList *nl;
 
 	if ( d->tn_smallactive!=-1 )
 	    TN_FinishSmallEdit(d);
@@ -5383,6 +5385,16 @@ return(true);
 	interp = GGadgetGetFirstListSelectedItem(GWidgetGetControl(gw,CID_Interpretation));
 	if ( interp==-1 ) sf->uni_interp = ui_none;
 	else sf->uni_interp = (intpt) interpretations[interp].userdata;
+
+	nlitem = GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_Namelist));
+	if ( nlitem==NULL )
+	    nl = DefaultNameListForNewFonts();
+	else {
+	    char *name = cu_copy(nlitem->text);
+	    nl = NameListByName(name);
+	    free(name);
+	}
+	sf->for_new_glyphs = nl;
 
 	if ( sf->hasvmetrics!=vmetrics )
 	    CVPaletteDeactivate();		/* Force a refresh later */
@@ -6136,15 +6148,16 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     GWindow gw;
     GWindowAttrs wattrs;
     GTabInfo aspects[17], conaspects[7], smaspects[5], vaspects[5];
-    GGadgetCreateData mgcd[10], ngcd[17], psgcd[28], tngcd[8],
+    GGadgetCreateData mgcd[10], ngcd[17], psgcd[30], tngcd[8],
 	pgcd[8], vgcd[16], pangcd[22], comgcd[3], atgcd[7], txgcd[23],
 	congcd[3], csubgcd[fpst_max-pst_contextpos][6], smgcd[3], smsubgcd[4][6],
 	mfgcd[8], mcgcd[8], szgcd[19], mkgcd[5], metgcd[28], vagcd[3], ssgcd[23];
-    GTextInfo mlabel[10], nlabel[17], pslabel[28], tnlabel[7],
+    GTextInfo mlabel[10], nlabel[17], pslabel[30], tnlabel[7],
 	plabel[8], vlabel[16], panlabel[22], comlabel[3], atlabel[7], txlabel[23],
 	csublabel[fpst_max-pst_contextpos][6], smsublabel[4][6],
 	mflabel[8], mclabel[8], szlabel[17], mklabel[5], metlabel[28],
 	sslabel[23];
+    GTextInfo *namelistnames;
     struct gfi_data *d;
     char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20],
 	    vbuf[20], uibuf[12], vorig[20], embuf[20];
@@ -6163,6 +6176,7 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     static char *smnames[] = { N_("Indic"), N_("Context Sub"), N_("Context Ins"), N_("Kerning"), NULL };
     static int smtypes[] = { asm_indic, asm_context, asm_insert, asm_kern };
     static int done = false;
+    char **nlnames;
 
     FontInfoInit();
     if ( !done ) {
@@ -6628,6 +6642,33 @@ return;
 	} else
 	    interpretations[i].selected = false;
     }
+    ++k;
+
+    psgcd[k].gd.pos.x = psgcd[k-2].gd.pos.x; psgcd[k].gd.pos.y = psgcd[k-1].gd.pos.y+32;
+    psgcd[k].gd.flags = gg_visible | gg_enabled;
+    pslabel[k].text = (unichar_t *) _("Name List:");
+    pslabel[k].text_is_1byte = true;
+    pslabel[k].text_in_resource = true;
+    psgcd[k].gd.label = &pslabel[k];
+    psgcd[k++].creator = GLabelCreate;
+
+    psgcd[k].gd.pos.x = psgcd[k-2].gd.pos.x; psgcd[k].gd.pos.y = psgcd[k-1].gd.pos.y-6;
+    psgcd[k].gd.flags = gg_visible | gg_enabled;
+    psgcd[k].gd.cid = CID_Namelist;
+    psgcd[k].creator = GListButtonCreate;
+    nlnames = AllNamelistNames();
+    for ( i=0; nlnames[i]!=NULL; ++i);
+    namelistnames = gcalloc(i+1,sizeof(GTextInfo));
+    for ( i=0; nlnames[i]!=NULL; ++i) {
+	namelistnames[i].text = (unichar_t *) nlnames[i];
+	namelistnames[i].text_is_1byte = true;
+	if ( strcmp(sf->for_new_glyphs->title,nlnames[i])==0 ) {
+	    namelistnames[i].selected = true;
+	    psgcd[k].gd.label = &namelistnames[i];
+	}
+    }
+    psgcd[k].gd.u.list = namelistnames;
+    free(nlnames);
     ++k;
 
 
@@ -8135,6 +8176,7 @@ return;
     rq.weight = 400;
     font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
     GGadgetSetFont(atgcd[0].ret,font);
+    GTextInfoListFree(namelistnames);
     GTextInfoListFree(pgcd[0].gd.u.list);
     GTextInfoListFree(atgcd[0].gd.u.list);
     if ( GTabSetGetTabLines(mgcd[0].ret)>3 ) {
@@ -8209,7 +8251,7 @@ void FontInfoInit(void) {
 	macstyles, widthclass, weightclass, fstype, pfmfamily, ibmfamily,
 	panfamily, panserifs, panweight, panprop, pancontrast, panstrokevar,
 	panarmstyle, panletterform, panmidline, panxheight, mslanguages,
-	ttfnameids,
+	ttfnameids, interpretations,
 	NULL
     };
     static char **needswork2[] = { texparams, texpopups,
@@ -8219,11 +8261,6 @@ void FontInfoInit(void) {
     if ( done )
 return;
     done = true;
-    /* Special case, needs a prefix stripped off */
-    /* (is feminine in french) */
-    interpretations[0].text = (unichar_t *) S_((char *) interpretations[0].text);
-    for ( i=1; interpretations[i].text!=NULL; ++i )
-	interpretations[i].text = (unichar_t *) _((char *) interpretations[i].text);
     for ( j=0; needswork[j]!=NULL; ++j ) {
 	for ( i=0; needswork[j][i].text!=NULL; ++i )
 	    needswork[j][i].text = (unichar_t *) S_((char *) needswork[j][i].text);
