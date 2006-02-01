@@ -2107,7 +2107,7 @@ return( 0 );
 	    }
 	    text = last;
 	    dist += _GDraw_DoText(gw,x+dist,y,ubuffer,upt-ubuffer,mods,col,drawit,arg);
-	} else {
+	} else if ( val!=(uint32) -1 ) {
 	    int plane = (val>>16);
 	    upt = ubuffer;
 	    while ( (val>>16)==plane && text<=end &&
