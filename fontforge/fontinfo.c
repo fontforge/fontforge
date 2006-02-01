@@ -723,7 +723,7 @@ static GTextInfo mslanguages[] = {
     { (unichar_t *) N_("Korean (Johab)"), NULL, 0, 0, (void *) 0x812, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Laothian"), NULL, 0, 0, (void *) 0x454, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Latvian"), NULL, 0, 0, (void *) 0x426, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Latin"), NULL, 0, 0, (void *) 0x476, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Lang|Latin"), NULL, 0, 0, (void *) 0x476, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Lithuanian"), NULL, 0, 0, (void *) 0x427, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Lithuanian (Classic)"), NULL, 0, 0, (void *) 0x827, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Macedonian"), NULL, 0, 0, (void *) 0x42f, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -8226,7 +8226,7 @@ return;
 	interpretations[i].text = (unichar_t *) _((char *) interpretations[i].text);
     for ( j=0; needswork[j]!=NULL; ++j ) {
 	for ( i=0; needswork[j][i].text!=NULL; ++i )
-	    needswork[j][i].text = (unichar_t *) _((char *) needswork[j][i].text);
+	    needswork[j][i].text = (unichar_t *) S_((char *) needswork[j][i].text);
     }
     for ( j=0; needswork2[j]!=NULL; ++j ) {
 	for ( i=0; needswork2[j][i]!=NULL; ++i )

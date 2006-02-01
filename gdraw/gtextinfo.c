@@ -673,8 +673,10 @@ void GStringSetFallbackArray(const unichar_t **array,const unichar_t *mn,const i
 
 char *sgettext(const char *msgid) {
     char *msgval = _(msgid);
+    char *found;
     if (msgval == msgid)
-	msgval = strrchr (msgid, '|') + 1;
+	if ( (found = strrchr (msgid, '|'))!=NULL )
+	    msgval = found+1;
 return msgval;
 }
 

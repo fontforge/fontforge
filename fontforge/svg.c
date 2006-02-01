@@ -774,8 +774,7 @@ static int libxml_init_base() {
     if ( xmltested )
 return( libxml!=NULL );
 
-    if ( dlopen("libz" SO_EXT,RTLD_GLOBAL|RTLD_LAZY)==NULL )
-return( false );
+    dlopen("libz" SO_EXT,RTLD_GLOBAL|RTLD_LAZY);
 
     libxml = dlopen( "libxml2" SO_EXT,RTLD_LAZY);
     xmltested = true;

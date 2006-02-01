@@ -149,7 +149,7 @@ GTextInfo scripts[] = {
     { (unichar_t *) N_("Kannada"), NULL, 0, 0, (void *) CHR('k','n','d','a'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Khmer"), NULL, 0, 0, (void *) CHR('k','h','m','r'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Lao") , NULL, 0, 0, (void *) CHR('l','a','o',' '), NULL, false, false, false, false, false, false, true },
-    { (unichar_t *) N_("Latin"), NULL, 0, 0, (void *) CHR('l','a','t','n'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Script|Latin"), NULL, 0, 0, (void *) CHR('l','a','t','n'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) NU_("Lepcha (Róng)"), NULL, 0, 0, (void *) CHR('l','e','p','c'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Limbu"), NULL, 0, 0, (void *) CHR('l','i','m','b'), NULL, false, false, false, false, false, false, true },	/* Not in ISO 15924 !!!!!, just guessing */
     { (unichar_t *) N_("Linear A"), NULL, 0, 0, (void *) CHR('l','i','n','a'), NULL, false, false, false, false, false, false, true },
@@ -6772,7 +6772,7 @@ return;
     done = true;
     for ( i=0; lists[i]!=NULL; ++i )
 	for ( j=0; lists[i][j].text!=NULL; ++j )
-	    lists[i][j].text = (unichar_t *) _((char *) lists[i][j].text);
+	    lists[i][j].text = (unichar_t *) S_((char *) lists[i][j].text);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     for ( i=0; cnames[i]!=NULL; ++i )
 	for ( j=0; cnames[i][j]!=NULL; ++j )
