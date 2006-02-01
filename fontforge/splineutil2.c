@@ -2560,6 +2560,7 @@ SplineFont *SplineFontEmpty(void) {
 	strncpy(sf->pfminfo.os2_vendor,TTFFoundry,4);
     else
 	memcpy(sf->pfminfo.os2_vendor,"PfEd",4);
+    sf->for_new_glyphs = DefaultNameListForNewFonts();
 return( sf );
 }
 

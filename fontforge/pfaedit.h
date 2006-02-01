@@ -55,15 +55,7 @@ extern void LogError(const char *format,...);
 extern void CheckIsScript(int argc, char *argv[]);
 
 extern char *AdobeStandardEncoding[256];
-extern int psunicodenames_cnt;
-extern const char *psunicodenames[];
 extern int32 unicode_from_adobestd[256];
-extern struct psaltnames {
-    char *name;
-    int unicode;
-    int provenance;		/* 1=> Adobe PUA, 2=>AMS PUA, 3=>TeX */
-} psaltuninames[];
-extern int psaltuninames_cnt;
 
 struct unicode_nameannot {
     const char *name, *annot;

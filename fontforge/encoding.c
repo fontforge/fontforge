@@ -646,6 +646,7 @@ void DumpPfaEditEncodings(void) {
     FILE *file;
     Encoding *item;
     int i;
+    char buffer[80];
 
     for ( item=enclist; item!=NULL && item->builtin; item=item->next );
     if ( item==NULL ) {
@@ -668,12 +669,8 @@ return;
 		fprintf( file, " /%s", item->psnames[i]);
 	    else if ( item->unicode[i]<' ' || (item->unicode[i]>=0x7f && item->unicode[i]<0xa0))
 		fprintf( file, " /.notdef" );
-	    else if ( item->unicode[i]<psunicodenames_cnt && psunicodenames[item->unicode[i]]!=NULL )
-		fprintf( file, " /%s", psunicodenames[item->unicode[i]]);
-	    else if ( item->unicode[i]<0x10000 )
-		fprintf( file, " /uni%04X", item->unicode[i]);
 	    else
-		fprintf( file, " /u%04X", item->unicode[i]);
+		fprintf( file, " /%s", StdGlyphName(buffer,item->unicode[i],ui_none,(NameList *) -1));
 	    if ( (i&0xf)==0 )
 		fprintf( file, "\t\t%% 0x%02x\n", i );
 	    else
@@ -1018,6 +1015,7 @@ return( -1 );
 
 int CID2NameUni(struct cidmap *map,int cid, char *buffer, int len) {
     int enc = -1;
+    const char *temp;
 
 #if defined( _NO_SNPRINTF ) || defined( __VMS )
     if ( map==NULL )
@@ -1025,13 +1023,13 @@ int CID2NameUni(struct cidmap *map,int cid, char *buffer, int len) {
     else if ( cid<map->namemax && map->name[cid]!=NULL )
 	strncpy(buffer,map->name[cid],len);
     else if ( cid==0 || (cid<map->namemax && map->unicode[cid]!=0 )) {
-	enc = map->unicode[cid];
-	if ( enc<psunicodenames_cnt && psunicodenames[enc]!=NULL )
-	    strncpy(buffer,psunicodenames[enc],len);
-	else if ( enc<0x10000 )
-	    sprintf(buffer,"uni%04X", enc);
+	if ( map->unicode==NULL || map->namemax==0 )
+	    enc = 0;
 	else
-	    sprintf(buffer,"u%04X", enc);
+	    enc = map->unicode[cid];
+	temp = StdGlyphName(buffer,enc,ui_none,(NameList *) -1);
+	if ( temp!=buffer )
+	    strcpy(buffer,temp);
     } else
 	sprintf(buffer,"%s.%d", map->ordering, cid);
 #else
@@ -1044,12 +1042,9 @@ int CID2NameUni(struct cidmap *map,int cid, char *buffer, int len) {
 	    enc = 0;
 	else
 	    enc = map->unicode[cid];
-	if ( enc<psunicodenames_cnt && psunicodenames[enc]!=NULL )
-	    strncpy(buffer,psunicodenames[enc],len);
-	else if ( enc<0x10000 )
-	    snprintf(buffer,len,"uni%04X", enc);
-	else
-	    snprintf(buffer,len,"u%04X", enc);
+	temp = StdGlyphName(buffer,enc,ui_none,(NameList *) -1);
+	if ( temp!=buffer )
+	    strcpy(buffer,temp);
     } else
 	snprintf(buffer,len,"%s.%d", map->ordering, cid);
 #endif

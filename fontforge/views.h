@@ -253,7 +253,7 @@ typedef struct charview {
     Layer *layerheads[dm_max];
     real scale;
 #if defined(FONTFORGE_CONFIG_GTK)
-    GtkWidget *v;
+    GtkWidget *gw, *v;
     GtkWidget *vsb, *hsb, *mb;
     PangoFont *small, *normal;
     GtkWindow *icon;		/* Pixmap? */
@@ -878,7 +878,10 @@ extern void FVRegenChar(FontView *fv,SplineChar *sc);
 extern FontView *FontNew(void);
 extern FontView *ViewPostscriptFont(char *filename);
 #if defined(FONTFORGE_CONFIG_GTK)
-    /* These are defined in interface.h */
+    /* Many of these are defined in interface.h */
+extern char *AskNameTag(char *title,char *def,uint32 def_tag,uint16 flags,
+	int script_lang_index, enum possub_type type, SplineFont *sf, SplineChar *default_script,
+	int merge_with,int act_type);
 #elif defined(FONTFORGE_CONFIG_GDRAW)
 extern void _MenuWarnings(GWindow gw,struct gmenuitem *mi,GEvent *e);
 extern void MenuPrefs(GWindow base,struct gmenuitem *mi,GEvent *e);
@@ -1145,7 +1148,7 @@ extern void Prefs_ReplaceMacFeatures(GGadget *list);
 
 #if defined(FONTFORGE_CONFIG_GTK)
 extern char *FVOpenFont(char *title, const char *defaultfile,
-	const char *initial_filter, char **mimetypes,int mult,int newok);
+	const char *initial_filter,int mult);
 #elif defined(FONTFORGE_CONFIG_GDRAW)
 extern void SCAutoTrace(SplineChar *sc,GWindow v,int ask);
 extern unichar_t *FVOpenFont(char *title, const char *defaultfile,
@@ -1163,8 +1166,8 @@ extern int SFTFSetFont(GGadget *g, int start, int end, SplineFont *sf,
 extern void SFTFRegisterCallback(GGadget *g, void *cbcontext,
 	void (*changefontcallback)(void *,SplineFont *,enum sftf_fonttype,int size,int aa));
 extern GGadget *SFTextAreaCreate(struct gwindow *base, GGadgetData *gd,void *data);
-extern void DisplayDlg(SplineFont *sf);
 #endif
+extern void DisplayDlg(SplineFont *sf);
 
 extern void ShowAboutScreen(void);
 extern void DelayEvent(void (*func)(void *), void *data);
@@ -1279,9 +1282,12 @@ extern void SFAddGlyphAndEncode(SplineFont *sf,SplineChar *sc,EncMap *basemap, i
 #if defined(FONTFORGE_CONFIG_GDRAW)
 extern GMenuItem *GetEncodingMenu(void (*func)(GWindow,GMenuItem *,GEvent *),
 	Encoding *current);
+
+extern GTextInfo *TIFromName(const char *name);
 #endif
 
 extern void SFBdfProperties(SplineFont *sf, EncMap *map, BDFFont *thisone);
+
 
 struct instrdlg;
 uint8 *_IVParse(struct instrdlg *iv, char *text, int *len);
