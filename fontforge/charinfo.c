@@ -4504,7 +4504,7 @@ return( NULL );
 		    const char *temp = StdGlyphName(buffer,*pt,ui_none,(NameList *)-1);
 		    strcpy(components+len,temp);
 		    len += strlen( temp );
-		    components[len++] = '_';
+		    components[len++] = ' ';
 		}
 	    }
 	    if ( components!=NULL )
