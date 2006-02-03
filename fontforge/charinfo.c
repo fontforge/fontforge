@@ -4448,10 +4448,26 @@ static char *LigDefaultStr(int uni, char *name, int alt_lig ) {
 		(uname = _UnicodeNameAnnot[uni>>16][(uni>>8)&0xff][uni&0xff].name)!=NULL &&
 		strstr(uname,"LIGATURE")==NULL &&
 		strstr(uname,"VULGAR FRACTION")==NULL &&
+		uni!=0x152 && uni!=0x153 &&	/* oe ligature should not be standard */
+		uni!=0x132 && uni!=0x133 &&	/* nor ij */
 		(uni<0xfb2a || uni>0xfb4f) &&	/* Allow hebrew precomposed chars */
 		uni!=0x215f &&
-		!((uni>=0x0958 && uni<=0x095f) || uni==0x929 || uni==0x931 || uni==0x934))
+		!((uni>=0x0958 && uni<=0x095f) || uni==0x929 || uni==0x931 || uni==0x934)) {
 	    alt = NULL;
+	} else if ( _UnicodeNameAnnot==NULL ) {
+	    if ( (uni>=0xbc && uni<=0xbe ) ||		/* Latin1 fractions */
+		    (uni>=0x2153 && uni<=0x215e ) ||	/* other fractions */
+		    (uni>=0xfb00 && uni<=0xfb06 ) ||	/* latin ligatures */
+		    (uni>=0xfb13 && uni<=0xfb17 ) ||	/* armenian ligatures */
+		    uni==0xfb17 ||			/* hebrew ligature */
+		    (uni>=0xfb2a && uni<=0xfb4f ) ||	/* hebrew precomposed chars */
+		    (uni>=0xfbea && uni<=0xfdcf ) ||	/* arabic ligatures */
+		    (uni>=0xfdf0 && uni<=0xfdfb ) ||	/* arabic ligatures */
+		    (uni>=0xfef5 && uni<=0xfefc ))	/* arabic ligatures */
+		;	/* These are good */
+	    else
+		alt = NULL;
+	}
     }
     if ( alt==NULL ) {
 	if ( name==NULL || alt_lig )
