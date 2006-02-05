@@ -633,19 +633,24 @@
 	the character, even if the character was in the encoding. -->
 	フォントビュー (またはグリフビュー) 上で文字をタイプした時、フォントが文字を含んでいない場合、FontForge はその文字の符号位置に対応するスロットを (その符号位置にその文字がある場合でさえ) 選択していませんでした。
       <LI>
-	When loading a ps type3 font, make sure that the glyph name is available
+<!--	When loading a ps type3 font, make sure that the glyph name is available
 	when parsing glyphs so we can produce reasonable error msgs. (mostly this
-	means "Spline stroke is too big"
+	means "Spline stroke is too big"  )-->
+	PS Type3 フォントの読み込み時に、グリフの解析中にグリフ名が利用可能であるかどうか確認するようにしたので、理解しやすいエラーメッセージ (ほとんどの場合は、"スプラインの幅が太すぎます" というものですが) が表示できるようになりました。
       <LI>
-	Only generate Spline stroke too big errors once per font.
+<!--	Only generate Spline stroke too big errors once per font. -->
+	スプラインの幅が太すぎるというエラーメッセージをフォント1個につき1回しか出力しないように変更。
       <LI>
-	Adam Goode tells me that the format 12 (32bit unicode) cmap was wrong, and
-	provided a patch to fix it.
+<!--	Adam Goode tells me that the format 12 (32bit unicode) cmap was wrong, and
+	provided a patch to fix it. -->
+	Adam Goode が、フォーマット 12 (32 ビット Unicode) の CMap が間違っていることを指摘し、修正パッチを提供しました。
       <LI>
-	Pretty much rewrote the stroking command from scratch.
+<!--	Pretty much rewrote the stroking command from scratch. -->
+	ストロークコマンドをスクラッチから大々的に書き直し。
       <LI>
-	Merge fonts would crash when merging in a font containing either a ligature
-	caret or a nested lookup.
+<!--	Merge fonts would crash when merging in a font containing either a ligature
+	caret or a nested lookup. -->
+	合字キャレットまたは入れ子になった照合を含むフォントに別のフォントを併合しようとするとクラッシュしていました。
       <LI>
 	Made FontForge cognizant of the proposed unicode dotlessj character (0237),
 	it will now use either this or the dotlessj in adobe's private use area

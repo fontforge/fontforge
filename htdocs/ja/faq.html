@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 11-Dec-2005 -->
+  <!-- AP: Last modified: 1-Feb-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Frequently Asked Questions</TITLE>-->
     <TITLE>よくある質問</TITLE>
@@ -130,6 +130,10 @@
 <!--  <A HREF="#otf-diffs">I generated an opentype (or truetype) font and windows
       wouldn't install it. Why not?</A> -->
       <A HREF="#otf-diffs">OpenType フォントを出力したけど Windows にインストールされません。なぜですか?</A>
+    <LI>
+<!--  <A HREF="#DSIG">I have a truetype font with opentype tables, but windows
+      displays the "TT" (truetype) icon and not the "O" icon. Why?</A> -->
+      <A HREF="#DSIG">私は OpenType テーブルを含む TrueType フォントを持っているのですが、Windows では“O”アイコンではなく (TrueType の)“TT”アイコンが表示されます。なぜですか?</A>
   </UL>
   <H2>
 <!--  Font Conversions-->
@@ -1949,6 +1953,16 @@ $ xset fp+ `pwd`
 	  different -->
 	  そして、高度な組版機能を含むテーブルは完全に異なっています。
       </UL>
+    <DT>
+<!--  <A NAME="DSIG"><B>I have a truetype font with opentype tables, but windows
+      displays the "TT" (truetype) icon and not the "O" icon. Why?</B></A> -->
+      <A NAME="DSIG"><B>私は OpenType テーブルを含む TrueType フォントを持っているのですが、Windows では“O”アイコンではなく (TrueType の)“TT”アイコンが表示されます。なぜですか?</A>
+    <DD>
+<!--  As far as I can tell Windows will mark a truetype font with the "O" icon
+      if that font contains a 'DSIG' (Digital Signature) table. FontForge does
+      not produce digital signatures (I think they are of negative utility, and
+      anyway I don't know how to create them). -->
+      私の知るかぎりでは、Windowsh は&lsquo;DSIG&rsquo; (デジタル署名) テーブルが含まれている TrueType フォントを“O”アイコンで表示します。FontForge はデジタル署名を作成しません (私はそれをユーザの利便性を下げるための機能であると考えていますし、そうでなくても作り方を知らないからです)。
     <DT>
 <!--  <A NAME="mingliu"><B>I looked at kaiu.ttf or mingliu.ttf and the outlines
       looked nothing like the correct glyphs. What's wrong?</B></A> -->

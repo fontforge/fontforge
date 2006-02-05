@@ -90,7 +90,7 @@ When FontForge loads a plugin it calls a routine <CODE>int
 FontForgeInit(void)</CODE>. This routine is responsible for registering the
 plugin with FontForge, and then returning to allow FontForge to continue.
 FontForge provides two registration routines:-->
-FontForge  は、プラグインの読み込み時にルーチン <CODE>int FontForgeInit(void)</CODE> を呼び出します。このルーチンは責任を持って FontForge のプラグインを登録しり、それから FontForge の実行を続けるために呼び出し元に帰ります。FontForge は 2 つの登録ルーチンを提供します。
+FontForge  は、プラグインの読み込み時にルーチン <CODE>int FontForgeInit(void)</CODE> を呼び出します。このルーチンは責任を持って FontForge のプラグインを登録し、それから FontForge の実行を続けるために呼び出し元に帰ります。FontForge は 2 つの登録ルーチンを提供します。
 <DL>
   <DT>
     <CODE>AddEncoding(char *name,int (*enc_to_uni)(int), int
@@ -147,6 +147,6 @@ directory. -->
 <!--
 Look in the plugins subdirectory for an example on how to create, build &amp;
 install a plugin. -->
-どのようにしてプラグインを作成し、ビルドしてインストールするかについては、plugins サブディレクトリをの例を参照してください。
+どのようにしてプラグインを作成し、ビルドしてインストールするかについては、plugins サブディレクトリの例を参照してください。
 </DIV>
 </BODY></HTML>
