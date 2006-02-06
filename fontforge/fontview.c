@@ -10013,11 +10013,10 @@ return( GGadgetDispatchEvent(fv->vsb,event));
 	/*  confused if I start resizing the window myself, try to wait for */
 	/*  the user to finish before responding to resizes */
 	if ( event->u.resize.sized || fv->resize_expected ) {
-	    static GEvent temp;
 	    if ( fv->resize )
 		GDrawCancelTimer(fv->resize);
-	    temp = *event;
-	    fv->resize = GDrawRequestTimer(fv->v,300,0,(void *) &temp);
+	    fv->resize_event = *event;
+	    fv->resize = GDrawRequestTimer(fv->v,300,0,(void *) &fv->resize_event);
 	    fv->resize_expected = false;
 	}
       break;
