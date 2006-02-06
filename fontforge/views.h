@@ -483,6 +483,7 @@ typedef struct fontview {
     GGadget *vsb, *mb;
     GTimer *pressed;
     GTimer *resize;
+    GEvent resize_event;
     GIC *gic;
 #endif
     int width, height;		/* of v */
