@@ -1037,7 +1037,9 @@ int CID2NameUni(struct cidmap *map,int cid, char *buffer, int len) {
 	snprintf(buffer,len,"cid-%d", cid);
     else if ( cid<map->namemax && map->name[cid]!=NULL )
 	strncpy(buffer,map->name[cid],len);
-    else if ( cid==0 || (cid<map->namemax && map->unicode[cid]!=0 )) {
+    else if ( cid==0 )
+	strcpy(buffer,".notdef");
+    else if ( cid<map->namemax && map->unicode[cid]!=0 ) {
 	if ( map->unicode==NULL || map->namemax==0 )
 	    enc = 0;
 	else

@@ -175,13 +175,13 @@ const char *StdGlyphName(char *buffer, int uni,enum uni_interp interp,NameList *
 			(name = nl->unicode[up][ub][uc])!=NULL )
 	    break;
 	}
-	if ( name==NULL ) {
-	    if ( uni>=0x10000 )
-		sprintf( buffer, "u%04X", uni);
-	    else
-		sprintf( buffer, "uni%04X", uni);
-	    name = buffer;
-	}
+    }
+    if ( name==NULL ) {
+	if ( uni>=0x10000 )
+	    sprintf( buffer, "u%04X", uni);
+	else
+	    sprintf( buffer, "uni%04X", uni);
+	name = buffer;
     }
 return( name );
 }
