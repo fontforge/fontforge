@@ -77,6 +77,7 @@ struct gfc_data {
     GGadget *bmptype;
     GGadget *bmpsizes;
     GGadget *options;
+    GGadget *rename;
     int ps_flags;		/* The ordering of these flags fields is */
     int ttf_flags;		/*  important. We index into them */
     int otf_flags;		/*  don't reorder or put junk in between */
@@ -1875,7 +1876,8 @@ return( sizes );
 }
 
 int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
-	int res, char *subfontdefinition, struct sflist *sfs,EncMap *map) {
+	int res, char *subfontdefinition, struct sflist *sfs,EncMap *map,
+	NameList *rename_to) {
     int i;
     static char *bitmaps[] = {"bdf", "ttf", "sbit", "bin", /*"dfont", */"fnt", "otb", "pdb", "pt3", NULL };
     int32 *sizes=NULL;
@@ -1883,6 +1885,8 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
     struct sflist *sfi;
     char *freeme = NULL;
     int ret;
+    struct sflist *sfl;
+    char **former;
 
     if ( sf->bitmaps==NULL ) i = bf_none;
     else if ( strmatch(bitmaptype,"otf")==0 ) i = bf_ttf;
@@ -2084,6 +2088,15 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	    sizes = AllBitmapSizes(sf);
     }
 
+    former = NULL;
+    if ( rename_to!=NULL ) {
+	if ( sfs!=NULL ) {
+	    for ( sfl=sfs; sfl!=NULL; sfl=sfl->next )
+		sfl->former_names = SFTemporaryRenameGlyphsToNamelist(sfl->sf,rename_to);
+	} else
+	    former = SFTemporaryRenameGlyphsToNamelist(sf,rename_to);
+    }
+
     if ( sfs!=NULL ) {
 	int flags = 0;
 	if ( oldformatstate<=ff_cffcid )
@@ -2099,6 +2112,14 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	ret = !_DoSave(sf,filename,sizes,res,map);
     }
     free(freeme);
+
+    if ( rename_to!=NULL ) {
+	if ( sfs!=NULL ) {
+	    for ( sfl=sfs; sfl!=NULL; sfl=sfl->next )
+		SFTemporaryRestoreGlyphNames(sfl->sf,sfl->former_names);
+	} else
+	    SFTemporaryRestoreGlyphNames(sf,former);
+    }
 return( ret );
 }
 
@@ -2130,7 +2151,16 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
 #elif defined(FONTFORGE_CONFIG_GTK)
     static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_NO, NULL };
 #endif
+    struct sflist *sfl;
+    char **former;
+    NameList *rename_to;
+    GTextInfo *ti = GGadgetGetListItemSelected(d->rename);
+    char *nlname = u2utf8_copy(ti->text);
+    extern NameList *force_names_when_saving;
 
+    rename_to = NameListByName(nlname);
+    free(nlname);
+    
     for ( i=d->sf->glyphcnt-1; i>=1; --i )
 	if ( d->sf->glyphs[i]!=NULL && strcmp(d->sf->glyphs[i]->name,".notdef")==0 &&
 		(d->sf->glyphs[i]->layers[ly_fore].splines!=NULL || AnyRefs(d->sf->glyphs[i]->layers[ly_fore].refs )))
@@ -2251,10 +2281,29 @@ return;
       break;
     }
 
+    former = NULL;
+    if ( rename_to!=NULL && !iscid ) {
+	if ( sfs!=NULL ) {
+	    for ( sfl=sfs; sfl!=NULL; sfl=sfl->next )
+		sfl->former_names = SFTemporaryRenameGlyphsToNamelist(sfl->sf,rename_to);
+	} else
+	    former = SFTemporaryRenameGlyphsToNamelist(d->sf,rename_to);
+    }
+
     if ( !d->family )
 	err = _DoSave(d->sf,temp,sizes,0x80000000,d->map);
     else
 	err = !WriteMacFamily(temp,sfs,oldformatstate,oldbitmapstate,flags,d->map);
+
+    if ( rename_to!=NULL && !iscid ) {
+	if ( sfs!=NULL ) {
+	    for ( sfl=sfs; sfl!=NULL; sfl=sfl->next )
+		SFTemporaryRestoreGlyphNames(sfl->sf,sfl->former_names);
+	} else
+	    SFTemporaryRestoreGlyphNames(d->sf,former);
+    }
+    if ( !iscid )
+	force_names_when_saving = rename_to;
 
     free(temp);
     d->done = !err;
@@ -2594,8 +2643,8 @@ int SFGenerateFont(SplineFont *sf,int family,EncMap *map) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[16+2*48+2];
-    GTextInfo label[16+2*48+2];
+    GGadgetCreateData gcd[18+2*48+2];
+    GTextInfo label[18+2*48+2];
     struct gfc_data d;
     GGadget *pulldown, *files, *tf;
     int i, j, k, old, ofs, y, fc, dupfc, dupstyle;
@@ -2606,6 +2655,10 @@ int SFGenerateFont(SplineFont *sf,int family,EncMap *map) {
     SFArray *familysfs=NULL;
     uint16 psstyle;
     static int done=false;
+    extern NameList *force_names_when_saving;
+    char **nlnames;
+    int cnt;
+    GTextInfo *namelistnames;
 
     if ( !done ) {
 	done = true;
@@ -2693,7 +2746,7 @@ int SFGenerateFont(SplineFont *sf,int family,EncMap *map) {
 #endif
 	    }
 	}
-	if ( MacStyleCode(sf,NULL)!=0 || familycnt==0 || sf->multilayer ) {
+	if ( MacStyleCode(sf,NULL)!=0 || familycnt<=1 || sf->multilayer ) {
 	    gwwv_post_error(_("Bad Mac Family"),_("To generate a Mac family file, the current font must have plain (Normal, Regular, etc.) style, and there must be other open fonts with the same family name."));
 return( 0 );
 	} else if ( dup ) {
@@ -2723,9 +2776,9 @@ return( 0 );
     spacing = (totwid-4*bs-2*12)/3;
     pos.width = GDrawPointsToPixels(NULL,totwid);
     if ( family )
-	pos.height = GDrawPointsToPixels(NULL,285+13+26*familycnt);
+	pos.height = GDrawPointsToPixels(NULL,310+13+26*(familycnt-1));
     else
-	pos.height = GDrawPointsToPixels(NULL,285);
+	pos.height = GDrawPointsToPixels(NULL,310);
     gw = GDrawCreateTopWindow(NULL,&pos,e_h,&d,&wattrs);
 
     memset(&label,0,sizeof(label));
@@ -2734,9 +2787,9 @@ return( 0 );
     gcd[0].gd.flags = gg_visible | gg_enabled;
     gcd[0].creator = GFileChooserCreate;
 
-    y = 252;
+    y = 276;
     if ( family )
-	y += 13 + 26*familycnt;
+	y += 13 + 26*(familycnt-1);
 
     gcd[1].gd.pos.x = 12; gcd[1].gd.pos.y = y-3;
     gcd[1].gd.pos.width = -1;
@@ -2934,8 +2987,43 @@ return( 0 );
     gcd[9].gd.label = &label[9];
 
     k = 10;
+    label[k].text = (unichar_t *) _("Force glyph names to:");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 8; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+24+6;
+    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[k].gd.popup_msg = (unichar_t *) _("In the saved font, force all glyph names to match those in the specified namelist");
+    gcd[k++].creator = GLabelCreate;
+
+    gcd[k].gd.pos.x = gcd[k-2].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-6;
+    gcd[k].gd.pos.width = gcd[k-2].gd.pos.width;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[k].gd.popup_msg = (unichar_t *) _("In the saved font, force all glyph names to match those in the specified namelist");
+    gcd[k].creator = GListButtonCreate;
+    nlnames = AllNamelistNames();
+    for ( cnt=0; nlnames[cnt]!=NULL; ++cnt);
+    namelistnames = gcalloc(cnt+3,sizeof(GTextInfo));
+    namelistnames[0].text = (unichar_t *) _("No Rename");
+    namelistnames[0].text_is_1byte = true;
+    if ( force_names_when_saving==NULL ) {
+	namelistnames[0].selected = true;
+	gcd[k].gd.label = &namelistnames[0];
+    }
+    namelistnames[1].line = true;
+    for ( cnt=0; nlnames[cnt]!=NULL; ++cnt) {
+	namelistnames[cnt+2].text = (unichar_t *) nlnames[cnt];
+	namelistnames[cnt+2].text_is_1byte = true;
+	if ( force_names_when_saving!=NULL &&
+		strcmp(force_names_when_saving->title,nlnames[cnt])==0 ) {
+	    namelistnames[cnt+2].selected = true;
+	    gcd[k].gd.label = &namelistnames[cnt+2];
+	}
+    }
+    gcd[k++].gd.u.list = namelistnames;
+    free(nlnames);
+
     if ( family ) {
-	y = 250;
+	y = 276;
 
 	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = y;
 	gcd[k].gd.pos.width = totwid-5-5;
@@ -2988,8 +3076,9 @@ return( 0 );
 
     GGadgetsCreate(gw,gcd);
     GGadgetSetUserData(gcd[2].ret,gcd[0].ret);
+    free(namelistnames);
     free(label[9].text);
-    for ( i=11; i<k; ++i ) if ( gcd[i].gd.popup_msg!=NULL )
+    for ( i=13; i<k; ++i ) if ( gcd[i].gd.popup_msg!=NULL )
 	free((unichar_t *) gcd[i].gd.popup_msg);
 
     GFileChooserConnectButtons(gcd[0].ret,gcd[1].ret,gcd[2].ret);
@@ -3019,6 +3108,7 @@ return( 0 );
     d.pstype = gcd[6].ret;
     d.bmptype = gcd[8].ret;
     d.bmpsizes = gcd[9].ret;
+    d.rename = gcd[11].ret;
     d.gw = gw;
 
     d.ps_flags = old_ps_flags;

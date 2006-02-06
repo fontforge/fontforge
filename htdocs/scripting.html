@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 8-Jan-2006 -->
+  <!-- AP: Last modified: 5-Feb-2006 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -536,6 +536,19 @@ a[4][0] = "Nested array";
 	  ~/.PfaEdit/plugins
       </UL>
     <DT>
+      LoadNamelist(filename)
+    <DD>
+      Will load the namelist stored in the given file.
+    <DT>
+      LoadPluginDir([directory-name])
+    <DD>
+      Searches the given directory for things that look like fontforge plugins
+      and loads them. If directory is omitted then it will load the default directory:
+      <UL>
+	<LI>
+	  ~/.PfaEdit/
+      </UL>
+    <DT>
       DefaultOtherSubrs()
     <DD>
       Returns to using Adobe's versions of the OtherSubrs subroutines.
@@ -749,7 +762,7 @@ a[4][0] = "Nested array";
       sfd file (if the font has no sfd file then this is an error). With one argument
       it executes a SaveAs command, saving the current font to that filename.
     <DT>
-      <A HREF="filemenu.html#Generate">Generate</A>(filename[,bitmaptype[,fmflags[,res[,mult-sfd-file]]]])
+      <A HREF="filemenu.html#Generate">Generate</A>(filename[,bitmaptype[,fmflags[,res[,mult-sfd-file[,namelist-name]]]]])
     <DD>
       Generates a font. The type of font is determined by the extension of the
       filename. Valid extensions are:
@@ -1396,6 +1409,10 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
       AdobeStandard says it should be named "fi", modern fonts tend to call it
       "f_i". Reencoding to AdobeStandard will move this glyph to the right slot,
       and then name it "fi".
+    <DT>
+      <A HREF="encodingmenu.html#RenameGlyphs">RenameGlyphs</A>(namelist-name)
+    <DD>
+      Renames all the glyphs in the current font according to the namelist.
     <DT>
       SetCharCnt(cnt)
     <DD>

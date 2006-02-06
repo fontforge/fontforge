@@ -121,6 +121,10 @@ extern float rr_radius;				/* from cvpalettes.c */
 extern int ps_pointcnt;				/* from cvpalettes.c */
 extern float star_percent;			/* from cvpalettes.c */
 
+NameList *force_names_when_opening=NULL;
+NameList *force_names_when_saving=NULL;
+extern NameList *namelist_for_new_fonts;
+
 static int pointless;
 
 #define CID_Features	101
@@ -224,13 +228,16 @@ return( false );
 
 
 /* don't use mnemonics 'C' or 'O' (Cancel & OK) */
-enum pref_types { pr_int, pr_real, pr_bool, pr_enum, pr_encoding, pr_string, pr_file };
+enum pref_types { pr_int, pr_real, pr_bool, pr_enum, pr_encoding, pr_string,
+	pr_file, pr_namelist };
 struct enums { char *name; int value; };
 
 struct enums fvsize_enums[] = { {NULL} };
 
 static struct prefs_list {
     char *name;
+    	/* In the prefs file the untranslated name will always be used, but */
+	/* in the UI that name may be translated. */
     enum pref_types type;
     void *val;
     void *(*get)(void);
@@ -240,60 +247,62 @@ static struct prefs_list {
     unsigned int dontdisplay: 1;
     char *popup;
 } general_list[] = {
-	{ "AutoHint", pr_bool, &autohint_before_rasterize, NULL, NULL, 'A', NULL, 0, N_("AutoHint before rasterizing") },
-	{ "NewCharset", pr_encoding, &default_encoding, NULL, NULL, 'N', NULL, 0, N_("Default encoding for\nnew fonts") },
-	{ "NewEmSize", pr_int, &new_em_size, NULL, NULL, 'S', NULL, 0, N_("The default size of the Em-Square in a newly created font.") },
-	{ "NewFontsQuadratic", pr_bool, &new_fonts_are_order2, NULL, NULL, 'Q', NULL, 0, N_("Whether new fonts should contain splines of quadratic (truetype)\nor cubic (postscript & opentype).") },
-	{ "LoadedFontsAsNew", pr_bool, &loaded_fonts_same_as_new, NULL, NULL, 'L', NULL, 0, N_("Whether fonts loaded from the disk should retain their splines\nwith the original order (quadratic or cubic), or whether the\nsplines should be converted to the default order for new fonts\n(see NewFontsQuadratic).") },
-	{ "GreekNames", pr_bool, &greeknames, NULL, NULL, 'G', NULL, 0, N_("Adobe has assigned the names Delta, Omega and mu\nto Increment, Ohm and micro signs respectively\nThis seems very odd to Greek font designers who use\nthe names to refer to letters of the alphabet.\nSetting this flags means that the alphabetic characters will\nbe named Delta.greek, Omega.greek and mu.greek.") },
-	{ "ResourceFile", pr_file, &xdefs_filename, NULL, NULL, 'R', NULL, 0, N_("When FontForge starts up it loads display related resources from a\nproperty on the screen. Sometimes it is useful to be able to store\nthese resources in a file. These resources are only read at start\nup, so changing this has no effect until the next time you start\nFontForge.") },
-	{ "HelpDir", pr_file, &helpdir, NULL, NULL, 'R', NULL, 0, N_("The directory on your local system in which FontForge will search for help\nfiles.  If a file is not found there, then FontForge will look for it on the net.") },
-	{ "OtherSubrsFile", pr_file, &othersubrsfile, NULL, NULL, 'O', NULL, 0, N_("If you wish to replace Adobe's OtherSubrs array (for Type1 fonts)\nwith an array of your own, set this to point to a file containing\na list of up to 14 PostScript subroutines. Each subroutine must\nbe preceded by a line starting with '%%%%' (any text before the\nfirst '%%%%' line will be treated as an initial copyright notice).\nThe first three subroutines are for flex hints, the next for hint\nsubstitution (this MUST be present), the 14th (or 13 as the\nnumbering actually starts with 0) is for counter hints.\nThe subroutines should not be enclosed in a [ ] pair.") },
-	{ "FreeTypeInFontView", pr_bool, &use_freetype_to_rasterize_fv, NULL, NULL, 'O', NULL, 0, N_("Use the FreeType rasterized (when available)\nto rasterize glyphs in the font view.\nThis generally results in better quality.") },
+	{ N_("AutoHint"), pr_bool, &autohint_before_rasterize, NULL, NULL, 'A', NULL, 0, N_("AutoHint before rasterizing") },
+	{ N_("NewCharset"), pr_encoding, &default_encoding, NULL, NULL, 'N', NULL, 0, N_("Default encoding for\nnew fonts") },
+	{ N_("NewEmSize"), pr_int, &new_em_size, NULL, NULL, 'S', NULL, 0, N_("The default size of the Em-Square in a newly created font.") },
+	{ N_("NewFontsQuadratic"), pr_bool, &new_fonts_are_order2, NULL, NULL, 'Q', NULL, 0, N_("Whether new fonts should contain splines of quadratic (truetype)\nor cubic (postscript & opentype).") },
+	{ N_("LoadedFontsAsNew"), pr_bool, &loaded_fonts_same_as_new, NULL, NULL, 'L', NULL, 0, N_("Whether fonts loaded from the disk should retain their splines\nwith the original order (quadratic or cubic), or whether the\nsplines should be converted to the default order for new fonts\n(see NewFontsQuadratic).") },
+	{ N_("GreekNames"), pr_bool, &greeknames, NULL, NULL, 'G', NULL, 0, N_("Adobe has assigned the names Delta, Omega and mu\nto Increment, Ohm and micro signs respectively\nThis seems very odd to Greek font designers who use\nthe names to refer to letters of the alphabet.\nSetting this flags means that the alphabetic characters will\nbe named Delta.greek, Omega.greek and mu.greek.") },
+	{ N_("ResourceFile"), pr_file, &xdefs_filename, NULL, NULL, 'R', NULL, 0, N_("When FontForge starts up it loads display related resources from a\nproperty on the screen. Sometimes it is useful to be able to store\nthese resources in a file. These resources are only read at start\nup, so changing this has no effect until the next time you start\nFontForge.") },
+	{ N_("HelpDir"), pr_file, &helpdir, NULL, NULL, 'R', NULL, 0, N_("The directory on your local system in which FontForge will search for help\nfiles.  If a file is not found there, then FontForge will look for it on the net.") },
+	{ N_("OtherSubrsFile"), pr_file, &othersubrsfile, NULL, NULL, 'O', NULL, 0, N_("If you wish to replace Adobe's OtherSubrs array (for Type1 fonts)\nwith an array of your own, set this to point to a file containing\na list of up to 14 PostScript subroutines. Each subroutine must\nbe preceded by a line starting with '%%%%' (any text before the\nfirst '%%%%' line will be treated as an initial copyright notice).\nThe first three subroutines are for flex hints, the next for hint\nsubstitution (this MUST be present), the 14th (or 13 as the\nnumbering actually starts with 0) is for counter hints.\nThe subroutines should not be enclosed in a [ ] pair.") },
+	{ N_("FreeTypeInFontView"), pr_bool, &use_freetype_to_rasterize_fv, NULL, NULL, 'O', NULL, 0, N_("Use the FreeType rasterized (when available)\nto rasterize glyphs in the font view.\nThis generally results in better quality.") },
 	{ NULL }
 },
   editing_list[] = {
-	{ "AutoWidthSync", pr_bool, &adjustwidth, NULL, NULL, '\0', NULL, 0, N_("Changing the width of a glyph\nchanges the widths of all accented\nglyphs based on it.") },
-	{ "AutoLBearingSync", pr_bool, &adjustlbearing, NULL, NULL, '\0', NULL, 0, N_("Changing the left side bearing\nof a glyph adjusts the lbearing\nof other references in all accented\nglyphs based on it.") },
-	{ "ItalicConstrained", pr_bool, &ItalicConstrained, NULL, NULL, '\0', NULL, 0, N_("In the Outline View, the Shift key constrains motion to be parallel to the ItalicAngle rather than the vertical.") },
-	{ "ArrowMoveSize", pr_real, &arrowAmount, NULL, NULL, '\0', NULL, 0, N_("The number of em-units by which an arrow key will move a selected point") },
-	{ "SnapDistance", pr_real, &snapdistance, NULL, NULL, '\0', NULL, 0, N_("When the mouse pointer is within this many pixels\nof one of the various interesting features (baseline,\nwidth, grid splines, etc.) the pointer will snap\nto that feature.") },
-	{ "JoinSnap", pr_real, &joinsnap, NULL, NULL, '\0', NULL, 0, N_("The Edit->Join command will join points which are this close together\nA value of 0 means they must be coincident") },
-	{ "CopyMetaData", pr_bool, &copymetadata, NULL, NULL, '\0', NULL, 0, N_("When copying glyphs from the font view, also copy the\nglyphs' metadata (name, encoding, comment, etc).") },
-	{ "UndoDepth", pr_int, &maxundoes, NULL, NULL, '\0', NULL, 0, N_("The maximum number of Undoes/Redoes stored in a glyph") },
-	{ "StopAtJoin", pr_bool, &stop_at_join, NULL, NULL, '\0', NULL, 0, N_("When dragging points in the outline view a join may occur\n(two open contours may connect at their endpoints). When\nthis is On a join will cause FontForge to stop moving the\nselection (as if the user had released the mouse button).\nThis is handy if your fingers are inclined to wiggle a bit.") },
-	{ "UpdateFlex", pr_bool, &updateflex, NULL, NULL, '\0', NULL, 0, N_("Figure out flex hints after every change") },
-	{ "GlyphAutoGoto", pr_bool, &cv_auto_goto, NULL, NULL, '\0', NULL, 0, N_("Typing a normal character in the glyph view window changes the window to look at that character") },
+	{ N_("AutoWidthSync"), pr_bool, &adjustwidth, NULL, NULL, '\0', NULL, 0, N_("Changing the width of a glyph\nchanges the widths of all accented\nglyphs based on it.") },
+	{ N_("AutoLBearingSync"), pr_bool, &adjustlbearing, NULL, NULL, '\0', NULL, 0, N_("Changing the left side bearing\nof a glyph adjusts the lbearing\nof other references in all accented\nglyphs based on it.") },
+	{ N_("ItalicConstrained"), pr_bool, &ItalicConstrained, NULL, NULL, '\0', NULL, 0, N_("In the Outline View, the Shift key constrains motion to be parallel to the ItalicAngle rather than the vertical.") },
+	{ N_("ArrowMoveSize"), pr_real, &arrowAmount, NULL, NULL, '\0', NULL, 0, N_("The number of em-units by which an arrow key will move a selected point") },
+	{ N_("SnapDistance"), pr_real, &snapdistance, NULL, NULL, '\0', NULL, 0, N_("When the mouse pointer is within this many pixels\nof one of the various interesting features (baseline,\nwidth, grid splines, etc.) the pointer will snap\nto that feature.") },
+	{ N_("JoinSnap"), pr_real, &joinsnap, NULL, NULL, '\0', NULL, 0, N_("The Edit->Join command will join points which are this close together\nA value of 0 means they must be coincident") },
+	{ N_("CopyMetaData"), pr_bool, &copymetadata, NULL, NULL, '\0', NULL, 0, N_("When copying glyphs from the font view, also copy the\nglyphs' metadata (name, encoding, comment, etc).") },
+	{ N_("UndoDepth"), pr_int, &maxundoes, NULL, NULL, '\0', NULL, 0, N_("The maximum number of Undoes/Redoes stored in a glyph") },
+	{ N_("StopAtJoin"), pr_bool, &stop_at_join, NULL, NULL, '\0', NULL, 0, N_("When dragging points in the outline view a join may occur\n(two open contours may connect at their endpoints). When\nthis is On a join will cause FontForge to stop moving the\nselection (as if the user had released the mouse button).\nThis is handy if your fingers are inclined to wiggle a bit.") },
+	{ N_("UpdateFlex"), pr_bool, &updateflex, NULL, NULL, '\0', NULL, 0, N_("Figure out flex hints after every change") },
+	{ N_("GlyphAutoGoto"), pr_bool, &cv_auto_goto, NULL, NULL, '\0', NULL, 0, N_("Typing a normal character in the glyph view window changes the window to look at that character") },
 	{ NULL }
 },
   accent_list[] = {
-	{ "AccentOffsetPercent", pr_int, &accent_offset, NULL, NULL, '\0', NULL, 0, N_("The percentage of an em by which an accent is offset from its base glyph in Build Accent") },
-	{ "AccentCenterLowest", pr_bool, &GraveAcuteCenterBottom, NULL, NULL, '\0', NULL, 0, N_("When placing grave and acute accents above letters, should\nFontForge center them based on their full width, or\nshould it just center based on the lowest point\nof the accent.") },
-	{ "CharCenterHighest", pr_bool, &CharCenterHighest, NULL, NULL, '\0', NULL, 0, N_("When centering an accent over a glyph, should the accent\nbe centered on the highest point(s) of the glyph,\nor the middle of the glyph?") },
+	{ N_("AccentOffsetPercent"), pr_int, &accent_offset, NULL, NULL, '\0', NULL, 0, N_("The percentage of an em by which an accent is offset from its base glyph in Build Accent") },
+	{ N_("AccentCenterLowest"), pr_bool, &GraveAcuteCenterBottom, NULL, NULL, '\0', NULL, 0, N_("When placing grave and acute accents above letters, should\nFontForge center them based on their full width, or\nshould it just center based on the lowest point\nof the accent.") },
+	{ N_("CharCenterHighest"), pr_bool, &CharCenterHighest, NULL, NULL, '\0', NULL, 0, N_("When centering an accent over a glyph, should the accent\nbe centered on the highest point(s) of the glyph,\nor the middle of the glyph?") },
 	{ NULL }
 },
  args_list[] = {
-	{ "PreferPotrace", pr_bool, &preferpotrace, NULL, NULL, '\0', NULL, 0, N_("FontForge supports two different helper applications to do autotracing\n autotrace and potrace\nIf your system only has one it will use that one, if you have both\nuse this option to tell FontForge which to pick.") },
-	{ "AutotraceArgs", pr_string, NULL, GetAutoTraceArgs, SetAutoTraceArgs, '\0', NULL, 0, N_("Extra arguments for configuring the autotrace program\n(either autotrace or potrace)") },
-	{ "AutotraceAsk", pr_bool, &autotrace_ask, NULL, NULL, '\0', NULL, 0, N_("Ask the user for autotrace arguments each time autotrace is invoked") },
-	{ "MfArgs", pr_string, &mf_args, NULL, NULL, '\0', NULL, 0, N_("Commands to pass to mf (metafont) program, the filename will follow these") },
-	{ "MfAsk", pr_bool, &mf_ask, NULL, NULL, '\0', NULL, 0, N_("Ask the user for mf commands each time mf is invoked") },
-	{ "MfClearBg", pr_bool, &mf_clearbackgrounds, NULL, NULL, '\0', NULL, 0, N_("FontForge loads large images into the background of each glyph\nprior to autotracing them. You may retain those\nimages to look at after mf processing is complete, or\nremove them to save space") },
-	{ "MfShowErr", pr_bool, &mf_showerrors, NULL, NULL, '\0', NULL, 0, N_("MetaFont (mf) generates lots of verbiage to stdout.\nMost of the time I find it an annoyance but it is\nimportant to see if something goes wrong.") },
+	{ N_("PreferPotrace"), pr_bool, &preferpotrace, NULL, NULL, '\0', NULL, 0, N_("FontForge supports two different helper applications to do autotracing\n autotrace and potrace\nIf your system only has one it will use that one, if you have both\nuse this option to tell FontForge which to pick.") },
+	{ N_("AutotraceArgs"), pr_string, NULL, GetAutoTraceArgs, SetAutoTraceArgs, '\0', NULL, 0, N_("Extra arguments for configuring the autotrace program\n(either autotrace or potrace)") },
+	{ N_("AutotraceAsk"), pr_bool, &autotrace_ask, NULL, NULL, '\0', NULL, 0, N_("Ask the user for autotrace arguments each time autotrace is invoked") },
+	{ N_("MfArgs"), pr_string, &mf_args, NULL, NULL, '\0', NULL, 0, N_("Commands to pass to mf (metafont) program, the filename will follow these") },
+	{ N_("MfAsk"), pr_bool, &mf_ask, NULL, NULL, '\0', NULL, 0, N_("Ask the user for mf commands each time mf is invoked") },
+	{ N_("MfClearBg"), pr_bool, &mf_clearbackgrounds, NULL, NULL, '\0', NULL, 0, N_("FontForge loads large images into the background of each glyph\nprior to autotracing them. You may retain those\nimages to look at after mf processing is complete, or\nremove them to save space") },
+	{ N_("MfShowErr"), pr_bool, &mf_showerrors, NULL, NULL, '\0', NULL, 0, N_("MetaFont (mf) generates lots of verbiage to stdout.\nMost of the time I find it an annoyance but it is\nimportant to see if something goes wrong.") },
 	{ NULL }
 },
  generate_list[] = {
-	{ "FoundryName", pr_string, &BDFFoundry, NULL, NULL, 'F', NULL, 0, N_("Name used for foundry field in bdf\nfont generation") },
-	{ "TTFFoundry", pr_string, &TTFFoundry, NULL, NULL, 'T', NULL, 0, N_("Name used for Vendor ID field in\nttf (OS/2 table) font generation.\nMust be no more than 4 characters") },
-	{ "XUID-Base", pr_string, &xuid, NULL, NULL, 'X', NULL, 0, N_("If specified this should be a space separated list of integers each\nless than 16777216 which uniquely identify your organization\nFontForge will generate a random number for the final component.") },
-	{ "AskBDFResolution", pr_bool, &ask_user_for_resolution, NULL, NULL, 'B', NULL, 0, N_("When generating a set of BDF fonts ask the user\nto specify the screen resolution of the fonts\notherwise FontForge will guess depending on the pixel size.") },
-	{ "PreferCJKEncodings", pr_bool, &prefer_cjk_encodings, NULL, NULL, 'C', NULL, 0, N_("When loading a truetype or opentype font which has both a unicode\nand a CJK encoding table, use this flag to specify which\nshould be loaded for the font.") },
-	{ "HintForGen", pr_bool, &autohint_before_generate, NULL, NULL, 'H', NULL, 0, N_("AutoHint changed glyphs before generating a font") },
-	{ "AlwaysGenApple", pr_bool, &alwaysgenapple, NULL, NULL, 'A', NULL, 0, N_("Apple and MS/Adobe differ about the format of truetype and opentype files\nThis controls the default setting of the Apple checkbox in the File->Generate Font dlg.\nThe main differences are:\n The requirements for the 'postscript' name in the name table conflict\n Bitmap data are stored in different tables\n Scaled composite glyphs are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop\nIf both this and OpenType are set, both formats are generated") },
-	{ "AlwaysGenOpenType", pr_bool, &alwaysgenopentype, NULL, NULL, 'O', NULL, 0, N_("Apple and MS/Adobe differ about the format of truetype and opentype files\nThis controls the default setting of the OpenType checkbox in the File->Generate Font dlg.\nThe main differences are:\n The requirements for the 'postscript' name in the name table conflict\n Bitmap data are stored in different tables\n Scaled composite glyphs are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop\nIf both this and Apple are set, both formats are generated") },
-	{ "PreserveTables", pr_string, &SaveTablesPref, NULL, NULL, 'P', NULL, 0, N_("Enter a list of 4 letter table tags, separated by commas.\nFontForge will make a binary copy of these tables when it\nloads a True/OpenType font, and will output them (unchanged)\nwhen it generates the font. Do not include table tags which\nFontForge thinks it understands.") },
+	{ N_("FoundryName"), pr_string, &BDFFoundry, NULL, NULL, 'F', NULL, 0, N_("Name used for foundry field in bdf\nfont generation") },
+	{ N_("TTFFoundry"), pr_string, &TTFFoundry, NULL, NULL, 'T', NULL, 0, N_("Name used for Vendor ID field in\nttf (OS/2 table) font generation.\nMust be no more than 4 characters") },
+	{ N_("XUID-Base"), pr_string, &xuid, NULL, NULL, 'X', NULL, 0, N_("If specified this should be a space separated list of integers each\nless than 16777216 which uniquely identify your organization\nFontForge will generate a random number for the final component.") },
+	{ N_("AskBDFResolution"), pr_bool, &ask_user_for_resolution, NULL, NULL, 'B', NULL, 0, N_("When generating a set of BDF fonts ask the user\nto specify the screen resolution of the fonts\notherwise FontForge will guess depending on the pixel size.") },
+	{ N_("PreferCJKEncodings"), pr_bool, &prefer_cjk_encodings, NULL, NULL, 'C', NULL, 0, N_("When loading a truetype or opentype font which has both a unicode\nand a CJK encoding table, use this flag to specify which\nshould be loaded for the font.") },
+	{ N_("HintForGen"), pr_bool, &autohint_before_generate, NULL, NULL, 'H', NULL, 0, N_("AutoHint changed glyphs before generating a font") },
+	{ N_("AlwaysGenApple"), pr_bool, &alwaysgenapple, NULL, NULL, 'A', NULL, 0, N_("Apple and MS/Adobe differ about the format of truetype and opentype files\nThis controls the default setting of the Apple checkbox in the File->Generate Font dlg.\nThe main differences are:\n The requirements for the 'postscript' name in the name table conflict\n Bitmap data are stored in different tables\n Scaled composite glyphs are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop\nIf both this and OpenType are set, both formats are generated") },
+	{ N_("AlwaysGenOpenType"), pr_bool, &alwaysgenopentype, NULL, NULL, 'O', NULL, 0, N_("Apple and MS/Adobe differ about the format of truetype and opentype files\nThis controls the default setting of the OpenType checkbox in the File->Generate Font dlg.\nThe main differences are:\n The requirements for the 'postscript' name in the name table conflict\n Bitmap data are stored in different tables\n Scaled composite glyphs are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop\nIf both this and Apple are set, both formats are generated") },
+	{ N_("PreserveTables"), pr_string, &SaveTablesPref, NULL, NULL, 'P', NULL, 0, N_("Enter a list of 4 letter table tags, separated by commas.\nFontForge will make a binary copy of these tables when it\nloads a True/OpenType font, and will output them (unchanged)\nwhen it generates the font. Do not include table tags which\nFontForge thinks it understands.") },
+	{ N_("NewFontNameList"), pr_namelist, &namelist_for_new_fonts, NULL, NULL, 'P', NULL, 0, N_("Enter a list of 4 letter table tags, separated by commas.\nFontForge will make a binary copy of these tables when it\nloads a True/OpenType font, and will output them (unchanged)\nwhen it generates the font. Do not include table tags which\nFontForge thinks it understands.") },
 	{ NULL }
 },
+/* These are hidden, so will never appear in ui, hence, no "N_(" */
  hidden_list[] = {
 	{ "AntiAlias", pr_bool, &default_fv_antialias, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultFVShowHmetrics", pr_int, &default_fv_showhmetrics, NULL, NULL, '\0', NULL, 1 },
@@ -337,6 +346,8 @@ static struct prefs_list {
 	{ "GridFitDpi", pr_int, &gridfit_dpi, NULL, NULL, '\0', NULL, 1 },
 	{ "GridFitDepth", pr_int, &gridfit_depth, NULL, NULL, '\0', NULL, 1 },
 	{ "GridFitPointSize", pr_real, &gridfit_pointsize, NULL, NULL, '\0', NULL, 1 },
+	{ "ForceNamesWhenOpening", pr_namelist, &force_names_when_opening, NULL, NULL, '\0', NULL, 1 },
+	{ "ForceNamesWhenSaving", pr_namelist, &force_names_when_saving, NULL, NULL, '\0', NULL, 1 },
 	{ NULL }
 },
  oldnames[] = {
@@ -373,7 +384,13 @@ int GetPrefs(char *name,Val *val) {
 		val->u.sval = copy( *((char **) (pf->val)));
 	    } else if ( pf->type == pr_encoding ) {
 		val->type = v_str;
-		val->u.sval = copy( (*((Encoding **) (pf->val)))->enc_name );
+		if ( *((NameList **) (pf->val))==NULL )
+		    val->u.sval = copy( "NULL" );
+		else
+		    val->u.sval = copy( (*((Encoding **) (pf->val)))->enc_name );
+	    } else if ( pf->type == pr_namelist ) {
+		val->type = v_str;
+		val->u.sval = copy( (*((NameList **) (pf->val)))->title );
 	    } else if ( pf->type == pr_real ) {
 		val->type = v_real;
 		val->u.fval = *((float *) (pf->val));
@@ -420,6 +437,18 @@ return( -1 );
 		    if ( enc==NULL )
 return( -1 );
 		    *((Encoding **) (pf->val)) = enc;
+		} else
+return( -1 );
+	    } else if ( pf->type == pr_namelist ) {
+		if ( val2!=NULL )
+return( -1 );
+		else if ( val1->type==v_str ) {
+		    NameList *nl = NameListByName(val1->u.sval);
+		    if ( strcmp(val1->u.sval,"NULL")==0 && pf->val != &namelist_for_new_fonts )
+			nl = NULL;
+		    else if ( nl==NULL )
+return( -1 );
+		    *((NameList **) (pf->val)) = nl;
 		} else
 return( -1 );
 	    } else
@@ -715,6 +744,7 @@ void LoadPrefs(void) {
 #if !defined(NODYNAMIC)
     LoadPluginDir(NULL);
 #endif
+    LoadNamelistDir(NULL);
     LoadPfaEditEncodings();
     LoadGroupList();
 
@@ -766,6 +796,14 @@ void LoadPrefs(void) {
 		    if ( enc==NULL )
 			enc = &custom;
 		    *((Encoding **) (pl->val)) = enc;
+		}
+	      break;
+	      case pr_namelist:
+		{ NameList *nl = NameListByName(pt);
+		    if ( strcmp(pt,"NULL")==0 && pl->val != &namelist_for_new_fonts )
+			*((NameList **) (pl->val)) = NULL;
+		    else if ( nl!=NULL )
+			*((NameList **) (pl->val)) = nl;
 		}
 	      break;
 	      case pr_bool: case pr_int:
@@ -824,6 +862,10 @@ return;
 	switch ( pl->type ) {
 	  case pr_encoding:
 	    fprintf( p, "%s:\t%s\n", pl->name, (*((Encoding **) (pl->val)))->enc_name );
+	  break;
+	  case pr_namelist:
+	    fprintf( p, "%s:\t%s\n", pl->name, *((NameList **) (pl->val))==NULL ? "NULL" :
+		    (*((NameList **) (pl->val)))->title );
 	  break;
 	  case pr_bool: case pr_int:
 	    fprintf( p, "%s:\t%d\n", pl->name, *(int *) (pl->val) );
@@ -1345,6 +1387,16 @@ return( true );
 		    enc = 1;	/* So gcc doesn't complain about unused. It is unused, but why add the ifdef and make the code even messier? */
 		}
 	      break;
+	      case pr_namelist:
+		{ NameList *nl;
+		  GTextInfo *ti = GGadgetGetListItemSelected(GWidgetGetControl(gw,j*1000+1000+i));
+		  char *name = u2utf8_copy(ti->text);
+		    nl = NameListByName(name);
+		    free(name);
+		    if ( nl!=NULL )
+			*((NameList **) (pl->val)) = nl;
+		}
+	      break;
 	      case pr_string: case pr_file:
 	        ret = _GGadgetGetTitle(GWidgetGetControl(gw,j*1000+1000+i));
 		if ( pl->val!=NULL ) {
@@ -1630,7 +1682,7 @@ void DoPrefs(void) {
 	    pl = &visible_prefs_list[k].pl[i];
 	    if ( pl->dontdisplay )
 	continue;
-	    plabel[gc].text = (unichar_t *) pl->name;
+	    plabel[gc].text = (unichar_t *) _(pl->name);
 	    plabel[gc].text_is_1byte = true;
 	    pgcd[gc].gd.label = &plabel[gc];
 	    pgcd[gc].gd.mnemonic = pl->mn;
@@ -1694,6 +1746,26 @@ void DoPrefs(void) {
 		++gc;
 		y += 28;
 	      break;
+	      case pr_namelist:
+	        { char **nlnames = AllNamelistNames();
+		int cnt;
+		GTextInfo *namelistnames;
+		for ( cnt=0; nlnames[cnt]!=NULL; ++cnt);
+		namelistnames = gcalloc(cnt+1,sizeof(GTextInfo));
+		for ( cnt=0; nlnames[cnt]!=NULL; ++cnt) {
+		    namelistnames[cnt].text = (unichar_t *) nlnames[cnt];
+		    namelistnames[cnt].text_is_1byte = true;
+		    if ( strcmp((*(NameList **) (pl->val))->title,nlnames[cnt])==0 ) {
+			namelistnames[cnt].selected = true;
+			pgcd[gc].gd.label = &namelistnames[cnt];
+		    }
+		}
+		pgcd[gc].gd.u.list = namelistnames;
+		pgcd[gc].creator = GListButtonCreate;
+		pgcd[gc].gd.pos.width = 160;
+		++gc;
+		y += 28;
+	      } break;
 	      case pr_string: case pr_file:
 		if ( pl->set==SetAutoTraceArgs || ((char **) pl->val)==&mf_args )
 		    pgcd[gc].gd.pos.width = 160;
@@ -1850,6 +1922,9 @@ void DoPrefs(void) {
 	    if ( aspects[k].gcd[gc+1].gd.u.list!=encodingtypes )
 		GTextInfoListFree(aspects[k].gcd[gc+1].gd.u.list);
 	  } break;
+	  case pr_namelist:
+	    free(aspects[k].gcd[gc+1].gd.u.list);
+	  break;
 	  case pr_string: case pr_file: case pr_int: case pr_real:
 	    free(plabels[k][gc+1].text);
 	    if ( pl->type==pr_file )

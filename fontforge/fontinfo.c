@@ -1182,6 +1182,9 @@ const char *TTFNameIds(int id) {
 	if ( ttfnameids[i].userdata == (void *) id )
 return( (char *) ttfnameids[i].text );
 
+    if ( id==6 )
+return( "Postscript" );
+
 return( _("Unknown") );
 }
 

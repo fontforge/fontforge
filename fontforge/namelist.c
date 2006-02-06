@@ -35,7 +35,7 @@ static struct psaltnames {
 } psaltnames[];
 
 static NameList agl_sans, agl, adobepua, greeksc, tex, ams;
-static NameList *namelist_for_new_fonts = &agl;
+NameList *namelist_for_new_fonts = &agl;
 
 	/* Adobe's standard names are wrong for: */
 	/* 0x0162 is named Tcommaaccent, 0x21A should be */
@@ -297,6 +297,324 @@ NameList *NameListByName(char *name) {
 return( nl );
     }
 return( NULL );
+}
+
+static void NameListFreeContents(NameList *nl) {
+    int np, nb, nc, i;
+
+    for ( np=0; np<17; ++np ) if ( nl->unicode[np]!=NULL ) {
+	for ( nb=0; nb<256; ++nb ) if ( nl->unicode[np][nb]!=NULL ) {
+	    for ( nc=0; nc<256; ++nc ) if ( nl->unicode[np][nb][nc]!=NULL )
+		free((char *)nl->unicode[np][nb][nc] );
+	    free( (char **) nl->unicode[np][nb]);
+	}
+	free( (char ***) nl->unicode[np]);
+    }
+    free( nl->title );
+    if ( nl->renames!=NULL ) {
+	for ( i=0; nl->renames[i].from!=NULL; ++i ) {
+	    free(nl->renames[i].from);
+	    free(nl->renames[i].to);
+	}
+	free(nl->renames);
+    }
+}
+
+static void NameListFree(NameList *nl) {
+    NameListFreeContents(nl);
+    chunkfree(nl,sizeof(NameList));
+}
+/* ************************************************************************** */
+
+#include <sys/types.h>
+#include <dirent.h>
+
+int LoadNamelist(char *filename) {
+    FILE *file = fopen(filename,"r");
+    NameList *nl, *nl2;
+    char buffer[400];
+    char *pt, *end, *test;
+    int uni;
+    int len;
+    int up, ub, uc;
+    int rn_cnt=0, rn_max = 0;
+# if defined(FONTFORGE_CONFIG_GTK)
+    gsize read, written;
+# endif
+
+    if ( file==NULL )
+return( false );
+
+    nl = chunkalloc(sizeof(NameList));
+    pt = strrchr(filename,'/');
+    if ( pt==NULL ) pt = filename; else ++pt;
+# if defined(FONTFORGE_CONFIG_GTK)
+    nl->title = g_filename_to_utf8(pt,-1,&read,&written,NULL);
+# else
+    nl->title = def2utf8_copy(pt);
+# endif
+    pt = strrchr(nl->title,'.');
+    if ( pt!=NULL ) *pt = '\0';
+
+    while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
+	if ( buffer[0]=='#' || buffer[0]=='\n' || buffer[0]=='\r' )
+    continue;
+	len = strlen( buffer );
+	if ( buffer[len-1]=='\n' ) buffer[--len] = '\0';
+	if ( buffer[len-1]=='\r' ) buffer[--len] = '\0';
+	if ( strncmp(buffer,"Based:",6)==0 ) {
+	    for ( pt=buffer+6; *pt==' ' || *pt=='\t'; ++pt);
+	    for ( nl2 = &agl; nl2!=NULL; nl2 = nl2->next )
+		if ( strcmp( nl2->title,pt )==0 )
+	    break;
+	    if ( nl2==NULL ) {
+		gwwv_post_error(_("NameList base missing"),_("NameList %s based on %s which could not be found"), nl->title, pt );
+		NameListFree(nl);
+return( false );
+	    } else if ( nl->basedon!=NULL ) {
+		gwwv_post_error(_("NameList based twice"),_("NameList %s based on two NameLists"), nl->title );
+		NameListFree(nl);
+return( false );
+	    }
+	    nl->basedon = nl2;
+	} else if ( strncmp(buffer,"Rename:",7)==0 ) {
+	    for ( pt=buffer+7; *pt==' ' || *pt=='\t'; ++pt);
+	    for ( test=pt; *test!=' ' && *test!='\t' && *test!='\0'; ++test );
+	    if ( *test=='\0' ) {
+		gwwv_post_error(_("NameList parsing error"),_("Missing rename \"to\" name %s\n%s"), nl->title, buffer );
+		NameListFree(nl);
+return( false );
+	    }
+	    *test='\0';
+	    for ( ++test; *test==' ' || *test=='\t'; ++test);
+	    if ( (test[0]=='-' || test[0]=='=') && test[1]=='>' )
+		for ( test+=2; *test==' ' || *test=='\t'; ++test);
+	    if ( *test=='\0' ) {
+		gwwv_post_error(_("NameList parsing error"),_("Missing rename \"to\" name %s\n%s"), nl->title, buffer );
+		NameListFree(nl);
+return( false );
+	    }
+	    if ( rn_cnt>=rn_max-1 )
+		nl->renames = grealloc(nl->renames,(rn_max+=20)*sizeof(struct renames));
+	    nl->renames[rn_cnt].from   = copy(pt);
+	    nl->renames[rn_cnt].to     = copy(test);
+	    nl->renames[++rn_cnt].from = NULL;		/* End mark */
+	} else {
+	    pt = buffer;
+	    if ( *pt=='0' && (pt[1]=='x' || pt[1]=='X'))
+		pt += 2;
+	    else if (( *pt=='u' || *pt=='U') && pt[1]=='+' )
+		pt += 2;
+	    uni = strtol(pt,&end,16);
+	    if ( end==pt || uni<0 || uni>=unicode4_size ) {
+		gwwv_post_error(_("NameList parsing error"),_("Bad unicode value when parsing %s\n%s"), nl->title, buffer );
+		NameListFree(nl);
+return( false );
+	    }
+	    pt = end;
+	    while ( *pt==' ' || *pt==';' || *pt=='\t' ) ++pt;
+	    if ( *pt=='\0' ) {
+		gwwv_post_error(_("NameList parsing error"),_("Missing name when parsing %s for unicode %x"), nl->title, uni );
+		NameListFree(nl);
+return( false );
+	    }
+	    for ( test=pt; *test; ++test ) {
+		if ( *test<=' ' ||
+		    *test=='(' || *test=='[' || *test=='{' || *test=='<' ||
+		    *test==')' || *test==']' || *test=='}' || *test=='>' ||
+		    *test=='%' || *test=='/' ) {
+		    gwwv_post_error(_("NameList parsing error"),_("Bad name when parsing %s for unicode %x"), nl->title, uni );
+		    NameListFree(nl);
+return( false );
+		}
+	    }
+	    up = uni>>16;
+	    ub = (uni&0xff00)>>8;
+	    uc = uni&0xff;
+	    if ( nl->unicode[up]==NULL )
+		nl->unicode[up] = gcalloc(256,sizeof(char **));
+	    if ( nl->unicode[up][ub]==NULL )
+		nl->unicode[up][ub] = gcalloc(256,sizeof(char *));
+	    if ( nl->unicode[up][ub][uc]==NULL )
+		nl->unicode[up][ub][uc]=copy(pt);
+	    else {
+		gwwv_post_error(_("NameList parsing error"),_("Multiple names when parsing %s for unicode %x"), nl->title, uni );
+		NameListFree(nl);
+return( false );
+	    }
+	}
+    }
+
+    fclose(file);
+    for ( nl2 = &agl; nl2->next!=NULL; nl2=nl2->next ) {
+	if ( strcmp(nl2->title,nl->title)==0 ) {	/* Replace old version */
+	    NameList *next = nl2->next;
+	    NameListFreeContents(nl2);
+	    *nl2 = *nl;
+	    nl2->next = next;
+	    chunkfree(nl,sizeof(NameList));
+return( true );
+	}
+    }
+    nl2->next = nl;
+return( true );
+}
+
+static int isnamelist(char *filename) {
+    char *pt;
+
+    pt = strrchr(filename,'.');
+    if ( pt==NULL )
+return( false );
+    if ( strcmp(pt,".nam")==0 )
+return( true );
+
+return( false );
+}
+
+void LoadNamelistDir(char *dir) {
+    char prefdir[1024];
+    DIR *diro;
+    struct dirent *ent;
+    char buffer[1025];
+
+    if ( dir == NULL )
+	dir = getPfaEditDir(prefdir);
+
+    diro = opendir(dir);
+    if ( diro==NULL )		/* It's ok not to have any */
+return;
+    
+    while ( (ent = readdir(diro))!=NULL ) {
+	if ( isnamelist(ent->d_name) ) {
+	    sprintf( buffer, "%s/%s", dir, ent->d_name );
+	    LoadNamelist(buffer);
+	}
+    }
+    closedir(diro);
+}
+/* ************************************************************************** */
+const char *RenameGlyphToNamelist(char *buffer, SplineChar *sc,NameList *old,NameList *new) {
+    int i, up, ub, uc, ch;
+    char space[80];		/* glyph names are supposed to be less<=31 chars */
+    char tempbuf[32];
+    char *pt, *start, *opt, *oend; const char *newsubname;
+    SplineChar *tempsc;
+    NameList *nl;
+
+    if ( sc->unicodeenc!=-1 ) {
+	up = sc->unicodeenc>>16;
+	ub = (sc->unicodeenc>>8)&0xff;
+	uc = (sc->unicodeenc&0xff);
+	for ( nl=new; nl!=NULL; nl=nl->basedon )
+	    if ( nl->unicode[up]!=NULL && nl->unicode[up][ub]!=NULL && nl->unicode[up][ub][uc]!=NULL )
+return( nl->unicode[up][ub][uc] );
+	if ( up==0 )
+	    sprintf( buffer, "uni%04X", sc->unicodeenc );
+	else
+	    sprintf( buffer, "u%04X", sc->unicodeenc );
+return( buffer );
+    } else {
+	if ( old!=NULL && old->renames!=NULL ) {
+	    for ( i=0; old->renames[i].from!=NULL; ++i )
+		if ( strcmp(sc->name,old->renames[i].from)==0 )
+return( old->renames[i].to );
+	}
+	if ( new->renames!=NULL ) {
+	    for ( i=0; new->renames[i].from!=NULL; ++i )
+		if ( strcmp(sc->name,new->renames[i].to)==0 )
+return( new->renames[i].from );
+	}
+	if ( strlen(sc->name)>sizeof(space)-1 )
+return( sc->name );
+	strcpy(space,sc->name);
+	opt = buffer; oend = buffer+31;
+	start = space;
+	/* Check for composite names f_i, A.small */
+	while ( *start ) {
+	    for ( pt=start; *pt!='\0' && *pt!='.' && *pt!='_'; ++pt );
+	    if ( *pt=='\0' && start==space )
+return( sc->name );
+	    ch = *pt;
+	    *pt = '\0';
+	    tempsc = SFGetChar(sc->parent,-1,start);
+	    if ( tempsc==NULL )
+return( sc->name );
+	    newsubname = RenameGlyphToNamelist(tempbuf,tempsc,old,new);
+	    while ( opt<oend && *newsubname )
+		*opt++ = *newsubname++;
+	    if ( *newsubname )
+return( sc->name );
+	    if ( ch=='\0' ) {
+		*opt = '\0';
+return( buffer );
+	    } else if ( ch=='.' ) {
+		/* don't attempt to translate anything after a '.' just copy that litterally */
+		while ( opt<oend && *pt )
+		    *opt++ = *pt++;
+		if ( *pt )
+return( sc->name );
+		*opt = '\0';
+return( buffer );
+	    } else {		/* _ */
+		*opt++ = '_';
+		start = pt+1;
+	    }
+	}
+	*opt = '\0';
+return( buffer );
+    }
+}
+
+void SFRenameGlyphsToNamelist(SplineFont *sf,NameList *new) {
+    int gid;
+    char buffer[40]; const char *name;
+    SplineChar *sc;
+
+    if ( new==NULL )
+return;
+
+    for ( gid = 0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
+	name = RenameGlyphToNamelist(buffer,sc,sf->for_new_glyphs,new);
+	if ( name!=sc->name ) {
+	    free(sc->name);
+	    sc->name = copy(name);
+	}
+    }
+    sf->for_new_glyphs = new;
+}
+
+char **SFTemporaryRenameGlyphsToNamelist(SplineFont *sf,NameList *new) {
+    int gid;
+    char buffer[40]; const char *name;
+    SplineChar *sc;
+    char **ret;
+
+    if ( new==NULL )
+return( NULL );
+
+    ret = gcalloc(sf->glyphcnt,sizeof(char *));
+    for ( gid = 0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
+	name = RenameGlyphToNamelist(buffer,sc,sf->for_new_glyphs,new);
+	if ( name!=sc->name ) {
+	    ret[gid] = sc->name;
+	    sc->name = copy(name);
+	}
+    }
+return( ret );
+}
+
+void SFTemporaryRestoreGlyphNames(SplineFont *sf,char **former) {
+    int gid;
+    SplineChar *sc;
+
+    for ( gid = 0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
+	if ( former[gid]!=NULL ) {
+	    free(sc->name);
+	    sc->name = former[gid];
+	}
+    }
+    free(former);
 }
 /* ************************************************************************** */
 static const char *agl_sans_p0_b0[] = {
@@ -3409,7 +3727,7 @@ static const char **agl_sans_p0[] = {
 
 static NameList agl_sans = {
 	NULL,
-	"AGL Without afii",
+	"AGL without afii",
 	{ agl_sans_p0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
 };
 /* ************************************************************************** */
