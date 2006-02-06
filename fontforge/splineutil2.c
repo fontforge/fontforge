@@ -794,6 +794,41 @@ static void ApproxBounds(DBounds *b,TPoint *mid, int cnt) {
     }
 }
 
+static int GoodCurve(SplinePoint *sp, int check_prev ) {
+    double dx, dy, lenx, leny;
+
+    if ( sp->pointtype!=pt_curve )
+return( false );
+    if ( check_prev ) {
+	dx = sp->me.x - sp->prevcp.x;
+	dy = sp->me.y - sp->prevcp.y;
+    } else {
+	dx = sp->me.x - sp->nextcp.x;
+	dy = sp->me.y - sp->nextcp.y;
+    }
+    /* If the cp is very close to the base point the point might as well be a corner */
+    if ( dx<0 ) dx = -dx;
+    if ( dy<0 ) dy = -dy;
+    if ( dx+dy<1 )
+return( false );
+
+    if ( check_prev ) {
+	if ( sp->prev==NULL )
+return( true );
+	lenx = sp->me.x - sp->prev->from->me.x;
+	leny = sp->me.y - sp->prev->from->me.y;
+    } else {
+	lenx = sp->me.x - sp->next->to->me.x;
+	leny = sp->me.y - sp->next->to->me.y;
+    }
+    if ( lenx<0 ) lenx = -lenx;
+    if ( leny<0 ) leny = -leny;
+    if ( 50*(dx+dy) < lenx+leny )
+return( false );
+
+return( true );
+}
+
 /* I used to do a least squares aproach adding two more to the above set of equations */
 /*  which held the slopes constant. But that didn't work very well. So instead*/
 /*  I'm doing the approximation, and then forcing the control points to be */
@@ -858,16 +893,22 @@ return( SplineMake2(from,to));
     }
     /* From here down we are only working with cubic splines */
 
-    if ( !to->noprevcp || to->pointtype == pt_corner ) {
+    if ( GoodCurve(to,true)) {
 	tounit.x = to->prevcp.x-to->me.x; tounit.y = to->prevcp.y-to->me.y;
+    } else if ( to->prev!=NULL ) {
+	tounit.x = (to->prev->from->me.x+to->prev->from->nextcp.x)/2 - to->me.x;
+	tounit.y = (to->prev->from->me.y+to->prev->from->nextcp.y)/2 - to->me.y;
     } else {
-	tounit.x = to->me.x-to->nextcp.x; tounit.y = to->me.y-to->nextcp.y;
+	tounit.x = to->prevcp.x-to->me.x; tounit.y = to->prevcp.y-to->me.y;
     }
     tlen = sqrt(tounit.x*tounit.x + tounit.y*tounit.y);
-    if ( !from->nonextcp || from->pointtype == pt_corner ) {
+    if ( GoodCurve(from,false)) {
 	fromunit.x = from->nextcp.x-from->me.x; fromunit.y = from->nextcp.y-from->me.y;
+    } else if ( from->next!=NULL ) {
+	fromunit.x = (from->next->to->me.x+from->next->to->nextcp.x)/2 - from->me.x;
+	fromunit.y = (from->next->to->me.y+from->next->to->nextcp.y)/2 - from->me.y;
     } else {
-	fromunit.x = from->me.x-from->prevcp.x; fromunit.y = from->me.y-from->prevcp.y;
+	fromunit.x = from->nextcp.x-from->me.x; fromunit.y = from->nextcp.y-from->me.y;
     }
     flen = sqrt(fromunit.x*fromunit.x + fromunit.y*fromunit.y);
     if ( tlen==0 || flen==0 ) {
@@ -2395,8 +2436,8 @@ return(s);
 		real x = ((s->splines[0].a*t[i]+s->splines[0].b)*t[i]+s->splines[0].c)*t[i]+s->splines[0].d;
 		int close_from = ( x-s->from->me.x<offsetbound && x-s->from->me.x>-offsetbound);
 		int close_to = ( x-s->to->me.x<offsetbound && x-s->to->me.x>-offsetbound);
-		int remove_from = close_from  && s->from->pointtype==pt_curve && !s->from->noprevcp;
-		int remove_to = close_to  && s->to->pointtype==pt_curve && !s->to->nonextcp;
+		int remove_from = close_from  && GoodCurve(s->from,true);
+		int remove_to = close_to  && GoodCurve(s->to,false);
 		if (( x>b->minx && x<b->maxx  && len<lenbound ) ||
 			(close_from && !remove_from) || (close_to && !remove_to) ) {
 		    --p;
@@ -2425,8 +2466,8 @@ return(s);
 		real y = ((s->splines[1].a*t[i]+s->splines[1].b)*t[i]+s->splines[1].c)*t[i]+s->splines[1].d;
 		int close_from =( y-s->from->me.y<offsetbound && y-s->from->me.y>-offsetbound );
 		int close_to = ( y-s->to->me.y<offsetbound && y-s->to->me.y>-offsetbound );
-		int remove_from = close_from  && s->from->pointtype==pt_curve && !s->from->noprevcp;
-		int remove_to = close_to  && s->to->pointtype==pt_curve && !s->to->nonextcp;
+		int remove_from = close_from  && GoodCurve(s->from,true);
+		int remove_to = close_to  && GoodCurve(s->to,false);
 		if (( y>b->miny && y<b->maxy && len<lenbound ) ||
 			(close_from && !remove_from) || (close_to && !remove_to) ) {
 		    --p;
