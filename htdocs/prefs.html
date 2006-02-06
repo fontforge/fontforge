@@ -2,351 +2,357 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 2-Sep-2002 -->
-  <!-- AP: Last modified: 22-Mar-2005 -->
+  <!-- AP: Last modified: 5-Feb-2006 -->
   <TITLE>Preferences Dialog</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
 <DIV id="in">
-<H1 ALIGN=Center>
-  Preferences Dialog
-</H1>
-<P>
-<IMG SRC="prefs-generic.png" WIDTH="286" HEIGHT="379" ALIGN="Right">
-<DL>
-  <DT>
-    <A NAME="AutoHint">AutoHint</A>
-  <DD>
-    Whether glyphs should be automagically hinted before a bitmap glyph is generated
-    (improves the quality of the bitmap)
-  <DT>
-    <A NAME="NewCharset">NewCharset</A>
-  <DD>
-    The default encoding used to create new fonts. Normally this is ISO 8859-1.
-  <DT>
-    <A NAME="NewEmSize">NewEmSize</A>
-  <DD>
-    Specifies the default number of em-units in the em-square. For PostScript
-    fonts this should be 1000, for truetype fonts it should be a power of two
-    (often 512, 1024 or 2048 will be used).
-  <DT>
-    <A NAME="NewFontsQuadratic">NewFontsQuadratic</A>
-  <DD>
-    Splines in fonts may be either in quadratic or cubic format. TrueType fonts
-    use quadratic splines while PostScript (and OpenType) fonts use cubic splines.
-    When FontForge generates a font it will convert from whatever format is used
-    internally to whatever format is required for the font, so there will be
-    no problem if this is set incorrectly, but setting it correctly for your
-    font means you get a clearer idea of what the outlines will look like.
-  <DT>
-    <A NAME="LoadedFontsAsNew">LoadedFontsAsNew</A>
-  <DD>
-    When FontForge reads in a font it will generally keep the splines in the
-    format they used in the font (that is quadratic for truetype fonts and cubic
-    for postscript). If you set this flag then all loaded fonts will have the
-    same file format as that specified by NewFontsQuadratic above.
-  <DT>
-    <A NAME="GreekNames">GreekNames</A>
-  <DD>
-    Will cause most new fonts to be created with a greek
-    <A HREF="fontinfo.html#Interpretation">interpretation</A>.
-  <DT>
-    <A NAME="ResourceFile">ResourceFile</A>
-  <DD>
-    FontForge will read <A HREF="xres.html">X Resources</A> from a property on
-    the screen. But sometimes this isn't enough. You set this preference item
-    to specify a file from which these resources should be read (those on the
-    screen will also be read and will supersede those in the file).
-  <DT>
-    <A NAME="HelpDir">HelpDir</A>
-  <DD>
-    FontForge will search this directory for help files when the user presses
-    [F1].
-  <DT>
-    <A NAME="OtherSubrsFile">OtherSubrsFile</A>
-  <DD>
-    Allows you to redefine the OtherSubrs routines used in type1 fonts. The file
-    format is described at the scripting command
-    <A HREF="scripting.html#ReadOtherSubrsFile">ReadOtherSubrsFile</A>.
-  <DT>
-    <A NAME="FreeTypeInFontView">FreeTypeInFontView</A>
-  <DD>
-    Normally FontForge will use the freetype library to generate glyphs for display
-    in the fontview. This is a bit slower, but creates better images than using
-    FontForge's built-in rasterizer. This preference item allows you to control
-    whether to use freetype or FontForge's own rasterizer.<BR Clear=all>
-</DL>
-<P>
-<IMG SRC="prefs-editing.png" WIDTH="286" HEIGHT="379" ALIGN="Right">
-<DL>
-  <DT>
-    <A NAME="AutoWidthSync">AutoWidthSync</A>
-  <DD>
-    Whether you want the widths of accented glyphs to track the width of the
-    base glyph (so if you modify the width of A then the width of &Agrave; will
-    automagically change, if &Agrave; is built as a reference to A and a reference
-    to grave)
-  <DT>
-    <A NAME="AutoLBearingSync">AutoLBearingSync</A>
-  <DD>
-    Whether you want left side bearings of accented glyphs to track the left
-    side bearing of base glyphs (so if you shift A left, then the accent in &Agrave;
-    will also be shifted left)
-  <DT>
-    <A NAME="ItalicConstrained">ItalicConstrained</A>
-  <DD>
-    Whether constrained motion in the glyph view should allow motion parallel
-    to the italic angle as well as horizontal and vertical.
-  <DT>
-  <DT>
-    <A NAME="ArrowMoveSize">ArrowMoveSize</A>
-  <DD>
-    The number of em-units an arrow key will move a selected point in the glyph
-    view.
-  <DT>
-    <A NAME="SnapDistance">SnapDistance</A>
-  <DD>
-    The maximum distance at which pointer motion in the glyph view will be snapped
-    to an interesting object (ie. a point, baseline, width line, etc.). This
-    is measured in pixels.
-  <DT>
-    <A NAME="JoinSnap">JoinSnap</A>
-  <DD>
-    The maximum distance between the endpoints of two splines before they will
-    join with the Edit-&gt;Join command. This is measured in pixels in the char
-    view and em-units elsewhere.
-  <DT>
-    <A NAME="CopyMetaData">CopyMetaData</A>
-  <DD>
-    Controls the behavior of Edit-&gt;Copy from the fontview. Normally Copy does
-    not copy a glyph's metadata (name, encoding, etc.) but if this is set then
-    it will.
-  <DT>
-    <A NAME="UndoDepth">UndoDepth</A>
-  <DD>
-    Controls the maximum number of Undoes that may be retained in a glyph. (In
-    some rare occasions an Undo will be stored even if this depth is 0)
-  <DT>
-    <A NAME="StopAtJoin">StopAtJoin</A>
-  <DD>
-    When dragging points in the outline view, if the end point of one open contour
-    is moved onto the end point of another open contour then those two contours
-    will join. If you leave this Off then further motion will continue to move
-    the points, if you set this to On then FontForge will stop noticing mouse
-    movements (it pretends that you released the mouse button). This is useful
-    if you hand jitters a little on the mouse.
-  <DT>
-    <A NAME="UpdateFlex">UpdateFlex</A>
-  <DD>
-    Figure out what points will be part of flex hints after every change to a
-    glyph. Points which are at the center of a flex hint will have a green halo
-    drawn around them. The criteria for flex hints are given on pages 72-73 of
-    Adobe's
-    <A HREF="http://partners.adobe.com/asn/developer/PDFS/TN/T1_SPEC.PDF">T1_Spec.pdf</A>.
-    This setting can be used to show you when those criteria are not met.
-  <DT>
-    <A NAME="GlyphAutoGoto">GlyphAutoGoto</A>
-  <DD>
-    In the glyph window this controls how ff behaves when the user types a normal
-    character. If this is On then when a normal character is typed the glyph
-    window will shift to display that character, if Off typed characters will
-    be ignored.<BR Clear=all>
-</DL>
-<DL>
-  <DT>
-    <A NAME="AccentOffsetPercent">AccentOffsetPercent</A>
-  <DD>
-    The amount of space (as a percentage of the em-square) that should be placed
-    between an accent and the glyph below it by the Build Accented Character
-    command.
-  <DT>
-    <A NAME="AccentCenterLowest">AccentCenterLowest</A>
-  <DD>
-    Whether accents should be positioned over letters based on the center of
-    the accent, or on the center of the bottom of the accent.
-  <DT>
-    <A NAME="CharCenterHighest">CharCenterHighest</A>
-  <DD>
-    Whether accents should be positioned over letters based on the center of
-    of the letter, or on the center of the top of the letter.
-</DL>
-<P>
-<IMG SRC="prefs-font.png" WIDTH="282" HEIGHT="372" ALIGN="Right">
-<DL>
-  <DT>
-    <A NAME="FoundryName">Foundry Name</A>
-  <DD>
-    Used in generating bdf files (part of the X Windows font naming convention).
-  <DT>
-    <A NAME="TTFFoundry">TTF Foundry</A>
-  <DD>
-    Similar to the above except that it is used inside ttf files (the achVendID
-    field of the OS/2 table) and is limited to 4 characters.
-  <DT>
-    <A NAME="XUID-Base">XUID-Base</A>
-  <DD>
-    The base
-    "<A HREF="http://partners.adobe.com/asn/tech/type/xuid.jsp">XUID</A>". Should
-    uniquely identify the user's organization. If present then every new font
-    will be given an XUID generated by appending a random number to the end of
-    this string (which should consist of a set of numbers separated by spaces).
-    Whenever a postscript font is generated then this last number will be incremented
-    by 1.
-    <P>
-    I have registered with Adobe and they have assigned FontForge (actually PfaEdit)
-    an extended unique id base of [1021]. When you first start FontForge, FontForge
-    will itself append a couple of random numbers to this to give you your own
-    extended unique id. And individual fonts will get a fourth number added to
-    that.
-    <P>
-    If you want you may
-    <A HREF="http://partners.adobe.com/asn/tech/type/xuidregister.jsp">register
-    directly with Adobe</A> for your own XUID base.
-    <P>
-    See also Adobe's comments on
-    <A HREF="http://partners.adobe.com/asn/tech/type/uniqueid.jsp">UniqueID</A>s.
-  <DT>
-    <A NAME="AskBDFResolution">AskBDFResolution</A>
-  <DD>
-    Normally FontForge will guess at what screen resolution you intend based
-    on the pixel size of the font (ie. 17 pixel fonts are usually 100dpi (12pt)
-    and 12 pixel fonts are usually 75dpi), but sometimes you will have more esoteric
-    desires. Setting this will give you more control, but you have to click through
-    another dlg.
-  <DT>
-    <A NAME="PreferCJKEncoding">PreferCJKEncoding</A>
-  <DD>
-    This controls the loading of truetype and opentype fonts. If a font contains
-    both an unicode encoding subtable and a cjk subtable, then this item allows
-    you to pick which one FontForge will choose to decode.
-  <DT>
-    <A NAME="HintForGen">HintForGen</A>
-  <DD>
-    Whether glyphs should be automagically hinted before a font is generated.
-  <DT>
-    <A NAME="AlwaysGenApple">AlwaysGenApple</A>
-  <DD>
-    If you always want to generate Apple style TTF fonts (and never windows ones)
-    then select this item.
-  <DT>
-    <A NAME="PreserveTables">PreserveTables</A>
-  <DD>
-    A string containing a list of 4 letter table tags separated by commas. When
-    loading an SFNT (ttf/otf) file, any table in the font with one of these tags
-    will be preserved without interpretation. (Note: If FontForge thinks it
-    understands the table it will parse it rather than preserving
-    it).<BR Clear=ALL>
-</DL>
-<DL>
-  <DT>
-    <IMG SRC="prefs-apps.png" WIDTH="282" HEIGHT="372" ALIGN="Right"><A NAME="AutotraceArgs">AutotraceArgs</A>
-  <DD>
-    This allows you to specify any arguments you want passed to the autotrace
-    program. Don't try to pass something that will change the input or output
-    format or set input or output files.
-  <DT>
-    <A NAME="AutotraceAsk">AutotraceAsk</A>
-  <DD>
-    If this is set then each time autotrace is invoked it will ask you for arguments.
-  <DT>
-    <A NAME="MfArgs">MfArgs</A>
-  <DD>
-    This is the command passed to the mf (MetaFont) program which controls conversion
-    of .mf files into bitmaps.
-  <DT>
-    <A NAME="MfClearBg">MfClearBg</A>
-  <DD>
-    Loading a .mf font is a multi step process, first a bitmap font is generated,
-    it is loaded into the background, then autotrace is invoked to trace around
-    the backgrounds. These background bitmaps can take up a lot of space and
-    you may not want them after they have been autotraced. Selecting this entry
-    will remove those bitmaps from the font after they have been used.
-  <DT>
-    <A NAME="MfShowErr">MfShowErr</A>
-  <DD>
-    The mf program generates a fair amount of verbiage even when it is working
-    correctly. And if it is working correctly you don't want to see those words.
-    So normally FontForge suppresses messages from mf. But if something goes
-    wrong you do want to see mf's output and setting this will allow you to do
-    so.<BR Clear=all>
-</DL>
-<P>
-<IMG SRC="prefs-script.png" WIDTH="282" HEIGHT="372" ALIGN="Right"><A NAME="scripts">This
-section </A>of the dialog allows you to define built in scripts that will
-show up in the <A HREF="filemenu.html#ScriptMenu">script menu</A>. Each entry
-has two things associated with it, the menu name and a script file. The menu
-name will be the name of this entry inside the script menu, and the
-<A HREF="scripting.html">script file</A> will be the filename of the file
-to be invoked. The "..." button allows you to browse for script files, which
-I think have extension .pe (but which can have whatever extension you prefer
-if you don't like my conventions).<BR Clear=All>
-<P>
-<IMG SRC="prefs-macfeat.png" WIDTH="282" HEIGHT="372" ALIGN="Right">The
-<A NAME="Mac">Mac</A> Features dialog allows you to define a set of default
-names (in many languages) for mac features and settings. These names are
-placed in the 'name' table whenever a feature/setting is used in a generated
-'morx' table. (Thus if you have some common ligatures in your font, then
-the "ligature" feature names, and the "common ligature" setting names will
-be added to the 'name' table).
-<P>
-You may also use this dialog to establish which setting(s) should be on by
-default in a given feature and whether the feature only allows one setting
-to be on at a time (the settings are mutually exclusive). All of this data
-may be overridden by the similar dialog in the
-<A HREF="fontinfo.html#Mac-Features">Element-&gt;Font Info </A>dialog.
-<P>
-<IMG SRC="macfeature.png" WIDTH="258" HEIGHT="369" ALT="Mac Feature dialog"
-    ALIGN="Left">To edit an existing feature double click on that feature in
-the list (at right) this will bring up the dialog on the left. Each feature
-must be assigned a unique number. You should indicate whether it has mutually
-exclusive features or not. You should provide names for the feature in various
-languages, and you should provide settings for the feature.
-<P>
-To add a new name press the [New] button under the name list and you will
-be prompted for a language and a name.
-<P>
-To add a new setting press the [New] button under the setting list. The setting
-dialog contains the numeric value of this setting (Apple has decreed that
-if the feature is not mutually exclusive, all settings must be even numbers),
-whether this setting is on by default, and then a list of names for the setting
-in as many languages as you like.<BR CLEAR=ALL>
-<IMG SRC="MacFeatName.png" ALIGN="Right" WIDTH="263" HEIGHT="125"><IMG SRC="macFeatureSetting.png"
-    WIDTH="263" HEIGHT="216" ALIGN="Left"><BR CLEAR=ALL>
-<P>
-<IMG SRC="prefs-macmap.png" WIDTH="282" HEIGHT="372" ALIGN="Right">The Mac
-<A NAME="Mapping">Mapping</A> dialog allows you to define a mapping between
-OTF <CODE>GSUB</CODE> feature tags and Apple's
-<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6morx.html"><CODE>mort/morx
-</CODE></A>Feature/Setting codes.
-<P>
-<A HREF="http://developer.apple.com/fonts/Registry/index.html">Apple's published
-list </A>of features and settings appears out of date (in that some features
-used by current fonts are not found in it).
-<P>
-A four letter OTF feature tag may correspond to a mac feature/setting
-combination. If you wish to create a new mapping you must first insure that
-the mac feature setting you desire is present in the feature list (above),
-and then you may add the mappings.
-<P>
-<IMG SRC="MacMapping.png" WIDTH="337" HEIGHT="198" ALIGN="Left">You must
-specify a mac feature (which must already be defined), a mac setting code
-and a 4 character opentype tag.<BR CLEAR=ALL>
-<H2>
-  Other ways of configuring
-</H2>
-<P>
-A number of things that might be controlled from a preference window are
-controlled by
-<UL>
-  <LI>
-    <A HREF="xres.html">X Resources</A>
-  <LI>
-    <A HREF="cliargs.html#Environment">Environment Variables</A>
-</UL>
-<P ALIGN=Center>
--- <A HREF="filemenu.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
-<A HREF="filemenu.html">Next</A> --
-<P>
+  <H1 ALIGN=Center>
+    Preferences Dialog
+  </H1>
+  <P>
+  <IMG SRC="prefs-generic.png" WIDTH="286" HEIGHT="379" ALIGN="Right">
+  <DL>
+    <DT>
+      <A NAME="AutoHint">AutoHint</A>
+    <DD>
+      Whether glyphs should be automagically hinted before a bitmap glyph is generated
+      (improves the quality of the bitmap)
+    <DT>
+      <A NAME="NewCharset">NewCharset</A>
+    <DD>
+      The default encoding used to create new fonts. Normally this is ISO 8859-1.
+    <DT>
+      <A NAME="NewEmSize">NewEmSize</A>
+    <DD>
+      Specifies the default number of em-units in the em-square. For PostScript
+      fonts this should be 1000, for truetype fonts it should be a power of two
+      (often 512, 1024 or 2048 will be used).
+    <DT>
+      <A NAME="NewFontsQuadratic">NewFontsQuadratic</A>
+    <DD>
+      Splines in fonts may be either in quadratic or cubic format. TrueType fonts
+      use quadratic splines while PostScript (and OpenType) fonts use cubic splines.
+      When FontForge generates a font it will convert from whatever format is used
+      internally to whatever format is required for the font, so there will be
+      no problem if this is set incorrectly, but setting it correctly for your
+      font means you get a clearer idea of what the outlines will look like.
+    <DT>
+      <A NAME="LoadedFontsAsNew">LoadedFontsAsNew</A>
+    <DD>
+      When FontForge reads in a font it will generally keep the splines in the
+      format they used in the font (that is quadratic for truetype fonts and cubic
+      for postscript). If you set this flag then all loaded fonts will have the
+      same file format as that specified by NewFontsQuadratic above.
+    <DT>
+      <A NAME="GreekNames">GreekNames</A>
+    <DD>
+      Will cause most new fonts to be created with a greek
+      <A HREF="fontinfo.html#Interpretation">interpretation</A>.
+    <DT>
+      <A NAME="ResourceFile">ResourceFile</A>
+    <DD>
+      FontForge will read <A HREF="xres.html">X Resources</A> from a property on
+      the screen. But sometimes this isn't enough. You set this preference item
+      to specify a file from which these resources should be read (those on the
+      screen will also be read and will supersede those in the file).
+    <DT>
+      <A NAME="HelpDir">HelpDir</A>
+    <DD>
+      FontForge will search this directory for help files when the user presses
+      [F1].
+    <DT>
+      <A NAME="OtherSubrsFile">OtherSubrsFile</A>
+    <DD>
+      Allows you to redefine the OtherSubrs routines used in type1 fonts. The file
+      format is described at the scripting command
+      <A HREF="scripting.html#ReadOtherSubrsFile">ReadOtherSubrsFile</A>.
+    <DT>
+      <A NAME="FreeTypeInFontView">FreeTypeInFontView</A>
+    <DD>
+      Normally FontForge will use the freetype library to generate glyphs for display
+      in the fontview. This is a bit slower, but creates better images than using
+      FontForge's built-in rasterizer. This preference item allows you to control
+      whether to use freetype or FontForge's own rasterizer.<BR Clear=all>
+  </DL>
+  <P>
+  <IMG SRC="prefs-editing.png" WIDTH="286" HEIGHT="379" ALIGN="Right">
+  <DL>
+    <DT>
+      <A NAME="AutoWidthSync">AutoWidthSync</A>
+    <DD>
+      Whether you want the widths of accented glyphs to track the width of the
+      base glyph (so if you modify the width of A then the width of &Agrave; will
+      automagically change, if &Agrave; is built as a reference to A and a reference
+      to grave)
+    <DT>
+      <A NAME="AutoLBearingSync">AutoLBearingSync</A>
+    <DD>
+      Whether you want left side bearings of accented glyphs to track the left
+      side bearing of base glyphs (so if you shift A left, then the accent in &Agrave;
+      will also be shifted left)
+    <DT>
+      <A NAME="ItalicConstrained">ItalicConstrained</A>
+    <DD>
+      Whether constrained motion in the glyph view should allow motion parallel
+      to the italic angle as well as horizontal and vertical.
+    <DT>
+    <DT>
+      <A NAME="ArrowMoveSize">ArrowMoveSize</A>
+    <DD>
+      The number of em-units an arrow key will move a selected point in the glyph
+      view.
+    <DT>
+      <A NAME="SnapDistance">SnapDistance</A>
+    <DD>
+      The maximum distance at which pointer motion in the glyph view will be snapped
+      to an interesting object (ie. a point, baseline, width line, etc.). This
+      is measured in pixels.
+    <DT>
+      <A NAME="JoinSnap">JoinSnap</A>
+    <DD>
+      The maximum distance between the endpoints of two splines before they will
+      join with the Edit-&gt;Join command. This is measured in pixels in the char
+      view and em-units elsewhere.
+    <DT>
+      <A NAME="CopyMetaData">CopyMetaData</A>
+    <DD>
+      Controls the behavior of Edit-&gt;Copy from the fontview. Normally Copy does
+      not copy a glyph's metadata (name, encoding, etc.) but if this is set then
+      it will.
+    <DT>
+      <A NAME="UndoDepth">UndoDepth</A>
+    <DD>
+      Controls the maximum number of Undoes that may be retained in a glyph. (In
+      some rare occasions an Undo will be stored even if this depth is 0)
+    <DT>
+      <A NAME="StopAtJoin">StopAtJoin</A>
+    <DD>
+      When dragging points in the outline view, if the end point of one open contour
+      is moved onto the end point of another open contour then those two contours
+      will join. If you leave this Off then further motion will continue to move
+      the points, if you set this to On then FontForge will stop noticing mouse
+      movements (it pretends that you released the mouse button). This is useful
+      if you hand jitters a little on the mouse.
+    <DT>
+      <A NAME="UpdateFlex">UpdateFlex</A>
+    <DD>
+      Figure out what points will be part of flex hints after every change to a
+      glyph. Points which are at the center of a flex hint will have a green halo
+      drawn around them. The criteria for flex hints are given on pages 72-73 of
+      Adobe's
+      <A HREF="http://partners.adobe.com/asn/developer/PDFS/TN/T1_SPEC.PDF">T1_Spec.pdf</A>.
+      This setting can be used to show you when those criteria are not met.
+    <DT>
+      <A NAME="GlyphAutoGoto">GlyphAutoGoto</A>
+    <DD>
+      In the glyph window this controls how ff behaves when the user types a normal
+      character. If this is On then when a normal character is typed the glyph
+      window will shift to display that character, if Off typed characters will
+      be ignored.<BR Clear=all>
+  </DL>
+  <DL>
+    <DT>
+      <A NAME="AccentOffsetPercent">AccentOffsetPercent</A>
+    <DD>
+      The amount of space (as a percentage of the em-square) that should be placed
+      between an accent and the glyph below it by the Build Accented Character
+      command.
+    <DT>
+      <A NAME="AccentCenterLowest">AccentCenterLowest</A>
+    <DD>
+      Whether accents should be positioned over letters based on the center of
+      the accent, or on the center of the bottom of the accent.
+    <DT>
+      <A NAME="CharCenterHighest">CharCenterHighest</A>
+    <DD>
+      Whether accents should be positioned over letters based on the center of
+      of the letter, or on the center of the top of the letter.
+  </DL>
+  <P>
+  <IMG SRC="prefs-font.png" WIDTH="282" HEIGHT="372" ALIGN="Right">
+  <DL>
+    <DT>
+      <A NAME="FoundryName">Foundry Name</A>
+    <DD>
+      Used in generating bdf files (part of the X Windows font naming convention).
+    <DT>
+      <A NAME="TTFFoundry">TTF Foundry</A>
+    <DD>
+      Similar to the above except that it is used inside ttf files (the achVendID
+      field of the OS/2 table) and is limited to 4 characters.
+    <DT>
+      <A NAME="XUID-Base">XUID-Base</A>
+    <DD>
+      The base
+      "<A HREF="http://partners.adobe.com/asn/tech/type/xuid.jsp">XUID</A>". Should
+      uniquely identify the user's organization. If present then every new font
+      will be given an XUID generated by appending a random number to the end of
+      this string (which should consist of a set of numbers separated by spaces).
+      Whenever a postscript font is generated then this last number will be incremented
+      by 1.
+      <P>
+      I have registered with Adobe and they have assigned FontForge (actually PfaEdit)
+      an extended unique id base of [1021]. When you first start FontForge, FontForge
+      will itself append a couple of random numbers to this to give you your own
+      extended unique id. And individual fonts will get a fourth number added to
+      that.
+      <P>
+      If you want you may
+      <A HREF="http://partners.adobe.com/asn/tech/type/xuidregister.jsp">register
+      directly with Adobe</A> for your own XUID base.
+      <P>
+      See also Adobe's comments on
+      <A HREF="http://partners.adobe.com/asn/tech/type/uniqueid.jsp">UniqueID</A>s.
+    <DT>
+      <A NAME="AskBDFResolution">AskBDFResolution</A>
+    <DD>
+      Normally FontForge will guess at what screen resolution you intend based
+      on the pixel size of the font (ie. 17 pixel fonts are usually 100dpi (12pt)
+      and 12 pixel fonts are usually 75dpi), but sometimes you will have more esoteric
+      desires. Setting this will give you more control, but you have to click through
+      another dlg.
+    <DT>
+      <A NAME="PreferCJKEncoding">PreferCJKEncoding</A>
+    <DD>
+      This controls the loading of truetype and opentype fonts. If a font contains
+      both an unicode encoding subtable and a cjk subtable, then this item allows
+      you to pick which one FontForge will choose to decode.
+    <DT>
+      <A NAME="HintForGen">HintForGen</A>
+    <DD>
+      Whether glyphs should be automagically hinted before a font is generated.
+    <DT>
+      <A NAME="AlwaysGenApple">AlwaysGenApple</A>
+    <DD>
+      If you always want to generate Apple style TTF fonts (and never windows ones)
+      then select this item.
+    <DT>
+      <A NAME="PreserveTables">PreserveTables</A>
+    <DD>
+      A string containing a list of 4 letter table tags separated by commas. When
+      loading an SFNT (ttf/otf) file, any table in the font with one of these tags
+      will be preserved without interpretation. (Note: If FontForge thinks it
+      understands the table it will parse it rather than preserving it).
+    <DT>
+      <A NAME="NewFontNameList">NewFontNameList</A>
+    <DD>
+      Specifies the namelist that will be attached to any new font. This list will
+      be used to name any glyphs created in that font. See the section on
+      <A HREF="encodingmenu.html#namelist">namelists</A> for more
+      information.<BR Clear=ALL>
+  </DL>
+  <DL>
+    <DT>
+      <IMG SRC="prefs-apps.png" WIDTH="282" HEIGHT="372" ALIGN="Right"><A NAME="AutotraceArgs">AutotraceArgs</A>
+    <DD>
+      This allows you to specify any arguments you want passed to the autotrace
+      program. Don't try to pass something that will change the input or output
+      format or set input or output files.
+    <DT>
+      <A NAME="AutotraceAsk">AutotraceAsk</A>
+    <DD>
+      If this is set then each time autotrace is invoked it will ask you for arguments.
+    <DT>
+      <A NAME="MfArgs">MfArgs</A>
+    <DD>
+      This is the command passed to the mf (MetaFont) program which controls conversion
+      of .mf files into bitmaps.
+    <DT>
+      <A NAME="MfClearBg">MfClearBg</A>
+    <DD>
+      Loading a .mf font is a multi step process, first a bitmap font is generated,
+      it is loaded into the background, then autotrace is invoked to trace around
+      the backgrounds. These background bitmaps can take up a lot of space and
+      you may not want them after they have been autotraced. Selecting this entry
+      will remove those bitmaps from the font after they have been used.
+    <DT>
+      <A NAME="MfShowErr">MfShowErr</A>
+    <DD>
+      The mf program generates a fair amount of verbiage even when it is working
+      correctly. And if it is working correctly you don't want to see those words.
+      So normally FontForge suppresses messages from mf. But if something goes
+      wrong you do want to see mf's output and setting this will allow you to do
+      so.<BR Clear=all>
+  </DL>
+  <P>
+  <IMG SRC="prefs-script.png" WIDTH="282" HEIGHT="372" ALIGN="Right"><A NAME="scripts">This
+  section </A>of the dialog allows you to define built in scripts that will
+  show up in the <A HREF="filemenu.html#ScriptMenu">script menu</A>. Each entry
+  has two things associated with it, the menu name and a script file. The menu
+  name will be the name of this entry inside the script menu, and the
+  <A HREF="scripting.html">script file</A> will be the filename of the file
+  to be invoked. The "..." button allows you to browse for script files, which
+  I think have extension .pe (but which can have whatever extension you prefer
+  if you don't like my conventions).<BR Clear=All>
+  <P>
+  <IMG SRC="prefs-macfeat.png" WIDTH="282" HEIGHT="372" ALIGN="Right">The
+  <A NAME="Mac">Mac</A> Features dialog allows you to define a set of default
+  names (in many languages) for mac features and settings. These names are
+  placed in the 'name' table whenever a feature/setting is used in a generated
+  'morx' table. (Thus if you have some common ligatures in your font, then
+  the "ligature" feature names, and the "common ligature" setting names will
+  be added to the 'name' table).
+  <P>
+  You may also use this dialog to establish which setting(s) should be on by
+  default in a given feature and whether the feature only allows one setting
+  to be on at a time (the settings are mutually exclusive). All of this data
+  may be overridden by the similar dialog in the
+  <A HREF="fontinfo.html#Mac-Features">Element-&gt;Font Info </A>dialog.
+  <P>
+  <IMG SRC="macfeature.png" WIDTH="258" HEIGHT="369" ALT="Mac Feature dialog"
+      ALIGN="Left">To edit an existing feature double click on that feature in
+  the list (at right) this will bring up the dialog on the left. Each feature
+  must be assigned a unique number. You should indicate whether it has mutually
+  exclusive features or not. You should provide names for the feature in various
+  languages, and you should provide settings for the feature.
+  <P>
+  To add a new name press the [New] button under the name list and you will
+  be prompted for a language and a name.
+  <P>
+  To add a new setting press the [New] button under the setting list. The setting
+  dialog contains the numeric value of this setting (Apple has decreed that
+  if the feature is not mutually exclusive, all settings must be even numbers),
+  whether this setting is on by default, and then a list of names for the setting
+  in as many languages as you like.<BR CLEAR=ALL>
+  <IMG SRC="MacFeatName.png" ALIGN="Right" WIDTH="263" HEIGHT="125"><IMG SRC="macFeatureSetting.png"
+      WIDTH="263" HEIGHT="216" ALIGN="Left"><BR CLEAR=ALL>
+  <P>
+  <IMG SRC="prefs-macmap.png" WIDTH="282" HEIGHT="372" ALIGN="Right">The Mac
+  <A NAME="Mapping">Mapping</A> dialog allows you to define a mapping between
+  OTF <CODE>GSUB</CODE> feature tags and Apple's
+  <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6morx.html"><CODE>mort/morx
+  </CODE></A>Feature/Setting codes.
+  <P>
+  <A HREF="http://developer.apple.com/fonts/Registry/index.html">Apple's published
+  list </A>of features and settings appears out of date (in that some features
+  used by current fonts are not found in it).
+  <P>
+  A four letter OTF feature tag may correspond to a mac feature/setting
+  combination. If you wish to create a new mapping you must first insure that
+  the mac feature setting you desire is present in the feature list (above),
+  and then you may add the mappings.
+  <P>
+  <IMG SRC="MacMapping.png" WIDTH="337" HEIGHT="198" ALIGN="Left">You must
+  specify a mac feature (which must already be defined), a mac setting code
+  and a 4 character opentype tag.<BR CLEAR=ALL>
+  <H2>
+    Other ways of configuring
+  </H2>
+  <P>
+  A number of things that might be controlled from a preference window are
+  controlled by
+  <UL>
+    <LI>
+      <A HREF="xres.html">X Resources</A>
+    <LI>
+      <A HREF="cliargs.html#Environment">Environment Variables</A>
+  </UL>
+  <P ALIGN=Center>
+  -- <A HREF="filemenu.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
+  <A HREF="filemenu.html">Next</A> --
+  <P>
 </DIV>
 </BODY></HTML>

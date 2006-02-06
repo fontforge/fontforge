@@ -551,6 +551,7 @@ typedef struct namelist {
     char *title;
     const char ***unicode[17];
     struct namelist *next;
+    struct renames { char *from; char *to; } *renames;
 } NameList;
 
 enum uni_interp { ui_unset= -1, ui_none, ui_adobe, ui_greek, ui_japanese,
@@ -1137,6 +1138,7 @@ struct sflist {
     BDFFont **bdfs;		/* Ditto */
     EncMap *map;
     struct sflist *next;
+    char **former_names;
 };
 
     /* Used for drawing text with mark to base anchors */
@@ -1832,6 +1834,12 @@ extern char **AllGlyphNames(int uni, NameList *for_this_font);
 extern char **AllNamelistNames(void);
 extern NameList *DefaultNameListForNewFonts(void);
 extern NameList *NameListByName(char *name);
+extern int LoadNamelist(char *filename);
+extern void LoadNamelistDir(char *dir);
+extern const char *RenameGlyphToNamelist(char *buffer, SplineChar *sc,NameList *old,NameList *new);
+extern void SFRenameGlyphsToNamelist(SplineFont *sf,NameList *new);
+extern char **SFTemporaryRenameGlyphsToNamelist(SplineFont *sf,NameList *new);
+extern void SFTemporaryRestoreGlyphNames(SplineFont *sf,char **former);
 
 extern void doversion(void);
 

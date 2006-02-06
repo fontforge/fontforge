@@ -1422,6 +1422,7 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal) {
     if ( normal!=NULL )
 	fprintf(sfd, "Compacted: 1\n" );
     fprintf( sfd, "UnicodeInterp: %s\n", unicode_interp_names[sf->uni_interp]);
+    fprintf( sfd, "NameList: %s\n", sf->for_new_glyphs->title );
 	
     if ( map->remap!=NULL ) {
 	struct remap *remap;
@@ -3536,8 +3537,30 @@ static enum uni_interp SFDGetUniInterp(FILE *sfd, char *tok, SplineFont *sf) {
 	    uniinterp = i;
     break;
 	}
+    /* These values are now handled by namelists */
+    if ( uniinterp == ui_adobe ) {
+	sf->for_new_glyphs = NameListByName("AGL with PUA");
+	uniinterp = ui_none;
+    } else if ( uniinterp == ui_greek ) {
+	sf->for_new_glyphs = NameListByName("Greek small caps");
+	uniinterp = ui_none;
+    } else if ( uniinterp == ui_ams ) {
+	sf->for_new_glyphs = NameListByName("AMS Names");
+	uniinterp = ui_none;
+    }
 
 return( uniinterp );
+}
+
+static void SFDGetNameList(FILE *sfd, char *tok, SplineFont *sf) {
+    NameList *nl;
+
+    geteol(sfd,tok);
+    nl = NameListByName(tok);
+    if ( nl==NULL )
+	LogError( "Failed to find NameList: %s", tok);
+    else
+	sf->for_new_glyphs = nl;
 }
 
 static int SFAddScriptIndex(SplineFont *sf,uint32 *scripts,int scnt) {
@@ -4214,6 +4237,8 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    /* old_encname =*/ (void) SFDGetEncoding(sfd,tok,sf);
 	} else if ( strmatch(tok,"UnicodeInterp:")==0 ) {
 	    sf->uni_interp = SFDGetUniInterp(sfd,tok,sf);
+	} else if ( strmatch(tok,"NameList:")==0 ) {
+	    SFDGetNameList(sfd,tok,sf);
 	} else if ( strmatch(tok,"Compacted:")==0 ) {
 	    int temp;
 	    getint(sfd,&temp);

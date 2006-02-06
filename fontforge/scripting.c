@@ -1177,6 +1177,34 @@ static void bLoadPluginDir(Context *c) {
     free(dir);
 }
 
+static void bLoadNamelist(Context *c) {
+    char *name, *_name;
+
+    if ( c->a.argc!=2 )
+	ScriptError( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type!=v_str )
+	ScriptError( c, "Bad type of argument" );
+    _name = script2utf8_copy(c->a.vals[1].u.sval);
+    name = utf82def_copy(_name); free(_name);
+    LoadNamelist(name);
+    free(name);
+}
+
+static void bLoadNamelistDir(Context *c) {
+    char *dir=NULL, *_dir;
+
+    if ( c->a.argc>2 )
+	ScriptError( c, "Wrong number of arguments" );
+    else if ( c->a.argc==2 ) {
+	if ( c->a.vals[1].type!=v_str )
+	    ScriptError( c, "Bad type of argument" );
+	_dir = script2utf8_copy(c->a.vals[1].u.sval);
+	dir = utf82def_copy(_dir); free(_dir);
+    }
+    LoadNamelistDir(dir);
+    free(dir);
+}
+
 /* **** File menu **** */
 
 static void bQuit(Context *c) {
@@ -1373,14 +1401,16 @@ static void bGenerate(Context *c) {
     char *subfontdirectory = NULL;
     char *t;
     char *locfilename;
+    NameList *rename_to = NULL;
 
-    if ( c->a.argc!=2 && c->a.argc!=3 && c->a.argc!=4 && c->a.argc!=5 && c->a.argc!=6 )
+    if ( c->a.argc!=2 && c->a.argc!=3 && c->a.argc!=4 && c->a.argc!=5 && c->a.argc!=6 && c->a.argc!=7 )
 	ScriptError( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_str ||
 	    (c->a.argc>=3 && c->a.vals[2].type!=v_str ) ||
 	    (c->a.argc>=4 && c->a.vals[3].type!=v_int ) ||
 	    (c->a.argc>=5 && c->a.vals[4].type!=v_int ) ||
-	    (c->a.argc>=6 && c->a.vals[5].type!=v_str ))
+	    (c->a.argc>=6 && c->a.vals[5].type!=v_str ) ||
+	    (c->a.argc>=7 && c->a.vals[5].type!=v_str ))
 	ScriptError( c, "Bad type of argument");
     if ( c->a.argc>=3 )
 	bitmaptype = c->a.vals[2].u.sval;
@@ -1390,10 +1420,15 @@ static void bGenerate(Context *c) {
 	res = c->a.vals[4].u.ival;
     if ( c->a.argc>=6 )
 	subfontdirectory = c->a.vals[5].u.sval;
+    if ( c->a.argc>=7 ) {
+	rename_to = NameListByName(c->a.vals[6].u.sval);
+	if ( rename_to==NULL )
+	    ScriptErrorString( c, "Could not find namelist: ", c->a.vals[6].u.sval);
+    }
     t = script2utf8_copy(c->a.vals[1].u.sval);
     locfilename = utf82def_copy(t);
     if ( !GenerateScript(sf,locfilename,bitmaptype,fmflags,res,subfontdirectory,
-	    NULL,c->curfv->normal==NULL?c->curfv->map:c->curfv->normal) )
+	    NULL,c->curfv->normal==NULL?c->curfv->map:c->curfv->normal,rename_to) )
 	ScriptError(c,"Save failed");
     free(t); free(locfilename);
 }
@@ -1526,7 +1561,7 @@ static void bGenerateFamily(Context *c) {
     t = script2utf8_copy(c->a.vals[1].u.sval);
     locfilename = utf82def_copy(t);
     if ( !GenerateScript(sf,locfilename,bitmaptype,fmflags,-1,NULL,sfs,
-	    c->curfv->normal==NULL?c->curfv->map:c->curfv->normal) )
+	    c->curfv->normal==NULL?c->curfv->map:c->curfv->normal,NULL) )
 	ScriptError(c,"Save failed");
     free(t); free(locfilename);
     for ( cur=sfs; cur!=NULL; cur=sfs ) {
@@ -2443,6 +2478,19 @@ static void bReencode(Context *c) {
     c->curfv->sf->changed_since_autosave = true;
     c->curfv->sf->changed_since_xuidchanged = true;
 */
+}
+
+static void bRenameGlyphs(Context *c) {
+    NameList *nl;
+
+    if ( c->a.argc!=2 )
+	ScriptError( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str )
+	ScriptError(c,"Bad argument type");
+    nl = NameListByName(c->a.vals[1].u.sval);
+    if ( nl==NULL )
+	ScriptErrorString(c,"Unknown namelist", c->a.vals[1].u.sval);
+    SFRenameGlyphsToNamelist(c->curfv->sf,nl);
 }
 
 static void bSetCharCnt(Context *c) {
@@ -6383,6 +6431,8 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "WriteStringToFile", bWriteStringToFile, 1 },
     { "LoadPlugin", bLoadPlugin, 1 },
     { "LoadPluginDir", bLoadPluginDir, 1 },
+    { "LoadNamelist", bLoadNamelist, 1 },
+    { "LoadNamelistDir", bLoadNamelistDir, 1 },
 /* File menu */
     { "Quit", bQuit, 1 },
     { "FontsInFile", bFontsInFile, 1 },
@@ -6437,6 +6487,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "SelectByColour", bSelectByColor },
 /* Element/Encoding Menu */
     { "Reencode", bReencode },
+    { "RenameGlyphs", bRenameGlyphs },
     { "SetCharCnt", bSetCharCnt },
     { "DetachGlyphs", bDetachGlyphs },
     { "DetachAndRemoveGlyphs", bDetachAndRemoveGlyphs },

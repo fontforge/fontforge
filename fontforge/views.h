@@ -650,7 +650,8 @@ extern void _FVSimplify(FontView *fv,struct simplifyinfo *smpl);
 extern int WritePfmFile(char *filename,SplineFont *sf, int type0, EncMap *map);
 #endif
 extern int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype,
-	int fmflags,int res, char *subfontdirectory,struct sflist *sfs,EncMap *map);
+	int fmflags,int res, char *subfontdirectory,struct sflist *sfs,
+	EncMap *map,NameList *rename_to);
 extern int SFGenerateFont(SplineFont *sf,int family,EncMap *map);
 
 extern int SFScaleToEm(SplineFont *sf, int ascent, int descent);
@@ -1152,7 +1153,7 @@ extern char *FVOpenFont(char *title, const char *defaultfile,
 #elif defined(FONTFORGE_CONFIG_GDRAW)
 extern void SCAutoTrace(SplineChar *sc,GWindow v,int ask);
 extern unichar_t *FVOpenFont(char *title, const char *defaultfile,
-	const char *initial_filter, unichar_t **mimetypes,int mult,int newok);
+	const char *initial_filter, unichar_t **mimetypes,int mult);
 #endif
 
 

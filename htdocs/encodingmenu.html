@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jun-2005 -->
-  <!-- AP: Last modified: 15-Jan-2006 -->
+  <!-- AP: Last modified: 5-Feb-2006 -->
   <TITLE>Encoding Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -49,6 +49,14 @@
       <A HREF="#Display">Display by Groups...</A>
     <LI>
       <A HREF="encodingmenu.html#Define">Define Groups...</A>
+    <LI>
+      <A HREF="#SaveNL">Save NameList of Font...</A>
+    <LI>
+      <A HREF="#LoadNL">Load NameList...</A>
+    <LI>
+      <A HREF="#RenameGlyphs">Rename Glyphs...</A>
+    <LI>
+      <A HREF="#NameGlyphs">Create Named Glyphs...</A>
   </UL>
   <DL>
     <DT>
@@ -137,6 +145,29 @@
     <DD>
       Allows you to define <A HREF="groups.html">groups</A> of glyphs which
       (presumably) have some meaningful connection to each other.
+    <DT>
+      <A NAME="SaveNL">Save NameList of Font...</A>
+    <DD>
+      Creates a <A HREF="#namelist">namelist</A> file mapping unicode to the glyph
+      names of the current font.
+    <DT>
+      <A NAME="LoadNL">Load NameList...</A>
+    <DD>
+      Loads a <A HREF="#namelist">namelist</A> file into fontforge and copies it
+      so that fontforge will load it on start up in the future.
+    <DT>
+      <A NAME="RenameGlyphs">Rename Glyphs...</A>
+    <DD>
+      Allows you to specify a <A HREF="#namelist">namelist</A>. All glyphs in the
+      current font will be renamed to match the scheme in the namelist.
+    <DT>
+      <A NAME="NameGlyphs">Create Named Glyphs...</A>
+    <DD>
+      Allows you to specify a file containing a list of glyph names. FontForge
+      will create a sequence of unencoded glyphs with these names. This might be
+      useful if all your fonts contain small caps and you always want to have the
+      names "A.small", "B.small", "C.small" etc. or perhaps you always want the
+      ligatures "longs_longs_t", "f_longs", "f_j", etc.
   </DL>
   <H2>
     General notes on encodings
@@ -348,6 +379,91 @@
       US-ASCII -- Not really useful by itself any more, but provides the first
       128 characters of almost every other encoding.
   </UL>
+  <H2>
+    <A NAME="namelist">NameLists</A>
+  </H2>
+  <P>
+  Adobe has established a standard glyph naming convention which provides
+  intelligible names for many glyphs of unicode characters. And some unintelligible
+  names too.
+  <P>
+  A namelist is just a mapping from unicode to glyph names (a glyph name must
+  be made up of alphanumeric characters (or the special characters '.' or '_'),
+  it may not begin with a digit, and it must be 31 or fewer characters in length.
+  <P>
+  FontForge provides a series of standard namelists:
+  <UL>
+    <LI>
+      Adobe Glyph List<BR>
+      This is the set of names that Adobe publishes on the web.
+    <LI>
+      AGL without afii<BR>
+      The cyrillic and hebrew glyphs have been assigned some very odd names (afiiXXXXX)
+      and some people prefer not to use them.
+    <LI>
+      AGL with PUA<BR>
+      Adobe has assigned part of the unicode public use area to hold some standard
+      glyph variants like small caps, subscripts, old-style numbers, etc.
+    <LI>
+      Greek small caps<BR>
+      I've added some greek small cap assignments
+    <LI>
+      TeX Names<BR>
+      The TeX typesetting system has its own set of names
+    <LI>
+      AMS Names<BR>
+      The American Mathematical Society has its set of names (see the American
+      Mathematical Society's
+      <A HREF="http://www.ams.org/STIX/bnb/stix-tbl.asc-2003-10-10">specification</A>)
+  </UL>
+  <P>
+  You may define your own namelist file. It should have the extension ".nam".
+  And it should contain a series of lines that look like:
+  <BLOCKQUOTE>
+    <PRE>0x0020 space
+0x0021 exclam
+0x0022 dblquote
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  In many cases you will just want to make a few modifications to an already
+  existing namelist. You can write:
+  <BLOCKQUOTE>
+    <PRE>Based: Adobe Glyph List
+0x0021 exclamation
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  Which means the namelist is the same as the Adobe Glyph List except that
+  in your system U+0021 will be called "exclamation" rather than "exclam".
+  <P>
+  Any glyphs you do not explicitly named will be named "uniXXXX" or "uXXXXX"
+  where XXXX is the unicode value in hex. The prefix "uni" will be used for
+  glyphs in the BMP, the prefix "u" for glyphs outside.
+  <P>
+  So if you find it easier to work with names other than those Adobe has
+  established you may create your own namelist file. Then use
+  <A HREF="#LoadNL">Encoding-&gt;Load NameList...</A> to load that into FontForge
+  (you only need do this once, FontForge should remember it thereafter). You
+  may use
+  <A HREF="prefs.html#NewFontNameList">File-&gt;Preferences-&gt;Font Info</A>
+  to decree that all your new fonts will use this namelist. You can change
+  a font's namelist with either:
+  <UL>
+    <LI>
+      <A HREF="fontinfo.html#PS-General">Element-&gt;Font
+      Info-&gt;General-&gt;NameList</A><BR>
+      Which will change the way new glyphs are assigned names
+    <LI>
+      <A HREF="#RenameGlyphs">Encoding-&gt;Rename Glyphs...</A><BR>
+      Which will rename existing glyphs as well as changing the way new glyphs
+      are named.
+  </UL>
+  <P>
+  You may also want to force a rename of all glyphs when you Open a font, and
+  the open dialog now lets you do this. Similarly when generating a font you
+  will probably want to force that font to be use the standard names of the
+  Adobe Glyph List.
   <H2>
     Other menus
   </H2>

@@ -1196,7 +1196,7 @@ char *GetPostscriptFontName(char *dir, int mult) {
     char *temp;
 
     u_dir = def2utf8_copy(dir);
-    ret = FVOpenFont(_("Open Font"), u_dir,wild,mimes,mult,true);
+    ret = FVOpenFont(_("Open Font"), u_dir,wild,mimes,mult);
     temp = u2def_copy(ret);
 
     free(ret);
@@ -1604,6 +1604,9 @@ void FontViewMenu_Metafont(GtkMenuItem *menuitem, gpointer user_data) {
 #define MID_RemoveEncoding	2838
 #define MID_DisplayByGroups	2839
 #define MID_Compact	2840
+#define MID_SaveNamelist	2841
+#define MID_RenameGlyphs	2842
+#define MID_NameGlyphs		2843
 #define MID_CreateMM	2900
 #define MID_MMInfo	2901
 #define MID_MMValid	2902
@@ -5455,6 +5458,7 @@ void FontViewMenu_InsertFont(GtkMenuItem *menuitem, gpointer user_data) {
     SplineFont *new;
     struct cidmap *map;
     char *filename;
+    extern NameList *force_names_when_opening;
 
     if ( cidmaster==NULL || cidmaster->subfontcnt>=255 )	/* Open type allows 1 byte to specify the fdselect */
 return;
@@ -5476,6 +5480,8 @@ return;
 #endif
 return;
     }
+    if ( force_names_when_opening!=NULL )
+	SFRenameGlyphsToNamelist(new,force_names_when_opening );
 
     map = FindCidMap(cidmaster->cidregistry,cidmaster->ordering,cidmaster->supplement,cidmaster);
     SFEncodeToMap(new,map);
@@ -6510,8 +6516,8 @@ return;
 		map->backmap = grealloc(map->map,(map->backmax += cnt+10)*sizeof(int));
 	    for ( i=map->enccount; i<map->enccount+cnt; ++i )
 		map->map[i] = map->backmap[i] = i;
-	    fv->selected = grealloc(fv->selected,(map->enccount+cnt));
-	    memset(fv->selected+map->enccount,0,cnt);
+	    fvs->selected = grealloc(fvs->selected,(map->enccount+cnt));
+	    memset(fvs->selected+map->enccount,0,cnt);
 	    map->enccount += cnt;
 	    if ( fv->filled!=NULL ) {
 		if ( fv->filled->glyphmax<sf->glyphmax )
@@ -6825,9 +6831,12 @@ return;
 	free(ret); free(temp);
 return;
     }
+    if ( !LoadNamelist(temp)) {
+	gwwv_post_error(_("Bad namelist file"),_("Could not parse %s"), ret );
+	free(ret); free(temp);
+return;
+    }
     free(ret); free(temp);
-    /* !!!!!! Parse the damn thing */
-    rewind(old);
 
     new = fopen( buffer,"w");
     if ( new==NULL ) {
@@ -6839,6 +6848,104 @@ return;
 	putc(ch,new);
     fclose(old);
     fclose(new);
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuRenameByNamelist(GWindow gw,struct gmenuitem *mi, GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_RenameByNamelist(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+    char **namelists = AllNamelistNames();
+    int i;
+    int ret;
+    NameList *nl;
+
+    for ( i=0; namelists[i]!=NULL; ++i );
+    ret = gwwv_choose(_("Rename by NameList"),(const char **) namelists,i,0,_("Rename the glyphs in this font to the names found in the selected namelist"));
+    if ( ret==-1 )
+return;
+    nl = NameListByName(namelists[ret]);
+    if ( nl==NULL )
+	IError("Couldn't find namelist");
+    SFRenameGlyphsToNamelist(fv->sf,nl);
+# if defined(FONTFORGE_CONFIG_GDRAW)
+    GDrawRequestExpose(fv->v,NULL,false);
+# elif defined(FONTFORGE_CONFIG_GTK)
+    gtk_widget_queue_draw(fv->v);
+# endif
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuNameGlyphs(GWindow gw,struct gmenuitem *mi, GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_NameGlyphs(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+    gsize read, written;
+# endif
+    /* Read a file containing a list of names, and add an unencoded glyph for */
+    /*  each name */
+    char buffer[33];
+    char *ret = gwwv_open_filename(_("Load glyph names"),NULL, "*",NULL);
+    char *temp, *pt;
+    FILE *file;
+    int ch;
+    SplineChar *sc;
+    FontView *fvs;
+
+    if ( ret==NULL )
+return;				/* Cancelled */
+# ifdef FONTFORGE_CONFIG_GDRAW
+    temp = utf82def_copy(ret);
+# elif defined(FONTFORGE_CONFIG_GTK)
+    temp = g_utf8_to_filename(ret,-1,&read,&written,NULL);
+#endif
+
+    file = fopen( temp,"r");
+    if ( file==NULL ) {
+	gwwv_post_error(_("No such file"),_("Could not read %s"), ret );
+	free(ret); free(temp);
+return;
+    }
+    pt = buffer;
+    forever {
+	ch = getc(file);
+	if ( ch!=EOF && !isspace(ch)) {
+	    if ( pt<buffer+sizeof(buffer)-1 )
+		*pt++ = ch;
+	} else {
+	    if ( pt!=buffer ) {
+		*pt = '\0';
+		sc = NULL;
+		for ( fvs=fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
+		    EncMap *map = fvs->map;
+		    if ( map->enccount+1>=map->encmax )
+			map->map = grealloc(map->map,(map->encmax += 20)*sizeof(int));
+		    map->map[map->enccount] = -1;
+		    fvs->selected = grealloc(fvs->selected,(map->enccount+1));
+		    memset(fvs->selected+map->enccount,0,1);
+		    ++map->enccount;
+		    if ( sc==NULL ) {
+			sc = SFMakeChar(fv->sf,map,map->enccount-1);
+			free(sc->name);
+			sc->name = copy(buffer);
+			sc->comment = copy(".");	/* Mark as something for sfd file */
+			SCLigDefault(sc);
+		    }
+		    map->map[map->enccount-1] = sc->orig_pos;
+		    map->backmap[sc->orig_pos] = map->enccount-1;
+		}
+		pt = buffer;
+	    }
+	    if ( ch==EOF )
+    break;
+	}
+    }
+    fclose(file);
+    free(ret); free(temp);
+    FontViewReformatAll(fv->sf);
 }
 
 static GMenuItem enlist[] = {
@@ -6859,10 +6966,10 @@ static GMenuItem enlist[] = {
     { { (unichar_t *) N_("Display By _Groups..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuDisplayByGroups, MID_DisplayByGroups },
     { { (unichar_t *) N_("D_efine Groups..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuDefineGroups },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("_Save Namelist of Font..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuMakeNamelist },
+    { { (unichar_t *) N_("_Save Namelist of Font..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuMakeNamelist, MID_SaveNamelist },
     { { (unichar_t *) N_("L_oad Namelist..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuLoadNamelist },
-    { { (unichar_t *) N_("Rename Gl_yphs..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuMakeNamelist },
-    { { (unichar_t *) N_("Na_me Glyphs..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuMakeNamelist },
+    { { (unichar_t *) N_("Rename Gl_yphs..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuRenameByNamelist, MID_RenameGlyphs },
+    { { (unichar_t *) N_("Cre_ate Named Glyphs..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuNameGlyphs, MID_NameGlyphs },
     { NULL }
 };
 
@@ -6902,6 +7009,12 @@ static void enlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	  break;
 	  case MID_DisplayByGroups:
 	    mi->ti.disabled = fv->cidmaster!=NULL || group_root==NULL;
+	  break;
+	  case MID_NameGlyphs:
+	    mi->ti.disabled = fv->normal!=NULL || fv->cidmaster!=NULL;
+	  break;
+	  case MID_RenameGlyphs: case MID_SaveNamelist:
+	    mi->ti.disabled = fv->cidmaster!=NULL;
 	  break;
 	}
     }
@@ -10589,8 +10702,11 @@ return( sf );
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 FontView *ViewPostscriptFont(char *filename) {
     SplineFont *sf = LoadSplineFont(filename,0);
+    extern NameList *force_names_when_opening;
     if ( sf==NULL )
 return( NULL );
+    if ( sf->fv==NULL && force_names_when_opening!=NULL )
+	SFRenameGlyphsToNamelist(sf,force_names_when_opening );
 #if 0
     if ( sf->fv!=NULL ) {
 	GDrawSetVisible(sf->fv->gw,true);
