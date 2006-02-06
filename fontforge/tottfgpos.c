@@ -177,7 +177,8 @@ static uint32 scripts[][15] = {
 
 int ScriptIsRightToLeft(uint32 script) {
     if ( script==CHR('a','r','a','b') || script==CHR('h','e','b','r') ||
-	    script==CHR('c','p','m','n') || script==CHR('k','h','a','r') )
+	    script==CHR('c','p','m','n') || script==CHR('k','h','a','r') ||
+	    script==CHR('s','y','r','c') || script==CHR('t','h','a','a') )
 return( true );
 
 return( false );
