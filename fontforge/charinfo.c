@@ -5187,7 +5187,7 @@ return;		/* Didn't change */
 	list = galloc((cnt+1)*sizeof(GTextInfo*)); 
 	for ( cnt=0; names[cnt]!=NULL; ++cnt ) {
 	    list[cnt] = TIFromName(names[cnt]);
-	    free(names[cnt]);
+	    /*free(names[cnt]);*/
 	}
 	free(names);
 	list[cnt] = TIFromName(NULL);
