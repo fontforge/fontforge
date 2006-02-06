@@ -61,7 +61,7 @@ struct unicoderange {
     { "Syriac", 0x700, 0x74f, 0x710 },
     { "Arabic Supplement", 0x750, 0x77f, -1 },
     { "Thaana", 0x780, 0x7bf, -1 },
-    { "Avestan", 0x7c0, 0x7ff, -1 },
+    { "N'Ko", 0x7c0, 0x7fa, -1 },
     { "Aramaic", 0x820, 0x83f, -1 },
     { "Pahlavi", 0x840, 0x87f, -1 },
     { "Tifinagh", 0x880, 0x8af, -1 },

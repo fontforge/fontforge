@@ -152,6 +152,7 @@ static uint32 scripts[][15] = {
 /* Malayalam */	{ CHR('m','l','y','m'), 0x0d00, 0x0d7f },
 /* Mongolian */	{ CHR('m','o','n','g'), 0x1800, 0x18af },
 /* Myanmar */	{ CHR('m','y','m','r'), 0x1000, 0x107f },
+/* N'Ko */	{ CHR('n','k','o',' '), 0x07c0, 0x07fa },
 /* Ogham */	{ CHR('o','g','a','m'), 0x1680, 0x169f },
 /* Oriya */	{ CHR('o','r','y','a'), 0x0b00, 0x0b7f },
 /* Osmanya */	{ CHR('o','s','m','a'), 0x10480, 0x104a9 },
@@ -178,7 +179,8 @@ static uint32 scripts[][15] = {
 int ScriptIsRightToLeft(uint32 script) {
     if ( script==CHR('a','r','a','b') || script==CHR('h','e','b','r') ||
 	    script==CHR('c','p','m','n') || script==CHR('k','h','a','r') ||
-	    script==CHR('s','y','r','c') || script==CHR('t','h','a','a') )
+	    script==CHR('s','y','r','c') || script==CHR('t','h','a','a') ||
+	    script==CHR('n','k','o',' '))
 return( true );
 
 return( false );
