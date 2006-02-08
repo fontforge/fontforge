@@ -266,7 +266,7 @@ return( NULL );
 	if ( strcmp(names[i],names[j])==0 ) {
 	    for ( k=j+1; k<cnt; ++k )
 		names[k-1] = names[k];
-	    names[cnt--] = NULL;
+	    names[--cnt] = NULL;
 	    --j;
 	}
     }
