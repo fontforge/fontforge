@@ -275,7 +275,7 @@ if test "$gww_nodynamic" = "yes"; then
   AC_DEFINE(_STATIC_LIBXML)
 fi
 fi
-AC_CHECK_LIB(intl, gettext, STATIC_LIBS="$STATIC_LIBS -lintl" ,HAVE_LIBINTL_H=0 ) 
+AC_CHECK_LIB(intl, bind_textdomain_codeset, STATIC_LIBS="$STATIC_LIBS -lintl" ,HAVE_LIBINTL_H=0 ) 
 
 AC_ARG_WITH(multilayer,
  [  --with-multilayer   Control whether we build with support for type3/svg fonts containing multilayered drawing with strokes, fills, images, etc.],
