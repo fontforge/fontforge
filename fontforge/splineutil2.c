@@ -893,22 +893,16 @@ return( SplineMake2(from,to));
     }
     /* From here down we are only working with cubic splines */
 
-    if ( GoodCurve(to,true)) {
+    if ( !to->noprevcp || to->pointtype == pt_corner ) {
 	tounit.x = to->prevcp.x-to->me.x; tounit.y = to->prevcp.y-to->me.y;
-    } else if ( to->prev!=NULL ) {
-	tounit.x = (to->prev->from->me.x+to->prev->from->nextcp.x)/2 - to->me.x;
-	tounit.y = (to->prev->from->me.y+to->prev->from->nextcp.y)/2 - to->me.y;
     } else {
-	tounit.x = to->prevcp.x-to->me.x; tounit.y = to->prevcp.y-to->me.y;
+	tounit.x = to->me.x-to->nextcp.x; tounit.y = to->me.y-to->nextcp.y;
     }
     tlen = sqrt(tounit.x*tounit.x + tounit.y*tounit.y);
-    if ( GoodCurve(from,false)) {
+    if ( !from->nonextcp || from->pointtype == pt_corner ) {
 	fromunit.x = from->nextcp.x-from->me.x; fromunit.y = from->nextcp.y-from->me.y;
-    } else if ( from->next!=NULL ) {
-	fromunit.x = (from->next->to->me.x+from->next->to->nextcp.x)/2 - from->me.x;
-	fromunit.y = (from->next->to->me.y+from->next->to->nextcp.y)/2 - from->me.y;
     } else {
-	fromunit.x = from->nextcp.x-from->me.x; fromunit.y = from->nextcp.y-from->me.y;
+	fromunit.x = from->me.x-from->prevcp.x; fromunit.y = from->me.y-from->prevcp.y;
     }
     flen = sqrt(fromunit.x*fromunit.x + fromunit.y*fromunit.y);
     if ( tlen==0 || flen==0 ) {
@@ -1000,7 +994,7 @@ return( SplineMake2(from,to));
     spline = SplineMake(from,to,false);
 
     bettern = betterp = false;
-    incrn = flen/16.0; incrp = tlen/16.0;
+    incrn = tdiff/2.0; incrp = fdiff/2.0;
     offn = flen; offp = tlen;
     nocnt = 0;
     curdiff = SigmaDeltas(spline,mid,cnt,&b);
@@ -1068,7 +1062,7 @@ return( SplineMake2(from,to));
 	    incrn /= 2;
 	    incrp /= 2;
 	}
-	if ( incrp<tlen/128 || incrn<tlen/128 )
+	if ( incrp<tdiff/256 || incrn<fdiff/256 )
     break;
 	if ( ++totcnt>10000 )
     break;
