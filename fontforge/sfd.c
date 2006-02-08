@@ -3323,7 +3323,7 @@ static void SFDFixupRefs(SplineFont *sf) {
 			refs->orig_pos = sf->glyphcnt;
 		    refs->encoded = false;
 		}
-		if ( refs->orig_pos<sf->glyphcnt && refs->orig_pos!=-1 )
+		if ( refs->orig_pos<sf->glyphcnt && refs->orig_pos>=0 )
 		    refs->sc = sf->glyphs[refs->orig_pos];
 		if ( refs->sc!=NULL ) {
 		    refs->unicode_enc = refs->sc->unicodeenc;
