@@ -1668,7 +1668,7 @@ static char *getquotedeol(FILE *sfd) {
     char *pt, *str, *end;
     int ch;
 
-    pt = str = galloc(100); end = str+100;
+    pt = str = galloc(101); end = str+100;
     while ( isspace(ch = getc(sfd)) && ch!='\r' && ch!='\n' );
     while ( ch!='\n' && ch!='\r' && ch!=EOF ) {
 	if ( ch=='\\' ) {
@@ -1676,7 +1676,7 @@ static char *getquotedeol(FILE *sfd) {
 	    if ( ch=='n' ) ch='\n';
 	}
 	if ( pt>=end ) {
-	    pt = grealloc(str,end-str+100);
+	    pt = grealloc(str,end-str+101);
 	    end = pt+(end-str)+100;
 	    str = pt;
 	    pt = end-100;
