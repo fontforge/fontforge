@@ -13,7 +13,7 @@ cvpalettes.obj,cvpointer.obj,cvruler.obj,cvshapes.obj,cvstroke.obj,cvtranstools.
 
 fontforge_OBJECTS2=cvundoes.obj,dumpbdf.obj,dumppfa.obj,fontinfo.obj,fontview.obj,fvcomposit.obj,\
 	fvfonts.obj,fvimportbdf.obj,fvmetrics.obj,images.obj,metricsview.obj,\
- parsepfa.obj,parsettf.obj,prefs.obj,psread.obj,psunicodenames.obj,savefontdlg.obj
+ parsepfa.obj,parsettf.obj,prefs.obj,psread.obj,namelist.obj,savefontdlg.obj
 
 fontforge_OBJECTS3=sfd.obj,splashimage.obj,splinefill.obj,splineoverlap.obj,splinesave.obj,\
  splinesaveafm.obj,splinestroke.obj,splineutil.obj,splineutil2.obj,stamp.obj,\
@@ -112,7 +112,7 @@ parsepfa.obj : parsepfa.c
 parsettf.obj : parsettf.c
 prefs.obj : prefs.c
 psread.obj : psread.c
-psunicodenames.obj : psunicodenames.c
+namelist.obj : namelist.c
 savefontdlg.ob : savefontdlg.c
 sfd.obj : sfd.c
 splashimage.obj : splashimage.c
