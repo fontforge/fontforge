@@ -2803,8 +2803,8 @@ int SSTtfNumberPoints(SplineSet *ss) {
 	    ss->first->prev->from->nextcpindex = pnum++;
 	for ( sp=ss->first; ; ) {
 	    if ( (sp->ttfindex==0xffff ||
-		    ( !sp->nonextcp && !sp->noprevcp &&
-		     !sp->roundx && !sp->roundy && !sp->dontinterpolate )) &&
+		    ( !sp->roundx && !sp->roundy && !sp->dontinterpolate )) &&
+		    !sp->nonextcp && !sp->noprevcp &&
 		    RealWithin((sp->nextcp.x+sp->prevcp.x)/2, sp->me.x,.1) &&
 		    RealWithin((sp->nextcp.y+sp->prevcp.y)/2, sp->me.y,.1) )
 		sp->ttfindex = 0xffff;
