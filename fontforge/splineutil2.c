@@ -2096,6 +2096,55 @@ static void GetNextUnitVector(SplinePoint *sp,BasePoint *uv) {
     }
 }
 
+static int isExtreme(SplinePoint *sp) {
+    if ( sp->next==NULL || sp->prev==NULL )
+return( 2 );		/* End point. Always extreme */
+    if ( sp->nonextcp ) {
+	if ( !sp->next->knownlinear )
+return( false );
+	if ( sp->next->to->me.x == sp->me.x || sp->next->to->me.y == sp->me.y )
+	    /* Ok, horizontal or vertical line, that'll do */;
+	else
+return( false );
+    } else {
+	if ( sp->nextcp.x != sp->me.x && sp->nextcp.y != sp->me.y )
+return( false );
+    }
+    if ( sp->noprevcp ) {
+	if ( !sp->prev->knownlinear )
+return( false );
+	if ( sp->prev->from->me.x == sp->me.x || sp->prev->from->me.y == sp->me.y )
+	    /* Ok, horizontal or vertical line, that'll do */;
+	else
+return( false );
+    } else {
+	if ( sp->prevcp.x != sp->me.x && sp->prevcp.y != sp->me.y )
+return( false );
+    }
+return( true );
+}
+
+/* If the start point of a contour is not at an extremum, and the contour has */
+/*  a point which is at an extremum, then make the start point be that point  */
+/* leave it unchanged if start point is already extreme, or no extreme point  */
+/*  could be found							      */
+static void SPLStartToExtremum(SplineChar *sc,SplinePointList *spl) {
+    SplinePoint *sp;
+
+    while ( spl!=NULL ) {
+	if ( spl->first==spl->last ) {		/* It's closed */
+	    for ( sp=spl->first; !isExtreme(sp); ) {
+		sp = sp->next->to;
+		if ( sp==spl->first )
+	    break;
+	    }
+	    if ( sp!=spl->first )
+		spl->first = spl->last = sp;
+	}
+	spl = spl->next;
+    }
+}
+
 /* Cleanup just turns splines with control points which happen to trace out */
 /*  lines into simple lines */
 /* it also checks for really nasty control points which point in the wrong */
@@ -2113,6 +2162,8 @@ return;
 
     RemoveZeroLengthSplines(spl,false,0.1);
     RemoveStupidControlPoints(spl);
+    if ( smpl->flags!=sf_cleanup && (smpl->flags&sf_setstart2extremum))
+	SPLStartToExtremum(sc,spl);
     if ( spl->first->next!=NULL && spl->first->next->to==spl->first &&
 	    spl->first->nonextcp && spl->first->noprevcp )
 return;		/* Ignore any splines which are just dots */

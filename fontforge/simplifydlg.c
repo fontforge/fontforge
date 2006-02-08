@@ -37,7 +37,8 @@
 #define CID_FlattenBumps	1006
 #define CID_FlattenBound	1007
 #define CID_LineLenMax		1008
-#define CID_SetAsDefault	1009
+#define CID_Start		1009
+#define CID_SetAsDefault	1010
 
 static double olderr_rat = 1/1000., oldsmooth_tan=.2,
 	oldlinefixup_rat = 10./1000., oldlinelenmax_rat = 1/100.;
@@ -48,6 +49,7 @@ static int oldslopes = false;
 static int oldsmooth = true;
 static int oldsmoothhv = true;
 static int oldlinefix = false;
+static int oldstart = false;
 
 typedef struct simplifydlg {
     int flags;
@@ -76,6 +78,8 @@ static int Sim_OK(GGadget *g, GEvent *e) {
 	    sim->flags |= sf_choosehv;
 	if ( GGadgetIsChecked(GWidgetGetControl(GGadgetGetWindow(g),CID_FlattenBumps)) )
 	    sim->flags |= sf_forcelines;
+	if ( GGadgetIsChecked(GWidgetGetControl(GGadgetGetWindow(g),CID_Start)) )
+	    sim->flags |= sf_setstart2extremum;
 	sim->err = GetReal8(GGadgetGetWindow(g),CID_Error,_("_Error Limit:"),&badparse);
 	if ( sim->flags&sf_smoothcurves )
 	    sim->tan_bounds= GetReal8(GGadgetGetWindow(g),CID_SmoothTan,_("_Tangent"),&badparse);
@@ -89,6 +93,7 @@ return( true );
 	oldslopes = (sim->flags&sf_ignoreslopes);
 	oldsmooth = (sim->flags&sf_smoothcurves);
 	oldlinefix = (sim->flags&sf_forcelines);
+	oldstart = (sim->flags&sf_setstart2extremum);
 	if ( oldsmooth ) {
 	    oldsmooth_tan = sim->tan_bounds;
 	    oldsmoothhv = (sim->flags&sf_choosehv);
@@ -128,10 +133,11 @@ int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[23];
-    GTextInfo label[23];
+    GGadgetCreateData gcd[24];
+    GTextInfo label[24];
     Simple sim;
     char buffer[12], buffer2[12], buffer3[12], buffer4[12];
+    int k;
 
     memset(&sim,0,sizeof(sim));
     sim.em_size = sf->ascent+sf->descent;
@@ -152,224 +158,236 @@ int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
 
-    label[0].text = (unichar_t *) _("_Error Limit:");
-    label[0].text_is_1byte = true;
-    label[0].text_in_resource = true;
-    gcd[0].gd.label = &label[0];
-    gcd[0].gd.pos.x = 10; gcd[0].gd.pos.y = 12;
-    gcd[0].gd.flags = gg_enabled|gg_visible;
-    gcd[0].creator = GLabelCreate;
+    label[k].text = (unichar_t *) _("_Error Limit:");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = 12;
+    gcd[k].gd.flags = gg_enabled|gg_visible;
+    gcd[k++].creator = GLabelCreate;
 
     sprintf( buffer, "%.3g", olderr_rat*sim.em_size );
-    label[1].text = (unichar_t *) buffer;
-    label[1].text_is_1byte = true;
-    gcd[1].gd.label = &label[1];
-    gcd[1].gd.pos.x = 70; gcd[1].gd.pos.y = gcd[0].gd.pos.y-6;
-    gcd[1].gd.pos.width = 40;
-    gcd[1].gd.flags = gg_enabled|gg_visible;
-    gcd[1].gd.cid = CID_Error;
-    gcd[1].creator = GTextFieldCreate;
+    label[k].text = (unichar_t *) buffer;
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 70; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-6;
+    gcd[k].gd.pos.width = 40;
+    gcd[k].gd.flags = gg_enabled|gg_visible;
+    gcd[k].gd.cid = CID_Error;
+    gcd[k++].creator = GTextFieldCreate;
 
-    gcd[2].gd.pos.x = gcd[1].gd.pos.x+gcd[1].gd.pos.width+3;
-    gcd[2].gd.pos.y = gcd[0].gd.pos.y;
-    gcd[2].gd.flags = gg_visible | gg_enabled ;
-    label[2].text = (unichar_t *) _("em-units");
-    label[2].text_is_1byte = true;
-    gcd[2].gd.label = &label[2];
-    gcd[2].creator = GLabelCreate;
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+gcd[k-1].gd.pos.width+3;
+    gcd[k].gd.pos.y = gcd[k-2].gd.pos.y;
+    gcd[k].gd.flags = gg_visible | gg_enabled ;
+    label[k].text = (unichar_t *) _("em-units");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k++].creator = GLabelCreate;
 
-    label[3].text = (unichar_t *) _("Allow _removal of extrema");
-    label[3].text_is_1byte = true;
-    label[3].text_in_resource = true;
-    gcd[3].gd.label = &label[3];
-    gcd[3].gd.pos.x = 8; gcd[3].gd.pos.y = gcd[1].gd.pos.y+24;
-    gcd[3].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    label[k].text = (unichar_t *) _("Allow _removal of extrema");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 8; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y+24;
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
     if ( oldextrema )
-	gcd[3].gd.flags |= gg_cb_on;
-    gcd[3].gd.popup_msg = (unichar_t *) _("Normally simplify will not remove points at the extrema of curves\n(both PostScript and TrueType suggest you retain these points)");
-    gcd[3].gd.cid = CID_Extrema;
-    gcd[3].creator = GCheckBoxCreate;
+	gcd[k].gd.flags |= gg_cb_on;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Normally simplify will not remove points at the extrema of curves\n(both PostScript and TrueType suggest you retain these points)");
+    gcd[k].gd.cid = CID_Extrema;
+    gcd[k++].creator = GCheckBoxCreate;
 
-    label[4].text = (unichar_t *) _("Allow _slopes to change");
-    label[4].text_is_1byte = true;
-    label[4].text_in_resource = true;
-    gcd[4].gd.label = &label[4];
-    gcd[4].gd.pos.x = 8; gcd[4].gd.pos.y = gcd[3].gd.pos.y+14;
-    gcd[4].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    label[k].text = (unichar_t *) _("Allow _slopes to change");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 8; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
     if ( oldslopes )
-	gcd[4].gd.flags |= gg_cb_on;
-    gcd[4].gd.cid = CID_Slopes;
-    gcd[4].gd.popup_msg = (unichar_t *) _("Normally simplify will not change the slope of the contour at the points.");
-    gcd[4].creator = GCheckBoxCreate;
+	gcd[k].gd.flags |= gg_cb_on;
+    gcd[k].gd.cid = CID_Slopes;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Normally simplify will not change the slope of the contour at the points.");
+    gcd[k++].creator = GCheckBoxCreate;
 
-    gcd[5].gd.pos.x = 15; gcd[5].gd.pos.y = gcd[4].gd.pos.y + 20;
-    gcd[5].gd.pos.width = 150;
-    gcd[5].gd.flags = gg_enabled|gg_visible;
-    gcd[5].creator = GLineCreate;
+    label[k].text = (unichar_t *) _("Start contours at e_xtrema");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 8; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    if ( oldstart )
+	gcd[k].gd.flags |= gg_cb_on;
+    gcd[k].gd.cid = CID_Start;
+    gcd[k].gd.popup_msg = (unichar_t *) _("If the start point of a contour is not an extremum, find a new start point (on the contour) which is");
+    gcd[k++].creator = GCheckBoxCreate;
 
-    label[6].text = (unichar_t *) _("Allow _curve smoothing");
-    label[6].text_is_1byte = true;
-    label[6].text_in_resource = true;
-    gcd[6].gd.label = &label[6];
-    gcd[6].gd.pos.x = 8; gcd[6].gd.pos.y = gcd[5].gd.pos.y+4;
+    gcd[k].gd.pos.x = 15; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y + 20;
+    gcd[k].gd.pos.width = 150;
+    gcd[k].gd.flags = gg_enabled|gg_visible;
+    gcd[k++].creator = GLineCreate;
+
+    label[k].text = (unichar_t *) _("Allow _curve smoothing");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 8; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+4;
     if ( sf->order2 )
-	gcd[6].gd.flags = gg_visible|gg_utf8_popup;
+	gcd[k].gd.flags = gg_visible|gg_utf8_popup;
     else {
-	gcd[6].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
 	if ( oldsmooth )
-	    gcd[6].gd.flags |= gg_cb_on;
+	    gcd[k].gd.flags |= gg_cb_on;
     }
-    gcd[6].gd.popup_msg = (unichar_t *) _("Simplify will examine corner points whose control points are almost\ncolinear and smooth them into curve points");
-    gcd[6].gd.cid = CID_Smooth;
-    gcd[6].creator = GCheckBoxCreate;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Simplify will examine corner points whose control points are almost\ncolinear and smooth them into curve points");
+    gcd[k].gd.cid = CID_Smooth;
+    gcd[k++].creator = GCheckBoxCreate;
 
-    label[7].text = (unichar_t *) _("if tan less than");
-    label[7].text_is_1byte = true;
-    gcd[7].gd.label = &label[7];
-    gcd[7].gd.pos.x = 20; gcd[7].gd.pos.y = gcd[6].gd.pos.y+24;
-    gcd[7].gd.flags = gg_enabled|gg_visible;
-    if ( sf->order2 ) gcd[7].gd.flags = gg_visible;
-    gcd[7].creator = GLabelCreate;
+    label[k].text = (unichar_t *) _("if tan less than");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 20; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+24;
+    gcd[k].gd.flags = gg_enabled|gg_visible;
+    if ( sf->order2 ) gcd[k].gd.flags = gg_visible;
+    gcd[k++].creator = GLabelCreate;
 
     sprintf( buffer2, "%.3g", oldsmooth_tan );
-    label[8].text = (unichar_t *) buffer2;
-    label[8].text_is_1byte = true;
-    gcd[8].gd.label = &label[8];
-    gcd[8].gd.pos.x = 94; gcd[8].gd.pos.y = gcd[7].gd.pos.y-6;
-    gcd[8].gd.pos.width = 40;
-    gcd[8].gd.flags = gg_enabled|gg_visible;
-    if ( sf->order2 ) gcd[8].gd.flags = gg_visible;
-    gcd[8].gd.cid = CID_SmoothTan;
-    gcd[8].creator = GTextFieldCreate;
+    label[k].text = (unichar_t *) buffer2;
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 94; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-6;
+    gcd[k].gd.pos.width = 40;
+    gcd[k].gd.flags = gg_enabled|gg_visible;
+    if ( sf->order2 ) gcd[k].gd.flags = gg_visible;
+    gcd[k].gd.cid = CID_SmoothTan;
+    gcd[k++].creator = GTextFieldCreate;
 
-    label[9].text = (unichar_t *) _("S_nap to horizontal/vertical");
-    label[9].text_is_1byte = true;
-    label[9].text_in_resource = true;
-    gcd[9].gd.label = &label[9];
-    gcd[9].gd.pos.x = 17; gcd[9].gd.pos.y = gcd[8].gd.pos.y+24; 
+    label[k].text = (unichar_t *) _("S_nap to horizontal/vertical");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 17; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+24; 
     if ( sf->order2 )
-	gcd[9].gd.flags = gg_visible;
+	gcd[k].gd.flags = gg_visible;
     else {
-	gcd[9].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
 	if ( oldsmoothhv )
-	    gcd[9].gd.flags |= gg_cb_on|gg_utf8_popup;
+	    gcd[k].gd.flags |= gg_cb_on|gg_utf8_popup;
     }
-    gcd[9].gd.popup_msg = (unichar_t *) _("If the slope of an adjusted point is near horizontal or vertical\nsnap to that");
-    gcd[9].gd.cid = CID_SmoothHV;
-    gcd[9].creator = GCheckBoxCreate;
+    gcd[k].gd.popup_msg = (unichar_t *) _("If the slope of an adjusted point is near horizontal or vertical\nsnap to that");
+    gcd[k].gd.cid = CID_SmoothHV;
+    gcd[k++].creator = GCheckBoxCreate;
 
-    label[10].text = (unichar_t *) _("_Flatten bumps on lines");
-    label[10].text_is_1byte = true;
-    label[10].text_in_resource = true;
-    gcd[10].gd.label = &label[10];
-    gcd[10].gd.pos.x = 8; gcd[10].gd.pos.y = gcd[9].gd.pos.y+14; 
+    label[k].text = (unichar_t *) _("_Flatten bumps on lines");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 8; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14; 
     if ( sf->order2 )
-	gcd[10].gd.flags = gg_visible|gg_utf8_popup;
+	gcd[k].gd.flags = gg_visible|gg_utf8_popup;
     else {
-	gcd[10].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
 	if ( oldlinefix )
-	    gcd[10].gd.flags |= gg_cb_on;
+	    gcd[k].gd.flags |= gg_cb_on;
     }
-    gcd[10].gd.popup_msg = (unichar_t *) _("If a line has a bump on it then flatten out that bump");
-    gcd[10].gd.cid = CID_FlattenBumps;
-    gcd[10].creator = GCheckBoxCreate;
+    gcd[k].gd.popup_msg = (unichar_t *) _("If a line has a bump on it then flatten out that bump");
+    gcd[k].gd.cid = CID_FlattenBumps;
+    gcd[k++].creator = GCheckBoxCreate;
 
-    label[11].text = (unichar_t *) _("if smaller than");
-    label[11].text_is_1byte = true;
-    gcd[11].gd.label = &label[11];
-    gcd[11].gd.pos.x = 20; gcd[11].gd.pos.y = gcd[10].gd.pos.y+24;
-    gcd[11].gd.flags = gg_enabled|gg_visible;
-    if ( sf->order2 ) gcd[11].gd.flags = gg_visible;
-    gcd[11].creator = GLabelCreate;
+    label[k].text = (unichar_t *) _("if smaller than");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 20; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+24;
+    gcd[k].gd.flags = gg_enabled|gg_visible;
+    if ( sf->order2 ) gcd[k].gd.flags = gg_visible;
+    gcd[k++].creator = GLabelCreate;
 
     sprintf( buffer3, "%.3g", oldlinefixup_rat*sim.em_size );
-    label[12].text = (unichar_t *) buffer3;
-    label[12].text_is_1byte = true;
-    gcd[12].gd.label = &label[12];
-    gcd[12].gd.pos.x = 90; gcd[12].gd.pos.y = gcd[11].gd.pos.y-6;
-    gcd[12].gd.pos.width = 40;
-    gcd[12].gd.flags = gg_enabled|gg_visible;
-    if ( sf->order2 ) gcd[12].gd.flags = gg_visible;
-    gcd[12].gd.cid = CID_FlattenBound;
-    gcd[12].creator = GTextFieldCreate;
+    label[k].text = (unichar_t *) buffer3;
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 90; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-6;
+    gcd[k].gd.pos.width = 40;
+    gcd[k].gd.flags = gg_enabled|gg_visible;
+    if ( sf->order2 ) gcd[k].gd.flags = gg_visible;
+    gcd[k].gd.cid = CID_FlattenBound;
+    gcd[k++].creator = GTextFieldCreate;
 
-    gcd[13].gd.pos.x = gcd[12].gd.pos.x+gcd[12].gd.pos.width+3;
-    gcd[13].gd.pos.y = gcd[11].gd.pos.y;
-    gcd[13].gd.flags = gg_visible | gg_enabled ;
-    if ( sf->order2 ) gcd[13].gd.flags = gg_visible;
-    label[13].text = (unichar_t *) _("em-units");
-    label[13].text_is_1byte = true;
-    gcd[13].gd.label = &label[13];
-    gcd[13].creator = GLabelCreate;
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+gcd[k-1].gd.pos.width+3;
+    gcd[k].gd.pos.y = gcd[k-2].gd.pos.y;
+    gcd[k].gd.flags = gg_visible | gg_enabled ;
+    if ( sf->order2 ) gcd[k].gd.flags = gg_visible;
+    label[k].text = (unichar_t *) _("em-units");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k++].creator = GLabelCreate;
 
 
-    label[14].text = (unichar_t *) _("Don't smooth lines");
-    label[14].text_is_1byte = true;
-    gcd[14].gd.label = &label[14];
-    gcd[14].gd.pos.x = 8; gcd[14].gd.pos.y = gcd[13].gd.pos.y+14; 
-    gcd[14].gd.flags = gg_enabled|gg_visible;
-    gcd[14].creator = GLabelCreate;
+    label[k].text = (unichar_t *) _("Don't smooth lines");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 8; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14; 
+    gcd[k].gd.flags = gg_enabled|gg_visible;
+    gcd[k].creator = GLabelCreate;
 
-    label[15].text = (unichar_t *) _("longer than");
-    label[15].text_is_1byte = true;
-    gcd[15].gd.label = &label[15];
-    gcd[15].gd.pos.x = 20; gcd[15].gd.pos.y = gcd[14].gd.pos.y+24;
-    gcd[15].gd.flags = gg_enabled|gg_visible;
-    gcd[15].creator = GLabelCreate;
+    label[k].text = (unichar_t *) _("longer than");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 20; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+24;
+    gcd[k].gd.flags = gg_enabled|gg_visible;
+    gcd[k++].creator = GLabelCreate;
 
     sprintf( buffer4, "%.3g", oldlinelenmax_rat*sim.em_size );
-    label[16].text = (unichar_t *) buffer4;
-    label[16].text_is_1byte = true;
-    gcd[16].gd.label = &label[16];
-    gcd[16].gd.pos.x = 90; gcd[16].gd.pos.y = gcd[15].gd.pos.y-6;
-    gcd[16].gd.pos.width = 40;
-    gcd[16].gd.flags = gg_enabled|gg_visible;
-    gcd[16].gd.cid = CID_LineLenMax;
-    gcd[16].creator = GTextFieldCreate;
+    label[k].text = (unichar_t *) buffer4;
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 90; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-6;
+    gcd[k].gd.pos.width = 40;
+    gcd[k].gd.flags = gg_enabled|gg_visible;
+    gcd[k].gd.cid = CID_LineLenMax;
+    gcd[k++].creator = GTextFieldCreate;
 
-    gcd[17].gd.pos.x = gcd[16].gd.pos.x+gcd[16].gd.pos.width+3;
-    gcd[17].gd.pos.y = gcd[15].gd.pos.y;
-    gcd[17].gd.flags = gg_visible | gg_enabled ;
-    label[17].text = (unichar_t *) _("em-units");
-    label[17].text_is_1byte = true;
-    gcd[17].gd.label = &label[17];
-    gcd[17].creator = GLabelCreate;
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+gcd[k-1].gd.pos.width+3;
+    gcd[k].gd.pos.y = gcd[k-2].gd.pos.y;
+    gcd[k].gd.flags = gg_visible | gg_enabled ;
+    label[k].text = (unichar_t *) _("em-units");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k++].creator = GLabelCreate;
 
-    gcd[18].gd.pos.x = 10; gcd[18].gd.pos.y = gcd[17].gd.pos.y+20;
-    gcd[18].gd.flags = gg_visible | gg_enabled | (set_as_default ? gg_cb_on : 0);
-    label[18].text = (unichar_t *) _("Set as Default");
-    label[18].text_is_1byte = true;
-    gcd[18].gd.label = &label[18];
-    gcd[18].gd.cid = CID_SetAsDefault;
-    gcd[18].creator = GCheckBoxCreate;
+    gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+20;
+    gcd[k].gd.flags = gg_visible | gg_enabled | (set_as_default ? gg_cb_on : 0);
+    label[k].text = (unichar_t *) _("Set as Default");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_SetAsDefault;
+    gcd[k++].creator = GCheckBoxCreate;
 
 
-    gcd[19].gd.pos.x = 20-3; gcd[19].gd.pos.y = gcd[18].gd.pos.y+30;
-    gcd[19].gd.pos.width = -1; gcd[19].gd.pos.height = 0;
-    gcd[19].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[19].text = (unichar_t *) _("_OK");
-    label[19].text_is_1byte = true;
-    label[19].text_in_resource = true;
-    gcd[19].gd.mnemonic = 'O';
-    gcd[19].gd.label = &label[19];
-    gcd[19].gd.handle_controlevent = Sim_OK;
-    gcd[19].creator = GButtonCreate;
+    gcd[k].gd.pos.x = 20-3; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+30;
+    gcd[k].gd.pos.width = -1; gcd[k].gd.pos.height = 0;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    label[k].text = (unichar_t *) _("_OK");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.mnemonic = 'O';
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.handle_controlevent = Sim_OK;
+    gcd[k++].creator = GButtonCreate;
 
-    gcd[20].gd.pos.x = -20; gcd[20].gd.pos.y = gcd[19].gd.pos.y+3;
-    gcd[20].gd.pos.width = -1; gcd[20].gd.pos.height = 0;
-    gcd[20].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[20].text = (unichar_t *) _("_Cancel");
-    label[20].text_is_1byte = true;
-    label[20].text_in_resource = true;
-    gcd[20].gd.label = &label[20];
-    gcd[20].gd.mnemonic = 'C';
-    gcd[20].gd.handle_controlevent = Sim_Cancel;
-    gcd[20].creator = GButtonCreate;
+    gcd[k].gd.pos.x = -20; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+3;
+    gcd[k].gd.pos.width = -1; gcd[k].gd.pos.height = 0;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    label[k].text = (unichar_t *) _("_Cancel");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.mnemonic = 'C';
+    gcd[k].gd.handle_controlevent = Sim_Cancel;
+    gcd[k++].creator = GButtonCreate;
 
-    gcd[21].gd.pos.x = 2; gcd[21].gd.pos.y = 2;
-    gcd[21].gd.pos.width = pos.width-4; gcd[21].gd.pos.height = pos.height-4;
-    gcd[21].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
-    gcd[21].creator = GGroupCreate;
+    gcd[k].gd.pos.x = 2; gcd[k].gd.pos.y = 2;
+    gcd[k].gd.pos.width = pos.width-4; gcd[k].gd.pos.height = pos.height-4;
+    gcd[k].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
+    gcd[k++].creator = GGroupCreate;
 
     GGadgetsCreate(gw,gcd);
     GWidgetIndicateFocusGadget(GWidgetGetControl(gw,CID_Error));
