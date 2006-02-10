@@ -2207,6 +2207,20 @@ SplineSet *SplineSetRemoveOverlap(SplineChar *sc, SplineSet *base,enum overlap_t
     Monotonic *ms;
     Intersection *ilist;
     SplineSet *ret;
+    SplineSet *order3 = NULL;
+    int is_o2 = false;
+    SplineSet *ss;
+
+    for ( ss=base; ss!=NULL; ss=ss->next )
+	if ( ss->first->next!=NULL ) {
+	    is_o2 = ss->first->next->order2;
+    break;
+	}
+    if ( is_o2 ) {
+	order3 = SplineSetsPSApprox(base);
+	SplinePointListsFree(base);
+	base = order3;
+    }
 
     if ( sc!=NULL )
 	glyphname = sc->name;
@@ -2232,5 +2246,10 @@ SplineSet *SplineSetRemoveOverlap(SplineChar *sc, SplineSet *base,enum overlap_t
     FreeMonotonics(ms);
     FreeIntersections(ilist);
     glyphname = NULL;
+    if ( order3!=NULL ) {
+	ss = SplineSetsTTFApprox(ret);
+	SplinePointListsFree(ret);
+	ret = ss;
+    }
 return( ret );
 }

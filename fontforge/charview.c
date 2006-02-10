@@ -6478,9 +6478,10 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	    mi->ti.disabled = cv->drawmode!=dm_fore || cv->sc->layers[ly_fore].refs!=NULL || order2;
 	  break;
 	  case MID_Stroke:
-	    mi->ti.disabled = ( cv->layerheads[cv->drawmode]->splines==NULL || order2 );
+	  case MID_RmOverlap:
+	    mi->ti.disabled = cv->layerheads[cv->drawmode]->splines==NULL;
 	  break;
-	  case MID_RmOverlap: case MID_Effects:
+	  case MID_Effects:
 	    mi->ti.disabled = ( cv->layerheads[cv->drawmode]->splines==NULL || order2 );
 	  break;
 #ifdef FONTFORGE_CONFIG_TILEPATH
