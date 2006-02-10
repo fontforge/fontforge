@@ -590,6 +590,7 @@ SplineSet *SSttfApprox(SplineSet *ss) {
 	}
     }
     ttfCleanup(ret->first);
+    SPLCatagorizePoints(ret);
 return( ret );
 }
 
@@ -605,7 +606,6 @@ SplineSet *SplineSetsTTFApprox(SplineSet *ss) {
 	last = cur;
 	ss = ss->next;
     }
-    SPLCatagorizePoints(head);
 return( head );
 }
 

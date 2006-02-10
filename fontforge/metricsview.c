@@ -2949,11 +2949,11 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_Transform:
 	    mi->ti.disabled = sc==NULL;
 	  break;
-	  case MID_RmOverlap: case MID_Effects:
+	  case MID_Effects:
 	    mi->ti.disabled = sc==NULL || mv->fv->sf->onlybitmaps || order2;
 	  break;
-	  case MID_Stroke:
-	    mi->ti.disabled = sc==NULL || mv->fv->sf->onlybitmaps || order2;
+	  case MID_RmOverlap: case MID_Stroke:
+	    mi->ti.disabled = sc==NULL || mv->fv->sf->onlybitmaps;
 	  break;
 	  case MID_AddExtrema:
 	  case MID_Round: case MID_Correct:

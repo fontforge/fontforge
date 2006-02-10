@@ -1841,7 +1841,10 @@ return( base );
 
 SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
     SplineSet *ret, *temp, *temp2;
+    SplineSet *order3 = NULL;
 
+    if ( spl->first->next!=NULL && spl->first->next->order2 )
+	order3 = spl = SSPSApprox(spl);
     if ( si->radius==0 )
 	si->radius=1;
     temp2 = SSRemoveUTurns(SplinePointListCopy(spl),si);
@@ -1873,6 +1876,12 @@ SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
     } else
 	ret = _SplineSetStroke(temp2,si,sc);
     SplinePointListFree(temp2);
+    if ( order3!=NULL ) {
+	temp = SplineSetsTTFApprox(ret);
+	SplinePointListsFree(ret);
+	SplinePointListFree(order3);
+	ret = temp;
+    }
 return( ret );
 }
 

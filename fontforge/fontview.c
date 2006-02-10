@@ -5960,10 +5960,10 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps;
 	  break;
 	  case MID_Simplify:
+	  case MID_Stroke: case MID_RmOverlap:
 	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps;
 	  break;
-	  case MID_MetaFont: case MID_Stroke:
-	  case MID_RmOverlap: case MID_Effects:
+	  case MID_MetaFont: case MID_Effects:
 	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps || order2;
 	  break;
 	  case MID_Round: case MID_Correct:
