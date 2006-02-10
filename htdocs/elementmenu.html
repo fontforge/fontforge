@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 14-Jan-2006 -->
+  <!-- AP: Last modified: 9-Feb-2006 -->
   <TITLE>The Element Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -468,10 +468,10 @@
     <DT>
       <A NAME="Expand">Expand</A> Stroke...
     <DD>
-      Not in the bitmap view, not in quadratic (truetype) fonts. In the font view
-      it applies to all foreground splines in all selected glyphs. In the outline
-      view it applies to all paths that have at least one point selected (or if
-      no points are selected then it applies to all paths).<BR>
+      Not in the bitmap view. In the font view it applies to all foreground splines
+      in all selected glyphs. In the outline view it applies to all paths that
+      have at least one point selected (or if no points are selected then it applies
+      to all paths).<BR>
       <IMG SRC="twolines.png" WIDTH="247" HEIGHT="247">
       <IMG SRC="expandedlines.png" WIDTH="247" HEIGHT="247"><BR>
       Above is a simple example of what expand stroke can do. It takes the two
@@ -499,8 +499,7 @@
     <DT>
       Overlap
     <DD>
-      None of these is available in the bitmap view. None works on quadratic (truetype)
-      fonts<SUP><A HREF="#overlap-footnote">1</A></SUP>.
+      None of these is available in the bitmap view.
       <DL>
 	<DT>
 	  <A NAME="Remove">Remove</A> Overlap
@@ -523,11 +522,6 @@
 	  the command it will save the state to the error recovery file.<BR>
 	  Warning: Splines which are tangent (or nearly so) cause problems. Points
 	  which are close together can cause problems.
-	  <P>
-	  <SUP><A NAME="overlap-footnote">1</A></SUP><SMALL>If you wish to run remove
-	  overlap on a truetype (quadratic) font, you must first use Element-&gt;Font
-	  Info-&gt;General to convert it into a cubic font, do the remove overlap,
-	  and then convert back to quadratic.</SMALL>
 	<DT>
 	  <A NAME="Intersect">Intersect</A>
 	<DD>
@@ -613,7 +607,8 @@
       view (or if nothing is selected in the outline view) it will add extrema
       to a spline if: 1) The spline is longer than the em-size/32, or 2) the entire
       contour (rather than just the current spline) attains its maximum/minimum
-      value at this point.
+      value at this point. If the added extrema is extremely close to an already
+      existing point, fontforge may remove that point to avoid creating tiny splines.
     <DT>
       Effects
     <DD>
@@ -624,12 +619,12 @@
 	<DD>
 	  <IMG SRC="OutlineInline.png" WIDTH="146" HEIGHT="70" ALIGN="Right">Changes
 	  the selected glyphs so that instead of being a solid block, only the outline
-	  of the glyph is visible. The glyphs' bounding box will not change.
+	  of the glyph is visible. The glyphs' bounding boxes will not change.
 	<DT>
 	  <A NAME="Inline">Inline</A>
 	<DD>
 	  Changes the selected glyphs so that the glyph is surrounded by an outline.
-	  The glyphs' bounding box will not change.
+	  The glyphs' bounding boxes will not change.
 	<DT>
 	  <A NAME="Shadow">Shadow</A>
 	<DD>

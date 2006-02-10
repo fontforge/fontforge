@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 5-Feb-2006 -->
+  <!-- AP: Last modified: 9-Feb-2006 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -1901,6 +1901,13 @@ ApplySubstitution("*","*","vrt2")
 	  if they are close
 	<LI>
 	  16 -- Remove bumps from lines
+	<LI>
+	  32 -- make lines which are close to horizontal/vertical be horizontal/vertical
+	<LI>
+	  64 -- merge lines which are nearly parallel into one
+	<LI>
+	  128 -- change which point is the start point if a contour's start point is
+	  not an extremum
       </UL>
       <P>
       The error argument is the number of font units by which the modified path
