@@ -2,11 +2,11 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jun-2005 -->
-  <!-- AP: Last modified: 15-Jan-2006 -->
+  <!-- AP: Last modified: 5-Feb-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Encoding Menu</TITLE> -->
     <TITLE>エンコーディングメニュー</TITLE>
-  <LINK REL="icon" href="ffanvil16.png">
+  <LINK REL="icon" href="../ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
@@ -69,6 +69,18 @@
     <LI>
 <!--  <A HREF="encodingmenu.html#Define">Define Groups...</A>-->
       <A HREF="encodingmenu.html#Define">グループを定義(<U>E</U>)...</A>
+    <LI>
+<!--  <A HREF="#SaveNL">Save NameList of Font...</A> -->
+      <A HREF="#SaveNL">フォントの名前リストを保存(<U>S</U>)...</A>
+    <LI>
+<!--  <A HREF="#LoadNL">Load NameList...</A> -->
+      <A HREF="#LoadNL">名前リストを読み込み(<U>O</U>)...</A>
+    <LI>
+<!--  <A HREF="#RenameGlyphs">Rename Glyphs...</A> -->
+      <A HREF="#RenameGlyphs">グリフ名を変更(<U>Y</U>)...</A>
+    <LI>
+<!--  <A HREF="#NameGlyphs">Create Named Glyphs...</A> -->
+      <A HREF="#NameGlyphs">名前を指定してグリフを作成(<U>A</U>)...</A>
   </UL>
   <DL>
     <DT>
@@ -185,6 +197,37 @@
 <!--  Allows you to define <A HREF="groups.html">groups</A> of glyphs which
       (presumably) have some meaningful connection to each other. -->
       相互に何らかの繋がりをもつ (と見ることができる) グリフの<A HREF="groups.html">グループ</A>を定義することができます。
+    <DT>
+<!--  <A NAME="SaveNL">Save NameList of Font...</A> -->
+      <A NAME="SaveNL">フォントの名前リストを保存(<U>S</U>)...</A>
+    <DD>
+<!--  Creates a <A HREF="#namelist">namelist</A> file mapping unicode to the glyph
+      names of the current font. -->
+      現在のフォント内のグリフ名を Unicode に対応づける<A HREF="#namelist">名前リスト</A>ファイルを作成します。
+    <DT>
+<!--  <A NAME="LoadNL">Load NameList...</A> -->
+      <A NAME="LoadNL">名前リストを読み込み(<U>O</U>)...</A>
+    <DD>
+<!--  Loads a <A HREF="#namelist">namelist</A> file into fontforge and copies it
+      so that fontforge will load it on start up in the future. -->
+      <A HREF="#namelist">名前リスト</A>ファイルを FontForge に読み込み、将来 FontForge を起動した時に読み込めるようにコピーします。
+    <DT>
+<!--  <A NAME="RenameGlyphs">Rename Glyphs...</A> -->
+      <A NAME="RenameGlyphs">グリフ名を変更(<U>Y</U>)...</A>
+    <DD>
+<!--  Allows you to specify a <A HREF="#namelist">namelist</A>. All glyphs in the
+      current font will be renamed to match the scheme in the namelist. -->
+      このコマンドでは<A HREF="#namelist">名前リスト</A>を指定できます。現在のフォント内のすべてのグリフは名前リストの様式に合うように改名されます。
+    <DT>
+<!--  <A NAME="NameGlyphs">Create Named Glyphs...</A> -->
+      <A NAME="NameGlyphs">名前を指定してグリフを作成(<U>A</U>)...</A>
+    <DD>
+<!--  Allows you to specify a file containing a list of glyph names. FontForge
+      will create a sequence of unencoded glyphs with these names. This might be
+      useful if all your fonts contain small caps and you always want to have the
+      names "A.small", "B.small", "C.small" etc. or perhaps you always want the
+      ligatures "longs_longs_t", "f_longs", "f_j", etc. -->
+      このコマンドでは、グリフ名のリストを含むファイルを指定することができます。FontForge は文字コードが割り当てられていないグリフの列を指定した名前で作成します。これは例えば、あなたが作るフォントが必ず小型大文字を含んでいて、それらを常に“A.small”,“B.small”,“C.small”のように命名したい時に役立つはずですし、常に "longs_longs_t", "f_longs", "f_j" 等の名前を使いたい場合にもたぶん役立つでしょう。
   </DL>
   <H2>
 <!--General notes on encodings-->
@@ -466,6 +509,127 @@
       128 characters of almost every other encoding.-->
       US-ASCII ― それ自身ではもはや本当に役立つわけではありませんが、その他ほとんどすべてのエンコーディングの最初の 128 文字を提供します。
   </UL>
+  <H2>
+<!--<A NAME="namelist">NameLists</A> -->
+    <A NAME="namelist">名前リスト</A>
+  </H2>
+  <P>
+<!--
+  Adobe has established a standard glyph naming convention which provides
+  intelligible names for many glyphs of unicode characters. And some unintelligible
+  names too. -->
+  Adobe は、多数の Unicode 文字に人が読んで理解可能なグリフ名をつけた命名規約を定めています。その中には訳の分からない名前もいくつか含まれています。
+  <P>
+<!--
+  A namelist is just a mapping from unicode to glyph names (a glyph name must
+  be made up of alphanumeric characters (or the special characters '.' or '_'),
+  it may not begin with a digit, and it must be 31 or fewer characters in length. -->
+  名前リストは Unicode からグリフ名への対応づけにすぎません。グリフ名は英数字 (および特殊文字&lsquo;.&rsquo;と&lsquo;_&rsquo;) からなり、数字で始まらない長さ 31 文字以内の文字列でなければなりません。
+  <P>
+<!--
+  FontForge provides a series of standard namelists: -->
+  FontForge はいくつかの標準名前リストを提供しています:
+  <UL>
+    <LI>
+<!--  Adobe Glyph List<BR>
+      This is the set of names that Adobe publishes on the web. -->
+      Adobe グリフ名 (AGL)<BR>
+      これは、Adobe が Web 上で公開している名前セットです。
+    <LI>
+<!--  AGL without afii<BR>
+      The cyrillic and hebrew glyphs have been assigned some very odd names (afiiXXXXX)
+      and some people prefer not to use them. -->
+      AGL (afii を除く)<BR>
+      キリル文字とヘブライ文字には非常に奇妙な名前 (afiiXXXXX) がつけられており、それを使いたくない人が何人かいます。
+    <LI>
+<!--  AGL with PUA<BR>
+      Adobe has assigned part of the unicode public use area to hold some standard
+      glyph variants like small caps, subscripts, old-style numbers, etc. -->
+      AGL (私用領域を含む)<BR>
+      Adobe は、Unicode の私用領域の一部を、小型大文字・下つき文字・ノンライニング数字など、いくつかの標準的な異体字を保持するために割り当てています。
+    <LI>
+<!--  Greek small caps<BR>
+      I've added some greek small cap assignments -->
+      ギリシャ小型大文字<BR>
+      私は、いくつかのギリシャ文字の小型大文字の割り当てを追加しました。
+    <LI>
+<!--
+      TeX Names<BR>
+      The TeX typesetting system has its own set of names -->
+      TeX 名<BR>
+      TeX 組版システムは独自の名前セットを定めています。
+    <LI>
+<!--  AMS Names<BR>
+      The American Mathematical Society has its set of names (see the American
+      Mathematical Society's
+      <A HREF="http://www.ams.org/STIX/bnb/stix-tbl.asc-2003-10-10">specification</A>) -->
+      AMS 名<BR>
+      米国数学会 (AMS) は独自の名前セットを定めています。(AMS の<A HREF="http://www.ams.org/STIX/bnb/stix-tbl.asc-2003-10-10">仕様書</A>を参照してください)。
+  </UL>
+  <P>
+<!--
+  You may define your own namelist file. It should have the extension ".nam".
+  And it should contain a series of lines that look like: -->
+  あなた自身の名前リストを定義することができます。名前リストは拡張子“.nam” をつける必要があります。その中には以下のような行の並びが含まれます:
+  <BLOCKQUOTE>
+    <PRE>0x0020 space
+0x0021 exclam
+0x0022 dblquote
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+<!--
+  In many cases you will just want to make a few modifications to an already
+  existing namelist. You can write: -->
+  多くの場合、既存の名前リストに 2, 3 の追加を行いたいだけでしょう。以下のように書くことができます:
+  <BLOCKQUOTE>
+    <PRE>Based: Adobe Glyph List
+0x0021 exclamation
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+<!--
+  Which means the namelist is the same as the Adobe Glyph List except that
+  in your system U+0021 will be called "exclamation" rather than "exclam". -->
+  この記述は、この名前リストが Adobe グリフリストと同じで、U+0021 が“exclam”ではなく“exclamation”という名前になっているだけが違います。
+  <P>
+<!--
+  Any glyphs you do not explicitly named will be named "uniXXXX" or "uXXXXX"
+  where XXXX is the unicode value in hex. The prefix "uni" will be used for
+  glyphs in the BMP, the prefix "u" for glyphs outside. -->
+  リストに明記して名前をつけなかったグリフはすべて“uniXXXX”または“uXXXXX”という名前になります (ここで XXXX は 16 進表記の Unicode 値を表します)。接頭辞“uni”は BMP 内のグリフに、接頭辞“u”は BMP に含まれないグリフにつけられます。
+  <P>
+<!--
+  So if you find it easier to work with names other than those Adobe has
+  established you may create your own namelist file. Then use
+  <A HREF="#LoadNL">Encoding-&gt;Load NameList...</A> to load that into FontForge
+  (you only need do this once, FontForge should remember it thereafter). You
+  may use
+  <A HREF="prefs.html#NewFontNameList">File-&gt;Preferences-&gt;Font Info</A>
+  to decree that all your new fonts will use this namelist. You can change
+  a font's namelist with either: -->
+  ですから、Adobe が決めた名前以外で作業した方が楽なのでしたら、自前の名前ファイルを作成することができます。ファイルを作成したら <A HREF="#LoadNL"><CODE>エンコーディング(<U>N</U>)</CODE>→<CODE>名前リストを読み込み(<U>O</U>)...</CODE></A> で、あなたが今後作成するすべてのフォントがこの名前リストを使用するように命令することができます。フォントの名前リストを変更するには、以下の 2 つの方法があります:
+  <UL>
+    <LI>
+<!--  <A HREF="fontinfo.html#PS-General">Element-&gt;Font
+      Info-&gt;General-&gt;NameList</A><BR>
+      Which will change the way new glyphs are assigned names -->
+      <A HREF="fontinfo.html#PS-General"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)</CODE>→[<CODE>一般情報</CODE>]→名前リスト:</A><BR>
+      新しいグリフに割り当てられる名前を変更します。
+    <LI>
+<!--  <A HREF="#RenameGlyphs">Encoding-&gt;Rename Glyphs...</A><BR>
+      Which will rename existing glyphs as well as changing the way new glyphs
+      are named. -->
+      <A HREF="#RenameGlyphs"><CODE>エンコーディング(<U>N</U>)</CODE>→<CODE>グリフ名を変更(<U>Y</U>)...</CODE></A><BR>
+      既存のグリフ名を、新規のグリフの命名既約に従って変更します。
+  </UL>
+  <P>
+<!--
+  You may also want to force a rename of all glyphs when you Open a font, and
+  the open dialog now lets you do this. Similarly when generating a font you
+  will probably want to force that font to be use the standard names of the
+  Adobe Glyph List. -->
+  フォントを開いた時に全グリフを強制的に改名したい場合もあるでしょう。現在のファイルオープンダイアログではそう指定することができます。同様に、フォントの出力時にそのフォントを Adobe グリフリストの標準名を使用するように強制したいと思われるでしょう。
   <H2>
 <!--   Other menus -->
        その他のメニュー

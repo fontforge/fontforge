@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "POT-Creation-Date: 2005-08-29 17:43+0800\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"PO-Revision-Date: 2006-02-11 22:48-0900\n"
 "Last-Translator: KANOU Hiroki <kanou@khdd.net>\n"
 "Language-Team: LANGUAGE <ja.c@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -243,6 +243,18 @@ msgstr "グループ毎の表示..."
 
 msgid "D_efine Groups..."
 msgstr "グループを定義(_E)..."
+
+msgid "_Save Namelist of Font..."
+msgstr "フォントの名前リストを保存(_S)..."
+
+msgid "L_oad Namelist..."
+msgstr "名前リストを読み込み(_O)..."
+
+msgid "Rename Gl_yphs..."
+msgstr "グリフ名を変更(_Y)..."
+
+msgid "Cre_ate Named Glyphs..."
+msgstr "名前を指定してグリフを作成(_A)..."
 
 msgid "_Change Supplement..."
 msgstr "補遺番号を変更(_C)..."
@@ -2678,7 +2690,7 @@ msgid "Malay (Brunei)"
 msgstr "マレー語(ブルネイ)"
 
 msgid "Mongolian (Cyrillic)"
-msgstr "モンゴル語"
+msgstr "モンゴル語(キリル文字)"
 
 msgid "Nepali (India)"
 msgstr "ネパール語(インド)"
@@ -3588,7 +3600,7 @@ msgid "Suffix to Tag..."
 msgstr "タグへの接尾子..."
 
 msgid "Load of Kerning Metrics Failed"
-msgstr "カーニングメトリックの読込みに失敗しました"
+msgstr "カーニングメトリックの読み込みに失敗しました"
 
 msgid "Failed to load kern data from %s"
 msgstr "カーニングデータを%sから読み込むのに失敗しました."
@@ -4485,13 +4497,13 @@ msgstr "文脈依存の合字"
 msgid "Contextual Swash"
 msgstr "文脈依存のスワッシュ"
 
-msgid "Aramaic"
+msgid "Script|Aramaic"
 msgstr "アラム文字"
 
-msgid "Avestan"
+msgid "Script|Avestan"
 msgstr "アヴェスタ文字"
 
-msgid "Batak"
+msgid "Script|Batak"
 msgstr "バタク文字"
 
 msgid "Bliss Symbolics"
@@ -4506,10 +4518,10 @@ msgstr "ブラーフミー文字"
 msgid "Braille"
 msgstr "点字図形"
 
-msgid "Buginese"
+msgid "Script|Buginese"
 msgstr "ブギ文字"
 
-msgid "Buhid"
+msgid "Script|Buhid"
 msgstr "ブヒッド文字"
 
 msgid "Byzantine Music"
@@ -4518,7 +4530,7 @@ msgstr "ビザンチン音楽記号"
 msgid "Canadian Syllabics"
 msgstr "統合カナダ先住民音節"
 
-msgid "Cham"
+msgid "Script|Cham"
 msgstr "チャム文字"
 
 msgid "Cirth"
@@ -4551,7 +4563,7 @@ msgstr "エジプト神官文字"
 msgid "Egyptian hieroglyphs"
 msgstr "ヒエログリフ"
 
-msgid "Ethiopic"
+msgid "Script|Ethiopic"
 msgstr "エチオピア文字"
 
 msgid "Glagolitic"
@@ -4569,7 +4581,7 @@ msgstr "ハングル字母"
 msgid "Hangul"
 msgstr "ハングル音節文字"
 
-msgid "Hanunóo"
+msgid "Script|Hanunóo"
 msgstr "ハヌノー文字"
 
 msgid "Pahawh Hmong"
@@ -4599,7 +4611,7 @@ msgstr "線文字A"
 msgid "Linear B"
 msgstr "線文字B"
 
-msgid "Mandaean"
+msgid "Script|Mandaean"
 msgstr "マンダ文字"
 
 msgid "Mayan hieroglyphs"
@@ -4608,10 +4620,10 @@ msgstr "マヤ神聖文字"
 msgid "Meroitic"
 msgstr "メロエ文字"
 
-msgid "Malay\xc4\x81lam"
+msgid "Script|Malay\xc4\x81lam"
 msgstr "マラヤーラム文字"
 
-msgid "Myanmar"
+msgid "Script|Myanmar"
 msgstr "ミャンマー文字"
 
 msgid "Ogham"
@@ -4620,13 +4632,13 @@ msgstr "オガム文字"
 msgid "Osmanya"
 msgstr "オスマニャ文字"
 
-msgid "Pahlavi"
+msgid "Script|Pahlavi"
 msgstr "パフラヴィ文字"
 
-msgid "Old Permic"
+msgid "Script|Old Permic"
 msgstr "古代ペルム文字"
 
-msgid "Phoenician"
+msgid "Script|Phoenician"
 msgstr "フェニキア文字"
 
 msgid "Phaistos"
@@ -4644,10 +4656,10 @@ msgstr "ルーン文字"
 msgid "Shavian"
 msgstr "シャバ文字"
 
-msgid "Sinhala"
+msgid "Script|Sinhala"
 msgstr "シンハラ文字"
 
-msgid "Tagbanwa"
+msgid "Script|Tagbanwa"
 msgstr "タグバンワ文字"
 
 msgid "Tai Le"
@@ -4662,10 +4674,10 @@ msgstr "ティフィナグ(ベルベル)文字"
 msgid "Thaana"
 msgstr "ターナ文字"
 
-msgid "Ugaritic"
+msgid "Script|Ugaritic"
 msgstr "ウガリト文字"
 
-msgid "Vai"
+msgid "Script|Vai"
 msgstr "ヴァイ文字"
 
 msgid "Visible Speech"
@@ -4680,7 +4692,7 @@ msgstr "シュメール・アッカド楔形文字"
 msgid "Cuneiform, Ugaritic"
 msgstr "ウガリト楔形文字"
 
-msgid "Yi"
+msgid "Script|Yi"
 msgstr "彝文字"
 
 msgid "Private Use Script 1"
@@ -4722,7 +4734,7 @@ msgstr "(ビルマ語)アラカン方言"
 msgid "Athapaskan"
 msgstr "アサパスカ語族"
 
-msgid "Avar"
+msgid "Lang|Avar"
 msgstr "アバール語"
 
 msgid "Awadhi"
@@ -4743,7 +4755,7 @@ msgstr "バルカル語"
 msgid "Baule"
 msgstr "バウレ語"
 
-msgid "Berber"
+msgid "Lang|Berber"
 msgstr "ベルベル語派"
 
 msgid "Bench"
@@ -4821,7 +4833,7 @@ msgstr "チュクチ語"
 msgid "Chipewyan"
 msgstr "チペワイアン語"
 
-msgid "Cherokee"
+msgid "Lang|Cherokee"
 msgstr "チェロキー語"
 
 msgid "Chuvash"
@@ -4830,7 +4842,7 @@ msgstr "チュバシュ語"
 msgid "Comorian"
 msgstr "コモロ語"
 
-msgid "Coptic"
+msgid "Lang|Coptic"
 msgstr "コプト語"
 
 msgid "Cree"
@@ -4899,7 +4911,7 @@ msgstr "エウェ語"
 msgid "French Antillean"
 msgstr "仏領アンチル諸島語"
 
-msgid "Farsi"
+msgid "Lang|Farsi"
 msgstr "ペルシャ語"
 
 msgid "Fijian"
@@ -4944,7 +4956,7 @@ msgstr "ガルシュニ語"
 msgid "Garhwali"
 msgstr "ガルワーリー語"
 
-msgid "Ge'ez"
+msgid "Lang|Ge'ez"
 msgstr "ゲーズ語"
 
 msgid "Gilyak"
@@ -5013,7 +5025,7 @@ msgstr "古アイルランド語"
 msgid "Inari Sami"
 msgstr "イナリ・サーミ語"
 
-msgid "Javanese"
+msgid "Lang|Javanese"
 msgstr "ジャワ語"
 
 msgid "Judezmo"
@@ -5172,8 +5184,8 @@ msgstr "リンガラ語"
 msgid "Low Mari"
 msgstr "牧地マリ語"
 
-msgid "Limbu"
-msgstr "リンブム語"
+msgid "Lang|Limbu"
+msgstr "リンブ語"
 
 msgid "Lomwe"
 msgstr "ロムエ語"
@@ -5214,7 +5226,7 @@ msgstr "マルワリ語"
 msgid "Mbundu"
 msgstr "ンブンダ語"
 
-msgid "Manchu"
+msgid "Lang|Manchu"
 msgstr "満州語"
 
 msgid "Moose Cree"
@@ -5244,7 +5256,7 @@ msgstr "マレー語"
 msgid "Mandinka"
 msgstr "マンディンカ語"
 
-msgid "Mongolian"
+msgid "Lang|Mongolian"
 msgstr "モンゴル語"
 
 msgid "Manipuri"
@@ -5454,7 +5466,7 @@ msgstr "スワジ語"
 msgid "Sutu"
 msgstr "スツ語"
 
-msgid "Syriac"
+msgid "Lang|Syriac"
 msgstr "シリア語"
 
 msgid "Tabasaran"
@@ -5534,6 +5546,9 @@ msgstr "ヨルバ語"
 
 msgid "Y-Cree"
 msgstr "Y-クリー語"
+
+msgid "Lang|Yi"
+msgstr "彝語"
 
 msgid "Yi Classic"
 msgstr "彝語 (古文)"
@@ -5834,260 +5849,7 @@ msgstr "UTF-8 (Unicode)"
 msgid "Default"
 msgstr "デフォルト"
 
-msgid ""
-"Changing the width of a glyph\n"
-"changes the widths of all accented\n"
-"glyphs based on it."
-msgstr "グリフの幅を変更すると, このグリフを含むすべての\nアクセントつきグリフの幅が変更されます"
-
-msgid ""
-"Changing the left side bearing\n"
-"of a glyph adjusts the lbearing\n"
-"of other references in all accented\n"
-"glyphs based on it."
-msgstr "グリフの左サイドベアリング(LSB)を変更すると\nこのグリフをベースとした他のアクセントつきグリフに\n含まれる参照のLSBも調整されます"
-
-msgid ""
-"Default encoding for\n"
-"new fonts"
-msgstr "新規作成フォントのエンコーディング"
-
-msgid "The default size of the Em-Square in a newly created font."
-msgstr "新規作成フォントの全角グリッドの初期値"
-
-msgid ""
-"Whether new fonts should contain splines of quadratic (truetype)\n"
-"or cubic (postscript & opentype)."
-msgstr "フォントに含まれる曲線を2次(TrueType)で扱うか\n3次(PostScriptとOpenType)で扱うか."
-
-msgid ""
-"Whether fonts loaded from the disk should retain their splines\n"
-"with the original order (quadratic or cubic), or whether the\n"
-"splines should be converted to the default order for new fonts\n"
-"(see NewFontsQuadratic)."
-msgstr "フォントがディスクから読み込まれた時にスプラインを\nオリジナルの次数(2次か3次)のままで保持するか,それとも\n新規作成フォントのデフォルトの次数に変換するかどうか\n(NewFontQuadratic 参照)"
-
-msgid ""
-"Character set used by the local\n"
-"clipboard, filesystem, etc. (only\n"
-"8bit charsets currently supported\n"
-"here)"
-msgstr "ローカル環境のクリップボード, ファイルシステム等で使われる文字集合\n(現在サポートされているのは8ビット文字集合のみ)"
-
-msgid "AutoHint before rasterizing"
-msgstr "ラスタ化前に自動ヒント作成"
-
-msgid "AutoHint changed glyphs before generating a font"
-msgstr "フォント生成時に変更されたグリフを自動ヒントづけ"
-
-msgid ""
-"Name used for foundry field in bdf\n"
-"font generation"
-msgstr "BDFフォントの生成時に, foundry\nフィールドに用いられる名前"
-
-msgid ""
-"Name used for Vendor ID field in\n"
-"ttf (OS/2 table) font generation.\n"
-"Must be no more than 4 characters"
-msgstr "TrueTypeフォント生成時にOS/2テーブルの\nVendorID フィールドに用いられる名前\n(最大4文字)"
-
-msgid ""
-"If specified this should be a space separated list of integers each\n"
-"less than 16777216 which uniquely identify your organization\n"
-"FontForge will generate a random number for the final component."
-msgstr "あなたの組織を一意に識別する値. 指定する場合,\n空白で区切った16777216未満の整数のリストで\nなければなりません. 無指定時は\nFontForgeが最後の構成要素をランダムに生成します."
-
-msgid "Display rulers in the Outline Glyph View"
-msgstr "アウトライン編集画面でルーラを表示します"
-
-msgid "Have seperate controls for display horizontal and vertical hints."
-msgstr "水平方向と垂直方向のヒント表示を別々に制御する"
-
-msgid "In the Outline View, the Shift key constrains motion to be parallel to the ItalicAngle rather than the vertical."
-msgstr "アウトライン表示で, シフトキーを押した時の動きを垂直方向にではなくItalicAngleに制限する"
-
-msgid "The percentage of an em by which an accent is offset from its base glyph in Build Accent"
-msgstr "[アクセントつきグリフの構築]で, アクセントを下のグリフから離すオフセットの大きさ (em に対する百分率で)"
-
-msgid ""
-"When placing grave and acute accents above letters, should\n"
-"FontForge center them based on their full width, or\n"
-"should it just center based on the lowest point\n"
-"of the accent."
-msgstr "アクサングラーブとアクサンテギュをグリフの上に置くとき,\n両幅の空きが同じになるように置くか, アクセントつきグリフの底が\n中央になるようにするか"
-
-msgid ""
-"When centering an accent over a glyph, should the accent\n"
-"be centered on the highest point(s) of the glyph,\n"
-"or the middle of the glyph?"
-msgstr "グリフの上にあるアクセントを中心揃えするとき,\nグリフの最も高い点に合わせるか,\nグリフの幅の中央に合わせるか"
-
-msgid "The number of em-units by which an arrow key will move a selected point"
-msgstr "矢印キーを押した時に, 選択した点が何em-unitだけ移動するか"
-
-msgid ""
-"Adobe has assigned the names Delta, Omega and mu\n"
-"to Increment, Ohm and micro signs respectively\n"
-"This seems very odd to Greek font designers who use\n"
-"the names to refer to letters of the alphabet.\n"
-"Setting this flags means that the alphabetic characters will\n"
-"be named Delta.greek, Omega.greek and mu.greek."
-msgstr "AdobeはDelta, Omega, muの3つの名前をそれぞれ差分, オーム, マイクロを\n表す記号に割り当てています. これはギリシャ文字フォントをデザインし,\nギリシャ文字の名前を表すのにこれらの名前を使う人にとっては\n非常に奇妙に感じます. このフラグを\nセットすると,アルファベットの文字は Delta.greek, Omega.greek, mu.greek と名づけられます"
-
-msgid ""
-"When the mouse pointer is within this many pixels\n"
-"of one of the various interesting features (baseline,\n"
-"width, grid splines, etc.) the pointer will snap\n"
-"to that feature."
-msgstr "マウスポインタが, 興味を引く対象 (ベースライン, 幅,\nグリッドスプラインなど) に, 何ピクセル以内に近付いた時に\nスナップするかを指定します"
-
-msgid ""
-"The Edit->Join command will join points which are this close together\n"
-"A value of 0 means they must be coincident"
-msgstr "The Edit->Join command will join points which are this close together\nA value of 0 means they must be coincident"
-
-msgid ""
-"When generating a set of BDF fonts ask the user\n"
-"to specify the screen resolution of the fonts\n"
-"otherwise FontForge will guess depending on the pixel size."
-msgstr "指定時には, 一組のBDFフォントを生成する時に, ユーザに画面解像度を指定するように求めます. 無指定時にはFontForgeはピクセルサイズから解像度を推測します."
-
-msgid ""
-"FontForge supports two different helper applications to do autotracing\n"
-" autotrace and potrace\n"
-"If your system only has one it will use that one, if you have both\n"
-"use this option to tell FontForge which to pick."
-msgstr "FontForgeは、自動トレースに用いる2種類の異なるヘルパー\nアプリケーション (autotraceとpotrace)をサポートしています.\nシステムに片方しかなければそちらを使用し,両方ある場合はどちらを使用するかをこのオプションで指定します"
-
-msgid ""
-"Extra arguments for configuring the autotrace program\n"
-"(either autotrace or potrace)"
-msgstr "自動トレースプログラム(autotraceまたはpotrace)の環境設定用に追加する引数"
-
-msgid "Ask the user for autotrace arguments each time autotrace is invoked"
-msgstr "autotraceを起動する度に,ユーザに引数を確認する"
-
-msgid "Commands to pass to mf (metafont) program, the filename will follow these"
-msgstr "mf (metafont)プログラムに渡すコマンド. ファイル名がその後に付け加えられます"
-
-msgid "Ask the user for mf commands each time mf is invoked"
-msgstr "mfが起動される度にユーザにmfについて尋ねます"
-
-msgid ""
-"FontForge loads large images into the background of each glyph\n"
-"prior to autotracing them. You may retain those\n"
-"images to look at after mf processing is complete, or\n"
-"remove them to save space"
-msgstr "FontForgeは,autotraceを実行する前に画像を\n各グリフの背景に貼りつけます.\nこれらの画像をmf処理が完了した後も見ることが\nできるように保持するか,スペースの節約のために削除するかを選べます."
-
-msgid ""
-"MetaFont (mf) generates lots of verbiage to stdout.\n"
-"Most of the time I find it an annoyance but it is\n"
-"important to see if something goes wrong."
-msgstr "MetaFont (mf)は標準出力に大量の詳細情報を生成します.\nほとんどの場合は単なる邪魔物だと思われますが,\nどこか悪い所がある場合は重要な意味を持ちます."
-
-msgid ""
-"When generating a truetype or opentype font it is occasionally\n"
-"useful to know the mapping between truetype glyph ids and\n"
-"glyph names. Setting this option will cause FontForge to\n"
-"produce a file (with extension .g2n) containing those data."
-msgstr "TrueTypeまたはOpenTypeフォントを生成する時,TrueTypeのグリフIDと\nグリフ名の間の対応が分かると便利なことがよくあります. このオプションを\nセットすると,FontForgeはその情報を含む(拡張子.g2nのついた)ファイル\nを作成します"
-
-msgid ""
-"When loading a truetype or opentype font which has both a unicode\n"
-"and a CJK encoding table, use this flag to specify which\n"
-"should be loaded for the font."
-msgstr "UnicodeとCJKエンコーディングテーブルの両方を\n含むフォントを読み込む時,どちらを読み込みに使用するか,このフラグで\n指定します."
-
-msgid ""
-"When FontForge starts up it loads display related resources from a\n"
-"property on the screen. Sometimes it is useful to be able to store\n"
-"these resources in a file. These resources are only read at start\n"
-"up, so changing this has no effect until the next time you start\n"
-"FontForge."
-msgstr "FontForgeは起動時に表示に関する属性をスクリーンから獲得します.\n場合によってはこれらのリソースをファイルに格納できた方が便利です.\nこれらのリソースは起動時にのみ読み込まれるので,この値を変更しても\n次回のFontForgeの起動時まで効果はありません"
-
-msgid ""
-"When copying glyphs from the font view, also copy the\n"
-"glyphs' metadata (name, encoding, comment, etc)."
-msgstr "フォントビューからグリフをコピーする時に,グリフのメタデータ(名前・符号位置・コメント等)もコピーする"
-
-msgid ""
-"Apple and MS/Adobe differ about the format of truetype and opentype files\n"
-"This controls the default setting of the Apple checkbox in the File->Generate Font dlg.\n"
-"The main differences are:\n"
-" The requirements for the 'postscript' name in the name table conflict\n"
-" Bitmap data are stored in different tables\n"
-" Scaled composite glyphs are treated differently\n"
-" Use of GSUB rather than morx(t)/feat\n"
-" Use of GPOS rather than kern/opbd\n"
-" Use of GDEF rather than lcar/prop\n"
-"If both this and OpenType are set, both formats are generated"
-msgstr "AppleとMS/Adobeとでは,TrueTypeとOpenTypeのファイル\nフォーマットが異なります.\nこの変数は,[ファイル(F)→フォントを出力(G)]ダイアログのAppleチェックボックスを\nデフォルトでチェックするかを制御します.\n主な相違点は: nameテーブルの'PostScript'名の扱いが異なる\n ビットマップデータが格納されるテーブルが異なる\n 拡大/縮小された複合グリフの扱いが異なる\n morx(t)テーブルでなくGSUBを使う\n kern/opbdテーブルでなくGPOSを使う\nlcar/prepではなくGDEFを使う\n このフラグと「OpenType」の両方が設定されていると,両方のフォーマットが出力されます"
-
-msgid ""
-"Apple and MS/Adobe differ about the format of truetype and opentype files\n"
-"This controls the default setting of the OpenType checkbox in the File->Generate Font dlg.\n"
-"The main differences are:\n"
-" The requirements for the 'postscript' name in the name table conflict\n"
-" Bitmap data are stored in different tables\n"
-" Scaled composite glyphs are treated differently\n"
-" Use of GSUB rather than morx(t)/feat\n"
-" Use of GPOS rather than kern/opbd\n"
-" Use of GDEF rather than lcar/prop\n"
-"If both this and Apple are set, both formats are generated"
-msgstr "AppleとMS/Adobeとでは,TrueTypeとOpenTypeのファイル\nフォーマットが異なります.\nこの変数は,[ファイル(F)→フォントを出力(G)]ダイアログのAppleチェックボックスを\nデフォルトでチェックするかを制御します.\n主な相違点は: nameテーブルの'PostScript'名の扱いが異なる\n ビットマップデータが格納されるテーブルが異なる\n 拡大/縮小された複合グリフの扱いが異なる\n morx(t)テーブルでなくGSUBを使う\n kern/opbdテーブルでなくGPOSを使う\nlcar/prepではなくGDEFを使う\n このフラグと「Apple」の両方が設定されていると,両方のフォーマットが出力されます"
-
-msgid ""
-"Enter a list of 4 letter table tags, separated by commas.\n"
-"FontForge will make a binary copy of these tables when it\n"
-"loads a True/OpenType font, and will output them (unchanged)\n"
-"when it generates the font. Do not include table tags which\n"
-"FontForge thinks it understands."
-msgstr "4文字のテーブルタグをカンマで区切ったリストを\n入力してください. FontForge はそれらのテーブルの\nバイナリコピーを,True/OpenTypeフォントを開いたときに\n保管し,フォントを出力するときに(編集せずに)\n書き出します.  FontForgeが解釈可能なテーブルを入力しないでください."
-
-msgid "The maximum number of Undoes/Redoes stored in a glyph"
-msgstr "1個のグリフに格納されるアンドゥ/リドゥの最大回数"
-
-msgid ""
-"The directory on your local system in which FontForge will search for help\n"
-"files.  If a file is not found there, then FontForge will look for it on the net."
-msgstr "ヘルプファイルの検索対象となるローカル\nシステム上のディレクトリ. ファイルが\n見つからない場合,FontForgeはネットを検索します"
-
-msgid ""
-"If you wish to replace Adobe's OtherSubrs array (for Type1 fonts)\n"
-"with an array of your own, set this to point to a file containing\n"
-"a list of up to 14 PostScript subroutines. Each subroutine must\n"
-"be preceded by a line starting with '%%%%' (any text before the\n"
-"first '%%%%' line will be treated as an initial copyright notice).\n"
-"The first three subroutines are for flex hints, the next for hint\n"
-"substitution (this MUST be present), the 14th (or 13 as the\n"
-"numbering actually starts with 0) is for counter hints.\n"
-"The subroutines should not be enclosed in a [ ] pair."
-msgstr "Adobe製のOtherSubrs配列を自作の物に置き換えたい場合,\nこの変数の値を14個以内のPostScriptサブルーチンを含んだファイルの名前に設定してください.\n各サブルーチンの前には'%%%%'で始まる行を置かなければなりません(最初の'%%%%'行の\n前にあるテキストはすべて先頭に置く著作権表示として扱われます).\n最初の3個のサブルーチンはflexヒントで,その次はヒント置換です(これらは必ず存在する\n必要があります). 14個目(実際には0から始まるので第13番ですが)はカウンタヒント用です.\nサブルーチンは [ ] の対で囲んではなりません."
-
-msgid ""
-"Use the FreeType rasterized (when available)\n"
-"to rasterize glyphs in the font view.\n"
-"This generally results in better quality."
-msgstr "(利用可能なら)FreeTypeをフォントビューでの\nグリフのラスタライズに使用します.\n一般に,より良い表示品質が得られます."
-
-msgid ""
-"When dragging points in the outline view a join may occur\n"
-"(two open contours may connect at their endpoints). When\n"
-"this is On a join will cause FontForge to stop moving the\n"
-"selection (as if the user had released the mouse button).\n"
-"This is handy if your fingers are inclined to wiggle a bit."
-msgstr "アウトラインビュー上で点をドラッグしすると,\n線を一体化することができます(2本の\n開いた輪郭線は,端点同士で結合可能です).\nこのフラグがオンのときは,結合が\n行われると,FontForgeは選択部分の移動を停止します\n(ユーザがマウスボタンを離した時と同様です).\nこれは指先が震えやすい人には便利です"
-
-msgid "Figure out flex hints after every change"
-msgstr "変更を行うごとにflexヒントを表示する"
-
-msgid ""
-"Typing a normal character in the glyph view window changes the window to "
-"look at that character"
-msgstr "グリフビューウィンドウで通常の文字をタイプするとその文字に移動する"
-
+# Preference dialog
 msgid "Generic"
 msgstr "一般"
 
@@ -6106,6 +5868,557 @@ msgstr "アクセント"
 msgid "Script Menu"
 msgstr "スクリプトメニュー"
 
+# prefs dlg: generic
+msgid "AutoHint"
+msgstr "自動ヒント(A)"
+
+msgid "AutoHint before rasterizing"
+msgstr ""
+"(AutoHint)\n"
+"ビットマップをラスタライズする前に自動ヒントづけを行います"
+
+msgid "NewCharset"
+msgstr "新規文字セット(N)"
+
+msgid ""
+"Default encoding for\n"
+"new fonts"
+msgstr ""
+"(NewCharset)\n"
+"新規作成フォントのエンコーディング"
+
+msgid "NewEmSize"
+msgstr "新規EMサイズ(S)"
+
+msgid "The default size of the Em-Square in a newly created font."
+msgstr "(NewEmSize)\n"
+"新規作成フォントのEM正方形のサイズの初期値"
+
+msgid "NewFontsQuadratic"
+msgstr "2次曲線フォントを作成(Q)"
+
+msgid ""
+"Whether new fonts should contain splines of quadratic (truetype)\n"
+"or cubic (postscript & opentype)."
+msgstr  ""
+"(NewFontsQuadratic)\n"
+"フォントに含まれる曲線を2次式で扱う(TrueType)か\n"
+"それとも3次式で扱う(PostScriptおよびOpenType)か."
+
+msgid "LoadedFontsAsNew"
+msgstr "新規の次数で開く(L)"
+
+msgid ""
+"Whether fonts loaded from the disk should retain their splines\n"
+"with the original order (quadratic or cubic), or whether the\n"
+"splines should be converted to the default order for new fonts\n"
+"(see NewFontsQuadratic)."
+msgstr ""
+"(LoadedFontAsNew)\n" "フォントがディスクから読み込まれた時にスプラインを\n"
+"オリジナルの次数(2次か3次)のままで保持するか,それとも\n"
+"新規作成フォントのデフォルトの次数に変換するかどうか\n"
+"(NewFontQuadratic 参照)"
+
+msgid "GreekNames"
+msgstr "ギリシャ文字名を調整(G)"
+
+msgid ""
+"Adobe has assigned the names Delta, Omega and mu\n"
+"to Increment, Ohm and micro signs respectively\n"
+"This seems very odd to Greek font designers who use\n"
+"the names to refer to letters of the alphabet.\n"
+"Setting this flags means that the alphabetic characters will\n"
+"be named Delta.greek, Omega.greek and mu.greek."
+msgstr ""
+"(GreekNames)\n"
+"AdobeはDelta, Omega, muの3つの名前をそれぞれ\n"
+"差分, オーム,マイクロを表す記号に割り当てています.\n" "これはギリシャ文字フォントをデザインし,ギリシャ文字の"
+"名前を表すのにこれらの名前を使う人にとっては\n"
+"非常に奇妙に感じます. このフラグをセットすると,\n"
+"アルファベットの文字は Delta.greek, Omega.greek, mu.greek\n"
+"と名づけられます"
+
+msgid "ResourceFile"
+msgstr "リソースファイル(R)"
+
+msgid ""
+"When FontForge starts up it loads display related resources from a\n"
+"property on the screen. Sometimes it is useful to be able to store\n"
+"these resources in a file. These resources are only read at start\n"
+"up, so changing this has no effect until the next time you start\n"
+"FontForge."
+msgstr ""
+"(ResourceFile)\n"
+"FontForgeは起動時に表示に関する属性をスクリーンから獲得します.\n"
+"場合によってはこれらのリソースをファイルに格納できた方が便利です.\n"
+"これらのリソースは起動時にのみ読み込まれるので,この値を変更しても\n"
+"次回のFontForgeの起動時まで効果はありません."
+
+msgid "HelpDir"
+msgstr "ヘルプディレクトリ(R)"
+
+msgid ""
+"The directory on your local system in which FontForge will search for help\n"
+"files.  If a file is not found there, then FontForge will look for it on the net."
+msgstr ""
+"(HelpDir)\n"
+"ヘルプファイルの検索対象となるローカル\n"
+"システム上のディレクトリ. ファイルが\n"
+"見つからない場合,FontForgeはネットを検索します"
+
+msgid "OtherSubrsFile"
+msgstr "OtherSubrsファイル"
+
+msgid ""
+"If you wish to replace Adobe's OtherSubrs array (for Type1 fonts)\n"
+"with an array of your own, set this to point to a file containing\n"
+"a list of up to 14 PostScript subroutines. Each subroutine must\n"
+"be preceded by a line starting with '%%%%' (any text before the\n"
+"first '%%%%' line will be treated as an initial copyright notice).\n"
+"The first three subroutines are for flex hints, the next for hint\n"
+"substitution (this MUST be present), the 14th (or 13 as the\n"
+"numbering actually starts with 0) is for counter hints.\n"
+"The subroutines should not be enclosed in a [ ] pair."
+msgstr ""
+"(OtherSubrsFile)\n" "Adobe製のOtherSubrs配列を自作の物に置き換えたい場合,\n"
+"この変数の値を14個以内のPostScriptサブルーチンを含んだ\n"
+"ファイルの名前に設定してください. 各サブルーチンの前には\n"
+"'%%%%'で始まる行を置かなければなりません(最初の'%%%%'行の\n"
+"前にあるテキストはすべて先頭に置く著作権表示として扱われます).\n"
+"最初の3個のサブルーチンはflexヒントで,その次はヒント置換です\n"
+"(これらは必ず存在する必要があります). 14個目(実際には0から\n"
+"始まるので 第13番ですが) はカウンタヒント用です. サブルーチンは\n"
+"[ ] の対で囲んではなりません."
+
+msgid "FreeTypeInFontView"
+msgstr "FreeTypeでフォント表示(O)"
+
+msgid ""
+"Use the FreeType rasterized (when available)\n"
+"to rasterize glyphs in the font view.\n"
+"This generally results in better quality."
+msgstr ""
+"(FreeTypeInFontView)\n"
+"(利用可能なら)FreeTypeをフォントビューでの\n"
+"グリフのラスタライズに使用します. 一般に,\n"
+"より良い表示品質が得られます."
+
+#  prefs dlg: edit
+msgid "AutoWidthSync"
+msgstr "幅を自動更新"
+
+msgid ""
+"Changing the width of a glyph\n"
+"changes the widths of all accented\n"
+"glyphs based on it."
+msgstr ""
+"(AutoWidthSync)\n"
+"グリフの幅を変更すると, このグリフを含むすべての\n"
+"アクセントつきグリフの幅が変更されます"
+
+msgid "AutoLBearingSync"
+msgstr "LSBを自動更新"
+
+msgid ""
+"Changing the left side bearing\n"
+"of a glyph adjusts the lbearing\n"
+"of other references in all accented\n"
+"glyphs based on it."
+msgstr ""
+"(AutoLBearingSync)\n"
+"グリフの左サイドベアリング(LSB)を変更すると\n"
+"このグリフをベースとした他のアクセントつき\n"
+"グリフに含まれる参照のLSBも調整されます"
+
+msgid "ItalicConstrained"
+msgstr "イタリック角への限定移動"
+
+msgid "In the Outline View, the Shift key constrains motion to be parallel to the ItalicAngle rather than the vertical."
+msgstr ""
+"(ItalicConstrained)\n"
+"アウトライン表示で, シフトキーを押した時の動きを\n"
+"垂直方向にではなくItalicAngleに制限する"
+
+msgid "ArrowMoveSize"
+msgstr "矢印キーの移動距離"
+
+msgid "The number of em-units by which an arrow key will move a selected point"
+msgstr ""
+"(ArrowMoveSize)\n"
+"矢印キーを押した時に, 選択した点が何em-unitだけ移動するか"
+
+msgid "SnapDistance"
+msgstr "スナップ距離"
+
+msgid ""
+"When the mouse pointer is within this many pixels\n"
+"of one of the various interesting features (baseline,\n"
+"width, grid splines, etc.) the pointer will snap\n"
+"to that feature."
+msgstr ""
+"(SnapDistance)\n"
+"マウスポインタが, 興味を引く対象 (ベースライン, 幅,\n"
+"グリッドスプラインなど) にスナップするのは,対象から\n"
+"何ピクセル以内に近づいたときか"
+
+msgid "JoinSnap"
+msgstr "線のスナップ距離"
+
+msgid ""
+"The Edit->Join command will join points which are this close together\n"
+"A value of 0 means they must be coincident"
+msgstr ""
+"(JoinSnap)\n"
+"編集(E)→線の接合(J)コマンドは,線端同士の距離が\n"
+"この値より近くにあるときに端点を統合します. 値が\n"
+"0の時は,点同士が重なりあっている必要があります"
+
+msgid "CopyMetaData"
+msgstr "メタデータをコピー"
+
+msgid ""
+"When copying glyphs from the font view, also copy the\n"
+"glyphs' metadata (name, encoding, comment, etc)."
+msgstr ""
+"(CopyMetadata)\n"
+"フォントビューからグリフをコピーする時に,\n"
+"グリフのメタデータ(名前・符号位置・コメント等)もコピーする"
+
+msgid "UndoDepth"
+msgstr "アンドゥの上限"
+
+msgid "The maximum number of Undoes/Redoes stored in a glyph"
+msgstr ""
+"(UndoDepth)\n"
+"1個のグリフに格納されるアンドゥ/リドゥの最大回数"
+
+msgid "StopAtJoin"
+msgstr "接合後に一旦停止"
+
+msgid ""
+"When dragging points in the outline view a join may occur\n"
+"(two open contours may connect at their endpoints). When\n"
+"this is On a join will cause FontForge to stop moving the\n"
+"selection (as if the user had released the mouse button).\n"
+"This is handy if your fingers are inclined to wiggle a bit."
+msgstr ""
+"(StopAtJoin)\n"
+"アウトラインビュー上で点をドラッグしすると,\n"
+"線を一体化することができます(2本の開いた\n"
+"輪郭線は,端点同士で結合可能です).\n"
+"このフラグがオンのときは,結合が行われると,\n"
+"FontForgeは選択部分の移動を停止します\n"
+"(ユーザがマウスボタンを離した時と同様です).\n"
+"これは指先が震えやすい人には便利です"
+
+msgid "UpdateFlex"
+msgstr "flexヒントを更新"
+
+msgid "Figure out flex hints after every change"
+msgstr ""
+"(UpdateFlex)\n"
+"変更を行うごとにflexヒントを表示します"
+
+msgid "GlyphAutoGoto"
+msgstr "打鍵文字へ移動"
+
+msgid ""
+"Typing a normal character in the glyph view window changes the window to "
+"look at that character"
+msgstr ""
+"(GlyphAutoGoto)\n"
+"グリフビューウィンドウで通常の文字をタイプすると\n"
+"編集グリフがその字に切り替わります"
+
+# prefs dlg: accent
+msgid "AccentOffsetPercent"
+msgstr "アクセント間隔の百分率"
+
+msgid "The percentage of an em by which an accent is offset from its base glyph in Build Accent"
+msgstr ""
+"(AccentOffsetPercent)\n"
+"[アクセントつきグリフの構築]で, アクセントを下のグリフから離す\n"
+"オフセットの大きさ (em に対する百分率で)"
+
+msgid "AccentCenterLowest"
+msgstr "アクセントの底を中心に"
+
+msgid ""
+"When placing grave and acute accents above letters, should\n"
+"FontForge center them based on their full width, or\n"
+"should it just center based on the lowest point\n"
+"of the accent."
+msgstr ""
+"(AccentCenterLowest)\n"
+"アクサングラーブとアクサンテギュをグリフの上に置くとき,\n"
+"両幅の空きが同じになるように置くか, アクセントつき\n"
+"グリフの底が中央になるようにするか"
+
+msgid "CharCenterHighest"
+msgstr "文字の頂点を中心に"
+
+msgid ""
+"When centering an accent over a glyph, should the accent\n"
+"be centered on the highest point(s) of the glyph,\n"
+"or the middle of the glyph?"
+msgstr ""
+"(CharCenterHighest)\n"
+"グリフの上にあるアクセントを中心揃えするとき,\n"
+"グリフの最も高い点に合わせるか, グリフの幅の\n"
+"中央に合わせるか"
+
+# prefs dlg: apps
+msgid "PreferPotrace"
+msgstr "potraceを使用"
+
+msgid ""
+"FontForge supports two different helper applications to do autotracing\n"
+" autotrace and potrace\n"
+"If your system only has one it will use that one, if you have both\n"
+"use this option to tell FontForge which to pick."
+msgstr ""
+"(PreferPotrace)\n"
+"FontForgeは、自動トレースに用いる2種類の異なるヘルパー\n"
+"アプリケーション (autotraceとpotrace)をサポートしています.\n"
+"システムに片方しかなければそちらを使用し,両方ある場合は\n"
+"どちらを使用するかをこのオプションで指定します"
+
+msgid "AutotraceArgs"
+msgstr "トレースの引数"
+
+msgid ""
+"Extra arguments for configuring the autotrace program\n"
+"(either autotrace or potrace)"
+msgstr ""
+"(AutotraceArgs)\n"
+"自動トレースプログラム(autotraceまたはpotrace)の環境\n"
+"設定用に追加する引数"
+
+msgid "AutotraceAsk"
+msgstr "トレースの確認"
+
+msgid "Ask the user for autotrace arguments each time autotrace is invoked"
+msgstr ""
+"(AutotraceAsk)\n"
+"自動トレースプログラムを起動するたびに\n"
+"ユーザに引数を確認するかどうか"
+
+msgid "MfArgs"
+msgstr "MFの引数"
+
+msgid "Commands to pass to mf (metafont) program, the filename will follow these"
+msgstr ""
+"(MfArgs)\n"
+"mf (metafont)プログラムに渡すコマンド.\n" "ファイル名がその後に付け加えられます"
+
+msgid "MfAsk"
+msgstr "MFの確認"
+
+msgid "Ask the user for mf commands each time mf is invoked"
+msgstr ""
+"(MfAsk)\n"
+"mfが起動される度にユーザにmfコマンドについて尋ねます"
+
+msgid "MfClearBg"
+msgstr "MFの背景をクリア"
+
+msgid ""
+"FontForge loads large images into the background of each glyph\n"
+"prior to autotracing them. You may retain those\n"
+"images to look at after mf processing is complete, or\n"
+"remove them to save space"
+msgstr ""
+"(MfClearBg)\n"
+"FontForgeは,autotraceを実行する前に画像を各グリフの\n"
+"背景に貼りつけます. これらの画像をmf処理が完了した後も\n"
+"見ることができるように保持するか,スペースの節約のために\n"
+"削除するかを選べます."
+
+msgid "MfShowErr"
+msgstr "MFエラーを表示"
+
+msgid ""
+"MetaFont (mf) generates lots of verbiage to stdout.\n"
+"Most of the time I find it an annoyance but it is\n"
+"important to see if something goes wrong."
+msgstr ""
+"(MfShowErr)\n"
+"MetaFont(mf)は標準出力に大量の詳細情報を印字します.\n"
+"ほとんどの場合は単なる邪魔物だと思われますが,\n"
+"どこか悪い所がある場合は重要な意味を持ちます."
+
+msgid "Prefs|App|Normally FontForge will find applications by searching for"
+msgstr "通常は, FontForge は PATH 環境変数を探索することに"
+
+msgid "Prefs|App|them in your PATH environment variable, if you want"
+msgstr "よってアプリケーションを見つけます.このふるまいを"
+
+msgid "Prefs|App|to alter that behavior you may set an environment"
+msgstr "変更したい場合は,環境変数にアプリケーション名を"
+
+msgid "Prefs|App|variable giving the full path spec of the application."
+msgstr "フルパスで指定します."
+
+msgid "Prefs|App|FontForge recognizes BROWSER, MF and AUTOTRACE."
+msgstr "ffは環境変数 BROWSER, MF と AUTOTRACE を認識します"
+
+# prefs dlg: font info
+msgid "FoundryName"
+msgstr "ファウンドリ名(F)"
+
+msgid ""
+"Name used for foundry field in bdf\n"
+"font generation"
+msgstr ""
+"(FoundryName)\n"
+"BDFフォントの生成時に, foundry\n"
+"フィールドに用いられる名前"
+
+msgid "TTFFoundry"
+msgstr "TTFファウンドリ"
+
+msgid ""
+"Name used for Vendor ID field in\n"
+"ttf (OS/2 table) font generation.\n"
+"Must be no more than 4 characters"
+msgstr ""
+"(TTFFoundry)\n"
+"TrueTypeフォント生成時にOS/2テーブルの\n"
+"VendorID フィールドに用いられる名前\n"
+"(最大4文字)"
+
+msgid "XUID-Base"
+msgstr "XUIDの基底"
+
+msgid ""
+"If specified this should be a space separated list of integers each\n"
+"less than 16777216 which uniquely identify your organization\n"
+"FontForge will generate a random number for the final component."
+msgstr ""
+"(XUID-Base)\n"
+"あなたの組織を一意に識別する値. 指定する場合,\n"
+"空白で区切った16777216未満の整数のリストで\n"
+"なければなりません. 無指定時は最後の構成要素を\n"
+"FontForgeがランダムに生成します."
+
+msgid "AskBDFResolution"
+msgstr "BDF解像度を確認"
+
+msgid ""
+"When generating a set of BDF fonts ask the user\n"
+"to specify the screen resolution of the fonts\n"
+"otherwise FontForge will guess depending on the pixel size."
+msgstr ""
+"(AskBDFResolution)\n"
+"指定時には, 一組のBDFフォントを生成する時に,\n"
+"ユーザに画面解像度を指定するように求めます.\n"
+"無指定時にはFontForgeはピクセルサイズから\n"
+"解像度を推測します."
+
+msgid "PreferCJKEncodings"
+msgstr "CJKエンコーディングを優先"
+
+msgid ""
+"When loading a truetype or opentype font which has both a unicode\n"
+"and a CJK encoding table, use this flag to specify which\n"
+"should be loaded for the font."
+msgstr ""
+"(PreferCJKEncodings)\n"
+"UnicodeとCJKエンコーディングテーブルの両方を\n"
+"含むフォントを読み込む時,どちらを読み込みに\n"
+"使用するか,このフラグで指定します."
+
+msgid "HintForGen"
+msgstr "出力時に自動ヒント(H)"
+
+msgid "AutoHint changed glyphs before generating a font"
+msgstr ""
+"(HintForGen)\n"
+"フォントを出力する前に,変更されたグリフを自動ヒントづけします"
+
+msgid "AlwaysGenApple"
+msgstr "常にApple TTFを出力"
+
+msgid ""
+"Apple and MS/Adobe differ about the format of truetype and opentype files\n"
+"This controls the default setting of the Apple checkbox in the File->Generate Font dlg.\n"
+"The main differences are:\n"
+" The requirements for the 'postscript' name in the name table conflict\n"
+" Bitmap data are stored in different tables\n"
+" Scaled composite glyphs are treated differently\n"
+" Use of GSUB rather than morx(t)/feat\n"
+" Use of GPOS rather than kern/opbd\n"
+" Use of GDEF rather than lcar/prop\n"
+"If both this and OpenType are set, both formats are generated"
+msgstr ""
+"(AlwaysGenApple)\n"
+"AppleとMS/Adobeとでは,TrueTypeとOpenTypeのファイル\n"
+"フォーマットが異なります. この変数は,[ファイル(F)→フォントを出力(G)]\n"
+"ダイアログのAppleチェックボックスをデフォルトでチェック\n"
+"するかを制御します.\n"
+"主な相違点は:\n"
+" nameテーブルの'PostScript'名の扱いが異なる\n"
+" ビットマップデータが格納されるテーブルが異なる\n"
+" 拡大/縮小された複合グリフの扱いが異なる\n"
+" morx(t)テーブルでなくGSUBを使う\n"
+" kern/opbdテーブルでなくGPOSを使う\n"
+" lcar/prepではなくGDEFを使う\n" "このフラグと「OpenType」の両方が設定されていると,\n"
+"両方のフォーマットが出力されます"
+
+msgid "AlwaysGenOpenType"
+msgstr "常にOpenTypeを出力"
+
+msgid ""
+"Apple and MS/Adobe differ about the format of truetype and opentype files\n"
+"This controls the default setting of the OpenType checkbox in the File->Generate Font dlg.\n"
+"The main differences are:\n"
+" The requirements for the 'postscript' name in the name table conflict\n"
+" Bitmap data are stored in different tables\n"
+" Scaled composite glyphs are treated differently\n"
+" Use of GSUB rather than morx(t)/feat\n"
+" Use of GPOS rather than kern/opbd\n"
+" Use of GDEF rather than lcar/prop\n"
+"If both this and Apple are set, both formats are generated"
+msgstr ""
+"(AlwaysGenOpenType)\n"
+"AppleとMS/Adobeとでは,TrueTypeとOpenTypeのファイル\n"
+"フォーマットが異なります.この変数は,[ファイル(F)→フォントを出力(G)]\n"
+"ダイアログのAppleチェックボックスをデフォルトでチェック\n"
+"するかを制御します.\n"
+"主な相違点は:\n"
+" nameテーブルの'PostScript'名の扱いが異なる\n"
+" ビットマップデータが格納されるテーブルが異なる\n"
+" 拡大/縮小された複合グリフの扱いが異なる\n"
+" morx(t)テーブルでなくGSUBを使う\n"
+" kern/opbdテーブルでなくGPOSを使う\n"
+" lcar/prepではなくGDEFを使う\n"
+"このフラグと「Apple」の両方が設定されていると,\n"
+"両方のフォーマットが出力されます"
+
+msgid "PreserveTables"
+msgstr "保持するテーブル(P)"
+
+msgid ""
+"Enter a list of 4 letter table tags, separated by commas.\n"
+"FontForge will make a binary copy of these tables when it\n"
+"loads a True/OpenType font, and will output them (unchanged)\n"
+"when it generates the font. Do not include table tags which\n"
+"FontForge thinks it understands."
+msgstr ""
+"(PreserveTables)\n"
+"4文字のテーブルタグをカンマで区切ったリストを\n"
+"入力してください. FontForge はそれらのテーブルの\n"
+"バイナリコピーを,True/OpenTypeフォントを開いた時に\n"
+"保管し,フォントの出力時に(編集せずに)書き出します.\n"
+"FontForgeが解釈可能なテーブルを入力しないでください."
+
+msgid "NewFontNameList"
+msgstr "新規フォントの名前リスト"
+
+msgid "NameList: %s\n"
+msgstr "名前リスト: %s\n"
+
+# prefs dlg: script menu
 msgid "Menu Name"
 msgstr "メニュー名"
 
@@ -6114,13 +6427,30 @@ msgid ""
 "Each entry in the menu needs both a name to display in the menu and\n"
 "a script file to execute. The menu name may contain any unicode characters.\n"
 "The button labeled \"...\" will allow you to browse for a script file."
-msgstr "よく使うスクリプトを10個まで登録することができます.\nメニューの各項目には, メニューに表示する名前と, 実行するスクリプトを\n指定する必要があります. メニュー名には任意のUnicode文字を使用することが\nできます. \"...\"というラベルがついたボタンを押すと, スクリプトファイルを\n見ることができます."
+msgstr ""
+"よく使うスクリプトを10個まで登録することができます.\n"
+"メニューの各項目には, メニューに表示する名前と, \n"
+"実行するスクリプトを指定する必要があります.\n" "メニュー名には任意のUnicode文字を使用することが\n"
+"できます. \"...\"というラベルがついたボタンを押すと,\n" "スクリプトファイルを見ることができます."
 
 msgid "Script File"
 msgstr "スクリプトファイル"
 
 msgid "..."
 msgstr "..."
+
+msgid "Display rulers in the Outline Glyph View"
+msgstr "アウトライン編集画面でルーラを表示します"
+
+msgid "Have seperate controls for display horizontal and vertical hints."
+msgstr "水平方向と垂直方向のヒント表示を別々に制御する"
+
+msgid ""
+"When generating a truetype or opentype font it is occasionally\n"
+"useful to know the mapping between truetype glyph ids and\n"
+"glyph names. Setting this option will cause FontForge to\n"
+"produce a file (with extension .g2n) containing those data."
+msgstr "TrueTypeまたはOpenTypeフォントを生成する時,TrueTypeのグリフIDと\nグリフ名の間の対応が分かると便利なことがよくあります. このオプションを\nセットすると,FontForgeはその情報を含む(拡張子.g2nのついた)ファイル\nを作成します"
 
 msgid "Menu name with no associated script"
 msgstr "対応するスクリプトのないメニュー名"
@@ -6180,21 +6510,6 @@ msgstr "この機能と設定の組み合わせは既に使われています.\n
 
 msgid "If the Off-Name is blank, then the Off-Code must be -1"
 msgstr "オフ時の名前が空白の場合,オフのコードは-1でなければなりません"
-
-msgid "Prefs|App|Normally FontForge will find applications by searching for"
-msgstr "通常は, FontForge は PATH 環境変数を探索することに"
-
-msgid "Prefs|App|them in your PATH environment variable, if you want"
-msgstr "よってアプリケーションを見つけます.このふるまいを"
-
-msgid "Prefs|App|to alter that behavior you may set an environment"
-msgstr "変更したい場合は,環境変数にアプリケーション名を"
-
-msgid "Prefs|App|variable giving the full path spec of the application."
-msgstr "フルパスで指定します."
-
-msgid "Prefs|App|FontForge recognizes BROWSER, MF and AUTOTRACE."
-msgstr "FontForgeは環境変数 BROWSER, MF と AUTOTRACE を認識します"
 
 msgid "_Base:"
 msgstr "基準(_B):"
@@ -7935,10 +8250,10 @@ msgid ""
 msgstr "上記以外の任意のコマンド(すべての引数を含む).\nこのコマンドは, 1個のPostScriptファイルを標準入力から読み込む\nものでなければなりません."
 
 msgid "To _File"
-msgstr "出力ファイル(_F)"
+msgstr "ファイルに出力(_F)"
 
 msgid "To P_DF File"
-msgstr "出力PDFファイル(_D)"
+msgstr "PDFに出力(_D)"
 
 msgid "Page_Size:"
 msgstr "用紙サイズ(_S):"
@@ -8550,6 +8865,13 @@ msgid ""
 "Simplify will examine corner points whose control points are almost\n"
 "colinear and smooth them into curve points"
 msgstr "「単純化」の際に両側の制御点がほとんど平行な頂点を探し,曲線上の点に置き換えます."
+
+msgid "Start contours at e_xtrema"
+msgstr "輪郭を極値で開始(X)"
+
+msgid "If the start point of a contour is not an extremum, find a new start point (on the contour) which is"
+msgstr ""
+"輪郭の開始点が極値でない場合,極値にあたる(輪郭上の)新しい開始点を探します"
 
 msgid "if tan less than"
 msgstr "よりも傾きが小さい場合"
@@ -9361,19 +9683,19 @@ msgstr "ポルトガル語"
 msgid "Norwegian"
 msgstr "ノルウェー語"
 
-msgid "Hebrew"
+msgid "Lang|Hebrew"
 msgstr "ヘブライ語"
 
 msgid "Japanese"
 msgstr "日本語"
 
-msgid "Arabic"
+msgid "Lang|Arabic"
 msgstr "アラビア語"
 
 msgid "Finnish"
 msgstr "フィンランド語"
 
-msgid "Greek"
+msgid "Lang|Greek"
 msgstr "ギリシャ語"
 
 msgid "Icelandic"
@@ -9400,7 +9722,7 @@ msgstr "ウルドゥー語"
 msgid "Hindi"
 msgstr "ヒンディー語"
 
-msgid "Thai"
+msgid "Lang|Thai"
 msgstr "タイ語"
 
 msgid "Korean"
@@ -9487,10 +9809,10 @@ msgstr "アゼルバイジャン語(キリル文字)"
 msgid "Axerbaijani (Arabic)"
 msgstr "アゼルバイジャン語(アラビア文字)"
 
-msgid "Armenian"
+msgid "Lang|Armenian"
 msgstr "アルメニア語"
 
-msgid "Georgian"
+msgid "Lang|Georgian"
 msgstr "グルジア語"
 
 msgid "Moldavian"
@@ -9529,7 +9851,7 @@ msgstr "シンド語(インド)"
 msgid "Sindhi Pakistan"
 msgstr "シンド語(パキスタン)"
 
-msgid "Tibetan"
+msgid "Lang|Tibetan"
 msgstr "チベット語"
 
 msgid "Nepali"
@@ -9544,7 +9866,7 @@ msgstr "セペディ語"
 msgid "Marathi"
 msgstr "マラーティー語"
 
-msgid "Bengali"
+msgid "Lang|Bengali"
 msgstr "ベンガル語"
 
 msgid "Bengali Bangladesh"
@@ -9553,8 +9875,8 @@ msgstr "ベンガル語(バングラデシュ)"
 msgid "Assamese"
 msgstr "アッサム語"
 
-msgid "Gujarati"
-msgstr "グジャラーティ語"
+msgid "Lang|Gujarati"
+msgstr "グジャラート語"
 
 msgid "Punjabi"
 msgstr "パンジャーブ語"
@@ -9565,22 +9887,22 @@ msgstr "パンジャーブ語(インド)"
 msgid "Punjabi Pakistan"
 msgstr "パンジャーブ語(パキスタン)"
 
-msgid "Oriya"
+msgid "Lang|Oriya"
 msgstr "オリヤ語"
 
-msgid "Malayalam"
+msgid "Lang|Malayalam"
 msgstr "マラヤラム語"
 
-msgid "Kannada"
+msgid "Lang|Kannada"
 msgstr "カンナダ語"
 
-msgid "Tamil"
+msgid "Lang|Tamil"
 msgstr "タミル語"
 
-msgid "Telugu"
+msgid "Lang|Telugu"
 msgstr "テルグ語"
 
-msgid "Sinhalese"
+msgid "Lang|Sinhalese"
 msgstr "シンハラ語"
 
 msgid "Divehi"
@@ -9589,10 +9911,10 @@ msgstr "ディベヒ語"
 msgid "Burmese"
 msgstr "ビルマ語"
 
-msgid "Khmer"
+msgid "Lang|Khmer"
 msgstr "クメール語"
 
-msgid "Lao"
+msgid "Lang|Lao"
 msgstr "ラオ語"
 
 msgid "Vietnamese"
@@ -9610,7 +9932,7 @@ msgstr "マレー語(ローマ字)"
 msgid "Malay (arabic)"
 msgstr "マレー語(アラビア文字)"
 
-msgid "Amharic"
+msgid "Lang|Amharic"
 msgstr "アムハラ語"
 
 msgid "Tigrinya"
@@ -9649,7 +9971,7 @@ msgstr "バスク語"
 msgid "Catalan"
 msgstr "カタルーニャ語"
 
-msgid "Latin"
+msgid "Lang|Latin"
 msgstr "ラテン語"
 
 msgid "Quechua"
@@ -9673,7 +9995,7 @@ msgstr "アイマラ語"
 msgid "Tatar"
 msgstr "タタール語"
 
-msgid "Uighur"
+msgid "Lang|Uighur"
 msgstr "ウイグル語"
 
 msgid "Dzongkha"
@@ -11659,7 +11981,7 @@ msgid "%s does not contain an <svg> element at the top\n"
 msgstr "%s の最上位エレメントとして <svg> が含まれていません\n"
 
 msgid "Failed to open glyph to name map file for writing: %s\n"
-msgstr "名前マップファイル %s を, グリフ名を書込むために開くのに失敗しました\n"
+msgstr "名前マップファイル %s を, グリフ名を書き込むために開くのに失敗しました\n"
 
 msgid "Table length should not be odd\n"
 msgstr "テーブルの長さは奇数であってはなりません\n"
@@ -11730,3 +12052,149 @@ msgstr "すべてデフォルトに"
 
 msgid "Default This"
 msgstr "この項目をデフォルトに"
+
+msgid "Script|Arabic"
+msgstr "アラビア文字"
+
+msgid "Script|Armenian"
+msgstr "アルメニア文字"
+
+msgid "Script|Bengali"
+msgstr "ベンガル文字"
+
+msgid "Script|Cherokee"
+msgstr "チェロキー文字"
+
+msgid "Script|Georgian"
+msgstr "グルジア文字"
+
+msgid "Script|Greek"
+msgstr "ギリシャ文字"
+
+msgid "Script|Gujarati"
+msgstr "グジャラート文字"
+
+msgid "Script|Hebrew"
+msgstr "ヘブライ文字"
+
+msgid "Script|Javanese"
+msgstr "ジャワ文字"
+
+msgid "Script|Kannada"
+msgstr "カンナダ語"
+
+msgid "Script|Khmer"
+msgstr "クメール文字"
+
+msgid "Script|Lao"
+msgstr "ラオ文字"
+
+msgid "Script|Latin"
+msgstr "ラテン文字"
+
+msgid "Script|Limbu"
+msgstr "リンブ文字"
+
+msgid "Script|Mongolian"
+msgstr "モンゴル文字"
+
+msgid "Script|Oriya"
+msgstr "オリヤー文字"
+
+msgid "Script|Syriac"
+msgstr "シリア文字"
+
+msgid "Script|Tamil"
+msgstr "タミル文字"
+
+msgid "Script|Telugu"
+msgstr "テルグ文字"
+
+msgid "Script|Tagalog"
+msgstr "タガログ文字"
+
+msgid "Script|Thai"
+msgstr "タイ文字"
+
+msgid "Script|Tibetan"
+msgstr "チベット文字"
+
+msgid "Could not read %s"
+msgstr "%sを読み込めませんでした"
+
+msgid "NameList base missing"
+msgstr "親名前リストが見つかりません"
+
+msgid "NameList %s based on %s which could not be found"
+msgstr "名前リスト%sの元となっている%sが見つかりません"
+
+msgid "NameList based twice"
+msgstr "名前リストの親が2つあります"
+
+msgid "NameList %s based on two NameLists"
+msgstr "名前リスト%sの元となる名前リストが2つあります"
+
+msgid "NameList parsing error"
+msgstr "NameListの構文解析エラー"
+
+msgid "Missing rename \"to\" name %s\n%s"
+msgstr "変更先の名前%sがありません\n%s"
+
+msgid "Bad unicode value when parsing %s\n%s"
+msgstr "不正なUnicode値が%sを解析中に見つかりました\n%s"
+
+msgid "Missing name when parsing %s for unicode %x"
+msgstr "%s の Unicode 値 %x に該当する名前がありません"
+
+msgid "Bad name when parsing %s for unicode %x"
+msgstr "%s の Unicode 値 %x に該当する名前が不正です"
+
+msgid "Multiple names when parsing %s for unicode %x"
+msgstr "%s の Unicode 値 %x に該当する名前が複数あります"
+
+msgid "AGL without afii"
+msgstr "AGL(afiiを除く)"
+
+msgid "AGL with PUA"
+msgstr "AGL(私用領域を含む)"
+
+msgid "Greek small caps"
+msgstr "ギリシャ小型小文字"
+
+msgid "AMS Names"
+msgstr "AMS名"
+ 
+msgid "Failed to find NameList: %s"
+msgstr "名前リストが見つかりません: %s"
+
+msgid "Force glyph names to:"
+msgstr "グリフ名を強制的に変更:"
+
+msgid ""
+"In the saved font, force all glyph names to match those in the specified namelist"
+msgstr ""
+"保存したフォントでは,すべてのグリフ名が指定した名前リストに合わせて変更されます."
+
+msgid "No Rename"
+msgstr "名前を変更しない"
+
+msgid "Make Namelist"
+msgstr "名前リストを作成"
+
+msgid "Bad namelist file"
+msgstr "不正な名前リストファイル"
+
+msgid "Could not parse %s"
+msgstr "%sを解析できませんでした"
+
+msgid "Rename by NameList"
+msgstr "名前リストによる改名"
+
+msgid "Rename the glyphs in this font to the names found in the selected namelist"
+msgstr "このフォント内のグリフを,選択した名前リストにある名前に改名します"
+
+msgid "Load glyph names"
+msgstr "グリフ名を読み込み"
+
+msgid "No such file"
+msgstr "そのようなファイルはありません"

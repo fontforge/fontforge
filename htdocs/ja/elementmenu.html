@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 14-Jan-2006 -->
+  <!-- AP: Last modified: 9-Feb-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>The Element Menu</TITLE>-->
     <TITLE>エレメントメニュー</TITLE>
@@ -615,11 +615,11 @@
 <!--  <A NAME="Expand">Expand</A> Stroke...-->
       輪郭を<A NAME="Expand">太らせる(<U>E</U>)...</A>
     <DD>
-<!--  Not in the bitmap view, not in quadratic (truetype) fonts. In the font view
-      it applies to all foreground splines in all selected glyphs. In the outline
-      view it applies to all paths that have at least one point selected (or if
-      no points are selected then it applies to all paths).<BR> -->
-      ビットマップビューからは呼び出せません。2 次曲線 (TrueType) フォントでは使用できません。フォントビューでは選択されたすべてのグリフの前面にあるすべてのスプラインに対して太め処理を適用します。アウトラインビューでは、最低 1 個の点が選択されているすべてのパスに適用します (点が選択されていないときには、すべてのパスに適用します)。<BR>
+<!--  Not in the bitmap view. In the font view it applies to all foreground splines
+      in all selected glyphs. In the outline view it applies to all paths that
+      have at least one point selected (or if no points are selected then it applies
+      to all paths).<BR> -->
+      ビットマップビューからは呼び出せません。フォントビューでは選択されたすべてのグリフの前面にあるすべてのスプラインに対して太め処理を適用します。アウトラインビューでは、最低 1 個の点が選択されているすべてのパスに適用します (点が選択されていないときには、すべてのパスに適用します)。<BR>
       <IMG SRC="../twolines.png" WIDTH="247" HEIGHT="247">
       <IMG SRC="../expandedlines.png" WIDTH="247" HEIGHT="247"><BR>
 <!--  Above is a simple example of what expand stroke can do. It takes the two
@@ -650,9 +650,8 @@
       and treats it as a tile which is applied to any selected contours. -->
       このコマンドはデフォルトのビルドでは利用できません。2 次曲線 (TrueType) フォントでは使用できません。ファイル <CODE>configure-fontforge.h</CODE> を修正してから FontForge を再ビルドする必要があります。このコマンドはクリップボードの内容をとり、それを選択中のパスに当てはめるためのタイルであるかのように扱います。
     <DT>
-<!--  --None of these is available in the bitmap view. None works on quadratic (truetype)
-      fonts<SUP><A HREF="#overlap-footnote">1</A></SUP>. -->
-      これらはいずれもビットマップビューには存在しません。どれも 2 次曲線 (TrueType) フォントでは使用できません<SUP><A HREF="#overlap-footnote">1</A></SUP>。
+<!--  None of these is available in the bitmap view. -->
+      これらはいずれもビットマップビューには存在しません。
       <DL>
 	<DT>
 <!--	  <A NAME="Remove">Remove</A> Overlap -->
@@ -680,12 +679,6 @@
 	  which are close together can cause problems. -->
 	  このコマンドは FontForge の中でおそらく最もバグが多いはずです。ですから、FontForge はコマンドを起動する前にエラー回復ファイルに現状を保存します。<BR>
       警告: 平行な (またはほとんどそれに近い) スプラインは問題を起こします。あまりに近い点も問題を起こす可能性があります。
-	  <P>
-<!--	  <SUP><A NAME="overlap-footnote">1</A></SUP><SMALL>If you wish to run remove
-	  overlap on a truetype (quadratic) font, you must first use Element-&gt;Font
-	  Info-&gt;General to convert it into a cubic font, do the remove overlap,
-	  and then convert back to quadratic.</SMALL> -->
-	  <SUP><A NAME="overlap-footnote">1</A></SUP><SMALL>TrueType (2 次曲線) フォントで重複除去処理を実行したい場合、最初に <CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE>→<CODE>[一般]</CODE> で 3 次曲線フォントに変換し、重複除去処理を行ったのち再度 2 次曲線に変換する必要があります。</SMALL>
 	<DT>
 <!--	  <A NAME="Intersect">Intersect</A> -->
 	  <A NAME="Intersect">重複部分を抽出(<U>I</U>)</A>
@@ -792,8 +785,9 @@
       view (or if nothing is selected in the outline view) it will add extrema
       to a spline if: 1) The spline is longer than the em-size/32, or 2) the entire
       contour (rather than just the current spline) attains its maximum/minimum
-      value at this point. -->
-      ビットマップビューでは使用できません。TrueType と Type1 のどちらでも、水平および垂直方向の極値にあたる位置に点が存在することを推奨しています。アウトラインビューでは、何らかの点が選択されていれば、選択された点の間に存在するすべての極値に点を追加します。フォントビューおよびメトリックビュー (または、アウトラインビューで何も選択されていなければ) 以下の 2 条件のいずれかが満たされている極値に点を追加します。1) スプラインの長さが em / 32 よりも大きい。2) その点が文字の輪郭全体 (現在のスプラインだけでなく) の極大/極小値に該当する。
+      value at this point. If the added extrema is extremely close to an already
+      existing point, fontforge may remove that point to avoid creating tiny splines. -->
+      ビットマップビューでは使用できません。TrueType と Type1 のどちらでも、水平および垂直方向の極値にあたる位置に点が存在することを推奨しています。アウトラインビューでは、何らかの点が選択されていれば、選択された点の間に存在するすべての極値に点を追加します。フォントビューおよびメトリックビュー (または、アウトラインビューで何も選択されていなければ) 以下の 2 条件のいずれかが満たされている極値に点を追加します。1) スプラインの長さが em / 32 よりも大きい、2) その点が文字の輪郭全体 (現在のスプラインだけでなく) の極大/極小値に該当する。もし、追加した点のごく近くに既存の点が位置する場合、FontForge は微小なスプラインが発生するのを避けるためにその点を削除します。
     <DT>
 <!--  Effects-->
       効果
@@ -807,14 +801,14 @@
 	<DD>
 	  <IMG SRC="../OutlineInline.png" WIDTH="146" HEIGHT="70" ALIGN="Right"><!--Changes
 	  the selected glyphs so that instead of being a solid block, only the outline
-	  of the glyph is visible. The glyphs' bounding box will not change. -->
+	  of the glyph is visible. The glyphs' bounding boxes will not change. -->
 	  選択されたグリフを中身の詰まった塊ではなく、グリフの輪郭だけが見えるように変形します。グリフのバウンディングボックスは変更しません。
 	<DT>
 <!--	  <A NAME="Inline">Inline</A> -->
 	  <A NAME="Inline">インライン(<U>I</U>)</A>
 	<DD>
 <!--	  Changes the selected glyphs so that the character is surrounded by an outline.
-	  The glyphs' bounding box will not change.-->
+	  The glyphs' bounding boxes will not change.-->
 	  選択中のグリフを加工し、グリフがアウトラインで囲まれたようにします。グリフのバウンディングボックスは変更しません。
 	<DT>
 <!--	  <A NAME="Shadow">Shadow</A> -->
