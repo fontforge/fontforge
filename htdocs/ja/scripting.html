@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 8-Jan-2006 -->
+  <!-- AP: Last modified: 5-Feb-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Writing scripts to change fonts in FontForge</TITLE>-->
     <TITLE>FontForge でフォントを変更するためのスクリプトの書き方</TITLE>
@@ -765,6 +765,22 @@ a[4][0] = "Nested array";
 	    ~/.PfaEdit/plugins
 	</UL>
     <DT>
+      LoadNamelist(filename)
+    <DD>
+<!--  Will load the namelist stored in the given file. -->
+      指定したファイルに格納されている名前リストを読み込みます。
+    <DT>
+      LoadPluginDir([directory-name])
+    <DD>
+<!--  Searches the given directory for things that look like fontforge plugins
+      and loads them. If directory is omitted then it will load the default directory: -->
+      指定したディレクトリから FontForge のプラグインらしき物を探して読み込みます。ディレクトリ名を省略した場合、デフォルトのディレクトリ
+      <UL>
+	<LI>
+	  ~/.PfaEdit/
+      </UL>
+      から読み込みます。
+    <DT>
       DefaultOtherSubrs()
     <DD>
 <!--  Returns to using Adobe's versions of the OtherSubrs subroutines. -->
@@ -1036,7 +1052,7 @@ a[4][0] = "Nested array";
       引数 1 個をつけて実行した場合、「名前をつけて保存」コマンドを実行し、
       カレントフォントを filename で指定したファイルに保存します。
     <DT>
-      <A HREF="filemenu.html#Generate">Generate</A>(filename[,bitmaptype[,fmflags[,res[,mult-sfd-file]]]])
+      <A HREF="filemenu.html#Generate">Generate</A>(filename[,bitmaptype[,fmflags[,res[,mult-sfd-file[,namelist-name]]]]])
     <DD>
 <!--  Generates a font. The type of font is determined by the extension of the
       filename. Valid extensions are: -->
@@ -1899,6 +1915,11 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
       and then name it "fi". -->
       注意: グリフ名によって指定されるエンコーディングがいくつかあります (例えば、ユーザ定義のエンコーディングは PostScript エンコーディング配列として指定されます) が、その他の物は Unicode の符号位置のリストとして指定されます (AdobeStandard および TeX、符号位置で指定したユーザ定義のエンコーディングを除くほとんど全ての組み込みエンコーディングの場合)。
   グリフ名によって定義されたエンコーディングを再符号化した時、ff は最初にグリフを適切なスロットに移動し、次に、不正な名前を持つ全てのグリフを強制的に正しい名前に変更します。この最も明らかな例は fi 合字です: AdobeStandard は、これは“fi”と命名しなければならないとしていますが、最近のフォントでは“f_i”と呼ぶのが一般的です。AdobeStandard に符号化変換を行うとグリフは正しい位置に移動され、その後に“fi”という名前に変更されます。
+    <DT>
+      <A HREF="encodingmenu.html#RenameGlyphs">RenameGlyphs</A>(namelist-name)
+    <DD>
+<!--  Renames all the glyphs in the current font according to the namelist. -->
+      引数で指定した名前リストに含まれるすべてのグリフの名前を変更します。
     <DT>
       SetCharCnt(cnt)
     <DD>
