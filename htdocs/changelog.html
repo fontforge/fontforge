@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 25-Jan-2006 -->
+  <!-- AP: Last modified: 12-Feb-2006 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -17,6 +17,76 @@
   on the file stamp.c.
   <P>
   <UL>
+    <LI>
+      9-Feb-2006
+      <UL>
+	<LI>
+	  Instead of refusing to do expand stroke/remove overlap for order2 fonts,
+	  why not convert the contours to order3, do the function and convert back.
+	<LI>
+	  Once more we are numbering points badly.
+	<LI>
+	  If we clear a glyph which is being referred to (and we don't unlink it first)
+	  then when we save it into an sfd file we get a reference to a glyph at orig_pos
+	  -1 (because the cleared glyph isn't stored in the sfd) which causes an error
+	  when reading it back in.
+	<LI>
+	  If a copyright message were an exact multiple of 100 characters long, fontforge
+	  would screw up memory (and potentially crash) when reading it in from an
+	  sfd file.
+	<LI>
+	  The Merge/Simplify command (which Add Extrema now calls) had problems when
+	  the control points were very close to the base point so that the point was
+	  (to the human eye) a corner point.
+	<LI>
+	  Add support for the r2l script N'Ko. MS says opentype will use script 'nko
+	  ', ISO says the tag should be 'nkoo'. Follow opentype.
+	<LI>
+	  Kanou tells me that Syriac &amp; Thaana are also r2l scripts and should be
+	  added to my list.
+	<LI>
+	  If FF was given multiple fonts on the command line the sizes of the font
+	  windows would jump around in a very peculiar fashion.
+	<LI>
+	  Add the concept of a namelist. Users can specify what names they want for
+	  new glyphs, or can force an entire font into a new naming scheme. Changes
+	  to
+	  <UL>
+	    <LI>
+	      FontInfo
+	    <LI>
+	      Open
+	    <LI>
+	      Generate (Family)
+	    <LI>
+	      Preferences
+	    <LI>
+	      and the Encoding menu.
+	    <LI>
+	      New scripting functions:
+	      <UL>
+		<LI>
+		  LoadNamelist(filename)
+		<LI>
+		  LoadNamelistDir([dir])
+		<LI>
+		  RenameGlyphs(namelist)
+		<LI>
+		  Extended Generate (scripting) to take a namelist argument.
+	      </UL>
+	  </UL>
+	<LI>
+	  If users didn't have libuninameslist installed we were still generating spurious
+	  ligatures for numero and TM. (and others)
+	<LI>
+	  KANOU points out that if you comment out a bdf glyph (with COMMENT) fontforge
+	  sort of reads it anyway.
+	<LI>
+	  Kanou needs to distinquish between the script latin and the language.
+	<LI>
+	  SplineRemoveAnnoyingExtrema1 got tweaked a little too much in attempting
+	  not to generate insane control points.
+      </UL>
     <LI>
       25-Jan-2006
       <UL>
