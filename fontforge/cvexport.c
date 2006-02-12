@@ -744,7 +744,7 @@ return;
     else if ( format==3 )
 	good = ExportPDF(buffer,sc);
     else if ( bc!=NULL )
-	good = BCExportXBM(buffer,bc,format-3);
+	good = BCExportXBM(buffer,bc,format-4);
     if ( !good )
 	gwwv_post_error(_("Save Failed"),_("Save Failed"));
 }
