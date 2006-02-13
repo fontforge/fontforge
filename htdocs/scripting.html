@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 9-Feb-2006 -->
+  <!-- AP: Last modified: 12-Feb-2006 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -2510,6 +2510,96 @@ ApplySubstitution("*","*","vrt2")
     <DD>
       Arg is as above. This returns true if the glyph contains any splines, references
       or images.
+    <DT>
+      CompareGlyphs([pt_err[,spline_err[,check_bitmaps[,report_diffs_as_errors]]]])
+    <DD>
+      This function compares two versions of one or several glyphs. It looks at
+      any selected glyphs in the font and compares them to an equivalent glyph
+      in the clipboard (there must be the same number of selected glyphs as glyphs
+      in the clipboard).
+      <UL>
+	<LI>
+	  It checks to make sure the advance width of each glyph pair is similar
+	<LI>
+	  It checks to make sure that each contains the same set of references
+	<LI>
+	  It checks to make sure that all points (both base and control) are within
+	  pt_err of each other
+	<LI>
+	  If that fails then it performs a slower check to see if points lying along
+	  the contours have equivalent points in the other glyph (that is: If you have
+	  simplified a glyph and are comparing it to the original, this check should
+	  pass it while the previous check would fail).
+	<LI>
+	  Optionally you may check that the bitmaps match (this will be an exact match).
+      </UL>
+      <P>
+      Normally this function treats any differences it finds as errors and stops
+      the script. If you set the fourth argument to 0 then it will return a value
+      which ors the following flags together (some flags indicate errors, others
+      unusual conditions, others success -- the function will never return both
+      an error and success flag, but it can return several success flags at once
+      if you are comparing more than one glyph)
+      <TABLE BORDER CELLPADDING="2">
+	<TR>
+	  <TD>1</TD>
+	  <TD>Different numbers of contours in a glyph</TD>
+	</TR>
+	<TR>
+	  <TD>2</TD>
+	  <TD>A contour in one glyph is open when the corresponding contour is closed</TD>
+	</TR>
+	<TR>
+	  <TD>4</TD>
+	  <TD>Disordered contours (contours are in different orders in the two glyphs)</TD>
+	</TR>
+	<TR>
+	  <TD>8</TD>
+	  <TD>Disordered start (the start point is at a different place in the two
+	    glyphs)</TD>
+	</TR>
+	<TR>
+	  <TD>16</TD>
+	  <TD>Disordered direction (the contour is clockwise in one and counter in
+	    the other)</TD>
+	</TR>
+	<TR>
+	  <TD>32</TD>
+	  <TD>Glyphs match by checking points</TD>
+	</TR>
+	<TR>
+	  <TD>64</TD>
+	  <TD>Glyphs match by checking the contours</TD>
+	</TR>
+	<TR>
+	  <TD>128</TD>
+	  <TD>Outline glyphs do not match</TD>
+	</TR>
+	<TR>
+	  <TD>256</TD>
+	  <TD>Different references in the two glyphs</TD>
+	</TR>
+	<TR>
+	  <TD>512</TD>
+	  <TD>Different advance widths in the two glyphs</TD>
+	</TR>
+	<TR>
+	  <TD>65536</TD>
+	  <TD>Bitmap glyphs have different depths</TD>
+	</TR>
+	<TR>
+	  <TD>2*65536</TD>
+	  <TD>Bitmap glyphs have different bounding boxes</TD>
+	</TR>
+	<TR>
+	  <TD>4*65536</TD>
+	  <TD>Bitmap glyphs do not match</TD>
+	</TR>
+	<TR>
+	  <TD>8*65536</TD>
+	  <TD>Bitmap glyphs match</TD>
+	</TR>
+      </TABLE>
     <DT>
       <B><A NAME="GlyphInfo">GlyphInfo</A></B>(str)<BR>
       GlyphInfo("Kern",glyph-spec)<BR>

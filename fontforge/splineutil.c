@@ -559,10 +559,10 @@ return( test );
 return( test );
 }
 
-static void SplineFindBounds(Spline *sp, DBounds *bounds) {
+static void SplineFindBounds(const Spline *sp, DBounds *bounds) {
     real t, b2_fourac, v;
     real min, max;
-    Spline1D *sp1;
+    const Spline1D *sp1;
     int i;
 
     /* first try the end points */
@@ -612,7 +612,7 @@ static void SplineFindBounds(Spline *sp, DBounds *bounds) {
     }
 }
 
-static void _SplineSetFindBounds(SplinePointList *spl, DBounds *bounds) {
+static void _SplineSetFindBounds(const SplinePointList *spl, DBounds *bounds) {
     Spline *spline, *first;
     /* Ignore contours consisting of a single point (used for hinting, anchors */
     /*  for mark to base, etc. */
@@ -635,7 +635,7 @@ static void _SplineSetFindBounds(SplinePointList *spl, DBounds *bounds) {
     }
 }
 
-void SplineSetFindBounds(SplinePointList *spl, DBounds *bounds) {
+void SplineSetFindBounds(const SplinePointList *spl, DBounds *bounds) {
     memset(bounds,'\0',sizeof(*bounds));
     _SplineSetFindBounds(spl,bounds);
 }
@@ -2747,7 +2747,7 @@ void SCRefToSplines(SplineChar *sc,RefChar *rf) {
 /* This returns all real solutions, even those out of bounds */
 /* I use -999999 as an error flag, since we're really only interested in */
 /*  solns near 0 and 1 that should be ok. -1 is perhaps a little too close */
-static int _CubicSolve(Spline1D *sp,double ts[3]) {
+static int _CubicSolve(const Spline1D *sp,double ts[3]) {
     double d, xN, yN, delta2, temp, delta, h, t2, t3, theta;
     int i=0;
 
@@ -2824,7 +2824,7 @@ return(false);		/* All roots imaginary */
 return( ts[0]!=-999999 );
 }
 
-int CubicSolve(Spline1D *sp,double ts[3]) {
+int CubicSolve(const Spline1D *sp,double ts[3]) {
     double t;
     int i;
     /* This routine gives us all solutions between [0,1] with -1 as an error flag */
@@ -3027,7 +3027,7 @@ return( -1 );
 return(i+1);
 }
 
-double SplineSolve(Spline1D *sp, real tmin, real tmax, real sought,real err) {
+double SplineSolve(const Spline1D *sp, real tmin, real tmax, real sought,real err) {
     /* We want to find t so that spline(t) = sought */
     /*  the curve must be monotonic */
     /* returns t which is near sought or -1 */
@@ -3047,7 +3047,7 @@ return( ts[i] );
 return( -1 );
 }
 
-static void _SplineFindExtrema(Spline1D *sp, double *_t1, double *_t2 ) {
+static void _SplineFindExtrema(const Spline1D *sp, double *_t1, double *_t2 ) {
     double t1= -1, t2= -1;
     double b2_fourac;
 
@@ -3078,7 +3078,7 @@ static void _SplineFindExtrema(Spline1D *sp, double *_t1, double *_t2 ) {
     *_t1 = t1; *_t2 = t2;
 }
 
-void SplineFindExtrema(Spline1D *sp, double *_t1, double *_t2 ) {
+void SplineFindExtrema(const Spline1D *sp, double *_t1, double *_t2 ) {
     double t1= -1, t2= -1;
     double b2_fourac;
 
@@ -3124,7 +3124,7 @@ return ( RealNear( (3*sp->a*t + 2*sp->b)*t + sp->c,0) &&
 	    !RealNear( 6*sp->a*t + 2*sp->b, 0));
 }
 
-int Spline2DFindExtrema(Spline *sp, double extrema[4] ) {
+int Spline2DFindExtrema(const Spline *sp, double extrema[4] ) {
     int i,j;
     BasePoint last, cur, mid;
 
@@ -3212,7 +3212,7 @@ void SplineRemoveInflectionsTooClose(Spline1D *sp, double *_t1, double *_t2 ) {
     *_t1 = t1; *_t2 = t2;
 }
 
-int SplineSolveFull(Spline1D *sp,double val, double ts[3]) {
+int SplineSolveFull(const Spline1D *sp,double val, double ts[3]) {
     Spline1D temp;
 
     temp = *sp;
@@ -3255,7 +3255,7 @@ return( soln );
 return( soln+1 );
 }
 
-static int AddQuadraticSoln(double s,Spline *s1, Spline *s2, BasePoint pts[3],
+static int AddQuadraticSoln(double s,const Spline *s1, const Spline *s2, BasePoint pts[3],
 	double t1s[3], double t2s[3], int soln ) {
     double t, x, y, d;
     int i;
@@ -3292,7 +3292,7 @@ return( AddPoint(x,y,t,s,pts,t1s,t2s,soln));
 return( soln );
 }
 
-static void IterateSolve(Spline1D *sp,double ts[3]) {
+static void IterateSolve(const Spline1D *sp,double ts[3]) {
     /* The closed form solution has too many rounding errors for my taste... */
     int i,j;
 
@@ -3355,7 +3355,7 @@ static void IterateSolve(Spline1D *sp,double ts[3]) {
 	ts[j] = -1;
 }
 
-static double ISolveWithin(Spline1D *sp,double val,double tlow, double thigh) {
+static double ISolveWithin(const Spline1D *sp,double val,double tlow, double thigh) {
     Spline1D temp;
     double ts[3];
     int i;
@@ -3388,7 +3388,7 @@ return( -1 );
 }
 
 static int ICAddInter(int cnt,BasePoint *foundpos,double *foundt1,double *foundt2,
-	Spline *s1,Spline *s2,double t1,double t2) {
+	const Spline *s1,const Spline *s2,double t1,double t2) {
     foundt1[cnt] = t1;
     foundt2[cnt] = t2;
     foundpos[cnt].x = ((s1->splines[0].a*t1+s1->splines[0].b)*t1+
@@ -3400,7 +3400,7 @@ return( cnt+1 );
 
 static int ICBinarySearch(int cnt,BasePoint *foundpos,double *foundt1,double *foundt2,
 	int other,
-	Spline *s1,Spline *s2,double t1low,double t1high,double t2low,double t2high) {
+	const Spline *s1,const Spline *s2,double t1low,double t1high,double t2low,double t2high) {
     int major;
     double t1, t2;
     double o1o, o2o, o1n, o2n, m;
@@ -3435,8 +3435,8 @@ return( ICAddInter(cnt,foundpos,foundt1,foundt2,s1,s2,t1,t2));
     }
 }
 
-static int CubicsIntersect(Spline *s1,double lowt1,double hight1,BasePoint *min1,BasePoint *max1,
-			    Spline *s2,double lowt2,double hight2,BasePoint *min2,BasePoint *max2,
+static int CubicsIntersect(const Spline *s1,double lowt1,double hight1,BasePoint *min1,BasePoint *max1,
+			    const Spline *s2,double lowt2,double hight2,BasePoint *min2,BasePoint *max2,
 			    BasePoint *foundpos,double *foundt1,double *foundt2) {
     int major, other;
     BasePoint max, min;
@@ -3501,7 +3501,7 @@ return( cnt );
 /* returns 0=>no intersection, 1=>at least one, location in pts, t1s, t2s */
 /*  -1 => We couldn't figure it out in a closed form, have to do a numerical */
 /*  approximation */
-int SplinesIntersect(Spline *s1, Spline *s2, BasePoint pts[9],
+int SplinesIntersect(const Spline *s1, const Spline *s2, BasePoint pts[9],
 	double t1s[10], double t2s[10]) {	/* One extra for a trailing -1 */
     BasePoint min1, max1, min2, max2;
     int soln = 0;
@@ -3570,7 +3570,7 @@ return( false );
     if ( s1->knownlinear )
 	/* Do Nothing */;
     else if ( s2->knownlinear || (!s1->isquadratic && s2->isquadratic)) {
-	Spline *stemp = s1;
+	const Spline *stemp = s1;
 	double *ts = t1s;
 	t1s = t2s; t2s = ts;
 	s1 = s2; s2 = stemp;

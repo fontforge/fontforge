@@ -1378,8 +1378,8 @@ extern void SplineRefigure3(Spline *spline);
 extern void SplineRefigure(Spline *spline);
 extern Spline *SplineMake3(SplinePoint *from, SplinePoint *to);
 extern LinearApprox *SplineApproximate(Spline *spline, real scale);
-extern int SplinePointListIsClockwise(SplineSet *spl);
-extern void SplineSetFindBounds(SplinePointList *spl, DBounds *bounds);
+extern int SplinePointListIsClockwise(const SplineSet *spl);
+extern void SplineSetFindBounds(const SplinePointList *spl, DBounds *bounds);
 extern void SplineCharFindBounds(SplineChar *sc,DBounds *bounds);
 extern void SplineFontFindBounds(SplineFont *sf,DBounds *bounds);
 extern void CIDFindBounds(SplineFont *sf,DBounds *bounds);
@@ -1473,14 +1473,14 @@ extern void XLFD_CreateComponents(BDFFont *bdf,EncMap *map,int res,struct xlfd_c
 /* Two lines intersect in at most 1 point */
 /* Two quadratics intersect in at most 4 points */
 /* Two cubics intersect in at most 9 points */ /* Plus an extra space for a trailing -1 */
-extern int SplinesIntersect(Spline *s1, Spline *s2, BasePoint pts[9],
+extern int SplinesIntersect(const Spline *s1, const Spline *s2, BasePoint pts[9],
 	double t1s[10], double t2s[10]);
-extern int CubicSolve(Spline1D *sp,double ts[3]);
-extern double IterateSplineSolve(Spline1D *sp, double tmin, double tmax, double sought_y, double err);
-extern double SplineSolve(Spline1D *sp, real tmin, real tmax, real sought_y, real err);
-extern int SplineSolveFull(Spline1D *sp,double val, double ts[3]);
-extern void SplineFindExtrema(Spline1D *sp, double *_t1, double *_t2 );
-extern int Spline2DFindExtrema(Spline *sp, double extrema[4] );
+extern int CubicSolve(const Spline1D *sp,double ts[3]);
+extern double IterateSplineSolve(const Spline1D *sp, double tmin, double tmax, double sought_y, double err);
+extern double SplineSolve(const Spline1D *sp, real tmin, real tmax, real sought_y, real err);
+extern int SplineSolveFull(const Spline1D *sp,double val, double ts[3]);
+extern void SplineFindExtrema(const Spline1D *sp, double *_t1, double *_t2 );
+extern int Spline2DFindExtrema(const Spline *sp, double extrema[4] );
 extern int SplineAtInflection(Spline1D *sp, double t );
 extern int SplineAtMinMax(Spline1D *sp, double t );
 extern void SplineRemoveInflectionsTooClose(Spline1D *sp, double *_t1, double *_t2 );
@@ -1920,6 +1920,26 @@ extern char *EnforcePostScriptName(char *old);
 extern const char *TTFNameIds(int id);
 extern const char *MSLangString(int language);
 extern void FontInfoInit(void);
+
+enum Compare_Ret {	SS_DiffContourCount	= 1,
+			SS_MismatchOpenClosed	= 2,
+			SS_DisorderedContours	= 4,
+			SS_DisorderedStart	= 8,
+			SS_DisorderedDirection	= 16,
+			SS_PointsMatch		= 32,
+			SS_ContourMatch		= 64,
+			SS_NoMatch		= 128,
+			SS_RefMismatch		= 256,
+			SS_WidthMismatch	= 512,
+
+			BC_DepthMismatch	= 1<<16,
+			BC_BoundingBoxMismatch	= 2<<16,
+			BC_NoMatch		= 4<<16,
+			BC_Match		= 8<<16
+		};
+
+extern enum Compare_Ret BitmapCompare(BDFChar *bc1, BDFChar *bc2);
+extern enum Compare_Ret SSsCompare(const SplineSet *ss1, const SplineSet *ss2, real pt_err, real spline_err);
 
 
 # if HANYANG

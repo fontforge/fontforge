@@ -45,6 +45,7 @@
 #include "ttf.h"
 #include "plugins.h"
 #include "scripting.h"
+#include "scriptfuncs.h"
 
 static int verbose = -1;
 int no_windowing_ui = false;
@@ -80,15 +81,15 @@ static const char *toknames[] = {
     "End Of File",
     NULL };
 
-char *utf82script_copy(char *ustr) {
+char *utf82script_copy(const char *ustr) {
 return( use_utf8_in_script ? copy(ustr) : utf8_2_latin1_copy(ustr));
 }
 
-char *script2utf8_copy(char *str) {
+char *script2utf8_copy(const char *str) {
 return( use_utf8_in_script ? copy(str) : latin1_2_utf8_copy(str));
 }
 
-static char *script2latin1_copy(char *str) {
+static char *script2latin1_copy(const char *str) {
     if ( !use_utf8_in_script )
 return( copy(str));
     else {
@@ -245,7 +246,7 @@ static void unexpected(Context *c,enum token_type got) {
     showtoken(c,got);
 }
 
-void ScriptError( Context *c, char *msg ) {
+void ScriptError( Context *c, const char *msg ) {
     char *t1 = script2utf8_copy(msg);
     char *ufile = def2utf8_copy(c->filename);
 
@@ -266,7 +267,7 @@ void ScriptError( Context *c, char *msg ) {
     traceback(c);
 }
 
-void ScriptErrorString( Context *c, char *msg, char *name) {
+void ScriptErrorString( Context *c, const char *msg, const char *name) {
     char *t1 = script2utf8_copy(msg);
     char *t2 = script2utf8_copy(name);
     char *ufile = def2utf8_copy(c->filename);
@@ -284,7 +285,7 @@ void ScriptErrorString( Context *c, char *msg, char *name) {
     traceback(c);
 }
 
-void ScriptErrorF( Context *c, char *format, ... ) {
+void ScriptErrorF( Context *c, const char *format, ... ) {
     char *ufile = def2utf8_copy(c->filename);
     /* All string arguments here assumed to be utf8 */
     char errbuf[400];
@@ -6379,6 +6380,50 @@ static void bSetGlyphTeX(Context *c) {
     }
 }
 
+static void bCompareGlyphs(Context *c) {
+    /* Compare selected glyphs against the contents of the clipboard	*/
+    /* Three comparisons:						*/
+    /*	1) Compare the points (base & control) of all contours		*/
+    /*  2) Compare that the splines themselves don't get too far appart */
+    /*  3) Compare bitmaps (exactly)					*/
+    real pt_err = .5, spline_err = 1;
+    int compare_bitmaps = false, report_errors = true;
+
+    if ( c->a.argc>5 )
+	ScriptError( c, "Wrong number of arguments");
+    if ( c->a.argc>=2 ) {
+	if ( c->a.vals[1].type==v_int )
+	    pt_err = c->a.vals[1].u.ival;
+	else if ( c->a.vals[1].type==v_real )
+	    pt_err = c->a.vals[1].u.fval;
+	else
+	    ScriptError( c, "Bad type for argument");
+    }
+    if ( c->a.argc>=3 ) {
+	if ( c->a.vals[2].type==v_int )
+	    spline_err = c->a.vals[2].u.ival;
+	else if ( c->a.vals[2].type==v_real )
+	    spline_err = c->a.vals[2].u.fval;
+	else
+	    ScriptError( c, "Bad type for argument");
+    }
+    if ( c->a.argc>=4 ) {
+	if ( c->a.vals[3].type==v_int )
+	    compare_bitmaps = c->a.vals[3].u.ival;
+	else
+	    ScriptError( c, "Bad type for argument");
+    }
+    if ( c->a.argc>=5 ) {
+	if ( c->a.vals[4].type==v_int )
+	    compare_bitmaps = c->a.vals[4].u.ival;
+	else
+	    ScriptError( c, "Bad type for argument");
+    }
+    c->return_val.type = v_int;
+    c->return_val.u.ival =
+	    CompareGlyphs(c, pt_err, spline_err, compare_bitmaps, report_errors );
+}
+
 static struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[] = {
 /* Generic utilities */
     { "Print", bPrint, 1 },
@@ -6628,6 +6673,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "GlyphInfo", bCharInfo },
     { "GetPosSub", bGetPosSub },
     { "SetGlyphTeX", bSetGlyphTeX },
+    { "CompareGlyphs", bCompareGlyphs },
     { NULL }
 };
 

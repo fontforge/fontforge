@@ -34,7 +34,7 @@ fontforge_OBJECTS7=macenc.obj,statemachine.obj,typofeatures.obj,splinerefigure.o
 	parsettfvar.obj,tottfvar.obj,pua.obj,stemdb.obj,anchorsaway.obj,\
 	palmfonts.obj,cvdgloss.obj,groups.obj,parsepdf.obj,plugins.obj
 
-fontforge_OBJECTS8=bdfinfo.obj
+fontforge_OBJECTS8=bdfinfo.obj,glyphcomp.obj
 
 fontforge.exe : main.obj lff.opt xlib.opt [-.libs]libfontforge.exe
         link/exec=fontforge.exe main,lff/opt,[-.libs]LIBGDRAW/lib,\
@@ -187,3 +187,4 @@ parsepdf.obj : parsepdf.c
 plugins.obj : plugins.c
 main.obj : main.c
 bdfinfo.obj : bdfinfo.c
+glyphcomp.obj : glyphcomp.c
