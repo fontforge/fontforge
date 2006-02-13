@@ -1728,9 +1728,12 @@ struct pschars *SplineFont2Chrs(SplineFont *sf, int iscjk,
 	*gb.pt = '\0';
 	chrs->values[0] = (unsigned char *) copyn((char *) gb.base,gb.pt-gb.base);	/* 0 <w> hsbw endchar */
 	chrs->lens[0] = gb.pt-gb.base;
-	cnt = 1;
+    } else {
+	chrs->values[0] = SplineChar2PS(sf->glyphs[notdef_pos],&chrs->lens[0],
+		round,iscjk,subrs,NULL,flags,format);
     }
-    for ( i=0 ; i<sf->glyphcnt; ++i ) {
+    cnt = 1;
+    for ( i=0 ; i<sf->glyphcnt; ++i ) if ( i!=notdef_pos ) {
 #if HANYANG
 	if ( sf->glyphs[i]!=NULL && sf->glyphs[i]->compositionunit )
 	    /* don't output it, should be in a subroutine */;

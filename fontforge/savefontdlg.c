@@ -2157,16 +2157,17 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
     GTextInfo *ti = GGadgetGetListItemSelected(d->rename);
     char *nlname = u2utf8_copy(ti->text);
     extern NameList *force_names_when_saving;
+    int notdef_pos = SFFindNotdef(d->sf,-1);
 
     rename_to = NameListByName(nlname);
     free(nlname);
     
-    for ( i=d->sf->glyphcnt-1; i>=1; --i )
+    for ( i=d->sf->glyphcnt-1; i>=1; --i ) if ( i!=notdef_pos )
 	if ( d->sf->glyphs[i]!=NULL && strcmp(d->sf->glyphs[i]->name,".notdef")==0 &&
 		(d->sf->glyphs[i]->layers[ly_fore].splines!=NULL || AnyRefs(d->sf->glyphs[i]->layers[ly_fore].refs )))
     break;
     if ( i>0 ) {
-	if ( gwwv_ask(_("Notdef name"),(const char **) buts,0,1,_("The glyph at encoding %d is named \".notdef\" but contains an outline. Because it is called \".notdef\" it will not be included in the generated font. You may give it a new name using Element->Char Info. Do you wish to continue font generation (and omit this character)?"),i)==1 )
+	if ( gwwv_ask(_("Notdef name"),(const char **) buts,0,1,_("The glyph at encoding %d is named \".notdef\" but contains an outline. Because it is called \".notdef\" it will not be included in the generated font. You may give it a new name using Element->Char Info. Do you wish to continue font generation (and omit this character)?"),d->map->backmap[i])==1 )
 return;
     }
 
