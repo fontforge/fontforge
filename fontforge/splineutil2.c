@@ -1026,7 +1026,6 @@ return( SplineMake2(from,to));
 	    if ( bettern>0 )
 		incrn /= 2;
 	    bettern = -1;
-	    if ( tsdiff>curdiff && tadiff>curdiff ) incrp /= 2.0;
 	    nocnt = 0;
 	    curdiff = fsdiff;
 	} else if ( offn+incrn<fmax && fadiff<curdiff &&
@@ -1035,7 +1034,6 @@ return( SplineMake2(from,to));
 	    if ( bettern<0 )
 		incrn /= 2;
 	    bettern = 1;
-	    if ( tsdiff>curdiff && tadiff>curdiff ) incrp /= 2.0;
 	    nocnt = 0;
 	    curdiff = fadiff;
 	} else if ( offp>=incrp && tsdiff<curdiff &&
@@ -1044,7 +1042,6 @@ return( SplineMake2(from,to));
 	    if ( betterp>0 )
 		incrp /= 2;
 	    betterp = -1;
-	    if ( fsdiff>curdiff && fadiff>curdiff ) incrn /= 2.0;
 	    nocnt = 0;
 	    curdiff = tsdiff;
 	} else if ( offp+incrp<tmax && tadiff<curdiff &&
@@ -1053,7 +1050,6 @@ return( SplineMake2(from,to));
 	    if ( betterp>0 )
 		incrp /= 2;
 	    betterp = 1;
-	    if ( fsdiff>curdiff && fadiff>curdiff ) incrn /= 2.0;
 	    nocnt = 0;
 	    curdiff = tadiff;
 	} else {
@@ -1062,7 +1058,7 @@ return( SplineMake2(from,to));
 	    incrn /= 2;
 	    incrp /= 2;
 	}
-	if ( incrp<tdiff/256 || incrn<fdiff/256 )
+	if ( incrp<tdiff/4096 || incrn<fdiff/4096 )
     break;
 	if ( ++totcnt>10000 )
     break;
@@ -3518,7 +3514,7 @@ return( NULL );
 return( ret );
 }
 
-int SplinePointListIsClockwise(SplineSet *spl) {
+int SplinePointListIsClockwise(const SplineSet *spl) {
     EIList el;
     EI *active=NULL, *apt, *e;
     int i, change,waschange;
@@ -3539,8 +3535,8 @@ return( -1 );		/* Open paths, (open paths with only one point are a special case
     dummy.layers = layers;
 #endif
     dummy.layer_cnt = 2;
-    dummy.layers[ly_fore].splines = spl;
-    next = spl->next; spl->next = NULL;
+    dummy.layers[ly_fore].splines = (SplineSet *) spl;
+    next = spl->next; ((SplineSet *) spl)->next = NULL;
     ELFindEdges(&dummy,&el);
     if ( el.coordmax[1]-el.coordmin[1] > 1.e6 ) {
 	LogError( _("Warning: Unreasonably big splines. They will be ignored.\n") );
@@ -3571,7 +3567,7 @@ return( -1 );
     free(el.ordered);
     free(el.ends);
     ElFreeEI(&el);
-    spl->next = next;
+    ((SplineSet *) spl)->next = next;
     if ( ret==-1 )
 	ret = maybe;
 return( ret );
