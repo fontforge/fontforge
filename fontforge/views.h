@@ -714,6 +714,7 @@ extern void BCTrans(BDFFont *bdf,BDFChar *bc,BVTFunc *bvts,FontView *fv );
 extern enum undotype CopyUndoType(void);
 extern int CopyContainsSomething(void);
 extern int CopyContainsBitmap(void);
+extern const Undoes *CopyBufferGet(void);
 extern RefChar *CopyContainsRef(SplineFont *);
 extern char **CopyGetPosSubData(enum possub_type *type,SplineFont **copied_from,
 	int pst_depth);

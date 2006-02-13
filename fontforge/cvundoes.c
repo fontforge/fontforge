@@ -1370,6 +1370,10 @@ return( NULL );
 return( cur->u.possub.data );
 }
 
+const Undoes *CopyBufferGet(void) {
+return( &copybuffer );
+}
+
 static void _CopyBufferClearCopiedFrom(Undoes *cb, SplineFont *dying) {
     switch ( cb->undotype ) {
       case ut_noop:

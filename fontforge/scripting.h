@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2006 by George Williams */
+/* Copyright (C) 2005-2006 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -111,16 +111,16 @@ extern UserDefScriptFunc HasUserScriptingCommand(char *name);
  /*  an environment variable. Now scripts are by default utf8. These two funcs */
  /*  will interconvert between latin1 & utf8 if appropriate, or just make a */
  /*  utf8 copy if not. They always make a copy. */
-extern char *utf82script_copy(char *ustr);
-extern char *script2utf8_copy(char *str);
+extern char *utf82script_copy(const char *ustr);
+extern char *script2utf8_copy(const char *str);
 
  /* Various error routines. */
-void ScriptError( Context *c, char *msg );
+void ScriptError( Context *c, const char *msg );
 	/* Prints an error message and exits. msg is in the script's encoding */
-void ScriptErrorString( Context *c, char *msg, char *name);
+void ScriptErrorString( Context *c, const char *msg, const char *name);
 	/* Prints an error message followed by a string and exits. */
 	/*  both strings are in the script's encoding */
-void ScriptErrorF( Context *c, char *fmt, ... );
+void ScriptErrorF( Context *c, const char *fmt, ... );
 	/* Standard printf-style spec. All string arguments assumed to be in */
 	/* utf8 */
 
