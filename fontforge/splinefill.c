@@ -69,7 +69,7 @@ void FreeEdges(EdgeList *es) {
     HintsFree(es->vhints);
 }
 
-double IterateSplineSolve(Spline1D *sp, double tmin, double tmax,
+double IterateSplineSolve(const Spline1D *sp, double tmin, double tmax,
 	double sought,double err) {
     double t, low, high, test;
     Spline1D temp;
