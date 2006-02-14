@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 12-Feb-2006 -->
+  <!-- AP: Last modified: 13-Feb-2006 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -2511,7 +2511,7 @@ ApplySubstitution("*","*","vrt2")
       Arg is as above. This returns true if the glyph contains any splines, references
       or images.
     <DT>
-      CompareGlyphs([pt_err[,spline_err[,check_bitmaps[,report_diffs_as_errors]]]])
+      CompareGlyphs([pt_err[,spline_err[,pixel_off_frac[,report_diffs_as_errors]]]])
     <DD>
       This function compares two versions of one or several glyphs. It looks at
       any selected glyphs in the font and compares them to an equivalent glyph
@@ -2531,8 +2531,23 @@ ApplySubstitution("*","*","vrt2")
 	  simplified a glyph and are comparing it to the original, this check should
 	  pass it while the previous check would fail).
 	<LI>
-	  Optionally you may check that the bitmaps match (this will be an exact match).
+	  Optionally you may check that the bitmaps match.
       </UL>
+      <P>
+      The first argument controls the accuracy with which points must match. A
+      value of 0 is an exact match. If you provide a negative value then this test
+      will be skipped.
+      <P>
+      The second argument controls the accuracy with which the contour check must
+      match. A value of 0 will not work due to rounding errors in the process.
+      A negative value will skip the test.
+      <P>
+      The third argument controls bitmap tests. A negative value (the default)
+      will mean no bitmap tests are done. A value of 0 requires an exact match
+      of the bitmap. A value between 0 and 1 specifies the fraction of the pixel
+      range that will be accepted for a match (so in a greymap with a depth of
+      8 the pixel range in 256, and a fraction value of .25 would mean any pixel
+      value within 64 (.25*256) would match).
       <P>
       Normally this function treats any differences it finds as errors and stops
       the script. If you set the fourth argument to 0 then it will return a value
