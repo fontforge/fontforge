@@ -199,7 +199,7 @@ return( false );
 		else
 		    here.x = here.x+step;
 		newt = FindNewT(here.x,&s->splines[0],t);
-		if ( t==-1 ) {
+		if ( newt==-1 ) {
 		    double t_yp, t_ym;
 		    t_yp = FindNewT(here.y+step,&s->splines[1],t);
 		    t_ym = FindNewT(here.y-step,&s->splines[1],t);
@@ -382,7 +382,10 @@ return( info );
 /* ********************* Code to compare bitmap glyphs ********************** */
 /* ************************************************************************** */
 
-enum Compare_Ret BitmapCompare(BDFChar *bc1, BDFChar *bc2) {
+enum Compare_Ret BitmapCompare(BDFChar *bc1, BDFChar *bc2, int err) {
+    uint8 *pt1, *pt2;
+    int i,j, d, xlen;
+    int mask;
 
     if ( bc1->byte_data!=bc2->byte_data )
 return( BC_DepthMismatch|BC_NoMatch );
@@ -394,8 +397,29 @@ return( BC_DepthMismatch|BC_NoMatch );
 	    bc1->ymin!=bc2->ymin || bc1->ymax!=bc2->ymax )
 return( BC_BoundingBoxMismatch|BC_NoMatch );
 
-    if ( memcmp(bc1->bitmap,bc2->bitmap,(bc1->ymax-bc1->ymin+1)*bc1->bytes_per_line)==0 )
+    xlen = bc1->xmax-bc1->xmin;
+    if ( bc1->byte_data ) {
+	for ( j=0; j<=bc1->ymax-bc1->ymin; ++j ) {
+	    pt1 = bc1->bitmap+j*bc1->bytes_per_line;
+	    pt2 = bc2->bitmap+j*bc2->bytes_per_line;
+	    for ( i=xlen; i>=0; --i )
+		if ( (d = ((int) pt1[i])-((int) pt2[i]) )>err || d<-err )
 return( BC_NoMatch );
+	}
+    } else {
+	/* Bitmap */
+	mask = 0xff00>>((xlen&7)+1);
+	xlen>>=3;
+	for ( j=0; j<=bc1->ymax-bc1->ymin; ++j ) {
+	    pt1 = bc1->bitmap+j*bc1->bytes_per_line;
+	    pt2 = bc2->bitmap+j*bc2->bytes_per_line;
+	    for ( i=xlen-1; i>=0; --i )
+		if ( pt1[i]!=pt2[i] )
+return( BC_NoMatch );
+	    if ( (pt1[xlen]&mask)!=(pt2[xlen]&mask) )
+return( BC_NoMatch );
+	}
+    }
 
 return( BC_Match );
 }
@@ -455,8 +479,9 @@ return( false );
 return( true );
 }
 
-static int CompareBitmap(Context *c,SplineChar *sc,const Undoes *cur, int diffs_are_errors ) {
-    int ret;
+static int CompareBitmap(Context *c,SplineChar *sc,const Undoes *cur,
+	real pixel_off_frac, int diffs_are_errors ) {
+    int ret, err;
     BDFFont *bdf;
     BDFChar bc;
 
@@ -471,19 +496,22 @@ static int CompareBitmap(Context *c,SplineChar *sc,const Undoes *cur, int diffs_
     bc.ymax = cur->u.bmpstate.ymax;
     bc.bytes_per_line = cur->u.bmpstate.bytes_per_line;
     bc.bitmap = (uint8 *) cur->u.bmpstate.bitmap;
-    ret = BitmapCompare(bdf->glyphs[sc->orig_pos],&bc);
-    if ( (ret&SS_NoMatch) && diffs_are_errors ) {
+    err = pixel_off_frac * (1<<BDFDepth(bdf));
+    ret = BitmapCompare(bdf->glyphs[sc->orig_pos],&bc,err);
+    if ( (ret&BC_NoMatch) && diffs_are_errors ) {
 	if ( ret&BC_BoundingBoxMismatch )
-	    ScriptErrorString(c,"Bitmaps bounding boxes do not match in glyph", sc->name);
+	    ScriptErrorF(c,"Bitmaps bounding boxes do not match in glyph %s pixelsize %d depth %d",
+		    sc->name, bdf->pixelsize, BDFDepth(bdf));
 	else
-	    ScriptErrorString(c,"Bitmap mismatch in glyph", sc->name);
+	    ScriptErrorF(c,"Bitmap mismatch in glyph %s pixelsize %d depth %d",
+		    sc->name, bdf->pixelsize, BDFDepth(bdf));
     }
 return( ret );
 }
 
 static int CompareSplines(Context *c,SplineChar *sc,const Undoes *cur,
 	real pt_err, real spline_err, int diffs_are_errors ) {
-    int ret, ly;
+    int ret=0, ly;
     const Undoes *layer;
     real err = pt_err>0 ? pt_err : spline_err;
 
@@ -519,11 +547,11 @@ return( ret );
 }
 
 int CompareGlyphs(Context *c, real pt_err, real spline_err,
-	int check_bitmaps, int diffs_are_errors ) {
+	real pixel_off_frac, int diffs_are_errors ) {
     FontView *fv = c->curfv;
     SplineFont *sf = fv->sf;
     int i, cnt=0;
-    int ret;
+    int ret=0;
     const Undoes *cur, *bmp;
 
     for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] )
@@ -550,18 +578,19 @@ int CompareGlyphs(Context *c, real pt_err, real spline_err,
 	switch ( cur->undotype ) {
 	  case ut_state: case ut_statehint: case ut_statename:
 	  case ut_layers:
-	    ret |= CompareSplines(c,sc,cur,pt_err,spline_err,diffs_are_errors);
+	    if ( pt_err>=0 || spline_err>0 )
+		ret |= CompareSplines(c,sc,cur,pt_err,spline_err,diffs_are_errors);
 	  break;
 	  case ut_bitmapsel: case ut_bitmap:
-	    if ( check_bitmaps )
-		ret |= CompareBitmap(c,sc,cur,diffs_are_errors);
+	    if ( pixel_off_frac>=0 )
+		ret |= CompareBitmap(c,sc,cur,pixel_off_frac,diffs_are_errors);
 	  break;
 	  case ut_composit:
-	    if ( cur->u.composit.state!=NULL )
+	    if ( cur->u.composit.state!=NULL && ( pt_err>=0 || spline_err>0 ))
 		ret |= CompareSplines(c,sc,cur->u.composit.state,pt_err,spline_err,diffs_are_errors);
-	    if ( check_bitmaps ) {
+	    if ( pixel_off_frac>=0 ) {
 		for ( bmp=cur->u.composit.bitmaps; bmp!=NULL; bmp = bmp->next )
-		    ret |= CompareBitmap(c,sc,bmp,diffs_are_errors);
+		    ret |= CompareBitmap(c,sc,bmp,pixel_off_frac,diffs_are_errors);
 	    }
 	  break;
 	  default:
