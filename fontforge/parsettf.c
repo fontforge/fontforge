@@ -773,11 +773,12 @@ static void ValidatePostScriptFontName(char *str) {
 	    for ( npt=pt; npt[1]; ++npt )
 		*npt = npt[1];
 	    *npt = '\0';
+	    --pt;
 	}
     }
     if ( strlen(str)>63 ) {
 #if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
-	gwwv_post_error(_("Bad Font Name"),_("The Postscript font name \"%.63s\" is invalid.\nIt should be printable ASCII,\nmust not contain (){}[]<>%%/ or space\nand must be shorted than 63 characters"),str);
+	gwwv_post_error(_("Bad Font Name"),_("The Postscript font name \"%.63s\" is invalid.\nIt should be printable ASCII,\nmust not contain (){}[]<>%%/ or space\nand must be shorter than 63 characters"),str);
 #endif
 	str[63] = '\0';
     }
@@ -879,7 +880,7 @@ return;
 	    cur->frommac[id/32] |= (1<<(id&0x1f));
 /* There's some wacky bug in gcc. If the optimizer is on then strcmp gets turned */
 /*  into some inline call. Which would be fine, except the following line goes */
-/*  bluey. "Called object is not a function", etc. Comiles fine if we turn off */
+/*  bluey. "Called object is not a function", etc. Compiles fine if we turn off */
 /*  the inlining magic */
 #ifdef strcmp
 # undef strcmp
