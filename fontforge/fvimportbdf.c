@@ -105,6 +105,8 @@ from The Open Group.
 /*
  * Author:  Keith Packard, MIT X Consortium
  */
+
+/* ************************************************************************** */
 void SFDefaultAscent(SplineFont *sf) {
     if ( sf->onlybitmaps ) {
 	double scaled_sum=0, cnt=0;
@@ -200,7 +202,10 @@ static int figureProperEncoding(SplineFont *sf,EncMap *map, BDFFont *b, int enc,
     } else if ( map->enc==encname ||
 	    (map->enc==&custom && sf->onlybitmaps)) {
 	i = enc;
-	if ( i==-1 ) i = map->enccount;
+	if ( i==-1 ) {
+	    if ( (i = SFFindSlot(sf,map,-1,name))==-1 )
+		i = map->enccount;
+	}
 	if ( i>=map->enccount || map->map[i]==-1 )
 	    MakeEncChar(sf,map,i,name);
     } else {
