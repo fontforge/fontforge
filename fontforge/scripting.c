@@ -6387,9 +6387,9 @@ static void bCompareGlyphs(Context *c) {
     /*  2) Compare that the splines themselves don't get too far appart */
     /*  3) Compare bitmaps						*/
     real pt_err = .5, spline_err = 1, bitmaps = -1;
-    int report_errors = true;
+    int bb_err=2, report_errors = true;
 
-    if ( c->a.argc>5 )
+    if ( c->a.argc>6 )
 	ScriptError( c, "Wrong number of arguments");
     if ( c->a.argc>=2 ) {
 	if ( c->a.vals[1].type==v_int )
@@ -6417,13 +6417,19 @@ static void bCompareGlyphs(Context *c) {
     }
     if ( c->a.argc>=5 ) {
 	if ( c->a.vals[4].type==v_int )
-	    report_errors = c->a.vals[4].u.ival;
+	    bb_err = c->a.vals[4].u.ival;
+	else
+	    ScriptError( c, "Bad type for argument");
+    }
+    if ( c->a.argc>=6 ) {
+	if ( c->a.vals[5].type==v_int )
+	    report_errors = c->a.vals[5].u.ival;
 	else
 	    ScriptError( c, "Bad type for argument");
     }
     c->return_val.type = v_int;
     c->return_val.u.ival =
-	    CompareGlyphs(c, pt_err, spline_err, bitmaps, report_errors );
+	    CompareGlyphs(c, pt_err, spline_err, bitmaps, bb_err, report_errors );
 }
 
 static struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[] = {

@@ -382,7 +382,7 @@ return( info );
 /* ********************* Code to compare bitmap glyphs ********************** */
 /* ************************************************************************** */
 
-enum Compare_Ret BitmapCompare(BDFChar *bc1, BDFChar *bc2, int err) {
+enum Compare_Ret BitmapCompare(BDFChar *bc1, BDFChar *bc2, int err, int bb_err) {
     uint8 *pt1, *pt2;
     int i,j, d, xlen;
     int mask;
@@ -391,10 +391,19 @@ enum Compare_Ret BitmapCompare(BDFChar *bc1, BDFChar *bc2, int err) {
     if ( bc1->byte_data!=bc2->byte_data )
 return( BC_DepthMismatch|BC_NoMatch );
 
+    if ( bc1->width!=bc2->width )
+return( SS_WidthMismatch|BC_NoMatch );
+
     BCFlattenFloat(bc1);
     BCCompressBitmap(bc1);
 
     if ( bc1->byte_data ) {
+	if ( (d=bc1->xmin-bc2->xmin)>bb_err || d<-bb_err ||
+		(d=bc1->ymin-bc2->ymin)>bb_err || d<-bb_err ||
+		(d=bc1->xmax-bc2->xmax)>bb_err || d<-bb_err ||
+		(d=bc1->ymax-bc2->ymax)>bb_err || d<-bb_err )
+return( BC_BoundingBoxMismatch|BC_NoMatch );
+		
 	xmin = bc1->xmin>bc2->xmin ? bc2->xmin : bc1->xmin;
 	ymin = bc1->ymin>bc2->ymin ? bc2->ymin : bc1->ymin;
 	xmax = bc1->xmax<bc2->xmax ? bc2->xmax : bc1->xmax;
@@ -500,7 +509,7 @@ return( true );
 }
 
 static int CompareBitmap(Context *c,SplineChar *sc,const Undoes *cur,
-	real pixel_off_frac, int diffs_are_errors ) {
+	real pixel_off_frac, int bb_err, int diffs_are_errors ) {
     int ret, err;
     BDFFont *bdf;
     BDFChar bc;
@@ -517,11 +526,15 @@ static int CompareBitmap(Context *c,SplineChar *sc,const Undoes *cur,
     bc.bytes_per_line = cur->u.bmpstate.bytes_per_line;
     bc.bitmap = (uint8 *) cur->u.bmpstate.bitmap;
     bc.byte_data = cur->u.bmpstate.depth!=1;
+    bc.width = cur->u.bmpstate.width;
     err = pixel_off_frac * (1<<BDFDepth(bdf));
-    ret = BitmapCompare(bdf->glyphs[sc->orig_pos],&bc,err);
+    ret = BitmapCompare(bdf->glyphs[sc->orig_pos],&bc,err, bb_err);
     if ( (ret&BC_NoMatch) && diffs_are_errors ) {
 	if ( ret&BC_BoundingBoxMismatch )
 	    ScriptErrorF(c,"Bitmaps bounding boxes do not match in glyph %s pixelsize %d depth %d",
+		    sc->name, bdf->pixelsize, BDFDepth(bdf));
+	else if ( ret&SS_WidthMismatch )
+	    ScriptErrorF(c,"Bitmaps advance widths do not match in glyph %s pixelsize %d depth %d",
 		    sc->name, bdf->pixelsize, BDFDepth(bdf));
 	else
 	    ScriptErrorF(c,"Bitmap mismatch in glyph %s pixelsize %d depth %d",
@@ -568,7 +581,7 @@ return( ret );
 }
 
 int CompareGlyphs(Context *c, real pt_err, real spline_err,
-	real pixel_off_frac, int diffs_are_errors ) {
+	real pixel_off_frac, int bb_err, int diffs_are_errors ) {
     FontView *fv = c->curfv;
     SplineFont *sf = fv->sf;
     int i, cnt=0;
@@ -604,14 +617,14 @@ int CompareGlyphs(Context *c, real pt_err, real spline_err,
 	  break;
 	  case ut_bitmapsel: case ut_bitmap:
 	    if ( pixel_off_frac>=0 )
-		ret |= CompareBitmap(c,sc,cur,pixel_off_frac,diffs_are_errors);
+		ret |= CompareBitmap(c,sc,cur,pixel_off_frac,bb_err,diffs_are_errors);
 	  break;
 	  case ut_composit:
 	    if ( cur->u.composit.state!=NULL && ( pt_err>=0 || spline_err>0 ))
 		ret |= CompareSplines(c,sc,cur->u.composit.state,pt_err,spline_err,diffs_are_errors);
 	    if ( pixel_off_frac>=0 ) {
 		for ( bmp=cur->u.composit.bitmaps; bmp!=NULL; bmp = bmp->next )
-		    ret |= CompareBitmap(c,sc,bmp,pixel_off_frac,diffs_are_errors);
+		    ret |= CompareBitmap(c,sc,bmp,pixel_off_frac,bb_err,diffs_are_errors);
 	    }
 	  break;
 	  default:
