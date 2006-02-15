@@ -386,6 +386,7 @@ enum Compare_Ret BitmapCompare(BDFChar *bc1, BDFChar *bc2, int err) {
     uint8 *pt1, *pt2;
     int i,j, d, xlen;
     int mask;
+    int xmin, xmax, ymin, ymax, c1, c2;
 
     if ( bc1->byte_data!=bc2->byte_data )
 return( BC_DepthMismatch|BC_NoMatch );
@@ -393,21 +394,40 @@ return( BC_DepthMismatch|BC_NoMatch );
     BCFlattenFloat(bc1);
     BCCompressBitmap(bc1);
 
-    if ( bc1->xmin!=bc2->xmin || bc1->xmax!=bc2->xmax ||
-	    bc1->ymin!=bc2->ymin || bc1->ymax!=bc2->ymax )
-return( BC_BoundingBoxMismatch|BC_NoMatch );
-
-    xlen = bc1->xmax-bc1->xmin;
     if ( bc1->byte_data ) {
-	for ( j=0; j<=bc1->ymax-bc1->ymin; ++j ) {
-	    pt1 = bc1->bitmap+j*bc1->bytes_per_line;
-	    pt2 = bc2->bitmap+j*bc2->bytes_per_line;
-	    for ( i=xlen; i>=0; --i )
-		if ( (d = ((int) pt1[i])-((int) pt2[i]) )>err || d<-err )
+	xmin = bc1->xmin>bc2->xmin ? bc2->xmin : bc1->xmin;
+	ymin = bc1->ymin>bc2->ymin ? bc2->ymin : bc1->ymin;
+	xmax = bc1->xmax<bc2->xmax ? bc2->xmax : bc1->xmax;
+	ymax = bc1->ymax<bc2->ymax ? bc2->ymax : bc1->ymax;
+	for ( j=ymin; j<=ymax; ++j ) {
+	    if ( j>=bc1->ymin && j<=bc1->ymax )
+		pt1 = bc1->bitmap+(j-bc1->ymin)*bc1->bytes_per_line;
+	    else
+		pt1 = NULL;
+	    if ( j>=bc2->ymin && j<=bc2->ymax )
+		pt2 = bc2->bitmap+(j-bc2->ymin)*bc2->bytes_per_line;
+	    else
+		pt2 = NULL;
+	    for ( i=xmin; i<=xmax; ++i ) {
+		if ( pt1!=NULL && i>=bc1->xmin && i<=bc1->xmax )
+		    c1 = pt1[i-bc1->xmin];
+		else
+		    c1 = 0;
+		if ( pt2!=NULL && i>=bc2->xmin && i<=bc2->xmax )
+		    c2 = pt2[i-bc2->xmin];
+		else
+		    c2 = 0;
+		if ( (d = c1-c2)>err || d<-err )
 return( BC_NoMatch );
+	    }
 	}
     } else {
 	/* Bitmap */
+	if ( bc1->xmin!=bc2->xmin || bc1->xmax!=bc2->xmax ||
+		bc1->ymin!=bc2->ymin || bc1->ymax!=bc2->ymax )
+return( BC_BoundingBoxMismatch|BC_NoMatch );
+
+	xlen = bc1->xmax-bc1->xmin;
 	mask = 0xff00>>((xlen&7)+1);
 	xlen>>=3;
 	for ( j=0; j<=bc1->ymax-bc1->ymin; ++j ) {
@@ -496,6 +516,7 @@ static int CompareBitmap(Context *c,SplineChar *sc,const Undoes *cur,
     bc.ymax = cur->u.bmpstate.ymax;
     bc.bytes_per_line = cur->u.bmpstate.bytes_per_line;
     bc.bitmap = (uint8 *) cur->u.bmpstate.bitmap;
+    bc.byte_data = cur->u.bmpstate.depth!=1;
     err = pixel_off_frac * (1<<BDFDepth(bdf));
     ret = BitmapCompare(bdf->glyphs[sc->orig_pos],&bc,err);
     if ( (ret&BC_NoMatch) && diffs_are_errors ) {
