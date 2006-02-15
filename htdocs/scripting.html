@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 13-Feb-2006 -->
+  <!-- AP: Last modified: 15-Feb-2006 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -2511,7 +2511,7 @@ ApplySubstitution("*","*","vrt2")
       Arg is as above. This returns true if the glyph contains any splines, references
       or images.
     <DT>
-      CompareGlyphs([pt_err[,spline_err[,pixel_off_frac[,report_diffs_as_errors]]]])
+      CompareGlyphs([pt_err[,spline_err[,pixel_off_frac[,bb_err[,report_diffs_as_errors]]]]])
     <DD>
       This function compares two versions of one or several glyphs. It looks at
       any selected glyphs in the font and compares them to an equivalent glyph
@@ -2549,8 +2549,11 @@ ApplySubstitution("*","*","vrt2")
       8 the pixel range in 256, and a fraction value of .25 would mean any pixel
       value within 64 (.25*256) would match).
       <P>
+      The fourth argument controls how different the bounding boxes of anti-aliased
+      bitmaps can be (the bounding boxes of bitmaps with depth 1 must match exactly)
+      <P>
       Normally this function treats any differences it finds as errors and stops
-      the script. If you set the fourth argument to 0 then it will return a value
+      the script. If you set the fifth argument to 0 then it will return a value
       which ors the following flags together (some flags indicate errors, others
       unusual conditions, others success -- the function will never return both
       an error and success flag, but it can return several success flags at once
