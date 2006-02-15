@@ -1938,7 +1938,7 @@ enum Compare_Ret {	SS_DiffContourCount	= 1,
 			BC_Match		= 8<<16
 		};
 
-extern enum Compare_Ret BitmapCompare(BDFChar *bc1, BDFChar *bc2, int err);
+extern enum Compare_Ret BitmapCompare(BDFChar *bc1, BDFChar *bc2, int err, int bb_err);
 extern enum Compare_Ret SSsCompare(const SplineSet *ss1, const SplineSet *ss2, real pt_err, real spline_err);
 
 
