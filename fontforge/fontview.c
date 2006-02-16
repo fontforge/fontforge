@@ -6570,13 +6570,15 @@ static void FVMenuCompact(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	EncMapFree(fv->map);
 	fv->map = fv->normal;
 	fv->normal = NULL;
+	fv->selected = grealloc(fv->selected,fv->map->enccount);
+	memset(fv->selected,0,fv->map->enccount);
     } else {
+	/* We reduced the encoding, so don't really need to reallocate the selection */
+	/*  array. It's just bigger than it needs to be. */
 	fv->normal = EncMapCopy(fv->map);
 	CompactEncMap(fv->map,fv->sf);
     }
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    /* We reduced the encoding, so don't really need to reallocate the selection */
-    /*  array. It's just bigger than it needs to be. */
     if ( oldcount!=fv->map->enccount )
 	FontViewReformatOne(fv);
     FVSetTitle(fv);
