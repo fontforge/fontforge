@@ -2526,10 +2526,10 @@ ApplySubstitution("*","*","vrt2")
 	  It checks to make sure that all points (both base and control) are within
 	  pt_err of each other
 	<LI>
-	  If that fails then it performs a slower check to see if points lying along
-	  the contours have equivalent points in the other glyph (that is: If you have
-	  simplified a glyph and are comparing it to the original, this check should
-	  pass it while the previous check would fail).
+	  If that fail<B></B><B></B>s then it performs a slower check to see if points
+	  lying along the contours have equivalent points in the other glyph (that
+	  is: If you have simplified a glyph and are comparing it to the original,
+	  this check should pass it while the previous check would fail).
 	<LI>
 	  Optionally you may check that the bitmaps match.
       </UL>
@@ -2550,7 +2550,8 @@ ApplySubstitution("*","*","vrt2")
       value within 64 (.25*256) would match).
       <P>
       The fourth argument controls how different the bounding boxes of anti-aliased
-      bitmaps can be (the bounding boxes of bitmaps with depth 1 must match exactly)
+      bitmaps can be (the bounding boxes of bitmaps with depth 1 must match
+      exactly)<B></B>
       <P>
       Normally this function treats any differences it finds as errors and stops
       the script. If you set the fifth argument to 0 then it will return a value
