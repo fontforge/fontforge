@@ -3222,8 +3222,12 @@ return( efile );
 
 static int CountLangs(SplineFont *sf,int sli) {
     int lcnt, l, s;
-    struct script_record *sr = sf->script_lang[sli];
+    struct script_record *sr;
 
+    if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
+    else if ( sf->mm!=NULL ) sf=sf->mm->normal;
+
+    sr = sf->script_lang[sli];
     lcnt = 0;
     for ( s=0; sr[s].script!=0; ++s )
 	for ( l=0; sr[s].langs[l]!=0; ++l )
@@ -3285,8 +3289,12 @@ static void AddScriptLangsToFeature(struct feature *f,struct slusage *slu,
 static void AddSliToFeature(struct feature *f,SplineFont *sf,int sli) {
     int s, l;
     struct sl *sl;
-    struct script_record *sr = sf->script_lang[sli];
+    struct script_record *sr;
 
+    if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
+    else if ( sf->mm!=NULL ) sf=sf->mm->normal;
+
+    sr = sf->script_lang[sli];
     f->sl = NULL;
     for ( s=0; sr[s].script!=0; ++s ) for ( l=0; sr[s].langs[l]!=0; ++l ) {
 	sl = chunkalloc(sizeof(struct sl));
@@ -3538,6 +3546,9 @@ static uint32 *ScriptsFromFeatures(SplineFont *sf, uint8 *used,
 	int *scnt, uint32 **_langs, int *lcnt) {
     int i,j,k,l, smax,lmax;
     uint32 *scripts, *langs;
+
+    if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
+    else if ( sf->mm!=NULL ) sf=sf->mm->normal;
 
     smax = lmax = 0;
     for ( i=0; sf->script_lang[i]!=NULL; ++i ) if ( used[i] ) {
@@ -3952,7 +3963,8 @@ void otf_dumpgdef(struct alltabs *at, SplineFont *sf) {
     int cnt, start, last, lastval;
     SplineChar **glyphs, *sc;
 
-    if ( sf->cidmaster ) sf = sf->cidmaster;
+    /* Don't look in the cidmaster if we are only dumping one subfont */
+    if ( sf->cidmaster && sf->cidmaster->glyphs!=NULL ) sf = sf->cidmaster;
     else if ( sf->mm!=NULL ) sf=sf->mm->normal;
 
     glyphs = NULL;
