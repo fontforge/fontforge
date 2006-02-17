@@ -3315,7 +3315,7 @@ static void bSetCharName(Context *c) {
     name = c->a.vals[1].u.sval;
     comment = copy(sc->comment);
 
-    if ( c->a.argc!=3 || c->a.vals[2].u.ival==-1 ) {
+    if ( c->a.argc!=3 || c->a.vals[2].u.ival ) {
 	uni = UniFromName(name,c->curfv->sf->uni_interp,c->curfv->map->enc);
     }
     SCSetMetaData(sc,name,uni,comment);
