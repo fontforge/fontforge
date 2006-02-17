@@ -864,7 +864,8 @@ static void GDFindUnlikelyStems(struct glyphdata *gd) {
 			MinMaxStem(&sp->prev->from->me,stem,&maxm,&minm);
 		}
 	    }
-	    len += maxm-minm;
+	    if ( maxm>minm )
+		len += maxm-minm;
 	}
 	stem->toobig = ( width > len ) &&
 		(width>em/10) &&
