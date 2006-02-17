@@ -1676,7 +1676,30 @@ static void SCGuessHintInstances(SplineChar *sc, StemInfo *stem,int major) {
 	    }
 	break;
 	}
-	if ( w2==NULL || w2->begin>=t->end ) {
+	if ( w2!=NULL && w2->begin>=t->end )
+	    w2 = NULL;
+	if ( w2==NULL && w!=NULL ) {
+	    HintInstance *best = NULL;
+	    double best_off=1e10, off;
+	    for ( w2=w; w2!=NULL ; w2=w2->next ) {
+		if ( w2->end<=t->begin )
+		    off = t->begin - w2->end;
+		else
+		    off = w2->begin - t->end;
+		if ( best==NULL && off<best_off ) {
+		    best = w2;
+		    best_off = off;
+		}
+	    }
+	    if ( best!=NULL && best_off<stem->width ) {
+		w2 = best;
+		if( w2->begin<t->begin )
+		    t->begin = w2->begin;
+		if ( w2->end>t->end )
+		    t->end = w2->end;
+	    }
+	}
+	if ( w2==NULL ) {
 	    /* No match for t (or if there were it wasn't complete) get rid */
 	    /*  of what's left of t */
 	    chunkfree(t,sizeof(*t));
