@@ -1506,8 +1506,8 @@ return(NULL);
     for ( st2=basesc->hstem,hst_cnt=0; st2!=NULL; st2=st2->next, hst_cnt++ );
 
     for ( st = ref->sc->vstem; st!=NULL; st=st->next ) {
-	start = st->start*ref->transform[1] + ref->transform[4] + trans->x;
-	width = st->width*ref->transform[1];
+	start = st->start*ref->transform[0] + ref->transform[4] + trans->x;
+	width = st->width*ref->transform[0];
 	for ( st2=basesc->vstem,bcnt=hst_cnt; st2!=NULL; st2=st2->next, bcnt++ )
 	    if ( st2->start == start && st2->width == width )
 	break;
