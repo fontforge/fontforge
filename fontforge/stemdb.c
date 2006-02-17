@@ -825,13 +825,15 @@ static void GDFindUnlikelyStems(struct glyphdata *gd) {
 	if ( width<0 ) width = -width;
 	stem->width = width;
 	len = 0;
+	for ( j=0; j<gd->pcnt; ++j ) if ( gd->points[j].sp!=NULL )
+	    gd->points[j].sp->ticked = false;
 	for ( j=0; j<stem->chunk_cnt; ++j )
 	    stem->chunks[j].ltick = stem->chunks[j].rtick = false;
 	for ( j=0; j<stem->chunk_cnt; ++j ) {
 	    struct stem_chunk *chunk = &stem->chunks[j];
 	    minm = 1e10; maxm = -1e10;
-	    if ( chunk->l!=NULL && !chunk->ltick ) {
-		sp = chunk->l->sp;
+	    if ( chunk->l!=NULL && !chunk->ltick && !(sp=chunk->l->sp)->ticked ) {
+		sp->ticked = true;
 		MinMaxStem(&sp->me,stem,&maxm,&minm);
 		if ( stem==chunk->l->nextstem ) {
 		    MinMaxStem(&sp->nextcp,stem,&maxm,&minm);
@@ -846,10 +848,10 @@ static void GDFindUnlikelyStems(struct glyphdata *gd) {
 			MinMaxStem(&sp->prev->from->me,stem,&maxm,&minm);
 		}
 	    }
-	    if ( chunk->r!=NULL && !chunk->rtick ) {
+	    if ( chunk->r!=NULL && !chunk->rtick && !(sp=chunk->r->sp)->ticked ) {
 		/* I still use stem->left as the base to make measurements */
 		/*  comensurate. Any normal distance becomes 0 in the dot product */
-		sp = chunk->r->sp;
+		sp->ticked = true;
 		MinMaxStem(&sp->me,stem,&maxm,&minm);
 		if ( stem==chunk->r->nextstem ) {
 		    MinMaxStem(&sp->nextcp,stem,&maxm,&minm);
