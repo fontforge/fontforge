@@ -6488,9 +6488,6 @@ static void FVMenuAddUnencoded(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     int cnt, i;
     EncMap *map = fv->map;
 
-    if ( fv->normal!=NULL )
-return;
-
     /* Add unused unencoded slots in the map */
     ret = gwwv_ask_string(_("_Add Encoding Slots..."),"1",fv->cidmaster?_("How many CID slots do you wish to add?"):_("How many unencoded glyph slots do you wish to add?"));
     if ( ret==NULL )
@@ -6502,6 +6499,15 @@ return;
 return;
     }
     free(ret);
+    if ( fv->normal!=NULL ) {
+	/* If it's compacted, lose the base encoding and the fact that it's */
+	/*  compact and make it be custom. That's what Alexey Kryukov asked */
+	/*  for */
+	EncMapFree(fv->normal);
+	fv->normal = NULL;
+	fv->map->enc = &custom;
+	FVSetTitle(fv);
+    }
     if ( fv->cidmaster ) {
 	SplineFont *sf = fv->sf;
 	FontView *fvs;
@@ -6537,6 +6543,7 @@ return;
 	memset(fv->selected+map->enccount,0,cnt);
 	map->enccount += cnt;
 	FontViewReformatOne(fv);
+	FVScrollToChar(fv,map->enccount-cnt);
     }
 }
 
@@ -6994,9 +7001,11 @@ static void enlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	  case MID_Reencode: case MID_ForceReencode:
 	    mi->ti.disabled = fv->cidmaster!=NULL;
 	  break;
+#if 0
 	  case MID_AddUnencoded:
 	    mi->ti.disabled = fv->normal!=NULL;
 	  break;
+#endif
 	  case MID_DetachGlyphs: case MID_DetachAndRemoveGlyphs:
 	    mi->ti.disabled = !anyglyphs;
 	  break;
