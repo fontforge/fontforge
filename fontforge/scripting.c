@@ -2467,6 +2467,10 @@ static void bReencode(Context *c) {
 	    FVSetTitle(c->curfv);
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
+    if ( c->curfv->normal!=NULL ) {
+	EncMapFree(c->curfv->normal);
+	c->curfv->normal = NULL;
+    }
     free(c->curfv->selected);
     c->curfv->selected = gcalloc(c->curfv->map->enccount,sizeof(char));
     SFReplaceEncodingBDFProps(c->curfv->sf,c->curfv->map);
