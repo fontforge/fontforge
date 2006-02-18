@@ -1332,6 +1332,7 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
     MMSet *mm = sc->parent->mm;
     HintMask *hm[MmMax];
     int fixuphm = false;
+    int wasseac = false;
 
     if ( !(flags&ps_flag_nohints) && SCNeedsSubsPts(sc,format))
 	SCFigureHintMasks(sc);
@@ -1398,7 +1399,7 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
     /*  tests for */
     if ( startend==NULL && !(iscjk&0x100) &&
 	    IsSeacable(&gb,scs,instance_count,round)) {
-	/* All Done */;
+	wasseac = true;
 	/* in MM fonts, all should share the same refs, so all should be */
 	/* seac-able if one is */
     } else {
@@ -1425,7 +1426,8 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
     }
     if ( gb.pt+1>=gb.end )
 	GrowBuffer(&gb);
-    *gb.pt++ = startend==NULL ? 14 : 11;	/* endchar / return */
+    if ( !wasseac )
+	*gb.pt++ = startend==NULL ? 14 : 11;	/* endchar / return */
     ret = (unsigned char *) copyn((char *) gb.base,gb.pt-gb.base);
     *len = gb.pt-gb.base;
     if ( hdb!=NULL ) {
