@@ -543,6 +543,34 @@ static int CompareBitmap(Context *c,SplineChar *sc,const Undoes *cur,
 return( ret );
 }
 
+static int CompareHints( Context *c,SplineChar *sc, const Undoes *cur,
+	real pt_err ) {
+    StemInfo *h = sc->hstem, *v = sc->vstem;
+    const StemInfo *test = cur->u.state.u.hints;
+
+    while ( test!=NULL ) {
+	if ( test->hinttype == ht_h ) {
+	    if ( h==NULL )
+return( false );
+	    if ( h->start!=test->start || h->width!=test->width )
+return( false );
+	    h = h->next;
+	} else if ( test->hinttype == ht_v ) {
+	    if ( v==NULL )
+return( false );
+	    if ( v->start!=test->start || v->width!=test->width )
+return( false );
+	    v = v->next;
+	} else
+return( false );
+	test = test->next;
+    }
+    if ( h!=NULL || v!=NULL )
+return( false );
+
+return( true );
+}
+
 static int CompareSplines(Context *c,SplineChar *sc,const Undoes *cur,
 	real pt_err, real spline_err, int diffs_are_errors ) {
     int ret=0, ly;
@@ -554,9 +582,12 @@ static int CompareSplines(Context *c,SplineChar *sc,const Undoes *cur,
 	ret |= CompareLayer(c,sc->layers[ly_fore].splines,cur->u.state.splines,
 		    pt_err, spline_err,sc->name, diffs_are_errors);
 	if ( sc->width-cur->u.state.width>err || sc->width-cur->u.state.width<-err )
-	    ret |= SS_WidthMismatch;
+	    ret = SS_NoMatch|SS_WidthMismatch;
 	if ( !RefCheck( c,sc->layers[ly_fore].refs,cur->u.state.refs, sc->name, diffs_are_errors ))
-	    ret |= SS_RefMismatch;
+	    ret = SS_NoMatch|SS_RefMismatch;
+	if ( cur->undotype==ut_statehint && pt_err>0 &&
+		!CompareHints( c,sc,cur->u.state.u.hints,pt_err ))
+	    ret = SS_NoMatch|SS_HintMismatch;
       break;
       case ut_layers:
 	for ( ly=ly_fore, layer = cur->u.multiple.mult;
@@ -565,9 +596,10 @@ static int CompareSplines(Context *c,SplineChar *sc,const Undoes *cur,
 	    ret |= CompareLayer(c,sc->layers[ly].splines,cur->u.state.splines,
 			pt_err, spline_err,sc->name, diffs_are_errors);
 	    if ( ly==ly_fore && (sc->width-cur->u.state.width>err || sc->width-cur->u.state.width<-err) )
-		ret |= SS_WidthMismatch;
+		ret = SS_NoMatch|SS_WidthMismatch;
 	    if ( !RefCheck( c,sc->layers[ly].refs,cur->u.state.refs, sc->name, diffs_are_errors ))
-		ret |= SS_RefMismatch;
+		ret = SS_NoMatch|SS_RefMismatch;
+	    /* No hints in type3 fonts */
 	}
 	if ( ly!=sc->layer_cnt || layer!=NULL )
 	    ScriptErrorString(c,"Layer difference in glyph", sc->name);
