@@ -813,9 +813,9 @@ return(false);
 	static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_NO, NULL };
 #endif
 	ans = gwwv_ask(title,(const char **) buts,0,1,
-		strcmp(title,_("Bad Class"))==0? _("The class member \"%.20s\" is not in this font,\nIs that what you want?") :
-		strcmp(title,_("Bad Coverage"))==0? _("The coverage table member \"%.20s\" is not in this font,\nIs that what you want?") :
-		    _("There is no glyph named \"%.20hs\" in this font,\nIs that what you want?") );
+		strcmp(title,_("Bad Class"))==0? _("The class member \"%.20s\" is not in this font.\nIs that what you want?") :
+		strcmp(title,_("Bad Coverage"))==0? _("The coverage table member \"%.20s\" is not in this font.\nIs that what you want?") :
+		    _("There is no glyph named \"%.20hs\" in this font.\nIs that what you want?") );
 	free(missingname);
 return(!ans);
     }
