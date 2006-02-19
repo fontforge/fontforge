@@ -2888,8 +2888,74 @@ static HintInstance *StemAddHIFromChunks(struct stemdata *stem,int major) {
 return( head );
 }
 
+static void GDReassignPoint(struct glyphdata *gd,struct stemdata *stem,struct pointdata **_pd) {
+    struct pointdata *pd = *_pd;
+    BasePoint *dir;
+    int i,j;
+    struct stemdata *potential;
+    int chunk, is_r;
+
+    if ( pd==NULL )
+return;
+    if ( pd->nextstem==stem )
+	dir = &pd->nextunit;
+    else if ( pd->prevstem==stem )
+	dir = &pd->prevunit;
+    else {
+	*_pd = NULL;
+return;
+    }
+
+    potential = NULL; chunk = is_r = -1;
+    for ( i=0; i<gd->stemcnt; ++i ) {
+	struct stemdata *stem = &gd->stems[i];
+	if ( !stem->toobig && UnitsParallel(dir,&stem->unit)) {
+	    for ( j=0; j<stem->chunk_cnt; ++j ) {
+		if ( stem->chunks[j].lpotential==pd ) {
+		    if ( potential==stem )
+			/* Do Nothing */;
+		    else if ( potential!=NULL )
+return;
+		    else {
+			potential = stem; chunk = j; is_r = false;
+		    }
+		} else if ( stem->chunks[j].rpotential==pd ) {
+		    if ( potential==stem )
+			/* Do Nothing */;
+		    else if ( potential!=NULL )
+return;
+		    else {
+			potential = stem; chunk = j; is_r = true;
+		    }
+		}
+	    }
+	}
+    }
+
+    if ( potential!=NULL ) {
+	if ( is_r && potential->chunks[chunk].r==NULL ) {
+	    potential->chunks[chunk].r = pd;
+	    *_pd = NULL;
+	} else if ( !is_r && potential->chunks[chunk].l==NULL ) {
+	    potential->chunks[chunk].l = pd;
+	    *_pd = NULL;
+	}
+    }
+}
+
 static void GDPreprocess(struct glyphdata *gd) {
-    int i;
+    int i,j;
+
+    /* Remove points from unusable stem and see if we can use 'em elsewhere */
+    for ( i=0; i<gd->stemcnt; ++i ) {
+	struct stemdata *stem = &gd->stems[i];
+	if ( stem->toobig ) {
+	    for ( j=0; j<stem->chunk_cnt; ++j ) {
+		GDReassignPoint(gd,stem,&stem->chunks[j].l);
+		GDReassignPoint(gd,stem,&stem->chunks[j].r);
+	    }
+	}
+    }
 
     for ( i=0; i<gd->pcnt; ++i ) {
 	struct pointdata *pd = &gd->points[i];

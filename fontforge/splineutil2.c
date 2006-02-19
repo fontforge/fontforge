@@ -2428,6 +2428,59 @@ SplineSet *SplineCharRemoveTiny(SplineChar *sc,SplineSet *head) {
 return( head );
 }
 
+#if 0
+Spline *SplineAddPointsOfInflection(Spline *s) {
+    double ts[2];
+    int cnt;
+    SplinePoint *sp;
+
+    forever {
+	if ( s->knownlinear )
+return( s );
+	cnt = 0;
+	if ( s->splines[0].a!=0 ) {
+	    ts[cnt] = splines[0].b/(3*splines[0].a);
+	    if ( ts[cnt]>.001 || ts[cnt]<.999 )
+		++cnt;
+	}
+	if ( s->splines[1].a!=0 ) {
+	    ts[cnt] = splines[1].b/(3*splines[1].a);
+	    if ( ts[cnt]>.001 || ts[cnt]<.999 )
+		++cnt;
+	}
+	if ( cnt==0 )
+return( s );
+	if ( cnt==2 && ts[0]>ts[1] )
+	    ts[0] = ts[1];
+	sp = SplineBisect(s,ts[0]);
+	s = sp->next;
+	if ( cnt==1 )
+return( s );
+	/* As with add extrema, if we had more than one, loop back to look */
+	/*  at any others. The spline is different now, easier to compute the */
+	/*  new value than to fix up the old */
+    }
+}
+
+void SplineSetAddPointsOfInflection(SplineChar *sc, SplineSet *ss) {
+    Spline *s, *first;
+
+    first = NULL;
+    for ( s = ss->first->next; s!=NULL && s!=first; s = s->to->next ) {
+	s = SplineAddPointsOfInflection(s);
+	if ( first==NULL ) first = s;
+    }
+}
+
+void SplineCharAddPointsOfInflection(SplineChar *sc, SplineSet *head) {
+    SplineSet *ss;
+
+    for ( ss=head; ss!=NULL; ss=ss->next ) {
+	SplineSetAddPointsOfInflection(sc,ss,between_selected,sf);
+    }
+}
+#endif
+
 Spline *SplineAddExtrema(Spline *s,int always,real lenbound, real offsetbound,
 	DBounds *b) {
     /* First find the extrema, if any */

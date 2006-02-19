@@ -453,6 +453,7 @@ return( end );
 #endif
 /* Hmm. With my algorithem, checking for points of inflection actually makes */
 /*  things worse. It uses more points and the splines don't join as nicely */
+/* However if we get a bad match (a line) in the normal approx, then check */
     /* no points of inflection in quad splines */
 
     if ( ps->splines[0].a!=0 ) {
