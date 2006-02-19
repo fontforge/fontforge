@@ -548,24 +548,31 @@ static int CompareHints( Context *c,SplineChar *sc, const void *_test,
     StemInfo *h = sc->hstem, *v = sc->vstem;
     const StemInfo *test = _test;
 
-    while ( test!=NULL ) {
-	if ( test->hinttype == ht_h ) {
+    if ( test!=NULL && test->hinttype == ht_h ) {
+	while ( test!=NULL && (test->hinttype==ht_unspecified || test->hinttype==ht_h)) {
 	    if ( h==NULL )
 return( false );
 	    if ( h->start!=test->start || h->width!=test->width )
 return( false );
 	    h = h->next;
-	} else if ( test->hinttype == ht_v ) {
+	    test = test->next;
+	}
+    }
+    if ( test!=NULL && test->hinttype == ht_v ) {
+	while ( test!=NULL && (test->hinttype==ht_unspecified || test->hinttype==ht_v)) {
 	    if ( v==NULL )
 return( false );
 	    if ( v->start!=test->start || v->width!=test->width )
 return( false );
 	    v = v->next;
-	} else
-return( false );
-	test = test->next;
+	    test = test->next;
+	}
     }
-    if ( h!=NULL || v!=NULL )
+
+    if ( test!=NULL && test->hinttype==ht_d )
+	test = NULL;		/* In case there are some old files */
+
+    if ( h!=NULL || v!=NULL || test!=NULL )
 return( false );
 
 return( true );
@@ -585,7 +592,7 @@ static int CompareSplines(Context *c,SplineChar *sc,const Undoes *cur,
 	    ret = SS_NoMatch|SS_WidthMismatch;
 	if ( !RefCheck( c,sc->layers[ly_fore].refs,cur->u.state.refs, sc->name, diffs_are_errors ))
 	    ret = SS_NoMatch|SS_RefMismatch;
-	if ( cur->undotype==ut_statehint && pt_err>0 &&
+	if ( cur->undotype==ut_statehint && pt_err==0 &&
 		!CompareHints( c,sc,cur->u.state.u.hints,pt_err ))
 	    ret = SS_NoMatch|SS_HintMismatch;
       break;
@@ -609,6 +616,8 @@ static int CompareSplines(Context *c,SplineChar *sc,const Undoes *cur,
     }
     if ( (ret&SS_WidthMismatch) && diffs_are_errors )
 	ScriptErrorString(c,"Advance width mismatch in glyph", sc->name);
+    else if ( (ret&SS_HintMismatch) && diffs_are_errors )
+	ScriptErrorString(c,"Hinting mismatch in glyph", sc->name);
 return( ret );
 }
 
