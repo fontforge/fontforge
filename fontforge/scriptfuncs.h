@@ -31,5 +31,5 @@
 #include "scripting.h"
 
 extern int CompareGlyphs(Context *c, real pt_err, real spline_err,
-	real pixel_off_frac, int bb_err, int diffs_are_errors );
+	real pixel_off_frac, int bb_err, int comp_hints, int diffs_are_errors );
 #endif /* _SCRIPTFUNCS_H */
