@@ -258,44 +258,8 @@ static SplinePoint *LinearSpline(Spline *ps,SplinePoint *start, real tmax) {
     new->splines[1].d = start->me.y;
     new->splines[1].c = (y-start->me.y);
     new->order2 = true;
+    new->islinear = new->knownlinear = true;
 return( end );
-}
-
-static SplinePoint *LinearTest(Spline *ps,real tmin,real tmax,
-	real xmax,real ymax, SplinePoint *start) {
-    Spline ttf;
-    int dim=0, other;
-    real dx, dy, ddim, dt, t;
-    real d, o, val;
-    real ttf_t;
-
-    memset(&ttf,'\0',sizeof(ttf));
-    ttf.splines[0].d = start->me.x;
-    ttf.splines[0].c = (xmax-start->me.x);
-    ttf.splines[1].d = start->me.y;
-    ttf.splines[1].c = (ymax-start->me.y);
-
-    if ( ( dx = xmax-start->me.x)<0 ) dx = -dx;
-    if ( ( dy = ymax-start->me.y)<0 ) dy = -dy;
-    if ( dx>dy ) {
-	dim = 0;
-	ddim = dx;
-    } else {
-	dim = 1;
-	ddim = dy;
-    }
-    other = !dim;
-
-    dt = (tmax-tmin)/ddim;
-    for ( t=tmin; t<=tmax; t+= dt ) {
-	d = ((ps->splines[dim].a*t+ps->splines[dim].b)*t+ps->splines[dim].c)*t+ps->splines[dim].d;
-	o = ((ps->splines[other].a*t+ps->splines[other].b)*t+ps->splines[other].c)*t+ps->splines[other].d;
-	ttf_t = (d-ttf.splines[dim].d)/ttf.splines[dim].c;
-	val = ttf.splines[other].c*ttf_t+ ttf.splines[other].d;
-	if ( val<o-1 || val>o+1 )
-return( NULL );
-    }
-return( MakeQuadSpline(start,&ttf,xmax,ymax,tmax,ps->to));
 }
 
 static SplinePoint *_ttfapprox(Spline *ps,real tmin, real tmax, SplinePoint *start) {
@@ -417,19 +381,9 @@ return( start );
 	/*  parallel and colinear then there is a line between 'em */
 	if ( ( dxdtmin==0 && dxdt==0 ) || (dydtmin==0 && dydt==0) ||
 		( dxdt!=0 && dxdtmin!=0 &&
-		    RealNearish(dydt/dxdt,dydtmin/dxdtmin)) ) {
-	    if (( dxdt==0 && x==xmin ) || (dydt==0 && y==ymin) ||
-		    (dxdt!=0 && x!=xmin && RealNearish(dydt/dxdt,(y-ymin)/(x-xmin))) ) {
-		if ( (sp = LinearTest(ps,tmin,t,x,y,start))!=NULL ) {
-		    if ( t==tmax )
-return( sp );
-		    tmin = t;
-		    start = sp;
-  goto tail_recursion;
-	      }
-	  }
+		    RealNearish(dydt/dxdt,dydtmin/dxdtmin)) )
     continue;
-	}
+
 	if ( dxdt==0 )
 	    cx=x;
 	else if ( dxdtmin==0 )
@@ -479,11 +433,26 @@ return( sp );
 }
 
 static SplinePoint *ttfApprox(Spline *ps,real tmin, real tmax, SplinePoint *start) {
-#if 0
-/* Hmm. With my algorithem, checking for points of inflection actually makes */
-/*  things worse. It uses more points and the splines don't join as nicely */
     real inflect[2];
     int i=0;
+#if 1
+    SplinePoint *end;
+    Spline *s, *next;
+
+    end = _ttfapprox(ps,tmin,tmax,start);
+    if ( ps->knownlinear )
+return( end );
+    for ( s=start->next; s!=NULL && !s->islinear; s=s->to->next );
+    if ( s==NULL )
+return( end );
+    for ( s=start->next; s!=NULL ; s=next ) {
+	next = s->to->next;
+	SplinePointFree(s->to);
+	SplineFree(s);
+    }
+#endif
+/* Hmm. With my algorithem, checking for points of inflection actually makes */
+/*  things worse. It uses more points and the splines don't join as nicely */
     /* no points of inflection in quad splines */
 
     if ( ps->splines[0].a!=0 ) {
@@ -513,7 +482,6 @@ static SplinePoint *ttfApprox(Spline *ps,real tmin, real tmax, SplinePoint *star
 	    tmin = inflect[1];
 	}
     }
-#endif
 return( _ttfapprox(ps,tmin,tmax,start));
 }
 
