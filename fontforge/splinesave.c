@@ -2380,7 +2380,8 @@ static void DumpRefsHints(GrowBuf *gb,RefChar *cur,StemInfo *h,StemInfo *v,
     memset(masks,'\0',sizeof(masks));
     cnt = 0;
     while ( h!=NULL && h->hintnumber>=0 ) {
-	real pos = (round ? rint(h->start) : h->start) - trans->x;
+	/* Horizontal stems are defined by vertical bounds */
+	real pos = (round ? rint(h->start) : h->start) - trans->y;
 	for ( rs = cur->sc->hstem; rs!=NULL; rs=rs->next ) {
 	    real rpos = round ? rint(rs->start) : rs->start;
 	    if ( rpos==pos && (round ? (rint(rs->width)==rint(h->width)) : (rs->width==h->width)) ) {
@@ -2393,7 +2394,7 @@ static void DumpRefsHints(GrowBuf *gb,RefChar *cur,StemInfo *h,StemInfo *v,
 	h = h->next; ++cnt;
     }
     while ( v!=NULL && v->hintnumber>=0 ) {
-	real pos = (round ? rint(v->start) : v->start) - trans->y;
+	real pos = (round ? rint(v->start) : v->start) - trans->x;
 	for ( rs = cur->sc->vstem; rs!=NULL; rs=rs->next ) {
 	    real rpos = round ? rint(rs->start) : rs->start;
 	    if ( rpos==pos && (round ? (rint(rs->width)==rint(v->width)) : (rs->width==v->width)) ) {
