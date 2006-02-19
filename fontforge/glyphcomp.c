@@ -543,10 +543,10 @@ static int CompareBitmap(Context *c,SplineChar *sc,const Undoes *cur,
 return( ret );
 }
 
-static int CompareHints( Context *c,SplineChar *sc, const Undoes *cur,
+static int CompareHints( Context *c,SplineChar *sc, const void *_test,
 	real pt_err ) {
     StemInfo *h = sc->hstem, *v = sc->vstem;
-    const StemInfo *test = cur->u.state.u.hints;
+    const StemInfo *test = _test;
 
     while ( test!=NULL ) {
 	if ( test->hinttype == ht_h ) {
