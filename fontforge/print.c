@@ -1298,7 +1298,8 @@ return(0);
 		}
 		if ( pi->istype42cid ) {
 		    int gid = pi->map->map[pi->chline+i];
-		    fprintf( pi->out, "  <%04x> Tj\n", gid==-1?0:gid );
+		    SplineChar *sc = gid==-1? NULL : pi->sf->glyphs[gid];
+		    fprintf( pi->out, "  <%04x> Tj\n", sc==NULL ? 0 : sc->ttf_glyph );
 		} else if ( pi->iscid )
 		    fprintf( pi->out, "  <%04x> Tj\n", pi->chline+i );
 		else
