@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 25-Jan-2006 -->
+  <!-- AP: Last modified: 12-Feb-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Change log for FontForge</TITLE> -->
     <TITLE>FontForge の変更履歴</TITLE>
@@ -22,7 +22,97 @@
   最新のリリース以降の変更点は、ファイル stamp.c を“cvs log”コマンドで調べれば分かります。
   <P>
   <UL>
-     <LI>
+    <LI>
+<!--  9-Feb-2006 -->
+      2006年2月9日
+      <UL>
+	<LI>
+<!--	  Instead of refusing to do expand stroke/remove overlap for order2 fonts,
+	  why not convert the contours to order3, do the function and convert back. -->
+	  2 次フォントの線幅拡張/重複除去処理を拒否するのではなく、輪郭を 3 次に変換し、関数を適用してから逆変換してもいいではないですか。
+	<LI>
+<!--	  Once more we are numbering points badly. -->
+	  またもや点の番号づけを間違えていました。
+	<LI>
+<!--	  If we clear a glyph which is being referred to (and we don't unlink it first)
+	  then when we save it into an sfd file we get a reference to a glyph at orig_pos
+	  -1 (because the cleared glyph isn't stored in the sfd) which causes an error
+	  when reading it back in. -->
+	  よそから参照されているグリフを消去した場合 (かつ、それを最初に削除していない場合)、SFD ファイルへの保存時にorig_pos-1 にあるグリフへの参照を行い、(消去されたグリフが SFD に格納されていないので) 再読み込み時にエラーを起こしていました。
+	<LI>
+<!--	  If a copyright message were an exact multiple of 100 characters long, fontforge
+	  would screw up memory (and potentially crash) when reading it in from an
+	  sfd file. -->
+	  著作権表示の文字列の長さがぴったり 100 の倍数である場合、FontForge は SFD ファイルからの読み込み時にメモリを破壊して (おそらくクラッシュして) いました。
+	<LI>
+<!--	  The Merge/Simplify command (which Add Extrema now calls) had problems when
+	  the control points were very close to the base point so that the point was
+	  (to the human eye) a corner point. -->
+	  併合/単純化コマンド (今や AddExtrema() を呼び出すようになりました) は、制御点が母点に非常に近く、(人間の目には) 角の点のように見える場合の処理に問題がありました。
+	<LI>
+	  Add support for the r2l script N'Ko. MS says opentype will use script 'nko
+	  ', ISO says the tag should be 'nkoo'. Follow opentype.
+	  右から左に書く用字系の ン・コー文字のサポートを追加。MS は、OpenType は&lsquo;nko &rsquo;を使宇土言い、ISO はタグは&lsquo;nkoo&rsquo;であるべきだと言っています。OpenType に従います。
+	<LI>
+<!--	  Kanou tells me that Syriac &amp; Thaana are also r2l scripts and should be
+	  added to my list. -->
+	  シリア文字とターナ文字も右書きの用字系であり、私の作ったリストに追加すべきだと狩野が言いました。
+	<LI>
+<!--	  If FF was given multiple fonts on the command line the sizes of the font
+	  windows would jump around in a very peculiar fashion. -->
+	  FF に複数のフォントをコマンドラインで指定すると、フォントウィンドウのサイズがまったく類を見ない方法でジャンプしていました。
+	<LI>
+<!--	  Add the concept of a namelist. Users can specify what names they want for
+	  new glyphs, or can force an entire font into a new naming scheme. Changes
+	  to -->
+	  名前リストの概念を導入。ユーザは新しいグリフに望む名前を指定することができ、また、新しい名前づけの枠組みをフォント全体に適用することもできます。変更箇所は以下のとおり:
+	  <UL>
+	    <LI>
+<!--	      FontInfo -->
+	      フォント情報(I)...
+	    <LI>
+<!--	      Open -->
+	      開く(O)...
+	    <LI>
+<!--	      Generate (Family) -->
+	      フォント (ファミリー) を出力 (G/F)...
+	    <LI>
+<!--	      Preferences -->
+	      環境設定(E)...
+	    <LI>
+<!--	      and the Encoding menu. -->
+	      および、エンコーディング(N) メニューです。
+	    <LI>
+<!--	      New scripting functions: -->
+	      新規のスクリプト関数:
+	      <UL>
+		<LI>
+		  LoadNamelist(filename)
+		<LI>
+		  LoadNamelistDir([dir])
+		<LI>
+		  RenameGlyphs(namelist)
+		<LI>
+<!--		  Extended Generate (scripting) to take a namelist argument. -->
+		  (スクリプトの) Generate() 関数が namelist 引数を取れるように拡張。
+	      </UL>
+	  </UL>
+	<LI>
+<!--	  If users didn't have libuninameslist installed we were still generating spurious
+	  ligatures for numero and TM. (and others) -->
+	  ユーザが libuninameslist をインストールしていないと、numero と TM (およびその他) の見せかけの合字が作成されていました。
+	<LI>
+<!--	  KANOU points out that if you comment out a bdf glyph (with COMMENT) fontforge
+	  sort of reads it anyway. -->
+	  BDF グリフを (COMMENT を使って) コメントアウトしても、FontForge がなんらかの読み込み処理を行おうとすることを指摘しました。
+	<LI>
+<!--	  Kanou needs to distinquish between the script latin and the language. -->
+	  Latin に「ラテン文字」と「ラテン語」の区別を行う必要がありました。
+	<LI>
+<!--	  SplineRemoveAnnoyingExtrema1 got tweaked a little too much in attempting
+	  not to generate insane control points. -->
+	  SplineRemoveAnnoyingExtrema1() に、異常な制御点を生成しないように試みるごくわずかな調整を追加しました。
+      </UL>
     <LI>
 <!--   25-Jan-2006 -->
        2006年1月17日
