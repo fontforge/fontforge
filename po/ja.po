@@ -1297,8 +1297,9 @@ msgid ""
 "A Postscript name should be ASCII\n"
 "and must not contain (){}[]<>%%/ or space\n"
 "and must be shorter than 63 characters"
-msgstr "PostScript名は空白や (){}[]<>%%/ を含まない63文字以内の
-ASCII文字列でなければなりません."
+msgstr ""
+"PostScript名は空白や (){}[]<>%%/ を含まない\n"
+"63文字以内のASCII文字列でなければなりません."
 
 msgid ""
 "The Postscript font name \"%.63s\" is invalid.\n"
