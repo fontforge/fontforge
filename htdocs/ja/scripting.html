@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 5-Feb-2006 -->
+  <!-- AP: Last modified: 19-Feb-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Writing scripts to change fonts in FontForge</TITLE>-->
     <TITLE>FontForge でフォントを変更するためのスクリプトの書き方</TITLE>
@@ -3357,6 +3357,155 @@ ApplySubstitution("*","*","vrt2")
       or images. -->
       引数 arg の意味は上と同様です。
       この関数は、グリフにアウトライン、参照または画像が含まれているときに真を返します。
+    <DT>
+      CompareGlyphs([pt_err[,spline_err[,pixel_off_frac[,bb_err[,compare_hints[,report_diffs_as_errors]]]]]])
+    <DD>
+<!--  This function compares two versions of one or several glyphs. It looks at
+      any selected glyphs in the font and compares them to an equivalent glyph
+      in the clipboard (there must be the same number of selected glyphs as glyphs
+      in the clipboard). -->
+      この関数は 1 個ないし数個のグリフの 2 つのバージョンを比較します。フォント内の選択された各グリフに着目し、それをクリップボード内の等価なグリフと比較します (クリップボード内のグリフと選択中のグリフとの個数が一致する必要があります)。
+      <UL>
+	<LI>
+<!--	  It checks to make sure the advance width of each glyph pair is similar -->
+	  それぞれのグリフの対の送り幅がが近似的に等しいかどうかをチェックします。
+	<LI>
+<!--	  It checks to make sure that each contains the same set of references -->
+	  それぞれに含まれる参照の集合が同一かどうかをチェックします。
+	<LI>
+<!--	  It checks to make sure that all points (both base and control) are within
+	  pt_err of each other -->
+	  すべての点が (端点と制御点ともに) 互いに pt_err 以内の誤差に収まっているかどうかをチェックします。
+	<LI>
+<!--	  If that fails then it performs a slower check to see if points lying along
+	  the contours have equivalent points in the other glyph (that is: If you have
+	  simplified a glyph and are comparing it to the original, this check should
+	  pass it while the previous check would fail). -->
+	  これらのチェックが失敗した場合、輪郭に沿って置かれている点に等価な点が、他のグリフ内に存在するかどうかをより時間をかけてチェックします (すなわち、単純化を施したグリフをそのオリジナルと比較した時に、最初のチェックは失敗するはずですが 2 回目のチェックは通るはずです)。
+	<LI>
+<!--	  Optionally you may check that the bitmaps match. -->
+	  また、オプションを指定することにより、ビットマップが一致するかどうかをチェックすることもできます。
+<!--	  Optionally you may check if hints (and hitmasks) match. -->
+	  また、オプションを指定することにより、ヒント (およびヒントマスク) が一致するかどうかをチェックすることもできます。
+      </UL>
+      <P>
+<!--  The first argument controls the accuracy with which points must match. A
+      value of 0 is an exact match and will also check hints. If you provide a
+      negative value then this test will be skipped. -->
+      最初の引数では、点が一致しなければならない精度を調節します。値が 0 の場合は点は正確に一致しなければならず、同時にヒントのチェックも行います。負の値を指定した場合には、このテストはスキップされます。
+      <P>
+<!--  The second argument controls the accuracy with which the contour check must
+      match. A value of 0 will not work due to rounding errors in the process.
+      A negative value will skip the test. -->
+      2 番目の引数では、輪郭チェックが一致しなければならない精度を調節します。処理中に丸め誤差が発生するため、値 0 を指定するとこれはうまく動作しないでしょう。負の値を指定した場合には、このテストはスキップされます。
+      <P>
+<!--  The third argument controls bitmap tests. A negative value (the default)
+      will mean no bitmap tests are done. A value of 0 requires an exact match
+      of the bitmap. A value between 0 and 1 specifies the fraction of the pixel
+      range that will be accepted for a match (so in a greymap with a depth of
+      8 the pixel range in 256, and a fraction value of .25 would mean any pixel
+      value within 64 (.25*256) would match). -->
+      3 番目の引数ではビットマップテストを調節します。負の値 (デフォルト) は、ビットマップテストを行わないことを意味します。値 が 0 の場合、ビットマップは正確に一致する必要があります。0 と 1 の間の値は、不一致が許容されるピクセル値の範囲を指定します (例えば、深さ 8 のグレイマップではピクセル値は 256 諧調なので、小数の値 0.25 を指定した場合には、64 (0.25*256) 以内のピクセル値の違いは一致するものと見なされます)。
+      <P>
+<!--  The fourth argument controls how different the bounding boxes of anti-aliased
+      bitmaps can be (the bounding boxes of bitmaps with depth 1 must match exactly) -->
+      4 番目の引数では、アンチエイリアス処理されたビットマップのバウンディングボックスがどれだけ違っていてよいかを調節します (深さ 1 のビットマップのバウンディングボックスは正確に一致しなければなりません)。
+      <P>
+<!--  The fifth argument controls whether to tests hints and hintmasks. A value
+      of 1 tests hints, 2 tests hintmasks and 3 tests both. -->
+      5 番目の引数では、ヒントとヒントマスクのテストを行うかを調節します。値 1 を指定するとヒントを、2 を指定するとヒントマスクを、3 を指定すると両方をテストします。
+      <P>
+<!--  Normally this function treats any differences it finds as errors and stops
+      the script. If you set the sixh argument to 0 then it will return a value
+      which ors the following flags together (some flags indicate errors, others
+      unusual conditions, others success - - the function will never return both
+      an error and success flag, but it can return several success flags at once
+      if you are comparing more than one glyph) -->
+      通常はこの関数はどのような相異点もエラーとして扱い、スクリプトを停止させます。もし、6 番目の引数として 0 を指定した場合、以下に示すフラグの論理和を取った値を返します (フラグのうち一部はエラーを表し、いくつかは異状を表し、その他は成功を表します――この関数はエラーと成功フラグの両方を同時に返すことは決してありませんが、複数のグリフを一度に比較したときには複数の成功フラグを返す可能性があります)。
+      <TABLE BORDER CELLPADDING="2">
+	<TR>
+	  <TD>1</TD>
+<!--	  <TD>Different numbers of contours in a glyph</TD> -->
+	  <TD>グリフ内の輪郭の個数が異なる</TD>
+	</TR>
+	<TR>
+	  <TD>2</TD>
+<!--	  <TD>A contour in one glyph is open when the corresponding contour is closed</TD> -->
+	  <TD>片方のグリフに含まれる輪郭の一つが開いているが、対応する輪郭は閉じている</TD>
+	</TR>
+	<TR>
+	  <TD>4</TD>
+<!--	  <TD>Disordered contours (contours are in different orders in the two glyphs)</TD> -->
+	  <TD>輪郭の次数不一致 (2 個のグリフの輪郭の次数が異なる)</TD>
+	</TR>
+	<TR>
+	  <TD>8</TD>
+<!--	  <TD>Disordered start (the start point is at a different place in the two
+	    glyphs)</TD> -->
+	  <TD>開始点の不一致 (2 個のグリフで、開始点の置かれている位置が異なる)</TD>
+	</TR>
+	<TR>
+	  <TD>16</TD>
+<!--	  <TD>Disordered direction (the contour is clockwise in one and counter in
+	    the other)</TD> -->
+	  <TD>方向の不一致 (片方の輪郭が時計回りでもう片方が反時計回り</TD>
+	</TR>
+	<TR>
+	  <TD>32</TD>
+<!--	  <TD>Glyphs match by checking points</TD> -->
+	  <TD>点のチェックによりグリフが一致した</TD>
+	</TR>
+	<TR>
+	  <TD>64</TD>
+<!--	  <TD>Glyphs match by checking the contours</TD> -->
+	  <TD>輪郭のチェックによりグリフが一致した</TD>
+	</TR>
+	<TR>
+	  <TD>128</TD>
+<!--	  <TD>Outline glyphs do not match</TD> -->
+	  <TD>グリフのアウトラインが一致しない</TD>
+	</TR>
+	<TR>
+	  <TD>256</TD>
+<!--	  <TD>Different references in the two glyphs</TD> -->
+	  <TD>2 つのグリフに含まれる参照が異なる</TD>
+	</TR>
+	<TR>
+	  <TD>512</TD>
+<!--	  <TD>Different advance widths in the two glyphs</TD> -->
+	  <TD>2 つのグリフの送り幅が異なる</TD>
+	</TR>
+	<TR>
+	  <TD>1024</TD>
+<!--	  <TD>Different hints in the two glyphs</TD> -->
+	  <TD>2 つのグリフのヒントが異なる</TD>
+	</TR>
+	<TR>
+	  <TD>2048</TD>
+<!--	  <TD>Different hintmasks in the two glyphs</TD> -->
+	  <TD>2 つのグリフのヒントマスクが異なる</TD>
+	</TR>
+	<TR>
+	  <TD>65536</TD>
+<!--	  <TD>Bitmap glyphs have different depths</TD> -->
+	  <TD>ビットマップグリフの色深度が異なる</TD>
+	</TR>
+	<TR>
+	  <TD>2*65536</TD>
+<!--	  <TD>Bitmap glyphs have different bounding boxes</TD> -->
+	  <TD>ビットマップグリフのバウンディングボックスが異なる</TD>
+	</TR>
+	<TR>
+	  <TD>4*65536</TD>
+<!--	  <TD>Bitmap glyphs do not match</TD> -->
+	  <TD>ビットマップグリフが一致しない</TD>
+	</TR>
+	<TR>
+	  <TD>8*65536</TD>
+<!--	  <TD>Bitmap glyphs match</TD> -->
+	  <TD>ビットマップグリフが一致した</TD>
+	</TR>
+      </TABLE>
     <DT>
       <B><A NAME="GlyphInfo">GlyphInfo</A></B>(str)<BR>
       GlyphInfo("Kern",glyph-spec)<BR>
