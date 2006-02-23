@@ -2393,6 +2393,7 @@ static Undoes *BCCopyAll(BDFChar *bc,int pixelsize, int depth) {
     if ( bc==NULL )
 	cur->undotype = ut_noop;
     else {
+	BCCompressBitmap(bc);
 	cur->undotype = ut_bitmap;
 	cur->u.bmpstate.width = bc->width;
 	cur->u.bmpstate.xmin = bc->xmin;

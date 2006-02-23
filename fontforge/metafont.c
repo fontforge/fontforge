@@ -1944,7 +1944,7 @@ return( true );
 		    if ( meta->fv->selected[i] && (gid=meta->fv->map->map[i])!=-1 &&
 			    meta->fv->sf->glyphs[gid]!=NULL &&
 			    !meta->fv->sf->glyphs[gid]->ticked ) {
-			_MetaFont(meta,meta->fv->sf->glyphs[i]);
+			_MetaFont(meta,meta->fv->sf->glyphs[gid]);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #if defined(FONTFORGE_CONFIG_GDRAW)
 			if ( !gwwv_progress_next())
