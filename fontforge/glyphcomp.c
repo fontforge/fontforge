@@ -454,12 +454,50 @@ return( BC_Match );
 }
 
 /* ************************************************************************** */
+/* *********************** Code to compare hint masks *********************** */
+/* ************************************************************************** */
+
+static int CompareHintmasks(const SplineSet *ss1, const SplineSet *ss2 ) {
+    const SplinePoint *sp1, *sp2;
+    /* No fancy code to reorder contours or to check for disordered start */
+
+    while ( ss1!=NULL && ss2!=NULL ) {
+	for ( sp2 = ss2->first, sp1=ss1->first; ; ) {
+	    if ( sp1->hintmask!=NULL && sp2->hintmask!=NULL &&
+		    memcmp(sp1->hintmask,sp2->hintmask,sizeof(HintMask))==0 )
+		/* It worked */;
+	    else if ( sp1->hintmask!=NULL || sp2->hintmask!=NULL )
+return( false );
+	    if ( sp2->next==NULL && sp1->next==NULL )
+	break;
+	    if ( sp1->next==NULL || sp2->next==NULL )
+return( false );
+	    sp1 = sp1->next->to;
+	    sp2 = sp2->next->to;
+	    if ( sp1 == ss1->first && sp2 == ss2->first )
+	break;
+	    if ( sp1 == ss1->first || sp2 == ss2->first )
+return( false );
+	}
+	ss1 = ss1->next;
+	ss2 = ss2->next;
+    }
+    if ( ss1!=NULL || ss2!=NULL )
+return( false );
+
+return( true );
+}
+
+/* ************************************************************************** */
 /* **************** Code to selected glyphs against clipboard *************** */
 /* ************************************************************************** */
+
 static int CompareLayer(Context *c, const SplineSet *ss1,const SplineSet *ss2,
 	real pt_err, real spline_err, const char *name, int diffs_are_errors ) {
     int val;
 
+    if ( pt_err<0 && spline_err<0 )
+return( SS_PointsMatch );
     val = SSsCompare(ss1,ss2, pt_err, spline_err);
     if ( (val&SS_NoMatch) && diffs_are_errors ) {
 	if ( val & SS_DiffContourCount )
@@ -543,8 +581,7 @@ static int CompareBitmap(Context *c,SplineChar *sc,const Undoes *cur,
 return( ret );
 }
 
-static int CompareHints( Context *c,SplineChar *sc, const void *_test,
-	real pt_err ) {
+static int CompareHints( SplineChar *sc, const void *_test ) {
     StemInfo *h = sc->hstem, *v = sc->vstem;
     const StemInfo *test = _test;
 
@@ -570,7 +607,7 @@ return( false );
     }
 
     if ( test!=NULL && test->hinttype==ht_d )
-	test = NULL;		/* In case there are some old files */
+	test = NULL;		/* In case there are some old files (with dhints) */
 
     if ( h!=NULL || v!=NULL || test!=NULL )
 return( false );
@@ -579,34 +616,41 @@ return( true );
 }
 
 static int CompareSplines(Context *c,SplineChar *sc,const Undoes *cur,
-	real pt_err, real spline_err, int diffs_are_errors ) {
+	real pt_err, real spline_err, int comp_hints, int diffs_are_errors ) {
     int ret=0, ly;
     const Undoes *layer;
     real err = pt_err>0 ? pt_err : spline_err;
 
     switch ( cur->undotype ) {
       case ut_state: case ut_statehint: case ut_statename:
-	ret |= CompareLayer(c,sc->layers[ly_fore].splines,cur->u.state.splines,
-		    pt_err, spline_err,sc->name, diffs_are_errors);
-	if ( sc->width-cur->u.state.width>err || sc->width-cur->u.state.width<-err )
-	    ret = SS_NoMatch|SS_WidthMismatch;
-	if ( !RefCheck( c,sc->layers[ly_fore].refs,cur->u.state.refs, sc->name, diffs_are_errors ))
-	    ret = SS_NoMatch|SS_RefMismatch;
-	if ( cur->undotype==ut_statehint && pt_err==0 &&
-		!CompareHints( c,sc,cur->u.state.u.hints,pt_err ))
+	if ( err>=0 ) {
+	    ret |= CompareLayer(c,sc->layers[ly_fore].splines,cur->u.state.splines,
+			pt_err, spline_err,sc->name, diffs_are_errors);
+	    if ( sc->width-cur->u.state.width>err || sc->width-cur->u.state.width<-err )
+		ret = SS_NoMatch|SS_WidthMismatch;
+	    if ( !RefCheck( c,sc->layers[ly_fore].refs,cur->u.state.refs, sc->name, diffs_are_errors ))
+		ret = SS_NoMatch|SS_RefMismatch;
+	}
+	if ( cur->undotype==ut_statehint && (comp_hints&1) &&
+		!CompareHints( sc,cur->u.state.u.hints ))
 	    ret = SS_NoMatch|SS_HintMismatch;
+	if ( cur->undotype==ut_statehint && (comp_hints&2) &&
+		!CompareHintmasks( sc->layers[ly_fore].splines,cur->u.state.splines ))
+	    ret = SS_NoMatch|SS_HintMaskMismatch;
       break;
       case ut_layers:
-	for ( ly=ly_fore, layer = cur->u.multiple.mult;
-		ly<sc->layer_cnt && layer!=NULL;
-		++ly, layer = cur->next ) {
-	    ret |= CompareLayer(c,sc->layers[ly].splines,cur->u.state.splines,
-			pt_err, spline_err,sc->name, diffs_are_errors);
-	    if ( ly==ly_fore && (sc->width-cur->u.state.width>err || sc->width-cur->u.state.width<-err) )
-		ret = SS_NoMatch|SS_WidthMismatch;
-	    if ( !RefCheck( c,sc->layers[ly].refs,cur->u.state.refs, sc->name, diffs_are_errors ))
-		ret = SS_NoMatch|SS_RefMismatch;
-	    /* No hints in type3 fonts */
+	if ( err>=0 ) {
+	    for ( ly=ly_fore, layer = cur->u.multiple.mult;
+		    ly<sc->layer_cnt && layer!=NULL;
+		    ++ly, layer = cur->next ) {
+		ret |= CompareLayer(c,sc->layers[ly].splines,cur->u.state.splines,
+			    pt_err, spline_err,sc->name, diffs_are_errors);
+		if ( ly==ly_fore && (sc->width-cur->u.state.width>err || sc->width-cur->u.state.width<-err) )
+		    ret = SS_NoMatch|SS_WidthMismatch;
+		if ( !RefCheck( c,sc->layers[ly].refs,cur->u.state.refs, sc->name, diffs_are_errors ))
+		    ret = SS_NoMatch|SS_RefMismatch;
+		/* No hints in type3 fonts */
+	    }
 	}
 	if ( ly!=sc->layer_cnt || layer!=NULL )
 	    ScriptErrorString(c,"Layer difference in glyph", sc->name);
@@ -618,11 +662,13 @@ static int CompareSplines(Context *c,SplineChar *sc,const Undoes *cur,
 	ScriptErrorString(c,"Advance width mismatch in glyph", sc->name);
     else if ( (ret&SS_HintMismatch) && diffs_are_errors )
 	ScriptErrorString(c,"Hinting mismatch in glyph", sc->name);
+    else if ( (ret&SS_HintMaskMismatch) && diffs_are_errors )
+	ScriptErrorString(c,"Hint mask mismatch in glyph", sc->name);
 return( ret );
 }
 
 int CompareGlyphs(Context *c, real pt_err, real spline_err,
-	real pixel_off_frac, int bb_err, int diffs_are_errors ) {
+	real pixel_off_frac, int bb_err, int comp_hints, int diffs_are_errors ) {
     FontView *fv = c->curfv;
     SplineFont *sf = fv->sf;
     int i, cnt=0;
@@ -653,16 +699,16 @@ int CompareGlyphs(Context *c, real pt_err, real spline_err,
 	switch ( cur->undotype ) {
 	  case ut_state: case ut_statehint: case ut_statename:
 	  case ut_layers:
-	    if ( pt_err>=0 || spline_err>0 )
-		ret |= CompareSplines(c,sc,cur,pt_err,spline_err,diffs_are_errors);
+	    if ( pt_err>=0 || spline_err>0 || comp_hints )
+		ret |= CompareSplines(c,sc,cur,pt_err,spline_err,comp_hints,diffs_are_errors);
 	  break;
 	  case ut_bitmapsel: case ut_bitmap:
 	    if ( pixel_off_frac>=0 )
 		ret |= CompareBitmap(c,sc,cur,pixel_off_frac,bb_err,diffs_are_errors);
 	  break;
 	  case ut_composit:
-	    if ( cur->u.composit.state!=NULL && ( pt_err>=0 || spline_err>0 ))
-		ret |= CompareSplines(c,sc,cur->u.composit.state,pt_err,spline_err,diffs_are_errors);
+	    if ( cur->u.composit.state!=NULL && ( pt_err>=0 || spline_err>0 || comp_hints ))
+		ret |= CompareSplines(c,sc,cur->u.composit.state,pt_err,spline_err,comp_hints,diffs_are_errors);
 	    if ( pixel_off_frac>=0 ) {
 		for ( bmp=cur->u.composit.bitmaps; bmp!=NULL; bmp = bmp->next )
 		    ret |= CompareBitmap(c,sc,bmp,pixel_off_frac,bb_err,diffs_are_errors);
