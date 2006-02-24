@@ -1210,6 +1210,7 @@ struct ttfinfo;
 struct alltabs;
 struct growbuf;
 struct glyphdata;
+extern int UnitsParallel(BasePoint *u1,BasePoint *u2);
 extern int CvtPsStem3(struct growbuf *gb, SplineChar *scs[MmMax], int instance_count,
 	int ishstem, int round);
 extern struct pschars *CID2Chrs(SplineFont *cidmaster,struct cidbytes *cidbytes,int flags);
