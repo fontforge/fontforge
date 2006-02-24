@@ -809,6 +809,11 @@ return( true );
 return( false );
 }
 
+int UnitsParallel(BasePoint *u1,BasePoint *u2) {
+    double dot = u1->x*u2->x + u1->y*u2->y;
+return( dot>.95 || dot < -.95 );
+}
+
 static void GDFindUnlikelyStems(struct glyphdata *gd) {
     double width, maxm, minm, len;
     int i,j;
