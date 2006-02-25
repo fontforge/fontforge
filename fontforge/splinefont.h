@@ -1476,6 +1476,8 @@ extern void XLFD_CreateComponents(BDFFont *bdf,EncMap *map,int res,struct xlfd_c
 /* Two cubics intersect in at most 9 points */ /* Plus an extra space for a trailing -1 */
 extern int SplinesIntersect(const Spline *s1, const Spline *s2, BasePoint pts[9],
 	double t1s[10], double t2s[10]);
+extern int LineTangentToSplineThroughPt(Spline *s, BasePoint *pt, double ts[4],
+	double tmin, double tmax);
 extern int CubicSolve(const Spline1D *sp,double ts[3]);
 extern double IterateSplineSolve(const Spline1D *sp, double tmin, double tmax, double sought_y, double err);
 extern double SplineSolve(const Spline1D *sp, real tmin, real tmax, real sought_y, real err);

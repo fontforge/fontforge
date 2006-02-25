@@ -36,8 +36,9 @@
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #endif
 
-/* This file contains utility routines for 2 order bezier splines (ie. truetype) */
-/* The most interesting thing */
+/* This file contains utility routines for second order bezier splines   */
+/*  (ie. truetype)							 */
+/* The most interesting thing						 */
 /*  it does is to figure out a quadratic approximation to the cubic splines */
 /*  that postscript uses. We do this by looking at each spline and running */
 /*  from the end toward the beginning, checking approximately every emunit */
@@ -274,35 +275,6 @@ static SplinePoint *_ttfapprox(Spline *ps,real tmin, real tmax, SplinePoint *sta
     BasePoint end, rend, dend;
     DBounds bb;
 
-    if ( RealNearish(ps->splines[0].a,0) && RealNearish(ps->splines[1].a,0) ) {
-	/* Already Quadratic, just need to find the control point */
-	/* Or linear, in which case we don't need to do much of anything */
-	Spline *spline;
-	sp = chunkalloc(sizeof(SplinePoint));
-	sp->me.x = ps->to->me.x; sp->me.y = ps->to->me.y;
-	sp->roundx = ps->to->roundx; sp->roundy = ps->to->roundy; sp->dontinterpolate = ps->to->dontinterpolate;
-	sp->ttfindex = 0xfffe;
-	sp->nextcpindex = 0xfffe;
-	sp->nonextcp = true;
-	spline = chunkalloc(sizeof(Spline));
-	spline->order2 = true;
-	spline->from = start;
-	spline->to = sp;
-	spline->splines[0] = ps->splines[0]; spline->splines[1] = ps->splines[1];
-	start->next = sp->prev = spline;
-	if ( ps->knownlinear ) {
-	    spline->islinear = spline->knownlinear = true;
-	    start->nonextcp = sp->noprevcp = true;
-	    start->nextcp = start->me;
-	    sp->prevcp = sp->me;
-	} else {
-	    start->nonextcp = sp->noprevcp = false;
-	    start->nextcp.x = sp->prevcp.x = (ps->splines[0].c+2*ps->splines[0].d)/2;
-	    start->nextcp.y = sp->prevcp.y = (ps->splines[1].c+2*ps->splines[1].d)/2;
-	}
-return( sp );
-    }
-
     rend.x = ((ps->splines[0].a*tmax+ps->splines[0].b)*tmax+ps->splines[0].c)*tmax + ps->splines[0].d;
     rend.y = ((ps->splines[1].a*tmax+ps->splines[1].b)*tmax+ps->splines[1].c)*tmax + ps->splines[1].d;
     end.x = rint( rend.x );
@@ -432,7 +404,7 @@ return( sp );
   goto tail_recursion;
 }
 
-static SplinePoint *ttfApprox(Spline *ps,real tmin, real tmax, SplinePoint *start) {
+static SplinePoint *__ttfApprox(Spline *ps,real tmin, real tmax, SplinePoint *start) {
     real inflect[2];
     int i=0;
 #if 1
@@ -486,6 +458,242 @@ return( end );
 return( _ttfapprox(ps,tmin,tmax,start));
 }
 
+typedef struct qpoint {
+    BasePoint bp;
+    BasePoint cp;
+    double t;
+} QPoint;
+
+static int comparedata(Spline *ps,QPoint *data,int qfirst,int qlast) {
+    Spline ttf;
+    int i;
+    double err = 1;
+
+    memset(&ttf,0,sizeof(ttf));
+    for ( i=qfirst; i<qlast; ++i ) {
+	ttf.splines[0].d = data[i-1].bp.x;
+	ttf.splines[0].c = 2*(data[i-1].cp.x-data[i-1].bp.x);
+	ttf.splines[0].b = data[i-1].bp.x+data[i].bp.x-2*data[i-1].cp.x;
+	ttf.splines[1].d = data[i-1].bp.y;
+	ttf.splines[1].c = 2*(data[i-1].cp.y-data[i-1].bp.y);
+	ttf.splines[1].b = data[i-1].bp.y+data[i].bp.y-2*data[i-1].cp.y;
+	if ( !comparespline(ps,&ttf,data[i-1].t,data[i].t,err) )
+return( false );
+    }
+return( true );
+}
+
+static SplinePoint *CvtDataToSplines(QPoint *data,int qfirst,int qlast,SplinePoint *start) {
+    SplinePoint *end;
+    int i;
+
+    for ( i=qfirst; i<qlast; ++i ) {
+	end = SplinePointCreate(data[i].bp.x,data[i].bp.y);
+	start->nextcp = end->prevcp = data[i-1].cp;
+	start->nonextcp = end->noprevcp = false;
+	SplineMake2(start,end);
+	start = end;
+    }
+return( start );
+}
+
+static int PrettyApprox(Spline *ps,double tmin, double tmax,
+	QPoint *data, int qcnt) {
+    int ptcnt, q, i;
+    double distance, dx, dy, t, tstart, ts[4];
+    BasePoint end, mid, slopemin, slopemid;
+    int tcnt;
+
+    if ( qcnt==-1 )
+return( -1 );
+
+    slopemin.x = (3*ps->splines[0].a*tmin+2*ps->splines[0].b)*tmin+ps->splines[0].c;
+    slopemin.y = (3*ps->splines[1].a*tmin+2*ps->splines[1].b)*tmin+ps->splines[1].c;
+
+    end.x = ((ps->splines[0].a*tmax+ps->splines[0].b)*tmax+ps->splines[0].c)*tmax+ps->splines[0].d;
+    end.y = ((ps->splines[1].a*tmax+ps->splines[1].b)*tmax+ps->splines[1].c)*tmax+ps->splines[1].d;
+
+    dx = end.x-data[qcnt-1].bp.x; dy = end.y-data[qcnt-1].bp.y;
+    distance = dx*dx + dy*dy;
+
+    for ( ptcnt=0; ptcnt<10; ++ptcnt ) {
+	double toosmall = tmin, toobig = -1;
+	if ( ptcnt>1 && distance/(ptcnt*ptcnt)<100 )
+return( -1 );			/* Points too close for a good approx */
+	if ( ptcnt==0 )
+	    tstart = tmax;
+	else
+	    tstart = (tmin*ptcnt + tmax)/(ptcnt+1);
+	forever {
+	    q = qcnt;
+	    mid.x = ((ps->splines[0].a*tstart+ps->splines[0].b)*tstart+ps->splines[0].c)*tstart+ps->splines[0].d;
+	    mid.y = ((ps->splines[1].a*tstart+ps->splines[1].b)*tstart+ps->splines[1].c)*tstart+ps->splines[1].d;
+	    slopemid.x = (3*ps->splines[0].a*tstart+2*ps->splines[0].b)*tstart+ps->splines[0].c;
+	    slopemid.y = (3*ps->splines[1].a*tstart+2*ps->splines[1].b)*tstart+ps->splines[1].c;
+
+	    if ( slopemid.x==0 )
+		data[q-1].cp.x=mid.x;
+	    else if ( slopemin.x==0 )
+		data[q-1].cp.x=data[q-1].bp.x;
+	    else if ( RealNear(slopemin.y/slopemin.x,slopemid.y/slopemid.x) )
+    goto break_two_loops;
+	    else
+		data[q-1].cp.x = -(data[q-1].bp.y-(slopemin.y/slopemin.x)*data[q-1].bp.x-mid.y+(slopemid.y/slopemid.x)*mid.x)/(slopemin.y/slopemin.x-slopemid.y/slopemid.x);
+	    if ( slopemid.y==0 )
+		data[q-1].cp.y=mid.y;
+	    else if ( slopemin.y==0 )
+		data[q-1].cp.y=data[q-1].bp.y;
+	    else
+		data[q-1].cp.y = -(data[q-1].bp.x-(slopemin.x/slopemin.y)*data[q-1].bp.y-mid.x+(slopemid.x/slopemid.y)*mid.y)/(slopemin.x/slopemin.y-slopemid.x/slopemid.y);
+	    if ( ptcnt==0 ) {
+		data[qcnt].bp = end;
+		data[qcnt].t = tmax;
+		if ( comparedata(ps,data,qcnt,qcnt+1))
+return( qcnt+1 );
+	break;
+	    }
+	    data[q].bp = mid;
+	    data[q++].t = tstart;
+	    t = tstart;
+	    for ( i=1; i<=ptcnt; ++i ) {
+		data[q-1].cp.x = data[q-1].bp.x - (data[q-2].cp.x - data[q-1].bp.x);
+		data[q-1].cp.y = data[q-1].bp.y - (data[q-2].cp.y - data[q-1].bp.y);
+		tcnt = LineTangentToSplineThroughPt(ps,&data[q-1].cp,ts, t+.01, tmax+.5 );
+		if ( tcnt==-1 ) {
+		    if ( i!=ptcnt )
+	    break;
+		    t = tmax+.1;
+		    tcnt = 0;
+		} else
+		    t = ts[0];
+		data[q].bp.x = ((ps->splines[0].a*t+ps->splines[0].b)*t+ps->splines[0].c)*t+ps->splines[0].d;
+		data[q].bp.y = ((ps->splines[1].a*t+ps->splines[1].b)*t+ps->splines[1].c)*t+ps->splines[1].d;
+		data[q].t = t;
+		++q;
+	    }
+	    if ( t>tmax-.01 && t<tmax+.01 ) {
+		data[q-1].bp = end;
+		data[q-1].t = tmax;
+		if ( comparedata(ps,data,qcnt,q))
+return( q );
+	break;
+	    }
+	    if ( tcnt==-1 )
+	break;
+	    if ( t>tmax ) {
+		toobig = tstart;
+		tstart = (toosmall+toobig)/2;
+	    } else {
+		toosmall = tstart;
+		if ( toobig==-1 )
+		    tstart += .1;
+		else
+		    tstart = (toosmall+toobig)/2;
+	    }
+	    if ( tstart==toosmall || tstart==toobig )
+	break;
+	}
+    break_two_loops: ;
+    }
+return( -1 );
+}
+
+static SplinePoint *AlreadyQuadraticCheck(Spline *ps, SplinePoint *start) {
+    SplinePoint *sp;
+
+    if ( RealNearish(ps->splines[0].a,0) && RealNearish(ps->splines[1].a,0) ) {
+	/* Already Quadratic, just need to find the control point */
+	/* Or linear, in which case we don't need to do much of anything */
+	Spline *spline;
+	sp = chunkalloc(sizeof(SplinePoint));
+	sp->me.x = ps->to->me.x; sp->me.y = ps->to->me.y;
+	sp->roundx = ps->to->roundx; sp->roundy = ps->to->roundy; sp->dontinterpolate = ps->to->dontinterpolate;
+	sp->ttfindex = 0xfffe;
+	sp->nextcpindex = 0xfffe;
+	sp->nonextcp = true;
+	spline = chunkalloc(sizeof(Spline));
+	spline->order2 = true;
+	spline->from = start;
+	spline->to = sp;
+	spline->splines[0] = ps->splines[0]; spline->splines[1] = ps->splines[1];
+	start->next = sp->prev = spline;
+	if ( ps->knownlinear ) {
+	    spline->islinear = spline->knownlinear = true;
+	    start->nonextcp = sp->noprevcp = true;
+	    start->nextcp = start->me;
+	    sp->prevcp = sp->me;
+	} else {
+	    start->nonextcp = sp->noprevcp = false;
+	    start->nextcp.x = sp->prevcp.x = (ps->splines[0].c+2*ps->splines[0].d)/2;
+	    start->nextcp.y = sp->prevcp.y = (ps->splines[1].c+2*ps->splines[1].d)/2;
+	}
+return( sp );
+    }
+return( NULL );
+}
+
+static SplinePoint *ttfApprox(Spline *ps, SplinePoint *start) {
+    double magicpoints[6], last;
+    int cnt, i, j, qcnt;
+    QPoint data[8*10];
+    SplinePoint *ret;
+/* Divide the spline up at extrema and points of inflection. The first	*/
+/*  because ttf splines should have points at their extrema, the second */
+/*  because quadratic splines can't have points of inflection.		*/
+
+    if (( ret = AlreadyQuadraticCheck(ps,start))!=NULL )
+return( ret );
+
+    cnt = Spline2DFindExtrema(ps,magicpoints);
+
+    if ( ps->splines[0].a!=0 )
+	magicpoints[cnt++] = -ps->splines[0].b/(3*ps->splines[0].a);
+    if ( ps->splines[1].a!=0 )
+	magicpoints[cnt++] = -ps->splines[1].b/(3*ps->splines[1].a);
+
+    /* remove points outside range */
+    for ( i=0; i<cnt; ++i ) {
+	if ( magicpoints[i]<=0 || magicpoints[i]>=1 ) {
+	    for ( j=i+1; j<cnt; ++j )
+		magicpoints[j-1] = magicpoints[j];
+	    --cnt;
+	    --i;
+	}
+    }
+    /* sort points */
+    for ( i=0; i<cnt; ++i ) for ( j=i+1; j<cnt; ++j ) {
+	if ( magicpoints[i]>magicpoints[j] ) {
+	    double temp = magicpoints[i];
+	    magicpoints[i] = magicpoints[j];
+	    magicpoints[j] = temp;
+	}
+    }
+    /* Remove duplicates */
+    for ( i=1; i<cnt; ++i ) {
+	while ( i<cnt && RealNear(magicpoints[i-1],magicpoints[i])) {
+	    --cnt;
+	    for ( j=i ; j<cnt; ++j )
+		magicpoints[j] = magicpoints[j+1];
+	    magicpoints[cnt] = -1;
+	}
+    }
+
+    last = 0;
+    qcnt = 1;
+    data[0].bp.x = ps->splines[0].d;
+    data[0].bp.y = ps->splines[1].d;
+    data[0].t = 0;
+    for ( i=0; i<cnt; ++i ) {
+	qcnt = PrettyApprox(ps,last,magicpoints[i],data,qcnt);
+	last = magicpoints[i];
+    }
+    qcnt = PrettyApprox(ps,last,1,data,qcnt);
+    if ( qcnt!=-1 )
+return( CvtDataToSplines(data,1,qcnt,start));
+
+return( __ttfApprox(ps,0,1,start));
+}
+
 static void ttfCleanup(SplinePoint *from) {
     SplinePoint *test, *next;
 
@@ -523,7 +731,7 @@ SplinePoint *SplineTtfApprox(Spline *ps) {
     from = chunkalloc(sizeof(SplinePoint));
     *from = *ps->from;
     from->hintmask = NULL;
-    ttfApprox(ps,0,1,from);
+    ttfApprox(ps,from);
 return( from );
 }
 
@@ -541,7 +749,7 @@ SplineSet *SSttfApprox(SplineSet *ss) {
 
     first = NULL;
     for ( spline=ss->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
-	ret->last = ttfApprox(spline,0,1,ret->last);
+	ret->last = ttfApprox(spline,ret->last);
 	if ( spline->to->hintmask != NULL ) {
 	    ret->last->hintmask = chunkalloc(sizeof(HintMask));
 	    memcpy(ret->last->hintmask,spline->to->hintmask,sizeof(HintMask));
