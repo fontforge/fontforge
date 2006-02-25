@@ -32,6 +32,9 @@
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include "views.h"		/* for FindSel structure */
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+#ifdef HAVE_IEEEFP_H
+# include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
+#endif
 
 /*#define DEBUG 1*/
 
@@ -2876,6 +2879,9 @@ return( false );
 return( true );
 }
 
+#if 0
+/* These methods purport to solve all quartics. But they don't solve mine */
+/*  so I may have miscopied or something, but I'll give up on algebraic solns*/
 static int QuarticAlternate(Quartic *q,double ts[4],double offset) {
     Spline1D sp;
     double zs[3], h, j, temp;
@@ -3019,6 +3025,106 @@ return( QuarticAlternate(&work,ts,offset));
     }
 return( i );
 }
+#else
+static int _QuarticSolve(Quartic *q,double ts[4]) {
+    double extrema[5];
+    Spline1D sp;
+    int ecnt = 0, i, zcnt;
+
+    /* Two special cases */
+    if ( q->a==0 ) {	/* It's really a cubic */
+	sp.a = q->b;
+	sp.b = q->c;
+	sp.c = q->d;
+	sp.d = q->e;
+	ts[4] = -999999;
+return( _CubicSolve(&sp,ts));
+    } else if ( q->e==0 ) {	/* we can factor out a zero root */
+	sp.a = q->a;
+	sp.b = q->b;
+	sp.c = q->c;
+	sp.d = q->d;
+	ts[0] = 0;
+return( _CubicSolve(&sp,ts+1)+1);
+    }
+
+    sp.a = 4*q->a;
+    sp.b = 3*q->b;
+    sp.c = 2*q->c;
+    sp.d = q->d;
+    if ( _CubicSolve(&sp,extrema)) {
+	ecnt = 1;
+	if ( extrema[1]!=-999999 ) {
+	    ecnt = 2;
+	    if ( extrema[1]<extrema[0] ) {
+		double temp = extrema[1]; extrema[1] = extrema[0]; extrema[0]=temp;
+	    }
+	    if ( extrema[2]!=-999999 ) {
+		ecnt = 3;
+		if ( extrema[2]<extrema[0] ) {
+		    double temp = extrema[2]; extrema[2] = extrema[0]; extrema[0]=temp;
+		}
+		if ( extrema[2]<extrema[1] ) {
+		    double temp = extrema[2]; extrema[2] = extrema[1]; extrema[1]=temp;
+		}
+	    }
+	}
+    }
+    for ( i=ecnt-1; i>=0 ; --i )
+	extrema[i+1] = extrema[i];
+    /* Upper and lower bounds within which we'll search */
+    extrema[0] = -999;
+    extrema[ecnt+1] = 999;
+    ecnt += 2;
+    /* divide into monotonic sections & use binary search to find zeroes */
+    for ( i=zcnt=0; i<ecnt-1; ++i ) {
+	double top, bottom, val;
+	double topt, bottomt, t;
+	topt = extrema[i+1];
+	bottomt = extrema[i];
+	top = (((q->a*topt+q->b)*topt+q->c)*topt+q->d)*topt+q->e;
+	bottom = (((q->a*bottomt+q->b)*bottomt+q->c)*bottomt+q->d)*bottomt+q->e;
+	if ( top<bottom ) {
+	    double temp = top; top = bottom; bottom = temp;
+	    temp = topt; topt = bottomt; bottomt = temp;
+	}
+	if ( bottom>.001 )	/* this monotonic is all above 0 */
+    continue;
+	if ( top<-.001 )	/* this monotonic is all below 0 */
+    continue;
+	if ( bottom>0 ) {
+	    ts[zcnt++] = bottomt;
+    continue;
+	}
+	if ( top<0 ) {
+	    ts[zcnt++] = topt;
+    continue;
+	}
+	forever {
+	    t = (topt+bottomt)/2;
+	    if ( t==topt || t==bottomt ) {
+		ts[zcnt++] = t;
+	break;
+	    }
+
+	    val = (((q->a*t+q->b)*t+q->c)*t+q->d)*t+q->e;
+	    if ( val>-.0001 && val<.0001 ) {
+		ts[zcnt++] = t;
+	break;
+	    } else if ( val>0 ) {
+		top = val;
+		topt = t;
+	    } else {
+		bottom = val;
+		bottomt = t;
+	    }
+	}
+    }
+    for ( i=zcnt; i<4; ++i )
+	ts[i] = -999999;
+return( zcnt );
+}
+#endif
 
 static int QuarticSolve(Quartic *q,double ts[4]) {
     int i,j,k;
@@ -3747,6 +3853,63 @@ return( soln!=0 );
     }
     t1s[found] = t2s[found] = -1;
 return( found!=0 );
+}
+
+int LineTangentToSplineThroughPt(Spline *s, BasePoint *pt, double ts[4],
+	double tmin, double tmax) {
+    /* attempt to find a line though the point pt which is tangent to the spline */
+    /*  we return t of the tangent point on the spline (if any)		  */
+    /* So the slope of the line through pt&tangent point must match slope */
+    /*  at the tangent point on the spline. Or...			  */
+    /* (pt.x-xt)/(pt.y-yt) = (dx/dt)/(dy/dt)				  */
+    /* (pt.x-xt)*(dy/dt) = (pt.y-yt)*(dx/dt)				  */
+    /* (pt.x - ax*t^3 - bx*t^2 - cx*t - dx)(3ay*t^2 + 2by*t + cy) =	  */
+    /*      (pt.y - ay*t^3 - by*t^2 - cy*t^2 - dy)(3ax*t^2 + 2bx*t + cx)  */
+    /* (-ax*3ay + ay*3ax) * t^5 +					  */
+    /*   (-ax*2by - bx*3ay + ay*2bx + by*3ax) * t^4 +			  */
+    /*   (-ax*cy - bx*2by - cx*3ay + ay*cx + by*2bx + cy*3ax) * t^3 +	  */
+    /*   (pt.x*3ay - bx*cy - cx*2by - dx*3ay - pt.y*3ax + by*cx + cy*2bx + dy*3ax) * t^2 +	*/
+    /*   (pt.x*2by - cx*cy - dx*2by - pt.y*2bx + cy*cx + dy*2bx) * t + 	  */
+    /*   (pt.x*cy - dx*cy - pt.y*cx + dy*cx) = 0 			  */
+    /* Yeah! The order 5 terms cancel out 				  */
+    /* (ax*by - bx*ay) * t^4 +						  */
+    /*   (2*ax*cy - 2*cx*ay) * t^3 +					  */
+    /*   (3*pt.x*ay + bx*cy - cx*by - 3*dx*ay - 3*pt.y*ax + 3*dy*ax) * t^2 +	*/
+    /*   (2*pt.x*by - 2*dx*by - 2*pt.y*bx + 2*dy*bx) * t +		  */
+    /*   (pt.x*cy - dx*cy - pt.y*cx + dy*cx) = 0 			  */
+    Quartic quad;
+    int i,j,k;
+
+    if ( !finite(pt->x) || !finite(pt->y) ) {
+	IError( "Non-finite arguments passed to LineTangentToSplineThroughPt");
+return( -1 );
+    }
+
+    quad.a = s->splines[0].a*s->splines[1].b - s->splines[0].b*s->splines[1].a;
+    quad.b = 2*s->splines[0].a*s->splines[1].c - 2*s->splines[0].c*s->splines[1].a;
+    quad.c = 3*pt->x*s->splines[1].a + s->splines[0].b*s->splines[1].c - s->splines[0].c*s->splines[1].b - 3*s->splines[0].d*s->splines[1].a - 3*pt->y*s->splines[0].a + 3*s->splines[1].d*s->splines[0].a;
+    quad.d = 2*pt->x*s->splines[1].b - 2*s->splines[0].d*s->splines[1].b - 2*pt->y*s->splines[0].b + 2*s->splines[1].d*s->splines[0].b;
+    quad.e = pt->x*s->splines[1].c - s->splines[0].d*s->splines[1].c - pt->y*s->splines[0].c + s->splines[1].d*s->splines[0].c;
+
+    if ( _QuarticSolve(&quad,ts)==-1 )
+return( -1 );
+
+    for ( i=0; i<4 && ts[i]!=-999999; ++i ) {
+	if ( ts[i]>tmin-.0001 && ts[i]<tmin ) ts[i] = tmin;
+	if ( ts[i]>tmax && ts[i]<tmax+.001 ) ts[i] = tmax;
+	if ( ts[i]>tmax || ts[i]<tmin ) ts[i] = -999999;
+    }
+    for ( i=3; i>=0 && ts[i]==-999999; --i );
+    if ( i==-1 )
+return( -1 );
+    for ( j=i ; j>=0 ; --j ) {
+	if ( ts[j]<0 ) {
+	    for ( k=j+1; k<=i; ++k )
+		ts[k-1] = ts[k];
+	    ts[i--] = -999999;
+	}
+    }
+return(i+1);
 }
 
 static int XSolve(Spline *spline,real tmin, real tmax,FindSel *fs) {
