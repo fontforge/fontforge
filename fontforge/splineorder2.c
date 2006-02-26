@@ -543,6 +543,8 @@ return( -1 );			/* Points too close for a good approx */
 		data[q-1].cp.y=mid.y;
 	    else if ( slopemin.y==0 )
 		data[q-1].cp.y=data[q-1].bp.y;
+	    else if ( RealNear(slopemin.x/slopemin.y,slopemid.x/slopemid.y) )
+    goto break_two_loops;
 	    else
 		data[q-1].cp.y = -(data[q-1].bp.x-(slopemin.x/slopemin.y)*data[q-1].bp.y-mid.x+(slopemid.x/slopemid.y)*mid.y)/(slopemin.x/slopemin.y-slopemid.x/slopemid.y);
 	    if ( ptcnt==0 ) {
