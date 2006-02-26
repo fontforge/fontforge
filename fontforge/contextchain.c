@@ -815,7 +815,7 @@ return(false);
 	ans = gwwv_ask(title,(const char **) buts,0,1,
 		strcmp(title,_("Bad Class"))==0? _("The class member \"%.20s\" is not in this font.\nIs that what you want?") :
 		strcmp(title,_("Bad Coverage"))==0? _("The coverage table member \"%.20s\" is not in this font.\nIs that what you want?") :
-		    _("There is no glyph named \"%.20hs\" in this font.\nIs that what you want?") );
+		    _("There is no glyph named \"%.20hs\" in this font.\nIs that what you want?"), missingname );
 	free(missingname);
 return(!ans);
     }
