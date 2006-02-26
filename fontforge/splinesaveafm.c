@@ -2655,7 +2655,10 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map
 	    if ( !is_math ) {
 		if ( sc->width==0 )
 		    widths[i] = 1;	/* TeX/Omega use a 0 width as a flag for non-existant character. Stupid. So zero width glyphs must be given the smallest posible non-zero width, to ensure they exists. GRRR. */
-		else
+		else if ( sc->width*scale >= (16<<20) ) {
+		    LogError( _("The width of %s is too big to fit in a tfm fix_word, it shall be truncated to the largest size allowed."), sc->name );
+		    widths[i] = (16<<20)-1;
+		} else
 		    widths[i] = sc->width*scale;
 		if ( (pst=SCFindPST(sc,pst_position,CHR('I','T','L','C'),-1,-1))!=NULL )
 		    italics[i] = pst->u.pos.h_adv_off*scale;
