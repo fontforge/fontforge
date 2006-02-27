@@ -11935,7 +11935,7 @@ msgstr "これは OFM ファイルではないようです. これを読み込�
 msgid ""
 "The width of %s is too big to fit in a tfm fix_word, it shall be truncated to the largest size allowed."
 msgstr ""
-"%s の幅が大きすぎてTFMのfix_wordに収まらないので,可能な最大サイズに切り詰めます";
+"%s の幅が大きすぎてTFMのfix_wordに収まらないので,可能な最大サイズに切り詰めます"
 
 msgid "Couldn't find referenced character \"%s\" in %s\n"
 msgstr "被参照文字 \"%s\" (%s 内の) を参照できません\n"
