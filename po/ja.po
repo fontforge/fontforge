@@ -5493,7 +5493,7 @@ msgid "Tundra Nenets"
 msgstr "ツンドラ・ネネツ語"
 
 msgid "Tonga"
-msgstr "トンガ(Tonga)語"
+msgstr "トンガ語(ニヤサ地方)"
 
 msgid "Todo"
 msgstr "トド語"
@@ -10033,7 +10033,7 @@ msgid "Irish Gaelic (with dot)"
 msgstr "アイルランド・ゲール語(点つき)"
 
 msgid "Tongan"
-msgstr "トンガ(Tongan)語"
+msgstr "トンガ語(トンガ諸島)"
 
 msgid "Greek (polytonic)"
 msgstr "ギリシャ語(古典)"
@@ -11932,6 +11932,11 @@ msgstr ""
 msgid "This doesn't look like an ofm file, I don't know how to read it."
 msgstr "これは OFM ファイルではないようです. これを読み込む方法が解りません."
 
+msgid ""
+"The width of %s is too big to fit in a tfm fix_word, it shall be truncated to the largest size allowed."
+msgstr ""
+"%s の幅が大きすぎてTFMのfix_wordに収まらないので,可能な最大サイズに切り詰めます";
+
 msgid "Couldn't find referenced character \"%s\" in %s\n"
 msgstr "被参照文字 \"%s\" (%s 内の) を参照できません\n"
 
@@ -12085,7 +12090,7 @@ msgid "Script|Javanese"
 msgstr "ジャワ文字"
 
 msgid "Script|Kannada"
-msgstr "カンナダ語"
+msgstr "カンナダ文字"
 
 msgid "Script|Khmer"
 msgstr "クメール文字"
