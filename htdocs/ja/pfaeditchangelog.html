@@ -652,23 +652,28 @@
 	caret or a nested lookup. -->
 	合字キャレットまたは入れ子になった照合を含むフォントに別のフォントを併合しようとするとクラッシュしていました。
       <LI>
-	Made FontForge cognizant of the proposed unicode dotlessj character (0237),
+<!--	Made FontForge cognizant of the proposed unicode dotlessj character (0237),
 	it will now use either this or the dotlessj in adobe's private use area
-	(depending on which is in the font)
+	(depending on which is in the font) -->
+	FontForge が提案済みの文字 dotlessj (U+0237) を認識するようにしたので、ここか Adobe の私用領域のどちらか (フォントにどちらが含まれるかにより異なる) を用いるようになりました。
       <LI>
-	FontForge would crash when trying to build an accented character based on
-	inverted breve in pala.ttf
+<!--	FontForge would crash when trying to build an accented character based on
+	inverted breve in pala.ttf -->
+	FontForge は、pala.ttf に含まれる逆向きのブリーブに依存するアクセントつき文字を構築しようとするとクラッシュを起こしていました。
 	<UL>
 	  <LI>
-	    It wrongly considered pala.ttf to be slightly italic (.0005&#176;)
+<!--	    It wrongly considered pala.ttf to be slightly italic (.0005&#176;) -->
+	    pala.ttf が微妙に傾いている (0.0005°) と間違って解釈していました。
 	  <LI>
-	    It would crash when doing this in an italic font
+<!--	    It would crash when doing this in an italic font -->
+	    構築をイタリックフォントで行うとクラッシュするようになっていました。
 	</UL>
 	<P>
 	  <HR>
       <LI>
-	When importing postscript (type3 fonts, eps files) counter-clockwise paths
-	which are both stroked and filled cause problems
+<!--	When importing postscript (type3 fonts, eps files) counter-clockwise paths
+	which are both stroked and filled cause problems -->
+	PostScript (Type3 フォント、EPS ファイル) の反時計回りの、線描きと塗りつぶしの両方を含むパスを取り込もうとすると問題を起こしていました。
       <LI>
 <!--	Changed the version stamp of otb fonts from 'OTTO' to 1.0 -->
 	OTB フォントのバージョンスタンプを 'OTTO' から 1.0 に変更。
@@ -678,57 +683,73 @@
     2003年12月10日
     <UL>
       <LI>
-	When there were multiple features with the same tag (different scripts with
+<!--	When there were multiple features with the same tag (different scripts with
 	'kern' for instance) FontForge would produce multiple copies of the same
-	lookup instead of different lookups.
+	lookup instead of different lookups. -->
+	同じタグに複数の機能が存在する場合に (例えば、用字系の異なる 'kern' があるとき) FontForge は異なる照合を作成しないで同じ照合のコピーを複数作成していました。
       <LI>
-	FontForge was not setting the right to left lookup flag bit properly for
-	hebrew (and presumably arabic) kerning
+<!--	FontForge was not setting the right to left lookup flag bit properly for
+	hebrew (and presumably arabic) kerning -->
+	FontForge は、右横書き照合フラグビットをヘブライ文字に対して (また、おそらくアラビア文字に対しても) 正しくセットしていませんでした。
       <LI>
-	Remove overlap was coalescing some splines that it should not have.
+<!--	Remove overlap was coalescing some splines that it should not have. -->
+	重複除去が、合体してはならないスプラインを合体させている場合がありました。
       <LI>
-	Typo in expand stroke meant that some round line joins were really weird
+<!--	Typo in expand stroke meant that some round line joins were really weird -->
+	線幅拡大の誤字が、ラウンドジョインの時に非常に奇妙な結果をもたらしすことがありました。
     </UL>
   <LI>
 <!--5-Dec-2003-->
     2003年12月5日
     <UL>
       <LI>
-	When changing the ascent/descent with fontinfo or scaletoem some of the OS/2
-	fields did not get updated properly.
+<!--	When changing the ascent/descent with fontinfo or scaletoem some of the OS/2
+	fields did not get updated properly. -->
+	フォント情報ダイアログや ScaleToEm() で高さ/深さを変更したときに、OS/2 フィールドのいくつが正確に更新されていませんでした。
       <LI>
-	The OS/2 TypoDescent field was set positive instead of negative.
+<!--	The OS/2 TypoDescent field was set positive instead of negative. -->
+	OS/2 の TypoDescent フィールドが負の値でなく正の値に設定されていました。
       <LI>
-	Added two scripting functions SetTTFName and GetTTFName to give scripts access
-	to the truetype names as well as the PS ones
+<!--	Added two scripting functions SetTTFName and GetTTFName to give scripts access
+	to the truetype names as well as the PS ones -->
+	スクリプトが PS 名前文字列と同様に TrueType 名前文字列にアクセスできるように SetTTFName() と GetTTFName() を追加しました。
       <LI>
-	Patch from Kazuyuki. SetPanose didn't work when argument was an array.
+<!--	Patch from Kazuyuki. SetPanose didn't work when argument was an array. -->
+	Kazuyuki からのパッチ。SetPanose に配列を引数に与えたときにうまく動いていませんでした。
       <LI>
-	New French translations from Pierre
+<!--	New French translations from Pierre -->
+	Pierre からの新しいフランス語訳。
       <LI>
-	$copyright didn't return the correct thing (Patch from Giuseppe Ghibo)
+<!--	$copyright didn't return the correct thing (Patch from Giuseppe Ghibo) -->
+	$copyright が正しいデータを返していませんでした (Giuseppe Ghibo からのパッチ)
       <LI>
-	Kerning pair data for non-ASCII unicode characters did not get output properly
-	into SVG fonts
+<!--	Kerning pair data for non-ASCII unicode characters did not get output properly
+	into SVG fonts -->
+	非 ASCII の Unicode 文字のカーニングペアが、SVG フォントに正しく出力されていませんでした。
       <LI>
-	The AddATT scripting command did not add ligatures correctly leading to problems
-	when time came to generate a font.
+<!--	The AddATT scripting command did not add ligatures correctly leading to problems
+	when time came to generate a font. -->
+	AddATT() スクリプトコマンドが合字を正しく追加しておらず、フォント出力時に問題を起こしていました。
     </UL>
   <LI>
 <!--23-Nov-2003-->
     2003年11月23日
     <UL>
       <LI>
-	FontForge would crash if given an encoding for the locale which it didn't
-	understand
+<!--	FontForge would crash if given an encoding for the locale which it didn't
+	understand -->
+	FontForge が理解できないエンコーディング名を与えられたらクラッシュしていました。
       <LI>
-	Center/Thirds in width from the font view would change the width
+<!--	Center/Thirds in width from the font view would change the width -->
+	フォントビューから中央揃え/1:2の揃えを行うとクラッシュしていました。
       <LI>
-	There was a synchronization problem and the truetype debugger window could
-	deadlock
+<!--	There was a synchronization problem and the truetype debugger window could
+	deadlock -->
+	TrueType デバッガに同期問題があってデッドロックを引き起こしていました。
       <LI>
-	FontForge failed to read a Contextual (but not Contextual chaining) Coverage
-	lookup properly.
+<!--	FontForge failed to read a Contextual (but not Contextual chaining) Coverage
+	lookup properly. -->
+	FontForge は文脈依存の範囲照合を正しく読み込めていませんでした  (文脈連鎖依存の照合は問題ありません)。
     </UL>
   <LI>
 <!--10-Nov-2003-->
