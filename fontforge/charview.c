@@ -5640,8 +5640,7 @@ static void CVMenuNLTransform(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static void SplinePointRound(SplinePoint *sp,real factor) {
-    sp->me.x = rint(sp->me.x*factor)/factor;
-    sp->me.y = rint(sp->me.y*factor)/factor;
+
     sp->nextcp.x = rint(sp->nextcp.x*factor)/factor;
     sp->nextcp.y = rint(sp->nextcp.y*factor)/factor;
     if ( sp->next!=NULL && sp->next->order2 )
@@ -5650,6 +5649,14 @@ static void SplinePointRound(SplinePoint *sp,real factor) {
     sp->prevcp.y = rint(sp->prevcp.y*factor)/factor;
     if ( sp->prev!=NULL && sp->prev->order2 )
 	sp->prev->from->nextcp = sp->prevcp;
+    if ( sp->prev!=NULL && sp->next!=NULL && sp->next->order2 &&
+	    sp->ttfindex == 0xffff ) {
+	sp->me.x = (sp->nextcp.x + sp->prevcp.x)/2;
+	sp->me.y = (sp->nextcp.y + sp->prevcp.y)/2;
+    } else {
+	sp->me.x = rint(sp->me.x*factor)/factor;
+	sp->me.y = rint(sp->me.y*factor)/factor;
+    }
 }
 
 void SplineSetsRound2Int(SplineSet *spl,real factor) {
