@@ -458,6 +458,7 @@ return( end );
 return( _ttfapprox(ps,tmin,tmax,start));
 }
 
+#if !defined(FONTFORGE_CONFIG_NON_SYMMETRIC_QUADRATIC_CONVERSION)
 typedef struct qpoint {
     BasePoint bp;
     BasePoint cp;
@@ -599,6 +600,7 @@ return( q );
     }
 return( -1 );
 }
+#endif
 
 static SplinePoint *AlreadyQuadraticCheck(Spline *ps, SplinePoint *start) {
     SplinePoint *sp;
@@ -635,9 +637,11 @@ return( NULL );
 }
 
 static SplinePoint *ttfApprox(Spline *ps, SplinePoint *start) {
+#if !defined(FONTFORGE_CONFIG_NON_SYMMETRIC_QUADRATIC_CONVERSION)
     double magicpoints[6], last;
     int cnt, i, j, qcnt;
     QPoint data[8*10];
+#endif
     SplinePoint *ret;
 /* Divide the spline up at extrema and points of inflection. The first	*/
 /*  because ttf splines should have points at their extrema, the second */
@@ -646,6 +650,7 @@ static SplinePoint *ttfApprox(Spline *ps, SplinePoint *start) {
     if (( ret = AlreadyQuadraticCheck(ps,start))!=NULL )
 return( ret );
 
+#if !defined(FONTFORGE_CONFIG_NON_SYMMETRIC_QUADRATIC_CONVERSION)
     cnt = Spline2DFindExtrema(ps,magicpoints);
 
     if ( ps->splines[0].a!=0 )
@@ -692,6 +697,7 @@ return( ret );
     qcnt = PrettyApprox(ps,last,1,data,qcnt);
     if ( qcnt!=-1 )
 return( CvtDataToSplines(data,1,qcnt,start));
+#endif
 
 return( __ttfApprox(ps,0,1,start));
 }
