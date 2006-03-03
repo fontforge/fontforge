@@ -256,6 +256,7 @@ return;
 	    free(glnum);
 	}
     }
+    free(kcnt.hbreaks); free(kcnt.vbreaks);
 
     if ( at->applemode ) for ( isv=0; isv<2; ++isv ) {
 	for ( kc=isv ? sf->vkerns : sf->kerns; kc!=NULL; kc=kc->next ) if ( SLIHasDefault(sf,kc->sli) ) {
@@ -329,13 +330,16 @@ void ttf_dumpkerns(struct alltabs *at, SplineFont *sf) {
 	mm = NULL;
     } else {
 	if ( mm!=NULL ) {
-	    for ( i=0; i<mm->instance_count; ++i )
+	    for ( i=0; i<mm->instance_count; ++i ) {
 		mmcnt += CountKerns(at,mm->instances[i],&kcnt);
+		free(kcnt.hbreaks); free(kcnt.vbreaks);
+	    }
 	    sf = mm->normal;
 	}
     }
 
     sum = CountKerns(at,sf,&kcnt);
+    free(kcnt.hbreaks); free(kcnt.vbreaks);
     if ( sum==0 && mmcnt==0 ) {
 	if ( must_use_old_style )
 	    SFKernCleanup(sf,false);
