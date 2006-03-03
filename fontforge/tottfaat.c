@@ -92,6 +92,10 @@ struct kerncounts {
     int kccnt;
     int vkccnt;
     int ksm;
+    int hsubs;
+    int *hbreaks;
+    int vsubs;
+    int *vbreaks;
 };
 
 static int CountKerns(struct alltabs *at, SplineFont *sf, struct kerncounts *kcnt) {
@@ -113,6 +117,54 @@ static int CountKerns(struct alltabs *at, SplineFont *sf, struct kerncounts *kcn
 		++vcnt, ++j;
 	if ( j>mv ) mv=j;
     }
+    kcnt->cnt = cnt;
+    kcnt->vcnt = vcnt;
+    kcnt->mh = mh;
+    kcnt->mv = mv;
+    kcnt->hsubs = kcnt->vsubs = 1;
+    kcnt->hbreaks = kcnt->vbreaks = NULL;
+    if ( cnt>=10000 ) {
+	/* the sub-table size is 6*cnt+14 or so and needs to be less 65535 */
+	/*  so break it up into little bits */
+	/* We might not need this when applemode is set because the subtable */
+	/*  length is a long. BUT... there's a damn binsearch header with */
+	/*  shorts in it still */
+	int b=0;
+	kcnt->hbreaks = galloc((at->gi.gcnt+1)*sizeof(int));
+	cnt = 0;
+	for ( i=0; i<at->gi.gcnt; ++i ) if ( at->gi.bygid[i]!=-1 ) {
+	    j = 0;
+	    for ( kp = sf->glyphs[at->gi.bygid[i]]->kerns; kp!=NULL; kp=kp->next )
+		if ( kp->off!=0 )
+		    ++j;
+	    if ( (cnt+j)*6>64000L && cnt!=0 ) {
+		kcnt->hbreaks[b++] = cnt;
+		cnt = 0;
+	    }
+	    cnt += j;
+	}
+	kcnt->hbreaks[b++] = cnt;
+	kcnt->hsubs = b;
+    }
+    if ( vcnt>=10000 ) {
+	int b=0;
+	kcnt->vbreaks = galloc((at->gi.gcnt+1)*sizeof(int));
+	vcnt = 0;
+	for ( i=0; i<at->gi.gcnt; ++i ) if ( at->gi.bygid[i]!=-1 ) {
+	    j = 0;
+	    for ( kp = sf->glyphs[at->gi.bygid[i]]->vkerns; kp!=NULL; kp=kp->next )
+		if ( kp->off!=0 )
+		    ++j;
+	    if ( (vcnt+j)*6>64000L && vcnt!=0 ) {
+		kcnt->vbreaks[b++] = vcnt;
+		vcnt = 0;
+	    }
+	    vcnt += j;
+	}
+	kcnt->vbreaks[b++] = vcnt;
+	kcnt->vsubs = b;
+    }
+
     if ( at->applemode ) {	/* if we aren't outputting Apple's extensions to kerning (by classes, and by state machine) then don't check for those extensions */
 	for ( kc=sf->kerns; kc!=NULL; kc = kc->next ) if ( SLIHasDefault(sf,kc->sli) )
 	    ++kccnt;
@@ -122,25 +174,23 @@ static int CountKerns(struct alltabs *at, SplineFont *sf, struct kerncounts *kcn
 	    if ( sm->type == asm_kern )
 		++ksm;
     }
-    kcnt->cnt = cnt;
-    kcnt->vcnt = vcnt;
-    kcnt->mh = mh;
-    kcnt->mv = mv;
     kcnt->kccnt = kccnt;
     kcnt->vkccnt = vkccnt;
     kcnt->ksm = ksm;
-return( (cnt!=0) + (vcnt!=0) + kccnt + vkccnt + ksm );
+return( kcnt->hsubs + kcnt->vsubs + kccnt + vkccnt + ksm );
 }
 
 static void ttf_dumpsfkerns(struct alltabs *at, SplineFont *sf, int tupleIndex, int version) {
     struct kerncounts kcnt;
-    int i, j, k, m, c;
+    int i, j, k, m, c, gid, tot, km;
     KernPair *kp;
     KernClass *kc;
     ASM *sm;
     uint16 *glnum, *offsets;
     int isv;
     int tupleMask = tupleIndex==-1 ? 0 : 0x2000;
+    int b, bmax;
+    int *breaks;
 
     if ( CountKerns(at,sf,&kcnt)==0 )
 return;
@@ -149,50 +199,57 @@ return;
     
     for ( isv=0; isv<2; ++isv ) {
 	c = isv ? kcnt.vcnt : kcnt.cnt;
-	m = isv ? kcnt.mv : kcnt.mh;
+	bmax = isv ? kcnt.vsubs : kcnt.hsubs;
+	breaks = isv ? kcnt.vbreaks : kcnt.hbreaks;
 	if ( c!=0 ) {
-	    if ( version==0 ) {
-		putshort(at->kern,0);		/* subtable version */
-		putshort(at->kern,(7+3*c)*sizeof(uint16)); /* subtable length */
-		putshort(at->kern,!isv);	/* coverage, flags=hor/vert&format=0 */
-	    } else {
-		putlong(at->kern,(8+3*c)*sizeof(uint16)); /* subtable length */
-		/* Apple's new format has a completely different coverage format */
-		putshort(at->kern,(isv?0x8000:0)| /* format 0, horizontal/vertical flags (coverage) */
-				tupleMask);
-		putshort(at->kern,tupleIndex);
-	    }
-	    putshort(at->kern,c);
-	    for ( i=1,j=0; i<=c; i<<=1, ++j );
-	    i>>=1; --j;
-	    putshort(at->kern,i*6);		/* binary search headers */
-	    putshort(at->kern,j);
-	    putshort(at->kern,6*(c-i));
-
-	    glnum = galloc(m*sizeof(uint16));
-	    offsets = galloc(m*sizeof(uint16));
-	    for ( i=0; i<at->gi.gcnt; ++i ) if ( at->gi.bygid[i]!=-1 ) {
-		SplineChar *sc = sf->glyphs[at->gi.bygid[i]];
-		m = 0;
-		for ( kp = isv ? sc->vkerns : sc->kerns; kp!=NULL; kp=kp->next ) {
-		    if ( kp->off!=0 ) {
-			/* order the pairs */
-			for ( j=0; j<m; ++j )
-			    if ( kp->sc->ttf_glyph<glnum[j] )
-			break;
-			for ( k=m; k>j; --k ) {
-			    glnum[k] = glnum[k-1];
-			    offsets[k] = offsets[k-1];
-			}
-			glnum[j] = kp->sc->ttf_glyph;
-			offsets[j] = kp->off;
-			++m;
-		    }
+	    km = isv ? kcnt.mv : kcnt.mh;
+	    glnum = galloc(km*sizeof(uint16));
+	    offsets = galloc(km*sizeof(uint16));
+	    gid = 0;
+	    for ( b=0; b<bmax; ++b ) {
+		c = bmax==1 ? c : breaks[b];
+		if ( version==0 ) {
+		    putshort(at->kern,0);		/* subtable version */
+		    putshort(at->kern,(7+3*c)*sizeof(uint16)); /* subtable length */
+		    putshort(at->kern,!isv);	/* coverage, flags=hor/vert&format=0 */
+		} else {
+		    putlong(at->kern,(8+3*c)*sizeof(uint16)); /* subtable length */
+		    /* Apple's new format has a completely different coverage format */
+		    putshort(at->kern,(isv?0x8000:0)| /* format 0, horizontal/vertical flags (coverage) */
+				    tupleMask);
+		    putshort(at->kern,tupleIndex);
 		}
-		for ( j=0; j<m; ++j ) {
-		    putshort(at->kern,i);
-		    putshort(at->kern,glnum[j]);
-		    putshort(at->kern,offsets[j]);
+		putshort(at->kern,c);
+		for ( i=1,j=0; i<=c; i<<=1, ++j );
+		i>>=1; --j;
+		putshort(at->kern,i*6);		/* binary search headers */
+		putshort(at->kern,j);
+		putshort(at->kern,6*(c-i));
+
+		for ( tot = 0; gid<at->gi.gcnt && tot<c; ++gid ) if ( at->gi.bygid[gid]!=-1 ) {
+		    SplineChar *sc = sf->glyphs[at->gi.bygid[gid]];
+		    m = 0;
+		    for ( kp = isv ? sc->vkerns : sc->kerns; kp!=NULL; kp=kp->next ) {
+			if ( kp->off!=0 ) {
+			    /* order the pairs */
+			    for ( j=0; j<m; ++j )
+				if ( kp->sc->ttf_glyph<glnum[j] )
+			    break;
+			    for ( k=m; k>j; --k ) {
+				glnum[k] = glnum[k-1];
+				offsets[k] = offsets[k-1];
+			    }
+			    glnum[j] = kp->sc->ttf_glyph;
+			    offsets[j] = kp->off;
+			    ++m;
+			}
+		    }
+		    for ( j=0; j<m; ++j ) {
+			putshort(at->kern,gid);
+			putshort(at->kern,glnum[j]);
+			putshort(at->kern,offsets[j]);
+		    }
+		    tot += m;
 		}
 	    }
 	    free(offsets);
