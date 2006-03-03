@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 19-Feb-2006 -->
+  <!-- AP: Last modified: 2-Mar-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Writing scripts to change fonts in FontForge</TITLE>-->
     <TITLE>FontForge でフォントを変更するためのスクリプトの書き方</TITLE>
@@ -1253,6 +1253,10 @@ a[4][0] = "Nested array";
 	<LI>
 <!--  	fmflags&amp;0x400 =&gt; generate an ofm file (for omega) -->
   	fmflags&amp;0x400 ⇒ (Omega 用の) OFM ファイルを出力します。
+	<LI>
+<!--	fmflags&amp;0x800 =&gt; generate an old style 'kern'ing table. Only meaningful
+	  if set with OpenType (GPOS/GSUB) tables and without Apple tables. -->
+  	fmflags&amp;0x800 ⇒ 旧来のカーニングテーブル&lsquo;kern&rsquo;を出力します。OpenType (GPOS/GSUB) テーブルを出力し、Apple のテーブルを出力しない時にのみ意味があります。
 	<LI>
 <!--  	fmflags&amp;0x10000 =&gt; generate a tfm file -->
   	fmflags&amp;0x10000 ⇒ TFM ファイルを出力します。

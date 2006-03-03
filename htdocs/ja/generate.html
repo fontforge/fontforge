@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Sep-2002 -->
-  <!-- AP: Last modified: 5-Feb-2006 -->
+  <!-- AP: Last modified: 2-Mar-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Generate Font Dialog</TITLE>-->
     <TITLE>フォント出力ダイアログ</TITLE>
@@ -280,11 +280,19 @@
       at the other.
       (<FONT COLOR="Red"><STRONG><BIG>CAVEAT</BIG></STRONG></FONT>: The above statement
       was true up to 10.4 ("Tiger") after 10.4, Apple will use OpenType tables
-      if they are present and ignore AAT tables. Unfortunately Apple doesn't implement
-      all of OpenType so Apple's behavior is likely to be
+      if they are present and may ignore AAT tables. Unfortunately Apple doesn't
+      implement all of OpenType so Apple's behavior may be
       <FONT COLOR="Red"><STRONG>WRONG</STRONG></FONT>). -->
       <CODE>[] OpenTypeの仕様</CODE> ― ここにチェックが入っている場合、フォント内には OpenType で使用されるテーブルが作成されます。ここと [] Apple の仕様 の両方にチェックが入っている場合、フォントには 2 組のテーブルが格納され、Apple は片方のセットを参照し、他の皆はもう片方を参照するでしょう。
-      (<FONT COLOR="Red"><STRONG><BIG>警告</BIG></STRONG></FONT>: 上記の記述が正しいのは、10.4 (“Tiger”) より前のバージョンに限られます。OS X 10.4 からは、Apple は OpenType テーブルが存在する時はそれを使用し、AAT テーブルを無視するようになりました。残念ながら Apple は OpenType の全機能を実装していないので、Apple 機上での振舞いはおそらく<FONT COLOR="Red"><STRONG>間違った</STRONG></FONT>)ものとなるでしょう。
+      (<FONT COLOR="Red"><STRONG><BIG>警告</BIG></STRONG></FONT>: 上記の記述が正しいのは、10.4 (“Tiger”) より前のバージョンに限られます。OS X 10.4 からは、Apple は OpenType テーブルが存在する時はそれを使用し、AAT テーブルを無視するでしょう。残念ながら Apple は OpenType の全機能を実装していないので、おそらく Apple 機上では<FONT COLOR="Red"><STRONG>間違った</STRONG></FONT>)振舞いをするでしょう。
+    <LI>
+<!--  [] Old style 'kern' - - If this is checked along with OpenType then both an
+      OpenType 'GPOS' and an old style 'kern' table will be generated (assuming
+      there are any kern pairs, of course). The OpenType mailing list considers
+      this a bad idea (some applications may add the kerning values from both tables
+      they say), but it may be helpful for applications which don't support 'GPOS'
+      kerning. -->
+      <CODE>[] 旧来の'kern'</CODE> ― もし <CODE>OpenType の仕様</CODE>と同時にこれにチェックをつけると、OpenType の 'GPOS' テーブルと旧来の 'kern' テーブルの両方が出力されます (もちろん、カーニングペアが含まれている場合だけです)。OpenType メーリングリストでは、これは拙劣な考えだとされています (一部のアプリケーションは、両方のテーブルのカーニング値を加えてしまう可能性があるそうです) が、&lsquo;GPOS&rsquo;のカーニングをサポートしていないアプリケーションには有益でしょう。
     <LI>
 <!--  [] Save Comments - - I have added my own table
       ('<A HREF="non-standard.html#PfEd">PfEd</A>') in the truetype format in which
