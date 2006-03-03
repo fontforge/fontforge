@@ -4863,7 +4863,7 @@ return( false );
 	    aat_dumpopbd(at,sf);
 	    aat_dumpprop(at,sf);
 	}
-	if ( !at->applemode && !at->opentypemode )
+	if ( !at->applemode && (!at->opentypemode || (at->gi.flags&ttf_flag_oldkern)) )
 	    ttf_dumpkerns(at,sf);		/* everybody supports a mimimal kern table */
     
 	dumpnames(at,sf,format);		/* Must be after dumpmorx which may create extra names */

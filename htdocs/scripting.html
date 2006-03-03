@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 19-Feb-2006 -->
+  <!-- AP: Last modified: 2-Mar-2006 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -908,6 +908,9 @@ a[4][0] = "Nested array";
 	  ' table containing (most) TeX font metrics information
 	<LI>
 	  fmflags&amp;0x400 =&gt; generate an ofm file (for omega)
+	<LI>
+	  fmflags&amp;0x800 =&gt; generate an old style 'kern'ing table. Only meaningful
+	  if set with OpenType (GPOS/GSUB) tables and without Apple tables.
 	<LI>
 	  fmflags&amp;0x10000 =&gt; generate a tfm file
 	<LI>
