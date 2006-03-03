@@ -1157,7 +1157,8 @@ enum ttf_flags { ttf_flag_shortps = 1, ttf_flag_nohints = 2,
 		    ttf_flag_otmode=0x20,
 		    ttf_flag_glyphmap=0x40,
 		    ttf_flag_TeXtable=0x80,
-		    ttf_flag_ofm=0x100
+		    ttf_flag_ofm=0x100,
+		    ttf_flag_oldkern=0x200	/* never set in conjunction with applemode */
 		};
 enum openflags { of_fstypepermitted=1 };
 enum ps_flags { ps_flag_nohintsubs = 0x10000, ps_flag_noflex=0x20000,

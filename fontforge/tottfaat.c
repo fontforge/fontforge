@@ -323,7 +323,7 @@ void ttf_dumpkerns(struct alltabs *at, SplineFont *sf) {
     struct kerncounts kcnt;
     int must_use_old_style = 0;
 
-    if ( !at->applemode && !at->opentypemode ) {
+    if ( !at->applemode && (!at->opentypemode || (at->gi.flags&ttf_flag_oldkern)) ) {
 	must_use_old_style = true;
 	SFKernPrepare(sf,false);
 	mm = NULL;

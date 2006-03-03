@@ -60,8 +60,9 @@ static int nfnt_warned = false, post_warned = false;
 #define CID_TTF_PfEd		1106
 #define CID_TTF_TeXTable	1107
 #define CID_TTF_OpenTypeMode	1108
-#define CID_TTF_GlyphMap	1109
-#define CID_TTF_OFM		1110
+#define CID_TTF_OldKern		1109
+#define CID_TTF_GlyphMap	1110
+#define CID_TTF_OFM		1111
 
 
 struct gfc_data {
@@ -460,6 +461,24 @@ static int OPT_PSHints(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static int OPT_Applemode(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	GWindow gw = GGadgetGetWindow(g);
+	if ( GGadgetIsChecked(g))
+	    GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_OldKern),false);
+    }
+return( true );
+}
+
+static int OPT_OldKern(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	GWindow gw = GGadgetGetWindow(g);
+	if ( GGadgetIsChecked(g))
+	    GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_AppleMode),false);
+    }
+return( true );
+}
+
 static int sod_e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	struct gfc_data *d = GDrawGetUserData(gw);
@@ -501,6 +520,9 @@ return( false );
 		    d->ttf_flags |= ttf_flag_applemode;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_OpenTypeMode)) )
 		    d->ttf_flags |= ttf_flag_otmode;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_OldKern)) &&
+			!(d->ttf_flags&ttf_flag_applemode) )
+		    d->ttf_flags |= ttf_flag_oldkern;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdComments)) )
 		    d->ttf_flags |= ttf_flag_pfed_comments;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdColors)) )
@@ -519,6 +541,9 @@ return( false );
 		    d->otf_flags |= ttf_flag_applemode;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_OpenTypeMode)) )
 		    d->otf_flags |= ttf_flag_otmode;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_OldKern)) &&
+			!(d->otf_flags&ttf_flag_applemode) )
+		    d->otf_flags |= ttf_flag_oldkern;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdComments)) )
 		    d->otf_flags |= ttf_flag_pfed_comments;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdColors)) )
@@ -619,6 +644,8 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_PfEdColors),flags&ttf_flag_pfed_colors);
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_TeXTable),flags&ttf_flag_TeXtable);
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_GlyphMap),flags&ttf_flag_glyphmap);
+    GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_OldKern),
+	    (flags&ttf_flag_oldkern) && !GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_AppleMode)));
 
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Hints),which!=1);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_HintSubs),which!=1);
@@ -640,6 +667,7 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_FullPS),which!=0);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_AppleMode),which!=0 && which!=3);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_OpenTypeMode),which!=0 && which!=3);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_OldKern),which!=0 && which!=3);
 
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_PfEd),which!=0);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_PfEdComments),which!=0);
@@ -659,8 +687,8 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     int k,group,group2;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[26];
-    GTextInfo label[26];
+    GGadgetCreateData gcd[27];
+    GTextInfo label[27];
     GRect pos;
 
     d->sod_done = false;
@@ -814,6 +842,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.popup_msg = (unichar_t *) _("Apple and MS/Adobe differ about the format of truetype and opentype files\nThis allows you to select which standard to follow for your font.\nThe main differences are:\n The requirements for the 'postscript' name in the name table conflict\n Bitmap data are stored in different tables\n Scaled composite characters are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop");
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_AppleMode;
+    gcd[k].gd.handle_controlevent = OPT_Applemode;
     gcd[k++].creator = GCheckBoxCreate;
 
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
@@ -825,7 +854,17 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.cid = CID_TTF_OpenTypeMode;
     gcd[k++].creator = GCheckBoxCreate;
 
-    gcd[k].gd.pos.x = gcd[group+6].gd.pos.x; gcd[k].gd.pos.y = gcd[k-4].gd.pos.y;
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+4; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
+    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+    label[k].text = (unichar_t *) _("Old style 'kern'");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Many applications still don't support 'GPOS' kerning.\nIf you want to include both 'GPOS' and old-style 'kern'\ntables set this check box.\nIt may not be set in conjunction with the Apple checkbox.\nThis may confuse other applications though.");
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_TTF_OldKern;
+    gcd[k].gd.handle_controlevent = OPT_OldKern;
+    gcd[k++].creator = GCheckBoxCreate;
+
+    gcd[k].gd.pos.x = gcd[group+6].gd.pos.x; gcd[k].gd.pos.y = gcd[k-5].gd.pos.y;
     gcd[k].gd.flags = gg_visible | gg_utf8_popup;
     label[k].text = (unichar_t *) _("PfaEdit Table");
     label[k].text_is_1byte = true;
@@ -834,7 +873,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.cid = CID_TTF_PfEd;
     gcd[k++].creator = GLabelCreate;
 
-    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+2; gcd[k].gd.pos.y = gcd[k-4].gd.pos.y-4;
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+2; gcd[k].gd.pos.y = gcd[k-5].gd.pos.y-4;
     gcd[k].gd.flags = gg_visible | gg_utf8_popup;
     label[k].text = (unichar_t *) _("Save Comments");
     label[k].text_is_1byte = true;
@@ -843,7 +882,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.cid = CID_TTF_PfEdComments;
     gcd[k++].creator = GCheckBoxCreate;
 
-    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-4].gd.pos.y-4;
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-5].gd.pos.y-4;
     gcd[k].gd.flags = gg_visible | gg_utf8_popup;
     label[k].text = (unichar_t *) _("Save Colors");
     label[k].text_is_1byte = true;
@@ -852,7 +891,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.cid = CID_TTF_PfEdColors;
     gcd[k++].creator = GCheckBoxCreate;
 
-    gcd[k].gd.pos.x = gcd[k-3].gd.pos.x; gcd[k].gd.pos.y = gcd[k-4].gd.pos.y;
+    gcd[k].gd.pos.x = gcd[k-3].gd.pos.x; gcd[k].gd.pos.y = gcd[k-5].gd.pos.y;
     gcd[k].gd.flags = gg_visible | gg_utf8_popup;
     label[k].text = (unichar_t *) _("TeX Table");
     label[k].text_is_1byte = true;
@@ -2018,11 +2057,28 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	    if ( fmflags&0x100000 ) old_ps_flags |= ps_flag_restrict256;
 	    if ( fmflags&0x200000 ) old_ps_flags |= ps_flag_round;
 	    if ( i==bf_otb ) {
+		old_ttf_flags = 0;
+		switch ( fmflags&0x90 ) {
+		  case 0x80:
+		    old_ttf_flags |= ttf_flag_applemode|ttf_flag_otmode;
+		  break;
+		  case 0x90:
+		    /* Neither */;
+		  break;
+		  case 0x10:
+		    old_ttf_flags |= ttf_flag_applemode;
+		  break;
+		  case 0x00:
+		    old_ttf_flags |= ttf_flag_otmode;
+		  break;
+		}
 		if ( fmflags&4 ) old_ttf_flags |= ttf_flag_shortps;
 		if ( fmflags&0x20 ) old_ttf_flags |= ttf_flag_pfed_comments;
 		if ( fmflags&0x40 ) old_ttf_flags |= ttf_flag_pfed_colors;
 		if ( fmflags&0x200 ) old_ttf_flags |= ttf_flag_TeXtable;
 		if ( fmflags&0x400 ) old_ttf_flags |= ttf_flag_ofm;
+		if ( (fmflags&0x800) && !(old_ttf_flags&ttf_flag_applemode) )
+		    old_ttf_flags |= ttf_flag_oldkern;
 	    }
 	} else if ( oldformatstate<=ff_ttfdfont || oldformatstate==ff_none ) {
 	    old_ttf_flags = 0;
@@ -2047,6 +2103,8 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	    if ( fmflags&0x100 ) old_ttf_flags |= ttf_flag_glyphmap;
 	    if ( fmflags&0x200 ) old_ttf_flags |= ttf_flag_TeXtable;
 	    if ( fmflags&0x400 ) old_ttf_flags |= ttf_flag_ofm;
+	    if ( (fmflags&0x800) && !(old_ttf_flags&ttf_flag_applemode) )
+		old_ttf_flags |= ttf_flag_oldkern;
 	} else {
 	    old_otf_flags = 0;
 		/* Applicable postscript flags */
@@ -2075,8 +2133,10 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	    if ( fmflags&0x20 ) old_otf_flags |= ttf_flag_pfed_comments;
 	    if ( fmflags&0x40 ) old_otf_flags |= ttf_flag_pfed_colors;
 	    if ( fmflags&0x100 ) old_otf_flags |= ttf_flag_glyphmap;
-	    if ( fmflags&0x200 ) old_ttf_flags |= ttf_flag_TeXtable;
-	    if ( fmflags&0x400 ) old_ttf_flags |= ttf_flag_ofm;
+	    if ( fmflags&0x200 ) old_otf_flags |= ttf_flag_TeXtable;
+	    if ( fmflags&0x400 ) old_otf_flags |= ttf_flag_ofm;
+	    if ( (fmflags&0x800) && !(old_otf_flags&ttf_flag_applemode) )
+		old_otf_flags |= ttf_flag_oldkern;
 	}
     }
 
