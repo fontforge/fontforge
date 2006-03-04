@@ -470,7 +470,7 @@ static int comparedata(Spline *ps,QPoint *data,int qfirst,int qlast,
 	int round_to_int ) {
     Spline ttf;
     int i;
-    double err = round_to_int ? 3 : 1;
+    double err = round_to_int ? 2 : 1;
 
     memset(&ttf,0,sizeof(ttf));
     for ( i=qfirst; i<qlast; ++i ) {
@@ -653,10 +653,29 @@ static SplinePoint *ttfApprox(Spline *ps, SplinePoint *start) {
     double magicpoints[6], last;
     int cnt, i, j, qcnt;
     QPoint data[8*10];
-    int round_to_int = ps->from->me.x==rint(ps->from->me.x) &&
-	    ps->from->me.y==rint(ps->from->me.y) &&
-	    ps->to->me.x == rint(ps->to->me.x) &&
-	    ps->to->me.y == rint(ps->to->me.y);
+    int round_to_int =
+    /* The end points are at integer points, or one coord is at half while */
+    /*  the other is at an integer (ie. condition for ttf interpolated point)*/
+	    ((ps->from->me.x==rint(ps->from->me.x) &&
+	      ps->from->me.y==rint(ps->from->me.y)) ||
+	     (ps->from->me.x==rint(ps->from->me.x) &&
+	      ps->from->me.x==ps->from->nextcp.x &&
+	      ps->from->me.y!=ps->from->nextcp.y &&
+	      2*ps->from->me.y==rint(2*ps->from->me.y)) ||
+	     (ps->from->me.y==rint(ps->from->me.y) &&
+	      ps->from->me.y==ps->from->nextcp.y &&
+	      ps->from->me.x!=ps->from->nextcp.x &&
+	      2*ps->from->me.x==rint(2*ps->from->me.x)) ) &&
+	    ((ps->to->me.x == rint(ps->to->me.x) &&
+	      ps->to->me.y == rint(ps->to->me.y)) ||
+	     (ps->to->me.x==rint(ps->to->me.x) &&
+	      ps->to->me.x==ps->to->prevcp.x &&
+	      ps->to->me.y!=ps->to->prevcp.y &&
+	      2*ps->to->me.y==rint(2*ps->to->me.y)) ||
+	     (ps->to->me.y==rint(ps->to->me.y) &&
+	      ps->to->me.y==ps->to->prevcp.y &&
+	      ps->to->me.x!=ps->to->prevcp.x &&
+	      2*ps->to->me.x==rint(2*ps->to->me.x)) );
 #endif
     SplinePoint *ret;
 /* Divide the spline up at extrema and points of inflection. The first	*/
