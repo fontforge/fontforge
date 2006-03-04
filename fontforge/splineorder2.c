@@ -119,7 +119,8 @@ return( false );
 return( false );
 	    sq = sqrt(sq);
 	    ttf_t = (-ttf->splines[dim].c-sq)/(2*ttf->splines[dim].b);
-	    if ( ttf_t>=-0.0001 && ttf_t<=1.0001 ) {	/* Optimizer gives us rounding errors */
+	    if ( ttf_t>=-0.1 && ttf_t<=1.1 ) {		/* Optimizer gives us rounding errors */
+				    /* And tmin/tmax are no longer exact */
 		val = (ttf->splines[other].b*ttf_t+ttf->splines[other].c)*ttf_t+
 			    ttf->splines[other].d;
 		if ( val>o-err && val<o+err )
@@ -127,7 +128,7 @@ return( false );
 	    }
 	    ttf_t = (-ttf->splines[dim].c+sq)/(2*ttf->splines[dim].b);
 	}
-	if ( ttf_t>=-0.0001 && ttf_t<=1.0001 ) {	/* Optimizer gives us rounding errors */
+	if ( ttf_t>=-0.1 && ttf_t<=1.1 ) {
 	    val = (ttf->splines[other].b*ttf_t+ttf->splines[other].c)*ttf_t+
 			ttf->splines[other].d;
 	    if ( val>o-err && val<o+err )
@@ -465,10 +466,11 @@ typedef struct qpoint {
     double t;
 } QPoint;
 
-static int comparedata(Spline *ps,QPoint *data,int qfirst,int qlast) {
+static int comparedata(Spline *ps,QPoint *data,int qfirst,int qlast,
+	int round_to_int ) {
     Spline ttf;
     int i;
-    double err = 1;
+    double err = round_to_int ? 3 : 1;
 
     memset(&ttf,0,sizeof(ttf));
     for ( i=qfirst; i<qlast; ++i ) {
@@ -499,11 +501,11 @@ return( start );
 }
 
 static int PrettyApprox(Spline *ps,double tmin, double tmax,
-	QPoint *data, int qcnt) {
+	QPoint *data, int qcnt, int round_to_int ) {
     int ptcnt, q, i;
-    double distance, dx, dy, t, tstart, ts[4];
-    BasePoint end, mid, slopemin, slopemid;
-    int tcnt;
+    double distance, dx, dy, tstart;
+    BasePoint end, mid, slopemin, slopemid, slopeend;
+    QPoint data2[12];
 
     if ( qcnt==-1 )
 return( -1 );
@@ -513,90 +515,98 @@ return( -1 );
 
     end.x = ((ps->splines[0].a*tmax+ps->splines[0].b)*tmax+ps->splines[0].c)*tmax+ps->splines[0].d;
     end.y = ((ps->splines[1].a*tmax+ps->splines[1].b)*tmax+ps->splines[1].c)*tmax+ps->splines[1].d;
+    slopeend.x = (3*ps->splines[0].a*tmax+2*ps->splines[0].b)*tmax+ps->splines[0].c;
+    slopeend.y = (3*ps->splines[1].a*tmax+2*ps->splines[1].b)*tmax+ps->splines[1].c;
+
+    if ( round_to_int && tmax!=1 ) {
+	end.x = rint( end.x );
+	end.y = rint( end.y );
+    }
 
     dx = end.x-data[qcnt-1].bp.x; dy = end.y-data[qcnt-1].bp.y;
     distance = dx*dx + dy*dy;
 
     for ( ptcnt=0; ptcnt<10; ++ptcnt ) {
-	double toosmall = tmin, toobig = -1;
 	if ( ptcnt>1 && distance/(ptcnt*ptcnt)<100 )
 return( -1 );			/* Points too close for a good approx */
-	if ( ptcnt==0 )
-	    tstart = tmax;
-	else
-	    tstart = (tmin*ptcnt + tmax)/(ptcnt+1);
-	forever {
-	    q = qcnt;
+	q = qcnt;
+	data2[ptcnt+1].bp = end;
+	for ( i=0; i<=ptcnt; ++i ) {
+	    tstart = (tmin*(ptcnt-i) + tmax*(i+1))/(ptcnt+1);
 	    mid.x = ((ps->splines[0].a*tstart+ps->splines[0].b)*tstart+ps->splines[0].c)*tstart+ps->splines[0].d;
 	    mid.y = ((ps->splines[1].a*tstart+ps->splines[1].b)*tstart+ps->splines[1].c)*tstart+ps->splines[1].d;
-	    slopemid.x = (3*ps->splines[0].a*tstart+2*ps->splines[0].b)*tstart+ps->splines[0].c;
-	    slopemid.y = (3*ps->splines[1].a*tstart+2*ps->splines[1].b)*tstart+ps->splines[1].c;
-
-	    if ( slopemid.x==0 )
-		data[q-1].cp.x=mid.x;
-	    else if ( slopemin.x==0 )
-		data[q-1].cp.x=data[q-1].bp.x;
-	    else if ( RealNear(slopemin.y/slopemin.x,slopemid.y/slopemid.x) )
-    goto break_two_loops;
-	    else
-		data[q-1].cp.x = -(data[q-1].bp.y-(slopemin.y/slopemin.x)*data[q-1].bp.x-mid.y+(slopemid.y/slopemid.x)*mid.x)/(slopemin.y/slopemin.x-slopemid.y/slopemid.x);
-	    if ( slopemid.y==0 )
-		data[q-1].cp.y=mid.y;
-	    else if ( slopemin.y==0 )
-		data[q-1].cp.y=data[q-1].bp.y;
-	    else if ( RealNear(slopemin.x/slopemin.y,slopemid.x/slopemid.y) )
-    goto break_two_loops;
-	    else
-		data[q-1].cp.y = -(data[q-1].bp.x-(slopemin.x/slopemin.y)*data[q-1].bp.y-mid.x+(slopemid.x/slopemid.y)*mid.y)/(slopemin.x/slopemin.y-slopemid.x/slopemid.y);
-	    if ( ptcnt==0 ) {
-		data[qcnt].bp = end;
-		data[qcnt].t = tmax;
-		if ( comparedata(ps,data,qcnt,qcnt+1))
-return( qcnt+1 );
+	    if ( i==0 ) {
+		slopemid.x = (3*ps->splines[0].a*tstart+2*ps->splines[0].b)*tstart+ps->splines[0].c;
+		slopemid.y = (3*ps->splines[1].a*tstart+2*ps->splines[1].b)*tstart+ps->splines[1].c;
+		if ( slopemid.x==0 )
+		    data[q-1].cp.x=mid.x;
+		else if ( slopemin.x==0 )
+		    data[q-1].cp.x=data[q-1].bp.x;
+		else if ( RealNear(slopemin.y/slopemin.x,slopemid.y/slopemid.x) )
 	break;
+		else
+		    data[q-1].cp.x = -(data[q-1].bp.y-(slopemin.y/slopemin.x)*data[q-1].bp.x-mid.y+(slopemid.y/slopemid.x)*mid.x)/(slopemin.y/slopemin.x-slopemid.y/slopemid.x);
+		if ( slopemid.y==0 )
+		    data[q-1].cp.y=mid.y;
+		else if ( slopemin.y==0 )
+		    data[q-1].cp.y=data[q-1].bp.y;
+		else if ( RealNear(slopemin.x/slopemin.y,slopemid.x/slopemid.y) )
+	break;
+		else
+		    data[q-1].cp.y = -(data[q-1].bp.x-(slopemin.x/slopemin.y)*data[q-1].bp.y-mid.x+(slopemid.x/slopemid.y)*mid.y)/(slopemin.x/slopemin.y-slopemid.x/slopemid.y);
+	    } else {
+		data[q-1].cp.x = 2*data[q-1].bp.x - data[q-2].cp.x;
+		data[q-1].cp.y = 2*data[q-1].bp.y - data[q-2].cp.y;
 	    }
 	    data[q].bp = mid;
 	    data[q++].t = tstart;
-	    t = tstart;
-	    for ( i=1; i<=ptcnt; ++i ) {
-		data[q-1].cp.x = data[q-1].bp.x - (data[q-2].cp.x - data[q-1].bp.x);
-		data[q-1].cp.y = data[q-1].bp.y - (data[q-2].cp.y - data[q-1].bp.y);
-		tcnt = LineTangentToSplineThroughPt(ps,&data[q-1].cp,ts, t+.01, tmax+.5 );
-		if ( tcnt==-1 ) {
-		    if ( i!=ptcnt )
-	    break;
-		    t = tmax+.1;
-		    tcnt = 0;
-		} else
-		    t = ts[0];
-		data[q].bp.x = ((ps->splines[0].a*t+ps->splines[0].b)*t+ps->splines[0].c)*t+ps->splines[0].d;
-		data[q].bp.y = ((ps->splines[1].a*t+ps->splines[1].b)*t+ps->splines[1].c)*t+ps->splines[1].d;
-		data[q].t = t;
-		++q;
-	    }
-	    if ( t>tmax-.01 && t<tmax+.01 ) {
-		data[q-1].bp = end;
-		data[q-1].t = tmax;
-		if ( comparedata(ps,data,qcnt,q))
-return( q );
+
+	    tstart = (tmax*(ptcnt-i) + tmin*(i+1))/(ptcnt+1);
+	    mid.x = ((ps->splines[0].a*tstart+ps->splines[0].b)*tstart+ps->splines[0].c)*tstart+ps->splines[0].d;
+	    mid.y = ((ps->splines[1].a*tstart+ps->splines[1].b)*tstart+ps->splines[1].c)*tstart+ps->splines[1].d;
+	    if ( i==0 ) {
+		slopemid.x = (3*ps->splines[0].a*tstart+2*ps->splines[0].b)*tstart+ps->splines[0].c;
+		slopemid.y = (3*ps->splines[1].a*tstart+2*ps->splines[1].b)*tstart+ps->splines[1].c;
+		if ( slopemid.x==0 )
+		    data2[ptcnt-i].cp.x=mid.x;
+		else if ( slopeend.x==0 )
+		    data2[ptcnt-i].cp.x=data2[ptcnt-i+1].bp.x;
+		else if ( RealNear(slopeend.y/slopeend.x,slopemid.y/slopemid.x) )
 	break;
-	    }
-	    if ( tcnt==-1 )
-	break;
-	    if ( t>tmax ) {
-		toobig = tstart;
-		tstart = (toosmall+toobig)/2;
-	    } else {
-		toosmall = tstart;
-		if ( toobig==-1 )
-		    tstart += .1;
 		else
-		    tstart = (toosmall+toobig)/2;
-	    }
-	    if ( tstart==toosmall || tstart==toobig )
+		    data2[ptcnt-i].cp.x = -(data2[ptcnt-i+1].bp.y-(slopeend.y/slopeend.x)*data2[ptcnt-i+1].bp.x-mid.y+(slopemid.y/slopemid.x)*mid.x)/(slopeend.y/slopeend.x-slopemid.y/slopemid.x);
+		if ( slopemid.y==0 )
+		    data2[ptcnt-i].cp.y=mid.y;
+		else if ( slopeend.y==0 )
+		    data2[ptcnt-i].cp.y=data2[ptcnt-i+1].bp.y;
+		else if ( RealNear(slopeend.x/slopeend.y,slopemid.x/slopemid.y) )
 	break;
+		else
+		    data2[ptcnt-i].cp.y = -(data2[ptcnt-i+1].bp.x-(slopeend.x/slopeend.y)*data2[ptcnt-i+1].bp.y-mid.x+(slopemid.x/slopemid.y)*mid.y)/(slopeend.x/slopeend.y-slopemid.x/slopemid.y);
+	    } else {
+		data2[ptcnt-i].cp.x = 2*data2[ptcnt-i+1].bp.x - data2[ptcnt-i+1].cp.x;
+		data2[ptcnt-i].cp.y = 2*data2[ptcnt-i+1].bp.y - data2[ptcnt-i+1].cp.y;
+	    }
+	    data2[ptcnt-i].bp = mid;
 	}
-    break_two_loops: ;
+	if ( i==0 && ptcnt!=0 )
+    continue;
+	for ( i=0; i<=ptcnt; ++i ) {
+	    if ( ptcnt!=0 ) {
+		data[qcnt+i-1].cp.x = (data[qcnt+i-1].cp.x*(ptcnt-i) + data2[i].cp.x*i)/ptcnt;
+		data[qcnt+i-1].cp.y = (data[qcnt+i-1].cp.y*(ptcnt-i) + data2[i].cp.y*i)/ptcnt;
+	    }
+	    if ( round_to_int ) {
+		data[qcnt+i-1].cp.x = rint( data[qcnt+i-1].cp.x );
+		data[qcnt+i-1].cp.y = rint( data[qcnt+i-1].cp.y );
+	    }
+	}
+	for ( i=0; i<ptcnt; ++i ) {
+	    data[qcnt+i].bp.x = (data[qcnt+i].cp.x + data[qcnt+i-1].cp.x)/2;
+	    data[qcnt+i].bp.y = (data[qcnt+i].cp.y + data[qcnt+i-1].cp.y)/2;
+	}
+	if ( comparedata(ps,data,qcnt,q,round_to_int))
+return( q );
     }
 return( -1 );
 }
@@ -605,7 +615,9 @@ return( -1 );
 static SplinePoint *AlreadyQuadraticCheck(Spline *ps, SplinePoint *start) {
     SplinePoint *sp;
 
-    if ( RealNearish(ps->splines[0].a,0) && RealNearish(ps->splines[1].a,0) ) {
+    if ( (RealNearish(ps->splines[0].a,0) && RealNearish(ps->splines[1].a,0)) ||
+	    ((ps->splines[0].b!=0 && RealNearish(ps->splines[0].a/ps->splines[0].b,0)) &&
+	     (ps->splines[1].b!=0 && RealNearish(ps->splines[1].a/ps->splines[1].b,0))) ) {
 	/* Already Quadratic, just need to find the control point */
 	/* Or linear, in which case we don't need to do much of anything */
 	Spline *spline;
@@ -641,17 +653,24 @@ static SplinePoint *ttfApprox(Spline *ps, SplinePoint *start) {
     double magicpoints[6], last;
     int cnt, i, j, qcnt;
     QPoint data[8*10];
+    int round_to_int = ps->from->me.x==rint(ps->from->me.x) &&
+	    ps->from->me.y==rint(ps->from->me.y) &&
+	    ps->to->me.x == rint(ps->to->me.x) &&
+	    ps->to->me.y == rint(ps->to->me.y);
 #endif
     SplinePoint *ret;
 /* Divide the spline up at extrema and points of inflection. The first	*/
 /*  because ttf splines should have points at their extrema, the second */
 /*  because quadratic splines can't have points of inflection.		*/
+/* Let's not do the first (extrema) AddExtrema does this better and we  */
+/*  don't want unneeded extrema.					*/
 
     if (( ret = AlreadyQuadraticCheck(ps,start))!=NULL )
 return( ret );
 
 #if !defined(FONTFORGE_CONFIG_NON_SYMMETRIC_QUADRATIC_CONVERSION)
-    cnt = Spline2DFindExtrema(ps,magicpoints);
+    cnt = 0;
+    /* cnt = Spline2DFindExtrema(ps,magicpoints);*/
 
     if ( ps->splines[0].a!=0 )
 	magicpoints[cnt++] = -ps->splines[0].b/(3*ps->splines[0].a);
@@ -687,14 +706,13 @@ return( ret );
 
     last = 0;
     qcnt = 1;
-    data[0].bp.x = ps->splines[0].d;
-    data[0].bp.y = ps->splines[1].d;
+    data[0].bp = ps->from->me;
     data[0].t = 0;
     for ( i=0; i<cnt; ++i ) {
-	qcnt = PrettyApprox(ps,last,magicpoints[i],data,qcnt);
+	qcnt = PrettyApprox(ps,last,magicpoints[i],data,qcnt,round_to_int);
 	last = magicpoints[i];
     }
-    qcnt = PrettyApprox(ps,last,1,data,qcnt);
+    qcnt = PrettyApprox(ps,last,1,data,qcnt,round_to_int);
     if ( qcnt!=-1 )
 return( CvtDataToSplines(data,1,qcnt,start));
 #endif
