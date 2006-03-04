@@ -2800,6 +2800,7 @@ static GTextInfo **StyleNames(struct otfname *otfn) {
     int cnt;
     struct otfname *on;
     GTextInfo **tis;
+    char *cname;
 
     for ( cnt=0, on=otfn; on!=NULL; on=on->next )
 	++cnt;
@@ -2808,8 +2809,9 @@ static GTextInfo **StyleNames(struct otfname *otfn) {
 	tis[cnt] = gcalloc(1,sizeof(GTextInfo));
 	tis[cnt]->fg = tis[cnt]->bg = COLOR_DEFAULT;
 	tis[cnt]->userdata = (void *) (intpt) otfn->lang;
-	tis[cnt]->text = (unichar_t *) OtfNameToText(on->lang,on->name);
-	tis[cnt]->text_is_1byte = true;
+	cname = OtfNameToText(on->lang,on->name);
+	tis[cnt]->text = utf82u_copy(cname);
+	free(cname);
     }
     tis[cnt] = gcalloc(1,sizeof(GTextInfo));
 return( tis );
