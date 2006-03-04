@@ -470,7 +470,7 @@ static int comparedata(Spline *ps,QPoint *data,int qfirst,int qlast,
 	int round_to_int ) {
     Spline ttf;
     int i;
-    double err = round_to_int ? 2 : 1;
+    double err = round_to_int ? 1.5 : 1;
 
     memset(&ttf,0,sizeof(ttf));
     for ( i=qfirst; i<qlast; ++i ) {
