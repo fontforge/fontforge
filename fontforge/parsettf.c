@@ -766,7 +766,7 @@ static void ValidatePostScriptFontName(char *str) {
 		*pt=='%' || *pt=='/' ) {
 	    if ( !complained ) {
 #if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
-		gwwv_post_error(_("Bad Font Name"),_("The Postscript font name \"%.63s\" is invalid.\nIt should be printable ASCII,\nmust not contain (){}[]<>%%/ or space\nand must be shorted than 63 characters"),str);
+		gwwv_post_error(_("Bad Font Name"),_("The Postscript font name \"%.63s\" is invalid.\nIt should be printable ASCII,\nmust not contain (){}[]<>%%/ or space\nand must be shorter than 63 characters"),str);
 #endif
 	    }
 	    complained = true;
