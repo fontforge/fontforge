@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 2-Sep-2002 -->
-  <!-- AP: Last modified: 5-Feb-2006 -->
+  <!-- AP: Last modified: 6-Mar-2006 -->
   <TITLE>Preferences Dialog</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -230,6 +230,11 @@
       If you always want to generate Apple style TTF fonts (and never windows ones)
       then select this item.
     <DT>
+      <A NAME="AlwaysGenOpenType">AlwaysGenOpenType</A>
+    <DD>
+      Conversely you may always want to include OpenType tables in a font. It is
+      permissible to set both this and AlwaysGenApple, or to set neither.
+    <DT>
       <A NAME="PreserveTables">PreserveTables</A>
     <DD>
       A string containing a list of 4 letter table tags separated by commas. When
@@ -246,7 +251,12 @@
   </DL>
   <DL>
     <DT>
-      <IMG SRC="prefs-apps.png" WIDTH="282" HEIGHT="372" ALIGN="Right"><A NAME="AutotraceArgs">AutotraceArgs</A>
+      <IMG SRC="prefs-apps.png" WIDTH="282" HEIGHT="372" ALIGN="Right"><A NAME="PreferPotrace">PreferPotrace</A>
+    <DD>
+      If you system has both potrace and autotrace installed this allows you to
+      specify which you'd prefer FontForge to use for autotracing.
+    <DT>
+      <A NAME="AutotraceArgs">AutotraceArgs</A>
     <DD>
       This allows you to specify any arguments you want passed to the autotrace
       program. Don't try to pass something that will change the input or output

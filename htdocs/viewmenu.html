@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 5-Mar-2006 -->
+  <!-- AP: Last modified: 6-Mar-2006 -->
   <TITLE>The View Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -442,21 +442,22 @@
       Mark <A NAME="Extrema">Extrema</A>
     <DD>
       <IMG SRC="extrema-poi.png" WIDTH="285" HEIGHT="301" ALIGN="Right">In postscript
-      and truetype fonts there should (in almost all cases) be no splines where
-      the horizontal or vertical points at extrema are not endpoints. This setting
-      will mark what points are at extrema by coloring them a dull purple to remind
-      you that you should not delete them. If an extremum occurs somewhere other
-      than an end point a crosshair will be drawn around it. You might consider
-      doing <A HREF="elementmenu.html#Add-Extrema">Element-&gt;Add Extrema </A>in
-      this case (or you might not, this is ok in some cases).
+      and truetype fonts (in almost all cases) should have their horizontal and
+      vertical extrema at the endpoints of splines. This setting will mark extremal
+      endpoints by coloring them a dull purple to remind you that you should not
+      delete them. If an extremum occurs somewhere other than an end point a crosshair
+      will be drawn around it. You might consider doing
+      <A HREF="elementmenu.html#Add-Extrema">Element-&gt;Add Extrema </A>in this
+      case (or you might not, this can be ok in some cases).
     <DT>
       Mark <A NAME="PoI">Points of Inflection</A>
     <DD>
-      Points of inflection occur where the slope of the curve changes sign. Quadratic
-      splines (truetype) cannot represent points of inflection. If you have a
-      postscript font which you intend to convert to truetype it can be helpful
-      to know where these difficult points lie. (the cubic-&gt;quadratic approximation
-      routines will often add intermediate points at these points of inflection)
+      Points of inflection occur where the change in the slope of the curve (second
+      derivative) changes sign. Quadratic splines (truetype) cannot represent points
+      of inflection. If you have a postscript font which you intend to convert
+      to truetype it can be helpful to know where these difficult points lie. (the
+      cubic-&gt;quadratic approximation routines will often add intermediate points
+      at these points of inflection)
     <DT>
       <A NAME="Fill">Fill</A>
     <DD>
