@@ -320,8 +320,8 @@ static void BCExpandBitmap(BDFChar *bc, int x, int y) {
 	bc->xmin = xmin; bc->xmax = xmax; bc->bytes_per_line = bpl;
 	bc->ymin = ymin; bc->ymax = ymax;
 
-	sc = bc->sc;
-	if ( sc->parent->onlybitmaps )
+	sc = bc->sc;			/* sc can be NULL when loading bitmap references from an sfnt */
+	if ( sc!=NULL && sc->parent!=NULL && sc->parent->onlybitmaps )
 	    sc->widthset = true;	/* Mark it as used */
     }
 }

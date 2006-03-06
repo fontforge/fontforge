@@ -53,6 +53,12 @@ struct bdfcharlist {
     struct bdfcharlist *next;
 };
 
+struct refbdfc {
+    uint16 gid;
+    int8 xoff;		/* of top left corner */
+    int8 yoff;
+};
+
 /* ************************************************************************** */
 /* *********************** Input --- Reading Bitmaps ************************ */
 /* ************************************************************************** */
@@ -122,7 +128,7 @@ return;
 return;
     }
     bdfc = chunkalloc(sizeof(BDFChar));
-    if ( info->chars!=NULL ) {
+    if ( info->chars!=NULL && gid<info->glyph_cnt ) {
 	if ( info->chars[gid]==NULL ) {
 	    info->chars[gid] = SplineCharCreate();
 	    info->chars[gid]->orig_pos = gid;
@@ -130,12 +136,16 @@ return;
 	    info->chars[gid]->width = info->chars[gid]->vwidth = info->emsize;
 	}
 	bdfc->sc = info->chars[gid];
+	/* in the case of a cid font orig_pos will be the cid, not the gid */
+	/* We'll need to rearrange the glyph array to match later. We need */
+	/*  gid order until we've fixed up references			   */
+	bdfc->orig_pos = info->chars[gid]->orig_pos;
+    } else {
+	bdfc->orig_pos = gid;
     }
-    bdfc->orig_pos = gid;
     if ( bdf->glyphs[gid]!=NULL ) /* Shouldn't happen of course */
 	BDFCharFree(bdf->glyphs[gid]);
-    /* in the case of a cid font orig_pos will be the cid, not the gid */
-    bdf->glyphs[info->chars[gid]->orig_pos] = bdfc;
+    bdf->glyphs[gid] = bdfc;
 
     bdfc->width = metrics->hadvance;
     bdfc->vwidth = metrics->vadvance;
@@ -151,13 +161,21 @@ return;
 	bdfc->byte_data = true;
 	bdfc->depth = bdf->clut->clut_len==4 ? 2 : bdf->clut->clut_len==16 ? 4 : 8;
     }
-    bdfc->bitmap = gcalloc(metrics->height*bdfc->bytes_per_line,sizeof(uint8));
+    if ( imageformat!=8 && imageformat!=9 )
+	bdfc->bitmap = gcalloc(metrics->height*bdfc->bytes_per_line,sizeof(uint8));
 
     if ( imageformat==8 || imageformat==9 ) {
-	/* composite, we don't support (but we will parse enough to skip over) */
+	/* composite */
+	struct refbdfc *refs;
 	num = getushort(ttf);
-	for ( i=0; i<num; ++i )
-	    getlong(ttf);	/* composed of short glyphcode, byte xoff,yoff */
+	bdfc->bitmap = (uint8 *) (refs = gcalloc(num+1,sizeof(struct refbdfc)));
+	refs[num].gid = 0xffff;
+	for ( i=0; i<num; ++i ) {
+	    refs[i].gid = getushort(ttf);
+	    refs[i].xoff = (int8) getc(ttf);
+	    refs[i].yoff = (int8) getc(ttf);
+	}
+	bdfc->isreference = true;
     } else if ( imageformat==1 || imageformat==6 ) {
 	/* each row is byte aligned */
 	if ( bdf->clut==NULL || bdf->clut->clut_len==256 ) {
@@ -227,6 +245,71 @@ return;
 #elif defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_next();
 #endif
+}
+
+static void BdfCRefFixup(BDFFont *bdf, int gid, int *warned) {
+    BDFChar *me = bdf->glyphs[gid];
+    struct refbdfc *refs = (struct refbdfc *) (me->bitmap);
+    int i;
+
+    me->bitmap = gcalloc((me->ymax-me->ymin+1)*me->bytes_per_line,sizeof(uint8));
+    me->isreference = false;
+    for ( i=0; refs[i].gid!=0xffff; ++i ) {
+	int rgid = refs[i].gid;
+	BDFChar *bdfc = rgid<bdf->glyphcnt ? bdf->glyphs[rgid] : NULL;
+	if ( bdfc!=NULL ) {
+	    if ( bdfc->isreference )
+		BdfCRefFixup(bdf,rgid, warned);
+	    BCPasteInto(me,bdfc,refs[i].xoff,refs[i].yoff, false, false);
+	} else if ( !*warned ) {
+	    /* Glyphs aren't named yet */
+	    LogError("Glyph %d in bitmap strike %d pixels refers to a missing glyph (%d)",
+		    gid, bdf->pixelsize, rgid );
+	    *warned = true;
+	}
+    }
+    BCCompressBitmap(me);
+    free(refs);
+}
+
+static void BdfRefFixup(BDFFont *bdf) {
+    int i;
+    int warned = false;
+
+    for ( i=0; i<bdf->glyphcnt; ++i )
+	if ( bdf->glyphs[i]!=NULL && bdf->glyphs[i]->isreference )
+	    BdfCRefFixup(bdf,i, &warned);
+}
+
+static void BdfCleanup(BDFFont *bdf,struct ttfinfo  *info) {
+    /* for gulim (and doubtless others) bitmap references do not match */
+    /*  outline glyph references and there are a bunch of extra glyphs */
+    /*  at the end of the list that we can now get rid of	       */
+    /* For cid keyed fonts we want to order things by cid rather than  */
+    /*  by gid so we may also need to move things around	       */
+    int i, cnt;
+    BDFChar **glyphs, *bdfc;
+
+    if ( info->subfonts==NULL ) {
+	if ( info->glyph_cnt<bdf->glyphcnt ) {
+	    for ( i=info->glyph_cnt ; i<bdf->glyphcnt; ++i )
+		BDFCharFree(bdf->glyphs[i]);
+	    bdf->glyphs = grealloc(bdf->glyphs,info->glyph_cnt*sizeof(BDFChar *));
+	    bdf->glyphcnt = info->glyph_cnt;
+	}
+    } else {
+	cnt = info->map->enccount;
+	glyphs = gcalloc(cnt,sizeof(BDFChar *));
+	for ( i=0; i<bdf->glyphcnt; ++i ) if ( (bdfc = bdf->glyphs[i])!=NULL ) {
+	    if ( bdfc->orig_pos<cnt )
+		glyphs[ bdfc->orig_pos ] = bdfc;
+	    else
+		BDFCharFree(bdfc);
+	}
+	free(bdf->glyphs);
+	bdf->glyphs = glyphs;
+	bdf->glyphcnt = cnt;
+    }
 }
 
 static void readttfbitmapfont(FILE *ttf,struct ttfinfo *info,
@@ -339,6 +422,8 @@ static void readttfbitmapfont(FILE *ttf,struct ttfinfo *info,
 	}
 	fseek(ttf,loc,SEEK_SET);
     }
+    BdfRefFixup(bdf);
+    BdfCleanup(bdf,info);
 }
 
 void TTFLoadBitmaps(FILE *ttf,struct ttfinfo *info,int onlyone) {
@@ -460,6 +545,8 @@ return;
 	bdf = gcalloc(1,sizeof(BDFFont));
 	/* In cid fonts fontforge stores things by cid rather than gid */
 	bdf->glyphcnt = info->subfonts!=NULL?info->map->enccount:info->glyph_cnt;
+	if ( sizes[i].endglyph > bdf->glyphcnt )
+	    bdf->glyphcnt = sizes[i].endglyph+1;	/* Important if we have reference glyphs */
 	bdf->glyphmax = bdf->glyphcnt;
 	bdf->glyphs = gcalloc(bdf->glyphcnt,sizeof(BDFChar *));
 	bdf->pixelsize = sizes[i].ppem;
