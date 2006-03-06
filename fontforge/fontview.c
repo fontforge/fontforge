@@ -8277,6 +8277,8 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,EncMap *map,int i) {
     else if ( map->enc->psnames!=NULL && i<map->enc->char_cnt &&
 	    map->enc->psnames[i]!=NULL )
 	dummy->name = map->enc->psnames[i];
+    else if ( dummy->unicodeenc==-1 )
+	dummy->name = NULL;
     else
 	dummy->name = (char *) StdGlyphName(namebuf,dummy->unicodeenc,sf->uni_interp,sf->for_new_glyphs);
     if ( dummy->name==NULL ) {
@@ -8311,7 +8313,6 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,EncMap *map,int i) {
     }
     dummy->parent = sf;
     dummy->orig_pos = 0xffff;
-    dummy->tex_height = *dummy->name;		/* Debugging */
 return( dummy );
 }
 
