@@ -280,6 +280,9 @@ msgstr "点番号を表示(_N)"
 msgid "_Mark Extrema"
 msgstr "極大点を表示(_M)"
 
+msgid "_Mark Points of Inflection"
+msgstr "変曲点を表示(_M)"
+
 msgid "Hide _Rulers"
 msgstr "ルーラーを隠す(_R)"
 
