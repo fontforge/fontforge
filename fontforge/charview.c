@@ -59,6 +59,7 @@ struct cvshows CVShows = {
 	1,		/* show horizontal metrics */
 	0,		/* show vertical metrics */
 	0,		/* mark extrema */
+	0,		/* show points of inflection */
 	1,		/* show blue values */
 	1,		/* show family blues too */
 	1		/* show anchor points */
@@ -68,6 +69,7 @@ static Color firstpointcol = 0x707000;
 static Color selectedpointcol = 0xffff00;
 static int selectedpointwidth = 2;
 static Color extremepointcol = 0xc00080;
+static Color pointofinflectioncol = 0x008080;
 Color nextcpcol = 0x007090;
 Color prevcpcol = 0xcc00cc;
 static Color selectedcpcol = 0xffffff;
@@ -116,6 +118,7 @@ static void CVColInit( void ) {
 	{ "SelectedPointColor", rt_color, &selectedpointcol },
 	{ "SelectedPointWidth", rt_int, &selectedpointwidth },
 	{ "ExtremePointColor", rt_color, &extremepointcol },
+	{ "PointOfInflectionColor", rt_color, &pointofinflectioncol },
 	{ "NextCPColor", rt_color, &nextcpcol },
 	{ "PrevCPColor", rt_color, &prevcpcol },
 	{ "SelectedCPColor", rt_color, &selectedcpcol },
@@ -709,6 +712,45 @@ return;
     GDrawDrawLine(pixmap,xe,ye,xe+rint(2*(-dir.y-dir.x)),ye+rint(2*(dir.x-dir.y)), firstpointcol);
 }
 
+static void CVMarkInterestingLocations(CharView *cv, GWindow pixmap,
+	SplinePointList *spl) {
+    Spline *s, *first;
+    double interesting[6];
+    int i, ecnt, cnt;
+    GRect r;
+
+    for ( s=spl->first->next, first=NULL; s!=NULL && s!=first; s=s->to->next ) {
+	if ( first==NULL ) first = s;
+	cnt = ecnt = 0;
+	if ( cv->markextrema )
+	    ecnt = cnt = Spline2DFindExtrema(s,interesting);
+
+	if ( cv->markpoi ) {
+	    if ( s->splines[0].a!=0 )
+		interesting[cnt++] = -s->splines[0].b/(3*s->splines[0].a);
+	    if ( s->splines[1].a!=0 ) {
+		interesting[cnt] = -s->splines[1].b/(3*s->splines[1].a);
+		if ( interesting[cnt]>0 && interesting[cnt]<1.0 )
+		    ++cnt;
+	    }
+	}
+	r.width = r.height = 9;
+	for ( i=0; i<cnt; ++i ) if ( interesting[i]>0 && interesting[i]<1.0 ) {
+	    Color col = i<ecnt ? extremepointcol : pointofinflectioncol;
+	    double x = ((s->splines[0].a*interesting[i]+s->splines[0].b)*interesting[i]+s->splines[0].c)*interesting[i]+s->splines[0].d;
+	    double y = ((s->splines[1].a*interesting[i]+s->splines[1].b)*interesting[i]+s->splines[1].c)*interesting[i]+s->splines[1].d;
+	    double sx =  cv->xoff + rint(x*cv->scale);
+	    double sy = -cv->yoff + cv->height - rint(y*cv->scale);
+	    if ( sx<-5 || sy<-5 || sx>10000 || sy>10000 )
+	continue;
+	    GDrawDrawLine(pixmap,sx-4,sy,sx+4,sy, col);
+	    GDrawDrawLine(pixmap,sx,sy-4,sx,sy+4, col);
+	    r.x = sx-4; r.y = sy-4;
+	    GDrawDrawElipse(pixmap,&r,col);
+	}
+    }
+}
+
 void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 	Color fg, int dopoints, DRect *clip ) {
     Spline *spline, *first;
@@ -734,6 +776,8 @@ void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 	for ( cur=gpl; cur!=NULL; cur=cur->next )
 	    GDrawDrawPoly(pixmap,cur->gp,cur->cnt,fg);
 	GPLFree(gpl);
+	if ( cv->markextrema || cv->markpoi )
+	    CVMarkInterestingLocations(cv,pixmap,spl);
     }
 }
 
@@ -4101,6 +4145,7 @@ return( true );
 #define MID_PtsSVG	2024
 #define MID_Ligatures	2025
 #define MID_Former	2026
+#define MID_MarkPointsOfInflection	2027
 #define MID_Cut		2101
 #define MID_Copy	2102
 #define MID_Paste	2103
@@ -4484,6 +4529,14 @@ static void CVMenuMarkExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
     CVShows.markextrema = cv->markextrema = !cv->markextrema;
+    SavePrefs();
+    GDrawRequestExpose(cv->v,NULL,false);
+}
+
+static void CVMenuMarkPointsOfInflection(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    CVShows.markpoi = cv->markpoi = !cv->markpoi;
     SavePrefs();
     GDrawRequestExpose(cv->v,NULL,false);
 }
@@ -6880,6 +6933,9 @@ static void cv_vwlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	  case MID_MarkExtrema:
 	    mi->ti.checked = cv->markextrema;
 	  break;
+	  case MID_MarkPointsOfInflection:
+	    mi->ti.checked = cv->markpoi;
+	  break;
 	  case MID_HidePoints:
 	    free(mi->ti.text);
 	    mi->ti.text = utf82u_copy(cv->showpoints?_("Hide Points"):_("Show Points"));
@@ -7370,6 +7426,7 @@ static GMenuItem vwlist[] = {
     { { (unichar_t *) N_("Hide Poin_ts"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, 'D', ksm_control, NULL, NULL, CVMenuShowHide, MID_HidePoints },
     { { (unichar_t *) N_("_Number Points"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, nplist, nplistcheck },
     { { (unichar_t *) N_("_Mark Extrema"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'M' }, '\0', ksm_control, NULL, NULL, CVMenuMarkExtrema, MID_MarkExtrema },
+    { { (unichar_t *) N_("_Mark Points of Inflection"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'M' }, '\0', ksm_control, NULL, NULL, CVMenuMarkPointsOfInflection, MID_MarkPointsOfInflection },
     { { (unichar_t *) N_("Fi_ll"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'l' }, '\0', 0, NULL, NULL, CVMenuFill, MID_Fill },
     { { (unichar_t *) N_("Sho_w Grid Fit..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'l' }, '\0', 0, NULL, NULL, CVMenuShowGridFit, MID_ShowGridFit },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},

@@ -49,6 +49,7 @@ extern struct cvshows {
     int showmdx, showmdy;	/* minimum distances x,y */
     int showhmetrics, showvmetrics;	/* show advance width, baseline, etc. */
     int markextrema;
+    int markpoi;		/* Points of inflection */
     int showblues, showfamilyblues;
     int showanchor;
 } CVShows;
@@ -237,6 +238,7 @@ typedef struct charview {
     unsigned int showanchor:1;
     unsigned int showpointnumbers:1;
     unsigned int markextrema:1;
+    unsigned int markpoi:1;
     unsigned int needsrasterize:1;		/* Rasterization (of fill or fontview) needed on mouse up */
     unsigned int recentchange:1;		/* a change happened in the grids or background. don't need to rasterize */
     unsigned int drawmode:2;
