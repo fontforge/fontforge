@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"		/* For Error */
+#include "ttf.h"		/* For AnchorClassDecompose */
 #include <stdio.h>
 #include "splinefont.h"
 #include <utype.h>
@@ -1207,6 +1208,89 @@ static void AfmSplineFontHeader(FILE *afm, SplineFont *sf, int formattype, EncMa
 	fprintf( afm, "Descender %d\n", dsh*1000/em );
 }
 
+static int CountClass(SplineChar **class) {
+    int i;
+    if ( class==NULL )
+return( 0 );
+    for ( i=0; class[i]!=NULL; ++i );
+return( i );
+}
+
+static void AfmComposites(FILE *afm, SplineFont *sf) {
+    AnchorClass *ac;
+    SplineChar ***base, ***lig, ***mkmk;
+    SplineChar ****marks;
+    AnchorClass **acs;
+    AnchorPoint *map, *bap;
+    int **subcnts;
+    int cnt, tot;
+    int i,j,k;
+
+    for ( ac=sf->anchor, cnt=0; ac!=NULL; ac = ac->next ) {
+	ac->processed = false;
+	ac->matches = false;
+	if ( ac->script_lang_index!=SLI_NESTED &&
+		ac->type==act_mark /* to base and to ligature. not m2m or cursive */ )
+	    ++cnt;
+    }
+    if ( cnt==0 )
+return;
+
+    base = galloc(cnt*sizeof(SplineChar **));
+    lig = galloc(cnt*sizeof(SplineChar **));
+    mkmk = galloc(cnt*sizeof(SplineChar **));
+    marks = galloc(cnt*sizeof(SplineChar ***));
+    subcnts = galloc(cnt*sizeof(int *));
+    acs = galloc(cnt*sizeof(AnchorClass *));
+
+    for ( cnt=tot=0, ac=sf->anchor; ac!=NULL; ac = ac->next ) {
+	if ( ac->script_lang_index!=SLI_NESTED &&
+		ac->type==act_mark /* to base and to ligature. not m2m or cursive */ ) {
+	    ac->processed = true;
+	    ac->matches = true;
+	    marks[cnt] = galloc(1*sizeof(SplineChar **));
+	    subcnts[cnt] = galloc(1*sizeof(int));
+	    AnchorClassDecompose(sf,ac,1,subcnts[cnt],marks[cnt],&base[cnt],&lig[cnt],&mkmk[cnt],NULL);
+	    tot += CountClass(marks[cnt][0]) * (CountClass(base[cnt]) /*+ CountClass(lig[cnt])*/ );
+	    acs[cnt++] = ac;
+	}
+    }
+    if ( tot!=0 ) {
+	fprintf( afm, "StartComposites %d\n", tot );
+	for ( i=0; i<cnt; ++i ) {
+	    for ( j=0; base[i][j]!=NULL; ++j ) {
+		for ( bap = base[i][j]->anchor; bap!=NULL && bap->anchor!=acs[i]; bap = bap->next );
+		/* Find base anchor point for acs[cnt] */
+		for ( k=0; marks[i][0][k]!=NULL; ++k ) {
+		    for ( map = marks[i][0][k]->anchor; map!=NULL && map->anchor!=acs[i]; map = map->next );
+		    /* Find mark anchor point for acs[cnt] */
+		    fprintf( afm, "CC %s_%s_ 2; PCC %s 0 0; PCC %s %g %g;\n",
+			    base[i][j]->name, marks[i][0][k]->name,
+			    base[i][j]->name,
+			    marks[i][0][k]->name,
+			    /* Amount to move the accent's origin */
+			    bap->me.x - map->me.x, bap->me.y - map->me.y );
+		}
+	    }
+	}
+	fprintf( afm, "EndComposites\n" );
+    }
+    for ( i=0; i<cnt; ++i ) {
+	free(base[i]);
+	free(lig[i]);
+	free(mkmk[i]);
+	free(marks[i][0]);
+	free(marks[i]);
+	free(subcnts[i]);
+    }
+    free(base);
+    free(lig);
+    free(mkmk);
+    free(marks);
+    free(subcnts);
+    free(acs);
+}
+
 static void LigatureClosure(SplineFont *sf);
 
 int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype,EncMap *map) {
@@ -1339,6 +1423,8 @@ int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype,EncMap *map) {
 	}
 	fprintf( afm, "EndKernData\n" );
     }
+    if ( sf->anchor!=NULL )
+	AfmComposites(afm,sf);
     fprintf( afm, "EndFontMetrics\n" );
 
     SFLigatureCleanup(sf);
