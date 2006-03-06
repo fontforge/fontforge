@@ -158,6 +158,7 @@ int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
 
+    k=0;
     label[k].text = (unichar_t *) _("_Error Limit:");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
