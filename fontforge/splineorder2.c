@@ -472,6 +472,9 @@ static int comparedata(Spline *ps,QPoint *data,int qfirst,int qlast,
     int i;
     double err = round_to_int ? 1.5 : 1;
 
+    if ( qfirst==qlast )		/* happened (was a bug) */
+return( false );
+
     memset(&ttf,0,sizeof(ttf));
     for ( i=qfirst; i<qlast; ++i ) {
 	ttf.splines[0].d = data[i-1].bp.x;
@@ -683,11 +686,19 @@ static SplinePoint *ttfApprox(Spline *ps, SplinePoint *start) {
 /*  because quadratic splines can't have points of inflection.		*/
 /* Let's not do the first (extrema) AddExtrema does this better and we  */
 /*  don't want unneeded extrema.					*/
+/* And sometimes we don't want to look at the points of inflection either*/
 
     if (( ret = AlreadyQuadraticCheck(ps,start))!=NULL )
 return( ret );
 
 #if !defined(FONTFORGE_CONFIG_NON_SYMMETRIC_QUADRATIC_CONVERSION)
+    qcnt = 1;
+    data[0].bp = ps->from->me;
+    data[0].t = 0;
+    qcnt = PrettyApprox(ps,0,1,data,qcnt,round_to_int);
+    if ( qcnt!=-1 )
+return( CvtDataToSplines(data,1,qcnt,start));
+
     cnt = 0;
     /* cnt = Spline2DFindExtrema(ps,magicpoints);*/
 
@@ -723,10 +734,8 @@ return( ret );
 	}
     }
 
-    last = 0;
     qcnt = 1;
-    data[0].bp = ps->from->me;
-    data[0].t = 0;
+    last = 0;
     for ( i=0; i<cnt; ++i ) {
 	qcnt = PrettyApprox(ps,last,magicpoints[i],data,qcnt,round_to_int);
 	last = magicpoints[i];
