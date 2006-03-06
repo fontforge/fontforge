@@ -776,7 +776,7 @@ void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 	for ( cur=gpl; cur!=NULL; cur=cur->next )
 	    GDrawDrawPoly(pixmap,cur->gp,cur->cnt,fg);
 	GPLFree(gpl);
-	if ( cv->markextrema || cv->markpoi )
+	if (( cv->markextrema || cv->markpoi ) && dopoints )
 	    CVMarkInterestingLocations(cv,pixmap,spl);
     }
 }
