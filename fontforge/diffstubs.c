@@ -7,6 +7,8 @@
 #include <charset.h>
 #include <ustring.h>
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #endif
@@ -1045,4 +1047,68 @@ void AltUniAdd(SplineChar *sc,int uni) {
 }
 
 void MMMatchGlyphs(MMSet *mm) {
+}
+
+void GWidgetError8(const char *title,const char *statement, ...) {
+    va_list ap;
+
+    va_start(ap, statement);
+    vfprintf(stderr, statement, ap);
+}
+
+#ifdef FONTFORGE_CONFIG_GTK
+# include <gtk/gtk.h>
+
+static char *gethomedir(void) {
+    static char *dir=NULL;
+
+    if ( dir!=NULL )
+return( dir );
+return( dir = g_get_home_dir());
+}
+#else 
+# include <pwd.h>
+
+static char *gethomedir(void) {
+    static char *dir=NULL;
+    int uid;
+    struct passwd *pw;
+
+    if ( dir!=NULL )
+return( dir );
+
+    uid = getuid();
+    while ( (pw=getpwent())!=NULL ) {
+	if ( pw->pw_uid==uid ) {
+	    dir = strdup(pw->pw_dir);
+	    endpwent();
+return( dir );
+	}
+    }
+    endpwent();
+
+    if ( (dir=getenv("HOME"))!=NULL )
+return( (dir=strdup(dir)) );
+
+return( NULL );
+}
+#endif
+
+char *getPfaEditDir(char *buffer) {
+    static char *dir=NULL;
+
+    if ( dir!=NULL )
+return( dir );
+    if ( gethomedir()==NULL )
+return( NULL );
+    sprintf(buffer,"%s/.PfaEdit", gethomedir());
+    if ( access(buffer,F_OK)==-1 )
+	if ( mkdir(buffer,0700)==-1 )
+return( NULL );
+    dir = strdup(buffer);
+return( dir );
+}
+
+SplineChar *SFGetChar(SplineFont *sf, int unienc, const char *name ) {
+return( NULL );
 }
