@@ -550,9 +550,7 @@ return;
     isfake = false;
     if ( cv->fv->sf->order2 && cv->drawmode==dm_fore &&
 	    cv->sc->layers[ly_fore].refs==NULL ) {
-	int mightbe_fake = RealWithin(sp->me.x,(sp->nextcp.x+sp->prevcp.x)/2,.1) &&
-			   RealWithin(sp->me.y,(sp->nextcp.y+sp->prevcp.y)/2,.1) ;
-	if ( sp->nonextcp || sp->noprevcp || sp->dontinterpolate ) mightbe_fake = false;
+	int mightbe_fake = SPInterpolate(sp);
         if ( !mightbe_fake && sp->ttfindex==0xffff )
 	    sp->ttfindex = 0xfffe;	/* if we have no instructions we won't call instrcheck and won't notice when a point stops being fake */
 	else if ( mightbe_fake )
@@ -2780,19 +2778,11 @@ static int _SCRefNumberPoints2(SplineSet **_rss,SplineChar *sc,int pnum) {
     break;
 	starts_with_cp = !ss->first->noprevcp &&
 		((ss->first->ttfindex == pnum+1 && ss->first->prev->from->nextcpindex==pnum ) ||
-		((ss->first->ttfindex==0xffff ||
-		    ( !ss->first->nonextcp && !ss->first->noprevcp &&
-		     !ss->first->roundx && !ss->first->roundy && !ss->first->dontinterpolate )) &&
-		    RealWithin((ss->first->nextcp.x+ss->first->prevcp.x)/2, ss->first->me.x,.1) &&
-		    RealWithin((ss->first->nextcp.y+ss->first->prevcp.y)/2, ss->first->me.y,.1) ));
+		 ((ss->first->ttfindex==0xffff || SPInterpolate( ss->first ))));
 	startcnt = pnum;
 	if ( starts_with_cp ) ++pnum;
 	for ( sp = ss->first, rsp=rss->first; ; ) {
-	    if ( (sp->ttfindex==0xffff ||
-		    ( !sp->nonextcp && !sp->noprevcp &&
-		     !sp->roundx && !sp->roundy && !sp->dontinterpolate )) &&
-		    RealWithin((sp->nextcp.x+sp->prevcp.x)/2, sp->me.x,.1) &&
-		    RealWithin((sp->nextcp.y+sp->prevcp.y)/2, sp->me.y,.1) )
+	    if ( sp->ttfindex==0xffff || SPInterpolate( sp ))
 		rsp->ttfindex = 0xffff;
 	    else
 		rsp->ttfindex = pnum++;
@@ -2837,20 +2827,12 @@ int SSTtfNumberPoints(SplineSet *ss) {
     for ( ; ss!=NULL; ss=ss->next ) {
 	starts_with_cp = !ss->first->noprevcp &&
 		((ss->first->ttfindex == pnum+1 && ss->first->prev->from->nextcpindex==pnum ) ||
-		((ss->first->ttfindex==0xffff ||
-		    ( !ss->first->nonextcp && !ss->first->noprevcp &&
-		     !ss->first->roundx && !ss->first->roundy && !ss->first->dontinterpolate )) &&
-		    RealWithin((ss->first->nextcp.x+ss->first->prevcp.x)/2, ss->first->me.x,.1) &&
-		    RealWithin((ss->first->nextcp.y+ss->first->prevcp.y)/2, ss->first->me.y,.1) ));
+		 SPInterpolate( ss->first ));
 	startcnt = pnum;
 	if ( starts_with_cp )
 	    ss->first->prev->from->nextcpindex = pnum++;
 	for ( sp=ss->first; ; ) {
-	    if ( (sp->ttfindex==0xffff ||
-		    ( !sp->roundx && !sp->roundy && !sp->dontinterpolate )) &&
-		    !sp->nonextcp && !sp->noprevcp &&
-		    RealWithin((sp->nextcp.x+sp->prevcp.x)/2, sp->me.x,.1) &&
-		    RealWithin((sp->nextcp.y+sp->prevcp.y)/2, sp->me.y,.1) )
+	    if ( SPInterpolate(sp) )
 		sp->ttfindex = 0xffff;
 	    else
 		sp->ttfindex = pnum++;
@@ -2939,10 +2921,7 @@ return( false );	/* TrueType can't represent this, so always remove instructions
 		!ss->first->noprevcp;
 	if ( starts_with_cp ) ++pnum;
 	for ( sp=ss->first; ; ) {
-	    skipit = sp!=ss->first && !sp->nonextcp && !sp->noprevcp &&
-		    !sp->roundx && !sp->roundy && !sp->dontinterpolate &&
-		    RealWithin((sp->nextcp.x+sp->prevcp.x)/2, sp->me.x, .1) &&
-		    RealWithin((sp->nextcp.y+sp->prevcp.y)/2, sp->me.y, .1);
+	    skipit = sp!=ss->first && SPInterpolate(sp);
 	    if ( sp->nonextcp || sp->noprevcp ) skipit = false;
 	    if ( sp->ttfindex==0xffff && skipit )
 		/* Doesn't count */;

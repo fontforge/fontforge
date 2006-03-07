@@ -2625,9 +2625,7 @@ static void SCDefaultInterpolation(SplineChar *sc) {
     if ( sc->ttf_instrs_len!=0 ) {
 	for ( cur=sc->layers[ly_fore].splines; cur!=NULL; cur=cur->next ) {
 	    for ( sp=cur->first; ; ) {
-		if ( !sp->nonextcp && !sp->noprevcp && sp->ttfindex!=0xffff &&
-			RealWithin((sp->prevcp.x+sp->nextcp.x)/2, sp->me.x, .1 ) &&
-			RealWithin((sp->prevcp.y+sp->nextcp.y)/2, sp->me.y, .1 ) )
+		if ( sp->ttfindex!=0xffff && SPInterpolate(sp))
 		    sp->dontinterpolate = true;
 		if ( sp->next==NULL )
 	    break;

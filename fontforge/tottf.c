@@ -681,10 +681,7 @@ int SSAddPoints(SplineSet *ss,int ptcnt,BasePoint *bp, char *flags) {
 	    bp[ptcnt].x = rint(sp->me.x);
 	    bp[ptcnt].y = rint(sp->me.y);
 	    sp->ttfindex = ptcnt++;
-	} else if ( ( sp->nonextcp || sp->noprevcp ||
-		    (sp->dontinterpolate || sp->roundx || sp->roundy) ||
-		    !RealWithin((sp->prevcp.x+sp->nextcp.x)/2, sp->me.x, .1) ||
-		    !RealWithin((sp->prevcp.y+sp->nextcp.y)/2, sp->me.y, .1) )) {
+	} else if ( !SPInterpolate( sp ) ) {
 	    /* If an on curve point is midway between two off curve points*/
 	    /*  it may be omitted and will be interpolated on read in */
 	    if ( flags!=NULL ) flags[ptcnt] = _On_Curve;
