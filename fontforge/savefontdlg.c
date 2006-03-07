@@ -96,7 +96,7 @@ static char *extensions[] = { ".pfa", ".pfb", ".res", "%s.pfb", ".pfa", ".pfb", 
 	".ttf", ".ttf", ".suit", ".dfont", ".otf", ".otf.dfont", ".otf",
 	".otf.dfont", ".svg", NULL };
 # ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-static char *bitmapextensions[] = { "-*.bdf", ".ttf", ".dfont", ".bmap", ".dfont", "-*.fnt", ".otb", ".pdb", "-*.pt3", ".none", NULL };
+static char *bitmapextensions[] = { "-*.bdf", ".ttf", ".dfont", ".bmap", ".dfont", ".fon", "-*.fnt", ".otb", ".pdb", "-*.pt3", ".none", NULL };
 # endif
 #else
 static char *extensions[] = { ".pfa", ".pfb", ".bin", "%s.pfb", ".pfa", ".pfb", ".pt3", ".ps",
@@ -105,7 +105,7 @@ static char *extensions[] = { ".pfa", ".pfb", ".bin", "%s.pfb", ".pfa", ".pfb", 
 	".ttf", ".ttf", ".ttf.bin", ".dfont", ".otf", ".otf.dfont", ".otf",
 	".otf.dfont", ".svg", NULL };
 # ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-static char *bitmapextensions[] = { "-*.bdf", ".ttf", ".dfont", ".bmap.bin", "-*.fnt", ".otb", ".pdb", "-*.pt3", ".none", NULL };
+static char *bitmapextensions[] = { "-*.bdf", ".ttf", ".dfont", ".bmap.bin", ".fon", "-*.fnt", ".otb", ".pdb", "-*.pt3", ".none", NULL };
 # endif
 #endif
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -154,6 +154,7 @@ static GTextInfo bitmaptypes[] = {
 #endif
 /* OS/X doesn't seem to support NFNTs, so there's no point in putting them in a dfont */
 /*  { (unichar_t *) "NFNT (dfont)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },*/
+    { (unichar_t *) N_("Win FON"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("Win FNT"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("OpenType Bitmap"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("Palm OS Bitmap"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
@@ -1191,8 +1192,10 @@ return( false );
 	    BDFFontDump(buf,bdf,map,res);
 	else if ( bf==bf_ptype3 )
 	    PSBitmapDump(buf,bdf,map);
+	else if ( bf==bf_fnt )
+	    FNTFontDump(buf,bdf,map,res);
 	else
-	    FONFontDump(buf,bdf,map,res);
+	    IError( "Unexpected font type" );
 	gwwv_progress_next_stage();
     }
     free(buf);
@@ -1873,11 +1876,23 @@ return( true );
 	    err = true;
 	if ( temp!=newname )
 	    free(temp);
-    } else if ( (oldbitmapstate==bf_bdf || oldbitmapstate==bf_fon ||
+    } else if ( (oldbitmapstate==bf_bdf || oldbitmapstate==bf_fnt ||
+	    oldbitmapstate==bf_fnt ||
 	    oldbitmapstate==bf_ptype3 ) && !err ) {
 	gwwv_progress_change_line1(_("Saving Bitmap Font(s)"));
 	gwwv_progress_increment(-sf->glyphcnt);
 	if ( !WriteBitmaps(newname,sf,sizes,res,oldbitmapstate,map))
+	    err = true;
+    } else if ( oldbitmapstate==bf_fon && !err ) {
+	extern int ask_user_for_resolution;
+	if ( ask_user_for_resolution && res==0x80000000 ) {
+	    gwwv_progress_pause_timer();
+	    res = AskResolution(bf_fnt,sf->bitmaps);
+	    gwwv_progress_resume_timer();
+	    if ( res==-2 )
+return( true );
+	}
+	if ( !FONFontDump(newname,sf,sizes,res,map))
 	    err = true;
     } else if ( oldbitmapstate==bf_palm && !err ) {
 	if ( !WritePalmBitmaps(newname,sf,sizes,map))
@@ -1918,7 +1933,7 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	int res, char *subfontdefinition, struct sflist *sfs,EncMap *map,
 	NameList *rename_to) {
     int i;
-    static char *bitmaps[] = {"bdf", "ttf", "sbit", "bin", /*"dfont", */"fnt", "otb", "pdb", "pt3", NULL };
+    static char *bitmaps[] = {"bdf", "ttf", "sbit", "bin", /*"dfont", */"fon", "fnt", "otb", "pdb", "pt3", NULL };
     int32 *sizes=NULL;
     char *end = filename+strlen(filename);
     struct sflist *sfi;
@@ -3005,7 +3020,7 @@ return( 0 );
     }
     old = oldbitmapstate;
     if ( family ) {
-	if ( old==bf_bdf || old==bf_fon ) {
+	if ( old==bf_bdf || old==bf_fon || old==bf_fnt ) {
 	    if ( ofs==ff_otfdfont || ofs==ff_otfciddfont || ofs==ff_ttfdfont )
 		old = bf_ttf;
 	    else
@@ -3020,6 +3035,7 @@ return( 0 );
 #endif
 	bitmaptypes[bf_bdf].disabled = true;
 	bitmaptypes[bf_fon].disabled = true;
+	bitmaptypes[bf_fnt].disabled = true;
     }
     temp = sf->cidmaster ? sf->cidmaster : sf;
     if ( temp->bitmaps==NULL ) {
@@ -3030,6 +3046,7 @@ return( 0 );
 	bitmaptypes[bf_nfntmacbin].disabled = true;
 	/*bitmaptypes[bf_nfntdfont].disabled = true;*/
 	bitmaptypes[bf_fon].disabled = true;
+	bitmaptypes[bf_fnt].disabled = true;
 	bitmaptypes[bf_otb].disabled = true;
 	bitmaptypes[bf_palm].disabled = true;
 	bitmaptypes[bf_ptype3].disabled = true;
