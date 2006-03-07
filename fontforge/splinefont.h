@@ -1222,7 +1222,7 @@ extern struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
 	const int *bygids,int gcnt);
 extern struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds,int flags);
 enum bitmapformat { bf_bdf, bf_ttf, bf_sfnt_dfont, 
-	bf_nfntmacbin, /*bf_nfntdfont, */bf_fon, bf_otb, bf_palm,
+	bf_nfntmacbin, /*bf_nfntdfont, */bf_fon, bf_fnt, bf_otb, bf_palm,
 	bf_ptype3,
 	bf_none };
 extern const char *GetAuthor(void);
@@ -1448,7 +1448,9 @@ extern void BDFFontFree(BDFFont *bdf);
 extern void SFDefaultAscent(SplineFont *sf);
 extern int  PSBitmapDump(char *filename,BDFFont *font, EncMap *map);
 extern int  BDFFontDump(char *filename,BDFFont *font, EncMap *map, int res);
-extern int  FONFontDump(char *filename,BDFFont *font, EncMap *map, int res);
+extern int  FNTFontDump(char *filename,BDFFont *font, EncMap *map, int res);
+extern int  FONFontDump(char *filename,SplineFont *sf, int32 *sizes,int res,
+	EncMap *map);
 extern void SFReplaceEncodingBDFProps(SplineFont *sf,EncMap *map);
 extern void SFReplaceFontnameBDFProps(SplineFont *sf);
 extern int  IsUnsignedBDFKey(char *key);

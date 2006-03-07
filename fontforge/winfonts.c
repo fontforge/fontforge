@@ -52,6 +52,9 @@ Thom Hogan, pages 6-18 through 6-19.  You need this book.  ISBN 1-55615-321-X.
 /*   http://www.csn.ul.ie/~caolan/publink/winresdump/winresdump/doc/resfmt.txt*/
 /*  and from the freetype source code (particularly:			      */
 /*  ~freetype/src/winfonts/winfnt.c and ~freetype/include/freetype/internal/fntypes.h */
+/* Algorithm for generating .fon files taken from the wine distribution:      */
+/*  wine/tools/fnt2fon.c written by Huw Davies of codeweavers and included    */
+/*  here with his permission.						      */
 
 /* Windows FNT header. A FON file may contain several FNTs */
 struct fntheader {
@@ -454,7 +457,11 @@ return( NULL );
 return( sf );
 }
 
-static int _FONFontDump(FILE *file,BDFFont *font, EncMap *map, int res) {
+/* ************************************************************************** */
+/*  ******************************** Output ********************************  */
+/* ************************************************************************** */
+
+static int _FntFontDump(FILE *file,BDFFont *font, EncMap *map, int res) {
     uint32 startpos, endpos, namelocpos, datapos, namepos;
     int i, j, k, l;
     int ch;
@@ -636,7 +643,7 @@ return( false );
 return( true );
 }
 
-int FONFontDump(char *filename,BDFFont *font, EncMap *map, int res) {
+int FNTFontDump(char *filename,BDFFont *font, EncMap *map, int res) {
     FILE *file;
     int ret;
 
@@ -645,10 +652,448 @@ int FONFontDump(char *filename,BDFFont *font, EncMap *map, int res) {
 	LogError( _("Can't open %s\n"), filename );
 return( 0 );
     }
-    ret = _FONFontDump(file,font,map,res);
+    ret = _FntFontDump(file,font,map,res);
     if ( ferror(file))
 	ret = 0;
     if ( fclose(file)!=0 )
 	ret = 0;
 return( ret );
+}
+
+#include "pfaeditui.h"
+
+/* From wine tools fnt2fon.c by Huw Davies, modified with permission */
+typedef unsigned short	WORD;
+typedef unsigned char	BYTE;
+typedef unsigned char	CHAR;
+typedef signed short	INT16;
+typedef int		INT;
+typedef uint32		DWORD;		/* originally unsigned long */
+typedef int32		LONG;
+#if 0
+#define CALLBACK	__stdcall
+typedef INT		(CALLBACK *FARPROC)();
+#else
+#define CALLBACK
+typedef int32		FARPROC;	/* Pointers screw up the alignment on 64 bit machines */
+#endif
+typedef unsigned short	HANDLE16;
+typedef int32		LONG_PTR;	/* originally "long", but that won't work on 64 bit machines */
+typedef LONG_PTR        LRESULT;
+typedef LRESULT (CALLBACK *FARPROC16)();
+
+typedef struct
+{
+    WORD  ne_magic;             /* 00 NE signature 'NE' */
+    BYTE  ne_ver;               /* 02 Linker version number */
+    BYTE  ne_rev;               /* 03 Linker revision number */
+    WORD  ne_enttab;            /* 04 Offset to entry table relative to NE */
+    WORD  ne_cbenttab;          /* 06 Length of entry table in bytes */
+    LONG  ne_crc;               /* 08 Checksum */
+    WORD  ne_flags;             /* 0c Flags about segments in this file */
+    WORD  ne_autodata;          /* 0e Automatic data segment number */
+    WORD  ne_heap;              /* 10 Initial size of local heap */
+    WORD  ne_stack;             /* 12 Initial size of stack */
+    DWORD ne_csip;              /* 14 Initial CS:IP */
+    DWORD ne_sssp;              /* 18 Initial SS:SP */
+    WORD  ne_cseg;              /* 1c # of entries in segment table */
+    WORD  ne_cmod;              /* 1e # of entries in module reference tab. */
+    WORD  ne_cbnrestab;         /* 20 Length of nonresident-name table     */
+    WORD  ne_segtab;            /* 22 Offset to segment table */
+    WORD  ne_rsrctab;           /* 24 Offset to resource table */
+    WORD  ne_restab;            /* 26 Offset to resident-name table */
+    WORD  ne_modtab;            /* 28 Offset to module reference table */
+    WORD  ne_imptab;            /* 2a Offset to imported name table */
+    DWORD ne_nrestab;           /* 2c Offset to nonresident-name table */
+    WORD  ne_cmovent;           /* 30 # of movable entry points */
+    WORD  ne_align;             /* 32 Logical sector alignment shift count */
+    WORD  ne_cres;              /* 34 # of resource segments */
+    BYTE  ne_exetyp;            /* 36 Flags indicating target OS */
+    BYTE  ne_flagsothers;       /* 37 Additional information flags */
+    WORD  ne_pretthunks;        /* 38 Offset to return thunks */
+    WORD  ne_psegrefbytes;      /* 3a Offset to segment ref. bytes */
+    WORD  ne_swaparea;          /* 3c Reserved by Microsoft */
+    WORD  ne_expver;            /* 3e Expected Windows version number */
+} IMAGE_OS2_HEADER, *PIMAGE_OS2_HEADER;
+
+#define NE_SEGFLAGS_MOVEABLE    0x0010
+#define NE_SEGFLAGS_SHAREABLE   0x0020
+#define NE_SEGFLAGS_PRELOAD     0x0040
+#define NE_SEGFLAGS_DISCARDABLE 0x1000
+
+#define NE_FFLAGS_GUI           0x0300
+#define NE_FFLAGS_LIBMODULE     0x8000
+
+#define NE_OSFLAGS_WINDOWS      0x04
+
+typedef struct
+{
+    WORD     offset;
+    WORD     length;
+    WORD     flags;
+    WORD     id;
+    HANDLE16 handle;
+    WORD     usage;
+} NE_NAMEINFO;
+
+#define NE_RSCTYPE_FONTDIR        0x8007
+#define NE_RSCTYPE_FONT           0x8008
+
+typedef struct
+{
+    WORD        type_id;   /* Type identifier */
+    WORD        count;     /* Number of resources of this type */
+    FARPROC16   resloader; /* SetResourceHandler() */
+    /*
+     * Name info array.
+     */
+} NE_TYPEINFO;
+
+typedef struct
+{
+    INT16 dfType;
+    INT16 dfPoints;
+    INT16 dfVertRes;
+    INT16 dfHorizRes;
+    INT16 dfAscent;
+    INT16 dfInternalLeading;
+    INT16 dfExternalLeading;
+    CHAR  dfItalic;
+    CHAR  dfUnderline;
+    CHAR  dfStrikeOut;
+    INT16 dfWeight;
+    BYTE  dfCharSet;
+    INT16 dfPixWidth;
+    INT16 dfPixHeight;
+    CHAR  dfPitchAndFamily;
+    INT16 dfAvgWidth;
+    INT16 dfMaxWidth;
+    CHAR  dfFirstChar;
+    CHAR  dfLastChar;
+    CHAR  dfDefaultChar;
+    CHAR  dfBreakChar;
+    INT16 dfWidthBytes;
+    LONG  dfDevice;
+    LONG  dfFace;
+    LONG  dfBitsPointer;
+    LONG  dfBitsOffset;
+    CHAR  dfReserved;
+    /* Fields, introduced for Windows 3.x fonts */
+    LONG  dfFlags;
+    INT16 dfAspace;
+    INT16 dfBspace;
+    INT16 dfCspace;
+    LONG  dfColorPointer;
+    LONG  dfReserved1[4];
+} FONTINFO16, *LPFONTINFO16;
+
+struct _fnt_header
+{
+    short dfVersion;
+    long dfSize;
+    char dfCopyright[60];
+    FONTINFO16 fi;
+};
+
+static const BYTE MZ_hdr[] = {'M',  'Z',  0x0d, 0x01, 0x01, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0xff, 0xff, 0x00, 0x00,
+                 0xb8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00,
+                 0x0e, 0x1f, 0xba, 0x0e, 0x00, 0xb4, 0x09, 0xcd, 0x21, 0xb8, 0x01, 0x4c, 0xcd, 0x21, 'T',  'h',
+                 'i',  's',  ' ',  'P',  'r',  'o',  'g',  'r',  'a',  'm',  ' ',  'c',  'a',  'n',  'n',  'o',
+                 't',  ' ',  'b',  'e',  ' ',  'r',  'u',  'n',  ' ',  'i',  'n',  ' ',  'D',  'O',  'S',  ' ',
+                 'm',  'o',  'd',  'e',  0x0d, 0x0a, 0x24, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+};
+
+
+int FONFontDump(char *filename,SplineFont *sf, int32 *sizes,int resol,
+	EncMap *map) {
+    BDFFont *bdf;
+    /* res = -1 => Guess depending on pixel size of font */
+    FILE **fntarray;
+    int *file_lens;
+    int num_files;
+    int i, j;
+    long off;
+    char name[200];
+    int c;
+    char *cp;
+    short point_size, dpi[2], align;
+    FILE *fon;
+    int resource_table_len, non_resident_name_len, resident_name_len;
+    unsigned short resource_table_off, resident_name_off, module_ref_off, non_resident_name_off, fontdir_off, font_off;
+    char resident_name[200] = "";
+    int fontdir_len = 2;
+    char non_resident_name[200] = "";
+    IMAGE_OS2_HEADER NE_hdr;
+    NE_TYPEINFO rc_type;
+    NE_NAMEINFO rc_name;
+    unsigned short first_res = 0x0050, pad, res;
+    struct _fnt_header *fnt_header;
+    char buf[0x1000];
+    int nread;
+
+    if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
+
+    for ( i=0; sizes[i]!=0; ++i );
+    gwwv_progress_change_line1(_("Saving Bitmap Font(s)"));
+    gwwv_progress_change_stages(i);
+    num_files = i;
+    fntarray = galloc(num_files*sizeof(FILE **));
+    file_lens = galloc(num_files*sizeof(int));
+
+    for ( i=0; sizes[i]!=0; ++i ) {
+	for ( bdf=sf->bitmaps; bdf!=NULL &&
+		(bdf->pixelsize!=(sizes[i]&0xffff) || BDFDepth(bdf)!=(sizes[i]>>16));
+		bdf=bdf->next );
+	if ( bdf==NULL ) {
+	    gwwv_post_notice(_("Missing Bitmap"),_("Attempt to save a pixel size that has not been created (%d@%d)"),
+		    sizes[i]&0xffff, sizes[i]>>16);
+	    for ( j=0; j<i; ++j )
+		fclose(fntarray[j]);
+	    free(fntarray);
+return( false );
+	}
+	fntarray[i] = tmpfile();
+	if ( !_FntFontDump(fntarray[i],bdf,map,resol) ) {
+	    for ( j=0; j<=i; ++j )
+		fclose(fntarray[j]);
+	    free(fntarray);
+return( false );
+	}
+	gwwv_progress_next_stage();
+
+	rewind(fntarray[i]);
+	lgetushort(fntarray[i]);
+	file_lens[i] = lgetlong(fntarray[i]);
+	fseek(fntarray[i], 0x44, SEEK_SET);
+	point_size = lgetushort(fntarray[i]);
+	dpi[0] = lgetushort(fntarray[i]);
+	dpi[1] = lgetushort(fntarray[i]);
+	fseek(fntarray[i], 0x69, SEEK_SET);
+	off = lgetlong(fntarray[i]);
+	fseek(fntarray[i], off, SEEK_SET);
+        cp = name;
+        while((c = fgetc(fntarray[i])) != 0 && c != EOF)
+            *cp++ = c;
+	*cp = '\0';
+	rewind(fntarray[i]);
+
+        fontdir_len += 0x74 + strlen(name) + 1;
+        if(i == 0) {
+            sprintf(non_resident_name, "FONTRES 100,%d,%d : %s %d", dpi[0], dpi[1], name, point_size);
+            strcpy(resident_name, name);
+        } else {
+            sprintf(non_resident_name + strlen(non_resident_name), ",%d", point_size);
+        }
+    }
+
+    if(dpi[0] <= 108)
+        strcat(non_resident_name, " (VGA res)");
+    else
+        strcat(non_resident_name, " (8514 res)");
+    non_resident_name_len = strlen(non_resident_name) + 4;
+
+    /* shift count + fontdir entry + num_files of font + nul type + \007FONTDIR */
+    resource_table_len = sizeof(align) + sizeof("FONTDIR") +
+                         sizeof(NE_TYPEINFO) + sizeof(NE_NAMEINFO) +
+                         sizeof(NE_TYPEINFO) + sizeof(NE_NAMEINFO) * num_files +
+                         sizeof(NE_TYPEINFO);
+    resource_table_off = sizeof(NE_hdr);
+    resident_name_off = resource_table_off + resource_table_len;
+    resident_name_len = strlen(resident_name) + 4;
+    module_ref_off = resident_name_off + resident_name_len;
+    non_resident_name_off = sizeof(MZ_hdr) + module_ref_off + sizeof(align);
+
+    memset(&NE_hdr, 0, sizeof(NE_hdr));
+    NE_hdr.ne_magic = 0x454e;
+    NE_hdr.ne_ver = 5;
+    NE_hdr.ne_rev = 1;
+    NE_hdr.ne_flags = NE_FFLAGS_LIBMODULE | NE_FFLAGS_GUI;
+    NE_hdr.ne_cbnrestab = non_resident_name_len;
+    NE_hdr.ne_segtab = sizeof(NE_hdr);
+    NE_hdr.ne_rsrctab = sizeof(NE_hdr);
+    NE_hdr.ne_restab = resident_name_off;
+    NE_hdr.ne_modtab = module_ref_off;
+    NE_hdr.ne_imptab = module_ref_off;
+    NE_hdr.ne_enttab = NE_hdr.ne_modtab;
+    NE_hdr.ne_nrestab = non_resident_name_off;
+    NE_hdr.ne_align = 4;
+    NE_hdr.ne_exetyp = NE_OSFLAGS_WINDOWS;
+    NE_hdr.ne_expver = 0x400;
+
+    fontdir_off = (non_resident_name_off + non_resident_name_len + 15) & ~0xf;
+    font_off = (fontdir_off + fontdir_len + 15) & ~0x0f;
+
+    fon = fopen(filename, "wb");
+    if ( fon==NULL ) {
+	gwwv_post_error(_("Couldn't open file"),_("Could not open output file: %s"),
+		filename );
+	for ( j=0; j<num_files; ++j )
+	    fclose(fntarray[j]);
+	free(fntarray);
+return( false );
+    }
+
+    fwrite(MZ_hdr, sizeof(MZ_hdr), 1, fon);
+    /* Write out the NE_hdr. Beware of endian problems */
+    lputshort(fon, NE_hdr.ne_magic);
+    putc(NE_hdr.ne_ver,fon);
+    putc(NE_hdr.ne_rev,fon);
+    lputshort(fon, NE_hdr.ne_enttab);
+    lputshort(fon, NE_hdr.ne_cbenttab);
+    lputlong(fon, NE_hdr.ne_crc);
+    lputshort(fon, NE_hdr.ne_flags);
+    lputshort(fon, NE_hdr.ne_autodata);
+    lputshort(fon, NE_hdr.ne_heap);
+    lputshort(fon, NE_hdr.ne_stack);
+    lputlong(fon, NE_hdr.ne_csip);
+    lputlong(fon, NE_hdr.ne_sssp);
+    lputshort(fon, NE_hdr.ne_cseg);
+    lputshort(fon, NE_hdr.ne_cmod);
+    lputshort(fon, NE_hdr.ne_cbnrestab);
+    lputshort(fon, NE_hdr.ne_segtab);
+    lputshort(fon, NE_hdr.ne_rsrctab);
+    lputshort(fon, NE_hdr.ne_restab);
+    lputshort(fon, NE_hdr.ne_modtab);
+    lputshort(fon, NE_hdr.ne_imptab);
+    lputlong(fon, NE_hdr.ne_nrestab);
+    lputshort(fon, NE_hdr.ne_cmovent);
+    lputshort(fon, NE_hdr.ne_align);
+    lputshort(fon, NE_hdr.ne_cres);
+    putc(NE_hdr.ne_exetyp,fon);
+    putc(NE_hdr.ne_flagsothers,fon);
+    lputshort(fon, NE_hdr.ne_pretthunks);
+    lputshort(fon, NE_hdr.ne_psegrefbytes);
+    lputshort(fon, NE_hdr.ne_swaparea);
+    lputshort(fon, NE_hdr.ne_expver);
+
+    align = 4;
+    lputshort(fon, align);
+
+    rc_type.type_id = NE_RSCTYPE_FONTDIR;
+    rc_type.count = 1;
+    rc_type.resloader = 0;
+    lputshort(fon, rc_type.type_id);
+    lputshort(fon, rc_type.count);
+    lputlong(fon, (long) rc_type.resloader);
+
+    rc_name.offset = fontdir_off >> 4;
+    rc_name.length = (fontdir_len + 15) >> 4;
+    rc_name.flags = NE_SEGFLAGS_MOVEABLE | NE_SEGFLAGS_PRELOAD;
+    rc_name.id = resident_name_off - sizeof("FONTDIR") - NE_hdr.ne_rsrctab;
+    rc_name.handle = 0;
+    rc_name.usage = 0;
+    lputshort(fon, rc_name.offset);
+    lputshort(fon, rc_name.length);
+    lputshort(fon, rc_name.flags);
+    lputshort(fon, rc_name.id);
+    lputshort(fon, rc_name.handle);
+    lputshort(fon, rc_name.usage);
+
+    rc_type.type_id = NE_RSCTYPE_FONT;
+    rc_type.count = num_files;
+    rc_type.resloader = 0;
+    lputshort(fon, rc_type.type_id);
+    lputshort(fon, rc_type.count);
+    lputlong(fon, (long) rc_type.resloader);
+
+    for(res = first_res | 0x8000, i = 0; i < num_files; i++, res++) {
+        int len = (file_lens[i] + 15) & ~0xf;
+
+        rc_name.offset = font_off >> 4;
+        rc_name.length = len >> 4;
+        rc_name.flags = NE_SEGFLAGS_MOVEABLE | NE_SEGFLAGS_SHAREABLE | NE_SEGFLAGS_DISCARDABLE;
+        rc_name.id = res;
+        rc_name.handle = 0;
+        rc_name.usage = 0;
+	lputshort(fon, rc_name.offset);
+	lputshort(fon, rc_name.length);
+	lputshort(fon, rc_name.flags);
+	lputshort(fon, rc_name.id);
+	lputshort(fon, rc_name.handle);
+	lputshort(fon, rc_name.usage);
+
+        font_off += len;
+    }
+
+    /* empty type info */
+    memset(&rc_type, 0, sizeof(rc_type));
+    lputshort(fon, rc_type.type_id);
+    lputshort(fon, rc_type.count);
+    lputlong(fon, (long) rc_type.resloader);
+
+    fputc(strlen("FONTDIR"), fon);
+    fwrite("FONTDIR", strlen("FONTDIR"), 1, fon);
+    fputc(strlen(resident_name), fon);
+    fwrite(resident_name, strlen(resident_name), 1, fon);
+
+    fputc(0x00, fon);    fputc(0x00, fon);
+    fputc(0x00, fon);
+    fputc(0x00, fon);    fputc(0x00, fon);
+
+    fputc(strlen(non_resident_name), fon);
+    fwrite(non_resident_name, strlen(non_resident_name), 1, fon);
+    fputc(0x00, fon); /* terminator */
+
+    /* empty ne_modtab and ne_imptab */
+    fputc(0x00, fon);
+    fputc(0x00, fon);
+
+    pad = ftell(fon) & 0xf;
+    if(pad != 0)
+        pad = 0x10 - pad;
+    for(i = 0; i < pad; i++)
+        fputc(0x00, fon);
+
+    /* FONTDIR resource */
+    lputshort(fon,num_files);
+    
+    for(res = first_res, i = 0; i < num_files; i++, res++) {
+        lputshort(fon,res);
+
+        rewind(fntarray[i]);
+        fread(buf, 0x72, 1, fntarray[i]);
+        fnt_header = (struct _fnt_header *)buf;
+        fnt_header->fi.dfBitsOffset = 0;	/* I can ignore endianness here. all is 0 */
+        fwrite(buf, 0x72, 1, fon);
+
+	fseek(fntarray[i], 0x69, SEEK_SET);
+	off = lgetlong(fntarray[i]);
+        fseek(fntarray[i], off, SEEK_SET);
+
+        cp = name;
+        while((c = fgetc(fntarray[i])) != 0 && c != EOF)
+            *cp++ = c;
+        *cp = '\0';
+        fwrite(name, strlen(name) + 1, 1, fon);
+    }
+
+    pad = ftell(fon) & 0xf;
+    if(pad != 0)
+        pad = 0x10 - pad;
+    for(i = 0; i < pad; i++)
+        fputc(0x00, fon);
+
+    for(res = first_res, i = 0; i < num_files; i++, res++) {
+        rewind(fntarray[i]);
+
+        while(1) {
+            nread = fread(buf, 1, sizeof(buf), fntarray[i]);
+            if(!nread)
+	break;
+            fwrite(buf, nread, 1, fon);
+        }
+        fclose(fntarray[i]);
+        pad = file_lens[i] & 0xf;
+        if(pad != 0)
+            pad = 0x10 - pad;
+        for(j = 0; j < pad; j++)
+            fputc(0x00, fon);
+    }
+    fclose(fon);
+    free(fntarray);
+    free(file_lens);
+
+return true;
 }
