@@ -1006,11 +1006,12 @@ return( SplineMake2(from,to));
 
     finaldiff = 1e20;
     offn_ = offp_ = -1;
+    spline = SplineMake(from,to,false);
     for ( k=0; k<TRY_CNT; ++k ) {
 	tlen = bestj[k]*tdiff; flen = besti[k]*fdiff;
 	to->prevcp.x = to->me.x + tlen*tounit.x; to->prevcp.y = to->me.y + tlen*tounit.y;
 	from->nextcp.x = from->me.x + flen*fromunit.x; from->nextcp.y = from->me.y + flen*fromunit.y;
-	spline = SplineMake(from,to,false);
+	SplineRefigure(spline);
 
 	bettern = betterp = false;
 	incrn = tdiff/2.0; incrp = fdiff/2.0;
@@ -1034,7 +1035,7 @@ return( SplineMake2(from,to));
 	    to->prevcp.x = to->me.x + (offp+incrp)*tounit.x; to->prevcp.y = to->me.y + (offp+incrp)*tounit.y;
 	    SplineRefigure(spline);
 	    tadiff = SigmaDeltas(spline,mid,cnt,&b);
-	    to->prevcp.x = to->me.x + (offp-incrn)*tounit.x; to->prevcp.y = to->me.y + (offp-incrn)*tounit.y;
+	    to->prevcp.x = to->me.x + (offp-incrp)*tounit.x; to->prevcp.y = to->me.y + (offp-incrp)*tounit.y;
 	    SplineRefigure(spline);
 	    tsdiff = SigmaDeltas(spline,mid,cnt,&b);
 	    to->prevcp.x = to->me.x + offp*tounit.x; to->prevcp.y = to->me.y + offp*tounit.y;
@@ -1089,11 +1090,8 @@ return( SplineMake2(from,to));
 	}
     }
 
-    offn = offn_;
-    offp = offp_;
-
-    to->prevcp.x = to->me.x + offp*tounit.x; to->prevcp.y = to->me.y + offp*tounit.y;
-    from->nextcp.x = from->me.x + offn*fromunit.x; from->nextcp.y = from->me.y + offn*fromunit.y;
+    to->prevcp.x = to->me.x + offp_*tounit.x; to->prevcp.y = to->me.y + offp_*tounit.y;
+    from->nextcp.x = from->me.x + offn_*fromunit.x; from->nextcp.y = from->me.y + offn_*fromunit.y;
     /* I used to check for a spline very close to linear (and if so, make it */
     /*  linear). But in when stroking a path with an eliptical pen we transform*/
     /*  the coordinate system and our normal definitions of "close to linear" */
@@ -1104,6 +1102,7 @@ return( SplineMake2(from,to));
 return( spline );
 }
 #undef TRY_CNT
+#undef DECIMATION
 
     /* calculating the actual length of a spline is hard, this gives a very */
     /*  rough (but quick) approximation */
