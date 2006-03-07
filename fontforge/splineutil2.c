@@ -1684,9 +1684,53 @@ return( false );
 return( good );
 }
 
-/* A wrapper to the previous routine to handle some extra checking for a */
-/*  common case */
-static int SplinesRemoveMidMaybe(SplineChar *sc,SplinePoint *mid, int flags,
+/* In truetype we can interpolate away an on curve point. Try this */
+static int Spline2Interpolate(SplinePoint *mid, double err) {
+    SplinePoint *from, *to;
+    BasePoint midme, test;
+    int i,tot, good;
+    TPoint *tp;
+
+    midme = mid->me;
+    from = mid->prev->from; to = mid->next->to;
+    tp = SplinesFigureTPsBetween(from,to,&tot);
+
+    mid->me.x = (mid->prevcp.x + mid->nextcp.x)/2;
+    mid->me.y = (mid->prevcp.y + mid->nextcp.y)/2;
+    SplineRefigure(mid->next);
+    SplineRefigure(mid->prev);
+
+    i = tot;
+    good = true;
+    while ( --i>0 && good ) {
+	/* tp[0] is the same as from (easier to include it), but the SplineNear*/
+	/*  routine will sometimes reject the end-points of the spline */
+	/*  so just don't check it */
+	test.x = tp[i].x; test.y = tp[i].y;
+	if ( i>tot/2 )
+	    good = SplineNearPoint(mid->next,&test,err)!= -1 ||
+		    SplineNearPoint(mid->prev,&test,err)!= -1;
+	else
+	    good = SplineNearPoint(mid->prev,&test,err)!= -1 ||
+		    SplineNearPoint(mid->next,&test,err)!= -1;
+    }
+    if ( !good ) {
+	mid->me = midme;
+	SplineRefigure(mid->next);
+	SplineRefigure(mid->prev);
+    }
+return( good );
+}
+
+int SPInterpolate(SplinePoint *sp) {
+    /* Using truetype rules, can we interpolate this point? */
+return( !sp->dontinterpolate && !sp->nonextcp && !sp->noprevcp &&
+	    !sp->roundx && !sp->roundy &&
+	    (RealWithin(sp->me.x,(sp->nextcp.x+sp->prevcp.x)/2,.1) &&
+	     RealWithin(sp->me.y,(sp->nextcp.y+sp->prevcp.y)/2,.1)) );
+}
+
+static int _SplinesRemoveMidMaybe(SplineChar *sc,SplinePoint *mid, int flags,
 	double err, double lenmax2) {
     SplinePoint *from, *to;
 #if 0		/* See comment below */
@@ -1759,7 +1803,26 @@ return( false );
     }
 #endif
 
+    if ( mid->next->order2 ) {
+	if ( SPInterpolate(from) && SPInterpolate(to) && SPInterpolate(mid))
+return( false );
+    }
+
 return ( SplinesRemoveBetweenMaybe(sc,from,to,flags,err));
+}
+
+/* A wrapper to SplinesRemoveBetweenMaybe to handle some extra checking for a */
+/*  common case */
+static int SplinesRemoveMidMaybe(SplineChar *sc,SplinePoint *mid, int flags,
+	double err, double lenmax2) {
+    int changed1 = false;
+    if ( mid->next->order2 ) {
+	if ( !mid->dontinterpolate && !mid->nonextcp && !mid->noprevcp &&
+		!(RealWithin(mid->me.x,(mid->nextcp.x+mid->prevcp.x)/2,.1) &&
+		  RealWithin(mid->me.y,(mid->nextcp.y+mid->prevcp.y)/2,.1)) )
+	  changed1 = Spline2Interpolate(mid,err);
+    }
+return( _SplinesRemoveMidMaybe(sc,mid,flags,err,lenmax2) || changed1 );
 }
 
 void SPLNearlyHvCps(SplineChar *sc,SplineSet *ss,double err) {

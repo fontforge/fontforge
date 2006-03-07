@@ -1511,6 +1511,7 @@ extern void SplineCharMerge(SplineChar *sc,SplineSet **head,int type);
 extern void SPLNearlyHvCps(SplineChar *sc,SplineSet *ss,double err);
 extern void SPLNearlyHvLines(SplineChar *sc,SplineSet *ss,double err);
 extern int  SPLNearlyLines(SplineChar *sc,SplineSet *ss,double err);
+extern int SPInterpolate(SplinePoint *sp);
 extern void SplinePointListSimplify(SplineChar *sc,SplinePointList *spl,
 	struct simplifyinfo *smpl);
 extern SplineSet *SplineCharSimplify(SplineChar *sc,SplineSet *head,
