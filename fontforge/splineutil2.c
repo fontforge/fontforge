@@ -1794,12 +1794,37 @@ return( false );
     if ( !(flags&sf_ignoreextremum) && SPisExtremum(mid) )
 return( false );
 
-    if ( !(flags&sf_mergelines) && (mid->prev->knownlinear || mid->next->knownlinear) ) {
+    if ( !(flags&sf_mergelines) && (mid->pointtype==pt_corner ||
+	    mid->prev->knownlinear || mid->next->knownlinear) ) {
 	/* Be very careful about merging straight lines. Generally they should*/
 	/*  remain straight... */
-	if ( mid->prev->knownlinear && mid->next->knownlinear ) {
-	    /* If both are straight, only allow a merge if lines are colinear*/
-	    /*  (or if the distortion is tiny */
+	/* Actually it's not that the lines are straight, the significant thing */
+	/*  is that if there is a abrupt change in direction at this point */
+	/*  (a corner) we don't want to get rid of it */
+	BasePoint prevu, nextu;
+	double plen, nlen;
+
+	if ( mid->next->knownlinear || mid->nonextcp ) {
+	    nextu.x = to->me.x-mid->me.x;
+	    nextu.y = to->me.y-mid->me.y;
+	} else {
+	    nextu.x = mid->nextcp.x-mid->me.x;
+	    nextu.y = mid->nextcp.y-mid->me.y;
+	}
+	if ( mid->prev->knownlinear || mid->noprevcp ) {
+	    prevu.x = from->me.x-mid->me.x;
+	    prevu.y = from->me.y-mid->me.y;
+	} else {
+	    prevu.x = mid->prevcp.x-mid->me.x;
+	    prevu.y = mid->prevcp.y-mid->me.y;
+	}
+	nlen = sqrt(nextu.x*nextu.x + nextu.y*nextu.y);
+	plen = sqrt(prevu.x*prevu.x + prevu.y*prevu.y);
+	if ( nlen==0 || plen==0 )
+	    /* Not a real corner */;
+	else if ( (nextu.x*prevu.x + nextu.y*prevu.y)/(nlen*plen)>((nlen+plen>20)?-.98:-.95) ) {
+	    /* If the cos if the angle between the two segments is too far */
+	    /*  from parallel then don't try to smooth the point into oblivion */
 	    double flen, tlen;
 	    flen = (from->me.x-mid->me.x)*(from->me.x-mid->me.x) +
 		    (from->me.y-mid->me.y)*(from->me.y-mid->me.y);
@@ -1807,7 +1832,14 @@ return( false );
 		    (to->me.y-mid->me.y)*(to->me.y-mid->me.y);
 	    if ( (flen<.7 && tlen<.7) || flen<.25 || tlen<.25 )
 		/* Too short to matter */;
-	    else if ( from->me.x==to->me.x ) {
+	    else
+return( false );
+	}
+
+	if ( mid->prev->knownlinear && mid->next->knownlinear ) {
+	    /* Special checks for horizontal/vertical lines */
+	    /* don't let the smoothing distort them */
+	    if ( from->me.x==to->me.x ) {
 		if ( mid->me.x!=to->me.x )
 return( false );
 	    } else if ( from->me.y==to->me.y ) {
