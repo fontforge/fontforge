@@ -829,6 +829,10 @@ return( false );
 return( true );
 }
 
+#if 0
+static int totcnt_cnt, nocnt_cnt, incr_cnt, curdiff_cnt;
+#endif
+
 /* I used to do a least squares aproach adding two more to the above set of equations */
 /*  which held the slopes constant. But that didn't work very well. So instead*/
 /*  Then I tried doing the approximation, and then forcing the control points */
@@ -1078,11 +1082,23 @@ return( SplineMake2(from,to));
 		incrn /= 2;
 		incrp /= 2;
 	    }
-	    if ( incrp<tdiff/4096 || incrn<fdiff/4096 )
+	    if ( curdiff<1 )
 	break;
-	    if ( ++totcnt>10000 )
+	    if ( incrp<tdiff/1024 || incrn<fdiff/1024 )
+	break;
+	    if ( ++totcnt>200 )
 	break;
 	}
+#if 0
+ if ( nocnt>6 )
+  nocnt_cnt++;
+ else if ( curdiff<1 )
+  curdiff_cnt++;
+ else if ( totcnt>200 )
+  totcnt_cnt++;
+ else
+  incr_cnt++;
+#endif
 	if ( curdiff<finaldiff ) {
 	    finaldiff = curdiff;
 	    offn_ = offn;
@@ -2391,6 +2407,9 @@ SplineSet *SplineCharSimplify(SplineChar *sc,SplineSet *head,
 	}
     }
     SplineSetsRemoveAnnoyingExtrema(head,.3);
+#if 0
+ printf( "nocnt=%d totcnt=%d curdif=%d incr=%d\n", nocnt_cnt, totcnt_cnt, curdiff_cnt, incr_cnt );
+#endif
 return( head );
 }
 
