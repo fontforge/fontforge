@@ -2451,29 +2451,34 @@ static void bReencode(Context *c) {
 	ScriptError(c,"Bad argument type");
     if ( c->a.argc==3 )
 	force = c->a.vals[2].u.ival;
-    new_enc = FindOrMakeEncoding(c->a.vals[1].u.sval);
-    if ( new_enc==NULL )
-	ScriptErrorString(c,"Unknown encoding", c->a.vals[1].u.sval);
-    if ( force )
-	SFForceEncoding(c->curfv->sf,c->curfv->map,new_enc);
-    else if ( new_enc==&custom )
-	c->curfv->map->enc = &custom;
-    else {
-	EncMap *map = EncMapFromEncoding(c->curfv->sf,new_enc);
-	EncMapFree(c->curfv->map);
-	c->curfv->map = map;
+    if ( strmatch(c->a.vals[1].u.sval,"compacted")==0 ) {
+	c->curfv->normal = EncMapCopy(c->curfv->map);
+	CompactEncMap(c->curfv->map,c->curfv->sf);
+    } else {
+	new_enc = FindOrMakeEncoding(c->a.vals[1].u.sval);
+	if ( new_enc==NULL )
+	    ScriptErrorString(c,"Unknown encoding", c->a.vals[1].u.sval);
+	if ( force )
+	    SFForceEncoding(c->curfv->sf,c->curfv->map,new_enc);
+	else if ( new_enc==&custom )
+	    c->curfv->map->enc = &custom;
+	else {
+	    EncMap *map = EncMapFromEncoding(c->curfv->sf,new_enc);
+	    EncMapFree(c->curfv->map);
+	    c->curfv->map = map;
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	if ( !no_windowing_ui )
-	    FVSetTitle(c->curfv);
+	    if ( !no_windowing_ui )
+		FVSetTitle(c->curfv);
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-    }
-    if ( c->curfv->normal!=NULL ) {
-	EncMapFree(c->curfv->normal);
-	c->curfv->normal = NULL;
+	}
+	if ( c->curfv->normal!=NULL ) {
+	    EncMapFree(c->curfv->normal);
+	    c->curfv->normal = NULL;
+	}
+	SFReplaceEncodingBDFProps(c->curfv->sf,c->curfv->map);
     }
     free(c->curfv->selected);
     c->curfv->selected = gcalloc(c->curfv->map->enccount,sizeof(char));
-    SFReplaceEncodingBDFProps(c->curfv->sf,c->curfv->map);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( !no_windowing_ui )
 	FontViewReformatAll(c->curfv->sf);
