@@ -1296,7 +1296,8 @@ static void LigatureClosure(SplineFont *sf);
 int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype,EncMap *map) {
     int i, j, cnt, vcnt;
     int type0 = ( formattype==ff_ptype0 );
-    int encmax=!type0?256:65536;
+    int otf = (formattype==ff_otf);
+    int encmax=(!type0 && !otf)?256:65536;
     int anyzapf;
     int iscid = ( formattype==ff_cid || formattype==ff_otfcid );
     SplineChar *sc;
