@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 2-Sep-2002 -->
-  <!-- AP: Last modified: 5-Feb-2006 -->
+  <!-- AP: Last modified: 6-Mar-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Preferences Dialog</TITLE>-->
     <TITLE>環境設定ダイアログ</TITLE>
@@ -298,6 +298,13 @@
 <!--  If you always want to generate Apple style TTF fonts (and never windows ones)
       then select this item.-->
       常に Apple スタイルの TTF フォントを出力したいならば (そして Windows 用フォントを決して出力しないならば) この項目を選択してください。
+     <DT>
+<!--  <A NAME="AlwaysGenOpenType">AlwaysGenOpenType</A> -->
+      <A NAME="AlwaysGenOpenType">AlwaysGenOpenType</A> (<CODE>常に <U>O</U>penType を出力</CODE>)
+    <DD>
+<!--  Conversely you may always want to include OpenType tables in a font. It is
+      permissible to set both this and AlwaysGenApple, or to set neither. -->
+      その逆に、常にフォントにOpenType テーブルを含めたい場合もあると思います。このフラグと AlwaysGenApple の両方をセットすることも許されますし、両方ともセットしないことも可能です。
     <DT>
 <!--  <A NAME="PreserveTables">PreserveTables</A> -->
       <A NAME="PreserveTables">PreserveTables</A> (<CODE>保存するテーブル(<U>P</U>)</CODE>)
@@ -319,8 +326,15 @@
   </DL>
   <DL>
     <DT>
-<!--  <IMG SRC="prefs-apps.png" WIDTH="282" HEIGHT="372" ALIGN="Right"><A NAME="AutotraceArgs">AutotraceArgs</A> -->
-      <IMG SRC="prefs-apps.png" WIDTH="350" HEIGHT="401" ALIGN="Right"><A NAME="AutotraceArgs">AutotraceArgs</A> (<CODE>自動トレースの引数</CODE>)
+<!--  <IMG SRC="prefs-apps.png" WIDTH="282" HEIGHT="372" ALIGN="Right"><A NAME="PreferPotrace">PreferPotrace</A> -->
+      <IMG SRC="prefs-apps.png" WIDTH="350" HEIGHT="401" ALIGN="Right"><A NAME="PreferPotrace">PreferPotrace</A> (<CODE>potrace を使用</CODE>)
+    <DD>
+<!--  If you system has both potrace and autotrace installed this allows you to
+      specify which you'd prefer FontForge to use for autotracing. -->
+      システムに potrace と autotrace の両方がインストールされている場合、FontForge がどちらを優先して自動トレースに用いるかを指定することができます。
+    <DT>
+<!--  <A NAME="AutotraceArgs">AutotraceArgs</A> -->
+      <A NAME="AutotraceArgs">AutotraceArgs</A> (<CODE>自動トレースの引数</CODE>)
     <DD>
 <!--  This allows you to specify any arguments you want passed to the autotrace
       program. Don't try to pass something that will change the input or output
