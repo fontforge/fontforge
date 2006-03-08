@@ -406,7 +406,7 @@ return( false );
 
     for ( i=0; i<map->enccount && i<65536; ++i ) {
 	if ( map->map[i]!=-1 && SCWorthOutputting(sf->glyphs[map->map[i]]) )
-	    fprintf( enc, "%04X N %s", i, sf->glyphs[map->map[i]]->name );
+	    fprintf( enc, "%04X N %s\n", i, sf->glyphs[map->map[i]]->name );
     }
 
     if ( fclose(enc)==-1 )
