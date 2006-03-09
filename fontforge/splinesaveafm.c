@@ -1208,92 +1208,371 @@ static void AfmSplineFontHeader(FILE *afm, SplineFont *sf, int formattype, EncMa
 	fprintf( afm, "Descender %d\n", dsh*1000/em );
 }
 
-static int CountClass(SplineChar **class) {
-    int i;
-    if ( class==NULL )
-return( 0 );
-    for ( i=0; class[i]!=NULL; ++i );
-return( i );
+struct cc_data {
+    char *name;
+    SplineChar *base;
+    int acnt;
+    struct cc_accents {
+	SplineChar *accent;
+	real xoff, yoff;
+	struct cc_accents *next;
+    } *accents;
+};
+
+struct cc_container {
+    struct cc_data *ccs;
+    int cnt, max;	 /* total number of ccs used/alocated */
+    SplineChar ***marks; /* For each ac this is a list of all mark glyphs in it */
+    int *mcnt;		 /* Count of the above list */
+    int *mpos;
+    SplineFont *sf;
+};
+
+#define AC_MAX	5	/* At most 5 Anchor classes may be used/glyph */
+
+static int FigureName(int *unicode,char *name,int u) {
+    char *upt, *start, *end, ch;
+
+    start = name;
+    if ( strchr(start,'_')!=NULL ) {
+	while ( (upt=strchr(start,'_'))!=NULL ) {
+	    *upt='\0';
+	    u = FigureName(unicode,start,u);
+	    *upt = '_';
+	    if ( u==-1 )
+return( -1 );
+	    start = upt+1;
+	}
+    }
+    if ( strncmp(start,"uni",3)==0 && (strlen(start)-3)%4==0 ) {
+	start+=3;
+	while ( *start ) {
+	    ch = start[4]; start[4] = '\0';
+	    unicode[u++] = strtol(start,&end,16);
+	    start[4] = ch;
+	    if ( *end!='\0' )
+return( -1 );
+	    start += 4;
+	}
+return( u );
+    }
+    unicode[u] = UniFromName(start,ui_none,&custom);
+    if ( unicode[u]==-1 )
+return( -1 );
+
+return( u+1 );
 }
 
-static void AfmComposites(FILE *afm, SplineFont *sf) {
-    AnchorClass *ac;
-    SplineChar ***base, ***lig, ***mkmk;
-    SplineChar ****marks;
-    AnchorClass **acs;
-    AnchorPoint *map, *bap;
-    int **subcnts;
-    int cnt, tot;
+#include <chardata.h>
+
+static int FigureUnicodes(int *unicode,SplineChar *sc,int u) {
+    const unichar_t *upt;
+
+    if ( u==-1 )
+return( -1 );
+    if ( sc->unicodeenc==-1 )
+return( FigureName(unicode,sc->name,u));
+    if ( isdecompositionnormative(sc->unicodeenc) && sc->unicodeenc>=65536 &&
+	    unicode_alternates[sc->unicodeenc>>8]!=NULL &&
+	    (upt = unicode_alternates[sc->unicodeenc>>8][sc->unicodeenc&0xff])!=NULL ) {
+	while ( *upt!='\0' )
+	    unicode[u++] = *upt++;
+    } else
+	unicode[u++] = sc->unicodeenc;
+return( u );
+}
+
+static int FindDecomposition(int *unicode, int u) {
+    int uni;
+    const unichar_t *upt;
+    int i;
+
+    for ( uni=0; uni<65536; ++uni ) {
+	if ( unicode_alternates[uni>>8]!=NULL &&
+		(upt = unicode_alternates[uni>>8][uni&0xff])!=NULL ) {
+	    for ( i=0; *upt!='\0' && i<u && *upt==unicode[i]; ++i, ++upt );
+	    if ( *upt=='\0' && i==u )
+return( uni );
+	}
+    }
+return( -1 );
+}
+
+static const unichar_t accents_synonems[][4] = {
+    { 0x2cb, 0x60 },		/* grave */
+    { 0x2ca, 0xb4 },		/* acute */
+    { 0x2c6, 0x5e },		/* circumflex */
+    { 0x2dc, 0x7e },		/* tilde */
+    { 0x2c9, 0xaf },		/* macron */
+    { 0x305, 0xaf },		/* overline, (macron is suggested as a syn, but it's not quite right) */
+    { 0x2d8 },			/* breve */
+    { 0x2d9 },			/* dot above */
+    { 0xa8 },			/* diaeresis */
+    { 0x2da, 0xb0 },		/* ring above */
+    { 0xffff }};
+
+static void sortunis(int *unicode,int u) {
     int i,j,k;
 
-    for ( ac=sf->anchor, cnt=0; ac!=NULL; ac = ac->next ) {
-	ac->processed = false;
-	ac->matches = false;
-	if ( ac->script_lang_index!=SLI_NESTED &&
-		ac->type==act_mark /* to base and to ligature. not m2m or cursive */ )
-	    ++cnt;
-    }
-    if ( cnt==0 )
-return;
-
-    base = galloc(cnt*sizeof(SplineChar **));
-    lig = galloc(cnt*sizeof(SplineChar **));
-    mkmk = galloc(cnt*sizeof(SplineChar **));
-    marks = galloc(cnt*sizeof(SplineChar ***));
-    subcnts = galloc(cnt*sizeof(int *));
-    acs = galloc(cnt*sizeof(AnchorClass *));
-
-    for ( cnt=tot=0, ac=sf->anchor; ac!=NULL; ac = ac->next ) {
-	if ( ac->script_lang_index!=SLI_NESTED &&
-		ac->type==act_mark /* to base and to ligature. not m2m or cursive */ ) {
-	    ac->processed = true;
-	    ac->matches = true;
-	    marks[cnt] = galloc(1*sizeof(SplineChar **));
-	    subcnts[cnt] = galloc(1*sizeof(int));
-	    AnchorClassDecompose(sf,ac,1,subcnts[cnt],marks[cnt],&base[cnt],&lig[cnt],&mkmk[cnt],NULL);
-	    tot += CountClass(marks[cnt][0]) * (CountClass(base[cnt]) /*+ CountClass(lig[cnt])*/ );
-	    acs[cnt++] = ac;
-	}
-    }
-    if ( tot!=0 ) {
-	fprintf( afm, "StartComposites %d\n", tot );
-	for ( i=0; i<cnt; ++i ) {
-	    for ( j=0; base[i][j]!=NULL; ++j ) {
-		for ( bap = base[i][j]->anchor; bap!=NULL && bap->anchor!=acs[i]; bap = bap->next );
-		/* Find base anchor point for acs[cnt] */
-		for ( k=0; marks[i][0][k]!=NULL; ++k ) {
-		    for ( map = marks[i][0][k]->anchor; map!=NULL && map->anchor!=acs[i]; map = map->next );
-		    /* Find mark anchor point for acs[cnt] */
-		    fprintf( afm, "CC %s_%s_ 2; PCC %s 0 0; PCC %s %g %g;\n",
-			    base[i][j]->name, marks[i][0][k]->name,
-			    base[i][j]->name,
-			    marks[i][0][k]->name,
-			    /* Amount to move the accent's origin */
-			    bap->me.x - map->me.x, bap->me.y - map->me.y );
+    /* Translate spacing accents to combiners */
+    for ( i=0; i<u; ++i ) {
+	for ( j=0; accents_synonems[j][0]!=0xffff; ++j ) {
+	    for ( k=0; k<4; ++k ) {
+		if ( unicode[i]==accents_synonems[j][k] ) {
+		    unicode[i] = 0x300+j;
+	    break;
 		}
 	    }
+	    if ( unicode[i]>=0x300 )
+	break;
 	}
-	fprintf( afm, "EndComposites\n" );
     }
-    for ( i=0; i<cnt; ++i ) {
-	free(base[i]);
-	free(lig[i]);
-	free(mkmk[i]);
-	free(marks[i][0]);
-	free(marks[i]);
-	free(subcnts[i]);
+
+    for ( i=0; i<u; ++i ) for ( j=i+1; j<u; ++j ) {
+	if ( unicode[i]>unicode[j] ) {
+	    int temp = unicode[i];
+	    unicode[i] = unicode[j];
+	    unicode[j] = temp;
+	}
     }
-    free(base);
-    free(lig);
-    free(mkmk);
-    free(marks);
-    free(subcnts);
-    free(acs);
+}
+
+static char *NameFrom(struct cc_data *this,int *unicode,int u,int uni) {
+    char *ret, *pt;
+    char buffer[60];
+    struct cc_accents *cca;
+    int i,len;
+
+    if ( uni!=-1 )
+return( copy( StdGlyphName(buffer,uni,ui_none,NULL)) );
+    if ( u!=-1 && (unicode[0]<0x370 || unicode[0]>0x3ff) ) {
+	/* Don't use the unicode decomposition to get a name for greek */
+	/*  glyphs. We'd get acute for tonos, etc. */
+	ret = galloc(4+4*u);
+	strcpy(ret,"uni");
+	pt = ret+3;
+	for ( i=0; i<u; ++i ) {
+	    sprintf( pt, "%04X", unicode[i] );
+	    pt += 4;
+	}
+return( ret );
+    }
+    len = strlen( this->base->name ) +1;
+    for ( cca = this->accents; cca!=NULL; cca = cca->next )
+	len += strlen( cca->accent->name ) +1;
+    ret = galloc(len);
+    strcpy(ret,this->base->name);
+    pt = ret + strlen(ret);
+    for ( cca = this->accents; cca!=NULL; cca = cca->next ) {
+	*pt++ = '_';
+	strcpy(pt,cca->accent->name);
+	pt = pt + strlen(pt);
+    }
+return( ret );
+}
+
+static int AfmBuildCCName(struct cc_data *this,struct cc_container *cc) {
+    int unicode[4*AC_MAX];
+    int u;
+    int uni;
+    struct cc_accents *cca;
+
+    u = FigureUnicodes(unicode,this->base,0);
+    for ( cca = this->accents; cca!=NULL; cca = cca->next )
+	u=FigureUnicodes(unicode,cca->accent,u);
+    if ( u!=-1 ) {
+	unicode[u]= -1;
+	sortunis(unicode+1,u-1);		/* Only sort the accents */
+    }
+    uni = FindDecomposition(unicode,u);
+    if ( uni!=-1 )
+	if ( SFGetChar(cc->sf,uni,NULL)!=NULL )
+return( false );		/* Character already exists in font */
+    this->name = NameFrom(this,unicode,u,uni);
+    if ( SFGetChar(cc->sf,-1,this->name)!=NULL ) {
+	free(this->name);
+return( false );		/* Character already exists in font */
+    }
+return( true );
+}
+
+static void AfmBuildMarkCombos(SplineChar *sc,AnchorPoint *ap, struct cc_container *cc) {
+    if ( ap==NULL ) {
+	AnchorPoint *ap;
+	struct cc_data *this = &cc->ccs[cc->cnt++];
+	int acnt=0;
+	int ticks, cnt;
+	AnchorPoint *map;
+
+	this->base = sc;
+	this->accents = NULL;
+	for ( ap=sc->anchor, ticks=0, cnt=1; ap!=NULL; ap=ap->next ) if ( ap->ticked ) {
+	    struct cc_accents *cca = chunkalloc(sizeof(struct cc_accents));
+	    cca->accent = cc->marks[ap->anchor->ac_num][cc->mpos[ap->anchor->ac_num]];
+	    for ( map = cca->accent->anchor; map->anchor!=ap->anchor || map->type!=at_mark;
+		    map = map->next );
+	    if ( map!=NULL ) {
+		cca->xoff = ap->me.x - map->me.x;
+		cca->yoff = ap->me.y - map->me.y;
+	    }
+	    cca->next = this->accents;
+	    this->accents = cca;
+	    ++acnt;
+	}
+	if ( !AfmBuildCCName(this,cc)) {
+	    struct cc_accents *cca, *next;
+	    --cc->cnt;
+	    for ( cca = this->accents; cca!=NULL; cca = next ) {
+		next = cca->next;
+		chunkfree(cca,sizeof(struct cc_accents));
+	    }
+	} else
+	    this->acnt = acnt;
+    } else if ( ap->ticked ) {
+	int ac_num = ap->anchor->ac_num;
+	for ( cc->mpos[ac_num] = 0; cc->mpos[ac_num]<cc->mcnt[ac_num]; ++cc->mpos[ac_num] )
+	    AfmBuildMarkCombos(sc,ap->next,cc);
+    } else {
+	AfmBuildMarkCombos(sc,ap->next,cc);
+    }
+}
+
+static void AfmBuildCombos(SplineChar *sc,AnchorPoint *ap, struct cc_container *cc) {
+
+    if ( ap!=NULL ) {
+	AfmBuildCombos(sc,ap->next,cc);
+	if ( ap->type==at_basechar ) {
+	    ap->ticked = true;
+	    AfmBuildCombos(sc,ap->next,cc);
+	    ap->ticked = false;
+	}
+    } else {
+	int ticks, cnt;
+	AnchorPoint *ap;
+
+	for ( ap=sc->anchor, ticks=0, cnt=1; ap!=NULL; ap=ap->next ) {
+	    if ( ap->ticked ) {
+		++ticks;
+		cnt *= cc->mcnt[ap->anchor->ac_num];
+	    }
+	}
+	if ( ticks==0 )		  /* No accents classes selected */
+return;
+	if ( ticks>AC_MAX || cnt>200 ) /* Too many selected. I fear combinatorial explosion */
+return;
+	if ( cc->cnt+cnt >= cc->max )
+	    cc->ccs = grealloc(cc->ccs,(cc->max += cnt+200)*sizeof(struct cc_data));
+	AfmBuildMarkCombos(sc,sc->anchor,cc);
+    }
+}
+
+static struct cc_data *AfmFigureCCdata(SplineFont *sf,int *total) {
+    int ac_cnt, i;
+    AnchorClass *ac;
+    AnchorPoint *ap;
+    SplineChar *sc;
+    int *mmax;
+    struct cc_container cc;
+
+    memset(&cc,0,sizeof(cc));
+    cc.sf = sf;
+    for ( ac=sf->anchor, ac_cnt=0; ac!=NULL; ac=ac->next, ++ac_cnt)
+	ac->ac_num = ac_cnt;
+    cc.mcnt = gcalloc(ac_cnt,sizeof(int));
+    cc.mpos = gcalloc(ac_cnt,sizeof(int));
+    mmax = gcalloc(ac_cnt,sizeof(int));
+    cc.marks = gcalloc(ac_cnt,sizeof(SplineChar **));
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc = sf->glyphs[i])!=NULL ) {
+	for ( ap = sc->anchor; ap!=NULL; ap=ap->next ) if ( ap->type==at_mark )
+	    ++mmax[ap->anchor->ac_num];
+    }
+    for ( i=0; i<ac_cnt; ++i )
+	cc.marks[i] = gcalloc(mmax[i],sizeof(SplineChar *));
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc = sf->glyphs[i])!=NULL ) {
+	for ( ap = sc->anchor; ap!=NULL; ap=ap->next ) if ( ap->type==at_mark )
+	    cc.marks[ap->anchor->ac_num][cc.mcnt[ap->anchor->ac_num]++] = sc;
+    }
+    for ( i=0; i<sf->glyphcnt; ++i )
+	if ( (sc = sf->glyphs[i])!=NULL && sc->anchor!=NULL ) {
+	    for ( ap = sc->anchor; ap!=NULL; ap=ap->next )
+		ap->ticked = false;
+	    AfmBuildCombos(sc,sc->anchor,&cc);
+	}
+    if ( cc.cnt+1 >= cc.max )
+	cc.ccs = grealloc(cc.ccs,(cc.max += 1)*sizeof(struct cc_data));
+    cc.ccs[cc.cnt].base = NULL;		/* End of list mark */
+    for ( i=0; i<ac_cnt; ++i )
+	free(cc.marks[i]);
+    free(cc.marks);
+    free(cc.mcnt);
+    free(cc.mpos);
+    free(mmax);
+    *total = cc.cnt;
+return( cc.ccs );
+}
+
+static void CCFree(struct cc_data *cc) {
+    int i;
+    struct cc_accents *cca, *next;
+
+    if ( cc==NULL )
+return;
+    for ( i=0; cc[i].base!=NULL; ++i ) {
+	free(cc[i].name);
+	for ( cca = cc[i].accents; cca!=NULL; cca = next ) {
+	    next = cca->next;
+	    chunkfree(cca,sizeof(struct cc_accents));
+	}
+    }
+    free( cc );
+}
+
+static void AfmComposites(FILE *afm, SplineFont *sf, struct cc_data *cc, int cc_cnt) {
+    int i;
+    struct cc_accents *cca;
+    double em = (sf->ascent+sf->descent);
+
+    fprintf( afm, "StartComposites %d\n", cc_cnt );
+    for ( i=0; i<cc_cnt; ++i ) {
+	fprintf( afm, "CC %s %d; PCC %s 0 0;",
+		cc[i].name, cc[i].acnt+1, cc[i].base->name );
+	for ( cca = cc[i].accents; cca!=NULL; cca = cca->next ) {
+	    fprintf( afm, " PCC %s %g %g;",
+		    cca->accent->name, rint(1000.0*cca->xoff/em), rint(1000.0*cca->yoff/em) );
+	}
+	putc('\n',afm);
+    }
+    fprintf( afm, "EndComposites\n" );
+}
+
+static void AfmCompositeChar(FILE *afm,struct cc_data *cc) {
+    DBounds b, b1;
+    SplineChar *sc = cc->base;
+    SplineFont *sf = sc->parent;
+    int em = (sf->ascent+sf->descent);
+    struct cc_accents *cca;
+
+    SplineCharFindBounds(sc,&b);
+    for ( cca = cc->accents; cca!=NULL; cca = cca->next ) {
+	SplineCharFindBounds(cca->accent,&b1);
+	if ( b1.minx+cca->xoff<b.minx ) b.minx = b1.minx+cca->xoff;
+	if ( b1.maxx+cca->xoff>b.maxx ) b.maxx = b1.maxx+cca->xoff;
+	if ( b1.miny+cca->yoff<b.miny ) b.miny = b1.miny+cca->yoff;
+	if ( b1.maxy+cca->yoff>b.maxy ) b.maxy = b1.maxy+cca->yoff;
+    }
+    fprintf( afm, "C %d ; WX %d ; ", -2, sc->width*1000/em );
+    if ( sf->hasvmetrics )
+	fprintf( afm, "WY %d ; ", sc->vwidth*1000/em );
+    fprintf( afm, "N %s ; B %d %d %d %d ;",
+	    cc->name,
+	    (int) floor(b.minx*1000/em), (int) floor(b.miny*1000/em),
+	    (int) ceil(b.maxx*1000/em), (int) ceil(b.maxy*1000/em) );
+    putc('\n',afm);
 }
 
 static void LigatureClosure(SplineFont *sf);
 
-int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype,EncMap *map) {
+int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype,EncMap *map, int docc) {
     int i, j, cnt, vcnt;
     int type0 = ( formattype==ff_ptype0 );
     int otf = (formattype==ff_otf);
@@ -1301,11 +1580,15 @@ int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype,EncMap *map) {
     int anyzapf;
     int iscid = ( formattype==ff_cid || formattype==ff_otfcid );
     SplineChar *sc;
+    int cc_cnt = 0;
+    struct cc_data *cc= NULL;
 
     SFLigaturePrepare(sf);
     LigatureClosure(sf);		/* Convert 3 character ligs to a set of two character ones when possible */
     SFKernPrepare(sf,false);		/* Undoes kern classes */
     SFKernPrepare(sf,true);
+    if ( sf->anchor!=NULL && docc )
+	cc = AfmFigureCCdata(sf,&cc_cnt);
 
     if ( iscid && sf->cidmaster!=NULL ) sf = sf->cidmaster;
 
@@ -1343,7 +1626,7 @@ int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype,EncMap *map) {
 		    ++cnt;
     }
 
-    fprintf( afm, "StartCharMetrics %d\n", cnt );
+    fprintf( afm, "StartCharMetrics %d\n", cnt+cc_cnt );
     if ( iscid ) {
 	for ( i=0; i<map->enccount; ++i ) {
 	    int gid = map->map[i];
@@ -1398,6 +1681,8 @@ int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype,EncMap *map) {
 	    AfmSplineChar(afm,sf->glyphs[gid],-1);
 	}
     }
+    for ( i=0; i<cc_cnt; ++i )
+	AfmCompositeChar(afm,&cc[i]);
     fprintf( afm, "EndCharMetrics\n" );
     vcnt = anykerns(sf,true);
     if ( (cnt = anykerns(sf,false))>0 || vcnt>0 ) {
@@ -1424,13 +1709,14 @@ int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype,EncMap *map) {
 	}
 	fprintf( afm, "EndKernData\n" );
     }
-    if ( sf->anchor!=NULL )
-	AfmComposites(afm,sf);
+    if ( cc!=NULL )
+	AfmComposites(afm,sf,cc,cc_cnt);
     fprintf( afm, "EndFontMetrics\n" );
 
     SFLigatureCleanup(sf);
     SFKernCleanup(sf,false);
     SFKernCleanup(sf,true);
+    CCFree(cc);
 
 return( !ferror(afm));
 }
