@@ -246,7 +246,7 @@ static int WriteAfmFile(char *filename,SplineFont *sf, int formattype, EncMap *m
     free(buf);
     if ( afm==NULL )
 return( false );
-    ret = AfmSplineFont(afm,sf,subtype,map);
+    ret = AfmSplineFont(afm,sf,subtype,map,true);
     if ( fclose(afm)==-1 )
 return( false );
     if ( !ret )
@@ -269,7 +269,7 @@ return( false );
 	    free(buf);
 	    if ( afm==NULL )
 return( false );
-	    ret = AfmSplineFont(afm,sf,subtype,map);
+	    ret = AfmSplineFont(afm,sf,subtype,map,true);
 	    if ( fclose(afm)==-1 )
 return( false );
 	    if ( !ret )

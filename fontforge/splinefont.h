@@ -238,7 +238,7 @@ typedef struct anchorclass {
     uint16 merge_with;
     uint16 type;		/* anchorclass_type */
     struct anchorclass *next;
-    uint8 processed, has_mark, matches;
+    uint8 processed, has_mark, matches, ac_num;
 } AnchorClass;
 
 enum anchor_type { at_mark, at_basechar, at_baselig, at_basemark, at_centry, at_cexit, at_max };
@@ -1620,7 +1620,7 @@ extern int SFFindNotdef(SplineFont *sf, int fixed);
 extern int IsntBDFChar(BDFChar *bdfc);
 extern int CIDWorthOutputting(SplineFont *cidmaster, int enc); /* Returns -1 on failure, font number on success */
 extern int AmfmSplineFont(FILE *afm, MMSet *mm,int formattype,EncMap *map);
-extern int AfmSplineFont(FILE *afm, SplineFont *sf,int formattype,EncMap *map);
+extern int AfmSplineFont(FILE *afm, SplineFont *sf,int formattype,EncMap *map, int docc);
 extern int PfmSplineFont(FILE *pfm, SplineFont *sf,int type0,EncMap *map);
 extern int TfmSplineFont(FILE *afm, SplineFont *sf,int formattype,EncMap *map);
 extern int OfmSplineFont(FILE *afm, SplineFont *sf,int formattype,EncMap *map);
