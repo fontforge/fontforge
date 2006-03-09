@@ -2217,7 +2217,7 @@ static void SFDGetMinimumDistances(FILE *sfd, SplineChar *sc) {
 	    }
 	}
 	if ( mapping==NULL )
-	    mapping = gcalloc(pt,sizeof(SplineChar *));
+	    mapping = gcalloc(pt,sizeof(SplinePoint *));
     }
 
     last = NULL;

@@ -5092,9 +5092,9 @@ return;
 return;
     }
     if ( carets->u.lcaret.carets==NULL )
-	carets->u.lcaret.carets = gcalloc(lig_comp_max,sizeof(real));
+	carets->u.lcaret.carets = (int16 *) gcalloc(lig_comp_max,sizeof(int16));
     else {
-	carets->u.lcaret.carets = grealloc(carets->u.lcaret.carets,lig_comp_max*sizeof(real));
+	carets->u.lcaret.carets = (int16 *) grealloc(carets->u.lcaret.carets,lig_comp_max*sizeof(int16));
 	for ( i=carets->u.lcaret.cnt; i<lig_comp_max; ++i )
 	    carets->u.lcaret.carets[i] = 0;
     }

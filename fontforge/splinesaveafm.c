@@ -2909,7 +2909,7 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map
 	depthindex = _depthindex;
 	italicindex = _italicindex;
     } else {
-	ligkerns = galloc(maxc*sizeof(struct ligkern));
+	ligkerns = galloc(maxc*sizeof(struct ligkern *));
 	widths = galloc((maxc+1)*sizeof(double));
 	heights = galloc((maxc+1)*sizeof(double));
 	depths = galloc((maxc+1)*sizeof(double));
