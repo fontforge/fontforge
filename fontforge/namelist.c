@@ -281,7 +281,7 @@ char **AllNamelistNames(void) {
     for ( nl = &agl, cnt=0; nl!=NULL; nl=nl->next, ++cnt );
     names = galloc((cnt+1) *sizeof(char *));
     for ( nl = &agl, cnt=0; nl!=NULL; nl=nl->next, ++cnt )
-	names[cnt] = copy(nl->title);
+	names[cnt] = copy(_(nl->title));
     names[cnt] = NULL;
 return( names );
 }
@@ -5805,7 +5805,7 @@ static const char **agl_p0[] = {
 
 static NameList agl = {
 	&agl_sans,
-	"Adobe Glyph List",
+	N_("Adobe Glyph List"),
 	{ agl_p0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
 };
 /* ************************************************************************** */
@@ -7106,7 +7106,7 @@ static const char **adobepua_p0[] = {
 
 static NameList adobepua = {
 	&agl,
-	"AGL with PUA",
+	N_("AGL with PUA"),
 	{ adobepua_p0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
 };
 /* ************************************************************************** */
@@ -7630,7 +7630,7 @@ static const char **greeksc_p0[] = {
 
 static NameList greeksc = {
 	&adobepua,
-	"Greek small caps",
+	N_("Greek small caps"),
 	{ greeksc_p0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
 };
 /* ************************************************************************** */
@@ -10744,7 +10744,7 @@ static const char **tex_p0[] = {
 
 static NameList tex = {
 	&agl,
-	"ΤεΧ Names",
+	NU_("ΤεΧ Names"),
 	{ tex_p0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
 };
 /* ************************************************************************** */
@@ -14117,7 +14117,7 @@ static const char **ams_p0[] = {
 
 static NameList ams = {
 	&tex,
-	"AMS Names",
+	N_("AMS Names"),
 	{ ams_p0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
 };
 /* ************************************************************************** */

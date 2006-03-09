@@ -461,7 +461,7 @@ static void DrawPoint(CharView *cv, GWindow pixmap, SplinePoint *sp,
 	    ((sp->nextcp.x==sp->me.x && sp->prevcp.x==sp->me.x) ||
 	     (sp->nextcp.y==sp->me.y && sp->prevcp.y==sp->me.y)) )
 	 col = extremepointcol;
-     if ( sp->selected )
+    if ( sp->selected )
 	 col = selectedpointcol;
 
     x =  cv->xoff + rint(sp->me.x*cv->scale);
@@ -2276,7 +2276,7 @@ static void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
     GDrawDrawText(pixmap,MAG_DATA,ybase,ubuffer,-1,NULL,0);
     GDrawDrawText8(pixmap,LAYER_DATA,ybase,
 		cv->drawmode==dm_fore ? _("Fore") :
-		cv->drawmode==dm_back ? _("_Back") : _("_Guide"),
+		cv->drawmode==dm_back ? _("Back") : _("Guide"),
 	    -1,NULL,0);
     if ( cv->coderange!=cr_none )
 	GDrawDrawText8(pixmap,CODERANGE_DATA,ybase,
