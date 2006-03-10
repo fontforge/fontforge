@@ -596,54 +596,104 @@ return( (struct stemdata *) (-1) );
 return( NULL );
 }
 
-static int OnLine(BasePoint *base,BasePoint *test,BasePoint *dir) {
-    double err = dir->x*(base->y-test->y) - dir->y*(base->x-test->x);
-return( err<slope_error && err>-slope_error );
+static int ParallelToDir(SplinePoint *sp,int checknext, BasePoint *dir,
+	BasePoint *opposite,BasePoint *base) {
+    BasePoint n, o;
+    double len;
+
+    if ( checknext ) {
+	if ( sp->next!=NULL && sp->next->knownlinear ) {
+	    n.x = sp->next->to->me.x - sp->me.x;
+	    n.y = sp->next->to->me.y - sp->me.y;
+	} else {
+	    n.x = sp->nextcp.x - sp->me.x;
+	    n.y = sp->nextcp.y - sp->me.y;
+	}
+	len = n.x*n.x + n.y*n.y;
+	if ( len == 0 )
+return( false );
+	len = sqrt(len);
+	n.x /= len;
+	n.y /= len;
+	if ( !UnitsParallel(&n,dir))
+return( false );
+    } else {
+	if ( sp->prev!=NULL && sp->prev->knownlinear ) {
+	    n.x = sp->prev->from->me.x - sp->me.x;
+	    n.y = sp->prev->from->me.y - sp->me.y;
+	} else {
+	    n.x = sp->prevcp.x - sp->me.x;
+	    n.y = sp->prevcp.y - sp->me.y;
+	}
+	len = n.x*n.x + n.y*n.y;
+	if ( len == 0 )
+return( false );
+	len = sqrt(len);
+	n.x /= len;
+	n.y /= len;
+	if ( !UnitsParallel(&n,dir))
+return( false );
+    }
+
+    /* Now sp must be on the same side of the spline as opposite */
+    o.x = opposite->x-base->x; o.y = opposite->y-base->y;
+    n.x = sp->me.x-base->x; n.y = sp->me.y-base->y;
+    if ( ( o.x*dir->y - o.y*dir->x )*( n.x*dir->y - n.y*dir->x ) < 0 )
+return( false );
+    
+return( true );
 }
 
-static double BpDirLen(BasePoint *base,BasePoint *off, BasePoint *dir) {
-    BasePoint diff;
-    double len, dot;
-
-    diff.x = off->x-base->x;
-    diff.y = off->y-base->y;
-    len = sqrt(diff.x*diff.x + diff.y*diff.y);
-    if ( len==0 )
-return( 0 );
-    if ( ( dot = (diff.x*dir->y - diff.y*dir->x)/len )>.05 || dot<-.05 )
-return( 0 );	/* Not parallel */
-
-    if ( (len = diff.x*dir->x + diff.y*dir->y)<0 ) len = -len;
+static double NormalDist(BasePoint *to, BasePoint *from, BasePoint *perp) {
+    double len = (to->x-from->x)*perp->y - (to->y-from->y)*perp->x;
+    if ( len<0 ) len = -len;
 return( len );
 }
 
-static double SpStemLen(SplinePoint *sp, BasePoint *dir) {
-    double nlen, plen;
+static int NewIsBetter(struct stemdata *stem,struct pointdata *pd, double width) {
+    double stemwidth;
+    int i, cnt;
 
-    if ( sp==NULL )
-return( 0 );
-    if ( sp->next!=NULL && sp->next->knownlinear )
-	nlen = BpDirLen(&sp->me,&sp->next->to->me,dir);
-    else
-	nlen = BpDirLen(&sp->me,&sp->nextcp,dir)/2;
-    if ( sp->prev!=NULL && sp->prev->knownlinear )
-	plen = BpDirLen(&sp->me,&sp->prev->from->me,dir);
-    else
-	plen = BpDirLen(&sp->me,&sp->prevcp,dir)/2;
-return( nlen+plen );
+    stemwidth = (stem->left.x-stem->right.x)*stem->unit.y -
+		(stem->left.y-stem->right.y)*stem->unit.x;
+    if ( stemwidth<0 ) stemwidth = -stemwidth;
+
+    if ( width>= stemwidth )
+return( false );
+    for ( i=cnt=0; i<stem->chunk_cnt; ++i )
+	if ( stem->chunks[i].r==pd || stem->chunks[i].l==pd )
+	    ++cnt;
+    if ( cnt>=2 )
+return( false );
+return( true );
+}
+
+static void MakePDPotential(struct stemdata *stem,struct pointdata *pd) {
+    int i;
+
+    for ( i=0; i<stem->chunk_cnt; ++i ) {
+	if ( stem->chunks[i].l==pd ) {
+	    stem->chunks[i].lpotential = pd;
+	    stem->chunks[i].l=NULL;
+	}
+	if ( stem->chunks[i].r==pd ) {
+	    stem->chunks[i].rpotential=pd;
+	    stem->chunks[i].r=NULL;
+	}
+    }
 }
 
 static struct stemdata *TestStem(struct glyphdata *gd,struct pointdata *pd,
 	BasePoint *dir,SplinePoint *match, int is_next, int is_next2) {
-    BasePoint *mdir;
     struct pointdata *pd2, *pd2potential;
     struct stemdata *stem, *stem2 = (struct stemdata *) (-2);
-    double err, width;
+    double width;
 
     if ( match->ttfindex==0xffff )
 return( NULL );
     width = (match->me.x-pd->sp->me.x)*dir->y - (match->me.y-pd->sp->me.y)*dir->x;
-    if ( width<.5 && width>-.5 )
+    if ( width<0 ) width = -width;
+    if ( width<.5 )
 return( NULL );		/* Zero width stems aren't interesting */
     if ( pd->sp->next->to==match || pd->sp->prev->from==match )
 return( NULL );		/* Don't want a stem between two splines that intersect */
@@ -662,40 +712,18 @@ return( NULL );
 	stem2 = stem;
     else if ( pd2->prevstem==stem )
 	stem2 = stem;
-    else if ( pd2->nextstem==NULL || pd2->prevstem==NULL ) {
-	mdir = is_next2 ? &pd2->nextunit : &pd2->prevunit;
-	if ( mdir->x!=0 || mdir->y!=0 ) {
-	    err = mdir->x*dir->y - mdir->y*dir->x;
-	    if ( err<slope_error && err>-slope_error &&
-		    (is_next2 ? pd2->nextstem : pd2->prevstem)==NULL ) {
-		Spline *other;
-		double t;
-		SplinePoint *test;
-		if ( !is_next2 ) {
-		    other = pd2->prevedge;
-		    t = pd2->prev_e_t;
-		} else {
-		    other = pd2->nextedge;
-		    t = pd2->next_e_t;
-		}
-		if ( other!=NULL ) {
-		    stem2 = FindStem(gd,pd2,dir,test = t>.5 ? other->to : other->from,t<=.5);
-		    if ( stem2==NULL )
-			stem2 = FindStem(gd,pd2,dir,test = t>.5 ? other->from : other->to,t>.5);
-		    if ( stem2==(struct stemdata *) (-1) ) {
-			if ( !OnLine(&pd->sp->me,&test->me,dir))
-			    stem2 = NULL;
-		    } else if ( stem2==stem )
-			/* Good */;
-		    else if ( OnLine( &pd->sp->me,&other->to->me,dir ) ||
-			    OnLine( &pd->sp->me,&other->from->me,dir )) {
-			stem2 = stem;
-		    } else
-			stem2 = NULL;
-		}
-	    }
-	}
-    }
+    else if ( is_next2 && pd2->nextstem!=NULL && NewIsBetter(pd2->nextstem,pd2,width) ) {
+	MakePDPotential(pd2->nextstem,pd2);
+	pd2->nextstem = NULL;
+	stem2 = stem;
+    } else if ( !is_next2 && pd2->prevstem!=NULL && NewIsBetter(pd2->prevstem,pd2,width) ) {
+	MakePDPotential(pd2->prevstem,pd2);
+	pd2->prevstem = NULL;
+	stem2 = stem;
+    } else if ( (is_next2 && pd2->nextstem==NULL) || (!is_next2 && pd2->prevstem==NULL) ) {
+	stem2 = stem;
+    } else
+	stem2 = NULL;
 
     pd2potential = pd2;
     if ( stem2==NULL )
@@ -729,6 +757,8 @@ static struct stemdata *BuildStem(struct glyphdata *gd,struct pointdata *pd,int 
     Spline *other;
     double t;
     struct stemdata *stem;
+    int tp, fp;
+    BasePoint opposite;
 
     if ( is_next ) {
 	dir = &pd->nextunit;
@@ -742,7 +772,16 @@ static struct stemdata *BuildStem(struct glyphdata *gd,struct pointdata *pd,int 
     if ( other==NULL )
 return( NULL );
 
-    if ( SpStemLen(other->to,dir) > SpStemLen(other->from,dir))
+    opposite.x = ((other->splines[0].a*t+other->splines[0].b)*t+other->splines[0].c)*t+other->splines[0].d;
+    opposite.y = ((other->splines[1].a*t+other->splines[1].b)*t+other->splines[1].c)*t+other->splines[1].d;
+
+    tp = ParallelToDir(other->to,false,dir,&opposite,&pd->sp->me);
+    fp = ParallelToDir(other->from,true,dir,&opposite,&pd->sp->me);
+    if ( !tp && !fp )
+return( NULL );
+
+    if ( (tp && fp && NormalDist(&other->to->me,&pd->sp->me,dir)<NormalDist(&other->from->me,&pd->sp->me,dir)) ||
+	    (tp && !fp))
 	stem = TestStem(gd,pd,dir, other->to, is_next, false);
     else
 	stem = TestStem(gd,pd,dir, other->from, is_next,true);
@@ -847,14 +886,11 @@ int UnitsParallel(BasePoint *u1,BasePoint *u2) {
 return( dot>.95 || dot < -.95 );
 }
 
-static void GDFindUnlikelyStems(struct glyphdata *gd) {
-    double width, maxm, minm, len;
-    int i,j;
-    double em = (gd->sc->parent->ascent+gd->sc->parent->descent);
-    SplinePoint *sp;
+static void GDFindMismatchedParallelStems(struct glyphdata *gd) {
+    int i;
+    struct pointdata *pd;
+    double width;
 
-    /* If a vertical stem has straight edges, and it is wider than tall */
-    /*  then it is unlikely to be a real stem */
     for ( i=0; i<gd->stemcnt; ++i ) {
 	struct stemdata *stem = &gd->stems[i];
 
@@ -862,6 +898,36 @@ static void GDFindUnlikelyStems(struct glyphdata *gd) {
 		(stem->left.y-stem->right.y)*stem->unit.x;
 	if ( width<0 ) width = -width;
 	stem->width = width;
+    }
+
+    for ( i=0; i<gd->pcnt; ++i ) if ( (pd = &gd->points[i])->sp!=NULL && pd->colinear ) {
+	if ( pd->nextstem!=NULL && pd->prevstem!=NULL &&
+		pd->nextstem != pd->prevstem ) {
+	    if ( pd->nextstem->width<pd->prevstem->width ) {
+		MakePDPotential(pd->prevstem,pd);
+		pd->prevstem = pd->nextstem;
+	    } else {
+		MakePDPotential(pd->nextstem,pd);
+		pd->nextstem = pd->prevstem;
+	    }
+	}
+    }
+}
+
+static void GDFindUnlikelyStems(struct glyphdata *gd) {
+    double width, maxm, minm, len;
+    int i,j;
+    double em = (gd->sc->parent->ascent+gd->sc->parent->descent);
+    SplinePoint *sp;
+
+    GDFindMismatchedParallelStems(gd);
+
+    /* If a vertical stem has straight edges, and it is wider than tall */
+    /*  then it is unlikely to be a real stem */
+    for ( i=0; i<gd->stemcnt; ++i ) {
+	struct stemdata *stem = &gd->stems[i];
+
+	width = stem->width;
 	len = 0;
 	for ( j=0; j<gd->pcnt; ++j ) if ( gd->points[j].sp!=NULL )
 	    gd->points[j].sp->ticked = false;
