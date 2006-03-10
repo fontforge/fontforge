@@ -601,6 +601,38 @@ static int OnLine(BasePoint *base,BasePoint *test,BasePoint *dir) {
 return( err<slope_error && err>-slope_error );
 }
 
+static double BpDirLen(BasePoint *base,BasePoint *off, BasePoint *dir) {
+    BasePoint diff;
+    double len, dot;
+
+    diff.x = off->x-base->x;
+    diff.y = off->y-base->y;
+    len = sqrt(diff.x*diff.x + diff.y*diff.y);
+    if ( len==0 )
+return( 0 );
+    if ( ( dot = (diff.x*dir->y - diff.y*dir->x)/len )>.05 || dot<-.05 )
+return( 0 );	/* Not parallel */
+
+    if ( (len = diff.x*dir->x + diff.y*dir->y)<0 ) len = -len;
+return( len );
+}
+
+static double SpStemLen(SplinePoint *sp, BasePoint *dir) {
+    double nlen, plen;
+
+    if ( sp==NULL )
+return( 0 );
+    if ( sp->next!=NULL && sp->next->knownlinear )
+	nlen = BpDirLen(&sp->me,&sp->next->to->me,dir);
+    else
+	nlen = BpDirLen(&sp->me,&sp->nextcp,dir)/2;
+    if ( sp->prev!=NULL && sp->prev->knownlinear )
+	plen = BpDirLen(&sp->me,&sp->prev->from->me,dir);
+    else
+	plen = BpDirLen(&sp->me,&sp->prevcp,dir)/2;
+return( nlen+plen );
+}
+
 static struct stemdata *TestStem(struct glyphdata *gd,struct pointdata *pd,
 	BasePoint *dir,SplinePoint *match, int is_next, int is_next2) {
     BasePoint *mdir;
@@ -710,9 +742,10 @@ static struct stemdata *BuildStem(struct glyphdata *gd,struct pointdata *pd,int 
     if ( other==NULL )
 return( NULL );
 
-    stem = TestStem(gd,pd,dir,t>.5 ? other->to : other->from,is_next,t<=.5);
-    if ( stem==NULL )
-	stem = TestStem(gd,pd,dir,t>.5 ? other->from : other->to,is_next,t>.5);
+    if ( SpStemLen(other->to,dir) > SpStemLen(other->from,dir))
+	stem = TestStem(gd,pd,dir, other->to, is_next, false);
+    else
+	stem = TestStem(gd,pd,dir, other->from, is_next,true);
 return( stem );
 }
 
