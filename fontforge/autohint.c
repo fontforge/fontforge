@@ -1204,7 +1204,8 @@ return( NULL );
     for ( s=stems; (sn = s->next)!=NULL; s = sn ) {
 	if ( s->start+BlueShift > sn->start && s->width>0 && sn->width>0 &&
 		s->start+s->width-BlueShift < sn->start+sn->width &&
-		s->start+s->width+BlueShift > sn->start+sn->width ) {
+		s->start+s->width+BlueShift > sn->start+sn->width &&
+		s->where->next!=NULL && sn->where->next==NULL ) {
 	    t = sn->next;
 	    sn->next = NULL;
 	    StemInfoFree(sn);
@@ -2872,8 +2873,9 @@ static HintInstance *StemAddHIFromChunks(struct stemdata *stem,int major) {
 	    if ( mino<=t->end )
 	break;
 	}
-	if ( t!=NULL && mino>=t->begin ) {
-	    if ( maxo>t->end ) t->end = maxo;
+	if ( t!=NULL && (mino>=t->begin || maxo<=t->end) ) {
+	    if ( maxo>t->end   ) t->end   = maxo;
+	    if ( mino<t->begin ) t->begin = mino;
 	} else {
 	    cur = chunkalloc(sizeof(HintInstance));
 	    cur->begin = mino;
