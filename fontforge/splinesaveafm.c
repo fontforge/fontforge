@@ -1298,34 +1298,11 @@ return( uni );
 return( -1 );
 }
 
-static const unichar_t accents_synonems[][4] = {
-    { 0x2cb, 0x60 },		/* grave */
-    { 0x2ca, 0xb4 },		/* acute */
-    { 0x2c6, 0x5e },		/* circumflex */
-    { 0x2dc, 0x7e },		/* tilde */
-    { 0x2c9, 0xaf },		/* macron */
-    { 0x305, 0xaf },		/* overline, (macron is suggested as a syn, but it's not quite right) */
-    { 0x2d8 },			/* breve */
-    { 0x2d9 },			/* dot above */
-    { 0xa8 },			/* diaeresis */
-    { 0x2da, 0xb0 },		/* ring above */
-    { 0xffff }};
-
 static void sortunis(int *unicode,int u) {
-    int i,j,k;
+    int i, j;
 
-    /* Translate spacing accents to combiners */
     for ( i=0; i<u; ++i ) {
-	for ( j=0; accents_synonems[j][0]!=0xffff; ++j ) {
-	    for ( k=0; k<4; ++k ) {
-		if ( unicode[i]==accents_synonems[j][k] ) {
-		    unicode[i] = 0x300+j;
-	    break;
-		}
-	    }
-	    if ( unicode[i]>=0x300 )
-	break;
-	}
+	unicode[i] = CanonicalCombiner(unicode[i]);
     }
 
     for ( i=0; i<u; ++i ) for ( j=i+1; j<u; ++j ) {

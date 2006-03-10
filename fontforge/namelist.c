@@ -27,6 +27,7 @@
 
 #include "pfaeditui.h"
 #include "ustring.h"
+#include <utype.h>
 
 static struct psaltnames {
     char *name;
@@ -186,80 +187,229 @@ const char *StdGlyphName(char *buffer, int uni,enum uni_interp interp,NameList *
 return( name );
 }
 
+#define RefMax	40
+
+static int transcmp(RefChar *r1, RefChar *r2) {
+    double d1, d2;
+
+    if ( r1->transform[4]<r2->transform[4] )
+return( -1 );
+    else if ( r1->transform[4]>r2->transform[4] )
+return(  1 );
+    if ( (d1 = r1->transform[5])<0 ) d1 = -d1;
+    if ( (d2 = r2->transform[5])<0 ) d2 = -d2;
+    if ( d1<d2 )
+return( -1 );
+    else if ( d1==d2 )
+return( 0 );
+    else
+return( 1 );
+}
+
+static int FindAllRefs(SplineChar *sc,SplineChar *rsc[RefMax], int *au) {
+    RefChar *refs[RefMax], *alp[RefMax], *out[RefMax];
+    RefChar *ref;
+    int layer, rcnt, acnt, ocnt, i,j;
+    int alluni;
+    /* We also order the reference. The order stored in the splinechar doesn't*/
+    /*  mean anything, so try and guess what is intended semantically. */
+
+    if ( sc==NULL )
+return( 0 );
+    for ( layer=ly_fore; layer<sc->layer_cnt; ++layer )
+	if ( sc->layers[layer].splines!=NULL || sc->layers[layer].images!=NULL )
+return( 0 );
+    rcnt = 0;
+    for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+	for ( ref = sc->layers[layer].refs; ref!=NULL; ref = ref->next ) {
+	    if ( rcnt>=RefMax )
+return( 0 );
+	    refs[rcnt++] = ref;
+	}
+    }
+    alluni = true;
+    for ( i=0; i<rcnt; ++i ) {
+	if ( refs[i]->sc->unicodeenc==-1 ) {
+	    alluni = false;
+    break;
+	}
+    }
+    if ( !alluni ) {
+	/* If not all unicode we can't make any guesses about meaning, so */
+	/*  order by transformation */
+	for ( i=0; i<rcnt; ++i ) for ( j=i+1; j<rcnt; ++j ) {
+	    if ( transcmp(refs[i],refs[j])>0 ) {
+		ref = refs[i];
+		refs[i] = refs[j];
+		refs[j] = ref;
+	    }
+	}
+    } else {
+	acnt = 0;
+	for ( i=0; i<rcnt; ++i ) {
+	    if ( isalpha(refs[i]->sc->unicodeenc )) {
+		alp[acnt++] = refs[i];
+		--rcnt;
+		for ( j=i; j<rcnt; ++j )
+		    refs[j] = refs[j+1];
+		--i;
+	    }
+	}
+	for ( i=0; i<acnt; ++i ) for ( j=i+1; j<acnt; ++j ) {
+	    if ( transcmp(alp[i],alp[j])>0 ) {
+		ref = alp[i];
+		alp[i] = alp[j];
+		alp[j] = ref;
+	    }
+	}
+	for ( i=0; i<rcnt; ++i ) for ( j=i+1; j<rcnt; ++j ) {
+	    if ( transcmp(refs[i],refs[j])>0 ) {
+		ref = refs[i];
+		refs[i] = refs[j];
+		refs[j] = ref;
+	    }
+	}
+	if ( acnt!=0 ) {
+	    int a=0, r=0;
+	    real cutpoint;
+	    ocnt = 0;
+	    out[ocnt++] = alp[a++];
+	    forever {
+		if ( a<acnt ) cutpoint = (alp[a]->transform[4]+3*alp[a-1]->transform[4])/4;
+		else		cutpoint = 1e30;
+		while ( r<rcnt && refs[r]->transform[4]<cutpoint )
+		    out[ocnt++] = refs[r++];
+		if ( a>=acnt )
+	    break;
+		out[ocnt++] = alp[a++];
+	    }
+	    memcpy(refs,out,ocnt*sizeof(RefChar *));
+	    rcnt = ocnt;
+	}
+    }
+    for ( i=0; i<rcnt; ++i )
+	rsc[i] = out[i]->sc;
+    /* alluni now means can be written as uniXXXX.XXXX.XXXX... */
+    for ( i=0; i<rcnt; ++i ) {
+	if ( refs[i]->sc->unicodeenc>0x10000 ) {
+	    alluni = false;
+    break;
+	}
+    }
+    *au = alluni;
+return( rcnt );
+}
+
 /* Return a list of all alternate or standard glyph names for this encoding */
-char **AllGlyphNames(int uni, NameList *for_this_font) {
-    int cnt, k, j, i;
+char **AllGlyphNames(int uni, NameList *for_this_font, SplineChar *sc) {
+    int cnt, k, j, i, len;
     NameList *nl, *nl2, *nl3;
     char **names = NULL;
     const char *name;
     int up, ub, uc;
-    char buffer[40];
+    char buffer[40], *pt;
+    SplineChar *refs[RefMax];
+    int rcnt, alluni;
+
+    rcnt = FindAllRefs(sc,refs,&alluni);
 
     up = uni>>16;
     ub = (uni&0xff00)>>8;
     uc = (uni&0xff);
-    if ( uni<0 || up>=17 )
-return( NULL );
 
     for ( k=0; k<2; ++k ) {
 	cnt = 0;
 	/* try the default namelist first to put that at the head of the list */
 	name = NULL;
 	nl = nl3 = NULL;
-	if ( for_this_font!=NULL ) {
-	    for ( nl3=for_this_font; nl3!=NULL; nl3=nl3->basedon ) {
-		if ( nl3->unicode[up]!=NULL && nl3->unicode[up][ub]!=NULL &&
-			(name = nl3->unicode[up][ub][uc])!=NULL )
-	    break;
+	if ( uni>=0 && up<17 ) {
+	    if ( for_this_font!=NULL ) {
+		for ( nl3=for_this_font; nl3!=NULL; nl3=nl3->basedon ) {
+		    if ( nl3->unicode[up]!=NULL && nl3->unicode[up][ub]!=NULL &&
+			    (name = nl3->unicode[up][ub][uc])!=NULL )
+		break;
+		}
+		if ( name!=NULL ) {
+		    if ( names )
+			names[cnt] = copy(name);
+		    ++cnt;
+		}
 	    }
-	    if ( name!=NULL ) {
-		if ( names )
-		    names[cnt] = copy(name);
+	    if ( for_this_font!=namelist_for_new_fonts ) {
+		for ( nl=namelist_for_new_fonts; nl!=NULL; nl=nl->basedon ) if ( nl!=nl3 ) {
+		    if ( nl->unicode[up]!=NULL && nl->unicode[up][ub]!=NULL &&
+			    (name = nl->unicode[up][ub][uc])!=NULL )
+		break;
+		}
+		if ( name!=NULL ) {
+		    if ( names )
+			names[cnt] = copy(name);
+		    ++cnt;
+		}
+	    }
+	    for ( nl2 = &agl; nl2!=NULL; nl2=nl2->next ) if ( nl2!=nl && nl2!=nl3) {
+		if ( nl2->unicode[up]!=NULL && nl2->unicode[up][ub]!=NULL &&
+			(name = nl2->unicode[up][ub][uc])!=NULL ) {
+		    if ( names )
+			names[cnt] = copy(name);
+		    ++cnt;
+		}
+	    }
+	    for ( i=0; psaltnames[i].name!=NULL ; ++i ) {
+		if ( psaltnames[i].unicode==uni ) {
+		    if ( names )
+			names[cnt] = copy(psaltnames[i].name);
+		    ++cnt;
+		}
+	    }
+	    if ( uni<0x10000 ) {
+		if ( names ) {
+		    sprintf( buffer, "uni%04X", uni);
+		    names[cnt] = copy(buffer);
+		}
 		++cnt;
 	    }
-	}
-	if ( for_this_font!=namelist_for_new_fonts ) {
-	    for ( nl=namelist_for_new_fonts; nl!=NULL; nl=nl->basedon ) if ( nl!=nl3 ) {
-		if ( nl->unicode[up]!=NULL && nl->unicode[up][ub]!=NULL &&
-			(name = nl->unicode[up][ub][uc])!=NULL )
-	    break;
-	    }
-	    if ( name!=NULL ) {
-		if ( names )
-		    names[cnt] = copy(name);
-		++cnt;
-	    }
-	}
-	for ( nl2 = &agl; nl2!=NULL; nl2=nl2->next ) if ( nl2!=nl && nl2!=nl3) {
-	    if ( nl2->unicode[up]!=NULL && nl2->unicode[up][ub]!=NULL &&
-		    (name = nl2->unicode[up][ub][uc])!=NULL ) {
-		if ( names )
-		    names[cnt] = copy(name);
-		++cnt;
-	    }
-	}
-	for ( i=0; psaltnames[i].name!=NULL ; ++i ) {
-	    if ( psaltnames[i].unicode==uni ) {
-		if ( names )
-		    names[cnt] = copy(psaltnames[i].name);
-		++cnt;
-	    }
-	}
-	if ( uni<0x10000 ) {
 	    if ( names ) {
-		sprintf( buffer, "uni%04X", uni);
+		sprintf( buffer, "u%04X", uni);
 		names[cnt] = copy(buffer);
 	    }
 	    ++cnt;
 	}
-	if ( names ) {
-	    sprintf( buffer, "u%04X", uni);
-	    names[cnt] = copy(buffer);
-	    names[cnt+1] = NULL;
+	if ( rcnt>1 && alluni && (uni<0 || (uni>=0xe000 && uni<0xf900) || uni>=0xf0000 ) ) {
+	    if ( names ) {
+		names[cnt] = galloc(4+4*rcnt);
+		strcpy(names[cnt],"uni");
+		pt = names[cnt]+3;
+		for ( i=0; i<rcnt; ++i ) {
+		    sprintf( pt,"%04X", CanonicalCombiner(refs[i]->unicodeenc));
+		    pt += 4;
+		}
+	    }
+	    ++cnt;
 	}
-	++cnt;
-	if ( k==0 )
+	if ( rcnt>1 ) {
+	    if ( names ) {
+		for ( i=len=0; i<rcnt; ++i )
+		    len += strlen( refs[i]->name )+1;
+		names[cnt] = pt = galloc(len);
+		for ( i=len=0; i<rcnt; ++i ) {
+		    strcpy(pt,refs[i]->name);
+		    pt += strlen(pt);
+		    *pt++ = '_';
+		}
+		pt[-1] = '\0';
+	    }
+	    ++cnt;
+	}
+	if ( uni<0 || up>=17 ) {
+	    if ( names )
+		names[cnt] = copy(".notdef");
+	    ++cnt;
+	}
+	if ( k==0 ) {
 	    names = galloc((cnt+1)*sizeof(char *));
+	    names[cnt] = NULL;
+	}
     }
     /* Remove any names from multiiple namelists */
     for ( i=0; i<cnt; ++i ) for ( j=i+1; j<cnt; ++j ) {
