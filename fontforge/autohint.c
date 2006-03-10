@@ -2873,7 +2873,10 @@ static HintInstance *StemAddHIFromChunks(struct stemdata *stem,int major) {
 	    if ( mino<=t->end )
 	break;
 	}
-	if ( t!=NULL && (mino>=t->begin || maxo<=t->end) ) {
+	if ( t!=NULL && ((mino>=t->begin && mino<=t->end) ||
+			 (maxo>=t->begin && maxo<=t->end) ||
+			 (t->begin>=mino && t->begin<=maxo) ||
+			 (t->end>=mino && t->end<=maxo)) ) {
 	    if ( maxo>t->end   ) t->end   = maxo;
 	    if ( mino<t->begin ) t->begin = mino;
 	} else {
