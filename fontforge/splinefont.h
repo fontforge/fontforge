@@ -1206,6 +1206,7 @@ enum fontformat { ff_pfa, ff_pfb, ff_pfbmacbin, ff_multiple, ff_mma, ff_mmb,
 	ff_otfcid, ff_otfciddfont, ff_svg, ff_none };
 extern struct pschars *SplineFont2Chrs(SplineFont *sf, int iscjk,
 	struct pschars *subrs,int flags,enum fontformat format);
+extern int CanonicalCombiner(int uni);
 struct cidbytes;
 struct fd2data;
 struct ttfinfo;
@@ -1838,7 +1839,7 @@ extern struct freetype_raster *DebuggerCurrentRaster(struct  TT_ExecContextRec_ 
 
 extern int UniFromName(const char *name,enum uni_interp interp, Encoding *encname);
 extern const char *StdGlyphName(char *buffer, int uni, enum uni_interp interp, NameList *for_this_font);
-extern char **AllGlyphNames(int uni, NameList *for_this_font);
+extern char **AllGlyphNames(int uni, NameList *for_this_font,SplineChar *sc/* May be NULL*/);
 extern char **AllNamelistNames(void);
 extern NameList *DefaultNameListForNewFonts(void);
 extern NameList *NameListByName(char *name);

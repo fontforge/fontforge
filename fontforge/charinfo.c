@@ -5174,14 +5174,9 @@ static void CI_SetNameList(CharInfo *ci,int val) {
 
     if ( GGadgetGetUserData(g)==(void *) val )
 return;		/* Didn't change */
-    if ( val<0 || val>=0x1100000 ) {
-	static GTextInfo notdef = { (unichar_t *) ".notdef", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-			 empty = { NULL },
-			 *list[] = { &notdef, &empty };
-	GGadgetSetList(g,list,true);
-    } else {
+    {
 	GTextInfo **list = NULL;
-	char **names = AllGlyphNames(val,ci->sc->parent->for_new_glyphs);
+	char **names = AllGlyphNames(val,ci->sc->parent->for_new_glyphs,ci->sc);
 
 	for ( cnt=0; names[cnt]!=NULL; ++cnt );
 	list = galloc((cnt+1)*sizeof(GTextInfo*)); 

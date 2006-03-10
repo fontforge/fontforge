@@ -114,6 +114,29 @@ static const unichar_t accents[][4] = {
     { 0xffff }
 };
 
+int CanonicalCombiner(int uni) {
+    /* Translate spacing accents to combiners */
+    int j,k;
+
+    /* The above table will use these occasionally, but we don't want to */
+    /*  translate them. They aren't accents */
+    if ( uni==',' || uni=='\'' || uni=='"' || uni=='~' || uni=='^' || uni=='-' ||
+	    uni=='+' || uni=='.' )
+return( uni );
+
+    for ( j=0; accents[j][0]!=0xffff; ++j ) {
+	for ( k=0; k<4; ++k ) {
+	    if ( uni==accents[j][k] ) {
+		uni = 0x300+j;
+	break;
+	    }
+	}
+	if ( uni>=0x300 && uni<0x370 )
+    break;
+    }
+return( uni );
+}
+
 static const char *uc_accent_names[] = {
     "Grave",
     "Acute",
