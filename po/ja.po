@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "POT-Creation-Date: 2005-08-29 17:43+0800\n"
-"PO-Revision-Date: 2006-02-11 22:48-0900\n"
+"PO-Revision-Date: 2006-03-10 12:08-0900\n"
 "Last-Translator: KANOU Hiroki <kanou@khdd.net>\n"
 "Language-Team: LANGUAGE <ja.c@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -271,6 +271,12 @@ msgstr "グリフを入れ換える(_R)..."
 msgid "Hide Poin_ts"
 msgstr "点を隠す(_T)"
 
+msgid "Hide Points"
+msgstr "点を隠す(T)"
+
+msgid "Show Points"
+msgstr "点を表示(T)"
+
 msgid "Show Poin_ts"
 msgstr "点を表示(_T)"
 
@@ -286,8 +292,14 @@ msgstr "変曲点を表示(_M)"
 msgid "Hide _Rulers"
 msgstr "ルーラーを隠す(_R)"
 
+msgid "Hide Rulers"
+msgstr "ルーラーを隠す(R)"
+
 msgid "Show _Rulers"
 msgstr "ルーラーを表示(_R)"
+
+msgid "Show Rulers"
+msgstr "ルーラーを表示(R)"
 
 msgid "S_how H. Metrics..."
 msgstr "横書きメトリックの表示法(_H)..."
@@ -468,6 +480,9 @@ msgstr "問題点を発見(_O)..."
 
 msgid "Get _Info..."
 msgstr "情報を得る(_I)..."
+
+msgid "Get Info..."
+msgstr "情報を得る..."
 
 msgid "Open Reference"
 msgstr "参照情報を開く"
@@ -1013,7 +1028,10 @@ msgid "Center _Between Control Points"
 msgstr "制御点の中間に移動(_B)"
 
 msgid "_Add Anchor"
-msgstr "アンカーを追加(_A)..."
+msgstr "アンカーを追加(_A)"
+
+msgid "Add Anchor"
+msgstr "アンカーを追加"
 
 msgid "_CID"
 msgstr "_CID"
@@ -7092,8 +7110,14 @@ msgstr "レイヤーが見えるか"
 msgid "F_ore"
 msgstr "前面(_O)"
 
+msgid "Fore"
+msgstr "前面"
+
 msgid "_Back"
 msgstr "背面(_B)"
+
+msgid "Back"
+msgstr "背面"
 
 msgid "_Guide"
 msgstr "ガイド(_G)"
@@ -10643,7 +10667,7 @@ msgid "_None"
 msgstr "なし(_N)"
 
 msgid "Interpretation|None"
-msgstr "なし(_N)"
+msgstr "なし"
 
 msgid "GGadget|ButtonSize|55"
 msgstr "80"
@@ -12182,6 +12206,9 @@ msgstr "%s の Unicode 値 %x に該当する名前が不正です"
 msgid "Multiple names when parsing %s for unicode %x"
 msgstr "%s の Unicode 値 %x に該当する名前が複数あります"
 
+msgid "Adobe Glyph List"
+msgstr "Adobeグリフリスト(AGL)"
+
 msgid "AGL without afii"
 msgstr "AGL(afiiを除く)"
 
@@ -12191,9 +12218,12 @@ msgstr "AGL(私用領域を含む)"
 msgid "Greek small caps"
 msgstr "ギリシャ小型小文字"
 
+msgid "ΤεΧ Names"
+msgstr "TeXの命名"
+
 msgid "AMS Names"
-msgstr "AMS名"
- 
+msgstr "AMSの命名"
+
 msgid "Failed to find NameList: %s"
 msgstr "名前リストが見つかりません: %s"
 
