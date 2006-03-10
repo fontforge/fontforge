@@ -756,34 +756,43 @@
     2003年11月10日
     <UL>
       <LI>
-	FontForge was crashing when loading a bitmap font with encoded characters
+<!--	FontForge was crashing when loading a bitmap font with encoded characters
 	outside the range specified by the encoding (ie. a character 0x10000 in a
-	unicode BMP font).
+	unicode BMP font). -->
+	符号化方式によって指定された範囲の外の文字符号をもつビットマップフォント (例: 文字 0x10000 を含む Unicode BMP フォント) を読み込むと、FontForge がクラッシュしていました。
       <LI>
-	Fixes for several memory leaks provided by Kazuki Ohta
+<!--	Fixes for several memory leaks provided by Kazuki Ohta -->
+	太田一樹によるいくつかのメモリリーク修正。
       <LI>
-	Slight improvements to the View-&gt;Combinations-&gt;Ligature dlg
+<!--	Slight improvements to the View-&gt;Combinations-&gt;Ligature dlg -->
+	表示→組合せ→合字 ダイアログのいくつかの細かい改良。
     </UL>
   <LI>
 <!--8-Nov-2003-->
     2003年11月8日
     <UL>
       <LI>
-	Bug introduced 6-Nov, FontForge generated a bad 'loca' table when outputting
-	a ttf outline font with bitmaps.
+<!--	Bug introduced 6-Nov, FontForge generated a bad 'loca' table when outputting
+	a ttf outline font with bitmaps. -->
+	11/6 に持ち込まれたバグ。FontForge はビットマップを含む TTF アウトラインフォントの出力時に不正な&lsquo;loca&rsquo;テーブルを出力していました。
       <LI>
-	FontForge was getting the truetype point number wrong when reading outlines
-	from an sfd file.
+<!--	FontForge was getting the truetype point number wrong when reading outlines
+	from an sfd file. -->
+	SFD ファイルからアウトラインを読み込む時に、FontForge は TrueType の点番号を間違えてつけていました。
       <LI>
-	If the loca table was 2 or 4 bytes long, FontForge failed to warn about a
-	bad glyph count.
+<!--	If the loca table was 2 or 4 bytes long, FontForge failed to warn about a
+	bad glyph count. -->
+	loca テーブルの長さが 2 バイトか 4 バイトの時、FontForge はグリフの個数が間違っていると警告していました。
       <LI>
-	FontForge got confused if two truetype glyphs had the same name.
+<!--	FontForge got confused if two truetype glyphs had the same name. -->
+	FontForge は、2 つの TrueType グリフが同じ名前をもっていると混乱していました。
       <LI>
-	When dumping out embedded ttf bitmaps, FontForge got confused by the extra
-	glyphs (.null and return) and generated garbage.
+<!--	When dumping out embedded ttf bitmaps, FontForge got confused by the extra
+	glyphs (.null and return) and generated garbage. -->
+	埋め込まれた TTF ビットマップを書き出す時、FontForge は余分なグリフ (.null と return) で混乱して、ゴミを書き出していました。
       <LI>
-	Make View-&gt;Combinations-&gt;ligature dlg a bit better for non-latin glyphs
+<!--	Make View-&gt;Combinations-&gt;ligature dlg a bit better for non-latin glyphs -->
+	表示→組合せ→合字 ダイアログを非ラテン文字に関して少し改良しました。
     </UL>
   <LI>
 <!--6-Nov-2003-->
