@@ -1359,6 +1359,8 @@ static int AfmBuildCCName(struct cc_data *this,struct cc_container *cc) {
 	u=FigureUnicodes(unicode,cca->accent,u);
     if ( u!=-1 ) {
 	unicode[u]= -1;
+	if ( unicode[0]==0x131 ) unicode[0] = 'i';
+	if ( unicode[0]==0x237 || unicode[0]==0xf6be ) unicode[0] = 'j';
 	sortunis(unicode+1,u-1);		/* Only sort the accents */
     }
     uni = FindDecomposition(unicode,u);
