@@ -45,10 +45,10 @@ install_docs:
 	mkdir -p $(docdir)
 	mkdir -p $(docdir)/flags $(docdir)/ja
 #explicit use of sh to make sure we don't invoke csh with different "if" syntax
-	-sh -c "if test -d htdocs/ja >/dev/null ; then mkdir -p $(docdir)/ja ; fi"
-	-cp htdocs/*.{html,png,gif,pdf} $(docdir)
-	-cp htdocs/flags/* $(docdir)/flags
-	-cp htdocs/ja/* $(docdir)/ja
+	-sh -c "if test -d $(srcdir)/htdocs/ja >/dev/null ; then mkdir -p $(docdir)/ja ; fi"
+	-cp $(srcdir)/htdocs/*.{html,png,gif,pdf} $(docdir)
+	-cp $(srcdir)/htdocs/flags/* $(docdir)/flags
+	-cp $(srcdir)/htdocs/ja/* $(docdir)/ja
 
 install_po:
 	( cd po ; make install )
@@ -70,7 +70,7 @@ install: $(sharedir) all install_libs install_po
 	mkdir -p $(libdir)/pkgconfig
 	cp fontforge.pc $(libdir)/pkgconfig
 #explicit use of sh to make sure we don't invoke csh with different "if" syntax
-	sh -c "if test -d htdocs >/dev/null ; then $(MAKE) install_docs ; fi"
+	sh -c "if test -d $(srcdir)/htdocs >/dev/null ; then $(MAKE) install_docs ; fi"
 	sh < systemspecific
 
 uninstall:
