@@ -14,6 +14,7 @@ top_builddir = .
 
 LIBTOOL = @LIBTOOL@
 INSTALL = @INSTALL@
+INSTALL_DATA = @INSTALL_DATA@
 
 all: fontforge
 
@@ -61,9 +62,9 @@ install_docs:
 	mkdir -p $(docdir)/flags $(docdir)/ja
 #explicit use of sh to make sure we don't invoke csh with different "if" syntax
 	-sh -c "if test -d $(srcdir)/htdocs/ja >/dev/null ; then mkdir -p $(docdir)/ja ; fi"
-	-cp $(srcdir)/htdocs/*.{html,png,gif,pdf} $(docdir)
-	-cp $(srcdir)/htdocs/flags/* $(docdir)/flags
-	-cp $(srcdir)/htdocs/ja/* $(docdir)/ja
+	-$(INSTALL_DATA) $(srcdir)/htdocs/*.{html,png,gif,pdf} $(docdir)
+	-$(INSTALL_DATA) $(srcdir)/htdocs/flags/* $(docdir)/flags
+	-$(INSTALL_DATA) $(srcdir)/htdocs/ja/* $(docdir)/ja
 
 install_po:
 	( cd po ; make install )
@@ -77,13 +78,13 @@ install: $(sharedir) all install_libs install_po
 	-$(LIBTOOL) --mode=install $(INSTALL) -c fontforge/sfddiff $(bindir)
 #	-rm -f $(bindir)/pfaedit
 #	(cd $(bindir) ; ln -s fontforge pfaedit)
-#	cp fontforge/pfaedit-*.ui $(sharedir)
+#	$(INSTALL_DATA) fontforge/pfaedit-*.ui $(sharedir)
 #The next line will fail for most installs. If you have downloaded the cidmaps
 # this will install them. If you haven't it won't. You only need the cidmaps
 # if you are editing CID keyed files (and even then you can live without them
-	-cp $(srcdir)/cidmap/*.cidmap $(sharedir) >/dev/null 2>&1
-	cp $(srcdir)/fontforge/fontforge.1 $(mandir)/man1
-	-cp $(srcdir)/fontforge/sfddiff.1 $(mandir)/man1
+	-$(INSTALL_DATA) $(srcdir)/cidmap/*.cidmap $(sharedir) >/dev/null 2>&1
+	$(INSTALL_DATA) $(srcdir)/fontforge/fontforge.1 $(mandir)/man1
+	-$(INSTALL_DATA) $(srcdir)/fontforge/sfddiff.1 $(mandir)/man1
 #explicit use of sh to make sure we don't invoke csh with different "if" syntax
 	sh -c "if test -d $(srcdir)/htdocs >/dev/null ; then $(MAKE) install_docs ; fi"
 	sh < systemspecific
