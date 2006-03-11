@@ -1112,3 +1112,15 @@ return( dir );
 SplineChar *SFGetChar(SplineFont *sf, int unienc, const char *name ) {
 return( NULL );
 }
+
+int SPInterpolate(SplinePoint *sp) {
+    /* Using truetype rules, can we interpolate this point? */
+return( !sp->dontinterpolate && !sp->nonextcp && !sp->noprevcp &&
+	    !sp->roundx && !sp->roundy &&
+	    (RealWithin(sp->me.x,(sp->nextcp.x+sp->prevcp.x)/2,.1) &&
+	     RealWithin(sp->me.y,(sp->nextcp.y+sp->prevcp.y)/2,.1)) );
+}
+
+int CanonicalCombiner(int uni) {
+return( uni );
+}
