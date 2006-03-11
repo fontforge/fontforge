@@ -381,7 +381,11 @@ char **AllGlyphNames(int uni, NameList *for_this_font, SplineChar *sc) {
 		strcpy(names[cnt],"uni");
 		pt = names[cnt]+3;
 		for ( i=0; i<rcnt; ++i ) {
-		    sprintf( pt,"%04X", CanonicalCombiner(refs[i]->unicodeenc));
+		    if ( refs[i]->unicodeenc==0x131 || refs[i]->unicodeenc==0x237 ||
+			    refs[i]->unicodeenc==0xf6be )
+			sprintf( pt,"%04X", refs[i]->unicodeenc==0x131?'i':'j' );
+		    else
+			sprintf( pt,"%04X", CanonicalCombiner(refs[i]->unicodeenc));
 		    pt += 4;
 		}
 	    }
