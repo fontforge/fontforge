@@ -1408,7 +1408,7 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc, BlueData *bd
     BlueData _bd;
     SplineFont *sf = sc->parent;
     StemInfo *prev, *s, *n, *snext, *ghosts = NULL;
-    SplineSet *spl;
+    SplineSet *spl, *spl_next;
     Spline *spline, *first;
     SplinePoint *sp, *sp2;
     real base, width/*, toobig = (sc->parent->ascent+sc->parent->descent)/2*/;
@@ -1420,7 +1420,6 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc, BlueData *bd
 	QuickBlues(sf,&_bd);
 	bd = &_bd;
     }
-    SplineCharQuickBounds(sc,&b);
 
     /* look for any stems stretching from one zone to another and remove them */
     /*  (I used to turn them into ghost hints here, but that didn't work (for */
@@ -1455,8 +1454,12 @@ static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc, BlueData *bd
 
     /* Now look and see if we can find any edges which lie in */
     /*  these zones.  Edges which are not currently in hints */
+    /* Use the current contour to determine top or bottom */
     for ( spl = sc->layers[ly_fore].splines; spl!=NULL; spl = spl->next ) if ( spl->first->prev!=NULL ) {
 	first = NULL;
+	spl_next = spl->next; spl->next = NULL;
+	SplineSetQuickBounds(spl,&b);
+	spl->next = spl_next;
 	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline = spline->to->next ) {
 	    base = spline->from->me.y;
 	    if ( spline->knownlinear && base == spline->to->me.y ) {
