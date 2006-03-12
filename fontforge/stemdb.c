@@ -73,6 +73,11 @@ return;
 	pd->nextlen = len;
 	pd->nextunit.x /= len;
 	pd->nextunit.y /= len;
+	if ( pd->nextunit.x<.03 && pd->nextunit.x>-.03 ) {
+	    pd->nextunit.x = 0; pd->nextunit.y = pd->nextunit.y>0 ? 1 : -1;
+	} else if ( pd->nextunit.y<.03 && pd->nextunit.y>-.03 ) {
+	    pd->nextunit.y = 0; pd->nextunit.x = pd->nextunit.x>0 ? 1 : -1;
+	}
 	if ( pd->nextunit.y==0 ) pd->next_hor = true;
 	else if ( pd->nextunit.x==0 ) pd->next_ver = true;
     }
@@ -99,6 +104,11 @@ return;
 	pd->prevlen = len;
 	pd->prevunit.x /= len;
 	pd->prevunit.y /= len;
+	if ( pd->prevunit.x<.03 && pd->prevunit.x>-.03 ) {
+	    pd->prevunit.x = 0; pd->prevunit.y = pd->prevunit.y>0 ? 1 : -1;
+	} else if ( pd->prevunit.y<.03 && pd->prevunit.y>-.03 ) {
+	    pd->prevunit.y = 0; pd->prevunit.x = pd->prevunit.x>0 ? 1 : -1;
+	}
 	if ( pd->prevunit.y==0 ) pd->prev_hor = true;
 	else if ( pd->prevunit.x==0 ) pd->prev_ver = true;
     }
@@ -348,8 +358,8 @@ static Spline *FindMatchingEdge(struct glyphdata *gd, struct pointdata *pd,
     double *other_t = is_next ? &pd->next_e_t : &pd->prev_e_t;
     double t1,t2;
 
-    if (( is_next && (pd->next_hor || pd->next_ver)) ||
-	    ( !is_next && (pd->prev_hor || pd->prev_ver)))
+    if (( is_next && ((pd->nextunit.y>-.03 && pd->nextunit.y<.03) || (pd->nextunit.x>-.03 && pd->nextunit.x<.03))) ||
+	    ( !is_next && ((pd->prevunit.y>-.03 && pd->prevunit.y<.03) || (pd->prevunit.x>-.03 && pd->prevunit.x<.03))))
 return( FindMatchingHVEdge(gd,pd,is_next,other_t));
     else if ( only_hv )
 return( NULL );
@@ -695,7 +705,7 @@ return( NULL );
     if ( width<0 ) width = -width;
     if ( width<.5 )
 return( NULL );		/* Zero width stems aren't interesting */
-    if ( pd->sp->next->to==match || pd->sp->prev->from==match )
+    if ( (is_next && pd->sp->next->to==match) || (!is_next && pd->sp->prev->from==match) )
 return( NULL );		/* Don't want a stem between two splines that intersect */
 
     stem = FindStem(gd,pd,dir,match,is_next2);
@@ -780,7 +790,10 @@ return( NULL );
     if ( !tp && !fp )
 return( NULL );
 
-    if ( (tp && fp && NormalDist(&other->to->me,&pd->sp->me,dir)<NormalDist(&other->from->me,&pd->sp->me,dir)) ||
+    /* We have several conflicting metrics for getting the "better" stem */
+    /* Generally we prefer the stem with the smaller width (but not always. See tilde) */
+    /* Generally we prefer the stem formed by the point closer to the intersection */
+    if ( (tp && fp && (1-t)*NormalDist(&other->to->me,&pd->sp->me,dir)<t*NormalDist(&other->from->me,&pd->sp->me,dir)) ||
 	    (tp && !fp))
 	stem = TestStem(gd,pd,dir, other->to, is_next, false);
     else
@@ -915,10 +928,11 @@ static void GDFindMismatchedParallelStems(struct glyphdata *gd) {
 }
 
 static void GDFindUnlikelyStems(struct glyphdata *gd) {
-    double width, maxm, minm, len;
+    double width, lmaxm, lminm, rmaxm, rminm, len;
     int i,j;
     double em = (gd->sc->parent->ascent+gd->sc->parent->descent);
     SplinePoint *sp;
+    int llinear, rlinear;
 
     GDFindMismatchedParallelStems(gd);
 
@@ -933,49 +947,70 @@ static void GDFindUnlikelyStems(struct glyphdata *gd) {
 	    gd->points[j].sp->ticked = false;
 	for ( j=0; j<stem->chunk_cnt; ++j )
 	    stem->chunks[j].ltick = stem->chunks[j].rtick = false;
+	llinear = rlinear = false;
 	for ( j=0; j<stem->chunk_cnt; ++j ) {
 	    struct stem_chunk *chunk = &stem->chunks[j];
-	    minm = 1e10; maxm = -1e10;
+	    rminm = lminm = 1e10; rmaxm = lmaxm = -1e10;
 	    if ( chunk->l!=NULL && !chunk->ltick && !(sp=chunk->l->sp)->ticked ) {
 		sp->ticked = true;
-		MinMaxStem(&sp->me,stem,&maxm,&minm);
+		MinMaxStem(&sp->me,stem,&lmaxm,&lminm);
 		if ( stem==chunk->l->nextstem ) {
-		    MinMaxStem(&sp->nextcp,stem,&maxm,&minm);
+		    MinMaxStem(&sp->nextcp,stem,&lmaxm,&lminm);
 		    if ( sp->next->knownlinear &&
-			    InChunk(sp->next->to,stem,j,true))
-			MinMaxStem(&sp->next->to->me,stem,&maxm,&minm);
+			    InChunk(sp->next->to,stem,j,true)) {
+			MinMaxStem(&sp->next->to->me,stem,&lmaxm,&lminm);
+			llinear = true;
+		    }
 		}
 		if ( stem==chunk->l->prevstem ) {
-		    MinMaxStem(&sp->prevcp,stem,&maxm,&minm);
+		    MinMaxStem(&sp->prevcp,stem,&lmaxm,&lminm);
 		    if ( sp->prev->knownlinear &&
-			    InChunk(sp->prev->from,stem,j,true))
-			MinMaxStem(&sp->prev->from->me,stem,&maxm,&minm);
+			    InChunk(sp->prev->from,stem,j,true)) {
+			MinMaxStem(&sp->prev->from->me,stem,&lmaxm,&lminm);
+			llinear = true;
+		    }
 		}
 	    }
 	    if ( chunk->r!=NULL && !chunk->rtick && !(sp=chunk->r->sp)->ticked ) {
 		/* I still use stem->left as the base to make measurements */
 		/*  comensurate. Any normal distance becomes 0 in the dot product */
 		sp->ticked = true;
-		MinMaxStem(&sp->me,stem,&maxm,&minm);
+		MinMaxStem(&sp->me,stem,&rmaxm,&rminm);
 		if ( stem==chunk->r->nextstem ) {
-		    MinMaxStem(&sp->nextcp,stem,&maxm,&minm);
+		    MinMaxStem(&sp->nextcp,stem,&rmaxm,&rminm);
 		    if ( sp->next->knownlinear &&
-			    InChunk(sp->next->to,stem,j,false))
-			MinMaxStem(&sp->next->to->me,stem,&maxm,&minm);
+			    InChunk(sp->next->to,stem,j,false)) {
+			MinMaxStem(&sp->next->to->me,stem,&rmaxm,&rminm);
+			rlinear = true;
+		    }
 		}
 		if ( stem==chunk->r->prevstem ) {
-		    MinMaxStem(&sp->prevcp,stem,&maxm,&minm);
+		    MinMaxStem(&sp->prevcp,stem,&rmaxm,&rminm);
 		    if ( sp->prev->knownlinear &&
-			    InChunk(sp->prev->from,stem,j,false))
-			MinMaxStem(&sp->prev->from->me,stem,&maxm,&minm);
+			    InChunk(sp->prev->from,stem,j,false)) {
+			MinMaxStem(&sp->prev->from->me,stem,&rmaxm,&rminm);
+			rlinear = true;
+		    }
 		}
 	    }
-	    if ( maxm>minm )
-		len += maxm-minm;
+	    /* stems where one side is a curve and another a line aren't */
+	    /*  usually real. If we find a possibility, be very picky */
+	    if ( llinear==rlinear ) {
+		if ( lmaxm>rmaxm ) rmaxm = lmaxm;
+		else lmaxm = rmaxm;
+		if ( lminm<rminm ) rminm = lminm;
+		else lminm = rminm;
+	    }
+	    if ( rmaxm<lminm || lmaxm<rminm )
+	continue;
+	    if ( rmaxm-rminm > lmaxm-lminm && lmaxm>lminm)
+		len += lmaxm-lminm;
+	    else if ( rmaxm>rminm )
+		len += rmaxm-rminm;
 	}
-	stem->toobig = ( width > len ) &&
-		(width>em/10) &&
-		(width>em/5 || 1.5*width>len);
+	stem->toobig =  (               width<=em/8 && 2.0*len < width ) ||
+			( width>em/8 && width<=em/4 && 1.5*len < width ) ||
+			( width>em/4 &&                    len < width );
     }
 }
 
