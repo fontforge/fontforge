@@ -720,7 +720,7 @@ static void setlabel(GGadget *lab, char *text) {
 
 static int MV_WidthChanged(GGadget *g, GEvent *e) {
     MetricsView *mv = GDrawGetUserData(GGadgetGetWindow(g));
-    int which = (int) GGadgetGetUserData(g);
+    int which = (intpt) GGadgetGetUserData(g);
     int i;
 
     if ( e->type!=et_controlevent )
@@ -752,7 +752,7 @@ return( true );
 
 static int MV_LBearingChanged(GGadget *g, GEvent *e) {
     MetricsView *mv = GDrawGetUserData(GGadgetGetWindow(g));
-    int which = (int) GGadgetGetUserData(g);
+    int which = (intpt) GGadgetGetUserData(g);
     int i;
 
     if ( e->type!=et_controlevent )
@@ -790,7 +790,7 @@ return( true );
 
 static int MV_RBearingChanged(GGadget *g, GEvent *e) {
     MetricsView *mv = GDrawGetUserData(GGadgetGetWindow(g));
-    int which = (int) GGadgetGetUserData(g);
+    int which = (intpt) GGadgetGetUserData(g);
     int i;
 
     if ( e->type!=et_controlevent )
@@ -857,7 +857,7 @@ return( gwwv_ask(_("Use Kerning Class?"),(const char **) yesno,0,1,_("This kerni
 
 static int MV_KernChanged(GGadget *g, GEvent *e) {
     MetricsView *mv = GDrawGetUserData(GGadgetGetWindow(g));
-    int which = (int) GGadgetGetUserData(g);
+    int which = (intpt) GGadgetGetUserData(g);
     int i;
 
     if ( e->type!=et_controlevent )
@@ -1001,27 +1001,27 @@ static void MVCreateFields(MetricsView *mv,int i) {
     gd.flags = gg_visible | gg_pos_in_pixels | gg_dontcopybox;
     if ( mv->bdf==NULL )
 	gd.flags |= gg_enabled;
-    mv->perchar[i].name = GLabelCreate(mv->gw,&gd,(void *) i);
+    mv->perchar[i].name = GLabelCreate(mv->gw,&gd,(void *) (intpt) i);
     if ( mv->perchar[i].selected )
 	GGadgetSetEnabled(mv->perchar[i].name,false);
 
     gd.pos.y += mv->fh+4;
     gd.handle_controlevent = MV_WidthChanged;
-    mv->perchar[i].width = GTextFieldCreate(mv->gw,&gd,(void *) i);
+    mv->perchar[i].width = GTextFieldCreate(mv->gw,&gd,(void *) (intpt) i);
 
     gd.pos.y += mv->fh+4;
     gd.handle_controlevent = MV_LBearingChanged;
-    mv->perchar[i].lbearing = GTextFieldCreate(mv->gw,&gd,(void *) i);
+    mv->perchar[i].lbearing = GTextFieldCreate(mv->gw,&gd,(void *) (intpt) i);
 
     gd.pos.y += mv->fh+4;
     gd.handle_controlevent = MV_RBearingChanged;
-    mv->perchar[i].rbearing = GTextFieldCreate(mv->gw,&gd,(void *) i);
+    mv->perchar[i].rbearing = GTextFieldCreate(mv->gw,&gd,(void *) (intpt) i);
 
     if ( i!=0 ) {
 	gd.pos.y += mv->fh+4;
 	gd.pos.x -= mv->mwidth/2;
 	gd.handle_controlevent = MV_KernChanged;
-	mv->perchar[i].kern = GTextFieldCreate(mv->gw,&gd,(void *) i);
+	mv->perchar[i].kern = GTextFieldCreate(mv->gw,&gd,(void *) (intpt) i);
 
 	if ( i>=mv->charcnt ) {
 	    for ( j=mv->charcnt+1; j<=i ; ++ j )
@@ -2472,7 +2472,7 @@ static void GMenuFillWithTag(GMenuItem *mi,GTextInfo *tags,uint32 tag) {
     unichar_t ubuf[8];
 
     for ( j=0; tags[j].text!=NULL; ++j )
-	if ( (uint32) (tags[j].userdata)==tag )
+	if ( (uint32) (intpt) (tags[j].userdata)==tag )
     break;
     if ( tags[j].text==NULL ) {
 	ubuf[0] = tag>>24;

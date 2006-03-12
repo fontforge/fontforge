@@ -186,7 +186,7 @@ return( false );
 }
 
 static void ScriptSelect(GWindow base,struct gmenuitem *mi,GEvent *e) {
-    int index = (int) (mi->ti.userdata);
+    int index = (intpt) (mi->ti.userdata);
     FontView *fv = (FontView *) GDrawGetUserData(base);
 
     /* the menu is not always up to date. If user changed prefs and then used */
@@ -215,7 +215,7 @@ return;
     sub = gcalloc(i+1,sizeof(GMenuItem));
     for ( i=0; i<SCRIPT_MENU_MAX && script_menu_names[i]!=NULL; ++i ) {
 	GMenuItem *mi = &sub[i];
-	mi->ti.userdata = (void *) i;
+	mi->ti.userdata = (void *) (intpt) i;
 	mi->ti.bg = mi->ti.fg = COLOR_DEFAULT;
 	mi->invoke = ScriptSelect;
 	mi->shortcut = i==9?'0':'1'+i;

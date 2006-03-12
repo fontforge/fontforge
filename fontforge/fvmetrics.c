@@ -98,7 +98,7 @@ return( true );
 static int CW_FocusChange(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textfocuschanged ) {
 	CreateWidthData *wd = GDrawGetUserData(GGadgetGetWindow(g));
-	int cid = (int) GGadgetGetUserData(g);
+	int cid = (intpt) GGadgetGetUserData(g);
 	GGadgetSetChecked(GWidgetGetControl(wd->gw,cid),true);
     }
 return( true );
@@ -107,7 +107,7 @@ return( true );
 static int CW_RadioChange(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
 	CreateWidthData *wd = GDrawGetUserData(GGadgetGetWindow(g));
-	int cid = (int) GGadgetGetUserData(g);
+	int cid = (intpt) GGadgetGetUserData(g);
 	GWidgetIndicateFocusGadget(GWidgetGetControl(wd->gw,cid));
 	GTextFieldSelect(GWidgetGetControl(wd->gw,cid),0,-1);
     }

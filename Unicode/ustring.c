@@ -747,7 +747,7 @@ int32 utf8_ildb(const char **_text) {
 	else
 	    text += 3;
     }
-    *_text = text;
+    *_text = (const char *) text;
 return( val );
 }
 

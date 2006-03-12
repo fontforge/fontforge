@@ -1109,14 +1109,14 @@ GTextInfo *SFLangList(SplineFont *sf,int addfinal,SplineChar *default_script) {
     if ( sf->script_lang!=NULL )
 	for ( i=0; sf->script_lang[i]!=NULL; ++i ) {
 	    ti[i].text = ScriptLangLine(sf->script_lang[i]);
-	    ti[i].userdata = (void *) i;
+	    ti[i].userdata = (void *) (intpt) i;
 	}
     if ( def_sli!=-1 && def_sli<i )
 	ti[def_sli].selected = true;
     for ( k=0, j=sizeof(sli_names)/sizeof(sli_names[0])-2, bit = 1<<j; j>=0; --j, ++k, bit>>=1 ) {
 	if ( addfinal&bit ) {
 	    ti[i].text = utf82u_copy(sli_names[k]);
-	    ti[i].userdata = (void *) sli_ud[k];
+	    ti[i].userdata = (void *) (intpt) sli_ud[k];
 	    if ( sli_ud[k]==def_sli )
 		ti[i].selected = true;
 	    ++i;
@@ -1137,13 +1137,13 @@ GTextInfo **SFLangArray(SplineFont *sf,int addfinal) {
 	ti[i] = gcalloc(1,sizeof( GTextInfo));
 	ti[i]->text = ScriptLangLine(sf->script_lang[i]);
 	ti[i]->fg = ti[i]->bg = COLOR_DEFAULT;
-	ti[i]->userdata = (void *) i;
+	ti[i]->userdata = (void *) (intpt) i;
     }
     for ( k=0, j=sizeof(sli_names)/sizeof(sli_names[0])-2, bit = 1<<j; j>=0; --j, ++k, bit>>=1 ) {
 	if ( addfinal&bit ) {
 	    ti[i] = gcalloc(1,sizeof( GTextInfo));
 	    ti[i]->text = utf82u_copy(sli_names[k]);
-	    ti[i]->userdata = (void *) sli_ud[k];
+	    ti[i]->userdata = (void *) (intpt) sli_ud[k];
 	    ti[i]->fg = ti[i]->bg = COLOR_DEFAULT;
 	    ++i;
 	}
@@ -1328,7 +1328,7 @@ static uint32 *ShowLanguages(uint32 *langs) {
 	for ( i=0; languages[i].text!=NULL; ++i )
 	    languages[i].selected = false;
 	for ( i=0; langs[i]!=0; ++i ) {
-	    for ( j=0; languages[j].text!=NULL && (uint32) languages[j].userdata!=langs[i]; ++j );
+	    for ( j=0; languages[j].text!=NULL && (uint32) (intpt) languages[j].userdata!=langs[i]; ++j );
 	    if ( languages[j].text!=NULL )
 		languages[j].selected = true;
 	    else if ( !warned ) {
@@ -1397,7 +1397,7 @@ static uint32 *ShowLanguages(uint32 *langs) {
     pt = ret;
     for ( i=0; i<len; ++i ) {
 	if ( done==2 && ti[i]->selected )
-	    *pt++ = (uint32) (ti[i]->userdata);
+	    *pt++ = (uint32) (intpt) (ti[i]->userdata);
     }
     if ( pt!=ret )
 	*pt = 0;
@@ -1559,7 +1559,7 @@ unichar_t *ShowScripts(unichar_t *usedef) {
 	    ti[i]->userdata = NULL;
 	}
 	for ( i=0; sr[i].script!=0; ++i ) {
-	    for ( j=0; j<len && (uint32) scripts[j].userdata!=sr[i].script; ++j );
+	    for ( j=0; j<len && (uint32) (intpt) scripts[j].userdata!=sr[i].script; ++j );
 	    if ( j<len ) {
 		int jj = FromScriptToList(ti,j);
 		ti[jj]->selected = true;
@@ -1604,10 +1604,10 @@ unichar_t *ShowScripts(unichar_t *usedef) {
     for ( i=0; i<len; ++i ) {
 	if ( done==2 && ti[i]->selected ) {
 	    int ii = FromListToScript(ti,i);
-	    *pt++ = ((uint32) (scripts[ii].userdata))>>24;
-	    *pt++ = (((uint32) (scripts[ii].userdata))>>16)&0xff;
-	    *pt++ = (((uint32) (scripts[ii].userdata))>>8)&0xff;
-	    *pt++ = ((uint32) (scripts[ii].userdata))&0xff;
+	    *pt++ = ((uint32) (intpt) (scripts[ii].userdata))>>24;
+	    *pt++ = (((uint32) (intpt) (scripts[ii].userdata))>>16)&0xff;
+	    *pt++ = (((uint32) (intpt) (scripts[ii].userdata))>>8)&0xff;
+	    *pt++ = ((uint32) (intpt) (scripts[ii].userdata))&0xff;
 	    *pt++ = '{';
 	    for ( j=0; ((uint32 *) (ti[i]->userdata))[j]!=0; ++j ) {
 		*pt++ = ((uint32 *) (ti[i]->userdata))[j]>>24;
@@ -2012,7 +2012,7 @@ return( opentype );
 			res[cnt].text = (unichar_t *) PickNameFromMacName(s->setname);
 			res[cnt].text_is_1byte = true;
 			res[cnt].image_precedes = true;	/* flag to say it's a mac thing */
-			res[cnt].userdata = (void *) ((feat<<16)|set);
+			res[cnt].userdata = (void *) (intpt) ((feat<<16)|set);
 		    }
 		    ++cnt;
 		}
@@ -2079,7 +2079,7 @@ static GTextInfo **ACD_FigureMerge(SplineFont *sf,uint32 tag, int flags,
 			ti[cnt] = gcalloc(1,sizeof(GTextInfo));
 			ti[cnt]->fg = ti[cnt]->bg = COLOR_DEFAULT;
 			ti[cnt]->text = utf82u_copy(ac->name);
-			ti[cnt]->userdata = (void *) (int32) (ac->merge_with);
+			ti[cnt]->userdata = (void *) (intpt) (ac->merge_with);
 			if ( ac->merge_with == select ) {
 			    ti[cnt]->selected = true;
 			    *spos = cnt;
@@ -2103,7 +2103,7 @@ static GTextInfo **ACD_FigureMerge(SplineFont *sf,uint32 tag, int flags,
 	    ti[cnt] = gcalloc(1,sizeof(GTextInfo));
 	    ti[cnt]->fg = ti[cnt]->bg = COLOR_DEFAULT;
 	    ti[cnt]->text = utf82u_copy(_("Itself"));
-	    ti[cnt]->userdata = (void *) (i);
+	    ti[cnt]->userdata = (void *) (intpt) (i);
 	    ti[cnt+1] = gcalloc(1,sizeof(GTextInfo));
 	} else if ( select!=-2 ) {
 	    ti[cnt]->selected = true;
@@ -2125,7 +2125,7 @@ static void ACD_RefigureMerge(struct ac_dlg *acd,int old) {
 return;
 
     if ( old==-1 )
-	old = (int) (GGadgetGetListItemSelected(merge)->userdata);
+	old = (intpt) (GGadgetGetListItemSelected(merge)->userdata);
     utag = _GGadgetGetTitle(GWidgetGetControl(acd->gw,CID_ACD_Tag));
     if ( (ubuf[0] = utag[0])==0 ) {
 	ubuf[0] = ubuf[1] = ubuf[2] = ubuf[3] = ' ';
@@ -2203,7 +2203,7 @@ return;
 
     ti = GGadgetGetList(list,&len);
     for ( i=0; i<len; ++i ) {
-	if ( ti[i]->userdata == (void *) tag ) {
+	if ( ti[i]->userdata == (void *) (intpt) tag ) {
 	    if ( ti[i]->selected )
 return;
 	    for ( j=0; j<len; ++j ) ti[j]->selected = false;
@@ -2235,7 +2235,7 @@ static void TagPopupMessage(GGadget *g,SplineFont *sf) {
 	tag = ((ret[0]&0xff)<<24) | ((ret[1]&0xff)<<16) | ((ret[2]&0xff)<<8) | (ret[3]&0xff);
 	for ( k=0; pst_tags[k]!=NULL; ++k ) {
 	    for ( i=0; pst_tags[k][i].text!=NULL; ++i ) {
-		if ( pst_tags[k][i].userdata == (void *) tag ) {
+		if ( pst_tags[k][i].userdata == (void *) (intpt) tag ) {
 		    unichar_t *temp = utf82u_copy((char *) pst_tags[k][i].text);
 		    GGadgetSetPopupMsg(g,temp);
 		    free(temp);
@@ -2263,7 +2263,7 @@ return( false );
     } else if ( event->type==et_controlevent && event->u.control.subtype == et_textchanged &&
 	    event->u.control.g == acd->taglist && acd->was_normalsli) {
 	if ( event->u.control.u.tf_changed.from_pulldown!=-1 ) {
-	    uint32 tag = (uint32) acd->mactags[event->u.control.u.tf_changed.from_pulldown].userdata;
+	    uint32 tag = (uint32) (intpt) acd->mactags[event->u.control.u.tf_changed.from_pulldown].userdata;
 	    int macfeat = acd->mactags[event->u.control.u.tf_changed.from_pulldown].image_precedes;
 	    unichar_t ubuf[20];
 	    char buf[20];
@@ -2639,7 +2639,7 @@ unichar_t *AskNameTag(char *title,unichar_t *def,uint32 def_tag, uint16 flags,
 	if ( GGadgetIsChecked(gcd[9].ret) ) flags |= pst_ignorecombiningmarks;
 	flags |= (GGadgetGetFirstListSelectedItem(gcd[11].ret))<<8;
 	if ( merge_with!=-1 ) {
-	    merge_with = (int) (GGadgetGetListItemSelected(gcd[16].ret)->userdata);
+	    merge_with = (intpt) (GGadgetGetListItemSelected(gcd[16].ret)->userdata);
 	    act_type = GGadgetIsChecked(gcd[12].ret) ? act_mark :
 			GGadgetIsChecked(gcd[13].ret) ? act_mkmk : act_curs;
 	}
@@ -2700,9 +2700,9 @@ return( false );
 	    /* If they select something from the pulldown, don't show the human */
 	    /*  readable form, instead show the 4 character tag */
 	    if ( ptd->ispair )
-		tag = (uint32) pairpos_tags[event->u.control.u.tf_changed.from_pulldown].userdata;
+		tag = (uint32) (intpt) pairpos_tags[event->u.control.u.tf_changed.from_pulldown].userdata;
 	    else
-		tag = (uint32) simplepos_tags[event->u.control.u.tf_changed.from_pulldown].userdata;
+		tag = (uint32) (intpt) simplepos_tags[event->u.control.u.tf_changed.from_pulldown].userdata;
 	    ubuf[0] = tag>>24;
 	    ubuf[1] = (tag>>16)&0xff;
 	    ubuf[2] = (tag>>8)&0xff;
@@ -3508,7 +3508,7 @@ static enum possub_type PSTGuess(char *data) {
 		    (((uint8 *) data)[2]<<8) | ((uint8 *) data)[3];
 	for ( type=pst_position; type<pst_max; ++type ) {
 	    for ( i=0; pst_tags[type-1][i].text!=NULL; ++i ) {
-		if ( (uint32) pst_tags[type-1][i].userdata==tag )
+		if ( (uint32) (intpt) pst_tags[type-1][i].userdata==tag )
 	    break;
 	    }
 	    if ( pst_tags[type-1][i].text!=NULL )
@@ -3834,7 +3834,7 @@ return;
 		type = pst_null;
 		if ( sel+1>pst_null && sel+1<pst_max ) {
 		    for ( i=0; pst_tags[sel][i].text!=NULL; ++i )
-			if ( (uint32) pst_tags[sel][i].userdata == tag ) {
+			if ( (uint32) (intpt) pst_tags[sel][i].userdata == tag ) {
 			    type = sel+1;
 		    break;
 		    }
@@ -4394,8 +4394,8 @@ return( false );
 	ci->sc->glyph_class = GGadgetGetFirstListSelectedItem(GWidgetGetControl(ci->gw,CID_GClass));
 	val = GGadgetGetFirstListSelectedItem(GWidgetGetControl(ci->gw,CID_Color));
 	if ( val!=-1 ) {
-	    if ( ci->sc->color != (int) (std_colors[val].userdata) ) {
-		ci->sc->color = (int) (std_colors[val].userdata);
+	    if ( ci->sc->color != (int) (intpt) (std_colors[val].userdata) ) {
+		ci->sc->color = (intpt) (std_colors[val].userdata);
 		for ( fvs=ci->sc->parent->fv; fvs!=NULL; fvs=fvs->next )
 		    GDrawRequestExpose(fvs->v,NULL,false);	/* Redraw info area just in case this char is selected */
 	    }
@@ -5172,7 +5172,7 @@ static void CI_SetNameList(CharInfo *ci,int val) {
     GGadget *g = GWidgetGetControl(ci->gw,CID_UName);
     int cnt;
 
-    if ( GGadgetGetUserData(g)==(void *) val )
+    if ( GGadgetGetUserData(g)==(void *) (intpt) val )
 return;		/* Didn't change */
     {
 	GTextInfo **list = NULL;
@@ -5188,7 +5188,7 @@ return;		/* Didn't change */
 	list[cnt] = TIFromName(NULL);
 	GGadgetSetList(g,list,true);
     }
-    GGadgetSetUserData(g,(void *) val);
+    GGadgetSetUserData(g,(void *) (intpt) val);
 }
 
 static int CI_UValChanged(GGadget *g, GEvent *e) {
@@ -5396,7 +5396,7 @@ static void CIFillup(CharInfo *ci) {
 	    sc->comment?sc->comment:"");
     GGadgetSelectOneListItem(GWidgetGetControl(ci->gw,CID_GClass),sc->glyph_class);
     for ( i=0; std_colors[i].image!=NULL; ++i ) {
-	if ( std_colors[i].userdata == (void *) sc->color )
+	if ( std_colors[i].userdata == (void *) (intpt) sc->color )
 	    GGadgetSelectOneListItem(GWidgetGetControl(ci->gw,CID_Color),i);
     }
     ci->first = sc->comment==NULL;
@@ -6224,7 +6224,7 @@ return( ti );
 }
 
 static int SelectStuff(struct sel_dlg *sld,GWindow gw) {
-    int type = (int) (GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_PST))->userdata);
+    int type = (intpt) (GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_PST))->userdata);
     int search_type = GGadgetIsChecked(GWidgetGetControl(gw,CID_SelectResults)) ? 1 :
 	    GGadgetIsChecked(GWidgetGetControl(gw,CID_MergeResults)) ? 2 :
 		3;
@@ -6264,7 +6264,7 @@ return( false );
     } else if ( event->type==et_controlevent &&
 	    event->u.control.subtype == et_listselected &&
 	    GGadgetGetCid(event->u.control.g)==CID_PST ) {
-	int type = (int) (GGadgetGetListItemSelected(event->u.control.g)->userdata);
+	int type = (intpt) (GGadgetGetListItemSelected(event->u.control.g)->userdata);
 	if ( type==pst_anchors ) {
 	    GGadgetSetList(GWidgetGetControl(gw,CID_Tag),AnchorClassesSimpleLList(sld->fv->sf),false);
 	    GGadgetSetEnabled(GWidgetGetControl(gw,CID_Tag),true);
@@ -6289,9 +6289,9 @@ return( false );
     } else if ( event->type==et_controlevent && event->u.control.subtype == et_textchanged &&
 	    event->u.control.u.tf_changed.from_pulldown!=-1 &&
 	    GGadgetGetCid(event->u.control.g)==CID_Tag ) {
-	int type = (int) (GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_PST))->userdata);
+	int type = (intpt) (GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_PST))->userdata);
 	if ( type!=pst_kerning && type!=pst_anchors && type!=pst_lcaret ) {
-	    uint32 tag = (uint32) tags[type][event->u.control.u.tf_changed.from_pulldown].userdata;
+	    uint32 tag = (uint32) (intpt) tags[type][event->u.control.u.tf_changed.from_pulldown].userdata;
 	    unichar_t ubuf[8];
 	    /* If they select something from the pulldown, don't show the human */
 	    /*  readable form, instead show the 4 character tag */
@@ -6431,7 +6431,7 @@ void FVSelectByPST(FontView *fv) {
 
 	GGadgetsCreate(gw,gcd);
     } else {
-	if ( (int) (GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_PST))->userdata) ==
+	if ( (intpt) (GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_PST))->userdata) ==
 		pst_anchors ) {
 	    if ( fv->sf->anchor==NULL ) {
 		GGadgetSelectOneListItem(GWidgetGetControl(gw,CID_PST),0);

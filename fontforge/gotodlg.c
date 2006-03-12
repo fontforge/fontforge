@@ -302,7 +302,7 @@ static GTextInfo *AvailableRanges(SplineFont *sf,EncMap *map) {
 	if ( pos!=-1 ) {
 	    ret[cnt].text = (unichar_t *) unicoderange[i].name;
 	    ret[cnt].text_is_1byte = true;
-	    ret[cnt++].userdata = (void *) pos;
+	    ret[cnt++].userdata = (void *) (intpt) pos;
 	}
     }
     qsort(ret,cnt,sizeof(GTextInfo),alpha);
@@ -446,7 +446,7 @@ static int Goto_OK(GGadget *g, GEvent *e) {
 	ret = GGadgetGetTitle8(GWidgetGetControl(gw,CID_Name));
 	for ( i=0; d->ranges[i].text!=NULL; ++i ) {
 	    if ( strcmp(ret,(char *) d->ranges[i].text)==0 ) {
-		d->ret = (int) d->ranges[i].userdata;
+		d->ret = (intpt) d->ranges[i].userdata;
 	break;
 	    }
 	}

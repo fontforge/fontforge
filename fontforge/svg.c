@@ -2740,7 +2740,7 @@ return( NULL );
 	if ( name==NULL ) {
 	    ret[cnt] = copy("nameless-font");
 	} else {
-	    ret[cnt] = copy(name);
+	    ret[cnt] = copy((char *) name);
 	    _xmlFree(name);
 	}
     }

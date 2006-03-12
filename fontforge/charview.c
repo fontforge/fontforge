@@ -7418,7 +7418,7 @@ static GMenuItem vwlist[] = {
 
 static void CVMenuShowMMMask(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    uint32 changemask = (uint32) mi->ti.userdata;
+    uint32 changemask = (uint32) (intpt) mi->ti.userdata;
     /* Change which mms get displayed in the "background" */
 
     if ( mi->mid==MID_MMAll ) {
@@ -7465,15 +7465,15 @@ static void mvlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	    mml[i].ti.text = uc_copy(sub->fontname);
 	    mml[i].ti.checkable = true;
 	    mml[i].ti.checked = (cv->mmvisible & (1<<j))?1:0;
-	    mml[i].ti.userdata = (void *) (1<<j);
+	    mml[i].ti.userdata = (void *) (intpt) (1<<j);
 	    mml[i].invoke = CVMenuShowMMMask;
 	    mml[i].ti.fg = mml[i].ti.bg = COLOR_DEFAULT;
 	    if ( sub==cv->sc->parent )
 		submask = (1<<j);
 	}
 	/* All */
-	mml[0].ti.userdata = (void *) ((1<<j)-1);
-	mml[0].ti.checked = (cv->mmvisible == (uint32) mml[0].ti.userdata);
+	mml[0].ti.userdata = (void *) (intpt) ((1<<j)-1);
+	mml[0].ti.checked = (cv->mmvisible == (uint32) (intpt) mml[0].ti.userdata);
 	    /* None */
 	mml[1].ti.checked = (cv->mmvisible == 0 || cv->mmvisible == submask);
     }

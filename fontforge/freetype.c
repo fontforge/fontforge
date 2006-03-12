@@ -1726,8 +1726,4 @@ return( NULL );
 int DebuggingFpgm(struct debugger_context *dc) {
 return( false );
 }
-
-struct freetype_raster *DebuggerCurrentRasterization(SplineSet *spl,real grid_spacing) {
-return( NULL );
-}
 #endif	/* FREETYPE_HAS_DEBUGGER && !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)*/

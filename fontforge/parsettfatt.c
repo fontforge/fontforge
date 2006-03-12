@@ -3048,7 +3048,7 @@ static void prop_apply_value(struct ttfinfo *info, int gfirst, int glast,FILE *t
 static void prop_apply_default(struct ttfinfo *info, int gfirst, int glast,void *def) {
     int def_prop, i;
 
-    def_prop = (int) def;
+    def_prop = (intpt) def;
     for ( i=gfirst; i<=glast; ++i )
 	TTF_SetProp(info,i, def_prop);
 }
@@ -3064,7 +3064,7 @@ void readttfprop(FILE *ttf,struct ttfinfo *info) {
     def = getushort(ttf);
     readttf_applelookup(ttf,info,
 	    prop_apply_values,prop_apply_value,
-	    prop_apply_default,(void *) def, false);
+	    prop_apply_default,(void *) (intpt) def, false);
 }
 
 static void TTF_SetLcaret(struct ttfinfo *info, int gnum, int offset, FILE *ttf) {

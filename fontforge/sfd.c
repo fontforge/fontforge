@@ -2907,7 +2907,7 @@ return( NULL );
 		    complained = true;
 		}
 		kp = chunkalloc(sizeof(KernPair));
-		kp->sc = (SplineChar *) index;
+		kp->sc = (SplineChar *) (intpt) index;
 		kp->kcid = has_orig;
 		kp->off = off;
 		kp->sli = sli;
@@ -3343,13 +3343,13 @@ static void SFDFixupRefs(SplineFont *sf) {
     /*continue;*/
 	for ( isv=0; isv<2; ++isv ) {
 	    for ( prev = NULL, kp=isv?sc->vkerns : sc->kerns; kp!=NULL; kp=next ) {
-		int index = (int) (kp->sc);
+		int index = (intpt) (kp->sc);
 		next = kp->next;
 		if ( !kp->kcid ) {	/* It's encoded (old sfds), else orig */
-		    if ( ((int) (kp->sc))>=map->encmax || map->map[(int) (kp->sc)]==-1 )
+		    if ( ((intpt) (kp->sc))>=map->encmax || map->map[(intpt) (kp->sc)]==-1 )
 			index = sf->glyphcnt;
 		    else
-			index = map->map[(int) (kp->sc)];
+			index = map->map[(intpt) (kp->sc)];
 		}
 		if ( index>=sf->glyphcnt ) {
 		    IError( "Bad kerning information in glyph %s\n", sc->name );
@@ -3413,11 +3413,11 @@ static void SFRemoveDependencies(SplineFont *sf) {
 	}
 	sf->glyphs[i]->dependents = NULL;
 	for ( kp=sf->glyphs[i]->kerns; kp!=NULL; kp=kp->next ) {
-	    kp->sc = (SplineChar *) (kp->sc->orig_pos);
+	    kp->sc = (SplineChar *) (intpt) (kp->sc->orig_pos);
 	    kp->kcid = true;		/* flag */
 	}
 	for ( kp=sf->glyphs[i]->vkerns; kp!=NULL; kp=kp->next ) {
-	    kp->sc = (SplineChar *) (kp->sc->orig_pos);
+	    kp->sc = (SplineChar *) (intpt) (kp->sc->orig_pos);
 	    kp->kcid = true;
 	}
     }

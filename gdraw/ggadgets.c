@@ -83,7 +83,7 @@ static void *border_type_cvt(char *val, void *def) {
     int ret = match(types,val);
     if ( ret== -1 )
 return( def );
-return( (void *) ret );
+return( (void *) (intpt) ret );
 }
 
 static void *border_shape_cvt(char *val, void *def) {
@@ -91,7 +91,7 @@ static void *border_shape_cvt(char *val, void *def) {
     int ret = match(shapes,val);
     if ( ret== -1 )
 return( def );
-return( (void *) ret );
+return( (void *) (intpt) ret );
 }
 
 /* font name may be something like:

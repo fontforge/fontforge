@@ -598,7 +598,7 @@ static GLabel *_GLabelCreate(GLabel *gl, struct gwindow *base, GGadgetData *gd,v
 	if ( gd->label->text_in_resource && gd->label->text_is_1byte )
 	    gl->label = utf82u_mncopy((char *) gd->label->text,&gl->g.mnemonic);
 	else if ( gd->label->text_in_resource )
-	    gl->label = u_copy((unichar_t *) GStringGetResource((int) gd->label->text,&gl->g.mnemonic));
+	    gl->label = u_copy((unichar_t *) GStringGetResource((intpt) gd->label->text,&gl->g.mnemonic));
 	else if ( gd->label->text_is_1byte )
 	    gl->label = /* def2u_*/ utf82u_copy((char *) gd->label->text);
 	else

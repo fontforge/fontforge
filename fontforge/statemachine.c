@@ -1309,7 +1309,7 @@ return( true );
     } else if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
 	if ( e->u.control.u.tf_changed.from_pulldown!=-1 ) {
 	    struct fs_dlg *d = GDrawGetUserData(gw);
-	    uint32 tag = (uint32) d->mactags[e->u.control.u.tf_changed.from_pulldown].userdata;
+	    uint32 tag = (uint32) (intpt) d->mactags[e->u.control.u.tf_changed.from_pulldown].userdata;
 	    unichar_t ubuf[20];
 	    char buf[20];
 	    /* If they select something from the pulldown, don't show the human */
@@ -2876,7 +2876,7 @@ return( false );
 	switch( event->u.control.subtype ) {
 	  case et_textchanged:
 	    if ( event->u.control.u.tf_changed.from_pulldown!=-1 ) {
-		uint32 tag = (uint32) smd->mactags[event->u.control.u.tf_changed.from_pulldown].userdata;
+		uint32 tag = (uint32) (intpt) smd->mactags[event->u.control.u.tf_changed.from_pulldown].userdata;
 		unichar_t ubuf[20];
 		char buf[20];
 		/* If they select something from the pulldown, don't show the human */

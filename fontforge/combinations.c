@@ -820,7 +820,7 @@ static void KP_Commands(KPData *kpd, GEvent *e) {
 static int KP_ChangeSize(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
 	KPData *kpd = GDrawGetUserData(GGadgetGetWindow(g));
-	int newsize = (int) (GGadgetGetListItemSelected(g)->userdata);
+	int newsize = (intpt) (GGadgetGetListItemSelected(g)->userdata);
 	BDFFont *temp;
 	if ( newsize==kpd->bdf->pixelsize )
 return( true );
@@ -1206,7 +1206,7 @@ return;
     wattrs.cursor = ct_mypointer;
     kpd.v = GWidgetCreateSubWindow(gw,&pos,kpdv_e_h,&kpd,&wattrs);
 
-    kpd.bdf = SplineFontPieceMeal(kpd.sf,(int) (gcd[1].gd.label->userdata),true,NULL);
+    kpd.bdf = SplineFontPieceMeal(kpd.sf,(intpt) (gcd[1].gd.label->userdata),true,NULL);
 
     memset(&rq,'\0',sizeof(rq));
     rq.family_name = helv;

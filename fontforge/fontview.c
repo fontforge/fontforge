@@ -2414,7 +2414,7 @@ void FontViewMenu_SelectUnhintedGlyphs(GtkMenuItem *menuitem, gpointer user_data
 # ifdef FONTFORGE_CONFIG_GDRAW
 static void FVMenuSelectColor(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    FVSelectColor(fv,(uint32) (mi->ti.userdata),(e->u.chr.state&ksm_shift)?1:0);
+    FVSelectColor(fv,(uint32) (intpt) (mi->ti.userdata),(e->u.chr.state&ksm_shift)?1:0);
 }
 # elif defined(FONTFORGE_CONFIG_GTK)
 void FontViewMenu_SelectDefault(GtkMenuItem *menuitem, gpointer user_data) {
@@ -2545,7 +2545,7 @@ return;
 static void FVMenuAAT(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     int i,gid;
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    uint32 tag = (uint32) (mi->ti.userdata);
+    uint32 tag = (uint32) (intpt) (mi->ti.userdata);
 # elif defined(FONTFORGE_CONFIG_GTK)
 void FontViewMenu_Att(GtkMenuItem *menuitem, gpointer user_data) {
     int i, gid;
