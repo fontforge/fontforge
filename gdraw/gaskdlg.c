@@ -754,7 +754,7 @@ static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,
     gcd[i].gd.pos.width = -1;
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels |gg_but_default | gg_pos_use0;
     gcd[i].gd.label = &blabel[0];
-    blabel[0].text = (unichar_t *) buts[0];
+    blabel[0].text = (unichar_t *) (intpt) buts[0];
     blabel[0].text_in_resource = true;
     gcd[i].gd.cid = CID_OK;
     gcd[i++].creator = GButtonCreate;
@@ -765,7 +765,7 @@ static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,
     gcd[i].gd.pos.width = -1;
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels |gg_but_cancel | gg_pos_use0;
     gcd[i].gd.label = &blabel[1];
-    blabel[1].text = (unichar_t *) buts[1];
+    blabel[1].text = (unichar_t *) (intpt) buts[1];
     blabel[1].text_in_resource = true;
     gcd[i].gd.cid = CID_Cancel;
     gcd[i++].creator = GButtonCreate;

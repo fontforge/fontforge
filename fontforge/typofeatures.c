@@ -985,7 +985,7 @@ GTextInfo **SFGenTagListFromType(struct gentagtype *gentags,enum possub_type typ
 			(gentags->tagtype[i].tag>>8)&0xff,
 			gentags->tagtype[i].tag&0xff );
 		ti[len] = gcalloc(1,sizeof(GTextInfo));
-		ti[len]->userdata = (void *) gentags->tagtype[i].tag;
+		ti[len]->userdata = (void *) (intpt) gentags->tagtype[i].tag;
 		ti[len]->text = uc_copy(buf);
 		ti[len]->fg = ti[len]->bg = COLOR_DEFAULT;
 		++len;

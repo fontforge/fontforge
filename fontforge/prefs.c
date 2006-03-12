@@ -1915,7 +1915,7 @@ void DoPrefs(void) {
 	    list = GGadgetGetList(g,&llen);
 	    for ( j=0; j<llen ; ++j ) {
 		if ( list[j]->text!=NULL &&
-			(void *) ( *((int *) pl->val)) == list[j]->userdata )
+			(void *) (intpt) ( *((int *) pl->val)) == list[j]->userdata )
 		    list[j]->selected = true;
 		else
 		    list[j]->selected = false;

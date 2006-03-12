@@ -3871,7 +3871,7 @@ static void *vc_cvt(char *val, void *def) {
 	if ( ept==val || *ept!='\0' )
 return( def );
     }
-return( (void *) ret );
+return( (void *) (intpt) ret );
 }
 
 static void *cm_cvt(char *val, void *def) {
@@ -3880,7 +3880,7 @@ static void *cm_cvt(char *val, void *def) {
     if ( ret== -1 )
 return( (void *) -1 );
 
-return( (void *) (ret-1) );
+return( (void *) (intpt) (ret-1) );
 }
 
 static void GXResourceInit(GXDisplay *gdisp,char *programname) {

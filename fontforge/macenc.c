@@ -2461,7 +2461,7 @@ return( false );
 	    sel = GGadgetGetListItemSelected(GWidgetGetControl(nd->gw,CID_Language));
 	    language = nd->changing->lang;
 	    if ( sel!=NULL )
-		language = (int) sel->userdata;
+		language = (intpt) sel->userdata;
 	    else if ( nd->index==-1 ) {
 		gwwv_post_error(_("Bad Language"),_("Bad Language"));
 return( true );

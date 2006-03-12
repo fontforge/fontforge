@@ -597,7 +597,7 @@ char *TagFullName(SplineFont *sf,uint32 tag, int ismac) {
 	    strcpy(ubuf,_("Required Feature"));
 	} else {
 	    for ( k=0; pst_tags[k]!=NULL; ++k ) {
-		for ( j=0; pst_tags[k][j].text!=NULL && stag!=(uint32) pst_tags[k][j].userdata; ++j );
+		for ( j=0; pst_tags[k][j].text!=NULL && stag!=(uint32) (intpt) pst_tags[k][j].userdata; ++j );
 		if ( pst_tags[k][j].text!=NULL )
 	    break;
 	    }
@@ -1311,7 +1311,7 @@ return;
 
     lang_max = j;
     for ( i=0; i<lang_max; ++i ) {
-	for ( j=0; languages[j].text!=NULL && langnodes[i].tag!=(uint32) languages[j].userdata; ++j );
+	for ( j=0; languages[j].text!=NULL && langnodes[i].tag!=(uint32) (intpt) languages[j].userdata; ++j );
 	buf[0] = '\'';
 	buf[1] = langnodes[i].tag>>24;
 	buf[2] = (langnodes[i].tag>>16)&0xff;
@@ -1830,7 +1830,7 @@ return;
     script_max = j;
 
     for ( i=0; i<script_max; ++i ) {
-	for ( j=0; scripts[j].text!=NULL && scriptnodes[i].tag!=(uint32) scripts[j].userdata; ++j );
+	for ( j=0; scripts[j].text!=NULL && scriptnodes[i].tag!=(uint32) (intpt) scripts[j].userdata; ++j );
 	buf[0] = '\'';
 	buf[1] = scriptnodes[i].tag>>24;
 	buf[2] = (scriptnodes[i].tag>>16)&0xff;

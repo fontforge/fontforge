@@ -280,7 +280,7 @@ static int Trans_TypeChange(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
 	GWindow bw = GGadgetGetWindow(g);
 	int index = GGadgetGetFirstListSelectedItem(g);
-	int mask = (int) transformtypes[index].userdata;
+	int mask = (intpt) transformtypes[index].userdata;
 	int i;
 
 	if ( mask & 0x400 ) {
@@ -311,7 +311,7 @@ static int Trans_TypeChange(GGadget *g, GEvent *e) {
 	for ( i=CID_First; i<=CID_Last; ++i ) {
 	    GGadget *sg;
 	    sg = GWidgetGetControl(bw,i);
-	    GGadgetSetVisible(sg, ( ((int) GGadgetGetUserData(sg))&mask )?1:0);
+	    GGadgetSetVisible(sg, ( ((intpt) GGadgetGetUserData(sg))&mask )?1:0);
 	}
 	if ( selcid[index]!=0 ) {
 	    GGadget *tf = GWidgetGetControl(bw,selcid[index]);

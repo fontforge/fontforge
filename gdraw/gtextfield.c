@@ -2369,7 +2369,7 @@ static GTextField *_GTextFieldCreate(GTextField *gt, struct gwindow *base, GGadg
 	if ( gd->label->text_is_1byte )
 	    gt->text = /* def2u_*/ utf82u_copy((char *) gd->label->text);
 	else if ( gd->label->text_in_resource )
-	    gt->text = u_copy((unichar_t *) GStringGetResource((int) gd->label->text,&gt->g.mnemonic));
+	    gt->text = u_copy((unichar_t *) GStringGetResource((intpt) gd->label->text,&gt->g.mnemonic));
 	else
 	    gt->text = u_copy(gd->label->text);
 	gt->sel_start = gt->sel_end = gt->sel_base = u_strlen(gt->text);

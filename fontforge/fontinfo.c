@@ -1179,7 +1179,7 @@ const char *TTFNameIds(int id) {
 
     FontInfoInit();
     for ( i=0; ttfnameids[i].text!=NULL; ++i )
-	if ( ttfnameids[i].userdata == (void *) id )
+	if ( ttfnameids[i].userdata == (void *) (intpt) id )
 return( (char *) ttfnameids[i].text );
 
     if ( id==6 )
@@ -1193,7 +1193,7 @@ const char *MSLangString(int language) {
 
     FontInfoInit();
     for ( i=0; mslanguages[i].text!=NULL; ++i )
-	if ( mslanguages[i].userdata == (void *) language )
+	if ( mslanguages[i].userdata == (void *) (intpt) language )
 return( (char *) mslanguages[i].text );
 
     language &= 0xff;
@@ -2778,7 +2778,7 @@ static char *OtfNameToText(int lang, const char *name) {
     int i;
 
     for ( i=sizeof(mslanguages)/sizeof(mslanguages[0])-1; i>=0 ; --i )
-	if ( mslanguages[i].userdata == (void *) lang )
+	if ( mslanguages[i].userdata == (void *) (intpt) lang )
     break;
     if ( i==-1 )
 	for ( i=sizeof(mslanguages)/sizeof(mslanguages[0])-1; i>=0 ; --i )
@@ -4074,7 +4074,7 @@ return( NULL );
 static const char *langname(int lang,char *buffer) {
     int i;
     for ( i=0; mslanguages[i].text!=NULL; ++i )
-	if ( mslanguages[i].userdata == (void *) lang )
+	if ( mslanguages[i].userdata == (void *) (intpt) lang )
 return( (char *) mslanguages[i].text );
 
     sprintf( buffer, "%04X", lang );
@@ -4311,7 +4311,7 @@ static void TTFN_SetSBs(struct gfi_data *d) {
     langmax = stridmax = strmax = 0;
     if ( d->tn_cnt>0 ) {
 	for ( i=0; i<d->tn_cnt; ++i ) {
-	    for ( k=0; ttfnameids[k].text!=NULL && ttfnameids[k].userdata!=(void *) d->ttfnames[i].strid;
+	    for ( k=0; ttfnameids[k].text!=NULL && ttfnameids[k].userdata!=(void *) (intpt) d->ttfnames[i].strid;
 		    ++k );
 	    if ( ttfnameids[k].text!=NULL ) {
 		const char *strid = (char *) ttfnameids[k].text;
@@ -4377,7 +4377,7 @@ static void TNExpose(struct gfi_data *d,GWindow pixmap,GEvent *event) {
 		    l,-1,NULL,0x000000);
 	}
 	if ( d->tn_strstart-3 > d->tn_offleft ) {
-	    for ( k=0; ttfnameids[k].text!=NULL && ttfnameids[k].userdata!=(void *) d->ttfnames[i+d->tn_offtop].strid;
+	    for ( k=0; ttfnameids[k].text!=NULL && ttfnameids[k].userdata!=(void *) (intpt) d->ttfnames[i+d->tn_offtop].strid;
 		    ++k );
 	    if ( ttfnameids[k].text!=NULL ) {
 		strid = (char *) ttfnameids[k].text;
@@ -4578,7 +4578,7 @@ return;
     }
 
     lang = langname(d->ttfnames[d->tn_active].lang,buf2);
-    for ( k=0; ttfnameids[k].text!=NULL && ttfnameids[k].userdata!=(void *) d->ttfnames[d->tn_active].strid;
+    for ( k=0; ttfnameids[k].text!=NULL && ttfnameids[k].userdata!=(void *) (intpt) d->ttfnames[d->tn_active].strid;
 	    ++k );
     snprintf(buf,sizeof(buf),_("%1$.30s string for %2$.30s"),
 	    lang, (char *) ttfnameids[k].text );
@@ -5425,18 +5425,18 @@ return(true);
 	    sf->pfminfo.width = GGadgetGetFirstListSelectedItem(GWidgetGetControl(gw,CID_WidthClass))+1;
 	    pfmfam = GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_PFMFamily));
 	    if ( pfmfam!=NULL )
-		sf->pfminfo.pfmfamily = (int) (pfmfam->userdata);
+		sf->pfminfo.pfmfamily = (intpt) (pfmfam->userdata);
 	    else
 		sf->pfminfo.pfmfamily = 0x11;
 	    ibmfam = GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_IBMFamily));
 	    if ( pfmfam!=NULL )
-		sf->pfminfo.os2_family_class = (int) (ibmfam->userdata);
+		sf->pfminfo.os2_family_class = (intpt) (ibmfam->userdata);
 	    else
 		sf->pfminfo.os2_family_class = 0x00;
 	    memcpy(sf->pfminfo.os2_vendor,os2_vendor,sizeof(os2_vendor));
 	    fstype = GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_FSType));
 	    if ( fstype!=NULL )
-		sf->pfminfo.fstype = (int) (fstype->userdata);
+		sf->pfminfo.fstype = (intpt) (fstype->userdata);
 	    else
 		sf->pfminfo.fstype = 0xc;
 	    if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_NoSubsetting)))
@@ -5444,7 +5444,7 @@ return(true);
 	    if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_OnlyBitmaps)))
 		sf->pfminfo.fstype |=0x200;
 	    for ( i=0; i<10; ++i )
-		sf->pfminfo.panose[i] = (int) (GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_PanFamily+i))->userdata);
+		sf->pfminfo.panose[i] = (intpt) (GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_PanFamily+i))->userdata);
 	    sf->pfminfo.panose_set = !GGadgetIsChecked(GWidgetGetControl(gw,CID_PanDefault));
 	    sf->pfminfo.os2_typolinegap = tlinegap;
 	    sf->pfminfo.linegap = linegap;
@@ -5740,12 +5740,12 @@ static void TTFSetup(struct gfi_data *d) {
     }
     GGadgetSelectOneListItem(GWidgetGetControl(d->gw,CID_WidthClass),info.width-1);
     for ( i=0; pfmfamily[i].text!=NULL; ++i )
-	if ( (int) (pfmfamily[i].userdata)==info.pfmfamily ) {
+	if ( (intpt) (pfmfamily[i].userdata)==info.pfmfamily ) {
 	    GGadgetSelectOneListItem(GWidgetGetControl(d->gw,CID_PFMFamily),i);
     break;
 	}
     for ( i=0; ibmfamily[i].text!=NULL; ++i )
-	if ( (int) (ibmfamily[i].userdata)==info.os2_family_class ) {
+	if ( (intpt) (ibmfamily[i].userdata)==info.os2_family_class ) {
 	    GGadgetSelectOneListItem(GWidgetGetControl(d->gw,CID_IBMFamily),i);
     break;
 	}

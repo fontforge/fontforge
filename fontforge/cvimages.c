@@ -1277,7 +1277,7 @@ static int GFD_ImportOk(GGadget *g, GEvent *e) {
 	unichar_t *ret = GGadgetGetTitle(d->gfc);
 	char *temp = u2def_copy(ret);
 	int pos = GGadgetGetFirstListSelectedItem(d->format);
-	int format = (int) (GGadgetGetListItemSelected(d->format)->userdata);
+	int format = (intpt) (GGadgetGetListItemSelected(d->format)->userdata);
 	GGadget *tf;
 
 	GFileChooserGetChildren(d->gfc,NULL,NULL,&tf);

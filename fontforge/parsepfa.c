@@ -1291,7 +1291,7 @@ static void findnumbers(struct fontparse *fp,struct pschars *chars,char *str) {
 	val = strtol(str,&end,10);
 	chars->lens[index] = 0;
 	chars->keys[index] = copy(namestrt);
-	chars->values[index] = (void *) val;
+	chars->values[index] = (void *) (intpt) val;
 	chars->next = index+1;
 	str = end;
 	while ( isspace(*str)) ++str;
