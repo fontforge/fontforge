@@ -1,0 +1,35 @@
+#!/usr/local/bin/fontforge
+#Needs: fonts/NumberPoints.sfd
+
+#Another point number test based on glyphs from deja-vu
+
+Open("fonts/NumberPoints.sfd")
+Reencode("original")
+cnt=CharCnt()
+ptcnts = Array(cnt)
+names = Array(cnt)
+i=j=0
+while ( i<cnt )
+  Select(i);
+  if ( WorthOutputting())
+      ptcnts[j] = CharInfo("PointCount");
+      names[j] = CharInfo("Name")
+      ++j;
+  endif
+  ++i;
+endloop
+cnt = j
+
+Generate("results/NumberPoints.ttf")
+Open("results/NumberPoints.ttf")
+
+i=0
+while ( i<cnt )
+  Select(names[i]);
+  if ( ptcnts[i] != CharInfo("PointCount"))
+    Print("!!!! Point count wrong in glyph " + ToString(i) + " " + CharInfo("Name"))
+  endif
+  ++i;
+endloop
+
+Quit()

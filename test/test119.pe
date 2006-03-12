@@ -1,0 +1,49 @@
+#!/usr/local/bin/fontforge
+#Needs: fonts/DejaVuSerif.sfd
+
+#The "i" glyph contains a point that could be interpolated between its
+#  control points, but must not be because the instructions depend on it
+#  being there.
+
+Open("fonts/DejaVuSerif.sfd")
+Reencode("original")
+cnt=CharCnt()
+ptcnts = Array(cnt)
+names = Array(cnt)
+i=j=0
+while ( i<cnt )
+  Select(i);
+  if ( WorthOutputting())
+      ptcnts[j] = CharInfo("PointCount");
+      names[j] = CharInfo("Name")
+      ++j;
+  endif
+  ++i;
+endloop
+cnt = j
+
+Generate("results/DejaVuSerif1.ttf")
+Open("results/DejaVuSerif1.ttf")
+
+i=0
+while ( i<cnt )
+  Select(names[i]);
+  if ( ptcnts[i] != CharInfo("PointCount"))
+    Print("!!!! Point count wrong in glyph " + ToString(i) + " " + CharInfo("Name"))
+  endif
+  ++i;
+endloop
+
+Generate("results/DejaVuSerif2.ttf")
+Open("results/DejaVuSerif2.ttf")
+
+i=0
+while ( i<cnt )
+  Select(names[i]);
+  if ( ptcnts[i] != CharInfo("PointCount"))
+    Print("!!!! (#2) Point count wrong in glyph " + ToString(i) + " " + CharInfo("Name"))
+  endif
+  ++i;
+endloop
+
+Quit()
