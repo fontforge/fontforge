@@ -859,6 +859,8 @@ static const char demiboldeng5[] = "SemiBold";
 static const char boldeng[] = "Bold";
 static const char thineng[] = "Thin";
 static const char lighteng[] = "Light";
+static const char extralighteng[] = "ExtraLight";
+static const char extralighteng2[] = "VeryLight";
 static const char mediumeng[] = "Medium";
 static const char bookeng[] = "Book";
 static const char heavyeng[] = "Heavy";
@@ -1003,6 +1005,7 @@ static struct langstyle heavys[] = { {0x409, heavyeng}, { 0x410, heavyital }, { 
 static struct langstyle blacks[] = { {0x409, blackeng}, { 0x410, blackital }, { 0x40c, blackfren }, { 0x407, blackgerm }, { 0x419, blackru }, { 0x40e, blackhu }, { 0x40e, blackhu2 }, { 0x40a, blackspan }, 
 	{ 0x413, blackdutch}, { 0x41d, blackswed }, { 0x414, blacknor }, { 0x406, blackdanish}, { 0 }};
 static struct langstyle thins[] = { {0x409, thineng}, { 0x410, thinital }, { 0x419, thinru }, { 0x40e, thinhu }, { 0 }};
+static struct langstyle extralights[] = { {0x409, extralighteng}, {0x409, extralighteng2}, {0}};
 static struct langstyle lights[] = { {0x409, lighteng}, {0x410, lightital}, {0x40c, lightfren}, {0x407, lightgerm}, { 0x419, lightru }, { 0x40e, lighthu }, { 0x40a, lightspan }, 
 	{ 0x413, lightdutch}, { 0x41d, lightswed }, { 0x414, lightnor }, { 0x406, lightdanish}, { 0 }};
 static struct langstyle condenseds[] = { {0x409, condensedeng}, {0x410, condensedital}, {0x40c, condensedfren}, {0x407, condensedgerm}, { 0x419, condensedru }, { 0x40e, condensedhu }, { 0x40a, condensedspan }, 
@@ -1011,7 +1014,7 @@ static struct langstyle expandeds[] = { {0x409, expandedeng}, {0x410, expandedit
 	{ 0x413, expandeddutch}, { 0x41d, expandedswed }, { 0x414, expandednor }, { 0x406, expandeddanish}, { 0 }};
 static struct langstyle outlines[] = { {0x409, outlineeng}, {0x40c, outlinefren}, {0x407, outlinegerm}, {0x40e, outlinehu}, { 0x406, outlinedanish}, { 0 }};
 static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, heavys, blacks,
-	lights, thins, italics, obliques, condenseds, expandeds, outlines, NULL };
+	extralights, lights, thins, italics, obliques, condenseds, expandeds, outlines, NULL };
 
 #define CID_Features	101		/* Mac stuff */
 #define CID_FeatureDel	103
@@ -1819,6 +1822,8 @@ static char *knownweights[] = { "Demi", "Bold", "Regu", "Medi", "Book", "Thin",
 static char *realweights[] = { "Demi", "Bold", "Regular", "Medium", "Book", "Thin",
 	"Light", "Heavy", "Black", "Ultra", "Nord", "Normal", "Gras", "Standard", "Halbfett",
 	"Fett", "Mager", "Mittel", "Buchschrift", NULL};
+static char *moreweights[] = { "ExtraLight", "VeryLight", NULL };
+static char **noticeweights[] = { moreweights, realweights, knownweights, NULL };
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static int GFI_NameChange(GGadget *g, GEvent *e) {
@@ -1827,13 +1832,18 @@ static int GFI_NameChange(GGadget *g, GEvent *e) {
 	struct gfi_data *gfi = GDrawGetUserData(gw);
 	const unichar_t *uname = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Fontname));
 	unichar_t ubuf[50];
-	int i;
-	for ( i=0; knownweights[i]!=NULL; ++i ) {
-	    if ( uc_strstrmatch(uname,knownweights[i])!=NULL ) {
-		uc_strcpy(ubuf, realweights[i]);
-		GGadgetSetTitle(GWidgetGetControl(gw,CID_Weight),ubuf);
-	break;
+	int i,j;
+	for ( j=0; noticeweights[j]!=NULL; ++j ) {
+	    for ( i=0; noticeweights[j][i]!=NULL; ++i ) {
+		if ( uc_strstrmatch(uname,noticeweights[j][i])!=NULL ) {
+		    uc_strcpy(ubuf, noticeweights[j]==knownweights ?
+			    realweights[i] : noticeweights[j][i]);
+		    GGadgetSetTitle(GWidgetGetControl(gw,CID_Weight),ubuf);
+	    break;
+		}
 	    }
+	    if ( noticeweights[j][i]!=NULL )
+	break;
 	}
 	if ( gfi->human_untitled )
 	    GGadgetSetTitle(GWidgetGetControl(gw,CID_Human),uname);
