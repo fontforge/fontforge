@@ -33,9 +33,10 @@ static const double slope_error = .05;
     /* If the dot vector of a slope and the normal of another slope is less */
     /*  than this error, then we say they are close enough to be colinear */
 static const double dist_error_hv = 1;
-static const double dist_error_diag = 5;
+static const double dist_error_diag = 6;
     /* It's easy to get horizontal/vertical lines aligned properly */
     /* it is more difficult to get diagonal ones done */
+    /* The "A" glyph in Apple's Times.dfont(Roman) is off by 6 in one spot */
 
 struct st {
     Spline *s;
@@ -50,6 +51,7 @@ static void PointInit(struct glyphdata *gd,SplinePoint *sp, SplineSet *ss) {
 return;
     pd = &gd->points[sp->ttfindex];
     pd->sp = sp;
+    pd->ss = ss;
 
     if ( sp->next==NULL ) {
 	pd->nextunit.x = ss->first->me.x - sp->me.x;
@@ -83,19 +85,19 @@ return;
     }
 
     if ( sp->prev==NULL ) {
-	pd->prevunit.x = sp->me.x - ss->last->me.x;
-	pd->prevunit.y = sp->me.y - ss->last->me.y;
+	pd->prevunit.x = ss->last->me.x - sp->me.x;
+	pd->prevunit.y = ss->last->me.y - sp->me.y;
 	pd->prevlinear = true;
     } else if ( sp->prev->knownlinear ) {
-	pd->prevunit.x = sp->me.x - sp->prev->from->me.x;
-	pd->prevunit.y = sp->me.y - sp->prev->from->me.y;
+	pd->prevunit.x = sp->prev->from->me.x - sp->me.x;
+	pd->prevunit.y = sp->prev->from->me.y - sp->me.y;
 	pd->prevlinear = true;
     } else if ( sp->noprevcp ) {
-	pd->prevunit.x = sp->me.x - sp->prev->from->nextcp.x;
-	pd->prevunit.y = sp->me.y - sp->prev->from->nextcp.y;
+	pd->prevunit.x = sp->prev->from->nextcp.x - sp->me.x;
+	pd->prevunit.y = sp->prev->from->nextcp.y - sp->me.y;
     } else {
-	pd->prevunit.x = sp->me.x - sp->prevcp.x;
-	pd->prevunit.y = sp->me.y - sp->prevcp.y;
+	pd->prevunit.x = sp->prevcp.x - sp->me.x;
+	pd->prevunit.y = sp->prevcp.y - sp->me.y;
     }
     len = sqrt(pd->prevunit.x*pd->prevunit.x + pd->prevunit.y*pd->prevunit.y);
     if ( len==0 )
@@ -112,11 +114,7 @@ return;
 	if ( pd->prevunit.y==0 ) pd->prev_hor = true;
 	else if ( pd->prevunit.x==0 ) pd->prev_ver = true;
     }
-    if ( pd->next_hor ) {
-	pd->colinear = pd->prev_hor;
-    } else if ( pd->next_ver ) {
-	pd->colinear = pd->prev_ver;
-    } else if ( !pd->prev_hor && !pd->prev_ver ) {
+    {
 	double same = pd->prevunit.x*pd->nextunit.x + pd->prevunit.y*pd->nextunit.y;
 	if ( same<-.95 )
 	    pd->colinear = true;
@@ -218,9 +216,9 @@ return( 2 );		/* Ignore both this line and the next */
 }
 
 static Spline *MonotonicFindAlong(Spline **sspace,Spline *line,struct st *stspace,
-	SplinePoint *sp, double *other_t) {
+	Spline *findme, double *other_t) {
     Spline *s;
-    int i,j,cnt;
+    int i,j,k,cnt;
     BasePoint pts[9];
     double lts[10], sts[10];
     int eo;		/* I do horizontal/vertical by winding number */
@@ -238,11 +236,11 @@ static Spline *MonotonicFindAlong(Spline **sspace,Spline *line,struct st *stspac
     continue;
 	    if ( SplinesIntersect(line,s,pts,lts,sts)<=0 )
     continue;
-	    for ( j=0; sts[j]!=-1; ++j ) {
-		if ( sts[j]>=0 && sts[j]<=1 ) {
+	    for ( k=0; sts[k]!=-1; ++k ) {
+		if ( sts[k]>=0 && sts[k]<=1 ) {
 		    stspace[i].s    = s;
-		    stspace[i].lt   = lts[j];
-		    stspace[i++].st = sts[j];
+		    stspace[i].lt   = lts[k];
+		    stspace[i++].st = sts[k];
 		}
 	    }
 	}
@@ -254,23 +252,21 @@ static Spline *MonotonicFindAlong(Spline **sspace,Spline *line,struct st *stspac
     eo = 0;
     for ( i=0; i<cnt; ++i ) {
 	s = stspace[i].s;
-	if ( (s->to==sp && stspace[i].st>.99) || (s->from==sp && stspace[i].st<.01 )) {
+	if ( s==findme ) {
 	    if ( eo&1 ) {
 		*other_t = stspace[i-1].st;
 return( stspace[i-1].s );
 	    }
-	    if ( LineType(stspace,i,cnt,line)==0 )
-		j=i+1;
-	    else
-		j=i+2;
-	    if ( j<cnt ) {
-		*other_t = stspace[j].st;
-return( stspace[j].s );
+	    if ( i+1<cnt ) {
+		*other_t = stspace[i+1].st;
+return( stspace[i+1].s );
 	    }
 	    fprintf( stderr, "MonotonicFindAlong: Ran out of intersections.\n" );
 return( NULL );
 	}
-	switch ( LineType(stspace,i,cnt,line) ) {
+	if ( i+1<cnt && stspace[i+1].s==findme )
+	    ++eo;
+	else switch ( LineType(stspace,i,cnt,line) ) {
 	  case 0:	/* Normal spline */
 	    ++eo;
 	  break;
@@ -283,7 +279,7 @@ return( NULL );
 	  break;
 	}
     }
-    fprintf( stderr, "MonotonicFindAlong: Never found our point.\n" );
+    fprintf( stderr, "MonotonicFindAlong: Never found our spline.\n" );
 return( NULL );
 }
 
@@ -353,10 +349,12 @@ return( NULL );
 
 static Spline *FindMatchingEdge(struct glyphdata *gd, struct pointdata *pd,
 	int is_next, int only_hv ) {
-    BasePoint *dir, norm, absnorm;
+    BasePoint *dir, norm, absnorm, perturbed;
     Spline myline;
+    SplinePoint end1, end2;
     double *other_t = is_next ? &pd->next_e_t : &pd->prev_e_t;
-    double t1,t2;
+    double t1,t2, t;
+    Spline *s;
 
     if (( is_next && ((pd->nextunit.y>-.03 && pd->nextunit.y<.03) || (pd->nextunit.x>-.03 && pd->nextunit.x<.03))) ||
 	    ( !is_next && ((pd->prevunit.y>-.03 && pd->prevunit.y<.03) || (pd->prevunit.x>-.03 && pd->prevunit.x<.03))))
@@ -392,34 +390,57 @@ return( NULL );
 	gd->size.minx -= 10; gd->size.miny -= 10;
 	gd->size.maxx += 10; gd->size.maxy += 10;
     }
-    if ( is_next )
+    if ( is_next ) {
 	dir = &pd->nextunit;
-    else
+	t = .001;
+	s = pd->sp->next;
+    } else {
 	dir = &pd->prevunit;
+	t = .999;
+	s = pd->sp->prev;
+    }
+    if ( s==NULL )
+return( NULL );
     norm.x = -dir->y;
     norm.y = dir->x;
     absnorm = norm;
     if ( absnorm.x<0 ) absnorm.x = -absnorm.x;
     if ( absnorm.y<0 ) absnorm.y = -absnorm.y;
     memset(&myline,0,sizeof(myline));
+    memset(&end1,0,sizeof(end1));
+    memset(&end2,0,sizeof(end2));
     myline.knownlinear = myline.islinear = true;
+    /* Don't base the line on the current point, we run into rounding errors */
+    /*  where lines that should intersect it don't. Instead perturb it a tiny*/
+    /*  bit in the direction along the spline */
+    perturbed.x = ((s->splines[0].a*t+s->splines[0].b)*t+s->splines[0].c)*t+s->splines[0].d;
+    perturbed.y = ((s->splines[1].a*t+s->splines[1].b)*t+s->splines[1].c)*t+s->splines[1].d;
     if ( absnorm.x > absnorm.y ) {
 	/* Greater change in x than in y */
-	t1 = (gd->size.minx-pd->sp->me.x)/norm.x;
-	t2 = (gd->size.maxx-pd->sp->me.x)/norm.x;
+	t1 = (gd->size.minx-perturbed.x)/norm.x;
+	t2 = (gd->size.maxx-perturbed.x)/norm.x;
 	myline.splines[0].d = gd->size.minx;
 	myline.splines[0].c = gd->size.maxx-gd->size.minx;
-	myline.splines[1].d = pd->sp->me.y+t1*norm.y;
+	myline.splines[1].d = perturbed.y+t1*norm.y;
 	myline.splines[1].c = (t2-t1)*norm.y;
     } else {
-	t1 = (gd->size.miny-pd->sp->me.y)/norm.y;
-	t2 = (gd->size.maxy-pd->sp->me.y)/norm.y;
-	myline.splines[0].d = gd->size.miny;
-	myline.splines[0].c = gd->size.maxy-gd->size.miny;
-	myline.splines[1].d = pd->sp->me.x+t1*norm.x;
-	myline.splines[1].c = (t2-t1)*norm.x;
+	t1 = (gd->size.miny-perturbed.y)/norm.y;
+	t2 = (gd->size.maxy-perturbed.y)/norm.y;
+	myline.splines[1].d = gd->size.miny;
+	myline.splines[1].c = gd->size.maxy-gd->size.miny;
+	myline.splines[0].d = perturbed.x+t1*norm.x;
+	myline.splines[0].c = (t2-t1)*norm.x;
     }
-return( MonotonicFindAlong(gd->sspace,&myline,gd->stspace,pd->sp,other_t));
+    end1.me.x = myline.splines[0].d;
+    end2.me.x = myline.splines[0].d + myline.splines[0].c;
+    end1.me.y = myline.splines[1].d;
+    end2.me.y = myline.splines[1].d + myline.splines[1].c;
+    end1.nextcp = end1.prevcp = end1.me;
+    end2.nextcp = end2.prevcp = end2.me;
+    end1.nonextcp = end1.noprevcp = end2.nonextcp = end2.noprevcp = true;
+    end1.next = &myline; end2.prev = &myline;
+    myline.from = &end1; myline.to = &end2;
+return( MonotonicFindAlong(gd->sspace,&myline,gd->stspace,s,other_t));
 }
 
 /* In TrueType I want to make sure that everything on a diagonal line remains */
@@ -526,6 +547,7 @@ static void AddToStem(struct stemdata *stem,struct pointdata *pd1,struct pointda
 	if ( is_next1 ) {
 	    if ( pd1->nextstem == NULL ) {
 		pd1->nextstem = stem;
+		pd1->next_is_l = true;
 #if 0	/* They can be different, if so we need to figure which is better */
 		if ( pd1->colinear )
 		    pd1->prevstem = stem;
@@ -534,6 +556,7 @@ static void AddToStem(struct stemdata *stem,struct pointdata *pd1,struct pointda
 	} else {
 	    if ( pd1->prevstem == NULL ) {
 		pd1->prevstem = stem;
+		pd1->prev_is_l = true;
 	    }
 	}
     }
@@ -541,19 +564,20 @@ static void AddToStem(struct stemdata *stem,struct pointdata *pd1,struct pointda
 	if ( is_next2 ) {
 	    if ( pd2->nextstem == NULL ) {
 		pd2->nextstem = stem;
+		pd2->next_is_l = false;		/* It's r */
 	    }
 	} else {
 	    if ( pd2->prevstem == NULL ) {
 		pd2->prevstem = stem;
+		pd2->prev_is_l = false;
 	    }
 	}
     }
 }
 
-static int OnStem(struct stemdata *stem,struct pointdata *pd) {
+static int OnStem(struct stemdata *stem,BasePoint *test) {
     double dist_error, off;
     BasePoint *dir = &stem->unit;
-    BasePoint *test = &pd->sp->me;
 
     dist_error = ( dir->x==0 || dir->y==0 ) ? dist_error_hv : dist_error_diag;	/* Diagonals are harder to align */
 
@@ -591,19 +615,49 @@ return( NULL );
 	       err<2*slope_error && err>-2*slope_error )) {
 	    /* Special check for cm serifs */
 	stem = is_next2 ? pd2->nextstem : pd2->prevstem;
-	if ( stem!=NULL && OnStem(stem,pd))
+	if ( stem!=NULL && OnStem(stem,&pd->sp->me))
 return( stem );
 
 	for ( j=0; j<gd->stemcnt; ++j ) {
 	    err = gd->stems[j].unit.x*dir->y - gd->stems[j].unit.y*dir->x;
 	    if ( err<slope_error && err>-slope_error &&
-		    OnStem(&gd->stems[j],pd) && OnStem(&gd->stems[j],pd2)) {
+		    OnStem(&gd->stems[j],&pd->sp->me) && OnStem(&gd->stems[j],&pd2->sp->me)) {
 return( &gd->stems[j] );
 	    }
 	}
 return( (struct stemdata *) (-1) );
     }
 return( NULL );
+}
+
+static struct stemdata *NewStem(struct glyphdata *gd,BasePoint *dir,
+	BasePoint *pos1, BasePoint *pos2) {
+    struct stemdata * stem = &gd->stems[gd->stemcnt++];
+
+    stem->unit = *dir;
+    if ( dir->x+dir->y<0 ) {
+	stem->unit.x = -stem->unit.x;
+	stem->unit.y = -stem->unit.y;
+    }
+    if (( stem->unit.x>stem->unit.y && pos1->y<pos2->y ) ||
+	    (stem->unit.y>=stem->unit.x && pos1->x<pos2->x )) {
+	stem->left = *pos1;
+	stem->right = *pos2;
+    } else {
+	stem->left = *pos2;
+	stem->right = *pos1;
+    }
+    /* Guess at which normal we want */
+    stem->l_to_r.x = dir->y; stem->l_to_r.y = -dir->x;
+    /* If we guessed wrong, use the other */
+    if ( (stem->right.x-stem->left.x)*stem->l_to_r.x +
+	    (stem->right.y-stem->left.y)*stem->l_to_r.y < 0 ) {
+	stem->l_to_r.x = -stem->l_to_r.x;
+	stem->l_to_r.y = -stem->l_to_r.y;
+    }
+    stem->chunks = NULL;
+    stem->chunk_cnt = 0;
+return( stem );
 }
 
 static int ParallelToDir(SplinePoint *sp,int checknext, BasePoint *dir,
@@ -739,32 +793,102 @@ return( NULL );
     if ( stem2==NULL )
 	pd2 = NULL;
 
-    if ( stem==(struct stemdata *) (-1) ) {
-	stem = &gd->stems[gd->stemcnt++];
-	stem->unit = *dir;
-	if ( dir->x+dir->y<0 ) {
-	    stem->unit.x = -stem->unit.x;
-	    stem->unit.y = -stem->unit.y;
-	}
-	if (( stem->unit.x>stem->unit.y && pd->sp->me.y<match->me.y ) ||
-		(stem->unit.y>=stem->unit.x && pd->sp->me.x<match->me.x )) {
-	    stem->left = pd->sp->me;
-	    stem->right = match->me;
-	} else {
-	    stem->left = match->me;
-	    stem->right = pd->sp->me;
-	}
-	stem->chunks = NULL;
-	stem->chunk_cnt = 0;
-    }
+    if ( stem==(struct stemdata *) (-1) )
+	stem = NewStem(gd,dir,&pd->sp->me,&match->me);
 
     AddToStem(stem,pd,pd2,is_next,is_next2,pd2potential);
+return( stem );
+}
+
+static double FindSameSlope(Spline *s,BasePoint *dir,double close_to) {
+    double a,b,c, desc;
+    double t1,t2;
+    double d1, d2;
+
+    if ( s==NULL )
+return( -1e4 );
+
+    a = dir->x*s->splines[1].a*3 - dir->y*s->splines[0].a*3;
+    b = dir->x*s->splines[1].b*2 - dir->y*s->splines[0].b*2;
+    c = dir->x*s->splines[1].c   - dir->y*s->splines[0].c  ;
+    if ( a!=0 ) {
+	desc = b*b - 4*a*c;
+	if ( desc<0 )
+return( -1e4 );
+	desc = sqrt(desc);
+	t1 = (-b+desc)/(2*a);
+	t2 = (-b-desc)/(2*a);
+	if ( (d1=t1-close_to)<0 ) d1 = -d1;
+	if ( (d2=t2-close_to)<0 ) d2 = -d2;
+	if ( d2<d1 && t2>=-.001 && t2<=1.001 )
+	    t1 = t2;
+    } else if ( b!=0 )
+	t1 = -c/b;
+    else
+return( -1e4 );
+
+return( t1 );
+}
+
+static struct stemdata *HalfStem(struct glyphdata *gd,struct pointdata *pd,
+	BasePoint *dir,Spline *other,double other_t,int is_next) {
+    /* Find the spot on other where the slope is the same as dir */
+    double t1;
+    double width, offset, err;
+    BasePoint match;
+    struct stemdata *stem = NULL;
+    int j;
+
+    t1 = FindSameSlope(other,dir,other_t);
+    if ( t1==-1e4 )
+return( NULL );
+    if ( t1<0 && other->from->prev!=NULL && gd->points[other->from->ttfindex].colinear ) {
+	other = other->from->prev;
+	t1 = FindSameSlope(other,dir,1.0);
+    } else if ( t1>1 && other->to->next!=NULL && gd->points[other->to->ttfindex].colinear ) {
+	other = other->to->next;
+	t1 = FindSameSlope(other,dir,0.0);
+    }
+
+    if ( t1<-.001 || t1>1.001 )
+return( NULL );
+
+    /* Ok. the opposite edge has the right slope at t1 */
+    /* Now see if we can make a one sided stem out of these two */
+    match.x = ((other->splines[0].a*t1+other->splines[0].b)*t1+other->splines[0].c)*t1+other->splines[0].d;
+    match.y = ((other->splines[1].a*t1+other->splines[1].b)*t1+other->splines[1].c)*t1+other->splines[1].d;
+
+    width = (match.x-pd->sp->me.x)*dir->y - (match.y-pd->sp->me.y)*dir->x;
+    offset = (match.x-pd->sp->me.x)*dir->x + (match.y-pd->sp->me.y)*dir->y;
+    if ( width<.5 && width>-.5 )
+return( NULL );		/* Zero width stems aren't interesting */
+
+    if ( is_next ) {
+	pd->nextedge = other;
+	pd->next_e_t = t1;
+    } else {
+	pd->prevedge = other;
+	pd->prev_e_t = t1;
+    }
+
+    stem = NULL;
+    for ( j=0; j<gd->stemcnt; ++j ) {
+	err = gd->stems[j].unit.x*dir->y - gd->stems[j].unit.y*dir->x;
+	if ( err<slope_error && err>-slope_error &&
+		OnStem(&gd->stems[j],&pd->sp->me) && OnStem(&gd->stems[j],&match)) {
+	    stem = &gd->stems[j];
+    break;
+	}
+    }
+    if ( stem==NULL )
+	stem = NewStem(gd,dir,&pd->sp->me,&match);
+    AddToStem(stem,pd,NULL,is_next,false,NULL);
 return( stem );
 }
 	
 static struct stemdata *BuildStem(struct glyphdata *gd,struct pointdata *pd,int is_next ) {
     BasePoint *dir;
-    Spline *other;
+    Spline *other, *cur;
     double t;
     struct stemdata *stem;
     int tp, fp;
@@ -773,10 +897,12 @@ static struct stemdata *BuildStem(struct glyphdata *gd,struct pointdata *pd,int 
     if ( is_next ) {
 	dir = &pd->nextunit;
 	other = pd->nextedge;
+	cur = pd->sp->next;
 	t = pd->next_e_t;
     } else {
 	dir = &pd->prevunit;
 	other = pd->prevedge;
+	cur = pd->sp->prev;
 	t = pd->prev_e_t;
     }
     if ( other==NULL )
@@ -798,6 +924,8 @@ return( NULL );
 	stem = TestStem(gd,pd,dir, other->to, is_next, false);
     else
 	stem = TestStem(gd,pd,dir, other->from, is_next,true);
+    if ( stem==NULL && cur!=NULL && !other->knownlinear && !cur->knownlinear )
+	stem = HalfStem(gd,pd,dir,other,t,is_next);
 return( stem );
 }
 
@@ -812,14 +940,26 @@ return( -1 );
 return( 0 );
 }
 
+static int IsL(BasePoint *bp,struct stemdata *stem) {
+    double offl, offr;
+
+    offl = (bp->x-stem->left.x)*stem->l_to_r.x + (bp->y-stem->left.y)*stem->l_to_r.y;
+    if ( offl<0 ) offl = -offl;
+    offr = (bp->x-stem->right.x)*stem->l_to_r.x + (bp->y-stem->right.y)*stem->l_to_r.y;
+    if ( offr<0 ) offr = -offr;
+return( offl < offr );
+}
+
 static struct pointdata *PotentialAdd(struct glyphdata *gd,struct stemdata *stem,
 	struct pointdata *pd, int is_next ) {
 
     if ( is_next && (pd->nextstem==NULL || pd->nextstem->toobig )) {
 	pd->nextstem = stem;
+	pd->next_is_l = IsL(&pd->sp->me,stem);
 return( pd );
     } else if ( !is_next && (pd->prevstem==NULL || pd->prevstem->toobig )) {
 	pd->prevstem = stem;
+	pd->prev_is_l = IsL(&pd->sp->me,stem);
 return( pd );
     }
 return( NULL );
@@ -878,25 +1018,482 @@ static void MinMaxStem(BasePoint *here,struct stemdata *stem, double *maxm, doub
     if ( m<*minm ) *minm = m;
 }
 
-static int InChunk(SplinePoint *sp,struct stemdata *stem,int j,int is_left ) {
+static struct pointdata *InChunk(SplinePoint *sp,struct stemdata *stem,int j,int is_left ) {
     int i;
 
     for ( i=j+1; i<stem->chunk_cnt; ++i ) {
 	struct stem_chunk *chunk = &stem->chunks[i];
 	if ( is_left && chunk->l!=NULL && chunk->l->sp==sp ) {
 	    chunk->ltick = true;
-return( true );
+return( chunk->l );
 	} else if ( !is_left && chunk->r!=NULL && chunk->r->sp==sp ) {
 	    chunk->rtick = true;
-return( true );
+return( chunk->r );
 	}
     }
-return( false );
+return( NULL );
+}
+
+static void AddSplineTick(struct splinesteminfo *ssi,Spline *s,
+	double t1,double t2, struct stemdata *stem, int isr) {
+    if ( s->knownlinear && t1!=t2 ) {
+	struct stembounds *sb;
+	sb = chunkalloc(sizeof(struct stembounds));
+	sb->stem = stem;
+	if ( t1>t2 ) {
+	    sb->tstart = t2;
+	    sb->tend = t1;
+	} else {
+	    sb->tstart = t1;
+	    sb->tend = t2;
+	}
+	if ( sb->tstart<0 ) sb->tstart = 0;
+	if ( sb->tend>1 ) sb->tend = 1;
+	sb->isr = isr;
+	sb->next = ssi[s->from->ttfindex].sb;
+	ssi[s->from->ttfindex].sb = sb;
+    }
 }
 
 int UnitsParallel(BasePoint *u1,BasePoint *u2) {
     double dot = u1->x*u2->x + u1->y*u2->y;
 return( dot>.95 || dot < -.95 );
+}
+
+static void TickSplinesBetween(struct glyphdata *gd, struct splinesteminfo *ssi,
+	struct pointdata *pd1,struct pointdata *pd2,
+	struct stemdata *stem, int lookright) {
+    /* For all splines between the opposites of pd1 and pd2, tick them as used */
+    /*  so if pd1 & pd2 were "right", then look at the "left" side */
+    double v1, v2, v;
+    Spline *s1, *s2, *us;
+    double t1,t2;
+    int j;
+
+    v1 = (pd1->sp->me.x-stem->left.x)*stem->unit.x +
+	    (pd1->sp->me.y-stem->left.y)*stem->unit.y;
+    v2 = (pd2->sp->me.x-stem->left.x)*stem->unit.x +
+	    (pd2->sp->me.y-stem->left.y)*stem->unit.y;
+    if ( v1>v2 ) {
+	struct pointdata *pd = pd1;
+	v = v1;
+	pd1 = pd2;
+	v1 = v2;
+	pd2 = pd;
+	v2 = v;
+    }
+    if ( pd1->sp->next!=NULL && pd1->sp->next->to==pd2->sp ) {
+	us = pd1->sp->next;
+	s1 = pd1->nextedge;
+	t1 = pd1->next_e_t;
+	s2 = pd2->prevedge;
+	t2 = pd2->prev_e_t;
+    } else {
+	us = pd1->sp->prev;
+	s1 = pd1->prevedge;
+	t1 = pd1->prev_e_t;
+	s2 = pd2->nextedge;
+	t2 = pd2->next_e_t;
+    }
+    if ( s1==NULL ) s1 = s2; else if ( s2==NULL ) s2=s1;
+    if ( s1==NULL )
+return;
+    if ( !UnitsParallel(&gd->points[s1->from->ttfindex].nextunit,&stem->unit) &&
+	    !UnitsParallel(&gd->points[s1->to->ttfindex].nextunit,&stem->unit))
+return;
+    if ( !UnitsParallel(&gd->points[s2->from->ttfindex].nextunit,&stem->unit) &&
+	    !UnitsParallel(&gd->points[s2->to->ttfindex].nextunit,&stem->unit))
+return;
+    
+    AddSplineTick(ssi,us,0,1,stem,!lookright);
+    if ( s1==s2 ) {
+	AddSplineTick(ssi,s1,t1,t2,stem,lookright);
+return;
+    }
+    /* Ok, there's a hole in the edge, and s1 & s2 are different */
+    if ( s1->knownlinear ) {
+	v = (s1->to->me.x-stem->left.x)*stem->unit.x +
+		(s1->to->me.y-stem->left.y)*stem->unit.y;
+	if ( v>v1 )
+	    AddSplineTick(ssi,s1,t1,1.0,stem,lookright);
+	else
+	    AddSplineTick(ssi,s1,0.0,t1,stem,lookright);
+    }
+    if ( s2->knownlinear ) {
+	v = (s2->to->me.x-stem->left.x)*stem->unit.x +
+		(s2->to->me.y-stem->left.y)*stem->unit.y;
+	if ( v>v2 )
+	    AddSplineTick(ssi,s2,0.0,t2,stem,lookright);
+	else
+	    AddSplineTick(ssi,s2,t2,1.0,stem,lookright);
+    }
+    /* Now there might be yet another hole in the edge so there might be */
+    /*  another (or several other splines) between v1 & v2 */
+    for ( j=0; j<stem->chunk_cnt; ++j ) {
+	struct stem_chunk *chunk = &stem->chunks[j];
+	Spline *s;
+	if ( lookright ) {
+	    s = chunk->r==NULL ? NULL :
+		    chunk->rnext ? chunk->r->sp->next
+				 : chunk->r->sp->prev;
+	} else {
+	    s = chunk->l==NULL ? NULL :
+		    chunk->lnext ? chunk->l->sp->next
+				 : chunk->l->sp->prev;
+	}
+	if ( s!=NULL && s!=s1 && s!=s2 ) {
+	    v = (s->to->me.x-stem->left.x)*stem->unit.x +
+		    (s->to->me.y-stem->left.y)*stem->unit.y;
+	    if ( v>v1 && v<v2 )
+		AddSplineTick(ssi,s,0.0,1.0,stem,lookright);
+	}
+    }
+}
+
+static struct stembounds *OrderSbByTDiff(struct stembounds *sb) {
+    struct stembounds *prev, *bestprev, *test;
+    struct stembounds *head=NULL, *last = NULL;
+    struct stembounds dummy;
+    double best;
+
+    dummy.next = sb;
+    while ( dummy.next!=NULL ) {
+	bestprev = &dummy;
+	best = bestprev->next->tend - bestprev->next->tstart;
+	for ( prev = dummy.next, test = prev->next; test!=NULL; prev = test, test=test->next )
+	    if ( test->tend-test->tstart > best ) {
+		best = test->tend-test->tstart;
+		bestprev = prev;
+	    }
+	test = bestprev->next;
+	bestprev->next = test->next;
+	if ( last==NULL )
+	    head = test;
+	else
+	    last->next = test;
+	last = test;
+	test->next = NULL;
+    }
+return( head );
+}
+
+struct tstem {
+    double t;
+    struct stemdata *stem;
+    int isr;
+};
+
+static void tstemExpand(struct tstem *ta,int cnt, int by) {
+    int i;
+
+    for ( i=cnt+by-1; i>=by; --i )
+	ta[i] = ta[i-by];
+}
+
+static void AttachSplineBitsToStems(struct splinesteminfo *ssi,int cnt) {
+    int i,j;
+    int tcnt, tmax=24;
+    struct stembounds *head, *test;
+    struct tstem *ta;
+
+    ta = galloc(tmax*sizeof(struct tstem));
+
+    /* Ok, for each spline, figure out what bits of it are on what stem */
+    for ( j=0; j<cnt; ++j ) if ( ssi[j].sb!=NULL ) {
+	tcnt = 2;
+	ta[0].t = 0;
+	ta[0].stem = NULL;
+	ta[1].t = 1.0;
+	ta[1].stem = NULL;
+	head = OrderSbByTDiff(ssi[j].sb);
+	for ( test=head; test!=NULL; test=test->next ) {
+	    for ( i=0; i<tcnt-1 && test->tstart>ta[i].t; ++i );
+	    if ( test->tstart!=ta[i].t ) --i;
+	    if ( i==tcnt-1 ) {
+		IError("FigureStemLinearLengths out of order" );
+	continue;
+	    } else if ( test->tend>ta[i+1].t+.002 ) {
+		IError("FigureStemLinearLengths unexpected condition" );
+		test->tend = ta[i+1].t;
+	    }
+	    if ( test->tstart==ta[i].t && test->tend>=ta[i+1].t ) {
+		ta[i].stem = test->stem;
+		ta[i].isr = test->isr;
+	    } else if ( test->tstart==ta[i].t ) {
+		if ( tcnt+1>=tmax )
+		    ta = grealloc(ta,(tmax += 24)*sizeof(struct tstem));
+		tstemExpand(ta+i,tcnt-i,1);
+		ta[i+1].t = test->tend;
+		ta[i].stem = test->stem;
+		ta[i].isr = test->isr;
+		++tcnt;
+	    } else if ( test->tend>=ta[i+1].t ) {
+		if ( tcnt+1>=tmax )
+		    ta = grealloc(ta,(tmax += 24)*sizeof(struct tstem));
+		tstemExpand(ta+i+1,tcnt-i-1,1);
+		ta[i+1].t = test->tstart;
+		ta[i+1].stem = test->stem;
+		ta[i+1].isr = test->isr;
+		++tcnt;
+	    } else {
+		if ( tcnt+2>=tmax )
+		    ta = grealloc(ta,(tmax += 24)*sizeof(struct tstem));
+		tstemExpand(ta+i+1,tcnt-i-1,2);
+		ta[i+1].t = test->tstart;
+		ta[i+1].stem = test->stem;
+		ta[i+1].isr = test->isr;
+		ta[i+2] = ta[i];
+		ta[i+2].t = test->tend;
+		tcnt += 2;
+	    }
+	}
+	for ( ; head!=NULL; head=test ) {
+	    test=head->next;
+	    chunkfree(head,sizeof(*head));
+	}
+	/* Then add those bits to the appropriate stem */
+	for ( i=0; i<tcnt-1; ++i ) if ( ta[i].stem!=NULL ) {
+	    struct splinebits *sb = chunkalloc( sizeof( struct splinebits ));
+	    struct stemdata *stem = ta[i].stem;
+	    Spline *s = ssi[j].s;
+	    sb->s = s;
+	    sb->tstart = ta[i].t;
+	    sb->tend = ta[i+1].t;
+	    if ( sb->s->islinear ) {
+		sb->ustart = (s->splines[0].c*sb->tstart+s->splines[0].d-stem->left.x)*stem->unit.x +
+			     (s->splines[1].c*sb->tstart+s->splines[1].d-stem->left.y)*stem->unit.y;
+		sb->uend = (s->splines[0].c*sb->tend+s->splines[0].d-stem->left.x)*stem->unit.x +
+			   (s->splines[1].c*sb->tend+s->splines[1].d-stem->left.y)*stem->unit.y;
+	    } else {
+		/* It really is linear, but they've got some colinear control */
+		/*  points so we must do things the hard way */
+		BasePoint start, end;
+		start.x = ((s->splines[0].a*sb->tstart+s->splines[0].b)*sb->tstart+s->splines[0].c)*sb->tstart+s->splines[0].d;
+		start.y = ((s->splines[1].a*sb->tstart+s->splines[1].b)*sb->tstart+s->splines[1].c)*sb->tstart+s->splines[0].d;
+		end.x = ((s->splines[0].a*sb->tend+s->splines[0].b)*sb->tend+s->splines[0].c)*sb->tend+s->splines[0].d;
+		end.y = ((s->splines[1].a*sb->tend+s->splines[1].b)*sb->tend+s->splines[1].c)*sb->tend+s->splines[0].d;
+		sb->ustart = (start.x-stem->left.x)*stem->unit.x +
+			     (start.y-stem->left.y)*stem->unit.y;
+		sb->uend = (end.x-stem->left.x)*stem->unit.x +
+			   (end.y-stem->left.y)*stem->unit.y;
+	    }
+	    if ( sb->ustart>sb->uend ) {
+		double temp = sb->ustart;
+		sb->ustart = sb->uend;
+		sb->uend = temp;
+	    }
+	    if ( ta[i].isr ) {
+		sb->next = stem->rsb;
+		stem->rsb = sb;
+	    } else {
+		sb->next = stem->lsb;
+		stem->lsb = sb;
+	    }
+	}
+    }
+    free(ta);
+}
+
+static struct splinebits *OrderSplineBits(struct splinebits *sb) {
+    struct splinebits *prev, *bestprev, *test;
+    struct splinebits *head=NULL, *last = NULL;
+    struct splinebits dummy;
+    double best;
+
+    dummy.next = sb;
+    while ( dummy.next!=NULL ) {
+	bestprev = &dummy;
+	best = bestprev->next->ustart;
+	for ( prev = dummy.next, test = prev->next; test!=NULL; prev = test, test=test->next )
+	    if ( test->ustart < best ) {
+		best = test->ustart;
+		bestprev = prev;
+	    }
+	test = bestprev->next;
+	bestprev->next = test->next;
+	if ( last==NULL )
+	    head = test;
+	else
+	    last->next = test;
+	last = test;
+	test->next = NULL;
+    }
+return( head );
+}
+
+static void FigureStemLinearLengths(struct glyphdata *gd) {
+    /* Now the left and right sides will have different holes. Figure out */
+    /*  what bits are completely unholy */
+    int i, j, fcnt, fmax;
+    double (*full)[2];
+    double len;
+    struct splinebits *lsb, *rsb;
+
+    fmax = 24;
+    full = galloc(fmax*sizeof( double[2]));
+    for ( i=0; i<gd->stemcnt; ++i ) {
+	struct stemdata *stem = &gd->stems[i];
+
+    if ( stem->lsb==NULL )  j = 0;
+    if ( stem->rsb==NULL ) j = 1;
+	stem->lsb = OrderSplineBits(stem->lsb);
+	stem->rsb = OrderSplineBits(stem->rsb);
+	fcnt = 0;
+	for ( lsb = stem->lsb, rsb=stem->rsb; lsb!=NULL && rsb!=NULL; ) {
+	    if ( lsb->uend<rsb->ustart )
+		lsb = lsb->next;
+	    else if ( rsb->uend<lsb->ustart )
+		rsb = rsb->next;
+	    else if ( lsb->uend==rsb->uend ) {
+		if ( fcnt>=fmax )
+		    full = grealloc(full,(fmax+=24)*sizeof(double[2]));
+		full[fcnt][0] = lsb->ustart>rsb->ustart ? lsb->ustart : rsb->ustart;
+		full[fcnt][1] = lsb->uend;
+		++fcnt;
+		lsb = lsb->next;
+		rsb = rsb->next;
+	    } else {
+		if ( fcnt>=fmax )
+		    full = grealloc(full,(fmax+=24)*sizeof(double[2]));
+		full[fcnt][0] = lsb->ustart>rsb->ustart ? lsb->ustart : rsb->ustart;
+		if ( lsb->uend<rsb->uend ) {
+		    full[fcnt][1] = lsb->uend;
+		    lsb = lsb->next;
+		} else {
+		    full[fcnt][1] = rsb->uend;
+		    rsb = rsb->next;
+		}
+		++fcnt;
+	    }
+	}
+	stem->activecnt = fcnt;
+	if ( fcnt!=0 ) {
+	    stem->active = galloc(fcnt*sizeof(double[2]));
+	    memcpy(stem->active,full,fcnt*sizeof(double[2]));
+	    len = 0;
+	    for ( j=0; j<fcnt; ++j )
+		len += full[j][1] - full[j][0];
+	    stem->len = len;
+	} else
+	    stem->active = NULL;
+    }
+    free(full);
+}
+
+static void GDSubDivideSplines(struct glyphdata *gd) {
+    /* A line may be on several stems the bottom horizontal edge of a serifed E*/
+    /*  usually has three "stems": one for the serif (on left), one going up to*/
+    /*  the cap height (really a vertical stem, but at this point it is a pot- */
+    /*  ential horizontal stem too), and the main horizonal stem out to the    */
+    /*  right. This routine builds a data base showing which bits of the spline*/
+    /*  are used by which stem */
+    /* We return an array, an entry for every spline indexed by sp->from->ttfindex */
+    struct splinesteminfo *ssi;
+    int i, j;
+    struct pointdata *other;
+    SplinePoint *sp;
+
+    ssi = gcalloc(gd->pcnt,sizeof(struct splinesteminfo));
+    for ( i=0; i <gd->pcnt; ++i ) if ( (sp = gd->points[i].sp)!=NULL && sp->next!=NULL )
+	ssi[sp->ttfindex].s = sp->next;
+
+    for ( i=0; i <gd->stemcnt; ++i ) {
+	struct stemdata *stem = &gd->stems[i];
+
+	for ( j=0; j<stem->chunk_cnt; ++j )
+	    stem->chunks[j].ltick = stem->chunks[j].rtick = false;
+	for ( j=0; j<stem->chunk_cnt; ++j ) {
+	    struct stem_chunk *chunk = &stem->chunks[j];
+	    if ( chunk->l!=NULL && !chunk->ltick ) {
+		sp = chunk->l->sp;
+		if ( stem==chunk->l->nextstem && sp->next->knownlinear &&
+			    (other = InChunk(sp->next->to,stem,j,true))!=NULL )
+		    TickSplinesBetween(gd,ssi,chunk->l,other,stem,true);
+		if ( stem==chunk->l->prevstem && sp->prev->knownlinear &&
+			    (other = InChunk(sp->prev->from,stem,j,true))!=NULL )
+		    TickSplinesBetween(gd,ssi,chunk->l,other,stem,true);
+	    }
+	    if ( chunk->r!=NULL && !chunk->rtick ) {
+		sp = chunk->r->sp;
+		if ( stem==chunk->r->nextstem && sp->next->knownlinear &&
+			    (other = InChunk(sp->next->to,stem,j,false))!=NULL )
+		    TickSplinesBetween(gd,ssi,chunk->r,other,stem,false);
+		if ( stem==chunk->r->prevstem && sp->prev->knownlinear &&
+			    (other = InChunk(sp->prev->from,stem,j,false))!=NULL )
+		    TickSplinesBetween(gd,ssi,chunk->r,other,stem,false);
+	    }
+	}
+    }
+    AttachSplineBitsToStems(ssi,gd->pcnt);
+    free(ssi);
+    FigureStemLinearLengths(gd);
+}
+
+static void FixupT(struct stemdata *stem,struct pointdata *pd,int isnext) {
+    /* When we calculated "next/prev_e_t" we deliberately did not use pd1->me */
+    /*  (because things get hard at intersections) so our t is only an approx-*/
+    /*  imation. We can do a lot better now */
+    Spline *s;
+    Spline myline;
+    SplinePoint end1, end2;
+    double width,t,sign;
+    BasePoint pts[9];
+    double lts[10], sts[10];
+
+    width = (stem->right.x-stem->left.x)*stem->unit.y - (stem->right.y-stem->left.y)*stem->unit.x;
+    s = isnext ? pd->nextedge : pd->prevedge;
+    if ( s==NULL )
+return;
+
+    if (( stem->unit.x==1 || stem->unit.x==-1 ) && s->knownlinear )
+	t = (pd->sp->me.x-s->from->me.x)/(s->to->me.x-s->from->me.x);
+    else if (( stem->unit.y==1 || stem->unit.y==-1 ) && s->knownlinear )
+	t = (pd->sp->me.y-s->from->me.y)/(s->to->me.y-s->from->me.y);
+    else {
+	memset(&myline,0,sizeof(myline));
+	memset(&end1,0,sizeof(end1));
+	memset(&end2,0,sizeof(end2));
+	sign = ( (isnext && pd->next_is_l) || (!isnext && pd->prev_is_l)) ? 1 : -1;
+	myline.knownlinear = myline.islinear = true;
+	end1.me = pd->sp->me;
+	end2.me.x = pd->sp->me.x+1.1*sign*width*stem->l_to_r.x;
+	end2.me.y = pd->sp->me.y+1.1*sign*width*stem->l_to_r.y;
+	end1.nextcp = end1.prevcp = end1.me;
+	end2.nextcp = end2.prevcp = end2.me;
+	end1.nonextcp = end1.noprevcp = end2.nonextcp = end2.noprevcp = true;
+	end1.next = &myline; end2.prev = &myline;
+	myline.from = &end1; myline.to = &end2;
+	myline.splines[0].d = end1.me.x;
+	myline.splines[0].c = end2.me.x-end1.me.x;
+	myline.splines[1].d = end1.me.y;
+	myline.splines[1].c = end2.me.y-end1.me.y;
+	if ( SplinesIntersect(&myline,s,pts,lts,sts)<=0 )
+return;
+	t = sts[0];
+    }
+    if ( isnext )
+	pd->next_e_t = t;
+    else
+	pd->prev_e_t = t;
+}
+
+static void GDStemsFixupIntersects(struct glyphdata *gd) {
+    int i,j;
+
+    for ( i=0; i<gd->stemcnt; ++i ) {
+	struct stemdata *stem = &gd->stems[i];
+	for ( j=0; j<stem->chunk_cnt; ++j ) {
+	    struct stem_chunk *chunk = &stem->chunks[j];
+	    if ( chunk->l!=NULL && stem==chunk->l->nextstem )
+		FixupT(stem,chunk->l,true);
+	    if ( chunk->l!=NULL && stem==chunk->l->prevstem )
+		FixupT(stem,chunk->l,false);
+	    if ( chunk->r!=NULL && stem==chunk->r->nextstem )
+		FixupT(stem,chunk->r,true);
+	    if ( chunk->r!=NULL && stem==chunk->r->prevstem )
+		FixupT(stem,chunk->r,false);
+	}
+    }
 }
 
 static void GDFindMismatchedParallelStems(struct glyphdata *gd) {
@@ -928,91 +1525,111 @@ static void GDFindMismatchedParallelStems(struct glyphdata *gd) {
 }
 
 static void GDFindUnlikelyStems(struct glyphdata *gd) {
-    double width, lmaxm, lminm, rmaxm, rminm, len;
+    double width, maxm, minm, llen, rlen;
     int i,j;
     double em = (gd->sc->parent->ascent+gd->sc->parent->descent);
     SplinePoint *sp;
-    int llinear, rlinear;
+
+    GDStemsFixupIntersects(gd);
 
     GDFindMismatchedParallelStems(gd);
 
-    /* If a vertical stem has straight edges, and it is wider than tall */
+    GDSubDivideSplines(gd);
+
+    /* If a stem has straight edges, and it is wider than tall */
     /*  then it is unlikely to be a real stem */
     for ( i=0; i<gd->stemcnt; ++i ) {
 	struct stemdata *stem = &gd->stems[i];
 
 	width = stem->width;
-	len = 0;
+	rlen = llen = 0;
 	for ( j=0; j<gd->pcnt; ++j ) if ( gd->points[j].sp!=NULL )
 	    gd->points[j].sp->ticked = false;
-	for ( j=0; j<stem->chunk_cnt; ++j )
-	    stem->chunks[j].ltick = stem->chunks[j].rtick = false;
-	llinear = rlinear = false;
 	for ( j=0; j<stem->chunk_cnt; ++j ) {
 	    struct stem_chunk *chunk = &stem->chunks[j];
-	    rminm = lminm = 1e10; rmaxm = lmaxm = -1e10;
-	    if ( chunk->l!=NULL && !chunk->ltick && !(sp=chunk->l->sp)->ticked ) {
+	    minm = 1e10; maxm = -1e10;
+	    if ( chunk->l!=NULL && !(sp=chunk->l->sp)->ticked ) {
+		MinMaxStem(&sp->me,stem,&maxm,&minm);
+		if ( stem==chunk->l->nextstem )
+		    MinMaxStem(&sp->nextcp,stem,&maxm,&minm);
+		if ( stem==chunk->l->prevstem )
+		    MinMaxStem(&sp->prevcp,stem,&maxm,&minm);
+		if ( maxm!=-1e10 )
+		    llen += maxm-minm;
 		sp->ticked = true;
-		MinMaxStem(&sp->me,stem,&lmaxm,&lminm);
-		if ( stem==chunk->l->nextstem ) {
-		    MinMaxStem(&sp->nextcp,stem,&lmaxm,&lminm);
-		    if ( sp->next->knownlinear &&
-			    InChunk(sp->next->to,stem,j,true)) {
-			MinMaxStem(&sp->next->to->me,stem,&lmaxm,&lminm);
-			llinear = true;
-		    }
-		}
-		if ( stem==chunk->l->prevstem ) {
-		    MinMaxStem(&sp->prevcp,stem,&lmaxm,&lminm);
-		    if ( sp->prev->knownlinear &&
-			    InChunk(sp->prev->from,stem,j,true)) {
-			MinMaxStem(&sp->prev->from->me,stem,&lmaxm,&lminm);
-			llinear = true;
-		    }
-		}
 	    }
-	    if ( chunk->r!=NULL && !chunk->rtick && !(sp=chunk->r->sp)->ticked ) {
+	    minm = 1e10; maxm = -1e10;
+	    if ( chunk->r!=NULL && !(sp=chunk->r->sp)->ticked ) {
 		/* I still use stem->left as the base to make measurements */
 		/*  comensurate. Any normal distance becomes 0 in the dot product */
+		MinMaxStem(&sp->me,stem,&maxm,&minm);
+		if ( stem==chunk->r->nextstem )
+		    MinMaxStem(&sp->nextcp,stem,&maxm,&minm);
+		if ( stem==chunk->r->prevstem )
+		    MinMaxStem(&sp->prevcp,stem,&maxm,&minm);
+		if ( maxm!=-1e10 )
+		    rlen += maxm-minm;
 		sp->ticked = true;
-		MinMaxStem(&sp->me,stem,&rmaxm,&rminm);
-		if ( stem==chunk->r->nextstem ) {
-		    MinMaxStem(&sp->nextcp,stem,&rmaxm,&rminm);
-		    if ( sp->next->knownlinear &&
-			    InChunk(sp->next->to,stem,j,false)) {
-			MinMaxStem(&sp->next->to->me,stem,&rmaxm,&rminm);
-			rlinear = true;
-		    }
-		}
-		if ( stem==chunk->r->prevstem ) {
-		    MinMaxStem(&sp->prevcp,stem,&rmaxm,&rminm);
-		    if ( sp->prev->knownlinear &&
-			    InChunk(sp->prev->from,stem,j,false)) {
-			MinMaxStem(&sp->prev->from->me,stem,&rmaxm,&rminm);
-			rlinear = true;
-		    }
-		}
 	    }
-	    /* stems where one side is a curve and another a line aren't */
-	    /*  usually real. If we find a possibility, be very picky */
-	    if ( llinear==rlinear ) {
-		if ( lmaxm>rmaxm ) rmaxm = lmaxm;
-		else lmaxm = rmaxm;
-		if ( lminm<rminm ) rminm = lminm;
-		else lminm = rminm;
-	    }
-	    if ( rmaxm<lminm || lmaxm<rminm )
-	continue;
-	    if ( rmaxm-rminm > lmaxm-lminm && lmaxm>lminm)
-		len += lmaxm-lminm;
-	    else if ( rmaxm>rminm )
-		len += rmaxm-rminm;
 	}
-	stem->toobig =  (               width<=em/8 && 2.0*len < width ) ||
-			( width>em/8 && width<=em/4 && 1.5*len < width ) ||
-			( width>em/4 &&                    len < width );
+	llen *= 1.7; rlen *= 1.7;		/* figuring "toobig" on curved "stems" is delicate. These numbers are chosen to make period in Apple's Times.dfont work */
+	llen += stem->len; rlen += stem->len;
+	llen = (llen+rlen)/2;
+	stem->clen = llen;
+#if 0
+ printf( "width=%g llen=%g len=%g em=%g ", width, llen, stem->len, em );
+#endif
+	stem->toobig =  (               width<=em/8 && 2.0*llen < width ) ||
+			( width>em/8 && width<=em/4 && 1.5*llen < width ) ||
+			( width>em/4 &&                    llen < width );
+#if 0
+ printf( "toobig=%d\n", stem->toobig );
+#endif
     }
 }
+
+static void AddOpposite(struct glyphdata *gd,struct stem_chunk *chunk,
+	struct stemdata *stem) {
+    Spline *s;
+    double t;
+    struct pointdata **other;
+
+    if ( chunk->l!=NULL ) {
+	if ( chunk->l->nextstem == stem ) {
+	    s = chunk->l->nextedge;
+	    t = chunk->l->next_e_t;
+	} else {
+	    s = chunk->l->prevedge;
+	    t = chunk->l->prev_e_t;
+	}
+	other = &chunk->r;
+    } else {
+	if ( chunk->r->nextstem == stem ) {
+	    s = chunk->r->nextedge;
+	    t = chunk->r->next_e_t;
+	} else {
+	    s = chunk->r->prevedge;
+	    t = chunk->r->prev_e_t;
+	}
+	other = &chunk->l;
+    }
+    if ( s!=NULL && s->knownlinear ) {
+	struct pointdata *fpd = &gd->points[s->from->ttfindex];
+	struct pointdata *tpd = &gd->points[s->to->ttfindex];
+	if ( fpd->nextstem==NULL && OnStem(stem,&fpd->sp->me)) {
+	    fpd->nextstem = stem;
+	    fpd->next_is_l = chunk->l==NULL;
+	    if ( t<.5 )
+		*other = fpd;
+	}
+	if ( tpd->prevstem == NULL && OnStem(stem,&tpd->sp->me)) {
+	    tpd->prevstem = stem;
+	    tpd->prev_is_l = chunk->l==NULL;
+	    if ( t>.5 )
+		*other = tpd;
+	}
+    }
+}    
 
 struct glyphdata *GlyphDataBuild(SplineChar *sc, int only_hv) {
     struct glyphdata *gd;
@@ -1036,7 +1653,7 @@ return( NULL );
     /*  to something since freed */
     gd->ms = SSsToMContours(sc->layers[ly_fore].splines,over_remove);	/* second argument is meaningless here */
 
-    gd->pcnt = SCNumberPoints(sc);
+    gd->realcnt = gd->pcnt = SCNumberPoints(sc);
     for ( i=0, ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next, ++i );
     gd->ccnt = i;
     gd->contourends = galloc((i+1)*sizeof(int));
@@ -1055,6 +1672,20 @@ return( NULL );
     gd->sc = sc;
     gd->sf = sc->parent;
     gd->fudge = (sc->parent->ascent+sc->parent->descent)/500;
+
+    /* Create temporary point numbers for the implied points. We need this */
+    /*  for metafont if nothing else */
+    for ( ss= sc->layers[ly_fore].splines; ss!=NULL; ss = ss->next ) {
+	for ( sp = ss->first; ; ) {
+	    if ( sp->ttfindex == 0xffff )
+		sp->ttfindex = gd->pcnt++;
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==ss->first )
+	break;
+	}
+    }
 
     gd->points = gcalloc(gd->pcnt,sizeof(struct pointdata));
     for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) if ( ss->first->prev!=NULL ) {
@@ -1081,6 +1712,26 @@ return( NULL );
 	    pd->prevedge = FindMatchingEdge(gd,pd,false,only_hv);
     }
 
+#if 0
+    /* Consider the slash character. We have a diagonal stem capped with two */
+    /*  horizontal lines. From the upper right corner, a line drawn normal to*/
+    /*  the right diagonal stem will intersect the top cap, very close to the*/
+    /*  upper right corner. That isn't interesting information */
+    for ( i=0; i<gd->pcnt; ++i ) if ( gd->points[i].sp!=NULL ) {
+	struct pointdata *pd = &gd->points[i];
+	if ( pd->nextedge == pd->sp->prev && pd->next_e_t>.9 &&
+		gd->points[pd->sp->prev->from->ttfindex].prevedge == pd->sp->next ) {
+	    pd->nextedge = pd->sp->prev->from->prev;
+	    pd->next_e_t = 1;
+	}
+	if ( pd->prevedge == pd->sp->next && pd->prev_e_t<.1 &&
+		gd->points[pd->sp->next->to->ttfindex].nextedge == pd->sp->prev ) {
+	    pd->prevedge = pd->sp->next->to->next;
+	    pd->prev_e_t = 0;
+	}
+    }
+#endif
+
     /* There will never be more lines than there are points (counting next/prev as separate) */
     gd->lines = galloc(2*gd->pcnt*sizeof(struct linedata));
     gd->linecnt = 0;
@@ -1101,7 +1752,7 @@ return( NULL );
     free(gd->pspace);
 
     /* There will never be more stems than there are points (counting next/prev as separate) */
-    gd->stems = galloc(2*gd->pcnt*sizeof(struct stemdata));
+    gd->stems = gcalloc(2*gd->pcnt,sizeof(struct stemdata));
     gd->stemcnt = 0;			/* None used so far */
     for ( i=0; i<gd->pcnt; ++i ) if ( gd->points[i].sp!=NULL ) {
 	struct pointdata *pd = &gd->points[i];
@@ -1112,10 +1763,13 @@ return( NULL );
     }
     for ( i=0; i<gd->pcnt; ++i ) if ( gd->points[i].sp!=NULL ) {
 	struct pointdata *pd = &gd->points[i];
-	if ( pd->nextstem==NULL && pd->colinear )
+	if ( pd->nextstem==NULL && pd->colinear ) {
 	    pd->nextstem = pd->prevstem;
-	else if ( pd->prevstem==NULL && pd->colinear )
+	    pd->next_is_l = pd->prev_is_l;
+	} else if ( pd->prevstem==NULL && pd->colinear ) {
 	    pd->prevstem = pd->nextstem;
+	    pd->prev_is_l = pd->next_is_l;
+	}
     }
 
     FreeMonotonics(gd->ms);	gd->ms = NULL;
@@ -1123,10 +1777,8 @@ return( NULL );
     free(gd->sspace);		gd->sspace = NULL;
     free(gd->stspace);		gd->stspace = NULL;
 
-    GDFindUnlikelyStems(gd);
-
     sspace = galloc(gd->stemcnt*sizeof(struct stemdata *));
-    for ( i=j=0; i<gd->stemcnt; ++i ) if ( !gd->stems[i].toobig )
+    for ( i=j=0; i<gd->stemcnt; ++i ) /*if ( !gd->stems[i].toobig )*/
 	sspace[j++] = &gd->stems[i];
     goodcnt = j;
     qsort(sspace,goodcnt,sizeof(struct stemdata *),swidth_cmp);
@@ -1147,17 +1799,46 @@ return( NULL );
 		chunk->r = PotentialAdd(gd,stem,chunk->rpotential,chunk->rnext);
 	}
     }
+    for ( i=0; i<goodcnt; ++i ) {
+	struct stemdata *stem = sspace[i];
+	for ( j=0; j<stem->chunk_cnt; ++j ) {
+	    struct stem_chunk *chunk = &stem->chunks[j];
+	    if (( chunk->l!=NULL && chunk->r==NULL ) ||
+		    ( chunk->l==NULL && chunk->r!=NULL ))
+		AddOpposite(gd,chunk,stem);
+	}
+    }
     free(sspace);
+
+    GDFindUnlikelyStems(gd);
 
 return( gd );
 }
 
+static void SplineBitsFree(struct splinebits *sb) {
+    struct splinebits *nsb;
+
+    for ( ; sb!=NULL; sb=nsb ) {
+	nsb = sb->next;
+	chunkfree(sb,sizeof(struct splinebits));
+    }
+}
+
 void GlyphDataFree(struct glyphdata *gd) {
     int i;
+
+    /* Restore implicit points */
+    for ( i=gd->realcnt; i<gd->pcnt; ++i )
+	gd->points[i].sp->ttfindex = 0xffff;
+
     for ( i=0; i<gd->linecnt; ++i )
 	free(gd->lines[i].points);
-    for ( i=0; i<gd->stemcnt; ++i )
+    for ( i=0; i<gd->stemcnt; ++i ) {
 	free(gd->stems[i].chunks);
+	SplineBitsFree(gd->stems[i].lsb);
+	SplineBitsFree(gd->stems[i].rsb);
+	free(gd->stems[i].active);
+    }
     free(gd->lines);
     free(gd->stems);
     free(gd->contourends);
