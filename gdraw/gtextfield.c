@@ -658,7 +658,7 @@ return( true );			/* but probably best to return success */
       default:
 return( false );
     }
-    GTextFieldChanged(gt,false);
+    GTextFieldChanged(gt,-1);
 return( true );
 }
 
@@ -1635,7 +1635,7 @@ return( true );
 		GTextFieldPaste(gt,sn_primary);
 	    if ( gt->sel_start==gt->sel_end )
 		GTextField_Show(gt,gt->sel_start);
-	    GTextFieldChanged(gt,false);
+	    GTextFieldChanged(gt,-1);
 	    if ( gt->sel_start<gt->sel_end && _GDraw_InsCharHook!=NULL && !gt->donthook )
 		(_GDraw_InsCharHook)(GDrawGetDisplayOfWindow(gt->g.base),
 			gt->text[gt->sel_start]);
