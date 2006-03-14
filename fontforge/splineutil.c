@@ -1584,6 +1584,7 @@ SplinePointList *SPLCopyTranslatedHintMasks(SplinePointList *base,
     SplinePointList *spl, *spl2, *head;
     SplinePoint *spt, *spt2, *pfirst;
     real transform[6];
+    Spline *s, *first;
 
     head = SplinePointListCopy(base);
 
@@ -1600,6 +1601,11 @@ SplinePointList *SPLCopyTranslatedHintMasks(SplinePointList *base,
 	    if ( spt->next==NULL )
 	break;
 	}
+	first = NULL;
+	for ( s = spl->first->next; s!=NULL && s!=first; s=s->to->next ) {
+	    SplineRefigure(s);
+	    if ( first==NULL ) first = s;
+	}
     }
 return( head );
 }
@@ -1608,6 +1614,7 @@ static SplinePointList *_SPLCopyTransformedHintMasks(SplineChar *subsc,real tran
 	SplineChar *basesc ) {
     SplinePointList *spl, *spl2, *head, *last=NULL, *cur, *base;
     SplinePoint *spt, *spt2, *pfirst;
+    Spline *s, *first;
     real trans[6];
     RefChar *rf;
 
@@ -1625,6 +1632,11 @@ static SplinePointList *_SPLCopyTransformedHintMasks(SplineChar *subsc,real tran
 		spt->hintmask = HintMaskTransform(spt2->hintmask,transform,basesc,subsc);
 	    if ( spt->next==NULL )
 	break;
+	}
+	first = NULL;
+	for ( s = spl->first->next; s!=NULL && s!=first; s=s->to->next ) {
+	    SplineRefigure(s);
+	    if ( first==NULL ) first = s;
 	}
     }
     for ( rf=subsc->layers[ly_fore].refs; rf!=NULL; rf=rf->next ) {
