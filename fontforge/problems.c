@@ -196,12 +196,21 @@ return;
     if ( p->explaining==_("This reference has been flipped, so the paths in it are drawn backwards") ) {
 	for ( r=p->sc->layers[ly_fore].refs; r!=NULL && !r->selected; r = r->next );
 	if ( r!=NULL ) {
+	    SplineSet *ss, *spl;
 	    SCPreserveState(p->sc,false);
+	    ss = p->sc->layers[ly_fore].splines;
+	    p->sc->layers[ly_fore].splines = NULL;
 	    SCRefToSplines(p->sc,r);
 	    changed = false;
-	    p->sc->layers[ly_fore].splines = SplineSetsCorrect(p->sc->layers[ly_fore].splines,&changed);
-	    if ( changed )
-		SCCharChangedUpdate(p->sc);
+	    for ( spl = p->sc->layers[ly_fore].splines; spl!=NULL; spl=spl->next )
+		SplineSetReverse(spl);
+	    if ( p->sc->layers[ly_fore].splines!=NULL ) {
+		for ( spl = p->sc->layers[ly_fore].splines; spl->next!=NULL; spl=spl->next );
+		spl->next = ss;
+	    } else
+		p->sc->layers[ly_fore].splines = ss;
+	    changed = true;
+	    SCCharChangedUpdate(p->sc);
 	} else
 	    IError("Could not find referenc");
 return;
