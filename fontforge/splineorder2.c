@@ -594,14 +594,25 @@ return( -1 );			/* Points too close for a good approx */
 	}
 	if ( i==0 && ptcnt!=0 )
     continue;
-	for ( i=0; i<=ptcnt; ++i ) {
-	    if ( ptcnt!=0 ) {
-		data[qcnt+i-1].cp.x = (data[qcnt+i-1].cp.x*(ptcnt-i) + data2[i].cp.x*i)/ptcnt;
-		data[qcnt+i-1].cp.y = (data[qcnt+i-1].cp.y*(ptcnt-i) + data2[i].cp.y*i)/ptcnt;
-	    }
+	if ( (data2[ptcnt+1].bp.x-data2[ptcnt].bp.x)*(data2[ptcnt].cp.x-data2[ptcnt].bp.x)<0 ||
+		(data2[ptcnt+1].bp.y-data2[ptcnt].bp.y)*(data2[ptcnt].cp.y-data2[ptcnt].bp.y)<0 ) {
+	    /* data2 are bad */;
 	    if ( round_to_int ) {
-		data[qcnt+i-1].cp.x = rint( data[qcnt+i-1].cp.x );
-		data[qcnt+i-1].cp.y = rint( data[qcnt+i-1].cp.y );
+		for ( i=0; i<=ptcnt; ++i ) {
+		    data[qcnt+i-1].cp.x = rint( data[qcnt+i-1].cp.x );
+		    data[qcnt+i-1].cp.y = rint( data[qcnt+i-1].cp.y );
+		}
+	    }
+	} else {
+	    for ( i=0; i<=ptcnt; ++i ) {
+		if ( ptcnt!=0 ) {
+		    data[qcnt+i-1].cp.x = (data[qcnt+i-1].cp.x*(ptcnt-i) + data2[i].cp.x*i)/ptcnt;
+		    data[qcnt+i-1].cp.y = (data[qcnt+i-1].cp.y*(ptcnt-i) + data2[i].cp.y*i)/ptcnt;
+		}
+		if ( round_to_int ) {
+		    data[qcnt+i-1].cp.x = rint( data[qcnt+i-1].cp.x );
+		    data[qcnt+i-1].cp.y = rint( data[qcnt+i-1].cp.y );
+		}
 	    }
 	}
 	for ( i=0; i<ptcnt; ++i ) {
