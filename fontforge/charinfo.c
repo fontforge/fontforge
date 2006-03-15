@@ -5212,15 +5212,17 @@ static int CI_CharChanged(GGadget *g, GEvent *e) {
 	CharInfo *ci = GDrawGetUserData(GGadgetGetWindow(g));
 	const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(ci->gw,CID_UChar));
 	int val = *ret;
-	unichar_t *temp, ubuf[1]; char buf[10];
+	unichar_t *temp, ubuf[2]; char buf[10];
 
-	if ( ret[1]!='\0' ) {
+	if ( ret[0]=='\0' )
+return( true );
+	else if ( ret[1]!='\0' ) {
 	    gwwv_post_notice(_("Only a single character allowed"),_("Only a single character allowed"));
-	    ubuf[0] = '\0';
+	    ubuf[0] = ret[0];
+	    ubuf[1] = '\0';
 	    GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_UChar),ubuf);
 return( true );
-	} else if ( ret[0]=='\0' )
-return( true );
+	}
 
 	SetNameFromUnicode(ci->gw,CID_UName,val);
 	CI_SetNameList(ci,val);
