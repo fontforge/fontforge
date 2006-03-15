@@ -1843,7 +1843,7 @@ return;
 	    strcat(buf," ");
 	} else
 	    buf[7]='\0';
-	strcat(buf,_("Script"));
+	strcat(buf,_("writing system|Script"));
 	scriptnodes[i].label = copy(buf);
 	scriptnodes[i].build = iskern ? BuildKernScript :
 				isvkern ? BuildVKernScript :

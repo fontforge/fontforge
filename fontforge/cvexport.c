@@ -761,22 +761,22 @@ struct gfc_data {
 
 
 static GTextInfo bcformats[] = {
-    { (unichar_t *) "X Bitmap", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "BMP", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("X Bitmap"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("BMP"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
 #ifndef _NO_LIBPNG
-    { (unichar_t *) "png", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("png"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
 #endif
     { NULL }};
 
 static GTextInfo formats[] = {
-    { (unichar_t *) "EPS", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 1, 0, 1 },
-    { (unichar_t *) "XFig", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "SVG", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "PDF", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "X Bitmap", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) "BMP", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("EPS"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 1, 0, 1 },
+    { (unichar_t *) N_("XFig"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("SVG"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("PDF"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("X Bitmap"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("BMP"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
 #ifndef _NO_LIBPNG
-    { (unichar_t *) "png", NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("png"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
 #endif
     { NULL }};
 static int last_format = 0;
@@ -962,6 +962,15 @@ static int _Export(SplineChar *sc,BDFChar *bc) {
     char *ext;
     int _format, i;
     int bs = GIntGetResource(_NUM_Buttonsize), bsbigger, totwid;
+    static int done = false;
+
+    if ( !done ) {
+	for ( i=0; formats[i].text!=NULL; ++i )
+	    formats[i].text= (unichar_t *) _((char *) formats[i].text);
+	for ( i=0; bcformats[i].text!=NULL; ++i )
+	    bcformats[i].text= (unichar_t *) _((char *) bcformats[i].text);
+	done = true;
+    }
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;
