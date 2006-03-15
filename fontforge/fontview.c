@@ -4276,7 +4276,7 @@ void FontViewMenu_DisplaySubstitutions(GtkMenuItem *menuitem, gpointer user_data
 	int macfeature;
 	uint16 flags, sli;
 	uint32 tag;
-	newname = AskNameTag(_("Display S_ubstitutions..."),NULL,0,0,
+	newname = AskNameTag(_("Display Substitutions..."),NULL,0,0,
 		-1, pst_substitution,fv->sf,NULL,-2,-1);
 	if ( newname==NULL )
 return;
@@ -5606,7 +5606,7 @@ void FontViewMenu_ChangeSupplement(GtkMenuItem *menuitem, gpointer user_data) {
     if ( cidmaster==NULL )
 return;
     sprintf(buffer,"%d",cidmaster->supplement);
-    ret = gwwv_ask_string(_("_Change Supplement..."),buffer,_("Please specify a new supplement for %.20s-%.20s"),
+    ret = gwwv_ask_string(_("Change Supplement..."),buffer,_("Please specify a new supplement for %.20s-%.20s"),
 	    cidmaster->cidregistry,cidmaster->ordering);
     if ( ret==NULL )
 return;
@@ -6489,7 +6489,7 @@ static void FVMenuAddUnencoded(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     EncMap *map = fv->map;
 
     /* Add unused unencoded slots in the map */
-    ret = gwwv_ask_string(_("_Add Encoding Slots..."),"1",fv->cidmaster?_("How many CID slots do you wish to add?"):_("How many unencoded glyph slots do you wish to add?"));
+    ret = gwwv_ask_string(_("Add Encoding Slots..."),"1",fv->cidmaster?_("How many CID slots do you wish to add?"):_("How many unencoded glyph slots do you wish to add?"));
     if ( ret==NULL )
 return;
     cnt = strtol(ret,&end,10);
@@ -6682,7 +6682,7 @@ void FontViewMenu_AddEncodingName(GtkMenuItem *menuitem, gpointer user_data) {
     Encoding *enc;
 
     /* Search the iconv database for the named encoding */
-    ret = gwwv_ask_string(_("Add E_ncoding Name..."),NULL,_("Please provide the name of an encoding in the iconv database which you want in the menu."));
+    ret = gwwv_ask_string(_("Add Encoding Name..."),NULL,_("Please provide the name of an encoding in the iconv database which you want in the menu."));
     if ( ret==NULL )
 return;
     enc = FindOrMakeEncoding(ret);

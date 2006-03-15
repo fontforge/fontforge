@@ -1115,7 +1115,7 @@ GTextInfo *SFLangList(SplineFont *sf,int addfinal,SplineChar *default_script) {
 	ti[def_sli].selected = true;
     for ( k=0, j=sizeof(sli_names)/sizeof(sli_names[0])-2, bit = 1<<j; j>=0; --j, ++k, bit>>=1 ) {
 	if ( addfinal&bit ) {
-	    ti[i].text = utf82u_copy(sli_names[k]);
+	    ti[i].text = utf82u_copy(_(sli_names[k]));
 	    ti[i].userdata = (void *) (intpt) sli_ud[k];
 	    if ( sli_ud[k]==def_sli )
 		ti[i].selected = true;

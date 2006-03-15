@@ -1361,9 +1361,9 @@ return( true );
 
 static int SelectFeatureDlg(SplineFont *sf,enum selectfeaturedlg_type type) {
     struct sf_dlg d;
-    static const char *titles[] = { N_("R_emove Feature(s)..."),
-	    N_("Re_tag Feature(s)..."),
-	    N_("_Copy Feature(s) To Font...") };
+    static const char *titles[] = { N_("Remove Feature(s)..."),
+	    N_("Retag Feature(s)..."),
+	    N_("Copy Feature(s) To Font...") };
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;

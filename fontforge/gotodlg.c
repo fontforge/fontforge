@@ -482,7 +482,7 @@ int GotoChar(SplineFont *sf,EncMap *map) {
     if ( map->enc->only_1byte ) {
 	/* In one byte encodings don't bother with the range list. It won't */
 	/*  have enough entries to be useful */
-	ret = gwwv_ask_string(_("_Goto"),NULL,_("Enter the name of a glyph in the font"));
+	ret = gwwv_ask_string(_("Goto"),NULL,_("Enter the name of a glyph in the font"));
 	if ( ret==NULL )
 return(-1);
 	enc = NameToEncoding(sf,map,ret);
