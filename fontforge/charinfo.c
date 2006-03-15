@@ -3419,7 +3419,7 @@ return( true );
 		for ( pst=sf->glyphs[i]->possub; pst!=NULL; pst=pst->next )
 			if ( pst->type==pst_ligature && pst->tag==tag &&
 			    uc_strcmp(components,pst->u.lig.components)==0 ) {
-return( gwwv_ask(_("Multiple"),(const char **) buts,0,1,_("There is already a ligature made from these components,\n(named %1$.40s, at local encoding %2$d)\nIs that what you want?"),sf->glyphs[i]->name,i)==0 );
+return( gwwv_ask(_("Multiple"),(const char **) buts,0,1,_("There is already a ligature made from these components\n(named %1$.40s, at local encoding %2$d).\nIs that what you want?"),sf->glyphs[i]->name,i)==0 );
 		}
 	    }
     }
@@ -3441,7 +3441,7 @@ return( false );
 	found = SFGetChar(sf,-1,temp);
 	free(temp);
 	if ( found==NULL ) {
-	    int ret = gwwv_ask(_("Multiple"),(const char **) buts,0,1,_("The component \"%.20s\" is not in this font,\nIs that what you want?"),start);
+	    int ret = gwwv_ask(_("Multiple"),(const char **) buts,0,1,_("The component \"%.20s\" is not in this font.\nIs that what you want?"),start);
 	    *pt = ch;
 return( ret==0 );
 	}
@@ -3904,7 +3904,7 @@ static int MultipleValues(char *name, int local) {
 #elif defined(FONTFORGE_CONFIG_GTK)
     static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_CANCEL, NULL };
 #endif
-    if ( gwwv_ask(_("Multiple"),(const char **) buts,0,1,_("There is already a glyph with this Unicode encoding,\n(named %1$.40s, at local encoding %2$d)\nIs that what you want?"),name,local)==0 )
+    if ( gwwv_ask(_("Multiple"),(const char **) buts,0,1,_("There is already a glyph with this Unicode encoding\n(named %1$.40s, at local encoding %2$d).\nIs that what you want?"),name,local)==0 )
 return( true );
 
 return( false );
