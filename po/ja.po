@@ -49,6 +49,9 @@ msgstr "新規(_N)"
 msgid "New"
 msgstr "新規"
 
+msgid "_Replace"
+msgstr "上書き(_R)"
+
 msgid "Replace"
 msgstr "上書き"
 
@@ -130,6 +133,9 @@ msgstr "警告"
 msgid "_Print..."
 msgstr "印刷(_P)..."
 
+msgid "Print..."
+msgstr "印刷..."
+
 msgid "_Display..."
 msgstr "組見本を表示(_D)..."
 
@@ -149,7 +155,10 @@ msgid "Revert Gl_yph"
 msgstr "グリフを戻す(_Y)"
 
 msgid "S_ave as..."
-msgstr "ファイル名を指定して保存(_A)"
+msgstr "ファイル名を指定して保存(_A)..."
+
+msgid "Save as..."
+msgstr "ファイル名を指定して保存..."
 
 msgid "Save A_ll"
 msgstr "すべて保存(_L)"
@@ -157,8 +166,14 @@ msgstr "すべて保存(_L)"
 msgid "_Generate Fonts..."
 msgstr "フォントを出力(_G)..."
 
+msgid "Generate Fonts..."
+msgstr "フォントを出力..."
+
 msgid "Generate Mac _Family..."
 msgstr "Macファミリーを出力(_F)..."
+
+msgid "Generate Mac Family..."
+msgstr "Macファミリーを出力..."
 
 msgid "_Import..."
 msgstr "取り込み(_I)..."
@@ -214,11 +229,17 @@ msgstr "置換を戻す"
 msgid "_Goto"
 msgstr "移動(_G)"
 
+msgid "Goto"
+msgstr "移動"
+
 msgid "_Reencode"
 msgstr "エンコーディング変換(_R)"
 
 msgid "_Add Encoding Slots..."
 msgstr "エンコーディングスロットを追加(_A)..."
+
+msgid "Add Encoding Slots..."
+msgstr "エンコーディングスロットを追加..."
 
 msgid "Remove _Unused Slots"
 msgstr "未使用のスロットを削除(_U)"
@@ -231,6 +252,9 @@ msgstr "グリフの切り離し・削除(_V)..."
 
 msgid "Add E_ncoding Name..."
 msgstr "エンコーディングの名前を追加(_N)..."
+
+msgid "Add Encoding Name..."
+msgstr "エンコーディングの名前を追加..."
 
 msgid "_Compact"
 msgstr "定義済みのグリフのみ表示(_C)"
@@ -250,6 +274,9 @@ msgstr "フォントの名前リストを保存(_S)..."
 msgid "L_oad Namelist..."
 msgstr "名前リストを読み込み(_O)..."
 
+msgid "Load Namelist..."
+msgstr "名前リストを読み込み..."
+
 msgid "Rename Gl_yphs..."
 msgstr "グリフ名を変更(_Y)..."
 
@@ -258,6 +285,9 @@ msgstr "名前を指定してグリフを作成(_A)..."
 
 msgid "_Change Supplement..."
 msgstr "補遺番号を変更(_C)..."
+
+msgid "Change Supplement..."
+msgstr "補遺番号を変更..."
 
 msgid "Insert Glyph _Before..."
 msgstr "現在位置の前に挿入(_B)..."
@@ -304,8 +334,14 @@ msgstr "ルーラーを表示(R)"
 msgid "S_how H. Metrics..."
 msgstr "横書きメトリックの表示法(_H)..."
 
+msgid "Show H. Metrics..."
+msgstr "横書きメトリックの表示法..."
+
 msgid "Show _V. Metrics..."
 msgstr "縦書きメトリックの表示法(_V)..."
+
+msgid "Show V. Metrics..."
+msgstr "縦書きメトリックの表示法..."
 
 msgid "_Show ATT"
 msgstr "ATTを表示(_S)"
@@ -315,6 +351,9 @@ msgstr "ATTを表示"
 
 msgid "Display S_ubstitutions..."
 msgstr "置換グリフを表示(_U)..."
+
+msgid "Display Substitutions..."
+msgstr "置換グリフを表示..."
 
 msgid "Com_binations"
 msgstr "複合グリフを表示(_B)"
@@ -478,6 +517,9 @@ msgstr "フォント情報(_F)..."
 msgid "Find Pr_oblems..."
 msgstr "問題点を発見(_O)..."
 
+msgid "Find Problems..."
+msgstr "問題点を発見..."
+
 msgid "Get _Info..."
 msgstr "情報を得る(_I)..."
 
@@ -517,10 +559,19 @@ msgstr "変形(_T)"
 msgid "_Transform..."
 msgstr "変形(_T)..."
 
+msgid "Transform..."
+msgstr "変形..."
+
 msgid "_Point of View Projection..."
 msgstr "透視変換(_P)..."
 
+msgid "Point of View Projection..."
+msgstr "透視変換..."
+
 msgid "_Non Linear Transform..."
+msgstr "非線形の変形(_N)..."
+
+msgid "Non Linear Transform..."
 msgstr "非線形の変形(_N)..."
 
 msgid "_Expand Stroke..."
@@ -778,6 +829,9 @@ msgstr "Y座標を丸めない(_O)"
 msgid "Expor_t..."
 msgstr "書き出し(_T)..."
 
+msgid "Export..."
+msgstr "書き出し..."
+
 msgid "_Palettes"
 msgstr "パレット(_P)"
 
@@ -811,14 +865,23 @@ msgstr "両幅の空きを1:2に(_T)"
 msgid "Set _Width..."
 msgstr "幅を設定(_W)..."
 
+msgid "Set Width..."
+msgstr "幅を設定..."
+
 msgid "Set _Vertical Advance..."
 msgstr "縦書き時のグリフ幅を設定(_V)..."
 
 msgid "Set _LBearing..."
 msgstr "左サイドベアリングを設定(_L)..."
 
+msgid "Set LBearing..."
+msgstr "左サイドベアリングを設定..."
+
 msgid "Set _RBearing..."
 msgstr "右サイドベアリングを設定(_R)..."
+
+msgid "Set RBearing..."
+msgstr "右サイドベアリングを設定..."
 
 msgid "Remove Kern _Pairs"
 msgstr "カーニングペアを削除(_P)"
@@ -828,6 +891,9 @@ msgstr "縦書きカーニングペアを削除"
 
 msgid "_Merge Kern Info..."
 msgstr "カーニング情報の統合(_M)..."
+
+msgid "Merge Kern Info"
+msgstr "カーニング情報の統合"
 
 msgid "_Anchor Control..."
 msgstr "アンカーの制御(_A)..."
@@ -901,6 +967,9 @@ msgstr "組版機能(_Y)"
 msgid "_Copy Feature(s) To Font..."
 msgstr "機能をフォントにコピー(_C)..."
 
+msgid "Copy Feature(s) To Font..."
+msgstr "機能をフォントにコピー..."
+
 msgid "_Default ATT"
 msgstr "デフォルトのATT(_D)"
 
@@ -913,8 +982,14 @@ msgstr "未使用の入れ子になった機能を削除(_N)"
 msgid "R_emove Feature(s)..."
 msgstr "機能を削除(_E)..."
 
+msgid "Remove Feature(s)..."
+msgstr "機能を削除..."
+
 msgid "Re_tag Feature(s)..."
 msgstr "機能タグをつけ直す(_T)..."
+
+msgid "Retag Feature(s)..."
+msgstr "機能タグをつけ直す..."
 
 msgid "_Merge Fonts..."
 msgstr "フォントの統合(_M)..."
@@ -943,6 +1018,9 @@ msgstr "グリフのメタデータ(_M)"
 msgid "Auto _Kern..."
 msgstr "自動カーニング(_K)..."
 
+msgid "Auto Kern..."
+msgstr "自動カーニング..."
+
 msgid "Ker_n By Classes..."
 msgstr "クラス毎のカーニング(_N)..."
 
@@ -957,6 +1035,9 @@ msgstr "クラス毎の縦書きカーニング..."
 
 msgid "_Auto Width..."
 msgstr "幅の自動設定(_A)..."
+
+msgid "Auto Width..."
+msgstr "幅の自動設定..."
 
 msgid "Remove All Kern _Pairs"
 msgstr "カーニングをすべて削除(_P)"
@@ -1440,6 +1521,9 @@ msgstr "ある %s のバージョンを変更しましたが,\nTTFのNamesテー
 msgid "_Rename..."
 msgstr "名前変更(_R)..."
 
+msgid "Anchor|_New..."
+msgstr "新規(_N)..."
+
 msgid "_Edit..."
 msgstr "編集(_E)..."
 
@@ -1891,28 +1975,31 @@ msgid ""
 msgstr "ビットマップのみ埋め込み可能です. アウトライン記述は\n埋め込むことができません (フォントにビットマップが\n含まれていない場合は何も埋め込むことができません)"
 
 msgid "Serif"
-msgstr "Serif"
+msgstr "セリフ"
 
 msgid "Sans-Serif"
-msgstr "Sans-Serif"
+msgstr "サンセリフ"
 
 msgid "Monospace"
-msgstr "Monospace"
-
-msgid "Decorative"
-msgstr "Decorative"
+msgstr "等幅"
 
 msgid "Any"
-msgstr "Any"
+msgstr "任意"
 
 msgid "No Fit"
-msgstr "No Fit"
+msgstr "該当なし"
 
 msgid "Text & Display"
-msgstr "Text & Display"
+msgstr "本文および見出し用"
+
+msgid "cursive|Script"
+msgstr "スクリプト体"
+
+msgid "Decorative"
+msgstr "装飾的"
 
 msgid "Pictoral"
-msgstr "Pictoral"
+msgstr "絵文字"
 
 msgid "Cove"
 msgstr "Cove"
@@ -2418,14 +2505,23 @@ msgstr "Sy/ネオグロテスクサンセリフ"
 msgid "Sy Miscellaneous"
 msgstr "Sy/その他"
 
+msgid "Family"
+msgstr "ファミリー"
+
 msgid "Styles (SubFamily)"
 msgstr "スタイル(サブファミリー)"
+
+msgid "Copyright"
+msgstr "著作権"
 
 msgid "UniqueID"
 msgstr "UniqueID"
 
 msgid "_Version"
 msgstr "バージョン(_V)"
+
+msgid "Version"
+msgstr "バージョン"
 
 msgid "Fullname"
 msgstr "フルネーム"
@@ -3499,9 +3595,6 @@ msgid ""
 "Is that really what you want?"
 msgstr "これを行うと10個より多くのウィンドウが開かれます.\n本当に行ってよろしいですか?"
 
-msgid "Merge Kern Info"
-msgstr "カーニング情報の併合"
-
 msgid "Open Postscript Font"
 msgstr "PostScriptフォントを開く"
 
@@ -3661,7 +3754,7 @@ msgid ""
 msgstr "本当にこれらのグリフを削除してよろしいですか? この操作は取り消しできません."
 
 msgid "Please specify a new supplement for %.20s-%.20s"
-msgstr "新しい補遺番号は%.20s〜%.20sのいずれかを指定してください."
+msgstr "%.20s-%.20sの補遺番号を指定し直してください."
 
 msgid ""
 "Please provide the name of an encoding in the iconv database which you want "
@@ -3937,6 +4030,9 @@ msgstr "値で指定(_U)"
 msgid "_Ligature:"
 msgstr "合字(_L):"
 
+msgid "Only a single character allowed"
+msgstr "入力できるのは1文字だけです"
+
 msgid "Accented glyph composed of:"
 msgstr "アクセントつきグリフの構成要素:"
 
@@ -4185,7 +4281,16 @@ msgid "Overlapped Hints"
 msgstr "ヒントが重なり合っています"
 
 msgid "The hint you have just selected overlaps with <%.2f,%.2f>. You should deselect one of the two."
-msgstr "いま選択したヒントは<%.2f,%.2f>で傘なり合っています. どちらか片方を選択解除してください."
+msgstr "いま選択したヒントは<%.2f,%.2f>で重なり合っています. どちらか片方を選択解除してください."
+
+msgid "Ancient Ligatures"
+msgstr "古代の合字"
+
+msgid "Discretionary Ligatures"
+msgstr "任意使用の合字"
+
+msgid "Historic Ligatures"
+msgstr "歴史的合字"
 
 msgid "Required Ligatures"
 msgstr "必須の合字"
@@ -4193,26 +4298,14 @@ msgstr "必須の合字"
 msgid "Standard Ligatures"
 msgstr "標準の合字"
 
-msgid "Discretionary Ligatures"
-msgstr "任意使用の合字"
-
-msgid "Ancient Ligatures"
-msgstr "古代の合字"
-
-msgid "Historic Ligatures"
-msgstr "歴史的合字"
-
 msgid "Diagonal Fractions"
 msgstr "斜めの分数"
-
-msgid "Above Base Substitutions"
-msgstr "ベースライン上方の置換"
 
 msgid "Vertical Fractions"
 msgstr "縦型の分数"
 
-msgid "Akhand"
-msgstr "Akhand"
+msgid "Above Base Substitutions"
+msgstr "ベースライン上方の置換"
 
 msgid "Below Base Forms"
 msgstr "ベースライン下方の字形"
@@ -4220,11 +4313,14 @@ msgstr "ベースライン下方の字形"
 msgid "Below Base Substitutions"
 msgstr "ベースライン下方の置換"
 
+msgid "Akhand"
+msgstr "Akhand"
+
 msgid "Glyph Composition/Decomposition"
 msgstr "グリフ合成/分解"
 
 msgid "Half Forms"
-msgstr "Half Forms"
+msgstr "半字形"
 
 msgid "Halant Forms"
 msgstr "Halant Forms"
@@ -4666,6 +4762,9 @@ msgstr "マラヤーラム文字"
 
 msgid "Script|Myanmar"
 msgstr "ミャンマー文字"
+
+msgid "N'ko"
+msgstr "ン・コー文字"
 
 msgid "Ogham"
 msgstr "オガム文字"
@@ -7362,8 +7461,14 @@ msgstr "3"
 msgid "Remove En_coding..."
 msgstr "エンコーディングを削除(_C)..."
 
+msgid "Remove Encoding..."
+msgstr "エンコーディングを削除..."
+
 msgid "_Load Encoding..."
 msgstr "エンコーディングを読み込み(_L)..."
+
+msgid "Load Encoding"
+msgstr "エンコーディングを読み込み"
 
 msgid "Adobe Public Use Defs."
 msgstr "Adobe公開の外字定義"
@@ -7847,24 +7952,24 @@ msgid ""
 "commands. PostScript shouldn't care though."
 msgstr "同じパス上の2つの隣り合う点が2,3ユニットより\n近くにある場合,FontForgeの一部のコマンドで問題が生ずる\nおそれがあります.\nただし, PostScriptインタプリタには影響ありません."
 
-msgid "_X near\xc2\xb9"
-msgstr "近接する_X"
+msgid "_X near¹"
+msgstr "近接¹する_X"
 
 msgid ""
 "Allows you to check that vertical stems in several\n"
 "glyphs start at the same location."
 msgstr "いくつかのグリフの中に, 同じ位置から始まる垂直ステムがあるかどうかをチェックします."
 
-msgid "_Y near\xe2\x91\xaf"
-msgstr "近接する_Y"
+msgid "_Y near¹"
+msgstr "近接¹する_Y"
 
 msgid ""
 "Allows you to check that horizontal stems in several\n"
 "glyphs start at the same location."
 msgstr "いくつかのグリフの中に, 同じ位置から始まる水平ステムがあるかどうかをチェックします."
 
-msgid "Y near\xe2\x91\xaf _standard heights"
-msgstr "標準の高さの近くのY座標(_S)"
+msgid "Y near¹ _standard heights"
+msgstr "標準の高さの近く¹のY座標(_S)"
 
 msgid ""
 "Allows you to find points which are slightly\n"
@@ -7914,8 +8019,8 @@ msgid ""
 "hint exists without any points that lie on it."
 msgstr "Ghostviewは (おそらくその他のインタプリタも)\n点が1個も上に載っていないヒントが存在すると\n問題を生じます."
 
-msgid "_Points near\xe2\xa1\x9f hint edges"
-msgstr "ヒント端に近い点(_P)"
+msgid "_Points near¹ hint edges"
+msgstr "ヒント端に近い¹点(_P)"
 
 msgid ""
 "Often if a point is slightly off from a hint\n"
@@ -7924,8 +8029,8 @@ msgid ""
 "has the wrong width."
 msgstr "点があるヒントから僅かに離れている場合, その多くは\n1本のステムが複数の部分からなり, 一部が間違った幅を持っているのが\n原因です."
 
-msgid "Hint _Width.Near\xe2\x91\xaf"
-msgstr "ヒント幅のぶれ量(_W)"
+msgid "Hint _Width Near¹"
+msgstr "近い¹幅のヒント(_W)"
 
 msgid "Allows you to check that stems have consistant widths.."
 msgstr "ステムの幅が一貫しているかをチェックします."
@@ -8056,8 +8161,8 @@ msgid ""
 "point to make a significant difference in the shape of the curve."
 msgstr "制御点は,主たる点との距離が近すぎて曲線の形を変える\n役に立たない場合,無意味なものとされます"
 
-msgid "\xe2\x91\xaf \"Near\" means within"
-msgstr " \"近く\"と判断される距離(_N)"
+msgid "¹ \"Near\" means within"
+msgstr " ¹\"近い\"と判断される距離"
 
 msgid "Near"
 msgstr "近く"
@@ -9191,7 +9296,7 @@ msgstr "基底マーク"
 msgid "Language"
 msgstr "言語"
 
-msgid "Script"
+msgid "writing system|Script"
 msgstr "用字系"
 
 msgid "Required Feature"
@@ -9972,7 +10077,7 @@ msgstr "ベトナム語"
 msgid "Indonesian"
 msgstr "インドネシア語"
 
-msgid "Tagalog"
+msgid "Lang|Tagalog"
 msgstr "タガログ語"
 
 msgid "Malay (roman)"
@@ -12176,6 +12281,12 @@ msgstr "チベット文字"
 msgid "Could not read %s"
 msgstr "%sを読み込めませんでした"
 
+msgid "Name List:"
+msgstr "名前リスト:"
+
+msgid "Name List"
+msgstr "名前リスト"
+
 msgid "NameList base missing"
 msgstr "親名前リストが見つかりません"
 
@@ -12258,3 +12369,8 @@ msgstr "グリフ名を読み込み"
 
 msgid "No such file"
 msgstr "そのようなファイルはありません"
+
+#msgid "<no instrs>"
+#msgstr "<命令なし>"
+
+
