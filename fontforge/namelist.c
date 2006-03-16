@@ -288,7 +288,7 @@ return( 0 );
 	}
     }
     for ( i=0; i<rcnt; ++i )
-	rsc[i] = out[i]->sc;
+	rsc[i] = refs[i]->sc;
     /* alluni now means can be written as uniXXXX.XXXX.XXXX... */
     for ( i=0; i<rcnt; ++i ) {
 	if ( refs[i]->sc->unicodeenc>0x10000 ) {
