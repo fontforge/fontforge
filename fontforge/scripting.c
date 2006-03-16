@@ -460,7 +460,7 @@ static void bAskUser(Context *c) {
     } else {
 	char *t1, *t2, *ret;
 	if ( use_utf8_in_script ) {
-	    ret = gwwv_ask_string(quest,def,"%s", t1);
+	    ret = gwwv_ask_string(quest,def,"%s", quest);
 	} else {
 	    t1 = latin1_2_utf8_copy(quest);
 	    ret = gwwv_ask_string(t1,t2=latin1_2_utf8_copy(def),"%s", t1);
