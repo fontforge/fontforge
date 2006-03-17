@@ -592,13 +592,13 @@ return( -1 );			/* Points too close for a good approx */
 	    }
 	    data2[ptcnt-i].bp = mid;
 	}
-	if ( i==0 && ptcnt!=0 )
+	if ( i==0 )
     continue;
 	if ( (data2[ptcnt+1].bp.x-data2[ptcnt].bp.x)*(data2[ptcnt].cp.x-data2[ptcnt].bp.x)<0 ||
 		(data2[ptcnt+1].bp.y-data2[ptcnt].bp.y)*(data2[ptcnt].cp.y-data2[ptcnt].bp.y)<0 ) {
 	    /* data2 are bad ... don't use them */;
-	} else if ( (data[qcnt].bp.x-data[qcnt+1].bp.x)*(data[qcnt].cp.x-data[qcnt+1].bp.x)<0 ||
-		(data[qcnt].bp.y-data[qcnt+1].bp.y)*(data[qcnt].cp.y-data[qcnt+1].bp.y)<0 ) {
+	} else if ( (data[qcnt-1].bp.x-data[qcnt].bp.x)*(data[qcnt-1].cp.x-data[qcnt].bp.x)<0 ||
+		(data[qcnt-1].bp.y-data[qcnt].bp.y)*(data[qcnt-1].cp.y-data[qcnt].bp.y)<0 ) {
 	    /* data are bad */;
 	    for ( i=0; i<=ptcnt; ++i ) {
 		data[qcnt+i-1].cp = data2[i].cp;
