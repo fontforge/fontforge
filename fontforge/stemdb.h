@@ -54,6 +54,8 @@ struct glyphdata {
     DBounds size;
     struct pointdata **pspace;
     struct stembundle *bundles;
+
+    int only_hv;
 };
 
 struct pointdata {
