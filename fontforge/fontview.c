@@ -4041,7 +4041,7 @@ void FVApplySubstitution(FontView *fv,uint32 script, uint32 lang, uint32 tag) {
 	    /*  we are about to replace */
 	    SCPreserveState(sc,2);
 	    SCFreeMostContents(sc);
-	    sprintf(namebuf,"NameMe-%d", sc->orig_pos);
+	    sprintf(namebuf,"NameMe.%d", sc->orig_pos);
 	    sc->name = copy(namebuf);
 	    sc->namechanged = true;
 	    sc->unicodeenc = -1;
@@ -8286,10 +8286,10 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,EncMap *map,int i) {
 	    dummy->name = ".notdef";
 	else*/ {
 	    int j;
-	    sprintf( namebuf, "NameMe-%d", i);
+	    sprintf( namebuf, "NameMe.%d", i);
 	    j=0;
 	    while ( SFFindExistingSlot(sf,-1,namebuf)!=-1 )
-		sprintf( namebuf, "NameMe-%d.%d", i, ++j);
+		sprintf( namebuf, "NameMe.%d.%d", i, ++j);
 	    dummy->name = namebuf;
 	}
     }
