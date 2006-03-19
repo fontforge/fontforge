@@ -2579,17 +2579,7 @@ Spline *SplineAddPointsOfInflection(Spline *s) {
     forever {
 	if ( s->knownlinear )
 return( s );
-	cnt = 0;
-	if ( s->splines[0].a!=0 ) {
-	    ts[cnt] = splines[0].b/(3*splines[0].a);
-	    if ( ts[cnt]>.001 || ts[cnt]<.999 )
-		++cnt;
-	}
-	if ( s->splines[1].a!=0 ) {
-	    ts[cnt] = splines[1].b/(3*splines[1].a);
-	    if ( ts[cnt]>.001 || ts[cnt]<.999 )
-		++cnt;
-	}
+	cnt = Spline2DFindPointsOfInflection(s,ts);
 	if ( cnt==0 )
 return( s );
 	if ( cnt==2 && ts[0]>ts[1] )
@@ -3583,7 +3573,7 @@ SplineSet *SplineSetsCorrect(SplineSet *base,int *changed) {
 		    !(i>0 && es.interesting[i-1]) && !(i>0 && es.edges[i-1]!=NULL) &&
 		    !(i<es.cnt-1 && es.edges[i+1]!=NULL) &&
 		    !(i<es.cnt-1 && es.interesting[i+1]))	/* interesting things happen when we add (or remove) entries */
-	continue;			/* and where we have points of inflection */
+	continue;			/* and where we have extrema */
 	    for ( apt=active; apt!=NULL; apt = e) {
 		check_cnt += SSCheck(base,apt,true,&es,changed);
 		winding = apt->up?1:-1;

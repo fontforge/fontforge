@@ -115,7 +115,7 @@ static Monotonic *SplineToMonotonic(Spline *s,double startt,double endt,
 		+ s->splines[1].d;
     if ( (real) (((start.x+end.x)/2)==start.x || (real) ((start.x+end.x)/2)==end.x) &&
 	    (real) (((start.y+end.y)/2)==start.y || (real) ((start.y+end.y)/2)==end.y) ) {
-	/* The distance between the two points of inflection is so small */
+	/* The distance between the two extrema is so small */
 	/*  as to be unobservable. In other words we'd end up with a zero*/
 	/*  length spline */
 	if ( endt==1.0 && last!=NULL && last->s==s )

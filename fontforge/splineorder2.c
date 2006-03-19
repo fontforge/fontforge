@@ -406,7 +406,7 @@ return( sp );
 }
 
 static SplinePoint *__ttfApprox(Spline *ps,real tmin, real tmax, SplinePoint *start) {
-    real inflect[2];
+    double inflect[2];
     int i=0;
 #if 1
     SplinePoint *end;
@@ -427,18 +427,10 @@ return( end );
 /* Hmm. With my algorithem, checking for points of inflection actually makes */
 /*  things worse. It uses more points and the splines don't join as nicely */
 /* However if we get a bad match (a line) in the normal approx, then check */
+/*  Err... I was computing POI incorrectly. Above statement might not be correct*/
     /* no points of inflection in quad splines */
 
-    if ( ps->splines[0].a!=0 ) {
-	inflect[i] = -ps->splines[0].b/(3*ps->splines[0].a);
-	if ( inflect[i]>tmin && inflect[i]<tmax )
-	    ++i;
-    }
-    if ( ps->splines[1].a!=0 ) {
-	inflect[i] = -ps->splines[1].b/(3*ps->splines[1].a);
-	if ( inflect[i]>tmin && inflect[i]<tmax )
-	    ++i;
-    }
+    i = Spline2DFindPointsOfInflection(ps, inflect);
     if ( i==2 ) {
 	if ( RealNearish(inflect[0],inflect[1]) )
 	    --i;
@@ -716,10 +708,7 @@ return( CvtDataToSplines(data,1,qcnt,start));
     cnt = 0;
     /* cnt = Spline2DFindExtrema(ps,magicpoints);*/
 
-    if ( ps->splines[0].a!=0 )
-	magicpoints[cnt++] = -ps->splines[0].b/(3*ps->splines[0].a);
-    if ( ps->splines[1].a!=0 )
-	magicpoints[cnt++] = -ps->splines[1].b/(3*ps->splines[1].a);
+    cnt += Spline2DFindPointsOfInflection(ps,magicpoints+cnt);
 
     /* remove points outside range */
     for ( i=0; i<cnt; ++i ) {

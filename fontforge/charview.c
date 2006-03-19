@@ -724,13 +724,7 @@ static void CVMarkInterestingLocations(CharView *cv, GWindow pixmap,
 	    ecnt = cnt = Spline2DFindExtrema(s,interesting);
 
 	if ( cv->markpoi ) {
-	    if ( s->splines[0].a!=0 )
-		interesting[cnt++] = -s->splines[0].b/(3*s->splines[0].a);
-	    if ( s->splines[1].a!=0 ) {
-		interesting[cnt] = -s->splines[1].b/(3*s->splines[1].a);
-		if ( interesting[cnt]>0 && interesting[cnt]<1.0 )
-		    ++cnt;
-	    }
+	    cnt += Spline2DFindPointsOfInflection(s,interesting+cnt);
 	}
 	r.width = r.height = 9;
 	for ( i=0; i<cnt; ++i ) if ( interesting[i]>0 && interesting[i]<1.0 ) {

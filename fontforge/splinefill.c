@@ -356,9 +356,9 @@ static void AddSpline(EdgeList *es, Spline *sp ) {
     real fm, tm;
     Spline1D *msp = &sp->splines[es->major], *osp = &sp->splines[es->other];
 
-    /* Find the points of inflection on the curve discribing y behavior */
+    /* Find the points of extrema on the curve discribing y behavior */
     if ( !RealNear(msp->a,0) ) {
-	/* cubic, possibly 2 inflections (possibly none) */
+	/* cubic, possibly 2 extrema (possibly none) */
 	b2_fourac = 4*msp->b*msp->b - 12*msp->a*msp->c;
 	if ( b2_fourac>=0 ) {
 	    b2_fourac = sqrt(b2_fourac);
@@ -389,10 +389,10 @@ return;		/* Pretend it's horizontal, ignore it */
 	    }
 	}
     } else if ( !RealNear(msp->b,0) ) {
-	/* Quadratic, at most one inflection */
+	/* Quadratic, at most one extremum */
 	t1 = -msp->c/(2.0*msp->b);
     } else if ( !RealNear(msp->c,0) ) {
-	/* linear, no points of inflection */
+	/* linear, no points of extrema */
     } else {
 	sp->ishorvert = true;
 	if ( es->genmajoredges )
@@ -416,7 +416,7 @@ return;		/* Horizontal line, ignore it */
     }
     AddEdge(es,sp,t,1.0);
     if ( es->interesting ) {
-	/* Also store up points of inflection in X as interesting (we got the endpoints, just internals now)*/
+	/* Also store up points of extrema in X as interesting (we got the endpoints, just internals now)*/
 	double ot1, ot2;
 	int mpos;
 	SplineFindExtrema(osp,&ot1,&ot2);

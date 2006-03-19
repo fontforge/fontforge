@@ -3308,11 +3308,53 @@ int Spline2DFindExtrema(const Spline *sp, double extrema[4] ) {
 return( i );
 }
 
-/* Ok, if the above routine finds a point of inflection that less than 1 unit */
-/*  from an endpoint or another point of inflection, then many things are */
+int Spline2DFindPointsOfInflection(const Spline *sp, double poi[2] ) {
+    int cnt=0;
+    double a, b, c, b2_fourac, t;
+    /* A POI happens when d2 y/dx2 is zero. This is not the same as d2y/dt2 / d2x/dt2 */
+    /* d2 y/dx^2 = d/dt ( dy/dt / dx/dt ) / dx/dt */
+    /*		 = ( (dx/dt) * d2 y/dt2 - ((dy/dt) * d2 x/dt2) )/ (dx/dt)^3 */
+    /* (3ax*t^2+2bx*t+cx) * (6ay*t+2by) - (3ay*t^2+2by*t+cy) * (6ax*t+2bx) == 0 */
+    /* (3ax*t^2+2bx*t+cx) * (3ay*t+by) - (3ay*t^2+2by*t+cy) * (3ax*t+bx) == 0 */
+    /*   9*ax*ay*t^3 + (3ax*by+6bx*ay)*t^2 + (2bx*by+3cx*ay)*t + cx*by	   */
+    /* -(9*ax*ay*t^3 + (3ay*bx+6by*ax)*t^2 + (2by*bx+3cy*ax)*t + cy*bx)==0 */
+    /* 3*(ax*by-ay*bx)*t^2 + 3*(cx*ay-cy*ax)*t+ (cx*by-cy*bx) == 0	   */
+
+    a = 3*(sp->splines[1].a*sp->splines[0].b-sp->splines[0].a*sp->splines[1].b);
+    b = 3*(sp->splines[0].c*sp->splines[1].a - sp->splines[1].c*sp->splines[0].a);
+    c = sp->splines[0].c*sp->splines[1].b-sp->splines[1].c*sp->splines[0].b;
+    if ( !RealNear(a,0) ) {
+	b2_fourac = b*b - 4*a*c;
+	poi[0] = poi[1] = -1;
+	if ( b2_fourac<0 )
+return( 0 );
+	b2_fourac = sqrt( b2_fourac );
+	t = (-b+b2_fourac)/(2*a);
+	if ( t>=0 && t<=1.0 )
+	    poi[cnt++] = t;
+	t = (-b-b2_fourac)/(2*a);
+	if ( t>=0 && t<=1.0 ) {
+	    if ( cnt==1 && poi[0]>t ) {
+		poi[1] = poi[0];
+		poi[0] = t;
+		++cnt;
+	    } else
+		poi[cnt++] = t;
+	}
+    } else if ( !RealNear(b,0) ) {
+	t = -c/b;
+	if ( t>=0 && t<=1.0 )
+	    poi[cnt++] = t;
+    }
+
+return( cnt );
+}
+
+/* Ok, if the above routine finds an extremum that less than 1 unit */
+/*  from an endpoint or another extremum, then many things are */
 /*  just going to skip over it, and other things will be confused by this */
 /*  so just remove it. It should be so close the difference won't matter */
-void SplineRemoveInflectionsTooClose(Spline1D *sp, double *_t1, double *_t2 ) {
+void SplineRemoveExtremaTooClose(Spline1D *sp, double *_t1, double *_t2 ) {
     double last, test;
     double t1= *_t1, t2 = *_t2;
 
