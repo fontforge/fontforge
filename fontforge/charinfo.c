@@ -4387,8 +4387,10 @@ return( false );
     ret = SCSetMetaData(ci->sc,name,val,comment);
     free(name); free(comment);
     if ( refresh_fvdi ) {
-	for ( fvs=ci->sc->parent->fv; fvs!=NULL; fvs=fvs->next )
+	for ( fvs=ci->sc->parent->fv; fvs!=NULL; fvs=fvs->next ) {
 	    GDrawRequestExpose(fvs->gw,NULL,false);	/* Redraw info area just in case this char is selected */
+	    GDrawRequestExpose(fvs->v,NULL,false);	/* Redraw character area in case this char is on screen */
+	}
     }
     if ( ret ) {
 	ci->sc->glyph_class = GGadgetGetFirstListSelectedItem(GWidgetGetControl(ci->gw,CID_GClass));
