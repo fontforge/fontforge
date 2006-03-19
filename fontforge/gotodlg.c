@@ -316,8 +316,11 @@ int NameToEncoding(SplineFont *sf,EncMap *map,const char *name) {
     const char *upt = name;
 
     ch = utf8_ildb(&upt);
-    if ( *upt=='\0' )
-return( SFFindSlot(sf,map,ch,NULL));
+    if ( *upt=='\0' ) {
+	enc = SFFindSlot(sf,map,ch,NULL);
+	if ( enc!=-1 )
+return( enc );
+    }
 
     enc = uni = -1;
 	
