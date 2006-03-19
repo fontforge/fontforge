@@ -847,7 +847,7 @@ static GTextInfo ttfnameids[] = {
     { (unichar_t *) N_("Preferred Family"), NULL, 0, 0, (void *) 16, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Preferred Styles"), NULL, 0, 0, (void *) 17, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Compatable Full"), NULL, 0, 0, (void *) 18, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("_Sample Text"), NULL, 0, 0, (void *) 19, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Sample Text"), NULL, 0, 0, (void *) 19, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("CID findfont Name"), NULL, 0, 0, (void *) 20, NULL, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
 
