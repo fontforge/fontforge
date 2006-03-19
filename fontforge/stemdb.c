@@ -32,7 +32,7 @@
 static const double slope_error = .05;
     /* If the dot vector of a slope and the normal of another slope is less */
     /*  than this error, then we say they are close enough to be colinear */
-static const double dist_error_hv = 1;
+static const double dist_error_hv = 3;
 static const double dist_error_diag = 6;
     /* It's easy to get horizontal/vertical lines aligned properly */
     /* it is more difficult to get diagonal ones done */
@@ -586,7 +586,7 @@ static int OnStem(struct stemdata *stem,BasePoint *test) {
 return( true );
 
     off = (test->x-stem->right.x)*dir->y - (test->y-stem->right.y)*dir->x;
-    if ( off<dist_error && off>-dist_error )
+    if ( off<=dist_error && off>=-dist_error )
 return( true );
 
 return( false );
@@ -663,7 +663,7 @@ return( stem );
 static int ParallelToDir(SplinePoint *sp,int checknext, BasePoint *dir,
 	BasePoint *opposite,BasePoint *base) {
     BasePoint n, o;
-    double len;
+    double len, err;
 
     if ( checknext ) {
 	if ( sp->next!=NULL && sp->next->knownlinear ) {
@@ -679,8 +679,6 @@ return( false );
 	len = sqrt(len);
 	n.x /= len;
 	n.y /= len;
-	if ( !UnitsParallel(&n,dir))
-return( false );
     } else {
 	if ( sp->prev!=NULL && sp->prev->knownlinear ) {
 	    n.x = sp->prev->from->me.x - sp->me.x;
@@ -695,7 +693,13 @@ return( false );
 	len = sqrt(len);
 	n.x /= len;
 	n.y /= len;
-	if ( !UnitsParallel(&n,dir))
+    }
+    err = n.x*dir->y - n.y*dir->x;
+    if ( dir->x==0 || dir->y==0 ) {
+	if ( err>slope_error || err<-slope_error )
+return( false );
+    } else {
+	if ( err>2*slope_error || err<-2*slope_error )
 return( false );
     }
 
@@ -1334,8 +1338,6 @@ static void FigureStemLinearLengths(struct glyphdata *gd) {
     for ( i=0; i<gd->stemcnt; ++i ) {
 	struct stemdata *stem = &gd->stems[i];
 
-    if ( stem->lsb==NULL )  j = 0;
-    if ( stem->rsb==NULL ) j = 1;
 	stem->lsb = OrderSplineBits(stem->lsb);
 	stem->rsb = OrderSplineBits(stem->rsb);
 	fcnt = 0;
@@ -1407,19 +1409,27 @@ static void GDSubDivideSplines(struct glyphdata *gd) {
 	    if ( chunk->l!=NULL && !chunk->ltick ) {
 		sp = chunk->l->sp;
 		if ( stem==chunk->l->nextstem && sp->next->knownlinear &&
-			    (other = InChunk(sp->next->to,stem,j,true))!=NULL )
+			    ((other = InChunk(sp->next->to,stem,j,true))!=NULL ||
+			     (sp->next->to->ttfindex!=0xffff &&
+			      (other = &gd->points[ sp->next->to->ttfindex ])!=NULL)) )
 		    TickSplinesBetween(gd,ssi,chunk->l,other,stem,true);
 		if ( stem==chunk->l->prevstem && sp->prev->knownlinear &&
-			    (other = InChunk(sp->prev->from,stem,j,true))!=NULL )
+			    ((other = InChunk(sp->prev->from,stem,j,true))!=NULL ||
+			     (sp->prev->from->ttfindex!=0xffff &&
+			      (other = &gd->points[ sp->prev->from->ttfindex ])!=NULL)) )
 		    TickSplinesBetween(gd,ssi,chunk->l,other,stem,true);
 	    }
 	    if ( chunk->r!=NULL && !chunk->rtick ) {
 		sp = chunk->r->sp;
 		if ( stem==chunk->r->nextstem && sp->next->knownlinear &&
-			    (other = InChunk(sp->next->to,stem,j,false))!=NULL )
+			    ((other = InChunk(sp->next->to,stem,j,false))!=NULL ||
+			     (sp->next->to->ttfindex!=0xffff &&
+			      (other = &gd->points[ sp->next->to->ttfindex ])!=NULL)) )
 		    TickSplinesBetween(gd,ssi,chunk->r,other,stem,false);
 		if ( stem==chunk->r->prevstem && sp->prev->knownlinear &&
-			    (other = InChunk(sp->prev->from,stem,j,false))!=NULL )
+			    ((other = InChunk(sp->prev->from,stem,j,false))!=NULL ||
+			     (sp->prev->from->ttfindex!=0xffff &&
+			      (other = &gd->points[ sp->prev->from->ttfindex ])!=NULL)) )
 		    TickSplinesBetween(gd,ssi,chunk->r,other,stem,false);
 	    }
 	}
@@ -1756,9 +1766,9 @@ return( NULL );
     gd->stemcnt = 0;			/* None used so far */
     for ( i=0; i<gd->pcnt; ++i ) if ( gd->points[i].sp!=NULL ) {
 	struct pointdata *pd = &gd->points[i];
-	if ( pd->nextedge!=NULL && pd->nextstem==NULL )
+	if ( pd->nextedge!=NULL /*&& pd->nextstem==NULL*/ )
 	    BuildStem(gd,pd,true);
-	if ( pd->prevedge!=NULL && pd->prevstem==NULL )
+	if ( pd->prevedge!=NULL /*&& pd->prevstem==NULL*/ )
 	    BuildStem(gd,pd,false);
     }
     for ( i=0; i<gd->pcnt; ++i ) if ( gd->points[i].sp!=NULL ) {
