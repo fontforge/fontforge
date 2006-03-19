@@ -3007,7 +3007,8 @@ static StemInfo *GDFindStems(struct glyphdata *gd, int major) {
 	stem = &gd->stems[i];
 	if ( stem->toobig )
     continue;
-	if (( stem->unit.x==0 && major==1 ) || ( stem->unit.y==0 && major==0 )) {
+	if ((( stem->unit.y>.99 || stem->unit.y<-.99) && major==1 ) ||
+		(( stem->unit.x>.99 || stem->unit.x<-.99) && major==0 )) {
 	    double l = (&stem->left.x)[other], r = (&stem->right.x)[other];
 	    int j, hasl=false, hasr=false;
 	    for ( j=0; j<stem->chunk_cnt; ++j ) {

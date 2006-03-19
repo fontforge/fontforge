@@ -32,8 +32,8 @@
 static const double slope_error = .05;
     /* If the dot vector of a slope and the normal of another slope is less */
     /*  than this error, then we say they are close enough to be colinear */
-static const double dist_error_hv = 3;
-static const double dist_error_diag = 6;
+static double dist_error_hv = 3;
+static double dist_error_diag = 6;
     /* It's easy to get horizontal/vertical lines aligned properly */
     /* it is more difficult to get diagonal ones done */
     /* The "A" glyph in Apple's Times.dfont(Roman) is off by 6 in one spot */
@@ -75,9 +75,9 @@ return;
 	pd->nextlen = len;
 	pd->nextunit.x /= len;
 	pd->nextunit.y /= len;
-	if ( pd->nextunit.x<.03 && pd->nextunit.x>-.03 ) {
+	if ( pd->nextunit.x<slope_error && pd->nextunit.x>-slope_error ) {
 	    pd->nextunit.x = 0; pd->nextunit.y = pd->nextunit.y>0 ? 1 : -1;
-	} else if ( pd->nextunit.y<.03 && pd->nextunit.y>-.03 ) {
+	} else if ( pd->nextunit.y<slope_error && pd->nextunit.y>-slope_error ) {
 	    pd->nextunit.y = 0; pd->nextunit.x = pd->nextunit.x>0 ? 1 : -1;
 	}
 	if ( pd->nextunit.y==0 ) pd->next_hor = true;
@@ -106,9 +106,9 @@ return;
 	pd->prevlen = len;
 	pd->prevunit.x /= len;
 	pd->prevunit.y /= len;
-	if ( pd->prevunit.x<.03 && pd->prevunit.x>-.03 ) {
+	if ( pd->prevunit.x<slope_error && pd->prevunit.x>-slope_error ) {
 	    pd->prevunit.x = 0; pd->prevunit.y = pd->prevunit.y>0 ? 1 : -1;
-	} else if ( pd->prevunit.y<.03 && pd->prevunit.y>-.03 ) {
+	} else if ( pd->prevunit.y<slope_error && pd->prevunit.y>-slope_error ) {
 	    pd->prevunit.y = 0; pd->prevunit.x = pd->prevunit.x>0 ? 1 : -1;
 	}
 	if ( pd->prevunit.y==0 ) pd->prev_hor = true;
@@ -292,18 +292,23 @@ static Spline *FindMatchingHVEdge(struct glyphdata *gd, struct pointdata *pd,
     Monotonic *m;
     int winding, nw, i,j;
     struct monotonic **space;
+    BasePoint *dir, d;
 
     /* Things are difficult if we go exactly through the point. Move off */
     /*  to the side a tiny bit and hope that doesn't matter */
     if ( is_next ) {
 	s = pd->sp->next;
 	t = .001;
-	which = pd->next_ver;
+	dir = &pd->nextunit;
     } else {
 	s = pd->sp->prev;
 	t = .999;
-	which = pd->prev_ver;
+	dir = &pd->prevunit;
     }
+    if ( (d.x = dir->x)<0 ) d.x = -d.x;
+    if ( (d.y = dir->y)<0 ) d.y = -d.y;
+    which = d.x<d.y;		/* closer to vertical */
+
     if ( s==NULL )		/* Somehow we got an open contour? */
 return( NULL );
     test = ((s->splines[which].a*t+s->splines[which].b)*t+s->splines[which].c)*t+s->splines[which].d;
@@ -356,11 +361,16 @@ static Spline *FindMatchingEdge(struct glyphdata *gd, struct pointdata *pd,
     double t1,t2, t;
     Spline *s;
 
-    if (( is_next && ((pd->nextunit.y>-.03 && pd->nextunit.y<.03) || (pd->nextunit.x>-.03 && pd->nextunit.x<.03))) ||
-	    ( !is_next && ((pd->prevunit.y>-.03 && pd->prevunit.y<.03) || (pd->prevunit.x>-.03 && pd->prevunit.x<.03))))
+    if ( ( is_next && (pd->next_hor || pd->next_ver)) ||
+	    ( !is_next && ( pd->prev_hor || pd->prev_ver )) )
 return( FindMatchingHVEdge(gd,pd,is_next,other_t));
-    else if ( only_hv )
+    if ( only_hv ) {
+	if (( is_next && ((pd->nextunit.y>-3*slope_error && pd->nextunit.y<3*slope_error) || (pd->nextunit.x>-3*slope_error && pd->nextunit.x<3*slope_error))) ||
+		( !is_next && ((pd->prevunit.y>-3*slope_error && pd->prevunit.y<3*slope_error) || (pd->prevunit.x>-3*slope_error && pd->prevunit.x<3*slope_error))))
+	    /* Close to vertical/horizontal */;
+	else 
 return( NULL );
+    }
 
     if ( gd->stspace==NULL ) {
 	int i, cnt;
@@ -603,6 +613,14 @@ static struct stemdata *FindStem(struct glyphdata *gd,struct pointdata *pd,
     if ( match->ttfindex==0xffff )
 return( NULL );			/* Point doesn't really exist */
 
+    if ( gd->only_hv &&
+	    (dir->x<-slope_error || dir->x>slope_error) &&
+	    (dir->y<-slope_error || dir->y>slope_error)) {
+	/* Not close enough to hor/vert, unless it's a serif */
+	if ( pd->sp->next->to!=match && pd->sp->prev->from!=match )
+return( NULL );
+    }
+
     pd2 = &gd->points[match->ttfindex];
 
     mdir = is_next2 ? &pd2->nextunit : &pd2->prevunit;
@@ -610,9 +628,9 @@ return( NULL );			/* Point doesn't really exist */
 return( NULL );
     err = mdir->x*dir->y - mdir->y*dir->x;
     if (( err<slope_error && err>-slope_error ) ||
-	    (( dir->x==0 || dir->y==0 ) &&
+	    (( dir->x>.99 || dir->x<-.99 || dir->y>.99 || dir->y<-.99 ) &&
 	       (pd->sp->next->to==match || pd->sp->prev->from==match) &&
-	       err<2*slope_error && err>-2*slope_error )) {
+	       err<3*slope_error && err>-3*slope_error )) {
 	    /* Special check for cm serifs */
 	stem = is_next2 ? pd2->nextstem : pd2->prevstem;
 	if ( stem!=NULL && OnStem(stem,&pd->sp->me))
@@ -623,6 +641,29 @@ return( stem );
 	    if ( err<slope_error && err>-slope_error &&
 		    OnStem(&gd->stems[j],&pd->sp->me) && OnStem(&gd->stems[j],&pd2->sp->me)) {
 return( &gd->stems[j] );
+	    }
+	}
+	if ( dir->y>.99 || dir->y<-.99 ) {
+	    for ( j=0; j<gd->stemcnt; ++j ) {
+		if ( (gd->stems[j].unit.y>.99 || gd->stems[j].unit.y<-.99) &&
+			((match->me.x==gd->stems[j].left.x && pd->sp->me.x==gd->stems[j].right.x) ||
+			 (match->me.x==gd->stems[j].right.x && pd->sp->me.x==gd->stems[j].left.x))) {
+		    gd->stems[j].unit.x = gd->stems[j].l_to_r.y = 0;
+		    gd->stems[j].unit.y = ( gd->stems[j].unit.y*dir->y<0 ) ? -1 : 1;
+		    gd->stems[j].l_to_r.x = gd->stems[j].unit.y;
+return( &gd->stems[j] );
+		}
+	    }
+	} else if ( dir->x>.99 || dir->x<-.99 ) {
+	    for ( j=0; j<gd->stemcnt; ++j ) {
+		if (( gd->stems[j].unit.x>.99 || gd->stems[j].unit.x<-.99 ) &&
+			((match->me.y==gd->stems[j].left.y && pd->sp->me.y==gd->stems[j].right.y) ||
+			 (match->me.y==gd->stems[j].right.y && pd->sp->me.y==gd->stems[j].left.y))) {
+		    gd->stems[j].unit.y = gd->stems[j].l_to_r.x = 0;
+		    gd->stems[j].unit.x = ( gd->stems[j].unit.x*dir->x<0 ) ? -1 : 1;
+		    gd->stems[j].l_to_r.y = gd->stems[j].unit.x;
+return( &gd->stems[j] );
+		}
 	    }
 	}
 return( (struct stemdata *) (-1) );
@@ -661,8 +702,8 @@ return( stem );
 }
 
 static int ParallelToDir(SplinePoint *sp,int checknext, BasePoint *dir,
-	BasePoint *opposite,BasePoint *base) {
-    BasePoint n, o;
+	BasePoint *opposite,SplinePoint *basesp) {
+    BasePoint n, o, *base = &basesp->me;
     double len, err;
 
     if ( checknext ) {
@@ -695,11 +736,13 @@ return( false );
 	n.y /= len;
     }
     err = n.x*dir->y - n.y*dir->x;
-    if ( dir->x==0 || dir->y==0 ) {
-	if ( err>slope_error || err<-slope_error )
+    if (( dir->x>.99 || dir->x<-.99 || dir->y>.99 || dir->y<-.99 ) &&
+	    (sp->next->to==basesp || sp->prev->from==basesp) ) {
+	/* special check for serifs */
+	if ( err>3*slope_error || err<-3*slope_error )
 return( false );
     } else {
-	if ( err>2*slope_error || err<-2*slope_error )
+	if ( err>slope_error || err<-slope_error )
 return( false );
     }
 
@@ -915,8 +958,8 @@ return( NULL );
     opposite.x = ((other->splines[0].a*t+other->splines[0].b)*t+other->splines[0].c)*t+other->splines[0].d;
     opposite.y = ((other->splines[1].a*t+other->splines[1].b)*t+other->splines[1].c)*t+other->splines[1].d;
 
-    tp = ParallelToDir(other->to,false,dir,&opposite,&pd->sp->me);
-    fp = ParallelToDir(other->from,true,dir,&opposite,&pd->sp->me);
+    tp = ParallelToDir(other->to,false,dir,&opposite,pd->sp);
+    fp = ParallelToDir(other->from,true,dir,&opposite,pd->sp);
     if ( !tp && !fp )
 return( NULL );
 
@@ -1649,13 +1692,18 @@ struct glyphdata *GlyphDataBuild(SplineChar *sc, int only_hv) {
     Monotonic *m;
     int cnt, goodcnt;
     struct stemdata **sspace;
+    int em = sc->parent!=NULL ? sc->parent->ascent+sc->parent->descent : 1000;
 
     /* We can't hint type3 fonts, so the only layer we care about is ly_fore */
     /* We shan't try to hint references yet */
     if ( sc->layers[ly_fore].splines==NULL )
 return( NULL );
 
+    dist_error_hv = .003*em;
+    dist_error_diag = .006*em;
+
     gd = gcalloc(1,sizeof(struct glyphdata));
+    gd->only_hv = only_hv;
 
     /* SSToMContours can clean up the splinesets (remove 0 length splines) */
     /*  so it must be called BEFORE everything else (even though logically */
