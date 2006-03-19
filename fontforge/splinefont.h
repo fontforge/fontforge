@@ -686,7 +686,7 @@ typedef struct spline {
     struct linearapprox *approx;
     /* Posible optimizations:
 	Precalculate bounding box
-	Precalculate points of inflection
+	Precalculate min/max/ points of inflection
     */
 } Spline;
 
@@ -1489,9 +1489,10 @@ extern double SplineSolve(const Spline1D *sp, real tmin, real tmax, real sought_
 extern int SplineSolveFull(const Spline1D *sp,double val, double ts[3]);
 extern void SplineFindExtrema(const Spline1D *sp, double *_t1, double *_t2 );
 extern int Spline2DFindExtrema(const Spline *sp, double extrema[4] );
+extern int Spline2DFindPointsOfInflection(const Spline *sp, double poi[2] );
 extern int SplineAtInflection(Spline1D *sp, double t );
 extern int SplineAtMinMax(Spline1D *sp, double t );
-extern void SplineRemoveInflectionsTooClose(Spline1D *sp, double *_t1, double *_t2 );
+extern void SplineRemoveExtremaTooClose(Spline1D *sp, double *_t1, double *_t2 );
 extern int NearSpline(struct findsel *fs, Spline *spline);
 extern real SplineNearPoint(Spline *spline, BasePoint *bp, real fudge);
 extern void SCMakeDependent(SplineChar *dependent,SplineChar *base);

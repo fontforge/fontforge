@@ -707,8 +707,8 @@ static void EIAddSpline(Spline *spline, EIList *el) {
     SplineFindExtrema(&spline->splines[0],&ts[1],&ts[2]);
     SplineFindExtrema(&spline->splines[1],&ts[3],&ts[4]);
     /* avoid teeny tiny segments, they just confuse us */
-    SplineRemoveInflectionsTooClose(&spline->splines[0],&ts[1],&ts[2]);
-    SplineRemoveInflectionsTooClose(&spline->splines[1],&ts[3],&ts[4]);
+    SplineRemoveExtremaTooClose(&spline->splines[0],&ts[1],&ts[2]);
+    SplineRemoveExtremaTooClose(&spline->splines[1],&ts[3],&ts[4]);
     for ( i=0; i<4; ++i ) for ( j=i+1; j<5; ++j ) {
 	if ( ts[i]>ts[j] ) {
 	    temp = ts[i];

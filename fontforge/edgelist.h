@@ -86,7 +86,7 @@ extern Edge *ActiveEdgesFindStem(Edge *apt, Edge **prev, real i);
 /* Version which is better for everything other than rasterization */
 /*  (I think) */
 typedef struct edgeinfo {
-    /* The spline is broken up at all points of inflection. So... */
+    /* The spline is broken up at all extrema. So... */
     /*  The spline between tmin and tmax is monotonic in both coordinates */
     /*  If the spline becomes vert/horizontal that will be at one of the */
     /*   end points too */
