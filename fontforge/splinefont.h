@@ -1930,6 +1930,7 @@ extern char *EnforcePostScriptName(char *old);
 extern const char *TTFNameIds(int id);
 extern const char *MSLangString(int language);
 extern void FontInfoInit(void);
+extern char *ToAbsolute(char *filename);
 
 enum Compare_Ret {	SS_DiffContourCount	= 1,
 			SS_MismatchOpenClosed	= 2,
@@ -1952,6 +1953,8 @@ enum Compare_Ret {	SS_DiffContourCount	= 1,
 
 extern enum Compare_Ret BitmapCompare(BDFChar *bc1, BDFChar *bc2, int err, int bb_err);
 extern enum Compare_Ret SSsCompare(const SplineSet *ss1, const SplineSet *ss2, real pt_err, real spline_err);
+enum font_compare_flags { fcf_exact=1, fcf_warn_not_exact=2, fcf_hinting=4 };
+extern int CompareFonts(SplineFont *sf1, SplineFont *sf2, FILE *diffs, int flags);
 
 
 # if HANYANG

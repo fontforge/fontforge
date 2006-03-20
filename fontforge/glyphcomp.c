@@ -728,3 +728,238 @@ return( ret );
 	ScriptError(c,"Too many glyphs in clipboard");
 return( ret );
 }
+
+/* ************************************************************************** */
+/* *********************** Code to compare two fonts ************************ */
+/* ************************************************************************** */
+
+struct font_diff {
+    SplineFont *sf1, *sf2;
+    FILE *diffs;
+    int flags;
+    char *name1, *name2;
+    int local_diff, diff;
+    SplineChar **matches;
+};
+
+static void GlyphDiffError(struct font_diff *fd, char *format, ... ) {
+    va_list ap;
+
+    if ( !fd->local_diff ) {
+	fprintf( fd->diffs, _(" Glyph Differences\n") );
+	fd->local_diff = fd->diff = true;
+    }
+    va_start(ap,format);
+    vfprintf(fd->diffs,format,ap);
+    va_end(ap);
+}
+
+static int SCCompareHints( SplineChar *sc1, SplineChar *sc2 ) {
+    StemInfo *h1, *h2;
+
+    for ( h1=sc1->hstem, h2=sc2->hstem; h1!=NULL && h2!=NULL; h1=h1->next, h2=h2->next )
+	if ( h1->width!=h2->width || h1->start!=h2->start )
+return( false );
+    if ( h1!=NULL || h2!=NULL )
+return( false );
+
+    for ( h1=sc1->vstem, h2=sc2->vstem; h1!=NULL && h2!=NULL; h1=h1->next, h2=h2->next )
+	if ( h1->width!=h2->width || h1->start!=h2->start )
+return( false );
+    if ( h1!=NULL || h2!=NULL )
+return( false );
+
+return( true );
+}
+
+static void fdRefCheck(struct font_diff *fd, RefChar *ref1, RefChar *ref2,
+	const char *glyph_name ) {
+    RefChar *r1, *r2;
+    int i;
+
+    for ( r2 = ref2; r2!=NULL; r2=r2->next )
+	r2->checked = false;
+
+    for ( r1 = ref1; r1!=NULL; r1=r1->next ) {
+	for ( r2 = ref2; r2!=NULL; r2=r2->next ) if ( !r2->checked ) {
+	    if ( r1->sc->unicodeenc==r1->sc->unicodeenc &&
+		    (r1->sc->unicodeenc!=-1 || strcmp(r1->sc->name,r1->sc->name)==0)) {
+		for ( i=0; i<6 &&
+		    RealNear(r1->transform[i],r2->transform[i]); ++i );
+		if ( i==6 )
+	break;
+	    }
+	}
+	if ( r2!=NULL )
+	    r2->checked = true;
+	else {
+	    for ( r2 = ref2; r2!=NULL; r2=r2->next ) if ( !r2->checked ) {
+		if ( r1->sc->unicodeenc==r1->sc->unicodeenc &&
+			(r1->sc->unicodeenc!=-1 || strcmp(r1->sc->name,r1->sc->name)==0))
+	    break;
+	    }
+	    if ( r2==NULL )
+		GlyphDiffError(fd,_("  Glyph >%s< contains a reference to %s in %s\n"),
+			glyph_name, r1->sc->name, fd->name1 );
+	    else {
+		GlyphDiffError(fd,_("  Glyph >%s< refers to %s with a different transformation matrix\n"),
+			glyph_name, r1->sc->name, fd->name1 );
+		r2->checked = true;
+	    }
+	}
+    }
+
+    for ( r2 = ref2; r2!=NULL; r2=r2->next ) if ( !r2->checked )
+	GlyphDiffError(fd,_("  Glyph >%s< contains a reference to %s in %s\n"),
+		glyph_name, r2->sc->name, fd->name2 );
+}
+
+static void SCCompare(SplineChar *sc1,SplineChar *sc2,struct font_diff *fd) {
+    int layer;
+    int val;
+
+    if ( sc1->width!=sc2->width )
+	GlyphDiffError(fd,_("  Glyph >%s< has advance width %d in %s but %d in %s\n"),
+		sc1->name, sc1->width, fd->name1, sc2->width, fd->name2 );
+    if ( sc1->vwidth!=sc2->vwidth )
+	GlyphDiffError(fd,_("  Glyph >%s< has vertical advance width %d in %s but %d in %s\n"),
+		sc1->name, sc1->vwidth, fd->name1, sc2->vwidth, fd->name2 );
+    if ( sc1->layer_cnt!=sc2->layer_cnt )
+	GlyphDiffError(fd,_("  Glyph >%s< has a different number of layers\n"),
+		sc1->name );
+    else {
+	for ( layer=ly_fore; layer<sc1->layer_cnt; ++layer ) {
+#ifdef FONTFORGE_CONFIG_TYPE3
+	    if ( sc1->layers[layer].dofill != sc2->layers[layer].dofill )
+		GlyphDiffError(fd,_("  Glyph >%s< has a different fill in layer %d\n"),
+			sc1->name, layer );
+	    if ( sc1->layers[layer].dostroke != sc2->layers[layer].dostroke )
+		GlyphDiffError(fd,_("  Glyph >%s< has a different stroke in layer %d\n"),
+			sc1->name, layer );
+#endif
+	    fdRefCheck(fd, sc1->layers[layer].refs, sc2->layers[layer].refs,
+		    sc1->name);
+	    val = SSsCompare(sc1->layers[layer].splines, sc2->layers[layer].splines,
+		    0,-1 );
+	    if ( (val&SS_NoMatch) && !(fd->flags&fcf_exact) ) {
+		val = SSsCompare(sc1->layers[layer].splines, sc2->layers[layer].splines,
+			-1,1.5 );
+		if ( !(val&SS_NoMatch) && (fd->flags&fcf_warn_not_exact) )
+		    GlyphDiffError(fd,_("  Glyph >%s< does not have splines which match exactly, but they are close\n"),
+			    sc1->name );
+	    }
+	    if ( val&SS_NoMatch ) {
+		if ( val & SS_DiffContourCount )
+		    GlyphDiffError(fd,_("  Different number of contours in glyph >%s<\n"), sc1->name);
+		else if ( val & SS_MismatchOpenClosed )
+		    GlyphDiffError(fd,_("  Open/Closed contour mismatch in glyph >%s<\n"), sc1->name);
+		else
+		    GlyphDiffError(fd,_("  Spline mismatch in glyph >%s<\n"), sc1->name);
+	    }
+	}
+    }
+    if ( ( fd->flags&fcf_hinting ) &&
+	    !CompareHintmasks( sc1->layers[ly_fore].splines,sc2->layers[ly_fore].splines ))
+	GlyphDiffError(fd,_("Hint masks differ in glyph >%s<\n"), sc1->name);
+    if ( ( fd->flags&fcf_hinting ) && !SCCompareHints( sc1,sc2 ))
+	GlyphDiffError(fd,_("Hints differ in glyph >%s<\n"), sc1->name);
+    if (( fd->flags&fcf_hinting ) && (sc1->ttf_instrs_len!=0 || sc2->ttf_instrs_len!=0)) {
+	if ( sc1->ttf_instrs_len==0 )
+	    GlyphDiffError(fd,_("Glyph >%s< in %s has no truetype instructions\n"),
+		    sc1->name, fd->name1 );
+	else if ( sc2->ttf_instrs_len==0 )
+	    GlyphDiffError(fd,_("Glyph >%s< in %s has no truetype instructions\n"),
+		    sc1->name, fd->name2 );
+	else if ( sc1->ttf_instrs_len!=sc2->ttf_instrs_len ||
+		memcmp(sc1->ttf_instrs,sc2->ttf_instrs,sc1->ttf_instrs_len)!=0 )
+	    GlyphDiffError(fd,_("Glyph >%s< has different truetype instructions\n"),
+		    sc1->name );
+    }
+}
+
+static void comparefontglyphs(struct font_diff *fd) {
+    int gid1, gid2;
+    SplineChar *sc, *sc2;
+    SplineFont *sf1 = fd->sf1, *sf2=fd->sf2;
+
+    fd->local_diff = false;
+    for ( gid1=0; gid1<sf1->glyphcnt; ++gid1 ) {
+	if ( (sc=sf1->glyphs[gid1])!=NULL && !sc->ticked ) {
+	    if ( !fd->local_diff )
+		fprintf( fd->diffs, _(" Glyphs in %s but not in %s\n"), fd->name1, fd->name2 );
+	    fd->local_diff = fd->diff = true;
+	    fprintf( fd->diffs, _("  Glyph >%s< missing from %s\n"), sc->name, fd->name2 );
+	}
+    }
+
+    fd->local_diff = false;
+    for ( gid2=0; gid2<sf2->glyphcnt; ++gid2 )
+	if ( (sc=sf2->glyphs[gid2])!=NULL && !sc->ticked ) {
+	    if ( !fd->local_diff )
+		fprintf( fd->diffs, _(" Glyphs in %s but not in %s\n"), fd->name2, fd->name1 );
+	    fd->local_diff = fd->diff = true;
+	    fprintf( fd->diffs, _("  Glyph >%s< missing from %s\n"), sc->name, fd->name1 );
+	}
+
+    if ( sf1->ascent+sf1->descent != sf2->ascent+sf2->descent ) {
+	fprintf( fd->diffs, _(" Glyph Differences\n") );
+	fprintf( fd->diffs, _("  ppem is different in the two fonts, cowardly refusing to compare glyphs\n") );
+	fd->diff = true;
+return;
+    }
+
+    fd->local_diff = false;
+    for ( gid1=0; gid1<sf1->glyphcnt; ++gid1 ) {
+	if ( (sc=sf1->glyphs[gid1])!=NULL && (sc2=fd->matches[gid1])!=NULL )
+	    SCCompare(sc,sc2,fd);
+    }
+}
+
+int CompareFonts(SplineFont *sf1, SplineFont *sf2, FILE *diffs,
+	int flags) {
+    int gid1, gid2;
+    SplineChar *sc, *sc2;
+    struct font_diff fd;
+
+    memset(&fd,0,sizeof(fd));
+    fd.sf1 = sf1; fd.sf2 = sf2; fd.diffs = diffs; fd.flags = flags;
+
+    if ( strcmp( sf1->fontname,sf2->fontname )!=0 ) {
+	fd.name1 = sf1->fontname; fd.name2 = sf2->fontname;
+    } else if ( sf1->fullname!=NULL && sf2->fullname!=NULL &&
+	    strcmp( sf1->fullname,sf2->fullname )!=0 ) {
+	fd.name1 = sf1->fullname; fd.name2 = sf2->fullname;
+    } else if ( sf1->version!=NULL && sf2->version!=NULL &&
+	    strcmp( sf1->version,sf2->version )!=0 ) {
+	fd.name1 = sf1->version; fd.name2 = sf2->version;
+    } else {
+	if ( sf1->filename==NULL )
+	    fd.name1 = sf1->origname;
+	else
+	    fd.name1 = sf1->filename;
+	if ( sf2->filename==NULL )
+	    fd.name2 = sf2->origname;
+	else
+	    fd.name2 = sf2->filename;
+    }
+
+    for ( gid2=0; gid2<sf2->glyphcnt; ++gid2 ) if ( (sc=sf2->glyphs[gid2])!=NULL )
+	sc->ticked = false;
+    for ( gid1=0; gid1<sf1->glyphcnt; ++gid1 ) if ( (sc=sf1->glyphs[gid1])!=NULL )
+	sc->ticked = false;
+    fd.matches = gcalloc(sf1->glyphcnt,sizeof(SplineChar *));
+
+    for ( gid1=0; gid1<sf1->glyphcnt; ++gid1 ) if ( (sc=sf1->glyphs[gid1])!=NULL ) {
+	sc2 = SFGetChar(sf2,sc->unicodeenc,sc->name);
+	fd.matches[gid1] = sc2;
+	if ( sc2!=NULL ) {
+	    sc2->ticked = true;
+	    sc->ticked = true;
+	}
+    }
+
+    comparefontglyphs(&fd);
+
+    free(fd.matches);
+return( fd.diff );
+}
