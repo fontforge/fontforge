@@ -6449,6 +6449,54 @@ static void bCompareGlyphs(Context *c) {
 		    comp_hints, report_errors );
 }
 
+
+static void bCompareFonts(Context *c) {
+    /* Compare the current font against the named one	     */
+    /* output to a file (used /dev/null if no output wanted) */
+    /* flags control what tests are done		     */
+    SplineFont *sf2 = NULL;
+    FILE *diffs;
+    int flags;
+    char *t, *locfilename;
+    FontView *fv;
+
+    if ( c->a.argc!=4 )
+	ScriptError( c, "Wrong number of arguments");
+    if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str || c->a.vals[3].type!=v_int )
+	ScriptError( c, "Bad type for argument");
+
+    flags = c->a.vals[3].u.ival;
+
+    if ( strcmp(c->a.vals[2].u.sval,"-")==0 )
+	diffs = stderr;
+    else
+	diffs = fopen(c->a.vals[2].u.sval,"w");
+    if ( diffs==NULL )
+	ScriptErrorString( c, "Failed to open output file", c->a.vals[2].u.sval);
+
+    t = script2utf8_copy(c->a.vals[1].u.sval);
+    locfilename = utf82def_copy(t);
+    free(t);
+    if ( *locfilename!='/' ) {
+	t = ToAbsolute(locfilename);
+	free(locfilename);
+	locfilename = t;
+    }
+    for ( fv=fv_list; fv!=NULL && sf2==NULL; fv=fv->next ) {
+	if ( fv->sf->filename!=NULL && strcmp(fv->sf->filename,locfilename)==0 )
+	    sf2 = fv->sf;
+	else if ( fv->sf->origname!=NULL && strcmp(fv->sf->origname,locfilename)==0 )
+	    sf2 = fv->sf;
+    }
+    free( locfilename );
+    if ( sf2==NULL )
+	ScriptErrorString( c, "Failed to find other font (it must be Open()ed first", c->a.vals[1].u.sval);
+
+    c->return_val.type = v_int;
+    c->return_val.u.ival = CompareFonts(c->curfv->sf, sf2, diffs, flags );
+    fclose( diffs );
+}
+
 static struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[] = {
 /* Generic utilities */
     { "Print", bPrint, 1 },
@@ -6699,6 +6747,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "GetPosSub", bGetPosSub },
     { "SetGlyphTeX", bSetGlyphTeX },
     { "CompareGlyphs", bCompareGlyphs },
+    { "CompareFonts", bCompareFonts },
     { NULL }
 };
 

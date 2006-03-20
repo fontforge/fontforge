@@ -10624,7 +10624,7 @@ return( fv->sf );
 return( NULL );
 }
 
-static char *ToAbsolute(char *filename) {
+char *ToAbsolute(char *filename) {
     char buffer[1025];
 
     GFileGetAbsoluteName(filename,buffer,sizeof(buffer));
