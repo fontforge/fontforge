@@ -71,6 +71,8 @@ struct att_dlg {
     int fh, as;
     GFont *font, *monofont;
     struct node *current;
+    enum dlg_type { dt_show_att, dt_font_comp } dlg_type;
+    FontView *fv1, *fv2;
 };
 
 static void BuildFPST(struct node *node,struct att_dlg *att);
@@ -2294,6 +2296,62 @@ static GMenuItem att_popuplist[] = {
     { NULL }
 };
 
+static FontView *FVVerify(FontView *fv) {
+    FontView *test;
+
+    for ( test= fv_list; test!=NULL && test!=fv; test=test->next );
+return( test );
+}
+
+static void FontCompActivate(struct att_dlg *att,struct node *node) {
+    char *pt, *pt2;
+    SplineChar *sc1=NULL, *sc2=NULL;
+    int size=0, depth=0;
+    BDFFont *bdf1, *bdf2;
+
+    att->fv1 = FVVerify(att->fv1);
+    att->fv2 = FVVerify(att->fv2);
+
+    pt = strchr(node->label,'|');
+    if ( pt==NULL )
+return;
+    pt2 = strchr(pt+1,'|');
+    if ( pt2==NULL )
+return;
+    *pt2 = '\0';
+    if ( att->fv1!=NULL )
+	sc1 = SFGetChar(att->fv1->sf,-1,pt+1);
+    if ( att->fv2!=NULL )
+	sc2 = SFGetChar(att->fv2->sf,-1,pt+1);
+    *pt2 = '|';
+
+    pt = strchr(node->label,'@');
+    if ( pt!=NULL ) {
+	for (pt2 = pt-1; pt2>=node->label && isdigit(*pt2); --pt2 );
+	size = strtol(pt2+1,NULL,10);
+	depth = strtol(pt+1,NULL,10);
+    }
+    if ( size!=0 && depth!=0 ) {
+	for ( bdf1 = att->fv1->sf->bitmaps; bdf1!=NULL &&
+		(bdf1->pixelsize!=size || BDFDepth(bdf1)!=depth); bdf1=bdf1->next );
+	for ( bdf2 = att->fv2->sf->bitmaps; bdf2!=NULL &&
+		(bdf2->pixelsize!=size || BDFDepth(bdf2)!=depth); bdf2=bdf2->next );
+	if ( bdf1!=NULL && sc1!=NULL && sc1->orig_pos<bdf1->glyphcnt &&
+		bdf1->glyphs[sc1->orig_pos]!=NULL )
+	    BitmapViewCreate(bdf1->glyphs[sc1->orig_pos],bdf1,att->fv1,
+		    att->fv1->map->backmap[sc1->orig_pos]);
+	if ( bdf2!=NULL && sc2!=NULL && sc2->orig_pos<bdf2->glyphcnt &&
+		bdf2->glyphs[sc2->orig_pos]!=NULL )
+	    BitmapViewCreate(bdf2->glyphs[sc2->orig_pos],bdf2,att->fv2,
+		    att->fv2->map->backmap[sc2->orig_pos]);
+    } else {
+	if ( sc1!=NULL )
+	    CharViewCreate(sc1,att->fv1,att->fv1->map->backmap[sc1->orig_pos]);
+	if ( sc2!=NULL )
+	    CharViewCreate(sc2,att->fv2,att->fv2->map->backmap[sc2->orig_pos]);
+    }
+}
+
 static void AttMouse(struct att_dlg *att,GEvent *event) {
     int l, depth, cnt;
     struct node *node;
@@ -2308,8 +2366,13 @@ return;
     ATTChangeCurrent(att,node);
     if ( event->u.mouse.y > l*att->fh+att->as ||
 	    event->u.mouse.x<5+8*depth ||
-	    event->u.mouse.x>=5+8*depth+att->as || node==NULL )
-return;			/* Not in +/- rectangle */
+	    event->u.mouse.x>=5+8*depth+att->as || node==NULL ) {
+	    /* Not in +/- rectangle */
+	if ( event->u.mouse.x > 5+8*depth+att->as && node!=NULL &&
+		att->dlg_type == dt_font_comp && event->u.mouse.clicks>1 )
+	    FontCompActivate(att,node);
+return;
+    }
     node->open = !node->open;
 
     cnt = SizeCnt(att,att->tables,0);
@@ -2546,12 +2609,21 @@ return( AttChar(att,event));
 	  break;
 	  case et_buttonactivate:
 	    att->done = true;
+	    if ( att->dlg_type==dt_font_comp )
+		GDrawDestroyWindow(gw);
 	  break;
 	}
       break;
       case et_close:
 	att->done = true;
+	if ( att->dlg_type==dt_font_comp )
+	    GDrawDestroyWindow(gw);
       break;
+      case et_destroy:
+	if ( att!=NULL ) {
+	    nodesfree(att->tables);
+	    free(att);
+	}
     }
 return( true );
 }
@@ -2572,12 +2644,13 @@ static void ShowAttCreateDlg(struct att_dlg *att, SplineFont *sf, int which,
 
     memset( att,0,sizeof(*att));
     att->sf = sf;
+    att->dlg_type = which;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.is_dlg = true;
-    wattrs.restrict_input_to_me = !which;
+    wattrs.restrict_input_to_me = which==dt_show_att;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
     wattrs.utf8_window_title = win_title;
@@ -2652,6 +2725,7 @@ void ShowAtt(SplineFont *sf) {
 
     while ( !att.done )
 	GDrawProcessOneEvent(NULL);
+    GDrawSetUserData(att.gw,NULL);
     nodesfree(att.tables);
     GDrawDestroyWindow(att.gw);
 }
@@ -2743,9 +2817,10 @@ static void BuildFCmpNodes(struct att_dlg *att, SplineFont *sf1, SplineFont *sf2
     fclose(tmp);
 }
 
-static void FontCmpDlg(SplineFont *sf1, SplineFont *sf2,int flags) {
-    struct att_dlg att;
+static void FontCmpDlg(FontView *fv1, FontView *fv2,int flags) {
+    struct att_dlg *att;
     char buffer[300];
+    SplineFont *sf1 = fv1->sf, *sf2=fv2->sf;
 
     if ( strcmp(sf1->fontname,sf2->fontname)!=0 )
 	snprintf( buffer, sizeof(buffer), _("Compare %s to %s"), sf1->fontname, sf2->fontname);
@@ -2756,18 +2831,15 @@ static void FontCmpDlg(SplineFont *sf1, SplineFont *sf2,int flags) {
     else
 	strcpy( buffer, _("Font Compare")); 
 
-    ShowAttCreateDlg(&att, sf1, 1, buffer);
+    att = galloc(sizeof(struct att_dlg));
+    ShowAttCreateDlg(att, sf1, dt_font_comp, buffer);
+    att->fv1 = fv1; att->fv2 = fv2;
 
-    BuildFCmpNodes(&att,sf1,sf2,flags);
-    att.open_cnt = SizeCnt(&att,att.tables,0);
-    GScrollBarSetBounds(att.vsb,0,att.open_cnt,att.lines_page);
+    BuildFCmpNodes(att,sf1,sf2,flags);
+    att->open_cnt = SizeCnt(att,att->tables,0);
+    GScrollBarSetBounds(att->vsb,0,att->open_cnt,att->lines_page);
 
-    GDrawSetVisible(att.gw,true);
-
-    while ( !att.done )
-	GDrawProcessOneEvent(NULL);
-    nodesfree(att.tables);
-    GDrawDestroyWindow(att.gw);
+    GDrawSetVisible(att->gw,true);
 }
 
 static void FCAskFilename(FontView *fv,int flags) {
@@ -2779,7 +2851,7 @@ return;
     otherfv = ViewPostscriptFont(filename);
     if ( otherfv==NULL )
 return;
-    FontCmpDlg(fv->sf,otherfv->sf,flags);
+    FontCmpDlg(fv,otherfv,flags);
     free(filename);
 }
 
@@ -2838,7 +2910,7 @@ static int FC_OK(GGadget *g, GEvent *e) {
 	if ( fv==NULL )
 	    FCAskFilename(d->fv,flags);
 	else
-	    FontCmpDlg(d->fv->sf,fv->sf,flags);
+	    FontCmpDlg(d->fv,fv,flags);
 	d->done = true;
     }
 return( true );

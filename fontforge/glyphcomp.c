@@ -755,6 +755,9 @@ struct font_diff {
     SplineChar **matches;
     SplineChar *last_sc;
     char held[300];
+    int fcnt1, fcnt2;
+    uint32 *tags1, *tags2;
+    int is_gpos;
 };
 
 static void GlyphDiffSCError(struct font_diff *fd, SplineChar *sc, char *format, ... ) {
@@ -1241,12 +1244,133 @@ static void comparefontnames(struct font_diff *fd) {
     }
 }
 
+struct tag_block {
+    int cnt, max;
+    uint32 *tags;
+};
+
+static void AddTag(struct tag_block *tb,uint32 tag) {
+    int i;
+
+    for ( i=0; i<tb->cnt; ++i )
+	if ( tb->tags[i]==tag )
+return;
+    if ( tb->cnt>=tb->max-1 )
+	tb->tags = grealloc(tb->tags,(tb->max+=40)*sizeof(uint32));
+    tb->tags[tb->cnt++] = tag;
+}
+
+static uint32 *FindFeatureTags(SplineFont *sf,int is_gpos,int *cnt) {
+    struct tag_block tb;
+    int i,j;
+    SplineChar *sc;
+    AnchorPoint *ap;
+    PST *pst;
+    FPST *fpst;
+
+    memset(&tb,0,sizeof(tb));
+
+    for ( i=0; i<sf->glyphcnt; ++i ) if ((sc = sf->glyphs[i])!=NULL ) {
+	if ( is_gpos ) {
+	    if ( sc->kerns!=NULL )
+		AddTag(&tb,CHR('k','e','r','n'));
+	    if ( sc->vkerns!=NULL )
+		AddTag(&tb,CHR('v','k','r','n'));
+	    for ( ap = sc->anchor; ap!=NULL; ap=ap->next )
+		AddTag(&tb,ap->anchor->feature_tag);
+	    for ( pst=sc->possub; pst!=NULL; pst=pst->next )
+		if ( pst->type == pst_position || pst->type == pst_pair )
+		    AddTag(&tb,pst->tag);
+	} else {
+	    for ( pst=sc->possub; pst!=NULL; pst=pst->next )
+		if ( pst->type == pst_substitution || pst->type == pst_alternate ||
+			pst->type == pst_multiple || pst->type == pst_ligature )
+		    AddTag(&tb,pst->tag);
+	}
+    }
+    if ( is_gpos ) {
+	if ( sf->kerns!=NULL )
+	    AddTag(&tb,CHR('k','e','r','n'));
+	if ( sf->vkerns!=NULL )
+	    AddTag(&tb,CHR('v','k','r','n'));
+	for ( fpst = sf->possub; fpst!=NULL; fpst=fpst->next )
+	    if ( fpst->type == pst_contextpos || fpst->type == pst_chainpos )
+		AddTag(&tb,fpst->tag);
+    } else {
+	for ( fpst = sf->possub; fpst!=NULL; fpst=fpst->next )
+	    if ( fpst->type == pst_contextsub || fpst->type == pst_chainsub ||
+		    fpst->type == pst_reversesub )
+		AddTag(&tb,fpst->tag);
+    }
+
+    for ( i=0; i<tb.cnt; ++i ) for ( j=i+1; j<tb.cnt; ++j )
+	if ( tb.tags[i]>tb.tags[j] ) {
+	    uint32 temp = tb.tags[i];
+	    tb.tags[i] = tb.tags[j];
+	    tb.tags[j] = temp;
+	}
+	    
+    *cnt = tb.cnt;
+return( tb.tags );
+}
+
+static void compareg___(struct font_diff *fd) {
+    int i,j;
+
+    fd->top_diff = fd->middle_diff = fd->local_diff = false;
+
+    fd->tags1 = FindFeatureTags(fd->sf1,fd->is_gpos,&fd->fcnt1);
+    fd->tags2 = FindFeatureTags(fd->sf2,fd->is_gpos,&fd->fcnt2);
+
+    for ( i=j=0; i<fd->fcnt1 ; ++i ) {
+	while ( j<fd->fcnt2 && fd->tags2[j]<fd->tags1[i])
+	    ++j;
+	if ( j>=fd->fcnt2 || fd->tags2[j]!=fd->tags1[i] ) {
+	    if ( !fd->top_diff )
+		fprintf( fd->diffs, fd->is_gpos ? _("Glyph Positioning\n") : _("Glyph Substitution\n"));
+	    if ( !fd->middle_diff ) {
+		putc( ' ', fd->diffs);
+		fprintf( fd->diffs, _("Features in %s but not in %s\n"), fd->name1, fd->name2 );
+	    }
+	    fd->top_diff = fd->middle_diff = true;
+	    fputs("  ",fd->diffs);
+	    fprintf( fd->diffs, _("Feature '%c%c%c%c' is not in %s\n"),
+		    (fd->tags1[i]>>24)&0xff,(fd->tags1[i]>>16)&0xff,(fd->tags1[i]>>8)&0xff,(fd->tags1[i])&0xff,
+		    fd->name2 );
+	}
+    }
+
+    fd->middle_diff = false;
+    for ( i=j=0; i<fd->fcnt2 ; ++i ) {
+	while ( j<fd->fcnt1 && fd->tags1[j]<fd->tags2[i])
+	    ++j;
+	if ( j>=fd->fcnt1 || fd->tags1[j]!=fd->tags2[i] ) {
+	    if ( !fd->top_diff )
+		fprintf( fd->diffs, fd->is_gpos ? _("Glyph Positioning\n") : _("Glyph Substitution\n"));
+	    if ( !fd->middle_diff ) {
+		putc( ' ', fd->diffs);
+		fprintf( fd->diffs, _("Features in %s but not in %s\n"), fd->name2, fd->name1 );
+	    }
+	    fd->top_diff = fd->middle_diff = true;
+	    fputs("  ",fd->diffs);
+	    fprintf( fd->diffs, _("Feature '%c%c%c%c' is not in %s\n"),
+		    (fd->tags2[i]>>24)&0xff,(fd->tags2[i]>>16)&0xff,(fd->tags2[i]>>8)&0xff,(fd->tags2[i])&0xff,
+		    fd->name1 );
+	}
+    }
+
+    free( fd->tags1 );
+    free( fd->tags2 );
+}
+
 static void comparegpos(struct font_diff *fd) {
-    fprintf( fd->diffs, "Glyph Positioning\n Not Yet Implemented\n" );
+    fd->is_gpos = true;
+    compareg___(fd);
 }
 
 static void comparegsub(struct font_diff *fd) {
-    fprintf( fd->diffs, "Glyph Substitutions\n Not Yet Implemented\n" );
+    fd->is_gpos = false;
+    compareg___(fd);
 }
 
 #include "ttf.h"
@@ -1313,7 +1437,7 @@ int CompareFonts(SplineFont *sf1, SplineFont *sf2, FILE *diffs,
 	comparebitmapstrikes(&fd);
     if ( flags&fcf_gpos )
 	comparegpos(&fd);
-    if ( flags&fcf_gpos )
+    if ( flags&fcf_gsub )
 	comparegsub(&fd);
 
     free(fd.matches);
