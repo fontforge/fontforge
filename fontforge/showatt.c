@@ -2556,8 +2556,8 @@ return( AttChar(att,event));
 return( true );
 }
 
-void ShowAtt(SplineFont *sf) {
-    struct att_dlg att;
+static void ShowAttCreateDlg(struct att_dlg *att, SplineFont *sf, int which,
+	char *win_title) {
     GRect pos;
     GWindowAttrs wattrs;
     FontRequest rq;
@@ -2570,43 +2570,43 @@ void ShowAtt(SplineFont *sf) {
 
     if ( sf->cidmaster ) sf = sf->cidmaster;
 
-    memset( &att,0,sizeof(att));
-    att.sf = sf;
+    memset( att,0,sizeof(*att));
+    att->sf = sf;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.is_dlg = true;
-    wattrs.restrict_input_to_me = 1;
+    wattrs.restrict_input_to_me = !which;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = _("Show ATT");
+    wattrs.utf8_window_title = win_title;
     pos.x = pos.y = 0;
-    pos.width =GDrawPointsToPixels(NULL,GGadgetScale(200));
+    pos.width = GDrawPointsToPixels(NULL,GGadgetScale(which==0?200:450));
     pos.height = GDrawPointsToPixels(NULL,300);
-    att.gw = GDrawCreateTopWindow(NULL,&pos,att_e_h,&att,&wattrs);
+    att->gw = GDrawCreateTopWindow(NULL,&pos,att_e_h,att,&wattrs);
 
     memset(&rq,'\0',sizeof(rq));
     rq.family_name = helv;
     rq.point_size = 12;
     rq.weight = 400;
-    att.font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(att.gw),&rq);
+    att->font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(att->gw),&rq);
     rq.family_name = courier;		/* I want to show tabluar data sometimes */
-    att.monofont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(att.gw),&rq);
-    GDrawFontMetrics(att.font,&as,&ds,&ld);
-    att.fh = as+ds; att.as = as;
+    att->monofont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(att->gw),&rq);
+    GDrawFontMetrics(att->font,&as,&ds,&ld);
+    att->fh = as+ds; att->as = as;
 
-    att.bmargin = GDrawPointsToPixels(NULL,32)+sbsize;
+    att->bmargin = GDrawPointsToPixels(NULL,32)+sbsize;
 
-    att.lines_page = (pos.height-att.bmargin)/att.fh;
-    att.page_width = pos.width-sbsize;
+    att->lines_page = (pos.height-att->bmargin)/att->fh;
+    att->page_width = pos.width-sbsize;
     wattrs.mask = wam_events|wam_cursor/*|wam_bordwidth|wam_bordcol*/;
     wattrs.border_width = 1;
     wattrs.border_color = 0x000000;
     pos.x = 0; pos.y = 0;
-    pos.width -= sbsize; pos.height = att.lines_page*att.fh;
-    att.v = GWidgetCreateSubWindow(att.gw,&pos,attv_e_h,&att,&wattrs);
-    GDrawSetVisible(att.v,true);
+    pos.width -= sbsize; pos.height = att->lines_page*att->fh;
+    att->v = GWidgetCreateSubWindow(att->gw,&pos,attv_e_h,att,&wattrs);
+    GDrawSetVisible(att->v,true);
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
@@ -2633,10 +2633,16 @@ void ShowAtt(SplineFont *sf) {
     gcd[2].gd.label = &label[2];
     gcd[2].creator = GButtonCreate;
 
-    GGadgetsCreate(att.gw,gcd);
-    att.vsb = gcd[0].ret;
-    att.hsb = gcd[1].ret;
-    att.cancel = gcd[2].ret;
+    GGadgetsCreate(att->gw,gcd);
+    att->vsb = gcd[0].ret;
+    att->hsb = gcd[1].ret;
+    att->cancel = gcd[2].ret;
+}
+
+void ShowAtt(SplineFont *sf) {
+    struct att_dlg att;
+
+    ShowAttCreateDlg(&att, sf, 0, _("Show ATT"));
 
     BuildTop(&att);
     att.open_cnt = SizeCnt(&att,att.tables,0);
@@ -2648,5 +2654,393 @@ void ShowAtt(SplineFont *sf) {
 	GDrawProcessOneEvent(NULL);
     nodesfree(att.tables);
     GDrawDestroyWindow(att.gw);
+}
+
+/* ************************************************************************** */
+/* ****************************** Font Compare ****************************** */
+/* ************************ (reuse the show att dlg) ************************ */
+/* ************************************************************************** */
+struct nested_file {
+    FILE *file;
+    char *linebuf;
+    int linemax;
+    int read_nest;
+};
+
+static int ReadNestedLine(struct nested_file *nf) {
+    char *pt, *end;
+    int ch;
+    int nest = 0;
+
+    pt = nf->linebuf; end = pt + nf->linemax-1;
+    while ( (ch=getc(nf->file))==' ' )
+	++nest;
+    if ( ch==EOF ) {
+	nf->read_nest = -1;
+return( -1 );
+    }
+    while ( ch!=EOF && ch!='\n' ) {
+	if ( pt>=end ) {
+	    char *old = nf->linebuf;
+	    nf->linemax += 200;
+	    nf->linebuf = grealloc(nf->linebuf, nf->linemax);
+	    pt = nf->linebuf + (pt-old);
+	    end = nf->linebuf + nf->linemax - 1;
+	}
+	*pt++ = ch;
+	ch = getc(nf->file);
+    }
+    *pt = '\0';
+    nf->read_nest = nest;
+return( nest );
+}
+
+static void ReadKids(struct nested_file *nf,int desired_nest,struct node *parent) {
+    int i=0, max=0, j, k;
+
+    ReadNestedLine(nf);
+    forever {
+	if ( nf->read_nest < desired_nest )
+    break;
+	if ( i>=max-1 ) {
+	    parent->children = grealloc(parent->children,(max+=10)*sizeof( struct node ));
+	    memset(parent->children+i,0,(max-i)*sizeof(struct node));
+	}
+	parent->children[i].label = copy(nf->linebuf);
+	parent->children[i].parent = parent;
+	ReadKids(nf,desired_nest+1,&parent->children[i]);
+	++i;
+    }
+    if ( i!=0 ) {
+	if ( i<max-1 )
+	    parent->children = grealloc(parent->children,(i+1)*sizeof(struct node));
+	/* The reallocs can invalidate the parent field */
+	for ( j=0; j<i; ++j )
+	    for ( k=0; k<parent->children[j].cnt; ++k )
+		parent->children[j].children[k].parent = &parent->children[j];
+	parent->cnt = i;
+    }
+}
+    
+static void BuildFCmpNodes(struct att_dlg *att, SplineFont *sf1, SplineFont *sf2,int flags) {
+    FILE *tmp = tmpfile();
+    struct node *tables;
+    struct nested_file nf;
+
+    att->tables = tables = gcalloc(2,sizeof(struct node));
+    att->current = tables;
+    if ( !CompareFonts(sf1,sf2,tmp,flags)) {
+	tables[0].label = copy(_("No differences found"));
+    } else {
+	tables[0].label = copy(_("Differences..."));
+	rewind(tmp);
+	memset(&nf,0,sizeof(nf));
+	nf.file = tmp;
+	nf.linebuf = galloc( nf.linemax = 300 );
+	ReadKids(&nf,0,&tables[0]);
+	free(nf.linebuf);
+    }
+    fclose(tmp);
+}
+
+static void FontCmpDlg(SplineFont *sf1, SplineFont *sf2,int flags) {
+    struct att_dlg att;
+    char buffer[300];
+
+    if ( strcmp(sf1->fontname,sf2->fontname)!=0 )
+	snprintf( buffer, sizeof(buffer), _("Compare %s to %s"), sf1->fontname, sf2->fontname);
+    else if ( sf1->version!=NULL && sf2->version!=NULL &&
+	    strcmp(sf1->version,sf2->version)!=0 )
+	snprintf( buffer, sizeof(buffer), _("Compare version %s of %s to %s"),
+		sf1->version, sf1->fontname, sf2->version);
+    else
+	strcpy( buffer, _("Font Compare")); 
+
+    ShowAttCreateDlg(&att, sf1, 1, buffer);
+
+    BuildFCmpNodes(&att,sf1,sf2,flags);
+    att.open_cnt = SizeCnt(&att,att.tables,0);
+    GScrollBarSetBounds(att.vsb,0,att.open_cnt,att.lines_page);
+
+    GDrawSetVisible(att.gw,true);
+
+    while ( !att.done )
+	GDrawProcessOneEvent(NULL);
+    nodesfree(att.tables);
+    GDrawDestroyWindow(att.gw);
+}
+
+static void FCAskFilename(FontView *fv,int flags) {
+    char *filename = GetPostscriptFontName(NULL,false);
+    FontView *otherfv;
+
+    if ( filename==NULL )
+return;
+    otherfv = ViewPostscriptFont(filename);
+    if ( otherfv==NULL )
+return;
+    FontCmpDlg(fv->sf,otherfv->sf,flags);
+    free(filename);
+}
+
+struct mf_data {
+    int done;
+    FontView *fv;
+    GGadget *other;
+    GGadget *amount;
+};
+#define CID_Outlines	1
+#define	CID_Exact	2
+#define CID_Warn	3
+#define CID_Fuzzy	4
+#define CID_Hinting	5
+#define CID_Bitmaps	6
+#define CID_Names	7
+#define CID_GPos	8
+#define CID_GSub	9
+
+static int last_flags = fcf_outlines|fcf_hinting|fcf_bitmaps|fcf_names|fcf_gpos|fcf_gsub;
+
+static int FC_OK(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GWindow gw = GGadgetGetWindow(g);
+	struct mf_data *d = GDrawGetUserData(gw);
+	int i, index = GGadgetGetFirstListSelectedItem(d->other);
+	FontView *fv;
+	int flags = 0;
+	for ( i=0, fv=fv_list; fv!=NULL; fv=fv->next ) {
+	    if ( fv==d->fv )
+	continue;
+	    if ( i==index )
+	break;
+	    ++i;
+	}
+
+	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_Outlines)) )
+	    flags |= fcf_outlines;
+	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_Exact)) )
+	    flags |= fcf_exact;
+	else if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_Warn)) )
+	    flags |= fcf_warn_not_exact;
+	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_Hinting)) )
+	    flags |= fcf_hinting;
+	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_Bitmaps)) )
+	    flags |= fcf_bitmaps;
+	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_Names)) )
+	    flags |= fcf_names;
+	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_GPos)) )
+	    flags |= fcf_gpos;
+	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_GSub)) )
+	    flags |= fcf_gsub;
+	last_flags = flags;
+
+	GDrawDestroyWindow(gw);
+	if ( fv==NULL )
+	    FCAskFilename(d->fv,flags);
+	else
+	    FontCmpDlg(d->fv->sf,fv->sf,flags);
+	d->done = true;
+    }
+return( true );
+}
+
+static int FC_Cancel(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GWindow gw = GGadgetGetWindow(g);
+	struct mf_data *d = GDrawGetUserData(gw);
+	d->done = true;
+	GDrawDestroyWindow(gw);
+    }
+return( true );
+}
+
+static int fc_e_h(GWindow gw, GEvent *event) {
+    if ( event->type==et_close ) {
+	struct mf_data *d = GDrawGetUserData(gw);
+	d->done = true;
+    } else if ( event->type == et_char ) {
+return( false );
+    }
+return( true );
+}
+
+void FontCompareDlg(FontView *fv) {
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[20];
+    GTextInfo label[20];
+    struct mf_data d;
+    char buffer[80];
+    int k;
+
+	memset(&wattrs,0,sizeof(wattrs));
+	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;
+	wattrs.event_masks = ~(1<<et_charup);
+	wattrs.restrict_input_to_me = 1;
+	wattrs.undercursor = 1;
+	wattrs.cursor = ct_pointer;
+	wattrs.utf8_window_title = _("Font Compare...");
+	pos.x = pos.y = 0;
+	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,150));
+	pos.height = GDrawPointsToPixels(NULL,88+9*14+2);
+	gw = GDrawCreateTopWindow(NULL,&pos,fc_e_h,&d,&wattrs);
+
+	memset(&label,0,sizeof(label));
+	memset(&gcd,0,sizeof(gcd));
+
+	k=0;
+	sprintf( buffer, _("Font to compare with %.20s"), fv->sf->fontname );
+	label[k].text = (unichar_t *) buffer;
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 12; gcd[k].gd.pos.y = 6; 
+	gcd[k].gd.flags = gg_visible | gg_enabled;
+	gcd[k++].creator = GLabelCreate;
+
+	gcd[k].gd.pos.x = 20; gcd[k].gd.pos.y = 21;
+	gcd[k].gd.pos.width = 110;
+	gcd[k].gd.flags = gg_visible | gg_enabled;
+	gcd[k].gd.u.list = BuildFontList(fv);
+	gcd[k].gd.label = &gcd[k].gd.u.list[0];
+	gcd[k].gd.u.list[0].selected = true;
+	gcd[k++].creator = GListButtonCreate;
+
+	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+24;
+	if ( fv->sf->onlybitmaps )
+	    gcd[k].gd.flags = gg_visible;
+	else
+	    gcd[k].gd.flags = gg_visible | gg_enabled | ((last_flags&fcf_outlines)?gg_cb_on:0);
+	label[k].text = (unichar_t *) _("Compare _Outlines");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.cid = CID_Outlines;
+	gcd[k++].creator = GCheckBoxCreate;
+
+	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
+	if ( fv->sf->onlybitmaps )
+	    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+	else
+	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | ((last_flags&fcf_exact)?gg_cb_on:0);
+	label[k].text = (unichar_t *) _("_Exact");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.cid = CID_Exact;
+	gcd[k].gd.popup_msg = (unichar_t *) _("Accept outlines which exactly match the original");
+	gcd[k++].creator = GRadioCreate;
+
+	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
+	if ( fv->sf->onlybitmaps )
+	    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+	else
+	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | ((last_flags&fcf_warn_not_exact)?gg_cb_on:0);
+	label[k].text = (unichar_t *) _("_Warn if inexact");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.cid = CID_Warn;
+	gcd[k].gd.popup_msg = (unichar_t *) _("Accept an outline which is a close approximation to the original but warn if it is not exactly the same");
+	gcd[k++].creator = GRadioCreate;
+
+	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
+	if ( fv->sf->onlybitmaps )
+	    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+	else
+	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | ((last_flags&(fcf_exact|fcf_warn_not_exact))?0:gg_cb_on);
+	label[k].text = (unichar_t *) _("_Accept inexact");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.cid = CID_Fuzzy;
+	gcd[k].gd.popup_msg = (unichar_t *) _("Accept an outline which is a close approximation to the original");
+	gcd[k++].creator = GRadioCreate;
+
+	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
+	if ( fv->sf->onlybitmaps )
+	    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+	else
+	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | ((last_flags&fcf_hinting)?gg_cb_on:0);
+	label[k].text = (unichar_t *) _("Compare _Hints");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.cid = CID_Hinting;
+	gcd[k].gd.popup_msg = (unichar_t *) _("Compare postscript hints and truetype instructions");
+	gcd[k++].creator = GCheckBoxCreate;
+
+	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+16;
+	if ( fv->sf->bitmaps==NULL )
+	    gcd[k].gd.flags = gg_visible;
+	else
+	    gcd[k].gd.flags = gg_visible | gg_enabled | ((last_flags&fcf_bitmaps)?gg_cb_on:0);
+	label[k].text = (unichar_t *) _("Compare _Bitmaps");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.cid = CID_Bitmaps;
+	gcd[k++].creator = GCheckBoxCreate;
+
+	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
+	gcd[k].gd.flags = gg_visible | gg_enabled | ((last_flags&fcf_names)?gg_cb_on:0);
+	label[k].text = (unichar_t *) _("Compare _Names");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.cid = CID_Names;
+	gcd[k++].creator = GCheckBoxCreate;
+
+	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
+	gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | ((last_flags&fcf_gpos)?gg_cb_on:0);
+	label[k].text = (unichar_t *) _("Compare Glyph _Positioning");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.cid = CID_GPos;
+	gcd[k].gd.popup_msg = (unichar_t *) _("Kerning & such");
+	gcd[k++].creator = GCheckBoxCreate;
+
+	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
+	gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | ((last_flags&fcf_gsub)?gg_cb_on:0);
+	label[k].text = (unichar_t *) _("Compare Glyph _Substitution");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.cid = CID_GSub;
+	gcd[k].gd.popup_msg = (unichar_t *) _("Ligatures & such");
+	gcd[k++].creator = GCheckBoxCreate;
+
+	gcd[k].gd.pos.x = 15-3; gcd[k].gd.pos.y = 9*14+2+55-3;
+	gcd[k].gd.pos.width = -1; gcd[k].gd.pos.height = 0;
+	gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
+	label[k].text = (unichar_t *) _("_OK");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.handle_controlevent = FC_OK;
+	gcd[k++].creator = GButtonCreate;
+
+	gcd[k].gd.pos.x = -15; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+3;
+	gcd[k].gd.pos.width = -1; gcd[k].gd.pos.height = 0;
+	gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+	label[k].text = (unichar_t *) _("_Cancel");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.handle_controlevent = FC_Cancel;
+	gcd[k++].creator = GButtonCreate;
+
+	GGadgetsCreate(gw,gcd);
+
+	memset(&d,'\0',sizeof(d));
+	d.other = gcd[1].ret;
+	d.fv = fv;
+
+	GWidgetHidePalettes();
+	GDrawSetVisible(gw,true);
+	while ( !d.done )
+	    GDrawProcessOneEvent(NULL);
+	TFFree(gcd[1].gd.u.list);
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

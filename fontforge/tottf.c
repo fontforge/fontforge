@@ -1188,7 +1188,7 @@ return;
     ttfdumpmetrics(sc,gi,&bb);
 }
 
-static void SFDummyUpCIDs(struct glyphinfo *gi,SplineFont *sf) {
+void SFDummyUpCIDs(struct glyphinfo *gi,SplineFont *sf) {
     int i,j,k,max;
     int *bygid;
 
@@ -1203,6 +1203,9 @@ return;
     for ( k=0; k<sf->subfontcnt; ++k )
 	for ( i=0; i<sf->subfonts[k]->glyphcnt; ++i ) if ( sf->subfonts[k]->glyphs[i]!=NULL )
 	    sf->glyphs[i] = sf->subfonts[k]->glyphs[i];
+
+    if ( gi==NULL )
+return;
 
     bygid = galloc((sf->glyphcnt+3)*sizeof(int));
     memset(bygid,0xff, (sf->glyphcnt+3)*sizeof(int));

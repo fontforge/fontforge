@@ -512,6 +512,7 @@ typedef struct bdfchar {
     unsigned int byte_data: 1;		/* for anti-aliased chars entries are grey-scale bytes not bw bits */
     unsigned int widthgroup: 1;		/* for ttf bitmap output */
     unsigned int isreference: 1;	/* for ttf bitmap input, */
+    unsigned int ticked: 1;
     uint8 depth;			/* for ttf bitmap output */
     uint16 vwidth;
     BDFFloat *selection;
@@ -1942,18 +1943,21 @@ enum Compare_Ret {	SS_DiffContourCount	= 1,
 			SS_NoMatch		= 128,
 			SS_RefMismatch		= 256,
 			SS_WidthMismatch	= 512,
-			SS_HintMismatch		= 1024,
-			SS_HintMaskMismatch	= 2048,
+			SS_VWidthMismatch	= 1024,
+			SS_HintMismatch		= 2048,
+			SS_HintMaskMismatch	= 4096,
 
 			BC_DepthMismatch	= 1<<16,
 			BC_BoundingBoxMismatch	= 2<<16,
-			BC_NoMatch		= 4<<16,
-			BC_Match		= 8<<16
+			BC_BitmapMismatch	= 4<<16,
+			BC_NoMatch		= 8<<16,
+			BC_Match		= 16<<16
 		};
 
 extern enum Compare_Ret BitmapCompare(BDFChar *bc1, BDFChar *bc2, int err, int bb_err);
 extern enum Compare_Ret SSsCompare(const SplineSet *ss1, const SplineSet *ss2, real pt_err, real spline_err);
-enum font_compare_flags { fcf_exact=1, fcf_warn_not_exact=2, fcf_hinting=4 };
+enum font_compare_flags { fcf_outlines=1, fcf_exact=2, fcf_warn_not_exact=4, fcf_hinting=8,
+	fcf_bitmaps=8, fcf_names = 0x10, fcf_gpos=0x20, fcf_gsub=0x40 };
 extern int CompareFonts(SplineFont *sf1, SplineFont *sf2, FILE *diffs, int flags);
 
 
