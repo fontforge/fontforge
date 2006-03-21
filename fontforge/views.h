@@ -1203,6 +1203,7 @@ extern int SVAttachFV(FontView *fv,int ask_if_difficult);
 extern void SVDetachFV(FontView *fv);
 
 extern void ShowAtt(SplineFont *sf);
+extern void FontCompareDlg(FontView *fv);
 extern void SFShowKernPairs(SplineFont *sf,SplineChar *sc,AnchorClass *ac);
 extern void SFShowLigatures(SplineFont *sf,SplineChar *sc);
 extern char *TagFullName(SplineFont *sf,uint32 tag, int ismac);
@@ -1233,6 +1234,8 @@ extern void KernPairD(SplineFont *sf,SplineChar *sc1,SplineChar *sc2,int isv);
 #if defined(FONTFORGE_CONFIG_GDRAW)
 extern void KCD_DrawGlyph(GWindow pixmap,int x,int baseline,BDFChar *bdfc,int mag);
 #endif
+extern GTextInfo *BuildFontList(FontView *except);
+extern void TFFree(GTextInfo *tf);
 
 extern void AnchorControl(SplineChar *sc,AnchorPoint *ap);
 

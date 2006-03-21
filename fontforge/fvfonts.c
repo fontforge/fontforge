@@ -847,7 +847,7 @@ return;
     free(filename);
 }
 
-static GTextInfo *BuildFontList(FontView *except) {
+GTextInfo *BuildFontList(FontView *except) {
     FontView *fv;
     int cnt=0;
     GTextInfo *tf;
@@ -868,7 +868,7 @@ static GTextInfo *BuildFontList(FontView *except) {
 return( tf );
 }
 
-static void TFFree(GTextInfo *tf) {
+void TFFree(GTextInfo *tf) {
 /*
     int i;
 

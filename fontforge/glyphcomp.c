@@ -387,12 +387,16 @@ enum Compare_Ret BitmapCompare(BDFChar *bc1, BDFChar *bc2, int err, int bb_err) 
     int i,j, d, xlen;
     int mask;
     int xmin, xmax, ymin, ymax, c1, c2;
+    int failed = 0;
 
     if ( bc1->byte_data!=bc2->byte_data )
 return( BC_DepthMismatch|BC_NoMatch );
 
     if ( bc1->width!=bc2->width )
-return( SS_WidthMismatch|BC_NoMatch );
+	failed = SS_WidthMismatch|BC_NoMatch;
+
+    if ( bc1->vwidth!=bc2->vwidth )
+	failed |= SS_VWidthMismatch|BC_NoMatch;
 
     BCFlattenFloat(bc1);
     BCCompressBitmap(bc1);
@@ -402,7 +406,7 @@ return( SS_WidthMismatch|BC_NoMatch );
 		(d=bc1->ymin-bc2->ymin)>bb_err || d<-bb_err ||
 		(d=bc1->xmax-bc2->xmax)>bb_err || d<-bb_err ||
 		(d=bc1->ymax-bc2->ymax)>bb_err || d<-bb_err )
-return( BC_BoundingBoxMismatch|BC_NoMatch );
+return( BC_BoundingBoxMismatch|BC_NoMatch|failed );
 		
 	xmin = bc1->xmin>bc2->xmin ? bc2->xmin : bc1->xmin;
 	ymin = bc1->ymin>bc2->ymin ? bc2->ymin : bc1->ymin;
@@ -427,14 +431,14 @@ return( BC_BoundingBoxMismatch|BC_NoMatch );
 		else
 		    c2 = 0;
 		if ( (d = c1-c2)>err || d<-err )
-return( BC_NoMatch );
+return( BC_NoMatch|BC_BitmapMismatch|failed );
 	    }
 	}
     } else {
 	/* Bitmap */
 	if ( bc1->xmin!=bc2->xmin || bc1->xmax!=bc2->xmax ||
 		bc1->ymin!=bc2->ymin || bc1->ymax!=bc2->ymax )
-return( BC_BoundingBoxMismatch|BC_NoMatch );
+return( BC_BoundingBoxMismatch|BC_NoMatch|failed );
 
 	xlen = bc1->xmax-bc1->xmin;
 	mask = 0xff00>>((xlen&7)+1);
@@ -444,13 +448,13 @@ return( BC_BoundingBoxMismatch|BC_NoMatch );
 	    pt2 = bc2->bitmap+j*bc2->bytes_per_line;
 	    for ( i=xlen-1; i>=0; --i )
 		if ( pt1[i]!=pt2[i] )
-return( BC_NoMatch );
+return( BC_NoMatch|BC_BitmapMismatch|failed );
 	    if ( (pt1[xlen]&mask)!=(pt2[xlen]&mask) )
-return( BC_NoMatch );
+return( BC_NoMatch|BC_BitmapMismatch|failed );
 	}
     }
 
-return( BC_Match );
+return( failed == 0 ? BC_Match : failed );
 }
 
 /* ************************************************************************** */
@@ -574,6 +578,9 @@ static int CompareBitmap(Context *c,SplineChar *sc,const Undoes *cur,
 	else if ( ret&SS_WidthMismatch )
 	    ScriptErrorF(c,"Bitmaps advance widths do not match in glyph %s pixelsize %d depth %d",
 		    sc->name, bdf->pixelsize, BDFDepth(bdf));
+	else if ( ret&SS_VWidthMismatch )
+	    ScriptErrorF(c,"Bitmaps vertical advance widths do not match in glyph %s pixelsize %d depth %d",
+		    sc->name, bdf->pixelsize, BDFDepth(bdf));
 	else
 	    ScriptErrorF(c,"Bitmap mismatch in glyph %s pixelsize %d depth %d",
 		    sc->name, bdf->pixelsize, BDFDepth(bdf));
@@ -626,6 +633,8 @@ static int CompareSplines(Context *c,SplineChar *sc,const Undoes *cur,
 	if ( err>=0 ) {
 	    ret |= CompareLayer(c,sc->layers[ly_fore].splines,cur->u.state.splines,
 			pt_err, spline_err,sc->name, diffs_are_errors);
+	    if ( sc->vwidth-cur->u.state.vwidth>err || sc->vwidth-cur->u.state.vwidth<-err )
+		ret = SS_NoMatch|SS_VWidthMismatch;
 	    if ( sc->width-cur->u.state.width>err || sc->width-cur->u.state.width<-err )
 		ret = SS_NoMatch|SS_WidthMismatch;
 	    if ( !RefCheck( c,sc->layers[ly_fore].refs,cur->u.state.refs, sc->name, diffs_are_errors ))
@@ -645,6 +654,8 @@ static int CompareSplines(Context *c,SplineChar *sc,const Undoes *cur,
 		    ++ly, layer = cur->next ) {
 		ret |= CompareLayer(c,sc->layers[ly].splines,cur->u.state.splines,
 			    pt_err, spline_err,sc->name, diffs_are_errors);
+		if ( ly==ly_fore && (sc->vwidth-cur->u.state.vwidth>err || sc->vwidth-cur->u.state.vwidth<-err) )
+		    ret = SS_NoMatch|SS_VWidthMismatch;
 		if ( ly==ly_fore && (sc->width-cur->u.state.width>err || sc->width-cur->u.state.width<-err) )
 		    ret = SS_NoMatch|SS_WidthMismatch;
 		if ( !RefCheck( c,sc->layers[ly].refs,cur->u.state.refs, sc->name, diffs_are_errors ))
@@ -660,6 +671,8 @@ static int CompareSplines(Context *c,SplineChar *sc,const Undoes *cur,
     }
     if ( (ret&SS_WidthMismatch) && diffs_are_errors )
 	ScriptErrorString(c,"Advance width mismatch in glyph", sc->name);
+    else if ( (ret&SS_VWidthMismatch) && diffs_are_errors )
+	ScriptErrorString(c,"Vertical advance width mismatch in glyph", sc->name);
     else if ( (ret&SS_HintMismatch) && diffs_are_errors )
 	ScriptErrorString(c,"Hinting mismatch in glyph", sc->name);
     else if ( (ret&SS_HintMaskMismatch) && diffs_are_errors )
@@ -738,20 +751,48 @@ struct font_diff {
     FILE *diffs;
     int flags;
     char *name1, *name2;
-    int local_diff, diff;
+    int top_diff, middle_diff, local_diff, diff;
     SplineChar **matches;
+    SplineChar *last_sc;
+    char held[300];
 };
 
-static void GlyphDiffError(struct font_diff *fd, char *format, ... ) {
+static void GlyphDiffSCError(struct font_diff *fd, SplineChar *sc, char *format, ... ) {
     va_list ap;
 
+    if ( !fd->top_diff ) {
+	fprintf( fd->diffs, _("Outline Glyphs\n") );
+	fd->top_diff = fd->diff = true;
+    }
     if ( !fd->local_diff ) {
-	fprintf( fd->diffs, _(" Glyph Differences\n") );
+	putc(' ',fd->diffs);
+	fprintf( fd->diffs, _("Glyph Differences\n") );
 	fd->local_diff = fd->diff = true;
     }
     va_start(ap,format);
-    vfprintf(fd->diffs,format,ap);
+    if ( fd->last_sc==sc ) {
+	if ( fd->held[0] ) {
+	    fputs("  ",fd->diffs);
+	    fprintf( fd->diffs, _("Glyph |%s| differs\n"), sc->name );
+	    fprintf( fd->diffs, "   %s", fd->held );
+	    fd->held[0] = '\0';
+	}
+	fputs("   ",fd->diffs);
+	vfprintf(fd->diffs,format,ap);
+    } else {
+	vsnprintf(fd->held,sizeof(fd->held),format,ap);
+	fd->last_sc = sc;
+    }
     va_end(ap);
+}
+
+static void GlyphDiffSCFinish(struct font_diff *fd) {
+    if ( fd->held[0] ) {
+	fputs("  ",fd->diffs);
+	fprintf( fd->diffs, "%s", fd->held );
+	fd->held[0] = '\0';
+    }
+    fd->last_sc = NULL;
 }
 
 static int SCCompareHints( SplineChar *sc1, SplineChar *sc2 ) {
@@ -772,8 +813,8 @@ return( false );
 return( true );
 }
 
-static void fdRefCheck(struct font_diff *fd, RefChar *ref1, RefChar *ref2,
-	const char *glyph_name ) {
+static void fdRefCheck(struct font_diff *fd, SplineChar *sc1,
+	RefChar *ref1, RefChar *ref2 ) {
     RefChar *r1, *r2;
     int i;
 
@@ -799,19 +840,19 @@ static void fdRefCheck(struct font_diff *fd, RefChar *ref1, RefChar *ref2,
 	    break;
 	    }
 	    if ( r2==NULL )
-		GlyphDiffError(fd,_("  Glyph >%s< contains a reference to %s in %s\n"),
-			glyph_name, r1->sc->name, fd->name1 );
+		GlyphDiffSCError(fd,sc1,_("Glyph |%s| contains a reference to %s in %s\n"),
+			sc1->name, r1->sc->name, fd->name1 );
 	    else {
-		GlyphDiffError(fd,_("  Glyph >%s< refers to %s with a different transformation matrix\n"),
-			glyph_name, r1->sc->name, fd->name1 );
+		GlyphDiffSCError(fd,sc1,_("Glyph |%s| refers to %s with a different transformation matrix\n"),
+			sc1->name, r1->sc->name, fd->name1 );
 		r2->checked = true;
 	    }
 	}
     }
 
     for ( r2 = ref2; r2!=NULL; r2=r2->next ) if ( !r2->checked )
-	GlyphDiffError(fd,_("  Glyph >%s< contains a reference to %s in %s\n"),
-		glyph_name, r2->sc->name, fd->name2 );
+	GlyphDiffSCError(fd,sc1,_("Glyph |%s| contains a reference to %s in %s\n"),
+		sc1->name, r2->sc->name, fd->name2 );
 }
 
 static void SCCompare(SplineChar *sc1,SplineChar *sc2,struct font_diff *fd) {
@@ -819,62 +860,62 @@ static void SCCompare(SplineChar *sc1,SplineChar *sc2,struct font_diff *fd) {
     int val;
 
     if ( sc1->width!=sc2->width )
-	GlyphDiffError(fd,_("  Glyph >%s< has advance width %d in %s but %d in %s\n"),
+	GlyphDiffSCError(fd,sc1,_("Glyph |%s| has advance width %d in %s but %d in %s\n"),
 		sc1->name, sc1->width, fd->name1, sc2->width, fd->name2 );
     if ( sc1->vwidth!=sc2->vwidth )
-	GlyphDiffError(fd,_("  Glyph >%s< has vertical advance width %d in %s but %d in %s\n"),
+	GlyphDiffSCError(fd,sc1,_("Glyph |%s| has vertical advance width %d in %s but %d in %s\n"),
 		sc1->name, sc1->vwidth, fd->name1, sc2->vwidth, fd->name2 );
     if ( sc1->layer_cnt!=sc2->layer_cnt )
-	GlyphDiffError(fd,_("  Glyph >%s< has a different number of layers\n"),
+	GlyphDiffSCError(fd,sc1,_("Glyph |%s| has a different number of layers\n"),
 		sc1->name );
     else {
 	for ( layer=ly_fore; layer<sc1->layer_cnt; ++layer ) {
 #ifdef FONTFORGE_CONFIG_TYPE3
 	    if ( sc1->layers[layer].dofill != sc2->layers[layer].dofill )
-		GlyphDiffError(fd,_("  Glyph >%s< has a different fill in layer %d\n"),
+		GlyphDiffSCError(fd,sc1,_("Glyph |%s| has a different fill in layer %d\n"),
 			sc1->name, layer );
 	    if ( sc1->layers[layer].dostroke != sc2->layers[layer].dostroke )
-		GlyphDiffError(fd,_("  Glyph >%s< has a different stroke in layer %d\n"),
+		GlyphDiffSCError(fd,sc1,_("Glyph |%s| has a different stroke in layer %d\n"),
 			sc1->name, layer );
 #endif
-	    fdRefCheck(fd, sc1->layers[layer].refs, sc2->layers[layer].refs,
-		    sc1->name);
+	    fdRefCheck(fd, sc1, sc1->layers[layer].refs, sc2->layers[layer].refs );
 	    val = SSsCompare(sc1->layers[layer].splines, sc2->layers[layer].splines,
 		    0,-1 );
 	    if ( (val&SS_NoMatch) && !(fd->flags&fcf_exact) ) {
 		val = SSsCompare(sc1->layers[layer].splines, sc2->layers[layer].splines,
 			-1,1.5 );
 		if ( !(val&SS_NoMatch) && (fd->flags&fcf_warn_not_exact) )
-		    GlyphDiffError(fd,_("  Glyph >%s< does not have splines which match exactly, but they are close\n"),
+		    GlyphDiffSCError(fd,sc1,_("Glyph |%s| does not have splines which match exactly, but they are close\n"),
 			    sc1->name );
 	    }
 	    if ( val&SS_NoMatch ) {
 		if ( val & SS_DiffContourCount )
-		    GlyphDiffError(fd,_("  Different number of contours in glyph >%s<\n"), sc1->name);
+		    GlyphDiffSCError(fd,sc1,_("Different number of contours in glyph |%s|\n"), sc1->name);
 		else if ( val & SS_MismatchOpenClosed )
-		    GlyphDiffError(fd,_("  Open/Closed contour mismatch in glyph >%s<\n"), sc1->name);
+		    GlyphDiffSCError(fd,sc1,_("Open/Closed contour mismatch in glyph |%s|\n"), sc1->name);
 		else
-		    GlyphDiffError(fd,_("  Spline mismatch in glyph >%s<\n"), sc1->name);
+		    GlyphDiffSCError(fd,sc1,_("Spline mismatch in glyph |%s|\n"), sc1->name);
 	    }
 	}
     }
-    if ( ( fd->flags&fcf_hinting ) &&
+    if ( ( fd->flags&fcf_hinting ) && !(val&SS_NoMatch) &&
 	    !CompareHintmasks( sc1->layers[ly_fore].splines,sc2->layers[ly_fore].splines ))
-	GlyphDiffError(fd,_("Hint masks differ in glyph >%s<\n"), sc1->name);
+	GlyphDiffSCError(fd,sc1,_("Hint masks differ in glyph |%s|\n"), sc1->name);
     if ( ( fd->flags&fcf_hinting ) && !SCCompareHints( sc1,sc2 ))
-	GlyphDiffError(fd,_("Hints differ in glyph >%s<\n"), sc1->name);
+	GlyphDiffSCError(fd,sc1,_("Hints differ in glyph |%s|\n"), sc1->name);
     if (( fd->flags&fcf_hinting ) && (sc1->ttf_instrs_len!=0 || sc2->ttf_instrs_len!=0)) {
 	if ( sc1->ttf_instrs_len==0 )
-	    GlyphDiffError(fd,_("Glyph >%s< in %s has no truetype instructions\n"),
+	    GlyphDiffSCError(fd,sc1,_("Glyph |%s| in %s has no truetype instructions\n"),
 		    sc1->name, fd->name1 );
 	else if ( sc2->ttf_instrs_len==0 )
-	    GlyphDiffError(fd,_("Glyph >%s< in %s has no truetype instructions\n"),
+	    GlyphDiffSCError(fd,sc1,_("Glyph |%s| in %s has no truetype instructions\n"),
 		    sc1->name, fd->name2 );
 	else if ( sc1->ttf_instrs_len!=sc2->ttf_instrs_len ||
 		memcmp(sc1->ttf_instrs,sc2->ttf_instrs,sc1->ttf_instrs_len)!=0 )
-	    GlyphDiffError(fd,_("Glyph >%s< has different truetype instructions\n"),
+	    GlyphDiffSCError(fd,sc1,_("Glyph |%s| has different truetype instructions\n"),
 		    sc1->name );
     }
+    GlyphDiffSCFinish(fd);
 }
 
 static void comparefontglyphs(struct font_diff *fd) {
@@ -882,28 +923,42 @@ static void comparefontglyphs(struct font_diff *fd) {
     SplineChar *sc, *sc2;
     SplineFont *sf1 = fd->sf1, *sf2=fd->sf2;
 
-    fd->local_diff = false;
+    fd->top_diff = fd->local_diff = false;
     for ( gid1=0; gid1<sf1->glyphcnt; ++gid1 ) {
 	if ( (sc=sf1->glyphs[gid1])!=NULL && !sc->ticked ) {
-	    if ( !fd->local_diff )
-		fprintf( fd->diffs, _(" Glyphs in %s but not in %s\n"), fd->name1, fd->name2 );
-	    fd->local_diff = fd->diff = true;
-	    fprintf( fd->diffs, _("  Glyph >%s< missing from %s\n"), sc->name, fd->name2 );
+	    if ( !fd->top_diff )
+		fprintf( fd->diffs, _("Outline Glyphs\n") );
+	    if ( !fd->local_diff ) {
+		putc(' ',fd->diffs);
+		fprintf( fd->diffs, _("Glyphs in %s but not in %s\n"), fd->name1, fd->name2 );
+	    }
+	    fd->local_diff = fd->top_diff = fd->diff = true;
+	    fputs("  ",fd->diffs);
+	    fprintf( fd->diffs, _("Glyph |%s| missing from %s\n"), sc->name, fd->name2 );
 	}
     }
 
     fd->local_diff = false;
     for ( gid2=0; gid2<sf2->glyphcnt; ++gid2 )
 	if ( (sc=sf2->glyphs[gid2])!=NULL && !sc->ticked ) {
-	    if ( !fd->local_diff )
-		fprintf( fd->diffs, _(" Glyphs in %s but not in %s\n"), fd->name2, fd->name1 );
-	    fd->local_diff = fd->diff = true;
-	    fprintf( fd->diffs, _("  Glyph >%s< missing from %s\n"), sc->name, fd->name1 );
+	    if ( !fd->top_diff )
+		fprintf( fd->diffs, _("Outline Glyphs\n") );
+	    if ( !fd->local_diff ) {
+		putc(' ',fd->diffs);
+		fprintf( fd->diffs, _("Glyphs in %s but not in %s\n"), fd->name2, fd->name1 );
+	    }
+	    fd->local_diff = fd->top_diff = fd->diff = true;
+	    fputs("  ",fd->diffs);
+	    fprintf( fd->diffs, _("Glyph |%s| missing from %s\n"), sc->name, fd->name1 );
 	}
 
     if ( sf1->ascent+sf1->descent != sf2->ascent+sf2->descent ) {
-	fprintf( fd->diffs, _(" Glyph Differences\n") );
-	fprintf( fd->diffs, _("  ppem is different in the two fonts, cowardly refusing to compare glyphs\n") );
+	if ( !fd->top_diff )
+	    fprintf( fd->diffs, _("Outline Glyphs\n") );
+	putc(' ',fd->diffs);
+	fprintf( fd->diffs, _("Glyph Differences\n") );
+	fputs("  ",fd->diffs);
+	fprintf( fd->diffs, _("ppem is different in the two fonts, cowardly refusing to compare glyphs\n") );
 	fd->diff = true;
 return;
     }
@@ -915,6 +970,287 @@ return;
     }
 }
 
+static void comparebitmapglyphs(struct font_diff *fd, BDFFont *bdf1, BDFFont *bdf2) {
+    BDFChar *bdfc, *bdfc2;
+    int gid1, gid2;
+
+    for ( gid1=0; gid1<bdf1->glyphcnt; ++gid1 ) if ( (bdfc=bdf1->glyphs[gid1])!=NULL )
+	bdfc->ticked = false;
+    for ( gid2=0; gid2<bdf2->glyphcnt; ++gid2 ) if ( (bdfc=bdf2->glyphs[gid2])!=NULL )
+	bdfc->ticked = false;
+
+    fd->middle_diff = fd->local_diff = false;
+    for ( gid1=0; gid1<bdf1->glyphcnt; ++gid1 ) {
+	if ( (bdfc=bdf1->glyphs[gid1])!=NULL ) {
+	    bdfc2 = NULL;
+	    if ( fd->matches[gid1]!=NULL ) {
+		gid2 = fd->matches[gid1]->orig_pos;
+		if ( gid2<bdf2->glyphcnt ) {
+		    bdfc2 = bdf2->glyphs[gid2];
+		    bdfc2->ticked = true;
+		    bdfc->ticked = true;
+		}
+	    }
+	    if ( bdfc2==NULL ) {
+		if ( !fd->top_diff )
+		    fprintf( fd->diffs, _("Bitmap Strikes\n") );
+		if ( !fd->middle_diff ) {
+		    putc(' ',fd->diffs);
+		    fprintf( fd->diffs, _("Strike %d@%d\n"),
+			    bdf1->pixelsize, BDFDepth(bdf1) );
+		}
+		if ( !fd->local_diff ) {
+		    fputs("  ",fd->diffs);
+		    fprintf( fd->diffs, _("Glyphs in %s but not in %s at %d@%d\n"),
+			    fd->name1, fd->name2, bdf1->pixelsize, BDFDepth(bdf1) );
+		}
+		fd->local_diff = fd->middle_diff = fd->top_diff = fd->diff = true;
+		fputs("   ",fd->diffs);
+		fprintf( fd->diffs, _("Glyph |%s| missing from %s at %d@%d\n"),
+			bdfc->sc->name, fd->name2, bdf1->pixelsize, BDFDepth(bdf1) );
+	    }
+	}
+    }
+
+    fd->local_diff = false;
+    for ( gid2=0; gid2<bdf2->glyphcnt; ++gid2 )
+	if ( (bdfc=bdf2->glyphs[gid2])!=NULL && !bdfc->ticked ) {
+	    if ( !fd->top_diff )
+		fprintf( fd->diffs, _("Bitmap Strikes\n") );
+	    if ( !fd->middle_diff ) {
+		putc(' ',fd->diffs);
+		fprintf( fd->diffs, _("Strike %d@%d\n"),
+			bdf1->pixelsize, BDFDepth(bdf1) );
+	    }
+	    if ( !fd->local_diff ) {
+		fputs("  ",fd->diffs);
+		fprintf( fd->diffs, _("Glyphs in %s but not in %s at %d@%d\n"),
+			fd->name2, fd->name2, bdf1->pixelsize, BDFDepth(bdf1) );
+	    }
+	    fd->local_diff = fd->middle_diff = fd->top_diff = fd->diff = true;
+	    fputs("   ",fd->diffs);
+	    fprintf( fd->diffs, _("Glyph |%s| missing from %s at %d@%d\n"),
+		    bdfc->sc->name, fd->name1, bdf1->pixelsize, BDFDepth(bdf1) );
+	}
+
+    fd->local_diff = false;
+    for ( gid1=0; gid1<bdf1->glyphcnt; ++gid1 ) {
+	if ( (bdfc=bdf1->glyphs[gid1])!=NULL ) {
+	    bdfc2 = NULL;
+	    if ( fd->matches[gid1]!=NULL ) {
+		gid2 = fd->matches[gid1]->orig_pos;
+		if ( gid2<bdf2->glyphcnt )
+		    bdfc2 = bdf2->glyphs[gid2];
+	    }
+	    if ( bdfc2!=NULL ) {
+		int val = BitmapCompare(bdfc,bdfc2,0,0);
+		char *leader = "   ";
+		if ( !fd->top_diff )
+		    fprintf( fd->diffs, _("Bitmap Strikes\n") );
+		if ( !fd->middle_diff ) {
+		    putc(' ',fd->diffs);
+		    fprintf( fd->diffs, _("Strike %d@%d\n"),
+			    bdf1->pixelsize, BDFDepth(bdf1) );
+		}
+		if ( !fd->local_diff ) {
+		    fputs("  ",fd->diffs);
+		    fprintf( fd->diffs, _("Glyphs Differences at %d@%d\n"),
+			    bdf1->pixelsize, BDFDepth(bdf1) );
+		}
+		if ( ((val&SS_WidthMismatch)!=0) + ((val&SS_VWidthMismatch)!=0) +
+			((val&(BC_BoundingBoxMismatch|BC_BitmapMismatch))!=0)>1 ) {
+		    fputs(leader,fd->diffs);
+		    fprintf( fd->diffs, _("Glyph |%s| differs at %d@%d\n"),
+			    bdfc->sc->name,bdf1->pixelsize, BDFDepth(bdf1) );
+		    leader = "    ";
+		}
+		if ( val&SS_WidthMismatch ) {
+		    fputs(leader,fd->diffs);
+		    fprintf(fd->diffs,_("Glyph |%s| has advance width %d in %s but %d in %s at %d@%d\n"),
+			    bdfc->sc->name, bdfc->width, fd->name1, bdfc2->width, fd->name2,
+			    bdf1->pixelsize, BDFDepth(bdf1));
+		}
+		if ( val&SS_VWidthMismatch ) {
+		    fputs(leader,fd->diffs);
+		    fprintf(fd->diffs,_("Glyph |%s| has vertical advance width %d in %s but %d in %s at %d@%d\n"),
+			    bdfc->sc->name, bdfc->vwidth, fd->name1, bdfc2->vwidth, fd->name2,
+			    bdf1->pixelsize, BDFDepth(bdf1));
+		}
+		if ( val&(BC_BoundingBoxMismatch|BC_BitmapMismatch) ) {
+		    fputs(leader,fd->diffs);
+		    fprintf(fd->diffs,_("Glyph |%s| has a different bitmap at %d@%d\n"),
+			    bdfc->sc->name, bdf1->pixelsize, BDFDepth(bdf1));
+		}
+		fd->local_diff = fd->middle_diff = fd->top_diff = fd->diff = true;
+	    }
+	}
+    }
+}
+
+static void comparebitmapstrikes(struct font_diff *fd) {
+    SplineFont *sf1 = fd->sf1, *sf2=fd->sf2;
+    BDFFont *bdf1, *bdf2;
+
+    fd->top_diff = fd->middle_diff = fd->local_diff = false;
+    for ( bdf1=sf1->bitmaps; bdf1!=NULL; bdf1=bdf1->next ) {
+	for ( bdf2=sf2->bitmaps;
+		bdf2!=NULL && (bdf1->pixelsize!=bdf2->pixelsize || BDFDepth(bdf1)!=BDFDepth(bdf2));
+		bdf2=bdf2->next );
+	if ( bdf2==NULL ) {
+	    if ( !fd->top_diff )
+		fprintf( fd->diffs, _("Bitmap Strikes\n") );
+	    if ( !fd->middle_diff ) {
+		putc(' ',fd->diffs);
+		fprintf( fd->diffs, _("Strikes in %s but not in %s\n"), fd->name1, fd->name2 );
+	    }
+	    fd->top_diff = fd->middle_diff = fd->diff = true;
+	    fputs("  ",fd->diffs);
+	    fprintf( fd->diffs, _("Strike %d@%d missing from %s\n"),
+		    bdf1->pixelsize, BDFDepth(bdf1), fd->name2 );
+	}
+    }
+
+    fd->middle_diff = false;
+    for ( bdf2=sf2->bitmaps; bdf2!=NULL; bdf2=bdf2->next ) {
+	for ( bdf1=sf1->bitmaps;
+		bdf1!=NULL && (bdf2->pixelsize!=bdf1->pixelsize || BDFDepth(bdf2)!=BDFDepth(bdf1));
+		bdf1=bdf1->next );
+	if ( bdf1==NULL ) {
+	    if ( !fd->top_diff )
+		fprintf( fd->diffs, _("Bitmap Strikes\n") );
+	    if ( !fd->middle_diff ) {
+		putc(' ',fd->diffs);
+		fprintf( fd->diffs, _("Strikes in %s but not in %s\n"), fd->name2, fd->name1 );
+	    }
+	    fd->top_diff = fd->middle_diff = fd->diff = true;
+	    fputs("  ",fd->diffs);
+	    fprintf( fd->diffs, _("Strike %d@%d missing from %s\n"),
+		    bdf2->pixelsize, BDFDepth(bdf2), fd->name1 );
+	}
+    }
+
+    fd->middle_diff = false;
+    for ( bdf1=sf1->bitmaps; bdf1!=NULL; bdf1=bdf1->next ) {
+	for ( bdf2=sf2->bitmaps;
+		bdf2!=NULL && (bdf1->pixelsize!=bdf2->pixelsize || BDFDepth(bdf1)!=BDFDepth(bdf2));
+		bdf2=bdf2->next );
+	if ( bdf2!=NULL )
+	    comparebitmapglyphs(fd, bdf1, bdf2);
+    }
+}
+
+static void NameCompare(struct font_diff *fd,char *name1, char *name2, char *id) {
+
+    if ( strcmp(name1,name2)!=0 ) {
+	if ( !fd->top_diff )
+	    fprintf( fd->diffs, "Names\n" );
+	fd->top_diff = fd->diff = true;
+	putc(' ',fd->diffs);
+	fprintf( fd->diffs, _("The %s differs. In %s it is ("), id, fd->name1 );
+	while ( *name1!='\0' ) {
+	    putc(*name1,fd->diffs);
+	    if ( *name1=='\n' )
+		fputs("  ",fd->diffs);
+	    ++name1;
+	}
+	fprintf( fd->diffs, _(") while in %s it is ("), fd->name2 );
+	while ( *name2!='\0' ) {
+	    putc(*name2,fd->diffs);
+	    if ( *name2=='\n' )
+		fputs("  ",fd->diffs);
+	    ++name2;
+	}
+	fputs(")\n",fd->diffs);
+    }
+}
+
+static void TtfNameCompare(struct font_diff *fd,char *name1,char *name2,
+	int lang,int strid) {
+    char strnamebuf[200];
+
+    if ( strcmp(name1,name2)==0 )
+return;
+    sprintf( strnamebuf, "%.90s %.90s", TTFNameIds(strid), MSLangString(lang));
+    NameCompare(fd,name1, name2, strnamebuf);
+}
+
+static void TtfMissingName(struct font_diff *fd,char *fontname_present,
+	char *fontname_missing, char *name, int lang,int strid) {
+    char strnamebuf[200];
+
+    sprintf( strnamebuf, "%.90s %.90s", TTFNameIds(strid), MSLangString(lang));
+    if ( !fd->top_diff )
+	fprintf( fd->diffs, "Names\n" );
+    fd->top_diff = fd->diff = true;
+    putc(' ',fd->diffs);
+    fprintf( fd->diffs, _("The %s is missing in %s. Whilst in %s it is ("),
+	    strnamebuf, fontname_missing, fontname_present );
+    while ( *name!='\0' ) {
+	putc(*name,fd->diffs);
+	if ( *name=='\n' )
+	    fputs("  ",fd->diffs);
+	++name;
+    }
+    fputs(")\n",fd->diffs);
+}
+
+static void comparefontnames(struct font_diff *fd) {
+    SplineFont *sf1 = fd->sf1, *sf2=fd->sf2;
+    struct ttflangname *names1, *names2;
+    int id;
+
+    fd->top_diff = fd->middle_diff = fd->local_diff = false;
+
+    NameCompare(fd,sf1->fontname,sf2->fontname,_("font name"));
+    NameCompare(fd,sf1->familyname,sf2->familyname,_("family name"));
+    NameCompare(fd,sf1->fullname,sf2->fullname,_("full name"));
+    NameCompare(fd,sf1->weight,sf2->weight,_("weight"));
+    NameCompare(fd,sf1->copyright,sf2->copyright,_("copyright notice"));
+    NameCompare(fd,sf1->version,sf2->version,_("version"));
+    for ( names1=sf1->names; names1!=NULL; names1=names1->next ) {
+	for ( names2=sf2->names; names2!=NULL && names2->lang!=names1->lang; names2=names2->next );
+	if ( names2!=NULL ) {
+	    for ( id=0; id<ttf_namemax; ++id )
+		if ( names1->names[id]!=NULL && names2->names[id]!=NULL )
+		    TtfNameCompare(fd,names1->names[id],names2->names[id],names1->lang,id);
+	}
+    }
+    for ( names1=sf1->names; names1!=NULL; names1=names1->next ) {
+	for ( names2=sf2->names; names2!=NULL && names2->lang!=names1->lang; names2=names2->next );
+	if ( names2!=NULL ) {
+	    for ( id=0; id<ttf_namemax; ++id )
+		if ( names1->names[id]!=NULL && names2->names[id]==NULL )
+		    TtfMissingName(fd,fd->name1,fd->name2,names1->names[id],names1->lang,id);
+	} else {
+	    for ( id=0; id<ttf_namemax; ++id )
+		if ( names1->names[id]!=NULL )
+		    TtfMissingName(fd,fd->name1,fd->name2,names1->names[id],names1->lang,id);
+	}
+    }
+    for ( names2=sf2->names; names2!=NULL; names2=names2->next ) {
+	for ( names1=sf1->names; names1!=NULL && names1->lang!=names2->lang; names1=names1->next );
+	if ( names1!=NULL ) {
+	    for ( id=0; id<ttf_namemax; ++id )
+		if ( names2->names[id]!=NULL && names1->names[id]==NULL )
+		    TtfMissingName(fd,fd->name2,fd->name1,names2->names[id],names2->lang,id);
+	} else {
+	    for ( id=0; id<ttf_namemax; ++id )
+		if ( names2->names[id]!=NULL )
+		    TtfMissingName(fd,fd->name2,fd->name1,names2->names[id],names2->lang,id);
+	}
+    }
+}
+
+static void comparegpos(struct font_diff *fd) {
+    fprintf( fd->diffs, "Glyph Positioning\n Not Yet Implemented\n" );
+}
+
+static void comparegsub(struct font_diff *fd) {
+    fprintf( fd->diffs, "Glyph Substitutions\n Not Yet Implemented\n" );
+}
+
+#include "ttf.h"
+
 int CompareFonts(SplineFont *sf1, SplineFont *sf2, FILE *diffs,
 	int flags) {
     int gid1, gid2;
@@ -922,6 +1258,17 @@ int CompareFonts(SplineFont *sf1, SplineFont *sf2, FILE *diffs,
     struct font_diff fd;
 
     memset(&fd,0,sizeof(fd));
+
+    if (( sf1->cidmaster || sf1->subfontcnt!=0 ) &&
+	    (sf2->cidmaster || sf2->subfontcnt!=0 )) {
+	if ( sf1->cidmaster ) sf1 = sf1->cidmaster;
+	if ( sf2->cidmaster ) sf2 = sf2->cidmaster;
+	SFDummyUpCIDs(NULL,sf1);
+	SFDummyUpCIDs(NULL,sf2);
+    } else if ( sf1->subfontcnt!=0 )
+	sf1 = sf1->subfonts[0];
+    else if ( sf2->subfontcnt!=0 )
+	sf2 = sf2->subfonts[0];
     fd.sf1 = sf1; fd.sf2 = sf2; fd.diffs = diffs; fd.flags = flags;
 
     if ( strcmp( sf1->fontname,sf2->fontname )!=0 ) {
@@ -958,8 +1305,24 @@ int CompareFonts(SplineFont *sf1, SplineFont *sf2, FILE *diffs,
 	}
     }
 
-    comparefontglyphs(&fd);
+    if ( flags&fcf_names )
+	comparefontnames(&fd);
+    if ( flags&fcf_outlines )
+	comparefontglyphs(&fd);
+    if ( flags&fcf_bitmaps )
+	comparebitmapstrikes(&fd);
+    if ( flags&fcf_gpos )
+	comparegpos(&fd);
+    if ( flags&fcf_gpos )
+	comparegsub(&fd);
 
     free(fd.matches);
+    if ( sf1->subfontcnt!=0 && sf2->subfontcnt!=0 ) {
+	free(sf1->glyphs); sf1->glyphs = NULL;
+	sf1->glyphcnt = sf1->glyphmax = 0;
+	free(sf2->glyphs); sf2->glyphs = NULL;
+	sf2->glyphcnt = sf2->glyphmax = 0;
+    }
+
 return( fd.diff );
 }

@@ -793,3 +793,5 @@ extern struct otfname *FindAllLangEntries(FILE *ttf, struct ttfinfo *info, int i
 #define TeX_BigOpSpace3		CHR('B','O','S','3')
 #define TeX_BigOpSpace4		CHR('B','O','S','4')
 #define TeX_BigOpSpace5		CHR('B','O','S','5')
+
+extern void SFDummyUpCIDs(struct glyphinfo *gi,SplineFont *sf);

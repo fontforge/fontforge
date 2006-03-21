@@ -1524,6 +1524,7 @@ void FontViewMenu_Metafont(GtkMenuItem *menuitem, gpointer user_data) {
 #define MID_POV		2236
 #define MID_BuildDuplicates	2237
 #define MID_StrikeInfo	2238
+#define MID_FontCompare	2239
 #define MID_Center	2600
 #define MID_Thirds	2601
 #define MID_SetWidth	2602
@@ -4071,6 +4072,16 @@ static void FVMenuBuildSyllables(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 # if defined(FONTFORGE_CONFIG_GDRAW)
+static void FVMenuCompareFonts(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_CompareFonts(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+    FontCompareDlg(fv);
+}
+
+# if defined(FONTFORGE_CONFIG_GDRAW)
 static void FVMenuMergeFonts(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
@@ -6018,6 +6029,9 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_MergeFonts:
 	    mi->ti.disabled = fv->sf->bitmaps!=NULL && fv->sf->onlybitmaps;
 	  break;
+	  case MID_FontCompare:
+	    mi->ti.disabled = fv_list->next==NULL;
+	  break;
 	  case MID_InterpolateFonts:
 	    mi->ti.disabled = fv->sf->onlybitmaps;
 	  break;
@@ -6373,6 +6387,7 @@ static GMenuItem ellist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Merge Fonts..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuMergeFonts, MID_MergeFonts },
     { { (unichar_t *) N_("Interpo_late Fonts..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'p' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuInterpFonts, MID_InterpolateFonts },
+    { { (unichar_t *) N_("Compare Fonts..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'p' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuCompareFonts, MID_FontCompare },
     { NULL }
 };
 
