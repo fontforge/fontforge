@@ -1275,6 +1275,8 @@ return;
     sc->orig_pos = orig_pos;
     sc->unicodeenc = base->unicodeenc;
     new->glyphs[orig_pos] = sc;
+    if ( orig_pos+1>new->glyphcnt )
+	new->glyphcnt = orig_pos+1;
     sc->parent = new;
     sc->changed = true;
     sc->views = NULL;
@@ -1336,7 +1338,8 @@ static void InterpFixupRefChars(SplineFont *sf) {
     }
 }
 
-SplineFont *InterpolateFont(SplineFont *base, SplineFont *other, real amount) {
+SplineFont *InterpolateFont(SplineFont *base, SplineFont *other, real amount,
+	Encoding *enc) {
     SplineFont *new;
     int i, index;
 
@@ -1370,7 +1373,7 @@ return( NULL );
     new->descent = base->descent + amount*(other->descent-base->descent);
     for ( i=0; i<base->glyphcnt; ++i ) if ( base->glyphs[i]!=NULL ) {
 	index = SFFindExistingSlot(other,base->glyphs[i]->unicodeenc,base->glyphs[i]->name);
-	if ( other->glyphs[index]!=NULL ) {
+	if ( index!=-1 && other->glyphs[index]!=NULL ) {
 	    InterpolateChar(new,i,base->glyphs[i],other->glyphs[index],amount);
 	    if ( new->glyphs[i]!=NULL )
 		new->glyphs[i]->kerns = InterpKerns(base->glyphs[i]->kerns,
@@ -1379,6 +1382,7 @@ return( NULL );
     }
     InterpFixupRefChars(new);
     new->changed = true;
+    new->map = EncMapFromEncoding(new,enc);
 return( new );
 }
 
@@ -1393,7 +1397,7 @@ return;
     free(filename);
     if ( sf==NULL )
 return;
-    FontViewCreate(InterpolateFont(fv->sf,sf,amount));
+    FontViewCreate(InterpolateFont(fv->sf,sf,amount,fv->map->enc));
 }
 
 #define CID_Amount	1000
@@ -1422,7 +1426,7 @@ return( true );
 	if ( fv==NULL )
 	    InterAskFilename(d->fv,last_amount/100.0);
 	else
-	    FontViewCreate(InterpolateFont(d->fv->sf,fv->sf,last_amount/100.0));
+	    FontViewCreate(InterpolateFont(d->fv->sf,fv->sf,last_amount/100.0,d->fv->map->enc));
 	d->done = true;
     }
 return( true );
