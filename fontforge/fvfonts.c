@@ -292,8 +292,13 @@ struct glyphnamehash {
 static __inline__ int hashname(const char *pt) {
     int val = 0;
 
-    while ( *pt )
-	val += *pt++;
+    while ( *pt ) {
+	val = (val<<3)|((val>>29)&0x7);
+	val ^= (unsigned char)(*pt-'!');
+	pt++;
+    }
+    val ^= (val>>16);
+    val &= 0xffff;
     val %= GN_HSIZE;
 return( val );
 }
