@@ -762,7 +762,7 @@ typedef struct kernclass {
     					/*  and means everything not specified elsewhere */
     uint16 sli;
     uint16 flags;
-    uint16 kcid;
+    uint16 kcid;			/* Temporary value, used for many things briefly */
     int16 *offsets;			/* array of first_cnt*second_cnt entries */
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
     DeviceTable *adjusts;		/* array of first_cnt*second_cnt entries */

@@ -619,6 +619,41 @@ char *TagFullName(SplineFont *sf,uint32 tag, int ismac) {
 return( copy( ubuf ));
 }
 #elif defined(FONTFORGE_CONFIG_GTK)
+#else
+char *TagFullName(SplineFont *sf,uint32 tag, int ismac) {
+    char ubuf[200], *end = ubuf+sizeof(ubuf), *setname;
+    int j,k;
+    extern GTextInfo *pst_tags[];
+
+    if ( ismac==-1 )
+	/* Guess */
+	ismac = (tag>>24)<' ' || (tag>>24)>0x7e;
+
+    if ( ismac ) {
+	sprintf( ubuf, "<%d,%d> ", tag>>16,tag&0xffff );
+	if ( (setname = PickNameFromMacName(FindMacSettingName(sf,tag>>16,tag&0xffff)))!=NULL ) {
+	    strcat( ubuf, setname );
+	    free( setname );
+	}
+    } else {
+	int stag = tag;
+	CharInfoInit();
+	if ( tag==CHR('n','u','t','f') )	/* early name that was standardize later as... */
+	    stag = CHR('a','f','r','c');	/*  Stood for nut fractions. "nut" meaning "fits in an en" in old typography-speak => vertical fractions rather than diagonal ones */
+	if ( tag==REQUIRED_FEATURE ) {
+	    strcpy(ubuf,_("Required Feature"));
+	} else {
+	    ubuf[0] = '\'';
+	    ubuf[1] = tag>>24;
+	    ubuf[2] = (tag>>16)&0xff;
+	    ubuf[3] = (tag>>8)&0xff;
+	    ubuf[4] = tag&0xff;
+	    ubuf[5] = '\'';
+	    ubuf[6] = '\0';
+	}
+    }
+return( copy( ubuf ));
+}
 #endif
 
 static void BuildMorxScript(struct node *node,struct att_dlg *att) {

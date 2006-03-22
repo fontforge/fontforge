@@ -758,6 +758,7 @@ struct font_diff {
     int fcnt1, fcnt2;
     uint32 *tags1, *tags2;
     int is_gpos;
+    uint32 tag;			/* Of currently active feature */
 };
 
 static void GlyphDiffSCError(struct font_diff *fd, SplineChar *sc, char *format, ... ) {
@@ -1314,8 +1315,443 @@ static uint32 *FindFeatureTags(SplineFont *sf,int is_gpos,int *cnt) {
 return( tb.tags );
 }
 
+static void featureheader(struct font_diff *fd) {
+    char *tagfullname;
+
+    if ( !fd->top_diff )
+	fprintf( fd->diffs, fd->is_gpos ? _("Glyph Positioning\n") : _("Glyph Substitution\n"));
+    if ( !fd->middle_diff ) {
+	putc( ' ', fd->diffs);
+	fprintf( fd->diffs, _("Feature Differences\n") );
+    }
+    if ( !fd->local_diff ) {
+	fputs("  ",fd->diffs);
+	tagfullname = TagFullName(fd->sf1,fd->tag,-1);
+	fprintf( fd->diffs, _("Feature %s\n"), tagfullname );
+	free(tagfullname);
+    }
+    fd->top_diff = fd->middle_diff = fd->diff = fd->local_diff = true;
+}
+
+static void complainscfeature(struct font_diff *fd, SplineChar *sc, char *format, ... ) {
+    va_list ap;
+
+    featureheader(fd);
+
+    va_start(ap,format);
+    if ( fd->last_sc==sc ) {
+	if ( fd->held[0] ) {
+	    fputs("   ",fd->diffs);
+	    fprintf( fd->diffs, _("Glyph |%s| differs\n"), sc->name );
+	    fprintf( fd->diffs, "    %s", fd->held );
+	    fd->held[0] = '\0';
+	}
+	fputs("    ",fd->diffs);
+	vfprintf(fd->diffs,format,ap);
+    } else {
+	vsnprintf(fd->held,sizeof(fd->held),format,ap);
+	fd->last_sc = sc;
+    }
+    va_end(ap);
+}
+
+static void complainapfeature(struct font_diff *fd,SplineChar *sc,
+	AnchorPoint *ap,char *missingname) {
+    complainscfeature(fd, sc, _("|%s| in %s did not contain an anchor point (%g,%g) class %s\n"),
+	    sc->name, missingname, ap->me.x, ap->me.y, ap->anchor->name);
+}
+
+static void complainpstfeature(struct font_diff *fd,SplineChar *sc,
+	PST *pst,char *missingname) {
+    if ( pst->type==pst_position ) {
+	complainscfeature(fd, sc, _("|%s| in %s did not contain a positioning lookup dx=%d dy=%d dx_adv=%d dy_adv=%d\n"),
+		sc->name, missingname, pst->u.pos.xoff, pst->u.pos.yoff, pst->u.pos.h_adv_off, pst->u.pos.v_adv_off );
+    } else if ( pst->type==pst_pair ) {
+	complainscfeature(fd, sc, _("|%s| in %s did not contain a pairwise positioning lookup dx=%d dy=%d dx_adv=%d dy_adv=%d to %s dx=%d dy=%d dx_adv=%d dy_adv=%d\n"),
+		sc->name, missingname, 
+		pst->u.pair.vr[0].xoff, pst->u.pair.vr[0].yoff, pst->u.pair.vr[0].h_adv_off, pst->u.pair.vr[0].v_adv_off,
+		pst->u.pair.paired,
+	    pst->u.pair.vr[1].xoff, pst->u.pair.vr[1].yoff, pst->u.pair.vr[1].h_adv_off, pst->u.pair.vr[1].v_adv_off );
+    } else if ( pst->type==pst_substitution || pst->type==pst_alternate || pst->type==pst_multiple || pst->type==pst_ligature ) {
+	complainscfeature(fd, sc, _("|%s| in %s did not contain a substitution lookup to %s\n"),
+		sc->name, missingname, pst->u.subs.variant );
+    }
+}
+
+static void finishscfeature(struct font_diff *fd ) {
+    if ( fd->held[0] ) {
+	fputs("   ",fd->diffs);
+	fputs(fd->held,fd->diffs);
+	fd->held[0] = '\0';
+    }
+}
+
+static int slimatch(struct font_diff *fd,int sli1, int sli2) {
+    struct script_record *sr1 = fd->sf1->script_lang[sli1];
+    struct script_record *sr2 = fd->sf2->script_lang[sli2];
+    int i;
+
+    if ( sli1==0xffff && sli2==0xffff )
+return( true );
+    if ( sli1==0xffff || sli2==0xffff )
+return( false );
+
+    sr1 = fd->sf1->script_lang[sli1];
+    sr2 = fd->sf2->script_lang[sli2];
+    while ( sr1->script!=0 ) {
+	if ( sr1->script!=sr2->script )
+return( false );
+	for ( i=0; sr1->langs[i]!=0; ++i )
+	    if ( sr1->langs[i]!=sr2->langs[i] )
+return( false );
+	if ( sr2->langs[i]!=0 )
+return( false );
+	++sr1; ++sr2;
+    }
+    if ( sr2->script!=0 )
+return( false );
+
+return( true );
+}
+
+static int comparekc(struct font_diff *fd,KernClass *kc1, KernClass *kc2) {
+    int i;
+
+    if ( kc1->first_cnt!=kc2->first_cnt || kc1->second_cnt!=kc2->second_cnt )
+return( false );
+    if ( !slimatch(fd,kc1->sli,kc2->sli))
+return( false );
+    if ( memcmp(kc1->offsets,kc2->offsets,kc1->first_cnt*kc2->second_cnt*sizeof(int16))!=0 )
+return( false );
+    for ( i=1; i<kc1->first_cnt; ++i )
+	if ( strcmp(kc1->firsts[i],kc2->firsts[i])!=0 )
+return( false );
+    for ( i=1; i<kc1->second_cnt; ++i )
+	if ( strcmp(kc1->seconds[i],kc2->seconds[i])!=0 )
+return( false );
+
+return( true );
+}
+
+static void comparekernclasses(struct font_diff *fd,KernClass *kc1, KernClass *kc2) {
+    KernClass *t1, *t2;
+    int i;
+
+    for ( t1=kc1; t1!=NULL; t1=t1->next )
+	t1->kcid = false;
+    for ( t2=kc2; t2!=NULL; t2=t2->next )
+	t2->kcid = false;
+    for ( t1=kc1; t1!=NULL; t1=t1->next ) {
+	for ( t2=kc2; t2!=NULL; t2=t2->next ) if ( !t2->kcid ) {
+	    if ( comparekc(fd,t1,t2)) {
+		t1->kcid = t2->kcid = true;
+	break;
+	    }
+	}
+    }
+    for ( t1=kc1; t1!=NULL; t1=t1->next )
+	if ( t1->kcid )
+    break;
+    if ( kc1!=NULL && t1==NULL ) {
+	featureheader(fd);
+	fputs("   ",fd->diffs);
+	if ( kc1->next==NULL )
+	    fprintf( fd->diffs,_("The kerning class in %s fails to match anything in %s\n"),
+		    fd->name1, fd->name2 );
+	else
+	    fprintf( fd->diffs,_("All kerning classes in %s fail to match anything in %s\n"),
+		    fd->name1, fd->name2 );
+	if ( kc2==NULL )
+	    /* Do Nothing */;
+	else if ( kc2->next==NULL )
+	    fprintf( fd->diffs,_("The kerning class in %s fails to match anything in %s\n"),
+		    fd->name2, fd->name1 );
+	else
+	    fprintf( fd->diffs,_("All kerning classes in %s fail to match anything in %s\n"),
+		    fd->name2, fd->name1 );
+    } else {
+	for ( t1=kc1, i=0; t1!=NULL; t1=t1->next, ++i )
+	    if ( !t1->kcid ) {
+		featureheader(fd);
+		fputs("   ",fd->diffs);
+		fprintf( fd->diffs,_("The %dth kerning class in %s does not match anything in %s\n"),
+			i+1, fd->name1, fd->name2 );
+	    }
+	for ( t2=kc2, i=0; t2!=NULL; t2=t2->next, ++i )
+	    if ( !t2->kcid ) {
+		featureheader(fd);
+		fputs("   ",fd->diffs);
+		fprintf( fd->diffs,_("The %dth kerning class in %s does not match anything in %s\n"),
+			i+1, fd->name2, fd->name1 );
+	    }
+    }
+}
+
+static int comparefpst(struct font_diff *fd,FPST *fpst1, FPST *fpst2) {
+    int i,j;
+
+    if ( !slimatch(fd,fpst1->script_lang_index,fpst2->script_lang_index))
+return( false );
+    if ( fpst1->type!=fpst2->type || fpst1->format!=fpst2->format )
+return( false );
+    if ( fpst1->rule_cnt != fpst2->rule_cnt )
+return( false );
+
+    if ( fpst1->nccnt!=fpst2->nccnt || fpst1->bccnt!=fpst2->bccnt || fpst1->fccnt!=fpst2->fccnt )
+return( false );
+    for ( i=0; i<fpst1->nccnt; ++i )
+	if ( strcmp(fpst1->nclass[i],fpst2->nclass[i])!=0 )
+return( false );
+    for ( i=0; i<fpst1->bccnt; ++i )
+	if ( strcmp(fpst1->bclass[i],fpst2->bclass[i])!=0 )
+return( false );
+    for ( i=0; i<fpst1->fccnt; ++i )
+	if ( strcmp(fpst1->fclass[i],fpst2->fclass[i])!=0 )
+return( false );
+
+    for ( i=0; i<fpst1->rule_cnt; ++i ) {
+	if ( fpst1->format==pst_glyphs ) {
+	    if ( strcmp(fpst1->rules[i].u.glyph.names,fpst2->rules[i].u.glyph.names)!=0 )
+return( false );
+	    if ( fpst1->rules[i].u.glyph.back!=NULL && fpst2->rules[i].u.glyph.back!=NULL &&
+		    strcmp(fpst1->rules[i].u.glyph.back,fpst2->rules[i].u.glyph.back)!=0 )
+return( false );
+	    if ( fpst1->rules[i].u.glyph.fore!=NULL && fpst2->rules[i].u.glyph.fore!=NULL &&
+		    strcmp(fpst1->rules[i].u.glyph.fore,fpst2->rules[i].u.glyph.fore)!=0 )
+return( false );
+	} else if ( fpst1->format == pst_class ) {
+	    if ( fpst1->rules[i].u.class.ncnt!=fpst2->rules[i].u.class.ncnt ||
+		    fpst1->rules[i].u.class.bcnt!=fpst2->rules[i].u.class.bcnt ||
+		    fpst1->rules[i].u.class.fcnt!=fpst2->rules[i].u.class.fcnt )
+return( false );
+	    if ( memcmp(fpst1->rules[i].u.class.nclasses,fpst2->rules[i].u.class.nclasses,
+		    fpst1->rules[i].u.class.ncnt*sizeof(uint16))!=0 )
+return( false );
+	    if ( fpst1->rules[i].u.class.bcnt!=0 &&
+		    memcmp(fpst1->rules[i].u.class.bclasses,fpst2->rules[i].u.class.bclasses,
+			fpst1->rules[i].u.class.bcnt*sizeof(uint16))!=0 )
+return( false );
+	    if ( fpst1->rules[i].u.class.fcnt!=0 &&
+		    memcmp(fpst1->rules[i].u.class.fclasses,fpst2->rules[i].u.class.fclasses,
+			fpst1->rules[i].u.class.fcnt*sizeof(uint16))!=0 )
+return( false );
+	} else if ( fpst1->format == pst_coverage || fpst1->format == pst_reversecoverage ) {
+	    if ( fpst1->rules[i].u.coverage.ncnt!=fpst2->rules[i].u.class.ncnt ||
+		    fpst1->rules[i].u.coverage.bcnt!=fpst2->rules[i].u.class.bcnt ||
+		    fpst1->rules[i].u.coverage.fcnt!=fpst2->rules[i].u.class.fcnt )
+return( false );
+	    for ( j=0; j<fpst1->rules[i].u.coverage.ncnt; ++j )
+		if ( strcmp(fpst1->rules[i].u.coverage.ncovers[j],fpst2->rules[i].u.coverage.ncovers[j])!=0 )
+return( false );
+	    for ( j=0; j<fpst1->rules[i].u.coverage.bcnt; ++j )
+		if ( strcmp(fpst1->rules[i].u.coverage.bcovers[j],fpst2->rules[i].u.coverage.bcovers[j])!=0 )
+return( false );
+	    for ( j=0; j<fpst1->rules[i].u.coverage.fcnt; ++j )
+		if ( strcmp(fpst1->rules[i].u.coverage.fcovers[j],fpst2->rules[i].u.coverage.fcovers[j])!=0 )
+return( false );
+	    if ( fpst1->format == pst_reversecoverage )
+		if ( strcmp(fpst1->rules[i].u.rcoverage.replacements,fpst2->rules[i].u.rcoverage.replacements)!=0 )
+return( false );
+	} else
+return( false);
+
+	if ( fpst1->rules[i].lookup_cnt!=fpst2->rules[i].lookup_cnt )
+return( false );
+	for ( j=0; j<fpst1->rules[i].lookup_cnt; ++j )
+	    if ( fpst1->rules[i].lookups[j].seq!=fpst2->rules[i].lookups[j].seq ||
+		    fpst1->rules[i].lookups[j].lookup_tag!=fpst2->rules[i].lookups[j].lookup_tag )
+return( false );
+    }
+    
+return( true );
+}
+
+static void comparefpsts(struct font_diff *fd,FPST *fpst1, FPST *fpst2) {
+    FPST *t1, *t2;
+    int i, any1, any2;
+
+    for ( t1=fpst1,any1=false; t1!=NULL; t1=t1->next ) {
+	t1->ticked = false;
+	if ( t1->tag==fd->tag ) ++any1;
+    }
+    for ( t2=fpst2,any2=false; t2!=NULL; t2=t2->next ) {
+	t2->ticked = false;
+	if ( t2->tag==fd->tag ) ++any2;
+    }
+    if ( !any1 && !any2 )
+return;
+    for ( t1=fpst1; t1!=NULL; t1=t1->next ) if ( t1->tag==fd->tag ) {
+	for ( t2=fpst2; t2!=NULL; t2=t2->next ) if ( !t2->ticked && t2->tag==fd->tag ) {
+	    if ( comparefpst(fd,t1,t2)) {
+		t1->ticked = t2->ticked = true;
+	break;
+	    }
+	}
+    }
+    for ( t1=fpst1; t1!=NULL; t1=t1->next )
+	if ( t1->ticked )
+    break;
+
+    if ( any1 && t1==NULL ) {
+	featureheader(fd);
+	fputs("   ",fd->diffs);
+	if ( any1==1 )
+	    fprintf( fd->diffs,_("The context/chaining in %s fails to match anything in %s\n"),
+		    fd->name1, fd->name2 );
+	else
+	    fprintf( fd->diffs,_("All context/chainings in %s fail to match anything in %s\n"),
+		    fd->name1, fd->name2 );
+	if ( any2==0 )
+	    /* Do Nothing */;
+	else if ( any2==1 )
+	    fprintf( fd->diffs,_("The context/chaining in %s fails to match anything in %s\n"),
+		    fd->name2, fd->name1 );
+	else
+	    fprintf( fd->diffs,_("All context/chainings in %s fail to match anything in %s\n"),
+		    fd->name2, fd->name1 );
+    } else {
+	for ( t1=fpst1, i=0; t1!=NULL; t1=t1->next, ++i )
+	    if ( !t1->ticked ) {
+		featureheader(fd);
+		fputs("   ",fd->diffs);
+		fprintf( fd->diffs,_("The %dth context/chaining in %s does not match anything in %s\n"),
+			i+1, fd->name1, fd->name2 );
+	    }
+	for ( t2=fpst2, i=0; t2!=NULL; t2=t2->next, ++i )
+	    if ( !t2->ticked ) {
+		featureheader(fd);
+		fputs("   ",fd->diffs);
+		fprintf( fd->diffs,_("The %dth context/chaining in %s does not match anything in %s\n"),
+			i+1, fd->name2, fd->name1 );
+	    }
+    }
+}
+
+static int comparepst(struct font_diff *fd,PST *pst1,PST *pst2) {
+    if ( pst1->type!=pst2->type )
+return( false );
+    if ( !slimatch(fd,pst1->script_lang_index,pst2->script_lang_index))
+return( false );
+    if ( pst1->type==pst_position ) {
+	if ( pst1->u.pos.xoff!=pst2->u.pos.xoff ||
+		pst1->u.pos.yoff!=pst2->u.pos.yoff ||
+		pst1->u.pos.h_adv_off!=pst2->u.pos.h_adv_off ||
+		pst1->u.pos.v_adv_off!=pst2->u.pos.v_adv_off )
+return( false );
+    } else if ( pst1->type==pst_pair ) {
+	if ( pst1->u.pair.vr[0].xoff!=pst2->u.pair.vr[0].xoff ||
+		pst1->u.pair.vr[0].yoff!=pst2->u.pair.vr[0].yoff ||
+		pst1->u.pair.vr[0].h_adv_off!=pst2->u.pair.vr[0].h_adv_off ||
+		pst1->u.pair.vr[0].v_adv_off!=pst2->u.pair.vr[0].v_adv_off ||
+		pst1->u.pair.vr[1].xoff!=pst2->u.pair.vr[1].xoff ||
+		pst1->u.pair.vr[1].yoff!=pst2->u.pair.vr[1].yoff ||
+		pst1->u.pair.vr[1].h_adv_off!=pst2->u.pair.vr[1].h_adv_off ||
+		pst1->u.pair.vr[1].v_adv_off!=pst2->u.pair.vr[1].v_adv_off ||
+		strcmp(pst1->u.pair.paired,pst2->u.pair.paired)!=0 )
+return( false );
+    } else if ( pst1->type==pst_substitution || pst1->type==pst_alternate ||
+	    pst1->type==pst_multiple || pst1->type==pst_ligature ) {
+	if ( strcmp(pst1->u.subs.variant,pst2->u.subs.variant)!=0 )
+return( false );
+    }
+return( true );
+}
+
+static int compareap(struct font_diff *fd,AnchorPoint *ap1,AnchorPoint *ap2) {
+    if ( ap1->type!=ap2->type )
+return( false );
+    if ( !slimatch(fd,ap1->anchor->script_lang_index,ap2->anchor->script_lang_index) )
+return( false );
+    if ( ap1->anchor->type!=ap2->anchor->type )
+return( false );
+    if ( ap1->me.x!=ap2->me.x || ap1->me.y!=ap2->me.y )
+return( false );
+
+return( true );
+}
+
+static void comparefeature(struct font_diff *fd) {
+    int gid1;
+    SplineChar *sc1, *sc2;
+    PST *pst1, *pst2;
+    AnchorPoint *ap1, *ap2;
+    KernPair *kp1, *kp2;
+
+    if ( fd->is_gpos ) {
+	if ( fd->tag==CHR('k','e','r','n') )
+	    comparekernclasses(fd,fd->sf1->kerns,fd->sf2->kerns);
+	else if ( fd->tag==CHR('v','k','r','n') )
+	    comparekernclasses(fd,fd->sf1->vkerns,fd->sf2->vkerns);
+    }
+    comparefpsts(fd,fd->sf1->possub,fd->sf2->possub);
+
+    for ( gid1=0; gid1<fd->sf1->glyphcnt; ++gid1 ) if ( (sc2=fd->matches[gid1])!=NULL && (sc1=fd->sf1->glyphs[gid1])!=NULL ) {
+	for ( pst1=sc1->possub; pst1!=NULL; pst1=pst1->next ) if ( pst1->tag==fd->tag ) {
+	    for ( pst2=sc2->possub; pst2!=NULL; pst2=pst2->next ) if ( pst2->tag==fd->tag ) {
+		if ( comparepst(fd,pst1,pst2))
+	    break;
+	    }
+	    if ( pst2==NULL )
+		complainpstfeature(fd,sc1,pst1,fd->name2);
+	}
+	for ( pst2=sc2->possub; pst2!=NULL; pst2=pst2->next ) if ( pst2->tag==fd->tag ) {
+	    for ( pst1=sc1->possub; pst1!=NULL; pst1=pst1->next ) if ( pst1->tag==fd->tag ) {
+		if ( comparepst(fd,pst1,pst2))
+	    break;
+	    }
+	    if ( pst1==NULL )
+		complainpstfeature(fd,sc1,pst2,fd->name1);
+	}
+	if ( fd->is_gpos ) {
+	    for ( ap1=sc1->anchor; ap1!=NULL; ap1=ap1->next ) if ( ap1->anchor->feature_tag==fd->tag ) {
+		for ( ap2=sc2->anchor; ap2!=NULL; ap2=ap2->next ) if ( ap2->anchor->feature_tag==fd->tag ) {
+		    if ( compareap(fd,ap1,ap2))
+		break;
+		}
+		if ( ap2==NULL )
+		    complainapfeature(fd,sc1,ap1,fd->name2);
+	    }
+	    for ( ap2=sc2->anchor; ap2!=NULL; ap2=ap2->next ) if ( ap2->anchor->feature_tag==fd->tag ) {
+		for ( ap1=sc1->anchor; ap1!=NULL; ap1=ap1->next ) if ( ap1->anchor->feature_tag==fd->tag ) {
+		    if ( compareap(fd,ap1,ap2))
+		break;
+		}
+		if ( ap1==NULL )
+		    complainapfeature(fd,sc1,ap2,fd->name1);
+	    }
+	    for ( kp2= (fd->tag==CHR('k','e','r','n'))? sc2->kerns : (fd->tag==CHR('v','k','r','n') ) ? sc2->vkerns : NULL ;
+		    kp2!=NULL; kp2=kp2->next )
+		kp2->kcid = 0;
+	    for ( kp1= (fd->tag==CHR('k','e','r','n'))? sc1->kerns : (fd->tag==CHR('v','k','r','n') ) ? sc1->vkerns : NULL ;
+		    kp1!=NULL; kp1=kp1->next ) {
+		for ( kp2= (fd->tag==CHR('k','e','r','n'))? sc2->kerns : (fd->tag==CHR('v','k','r','n') ) ? sc2->vkerns : NULL ;
+			kp2!=NULL; kp2=kp2->next ) if ( !kp2->kcid ) {
+		    if ( strcmp(kp1->sc->name,kp2->sc->name)==0 )
+		break;
+		}
+		if ( kp2!=NULL ) {
+		    if ( kp2->off!=kp1->off )
+			complainscfeature(fd, sc1, _("Kerning between |%s| and |%s| is %d in %s and %d in %s\n"),
+				sc1->name, kp1->sc->name, kp1->off, fd->name1, kp2->off, fd->name2 );
+		    kp2->kcid = 1;
+		} else {
+		    complainscfeature(fd, sc1, _("No kerning between |%s| and |%s| in %s whilst it is %d in %s\n"),
+			    sc1->name, kp1->sc->name, fd->name2, kp1->off, fd->name1 );
+		}
+	    }
+	    for ( kp2= (fd->tag==CHR('k','e','r','n'))? sc2->kerns : (fd->tag==CHR('v','k','r','n') ) ? sc2->vkerns : NULL ;
+		    kp2!=NULL; kp2=kp2->next ) if ( !kp2->kcid ) {
+		complainscfeature(fd, sc1, _("No kerning between |%s| and |%s| in %s whilst it is %d in %s\n"),
+			sc2->name, kp2->sc->name, fd->name1, kp2->off, fd->name2 );
+	    }
+	}
+	finishscfeature(fd);
+    }
+}
+
 static void compareg___(struct font_diff *fd) {
     int i,j;
+    char *tagfullname;
 
     fd->top_diff = fd->middle_diff = fd->local_diff = false;
 
@@ -1332,11 +1768,12 @@ static void compareg___(struct font_diff *fd) {
 		putc( ' ', fd->diffs);
 		fprintf( fd->diffs, _("Features in %s but not in %s\n"), fd->name1, fd->name2 );
 	    }
-	    fd->top_diff = fd->middle_diff = true;
+	    fd->top_diff = fd->middle_diff = fd->diff = true;
 	    fputs("  ",fd->diffs);
-	    fprintf( fd->diffs, _("Feature '%c%c%c%c' is not in %s\n"),
-		    (fd->tags1[i]>>24)&0xff,(fd->tags1[i]>>16)&0xff,(fd->tags1[i]>>8)&0xff,(fd->tags1[i])&0xff,
-		    fd->name2 );
+	    tagfullname = TagFullName(fd->sf1,fd->tags1[i],-1);
+	    fprintf( fd->diffs, _("Feature %s is not in %s\n"),
+		    tagfullname, fd->name2 );
+	    free(tagfullname);
 	}
     }
 
@@ -1353,9 +1790,21 @@ static void compareg___(struct font_diff *fd) {
 	    }
 	    fd->top_diff = fd->middle_diff = true;
 	    fputs("  ",fd->diffs);
-	    fprintf( fd->diffs, _("Feature '%c%c%c%c' is not in %s\n"),
-		    (fd->tags2[i]>>24)&0xff,(fd->tags2[i]>>16)&0xff,(fd->tags2[i]>>8)&0xff,(fd->tags2[i])&0xff,
-		    fd->name1 );
+	    tagfullname = TagFullName(fd->sf2,fd->tags2[i],-1);
+	    fprintf( fd->diffs, _("Feature %s is not in %s\n"),
+		    tagfullname, fd->name1 );
+	    free(tagfullname);
+	}
+    }
+
+    fd->middle_diff = false;
+    for ( i=j=0; i<fd->fcnt1 ; ++i ) {
+	while ( j<fd->fcnt2 && fd->tags2[j]<fd->tags1[i])
+	    ++j;
+	if ( j<fd->fcnt2 && fd->tags2[j]==fd->tags1[i] ) {
+	    fd->local_diff = false;
+	    fd->tag = fd->tags1[i];
+	    comparefeature(fd);
 	}
     }
 
