@@ -1003,6 +1003,9 @@ msgstr "フォントの補間(_L)..."
 msgid "Interpolate Fonts..."
 msgstr "フォントの補間..."
 
+msgid "Compare Fonts..."
+msgstr "フォントを比較..."
+
 msgid "Copy _From"
 msgstr "コピー元の指定(_F)"
 
@@ -2561,6 +2564,9 @@ msgstr "Mac互換フルネーム"
 
 msgid "_Sample Text"
 msgstr "サンプルテキスト(_S)"
+
+msgid "Sample Text"
+msgstr "サンプルテキスト"
 
 msgid "CID findfont Name"
 msgstr "CID findfont名"
@@ -4642,14 +4648,23 @@ msgstr "文脈依存の合字"
 msgid "Contextual Swash"
 msgstr "文脈依存のスワッシュ"
 
+msgid "Script|Arabic"
+msgstr "アラビア文字"
+
 msgid "Script|Aramaic"
 msgstr "アラム文字"
+
+msgid "Script|Armenian"
+msgstr "アルメニア文字"
 
 msgid "Script|Avestan"
 msgstr "アヴェスタ文字"
 
 msgid "Script|Batak"
 msgstr "バタク文字"
+
+msgid "Script|Bengali"
+msgstr "ベンガル文字"
 
 msgid "Bliss Symbolics"
 msgstr "ブリス表意記号"
@@ -4677,6 +4692,9 @@ msgstr "統合カナダ先住民音節"
 
 msgid "Script|Cham"
 msgstr "チャム文字"
+
+msgid "Script|Cherokee"
+msgstr "チェロキー文字"
 
 msgid "Cirth"
 msgstr "キアス'文字'"
@@ -4711,11 +4729,20 @@ msgstr "ヒエログリフ"
 msgid "Script|Ethiopic"
 msgstr "エチオピア文字"
 
+msgid "Script|Georgian"
+msgstr "グルジア文字"
+
 msgid "Glagolitic"
 msgstr "グラゴル文字"
 
 msgid "Gothic"
 msgstr "ゴート文字"
+
+msgid "Script|Greek"
+msgstr "ギリシャ文字"
+
+msgid "Script|Gujarati"
+msgstr "グジャラート文字"
 
 msgid "Gurmukhi"
 msgstr "グルムキー文字"
@@ -4729,6 +4756,9 @@ msgstr "ハングル音節文字"
 msgid "Script|Hanunóo"
 msgstr "ハヌノー文字"
 
+msgid "Script|Hebrew"
+msgstr "ヘブライ文字"
+
 msgid "Pahawh Hmong"
 msgstr "パハウ・フモン文字"
 
@@ -4738,17 +4768,35 @@ msgstr "(ハラッパー)インダス文字"
 msgid "Old Italic (Etruscan, Oscan, etc.)"
 msgstr "イタリア古代(エトルリア,オスク等)文字"
 
+msgid "Script|Javanese"
+msgstr "ジャワ文字"
+
 msgid "Kayah Li"
 msgstr "カヤー・リ文字"
-
-msgid "Kharoṣṭhī"
-msgstr "カローシュティー文字"
 
 msgid "Hiragana & Katakana"
 msgstr "平仮名と片仮名"
 
+msgid "Kharoṣṭhī"
+msgstr "カローシュティー文字"
+
+msgid "Script|Kannada"
+msgstr "カンナダ文字"
+
+msgid "Script|Khmer"
+msgstr "クメール文字"
+
+msgid "Script|Lao"
+msgstr "ラオ文字"
+
+msgid "Script|Latin"
+msgstr "ラテン文字"
+
 msgid "Lepcha (Róng)"
 msgstr "レプチャ(ロン)文字"
+
+msgid "Script|Limbu"
+msgstr "リンブ文字"
 
 msgid "Linear A"
 msgstr "線文字A"
@@ -4768,6 +4816,9 @@ msgstr "メロエ文字"
 msgid "Script|Malay\xc4\x81lam"
 msgstr "マラヤーラム文字"
 
+msgid "Script|Mongolian"
+msgstr "モンゴル文字"
+
 msgid "Script|Myanmar"
 msgstr "ミャンマー文字"
 
@@ -4776,6 +4827,9 @@ msgstr "ン・コー文字"
 
 msgid "Ogham"
 msgstr "オガム文字"
+
+msgid "Script|Oriya"
+msgstr "オリヤー文字"
 
 msgid "Osmanya"
 msgstr "オスマニャ文字"
@@ -4807,11 +4861,20 @@ msgstr "シャバ文字"
 msgid "Script|Sinhala"
 msgstr "シンハラ文字"
 
+msgid "Script|Syriac"
+msgstr "シリア文字"
+
 msgid "Script|Tagbanwa"
 msgstr "タグバンワ文字"
 
 msgid "Tai Le"
 msgstr "タイ・ロ文字"
+
+msgid "Script|Tamil"
+msgstr "タミル文字"
+
+msgid "Script|Telugu"
+msgstr "テルグ文字"
 
 msgid "Tengwar"
 msgstr "テングワール'文字'"
@@ -4819,8 +4882,17 @@ msgstr "テングワール'文字'"
 msgid "Tifinagh (Berber)"
 msgstr "ティフィナグ(ベルベル)文字"
 
+msgid "Script|Tagalog"
+msgstr "タガログ文字"
+
 msgid "Thaana"
 msgstr "ターナ文字"
+
+msgid "Script|Thai"
+msgstr "タイ文字"
+
+msgid "Script|Tibetan"
+msgstr "チベット文字"
 
 msgid "Script|Ugaritic"
 msgstr "ウガリト文字"
@@ -7573,7 +7645,7 @@ msgid ""
 msgstr "このフォントにはdotlessjというなまえのグリフがありません.\nグリフを追加して, アクセントつきグリフを再作成してください."
 
 msgid "Merging Problem"
-msgstr "合併処理中に問題が発生しました."
+msgstr "合併処理中に問題発生"
 
 msgid "Merging a font with itself achieves nothing"
 msgstr "フォントを自分自身と合併しても何も起こりません."
@@ -7600,7 +7672,7 @@ msgid "Different settings on whether to stroke in layer %d of %s\n"
 msgstr "レイヤー %d (%s の) でストロークをどう行うかの設定が異なります.\n"
 
 msgid "Interpolating Problem"
-msgstr "補間処理中に問題が発生しました."
+msgstr "補間処理中に問題発生"
 
 msgid "Interpolating a font with itself achieves nothing"
 msgstr "フォントを自分自身と補間しても何も起こりません."
@@ -12220,72 +12292,6 @@ msgstr "すべてデフォルトに"
 msgid "Default This"
 msgstr "この項目をデフォルトに"
 
-msgid "Script|Arabic"
-msgstr "アラビア文字"
-
-msgid "Script|Armenian"
-msgstr "アルメニア文字"
-
-msgid "Script|Bengali"
-msgstr "ベンガル文字"
-
-msgid "Script|Cherokee"
-msgstr "チェロキー文字"
-
-msgid "Script|Georgian"
-msgstr "グルジア文字"
-
-msgid "Script|Greek"
-msgstr "ギリシャ文字"
-
-msgid "Script|Gujarati"
-msgstr "グジャラート文字"
-
-msgid "Script|Hebrew"
-msgstr "ヘブライ文字"
-
-msgid "Script|Javanese"
-msgstr "ジャワ文字"
-
-msgid "Script|Kannada"
-msgstr "カンナダ文字"
-
-msgid "Script|Khmer"
-msgstr "クメール文字"
-
-msgid "Script|Lao"
-msgstr "ラオ文字"
-
-msgid "Script|Latin"
-msgstr "ラテン文字"
-
-msgid "Script|Limbu"
-msgstr "リンブ文字"
-
-msgid "Script|Mongolian"
-msgstr "モンゴル文字"
-
-msgid "Script|Oriya"
-msgstr "オリヤー文字"
-
-msgid "Script|Syriac"
-msgstr "シリア文字"
-
-msgid "Script|Tamil"
-msgstr "タミル文字"
-
-msgid "Script|Telugu"
-msgstr "テルグ文字"
-
-msgid "Script|Tagalog"
-msgstr "タガログ文字"
-
-msgid "Script|Thai"
-msgstr "タイ文字"
-
-msgid "Script|Tibetan"
-msgstr "チベット文字"
-
 msgid "Could not read %s"
 msgstr "%sを読み込めませんでした"
 
@@ -12378,7 +12384,179 @@ msgstr "グリフ名を読み込み"
 msgid "No such file"
 msgstr "そのようなファイルはありません"
 
+msgid "No differences found"
+msgstr "違いは見つかりませんでした"
+
+msgid "Differences..."
+msgstr "相違点..."
+
+msgid "Compare %s to %s"
+msgstr "%sを%sと比較"
+
+msgid "Compare version %s of %s to %s"
+msgstr "%2$%sのバージョン%1$sを%3$sと比較"
+
+msgid "Font Compare"
+msgstr "フォントの比較"
+
+msgid "Font Compare..."
+msgstr "フォントの比較..."
+
+msgid "Font to compare with %.20s"
+msgstr "%.20sと比較するフォント"
+
+msgid "Compare _Outlines"
+msgstr "アウトラインを比較(_O)"
+
+msgid "_Exact"
+msgstr "正確に(_E)"
+
+msgid "Accept outlines which exactly match the original"
+msgstr " オリジナルと正確に一致するアウトラインのみを受け入れます"
+
+msgid "_Warn if inexact"
+msgstr "不正確な一致を警告(_W)"
+
+msgid "Accept an outline which is a close approximation to the original but warn if it is not exactly the same"
+msgstr "オリジナルと近似的に一致するアウトラインを受け入れるが，正確に一致しない場合に警告します"
+
+msgid "_Accept inexact"
+msgstr "不正確な一致を許容(_A)"
+
+msgid "Accept an outline which is a close approximation to the original"
+msgstr "オリジナルに近似的に一致するアウトラインを受け入れます"
+
+msgid "Compare _Hints"
+msgstr "ヒントを比較(_H)"
+
+msgid "Compare postscript hints and truetype instructions"
+msgstr "PostScriptのヒントおよびTrueType命令を比較します"
+
+msgid "Compare _Bitmaps"
+msgstr "ビットマップを比較(_B)"
+
+msgid "Compare _Names"
+msgstr "名前を比較(_N)"
+
+msgid "Compare Glyph _Positioning"
+msgstr "グリフの位置指定を比較(_P)"
+
+msgid "Kerning & such"
+msgstr "カーニングの類"
+
+msgid "Compare Glyph _Substitution"
+msgstr "グリフ置換を比較(_S)"
+
+msgid "Ligatures & such"
+msgstr "合字の類"
+
+msgid "Outline Glyphs\n"
+msgstr "アウトライングリフ\n"
+
+msgid "Glyph Differences\n"
+msgstr "グリフの相違点\n"
+
+msgid "Glyph |%s| differs\n"
+msgstr "グリフ |%s| に違いがあります\n"
+
+msgid "Glyph |%s| contains a reference to %s in %s\n"
+msgstr "グリフ |%1$s| の%3$sには%2$sへの参照が含まれています\n"
+
+msgid "Glyph |%s| refers to %s with a different transformation matrix\n"
+msgstr "グリフ |%s| から%sへの参照の変換行列が互いに異なります\n"
+
+msgid "Glyph |%s| has advance width %d in %s but %d in %s\n"
+msgstr "グリフ |%1$s| の送り幅は%3$sでは%2$sですが%5$dでは%4$sです\n"
+
+msgid "Glyph |%s| has vertical advance width %d in %s but %d in %s\n"
+msgstr "グリフ |%1$s| の縦書き時の送り幅は%3$sでは%2$sですが%5$dでは%4$sです\n"
+
+msgid "Glyph |%s| has a different number of layers\n"
+msgstr "グリフ |%s| に含まれるレイヤーの個数が互いに異なります\n"
+
+msgid "Glyph |%s| has a different fill in layer %d\n"
+msgstr "グリフ |%s| のレイヤー%dの塗りつぶしが互いに異なります\n"
+
+msgid "Glyph |%s| has a different stroke in layer %d\n"
+msgstr "グリフ |%s| のレイヤー%dのストローク設定が互いに異なります\n"
+
+msgid "Glyph |%s| does not have splines which match exactly, but they are close\n"
+msgstr "グリフ |%s| のスプラインは正確に一致しませんが,ほとんど同じです\n"
+
+msgid "Different number of contours in glyph |%s|\n"
+msgstr "グリフ |%s| に含まれる輪郭の本数が互いに異なります\n"
+
+msgid "Open/Closed contour mismatch in glyph |%s|\n"
+msgstr "グリフ |%s| に,輪郭の開き/閉じの不一致があります\n"
+
+msgid "Spline mismatch in glyph |%s|\n"
+msgstr "グリフ |%s| にスプラインの不一致があります\n"
+
+msgid "Hint masks differ in glyph |%s|\n"
+msgstr "グリフ |%s| にヒントマスクの不一致があります\n"
+
+msgid "Hints differ in glyph |%s|\n"
+msgstr "グリフ |%s| のヒントが互いに異なります\n"
+
+msgid "Glyph |%s| in %s has no truetype instructions\n"
+msgstr "%2$sのグリフ |%1$s| にはTrueType命令がありません\n"
+
+msgid "Glyph |%s| has different truetype instructions\n"
+msgstr "グリフ |%s| のTrueType命令が互いに異なります\n"
+
+msgid "Glyphs in %s but not in %s\n"
+msgstr "%sにあるグリフが%sにありません\n"
+
+msgid "Glyph |%s| missing from %s\n"
+msgstr "グリフ |%s| が %sにありません\n"
+
+msgid "ppem is different in the two fonts, cowardly refusing to compare glyphs\n"
+msgstr "EMあたりピクセル数が2つのフォントで異なるので,卑怯にもグリフの比較を拒否します\n"
+
+msgid "Bitmap Strikes\n"
+msgstr "ビットマップストライク\n"
+
+msgid "Strike %d@%d\n"
+msgstr "ストライク %d@%d\n"
+
+msgid "Glyphs in %s but not in %s at %d@%d\n"
+msgstr "%3$d@%4$dのグリフは%1$sにはありますが%2$sにはありません\n"
+
+msgid "Glyph |%s| missing from %s at %d@%d\n"
+msgstr "%3$d@%4$dのグリフ |%1$s| は%2$dにはありません\n"
+
+msgid "Glyphs Differences at %d@%d\n"
+msgstr "%d@%dにおけるグリフの相違点\n"
+
+msgid "Glyph |%s| differs at %d@%d\n"
+msgstr "グリフ |%s| は,%d@%dで互いに異なります\n"
+
+msgid "Glyph |%s| has advance width %d in %s but %d in %s at %d@%d\n"
+msgstr "%6$d@%7$dのグリフ |%1$s| の送り幅は%3$sでは%2$dですが,%5$sでは%4$dです\n"
+
+msgid "Glyph |%s| has vertical advance width %d in %s but %d in %s at %d@%d\n"
+msgstr "%6$d@%7$dのグリフ |%1$s| の縦書き時の送り幅は%3$sでは%2$dですが,%5$sでは%4$dです\n"
+
+msgid "Glyph |%s| has a different bitmap at %d@%d\n"
+msgstr "%2$d@%3$dのグリフ |%1$s| のビットマップが互いに異なります\n"
+
+msgid "Strikes in %s but not in %s\n"
+msgstr "%sに含まれるストライクが%sにはありません\n"
+
+msgid "Strike %d@%d missing from %s\n"
+msgstr "ストライク%d@%dが%sにはありません\n"
+
+msgid "Glyph Positioning\n"
+msgstr "グリフ位置指定\n"
+
+msgid "Glyph Substitution\n"
+msgstr "グリフ置換\n"
+
+msgid "Features in %s but not in %s\n"
+msgstr "%sにある機能が%sにはありません\n"
+
+msgid "Feature '%c%c%c%c' is not in %s\n"
+msgstr "機能'%c%c%c%c'は%sにはありません\n"
+
 #msgid "<no instrs>"
 #msgstr "<命令なし>"
-
-
