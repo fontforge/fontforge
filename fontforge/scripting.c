@@ -4423,7 +4423,7 @@ static void bInterpolateFonts(Context *c) {
     free(t); free(locfilename);
     if ( sf==NULL )
 	ScriptErrorString(c,"Can't find font", c->a.vals[2].u.sval);
-    c->curfv = FVAppend(_FontViewCreate(InterpolateFont(c->curfv->sf,sf,percent/100.0 )));
+    c->curfv = FVAppend(_FontViewCreate(InterpolateFont(c->curfv->sf,sf,percent/100.0, c->curfv->map->enc )));
 }
 
 static void bDefaultUseMyMetrics(Context *c) {
