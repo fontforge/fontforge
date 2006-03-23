@@ -1893,6 +1893,7 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
     int width, vwidth;
     FontView *fvs;
     int xoff=0, yoff=0;
+    int was_empty;
 #ifdef FONTFORGE_CONFIG_PASTEAFTER
     RefChar *ref;
 #endif
@@ -1913,6 +1914,7 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
 	    SCMarkInstrDlgAsChanged(sc);
 #endif	/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	}
+	was_empty = sc->hstem==NULL && sc->vstem==NULL && sc->layers[ly_fore].splines==NULL && sc->layers[ly_fore].refs == NULL;
 	if ( !pasteinto ) {
 	    if ( !sc->parent->onlybitmaps )
 		SCSynchronizeWidth(sc,width,sc->width,fv);
@@ -1924,6 +1926,13 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
 	    SCRemoveLayerDependents(sc,layer);
 	    AnchorPointsFree(sc->anchor);
 	    sc->anchor = NULL;
+	    if ( paster->undotype==ut_statehint ) {
+		StemInfosFree(sc->hstem);
+		StemInfosFree(sc->vstem);
+		sc->hstem = sc->vstem = NULL;
+		sc->hconflicts = sc->vconflicts = false;
+	    }
+	    was_empty = true;
 #ifdef FONTFORGE_CONFIG_PASTEAFTER
 	} else if ( pasteinto==2 ) {
 	    if ( sc->parent->hasvmetrics ) {
@@ -2046,6 +2055,9 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
 	    }
 	}
 	SCCharChangedUpdate(sc);
+	/* Bug here. we are assuming that the pasted hints are up to date */
+	if ( was_empty && (sc->hstem!=NULL || sc->vstem!=NULL))
+	    sc->changedsincelasthinted = false;
       break;
       case ut_possub:
 	while ( paster!=NULL ) {

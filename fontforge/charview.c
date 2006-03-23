@@ -4975,12 +4975,15 @@ static void CVClearBackground(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void _CVPaste(CharView *cv) {
     enum undotype ut = CopyUndoType();
+    int was_empty = cv->drawmode==dm_fore && cv->sc->hstem==NULL && cv->sc->vstem==NULL && cv->sc->layers[ly_fore].splines==NULL && cv->sc->layers[ly_fore].refs==NULL;
     if ( ut!=ut_lbearing )	/* The lbearing code does this itself */
 	CVPreserveStateHints(cv);
     if ( ut!=ut_width && ut!=ut_vwidth && ut!=ut_lbearing && ut!=ut_rbearing && ut!=ut_possub )
 	CVClearSel(cv);
     PasteToCV(cv);
     CVCharChangedUpdate(cv);
+    if ( was_empty && (cv->sc->hstem != NULL || cv->sc->vstem!=NULL ))
+	cv->sc->changedsincelasthinted = false;
 }
 
 static void CVPaste(GWindow gw,struct gmenuitem *mi,GEvent *e) {
