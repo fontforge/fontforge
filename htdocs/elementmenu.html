@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 9-Feb-2006 -->
+  <!-- AP: Last modified: 22-Mar-2006 -->
   <TITLE>The Element Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -170,6 +170,8 @@
       <A HREF="#Merge">Merge Fonts...</A>
     <LI>
       <A HREF="#Interpolate">Interpolate Fonts...</A>
+    <LI>
+      <A HREF="#CompareFonts">Compare Fonts...</A>
   </UL>
   <P>
   There are also two menu entries which are not part of the default build but
@@ -859,6 +861,35 @@
       fonts must have the same sets of glyphs, and each glyph must have the same
       number of paths (ordered similarly) and each path must have the same number
       of points on it, and must have the same references.
+      <P>
+      Examples: If you are interpolating from a light font to a bold one, then
+      a medium font might be 50% between the two, an extra-bold font might be 200%
+      and a thin one -100%.
+    <DT>
+      <A NAME="CompareFonts">Compare Fonts...</A>
+    <DD>
+      <IMG SRC="fontcompdlg.png" WIDTH="212" HEIGHT="331" ALIGN="Right">Sometimes
+      it is useful to compare two versions of a font and see what has changed.
+      This command will allow you to check:
+      <UL>
+	<LI>
+	  The addition or removal of glyphs
+	<LI>
+	  Changes to outline glyphs
+	<LI>
+	  Changes to bitmap glyphs
+	<LI>
+	  Changes to the font's names (truetype 'name' table and some postscript names)
+	<LI>
+	  Changes to the font's glyph substitutions (ligatures and whatnot)
+	<LI>
+	  Changes to the font's glyph positioning (kerning and whatnot)
+      </UL>
+      <P>
+      You can also use it to compare truetype and postscript versions of the same
+      font. Normally fontforge checks to make sure all the splines match exactly,
+      but you can also have it test whether a contour in one font is always close
+      to the similar contour in another font.
   </DL>
   <P>
   <H2>
