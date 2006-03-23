@@ -6691,6 +6691,13 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "SubstitutionPoints", bSubstitutionPoints },
     { "AutoCounter", bAutoCounter },
     { "DontAutoHint", bDontAutoHint },
+  /* Some idiot (me) put the wrong names in for these functions. I've since */
+  /*  corrected that blunder (above) but just in case anyone uses the bad */
+  /*  names, I guess I should leave them in */
+    { "bSubstitutionPoints", bSubstitutionPoints },
+    { "bAutoCounter", bAutoCounter },
+    { "bDontAutoHint", bDontAutoHint },
+  /* end blunder */
     { "AddHHint", bAddHHint },
     { "AddVHint", bAddVHint },
     { "ClearCharCounterMasks", bClearCharCounterMasks },
