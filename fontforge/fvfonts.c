@@ -353,6 +353,21 @@ return;
     } while ( k<sf->subfontcnt );
 }
 
+void SFHashGlyph(SplineFont *sf,SplineChar *sc) {
+    /* sc just got added to the font. Put it in the lookup */
+    int hash;
+    struct glyphnamebucket *new;
+
+    if ( sf->glyphnames==NULL )
+return;		/* No hash table, nothing to update */
+
+    new = chunkalloc(sizeof(struct glyphnamebucket));
+    new->sc = sc;
+    hash = hashname(sc->name);
+    new->next = sf->glyphnames->table[hash];
+    sf->glyphnames->table[hash] = new;
+}
+
 static SplineChar *SFHashName(SplineFont *sf,const char *name) {
     struct glyphnamebucket *test;
 

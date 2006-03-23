@@ -2710,7 +2710,7 @@ void SFAddGlyphAndEncode(SplineFont *sf,SplineChar *sc,EncMap *basemap, int base
     sf->glyphs[gid] = sc;
     sc->orig_pos = gid;
     sc->parent = sf;
-    GlyphHashFree(sf);
+    SFHashGlyph(sf,sc);
 }
 
 static SplineChar *SplineCharMatch(SplineFont *parent,SplineChar *sc) {
