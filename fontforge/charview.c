@@ -7631,6 +7631,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
     cv->showhmetrics = CVShows.showhmetrics;
     cv->showvmetrics = CVShows.showvmetrics;
     cv->markextrema = CVShows.markextrema;
+    cv->markpoi = CVShows.markpoi;
     cv->showblues = CVShows.showblues;
     cv->showfamilyblues = CVShows.showfamilyblues;
     cv->showanchor = CVShows.showanchor;
