@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 2-Mar-2006 -->
+  <!-- AP: Last modified: 22-Mar-2006 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -2603,7 +2603,7 @@ ApplySubstitution("*","*","vrt2")
 	</TR>
 	<TR>
 	  <TD>256</TD>
-	  <TD>Different references in the two glyphs</TD>
+	  <TD>Different references in the two glyphs (or different transformation matrices)</TD>
 	</TR>
 	<TR>
 	  <TD>512</TD>
@@ -2611,11 +2611,23 @@ ApplySubstitution("*","*","vrt2")
 	</TR>
 	<TR>
 	  <TD>1024</TD>
-	  <TD>Different hints in the two glyphs</TD>
+	  <TD>Different vertical advance widths in the two glyphs</TD>
 	</TR>
 	<TR>
 	  <TD>2048</TD>
+	  <TD>Different hints in the two glyphs</TD>
+	</TR>
+	<TR>
+	  <TD>4096</TD>
 	  <TD>Different hintmasks in the two glyphs</TD>
+	</TR>
+	<TR>
+	  <TD>8192</TD>
+	  <TD>Different numbers of layers in the two glyphs</TD>
+	</TR>
+	<TR>
+	  <TD>16384</TD>
+	  <TD>Contours do not match in the two glyphs</TD>
 	</TR>
 	<TR>
 	  <TD>65536</TD>
@@ -2627,11 +2639,60 @@ ApplySubstitution("*","*","vrt2")
 	</TR>
 	<TR>
 	  <TD>4*65536</TD>
-	  <TD>Bitmap glyphs do not match</TD>
+	  <TD>Bitmaps are different</TD>
 	</TR>
 	<TR>
 	  <TD>8*65536</TD>
+	  <TD>Bitmap glyphs do not match (set with all the above)</TD>
+	</TR>
+	<TR>
+	  <TD>16*65536</TD>
 	  <TD>Bitmap glyphs match</TD>
+	</TR>
+      </TABLE>
+    <DT>
+      CompareFonts(other-font-filename,output-filename,flags)
+    <DD>
+      This will compare the current font with the font in
+      <CODE>other-font-filename</CODE> (which must already have been opened). It
+      will write the results to the <CODE>output-filename</CODE>, you may use "-"
+      to send the output to stdout. The <CODE>flags</CODE> argument controls what
+      will be compared.
+      <TABLE BORDER CELLPADDING="2">
+	<CAPTION>
+	  <SMALL>flags</SMALL>
+	</CAPTION>
+	<TR>
+	  <TD>1</TD>
+	  <TD>compare outlines</TD>
+	</TR>
+	<TR>
+	  <TD>2</TD>
+	  <TD>compare outlines exactly (otherwise allow slight errors)</TD>
+	</TR>
+	<TR>
+	  <TD>4</TD>
+	  <TD>warn if the outlines don't exactly match (but are pretty close)</TD>
+	</TR>
+	<TR>
+	  <TD>8</TD>
+	  <TD>compare hints</TD>
+	</TR>
+	<TR>
+	  <TD>0x10</TD>
+	  <TD>compare bitmap strikes</TD>
+	</TR>
+	<TR>
+	  <TD>0x20</TD>
+	  <TD>compare font names</TD>
+	</TR>
+	<TR>
+	  <TD>0x40</TD>
+	  <TD>compare glyph positioning</TD>
+	</TR>
+	<TR>
+	  <TD>0x80</TD>
+	  <TD>compare glyph substitutions</TD>
 	</TR>
       </TABLE>
     <DT>
