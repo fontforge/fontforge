@@ -174,11 +174,11 @@ static void RH_SetupHint(ReviewHintData *hd) {
 	GGadgetSetVisible(GWidgetGetControl(hd->gw,CID_Overlap),false);
     } else {
 	hd->active->active = true;
-	sprintf( buffer,"%g", hd->active->start );
+	sprintf( buffer,"%g", !hd->active->ghost ? hd->active->start : hd->active->start+hd->active->width );
 	uc_strcpy(ubuf,buffer);
 	GGadgetSetTitle(GWidgetGetControl(hd->gw,CID_Base),ubuf);
 	GTextFieldShow(GWidgetGetControl(hd->gw,CID_Base),0);
-	sprintf( buffer,"%g", hd->active->width );
+	sprintf( buffer,"%g", !hd->active->ghost ? hd->active->width : -hd->active->width );
 	uc_strcpy(ubuf,buffer);
 	GGadgetSetTitle(GWidgetGetControl(hd->gw,CID_Width),ubuf);
 	GTextFieldShow(GWidgetGetControl(hd->gw,CID_Width),0);
@@ -280,18 +280,26 @@ static int RH_TextChanged(GGadget *g, GEvent *e) {
 	if ( hd->active!=NULL ) {
 	    int cid = GGadgetGetCid(g);
 	    int err=0;
-	    int val = GetInt8(hd->gw,cid,cid==CID_Base?_("_Base:"):_("_Size:"),&err);
+	    int start = GetInt8(hd->gw,CID_Base,_("_Base:"),&err);
+	    int width = GetInt8(hd->gw,CID_Width,_("_Size:"),&err);
 	    if ( err )
 return( true );
 	    if ( GGadgetIsChecked(GWidgetGetControl(GGadgetGetWindow(g),CID_MovePoints)) ) {
-		RH_MovePoints(hd,hd->active,
-			cid==CID_Base?val:hd->active->start,
-			cid==CID_Base?hd->active->width:val);
+		if ( width<0 )
+		    RH_MovePoints(hd,hd->active,start+width,-width);
+		else
+		    RH_MovePoints(hd,hd->active,start,width);
 	    }
 	    if ( cid==CID_Base )
-		hd->active->start = val;
+		hd->active->start = start;
 	    else
-		hd->active->width = val;
+		hd->active->width = width;
+	    if ( width<0 ) {
+		hd->active->ghost = true;
+		hd->active->width = -width;
+		hd->active->start = start+width;
+	    } else
+		hd->active->ghost = false;
 	    wasconflict = hd->active->hasconflicts;
 	    if ( hd->ishstem )
 		hd->cv->sc->hconflicts = StemListAnyConflicts(hd->cv->sc->hstem);

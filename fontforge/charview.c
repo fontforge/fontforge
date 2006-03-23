@@ -971,12 +971,11 @@ return;
     GDrawSetDashedLine(pixmap,0,0,0);
 }
 
-static void dtou(unichar_t *ubuf,real val) {
-    char buffer[8], *pt;
-    sprintf( buffer,"%.1f", val);
-    pt = buffer+strlen(buffer);
+static void dtos(char *buf,real val) {
+    char *pt;
+    sprintf( buf,"%.1f", val);
+    pt = buf+strlen(buf);
     if ( pt[-1]=='0' && pt[-2]=='.' ) pt[-2] = '\0';
-    uc_strcpy(ubuf,buffer);
 }
 
 static void CVDrawBlues(CharView *cv,GWindow pixmap,char *bluevals,char *others,
@@ -985,7 +984,7 @@ static void CVDrawBlues(CharView *cv,GWindow pixmap,char *bluevals,char *others,
     char *pt, *end;
     int i=0, bcnt=0;
     GRect r;
-    unichar_t ubuf[8];
+    char buf[20];
     int len,len2;
 
     if ( bluevals!=NULL ) {
@@ -1039,15 +1038,15 @@ return;
 	GDrawSetStippled(pixmap,0, 0,0);
 
 	if ( first>-20 && first<cv->height+20 ) {
-	    dtou( ubuf, blues[i]);
-	    len = GDrawGetTextWidth(pixmap,ubuf,-1,NULL);
-	    GDrawDrawText(pixmap,cv->width-len-5,first-3,ubuf,-1,NULL,hintlabelcol);
+	    dtos( buf, blues[i]);
+	    len = GDrawGetText8Width(pixmap,buf,-1,NULL);
+	    GDrawDrawText8(pixmap,cv->width-len-5,first-3,buf,-1,NULL,hintlabelcol);
 	} else
 	    len = 0;
 	if ( other>-20 && other<cv->height+20 ) {
-	    dtou( ubuf, blues[i+1]-blues[i]);
-	    len2 = GDrawGetTextWidth(pixmap,ubuf,-1,NULL);
-	    GDrawDrawText(pixmap,cv->width-len-5-len2-5,other+cv->sas-3,ubuf,-1,NULL,hintlabelcol);
+	    dtos( buf, blues[i+1]-blues[i]);
+	    len2 = GDrawGetText8Width(pixmap,buf,-1,NULL);
+	    GDrawDrawText8(pixmap,cv->width-len-5-len2-5,other+cv->sas-3,buf,-1,NULL,hintlabelcol);
 	}
     }
 }
@@ -1062,7 +1061,7 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
     MinimumDistance *md;
     char *blues, *others;
     struct psdict *private = cv->sc->parent->private;
-    unichar_t ubuf[8];
+    char buf[20];
     int len, len2;
     SplinePoint *sp;
     SplineSet *spl;
@@ -1116,17 +1115,22 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 	    r.y = -cv->yoff + cv->height - rint(hint->start*cv->scale);
 	    r.y += ( hint->width>0 ) ? -3 : cv->sas+3;
 	    if ( r.y>-20 && r.y<cv->height+20 ) {
-		dtou( ubuf, hint->start);
-		len = GDrawGetTextWidth(pixmap,ubuf,-1,NULL);
-		GDrawDrawText(pixmap,cv->width-len-5,r.y,ubuf,-1,NULL,hintlabelcol);
+		dtos( buf, hint->start);
+		len = GDrawGetText8Width(pixmap,buf,-1,NULL);
+		GDrawDrawText8(pixmap,cv->width-len-5,r.y,buf,-1,NULL,hintlabelcol);
 	    } else
 		len = 0;
 	    r.y = -cv->yoff + cv->height - rint((hint->start+hint->width)*cv->scale);
 	    r.y += ( hint->width>0 ) ? cv->sas+3 : -3;
 	    if ( r.y>-20 && r.y<cv->height+20 ) {
-		dtou( ubuf, hint->width);
-		len2 = GDrawGetTextWidth(pixmap,ubuf,-1,NULL);
-		GDrawDrawText(pixmap,cv->width-len-5-len2-5,r.y,ubuf,-1,NULL,hintlabelcol);
+		if ( hint->ghost ) {
+		    buf[0] = 'G';
+		    buf[1] = ' ';
+		    dtos(buf+2, hint->width);
+		} else
+		    dtos( buf, hint->width);
+		len2 = GDrawGetText8Width(pixmap,buf,-1,NULL);
+		GDrawDrawText8(pixmap,cv->width-len-5-len2-5,r.y,buf,-1,NULL,hintlabelcol);
 	    }
 	}
     }
@@ -1165,17 +1169,22 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 
 	    r.x = cv->xoff + rint(hint->start*cv->scale);
 	    if ( r.x>-60 && r.x<cv->width+20 ) {
-		dtou( ubuf, hint->start);
-		len = GDrawGetTextWidth(pixmap,ubuf,-1,NULL);
+		dtos( buf, hint->start);
+		len = GDrawGetText8Width(pixmap,buf,-1,NULL);
 		r.x += ( hint->width>0 ) ? 3 : -len-3;
-		GDrawDrawText(pixmap,r.x,cv->sas+3,ubuf,-1,NULL,hintlabelcol);
+		GDrawDrawText8(pixmap,r.x,cv->sas+3,buf,-1,NULL,hintlabelcol);
 	    }
 	    r.x = cv->xoff + rint((hint->start+hint->width)*cv->scale);
 	    if ( r.x>-60 && r.x<cv->width+20 ) {
-		dtou( ubuf, hint->width);
-		len = GDrawGetTextWidth(pixmap,ubuf,-1,NULL);
+		if ( hint->ghost ) {
+		    buf[0] = 'G';
+		    buf[1] = ' ';
+		    dtos(buf+2, hint->width);
+		} else
+		    dtos( buf, hint->width);
+		len = GDrawGetText8Width(pixmap,buf,-1,NULL);
 		r.x += ( hint->width>0 ) ? -len-3 : 3;
-		GDrawDrawText(pixmap,r.x,cv->sas+cv->sfh+3,ubuf,-1,NULL,hintlabelcol);
+		GDrawDrawText8(pixmap,r.x,cv->sas+cv->sfh+3,buf,-1,NULL,hintlabelcol);
 	    }
 	}
     }
@@ -1347,14 +1356,14 @@ static void DrawTransOrigin(CharView *cv, GWindow pixmap) {
 }
 
 static void DrawVLine(CharView *cv,GWindow pixmap,real pos,Color fg, int flags) {
-    unichar_t ubuf[20];
+    char buf[20];
     int x = cv->xoff + rint(pos*cv->scale);
     DrawLine(cv,pixmap,pos,-32768,pos,32767,fg);
     if ( flags&1 ) {
 	if ( x>-400 && x<cv->width+400 ) {
-	    dtou( ubuf, pos);
+	    dtos( buf, pos);
 	    GDrawSetFont(pixmap,cv->small);
-	    GDrawDrawText(pixmap,x+5,cv->sas+3,ubuf,-1,NULL,metricslabelcol);
+	    GDrawDrawText8(pixmap,x+5,cv->sas+3,buf,-1,NULL,metricslabelcol);
 	}
     }
     if ( ItalicConstrained && cv->sc->parent->italicangle!=0 ) {
@@ -1484,7 +1493,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     RefChar *rf;
     GRect old;
     DRect clip;
-    unichar_t ubuf[20];
+    char buf[20];
     PST *pst; int i, layer, rlayer;
 
     GDrawPushClip(pixmap,&event->u.expose.rect,&old);
@@ -1608,10 +1617,10 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 			    32767,sf->vertical_origin-cv->sc->vwidth,
 		(!cv->inactive && cv->vwidthsel)?widthselcol:widthcol);
 	if ( y>-40 && y<cv->height+40 ) {
-	    dtou( ubuf, cv->sc->vwidth);
+	    dtos( buf, cv->sc->vwidth);
 	    GDrawSetFont(pixmap,cv->small);
-	    len = GDrawGetTextWidth(pixmap,ubuf,-1,NULL);
-	    GDrawDrawText(pixmap,cv->width-len-5,y,ubuf,-1,NULL,metricslabelcol);
+	    len = GDrawGetText8Width(pixmap,buf,-1,NULL);
+	    GDrawDrawText8(pixmap,cv->width-len-5,y,buf,-1,NULL,metricslabelcol);
 	}
     }
 
