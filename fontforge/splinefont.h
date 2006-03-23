@@ -1947,6 +1947,8 @@ enum Compare_Ret {	SS_DiffContourCount	= 1,
 			SS_VWidthMismatch	= 1024,
 			SS_HintMismatch		= 2048,
 			SS_HintMaskMismatch	= 4096,
+			SS_LayerCntMismatch	= 8192,
+			SS_ContourMismatch	= 16384,
 
 			BC_DepthMismatch	= 1<<16,
 			BC_BoundingBoxMismatch	= 2<<16,

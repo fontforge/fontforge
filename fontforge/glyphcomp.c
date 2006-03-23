@@ -373,7 +373,7 @@ return( SS_MismatchOpenClosed|SS_NoMatch );
 
     free(match);
     if ( !allmatch )
-return( SS_NoMatch );
+return( SS_NoMatch|SS_ContourMismatch );
 
 return( info );
 }
@@ -624,59 +624,71 @@ return( true );
 
 static int CompareSplines(Context *c,SplineChar *sc,const Undoes *cur,
 	real pt_err, real spline_err, int comp_hints, int diffs_are_errors ) {
-    int ret=0, ly;
+    int ret=0, failed=0, temp, ly;
     const Undoes *layer;
     real err = pt_err>0 ? pt_err : spline_err;
 
     switch ( cur->undotype ) {
       case ut_state: case ut_statehint: case ut_statename:
 	if ( err>=0 ) {
-	    ret |= CompareLayer(c,sc->layers[ly_fore].splines,cur->u.state.splines,
+	    ret = CompareLayer(c,sc->layers[ly_fore].splines,cur->u.state.splines,
 			pt_err, spline_err,sc->name, diffs_are_errors);
+	    if ( ret&SS_NoMatch )
+		failed |= ret;
 	    if ( sc->vwidth-cur->u.state.vwidth>err || sc->vwidth-cur->u.state.vwidth<-err )
-		ret = SS_NoMatch|SS_VWidthMismatch;
+		failed |= SS_NoMatch|SS_VWidthMismatch;
 	    if ( sc->width-cur->u.state.width>err || sc->width-cur->u.state.width<-err )
-		ret = SS_NoMatch|SS_WidthMismatch;
+		failed |= SS_NoMatch|SS_WidthMismatch;
 	    if ( !RefCheck( c,sc->layers[ly_fore].refs,cur->u.state.refs, sc->name, diffs_are_errors ))
-		ret = SS_NoMatch|SS_RefMismatch;
+		failed |= SS_NoMatch|SS_RefMismatch;
 	}
 	if ( cur->undotype==ut_statehint && (comp_hints&1) &&
 		!CompareHints( sc,cur->u.state.u.hints ))
-	    ret = SS_NoMatch|SS_HintMismatch;
+	    failed |= SS_NoMatch|SS_HintMismatch;
 	if ( cur->undotype==ut_statehint && (comp_hints&2) &&
 		!CompareHintmasks( sc->layers[ly_fore].splines,cur->u.state.splines ))
-	    ret = SS_NoMatch|SS_HintMaskMismatch;
+	    failed |= SS_NoMatch|SS_HintMaskMismatch;
+	if ( failed )
+	    ret = failed;
       break;
       case ut_layers:
 	if ( err>=0 ) {
 	    for ( ly=ly_fore, layer = cur->u.multiple.mult;
 		    ly<sc->layer_cnt && layer!=NULL;
 		    ++ly, layer = cur->next ) {
-		ret |= CompareLayer(c,sc->layers[ly].splines,cur->u.state.splines,
+		temp = CompareLayer(c,sc->layers[ly].splines,cur->u.state.splines,
 			    pt_err, spline_err,sc->name, diffs_are_errors);
+		if ( temp&SS_NoMatch )
+		    failed |= temp;
+		else
+		    ret |= temp;
 		if ( ly==ly_fore && (sc->vwidth-cur->u.state.vwidth>err || sc->vwidth-cur->u.state.vwidth<-err) )
-		    ret = SS_NoMatch|SS_VWidthMismatch;
+		    failed |= SS_NoMatch|SS_VWidthMismatch;
 		if ( ly==ly_fore && (sc->width-cur->u.state.width>err || sc->width-cur->u.state.width<-err) )
-		    ret = SS_NoMatch|SS_WidthMismatch;
+		    failed |= SS_NoMatch|SS_WidthMismatch;
 		if ( !RefCheck( c,sc->layers[ly].refs,cur->u.state.refs, sc->name, diffs_are_errors ))
-		    ret = SS_NoMatch|SS_RefMismatch;
+		    failed |= SS_NoMatch|SS_RefMismatch;
 		/* No hints in type3 fonts */
 	    }
 	}
 	if ( ly!=sc->layer_cnt || layer!=NULL )
-	    ScriptErrorString(c,"Layer difference in glyph", sc->name);
+	    failed |= SS_NoMatch|SS_LayerCntMismatch;
+	if ( failed )
+	    ret = failed;
       break;
       default:
 	ScriptError(c,"Unexpected clipboard contents");
     }
     if ( (ret&SS_WidthMismatch) && diffs_are_errors )
 	ScriptErrorString(c,"Advance width mismatch in glyph", sc->name);
-    else if ( (ret&SS_VWidthMismatch) && diffs_are_errors )
+    if ( (ret&SS_VWidthMismatch) && diffs_are_errors )
 	ScriptErrorString(c,"Vertical advance width mismatch in glyph", sc->name);
-    else if ( (ret&SS_HintMismatch) && diffs_are_errors )
+    if ( (ret&SS_HintMismatch) && diffs_are_errors )
 	ScriptErrorString(c,"Hinting mismatch in glyph", sc->name);
-    else if ( (ret&SS_HintMaskMismatch) && diffs_are_errors )
+    if ( (ret&SS_HintMaskMismatch) && diffs_are_errors )
 	ScriptErrorString(c,"Hint mask mismatch in glyph", sc->name);
+    if ( (ret&SS_LayerCntMismatch) && diffs_are_errors )
+	ScriptErrorString(c,"Layer difference in glyph", sc->name);
 return( ret );
 }
 

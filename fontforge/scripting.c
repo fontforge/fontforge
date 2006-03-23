@@ -6468,7 +6468,7 @@ static void bCompareFonts(Context *c) {
     flags = c->a.vals[3].u.ival;
 
     if ( strcmp(c->a.vals[2].u.sval,"-")==0 )
-	diffs = stderr;
+	diffs = stdout;
     else
 	diffs = fopen(c->a.vals[2].u.sval,"w");
     if ( diffs==NULL )
