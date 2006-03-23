@@ -6688,9 +6688,9 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "DefaultRoundToGrid", bDefaultRoundToGrid },
 /*  Menu */
     { "AutoHint", bAutoHint },
-    { "bSubstitutionPoints", bSubstitutionPoints },
-    { "bAutoCounter", bAutoCounter },
-    { "bDontAutoHint", bDontAutoHint },
+    { "SubstitutionPoints", bSubstitutionPoints },
+    { "AutoCounter", bAutoCounter },
+    { "DontAutoHint", bDontAutoHint },
     { "AddHHint", bAddHHint },
     { "AddVHint", bAddVHint },
     { "ClearCharCounterMasks", bClearCharCounterMasks },
