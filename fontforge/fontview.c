@@ -10213,7 +10213,7 @@ FontView *FontViewCreate(SplineFont *sf) {
     GRect gsize;
     FontRequest rq;
     /* sadly, clearlyu is too big for the space I've got */
-    static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
+    static unichar_t monospace[] = { 'f','o','n','t','v','i','e','w',',','c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
     static unichar_t *fontnames=NULL;
     static GWindow icon = NULL;
     static int nexty=0;
