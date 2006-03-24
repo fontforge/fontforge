@@ -888,16 +888,15 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt,order2) );
 	if ( from->nonextcp || to->noprevcp )
 return( ApproximateSplineFromPoints(from,to,mid,cnt,order2) );
 	else if ( !IntersectLines(&nextcp,&from->nextcp,&from->me,&to->prevcp,&to->me) ) {
+	    /* If the slopes don't intersect then use a line */
+	    /*  (or if the intersection is patently absurd) */
 	    from->nonextcp = to->noprevcp = true;
 	    from->nextcp = from->me;
 	    to->prevcp = to->me;
 	    TestForLinear(from,to);
 	} else {
-	    /* If the slopes don't intersect then use a line */
-	    /*  (or if the intersection is patently absurd) */
-	    from->nextcp = from->me;
-	    to->prevcp = to->me;
-	    from->nonextcp = to->noprevcp = true;
+	    from->nextcp = to->prevcp = nextcp;
+	    from->nonextcp = to->noprevcp = false;
 	}
 return( SplineMake2(from,to));
     }
