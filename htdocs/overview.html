@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 2-Feb-2006 -->
+  <!-- AP: Last modified: 24-Mar-2006 -->
   <TITLE>FontForge -- An outline font editor for PostScript&reg;, TrueType
   and OpenType fonts</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
@@ -36,6 +36,8 @@
 	  <A HREF="#References">References</A>
 	<LI>
 	  <A HREF="#Scripts">Scripts</A>
+	<LI>
+	  <A HREF="overview.html#Glyph-names">Glyph names &amp; Namelists</A>
 	<LI>
 	  <A HREF="#Anchors">Anchor Points and Classes</A>
 	<LI>
@@ -691,11 +693,52 @@
   <P>
   A script is a collection of letter shapes and rules for putting letters together.
   For instance latin is a script consisting for the letters A-Z, written left
-  to right, along with a transformation from upper to lower case in most instances,
-  a few ligatures and rules for generating accents. Arabic is a script consisting
-  of its own character set, written right to left, along with transformations
-  for initial, medial, final and isolated forms, many ligatures and rules for
-  placing vowel marks.
+  to right, along with a transformation from upper to lower case (in writing
+  since the middle ages), a few ligatures and rules for generating accents.
+  Arabic is a script consisting of its own character set, written right to
+  left, along with transformations for initial, medial, final and isolated
+  forms, many ligatures and rules for placing vowel marks.
+  <H3>
+    <A NAME="Glyph-names">Glyph names &amp; Namelists</A>
+  </H3>
+  <P>
+  Within fontforge every glyph will have a name. Generally the glyph name will
+  be something that provides information about what the glyph looks like so
+  the name for the glyph representing "9" is "nine". Adobe has established
+  a
+  <A HREF="http://partners.adobe.com/public/developer/en/opentype/aglfn13.txt">standard
+  for what names may be assigned to what glyphs</A>, and when producing a font
+  for general use it is best to stick to that standard (Acrobat uses the glyph
+  names and recognizes the standard ones. If you try and use "neuf" for "nine"
+  Acrobat will not recognize it and surprising things will fail).
+  <P>
+  Adobe's standard provides reasonably mnemonic names for most latin and greek
+  glyphs (to English speakers anyway), some rather incomprehensible names for
+  cyrillic and hebrew (afiiXXXXX) and identifies most other glyphs by unicode
+  code point (uniXXXX).
+  <P>
+  If you are an english speaker and you are working with latin glyphs this
+  is fine and dandy. But if you are French you might wish that "adieresis"
+  were named "atr&eacute;ma" -- for that matter even if you are an English
+  speaker you might prefer it to be named "aumlaut". No matter who you are
+  you might prefer more mnemonic names for the code block you are working on.
+  <P>
+  FontForge has a concept called a
+  <A HREF="encodingmenu.html#namelist">namelist</A> each of which is simply
+  a mapping from unicode code point to name. Several namelists may be defined,
+  different lists may apply to different fonts and a font may be have all its
+  glyphs renamed from one namelist to another. 
+  <P>
+  Namelists can also help navigating in a font. Even if a list does not apply
+  to a given font its names may be used in the goto dialog to find glyphs.
+  So if you've loaded a french namelist you can search for "atr&eacute;ma"
+  and FontForge will show you the glyph "adieresis" or "uni00E4" or "aumlaut"
+  or whatever.
+  <P>
+  A few caveats: Adobe's glyph name standard expects all glyph names to be
+  in ASCII characters. Syntactically postscript permits a wider range of glyph
+  names, but if you use non-ASCII characters some rasterizers might have problems.
+  Best to keep these within fontforge.
   <H3>
     <A NAME="Anchors">Anchor Points and Classes</A>
   </H3>

@@ -6819,6 +6819,7 @@ void FontViewMenu_LoadNamelist(GtkMenuItem *menuitem, gpointer user_data) {
     char *buts[3];
     FILE *old, *new;
     int ch, ans;
+    NameList *nl;
 
     if ( ret==NULL )
 return;				/* Cancelled */
@@ -6855,12 +6856,18 @@ return;
 	free(ret); free(temp);
 return;
     }
-    if ( !LoadNamelist(temp)) {
+    if ( (nl = LoadNamelist(temp))==NULL ) {
 	gwwv_post_error(_("Bad namelist file"),_("Could not parse %s"), ret );
 	free(ret); free(temp);
 return;
     }
     free(ret); free(temp);
+    if ( nl->uses_unicode ) {
+	if ( nl->a_utf8_name!=NULL )
+	    gwwv_post_notice(_("Non-ASCII glyphnames"),_("This namelist contains at least one non-ASCII glyph name, namely: %s"), nl->a_utf8_name );
+	else
+	    gwwv_post_notice(_("Non-ASCII glyphnames"),_("This namelist is based on a namelist which contains non-ASCII glyph names"));
+    }
 
     new = fopen( buffer,"w");
     if ( new==NULL ) {
@@ -6885,14 +6892,20 @@ void FontViewMenu_RenameByNamelist(GtkMenuItem *menuitem, gpointer user_data) {
     int i;
     int ret;
     NameList *nl;
+    extern int allow_utf8_glyphnames;
 
     for ( i=0; namelists[i]!=NULL; ++i );
     ret = gwwv_choose(_("Rename by NameList"),(const char **) namelists,i,0,_("Rename the glyphs in this font to the names found in the selected namelist"));
     if ( ret==-1 )
 return;
     nl = NameListByName(namelists[ret]);
-    if ( nl==NULL )
+    if ( nl==NULL ) {
 	IError("Couldn't find namelist");
+return;
+    } else if ( nl!=NULL && nl->uses_unicode && !allow_utf8_glyphnames) {
+	gwwv_post_error(_("Namelist contains non-ASCII names"),_("Glyph names should be limited to characters in the ASCII character set, but there are names in this namelist which use characters outside that range."));
+return;
+    }
     SFRenameGlyphsToNamelist(fv->sf,nl);
 # if defined(FONTFORGE_CONFIG_GDRAW)
     GDrawRequestExpose(fv->v,NULL,false);
@@ -9252,7 +9265,7 @@ return;
 	    sc->name );
 
     strcat(buffer,"  ");
-    uc_strcpy(ubuffer,buffer);
+    utf82u_strcpy(ubuffer,buffer);
     ulen = u_strlen(ubuffer);
 
     if ( uni==-1 && (pt=strchr(sc->name,'.'))!=NULL && pt-sc->name<30 ) {
@@ -9559,7 +9572,7 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 	snprintf( cspace, sizeof(cspace), "%u 0x%x U+%04x \"%.25s\" %.100s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
 		_UnicodeNameAnnot[upos>>16][(upos>>8)&0xff][upos&0xff].name);
 #endif
-	uc_strcpy(space,cspace);
+	utf82u_strcpy(space,cspace);
     } else if ( upos>=0xAC00 && upos<=0xD7A3 ) {
 #if defined( _NO_SNPRINTF ) || defined( __VMS )
 	sprintf( cspace, "%u 0x%x U+%04x \"%.25s\" Hangul Syllable %s%s%s",
@@ -9574,7 +9587,7 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 		jungsung[(upos-0xAC00)/28%21],
 		jongsung[(upos-0xAC00)%28] );
 #endif
-	uc_strcpy(space,cspace);
+	utf82u_strcpy(space,cspace);
     } else {
 #if defined( _NO_SNPRINTF ) || defined( __VMS )
 	sprintf( cspace, "%u 0x%x U+%04x \"%.25s\" %.50s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
@@ -9583,7 +9596,7 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 	snprintf( cspace, sizeof(cspace), "%u 0x%x U+%04x \"%.25s\" %.50s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
 	    	UnicodeRange(upos));
 #endif
-	uc_strcpy(space,cspace);
+	utf82u_strcpy(space,cspace);
     }
     if ( upos>=0 && upos<0x110000 && _UnicodeNameAnnot!=NULL &&
 	    _UnicodeNameAnnot[upos>>16][(upos>>8)&0xff][upos&0xff].annot!=NULL ) {

@@ -2233,9 +2233,16 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
     char *nlname = u2utf8_copy(ti->text);
     extern NameList *force_names_when_saving;
     int notdef_pos = SFFindNotdef(d->sf,-1);
+    extern int allow_utf8_glyphnames;
 
     rename_to = NameListByName(nlname);
     free(nlname);
+    if ( rename_to!=NULL && rename_to->uses_unicode ) {
+	/* I'll let someone generate a font with utf8 names, but I won't let */
+	/*  them take a font and force it to unicode here. */
+	gwwv_post_error(_("Namelist contains non-ASCII names"),_("Glyph names should be limited to characters in the ASCII character set, but there are names in this namelist which use characters outside that range."));
+return;
+    }
     
     for ( i=d->sf->glyphcnt-1; i>=1; --i ) if ( i!=notdef_pos )
 	if ( d->sf->glyphs[i]!=NULL && strcmp(d->sf->glyphs[i]->name,".notdef")==0 &&
