@@ -57,6 +57,17 @@
       <A HREF="#RenameGlyphs">Rename Glyphs...</A>
     <LI>
       <A HREF="#NameGlyphs">Create Named Glyphs...</A>
+	<HR>
+    <LI>
+      <A HREF="encodingmenu.html#General-encodings">General notes on encodings</A>
+      <UL>
+	<LI>
+	  <A HREF="encodingmenu.html#Encodings">Built-in encodings</A>
+	<LI>
+	  <A HREF="encodingmenu.html#User-def">User defined encodings</A>
+      </UL>
+    <LI>
+      <A HREF="encodingmenu.html#namelist">Namelists</A>
   </UL>
   <DL>
     <DT>
@@ -170,7 +181,7 @@
       ligatures "longs_longs_t", "f_longs", "f_j", etc.
   </DL>
   <H2>
-    General notes on encodings
+    <A NAME="General-encodings">General</A> notes on encodings
   </H2>
   <P>
   Not all font formats support all encodings. SVG fonts will always be output
@@ -446,7 +457,8 @@
   some others). But really this is only true of glyph names that get output
   into a font. If you design your own namelist you may include whatever glyph
   names you like, using (almost) the full range of unicode -- provided you
-  rename all your glyphs to Adobe's names before you generate a font. 
+  rename all your glyphs to Adobe's names before you generate a font. If you
+  use non-ASCII characters you should encode the file in utf-8.
   <P>
   FontForge normally will restrict glyph names to be within the ASCII range,
   but if you go to File-&gt;Preferences-&gt;Generic-&gt;UnicodeGlyphNames and
