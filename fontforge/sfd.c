@@ -68,18 +68,27 @@ signed char inbase64[256] = {
         -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
         -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 };
-
-static void utf7_encode(FILE *sfd,long ch) {
 static char base64[64] = {
  'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
  'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
  'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
  'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'};
 
+static void utf7_encode(FILE *sfd,long ch) {
+
     putc(base64[(ch>>18)&0x3f],sfd);
     putc(base64[(ch>>12)&0x3f],sfd);
     putc(base64[(ch>>6)&0x3f],sfd);
     putc(base64[ch&0x3f],sfd);
+}
+
+static char *base64_encode(char *ostr, long ch) {
+
+    *ostr++ = base64[(ch>>18)&0x3f];
+    *ostr++ = base64[(ch>>12)&0x3f];
+    *ostr++ = base64[(ch>> 6)&0x3f];
+    *ostr++ = base64[(ch    )&0x3f];
+return( ostr );
 }
 
 static void SFDDumpUTF7Str(FILE *sfd, const char *_str) {
@@ -151,6 +160,125 @@ static void SFDDumpUTF7Str(FILE *sfd, const char *_str) {
     }
     putc('"',sfd);
     putc(' ',sfd);
+}
+
+
+char *utf8toutf7_copy(const char *_str) {
+    int ch, prev_cnt=0, prev=0, in=0;
+    const unsigned char *str = (const unsigned char *) _str;
+    int i, len;
+    char *ret=NULL, *ostr=NULL;
+
+    if ( str==NULL )
+return( NULL );
+    for ( i=0; i<2; ++i ) {
+	str = (const unsigned char *) _str;
+	len= prev_cnt= prev= in=0;
+	while ( (ch = *str++)!='\0' ) {
+	    /* Convert from utf8 to ucs2 */
+	    if ( ch<=127 )
+		/* Done */;
+	    else if ( ch<=0xdf && *str!='\0' ) {
+		ch = ((ch&0x1f)<<6) | (*str++&0x3f);
+	    } else if ( ch<=0xef && *str!='\0' && str[1]!='\0' ) {
+		ch = ((ch&0xf)<<12) | ((str[0]&0x3f)<<6) | (str[1]&0x3f);
+		str += 2;
+	    } else if ( *str!='\0' && str[1]!='\0' && str[2]!='\0' ) {
+		int w = ( ((ch&0x7)<<2) | ((str[0]&0x30)>>4) )-1;
+		int s1, s2;
+		s1 = (w<<6) | ((str[0]&0xf)<<2) | ((str[1]&0x30)>>4);
+		s2 = ((str[1]&0xf)<<6) | (str[2]&0x3f);
+		ch = (s1*0x400)+s2 + 0x10000;
+		str += 3;
+	    } else {
+		/* illegal */
+	    }
+	    if ( ch<127 && ch!='\n' && ch!='\r' && ch!='\\' && ch!='~' &&
+		    ch!='+' && ch!='=' && ch!='"' ) {
+		if ( prev_cnt!=0 ) {
+		    if ( i ) {
+			prev<<= (prev_cnt==1?16:8);
+			ostr = base64_encode(ostr,prev);
+			prev_cnt=prev=0;
+		    } else
+			len += 4;
+		}
+		if ( in ) {
+		    if ( inbase64[ch]!=-1 || ch=='-' ) {
+			if ( i )
+			    *ostr++ = '-';
+			else
+			    ++len;
+		    }
+		    in = 0;
+		}
+		if ( i )
+		    *ostr++ = ch;
+		else
+		    ++len;
+	    } else if ( ch=='+' && !in ) {
+		if ( i ) {
+		    *ostr++ = '+';
+		    *ostr++ = '-';
+		} else
+		    len += 2;
+	    } else if ( prev_cnt== 0 ) {
+		if ( !in ) {
+		    if ( i )
+			*ostr++ = '+';
+		    else
+			++len;
+		    in = 1;
+		}
+		prev = ch;
+		prev_cnt = 2;		/* 2 bytes */
+	    } else if ( prev_cnt==2 ) {
+		prev<<=8;
+		prev += (ch>>8)&0xff;
+		if ( i ) {
+		    ostr = base64_encode(ostr,prev);
+		    prev_cnt=prev=0;
+		} else
+		    len += 4;
+		prev = (ch&0xff);
+		prev_cnt=1;
+	    } else {
+		prev<<=16;
+		prev |= ch;
+		if ( i ) {
+		    ostr = base64_encode(ostr,prev);
+		    prev_cnt=prev=0;
+		} else
+		    len += 4;
+		prev_cnt = prev = 0;
+	    }
+	}
+	if ( prev_cnt==2 ) {
+	    prev<<=8;
+	    if ( i ) {
+		ostr = base64_encode(ostr,prev);
+		prev_cnt=prev=0;
+	    } else
+		len += 4;
+	} else if ( prev_cnt==1 ) {
+	    prev<<=16;
+	    if ( i ) {
+		ostr = base64_encode(ostr,prev);
+		prev_cnt=prev=0;
+	    } else
+		len += 4;
+	}
+	if ( in ) {
+	    if ( i )
+		*ostr++ = '-';
+	    else
+		++len;
+	}
+	if ( i==0 )
+	    ostr = ret = galloc(len+1);
+    }
+    *ostr = '\0';
+return( ret );
 }
 
 static char *SFDReadUTF7Str(FILE *sfd) {
@@ -240,6 +368,90 @@ return( NULL );
     }
     if ( buffer==NULL )
 return( NULL );
+    *pt = '\0';
+    pt = copy(buffer);
+    free(buffer );
+return( pt );
+}
+
+char *utf7toutf8_copy(const char *_str) {
+    char *buffer = NULL, *pt, *end = NULL;
+    int ch1, ch2, ch3, ch4, done, c;
+    int prev_cnt=0, prev=0, in=0;
+    const char *str = _str;
+
+    if ( str==NULL )
+return( NULL );
+    buffer = pt = galloc(400);
+    end = pt+400;
+    while ( (ch1=*str++)!='\0' ) {
+	done = 0;
+	if ( !done && !in ) {
+	    if ( ch1=='+' ) {
+		ch1=*str++;
+		if ( ch1=='-' ) {
+		    ch1 = '+';
+		    done = true;
+		} else {
+		    in = true;
+		    prev_cnt = 0;
+		}
+	    } else
+		done = true;
+	}
+	if ( !done ) {
+	    if ( ch1=='-' ) {
+		in = false;
+	    } else if ( inbase64[ch1]==-1 ) {
+		in = false;
+		done = true;
+	    } else {
+		ch1 = inbase64[ch1];
+		ch2 = inbase64[c = *str++];
+		if ( ch2==1 ) {
+		    --str;
+		    ch2 = ch3 = ch4 = 0;
+		} else {
+		    ch3 = inbase64[c = *str++];
+		    if ( ch3==-1 ) {
+			--str;
+			ch3 = ch4 = 0;
+		    } else {
+			ch4 = inbase64[c = *str++];
+			if ( ch4==-1 ) {
+			    --str;
+			    ch4 = 0;
+			}
+		    }
+		}
+		ch1 = (ch1<<18) | (ch2<<12) | (ch3<<6) | ch4;
+		if ( prev_cnt==0 ) {
+		    prev = ch1&0xff;
+		    ch1 >>= 8;
+		    prev_cnt = 1;
+		} else /* if ( prev_cnt == 1 ) */ {
+		    ch1 |= (prev<<24);
+		    prev = (ch1&0xffff);
+		    ch1 = (ch1>>16)&0xffff;
+		    prev_cnt = 2;
+		}
+		done = true;
+	    }
+	}
+	if ( pt+10>=end ) {
+	    char *temp = grealloc(buffer,end-buffer+400);
+	    pt = temp+(pt-buffer);
+	    end = temp+(end-buffer+400);
+	    buffer = temp;
+	}
+	if ( done )
+	    pt = utf8_idpb(pt,ch1);
+	if ( prev_cnt==2 ) {
+	    prev_cnt = 0;
+	    if ( prev!=0 )
+		pt = utf8_idpb(pt,prev);
+	}
+    }
     *pt = '\0';
     pt = copy(buffer);
     free(buffer );

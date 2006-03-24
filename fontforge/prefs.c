@@ -114,6 +114,7 @@ char *othersubrsfile;
 extern MacFeat *default_mac_feature_map,	/* from macenc.c */
 		*user_mac_feature_map;
 int updateflex = false;
+int allow_utf8_glyphnames = false;
 
 extern int rectelipse, polystar, regular_star;	/* from cvpalettes.c */
 extern int center_out[2];			/* from cvpalettes.c */
@@ -257,6 +258,7 @@ static struct prefs_list {
 	{ N_("HelpDir"), pr_file, &helpdir, NULL, NULL, 'R', NULL, 0, N_("The directory on your local system in which FontForge will search for help\nfiles.  If a file is not found there, then FontForge will look for it on the net.") },
 	{ N_("OtherSubrsFile"), pr_file, &othersubrsfile, NULL, NULL, 'O', NULL, 0, N_("If you wish to replace Adobe's OtherSubrs array (for Type1 fonts)\nwith an array of your own, set this to point to a file containing\na list of up to 14 PostScript subroutines. Each subroutine must\nbe preceded by a line starting with '%%%%' (any text before the\nfirst '%%%%' line will be treated as an initial copyright notice).\nThe first three subroutines are for flex hints, the next for hint\nsubstitution (this MUST be present), the 14th (or 13 as the\nnumbering actually starts with 0) is for counter hints.\nThe subroutines should not be enclosed in a [ ] pair.") },
 	{ N_("FreeTypeInFontView"), pr_bool, &use_freetype_to_rasterize_fv, NULL, NULL, 'O', NULL, 0, N_("Use the FreeType rasterized (when available)\nto rasterize glyphs in the font view.\nThis generally results in better quality.") },
+	{ N_("UnicodeGlyphNames"), pr_bool, &allow_utf8_glyphnames, NULL, NULL, 'O', NULL, 0, N_("Allow the full unicode character set in glyph names.\nThis does not conform to adobe's glyph name standard.\nSuch names should be for internal use only and\nshould NOT end up in production fonts." ) },
 	{ NULL }
 },
   editing_list[] = {
@@ -745,7 +747,6 @@ void LoadPrefs(void) {
 #if !defined(NODYNAMIC)
     LoadPluginDir(NULL);
 #endif
-    LoadNamelistDir(NULL);
     LoadPfaEditEncodings();
     LoadGroupList();
 
@@ -840,6 +841,7 @@ void LoadPrefs(void) {
 	old_ttf_flags |= ttf_flag_glyphmap;
 	old_otf_flags |= ttf_flag_glyphmap;
     }
+    LoadNamelistDir(NULL);
 }
 
 void PrefDefaultEncoding(void) {
@@ -1394,7 +1396,9 @@ return( true );
 		  char *name = u2utf8_copy(ti->text);
 		    nl = NameListByName(name);
 		    free(name);
-		    if ( nl!=NULL )
+		    if ( nl!=NULL && nl->uses_unicode && !allow_utf8_glyphnames)
+			gwwv_post_error(_("Namelist contains non-ASCII names"),_("Glyph names should be limited to characters in the ASCII character set, but there are names in this namelist which use characters outside that range."));
+		    else if ( nl!=NULL )
 			*((NameList **) (pl->val)) = nl;
 		}
 	      break;

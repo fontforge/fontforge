@@ -756,6 +756,7 @@ static void CCD_EnableNextPrev(struct contextchaindlg *ccd) {
 
 static int CCD_ValidNameList(const char *ret,int empty_bad) {
     int first;
+    extern int allow_utf8_glyphnames;
 
     while ( isspace(*ret)) ++ret;
     if ( *ret=='\0' )
@@ -763,7 +764,7 @@ return( !empty_bad );
 
     first = true;
     while ( *ret ) {
-	if ( *(unsigned char *) ret>=0x7f || *ret<' ' )
+	if ( (*(unsigned char *) ret>=0x7f && !allow_utf8_glyphnames) || *ret<' ' )
 return( false );
 	if ( first && isdigit(*ret) )
 return( false );

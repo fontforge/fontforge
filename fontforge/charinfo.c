@@ -3393,13 +3393,12 @@ return;
 }
 
 static int LigCheck(SplineChar *sc,enum possub_type type,
-	uint32 tag, unichar_t *components) {
+	uint32 tag, char *components) {
     int i;
-    unichar_t *pt, *start, ch;
+    char *pt, *start, ch;
     PST *pst;
     SplineFont *sf = sc->parent;
     SplineChar *found;
-    char *temp;
 #if defined(FONTFORGE_CONFIG_GDRAW)
     char *buts[3];
 
@@ -3418,28 +3417,26 @@ return( true );
 	    if ( sf->glyphs[i]!=sc && sf->glyphs[i]!=NULL && sf->glyphs[i]->possub!=NULL ) {
 		for ( pst=sf->glyphs[i]->possub; pst!=NULL; pst=pst->next )
 			if ( pst->type==pst_ligature && pst->tag==tag &&
-			    uc_strcmp(components,pst->u.lig.components)==0 ) {
+			    strcmp(components,pst->u.lig.components)==0 ) {
 return( gwwv_ask(_("Multiple"),(const char **) buts,0,1,_("There is already a ligature made from these components\n(named %1$.40s, at local encoding %2$d).\nIs that what you want?"),sf->glyphs[i]->name,i)==0 );
 		}
 	    }
     }
 
-    if ( type==pst_substitution && uc_strcmp(components,MAC_DELETED_GLYPH_NAME)==0 )
+    if ( type==pst_substitution && strcmp(components,MAC_DELETED_GLYPH_NAME)==0 )
 return( true );
 
     start = components;
     while ( 1 ) {
-	pt = u_strchr(start+1,' ');
-	if ( pt==NULL ) pt = start+u_strlen(start);
+	pt = strchr(start+1,' ');
+	if ( pt==NULL ) pt = start+strlen(start);
 	ch = *pt; *pt = '\0';
-	if ( uc_strcmp(start,sc->name)==0 && type == pst_ligature ) {
+	if ( strcmp(start,sc->name)==0 && type == pst_ligature ) {
 	    gwwv_post_error(_("A ligature may not be made up of itself"),_("This substitution is self-referential") );
 	    *pt = ch;
 return( false );
 	}
-	temp = cu_copy(start);
-	found = SFGetChar(sf,-1,temp);
-	free(temp);
+	found = SFGetChar(sf,-1,start);
 	if ( found==NULL ) {
 	    int ret = gwwv_ask(_("Multiple"),(const char **) buts,0,1,_("The component \"%.20s\" is not in this font.\nIs that what you want?"),start);
 	    *pt = ch;
@@ -3574,13 +3571,16 @@ return;
 	if ( sel>1 ) {
 	    uint32 tag; int macfeat;
 	    unichar_t *comp;
+	    char *components;
 	    DecomposeClassName(newname,&comp,&tag,&macfeat,NULL,NULL,NULL,NULL,
 		    ci->sc->parent);
-	    if ( !LigCheck(ci->sc,sel+1,tag,comp)) {
-		free( newname ); free(comp);
+	    components = u2utf8_copy(comp);
+	    free(comp);
+	    if ( !LigCheck(ci->sc,sel+1,tag,components)) {
+		free( newname ); free(components);
 return;
 	    }
-	    free(comp);
+	    free(components);
 	}
 	list = GWidgetGetControl(ci->gw,CID_List+sel*100);
 	old = GGadgetGetList(list,&len);
@@ -3949,7 +3949,7 @@ static void SetNameFromUnicode(GWindow gw,int cid,int val) {
     char buf[100];
     CharInfo *ci = GDrawGetUserData(gw);
 
-    temp = uc_copy(StdGlyphName(buf,val,ci->sc->parent->uni_interp,ci->sc->parent->for_new_glyphs));
+    temp = utf82u_copy(StdGlyphName(buf,val,ci->sc->parent->uni_interp,ci->sc->parent->for_new_glyphs));
     GGadgetSetTitle(GWidgetGetControl(gw,cid),temp);
     free(temp);
 }
@@ -4294,6 +4294,7 @@ static int CI_NameCheck(const unichar_t *name) {
 #elif defined(FONTFORGE_CONFIG_GTK)
     static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_CANCEL, NULL };
 #endif
+    extern int allow_utf8_glyphnames;
 
     if ( uc_strcmp(name,".notdef")==0 )		/* This name is a special case and doesn't follow conventions */
 return( true );
@@ -4309,7 +4310,7 @@ return( false );
     }
     bad = questionable = false;
     while ( *name ) {
-	if ( *name<=' ' || *name>=0x7f ||
+	if ( *name<=' ' || (!allow_utf8_glyphnames && *name>=0x7f) ||
 		*name=='(' || *name=='[' || *name=='{' || *name=='<' ||
 		*name==')' || *name==']' || *name=='}' || *name=='>' ||
 		*name=='%' || *name=='/' )
@@ -4379,7 +4380,7 @@ return( false );
     nm = _GGadgetGetTitle(GWidgetGetControl(ci->gw,CID_UName));
     if ( !CI_NameCheck(nm) )
 return( false );
-    name = cu_copy( nm );
+    name = u2utf8_copy( nm );
     if ( strcmp(name,ci->sc->name)!=0 || val!=ci->sc->unicodeenc )
 	refresh_fvdi = 1;
     comment = GGadgetGetTitle8(GWidgetGetControl(ci->gw,CID_Comment));
@@ -5164,7 +5165,7 @@ return( true );
 
 GTextInfo *TIFromName(const char *name) {
     GTextInfo *ti = gcalloc(1,sizeof(GTextInfo));
-    ti->text = uc_copy(name);
+    ti->text = utf82u_copy(name);
     ti->fg = COLOR_DEFAULT;
     ti->bg = COLOR_DEFAULT;
 return( ti );
@@ -5336,13 +5337,13 @@ static void CIFillup(CharInfo *ci) {
 	     sf->glyphs[gid]==NULL || sf->glyphs[gid]->charinfo==NULL ||
 	     gid==sc->orig_pos));
 
-    temp = uc_copy(sc->name);
+    temp = utf82u_copy(sc->name);
     GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_UName),temp);
     free(temp);
     CI_SetNameList(ci,sc->unicodeenc);
 
     sprintf(buffer,"U+%04x", sc->unicodeenc);
-    temp = uc_copy(sc->unicodeenc==-1?"-1":buffer);
+    temp = utf82u_copy(sc->unicodeenc==-1?"-1":buffer);
     GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_UValue),temp);
     free(temp);
 

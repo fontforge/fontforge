@@ -51,12 +51,12 @@ static int psnamesinited=false;
 #define HASH_SIZE	257
 struct psbucket { const char *name; int uni; struct psbucket *prev; } *psbuckets[HASH_SIZE];
 
-static int hashname(const char *name) {
-    /* Name is assumed to be ascii */
+static int hashname(const char *_name) {
+    const unsigned char *name = (const unsigned char *) _name;
     int hash=0;
 
     while ( *name ) {
-	if ( *name<=' ' || *name>=0x7f )
+	if ( *name<=' ' )
     break;
 	hash = (hash<<3)|((hash>>29)&0x7);
 	hash ^= *name++-(' '+1);
@@ -101,6 +101,28 @@ static void psinitnames(void) {
     for ( nl=&agl; nl!=NULL; nl=nl->next )
 	NameListHash(nl);
     psnamesinited = true;
+}
+
+static void psreinitnames(void) {
+    /* If we reread a (loaded) namelist file, then we must remove the old defn*/
+    /*  which means we must remove all the old hash entries before we can put */
+    /*  in the new ones */
+    int i;
+    struct psbucket *cur, *prev;
+    NameList *nl;
+
+    for ( i=0; i<HASH_SIZE; ++i ) {
+	for ( cur = psbuckets[i]; cur!=NULL; cur=prev ) {
+	    prev = cur->prev;
+	    chunkfree(cur,sizeof(struct psbucket));
+	}
+	psbuckets[i] = NULL;
+    }
+
+    for ( i=0; psaltnames[i].name!=NULL ; ++i )
+	psaddbucket(psaltnames[i].name,psaltnames[i].unicode);
+    for ( nl=&agl; nl!=NULL; nl=nl->next )
+	NameListHash(nl);
 }
 
 int UniFromName(const char *name,enum uni_interp interp,Encoding *encname) {
@@ -440,6 +462,21 @@ char **AllNamelistNames(void) {
 return( names );
 }
 
+#if 0
+uint8 *AllNamelistUnicodes(void) {
+    NameList *nl;
+    int cnt;
+    uint8 *uses;
+
+    for ( nl = &agl, cnt=0; nl!=NULL; nl=nl->next, ++cnt );
+    uses = galloc((cnt+1) *sizeof(uint8));
+    for ( nl = &agl, cnt=0; nl!=NULL; nl=nl->next, ++cnt )
+	uses[cnt] = nl->uses_unicode;
+    uses[cnt] = 0xff;
+return( uses );
+}
+#endif
+
 NameList *DefaultNameListForNewFonts(void) {
 return( namelist_for_new_fonts );
 }
@@ -472,6 +509,7 @@ static void NameListFreeContents(NameList *nl) {
 	}
 	free(nl->renames);
     }
+    free(nl->a_utf8_name);
 }
 
 static void NameListFree(NameList *nl) {
@@ -483,7 +521,7 @@ static void NameListFree(NameList *nl) {
 #include <sys/types.h>
 #include <dirent.h>
 
-int LoadNamelist(char *filename) {
+NameList *LoadNamelist(char *filename) {
     FILE *file = fopen(filename,"r");
     NameList *nl, *nl2;
     char buffer[400];
@@ -492,12 +530,16 @@ int LoadNamelist(char *filename) {
     int len;
     int up, ub, uc;
     int rn_cnt=0, rn_max = 0;
+    int uses_unicode = false;
 # if defined(FONTFORGE_CONFIG_GTK)
     gsize read, written;
 # endif
 
     if ( file==NULL )
-return( false );
+return( NULL );
+
+    if ( !psnamesinited )
+	psinitnames();
 
     nl = chunkalloc(sizeof(NameList));
     pt = strrchr(filename,'/');
@@ -524,11 +566,11 @@ return( false );
 	    if ( nl2==NULL ) {
 		gwwv_post_error(_("NameList base missing"),_("NameList %s based on %s which could not be found"), nl->title, pt );
 		NameListFree(nl);
-return( false );
+return( NULL );
 	    } else if ( nl->basedon!=NULL ) {
 		gwwv_post_error(_("NameList based twice"),_("NameList %s based on two NameLists"), nl->title );
 		NameListFree(nl);
-return( false );
+return( NULL );
 	    }
 	    nl->basedon = nl2;
 	} else if ( strncmp(buffer,"Rename:",7)==0 ) {
@@ -537,7 +579,7 @@ return( false );
 	    if ( *test=='\0' ) {
 		gwwv_post_error(_("NameList parsing error"),_("Missing rename \"to\" name %s\n%s"), nl->title, buffer );
 		NameListFree(nl);
-return( false );
+return( NULL );
 	    }
 	    *test='\0';
 	    for ( ++test; *test==' ' || *test=='\t'; ++test);
@@ -546,7 +588,7 @@ return( false );
 	    if ( *test=='\0' ) {
 		gwwv_post_error(_("NameList parsing error"),_("Missing rename \"to\" name %s\n%s"), nl->title, buffer );
 		NameListFree(nl);
-return( false );
+return( NULL );
 	    }
 	    if ( rn_cnt>=rn_max-1 )
 		nl->renames = grealloc(nl->renames,(rn_max+=20)*sizeof(struct renames));
@@ -563,23 +605,28 @@ return( false );
 	    if ( end==pt || uni<0 || uni>=unicode4_size ) {
 		gwwv_post_error(_("NameList parsing error"),_("Bad unicode value when parsing %s\n%s"), nl->title, buffer );
 		NameListFree(nl);
-return( false );
+return( NULL );
 	    }
 	    pt = end;
 	    while ( *pt==' ' || *pt==';' || *pt=='\t' ) ++pt;
 	    if ( *pt=='\0' ) {
 		gwwv_post_error(_("NameList parsing error"),_("Missing name when parsing %s for unicode %x"), nl->title, uni );
 		NameListFree(nl);
-return( false );
+return( NULL );
 	    }
 	    for ( test=pt; *test; ++test ) {
-		if ( *test<=' ' ||
+		if ( (*test<=' ' && *test>=0) ||
 		    *test=='(' || *test=='[' || *test=='{' || *test=='<' ||
 		    *test==')' || *test==']' || *test=='}' || *test=='>' ||
 		    *test=='%' || *test=='/' ) {
 		    gwwv_post_error(_("NameList parsing error"),_("Bad name when parsing %s for unicode %x"), nl->title, uni );
 		    NameListFree(nl);
-return( false );
+return( NULL );
+		}
+		if ( *test&0x80 ) {
+		    uses_unicode = true;
+		    if ( nl->a_utf8_name==NULL )
+			nl->a_utf8_name = copy(pt);
 		}
 	    }
 	    up = uni>>16;
@@ -594,11 +641,14 @@ return( false );
 	    else {
 		gwwv_post_error(_("NameList parsing error"),_("Multiple names when parsing %s for unicode %x"), nl->title, uni );
 		NameListFree(nl);
-return( false );
+return( NULL );
 	    }
 	}
     }
 
+    nl->uses_unicode = uses_unicode;
+    if ( nl->basedon!=NULL && nl->basedon->uses_unicode )
+	nl->uses_unicode = true;
     fclose(file);
     for ( nl2 = &agl; nl2->next!=NULL; nl2=nl2->next ) {
 	if ( strcmp(nl2->title,nl->title)==0 ) {	/* Replace old version */
@@ -607,11 +657,13 @@ return( false );
 	    *nl2 = *nl;
 	    nl2->next = next;
 	    chunkfree(nl,sizeof(NameList));
-return( true );
+	    psreinitnames();
+return( nl2 );
 	}
     }
+    NameListHash(nl);
     nl2->next = nl;
-return( true );
+return( nl );
 }
 
 static int isnamelist(char *filename) {

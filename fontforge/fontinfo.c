@@ -5163,6 +5163,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 #endif
 	char os2_vendor[4];
 	NameList *nl;
+	extern int allow_utf8_glyphnames;
 
 	if ( d->tn_smallactive!=-1 )
 	    TN_FinishSmallEdit(d);
@@ -5296,6 +5297,19 @@ return( true );
 return( true );
 	if ( order2!=sf->order2 && !SFCloseAllInstrs(sf))
 return( true );
+
+	nlitem = GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_Namelist));
+	if ( nlitem==NULL )
+	    nl = DefaultNameListForNewFonts();
+	else {
+	    char *name = cu_copy(nlitem->text);
+	    nl = NameListByName(name);
+	    free(name);
+	}
+	if ( nl->uses_unicode && !allow_utf8_glyphnames ) {
+	    gwwv_post_error(_("Namelist contains non-ASCII names"),_("Glyph names should be limited to characters in the ASCII character set,\nbut there are names in this namelist which use characters outside\nthat range."));
+return(true);
+	}
 #ifdef FONTFORGE_CONFIG_TYPE3
 	if ( strokedfont!=sf->strokedfont || multilayer!=sf->multilayer ) {
 	    if ( sf->strokedfont && multilayer )
@@ -5401,14 +5415,6 @@ return(true);
 	if ( interp==-1 ) sf->uni_interp = ui_none;
 	else sf->uni_interp = (intpt) interpretations[interp].userdata;
 
-	nlitem = GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_Namelist));
-	if ( nlitem==NULL )
-	    nl = DefaultNameListForNewFonts();
-	else {
-	    char *name = cu_copy(nlitem->text);
-	    nl = NameListByName(name);
-	    free(name);
-	}
 	sf->for_new_glyphs = nl;
 
 	if ( sf->hasvmetrics!=vmetrics )

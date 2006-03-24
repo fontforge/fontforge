@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jun-2005 -->
-  <!-- AP: Last modified: 5-Feb-2006 -->
+  <!-- AP: Last modified: 24-Mar-2006 -->
   <TITLE>Encoding Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -387,9 +387,10 @@
   intelligible names for many glyphs of unicode characters. And some unintelligible
   names too.
   <P>
-  A namelist is just a mapping from unicode to glyph names (a glyph name must
-  be made up of alphanumeric characters (or the special characters '.' or '_'),
-  it may not begin with a digit, and it must be 31 or fewer characters in length.
+  A <A HREF="overview.html#Glyph-names">namelist</A> is just a mapping from
+  unicode to glyph names (a glyph name must be made up of alphanumeric characters
+  (or the special characters '.' or '_'), it may not begin with a digit, and
+  it must be 31 or fewer characters in length.
   <P>
   FontForge provides a series of standard namelists:
   <UL>
@@ -437,9 +438,24 @@
   Which means the namelist is the same as the Adobe Glyph List except that
   in your system U+0021 will be called "exclamation" rather than "exclam".
   <P>
-  Any glyphs you do not explicitly named will be named "uniXXXX" or "uXXXXX"
+  Any glyphs you do not explicitly name will be named "uniXXXX" or "uXXXXX"
   where XXXX is the unicode value in hex. The prefix "uni" will be used for
   glyphs in the BMP, the prefix "u" for glyphs outside.
+  <P>
+  I said that glyph names should contain only alphanumeric characters (and
+  some others). But really this is only true of glyph names that get output
+  into a font. If you design your own namelist you may include whatever glyph
+  names you like, using (almost) the full range of unicode -- provided you
+  rename all your glyphs to Adobe's names before you generate a font. 
+  <P>
+  FontForge normally will restrict glyph names to be within the ASCII range,
+  but if you go to File-&gt;Preferences-&gt;Generic-&gt;UnicodeGlyphNames and
+  set it on you can use unicode.
+  <P>
+  I've created a <A HREF="ListeDesGlyphs.nam">french namelist</A> which uses
+  accented letters. This will work fine within fontforge, and most rasterizers
+  will parse fonts generated using such names -- but they are non-standard
+  and may cause problems. Best to do a rename just before generating your font.
   <P>
   So if you find it easier to work with names other than those Adobe has
   established you may create your own namelist file. Then use

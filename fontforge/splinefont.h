@@ -554,6 +554,8 @@ typedef struct namelist {
     const char ***unicode[17];
     struct namelist *next;
     struct renames { char *from; char *to; } *renames;
+    int uses_unicode;
+    char *a_utf8_name;
 } NameList;
 
 enum uni_interp { ui_unset= -1, ui_none, ui_adobe, ui_greek, ui_japanese,
@@ -1846,7 +1848,7 @@ extern char **AllGlyphNames(int uni, NameList *for_this_font,SplineChar *sc/* Ma
 extern char **AllNamelistNames(void);
 extern NameList *DefaultNameListForNewFonts(void);
 extern NameList *NameListByName(char *name);
-extern int LoadNamelist(char *filename);
+extern NameList *LoadNamelist(char *filename);
 extern void LoadNamelistDir(char *dir);
 extern const char *RenameGlyphToNamelist(char *buffer, SplineChar *sc,NameList *old,NameList *new);
 extern void SFRenameGlyphsToNamelist(SplineFont *sf,NameList *new);
@@ -1973,4 +1975,8 @@ extern void SFBuildSyllables(SplineFont *sf);
 
 extern void DefaultOtherSubrs(void);
 extern int ReadOtherSubrsFile(char *filename);
+
+extern char *utf8toutf7_copy(const char *_str);
+extern char *utf7toutf8_copy(const char *_str);
+
 #endif
