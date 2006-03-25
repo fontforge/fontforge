@@ -2924,7 +2924,7 @@ return( false );	/* TrueType can't represent this, so always remove instructions
 		!ss->first->noprevcp;
 	if ( starts_with_cp ) ++pnum;
 	for ( sp=ss->first; ; ) {
-	    skipit = sp!=ss->first && SPInterpolate(sp);
+	    skipit = SPInterpolate(sp);
 	    if ( sp->nonextcp || sp->noprevcp ) skipit = false;
 	    if ( sp->ttfindex==0xffff && skipit )
 		/* Doesn't count */;
@@ -2936,6 +2936,8 @@ return( false );
 		/* Doesn't count */;
 	    else if ( sp->nextcpindex==pnum )
 		++pnum;
+	    else if ( sp->nextcpindex==0 && starts_with_cp && sp->next->to==ss->first )
+		/* Ok */;
 	    else
 return( false );
 	    if ( sp->next==NULL )
