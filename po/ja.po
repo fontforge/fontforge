@@ -1705,7 +1705,7 @@ msgid "_String Type"
 msgstr "文字列のタイプ(_S)"
 
 msgid "%1$.30s string for %2$.30s"
-msgstr ""
+msgstr "%2$.30sのための文字列%1$.30s"
 
 msgid "Multi-line edit"
 msgstr "複数行編集"
@@ -3413,7 +3413,7 @@ msgid "There are two open fonts with the current family name and the same style.
 msgstr "カレントフォントと同一のファミリー名をもち,同じスタイルをもつ,%.30sと%0.30hsの2つのフォントが開かれています."
 
 msgid "The font %1$.30s has a different encoding than that of %2$.30hs"
-msgstr "フォント %1$.30s のエンコーディングは%2$.30hsと異なります"
+msgstr "フォント%1$.30sのエンコーディングは%2$.30hsと異なります"
 
 msgid "Bad Drawing Operation"
 msgstr "描画操作が不正です"
@@ -3582,13 +3582,18 @@ msgstr "フォントが変更されています."
 msgid ""
 "Font %1$.40s in file %2$.40s has been changed.\n"
 "Do you want to save it?"
-msgstr "フォント '%1$.40s' (ファイル名 '%2$.40hs') は変更されています.\n保存しますか?"
+msgstr ""
+"ファイル'%2$.40s'に含まれるフォント'%1$.40s'は変更されています.\n"
+"保存しますか?"
 
 msgid ""
 "Font %1$.40s in file %2$.40s has been changed.\n"
 "Reverting the file will lose those changes.\n"
 "Is that what you want?"
-msgstr "フォント '%1$.40s' (ファイル名 '%2$.40hs') は変更されています.\nファイルを元に戻すといくつかの編集操作の結果が失われます.\n元に戻してよろしいですか?"
+msgstr ""
+"ファイル'%2$.40s'に含まれるフォント'%1$.40s'は変更されています.\n"
+"ファイルを元に戻すといくつかの編集操作の結果が失われます.\n"
+"元に戻してよろしいですか?"
 
 msgid "_Revert"
 msgstr "元に戻す(_R)"
@@ -3703,7 +3708,7 @@ msgid "Please close %s before inserting it into a CID font"
 msgstr "CIDフォントに %s を挿入する前に, それを閉じてください."
 
 msgid "Are you sure you wish to remove sub-font %1$.40s from the CID font %2$.40hs"
-msgstr "本当に, CIDフォント%2$.40sから%1$.40hsを\n削除してよろしいですか?"
+msgstr "本当に, CIDフォント%2$.40hsから%1$.40sを\n削除してよろしいですか?"
 
 msgid "Flipped Reference"
 msgstr "参照が裏返しになっています."
@@ -3839,7 +3844,7 @@ msgid ""
 "Is that what you want?"
 msgstr ""
 "この構成要素からなる合字\n"
-"(名前:%1$.40s,ローカルエンコーディング:$2$.40hs)\n"
+"(名前:%1$.40s,ローカルエンコーディング:%2$d)\n"
 "は既に定義されています. このまま続けますか?"
 
 msgid "A ligature may not be made up of itself"
@@ -3877,7 +3882,7 @@ msgid "Reference Info"
 msgstr "参照の情報"
 
 msgid "Reference to character %1$.20s at %2$d"
-msgstr "文字%1$.20sへの%dにおける参照"
+msgstr "文字%1$.20sへの%2$dにおける参照"
 
 msgid "_Use My Metrics"
 msgstr "この参照のメトリックを使用(_U)"
@@ -7086,6 +7091,9 @@ msgstr "ビットマップを拡大/縮小中"
 msgid "%1$.80s at %2$d size %3$d from %4$.80hs"
 msgstr "%1$.80s at %2$d size %3$d from %4$.80hs"
 
+msgid "Set Vertical Width..."
+msgstr "縦書き時の送り幅を設定..."
+
 msgid "Recalculate Bitmaps"
 msgstr "ビットマップを再計算"
 
@@ -7484,8 +7492,8 @@ msgid ""
 "refered to.\n"
 "It will not be copied."
 msgstr ""
-"%1$s への参照を %2$hs に貼りつけようとしていますが,この\n"
-"フォントには %1$hs は存在せず, 参照された元のグリフも見つかりません.\n"
+"%1$s への参照を %2$s に貼りつけようとしていますが,この\n"
+"フォントには %1$s は存在せず, 参照された元のグリフも見つかりません.\n"
 "コピーは行われません."
 
 msgid "Don't _Warn Again"
@@ -7942,7 +7950,7 @@ msgid "This glyph contains a substitution or ligature entry which refers to an e
 msgstr "このグリフには,空のグリフを参照する置換えまたは合字のエントリが含まれています."
 
 msgid "'%2$c%3$c%4$c%5$c' refers to an empty glyph \"%1$.20hs\""
-msgstr "'%2$c%3$c%4$c%5$c' は空のグリフ \"%1$.20hs\" を参照しています."
+msgstr "'%2$c%3$c%4$c%5$c'は空のグリフ\"%1$.20hs\"を参照しています."
 
 msgid "This glyph has the same unicode code point as the glyph named"
 msgstr "このグリフと重複する,Unicodeのコードポイントが同じで以下の名前をもつグリフがあります:"
@@ -7960,16 +7968,16 @@ msgid "Problem explanation"
 msgstr "問題の説明"
 
 msgid "Glyph %1$.50s with a %2$hs with tag '%3$c%4$c%5$c%6$c'"
-msgstr "タグ'%3$c%4$c%5$c%6$c'をもつ%2$hsを含むグリフ%1$.50hs"
+msgstr "タグ'%3$c%4$c%5$c%6$c'をもつ%2$hsを含むグリフ%1$.50s"
 
 msgid "Glyph %1$.50s with a %2$hs with feature <%3$d,%4$d>"
-msgstr "機能'%3$c%4$c%5$c%6$c'をもつ%2$hsを含むグリフ%1$.50hs"
+msgstr "機能<%3$d,%4$d>をもつ%2$hsを含むグリフ%1$.50s"
 
 msgid "%1$s with tag '%2$c%3$c%4$c%5$c'"
-msgstr "タグ'%2$c%3$c%4$c%5$c'をもつ%1$hs"
+msgstr "タグ'%2$c%3$c%4$c%5$c'をもつ%1$s"
 
 msgid "%1$s with feature <%2$d,%3$d>"
-msgstr "機能<%2$d,%3$d>をもつ%1$hs"
+msgstr "機能<%2$d,%3$d>をもつ%1$s"
 
 msgid " refers to a missing glyph"
 msgstr "は存在しないグリフを参照しています"
@@ -8566,7 +8574,7 @@ msgid "Bad Glyph Count"
 msgstr "グリフの個数が不正です"
 
 msgid "Font file has bad glyph count field. maxp says: %d sizeof(loca)=>%d"
-msgstr "フォントファイルのグリフ数を表すフィールドが間違っています. maxpの値は%d個ですが,sizeof(loca)=&gt;%dです"
+msgstr "フォントファイルのグリフ数を表すフィールドが間違っています. maxpの値は%d個ですが,sizeof(loca)からは%dです"
 
 msgid "Reading Names"
 msgstr "名前を読み込み中"
@@ -8587,13 +8595,13 @@ msgid "Not in Collection"
 msgstr "TTCに含まれません."
 
 msgid "%s is not in %.100hs"
-msgstr "%s は %.100hs に含まれません."
+msgstr "%sは%.100hsに含まれません."
 
 msgid "%s is not in %.100s"
-msgstr "%s は %.100s に含まれません."
+msgstr "%sは%.100sに含まれません."
 
 msgid "%1$s is not in %2$.100s"
-msgstr "%1$s は %2$.100s に含まれません."
+msgstr "%1$sは%2$.100sに含まれません."
 
 msgid "Anchor-%d"
 msgstr "Untitled-%d"
@@ -8950,10 +8958,10 @@ msgid "Not Found"
 msgstr "見つかりません"
 
 msgid "The search pattern was not found in the font %.100s"
-msgstr "検索パターンはフォント %.100s の中にはありませんでした."
+msgstr "検索パターンはフォント%.100sの中にはありませんでした."
 
 msgid "The search pattern was not found again in the font %.100s"
-msgstr "検索パターンはフォント %.100s の中にはこれ以上ありませんでした."
+msgstr "検索パターンはフォント%.100sの中にはこれ以上ありませんでした."
 
 msgid "The outlines of glyph %2$.30s were not found in the font %1$.60hs"
 msgstr "グリフ%2$.30sのアウトラインはフォント%1$.60hsに含まれていません"
@@ -10468,28 +10476,28 @@ msgid "The glyph %1$.30s is defined in font %2$.30hs but not in %3$.30hs"
 msgstr "グリフ%1$.30sはフォント%2$.30hsで定義されていますが,%3$.30hsには存在しません"
 
 msgid "The glyph %1$.30s in %2$.30hs has both references and contours. This is not supported in a font with variations"
-msgstr "%2$.30sに含まれるグリフ%1$.30hsは輪郭と参照の両方を含んでいます. これはバリエーションを含むフォントではサポートされていません"
+msgstr "%2$.30hsに含まれるグリフ%1$.30sは輪郭と参照の両方を含んでいます. これはバリエーションを含むフォントではサポートされていません"
 
 msgid "The glyph %1$.30s has a different number of contours in font %2$.30hs than in %3$.30hs"
 msgstr "グリフ%1$.30sは,フォント%2$.30hsと%3$.30hsに含まれているものの間で輪郭の個数が異なります"
 
 msgid "The glyph %1$.30s in font %2$.30hs has a different number of points (or control points) on its contours than in %3$.30hs"
-msgstr "フォント%2$.30s内のグリフ%1$.30hsは,%3$.30hsに含まれるものと輪郭上に含まれる点(または制御点)の個数が異なります"
+msgstr "フォント%2$.30hs内のグリフ%1$.30sは,%3$.30hsに含まれるものと輪郭上に含まれる点(または制御点)の個数が異なります"
 
 msgid "The glyph %1$.30s has a different numbering of points (and control points) on its contours than in the various instances of the font"
-msgstr "フォント%2$.30sのグリフ%1$.30hsと,フォントに含まれる多くのインスタンスとのどれかに含まれるそのグリフは点(または制御点)の番号づけが異なります"
+msgstr "グリフ%1$.30sは,フォントに含まれる多数のインスタンスのどれかと,輪郭上の点(と制御点)の番号づけが異なります"
 
 msgid "The glyph %1$.30s in font %2$.30hs has contours running in a different direction than in %3$.30hs"
-msgstr "フォント%2$.30s内のグリフ%1$.30hsは,%3$.30hsに含まれるものと輪郭の向きが逆になっている部分があります"
+msgstr "フォント%2$.30hs内のグリフ%1$.30sは,%3$.30hsに含まれるものと輪郭の向きが逆になっている部分があります"
 
 msgid "The glyph %1$.30s in font %2$.30hs has a different number of references than in %3$.30hs"
-msgstr "フォント%2$.30s内のグリフ%1$.30hsは,含んでいる参照の個数が%3$.30hsにあるものと異なります"
+msgstr "フォント%2$.30hs内のグリフ%1$.30sは,含んでいる参照の個数が%3$.30hsにあるものと異なります"
 
 msgid "The glyph %1$.30s in font %2$.30hs has references with different scaling or rotation (etc.) than in %3$.30hs"
-msgstr "フォント%2$.30s内のグリフ%1$.30hsは,%3$.30hsにあるものと異なる回転または拡大/縮小をもつ参照を含んでいます"
+msgstr "フォント%2$.30hs内のグリフ%1$.30sは,%3$.30hsにあるものと異なる回転または拡大/縮小をもつ参照を含んでいます"
 
 msgid "The %1$s hints in glyph \"%2$.30hs\" in font %3$.30hs do not match those in %4$.30hs (different number or different overlap criteria)"
-msgstr "フォント%3$.30sのグリフ\"%2$.30hs\"に含まれるヒント%1$hsは,%4$.30hsに含まれるものと一致しません(個数または重なり相方の特徴が異なります)"
+msgstr "フォント%3$.30sのグリフ\"%2$.30hs\"に含まれるヒント%1$sは,%4$.30hsに含まれるものと一致しません(個数または重なり相方の特徴が異なります)"
 
 msgid "The glyph %1$.30s in font %2$.30hs has a different set of kern pairs than in %3$.30hs"
 msgstr "フォント%2$.30s内のグリフ%1$.30hsは,%3$.30hsにあるものとカーニングペアの個数が異なります"
@@ -10907,11 +10915,16 @@ msgid ""
 "has been in %2$.30s. Any instructions\n"
 "added would be meaningless."
 msgstr ""
+"TrueTypeは200%%を超える拡大/縮小率の参照を\n"
+"使用することができません. しかし%2$.30sには\n"
+"%1$.30sが含まれています. 追加された命令はすべて\n"
+"無意味です."
 
 msgid ""
-"Unparsed characters found after end of groups file (last line parsed was %"
-"d).\n"
+"Unparsed characters found after end of groups file (last line parsed was %d).\n"
 msgstr ""
+"グループファイルの末尾よりも後に解析されない文字があります\n"
+"(解析した最後の行は%dです).\n"
 
 msgid "Groups"
 msgstr "グループ"
@@ -12394,7 +12407,7 @@ msgid "Compare %s to %s"
 msgstr "%sを%sと比較"
 
 msgid "Compare version %s of %s to %s"
-msgstr "%2$%sのバージョン%1$sを%3$sと比較"
+msgstr "%2$sのバージョン%1$sを%3$sと比較"
 
 msgid "Font Compare"
 msgstr "フォントの比較"
@@ -12466,10 +12479,10 @@ msgid "Glyph |%s| refers to %s with a different transformation matrix\n"
 msgstr "グリフ |%s| から%sへの参照の変換行列が互いに異なります\n"
 
 msgid "Glyph |%s| has advance width %d in %s but %d in %s\n"
-msgstr "グリフ |%1$s| の送り幅は%3$sでは%2$sですが%5$dでは%4$sです\n"
+msgstr "グリフ |%1$s| の送り幅は%3$sでは%2$dですが%5$sでは%4$dです\n"
 
 msgid "Glyph |%s| has vertical advance width %d in %s but %d in %s\n"
-msgstr "グリフ |%1$s| の縦書き時の送り幅は%3$sでは%2$sですが%5$dでは%4$sです\n"
+msgstr "グリフ |%1$s| の縦書き時の送り幅は%3$sでは%2$dですが%5$sでは%4$dです\n"
 
 msgid "Glyph |%s| has a different number of layers\n"
 msgstr "グリフ |%s| に含まれるレイヤーの個数が互いに異なります\n"
