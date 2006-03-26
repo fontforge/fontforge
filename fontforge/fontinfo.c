@@ -6683,7 +6683,7 @@ return;
     for ( i=0; nlnames[i]!=NULL; ++i) {
 	namelistnames[i].text = (unichar_t *) nlnames[i];
 	namelistnames[i].text_is_1byte = true;
-	if ( strcmp(sf->for_new_glyphs->title,nlnames[i])==0 ) {
+	if ( strcmp(_(sf->for_new_glyphs->title),nlnames[i])==0 ) {
 	    namelistnames[i].selected = true;
 	    psgcd[k].gd.label = &namelistnames[i];
 	}

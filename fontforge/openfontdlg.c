@@ -242,7 +242,7 @@ unichar_t *FVOpenFont(char *title, const char *defaultfile,
 	namelistnames[cnt+2].text = (unichar_t *) nlnames[cnt];
 	namelistnames[cnt+2].text_is_1byte = true;
 	if ( force_names_when_opening!=NULL &&
-		strcmp(force_names_when_opening->title,nlnames[cnt])==0 ) {
+		strcmp(_(force_names_when_opening->title),nlnames[cnt])==0 ) {
 	    namelistnames[cnt+2].selected = true;
 	    gcd[i].gd.label = &namelistnames[cnt+2];
 	}

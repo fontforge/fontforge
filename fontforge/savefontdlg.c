@@ -2233,7 +2233,6 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
     char *nlname = u2utf8_copy(ti->text);
     extern NameList *force_names_when_saving;
     int notdef_pos = SFFindNotdef(d->sf,-1);
-    extern int allow_utf8_glyphnames;
 
     rename_to = NameListByName(nlname);
     free(nlname);
@@ -3099,7 +3098,7 @@ return( 0 );
 	namelistnames[cnt+2].text = (unichar_t *) nlnames[cnt];
 	namelistnames[cnt+2].text_is_1byte = true;
 	if ( force_names_when_saving!=NULL &&
-		strcmp(force_names_when_saving->title,nlnames[cnt])==0 ) {
+		strcmp(_(force_names_when_saving->title),nlnames[cnt])==0 ) {
 	    namelistnames[cnt+2].selected = true;
 	    gcd[k].gd.label = &namelistnames[cnt+2];
 	}

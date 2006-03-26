@@ -484,7 +484,7 @@ return( namelist_for_new_fonts );
 NameList *NameListByName(char *name) {
     NameList *nl;
     for ( nl = &agl; nl!=NULL; nl=nl->next ) {
-	if ( strcmp(nl->title,name)==0 )
+	if ( strcmp(_(nl->title),name)==0 || strcmp(nl->title,name)==0 )
 return( nl );
     }
 return( NULL );
