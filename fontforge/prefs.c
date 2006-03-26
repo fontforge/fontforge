@@ -1393,13 +1393,15 @@ return( true );
 	      case pr_namelist:
 		{ NameList *nl;
 		  GTextInfo *ti = GGadgetGetListItemSelected(GWidgetGetControl(gw,j*1000+1000+i));
-		  char *name = u2utf8_copy(ti->text);
-		    nl = NameListByName(name);
-		    free(name);
-		    if ( nl!=NULL && nl->uses_unicode && !allow_utf8_glyphnames)
-			gwwv_post_error(_("Namelist contains non-ASCII names"),_("Glyph names should be limited to characters in the ASCII character set, but there are names in this namelist which use characters outside that range."));
-		    else if ( nl!=NULL )
-			*((NameList **) (pl->val)) = nl;
+		  if ( ti!=NULL ) {
+			char *name = u2utf8_copy(ti->text);
+			nl = NameListByName(name);
+			free(name);
+			if ( nl!=NULL && nl->uses_unicode && !allow_utf8_glyphnames)
+			    gwwv_post_error(_("Namelist contains non-ASCII names"),_("Glyph names should be limited to characters in the ASCII character set, but there are names in this namelist which use characters outside that range."));
+			else if ( nl!=NULL )
+			    *((NameList **) (pl->val)) = nl;
+		    }
 		}
 	      break;
 	      case pr_string: case pr_file:
@@ -1760,7 +1762,7 @@ void DoPrefs(void) {
 		for ( cnt=0; nlnames[cnt]!=NULL; ++cnt) {
 		    namelistnames[cnt].text = (unichar_t *) nlnames[cnt];
 		    namelistnames[cnt].text_is_1byte = true;
-		    if ( strcmp((*(NameList **) (pl->val))->title,nlnames[cnt])==0 ) {
+		    if ( strcmp(_((*(NameList **) (pl->val))->title),nlnames[cnt])==0 ) {
 			namelistnames[cnt].selected = true;
 			pgcd[gc].gd.label = &namelistnames[cnt];
 		    }
