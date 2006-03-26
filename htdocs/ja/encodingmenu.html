@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jun-2005 -->
-  <!-- AP: Last modified: 5-Feb-2006 -->
+  <!-- AP: Last modified: 24-Mar-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Encoding Menu</TITLE> -->
     <TITLE>エンコーディングメニュー</TITLE>
@@ -81,6 +81,21 @@
     <LI>
 <!--  <A HREF="#NameGlyphs">Create Named Glyphs...</A> -->
       <A HREF="#NameGlyphs">名前を指定してグリフを作成(<U>A</U>)...</A>
+	<HR>
+    <LI>
+<!--  <A HREF="encodingmenu.html#General-encodings">General notes on encodings</A> -->
+      <A HREF="encodingmenu.html#General-encodings">エンコーディングに関する一般的な注意</A>
+      <UL>
+	<LI>
+<!--	  <A HREF="encodingmenu.html#Encodings">Built-in encodings</A> -->
+	  <A HREF="encodingmenu.html#Encodings">組込みのエンコーディング</A>
+	<LI>
+<!--	  <A HREF="encodingmenu.html#User-def">User defined encodings</A> -->
+	  <A HREF="encodingmenu.html#User-def">ユーザ定義のエンコーディング</A>
+      </UL>
+    <LI>
+<!--  <A HREF="encodingmenu.html#namelist">Namelists</A> -->
+      <A HREF="encodingmenu.html#namelist">名前リスト</A>
   </UL>
   <DL>
     <DT>
@@ -230,8 +245,8 @@
       このコマンドでは、グリフ名のリストを含むファイルを指定することができます。FontForge は文字コードが割り当てられていないグリフの列を指定した名前で作成します。これは例えば、あなたが作るフォントが必ず小型大文字を含んでいて、それらを常に“A.small”,“B.small”,“C.small”のように命名したい時に役立つはずですし、常に "longs_longs_t", "f_longs", "f_j" 等の名前を使いたい場合にもたぶん役立つでしょう。
   </DL>
   <H2>
-<!--General notes on encodings-->
-    エンコーディングに関する一般的注意
+<!--<A NAME="General-encodings">General</A> notes on encodings -->
+    エンコーディングに関する<A NAME="General-encodings">一般的な</A>注意
   </H2>
   <P>
 <!--
@@ -521,10 +536,11 @@
   Adobe は、多数の Unicode 文字に人が読んで理解可能なグリフ名をつけた命名規約を定めています。その中には訳の分からない名前もいくつか含まれています。
   <P>
 <!--
-  A namelist is just a mapping from unicode to glyph names (a glyph name must
-  be made up of alphanumeric characters (or the special characters '.' or '_'),
-  it may not begin with a digit, and it must be 31 or fewer characters in length. -->
-  名前リストは Unicode からグリフ名への対応づけにすぎません。グリフ名は英数字 (および特殊文字&lsquo;.&rsquo;と&lsquo;_&rsquo;) からなり、数字で始まらない長さ 31 文字以内の文字列でなければなりません。
+  A <A HREF="overview.html#Glyph-names">namelist</A> is just a mapping from
+  unicode to glyph names (a glyph name must be made up of alphanumeric characters
+  (or the special characters '.' or '_'), it may not begin with a digit, and
+  it must be 31 or fewer characters in length. -->
+  <A HREF="overview.html#Glyph-names">名前リスト</A>は Unicode からグリフ名への対応づけにすぎません。グリフ名は英数字 (および特殊文字&lsquo;.&rsquo;と&lsquo;_&rsquo;) からなり、数字で始まらない長さ 31 文字以内の文字列でなければなりません。
   <P>
 <!--
   FontForge provides a series of standard namelists: -->
@@ -594,10 +610,33 @@
   この記述は、この名前リストが Adobe グリフリストと同じで、U+0021 が“exclam”ではなく“exclamation”という名前になっているだけが違います。
   <P>
 <!--
-  Any glyphs you do not explicitly named will be named "uniXXXX" or "uXXXXX"
+  Any glyphs you do not explicitly name will be named "uniXXXX" or "uXXXXX"
   where XXXX is the unicode value in hex. The prefix "uni" will be used for
   glyphs in the BMP, the prefix "u" for glyphs outside. -->
-  リストに明記して名前をつけなかったグリフはすべて“uniXXXX”または“uXXXXX”という名前になります (ここで XXXX は 16 進表記の Unicode 値を表します)。接頭辞“uni”は BMP 内のグリフに、接頭辞“u”は BMP に含まれないグリフにつけられます。
+  リストに明記して名前をつけていないグリフはすべて“uniXXXX”または“uXXXXX”という名前になります (ここで XXXX は 16 進表記の Unicode 値を表します)。接頭辞“uni”は BMP 内のグリフに、接頭辞“u”は BMP に含まれないグリフにつけられます。
+  <P>
+<!--
+  I said that glyph names should contain only alphanumeric characters (and
+  some others). But really this is only true of glyph names that get output
+  into a font. If you design your own namelist you may include whatever glyph
+  names you like, using (almost) the full range of unicode - - provided you
+  rename all your glyphs to Adobe's names before you generate a font. If you
+  use non-ASCII characters you should encode the file in utf-8. -->
+  いま、グリフ名は英数文字 (および他の少数の文字) のみを含むべきであると述べました。しかし実際にはそれは、グリフ名がフォント内に出力される場合のみ当てはまる事実です。独自の名前リストを作成した場合、Unicode の (ほとんど) 全範囲を使用して、どのようなグリフ名でも好きにつけることができます――ただし、フォントを出力する前に全てのグリフ名を Adobe の名前に変換することが前提です。非 ASCII の文字名を使用した場合、ファイルを UTF-8 で符合化する必要があります。
+  <P>
+<!--
+  FontForge normally will restrict glyph names to be within the ASCII range,
+  but if you go to File-&gt;Preferences-&gt;Generic-&gt;UnicodeGlyphNames and
+  set it on you can use unicode. -->
+  通常は FontForge はグリフ名を ASCII の範囲に制限してしますが、<CODE>ファイル<U>F</U></CODE>→<CODE>環境設定(<U>E</U>)...</CODE>→<CODE>一般</CODE>→<CODE>UnicodeGlyphNames</CODE>を選択し、この欄をセットすれば Unicode を使用することができます。
+  <P>
+<!--
+  I've created a <A HREF="ListeDesGlyphs.nam">french namelist</A> which uses
+  accented letters. This will work fine within fontforge, and most rasterizers
+  will parse fonts generated using such names -- but they are non-standard
+  and may cause problems. Best to do a rename just before generating your font.
+-->
+  私はアクセント付き文字を使用する<A HREF="../ListeDesGlyphes.nam">フランス語の名前リスト</A>を作成しました。これは FontForge ではうまく動作していますし、ほとんどのラスタライザはこのような名前を使用して出力されたフォントを解析することができるでしょう――しかしこれは非標準ですので問題を起こすことでしょう。フォントを出力する前に改名するに如くはありません。
   <P>
 <!--
   So if you find it easier to work with names other than those Adobe has
@@ -614,7 +653,7 @@
 <!--  <A HREF="fontinfo.html#PS-General">Element-&gt;Font
       Info-&gt;General-&gt;NameList</A><BR>
       Which will change the way new glyphs are assigned names -->
-      <A HREF="fontinfo.html#PS-General"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)</CODE>→[<CODE>一般情報</CODE>]→名前リスト:</A><BR>
+      <A HREF="fontinfo.html#PS-General"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)</CODE>→[<CODE>一般情報</CODE>]→<CODE>名前リスト:</CODE></A><BR>
       新しいグリフに割り当てられる名前を変更します。
     <LI>
 <!--  <A HREF="#RenameGlyphs">Encoding-&gt;Rename Glyphs...</A><BR>
@@ -629,7 +668,7 @@
   the open dialog now lets you do this. Similarly when generating a font you
   will probably want to force that font to be use the standard names of the
   Adobe Glyph List. -->
-  フォントを開いた時に全グリフを強制的に改名したい場合もあるでしょう。現在のファイルオープンダイアログではそう指定することができます。同様に、フォントの出力時にそのフォントを Adobe グリフリストの標準名を使用するように強制したいと思われるでしょう。
+  フォントを開いた時に全グリフを強制的に改名したい場合もあるでしょう。現在のファイルオープンダイアログではそう指定することができます。同様に、フォントの出力時にそのフォントを Adobe グリフリストの標準名を使用するように強制したほうがいいでしょう。
   <H2>
 <!--   Other menus -->
        その他のメニュー

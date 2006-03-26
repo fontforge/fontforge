@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 2-Mar-2006 -->
+  <!-- AP: Last modified: 22-Mar-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Writing scripts to change fonts in FontForge</TITLE>-->
     <TITLE>FontForge でフォントを変更するためのスクリプトの書き方</TITLE>
@@ -1185,7 +1185,7 @@ a[4][0] = "Nested array";
       ask for them). If you wish to output bitmaps you must first create them with
       the <A HREF="#BitmapsAvail">BitmapsAvail</A> scripting command or
       <A HREF="elementmenu.html#Bitmaps">Element-&gt;Bitmaps Avail</A>. -->
-      注意: ビットマップ出力を指定した場合、現在のフォントデータベースに含まれる全てのサイズが出力されますが、このコマンドはビットマップを作成しませんので、フォントデータベースにビットマップが全く含まれない場合、（ビットマップを出力するように指定したとしても) 全く出力されません。ビットマップの出力を行いたい場合、あらかじめ <A HREF="#BitmapsAvail">BitmapsAvail</A> スクリプトコマンドか <A HREF="elementmenu.html#Bitmaps"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>使用するビットマップ(<U>A</U>)</CODE></A> を使ってビットマップを作成する必要があります。
+      注意: ビットマップ出力を指定した場合、カレントフォントデータベースに含まれる全てのサイズが出力されますが、このコマンドはビットマップを作成しませんので、フォントデータベースにビットマップが全く含まれない場合、（ビットマップを出力するように指定したとしても) 全く出力されません。ビットマップの出力を行いたい場合、あらかじめ <A HREF="#BitmapsAvail">BitmapsAvail</A> スクリプトコマンドか <A HREF="elementmenu.html#Bitmaps"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>使用するビットマップ(<U>A</U>)</CODE></A> を使ってビットマップを作成する必要があります。
       <P>
 <!--  fmflags controls -->
       AFM や PFM ファイルを出力するかどうかは、fmflags で制御できます。
@@ -1743,13 +1743,13 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
       <UL>
 	<LI>
 <!--  	an integer which specifies the location in the current font's encoding -->
-  	現在のフォントの符号化方式における位置を表す整数
+  	カレントフォントの符号化方式における位置を表す整数
 	<LI>
 <!--  	a postscript unicode name which gets mapped into the current font's encoding -->
-	  Unicode の PostScript 名 (現在のフォントのエンコーディングに変換されます)
+	  Unicode の PostScript 名 (カレントフォントのエンコーディングに変換されます)
 	<LI>
 <!--  	a unicode code point (0u61) which gets mapped to the current font's encoding -->
-  	Unicode の符号位置 (例: 0u61) これは、(現在のフォントのエンコーディングに変換されます)
+  	Unicode の符号位置 (例: 0u61) これは、(カレントフォントのエンコーディングに変換されます)
 	<LI>
 <!--  	If Select is given exactly one argument and that argument is an array then
   	the selection will be set to that specified in the array. So array[0] would
@@ -2769,7 +2769,7 @@ ApplySubstitution("*","*","vrt2")
     <DD>
 <!--  Returns 1 if the current font contains an Anchor class with the given name
       (which must be in utf8). -->
-      現在のフォントが name で指定した名前 (UTF-8 でなければなりません)
+      カレントフォントが name で指定した名前 (UTF-8 でなければなりません)
       と同名のアンカークラスを含む場合、1 を返します。
     <DT>
       AddAnchorClass(name,type,script-lang,tag,flags,merge-with)
@@ -2922,7 +2922,7 @@ ApplySubstitution("*","*","vrt2")
       to the one specified by other-font-name (note: percentage may be negative
       or more than 100, in which case we extrapolate a font). This command changes
       the current font to be the new font. -->
-      現在のフォントと、other-font-name で指定された名前のフォントとの間で比率 percentage でフォントを補間します
+      カレントフォントと、other-font-name で指定された名前のフォントとの間で比率 percentage でフォントを補間します
       (注意: percentage は負の値や 100 を超える値を使用することができ、その場合はフォントを補外します)。
       このコマンドはカレントフォントを新しく作られたフォントに変更します。
 <!--  <FONT COLOR="Red"><STRONG><SMALL>NOTE:</SMALL></STRONG></FONT> You will need
@@ -3278,7 +3278,7 @@ ApplySubstitution("*","*","vrt2")
       65536 times the desired value (to deal with mac blends which tend to be small 
       real numbers). This command creates a completely new font by blending the 
       mm font and sets the current font to the new font. -->
-      weights は整数からなる配列で、1 軸に対し整数 1 個が対応します。それぞれの値は必要な値の 65536 倍でなければなりません (一般に小さな実数となる Mac のブレンドを扱うためです)。このコマンドはマルチプルマスターフォントをブレンドすることによって全く新規にフォントを作成し、新しいフォントを現在のフォントに設定します。
+      weights は整数からなる配列で、1 軸に対し整数 1 個が対応します。それぞれの値は必要な値の 65536 倍でなければなりません (一般に小さな実数となる Mac のブレンドを扱うためです)。このコマンドはマルチプルマスターフォントをブレンドすることによって全く新規にフォントを作成し、新しいフォントをカレントフォントに設定します。
     <DT> 
 	<HR>
     <DT>
@@ -3471,8 +3471,8 @@ ApplySubstitution("*","*","vrt2")
 	</TR>
 	<TR>
 	  <TD>256</TD>
-<!--	  <TD>Different references in the two glyphs</TD> -->
-	  <TD>2 つのグリフに含まれる参照が異なる</TD>
+<!--	  <TD>Different references in the two glyphs (or different transformation matrices)</TD> -->
+	  <TD>2 つのグリフに含まれる参照が異なる (または変換行列が異なる)</TD>
 	</TR>
 	<TR>
 	  <TD>512</TD>
@@ -3480,14 +3480,29 @@ ApplySubstitution("*","*","vrt2")
 	  <TD>2 つのグリフの送り幅が異なる</TD>
 	</TR>
 	<TR>
-	  <TD>1024</TD>
+ 	  <TD>1024</TD>
+<!--	  <TD>Different vertical advance widths in the two glyphs</TD> -->
+	  <TD>2 つのグリフの縦書き時の送り幅が異なる</TD>
+	</TR>
+	<TR>
+	  <TD>2048</TD>
 <!--	  <TD>Different hints in the two glyphs</TD> -->
 	  <TD>2 つのグリフのヒントが異なる</TD>
 	</TR>
 	<TR>
-	  <TD>2048</TD>
+	  <TD>4096</TD>
 <!--	  <TD>Different hintmasks in the two glyphs</TD> -->
 	  <TD>2 つのグリフのヒントマスクが異なる</TD>
+	</TR>
+	<TR>
+	  <TD>8192</TD>
+<!--	  <TD>Different numbers of layers in the two glyphs</TD> -->
+	  <TD>2 つのグリフのレイヤの個数が異なる</TD>
+	</TR>
+	<TR>
+	  <TD>16384</TD>
+<!--	  <TD>Contours do not match in the two glyphs</TD> -->
+	  <TD>2 つのグリフ間で輪郭が一致しない</TD>
 	</TR>
 	<TR>
 	  <TD>65536</TD>
@@ -3501,13 +3516,73 @@ ApplySubstitution("*","*","vrt2")
 	</TR>
 	<TR>
 	  <TD>4*65536</TD>
-<!--	  <TD>Bitmap glyphs do not match</TD> -->
-	  <TD>ビットマップグリフが一致しない</TD>
+<!--	  <TD>Bitmaps are different</TD> -->
+	  <TD>ビットマップに違いがある</TD>
 	</TR>
 	<TR>
-	  <TD>8*65536</TD>
+ 	  <TD>8*65536</TD>
+<!--	  <TD>Bitmap glyphs do not match (set with all the above)</TD> -->
+	  <TD>ビットマップグリフが一致しない (上記のどの場合にもセットされます)</TD>
+	</TR>
+	<TR>
+	  <TD>16*65536</TD>
 <!--	  <TD>Bitmap glyphs match</TD> -->
 	  <TD>ビットマップグリフが一致した</TD>
+	</TR>
+      </TABLE>
+    <DT>
+      CompareFonts(other-font-filename,output-filename,flags)
+    <DD>
+<!--  This will compare the current font with the font in
+      <CODE>other-font-filename</CODE> (which must already have been opened). It
+      will write the results to the <CODE>output-filename</CODE>, you may use "-"
+      to send the output to stdout. The <CODE>flags</CODE> argument controls what
+      will be compared. -->
+      この関数は、カレントフォントを <CODE>other-font-filename</CODE> で指定したフォント (あらかじめ開いておく必要があります) と比較します。結果はファイル <CODE>output-filename</CODE> に出力されます (出力を標準出力に送りたい場合は "-" が使用できます。<CODE>flags</CODE> 引数は、何を比較するかを制御します。
+      <TABLE BORDER CELLPADDING="2">
+	<CAPTION>
+<!--	  <SMALL>flags</SMALL> -->
+	  <SMALL>フラグ</SMALL>
+	</CAPTION>
+	<TR>
+	  <TD>1</TD>
+<!--	  <TD>compare outlines</TD> -->
+	  <TD>アウトラインを比較する</TD>
+	</TR>
+	<TR>
+	  <TD>2</TD>
+<!--	  <TD>compare outlines exactly (otherwise allow slight errors)</TD> -->
+	  <TD>アウトラインを性格に比較する (指定しない場合、微小なエラーを許容します)</TD>
+	</TR>
+	<TR>
+	  <TD>4</TD>
+<!--	  <TD>warn if the outlines don't exactly match (but are pretty close)</TD> -->
+	  <TD>アウトラインが正確に一致しない (が、非常に近い) 場合に警告する</TD>
+	</TR>
+	<TR>
+	  <TD>8</TD>
+<!--	  <TD>compare hints</TD> -->
+	  <TD>ヒントを比較する</TD>
+	</TR>
+	<TR>
+	  <TD>0x10</TD>
+<!--	  <TD>compare bitmap strikes</TD> -->
+	  <TD>ビットマップの各ストライクを比較する</TD>
+	</TR>
+	<TR>
+	  <TD>0x20</TD>
+<!--	  <TD>compare font names</TD> -->
+	  <TD>フォント名を比較する</TD>
+	</TR>
+	<TR>
+	  <TD>0x40</TD>
+<!--	  <TD>compare glyph positioning</TD> -->
+	  <TD>グリフの位置指定を比較する</TD>
+	</TR>
+	<TR>
+	  <TD>0x80</TD>
+<!--	  <TD>compare glyph substitutions</TD> -->
+	  <TD>グリフ置換を比較する</TD>
 	</TR>
       </TABLE>
     <DT>
