@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 9-Feb-2006 -->
+  <!-- AP: Last modified: 24-Mar-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>The Element Menu</TITLE>-->
     <TITLE>エレメントメニュー</TITLE>
@@ -239,6 +239,9 @@
     <LI>
 <!--  <A HREF="#Interpolate">Interpolate Fonts...</A>-->
       <A HREF="#Interpolate">フォントの補間(<U>L</U>)...</A>
+    <LI>
+<!--  <A HREF="#CompareFonts">Compare Fonts...</A> -->
+      <A HREF="#CompareFonts">フォントを比較...</A>
   </UL>
   <P>
 <!--
@@ -1109,6 +1112,49 @@
       number of paths (ordered similarly) and each path must have the same number
       of points on it, and must have the same references. -->
       フォントビューでのみ使用可能です。ボールドとライトの 2 つのウェイトのフォントがあってそれらを元にミディアムフォントを作成したい場合、2 個の間の中間フォントを補間によって作成することができます (または、さらに太いフォントや細いフォントを補外して作ることもできます)。その 2 つのフォントは同じグリフのセットを含み、各フォントに同じ個数のパスを含み (同じ順序で並んでいて) 各パスには同じ個数の点を含んでいなければならず、含んでいる参照も同じでなければなりません。
+      <P>
+<!--  Examples: If you are interpolating from a light font to a bold one, then
+      a medium font might be 50% between the two, an extra-bold font might be 200%
+      and a thin one -100%. -->
+      例: ウェイトが light のフォントから bold のフォントへの補間を行った場合、medium のフォントは2 つの中間の 50% にあたり、extra-bold のフォントは 200% に、thin は -100% になるでしょう。
+    <DT>
+<!--  <A NAME="CompareFonts">Compare Fonts...</A> -->
+      <A NAME="CompareFonts">フォントを比較...</A>
+    <DD>
+<!--  <IMG SRC="fontcompdlg.png" WIDTH="212" HEIGHT="331" ALIGN="Right">Sometimes
+      it is useful to compare two versions of a font and see what has changed.
+      This command will allow you to check: -->
+      <IMG SRC="fontcompdlg.png" WIDTH="185" HEIGHT="249" ALIGN="Right">
+      時には、あるフォントの 2 つのバージョンを比較して、どこが変更されたかを確認できると便利なことがあります。このコマンドでは以下の変更をチェックすることができます:
+      <UL>
+	<LI>
+<!--	  The addition or removal of glyphs -->
+	  グリフの追加または削除
+	<LI>
+<!--	  Changes to outline glyphs -->
+	  アウトライングリフの変更
+	<LI>
+<!--	  Changes to bitmap glyphs -->
+	  ビットマップグリフの変更
+	<LI>
+<!--	  Changes to the font's names (truetype 'name' table and some postscript names) -->
+	  フォント名の変更 (TrueType の&lsquo;name&rsquo;テーブルといくつかの PostScript 名)
+	<LI>
+<!--	  Changes to the font's glyph substitutions (ligatures and whatnot) -->
+	  フォントの含むグリフ置換 (合字だの何だの) の変更
+	<LI>
+<!--	  Changes to the font's glyph positioning (kerning and whatnot) -->
+	  フォントの含むグリフ位置指定 (カーニングだの何だの) の変更
+      </UL>
+      <P>
+<!--  You can also use it to compare truetype and postscript versions of the same
+      font. Normally fontforge checks to make sure all the splines match exactly,
+      but you can also have it test whether a contour in one font is always close
+      to the similar contour in another font. -->
+      同じフォントの TrueType 版と PostScript 版の比較をすることもできます。通常は FontForge はすべてのスプラインが完全に一致するかどうかを確かめるための検査を行いますが、これを使って、片方のフォントが常にもう片方のフォントの同等な輪郭とどこでもほぼ一致するかどうかを検査することもできます。
+      <P>
+<!--  <IMG SRC="fontcompresults.png" WIDTH="497" HEIGHT="349"> -->
+      <IMG SRC="fontcompresults.png" WIDTH="412" HEIGHT="273">
   </DL>
   <P>
   <H2>

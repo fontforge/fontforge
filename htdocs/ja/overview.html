@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 2-Feb-2006 -->
+  <!-- AP: Last modified: 24-Mar-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--
   <TITLE>FontForge -- An outline font editor for PostScript&reg;, TrueType
@@ -63,6 +63,9 @@
 	<LI>
 <!--	  <A HREF="#Scripts">Scripts</A> -->
 	  <A HREF="#Scripts">用字系</A>
+	<LI>
+<!--	  <A HREF="overview.html#Glyph-names">Glyph names &amp; Namelists</A> -->
+	  <A HREF="overview.html#Glyph-names">グリフ名と名前リスト</A>
 	<LI>
 <!--	  <A HREF="#Anchors">Anchor Points and Classes</A> -->
 	  <A HREF="#Anchors">アンカーポイントとアンカークラス</A>
@@ -942,12 +945,67 @@ Both PostScript and TrueType place
 <!--
   A script is a collection of letter shapes and rules for putting letters together.
   For instance latin is a script consisting for the letters A-Z, written left
-  to right, along with a transformation from upper to lower case in most instances,
-  a few ligatures and rules for generating accents. Arabic is a script consisting
-  of its own character set, written right to left, along with transformations
-  for initial, medial, final and isolated forms, many ligatures and rules for
-  placing vowel marks. -->
-  用字系 (script) とは、文字の形と、文字を相互に組み立てるルールからなる 1 つの組のことです。例えば、ラテン文字は文字 A から Z までから成り、左から右に書かれ、ほとんどの場合に大文字から小文字への変換が定められていて、少数の合字およびアクセント文字を生成するルールが存在する用字系です。アラビア文字は独自の文字セットからなり、右から左に書かれ、語頭形、語中形、語尾形および独立形の変換が定められていて、多数の合字および母音記号を配置するルールが定められている用字系です。
+  to right, along with a transformation from upper to lower case (in writing
+  since the middle ages), a few ligatures and rules for generating accents.
+  Arabic is a script consisting of its own character set, written right to
+  left, along with transformations for initial, medial, final and isolated
+  forms, many ligatures and rules for placing vowel marks. -->
+  用字系 (script) とは、文字の形と、文字を相互に組み立てるルールからなる 1 つの組のことです。例えば、ラテン文字は文字 A から Z までから成り、左から右に書かれ、(中世以来の書字法では) 大文字から小文字への変換が定められていて、少数の合字およびアクセント文字を生成するルールが存在する用字系です。アラビア文字は独自の文字セットからなり、右から左に書かれ、語頭形、語中形、語尾形および独立形の変換が定められていて、多数の合字および母音記号を配置するルールが定められている用字系です。
+  <H3>
+<!--<A NAME="Glyph-names">Glyph names &amp; Namelists</A> -->
+    <A NAME="Glyph-names">グリフ名と名前リスト</A>
+  </H3>
+  <P>
+<!--
+  Within fontforge every glyph will have a name. Generally the glyph name will
+  be something that provides information about what the glyph looks like so
+  the name for the glyph representing "9" is "nine". Adobe has established
+  a
+  <A HREF="http://partners.adobe.com/public/developer/en/opentype/aglfn13.txt">standard
+  for what names may be assigned to what glyphs</A>, and when producing a font
+  for general use it is best to stick to that standard (Acrobat uses the glyph
+  names and recognizes the standard ones. If you try and use "neuf" for "nine"
+  Acrobat will not recognize it and surprising things will fail). -->
+  FontForge 内部では、各グリフに名前がつけられています。一般に、グリフ名はそのグリフがどのように見えるかを表す情報を提供するものとなっており、例えば&ldquo;9&rdquo;を表すグリフは&ldquo;nine&rdquo;という名前です。Adobe は、<A HREF="http://partners.adobe.com/public/developer/en/opentype/aglfn13.txt">各グリフにどのような名前を割り当てるかを定めた標準</a>を定めており、一般的な用途のフォントを出力する時にはその標準を厳守するのが最良の方法です (Acrobat はグリフ名を使用しており、標準の名前を認識します。もし&ldquo;nine&rdquo;の代わりに&ldquo;neuf&rdquo;とつけても、Acrobatはそれを認識せず、驚くような事が起こるでしょう)。
+  <P>
+<!--
+  Adobe's standard provides reasonably mnemonic names for most latin and greek
+  glyphs (to English speakers anyway), some rather incomprehensible names for
+  cyrillic and hebrew (afiiXXXXX) and identifies most other glyphs by unicode
+  code point (uniXXXX). -->
+  Adobe の標準は、ほとんどのラテン文字とギリシャ文字のグリフにまあまあ覚えやすい名前をつけています (英語の話者にとっての話ではありますが) が、キリル文字とヘブライ文字に対してはほとんど訳の分からない名前 (afiiXXXXX) をつけており、その他のほとんどのグリフは Unicode の符合位置で識別 (uniXXXX) しています。
+  <P>
+<!--
+  If you are an english speaker and you are working with latin glyphs this
+  is fine and dandy. But if you are French you might wish that "adieresis"
+  were named "atr&eacute;ma" - - for that matter even if you are an English
+  speaker you might prefer it to be named "aumlaut". No matter who you are
+  you might prefer more mnemonic names for the code block you are working on.
+-->
+  あなたが英語の話者で、ラテン文字のグリフを作成しているなら、これは非常に便利でしょう。しかしあなたがフランス人で、&ldquo;adieresis&rdquo;には&ldquo;atr&eacute;ma&rdquo;という名前がついていてほしいのでしたら――この件に関しては、英語の話者でさえ、&ldquo;aumlaut&rdquo;という名前の方を好むかもしれません。あなたが何者であれ、自分が作業中のコードブロックにはより覚えやすい名前を好むことでしょう。
+  <P>
+<!--
+  FontForge has a concept called a
+  <A HREF="encodingmenu.html#namelist">namelist</A> each of which is simply
+  a mapping from unicode code point to name. Several namelists may be defined,
+  different lists may apply to different fonts and a font may be have all its
+  glyphs renamed from one namelist to another. -->
+  FontForge には<A HREF="encodingmenu.html#namelist">名前リスト</A>という概念があます。このリストの各項目は、Unicode の符合位置から名前への単純な対応づけです。いくつかの名前リストを定義することができ、異なるフォントには異なるリストを適用することができ、ある名前リストから別のリストに切替えることによって、フォントに含まれるすべてのグリフを改名することができます。
+  <P>
+<!--
+  Namelists can also help navigating in a font. Even if a list does not apply
+  to a given font its names may be used in the goto dialog to find glyphs.
+  So if you've loaded a french namelist you can search for "atr&eacute;ma"
+  and FontForge will show you the glyph "adieresis" or "uni00E4" or "aumlaut"
+  or whatever. -->
+  名前リストはフォント内を移動するのにも役立ちます。あるリストが現在のフォントに適用されていない場合でも、それに含まれる名前は、<CODE>移動(<U>G</U>)</CODE>ダイアログでグリフを探すのに使用することができます。ですから、フランス語の名前リストを読み込んであれば、グリフが&ldquo;adieresis&rdquo;と表示されていても、&ldquo;uni00E4&rdquo;または&ldquo;aumlaut&rdquo;でも、&ldquo;atr&eacute;ma&rdquo;を検索することができます。
+  <P>
+<!--
+  A few caveats: Adobe's glyph name standard expects all glyph names to be
+  in ASCII characters. Syntactically postscript permits a wider range of glyph
+  names, but if you use non-ASCII characters some rasterizers might have problems.
+  Best to keep these within fontforge. -->
+  2, 3 の警告: Adobe のグリフ名標準は、すべてのグリフ名が ASCII 文字であることを前提としています。構文的には PostScript はより広いグリフ名を受け付けることができますが、ASCII 以外の文字を使用した場合、いくつかのラスタライザでは問題が起こる可能性があります。
   <H3>
 <!--<A NAME="Anchors">Anchor Points and Classes</A>-->
     <A NAME="Anchors">アンカーポイントとアンカークラス</A>
