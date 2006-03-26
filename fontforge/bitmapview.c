@@ -1284,13 +1284,23 @@ static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 static void BVMagnify(BitmapView *bv, int midx, int midy, int bigger) {
+    /* available sizes: 1, 2, 3, 4, 6, 8, 12, 16, 24, 32 */
 
     if ( bigger>0 ) {
-	bv->scale *= 2;
+	if ( bv->scale == 1 )
+	    bv->scale = 2;
+	else if ( (bv->scale & (bv->scale - 1)) == 0 )	 /* power of 2 */
+	    bv->scale += bv->scale / 2;
+	else
+	    bv->scale += bv->scale / 3;
 	if ( bv->scale > 32 ) bv->scale = 32;
     } else {
-	bv->scale /= 2;
-	if ( bv->scale < 1 ) bv->scale = 1;
+	if ( bv->scale <= 2 )
+	    bv->scale = 1;
+	else if ( (bv->scale & (bv->scale - 1)) == 0 )
+	    bv->scale -= bv->scale / 4;
+	else
+	    bv->scale -= bv->scale / 3;
     }
     bv->xoff = -(midx*bv->scale - bv->width/2);
     bv->yoff = -(midy*bv->scale - bv->height/2);
