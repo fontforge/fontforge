@@ -34,7 +34,8 @@ static struct shapedescrip { BasePoint me, prevcp, nextcp; int nocp; }
 	{ {0,1}, { -.552, 1 }, { .552, 1 }, false},
 	{ {1,0}, { 1, .552 }, { 1, -.552 }, false},
 	{ {0,-1}, {.552, -1 }, {-.552, -1 }, false},
-	{ {0,0}}},
+	{ {0,0}}};
+#if 0
     ellipse2[] = {
 	{ {-1,0}, {-1,-.2679}, {-1,.2679}, false},
 	{ {-.866,.5},{-1,.2679}, {-.7321,.7321}, false},
@@ -49,6 +50,7 @@ static struct shapedescrip { BasePoint me, prevcp, nextcp; int nocp; }
 	{ {-.5,-.866},{-.2679,-1},{-.7321,-.7321}, false},
 	{ {-.866,-.5},{-.7321,-.7321},{-1,-.2679}, false},
 	{ {0,0}}};
+#endif
 
 static SplinePoint *SPMake(BasePoint *base,int pt) {
     SplinePoint *new;
@@ -59,9 +61,9 @@ static SplinePoint *SPMake(BasePoint *base,int pt) {
 return( new );
 }
 
-static SplinePoint *SPMakeTo(BasePoint *base,int pt, SplinePoint *from,int order2) {
+static SplinePoint *SPMakeTo(BasePoint *base,int pt, SplinePoint *from) {
     SplinePoint *to = SPMake(base,pt);
-    SplineMake(from,to,order2);
+    SplineMake(from,to,false);		/* Always make a cubic, then convert to quadratic when done */
 return( to );
 }
 
@@ -69,7 +71,6 @@ void CVMouseDownShape(CharView *cv,GEvent *event) {
     real radius = CVRoundRectRadius(); int points = CVPolyStarPoints();
     SplinePoint *last;
     int i;
-    int order2 = cv->sc->parent->order2;
     struct shapedescrip *ellipse;
 
     if ( event->u.mouse.clicks==2 &&
@@ -86,45 +87,42 @@ return;
     cv->layerheads[cv->drawmode]->splines = cv->active_shape;
     cv->active_shape->first = last = SPMake(&cv->info,pt_corner);
 
+    /* always make a cubic shape. Then convert to order2 when done */
+    /*  the conversion routine already knows about rounding to int */
     switch ( cv->active_tool ) {
       case cvt_rect:
 	if ( radius==0 ) {
-	    last = SPMakeTo(&cv->info,pt_corner,last,order2);
-	    last = SPMakeTo(&cv->info,pt_corner,last,order2);
-	    last = SPMakeTo(&cv->info,pt_corner,last,order2);
+	    last = SPMakeTo(&cv->info,pt_corner,last);
+	    last = SPMakeTo(&cv->info,pt_corner,last);
+	    last = SPMakeTo(&cv->info,pt_corner,last);
 	} else {
 	    last->pointtype = pt_tangent;
-	    /* This isn't really right for quadratic splines */
-	    /* the curves aren't quarter circles. But I'm */
-	    /* guessing that radius is generally small enough */
-	    /* that the extra points (see elipse) will cause */
-	    /* worse rounding errors... !!!! */
-	    last = SPMakeTo(&cv->info,pt_tangent,last,order2);
-	    last = SPMakeTo(&cv->info,pt_tangent,last,order2);
-	    last = SPMakeTo(&cv->info,pt_tangent,last,order2);
-	    last = SPMakeTo(&cv->info,pt_tangent,last,order2);
-	    last = SPMakeTo(&cv->info,pt_tangent,last,order2);
-	    last = SPMakeTo(&cv->info,pt_tangent,last,order2);
-	    last = SPMakeTo(&cv->info,pt_tangent,last,order2);
+	    last = SPMakeTo(&cv->info,pt_tangent,last);
+	    last = SPMakeTo(&cv->info,pt_tangent,last);
+	    last = SPMakeTo(&cv->info,pt_tangent,last);
+	    last = SPMakeTo(&cv->info,pt_tangent,last);
+	    last = SPMakeTo(&cv->info,pt_tangent,last);
+	    last = SPMakeTo(&cv->info,pt_tangent,last);
+	    last = SPMakeTo(&cv->info,pt_tangent,last);
 	}
       break;
       case cvt_elipse:
-	ellipse = order2 ? ellipse2 : ellipse3;
+	ellipse = /*order2 ? ellipse2 :*/ ellipse3;
 	last->pointtype = pt_curve;
 	for ( i=1; ellipse[i].me.x!=0 || ellipse[i].me.y!=0 ; ++i ) {
-	    last = SPMakeTo(&cv->info,pt_curve,last,order2);
+	    last = SPMakeTo(&cv->info,pt_curve,last);
 	}
       break;
       case cvt_poly:
 	for ( i=1; i<points; ++i )
-	    last = SPMakeTo(&cv->info,pt_corner,last,order2);
+	    last = SPMakeTo(&cv->info,pt_corner,last);
       break;
       case cvt_star:
 	for ( i=1; i<2*points; ++i )
-	    last = SPMakeTo(&cv->info,pt_corner,last,order2);
+	    last = SPMakeTo(&cv->info,pt_corner,last);
       break;
     }
-    SplineMake(last,cv->active_shape->first,order2);
+    SplineMake(last,cv->active_shape->first,false);
     cv->active_shape->last = cv->active_shape->first;
     SCUpdateAll(cv->sc);
 }
@@ -268,7 +266,11 @@ return;
 	    if (( xrad = (cv->p.cx-cv->info.x) )<0 ) xrad = -xrad;
 	    if (( yrad = (cv->p.cy-cv->info.y) )<0 ) yrad = -yrad;
 	}
-	ellipse = cv->sc->parent->order2 ? ellipse2 : ellipse3;
+	if ( cv->sc->parent->order2 ) {
+	    xrad = rint(xrad);
+	    yrad = rint(yrad);
+	}
+	ellipse = /*cv->sc->parent->order2 ? ellipse2 :*/ ellipse3;
 	for ( i=0, sp=cv->active_shape->first; ellipse[i].me.x!=0 || ellipse[i].me.y!=0 ; ++i, sp=sp->next->to )
 	    SetCurve(sp,&center,xrad,yrad,&ellipse[i]);
       break;
@@ -312,6 +314,23 @@ void CVMouseUpShape(CharView *cv) {
     if ( cv->active_shape==NULL )
 return;
 
+    if ( cv->sc->parent->order2 ) {
+	SplineSet *prev, *new, *ss;
+	new = SplineSetsTTFApprox(cv->active_shape);
+	for ( ss=cv->layerheads[cv->drawmode]->splines, prev=NULL;
+		ss!=NULL && ss!=cv->active_shape;
+		prev = ss, ss=ss->next );
+	if ( ss==NULL )
+	    IError("Couldn't find shape");
+	else {
+	    if ( prev==NULL )
+		cv->layerheads[cv->drawmode]->splines = new;
+	    else
+		prev->next = new;
+	    SplinePointListsFree(cv->active_shape);
+	    cv->active_shape = new;
+	}
+    }
     first = cv->active_shape->first; second = first->next->to;
     if ( first->me.x == second->me.x && first->me.y == second->me.y ) {
 	/* Remove this shape, it will be selected */
