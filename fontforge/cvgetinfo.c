@@ -47,6 +47,9 @@ typedef struct gidata {
     GWindow gw;
     int done, first, changed;
     int prevchanged, nextchanged;
+    int normal_start, normal_end;
+    int interp_start, interp_end;
+    GGadgetCreateData *gcd;
 } GIData;
 
 #define CID_BaseX	2001
@@ -68,6 +71,14 @@ typedef struct gidata {
 #define CID_PrevTheta	2017
 #define CID_HintMask	2020
 #define CID_ActiveHints	2030
+#define CID_NextX	2031
+#define CID_NextY	2032
+#define CID_PrevX	2033
+#define CID_PrevY	2034
+#define CID_BasePos	2035
+#define CID_Normal	2036
+#define CID_Interpolated 2037
+#define CID_NeverInterpolate	2038
 /* Also use CID_Next, CID_Prev below */
 #define CID_NextC	2041
 #define CID_PrevC	2042
@@ -98,7 +109,7 @@ typedef struct gidata {
 #define II_Height	70
 
 #define PI_Width	228
-#define PI_Height	334
+#define PI_Height	366
 
 #define AI_Width	160
 #define AI_Height	258
@@ -1688,6 +1699,27 @@ static void PIFillup(GIData *ci, int except_cid) {
     mysprintf2(buffer, ci->cursp->prevcp.x,ci->cursp->prevcp.y );
     GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_PrevPos),buffer);
 
+
+    mysprintf2(buffer, ci->cursp->me.x,ci->cursp->me.y );
+    GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_BasePos),buffer);
+
+    mysprintf(buffer, "%.2f", ci->cursp->nextcp.x );
+    if ( except_cid!=CID_NextX )
+	GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_NextX),buffer);
+
+    mysprintf(buffer, "%.2f", ci->cursp->nextcp.y );
+    if ( except_cid!=CID_NextY )
+	GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_NextY),buffer);
+
+    mysprintf(buffer, "%.2f", ci->cursp->prevcp.x );
+    if ( except_cid!=CID_PrevX )
+	GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_PrevX),buffer);
+
+    mysprintf(buffer, "%.2f", ci->cursp->prevcp.y );
+    if ( except_cid!=CID_PrevY )
+	GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_PrevY),buffer);
+
+
     GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_PrevDef), ci->cursp->prevcpdef );
 
     GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_Curve), ci->cursp->pointtype==pt_curve );
@@ -1698,6 +1730,16 @@ static void PIFillup(GIData *ci, int except_cid) {
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_NextTheta), ci->cursp->pointtype!=pt_tangent );
 }
 
+static void PIShowHide(GIData *ci) {
+    int normal = GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_Normal));
+    int i;
+
+    for ( i=ci->normal_start; i<ci->normal_end; ++i )
+	GGadgetSetVisible(ci->gcd[i].ret,normal);
+    for ( i=ci->interp_start; i<ci->interp_end; ++i )
+	GGadgetSetVisible(ci->gcd[i].ret,!normal);
+}
+
 static void PIChangePoint(GIData *ci) {
     int aspect = GTabSetGetSel(GWidgetGetControl(ci->gw,CID_TabSet));
     GGadget *list = GWidgetGetControl(ci->gw,CID_HintMask);
@@ -1705,10 +1747,20 @@ static void PIChangePoint(GIData *ci) {
     HintMask *hm;
     SplinePoint *sp;
     SplineSet *spl;
+    int interpolate;
 
     GGadgetGetList(list,&len);
 
     PIFillup(ci,0);
+
+    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_Interpolated),
+	    !ci->cursp->dontinterpolate );
+    interpolate = SPInterpolate(sp) && ci->sc->parent->order2;
+    GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_Normal), !interpolate );
+    GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_Interpolated), interpolate );
+    GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_NeverInterpolate), ci->cursp->dontinterpolate );
+    PIShowHide(ci);
+
     if ( ci->cursp->hintmask==NULL ) {
 	for ( i=0; i<len; ++i )
 	    GGadgetSelectListItem(list,i,false);
@@ -1811,6 +1863,35 @@ static int PI_NextPrev(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static int PI_InterpChanged(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	SplinePoint *cursp = ci->cursp;
+
+	if ( GGadgetGetCid(g)==CID_Interpolated ) {
+	    cursp->me.x = (cursp->nextcp.x + cursp->prevcp.x)/2;
+	    cursp->me.y = (cursp->nextcp.y + cursp->prevcp.y)/2;
+	    PIFillup(ci,0);
+	}
+	PIShowHide(ci);
+    }
+return( true );
+}
+
+static int PI_NeverInterpChanged(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	int never = GGadgetIsChecked(g);
+
+	GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_Interpolated),!never);
+
+	if ( never )
+	    GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_Normal),true);
+	PIShowHide(ci);
+    }
+return( true );
+}
+
 static int PI_BaseChanged(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
 	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
@@ -1831,8 +1912,8 @@ return( true );
 	cursp->nextcp.y += dy;
 	cursp->prevcp.y += dy;
 	if ( ci->sc->parent->order2 ) {
-	    SplinePointNextCPChanged2(cursp,false);
-	    SplinePointPrevCPChanged2(cursp,false);
+	    SplinePointNextCPChanged2(cursp);
+	    SplinePointPrevCPChanged2(cursp);
 	}
 	if ( cursp->next!=NULL )
 	    SplineRefigure(cursp->next);
@@ -1900,11 +1981,11 @@ return( true );
 	    ci->cursp->prevcp.x = ci->cursp->me.x - plen*cos(ntheta);
 	    ci->cursp->prevcp.y = ci->cursp->me.y - plen*sin(ntheta);
 	    if ( ci->sc->parent->order2 )
-		SplinePointPrevCPChanged2(cursp,false);
+		SplinePointPrevCPChanged2(cursp);
 	    SplineRefigure(cursp->prev);
 	}
 	if ( ci->sc->parent->order2 )
-	    SplinePointNextCPChanged2(cursp,false);
+	    SplinePointNextCPChanged2(cursp);
 	if ( cursp->next!=NULL )
 	    SplineRefigure(cursp->next);
 	CVCharChangedUpdate(ci->cv);
@@ -1968,11 +2049,11 @@ return( true );
 	    ci->cursp->nextcp.x = ci->cursp->me.x - nlen*cos(ptheta);
 	    ci->cursp->nextcp.y = ci->cursp->me.y - nlen*sin(ptheta);
 	    if ( ci->sc->parent->order2 )
-		SplinePointNextCPChanged2(cursp,false);
+		SplinePointNextCPChanged2(cursp);
 	    SplineRefigure(cursp->next);
 	}
 	if ( ci->sc->parent->order2 )
-	    SplinePointPrevCPChanged2(cursp,false);
+	    SplinePointPrevCPChanged2(cursp);
 	if ( cursp->prev!=NULL )
 	    SplineRefigure(cursp->prev);
 	CVCharChangedUpdate(ci->cv);
@@ -1982,6 +2063,66 @@ return( true );
 	    e->u.control.u.tf_focus.gained_focus ) {
 	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
 	PI_FigurePrev(ci);
+    }
+return( true );
+}
+
+static int PI_NextIntChanged(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	real x=0, y=0;
+	int err=false;
+	SplinePoint *cursp = ci->cursp;
+
+	x = GetCalmReal8(ci->gw,CID_NextX,_("Next CP X"),&err);
+	y = GetCalmReal8(ci->gw,CID_NextY,_("Next CP Y"),&err);
+	if ( err || (x==cursp->nextcp.x && y==cursp->nextcp.y) )
+return( true );
+	cursp->nextcp.x = x;
+	cursp->nextcp.y = y;
+	cursp->me.x = (cursp->nextcp.x + cursp->prevcp.x)/2;
+	cursp->me.y = (cursp->nextcp.y + cursp->prevcp.y)/2;
+	if ( ci->sc->parent->order2 )
+	    SplinePointNextCPChanged2(cursp);
+	if ( cursp->next!=NULL )
+	    SplineRefigure(cursp->next);
+	CVCharChangedUpdate(ci->cv);
+	PIFillup(ci,GGadgetGetCid(g));
+    } else if ( e->type==et_controlevent &&
+	    e->u.control.subtype == et_textfocuschanged &&
+	    e->u.control.u.tf_focus.gained_focus ) {
+	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	PI_FigureNext(ci);
+    }
+return( true );
+}
+
+static int PI_PrevIntChanged(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	real x=0, y=0;
+	int err=false;
+	SplinePoint *cursp = ci->cursp;
+
+	x = GetCalmReal8(ci->gw,CID_PrevX,_("Prev CP X"),&err);
+	y = GetCalmReal8(ci->gw,CID_PrevY,_("Prev CP Y"),&err);
+	if ( err || (x==cursp->prevcp.x && y==cursp->prevcp.y) )
+return( true );
+	cursp->prevcp.x = x;
+	cursp->prevcp.y = y;
+	cursp->me.x = (cursp->nextcp.x + cursp->prevcp.x)/2;
+	cursp->me.y = (cursp->nextcp.y + cursp->prevcp.y)/2;
+	if ( ci->sc->parent->order2 )
+	    SplinePointPrevCPChanged2(cursp);
+	if ( cursp->prev!=NULL )
+	    SplineRefigure(cursp->prev);
+	CVCharChangedUpdate(ci->cv);
+	PIFillup(ci,GGadgetGetCid(g));
+    } else if ( e->type==et_controlevent &&
+	    e->u.control.subtype == et_textfocuschanged &&
+	    e->u.control.u.tf_focus.gained_focus ) {
+	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	PI_FigureNext(ci);
     }
 return( true );
 }
@@ -2147,15 +2288,15 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
     static GIData gi;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[39], hgcd[2], h2gcd[2], mgcd[11];
-    GTextInfo label[39], mlabel[11];
+    GGadgetCreateData gcd[51], hgcd[2], h2gcd[2], mgcd[11];
+    GTextInfo label[51], mlabel[11];
     GTabInfo aspects[4];
     static GBox cur, nextcp, prevcp;
     extern Color nextcpcol, prevcpcol;
     GWindow root;
     GRect screensize;
     GPoint pt;
-    int j, defxpos, nextstarty;
+    int j, defxpos, nextstarty, groupj;
 
     cur.main_background = nextcp.main_background = prevcp.main_background = COLOR_DEFAULT;
     cur.main_foreground = 0xff0000;
@@ -2204,34 +2345,71 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	memset(&aspects,0,sizeof(aspects));
 
 	j=0;
+	gi.gcd = gcd;
+
+	label[j].text = (unichar_t *) _("_Normal");
+	label[j].text_is_1byte = true;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = 5;
+	gcd[j].gd.flags = gg_enabled|gg_visible|gg_cb_on;
+	gcd[j].gd.cid = CID_Normal;
+	gcd[j].gd.handle_controlevent = PI_InterpChanged;
+	gcd[j].creator = GRadioCreate;
+	++j;
+
+	label[j].text = (unichar_t *) _("_Interpolated");
+	label[j].text_is_1byte = true;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = 70; gcd[j].gd.pos.y = 5;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_Interpolated;
+	gcd[j].gd.handle_controlevent = PI_InterpChanged;
+	gcd[j].creator = GRadioCreate;
+	++j;
+
+	label[j].text = (unichar_t *) _("N_ever Interpolate");
+	label[j].text_is_1byte = true;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+16;
+	gcd[j].gd.flags = cv->sc->parent->order2 ? (gg_enabled|gg_visible) : gg_visible;
+	gcd[j].gd.cid = CID_NeverInterpolate;
+	gcd[j].gd.handle_controlevent = PI_NeverInterpChanged;
+	gcd[j].creator = GCheckBoxCreate;
+	++j;
+
+	gi.normal_start = j;
 	label[j].text = (unichar_t *) _("_Base:");
 	label[j].text_is_1byte = true;
 	label[j].text_in_resource = true;
 	gcd[j].gd.label = &label[j];
-	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = 5+6; 
+	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+17+6; 
 	gcd[j].gd.flags = gg_enabled|gg_visible|gg_dontcopybox;
 	gcd[j].gd.box = &cur;
 	gcd[j].creator = GLabelCreate;
 	++j;
 
-	gcd[j].gd.pos.x = 60; gcd[j].gd.pos.y = 5; gcd[j].gd.pos.width = 70;
+	gcd[j].gd.pos.x = 60; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y-6; gcd[j].gd.pos.width = 70;
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].gd.cid = CID_BaseX;
 	gcd[j].gd.handle_controlevent = PI_BaseChanged;
 	gcd[j].creator = GTextFieldCreate;
 	++j;
 
-	gcd[j].gd.pos.x = 137; gcd[j].gd.pos.y = 5; gcd[j].gd.pos.width = 70;
+	gcd[j].gd.pos.x = 137; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y; gcd[j].gd.pos.width = 70;
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].gd.cid = CID_BaseY;
 	gcd[j].gd.handle_controlevent = PI_BaseChanged;
 	gcd[j].creator = GTextFieldCreate;
 	++j;
 
+	groupj = j;
 	label[j].text = (unichar_t *) _("Prev CP:");
 	label[j].text_is_1byte = true;
 	gcd[j].gd.label = &label[j];
-	gcd[j].gd.pos.x = 9; gcd[j].gd.pos.y = 36; 
+	gcd[j].gd.pos.x = 9; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+24+4; 
 	gcd[j].gd.flags = gg_enabled|gg_visible|gg_dontcopybox;
 	gcd[j].gd.box = &prevcp;
 	gcd[j].creator = GLabelCreate;
@@ -2306,18 +2484,18 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].creator = GLabelCreate;
 	++j;
 
-	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[3].gd.pos.y-5;
-	gcd[j].gd.pos.width = PI_Width-10; gcd[j].gd.pos.height = 70;
+	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[groupj].gd.pos.y-5;
+	gcd[j].gd.pos.width = PI_Width-20; gcd[j].gd.pos.height = 70;
 	gcd[j].gd.flags = gg_enabled | gg_visible;
 	gcd[j].creator = GGroupCreate;
 	++j;
 
+	groupj = j;
 	nextstarty = gcd[j-3].gd.pos.y+34;
 	label[j].text = (unichar_t *) _("Next CP:");
 	label[j].text_is_1byte = true;
 	gcd[j].gd.label = &label[j];
-	gcd[j].gd.pos.x = gcd[3].gd.pos.x; gcd[j].gd.pos.y = nextstarty; 
-	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.pos.x = 9; gcd[j].gd.pos.y = nextstarty; 
 	gcd[j].gd.flags = gg_enabled|gg_visible|gg_dontcopybox;
 	gcd[j].gd.box = &nextcp;
 	gcd[j].creator = GLabelCreate;
@@ -2392,15 +2570,80 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	++j;
 
 	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = nextstarty-5;
-	gcd[j].gd.pos.width = PI_Width-10; gcd[j].gd.pos.height = 70;
+	gcd[j].gd.pos.width = PI_Width-20; gcd[j].gd.pos.height = 70;
 	gcd[j].gd.flags = gg_enabled | gg_visible;
 	gcd[j].creator = GGroupCreate;
 	++j;
+	gi.normal_end = j;
+
+	gi.interp_start = j;
+	label[j].text = (unichar_t *) _("_Base:");
+	label[j].text_is_1byte = true;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[gi.normal_start].gd.pos.y; 
+	gcd[j].gd.flags = gg_enabled|gg_visible|gg_dontcopybox;
+	gcd[j].gd.box = &cur;
+	gcd[j].creator = GLabelCreate;
+	++j;
+
+	gcd[j].gd.pos.x = 60; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y; gcd[j].gd.pos.width = 65;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_BasePos;
+	gcd[j].creator = GLabelCreate;
+	++j;
+
+	label[j].text = (unichar_t *) _("Prev CP:");
+	label[j].text_is_1byte = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = 9; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+14+4; 
+	gcd[j].gd.flags = gg_enabled|gg_visible|gg_dontcopybox;
+	gcd[j].gd.box = &prevcp;
+	gcd[j].creator = GLabelCreate;
+	++j;
+
+	gcd[j].gd.pos.x = 60; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y-4; gcd[j].gd.pos.width = 70;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_PrevX;
+	gcd[j].gd.handle_controlevent = PI_PrevIntChanged;
+	gcd[j].creator = GTextFieldCreate;
+	++j;
+
+	gcd[j].gd.pos.x = 137; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y; gcd[j].gd.pos.width = 70;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_PrevY;
+	gcd[j].gd.handle_controlevent = PI_PrevIntChanged;
+	gcd[j].creator = GTextFieldCreate;
+	++j;
+
+	label[j].text = (unichar_t *) _("Next CP:");
+	label[j].text_is_1byte = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = 9; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+24+4; 
+	gcd[j].gd.flags = gg_enabled|gg_visible|gg_dontcopybox;
+	gcd[j].gd.box = &nextcp;
+	gcd[j].creator = GLabelCreate;
+	++j;
+
+	gcd[j].gd.pos.x = 60; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y-4; gcd[j].gd.pos.width = 70;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_NextX;
+	gcd[j].gd.handle_controlevent = PI_NextIntChanged;
+	gcd[j].creator = GTextFieldCreate;
+	++j;
+
+	gcd[j].gd.pos.x = 137; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y; gcd[j].gd.pos.width = 70;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_NextY;
+	gcd[j].gd.handle_controlevent = PI_NextIntChanged;
+	gcd[j].creator = GTextFieldCreate;
+	++j;
+	gi.interp_end = j;
 
 	label[j].text = (unichar_t *) _("Type:");
 	label[j].text_is_1byte = true;
 	gcd[j].gd.label = &label[j];
-	gcd[j].gd.pos.x = gcd[0].gd.pos.x; gcd[j].gd.pos.y = gcd[j-3].gd.pos.y+32;
+	gcd[j].gd.pos.x = gcd[0].gd.pos.x; gcd[j].gd.pos.y = gcd[gi.normal_end-3].gd.pos.y+32;
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].creator = GLabelCreate;
 	++j;

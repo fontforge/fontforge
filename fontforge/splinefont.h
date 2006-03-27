@@ -1573,8 +1573,8 @@ extern void SFConvertToOrder2(SplineFont *sf);
 extern void SCConvertToOrder3(SplineChar *sc);
 extern void SFConvertToOrder3(SplineFont *sf);
 extern void SCConvertOrder(SplineChar *sc, int to_order2);
-extern void SplinePointPrevCPChanged2(SplinePoint *sp, int fixnext);
-extern void SplinePointNextCPChanged2(SplinePoint *sp, int fixprev);
+extern void SplinePointPrevCPChanged2(SplinePoint *sp);
+extern void SplinePointNextCPChanged2(SplinePoint *sp);
 extern int IntersectLines(BasePoint *inter,
 	BasePoint *line1_1, BasePoint *line1_2,
 	BasePoint *line2_1, BasePoint *line2_2);
