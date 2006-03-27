@@ -1755,7 +1755,7 @@ static void PIChangePoint(GIData *ci) {
 
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_Interpolated),
 	    !ci->cursp->dontinterpolate );
-    interpolate = SPInterpolate(sp) && ci->sc->parent->order2;
+    interpolate = SPInterpolate(ci->cursp) && ci->sc->parent->order2;
     GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_Normal), !interpolate );
     GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_Interpolated), interpolate );
     GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_NeverInterpolate), ci->cursp->dontinterpolate );
