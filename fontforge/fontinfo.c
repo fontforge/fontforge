@@ -5302,7 +5302,7 @@ return( true );
 	if ( nlitem==NULL )
 	    nl = DefaultNameListForNewFonts();
 	else {
-	    char *name = cu_copy(nlitem->text);
+	    char *name = u2utf8_copy(nlitem->text);
 	    nl = NameListByName(name);
 	    free(name);
 	}
