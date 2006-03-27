@@ -1871,6 +1871,10 @@ static int PI_InterpChanged(GGadget *g, GEvent *e) {
 	if ( GGadgetGetCid(g)==CID_Interpolated ) {
 	    cursp->me.x = (cursp->nextcp.x + cursp->prevcp.x)/2;
 	    cursp->me.y = (cursp->nextcp.y + cursp->prevcp.y)/2;
+	    if ( cursp->pointtype==pt_tangent ) {
+		cursp->pointtype = pt_curve;
+		GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_Curve),true);
+	    }
 	    PIFillup(ci,0);
 	}
 	PIShowHide(ci);
@@ -1887,6 +1891,7 @@ static int PI_NeverInterpChanged(GGadget *g, GEvent *e) {
 
 	if ( never )
 	    GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_Normal),true);
+	ci->cursp->dontinterpolate = never;
 	PIShowHide(ci);
     }
 return( true );
