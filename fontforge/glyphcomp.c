@@ -141,6 +141,8 @@ return( true );
 			 ((dy=s->to->me.y-here->y)<=3 || dy<=3*err ) && (dy>=-3 || dy>=-3*err)) ) {
 		    s = s->to->next;
 		    t = 0;
+		    if ( (adx = (3*s->splines[0].a* t + 2*s->splines[0].b)* t + s->splines[0].c)<0 ) adx = -adx;
+		    if ( (ady = (3*s->splines[1].a* t + 2*s->splines[1].b)* t + s->splines[1].c)<0 ) ady = -ady;
 		} else
 	    break;
 	    }
@@ -265,7 +267,7 @@ return( false );
 return( false );
     }
 }
-    
+
 enum Compare_Ret SSsCompare(const SplineSet *ss1, const SplineSet *ss2, real pt_err, real spline_err) {
     int cnt1, cnt2, bestcnt;
     const SplineSet *ss, *s2s, *bestss;
@@ -766,7 +768,7 @@ struct font_diff {
     int top_diff, middle_diff, local_diff, diff;
     SplineChar **matches;
     SplineChar *last_sc;
-    char held[300];
+    char held[600];
     int fcnt1, fcnt2;
     uint32 *tags1, *tags2;
     int is_gpos;
@@ -1356,6 +1358,8 @@ static void complainscfeature(struct font_diff *fd, SplineChar *sc, char *format
 	    fputs("   ",fd->diffs);
 	    fprintf( fd->diffs, _("Glyph |%s| differs\n"), sc->name );
 	    fprintf( fd->diffs, "    %s", fd->held );
+	    if ( fd->held[strlen(fd->held)-1]!='\n' )
+		putc('\n',fd->diffs);
 	    fd->held[0] = '\0';
 	}
 	fputs("    ",fd->diffs);
@@ -1426,6 +1430,50 @@ return( false );
 return( true );
 }
 
+static int classcmp(char *str1, char *str2) {
+    int cnt1, cnt2, ch1, ch2;
+    char *pt1, *pt2, *start1, *start2;
+
+    /* Sometimes classes are in the same order and all is easy */
+    if ( strcmp(str1,str2)==0 )
+return( 0 );
+
+    for ( pt1=str1, cnt1=1; *pt1!='\0' ; ++pt1 )
+	if ( *pt1==' ' ) {
+	    ++cnt1;
+	    while ( pt1[1]==' ' ) ++pt1;
+	}
+    for ( pt2=str2, cnt2=1; *pt2!='\0' ; ++pt2 )
+	if ( *pt2==' ' ) {
+	    ++cnt2;
+	    while ( pt2[1]==' ' ) ++pt2;
+	}
+    if ( cnt1!=cnt2 )
+return( -1 );
+
+    for ( start1=str1; *start1!='\0' ; ) {
+	for ( pt1 = start1; *pt1!=' ' && *pt1!='\0'; ++pt1 );
+	ch1 = *pt1; *pt1 = '\0';
+	for ( start2=str2; *start2!='\0' ; ) {
+	    for ( pt2 = start2; *pt2!=' ' && *pt2!='\0'; ++pt2 );
+	    ch2 = *pt2; *pt2 = '\0';
+	    if ( strcmp( start1, start2 )==0 ) {
+		*pt2 = ch2;
+	break;
+	    }
+	    *pt2 = ch2;
+	    while ( *pt2==' ' ) ++pt2;
+	    start2 = pt2;
+	}
+	*pt1 = ch1;
+	if ( *start2=='\0' )
+return( -1 );
+	while ( *pt1==' ' ) ++pt1;
+	start1 = pt1;
+    }
+return( 0 );
+}
+
 static int comparekc(struct font_diff *fd,KernClass *kc1, KernClass *kc2) {
     int i;
 
@@ -1436,10 +1484,10 @@ return( false );
     if ( memcmp(kc1->offsets,kc2->offsets,kc1->first_cnt*kc2->second_cnt*sizeof(int16))!=0 )
 return( false );
     for ( i=1; i<kc1->first_cnt; ++i )
-	if ( strcmp(kc1->firsts[i],kc2->firsts[i])!=0 )
+	if ( classcmp(kc1->firsts[i],kc2->firsts[i])!=0 )
 return( false );
     for ( i=1; i<kc1->second_cnt; ++i )
-	if ( strcmp(kc1->seconds[i],kc2->seconds[i])!=0 )
+	if ( classcmp(kc1->seconds[i],kc2->seconds[i])!=0 )
 return( false );
 
 return( true );
@@ -1512,13 +1560,13 @@ return( false );
     if ( fpst1->nccnt!=fpst2->nccnt || fpst1->bccnt!=fpst2->bccnt || fpst1->fccnt!=fpst2->fccnt )
 return( false );
     for ( i=0; i<fpst1->nccnt; ++i )
-	if ( strcmp(fpst1->nclass[i],fpst2->nclass[i])!=0 )
+	if ( classcmp(fpst1->nclass[i],fpst2->nclass[i])!=0 )
 return( false );
     for ( i=0; i<fpst1->bccnt; ++i )
-	if ( strcmp(fpst1->bclass[i],fpst2->bclass[i])!=0 )
+	if ( classcmp(fpst1->bclass[i],fpst2->bclass[i])!=0 )
 return( false );
     for ( i=0; i<fpst1->fccnt; ++i )
-	if ( strcmp(fpst1->fclass[i],fpst2->fclass[i])!=0 )
+	if ( classcmp(fpst1->fclass[i],fpst2->fclass[i])!=0 )
 return( false );
 
     for ( i=0; i<fpst1->rule_cnt; ++i ) {
@@ -1553,13 +1601,13 @@ return( false );
 		    fpst1->rules[i].u.coverage.fcnt!=fpst2->rules[i].u.class.fcnt )
 return( false );
 	    for ( j=0; j<fpst1->rules[i].u.coverage.ncnt; ++j )
-		if ( strcmp(fpst1->rules[i].u.coverage.ncovers[j],fpst2->rules[i].u.coverage.ncovers[j])!=0 )
+		if ( classcmp(fpst1->rules[i].u.coverage.ncovers[j],fpst2->rules[i].u.coverage.ncovers[j])!=0 )
 return( false );
 	    for ( j=0; j<fpst1->rules[i].u.coverage.bcnt; ++j )
-		if ( strcmp(fpst1->rules[i].u.coverage.bcovers[j],fpst2->rules[i].u.coverage.bcovers[j])!=0 )
+		if ( classcmp(fpst1->rules[i].u.coverage.bcovers[j],fpst2->rules[i].u.coverage.bcovers[j])!=0 )
 return( false );
 	    for ( j=0; j<fpst1->rules[i].u.coverage.fcnt; ++j )
-		if ( strcmp(fpst1->rules[i].u.coverage.fcovers[j],fpst2->rules[i].u.coverage.fcovers[j])!=0 )
+		if ( classcmp(fpst1->rules[i].u.coverage.fcovers[j],fpst2->rules[i].u.coverage.fcovers[j])!=0 )
 return( false );
 	    if ( fpst1->format == pst_reversecoverage )
 		if ( strcmp(fpst1->rules[i].u.rcoverage.replacements,fpst2->rules[i].u.rcoverage.replacements)!=0 )
@@ -1613,6 +1661,7 @@ return;
 	else
 	    fprintf( fd->diffs,_("All context/chainings in %s fail to match anything in %s\n"),
 		    fd->name1, fd->name2 );
+	fputs("   ",fd->diffs);
 	if ( any2==0 )
 	    /* Do Nothing */;
 	else if ( any2==1 )
@@ -1622,14 +1671,14 @@ return;
 	    fprintf( fd->diffs,_("All context/chainings in %s fail to match anything in %s\n"),
 		    fd->name2, fd->name1 );
     } else {
-	for ( t1=fpst1, i=0; t1!=NULL; t1=t1->next, ++i )
+	for ( t1=fpst1, i=0; t1!=NULL; t1=t1->next, ++i ) if ( t1->tag==fd->tag )
 	    if ( !t1->ticked ) {
 		featureheader(fd);
 		fputs("   ",fd->diffs);
 		fprintf( fd->diffs,_("The %dth context/chaining in %s does not match anything in %s\n"),
 			i+1, fd->name1, fd->name2 );
 	    }
-	for ( t2=fpst2, i=0; t2!=NULL; t2=t2->next, ++i )
+	for ( t2=fpst2, i=0; t2!=NULL; t2=t2->next, ++i ) if ( t2->tag==fd->tag )
 	    if ( !t2->ticked ) {
 		featureheader(fd);
 		fputs("   ",fd->diffs);
@@ -1697,6 +1746,7 @@ static void comparefeature(struct font_diff *fd) {
     }
     comparefpsts(fd,fd->sf1->possub,fd->sf2->possub);
 
+    fd->last_sc = NULL;
     for ( gid1=0; gid1<fd->sf1->glyphcnt; ++gid1 ) if ( (sc2=fd->matches[gid1])!=NULL && (sc1=fd->sf1->glyphs[gid1])!=NULL ) {
 	for ( pst1=sc1->possub; pst1!=NULL; pst1=pst1->next ) if ( pst1->tag==fd->tag ) {
 	    for ( pst2=sc2->possub; pst2!=NULL; pst2=pst2->next ) if ( pst2->tag==fd->tag ) {
