@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 31-Oct-2005 -->
+  <!-- AP: Last modified: 26-Mar-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Get Info</TITLE>-->
     <TITLE>情報を得る</TITLE>
@@ -31,10 +31,12 @@
       <A NAME="Point">点</A>の情報
   </H2>
   <P>
-  <IMG SRC="pointinfo.png" WIDTH="277" HEIGHT="370" ALIGN="Right"><!-- This shows
+<!--
+  <IMG SRC="pointinfo.png" WIDTH="321" HEIGHT="539" ALIGN="Right"> This shows
   information about the current point. The Base position is where the point
   itself is. -->
-  ここでは現在の点に関する情報を表示します。<CODE>基準(<U>B</U>)</CODE> は、その点自身の置かれた位置を表します。
+  <IMG SRC="pointinfo.png" WIDTH="277" HEIGHT="403" ALIGN="Right">
+  ここでは現在の点に関する情報を表示します。<CODE>基点(<U>B</U>):</CODE> は、その点自身の置かれた位置を表します。
   <P>
 <!--
   The Next CP shows both the location of the next control point, and the offset
@@ -68,6 +70,19 @@
   point itself will be drawn in red, the previous control point will be drawn
   in magenta and the next control point will be drawn in dull cyan. -->
   ラベルの色は、それが参照しているものの色を反映しています。点そのものは赤で表示され、前の制御点はマゼンタ、次の制御点は鈍いシアンで表示されます。
+  <P>
+<!--
+  <IMG SRC="pointinfo-interp.png" WIDTH="321" HEIGHT="405" ALIGN="Right">When
+  editing truetype interpolated points it is more important to view the control
+  points and let the base point continue to be interpolated. The &lt;&gt; Normal
+  and &lt;&gt;Interpolated radio buttons control which view is active. -->
+  <IMG SRC="pointinfo-interp.png" WIDTH="277" HEIGHT="403" ALIGN="Right">
+  TrueType の補完された点を編集しているときには、制御点を見て、基点が依然補完されるように調整することがより重要となります。どちらの表示法を有効にするかは、<CODE>◇ 通常(<U>N</U>)</CODE> または <CODE>◇ 補完される点(<U>I</U>)</CODE> のラジオボタンで切替えます。
+  <P>
+<!--
+  Pressing &lt;&gt; Interpolated may move the point to position it correctly
+  for interpolation.<BR CLEAR=ALL> -->
+  <CODE>◇ 補完される点(<U>I</U>)</CODE> を押すと、補完される正しい位置まで点が移動されるでしょう。
   <BR CLEAR=ALL>
   <H3>
     <IMG SRC="../hintmaskinfo.png" WIDTH="321" HEIGHT="459" ALIGN="Right"><!--<A NAME="HintMask">Hint</A>
