@@ -121,7 +121,6 @@ static int CountKerns(struct alltabs *at, SplineFont *sf, struct kerncounts *kcn
     kcnt->vcnt = vcnt;
     kcnt->mh = mh;
     kcnt->mv = mv;
-    kcnt->hsubs = kcnt->vsubs = 1;
     kcnt->hbreaks = kcnt->vbreaks = NULL;
     if ( cnt>=10000 ) {
 	/* the sub-table size is 6*cnt+14 or so and needs to be less 65535 */
@@ -145,7 +144,10 @@ static int CountKerns(struct alltabs *at, SplineFont *sf, struct kerncounts *kcn
 	}
 	kcnt->hbreaks[b++] = cnt;
 	kcnt->hsubs = b;
-    }
+    } else if ( cnt!=0 )
+	kcnt->hsubs = 1;
+    else
+	kcnt->hsubs = 0;
     if ( vcnt>=10000 ) {
 	int b=0;
 	kcnt->vbreaks = galloc((at->gi.gcnt+1)*sizeof(int));
@@ -163,7 +165,10 @@ static int CountKerns(struct alltabs *at, SplineFont *sf, struct kerncounts *kcn
 	}
 	kcnt->vbreaks[b++] = vcnt;
 	kcnt->vsubs = b;
-    }
+    } else if ( vcnt!=0 )
+	kcnt->vsubs = 1;
+    else
+	kcnt->vsubs = 0;
 
     if ( at->applemode ) {	/* if we aren't outputting Apple's extensions to kerning (by classes, and by state machine) then don't check for those extensions */
 	for ( kc=sf->kerns; kc!=NULL; kc = kc->next ) if ( SLIHasDefault(sf,kc->sli) )
