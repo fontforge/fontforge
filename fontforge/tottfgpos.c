@@ -332,7 +332,8 @@ return;
 }
 
 static SplineChar **FindSubs(SplineChar *sc,struct tagflaglang *tfl, enum possub_type type) {
-    SplineChar *space[30];
+    SplineChar *spc[30], **space = spc;
+    int max = sizeof(space)/sizeof(space[0]);
     int cnt=0;
     char *pt, *start;
     SplineChar *subssc, **ret;
@@ -349,9 +350,16 @@ static SplineChar **FindSubs(SplineChar *sc,struct tagflaglang *tfl, enum possub
 		if ( pt!=NULL )
 		    *pt = '\0';
 		subssc = SFGetChar(sc->parent,-1,start);
-		if ( subssc!=NULL && subssc->ttf_glyph!=-1 &&
-			cnt<sizeof(space)/sizeof(space[0]) )
+		if ( subssc!=NULL && subssc->ttf_glyph!=-1 ) {
+		    if ( cnt>=max ) {
+			if ( spc==space ) {
+			    space = galloc((max+=30)*sizeof(SplineChar *));
+			    memcpy(space,spc,(max-30)*sizeof(SplineChar *));
+			} else
+			    space = grealloc(space,(max+=30)*sizeof(SplineChar *));
+		    }
 		    space[cnt++] = subssc;
+		}
 		if ( pt==NULL )
 	    break;
 		*pt=' ';
@@ -363,6 +371,8 @@ return( NULL );
     ret = galloc((cnt+1)*sizeof(SplineChar *));
     memcpy(ret,space,cnt*sizeof(SplineChar *));
     ret[cnt] = NULL;
+    if ( space!=spc )
+	free(space);
 return( ret );
 }
 
