@@ -842,6 +842,8 @@ static int totcnt_cnt, nocnt_cnt, incr_cnt, curdiff_cnt;
 /* Then I tried checking various possible cp lengths in the desired directions*/
 /*  finding the best one or two, and doing a 2D binary search using that as a */
 /*  starting point. */
+/* And sometimes a least squares approach will give us the right answer, so   */
+/*  try that too. */
 /* This still isn't as good as I'd like it... But I haven't been able to */
 /*  improve it further yet */
 #define TRY_CNT		2
