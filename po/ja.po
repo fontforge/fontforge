@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "POT-Creation-Date: 2005-08-29 17:43+0800\n"
-"PO-Revision-Date: 2006-03-10 12:08-0900\n"
+"PO-Revision-Date: 2006-03-28 12:08-0900\n"
 "Last-Translator: KANOU Hiroki <kanou@khdd.net>\n"
 "Language-Team: LANGUAGE <ja.c@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -4258,47 +4258,59 @@ msgstr "依存する置換"
 msgid "'%c%c%c%c' in glyph %.40s"
 msgstr "'%c%c%c%c' (グリフ%.40s内の)"
 
+msgid "_Normal"
+msgstr "通常(_N)"
+
+msgid "_Interpolated"
+msgstr "補間される点(_I)"
+
+msgid "N_ever Interpolate"
+msgstr "決して補間しない(_E)"
+
+msgid "Base X"
+msgstr "基点のX座標"
+
+msgid "Base Y"
+msgstr "基点のY座標"
+
+msgid "_Base:"
+msgstr "基点(_B):"
+
 msgid "Offset"
 msgstr "オフセット"
 
 msgid "Dist"
 msgstr "距離"
 
-msgid "Base X"
-msgstr "基準のX"
-
-msgid "Base Y"
-msgstr "基準のY"
-
-msgid "Next CP:"
-msgstr "次の点:"
-
-msgid "Next CP X"
-msgstr "次の点のX"
-
-msgid "Next CP Y"
-msgstr "次の点のY"
-
-msgid "Next CP Dist"
-msgstr "次の点の距離"
-
-msgid "Next CP Angle"
-msgstr "次の点の角度"
-
 msgid "Prev CP:"
 msgstr "前の制御点:"
 
 msgid "Prev CP X"
-msgstr "前の点のX"
+msgstr "前制御点のX座標"
 
 msgid "Prev CP Y"
-msgstr "前の点のY"
+msgstr "前制御点のY座標"
 
 msgid "Prev CP Dist"
-msgstr "前の点の距離"
+msgstr "前制御点の距離"
 
 msgid "Prev CP Angle"
-msgstr "前の点の角度"
+msgstr "前制御点の角度"
+
+msgid "Next CP:"
+msgstr "次の制御点:"
+
+msgid "Next CP X"
+msgstr "次制御点のX座標"
+
+msgid "Next CP Y"
+msgstr "次制御点のY座標"
+
+msgid "Next CP Dist"
+msgstr "次制御点の距離"
+
+msgid "Next CP Angle"
+msgstr "次制御点の角度"
 
 msgid "Type:"
 msgstr "種類:"
@@ -7160,9 +7172,6 @@ msgstr "この機能と設定の組み合わせは既に使われています.\n
 
 msgid "If the Off-Name is blank, then the Off-Code must be -1"
 msgstr "オフ時の名前が空白の場合,オフのコードは-1でなければなりません"
-
-msgid "_Base:"
-msgstr "基準(_B):"
 
 msgid "_Size:"
 msgstr "サイズ(_S):"
@@ -13416,7 +13425,7 @@ msgid "The %dth context/chaining in %s does not match anything in %s\n"
 msgstr "%2$sの%1$d番目の文脈(連鎖)依存の照合は,%3$sの中に一致するものがありません\n"
 
 msgid "Kerning between |%s| and |%s| is %d in %s and %d in %s\n"
-msgstr " |%1$s| と |%2$s| とのカーニングは,%4$sでは%3$dですが,%6$sでは%5$dです\n"
+msgstr "|%1$s| と |%2$s| とのカーニングは,%4$sでは%3$dですが,%6$sでは%5$dです\n"
 
 msgid "No kerning between |%s| and |%s| in %s whilst it is %d in %s\n"
 msgstr "|%1$s| と |%2$s| とのカーニングは%3$sにはありませんが,%5$sには%4$dだけあります\n"
