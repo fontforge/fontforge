@@ -1010,8 +1010,18 @@ return( SplineMake2(from,to));
     finaldiff = 1e20;
     offn_ = offp_ = -1;
     spline = SplineMake(from,to,false);
-    for ( k=0; k<TRY_CNT; ++k ) {
-	tlen = bestj[k]*tdiff; flen = besti[k]*fdiff;
+    for ( k=-1; k<TRY_CNT; ++k ) {
+	if ( k<0 ) {
+	    BasePoint nextcp, prevcp;
+	    int ret = _ApproximateSplineFromPoints(from,to,mid,cnt,&nextcp,&prevcp,false);
+	    /* sometimes least squares gives us the right answer */
+	    if ( !(ret&1) || !(ret&2))
+    continue;
+	    tlen = (prevcp.x-to->me.x)*tounit.x + (prevcp.y-to->me.y)*tounit.y;
+	    flen = (nextcp.x-from->me.x)*fromunit.x + (nextcp.y-from->me.y)*fromunit.y;
+	} else {
+	    tlen = bestj[k]*tdiff; flen = besti[k]*fdiff;
+	}
 	to->prevcp.x = to->me.x + tlen*tounit.x; to->prevcp.y = to->me.y + tlen*tounit.y;
 	from->nextcp.x = from->me.x + flen*fromunit.x; from->nextcp.y = from->me.y + flen*fromunit.y;
 	SplineRefigure(spline);
