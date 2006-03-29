@@ -144,13 +144,13 @@ static void MarkTranslationRefs(SplineFont *sf) {
 /* ************************************************************************** */
 
 struct mhlist {
-    uint8 mask[12];
+    uint8 mask[HntMax/8];
     int subr;
     struct mhlist *next;
 };
 
 struct hintdb {
-    uint8 mask[12];
+    uint8 mask[HntMax/8];
     int cnt;				/* number of hints */
     struct mhlist *sublist;
     struct pschars *subrs;
@@ -163,6 +163,7 @@ struct hintdb {
 	/* stems are always active and there are no other stems !(h/v)hasoverlap*/
     unsigned int noconflicts: 1;
     unsigned int startset: 1;
+    unsigned int skiphm: 1;		/* Set when coming back to the start point of a contour. hintmask should be set the first time, not the second */
     int cursub;				/* Current subr number */
     BasePoint current;
 };
@@ -359,7 +360,7 @@ return;
 	for ( i=0; i<instance_count; ++i ) {
 	    off = offsets!=NULL ? offsets[i] :
 		    ishstem ? 0 : scs[i]->lsidebearing;
-	    if ( hs[i]->backwards ) {
+	    if ( hs[i]->ghost ) {
 		data[i][0] = hs[i]->start-off+hs[i]->width;
 		data[i][1] = -hs[i]->width;
 	    } else {
@@ -390,7 +391,7 @@ static void CvtPsMasked(GrowBuf *gb,SplineChar *scs[MmMax], int instance_count,
 		(mask[hs[0]->hintnumber>>3]&(0x80>>(hs[0]->hintnumber&7))) ) {
 	    for ( i=0; i<instance_count; ++i ) {
 		off = ishstem ? 0 : scs[i]->lsidebearing;
-		if ( hs[i]->backwards ) {
+		if ( hs[i]->ghost ) {
 		    data[i][0] = hs[i]->start-off+hs[i]->width;
 		    data[i][1] = -hs[i]->width;
 		} else {
@@ -1957,7 +1958,7 @@ static int HintSetup2(GrowBuf *gb,struct hintdb *hdb, SplinePoint *to ) {
     /* (ie. the initial point when we return to it at the end of the splineset*/
     /* in that case hdb->cnt will be 0 and we should ignore it */
     /* components in subroutines depend on not having any hintmasks */
-    if ( to->hintmask==NULL || hdb->cnt==0 || hdb->noconflicts )
+    if ( to->hintmask==NULL || hdb->cnt==0 || hdb->noconflicts || hdb->skiphm )
 return( false );
 
     if ( memcmp(hdb->mask,*to->hintmask,(hdb->cnt+7)/8)==0 )
@@ -2290,10 +2291,7 @@ static void CvtPsSplineSet2(GrowBuf *gb, SplinePointList *spl,
 		spl->first->flexx = spl->first->flexy = false;
 	    }
 	}
-	/* When a glyph with conflicts is put in a subr, it needs the rmoveto */
-	/*  the subr will contain all the hints, and the initial moveto must  */
-	/*  come after them. That is, in the subr */
-	if ( start==NULL || hdb->startset || !hdb->noconflicts ) {
+	if ( start==NULL || hdb->startset ) {
 	    if ( unhinted && hdb->cnt>0 && spl->first->hintmask!=NULL ) {
 		hdb->mask[0] = ~(*spl->first->hintmask)[0];	/* Make it different */
 		unhinted = false;
@@ -2305,6 +2303,8 @@ static void CvtPsSplineSet2(GrowBuf *gb, SplinePointList *spl,
 	}
 	for ( spline = spl->first->next; spline!=NULL && spline!=first; ) {
 	    if ( first==NULL ) first = spline;
+	    else if ( first->from==spline->to )
+		hdb->skiphm = true;
 	    if ( spline->to->flexx || spline->to->flexy ) {
 		flexto2(gb,hdb,spline,round);	/* does two adjacent splines */
 		spline = spline->to->next->to->next;
@@ -2313,7 +2313,8 @@ static void CvtPsSplineSet2(GrowBuf *gb, SplinePointList *spl,
 	    else
 		spline = curveto2(gb,hdb,spline,first,round);
 	}
-	/* No closepath oper in type2 fonts */
+	hdb->skiphm = false;
+	/* No closepath oper in type2 fonts, can't skip the last lineto */
 	SplineSetReverse(spl);
 	/* Of course, I have to Reverse again to get back to my convention after*/
 	/*  saving */
@@ -2367,13 +2368,23 @@ return;
     }
 }
 
-static void DumpRefsHints(GrowBuf *gb,RefChar *cur,StemInfo *h,StemInfo *v,
+static void DumpRefsHints(GrowBuf *gb, struct hintdb *hdb,RefChar *cur,StemInfo *h,StemInfo *v,
 	BasePoint *trans, int round) {
     uint8 masks[12];
     int cnt, sets=0;
     StemInfo *rs;
 
     /* trans has already been rounded (whole char is translated by an integral amount) */
+
+    /* If we have a subroutine containing conflicts, then its hints will match*/
+    /*  ours exactly, and we can use its hintmasks directly */
+    if (( cur->sc->hconflicts || cur->sc->vconflicts ) &&
+	    cur->sc->layers[ly_fore].splines!=NULL &&
+	    cur->sc->layers[ly_fore].splines->first->hintmask!=NULL ) {
+	AddMask2(gb,*cur->sc->layers[ly_fore].splines->first->hintmask,hdb->cnt,19);		/* hintmask */
+	memcpy(hdb->mask,*cur->sc->layers[ly_fore].splines->first->hintmask,sizeof(HintMask));
+return;
+    }
 
     if ( h==NULL && v==NULL )
 	IError("hintmask invoked when there are no hints");
@@ -2434,7 +2445,7 @@ static void ExpandRef2(GrowBuf *gb, SplineChar *sc, struct hintdb *hdb,
     }
 
     if ( hdb->cnt>0 && !hdb->noconflicts )
-	DumpRefsHints(gb,r,sc->hstem,sc->vstem,&rtrans,round);
+	DumpRefsHints(gb,hdb,r,sc->hstem,sc->vstem,&rtrans,round);
 
     /* Translate from end of last character to where this one should */
     /*  start (we must have one moveto operator to start off, none */
@@ -2514,7 +2525,7 @@ static void RSC2PS2(GrowBuf *gb, SplineChar *base,SplineChar *rsc,
 
     if ( unsafe && allwithouthints ) {
 	if ( unsafe->sc->lsidebearing!=0x7fff ) {
-	    PS2CallSubr(gb,unsafe->sc->lsidebearing,subrs, &hdb->current);
+	    ExpandRef2(gb,base,hdb,unsafe,trans,startend,subrs,round);
 	} else if ( unsafe->transform[4]==0 && unsafe->transform[5]==0 )
 	    RSC2PS2(gb,base,unsafe->sc,hdb,trans,subrs,startend,flags);
 	else

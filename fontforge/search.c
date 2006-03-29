@@ -1588,7 +1588,7 @@ void FVReplaceOutlineWithReference( FontView *fv, double fudge ) {
 #endif
 
     sv = SVFillup( gcalloc(1,sizeof(SearchView)), fv);
-    sv->fudge_percent = .01;
+    sv->fudge_percent = .001;
     sv->fudge = fudge;
     CV2SC(&sv->cv_srch,&sv->sc_srch,sv);
     CV2SC(&sv->cv_rpl,&sv->sc_rpl,sv);
