@@ -2,571 +2,578 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 5-Oct-2005 -->
+  <!-- AP: Last modified: 29-Mar-2006 -->
   <TITLE>The Edit Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
 <DIV id="in">
-<H1 ALIGN=Center>
-  The Edit Menu
-</H1>
-<P>
-In the Metrics View this menu is greyed out. The commands are only available
-in text fields.
-<UL>
-  <LI>
-    <A HREF="#Undo">Undo</A>
-  <LI>
-    <A HREF="#Redo">Redo</A>
-  <LI>
-    <A HREF="#Cut">Cut</A>
-  <LI>
-    <A HREF="#Copy">Copy</A>
-  <LI>
-    <A HREF="#Reference">Copy Reference</A>
-  <LI>
-    <A HREF="#Width">Copy Width</A>
-  <LI>
-    <A HREF="#VWidth">Copy VWidth</A>
-  <LI>
-    <A HREF="#LBearing">Copy LBearing</A>
-  <LI>
-    <A HREF="#RBearing">Copy RBearing</A>
-  <LI>
-    <A HREF="#CopyGlyphFeatures">Copy Glyph Features...</A>
-  <LI>
-    <A HREF="#CopyGridFit">Copy Grid Fit</A>
-  <LI>
-    <A HREF="#Paste">Paste</A>
-  <LI>
-    <A HREF="#PasteInto">Paste Into</A>
-  <LI>
-    <A HREF="#PasteAfter">Paste After</A>
-  <LI>
-    <A HREF="#SameGlyphAs">Same Glyph As</A>
-  <LI>
-    <A HREF="#Clear">Clear</A>
-  <LI>
-    <A HREF="#Background">Clear Background</A>
-  <LI>
-    <A HREF="#Merge">Merge</A>
-  <LI>
-    <A HREF="#Join">Join</A>
-  <LI>
-    <A HREF="#CopyFg">Copy Fg To Bg</A>
-  <LI>
-    [Copy Bg to Fg]
-  <LI>
-    <A HREF="#Select">Select</A>
-    <UL>
-      <LI>
-	<A HREF="editmenu.html#All">Select All</A>
-      <LI>
-	<A HREF="#Invert">Invert Selection</A>
-      <LI>
-	<A HREF="#Deselect">Deselect All</A>
-      <LI>
-	<A HREF="#FirstPt">First Point</A>
-      <LI>
-	<A HREF="#NextContour">First Point, Next Contour</A>
-      <LI>
-	<A HREF="#NextP">Next Point</A>
-      <LI>
-	<A HREF="#PrevP">Prev Point</A>
-      <LI>
-	<A HREF="#NextCP">Next Control Point</A>
-      <LI>
-	<A HREF="#PrevCP">Prev Control Point</A>
-      <LI>
-	<A HREF="#Contours">Contours</A>
-      <LI>
-	<A HREF="#SelectPoints">Select All Points &amp; Refs</A>
-      <LI>
-	<A HREF="#SelectAnchors">Select Anchors</A>
-      <LI>
-	<A HREF="#SelWidth">(De)Select Width</A>
-      <LI>
-	<A HREF="#SelVWidth">(De)Select VWidth</A>
-      <LI>
-	<A HREF="#SelHM">Select Points Affected by Current HintMask</A>
-      <LI>
-	<A HREF="#Color">Select Color&gt;</A>
-      <LI>
-	<A HREF="#SelChanged">Changed Glyphs</A>
-      <LI>
-	<A HREF="#SelHinting">Hinting Needed</A>
-      <LI>
-	<A HREF="#SelectByATT">Select By ATT</A>...
-    </UL>
-  <LI>
-    <A HREF="#Find">Find / Replace</A>
-  <LI>
-    <A HREF="#ReplaceRef">Replace With Reference</A>
-  <LI>
-    <A HREF="#Unlink">Unlink Reference</A>
-  <LI>
-    <A HREF="#From">Copy From</A>
-    <UL>
-      <LI>
-	<A HREF="#Fonts">All Fonts</A>
-      <LI>
-	<A HREF="#Displayed">Displayed Font</A>
-      <LI>
-	<A HREF="#CharName">Char Metadata</A>
-    </UL>
-  <LI>
-    <A HREF="#Remove-Undoes">Remove Undoes</A>
-</UL>
-<P>
-<FONT COLOR="Red"><STRONG><SMALL>NOTE</SMALL></STRONG></FONT>: In the metrics
-view this menu will be disabled when one of the text fields has the focus.
-<P>
-<DL>
-  <DT>
-    <A NAME="Undo">Undo</A>
-  <DD>
-    In the outline view and the bitmap view this will undo the last command.
-    The number of commands that may be undone for any glyph is controlled by
-    the <A HREF="prefs.html#UndoDepth">UndoDepth</A> preference item.<BR>
-    In the font and metrics views, this does NOT undo the last command. It undoes
-    the last operation on all selected glyphs.
-  <DT>
-    <A NAME="Redo">Redo</A>
-  <DD>
-    In the outline view and the bitmap view this will redo the last command undone.
-    Up to twelve commands may be redone (after that they get thrown away)<BR>
-    In the font and metrics views, this does NOT undo the last command. It undoes
-    the last operation on all selected glyphs.
-  <DT>
-    <A NAME="Cut">Cut</A>
-  <DD>
-    In the font view this command puts the foreground of all selected glyphs
-    into the clipboard and then deletes them. Depending on the setting of
-    <A HREF="#From">Copy From</A> it will either refer all glyphs (bitmap and
-    outline) corresponding to this entry, or just the glyph being displayed.
-    <P>
-    In the Outline View this will copy any selected points, References, or Images
-    into the clipboard and then delete them. If a point is removed from a path
-    then the path will be broken at there, see the <A HREF="#Merge">Merge</A>
-    command for information on how to leave the path whole but without the point.
-    (if there is no selection nothing happens)
-    <P>
-    In the Bitmap View this will copy the selection into the clipboard and then
-    delete it. If there is no selection nothing happens.
-  <DT>
-    <A NAME="Copy">Copy</A>
-  <DD>
-    In the font view this command puts the foreground and hints of all selected
-    glyphs into the clipboard. Depending on the setting of <A HREF="#From">Copy
-    From</A> it will either copy all glyphs (bitmap and outline) corresponding
-    to this entry, or just the glyph being displayed. Normally it will not copy
-    a glyph's name, but if <A HREF="#CharName">Copy From-&gt;Char Name</A> is
-    set then it will copy the name as well.
-    <P>
-    In the Outline View this will copy any selected points, References, or Images
-    into the clipboard. If there is no selection everything in the current layer
-    will go into the clipboard.
-    <P>
-    In the Bitmap View this will copy the selection into the clipboard, if there
-    is no selection everything is copied.
-    <P>
-    To external applications selected points (and associated contours) will be
-    exported to the clipboard with format "image/eps", while a selected image
-    will be exported with formats "image/png" and "image/bmp". If you Copy a
-    series of glyphs into the clipboard, the only the first one will be exported
-    to external applications. If the clipboard contains a single point, then
-    this will also be exported in STRING format (giving the coordinates of the
-    point); the intent is to make it easier to people to identify the point.
-    See the section on <A HREF="selections.html">selections</A>
-  <DT>
-    Copy <A NAME="Reference">Reference</A>
-  <DD>
-    In the font view this command puts a reference to all selected glyphs into
-    the clipboard.
-    <P>
-    In the Outline View this will copy a reference to the current glyph into
-    the clipboard (only available in foreground mode).
-    <P>
-    This command is not available in the Bitmap View.
-  <DT>
-    Copy <A NAME="Width">Width</A>
-  <DD>
-    In the Font View this command copies the widths of all selected glyphs and
-    stores them in the clipboard.
-    <P>
-    In the Outline View this command copies the width of the current glyph and
-    stores it in the clipboard.
-    <P>
-    This command is not available in the Bitmap View.
-  <DT>
-    Copy <A NAME="VWidth">VWidth</A>
-  <DD>
-    In the Font View this command copies the vertical widths of all selected
-    glyphs and stores them in the clipboard.
-    <P>
-    In the Outline View this command copies the vertical width of the current
-    glyph and stores it in the clipboard.
-    <P>
-    This command is not available in the Bitmap View.
-  <DT>
-    Copy <A NAME="LBearing">LBearing</A>
-  <DD>
-    In the Font View this command copies the left side bearings of all selected
-    glyphs and stores them in the clipboard.
-    <P>
-    In the Outline View this command copies the left side bearing of the current
-    glyph and stores it in the clipboard.
-    <P>
-    This command is not available in the Bitmap View.
-  <DT>
-    Copy <A NAME="RBearing">RBearing</A>
-  <DD>
-    In the Font View this command copies the right side bearings of all selected
-    glyphs and stores them in the clipboard.
-    <P>
-    In the Outline View this command copies the right side bearing of the current
-    glyph and stores it in the clipboard.
-    <P>
-    This command is not available in the Bitmap View.
-  <DT>
-    Copy <A NAME="CopyGlyphFeatures">Glyph Features</A>
-  <DD>
-    Available in font and outline views. This command allows you to select features
-    (including kerning) of the current glyph and later paste those features into
-    another glyph.
-  <DT>
-    <A NAME="CopyGridFit">Copy Grid Fit</A>
-  <DD>
-    Only available in the outline glyph view and only if
-    <A HREF="viewmenu.html#ShowGridFit">View-&gt;Show Grid Fit </A>is selected.
-    This will place a copy of the grid fit version of the glyph into the clipboard.
-  <DT>
-    <A NAME="Paste">Paste</A>
-  <DD>
-    In the Font View this command will paste whatever is in the clipboard into
-    the foregrounds of all selected glyphs (exception: if the clipboard contains
-    an image it will not go into the foreground), clearing out whatever was there.
-    If there are more selected glyphs than there is information in the clipboard
-    then the clipboard will be repeated until all selected glyphs have had something
-    pasted in them (that is if glyphs A and B were selected when the copy happened
-    and now glyphs C, D and E are selected, the C will get A, D will get B and
-    E will also get A). If exactly one glyph is selected but the clipboard contains
-    more that one glyph, the the selection will be extended so that enough glyphs
-    are selected that something may be pasted in each. <BR>
-    If the clipboard contains outline information then that information will
-    go into the glyph outline regardless of the setting of Copy From. If the
-    clipboard contains a bitmap and the display is set to outline then the bitmap
-    is pasted into the bitmap font it was copied from (ie. the one with the same
-    pixel size), if the clipboard contains a bitmap and the display is set to
-    a bitmap then the bitmap will be pasted into the currently displayed font.
-    If the clipboard contains a bitmap of a size which does not exist in our
-    database, then you will be asked if you want to create a bitmap font to put
-    the bitmap into.
-    <P>
-    In the Outline View this command will paste whatever is in the clipboard
-    to the current editing layer.
-    <P>
-    In the Bitmap View this command will flatten any floating selection and paste
-    the contents of the clipboard into a new floating selection.
-    <P>
-    If the clipboard is owned by an external application FontForge will attempt
-    to Paste the following selection types (the bitmap view does not currently
-    respond to external clipboards):
-    <TABLE BORDER>
-      <TR>
-	<TD>"image/png", "image/bmp"</TD>
-	<TD>background images</TD>
-      </TR>
-      <TR>
-	<TD>"image/eps"</TD>
-	<TD>as spline data</TD>
-      </TR>
-    </TABLE>
-    <P>
-    See the section on <A HREF="selections.html">selections</A>
-  <DT>
-    <A NAME="PasteInto">Paste Into</A>
-  <DD>
-    Only available in the fontview. Just like Paste, except it does not clear
-    the contents of the glyph before adding to it.
-  <DT>
-    <A NAME="PasteAfter">Paste After</A>
-  <DD>
-    Only available in the fontview. Pastes the contents of the clipboard into
-    the selected glyph, shifts it over by the advance width, and then adds the
-    advance width of the glyph in the clip to this glyph. Essentially this makes
-    it easy to build up words. (If the font has vertical metrics, then glyphs
-    will be stacked vertically. If the glyph is right to left then the clipboard
-    will be added on the left).
-    <P>
-    This command is not present unless you modify configure-pfaedit.h
-  <DT>
-    <A NAME="SameGlyphAs">Same Glyph As</A>
-  <DD>
-    Only available in the fontview. If the clipboard contains a single reference
-    to a glyph then applying this command makes all selected encoding points
-    refer to that same glyph. (For example the non-breaking-space glyph (U+00A0)
-    frequently uses the same glyph as the space glyph. To accomplish this, select
-    the space glyph, Copy Ref, select the non-breaking-space glyph and Same Glyph
-    As).
-    <P>
-    Adobe suggests that you avoid this. Use a reference instead. In some situations
-    (I think pdf files is one) having one glyph with several encodings causes
-    problems (Acrobat uses the glyph to back-map through the encoding to work
-    out the unicode code point. But that will fail if a glyph has two unicode
-    code points associated with it).
-  <DT>
-    <A NAME="Clear">Clear</A>
-  <DD>
-    Similar to <A HREF="#Cut">Cut</A> except it does not copy anything to the
-    clipboard.
-  <DT>
-    Clear <A NAME="Background">Background</A>
-  <DD>
-    Only in the font view. This command clears the backgrounds of all selected
-    glyphs.
-  <DT>
-    <A NAME="Merge">Merge</A>
-  <DD>
-    This command is only available in the Outline View. If a point on a path
-    is selected, the the merge command will remove that point from the path and
-    join the two points around the removed one with a new spline which approximates
-    the curve between the two before. This command comes in two forms, in the
-    default case the two surrounding points will retain their slopes (unless
-    both are corner points), while in the other case (Elide) the slopes will
-    be lost.
-    <P>
-    <A HREF="pfaeditmath.html#Approximating">How is this done?</A>
-  <DT>
-    <A NAME="Elide">Elide</A>
-  <DD>
-    This is a variant of the Merge command, obtained by holding down the shift
-    key when bringing down the menu (or by Ctl-Alt-M). Allows the slopes of points
-    to change.
-  <DT>
-    <A NAME="Join">Join</A>
-  <DD>
-    This command is not available in the bitmap view. It looks for any paths
-    with endpoints as the endpoints of other paths and then join those two paths.
-    Also if the endpoint of a path is the same as the start point it will make
-    that path into a loop. (The commands that move points around will normally
-    do this automatically, but Paste will not).<BR>
-    In the Outline view things are slightly more complicated: If any paths have
-    selected points on them it will only attempt to join those paths.
-  <DT>
-    <A NAME="CopyFg">Copy Fg To Bg</A>
-  <DD>
-    This command is only available in the Outline and Font Views. It cleans out
-    all the splines in the background layer and replaces them with a copy of
-    all the splines in the foreground layer. Note: Any background images remain.
-    No references are copied.
-  <DT>
-    <A NAME="Select">Select</A>
-  <DD>
-    In the outline view there is a select menu, other views just have Select
-    All.
-    <DL>
-      <DT>
-	Select <A NAME="All">All</A>
-      <DD>
-	In the outline view it selects all points, all references (all images if
-	the background is active) and the width line (and the vertical width line
-	if that is enabled). In the fontview it selects all glyphs. In the bitmap
-	view it selects the current bitmap region.
-      <DT>
-	<A NAME="Invert">Invert</A> Selection
-      <DD>
-	Selects anything not selected, and deselects everything selected.
-      <DT>
-	<A NAME="Deselect">Deselect</A> All
-      <DD>
-	Deselects anything selected
-      <DT>
-	<A NAME="FirstPt">First Point</A>
-      <DD>
-	Deselects everything and then selects the first point on the first path of
-	the glyph.
-      <DT>
-	First Point, <A NAME="NextContour">Next Contour</A>
-      <DD>
-	Deselects everything and then selects the first point on the next contour.
-	(If the last contour is selected then deselects everything).
-      <DT>
-	<A NAME="NextP">Next</A> Point
-      <DD>
-	Deselects the current point and selects the next point.
-      <DT>
-	<A NAME="PrevP">Prev</A> Point
-      <DD>
-	Deselects the current point and selects the previous point
-      <DT>
-	<A NAME="NextCP">Next</A> Control Point
-      <DD>
-	Selects the "Next Control Point" of the current point.
-      <DT>
-	<A NAME="PrevCP">Prev</A> Control Point
-      <DD>
-	Selects the "Prev Control Point" of the current point.
-      <DT>
-	<A NAME="Contours">Contours</A>
-      <DD>
-	If a contour contains any selected points, then select all points on the
-	contour.
-      <DT>
-	<A NAME="SelectPoints">Select</A> All Points &amp; Refs
-      <DD>
-	Just like select all, but it doesn't select anchor points or the width lines.
-      <DT>
-	<A NAME="SelectAnchors">Select</A> Anchors
-      <DD>
-	Select all the Anchor points in the glyph.
-      <DT>
-	(De)<A NAME="SelWidth">Select</A> Width
-      <DD>
-	Toggles whether the width line is selected.
-      <DT>
-	<A NAME="SelVWidth">(De)Select</A> VWidth
-      <DD>
-	(if vertical metrics are enabled) Toggles whether the vertical width line
-	is selected.
-      <DT>
-	<A NAME="SelHM">Select Points Affected by Current HintMask</A>
-      <DD>
-	if a single point with a hintmask is selected, then this command selects
-	all points affected by that hintmask.
-      <DT>
-	Select <A NAME="Color">Color</A>&gt;
-      <DD>
-	Only in the font view. Displays a submenu containing a list of colors and
-	allows you to select all glyphs which you have set to that color with the
-	Char Info dlg. Normally the selection is cleared before setting the colored
-	glyphs, but if you hold down the shift key the selection will be extended
-	to the colored glyphs.
-      <DT>
-	<A NAME="SelChanged">Changed</A>
-      <DD>
-	Selects all changed glyphs
-      <DT>
-	<A NAME="SelHinting">Hinting Needed</A>
-      <DD>
-	Selects all glyphs which FontForge thinks need to be hinted.
-      <DT>
-	<A NAME="SelectByATT">Select By ATT...</A>
-      <DD>
-	Only in the font view. Brings up a <A HREF="selectbyatt.html">dlg</A> which
-	allows you to select various glyphs depending on various advanced typographic
-	features.
-    </DL>
-  <DT>
-    <A NAME="Find">Find</A> / Replace
-  <DD>
-    Only in the font view, this brings up a <A HREF="search.html">dialog</A>
-    that allows you to find patterns within glyphs and replace them with other
-    patterns.
-  <DT>
-    <A NAME="ReplaceRef">Replace </A>With Reference
-  <DD>
-    Only in the font view, this command will search the font finding any glyph
-    which contains an inline copy of one of the selected glyphs, and converts
-    that copy into a reference to the appropriate glyph. In other words it finds
-    things which should be references and makes them be.
-    <P>
-    This is primarily for use after reading a postscript (type1, otf or cff)
-    font. The reference information will usually be lost in these formats, and
-    this command can find it again.
-    <P>
-    Suppose the font contains a glyph "Acircumflex" which contains an embedded
-    copy of "A" (a copy of the contours, not a references), then if you select
-    "A" and apply this command it will search all glyphs in the font for something
-    that looks like "A", remove it from any glyphs in which it is found and replace
-    it with a reference. It applies this same algorithm for all selected glyphs.
-    If you want to check for every possibility, just select all glyphs first.
-    <P>
-    After completion, the selection will be set to those glyphs which have been
-    changed by the command.
-  <DT>
-    <A NAME="Unlink">Unlink</A> Reference
-  <DD>
-    This will remove a referenced glyph and replace it with the splines and points
-    that make it up.
-  <DT>
-    Copy <A NAME="From">From</A>
-  <DD>
-    Only available in the Font View.
-    <DL>
-      <DT>
-	All <A NAME="Fonts">Fonts</A>
-      <DD>
-	If this is set then Copy (and Cut and Clear) will copy from the outline font
-	and from all the bitmap fonts
-      <DT>
-	<A NAME="Displayed">Displayed</A> Font
-      <DD>
-	If this is set then Copy will only copy from the font currently being displayed.
-      <DT>
-	<A NAME="CharName">Char Metadata</A>
-      <DD>
-	Normally Copy does not copy the metadata (name, unicode encoding, comment,
-	ligature info) associated with a glyph, but if this is checked then it will.
-    </DL>
-    <P>
-    This also controls the behavior of the
-    <A HREF="elementmenu.html#Transform">Transform</A> and
-    <A HREF="elementmenu.html#Accented">Build Accented</A> glyph commands.
-  <DT>
-    <A NAME="Remove-Undoes">Remove Undoes</A>
-  <DD>
-    Not available in the Metrics View. This allows you to free up some of the
-    memory FontForge is currently squandering on keeping track of Undoes (and
-    Redoes). Obviously this command cannot be undone.
-    <UL>
-      <LI>
-	In the Outline Glyph view this will free up all undoes/redoes in the current
-	edit mode
-      <LI>
-	In the Bitmap Glyph view this will free up all bitmap undoes/redoes
-      <LI>
-	In the Font View this will free up all undoes/redoes in all selected glyphs,
-	outline and bitmap, background and foreground.
-    </UL>
-</DL>
-<P>
-<H2>
-  Other menus
-</H2>
-<UL>
-  <LI>
-    <A HREF="filemenu.html">File</A>
-  <LI>
-    <A HREF="editmenu.html">Edit</A>
-  <LI>
-    <A HREF="pointmenu.html">Point</A>
-  <LI>
-    <A HREF="elementmenu.html">Element</A>
-  <LI>
-    <A HREF="hintsmenu.html">Hints</A>
-  <LI>
-    <A HREF="encodingmenu.html">Encoding</A>
-  <LI>
-    <A HREF="viewmenu.html">View</A>
-  <LI>
-    <A HREF="metricsmenu.html">Metrics</A>
-  <LI>
-    <A HREF="cidmenu.html">CID</A>
-  <LI>
-    <A HREF="mmmenu.html">MM</A>
-  <LI>
-    <A HREF="windowmenu.html">Window</A>
-  <LI>
-    <A HREF="helpmenu.html">Help</A>
-  <LI>
-    <A HREF="HotKeys.html">Hot Keys</A>
-</UL>
-<P ALIGN=Center>
--- <A HREF="filemenu.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
-<A HREF="pointmenu.html">Next</A> --
-<P>
+  <H1 ALIGN=Center>
+    The Edit Menu
+  </H1>
+  <P>
+  In the Metrics View this menu is greyed out. The commands are only available
+  in text fields.
+  <UL>
+    <LI>
+      <A HREF="#Undo">Undo</A>
+    <LI>
+      <A HREF="#Redo">Redo</A>
+    <LI>
+      <A HREF="#Cut">Cut</A>
+    <LI>
+      <A HREF="#Copy">Copy</A>
+    <LI>
+      <A HREF="#Reference">Copy Reference</A>
+    <LI>
+      <A HREF="#Width">Copy Width</A>
+    <LI>
+      <A HREF="#VWidth">Copy VWidth</A>
+    <LI>
+      <A HREF="#LBearing">Copy LBearing</A>
+    <LI>
+      <A HREF="#RBearing">Copy RBearing</A>
+    <LI>
+      <A HREF="#CopyGlyphFeatures">Copy Glyph Features...</A>
+    <LI>
+      <A HREF="#CopyGridFit">Copy Grid Fit</A>
+    <LI>
+      <A HREF="#Paste">Paste</A>
+    <LI>
+      <A HREF="#PasteInto">Paste Into</A>
+    <LI>
+      <A HREF="#PasteAfter">Paste After</A>
+    <LI>
+      <A HREF="#SameGlyphAs">Same Glyph As</A>
+    <LI>
+      <A HREF="#Clear">Clear</A>
+    <LI>
+      <A HREF="#Background">Clear Background</A>
+    <LI>
+      <A HREF="#Merge">Merge</A>
+    <LI>
+      <A HREF="#Join">Join</A>
+    <LI>
+      <A HREF="#CopyFg">Copy Fg To Bg</A>
+    <LI>
+      [Copy Bg to Fg]
+    <LI>
+      <A HREF="#Select">Select</A>
+      <UL>
+	<LI>
+	  <A HREF="editmenu.html#All">Select All</A>
+	<LI>
+	  <A HREF="#Invert">Invert Selection</A>
+	<LI>
+	  <A HREF="#Deselect">Deselect All</A>
+	<LI>
+	  <A HREF="#FirstPt">First Point</A>
+	<LI>
+	  <A HREF="#NextContour">First Point, Next Contour</A>
+	<LI>
+	  <A HREF="#NextP">Next Point</A>
+	<LI>
+	  <A HREF="#PrevP">Prev Point</A>
+	<LI>
+	  <A HREF="#NextCP">Next Control Point</A>
+	<LI>
+	  <A HREF="#PrevCP">Prev Control Point</A>
+	<LI>
+	  <A HREF="#PointAt">Point At</A>
+	<LI>
+	  <A HREF="#Contours">Contours</A>
+	<LI>
+	  <A HREF="#SelectPoints">Select All Points &amp; Refs</A>
+	<LI>
+	  <A HREF="#SelectAnchors">Select Anchors</A>
+	<LI>
+	  <A HREF="#SelWidth">(De)Select Width</A>
+	<LI>
+	  <A HREF="#SelVWidth">(De)Select VWidth</A>
+	<LI>
+	  <A HREF="#SelHM">Select Points Affected by Current HintMask</A>
+	<LI>
+	  <A HREF="#Color">Select Color&gt;</A>
+	<LI>
+	  <A HREF="#SelChanged">Changed Glyphs</A>
+	<LI>
+	  <A HREF="#SelHinting">Hinting Needed</A>
+	<LI>
+	  <A HREF="#SelectByATT">Select By ATT</A>...
+      </UL>
+    <LI>
+      <A HREF="#Find">Find / Replace</A>
+    <LI>
+      <A HREF="#ReplaceRef">Replace With Reference</A>
+    <LI>
+      <A HREF="#Unlink">Unlink Reference</A>
+    <LI>
+      <A HREF="#From">Copy From</A>
+      <UL>
+	<LI>
+	  <A HREF="#Fonts">All Fonts</A>
+	<LI>
+	  <A HREF="#Displayed">Displayed Font</A>
+	<LI>
+	  <A HREF="#CharName">Char Metadata</A>
+      </UL>
+    <LI>
+      <A HREF="#Remove-Undoes">Remove Undoes</A>
+  </UL>
+  <P>
+  <FONT COLOR="Red"><STRONG><SMALL>NOTE</SMALL></STRONG></FONT>: In the metrics
+  view this menu will be disabled when one of the text fields has the focus.
+  <P>
+  <DL>
+    <DT>
+      <A NAME="Undo">Undo</A>
+    <DD>
+      In the outline view and the bitmap view this will undo the last command.
+      The number of commands that may be undone for any glyph is controlled by
+      the <A HREF="prefs.html#UndoDepth">UndoDepth</A> preference item.<BR>
+      In the font and metrics views, this does NOT undo the last command. It undoes
+      the last operation on all selected glyphs.
+    <DT>
+      <A NAME="Redo">Redo</A>
+    <DD>
+      In the outline view and the bitmap view this will redo the last command undone.
+      Up to twelve commands may be redone (after that they get thrown away)<BR>
+      In the font and metrics views, this does NOT undo the last command. It undoes
+      the last operation on all selected glyphs.
+    <DT>
+      <A NAME="Cut">Cut</A>
+    <DD>
+      In the font view this command puts the foreground of all selected glyphs
+      into the clipboard and then deletes them. Depending on the setting of
+      <A HREF="#From">Copy From</A> it will either refer all glyphs (bitmap and
+      outline) corresponding to this entry, or just the glyph being displayed.
+      <P>
+      In the Outline View this will copy any selected points, References, or Images
+      into the clipboard and then delete them. If a point is removed from a path
+      then the path will be broken at there, see the <A HREF="#Merge">Merge</A>
+      command for information on how to leave the path whole but without the point.
+      (if there is no selection nothing happens)
+      <P>
+      In the Bitmap View this will copy the selection into the clipboard and then
+      delete it. If there is no selection nothing happens.
+    <DT>
+      <A NAME="Copy">Copy</A>
+    <DD>
+      In the font view this command puts the foreground and hints of all selected
+      glyphs into the clipboard. Depending on the setting of <A HREF="#From">Copy
+      From</A> it will either copy all glyphs (bitmap and outline) corresponding
+      to this entry, or just the glyph being displayed. Normally it will not copy
+      a glyph's name, but if <A HREF="#CharName">Copy From-&gt;Char Name</A> is
+      set then it will copy the name as well.
+      <P>
+      In the Outline View this will copy any selected points, References, or Images
+      into the clipboard. If there is no selection everything in the current layer
+      will go into the clipboard.
+      <P>
+      In the Bitmap View this will copy the selection into the clipboard, if there
+      is no selection everything is copied.
+      <P>
+      To external applications selected points (and associated contours) will be
+      exported to the clipboard with format "image/eps", while a selected image
+      will be exported with formats "image/png" and "image/bmp". If you Copy a
+      series of glyphs into the clipboard, the only the first one will be exported
+      to external applications. If the clipboard contains a single point, then
+      this will also be exported in STRING format (giving the coordinates of the
+      point); the intent is to make it easier to people to identify the point.
+      See the section on <A HREF="selections.html">selections</A>
+    <DT>
+      Copy <A NAME="Reference">Reference</A>
+    <DD>
+      In the font view this command puts a reference to all selected glyphs into
+      the clipboard.
+      <P>
+      In the Outline View this will copy a reference to the current glyph into
+      the clipboard (only available in foreground mode).
+      <P>
+      This command is not available in the Bitmap View.
+    <DT>
+      Copy <A NAME="Width">Width</A>
+    <DD>
+      In the Font View this command copies the widths of all selected glyphs and
+      stores them in the clipboard.
+      <P>
+      In the Outline View this command copies the width of the current glyph and
+      stores it in the clipboard.
+      <P>
+      This command is not available in the Bitmap View.
+    <DT>
+      Copy <A NAME="VWidth">VWidth</A>
+    <DD>
+      In the Font View this command copies the vertical widths of all selected
+      glyphs and stores them in the clipboard.
+      <P>
+      In the Outline View this command copies the vertical width of the current
+      glyph and stores it in the clipboard.
+      <P>
+      This command is not available in the Bitmap View.
+    <DT>
+      Copy <A NAME="LBearing">LBearing</A>
+    <DD>
+      In the Font View this command copies the left side bearings of all selected
+      glyphs and stores them in the clipboard.
+      <P>
+      In the Outline View this command copies the left side bearing of the current
+      glyph and stores it in the clipboard.
+      <P>
+      This command is not available in the Bitmap View.
+    <DT>
+      Copy <A NAME="RBearing">RBearing</A>
+    <DD>
+      In the Font View this command copies the right side bearings of all selected
+      glyphs and stores them in the clipboard.
+      <P>
+      In the Outline View this command copies the right side bearing of the current
+      glyph and stores it in the clipboard.
+      <P>
+      This command is not available in the Bitmap View.
+    <DT>
+      Copy <A NAME="CopyGlyphFeatures">Glyph Features</A>
+    <DD>
+      Available in font and outline views. This command allows you to select features
+      (including kerning) of the current glyph and later paste those features into
+      another glyph.
+    <DT>
+      <A NAME="CopyGridFit">Copy Grid Fit</A>
+    <DD>
+      Only available in the outline glyph view and only if
+      <A HREF="viewmenu.html#ShowGridFit">View-&gt;Show Grid Fit </A>is selected.
+      This will place a copy of the grid fit version of the glyph into the clipboard.
+    <DT>
+      <A NAME="Paste">Paste</A>
+    <DD>
+      In the Font View this command will paste whatever is in the clipboard into
+      the foregrounds of all selected glyphs (exception: if the clipboard contains
+      an image it will not go into the foreground), clearing out whatever was there.
+      If there are more selected glyphs than there is information in the clipboard
+      then the clipboard will be repeated until all selected glyphs have had something
+      pasted in them (that is if glyphs A and B were selected when the copy happened
+      and now glyphs C, D and E are selected, the C will get A, D will get B and
+      E will also get A). If exactly one glyph is selected but the clipboard contains
+      more that one glyph, the the selection will be extended so that enough glyphs
+      are selected that something may be pasted in each. <BR>
+      If the clipboard contains outline information then that information will
+      go into the glyph outline regardless of the setting of Copy From. If the
+      clipboard contains a bitmap and the display is set to outline then the bitmap
+      is pasted into the bitmap font it was copied from (ie. the one with the same
+      pixel size), if the clipboard contains a bitmap and the display is set to
+      a bitmap then the bitmap will be pasted into the currently displayed font.
+      If the clipboard contains a bitmap of a size which does not exist in our
+      database, then you will be asked if you want to create a bitmap font to put
+      the bitmap into.
+      <P>
+      In the Outline View this command will paste whatever is in the clipboard
+      to the current editing layer.
+      <P>
+      In the Bitmap View this command will flatten any floating selection and paste
+      the contents of the clipboard into a new floating selection.
+      <P>
+      If the clipboard is owned by an external application FontForge will attempt
+      to Paste the following selection types (the bitmap view does not currently
+      respond to external clipboards):
+      <TABLE BORDER>
+	<TR>
+	  <TD>"image/png", "image/bmp"</TD>
+	  <TD>background images</TD>
+	</TR>
+	<TR>
+	  <TD>"image/eps"</TD>
+	  <TD>as spline data</TD>
+	</TR>
+      </TABLE>
+      <P>
+      See the section on <A HREF="selections.html">selections</A>
+    <DT>
+      <A NAME="PasteInto">Paste Into</A>
+    <DD>
+      Only available in the fontview. Just like Paste, except it does not clear
+      the contents of the glyph before adding to it.
+    <DT>
+      <A NAME="PasteAfter">Paste After</A>
+    <DD>
+      Only available in the fontview. Pastes the contents of the clipboard into
+      the selected glyph, shifts it over by the advance width, and then adds the
+      advance width of the glyph in the clip to this glyph. Essentially this makes
+      it easy to build up words. (If the font has vertical metrics, then glyphs
+      will be stacked vertically. If the glyph is right to left then the clipboard
+      will be added on the left).
+      <P>
+      This command is not present unless you modify configure-pfaedit.h
+    <DT>
+      <A NAME="SameGlyphAs">Same Glyph As</A>
+    <DD>
+      Only available in the fontview. If the clipboard contains a single reference
+      to a glyph then applying this command makes all selected encoding points
+      refer to that same glyph. (For example the non-breaking-space glyph (U+00A0)
+      frequently uses the same glyph as the space glyph. To accomplish this, select
+      the space glyph, Copy Ref, select the non-breaking-space glyph and Same Glyph
+      As).
+      <P>
+      Adobe suggests that you avoid this. Use a reference instead. In some situations
+      (I think pdf files is one) having one glyph with several encodings causes
+      problems (Acrobat uses the glyph to back-map through the encoding to work
+      out the unicode code point. But that will fail if a glyph has two unicode
+      code points associated with it).
+    <DT>
+      <A NAME="Clear">Clear</A>
+    <DD>
+      Similar to <A HREF="#Cut">Cut</A> except it does not copy anything to the
+      clipboard.
+    <DT>
+      Clear <A NAME="Background">Background</A>
+    <DD>
+      Only in the font view. This command clears the backgrounds of all selected
+      glyphs.
+    <DT>
+      <A NAME="Merge">Merge</A>
+    <DD>
+      This command is only available in the Outline View. If a point on a path
+      is selected, the the merge command will remove that point from the path and
+      join the two points around the removed one with a new spline which approximates
+      the curve between the two before. This command comes in two forms, in the
+      default case the two surrounding points will retain their slopes (unless
+      both are corner points), while in the other case (Elide) the slopes will
+      be lost.
+      <P>
+      <A HREF="pfaeditmath.html#Approximating">How is this done?</A>
+    <DT>
+      <A NAME="Elide">Elide</A>
+    <DD>
+      This is a variant of the Merge command, obtained by holding down the shift
+      key when bringing down the menu (or by Ctl-Alt-M). Allows the slopes of points
+      to change.
+    <DT>
+      <A NAME="Join">Join</A>
+    <DD>
+      This command is not available in the bitmap view. It looks for any paths
+      with endpoints as the endpoints of other paths and then join those two paths.
+      Also if the endpoint of a path is the same as the start point it will make
+      that path into a loop. (The commands that move points around will normally
+      do this automatically, but Paste will not).<BR>
+      In the Outline view things are slightly more complicated: If any paths have
+      selected points on them it will only attempt to join those paths.
+    <DT>
+      <A NAME="CopyFg">Copy Fg To Bg</A>
+    <DD>
+      This command is only available in the Outline and Font Views. It cleans out
+      all the splines in the background layer and replaces them with a copy of
+      all the splines in the foreground layer. Note: Any background images remain.
+      No references are copied.
+    <DT>
+      <A NAME="Select">Select</A>
+    <DD>
+      In the outline view there is a select menu, other views just have Select
+      All.
+      <DL>
+	<DT>
+	  Select <A NAME="All">All</A>
+	<DD>
+	  In the outline view it selects all points, all references (all images if
+	  the background is active) and the width line (and the vertical width line
+	  if that is enabled). In the fontview it selects all glyphs. In the bitmap
+	  view it selects the current bitmap region.
+	<DT>
+	  <A NAME="Invert">Invert</A> Selection
+	<DD>
+	  Selects anything not selected, and deselects everything selected.
+	<DT>
+	  <A NAME="Deselect">Deselect</A> All
+	<DD>
+	  Deselects anything selected
+	<DT>
+	  <A NAME="FirstPt">First Point</A>
+	<DD>
+	  Deselects everything and then selects the first point on the first path of
+	  the glyph.
+	<DT>
+	  First Point, <A NAME="NextContour">Next Contour</A>
+	<DD>
+	  Deselects everything and then selects the first point on the next contour.
+	  (If the last contour is selected then deselects everything).
+	<DT>
+	  <A NAME="NextP">Next</A> Point
+	<DD>
+	  Deselects the current point and selects the next point.
+	<DT>
+	  <A NAME="PrevP">Prev</A> Point
+	<DD>
+	  Deselects the current point and selects the previous point
+	<DT>
+	  <A NAME="NextCP">Next</A> Control Point
+	<DD>
+	  Selects the "Next Control Point" of the current point.
+	<DT>
+	  <A NAME="PrevCP">Prev</A> Control Point
+	<DD>
+	  Selects the "Prev Control Point" of the current point.
+	<DT>
+	  <A NAME="PointAt">Point At</A>
+	<DD>
+	  Allows the user to enter an X,Y coordinate and selects the point at that
+	  location.
+	<DT>
+	  <A NAME="Contours">Contours</A>
+	<DD>
+	  If a contour contains any selected points, then select all points on the
+	  contour.
+	<DT>
+	  <A NAME="SelectPoints">Select</A> All Points &amp; Refs
+	<DD>
+	  Just like select all, but it doesn't select anchor points or the width lines.
+	<DT>
+	  <A NAME="SelectAnchors">Select</A> Anchors
+	<DD>
+	  Select all the Anchor points in the glyph.
+	<DT>
+	  (De)<A NAME="SelWidth">Select</A> Width
+	<DD>
+	  Toggles whether the width line is selected.
+	<DT>
+	  <A NAME="SelVWidth">(De)Select</A> VWidth
+	<DD>
+	  (if vertical metrics are enabled) Toggles whether the vertical width line
+	  is selected.
+	<DT>
+	  <A NAME="SelHM">Select Points Affected by Current HintMask</A>
+	<DD>
+	  if a single point with a hintmask is selected, then this command selects
+	  all points affected by that hintmask.
+	<DT>
+	  Select <A NAME="Color">Color</A>&gt;
+	<DD>
+	  Only in the font view. Displays a submenu containing a list of colors and
+	  allows you to select all glyphs which you have set to that color with the
+	  Char Info dlg. Normally the selection is cleared before setting the colored
+	  glyphs, but if you hold down the shift key the selection will be extended
+	  to the colored glyphs.
+	<DT>
+	  <A NAME="SelChanged">Changed</A>
+	<DD>
+	  Selects all changed glyphs
+	<DT>
+	  <A NAME="SelHinting">Hinting Needed</A>
+	<DD>
+	  Selects all glyphs which FontForge thinks need to be hinted.
+	<DT>
+	  <A NAME="SelectByATT">Select By ATT...</A>
+	<DD>
+	  Only in the font view. Brings up a <A HREF="selectbyatt.html">dlg</A> which
+	  allows you to select various glyphs depending on various advanced typographic
+	  features.
+      </DL>
+    <DT>
+      <A NAME="Find">Find</A> / Replace
+    <DD>
+      Only in the font view, this brings up a <A HREF="search.html">dialog</A>
+      that allows you to find patterns within glyphs and replace them with other
+      patterns.
+    <DT>
+      <A NAME="ReplaceRef">Replace </A>With Reference
+    <DD>
+      Only in the font view, this command will search the font finding any glyph
+      which contains an inline copy of one of the selected glyphs, and converts
+      that copy into a reference to the appropriate glyph. In other words it finds
+      things which should be references and makes them be.
+      <P>
+      This is primarily for use after reading a postscript (type1, otf or cff)
+      font. The reference information will usually be lost in these formats, and
+      this command can find it again.
+      <P>
+      Suppose the font contains a glyph "Acircumflex" which contains an embedded
+      copy of "A" (a copy of the contours, not a references), then if you select
+      "A" and apply this command it will search all glyphs in the font for something
+      that looks like "A", remove it from any glyphs in which it is found and replace
+      it with a reference. It applies this same algorithm for all selected glyphs.
+      If you want to check for every possibility, just select all glyphs first.
+      <P>
+      After completion, the selection will be set to those glyphs which have been
+      changed by the command.
+    <DT>
+      <A NAME="Unlink">Unlink</A> Reference
+    <DD>
+      This will remove a referenced glyph and replace it with the splines and points
+      that make it up.
+    <DT>
+      Copy <A NAME="From">From</A>
+    <DD>
+      Only available in the Font View.
+      <DL>
+	<DT>
+	  All <A NAME="Fonts">Fonts</A>
+	<DD>
+	  If this is set then Copy (and Cut and Clear) will copy from the outline font
+	  and from all the bitmap fonts
+	<DT>
+	  <A NAME="Displayed">Displayed</A> Font
+	<DD>
+	  If this is set then Copy will only copy from the font currently being displayed.
+	<DT>
+	  <A NAME="CharName">Char Metadata</A>
+	<DD>
+	  Normally Copy does not copy the metadata (name, unicode encoding, comment,
+	  ligature info) associated with a glyph, but if this is checked then it will.
+      </DL>
+      <P>
+      This also controls the behavior of the
+      <A HREF="elementmenu.html#Transform">Transform</A> and
+      <A HREF="elementmenu.html#Accented">Build Accented</A> glyph commands.
+    <DT>
+      <A NAME="Remove-Undoes">Remove Undoes</A>
+    <DD>
+      Not available in the Metrics View. This allows you to free up some of the
+      memory FontForge is currently squandering on keeping track of Undoes (and
+      Redoes). Obviously this command cannot be undone.
+      <UL>
+	<LI>
+	  In the Outline Glyph view this will free up all undoes/redoes in the current
+	  edit mode
+	<LI>
+	  In the Bitmap Glyph view this will free up all bitmap undoes/redoes
+	<LI>
+	  In the Font View this will free up all undoes/redoes in all selected glyphs,
+	  outline and bitmap, background and foreground.
+      </UL>
+  </DL>
+  <P>
+  <H2>
+    Other menus
+  </H2>
+  <UL>
+    <LI>
+      <A HREF="filemenu.html">File</A>
+    <LI>
+      <A HREF="editmenu.html">Edit</A>
+    <LI>
+      <A HREF="pointmenu.html">Point</A>
+    <LI>
+      <A HREF="elementmenu.html">Element</A>
+    <LI>
+      <A HREF="hintsmenu.html">Hints</A>
+    <LI>
+      <A HREF="encodingmenu.html">Encoding</A>
+    <LI>
+      <A HREF="viewmenu.html">View</A>
+    <LI>
+      <A HREF="metricsmenu.html">Metrics</A>
+    <LI>
+      <A HREF="cidmenu.html">CID</A>
+    <LI>
+      <A HREF="mmmenu.html">MM</A>
+    <LI>
+      <A HREF="windowmenu.html">Window</A>
+    <LI>
+      <A HREF="helpmenu.html">Help</A>
+    <LI>
+      <A HREF="HotKeys.html">Hot Keys</A>
+  </UL>
+  <P ALIGN=Center>
+  -- <A HREF="filemenu.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
+  <A HREF="pointmenu.html">Next</A> --
+  <P>
 </DIV>
 </BODY></HTML>
