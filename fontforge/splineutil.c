@@ -1567,8 +1567,8 @@ return( NULL );
 
     for ( st = subsc->vstem; st!=NULL; st=st->next, cnt++ ) {
 	if ( (*oldhm)[cnt>>3]&(0x80>>(cnt&7)) ) {
-	    start = st->start*transform[1] + transform[4];
-	    width = st->width*transform[1];
+	    start = st->start*transform[0] + transform[4];
+	    width = st->width*transform[0];
 	    for ( st2=basesc->vstem,bcnt=hst_cnt; st2!=NULL; st2=st2->next, bcnt++ )
 		if ( st2->start == start && st2->width == width )
 	    break;
@@ -1878,7 +1878,7 @@ static void SplineFontMetaData(SplineFont *sf,struct fontdict *fd) {
     if ( sf->fontname==NULL ) sf->fontname = GetNextUntitledName();
     if ( sf->fullname==NULL ) sf->fullname = copy(sf->fontname);
     if ( sf->familyname==NULL ) sf->familyname = copy(sf->fontname);
-    if ( sf->weight==NULL ) sf->weight = copy("Medium");
+    if ( sf->weight==NULL ) sf->weight = copy("");
     sf->cidversion = fd->cidversion;
     sf->xuid = XUIDFromFD(fd->xuid);
     /*sf->wasbinary = fd->wasbinary;*/
