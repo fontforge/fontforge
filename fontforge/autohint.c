@@ -868,10 +868,10 @@ StemInfo *HintCleanup(StemInfo *stem,int dosort,int instance_count) {
     int swap;
 
     for ( s=stem; s!=NULL; p=s, s=s->next ) {
-	if ( s->backwards ) {
+	if ( s->width<0 ) {
 	    s->start += s->width;
 	    s->width = -s->width;
-	    s->backwards = false;
+	    s->ghost = true;
 	}
 	s->reordered = false;
 	if ( p!=NULL && p->start> s->start )
@@ -911,13 +911,6 @@ StemInfo *HintCleanup(StemInfo *stem,int dosort,int instance_count) {
 		    s = t;
 		    t = pt;
 		}
-	    }
-	}
-	for ( s=stem; s!=NULL; p=s, s=s->next ) {
-	    if ( s->width<0 ) {
-		s->start += s->width;
-		s->width = -s->width;
-		s->backwards = true;
 	    }
 	}
 	/* Remove duplicates */
@@ -1375,7 +1368,6 @@ return(ghosts);
 	s->start = base;
 	s->width = width;
 	s->ghost = true;
-	s->backwards = true;
 	if ( ghosts==NULL || base<ghosts->start ) {
 	    s->next = ghosts;
 	    ghosts = s;
@@ -3530,3 +3522,5 @@ return( 0 );
 	}
 return( max );
 }
+
+
