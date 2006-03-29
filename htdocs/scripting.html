@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 22-Mar-2006 -->
+  <!-- AP: Last modified: 28-Mar-2006 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -2558,7 +2558,8 @@ ApplySubstitution("*","*","vrt2")
       bitmaps can be (the bounding boxes of bitmaps with depth 1 must match exactly)
       <P>
       The fifth argument controls whether to tests hints and hintmasks. A value
-      of 1 tests hints, 2 tests hintmasks and 3 tests both.
+      of 1 tests hints, 2 tests hintmasks and 3 tests both, a value of 7 will test
+      hintmasks only in glyphs with conflicts.
       <P>
       Normally this function treats any differences it finds as errors and stops
       the script. If you set the sixth argument to 0 then it will return a value
