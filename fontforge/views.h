@@ -1116,7 +1116,7 @@ extern void CopyWidth(CharView *cv,enum undotype);
 extern void MVCopyChar(MetricsView *mv, SplineChar *sc, int fullcopy);
 extern void PasteIntoMV(MetricsView *mv,SplineChar *sc, int doclear);
 
-extern void CVShowPoint(CharView *cv, SplinePoint *sp);
+extern void CVShowPoint(CharView *cv, BasePoint *me);
 
 extern BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv,int enc);
 extern BitmapView *BitmapViewCreatePick(int enc, FontView *fv);

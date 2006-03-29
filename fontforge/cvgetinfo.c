@@ -1857,7 +1857,7 @@ static int PI_NextPrev(GGadget *g, GEvent *e) {
 	}
 	ci->cursp->selected = true;
 	PIChangePoint(ci);
-	CVShowPoint(cv,ci->cursp);
+	CVShowPoint(cv,&ci->cursp->me);
 	SCUpdateAll(cv->sc);
     }
 return( true );
