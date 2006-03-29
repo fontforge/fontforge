@@ -2905,9 +2905,11 @@ struct mf_data {
 #define CID_Names	7
 #define CID_GPos	8
 #define CID_GSub	9
-#define CID_HintMasksWConflicts	10
+#define CID_HintMasks	10
+#define CID_HintMasksWConflicts	11
+#define CID_NoHintMasks	12
 
-static int last_flags = fcf_outlines|fcf_hinting|fcf_hmonlywithconflicts|fcf_bitmaps|fcf_names|fcf_gpos|fcf_gsub;
+static int last_flags = fcf_outlines|fcf_hinting|fcf_bitmaps|fcf_names|fcf_gpos|fcf_gsub;
 
 static int FC_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
@@ -2932,8 +2934,10 @@ static int FC_OK(GGadget *g, GEvent *e) {
 	    flags |= fcf_warn_not_exact;
 	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_Hinting)) )
 	    flags |= fcf_hinting;
+	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_HintMasks)) )
+	    flags |= fcf_hintmasks;
 	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_HintMasksWConflicts)) )
-	    flags |= fcf_hmonlywithconflicts;
+	    flags |= fcf_hmonlywithconflicts|fcf_hintmasks;
 	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_Bitmaps)) )
 	    flags |= fcf_bitmaps;
 	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_Names)) )
@@ -2978,8 +2982,8 @@ void FontCompareDlg(FontView *fv) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[22];
-    GTextInfo label[22];
+    GGadgetCreateData gcd[24];
+    GTextInfo label[24];
     struct mf_data d;
     char buffer[80];
     int k;
@@ -2992,8 +2996,8 @@ void FontCompareDlg(FontView *fv) {
 	wattrs.cursor = ct_pointer;
 	wattrs.utf8_window_title = _("Font Compare...");
 	pos.x = pos.y = 0;
-	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,155));
-	pos.height = GDrawPointsToPixels(NULL,88+10*14+2);
+	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,170));
+	pos.height = GDrawPointsToPixels(NULL,88+12*14+2);
 	gw = GDrawCreateTopWindow(NULL,&pos,fc_e_h,&d,&wattrs);
 
 	memset(&label,0,sizeof(label));
@@ -3072,13 +3076,26 @@ void FontCompareDlg(FontView *fv) {
 	    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
 	else
 	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | ((last_flags&fcf_hinting)?gg_cb_on:0);
-	label[k].text = (unichar_t *) _("Compare _Hints & Masks");
+	label[k].text = (unichar_t *) _("Compare _Hints");
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.cid = CID_Hinting;
 	gcd[k].gd.popup_msg = (unichar_t *) _("Compare postscript hints and hintmasks and truetype instructions");
 	gcd[k++].creator = GCheckBoxCreate;
+
+	gcd[k].gd.pos.x = 15; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
+	if ( fv->sf->onlybitmaps )
+	    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+	else
+	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | (((last_flags&fcf_hintmasks) && !(last_flags&fcf_hmonlywithconflicts))?gg_cb_on:0);
+	label[k].text = (unichar_t *) _("Compare Hint_Masks");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.cid = CID_HintMasks;
+	gcd[k].gd.popup_msg = (unichar_t *) _("Compare hintmasks");
+	gcd[k++].creator = GRadioCreate;
 
 	gcd[k].gd.pos.x = 15; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
 	if ( fv->sf->onlybitmaps )
@@ -3091,7 +3108,19 @@ void FontCompareDlg(FontView *fv) {
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.cid = CID_HintMasksWConflicts;
 	gcd[k].gd.popup_msg = (unichar_t *) _("Don't compare hintmasks if the glyph has no hint conflicts");
-	gcd[k++].creator = GCheckBoxCreate;
+	gcd[k++].creator = GRadioCreate;
+
+	gcd[k].gd.pos.x = 15; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
+	if ( fv->sf->onlybitmaps )
+	    gcd[k].gd.flags = gg_visible ;
+	else
+	    gcd[k].gd.flags = gg_visible | gg_enabled | ((last_flags&fcf_hintmasks)?0:gg_cb_on);
+	label[k].text = (unichar_t *) _("Don't Compare HintMasks");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.cid = CID_NoHintMasks;
+	gcd[k++].creator = GRadioCreate;
 
 	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+16;
 	if ( fv->sf->bitmaps==NULL )
