@@ -2508,7 +2508,7 @@ void FontViewMenu_RplRef(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
 
-    FVReplaceOutlineWithReference(fv,.01);
+    FVReplaceOutlineWithReference(fv,.001);
 }
 
 # if defined(FONTFORGE_CONFIG_GDRAW)

@@ -804,7 +804,7 @@ typedef struct steminfo {
 			        /*  the points on the end line have been */
 			        /*  instructed already */
     unsigned int startdone: 1;	/* Used by ttf instructing */
-    unsigned int backwards: 1;	/* If we think this hint is better done with a negative width */
+    /*unsigned int backwards: 1;*/	/* If we think this hint is better done with a negative width */
     unsigned int reordered: 1;	/* In AutoHinting. Means we changed the start of the hint, need to test for out of order */
     unsigned int pendingpt: 1;	/* A pending stem creation, not a true stem */
     unsigned int linearedges: 1;/* If we have a nice rectangle then we aren't */
@@ -1961,8 +1961,9 @@ enum Compare_Ret {	SS_DiffContourCount	= 1,
 
 extern enum Compare_Ret BitmapCompare(BDFChar *bc1, BDFChar *bc2, int err, int bb_err);
 extern enum Compare_Ret SSsCompare(const SplineSet *ss1, const SplineSet *ss2, real pt_err, real spline_err);
-enum font_compare_flags { fcf_outlines=1, fcf_exact=2, fcf_warn_not_exact=4, fcf_hinting=8,
-	fcf_bitmaps=8, fcf_names = 0x10, fcf_gpos=0x20, fcf_gsub=0x40 };
+enum font_compare_flags { fcf_outlines=1, fcf_exact=2, fcf_warn_not_exact=4,
+	fcf_hinting=8, fcf_hmonlywithconflicts=0x10,
+	fcf_bitmaps=0x20, fcf_names = 0x40, fcf_gpos=0x80, fcf_gsub=0x100 };
 extern int CompareFonts(SplineFont *sf1, SplineFont *sf2, FILE *diffs, int flags);
 
 
