@@ -2477,17 +2477,6 @@ static void ExpandRef2(GrowBuf *gb, SplineChar *sc, struct hintdb *hdb,
     hdb->current.y = bpt[1].y+rtrans.y;
 }
 
-static void PS2CallSubr(GrowBuf *gb,int subr_num,struct pschars *subrs, BasePoint *current) {
-    AddNumber2(gb,subr_num,false);
-    if ( gb->pt+1>=gb->end )
-	GrowBuffer(gb);
-    *gb->pt++ = 10;					/* callsubr */
-    if ( current!=NULL ) {
-	BasePoint *bpt = (BasePoint *) (subrs->keys[subr_num+subrs->bias]);
-	*current = bpt[1];
-    }
-}
-
 static void RSC2PS2(GrowBuf *gb, SplineChar *base,SplineChar *rsc,
 	struct hintdb *hdb, BasePoint *trans, struct pschars *subrs,
 	BasePoint *startend, int flags ) {
