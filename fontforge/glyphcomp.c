@@ -225,9 +225,11 @@ return( false );
 return( true );
 }
 
-static int AllPointsMatch(const SplinePoint *start1, const SplinePoint *start2, real err) {
+static int AllPointsMatch(const SplinePoint *start1, const SplinePoint *start2,
+	real err, int *_hmmatch) {
     double dx, dy;
     const SplinePoint *sp1=start1, *sp2=start2;
+    int hmmatch=true;
 
     forever {
 	if ( (dx = sp1->me.x-sp2->me.x)<=err && dx>=-err &&
@@ -240,25 +242,36 @@ static int AllPointsMatch(const SplinePoint *start1, const SplinePoint *start2, 
 	else
 return( false );
 
-	if ( sp2->next==NULL && sp1->next==NULL )
+	if ( sp1->hintmask!=NULL && sp2->hintmask!=NULL &&
+		memcmp(sp1->hintmask,sp2->hintmask,sizeof(HintMask))==0 )
+	    /* hm continues to match */;
+	else if ( sp1->hintmask!=NULL || sp2->hintmask!=NULL )
+	    hmmatch=false;
+
+	if ( sp2->next==NULL && sp1->next==NULL ) {
+	    if ( !hmmatch ) *_hmmatch = false;
 return( true );
+	}
 	if ( sp2->next==NULL || sp1->next==NULL )
 return( false );
 	sp1 = sp1->next->to;
 	sp2 = sp2->next->to;
-	if ( sp1 == start1 && sp2 == start2 )
+	if ( sp1 == start1 && sp2 == start2 ) {
+	    if ( !hmmatch ) *_hmmatch = false;
 return( true );
+	}
 	if ( sp1 == start1 || sp2 == start2 )
 return( false );
     }
 }
 
-static int ContourPointsMatch(const SplineSet *ss1, const SplineSet *ss2, real err) {
+static int ContourPointsMatch(const SplineSet *ss1, const SplineSet *ss2,
+	real err, int *_hmmatch) {
     const SplinePoint *sp2;
 
     /* Does ANY point on the second contour match the start point of the first? */
     for ( sp2 = ss2->first; ; ) {
-	if ( AllPointsMatch(ss1->first,sp2,err) )
+	if ( AllPointsMatch(ss1->first,sp2,err,_hmmatch) )
 return( sp2==ss2->first?1:2 );
 	if ( sp2->next==NULL )
 return( false );
@@ -268,7 +281,8 @@ return( false );
     }
 }
 
-enum Compare_Ret SSsCompare(const SplineSet *ss1, const SplineSet *ss2, real pt_err, real spline_err) {
+enum Compare_Ret SSsCompare(const SplineSet *ss1, const SplineSet *ss2,
+	real pt_err, real spline_err, int *_hmmatch) {
     int cnt1, cnt2, bestcnt;
     const SplineSet *ss, *s2s, *bestss;
     enum Compare_Ret info = 0;
@@ -277,6 +291,8 @@ enum Compare_Ret SSsCompare(const SplineSet *ss1, const SplineSet *ss2, real pt_
     const SplineSet **match;
     double diff, delta, bestdiff;
     double dx, dy;
+
+    *_hmmatch = true;
 
     for ( ss=ss1, cnt1=0; ss!=NULL; ss=ss->next, ++cnt1 );
     for ( ss=ss2, cnt2=0; ss!=NULL; ss=ss->next, ++cnt2 );
@@ -331,7 +347,7 @@ return( SS_MismatchOpenClosed|SS_NoMatch );
     if ( pt_err>=0 ) {
 	allmatch = true;
 	for ( ss=ss1, cnt1=0; ss!=NULL; ss=ss->next, ++cnt1 ) {
-	    int ret = ContourPointsMatch(ss,match[cnt1],pt_err);
+	    int ret = ContourPointsMatch(ss,match[cnt1],pt_err,_hmmatch);
 	    if ( !ret ) {
 		allmatch = false;
 	break;
@@ -369,8 +385,10 @@ return( SS_MismatchOpenClosed|SS_NoMatch );
 		    dy < -spline_err )
 		info |= SS_DisorderedStart;
 	}
-	if ( allmatch )
+	if ( allmatch ) {
 	    info |= SS_ContourMatch;
+	    *_hmmatch = 2;
+	}
     }
 
     free(match);
@@ -460,51 +478,17 @@ return( failed == 0 ? BC_Match : failed );
 }
 
 /* ************************************************************************** */
-/* *********************** Code to compare hint masks *********************** */
-/* ************************************************************************** */
-
-static int CompareHintmasks(const SplineSet *ss1, const SplineSet *ss2 ) {
-    const SplinePoint *sp1, *sp2;
-    /* No fancy code to reorder contours or to check for disordered start */
-
-    while ( ss1!=NULL && ss2!=NULL ) {
-	for ( sp2 = ss2->first, sp1=ss1->first; ; ) {
-	    if ( sp1->hintmask!=NULL && sp2->hintmask!=NULL &&
-		    memcmp(sp1->hintmask,sp2->hintmask,sizeof(HintMask))==0 )
-		/* It worked */;
-	    else if ( sp1->hintmask!=NULL || sp2->hintmask!=NULL )
-return( false );
-	    if ( sp2->next==NULL && sp1->next==NULL )
-	break;
-	    if ( sp1->next==NULL || sp2->next==NULL )
-return( false );
-	    sp1 = sp1->next->to;
-	    sp2 = sp2->next->to;
-	    if ( sp1 == ss1->first && sp2 == ss2->first )
-	break;
-	    if ( sp1 == ss1->first || sp2 == ss2->first )
-return( false );
-	}
-	ss1 = ss1->next;
-	ss2 = ss2->next;
-    }
-    if ( ss1!=NULL || ss2!=NULL )
-return( false );
-
-return( true );
-}
-
-/* ************************************************************************** */
 /* **************** Code to selected glyphs against clipboard *************** */
 /* ************************************************************************** */
 
 static int CompareLayer(Context *c, const SplineSet *ss1,const SplineSet *ss2,
-	real pt_err, real spline_err, const char *name, int diffs_are_errors ) {
+	real pt_err, real spline_err, const char *name, int diffs_are_errors,
+	int *_hmmatch) {
     int val;
 
     if ( pt_err<0 && spline_err<0 )
 return( SS_PointsMatch );
-    val = SSsCompare(ss1,ss2, pt_err, spline_err);
+    val = SSsCompare(ss1,ss2, pt_err, spline_err,_hmmatch);
     if ( (val&SS_NoMatch) && diffs_are_errors ) {
 	if ( val & SS_DiffContourCount )
 	    ScriptErrorString(c,"Spline mismatch (different number of contours) in glyph", name);
@@ -629,12 +613,13 @@ static int CompareSplines(Context *c,SplineChar *sc,const Undoes *cur,
     int ret=0, failed=0, temp, ly;
     const Undoes *layer;
     real err = pt_err>0 ? pt_err : spline_err;
+    int hmmatch;
 
     switch ( cur->undotype ) {
       case ut_state: case ut_statehint: case ut_statename:
 	if ( err>=0 ) {
 	    ret = CompareLayer(c,sc->layers[ly_fore].splines,cur->u.state.splines,
-			pt_err, spline_err,sc->name, diffs_are_errors);
+			pt_err, spline_err,sc->name, diffs_are_errors, &hmmatch);
 	    if ( ret&SS_NoMatch )
 		failed |= ret;
 	    if ( sc->vwidth-cur->u.state.vwidth>err || sc->vwidth-cur->u.state.vwidth<-err )
@@ -649,7 +634,7 @@ static int CompareSplines(Context *c,SplineChar *sc,const Undoes *cur,
 	    failed |= SS_NoMatch|SS_HintMismatch;
 	if ( cur->undotype==ut_statehint && (comp_hints&2) &&
 		(sc->hconflicts || sc->vconflicts || !(comp_hints&4)) &&
-		!CompareHintmasks( sc->layers[ly_fore].splines,cur->u.state.splines ))
+		!hmmatch )
 	    failed |= SS_NoMatch|SS_HintMaskMismatch;
 	if ( failed )
 	    ret = failed;
@@ -660,7 +645,7 @@ static int CompareSplines(Context *c,SplineChar *sc,const Undoes *cur,
 		    ly<sc->layer_cnt && layer!=NULL;
 		    ++ly, layer = cur->next ) {
 		temp = CompareLayer(c,sc->layers[ly].splines,cur->u.state.splines,
-			    pt_err, spline_err,sc->name, diffs_are_errors);
+			    pt_err, spline_err,sc->name, diffs_are_errors, &hmmatch);
 		if ( temp&SS_NoMatch )
 		    failed |= temp;
 		else
@@ -877,6 +862,7 @@ static void fdRefCheck(struct font_diff *fd, SplineChar *sc1,
 static void SCCompare(SplineChar *sc1,SplineChar *sc2,struct font_diff *fd) {
     int layer;
     int val;
+    int hmmatch;
 
     if ( sc1->width!=sc2->width )
 	GlyphDiffSCError(fd,sc1,_("Glyph |%s| has advance width %d in %s but %d in %s\n"),
@@ -899,10 +885,10 @@ static void SCCompare(SplineChar *sc1,SplineChar *sc2,struct font_diff *fd) {
 #endif
 	    fdRefCheck(fd, sc1, sc1->layers[layer].refs, sc2->layers[layer].refs );
 	    val = SSsCompare(sc1->layers[layer].splines, sc2->layers[layer].splines,
-		    0,-1 );
+		    0,-1, &hmmatch );
 	    if ( (val&SS_NoMatch) && !(fd->flags&fcf_exact) ) {
 		val = SSsCompare(sc1->layers[layer].splines, sc2->layers[layer].splines,
-			-1,1.5 );
+			-1,1.5, &hmmatch );
 		if ( !(val&SS_NoMatch) && (fd->flags&fcf_warn_not_exact) )
 		    GlyphDiffSCError(fd,sc1,_("Glyph |%s| does not have splines which match exactly, but they are close\n"),
 			    sc1->name );
@@ -917,9 +903,9 @@ static void SCCompare(SplineChar *sc1,SplineChar *sc2,struct font_diff *fd) {
 	    }
 	}
     }
-    if ( ( fd->flags&fcf_hinting ) && !(val&SS_NoMatch) &&
+    if ( ( fd->flags&fcf_hintmasks ) && !(val&SS_NoMatch) &&
 	    (sc1->hconflicts || sc1->vconflicts || !(fd->flags&fcf_hmonlywithconflicts)) &&
-	    !CompareHintmasks( sc1->layers[ly_fore].splines,sc2->layers[ly_fore].splines ))
+	    !hmmatch )
 	GlyphDiffSCError(fd,sc1,_("Hint masks differ in glyph |%s|\n"), sc1->name);
     if ( ( fd->flags&fcf_hinting ) && !SCCompareHints( sc1,sc2 ))
 	GlyphDiffSCError(fd,sc1,_("Hints differ in glyph |%s|\n"), sc1->name);
