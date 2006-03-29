@@ -4672,7 +4672,7 @@ return;
 	CVChangeChar(cv,pos);
 }
 
-void CVShowPoint(CharView *cv, SplinePoint *sp) {
+void CVShowPoint(CharView *cv, BasePoint *me) {
     int x, y;
     int fudge = 30;
 
@@ -4682,10 +4682,10 @@ void CVShowPoint(CharView *cv, SplinePoint *sp) {
 	fudge = cv->height/3;
 
     /* Make sure the point is visible and has some context around it */
-    x =  cv->xoff + rint(sp->me.x*cv->scale);
-    y = -cv->yoff + cv->height - rint(sp->me.y*cv->scale);
+    x =  cv->xoff + rint(me->x*cv->scale);
+    y = -cv->yoff + cv->height - rint(me->y*cv->scale);
     if ( x<fudge || y<fudge || x>cv->width-fudge || y>cv->height-fudge )
-	CVMagnify(cv,sp->me.x,sp->me.y,0);
+	CVMagnify(cv,me->x,me->y,0);
 }
 
 static void CVSelectContours(CharView *cv,struct gmenuitem *mi) {

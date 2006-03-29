@@ -1154,10 +1154,26 @@ void CVMouseUpPointer(CharView *cv ) {
 /*  ************************** Select Point Dialog *************************  */
 /* ************************************************************************** */
 
+static SplinePoint *Closest(BasePoint *base,SplinePoint *sp1, SplinePoint *sp2) {
+    double dx1, dy1, dx2, dy2;
+    if ( sp1==NULL )
+return( sp2 );
+    if ( sp2==NULL )
+return( sp1 );
+    if ( (dx1 = sp1->me.x-base->x)<0 ) dx1 = -dx1;
+    if ( (dy1 = sp1->me.y-base->y)<0 ) dy1 = -dy1;
+    if ( (dx2 = sp2->me.x-base->x)<0 ) dx2 = -dx2;
+    if ( (dy2 = sp2->me.y-base->y)<0 ) dy2 = -dy2;
+    if ( dx1+dy1 < dx2+dy2 )
+return( sp1 );
+    else
+return( sp2 );
+}
+
 static int SelectPointsWithin(CharView *cv, BasePoint *base, double fuzz, BasePoint *bounds) {
     SplineSet *ss;
     SplinePoint *sp;
-    int any = false;
+    SplinePoint *any = NULL;
 
     CVClearSel(cv);
     for ( ss= cv->layerheads[cv->drawmode]->splines; ss!=NULL; ss=ss->next ) {
@@ -1166,17 +1182,17 @@ static int SelectPointsWithin(CharView *cv, BasePoint *base, double fuzz, BasePo
 		if ( sp->me.x >= base->x && sp->me.x <= base->x+bounds->x &&
 			sp->me.y >= base->y && sp->me.y <= base->y+bounds->y ) {
 		    sp->selected = true;
-		    any = true;
+		    any = sp;
 		}
 	    } else if ( fuzz>0 ) {
 		if ( RealWithin(sp->me.x,base->x,fuzz) && RealWithin(sp->me.y,base->y,fuzz)) {
 		    sp->selected = true;
-		    any = true;
+		    any = Closest(base,any,sp);
 		}
 	    } else {
 		if ( RealNear(sp->me.x,base->x) && RealNear(sp->me.y,base->y)) {
 		    sp->selected = true;
-		    any = true;
+		    any = Closest(base,any,sp);
   goto done;
 		}
 	    }
@@ -1188,10 +1204,13 @@ static int SelectPointsWithin(CharView *cv, BasePoint *base, double fuzz, BasePo
 	}
     }
   done:
-    if ( !any )
+    if ( any==NULL ) {
+	CVShowPoint(cv,base);
 	GDrawBeep(NULL);
+    } else
+	CVShowPoint(cv,&any->me);
     SCUpdateAll(cv->sc);
-return( any );
+return( any!=NULL );
 }
 
 #define CID_X	1001
@@ -1448,6 +1467,8 @@ void CVSelectPointAt(CharView *cv) {
 
 	GGadgetsCreate(gw,gcd);
 	first = true;
+    } else {
+	GTextFieldSelect(GWidgetGetControl(pa.gw,CID_X),0,-1);
     }
     GWidgetIndicateFocusGadget(GWidgetGetControl(pa.gw,CID_X));
     GDrawSetVisible(pa.gw,true);
