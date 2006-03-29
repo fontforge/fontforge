@@ -648,6 +648,7 @@ static int CompareSplines(Context *c,SplineChar *sc,const Undoes *cur,
 		!CompareHints( sc,cur->u.state.u.hints ))
 	    failed |= SS_NoMatch|SS_HintMismatch;
 	if ( cur->undotype==ut_statehint && (comp_hints&2) &&
+		(sc->hconflicts || sc->vconflicts || !(comp_hints&4)) &&
 		!CompareHintmasks( sc->layers[ly_fore].splines,cur->u.state.splines ))
 	    failed |= SS_NoMatch|SS_HintMaskMismatch;
 	if ( failed )
@@ -917,6 +918,7 @@ static void SCCompare(SplineChar *sc1,SplineChar *sc2,struct font_diff *fd) {
 	}
     }
     if ( ( fd->flags&fcf_hinting ) && !(val&SS_NoMatch) &&
+	    (sc1->hconflicts || sc1->vconflicts || !(fd->flags&fcf_hmonlywithconflicts)) &&
 	    !CompareHintmasks( sc1->layers[ly_fore].splines,sc2->layers[ly_fore].splines ))
 	GlyphDiffSCError(fd,sc1,_("Hint masks differ in glyph |%s|\n"), sc1->name);
     if ( ( fd->flags&fcf_hinting ) && !SCCompareHints( sc1,sc2 ))

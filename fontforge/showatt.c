@@ -2905,8 +2905,9 @@ struct mf_data {
 #define CID_Names	7
 #define CID_GPos	8
 #define CID_GSub	9
+#define CID_HintMasksWConflicts	10
 
-static int last_flags = fcf_outlines|fcf_hinting|fcf_bitmaps|fcf_names|fcf_gpos|fcf_gsub;
+static int last_flags = fcf_outlines|fcf_hinting|fcf_hmonlywithconflicts|fcf_bitmaps|fcf_names|fcf_gpos|fcf_gsub;
 
 static int FC_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
@@ -2931,6 +2932,8 @@ static int FC_OK(GGadget *g, GEvent *e) {
 	    flags |= fcf_warn_not_exact;
 	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_Hinting)) )
 	    flags |= fcf_hinting;
+	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_HintMasksWConflicts)) )
+	    flags |= fcf_hmonlywithconflicts;
 	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_Bitmaps)) )
 	    flags |= fcf_bitmaps;
 	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_Names)) )
@@ -2975,8 +2978,8 @@ void FontCompareDlg(FontView *fv) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[20];
-    GTextInfo label[20];
+    GGadgetCreateData gcd[22];
+    GTextInfo label[22];
     struct mf_data d;
     char buffer[80];
     int k;
@@ -2989,8 +2992,8 @@ void FontCompareDlg(FontView *fv) {
 	wattrs.cursor = ct_pointer;
 	wattrs.utf8_window_title = _("Font Compare...");
 	pos.x = pos.y = 0;
-	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,150));
-	pos.height = GDrawPointsToPixels(NULL,88+9*14+2);
+	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,155));
+	pos.height = GDrawPointsToPixels(NULL,88+10*14+2);
 	gw = GDrawCreateTopWindow(NULL,&pos,fc_e_h,&d,&wattrs);
 
 	memset(&label,0,sizeof(label));
@@ -3069,12 +3072,25 @@ void FontCompareDlg(FontView *fv) {
 	    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
 	else
 	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | ((last_flags&fcf_hinting)?gg_cb_on:0);
-	label[k].text = (unichar_t *) _("Compare _Hints");
+	label[k].text = (unichar_t *) _("Compare _Hints & Masks");
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.cid = CID_Hinting;
-	gcd[k].gd.popup_msg = (unichar_t *) _("Compare postscript hints and truetype instructions");
+	gcd[k].gd.popup_msg = (unichar_t *) _("Compare postscript hints and hintmasks and truetype instructions");
+	gcd[k++].creator = GCheckBoxCreate;
+
+	gcd[k].gd.pos.x = 15; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
+	if ( fv->sf->onlybitmaps )
+	    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+	else
+	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | ((last_flags&fcf_hmonlywithconflicts)?gg_cb_on:0);
+	label[k].text = (unichar_t *) _("HintMasks only if conflicts");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.cid = CID_HintMasksWConflicts;
+	gcd[k].gd.popup_msg = (unichar_t *) _("Don't compare hintmasks if the glyph has no hint conflicts");
 	gcd[k++].creator = GCheckBoxCreate;
 
 	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+16;
@@ -3118,7 +3134,7 @@ void FontCompareDlg(FontView *fv) {
 	gcd[k].gd.popup_msg = (unichar_t *) _("Ligatures & such");
 	gcd[k++].creator = GCheckBoxCreate;
 
-	gcd[k].gd.pos.x = 15-3; gcd[k].gd.pos.y = 9*14+2+55-3;
+	gcd[k].gd.pos.x = 15-3; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+23-3;
 	gcd[k].gd.pos.width = -1; gcd[k].gd.pos.height = 0;
 	gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
 	label[k].text = (unichar_t *) _("_OK");
@@ -3137,6 +3153,11 @@ void FontCompareDlg(FontView *fv) {
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.handle_controlevent = FC_Cancel;
 	gcd[k++].creator = GButtonCreate;
+
+	gcd[k].gd.pos.x = 2; gcd[k].gd.pos.y = 2;
+	gcd[k].gd.pos.width = pos.width-4; gcd[k].gd.pos.height = pos.height-2;
+	gcd[k].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
+	gcd[k++].creator = GGroupCreate;
 
 	GGadgetsCreate(gw,gcd);
 
