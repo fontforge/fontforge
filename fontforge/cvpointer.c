@@ -157,6 +157,24 @@ int CVAnySel(CharView *cv, int *anyp, int *anyr, int *anyi, int *anya) {
 return( anypoints || anyrefs || anyimages || anyanchor );
 }
 
+SplinePoint *CVAnySelPoints(CharView *cv) {
+    /* if there are any points selected */
+    SplinePointList *spl;
+    Spline *spline, *first;
+
+    for ( spl= cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl=spl->next ) {
+	if ( spl->first->selected );
+return( spl->first );
+	first = NULL;
+	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
+	    if ( spline->to->selected )
+return( spline->to );
+	    if ( first==NULL ) first = spline;
+	}
+    }
+return( NULL );
+}
+
 int CVClearSel(CharView *cv) {
     SplinePointList *spl;
     Spline *spline, *first;
@@ -1130,5 +1148,314 @@ void CVMouseUpPointer(CharView *cv ) {
 	SCUndoSetLBearingChange(cv->sc,(int) rint(cv->info.x-cv->p.cx));
 	SCSynchronizeLBearing(cv->sc,cv->info.x-cv->p.cx);
     }
+}
+
+/* ************************************************************************** */
+/*  ************************** Select Point Dialog *************************  */
+/* ************************************************************************** */
+
+static int SelectPointsWithin(CharView *cv, BasePoint *base, double fuzz, BasePoint *bounds) {
+    SplineSet *ss;
+    SplinePoint *sp;
+    int any = false;
+
+    CVClearSel(cv);
+    for ( ss= cv->layerheads[cv->drawmode]->splines; ss!=NULL; ss=ss->next ) {
+	for ( sp=ss->first; ; ) {
+	    if ( bounds!=NULL ) {
+		if ( sp->me.x >= base->x && sp->me.x <= base->x+bounds->x &&
+			sp->me.y >= base->y && sp->me.y <= base->y+bounds->y ) {
+		    sp->selected = true;
+		    any = true;
+		}
+	    } else if ( fuzz>0 ) {
+		if ( RealWithin(sp->me.x,base->x,fuzz) && RealWithin(sp->me.y,base->y,fuzz)) {
+		    sp->selected = true;
+		    any = true;
+		}
+	    } else {
+		if ( RealNear(sp->me.x,base->x) && RealNear(sp->me.y,base->y)) {
+		    sp->selected = true;
+		    any = true;
+  goto done;
+		}
+	    }
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==ss->first )
+	break;
+	}
+    }
+  done:
+    if ( !any )
+	GDrawBeep(NULL);
+    SCUpdateAll(cv->sc);
+return( any );
+}
+
+#define CID_X	1001
+#define CID_Y	1002
+#define CID_Width	1003
+#define CID_Height	1004
+#define CID_Fuzz	1005
+#define CID_Exact	1006
+#define CID_Within	1007
+#define CID_Fuzzy	1008
+
+struct selpt {
+    int done;
+    CharView *cv;
+    GWindow gw;
+};
+
+static void SPA_DoCancel(struct selpt *pa) {
+    pa->done = true;
+}
+
+static int SPA_OK(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GWindow gw = GGadgetGetWindow(g);
+	struct selpt *pa = GDrawGetUserData(gw);
+	CharView *cv = pa->cv;
+	BasePoint base, bounds;
+	double fuzz;
+	int err = false, ret;
+
+	base.x = GetReal8(gw,CID_X,_("X"),&err);
+	base.y = GetReal8(gw,CID_Y,_("Y"),&err);
+	if ( err )
+return( true );
+	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_Exact)) )
+	    ret = SelectPointsWithin(cv, &base, 0, NULL );
+	else if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_Fuzzy)) ) {
+	    fuzz = GetReal8(gw,CID_Fuzz,_("Search Radius"),&err);
+	    if ( err )
+return( true );
+	    ret = SelectPointsWithin(cv, &base, fuzz, NULL );
+	} else {
+	    bounds.x = GetReal8(gw,CID_Width,_("Width"),&err);
+	    bounds.y = GetReal8(gw,CID_Height,_("Height"),&err);
+	    if ( err )
+return( true );
+	    if ( bounds.x<0 ) {
+		base.x += bounds.x;
+		bounds.x = -bounds.x;
+	    }
+	    if ( bounds.y<0 ) {
+		base.y += bounds.y;
+		bounds.y = -bounds.y;
+	    }
+	    ret = SelectPointsWithin(cv, &base, 0, &bounds );
+	}
+	pa->done = ret;
+    }
+return( true );
+}
+
+static int SPA_Cancel(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct selpt *pa = GDrawGetUserData(GGadgetGetWindow(g));
+	SPA_DoCancel(pa);
+    }
+return( true );
+}
+
+static int SPA_Radius(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent ) {
+	GWindow gw = GGadgetGetWindow(g);
+	GGadgetSetChecked(GWidgetGetControl(gw,CID_Fuzzy),true);
+    }
+return( true );
+}
+
+static int SPA_Rect(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent ) {
+	GWindow gw = GGadgetGetWindow(g);
+	GGadgetSetChecked(GWidgetGetControl(gw,CID_Within),true);
+    }
+return( true );
+}
+
+static int spa_e_h(GWindow gw, GEvent *event) {
+    if ( event->type==et_close ) {
+	SPA_DoCancel( GDrawGetUserData(gw));
+    } else if ( event->type == et_char ) {
+return( false );
+    }
+return( true );
+}
+
+void CVSelectPointAt(CharView *cv) {
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[18];
+    GTextInfo label[18];
+    static struct selpt pa;
+    int k;
+    int first = false;
+
+    pa.done = false;
+    pa.cv = cv;
+
+    if ( pa.gw==NULL ) {
+	memset(&wattrs,0,sizeof(wattrs));
+	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+	wattrs.event_masks = ~(1<<et_charup);
+	wattrs.restrict_input_to_me = 1;
+	wattrs.undercursor = 1;
+	wattrs.cursor = ct_pointer;
+	wattrs.utf8_window_title = _("Select Point(s) at...");
+	wattrs.is_dlg = true;
+	pos.x = pos.y = 0;
+	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,190));
+	pos.height = GDrawPointsToPixels(NULL,175);
+	pa.gw = gw = GDrawCreateTopWindow(NULL,&pos,spa_e_h,&pa,&wattrs);
+
+	memset(&label,0,sizeof(label));
+	memset(&gcd,0,sizeof(gcd));
+
+	k = 0;
+	label[k].text = (unichar_t *) _("_X:");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = 8+4; 
+	gcd[k].gd.flags = gg_enabled|gg_visible;
+	gcd[k++].creator = GLabelCreate;
+
+	gcd[k].gd.pos.x = 30; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;  gcd[k].gd.pos.width = 40;
+	gcd[k].gd.flags = gg_enabled|gg_visible;
+	gcd[k].gd.cid = CID_X;
+	gcd[k++].creator = GTextFieldCreate;
+
+	label[k].text = (unichar_t *) _("_Y:");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 80; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y; 
+	gcd[k].gd.flags = gg_enabled|gg_visible;
+	gcd[k++].creator = GLabelCreate;
+
+	gcd[k].gd.pos.x = 100; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y;  gcd[k].gd.pos.width = 40;
+	gcd[k].gd.flags = gg_enabled|gg_visible;
+	gcd[k].gd.cid = CID_Y;
+	gcd[k++].creator = GTextFieldCreate;
+
+	label[k].text = (unichar_t *) _("_Exact");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+23; 
+	gcd[k].gd.flags = gg_enabled|gg_visible|gg_cb_on;
+	gcd[k].gd.cid = CID_Exact;
+	gcd[k++].creator = GRadioCreate;
+
+	label[k].text = (unichar_t *) _("_Around");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+13; 
+	gcd[k].gd.flags = gg_enabled|gg_visible;
+	gcd[k].gd.cid = CID_Fuzzy;
+	gcd[k++].creator = GRadioCreate;
+
+	label[k].text = (unichar_t *) _("W_ithin Rectangle");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+16+24;
+	gcd[k].gd.flags = gg_enabled|gg_visible;
+	gcd[k].gd.cid = CID_Within;
+	gcd[k++].creator = GRadioCreate;
+
+	label[k].text = (unichar_t *) _("_Radius:");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 15; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y+17+4; 
+	gcd[k].gd.flags = gg_enabled|gg_visible;
+	gcd[k++].creator = GLabelCreate;
+
+	label[k].text = (unichar_t *) _("3");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 52; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;  gcd[k].gd.pos.width = 40;
+	gcd[k].gd.flags = gg_enabled|gg_visible;
+	gcd[k].gd.cid = CID_Fuzz;
+	gcd[k].gd.handle_controlevent = SPA_Radius;
+	gcd[k++].creator = GTextFieldCreate;
+
+	label[k].text = (unichar_t *) _("_Width:");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 15; gcd[k].gd.pos.y = gcd[k-3].gd.pos.y+17+4; 
+	gcd[k].gd.flags = gg_enabled|gg_visible;
+	gcd[k++].creator = GLabelCreate;
+
+	gcd[k].gd.pos.x = 52; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;  gcd[k].gd.pos.width = 40;
+	gcd[k].gd.flags = gg_enabled|gg_visible;
+	gcd[k].gd.cid = CID_Width;
+	gcd[k].gd.handle_controlevent = SPA_Rect;
+	gcd[k++].creator = GTextFieldCreate;
+
+	label[k].text = (unichar_t *) _("_Height:");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 100; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y; 
+	gcd[k].gd.flags = gg_enabled|gg_visible;
+	gcd[k++].creator = GLabelCreate;
+
+	gcd[k].gd.pos.x = 138; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;  gcd[k].gd.pos.width = 40;
+	gcd[k].gd.flags = gg_enabled|gg_visible;
+	gcd[k].gd.cid = CID_Height;
+	gcd[k].gd.handle_controlevent = SPA_Rect;
+	gcd[k++].creator = GTextFieldCreate;
+
+	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+28;
+	gcd[k].gd.pos.width = GDrawPixelsToPoints(gw,pos.width)-10;
+	gcd[k].gd.flags = gg_enabled|gg_visible;
+	gcd[k++].creator = GLineCreate;
+
+	gcd[k].gd.pos.x = 20-3; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+8;
+	gcd[k].gd.pos.width = -1; gcd[k].gd.pos.height = 0;
+	gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
+	label[k].text = (unichar_t *) _("_OK");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.handle_controlevent = SPA_OK;
+	gcd[k++].creator = GButtonCreate;
+
+	gcd[k].gd.pos.x = -20; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+3;
+	gcd[k].gd.pos.width = -1; gcd[k].gd.pos.height = 0;
+	gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+	label[k].text = (unichar_t *) _("_Cancel");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.handle_controlevent = SPA_Cancel;
+	gcd[k++].creator = GButtonCreate;
+
+	gcd[k].gd.pos.x = 2; gcd[k].gd.pos.y = 2;
+	gcd[k].gd.pos.width = pos.width-4; gcd[k].gd.pos.height = pos.height-4;
+	gcd[k].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
+	gcd[k++].creator = GGroupCreate;
+
+	GGadgetsCreate(gw,gcd);
+	first = true;
+    }
+    GWidgetIndicateFocusGadget(GWidgetGetControl(pa.gw,CID_X));
+    GDrawSetVisible(pa.gw,true);
+    GDrawProcessOneEvent(NULL);
+    if ( first )
+	GGadgetSetChecked(GWidgetGetControl(gw,CID_Exact),true);
+    while ( !pa.done )
+	GDrawProcessOneEvent(NULL);
+    GDrawSetVisible(pa.gw,false);
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

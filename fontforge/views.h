@@ -1015,6 +1015,8 @@ extern void CVSetCharChanged(CharView *cv,int changed);
 extern void _CVCharChangedUpdate(CharView *cv,int changed);
 extern void CVCharChangedUpdate(CharView *cv);
 extern int CVAnySel(CharView *cv, int *anyp, int *anyr, int *anyi, int *anya);
+extern SplinePoint *CVAnySelPoints(CharView *cv);
+extern void CVSelectPointAt(CharView *cv);
 extern int CVTwoForePointsSelected(CharView *cv, SplinePoint **sp1, SplinePoint **sp2);
 extern int CVIsDiagonalable(SplinePoint *sp1, SplinePoint *sp2, SplinePoint **sp3, SplinePoint **sp4);
 extern int CVClearSel(CharView *cv);
