@@ -3158,6 +3158,10 @@ static void dump_script_table(FILE *g___,SplineFont *sf,
 	here = ftell(g___);
 	fseek(g___,base+offset,SEEK_SET);
 	putshort(g___,here-base);
+	if ( dflt_equiv==i ) {
+	    fseek(g___,base,SEEK_SET);
+	    putshort(g___,here-base);
+	}
 	fseek(g___,here,SEEK_SET);
 	offset += 6;
 	putshort(g___,0);		/* reserved, must be zero */
