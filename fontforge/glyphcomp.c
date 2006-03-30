@@ -1408,9 +1408,14 @@ static int slimatch(struct font_diff *fd,int sli1, int sli2) {
     struct script_record *sr2 = fd->sf2->script_lang[sli2];
     int i;
 
-    if ( sli1==0xffff && sli2==0xffff )
+    if ( sli1==SLI_UNKNOWN && sli2==SLI_UNKNOWN )
 return( true );
-    if ( sli1==0xffff || sli2==0xffff )
+    if ( sli1==SLI_UNKNOWN || sli2==SLI_UNKNOWN )
+return( false );
+
+    if ( sli1==SLI_NESTED && sli2==SLI_NESTED )
+return( true );
+    if ( sli1==SLI_NESTED || sli2==SLI_NESTED )
 return( false );
 
     sr1 = fd->sf1->script_lang[sli1];
@@ -1548,6 +1553,8 @@ static void comparekernclasses(struct font_diff *fd,KernClass *kc1, KernClass *k
     }
 }
 
+static int NestedFeatureMatches(struct font_diff *fd,uint32 tag1,uint32 tag2);
+
 static int comparefpst(struct font_diff *fd,FPST *fpst1, FPST *fpst2) {
     int i,j;
 
@@ -1619,8 +1626,13 @@ return( false);
 	if ( fpst1->rules[i].lookup_cnt!=fpst2->rules[i].lookup_cnt )
 return( false );
 	for ( j=0; j<fpst1->rules[i].lookup_cnt; ++j )
-	    if ( fpst1->rules[i].lookups[j].seq!=fpst2->rules[i].lookups[j].seq ||
-		    fpst1->rules[i].lookups[j].lookup_tag!=fpst2->rules[i].lookups[j].lookup_tag )
+	    if ( fpst1->rules[i].lookups[j].seq!=fpst2->rules[i].lookups[j].seq )
+return( false );
+	for ( j=0; j<fpst1->rules[i].lookup_cnt; ++j )
+	    if ( fpst1->rules[i].lookups[j].lookup_tag!=fpst2->rules[i].lookups[j].lookup_tag &&
+		    !NestedFeatureMatches(fd,
+			    fpst1->rules[i].lookups[j].lookup_tag,
+			    fpst2->rules[i].lookups[j].lookup_tag))
 return( false );
     }
     
@@ -1729,6 +1741,54 @@ return( false );
     if ( ap1->me.x!=ap2->me.x || ap1->me.y!=ap2->me.y )
 return( false );
 
+return( true );
+}
+
+/* Very similar to following routine, except here we don't complain */
+static int NestedFeatureMatches(struct font_diff *fd,uint32 tag1,uint32 tag2) {
+    int gid1;
+    SplineChar *sc1, *sc2;
+    PST *pst1, *pst2;
+    AnchorPoint *ap1, *ap2;
+
+    for ( gid1=0; gid1<fd->sf1->glyphcnt; ++gid1 ) if ( (sc2=fd->matches[gid1])!=NULL && (sc1=fd->sf1->glyphs[gid1])!=NULL ) {
+	for ( pst1=sc1->possub; pst1!=NULL; pst1=pst1->next ) if ( pst1->tag==tag1 ) {
+	    for ( pst2=sc2->possub; pst2!=NULL; pst2=pst2->next ) if ( pst2->tag==tag2 ) {
+		if ( comparepst(fd,pst1,pst2))
+	    break;
+	    }
+	    if ( pst2==NULL )
+return( false );
+	}
+	for ( pst2=sc2->possub; pst2!=NULL; pst2=pst2->next ) if ( pst2->tag==tag2 ) {
+	    for ( pst1=sc1->possub; pst1!=NULL; pst1=pst1->next ) if ( pst1->tag==tag1 ) {
+		if ( comparepst(fd,pst1,pst2))
+	    break;
+	    }
+	    if ( pst1==NULL )
+return( false );
+	}
+	if ( fd->is_gpos ) {
+	    /* There won't be any kern pairs as such here, but there might be */
+	    /* some pair-size features above */
+	    for ( ap1=sc1->anchor; ap1!=NULL; ap1=ap1->next ) if ( ap1->anchor->feature_tag==tag1 ) {
+		for ( ap2=sc2->anchor; ap2!=NULL; ap2=ap2->next ) if ( ap2->anchor->feature_tag==tag2 ) {
+		    if ( compareap(fd,ap1,ap2))
+		break;
+		}
+		if ( ap2==NULL )
+return( false );
+	    }
+	    for ( ap2=sc2->anchor; ap2!=NULL; ap2=ap2->next ) if ( ap2->anchor->feature_tag==tag1 ) {
+		for ( ap1=sc1->anchor; ap1!=NULL; ap1=ap1->next ) if ( ap1->anchor->feature_tag==tag2 ) {
+		    if ( compareap(fd,ap1,ap2))
+		break;
+		}
+		if ( ap1==NULL )
+return( false );
+	    }
+	}
+    }
 return( true );
 }
 
