@@ -520,6 +520,7 @@ return;
 		active->prev->from->nextcp = active->prevcp;
 		active->prev->from->nonextcp = false;
 	    }
+	    SplinePointNextCPChanged2(active->prev->from);
 	    SplineRefigureFixup(active->prev);
 	}
 	if ( active->next!=NULL ) {
