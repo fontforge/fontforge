@@ -1961,7 +1961,7 @@ enum Compare_Ret {	SS_DiffContourCount	= 1,
 
 extern enum Compare_Ret BitmapCompare(BDFChar *bc1, BDFChar *bc2, int err, int bb_err);
 extern enum Compare_Ret SSsCompare(const SplineSet *ss1, const SplineSet *ss2,
-	real pt_err, real spline_err, int *hmmatch);
+	real pt_err, real spline_err, SplinePoint **hmfail);
 enum font_compare_flags { fcf_outlines=1, fcf_exact=2, fcf_warn_not_exact=4,
 	fcf_hinting=8, fcf_hintmasks=0x10, fcf_hmonlywithconflicts=0x20,
 	fcf_bitmaps=0x40, fcf_names = 0x80, fcf_gpos=0x100, fcf_gsub=0x200 };
