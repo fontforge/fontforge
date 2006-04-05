@@ -2195,11 +2195,45 @@ return( NULL );
 return( node );
 }
 
+static char *findstartquote(char *str) {
+    static int quotes[] = { '"', 0x00ab, 0x2018, 0x201b, 0x201c, 0x201e, 0 };
+    char *last, *cur;
+    int i, ch;
+
+    for ( cur=str; *cur!='\0'; ) {
+	last = cur;
+	ch = utf8_ildb((const char **) &cur);
+	for ( i=0; quotes[i]!=0; ++i )
+	    if ( ch==quotes[i] )
+return( last );
+    }
+return( NULL );
+}
+
+static char *findendquote(char *str) {
+    static int endquotes[] = { '"', 0x00bb, 0x2019, 0x201b, 0x201d, 0x201e, 0 };
+    char *last, *cur;
+    int i, ch, startquote;
+
+    startquote = utf8_ildb((const char **) &str);
+    for ( cur=str; *cur!='\0'; ) {
+	last = cur;
+	ch = utf8_ildb((const char **) &cur);
+	if ( ch==' ' )
+return( NULL );
+	for ( i=0; endquotes[i]!=0; ++i )
+	    if ( ch==endquotes[i] )
+return( last );
+    }
+return( NULL );
+}
+
 static void AttExpose(struct att_dlg *att,GWindow pixmap,GRect *rect) {
     int depth, y;
     struct node *node;
     GRect r;
     Color fg;
+    char *spt, *ept;
 
     GDrawFillRect(pixmap,rect,GDrawGetDefaultBackground(NULL));
     GDrawSetLineWidth(pixmap,0);
@@ -2223,7 +2257,19 @@ static void AttExpose(struct att_dlg *att,GWindow pixmap,GRect *rect) {
 	}
 	if ( node->monospace )
 	    GDrawSetFont(pixmap,att->monofont);
-	GDrawDrawText8(pixmap,r.x+r.width+5,y,node->label,-1,NULL,fg);
+	ept = NULL;
+	if ( att->dlg_type==dt_font_comp ) {
+	    if ( (spt = findstartquote(node->label))!=NULL )
+		ept = findendquote(spt);
+	}
+	if ( ept==NULL )
+	    GDrawDrawText8(pixmap,r.x+r.width+5,y,node->label,-1,NULL,fg);
+	else {
+	    int len;
+	    len = GDrawDrawText8(pixmap,r.x+r.width+5,y,node->label,spt-node->label,NULL,fg);
+	    len += GDrawDrawText8(pixmap,r.x+r.width+5+len,y,spt,ept-spt,NULL,0x0000ff);
+	    GDrawDrawText8(pixmap,r.x+r.width+5+len,y,ept,-1,NULL,fg);
+	}
 	if ( node->monospace )
 	    GDrawSetFont(pixmap,att->font);
 	node = NodeNext(node,&depth);
@@ -2339,7 +2385,7 @@ return( test );
 }
 
 static void FontCompActivate(struct att_dlg *att,struct node *node) {
-    char *pt, *pt2;
+    char *pt, *pt2; int ch;
     SplineChar *sc1=NULL, *sc2=NULL;
     int size=0, depth=0;
     BDFFont *bdf1, *bdf2;
@@ -2347,18 +2393,19 @@ static void FontCompActivate(struct att_dlg *att,struct node *node) {
     att->fv1 = FVVerify(att->fv1);
     att->fv2 = FVVerify(att->fv2);
 
-    pt = strchr(node->label,'|');
+    pt = findstartquote(node->label);
     if ( pt==NULL )
 return;
-    pt2 = strchr(pt+1,'|');
+    pt2 = findendquote(pt);
     if ( pt2==NULL )
 return;
-    *pt2 = '\0';
+    utf8_ildb((const char **) &pt);
+    ch = *pt2; *pt2 = '\0';
     if ( att->fv1!=NULL )
-	sc1 = SFGetChar(att->fv1->sf,-1,pt+1);
+	sc1 = SFGetChar(att->fv1->sf,-1,pt);
     if ( att->fv2!=NULL )
-	sc2 = SFGetChar(att->fv2->sf,-1,pt+1);
-    *pt2 = '|';
+	sc2 = SFGetChar(att->fv2->sf,-1,pt);
+    *pt2 = ch;
 
     pt = strchr(node->label,'@');
     if ( pt!=NULL ) {
@@ -2972,6 +3019,7 @@ static int fc_e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	struct mf_data *d = GDrawGetUserData(gw);
 	d->done = true;
+	GDrawDestroyWindow(gw);
     } else if ( event->type == et_char ) {
 return( false );
     }
@@ -3012,8 +3060,8 @@ void FontCompareDlg(FontView *fv) {
 	gcd[k].gd.flags = gg_visible | gg_enabled;
 	gcd[k++].creator = GLabelCreate;
 
-	gcd[k].gd.pos.x = 20; gcd[k].gd.pos.y = 21;
-	gcd[k].gd.pos.width = 110;
+	gcd[k].gd.pos.x = 15; gcd[k].gd.pos.y = 21;
+	gcd[k].gd.pos.width = 145;
 	gcd[k].gd.flags = gg_visible | gg_enabled;
 	gcd[k].gd.u.list = BuildFontList(fv);
 	gcd[k].gd.label = &gcd[k].gd.u.list[0];

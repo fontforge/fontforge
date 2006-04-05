@@ -985,8 +985,8 @@ void FVMergeFonts(FontView *fv) {
 	gcd[0].gd.flags = gg_visible | gg_enabled;
 	gcd[0].creator = GLabelCreate;
 
-	gcd[1].gd.pos.x = 20; gcd[1].gd.pos.y = 21;
-	gcd[1].gd.pos.width = 110;
+	gcd[1].gd.pos.x = 15; gcd[1].gd.pos.y = 21;
+	gcd[1].gd.pos.width = 120;
 	gcd[1].gd.flags = gg_visible | gg_enabled;
 	gcd[1].gd.u.list = BuildFontList(fv);
 	gcd[1].gd.label = &gcd[1].gd.u.list[0];
