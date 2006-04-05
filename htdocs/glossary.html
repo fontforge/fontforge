@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 28-Oct-2002 -->
-  <!-- AP: Last modified: 24-Mar-2006 -->
+  <!-- AP: Last modified: 4-Apr-2006 -->
   <TITLE>Glossary of (some) typographical terms</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -32,10 +32,18 @@
       <TD BGCOLOR=yellow><A NAME="A">A</A></TD>
       <TD><DL>
 	  <DT>
-	    <A NAME="advance-width">Advance Width</A>
+	    <IMG SRC="sidebearings.png" WIDTH="111" HEIGHT="191" ALIGN="Right"><A NAME="advance-width">Advance
+	    Width</A>
 	  <DD>
 	    The distance between the start of this glyph and the start of the next glyph.
-	    Sometimes called the glyph's width.
+	    Sometimes called the glyph's width. See also
+	    <A HREF="glossary.html#Vertical-Advance">Vertical Advance Width.</A>
+	  <DT>
+	    <A NAME="AAT">Apple Advanced Typography</A>
+	  <DD>
+	    Apple's extension to basic TrueType fonts. Includes contextual substitutions,
+	    ligatures, kerning, etc. Also includes
+	    <A HREF="glossary.html#Multi-Master">distortable fonts</A>.
 	  <DT>
 	    <A NAME="ascender">Ascender</A>
 	  <DD>
@@ -59,7 +67,7 @@
 	  <DT>
 	    ATSUI
 	  <DD>
-	    Apple's advanced typographical system
+	    Apple's advanced typographical system. Also called Apple Advanced Typography.
 	</DL>
       </TD>
     </TR>
@@ -91,7 +99,15 @@
 	    <A NAME="BMP">BMP</A> (Basic Multilingual Plane)
 	  <DD>
 	    The first 65536 code points of Unicode. These contain most of the ordinary
-	    characters in the modern world.
+	    characters in the modern world. See Also
+	    <UL>
+	      <LI>
+		<A HREF="#SMP">SMP</A> -- Supplementary Multilingual Plane (0x10000-0x1FFFF)
+	      <LI>
+		<A HREF="#SIP">SIP</A> -- Supplementary Ideographic Plane (0x20000-0x2FFFF)
+	      <LI>
+		<A HREF="#SSP">SSP</A> -- Supplementary Special-purpose Plane (0xE0000-0xEFFFF)
+	    </UL>
 	  <DT>
 	    <A NAME="bold">Bold</A>
 	  <DD>
@@ -102,7 +118,7 @@
 	  <DT>
 	    <A NAME="Bopomofo">Bopomofo</A>
 	  <DD>
-	    A (modern--1911) Chinese (Mandarin) alphabet used to provide phonetic
+	    A (modern~1911) Chinese (Mandarin) alphabet used to provide phonetic
 	    transliteration of Han ideographs in dictionaries.
 	  <DT>
 	    <IMG SRC="boustrophedon.png" WIDTH="86" HEIGHT="54" ALIGN="Right"><A NAME="Boustrophedon">Boustrophedon</A>
@@ -176,6 +192,12 @@
 	  <DD>
 	    A condensed font is one where the space between the stems of the glyphs,
 	    and the distance between glyphs themselves has been reduced.
+	  <DT>
+	    <A NAME="Conflicting-hints">Conflicting hints</A>
+	  <DD>
+	    If a glyph contains two hints where the start or end point of one is within
+	    the range of the other then these hints conflict. They may not be active
+	    simultaneously.
 	</DL>
       </TD>
     </TR>
@@ -274,12 +296,18 @@
 	    number of times contours cross this line. If that number is odd then fill
 	    the point, if it is even then do not fill the point. This method is used
 	    by postscript rasterizers after level 2.0 of PostScript. See Also
-	    <A HREF="#Non-Zero">Non-Zero Winding Number Fill</A>.<BR>
+	    <A HREF="#Non-Zero">Non-Zero Winding Number Fill</A>.
 	  <DT>
 	    <A NAME="extended">Extended</A>
 	  <DD>
 	    An extended font is one where the space between the stems of the glyphs,
 	    and the distance between glyphs themselves has been increased.
+	  <DT>
+	    Extremum
+	  <DD>
+	    A point on a curve where the curve attains its maximum or minimum value.
+	    On a continuous curve this can happen at the endpoints (which is dull) or
+	    where dx/dt=0 or dy/dt=0.
 	</DL>
       </TD>
     </TR>
@@ -347,6 +375,18 @@
       <TD BGCOLOR=yellow><A NAME="G">G</A></TD>
       <TD><DL>
 	  <DT>
+	    <A NAME="glyph"></A>Ghost Hint
+	  <DD>
+	    Sometimes it is important to indicate that a horizontal edge is indeed
+	    horizontal. But the edge has no corresponding edge with which to make a normal
+	    stem. In this case a special <A HREF="glossary.html#hints">hint</A> is used
+	    with a width of -20 (or -21). A ghost hint must lie entirely within a glyph.
+	    If it is at the top of a contour use a width of -20, if at the bottom use
+	    -21. Ghost hints should also lie within BlueZones.
+	    <P>
+	    (The spec also mentions vertical ghost hints, but as there are no vertical
+	    bluezones it is not clear how these should be used).
+	  <DT>
 	    <A NAME="glyph">Glyph</A>
 	  <DD>
 	    A glyph is an image, often associated with one or several
@@ -396,7 +436,7 @@
 	    <P>
 	    SIL International provides a free
 	    <A HREF="http://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&amp;item_id=GraphiteCompilerDownload">Graphite
-	    compiler </A>(I think windows only at the moment).
+	    compiler </A>(I think windows-only at the moment).
 	  <DT>
 	    <A NAME="Grotesque">Grotesque</A>
 	  <DD>
@@ -413,8 +453,8 @@
 	    The ideographic characters used in China,
 	    <A HREF="glossary.html#Kanji">Japan</A> and
 	    <A HREF="glossary.html#Hanja">Korea</A> (and, I believe, in various other
-	    asian countries as well), all based on the writing style that evolved in
-	    China.
+	    asian countries as well (Vietnam?)), all based on the writing style that
+	    evolved in China.
 	  <DT>
 	    <A NAME="Hangul">Hangul</A>
 	  <DD>
@@ -432,6 +472,14 @@
 	    manual</A>. They help the rasterizer to draw a <A HREF="#glyph">glyph</A>
 	    well at small pointsizes.
 	  <DT>
+	    Hint Masks
+	  <DD>
+	    At any given point on a contour <A HREF="glossary.html#hints">hints</A> may
+	    not <A HREF="glossary.html#Conflicting-hints">conflict</A>. However different
+	    points in a glyph may need conflicting hints. So every now and then a contour
+	    will change which hints are active. Each list of active hints is called a
+	    hint mask.
+	  <DT>
 	    <A NAME="Hiragona">Hiragona</A>
 	  <DD>
 	    One of the two Japanese syllabaries. Both Hiragona and
@@ -442,6 +490,11 @@
     <TR VALIGN=TOP>
       <TD BGCOLOR=yellow><A NAME="I">I</A></TD>
       <TD><DL>
+	  <DT>
+	    Ideographic character
+	  <DD>
+	    A single character which represents a concept without spelling it out. Generally
+	    used to mean Han (Chinese) characters.
 	  <DT>
 	    <A NAME="italic">Italic</A>
 	  <DD>
@@ -497,6 +550,13 @@
 	  <DD>
 	    A pair of glyphs for which <A HREF="#kerning">kerning</A> information has
 	    been specified.
+	  <DT>
+	    Kerning by classes
+	  <DD>
+	    The glyphs of the font are divided into classes of glyphs and there is a
+	    large table which specifies kerning for every possible combination of classes.
+	    Generally this will be smaller than the equivalent set of kerning pairs because
+	    each class will usually contain several glyphs.
 	</DL>
       </TD>
     </TR>
@@ -530,7 +590,8 @@
 	    Latin, Greek, Cyrillic. These three alphabets have evolved side by side over
 	    the last few thousand years. The letter forms are very similar (and some
 	    letters are shared). Many concepts such as "lower case", "italic" are applicable
-	    to these three alphabets and not to any others.
+	    to these three alphabets and not to any others. (OK, Armenian also has lower
+	    case letters)
 	</DL>
       </TD>
     </TR>
@@ -542,9 +603,9 @@
 	  <DD>
 	    An early Japanese script, ancestral to both <A HREF="#hiragana">hiragana</A>
 	    and <A HREF="#katakana">katakana</A>.
-	    <A HREF="http://en.wikipedia.org/wiki/Manyogana">Manyogana</A> used kanji
-	    for their phontic sounds, and over the years these kanji were simplified
-	    into hiragana and katahana.
+	    <A HREF="http://en.wikipedia.org/wiki/Manyogana">Manyogana</A> used
+	    <A HREF="glossary.html#Kanji">kanji</A> for their phontic sounds, and over
+	    the years these kanji were simplified into hiragana and katahana.
 	  <DT>
 	    <A NAME="monospace">Monospace</A>
 	  <DD>
@@ -553,12 +614,13 @@
 	  <DT>
 	    <A NAME="multi-layered">Multi-layered</A> fonts
 	  <DD>
-	    PostScript type3 fonts and SVG fonts allow for more drawing possibilities
-	    than normal fonts. Normal fonts may only be filled with a single color inherited
-	    from the graphics environment. These two fonts may be filled with several
-	    different colors, stroked, and in the case of PostScript fonts may also draw
-	    bitmap images. FontForge can be configured to support these fonts (it does
-	    not do so by default because this takes up more memory).
+	    (FontForge's own term) PostScript type3 fonts and SVG fonts allow for more
+	    drawing possibilities than normal fonts. Normal fonts may only be filled
+	    with a single color inherited from the graphics environment. These two fonts
+	    may be filled with several different colors, stroked, and in the case of
+	    PostScript fonts may also draw bitmap images. FontForge can be configured
+	    to support these fonts (it does not do so by default because this takes up
+	    more memory).
 	    <BLOCKQUOTE>
 	      <PRE>$ configure --with-multilayer
 $ make
@@ -653,10 +715,9 @@ $ make install
 	    <IMG SRC="overshoot.png" WIDTH="160" HEIGHT="24">
 	  <DD>
 	    In order for the curved shape of the "O" to appear to be the same height
-	    as the flat top of the "I" it tends to "overshoot" the cap-height (or x-height,
-	    or undershoot the baseline) by about 3% of the cap-height (or x-height).
-	    For a triangular shape (such as "A") the overshoot is even greater, perhaps
-	    5%.<BR>
+	    as the flat top of the "I" it tends to "overshoot" the cap-height (or x-height),
+	    or undershoot the baseline by about 3% of the cap-height (or x-height). For
+	    a triangular shape (such as "A") the overshoot is even greater, perhaps 5%.<BR>
 	    These guidelines are based on the way the eye works and the optical illusions
 	    it generates and are taken from Peter Karow's <I>Digital Formats for
 	    Typefaces</I>, p. 26).<BR>
@@ -682,6 +743,12 @@ $ make install
 	    <P>
 	    FontForge only knows about the classification scheme for Latin fonts. Other
 	    schemes exist for other scripts.
+	  <DT>
+	    PfaEdit
+	  <DD>
+	    This was the early name for FontForge. The original conception was that it
+	    would only edit type1 fonts (hence then name), it quickly metamorphosed beyond
+	    that point, but it took me three years to rename it.
 	  <DT>
 	    Phantom points
 	  <DD>
@@ -728,6 +795,14 @@ $ make install
 	    each glyph was 10 points high. The point size of a font is the unleaded baseline
 	    to baseline distance.
 	  <DT>
+	    Point of inflection
+	  <DD>
+	    A point on a curve where it changes from being concave downwards to concave
+	    upwards (or vice versa). Or in mathematical terms (for continuous curves)
+	    where d<SUP>2</SUP> y/dx<SUP>2</SUP>=0 or infinity.
+	    <P>
+	    Cubic splines may contain infection points, quadratic splines may not.
+	  <DT>
 	    <A NAME="postScript">PostScript</A>
 	  <DD>
 	    PostScript is a page-layout language used by many printers. The language
@@ -747,16 +822,17 @@ $ make install
 		Type 3 -- This format allows full postscript within the font, but it means
 		that no <A HREF="#hints">hints</A> are allowed, so these fonts will not look
 		as nice at small point-sizes. Also most rasterizers are incapable of dealing
-		with them. A type 0 font is limited to a one byte encoding (ie. only 256
+		with them. A type 3 font is limited to a one byte encoding (ie. only 256
 		glyphs may be encoded).
 	      <LI>
-		Type 0 -- This format is used for collecting many sub-fonts (of Type 1 or
-		Type 3) into one big font, and was used for CJK or Unicode fonts.
+		Type 0 -- This format is used for collecting many sub-fonts (of Type 1, 2
+		or 3) into one big font, and was used for CJK or Unicode fonts.
 	      <LI>
 		Type 42 -- A <A HREF="#truetype">TrueType</A> font wrapped up in PostScript.
 		Sort of the opposite from OpenType.
 	      <LI>
-		CID -- This format is used for CJK fonts with large numbers of glyphs.
+		CID -- This format is used for CJK fonts with large numbers of glyphs. The
+		glyphs themselves are encoded either as type1 or type2.
 	    </UL>
 	</DL>
       </TD>
@@ -833,9 +909,10 @@ $ make install
 	    of their own. Early type designers added them to their fonts for esthetic
 	    rather than functional reasons.
 	    <P>
-	    At the end of the nineteenth and beginning of the twentieth, type-designers
-	    started designing fonts without serifs. These were initially called grotesques
-	    because their form appeared so strange, they are now generally called sans-serif.
+	    At the end of the nineteenth and beginning of the twentieth centuries,
+	    type-designers started designing fonts without serifs. These were initially
+	    called grotesques because their form appeared so strange, they are now generally
+	    called sans-serif.
 	    <P>
 	    Other writing systems (Hebrew for one) have their own serifs. Hebrew serifs
 	    are rather different from latin (cyrillic, greek) serifs and I don't know
@@ -851,16 +928,56 @@ $ make install
 	    Each of the above formats follow this general idea but include more specific
 	    requirements (such as what tables are needed, and the format of each table).
 	  <DT>
+	    <A NAME="SIP">SIP</A>
+	  <DD>
+	    Supplementary Ideographic Plane (0x20000-0x2FFFF) of unicode. Used for rare
+	    Han characters (most are no longer in common use) See Also
+	    <UL>
+	      <LI>
+		<A HREF="#BMP">BMP</A> -- Basic Multilingual Plane (0x00000-0x0FFFF)
+	      <LI>
+		<A HREF="#SMP">SMP</A> -- Supplementary Multilingual Plane (0x10000-0x1FFFF)
+	      <LI>
+		<A HREF="#SSP">SSP</A> -- Supplementary Special-purpose Plane (0xE0000-0xEFFFF)
+	    </UL>
+	  <DT>
+	    <A NAME="SMP">SMP</A>
+	  <DD>
+	    Supplementary Multilingual Plane (0x10000-0x1FFFF) of unicode. Used for ancient
+	    and artificial alphabets and syllabaries -- like Linear B, Gothic, and Shavian.
+	    See Also
+	    <UL>
+	      <LI>
+		<A HREF="#BMP">BMP</A> -- Basic Multilingual Plane (0x00000-0x0FFFF)
+	      <LI>
+		<A HREF="#SIP">SIP</A> -- Supplementary Ideographic Plane (0x20000-0x2FFFF)
+	      <LI>
+		<A HREF="#SSP">SSP</A> -- Supplementary Special-purpose Plane (0xE0000-0xEFFFF)
+	    </UL>
+	  <DT>
 	    <A NAME="spline">Spline</A>
 	  <DD>
 	    A curved line segment. See the <A HREF="overview.html#intro">section in the
 	    manual on splines</A>. The splines used in FontForge are all second or third
-	    order <A HREF="#bezier">B&eacute;zier</A> splines.
+	    order <A HREF="#bezier">B&eacute;zier</A> splines (quadratic or cubic).
+	  <DT>
+	    SSP
+	  <DD>
+	    Supplementary Special-purpose Plane (0xE0000-0xEFFFF) of unicode. Not used
+	    for much of anything. See Also
+	    <UL>
+	      <LI>
+		BMP -- Basic Multilingual Plane (0x00000-0x0FFFF)
+	      <LI>
+		<A HREF="#SMP">SMP</A> -- Supplementary Multilingual Plane (0x10000-0x1FFFF)
+	      <LI>
+		<A HREF="#SIP">SIP</A> -- Supplementary Ideographic Plane (0x20000-0x2FFFF)
+	    </UL>
 	  <DT>
 	    State machine
 	  <DD>
 	    A state machine is like a very simple little program, they are used on the
-	    mac for performing contextual substitutions, and kerning. The
+	    mac for performing contextual substitutions and kerning. The
 	    <A HREF="statemachine.html" TARGET="_top">state machine dialog </A>is reachable
 	    from <A HREF="fontinfo.html#Mac-SM" TARGET="_top">Element-&gt;Font
 	    Info-&gt;Mac State Machine</A>
@@ -925,13 +1042,15 @@ $ make install
 	    <A NAME="truetype">True Type</A>
 	  <DD>
 	    A type of font invented by Apple and shared with MicroSoft. It specifies
-	    outlines with 2 degree <A HREF="#bezier">B&eacute;zier</A> curves, contains
-	    innovative hinting controls, and an expandable series of tables for containing
-	    whatever additional information is deemed imported to the font.
+	    outlines with second degree (quadratic) <A HREF="#bezier">B&eacute;zier</A>
+	    curves, contains innovative hinting controls, and an expandable series of
+	    tables for containing whatever additional information is deemed imported
+	    to the font.
 	    <P>
 	    Apple and Adobe/MicroSoft have expanded these tables in different ways to
 	    include for advanced typographic features needed for non-latin scripts (or
-	    for complex latin scripts).
+	    for complex latin scripts). See <A HREF="glossary.html#AAT">Apple Advanced
+	    Typography </A>and <A HREF="glossary.html#opentype">OpenType</A>.
 	  <DT>
 	    <A NAME="TrueType-tables">TrueType Tables</A>
 	  <DD>
@@ -970,8 +1089,23 @@ $ make install
 	  <DD>
 	    An encoding character set/encoding which tries to contain all the characters
 	    used in the world. See the <A HREF="http://www.unicode.org/">Unicode
-	    consortium</A>.<BR>
-	    <A HREF="bibliography.html#Unicode">More info.</A>
+	    consortium</A>.
+	    <UL>
+	      <LI>
+		<A HREF="#BMP">BMP</A> -- Basic Multilingual Plane (0x00000-0x0FFFF)
+	      <LI>
+		<A HREF="#SMP">SMP</A> -- Supplementary Multilingual Plane (0x10000-0x1FFFF)
+	      <LI>
+		<A HREF="#SIP">SIP</A> -- Supplementary Ideographic Plane (0x20000-0x2FFFF)
+	      <LI>
+		<A HREF="#SSP">SSP</A> -- Supplementary Special-purpose Plane
+		(0xE0000-0xEFFFF)<BR>
+		<A HREF="bibliography.html#Unicode">More info.</A>
+	    </UL>
+	  <DT>
+	    Undershoot
+	  <DD>
+	    See the explanation at <A HREF="glossary.html#overshoot">Overshoot</A>.
 	  <DT>
 	    <A NAME="UniqueID">UniqueID</A>
 	  <DD>
@@ -993,7 +1127,11 @@ $ make install
       <TD BGCOLOR=yellow><A NAME="V">V</A></TD>
       <TD><DL>
 	  <DT>
+	    <A NAME="Vertical-Advance">Vertical Advance Width</A>
 	  <DD>
+	    CJK text is often written vertically (and sometimes horizontally), so each
+	    CJK glyph has a vertical advance as well as a
+	    <A HREF="glossary.html#advance-width">horizontal advance</A>.
 	</DL>
       </TD>
     </TR>
@@ -1075,6 +1213,11 @@ $ make install
 	    See also <A HREF="#cap-height">Cap-height</A>,
 	    <A HREF="#ascender">Ascender</A>, <A HREF="#descender">Descender</A>,
 	    <A HREF="#overshoot">Overshoot</A>, <A HREF="#baseline">Baseline</A>
+	  <DT>
+	    XUID
+	  <DD>
+	    Extended Unique ID in a PostScript font. Now somewhat obsolete. See the
+	    explanation at <A HREF="glossary.html#UniqueID">Unique ID</A>.
 	</DL>
       </TD>
     </TR>
@@ -1090,7 +1233,9 @@ $ make install
       <TD BGCOLOR=yellow><A NAME="Z">Z</A></TD>
       <TD><DL>
 	  <DT>
+	    Zapf, Hermann
 	  <DD>
+	    Outstanding modern font designer.
 	</DL>
       </TD>
     </TR>

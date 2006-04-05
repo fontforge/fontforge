@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 28-Mar-2006 -->
+  <!-- AP: Last modified: 4-Apr-2006 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -2631,6 +2631,10 @@ ApplySubstitution("*","*","vrt2")
 	  <TD>Contours do not match in the two glyphs</TD>
 	</TR>
 	<TR>
+	  <TD>32768</TD>
+	  <TD>We only find a match after we have unlinked references</TD>
+	</TR>
+	<TR>
 	  <TD>65536</TD>
 	  <TD>Bitmap glyphs have different depths</TD>
 	</TR>
@@ -2669,7 +2673,8 @@ ApplySubstitution("*","*","vrt2")
 	</TR>
 	<TR>
 	  <TD>2</TD>
-	  <TD>compare outlines exactly (otherwise allow slight errors)</TD>
+	  <TD>compare outlines exactly (otherwise allow slight errors and the unlinking
+	    of references)</TD>
 	</TR>
 	<TR>
 	  <TD>4</TD>
@@ -2681,18 +2686,30 @@ ApplySubstitution("*","*","vrt2")
 	</TR>
 	<TR>
 	  <TD>0x10</TD>
-	  <TD>compare bitmap strikes</TD>
+	  <TD>compare hintmasks</TD>
 	</TR>
 	<TR>
 	  <TD>0x20</TD>
-	  <TD>compare font names</TD>
+	  <TD>compare hintmasks only if the glyph has hint conflicts</TD>
 	</TR>
 	<TR>
 	  <TD>0x40</TD>
-	  <TD>compare glyph positioning</TD>
+	  <TD>warn if references need to be unlinked before a match is found</TD>
 	</TR>
 	<TR>
 	  <TD>0x80</TD>
+	  <TD>compare bitmap strikes</TD>
+	</TR>
+	<TR>
+	  <TD>0x100</TD>
+	  <TD>compare font names</TD>
+	</TR>
+	<TR>
+	  <TD>0x200</TD>
+	  <TD>compare glyph positioning</TD>
+	</TR>
+	<TR>
+	  <TD>0x400</TD>
 	  <TD>compare glyph substitutions</TD>
 	</TR>
       </TABLE>

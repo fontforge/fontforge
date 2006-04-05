@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 12-Dec-2005 -->
+  <!-- AP: Last modified: 4-Apr-2006 -->
   <TITLE>Outline Glyph View</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -346,10 +346,18 @@
     <A NAME="pen">pen</A> tool
   </H3>
   <P>
-  In many ways this is similar to the tools above, the only differences are
-  that the points created are curved points, they are initially created with
-  the control points on the point and as you drag you drag out the control
-  points rather than moving the point itself around.
+  This tool behaves differently in cubic and quadratic editing. In many ways
+  it is similar to the tools above as it adds a point to the current spline.
+  <P>
+  In a cubic font the points created are curved points, and they are initially
+  created with the control points on the point and as you drag you drag out
+  the control points rather than moving the point itself around. 
+  <P>
+  In a quadratic font a point will be created half-way between the last control
+  point and the current location (which becomes the next control point).
+  <P>
+  If you hold down the Alt (Meta, etc) key you change the behavior so that
+  cubic editing looks like quadratic and vice versa.
   <H3>
     <IMG SRC="cvknifeicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">The
     <A NAME="knife">knife</A> tool

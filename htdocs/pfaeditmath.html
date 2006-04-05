@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jul-2003 -->
-  <!-- AP: Last modified: 11-Dec-2005 -->
+  <!-- AP: Last modified: 4-Apr-2006 -->
   <TITLE>FontForge's math</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -108,7 +108,7 @@
   <P>
     <HR>
   <H2>
-    Finding <A NAME="maxima">maxima</A> and minima of a splines
+    Finding <A NAME="maxima">maxima</A> and minima of a spline
   </H2>
   <P>
   The maximum or minimum of a spline (along either the x or y axes) may be
@@ -145,6 +145,48 @@
 	2*3*a<SUB>x</SUB></TD>
     </TR>
   </TABLE>
+  <P>
+    <HR>
+  <H2>
+    <A NAME="POI">Finding points of inflection</A> of a spline
+  </H2>
+  <P>
+  A point of inflection occurs when d<SUP>2</SUP>y/dx<SUP>2</SUP>==0 (or infinity).
+  <P>
+  Unfortunately this does not mean that d<SUP>2</SUP>y/dt<SUP>2</SUP>==0 or
+  d<SUP>2</SUP>x/dt<SUP>2</SUP>==0.
+  <TABLE CELLPADDING="2">
+    <TR>
+      <TD>d<SUP>2</SUP>y/dx<SUP>2 </SUP>=</TD>
+      <TD>d/dt ((dy/dt)/(dx/dt)) / dx/dt</TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TD>( ((dx/dt) * d<SUP>2</SUP>y/dt<SUP>2</SUP>) - ((dy/dt) *
+	d<SUP>2</SUP>x/dt<SUP>2</SUP>)) / (dx/dt)<SUP>3</SUP></TD>
+    </TR>
+  </TABLE>
+  <P>
+  After a lot of algebra this boils down to the quadratic in t:
+  <TABLE CELLPADDING="2">
+    <TR>
+      <TD ROWSPAN=3>&nbsp;</TD>
+      <TD>3*(a<SUB>x</SUB>*b<SUB>y</SUB>-a<SUB>y</SUB>*b<SUB>x</SUB>)*t<SUP>2</SUP>
+	+</TD>
+      <TD></TD>
+    </TR>
+    <TR>
+      <TD>3*(c<SUB>x</SUB>*a<SUB>y</SUB>-c<SUB>y</SUB>*a<SUB>x</SUB>)*t +</TD>
+      <TD></TD>
+    </TR>
+    <TR>
+      <TD>c<SUB>x</SUB>*b<SUB>y</SUB>-c<SUB>y</SUB>*b<SUB>x</SUB></TD>
+      <TD>= 0</TD>
+    </TR>
+  </TABLE>
+  <P>
+  If you examine this closely you will note that a quadratic spline
+  (a<SUB>y</SUB>==a<SUB>x</SUB>==0) can never have a point of inflection.
   <P>
     <HR>
   <H2>
@@ -384,7 +426,7 @@
   Unfortunately that doesn't always work. If the spline makes a very sharp
   bend, the our approximation method above is unable to produce a good
   approximation. When that happens FontForge attempts to break the spline in
-  two, and a point near the sharp bend. The approximation of the two sub-splines
+  two, adding a point near the sharp bend. The approximation of the two sub-splines
   is generally much better. (How does FontForge figure out where to break a
   line? It uses two methods, one just adds points to the extrema of the original
   curve, and the other looks for places where the innermost path intersects
