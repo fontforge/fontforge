@@ -928,15 +928,15 @@ return;
 }
 
 static GMenuItem gtf_popuplist[] = {
-    { { (unichar_t *) "_Undo", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 1, 0, 0, 'U' }, 'Z', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Undo },
+    { { (unichar_t *) "_Undo", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1 }, 'Z', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Undo },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) "Cu_t", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 1, 0, 0, 't' }, 'X', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Cut },
-    { { (unichar_t *) "_Copy", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 1, 0, 0, 'C' }, 'C', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Copy },
-    { { (unichar_t *) "_Paste", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 1, 0, 0, 'P' }, 'V', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Paste },
+    { { (unichar_t *) "Cu_t", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1 }, 'X', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Cut },
+    { { (unichar_t *) "_Copy", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1 }, 'C', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Copy },
+    { { (unichar_t *) "_Paste", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1 }, 'V', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Paste },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) "_Save in UTF8", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 1, 0, 0, 'S' }, 'S', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Save },
-    { { (unichar_t *) "Save in _UCS2", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 1, 0, 0, '2' }, '\0', ksm_control, NULL, NULL, GTFPopupInvoked, MID_SaveUCS2 },
-    { { (unichar_t *) "_Import", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 1, 0, 0, 'I' }, 'I', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Import },
+    { { (unichar_t *) "_Save in UTF8", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1 }, 'S', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Save },
+    { { (unichar_t *) "Save in _UCS2", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1 }, '\0', ksm_control, NULL, NULL, GTFPopupInvoked, MID_SaveUCS2 },
+    { { (unichar_t *) "_Import", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1 }, 'I', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Import },
     { NULL }
 };
 static int first = true;
