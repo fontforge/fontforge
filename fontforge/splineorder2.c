@@ -1386,6 +1386,7 @@ void SplinePointPrevCPChanged2(SplinePoint *sp) {
 	    p->me.x = ( p->prevcp.x+p->nextcp.x)/2;
 	    p->me.y = ( p->prevcp.y+p->nextcp.y)/2;
 	    SplineRefigure2(sp->prev);
+	    if (p->prev != NULL) SplineRefigure2(p->prev);
 	} else {
 	    p->nextcp = sp->prevcp;
 	    p->nonextcp = sp->noprevcp;
@@ -1434,6 +1435,7 @@ void SplinePointNextCPChanged2(SplinePoint *sp) {
 	    n->me.x = ( n->prevcp.x+n->nextcp.x)/2;
 	    n->me.y = ( n->prevcp.y+n->nextcp.y)/2;
 	    SplineRefigure2(sp->next);
+	    if (n->next != NULL) SplineRefigure2(n->next);
 	} else {
 	    n->prevcp = sp->nextcp;
 	    n->noprevcp = sp->nonextcp;
