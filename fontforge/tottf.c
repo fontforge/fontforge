@@ -2328,7 +2328,7 @@ static int dumpcffhmtx(struct alltabs *at,SplineFont *sf,int bitmaps) {
     if ( dovmetrics )
 	at->gi.vmtx = tmpfile();
     FigureFullMetricsEnd(sf,&at->gi);
-    if ( at->gi.bygid[0]!=-1 && sf->glyphs[at->gi.bygid[0]]->width==width ) {
+    if ( at->gi.bygid[0]!=-1 && (sf->glyphs[at->gi.bygid[0]]->width==width || width==-1 )) {
 	putshort(at->gi.hmtx,sf->glyphs[at->gi.bygid[0]]->width);
 	SplineCharFindBounds(sf->glyphs[at->gi.bygid[0]],&b);
 	putshort(at->gi.hmtx,b.minx);
