@@ -49,6 +49,9 @@ void CVDebugPointPopup(CharView *cv) {
 #else
 #include <ft2build.h>
 #include FT_FREETYPE_H
+#if FREETYPE_MINOR>=2
+# include <internal/internal.h>
+#endif
 #include "ttinterp.h"
 
 static Color rasterbackcol = 0xffffff;

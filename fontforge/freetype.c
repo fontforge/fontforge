@@ -85,6 +85,9 @@ return( NULL );
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_OUTLINE_H
+#if FREETYPE_MINOR>=2
+# include <internal/internal.h>
+#endif
 #include <unistd.h>
 #include <sys/mman.h>
 
@@ -611,8 +614,11 @@ static void FT_ClosePath(struct ft_context *context) {
     }
 }
 
-/* The cvs version (2.2.0?) defines FT_MoveTo as having const FT_Vector * */
+#if FREETYPE_MINOR>=2
+static int FT_MoveTo(const FT_Vector *to,void *user) {
+#else
 static int FT_MoveTo(FT_Vector *to,void *user) {
+#endif
     struct ft_context *context = user;
 
     FT_ClosePath(context);
@@ -639,7 +645,11 @@ static int FT_MoveTo(FT_Vector *to,void *user) {
 return( 0 );
 }
 
+#if FREETYPE_MINOR>=2
+static int FT_LineTo(const FT_Vector *to,void *user) {
+#else
 static int FT_LineTo(FT_Vector *to,void *user) {
+#endif
     struct ft_context *context = user;
     SplinePoint *sp;
 
@@ -658,7 +668,11 @@ static int FT_LineTo(FT_Vector *to,void *user) {
 return( 0 );
 }
 
+#if FREETYPE_MINOR>=2
+static int FT_ConicTo(const FT_Vector *_cp, const FT_Vector *to,void *user) {
+#else
 static int FT_ConicTo(FT_Vector *_cp, FT_Vector *to,void *user) {
+#endif
     struct ft_context *context = user;
     SplinePoint *sp;
 
@@ -681,7 +695,12 @@ static int FT_ConicTo(FT_Vector *_cp, FT_Vector *to,void *user) {
 return( 0 );
 }
 
+#if FREETYPE_MINOR>=2
+static int FT_CubicTo(const FT_Vector *cp1, const FT_Vector *cp2,
+	const FT_Vector *to,void *user) {
+#else
 static int FT_CubicTo(FT_Vector *cp1, FT_Vector *cp2,FT_Vector *to,void *user) {
+#endif
     struct ft_context *context = user;
     SplinePoint *sp;
 
