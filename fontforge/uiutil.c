@@ -424,7 +424,7 @@ return;
     {
 #endif
 	temp = galloc(strlen(browser) + strlen(fullspec) + 20);
-	sprintf( temp, "\"%s\" \"%s\" &", browser, fullspec );
+	sprintf( temp, strcmp(browser,"kfmclient openURL")==0 ? "%s \"%s\" &" : "\"%s\" \"%s\" &", browser, fullspec );
 	system(temp);
     }
     free(temp);
