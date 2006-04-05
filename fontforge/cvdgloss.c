@@ -35,6 +35,9 @@
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
+#if FREETYPE_MINOR>=2
+# include <internal/internal.h>
+#endif
 #include "ttinterp.h"
 
 struct scr {
