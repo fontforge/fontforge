@@ -2751,7 +2751,7 @@ return;
 	CVMouseDownFreeHand(cv,event);
       break;
       case cvt_curve: case cvt_corner: case cvt_tangent: case cvt_pen:
-	CVMouseDownPoint(cv);
+	CVMouseDownPoint(cv,event);
       break;
       case cvt_ruler:
 	CVMouseDownRuler(cv,event);
@@ -2832,7 +2832,7 @@ int SSTtfNumberPoints(SplineSet *ss) {
 		((ss->first->ttfindex == pnum+1 && ss->first->prev->from->nextcpindex==pnum ) ||
 		 SPInterpolate( ss->first ));
 	startcnt = pnum;
-	if ( starts_with_cp )
+	if ( starts_with_cp && ss->first->prev!=NULL )
 	    ss->first->prev->from->nextcpindex = pnum++;
 	for ( sp=ss->first; ; ) {
 	    if ( SPInterpolate(sp) )
