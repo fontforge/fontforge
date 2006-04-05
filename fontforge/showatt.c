@@ -2885,7 +2885,7 @@ static void BuildFCmpNodes(struct att_dlg *att, SplineFont *sf1, SplineFont *sf2
 
     att->tables = tables = gcalloc(2,sizeof(struct node));
     att->current = tables;
-    if ( !CompareFonts(sf1,sf2,tmp,flags)) {
+    if ( !CompareFonts(sf1,sf2,tmp,flags) && ftell(tmp)==0 ) {
 	tables[0].label = copy(_("No differences found"));
     } else {
 	tables[0].label = copy(_("Differences..."));
@@ -2917,7 +2917,12 @@ static void FontCmpDlg(FontView *fv1, FontView *fv2,int flags) {
     ShowAttCreateDlg(att, sf1, dt_font_comp, buffer);
     att->fv1 = fv1; att->fv2 = fv2;
 
+    GDrawSetCursor(fv1->v,ct_watch);
+    GDrawSetCursor(fv2->v,ct_watch);
     BuildFCmpNodes(att,sf1,sf2,flags);
+    GDrawSetCursor(fv1->v,ct_pointer);
+    GDrawSetCursor(fv2->v,ct_pointer);
+    
     att->open_cnt = SizeCnt(att,att->tables,0);
     GScrollBarSetBounds(att->vsb,0,att->open_cnt,att->lines_page);
 
@@ -2955,6 +2960,7 @@ struct mf_data {
 #define CID_HintMasks	10
 #define CID_HintMasksWConflicts	11
 #define CID_NoHintMasks	12
+#define CID_RefContourWarn	13
 
 static int last_flags = fcf_outlines|fcf_hinting|fcf_bitmaps|fcf_names|fcf_gpos|fcf_gsub;
 
@@ -2979,6 +2985,8 @@ static int FC_OK(GGadget *g, GEvent *e) {
 	    flags |= fcf_exact;
 	else if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_Warn)) )
 	    flags |= fcf_warn_not_exact;
+	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_RefContourWarn)) )
+	    flags |= fcf_warn_not_ref_exact;
 	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_Hinting)) )
 	    flags |= fcf_hinting;
 	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_HintMasks)) )
@@ -3045,7 +3053,7 @@ void FontCompareDlg(FontView *fv) {
 	wattrs.utf8_window_title = _("Font Compare...");
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,170));
-	pos.height = GDrawPointsToPixels(NULL,88+12*14+2);
+	pos.height = GDrawPointsToPixels(NULL,88+13*14+2);
 	gw = GDrawCreateTopWindow(NULL,&pos,fc_e_h,&d,&wattrs);
 
 	memset(&label,0,sizeof(label));
@@ -3097,27 +3105,40 @@ void FontCompareDlg(FontView *fv) {
 	if ( fv->sf->onlybitmaps )
 	    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
 	else
+	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | ((last_flags&fcf_exact)?0:gg_cb_on);
+	label[k].text = (unichar_t *) _("_Accept inexact");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.cid = CID_Fuzzy;
+	gcd[k].gd.popup_msg = (unichar_t *) _("Accept an outline which is a close approximation to the original.\nIt may be off by an em-unit, or have a reference which matches a contour.");
+	gcd[k++].creator = GRadioCreate;
+
+	gcd[k].gd.pos.x = 15; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
+	if ( fv->sf->onlybitmaps )
+	    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+	else
 	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | ((last_flags&fcf_warn_not_exact)?gg_cb_on:0);
 	label[k].text = (unichar_t *) _("_Warn if inexact");
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.cid = CID_Warn;
-	gcd[k].gd.popup_msg = (unichar_t *) _("Accept an outline which is a close approximation to the original but warn if it is not exactly the same");
-	gcd[k++].creator = GRadioCreate;
+	gcd[k].gd.popup_msg = (unichar_t *) _("Warn if the outlines are close but not exactly the same");
+	gcd[k++].creator = GCheckBoxCreate;
 
-	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
+	gcd[k].gd.pos.x = 15; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
 	if ( fv->sf->onlybitmaps )
 	    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
 	else
-	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | ((last_flags&(fcf_exact|fcf_warn_not_exact))?0:gg_cb_on);
-	label[k].text = (unichar_t *) _("_Accept inexact");
+	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | ((last_flags&fcf_warn_not_ref_exact)?gg_cb_on:0);
+	label[k].text = (unichar_t *) _("Warn if _unlinked references");
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
-	gcd[k].gd.cid = CID_Fuzzy;
-	gcd[k].gd.popup_msg = (unichar_t *) _("Accept an outline which is a close approximation to the original");
-	gcd[k++].creator = GRadioCreate;
+	gcd[k].gd.cid = CID_RefContourWarn;
+	gcd[k].gd.popup_msg = (unichar_t *) _("Warn if one glyph contains an outline while the other contains a reference (but the reference describes the same outline)");
+	gcd[k++].creator = GCheckBoxCreate;
 
 	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
 	if ( fv->sf->onlybitmaps )

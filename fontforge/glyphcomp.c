@@ -405,6 +405,57 @@ return( SS_NoMatch|SS_ContourMismatch );
 return( info );
 }
 
+static int SSRefCompare(const SplineSet *ss1,const SplineSet *ss2,
+	const RefChar *refs1, const RefChar *refs2,
+	real pt_err, real spline_err) {
+    /* Convert all references to contours */
+    /* Note: Hintmasks are trashed */
+    SplineSet *head1;
+    SplineSet *head2;
+    SplineSet *temp, *tail;
+    const RefChar *r;
+    int ret, layer;
+    SplinePoint *junk;
+
+    head1 = SplinePointListCopy(ss1);
+    if ( head1==NULL ) tail = NULL;
+    else for ( tail=head1 ; tail->next!=NULL; tail = tail->next );
+    for ( r=refs1; r!=NULL; r=r->next ) {
+	for ( layer=0; layer<r->layer_cnt; ++layer ) {
+	    temp = SplinePointListCopy(r->layers[layer].splines);
+	    if ( head1==NULL )
+		head1=tail = temp;
+	    else
+		tail->next = temp;
+	    if ( tail!=NULL )
+		for ( ; tail->next!=NULL; tail = tail->next );
+	}
+    }
+
+    head2 = SplinePointListCopy(ss2);
+    if ( head2==NULL ) tail = NULL;
+    else for ( tail=head2 ; tail->next!=NULL; tail = tail->next );
+    for ( r=refs2; r!=NULL; r=r->next ) {
+	for ( layer=0; layer<r->layer_cnt; ++layer ) {
+	    temp = SplinePointListCopy(r->layers[layer].splines);
+	    if ( head2==NULL )
+		head2 = tail = temp;
+	    else
+		tail->next = temp;
+	    if ( tail!=NULL )
+		for ( ; tail->next!=NULL; tail = tail->next );
+	}
+    }
+
+    ret = SSsCompare(head1,head2,pt_err,spline_err,&junk);
+    if ( !(ret&SS_NoMatch) )
+	ret |= SS_UnlinkRefMatch;
+
+    SplinePointListsFree(head1);
+    SplinePointListsFree(head2);
+return( ret );
+}
+
 /* ************************************************************************** */
 /* ********************* Code to compare bitmap glyphs ********************** */
 /* ************************************************************************** */
@@ -488,27 +539,7 @@ return( failed == 0 ? BC_Match : failed );
 /* **************** Code to selected glyphs against clipboard *************** */
 /* ************************************************************************** */
 
-static int CompareLayer(Context *c, const SplineSet *ss1,const SplineSet *ss2,
-	real pt_err, real spline_err, const char *name, int diffs_are_errors,
-	SplinePoint **_hmfail) {
-    int val;
-
-    if ( pt_err<0 && spline_err<0 )
-return( SS_PointsMatch );
-    val = SSsCompare(ss1,ss2, pt_err, spline_err,_hmfail);
-    if ( (val&SS_NoMatch) && diffs_are_errors ) {
-	if ( val & SS_DiffContourCount )
-	    ScriptErrorString(c,"Spline mismatch (different number of contours) in glyph", name);
-	else if ( val & SS_MismatchOpenClosed )
-	    ScriptErrorString(c,"Open/Closed contour mismatch in glyph", name);
-	else
-	    ScriptErrorString(c,"Spline mismatch in glyph", name);
-    }
-return( val );
-}
-
-static int RefCheck(Context *c, const RefChar *ref1,const RefChar *ref2,
-	const char *name, int diffs_are_errors ) {
+static int RefCheck(Context *c, const RefChar *ref1,const RefChar *ref2 ) {
     const RefChar *r1, *r2;
     int i;
 
@@ -527,20 +558,54 @@ static int RefCheck(Context *c, const RefChar *ref1,const RefChar *ref2,
 	}
 	if ( r2!=NULL )
 	    ((RefChar *) r2)->checked = true;
-	else if ( diffs_are_errors )
-	    ScriptErrorString(c,"Reference mismatch in glyph", name);
 	else
 return( false );
     }
 
     for ( r2 = ref2; r2!=NULL; r2=r2->next ) if ( !r2->checked ) {
-	if ( diffs_are_errors )
-	    ScriptErrorString(c,"Reference mismatch in glyph", name);
-	else
 return( false );
     }
 
 return( true );
+}
+
+static int CompareLayer(Context *c, const SplineSet *ss1,const SplineSet *ss2,
+	const RefChar *refs1, const RefChar *refs2,
+	real pt_err, real spline_err, const char *name, int diffs_are_errors,
+	SplinePoint **_hmfail) {
+    int val;
+
+    if ( pt_err<0 && spline_err<0 )
+return( SS_PointsMatch );
+#if 0
+    /* Unfortunately we can't do this because references in the clipboard */
+    /*  don't have inline copies of their splines */
+    if ( !RefCheck( c,refs1,refs2 )) {
+	val = SSRefCompare(ss1,ss2,refs1,refs2,pt_err,spline_err);
+	if ( val&SS_NoMatch )
+	    val |= SS_RefMismatch;
+    } else
+	val = SSsCompare(ss1,ss2, pt_err, spline_err,_hmfail);
+#else
+    val = SSsCompare(ss1,ss2, pt_err, spline_err,_hmfail);
+    if ( !RefCheck( c,refs1,refs2 )) {
+	if ( !(val&SS_NoMatch) )
+	    val = SS_NoMatch|SS_RefMismatch;
+	else
+	    val |= SS_RefMismatch;
+    }
+#endif
+    if ( (val&SS_NoMatch) && diffs_are_errors ) {
+	if ( val & SS_DiffContourCount )
+	    ScriptErrorString(c,"Spline mismatch (different number of contours) in glyph", name);
+	else if ( val & SS_MismatchOpenClosed )
+	    ScriptErrorString(c,"Open/Closed contour mismatch in glyph", name);
+	else if ( val & SS_RefMismatch )
+	    ScriptErrorString(c,"Reference mismatch in glyph", name);
+	else
+	    ScriptErrorString(c,"Spline mismatch in glyph", name);
+    }
+return( val );
 }
 
 static int CompareBitmap(Context *c,SplineChar *sc,const Undoes *cur,
@@ -626,6 +691,7 @@ static int CompareSplines(Context *c,SplineChar *sc,const Undoes *cur,
       case ut_state: case ut_statehint: case ut_statename:
 	if ( err>=0 ) {
 	    ret = CompareLayer(c,sc->layers[ly_fore].splines,cur->u.state.splines,
+			sc->layers[ly_fore].refs,cur->u.state.refs,
 			pt_err, spline_err,sc->name, diffs_are_errors, &hmfail);
 	    if ( ret&SS_NoMatch )
 		failed |= ret;
@@ -633,8 +699,6 @@ static int CompareSplines(Context *c,SplineChar *sc,const Undoes *cur,
 		failed |= SS_NoMatch|SS_VWidthMismatch;
 	    if ( sc->width-cur->u.state.width>err || sc->width-cur->u.state.width<-err )
 		failed |= SS_NoMatch|SS_WidthMismatch;
-	    if ( !RefCheck( c,sc->layers[ly_fore].refs,cur->u.state.refs, sc->name, diffs_are_errors ))
-		failed |= SS_NoMatch|SS_RefMismatch;
 	}
 	if ( cur->undotype==ut_statehint && (comp_hints&1) &&
 		!CompareHints( sc,cur->u.state.u.hints ))
@@ -652,19 +716,18 @@ static int CompareSplines(Context *c,SplineChar *sc,const Undoes *cur,
 		    ly<sc->layer_cnt && layer!=NULL;
 		    ++ly, layer = cur->next ) {
 		temp = CompareLayer(c,sc->layers[ly].splines,cur->u.state.splines,
+			    sc->layers[ly].refs,cur->u.state.refs,
 			    pt_err, spline_err,sc->name, diffs_are_errors, &hmfail);
 		if ( temp&SS_NoMatch )
 		    failed |= temp;
 		else
 		    ret |= temp;
-		if ( ly==ly_fore && (sc->vwidth-cur->u.state.vwidth>err || sc->vwidth-cur->u.state.vwidth<-err) )
-		    failed |= SS_NoMatch|SS_VWidthMismatch;
-		if ( ly==ly_fore && (sc->width-cur->u.state.width>err || sc->width-cur->u.state.width<-err) )
-		    failed |= SS_NoMatch|SS_WidthMismatch;
-		if ( !RefCheck( c,sc->layers[ly].refs,cur->u.state.refs, sc->name, diffs_are_errors ))
-		    failed |= SS_NoMatch|SS_RefMismatch;
 		/* No hints in type3 fonts */
 	    }
+	    if ( ly==ly_fore && (sc->vwidth-cur->u.state.vwidth>err || sc->vwidth-cur->u.state.vwidth<-err) )
+		failed |= SS_NoMatch|SS_VWidthMismatch;
+	    if ( ly==ly_fore && (sc->width-cur->u.state.width>err || sc->width-cur->u.state.width<-err) )
+		failed |= SS_NoMatch|SS_WidthMismatch;
 	}
 	if ( ly!=sc->layer_cnt || layer!=NULL )
 	    failed |= SS_NoMatch|SS_LayerCntMismatch;
@@ -831,10 +894,11 @@ return( false );
 return( true );
 }
 
-static void fdRefCheck(struct font_diff *fd, SplineChar *sc1,
-	RefChar *ref1, RefChar *ref2 ) {
+static int fdRefCheck(struct font_diff *fd, SplineChar *sc1,
+	RefChar *ref1, RefChar *ref2, int complain ) {
     RefChar *r1, *r2;
     int i;
+    int ret = true;
 
     for ( r2 = ref2; r2!=NULL; r2=r2->next )
 	r2->checked = false;
@@ -857,20 +921,28 @@ static void fdRefCheck(struct font_diff *fd, SplineChar *sc1,
 			(r1->sc->unicodeenc!=-1 || strcmp(r1->sc->name,r1->sc->name)==0))
 	    break;
 	    }
-	    if ( r2==NULL )
-		GlyphDiffSCError(fd,sc1,U_("Glyph “%s” contains a reference to %s in %s\n"),
-			sc1->name, r1->sc->name, fd->name1 );
-	    else {
-		GlyphDiffSCError(fd,sc1,U_("Glyph “%s” refers to %s with a different transformation matrix\n"),
-			sc1->name, r1->sc->name, fd->name1 );
+	    if ( r2==NULL ) {
+		if ( complain )
+		    GlyphDiffSCError(fd,sc1,U_("Glyph “%s” contains a reference to %s in %s\n"),
+			    sc1->name, r1->sc->name, fd->name1 );
+		ret = false;
+	    } else {
+		if ( complain )
+		    GlyphDiffSCError(fd,sc1,U_("Glyph “%s” refers to %s with a different transformation matrix\n"),
+			    sc1->name, r1->sc->name, fd->name1 );
+		ret = false;
 		r2->checked = true;
 	    }
 	}
     }
 
-    for ( r2 = ref2; r2!=NULL; r2=r2->next ) if ( !r2->checked )
-	GlyphDiffSCError(fd,sc1,U_("Glyph “%s” contains a reference to %s in %s\n"),
-		sc1->name, r2->sc->name, fd->name2 );
+    for ( r2 = ref2; r2!=NULL; r2=r2->next ) if ( !r2->checked ) {
+	if ( complain )
+	    GlyphDiffSCError(fd,sc1,U_("Glyph “%s” contains a reference to %s in %s\n"),
+		    sc1->name, r2->sc->name, fd->name2 );
+	ret = false;
+    }
+return( ret );
 }
 
 static void SCCompare(SplineChar *sc1,SplineChar *sc2,struct font_diff *fd) {
@@ -897,15 +969,31 @@ static void SCCompare(SplineChar *sc1,SplineChar *sc2,struct font_diff *fd) {
 		GlyphDiffSCError(fd,sc1,U_("Glyph “%s” has a different stroke in layer %d\n"),
 			sc1->name, layer );
 #endif
-	    fdRefCheck(fd, sc1, sc1->layers[layer].refs, sc2->layers[layer].refs );
-	    val = SSsCompare(sc1->layers[layer].splines, sc2->layers[layer].splines,
-		    0,-1, &hmfail );
-	    if ( (val&SS_NoMatch) && !(fd->flags&fcf_exact) ) {
-		val = SSsCompare(sc1->layers[layer].splines, sc2->layers[layer].splines,
-			-1,1.5, &hmfail );
-		if ( !(val&SS_NoMatch) && (fd->flags&fcf_warn_not_exact) )
+	    if ( !(fd->flags&fcf_exact) ) {
+		int tdiff;
+		val = SS_NoMatch;
+		if ( !fdRefCheck(fd, sc1, sc1->layers[layer].refs, sc2->layers[layer].refs, false )) {
+		    val = SSRefCompare(sc1->layers[layer].splines, sc2->layers[layer].splines,
+			    sc1->layers[layer].refs, sc2->layers[layer].refs,
+			    0,1.5 );
+		} 
+		if ( val&SS_NoMatch ) {
+		    fdRefCheck(fd, sc1, sc1->layers[layer].refs, sc2->layers[layer].refs, true );
+		    val = SSsCompare(sc1->layers[layer].splines, sc2->layers[layer].splines,
+			    0,1.5, &hmfail );
+		}
+		tdiff = fd->diff;
+		if ( (val&SS_ContourMatch) && (fd->flags&fcf_warn_not_exact) )
 		    GlyphDiffSCError(fd,sc1,U_("Glyph “%s” does not have splines which match exactly, but they are close\n"),
 			    sc1->name );
+		if ( (val&SS_UnlinkRefMatch) && (fd->flags&fcf_warn_not_ref_exact) )
+		    GlyphDiffSCError(fd,sc1,U_("A match was found after unlinking references in glyph “%s”\n"),
+			    sc1->name );
+		fd->diff = tdiff;	/* those are warnings, not errors */
+	    } else {
+		fdRefCheck(fd, sc1, sc1->layers[layer].refs, sc2->layers[layer].refs, true );
+		val = SSsCompare(sc1->layers[layer].splines, sc2->layers[layer].splines,
+			0,-1, &hmfail );
 	    }
 	    if ( val&SS_NoMatch ) {
 		if ( val & SS_DiffContourCount )
