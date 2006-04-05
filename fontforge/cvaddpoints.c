@@ -229,7 +229,7 @@ return( found );
 
 	and, if the old point is a tangent, we may need to adjust its control pt
 */
-void CVMouseDownPoint(CharView *cv) {
+void CVMouseDownPoint(CharView *cv, GEvent *event) {
     SplineSet *sel, *ss;
     SplinePoint *sp, *base = NULL;
     SplineChar *sc = cv->sc;
@@ -238,6 +238,8 @@ void CVMouseDownPoint(CharView *cv) {
 			    cv->active_tool==cvt_tangent?pt_tangent:
 			    /*cv->active_tool==cvt_pen?*/pt_corner);
     int order2 = cv->sc->parent->order2;
+    int order2_style = (order2 && !(event->u.mouse.state&ksm_alt)) ||
+		    (!order2 && (event->u.mouse.state&ksm_alt));
 
     cv->active_spl = NULL;
     cv->active_sp = NULL;
@@ -269,7 +271,15 @@ return;			/* We clicked on the active point, that's a no-op */
 	    sp->nextcpdef = sp->prevcpdef = 1;
 	    sp->pointtype = ptype;
 	    sp->selected = true;
-	    if ( order2 && !base->nonextcp ) {
+	    if ( !base->nonextcp && order2_style &&
+		    cv->active_tool==cvt_pen ) {
+		sp->prevcp = base->nextcp;
+		sp->noprevcp = false;
+		sp->me.x = ( sp->prevcp.x + sp->nextcp.x )/2;
+		sp->me.y = ( sp->prevcp.y + sp->nextcp.y )/2;
+		sp->nonextcp = false;
+		sp->pointtype = pt_curve;
+	    } else if ( order2 && !base->nonextcp ) {
 		sp->prevcp = base->nextcp;
 		sp->noprevcp = false;
 		if (  cv->active_tool==cvt_pen ) {
@@ -353,6 +363,8 @@ return;			/* We clicked on the active point, that's a no-op */
 	sp = SplineBisect(cv->p.spline,cv->p.t);
 	cv->joinvalid = true;
 	cv->joinpos = *sp; cv->joinpos.selected = false;
+	if (  cv->active_tool==cvt_pen )
+	    ptype = pt_curve;
 	sp->pointtype = ptype;
 	sp->selected = true;
 	ss = cv->p.spl;
@@ -485,6 +497,9 @@ return;
 
 void CVMouseMovePen(CharView *cv, PressedOn *p, GEvent *event) {
     SplinePoint *active = cv->active_sp;
+    int order2 = cv->sc->parent->order2;
+    int order2_style = (order2 && !(event->u.mouse.state&ksm_alt)) ||
+		    (!order2 && (event->u.mouse.state&ksm_alt));
 
     if ( active==NULL )
 return;
@@ -501,7 +516,20 @@ return;
 
     active->nextcp.x = cv->info.x;
     active->nextcp.y = cv->info.y;
-    if ( active->nextcp.x==active->me.x && active->nextcp.y==active->me.y ) {
+    if ( order2_style && active->next==NULL ) {
+	active->me.x = (active->nextcp.x + active->prevcp.x)/2;
+	active->me.y = (active->nextcp.y + active->prevcp.y)/2;
+	if ( active->me.x == active->nextcp.x && active->me.y == active->nextcp.y ) {
+	    active->nonextcp = active->noprevcp = true;
+	} else {
+	    active->nonextcp = active->noprevcp = false;
+	    active->pointtype = pt_curve;
+	}
+	if ( active->prev!=NULL )
+	    SplineRefigure(active->prev);
+	SCUpdateAll(cv->sc);
+return;
+    } else if ( active->nextcp.x==active->me.x && active->nextcp.y==active->me.y ) {
 	active->prevcp = active->me;
 	active->nonextcp = active->noprevcp = true;
 	active->pointtype = pt_corner;

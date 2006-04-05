@@ -1078,7 +1078,7 @@ extern void CVMouseUpFreeHand(CharView *cv, GEvent *event);
 extern void CVMouseDownShape(CharView *cv,GEvent *event);
 extern void BVChar(BitmapView *cv, GEvent *event );
 #endif
-extern void CVMouseDownPoint(CharView *cv);
+extern void CVMouseDownPoint(CharView *cv,GEvent *event);
 extern void CVMouseMovePoint(CharView *cv,PressedOn *);
 extern void CVMouseUpPointer(CharView *cv );
 extern void CVCheckResizeCursors(CharView *cv);
