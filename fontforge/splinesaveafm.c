@@ -2098,8 +2098,9 @@ static const unsigned short local_unicode_from_win[] = {
   0x00f8, 0x00f9, 0x00fa, 0x00fb, 0x00fc, 0x00fd, 0x00fe, 0x00ff
 };
 
-static void inwin(SplineFont *sf, int winmap[256]) {
+static int inwin(SplineFont *sf, int winmap[256]) {
     int i, j;
+    int cnt;
 
     memset(winmap,-1,sizeof(int[256]));
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
@@ -2113,6 +2114,10 @@ static void inwin(SplineFont *sf, int winmap[256]) {
 	    }
 	}
     }
+    for ( i=0x80, cnt=0; i<0x100; ++i )
+	if ( winmap[i]!=-1 )
+	    ++cnt;
+return( cnt>64 );
 }
 
 static int revwinmap(int winmap[256], int gid) {
@@ -2150,11 +2155,14 @@ int PfmSplineFont(FILE *pfm, SplineFont *sf, int type0,EncMap *map) {
     else if ( map->enc->is_simplechinese ||
 	    (sf->cidmaster!=NULL && strnmatch(sf->cidmaster->ordering,"GB",2)==0 ))
 	windows_encoding = 134;
+    else if ( map->enc->is_custom )
+	windows_encoding = 2;
     else
 	windows_encoding = strmatch(map->enc->enc_name,"symbol")==0?2:0;
     if ( windows_encoding==0 )
-	inwin(sf,winmap);
-    else {
+	if ( !inwin(sf,winmap))
+	    windows_encoding = 0xff;
+    if ( windows_encoding!=0 ) {
 	for ( i=0; i<256 && i<map->enccount; ++i )
 	    winmap[i] = i;
 	for ( ; i<256; ++i )
