@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Dec-2000 -->
-  <!-- AP: Last modified: 11-Dec-2005 -->
+  <!-- AP: Last modified: 4-Apr-2006 -->
   <TITLE>B&eacute;zier Splines</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -143,6 +143,36 @@
   slope at those two points. (the one quadratic has its end points as the end
   points of the interval, and its control point is determined by the intersections
   of the lines tangent to the cubic at the start and end of the interval).
+  <P>
+  <IMG SRC="cubic2quad.png" WIDTH="482" HEIGHT="180" ALIGN="Right">I cannot
+  prove this, but have determined emperically (after being told it worked)
+  that if a cubic spline -- like the quarter ellipse at right -- is divided
+  "evenly" into n quadratic splines (here n==3) then the control points will
+  have the nice property that the on-curve points are exactly mid-way between
+  control points -- this means that truetype can represent them as interpolated
+  points. An even division means means that each sub-point is placed where
+  t=i/n (where 0&lt;i&lt;n).
+  <P>
+  FontForge first checks to see if the curve is already a quadratic -- this
+  might happen if the cubic originally came from a truetype font. If it is
+  it simply converts the control point.
+  <P>
+  Otherwise FontForge start inserting points. It begins by inserting a single
+  point mid-way on the spline. If this produces a good approximation it stops,
+  otherwise it tries again with two, three ... additional points.
+  <P>
+  On each test it will round the control points to integer values because truetype
+  output requires this (note that it does not do this to the on-curve points,
+  they are interpolated between control points and will be ok if the control
+  points are). Then it checks to see if the resultant quadratics are close
+  to the original curve.
+  <P>
+  FontForge may also break the curve at its points of inflection (because no
+  quadratic can have one there should be a point there to start a new quadratic)
+  and apply the above algorithm to the components.
+  <P>
+  If FontForge can find no good approximation using the above algorithm it
+  will fall back to its old method, which is:
   <P>
   Start from the end of the spline and every so often (ie. within the margin
   of error) check to see if the one permissible quadratic approximation actually
