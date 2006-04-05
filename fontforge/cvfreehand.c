@@ -479,7 +479,6 @@ static SplineSet *TraceCurve(CharView *cv) {
     TPoint *mids;
     double len,sofar;
     StrokeInfo *si;
-    int order2 = cv->sc->parent->order2;
 
     /* First we look for straight lines in the data. We will put SplinePoints */
     /*  at their endpoints */
@@ -565,10 +564,12 @@ static SplineSet *TraceCurve(CharView *cv) {
 	for ( pt=base->next; !pt->use_as_pt ; pt=pt->next );
 	cur = SplinePointCreate(pt->here.x,pt->here.y);
 	cur->ptindex = pt->num;
+	/* even if we are order2, do everything in order3, and then convert */
+	/*  when they raise the pen */
 	if ( base->next->online || base->next==pt )
-	    SplineMake(last,cur,order2);
+	    SplineMake(last,cur,false);
 	else
-	    ApproximateSplineFromPoints(last,cur,mids+base->num+1,pt->num-base->num-1,order2);
+	    ApproximateSplineFromPoints(last,cur,mids+base->num+1,pt->num-base->num-1,false);
 	last = cur;
     }
     spl->last = last;
@@ -600,13 +601,13 @@ static SplineSet *TraceCurve(CharView *cv) {
 		if ( !cur->noprevcp )
 		    ApproximateSplineFromPointsSlopes(cur->prev->from,cur,
 			    mids+cur->prev->from->ptindex+1,
-			    cur->ptindex-cur->prev->from->ptindex-1,order2);
+			    cur->ptindex-cur->prev->from->ptindex-1,false);
 	    }
 	}
 	if ( !cur->nonextcp )
 	    ApproximateSplineFromPointsSlopes(cur,cur->next->to,
 		    mids+cur->ptindex+1,
-		    cur->next->to->ptindex-cur->ptindex-1,order2);
+		    cur->next->to->ptindex-cur->ptindex-1,false);
     }
 
     free(mids);
@@ -783,8 +784,6 @@ static void TraceDataCleanup(CharView *cv) {
 }
 
 void CVMouseDownFreeHand(CharView *cv, GEvent *event) {
-    if ( cv->sc->parent->order2 )
-return;
 
     TraceDataFree(cv->freehand.head);
     cv->freehand.head = cv->freehand.last = NULL;
@@ -800,9 +799,6 @@ void CVMouseMoveFreeHand(CharView *cv, GEvent *event) {
     double dx, dy;
     SplinePoint *last;
     BasePoint *here;
-
-    if ( cv->sc->parent->order2 )
-return;
 
     TraceDataFromEvent(cv,event);
     /* I used to do the full processing here to get an path. But that took */
@@ -821,9 +817,6 @@ return;
 
 void CVMouseUpFreeHand(CharView *cv, GEvent *event) {
 
-    if ( cv->sc->parent->order2 )
-return;
-
     TraceDataCleanup(cv);
 
     if ( event->u.chr.state&ksm_meta )
@@ -841,6 +834,8 @@ return;
 		sf_normal,.75/cv->scale,0);
 #endif
 	CVPreserveState(cv);
+	if ( cv->sc->parent->order2 )
+	    cv->freehand.current_trace = SplineSetsTTFApprox(cv->freehand.current_trace);
 	if ( CVFreeHandInfo()->stroke_type==si_centerline ) {
 	    cv->freehand.current_trace->next = cv->layerheads[cv->drawmode]->splines;
 	    cv->layerheads[cv->drawmode]->splines = cv->freehand.current_trace;
