@@ -273,9 +273,11 @@
 	<LI>
 	  If a font contain an encoded glyph called ".notdef" and that glyph was not
 	  the first glyph, then type1 fonts had a .notdef glyph at a random place in
-	  the font which screwed up freetype's rasterizer in some modes (2.1.10 ftview
-	  failed, ftstring worked) Rather than figure out what's wrong with freetype,
-	  just always make notdef be first in the chars dictionary and then all is
+	  the font. Now freetype seems to renumber glyphs so .notdef is always glyph
+	  0 which fontforge did not expect and produced some strange results when
+	  rasterizing (tested on 2.1.10).
+	  Fix is simple: 
+	  always make notdef be first in the chars dictionary and then all is
 	  happy.
 	<LI>
 	  Add new scripting command to compare two glyphs. I want this for testsuites,
