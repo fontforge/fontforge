@@ -1120,15 +1120,14 @@ return( k );
 return( -1 );
 }
 
-SplinePointList *SplinePointListCopy1(SplinePointList *spl) {
+SplinePointList *SplinePointListCopy1(const SplinePointList *spl) {
     SplinePointList *cur;
-    SplinePoint *pt, *cpt, *first;
+    const SplinePoint *pt; SplinePoint *cpt;
     Spline *spline;
 
     cur = chunkalloc(sizeof(SplinePointList));
 
-    first = NULL;
-    for ( pt=spl->first; pt!=NULL && pt!=first; pt = pt->next->to ) {
+    for ( pt=spl->first; ;  ) {
 	cpt = chunkalloc(sizeof(SplinePoint));
 	*cpt = *pt;
 	if ( pt->hintmask!=NULL ) {
@@ -1150,9 +1149,11 @@ SplinePointList *SplinePointListCopy1(SplinePointList *spl) {
 	}
 	if ( pt->next==NULL )
     break;
-	if ( first==NULL ) first = pt;
+	pt = pt->next->to;
+	if ( pt==spl->first )
+    break;
     }
-    if ( pt==first ) {
+    if ( spl->first->prev!=NULL ) {
 	cpt = cur->first;
 	spline = chunkalloc(sizeof(Spline));
 	*spline = *pt->prev;
@@ -1231,7 +1232,7 @@ static SplinePointList *SplinePointListCopySelected1(SplinePointList *spl) {
 return( head );
 }
 
-SplinePointList *SplinePointListCopy(SplinePointList *base) {
+SplinePointList *SplinePointListCopy(const SplinePointList *base) {
     SplinePointList *head=NULL, *last=NULL, *cur;
 
     for ( ; base!=NULL; base = base->next ) {

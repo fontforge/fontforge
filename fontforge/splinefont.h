@@ -1399,8 +1399,8 @@ extern void SplinePointCatagorize(SplinePoint *sp);
 extern int SplinePointIsACorner(SplinePoint *sp);
 extern void SPLCatagorizePoints(SplinePointList *spl);
 extern void SCCatagorizePoints(SplineChar *sc);
-extern SplinePointList *SplinePointListCopy1(SplinePointList *spl);
-extern SplinePointList *SplinePointListCopy(SplinePointList *base);
+extern SplinePointList *SplinePointListCopy1(const SplinePointList *spl);
+extern SplinePointList *SplinePointListCopy(const SplinePointList *base);
 extern SplinePointList *SplinePointListCopySelected(SplinePointList *base);
 extern ImageList *ImageListCopy(ImageList *cimg);
 extern ImageList *ImageListTransform(ImageList *cimg,real transform[6]);
@@ -1951,6 +1951,7 @@ enum Compare_Ret {	SS_DiffContourCount	= 1,
 			SS_HintMaskMismatch	= 4096,
 			SS_LayerCntMismatch	= 8192,
 			SS_ContourMismatch	= 16384,
+			SS_UnlinkRefMatch	= 32768,
 
 			BC_DepthMismatch	= 1<<16,
 			BC_BoundingBoxMismatch	= 2<<16,
@@ -1964,7 +1965,8 @@ extern enum Compare_Ret SSsCompare(const SplineSet *ss1, const SplineSet *ss2,
 	real pt_err, real spline_err, SplinePoint **hmfail);
 enum font_compare_flags { fcf_outlines=1, fcf_exact=2, fcf_warn_not_exact=4,
 	fcf_hinting=8, fcf_hintmasks=0x10, fcf_hmonlywithconflicts=0x20,
-	fcf_bitmaps=0x40, fcf_names = 0x80, fcf_gpos=0x100, fcf_gsub=0x200 };
+	fcf_warn_not_ref_exact=0x40,
+	fcf_bitmaps=0x80, fcf_names = 0x100, fcf_gpos=0x200, fcf_gsub=0x400 };
 extern int CompareFonts(SplineFont *sf1, SplineFont *sf2, FILE *diffs, int flags);
 
 
