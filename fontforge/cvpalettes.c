@@ -663,9 +663,9 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
 	mi = i;
 	if ( i==(cvt_rect)/2 && ((j==0 && rectelipse) || (j==1 && polystar)) )
 	    ++mi;
-	if ( cv->sc->parent->order2 && buttons[mi][j]==&GIcon_freehand )
-	    GDrawDrawImage(pixmap,&GIcon_greyfree,NULL,j*27+1,i*27+1);
-	else
+/*	if ( cv->sc->parent->order2 && buttons[mi][j]==&GIcon_freehand ) */
+/*	    GDrawDrawImage(pixmap,&GIcon_greyfree,NULL,j*27+1,i*27+1);	 */
+/*	else								 */
 	    GDrawDrawImage(pixmap,buttons[mi][j],NULL,j*27+1,i*27+1);
 	norm = (mi*2+j!=tool);
 	GDrawDrawLine(pixmap,j*27,i*27,j*27+25,i*27,norm?0xe0e0e0:0x707070);
@@ -859,8 +859,10 @@ static void ToolsMouse(CharView *cv, GEvent *event) {
     /* we have two fewer buttons than commands as two bottons each control two commands */
     if ( pos<0 || pos>=cvt_max )
 	pos = cvt_none;
+#if 0
     if ( pos==cvt_freehand && cv->sc->parent->order2 )
 return;			/* Not available in order2 spline mode */
+#endif
     if ( event->type == et_mousedown ) {
 	if ( isstylus && event->u.mouse.button==2 )
 	    /* Not a real button press, only touch counts. This is a modifier */;
