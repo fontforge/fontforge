@@ -2914,6 +2914,7 @@ int SCPointsNumberedProperly(SplineChar *sc) {
     SplineSet *ss;
     SplinePoint *sp;
     int starts_with_cp;
+    int start_pnum;
 
     if ( sc->layers[ly_fore].splines!=NULL &&
 	    sc->layers[ly_fore].refs!=NULL )
@@ -2922,6 +2923,7 @@ return( false );	/* TrueType can't represent this, so always remove instructions
     for ( ss = sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
 	starts_with_cp = (ss->first->ttfindex == pnum+1 || ss->first->ttfindex==0xffff) &&
 		!ss->first->noprevcp;
+	start_pnum = pnum;
 	if ( starts_with_cp ) ++pnum;
 	for ( sp=ss->first; ; ) {
 	    skipit = SPInterpolate(sp);
@@ -2936,7 +2938,8 @@ return( false );
 		/* Doesn't count */;
 	    else if ( sp->nextcpindex==pnum )
 		++pnum;
-	    else if ( sp->nextcpindex==0 && starts_with_cp && sp->next->to==ss->first )
+	    else if ( sp->nextcpindex==start_pnum && starts_with_cp &&
+		    sp->next->to==ss->first )
 		/* Ok */;
 	    else
 return( false );
