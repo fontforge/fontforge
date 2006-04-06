@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 4-Apr-2006 -->
+  <!-- AP: Last modified: 6-Apr-2006 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -20,6 +20,11 @@
     <LI>
       ??-Apr-2006
       <UL>
+	<LI>
+	  On some windows systems (mine), windows will refuse to install a postscript
+	  font if the fontname or familyname of that font is longer than 31 characters.
+	  These are the names in the Font Dictionary of the postscript font itself,
+	  not the names in the 'name' table (for otf fonts).
 	<LI>
 	  Make ff compile with freetype 2.2.0
 	<LI>
@@ -275,10 +280,8 @@
 	  the first glyph, then type1 fonts had a .notdef glyph at a random place in
 	  the font. Now freetype seems to renumber glyphs so .notdef is always glyph
 	  0 which fontforge did not expect and produced some strange results when
-	  rasterizing (tested on 2.1.10).
-	  Fix is simple: 
-	  always make notdef be first in the chars dictionary and then all is
-	  happy.
+	  rasterizing (tested on 2.1.10). Fix is simple: always make notdef be first
+	  in the chars dictionary and then all is happy.
 	<LI>
 	  Add new scripting command to compare two glyphs. I want this for testsuites,
 	  other people might find a use for it.
