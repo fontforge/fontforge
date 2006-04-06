@@ -21,10 +21,16 @@
       ??-Apr-2006
       <UL>
 	<LI>
-	  On some windows systems (mine), windows will refuse to install a postscript
-	  font if the fontname or familyname of that font is longer than 31 characters.
-	  These are the names in the Font Dictionary of the postscript font itself,
-	  not the names in the 'name' table (for otf fonts).
+	  The PLRM says that formfeed is whitespace. The T1_Spec says that it is not.
+	  After an eexec the T1_Spec is right (and ff was following the PLRM
+	  definition).<BR>
+	  Also add a check to insure that the first character we generate in pfb encryption
+	  isn't a white space character.
+	<LI>
+	  On some windows systems (mine at least), windows will refuse to install a
+	  postscript font if the fontname or familyname of that font is longer than
+	  31 characters. These are the names in the Font Dictionary of the postscript
+	  font itself, not the names in the 'name' table (for otf fonts).
 	<LI>
 	  Make ff compile with freetype 2.2.0
 	<LI>
