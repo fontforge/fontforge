@@ -2215,7 +2215,10 @@ static void decrypteexec(FILE *in,FILE *temp, int hassectionheads,char *extra) {
 
     if ( extra==(void *) 5 ) extra = "";
 
-    while ( (ch1=bgetc(extra,in))!=EOF && isspace(ch1));
+    /* The PLRM defines white space to include form-feed and null. The t1_spec*/
+    /*  does not. The t1_spec wins here. Someone gave me a font which began */
+    /*  with a formfeed and that was part of the encrypted body */
+    while ( (ch1=bgetc(extra,in))!=EOF && (ch1==' ' || ch1=='\t' || ch1=='\n' || ch1=='\r'));
     if ( ch1==0200 && hassectionheads ) {
 	/* skip the 6 byte section header in pfb files that follows eexec */
 	ch1 = bgetc(extra,in);
