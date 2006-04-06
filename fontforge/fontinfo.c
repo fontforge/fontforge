@@ -3964,6 +3964,11 @@ static int CheckNames(struct gfi_data *d) {
     static char *buts[] = { GTK_STOCK_OK, GTK_STOCK_CANCEL, NULL };
 #endif
 
+    if ( u_strlen(ufont)>63 ) {
+	gwwv_post_error(_("Bad Font Name"),_("A Postscript name should be ASCII\nand must not contain (){}[]<>%%/ or space\nand must be shorter than 63 characters"));
+return( false );
+    }
+
     if ( *ufamily=='\0' ) {
 	gwwv_post_error(_("A Font Family name is required"),_("A Font Family name is required"));
 return( false );
@@ -3976,6 +3981,18 @@ return( false );
     if ( *end=='\0' || (isdigit(ufamily[0]) && u_strchr(ufamily,'#')!=NULL) ) {
 	gwwv_post_error(_("Bad Font Family Name"),_("A Postscript name may not be a number"));
 return( false );
+    }
+    if ( u_strlen(ufamily)>31 ) {
+	if ( gwwv_ask(_("Bad Font Family Name"),(const char **) buts,0,1,_("Some versions of Windows will refuse to install postscript fonts if the familyname is longer than 31 characters. Do you want to continue anyway?"))==1 )
+return( false );
+    } else {
+	if ( u_strlen(ufont)>31 ) {
+	    if ( gwwv_ask(_("Bad Font Name"),(const char **) buts,0,1,_("Some versions of Windows will refuse to install postscript fonts if the fontname is longer than 31 characters. Do you want to continue anyway?"))==1 )
+return( false );
+	} else if ( u_strlen(ufont)>29 ) {
+	    if ( gwwv_ask(_("Bad Font Name"),(const char **) buts,0,1,_("Adobe's fontname spec (5088.FontNames.pdf) says that fontnames must not be longer than 29 characters. Do you want to continue anyway?"))==1 )
+return( false );
+	}
     }
     while ( *ufamily ) {
 	if ( *ufamily<' ' || *ufamily>=0x7f ) {
@@ -3999,17 +4016,6 @@ return( false );
 	    gwwv_post_error(_("Bad Font Name"),_("A Postscript name should be ASCII\nand must not contain (){}[]<>%%/ or space"));
 return( false );
 	}
-    }
-    if ( u_strlen(ufont)>63 ) {
-	gwwv_post_error(_("Bad Font Name"),_("A Postscript name should be ASCII\nand must not contain (){}[]<>%%/ or space\nand must be shorter than 63 characters"));
-return( false );
-    }
-    if ( u_strlen(ufont)>31 ) {
-	if ( gwwv_ask(_("Bad Font Name"),(const char **) buts,0,1,_("Some versions of Windows will refuse to install fonts if the fontname is longer than 31 characters. Do you want to continue anyway?"))==1 )
-return( false );
-    } else if ( u_strlen(ufont)>29 ) {
-	if ( gwwv_ask(_("Bad Font Name"),(const char **) buts,0,1,_("Adobe's fontname spec (5088.FontNames.pdf) says that fontnames must not be longer than 29 characters. Do you want to continue anyway?"))==1 )
-return( false );
     }
 return( true );
 }
