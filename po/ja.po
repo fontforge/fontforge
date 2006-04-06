@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "POT-Creation-Date: 2005-08-29 17:43+0800\n"
-"PO-Revision-Date: 2006-03-28 12:08-0900\n"
+"PO-Revision-Date: 2006-04-04 12:08-0900\n"
 "Last-Translator: KANOU Hiroki <kanou@khdd.net>\n"
 "Language-Team: LANGUAGE <ja.c@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -220,6 +220,9 @@ msgstr "取り込み(_I)..."
 
 msgid "Import..."
 msgstr "取り込み..."
+
+msgid "_Import"
+msgstr "取り込み(_I)"
 
 msgid "_Close"
 msgstr "閉じる(_C)"
@@ -464,8 +467,11 @@ msgstr "最初の端点(_F)"
 msgid "First P_oint, Next Contour"
 msgstr "次の輪郭の最初の点(_O)"
 
-msgid "_Contours"
-msgstr "輪郭全体(_C)"
+msgid "Points on Selected _Contours"
+msgstr "選択中の輪郭全体(_C)"
+
+msgid "Point A_t"
+msgstr "位置を指定して選択(_T)"
 
 msgid "_Next Point"
 msgstr "次の端点(_N)"
@@ -571,6 +577,9 @@ msgstr "参照を解除(_N)"
 
 msgid "_Select by Color"
 msgstr "色で選択(_S)"
+
+msgid "_Glyphs Worth Outputting"
+msgstr "出力に値するグリフ(_G)"
 
 msgid "Remo_ve Undoes"
 msgstr "アンドゥ履歴のクリア(_V)"
@@ -9340,6 +9349,27 @@ msgstr ""
 "TrueTypeでは文字の幅を負の値にすることはできません.\n"
 "本当にマイナスの文字幅をセットしたいのですか?"
 
+msgid "Search Radius"
+msgstr "検索半径"
+
+msgid "Select Point(s) at..."
+msgstr "指定位置の点を選択..."
+
+msgid "_Exact"
+msgstr "正確に(_E)"
+
+msgid "_Around"
+msgstr "周辺も(_A)"
+
+msgid "W_ithin Rectangle"
+msgstr "長方形の範囲(_I)"
+
+msgid "_Radius:"
+msgstr "半径(_R):"
+
+msgid "3"
+msgstr "3"
+
 msgid "_Hangul"
 msgstr "ハングル(_H)"
 
@@ -9381,6 +9411,9 @@ msgstr "幅(_W):"
 
 msgid "_Width..."
 msgstr "幅(_W)..."
+
+msgid "Width"
+msgstr "幅"
 
 msgid "Reset"
 msgstr "リセット"
@@ -10093,6 +10126,9 @@ msgstr "幅:"
 
 msgid "Height:"
 msgstr "高さ:"
+
+msgid "Height"
+msgstr "高さ"
 
 msgid "LBearing:"
 msgstr "左サイドベアリング:"
@@ -13224,9 +13260,6 @@ msgstr "%.20sと比較するフォント"
 msgid "Compare _Outlines"
 msgstr "アウトラインを比較(_O)"
 
-msgid "_Exact"
-msgstr "正確に(_E)"
-
 msgid "Accept outlines which exactly match the original"
 msgstr " オリジナルと正確に一致するアウトラインのみを受け入れます"
 
@@ -13242,11 +13275,36 @@ msgstr "不正確な一致を許容(_A)"
 msgid "Accept an outline which is a close approximation to the original"
 msgstr "オリジナルに近似的に一致するアウトラインを受け入れます"
 
+msgid "Warn if _unlinked references"
+msgstr "参照リンクの解除時に警告(_U)"
+
+msgid ""
+"Warn if one glyph contains an outline while the other contains a reference "
+"(but the reference describes the same outline)"
+msgstr ""
+"片方のグリフがアウトラインを含んでおり,もう片方が参照を含んでいる"
+"(が,その参照が同じアウトラインを記述している) 場合に警告します"
+
 msgid "Compare _Hints"
 msgstr "ヒントを比較(_H)"
 
-msgid "Compare postscript hints and truetype instructions"
-msgstr "PostScriptのヒントおよびTrueType命令を比較します"
+msgid "Compare postscript hints and hintmasks and truetype instructions"
+msgstr "PostScriptのヒントおよびヒントマスクならびにTrueType命令を比較します"
+
+msgid "Compare Hint_Masks"
+msgstr "ヒントマスクを比較(_M)"
+
+msgid "Compare hintmasks"
+msgstr "ヒントマスクを比較"
+
+msgid "HintMasks only if conflicts"
+msgstr "衝突するヒントマスクのみ"
+
+msgid "Don't compare hintmasks if the glyph has no hint conflicts"
+msgstr "グリフにヒントの衝突がない場合,ヒントマスクを比較しません"
+
+msgid "Don't Compare HintMasks"
+msgstr "ヒントマスクを比較しない"
 
 msgid "Compare _Bitmaps"
 msgstr "ビットマップを比較(_B)"
@@ -13272,59 +13330,59 @@ msgstr "アウトライングリフ\n"
 msgid "Glyph Differences\n"
 msgstr "グリフの相違点\n"
 
-msgid "Glyph |%s| differs\n"
-msgstr "グリフ |%s| に違いがあります\n"
+msgid "Glyph “%s” differs\n"
+msgstr "グリフ“%s”に違いがあります\n"
 
-msgid "Glyph |%s| contains a reference to %s in %s\n"
-msgstr "グリフ |%1$s| の%3$sには%2$sへの参照が含まれています\n"
+msgid "Glyph “%s” contains a reference to %s in %s\n"
+msgstr "グリフ“%1$s”の%3$sには%2$sへの参照が含まれています\n"
 
-msgid "Glyph |%s| refers to %s with a different transformation matrix\n"
-msgstr "グリフ |%s| から%sへの参照の変換行列が互いに異なります\n"
+msgid "Glyph “%s” refers to %s with a different transformation matrix\n"
+msgstr "グリフ“%s”から%sへの参照の変換行列が互いに異なります\n"
 
-msgid "Glyph |%s| has advance width %d in %s but %d in %s\n"
-msgstr "グリフ |%1$s| の送り幅は%3$sでは%2$dですが%5$sでは%4$dです\n"
+msgid "Glyph “%s” has advance width %d in %s but %d in %s\n"
+msgstr "グリフ“%1$s”の送り幅は%3$sでは%2$dですが%5$sでは%4$dです\n"
 
-msgid "Glyph |%s| has vertical advance width %d in %s but %d in %s\n"
-msgstr "グリフ |%1$s| の縦書き時の送り幅は%3$sでは%2$dですが%5$sでは%4$dです\n"
+msgid "Glyph “%s” has vertical advance width %d in %s but %d in %s\n"
+msgstr "グリフ“%1$s”の縦書き時の送り幅は%3$sでは%2$dですが%5$sでは%4$dです\n"
 
-msgid "Glyph |%s| has a different number of layers\n"
-msgstr "グリフ |%s| に含まれるレイヤーの個数が互いに異なります\n"
+msgid "Glyph “%s” has a different number of layers\n"
+msgstr "グリフ“%s”に含まれるレイヤーの個数が互いに異なります\n"
 
-msgid "Glyph |%s| has a different fill in layer %d\n"
-msgstr "グリフ |%s| のレイヤー%dの塗りつぶしが互いに異なります\n"
+msgid "Glyph “%s” has a different fill in layer %d\n"
+msgstr "グリフ“%s”のレイヤー%dの塗りつぶしが互いに異なります\n"
 
-msgid "Glyph |%s| has a different stroke in layer %d\n"
-msgstr "グリフ |%s| のレイヤー%dのストローク設定が互いに異なります\n"
+msgid "Glyph “%s” has a different stroke in layer %d\n"
+msgstr "グリフ“%s”のレイヤー%dのストローク設定が互いに異なります\n"
 
-msgid "Glyph |%s| does not have splines which match exactly, but they are close\n"
-msgstr "グリフ |%s| のスプラインは正確に一致しませんが,ほとんど同じです\n"
+msgid "Glyph “%s” does not have splines which match exactly, but they are close\n"
+msgstr "グリフ“%s”のスプラインは正確に一致しませんが,ほとんど同じです\n"
 
-msgid "Different number of contours in glyph |%s|\n"
-msgstr "グリフ |%s| に含まれる輪郭の本数が互いに異なります\n"
+msgid "Different number of contours in glyph “%s”\n"
+msgstr "グリフ“%s”に含まれる輪郭の本数が互いに異なります\n"
 
-msgid "Open/Closed contour mismatch in glyph |%s|\n"
-msgstr "グリフ |%s| に,輪郭の開き/閉じの不一致があります\n"
+msgid "Open/Closed contour mismatch in glyph “%s”\n"
+msgstr "グリフ“%s”に,輪郭の開き/閉じの不一致があります\n"
 
-msgid "Spline mismatch in glyph |%s|\n"
-msgstr "グリフ |%s| にスプラインの不一致があります\n"
+msgid "Spline mismatch in glyph “%s”\n"
+msgstr "グリフ“%s”にスプラインの不一致があります\n"
 
-msgid "Hint masks differ in glyph |%s|\n"
-msgstr "グリフ |%s| にヒントマスクの不一致があります\n"
+msgid "Hint masks differ in glyph “%s” at (%g,%g)\n"
+msgstr "グリフ“%s”の位置(%g,%g)にヒントマスクの不一致があります\n"
 
-msgid "Hints differ in glyph |%s|\n"
-msgstr "グリフ |%s| のヒントが互いに異なります\n"
+msgid "Hints differ in glyph “%s”\n"
+msgstr "グリフ“%s”のヒントが互いに異なります\n"
 
-msgid "Glyph |%s| in %s has no truetype instructions\n"
-msgstr "%2$sのグリフ |%1$s| にはTrueType命令がありません\n"
+msgid "Glyph “%s” in %s has no truetype instructions\n"
+msgstr "%2$sのグリフ“%1$s”にはTrueType命令がありません\n"
 
-msgid "Glyph |%s| has different truetype instructions\n"
-msgstr "グリフ |%s| のTrueType命令が互いに異なります\n"
+msgid "Glyph “%s” has different truetype instructions\n"
+msgstr "グリフ“%s”のTrueType命令が互いに異なります\n"
 
 msgid "Glyphs in %s but not in %s\n"
 msgstr "%sにあるグリフが%sにありません\n"
 
-msgid "Glyph |%s| missing from %s\n"
-msgstr "グリフ |%s| が %sにありません\n"
+msgid "Glyph “%s” missing from %s\n"
+msgstr "グリフ“%s”が %sにありません\n"
 
 msgid "ppem is different in the two fonts, cowardly refusing to compare glyphs\n"
 msgstr "EMあたりピクセル数が2つのフォントで異なるので,卑怯にもグリフの比較を拒否します\n"
@@ -13338,23 +13396,23 @@ msgstr "ストライク %d@%d\n"
 msgid "Glyphs in %s but not in %s at %d@%d\n"
 msgstr "%3$d@%4$dのグリフは%1$sにはありますが%2$sにはありません\n"
 
-msgid "Glyph |%s| missing from %s at %d@%d\n"
-msgstr "%3$d@%4$dのグリフ |%1$s| は%2$dにはありません\n"
+msgid "Glyph “%s” missing from %s at %d@%d\n"
+msgstr "%3$d@%4$dのグリフ“%1$s”は%2$dにはありません\n"
 
 msgid "Glyphs Differences at %d@%d\n"
 msgstr "%d@%dにおけるグリフの相違点\n"
 
-msgid "Glyph |%s| differs at %d@%d\n"
-msgstr "グリフ |%s| は,%d@%dで互いに異なります\n"
+msgid "Glyph “%s” differs at %d@%d\n"
+msgstr "グリフ“%s”は,%d@%dで互いに異なります\n"
 
-msgid "Glyph |%s| has advance width %d in %s but %d in %s at %d@%d\n"
-msgstr "%6$d@%7$dのグリフ |%1$s| の送り幅は%3$sでは%2$dですが,%5$sでは%4$dです\n"
+msgid "Glyph “%s” has advance width %d in %s but %d in %s at %d@%d\n"
+msgstr "%6$d@%7$dのグリフ“%1$s”の送り幅は%3$sでは%2$dですが,%5$sでは%4$dです\n"
 
-msgid "Glyph |%s| has vertical advance width %d in %s but %d in %s at %d@%d\n"
-msgstr "%6$d@%7$dのグリフ |%1$s| の縦書き時の送り幅は%3$sでは%2$dですが,%5$sでは%4$dです\n"
+msgid "Glyph “%s” has vertical advance width %d in %s but %d in %s at %d@%d\n"
+msgstr "%6$d@%7$dのグリフ“%1$s”の縦書き時の送り幅は%3$sでは%2$dですが,%5$sでは%4$dです\n"
 
-msgid "Glyph |%s| has a different bitmap at %d@%d\n"
-msgstr "%2$d@%3$dのグリフ |%1$s| のビットマップが互いに異なります\n"
+msgid "Glyph “%s” has a different bitmap at %d@%d\n"
+msgstr "%2$d@%3$dのグリフ“%1$s”のビットマップが互いに異なります\n"
 
 msgid "Strikes in %s but not in %s\n"
 msgstr "%sに含まれるストライクが%sにはありません\n"
@@ -13386,23 +13444,23 @@ msgstr "機能の相違点\n"
 msgid "Feature %s\n"
 msgstr "機能%s\n"
 
-msgid "|%s| in %s did not contain an anchor point (%g,%g) class %s\n"
-msgstr "%2$s内の |%1$s| にはクラス%5$sのアンカー点 (%3$g,%4$g) が含まれません\n"
+msgid "“%s” in %s did not contain an anchor point (%g,%g) class %s\n"
+msgstr "%2$s内の“%1$s”にはクラス%5$sのアンカー点 (%3$g,%4$g) が含まれません\n"
 
 msgid ""
-"|%s| in %s did not contain a positioning lookup dx=%d dy=%d dx_adv=%d dy_adv=%d\n"
+"“%s” in %s did not contain a positioning lookup dx=%d dy=%d dx_adv=%d dy_adv=%d\n"
 msgstr ""
-"%2$sの|%1$s|には位置指定dx=%3$d dy=%4$d dx_adv=%5$d dy_adv=%6$dを行う照合はありません\n"
+"%2$sの“%1$s”には位置指定dx=%3$d dy=%4$d dx_adv=%5$d dy_adv=%6$dを行う照合はありません\n"
 
 msgid ""
-"|%s| in %s did not contain a pairwise positioning lookup dx=%d dy=%d "
+"“%s” in %s did not contain a pairwise positioning lookup dx=%d dy=%d "
 "dx_adv=%d dy_adv=%d to %s dx=%d dy=%d dx_adv=%d dy_adv=%d\n"
 msgstr ""
-"%2$sの |%1$s| にはペア単位の位置指定dx=%3$d dy=%4$d dx_adv=%5$d dy_adv=%6$d"
+"%2$sの“%1$s”にはペア単位の位置指定dx=%3$d dy=%4$d dx_adv=%5$d dy_adv=%6$d"
 "(次のグリフ%7$sにはdx=%8$d dy=%9$d dx_adv=%10$d dy_adv=%11$d) を行う照合はありません\n"
 
-msgid "|%s| in %s did not contain a substitution lookup to %s\n"
-msgstr "%2$sの |%1$s| は%3$sに対する置換照合を含んでいません\n"
+msgid "“%s” in %s did not contain a substitution lookup to %s\n"
+msgstr "%2$sの“%1$s”は%3$sに対する置換照合を含んでいません\n"
 
 msgid "The kerning class in %1$s fails to match anything in %2$s\n"
 msgstr "%sにあるカーニングクラスは,%sの中に一致するものがありません\n"
@@ -13424,11 +13482,11 @@ msgstr ""
 msgid "The %dth context/chaining in %s does not match anything in %s\n"
 msgstr "%2$sの%1$d番目の文脈(連鎖)依存の照合は,%3$sの中に一致するものがありません\n"
 
-msgid "Kerning between |%s| and |%s| is %d in %s and %d in %s\n"
-msgstr "|%1$s| と |%2$s| とのカーニングは,%4$sでは%3$dですが,%6$sでは%5$dです\n"
+msgid "Kerning between “%s” and %s is %d in %s and %d in %s\n"
+msgstr "“%1$s”と“%2$s”とのカーニングは,%4$sでは%3$dですが,%6$sでは%5$dです\n"
 
-msgid "No kerning between |%s| and |%s| in %s whilst it is %d in %s\n"
-msgstr "|%1$s| と |%2$s| とのカーニングは%3$sにはありませんが,%5$sには%4$dだけあります\n"
+msgid "No kerning between “%s” and %s in %s whilst it is %d in %s\n"
+msgstr "“%1$s”と“%2$s”とのカーニングは%3$sにはありませんが,%5$sには%4$dだけあります\n"
 
 msgid "Features in %s but not in %s\n"
 msgstr "%sにある機能が%sにはありません\n"
@@ -13438,6 +13496,19 @@ msgstr "機能%sは%sにはありません\n"
 
 msgid "Feature '%c%c%c%c' is not in %s\n"
 msgstr "機能'%c%c%c%c'は%sにはありません\n"
+
+msgid "Nested features in %s but not in %s\n"
+msgstr "入れ子になった機能は%sにはありますが%sにはありません\n"
+
+msgid "Nested feature '%c%c%c%c' is not in %s\n"
+msgstr "入れ子になった機能'%c%c%c%c'は%sにはありません\n"
+
+msgid "Nested feature correspondance between fonts\n"
+msgstr "入れ子になった機能のフォント間の対応関係\n"
+
+msgid "Nested feature '%c%c%c%c' in %s corresponds to '%c%c%c%c' in %s\n"
+msgstr ""
+"%5%sにある入れ子になった機能'%1$c%2$c%3$c%4$c'は%10$sの'%6$c%7$c%8$c%9$c'に対応します\n"
 
 msgid "Namelist contains non-ASCII names"
 msgstr "名前リストに非ASCIIの名前が含まれています"
@@ -13469,4 +13540,16 @@ msgid "This namelist is based on a namelist which contains non-ASCII glyph names
 msgstr "この名前リストは,非ASCIIのグリフ名を含む名前リストを基にしています"
 
 msgid "Create failed"
-msgstr "保存に失敗しました."
+msgstr "作成に失敗しました."
+
+msgid "Show Hidden Files"
+msgstr "隠しファイルを表示"
+
+msgid "Refresh File List"
+msgstr "ファイルリストを更新"
+
+msgid "_Save in UTF8"
+msgstr "UTF-8で保存(_S)"
+
+msgid "Save in _UCS2"
+msgstr "_UCS-2で保存"

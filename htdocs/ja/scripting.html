@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 22-Mar-2006 -->
+  <!-- AP: Last modified: 4-Apr-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Writing scripts to change fonts in FontForge</TITLE>-->
     <TITLE>FontForge でフォントを変更するためのスクリプトの書き方</TITLE>
@@ -3416,8 +3416,9 @@ ApplySubstitution("*","*","vrt2")
       4 番目の引数では、アンチエイリアス処理されたビットマップのバウンディングボックスがどれだけ違っていてよいかを調節します (深さ 1 のビットマップのバウンディングボックスは正確に一致しなければなりません)。
       <P>
 <!--  The fifth argument controls whether to tests hints and hintmasks. A value
-      of 1 tests hints, 2 tests hintmasks and 3 tests both. -->
-      5 番目の引数では、ヒントとヒントマスクのテストを行うかを調節します。値 1 を指定するとヒントを、2 を指定するとヒントマスクを、3 を指定すると両方をテストします。
+      of 1 tests hints, 2 tests hintmasks and 3 tests both, a value of 7 will test
+      hintmasks only in glyphs with conflicts. -->
+      5 番目の引数では、ヒントとヒントマスクのテストを行うかを調節します。値 1 を指定するとヒントを、2 を指定するとヒントマスクを、3 を指定すると両方をテストします。7 を指定した場合はグリフのヒントマスクが衝突している場合に限り、ヒントマスクを比較します。
       <P>
 <!--  Normally this function treats any differences it finds as errors and stops
       the script. If you set the sixh argument to 0 then it will return a value
@@ -3505,6 +3506,11 @@ ApplySubstitution("*","*","vrt2")
 	  <TD>2 つのグリフ間で輪郭が一致しない</TD>
 	</TR>
 	<TR>
+	  <TD>32768</TD>
+<!--	  <TD>We only find a match after we have unlinked references</TD> -->
+	  <TD>参照のリンクを解除しないと一致が発見できない</TD>
+	</TR>
+	<TR>
 	  <TD>65536</TD>
 <!--	  <TD>Bitmap glyphs have different depths</TD> -->
 	  <TD>ビットマップグリフの色深度が異なる</TD>
@@ -3551,8 +3557,9 @@ ApplySubstitution("*","*","vrt2")
 	</TR>
 	<TR>
 	  <TD>2</TD>
-<!--	  <TD>compare outlines exactly (otherwise allow slight errors)</TD> -->
-	  <TD>アウトラインを性格に比較する (指定しない場合、微小なエラーを許容します)</TD>
+<!--	  <TD>compare outlines exactly (otherwise allow slight errors and the unlinking
+	    of references)</TD> -->
+	  <TD>アウトラインを性格に比較する (指定しない場合、微小なエラーの存在および参照のリンク解除を許容します)</TD>
 	</TR>
 	<TR>
 	  <TD>4</TD>
@@ -3566,24 +3573,39 @@ ApplySubstitution("*","*","vrt2")
 	</TR>
 	<TR>
 	  <TD>0x10</TD>
+<!--	  <TD>compare hintmasks</TD> -->
+	  <TD>ヒントマスクを比較する</TD>
+	</TR>
+	<TR>
+	  <TD>0x20</TD>
+<!--	  <TD>compare hintmasks only if the glyph has hint conflicts</TD> -->
+	  <TD>グリフ内のヒントが衝突している場合に限り、ヒントマスクを作成する</TD>
+	</TR>
+	<TR>
+	  <TD>0x40</TD>
+<!--	  <TD>warn if references need to be unlinked before a match is found</TD> -->
+	  <TD>一致を発見するために参照のリンク解除を行う必要がある場合に警告する</TD>
+	</TR>
+	<TR>
+	  <TD>0x80</TD>
 <!--	  <TD>compare bitmap strikes</TD> -->
 	  <TD>ビットマップの各ストライクを比較する</TD>
 	</TR>
 	<TR>
-	  <TD>0x20</TD>
+	  <TD>0x100</TD>
 <!--	  <TD>compare font names</TD> -->
 	  <TD>フォント名を比較する</TD>
 	</TR>
 	<TR>
-	  <TD>0x40</TD>
+	  <TD>0x200</TD>
 <!--	  <TD>compare glyph positioning</TD> -->
 	  <TD>グリフの位置指定を比較する</TD>
 	</TR>
 	<TR>
-	  <TD>0x80</TD>
+	  <TD>0x400</TD>
 <!--	  <TD>compare glyph substitutions</TD> -->
 	  <TD>グリフ置換を比較する</TD>
-	</TR>
+ 	</TR>
       </TABLE>
     <DT>
       <B><A NAME="GlyphInfo">GlyphInfo</A></B>(str)<BR>
