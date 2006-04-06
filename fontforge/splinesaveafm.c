@@ -2163,10 +2163,10 @@ int PfmSplineFont(FILE *pfm, SplineFont *sf, int type0,EncMap *map) {
 	if ( !inwin(sf,winmap))
 	    windows_encoding = 0xff;
     if ( windows_encoding!=0 ) {
+	memset(winmap,-1,sizeof(winmap));
 	for ( i=0; i<256 && i<map->enccount; ++i )
-	    winmap[i] = i;
-	for ( ; i<256; ++i )
-	    winmap[i] = -1;
+	    if ( (ii=map->map[i])!=-1 )
+		winmap[ii] = i;
     }
 
     SFKernPrepare(sf,false);
