@@ -3957,6 +3957,12 @@ static int CheckNames(struct gfi_data *d) {
     const unichar_t *ufamily = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Family));
     const unichar_t *ufont = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Fontname));
     unichar_t *end; const unichar_t *pt;
+#if defined(FONTFORGE_CONFIG_GDRAW)
+    char *buts[3];
+    buts[0] = _("_OK"); buts[1] = _("_Cancel"); buts[2]=NULL;
+#elif defined(FONTFORGE_CONFIG_GTK)
+    static char *buts[] = { GTK_STOCK_OK, GTK_STOCK_CANCEL, NULL };
+#endif
 
     if ( *ufamily=='\0' ) {
 	gwwv_post_error(_("A Font Family name is required"),_("A Font Family name is required"));
@@ -3996,6 +4002,13 @@ return( false );
     }
     if ( u_strlen(ufont)>63 ) {
 	gwwv_post_error(_("Bad Font Name"),_("A Postscript name should be ASCII\nand must not contain (){}[]<>%%/ or space\nand must be shorter than 63 characters"));
+return( false );
+    }
+    if ( u_strlen(ufont)>31 ) {
+	if ( gwwv_ask(_("Bad Font Name"),(const char **) buts,0,1,_("Some versions of Windows will refuse to install fonts if the fontname is longer than 31 characters. Do you want to continue anyway?"))==1 )
+return( false );
+    } else if ( u_strlen(ufont)>29 ) {
+	if ( gwwv_ask(_("Bad Font Name"),(const char **) buts,0,1,_("Adobe's fontname spec (5088.FontNames.pdf) says that fontnames must not be longer than 29 characters. Do you want to continue anyway?"))==1 )
 return( false );
     }
 return( true );
