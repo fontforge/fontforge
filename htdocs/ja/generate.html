@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Sep-2002 -->
-  <!-- AP: Last modified: 2-Mar-2006 -->
+  <!-- AP: Last modified: 7-Mar-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Generate Font Dialog</TITLE>-->
     <TITLE>フォント出力ダイアログ</TITLE>
@@ -176,10 +176,11 @@
       required, it will not be used. Odd. -->
       <FONT COLOR="Red"><STRONG><BIG>注意:</BIG></STRONG></FONT> Mac OS X は NFNT ビットマップをサポートしないようです (私の試した限りでは動かせませんでした)。<STRONG>それにもかかわらず</STRONG></FONT>, Mac は Type1 フォントを認識するためにはいまだに NFNT を最低 1 個は必要とするようです。ビットマップが必要なのに、使われないのです。変ですね。
     <LI>
-<!--  Windows FNT - - this needs to be processed somehow with the windows resource
-      compiler to create a FON file. I don't have enough info to do this myself
-      yet. -->
-      Windows FNT ― これは Windows のリソースコンパイラで何らかの処理を行って FON ファイルに変換する必要があります。私は、これに関する十分な情報をまだ知りません。
+<!--  Windows FON - - Windows resource based font format. -->
+      Windows FON ― Windows 用のリソースベースのフォントフォーマット。
+    <LI>
+<!--  Windows FNT - - Windows format, one bitmap font per file. -->
+      Windows FNT ― Windows 用の、1 ファイル毎に 1 個のビットマップを含んだフォーマット。
     <LI>
 <!--  OpenType Bitmap - - this is the new X11 bitmap format with bitmaps embedded
       in an sfnt wrapper (an opentype or truetype font) but with no outline data. -->

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jul-2003 -->
-  <!-- AP: Last modified: 11-Dec-2005 -->
+  <!-- AP: Last modified: 4-Apr-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>FontForge's math</TITLE>-->
     <TITLE>FontForge の数学</TITLE>
@@ -129,7 +129,7 @@
   <P>
     <HR>
   <H2>
-<!--Finding <A NAME="maxima">maxima</A> and minima of a splines -->
+<!--Finding <A NAME="maxima">maxima</A> and minima of a spline -->
     スプラインの<A NAME="maxima">極大値</A>と極小値を検出する方法
   </H2>
   <P>
@@ -173,6 +173,57 @@
 	2*3*a<SUB>x</SUB></TD>
     </TR>
   </TABLE>
+  <P>
+    <HR>
+  <H2>
+<!--<A NAME="POI">Finding points of inflection</A> of a spline -->
+    スプラインの<A NAME="POI">変曲点を求める方法</A>
+  </H2>
+  <P>
+<!--
+  A point of inflection occurs when d<SUP>2</SUP>y/dx<SUP>2</SUP>==0 (or infinity). -->
+  変曲点は d<SUP>2</SUP>y/dx<SUP>2</SUP>==0 (または無限大) になる場所に位置します。
+  <P>
+<!--
+  Unfortunately this does not mean that d<SUP>2</SUP>y/dt<SUP>2</SUP>==0 or
+  d<SUP>2</SUP>x/dt<SUP>2</SUP>==0. -->
+  残念ながら、この条件が成り立つ時に d<SUP>2</SUP>y/dt<SUP>2</SUP>==0 や d<SUP>2</SUP>x/dt<SUP>2</SUP>==0 が成り立つとは限りません。
+  <TABLE CELLPADDING="2">
+    <TR>
+      <TD>d<SUP>2</SUP>y/dx<SUP>2 </SUP>=</TD>
+      <TD>d/dt ((dy/dt)/(dx/dt)) / dx/dt</TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TD>( ((dx/dt) * d<SUP>2</SUP>y/dt<SUP>2</SUP>) - ((dy/dt) *
+	d<SUP>2</SUP>x/dt<SUP>2</SUP>)) / (dx/dt)<SUP>3</SUP></TD>
+    </TR>
+  </TABLE>
+  <P>
+<!--
+  After a lot of algebra this boils down to the quadratic in t: -->
+  長々とした代数の果てに、これは t に関する 2 次式に還元されます:
+  <TABLE CELLPADDING="2">
+    <TR>
+      <TD ROWSPAN=3>&nbsp;</TD>
+      <TD>3*(a<SUB>x</SUB>*b<SUB>y</SUB>-a<SUB>y</SUB>*b<SUB>x</SUB>)*t<SUP>2</SUP>
+	+</TD>
+      <TD></TD>
+    </TR>
+    <TR>
+      <TD>3*(c<SUB>x</SUB>*a<SUB>y</SUB>-c<SUB>y</SUB>*a<SUB>x</SUB>)*t +</TD>
+      <TD></TD>
+    </TR>
+    <TR>
+      <TD>c<SUB>x</SUB>*b<SUB>y</SUB>-c<SUB>y</SUB>*b<SUB>x</SUB></TD>
+      <TD>= 0</TD>
+    </TR>
+  </TABLE>
+  <P>
+<!--
+  If you examine this closely you will note that a quadratic spline
+  (a<SUB>y</SUB>==a<SUB>x</SUB>==0) can never have a point of inflection. -->
+  この式を詳細に検討すると、2 次スプライン (a<SUB>y</SUB>==a<SUB>x</SUB>==0) に変曲点が生じることが決して無いことが分かります。
   <P>
     <HR>
   <H2>
@@ -468,12 +519,12 @@
   Unfortunately that doesn't always work. If the spline makes a very sharp
   bend, the our approximation method above is unable to produce a good
   approximation. When that happens FontForge attempts to break the spline in
-  two, and a point near the sharp bend. The approximation of the two sub-splines
+  two, adding a point near the sharp bend. The approximation of the two sub-splines
   is generally much better. (How does FontForge figure out where to break a
   line? It uses two methods, one just adds points to the extrema of the original
   curve, and the other looks for places where the innermost path intersects
   itself). -->
-  残念ながら、これは常にうまく動作するわけではありません。スプラインが非常に鋭い折れ曲がりを見せた場合、上に示した我々の近似法はよい近似を出力することができません。そのようなことが起こった場合、FontForge はスプラインを鋭い折れ曲がりのそばで 2 本に分割しようと試みます。2 本の部分スプラインの近似は一般にずっと良くなります (どのように FontForge は線を分割する場所を算出するのでしょうか? 2 つの方法を使用しています。1 つは単にオリジナルの曲線の極値に点を追加する方法で、もう 1 つは内側のパスがそれ自身と交差する箇所を探す方法です)。
+  残念ながら、これは常にうまく動作するわけではありません。スプラインが非常に鋭い折れ曲がりを見せた場合、上に示した我々の近似法はよい近似を出力することができません。そのようなことが起こった場合、FontForge はスプラインの鋭い折れ曲がりのそばに点を追加して 2 本に分割しようと試みます。2 本の部分スプラインの近似は一般にずっと良くなります (どのように FontForge は線を分割する場所を算出するのでしょうか? 2 つの方法を使用しています。1 つは単にオリジナルの曲線の極値に点を追加する方法で、もう 1 つは内側のパスがそれ自身と交差する箇所を探す方法です)。
   <P>
 <!--
   PostScript pens can end in -->

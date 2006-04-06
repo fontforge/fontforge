@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 24-Mar-2006 -->
+  <!-- AP: Last modified: 4-Apr-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>The Element Menu</TITLE>-->
     <TITLE>エレメントメニュー</TITLE>
@@ -1121,10 +1121,10 @@
 <!--  <A NAME="CompareFonts">Compare Fonts...</A> -->
       <A NAME="CompareFonts">フォントを比較...</A>
     <DD>
-<!--  <IMG SRC="fontcompdlg.png" WIDTH="212" HEIGHT="331" ALIGN="Right">Sometimes
+<!--  <IMG SRC="fontcompdlg.png" WIDTH="240" HEIGHT="409" ALIGN="Right">Sometimes
       it is useful to compare two versions of a font and see what has changed.
       This command will allow you to check: -->
-      <IMG SRC="fontcompdlg.png" WIDTH="185" HEIGHT="249" ALIGN="Right">
+      <IMG SRC="fontcompdlg.png" WIDTH="209" HEIGHT="292" ALIGN="Right">
       時には、あるフォントの 2 つのバージョンを比較して、どこが変更されたかを確認できると便利なことがあります。このコマンドでは以下の変更をチェックすることができます:
       <UL>
 	<LI>
@@ -1150,8 +1150,17 @@
 <!--  You can also use it to compare truetype and postscript versions of the same
       font. Normally fontforge checks to make sure all the splines match exactly,
       but you can also have it test whether a contour in one font is always close
-      to the similar contour in another font. -->
-      同じフォントの TrueType 版と PostScript 版の比較をすることもできます。通常は FontForge はすべてのスプラインが完全に一致するかどうかを確かめるための検査を行いますが、これを使って、片方のフォントが常にもう片方のフォントの同等な輪郭とどこでもほぼ一致するかどうかを検査することもできます。
+      to the similar contour in another font, or whether a contour in one font
+      is inside a reference in another (these are common when comparing PostScript
+      fonts where the format loses references). -->
+      同じフォントの TrueType 版と PostScript 版の比較をすることもできます。通常は FontForge はすべてのスプラインが完全に一致するかどうかを確かめるための検査を行いますが、これを使って、片方のフォントが常にもう片方のフォントの同等な輪郭とどこでもほぼ一致するかどうか、または片方のフォントに含まれる輪郭がもう片方のフォント内の参照に含まれているか (これは、フォーマットが参照を含まない PostScript フォントを比較する時によく起こります) を検査することもできます。
+      <P>
+<!--
+      Comparing PostScript hintmasks is another somewhat iffy topic. There are
+      often many equivalent (I think) hint mask possibilities, but I don't have
+      a good algorithm for saying that they are equivalent - - especially since
+      Adobe uses hints in ways which I find unexpected. -->
+      PostScript のヒントマスクの比較もまた、どこと無くあやふやな所のある問題です。(私の考えでは) 等価なヒントマスクを表現する多くの方法が可能であることがしばしばありますが、それらが等価であると示すいいアルゴリズムがありません――思いもよらないようなヒントの使い方を Adobe がしていることに気づいてからはなおのことです。
       <P>
 <!--  <IMG SRC="fontcompresults.png" WIDTH="497" HEIGHT="349"> -->
       <IMG SRC="fontcompresults.png" WIDTH="412" HEIGHT="273">

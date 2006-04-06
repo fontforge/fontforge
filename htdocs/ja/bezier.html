@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Dec-2000 -->
-  <!-- AP: Last modified: 11-Dec-2005 -->
+  <!-- AP: Last modified: 5-Apr-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>B&eacute;zier Splines</TITLE>-->
     <TITLE>B&eacute;zier スプライン</TITLE>
@@ -179,6 +179,48 @@
   points of the interval, and its control point is determined by the intersections
   of the lines tangent to the cubic at the start and end of the interval). -->
   3 次スプラインが与えられたとしましょう。スプライン上の 2 個の点に注目しましょう。その場合、それらの 2 点における傾きが求める値であるスプラインは、それら 2 個の点の間に 1 本しか引くことができません。(その 2 次曲線は、その区間の端点を端点とし、その制御点は、3 次曲線のその区間の始点と終点における接線の交点です)。
+  <P>
+<!--
+  <IMG SRC="cubic2quad.png" WIDTH="482" HEIGHT="180" ALIGN="Right">I cannot
+  prove this, but have determined empirically (after being told it worked)
+  that if a cubic spline - - like the quarter ellipse at right - - is divided
+  "evenly" into n quadratic splines (here n==3) then the control points will
+  have the nice property that the on-curve points are exactly mid-way between
+  control points - - this means that truetype can represent them as interpolated
+  points. An even division means means that each sub-point is placed where
+  t=i/n (where 0&lt;i&lt;n). -->
+  <IMG SRC="../cubic2quad.png" WIDTH="482" HEIGHT="180" ALIGN="Right">私はこれを証明できていませんが、3 次スプラインを――右図の 4 分の 1 楕円のごとく、n 本の 2 次スプライン (図では、n=3) へと――「均等に」分割すれば、その制御点同士の中点が曲線上の点となるのにちょうどよい比率になるということが (そう教えられて) 経験的な測定結果により知られています。これはつまり、TrueType ではそれらが補間された点として表現できるということになります。(「均等な」分割とは、t=i/n (ただし 0&lt;i&lt;n) の位置に点を置くことを指します。)
+  <P>
+<!--
+  FontForge first checks to see if the curve is already a quadratic - - this
+  might happen if the cubic originally came from a truetype font. If it is
+  it simply converts the control point. -->
+  FontForge は、曲線が既に 2 次曲線で表現可能になっているかを最初にチェックします――TrueType から変換して 3 次曲線を作った場合、そのような事が起こるでしょう。それに該当する場合、制御点を単純に変換するだけです。
+  <P>
+<!--
+  Otherwise FontForge start inserting points. It begins by inserting a single
+  point mid-way on the spline. If this produces a good approximation it stops,
+  otherwise it tries again with two, three ... additional points. -->
+  それ以外の場合、FontForge は点の挿入を開始します。まず最初に、スプラインの中央に 1 個の点を追加することから始めます。もし十分によい近似が得られるならそこで停止します。不十分ならば 2 個、3 個……と点の個数を増やして近似をやり直します。
+  <P>
+<!--
+  On each test it will round the control points to integer values because truetype
+  output requires this (note that it does not do this to the on-curve points,
+  they are interpolated between control points and will be ok if the control
+  points are). Then it checks to see if the resultant quadratics are close
+  to the original curve. -->
+  TrueType の座標値は整数しする必要があるので、毎回の検査時には、制御点を整数値に丸めます (曲線上の点に対してはこれを行わないことに注意してください。これは制御点の中点として補間されるので、制御点が整数になっていれば十分なのです)。次に、その結果として生成された 2 次曲線が元の曲線に近いかどうかをチェックします。
+  <P>
+<!--
+  FontForge may also break the curve at its points of inflection (because no
+  quadratic can have one there should be a point there to start a new quadratic)
+  and apply the above algorithm to the components. -->
+  FontForge は、曲線の変曲点に新しく点を加えて分割を行う可能性があります (2 次曲線の曲率方向は一定なので、通常は曲率方向が変化する点から先を新しい 2 次曲線に分け、それぞれに上記のアルゴリズムを適用する必要があるだろうからです)。
+  <P>
+<!--
+  If FontForge can find no good approximation using the above algorithm it
+  will fall back to its old method, which is: -->
+  FontForge が上記のアルゴリズムを使用してうまく近似ができなかった場合、従来の方法に移行します。その手順は以下の通りです:
   <P>
 <!--
   Start from the end of the spline and every so often (ie. within the margin

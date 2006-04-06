@@ -465,10 +465,25 @@
   <P>
 <!--
   In many ways this is similar to the tools above, the only differences are
-  that the points created are curved points, they are initially created with
-  the control points on the point and as you drag you drag out the control
-  points rather than moving the point itself around. -->
-  このツールは上記のツールとほぼ同じですが、唯一の違いは作成される点が曲線上の点であり、クリック時に制御点も一緒に作成され、そのままドラッグすると点そのものがドラッグされるのではなく、制御点が移動するということだけです。
+  This tool behaves differently in cubic and quadratic editing. In many ways
+  it is similar to the tools above as it adds a point to the current spline. -->
+  このツールは 3 次曲線と 2 次曲線の編集で異なったふるまいをします。これは多くの面で前述の諸ツールに類似しており、現在のスプラインに点を付け加えます。
+  <P>
+<!--
+  In a cubic font the points created are curved points, and they are initially
+  created with the control points on the point and as you drag you drag out
+  the control points rather than moving the point itself around. -->
+  3 次フォントで画面上をクリックすると、曲線上の点が作成されます。クリック時の初期状態では、制御点はその点と同位置に置かれ、その後ドラッグすると点そのものではなく制御点をドラッグした位置に移動します。
+  <P>
+<!--
+  In a quadratic font a point will be created half-way between the last control
+  point and the current location (which becomes the next control point). -->
+  2 次フォントでは、最後の制御点と現在位置 (これが次の制御点となります) の中間点に端点が作成されます。
+  <P>
+<!--
+  If you hold down the Alt (Meta, etc) key you change the behavior so that
+  cubic editing looks like quadratic and vice versa. -->
+  Alt キー (または Meta キーその他) を押すとこのふるまいが変わるので、3 次フォントを編集中に 2 次フォントと同様の編集操作ができますし、その逆も可能です。
   <H3>
     <IMG SRC="../cvknifeicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle"><!--The
     <A NAME="knife">knife</A> tool -->
