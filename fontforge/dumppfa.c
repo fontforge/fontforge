@@ -118,22 +118,25 @@ static DumpChar startfileencoding(DumpChar dumpchar,void *data,
 	    /* find some random bytes where at least one of them encrypts to */
 	    /*  a non hex character */
 	    r = 55665;
-	    cypher = ( randombytes[0] ^ (fed->r>>8));
+	    cypher = ( randombytes[0] ^ (r>>8));
+	    if ( isspace(cypher) )
+	goto try_again;
 	    if ( cypher<'0' || (cypher>'9' && cypher<'A') || (cypher>'F' && cypher<'a') || cypher>'f' )
 	break;
 	    r = (cypher + r) * c1 + c2;
-	    cypher = ( randombytes[1] ^ (fed->r>>8));
+	    cypher = ( randombytes[1] ^ (r>>8));
 	    if ( cypher<'0' || (cypher>'9' && cypher<'A') || (cypher>'F' && cypher<'a') || cypher>'f' )
 	break;
 	    r = (cypher + r) * c1 + c2;
-	    cypher = ( randombytes[2] ^ (fed->r>>8));
+	    cypher = ( randombytes[2] ^ (r>>8));
 	    if ( cypher<'0' || (cypher>'9' && cypher<'A') || (cypher>'F' && cypher<'a') || cypher>'f' )
 	break;
 	    r = (cypher + r) * c1 + c2;
-	    cypher = ( randombytes[3] ^ (fed->r>>8));
+	    cypher = ( randombytes[3] ^ (r>>8));
 	    if ( cypher<'0' || (cypher>'9' && cypher<'A') || (cypher>'F' && cypher<'a') || cypher>'f' )
 	break;
-	    r = (cypher + r) * c1 + c2;
+
+	try_again:
 	    randombytes[0] += 3;
 	    randombytes[1] += 5;
 	    randombytes[2] += 7;
