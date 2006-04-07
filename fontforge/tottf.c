@@ -575,7 +575,7 @@ static void FigureFullMetricsEnd(SplineFont *sf,struct glyphinfo *gi) {
 
     lasti = lastv = gi->gcnt-1;
     for ( i=gi->gcnt-1; i>3 && gi->bygid[i]==-1; --i );
-    if ( i!=2 ) {
+    if ( i>2 ) {
 	width = sf->glyphs[gi->bygid[i]]->width;
 	vwidth = sf->glyphs[gi->bygid[i]]->vwidth;
 	lasti = lastv = i;
