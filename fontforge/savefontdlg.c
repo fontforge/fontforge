@@ -2216,7 +2216,7 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
     int32 *sizes=NULL;
     int iscid, i;
     struct sflist *sfs=NULL, *cur, *last=NULL;
-    static int psscalewarned=0, ttfscalewarned=0;
+    static int psscalewarned=0, ttfscalewarned=0, psfnlenwarned=0;
     int flags;
 #if defined(FONTFORGE_CONFIG_GDRAW)
     char *buts[3];
@@ -2267,6 +2267,11 @@ return;
 		    d->sf->ascent+d->sf->descent)==1 )
 return;
 	    psscalewarned = true;
+	}
+	if ( (strlen(d->sf->fontname)>31 || strlen(d->sf->familyname)>31) && !psfnlenwarned ) {
+	    if ( gwwv_ask(_("Bad Font Name"),(const char **) buts,0,1,_("Some versions of Windows will refuse to install postscript fonts if the fontname is longer than 31 characters. Do you want to continue anyway?"))==1 )
+return;
+	    psfnlenwarned = true;
 	}
     } else if ( oldformatstate!=ff_none && oldformatstate!=ff_svg ) {
 	int val = d->sf->ascent+d->sf->descent;
