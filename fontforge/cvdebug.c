@@ -334,7 +334,7 @@ static void ScalePoint(BasePoint *me,FT_Vector *cur,real scale,struct reflist *a
 #define CID_EmUnit	1004
 #define CID_Current	1005
 #define CID_Original	1006
-#define CID_Transform	1006
+#define CID_Transform	1007
 static int show_twilight = false, show_grid=true, show_current=true, show_transformed=true;
 
 static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
