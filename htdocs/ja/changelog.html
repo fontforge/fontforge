@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 4-Apr-2006 -->
+  <!-- AP: Last modified: 6-Apr-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Change log for FontForge</TITLE> -->
     <TITLE>FontForge の変更履歴</TITLE>
@@ -26,6 +26,20 @@
 <!--  ??-Apr-2006 -->
       2006年4月??日
       <UL>
+ 	<LI>
+<!--	  The PLRM says that formfeed is whitespace. The T1_Spec says that it is not.
+	  After an eexec the T1_Spec is right (and ff was following the PLRM
+	  definition).<BR>
+	  Also add a check to insure that the first character we generate in pfb encryption
+	  isn't a white space character. -->
+	  PLRM は、フォームフィードは空白文字であるとしています。T1_Spec には、そうではないと書いてあります。eexec の後では T1_Spec の指摘通りでした (ff は今まで PLRM の定義に従っていました。<BR>
+	  また、PFB 暗号化において、出力される最初の文字が空白文字ではないことを確かにするためのチェックを追加しました。
+	<LI>
+<!--	  On some windows systems (mine at least), windows will refuse to install a
+	  postscript font if the fontname or familyname of that font is longer than
+	  31 characters. These are the names in the Font Dictionary of the postscript
+	  font itself, not the names in the 'name' table (for otf fonts). -->
+	  いくつかの Windows システム (少なくとも私の) では、フォントの /FontName または /FamilyName が 31 文字を超えるような PostScript フォントをインストールすることを拒絶します。これは PostScript フォント本体のフォント辞書に関する話であり、(OTF フォントに関しては) 'name' テーブル内の名前には適用されません。
 	<LI>
 <!--	  Make ff compile with freetype 2.2.0 -->
 	  ff を FreeType 2.2.0 と一緒にコンパイル可能にする修正。
@@ -242,7 +256,7 @@
 	<LI>
 <!--	  Barry.SCHWARTZ points out that when generating an afm file for an otf font
 	  only the first 256 characters were given encodings. -->
-	  Barry.SCHWARTZ は、OTF フォントとともに AFM ファイルの出力を行った時に、最初の 256 文字にしか符合値が指定されていないことを指摘しました。
+	  Barry.SCHWARTZ は、OTF フォントとともに AFM ファイルの出力を行った時に、最初の 256 文字にしか符号値が指定されていないことを指摘しました。
 	<LI>
 <!--	  Simplify much improved. -->
 	  単純化処理をこれまでよりはるかに改良しました。
@@ -275,7 +289,7 @@
 	<LI>
 <!--	  glyph names for unencoded glyphs were always "uniFFFFFFFF" should be
 	  "NameMe-&lt;n&gt; broken by last summer's encoding changes. -->
-	  符合値を持たないグリフのグリフ名が "NameMe-&lt;n&gt;" でなければならないところが、昨夏の符合化方式の変更以来、常に "uniFFFFFFFF" になっていました。
+	  符号値を持たないグリフのグリフ名が "NameMe-&lt;n&gt;" でなければならないところが、昨夏の符号化方式の変更以来、常に "uniFFFFFFFF" になっていました。
 	<LI>
 <!--	  Werner wants CC (composite character) entries in afm for GPOS mark-to-base
 	  features. -->
@@ -313,7 +327,7 @@
 	<LI>
 <!--	  Johan Winge suggests an improvement to converting cubic splines to quadratic:
 	  If we end up using a line when looking at the spline as a whole, try breaking
-	  it at the point of infection(s) first. It seems like a good idea. -->
+	  it at the point(s) of inflection first. It seems like a good idea. -->
 	  Johan Winge は、3 次から 2 次へのスプライン変換の改良を提案しました: スプライン全体を見る時に、最後が直線で終っている場合、変曲点での分割を試みる方法です。これはいい考えのように思います。
 	<LI>
 <!--	  Johan Winge also points out that I identify points as tangents when they
@@ -325,7 +339,7 @@
 	<LI>
 <!--	  Alexey Kryukov thinks Add Unencoded Slots should work in the compacted view
 	  by making the thing have a custom encoding. -->
-	  Alexey Kryukov の考えでは、符合値を割り当てない「エンコーディングスロットを追加(E)」をコンパクト表示でも実行できるようにし、カスタムエンコーディングに変換するべきです。
+	  Alexey Kryukov の考えでは、符号値を割り当てない「エンコーディングスロットを追加(E)」をコンパクト表示でも実行できるようにし、カスタムエンコーディングに変換するべきです。
 	<LI>
 <!--	  Scripting reencode didn't get rid of the "compacted" mark. -->
 	  スクリプト関数 Reencode() は "コンパクト表示" マークを取り除いていませんでした。
@@ -371,11 +385,9 @@
 
 	  the font. Now freetype seems to renumber glyphs so .notdef is always glyph
 	  0 which fontforge did not expect and produced some strange results when
-	  rasterizing (tested on 2.1.10).
-	  Fix is simple: 
-	  always make notdef be first in the chars dictionary and then all is
-	  happy. -->
-	  フォントに ".notdef" という名前の符合値をも津グリフが含まれていて、そのグリフが最初のグリフではなかった場合、Type1 フォントは .notdef グリフをフォント内のランダムな位置に出力していて、それが原因となって FreeType のラスタライザがいくつかの特定のモード下でクラッシュしていました。FreeType は現在では .notdef が常にグリフ番号 0 になるように番号を振り直すようです (2.1.10 で確認)。修正は単純です: 常に .notdef が chars 辞書の最初のグリフになるようにすれば、みんな幸せでしょう。
+	  rasterizing (tested on 2.1.10). Fix is simple: always make notdef be first 
+	  in the chars dictionary and then all is happy. -->
+	  フォントに ".notdef" という名前の符号値をもつグリフが含まれていて、そのグリフが最初のグリフではなかった場合、Type1 フォントは .notdef グリフをフォント内のランダムな位置に出力していて、それが原因となって FreeType のラスタライザがいくつかの特定のモード下でクラッシュしていました。FreeType は現在では .notdef が常にグリフ番号 0 になるように番号を振り直すようです (2.1.10 で確認)。修正は単純です: 常に .notdef が chars 辞書の最初のグリフになるようにすれば、みんな幸せでしょう。
 	<LI>
 <!--	  Add new scripting command to compare two glyphs. I want this for testsuites,
 	  other people might find a use for it. -->
