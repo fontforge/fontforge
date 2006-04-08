@@ -239,8 +239,8 @@ return( NULL );
     sc->parent = sf;
     sc->orig_pos = sf->glyphcnt++;
     sf->glyphs[sc->orig_pos] = sc;
-    sf->map->map[sc->orig_pos] = enc;
-    sf->map->backmap[enc] = sc->orig_pos;
+    sf->map->map[enc] = sc->orig_pos;
+    sf->map->backmap[sc->orig_pos] = enc;
     sc->unicodeenc = enc;
     sc->changedsincelasthinted = true; /* I don't understand the scaffold lines */
 	/* which I think are the same as hints. So no hints processed. PfaEdit */
@@ -248,6 +248,7 @@ return( NULL );
     sc->name = copy( StdGlyphName(buffer,enc,ui_none,NULL));
     sc->width = (outline->defxadvance*(sf->ascent + sf->descent))/1000;
     sc->vwidth = (outline->defyadvance*(sf->ascent + sf->descent))/1000;
+    sc->widthset = true;
     if ( outline->xadvance!=NULL )
 	sc->width = (outline->xadvance[enc]*(sf->ascent+sf->descent))/1000;
     if ( outline->yadvance!=NULL )
