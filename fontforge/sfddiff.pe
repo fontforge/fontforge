@@ -1,0 +1,61 @@
+
+if ( Strtol($version)<20060330 )
+  Error( "Please upgrade to a more recent version of fontforge" )
+endif
+
+flags=0x789
+
+while ( $argc > 1 && Strsub($1,0,1)=="-" )
+  temp = $1
+  if ( Strsub(temp,1,2)=='-' )
+    temp = Strsub(temp,1)
+  endif
+
+  if ( temp=="-ignorehints" )
+    flags &= ~0x8
+  else if ( temp=="-ignorenames" )
+    flags &= ~0x100
+  else if ( temp=="-ignoregpos" )
+    flags &= ~0x200
+  else if ( temp=="-ignoregsub" )
+    flags &= ~0x400
+  else if ( temp=="-ignorebitmaps" )
+    flags &= ~0x80
+  else if ( temp=="-exact" )
+    flags |= 0x2
+  else if ( temp=="-warn" )
+    flags |= 0x44
+  else if ( temp=="-help" )
+    Print( "sfddiff: [--version] [--help] [--usage] [--ignorehints] [--ignorenames] [--ignoregpos] [--ignoregsup] [--ignorebitmaps] [--warn] [--exact] fontfile1 fontfile2" )
+    Print( " Compares two fontfiles" )
+    Print( " --ignorehints: Do not compare postscript hints or truetype instructions" )
+    Print( " --ignorenames: Do not compare font names" )
+    Print( " --ignoregpos:  Do not compare kerning, etc." )
+    Print( " --ignoregsub:  Do not compare ligatures, etc." )
+    Print( " --ignorebitmaps: Do not compare bitmap strikes" )
+    Print( " --exact:       Normally sfddiff will match contours which are not exact" )
+    Print( "                but where the differences are slight (so you could compare" )
+    Print( "                truetype and postscript and get reasonable answers). Also" )
+    Print( "                normally sfddiff will unlink references before it compares" )
+    Print( "                (so you can compare a postscript font (with no references)" )
+    Print( "                to the original source (which does have references)). Setting")
+    Print( "                this flag means glyphs must match exactly.")
+    Print( " --warn:        Provides a warning when an exact match is not found" )
+return(0)
+  else if ( temp=="-version" )
+    Print( "Version 1.0" )
+return(0)
+  else
+break
+  endif
+  shift
+endloop
+
+if ( $argc!=3 || $1=="--usage" || $1=="-usage" )
+  Print( "sfddiff: [--version] [--help] [--usage] [--ignorehints] [--ignorenames] [--ignoregpos] [--ignoregsup] [--ignorebitmaps] [--warn] [--exact] fontfile1 fontfile2" )
+return(0)
+endif
+
+Open($2)
+Open($1)
+CompareFonts($2,"-",flags)

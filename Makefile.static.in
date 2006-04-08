@@ -11,7 +11,8 @@ docdir = $(prefix)/share/doc/fontforge
 srcdir = @srcdir@
 top_builddir = .
 
-install_data = @INSTALL_DATA@
+INSTALL = @INSTALL@
+INSTALL_DATA = @INSTALL_DATA@
 
 all: fontforge
 
@@ -48,9 +49,9 @@ install_docs:
 	mkdir -p $(docdir)/flags $(docdir)/ja
 #explicit use of sh to make sure we don't invoke csh with different "if" syntax
 	-sh -c "if test -d $(srcdir)/htdocs/ja >/dev/null ; then mkdir -p $(docdir)/ja ; fi"
-	-$(install_data) $(srcdir)/htdocs/*.{html,png,gif,pdf} $(docdir)
-	-$(install_data) $(srcdir)/htdocs/flags/* $(docdir)/flags
-	-$(install_data) $(srcdir)/htdocs/ja/* $(docdir)/ja
+	-$(INSTALL_DATA) $(srcdir)/htdocs/*.{html,png,gif,pdf} $(docdir)
+	-$(INSTALL_DATA) $(srcdir)/htdocs/flags/* $(docdir)/flags
+	-$(INSTALL_DATA) $(srcdir)/htdocs/ja/* $(docdir)/ja
 
 install_po:
 	( cd po ; make install )
@@ -61,16 +62,16 @@ install: $(sharedir) all install_libs install_po
 	mkdir -p $(mandir)/man1
 	mkdir -p $(sharedir)
 	cp fontforge/fontforge $(bindir)
-	-cp fontforge/sfddiff $(bindir)
-#	$(install_data) fontforge/pfaedit-*.ui $(sharedir)
+	cp fontforge/sfddiff $(bindir)
+#	$(INSTALL_DATA) fontforge/pfaedit-*.ui $(sharedir)
 #The next line will fail for most installs. If you have downloaded the cidmaps
 # this will install them. If you haven't it won't. You only need the cidmaps
 # if you are editing CID keyed files (and even then you can live without them
-	-$(install_data) $(srcdir)/cidmap/*.cidmap $(sharedir) >/dev/null 2>&1
-	$(install_data) $(srcdir)/fontforge/fontforge.1 $(mandir)/man1
-	-$(install_data) $(srcdir)/fontforge/sfddiff.1 $(mandir)/man1
+	-$(INSTALL_DATA) $(srcdir)/cidmap/*.cidmap $(sharedir) >/dev/null 2>&1
+	$(INSTALL_DATA) $(srcdir)/fontforge/fontforge.1 $(mandir)/man1
+	$(INSTALL_DATA) $(srcdir)/fontforge/sfddiff.1 $(mandir)/man1
 	mkdir -p $(libdir)/pkgconfig
-	$(install_data) fontforge.pc $(libdir)/pkgconfig
+	$(INSTALL_DATA) fontforge.pc $(libdir)/pkgconfig
 #explicit use of sh to make sure we don't invoke csh with different "if" syntax
 	sh -c "if test -d $(srcdir)/htdocs >/dev/null ; then $(MAKE) install_docs ; fi"
 	sh < systemspecific
