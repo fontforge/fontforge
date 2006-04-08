@@ -48,12 +48,13 @@ return( dir = g_get_home_dir());
 # include <pwd.h>
 
 static char *gethomedir(void) {
-    static char *dir=NULL;
+    static char *dir;
     int uid;
     struct passwd *pw;
 
+	dir = getenv("HOME");
     if ( dir!=NULL )
-return( dir );
+return( strdup(dir) );
 
     uid = getuid();
     while ( (pw=getpwent())!=NULL ) {
@@ -65,21 +66,17 @@ return( dir );
     }
     endpwent();
 
-    if ( (dir=getenv("HOME"))!=NULL )
-return( (dir=strdup(dir)) );
-
 return( NULL );
 }
 #endif
 
 char *getPfaEditDir(char *buffer) {
-    static char *dir=NULL;
+    char *dir=gethomedir();
 
-    if ( dir!=NULL )
-return( dir );
-    if ( gethomedir()==NULL )
+    if ( dir==NULL )
 return( NULL );
-    sprintf(buffer,"%s/.PfaEdit", gethomedir());
+    sprintf(buffer,"%s/.PfaEdit", dir);
+    free(dir);
     if ( access(buffer,F_OK)==-1 )
 	if ( mkdir(buffer,0700)==-1 )
 return( NULL );
@@ -88,13 +85,12 @@ return( dir );
 }
 
 static char *getAutoDirName(char *buffer) {
-    static char *dir=NULL;
+    char *dir=getPfaEditDir(buffer);
 
-    if ( dir!=NULL )
-return( dir );
-    if ( getPfaEditDir(buffer)==NULL )
+    if ( dir==NULL )
 return( NULL );
-    sprintf(buffer,"%s/autosave", getPfaEditDir(buffer));
+    sprintf(buffer,"%s/autosave", dir);
+    free(dir);
     if ( access(buffer,F_OK)==-1 )
 	if ( mkdir(buffer,0700)==-1 )
 return( NULL );
