@@ -332,10 +332,11 @@ static void ScalePoint(BasePoint *me,FT_Vector *cur,real scale,struct reflist *a
 #define CID_Normal	1002
 #define CID_Grid	1003
 #define CID_EmUnit	1004
-#define CID_Current	1005
-#define CID_Original	1006
-#define CID_Transform	1007
-static int show_twilight = false, show_grid=true, show_current=true, show_transformed=true;
+#define CID_Raw		1005
+#define CID_Current	1006
+#define CID_Original	1007
+#define CID_Transform	1008
+static int show_twilight = false, show_grid=true, show_current=true, show_transformed=true, show_raw=false;
 
 static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
     TT_ExecContext exc = DebuggerGetEContext(dv->dc);
@@ -357,6 +358,9 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
     else {
 	show_twilight = GGadgetIsChecked(GWidgetGetControl(dv->points,CID_Twilight));
 	show_grid = GGadgetIsChecked(GWidgetGetControl(dv->points,CID_Grid));
+#if defined(FONTFORGE_CONFIG_SHOW_RAW_POINTS)
+	show_raw = GGadgetIsChecked(GWidgetGetControl(dv->points,CID_Raw));
+#endif
 	show_current = GGadgetIsChecked(GWidgetGetControl(dv->points,CID_Current));
 	show_transformed = GGadgetIsChecked(GWidgetGetControl(dv->points,CID_Transform));
 	r = show_twilight ? &exc->twilight : &exc->pts;
@@ -373,7 +377,7 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 
 	GDrawSetFont(pixmap,dv->ii.gfont);
 	for ( i=0; i<n; ++i ) {
-	    if ( i==0 ) l=n-5; else l=i-1;
+	    if ( i==0 ) l=n-5; else l=i-1;	/* Skip 4 phantom points */
 	    if ( !show_twilight && i<n-ph &&
 		    !(r->tags[i]&FT_Curve_Tag_On) && !(r->tags[l]&FT_Curve_Tag_On)) {
 		ScalePoint(&me,&pts[i],dv->scale,actives);
@@ -382,6 +386,9 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 		if ( show_grid )
 		    sprintf(buffer, "   : I    %.2f,%.2f",
 			    me.x/dv->scale/64.0, me.y/dv->scale/64.0 );
+		else if ( show_raw )
+		    sprintf(buffer, "   : I    %g,%g",
+			    (pts[i].x+pts[l].x)/2.0, (pts[i].y+pts[l].y)/2.0 );
 		else
 		    sprintf(buffer, "   : I    %g,%g", me.x , me.y );
 		uc_strcpy(ubuffer,buffer);
@@ -403,6 +410,10 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 			show_twilight ? 'T' : i>=n-ph? 'F' : r->tags[i]&FT_Curve_Tag_On?'P':'C',
 			r->tags[i]&FT_Curve_Tag_Touch_X?'H':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'V':' ', watched,
 			me.x/dv->scale/64.0, me.y/dv->scale/64.0 );
+	    else if ( show_raw )
+		sprintf(buffer, "%3d: %c%c%c%c %d,%d", i,
+			r->tags[i]&FT_Curve_Tag_On?'P':'C', r->tags[i]&FT_Curve_Tag_Touch_X?'H':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'V':' ', watched,
+			(int) pts[i].x, (int) pts[i].y );
 	    else
 		sprintf(buffer, "%3d: %c%c%c%c %g,%g", i,
 			r->tags[i]&FT_Curve_Tag_On?'P':'C', r->tags[i]&FT_Curve_Tag_Touch_X?'H':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'V':' ', watched,
@@ -1653,9 +1664,10 @@ static void DVCreatePoints(DebugView *dv) {
     GWindowAttrs wattrs;
     GRect pos;
     /*extern int _GScrollBar_Width;*/
-    GGadgetCreateData gcd[9];
-    GTextInfo label[8];
+    GGadgetCreateData gcd[10];
+    GTextInfo label[9];
     extern int _GScrollBar_Width;
+    int k;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle;
@@ -1712,33 +1724,49 @@ static void DVCreatePoints(DebugView *dv) {
     gcd[4].gd.cid = CID_Grid;
     gcd[4].creator = GRadioCreate;
 
-    label[5].text = (unichar_t *) _("Em Units");
-    label[5].text_is_1byte = true;
-    gcd[5].gd.label = &label[5];
-    gcd[5].gd.pos.x = gcd[1].gd.pos.x; gcd[5].gd.pos.y = gcd[4].gd.pos.y;
-    gcd[5].gd.flags = gg_visible | gg_enabled | (!show_current ? gg_cb_on : 0 );
-    gcd[5].gd.cid = CID_EmUnit;
-    gcd[5].creator = GRadioCreate;
+    k=5;
 
-    label[6].text = (unichar_t *) _("Transformed");
-    label[6].text_is_1byte = true;
-    gcd[6].gd.label = &label[6];
-    gcd[6].gd.pos.x = 5; gcd[6].gd.pos.y = gcd[4].gd.pos.y+16;
-    gcd[6].gd.flags = gg_visible | (show_transformed ? gg_cb_on : 0 );
+#if defined(FONTFORGE_CONFIG_SHOW_RAW_POINTS)
+    label[k].text = (unichar_t *) _("Raw");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 43; gcd[k].gd.pos.y = gcd[4].gd.pos.y;
+    gcd[k].gd.flags = gg_visible | gg_enabled | (!show_current ? gg_cb_on : 0 );
+    gcd[k].gd.cid = CID_Raw;
+    gcd[k++].creator = GRadioCreate;
+#endif
+
+    label[k].text = (unichar_t *) _("Em Units");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+#if defined(FONTFORGE_CONFIG_SHOW_RAW_POINTS)
+    gcd[k].gd.pos.x = 82; gcd[k].gd.pos.y = gcd[4].gd.pos.y;
+#else
+    gcd[k].gd.pos.x = gcd[1].gd.pos.x; gcd[k].gd.pos.y = gcd[4].gd.pos.y;
+#endif
+    gcd[k].gd.flags = gg_visible | gg_enabled | (!show_current ? gg_cb_on : 0 );
+    gcd[k].gd.cid = CID_EmUnit;
+    gcd[k++].creator = GRadioCreate;
+
+    label[k].text = (unichar_t *) _("Transformed");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[4].gd.pos.y+16;
+    gcd[k].gd.flags = gg_visible | (show_transformed ? gg_cb_on : 0 );
     if ( dv->cv->sc->layers[ly_fore].splines==NULL &&
 	    dv->cv->sc->layers[ly_fore].refs!=NULL )
-	gcd[6].gd.flags |= gg_enabled;
-    gcd[6].gd.cid = CID_Transform;
-    gcd[6].creator = GCheckBoxCreate;
+	gcd[k].gd.flags |= gg_enabled;
+    gcd[k].gd.cid = CID_Transform;
+    gcd[k++].creator = GCheckBoxCreate;
 
-    gcd[7].gd.pos.width = GDrawPointsToPixels(NULL,_GScrollBar_Width);
-    gcd[7].gd.pos.height = pos.height-dv->pts_head;
-    gcd[7].gd.pos.x = pos.width-gcd[7].gd.pos.width; gcd[7].gd.pos.y = dv->pts_head;
-    gcd[7].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_sb_vert;
-    gcd[7].creator = GScrollBarCreate;
+    gcd[k].gd.pos.width = GDrawPointsToPixels(NULL,_GScrollBar_Width);
+    gcd[k].gd.pos.height = pos.height-dv->pts_head;
+    gcd[k].gd.pos.x = pos.width-gcd[k].gd.pos.width; gcd[k].gd.pos.y = dv->pts_head;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_sb_vert;
+    gcd[k].creator = GScrollBarCreate;
 
     GGadgetsCreate(dv->points,gcd);
-    dv->pts_vsb = gcd[7].ret;
+    dv->pts_vsb = gcd[k].ret;
 
     pos.x = 0;
     pos.y = dv->pts_head;
