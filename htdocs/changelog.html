@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 7-Apr-2006 -->
+  <!-- AP: Last modified: 8-Apr-2006 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -17,6 +17,21 @@
   on the file stamp.c.
   <P>
   <UL>
+    <LI>
+      08-Apr-2006
+      <UL>
+	<LI>
+	  Patch by Mike Frysinger from gentoo. Use the HOME environment variable in
+	  preference to /etc/passwd.
+	<LI>
+	  Werner wants to see raw data in the points window of the debugger. My guess
+	  is that most people won't be interested in this mode (and it makes the window
+	  a bit uglier) so I've made it configurable. --with-debug-raw-points
+	<LI>
+	  Write sfddiff as a fontforge script and put it back into the install process.
+	<LI>
+	  Someone wanted acorn2sfd! Make it compile again.
+      </UL>
     <LI>
       06-Apr-2006
       <UL>
