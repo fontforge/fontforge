@@ -351,7 +351,7 @@ int getAdobeEnc(char *name) { return -1; }
 SplineChar *SFMakeChar(SplineFont *sf, EncMap *map, int enc) { return NULL; }
 GDisplay *screen_display=NULL;
 int no_windowing_ui = true;
-int FVWinInfo(struct fontview *sf,int *cc,int *rc) { return 0 ; }
+int FVWinInfo(struct fontview *sf,int *cc,int *rc) { return -1 ; }
 EncMap *EncMapFromEncoding(SplineFont *sf,Encoding *enc) { return NULL; }
 
 /* ************************************************************************** */

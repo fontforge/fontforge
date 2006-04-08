@@ -12,15 +12,10 @@
 #include "splinefont.h"
 #include <ustring.h>
 
-extern char *psunicodenames[];
-extern int psunicodenames_cnt;
-extern struct psaltnames {
-    char *name;
-    int unicode;
-} psaltuninames[];
-extern int psaltuninames_cnt;
-
 static int includestrokes = false;
+
+extern Encoding custom;
+extern NameList *namelist_for_new_fonts;
 
 #define true	1
 #define false	0
@@ -133,30 +128,6 @@ static char *despace(char *fontname) {
 return( fontname );
 }
 
-static int UnicodeFromName(char *name) {
-    int i = -1;
-
-    if ( strncmp(name,"uni",3)==0 ) { char *end;
-	i = strtol(name+3,&end,16);
-	if ( *end || end-name!=7 )
-	    i = -1;
-    } else if ( name[0]=='u' ) { char *end;
-	i = strtol(name+1,&end,16);
-	if ( *end )
-	    i = -1;
-    }
-    if ( i==-1 ) for ( i=psunicodenames_cnt-1; i>=0 ; --i ) {
-	if ( psunicodenames[i]!=NULL )
-	    if ( strcmp(name,psunicodenames[i])==0 )
-    break;
-    }
-    if ( i==-1 ) for ( i=psaltuninames_cnt-1; i>=0 ; --i ) {
-	if ( strcmp(name,psaltuninames[i].name)==0 )
-    break;
-    }
-return( i );
-}
-
 static void readcoords(FILE *file,int is12, int *x, int *y) {
     int ch1, ch2, ch3;
 
@@ -266,12 +237,15 @@ return( NULL );
     }
 
     sc->parent = sf;
-    sc->enc = sc->unicodeenc = enc;
+    sc->orig_pos = sf->glyphcnt++;
+    sf->glyphs[sc->orig_pos] = sc;
+    sf->map->map[sc->orig_pos] = enc;
+    sf->map->backmap[enc] = sc->orig_pos;
+    sc->unicodeenc = enc;
     sc->changedsincelasthinted = true; /* I don't understand the scaffold lines */
 	/* which I think are the same as hints. So no hints processed. PfaEdit */
 	/* should autohint the char */
-    sprintf( buffer,"uni%04X", enc);
-    sc->name = copy( psunicodenames[enc]==NULL ? buffer : psunicodenames[enc]);
+    sc->name = copy( StdGlyphName(buffer,enc,ui_none,NULL));
     sc->width = (outline->defxadvance*(sf->ascent + sf->descent))/1000;
     sc->vwidth = (outline->defyadvance*(sf->ascent + sf->descent))/1000;
     if ( outline->xadvance!=NULL )
@@ -282,11 +256,11 @@ return( NULL );
     if ( flags&(1<<4) ) {
 	r1 = gcalloc(1,sizeof(RefChar));
 	r1->transform[0] = r1->transform[3] = 1;
-	r1->local_enc = readcharindex(file,flags&(1<<6));
+	r1->orig_pos = readcharindex(file,flags&(1<<6));
 	if ( flags&(1<<5) ) {
 	    r2 = gcalloc(1,sizeof(RefChar));
 	    r2->transform[0] = r2->transform[3] = 1;
-	    r2->local_enc = readcharindex(file,flags&(1<<6));
+	    r2->orig_pos = readcharindex(file,flags&(1<<6));
 	    readcoords(file,flags&1,&x,&y);
 	    r2->transform[4] = x; r2->transform[5] = y;
 	    r1->next = r2;
@@ -316,7 +290,7 @@ return(sc);
 	while ( (ch=readcharindex(file,flags&(1<<6)))!=0 && !feof(file)) {
 	    r1 = gcalloc(1,sizeof(RefChar));
 	    r1->transform[0] = r1->transform[3] = 1;
-	    r1->local_enc = ch;
+	    r1->orig_pos = ch;
 	    readcoords(file,flags&1,&x,&y);
 	    r1->transform[4] = x; r1->transform[5] = y;
 	    r1->next = sc->layers[ly_fore].refs;
@@ -353,7 +327,7 @@ static void ReadChunk(FILE *file,struct Outlines *outline,int chunk) {
 
     for ( i=0; i<32; ++i ) if ( offsets[i]!=0 && 32*chunk+i<outline->metrics_n ) {
 	fseek(file,index_start+offsets[i],SEEK_SET);
-	outline->sf->chars[32*chunk+i] = ReadChar(file,outline,32*chunk+i);
+	ReadChar(file,outline,32*chunk+i);
     }
 }
 
@@ -633,39 +607,56 @@ static void FixupKerns(SplineFont *sf,struct Outlines *outline) {
     struct r_kern *kern;
     KernPair *kp;
     int em = sf->ascent+sf->descent;
+    int gid1, gid2;
 
     if ( outline->kerns==NULL )
 return;
 
+    sf->script_lang = gcalloc(2,sizeof(struct script_record *));
+    sf->script_lang[0] = gcalloc(1,sizeof(struct script_record));
+    sf->script_lang[0]->script = CHR('l','a','t','n');
+    sf->script_lang[0]->langs = gcalloc(2,sizeof(uint32));
+    sf->script_lang[0]->langs[0] = CHR('d','f','l','t');
+    sf->sli_cnt = 1;
+
     for ( i=0; i<outline->metrics_n; ++i ) {
+	gid1 = sf->map->map[i];
 	for ( kern = outline->kerns[i]; kern!=NULL; kern=kern->next ) {
 	    kp = gcalloc(1,sizeof(KernPair));
 	    kp->off = em*kern->amount/1000;
-	    kp->sc = sf->chars[kern->right];
-	    kp->next = sf->chars[i]->kerns;
-	    sf->chars[i]->kerns = kp;
+	    gid2 = sf->map->map[kern->right];
+	    kp->sc = sf->glyphs[gid2];
+	    kp->next = sf->glyphs[gid1]->kerns;
+	    kp->sli = 0;
+	    kp->flags = 0;
+	    sf->glyphs[gid1]->kerns = kp;
 	}
     }
 }
 
 static void FixupRefs(SplineChar *sc,SplineFont *sf) {
     RefChar *rf, *prev, *next;
+    EncMap *map = sf->map;
+    int gid;
 
     if ( sc==NULL || sc->layers[ly_fore].refs==NULL )
 return;
     prev = NULL;
     for ( rf = sc->layers[ly_fore].refs; rf!=NULL; rf=next ) {
 	next = rf->next;
-	if ( rf->local_enc<0 || rf->local_enc>=sf->charcnt || sf->chars[rf->local_enc]==NULL ) {
+	if ( rf->orig_pos<0 || rf->orig_pos>=map->enccount ||
+		(gid = map->map[rf->orig_pos])==-1 ||
+		sf->glyphs[gid]==NULL ) {
 	    fprintf( stderr, "%s contains a reference to a character at index %d which does not exist.\n",
-		sc->name, rf->local_enc );
+		sc->name, rf->orig_pos );
 	    if ( prev==NULL )
 		sc->layers[ly_fore].refs = next;
 	    else
 		prev->next = next;
 	    free(rf);
 	} else {
-	    rf->sc = sf->chars[rf->local_enc];
+	    rf->orig_pos = gid;
+	    rf->sc = sf->glyphs[gid];
 	    rf->adobe_enc = getAdobeEnc(rf->sc->name);
 	    prev = rf;
 	}
@@ -679,7 +670,7 @@ static void FindEncoding(SplineFont *sf,char *filename) {
     char *encfilename;
     FILE *file;
     char buffer[200];
-    int pos;
+    int pos, gid;
 
     strcpy(pattern,"Base *");
     pattern[4] = filename[strlen(filename)-1];
@@ -711,10 +702,10 @@ return;
 	    while ( isspace(*pt)) ++pt;
 	    if ( *pt=='/' ) {
 		for ( end = ++pt; !isspace(*end) && *end!='\0'; ++end );
-		if ( sf->chars[pos]!=NULL ) {
-		    free(sf->chars[pos]->name);
-		    sf->chars[pos]->name = copyn(pt,end-pt);
-		    sf->chars[pos]->unicodeenc = UnicodeFromName(sf->chars[pos]->name);
+		if ( (gid=sf->map->map[pos])!=-1 && sf->glyphs[gid]!=NULL ) {
+		    free(sf->glyphs[gid]->name);
+		    sf->glyphs[gid]->name = copyn(pt,end-pt);
+		    sf->glyphs[gid]->unicodeenc = UniFromName(sf->glyphs[gid]->name,ui_none,&custom);
 		}
 		++pos;
 		pt = end;
@@ -824,8 +815,17 @@ return( NULL );
 	outline.metrics_n = i;
 
     outline.sf = SplineFontEmpty();
-    outline.sf->charcnt = outline.metrics_n;
-    outline.sf->chars = gcalloc(outline.sf->charcnt,sizeof(SplineChar *));
+    outline.sf->glyphmax = outline.metrics_n;
+    outline.sf->glyphcnt = 0;
+    outline.sf->glyphs = gcalloc(outline.sf->glyphmax,sizeof(SplineChar *));
+    outline.sf->map = gcalloc(1,sizeof(EncMap));
+    outline.sf->map->enc = &custom;
+    outline.sf->map->encmax = outline.sf->map->enccount = outline.sf->map->backmax = outline.sf->glyphmax;
+    outline.sf->map->map = galloc(outline.sf->glyphmax*sizeof(int32));
+    outline.sf->map->backmap = galloc(outline.sf->glyphmax*sizeof(int32));
+    memset(outline.sf->map->map,-1,outline.sf->glyphmax*sizeof(int32));
+    memset(outline.sf->map->backmap,-1,outline.sf->glyphmax*sizeof(int32));
+    outline.sf->for_new_glyphs = namelist_for_new_fonts;
     outline.sf->fontname = despace(outline.fontname);
     outline.sf->fullname = copy(outline.fontname);
     outline.sf->familyname = GuessFamily(outline.fontname);
@@ -835,6 +835,8 @@ return( NULL );
     strcpy(buffer,outline.fontname);
     strcat(buffer,".sfd");
     outline.sf->filename = copy(buffer);
+
+    outline.sf->top_enc = -1;
 
     outline.sf->ascent = 4*outline.design_size/5;
     outline.sf->descent = outline.design_size - outline.sf->ascent;
@@ -850,8 +852,8 @@ return( NULL );
 
     FixupKerns(outline.sf,&outline);
 
-    for ( i=0; i<outline.sf->charcnt; ++i )
-	FixupRefs(outline.sf->chars[i],outline.sf);
+    for ( i=0; i<outline.sf->glyphcnt; ++i )
+	FixupRefs(outline.sf->glyphs[i],outline.sf);
 
     if ( isdigit(filename[strlen(filename)-1]) )
 	FindEncoding(outline.sf,filename);
@@ -859,7 +861,7 @@ return( NULL );
     free(filename);
     fclose(file);
 
-    if ( !SFDWrite(outline.sf->filename,outline.sf) )
+    if ( !SFDWrite(outline.sf->filename,outline.sf,outline.sf->map,NULL) )
 	fprintf( stderr, "Failed to write outputfile %s\n", outline.sf->filename );
     else
 	fprintf( stderr, "Created: %s\n", outline.sf->filename );
