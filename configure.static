@@ -849,6 +849,16 @@ Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-capslock-for-alt   Control whether to use capslock rather than alt/meta to alter behavior of tools in outline/bitmap windows
+  --with-debug-raw-points   Add a raw mode to the points window of the debugger
+
+   if test "$withval" \!= "no" ; then
+     cat >>confdefs.h <<\_ACEOF
+#define FONTFORGE_CONFIG_SHOW_RAW_POINTS 1
+_ACEOF
+
+   fi
+
+
   --without-iconv   Don't use the system's iconv(3) routines, use fontforge's instead
   --with-freetype-bytecode   Control whether we build with the bytecode interpreter
   --with-freetype-src=dir   Specify freetype source directory
@@ -2470,6 +2480,13 @@ if test "$gww_define_caps_for_alt" \!= "dontknow" ; then
 _ACEOF
 
 fi
+
+
+# Check whether --with-debug-raw-points or --without-debug-raw-points was given.
+if test "${with_debug_raw_points+set}" = set; then
+  withval="$with_debug_raw_points"
+
+fi;
 
 
 gww_uselessiconv="no"
