@@ -55,13 +55,18 @@ LIBS = -rpath $(libdir) $(X_LIBS) ../libgdraw.la ../libgunicode.la \
     $(X_PRE_LIBS) $(X_11LIB) $(X_EXTRA_LIBS) @LIBS@ $(STATIC_LIBS) -lm
 DLIBS = -rpath $(libdir) ../libgunicode.la @LIBS@ $(STATIC_LIBS) -lm
 
-all: fontforge
+all: fontforge sfddiff
 
 fontforge: main.o $(fontforge_LIBOBJECTS)
 	$(LIBTOOL) --mode=link $(CC) -export-dynamic -o fontforge main.o $(fontforge_LIBOBJECTS) $(LIBS)
 
-sfddiff: $(DIFFOBJS)
-	$(LIBTOOL) --mode=link $(CC) -o sfddiff $(DIFFOBJS) $(DLIBS)
+sfddiff: sfddiff.pe
+	echo "#!$(bindir)/fontforge" >sfddiff
+	cat sfddiff.pe >>sfddiff
+	chmod +x sfddiff
+
+sfddiff.old: $(DIFFOBJS)
+	$(LIBTOOL) --mode=link $(CC) -o sfddiff.old $(DIFFOBJS) $(DLIBS)
 
 acorn2sfd: $(ACORNOBJS)
 	$(LIBTOOL) --mode=link $(CC) -o acorn2sfd $(ACORNOBJS) $(DLIBS)

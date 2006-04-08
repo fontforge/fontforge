@@ -49,13 +49,18 @@ LIBS = -L../libs $(X_LIBS) ../libs/libgdraw.a ../libs/libgunicode.a \
     $(X_PRE_LIBS) $(X_11LIB) $(X_EXTRA_LIBS) @LIBS@ $(STATIC_LIBS) -lm
 DLIBS = ../libs/libgunicode.a @LIBS@ $(STATIC_LIBS) -lm
 
-all: fontforge
+all: fontforge sfddiff
 
 fontforge: $(fontforge_OBJECTS)
 	$(CC) -o fontforge $(fontforge_OBJECTS) $(LIBS)
 
-sfddiff: $(DIFFOBJS)
-	$(CC) -o sfddiff $(DIFFOBJS) $(DLIBS)
+sfddiff: sfddiff.pe
+	echo "#!$(bindir)/fontforge" >sfddiff
+	cat sfddiff.pe >>sfddiff
+	chmod +x sfddiff
+
+sfddiff.old: $(DIFFOBJS)
+	$(LIBTOOL) --mode=link $(CC) -o sfddiff.old $(DIFFOBJS) $(DLIBS)
 
 acorn2sfd: $(ACORNOBJS)
 	$(CC) -o acorn2sfd $(ACORNOBJS) $(DLIBS)
