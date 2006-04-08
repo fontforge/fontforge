@@ -52,6 +52,15 @@ if test "$gww_define_caps_for_alt" \!= "dontknow" ; then
   AC_DEFINE_UNQUOTED(FONTFORGE_CONFIG_CAPSLOCK_FOR_ALT,$gww_define_caps_for_alt)
 fi
 
+AC_ARG_WITH(debug-raw-points,
+ [  --with-debug-raw-points   Add a raw mode to the points window of the debugger]
+ [
+   if test "$withval" \!= "no" ; then
+     AC_DEFINE(FONTFORGE_CONFIG_SHOW_RAW_POINTS)
+   fi
+
+ ])
+
 dnl One user seems to have messed up iconv on his system and can't get it
 dnl to work.
 
