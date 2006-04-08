@@ -169,6 +169,13 @@
 /*									      */
 
 
+/* Werner wants to be able to see the raw (unscaled) data for the location of */
+/*  points (in the points window of the debugger). I'm not sure that is       */
+/*  generally a good idea (I think it makes the dlg look unsymetric).         */
+/*									      */
+/* #define FONTFORGE_CONFIG_SHOW_RAW_POINTS				      */
+/*									      */
+
 /* On most systems fontforge uses the alt or meta key as a mouse press modifier*/
 /*  on the mac that would mean the option key. But the mac usually uses option*/
 /*  keypress to mean mouse button 2, and so option isn't available. Let's use */
