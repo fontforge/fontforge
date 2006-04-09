@@ -13608,7 +13608,3 @@ msgstr "UTF-8で保存(_S)"
 
 msgid "Save in _UCS2"
 msgstr "_UCS-2で保存"
-
-msgid "_Raw"
-msgstr "無変換(_R)"
-
