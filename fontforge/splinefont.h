@@ -1966,8 +1966,10 @@ extern enum Compare_Ret SSsCompare(const SplineSet *ss1, const SplineSet *ss2,
 enum font_compare_flags { fcf_outlines=1, fcf_exact=2, fcf_warn_not_exact=4,
 	fcf_hinting=8, fcf_hintmasks=0x10, fcf_hmonlywithconflicts=0x20,
 	fcf_warn_not_ref_exact=0x40,
-	fcf_bitmaps=0x80, fcf_names = 0x100, fcf_gpos=0x200, fcf_gsub=0x400 };
-extern int CompareFonts(SplineFont *sf1, SplineFont *sf2, FILE *diffs, int flags);
+	fcf_bitmaps=0x80, fcf_names = 0x100, fcf_gpos=0x200, fcf_gsub=0x400,
+	fcf_adddiff2sf1=0x800, fcf_addmissing=0x1000 };
+extern int CompareFonts(SplineFont *sf1, EncMap *map1, SplineFont *sf2,
+	FILE *diffs, int flags);
 
 
 # if HANYANG

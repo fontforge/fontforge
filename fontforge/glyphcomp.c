@@ -28,6 +28,7 @@
 #include "pfaeditui.h"
 #include "scriptfuncs.h"
 #include <math.h>
+#include <ustring.h>
 
 /* ************************************************************************** */
 /* ********************* Code to compare outline glyphs ********************* */
@@ -823,6 +824,8 @@ return( ret );
 
 struct font_diff {
     SplineFont *sf1, *sf2;
+    EncMap *map1;
+    int sf1_glyphcnt;		/* It may change if addmissing, but our arrays (like matches) won't */
     FILE *diffs;
     int flags;
     char *name1, *name2;
@@ -945,17 +948,39 @@ static int fdRefCheck(struct font_diff *fd, SplineChar *sc1,
 return( ret );
 }
 
+static void SCAddBackgrounds(SplineChar *sc1,SplineChar *sc2,struct font_diff *fd) {
+    SplineSet *last;
+    RefChar *ref;
+
+    SCOutOfDateBackground(sc1);
+    SplinePointListsFree(sc1->layers[ly_back].splines);
+    sc1->layers[ly_back].splines = SplinePointListCopy(sc2->layers[ly_fore].splines);
+    if ( sc1->layers[ly_back].splines!=NULL )
+	for ( last = sc1->layers[ly_back].splines; last->next!=NULL; last=last->next );
+    else
+	last = NULL;
+    for ( ref = sc2->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
+	if ( last!=NULL ) {
+	    last->next = SplinePointListCopy(ref->layers[0].splines);
+	    while ( last->next!=NULL ) last=last->next;
+	} else {
+	    sc1->layers[ly_back].splines = SplinePointListCopy(ref->layers[0].splines);
+	    if ( sc1->layers[ly_back].splines!=NULL )
+		for ( last = sc1->layers[ly_back].splines; last->next!=NULL; last=last->next );
+	}
+    }
+    if ( sc1->parent->order2!=sc2->parent->order2 )
+	sc1->layers[ly_back].splines =
+		SplineSetsConvertOrder(sc1->layers[ly_back].splines,
+			sc1->parent->order2);
+    SCCharChangedUpdate(sc1);
+}
+
 static void SCCompare(SplineChar *sc1,SplineChar *sc2,struct font_diff *fd) {
     int layer;
     int val;
     SplinePoint *hmfail;
 
-    if ( sc1->width!=sc2->width )
-	GlyphDiffSCError(fd,sc1,U_("Glyph “%s” has advance width %d in %s but %d in %s\n"),
-		sc1->name, sc1->width, fd->name1, sc2->width, fd->name2 );
-    if ( sc1->vwidth!=sc2->vwidth )
-	GlyphDiffSCError(fd,sc1,U_("Glyph “%s” has vertical advance width %d in %s but %d in %s\n"),
-		sc1->name, sc1->vwidth, fd->name1, sc2->vwidth, fd->name2 );
     if ( sc1->layer_cnt!=sc2->layer_cnt )
 	GlyphDiffSCError(fd,sc1,U_("Glyph “%s” has a different number of layers\n"),
 		sc1->name );
@@ -1005,6 +1030,16 @@ static void SCCompare(SplineChar *sc1,SplineChar *sc2,struct font_diff *fd) {
 	    }
 	}
     }
+    if ( fd->last_sc==sc1 && (fd->flags&fcf_adddiff2sf1))
+	SCAddBackgrounds(sc1,sc2,fd);
+
+    if ( sc1->width!=sc2->width )
+	GlyphDiffSCError(fd,sc1,U_("Glyph “%s” has advance width %d in %s but %d in %s\n"),
+		sc1->name, sc1->width, fd->name1, sc2->width, fd->name2 );
+    if ( sc1->vwidth!=sc2->vwidth )
+	GlyphDiffSCError(fd,sc1,U_("Glyph “%s” has vertical advance width %d in %s but %d in %s\n"),
+		sc1->name, sc1->vwidth, fd->name1, sc2->vwidth, fd->name2 );
+
     if ( ( fd->flags&fcf_hintmasks ) && !(val&SS_NoMatch) &&
 	    (sc1->hconflicts || sc1->vconflicts || !(fd->flags&fcf_hmonlywithconflicts)) &&
 	    hmfail!=NULL )
@@ -1027,13 +1062,30 @@ static void SCCompare(SplineChar *sc1,SplineChar *sc2,struct font_diff *fd) {
     GlyphDiffSCFinish(fd);
 }
 
+static void FDAddMissingGlyph(struct font_diff *fd,SplineChar *sc2) {
+    SplineChar *sc;
+    int enc;
+
+    enc = SFFindSlot(fd->sf1,fd->map1,sc2->unicodeenc,sc2->name);
+    if ( enc==-1 )
+	enc = fd->map1->enccount;
+    sc = SFMakeChar(fd->sf1,fd->map1,enc);
+    sc->width = sc2->width;
+    sc->vwidth = sc2->vwidth;
+    sc->widthset = sc2->widthset;
+    free(sc->name);
+    sc->name = copy(sc2->name);
+    sc->unicodeenc = sc2->unicodeenc;
+    SCAddBackgrounds(sc,sc2,fd);
+}
+
 static void comparefontglyphs(struct font_diff *fd) {
     int gid1, gid2;
     SplineChar *sc, *sc2;
     SplineFont *sf1 = fd->sf1, *sf2=fd->sf2;
 
     fd->top_diff = fd->local_diff = false;
-    for ( gid1=0; gid1<sf1->glyphcnt; ++gid1 ) {
+    for ( gid1=0; gid1<fd->sf1_glyphcnt; ++gid1 ) {
 	if ( (sc=sf1->glyphs[gid1])!=NULL && !sc->ticked ) {
 	    if ( !fd->top_diff )
 		fprintf( fd->diffs, _("Outline Glyphs\n") );
@@ -1059,6 +1111,8 @@ static void comparefontglyphs(struct font_diff *fd) {
 	    fd->local_diff = fd->top_diff = fd->diff = true;
 	    fputs("  ",fd->diffs);
 	    fprintf( fd->diffs, U_("Glyph “%s” missing from %s\n"), sc->name, fd->name1 );
+	    if ( fd->flags&fcf_addmissing )
+		FDAddMissingGlyph(fd,sc);
 	}
 
     if ( sf1->ascent+sf1->descent != sf2->ascent+sf2->descent ) {
@@ -1073,7 +1127,7 @@ return;
     }
 
     fd->local_diff = false;
-    for ( gid1=0; gid1<sf1->glyphcnt; ++gid1 ) {
+    for ( gid1=0; gid1<fd->sf1_glyphcnt; ++gid1 ) {
 	if ( (sc=sf1->glyphs[gid1])!=NULL && (sc2=fd->matches[gid1])!=NULL )
 	    SCCompare(sc,sc2,fd);
     }
@@ -1872,7 +1926,7 @@ static int NestedFeatureMatches(struct font_diff *fd,uint32 tag1,uint32 tag2) {
     PST *pst1, *pst2;
     AnchorPoint *ap1, *ap2;
 
-    for ( gid1=0; gid1<fd->sf1->glyphcnt; ++gid1 ) if ( (sc2=fd->matches[gid1])!=NULL && (sc1=fd->sf1->glyphs[gid1])!=NULL ) {
+    for ( gid1=0; gid1<fd->sf1_glyphcnt; ++gid1 ) if ( (sc2=fd->matches[gid1])!=NULL && (sc1=fd->sf1->glyphs[gid1])!=NULL ) {
 	for ( pst1=sc1->possub; pst1!=NULL; pst1=pst1->next ) if ( pst1->tag==tag1 ) {
 	    for ( pst2=sc2->possub; pst2!=NULL; pst2=pst2->next ) if ( pst2->tag==tag2 ) {
 		if ( comparepst(fd,pst1,pst2))
@@ -1929,7 +1983,7 @@ static void comparefeature(struct font_diff *fd) {
     comparefpsts(fd,fd->sf1->possub,fd->sf2->possub);
 
     fd->last_sc = NULL;
-    for ( gid1=0; gid1<fd->sf1->glyphcnt; ++gid1 ) if ( (sc2=fd->matches[gid1])!=NULL && (sc1=fd->sf1->glyphs[gid1])!=NULL ) {
+    for ( gid1=0; gid1<fd->sf1_glyphcnt; ++gid1 ) if ( (sc2=fd->matches[gid1])!=NULL && (sc1=fd->sf1->glyphs[gid1])!=NULL ) {
 	for ( pst1=sc1->possub; pst1!=NULL; pst1=pst1->next ) if ( pst1->tag==fd->tag ) {
 	    for ( pst2=sc2->possub; pst2!=NULL; pst2=pst2->next ) if ( pst2->tag==fd->tag ) {
 		if ( comparepst(fd,pst1,pst2))
@@ -2138,7 +2192,7 @@ static void comparegsub(struct font_diff *fd) {
 
 #include "ttf.h"
 
-int CompareFonts(SplineFont *sf1, SplineFont *sf2, FILE *diffs,
+int CompareFonts(SplineFont *sf1, EncMap *map1, SplineFont *sf2, FILE *diffs,
 	int flags) {
     int gid1, gid2;
     SplineChar *sc, *sc2;
@@ -2157,6 +2211,8 @@ int CompareFonts(SplineFont *sf1, SplineFont *sf2, FILE *diffs,
     else if ( sf2->subfontcnt!=0 )
 	sf2 = sf2->subfonts[0];
     fd.sf1 = sf1; fd.sf2 = sf2; fd.diffs = diffs; fd.flags = flags;
+    fd.map1 = map1;
+    fd.sf1_glyphcnt = sf1->glyphcnt;
 
     if ( strcmp( sf1->fontname,sf2->fontname )!=0 ) {
 	fd.name1 = sf1->fontname; fd.name2 = sf2->fontname;
@@ -2211,6 +2267,9 @@ int CompareFonts(SplineFont *sf1, SplineFont *sf2, FILE *diffs,
 	free(sf2->glyphs); sf2->glyphs = NULL;
 	sf2->glyphcnt = sf2->glyphmax = 0;
     }
+
+    if ( fd.sf1_glyphcnt!=sf1->glyphcnt )	/* If we added glyphs, they didn't get hashed properly */
+	GlyphHashFree(sf1);
 
 return( fd.diff );
 }

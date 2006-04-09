@@ -6493,7 +6493,7 @@ static void bCompareFonts(Context *c) {
 	ScriptErrorString( c, "Failed to find other font (it must be Open()ed first", c->a.vals[1].u.sval);
 
     c->return_val.type = v_int;
-    c->return_val.u.ival = CompareFonts(c->curfv->sf, sf2, diffs, flags );
+    c->return_val.u.ival = CompareFonts(c->curfv->sf, c->curfv->map, sf2, diffs, flags );
     fclose( diffs );
 }
 

@@ -2885,7 +2885,7 @@ static void BuildFCmpNodes(struct att_dlg *att, SplineFont *sf1, SplineFont *sf2
 
     att->tables = tables = gcalloc(2,sizeof(struct node));
     att->current = tables;
-    if ( !CompareFonts(sf1,sf2,tmp,flags) && ftell(tmp)==0 ) {
+    if ( !CompareFonts(sf1,att->fv1->map,sf2,tmp,flags) && ftell(tmp)==0 ) {
 	tables[0].label = copy(_("No differences found"));
     } else {
 	tables[0].label = copy(_("Differences..."));
@@ -2961,8 +2961,10 @@ struct mf_data {
 #define CID_HintMasksWConflicts	11
 #define CID_NoHintMasks	12
 #define CID_RefContourWarn	13
+#define CID_AddDiffs	14
+#define CID_AddMissing	15
 
-static int last_flags = fcf_outlines|fcf_hinting|fcf_bitmaps|fcf_names|fcf_gpos|fcf_gsub;
+static int last_flags = fcf_outlines|fcf_hinting|fcf_bitmaps|fcf_names|fcf_gpos|fcf_gsub|fcf_adddiff2sf1;
 
 static int FC_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
@@ -3001,6 +3003,10 @@ static int FC_OK(GGadget *g, GEvent *e) {
 	    flags |= fcf_gpos;
 	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_GSub)) )
 	    flags |= fcf_gsub;
+	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_AddDiffs)) )
+	    flags |= fcf_adddiff2sf1;
+	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_AddMissing)) )
+	    flags |= fcf_addmissing;
 	last_flags = flags;
 
 	GDrawDestroyWindow(gw);
@@ -3038,8 +3044,8 @@ void FontCompareDlg(FontView *fv) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[24];
-    GTextInfo label[24];
+    GGadgetCreateData gcd[25];
+    GTextInfo label[25];
     struct mf_data d;
     char buffer[80];
     int k;
@@ -3052,8 +3058,8 @@ void FontCompareDlg(FontView *fv) {
 	wattrs.cursor = ct_pointer;
 	wattrs.utf8_window_title = _("Font Compare...");
 	pos.x = pos.y = 0;
-	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,170));
-	pos.height = GDrawPointsToPixels(NULL,88+13*14+2);
+	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,180));
+	pos.height = GDrawPointsToPixels(NULL,88+15*14+2);
 	gw = GDrawCreateTopWindow(NULL,&pos,fc_e_h,&d,&wattrs);
 
 	memset(&label,0,sizeof(label));
@@ -3190,6 +3196,32 @@ void FontCompareDlg(FontView *fv) {
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.cid = CID_NoHintMasks;
 	gcd[k++].creator = GRadioCreate;
+
+	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
+	if ( fv->sf->onlybitmaps )
+	    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+	else
+	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | ((last_flags&fcf_adddiff2sf1)?gg_cb_on:0);
+	label[k].text = (unichar_t *) _("_Add Diff Outlines to Background");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.cid = CID_AddDiffs;
+	gcd[k].gd.popup_msg = (unichar_t *) _("If two glyphs differ, then add the outlines of the second glyph\nto the background layer of the first (So when opening the first\nthe differences will be visible)");
+	gcd[k++].creator = GCheckBoxCreate;
+
+	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
+	if ( fv->sf->onlybitmaps )
+	    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+	else
+	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | ((last_flags&fcf_addmissing)?gg_cb_on:0);
+	label[k].text = (unichar_t *) _("Add _Missing Glyphs");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.cid = CID_AddMissing;
+	gcd[k].gd.popup_msg = (unichar_t *) _("If a glyph in the second font is missing from the first then\nadd it to the first with the outlines of the second font in\nthe background");
+	gcd[k++].creator = GCheckBoxCreate;
 
 	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+16;
 	if ( fv->sf->bitmaps==NULL )
