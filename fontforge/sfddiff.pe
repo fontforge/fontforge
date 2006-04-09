@@ -4,6 +4,7 @@ if ( Strtol($version)<20060330 )
 endif
 
 flags=0x789
+outfile=""
 
 while ( $argc > 1 && Strsub($1,0,1)=="-" )
   temp = $1
@@ -12,20 +13,24 @@ while ( $argc > 1 && Strsub($1,0,1)=="-" )
   endif
 
   if ( temp=="-ignorehints" )
-    flags &= ~0x8
-  else if ( temp=="-ignorenames" )
-    flags &= ~0x100
-  else if ( temp=="-ignoregpos" )
-    flags &= ~0x200
-  else if ( temp=="-ignoregsub" )
-    flags &= ~0x400
-  else if ( temp=="-ignorebitmaps" )
-    flags &= ~0x80
-  else if ( temp=="-exact" )
-    flags |= 0x2
-  else if ( temp=="-warn" )
-    flags |= 0x44
-  else if ( temp=="-help" )
+    flags = flags & ~0x8
+  elseif ( temp=="-ignorenames" )
+    flags = flags & ~0x100
+  elseif ( temp=="-ignoregpos" )
+    flags = flags & ~0x200
+  elseif ( temp=="-ignoregsub" )
+    flags = flags & ~0x400
+  elseif ( temp=="-ignorebitmaps" )
+    flags = flags & ~0x80
+  elseif ( temp=="-exact" )
+    flags = flags | 0x2
+  elseif ( temp=="-warn" )
+    flags = flags | 0x44
+  elseif ( temp=="-merge" )
+    flags = flags | 0x1800
+    shift
+    outfile = $1
+  elseif ( temp=="-help" )
     Print( "sfddiff: [--version] [--help] [--usage] [--ignorehints] [--ignorenames] [--ignoregpos] [--ignoregsup] [--ignorebitmaps] [--warn] [--exact] fontfile1 fontfile2" )
     Print( " Compares two fontfiles" )
     Print( " --ignorehints: Do not compare postscript hints or truetype instructions" )
@@ -41,8 +46,10 @@ while ( $argc > 1 && Strsub($1,0,1)=="-" )
     Print( "                to the original source (which does have references)). Setting")
     Print( "                this flag means glyphs must match exactly.")
     Print( " --warn:        Provides a warning when an exact match is not found" )
+    Print( " --merge outfile: Put any outline differences in the backgrounds of" )
+    Print( "                appropriate glyphs" )
 return(0)
-  else if ( temp=="-version" )
+  elseif ( temp=="-version" )
     Print( "Version 1.0" )
 return(0)
   else
@@ -52,10 +59,13 @@ break
 endloop
 
 if ( $argc!=3 || $1=="--usage" || $1=="-usage" )
-  Print( "sfddiff: [--version] [--help] [--usage] [--ignorehints] [--ignorenames] [--ignoregpos] [--ignoregsup] [--ignorebitmaps] [--warn] [--exact] fontfile1 fontfile2" )
+  Print( "sfddiff: [--version] [--help] [--usage] [--ignorehints] [--ignorenames] [--ignoregpos] [--ignoregsup] [--ignorebitmaps] [--warn] [--exact] [--merge outfile] fontfile1 fontfile2" )
 return(0)
 endif
 
 Open($2)
 Open($1)
 CompareFonts($2,"-",flags)
+if ( outfile!="" )
+  Save(outfile)
+endif
