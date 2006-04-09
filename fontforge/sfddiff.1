@@ -14,6 +14,8 @@
 .RB [ \--ignorebitmaps ]
 .RB [ \--exact ]
 .RB [ \--warn ]
+.RB [ \-merge
+.IR outfile ]
 .RB [ \--usage ]
 .RB [ \--version ]
 .I fontfile1
@@ -82,6 +84,21 @@ Require outlines to match exactly.
 .TP
 .B \--warn
 Warn if the outlines/references are slightly different.
+.TP
+.BI \-merge " outfile"
+Store a merged version of the two fonts into the specified output file.
+The merged data will be based on
+.I sfdfile1,
+as well as any characters present in
+.I sfdfile2
+but not in
+.RI sfdfile1 will be added, and the outlines of
+.I sfdfile2
+will be placed in the background.
+Finally, for any characters with different outlines or references
+the background of the the character will contain the outlines from
+.I sfdfile2
+(references will be unlinked into outlines and those outlines also will be added)
 .TP
 .B \--usage
 Display the usage description.
