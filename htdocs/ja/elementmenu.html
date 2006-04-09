@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 4-Apr-2006 -->
+  <!-- AP: Last modified: 9-Apr-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>The Element Menu</TITLE>-->
     <TITLE>エレメントメニュー</TITLE>
@@ -73,7 +73,7 @@
 <!--  <A HREF="#Regenerate">Regenerate Bitmaps...</A> -->
       <A HREF="#Regenerate">ビットマップの再生成(<U>B</U>)...</A>
     <LI>
-<!--  Transformatons-->
+<!--  Transformations-->
       変形(<U>T</U>)
       <UL>
 	<LI>
@@ -536,7 +536,7 @@
       変形
     <DD>
 <!--  This sub-menu has rather different choices in the bitmap view from the other
-      views. (Because bitmaps are discrete and the continous transformations of
+      views. (Because bitmaps are discrete and the continuous transformations of
       splines are not meaningful). -->
       このサブメニューは、ビットマップビューでは他のビューとかなり異なる選択肢が表示されます。(なぜならビットマップは離散的で、スプラインのような連続変形は無意味だからです)。
       <DL>
@@ -669,7 +669,7 @@
 <!--	  Make sure paths have the correct orientation. Consider the letter "O" with
 	  two contours. If both contours run in the same direction then the inner path
 	  will be removed (because the outer path overlaps it everywhere), but if the
-	  contours run in oposite orientations then the inner path will be retained.
+	  contours run in opposite orientations then the inner path will be retained.
 	  Things get very strange if you have intersecting paths with different
 	  orientations. -->
 	  パスの向きが正しいことを確かめておいてください。2 本の輪郭をもつ文字“O”を考えましょう。2 本の輪郭が同じ方向を向いている場合、内側のものが削除されます (外側のパスが全体に重なり合っているからです) が、輪郭同士が逆向きになっている場合、内側のパスは保持されます。交差するパスが逆向きになっているときは非常に奇妙なことが起こります。
@@ -1121,7 +1121,7 @@
 <!--  <A NAME="CompareFonts">Compare Fonts...</A> -->
       <A NAME="CompareFonts">フォントを比較...</A>
     <DD>
-<!--  <IMG SRC="fontcompdlg.png" WIDTH="240" HEIGHT="409" ALIGN="Right">Sometimes
+<!--  <IMG SRC="fontcompdlg.png" WIDTH="254" HEIGHT="448" ALIGN="Right">Sometimes
       it is useful to compare two versions of a font and see what has changed.
       This command will allow you to check: -->
       <IMG SRC="fontcompdlg.png" WIDTH="209" HEIGHT="307" ALIGN="Right">
@@ -1161,6 +1161,11 @@
       a good algorithm for saying that they are equivalent - - especially since
       Adobe uses hints in ways which I find unexpected. -->
       PostScript のヒントマスクの比較もまた、どこと無くあやふやな所のある問題です。(私の考えでは) 等価なヒントマスクを表現する多くの方法が可能であることがしばしばありますが、それらが等価であると示すいいアルゴリズムがありません――思いもよらないようなヒントの使い方を Adobe がしていることに気づいてからはなおのことです。
+      <P>
+<!--  Finally you can have it place the outlines of each differing glyph from the
+      second font into the background of the corresponding glyph in the first font.
+      This can be helpful in correcting discrepancies. -->
+      そして最後に、比較先のフォントと比較元のフォントで異なるグリフのそれぞれに対し、比較先のフォントの欠落したグリフを比較元のフォントの対応するグリフの背景に配置することができます。これは、矛盾点を修正するのに役立つでしょう。
       <P>
 <!--  <IMG SRC="fontcompresults.png" WIDTH="497" HEIGHT="349"> -->
       <IMG SRC="fontcompresults.png" WIDTH="412" HEIGHT="273">

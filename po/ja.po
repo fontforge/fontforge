@@ -10074,6 +10074,9 @@ msgstr "オリジナル"
 msgid "Grid"
 msgstr "グリッド"
 
+msgid "Raw"
+msgstr "無変換"
+
 msgid "Em Units"
 msgstr "EMあたりユニット数"
 
@@ -13334,6 +13337,30 @@ msgstr "グリフにヒントの衝突がない場合,ヒントマスクを比�
 msgid "Don't Compare HintMasks"
 msgstr "ヒントマスクを比較しない"
 
+msgid "_Add Diff Outlines to Background"
+msgstr "アウトラインの差分を背景に追加(_A)"
+
+msgid ""
+"If two glyphs differ, then add the outlines of the second glyph\n"
+"to the background layer of the first (So when opening the first\n"
+"the differences will be visible)"
+msgstr ""
+"2つのアウトラインに違いがある時は,比較先のグリフのアウトラインを\n"
+"比較元のグリフの背景レイヤーに追加します (それにより,比較元の\n"
+"フォントを開けば両者の違いを目で確認できます)"
+
+msgid "Add _Missing Glyphs"
+msgstr "存在しないグリフを追加(_M)"
+
+msgid ""
+"If a glyph in the second font is missing from the first then\n"
+"add it to the first with the outlines of the second font in\n"
+"the background"
+msgstr ""
+"比較先のフォントのグリフが比較元のフォントに含まれていない\n"
+"ときはそのグリフを挿入し,比較先のアウトラインをグリフの背景に\n"
+"配置します"
+
 msgid "Compare _Bitmaps"
 msgstr "ビットマップを比較(_B)"
 
@@ -13581,3 +13608,7 @@ msgstr "UTF-8で保存(_S)"
 
 msgid "Save in _UCS2"
 msgstr "_UCS-2で保存"
+
+msgid "_Raw"
+msgstr "無変換(_R)"
+
