@@ -23,8 +23,28 @@
   <P>
   <UL>
     <LI>
-<!--  ??-Apr-2006 -->
-      2006年4月??日
+<!--  08-Apr-2006 -->
+      2006年4月8日
+      <UL>
+	<LI>
+<!--	  Patch by Mike Frysinger from gentoo. Use the HOME environment variable in
+	  preference to /etc/passwd. -->
+	  gentoo の Mike Frysinger からのパッチ。HOME 環境変数を /etc/passwd より優先して使用するように変更。
+	<LI>
+<!--	  Werner wants to see raw data in the points window of the debugger. My guess
+	  is that most people won't be interested in this mode (and it makes the window
+	  a bit uglier) so I've made it configurable. - -with-debug-raw-points -->
+	  Werner はデバッガの点ウィンドウ中で生データを見ることができるように要望しました。私の推測では、ほとんどの人はこのモードに興味を持たないでしょう (そしてウィンドウの見栄えが少し汚くなるでしょう) から、コンパイル時に --with-debug-raw-points をつけるか否かで調整できるようにしました。
+	<LI>
+<!--	  Write sfddiff as a fontforge script and put it back into the install process. -->
+          sfddiff を FontForge スクリプトとして書き、それをインストール処理に再び追加しました。
+	<LI>
+<!--	  Someone wanted acorn2sfd! Make it compile again. -->
+	  acorn2sfd を必要な人がいました! それをまたコンパイルするようにしました。
+      </UL>
+    <LI>
+<!--  06-Apr-2006 -->
+      2006年4月6日
       <UL>
 	<LI>
 <!--	  Patch by Ian Jackson of Ubuntu. When in an empty glyph (one not WorthOutputting)
