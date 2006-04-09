@@ -109,7 +109,7 @@ if test "$gww_define_caps_for_alt" \!= "dontknow" ; then
 fi
 
 AC_ARG_WITH(debug-raw-points,
- [  --with-debug-raw-points   Add a raw mode to the points window of the debugger]
+ [  --with-debug-raw-points   Add a raw mode to the points window of the debugger],
  [
    if test "$withval" \!= "no" ; then
      AC_DEFINE(FONTFORGE_CONFIG_SHOW_RAW_POINTS)
@@ -164,14 +164,21 @@ AC_CHECK_FILE(/usr/include/libxml2/libxml,[CFLAGS="$CFLAGS -I/usr/include/libxml
   AC_DEFINE(_NO_LIBXML))])
 
 dnl Some old versions of lib(un)gif don't work for us, they've got the
-dnl Function argument in the wrong place. So two checks for gif.
+dnl Function argument in the wrong place. So check the header files.
+dnl check for both libgif and libungif, I think they use the same args.
 
-AC_CHECK_LIB(ungif, DGifOpenFileName, [
+AC_CHECK_LIB(gif, DGifOpenFileName, [
 echo -n checking for ExtensionBlock.Function in gif_lib.h...
 AC_TRY_COMPILE([#include <gif_lib.h>], [ ExtensionBlock foo; foo.Function=3; ], echo " " yes , [echo " " no
     ac_cv_lib_ungif_DGifOpenFileName=no
     AC_DEFINE(_NO_LIBUNGIF)])
-] , AC_DEFINE(_NO_LIBUNGIF))
+] , [
+  AC_CHECK_LIB(ungif, DGifOpenFileName, [
+  echo -n checking for ExtensionBlock.Function in gif_lib.h...
+  AC_TRY_COMPILE([#include <gif_lib.h>], [ ExtensionBlock foo; foo.Function=3; ], echo " " yes , [echo " " no
+      ac_cv_lib_ungif_DGifOpenFileName=no
+      AC_DEFINE(_NO_LIBUNGIF)])
+  ] , AC_DEFINE(_NO_LIBUNGIF))])
 
 dnl some people have installed libraries without include files.
 dnl bloody useless thing to do, but check for both (don't need to check for
