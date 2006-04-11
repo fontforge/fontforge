@@ -85,7 +85,7 @@ return( NULL );
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_OUTLINE_H
-#if FREETYPE_MINOR>=2
+#if defined(FREETYPE_HAS_DEBUGGER) && FREETYPE_MINOR>=2
 # include <internal/internal.h>
 #endif
 #include <unistd.h>
