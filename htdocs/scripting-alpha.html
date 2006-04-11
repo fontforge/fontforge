@@ -1,0 +1,2766 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 9-Apr-2006 -->
+  <!-- AP: Last modified: 10-Apr-2006 -->
+  <TITLE>Scripting functions</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY id=framed>
+<DIV id="framed-in">
+  <H1 ALIGN=Center>
+    Scripting functions
+  </H1>
+  <P ALIGN=Center>
+  - <A HREF="#A">A</A> - <A HREF="#B">B</A> - <A HREF="#C">C</A> -
+  <A HREF="#D">D</A> - <A HREF="#E">E</A> - <A HREF="#F">F</A> -
+  <A HREF="#G">G</A> - <A HREF="#H">H</A> - <A HREF="#I">I </A>- <A HREF="#J">J
+  </A>- <A HREF="#K">K</A> - <A HREF="#L">L</A> - <A HREF="#M">M</A> -
+  <A HREF="#N">N</A> - <A HREF="#O">O</A> - <A HREF="#P">P</A> -
+  <A HREF="#Q">Q</A> - <A HREF="#R">R</A> - <A HREF="#S">S</A> - <A HREF="#T">T
+  </A>- <A HREF="#U">U </A>- <A HREF="#V">V </A>- <A HREF="#W">W</A> -
+  <A HREF="#X">X </A>- <A HREF="#Y">Y</A> - <A HREF="#Z">Z </A>-
+  <P>
+  The built in procedures are very similar to the
+  menu items with the same names. Often the description here is sketchy, look
+  at the menu item for more information.
+  <P> I use a syntax like:
+<BLOCKQUOTE><PRE>
+Generate</A>(filename[,bitmaptype[,fmflags[,res[,mult-sfd-file[,namelist-name]]]]])
+</PRE></BLOCKQUOTE>
+<P>
+To mean that arguments after the first are optional. However if you wish to
+set the fourth argument you must specify the second and third arguments too.
+  <P>
+  <TABLE CELLPAD=0 CELLSPACE=0>
+    <TR VALIGN=TOP>
+      <TD BGCOLOR=yellow><A NAME="A">A</A></TD>
+      <TD><DL>
+	  <DT>
+      <A NAME="AddAccent">A</A>ddAccent(accent[,pos])
+    <DD>
+      There must be exactly one glyph selected. That glyph must contain at least
+      one reference (and the least recently added reference must be the base glyph
+      -- the letter on which the accent is placed). The first argument should be
+      either the glyph-name of an accent, or the unicode code point of that accent
+      (and it should be in the font). The second argument, if present indicates
+      how the accent should be positioned... if omitted a default position will
+      be chosen from the unicode value for the accent, this argument is the or
+      of the following flags:
+      <TABLE BORDER CELLPADDING="2">
+	<TR>
+	  <TD>0x100</TD>
+	  <TD>Above</TD>
+	</TR>
+	<TR>
+	  <TD>0x200</TD>
+	  <TD>Below</TD>
+	</TR>
+	<TR>
+	  <TD>0x400</TD>
+	  <TD>Overstrike</TD>
+	</TR>
+	<TR>
+	  <TD>0x800</TD>
+	  <TD>Left</TD>
+	</TR>
+	<TR>
+	  <TD>0x1000</TD>
+	  <TD>Right</TD>
+	</TR>
+	<TR>
+	  <TD>0x4000</TD>
+	  <TD>Center Left</TD>
+	</TR>
+	<TR>
+	  <TD>0x8000</TD>
+	  <TD>Center Right</TD>
+	</TR>
+	<TR>
+	  <TD>0x10000</TD>
+	  <TD>Centered Outside</TD>
+	</TR>
+	<TR>
+	  <TD>0x20000</TD>
+	  <TD>Outside</TD>
+	</TR>
+	<TR>
+	  <TD>0x40000</TD>
+	  <TD>Left Edge</TD>
+	</TR>
+	<TR>
+	  <TD>0x80000</TD>
+	  <TD>Right Edge</TD>
+	</TR>
+	<TR>
+	  <TD>0x100000</TD>
+	  <TD>Touching</TD>
+	</TR>
+      </TABLE>
+	  <DT>
+      <A NAME="AddAnchorClass">A</A>ddAnchorClass(name,type,script-lang,tag,flags,merge-with)
+    <DD>
+      These mirror the values of the Anchor class dialog of Element-&gt;Font Info.
+      The first argument should be a utf8 encoded name for the anchor class. The
+      second should be one of the strings "default", "mk-mk", or "cursive". The
+      third should be a script-lang string like:<BR>
+      <CODE>&nbsp; &nbsp; grek{dflt} latn{dflt,VIT ,ROM }</CODE><BR>
+      The fourth arg should be a 4 character opentype feature tag. The fifth argument
+      should be the <A HREF="#otf-flags">otf flags </A>(or -1 to
+      make FontForge guess appropriate flags). The sixth and last argument should
+      be the name of another AnchorClass to be merged into the same lookup (or
+      a null string if this class merges with no other class yet).
+	  <DT>
+      <A NAME="AddAnchorPoint">A</A>ddAnchorPoint(name,type,x,y[,lig-index])
+    <DD>
+      Adds an AnchorPoint to the currently selected glyph. The first argument is
+      the name of the AnchorClass. The second should be one of the strings: "mark",
+      "basechar", "baselig", "basemark", "cursentry" , "cursexit" or "default"
+      ("default" tries to guess an appropriate setting for you). The next two values
+      specify the location of the point. The final argument is only present for
+      things of type "baselig".
+	  <DT>
+      <A NAME="AddATT">A</A>ddATT(type,script-lang,tag,flags,variant)<BR>
+      AddATT("Position",script-lang,tag,flags,xoff,yoff,h_adv_off,v_adv_off)<BR>
+      AddATT("Pair",script-lang,tag,flags,name,xoff,yoff,h_adv_off,v_adv_off,xoff2,yoff2,h_adv_off2,v_adv_off2)
+    <DD>
+      Allows you to add an Advanced Typography feature to a single selected glyph.
+      The first argument may be either: Position, Pair, Substitution, AltSubs,
+      MultSubs or Ligature. The second argument should be a script-lang list where
+      each 4-character script name is followed by a comma separated list of 4 character
+      language names (with the languages enclosed in curly braces) -- or the special
+      string "Nested". As:<BR>
+      <CODE>&nbsp; &nbsp; grek{dflt} latn{dflt,VIT ,ROM }</CODE><BR>
+      The third arg should be a 4 character opentype feature tag (or apple
+      feature/setting).
+      <P>
+      The fourth argument should be the <A NAME="otf-flags">otf flags </A>(or -1
+      to make FontForge guess appropriate flags).
+      <UL>
+	<LI>
+	  0x0001 =&gt; RightToLeft
+	<LI>
+	  0x0002 =&gt; IgnoreBaseGlyphs
+	<LI>
+	  0x0004 =&gt; IgnoreLigatures
+	<LI>
+	  0x0008 =&gt; IgnoreMarks
+	<LI>
+	  0x00F0 =&gt; not defined
+	<LI>
+	  0xFF00 =&gt; not supported
+      </UL>
+      <P>
+      The remaining argument(s) vary depending on the value of the first (type)
+      argument. For Position tags there are 4 integral arguments which specify
+      how this feature modifies the metrics of this glyph. For Pair type the next
+      argument is the name of the other glyph in the pair followed by 8 integral
+      arguments, the first 4 specify the changes in positioning to the first glyph,
+      the next four the changes for the second char. For substitution tags the
+      fifth argument is the name of another glyph which will replace the current
+      one. For an AltSubs tag the argument is a space separated list of glyph names
+      any of which will replace the current one. For a MultSubs the argument is
+      a space separated list of names all of which will replace the current one.
+      For a Ligature the argument is a space separated list of glyph names all
+      of which will be replaced by the current glyph.
+	  <DT>
+      <A NAME="AddExtrema" HREF="elementmenu.html#Add-Extrema">AddExtrema</A>()
+    <DD>
+	  <DT>
+      <A NAME="AddHHint" HREF="hintsmenu.html#HHint">AddHHint</A>(start,width)
+    <DD>
+      Adds horizontal stem hint to any selected glyphs. The hint starts at location
+      "start" and is width wide. A hint will be added to all selected glyphs.
+	  <DT>
+      <A NAME="AddInstrs">A</A>ddInstrs(thingamy,replace,instrs)
+    <DD>
+      Where thingamy is a string, either "fpgm" or "prep" in which case it refers
+      to that truetype table (which will be created if need be), or a glyph-name
+      in which case it refers to that glyph, or a null string in which case any
+      selected characters will be used.<BR>
+      Where replace is an integer. If zero then the instructions will be appended
+      to any already present. If non-zero then the instructions will replace those
+      already present.<BR>
+      And instrs is a string containing fontforge's human readable version of tt
+      instructions, as "<CODE>IUP[x]\nIUP[y]</CODE>"
+	  <DT>
+      <A NAME="AddVHint" HREF="hintsmenu.html#VHint">AddVHint</A>(start,width)
+    <DD>
+      Adds a vertical stem hint to any selected glyphs. The hint starts at location
+      "start" and is width wide. A hint will be added to all selected glyphs.
+	  <DT>
+      <A NAME="ApplySubstitution">A</A>pplySubstitution(script,lang,tag)
+    <DD>
+      All three arguments must be strings of no more that four characters (shorter
+      strings will be padded with blanks to become 4 character strings). For each
+      selected glyph this command will look up that glyph's list of substitutions,
+      and if it finds a substitution with the tag "tag" (and if that substitution
+      matches the script and language combination) then it will apply the
+      substitution-- that is it will find the variant glyph specified in the
+      substitution and replace the current glyph with the variant, and clear the
+      variant.
+      <P>
+      FontForge recognizes the string "*" as a wildcard for both the script and
+      the language (not for the tag though). So if you wish to replace all glyphs
+      with their vertical variants:
+      <BLOCKQUOTE>
+	<PRE>SelectAll()
+ApplySubstitution("*","*","vrt2")
+</PRE>
+      </BLOCKQUOTE>
+	  <DT>
+      <A NAME="Array">A</A>rray(size)
+    <DD>
+      Allocates an array of the indicated size.
+      <BLOCKQUOTE>
+	<PRE>a = Array(10)
+i = 0;
+while ( i&lt;10 )
+   a[i] = i++
+endloop
+a[3] = "string"
+a[4] = Array(10)
+a[4][0] = "Nested array";
+</PRE>
+      </BLOCKQUOTE>
+      <P>
+      It can execute with no current font.
+	  <DT>
+      <A NAME="AskUser">A</A>skUser(question[,default-answer])
+    <DD>
+      Asks the user the question and returns an answer (a string). A default-answer
+      may be specified too. It can execute with no current font.
+	  <DT>
+      <A NAME="ATan2">A</A>Tan2(val1,val2)
+    <DD>
+      Returns the arc-tangent. See atan2(3) for more info. It can execute with
+      no current font.
+	  <DT>
+      <A NAME="AutoCounter" HREF="hintsmenu.html#Counter">AutoCounter</A>()
+    <DD>
+	  <DT>
+      <A NAME="AutoHint" HREF="hintsmenu.html#AutoHint">AutoHint</A>()
+    <DD>
+      <B></B>
+	  <DT>
+      <A NAME="AutoInstr" HREF="hintsmenu.html#AutoInstr">AutoInstr</A>()
+    <DD>
+	  <DT>
+      <A NAME="AutoKern" HREF="metricsmenu.html#Kern">AutoKern</A>(spacing,threshold[,kernfile])
+    <DD>
+      (AutoKern doesn't work well in general)<BR>
+      Guesses at kerning pairs by looking at all selected glyphs, or if a kernfile
+      is specified, FontForge will read the kern pairs out of the file.
+	  <DT>
+      <A NAME="AutoTrace" HREF="elementmenu.html#AutoTrace">AutoTrace</A>()
+    <DD>
+	  <DT>
+      <A NAME="AutoWidth" HREF="metricsmenu.html#Auto">AutoWidth</A>(spacing)
+    <DD>
+      Guesses at the widths of all selected glyphs so that two adjacent "I" glyphs
+      will appear to be spacing em-units apart. (if spacing is the negative of
+      the em-size (sum of ascent and descent) then a default value will be used).
+	</DL>
+      </TD>
+    </TR>
+    <TR VALIGN=TOP>
+      <TD BGCOLOR=yellow><A NAME="B">B</A></TD>
+      <TD><DL>
+	  <DT>
+      <A HREF="elementmenu.html#Bitmaps" NAME="BitmapsAvail">BitmapsAvail</A>(sizes)
+    <DD>
+      Controls what bitmap sizes are stored in the font's database. It is passed
+      an array of sizes. If a size is specified which is not in the font database
+      it will be generated. If a size is not specified which is in the font database
+      it will be removed. A size which is specified and present in the font database
+      will not be touched.<BR>
+      If you want to specify greymap fonts then the low-order 16 bits will be the
+      pixel size and the high order 16 bits will specify the bits/pixel. Thus 0x8000c
+      would be a 12 pixel font with 8 bits per pixel, while either 0xc or 0x1000c
+      could be used to refer to a 12 pixel bitmap font.
+	  <DT>
+      <A NAME="BitmapsRegen" HREF="elementmenu.html#Regenerate">BitmapsRegen</A>(sizes)
+    <DD>
+      Allows you to update specific bitmaps in an already generated bitmap font.
+      It will regenerate the bitmaps of all selected glyphs at the specified
+      pixelsizes.
+	  <DT>
+      <A NAME="BuildAccented" HREF="elementmenu.html#Accented">BuildAccented</A>()
+    <DD>
+	  <DT>
+      <A NAME="BuildComposite" HREF="elementmenu.html#Accented">BuildComposite</A>()
+    <DD>
+	  <DT>
+      <A NAME="BuildDuplicate" HREF="elementmenu.html#BuildDuplicate">BuildDuplicate</A>()
+    <DD>
+	</DL>
+      </TD>
+    </TR>
+    <TR VALIGN=TOP>
+      <TD BGCOLOR=yellow><A NAME="C">C</A></TD>
+      <TD><DL>
+	  <DT>
+      <A NAME="Ceil">Ceil</A>(real)
+    <DD>
+      Converts a real number to the smallest integer larger than the real. It can
+      execute with no current font.<BR>
+      See Also <A HREF="#Int">Int</A>,
+      <A HREF="#Round">Round</A>,
+      <A HREF="#Floor">Floor</A>
+	  <DT>
+      <A NAME="CenterInWidth" HREF="metricsmenu.html#Center">CenterInWidth</A>()
+    <DD>
+	  <DT>
+      <A NAME="ChangePrivateEntry" HREF="fontinfo.html#Private">ChangePrivateEntry</A>(key,val)
+    <DD>
+      Changes (or adds if the key is not already present) the value in the dictionary
+      indexed by key. (all values must be strings even if they represent numbers
+      in PostScript)
+	  <DT>
+      <A NAME="CharCnt">C</A>harCnt()
+    <DD>
+      Returns the number of encoding slots (or encoding slots + unencoded glyphs)
+      in the current font
+	  <DT>
+      <A NAME="CharInfo">C</A>harInfo(str)
+    <DD>
+      Depreciated name for <A HREF="#GlyphInfo">GlyphInfo</A>
+	  <DT>
+      <A NAME="CheckForAnchorClass">C</A>heckForAnchorClass(name)
+    <DD>
+      Returns 1 if the current font contains an Anchor class with the given name
+      (which must be in utf8).
+	  <DT>
+      <A NAME="Chr">C</A>hr(int)<BR>
+      Chr(array)
+    <DD>
+      Takes an integer [0,255] and returns a single character string containing
+      that code point. Internally FontForge interprets strings as if they were
+      in utf8 (well really, FontForge almost always just uses ASCII-US internally).
+      If passed an array, it should be an array of integers and the result is the
+      string. It can execute with no current font.
+	  <DT>
+      <A NAME="CIDChangeSubFont">C</A>IDChangeSubFont(new-sub-font-name)
+    <DD>
+      If the current font is a cid keyed font, this command changes the active
+      sub-font to be the one specified (the string should be the postscript FontName
+      of the subfont)
+	  <DT>
+      <A NAME="CIDFlatten" HREF="cidmenu.html#Flatten">CIDFlatten</A>()
+    <DD>
+      Flattens a cid-keyed font.
+	  <DT>
+      <A NAME="CIDFlattenByCMap" HREF="cidmenu.html#FlattenCMap">CIDFlattenByCMap</A>(cmap-filename)
+    <DD>
+      Flattens a cid-keyed font, producing a font encoded with the result of the
+      CMAP file.
+	  <DT>
+      <A NAME="CIDSetFontNames" HREF="cidmenu.html#FontInfo">CIDSetFontNames</A>(fontname[,family[,fullname[,weight[,copyright-notice]]]])
+    <DD>
+      Sets various postscript names associated with the top level cid font. If
+      a name is omitted (or is the empty string) it will not be changed. (this
+      is just like SetFontNames except it works on the top level cid font rather
+      than the current font).
+	  <DT>
+      <A NAME="Clear" HREF="editmenu.html#Clear">Clear</A>
+    <DD>
+      Clears out all selected glyphs
+	  <DT>
+      <A NAME="ClearBackground" HREF="editmenu.html#Background">ClearBackground</A>
+    <DD>
+      Clears the background of all selected glyphs
+	  <DT>
+      <A NAME="ClearCharCounterMasks">C</A>learCharCounterMasks()
+    <DD>
+      Clears any counter masks from the (one) selected glyph.
+	  <DT>
+      <A NAME="ClearHints" HREF="hintsmenu.html#ClearHints">ClearHints</A>()
+    <DD>
+	  <DT>
+      <A NAME="ClearInstrs">C</A>learInstrs()
+    <DD>
+      From selected glyphs
+	  <DT>
+      <A NAME="ClearPrivateEntry" HREF="fontinfo.html#Private">ClearPrivateEntry</A>(key)
+    <DD>
+      Removes the entry indexed by the given key from the private dictionary of
+      the font.
+	  <DT>
+      <A NAME="ClearTable">C</A>learTable(tag)
+    <DD>
+      Removes the table named tag. This may be 'fpgm', 'prep', 'cvt ', 'maxp' or
+      any user defined tables. It returns 1 if it found (and removed) the table,
+      0 if the table was not present.
+	  <DT>
+      <A NAME="Close">C</A>lose()
+    <DD>
+      This frees up any memory taken up by the current font and drops it off the
+      list of loaded fonts. After this executes there will be no current font.
+	  <DT>
+      <A NAME="CompareFonts">C</A>ompareFonts(other-font-filename,output-filename,flags)
+    <DD>
+      This will compare the current font with the font in
+      <CODE>other-font-filename</CODE> (which must already have been opened). It
+      will write the results to the <CODE>output-filename</CODE>, you may use "-"
+      to send the output to stdout. The <CODE>flags</CODE> argument controls what
+      will be compared.
+      <TABLE BORDER CELLPADDING="2">
+	<CAPTION>
+	  <SMALL>flags</SMALL>
+	</CAPTION>
+	<TR>
+	  <TD>1</TD>
+	  <TD>compare outlines</TD>
+	</TR>
+	<TR>
+	  <TD>2</TD>
+	  <TD>compare outlines exactly (otherwise allow slight errors and the unlinking
+	    of references)</TD>
+	</TR>
+	<TR>
+	  <TD>4</TD>
+	  <TD>warn if the outlines don't exactly match (but are pretty close)</TD>
+	</TR>
+	<TR>
+	  <TD>8</TD>
+	  <TD>compare hints</TD>
+	</TR>
+	<TR>
+	  <TD>0x10</TD>
+	  <TD>compare hintmasks</TD>
+	</TR>
+	<TR>
+	  <TD>0x20</TD>
+	  <TD>compare hintmasks only if the glyph has hint conflicts</TD>
+	</TR>
+	<TR>
+	  <TD>0x40</TD>
+	  <TD>warn if references need to be unlinked before a match is found</TD>
+	</TR>
+	<TR>
+	  <TD>0x80</TD>
+	  <TD>compare bitmap strikes</TD>
+	</TR>
+	<TR>
+	  <TD>0x100</TD>
+	  <TD>compare font names</TD>
+	</TR>
+	<TR>
+	  <TD>0x200</TD>
+	  <TD>compare glyph positioning</TD>
+	</TR>
+	<TR>
+	  <TD>0x400</TD>
+	  <TD>compare glyph substitutions</TD>
+	</TR>
+	<TR>
+	  <TD>0x800</TD>
+	  <TD>for any glyphs whose outlines differ, add the outlines of the glyph in
+	    the second font to the background of the glyph in the first</TD>
+	</TR>
+	<TR>
+	  <TD>0x1000</TD>
+	  <TD>if a glyph exists in the second font but not the first, create that glyph
+	    in the first and add the outlines from the second into the backgroun layer</TD>
+	</TR>
+      </TABLE>
+	  <DT>
+      <A NAME="CompareGlyphs">C</A>ompareGlyphs([pt_err[,spline_err[,pixel_off_frac[,bb_err[,compare_hints[,report_diffs_as_errors]]]]]])
+    <DD>
+      This function compares two versions of one or several glyphs. It looks at
+      any selected glyphs in the font and compares them to an equivalent glyph
+      in the clipboard (there must be the same number of selected glyphs as glyphs
+      in the clipboard).
+      <UL>
+	<LI>
+	  It checks to make sure the advance width of each glyph pair is similar
+	<LI>
+	  It checks to make sure that each contains the same set of references
+	<LI>
+	  It checks to make sure that all points (both base and control) are within
+	  pt_err of each other
+	<LI>
+	  If that fails then it performs a slower check to see if points lying along
+	  the contours have equivalent points in the other glyph (that is: If you have
+	  simplified a glyph and are comparing it to the original, this check should
+	  pass it while the previous check would fail).
+	<LI>
+	  Optionally you may check that the bitmaps match.
+	<LI>
+	  Optionally you may check if hints (and hintmasks) match.
+      </UL>
+      <P>
+      The first argument controls the accuracy with which points must match. A
+      value of 0 is an exact match and will also check hints. If you provide a
+      negative value then this test will be skipped.
+      <P>
+      The second argument controls the accuracy with which the contour check must
+      match. A value of 0 will not work due to rounding errors in the process.
+      A negative value will skip the test.
+      <P>
+      The third argument controls bitmap tests. A negative value (the default)
+      will mean no bitmap tests are done. A value of 0 requires an exact match
+      of the bitmap. A value between 0 and 1 specifies the fraction of the pixel
+      range that will be accepted for a match (so in a greymap with a depth of
+      8 the pixel range in 256, and a fraction value of .25 would mean any pixel
+      value within 64 (.25*256) would match).
+      <P>
+      The fourth argument controls how different the bounding boxes of anti-aliased
+      bitmaps can be (the bounding boxes of bitmaps with depth 1 must match exactly)
+      <P>
+      The fifth argument controls whether to tests hints and hintmasks. A value
+      of 1 tests hints, 2 tests hintmasks and 3 tests both, a value of 7 will test
+      hintmasks only in glyphs with conflicts.
+      <P>
+      Normally this function treats any differences it finds as errors and stops
+      the script. If you set the sixth argument to 0 then it will return a value
+      which ors the following flags together (some flags indicate errors, others
+      unusual conditions, others success -- the function will never return both
+      an error and success flag, but it can return several success flags at once
+      if you are comparing more than one glyph)
+      <TABLE BORDER CELLPADDING="2">
+	<TR>
+	  <TD>1</TD>
+	  <TD>Different numbers of contours in a glyph</TD>
+	</TR>
+	<TR>
+	  <TD>2</TD>
+	  <TD>A contour in one glyph is open when the corresponding contour is closed</TD>
+	</TR>
+	<TR>
+	  <TD>4</TD>
+	  <TD>Disordered contours (contours are in different orders in the two glyphs)</TD>
+	</TR>
+	<TR>
+	  <TD>8</TD>
+	  <TD>Disordered start (the start point is at a different place in the two
+	    glyphs)</TD>
+	</TR>
+	<TR>
+	  <TD>16</TD>
+	  <TD>Disordered direction (the contour is clockwise in one and counter in
+	    the other)</TD>
+	</TR>
+	<TR>
+	  <TD>32</TD>
+	  <TD>Glyphs match by checking points</TD>
+	</TR>
+	<TR>
+	  <TD>64</TD>
+	  <TD>Glyphs match by checking the contours</TD>
+	</TR>
+	<TR>
+	  <TD>128</TD>
+	  <TD>Outline glyphs do not match</TD>
+	</TR>
+	<TR>
+	  <TD>256</TD>
+	  <TD>Different references in the two glyphs (or different transformation matrices)</TD>
+	</TR>
+	<TR>
+	  <TD>512</TD>
+	  <TD>Different advance widths in the two glyphs</TD>
+	</TR>
+	<TR>
+	  <TD>1024</TD>
+	  <TD>Different vertical advance widths in the two glyphs</TD>
+	</TR>
+	<TR>
+	  <TD>2048</TD>
+	  <TD>Different hints in the two glyphs</TD>
+	</TR>
+	<TR>
+	  <TD>4096</TD>
+	  <TD>Different hintmasks in the two glyphs</TD>
+	</TR>
+	<TR>
+	  <TD>8192</TD>
+	  <TD>Different numbers of layers in the two glyphs</TD>
+	</TR>
+	<TR>
+	  <TD>16384</TD>
+	  <TD>Contours do not match in the two glyphs</TD>
+	</TR>
+	<TR>
+	  <TD>32768</TD>
+	  <TD>We only find a match after we have unlinked references</TD>
+	</TR>
+	<TR>
+	  <TD>65536</TD>
+	  <TD>Bitmap glyphs have different depths</TD>
+	</TR>
+	<TR>
+	  <TD>2*65536</TD>
+	  <TD>Bitmap glyphs have different bounding boxes</TD>
+	</TR>
+	<TR>
+	  <TD>4*65536</TD>
+	  <TD>Bitmaps are different</TD>
+	</TR>
+	<TR>
+	  <TD>8*65536</TD>
+	  <TD>Bitmap glyphs do not match (set with all the above)</TD>
+	</TR>
+	<TR>
+	  <TD>16*65536</TD>
+	  <TD>Bitmap glyphs match</TD>
+	</TR>
+      </TABLE>
+	  <DT>
+      <A NAME="ControlAfmLigatureOutput">C</A>ontrolAfmLigatureOutput(script,lang,ligature-tag-list)
+    <DD>
+      All three arguments must be strings. The first two must be strings containing
+      four or fewer characters, the third a string containing a comma separated
+      list of 4 (or fewer) character strings. Ligatures will be placed in an AFM
+      file only if
+      <UL>
+	<LI>
+	  their tags match one of the entries in the list
+	<LI>
+	  they are active in the given script with the given language ("*" acts as
+	  a wildcard for both script and language).
+      </UL>
+      <P>
+      The default setting is:
+      <BLOCKQUOTE>
+	<PRE>ControlAfmLigatureOutput("*","dflt","liga,rlig")
+</PRE>
+      </BLOCKQUOTE>
+	  <DT>
+      <A NAME="ConvertByCMap" HREF="cidmenu.html#ConvertCMap">ConvertByCMap</A>(cmapfilename)
+    <DD>
+      Converts current font to a CID-keyed font using specified CMap file. cmapfilename
+      must be a path name of a file conforming Adobe CMap File Format. 
+	  <DT>
+      <A NAME="ConvertToCID" HREF="cidmenu.html#Convert">ConvertToCID</A>(registry, ordering, supplement)
+    <DD>
+      Converts current font to a CID-keyed font using given registry, ordering
+      and supplement. registry and ordering must be strings, supplement must be
+      a integer.
+	  <DT>
+      <A NAME="Copy" HREF="editmenu.html#Copy">Copy</A>
+    <DD>
+      Makes a copy of all selected glyphs.
+	  <DT>
+      <A NAME="CopyFgToBd" HREF="editmenu.html#CopyFg">CopyFgToBd</A>
+    <DD>
+      Copies all foreground splines into the background in all selected glyphs
+	  <DT>
+      <A NAME="CopyGlyphFeatures" HREF="editmenu.html#CopyGlyphFeatures">CopyGlyphFeatures</A>(arg,...)
+    <DD>
+      This copies features from the currently selected glyph (only one) and stores
+      them in the clipboard.
+      <P>
+      arg may be either a string in which case it should be either a four character
+      opentype tag (like "kern") or a mac feature setting (like "&lt;1,1&gt;").
+      Or it may be an integer in which case it must be the integer representation
+      of one of the above. Or arg may be an array of strings and integers (in this
+      case there may be only one argument).
+      <P>
+      The feature 'kern' will match any kerning pair that has the currently selected
+      glyph as the first character of the two. The (made up) feature '_krn' will
+      match any kerning pair that has the currently selected glyph as the last
+      character of the two. Similary for 'vkrn' and '_vkn'.
+	  <DT>
+      <A NAME="CopyLBearing" HREF="editmenu.html#LBearing">CopyLBearing</A>
+    <DD>
+      Stores the left side bearing of all selected glyphs in the clipboard
+	  <DT>
+      <A NAME="CopyRBearing" HREF="editmenu.html#RBearing">CopyRBearing</A>
+    <DD>
+      Stores the right side bearing of all selected glyphs in the clipboard
+	  <DT>
+      <A NAME="CopyReference" HREF="editmenu.html#Reference">CopyReference</A>
+    <DD>
+      Makes references to all selected glyphs and stores them in the clipboard.
+	  <DT>
+      <A NAME="CopyVWidth" HREF="editmenu.html#VWidth">CopyVWidth</A>
+    <DD>
+      Stores the vertical widths of all selected glyphs in the clipboard
+	  <DT>
+      <A NAME="CopyWidth" HREF="editmenu.html#Width">CopyWidth</A>
+    <DD>
+      Stores the widths of all selected glyphs in the clipboard
+	  <DT>
+      <A NAME="CorrectDirection" HREF="elementmenu.html#Correct">CorrectDirection</A>([unlinkrefs])
+    <DD>
+      If the an argument is present it must be integral and is treated as a flag
+      controlling whether flipped references should be unlinked before the
+      CorrectDirection code runs. If the argument is not present, or if it has
+      a non-zero value then flipped references will be unlinked.
+	  <DT>
+      <A NAME="Cos">C</A>os(val)
+    <DD>
+      Returns the cosine of val. It can execute with no current font.
+	  <DT>
+      <A NAME="Cut" HREF="editmenu.html#Cut">Cut</A>
+    <DD>
+      Makes a copy of all selected glyphs and saves it in the clipboard, then clears
+      out the selected glyphs
+	</DL>
+      </TD>
+    </TR>
+    <TR VALIGN=TOP>
+      <TD BGCOLOR=yellow><A NAME="D">D</A></TD>
+      <TD><DL>
+	  <DT>
+      <A NAME="DefaultATT" HREF="elementmenu.html#DefaultATT">DefaultATT</A>(tag)
+    <DD>
+      For all selected glyphs make a guess as to what might be an appropriate value
+      for the given tag. If the tag is "*" then FontForge will apply guesses for
+      all features it can.
+	  <DT>
+      <A NAME="DefaultOtherSubrs">D</A>efaultOtherSubrs()
+    <DD>
+      Returns to using Adobe's versions of the OtherSubrs subroutines. It can execute
+      with no current font.
+	  <DT>
+      <A NAME="DefaultRoundToGrid">D</A>efaultRoundToGrid()
+    <DD>
+      Looks at all selected glyphs, if any reference is not positioned by point
+      matching, then FontForge will set the truetype "ROUND-TO-GRID" flag for the
+      reference.
+	  <DT>
+      Default<A NAME="Use-My-Metrics">UseMyM</A>etrics()
+    <DD>
+      Looks at all selected glyphs. If any glyph contains references, does not
+      have the "USE-MY-METRICS" bit set on any of those references, and if one
+      of those references has the same width as the current glyph, and has an identity
+      transformation matrix, then set the bit on that reference.
+	  <DT>
+      <A NAME="DontAutoHint" HREF="hintsmenu.html#DontAutoHint">DontAutoHint</A>()
+    <DD>
+	  <DT>
+      <A NAME="DrawsSomething">D</A>rawsSomething([arg])
+    <DD>
+      Arg is as above. This returns true if the glyph contains any splines, references
+      or images.
+	</DL>
+      </TD>
+    </TR>
+    <TR VALIGN=TOP>
+      <TD BGCOLOR=yellow><A NAME="E">E</A></TD>
+      <TD><DL>
+	  <DT>
+      <A NAME="Error">E</A>rror(str)
+    <DD>
+      Prints out str as an error message and aborts the current script. It can
+      execute with no current font.
+	  <DT>
+      <A NAME="Exp">E</A>xp(val)
+    <DD>
+      Returns e<SUP>val</SUP>. It can execute with no current font.
+	  <DT>
+      <A NAME="ExpandStroke" HREF="elementmenu.html#Expand">ExpandStroke</A>(width)<BR>
+      ExpandStroke(width,line cap, line join)<BR>
+      ExpandStroke(width,line cap, line join,0,removeinternal /external flag)<BR>
+      ExpandStroke(width,calligraphic-angle,height-numerator,height-denom)<BR>
+      ExpandStroke(width,calligraphic-angle,height-numerator,height-denom, 0, remove
+      internal/external flag)
+    <DD>
+      In the first format a line cap of "butt" and line join of "round" are
+      implied.<BR>
+      A value of 1 for remove internal/external will remove the internal contour,
+      a value of 2 will remove the external contour.<BR>
+      The first three calls simulate the PostScript "stroke" command, the two final
+      simulate a caligraphic pen.
+      <DL>
+	<DT>
+	  Width
+	<DD>
+	  In the PostScript "stroke" command the width is the distance between the
+	  two generated curves. To be more precise, at ever point on the original curve,
+	  a point will be added to each of the new curves at width/2 units as measured
+	  on a vector normal to the direction of the original curve at that point.<BR>
+	  In a caligraphic pen, the width is the width of the pen used to draw the
+	  curve.
+	<DT>
+	  Line-cap
+	<DD>
+	  Can have one of three values: 0=&gt; butt, 1=&gt;round, 2=&gt;square
+	<DT>
+	  Line-join
+	<DD>
+	  Can have one of three values: 0=&gt;miter, 1=&gt;round, 2=&gt;bevel
+	<DT>
+	  caligraphic-angle
+	<DD>
+	  the (fixed) angle at which the pen is held.
+	<DT>
+	  height-numerator/denominator
+	<DD>
+	  These two values specify a ratio between the height and the width<BR>
+	  height = numerator * width / denominator<BR>
+	  (the scripting language only deals in integers, so when fractions are needed
+	  this kludge is used)
+	<DT>
+	  remove internal/external contour flags
+	<DD>
+	  1 =&gt; remove internal contour<BR>
+	  2=&gt; remove external contour<BR>
+	  (you may not remove both contours)<BR>
+	  4 =&gt; run remove overlap on result (buggy)
+      </DL>
+	  <DT>
+      <A NAME="Export" HREF="filemenu.html#Export">Export</A>(format[,bitmap-size])
+    <DD>
+      For each selected glyph in the current font, this command will export that
+      glyph into a file in the current directory. Format must be a string and must
+      end with one of
+      <UL>
+	<LI>
+	  eps -- the selected glyphs will have their splines output into eps files.
+	  The files will be named "&lt;glyph-name&gt;_&lt;font-name&gt;.eps".
+	<LI>
+	  pdf -- the selected glyphs will have their splines output into pdf files.
+	  The files will be named "&lt;glyph-name&gt;_&lt;font-name&gt;.pdf".
+	<LI>
+	  svg -- the selected glyphs will have their splines output into svg files.
+	  The files will be named "&lt;glyph-name&gt;_&lt;font-name&gt;.svg".
+	<LI>
+	  fig -- the selected glyphs will have their splines converted (badly) into
+	  xfig files. The files will be named
+	  "&lt;glyph-name&gt;_&lt;font-name&gt;.fig".
+	<LI>
+	  xbm -- The second argument specifies a bitmap font size, the selected glyphs
+	  in that bitmap font will be output as xbm files. The files will be named
+	  "&lt;glyph-name&gt;_&lt;font-name&gt;.xbm".
+	<LI>
+	  bmp -- The second argument specifies a bitmap font size, the selected glyphs
+	  in that bitmap font will be output as bmp files. The files will be named
+	  "&lt;glyph-name&gt;_&lt;font-name&gt;.bmp".
+	<LI>
+	  png -- The second argument specifies a bitmap font size, the selected glyphs
+	  in that bitmap font will be output as png files. The files will be named
+	  "&lt;glyph-name&gt;_&lt;font-name&gt;.png".
+      </UL>
+      <P>
+      The format may consist entirely of the filetype (above), or it may include
+      a full filename (with some format control within it) which has the file type
+      as an extension:
+      <BLOCKQUOTE>
+	"Glyph %n from font %f.svg"<BR>
+	"U+%U.bmp"
+      </BLOCKQUOTE>
+      <P>
+      All characters in the format string except for % are copied verbatim. If
+      there is a % then the following character controls behavior:
+      <UL>
+	<LI>
+	  %n -- inserts the glyph name (or the first 40 characters of it for long names)
+	<LI>
+	  %f -- inserts the font name (or the first 40 characters)
+	<LI>
+	  %e -- inserts the glyph's encoding as a decimal integer
+	<LI>
+	  %u -- inserts the glyph's unicode code point in lower case hex
+	<LI>
+	  %U -- inserts the glyph's unicode code point in upper case hex
+	<LI>
+	  %% -- inserts a single '%'
+      </UL>
+	</DL>
+      </TD>
+    </TR>
+    <TR VALIGN=TOP>
+      <TD BGCOLOR=yellow><A NAME="F">F</A></TD>
+      <TD><DL>
+	  <DT>
+      <A NAME="FileAccess">F</A>ileAccess(filename[,prot])
+    <DD>
+      Behaves like the unix access system call. Returns 0 if the file exists, -1
+      if it does not. If protection is omitted, checks for read access. It can
+      execute with no current font.
+	  <DT>
+      <A NAME="FindIntersections">F</A>indIntersections()
+    <DD>
+      Finds everywhere that splines cross and creates points there.
+	  <DT>
+      <A NAME="FindOrAddCvtIndex">F</A>indOrAddCvtIndex(value[,sign-matters])
+    <DD>
+      Returns the index in the cvt table of the given value. If the value does
+      not exist in the table it will be added, and an index at the end of the table
+      will be returned. Most tt instructions ignore the sign of items in the cvt
+      table, but a few care. Usually this command stores the absolute value of
+      value, but if sign-matters is present and non-zero a negative value can be
+      looked up (or added).
+	  <DT>
+      <A NAME="Floor">Floor</A>(real)
+    <DD>
+      Converts a real number to the largest integer smaller than the real. It can
+      execute with no current font.<BR>
+      See Also <A HREF="#Ceil">Ceil</A>,
+      <A HREF="#Int">Int</A>,
+      <A HREF="#Round">Round</A>
+	  <DT>
+      <A NAME="FontsInFile">F</A>ontsInFile(filename)
+    <DD>
+      Returns an array of strings containing the names of all fonts within a file.
+      Most files contain one font, but some (mac font suitcases, dfonts, ttc files,
+      svg files, etc) may contain several. If the file contains no fonts (or the
+      file doesn't exist, or the fonts aren't named), a zero length array is returned.
+      It does not open the font. It can execute without a current font.
+	</DL>
+      </TD>
+    </TR>
+    <TR VALIGN=TOP>
+      <TD BGCOLOR=yellow><A NAME="G">G</A></TD>
+      <TD><DL>
+	  <DT>
+      <A NAME="Generate" HREF="filemenu.html#Generate">Generate</A>(filename[,bitmaptype[,fmflags[,res[,mult-sfd-file[,namelist-name]]]]])
+    <DD>
+      Generates a font. The type of font is determined by the extension of the
+      filename. Valid extensions are:
+      <UL>
+	<LI>
+	  .pfa
+	<LI>
+	  .pfb
+	<LI>
+	  .bin (a mac postscript (pfb) resource in a mac binary wrapper)<BR>
+	  .res (on the Mac itself FontForge will put the result directly into a font
+	  suitcase file, and the extension should be ".res" rather than ".bin")
+	  <P>
+	  Note: you must also create a bitmap font in NFNT format or the mac will not
+	  recognize your postscript font.
+	<LI>
+	  *%s*.pf[ab] (here more than just an extension is required, the font name
+	  must contain a "%s") (splits a big font up into multiple pfb fonts each with
+	  256 characters, making use of the fifth argument to determine how this is
+	  done). The "%s" will be replaced by the fontnumber specified in the
+	  mult-sfd-file.
+	<LI>
+	  .mm.pfa (multiple master font in ascii format)
+	<LI>
+	  .mm.pfb (multiple master font in binary format)
+	<LI>
+	  .pt3 (type 3)
+	<LI>
+	  .ps (type 0)
+	<LI>
+	  .t42 (type 42, truetype wrapped in PostScript)
+	<LI>
+	  .cid.t42 (type 42 cid font)
+	<LI>
+	  .cid (non-otf cid font)
+	<LI>
+	  .cff (bare cff font)
+	<LI>
+	  .cid.cff (bare cff cid-keyed font)
+	<LI>
+	  .ttf
+	<LI>
+	  .sym.ttf (a truetype file with a symbol (custom) encoding)
+	<LI>
+	  .ttf.bin (a mac truetype resource in a mac binary wrapper)<BR>
+	  suit (on the Mac itself FontForge will put the result directly into a font
+	  suitcase file, and the extension should be ".suit" not ".ttf.bin")
+	<LI>
+	  .dfont (a mac truetype resource in a dfont file)
+	<LI>
+	  .otf (either cid or not depending on the font)
+	<LI>
+	  .otf.dfont (a mac opentype resource in a dfont file)
+	<LI>
+	  .svg (an svg font)
+	<LI>
+	  &lt;null extension&gt; If you don't want to generate an outline font at all
+	  (but do want to provide a filename for bitmap or metrics files) then provide
+	  a null extension (ie. <CODE>"Times."</CODE> but NOT <CODE>"Times"</CODE>)
+	  -- the generated bitmap fonts will have appropriate extensions for their
+	  font types, the "." is merely a placeholder.
+      </UL>
+      <P>
+      If present, bitmaptype may be one of:
+      <UL>
+	<LI>
+	  bdf
+	<LI>
+	  ttf (for EBDT/bdat table in truetype/opentype)
+	<LI>
+	  sbit (for bdat table in truetype without any outline font in a dfont wrapper)
+	<LI>
+	  bin (for nfnt in macbinary)
+	  <P>
+	  NOTE: Mac OS/X does not appear to support NFNT bitmaps. However even though
+	  unused itself, an NFNT bitmap must be present for a resource based type1
+	  postscript font to be used. (More accurately the obsolete FOND must be present,
+	  and that will only be present if an obsolete NFNT is also present)
+	<LI>
+	  fnt (For windows FNT format)
+	<LI>
+	  otb (For X11 opentype bitmap format)
+	<LI>
+	  pdb (for <A HREF="palmfonts.html">palm bitmap fonts</A>)
+	<LI>
+	  pt3 (for a postscript type3 bitmap font)
+	<LI>
+	  "" for no bitmaps
+      </UL>
+      <P>
+      Note: If you request bitmap output then all strikes in the current font database
+      will be output, but this command will not create bitmaps, so if there are
+      no strikes in your font database, no strikes will be output (even if you
+      ask for them). If you wish to output bitmaps you must first create them with
+      the <A HREF="#BitmapsAvail">BitmapsAvail</A> scripting command or
+      <A HREF="elementmenu.html#Bitmaps">Element-&gt;Bitmaps Avail</A>.
+      <P>
+      fmflags controls
+      <UL>
+	<LI>
+	  -1 =&gt; default (generate an afm file for postscript fonts, never generate
+	  a pfm file, full 'post' table, ttf hints)
+	<LI>
+	  fmflags&amp;1 =&gt; generate an afm file (if you are generating a multiple
+	  master font then setting this flag means you get several afm files (one for
+	  each master design, and one for the default version of the font) and an amfm
+	  file)
+	<LI>
+	  fmflags&amp;2 =&gt; generate a pfm file
+	<LI>
+	  fmflags&amp;4 =&gt; generate a short 'post' table with no glyph name info
+	  in it.
+	<LI>
+	  fmflags&amp;8 =&gt; do not include ttf instructions
+	<LI>
+	  fmflags&amp;0x10 =&gt; where apple and ms/adobe differ about the format of
+	  a true/open type file, use apple's definition (otherwise use ms/adobe)<BR>
+	  Currently this affects bitmaps stored in the font (Apple calls the table
+	  'bdat', ms/adobe 'EBDT'), the PostScript name in the 'name' table (Apple
+	  says it must occur exactly once, ms/adobe say at least twice), and whether
+	  morx/feat/kern/opbd/prop/lcar or GSUB/GPOS/GDEF tables are generated.
+	<LI>
+	  fmflags&amp;0x20 =&gt; generate a '<A HREF="non-standard.html#PfEd">PfEd</A>'
+	  table and store glyph comments
+	<LI>
+	  fmflags&amp;0x40 =&gt; generate a '<A HREF="non-standard.html#PfEd">PfEd</A>'
+	  table and store glyph colors
+	<LI>
+	  fmflags&amp;0x80 =&gt; generate tables so the font will work on both Apple
+	  and MS platforms.<BR>
+	  Apple has screwed up and in Mac 10.4 (Tigger), if OpenType tables are present
+	  in a font then the AAT tables will be ignored -- or so I'm told (I can't
+	  test this myself). Unfortunately Apple does not implement all of OpenType,
+	  so the result is almost certain to be wrong).
+	<LI>
+	  If you want neither OpenType nor Apple tables (just an old fashioned 'kern'
+	  table and nothing else) then set both 0x80 and 0x10.
+	<LI>
+	  fmflags&amp;0x100 =&gt; generate a glyph map file (GID=&gt;glyph name, unicode
+	  map). The map file will have extension ".g2n".
+	<LI>
+	  fmflags&amp;0x200 =&gt; generate a '<A HREF="non-standard.html#TeX">TeX</A>
+	  ' table containing (most) TeX font metrics information
+	<LI>
+	  fmflags&amp;0x400 =&gt; generate an ofm file (for omega)
+	<LI>
+	  fmflags&amp;0x800 =&gt; generate an old style 'kern'ing table. Only meaningful
+	  if set with OpenType (GPOS/GSUB) tables and without Apple tables.
+	<LI>
+	  fmflags&amp;0x10000 =&gt; generate a tfm file
+	<LI>
+	  fmflags&amp;0x40000 =&gt; do not do flex hints
+	<LI>
+	  fmflags&amp;0x80000 =&gt; do not include postscript hints
+	<LI>
+	  fmflags&amp;0x200000 =&gt; round postscript coordinates
+      </UL>
+      <P>
+      res controls the resolution of generated bdf fonts. A value of -1 means fontforge
+      will guess for each strike.
+      <P>
+      If the filename contains a "%s" and has either a ".pf[ab]" extension then
+      a "mult-sfd-file" may be present. This is the filename of a file containing
+      the mapping from the current encoding into the subfonts.
+      <A HREF="Big5.txt">Here is an example</A>. If this file is not present FontForge
+      will go through its default search process to find a file for the encoding,
+      and if it fails the fonts will not be saved.
+	  <DT>
+      <A NAME="GenerateFamily" HREF="filemenu.html#GenerateMac">GenerateFamily</A>(filename,bitmaptype,fmflags,array-of-font-filenames)
+    <DD>
+      Generates a mac font family (FOND) from the fonts (which must be loaded)
+      in the array-of-font-filenames. filename, bitmaptype, fmflags are as above.
+      <BLOCKQUOTE>
+	<PRE>#!/usr/local/bin/fontforge
+a = Array($argc-1)
+i = 1
+j = 0
+while ( i &lt; $argc )
+# Open each of the fonts
+  Open($argv[i], 1)
+# and store the filenames of all the styles in the array
+  a[j] = $filename
+  j++
+  i++
+endloop
+
+GenerateFamily("All.otf.dfont","dfont",16,a)
+</PRE>
+      </BLOCKQUOTE>
+	  <DT>
+      <A NAME="GetCvtAt">G</A>etCvtAt(index)
+    <DD>
+      Return the value in the cvt table at the given index.
+	  <DT>
+      <A NAME="GetEnv">G</A>etEnv(str)
+    <DD>
+      Returns the value of the unix environment variable named by str. It can execute
+      with no current font.
+	  <DT>
+      <A NAME="GetMaxpValue">G</A>etMaxpValue(field-name)
+    <DD>
+      Field name must be as above.
+	  <DT>
+      <A NAME="GetOS2Value" HREF="fontinfo.html#TTF-Values">GetOS2Value</A>(field-name)
+    <DD>
+      The argument takes the same set of tag strings as <A HREF="#SetOS2Value">SetOS2Value</A>. <CODE>VendorId</CODE> returns
+      a string, and <CODE>Panose</CODE> returns an array. The others return integers.
+	  <DT>
+      <A NAME="GetPosSub">G</A>etPosSub(feature-tag,script,lang)
+    <DD>
+      One glyph must be selected, this returns information about GPOS/GSUB features
+      attached to this glyph (It will not return information about class based
+      kerning or contextual features -- nothing that applies to the font as a whole
+      -- just things relating to the current glyph). The arguments must be 4 letter
+      strings (or the special string "*" which acts as a wildcard). It returns
+      an Array of Arrays (with one entry for each feature which matches the arguments).
+      If nothing matches a 0 length array will be returned.
+      <P>
+      Each sub-array contains the following information
+      <UL>
+	<LI>
+	  The feature tag (a string)
+	<LI>
+	  The script/language string of this feature
+	<LI>
+	  The type (As a string, One of <CODE>Position, Pair, Substitution, AltSubs,
+	  MultSubs </CODE>or<CODE> Ligature</CODE>)
+      </UL>
+      <P>
+      The remaining entries depend on the type.
+      <DL>
+	<DT>
+	  For Positions
+	<DD>
+	  There will be 4 numbers indicating respectively the contents of a GPOS value
+	  record (dx,dy,d_horizontal_advance,d_vertical_advance)
+	<DT>
+	  For Pairs
+	<DD>
+	  A string containing the name of the other glyph in the pair
+	  <P>
+	  A list of 8 numbers indicating the contents of two GPOS value records (the
+	  first four numbers control the current glyph, the next four numbers control
+	  the second glyph)
+	<DT>
+	  For Substitutions
+	<DD>
+	  A string containing the name of a glyph with which the current glyph is to
+	  be replaced.
+	<DT>
+	  For the others
+	<DD>
+	  A set of glyph names, one for each component.
+      </DL>
+      <P>
+      Examples:
+      <BLOCKQUOTE>
+	<PRE>&gt;Select("ffl")
+&gt;Print( GetPosSub("liga","*","*"))
+[[liga,latn{dflt} ,Ligature,f,f,l],
+[liga,latn{dflt} ,Ligature,ff,l]]
+&gt;Select("T")
+&gt;Print( GetPosSub("*","*","*"))
+[[kern,latn{dflt} ,Pair,u,0,0,-76,0,0,0,0,0],
+[kern,latn{dflt} ,Pair,e,0,0,-92,0,0,0,0,0],
+[kern,latn{dflt} ,Pair,a,0,0,-92,0,0,0,0,0],
+[kern,latn{dflt} ,Pair,o,0,0,-76,0,0,0,0,0]]
+&gt;Select("onehalf")
+&gt;Print( GetPosSub("frac","latn","dflt"))
+[[frac,latn{dflt} ,Ligature,one,slash,two],
+[frac,latn{dflt} ,Ligature,one,fraction,two]]
+</PRE>
+      </BLOCKQUOTE>
+	  <DT>
+      <A NAME="GetPref">G</A>etPref(str)
+    <DD>
+      Gets the value of the preference item whose name is contained in str. Only
+      boolean, integer, real, string and file preference items may be returned.
+      Boolean and real items are returned with integer type and file items are
+      returned with string type. Encodings (NewCharset) are returned as magic numbers,
+      these are meaningless outside the context of get/set Pref. It can execute
+      with no current font.
+	  <DT>
+      <A NAME="GetPrivateEntry">G</A>etPrivateEntry(key)
+    <DD>
+      Returns the entry indexed by key in the private dictionary. All return values
+      will be strings. If an entry does not exist a null string is returned.
+	  <DT>
+      <A NAME="GetTeXParam">G</A>etTeXParam(index)
+    <DD>
+      If index == -1 then the tex font type will be returned (text==0, math==1,
+      math extended=2)<BR>
+      Else index is used to index into the font's tex params array.
+	  <DT>
+      <A NAME="GetTTFName">G</A>etTTFName(lang,nameid)
+    <DD>
+      The lang and nameid arguments are as above. This returns the current value
+      as a utf8 encoded string. Combinations which are not present will be returned
+      as "".
+	  <DT>
+      <B><A NAME="GlyphInfo">GlyphInfo</A></B>(str)<BR>
+      GlyphInfo("Kern",glyph-spec)<BR>
+      GlyphInfo("VKern",glyph-spec)<BR>
+      GlyphInfo(str,script,lang,tag)
+    <DD>
+      There must be exactly one glyph selected in the font, and this returns
+      information on it. The information returned depends on str with the obvious
+      meanings:
+      <UL>
+	<LI>
+	  "Name" returns the glyph's name
+	<LI>
+	  "Unicode" returns the glyph's unicode encoding
+	<LI>
+	  "Encoding" returns the glyph's encoding in the current font
+	<LI>
+	  "Width" returns the glyph's width
+	<LI>
+	  "VWidth" returns the glyph's Vertical width
+	<LI>
+	  "TeXHeight" returns the tex_height field (a value of 0x7fff indicates that
+	  a default value will be used)
+	<LI>
+	  "TeXDepth" returns the tex_depth field (a value of 0x7fff indicates that
+	  a default value will be used)
+	<LI>
+	  "TeXSubPos" returns the tex_sub_pos field (a value of 0x7fff indicates that
+	  a default value will be used)
+	<LI>
+	  "TeXSuperPos" returns the tex_super_pos field (a value of 0x7fff indicates
+	  that a default value will be used)
+	<LI>
+	  "LBearing" returns the glyph's left side bearing
+	<LI>
+	  "RBearing" returns the glyph's right side bearing
+	<LI>
+	  "BBox" returns a 4 element array containing [minimum-x-value, minimum-y-value,
+	  maximum-x-value, maximum-y-value] of the glyph.
+	<LI>
+	  "Kern" (there must be a second argument here which specifies another glyph
+	  as in Select()) Returns the kern offset between the two glyphs (or 0 if none).
+	<LI>
+	  "VKern" (there must be a second argument here which specifies another glyph
+	  as in Select()) Returns the vertical kern offset between the two glyphs (or
+	  0 if none).
+	<LI>
+	  "Xextrema" (there must be a second argument here which specifies the vertical
+	  position) Returns a two element array containing the minimum and maximum
+	  horizontal positions on the contours of the glyph at the given vertical position.
+	  If the position is beyond the glyph's bounding box the minimum value will
+	  be set to 1 and the max to 0 (ie. max&lt;min which is impossible).
+	<LI>
+	  "Yextrema" (there must be a second argument here which specifies the horizontal
+	  position) Returns a two element array containing the minimum and maximum
+	  vertical positions on the contours of the glyph at the given horizontal position.
+	  If the position is beyond the glyph's bounding box the minimum value will
+	  be set to 1 and the max to 0 (ie. max&lt;min which is impossible).
+	<LI>
+	  "Color" returns the glyph's color as a 24bit rgb value (or -2 if no color
+	  has been assigned to the glyph).
+	<LI>
+	  "Comment" returns the glyph's comment (it will be converted from unicode
+	  into the default encoding).
+	<LI>
+	  "Changed" returns whether the glyph has been changed since the last save
+	  or load.
+	<LI>
+	  "DontAutoHint" returns the status of the "Don't AutoHint" flag.
+	<LI>
+	  "Position" takes three additional arguments, a script, a language and a tag
+	  (all 4 character strings) and returns whether the glyph has a Position alternate
+	  with that tag.
+	<LI>
+	  "Pair" takes three additional arguments, a script, a language and a tag (all
+	  4 character strings) and returns whether the glyph has a Pairwise positioning
+	  alternate with that tag.
+	<LI>
+	  "Substitution" takes three additional arguments, a script, a language and
+	  a tag (all 4 character strings) and returns the name of the Simple Substitution
+	  alternate with that tag (or a null string if there is none).
+	<LI>
+	  "AltSubs" takes three additional arguments, a script, a language and a tag
+	  (all 4 character strings) and returns a space separated list of the names
+	  of all alternate substitutions with that tag (or a null string if there is
+	  none).
+	<LI>
+	  "MultSubs" takes three additional arguments, a script, a language and a tag
+	  (all 4 character strings) and returns a space separated list of all the names
+	  of all glyphs this glyph gets decomposed into with that tag (or a null string
+	  if there is none).
+	<LI>
+	  "Ligature" takes three additional arguments, a script, a language and a tag
+	  (all 4 character strings) and returns a space separated list of the names
+	  of all components with that tag (or a null string if there is none).
+	<LI>
+	  "GlyphIndex" returns the index of the current glyph in the ttf 'glyf' table,
+	  or -1 if it has been created since. This value may change when a
+	  truetype/opentyp<B></B>e font is generated (to the index in the generated
+	  font).
+	<LI>
+	  "PointCount" returns the number of points in the glyph (this means different
+	  things in different modes).
+	<LI>
+	  "LayerCount" returns the number of layers in the glyph. This will always
+	  be 2 (foreground &amp; background) except in the case of a multilayered font.
+	<LI>
+	  "RefCount" returns the number of references in the glyph
+	<LI>
+	  "RefNames" returns an array containing the names of all glyphs refered to.
+	  This may contain 0 elements. This may contain a glyph twice ("colon" might
+	  refer twice to period)
+	<LI>
+	  "RefTransform" returns an array of arrays. The bottom most arrays are 6 element
+	  (real) transformation matrices which are applied to their respective glyphs.
+      </UL>
+      <P>
+      Examples:
+      <BLOCKQUOTE>
+	<PRE>Select("A")
+lbearing = GlyphInfo("LBearing")
+kern = GlyphInfo("Kern","O")
+Select(0u410)
+SetLBearing(lbearing)
+SetKern(0u41e,kern)
+Select("a")
+verta = GlyphInfo("Substitution","*","dflt","vrt2")
+</PRE>
+      </BLOCKQUOTE>
+	</DL>
+      </TD>
+    </TR>
+    <TR VALIGN=TOP>
+      <TD BGCOLOR=yellow><A NAME="H">H</A></TD>
+      <TD><DL>
+	  <DT>
+      <A NAME="HasPreservedTable">H</A>asPreservedTable(tag)
+    <DD>
+      Returns true if the font contains a preserved table with the given tag.
+	  <DT>
+      <A NAME="HasPrivateEntry">H</A>asPrivateEntry(key)
+    <DD>
+      Returns whether key exists in the private dictionary.
+	  <DT>
+      <A NAME="HFlip">H</A>Flip([about-x])
+    <DD>
+      All selected glyphs will be horizontally flipped about the vertical line
+      through x=about-x. If no argument is given then all selected glyphs will
+      be flipped about their central point.
+	</DL>
+      </TD>
+    </TR>
+    <TR VALIGN=TOP>
+      <TD BGCOLOR=yellow><A NAME="I">I</A></TD>
+      <TD><DL>
+	  <DT>
+      <A NAME="Import" HREF="filemenu.html#Import">Import</A>(filename[,toback[,flags]])
+    <DD>
+      Either imports a bitmap font into the database, or imports background image[s]
+      into various glyphs. There may be one or two arguments. The first must be
+      a string representing a filename. The extension of the file determines how
+      the import proceeds.
+      <UL>
+	<LI>
+	  If the extension is ".bdf" then a bdf font will be imported
+	<LI>
+	  If the extension is ".pcf" then a pcf font will be imported.
+	<LI>
+	  If the extension is ".ttf" then the EBDT or bdat table of the ttf file will
+	  be searched for bitmap fonts
+	<LI>
+	  If the extension is "pk" then a metafont pk (bitmap font) file will be import
+	  and by default placed in the background
+	<LI>
+	  Otherwise if the extension is an image extension, and any loaded images will
+	  be placed in the background.
+	  <UL>
+	    <LI>
+	      If the filename contains a "*" then it should be a recognized template in
+	      which case all images which match that template will be loaded appropriately
+	      and stored in the background
+	    <LI>
+	      Otherwise there may be several filenames (separated by semicolons), the first
+	      will be placed in the background of the first selected glyph, the second
+	      into the background of the second selected glyph, ...
+	  </UL>
+	<LI>
+	  If the extension is "eps" then an encapsulated postscript file will be merged
+	  into the foreground. The file may be specified as for images (except the
+	  extension should be "eps" rather than an image extension). FontForge is limited
+	  in its ability to read eps files.
+	<LI>
+	  If the extension is "svg" then an svg file will be read into the foreground.
+      </UL>
+      <P>
+      If present the second argument must be an integer, if the first argument
+      is a bitmap font then the second argument controls whether it is imported
+      into the bitmap list (0) or to fill up the backgrounds of glyphs (1). For
+      eps and svg files this argument controls whether the splines are added to
+      the foreground or the background layer of the glyph.
+      <P>
+      If there is a third argument it must also be an integer and provides a set
+      of flags controling the behavior of importing an EPS (and in one case SVG
+      too) file.
+      <UL>
+	<LI>
+	  16 =&gt; remove anything currently present (works for SVG &amp; EPS)
+	<LI>
+	  8 =&gt; correct direction
+	<LI>
+	  4 =&gt; attempt to handle TeX erasers (stroking with a white pen)
+	<LI>
+	  2 =&gt; remove overlap
+      </UL>
+	  <DT>
+      <A NAME="InFont">I</A>nFont(arg)
+    <DD>
+      Returns whether the argument is in the font. The argument may be an integer
+      in which case true is returned if the value is &gt;= 0 and &lt; total number
+      of glyphs in the font. Otherwise if the argument is a unicode code point
+      or a postscript glyph name, true is returned if that glyph is in the font.
+	  <DT>
+      <A NAME="Inline" HREF="elementmenu.html#Inline">Inline</A>(width,gap)
+    <DD>
+      Produces an outline as above, and then shrinks the glyph so that it fits
+      inside the outline. In other words, it produces an inlined glyph.
+	  <DT>
+      <A NAME="Int">Int</A>(real)
+    <DD>
+      Uses standard C conversion from real to integer. It can execute with no current
+      font.<BR>
+      See Also <A HREF="#Ceil">Ceil</A>,
+      <A HREF="#Round">Round</A>,
+      <A HREF="#Floor">Floor</A>
+	  <DT>
+      <A NAME="InterpolateFonts" HREF="elementmenu.html#Interpolate">InterpolateFonts</A>(percentage,other-font-name[,flags])
+    <DD>
+      Interpolates a font which is percentage of the way from the current font
+      to the one specified by other-font-name (note: percentage may be negative
+      or more than 100, in which case we extrapolate a font). This command changes
+      the current font to be the new font.
+      <FONT COLOR="Red"><STRONG><SMALL>NOTE:</SMALL></STRONG></FONT> You will need
+      to set the fontname of this new font. The flag argument is the same as for
+      Open.
+	  <DT>
+      <A NAME="IsFinite">I</A>sFinite(real)
+    <DD>
+      Returns whether the value is finite (not infinite and not a nan). It can
+      execute with no current font.
+	  <DT>
+      <A NAME="IsNan">I</A>sNan(real)
+    <DD>
+      Returns whether the value is a nan. It can execute with no current font.
+	</DL>
+      </TD>
+    </TR>
+    <TR VALIGN=TOP>
+      <TD BGCOLOR=yellow><A NAME="J">J</A></TD>
+      <TD><DL>
+	  <DT>
+      <A NAME="Join" HREF="editmenu.html#Join">Join</A>([fudge])
+    <DD>
+      Joins open paths in selected glyphs. If fudge is specified then the endpoints
+      only need to be within fudge em-units of each other to be merged.
+	</DL>
+      </TD>
+    </TR>
+    <TR VALIGN=TOP>
+      <TD BGCOLOR=yellow><A NAME="K">K</A></TD>
+      <TD>
+      </TD>
+    </TR>
+    <TR VALIGN=TOP>
+      <TD BGCOLOR=yellow><A NAME="L">L</A></TD>
+      <TD><DL>
+	  <DT>
+      <A NAME="LoadEncodingFile">L</A>oadEncodingFile(filename)
+    <DD>
+	  <DT>
+      <A NAME="LoadNamelist">L</A>oadNamelist(filename)
+    <DD>
+      Will load the namelist stored in the given file. It can execute with no current
+      font.
+	  <DT>
+      <A NAME="LoadNamelistDir">L</A>oadNamelistDir([directory-name])
+    <DD>
+      Searches the given directory for things that look like fontforge namelists
+      and loads them. If directory is omitted then it will load the default directory.
+      It can execute with no current font.
+	  <DT>
+      <A NAME="LoadPlugin">L</A>oadPlugin(filename)
+    <DD>
+      Will load the <A HREF="plugins.html">fontforge plugin </A>stored in the given
+      file (this should be a shared library). It can execute with no current font.
+	  <DT>
+      <A NAME="LoadPluginDir">L</A>oadPluginDir([directory-name])
+    <DD>
+      Searches the given directory for things that look like fontforge plugins
+      and loads them. If directory is omitted then it will load the two default
+      directories:
+      <UL>
+	<LI>
+	  /usr/local/share/fontforge/plugins
+	<LI>
+	  ~/.PfaEdit/plugins
+      </UL>
+      <P>
+      It can execute with no current font.
+	  <DT>
+      <A NAME="LoadPrefs">L</A>oadPrefs()
+    <DD>
+      Loads the user's preferences. This used to happen automatically at startup.
+      Now it happens automatically when the UI is started, but scripts must request.
+      It can execute with no current font. it.
+	  <DT>
+      <A NAME="LoadStringFromFile">L</A>oadStringFromFile("filename")
+    <DD>
+      Reads the entire file into a string. Returns a null string for a non-existant
+      or empty file. The returned string will have enough bytes allocated to hold
+      the entire file plus one trailing NUL byte. If the file contains a NUL itself,
+      fontforge will think the string ends there. It can execute with no current
+      font.
+	  <DT>
+      <A NAME="LoadTableFromFile">L</A>oadTableFromFile(tag,filename)
+    <DD>
+      Both arguments should be strings, the first should be a 4 letter table tag.
+      The file will be read and preserved in the font as the contents of the table
+      with the specified tag. Don't use a tag that ff thinks it understands!
+	  <DT>
+      <A NAME="Log">L</A>og(val)
+    <DD>
+      Returns the natural log of val. It can execute with no current font.
+	</DL>
+      </TD>
+    </TR>
+    <TR VALIGN=TOP>
+      <TD BGCOLOR=yellow><A NAME="M">M</A></TD>
+      <TD><DL>
+	  <DT>
+      <A NAME="MergeFonts" HREF="elementmenu.html#Merge">MergeFonts</A>(other-font-name[,flags])
+    <DD>
+      Loads other-font-name, and extracts any glyphs from it which are not in the
+      current font and moves them to the current font. The flags argument is the
+      same as that for Open. Currently the only relevant flag is to say that you
+      do have a license to use a font with fstype=2.
+	  <DT>
+      <A NAME="MergeKern" HREF="filemenu.html#Merge-kern">MergeKern</A>(filename)
+    <DD>
+      Loads Kerning info out of either an afm or a tfm file and merges it into
+      the current font.
+	  <DT>
+      <A NAME="MMAxisBounds">M</A>MAxisBounds(axis)
+    <DD>
+      Axis is an integer less than the number of axes in the mm font. Returns an
+      array containing the lower bound, default value and upper bound. Note each
+      value is multiplied by 65536 (because they need not be integers on the mac,
+      and ff doesn't support real values).
+      <P>
+      (The default value is a GX Var concept. FF simulates a reasonable value for
+      true multiple master fonts).
+	  <DT>
+      <A NAME="MMAxisNames">M</A>MAxisNames()
+    <DD>
+      Returns an array containing the names of all axes in a multi master set.
+	  <DT>
+      <A NAME="MMBlendToNewFont" HREF="mmmenu.html#NewFont">MMBlendToNewFont</A>(weights)
+    <DD>
+      Weights is an array of integers, one for each axis. Each value should be
+      65536 times the desired value (to deal with mac blends which tend to be small
+      real numbers). This command creates a completely new font by blending the
+      mm font and sets the current font to the new font.
+	  <DT>
+      <A NAME="MMChangeInstance">M</A>MChangeInstance(instance)
+    <DD>
+      Where instance is either a font name or a small integer. If passed a string
+      FontForge searches through all fonts in the multi master font set (instance
+      fonts and the weighted font) and changes the current font to the indicated
+      one. If passed a small integer, then -1 indicates the weighted font and values
+      between [0,$mmcount) represent that specific instance in the font set.
+	  <DT>
+      <A NAME="MMChangeWeight" HREF="mmmenu.html#DefWeights">MMChangeWeight</A>(weights)
+    <DD>
+      Weights is an array of integers, one for each axis. Each value should be
+      65536 times the desired value (to deal with mac blends which tend to be small
+      real numbers). This command changes the current multiple master font to have
+      a different default weight, and sets that to be the current instance.
+	  <DT>
+      <A NAME="MMInstanceNames">M</A>MInstanceNames()
+    <DD>
+      Returns an array containing the names of all instance fonts in a multi master
+      set.
+	  <DT>
+      <A NAME="MMWeightedName">M</A>MWeightedName()
+    <DD>
+      Returns the name of the weighted font in a multi master set.
+	  <DT>
+      <A NAME="Move">M</A>ove(delta-x,delta-y)
+    <DD>
+      All selected glyphs will have their points moved the given amount.
+	  <DT>
+      <A NAME="MoveReference">M</A>oveReference(delta-x,delta-y,[refname/ref-unicode]+)
+    <DD>
+      References may be identified either by a string containing the name of the
+      glyph being refered to, or an integer containing the unicode code point of
+      the glyph being refered to, there may be an arbetrary (positive) number of
+      references specified. Each selected glyph will be searched for references
+      that match the name/unicode-values given, all references found will be moved
+      by the specified offsets.
+      <BLOCKQUOTE>
+	<PRE>MoveReference(300,0,"acute",0xb4)
+</PRE>
+	<P>
+	Will move any acute or grave references 300 em-units horizontally from where
+	they currently are
+      </BLOCKQUOTE>
+	</DL>
+      </TD>
+    </TR>
+    <TR VALIGN=TOP>
+      <TD BGCOLOR=yellow><A NAME="N">N</A></TD>
+      <TD><DL>
+	  <DT>
+      <A NAME="NearlyHvCps">N</A>earlyHvCps([error[,err-denom]])
+    <DD>
+      Checks for control points which are almost, but not quite horzontal or vertical
+      (where almost means (say) that <CODE>abs( (control point).x - point.x ) &lt;
+      error</CODE>, where error is either:
+      <TABLE CELLPADDING="2">
+	<TR>
+	  <TD>.1</TD>
+	  <TD>if no arguments are given</TD>
+	</TR>
+	<TR>
+	  <TD>first-arg</TD>
+	  <TD>if one argument is given</TD>
+	</TR>
+	<TR>
+	  <TD>first-arg/second-arg</TD>
+	  <TD>if two arguments are given</TD>
+	</TR>
+      </TABLE>
+	  <DT>
+      <A NAME="NearlyHvLines">N</A>earlyHvLines([error[,err-denom]])
+    <DD>
+      Checks for lines which are almost, but not quite horzontal or vertical (where
+      almost means (say) that <CODE>abs( (end point).x - (start point).x ) &lt;
+      error</CODE>, where error is either:
+      <TABLE CELLPADDING="2">
+	<TR>
+	  <TD>.1</TD>
+	  <TD>if no arguments are given</TD>
+	</TR>
+	<TR>
+	  <TD>first-arg</TD>
+	  <TD>if one argument is given</TD>
+	</TR>
+	<TR>
+	  <TD>first-arg/second-arg</TD>
+	  <TD>if two arguments are given</TD>
+	</TR>
+      </TABLE>
+	  <DT>
+      <A NAME="NearlyLines">N</A>earlyLines(error)
+    <DD>
+      Checks for splines that are nearly linear, and makes them so. A spline is
+      nearly linear if the maximum deviation of the spline from the line between
+      the spline's endpoints is less than error.
+    <DD>
+	  <DT>
+      <A NAME="New" HREF="filemenu.html#New">New</A>()
+    <DD>
+      This creates a new font. It can execute with no current font.
+	  <DT>
+      <A NAME="NonLinearTransform">NonLinearTransform</A>(x-expression,y-expression)
+    <DD>
+      Takes two string arguments which must contain valid expressions of x and
+      y and transforms all selected glyphs using those expressions.
+      <BLOCKQUOTE>
+	<PRE>&lt;e0&gt; := "x" | "y" | "-" &lt;e0&gt; | "!" &lt;e0&gt; | "(" &lt;expr&gt; ")" |
+	"sin" "(" &lt;expr&gt; ")" | "cos" "(" &lt;expr&gt; ")" | "tan" "(" &lt;expr&gt; ")" | 
+	"log" "(" &lt;expr&gt; ")" | "exp" "(" &lt;expr&gt; ")" | "sqrt" "(" &lt;expr&gt; ")" |
+	"abs" "(" &lt;expr&gt; ")" | 
+	"rint" "(" &lt;expr&gt; ")" | "float" "(" &lt;expr&gt; ")" | "ceil" "(" &lt;expr&gt; ")"
+&lt;e1&gt; := &lt;e0&gt; "^" &lt;e1&gt;
+&lt;e2&gt; := &lt;e1&gt; "*" &lt;e2&gt; | &lt;e1&gt; "/" &lt;e2&gt; | &lt;e1&gt; "%" &lt;e2&gt; 
+&lt;e3&gt; := &lt;e2&gt; "+" &lt;e3&gt; | &lt;e2&gt; "-" &lt;e3&gt;
+&lt;e4&gt; := &lt;e3&gt; "==" &lt;e4&gt; | &lt;e3&gt; "!=" &lt;e4&gt; |
+	&lt;e3&gt; "&gt;=" &lt;e4&gt; | &lt;e3&gt; "&gt;" &lt;e4&gt; |
+	&lt;e3&gt; "&lt;=" &lt;e4&gt; | &lt;e3&gt; "&lt;" &lt;e4&gt; 
+&lt;e5&gt; := &lt;e4&gt; "&amp;&amp;" &lt;e5&gt; | &lt;e4&gt; "||" &lt;e5&gt;
+&lt;expr&gt; := &lt;e5&gt; "?" &lt;expr&gt; ":"
+
+</PRE>
+      </BLOCKQUOTE>
+      <P>
+      Example: To do a perspective transformation with a vanishing point at (200,300):
+      <BLOCKQUOTE>
+	<PRE>NonLinearTrans("200+(x-200)*abs(y-300)/300","y")
+</PRE>
+      </BLOCKQUOTE>
+      <P>
+      This command is not available in the default build, you must modify the file
+      <CODE>configure-fontforge.h</CODE> and then rebuild FontForge.
+	</DL>
+      </TD>
+    </TR>
+    <TR VALIGN=TOP>
+      <TD BGCOLOR=yellow><A NAME="O">O</A></TD>
+      <TD><DL>
+	  <DT>
+      <A NAME="Open" HREF="filemenu.html#Open">Open</A>(filename[,flags])
+    <DD>
+      This makes the font named by filename be the current font. If filename has
+      not yet been loaded into memory it will be loaded now. It can execute without
+      a current font.
+      <P>
+      When loading from a ttc file (mac suitcase, dfont, svg, etc), a particular
+      font may be selected by placing the fontname in parens and appending it to
+      the filename, as <CODE>Open("gulim.ttc(Dotum)")</CODE><BR>
+      The optional flags argument current has only one flag in it:
+      <UL>
+	<LI>
+	  1 =&gt; the user does have the appropriate license to examine the font no
+	  matter what the fstype setting is.
+      </UL>
+	  <DT>
+      <A NAME="Ord">O</A>rd(string[,pos])
+    <DD>
+      Returns an array of integers representing the encoding of the characters
+      in the string. If pos is given it should be an integer less than the string
+      length and the function will return the integer encoding of that character
+      in the string. It can execute with no current font.
+	  <DT>
+      <A NAME="Outline" HREF="elementmenu.html#Outline">Outline</A>(width)
+    <DD>
+      Strokes all selected glyphs with a stroke of the specified width (internal
+      to the glyphs). The bounding box of the glyph will not change. In other words
+      it produces what the mac calls the "Outline Style".
+	  <DT>
+      <A NAME="OverlapIntersect">O</A>verlapIntersect()
+    <DD>
+      Removes everything but the intersection.
+	</DL>
+      </TD>
+    </TR>
+    <TR VALIGN=TOP>
+      <TD BGCOLOR=yellow><A NAME="P">P</A></TD>
+      <TD><DL>
+	  <DT>
+      <A NAME="Paste" HREF="editmenu.html#PasteInto">Paste Into</A>
+    <DD>
+      Copies the clipboard into the current font (merging with what was there before)
+	  <DT>
+      <A NAME="Paste" HREF="editmenu.html#Paste">Paste</A>
+    <DD>
+      Copies the clipboard into the selected glyphs of the current font (removing
+      what was there before)
+	  <DT>
+      <A NAME="PasteWithOffset">P</A>asteWithOffset(xoff,yoff)
+    <DD>
+      Translates the clipboard by xoff,yoff before doing a PasteInto(). Can be
+      used to build accented glyphs.
+	  <DT>
+      <A NAME="PositionReference">P</A>ositionReference(x,y,[refname/ref-unicode]+)
+    <DD>
+      References may be identified either by a string containing the name of the
+      glyph being refered to, or an integer containing the unicode code point of
+      the glyph being refered to, there may be an arbetrary (positive) number of
+      references specified. Each selected glyph will be searched for references
+      that match the name/unicode-values given, all references found will be at
+      the specified location.
+      <BLOCKQUOTE>
+	<PRE>PositionReference(0,0,"circumflex")
+</PRE>
+	<P>
+	Will position any references to circumflex so that they are where the base
+	circumflex is
+      </BLOCKQUOTE>
+	  <DT>
+      <A NAME="PostNotice">P</A>ostNotice(str)
+    <DD>
+      When run from the UI will put up a window displaying the string (the window
+      will not block the program and will disappear after a minute or so). When
+      run from the command line will write the string to stderr. It can execute
+      with no current font.
+	  <DT>
+      <A NAME="Pow">P</A>ow(val1,val2)
+    <DD>
+      Returns val1<SUP>val2</SUP>. It can execute with no current font.
+	  <DT>
+      <A NAME="Print">P</A>rint(arg1,arg2,arg3,...)
+    <DD>
+      This corresponds to no menu item. It will print all of its arguments to stdout.
+      It can execute with no current font.
+	  <DT>
+      <A NAME="PrintFont" HREF="filemenu.html#Print">PrintFont</A>(type[,pointsize[,sample-text/filename[,output-file]]])
+    <DD>
+      Prints the current font according to the
+      <A HREF="#PrintSetup">PrintSetup</A>. The values for type are
+      (meanings are described in the <A HREF="print.html">section on printing</A>):
+      <UL>
+	<LI>
+	  0 =&gt; Prints a full font display at the given pointsize
+	<LI>
+	  1 =&gt; Prints selected glyphs to fill page
+	<LI>
+	  2 =&gt; Prints selected glyphs at multiple pointsizes
+	<LI>
+	  3 =&gt; Prints a text sample read from a file at the given pointsize(s)
+	<LI>
+	  4 =&gt; Prints a text sample, except that instead of treating the third argument
+	  as a file name it represents the sample itself (in utf-8 encoding)
+      </UL>
+      <P>
+      The pointsize is either a single integer or an array of integers. It is only
+      meaningful for types 0, 3 and 4. If omitted or set to 0 a default value will
+      be chosen. The font display will only look at one value.
+      <P>
+      If you selected print type 3 then you may provide the name of a file containing
+      sample text. This file may either be in ucs2 format (preceded by a 0xfeff
+      value), or in the current default encoding. A null string or an omitted argument
+      will cause FontForge to use a default value.
+      <P>
+      If your PrintSetup specified printing to a file (either PostScript or pdf)
+      then the fourth argument provides the filename of the output file.
+	  <DT>
+      <A NAME="PrintSetup">PrintSetup</A>(type,[printer[,width,height]])
+    <DD>
+      Allows you to configure the print command. Type may be a value between 0
+      and 4
+      <UL>
+	<LI>
+	  0 =&gt; print with lp
+	<LI>
+	  1 =&gt; print with lpr
+	<LI>
+	  2 =&gt; output to ghostview
+	<LI>
+	  3 =&gt; output to PostScript file
+	<LI>
+	  4 =&gt; other printing command
+	<LI>
+	  5 =&gt; output to a pdf file
+      </UL>
+      <P>
+      If the type is 4 (other) and the second argument is specified, then the second
+      argument should be a string containing the "other" printing command.<BR>
+      If the type is 0 (lp) or 1 (lpr) and the second argument is specified, then
+      the second argument should contain the name of a laser printer<BR>
+      (If the second argument is a null string neither will be set).
+      <P>
+      The third and fourth arguments should specify the page width and height
+      respectively. Units are in 1/72 inches (almost points), so 8.5x11" paper
+      is 612,792 and A4 paper is (about) 595,842.
+	  <DT>
+      <A NAME="PrivateToCvt">P</A>rivateToCvt()
+    <DD>
+      Adds the standard numeric entries in the Private dictionary into the cvt
+      table.
+	</DL>
+      </TD>
+    </TR>
+    <TR VALIGN=TOP>
+      <TD BGCOLOR=yellow><A NAME="Q">Q</A></TD>
+      <TD><DL>
+	  <DT>
+      <A NAME="Quit" HREF="filemenu.html#Quit">Quit</A>(status)
+    <DD>
+      Causes FontForge to exit with the given status (no attempt is made to save
+      unsaved files). This command can execute with no current font. 
+	<HR>
+	</DL>
+      </TD>
+    </TR>
+    <TR VALIGN=TOP>
+      <TD BGCOLOR=yellow><A NAME="R">R</A></TD>
+      <TD><DL>
+	  <DT>
+      <A NAME="Rand">R</A>and()
+    <DD>
+      returns a random integer. It can execute with no current font.
+	  <DT>
+      <A NAME="ReadOtherSubrsFile">ReadOtherSubrsFile</A>(filename)
+    <DD>
+      Reads new PostScript subroutines to be used in the OtherSubrs array of a
+      type1 font. The file format is a little more complicated than it should be
+      (because I can't figure out how to parse the OtherSubrs array into individual
+      subroutines).
+      <UL>
+	<LI>
+	  The subroutine list should not be enclosed in a [ ] pair
+	<LI>
+	  Each subroutine should be preceded by a line starting with '%%%%' (there
+	  may be more stuff after that)
+	<LI>
+	  Subroutines should come in the obvious order, and must have the expected
+	  meaning.
+	<LI>
+	  If you don't wish to support flex hints set the first three subroutines to
+	  "{}"
+	<LI>
+	  You may specify at most 14 subroutines (0-13)
+	<LI>
+	  Any text before the first subroutine will be treated as a copyright notice.
+      </UL>
+      <BLOCKQUOTE>
+	<PRE>% Copyright (c) 1987-1990 Adobe Systems Incorporated.
+% All Rights Reserved
+% This code to be used for Flex and Hint Replacement
+% Version 1.1
+%%%%%%
+{systemdict /internaldict known
+1183615869 systemdict /internaldict get exec
+...
+%%%%%%
+{gsave currentpoint newpath moveto} executeonly
+%%%%%%
+{currentpoint grestore gsave currentpoint newpath moveto} executeonly
+%%%%%%
+{systemdict /internaldict known not
+{pop 3}
+...
+</PRE>
+      </BLOCKQUOTE>
+      <P>
+      It can execute with no current font.
+	  <DT>
+      <A NAME="Real">R</A>eal(int)
+    <DD>
+      Converts an integer to a real number. It can execute with no current font.
+	  <DT>
+      <A NAME="Reencode" HREF="encodingmenu.html">Reencode</A>(encoding-name[,force])
+    <DD>
+      Reencodes the current font into the given encoding which may be:<BR>
+      compacted,original,<BR>
+      iso8859-1, isolatin1, latin1, iso8859-2, latin2, iso8859-3, latin3, iso8859-4,
+      latin4, iso8859-5, iso8859-6, iso8859-7, iso8859-8, iso8859-9, iso8859-10,
+      isothai, iso8859-13, iso8859-14, iso8859-15, latin0, koi8-r, jis201, jisx0201,
+      AdobeStandardEncoding, win, mac, symbol, wansung, big5, johab, jis208, jisx0208,
+      jis212, jisx0212, sjis, gh2312, gb2312packed, unicode, iso10646-1,
+      TeX-Base-Encoding, one of the user defined encodings.<BR>
+      You may also specify that you want to force the encoding to be the given
+      one.<BR>
+      Note: some encodings are specified by glyph names (ie. user defined encodings
+      specified as postscript encoding arrays) others are specified as lists of
+      unicode code points (most built in encodings except for AdobeStandard and
+      TeX, user defined encodings specified by codepoints). If you reencode to
+      an encoding defined by glyph names, then ff will first move glyphs to the
+      appropriate slots, and then force any glyphs with the wrong name to have
+      the correct one. The most obvious example of this is the fi ligature:
+      AdobeStandard says it should be named "fi", modern fonts tend to call it
+      "f_i". Reencoding to AdobeStandard will move this glyph to the right slot,
+      and then name it "fi".
+	  <DT>
+      <A NAME="RemoveAllKerns" HREF="metricsmenu.html#Remove">RemoveAllKerns</A>()
+    <DD>
+      Removes all kern pairs and classes from the current font.
+	  <DT>
+      <A NAME="RemoveAllVKerns" HREF="metricsmenu.html#VRemove">RemoveAllVKerns</A>()
+    <DD>
+      Removes all vertical kern pairs and classes from the current font.
+    <DD>
+	<HR>
+	  <DT>
+      <A NAME="RemoveAnchorClass">R</A>emoveAnchorClass(name)
+    <DD>
+      Removes the named AnchorClass (and all associated points) from the font.
+	  <DT>
+      <A NAME="RemoveATT">R</A>emoveATT(type,script-lang,tag)
+    <DD>
+      Removes any feature tags which match the arguments (which are essentially
+      the same as above, except that any of them may be "*" which will match anything).
+	  <DT>
+      <A NAME="RemoveOverlap" HREF="elementmenu.html#Remove">RemoveOverlap</A>()
+    <DD>
+      Does the obvious.
+	  <DT>
+      <A NAME="RemovePreservedTable">R</A>emovePreservedTable(tag)
+    <DD>
+      Searches for a preserved table with the given tag, and removes it from the
+      font.
+	  <DT>
+      <A NAME="RenameGlyphs" HREF="encodingmenu.html#RenameGlyphs">RenameGlyphs</A>(namelist-name)
+    <DD>
+      Renames all the glyphs in the current font according to the namelist.
+	  <DT>
+      <A NAME="ReplaceCharCounterMasks">R</A>eplaceCharCounterMasks(array)
+    <DD>
+      This requires that there be exactly one glyph selected. It will create a
+      set of counter masks for that glyph. The single argument must be an array
+      of twelve element arrays of integers (in c this would be "int array[][12]").
+      This is the format of a type2 counter mask. The number of elements in the
+      top level array is the number of counter groups to be specified. The nested
+      array thus corresponds to a counter mask, and is treated as an array of bytes.
+      Each bit in the byte specifies whether the corresponding hint is active in
+      this counter. (there are at most 96 hints, so at most 12 bytes).
+      Array[i][0]&amp;0x80 corresponds to the first horizontal stem hint,
+      Array[i][0]&amp;0x40 corresponds to the second, Array[i][1]&amp;0x80 corresponds
+      to the eighth hint, etc.
+	  <DT>
+      <A NAME="ReplaceCvtAt">R</A>eplaceCvtAt(index,value)
+    <DD>
+      Change the cvt table at the given index to have the new value.
+	  <DT>
+      <A NAME="ReplaceWithReference" HREF="editmenu.html#ReplaceRef">ReplaceWithReference</A>([fudge])
+    <DD>
+      Finds any glyph which contains an inline copy of one of the selected glyphs,
+      and converts that copy into a reference to the appropriate glyph. Selection
+      is changed to the set of glyphs which the command alters.
+      <P>
+      If specified the fudge argument specifie<B></B>s<B></B> the error allowed
+      for coordinate differences.
+	  <DT>
+      <A NAME="Rotate">R</A>otate(angle[,ox,oy])
+    <DD>
+      Rotates all selected glyph the specified number of degrees. If the last two
+      args are specified they provide the origin of the rotation, otherwise the
+      center of the glyph is used.
+	  <DT>
+      <A NAME="Round">Round</A>(real)
+    <DD>
+      Converts a real number to an integer by rounding to the nearest integer.
+      It can execute with no current font.<BR>
+      See Also <A HREF="#Ceil">Ceil</A>,
+      <A HREF="#Int">Int</A>,
+      <A HREF="#Floor">Floor</A>
+	  <DT>
+      <A NAME="RoundToCluster" HREF="elementmenu.html#Cluster">RoundToCluster</A>([within[,max]])
+    <DD>
+      The first two provide a fraction that indicates a value within which similar
+      coordinates will be bundled together. Max indicates how many "within"s from
+      the center point it will go if there are a chain of points each within "within"
+      of the previous one. So
+      <BLOCKQUOTE>
+	<PRE> RoundToCluster(.1,.5)
+</PRE>
+      </BLOCKQUOTE>
+      <P>
+      Will merge coordinates within .1 em-unit of each other. A sequence like
+      <CODE>-.1,-.05,0,.05,.1,.15</CODE> will all be merged together because each
+      is within .1 of the next, and none is more than .5 from the center.
+	  <DT>
+      <A NAME="RoundToInt" HREF="elementmenu.html#Round">RoundToInt</A>([factor])
+    <DD>
+      Rounds all points/hints/reference-offsets to be integers. If the the "factor"
+      argument is specified then it rounds like <CODE>rint(factor * x) /
+      factor</CODE>, in other words if you set factor to 100 then it will round
+      to hundredths.
+	</DL>
+      </TD>
+    </TR>
+    <TR VALIGN=TOP>
+      <TD BGCOLOR=yellow><A NAME="S">S</A></TD>
+      <TD><DL>
+	  <DT>
+      <A NAME="SameGlyphAs" HREF="editmenu.html#SameGlyphAs">SameGlyphAs</A>
+    <DD>
+      If the clipboard contains a reference to a single glyph then this makes all
+      selected glyphs refer to that one.
+      <P>
+      Adobe suggests that you avoid this. Use a reference instead. In some situations
+      (I think pdf files is one) having one glyph with several encodings causes
+      problems (Acrobat uses the glyph to back-map through the encoding to work
+      out the unicode code point. But that will fail if a glyph has two unicode
+      code points associated with it).
+	  <DT>
+      <A NAME="Save" HREF="filemenu.html#Save">Save</A>([filename])
+    <DD>
+      If no filename is specified then this saves the current font back into its
+      sfd file (if the font has no sfd file then this is an error). With one argument
+      it executes a SaveAs command, saving the current font to that filename.
+	  <DT>
+      <A NAME="SavePrefs">S</A>avePrefs()
+    <DD>
+      Save the current state of preferences. This used to happen when SetPref was
+      called, now a script must request it explicitly. It can execute with no current
+      font.
+	  <DT>
+      <A NAME="SaveTableToFile">S</A>aveTableToFile(tag,filename)
+    <DD>
+      Both arguments should be strings, the first should be a 4 letter table tag.
+      The list of preserved tables will be searched for a table with the given
+      tag, and saved to the file.
+	  <DT>
+      <A NAME="Scale">S</A>cale(factor[,yfactor][,ox,oy])
+    <DD>
+      All selected glyphs will be scaled (scale factors are in percent)
+      <UL>
+	<LI>
+	  with one argument they will be scaled uniformly about the glyph's center
+	  point
+	<LI>
+	  with two arguments the first specifies the scale factor for x, the second
+	  for y. Again scaling will be about the center point
+	<LI>
+	  with three arguments they will be scaled uniformly about the specified center
+	<LI>
+	  with four arguments they will be scaled differently about the specified center
+      </UL>
+	  <DT>
+      <A NAME="ScaleToEm">S</A>caleToEm(em-size)<BR>
+      ScaleToEm(ascent,descent)
+    <DD>
+      Change the font's ascent and descent and scale everything in the font to
+      be in the same proportion to the new em (which is the sum of ascent and descent)
+      value that it was to the old value.
+	  <DT>
+      <A NAME="Select">S</A>elect(arg1, arg2, ...)
+    <DD>
+      This clears out the current selection, then for each pair of arguments it
+      selects all glyphs between (inclusive) the bounds specified by the pair.
+      If there is a final singleton argument then that single glyph will be selected.
+      An argument may be specified by:
+      <UL>
+	<LI>
+	  an integer which specifies the location in the current font's encoding
+	<LI>
+	  a postscript unicode name which gets mapped into the current font's encoding
+	<LI>
+	  a unicode code point (0u61) which gets mapped to the current font's encoding
+	<LI>
+	  If Select is given exactly one argument and that argument is an array then
+	  the selection will be set to that specified in the array. So array[0] would
+	  set the selection of the glyph at encoding 0 and so forth. The array may
+	  have a different number of elements from that number of glyphs in the font
+	  but should otherwise be in the same format as that returned by the $selection
+	  psuedo-variable.
+      </UL>
+	  <DT>
+      <A NAME="SelectAll" HREF="editmenu.html#All">SelectAll</A>
+    <DD>
+      Selects all glyphs
+	  <DT>
+      <A NAME="SelectBitmap">SelectBitmap</A>(size)
+    <DD>
+      In a bitmap only font this selects which bitmap strike will be used for units
+      in the following metrics commands. If no bitmap is selected, then the units
+      should be in em-units, otherwise units will be in pixels of the given bitmap
+      strike. The size should be the pixelsize of the font. If you use anti-aliased
+      fonts then size should be set to (depth&lt;&lt;16)|pixel_size. A value of
+      -1 for size deselects all bitmaps (units become em-units).
+	  <DT>
+      <A NAME="SelectByATT">S</A>electByATT(type,tags,contents,search-type)
+    <DD>
+      See the <A HREF="selectbyatt.html">Select By ATT menu command</A>. The values
+      for type are:
+      <TABLE>
+	<TR>
+	  <TD><CODE>"Position"</CODE></TD>
+	  <TD>Simple position</TD>
+	</TR>
+	<TR>
+	  <TD><CODE>"Pair"</CODE></TD>
+	  <TD>Pairwise positioning (but not kerning)</TD>
+	</TR>
+	<TR>
+	  <TD><CODE>"Substitution"</CODE></TD>
+	  <TD>Simple substitution</TD>
+	</TR>
+	<TR>
+	  <TD><CODE>"AltSubs"</CODE></TD>
+	  <TD>Alternate substitution</TD>
+	</TR>
+	<TR>
+	  <TD><CODE>"MultSubs"</CODE></TD>
+	  <TD>Multiple substitution</TD>
+	</TR>
+	<TR>
+	  <TD><CODE>"Ligature"</CODE></TD>
+	  <TD>Ligature</TD>
+	</TR>
+	<TR>
+	  <TD><CODE>"LCaret"</CODE></TD>
+	  <TD>Ligature caret</TD>
+	</TR>
+	<TR>
+	  <TD><CODE>"Kern"</CODE></TD>
+	  <TD>Kerning</TD>
+	</TR>
+	<TR>
+	  <TD><CODE>"VKern"</CODE></TD>
+	  <TD>Vertical Kerning</TD>
+	</TR>
+	<TR>
+	  <TD><CODE>"Anchor"</CODE></TD>
+	  <TD>Anchor class</TD>
+	</TR>
+      </TABLE>
+      <P>
+      And for search_type
+      <OL>
+	<LI>
+	  Select Results
+	<LI>
+	  Merge Selection
+	<LI>
+	  Restrict Selection
+      </OL>
+	  <DT>
+      <A NAME="SelectChanged" HREF="editmenu.html#SelChanged">SelectChanged</A>([merge])
+    <DD>
+      Selects all changed glyphs. If merge is true, will or the current selection
+      with the new one.
+	  <DT>
+      <A NAME="SelectFewer">S</A>electFewer(arg1, arg2, ...)
+    <DD>
+      The same as the previous command except that it clears the selection on the
+      indicated glyphs, so it reduces the current selection.
+	  <DT>
+      <A NAME="SelectFewerSingletons">S</A>electFewerSingletons(arg1, ...)
+    <DD>
+	  <DT>
+      <A NAME="SelectHintingNeeded" HREF="editmenu.html#SelHinting">SelectHintingNeeded</A>([merge])
+    <DD>
+      Selects all glyphs which FontForge thinks need their hints updated.
+	  <DT>
+      <A NAME="SelectIf">S</A>electIf(arg1,arg2, ...)
+    <DD>
+      The same as Select() except that instead of signalling an error when a glyph
+      is not in the font it returns an error code.
+      <UL>
+	<LI>
+	  0 =&gt; there were no errors but no glyphs were selected
+	<LI>
+	  &lt;a positive number&gt; =&gt; there were no errors and this many glyphs
+	  were selected
+	<LI>
+	  -2 =&gt; there was an error and no glyphs were selected
+	<LI>
+	  -1 =&gt; there was an error and at least one glyph was selected before that.
+      </UL>
+	  <DT>
+      <A NAME="SelectInvert">S</A>electInvert()
+    <DD>
+      Inverts the selection.
+	  <DT>
+      <A NAME="SelectMore">S</A>electMore(arg1, arg2, ...)
+    <DD>
+      The same as the previous command except that it does not clear the selection
+      initially, so it extends the current selection.
+	  <DT>
+      <A NAME="SelectMoreSingletons">S</A>electMoreSingletons(arg1, ...)
+    <DD>
+	  <DT>
+      <A NAME="SelectNone" HREF="editmenu.html#Deselect">SelectNone</A>
+    <DD>
+      Deselects all glyphs
+	  <DT>
+      <A NAME="SelectSingletons">S</A>electSingletons(arg1, ...)
+    <DD>
+      Selects its arguments without looking for ranges.
+	  <DT>
+      <A NAME="SetCharCnt">S</A>etCharCnt(cnt)
+    <DD>
+      Sets the number of encoding slots in the font.
+	  <DT>
+      <A NAME="SetCharColor">S</A>etCharColor(color)
+    <DD>
+      Sets any currently selected glyphs to have the given color (expressed as
+      24 bit rgb (0xff0000 is red) with the special value of -2 meaning the default
+      color.
+	  <DT>
+      <A NAME="SetCharComment">S</A>etCharComment(comment)
+    <DD>
+      Sets the currently selected glyph to have the given comment. The comment
+      is converted via the current encoding to unicode.
+	  <DT>
+      <A NAME="SetCharCounterMask">S</A>etCharCounterMask(cg,hint-index,hint-index,...)
+    <DD>
+      Creates or sets the counter mask at index cg to contain the hints listed.
+      Hint index 0 corresponds to the first hstem hint, index 1 to the second hstem
+      hint, etc. vstem hints follow hstems.
+	  <DT>
+      <A NAME="SetCharName" HREF="charinfo.html#Unicode">SetCharName</A>(name[,set-from-name-flag])
+    <DD>
+      Sets the currently selected glyph to have the given name. If set-from-name-flag
+      is absent or is present and true then it will also set the unicode value
+      and the ligature string to match the name.
+	  <DT>
+      <A NAME="SetFondName">S</A>etFondName(fondname)
+    <DD>
+      Sets the FOND name of the font.
+	  <DT>
+      <A NAME="SetFontHasVerticalMetrics">S</A>etFontHasVerticalMetrics(flag)
+    <DD>
+      Sets whether the font has vertical metrics or not. A 0 value means it does
+      not, any other value means it does. Returns the old setting.
+	  <DT>
+      <A NAME="SetFontNames">S</A>etFontNames(fontname[,family[,fullname[,weight[,copyright-notice[,fontversion]]]]])
+    <DD>
+      Sets various postscript names associated with a font. If a name is omitted
+      (or is the empty string) it will not be changed.
+	  <DT>
+      <A NAME="SetFontOrder" HREF="fontinfo.html#PS-General">SetFontOrder</A>(order)
+    <DD>
+      Sets the font's order. Order must be either 2 (quadratic) or 3 (cubic). It
+      returns the old order.
+	  <DT>
+      <A NAME="SetGlyphChanged">S</A>etGlyphChanged(flag)
+    <DD>
+      If flag is 1 sets all selected glyphs to be changed, if flag is 0 sets them
+      unchanged.
+	  <DT>
+      <A NAME="SetGlyphClass">S</A>etGlyphClass(class-name)
+    <DD>
+      Sets the class on all selected glyphs to be one of "automatic", "none", "base",
+      "ligature", "mark" or "component".
+	  <DT>
+      <A NAME="SetGlyphTeX">S</A>etGlyphTeX(height,depth[,subpos,suppos])
+    <DD>
+      Sets the tex_height and tex_depth fields of this glyph. And the subscript
+      pos and superscript pos for math fonts.
+	  <DT>
+      <A NAME="SetItalicAngle">S</A>etItalicAngle(angle[,denom])
+    <DD>
+      Sets the postscript italic angle field appropriately. If denom is specified
+      then angle will be divided by denom before setting the italic angle field
+      (a hack to get real values). The angle should be in degrees.
+	  <DT>
+      <A NAME="SetKern">S</A>etKern(ch2,offset)
+    <DD>
+      Sets the kern between any selected glyphs and the glyph ch2 to be offset.
+      The first argument may be specified as in Select(), the second is an integer
+      representing the kern offset.
+	  <DT>
+      <A NAME="SetLBearing" HREF="metricsmenu.html#LBearing">SetLBearing</A>(lbearing[,relative])
+    <DD>
+      If the second argument is absent or zero then the left bearing will be set
+      to the first argument, if the second argument is 1 then the left bearing
+      will be incremented by the first, and if the argument is 2 then the left
+      bearing will be scaled by &lt;first argument&gt;/100.0 . In bitmap only fonts
+      see the comment at <A HREF="#SelectBitmap">SelectBitmap</A>
+      about units.
+	  <DT>
+      <A NAME="SetMacStyle">S</A>etMacStyle(val)<BR>
+      SetMacStyle(str)
+    <DD>
+      The argument may be either an integer or a string. If an integer it is a
+      set of bits expressing styles as defined on the mac
+      <TABLE CELLPADDING="2">
+	<TR>
+	  <TD>0x01</TD>
+	  <TD>Bold</TD>
+	</TR>
+	<TR>
+	  <TD>0x02</TD>
+	  <TD>Italic</TD>
+	</TR>
+	<TR>
+	  <TD>0x04</TD>
+	  <TD>Underline</TD>
+	</TR>
+	<TR>
+	  <TD>0x08</TD>
+	  <TD>Outline</TD>
+	</TR>
+	<TR>
+	  <TD>0x10</TD>
+	  <TD>Shadow</TD>
+	</TR>
+	<TR>
+	  <TD>0x20</TD>
+	  <TD>Condensed</TD>
+	</TR>
+	<TR>
+	  <TD>0x40</TD>
+	  <TD>Extended</TD>
+	</TR>
+	<TR>
+	  <TD>-1</TD>
+	  <TD>FontForge should guess the styles from the fontname</TD>
+	</TR>
+      </TABLE>
+      <P>
+      The bits 0x20 and 0x40 (condensed and extended) may not both be set.
+      <P>
+      If the argument is a string then the string should be the concatenation of
+      various style names, as "Bold Italic Condensed"
+	  <DT>
+      <A NAME="SetMaxpValue">S</A>etMaxpValue(field-name,value)
+    <DD>
+      The field-name must be a string and one of: <CODE>Zones, TwilightPntCnt,
+      StorageCnt, MaxStackDepth, FDEFs,</CODE> or <CODE>IDEFs</CODE>. Value must
+      be an integer.
+	  <DT>
+      <A NAME="SetOS2Value" HREF="fontinfo.html#TTF-Values">SetOS2Value</A>(field-name,field-value)
+    <DD>
+      This sets one of the fields of the OS/2 table to the given value. The field-name
+      must be one of the strings listed below:
+      <P>
+      <CODE>Weight, Width, FSType, IBMFamily, VendorID, Panose,<BR>
+      WinAscent, WinAscentIsOffset</CODE>
+      <P>
+      These are equivalent to the WinAscent field &amp; []Offset check box in
+      <A HREF="fontinfo.html#TTF-Values">Font Info-&gt;OS/2-&gt;Misc. </A>Where
+      WinAscentOffset controls whether WinAscent is treated as an absolute number
+      or as relative to the expected number.
+      <P>
+      <CODE>WinDescent, WinDescentIsOffset,<BR>
+      TypoAscent, TypoAscentIsOffset,<BR>
+      TypoDescent, TypoDescentIsOffset,<BR>
+      HHeadAscent, HHeadAscentIsOffset,<BR>
+      HHeadDescent, HHeadDescentIsOffset,<BR>
+      TypoLineGap, HHeadLineGap, VHeadLineGap,<BR>
+      SubXSize, SubYSize, SubXOffset, SubYOffset</CODE>
+      <P>
+      Sets the Subscript x/y sizes/offsets.
+      <P>
+      <CODE>SupXSize, SupYSize, SupXOffset, SupYOffset</CODE>
+      <P>
+      Sets the Superscript x/y sizes/offsets.
+      <P>
+      <CODE>StrikeOutSize, StrikeOutPos</CODE>
+      <P>
+      <P>
+      Usually the second argument is an integer but <CODE>VendorID</CODE> takes
+      a 4 character ASCII string, and <CODE>Panose</CODE> takes a 10 element integer
+      array.
+	  <DT>
+      <A NAME="SetPanose" HREF="fontinfo.html#Panose">SetPanose</A>(array) SetPanose(index,value)
+    <DD>
+      This sets the panose values for the font. Either it takes an array of 10
+      integers and sets all the values, or it takes two integer arguments and sets
+      <CODE>font.panose[index] = value</CODE>
+	  <DT>
+      <A NAME="SetPrefs">SetPrefs</A>(str,val[,val2])
+    <DD>
+      Sets the value of the preference item whose name is contained in str. If
+      the preference item has a real type then a second argument may be passed
+      and the value set will be val/val2. It can execute with no current font.
+	  <DT>
+      <A NAME="SetRBearing" HREF="metricsmenu.html#RBearing">SetRBearing</A>(rbearing[,relative])
+    <DD>
+      If the second argument is absent or zero then the right bearing will be set
+      to the first argument, if the second argument is 1 then the right bearing
+      will be incremented by the first, and if the argument is 2 then the right
+      bearing will be scaled by &lt;first argument&gt;/100.0 . In bitmap only fonts
+      see the comment at <A HREF="#SelectBitmap">SelectBitmap</A>
+      about units.
+	  <DT>
+      <A NAME="SetTeXParams" HREF="fontinfo.html#TeX">SetTeXParams</A>(type,design-size,slant,space,stretch,shrink,xheight,quad,extraspace[...])
+    <DD>
+      Sets the TeX (text) font parameters for the font.<BR>
+      Type may be 1, 2 or 3, depending on whether the font is text, math or math
+      extension. <BR>
+      DesignSize is the pointsize the font was designed for.<BR>
+      The remaining parameters are described in Knuth's The MetaFont Book, pp.
+      98-100.<BR>
+      Slant is expressed as a percentage. All the others are expressed in
+      em-units.<BR>
+      If type is 1 then the 9 indicated arguments are required. If type is 2 then
+      24 arguments are required (the remaining 15 are described in the metafont
+      book). If type is 3 then 15 arguments are required.
+	  <DT>
+      <A NAME="SetTTFName" HREF="fontinfo.html#TTF-Names">SetTTFName</A>(lang,nameid,utf8-string)
+    <DD>
+      Sets the indicated truetype name in the MS platform. Lang must be one of
+      the
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_name.html#lang3">language/locales</A>
+      supported by MS, and nameid must be one of the
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_name.html#enc4">small
+      integers used to indicate a standard name</A>, while the final argument should
+      be a utf8 encoded string which will become the value of that entry. A null
+      string ("") may be used to clear an entry.<BR>
+      Example: To set the SubFamily string in the American English
+      language/locale<BR>
+      <CODE>&nbsp; &nbsp;SetTTFName(0x409,2,"Bold Oblique")</CODE>
+	  <DT>
+      <A NAME="SetUnicodeValue">S</A>etUnicodeValue(uni[,set-from-value-flag])
+    <DD>
+      Sets the currently selected glyph to have the given unicode value. If
+      set-from-value-flag is absent or is present and true then it will also set
+      the name and the ligature string to match the value.
+	  <DT>
+      <A NAME="SetUniqueID">S</A>etUniqueID(value)
+    <DD>
+      Sets the postscript uniqueid field as requested. If you give a value of 0
+      then FontForge will pick a reasonable random number for you.
+	  <DT>
+      <A NAME="SetVKern">S</A>etVKern(ch2,offset)
+    <DD>
+      Sets the kern between any selected glyphs and the glyph ch2 to be offset.
+      The first argument may be specified as in Select(), the second is an integer
+      representing the kern offset.
+	  <DT>
+      <A NAME="SetVWidth" HREF="metricsmenu.html#vertical">SetVWidth</A>(vertical-width[,relative])
+    <DD>
+      If the second argument is absent or zero then the vertical width will be
+      set to the first argument, if the second argument is 1 then the vertical
+      width will be incremented by the first, and if the argument is 2 then the
+      vertical width will be scaled by &lt;first argument&gt;/100.0 . In bitmap
+      only fonts see the comment at
+      <A HREF="#SelectBitmap">SelectBitmap</A> about units.
+	  <DT>
+      <A NAME="SetWidth" HREF="metricsmenu.html#Width">SetWidth</A>(width[,relative])
+    <DD>
+      If the second argument is absent or zero then the width will be set to the
+      first argument, if the second argument is 1 then the width will be incremented
+      by the first, and if the argument is 2 then the width will be scaled by
+      &lt;first argument&gt;/100.0 . In bitmap only fonts see the comment at
+      <A HREF="#SelectBitmap">SelectBitmap</A> about units.
+	  <DT>
+      <A NAME="Shadow" HREF="elementmenu.html#Shadow">Shadow</A>(angle,outline-width,shadow-width)
+    <DD>
+      Converts the selected glyphs into shadowed versions of themselves.
+	  <DT>
+      <A NAME="Simplify" HREF="elementmenu.html#Simplify">Simplify</A>()<BR>
+      Simplify(flags,error[,tan_bounds[,bump_size[,error_denom,line_len_max]]])
+    <DD>
+      With no arguments it does the obvious. If flags is -1 it does a
+      <A HREF="elementmenu.html#Cleanup">Cleanup</A>, otherwise flags should be
+      a bitwise or of
+      <UL>
+	<LI>
+	  1 -- Slopes may change at the end points.
+	<LI>
+	  2 -- Points which are extremum may be removed
+	<LI>
+	  4 -- Corner points may be smoothed into curves
+	<LI>
+	  8 -- Smoothed points should be snapped to a horizontal or vertical tangent
+	  if they are close
+	<LI>
+	  16 -- Remove bumps from lines
+	<LI>
+	  32 -- make lines which are close to horizontal/vertical be horizontal/vertical
+	<LI>
+	  64 -- merge lines which are nearly parallel into one
+	<LI>
+	  128 -- change which point is the start point if a contour's start point is
+	  not an extremum
+      </UL>
+      <P>
+      The error argument is the number of font units by which the modified path
+      is allowed to stray from the true path.<BR>
+      The tan_bounds argument specifies the tangent of the angle between the curves
+      at which smoothing will stop (argument is multiplied by .01 before use).<BR>
+      And bump_size gives the maximum distance a bump can move from the line and
+      still be smoothed out.<BR>
+      If a fifth argument is given then it will be treated as the denominator of
+      the error term (so users can express fraction pixel distances).<BR>
+      Generally it is a bad idea to merge a line segment with any other than a
+      colinear line segment. The longer the line segment, the more likely that
+      such a merge will produce unpleasing results. The sixth argument, if present,
+      specifies the maximum length for lines which may be merged (anything longer
+      will not be merged).
+	  <DT>
+      <A NAME="Sin">S</A>in(val)
+    <DD>
+      Returns the sine of val. It can execute with no current font.
+	  <DT>
+      <A NAME="SizeOf">S</A>izeOf(arr)
+    <DD>
+      Returns the number of elements in an array. It can execute with no current
+      font.
+	  <DT>
+      <A NAME="Skew">S</A>kew(angle[,ox,oy])<BR>
+      Skew(angle-num,angle-denom[,ox,oy])
+    <DD>
+      All selected glyphs will be skewed by the given angle.
+	  <DT>
+      <A NAME="Sqrt">S</A>qrt(val)
+    <DD>
+      Returns the square root. It can execute with no current font.
+	  <DT>
+      <A NAME="Strcasecmp">S</A>trcasecmp(str1,str2)
+    <DD>
+      Compares the two strings ignoring case, returns zero if the two are equal,
+      a negative number if str1&lt;str2 and a positive number if str1&gt;str2.
+      It can execute with no current font. Note: There is no Strcmp function because
+      that is done with relational operators when applied to two strings.
+	  <DT>
+      <A NAME="Strcasestr">S</A>trcasestr(haystack,needle)
+    <DD>
+      Returns the index of the first occurrence of the string needle within the
+      string haystack ignoring case in the search (or -1 if not found). It can
+      execute with no current font.
+	  <DT>
+      <A NAME="Strlen">S</A>trlen(str)
+    <DD>
+      Returns the length of the string. It can execute with no current font.
+	  <DT>
+      <A NAME="Strrstr">S</A>trrstr(haystack,needle)
+    <DD>
+      Returns the index of the last occurrence of the string needle within the
+      string haystack (or -1 if not found). It can execute with no current font.
+	  <DT>
+      <A NAME="Strskipint">S</A>trskipint(str[,base])
+    <DD>
+      Parses as much of str as possible and returns the offset to the first character
+      that could not be parsed. It can execute with no current font.
+	  <DT>
+      <A NAME="Strstr">S</A>trstr(haystack,needle)
+    <DD>
+      Returns the index of the first occurrence of the string needle within the
+      string haystack (or -1 if not found). It can execute with no current font.
+	  <DT>
+      <A NAME="Strsub">S</A>trsub(str,start[,end])
+    <DD>
+      Returns a substring of the string argument. The substring begins at position
+      indexed by start and ends before the position indexed by end (if end is omitted
+      the end of the string will be used, the first position is position 0). Thus
+      <CODE>Strsub("abcdef",2,3) == "c" </CODE>and <CODE>Strsub("abcdef",2) ==
+      "cdef"</CODE>. It can execute with no current font.
+	  <DT>
+      <A NAME="Strtod">S</A>trtod(str)
+    <DD>
+      Converts a string to a real number. It can execute with no current font.
+	  <DT>
+      <A NAME="Strtol">S</A>trtol(str[,base])
+    <DD>
+      Parses as much of str as possible and returns the integer value it represents.
+      A second argument may be used to specify the base of the conversion (it defaults
+      to 10). Behavior is as for strtol(3). It can execute with no current font.
+	  <DT>
+      <A NAME="SubstitutionPoints" HREF="hintsmenu.html#SubstitutionPt">SubstitutionPoints</A>()
+    <DD>
+	</DL>
+      </TD>
+    </TR>
+    <TR VALIGN=TOP>
+      <TD BGCOLOR=yellow><A NAME="T">T</A></TD>
+      <TD><DL>
+	  <DT>
+      <A NAME="Tan">T</A>an(val)
+    <DD>
+      Returns the tangent of val. It can execute with no current font.
+	  <DT>
+      <A NAME="ToString">T</A>oString(arg)
+    <DD>
+      Converts its argument to a string. (the output is what the Print() command
+      would print) It can execute with no current font.
+	  <DT>
+      <A NAME="Transform" HREF="elementmenu.html#Transform">Transform</A>(t1,t2,t3,t4,t5,t6)
+    <DD>
+      Each argument will be divided by 100. and then all selected glyphs will be
+      transformed by this matrix
+	  <DT>
+      <A NAME="TypeOf">T</A>ypeOf(any)
+    <DD>
+      Returns a string naming the type of the argument:
+      <UL>
+	<LI>
+	  "Integer"
+	<LI>
+	  "Real"
+	<LI>
+	  "Unicode"
+	<LI>
+	  "String"
+	<LI>
+	  "Array"
+	<LI>
+	  "Void"<BR>
+	  (The following type is used internally, but I don't think the user can ever
+	  see it. It is included here for completeness)
+	<LI>
+	  "LValue"
+      </UL>
+      <P>
+      It can execute with no current font.
+	</DL>
+      </TD>
+    </TR>
+    <TR VALIGN=TOP>
+      <TD BGCOLOR=yellow><A NAME="U">U</A></TD>
+      <TD><DL>
+	  <DT>
+      <A NAME="UCodePoint">U</A>CodePoint(int)
+    <DD>
+      Converts the argument to a unicode code point (a special type used in several
+      commands). It can execute with no current font.
+	  <DT>
+      <A NAME="UnicodeFromName">U</A>nicodeFromName(name)
+    <DD>
+      Looks the string "name" up in FontForge's database of commonly used glyph
+      names and returns the unicode value associated with that name, or -1 if not
+      found. This does <EM>not</EM> check the current font (if any). It can execute
+      with no current font.
+	  <DT>
+      <A NAME="UnlinkReference" HREF="editmenu.html#Unlink">UnlinkReference</A>
+    <DD>
+      Unlinks all references within all selected glyphs
+	  <DT>
+      <A NAME="Utf8">U</A>tf8(int)
+    <DD>
+      Takes an integer [0,0x10ffff] and returns the utf8 string representing that
+      unicode code point. If passed an array of integers it will generate a utf8
+      string containing all of those unicode code points. (it does not expect to
+      get surrogates). It can execute with no current font.
+	</DL>
+      </TD>
+    </TR>
+    <TR VALIGN=TOP>
+      <TD BGCOLOR=yellow><A NAME="V">V</A></TD>
+      <TD><DL>
+	  <DT>
+      <A NAME="VFlip">V</A>Flip([about-y])
+    <DD>
+      All selected glyphs will be vertically flipped about the horizontal line
+      through y=about-y. If no argument is given then all selected glyphs will
+      be flipped about their central point.
+	  <DT>
+      <A NAME="VKernFromHKern" HREF="metricsmenu.html#VKernFromHKern">VKernFromHKern</A>()
+    <DD>
+      Removes all vertical kern pairs and classes from the current font, and then
+      generates new vertical kerning pairs by copying the horizontal kerning data
+      for a pair of glyphs to the vertically rotated versions of those glyphs.
+	</DL>
+      </TD>
+    </TR>
+    <TR VALIGN=TOP>
+      <TD BGCOLOR=yellow><A NAME="W">W</A></TD>
+      <TD><DL>
+	  <DT>
+      <A NAME="Wireframe" HREF="elementmenu.html#Wireframe">Wireframe</A>(angle,outline-width,shadow-width)
+    <DD>
+      Converts the selected glyphs into wireframed versions of themselves.
+	  <DT>
+      <A NAME="WorthOutputting">W</A>orthOutputting([arg])
+    <DD>
+      If there is no argument then a single glyph should be selected and the function
+      applies to that glyph, otherwise arg is as above. This returns true if the
+      glyph contains any splines, references, images or has had its width set.
+	  <DT>
+      <A NAME="WriteStringToFile">W</A>riteStringToFile("string","Filename"[,append])
+    <DD>
+      Creates the file named "Filename" and writes the string to it. If the append
+      flag is present and non-zero, then the string will be appended to the file.
+      This deals with null-terminated strings, not with byte arrays. Returns -1
+      on failure otherwise the number of bytes written. It can execute with no
+      current font.
+	</DL>
+      </TD>
+    </TR>
+    <TR VALIGN=TOP>
+      <TD BGCOLOR=yellow><A NAME="X">X</A></TD>
+      <TD>
+      </TD>
+    </TR>
+    <TR VALIGN=TOP>
+      <TD BGCOLOR=yellow><A NAME="Y">Y</A></TD>
+      <TD>
+      </TD>
+    </TR>
+    <TR VALIGN=TOP>
+      <TD BGCOLOR=yellow><A NAME="Z">Z</A></TD>
+      <TD>
+      </TD>
+    </TR>
+  </TABLE>
+  <P>
+  <P ALIGN=Center>
+  -- <A HREF="scripting.html">Up</A> --
+</DIV>
+</BODY></HTML>
