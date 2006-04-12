@@ -5361,13 +5361,27 @@ static void FontViewMenu_ShowSubFont(GtkMenuItem *menuitem, gpointer user_data) 
     SplineFont *new = mi->ti.userdata;
     MetricsView *mv, *mvnext;
     BDFFont *newbdf;
+    int wascompact = fv->normal!=NULL;
 
     for ( mv=fv->metrics; mv!=NULL; mv = mvnext ) {
 	/* Don't bother trying to fix up metrics views, just not worth it */
 	mvnext = mv->next;
 	GDrawDestroyWindow(mv->gw);
     }
+    if ( wascompact ) {
+	EncMapFree(fv->map);
+	fv->map = fv->normal;
+	fv->normal = NULL;
+	fv->selected = grealloc(fv->selected,fv->map->enccount);
+	memset(fv->selected,0,fv->map->enccount);
+    }
     CIDSetEncMap(fv,new);
+    if ( wascompact ) {
+	fv->normal = EncMapCopy(fv->map);
+	CompactEncMap(fv->map,fv->sf);
+	FontViewReformatOne(fv);
+	FVSetTitle(fv);
+    }
     newbdf = SplineFontPieceMeal(fv->sf,fv->filled->pixelsize,
 	    (fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0),
 	    NULL);
