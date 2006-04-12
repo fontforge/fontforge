@@ -495,8 +495,15 @@ int GIntGetResource(int index) {
     if ( _ggadget_use_gettext && index<2 ) {
 	static int gt_intarray[2];
 	if ( gt_intarray[0]==0 ) {
-	    gt_intarray[0] = strtol(S_("GGadget|ButtonSize|55"),NULL,10);
-	    gt_intarray[1] = strtol(S_("GGadget|ScaleFactor|100"),NULL,10);
+	    char *pt, *end;
+	    pt = S_("GGadget|ButtonSize|55");
+	    gt_intarray[0] = strtol(pt,&end,10);
+	    if ( pt==end )
+		gt_intarray[0]=55;
+	    pt = S_("GGadget|ScaleFactor|100");
+	    gt_intarray[1] = strtol(pt,&end,10);
+	    if ( pt==end )
+		gt_intarray[1]=100;
 	}
 return( gt_intarray[index] );
     }
