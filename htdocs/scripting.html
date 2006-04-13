@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 10-Apr-2006 -->
+  <!-- AP: Last modified: 13-Apr-2006 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -429,6 +429,8 @@ endloop
       <A HREF="#arrays">Arrays</A>
     <LI>
       <A HREF="#misc">Miscellaneous</A>
+    <LI>
+      <A HREF="#Deprecated">Deprecated</A> Names
   </UL>
   <H3 ALIGN=Center>
     Built-in procedures in <A NAME="alpha">alphabetic</A> order
@@ -837,23 +839,21 @@ endloop
   </H3>
   <UL>
     <LI>
-      <A HREF="scripting-alpha.html#CharInfo">CharInfo(str)</A>
-    <LI>
       <A HREF="scripting-alpha.html#DrawsSomething">DrawsSomething([arg])</A>
     <LI>
       <A HREF="scripting-alpha.html#GetPosSub">GetPosSub(feature-tag,script,lang)</A>
     <LI>
       <A HREF="scripting-alpha.html#GlyphInfo">GlyphInfo(str)</A>
     <LI>
-      <A HREF="scripting-alpha.html#SetCharColor">SetCharColor(color)</A>
+      <A HREF="scripting-alpha.html#SetGlyphColor">SetGlyphColor(color)</A>
     <LI>
-      <A HREF="scripting-alpha.html#SetCharComment">SetCharComment(comment)</A>
-    <LI>
-      <A HREF="scripting-alpha.html#SetCharName">SetCharName(name[,set-from-name-flag])</A>
+      <A HREF="scripting-alpha.html#SetGlyphComment">SetGlyphComment(comment)</A>
     <LI>
       <A HREF="scripting-alpha.html#SetGlyphChanged">SetGlyphChanged(flag)</A>
     <LI>
       <A HREF="scripting-alpha.html#SetGlyphClass">SetGlyphClass(class-name)</A>
+    <LI>
+      <A HREF="scripting-alpha.html#SetGlyphName">SetGlyphName(name[,set-from-name-flag])</A>
     <LI>
       <A HREF="scripting-alpha.html#SetUnicodeValue">SetUnicodeValue(uni[,set-from-value-flag])</A>
     <LI>
@@ -926,7 +926,7 @@ endloop
     <LI>
       <A HREF="scripting-alpha.html#ChangePrivateEntry">ChangePrivateEntry(key,val)</A>
     <LI>
-      <A HREF="scripting-alpha.html#ClearCharCounterMasks">ClearCharCounterMasks()</A>
+      <A HREF="scripting-alpha.html#ClearGlyphCounterMasks">ClearGlyphCounterMasks()</A>
     <LI>
       <A HREF="scripting-alpha.html#ClearHints">ClearHints()</A>
     <LI>
@@ -948,11 +948,11 @@ endloop
     <LI>
       <A HREF="scripting-alpha.html#PrivateToCvt">PrivateToCvt()</A>
     <LI>
-      <A HREF="scripting-alpha.html#ReplaceCharCounterMasks">ReplaceCharCounterMasks(array)</A>
+      <A HREF="scripting-alpha.html#ReplaceGlyphCounterMasks">ReplaceGlyphCounterMasks(array)</A>
     <LI>
       <A HREF="scripting-alpha.html#ReplaceCvtAt">ReplaceCvtAt(index,value)</A>
     <LI>
-      <A HREF="scripting-alpha.html#SetCharCounterMask">SetCharCounterMask(cg,hint-index,hint-index,...)</A>
+      <A HREF="scripting-alpha.html#SetGlyphCounterMask">SetGlyphCounterMask(cg,hint-index,hint-index,...)</A>
     <LI>
       <A HREF="scripting-alpha.html#SubstitutionPoints">SubstitutionPoints()</A>
   </UL>
@@ -1182,6 +1182,25 @@ endloop
     <LI>
       <A HREF="scripting-alpha.html#TypeOf">TypeOf(any)</A>
   </UL>
+  <H3 ALIGN=Center>
+    <A NAME="Deprecated">Deprecated Names</A>
+  </H3>
+  <UL>
+    <LI>
+      <A HREF="scripting-alpha.html#ClearGlyphCounterMasks">ClearCharCounterMasks()</A>
+    <LI>
+      <A HREF="scripting-alpha.html#GlyphInfo">CharInfo(str)</A>
+    <LI>
+      <A HREF="scripting-alpha.html#ReplaceGlyphCounterMasks">ReplaceCharCounterMasks(array)</A>
+    <LI>
+      <A HREF="scripting-alpha.html#SetGlyphColor">SetCharColor(color)</A>
+    <LI>
+      <A HREF="scripting-alpha.html#SetGlyphComment">SetCharComment(comment)</A>
+    <LI>
+      <A HREF="scripting-alpha.html#SetGlyphCounterMask">SetCharCounterMask(cg,hint-index,hint-index,...)</A>
+    <LI>
+      <A HREF="scripting-alpha.html#SetGlyphName">SetCharName(name[,set-from-name-flag])</A>
+  </UL>
   <P>
     <HR>
   <H2>
@@ -1218,7 +1237,14 @@ endloop
     <PRE>#!/usr/local/bin/fontforge
 #This is the sfddiff script which compares two fonts
 
-if ( Strtol($version)<20060330 ) Error( "Please upgrade to a more recent version of fontforge" ) endif flags=0x789 outfile="" while ( $argc > 1 &amp;&amp; Strsub($1,0,1)=="-" )
+if ( Strtol($version) &lt; 20060330 )
+  Error( "Please upgrade to a more recent version of fontforge" )
+endif
+
+flags=0x789
+outfile=""
+
+while ( $argc &gt; 1 &amp;&amp; Strsub($1,0,1)=="-" )
   temp = $1
   if ( Strsub(temp,1,2)=='-' )
     temp = Strsub(temp,1)
