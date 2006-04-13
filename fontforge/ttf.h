@@ -547,6 +547,7 @@ struct alltabs {
     FILE *sidh;
     FILE *charset;
     FILE *encoding;
+    FILE *globalsubrs;
     FILE *private;
     FILE *charstrings;
     FILE *fdselect;

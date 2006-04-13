@@ -99,16 +99,15 @@ typedef struct glyphinfo {
 	int idx;		/* initially index into psubrs array */
 				/*  then index into subrs array or -1 if none */
 	int cnt;		/* the usage count */
-	union {
-	    unsigned long sfmask1;
-	    unsigned long *sfmask;
-	} u;	/* Very few cid fonts have more than 32 subfonts, but be prepared for more cff supports 255, and the type1 format supports lots */
+	int fd;			/* Which sub font is it in */
+				/* -1 => used in more than one */
 	int next;
     } *psubrs;
     int pcnt, pmax;
     int hashed[HSH_SIZE];
     struct glyphbits {
 	SplineChar *sc;
+	int fd;			/* Which subfont is it in */
 	int bcnt;
 	struct bits {
 	    uint8 *data;
@@ -2064,7 +2063,10 @@ return;
 	memcpy(ps->data,gb->base,ps->len);
 	ps->next = gi->hashed[hash];
 	gi->hashed[hash] = ps->idx;
+	ps->fd = gi->active->fd;
     }
+    if ( ps->fd!=gi->active->fd )
+	ps->fd = -1;			/* used in multiple cid sub-fonts */
     gi->bits[gi->bcnt].psub_index = ps->idx;
     ++ps->cnt;
     gb->pt = gb->base;
@@ -2956,7 +2958,7 @@ return( NULL );
     chrs->next = cnt;
 return( chrs );
 }
-    
+
 struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds,int flags) {
     struct pschars *chrs = gcalloc(1,sizeof(struct pschars));
     int i, cnt, cid, max;
@@ -3109,11 +3111,19 @@ struct pschars *SplineFont2ChrsSubrs2(SplineFont *sf, int nomwid, int defwid,
     continue;
 	gi.active = &gi.gb[i];
 	SplineChar2PS2(sc,NULL,nomwid,defwid,NULL,NULL,flags,&gi);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+	gwwv_progress_next();
+#endif
     }
 
     for ( i=scnt=0; i<gi.pcnt; ++i ) {
+	/* A subroutine call takes somewhere between 2 and 4 bytes itself. */
+	/*  and we must add a return statement to the end. We don't want to */
+	/*  make things bigger */
 	if ( gi.psubrs[i].cnt*gi.psubrs[i].len>(gi.psubrs[i].cnt*4)+gi.psubrs[i].len+1 )
-	    ++scnt;
+	    gi.psubrs[i].idx = scnt++;
+	else
+	    gi.psubrs[i].idx = -1;
     }
     subrs = gcalloc(1,sizeof(struct pschars));
     subrs->cnt = scnt;
@@ -3122,20 +3132,16 @@ struct pschars *SplineFont2ChrsSubrs2(SplineFont *sf, int nomwid, int defwid,
     subrs->values = galloc(scnt*sizeof(unsigned char *));
     subrs->bias = scnt<1240 ? 107 :
 		  scnt<33900 ? 1131 : 32768;
-    for ( i=scnt=0; i<gi.pcnt; ++i ) {
-	if ( gi.psubrs[i].cnt*gi.psubrs[i].len>(gi.psubrs[i].cnt*4)+gi.psubrs[i].len+1 ) {
-	/* A subroutine call takes somewhere between 2 and 4 bytes itself. */
-	/*  and we must add a return statement to the end. We don't want to */
-	/*  make things bigger */
+    for ( i=0; i<gi.pcnt; ++i ) {
+	if ( gi.psubrs[i].idx != -1 ) {
+	    scnt = gi.psubrs[i].idx;
 	    subrs->lens[scnt] = gi.psubrs[i].len+1;
 	    subrs->values[scnt] = galloc(subrs->lens[scnt]);
 	    memcpy(subrs->values[scnt],gi.psubrs[i].data,gi.psubrs[i].len);
 	    subrs->values[scnt][gi.psubrs[i].len] = 11;	/* Add a return to end of subr */
-	    gi.psubrs[i].idx = scnt++;
-	} else
-	    gi.psubrs[i].idx = -1;
+	}
     }
-	
+
     chrs = gcalloc(1,sizeof(struct pschars));
     chrs->cnt = cnt;
     chrs->next = cnt;
@@ -3209,6 +3215,214 @@ struct pschars *SplineFont2ChrsSubrs2(SplineFont *sf, int nomwid, int defwid,
     free(gi.psubrs);
     free(gi.bits);
     *_subrs = subrs;
+return( chrs );
+}
+
+struct pschars *CID2ChrsSubrs2(SplineFont *cidmaster,struct fd2data *fds,
+	int flags, struct pschars **_glbls) {
+    struct pschars *chrs, *glbls;
+    int i, j, cnt, cid, max, fd;
+    int *scnts;
+    SplineChar *sc;
+    SplineFont *sf = NULL;
+    /* In a cid-keyed font, cid 0 is defined to be .notdef so there are no */
+    /*  special worries. If it is defined we use it. If it is not defined */
+    /*  we add it. */
+    GlyphInfo gi;
+    SplineChar dummynotdef;
+#ifdef FONTFORGE_CONFIG_TYPE3
+    Layer dummylayers[2];
+#endif
+
+    max = 0;
+    for ( i=0; i<cidmaster->subfontcnt; ++i ) {
+	if ( max<cidmaster->subfonts[i]->glyphcnt )
+	    max = cidmaster->subfonts[i]->glyphcnt;
+	MarkTranslationRefs(cidmaster->subfonts[i]);
+    }
+    cnt = 1;			/* for .notdef */
+    for ( cid = 1; cid<max; ++cid ) {
+	for ( i=0; i<cidmaster->subfontcnt; ++i ) {
+	    sf = cidmaster->subfonts[i];
+	    if ( cid<sf->glyphcnt && (sc=sf->glyphs[cid])!=NULL ) {
+		sc->ttf_glyph = -1;
+		sc->lsidebearing = 0x7fff;
+		if ( SCWorthOutputting(sc))
+		    ++cnt;
+	break;
+	    }
+	}
+    }
+
+    memset(&gi,0,sizeof(gi));
+    memset(&gi.hashed,-1,sizeof(gi.hashed));
+    gi.sf = sf;
+    gi.glyphcnt = cnt;
+    gi.bygid = NULL;
+    gi.gb = gcalloc(cnt,sizeof(struct glyphbits));
+    gi.pmax = 3*cnt;
+    gi.psubrs = galloc(gi.pmax*sizeof(struct potentialsubrs));
+
+    for ( cid = cnt = 0; cid<max; ++cid ) {
+	sf = NULL;
+	for ( i=0; i<cidmaster->subfontcnt; ++i ) {
+	    sf = cidmaster->subfonts[i];
+	    if ( cid<sf->glyphcnt && SCWorthOutputting(sf->glyphs[cid]) )
+	break;
+	}
+	if ( cid!=0 && i==cidmaster->subfontcnt ) {
+	    sc=NULL;
+	} else if ( i==cidmaster->subfontcnt ) {
+	    /* They didn't define CID 0 */
+	    sc = &dummynotdef;
+	    /* Place it in the final subfont (which is what sf points to) */
+	    memset(sc,0,sizeof(dummynotdef));
+	    dummynotdef.name = ".notdef";
+	    dummynotdef.parent = sf;
+	    dummynotdef.layer_cnt = 2;
+#ifdef FONTFORGE_CONFIG_TYPE3
+	    dummynotdef.layers = dummylayers;
+	    memset(dummylayers,0,sizeof(dummylayers));
+#endif
+	    dummynotdef.width = SFOneWidth(sf);
+	    if ( dummynotdef.width==-1 )
+		dummynotdef.width = (sf->ascent+sf->descent);
+	    gi.gb[cnt].sc = sc;
+	    gi.gb[cnt].fd = i = cidmaster->subfontcnt-1;
+#if 0 && HANYANG			/* Too much stuff knows the glyph cnt, can't refigure it here at the end */
+	} else if ( sf->glyphs[cid]->compositionunit ) {
+	    sc=NULL;	/* don't output it, should be in a subroutine */;
+#endif
+	} else {
+	    gi.gb[cnt].sc = sc = sf->glyphs[cid];
+	    gi.gb[cnt].fd = i;
+	}
+	if ( sc!=NULL ) {
+	    sc->lsidebearing = 0x7fff;
+	    gi.active = &gi.gb[cnt];
+	    sc->ttf_glyph = cnt++;
+	    SplineChar2PS2(sc,NULL,fds[i].nomwid,fds[i].defwid,NULL,NULL,flags,&gi);
+	}
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+	gwwv_progress_next();
+#endif
+    }
+
+    scnts = gcalloc( cidmaster->subfontcnt+1,sizeof(int));
+    for ( i=0; i<gi.pcnt; ++i ) {
+	gi.psubrs[i].idx = -1;
+	if ( gi.psubrs[i].cnt*gi.psubrs[i].len>(gi.psubrs[i].cnt*4)+gi.psubrs[i].len+1 )
+	    gi.psubrs[i].idx = scnts[gi.psubrs[i].fd+1]++;
+    }
+
+    glbls = gcalloc(1,sizeof(struct pschars));
+    glbls->cnt = scnts[0];
+    glbls->next = scnts[0];
+    glbls->lens = galloc(scnts[0]*sizeof(int));
+    glbls->values = galloc(scnts[0]*sizeof(unsigned char *));
+    glbls->bias = scnts[0]<1240 ? 107 :
+		  scnts[0]<33900 ? 1131 : 32768;
+    for ( fd=0; fd<cidmaster->subfontcnt; ++fd ) {
+	fds[fd].subrs = gcalloc(1,sizeof(struct pschars));
+	fds[fd].subrs->cnt = scnts[fd+1];
+	fds[fd].subrs->next = scnts[fd+1];
+	fds[fd].subrs->lens = galloc(scnts[fd+1]*sizeof(int));
+	fds[fd].subrs->values = galloc(scnts[fd+1]*sizeof(unsigned char *));
+	fds[fd].subrs->bias = scnts[fd+1]<1240 ? 107 :
+			      scnts[fd+1]<33900 ? 1131 : 32768;
+    }
+    free( scnts);
+
+    for ( i=0; i<gi.pcnt; ++i ) {
+	if ( gi.psubrs[i].idx != -1 ) {
+	    struct pschars *subrs = gi.psubrs[i].fd==-1 ? glbls : fds[gi.psubrs[i].fd].subrs;
+	    int scnt = gi.psubrs[i].idx;
+	    subrs->lens[scnt] = gi.psubrs[i].len+1;
+	    subrs->values[scnt] = galloc(subrs->lens[scnt]);
+	    memcpy(subrs->values[scnt],gi.psubrs[i].data,gi.psubrs[i].len);
+	    subrs->values[scnt][gi.psubrs[i].len] = 11;	/* Add a return to end of subr */
+	}
+    }
+
+
+    chrs = gcalloc(1,sizeof(struct pschars));
+    chrs->cnt = cnt;
+    chrs->next = cnt;
+    chrs->lens = galloc(cnt*sizeof(int));
+    chrs->values = galloc(cnt*sizeof(unsigned char *));
+    chrs->keys = galloc(cnt*sizeof(char *));
+    for ( i=0; i<cnt; ++i ) {
+	int len=0;
+	struct glyphbits *gb = &gi.gb[i];
+	chrs->keys[i] = copy(gb->sc->name);
+	for ( j=0; j<gb->bcnt; ++j ) {
+	    len += gb->bits[j].dlen;
+	    if ( gi.psubrs[ gb->bits[j].psub_index ].idx==-1 )
+		len += gi.psubrs[ gb->bits[j].psub_index ].len;
+	    else {
+		struct pschars *subrs = gi.psubrs[gb->bits[j].psub_index].fd==-1 ? glbls : fds[gi.psubrs[gb->bits[j].psub_index].fd].subrs;
+		int si = gi.psubrs[ gb->bits[j].psub_index ].idx - subrs->bias;
+		/* space for the number (subroutine index) */
+		if ( si>=-107 && si<=107 )
+		    ++len;
+		else if ( si>=-1131 && si<=1131 )
+		    len += 2;
+		else
+		    len += 3;
+		/* space for the subroutine operator */
+		++len;
+	    }
+	}
+	chrs->lens[i] = len+1;
+	chrs->values[i] = galloc(len+2); /* space for endchar and a final NUL (which is really meaningless, but makes me feel better) */
+
+	len = 0;
+	for ( j=0; j<gb->bcnt; ++j ) {
+	    memcpy(chrs->values[i]+len,gb->bits[j].data,gb->bits[j].dlen);
+	    len += gb->bits[j].dlen;
+	    if ( gi.psubrs[ gb->bits[j].psub_index ].idx==-1 ) {
+		memcpy(chrs->values[i]+len,gi.psubrs[ gb->bits[j].psub_index ].data,
+			gi.psubrs[ gb->bits[j].psub_index ].len);
+		len += gi.psubrs[ gb->bits[j].psub_index ].len;
+	    } else {
+		struct pschars *subrs = gi.psubrs[gb->bits[j].psub_index].fd==-1 ? glbls : fds[gi.psubrs[gb->bits[j].psub_index].fd].subrs;
+		int si = gi.psubrs[ gb->bits[j].psub_index ].idx - subrs->bias;
+		/* space for the number (subroutine index) */
+		if ( si>=-107 && si<=107 )
+		    chrs->values[i][len++] = si+139;
+		else if ( si>0 && si<=1131 ) {
+		    si-=108;
+		    chrs->values[i][len++] = (si>>8)+247;
+		    chrs->values[i][len++] = si&0xff;
+		} else if ( si>=-1131 && si<0 ) {
+		    si=(-si)-108;
+		    chrs->values[i][len++] = (si>>8)+251;
+		    chrs->values[i][len++] = si&0xff;
+		} else {
+		    chrs->values[i][len++] = 28;
+		    chrs->values[i][len++] = (si>>8)&0xff;
+		    chrs->values[i][len++] = si&0xff;
+		}
+		/* space for the subroutine operator */
+		if ( gi.psubrs[ gb->bits[j].psub_index ].fd==-1 ) {
+		    chrs->values[i][len++] = 29;
+		} else
+		    chrs->values[i][len++] = 10;
+	    }
+	}
+	chrs->values[i][len++] = 14;	/* endchar */
+	chrs->values[i][len] = '\0';
+    }
+    for ( i=0; i<gi.pcnt; ++i ) {
+	free(gi.psubrs[i].data);
+    }
+    for ( i=0; i<cnt; ++i ) {
+	free(gi.gb[i].bits);
+    }
+    free(gi.gb);
+    free(gi.psubrs);
+    free(gi.bits);
+    *_glbls = glbls;
 return( chrs );
 }
 
