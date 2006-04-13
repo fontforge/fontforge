@@ -2268,7 +2268,7 @@ return;
 return;
 	    psscalewarned = true;
 	}
-	if ( (strlen(d->sf->fontname)>31 || strlen(d->sf->familyname)>31) && !psfnlenwarned ) {
+	if ( (strlen(d->sf->fontname)>31 || (d->sf->familyname!=NULL && strlen(d->sf->familyname)>31)) && !psfnlenwarned ) {
 	    if ( gwwv_ask(_("Bad Font Name"),(const char **) buts,0,1,_("Some versions of Windows will refuse to install postscript fonts if the fontname is longer than 31 characters. Do you want to continue anyway?"))==1 )
 return;
 	    psfnlenwarned = true;
