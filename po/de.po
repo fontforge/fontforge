@@ -101,4 +101,4 @@ msgid "GGadget|ButtonSize|55"
 msgstr "60"
 
 msgid "GGadget|ScaleFactor|100"
-msgstr "-2147483648"
+msgstr "120"
