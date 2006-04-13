@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 9-Apr-2006 -->
-  <!-- AP: Last modified: 10-Apr-2006 -->
+  <!-- AP: Last modified: 13-Apr-2006 -->
   <TITLE>Scripting functions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -171,6 +171,12 @@ Generate(filename[,bitmaptype[,fmflags[,res[,mult-sfd-file[,namelist-name]]]]])
 	  <DT>
 	    <A NAME="AddExtrema" HREF="elementmenu.html#Add-Extrema">AddExtrema</A>()
 	  <DD>
+	    If a spline in a glyph reaches a maximum or minimum x or y value within a
+	    spline then break the spline so that there will be a point at all significant
+	    extrema. (If this point is too close to an end-point then the end-point itself
+	    may be moved. There are various other caveats. See
+	    Element-&gt;<A NAME="AddExtrema" HREF="elementmenu.html#Add-Extrema">AddExtrema</A>
+	    for more information).
 	  <DT>
 	    <A NAME="AddHHint" HREF="hintsmenu.html#HHint">AddHHint</A>(start,width)
 	  <DD>
@@ -243,13 +249,16 @@ a[4][0] = "Nested array";
 	  <DT>
 	    <A NAME="AutoCounter" HREF="hintsmenu.html#Counter">AutoCounter</A>()
 	  <DD>
+	    Generates (PostScript) counter masks for selected glyphs automagically.
 	  <DT>
 	    <A NAME="AutoHint" HREF="hintsmenu.html#AutoHint">AutoHint</A>()
 	  <DD>
-	    <B></B>
+	    Generates (PostScript) hints for selected glyphs automagically.
 	  <DT>
 	    <A NAME="AutoInstr" HREF="hintsmenu.html#AutoInstr">AutoInstr</A>()
 	  <DD>
+	    Generates (TrueType) instructions for selected glyphs. It doesn't do a good
+	    job.
 	  <DT>
 	    <A NAME="AutoKern" HREF="metricsmenu.html#Kern">AutoKern</A>(spacing,threshold[,kernfile])
 	  <DD>
@@ -259,6 +268,8 @@ a[4][0] = "Nested array";
 	  <DT>
 	    <A NAME="AutoTrace" HREF="elementmenu.html#AutoTrace">AutoTrace</A>()
 	  <DD>
+	    If you have either potrace or autotrace installed, this will invoke them
+	    on the selected glyphs to trace the background image and generate splines.
 	  <DT>
 	    <A NAME="AutoWidth" HREF="metricsmenu.html#Auto">AutoWidth</A>(spacing)
 	  <DD>
@@ -292,12 +303,17 @@ a[4][0] = "Nested array";
 	  <DT>
 	    <A NAME="BuildAccented" HREF="elementmenu.html#Accented">BuildAccented</A>()
 	  <DD>
+	    If any of the selected glyphs are accented, then clear them and create a
+	    new glyph by inserting references to the approriate base glyph and accents.
 	  <DT>
 	    <A NAME="BuildComposite" HREF="elementmenu.html#Accented">BuildComposite</A>()
 	  <DD>
+	    Similar to BuildAccented but will build any composite glyph -- ligatures
+	    and what not.
 	  <DT>
 	    <A NAME="BuildDuplicate" HREF="elementmenu.html#BuildDuplicate">BuildDuplicate</A>()
 	  <DD>
+	    Changes the encoding so that to encoding points share the same glyph.
 	</DL>
       </TD>
     </TR>
@@ -314,6 +330,8 @@ a[4][0] = "Nested array";
 	  <DT>
 	    <A NAME="CenterInWidth" HREF="metricsmenu.html#Center">CenterInWidth</A>()
 	  <DD>
+	    Centers any selected glyphs so that their right and left side bearings are
+	    equal.
 	  <DT>
 	    <A NAME="ChangePrivateEntry" HREF="fontinfo.html#Private">ChangePrivateEntry</A>(key,val)
 	  <DD>
@@ -328,7 +346,7 @@ a[4][0] = "Nested array";
 	  <DT>
 	    <A NAME="CharInfo">C</A>harInfo(str)
 	  <DD>
-	    Depreciated name for <A HREF="#GlyphInfo">GlyphInfo</A>
+	    Deprecated name for <A HREF="#GlyphInfo">GlyphInfo</A>
 	  <DT>
 	    <A NAME="CheckForAnchorClass">C</A>heckForAnchorClass(name)
 	  <DD>
@@ -376,14 +394,19 @@ a[4][0] = "Nested array";
 	  <DT>
 	    <A NAME="ClearCharCounterMasks">C</A>learCharCounterMasks()
 	  <DD>
+	    Deprecated name for <A HREF="#ClearGlyphCounterMasks">ClearGlyphCounterMasks</A>
+	  <DT>
+	    <A NAME="ClearGlyphCounterMasks">C</A>learGlyphCounterMasks()
+	  <DD>
 	    Clears any counter masks from the (one) selected glyph.
 	  <DT>
 	    <A NAME="ClearHints" HREF="hintsmenu.html#ClearHints">ClearHints</A>()
 	  <DD>
+	    Clears any (PostScript) hints from the selected instructions.
 	  <DT>
 	    <A NAME="ClearInstrs">C</A>learInstrs()
 	  <DD>
-	    From selected glyphs
+	    Clears any (TrueType) instructions from selected glyphs
 	  <DT>
 	    <A NAME="ClearPrivateEntry" HREF="fontinfo.html#Private">ClearPrivateEntry</A>(key)
 	  <DD>
@@ -735,11 +758,14 @@ a[4][0] = "Nested array";
 	  <DT>
 	    <A NAME="DontAutoHint" HREF="hintsmenu.html#DontAutoHint">DontAutoHint</A>()
 	  <DD>
+	    Mark any selected glyphs so that they will not be AutoHinted when saving
+	    the font. (This flag is cleared if the user explicitely AutoHints the glyph
+	    himself).
 	  <DT>
 	    <A NAME="DrawsSomething">D</A>rawsSomething([arg])
 	  <DD>
-	    Arg is as above. This returns true if the glyph contains any splines, references
-	    or images.
+	    Arg is as in <A HREF="#InFont">InFont</A>. This returns true if the glyph
+	    contains any splines, references or images.
 	</DL>
       </TD>
     </TR>
@@ -1083,7 +1109,8 @@ a[4][0] = "Nested array";
 	    <A NAME="GenerateFamily" HREF="filemenu.html#GenerateMac">GenerateFamily</A>(filename,bitmaptype,fmflags,array-of-font-filenames)
 	  <DD>
 	    Generates a mac font family (FOND) from the fonts (which must be loaded)
-	    in the array-of-font-filenames. filename, bitmaptype, fmflags are as above.
+	    in the array-of-font-filenames. filename, bitmaptype, fmflags are as in
+	    <A HREF="#Generate">Generate</A>.
 	    <BLOCKQUOTE>
 	      <PRE>#!/usr/local/bin/fontforge
 a = Array($argc-1)
@@ -1113,7 +1140,8 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
 	  <DT>
 	    <A NAME="GetMaxpValue">G</A>etMaxpValue(field-name)
 	  <DD>
-	    Field name must be as above.
+	    Field name can be the same set of tag strings as
+	    <A HREF="#SetMaxpValue">SetMaxpValue</A>.
 	  <DT>
 	    <A NAME="GetOS2Value" HREF="fontinfo.html#TTF-Values">GetOS2Value</A>(field-name)
 	  <DD>
@@ -1209,9 +1237,9 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
 	  <DT>
 	    <A NAME="GetTTFName">G</A>etTTFName(lang,nameid)
 	  <DD>
-	    The lang and nameid arguments are as above. This returns the current value
-	    as a utf8 encoded string. Combinations which are not present will be returned
-	    as "".
+	    The lang and nameid arguments are as in <A HREF="#SetTTFName">SetTTFName</A>.
+	    This returns the current value as a utf8 encoded string. Combinations which
+	    are not present will be returned as "".
 	  <DT>
 	    <B><A NAME="GlyphInfo">GlyphInfo</A></B>(str)<BR>
 	    GlyphInfo("Kern",glyph-spec)<BR>
@@ -1436,8 +1464,9 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	  <DT>
 	    <A NAME="Inline" HREF="elementmenu.html#Inline">Inline</A>(width,gap)
 	  <DD>
-	    Produces an outline as above, and then shrinks the glyph so that it fits
-	    inside the outline. In other words, it produces an inlined glyph.
+	    Produces an outline as in <A HREF="#Outline">Outline</A>, and then shrinks
+	    the glyph so that it fits inside the outline. In other words, it produces
+	    an inlined glyph.
 	  <DT>
 	    <A NAME="Int">Int</A>(real)
 	  <DD>
@@ -1488,6 +1517,9 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	  <DT>
 	    <A NAME="LoadEncodingFile">L</A>oadEncodingFile(filename)
 	  <DD>
+	    Reads an encoding file and stores it in FontForge's list of possible encodings.
+	    See Encoding-&gt;<A HREF="encodingmenu.html#Load">LoadEncoding</A> for more
+	    info.
 	  <DT>
 	    <A NAME="LoadNamelist">L</A>oadNamelist(filename)
 	  <DD>
@@ -1879,8 +1911,7 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	    <A NAME="Quit" HREF="filemenu.html#Quit">Quit</A>(status)
 	  <DD>
 	    Causes FontForge to exit with the given status (no attempt is made to save
-	    unsaved files). This command can execute with no current font. 
-	      <HR>
+	    unsaved files). This command can execute with no current font.
 	</DL>
       </TD>
     </TR>
@@ -1971,8 +2002,6 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	    <A NAME="RemoveAllVKerns" HREF="metricsmenu.html#VRemove">RemoveAllVKerns</A>()
 	  <DD>
 	    Removes all vertical kern pairs and classes from the current font.
-	  <DD>
-	      <HR>
 	  <DT>
 	    <A NAME="RemoveAnchorClass">R</A>emoveAnchorClass(name)
 	  <DD>
@@ -1981,7 +2010,8 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	    <A NAME="RemoveATT">R</A>emoveATT(type,script-lang,tag)
 	  <DD>
 	    Removes any feature tags which match the arguments (which are essentially
-	    the same as above, except that any of them may be "*" which will match anything).
+	    the same as <A HREF="#AddATT">AddAAT</A>, except that any of them may be
+	    "*" which will match anything).
 	  <DT>
 	    <A NAME="RemoveOverlap" HREF="elementmenu.html#Remove">RemoveOverlap</A>()
 	  <DD>
@@ -1997,6 +2027,10 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	    Renames all the glyphs in the current font according to the namelist.
 	  <DT>
 	    <A NAME="ReplaceCharCounterMasks">R</A>eplaceCharCounterMasks(array)
+	  <DD>
+	    Deprecated name for <A HREF="#ReplaceGlyphCounterMasks">ReplaceGlyphCounterMasks</A>
+	  <DT>
+	    <A NAME="ReplaceGlyphCounterMasks">R</A>eplaceGlyphCounterMasks(array)
 	  <DD>
 	    This requires that there be exactly one glyph selected. It will create a
 	    set of counter masks for that glyph. The single argument must be an array
@@ -2215,11 +2249,13 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	  <DT>
 	    <A NAME="SelectFewer">S</A>electFewer(arg1, arg2, ...)
 	  <DD>
-	    The same as the previous command except that it clears the selection on the
-	    indicated glyphs, so it reduces the current selection.
+	    The same as in <A HREF="#Select">Select</A> except that it clears the selection
+	    on the indicated glyphs, so it reduces the current selection.
 	  <DT>
 	    <A NAME="SelectFewerSingletons">S</A>electFewerSingletons(arg1, ...)
 	  <DD>
+	    Same as <A HREF="scripting-alpha.html#SelectSingletons">SelectSingletons</A>
+	    except it removes single glyphs from the current selection.
 	  <DT>
 	    <A NAME="SelectHintingNeeded" HREF="editmenu.html#SelHinting">SelectHintingNeeded</A>([merge])
 	  <DD>
@@ -2247,11 +2283,13 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	  <DT>
 	    <A NAME="SelectMore">S</A>electMore(arg1, arg2, ...)
 	  <DD>
-	    The same as the previous command except that it does not clear the selection
-	    initially, so it extends the current selection.
+	    The same as in <A HREF="#Select">Select</A> except that it does not clear
+	    the selection initially, so it extends the current selection.
 	  <DT>
 	    <A NAME="SelectMoreSingletons">S</A>electMoreSingletons(arg1, ...)
 	  <DD>
+	    Same as <A HREF="scripting-alpha.html#SelectSingletons">SelectSingletons</A>
+	    except it adds single glyphs from the current selection.
 	  <DT>
 	    <A NAME="SelectNone" HREF="editmenu.html#Deselect">SelectNone</A>
 	  <DD>
@@ -2267,22 +2305,38 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	  <DT>
 	    <A NAME="SetCharColor">S</A>etCharColor(color)
 	  <DD>
+	    Deprecated name for <A HREF="SetGlyphColor">SetGlyphColor</A>
+	  <DT>
+	    <A NAME="SetCharComment">S</A>etCharComment(comment)
+	  <DD>
+	    Deprecated name for <A HREF="SetGlyphComment">SetGlyphComment</A>
+	  <DT>
+	    <A NAME="SetCharCounterMask">S</A>etCharCounterMask(cg,hint-index,hint-index,...)
+	  <DD>
+	    Deprecated name for <A HREF="SetGlyphCounterMask">SetGlyphCounterMask</A>
+	  <DT>
+	    <A NAME="SetCharName" HREF="charinfo.html#Unicode">SetCharName</A>(name[,set-from-name-flag])
+	  <DD>
+	    Deprecated name for <A HREF="SetGlyphName">SetGlyphName</A>
+	  <DT>
+	    <A NAME="SetGlyphColor">S</A>etGlyphColor(color)
+	  <DD>
 	    Sets any currently selected glyphs to have the given color (expressed as
 	    24 bit rgb (0xff0000 is red) with the special value of -2 meaning the default
 	    color.
 	  <DT>
-	    <A NAME="SetCharComment">S</A>etCharComment(comment)
+	    <A NAME="SetGlyphComment">S</A>etGlyphComment(comment)
 	  <DD>
 	    Sets the currently selected glyph to have the given comment. The comment
 	    is converted via the current encoding to unicode.
 	  <DT>
-	    <A NAME="SetCharCounterMask">S</A>etCharCounterMask(cg,hint-index,hint-index,...)
+	    <A NAME="SetGlyphCounterMask">S</A>etGlyphCounterMask(cg,hint-index,hint-index,...)
 	  <DD>
 	    Creates or sets the counter mask at index cg to contain the hints listed.
 	    Hint index 0 corresponds to the first hstem hint, index 1 to the second hstem
 	    hint, etc. vstem hints follow hstems.
 	  <DT>
-	    <A NAME="SetCharName" HREF="charinfo.html#Unicode">SetCharName</A>(name[,set-from-name-flag])
+	    <A NAME="SetGlyphName" HREF="charinfo.html#Unicode">SetGlyphName</A>(name[,set-from-name-flag])
 	  <DD>
 	    Sets the currently selected glyph to have the given name. If set-from-name-flag
 	    is absent or is present and true then it will also set the unicode value
@@ -2730,8 +2784,9 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	    <A NAME="WorthOutputting">W</A>orthOutputting([arg])
 	  <DD>
 	    If there is no argument then a single glyph should be selected and the function
-	    applies to that glyph, otherwise arg is as above. This returns true if the
-	    glyph contains any splines, references, images or has had its width set.
+	    applies to that glyph, otherwise arg is as in <A HREF="#InFont">InFont</A>.
+	    This returns true if the glyph contains any splines, references, images or
+	    has had its width set.
 	  <DT>
 	    <A NAME="WriteStringToFile">W</A>riteStringToFile("string","Filename"[,append])
 	  <DD>
