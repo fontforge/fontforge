@@ -169,6 +169,16 @@
 /*									      */
 
 
+/* FontForge used to do a fairly bad job of using subroutines in otf output   */
+/*  only using them when we had references and only if the refs matched all   */
+/*  sorts of archane restrictions. I think I've an algorithm which works much */
+/*  better now (still not as good as Adobe's). But just in case there's a     */
+/*  horrible flaw of which I'm unaware, I'll make it configurable	      */
+/*									      */
+#define FONTFORGE_CONFIG_OTF_USE_SUBRS
+/*									      */
+
+
 /* Werner wants to be able to see the raw (unscaled) data for the location of */
 /*  points (in the points window of the debugger). I'm not sure that is       */
 /*  generally a good idea (I think it makes the dlg look unsymetric).         */

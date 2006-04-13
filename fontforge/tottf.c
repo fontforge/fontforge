@@ -1849,6 +1849,20 @@ int SFFigureDefWidth(SplineFont *sf, int *_nomwid) {
 return( defwid );
 }
 
+static void ATFigureDefWidth(SplineFont *sf, struct alltabs *at, int subfont) {
+    int nomwid, defwid;
+
+    defwid = SFFigureDefWidth(sf,&nomwid);
+    if ( subfont==-1 )
+	at->defwid = defwid;
+    else
+	at->fds[subfont].defwid = defwid;
+    if ( subfont==-1 )
+	at->nomwid = nomwid;
+    else
+	at->fds[subfont].nomwid = nomwid;
+}
+
 static void dumpcffprivate(SplineFont *sf,struct alltabs *at,int subfont,
 	int subrcnt) {
     char *pt;
@@ -1864,17 +1878,16 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at,int subfont,
 
     /* The private dict is not in an index, so no index header. Just the data */
 
-    defwid = SFFigureDefWidth(sf,&nomwid);
+    if ( subfont==-1 )
+	defwid = at->defwid;
+    else
+	defwid = at->fds[subfont].defwid;
     dumpintoper(private,defwid,20);		/* Default Width */
     if ( subfont==-1 )
-	at->defwid = defwid;
+	nomwid = at->nomwid;
     else
-	at->fds[subfont].defwid = defwid;
+	nomwid = at->fds[subfont].nomwid;
     dumpintoper(private,nomwid,21);		/* Nominative Width */
-    if ( subfont==-1 )
-	at->nomwid = nomwid;
-    else
-	at->fds[subfont].nomwid = nomwid;
 
     bs = SplineFontIsFlexible(sf,at->gi.flags);
     hasblue = PSDictHasEntry(sf->private,"BlueValues")!=NULL;
@@ -2252,7 +2265,7 @@ static void finishupcid(SplineFont *sf,struct alltabs *at) {
 
     storesid(at,NULL);		/* end the strings index */
     strlen = ftell(at->sidf) + (shlen = ftell(at->sidh));
-    glen = sizeof(short);	/* Single entry: 0, no globals */
+    glen = ftell(at->globalsubrs);
     /* No encodings */
     csetlen = ftell(at->charset);
     fdsellen = ftell(at->fdselect);
@@ -2291,7 +2304,7 @@ static void finishupcid(SplineFont *sf,struct alltabs *at) {
     }
 
     /* Global Subrs */
-    putshort(at->cfff,0);
+    if ( !ttfcopyfile(at->cfff,at->globalsubrs,base+strlen,"CFF-GlobalSubrs")) at->error = true;
 
     /* Charset */
     if ( !ttfcopyfile(at->cfff,at->charset,base+strlen+glen,"CFF-Charset")) at->error = true;
@@ -2469,21 +2482,22 @@ static int dumptype2glyphs(SplineFont *sf,struct alltabs *at) {
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_change_stages(2+at->gi.strikecnt);
 #endif
-#define OTF_USE_SUBRS
-#if defined(OTF_USE_SUBRS)
+
+#if defined(FONTFORGE_CONFIG_OTF_USE_SUBRS)
     if ((chrs =SplineFont2ChrsSubrs2(sf,at->nomwid,at->defwid,at->gi.bygid,at->gi.gcnt,at->gi.flags,&subrs))==NULL )
 return( false );
 #else
     if ((subrs = SplineFont2Subrs2(sf,at->gi.flags))==NULL )
 return( false );
 #endif
+    ATFigureDefWidth(sf,at,-1);
     dumpcffprivate(sf,at,-1,subrs->next);
     if ( subrs->next!=0 )
 	_dumpcffstrings(at->private,subrs);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_next_stage();
 #endif
-#if !defined(OTF_USE_SUBRS)
+#if !defined(FONTFORGE_CONFIG_OTF_USE_SUBRS)
     chrs = SplineFont2Chrs2(sf,at->nomwid,at->defwid,subrs,at->gi.flags,at->gi.bygid,at->gi.gcnt);
 #endif
     at->charstrings = dumpcffstrings(chrs);
@@ -2508,6 +2522,7 @@ return( true );
 
 static int dumpcidglyphs(SplineFont *sf,struct alltabs *at) {
     int i;
+    struct pschars *glbls = NULL, *chrs;
 
     at->cfff = tmpfile();
     at->sidf = tmpfile();
@@ -2515,24 +2530,45 @@ static int dumpcidglyphs(SplineFont *sf,struct alltabs *at) {
     at->charset = tmpfile();
     at->fdselect = tmpfile();
     at->fdarray = tmpfile();
+    at->globalsubrs = tmpfile();
 
     at->fds = gcalloc(sf->subfontcnt,sizeof(struct fd2data));
     for ( i=0; i<sf->subfontcnt; ++i ) {
 	at->fds[i].private = tmpfile();
+	ATFigureDefWidth(sf->subfonts[i],at,i);
+    }
+#if defined(FONTFORGE_CONFIG_OTF_USE_SUBRS)
+    if ( (chrs = CID2ChrsSubrs2(sf,at->fds,at->gi.flags,&glbls))==NULL )
+return( false );
+    for ( i=0; i<sf->subfontcnt; ++i ) {
+	dumpcffprivate(sf->subfonts[i],at,i,at->fds[i].subrs->next);
+	if ( at->fds[i].subrs->next!=0 )
+	    _dumpcffstrings(at->fds[i].private,at->fds[i].subrs);
+    }
+    _dumpcffstrings(at->globalsubrs,glbls);
+    PSCharsFree(glbls);
+#else
+    for ( i=0; i<sf->subfontcnt; ++i ) {
 	if ( (at->fds[i].subrs = SplineFont2Subrs2(sf->subfonts[i],at->gi.flags))==NULL )
 return( false );
 	dumpcffprivate(sf->subfonts[i],at,i,at->fds[i].subrs->next);
 	if ( at->fds[i].subrs->next!=0 )
 	    _dumpcffstrings(at->fds[i].private,at->fds[i].subrs);
     }
+    putshort(at->globalsubrs,0);		/* No globals */
+#endif
 
     dumpcffheader(sf,at->cfff);
     dumpcffnames(sf,at->cfff);
     dumpcffcidset(sf,at);
     dumpcfffdselect(sf,at);
     dumpcffdictindex(sf,at);
-    if ( (at->charstrings = dumpcffstrings(CID2Chrs2(sf,at->fds,at->gi.flags)))==NULL )
+#if defined(FONTFORGE_CONFIG_OTF_USE_SUBRS)
+    if ( (at->charstrings = dumpcffstrings(chrs))==NULL )
+#else
+    if ( (at->charstrings = dumpcffstrings(chrs = CID2Chrs2(sf,at->fds,at->gi.flags)))==NULL )
 return( false );
+#endif
     for ( i=0; i<sf->subfontcnt; ++i )
 	PSCharsFree(at->fds[i].subrs);
     dumpcffcidtopdict(sf,at);
