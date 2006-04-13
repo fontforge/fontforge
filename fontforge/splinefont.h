@@ -1224,6 +1224,9 @@ extern struct pschars *SplineFont2Subrs2(SplineFont *sf,int flags);
 extern struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
 	struct pschars *subrs,int flags/*, enum fontformat format*/,
 	const int *bygids,int gcnt);
+extern struct pschars *SplineFont2ChrsSubrs2(SplineFont *sf, int nomwid,
+	int defwid, const int *bygid, int cnt, int flags,
+	struct pschars **_subrs);
 extern struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds,int flags);
 enum bitmapformat { bf_bdf, bf_ttf, bf_sfnt_dfont, 
 	bf_nfntmacbin, /*bf_nfntdfont, */bf_fon, bf_fnt, bf_otb, bf_palm,

@@ -2454,7 +2454,7 @@ static void dumpcffcidhmtx(struct alltabs *at,SplineFont *_sf) {
 
 static int dumptype2glyphs(SplineFont *sf,struct alltabs *at) {
     int i;
-    struct pschars *subrs;
+    struct pschars *subrs, *chrs;
 
     at->cfff = tmpfile();
     at->sidf = tmpfile();
@@ -2469,15 +2469,24 @@ static int dumptype2glyphs(SplineFont *sf,struct alltabs *at) {
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_change_stages(2+at->gi.strikecnt);
 #endif
+#define OTF_USE_SUBRS
+#if defined(OTF_USE_SUBRS)
+    if ((chrs =SplineFont2ChrsSubrs2(sf,at->nomwid,at->defwid,at->gi.bygid,at->gi.gcnt,at->gi.flags,&subrs))==NULL )
+return( false );
+#else
     if ((subrs = SplineFont2Subrs2(sf,at->gi.flags))==NULL )
 return( false );
+#endif
     dumpcffprivate(sf,at,-1,subrs->next);
     if ( subrs->next!=0 )
 	_dumpcffstrings(at->private,subrs);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_next_stage();
 #endif
-    at->charstrings = dumpcffstrings(SplineFont2Chrs2(sf,at->nomwid,at->defwid,subrs,at->gi.flags,at->gi.bygid,at->gi.gcnt));
+#if !defined(OTF_USE_SUBRS)
+    chrs = SplineFont2Chrs2(sf,at->nomwid,at->defwid,subrs,at->gi.flags,at->gi.bygid,at->gi.gcnt);
+#endif
+    at->charstrings = dumpcffstrings(chrs);
     PSCharsFree(subrs);
     if ( at->charstrings == NULL )
 return( false );
