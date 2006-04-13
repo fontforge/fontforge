@@ -69,11 +69,61 @@
 /*  titutions may be put in a subr. UNLESS all the other references in a */
 /*  refering character contain no hints */
 
+/* That's very complex. And it doesn't do a very good job. */
+/* For type2 let's take all strings bounded by either moveto or hintmask operators */
+/*  store these as potential subroutines. So a glyph becomes a sequence of    */
+/*  potential subroutine calls preceded by the glyph header (width, hint decl,*/
+/*  counter declarations, etc.) and intersperced by hintmask/moveto operators */
+/* Each time we get a potential subr we hash it and see if we've used that    */
+/*  string before. If we have then we merge the two. Otherwise it's a new one.*/
+/* Then at the end we see what strings get used often enough to go into subrs */
+/*  we create the subrs array from that.				      */
+/* Then each glyph. We insert the preamble. We check of the potential subroutine */
+/*  became a real subroutine. If so we call it, else we insert the data inline*/
+/*  Do the same for the next hintmask/moveto and potential subroutine...      */
+
 typedef struct growbuf {
     unsigned char *pt;
     unsigned char *base;
     unsigned char *end;
 } GrowBuf;
+
+#define HSH_SIZE	511
+/* In type2 charstrings we divide every character into bits where a bit is */
+/* bounded by a hintmask/moveto. Each of these is a potential subroutine and */
+/* is stored here */
+typedef struct glyphinfo {
+    struct potentialsubrs {
+	uint8 *data;		/* the charstring of the subr */
+	int len;		/* the length of the charstring */
+	int idx;		/* initially index into psubrs array */
+				/*  then index into subrs array or -1 if none */
+	int cnt;		/* the usage count */
+	union {
+	    unsigned long sfmask1;
+	    unsigned long *sfmask;
+	} u;	/* Very few cid fonts have more than 32 subfonts, but be prepared for more cff supports 255, and the type1 format supports lots */
+	int next;
+    } *psubrs;
+    int pcnt, pmax;
+    int hashed[HSH_SIZE];
+    struct glyphbits {
+	SplineChar *sc;
+	int bcnt;
+	struct bits {
+	    uint8 *data;
+	    int dlen;
+	    int psub_index;
+	} *bits;
+    } *gb, *active;
+    SplineFont *sf;
+    int glyphcnt;
+    int subfontcnt;
+    int bcnt, bmax;
+    struct bits *bits;		/* For current glyph */
+    const int *bygid;
+    int justbroken;
+} GlyphInfo;
 
 static void GrowBuffer(GrowBuf *gb) {
     if ( gb->base==NULL ) {
@@ -164,8 +214,10 @@ struct hintdb {
     unsigned int noconflicts: 1;
     unsigned int startset: 1;
     unsigned int skiphm: 1;		/* Set when coming back to the start point of a contour. hintmask should be set the first time, not the second */
+    unsigned int donefirsthm: 1;
     int cursub;				/* Current subr number */
     BasePoint current;
+    GlyphInfo *gi;
 };
 
 static real myround( real pos, int round ) {
@@ -1889,11 +1941,7 @@ static void AddNumber2(GrowBuf *gb, real pos, int round) {
     if ( pos!=floor(pos )) {
 #if 0
 	if ( !real_warn ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	    gwwv_post_notice(_("Not integral"),_("This font contains at least one non-integral coordinate.\nThis is perfectly legal, but it is unusual and does\nincrease the size of the generated font file. You might\nwant to try using\n  Element->Round To Int\non the entire font."));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_notice(_("Not integral"),_("This font contains at least one non-integral coordinate.\nThis is perfectly legal, but it is unusual and does\nincrease the size of the generated font file. You might\nwant to try using\n  Element->Round To Int\non the entire font."));
-#endif
 	    real_warn = true;
 	}
 #endif
@@ -1952,7 +2000,91 @@ static void CounterHints2(GrowBuf *gb, SplineChar *sc, int hcnt) {
 	AddMask2(gb,sc->countermasks[i],hcnt,20);	/* cntrmask */
 }
 
-static int HintSetup2(GrowBuf *gb,struct hintdb *hdb, SplinePoint *to ) {
+static void StartNextSubroutine(GrowBuf *gb,struct hintdb *hdb) {
+    GlyphInfo *gi = hdb->gi;
+
+    if ( gi==NULL )
+return;
+    /* Store everything in the grow buf into the data/dlen of the next bit */
+    if ( gi->bcnt>=gi->bmax )
+	gi->bits = grealloc(gi->bits,(gi->bmax+=20)*sizeof(struct bits));
+    gi->bits[gi->bcnt].dlen = gb->pt-gb->base;
+    gi->bits[gi->bcnt].data = galloc(gi->bits[gi->bcnt].dlen);
+    gi->bits[gi->bcnt].psub_index = -1;
+    memcpy(gi->bits[gi->bcnt].data,gb->base,gi->bits[gi->bcnt].dlen);
+    gb->pt = gb->base;
+    gi->justbroken = false;
+}
+
+static int hashfunc(uint8 *data, int len) {
+    uint8 *end = data+len;
+    unsigned int hash = 0, r;
+
+    while ( data<end ) {
+	r = (hash>>30)&3;
+	hash <<= 2;
+	hash = (hash|r)&0xffffffff;
+	hash ^= *data++;
+    }
+return( hash%HSH_SIZE );
+}
+
+static void BreakSubroutine(GrowBuf *gb,struct hintdb *hdb) {
+    GlyphInfo *gi = hdb->gi;
+    struct potentialsubrs *ps;
+    int hash;
+    int pi;
+
+    if ( gi==NULL )
+return;
+    /* The stuff before the first moveto in a glyph (the header that sets */
+    /*  the width, sets up the hints, counters, etc.) can't go into a subr */
+    if ( gi->bcnt==-1 ) {
+	gi->bcnt=0;
+	gi->justbroken = true;
+return;
+    } else if ( gi->justbroken )
+return;
+    /* Otherwise stuff everything in the growbuffer into a subr */
+    hash = hashfunc(gb->base,gb->pt-gb->base);
+    ps = NULL;
+    for ( pi=gi->hashed[hash]; pi!=-1; pi=gi->psubrs[pi].next ) {
+	ps = &gi->psubrs[pi];
+	if ( ps->len==gb->pt-gb->base && memcmp(ps->data,gb->base,gb->pt-gb->base)==0 )
+    break;
+    }
+    if ( pi==-1 ) {
+	if ( gi->pcnt>=gi->pmax )
+	    gi->psubrs = grealloc(gi->psubrs,(gi->pmax+=gi->glyphcnt)*sizeof(struct potentialsubrs));
+	ps = &gi->psubrs[gi->pcnt];
+	memset(ps,0,sizeof(*ps));	/* set cnt to 0 */
+	ps->idx = gi->pcnt++;
+	ps->len = gb->pt-gb->base;
+	ps->data = galloc(ps->len);
+	memcpy(ps->data,gb->base,ps->len);
+	ps->next = gi->hashed[hash];
+	gi->hashed[hash] = ps->idx;
+    }
+    gi->bits[gi->bcnt].psub_index = ps->idx;
+    ++ps->cnt;
+    gb->pt = gb->base;
+    ++gi->bcnt;
+    gi->justbroken = true;
+}
+
+static void MoveSubrsToChar(GlyphInfo *gi) {
+    struct glyphbits *active;
+
+    if ( gi==NULL )
+return;
+    active = gi->active;
+    active->bcnt = gi->bcnt;
+    active->bits = galloc(active->bcnt*sizeof(struct bits));
+    memcpy(active->bits,gi->bits,active->bcnt*sizeof(struct bits));
+    gi->bcnt = 0;
+}
+
+static int HintSetup2(GrowBuf *gb,struct hintdb *hdb, SplinePoint *to, int break_subr ) {
 
     /* We might get a point with a hintmask in a glyph with no conflicts */
     /* (ie. the initial point when we return to it at the end of the splineset*/
@@ -1964,8 +2096,14 @@ return( false );
     if ( memcmp(hdb->mask,*to->hintmask,(hdb->cnt+7)/8)==0 )
 return( false );
 
+    if ( break_subr )
+	BreakSubroutine(gb,hdb);
+
     AddMask2(gb,*to->hintmask,hdb->cnt,19);		/* hintmask */
     memcpy(hdb->mask,*to->hintmask,sizeof(HintMask));
+    hdb->donefirsthm = true;
+    if ( break_subr )
+	StartNextSubroutine(gb,hdb);
 return( true );
 }
 
@@ -1975,7 +2113,8 @@ static void moveto2(GrowBuf *gb,struct hintdb *hdb,SplinePoint *to, int round) {
     if ( gb->pt+18 >= gb->end )
 	GrowBuffer(gb);
 
-    HintSetup2(gb,hdb,to);
+    BreakSubroutine(gb,hdb);
+    HintSetup2(gb,hdb,to,false);
     tom = &to->me;
     if ( round ) {
 	temp.x = rint(tom->x);
@@ -2000,6 +2139,7 @@ static void moveto2(GrowBuf *gb,struct hintdb *hdb,SplinePoint *to, int round) {
 	*(gb->pt)++ = 21;		/* r move to */
     }
     hdb->current = *tom;
+    StartNextSubroutine(gb,hdb);
 }
 
 static Spline *lineto2(GrowBuf *gb,struct hintdb *hdb,Spline *spline, Spline *done, int round) {
@@ -2017,7 +2157,7 @@ static Spline *lineto2(GrowBuf *gb,struct hintdb *hdb,Spline *spline, Spline *do
     break;
     }
 
-    HintSetup2(gb,hdb,spline->to);
+    HintSetup2(gb,hdb,spline->to,true);
 
     hv = -1; hvcnt=1; lasthvgood = NULL;
     if ( spline->from->me.x==spline->to->me.x )
@@ -2125,7 +2265,7 @@ static Spline *curveto2(GrowBuf *gb,struct hintdb *hdb,Spline *spline, Spline *d
     BasePoint start;
     int donehm;
 
-    HintSetup2(gb,hdb,spline->to);
+    HintSetup2(gb,hdb,spline->to,true);
 
     hv = -1;
     if ( hdb->current.x==myround2(spline->from->nextcp.x,round) &&
@@ -2219,7 +2359,7 @@ static void flexto2(GrowBuf *gb,struct hintdb *hdb,Spline *pspline,int round) {
     nc1 = &nspline->to->prevcp;
     end = &nspline->to->me;
 
-    HintSetup2(gb,hdb,nspline->to);
+    HintSetup2(gb,hdb,nspline->to,true);
 
     if ( myround2(c0->y,round)==hdb->current.y && myround2(nc1->y,round)==hdb->current.y &&
 	    myround2(end->y,round)==hdb->current.y &&
@@ -2382,6 +2522,7 @@ static void DumpRefsHints(GrowBuf *gb, struct hintdb *hdb,RefChar *cur,StemInfo 
 	    cur->sc->layers[ly_fore].splines!=NULL &&
 	    cur->sc->layers[ly_fore].splines->first->hintmask!=NULL ) {
 	AddMask2(gb,*cur->sc->layers[ly_fore].splines->first->hintmask,hdb->cnt,19);		/* hintmask */
+	hdb->donefirsthm = true;
 	memcpy(hdb->mask,*cur->sc->layers[ly_fore].splines->first->hintmask,sizeof(HintMask));
 return;
     }
@@ -2417,17 +2558,31 @@ return;
 	}
 	v = v->next; ++cnt;
     }
+    BreakSubroutine(gb,hdb);
+    hdb->donefirsthm = true;
     /* if ( sets!=0 ) */	/* First ref will need a hintmask even if it has no hints (if there are conflicts) */
 	AddMask2(gb,masks,cnt,19);		/* hintmask */
+}
+
+static void DummyHintmask(GrowBuf *gb,struct hintdb *hdb) {
+    HintMask hm;
+
+    memset(hm,0,sizeof(hm));
+    BreakSubroutine(gb,hdb);
+    hdb->donefirsthm = true;
+    AddMask2(gb,hm,hdb->cnt,19);		/* hintmask */
 }
 
 static void SetTransformedHintMask(GrowBuf *gb,struct hintdb *hdb,
 	SplineChar *sc, RefChar *ref, BasePoint *trans, int round) {
     HintMask hm;
 
-    if ( HintMaskFromTransformedRef(ref,trans,sc,&hm)==NULL )
-return;
-    AddMask2(gb,hm,hdb->cnt,19);		/* hintmask */
+    if ( HintMaskFromTransformedRef(ref,trans,sc,&hm)!=NULL ) {
+	BreakSubroutine(gb,hdb);
+	hdb->donefirsthm = true;
+	AddMask2(gb,hm,hdb->cnt,19);		/* hintmask */
+    } else if ( !hdb->donefirsthm )
+	DummyHintmask(gb,hdb);
 }
 
 static void ExpandRef2(GrowBuf *gb, SplineChar *sc, struct hintdb *hdb,
@@ -2534,6 +2689,8 @@ static void RSC2PS2(GrowBuf *gb, SplineChar *base,SplineChar *rsc,
 	    if ( !r->sc->hconflicts && !r->sc->vconflicts && !hdb->noconflicts &&
 		    r->transform[1]==0 && r->transform[2]==0 )
 		SetTransformedHintMask(gb,hdb,base,r,trans,round);
+	    if ( !hdb->donefirsthm )
+		DummyHintmask(gb,hdb);
 	    temp = SPLCopyTransformedHintMasks(r,base,trans);
 	    CvtPsSplineSet2(gb,temp,hdb,startend,rsc->parent->order2,round);
 	    SplinePointListFree(temp);
@@ -2559,7 +2716,8 @@ static void RSC2PS2(GrowBuf *gb, SplineChar *base,SplineChar *rsc,
 }
 
 static unsigned char *SplineChar2PS2(SplineChar *sc,int *len, int nomwid,
-	int defwid, struct pschars *subrs, BasePoint *startend, int flags ) {
+	int defwid, struct pschars *subrs, BasePoint *startend, int flags,
+	GlyphInfo *gi) {
     GrowBuf gb;
     unsigned char *ret;
     struct hintdb hdb;
@@ -2601,6 +2759,9 @@ static unsigned char *SplineChar2PS2(SplineChar *sc,int *len, int nomwid,
     memset(&trans,'\0',sizeof(trans));
     memset(&hdb,'\0',sizeof(hdb));
     hdb.scs = scs;
+    hdb.gi = gi;
+    if ( gi!=NULL )
+	gi->bcnt = -1;
     scs[0] = sc;
     hdb.noconflicts = !sc->hconflicts && !sc->vconflicts;
     hdb.cnt = NumberHints(hdb.scs,1);
@@ -2620,13 +2781,23 @@ static unsigned char *SplineChar2PS2(SplineChar *sc,int *len, int nomwid,
     } else
 	RSC2PS2(&gb,sc,sc,&hdb,&trans,subrs,startend,flags);
 
-    if ( gb.pt+1>=gb.end )
-	GrowBuffer(&gb);
-    *gb.pt++ = startend==NULL?14:11;		/* endchar / return */
+    if ( gi!=NULL ) {
+	if ( gi->bcnt==-1 ) {	/* If it's whitespace */
+	    gi->bcnt = 0;
+	    StartNextSubroutine(&gb,&hdb);
+	}
+	BreakSubroutine(&gb,&hdb);
+	MoveSubrsToChar(gi);
+	ret = NULL;
+    } else {
+	if ( gb.pt+1>=gb.end )
+	    GrowBuffer(&gb);
+	*gb.pt++ = startend==NULL?14:11;		/* endchar / return */
+	ret = (unsigned char *) copyn((char *) gb.base,gb.pt-gb.base);
+	*len = gb.pt-gb.base;
+    }
     if ( startend!=NULL )
 	startend[1] = hdb.current;
-    ret = (unsigned char *) copyn((char *) gb.base,gb.pt-gb.base);
-    *len = gb.pt-gb.base;
     free(gb.base);
     if ( flags&ps_flag_nohints ) {
 	sc->hstem = oldh; sc->vstem = oldv;
@@ -2709,15 +2880,11 @@ return( subrs);
 	else if ( sc->lsidebearing!=0x7fff ) {
 	    subrs->keys[cnt] = gcalloc(2,sizeof(BasePoint));
 	    subrs->values[cnt] = SplineChar2PS2(sc,&subrs->lens[cnt],0,0,
-			subrs,(BasePoint *) (subrs->keys[cnt]),flags);
+			subrs,(BasePoint *) (subrs->keys[cnt]),flags,NULL);
 	    sc->lsidebearing = cnt++ - subrs->bias;
 	}
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !gwwv_progress_next()) {
-#elif defined(FONTFORGE_CONFIG_GTK)
-	if ( !gwwv_progress_next()) {
-#endif
 	    PSCharsFree(subrs);
 return( NULL );
 	}
@@ -2726,7 +2893,7 @@ return( NULL );
     subrs->next = cnt;
 return( subrs );
 }
-    
+
 struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
 	struct pschars *subrs,int flags,const int *bygid, int cnt) {
     struct pschars *chrs = gcalloc(1,sizeof(struct pschars));
@@ -2747,7 +2914,7 @@ struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
 
     /* notdef needs to be glyph 0 in an sfnt */
     if ( bygid[0]!=-1 ) {
-	chrs->values[0] = SplineChar2PS2(sf->glyphs[bygid[0]],&chrs->lens[0],nomwid,defwid,subrs,NULL,flags);
+	chrs->values[0] = SplineChar2PS2(sf->glyphs[bygid[0]],&chrs->lens[0],nomwid,defwid,subrs,NULL,flags,NULL);
     } else {
 	char *pt = notdefentry;
 	if ( notdefwidth==defwid )
@@ -2778,13 +2945,9 @@ struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
     }
     for ( i=1 ; i<cnt; ++i ) {
 	sc = sf->glyphs[bygid[i]];
-	chrs->values[i] = SplineChar2PS2(sc,&chrs->lens[i],nomwid,defwid,subrs,NULL,flags);
+	chrs->values[i] = SplineChar2PS2(sc,&chrs->lens[i],nomwid,defwid,subrs,NULL,flags,NULL);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !gwwv_progress_next()) {
-#elif defined(FONTFORGE_CONFIG_GTK)
-	if ( !gwwv_progress_next()) {
-#endif
 	    PSCharsFree(chrs);
 return( NULL );
 	}
@@ -2880,15 +3043,172 @@ struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds,int flags) {
 	} else {
 	    sc = sf->glyphs[cid];
 	    chrs->values[cnt] = SplineChar2PS2(sc,&chrs->lens[cnt],
-		    fds[i].nomwid,fds[i].defwid,fds[i].subrs,NULL,flags);
+		    fds[i].nomwid,fds[i].defwid,fds[i].subrs,NULL,flags,NULL);
 	    sc->ttf_glyph = cnt++;
 	}
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	gwwv_progress_next();
-#elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	gwwv_progress_next();
 #endif
     }
     chrs->next = cnt;
 return( chrs );
 }
+
+struct pschars *SplineFont2ChrsSubrs2(SplineFont *sf, int nomwid, int defwid,
+	const int *bygid, int cnt, int flags, struct pschars **_subrs) {
+    struct pschars *subrs, *chrs;
+    int i,j,scnt;
+    SplineChar *sc;
+    GlyphInfo gi;
+    SplineChar dummynotdef;
+#ifdef FONTFORGE_CONFIG_TYPE3
+    Layer dummylayers[2];
+#endif
+
+    if ( !autohint_before_generate && !(flags&ps_flag_nohints))
+	SplineFontAutoHintRefs(sf);
+
+    memset(&gi,0,sizeof(gi));
+    memset(&gi.hashed,-1,sizeof(gi.hashed));
+    gi.sf = sf;
+    gi.glyphcnt = cnt;
+    gi.bygid = bygid;
+    gi.gb = gcalloc(cnt,sizeof(struct glyphbits));
+    gi.pmax = 3*cnt;
+    gi.psubrs = galloc(gi.pmax*sizeof(struct potentialsubrs));
+    for ( i=0; i<cnt; ++i ) {
+	int gid = bygid[i];
+	if ( i==0 && gid==-1 ) {
+	    sc = &dummynotdef;
+	    memset(sc,0,sizeof(dummynotdef));
+	    dummynotdef.name = ".notdef";
+	    dummynotdef.parent = sf;
+	    dummynotdef.layer_cnt = 2;
+#ifdef FONTFORGE_CONFIG_TYPE3
+	    dummynotdef.layers = dummylayers;
+	    memset(dummylayers,0,sizeof(dummylayers));
+#endif
+	    dummynotdef.width = SFOneWidth(sf);
+	    if ( dummynotdef.width==-1 )
+		dummynotdef.width = (sf->ascent+sf->descent)/2;
+	} else if ( gid!=-1 )
+	    sc = sf->glyphs[gid];
+	else
+    continue;
+	gi.gb[i].sc = sc;
+	if ( autohint_before_generate && sc!=NULL &&
+		sc->changedsincelasthinted && !sc->manualhints &&
+		!(flags&ps_flag_nohints))
+	    SplineCharAutoHint(sc,NULL);
+	sc->lsidebearing = 0x7fff;
+    }
+    MarkTranslationRefs(sf);
+
+    for ( i=0; i<cnt; ++i ) {
+	if ( (sc = gi.gb[i].sc)==NULL )
+    continue;
+	gi.active = &gi.gb[i];
+	SplineChar2PS2(sc,NULL,nomwid,defwid,NULL,NULL,flags,&gi);
+    }
+
+    for ( i=scnt=0; i<gi.pcnt; ++i ) {
+	if ( gi.psubrs[i].cnt*gi.psubrs[i].len>(gi.psubrs[i].cnt*4)+gi.psubrs[i].len+1 )
+	    ++scnt;
+    }
+    subrs = gcalloc(1,sizeof(struct pschars));
+    subrs->cnt = scnt;
+    subrs->next = scnt;
+    subrs->lens = galloc(scnt*sizeof(int));
+    subrs->values = galloc(scnt*sizeof(unsigned char *));
+    subrs->bias = scnt<1240 ? 107 :
+		  scnt<33900 ? 1131 : 32768;
+    for ( i=scnt=0; i<gi.pcnt; ++i ) {
+	if ( gi.psubrs[i].cnt*gi.psubrs[i].len>(gi.psubrs[i].cnt*4)+gi.psubrs[i].len+1 ) {
+	/* A subroutine call takes somewhere between 2 and 4 bytes itself. */
+	/*  and we must add a return statement to the end. We don't want to */
+	/*  make things bigger */
+	    subrs->lens[scnt] = gi.psubrs[i].len+1;
+	    subrs->values[scnt] = galloc(subrs->lens[scnt]);
+	    memcpy(subrs->values[scnt],gi.psubrs[i].data,gi.psubrs[i].len);
+	    subrs->values[scnt][gi.psubrs[i].len] = 11;	/* Add a return to end of subr */
+	    gi.psubrs[i].idx = scnt++;
+	} else
+	    gi.psubrs[i].idx = -1;
+    }
+	
+    chrs = gcalloc(1,sizeof(struct pschars));
+    chrs->cnt = cnt;
+    chrs->next = cnt;
+    chrs->lens = galloc(cnt*sizeof(int));
+    chrs->values = galloc(cnt*sizeof(unsigned char *));
+    chrs->keys = galloc(cnt*sizeof(char *));
+    for ( i=0; i<cnt; ++i ) {
+	int len=0;
+	struct glyphbits *gb = &gi.gb[i];
+	chrs->keys[i] = copy(gb->sc->name);
+	for ( j=0; j<gb->bcnt; ++j ) {
+	    len += gb->bits[j].dlen;
+	    if ( gi.psubrs[ gb->bits[j].psub_index ].idx==-1 )
+		len += gi.psubrs[ gb->bits[j].psub_index ].len;
+	    else {
+		int si = gi.psubrs[ gb->bits[j].psub_index ].idx - subrs->bias;
+		/* space for the number (subroutine index) */
+		if ( si>=-107 && si<=107 )
+		    ++len;
+		else if ( si>=-1131 && si<=1131 )
+		    len += 2;
+		else
+		    len += 3;
+		/* space for the subroutine operator */
+		++len;
+	    }
+	}
+	chrs->lens[i] = len+1;
+	chrs->values[i] = galloc(len+2); /* space for endchar and a final NUL (which is really meaningless, but makes me feel better) */
+
+	len = 0;
+	for ( j=0; j<gb->bcnt; ++j ) {
+	    memcpy(chrs->values[i]+len,gb->bits[j].data,gb->bits[j].dlen);
+	    len += gb->bits[j].dlen;
+	    if ( gi.psubrs[ gb->bits[j].psub_index ].idx==-1 ) {
+		memcpy(chrs->values[i]+len,gi.psubrs[ gb->bits[j].psub_index ].data,
+			gi.psubrs[ gb->bits[j].psub_index ].len);
+		len += gi.psubrs[ gb->bits[j].psub_index ].len;
+	    } else {
+		int si = gi.psubrs[ gb->bits[j].psub_index ].idx - subrs->bias;
+		/* space for the number (subroutine index) */
+		if ( si>=-107 && si<=107 )
+		    chrs->values[i][len++] = si+139;
+		else if ( si>0 && si<=1131 ) {
+		    si-=108;
+		    chrs->values[i][len++] = (si>>8)+247;
+		    chrs->values[i][len++] = si&0xff;
+		} else if ( si>=-1131 && si<0 ) {
+		    si=(-si)-108;
+		    chrs->values[i][len++] = (si>>8)+251;
+		    chrs->values[i][len++] = si&0xff;
+		} else {
+		    chrs->values[i][len++] = 28;
+		    chrs->values[i][len++] = (si>>8)&0xff;
+		    chrs->values[i][len++] = si&0xff;
+		}
+		/* space for the subroutine operator */
+		chrs->values[i][len++] = 10;
+	    }
+	}
+	chrs->values[i][len++] = 14;	/* endchar */
+	chrs->values[i][len] = '\0';
+    }
+    for ( i=0; i<gi.pcnt; ++i ) {
+	free(gi.psubrs[i].data);
+    }
+    for ( i=0; i<cnt; ++i ) {
+	free(gi.gb[i].bits);
+    }
+    free(gi.gb);
+    free(gi.psubrs);
+    free(gi.bits);
+    *_subrs = subrs;
+return( chrs );
+}
+
