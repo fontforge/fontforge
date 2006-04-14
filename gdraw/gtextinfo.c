@@ -498,11 +498,11 @@ int GIntGetResource(int index) {
 	    char *pt, *end;
 	    pt = S_("GGadget|ButtonSize|55");
 	    gt_intarray[0] = strtol(pt,&end,10);
-	    if ( pt==end )
+	    if ( pt==end || gt_intarray[0]<20 || gt_intarray[0]>4000 )
 		gt_intarray[0]=55;
 	    pt = S_("GGadget|ScaleFactor|100");
 	    gt_intarray[1] = strtol(pt,&end,10);
-	    if ( pt==end )
+	    if ( pt==end || gt_intarray[1]<20 || gt_intarray[1]>4000 )
 		gt_intarray[1]=100;
 	}
 return( gt_intarray[index] );
