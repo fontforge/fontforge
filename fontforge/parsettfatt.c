@@ -2325,7 +2325,8 @@ static void tagFeature(struct feature *feat, uint32 feat_tag, uint32 script_tag,
 }
 
 static struct lookup_subtable *tagSubLookupsWithScript(struct scripts *scripts,
-	struct feature *features, struct lookup *lookups) {
+	struct feature *features, struct lookup *lookups,struct ttfinfo *info,
+	int isgpos) {
     int lcnt, fcnt, lstcnt, lstmax;
     struct lookup_subtable *subs;
     int i,j,k,f;
@@ -2374,6 +2375,23 @@ static struct lookup_subtable *tagSubLookupsWithScript(struct scripts *scripts,
 	    }
 	}
     }
+
+    /* Save the lookup ordering */
+    j=0;
+    for ( i=0; i<lcnt; ++i ) {
+	uint32 tag=0;
+	for ( k=0; tag==0 && k<lookups[i].subtabcnt; ++k )
+	    tag = lookups[i].subtables[k]->tag;
+	if ( tag==0 )
+    continue;
+	for ( k=0; k<j; ++k )
+	    if ( tag==info->feats[isgpos][k] )
+	break;
+	if ( k==j )
+	    info->feats[isgpos][j++] = tag;
+    }
+    info->feats[isgpos][j] = 0;
+    
 return( subs );
 }
 
@@ -2778,7 +2796,7 @@ return;
     lookups = readttflookups(ttf,lookup_start,info);
     if ( lookups==NULL )
 return;
-    sublookups = tagSubLookupsWithScript(scripts,features,lookups);
+    sublookups = tagSubLookupsWithScript(scripts,features,lookups,info,gpos);
     ScriptsFree(scripts); scripts = NULL;
     FeaturesFree(features); features = NULL;
     sublookups = flattenSubLookups(sublookups,lookups);

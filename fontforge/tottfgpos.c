@@ -75,6 +75,7 @@ struct clookup {		/* Coalesced lookups */
     int lookup_cnt;		/* Index of lookup in table */
     struct clookup *next;	/* Next in table */
     struct clookup *fnext;	/* Next in feature */
+    int ticked;
 };
 
 struct postponedlookup {
@@ -3346,7 +3347,8 @@ return( f );
 /*  lookup if they have the same feature tag/lookup flags */
 /* Alexej suggests requiring the same sli too */
 static struct feature *CoalesceLookups(SplineFont *sf, struct lookup *lookups,
-	struct lookup *nested, struct clookup **clookups, int is_gpos) {
+	struct lookup *nested, struct clookup **clookups, int is_gpos,
+	struct table_ordering *ord) {
     struct lookup *l, *last;
     int cnt, lcnt, allsame;
     struct slusage *slu=NULL;
@@ -3355,9 +3357,9 @@ static struct feature *CoalesceLookups(SplineFont *sf, struct lookup *lookups,
     int lang, s, pos, which, tot;
     int fcnt = 0;
     int added_size = false;
-    struct clookup *clhead, *cllast, *cl, *cl2, *clflast;
+    struct clookup *clhead, *cllast, *cl, *cl2, *clflast, *clendnest, *clstart, **array;
     struct lookup **temp;
-    int clcnt, clfcnt;
+    int clcnt, clfcnt, clcntnest;
     int lc_warned;
     int i,j;
 
@@ -3485,6 +3487,9 @@ static struct feature *CoalesceLookups(SplineFont *sf, struct lookup *lookups,
 	}
 	cl->lookup_cnt = clcnt++;
     }
+    clendnest = cllast;
+    clcntnest = clcnt;
+
     for ( f=fhead; f!=NULL; f=f->feature_next ) {
 	clfcnt = 0;
 	clflast = NULL;
@@ -3551,6 +3556,40 @@ static struct feature *CoalesceLookups(SplineFont *sf, struct lookup *lookups,
 	}
 	f->lcnt = clfcnt;
     }
+
+    if ( clendnest==NULL )
+	clstart = clhead;
+    else
+	clstart = clendnest->next;
+    for ( cnt=0, cl=clstart; cl!=NULL; cl=cl->next, ++cnt );
+    array = galloc((cnt+1) *sizeof(struct clookup *));
+    for ( cnt=0, cl=clstart; cl!=NULL; cl=cl->next, ++cnt )
+	array[cnt] = cl;
+    array[cnt] = NULL;
+    for ( i=0; i<cnt-1; ++i ) for ( j=i+1; j<cnt; ++j ) {
+	if ( TTFFeatureIndex(array[i]->lookups[0]->feature_tag,ord,!is_gpos)>TTFFeatureIndex(array[j]->lookups[0]->feature_tag,ord,!is_gpos)) {
+	    struct clookup *temp = array[i];
+	    array[i] = array[j];
+	    array[j] = temp;
+	}
+    }
+    clcnt = clcntnest;
+    for ( i=0; i<cnt; ++i ) {
+	array[i]->next = array[i+1];
+	if ( !array[i]->duplicate ) {
+	    for ( j=0; j<cnt; ++j ) if ( !array[j]->ticked && array[j]->duplicate && array[j]->lookup_cnt==array[i]->lookup_cnt ) {
+		array[j]->ticked = true;
+		array[j]->lookup_cnt = clcnt;
+	    }
+	    array[i]->lookup_cnt = clcnt++;
+	}
+    }
+    if ( clendnest==NULL )
+	clhead = array[0];
+    else
+	clendnest->next = array[0];
+    free(array);
+    
     *clookups = clhead;
 	
 return( fhead );
@@ -3692,7 +3731,7 @@ return( NULL );
     lfile2 = tmpfile();
     features_ordered = orderlookups(&lookups,ord,lfile2,lfile,nested,!is_gpos);
     lfile = lfile2;
-    features = CoalesceLookups(sf,features_ordered,nested,&clookups,is_gpos);
+    features = CoalesceLookups(sf,features_ordered,nested,&clookups,is_gpos,ord);
 
     master = ( sf->cidmaster ) ? sf->cidmaster : ( sf->mm ) ? sf->mm->normal : sf;
     for ( i=0; master->script_lang[i]!=NULL; ++i );
