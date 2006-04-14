@@ -94,6 +94,9 @@ return( gcalloc(1,size));
     struct chunk *item;
     int index;
 
+    if ( size&(CHUNK_UNIT-1) )
+	size = (size+CHUNK_UNIT-1)&~(CHUNK_UNIT-1);
+
     if ( (size&(CHUNK_UNIT-1)) || size>=CHUNK_MAX*CHUNK_UNIT || size<=sizeof(struct chunk)) {
 	fprintf( stderr, "Attempt to allocate something of size %d\n", size );
 return( gcalloc(1,size));
@@ -137,6 +140,10 @@ return;
 # else
     if ( item==NULL )
 return;
+
+    if ( size&(CHUNK_UNIT-1) )
+	size = (size+CHUNK_UNIT-1)&~(CHUNK_UNIT-1);
+
     if ( (size&(CHUNK_UNIT-1)) || size>=CHUNK_MAX*CHUNK_UNIT || size<=sizeof(struct chunk)) {
 	fprintf( stderr, "Attempt to free something of size %d\n", size );
 	free(item);
