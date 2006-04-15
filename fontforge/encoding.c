@@ -1163,7 +1163,7 @@ static struct cidmap *MakeDummyMap(char *registry,char *ordering,int supplement)
 return( ret );
 }
 
-static struct cidmap *LoadMapFromFile(char *file,char *registry,char *ordering,
+struct cidmap *LoadMapFromFile(char *file,char *registry,char *ordering,
 	int supplement) {
     struct cidmap *ret = galloc(sizeof(struct cidmap));
     char *pt = strrchr(file,'.');

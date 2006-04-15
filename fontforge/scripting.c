@@ -5242,6 +5242,15 @@ static void bMMBlendToNewFont(Context *c) {
 
 /* **** CID menu **** */
 
+static void bPreloadCidmap(Context *c) {
+
+    if ( c->a.argc!=5 )
+	ScriptError( c, "Wrong number of arguments" );
+    if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str || c->a.vals[3].type!=v_str || c->a.vals[4].type!=v_int )
+	ScriptError( c, "Bad argument type" );
+    LoadMapFromFile(c->a.vals[1].u.sval, c->a.vals[2].u.sval, c->a.vals[3].u.sval, c->a.vals[4].u.ival );
+}
+
 static void bConvertToCID(Context *c) {
     SplineFont *sf = c->curfv->sf;
     struct cidmap *map;
@@ -6744,6 +6753,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "MMChangeWeight", bMMChangeWeight },
     { "MMBlendToNewFont", bMMBlendToNewFont },
 /* CID Menu */
+    { "PreloadCidmap", bPreloadCidmap },
     { "ConvertToCID", bConvertToCID },
     { "ConvertByCMap", bConvertByCMap },
     { "CIDChangeSubFont", bCIDChangeSubFont },
