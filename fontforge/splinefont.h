@@ -1803,6 +1803,8 @@ extern int CID2Uni(struct cidmap *map,int cid);
 extern int CID2NameUni(struct cidmap *map,int cid, char *buffer, int len);
 extern int NameUni2CID(struct cidmap *map,int uni, const char *name);
 extern int MaxCID(struct cidmap *map);
+extern struct cidmap *LoadMapFromFile(char *file,char *registry,char *ordering,
+	int supplement);
 extern struct cidmap *FindCidMap(char *registry,char *ordering,int supplement,
 	SplineFont *sf);
 extern void SFEncodeToMap(SplineFont *sf,struct cidmap *map);
