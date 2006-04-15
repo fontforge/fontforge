@@ -6753,7 +6753,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "MMChangeWeight", bMMChangeWeight },
     { "MMBlendToNewFont", bMMBlendToNewFont },
 /* CID Menu */
-    { "PreloadCidmap", bPreloadCidmap },
+    { "PreloadCidmap", bPreloadCidmap, 1 },
     { "ConvertToCID", bConvertToCID },
     { "ConvertByCMap", bConvertByCMap },
     { "CIDChangeSubFont", bCIDChangeSubFont },

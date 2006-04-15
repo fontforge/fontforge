@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 9-Apr-2006 -->
-  <!-- AP: Last modified: 13-Apr-2006 -->
+  <!-- AP: Last modified: 15-Apr-2006 -->
   <TITLE>Scripting functions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -394,7 +394,8 @@ a[4][0] = "Nested array";
 	  <DT>
 	    <A NAME="ClearCharCounterMasks">C</A>learCharCounterMasks()
 	  <DD>
-	    Deprecated name for <A HREF="#ClearGlyphCounterMasks">ClearGlyphCounterMasks</A>
+	    Deprecated name for
+	    <A HREF="#ClearGlyphCounterMasks">ClearGlyphCounterMasks</A>
 	  <DT>
 	    <A NAME="ClearGlyphCounterMasks">C</A>learGlyphCounterMasks()
 	  <DD>
@@ -1832,6 +1833,12 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	  <DD>
 	    Returns val1<SUP>val2</SUP>. It can execute with no current font.
 	  <DT>
+	    PreloadCidmap(filename,registry,ordering,supplement)
+	  <DD>
+	    Loads a user defined cidmap file for the specified ROS. All arguments except
+	    the last should be strings while supplement should be an integer. This can
+	    execute without a font loaded.
+	  <DT>
 	    <A NAME="Print">P</A>rint(arg1,arg2,arg3,...)
 	  <DD>
 	    This corresponds to no menu item. It will print all of its arguments to stdout.
@@ -2028,7 +2035,8 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	  <DT>
 	    <A NAME="ReplaceCharCounterMasks">R</A>eplaceCharCounterMasks(array)
 	  <DD>
-	    Deprecated name for <A HREF="#ReplaceGlyphCounterMasks">ReplaceGlyphCounterMasks</A>
+	    Deprecated name for
+	    <A HREF="#ReplaceGlyphCounterMasks">ReplaceGlyphCounterMasks</A>
 	  <DT>
 	    <A NAME="ReplaceGlyphCounterMasks">R</A>eplaceGlyphCounterMasks(array)
 	  <DD>
