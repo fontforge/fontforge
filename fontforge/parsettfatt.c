@@ -3373,7 +3373,7 @@ static void mort_figure_ligatures(struct statemachine *sm, int lcp, int off, int
 return;
 
     lig = memlong(sm->data,sm->length, off);
-    off += sizeof(long);
+    off += sizeof(int32);
 
     for ( i=0; i<sm->info->glyph_cnt; ++i ) if ( sm->classes[i]==sm->lig_comp_classes[lcp] ) {
 	sm->lig_comp_glyphs[lcp] = i;
@@ -3596,12 +3596,12 @@ return;
     fseek(ttf,here,SEEK_SET);
     if ( ismorx ) {
 	sm.nClasses = memlong(sm.data,sm.length, 0);
-	sm.classOffset = memlong(sm.data,sm.length, sizeof(long));
-	sm.stateOffset = memlong(sm.data,sm.length, 2*sizeof(long));
-	sm.entryOffset = memlong(sm.data,sm.length, 3*sizeof(long));
-	sm.ligActOff = memlong(sm.data,sm.length, 4*sizeof(long));
-	sm.compOff = memlong(sm.data,sm.length, 5*sizeof(long));
-	sm.ligOff = memlong(sm.data,sm.length, 6*sizeof(long));
+	sm.classOffset = memlong(sm.data,sm.length, sizeof(int32));
+	sm.stateOffset = memlong(sm.data,sm.length, 2*sizeof(int32));
+	sm.entryOffset = memlong(sm.data,sm.length, 3*sizeof(int32));
+	sm.ligActOff = memlong(sm.data,sm.length, 4*sizeof(int32));
+	sm.compOff = memlong(sm.data,sm.length, 5*sizeof(int32));
+	sm.ligOff = memlong(sm.data,sm.length, 6*sizeof(int32));
 	fseek(ttf,here+sm.classOffset,SEEK_SET);
 	/* I used only to allocate space for info->glyph_cnt entries */
 	/*  but some fonts use out of bounds gids as flags to contextual */
