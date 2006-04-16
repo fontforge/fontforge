@@ -1,0 +1,12 @@
+#!/usr/local/bin/fontforge
+#Needs: fonts/MinionPro-Regular.otf
+
+# Check that our new subroutine usage in cff fonts produces an equivalent font.
+Open("fonts/MinionPro-Regular.otf")
+Generate("results/MinionPro.otf")
+Open("results/MinionPro.otf");
+#comparing fonts exactly doesn't work because ff will remove control points
+#if it thinks they are colinear with the to end points.
+if ( CompareFonts("fonts/MinionPro-Regular.otf","/dev/null",0x1|0x8|0x20)!=0 )
+    Error("!!!! Font differed");
+endif
