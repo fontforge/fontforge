@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 4-Apr-2006 -->
+  <!-- AP: Last modified: 15-Apr-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Writing scripts to change fonts in FontForge</TITLE>-->
     <TITLE>FontForge でフォントを変更するためのスクリプトの書き方</TITLE>
@@ -552,9 +552,9 @@ endloop
       は、手続きを呼び出すごとにトレース表示を行います。
     <LI>
 <!--  <CODE>$version</CODE> returns a string containing the current version of
-      fontforge. This should look something like "020817". -->
+      fontforge. This should look something like "20050817". -->
       <CODE>$version</CODE> 現在実行中の FontForge のバージョンを含む文字列を返します。
-      この値は“020817”のような書式です。
+      この値は“20050817”のような書式です。
     <LI>
 <!--  <CODE>$</CODE>&lt;<A NAME="Preference">Preference</A> Item&gt; (for example
       <CODE>$AutoHint</CODE>) allows you to examine the value of that preference
@@ -583,619 +583,658 @@ endloop
   at the menu item for more information. -->
   組込み <A NAME="procedures">手続き</A> の動作は、同じ名前のメニュー項目とほとんど同じです。ここでの説明はしばしば概要しか示されていませんので、より詳しい情報は当該のメニュー項目を調べてください。
   <UL>
-<!--
-  <LI><A HREF="scripting-alpha.html">Built-in procedures in alphabetic order</A>
-  <LI><A HREF="#no-font">Built-in procedures that do not require a font</A>
-  <LI><A HREF="#file-menu">File menu</A>
-  <LI><A HREF="#files">File manipulation</A>
-  <LI><A HREF="#edit-menu">Edit menu</A>
-  <LI><A HREF="#select-menu">Select menu</A>
-  <LI><A HREF="#element-menu">Element menu</A>
-  <LI><A HREF="#font-info">Font information</A>
-  <LI><A HREF="#glyph-info">Glyph information</A>
-  <LI><A HREF="#ATT">Advanced Typography</A>
-  <LI><A HREF="#encoding-menu">Encoding menu</A>
-  <LI><A HREF="#hint-menu">Hint menu</A>
-  <LI><A HREF="#metrics-menu">Metrics menu</A>
-  <LI><A HREF="#MM">Multiple master</A>
-  <LI><A HREF="#CID">CID keyed fonts</A>
-  <LI><A HREF="#user">User interaction</A>
-  <LI><A HREF="#prefs">Preferences</A>
-  <LI><A HREF="#math">Math</A>
-  <LI><A HREF="#unicode">Unicode</A>
-  <LI><A HREF="#strings">String manipulation</A>
-  <LI><A HREF="#arrays">Arrays</A>
-  <LI><A HREF="#misc">Miscellaneous</A> -->
-  <LI><A HREF="scripting-alpha.html">組込み手続きのアルファベット順一覧</A>
-  <LI><A HREF="#no-font">フォントを必要としない組込み手続き</A>
-  <LI><A HREF="#file-menu"><CODE>ファイル(<U>F</U>)</CODE>メニュー</A>
-  <LI><A HREF="#files">ファイル操作</A>
-  <LI><A HREF="#edit-menu"><CODE>編集(<U>E</U>)</CODE>メニュー</A>
-  <LI><A HREF="#select-menu"><CODE>選択(<U>S</U>)</CODE>サブメニュー</A>
-  <LI><A HREF="#element-menu"><CODE>エレメント(<U>L</U>)</CODE>メニュー</A>
-  <LI><A HREF="#font-info">フォント情報</A>
-  <LI><A HREF="#glyph-info">グリフ情報</A>
-  <LI><A HREF="#ATT">高度組版機能</A>
-  <LI><A HREF="#encoding-menu"><CODE>エンコーディング(<U>N</U>)</CODE>メニュー</A>
-  <LI><A HREF="#hint-menu"><CODE>ヒント(<U>H</U>)</CODE>メニュー</A>
-  <LI><A HREF="#metrics-menu"><CODE>メトリック(<U>M</U>)</CODE>メニュー</A>
-  <LI><A HREF="#MM">マルチプルマスター</A>
-  <LI><A HREF="#CID">CID キー指定フォント</A>
-  <LI><A HREF="#user">ユーザとのやりとり</A>
-  <LI><A HREF="#prefs">環境設定</A>
-  <LI><A HREF="#math">数学関数</A>
-  <LI><A HREF="#unicode">Unicode</A>
-  <LI><A HREF="#strings">文字列操作</A>
-  <LI><A HREF="#arrays">配列</A>
-  <LI><A HREF="#misc">その他</A>
+    <LI>
+<!--  <A HREF="scripting-alpha.html">Built-in procedures in alphabetic order</A> -->
+      <A HREF="scripting-alpha.html">組込み手続きのアルファベット順一覧</A>
+    <LI>
+<!--  <A HREF="#no-font">Built-in procedures that do not require a font</A> -->
+      <A HREF="#no-font">フォントを必要としない組込み手続き</A>
+    <LI>
+<!--  <A HREF="#file-menu">File menu</A> -->
+      <A HREF="#file-menu"><CODE>ファイル(<U>F</U>)</CODE>メニュー</A>
+    <LI>
+<!--  <A HREF="#files">File manipulation</A> -->
+      <A HREF="#files">ファイル操作</A>
+    <LI>
+<!--  <A HREF="#edit-menu">Edit menu</A> -->
+      <A HREF="#edit-menu"><CODE>編集(<U>E</U>)</CODE>メニュー</A>
+    <LI>
+<!--  <A HREF="#select-menu">Select menu</A> -->
+      <A HREF="#select-menu"><CODE>選択(<U>S</U>)</CODE>サブメニュー</A>
+    <LI>
+<!--  <A HREF="#element-menu">Element menu</A> -->
+      <A HREF="#element-menu"><CODE>エレメント(<U>L</U>)</CODE>メニュー</A>
+    <LI>
+<!--  <A HREF="#font-info">Font information</A> -->
+      <A HREF="#font-info">フォント情報</A>
+    <LI>
+<!--  <A HREF="#glyph-info">Glyph information</A> -->
+      <A HREF="#glyph-info">グリフ情報</A>
+    <LI>
+<!--  <A HREF="#ATT">Advanced Typography</A> -->
+      <A HREF="#ATT">高度組版機能</A>
+    <LI>
+<!--  <A HREF="#encoding-menu">Encoding menu</A> -->
+      <A HREF="#encoding-menu"><CODE>エンコーディング(<U>N</U>)</CODE>メニュー</A>
+    <LI>
+<!--  <A HREF="#hint-menu">Hint menu</A> -->
+      <A HREF="#hint-menu"><CODE>ヒント(<U>H</U>)</CODE>メニュー</A>
+    <LI>
+<!--  <A HREF="#metrics-menu">Metrics menu</A> -->
+      <A HREF="#metrics-menu"><CODE>メトリック(<U>M</U>)</CODE>メニュー</A>
+    <LI>
+<!--  <A HREF="#MM">Multiple master</A> -->
+      <A HREF="#MM">マルチプルマスター</A>
+    <LI>
+<!--  <A HREF="#CID">CID keyed fonts</A> -->
+      <A HREF="#CID">CID キー指定フォント</A>
+    <LI>
+<!--  <A HREF="#user">User interaction</A> -->
+      <A HREF="#user">ユーザとのやりとり</A>
+    <LI>
+<!--  <A HREF="#prefs">Preferences</A> -->
+      <A HREF="#prefs">環境設定</A>
+    <LI>
+<!--  <A HREF="#math">Math</A> -->
+      <A HREF="#math">数学関数</A>
+    <LI>
+      <A HREF="#unicode">Unicode</A>
+    <LI>
+<!--  <A HREF="#strings">String manipulation</A> -->
+      <A HREF="#strings">文字列操作</A>
+    <LI>
+<!--  <A HREF="#arrays">Arrays</A> -->
+      <A HREF="#arrays">配列</A>
+    <LI>
+<!--  <A HREF="#misc">Miscellaneous</A> -->
+      <A HREF="#misc">その他</A>
+    <LI>
+<!--  <A HREF="#Deprecated">Deprecated</A> Names -->
+      <A HREF="#Deprecated">廃止された</A>名前
   </UL>
 <!--
-  <H3 ALIGN=Center>Built-in procedures in <A NAME="alpha">alphabetic</A> order</H3> -->
-  <H3 ALIGN=Center>組込み手続きの<A NAME="alpha">アルファベット順</A>一覧</H3>
+  <H3 ALIGN=Center>
+<!--Built-in procedures in <A NAME="alpha">alphabetic</A> order -->
+    組込み手続きの<A NAME="alpha">アルファベット順</A>一覧
+  </H3>
   <P ALIGN=Center>
-  - <A HREF="scripting-alpha.html#A">A</A> - <A HREF="scripting-alpha.html#B">B</A> - <A HREF="scripting-alpha.html#C">C</A> -
-  <A HREF="scripting-alpha.html#D">D</A> - <A HREF="scripting-alpha.html#E">E</A> - <A HREF="scripting-alpha.html#F">F</A> -
-  <A HREF="scripting-alpha.html#G">G</A> - <A HREF="scripting-alpha.html#H">H</A> - <A HREF="scripting-alpha.html#I">I </A>- <A HREF="scripting-alpha.html#J">J
-  </A>- <A HREF="scripting-alpha.html#K">K</A> - <A HREF="scripting-alpha.html#L">L</A> - <A HREF="scripting-alpha.html#M">M</A> -
-  <A HREF="scripting-alpha.html#N">N</A> - <A HREF="scripting-alpha.html#O">O</A> - <A HREF="scripting-alpha.html#P">P</A> -
-  <A HREF="scripting-alpha.html#Q">Q</A> - <A HREF="scripting-alpha.html#R">R</A> - <A HREF="scripting-alpha.html#S">S</A> - <A HREF="scripting-alpha.html#T">T
-  </A>- <A HREF="scripting-alpha.html#U">U </A>- <A HREF="scripting-alpha.html#V">V </A>- <A HREF="scripting-alpha.html#W">W</A> -
-  <A HREF="scripting-alpha.html#X">X </A>- <A HREF="scripting-alpha.html#Y">Y</A> - <A HREF="scripting-alpha.html#Z">Z </A>-
-<!--
-  <H3 ALIGN=Center>Built-in procedures that do not require a <A NAME="no-font">loaded font</A></H3> -->
-  <H3 ALIGN=Center><A NAME="no-font">フォントを必要</A>としない組込み手続き</A></H3>
+  - <A HREF="scripting-alpha.html#A">A</A> -
+  <A HREF="scripting-alpha.html#B">B</A> -
+  <A HREF="scripting-alpha.html#C">C</A> -
+  <A HREF="scripting-alpha.html#D">D</A> -
+  <A HREF="scripting-alpha.html#E">E</A> -
+  <A HREF="scripting-alpha.html#F">F</A> -
+  <A HREF="scripting-alpha.html#G">G</A> -
+  <A HREF="scripting-alpha.html#H">H</A> - <A HREF="scripting-alpha.html#I">I
+  </A>- <A HREF="scripting-alpha.html#J">J </A>-
+  <A HREF="scripting-alpha.html#K">K</A> -
+  <A HREF="scripting-alpha.html#L">L</A> -
+  <A HREF="scripting-alpha.html#M">M</A> -
+  <A HREF="scripting-alpha.html#N">N</A> -
+  <A HREF="scripting-alpha.html#O">O</A> -
+  <A HREF="scripting-alpha.html#P">P</A> -
+  <A HREF="scripting-alpha.html#Q">Q</A> -
+  <A HREF="scripting-alpha.html#R">R</A> -
+  <A HREF="scripting-alpha.html#S">S</A> - <A HREF="scripting-alpha.html#T">T
+  </A>- <A HREF="scripting-alpha.html#U">U </A>-
+  <A HREF="scripting-alpha.html#V">V </A>-
+  <A HREF="scripting-alpha.html#W">W</A> - <A HREF="scripting-alpha.html#X">X
+  </A>- <A HREF="scripting-alpha.html#Y">Y</A> -
+  <A HREF="scripting-alpha.html#Z">Z </A>-
+  <H3 ALIGN=Center>
+<!--Built-in procedures that do not require a <A NAME="no-font">loaded font</A> -->
+    <A NAME="no-font">フォントを読み込む</A>必要がない組込み手続き</A></H3>
+  </H3>
   <UL>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Array">Array(size)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#AskUser">AskUser(question[,default-answer])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#ATan2">ATan2(val1,val2)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Ceil">Ceil(real)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Chr">Chr(int)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Cos">Cos(val)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Floor">Floor(real)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Error">Error(str)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Exp">Exp(val)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#DefaultOtherSubrs">DefaultOtherSubrs()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#FileAccess">FileAccess(filename[,prot])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#FontsInFile">FontsInFile(filename)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#GetEnv">GetEnv(str)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#GetPref">GetPref(str)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Int">Int(real)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#IsFinite">IsFinite(real)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#IsNan">IsNan(real)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#LoadEncodingFile">LoadEncodingFile(filename)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#LoadNamelist">LoadNamelist(filename)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#LoadNamelistDir">LoadNamelistDir([directory-name])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#LoadPlugin">LoadPlugin(filename)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#LoadPluginDir">LoadPluginDir([directory-name])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#LoadPrefs">LoadPrefs()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#LoadStringFromFile">LoadStringFromFile("filename")</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Log">Log(val)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#New">New()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Open">Open(filename[,flags])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Ord">Ord(string[,pos])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#PostNotice">PostNotice(str)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Pow">Pow(val1,val2)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Print">Print(arg1,arg2,arg3,...)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Rand">Rand()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#ReadOtherSubrsFile">ReadOtherSubrsFile(filename)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Real">Real(int)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Round">Round(real)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SavePrefs">SavePrefs()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SetPrefs">SetPrefs(str,val[,val2])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SizeOf">SizeOf(arr)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Sin">Sin(val)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Sqrt">Sqrt(val)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Strcasestr">Strcasestr(haystack,needle)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Strcasecmp">Strcasecmp(str1,str2)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Strlen">Strlen(str)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Strrstr">Strrstr(haystack,needle)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Strskipint">Strskipint(str[,base])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Strstr">Strstr(haystack,needle)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Strsub">Strsub(str,start[,end])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Strtod">Strtod(str)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Strtol">Strtol(str[,base])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Tan">Tan(val)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#ToString">ToString(arg)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#TypeOf">TypeOf(any)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#UCodePoint">UCodePoint(int)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#UnicodeFromName">UnicodeFromName(name)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Utf8">Utf8(int)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#WriteStringToFile">WriteStringToFile("string","Filename"[,append])</A>
   </UL>
 <!--
   <H3 ALIGN=Center>Built-in procedures that act like the <A NAME="file-menu">File Menu</A></H3> -->
   <H3 ALIGN=Center><A NAME="file-menu"><CODE>ファイル(<U>F</U>)</CODE>メニュー</A>と同じようにふるまう組込み手続き</H3>
   <UL>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Close">Close()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#ControlAfmLigatureOutput">ControlAfmLigatureOutput(script,lang,ligature-tag-list)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Export">Export(format[,bitmap-size])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#FontsInFile">FontsInFile(filename)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Generate">Generate(filename[,bitmaptype[,fmflags[,res[,mult-sfd-file[,namelist-name]]]]])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#GenerateFamily">GenerateFamily(filename,bitmaptype,fmflags,array-of-font-filenames)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Import">Import(filename[,toback[,flags]])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#MergeKern">MergeKern(filename)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#New">New()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Open">Open(filename[,flags])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#PrintFont">PrintFont(type[,pointsize[,sample-text/filename[,output-file]]])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#PrintSetup">PrintSetup(type,[printer[,width,height]])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Quit">Quit(status)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Save">Save([filename])</A>
   </UL>
 <!--
   <H3 ALIGN=Center><A NAME="files">File Manipulation</A></H3> -->
   <H3 ALIGN=Center><A NAME="files">ファイル操作</A></H3>
   <UL>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#FileAccess">FileAccess(filename[,prot])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#LoadStringFromFile">LoadStringFromFile("filename")</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#WriteStringToFile">WriteStringToFile("string","Filename"[,append])</A>
   </UL>
 <!--
   <H3 ALIGN=Center>Built-in procedures that act like the <A NAME="edit-menu">Edit Menu</A></H3> -->
   <H3 ALIGN=Center><A NAME="edit-menu"><CODE>編集(<U>E</U>)</CODE>メニュー</A>のようにふるまう組込み手続き</H3>
   <UL>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Clear">Clear</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#ClearBackground">ClearBackground</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Copy">Copy</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#CopyFgToBd">CopyFgToBd</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#CopyGlyphFeatures">CopyGlyphFeatures(arg,...)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#CopyLBearing">CopyLBearing</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#CopyRBearing">CopyRBearing</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#CopyReference">CopyReference</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#CopyVWidth">CopyVWidth</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#CopyWidth">CopyWidth</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Cut">Cut</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Join">Join([fudge])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Paste">Paste</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Paste">PasteInto</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#PasteWithOffset">PasteWithOffset(xoff,yoff)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#ReplaceWithReference">ReplaceWithReference([fudge])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SameGlyphAs">SameGlyphAs</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#UnlinkReference">UnlinkReference</A>
   </UL>
 <!--
   <H3 ALIGN=Center>Built-in procedures that act like the <A NAME="select-menu">Select Menu</A></H3> -->
   <H3 ALIGN=Center><A NAME="select-menu"><CODE>選択(<U>S</U>)</CODE>サブメニュー</A>のようにふるまう組込み手続き</H3>
   <UL>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Select">Select(arg1, arg2, ...)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SelectAll">SelectAll</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SelectBitmap">SelectBitmap(size)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SelectByATT">SelectByATT(type,tags,contents,search-type)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SelectChanged">SelectChanged([merge])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SelectFewer">SelectFewer(arg1, arg2, ...)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SelectFewerSingletons">SelectFewerSingletons(arg1, ...)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SelectHintingNeeded">SelectHintingNeeded([merge])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SelectIf">SelectIf(arg1,arg2, ...)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SelectInvert">SelectInvert()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SelectMore">SelectMore(arg1, arg2, ...)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SelectMoreSingletons">SelectMoreSingletons(arg1, ...)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SelectNone">SelectNone
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SelectSingletons">SelectSingletons(arg1, ...)</A>
  </UL>
 <!--
   <H3 ALIGN=Center>Built-in procedures that act like the <A NAME="element-menu">Element Menu</A></H3> -->
   <H3 ALIGN=Center><A NAME="element-menu"><CODE>エレメント(<U>L</U>)</CODE>メニュー</A>のようにふるまう組込み手続き</H3>
   <UL>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#AddAccent">AddAccent(accent[,pos])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#AddExtrema">AddExtrema()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#ApplySubstitution">ApplySubstitution(script,lang,tag)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#AutoTrace">AutoTrace()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#BitmapsAvail">BitmapsAvail(sizes)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#BitmapsRegen">BitmapsRegen(sizes)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#BuildAccented">BuildAccented()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#BuildComposite">BuildComposite()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#BuildDuplicate">BuildDuplicate()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#CompareFonts">CompareFonts(other-font-filename,output-filename,flags)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#CompareGlyphs">CompareGlyphs([pt_err[,spline_err[,pixel_off_frac[,bb_err[,compare_hints[,report_diffs_as_errors]]]]]])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#CorrectDirection">CorrectDirection([unlinkrefs])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#DefaultRoundToGrid">DefaultRoundToGrid()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#DefaultUseMyMetrics">DefaultUseMyMetrics()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#ExpandStroke">ExpandStroke(width)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#FindIntersections">FindIntersections()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#HFlip">HFlip([about-x])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Inline">Inline(width,gap)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#InterpolateFonts">InterpolateFonts(percentage,other-font-name[,flags])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#MergeFonts">MergeFonts(other-font-name[,flags])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Move">Move(delta-x,delta-y)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#MoveReference">MoveReference(delta-x,delta-y,[refname/ref-unicode]+)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#NearlyHvCps">NearlyHvCps([error[,err-denom]])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#NearlyHvLines">NearlyHvLines([error[,err-denom]])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#NearlyLines">NearlyLines(error)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#NonLinearTransform">NonLinearTransform(x-expression,y-expression)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Outline">Outline(width)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#OverlapIntersect">OverlapIntersect()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#PositionReference">PositionReference(x,y,[refname/ref-unicode]+)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#RemoveOverlap">RemoveOverlap()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Rotate">Rotate(angle[,ox,oy])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#RoundToCluster">RoundToCluster([within[,max]])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#RoundToInt">RoundToInt([factor])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Scale">Scale(factor[,yfactor][,ox,oy])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#ScaleToEm">ScaleToEm(em-size)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Shadow">Shadow(angle,outline-width,shadow-width)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Simplify">Simplify()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Skew">Skew(angle[,ox,oy])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Transform">Transform(t1,t2,t3,t4,t5,t6)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#VFlip">VFlip([about-y])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Wireframe">Wireframe(angle,outline-width,shadow-width)</A>
   </UL>
 <!--
   <H3 ALIGN=Center><A NAME="font-info">Font Info</A></H3> -->
   <H3 ALIGN=Center><A NAME="font-info">フォント情報</A></H3>
   <UL>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#ChangePrivateEntry">ChangePrivateEntry(key,val)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#ClearPrivateEntry">ClearPrivateEntry(key)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#GetMaxpValue">GetMaxpValue(field-name)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#GetOS2Value">GetOS2Value(field-name)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#GetPrivateEntry">GetPrivateEntry(key)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#GetTeXParam">GetTeXParam(index)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#GetTTFName">GetTTFName(lang,nameid)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#HasPrivateEntry">HasPrivateEntry(key)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#ScaleToEm">ScaleToEm(em-size)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SetFondName">SetFondName(fondname)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SetFontHasVerticalMetrics">SetFontHasVerticalMetrics(flag)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SetFontNames">SetFontNames(fontname[,family[,fullname[,weight[,copyright-notice[,fontversion]]]]])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SetFontOrder">SetFontOrder(order)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SetItalicAngle">SetItalicAngle(angle[,denom])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SetMacStyle">SetMacStyle(val)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SetMaxpValue">SetMaxpValue(field-name,value)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SetOS2Value">SetOS2Value(field-name,field-value)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SetPanose">SetPanose(array) SetPanose(index,value)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SetTeXParams">SetTeXParams(type,design-size,slant,space,stretch,shrink,xheight,quad,extraspace[...])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SetTTFName">SetTTFName(lang,nameid,utf8-string)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SetUniqueID">SetUniqueID(value)</A>
-<LI>Some items (such as the font name) may be retrieved via built-in variables.
+    <LI>Some items (such as the font name) may be retrieved via built-in variables.
   </UL>
 <!--
   <H3 ALIGN=Center><A NAME="glyph-info">Glyph Info</A></H3> -->
   <H3 ALIGN=Center><A NAME="glyph-info">グリフ情報</A></H3>
   <UL>
-<LI>
-      <A HREF="scripting-alpha.html#CharInfo">CharInfo(str)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#DrawsSomething">DrawsSomething([arg])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#GetPosSub">GetPosSub(feature-tag,script,lang)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#GlyphInfo">GlyphInfo(str)</A>
-<LI>
-      <A HREF="scripting-alpha.html#SetCharColor">SetCharColor(color)</A>
-<LI>
-      <A HREF="scripting-alpha.html#SetCharComment">SetCharComment(comment)</A>
-<LI>
-      <A HREF="scripting-alpha.html#SetCharName">SetCharName(name[,set-from-name-flag])</A>
-<LI>
-      <A HREF="scripting-alpha.html#SetGlyphChanged">SetGlyphChanged(flag)</A>
-<LI>
+    <LI>
+      <A HREF="scripting-alpha.html#SetGlyphColor">SetCharColor(color)</A>
+    <LI>
+      <A HREF="scripting-alpha.html#SetGlyphComment">SetGlyphComment(comment)</A>
+    <LI>
+      <A HREF="scripting-alpha.html#SetCharName">SetGlyphName(name[,set-from-name-flag])</A>
+    <LI>
+      <A HREF="scripting-alpha.html#SetlyphChanged">SetGlyphChanged(flag)</A>
+    <LI>
       <A HREF="scripting-alpha.html#SetGlyphClass">SetGlyphClass(class-name)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SetUnicodeValue">SetUnicodeValue(uni[,set-from-value-flag])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SetGlyphTeX">SetGlyphTeX(height,depth[,subpos,suppos])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#WorthOutputting">WorthOutputting([arg])</A>
   </UL>
 <!--
   <H3 ALIGN=Center>Built-in procedures that handle <A NAME="ATT">Advanced Typography</A></H3> -->
   <H3 ALIGN=Center><A NAME="ATT">高度組版機能</A>を操作する組込み手続き</H3>
   <UL>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#AddAnchorClass">AddAnchorClass(name,type,script-lang,tag,flags,merge-with)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#AddAnchorPoint">AddAnchorPoint(name,type,x,y[,lig-index])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#AddATT">AddATT(type,script-lang,tag,flags,variant)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#ApplySubstitution">ApplySubstitution(script,lang,tag)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#CheckForAnchorClass">CheckForAnchorClass(name)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#DefaultATT">DefaultATT(tag)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#HasPreservedTable">HasPreservedTable(tag)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#LoadTableFromFile">LoadTableFromFile(tag,filename)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#GetPosSub">GetPosSub(feature-tag,script,lang)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#RemoveATT">RemoveATT(type,script-lang,tag)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#RemoveAnchorClass">RemoveAnchorClass(name)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#RemovePreservedTable">RemovePreservedTable(tag)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SaveTableToFile">SaveTableToFile(tag,filename)</A>
   </UL>
 <!--
   <H3 ALIGN=Center>Built-in procedures that act like the <A NAME="encoding-menu">Encoding Menu</A></H3> -->
   <H3 ALIGN=Center><A NAME="encoding-menu"><CODE>エンコーディング(<U>N</U>)</CODE>メニュー</A>のようにふるまう組込み手続き</H3>
   <UL>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#CharCnt">CharCnt()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#LoadEncodingFile">LoadEncodingFile(filename)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Reencode">Reencode(encoding-name[,force])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#RenameGlyphs">RenameGlyphs(namelist-name)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SetCharCnt">SetCharCnt(cnt)</A>
   </UL>
 <!--
   <H3 ALIGN=Center>Built-in procedures that act like the <A NAME="hint-menu">Hint Menu</A></H3> -->
   <H3 ALIGN=Center><A NAME="hint-menu"><CODE>ヒント(<U>H</U>)</CODE>メニュー</A>のようにふるまう組込み手続き</H3>
   <UL>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#AddHHint">AddHHint(start,width)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#AddInstrs">AddInstrs(thingamy,replace,instrs)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#AddVHint">AddVHint(start,width)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#AutoCounter">AutoCounter()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#AutoHint">AutoHint()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#AutoInstr">AutoInstr()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#ChangePrivateEntry">ChangePrivateEntry(key,val)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#ClearCharCounterMasks">ClearCharCounterMasks()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#ClearHints">ClearHints()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#ClearInstrs">ClearInstrs()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#ClearPrivateEntry">ClearPrivateEntry(key)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#ClearTable">ClearTable(tag)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#DontAutoHint">DontAutoHint()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#FindOrAddCvtIndex">FindOrAddCvtIndex(value[,sign-matters])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#GetCvtAt">GetCvtAt(index)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#GetPrivateEntry">GetPrivateEntry(key)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#HasPrivateEntry">HasPrivateEntry(key)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#PrivateToCvt">PrivateToCvt()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#ReplaceCharCounterMasks">ReplaceCharCounterMasks(array)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#ReplaceCvtAt">ReplaceCvtAt(index,value)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SetCharCounterMask">SetCharCounterMask(cg,hint-index,hint-index,...)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SubstitutionPoints">SubstitutionPoints()</A>
   </UL>
 <!--
   <H3 ALIGN=Center>Built-in procedures that act like the <A NAME="metrics-menu">Metrics Menu</A></H3> -->
   <H3 ALIGN=Center><A NAME="metrics-menu"><CODE>メトリック(<U>M</U>)</CODE>メニュー</A>のようにふるまう組込み手続き</H3>
   <UL>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#AutoKern">AutoKern(spacing,threshold[,kernfile])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#AutoWidth">AutoWidth(spacing)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#CenterInWidth">CenterInWidth()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SetKern">SetKern(ch2,offset)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#RemoveAllKerns">RemoveAllKerns()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#RemoveAllVKerns">RemoveAllVKerns()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SetLBearing">SetLBearing(lbearing[,relative])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SetRBearing">SetRBearing(rbearing[,relative])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SetVKern">SetVKern(ch2,offset)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SetVWidth">SetVWidth(vertical-width[,relative])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SetWidth">SetWidth(width[,relative])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#VKernFromHKern">VKernFromHKern()</A>
   </UL>
 <!--
   <H3 ALIGN=Center><A NAME="MM">Multiple master routines</A></H3> -->
   <H3 ALIGN=Center><A NAME="MM">マルチプルマスター操作ルーチン</A></H3>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#MMAxisBounds">MMAxisBounds(axis)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#MMAxisNames">MMAxisNames()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#MMBlendToNewFont">MMBlendToNewFont(weights)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#MMChangeInstance">MMChangeInstance(instance)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#MMChangeWeight">MMChangeWeight(weights)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#MMInstanceNames">MMInstanceNames()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#MMWeightedName">MMWeightedName()</A>
   </UL>
 <!--
   <H3 ALIGN=Center><A NAME="CID">CID routines</A></H3> -->
   <H3 ALIGN=Center><A NAME="CID">CID フォント操作ルーチン</A></H3>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#CIDChangeSubFont">CIDChangeSubFont(new-sub-font-name)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#CIDFlatten">CIDFlatten()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#CIDFlattenByCMap">CIDFlattenByCMap(cmap-filename)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#CIDSetFontNames">CIDSetFontNames(fontname[,family[,fullname[,weight[,copyright-notice]]]])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#ConvertToCID">ConvertToCID(registry, ordering, supplement)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#ConvertByCMap">ConvertByCMap(cmapfilename)</A>
   <UL>
   </UL>
@@ -1203,13 +1242,13 @@ endloop
   <H3 ALIGN=Center><A NAME="user">User Interaction</A></H3> -->
   <H3 ALIGN=Center><A NAME="user">ユーザとのやりとり</A></H3>
   <UL>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#AskUser">AskUser(question[,default-answer])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Error">Error(str)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#PostNotice">PostNotice(str)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Print">Print(arg1,arg2,arg3,...)</A>
 
   </UL>
@@ -1217,127 +1256,127 @@ endloop
   <H3 ALIGN=Center><A NAME="prefs">Preferences</A></H3> -->
   <H3 ALIGN=Center><A NAME="prefs">環境設定</A></H3>
   <UL>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#DefaultOtherSubrs">DefaultOtherSubrs()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#GetPref">GetPref(str)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#LoadEncodingFile">LoadEncodingFile(filename)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#LoadNamelist">LoadNamelist(filename)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#LoadNamelistDir">LoadNamelistDir([directory-name])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#LoadPlugin">LoadPlugin(filename)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#LoadPluginDir">LoadPluginDir([directory-name])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#LoadPrefs">LoadPrefs()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#ReadOtherSubrsFile">ReadOtherSubrsFile(filename)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SavePrefs">SavePrefs()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SetPrefs">SetPrefs(str,val[,val2])</A>
 <!--
-<LI>It it also possible to get the value of a preference item by preceding its
+    <LI>It it also possible to get the value of a preference item by preceding its
 name with a dollar sign. -->
-<LI>環境設定項目の値は、項目名の前にドル記号 ($) をつけた名前の変数によって得ることもできます。
+    <LI>環境設定項目の値は、項目名の前にドル記号 ($) をつけた名前の変数によって得ることもできます。
   </UL>
 <!--
   <H3 ALIGN=Center><A NAME="math">Math</A></H3> -->
   <H3 ALIGN=Center><A NAME="math">数学関数</A></H3>
   <UL>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#ATan2">ATan2(val1,val2)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Ceil">Ceil(real)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Chr">Chr(int)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Cos">Cos(val)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Exp">Exp(val)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Floor">Floor(real)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Int">Int(real)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#IsFinite">IsFinite(real)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#IsNan">IsNan(real)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Log">Log(val)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Ord">Ord(string[,pos])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Pow">Pow(val1,val2)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Rand">Rand()</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Real">Real(int)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Round">Round(real)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Sin">Sin(val)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Sqrt">Sqrt(val)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Strskipint">Strskipint(str[,base])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Strtod">Strtod(str)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Strtol">Strtol(str[,base])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Tan">Tan(val)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#ToString">ToString(arg)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#UCodePoint">UCodePoint(int)</A>
 
   </UL>
   <H3 ALIGN=Center><A NAME="unicode">Unicode</A></H3>
   <UL>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#UCodePoint">UCodePoint(int)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#UnicodeFromName">UnicodeFromName(name)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Utf8">Utf8(int)</A>
   </UL>
 <!--
   <H3 ALIGN=Center><A NAME="strings">String manipulation</A></H3> -->
   <H3 ALIGN=Center><A NAME="strings">文字列操作</A></H3>
   <UL>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Chr">Chr(int)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#GetEnv">GetEnv(str)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Ord">Ord(string[,pos])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Strcasecmp">Strcasecmp(str1,str2)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Strcasestr">Strcasestr(haystack,needle)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Strlen">Strlen(str)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Strrstr">Strrstr(haystack,needle)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Strskipint">Strskipint(str[,base])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Strstr">Strstr(haystack,needle)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Strsub">Strsub(str,start[,end])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Strtod">Strtod(str)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Strtol">Strtol(str[,base])</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#ToString">ToString(arg)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#UnicodeFromName">UnicodeFromName(name)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#Utf8">Utf8(int)</A>
   </UL>
 <!--
@@ -1345,17 +1384,36 @@ name with a dollar sign. -->
   <H3 ALIGN=Center><A NAME="arrays">配列操作</A></H3>
   <UL><LI>
       <A HREF="scripting-alpha.html#Array">Array(size)</A>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#SizeOf">SizeOf(arr)</A>
   </UL>
 <!--
   <H3 ALIGN=Center><A NAME="misc">Miscellaneous</A></H3> -->
   <H3 ALIGN=Center><A NAME="misc">その他</A></H3>
   <UL>
-<LI>
+    <LI>
       <A HREF="scripting-alpha.html#InFont">InFont(arg)</A>
-  <LI>
+    <LI>
       <A HREF="scripting-alpha.html#TypeOf">TypeOf(any)</A>
+  <H3 ALIGN=Center>
+<!--<A NAME="Deprecated">Deprecated Names</A> -->
+    <A NAME="Deprecated">廃止された名前</A>
+  </H3>
+  <UL>
+    <LI>
+      <A HREF="scripting-alpha.html#ClearGlyphCounterMasks">ClearCharCounterMasks()</A>
+    <LI>
+      <A HREF="scripting-alpha.html#GlyphInfo">CharInfo(str)</A>
+    <LI>
+      <A HREF="scripting-alpha.html#ReplaceGlyphCounterMasks">ReplaceCharCounterMasks(array)</A>
+    <LI>
+      <A HREF="scripting-alpha.html#SetGlyphColor">SetCharColor(color)</A>
+    <LI>
+      <A HREF="scripting-alpha.html#SetGlyphComment">SetCharComment(comment)</A>
+    <LI>
+      <A HREF="scripting-alpha.html#SetGlyphCounterMask">SetCharCounterMask(cg,hint-index,hint-index,...)</A>
+    <LI>
+      <A HREF="scripting-alpha.html#SetGlyphName">SetCharName(name[,set-from-name-flag])</A>
   </UL>
   <P>
     <HR>
@@ -1365,9 +1423,9 @@ name with a dollar sign. -->
   </H2>
   <UL>
     <LI>
-<!--  <A HREF="http://cvs.sourceforge.net/viewcvspy/pfaedit/pfaedit/test/">FontForge's
+<!--  <A HREF="http://cvs.sourceforge.net/viewcvspy/fontforge/fontforge/test/">FontForge's
       testsuite</A> (such as it is) -->
-      <A HREF="http://cvs.sourceforge.net/viewcvs.py/pfaedit/pfaedit/test/">FontForge 
+      <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/test/">FontForge 
       のテストスイート</A> (という程の物ではないが)
     <LI>
 <!--  <A HREF="scripts/">Directory of donated scripts</A>-->
