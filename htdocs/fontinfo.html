@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 5-Feb-2006 -->
+  <!-- AP: Last modified: 17-Apr-2006 -->
   <TITLE>Font Info</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -17,10 +17,11 @@
   <P>
   The Font Info dialog is available from all views. It allows you to name your
   font and various other useful bits of information. In a
-  <A HREF="fontview.html#CID">CID keyed font</A>, there is a
-  <A HREF="cidmenu.html#FontInfo">separate command</A> to access the information
-  for the font as a whole, the dialog looks the same. The dialog is composed
-  of many different sub dialogs.
+  <A HREF="fontview.html#CID">CID keyed font</A>, things are more complex.
+  Each CID keyed font is composed of man sub-fonts; this command works on the
+  current sub-font while there is a <A HREF="cidmenu.html#FontInfo">separate
+  command</A> to access the information for the font as a whole -- that dialog
+  looks the same. The dialog is composed of many different sub dialogs.
   <UL>
     <LI>
       <A HREF="fontinfo.html#Names">Names</A>
@@ -162,7 +163,7 @@
   for understanding the font's behavior. For example a unicode font designed
   for a chinese system will look very different from a unicode font for a japanese
   system (The same unicode character may map to very different chinese or japanese
-  glyphs). To handle this FontForge has the concept of "Interpretation". 
+  glyphs). To handle this FontForge has the concept of "Interpretation".
   <P>
   When you create a new glyph in a font, fontforge will assign it a name based
   on the current
