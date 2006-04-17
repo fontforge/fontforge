@@ -1604,8 +1604,10 @@ SplinePointList *SPLCopyTranslatedHintMasks(SplinePointList *base,
 	for ( spt = spl->first, spt2 = spl2->first ; spt!=pfirst; spt = spt->next->to, spt2 = spt2->next->to ) {
 	    if ( pfirst==NULL ) pfirst = spt;
 	    TransformPoint(spt,transform);
-	    if ( spt2->hintmask )
+	    if ( spt2->hintmask ) {
+		chunkfree(spt->hintmask,sizeof(HintMask));
 		spt->hintmask = HintMaskTransform(spt2->hintmask,transform,basesc,subsc);
+	    }
 	    if ( spt->next==NULL )
 	break;
 	}
@@ -1636,8 +1638,10 @@ static SplinePointList *_SPLCopyTransformedHintMasks(SplineChar *subsc,real tran
 	for ( spt = spl->first, spt2 = spl2->first ; spt!=pfirst; spt = spt->next->to, spt2 = spt2->next->to ) {
 	    if ( pfirst==NULL ) pfirst = spt;
 	    TransformPoint(spt,transform);
-	    if ( spt2->hintmask )
+	    if ( spt2->hintmask ) {
+		chunkfree(spt->hintmask,sizeof(HintMask));
 		spt->hintmask = HintMaskTransform(spt2->hintmask,transform,basesc,subsc);
+	    }
 	    if ( spt->next==NULL )
 	break;
 	}
@@ -2349,11 +2353,12 @@ return( NULL );
 
 	mm->instances[ipos] = SplineFontEmpty();
 	SplineFontMetaData(mm->instances[ipos],fd);
+	free(fd->fontinfo->weight);
 	mm->instances[ipos]->map = map;
 	_SplineFontFromType1(mm->instances[ipos],fd,pscontext);
 	mm->instances[ipos]->mm = mm;
     }
-    free(origweight);
+    fd->fontinfo->weight = origweight;
 
     /* Clean up hintmasks. We always create a hintmask on the first point */
     /*  only keep them if we actually have conflicts.			  */
@@ -4794,6 +4799,7 @@ void SplineCharFreeContents(SplineChar *sc) {
     if ( sc==NULL )
 return;
     free(sc->name);
+    free(sc->comment);
     for ( i=0; i<sc->layer_cnt; ++i ) {
 	SplinePointListsFree(sc->layers[i].splines);
 	RefCharsFree(sc->layers[i].refs);
@@ -4831,6 +4837,7 @@ void AnchorClassesFree(AnchorClass *an) {
     AnchorClass *anext;
     for ( ; an!=NULL; an = anext ) {
 	anext = an->next;
+	free(an->name);
 	chunkfree(an,sizeof(AnchorClass));
     }
 }
@@ -5075,6 +5082,7 @@ return;
     free(sf->familyname);
     free(sf->weight);
     free(sf->copyright);
+    free(sf->comments);
     free(sf->filename);
     free(sf->origname);
     free(sf->autosavename);
@@ -5082,6 +5090,7 @@ return;
     free(sf->xuid);
     free(sf->cidregistry);
     free(sf->ordering);
+    MacFeatListFree(sf->features);
     /* We don't free the EncMap. That field is only a temporary pointer. Let the FontView free it, that's where it really lives */
     SplinePointListsFree(sf->grid.splines);
     AnchorClassesFree(sf->anchor);

@@ -1286,7 +1286,7 @@ static void bFontsInFile(Context *c) {
 
     cnt = 0;
     if ( ret!=NULL ) for ( cnt=0; ret[cnt]!=NULL; ++cnt );
-    c->return_val.type = v_arr;
+    c->return_val.type = v_arrfree;
     c->return_val.u.aval = galloc(sizeof(Array));
     c->return_val.u.aval->argc = cnt;
     c->return_val.u.aval->vals = galloc((cnt==0?1:cnt)*sizeof(Val));
@@ -1315,6 +1315,7 @@ static void bOpen(Context *c) {
     t = script2utf8_copy(c->a.vals[1].u.sval);
     locfilename = utf82def_copy(t);
     sf = LoadSplineFont(locfilename,openflags);
+    free(t); free(locfilename);
     if ( sf==NULL )
 	ScriptErrorString(c, "Failed to open", c->a.vals[1].u.sval);
     if ( sf->fv!=NULL )
@@ -4393,6 +4394,8 @@ static void bMergeFonts(Context *c) {
     free(t); free(locfilename);
     if ( sf==NULL )
 	ScriptErrorString(c,"Can't find font", c->a.vals[1].u.sval);
+    if ( sf->fv==NULL )
+	EncMapFree(sf->map);
     MergeFont(c->curfv,sf);
 }
 
@@ -4423,6 +4426,8 @@ static void bInterpolateFonts(Context *c) {
     free(t); free(locfilename);
     if ( sf==NULL )
 	ScriptErrorString(c,"Can't find font", c->a.vals[2].u.sval);
+    if ( sf->fv==NULL )
+	EncMapFree(sf->map);
     c->curfv = FVAppend(_FontViewCreate(InterpolateFont(c->curfv->sf,sf,percent/100.0, c->curfv->map->enc )));
 }
 
@@ -5109,7 +5114,7 @@ static void bMMInstanceNames(Context *c) {
     else if ( mm==NULL )
 	ScriptError( c, "Not a multiple master font" );
 
-    c->return_val.type = v_arr;
+    c->return_val.type = v_arrfree;
     c->return_val.u.aval = galloc(sizeof(Array));
     c->return_val.u.aval->argc = mm->instance_count;
     c->return_val.u.aval->vals = galloc(mm->instance_count*sizeof(Val));
@@ -5128,7 +5133,7 @@ static void bMMAxisNames(Context *c) {
     else if ( mm==NULL )
 	ScriptError( c, "Not a multiple master font" );
 
-    c->return_val.type = v_arr;
+    c->return_val.type = v_arrfree;
     c->return_val.u.aval = galloc(sizeof(Array));
     c->return_val.u.aval->argc = mm->axis_count;
     c->return_val.u.aval->vals = galloc(mm->axis_count*sizeof(Val));
@@ -5152,7 +5157,7 @@ static void bMMAxisBounds(Context *c) {
 	ScriptError( c, "Axis out of range");
     axis = c->a.vals[1].u.ival;
 
-    c->return_val.type = v_arr;
+    c->return_val.type = v_arrfree;
     c->return_val.u.aval = galloc(sizeof(Array));
     c->return_val.u.aval->argc = mm->axis_count;
     c->return_val.u.aval->vals = galloc(3*sizeof(Val));
@@ -5932,7 +5937,7 @@ static void FigureExtrema(Context *c,SplineChar *sc,int pos,int xextrema) {
 		FigureSplExt(r->layers[l].splines,pos,xextrema,minmax);
     }
 
-    c->return_val.type = v_arr;
+    c->return_val.type = v_arrfree;
     c->return_val.u.aval = galloc(sizeof(Array));
     c->return_val.u.aval->argc = 2;
     c->return_val.u.aval->vals = galloc(2*sizeof(Val));
@@ -6117,7 +6122,7 @@ return;
 	    for ( i=0, layer=ly_fore; layer<sc->layer_cnt; ++layer )
 		for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next, ++i )
 		    ;
-	    c->return_val.type = v_arr;
+	    c->return_val.type = v_arrfree;
 	    c->return_val.u.aval = galloc(sizeof(Array));
 	    c->return_val.u.aval->argc = i;
 	    c->return_val.u.aval->vals = galloc(i*sizeof(Val));
@@ -6131,7 +6136,7 @@ return;
 	    for ( i=0, layer=ly_fore; layer<sc->layer_cnt; ++layer )
 		for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next, ++i )
 		    ;
-	    c->return_val.type = v_arr;
+	    c->return_val.type = v_arrfree;
 	    c->return_val.u.aval = galloc(sizeof(Array));
 	    c->return_val.u.aval->argc = i;
 	    c->return_val.u.aval->vals = galloc(i*sizeof(Val));
@@ -6159,7 +6164,7 @@ return;
 	    else if ( strmatch( c->a.vals[1].u.sval,"BBox")==0 ||
 		    strmatch( c->a.vals[1].u.sval,"BoundingBox")==0 ||
 		    strmatch( c->a.vals[1].u.sval,"BB")==0 ) {
-		c->return_val.type = v_arr;
+		c->return_val.type = v_arrfree;
 		c->return_val.u.aval = galloc(sizeof(Array));
 		c->return_val.u.aval->argc = 4;
 		c->return_val.u.aval->vals = galloc(4*sizeof(Val));

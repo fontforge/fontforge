@@ -770,6 +770,7 @@ return;
 		    classes[j], at,sc->anchor);
 	}
     }
+    free(offsets);
 }
 
 static void MarkGlyphsProcessLigs(FILE *ttf,int baseoffset,
@@ -808,7 +809,9 @@ return;
 		sc->anchor->lig_index = k;
 	    }
 	}
+	free(aoffsets);
     }
+    free(loffsets);
 }
 
 static void gposMarkSubTable(FILE *ttf, uint32 stoffset,
@@ -1292,6 +1295,7 @@ return;
 	class = getClassDefTable(ttf, stoffset+classoff, info->glyph_cnt, info->g_bounds);
 	fpst->nccnt = ClassFindCnt(class,info->glyph_cnt);
 	fpst->nclass = ClassToNames(info,fpst->nccnt,class,info->glyph_cnt);
+	free(class); class = NULL;
 
 	cnt = 0;
 	for ( i=0; i<rcnt; ++i ) for ( j=0; j<rules[i].scnt; ++j ) {
@@ -1992,8 +1996,8 @@ return;
 		    }
 		}
 		pt[-1] = '\0';
-		free(lig_glyphs);
 	    }
+	    free(lig_glyphs);
 	}
 	free(lig_offsets);
     }
@@ -2791,8 +2795,10 @@ static void ProcessGPOSGSUB(FILE *ttf,struct ttfinfo *info,int gpos,int inusetyp
     if ( scripts==NULL )
 return;
     features = readttffeatures(ttf,base+feature_off,gpos,info);
-    if ( features==NULL )		/* None of the data we care about */
+    if ( features==NULL ) {		/* None of the data we care about */
+	ScriptsFree(scripts);		/* Some fonts have empty GSUB/GPOS tables to force windows to accept the other one */
 return;
+    }
     lookups = readttflookups(ttf,lookup_start,info);
     if ( lookups==NULL )
 return;
@@ -2813,6 +2819,10 @@ return;
     }
     LookupsFree(lookups);
     free(sublookups);
+    if ( inusetype ) {
+	free(info->feats[gpos]);
+	info->feats[gpos]=NULL;
+    }
 }
 
 void readttfgsubUsed(FILE *ttf,struct ttfinfo *info) {
@@ -3531,7 +3541,8 @@ return;
 		    pst->u.lig.lig = sm->info->chars[lig_glyph];
 		    pst->next = sm->info->chars[lig_glyph]->possub;
 		    sm->info->chars[lig_glyph]->possub = pst;
-		}
+		} else
+		    free(comp);
 	    }
 	} else
 	    morx_figure_ligatures(sm,lcp-1,ligindex,lig_offset);
@@ -4595,6 +4606,7 @@ return;
 	if ( flags&0x4000 )
 	    cur->default_setting = flags&0xff;
 	if ( feof(ttf)) {
+	    free(fs);
 	    LogError( _("End of file in feat table.\n" ));
 return;
 	}
@@ -4614,6 +4626,7 @@ return;
 	    scur->setting = getushort(ttf);
 	    scur->strid = getushort(ttf);
 	    if ( feof(ttf)) {
+		free(fs);
 		LogError( _("End of file in feat table.\n") );
 return;
 	    }

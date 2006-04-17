@@ -2318,6 +2318,7 @@ return;
 	}
     }
     for ( i=0; i<instance_count; ++i ) if ( to[i]!=NULL ) {
+	chunkfree(to[i]->hintmask,sizeof(HintMask));
 	to[i]->hintmask = chunkalloc(sizeof(HintMask));
 	memcpy(to[i]->hintmask,mask,sizeof(HintMask));
     }

@@ -1774,6 +1774,7 @@ static int Spline2Interpolate(SplinePoint *mid, double err) {
 	SplineRefigure(mid->next);
 	SplineRefigure(mid->prev);
     }
+    free(tp);
 return( good );
 }
 

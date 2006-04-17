@@ -2254,6 +2254,7 @@ static int SFDCloseCheck(SplinePointList *spl,int order2) {
 	oldlast->prev->from->next = NULL;
 	spl->last = oldlast->prev->from;
 	chunkfree(oldlast->prev,sizeof(*oldlast));
+	chunkfree(oldlast->hintmask,sizeof(HintMask));
 	chunkfree(oldlast,sizeof(*oldlast));
 	SplineMake(spl->last,spl->first,order2);
 	spl->last = spl->first;
@@ -4923,6 +4924,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 		gwwv_progress_next_stage();
 #endif
 	    mm->instances[i] = SFD_GetFont(sfd,NULL,tok);
+	    EncMapFree(mm->instances[i]->map); mm->instances[i]->map=NULL;
 	    mm->instances[i]->mm = mm;
 	}
 #if defined(FONTFORGE_CONFIG_GDRAW)

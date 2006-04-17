@@ -2180,6 +2180,7 @@ static void SVGLigatureFixupCheck(SplineChar *sc,xmlNodePtr glyph) {
 		    if ( *pt==' ' ) *pt = '_';
 	    }
 	}
+	free(u);
     }
 }
 
@@ -2442,6 +2443,7 @@ return( NULL );
 		    sf->pfminfo.panose[i] = strtol(pt,&end,10);
 		}
 		sf->pfminfo.panose_set = true;
+		_xmlFree(name);
 	    }
 	    name = _xmlGetProp(kids,(xmlChar *) "slope");
 	    if ( name!=NULL ) {

@@ -1003,7 +1003,7 @@ static void _CvtPsSplineSet(GrowBuf *gb, SplinePointList *spl[MmMax], int instan
 	    spl[i] = spl[i]->next;
 	}
     }
-    SplinePointListFree(freeme);
+    SplinePointListsFree(freeme);
 }
 
 static RefChar *IsRefable(RefChar *ref, int isps, real transform[6], RefChar *sofar) {
@@ -1310,20 +1310,20 @@ static void RSC2PS1(GrowBuf *gb, SplineChar *base[MmMax],SplineChar *rsc[MmMax],
     SplineChar *rscs[MmMax];
     int round = (flags&ps_flag_round)? true : false;
     RefChar *refs[MmMax];
-    SplineSet *spls[MmMax];
+    SplineSet *spls[MmMax], *freeme[MmMax];
     int i;
     int wasntconflicted = hdb->noconflicts;
 
     for ( i=0; i<instance_count; ++i ) {
 	spls[i] = rsc[i]->layers[ly_fore].splines;
 	if ( base[0]!=rsc[0] )
-	    spls[i] = SPLCopyTranslatedHintMasks(spls[i],base[i],rsc[i],&trans[i]);
+	    spls[i] = freeme[i] = SPLCopyTranslatedHintMasks(spls[i],base[i],rsc[i],&trans[i]);
     }
     _CvtPsSplineSet(gb,spls,instance_count,current,round,hdb,startend,
 	    base[0]->parent->order2,base[0]->parent->strokedfont);
     if ( base[0]!=rsc[0] )
 	for ( i=0; i<instance_count; ++i )
-	    SplinePointListFree(spls[i]);
+	    SplinePointListsFree(freeme[i]);
 
     for ( i=0; i<instance_count; ++i )
 	refs[i] = rsc[i]->layers[ly_fore].refs;
@@ -1332,14 +1332,14 @@ static void RSC2PS1(GrowBuf *gb, SplineChar *base[MmMax],SplineChar *rsc[MmMax],
 	    spls[i] = refs[i]->layers[0].splines;
 	if ( !refs[0]->justtranslated ) {
 	    for ( i=0; i<instance_count; ++i )
-		spls[i] = SPLCopyTransformedHintMasks(refs[i],base[i],&trans[i]);
+		spls[i] = freeme[i] = SPLCopyTransformedHintMasks(refs[i],base[i],&trans[i]);
 	    if ( NeverConflicts(refs,instance_count) && !hdb->noconflicts &&
 		    refs[0]->transform[1]==0 && refs[0]->transform[2]==0 )
 		CallTransformedHintSubr(gb,hdb,base,refs,trans,instance_count,round);
 	    _CvtPsSplineSet(gb,spls,instance_count,current,round,hdb,startend,
 		    base[0]->parent->order2,base[0]->parent->strokedfont);
 	    for ( i=0; i<instance_count; ++i )
-		SplinePointListFree(spls[i]);
+		SplinePointListsFree(freeme[i]);
 	} else if ( refs[0]->sc->ttf_glyph!=0x7fff &&
 		((flags&ps_flag_nohints) ||
 		 !refs[0]->sc->anyflexes ||
@@ -1782,6 +1782,7 @@ struct pschars *SplineFont2Chrs(SplineFont *sf, int iscjk,
 	*gb.pt = '\0';
 	chrs->values[0] = (unsigned char *) copyn((char *) gb.base,gb.pt-gb.base);	/* 0 <w> hsbw endchar */
 	chrs->lens[0] = gb.pt-gb.base;
+	free(gb.base);
     } else {
 	chrs->values[0] = SplineChar2PS(sf->glyphs[notdef_pos],&chrs->lens[0],
 		round,iscjk,subrs,NULL,flags,format);
@@ -2461,7 +2462,7 @@ static void CvtPsSplineSet2(GrowBuf *gb, SplinePointList *spl,
 	/* Of course, I have to Reverse again to get back to my convention after*/
 	/*  saving */
     }
-    SplinePointListFree(freeme);
+    SplinePointListsFree(freeme);
 }
 
 static void DumpHints(GrowBuf *gb,StemInfo *h,int oper,int midoper,int round) {
@@ -2684,7 +2685,7 @@ static void RSC2PS2(GrowBuf *gb, SplineChar *base,SplineChar *rsc,
     if ( base!=rsc )
 	temp = freeme = SPLCopyTranslatedHintMasks(temp,base,rsc,trans);
     CvtPsSplineSet2(gb,temp,hdb,startend,rsc->parent->order2,round);
-    SplinePointListFree(freeme);
+    SplinePointListsFree(freeme);
 
     for ( r = rsc->layers[ly_fore].refs; r!=NULL; r = r->next ) if ( r!=unsafe ) {
 	if ( !r->justtranslated ) {
@@ -2695,7 +2696,7 @@ static void RSC2PS2(GrowBuf *gb, SplineChar *base,SplineChar *rsc,
 		DummyHintmask(gb,hdb);
 	    temp = SPLCopyTransformedHintMasks(r,base,trans);
 	    CvtPsSplineSet2(gb,temp,hdb,startend,rsc->parent->order2,round);
-	    SplinePointListFree(temp);
+	    SplinePointListsFree(temp);
 	} else if ( r->sc->lsidebearing!=0x7fff &&
 		((flags&ps_flag_nohints) ||(!r->sc->hconflicts && !r->sc->vconflicts)) ) {
 	    ExpandRef2(gb,base,hdb,r,trans,startend,subrs,round);
@@ -3209,6 +3210,8 @@ struct pschars *SplineFont2ChrsSubrs2(SplineFont *sf, int nomwid, int defwid,
 	free(gi.psubrs[i].data);
     }
     for ( i=0; i<cnt; ++i ) {
+	for ( j=0; j<gi.gb[i].bcnt; ++j )
+	    free(gi.gb[i].bits[j].data);
 	free(gi.gb[i].bits);
     }
     free(gi.gb);
@@ -3417,6 +3420,8 @@ struct pschars *CID2ChrsSubrs2(SplineFont *cidmaster,struct fd2data *fds,
 	free(gi.psubrs[i].data);
     }
     for ( i=0; i<cnt; ++i ) {
+	for ( j=0; j<gi.gb[i].bcnt; ++j )
+	    free(gi.gb[i].bits[j].data);
 	free(gi.gb[i].bits);
     }
     free(gi.gb);

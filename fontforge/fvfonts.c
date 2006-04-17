@@ -855,6 +855,8 @@ return;
 	full = galloc(strlen(filename)+1+strlen(file)+1);
 	strcpy(full,filename); strcat(full,"/"); strcat(full,file);
 	sf = LoadSplineFont(full,0);
+	if ( sf!=NULL && sf->fv==NULL )
+	    EncMapFree(sf->map);
 	free(full);
 	if ( sf==NULL )
 	    /* Do Nothing */;
@@ -1409,6 +1411,8 @@ static void InterAskFilename(FontView *fv, real amount) {
     if ( filename==NULL )
 return;
     sf = LoadSplineFont(filename,0);
+    if ( sf!=NULL && sf->fv==NULL )
+	EncMapFree(sf->map);
     free(filename);
     if ( sf==NULL )
 return;

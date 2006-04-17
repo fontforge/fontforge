@@ -1226,14 +1226,16 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 	    /* MS chinese fonts have contours consisting of a single off curve*/
 	    /*  point. What on earth do they think that means? */
 	    /* Oh. I see. It's used to possition marks and such */
-	    sp = chunkalloc(sizeof(SplinePoint));
-	    sp->me.x = pts[start].x;
-	    sp->me.y = pts[start].y;
-	    sp->nextcp = sp->prevcp = sp->me;
-	    sp->nonextcp = sp->noprevcp = true;
-	    sp->ttfindex = i-1;
-	    sp->nextcpindex = 0xffff;
-	    cur->first = cur->last = sp;
+	    if ( cur->first==NULL ) {
+		sp = chunkalloc(sizeof(SplinePoint));
+		sp->me.x = pts[start].x;
+		sp->me.y = pts[start].y;
+		sp->nextcp = sp->prevcp = sp->me;
+		sp->nonextcp = sp->noprevcp = true;
+		sp->ttfindex = i-1;
+		sp->nextcpindex = 0xffff;
+		cur->first = cur->last = sp;
+	    }
 	} else if ( !(flags[start]&_On_Curve) && !(flags[i-1]&_On_Curve) ) {
 	    sp = chunkalloc(sizeof(SplinePoint));
 	    sp->me.x = (pts[start].x+pts[i-1].x)/2;
@@ -3051,13 +3053,14 @@ static void cidfigure(struct ttfinfo *info, struct topdicts *dict,
     struct cidmap *map;
     char buffer[100];
     struct pscontext pscontext;
-    EncMap *encmap;
+    EncMap *encmap = NULL;
 
     memset(&pscontext,0,sizeof(pscontext));
 
     cffinfofillup(info, dict, strings, scnt );
 
-    info->map = encmap = EncMapNew(info->glyph_cnt,info->glyph_cnt,&custom);
+    /* We'll set the encmap later */
+    /*info->map = encmap = EncMapNew(info->glyph_cnt,info->glyph_cnt,&custom);*/
 
     for ( j=0; subdicts[j]!=NULL; ++j );
     info->subfontcnt = j;
@@ -3070,13 +3073,13 @@ static void cidfigure(struct ttfinfo *info, struct topdicts *dict,
 	sf = info->subfonts[ fdselect[i] ];
 	cid = dict->charset[i];
 	if ( cid>=sf->glyphcnt ) sf->glyphcnt = sf->glyphmax = cid+1;
-	if ( cid>=encmap->enccount ) encmap->enccount = cid+1;
+	/*if ( cid>=encmap->enccount ) encmap->enccount = cid+1;*/
     }
     for ( j=0; subdicts[j]!=NULL; ++j )
 	info->subfonts[j]->glyphs = gcalloc(info->subfonts[j]->glyphcnt,sizeof(SplineChar *));
-    encmap->encmax = encmap->enccount;
-    encmap->map = galloc(encmap->enccount*sizeof(int));
-    memset(encmap->map,-1,encmap->enccount*sizeof(int));
+    /*encmap->encmax = encmap->enccount;*/
+    /*encmap->map = galloc(encmap->enccount*sizeof(int));*/
+    /*memset(encmap->map,-1,encmap->enccount*sizeof(int));*/
 
     info->chars = gcalloc(info->glyph_cnt,sizeof(SplineChar *));
 
@@ -3106,7 +3109,7 @@ static void cidfigure(struct ttfinfo *info, struct topdicts *dict,
 		subrs->cnt <33900 ? 1131 : 32768;
 
 	cid = dict->charset[i];
-	encmap->map[cid] = cid;
+	/*encmap->map[cid] = cid;*/
 	uni = CID2NameUni(map,cid,buffer,sizeof(buffer));
 	info->chars[i] = PSCharStringToSplines(
 		dict->glyphs.values[i], dict->glyphs.lens[i],&pscontext,
@@ -3969,7 +3972,7 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 
     /* Give ourselves an xuid, just in case they want to convert to PostScript*/
     /*  (even type42)							      */
-    if ( xuid!=NULL && info->fd==NULL ) {
+    if ( xuid!=NULL && info->fd==NULL && info->xuid==NULL ) {
 	info->xuid = galloc(strlen(xuid)+20);
 	sprintf(info->xuid,"[%s %d]", xuid, (rand()&0xffffff));
     }
@@ -4670,6 +4673,9 @@ static void PsuedoEncodeUnencoded(EncMap *map,struct ttfinfo *info) {
 static void MapDoBack(EncMap *map,struct ttfinfo *info) {
     int i;
 
+    if ( map==NULL )		/* CID fonts */
+return;
+    free(map->backmap);		/* CFF files have this */
     map->backmax = info->glyph_cnt;
     map->backmap = galloc(info->glyph_cnt*sizeof(int));
     memset(map->backmap,-1,info->glyph_cnt*sizeof(int));
@@ -4805,7 +4811,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     if ( info->twobytesymbol )
 	/* rework ms symbol encodings */
 	SymbolFixup(info);
-    if ( info->map==NULL )		/* Can happen when reading a ttf from a pdf */
+    if ( info->map==NULL && info->subfonts==NULL )		/* Can happen when reading a ttf from a pdf */
 	info->map = EncMapFromEncoding(sf,FindOrMakeEncoding("original"));
     if ( info->subfontcnt==0 )
 	PsuedoEncodeUnencoded(info->map,info);

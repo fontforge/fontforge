@@ -1659,6 +1659,7 @@ void FVReplaceOutlineWithReference( FontView *fv, double fudge ) {
     free(sv->sc_srch.layers);
     free(sv->sc_rpl.layers);
 #endif
+    SplinePointListsFree(sv->revpath);
     free(sv);
 
     free(selected);
