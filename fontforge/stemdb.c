@@ -354,7 +354,7 @@ return( NULL );
 
 static Spline *FindMatchingEdge(struct glyphdata *gd, struct pointdata *pd,
 	int is_next, int only_hv ) {
-    BasePoint *dir, norm, absnorm, perturbed;
+    BasePoint *dir, norm, absnorm, perturbed, diff;
     Spline myline;
     SplinePoint end1, end2;
     double *other_t = is_next ? &pd->next_e_t : &pd->prev_e_t;
@@ -411,6 +411,9 @@ return( NULL );
     }
     if ( s==NULL )
 return( NULL );
+    diff.x = s->to->me.x-s->from->me.x; diff.y = s->to->me.y-s->from->me.y;
+    if ( diff.x<.03 && diff.x>-.03 && diff.y<.03 && diff.y>-.03 )
+return( NULL );
     norm.x = -dir->y;
     norm.y = dir->x;
     absnorm = norm;
@@ -423,8 +426,22 @@ return( NULL );
     /* Don't base the line on the current point, we run into rounding errors */
     /*  where lines that should intersect it don't. Instead perturb it a tiny*/
     /*  bit in the direction along the spline */
-    perturbed.x = ((s->splines[0].a*t+s->splines[0].b)*t+s->splines[0].c)*t+s->splines[0].d;
-    perturbed.y = ((s->splines[1].a*t+s->splines[1].b)*t+s->splines[1].c)*t+s->splines[1].d;
+    forever {
+	perturbed.x = ((s->splines[0].a*t+s->splines[0].b)*t+s->splines[0].c)*t+s->splines[0].d;
+	perturbed.y = ((s->splines[1].a*t+s->splines[1].b)*t+s->splines[1].c)*t+s->splines[1].d;
+	if ( !RealWithin(perturbed.x,pd->sp->me.x,.01) ||
+		!RealWithin(perturbed.y,pd->sp->me.y,.01) )
+    break;
+	if ( t<.5 ) {
+	    t *= 2;
+	    if ( t>.5 )
+    break;
+	} else {
+	    t = 1- 2*(1-t);
+	    if ( t<.5 )
+    break;
+	}
+    }
     if ( absnorm.x > absnorm.y ) {
 	/* Greater change in x than in y */
 	t1 = (gd->size.minx-perturbed.x)/norm.x;
@@ -910,6 +927,9 @@ return( NULL );
     if ( width<.5 && width>-.5 )
 return( NULL );		/* Zero width stems aren't interesting */
 
+    if ( isnan(t1))
+	IError( "NaN value in HalfStem" );
+
     if ( is_next ) {
 	pd->nextedge = other;
 	pd->next_e_t = t1;
@@ -1083,6 +1103,8 @@ return( NULL );
 
 static void AddSplineTick(struct splinesteminfo *ssi,Spline *s,
 	double t1,double t2, struct stemdata *stem, int isr) {
+    if ( isnan(t1) || isnan(t2) )
+	IError("NaN value in AddSplineTick" );
     if ( s->knownlinear && t1!=t2 ) {
 	struct stembounds *sb;
 	sb = chunkalloc(sizeof(struct stembounds));
@@ -1146,10 +1168,10 @@ static void TickSplinesBetween(struct glyphdata *gd, struct splinesteminfo *ssi,
     if ( s1==NULL )
 return;
     if ( !UnitsParallel(&gd->points[s1->from->ttfindex].nextunit,&stem->unit) &&
-	    !UnitsParallel(&gd->points[s1->to->ttfindex].nextunit,&stem->unit))
+	    !UnitsParallel(&gd->points[s1->to->ttfindex].prevunit,&stem->unit))
 return;
     if ( !UnitsParallel(&gd->points[s2->from->ttfindex].nextunit,&stem->unit) &&
-	    !UnitsParallel(&gd->points[s2->to->ttfindex].nextunit,&stem->unit))
+	    !UnitsParallel(&gd->points[s2->to->ttfindex].prevunit,&stem->unit))
 return;
     
     AddSplineTick(ssi,us,0,1,stem,!lookright);
@@ -1489,14 +1511,21 @@ static void FixupT(struct stemdata *stem,struct pointdata *pd,int isnext) {
     Spline *s;
     Spline myline;
     SplinePoint end1, end2;
-    double width,t,sign;
+    double width,t,sign, len;
     BasePoint pts[9];
     double lts[10], sts[10];
+    BasePoint diff;
 
     width = (stem->right.x-stem->left.x)*stem->unit.y - (stem->right.y-stem->left.y)*stem->unit.x;
     s = isnext ? pd->nextedge : pd->prevedge;
     if ( s==NULL )
 return;
+    diff.x = s->to->me.x-s->from->me.x; diff.y = s->to->me.y-s->from->me.y;
+    if ( diff.x<.001 && diff.x>-.001 && diff.y<.001 && diff.y>-.001 )
+return;		/* Zero length splines give us NaNs */
+    len = sqrt( diff.x*diff.x + diff.y*diff.y );
+    if ( (diff.x*stem->unit.x + diff.y*stem->unit.y)/len < .0004 )
+return;		/* It's orthogonal to our stem */
 
     if (( stem->unit.x==1 || stem->unit.x==-1 ) && s->knownlinear )
 	t = (pd->sp->me.x-s->from->me.x)/(s->to->me.x-s->from->me.x);
@@ -1524,6 +1553,8 @@ return;
 return;
 	t = sts[0];
     }
+    if ( isnan(t))
+	IError( "NaN value in FixupT" );
     if ( isnext )
 	pd->next_e_t = t;
     else
