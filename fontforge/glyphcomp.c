@@ -655,7 +655,7 @@ static int CompareHints( SplineChar *sc, const void *_test ) {
 	while ( test!=NULL && (test->hinttype==ht_unspecified || test->hinttype==ht_h)) {
 	    if ( h==NULL )
 return( false );
-	    if ( h->start!=test->start || h->width!=test->width )
+	    if ( rint(h->start) != rint(test->start) || rint(h->width) != rint(test->width) )
 return( false );
 	    h = h->next;
 	    test = test->next;
@@ -665,7 +665,7 @@ return( false );
 	while ( test!=NULL && (test->hinttype==ht_unspecified || test->hinttype==ht_v)) {
 	    if ( v==NULL )
 return( false );
-	    if ( v->start!=test->start || v->width!=test->width )
+	    if ( rint(v->start) != rint(test->start) || rint(v->width) != rint(test->width) )
 return( false );
 	    v = v->next;
 	    test = test->next;
