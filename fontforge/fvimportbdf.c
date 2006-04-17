@@ -2008,8 +2008,10 @@ return( NULL );
 	    sf->vertical_origin = defs.vertical_origin==0?sf->ascent:defs.vertical_origin;
 	}
 	sf->display_size = pixelsize;
-	if ( comments[0]!='\0' )
+	if ( comments[0]!='\0' ) {
+	    free(sf->copyright);
 	    sf->copyright = copy(comments);
+	}
 	if ( upos!=0x80000000 )
 	    sf->upos = upos;
 	if ( uwidth!=0x80000000 )

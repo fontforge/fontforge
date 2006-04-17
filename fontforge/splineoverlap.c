@@ -1531,6 +1531,7 @@ return;
     free(ends[0]);
     free(ends[1]);
     free(space);
+    free(gaps);
 }
 
 static void TestForBadDirections(Intersection *ilist) {

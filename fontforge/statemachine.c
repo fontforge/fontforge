@@ -974,6 +974,9 @@ return( NULL );
     }
     /* Class 0 and class 1 should be the same. We only filled in class 1 above*/
     memcpy(sm->state,sm->state+sm->class_cnt,sm->class_cnt*sizeof(struct asm_state));
+    for ( j=0; j<match_len; ++j )
+	free(classes[j]);
+    free(classes);
 return( sm );
 }
 

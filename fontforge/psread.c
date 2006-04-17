@@ -3403,11 +3403,20 @@ return;		/* The "path" is just a single point created by a moveto */
 	    oldlast->prev->from->next = NULL;
 	    cur->last = oldlast->prev->from;
 	    chunkfree(oldlast->prev,sizeof(*oldlast));
+	    chunkfree(oldlast->hintmask,sizeof(HintMask));
 	    chunkfree(oldlast,sizeof(*oldlast));
 	}
 	CheckMake(cur->last,cur->first);
 	SplineMake3(cur->last,cur->first);
 	cur->last = cur->first;
+    }
+}
+
+static void UnblendFree(StemInfo *h ) {
+    while ( h!=NULL ) {
+	chunkfree(h->u.unblended,sizeof(real [2][MmMax]));
+	h->u.unblended = NULL;
+	h = h->next;
     }
 }
 
@@ -4224,7 +4233,8 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		if ( v==19 ) {
 		    ret->hstem = HintsAppend(ret->hstem,activeh); activeh=NULL;
 		    ret->vstem = HintsAppend(ret->vstem,activev); activev=NULL;
-		    pending_hm = chunkalloc(sizeof(HintMask));
+		    if ( pending_hm==NULL )
+			pending_hm = chunkalloc(sizeof(HintMask));
 		    memcpy(pending_hm,type1,bytes);
 		} else if ( cp<sizeof(counters)/sizeof(counters[0]) ) {
 		    counters[cp] = chunkalloc(sizeof(HintMask));
@@ -4569,6 +4579,10 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	SplineSetReverse(cur);
     if ( ret->hstem==NULL && ret->vstem==NULL )
 	ret->manualhints = false;
+    if ( !is_type2 && context->instance_count!=0 ) {
+	UnblendFree(ret->hstem);
+	UnblendFree(ret->vstem);
+    }
     ret->hstem = HintCleanup(ret->hstem,true,context->instance_count);
     ret->vstem = HintCleanup(ret->vstem,true,context->instance_count);
     SCGuessHHintInstancesList(ret);

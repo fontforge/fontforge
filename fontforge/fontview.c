@@ -10586,6 +10586,7 @@ return( NULL );
 
     if ( sf!=NULL ) {
 	SplineFont *norm = sf->mm!=NULL ? sf->mm->normal : sf;
+	free( norm->origname );
 	if ( sf->chosenname!=NULL && strippedname==filename ) {
 	    norm->origname = galloc(strlen(filename)+strlen(sf->chosenname)+8);
 	    strcpy(norm->origname,filename);

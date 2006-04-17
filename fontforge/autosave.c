@@ -100,17 +100,19 @@ return( dir );
 
 static void MakeAutoSaveName(SplineFont *sf) {
     char buffer[1025];
-    char *autosavedir = getAutoDirName(buffer);
+    char *autosavedir;
     static int cnt=0;
 
     if ( sf->autosavename )
 return;
+    autosavedir = getAutoDirName(buffer);
     if ( autosavedir==NULL )
 return;
     while ( 1 ) {
 	sprintf( buffer, "%s/auto%06x-%d.asfd", autosavedir, getpid(), ++cnt );
 	if ( access(buffer,F_OK)==-1 ) {
 	    sf->autosavename = strdup(buffer);
+	    free(autosavedir);
 return;
 	}
     }

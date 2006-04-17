@@ -2517,6 +2517,7 @@ return( false );
 
     if ( at->format!=ff_cff )
 	dumpcffhmtx(at,sf,false);
+    free(at->gn_sid); at->gn_sid=NULL;
 return( true );
 }
 
@@ -2544,6 +2545,7 @@ return( false );
 	dumpcffprivate(sf->subfonts[i],at,i,at->fds[i].subrs->next);
 	if ( at->fds[i].subrs->next!=0 )
 	    _dumpcffstrings(at->fds[i].private,at->fds[i].subrs);
+	PSCharsFree(at->fds[i].subrs);
     }
     _dumpcffstrings(at->globalsubrs,glbls);
     PSCharsFree(glbls);
@@ -2554,6 +2556,7 @@ return( false );
 	dumpcffprivate(sf->subfonts[i],at,i,at->fds[i].subrs->next);
 	if ( at->fds[i].subrs->next!=0 )
 	    _dumpcffstrings(at->fds[i].private,at->fds[i].subrs);
+	PSCharsFree(at->fds[i].subrs);
     }
     putshort(at->globalsubrs,0);		/* No globals */
 #endif
@@ -4673,6 +4676,7 @@ static void AbortTTF(struct alltabs *at, SplineFont *sf) {
     }
     if ( at->fds!=NULL )
 	free( at->fds );
+    free( at->gi.bygid );
 }
 
 static int SFHasInstructions(SplineFont *sf) {
@@ -5395,10 +5399,10 @@ static int dumpcff(struct alltabs *at,SplineFont *sf,enum fontformat format,
     } else {
 	SFDummyUpCIDs(&at->gi,sf);	/* life is easier if we ignore the seperate fonts of a cid keyed fonts and treat it as flat */
 	ret = dumpcidglyphs(sf,at);
-	free( at->gi.bygid );
 	free(sf->glyphs); sf->glyphs = NULL;
 	sf->glyphcnt = sf->glyphmax = 0;
     }
+    free( at->gi.bygid );
 
     if ( !ret )
 	at->error = true;

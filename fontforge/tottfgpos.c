@@ -1603,7 +1603,6 @@ static void dumpGPOSsimplepos(FILE *gpos,SplineFont *sf,SplineChar **glyphs,
     fseek(gpos,end,SEEK_SET);
     dumpcoveragetable(gpos,glyphs);
     fseek(gpos,0,SEEK_END);
-    free(glyphs);
 }
 
 
@@ -1730,7 +1729,6 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,SplineChar **glyphs,
     putshort(gpos,end-start);
     fseek(gpos,end,SEEK_SET);
     dumpcoveragetable(gpos,glyphs);
-    free(glyphs);
 }
 
 static void dumpgsubligdata(FILE *gsub,SplineFont *sf,
@@ -2353,6 +2351,7 @@ static void dumpg___ContextChainCoverage(FILE *lfile,FPST *fpst,SplineFont *sf,
 	    free(glyphs);
 	}
     }
+    free(exists);
 
     curcontext = fpst->rules[0].u.coverage.ncnt+fpst->rules[0].u.coverage.bcnt+fpst->rules[0].u.coverage.fcnt;
     if ( curcontext>at->os2.maxContext )
@@ -2468,7 +2467,7 @@ static void g___HandleNested(FILE *lfile,SplineFont *sf,int gpos,
     struct tagflaglang ligtags;
     LigList *ll;
     PST *pst;
-    int i, start, end, type;
+    int i, j, start, end, type;
     unichar_t buf[6];
     SplineChar ***map, **glyphs;
 
@@ -2555,6 +2554,10 @@ static void g___HandleNested(FILE *lfile,SplineFont *sf,int gpos,
 				/* Already done */;
 			    } else
 				IError("Unknown PST type in GPOS/GSUB figure lookups" );
+			    free(glyphs);
+			    if ( map!=NULL ) for ( j=0; map[j]!=NULL ; ++j )
+				free(map[j]);
+			    free(map);
 			    new->len = ftell(lfile)-new->offset[0];
 		    break;
 			}
@@ -2646,6 +2649,7 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 		} else
 		    IError("Unknown PST type in GPOS figure lookups" );
 		new->len = ftell(lfile)-new->offset[0];
+		free(glyphs);
 	    }
 	}
     }
@@ -3881,6 +3885,10 @@ return( NULL );
 	next = l->next;
 	chunkfree(l,sizeof(*l));
     }
+    for ( l=nested; l!=NULL; l=next ) {
+	next = l->next;
+	chunkfree(l,sizeof(*l));
+    }
     for ( cl=clookups; cl!=NULL; cl=cnext ) {
 	cnext = cl->next;
 	free( cl->lookups );
@@ -4564,4 +4572,5 @@ a GPOS, but he says the GPOS won't work without a GSUB.)
     }
     at->scripts = scripts;
     at->script_cnt = smax;
+    free(used);
 }
