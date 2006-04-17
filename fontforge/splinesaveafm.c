@@ -840,10 +840,11 @@ static int ScriptLangMatchLigOuts(PST *lig,SplineFont *sf) {
     struct script_record *sr;
 
     if ( lig_tags==NULL ) {
-	lig_tags = gcalloc(3,sizeof(uint32));
+	lig_tags = gcalloc(4,sizeof(uint32));
 	lig_tags[0] = CHR('l','i','g','a');
 	lig_tags[1] = CHR('r','l','i','g');
-	lig_tags[2] = 0;
+	lig_tags[2] = REQUIRED_FEATURE;
+	lig_tags[3] = 0;
     }
 
     if ( lig->tag==SPECIAL_TEMPORARY_LIGATURE_TAG )	/* Special hack for the temporary 2 character intermediate ligatures we generate. We've already decided to output them */
@@ -2550,10 +2551,11 @@ static struct ligkern *TfmAddKern(KernPair *kp,struct ligkern *last,double *kern
 return( new );
 }
 
-static struct ligkern *TfmAddLiga(LigList *l,struct ligkern *last,EncMap *map,int maxc) {
+static struct ligkern *TfmAddLiga(LigList *l,struct ligkern *last,EncMap *map,
+	int maxc, SplineChar *sc) {
     struct ligkern *new;
 
-    if ( l->lig->tag!=CHR('l','i','g','a') && l->lig->tag!=CHR('r','l','i','g'))
+    if ( !ScriptLangMatchLigOuts(l->lig,sc->parent))
 return( last );
     if ( map->backmap[l->lig->u.lig.lig->orig_pos]>=maxc )
 return( last );
@@ -3074,7 +3076,7 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map
 			map->backmap[kp->sc->orig_pos]<maxc )
 		    ligkerns[i] = TfmAddKern(kp,ligkerns[i],kerns,&kcnt,map,maxc);
 	    for ( l=sc->ligofme; l!=NULL; l=l->next )
-		ligkerns[i] = TfmAddLiga(l,ligkerns[i],map,maxc);
+		ligkerns[i] = TfmAddLiga(l,ligkerns[i],map,maxc,sc);
 	    if ( ligkerns[i]!=NULL ) {
 		tags[i] = 1;
 		for ( lk=ligkerns[i]; lk!=NULL; lk=lk->next )
