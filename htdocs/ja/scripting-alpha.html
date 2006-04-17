@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 9-Apr-2006 -->
-  <!-- AP: Last modified: 10-Apr-2006 -->
+  <!-- AP: Last modified: 15-Apr-2006 -->
 <!--
   <TITLE>Scripting functions</TITLE> -->
   <TITLE>スクリプト関数一覧</TITLE>
@@ -218,6 +218,13 @@ Generate</A>(filename[,bitmaptype[,fmflags[,res[,mult-sfd-file[,namelist-name]]]
 	  <DT>
 	    <A NAME="AddExtrema" HREF="elementmenu.html#Add-Extrema">AddExtrema</A>()
 	  <DD>
+<!--	    If a spline in a glyph reaches a maximum or minimum x or y value within a
+	    spline then break the spline so that there will be a point at all significant
+	    extrema. (If this point is too close to an end-point then the end-point itself
+	    may be moved. There are various other caveats. See
+	    Element-&gt;<A NAME="AddExtrema" HREF="elementmenu.html#Add-Extrema">AddExtrema</A>
+	    for more information). -->
+	    グリフ内のスプラインの x 座標または y 座標が途中で極大値または極小値に達した場合、すべての顕著な極大値に点がある状態になるようにスプラインを分割します (もしその点が端点に近すぎる場合、それ自身が移動する可能性があります。注意すべき点は他にもいろいろあります。より詳しい情報は、<CODE>エレメント(<U>L</U>)</CODE>→<CODE><A NAME="AddExtrema" HREF="elementmenu.html#Add-Extrema">極大点の追加(<U>X</U>)</A></CODE> を参照してください)。
 	  <DT>
 	    <A NAME="AddHHint" HREF="hintsmenu.html#HHint">AddHHint</A>(start,width)
 	  <DD>
@@ -305,13 +312,19 @@ a[4][0] = "Nested array";
 	  <DT>
 	    <A NAME="AutoCounter" HREF="hintsmenu.html#Counter">AutoCounter</A>()
 	  <DD>
+<!--	    Generates (PostScript) counter masks for selected glyphs automagically. -->
+	    選択中のグリフに対して (PostScript の) カウンタマスクを全自動で作成します。
 	  <DT>
 	    <A NAME="AutoHint" HREF="hintsmenu.html#AutoHint">AutoHint</A>()
 	  <DD>
-	    <B></B>
+<!--	    Generates (PostScript) hints for selected glyphs automagically. -->
+	    選択中のグリフに対してヒントを全自動で作成します。
 	  <DT>
 	    <A NAME="AutoInstr" HREF="hintsmenu.html#AutoInstr">AutoInstr</A>()
 	  <DD>
+<!--	    Generates (TrueType) instructions for selected glyphs. It doesn't do a good
+	    job. -->
+	    選択中のグリフに対して (TrueType の) 命令を全自動で作成します。これはあまりうまく動きません。
 	  <DT>
 	    <A NAME="AutoKern" HREF="metricsmenu.html#Kern">AutoKern</A>(spacing,threshold[,kernfile])
 	  <DD>
@@ -323,6 +336,9 @@ a[4][0] = "Nested array";
 	  <DT>
 	    <A NAME="AutoTrace" HREF="elementmenu.html#AutoTrace">AutoTrace</A>()
 	  <DD>
+<!--	    If you have either potrace or autotrace installed, this will invoke them
+	    on the selected glyphs to trace the background image and generate splines. -->
+	    potrace か autotrace がインストールされていれば、個の関数を起動するとそれらのどちらかを呼び出し、選択中のグリフの背景画像をトレースして背景に追加します。
 	  <DT>
 	    <A NAME="AutoWidth" HREF="metricsmenu.html#Auto">AutoWidth</A>(spacing)
 	  <DD>
@@ -360,12 +376,20 @@ a[4][0] = "Nested array";
 	  <DT>
 	    <A NAME="BuildAccented" HREF="elementmenu.html#Accented">BuildAccented</A>()
 	  <DD>
+<!--	    If any of the selected glyphs are accented, then clear them and create a
+	    new glyph by inserting references to the approriate base glyph and accents. -->
+	    選択中のグリフのどれかがアクセントつきグリフの場合、その内容を消去してから、適切な基底も次とアクセントへの参照を挿入することによって新しいグリフを作成します。
 	  <DT>
 	    <A NAME="BuildComposite" HREF="elementmenu.html#Accented">BuildComposite</A>()
 	  <DD>
+<!--	    Similar to BuildAccented but will build any composite glyph - - ligatures
+	    and what not. -->
+	    BuildAccented と同様ですが、任意の複合グリフ――合字やその他さまざまな――を作成します。
 	  <DT>
 	    <A NAME="BuildDuplicate" HREF="elementmenu.html#BuildDuplicate">BuildDuplicate</A>()
 	  <DD>
+<!--	    Changes the encoding so that to encoding points share the same glyph. -->
+	    エンコーディングを変更して、複数の符号位置が同じグリフを参照するようにします。
 	</DL>
       </TD>
     </TR>
@@ -384,6 +408,9 @@ a[4][0] = "Nested array";
 	  <DT>
 	    <A NAME="CenterInWidth" HREF="metricsmenu.html#Center">CenterInWidth</A>()
 	  <DD>
+<!--	    Centers any selected glyphs so that their right and left side bearings are
+	    equal. -->
+	    選択中のすべての文字を幅の中央に揃え、左右のサイドベアリングが等しくなるようにします。
 	  <DT>
 	    <A NAME="ChangePrivateEntry" HREF="fontinfo.html#Private">ChangePrivateEntry</A>(key,val)
 	  <DD>
@@ -402,7 +429,7 @@ a[4][0] = "Nested array";
 	  <DT>
 	    <A NAME="CharInfo">C</A>harInfo(str)
 	  <DD>
-<!--	    Depreciated name for <A HREF="#GlyphInfo">GlyphInfo</A> -->
+<!--	    Deprecated name for <A HREF="#GlyphInfo">GlyphInfo</A> -->
 	    <A HREF="#GlyphInfo">GlyphInfo</A> の廃止予定の名前です。
 	  <DT>
 	    <A NAME="CheckForAnchorClass">C</A>heckForAnchorClass(name)
@@ -462,16 +489,24 @@ a[4][0] = "Nested array";
 	  <DT>
 	    <A NAME="ClearCharCounterMasks">C</A>learCharCounterMasks()
 	  <DD>
+<!--	    Deprecated name for
+	    <A HREF="#ClearGlyphCounterMasks">ClearGlyphCounterMasks</A> -->
+	    <A HREF="#ClearGlyphCounterMasks">ClearGlyphCounterMasks</A> の廃止予定の名前です。
+	  <DT>
+	    <A NAME="ClearGlyphCounterMasks">C</A>learGlyphCounterMasks()
+	  <DD>
 <!--	    Clears any counter masks from the (one) selected glyph. -->
 	    選択中の (1 個の) グリフから、すべてのカウンターマスクを取り除きます。 
 	  <DT>
 	    <A NAME="ClearHints" HREF="hintsmenu.html#ClearHints">ClearHints</A>()
 	  <DD>
+<!--	    Clears any (PostScript) hints from the selected instructions. -->
+	    選択中のグリフからすべてのヒントを取り除きます。
 	  <DT>
 	    <A NAME="ClearInstrs">C</A>learInstrs()
 	  <DD>
-<!--	    From selected glyphs -->
-	    選択中のグリフから命令を削除します。
+<!--	    Clears any (TrueType) instructions from selected glyphs -->
+	    選択中のグリフからすべての (TrueType) 命令を削除します。
 	  <DT>
 	    <A NAME="ClearPrivateEntry" HREF="fontinfo.html#Private">ClearPrivateEntry</A>(key)
 	  <DD>
@@ -901,12 +936,16 @@ a[4][0] = "Nested array";
 	  <DT>
 	    <A NAME="DontAutoHint" HREF="hintsmenu.html#DontAutoHint">DontAutoHint</A>()
 	  <DD>
+<!--	    Mark any selected glyphs so that they will not be AutoHinted when saving
+	    the font. (This flag is cleared if the user explicitely AutoHints the glyph
+	    himself). -->
+	    選択中のすべての文字にフォント保存時に自動ヒントづけしないように印づけを行います。(このフラグは、ユーザが自分でグリフに対して AutoHints を呼び出した時に削除されます)
 	  <DT>
 	    <A NAME="DrawsSomething">D</A>rawsSomething([arg])
 	  <DD>
-<!--	    Arg is as above. This returns true if the glyph contains any splines, references
-	    or images. -->
-	    引数 arg の意味は上と同様です。この関数は、グリフにアウトライン、参照または画像が含まれているときに真を返します。
+<!--	    Arg is as in <A HREF="#InFont">InFont</A>. This returns true if the glyph
+	    contains any splines, references or images. -->
+	    引数 arg の意味は <A HREF="#InFont">InFont</A> と同様です。この関数は、グリフにアウトライン、参照または画像が含まれているときに真を返します。
 	</DL>
       </TD>
     </TR>
@@ -1352,8 +1391,9 @@ a[4][0] = "Nested array";
 	    <A NAME="GenerateFamily" HREF="filemenu.html#GenerateMac">GenerateFamily</A>(filename,bitmaptype,fmflags,array-of-font-filenames)
 	  <DD>
 <!--	    Generates a mac font family (FOND) from the fonts (which must be loaded)
-	    in the array-of-font-filenames. filename, bitmaptype, fmflags are as above. -->
-	    配列 array-of-font-filenames で名前を指定した各フォント (読み込み済みでなければなりません) から構成される Mac のフォントファミリー (FOND) を生成します。filename, bitmaptype, fmflag は上と同じです。
+	    in the array-of-font-filenames. filename, bitmaptype, fmflags are as in
+	    <A HREF="#Generate">Generate</A>. -->
+	    配列 array-of-font-filenames で名前を指定した各フォント (読み込み済みでなければなりません) から構成される Mac のフォントファミリー (FOND) を生成します。filename, bitmaptype, fmflag は <A HREF="#Generate">Generate</A> と同じです。
 	    <BLOCKQUOTE>
 	<PRE>#!/usr/local/bin/fontforge
 a = Array($argc-1)
@@ -1385,8 +1425,9 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
 	  <DT>
 	    <A NAME="GetMaxpValue">G</A>etMaxpValue(field-name)
 	  <DD>
-<!--	    Field name must be as above. -->
-	    引数 field-name は上に挙げた値のどれかでなければなりません。
+<!--	    Field name can be the same set of tag strings as
+	    <A HREF="#SetMaxpValue">SetMaxpValue</A>. -->
+	    引数 field-name として使用できるのは、<A HREF="#SetMaxpValue">SetMaxpValue</A> で使えるタグ文字列と同じです。
 	  <DT>
 	    <A NAME="GetOS2Value" HREF="fontinfo.html#TTF-Values">GetOS2Value</A>(field-name)
 	  <DD>
@@ -1503,12 +1544,10 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
 	  <DT>
 	    <A NAME="GetTTFName">G</A>etTTFName(lang,nameid)
 	  <DD>
-<!--	    The lang and nameid arguments are as above. This returns the current value
-	    as a utf8 encoded string. Combinations which are not present will be returned
-	    as "". -->
-	    引数 lang および nameid は上と同じ意味です。
-	    現在の値を UTF-8 で符号化された文字列として返します。
-	    値が存在しない引数の組合せに対しては、"" を返します。
+<!--	    The lang and nameid arguments are as in <A HREF="#SetTTFName">SetTTFName</A>.
+	    This returns the current value as a utf8 encoded string. Combinations which
+	    are not present will be returned as "". -->
+	    引数 lang および nameid の意味は <A HREF="#SetTTFName">SetTTFName</A> と同じです。現在の値を UTF-8 で符号化された文字列として返します。値が存在しない引数の組合せに対しては、"" を返します。
 	  <DT>
 	    <B><A NAME="GlyphInfo">GlyphInfo</A></B>(str)<BR>
 	    GlyphInfo("Kern",glyph-spec)<BR>
@@ -1790,11 +1829,10 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	  <DT>
 	    <A NAME="Inline" HREF="elementmenu.html#Inline">Inline</A>(width,gap)
 	  <DD>
-<!--	    Produces an outline as above, and then shrinks the character so that it fits
-	    inside the outline. In other words, it produces an inlined glyph. -->
-	    上の方法でアウトラインを生成してから、
-	    アウトラインの内側に一致するようにアウトラインを縮小します。
-	    言い替えれば、インライン化したグリフを生成します。
+<!--	    Produces an outline as in <A HREF="#Outline">Outline</A>, and then shrinks
+	    the glyph so that it fits inside the outline. In other words, it produces
+	    an inlined glyph. -->
+	    <A HREF="#Outline">Outline</A> と同じ方法でアウトラインを生成してから、アウトラインの内側に一致するようにアウトラインを縮小します。言い替えれば、インライン化したグリフを生成します。
 	  <DT>
 	    <A NAME="Int">I</A>nt(real)
 	  <DD>
@@ -1852,6 +1890,10 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	  <DT>
 	    <A NAME="LoadEncodingFile">L</A>oadEncodingFile(filename)
 	  <DD>
+<!--	    Reads an encoding file and stores it in FontForge's list of possible encodings.
+	    See Encoding-&gt;<A HREF="encodingmenu.html#Load">LoadEncoding</A> for more
+	    info. -->
+	    エンコーディングファイルを読み込み、FontForge で使用可能なエンコーディングのリストに追加します。より詳しい情報は、<CODE>エンコーディング(<U>N</U>)</CODE>→<CODE><A HREF="encodingmenu.html#Load">エンコーディングを読み込み(<U>L</U>)...</A></CODE>を参照してください。
 	  <DT>
 	    <A NAME="LoadNamelist">L</A>oadNamelist(filename)
 	  <DD>
@@ -2235,6 +2277,13 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 <!--	    Returns val1<SUP>val2</SUP>. It can execute with no current font. -->
 	    val1 の val2 乗を返します。カレントフォントがない状態でも実行できます。
 	  <DT>
+	    PreloadCidmap(filename,registry,ordering,supplement)
+	  <DD>
+<!--	    Loads a user defined cidmap file for the specified ROS. All arguments except
+	    the last should be strings while supplement should be an integer. This can
+	    execute without a font loaded. -->
+	    指定した ROS の組合せに対するユーザ定義の cidmap ファイルを読み込みます。最後の引数以外は文字列で、supplement は整数でなければなりません。これはフォントが読み込まれていなくても実行することができます。
+	  <DT>
 	    <A NAME="Print">P</A>rint(arg1,arg2,arg3,...)
 	  <DD>
 <!--	    This corresponds to no menu item. It will print all of its arguments to stdout.
@@ -2339,7 +2388,6 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 <!--	    Causes FontForge to exit with the given status (no attempt is made to save
 	    unsaved files). This command can execute with no current font. -->
 	    status を終了ステータスとして FontForge を終了します。(保存していないフォントを保存するように促すことはしません)。カレントフォントが無い状態でも実行可能です。
-	      <HR>
 	</DL>
       </TD>
     </TR>
@@ -2446,8 +2494,6 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	  <DD>
 <!--	    Removes all vertical kern pairs and classes from the current font. -->
 	    カレントフォントからすべての縦書き用のカーニングペアとカーニングクラスを削除します。
-	  <DD>
-	      <HR>
 	  <DT>
 	    <A NAME="RemoveAnchorClass">R</A>emoveAnchorClass(name)
 	  <DD>
@@ -2457,8 +2503,9 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	    <A NAME="RemoveATT">R</A>emoveATT(type,script-lang,tag)
 	  <DD>
 <!--	    Removes any feature tags which match the arguments (which are essentially
-	    the same as above, except that any of them may be "*" which will match anything). -->
-	    引数に一致する任意の機能タグを削除します (引数は基本的に上と同じですが、何にでもマッチする "*" を使用できる点が異なります)
+	    the same as <A HREF="#AddATT">AddAAT</A>, except that any of them may be
+	    "*" which will match anything). -->
+	    引数に一致する任意の機能タグを削除します (引数は基本的に <A HREF="#AddATT">AddAAT</A> と同じですが、何にでもマッチする "*" を使用できる点が異なります)
 	  <DT>
 	    <A NAME="RemoveOverlap" HREF="elementmenu.html#Remove">RemoveOverlap</A>()
 	  <DD>
@@ -2477,6 +2524,12 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	    引数で指定した名前リストに含まれるすべてのグリフの名前を変更します。
 	  <DT>
 	    <A NAME="ReplaceCharCounterMasks">R</A>eplaceCharCounterMasks(array)
+	  <DD>
+<!--	    Deprecated name for
+	    <A HREF="#ReplaceGlyphCounterMasks">ReplaceGlyphCounterMasks</A> -->
+	    <A HREF="#ReplaceGlyphCounterMasks">ReplaceGlyphCounterMasks</A> の廃止予定の名前です。
+	  <DT>
+	    <A NAME="ReplaceGlyphCounterMasks">R</A>eplaceGlyphCounterMasks(array)
 	  <DD>
 <!--	    This requires that there be exactly one glyph selected. It will create a
 	    set of counter masks for that glyph. The single argument must be an array
@@ -2741,12 +2794,15 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	  <DT>
 	    <A NAME="SelectFewer">S</A>electFewer(arg1, arg2, ...)
 	  <DD>
-<!--	    The same as the previous command except that it clears the selection on the
-	    indicated glyphs, so it reduces the current selection. -->
-	    上のコマンドと同じですが、指定されたグリフの選択を解除する点が異なります。それにより、現在の選択範囲は縮小されます。
+<!--	    The same as in <A HREF="#Select">Select</A> except that it clears the selection
+	    on the indicated glyphs, so it reduces the current selection. -->
+	    <A HREF="#Select">Select</A> と同じですが、指定されたグリフの選択を解除する点が異なります。それにより、現在の選択範囲は縮小されます。
 	  <DT>
 	    <A NAME="SelectFewerSingletons">S</A>electFewerSingletons(arg1, ...)
 	  <DD>
+<!--	    Same as <A HREF="scripting-alpha.html#SelectSingletons">SelectSingletons</A>
+	    except it removes single glyphs from the current selection. -->
+	    <A HREF="scripting-alpha.html#SelectSingletons">SelectSingletons</A> と同じですが、引数で指定した個々のグリフを選択範囲から取り除く点が異なります。
 	  <DT>
 	    <A NAME="SelectHintingNeeded" HREF="editmenu.html#SelHinting">SelectHintingNeeded</A>([merge])
 	  <DD>
@@ -2781,12 +2837,15 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	  <DT>
 	    <A NAME="SelectMore">S</A>electMore(arg1, arg2, ...)
 	  <DD>
-<!--	    The same as the previous command except that it does not clear the selection
-	    initially, so it extends the current selection -->
-	    上のコマンドと同じですが、このコマンドは選択中の文字を最初に消去しないので、現在選択中の範囲を拡張します。
+<!--	    The same as in <A HREF="#Select">Select</A> except that it does not clear
+	    the selection initially, so it extends the current selection. -->
+	    <A HREF="#Select">Select</A> と同じですが、このコマンドは選択中の文字を最初に消去しないので、現在選択中の範囲を拡張する点だけが異なります。
 	  <DT>
 	    <A NAME="SelectMoreSingletons">S</A>electMoreSingletons(arg1, ...)
 	  <DD>
+<!--	    Same as <A HREF="scripting-alpha.html#SelectSingletons">SelectSingletons</A>
+	    except it adds single glyphs from the current selection. -->
+	    <A HREF="scripting-alpha.html#SelectSingletons">SelectSingletons</A> と同じですが、現在の選択範囲に引数で指定した個々のグリフを追加する点が異なります。
 	  <DT>
 	    <A NAME="SelectNone" HREF="editmenu.html#Deselect">SelectNone</A>
 	  <DD>
@@ -2805,25 +2864,45 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	  <DT>
 	    <A NAME="SetCharColor">S</A>etCharColor(color)
 	  <DD>
+<!--	    Deprecated name for <A HREF="SetGlyphColor">SetGlyphColor</A> -->
+	    <A HREF="SetGlyphColor">SetGlyphColor</A> の廃止予定の名前です。
+	  <DT>
+	    <A NAME="SetCharComment">S</A>etCharComment(comment)
+	  <DD>
+<!--	    Deprecated name for <A HREF="SetGlyphComment">SetGlyphComment</A> -->
+	    <A HREF="SetGlyphComment">SetGlyphComment</A> の廃止予定の名前です。
+	  <DT>
+	    <A NAME="SetCharCounterMask">S</A>etCharCounterMask(cg,hint-index,hint-index,...)
+	  <DD>
+<!--	    Deprecated name for <A HREF="SetGlyphCounterMask">SetGlyphCounterMask</A> -->
+	    <A HREF="SetGlyphCounterMask">SetGlyphCounterMask</A> の廃止予定の名前です。
+	  <DT>
+	    <A NAME="SetCharName" HREF="charinfo.html#Unicode">SetCharName</A>(name[,set-from-name-flag])
+	  <DD>
+<!--	    Deprecated name for <A HREF="SetGlyphName">SetGlyphName</A> -->
+	    <A HREF="SetGlyphName">SetGlyphName</A> の廃止予定の名前です。
+	  <DT>
+	    <A NAME="SetGlyphColor">S</A>etGlyphColor(color)
+	  <DD>
 <!--	    Sets any currently selected glyphs to have the given color (expressed as
 	    24 bit rgb (0xff0000 is red) with the special value of -2 meaning the default
 	    color. -->
 	    現在選択されているグリフをすべて、color で指定した色 (24 ビット RGB (0xff0000 が赤) で表す) に設定します。特別な値として、-2 はデフォルトの色を示します。
 	  <DT>
-	    <A NAME="SetCharComment">S</A>etCharComment(comment)
+	    <A NAME="SetGlyphComment">S</A>etGlyphComment(comment)
 	  <DD>
 <!--	    Sets the currently selected glyph to have the given comment. The comment
 	    is converted via the current encoding to unicode. -->
 	    現在選択されているグリフに comment で指定したコメントを設定します。コメントは現在のエンコーディングから Unicode に変換されます。
 	  <DT>
-	    <A NAME="SetCharCounterMask">S</A>etCharCounterMask(cg,hint-index,hint-index,...)
+	    <A NAME="SetGlyphCounterMask">S</A>etGlyphCounterMask(cg,hint-index,hint-index,...)
 	  <DD>
 <!--	    Creates or sets the counter mask at index cg to contain the hints listed.
 	    Hint index 0 corresponds to the first hstem hint, index 1 to the second hstem
 	    hint, etc. vstem hints follow hstems. -->
 	    列挙したヒントが第 cg 番目のカウンターマスクに含まれるように、作成または設定を行います。ヒント番号 0 は最初の水平ステムヒントに対応し、1 番は 2 番目に…という要領で対応します。垂直ステムヒントは水平ステムヒントの後に来ます。
 	  <DT>
-	    <A NAME="SetCharName" HREF="charinfo.html#Unicode">SetCharName</A>(name[,set-from-name-flag])
+	    <A NAME="SetGlyphName" HREF="charinfo.html#Unicode">SetGlyphName</A>(name[,set-from-name-flag])
 	  <DD>
 <!--	    Sets the currently selected glyph to have the given name. If set-from-name-flag
 	    is absent or is present and true then it will also set the unicode value
@@ -3359,9 +3438,10 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	    <A NAME="WorthOutputting">W</A>orthOutputting([arg])
      <DD>
 <!--	    If there is no argument then a single glyph should be selected and the function
-	    applies to that glyph, otherwise arg is as above. This returns true if the
-	    glyph contains any splines, references, images or has had its width set. -->
-	    引数が存在しない場合、ちょうど 1 個の引数を選択していなければならず、この関数はそのグリフに適用されます。それ以外の場合、arg は上と同様に解釈されます。この関数は、対象となるグリフが何らかのスプライン、参照、画像を含んでいるか、幅が設定されているときに真を返します。
+	    applies to that glyph, otherwise arg is as in <A HREF="#InFont">InFont</A>.
+	    This returns true if the glyph contains any splines, references, images or
+	    has had its width set. -->
+	    引数が存在しない場合、ちょうど 1 個の引数を選択していなければならず、この関数はそのグリフに適用されます。それ以外の場合、arg は <A HREF="#InFont">InFont</A> と同様に解釈されます。この関数は、対象となるグリフが何らかのスプライン、参照、画像を含んでいるか、幅が設定されているときに真を返します。
 	  <DT>
 <!--	    WriteStringToFile("string","Filename"[,append]) -->
 	    WriteStringToFile("文字列","Filename"[,append])
