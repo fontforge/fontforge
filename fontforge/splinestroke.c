@@ -756,6 +756,16 @@ static void StrokedSplineFree(struct strokedspline *head) {
     }
 }
 
+static void FreeOrigStuff(struct strokedspline *before) {
+
+    if ( before->origminusto!=NULL )
+	SplineFreeBackward(before->origminusto);
+    before->origminusto = NULL;
+    if ( before->origplusfrom!=NULL )
+	SplineFreeForeward(before->origplusfrom);
+    before->origplusfrom = NULL;
+}
+
 static int DoIntersect_Splines(struct strokedspline *before,
 	struct strokedspline *after, int doplus,StrokeInfo *si,SplineChar *sc,
 	int force_connect ) {
@@ -807,9 +817,6 @@ static int DoIntersect_Splines(struct strokedspline *before,
 	    }
 	    ret = false;
 	}
-	if ( before->origplusfrom!=NULL )
-	    SplineFreeForeward(before->origplusfrom);
-	before->origplusfrom = NULL;
     } else {
 	afterat = Intersect_Splines(after->minusfrom,before->minusto,&beforeat);
 	if ( afterat!=NULL ) {
@@ -856,10 +863,9 @@ static int DoIntersect_Splines(struct strokedspline *before,
 	    }
 	    ret = false;
 	}
-	if ( before->origminusto!=NULL )
-	    SplineFreeBackward(before->origminusto);
-	before->origminusto = NULL;
     }
+    FreeOrigStuff(before);
+
     if ( toobig ) {
 	si->gottoobig = si->gottoobiglocal = true;
 	if ( !si->toobigwarn ) {
@@ -1488,6 +1494,7 @@ return( ssplus );
 	if ( cur->s->to->next!=NULL )
 	    StrokeJoint(cur->s->to,si,cur,cur->next,sc);
     }
+    FreeOrigStuff(head);	/* normally gets freed when we look at the next item on list. But we did that for head first */
 
     /* Finish off intersections, before doing joins */
     if ( spl->first->prev==NULL ) {
