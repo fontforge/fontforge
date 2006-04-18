@@ -5505,6 +5505,7 @@ return;
 #endif
 return;
     }
+    EncMapFree(new->map);
     if ( force_names_when_opening!=NULL )
 	SFRenameGlyphsToNamelist(new,force_names_when_opening );
 
@@ -5516,6 +5517,7 @@ return;
     new->display_bbsized = fv->sf->display_bbsized;
     new->display_size = fv->sf->display_size;
     FVInsertInCID(fv,new);
+    CIDMasterAsDes(new);
 }
 
 # ifdef FONTFORGE_CONFIG_GDRAW

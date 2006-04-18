@@ -5153,6 +5153,40 @@ static void SortableToTTFNames(struct gfi_data *d) {
     free(d->ttfnames); d->ttfnames = NULL;
 }
 
+/* If we change the ascent/descent of a sub font then consider changing the */
+/*  as/ds of the master font. I used to think this irrelevant, but as the */
+/*  typoAscent/Descent is based on the master's ascent/descent it actually */
+/*  is meaningful. Set the master to the subfont with the most glyphs */
+void CIDMasterAsDes(SplineFont *sf) {
+    SplineFont *cidmaster = sf->cidmaster;
+    SplineFont *best;
+    int i, cid, cnt, bcnt;
+
+    if ( cidmaster==NULL )
+return;
+    best = NULL; bcnt = 0;
+    for ( i=0; i<cidmaster->subfontcnt; ++i ) {
+	sf = cidmaster->subfonts[i];
+	for ( cid=cnt=0; cid<sf->glyphcnt; ++cid )
+	    if ( sf->glyphs[cid]!=NULL )
+		++cnt;
+	if ( cnt>bcnt ) {
+	    best = sf;
+	    bcnt = cnt;
+	}
+    }
+    if ( best==NULL && cidmaster->subfontcnt>0 )
+	best = cidmaster->subfonts[0];
+    if ( best!=NULL ) {
+	double ratio = 1000.0/(best->ascent+best->descent);
+	int ascent = rint(best->ascent*ratio);
+	if ( cidmaster->ascent!=ascent || cidmaster->descent!=1000-ascent ) {
+	    cidmaster->ascent = ascent;
+	    cidmaster->descent = 1000-ascent;
+	}
+    }
+}
+
 static int GFI_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GWindow gw = GGadgetGetWindow(g);
@@ -5406,15 +5440,16 @@ return(true);
 	    txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Version));
 	    free(sf->version); sf->version = cu_copy(txt);
 	}
-	if ( as+des != sf->ascent+sf->descent && GGadgetIsChecked(GWidgetGetControl(gw,CID_Scale)) ) {
-	    SFScaleToEm(sf,as,des);
-	    reformat_fv = true;
+	if ( as!=sf->ascent || des!=sf->descent ) {
+	    if ( as+des != sf->ascent+sf->descent && GGadgetIsChecked(GWidgetGetControl(gw,CID_Scale)) )
+		SFScaleToEm(sf,as,des);
+	    else {
+		sf->ascent = as;
+		sf->descent = des;
+	    }
 	    BDFsSetAsDs(sf);
-	} else if ( as!=sf->ascent || des!=sf->descent ) {
-	    sf->ascent = as;
-	    sf->descent = des;
-	    BDFsSetAsDs(sf);
 	    reformat_fv = true;
+	    CIDMasterAsDes(sf);
 	}
 	fond = _GGadgetGetTitle(GWidgetGetControl(gw,CID_MacFOND));
 	free(sf->fondname); sf->fondname = NULL;
