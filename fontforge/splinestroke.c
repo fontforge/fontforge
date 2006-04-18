@@ -864,7 +864,6 @@ static int DoIntersect_Splines(struct strokedspline *before,
 	    ret = false;
 	}
     }
-    FreeOrigStuff(before);
 
     if ( toobig ) {
 	si->gottoobig = si->gottoobiglocal = true;
@@ -1100,6 +1099,7 @@ return( ssplus );
 
 static SplinePoint *SPNew(SplinePoint *base,BasePoint *pos,BasePoint *cp,int isnext) {
     SplinePoint *sp = SplinePointCreate(pos->x,pos->y);
+
     sp->pointtype = base->pointtype;
     if ( isnext ) {
 	sp->nextcp.x = pos->x + (cp->x-base->me.x);
@@ -1493,6 +1493,7 @@ return( ssplus );
 	if ( first==NULL ) first = cur;
 	if ( cur->s->to->next!=NULL )
 	    StrokeJoint(cur->s->to,si,cur,cur->next,sc);
+	FreeOrigStuff(cur);
     }
     FreeOrigStuff(head);	/* normally gets freed when we look at the next item on list. But we did that for head first */
 
