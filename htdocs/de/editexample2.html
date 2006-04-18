@@ -68,13 +68,13 @@
     zu diesem Zeichen gesprungen.
   </p>
   <p>
-    Da einige Schriftsätze sehr groß sind (chinesische, japanische
-    und koreanisch Schriftsätze enthalten Tausende oder sogar
-    Zehntaussende von Zeichen), ist für diese Fälle das Scrollen
-    in der Schriftsatzansicht eine sehr ineffiziente Methode ein
-    Zeichen zu finden. Mit Hilfe des Befehls
+    Da einige Zeichensätze sehr groß sind (chinesische, japanische
+    und koreanische Zeichensätze enthalten tausende oder sogar
+    zigtausende von Zeichen), ist für diese Fälle das Scrollen
+    in der Schriftsatzansicht eine sehr ineffiziente Methode zur
+    Navigation zu bestimmten Zeichen. Mit Hilfe des Befehls
     <code>Ansicht-&gt;Gehe zu ...</code>
-    provides kann über ein einfaches Dialogfenster zu dem Zeichen
+    kann über ein einfaches Dialogfenster zu dem Zeichen
     gesprungen werden, indem entweder dessen Name oder Code
     angegeben wird.
     Im Falle eines Unicodeschriftsatzes ermöglicht der Dialog
@@ -121,7 +121,7 @@
     Zu beachten ist, daß der erste Umriss im Uhrzeigersinn und der zweite
     gegen den Uhrzeigersinn gezeichnet wurde. Dieser Wechsel in der
     Zeichenrichtung ist wichtig. Sowohl PostScript also auch
-    TrueType erfordern daß die äussere Begrenzung eines Zeichens
+    TrueType erfordern, daß die äussere Begrenzung eines Zeichens
     in einer bestimmten Richtung gezeichnet wird (diese sind für
     diese beiden Standards genau in der jeweils entgegengesetzten Richtung).
     Innerhalb von FontForge müssen alle äusseren Begrenzungen im
@@ -130,20 +130,20 @@
   </p>
   <p>
     Wird versehentlich vergessen, die inneren und äusseren Begrenzungen
-    in entgegengesetzten Richtungen zu zeichnen kann es zu Ergebnissen
+    in entgegengesetzten Richtungen zu zeichnen, kann es zu Ergebnissen
     wie hier im Beispiel auf der linken Seite angezeigt kommen:
     <img src="../o-baddir.png" height="28" width="51">
-    Wird versäumt, die äussere Kontur im Uhrzeigersinn zu zeichnen
+    Wird versäumt, die äussere Kontur im Uhrzeigersinn zu zeichnen,
     sind die Fehler weniger auffällig, im allgemeinen führt dies
     zu einer weniger attraktiven Rasterung des Zeichens.
   </p>
   <p>
     <small><strong>TECHNISCH UND VERWIRREND</strong>:
-    Das exakte Verhalten von Rasteren variiert.
-    Frühe PostScript-Rasterer verwendeten eine "non-zero winding
-    number"-Regel während neuere die "even-odd"-Regel verwenden.
+      Das exakte Verhalten von Rasteralgorithmen variiert.
+    Frühe PostScript-Rasteralgorithmen verwendeten eine "non-zero winding
+    number"-Regel, während neuere die "even-odd"-Regel verwenden.
     Bei TrueType kommt die "non-zero"-Regel zur Anwendung.
-    Im obigen Beispiel wurde die "non-zero" rule beschrieben.
+    Im gezeigten Beispiel wurde die "non-zero" rule beschrieben.
     Die "even-odd"-Regel würde das "o" unabhängig von der Richtung
     der Pfade korrekt darstellen (obwohl u.U. leichte Probleme 
     mit dem Hinting auftreten können).</small>

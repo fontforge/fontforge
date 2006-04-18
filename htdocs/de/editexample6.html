@@ -58,7 +58,7 @@
   <A NAME="Variants">Bildzeichenvarianten</A>
   </H2>
   <P>
-  In vielen Schriften gibt es mehrere Varianten von Zeichen. Das offensichtlichste
+  In vielen Zeichensätzen existieren mehrere Varianten eines Zeichens. Das offensichtlichste
   Beispiel ist bei lateinischen Schriften, daß jeder Buchstabe eine
   kleingeschriebene und eine großgeschriebene Variante besitzt.
   Ein etwas esoterisches Beispiel ist die in der Renaissance verwendete
@@ -71,15 +71,15 @@
     Ziffern haben oft mehrere Varianten: Tabellarische Ziffern (in denen
     alle Ziffern die selbe Schrittweite besitzen, so daß Zahlentabellen
     nicht unregelmäßig aussehen), proportionale Ziffern (jede Ziffer
-    besitzt eine ihrer Form entsprechende Breite und altmodische oder
-    kleingeschriebene Ziffern)
+    besitzt eine ihrer Form entsprechende Breite) und altmodische oder
+    kleingeschriebene Ziffern
   (<IMG SRC="../lcdigits.png" WIDTH="76" HEIGHT="18" ALIGN="Middle">).
   <P>
     Einige der genannten Varianten sind in den Codierungen enthalten
     (wie die Unterscheidung zwischen Klein- und Großschreibung),
     in anderen Fällen sollte dem Schriftsatz Zusatzinformation hinzugefügt
     werden, so daß die Textverarbeitung diese Varianten erkennt (Arabisch
-    ist zwischen diesen beiden Fällen, die verschiedenen Formen sind
+    liegt zwischen diesen beiden Fällen, die verschiedenen Formen sind
     in der Codierung enthalten, aber es muss auch Zusatzinformation
     bereitgestellt werden).
   <P>
@@ -100,15 +100,15 @@
     <CODE>Element-&gt;Typo. Eigenschaften-&gt;Default ATT-&gt;(Variantenname)</CODE>
     verwendet wird, kann FontForge diesen Prozess u.U. automatisieren.
   <P>
-  (Anmerkung: Type0, Type1 und Type3 PostScript-Schriften haben keine Notation
-  um dies zu behandeln. Um diese Varianten zu erzeugen muß entweder eine OpenType or
+  (Anmerkung: Type0, Type1 und Type3 PostScript-Schriften haben keine Notation,
+  um dies zu behandeln. Um diese Varianten zu erzeugen, muß entweder eine OpenType or
   TrueType-Schrift verwendet werden).
   <H3>
     <A NAME="Conditional">Bedingte</A> Varianten
   </H3>
   <P>
   FontForge unterstützt die kontextbezogenen Ersetzungstabellen und die verketteten
-  kontextbezogenen Ersetzungstabellen von OpenType und in geringerem Ausmasse
+  kontextbezogenen Ersetzungstabellen von OpenType und in geringerem Umfang
   die kontextbezogenen Zeichenersetzungstabellen von Apple. Das bedeutet, daß
     bedingte Varianten im Schriftsatz eingesetzt werden können.
     <A HREF="editexample6-5.html#Conditional">Auf der nächsten Seite</A>
@@ -119,11 +119,11 @@
   <P>
     Einige Schreibschriften (Arabisch, Hebräisch) erfordern Vokalmarkierungen um
     die Haupttextzeichen herum. Für andere (einige Varianten von Latein und
-    Griechisch) gibt es so viele mögliche Akzentkombinationen, so daß
-    vorgefertigte Zeichen für alle Kombinationen nicht handbar ist.
+    Griechisch) gibt es so viele mögliche Akzentkombinationen, daß
+    vorgefertigte Zeichen für alle Kombinationen nicht handbar sind.
   <P>
   In OpenType (einschliesslich Microsofts TrueType) ist es möglich,
-  an allen Basiszeichen einzustellen, wo Markierungen angebracht werden
+  an allen Basiszeichen einzustellen, an welchen Stellen Markierungen angebracht werden
   sollten und an allen Markierungen, wo Basiszeichen angebracht werden sollten.
   Folglich könnte ein Anker zentriert über ein großes A gesetzt werden, der
   angibt, daß alle Akzente (aigu, grave, Umlaut, circonflex, tilde,
@@ -147,15 +147,15 @@
   <P>
     Schließlich können einige Buchstaben auch mehrere Akzente besitzen,
     z.B. ist U+1EA4 ein A mit einem Circonflex und einem Aigu. Normalerweise
-    setzen Circonflex und Aigu an der selben Stelle an, was sin diesem
-    Fall sowohl häßlich als auch verwirrend wäre. Stattdessen kann eine
+    setzen Circonflex und Aigu an der selben Stelle an, was in diesem
+    Fall sowohl wenig attraktiv als auch verwirrend wäre. Stattdessen kann eine
     andere Art Anker an dem Circonflex erzeugt werden
     (ein Markierung-zu-Markierung-Anker), dem Accent Aigu wird dann
     mitgeteilt, daß er an diesem Anker ansetzen soll.
   <P>
     Bevor in einem Zeichen Anker erzeugt werden können, muß FontForge
     mitgeteilt werden, daß die Schriftart Anker verwendet.
-    Hierzu wird für jede Art von Zeichenanhang jweils eine
+    Hierzu wird für jede Art von Zeichenanhang jeweils eine
     <A HREF="../overview.html#Anchors">Ankerklasse</A> definiert,
     im oben beschriebenen Beispiel oben also zwei. Der Dialog
     für den Befehl
@@ -178,7 +178,7 @@
   <P>
   <P>
   <P ALIGN=Center>
-  -- <A HREF="editexample5.html">Vorherige</A> -- <A HREF="../overview.html">Inhalt</A>
-  -- <A HREF="editexample6-5.html">Nächste</A> --
+  -- <A HREF="editexample5.html">Vorherige Seite</A> -- <A HREF="../overview.html">Inhalt</A>
+  -- <A HREF="editexample6-5.html">Nächste Seite</A> --
 </DIV>
 </BODY></HTML>

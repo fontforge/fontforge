@@ -60,8 +60,8 @@
   <P>
     Sowohl OpenType als auch Apple-Schriften unterstützen kontextbezogene
     Eingeschaften. Dies sind Eigenschaften, die nur in einem bestimmten
-    Kontext auftreten und sind notwendig für das Setzen von indischen und
-    arabischen Schriften. In OpenType wird ein Kontext durch eine Menge
+    Kontext auftreten und sind notwendig für das Setzen von indischer und
+    arabischer Schreibschrift. In OpenType wird ein Kontext durch eine Menge
     von Mustern spezifiziert, die gegen den Zeichenstrom des Dokuments
     getestet werden. Wenn ein Muster erkannt wird, werden die auf ihm
     definierten Ersetzungen angewendet. In einer Apple-Schriftart wird
@@ -92,8 +92,8 @@ folgenden "high" Buchstaben genannt: "a.high", "b.high" usw.
   Zeichen. Es werden zwei Muster benötigt, das erste erkennt ein
   Zeichen in der "bovw"-Klasse gefolgt von einem Zeichen in der "bovw"-
   Klasse, während das andere ein Zeichen in der "bovw"-Klasse gefolgt
-  von irgendeinem anderen erkennt. Wenn eines dieser Muster auf das
-  zweite Zeichen passt, sollte dieses in sein "high"-Variante transformiert
+  von irgendeinem anderen Zeichen erkennt. Wenn eines dieser Muster auf das
+  zweite Zeichen passt, sollte dieses in seine "high"-Variante transformiert
   werden.
 <P>
   Das erste Schritt ist es, eine einfache Ersetzung zu erzeugen, die
@@ -101,12 +101,12 @@ folgenden "high" Buchstaben genannt: "a.high", "b.high" usw.
   Ersetzung wird im folgenden mit dem OpenType-Tag "high" bezeichnet.
   Um diese zu definieren wird der Befehl
   <A HREF="../charinfo.html#substitution">Element -&gt;Zeicheninformation</A> 
-  wie bereits verwendet, ausser das hier die Option "--- verschachtelt ---"
+  wie bereits verwendet, ausser daß hier die Option "--- verschachtelt ---"
   aus "Schreibschrift/Sprache" aus dem Pulldown-Menü benutzt wird.
 <P>
 <IMG SRC="../ott1.png" WIDTH="261" HEIGHT="328" ALIGN="Right">
 Der knifflige Teil ist die Definition des Kontexts. Dies wird im
-Tab "Kontextuell" aus dem Dialog für
+Reiter "Kontextuell" aus dem Dialog für
 <A HREF="../fontinfo.html#Contextual">Element -&gt;Zeichensatzinformation</A> gemacht,
 in dem fünf verschiedene Typen kontextbezogenen Verhaltens zur Auswahl
 stehen, in diesem Beispiel interessieren die kontextbezogen verketteten
@@ -120,7 +120,7 @@ Selektion (wie bereits <A HREF="../charinfo.html#Feature-Tag">vorher gesehen</A>
 In diesem Beispiel wird "calt" als Tagname vergeben. Dies scheint ein
 geeignetes Tag zu sein, leider ist es nicht für die lateinische
 Schreibschrift implementiert. Das Beispiel erzeugt eine Schriftart,
-die zwar syntaktisch korrekt ist, aber keinen Effekt hat. Es ist frustrierend
+die zwar syntaktisch korrekt ist, aber keinen Effekt hat. Es ist frustrierend,
 daß OpenType die Möglichkeiten bietet, wundervolle Dinge zu tun, um
 dann herauszufinden, daß
 <A HREF="http://www.microsoft.com/typography/OpenType%20Dev/standard/shaping.mspx">Microsoft</A>
@@ -146,7 +146,7 @@ und zuletzt Bildzeichen, die nach dem aktuellen Zeichen auftreten
 Jede Kategorie von Bildzeichen kann verschiedene Mengen
 von Klassen besitzen, in diesem Beispiel werden die selben
 Klassen für alle Kategorien verwendet (was die Konvertierung
-der Erztzungen in das Apple-Format vereinfacht).
+der Ersetzungen in das Apple-Format vereinfacht).
 Die erste Zeile (in dem "Liste von Listen"-Feld) liest sich
 folglich: wenn ein Rückverfolgungszeichen (das Zeichen vor
 dem aktuellen) in Klasse 1 gefolgt wird vom aktuellen Zeichen
@@ -228,7 +228,7 @@ vorheriges Zeichen (das "markierte" Zeichen).
 <P>
 <IMG SRC="../sm-picture.png" WIDTH="386" HEIGHT="130" ALIGN="Right">Es wird
 im folgenden wieder das Beispiel eines lateinischen Schreibschrift-
-Zeichensatzes verwendet und es wird wieder eine einfache Ersetzung
+Zeichensatzes bemüht und es wird wieder eine einfache Ersetzung
 benötigt, um jeden Buchstaben in seine "high"-Variante zu konvertieren.
 Der Vorgang ist der gleiche wie für OpenType und es kann die selbe
 Ersetzung verwendet werden. Erneut werden die Zeichen in drei
@@ -263,9 +263,9 @@ Ein Doppelklick auf einen Klasseneintrag öffnet einen Dialog,
 der dem in OpenType verwendeten ähnlich ist.<BR CLEAR=Right>
 <P>
 <IMG SRC="../asm4.png" WIDTH="196" HEIGHT="307" ALIGN="Right">
-Ein Klick auf einen Übergang im Automaten
+Ein Klick auf einen Zustandsübergang im Automaten
 (für jede Zustand/Klassen-Kombination gibt es einen Übergang) öffnet
-den Übergangsdialog. Dieser kontrolliert wie sich der
+den Zustandsübergangsdialog. Dieser kontrolliert wie sich der
 Automat in einem bestimmten Zustand verhält, wenn eine Eingabe
 eines Zeichens in einer bestimmten Klasse gelesen wird.
 In diesem Beispiel wird Zustand 2 gezeigt (es wurde bereits
