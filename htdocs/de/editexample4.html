@@ -58,19 +58,19 @@
     <a name="accents">Building</A> accented glyphs
   </h2>
   <p>
-    Zu lateinischen, griechische und kyrillische Schriftsätzen existieren
+    In lateinischen, griechischen und kyrillischen Zeichensätzen existieren
     jeweils eine Anzahl akzentuierter Zeichen.
-    FontForge bietet eine Reihe von Möglichkeiten, aus den Grundzeichen
-    deren akzentuierte Varianten zu erstellen.
+    FontForge bietet eine Reihe von Möglichkeiten, 
+    akzentuierte Varianten aus deren Grundformen zu erstellen.
   </p>
   <p>
-    Die offensichtlichste Methode ist einfaches Kopieren und Einfügen:
+    Die offensichtlichste Methode ist über einfaches Kopieren und Einfügen:
     <a href="editmenu.html#Copy">Kopieren</A> des Buchstabens "A" und
     <a href="editmenu.html#Paste">Einfügen</A> in "&Atilde;" und
     <a href="editmenu.html#Copy">Kopieren</A> des Tilde-Zeichens und
     <a href="editmenu.html#PasteInto">Einfügen in</A> nach "&Atilde;" 
     (das Verhalten von "Einfügen" und "Einfügen in" untescheidet sich
-    leicht voneinander. Während "Einfügen" den Zeicheninhalt vor dem
+    geringfügig voneinander. Während "Einfügen" den Zeicheninhalt vor dem
     Einfügen löscht, fügt "Einfügen in" den Inhalt der Zwischenablage
     an den Inhalt des Zeichens an).
     Danach wird das Bearbeitungsfenster für "&Atilde;" geöffnet und
@@ -78,7 +78,7 @@
     Stelle über dem A steht.
   </p>
   <p>
-    Diese Methode ist nicht besonders effizient, wenn die Form des
+    Diese Methode ist nicht besonders effizient: wenn die Form des
     Buchstabens "A" geändert wird, müssen auch alle akzentuierten
     Formen von "A" angepasst werden. Daher bietet FontForge die
     Möglichkeit, eine <a href="../overview.html#References">Referenz</a>
@@ -97,7 +97,7 @@
     zusammengesetzt wurde und kann akzentuierte
     Zeichen automatisch selbst erstellen, indem die Referenzen in "&Atilde;"
     gesetzt werden und der Akzent über dem A positioniert wird.
-    (Unicode stellt eine Datenbank zu Verfügung, in der die einzelnen
+    (Für Unicode steht eine Datenbank zu Verfügung, in der die einzelnen
     Komponenten jedes akzentuierten Zeichens als Unicodes aufgelistet sind).
   </p>
   <p>
@@ -112,26 +112,25 @@
   <p>
     FontForge enthält eine Heuristik für die Positionierung von Akzenten
     (die meisten Akzente liegen zentriert über dem höchsten Punkt des
-    Zeichens), welche in manchen Fällen schlechte Ergebnisse produziert
+    Zeichens), welche gelegentlich schlechte Ergebnisse produziert
     (wenn z.B. einer der beiden Stämme des "u" ein wenig höher ist als
     der andere, wird der Akzent über diesem positioniert anstatt über
     dem gesamten Zeichen). Aus diesem Grunde sollte nach der Erzeugung der
     akzentuierten Zeichen immer nachkontrolliert werden, ggf. müssen
     ein oder zwei davon korrigiert werden (evtl. sollte sogar das
-    Basiszeichen leicht geändert werden).
+    Ausgangszeichen leicht verändert werden).
   <h2>
     <a name="ligature">Erzeugung</a> einer Ligatur
   </H2>
   </p>
   <p>
     Unicode enthält eine Reihe von Ligaturzeichen (im Lateinischen
-    sind dies: &AElig;, OE, fi, etc. während es für den arabischen
-    Zeichensatz hunderte sind). Hier bietet Unicode wiederum eine
-    Datenbank für die einzelnen Komponenten jeder Standardligatur
-    an.
+    sind dies: &AElig;, OE, fi, etc. während es in arabische
+    Zeichensätzen hunderte sind). Auch hier gibt es für Unicode eine
+    Datenbank für die einzelnen Komponenten jeder Standardligatur.
   </p>
   <p>
-    FontForge kann leider nicht automatisch Ligaturen erzeugen,
+    FontForge kann leider Ligaturen nicht automatisch erzeugen,
     stattdessen können die Komponenten der Ligatur mit
     <a href="../elementmenu.html#Accented"><code>Element-&gt;Erzeugen-&gt;Zusammengesetzt erzeugen</code></a>.
     in das Zeichen kopiert werden. Dies macht es ein wenig einfacher
@@ -156,8 +155,8 @@
     </TR>
     <tr valign="Top">
       <td>Über den Dialog des Befehls
-        <a href="../elementmenu.html#CharInfo">Element -&gt; Glyphinformation</a>
-        wird das Zeichen benannt und glyph als Ligatur gekennzeichnet.
+        <a href="../elementmenu.html#CharInfo">Element -&gt;Zeicheninformation</a>
+        wird das Zeichen benannt und als Ligatur gekennzeichnet.
         Mit <a href="../elementmenu.html#Accented">Element -&gt; Erzeugen -&gt; Zusammengesetzt erzeugen</a>
         werden die Referenzen zu den Ligaturkomponenten eingefügt.</td>
       <td>Mit Hilfe des Befehls
@@ -166,12 +165,12 @@
 	    </td>
       <td>
         Die Komponenten werden so angepasst, daß ihr gemeinsames Erscheinungsbild
-        besser aussieht. In diesem Fall wurde der Stamm des ersten f ein wenig
+        besser aussieht. In diesem Fall wurde der Stamm des ersten "f" ein wenig
         verkürzt.
 	    </td>
       <td>
         Mit <a href="../elementmenu.html#Remove">Element -&gt; Überlappungen entfernen</A>
-        wird das Zeichen aufgeräumt.  
+          wird das Zeichen bereinigt.  
       </td>
       <td>
         Zum Schluss werden die Ligatur-Textmarkierungs-Linien vom Ursprung zu den entsprechenden
@@ -185,7 +184,8 @@
     einer Ligatur zu positionieren (mit einer Position zwischen jeder Komponente
     der Ligatur). Das hat den Vorteil, daß der Benutzer einer Textverarbeitung
     nicht zu wissen braucht, daß er/sie es mit einer Ligatur zu tun hat und
-    das verhalten so ist, als wenn die Einzelkomponenten bearbeitet werden.
+    sondern stattdessen so gearbeitet werden kann, als wenn die Komponenten
+    einzeln vorliegen.
     Wenn die Textverarbeitung damit umgehen soll, muss der Schriftgestalter
     Zusatzinformation bereitstellen, um die Textmarkierung an die richtigen
     Stellen zu setzen.
@@ -193,27 +193,27 @@
     werden genügend Textmarkierungslinien erzeugt, um diese zwischen die
     Einzelkomponenten setzen zu können. Diese werden in den Ursprung gesetzt,
     und wenn sie dort gelassen werden, ignoriert FontForge diese. Im
-    Normalfall wird allerdings empfohlen, mit Hilfe des Selektionswerkzeugs
+    Normalfall ist es allerdings empfehlenswert, mit Hilfe des Selektionswerkzeugs
     die Textmarkierungslinien vom Ursprung zu den jeweiligen Positionen
     zu verschieben (wird lediglich von TrueType und OpenType unterstützt).
   </p>
   <p>
   <font color="red"><strong><big>Warnung: </big></strong></font>
-  OpenType engines verwenden nur solche Features, von denen sie
+  OpenType-Engines verwenden nur solche Features, von denen sie
   glauben, daß sie für die aktuelle Schrift relevant sind (für
   lateinischen Schriften verwendet Uniscribe 'liga').
-  Schlimmer noch, einige Anwendendungen unterstützen überhaupt
-  keine Features (Word unterstützt keine Ligaturen für Latein).
+  Schlimmer noch, einige Anwendungen unterstützen u.U. diese
+  Funktionen überhaupt nicht (Word unterstützt keine Ligaturen für Latein).
   <a href="http://www.microsoft.com/typography/specs/default.htm">Microsoft
-    versucht zu dokumentieren</a> welche Features für welche Schriften in Uniscribe
+    versucht zu dokumentieren</a> welche Eigenschaften für welche Schriften in Uniscribe
     zur Anwendung kommen, allerdings ist dies wenig hilfreich, da sich Word und Office
-    anders als der Standard verhalten.
+    nicht standardkonform verhalten.
   </p>
   <p>
     Für indische Schriften werden viele Ligaturen benötigt, allerdings
     stellt Unicode für diese keine Kodierung zur Verfügung. Wenn eine
     Ligatur erstellt werden soll, die nicht Bestandteil von Unicode
-    ist, ist dies möglich.
+    ist, ist dies trotzdem möglich.
     Dafür muß zunächst ein
     <a href="../faq.html#new-name">unkodiertes Zeichen erstellt</a>
     (oder wenn der Schriftsatz ein Unicode-Font ist, kann ein Codepunkt
@@ -229,7 +229,7 @@
   </p>
   <p>
     Nach der Benennung der Ligatur und dem Einfügen der Komponenten
-    (Mit "Zusammengesetzt erzeugen"), kann das Zeichen zur Bearbeitung
+    (mit "Zusammengesetzt erzeugen"), kann das Zeichen zur Bearbeitung
     geöffnet werden, die <a href="../editmenu.html#Unlink">Referenzen getrennt</A>
     und dann wie im obigen Beispiel gezeigt in die gewünschte Form gebracht
     werden.

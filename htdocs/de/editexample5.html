@@ -84,7 +84,7 @@
     <IMG src="../MetricsView.png" WIDTH="478" HEIGHT="323"><BR>
     Alle Zeichen, die bei Aktivierung dieses Befehls in der Schrifsatzansicht
     ausgewählt sind, werden auch in der Metrikansicht angezeigt.
-    Man kann die angezeigten Zeichen verändern indem entweder das Eingabefeld
+    Man kann die angezeigten Zeichen verändern, indem entweder das Eingabefeld
     oben in der Ansicht verwendet wird, oder indem ein Zeichen aus der
     Schriftsatzansicht in das Fenster gezogen wird.
   </p>
@@ -110,7 +110,7 @@
     versucht werden, mit
     <code><a href="../autowidth.html#AutoWidth">Metriken-&gt;Autobreite</a></code>
     automatisch Breiten an die Zeichen zu vergeben. Das Ergebnis genügt
-    vielleicht nicht professionellen Standards, liefert aber im allgemeinen
+    vielleicht nicht professionellen Ansprüchen, liefert aber im allgemeinen
     eine vernünftige Annäherung.
   </p>
   <h3>
@@ -130,7 +130,7 @@
     Schrittweitenlinie.
   </p>
   <h3>
-    Setzen des <a name="baseline">Baseline</a> to Baseline Spacing einer Schriftart.
+    Setzen des <a name="baseline">Grundlinie</a>-zu-Grundlinie Abstands einer Schriftart.
   </h3>
   <p>
     Man könnte meinen, daß es einen einfachen Weg gibt, diese sehr wichtige
@@ -141,10 +141,12 @@
       <dd>
         gibt es keinen Weg, diesen Wert zu setzen.<br>
         überhaupt nicht, nie.<br>
-      In traditional typography the inter-line spacing is 1em (which in FontForge
-      is the ascent+descent of a font). Some applications will use this. Other
-      applications will use the font's bounding box (summing the maximum ascender
-      height with the minimum descender depth) -- a very bad, but very common approach.
+        In der traditionellen Typographie ist der Zeilenabstand 1em (was
+        in FontForge Anstieg + Abstieg des Zeichensatzes ist). Einige
+        Anwendungen verwenden machen Gebrauch davon. Andere Anwendungen
+        verwenden die Bounding-Box des des Zeichensatzes (die Summe aus
+        maximaler Anstiegshöhe und minimaler Abstiegstiefe) - ein sehr
+        schlechter, aber sehr gebräuchlicher Ansatz.
       <dt>
         Für TrueType oder OpenType Schriften
       <dd>
@@ -153,7 +155,7 @@
 	    <dt>
 	      Mac
 	    <dd>
-        Auf einem Mac wird das Baseline zu Baseline Spacing wiederum durch die
+      Auf einem Mac wird der Grundlinie-zu-Grundlinie Abstand wiederum durch die
         Bounding-Box-Werte der Schriftart bestimmt, die in der 'hhea'-Tabelle
         spezifiziert sind, ggf. durch eine Zeilenlücke modifiziert,
         welche mit
@@ -162,15 +164,15 @@
 	    <DT>
 	    Windows
 	<DD>
-  Gemäß der OpenType Spezifikation, wird der Baseline zu Baseline Abstand
+  Gemäß der OpenType Spezifikation wird der Grundlinie-zu-Grundlinie Abstand
   durch die Werte des typografischen Anstiegs und Abstiegs der 'OS/2'-Tabelle
   bestimmt. Diese können mit Hilfe von
   <A HREF="../fontinfo.html">Element-&gt;FontInfo-&gt;OS/2</A> gesetzt werden,
-  dürfen aber normalerweise den Anstieg und Abstiegswerten von FontForge
+  dürften aber normalerweise den Anstieg und Abstiegswerten von FontForge
   entsprechen - diese summieren sich normalerweise zu 1em und entsprechen
   der traditionellen ungeführten Standardeinstellung.<BR>
-  Auch diese Einstellung kann duch ein Zeilenlückenfeld modifiziert werden.<BR>
-  Leider folgen Windows-Programme seltem dem Standard (was wahrscheinlich
+  Auch diese Einstellung kann durch ein Zeilenlückenfeld modifiziert werden.<BR>
+  Leider arbeiten Windows-Programme selten standardkonform (was wahrscheinlich
   niemanden überrascht) und im allgemeinen nutzen diese die Bounding-Box
   der Schriftart, wie sie in den Win Anstieg-/Abstiegsfeldern der
   'OS/2' spezifiert ist.
@@ -182,16 +184,16 @@
     </DL>
   </DL>
   <P>
-    Typografische Applikationen erlauben Benutzern, den Baseline-to-Baseline
-    Abstand einzustellen, so daß die Voreinstellung hier wahrscheinlich 
+    Typografische Applikationen erlauben Benutzern, den Grundlinie-zu-Grundlinie
+    Abstand innerhalb der Anwendung einzustellen, so daß die Voreinstellung hier wahrscheinlich 
     weniger relevant sein wird.
   <H2>
     <A NAME="Kerning">Unterschneidung</A>
   </H2>
   <P>
-    Wenn die Einstellungen der linken und rechten Führung mit Bedacht gewählt
+    Wenn die Einstellungen der linken und rechten Führung sorgsam gewählt
     wurden, kann die Schrift so gestaltet werden, daß die Abstände in fast allen
-    Fällen gut aussehen. Es gibt aber immer einige Fälle, die einfache Lösungen
+    Situationen gut aussehen. Es gibt aber immer einige Fälle, die einfache Lösungen
     erschweren.
   <P>
   So sind z.B. bei "<FONT FACE="helvetica">To</FONT>" oder
@@ -217,21 +219,23 @@
     beiden Zeichen (normalerweise für die horizontale Schrittweite)
     sollte grün werden (und wird die unterschnittene Schrittweite).
     Diese Linie kann vom Anwender verschoben werden, bis das Ergebnis
-    gut aussieht.
+    den Vorstellungen entspricht.
   <P>
-  (Für einige Zeichenkombinationen  wird besser eine
-  <A HREF="editexample4.html#ligature">Ligatur erzeugt</A> anstatt die
+  (Für einige Zeichenkombinationen ist es empfehlenswerter, eine
+  <A HREF="editexample4.html#ligature">Ligatur zu erzeugen</A> anstatt die
   Zeichen zu unterschneiden)
   <H3>
   Unterschneidungsklassen
   </H3>
   <P>
-  If you have many glyphs which have similar kerning features you might instead
-  wish to create a set of <A HREF="../metricsview.html#kernclass">kerning
-  classes</A> (which might say that A, &Agrave;, &Aacute;, &Acirc;, &Acirc;,
-  &Atilde; and &Auml; all kern alike).
+    Wenn es viele Zeichen mit ähnlichen Unterschneidungseigenschaften
+    gibt, können diese in 
+    <A HREF="../metricsview.html#kernclass">Unterschneidungsklassen</A>
+    zusammengefasst werden (z.B. könnten A, &Agrave;, &Aacute;, &Acirc;,
+    &Acirc;, &Atilde; and &Auml; in der selben Unterschneidungsklasse
+    sein).
   <H3>
-    <A NAME="VKern">Vertical</A> Kerning
+    <A NAME="VKern">Vertikale</A> Unterschneidung
   </H3>
   <P>
     FontForge enthält entsprechende Unterstützung für vertikale Unterschneidung.
@@ -239,7 +243,7 @@
     und SVG Schriften gelesen und geschrieben werden. Es können vertikale
     Unterschneidungsklassen erzeugt werden. Das Metrikfenster hat einen
     vertikalen Modus in dem vertikale Unterschneidungspaare gesetzt werden
-    können. Schlussendlich gibt es einen Befehl, mit dem horizontale
+    können. Schliesslich gibt es noch einen Befehl, mit dem horizontale
     Unterschneidungsinformation in vertikal gedrehte Zeichen kopiert
     werden kann (das bedeutet, wenn die Kombination "A" "V" horizontal
     mit dem Wert -200 unterschnitten wurde, dann sollten "A.vert" und

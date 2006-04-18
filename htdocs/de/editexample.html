@@ -19,7 +19,8 @@
   vor. Wenn Sie schrittweise nach dem Tutorial lernen möchten, sollte dieses
   <a href="tutorial.tgz">Archiv</a> alle benötigten Dateien
   enthalten.<br>
-  Der Schwerpunkt liegt hierbei nicht auf Ästhetik, sondern komplett auf der Mechanik.
+  Der Schwerpunkt liegt in diesem Tutorial nicht auf Ästhetik, sondern
+  in erster Linie auf dem Prinzip des Erstellungsvorgangs.
   </p>
     <ul>
     <li>
@@ -90,7 +91,7 @@
   </p>
   <p>
     Mit Hilfe des Befehls
-    <code><a href="../fontinfo.html">Font Info</a></code>
+    <code><a href="../fontinfo.html">Zeichensatzinformation</a></code>
     aus dem <code>Element</code>-Menü kann ein Name an die Schriftart vergeben
     werden.
     Derselbe Befehl dient auch zur Vergabe eines Copyright-Hinweises und der
@@ -109,7 +110,7 @@
     <img src="../fontinfo.png" height="608" width="376">
   </p>
   <p>
-    Mit Hilfe des Befehls <code>Encoding-&gt;Reencode</code> ist es möglich
+    Mit Hilfe des Befehls <code>Codierung-&gt;Neu Codieren</code> ist es möglich
     vorzugeben, welche Zeichen im Schriftsatz enthalten sein sollen.
     FontForge erzeugt Schriftsätze im allgemeinen in ISO-8859-1,
     welches die (meisten der) in Westeuropa verwendeten Zeichen enthält
@@ -137,20 +138,22 @@
   <p>
     Der Vordergrund-Layer enthält den Umriss des Bildzeichens, der
     Hintergrund-Layer kann Bilder oder Linienzeichnungen enhalten, die
-    als Zeichenhilfe dienen. Der Guide-Layer enthält Hilfslinien,
+    als Zeichenhilfe oder Vorlage dienen können. Der Guide-Layer enthält
+    Hilfslinien,
     die für den gesamten Schriftsatz gelten (z.B. die x-Höhe). Zu Beginn
     sind alle Layer leer.
   </p>
   <p>
-    Diese Fenster enthält ausserdem das interne Koordinatensystem des
-    Bildzeichens, dessen X- und Y-Achsen in hellgrau dargestellt werden.
+    Dieses Fenster enthält ausserdem das interne Koordinatensystem des
+    Zeichens, dessen X- und Y-Achsen in hellgrau dargestellt werden.
     Die schwarze Linie am rechten Rand des Fensters zeigt die Schrittweite
     des Zeichens an. FontForge weist einem neuen Zeichen eine Schrittweite von
-    einem "em" (in Postscript sind dies normalerweise 1000 Einheiten) zu.
+    einem "em" (in Postscript sind dies üblicherweise 1000 Einheiten) zu.
   </p>
   <p>
     Mit dem Befehl <code>Datei-&gt;Importieren</code> wird ein Bild des
-    zu erzeugenden Zeichens erzeugt. Es wird automatisch so skaliert,
+    zu erzeugenden Zeichens in den Hintergrundlayer gelesen. Es wird
+    automatisch so skaliert,
     daß es der Höhe des "em"-Blocks entspricht.
   </p>
   <p>
@@ -158,9 +161,10 @@
   </p>
   <p>
     Der Hintergrund-Layer wird nun über die Layer-Palette als editierbar
-    markiert. Um die Grösse des Bildes anzupassen, wird der Mauszeiger
-    an einer Kante des Bildes positioniert, und mit gedrückter Umschalttaste
-    und gehaltener linken Maustaste gezogen. Für die Positionierung
+    markiert. Um die Größe des Bildes anzupassen, wird der Mauszeiger
+    an einer Kante des Bildes positioniert, und bei gedrückt gehaltener
+    Umschalttaste mit der linken Maustaste auf die gewünschten Maße
+    gezogen. Für dessen Positionierung
     wird der Mauszeiger im dunklen Bereich des Bildes plaziert und
     mit gedrückter linker Maustaste and die gewünschte Stelle bewegt.
   </p>
@@ -174,8 +178,9 @@
     <code>Element-&gt;AutoTrace</code> automatisch ein Umriss aus
     dem importierten Bild erzeugt werden. Ansonsten müssen die Punkte
     vom Benutzer selbst hinzugefügt werden. Dazu wird der Vordergrund-Layer
-    als aktiv selektiert und aus der Werkzeugpalette der runde (oder
-    Kurven-) Punkt ausgewählt. Dann wird der Mauszeiger am Rand des
+    als aktiv selektiert und aus der Werkzeugpalette der Kurvenpunkt
+    (das ist der gefüllte Kreis) Punkt ausgewählt.
+    Dann wird der Mauszeiger am Rand des
     Bildes positioniert und per Mausklick ein Punkt hinzugefügt.
     Am einfachsten ist es, Punkte an Stellen hinzuzufügen, an denen die
     Kurve horizontal oder vertikal verläuft, an Ecken oder Stellen
@@ -213,7 +218,7 @@
     <img src="../C6.png" height="283" width="272">
   </p>
   <p>
-    Wie zu sehen ist, folgt der Kurvenverlauf der Vorlage schon etwas
+    Wie zu sehen ist, ist der Kurvenverlauf der Vorlage schon etwas
     ähnlicher. Es werden nun noch mehr Punkte hinzugefügt bis der
     Pfad geschlossen werden kann.
   </p>
@@ -242,7 +247,7 @@
     Zum Schluß wird die Zeichenbreite gesetzt. Hierzu wird bei ausgewähltem
     Selektionswerkzeug der Mauszeiger auf die Breitenlinie auf der rechten
     Seite der Ansicht gesetzt und diese bei gedrückter Maustaste
-    an eine passenden Stelle verschoben.
+    an eine passende Stelle verschoben.
   </p>
   <p>
     <img src="../C10.png" height="279" width="266">
@@ -253,20 +258,20 @@
   <p>
     Mathematisch Interessierte sollten ein Augenmerk auf die Koordinaten
     in der linken oberen Ecke des Fensters werfen. Im allgemeinen können
-    Zeichen auch ohne deren Berücksichtigung erstellt werden, aber als
-    Zusatzinformation:
+    Zeichen auch ohne deren Berücksichtigung erstellt werden, hier aber als
+    ergänzende Information:
   </p>
   <ul>
     <li>
       Jedes Zeichen hat sein eigenes Koordinatensystem.
     </li>
     <li>
-      Der vertikale Ursprung ist die Grundlinie des Schriftsatzes (die meisten
+    Der vertikale Ursprung ist die Grundlinie des Zeichensatzes (die meisten
       lateinischen Buchstaben liegen auf dieser Linie).
     </li>
     <li>
       Der horizontale Ursprung ist die Stelle, bei der die Darstellung des
-      Zeichens beginnt. Im obigen Beispiel wird zunächst ein Leerraum
+      Zeichens beginnt. Im gezeigten Beispiel wird zunächst ein Leerraum
       dargestellt, was relativ üblich ist. Dieser Leerraum (der Abstand
       vom Ursprung bis zur linken Kante des Zeichens) wird 
       "linke Führungsschiene" genannt.
