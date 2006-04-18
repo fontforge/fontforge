@@ -1202,6 +1202,7 @@ extern int SFOneWidth(SplineFont *sf);
 extern int CIDOneWidth(SplineFont *sf);
 extern int SFOneHeight(SplineFont *sf);
 extern int SFIsCJK(SplineFont *sf,EncMap *map);
+extern void CIDMasterAsDes(SplineFont *sf);
 enum fontformat { ff_pfa, ff_pfb, ff_pfbmacbin, ff_multiple, ff_mma, ff_mmb,
 	ff_ptype3, ff_ptype0, ff_cid, ff_cff, ff_cffcid,
 	ff_type42, ff_type42cid,

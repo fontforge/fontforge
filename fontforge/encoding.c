@@ -2196,6 +2196,7 @@ return(NULL);
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
     SFRestoreNearTop(sf);
+    CIDMasterAsDes(sf);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     FontViewReformatAll(sf);
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
