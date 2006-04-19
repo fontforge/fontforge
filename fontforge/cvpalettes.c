@@ -1543,8 +1543,10 @@ return;
 	    cv->sc->parent->hasvmetrics);
     GGadgetSetChecked(GWidgetGetControl(cvlayers,CID_VBlues),cv->showblues);
 
+#if 0	/* Use this to control visibility of grid fit layer */
     GGadgetSetEnabled(GWidgetGetControl(cvlayers,CID_EBack),!cv->show_ft_results);
     GGadgetSetEnabled(GWidgetGetControl(cvlayers,CID_EGrid),!cv->show_ft_results);
+#endif
 }
 
 static int cvlayers_e_h(GWindow gw, GEvent *event) {
