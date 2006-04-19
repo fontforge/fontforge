@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 4-Apr-2006 -->
+  <!-- AP: Last modified: 19-Apr-2006 -->
   <TITLE>Outline Glyph View</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -105,6 +105,12 @@
   kde family of applications does this, perhaps others), then FontForge will
   be able to read images in either "image/png" or "image/bmp".
   <P>
+  When debugging truetype
+  (<CODE><A HREF="hintsmenu.html#Debug">Hints-&gt;Debug</A>)</CODE>, or showing
+  gritfit outlines (<A HREF="viewmenu.html#ShowGridFit"><CODE>View-&gt;Show
+  Gridfit</CODE></A>) the visibility of the gridfit outlines can be controlled
+  by the background layer's visibility.
+  <P>
   The third layer is a set of guide lines/splines. These are common to all
   glyphs in the font. A few lines are provided for you (the x=0 line, the ascent,
   descent and baseline). Other handy lines might be the x-height of the font,
@@ -113,10 +119,12 @@
   it easy to force a consistent x-height for example).
   <P>
   The next 4 entries control what hints for this glyph are visible. Most hints
-  may be created with the <CODE>Hints-&gt;AutoHint</CODE> command, the presence
-  of hints will sometimes improve rasterization. The blues entry displays the
-  BlueValues zones. These may be set with <CODE>Element-&gt;Font Info-&gt;PS
-  Private</CODE>.
+  may be created with the
+  <A HREF="hintsmenu.html#AutoHint"><CODE>Hints-&gt;AutoHint</CODE> </A>command,
+  the presence of hints will sometimes improve rasterization. The blues entry
+  displays the BlueValues zones. These may be set with
+  <CODE><A HREF="fontinfo.html#Private">Element-&gt;Font Info-&gt;PS
+  Private</A></CODE>.
   <P>
   The Anchors entry controls what whether anchor points are displayed.
   <P>
@@ -351,7 +359,7 @@
   <P>
   In a cubic font the points created are curved points, and they are initially
   created with the control points on the point and as you drag you drag out
-  the control points rather than moving the point itself around. 
+  the control points rather than moving the point itself around.
   <P>
   In a quadratic font a point will be created half-way between the last control
   point and the current location (which becomes the next control point).
@@ -528,8 +536,9 @@
   If you have freetype's bytecode interpreter enabled you can also see how
   the truetype instructions in the glyph have moved the points around (if you
   don't have the bytecode interpreter enabled you will see what freetype's
-  autohinter does to points). This mode can be invoked with View-&gt;Show Grid
-  Fit...
+  autohinter does to points). This mode can be invoked with
+  <CODE><A HREF="viewmenu.html#ShowGridFit">View-&gt;Show Grid
+  Fit</A></CODE>...
   <P>
   The Show Grid Fit command will ask you for some basic information first.
   It needs to know the pointsize and resolution for which you want the action
@@ -546,11 +555,11 @@
   this. It is protected by several patents)</STRONG></FONT>.
   <P>
   The image to the right shows an example of this mode. You invoke it with
-  Hints-&gt;Debug, and as with the grid-fit view above you must establish a
-  pointsize and and resolution. The view divides into two panes, the left of
-  which is similar to the grid fit view above (except that it changes as you
-  step through the instructions), the right pane provides a list of the
-  instructions to be executed.
+  <CODE><A HREF="hintsmenu.html#Debug">Hints-&gt;Debug</A></CODE>, and as with
+  the grid-fit view above you must establish a pointsize and and resolution.
+  The view divides into two panes, the left of which is similar to the grid
+  fit view above (except that it changes as you step through the instructions),
+  the right pane provides a list of the instructions to be executed.
   <P>
   In addition to showing you all the points in your glyph there are either
   2 or 4 additional points. These are the so-called "phantom" points and represent
