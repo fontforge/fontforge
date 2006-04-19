@@ -1276,6 +1276,8 @@ static void AttachSplineBitsToStems(struct splinesteminfo *ssi,int cnt) {
 	ta[1].stem = NULL;
 	head = OrderSbByTDiff(ssi[j].sb);
 	for ( test=head; test!=NULL; test=test->next ) {
+	    if ( test->tstart==test->tend )
+	continue;
 	    for ( i=0; i<tcnt-1 && test->tstart>ta[i].t; ++i );
 	    if ( test->tstart!=ta[i].t ) --i;
 	    if ( i==tcnt-1 ) {
