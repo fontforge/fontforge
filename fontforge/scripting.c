@@ -222,6 +222,8 @@ static void showtoken(Context *c,enum token_type got) {
 
 static void expect(Context *c,enum token_type expected, enum token_type got) {
     if ( got!=expected ) {
+	if ( verbose>0 )
+	    fflush(stdout);
 	LogError( _("%s: %d Expected %s, got %s"),
 		c->filename, c->lineno, toknames[expected], toknames[got] );
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -235,6 +237,8 @@ static void expect(Context *c,enum token_type expected, enum token_type got) {
 }
 
 static void unexpected(Context *c,enum token_type got) {
+    if ( verbose>0 )
+	fflush(stdout);
     LogError( _("%s: %d Unexpected %s found"),
 	    c->filename, c->lineno, toknames[got] );
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -254,6 +258,8 @@ void ScriptError( Context *c, const char *msg ) {
     /*  no difference between latin1 and utf8. User errors are a different */
     /*  matter */
 
+    if ( verbose>0 )
+	fflush(stdout);
     if ( c->lineno!=0 )
 	LogError( _("%s line: %d %s\n"), ufile, c->lineno, t1 );
     else
@@ -272,6 +278,8 @@ void ScriptErrorString( Context *c, const char *msg, const char *name) {
     char *t2 = script2utf8_copy(name);
     char *ufile = def2utf8_copy(c->filename);
 
+    if ( verbose>0 )
+	fflush(stdout);
     if ( c->lineno!=0 )
 	LogError( _("%s line: %d %s: %s\n"), ufile, c->lineno, t1, t2 );
     else
@@ -295,6 +303,8 @@ void ScriptErrorF( Context *c, const char *format, ... ) {
     vsnprintf(errbuf,sizeof(errbuf),format,ap);
     va_end(ap);
     
+    if ( verbose>0 )
+	fflush(stdout);
     if ( c->lineno!=0 )
 	LogError( _("%s line: %d %s\n"), ufile, c->lineno, errbuf );
     else
@@ -7264,6 +7274,8 @@ static void docall(Context *c,char *name,Val *val) {
 		}
 	}
 	if ( found!=NULL ) {
+	    if ( verbose>0 )
+		fflush(stdout);
 	    if ( sub.curfv==NULL && !found->nofontok )
 		ScriptError(&sub,"This command requires an active font");
 	    (found->func)(&sub);
