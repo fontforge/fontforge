@@ -714,6 +714,7 @@ static void DefaultXUID(void) {
     srandom(tv.tv_usec+1);
     r2 = random();
     sprintf( buffer, "1021 %d %d", r1, r2 );
+    free(xuid);
     xuid = copy(buffer);
 }
 

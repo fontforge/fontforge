@@ -35,6 +35,9 @@ int hasFreeType(void) {
 return( false );
 }
 
+void doneFreeType(void) {
+}
+
 int hasFreeTypeDebugger(void) {
 return( false );
 }
@@ -118,6 +121,7 @@ static FT_Library context;
 #define _FT_Outline_Decompose FT_Outline_Decompose
 #define _FT_Library_Version FT_Library_Version
 #define _FT_Outline_Get_Bitmap FT_Outline_Get_Bitmap
+#define _FT_Done_FreeType FT_Done_FreeType
 
 # if FREETYPE_HAS_DEBUGGER
 #  include "ttinterp.h"
@@ -137,6 +141,7 @@ return( true );
 
 static DL_CONST void *libfreetype;
 static FT_Error (*_FT_Init_FreeType)( FT_Library  * );
+static FT_Error (*_FT_Done_FreeType)( FT_Library  );
 static FT_Error (*_FT_New_Memory_Face)( FT_Library, const FT_Byte *, int, int, FT_Face * );
 static FT_Error (*_FT_Done_Face)( FT_Face );
 static FT_Error (*_FT_Set_Pixel_Sizes)( FT_Face, int, int);
@@ -163,6 +168,7 @@ static int freetype_init_base() {
 return( false );
 
     _FT_Init_FreeType = (FT_Error (*)(FT_Library *)) dlsym(libfreetype,"FT_Init_FreeType");
+    _FT_Done_FreeType = (FT_Error (*)(FT_Library  )) dlsym(libfreetype,"FT_Done_FreeType");
     _FT_New_Memory_Face = (FT_Error (*)(FT_Library, const FT_Byte *, int, int, FT_Face * )) dlsym(libfreetype,"FT_New_Memory_Face");
     _FT_Set_Pixel_Sizes = (FT_Error (*)(FT_Face, int, int)) dlsym(libfreetype,"FT_Set_Pixel_Sizes");
     _FT_Set_Char_Size = (FT_Error (*)(FT_Face, int, int, int, int)) dlsym(libfreetype,"FT_Set_Char_Size");
@@ -196,6 +202,12 @@ return( false );
 
     ok = true;
 return( true );
+}
+
+void doneFreeType(void) {
+    if ( context!=NULL )
+	_FT_Done_FreeType(context);
+    context = NULL;
 }
 
 int hasFreeTypeDebugger(void) {

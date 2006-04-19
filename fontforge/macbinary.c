@@ -2281,7 +2281,7 @@ static FOND *BuildFondList(FILE *f,long rlistpos,int subcnt,long rdata_pos,
 	    ch1 = getc(f);
 	    fread(name,1,ch1,f);
 	    name[ch1] = '\0';
-	    cur->fondname = strdup(name);
+	    cur->fondname = copy(name);
 	}
 
 	offset += 4;

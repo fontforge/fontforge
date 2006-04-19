@@ -33,6 +33,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <dirent.h>
+#include <ustring.h>
 
 #ifdef FONTFORGE_CONFIG_GTK
 # include <gtk/gtk.h>
@@ -54,12 +55,12 @@ static char *gethomedir(void) {
 
 	dir = getenv("HOME");
     if ( dir!=NULL )
-return( strdup(dir) );
+return( copy(dir) );
 
     uid = getuid();
     while ( (pw=getpwent())!=NULL ) {
 	if ( pw->pw_uid==uid ) {
-	    dir = strdup(pw->pw_dir);
+	    dir = copy(pw->pw_dir);
 	    endpwent();
 return( dir );
 	}
@@ -71,7 +72,11 @@ return( NULL );
 #endif
 
 char *getPfaEditDir(char *buffer) {
+    char *editdir = NULL;
     char *dir=gethomedir();
+
+    if ( editdir!=NULL )
+return( editdir );
 
     if ( dir==NULL )
 return( NULL );
@@ -80,8 +85,8 @@ return( NULL );
     if ( access(buffer,F_OK)==-1 )
 	if ( mkdir(buffer,0700)==-1 )
 return( NULL );
-    dir = strdup(buffer);
-return( dir );
+    editdir = copy(buffer);
+return( editdir );
 }
 
 static char *getAutoDirName(char *buffer) {
@@ -94,7 +99,7 @@ return( NULL );
     if ( access(buffer,F_OK)==-1 )
 	if ( mkdir(buffer,0700)==-1 )
 return( NULL );
-    dir = strdup(buffer);
+    dir = copy(buffer);
 return( dir );
 }
 
@@ -111,7 +116,7 @@ return;
     while ( 1 ) {
 	sprintf( buffer, "%s/auto%06x-%d.asfd", autosavedir, getpid(), ++cnt );
 	if ( access(buffer,F_OK)==-1 ) {
-	    sf->autosavename = strdup(buffer);
+	    sf->autosavename = copy(buffer);
 	    free(autosavedir);
 return;
 	}

@@ -1220,8 +1220,8 @@ return( NULL );
     ret->keys = gcalloc(ret->cnt,sizeof(char *));
     ret->values = gcalloc(ret->cnt,sizeof(char *));
     for ( i=0; i<dict->next; ++i ) {
-	ret->keys[i] = strdup(dict->keys[i]);
-	ret->values[i] = strdup(dict->values[i]);
+	ret->keys[i] = copy(dict->keys[i]);
+	ret->values[i] = copy(dict->values[i]);
     }
 
 return( ret );
@@ -1291,12 +1291,12 @@ return( -1 );
 	    dict->keys = grealloc(dict->keys,dict->cnt*sizeof(char *));
 	    dict->values = grealloc(dict->values,dict->cnt*sizeof(char *));
 	}
-	dict->keys[dict->next] = strdup(key);
+	dict->keys[dict->next] = copy(key);
 	dict->values[dict->next] = NULL;
 	++dict->next;
     }
     free(dict->values[i]);
-    dict->values[i] = strdup(newval);
+    dict->values[i] = copy(newval);
 return( i );
 }
 

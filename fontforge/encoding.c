@@ -1545,9 +1545,9 @@ struct cidmap *AskUserForCIDMap(SplineFont *sf) {
     FindMapsInDir(&block,"/usr/share/fontforge");
 
     choices = gcalloc(block.cur+2,sizeof(unichar_t *));
-    choices[0] = strdup(_("Browse..."));
+    choices[0] = copy(_("Browse..."));
     for ( i=0; i<block.cur; ++i )
-	choices[i+1] = strdup(block.maps[i]);
+	choices[i+1] = copy(block.maps[i]);
     ret = gwwv_choose(_("Find a cidmap file..."),(const char **) choices,i+1,0,_("Please select a CID ordering"));
     for ( i=0; i<=block.cur; ++i )
 	free( choices[i] );
