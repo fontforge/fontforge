@@ -1167,13 +1167,13 @@ static void TickSplinesBetween(struct glyphdata *gd, struct splinesteminfo *ssi,
     if ( s1==NULL ) s1 = s2; else if ( s2==NULL ) s2=s1;
     if ( s1==NULL )
 return;
-    if ( !UnitsParallel(&gd->points[s1->from->ttfindex].nextunit,&stem->unit) &&
-	    !UnitsParallel(&gd->points[s1->to->ttfindex].prevunit,&stem->unit))
+    if ( (!UnitsParallel(&gd->points[s1->from->ttfindex].nextunit,&stem->unit) || !OnStem(stem,&s1->from->me)) &&
+	    (!UnitsParallel(&gd->points[s1->to->ttfindex].prevunit,&stem->unit) || !OnStem(stem,&s1->to->me)) )
 return;
-    if ( !UnitsParallel(&gd->points[s2->from->ttfindex].nextunit,&stem->unit) &&
-	    !UnitsParallel(&gd->points[s2->to->ttfindex].prevunit,&stem->unit))
+    if ( (!UnitsParallel(&gd->points[s2->from->ttfindex].nextunit,&stem->unit) || !OnStem(stem,&s2->from->me)) &&
+	    (!UnitsParallel(&gd->points[s2->to->ttfindex].prevunit,&stem->unit) || !OnStem(stem,&s2->to->me)) )
 return;
-    
+
     AddSplineTick(ssi,us,0,1,stem,!lookright);
     if ( s1==s2 ) {
 	AddSplineTick(ssi,s1,t1,t2,stem,lookright);
