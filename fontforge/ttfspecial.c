@@ -107,6 +107,7 @@ static void PfEd_GlyphComments(SplineFont *sf, struct PfEd_subtabs *pfed,
     uint32 uch;
 
     any = 0;
+    /* We don't need to check in bygid order. We just want to know existance */
     for ( i=0; i<sf->glyphcnt; ++i ) {
 	if ( sf->glyphs[i]!=NULL && sf->glyphs[i]->ttf_glyph!=-1 &&
 		sf->glyphs[i]->comment!=NULL ) {
@@ -490,7 +491,7 @@ static uint32 tex_mathext_params[] = {
 /* *************************         Output         ************************* */
 /* ************************************************************************** */
 
-static void TeX_dumpFontParams(SplineFont *sf, struct TeX_subtabs *tex ) {
+static void TeX_dumpFontParams(SplineFont *sf, struct TeX_subtabs *tex, struct alltabs *at ) {
     FILE *fprm;
     int i,pcnt;
     uint32 *tags;
@@ -513,15 +514,17 @@ return;
     /* always aligned */
 }
 
-static void TeX_dumpHeightDepth(SplineFont *sf, struct TeX_subtabs *tex ) {
+static void TeX_dumpHeightDepth(SplineFont *sf, struct TeX_subtabs *tex, struct alltabs *at ) {
     FILE *htdp;
-    int i,j,k,last_g;
+    int i,j,k,last_g, gid;
     DBounds b;
 
-    for ( i=sf->glyphcnt-1; i>=0; --i )
-	if ( sf->glyphs[i]!=NULL &&
-		(sf->glyphs[i]->tex_height!=TEX_UNDEF || sf->glyphs[i]->tex_depth!=TEX_UNDEF))
+    for ( i=at->gi.gcnt-1; i>=0; --i ) {
+	gid = at->gi.bygid[i];
+	if ( gid!=-1 && sf->glyphs[gid]!=NULL &&
+		(sf->glyphs[gid]->tex_height!=TEX_UNDEF || sf->glyphs[gid]->tex_depth!=TEX_UNDEF))
     break;
+    }
     if ( i<0 )		/* No height/depth info */
 return;
 
@@ -529,32 +532,37 @@ return;
     tex->subtabs[tex->next++].data = htdp = tmpfile();
 
     putshort(htdp,0);				/* sub-table version number */
-    putshort(htdp,sf->glyphs[i]->ttf_glyph+1);	/* data for this many glyphs */
+    putshort(htdp,sf->glyphs[gid]->ttf_glyph+1);/* data for this many glyphs */
 
     last_g = -1;
-    for ( j=0; j<=i; ++j ) if ( sf->glyphs[j]!=NULL ) {
-	SplineChar *sc = sf->glyphs[j];
-	for ( k=last_g+1; k<sc->ttf_glyph; ++k ) {
-	    putshort(htdp,0);
-	    putshort(htdp,0);
+    for ( j=0; j<=i; ++j ) {
+	gid = at->gi.bygid[j];
+	if ( gid!=-1 && sf->glyphs[gid]!=NULL ) {
+	    SplineChar *sc = sf->glyphs[gid];
+	    for ( k=last_g+1; k<sc->ttf_glyph; ++k ) {
+		putshort(htdp,0);
+		putshort(htdp,0);
+	    }
+	    if ( sc->tex_depth==TEX_UNDEF || sc->tex_height==TEX_UNDEF )
+		SplineCharFindBounds(sc,&b);
+	    putshort( htdp, sc->tex_height==TEX_UNDEF ? b.maxy : sc->tex_height );
+	    putshort( htdp, sc->tex_depth==TEX_UNDEF ? -b.miny : sc->tex_depth );
+	    last_g = sc->ttf_glyph;
 	}
-	if ( sc->tex_depth==TEX_UNDEF || sc->tex_height==TEX_UNDEF )
-	    SplineCharFindBounds(sc,&b);
-	putshort( htdp, sc->tex_height==TEX_UNDEF ? b.maxy : sc->tex_height );
-	putshort( htdp, sc->tex_depth==TEX_UNDEF ? -b.miny : sc->tex_depth );
-	last_g = sc->ttf_glyph;
     }
     /* always aligned */
 }
 
-static void TeX_dumpSubSuper(SplineFont *sf, struct TeX_subtabs *tex ) {
+static void TeX_dumpSubSuper(SplineFont *sf, struct TeX_subtabs *tex, struct alltabs *at ) {
     FILE *sbsp;
-    int i,j,k,last_g;
+    int i,j,k,last_g, gid;
 
-    for ( i=sf->glyphcnt-1; i>=0; --i )
-	if ( sf->glyphs[i]!=NULL &&
-		(sf->glyphs[i]->tex_sub_pos!=TEX_UNDEF || sf->glyphs[i]->tex_super_pos!=TEX_UNDEF))
+    for ( i=at->gi.gcnt-1; i>=0; --i ) {
+	gid = at->gi.bygid[i];
+	if ( gid!=-1 && sf->glyphs[gid]!=NULL &&
+		(sf->glyphs[gid]->tex_sub_pos!=TEX_UNDEF || sf->glyphs[gid]->tex_super_pos!=TEX_UNDEF))
     break;
+    }
     if ( i<0 )		/* No sub/super info */
 return;
 
@@ -562,20 +570,23 @@ return;
     tex->subtabs[tex->next++].data = sbsp = tmpfile();
 
     putshort(sbsp,0);				/* sub-table version number */
-    putshort(sbsp,sf->glyphs[i]->ttf_glyph+1);	/* data for this many glyphs */
+    putshort(sbsp,sf->glyphs[gid]->ttf_glyph+1);/* data for this many glyphs */
 
     last_g = -1;
-    for ( j=0; j<=i; ++j ) if ( sf->glyphs[j]!=NULL ) {
-	SplineChar *sc = sf->glyphs[j];
-	for ( k=last_g+1; k<sc->ttf_glyph; ++k ) {
-	    putshort(sbsp,0);
-	    putshort(sbsp,0);
+    for ( j=0; j<=i; ++j ) {
+	gid = at->gi.bygid[j];
+	if ( gid!=-1 && sf->glyphs[gid]!=NULL ) {
+	    SplineChar *sc = sf->glyphs[gid];
+	    for ( k=last_g+1; k<sc->ttf_glyph; ++k ) {
+		putshort(sbsp,0);
+		putshort(sbsp,0);
+	    }
+	    putshort( sbsp, sc->tex_sub_pos==TEX_UNDEF ? sc->width : sc->tex_sub_pos );
+	    putshort( sbsp, sc->tex_super_pos!=TEX_UNDEF ? sc->tex_super_pos :
+			    sc->tex_sub_pos!=TEX_UNDEF ? sc->width - sc->tex_sub_pos :
+				    0 );
+	    last_g = sc->ttf_glyph;
 	}
-	putshort( sbsp, sc->tex_sub_pos==TEX_UNDEF ? sc->width : sc->tex_sub_pos );
-	putshort( sbsp, sc->tex_super_pos!=TEX_UNDEF ? sc->tex_super_pos :
-			sc->tex_sub_pos!=TEX_UNDEF ? sc->width - sc->tex_sub_pos :
-				0 );
-	last_g = sc->ttf_glyph;
     }
     /* always aligned */
 }
@@ -590,9 +601,9 @@ void tex_dump(struct alltabs *at, SplineFont *sf) {
 return;
 
     memset(&tex,0,sizeof(tex));
-    TeX_dumpFontParams(sf,&tex);
-    TeX_dumpHeightDepth(sf,&tex);
-    TeX_dumpSubSuper(sf,&tex);
+    TeX_dumpFontParams(sf,&tex,at);
+    TeX_dumpHeightDepth(sf,&tex,at);
+    TeX_dumpSubSuper(sf,&tex,at);
 
     if ( tex.next==0 )
 return;		/* No subtables */
