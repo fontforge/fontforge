@@ -125,7 +125,7 @@ return( 0 );
 return(1 );
 }
 
-static int getline(unsigned char *buf, int sz, FILE *fp) {
+static int gww_getline(unsigned char *buf, int sz, FILE *fp) {
     int ch;
     unsigned char *pt=buf;
 
@@ -297,7 +297,7 @@ return( NULL );
 
     fgets((char *) buf,sizeof(buf),fp);
     if ( strstr((char *) buf,"XPM2")!=NULL )
-	getdata = getline;
+	getdata = gww_getline;
     else if ( strstr((char *) buf,"/*")!=NULL && strstr((char *) buf,"XPM")!=NULL && strstr((char *) buf,"*/")!=NULL )
 	getdata = getstring;
     if ( getdata==NULL ||
