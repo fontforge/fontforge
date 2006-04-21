@@ -209,8 +209,9 @@ return( 0 );
 
     dn = nextcp.x*line->splines[0].c + nextcp.y*line->splines[1].c;
     dp = prevcp.x*line->splines[0].c + prevcp.y*line->splines[1].c;
-    if ( (dn<0 && dp<0) || (dn>0 && dp>0))
+    if ( dn*dp<0 )
 return( 1 );		/* Treat this line and the next as one */
+			/* We assume that a rounding error gave us one erroneous intersection (or we went directly through the endpoint) */
     else
 return( 2 );		/* Ignore both this line and the next */
 }
@@ -253,11 +254,10 @@ static Spline *MonotonicFindAlong(Spline **sspace,Spline *line,struct st *stspac
     for ( i=0; i<cnt; ++i ) {
 	s = stspace[i].s;
 	if ( s==findme ) {
-	    if ( eo&1 ) {
+	    if ( (eo&1) && i>0 ) {
 		*other_t = stspace[i-1].st;
 return( stspace[i-1].s );
-	    }
-	    if ( i+1<cnt ) {
+	    } else if ( !(eo&1) && i+1<cnt ) {
 		*other_t = stspace[i+1].st;
 return( stspace[i+1].s );
 	    }
