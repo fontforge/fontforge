@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 15-Apr-2006 -->
+  <!-- AP: Last modified: 21-Apr-2006 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -16,7 +16,9 @@
   FontForge includes an interpreter so you can write scripts to modify fonts.
   <UL>
     <LI>
-      <A HREF="#Starting">Starting a script</A>
+      <A HREF="scripting-tutorial.html">Scripting tutorial</A>
+    <LI>
+      <A HREF="#Starting">Invoking a script</A>
     <LI>
       <A HREF="#Language">Scripting language</A>
       <UL>
@@ -33,7 +35,7 @@
       <A HREF="#menu">The Scripts menu</A>
   </UL>
   <H2>
-    <A NAME="Starting">Starting scripts</A>
+    <A NAME="Starting">Invoking scripts</A>
   </H2>
   <P>
   If you start fontforge with a script on the command line it will not put
@@ -150,9 +152,9 @@
       Starting with "/*" and proceeding to "*/"
   </UL>
   <P>
-  Expressions are similar to those in C, a few operators have been omitted,
-  a few added from shell scripts. Operator precedence has been simplified slightly.
-  So operators (and their precedences) are:
+  <A NAME="Expressions">Expressions</A> are similar to those in C, a few operators
+  have been omitted, a few added from shell scripts. Operator precedence has
+  been simplified slightly. So operators (and their precedences) are:
   <UL>
     <LI>
       unary operators (+, -, !, ~, ++ (prefix and postfix), --(prefix and postfix),
@@ -351,6 +353,16 @@ endloop
       for this font. (If the font database contains greymaps then they will be
       indicated in the array as
       <CODE>(&lt;BitmapDepth&gt;&lt;&lt;16)|&lt;PixelSize&gt;</CODE>)
+    <LI>
+      <CODE>$order </CODE>returns an integer containing either 2 (for truetype
+      fonts) or 3 (for postscript fonts). This indicates whether the font uses
+      quadratic or cubic splines.
+    <LI>
+      <CODE>$em</CODE> returns the number of em-units used by the font.
+    <LI>
+      <CODE>$ascent </CODE>returns the ascent of the font
+    <LI>
+      <CODE>$descent </CODE>returns the descent of the font.
     <LI>
       <CODE>$selection</CODE> returns an array containing one entry for each glyph
       in the current font indicating whether that glyph is selected or not
@@ -694,10 +706,12 @@ endloop
       <A HREF="scripting-alpha.html#SelectMoreSingletons">SelectMoreSingletons(arg1,
       ...)</A>
     <LI>
-      <A HREF="scripting-alpha.html#SelectNone">SelectNone </A>
+      <A HREF="scripting-alpha.html#SelectNone">SelectNone()</A>
     <LI>
       <A HREF="scripting-alpha.html#SelectNone"><A HREF="scripting-alpha.html#SelectSingletons">SelectSingletons(arg1,
       ...)</A> </A>
+    <LI>
+      <A HREF="scripting-alpha.html#SelectWorthOutputting">SelectWorthOutputting()</A>
   </UL>
   <H3 ALIGN=Center>
     Built-in procedures that act like the <A NAME="element-menu">Element Menu</A>
@@ -1220,6 +1234,8 @@ endloop
 	<LI>
 	  <A HREF="http://sourceforge.net/projects/x-symbol/">x-symbol</A>
       </UL>
+    <LI>
+      <A HREF="scripting-tutorial.html">the scripting tutorial</A>
   </UL>
   <H3>
     Example 1:
