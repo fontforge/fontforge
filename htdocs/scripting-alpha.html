@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 9-Apr-2006 -->
-  <!-- AP: Last modified: 17-Apr-2006 -->
+  <!-- AP: Last modified: 21-Apr-2006 -->
   <TITLE>Scripting functions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -2299,13 +2299,17 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	    Same as <A HREF="scripting-alpha.html#SelectSingletons">SelectSingletons</A>
 	    except it adds single glyphs from the current selection.
 	  <DT>
-	    <A NAME="SelectNone" HREF="editmenu.html#Deselect">SelectNone</A>
+	    <A NAME="SelectNone" HREF="editmenu.html#Deselect">SelectNone</A>()
 	  <DD>
 	    Deselects all glyphs
 	  <DT>
 	    <A NAME="SelectSingletons">S</A>electSingletons(arg1, ...)
 	  <DD>
 	    Selects its arguments without looking for ranges.
+	  <DT>
+	    <A NAME="SelectWorthOutputting">SelectWorthOutputting</A>()
+	  <DD>
+	    Selects all glyphs <A HREF="#WorthOutputting">WorthOutputting</A>
 	  <DT>
 	    <A NAME="SetCharCnt">S</A>etCharCnt(cnt)
 	  <DD>
