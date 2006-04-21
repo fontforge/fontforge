@@ -7406,9 +7406,20 @@ static void handlename(Context *c,Val *val) {
 		else
 		    val->u.ival = c->curfv->sf->mm->instance_count;
 		val->type = v_int;
-	    } else if ( strcmp(name,"$macstyle")==0 ) {
+	    } else if ( strcmp(name,"$macstyle")==0 || strcmp(name,"$order")==0 ||
+		    strcmp(name,"$em")==0 || strcmp(name,"$ascent")==0 ||
+		    strcmp(name,"$ascent")==0 ) {
 		if ( c->curfv==NULL ) ScriptError(c,"No current font");
-		val->u.ival = c->curfv->sf->macstyle;
+		if ( strcmp(name,"$macstyle")==0 )
+		    val->u.ival = c->curfv->sf->macstyle;
+		else if ( strcmp(name,"$order")==0 )
+		    val->u.ival = c->curfv->sf->order2 ? 2 : 3;
+		else if ( strcmp(name,"$em")==0 )
+		    val->u.ival = c->curfv->sf->ascent+c->curfv->sf->descent;
+		else if ( strcmp(name,"$ascent")==0 )
+		    val->u.ival = c->curfv->sf->ascent;
+		else /* if ( strcmp(name,"$descent")==0 )*/
+		    val->u.ival = c->curfv->sf->descent;
 		val->type = v_int;
 	    } else if ( strcmp(name,"$curcid")==0 || strcmp(name,"$nextcid")==0 ||
 		    strcmp(name,"$firstcid")==0 ) {
