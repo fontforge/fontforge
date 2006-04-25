@@ -37,34 +37,34 @@ extern int accent_offset;	/* in prefs.c */
 #define TopAccent	0x345
 
 /* for accents between 0x300 and 345 these are some synonyms */
-/* postscript wants accented chars built with accents in the 0x2c? range */
+/* type1 wants accented chars built with accents in the 0x2c? range */
 /*  except for grave and acute which live in iso8859-1 range */
 /*  this table is ordered on a best try basis */
 static const unichar_t accents[][4] = {
-    { 0x2cb, 0x300, 0x60 },		/* grave */
-    { 0x2ca, 0x301, 0xb4 },		/* acute */
-    { 0x2c6, 0x302, 0x5e },		/* circumflex */
-    { 0x2dc, 0x303, 0x7e },		/* tilde */
-    { 0x2c9, 0x304, 0xaf },		/* macron */
-    { 0x305, 0xaf },			/* overline, (macron is suggested as a syn, but it's not quite right) */
-    { 0x2d8, 0x306 },			/* breve */
-    { 0x2d9, 0x307, '.' },		/* dot above */
-    { 0xa8,  0x308 },			/* diaeresis */
-    { 0x2c0 },				/* hook above */
-    { 0x2da, 0xb0 },			/* ring above */
-    { 0x2dd },				/* real acute */
-    { 0x2c7 },				/* caron */
+    { 0x2cb, 0x300, 0x60 },	/* grave */
+    { 0x2ca, 0x301, 0xb4 },	/* acute */
+    { 0x2c6, 0x302, 0x5e },	/* circumflex */
+    { 0x2dc, 0x303, 0x7e },	/* tilde */
+    { 0x2c9, 0x304, 0xaf },	/* macron */
+    { 0x305, 0xaf },		/* overline, (macron is suggested as a syn, but it's not quite right) */
+    { 0x2d8, 0x306 },		/* breve */
+    { 0x2d9, 0x307, '.' },	/* dot above */
+    { 0xa8,  0x308 },		/* diaeresis */
+    { 0x2c0 },			/* hook above */
+    { 0x2da, 0xb0 },		/* ring above */
+    { 0x2dd },			/* real acute */
+    { 0x2c7 },			/* caron */
     { 0x2c8, 0x384, 0x30d, '\''  },	/* vertical line, tonos */
-    { '"' },			/* real vertical line */
+    { 0x30e, '"' },		/* real vertical line */
     { 0 },			/* real grave */
     { 0 },			/* cand... */		/* 310 */
     { 0 },			/* inverted breve */
     { 0x2bb },			/* turned comma */
-    { 0x2bc, ',' },		/* comma above */
+    { 0x2bc, 0x313, ',' },	/* comma above */
     { 0x2bd },			/* reversed comma */
-    { 0x2bc, ',' },		/* comma above right */
-    { 0x60, 0x2cb },		/* grave below */
-    { 0xb4, 0x2ca },		/* acute below */
+    { 0x2bc, 0x315, ',' },	/* comma above right */
+    { 0x316, 0x60, 0x2cb },	/* grave below */
+    { 0x317, 0xb4, 0x2ca },	/* acute below */
     { 0 },			/* left tack */
     { 0 },			/* right tack */
     { 0 },			/* left angle */
@@ -72,32 +72,32 @@ static const unichar_t accents[][4] = {
     { 0 },			/* half ring */
     { 0x2d4 },			/* up tack */
     { 0x2d5 },			/* down tack */
-    { 0x2d6, '+' },		/* plus below */
-    { 0x2d7, '-' },		/* minus below */	/* 320 */
+    { 0x2d6, 0x31f, '+' },	/* plus below */
+    { 0x2d7, 0x320, '-' },	/* minus below */	/* 320 */
     { 0x2b2 },			/* hook */
     { 0 },			/* back hook */
-    { 0x2d9, '.' },		/* dot below */
-    { 0xa8 },			/* diaeresis below */
-    { 0x2da, 0xb0 },		/* ring below */
-    { 0x2bc, ',' },		/* comma below */
+    { 0x323, 0x2d9, '.' },	/* dot below */
+    { 0x324, 0xa8 },		/* diaeresis below */
+    { 0x325, 0x2da, 0xb0 },	/* ring below */
+    { 0x326, 0x2bc, ',' },	/* comma below */
     { 0xb8 },			/* cedilla */
     { 0x2db },			/* ogonek */		/* 0x328 */
-    { 0x2c8, 0x384, '\''  },	/* vertical line below */
+    { 0x329, 0x2c8, 0x384, '\''  },	/* vertical line below */
     { 0 },			/* bridge below */
     { 0 },			/* real arch below */
-    { 0x2c7 },			/* caron below */
-    { 0x2c6, 0x52 },		/* circumflex below */
-    { 0x2d8 },			/* breve below */
+    { 0x32c, 0x2c7 },		/* caron below */
+    { 0x32d, 0x2c6, 0x52 },	/* circumflex below */
+    { 0x32e, 0x2d8 },		/* breve below */
     { 0 },			/* inverted breve below */
-    { 0x2dc, 0x7e },		/* tilde below */	/* 0x330 */
-    { 0xaf, 0x2c9 },		/* macron below */
-    { '_' },			/* low line */
+    { 0x330, 0x2dc, 0x7e },	/* tilde below */	/* 0x330 */
+    { 0x331, 0xaf, 0x2c9 },	/* macron below */
+    { 0x332, '_' },		/* low line */
     { 0 },			/* real low line */
-    { 0x2dc, 0x7e },		/* tilde overstrike */
-    { '-' },			/* line overstrike */
-    { '_' },			/* long line overstrike */
-    { '/' },			/* short solidus overstrike */
-    { '/' },			/* long solidus overstrike */	/* 0x338 */
+    { 0x334, 0x2dc, 0x7e },	/* tilde overstrike */
+    { 0x335, '-' },		/* line overstrike */
+    { 0x336, '_' },		/* long line overstrike */
+    { 0x337, '/' },		/* short solidus overstrike */
+    { 0x338, '/' },		/* long solidus overstrike */	/* 0x338 */
     { 0 },
     { 0 },
     { 0 },
@@ -105,10 +105,10 @@ static const unichar_t accents[][4] = {
     { 0 },
     { 0 },
     { 0 },
-    { 0x60, 0x2cb },		/* tone mark, left of circumflex */ /* 0x340 */
-    { 0xb4, 0x2ca },		/* tone mark, right of circumflex */
-    { 0x2dc, 0x7e },		/* perispomeni (tilde) */
-    { 0x2bc, ',' },		/* koronis */
+    { 0x340, 0x60, 0x2cb },	/* tone mark, left of circumflex */ /* 0x340 */
+    { 0x341, 0xb4, 0x2ca },	/* tone mark, right of circumflex */
+    { 0x342, 0x2dc, 0x7e },	/* perispomeni (tilde) */
+    { 0x343, 0x2bc, ',' },	/* koronis */
     { 0 },			/* dialytika tonos (two accents) */
     { 0x37a },			/* ypogegrammeni */
     { 0xffff }
@@ -1638,13 +1638,16 @@ static SplineChar *GetGoodAccentGlyph(SplineFont *sf, int uni, int basech,
     int ach= -1;
     const unichar_t *apt, *end;
     SplineChar *rsc;
+    extern int PreferSpacingAccents;
 
     *invert = false;
 
     /* cedilla on lower "g" becomes a turned comma above it */
     if ( uni==0x327 && basech=='g' && haschar(sf,0x312))
 	uni = 0x312;
-    if ( uni>=BottomAccent && uni<=TopAccent ) {
+    if ( !PreferSpacingAccents && haschar(sf,uni))
+	ach = uni;
+    else if ( uni>=BottomAccent && uni<=TopAccent ) {
 	apt = accents[uni-BottomAccent]; end = apt+sizeof(accents[0])/sizeof(accents[0][0]);
 	while ( *apt && apt<end && !haschar(sf,*apt)) ++apt;
 	if ( *apt!='\0' && apt<end )
