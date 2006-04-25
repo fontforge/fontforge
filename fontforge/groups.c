@@ -1294,10 +1294,10 @@ void DefineGroups(FontView *fv) {
     wattrs.utf8_window_title = _("Define Groups");
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,GGadgetScale(200));
-    pos.height = h = GDrawPointsToPixels(NULL,481);
+    pos.height = h = GDrawPointsToPixels(NULL,482);
     grp->gw = GDrawCreateTopWindow(NULL,&pos,displaygrp_e_h,grp,&wattrs);
 
-    grp->bmargin = GDrawPointsToPixels(NULL,213)+GDrawPointsToPixels(grp->gw,_GScrollBar_Width);
+    grp->bmargin = GDrawPointsToPixels(NULL,224)+GDrawPointsToPixels(grp->gw,_GScrollBar_Width);
 
     GroupWCreate(grp,&pos);
 
@@ -1307,7 +1307,7 @@ void DefineGroups(FontView *fv) {
     k = 0;
 
     gcd[k].gd.pos.x = 20;
-    gcd[k].gd.pos.y = GDrawPixelsToPoints(NULL,h-grp->bmargin)+6;
+    gcd[k].gd.pos.y = GDrawPixelsToPoints(NULL,h-grp->bmargin)+12;
     gcd[k].gd.flags = gg_visible;
     label[k].text = (unichar_t *) _("New Sub-Group");
     label[k].text_is_1byte = true;
@@ -1456,6 +1456,7 @@ void DefineGroups(FontView *fv) {
     grp->cancel = gcd[15].ret;
 
     GroupSBSizes(grp);
+    GroupResize(grp,NULL);
 
     GDrawSetVisible(grp->gw,true);
 }
