@@ -467,6 +467,7 @@ return( NULL );
     end1.nonextcp = end1.noprevcp = end2.nonextcp = end2.noprevcp = true;
     end1.next = &myline; end2.prev = &myline;
     myline.from = &end1; myline.to = &end2;
+    /* prev_e_t = next_e_t =. This is where these guys are set */
 return( MonotonicFindAlong(gd->sspace,&myline,gd->stspace,s,other_t));
 }
 
@@ -1129,6 +1130,64 @@ int UnitsParallel(BasePoint *u1,BasePoint *u2) {
 return( dot>.95 || dot < -.95 );
 }
 
+static void FixupT(struct stemdata *stem,struct pointdata *pd,int isnext) {
+    /* When we calculated "next/prev_e_t" we deliberately did not use pd1->me */
+    /*  (because things get hard at intersections) so our t is only an approx-*/
+    /*  imation. We can do a lot better now */
+    Spline *s;
+    Spline myline;
+    SplinePoint end1, end2;
+    double width,t,sign, len, dot;
+    BasePoint pts[9];
+    double lts[10], sts[10];
+    BasePoint diff;
+
+    width = (stem->right.x-stem->left.x)*stem->unit.y - (stem->right.y-stem->left.y)*stem->unit.x;
+    s = isnext ? pd->nextedge : pd->prevedge;
+    if ( s==NULL )
+return;
+    diff.x = s->to->me.x-s->from->me.x; diff.y = s->to->me.y-s->from->me.y;
+    if ( diff.x<.001 && diff.x>-.001 && diff.y<.001 && diff.y>-.001 )
+return;		/* Zero length splines give us NaNs */
+    len = sqrt( diff.x*diff.x + diff.y*diff.y );
+    dot = (diff.x*stem->unit.x + diff.y*stem->unit.y)/len;
+    if ( dot < .0004 && dot > -.0004 )
+return;		/* It's orthogonal to our stem */
+
+    if (( stem->unit.x==1 || stem->unit.x==-1 ) && s->knownlinear )
+	t = (pd->sp->me.x-s->from->me.x)/(s->to->me.x-s->from->me.x);
+    else if (( stem->unit.y==1 || stem->unit.y==-1 ) && s->knownlinear )
+	t = (pd->sp->me.y-s->from->me.y)/(s->to->me.y-s->from->me.y);
+    else {
+	memset(&myline,0,sizeof(myline));
+	memset(&end1,0,sizeof(end1));
+	memset(&end2,0,sizeof(end2));
+	sign = ( (isnext && pd->next_is_l) || (!isnext && pd->prev_is_l)) ? 1 : -1;
+	myline.knownlinear = myline.islinear = true;
+	end1.me = pd->sp->me;
+	end2.me.x = pd->sp->me.x+1.1*sign*width*stem->l_to_r.x;
+	end2.me.y = pd->sp->me.y+1.1*sign*width*stem->l_to_r.y;
+	end1.nextcp = end1.prevcp = end1.me;
+	end2.nextcp = end2.prevcp = end2.me;
+	end1.nonextcp = end1.noprevcp = end2.nonextcp = end2.noprevcp = true;
+	end1.next = &myline; end2.prev = &myline;
+	myline.from = &end1; myline.to = &end2;
+	myline.splines[0].d = end1.me.x;
+	myline.splines[0].c = end2.me.x-end1.me.x;
+	myline.splines[1].d = end1.me.y;
+	myline.splines[1].c = end2.me.y-end1.me.y;
+	if ( SplinesIntersect(&myline,s,pts,lts,sts)<=0 )
+return;
+	t = sts[0];
+    }
+    if ( isnan(t))
+	IError( "NaN value in FixupT" );
+    if ( isnext )
+	pd->next_e_t = t;
+    else
+	pd->prev_e_t = t;
+}
+
 static void TickSplinesBetween(struct glyphdata *gd, struct splinesteminfo *ssi,
 	struct pointdata *pd1,struct pointdata *pd2,
 	struct stemdata *stem, int lookright) {
@@ -1154,14 +1213,22 @@ static void TickSplinesBetween(struct glyphdata *gd, struct splinesteminfo *ssi,
     if ( pd1->sp->next!=NULL && pd1->sp->next->to==pd2->sp ) {
 	us = pd1->sp->next;
 	s1 = pd1->nextedge;
+	if ( pd1->nextunit.x!=stem->unit.x && pd1->nextunit.x!=-stem->unit.x )
+	    FixupT(stem,pd1,true);
 	t1 = pd1->next_e_t;
 	s2 = pd2->prevedge;
+	if ( pd2->prevunit.x!=stem->unit.x && pd2->prevunit.x!=-stem->unit.x )
+	    FixupT(stem,pd2,false);
 	t2 = pd2->prev_e_t;
     } else {
 	us = pd1->sp->prev;
 	s1 = pd1->prevedge;
+	if ( pd1->prevunit.x!=stem->unit.x && pd1->prevunit.x!=-stem->unit.x )
+	    FixupT(stem,pd1,false);
 	t1 = pd1->prev_e_t;
 	s2 = pd2->nextedge;
+	if ( pd2->nextunit.x!=stem->unit.x && pd2->nextunit.x!=-stem->unit.x )
+	    FixupT(stem,pd2,true);
 	t2 = pd2->next_e_t;
     }
     if ( s1==NULL ) s1 = s2; else if ( s2==NULL ) s2=s1;
@@ -1270,10 +1337,8 @@ static void AttachSplineBitsToStems(struct splinesteminfo *ssi,int cnt) {
     /* Ok, for each spline, figure out what bits of it are on what stem */
     for ( j=0; j<cnt; ++j ) if ( ssi[j].sb!=NULL ) {
 	tcnt = 2;
-	ta[0].t = 0;
-	ta[0].stem = NULL;
+	memset(ta,0,2*sizeof(struct tstem));
 	ta[1].t = 1.0;
-	ta[1].stem = NULL;
 	head = OrderSbByTDiff(ssi[j].sb);
 	for ( test=head; test!=NULL; test=test->next ) {
 	    if ( test->tstart==test->tend )
@@ -1504,63 +1569,6 @@ static void GDSubDivideSplines(struct glyphdata *gd) {
     AttachSplineBitsToStems(ssi,gd->pcnt);
     free(ssi);
     FigureStemLinearLengths(gd);
-}
-
-static void FixupT(struct stemdata *stem,struct pointdata *pd,int isnext) {
-    /* When we calculated "next/prev_e_t" we deliberately did not use pd1->me */
-    /*  (because things get hard at intersections) so our t is only an approx-*/
-    /*  imation. We can do a lot better now */
-    Spline *s;
-    Spline myline;
-    SplinePoint end1, end2;
-    double width,t,sign, len;
-    BasePoint pts[9];
-    double lts[10], sts[10];
-    BasePoint diff;
-
-    width = (stem->right.x-stem->left.x)*stem->unit.y - (stem->right.y-stem->left.y)*stem->unit.x;
-    s = isnext ? pd->nextedge : pd->prevedge;
-    if ( s==NULL )
-return;
-    diff.x = s->to->me.x-s->from->me.x; diff.y = s->to->me.y-s->from->me.y;
-    if ( diff.x<.001 && diff.x>-.001 && diff.y<.001 && diff.y>-.001 )
-return;		/* Zero length splines give us NaNs */
-    len = sqrt( diff.x*diff.x + diff.y*diff.y );
-    if ( (diff.x*stem->unit.x + diff.y*stem->unit.y)/len < .0004 )
-return;		/* It's orthogonal to our stem */
-
-    if (( stem->unit.x==1 || stem->unit.x==-1 ) && s->knownlinear )
-	t = (pd->sp->me.x-s->from->me.x)/(s->to->me.x-s->from->me.x);
-    else if (( stem->unit.y==1 || stem->unit.y==-1 ) && s->knownlinear )
-	t = (pd->sp->me.y-s->from->me.y)/(s->to->me.y-s->from->me.y);
-    else {
-	memset(&myline,0,sizeof(myline));
-	memset(&end1,0,sizeof(end1));
-	memset(&end2,0,sizeof(end2));
-	sign = ( (isnext && pd->next_is_l) || (!isnext && pd->prev_is_l)) ? 1 : -1;
-	myline.knownlinear = myline.islinear = true;
-	end1.me = pd->sp->me;
-	end2.me.x = pd->sp->me.x+1.1*sign*width*stem->l_to_r.x;
-	end2.me.y = pd->sp->me.y+1.1*sign*width*stem->l_to_r.y;
-	end1.nextcp = end1.prevcp = end1.me;
-	end2.nextcp = end2.prevcp = end2.me;
-	end1.nonextcp = end1.noprevcp = end2.nonextcp = end2.noprevcp = true;
-	end1.next = &myline; end2.prev = &myline;
-	myline.from = &end1; myline.to = &end2;
-	myline.splines[0].d = end1.me.x;
-	myline.splines[0].c = end2.me.x-end1.me.x;
-	myline.splines[1].d = end1.me.y;
-	myline.splines[1].c = end2.me.y-end1.me.y;
-	if ( SplinesIntersect(&myline,s,pts,lts,sts)<=0 )
-return;
-	t = sts[0];
-    }
-    if ( isnan(t))
-	IError( "NaN value in FixupT" );
-    if ( isnext )
-	pd->next_e_t = t;
-    else
-	pd->prev_e_t = t;
 }
 
 static void GDStemsFixupIntersects(struct glyphdata *gd) {
