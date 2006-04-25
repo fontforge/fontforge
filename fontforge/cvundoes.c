@@ -2154,8 +2154,10 @@ static void _PasteToCV(CharView *cv,SplineChar *cvsc,Undoes *paster) {
     int wasempty = false;
 
     if ( copybuffer.undotype == ut_none ) {
+	if ( cv->drawmode==dm_grid )
+return;
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	SCCheckXClipboard(cv->gw,cvsc,cv->drawmode,false);
+	SCCheckXClipboard(cv->gw,cvsc,cv->layerheads[cv->drawmode]-cvsc->layers,false);
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 return;
     }
