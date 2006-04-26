@@ -64,7 +64,8 @@ static enum encoding name_to_enc(const char *encname) {
 	{ "UCS2", e_unicode },
 	{ "UCS-2", e_unicode },
 	{ "UCS-2-INTERNAL", e_unicode },
-	{ "ISO-10646/USC2", e_unicode },
+	{ "ISO-10646/UCS2", e_unicode },
+	{ "ISO-10646/USC2", e_unicode },		/* Old typo */
 	{ "iso8859-1", e_iso8859_1 },
 	{ "iso8859-2", e_iso8859_2 },
 	{ "iso8859-3", e_iso8859_3 },
