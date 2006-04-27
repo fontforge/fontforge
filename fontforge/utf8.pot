@@ -252,10 +252,6 @@ msgid "Glyph “%s” in %s has no truetype instructions\n"
 msgstr ""
 
 #: glyphcomp.c
-msgid "Glyph “%s” in %s has no truetype instructions\n"
-msgstr ""
-
-#: glyphcomp.c
 msgid "Glyph “%s” has different truetype instructions\n"
 msgstr ""
 
