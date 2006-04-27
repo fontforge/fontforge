@@ -2593,6 +2593,30 @@ static void bDetachAndRemoveGlyphs(Context *c) {
     }
 }
 
+static void bRemoveDetachedGlyphs(Context *c) {
+    FontView *fv = c->curfv;
+    int i, gid;
+    EncMap *map = fv->map;
+    SplineFont *sf = fv->sf;
+    SplineChar *sc;
+    int flags = -1;
+    int changed = false;
+
+    for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( sf->glyphs[gid]!=NULL )
+	sf->glyphs[gid]->ticked = false;
+	
+    for ( i=0; i<map->enccount; ++i ) if ( fv->selected[i] && (gid=map->map[i])!=-1 )
+	sf->glyphs[gid]->ticked = true;
+
+    for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL && !sc->ticked ) {
+	SFRemoveGlyph(sf,sc,&flags);
+	changed = true;
+    }
+    if ( changed && !sf->changed ) {
+	fv->sf->changed = true;
+    }
+}
+
 static void bLoadTableFromFile(Context *c) {
     SplineFont *sf = c->curfv->sf;
     uint32 tag;
@@ -6633,6 +6657,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "SetCharCnt", bSetCharCnt },
     { "DetachGlyphs", bDetachGlyphs },
     { "DetachAndRemoveGlyphs", bDetachAndRemoveGlyphs },
+    { "RemoveDetachedGlyphs", bRemoveDetachedGlyphs },
     { "LoadTableFromFile", bLoadTableFromFile },
     { "SaveTableToFile", bSaveTableToFile },
     { "RemovePreservedTable", bRemovePreservedTable },

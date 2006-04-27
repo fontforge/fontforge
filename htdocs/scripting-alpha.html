@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 9-Apr-2006 -->
-  <!-- AP: Last modified: 21-Apr-2006 -->
+  <!-- AP: Last modified: 26-Apr-2006 -->
   <TITLE>Scripting functions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -756,6 +756,18 @@ a[4][0] = "Nested array";
 	    have the "USE-MY-METRICS" bit set on any of those references, and if one
 	    of those references has the same width as the current glyph, and has an identity
 	    transformation matrix, then set the bit on that reference.
+	  <DT>
+	    <A NAME="DetachAndRemoveGlyph" HREF="encodingmenu.html#RemoveGlyphs">DetachAndRemoveGlyphs</A>()
+	  <DD>
+	    Any selected encoding slots will have their glyph pointer nulled out. In
+	    addition, if this glyph is now unencoded it will remove the glyph from the
+	    font.
+	  <DT>
+	    <A HREF="encodingmenu.html#Detach" NAME="DetachGlyphs">DetachGlyphs</A>()
+	  <DD>
+	    Any selected encoding slots will have their glyph pointer nulled out. This
+	    does not remove the glyph from the font, it just makes it unreachable through
+	    this encoding slot.
 	  <DT>
 	    <A NAME="DontAutoHint" HREF="hintsmenu.html#DontAutoHint">DontAutoHint</A>()
 	  <DD>
@@ -2020,6 +2032,12 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	    the same as <A HREF="#AddATT">AddAAT</A>, except that any of them may be
 	    "*" which will match anything).
 	  <DT>
+	    <A NAME="RemoveDetachedGlyphs">RemoveDetachedGlyphs</A>()
+	  <DD>
+	    If this font contains any glyphs which do not have an encoding slot then
+	    those glyphs will be removed from the font. In other words any glyph not
+	    displayed in the fontview will be removed.
+	  <DT>
 	    <A NAME="RemoveOverlap" HREF="elementmenu.html#Remove">RemoveOverlap</A>()
 	  <DD>
 	    Does the obvious.
@@ -2711,6 +2729,39 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	  <DD>
 	    Each argument will be divided by 100. and then all selected glyphs will be
 	    transformed by this matrix
+	    <TABLE CELLPADDING="2">
+	      <TR>
+		<TD ROWSPAN=2><BIG><BIG><BIG>[</BIG></BIG></BIG></TD>
+		<TD>t1/100.</TD>
+		<TD>t2/100.</TD>
+		<TD>t3/100.</TD>
+		<TD ROWSPAN=2><BIG><BIG><BIG>]</BIG></BIG></BIG></TD>
+	      </TR>
+	      <TR>
+		<TD>t4/100.</TD>
+		<TD>t5/100.</TD>
+		<TD>t6/100.</TD>
+	      </TR>
+	    </TABLE>
+	    <P>
+	    This is a standard PostScript transformation matrix where
+	    <TABLE CELLPADDING="2">
+	      <TR>
+		<TD>x'</TD>
+		<TD>=</TD>
+		<TD>t1/100 * x + t2/100 * y + t3/100</TD>
+	      </TR>
+	      <TR>
+		<TD>y'</TD>
+		<TD>=</TD>
+		<TD>t4/100 * x + t5/100 * y + t6/100</TD>
+	      </TR>
+	    </TABLE>
+	    <P>
+	    The peculiar notion of dividing by 100 was to overcome the fact that fontforge's
+	    scripting language formerly could not handle real numbers. We've overcome
+	    that limitation since, but it seemed best to leave the behavior of the function
+	    as it was.
 	  <DT>
 	    <A NAME="TypeOf">T</A>ypeOf(any)
 	  <DD>
