@@ -305,6 +305,45 @@ static void FVSelectAll(FontView *fv) {
     fv->sel_index = 1;
 }
 
+static void FVSelectByName(FontView *fv) {
+    int j, gid;
+    char *ret, *end;
+    SplineChar *sc;
+    EncMap *map = fv->map;
+    SplineFont *sf = fv->sf;
+    struct altuni *alt;
+
+    ret = gwwv_ask_string(_("Select all instances of named glyph"),".notdef",_("Select all instances of the named glyph"));
+    if ( ret==NULL )
+return;
+    FVDeselectAll(fv);
+    if (( *ret=='0' && ( ret[1]=='x' || ret[1]=='X' )) ||
+	    ((*ret=='u' || *ret=='U') && ret[1]=='+' )) {
+	int uni = strtol(ret+2,&end,16);
+	if ( *end!='\0' || uni<0 || uni>=0x110000 ) {
+	    free(ret);
+	    gwwv_post_error( _("Bad Number"),_("Bad Number") );
+return;
+	}
+	for ( j=0; j<map->enccount; ++j ) if ( (gid=map->map[j])!=-1 && (sc=sf->glyphs[gid])!=NULL ) {
+	    for ( alt=sc->altuni; alt!=NULL && alt->unienc!=uni; alt=alt->next );
+	    if ( sc->unicodeenc == uni || alt!=NULL ) {
+		fv->selected[j] = true;
+		FVToggleCharSelected(fv,j);
+	    }
+	}
+    } else {
+	for ( j=0; j<map->enccount; ++j ) if ( (gid=map->map[j])!=-1 && (sc=sf->glyphs[gid])!=NULL ) {
+	    if ( strcmp(sc->name,ret)==0 ) {
+		fv->selected[j] = true;
+		FVToggleCharSelected(fv,j);
+	    }
+	}
+    }
+    free(ret);
+    fv->sel_index = 1;
+}
+
 static void FVSelectColor(FontView *fv, uint32 col, int door) {
     int i, any=0;
     uint32 sccol;
@@ -2353,6 +2392,17 @@ void FontViewMenu_DeselectAll(GtkMenuItem *menuitem, gpointer user_data) {
 # endif
 
     FVDeselectAll(fv);
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuSelectByName(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_SelectByName(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+
+    FVSelectByName(fv);
 }
 
 # ifdef FONTFORGE_CONFIG_GDRAW
@@ -6238,6 +6288,7 @@ static GMenuItem sllist[] = {
     { { (unichar_t *) N_("_Invert Selection"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, GK_Escape, ksm_control, NULL, NULL, FVMenuInvertSelection },
     { { (unichar_t *) N_("_Deselect All"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, GK_Escape, 0, NULL, NULL, FVMenuDeselectAll },
     { { (unichar_t *) N_("_Select by Color"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control, sclist },
+    { { (unichar_t *) N_("Select by _Name"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control, NULL, NULL, FVMenuSelectByName },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Glyphs Worth Outputting"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control, NULL,NULL, FVMenuSelectWorthOutputting },
     { { (unichar_t *) N_("_Changed Glyphs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control, NULL,NULL, FVMenuSelectChanged },
