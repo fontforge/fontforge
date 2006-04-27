@@ -1389,6 +1389,14 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
 		    dumpglyph(sf->glyphs[gi->bygid[i]],gi);
 	    }
 	}
+	if ( (ftell(gi->glyphs)&3) != 0 ) {
+	    /* Apple says glyphs must be 16bit aligned */
+	    if ( ftell(gi->glyphs)&1 )
+		putc('\0',gi->glyphs);
+	    /* MS says glyphs should be 32bit aligned */
+	    if ( ftell(gi->glyphs)&2 )
+		putshort(gi->glyphs,0);
+	}
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	if ( !gwwv_progress_next())
 return( false );
@@ -1400,7 +1408,9 @@ return( false );
     /* Microsoft's Font Validator wants the last loca entry to point into the */
     /*  glyph table. I think that's an error on their part, but it's so easy */
     /*  to fix, I might as well (instead of pointing to right after the table)*/
-    putlong(gi->glyphs,0);
+    /* Sigh. But if I do that, it complains that there's extra stuff in the */
+    /*  glyph table. There's just no pleasing them */
+    /* putlong(gi->glyphs,0);*/
     gi->glyph_len = ftell(gi->glyphs);
     gi->hmtxlen = ftell(gi->hmtx);
     /* pad out to four bytes */
@@ -3153,11 +3163,12 @@ docs are wrong.
                 os2->version = 0;
     }
 
-    if ( format==ff_otf || format==ff_otfcid ) {
+    /*if ( format==ff_otf || format==ff_otfcid )*/ {
 	BlueData bd;
 
 	QuickBlues(sf,&bd);		/* This handles cid fonts properly */
-	os2->version = 2;		/* current version is 3, I don't see how it differs from 2 */
+	/*os2->version = 2;*/		/* current version is 3, I don't see how it differs from 2 */
+	os2->version = 3;		/* it added some bits but no new fields */
 	os2->xHeight = bd.xheight;
 	os2->capHeight = bd.caph;
 	os2->defChar = ' ';
@@ -4365,7 +4376,8 @@ static void dumpcmap(struct alltabs *at, SplineFont *sf,enum fontformat format) 
 	table[9] = table[13] = 2;
     }
     for ( i=0; i<256 ; ++i ) {
-	sc = SFFindExistingCharMac(sf,map,unicode_from_mac[i]);
+	extern unichar_t MacRomanEnc[];
+	sc = SFFindExistingCharMac(sf,map,MacRomanEnc[i]);
 	if ( sc!=NULL && sc->ttf_glyph!=-1 )
 	    table[i] = sc->ttf_glyph;
     }
