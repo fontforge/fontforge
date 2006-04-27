@@ -14411,6 +14411,8 @@ static struct psaltnames psaltnames[] = {
 	{ "Deltagreek", 0x0394 },
 	{ "Dhook", 0x018a },
 	{ "Dieresis", 0xf6cb },
+	{ "diaeresis", 0x00a8 },
+	{ "Diaeresis", 0xf6cb },
 	{ "DieresisAcute", 0xf6cc },
 	{ "DieresisGrave", 0xf6cd },
 	{ "Dieresissmall", 0xf7a8 },
