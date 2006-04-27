@@ -548,6 +548,7 @@ return( true ); /* Do Nothing, nothing selectable */
 	else if ( !gl->exactly_one && gl->ti[pos]->selected &&
 		(event->u.mouse.state&(ksm_control|ksm_shift))) {
 	    gl->ti[pos]->selected = false;
+	    gl->start = gl->end = 0xffff;
 	} else if ( !gl->multiple_sel ||
 		(!gl->ti[pos]->selected && !(event->u.mouse.state&(ksm_control|ksm_shift)))) {
 	    GListClearSel(gl);
@@ -567,11 +568,13 @@ return( true ); /* Do Nothing, nothing selectable */
     } else if ( event->type==et_mouseup && gl->pressed ) {
 	GDrawCancelTimer(gl->pressed); gl->pressed = NULL;
 	if ( GGadgetInnerWithin(&gl->g,event->u.mouse.x,event->u.mouse.y) ) {
-	    glist_scroll_selbymouse(gl,event);
+	    pos = GListIndexFromPos(gl,event->u.mouse.y);
+	    if ( !(event->u.mouse.state&(ksm_control|ksm_shift)) || gl->start!=0xffff )
+		glist_scroll_selbymouse(gl,event);
 	    if ( event->u.mouse.clicks==2 )
-		GListDoubleClick(gl,true,GListIndexFromPos(gl,event->u.mouse.y));
+		GListDoubleClick(gl,true,pos);
 	    else
-		GListSelected(gl,true,GListIndexFromPos(gl,event->u.mouse.y));
+		GListSelected(gl,true,pos);
 	}
     } else
 return( false );
