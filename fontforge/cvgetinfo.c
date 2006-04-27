@@ -1568,9 +1568,10 @@ static void PI_FigureHintMask(GIData *ci) {
 	if ( ti[i]->selected )
     break;
 
-    if ( i==len )
+    if ( i==len ) {
 	chunkfree(ci->cursp->hintmask,sizeof(HintMask));
-    else {
+	ci->cursp->hintmask = NULL;
+    } else {
 	if ( ci->cursp->hintmask==NULL )
 	    ci->cursp->hintmask = chunkalloc(sizeof(HintMask));
 	else
