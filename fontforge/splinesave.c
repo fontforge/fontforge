@@ -977,7 +977,8 @@ static void _CvtPsSplineSet(GrowBuf *gb, SplinePointList *spl[MmMax], int instan
 	    spline[i] = spl[i]->first->next;
 	while ( spline[0]!=NULL && spline[0]!=first ) {
 	    if ( first==NULL ) first = spline[0];
-	    if ( SplinesAreFlexible(spline,instance_count) ) {
+	    if ( SplinesAreFlexible(spline,instance_count) &&
+		    (hdb->noconflicts || spline[0]->to->hintmask==NULL)) {
 		flexto(gb,current,spline,instance_count,round,hdb);	/* does two adjacent splines */
 		for ( i=0; i<instance_count; ++i )
 		    spline[i] = spline[i]->to->next;
