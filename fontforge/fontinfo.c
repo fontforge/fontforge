@@ -5284,7 +5284,7 @@ return(true);
 	    if ( weight == 0 )
 		weight = GetInt8(gw,CID_WeightClass,_("_Weight Class"),&err);
 	    linegap = GetInt8(gw,CID_LineGap,_("HHead _Line Gap:"),&err);
-	    tlinegap = GetInt8(gw,CID_LineGap,_("Typo Line _Gap:"),&err);
+	    tlinegap = GetInt8(gw,CID_TypoLineGap,_("Typo Line _Gap:"),&err);
 	    if ( vmetrics )
 		vlinegap = GetInt8(gw,CID_VLineGap,_("VHead _Column Spacing:"),&err);
 	    winaoff = GGadgetIsChecked(GWidgetGetControl(gw,CID_WinAscentIsOff));
