@@ -3163,7 +3163,7 @@ docs are wrong.
                 os2->version = 0;
     }
 
-    /*if ( format==ff_otf || format==ff_otfcid )*/ {
+    if ( format==ff_otf || format==ff_otfcid ) {
 	BlueData bd;
 
 	QuickBlues(sf,&bd);		/* This handles cid fonts properly */
