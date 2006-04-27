@@ -1807,7 +1807,15 @@ void FontViewMenu_PasteAfter(GtkMenuItem *menuitem, gpointer user_data) {
 void AltUniRemove(SplineChar *sc,int uni) {
     struct altuni *altuni, *prev;
 
-    if ( sc==NULL || uni==-1 || sc->unicodeenc==uni )
+    if ( sc==NULL || uni==-1 )
+return;
+
+    if ( sc->unicodeenc==uni && sc->altuni!=NULL ) {
+	sc->unicodeenc = sc->altuni->unienc;
+	sc->altuni->unienc = uni;
+    }
+
+    if ( sc->unicodeenc==uni )
 return;
     for ( prev=NULL, altuni=sc->altuni; altuni!=NULL && altuni->unienc!=uni;
 	    prev = altuni, altuni = altuni->next );

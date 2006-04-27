@@ -4169,10 +4169,13 @@ int SCSetMetaData(SplineChar *sc,char *name,int unienc,const char *comment) {
     SplineFont *sf = sc->parent;
     int i, mv=0;
     int isnotdef, samename=false;
+    struct altuni *alt;
 
-    if ( sc->unicodeenc == unienc && strcmp(name,sc->name)==0 ) {
+    for ( alt=sc->altuni; alt!=NULL && alt->unienc!=unienc; alt=alt->next );
+    if ( (sc->unicodeenc == unienc || alt!=NULL ) && strcmp(name,sc->name)==0 ) {
 	samename = true;	/* No change, it must be good */
-    } else {
+    }
+    if ( alt!=NULL || !samename ) {
 	isnotdef = strcmp(name,".notdef")==0;
 	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL && sf->glyphs[i]!=sc ) {
 	    if ( unienc!=-1 && sf->glyphs[i]->unicodeenc==unienc ) {
@@ -4213,6 +4216,8 @@ return( false );
 	    }
 	}
     }
+    if ( alt!=NULL )
+	alt->unienc = sc->unicodeenc;
     sc->unicodeenc = unienc;
     if ( sc->name==NULL || strcmp(name,sc->name)!=0 ) {
 	free(sc->name);
