@@ -200,10 +200,6 @@ msgid "Glyph “%s” refers to %s with a different transformation matrix\n"
 msgstr ""
 
 #: glyphcomp.c
-msgid "Glyph “%s” contains a reference to %s in %s\n"
-msgstr ""
-
-#: glyphcomp.c
 msgid "A match was found after unlinking references in glyph “%s”\n"
 msgstr ""
 
@@ -268,14 +264,6 @@ msgid "Glyph “%s” missing from %s\n"
 msgstr ""
 
 #: glyphcomp.c
-msgid "Glyph “%s” missing from %s\n"
-msgstr ""
-
-#: glyphcomp.c
-msgid "Glyph “%s” missing from %s at %d@%d\n"
-msgstr ""
-
-#: glyphcomp.c
 msgid "Glyph “%s” missing from %s at %d@%d\n"
 msgstr ""
 
@@ -293,10 +281,6 @@ msgstr ""
 
 #: glyphcomp.c
 msgid "Glyph “%s” has a different bitmap at %d@%d\n"
-msgstr ""
-
-#: glyphcomp.c
-msgid "Glyph “%s” differs\n"
 msgstr ""
 
 #: glyphcomp.c
@@ -322,8 +306,3 @@ msgstr ""
 #: glyphcomp.c
 msgid "No kerning between “%s” and %s in %s whilst it is %d in %s\n"
 msgstr ""
-
-#: glyphcomp.c
-msgid "No kerning between “%s” and %s in %s whilst it is %d in %s\n"
-msgstr ""
-
