@@ -2272,6 +2272,34 @@ static void bSelectSingletons(Context *c) {
     bDoSelect(c,true,true,false);
 }
 
+static void bSelectAllInstancesOf(Context *c) {
+    int i,j,gid;
+    SplineChar *sc;
+    FontView *fv = c->curfv;
+    EncMap *map = fv->map;
+    SplineFont *sf = fv->sf;
+    struct altuni *alt;
+
+    memset(fv->selected,0,map->enccount);
+    for ( i=1; i<c->a.argc; ++i ) {
+	if ( c->a.vals[i].type==v_unicode ) {
+	    int uni = c->a.vals[i].u.ival;
+	    for ( j=0; j<map->enccount; ++j ) if ( (gid=map->map[j])!=-1 && (sc=sf->glyphs[gid])!=NULL ) {
+		for ( alt=sc->altuni; alt!=NULL && alt->unienc!=uni; alt=alt->next );
+		if ( sc->unicodeenc == uni || alt!=NULL )
+		    fv->selected[j] = true;
+	    }
+	} else if ( c->a.vals[i].type==v_str ) {
+	    char *name = c->a.vals[i].u.sval;
+	    for ( j=0; j<map->enccount; ++j ) if ( (gid=map->map[j])!=-1 && (sc=sf->glyphs[gid])!=NULL ) {
+		if ( strcmp(sc->name,name)==0 )
+		    fv->selected[j] = true;
+	    }
+	} else
+	    ScriptError( c, "Bad type for argument");
+    }
+}
+
 static void bSelectIf(Context *c) {
     memset(c->curfv->selected,0,c->curfv->map->enccount);
     c->return_val.type = v_int;
@@ -6644,6 +6672,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "SelectMoreSingletons", bSelectMoreSingletons },
     { "SelectFewerSingletons", bSelectFewerSingletons },
     { "SelectSingletons", bSelectSingletons },
+    { "SelectAllInstancesOf", bSelectAllInstancesOf },
     { "SelectIf", bSelectIf },
     { "SelectChanged", bSelectChanged },
     { "SelectHintingNeeded", bSelectHintingNeeded },
