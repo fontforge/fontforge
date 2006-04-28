@@ -725,7 +725,7 @@ static void _MergeFont(SplineFont *into,SplineFont *other) {
 		}
 	    }
 	    if ( !doit ) {
-		if ( emptypos+cnt >= into->glyphcnt ) {
+		if ( emptypos+cnt >= into->glyphcnt && emptypos+cnt>0 ) {
 		    into->glyphs = grealloc(into->glyphs,(emptypos+cnt)*sizeof(SplineChar *));
 		    memset(into->glyphs+emptypos,0,cnt*sizeof(SplineChar *));
 		    for ( bdf = bitmap_into->bitmaps; bdf!=NULL; bdf=bdf->next )
