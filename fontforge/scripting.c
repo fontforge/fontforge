@@ -1371,14 +1371,18 @@ static void bNew(Context *c) {
 static void bClose(Context *c) {
     if ( c->a.argc!=1 )
 	ScriptError( c, "Wrong number of arguments");
-    if ( fv_list==c->curfv )
-	fv_list = c->curfv->next;
+    if ( c->curfv->gw!=NULL )
+	GDrawDestroyWindow(c->curfv->gw);
     else {
-	FontView *n;
-	for ( n=fv_list; n->next!=c->curfv; n=n->next );
-	n->next = c->curfv->next;
+	if ( fv_list==c->curfv )
+	    fv_list = c->curfv->next;
+	else {
+	    FontView *n;
+	    for ( n=fv_list; n->next!=c->curfv; n=n->next );
+	    n->next = c->curfv->next;
+	}
+	FontViewFree(c->curfv);
     }
-    FontViewFree(c->curfv);
     c->curfv = NULL;
 }
 
