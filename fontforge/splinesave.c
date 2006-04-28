@@ -582,6 +582,7 @@ return( mh->subr );
 	free( hdb->subrs->values[mh->subr]);
 	hdb->subrs->values[mh->subr] = (uint8 *) copyn((char *) gb.base,gb.pt-gb.base);
 	hdb->subrs->lens[mh->subr] = gb.pt-gb.base;
+	memcpy(mh->mask,mask,sizeof(mh->mask));
     } else {
 	hdb->subrs->values[hdb->subrs->next] = (uint8 *) copyn((char *) gb.base,gb.pt-gb.base);
 	hdb->subrs->lens[hdb->subrs->next] = gb.pt-gb.base;
