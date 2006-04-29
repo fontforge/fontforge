@@ -24,6 +24,8 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+/* #define TEST_O2 */
+
 #include "pfaeditui.h"
 #include <math.h>
 #include <locale.h>
@@ -3600,6 +3602,51 @@ return;
     CVCharChangedUpdate(cv);
 }
 
+#ifdef TEST_O2
+static int o2_cp_fixup( SplineSet *spl) {
+    SplinePoint *sp, *n;
+    int ret = false, spi, ni;
+
+    while ( spl!=NULL ) {
+	for ( sp=spl->first ; ; ) {
+	    if ( sp->next==NULL )
+	break;
+	    n = sp->next->to;
+	    if ( !sp->next->order2 )
+		/* No constraints on cubics */;
+	    else if ( sp->nonextcp && n->noprevcp )
+		/* A line is ok */;
+	    else if ( RealNear(sp->nextcp.x,n->prevcp.x) &&
+		    RealNear(sp->nextcp.y,n->prevcp.y))
+		/* That's ok as well */;
+	    else {
+		ret = true;
+		fprintf( stderr, "Control point between (%g,%g) and (%g,%g) is wrong.\n",
+			sp->me.x, sp->me.y, n->me.x, n->me.y );
+		spi = SPInterpolate(sp);
+		ni = SPInterpolate(n);
+		sp->nextcp.x = (sp->nextcp.x+n->prevcp.x)/2;
+		sp->nextcp.y = (sp->nextcp.y+n->prevcp.y)/2;
+		n->prevcp = sp->nextcp;
+		if ( spi ) {
+		    sp->me.x = (sp->prevcp.x + sp->nextcp.x)/2;
+		    sp->me.y = (sp->prevcp.y + sp->nextcp.y)/2;
+		}
+		if ( ni ) {
+		    n->me.x = (n->prevcp.x + n->nextcp.x)/2;
+		    n->me.y = (n->prevcp.y + n->nextcp.y)/2;
+		}
+	    }
+	    sp = n;
+	    if ( sp==spl->first )
+	break;
+	}
+	spl = spl->next;
+    }
+return( ret );
+}
+#endif
+
 static int v_e_h(GWindow gw, GEvent *event) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
@@ -3614,6 +3661,10 @@ return( GGadgetDispatchEvent(cv->vsb,event));
       case et_expose:
 	GDrawSetLineWidth(gw,0);
 	CVExpose(cv,gw,event);
+#ifdef TEST_O2
+	if ( o2_cp_fixup(cv->layerheads[cv->drawmode]->splines) )
+	    IError("Mismatch control points" );
+#endif
       break;
       case et_crossing:
 	CVCrossing(cv,event);
