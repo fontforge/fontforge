@@ -2637,7 +2637,7 @@ static void bRemoveDetachedGlyphs(Context *c) {
     for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( sf->glyphs[gid]!=NULL )
 	sf->glyphs[gid]->ticked = false;
 	
-    for ( i=0; i<map->enccount; ++i ) if ( fv->selected[i] && (gid=map->map[i])!=-1 )
+    for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 )
 	sf->glyphs[gid]->ticked = true;
 
     for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL && !sc->ticked ) {
