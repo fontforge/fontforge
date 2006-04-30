@@ -165,7 +165,7 @@ static void AnchorD_FindComplements(AnchorDlg *a) {
     if ( hasFreeType() && _sf->subfontcnt==0 ) {
 	int enc = map->backmap[a->sc->orig_pos];
 	if ( enc!=-1 ) {
-	    sel = gcalloc(_sf->glyphcnt,1);
+	    sel = gcalloc(map->enccount,1);
 	    sel[enc] = true;
 	    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
 		enc = map->backmap[i];
@@ -909,7 +909,8 @@ void AnchorControl(SplineChar *sc,AnchorPoint *ap) {
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+30;
-    gcd[k].gd.flags = gg_visible|gg_enabled ;
+    gcd[k].gd.flags = gg_visible|gg_enabled | gg_utf8_popup ;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Correction in pixels to the horizontal positioning of this anchor point\nwhen rasterizing at the given pixelsize.\n(Lives in a Device Table)");
     gcd[k++].creator = GLabelCreate;
 
     label[k].text = (unichar_t *) "0";
@@ -947,7 +948,8 @@ void AnchorControl(SplineChar *sc,AnchorPoint *ap) {
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+30;
-    gcd[k].gd.flags = gg_visible|gg_enabled ;
+    gcd[k].gd.flags = gg_visible|gg_enabled | gg_utf8_popup ;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Correction in pixels to the horizontal positioning of this anchor point\nwhen rasterizing at the given pixelsize.\n(Lives in a Device Table)");
     gcd[k++].creator = GLabelCreate;
 
     label[k].text = (unichar_t *) "0";
