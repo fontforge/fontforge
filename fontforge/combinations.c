@@ -374,6 +374,26 @@ return( NULL );
 }
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+static void AnchorRefigure(KPData *kpd) {
+    AnchorPoint *ap1, *ap2;
+    DBounds bb;
+    int i;
+
+    for ( i=0; i<kpd->kcnt; ++i ) {
+	struct kerns *k= &kpd->kerns[i];
+	for ( ap1=k->first->anchor; ap1!=NULL && ap1->anchor!=k->ac; ap1=ap1->next );
+	for ( ap2=k->second->anchor; ap2!=NULL && ap2->anchor!=k->ac; ap2=ap2->next );
+	if ( ap1!=NULL && ap2!=NULL ) {
+	    if ( k->r2l ) {
+		SplineCharQuickBounds(k->second,&bb);
+		k->newoff = k->second->width-ap1->me.x + ap2->me.x;
+	    } else
+		k->newoff = -k->first->width+ap1->me.x-ap2->me.x;
+	    k->newyoff = ap1->me.y-ap2->me.y;
+	}
+    }
+}
+
 static void KPBuildAnchorList(KPData *kpd) {
     int i, j, cnt;
     AnchorClass *ac;
@@ -928,8 +948,59 @@ static void KPMenuRemove(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     KPRemove(kpd);
 }
 
+static void KPKPCloseup(KPData *kpd) {
+    if ( kpd->selected!=-1 ) {
+	struct kerns *k = &kpd->kerns[kpd->selected];
+	int oldoff = k->kp->off;
+	k->kp->off = k->newoff;
+	KernPairD(k->first->parent,k->first,k->second,false);
+	k->newoff = k->kp->off;
+	k->kp->off = oldoff;
+	GDrawRequestExpose(kpd->v,NULL,false);
+    }
+}
+
+static void KPAC(KPData *kpd, int base) {
+    if ( kpd->selected!=-1 ) {
+	struct kerns *k = &kpd->kerns[kpd->selected];
+	SplineChar *sc = base ? k->first : k->second;
+	AnchorPoint *ap;
+	for ( ap=sc->anchor; ap!=NULL && ap->anchor!=k->ac; ap=ap->next );
+	if ( ap!=NULL ) {
+	    /* There is currently no way to modify anchors in this dlg */
+	    /* so the anchor will be right. On the other hand we might */
+	    /* need to reinit all other combinations which use this point */
+	    AnchorControl(sc,ap);
+	    AnchorRefigure(kpd);
+	    GDrawRequestExpose(kpd->v,NULL,false);
+	}
+    }
+}
+
+static void KPMenuKPCloseup(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    KPData *kpd = GDrawGetUserData(gw);
+    KPKPCloseup(kpd);
+}
+
+static void KPMenuACB(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    KPData *kpd = GDrawGetUserData(gw);
+    KPAC(kpd,true);
+}
+
+static void KPMenuACM(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    KPData *kpd = GDrawGetUserData(gw);
+    KPAC(kpd,false);
+}
+
 static GMenuItem kernmenu[] = {
-    { { (unichar_t *) N_("C_lear"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'N' }, '\177', 0, NULL, NULL, KPMenuRemove },
+    { { (unichar_t *) N_("C_lear"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'N' }, '\177', 0, NULL, NULL, KPMenuRemove },
+    { { (unichar_t *) N_("Kern Pair Closeup"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'N' }, '\0', 0, NULL, NULL, KPMenuKPCloseup },
+    { NULL }
+};
+
+static GMenuItem acmenu[] = {
+    { { (unichar_t *) N_("Anchor Control for Base"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'N' }, '\0', 0, NULL, NULL, KPMenuACB },
+    { { (unichar_t *) N_("Anchor Control for Mark"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'N' }, '\0', 0, NULL, NULL, KPMenuACM },
     { NULL }
 };
 
@@ -970,10 +1041,15 @@ return( true );
 		for ( i=0; kernmenu[i].ti.text!=NULL || kernmenu[i].ti.line; ++i )
 		    if ( kernmenu[i].ti.text!=NULL )
 			kernmenu[i].ti.text = (unichar_t *) _((char *) kernmenu[i].ti.text);
+		for ( i=0; acmenu[i].ti.text!=NULL || acmenu[i].ti.line; ++i )
+		    if ( acmenu[i].ti.text!=NULL )
+			acmenu[i].ti.text = (unichar_t *) _((char *) acmenu[i].ti.text);
 		done = true;
 	    }
 	    if ( kpd->ac==NULL )
 		GMenuCreatePopupMenu(gw,event, kernmenu);
+	    else
+		GMenuCreatePopupMenu(gw,event, acmenu);
 	} else if ( KP_Cursor(kpd,event)!=NULL ) {
 	    kpd->pressed_x = event->u.mouse.x;
 	    kpd->old_val = kpd->kerns[index].newoff;
@@ -985,6 +1061,13 @@ return( true );
 	    kpd->last_index = kpd->selected;
 	else
 	    kpd->last_index = -1;
+	if ( kpd->selected>=0 && event->u.mouse.clicks>1 ) {
+	    if ( kpd->ac==NULL )
+		KPKPCloseup(kpd);
+	    else
+		KPAC(kpd,true);
+return;
+	}
       /* Fall through... */
       case et_mousemove:
 	GGadgetEndPopup();
@@ -1113,7 +1196,7 @@ return;
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = ac==NULL?_("Kern Pairs"):_("_Anchored Pairs");
+    wattrs.utf8_window_title = ac==NULL?_("Kern Pairs"):_("Anchored Pairs");
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(200);
