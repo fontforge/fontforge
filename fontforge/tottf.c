@@ -2493,6 +2493,7 @@ static int dumptype2glyphs(SplineFont *sf,struct alltabs *at) {
     gwwv_progress_change_stages(2+at->gi.strikecnt);
 #endif
 
+    ATFigureDefWidth(sf,at,-1);
 #if defined(FONTFORGE_CONFIG_OTF_USE_SUBRS)
     if ((chrs =SplineFont2ChrsSubrs2(sf,at->nomwid,at->defwid,at->gi.bygid,at->gi.gcnt,at->gi.flags,&subrs))==NULL )
 return( false );
@@ -2500,7 +2501,6 @@ return( false );
     if ((subrs = SplineFont2Subrs2(sf,at->gi.flags))==NULL )
 return( false );
 #endif
-    ATFigureDefWidth(sf,at,-1);
     dumpcffprivate(sf,at,-1,subrs->next);
     if ( subrs->next!=0 )
 	_dumpcffstrings(at->private,subrs);
