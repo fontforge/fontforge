@@ -3233,14 +3233,25 @@ static void readttfwidths(FILE *ttf,struct ttfinfo *info) {
     int lastwidth = info->emsize;
     /* I'm not interested in the lsb, I'm not sure what it means if it differs*/
     /*  from that is specified in the outline. Do we move the outline? */
+    int check_width_consistency = info->cff_start!=0 && info->glyph_start==0;
+    SplineChar *sc;
 
     fseek(ttf,info->hmetrics_start,SEEK_SET);
     for ( i=0; i<info->width_cnt && i<info->glyph_cnt; ++i ) {
-	if ( info->chars[i]!=NULL ) {		/* can happen in ttc files */
-	    info->chars[i]->width = lastwidth = getushort(ttf);
-	    info->chars[i]->widthset = true;
-	} else
-	    /* unused width = */ lastwidth = getushort(ttf);
+	lastwidth = getushort(ttf);
+	if ( (sc = info->chars[i])!=NULL ) {	/* can happen in ttc files */
+	    if ( check_width_consistency && sc->width!=lastwidth ) {
+		if ( info->fontname!=NULL && sc->name!=NULL )
+		    LogError("In %s, in glyph %s, 'CFF ' advance width (%d) and\n  'hmtx' width (%d) do not match. (Subsequent mismatches will not be reported)\n",
+			    info->fontname, sc->name, sc->width, lastwidth );
+		else
+		    LogError("In GID %d, 'CFF ' advance width (%d) and 'hmtx' width (%d) do not match.\n  (Subsequent mismatches will not be reported)\n",
+			    i, sc->width, lastwidth );
+		check_width_consistency = false;
+	    }
+	    sc->width = lastwidth;
+	    sc->widthset = true;
+	}
 	/* lsb = */ getushort(ttf);
     }
     if ( i==0 )
