@@ -175,7 +175,7 @@ return( 0 );
 
 static int LineType(struct st *st,int i, int cnt,Spline *line) {
     SplinePoint *sp;
-    BasePoint nextcp, prevcp;
+    BasePoint nextcp, prevcp, here;
     double dn, dp;
 
     if ( st[i].st>.01 && st[i].st<.99 )
@@ -204,16 +204,20 @@ return( 0 );
 	prevcp = sp->prevcp;
     else
 	prevcp = sp->prev->from->me;
-    nextcp.x -= sp->me.x; nextcp.y -= sp->me.y;
-    prevcp.x -= sp->me.x; prevcp.y -= sp->me.y;
+    here.x = line->splines[0].c*(st[i].st+st[i+1].st)/2 + line->splines[0].d;
+    here.y = line->splines[1].c*(st[i].st+st[i+1].st)/2 + line->splines[1].d;
+
+    nextcp.x -= here.x; nextcp.y -= here.y;
+    prevcp.x -= here.x; prevcp.y -= here.y;
 
     dn = nextcp.x*line->splines[0].c + nextcp.y*line->splines[1].c;
     dp = prevcp.x*line->splines[0].c + prevcp.y*line->splines[1].c;
-    if ( dn*dp<0 )
+    if ( dn*dp>0 )
 return( 1 );		/* Treat this line and the next as one */
 			/* We assume that a rounding error gave us one erroneous intersection (or we went directly through the endpoint) */
     else
 return( 2 );		/* Ignore both this line and the next */
+			/* Intersects both in a normal fashion */
 }
 
 static Spline *MonotonicFindAlong(Spline **sspace,Spline *line,struct st *stspace,
