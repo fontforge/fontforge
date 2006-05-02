@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 1-Feb-2006 -->
+  <!-- AP: Last modified: 2-May-2006 -->
   <TITLE>Frequently Asked Questions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -74,6 +74,10 @@
       </TABLE>
     <LI>
       <A HREF="#Minimum">Minimum requirements</A>
+      <UL>
+	<LI>
+	  <A HREF="#excessive-memory">Why does FontForge use so much memory?</A>
+      </UL>
     <LI>
       <A HREF="#font-install">How do I install the fonts once I've made them?</A>
     <LI>
@@ -547,6 +551,25 @@
       <P>
       FontForge requires a color (or grey-scale) monitor -- black &amp; white will
       not suffice.
+    <DT>
+      <A NAME="excessive-memory"><B>Why does FontForge use so much memory?</B></A>
+    <DD>
+      Fonts are generally stored in a very compact representation. Font formats
+      are designed to be small and easily rasterized. They are not designed to
+      be edited.
+      <P>
+      When it loads a font FontForge expands it into a more intuitive (well intuitive
+      to me) format which is much easier to edit. But is much bigger.
+      <P>
+      It would probably be possible to rewrite FontForge to use a more efficient
+      memory representation. But this would be an enormous amount of work and doesn't
+      interest me.
+      <P>
+      Sfd files are large because they are an ASCII representation of this same
+      expanded format. They weren't designed to be compact but to be legible.
+      <P>
+      See also: <A HREF="#memory">My system keeps crashing because FontForge keeps
+      running out of memory. What can I do about it?</A>
     <DT>
       <A NAME="font-install"><B>How do I install the fonts once I've made
       them?</B></A>
@@ -1583,11 +1606,13 @@ $ xset fp+ `pwd`
       <A NAME="memory"><B>My system keeps crashing because FontForge keeps running
       out of memory. What can I do about it?</B></A>
     <DD>
+      Buy more memory?
+      <P>
       If you are editing large fonts, FontForge may run out of memory. All too
       often when FF runs out of memory, the kernel will crash rather than report
       an error condition. FontForge does check for failure to allocate and attempts
-      to free up some chunks of memory when this happens -- I've never seen this
-      code activated though.
+      to free up some chunks of memory when the system returns an error -- I've
+      never seen this code activated though.
       <P>
       FontForge does provide a mechanism which might help you avoid this. FontForge
       generally wastes a lot of memory keeping undoes around. You can clear undoes
