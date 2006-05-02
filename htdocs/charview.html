@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 19-Apr-2006 -->
+  <!-- AP: Last modified: 2-May-2006 -->
   <TITLE>Outline Glyph View</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -48,16 +48,19 @@
   the control points will be collinear). (the "Next" control point will be
   drawn dull cyan, and the Prev point will be magenta).
   <P>
-  In a TrueType font, an on-curve point can be implied between two control
-  points. FontForge will draw these with an open circle.
+  <IMG SRC="charview-quadratic.png" WIDTH="344" HEIGHT="392" ALT="A quadratic glyph"
+      ALIGN="Right">In a TrueType font, an on-curve point can be implied between
+  two control points. FontForge will draw these with an open circle.
   <P>
   The initial point in a contour will be drawn in green, and beside it will
   be a tiny arrow pointing in the direction of the contour.
   <P>
-  Sometimes it is important to know which points are at the extrema of splines
-  (postscript likes for there to be points at the extrema of all splines),
-  if this is important to you set the "Mark Extrema" flag in the View menu.
-  After that points at extrema will show up as dull purple.
+  <IMG SRC="extrema-poi.png" WIDTH="204" HEIGHT="274" ALT="Showing extrema"
+      ALIGN="Left">Sometimes it is important to know which points are at the extrema
+  of splines (postscript likes for there to be points at the extrema of all
+  splines), if this is important to you set the "Mark Extrema" flag in the
+  View menu. After that points at extrema will show up as dull purple. And
+  internal extrema will also be marked.
   <P>
   There are also two palettes, one, a layer palette, allowing you to control
   <A HREF="#Layers">which layers are visible</A>, and one, a tool palette,
@@ -124,7 +127,8 @@
   the presence of hints will sometimes improve rasterization. The blues entry
   displays the BlueValues zones. These may be set with
   <CODE><A HREF="fontinfo.html#Private">Element-&gt;Font Info-&gt;PS
-  Private</A></CODE>.
+  Private</A></CODE>. (The DHints layer is currently unused. I thought it would
+  be useful for instructing truetype but I haven't made it work yet).
   <P>
   The Anchors entry controls what whether anchor points are displayed.
   <P>
