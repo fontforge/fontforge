@@ -1315,6 +1315,14 @@ return;
 }
 
 # ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuContextualHelp(GWindow base,struct gmenuitem *mi,GEvent *e) {
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_ContextualHelp(GtkMenuItem *menuitem, gpointer user_data) {
+# endif
+    help("fontview.html");
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
 void MenuHelp(GWindow base,struct gmenuitem *mi,GEvent *e) {
 # elif defined(FONTFORGE_CONFIG_GTK)
 void MenuHelp_Help(GtkMenuItem *menuitem, gpointer user_data) {
@@ -7509,7 +7517,8 @@ static void FVWindowMenuBuild(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 GMenuItem helplist[] = {
-    { { (unichar_t *) N_("_Help"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, GK_F1, 0, NULL, NULL, MenuHelp },
+    { { (unichar_t *) N_("_Help"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, GK_F1, 0, NULL, NULL, FVMenuContextualHelp },
+    { { (unichar_t *) N_("_Overview"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, GK_F1, ksm_shift, NULL, NULL, MenuHelp },
     { { (unichar_t *) N_("_Index"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, GK_F1, ksm_control, NULL, NULL, MenuIndex },
     { { (unichar_t *) N_("_About..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, '\0', 0, NULL, NULL, MenuAbout },
     { { (unichar_t *) N_("_License..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, '\0', 0, NULL, NULL, MenuLicense },
@@ -10335,6 +10344,7 @@ FontView *FontViewCreate(SplineFont *sf) {
 
     memset(&gd,0,sizeof(gd));
     gd.flags = gg_visible | gg_enabled;
+    helplist[0].invoke = FVMenuContextualHelp;
     gd.u.menu = mblist;
     fv->mb = GMenuBarCreate( gw, &gd, NULL);
     GGadgetGetSize(fv->mb,&gsize);
