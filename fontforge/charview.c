@@ -7630,6 +7630,14 @@ static void mmlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     }
 }
 
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void CVMenuContextualHelp(GWindow base,struct gmenuitem *mi,GEvent *e) {
+# elif defined(FONTFORGE_CONFIG_GTK)
+void CharViewMenu_ContextualHelp(GtkMenuItem *menuitem, gpointer user_data) {
+# endif
+    help("charview.html");
+}
+
 static GMenuItem mblist[] = {
     { { (unichar_t *) N_("_File"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'F' }, 0, 0, fllist, fllistcheck },
     { { (unichar_t *) N_("_Edit"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'E' }, 0, 0, edlist, edlistcheck },
@@ -7871,6 +7879,7 @@ CharView *CharViewCreate(SplineChar *sc, FontView *fv,int enc) {
 
     memset(&gd,0,sizeof(gd));
     gd.flags = gg_visible | gg_enabled;
+    helplist[0].invoke = CVMenuContextualHelp;
     gd.u.menu = sc->parent->mm==NULL ? mblist_nomm : mblist;
     cv->mb = GMenuBarCreate( gw, &gd, NULL);
     GGadgetGetSize(cv->mb,&gsize);
@@ -8442,6 +8451,7 @@ void SVCharViewInits(SearchView *sv) {
 
     memset(&gd,0,sizeof(gd));
     gd.flags = gg_visible | gg_enabled;
+    helplist[0].invoke = CVMenuContextualHelp;
     gd.u.menu = sv_mblist;
     sv->mb = GMenuBarCreate( sv->gw, &gd, NULL);
     GGadgetGetSize(sv->mb,&gsize);

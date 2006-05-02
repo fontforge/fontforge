@@ -1637,6 +1637,14 @@ static void BVWindowMenuBuild(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     WindowMenuBuild(gw,mi,e,wnmenu);
 }
 
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void BVMenuContextualHelp(GWindow base,struct gmenuitem *mi,GEvent *e) {
+# elif defined(FONTFORGE_CONFIG_GTK)
+void BitmapViewMenu_ContextualHelp(GtkMenuItem *menuitem, gpointer user_data) {
+# endif
+    help("bitmapview.html");
+}
+
 char *BVFlipNames[] = { N_("Flip Horizontally"), N_("Flip Vertically"), NU_("Rotate 90° CW"), NU_("Rotate 90° CCW"), NU_("Rotate 180°"), N_("Skew..."), NULL };
 
 static GMenuItem dummyitem[] = { { (unichar_t *) N_("_New"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'N' }, NULL };
@@ -1825,6 +1833,7 @@ BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv, int enc) {
 
     memset(&gd,0,sizeof(gd));
     gd.flags = gg_visible | gg_enabled;
+    helplist[0].invoke = BVMenuContextualHelp;
     gd.u.menu = mblist;
     bv->mb = GMenuBarCreate( gw, &gd, NULL);
     GGadgetGetSize(bv->mb,&gsize);

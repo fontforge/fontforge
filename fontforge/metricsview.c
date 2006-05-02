@@ -2849,6 +2849,14 @@ static GMenuItem vwlist[] = {
     { NULL }
 };
 
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void MVMenuContextualHelp(GWindow base,struct gmenuitem *mi,GEvent *e) {
+# elif defined(FONTFORGE_CONFIG_GTK)
+void MetricsViewMenu_ContextualHelp(GtkMenuItem *menuitem, gpointer user_data) {
+# endif
+    help("metricsview.html");
+}
+
 static GMenuItem mtlist[] = {
     { { (unichar_t *) N_("_Center in Width"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_control, NULL, NULL, MVMenuCenter, MID_Center },
     { { (unichar_t *) N_("_Thirds in Width"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'T' }, '\0', ksm_control, NULL, NULL, MVMenuCenter, MID_Thirds },
@@ -3957,6 +3965,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
 
     memset(&gd,0,sizeof(gd));
     gd.flags = gg_visible | gg_enabled;
+    helplist[0].invoke = MVMenuContextualHelp;
     gd.u.menu = mblist;
     mv->mb = GMenuBarCreate( gw, &gd, NULL);
     GGadgetGetSize(mv->mb,&gsize);
