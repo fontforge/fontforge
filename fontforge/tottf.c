@@ -3123,11 +3123,14 @@ docs are wrong.
     for ( pt=os2->achVendID; pt<os2->achVendID && *pt!='\0'; ++pt );
     while ( pt<os2->achVendID ) *pt++ = ' ';	/* Pad with spaces not NUL */
 
+    /* v1,2 & v3,4 have different ways of calculating avgCharWid. */
+    /* but I'm told that using the v3 way breaks display of CJK fonts in windows */
     os2->avgCharWid = 500;
+    os2->v1_avgCharWid = os2->v3_avgCharWid = 0;
     if ( cnt1==27 )
-	os2->avgCharWid = avg1/1000;
-    else if ( cnt2!=0 )
-	os2->avgCharWid = avg2/cnt2;
+	os2->v1_avgCharWid = avg1/1000;
+    if ( cnt2!=0 )
+	os2->v3_avgCharWid = avg2/cnt2;
     memcpy(os2->panose,sf->pfminfo.panose,sizeof(os2->panose));
     map = at->map;
     if ( format==ff_ttfsym ) {
@@ -3167,14 +3170,22 @@ docs are wrong.
 	BlueData bd;
 
 	QuickBlues(sf,&bd);		/* This handles cid fonts properly */
-	/*os2->version = 2;*/		/* current version is 3, I don't see how it differs from 2 */
-	os2->version = 3;		/* it added some bits but no new fields */
+	/*os2->version = 2;*/		/* current version is 3. It added some bit defns but no fields */
+	if ( os2->version != 0 )
+	    os2->version = 3;
 	os2->xHeight = bd.xheight;
 	os2->capHeight = bd.caph;
 	os2->defChar = ' ';
 	os2->breakChar = ' ';
 	os2->maxContext = 1;	/* Kerning will set this to 2, ligature to whatever */
     }
+
+    if ( os2->version==3 && os2->v3_avgCharWid!=0 )
+	os2->avgCharWid = os2->v3_avgCharWid;
+    else if ( os2->v1_avgCharWid!=0 )
+	os2->avgCharWid = os2->v1_avgCharWid;
+    else if ( os2->v3_avgCharWid!=0 )
+	os2->avgCharWid = os2->v3_avgCharWid;
 }
 
 static void redoloca(struct alltabs *at) {
