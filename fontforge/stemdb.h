@@ -37,6 +37,7 @@ struct glyphdata {
     int ccnt;
     int *contourends;
     int realcnt;			/* Includes control points, excludes implied points */
+    int norefpcnt;			/* Does not include points in glyphs with references */
     int pcnt;				/* Includes control points, includes implied points */
     struct pointdata *points;		/* Entries corresponding to control points are empty */
     int stemcnt;
