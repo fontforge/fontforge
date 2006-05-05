@@ -380,7 +380,7 @@ struct nametab {
 
 struct os2 {
     uint16 version;	/* 1 */
-    int16 avgCharWid;	/* average width of a-z and space, if no lower case, then average all chars */
+    int16 avgCharWid;	/* average all chars (v3) see v2 definition below */
     uint16 weightClass;	/* 100=>thin, 200=>extra-light, 300=>light, 400=>normal, */
 			/* 500=>Medium, 600=>semi-bold, 700=>bold, 800=>extra-bold, */
 			/* 900=>black */
@@ -441,6 +441,11 @@ struct os2 {
     short defChar;
     short breakChar;
     short maxContext;
+    /* V3 of OS/2 has no additional data */
+    /* V4 of OS/2 has no additional data */
+
+    int v1_avgCharWid;	/* 1&2 Weighted average of the lower case letters and space */
+    int v3_avgCharWid;	/* 3&4 average over all non-zero width glyphs */
 };
 
 struct post {
