@@ -47,7 +47,7 @@ static void PointInit(struct glyphdata *gd,SplinePoint *sp, SplineSet *ss) {
     struct pointdata *pd;
     double len;
 
-    if ( sp->ttfindex==0xffff )
+    if ( sp->ttfindex==0xffff || sp->ttfindex==0xfffe )
 return;
     pd = &gd->points[sp->ttfindex];
     pd->sp = sp;
@@ -1789,6 +1789,20 @@ return( NULL );
 	break;
 	}
     }
+    gd->norefpcnt = gd->pcnt;
+    /* And for 0xfffe points such as those used in glyphs with order2 glyphs */
+    /*  with references. */
+    for ( ss= sc->layers[ly_fore].splines; ss!=NULL; ss = ss->next ) {
+	for ( sp = ss->first; ; ) {
+	    if ( sp->ttfindex == 0xfffe )
+		sp->ttfindex = gd->pcnt++;
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==ss->first )
+	break;
+	}
+    }
 
     gd->points = gcalloc(gd->pcnt,sizeof(struct pointdata));
     for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) if ( ss->first->prev!=NULL ) {
@@ -1931,8 +1945,10 @@ void GlyphDataFree(struct glyphdata *gd) {
     int i;
 
     /* Restore implicit points */
-    for ( i=gd->realcnt; i<gd->pcnt; ++i )
+    for ( i=gd->realcnt; i<gd->norefpcnt; ++i )
 	gd->points[i].sp->ttfindex = 0xffff;
+    for ( i=gd->norefpcnt; i<gd->pcnt; ++i )
+	gd->points[i].sp->ttfindex = 0xfffe;
 
     for ( i=0; i<gd->linecnt; ++i )
 	free(gd->lines[i].points);
