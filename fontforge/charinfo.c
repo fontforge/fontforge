@@ -101,6 +101,8 @@ static GTextInfo std_colors[] = {
 };
 
 GTextInfo scripts[] = {
+/* GT: See the long comment at "Property|New" */
+/* GT: The msgstr should contain a translation of "Arabic", ignore "Script|" */
     { (unichar_t *) N_("Script|Arabic"), NULL, 0, 0, (void *) CHR('a','r','a','b'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Script|Aramaic"), NULL, 0, 0, (void *) CHR('a','r','a','m'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Script|Armenian"), NULL, 0, 0, (void *) CHR('a','r','m','n'), NULL, false, false, false, false, false, false, true },
@@ -127,6 +129,10 @@ GTextInfo scripts[] = {
     { (unichar_t *) N_("Devanagari"), NULL, 0, 0, (void *) CHR('d','e','v','a'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Egyptian demotic"), NULL, 0, 0, (void *) CHR('e','g','y','d'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Egyptian hieratic"), NULL, 0, 0, (void *) CHR('e','g','y','h'), NULL, false, false, false, false, false, false, true },
+/* GT: Someone asked if FontForge actually was prepared generate hieroglyph output */
+/* GT: because of this string. No. But OpenType and Unicode have placeholders for */
+/* GT: dealing with these scripts against the day someone wants to use them. So */
+/* GT: FontForge must be prepared to deal with those placeholders if nothing else. */
     { (unichar_t *) N_("Egyptian hieroglyphs"), NULL, 0, 0, (void *) CHR('e','g','y','p'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Script|Ethiopic"), NULL, 0, 0, (void *) CHR('e','t','h','i'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Script|Georgian"), NULL, 0, 0, (void *) CHR('g','e','o','r'), NULL, false, false, false, false, false, false, true },
@@ -205,6 +211,8 @@ GTextInfo languages[] = {
     { (unichar_t *) N_("Afar"), NULL, 0, 0, (void *) CHR('A','F','R',' '), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Agaw"), NULL, 0, 0, (void *) CHR('A','G','W',' '), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Altai"), NULL, 0, 0, (void *) CHR('A','L','T',' '), NULL, false, false, false, false, false, false, true },
+/* GT: See the long comment at "Property|New" */
+/* GT: The msgstr should contain a translation of "Amharic", ignore "Lang|" */
     { (unichar_t *) N_("Lang|Amharic"), NULL, 0, 0, (void *) CHR('A','M','H',' '), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Lang|Arabic"), NULL, 0, 0, (void *) CHR('A','R','A',' '), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Aari"), NULL, 0, 0, (void *) CHR('A','R','I',' '), NULL, false, false, false, false, false, false, true },
@@ -1185,7 +1193,7 @@ return( NULL );
 	}
 	if ( *pt!='{' ) {
 	    ScriptRecordFree(sr);
-	    gwwv_post_error(_("Cant Parse Scripts"),_("A script language list consists of a list of\n4 letter script tags each followed by a '{'\nand a list of 4 letter language tags seperated\nby commas. As:\nlatn{DEU ,dflt} cyrl{dflt}"));
+	    gwwv_post_error(_("Cant Parse Scripts"),_("A script language series consists of a list of\n4 letter script tags each followed by a '{'\nand a sub-series of 4 letter language tags separated\nby commas and ended with '}'. As:\nlatn{DEU ,dflt} cyrl{dflt}"));
 return( NULL );
 	}
 	sr[i].script = (start[0]<<24) | ((start[1]&0xff)<<16) | ((start[2]&0xff)<<8) | (start[3]&0xff);
@@ -1193,7 +1201,7 @@ return( NULL );
 	    if ( *lpt==',' ) ++lcnt;
 	if ( *lpt=='\0' ) {
 	    ScriptRecordFree(sr);
-	    gwwv_post_error(_("Cant Parse Scripts"),_("A script language list consists of a list of\n4 letter script tags each followed by a '{'\nand a list of 4 letter language tags seperated\nby commas. As:\nlatn{DEU ,dflt} cyrl{dflt}"));
+	    gwwv_post_error(_("Cant Parse Scripts"),_("A script language series consists of a list of\n4 letter script tags each followed by a '{'\nand a sub-series of 4 letter language tags separated\nby commas and ended with '}'. As:\nlatn{DEU ,dflt} cyrl{dflt}"));
 return( NULL );
 	}
 	sr[i].langs = galloc((lcnt+1)*sizeof(uint32));
@@ -1222,7 +1230,7 @@ return( NULL );
 
     if ( *pt!='\0' ) {
 	ScriptRecordFree(sr);
-	gwwv_post_error(_("Cant Parse Scripts"),_("A script language list consists of a list of\n4 letter script tags each followed by a '{'\nand a list of 4 letter language tags seperated\nby commas. As:\nlatn{DEU ,dflt} cyrl{dflt}"));
+	gwwv_post_error(_("Cant Parse Scripts"),_("A script language series consists of a list of\n4 letter script tags each followed by a '{'\nand a sub-series of 4 letter language tags separated\nby commas and ended with '}'. As:\nlatn{DEU ,dflt} cyrl{dflt}"));
 return( NULL );
     }
 
@@ -1332,7 +1340,7 @@ static uint32 *ShowLanguages(uint32 *langs) {
 	    if ( languages[j].text!=NULL )
 		languages[j].selected = true;
 	    else if ( !warned ) {
-		gwwv_post_error(_("Language Missing"),_("Could not find a language to match '%c%c%c%c'.\nIt has been omitted from this list.\nIf that is not desirable press [Cancel] twice\nand then hold down the control key and press [Edit]"),
+		gwwv_post_error(_("Language Missing"),_("Could not find a language to match '%c%c%c%c'.\nIt has been omitted from this list.\nIf that is not desirable, press [Cancel] twice,\nand then hold down the control key and press [Edit]."),
 			langs[i]>>24,
 			(langs[i]>>16)&0xff,
 			(langs[i]>>8)&0xff,
@@ -1387,7 +1395,7 @@ static uint32 *ShowLanguages(uint32 *langs) {
 		++lcnt;
 	}
 	if ( lcnt==0 ) {
-	    gwwv_post_error(_("Language Missing"),_("You must select at least one language\nUse the \"Default\" language if nothing else fits."));
+	    gwwv_post_error(_("Language Missing"),_("You must select at least one language.\nUse the \"Default\" language if nothing else fits."));
 	    done = 0;
  goto retry;
 	}
@@ -1566,7 +1574,7 @@ unichar_t *ShowScripts(unichar_t *usedef) {
 		ti[jj]->userdata = sr[i].langs;
 		sr[i].langs = NULL;
 	    } else if ( !warned ) {
-		gwwv_post_error(_("Script Missing"),_("Could not find a script to match '%c%c%c%c'.\nIt has been omitted from this list.\nIf that is not desirable press [Cancel]\nand then hold down the control key and press [Edit]"),
+		gwwv_post_error(_("Script Missing"),_("Could not find a script to match '%c%c%c%c'.\nIt has been omitted from this list.\nIf that is not desirable, press [Cancel],\nand then hold down the control key and press [Edit]."),
 			sr[i].script>>24,
 			(sr[i].script>>16)&0xff,
 			(sr[i].script>>8)&0xff,
@@ -2482,6 +2490,7 @@ unichar_t *AskNameTag(char *title,unichar_t *def,uint32 def_tag, uint16 flags,
 	gcd[9].gd.cid = CID_ACD_IgnMark;
 	gcd[9].creator = GCheckBoxCreate;
 
+/* GT: Process is a verb here. Marks of the given mark class are to be processed */
 	label[10].text = (unichar_t *) _("Process Marks:");
 	label[10].text_is_1byte = true;
 	gcd[10].gd.label = &label[10];
@@ -2733,7 +2742,7 @@ static unichar_t *AskPosTag(char *title,unichar_t *def,uint32 def_tag, uint16 fl
     uint32 tag;
     int dx=0, dy=0, dxa=0, dya=0;
     int dx2=0, dy2=0, dxa2=0, dya2=0;
-    char buf[200];
+    char buf[250];
     unichar_t udx[12], udy[12], udxa[12], udya[12];
     unichar_t udx2[12], udy2[12], udxa2[12], udya2[12];
     int i, j, temp, tag_pos, sli_pos, class, mrk_pos;
@@ -3110,7 +3119,7 @@ static unichar_t *AskPosTag(char *title,unichar_t *def,uint32 def_tag, uint16 fl
 		gwwv_post_error(_("Missing paired glyph"),_("You must specify a name by which to identify the paired glyph"));
 		err = true;
 	    } else if ( SFGetChar(sf,-1,other)==NULL ) {
-		if ( gwwv_ask(_("Missing paired glyph"),(const char **) buts,0,1,_("The paired glyph's name (%.50s) does not match any glyph in font. Is that what you want?"),other)==1 )
+		if ( gwwv_ask(_("Missing paired glyph"),(const char **) buts,0,1,_("The paired glyph's name (%.50s) does not match any glyph in the font. Is that what you want?"),other)==1 )
 		    err = true;
 	    }
 	}
@@ -3162,9 +3171,9 @@ static unichar_t *AskPosTag(char *title,unichar_t *def,uint32 def_tag, uint16 fl
 	flags |= (GGadgetGetFirstListSelectedItem(gcd[i-3].ret))<<8;
 	if ( ptd.ispair ) {
 #if defined( _NO_SNPRINTF ) || defined( __VMS )
-	    sprintf(buf,"%c%c%c%c %c%c%c%c %d %.50s dx=%d dy=%d dx_adv=%d dy_adv=%d",
+	    sprintf(buf,"%c%c%c%c %c%c%c%c %d %.50s ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d | ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d",
 #else
-	    snprintf(buf,sizeof(buf), "%c%c%c%c %c%c%c%c %d %.50s dx=%d dy=%d dx_adv=%d dy_adv=%d | dx=%d dy=%d dx_adv=%d dy_adv=%d",
+	    snprintf(buf,sizeof(buf), "%c%c%c%c %c%c%c%c %d %.50s ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d | ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d",
 #endif
 		    tag>>24, tag>>16, tag>>8, tag,
 		    flags&pst_r2l?'r':' ',
@@ -3177,9 +3186,9 @@ static unichar_t *AskPosTag(char *title,unichar_t *def,uint32 def_tag, uint16 fl
 		    dx2, dy2, dxa2, dya2 );
 	} else {
 #if defined( _NO_SNPRINTF ) || defined( __VMS )
-	    sprintf(buf,"%c%c%c%c %c%c%c%c %d dx=%d dy=%d dx_adv=%d dy_adv=%d",
+	    sprintf(buf,"%c%c%c%c %c%c%c%c %d ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d",
 #else
-	    snprintf(buf,sizeof(buf), "%c%c%c%c %c%c%c%c %d dx=%d dy=%d dx_adv=%d dy_adv=%d",
+	    snprintf(buf,sizeof(buf), "%c%c%c%c %c%c%c%c %d ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d",
 #endif
 		    tag>>24, tag>>16, tag>>8, tag,
 		    flags&pst_r2l?'r':' ',
@@ -3591,6 +3600,7 @@ return;
 	break;
 	}
 	if ( i<len && sel+1!=pst_pair && sel+1!=pst_ligature ) {
+/* GT: We have a tag that appears twice and that's bad. */
 	    gwwv_post_error(_("Duplicate Tag"),_("Duplicate Tag"));
 	    free(newname);
 return;
@@ -5261,12 +5271,12 @@ char *PST2Text(PST *pst,SplineFont *sf) {
 
     if ( pst->type==pst_position || pst->type==pst_pair ) {
 	if ( pst->type==pst_position ) {
-	    sprintf(buffer,"          %3d dx=%d dy=%d dx_adv=%d dy_adv=%d",
+	    sprintf(buffer,"          %3d ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d",
 		    pst->script_lang_index,
 		    pst->u.pos.xoff, pst->u.pos.yoff,
 		    pst->u.pos.h_adv_off, pst->u.pos.v_adv_off );
 	} else if ( pst->type==pst_pair ) {
-	    sprintf(buffer,"          %3d %s dx=%d dy=%d dx_adv=%d dy_adv=%d | dx=%d dy=%d dx_adv=%d dy_adv=%d",
+	    sprintf(buffer,"          %3d %s ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d | ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d",
 		    pst->script_lang_index,
 		    pst->u.pair.paired,
 		    pst->u.pair.vr[0].xoff, pst->u.pair.vr[0].yoff,
@@ -5796,7 +5806,7 @@ return;
 	tgcd[0].gd.label = &tlabel[0];
 	tgcd[0].gd.pos.x = 5; tgcd[0].gd.pos.y = 5+4; 
 	tgcd[0].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-	tgcd[0].gd.popup_msg = (unichar_t *) _("These fields are the metrics fields used by TeX\nThe height and depth are pretty self-explanatory\nexcept that they are corrected for optical distortion.\nSo 'x' and 'o' probably have the same height.\nSubscript and Superscript positions\nare only used in math fonts and should be left blank elsewhere");
+	tgcd[0].gd.popup_msg = (unichar_t *) _("These fields are the metrics fields used by TeX\nThe height and depth are pretty self-explanatory,\nexcept that they are corrected for optical distortion.\nSo 'x' and 'o' probably have the same height.\nSubscript and Superscript positions\nare only used in math fonts and should be left blank elsewhere");
 	tgcd[0].creator = GLabelCreate;
 
 	tgcd[1].gd.pos.x = 85; tgcd[1].gd.pos.y = 5;

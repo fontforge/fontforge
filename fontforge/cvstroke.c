@@ -462,7 +462,8 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
 	wattrs.utf8_window_title = strokeit!=NULL ? _("Expand Stroke...") :
-		    _("Free Hand");
+/* GT: This does not mean the program, but freehand drawing */
+		    _("Freehand");
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,SD_Width));
@@ -501,7 +502,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 
 	    /* This radio button is here rather than where it's location would */
 	    /*  suggest because itneeds to be grouped with stroke and dont expand */
-	label[gcdoff].text = (unichar_t *) _("_Caligraphic");
+	label[gcdoff].text = (unichar_t *) _("_Calligraphic");
 	label[gcdoff].text_is_1byte = true;
 	label[gcdoff].text_in_resource = true;
 	gcd[gcdoff].gd.mnemonic = 'C';
@@ -553,6 +554,18 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
 	gcd[gcdoff++].creator = GGroupCreate;
 
+/* GT: Butt is a PostScript concept which refers to a way of ending strokes */
+/* GT: In the following image the line drawn with "=" is the original, and */
+/* GT: the others are the results. The "Round" style is hard to draw with */
+/* GT: ASCII glyphs. If this is unclear I suggest you look at the Expand Stroke */
+/* GT: dialog which has little pictures */
+/* GT: */
+/* GT: -----------------+    -----------------+    ----------------+--+ */
+/* GT:                  |                      \                      | */
+/* GT: =================+    ================== )  =================  | */
+/* GT:                  |                      /                      | */
+/* GT: -----------------+    -----------------+    ----------------+--+ */
+/* GT:       Butt                 Round                Square */
 	label[gcdoff].text = (unichar_t *) _("_Butt");
 	label[gcdoff].text_is_1byte = true;
 	label[gcdoff].text_in_resource = true;
@@ -662,7 +675,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff].gd.pos.x = gcd[gcdoff-2].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-2].gd.pos.y+24;
 	gcd[gcdoff].gd.flags = gg_visible | gg_utf8_popup;
 	gcd[gcdoff].gd.cid = CID_ThicknessRatioTxt;
-	gcd[gcdoff].gd.popup_msg = (unichar_t *) _("A caligraphic pen's nib has two dimensions, the width\n(which may be set by Stroke Width below) and a thickness\nor height. I express the height as a ratio to the width.");
+	gcd[gcdoff].gd.popup_msg = (unichar_t *) _("A calligraphic pen's nib has two dimensions, the width\n(which may be set by Stroke Width below) and the thickness\nor height. I express the height as a ratio to the width.");
 	gcd[gcdoff++].creator = GLabelCreate;
 
 	sprintf( ratiobuf, "%g", def->ratio );
@@ -673,7 +686,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff].gd.pos.x = gcd[gcdoff-2].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-2].gd.pos.y+24;
 	gcd[gcdoff].gd.flags = gg_visible | gg_utf8_popup;
 	gcd[gcdoff].gd.cid = CID_ThicknessRatio;
-	gcd[gcdoff].gd.popup_msg = (unichar_t *) _("A caligraphic pen's nib has two dimensions, the width\n(which may be set by Stroke Width below) and a thickness\nor height. I express the height as a ratio to the width.");
+	gcd[gcdoff].gd.popup_msg = (unichar_t *) _("A calligraphic pen's nib has two dimensions, the width\n(which may be set by Stroke Width below) and the thickness\nor height. I express the height as a ratio to the width.");
 	gcd[gcdoff++].creator = GTextFieldCreate;
 
 	    /* Elipse */
@@ -715,7 +728,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff].gd.pos.x = gcd[gcdoff-2].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-2].gd.pos.y+24;
 	gcd[gcdoff].gd.flags = gg_visible | gg_utf8_popup;
 	gcd[gcdoff].gd.cid = CID_MinorAxis;
-	gcd[gcdoff].gd.popup_msg = (unichar_t *) _("A caligraphic pen's nib has two dimensions, the width\n(which may be set by Stroke Width below) and a thickness\nor height. I express the height as a ratio to the width.");
+	gcd[gcdoff].gd.popup_msg = (unichar_t *) _("A calligraphic pen's nib has two dimensions, the width\n(which may be set by Stroke Width below) and the thickness\nor height. I express the height as a ratio to the width.");
 	gcd[gcdoff++].creator = GTextFieldCreate;
 	/* End radio area */
 

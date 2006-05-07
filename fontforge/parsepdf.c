@@ -778,6 +778,8 @@ return( pt_number );
 	} else {
 	    *val = strtod(tokbuf,&end);
 	    if ( !finite(*val) ) {
+/* GT: NaN is a concept in IEEE floating point which means "Not a Number" */
+/* GT: it is used to represent errors like 0/0 or sqrt(-1). */
 		LogError( _("Bad number, infinity or nan: %s\n"), tokbuf );
 		*val = 0;
 	    }
@@ -1221,7 +1223,7 @@ return( NULL );
 return( sc );
 
   fail:
-    LogError( _("Syntax error in parsing type3 glyph: %s"), glyphname );
+    LogError( _("Syntax error while parsing type3 glyph: %s"), glyphname );
 return( NULL );
 }
     

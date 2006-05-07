@@ -1,10 +1,10 @@
 
 
 
-# This file (or this section of the main file) contains the
-#  fontforge messages which use non-ASCII characters.
-#  xgettext doesn't like them, so I have to find them manually.
-#  it is encoded in utf-8
+#.This file (or this section of the main file) contains the
+#. fontforge messages which use non-ASCII characters.
+#. xgettext doesn't like them, so I have to find them manually.
+#. it is encoded in utf-8
 
 #: autowidth.c
 msgid "Α-ΡΣ-Ωα-ω"
@@ -30,10 +30,12 @@ msgstr ""
 msgid "ЂЄ-ІЈ-ЋЏ-ИК-Яа-ик-яђє-іј-ћџ.,:;-"
 msgstr ""
 
+#. CW means clockwise
 #: bitmapview.c
 msgid "_Rotate 90° CW"
 msgstr ""
 
+#. CCW means counter clockwise
 #: bitmapview.c
 msgid "Rotate _90° CCW"
 msgstr ""
@@ -178,14 +180,17 @@ msgstr ""
 msgid "° Clockwise"
 msgstr ""
 
+#. Sometimes spelled Widdershins. An old word which means counter clockwise.
+#. I used it because "counter clockwise" took too much space.
 #: transform.c
 msgid "° Withershins"
 msgstr ""
 
 
-# FontForge needs to recoginze the quotes used here(“”). If you change them
-# (in the translated strings) let me know. It currently also recognizes
-# guillemets and a couple of other quotes as well.
+#. FontForge needs to recoginze the quotes used here(“”). If you change them
+#. (in the translated strings) let me know. It currently also recognizes
+#. guillemets and a couple of other quotes as well.
+#.   pfaedit@users.sourceforge.net
 
 #: glyphcomp.c
 msgid "Glyph “%s” differs\n"
@@ -284,11 +289,11 @@ msgid "“%s” in %s did not contain an anchor point (%g,%g) class %s\n"
 msgstr ""
 
 #: glyphcomp.c
-msgid "“%s” in %s did not contain a positioning lookup dx=%d dy=%d dx_adv=%d dy_adv=%d\n"
+msgid "“%s” in %s did not contain a positioning lookup ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d\n"
 msgstr ""
 
 #: glyphcomp.c
-msgid "“%s” in %s did not contain a pairwise positioning lookup dx=%d dy=%d dx_adv=%d dy_adv=%d to %s dx=%d dy=%d dx_adv=%d dy_adv=%d\n"
+msgid "“%s” in %s did not contain a pairwise positioning lookup ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d to %s ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d\n"
 msgstr ""
 
 #: glyphcomp.c

@@ -1221,7 +1221,7 @@ return( 0 );
 	}
     }
     if ( ftell(pk)!=char_end ) {
-	LogError( _("The character, %d, was not read properly (or pk file is in bad format)\n At %ld should be %d, off by %ld\n"), cc, ftell(pk), char_end, ftell(pk)-char_end );
+	LogError( "The character, %d, was not read properly (or pk file is in bad format)\n At %ld should be %d, off by %ld\n", cc, ftell(pk), char_end, ftell(pk)-char_end );
 	fseek(pk,char_end,SEEK_SET);
     }
  /* printf( "\n" ); */

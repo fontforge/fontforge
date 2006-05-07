@@ -591,7 +591,7 @@ return( false );
     lputshort(file,widbytes);
 
     if ( ftell(file)-startpos != datapos ) {
-	LogError( _("Internal error in creating FNT. file offset wrong\n") );
+	LogError( _("Internal error in creating FNT. File offset wrong\n") );
 	complained = true;
     }
 
@@ -619,7 +619,7 @@ return( false );
 		}
 	    }
 	    if ( ftell(file)-startpos != datapos+widbytes && !complained ) {
-		LogError( _("Internal error in creating FNT. file offset wrong in bitmap data\n") );
+		LogError( _("Internal error in creating FNT. File offset wrong in bitmap data\n") );
 		complained = true;
 	    }
 	}

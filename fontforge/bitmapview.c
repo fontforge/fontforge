@@ -231,6 +231,13 @@ static char *BVMakeTitles(BitmapView *bv, BDFChar *bc,char *buf) {
     BDFFont *bdf = bv->bdf;
 
     sc = bc->sc;
+/* GT: This is the title for a window showing a bitmap character */
+/* GT: It will look something like: */
+/* GT:  exclam at 33 size 12 from Arial */
+/* GT: $1 is the name of the glyph */
+/* GT: $2 is the glyph's encoding */
+/* GT: $3 is the pixel size of the bitmap font */
+/* GT: $4 is the font name */
     sprintf(buf,_("%1$.80s at %2$d size %3$d from %4$.80s"),
 	    sc!=NULL ? sc->name : "<Nameless>", bv->enc, bdf->pixelsize, sc==NULL ? "" : sc->parent->fontname);
     title = copy(buf);
@@ -1645,7 +1652,13 @@ void BitmapViewMenu_ContextualHelp(GtkMenuItem *menuitem, gpointer user_data) {
     help("bitmapview.html");
 }
 
-char *BVFlipNames[] = { N_("Flip Horizontally"), N_("Flip Vertically"), NU_("Rotate 90° CW"), NU_("Rotate 90° CCW"), NU_("Rotate 180°"), N_("Skew..."), NULL };
+char *BVFlipNames[] = { N_("Flip Horizontally"), N_("Flip Vertically"),
+/* GT: "CW" means Clockwise */
+    NU_("Rotate 90° CW"),
+/* GT: "CW" means Counter-Clockwise */
+    NU_("Rotate 90° CCW"),
+    NU_("Rotate 180°"),
+    N_("Skew..."), NULL };
 
 static GMenuItem dummyitem[] = { { (unichar_t *) N_("_New"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'N' }, NULL };
 static GMenuItem fllist[] = {

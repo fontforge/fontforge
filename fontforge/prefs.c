@@ -255,17 +255,17 @@ static struct prefs_list {
 	{ N_("NewFontsQuadratic"), pr_bool, &new_fonts_are_order2, NULL, NULL, 'Q', NULL, 0, N_("Whether new fonts should contain splines of quadratic (truetype)\nor cubic (postscript & opentype).") },
 	{ N_("LoadedFontsAsNew"), pr_bool, &loaded_fonts_same_as_new, NULL, NULL, 'L', NULL, 0, N_("Whether fonts loaded from the disk should retain their splines\nwith the original order (quadratic or cubic), or whether the\nsplines should be converted to the default order for new fonts\n(see NewFontsQuadratic).") },
 	{ N_("GreekNames"), pr_bool, &greeknames, NULL, NULL, 'G', NULL, 0, N_("Adobe has assigned the names Delta, Omega and mu\nto Increment, Ohm and micro signs respectively\nThis seems very odd to Greek font designers who use\nthe names to refer to letters of the alphabet.\nSetting this flags means that the alphabetic characters will\nbe named Delta.greek, Omega.greek and mu.greek.") },
-	{ N_("ResourceFile"), pr_file, &xdefs_filename, NULL, NULL, 'R', NULL, 0, N_("When FontForge starts up it loads display related resources from a\nproperty on the screen. Sometimes it is useful to be able to store\nthese resources in a file. These resources are only read at start\nup, so changing this has no effect until the next time you start\nFontForge.") },
+	{ N_("ResourceFile"), pr_file, &xdefs_filename, NULL, NULL, 'R', NULL, 0, N_("When FontForge starts up, it loads display related resources from a\nproperty on the screen. Sometimes it is useful to be able to store\nthese resources in a file. These resources are only read at start\nup, so changing this has no effect until the next time you start\nFontForge.") },
 	{ N_("HelpDir"), pr_file, &helpdir, NULL, NULL, 'R', NULL, 0, N_("The directory on your local system in which FontForge will search for help\nfiles.  If a file is not found there, then FontForge will look for it on the net.") },
 	{ N_("OtherSubrsFile"), pr_file, &othersubrsfile, NULL, NULL, 'O', NULL, 0, N_("If you wish to replace Adobe's OtherSubrs array (for Type1 fonts)\nwith an array of your own, set this to point to a file containing\na list of up to 14 PostScript subroutines. Each subroutine must\nbe preceded by a line starting with '%%%%' (any text before the\nfirst '%%%%' line will be treated as an initial copyright notice).\nThe first three subroutines are for flex hints, the next for hint\nsubstitution (this MUST be present), the 14th (or 13 as the\nnumbering actually starts with 0) is for counter hints.\nThe subroutines should not be enclosed in a [ ] pair.") },
-	{ N_("FreeTypeInFontView"), pr_bool, &use_freetype_to_rasterize_fv, NULL, NULL, 'O', NULL, 0, N_("Use the FreeType rasterized (when available)\nto rasterize glyphs in the font view.\nThis generally results in better quality.") },
+	{ N_("FreeTypeInFontView"), pr_bool, &use_freetype_to_rasterize_fv, NULL, NULL, 'O', NULL, 0, N_("Use the FreeType rasterizer (when available)\nto rasterize glyphs in the font view.\nThis generally results in better quality.") },
 	{ N_("UnicodeGlyphNames"), pr_bool, &allow_utf8_glyphnames, NULL, NULL, 'O', NULL, 0, N_("Allow the full unicode character set in glyph names.\nThis does not conform to adobe's glyph name standard.\nSuch names should be for internal use only and\nshould NOT end up in production fonts." ) },
 	{ NULL }
 },
   editing_list[] = {
 	{ N_("AutoWidthSync"), pr_bool, &adjustwidth, NULL, NULL, '\0', NULL, 0, N_("Changing the width of a glyph\nchanges the widths of all accented\nglyphs based on it.") },
 	{ N_("AutoLBearingSync"), pr_bool, &adjustlbearing, NULL, NULL, '\0', NULL, 0, N_("Changing the left side bearing\nof a glyph adjusts the lbearing\nof other references in all accented\nglyphs based on it.") },
-	{ N_("ItalicConstrained"), pr_bool, &ItalicConstrained, NULL, NULL, '\0', NULL, 0, N_("In the Outline View, the Shift key constrains motion to be parallel to the ItalicAngle rather than the vertical.") },
+	{ N_("ItalicConstrained"), pr_bool, &ItalicConstrained, NULL, NULL, '\0', NULL, 0, N_("In the Outline View, the Shift key constrains motion to be parallel to the ItalicAngle rather than constraining it to be vertical.") },
 	{ N_("ArrowMoveSize"), pr_real, &arrowAmount, NULL, NULL, '\0', NULL, 0, N_("The number of em-units by which an arrow key will move a selected point") },
 	{ N_("SnapDistance"), pr_real, &snapdistance, NULL, NULL, '\0', NULL, 0, N_("When the mouse pointer is within this many pixels\nof one of the various interesting features (baseline,\nwidth, grid splines, etc.) the pointer will snap\nto that feature.") },
 	{ N_("JoinSnap"), pr_real, &joinsnap, NULL, NULL, '\0', NULL, 0, N_("The Edit->Join command will join points which are this close together\nA value of 0 means they must be coincident") },
@@ -300,8 +300,8 @@ static struct prefs_list {
 	{ N_("AskBDFResolution"), pr_bool, &ask_user_for_resolution, NULL, NULL, 'B', NULL, 0, N_("When generating a set of BDF fonts ask the user\nto specify the screen resolution of the fonts\notherwise FontForge will guess depending on the pixel size.") },
 	{ N_("PreferCJKEncodings"), pr_bool, &prefer_cjk_encodings, NULL, NULL, 'C', NULL, 0, N_("When loading a truetype or opentype font which has both a unicode\nand a CJK encoding table, use this flag to specify which\nshould be loaded for the font.") },
 	{ N_("HintForGen"), pr_bool, &autohint_before_generate, NULL, NULL, 'H', NULL, 0, N_("AutoHint changed glyphs before generating a font") },
-	{ N_("AlwaysGenApple"), pr_bool, &alwaysgenapple, NULL, NULL, 'A', NULL, 0, N_("Apple and MS/Adobe differ about the format of truetype and opentype files\nThis controls the default setting of the Apple checkbox in the File->Generate Font dlg.\nThe main differences are:\n The requirements for the 'postscript' name in the name table conflict\n Bitmap data are stored in different tables\n Scaled composite glyphs are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop\nIf both this and OpenType are set, both formats are generated") },
-	{ N_("AlwaysGenOpenType"), pr_bool, &alwaysgenopentype, NULL, NULL, 'O', NULL, 0, N_("Apple and MS/Adobe differ about the format of truetype and opentype files\nThis controls the default setting of the OpenType checkbox in the File->Generate Font dlg.\nThe main differences are:\n The requirements for the 'postscript' name in the name table conflict\n Bitmap data are stored in different tables\n Scaled composite glyphs are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop\nIf both this and Apple are set, both formats are generated") },
+	{ N_("AlwaysGenApple"), pr_bool, &alwaysgenapple, NULL, NULL, 'A', NULL, 0, N_("Apple and MS/Adobe differ about the format of truetype and opentype files.\nThis controls the default setting of the Apple checkbox in the File->Generate Font dialog.\nThe main differences are:\n The requirements for the 'postscript' name in the name table conflict\n Bitmap data are stored in different tables\n Scaled composite glyphs are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop\nIf both this and OpenType are set, both formats are generated") },
+	{ N_("AlwaysGenOpenType"), pr_bool, &alwaysgenopentype, NULL, NULL, 'O', NULL, 0, N_("Apple and MS/Adobe differ about the format of truetype and opentype files.\nThis controls the default setting of the OpenType checkbox in the File->Generate Font dialog.\nThe main differences are:\n Bitmap data are stored in different tables\n Scaled composite glyphs are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop\nIf both this and Apple are set, both formats are generated") },
 	{ N_("PreserveTables"), pr_string, &SaveTablesPref, NULL, NULL, 'P', NULL, 0, N_("Enter a list of 4 letter table tags, separated by commas.\nFontForge will make a binary copy of these tables when it\nloads a True/OpenType font, and will output them (unchanged)\nwhen it generates the font. Do not include table tags which\nFontForge thinks it understands.") },
 	{ N_("NewFontNameList"), pr_namelist, &namelist_for_new_fonts, NULL, NULL, 'P', NULL, 0, N_("Enter a list of 4 letter table tags, separated by commas.\nFontForge will make a binary copy of these tables when it\nloads a True/OpenType font, and will output them (unchanged)\nwhen it generates the font. Do not include table tags which\nFontForge thinks it understands.") },
 	{ NULL }
@@ -1626,7 +1626,7 @@ void DoPrefs(void) {
     slabel[sgc].text = (unichar_t *) _("Menu Name");
     slabel[sgc].text_is_1byte = true;
     sgcd[sgc].gd.label = &slabel[sgc];
-    sgcd[sgc].gd.popup_msg = (unichar_t *) _("You may create a script menu containing up to 10 frequently used scripts\nEach entry in the menu needs both a name to display in the menu and\na script file to execute. The menu name may contain any unicode characters.\nThe button labeled \"...\" will allow you to browse for a script file.");
+    sgcd[sgc].gd.popup_msg = (unichar_t *) _("You may create a script menu containing up to 10 frequently used scripts.\nEach entry in the menu needs both a name to display in the menu and\na script file to execute. The menu name may contain any unicode characters.\nThe button labeled \"...\" will allow you to browse for a script file.");
     sgcd[sgc].gd.pos.x = 8;
     sgcd[sgc].gd.pos.y = y2;
     sgcd[sgc].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
@@ -1811,6 +1811,12 @@ void DoPrefs(void) {
 	}
 	if ( visible_prefs_list[k].pl == args_list ) {
 	    static char *text[] = {
+/* GT: See the long comment at "Property|New" */
+/* GT: This and the next few strings show a limitation of my widget set which */
+/* GT: cannot handle multi-line text labels. These strings should be concatenated */
+/* GT: (after striping off "Prefs|App|") together, translated, and then broken up */
+/* GT: to fit the dialog. There is an extra blank line, not used in English, */
+/* GT: into which your text may extend if needed. */
 		N_("Prefs|App|Normally FontForge will find applications by searching for"),
 		N_("Prefs|App|them in your PATH environment variable, if you want"),
 		N_("Prefs|App|to alter that behavior you may set an environment"),

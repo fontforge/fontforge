@@ -1894,6 +1894,12 @@ static char *CVMakeTitles(CharView *cv,char *buf) {
     char *title;
     SplineChar *sc = cv->sc;
 
+/* GT: This is the title for a window showing an outline character */
+/* GT: It will look something like: */
+/* GT:  exclam at 33 from Arial */
+/* GT: $1 is the name of the glyph */
+/* GT: $2 is the glyph's encoding */
+/* GT: $3 is the font name */
     sprintf(buf,_("%1$.80s at %2$d from %3$.90s"),
 	    sc->name, CVCurEnc(cv), sc->parent->fontname);
     if ( sc->changed )
@@ -2280,8 +2286,12 @@ static void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
     uc_strcpy(ubuffer,buffer);
     GDrawDrawText(pixmap,MAG_DATA,ybase,ubuffer,-1,NULL,0);
     GDrawDrawText8(pixmap,LAYER_DATA,ybase,
+/* GT: Foreground, make it short */
 		cv->drawmode==dm_fore ? _("Fore") :
-		cv->drawmode==dm_back ? _("Back") : _("Guide"),
+/* GT: Background, make it short */
+		cv->drawmode==dm_back ? _("Back") :
+/* GT: Guide layer, make it short */
+		_("Guide"),
 	    -1,NULL,0);
     if ( cv->coderange!=cr_none )
 	GDrawDrawText8(pixmap,CODERANGE_DATA,ybase,
@@ -7231,6 +7241,7 @@ static GMenuItem ptlist[] = {
     { { (unichar_t *) N_("C_orner"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'o' }, '3', ksm_control, NULL, NULL, CVMenuPointType, MID_Corner },
     { { (unichar_t *) N_("_Tangent"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'T' }, '4', ksm_control, NULL, NULL, CVMenuPointType, MID_Tangent },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+/* GT: Make this (selected) point the first point in the glyph */
     { { (unichar_t *) N_("_Make First"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, '1', ksm_control, NULL, NULL, CVMenuMakeFirst, MID_MakeFirst },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("Can Be _Interpolated"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'T' }, '\0', ksm_control, NULL, NULL, CVMenuImplicit, MID_ImplicitPt },
@@ -7244,6 +7255,7 @@ static GMenuItem ptlist[] = {
 };
 
 static GMenuItem allist[] = {
+/* GT: Align these points to their average position */
     { { (unichar_t *) N_("_Average Points"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, '@', ksm_control|ksm_shift, NULL, NULL, CVMenuConstrain, MID_Average },
     { { (unichar_t *) N_("_Space Points"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'S' }, '#', ksm_control|ksm_shift, NULL, NULL, CVMenuConstrain, MID_SpacePts },
     { { (unichar_t *) N_("Space _Regions..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'R' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuConstrain, MID_SpaceRegion },
@@ -7575,6 +7587,7 @@ return;
 }
 
 static GMenuItem mmlist[] = {
+/* GT: Here (and following) MM means "MultiMaster" */
     { { (unichar_t *) N_("MM _Reblend"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, 0, 0, NULL, NULL, CVMenuReblend, MID_MMReblend },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
     { { (unichar_t *) N_("_View"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, 0, 0, mvlist, mvlistcheck },
@@ -7646,6 +7659,7 @@ static GMenuItem mblist[] = {
     { { (unichar_t *) N_("H_ints"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, 0, 0, htlist, htlistcheck },
     { { (unichar_t *) N_("_View"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'V' }, 0, 0, vwlist, vwlistcheck },
     { { (unichar_t *) N_("_Metrics"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, 0, 0, mtlist, mtlistcheck },
+/* GT: Here (and following) MM means "MultiMaster" */
     { { (unichar_t *) N_("MM"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, 0, 0, mmlist, mmlistcheck },
     { { (unichar_t *) N_("_Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'W' }, 0, 0, wnmenu, CVWindowMenuBuild },
     { { (unichar_t *) N_("_Help"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, 0, 0, helplist, NULL },
@@ -8309,6 +8323,7 @@ static GMenuItem sv_ptlist[] = {
 };
 
 static GMenuItem sv_allist[] = {
+/* GT: Align these points to their average position */
     { { (unichar_t *) N_("_Average Points"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, '@', ksm_control|ksm_shift, NULL, NULL, SVMenuConstrain, MID_Average },
     { { (unichar_t *) N_("_Space Points"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'S' }, '#', ksm_control|ksm_shift, NULL, NULL, SVMenuConstrain, MID_SpacePts },
     { { (unichar_t *) N_("Space _Regions..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'R' }, '\0', ksm_control|ksm_shift, NULL, NULL, SVMenuConstrain, MID_SpaceRegion },

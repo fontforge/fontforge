@@ -1356,6 +1356,22 @@ static void BdfP_Expose(struct bdf_dlg *bd, GWindow pixmap) {
 	GDrawDrawLine(pixmap,0,i*(bd->fh+1)+bd->fh,bd->vwidth,i*(bd->fh+1)+bd->fh,0x808080);
     }
     if ( i<page ) {
+/* GT: I am told that the use of "|" to provide contextual information in a */
+/* GT: gettext string is non-standard. However it is documented in section */
+/* GT: 10.2.6 of http://www.gnu.org/software/gettext/manual/html_mono/gettext.html */
+/* GT: */
+/* GT: Anyway here the word "Property" is used to provide context for "New..." and */
+/* GT: the translator should only translate "New...". This is necessary because in */
+/* GT: French (or any language where adjectives agree in gender/number with their */
+/* GT: nouns) there are several different forms of "New" and the one chose depends */
+/* GT: on the noun in question. */
+/* GT: A french translation might be either msgstr "Nouveau..." or msgstr "Nouvelle..." */
+/* GT: */
+/* GT: I expect there are more cases where one english word needs to be translated */
+/* GT: by several different words in different languages (in Japanese a different */
+/* GT: word is used for the latin script and the latin language) and that you, as */
+/* GT: a translator may need to ask me to disambiguate more strings. Please do so: */
+/* GT:      <pfaedit@users.sourceforge.net> */
 	GDrawDrawText8(pixmap,4,i*(bd->fh+1)+bd->as,S_("Property|New..."),-1,NULL,0xff0000);
 	GDrawDrawLine(pixmap,0,i*(bd->fh+1)+bd->fh,bd->vwidth,i*(bd->fh+1)+bd->fh,0x808080);
     }

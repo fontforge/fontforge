@@ -334,7 +334,11 @@ return( true );
 	if ( choice==-1 ) {
 	    char *fn = copy(filename);
 	    fn[lparen-filename] = '\0';
-	    gwwv_post_error(_("Not in Collection"),_("%1$s is not in %2$.100s"),find,fn);
+	    gwwv_post_error(_("Not in Collection"),
+/* GT: The user is trying to open a font file which contains multiple fonts and */
+/* GT: has asked for a font which is not in that file. */
+/* GT: The string will look like: <fontname> is not in <filename> */
+		    _("%1$s is not in %2$.100s"),find,fn);
 	    free(fn);
 	}
 	free(find);
@@ -892,7 +896,7 @@ return;
     } else if ( plat==1 ) {
 	/* Mac string doesn't match mac unicode string */
 	if ( !IsSubSetOf(str,cur->names[id]) )
-	    LogError( _("Warning: Mac and Unicode entries in the 'name' table differ for the\n %s string in the language %s\n Mac String: %s\nWindows String: %s\n"),
+	    LogError( _("Warning: Mac and Unicode entries in the 'name' table differ for the\n %s string in the language %s\n Mac String: %s\nMac Unicode String: %s\n"),
 		    TTFNameIds(id),MSLangString(language),
 		    str,cur->names[id]);
 	else
@@ -905,7 +909,7 @@ return;
 		    TTFNameIds(id),MSLangString(language),
 		    cur->names[id],str);
 	else
-	    LogError( _("Warning: Mac string is a subset of the Unicode string in the 'name' table\n for the %s string in the %s language.\n"),
+	    LogError( _("Warning: Mac string is a subset of the Windows string in the 'name' table\n for the %s string in the %s language.\n"),
 		    TTFNameIds(id),MSLangString(language));
 	free(cur->names[id]);
 	cur->names[id] = str;
@@ -1536,7 +1540,7 @@ return( sc );
     else
 	readttfcompositglyph(ttf,info,sc,info->glyph_start+end);
     if ( start>end )
-	LogError(_("Bad glyph (%d), disordered 'loca table (start comes after end)\n"), gid );
+	LogError(_("Bad glyph (%d), disordered 'loca' table (start comes after end)\n"), gid );
     else if ( ftell(ttf)>info->glyph_start+end )
 	LogError(_("Bad glyph (%d), its definition extends beyond the space allowed for it\n"), gid );
 return( sc );
@@ -2018,6 +2022,9 @@ return( NULL );
     names = galloc((count+1)*sizeof(char *));
     for ( i=0; i<count; ++i ) {
 	if ( offsets[i+1]<offsets[i] ) {
+/* GT: The CFF font type contains a thing called a name INDEX, and that INDEX */
+/* GT: is bad. It is an index of many of the names used in the CFF font. */
+/* GT: We hope the user will never see this. */
 	    LogError( _("Bad CFF name INDEX\n") );
 	    while ( i<count ) {
 		names[i] = copy("");
@@ -2104,7 +2111,7 @@ return( 0 );
 
 static void skipcfft2thing(FILE *ttf) {
     /* The old CFF spec allows little type2 programs to live in the CFF dict */
-    /*  indeces. These are designed to allow interpolation of values for mm */
+    /*  indices. These are designed to allow interpolation of values for mm */
     /*  fonts. */
     /* The Type2 program is terminated by an "endchar" operator */
     /* I don't support this, but I shall try to skip over them properly */
@@ -2112,7 +2119,7 @@ static void skipcfft2thing(FILE *ttf) {
     /*  cff stack, as there are no examples of this, it's hard to guess */
     int ch;
 
-    LogError( _("FontForge does not support type2 programs embedded in CFF dict indeces.\n") );
+    LogError( _("FontForge does not support type2 programs embedded in CFF dict indices.\n") );
     forever {
 	ch = getc(ttf);
 	if ( ch>=247 && ch<=254 )

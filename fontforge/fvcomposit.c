@@ -1611,11 +1611,16 @@ static int SCMakeBaseReference(SplineChar *sc,SplineFont *sf,int ch, int copybmp
 	    if ( ch==0x131 ) ch='i'; else ch = 'j';
 	    rsc = SFGetChar(sf,ch,NULL);
 	    if ( rsc!=NULL && !sf->dotlesswarn ) {
-#if defined(FONTFORGE_CONFIG_GTK)
-		gwwv_post_error( _("Missing Glyph..."),ch=='i'?_("Your font is missing the dotlessi glyph,\nplease add it and remake your accented glyphs"):_("Your font is missing the dotlessj glyph,\nplease add it and remake your accented glyphs"));
-#else
-		gwwv_post_error( _("Missing Glyph..."),ch=='i'?_("Your font is missing the dotlessi glyph,\nplease add it and remake your accented glyphs"):_("Your font is missing the dotlessj glyph,\nplease add it and remake your accented glyphs"));
-#endif
+/* GT: the string "dotlessi" is the official postscript name for the glyph */
+/* GT: containing an "i" without a dot on top of it. The name "dotlessi" */
+/* GT: should be left untranslated, though you may wish to explain what it */
+/* GT: means */
+		gwwv_post_error( _("Missing Glyph..."),ch=='i'?_("Your font is missing the dotlessi glyph,\nplease add it and remake your accented glyphs"):
+/* GT: the string "dotlessj" is the official postscript name for the glyph */
+/* GT: containing an "j" without a dot on top of it. The name "dotlessj" */
+/* GT: should be left untranslated, though you may wish to explain what it */
+/* GT: means */
+			_("Your font is missing the dotlessj glyph,\nplease add it and remake your accented glyphs"));
 		sf->dotlesswarn = true;
 	    }
 	}

@@ -210,9 +210,9 @@ return( 0 );
     nextcp.x -= here.x; nextcp.y -= here.y;
     prevcp.x -= here.x; prevcp.y -= here.y;
 
-    dn = nextcp.x*line->splines[0].c + nextcp.y*line->splines[1].c;
-    dp = prevcp.x*line->splines[0].c + prevcp.y*line->splines[1].c;
-    if ( dn*dp>0 )
+    dn = nextcp.x*line->splines[1].c - nextcp.y*line->splines[0].c;
+    dp = prevcp.x*line->splines[1].c - prevcp.y*line->splines[0].c;
+    if ( dn*dp<0 )	/* splines away move on opposite sides of the line */
 return( 1 );		/* Treat this line and the next as one */
 			/* We assume that a rounding error gave us one erroneous intersection (or we went directly through the endpoint) */
     else

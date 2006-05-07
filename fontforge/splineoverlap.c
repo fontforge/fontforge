@@ -1575,12 +1575,8 @@ static void TestForBadDirections(Intersection *ilist) {
 	}
 #if 0
 	if ( cnt>=4 && ncnt==cnt ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    gwwv_post_notice(_("Warning"),_("Glyph %.40s contains an overlapped region where two contours with oposite orientations intersect. This will not be removed. In many cases doing Element->Correct Direction before Remove Overlap will improve matters."),glyphname);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_notice(_("Warning"),_("Glyph %.40s contains an overlapped region where two contours with oposite orientations intersect. This will not be removed. In many cases doing Element->Correct Direction before Remove Overlap will improve matters."),
+	    gwwv_post_notice(_("Warning"),_("Glyph %.40s contains an overlapped region where two contours with opposite orientations intersect. This will not be removed. In many cases doing Element->Correct Direction before Remove Overlap will improve matters."),
 		    glyphname );
-#endif
 	    fprintf( stderr, "%s: Fully needed intersection at (%g,%g)\n",
 		    glyphname,
 		    ilist->inter.x, ilist->inter.y );

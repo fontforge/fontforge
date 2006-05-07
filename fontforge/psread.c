@@ -348,6 +348,10 @@ return;
 	io = iop;
     }
 
+/* GT: This is part of the PostScript language. "exit" should not be translated */
+/* GT: as it is a PostScript keyword. (FF contains a small PostScript interpreter */
+/* GT: so it can understand some PostScript fonts, and can generate errors when */
+/* GT: handed bad PostScript). */
     LogError( _("Use of \"exit\" when not in a loop\n") );
     wrapper->top = io;
 }
@@ -372,6 +376,8 @@ return(sp);
 	io = iop;
     }
 
+/* GT: This is part of the PostScript language. Neither "stop" nor "stopped" */
+/* GT: should be translated as both are PostScript keywords. */
     LogError( _("Use of \"stop\" when not in a stopped\n") );
     wrapper->top = io;
 return( sp );
@@ -510,6 +516,8 @@ return( pt_number );
 	} else {
 	    *val = strtod(tokbuf,&end);
 	    if ( !finite(*val) ) {
+/* GT: NaN is a concept in IEEE floating point which means "Not a Number" */
+/* GT: it is used to represent errors like 0/0 or sqrt(-1). */
 		LogError( _("Bad number, infinity or nan: %s\n"), tokbuf );
 		*val = 0;
 	    }
@@ -589,6 +597,8 @@ static int AddEntry(struct pskeydict *dict,struct psstack *stack, int sp) {
     if ( sp<2 )
 return(sp);
     if ( stack[sp-2].type!=ps_string && stack[sp-2].type!=ps_lit ) {
+/* GT: Here "def" is a PostScript keyword, (meaning define). */
+/* GT: This "def" should not be translated as it is part of the PostScript language. */
 	LogError( _("Key for a def must be a string or name literal\n") );
 return(sp-2);
     }

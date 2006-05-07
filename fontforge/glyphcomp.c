@@ -857,6 +857,10 @@ static void GlyphDiffSCError(struct font_diff *fd, SplineChar *sc, char *format,
     if ( fd->last_sc==sc ) {
 	if ( fd->held[0] ) {
 	    fputs("  ",fd->diffs);
+/* GT: FontForge needs to recoginze the quotes used here(“”). If you change them */
+/* GT: (in the translated strings) let me know. It currently also recognizes */
+/* GT: guillemets and a couple of other quotes as well. */
+/* GT:   pfaedit@users.sourceforge.net */
 	    fprintf( fd->diffs, U_("Glyph “%s” differs\n"), sc->name );
 	    fprintf( fd->diffs, "   %s", fd->held );
 	    fd->held[0] = '\0';
@@ -1546,10 +1550,10 @@ static void complainapfeature(struct font_diff *fd,SplineChar *sc,
 static void complainpstfeature(struct font_diff *fd,SplineChar *sc,
 	PST *pst,char *missingname) {
     if ( pst->type==pst_position ) {
-	complainscfeature(fd, sc, U_("“%s” in %s did not contain a positioning lookup dx=%d dy=%d dx_adv=%d dy_adv=%d\n"),
+	complainscfeature(fd, sc, U_("“%s” in %s did not contain a positioning lookup ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d\n"),
 		sc->name, missingname, pst->u.pos.xoff, pst->u.pos.yoff, pst->u.pos.h_adv_off, pst->u.pos.v_adv_off );
     } else if ( pst->type==pst_pair ) {
-	complainscfeature(fd, sc, U_("“%s” in %s did not contain a pairwise positioning lookup dx=%d dy=%d dx_adv=%d dy_adv=%d to %s dx=%d dy=%d dx_adv=%d dy_adv=%d\n"),
+	complainscfeature(fd, sc, U_("“%s” in %s did not contain a pairwise positioning lookup ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d to %s ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d\n"),
 		sc->name, missingname, 
 		pst->u.pair.vr[0].xoff, pst->u.pair.vr[0].yoff, pst->u.pair.vr[0].h_adv_off, pst->u.pair.vr[0].v_adv_off,
 		pst->u.pair.paired,

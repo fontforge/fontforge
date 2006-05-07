@@ -918,7 +918,7 @@ return( false );
 		}
 		for ( ; val<=val2; ++val )
 		    if ( (grp=FindDuplicateNumber(top,val,cur,gpt))!=NULL ) {
-			gwwv_post_error(_("Duplicate Name"),_("The code point U+%1$04X occurs groups %2$.30s and %3$.30s"), val, cur->name, grp->name);
+			gwwv_post_error(_("Duplicate Name"),_("The code point U+%1$04X occurs in groups %2$.30s and %3$.30s"), val, cur->name, grp->name);
 return( false );
 		    }
 	    } else {

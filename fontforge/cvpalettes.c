@@ -181,7 +181,12 @@ static char *popupsres[] = { N_("Pointer"), N_("Magnify (Minify with alt)"),
 			            N_("Rotate the selection in 3D and project back to plain"), N_("Perform a perspective transformation on the selection"),
 			            N_("Rectangle or Ellipse"), N_("Polygon or Star"),
 			            N_("Rectangle or Ellipse"), N_("Polygon or Star")};
-static char *editablelayers[] = { N_("F_ore"), N_("_Back"), N_("_Guide") };
+/* GT: Foreground, make it short */
+static char *editablelayers[] = { N_("F_ore"),
+/* GT: Background, make it short */
+    N_("_Back"),
+/* GT: Guide layer, make it short */
+    N_("_Guide") };
 static real raddiam_x = 20, raddiam_y = 20, rotate_by=0;
 static StrokeInfo expand = { 25, lj_round, lc_butt, si_centerline,
 	    /* toobigwarn */  true,
@@ -619,7 +624,7 @@ static void CVPolyStar(CharView *cv) {
     float temp = ps_pointcnt;
     int foo[2];
     polystar = Ask(_("Polygon"),_("Star"),polystar,
-	    _("Number of star points/Polygon verteces"),&temp,foo,true, cv);
+	    _("Number of star points/Polygon vertices"),&temp,foo,true, cv);
     ps_pointcnt = temp;
 }
 
@@ -1424,6 +1429,7 @@ return;
     gcd[0].creator = GScrollBarCreate;
     layer2.sb_start = gcd[0].gd.pos.x;
 
+/* GT: Abrieviation for "Visible" */
     label[1].text = (unichar_t *) _("V");
     label[1].text_is_1byte = true;
     gcd[1].gd.label = &label[1];
@@ -1635,8 +1641,11 @@ return( true );
 
 int CVPaletteMnemonicCheck(GEvent *event) {
     static struct strmatch { char *str; int cid; } strmatch[] = {
+/* GT: Foreground, make it short */
 	{ N_("F_ore"), CID_EFore },
+/* GT: Background, make it short */
 	{ N_("_Back"), CID_EBack },
+/* GT: Guide layer, make it short */
 	{ N_("_Guide"), CID_EGrid },
 	{ 0 }
     };
@@ -1751,6 +1760,7 @@ return( cvlayers );
     for ( i=0; i<sizeof(label)/sizeof(label[0]); ++i )
 	label[i].font = font;
 
+/* GT: Abrieviation for "Visible" */
     label[0].text = (unichar_t *) _("V");
     label[0].text_is_1byte = true;
     gcd[0].gd.label = &label[0];
@@ -1759,6 +1769,7 @@ return( cvlayers );
     gcd[0].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
     gcd[0].creator = GLabelCreate;
 
+/* GT: Abrieviation for "Editable" */
     label[1].text = (unichar_t *) _("E");
     label[1].text_is_1byte = true;
     gcd[1].gd.label = &label[1];
@@ -1847,6 +1858,7 @@ return( cvlayers );
     base = 13;
 
 
+/* GT: Foreground, make it short */
     label[base].text = (unichar_t *) _("F_ore");
     label[base].text_is_1byte = true;
     label[base].text_in_resource = true;
@@ -1858,6 +1870,7 @@ return( cvlayers );
     gcd[base].gd.box = &radio_box;
     gcd[base].creator = GRadioCreate;
 
+/* GT: Background, make it short */
     label[base+1].text = (unichar_t *) _("_Back");
     label[base+1].text_is_1byte = true;
     label[base+1].text_in_resource = true;
@@ -1869,6 +1882,7 @@ return( cvlayers );
     gcd[base+1].gd.box = &radio_box;
     gcd[base+1].creator = GRadioCreate;
 
+/* GT: Guide layer, make it short */
     label[base+2].text = (unichar_t *) _("_Guide");
     label[base+2].text_is_1byte = true;
     label[base+2].text_in_resource = true;
@@ -2342,6 +2356,7 @@ return(bvlayers);
     for ( i=0; i<sizeof(label)/sizeof(label[0]); ++i )
 	label[i].font = font;
 
+/* GT: Abrieviation for "Visible" */
     label[0].text = (unichar_t *) _("V");
     label[0].text_is_1byte = true;
     gcd[0].gd.label = &label[0];

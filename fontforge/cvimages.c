@@ -137,6 +137,10 @@ return( oldflags );
     memset(&gcd,0,sizeof(gcd));
 
     k = 0;
+/* GT: The following strings should be concatenated together, the result */
+/* GT: translated, and then broken into lines by hand. I'm sure it would */
+/* GT: be better to specify this all as one string, but my widgets won't support */
+/* GT: that */
     label[k].text = (unichar_t *) _("FontForge has some bugs in its remove overlap");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];

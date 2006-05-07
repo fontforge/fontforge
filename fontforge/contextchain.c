@@ -888,7 +888,7 @@ return( false );
     }
     r->u.class.ncnt = any;
     if ( any==0 ) {
-	gwwv_post_error(_("Bad Match Class Number"),_("The are no class number listed to be matched. There must be at least one."));
+	gwwv_post_error(_("Bad Match Class Number"),_("There are no class numbers listed to be matched. There must be at least one."));
 return( false );
     }
 
@@ -2354,11 +2354,18 @@ struct contextchaindlg *ContextChainEdit(SplineFont *sf,FPST *fpst,
     GTextInfo blabel[4], rlabel[15];
     struct fpst_rule *r=NULL;
     int blen = GIntGetResource(_NUM_Buttonsize)*100/GGadgetScale(100);
-    char *text[] = { N_("OpenType Contextual or Chaining subtables may be in one"), N_(" of three formats. The context may be specified either"),
+    char *text[] = {
+/* GT: The following strings should be concatenated together, the result */
+/* GT: translated, and then broken into lines by hand. I'm sure it would */
+/* GT: be better to specify this all as one string, but my widgets won't support */
+/* GT: that */
+	    N_("OpenType Contextual or Chaining subtables may be in one"),
+	    N_(" of three formats. The context may be specified either"),
 	    N_(" as a string of specific glyphs, a string of glyph classes,"), N_(" or a string of coverage tables."),
 	    N_("In the first format you must specify a string of glyph-names."), N_(" In the second format you must specify a string of class numbers."),
 	    N_(" In the third format you must specify a string each element"), N_("  of which may contain several glyph-names."),
-	    N_("For chaining subtables you may also specify backtrack and"), N_(" lookahead lists."), 0 };
+	    N_("For chaining subtables you may also specify backtrack and"),
+	    N_(" lookahead lists."), 0 };
     FPST *tempfpst;
 
     ccd = chunkalloc(sizeof(struct contextchaindlg));

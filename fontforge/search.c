@@ -1468,7 +1468,7 @@ return( NULL );
     gcd[4].gd.pos.x = 5; gcd[4].gd.pos.y = gcd[1].gd.pos.y+18;
     gcd[4].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
     gcd[4].gd.cid = CID_Selected;
-    gcd[4].gd.popup_msg = (unichar_t *) _("Only search selected characters in the fontview\nNormally we search all characters in the font.");
+    gcd[4].gd.popup_msg = (unichar_t *) _("Only search selected characters in the fontview.\nNormally we search all characters in the font.");
     gcd[4].creator = GCheckBoxCreate;
 
     label[5].text = (unichar_t *) _("Find Next");	/* Start with this to allow sufficient space */
