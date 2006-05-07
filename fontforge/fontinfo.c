@@ -85,6 +85,9 @@ GTextInfo emsizes[] = {
 };
 
 GTextInfo interpretations[] = {
+/* GT: See the long comment at "Property|New" */
+/* GT: The msgstr should contain a translation of "None", ignore "Interpretation|" */
+/* GT: In french this could be "Aucun" or "Aucune" depending on the gender */
     { (unichar_t *) N_("Interpretation|None"), NULL, 0, 0, (void *) ui_none, NULL, 0, 0, 0, 0, 0, 0, 1},
 /*  { (unichar_t *) N_("Adobe Public Use Defs."), NULL, 0, 0, (void *) ui_adobe, NULL, 0, 0, 0, 0, 0, 0, 1}, */
 /*  { (unichar_t *) N_("Greek"), NULL, 0, 0, (void *) ui_greek, NULL, 0, 0, 0, 0, 0, 0, 1}, */
@@ -135,6 +138,10 @@ static GTextInfo pfmfamily[] = {
     { (unichar_t *) N_("Serif"), NULL, 0, 0, (void *) 0x11, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Sans-Serif"), NULL, 0, 0, (void *) 0x21, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Monospace"), NULL, 0, 0, (void *) 0x31, NULL, 0, 0, 0, 0, 0, 0, 1},
+/* GT: See the long comment at "Property|New" */
+/* GT: The msgstr should contain a translation of "Script", ignore "cursive|" */
+/* GT: English uses "script" to me a general writing style (latin, greek, kanji) */
+/* GT: and the cursive handwriting style. Here we mean cursive handwriting. */
     { (unichar_t *) N_("cursive|Script"), NULL, 0, 0, (void *) 0x41, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Decorative"), NULL, 0, 0, (void *) 0x51, NULL, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
@@ -148,7 +155,7 @@ static GTextInfo ibmfamily[] = {
     { (unichar_t *) N_("OSS Dutch Modern"), NULL, 0, 0, (void *) 0x105, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("OSS Dutch Trad"), NULL, 0, 0, (void *) 0x106, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("OSS Contemporary"), NULL, 0, 0, (void *) 0x107, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("OSS Caligraphic"), NULL, 0, 0, (void *) 0x108, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("OSS Calligraphic"), NULL, 0, 0, (void *) 0x108, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("OSS Miscellaneous"), NULL, 0, 0, (void *) 0x10f, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Transitional Serifs"), NULL, 0, 0, (void *) 0x200, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("TS Direct Line"), NULL, 0, 0, (void *) 0x201, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -198,7 +205,7 @@ static GTextInfo ibmfamily[] = {
     { (unichar_t *) N_("S Brush Joined"), NULL, 0, 0, (void *) 0xa02, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("S Formal Joined"), NULL, 0, 0, (void *) 0xa03, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("S Monotone Joined"), NULL, 0, 0, (void *) 0xa04, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("S Caligraphic"), NULL, 0, 0, (void *) 0xa05, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("S Calligraphic"), NULL, 0, 0, (void *) 0xa05, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("S Brush Unjoined"), NULL, 0, 0, (void *) 0xa06, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("S Formal Unjoined"), NULL, 0, 0, (void *) 0xa07, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("S Monotone Unjoined"), NULL, 0, 0, (void *) 0xa08, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -213,9 +220,13 @@ static GTextInfo panfamily[] = {
     { (unichar_t *) N_("Any"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("No Fit"), NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Text & Display"), NULL, 0, 0, (void *) 2, NULL, 0, 0, 0, 0, 0, 0, 1},
+/* GT: See the long comment at "Property|New" */
+/* GT: The msgstr should contain a translation of "Script", ignore "cursive|" */
+/* GT: English uses "script" to me a general writing style (latin, greek, kanji) */
+/* GT: and the cursive handwriting style. Here we mean cursive handwriting. */
     { (unichar_t *) N_("cursive|Script"), NULL, 0, 0, (void *) 3, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Decorative"), NULL, 0, 0, (void *) 4, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Pictoral"), NULL, 0, 0, (void *) 5, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Pictorial"), NULL, 0, 0, (void *) 5, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) "6", NULL, 0, 0, (void *) 6, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) "7", NULL, 0, 0, (void *) 7, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) "8", NULL, 0, 0, (void *) 8, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -604,6 +615,8 @@ static struct ms_2_locales { char *loc_name; int local_id; } ms_2_locals[] = {
 static GTextInfo mslanguages[] = {
     { (unichar_t *) N_("Afrikaans"), NULL, 0, 0, (void *) 0x436, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Albanian"), NULL, 0, 0, (void *) 0x41c, NULL, 0, 0, 0, 0, 0, 0, 1},
+/* GT: See the long comment at "Property|New" */
+/* GT: The msgstr should contain a translation of "Malayalam", ignore "Lang|" */
     { (unichar_t *) N_("Lang|Amharic"), NULL, 0, 0, (void *) 0x45e, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Arabic Saudi Arabia"), NULL, 0, 0, (void *) 0x401, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Arabic Iraq"), NULL, 0, 0, (void *) 0x801, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -663,12 +676,12 @@ static GTextInfo mslanguages[] = {
     { (unichar_t *) N_("English (Indonesia)"), NULL, 0, 0, (void *) 0x3809, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("English (Hong Kong)"), NULL, 0, 0, (void *) 0x3c09, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("English (India)"), NULL, 0, 0, (void *) 0x4009, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("English (Malasia)"), NULL, 0, 0, (void *) 0x4409, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("English (Malaysia)"), NULL, 0, 0, (void *) 0x4409, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Estonian"), NULL, 0, 0, (void *) 0x425, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Faeroese"), NULL, 0, 0, (void *) 0x438, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Lang|Farsi"), NULL, 0, 0, (void *) 0x429, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Filipino"), NULL, 0, 0, (void *) 0x464, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Finish"), NULL, 0, 0, (void *) 0x40b, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Finnish"), NULL, 0, 0, (void *) 0x40b, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("French French"), NULL, 0, 0, (void *) 0x40c, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("French Belgium"), NULL, 0, 0, (void *) 0x80c, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("French Canadian"), NULL, 0, 0, (void *) 0xc0c, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -721,7 +734,7 @@ static GTextInfo mslanguages[] = {
     { (unichar_t *) N_("Konkani"), NULL, 0, 0, (void *) 0x457, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Korean"), NULL, 0, 0, (void *) 0x412, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Korean (Johab)"), NULL, 0, 0, (void *) 0x812, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Laothian"), NULL, 0, 0, (void *) 0x454, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Lao"), NULL, 0, 0, (void *) 0x454, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Latvian"), NULL, 0, 0, (void *) 0x426, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Lang|Latin"), NULL, 0, 0, (void *) 0x476, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Lithuanian"), NULL, 0, 0, (void *) 0x427, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -779,7 +792,7 @@ static GTextInfo mslanguages[] = {
     { (unichar_t *) N_("Spanish (Colombia)"), NULL, 0, 0, (void *) 0x240a, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Spanish (Peru)"), NULL, 0, 0, (void *) 0x280a, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Spanish (Argentina)"), NULL, 0, 0, (void *) 0x2c0a, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Spanish (Ecquador)"), NULL, 0, 0, (void *) 0x300a, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Spanish (Ecuador)"), NULL, 0, 0, (void *) 0x300a, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Spanish (Chile)"), NULL, 0, 0, (void *) 0x340a, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Spanish (Uruguay)"), NULL, 0, 0, (void *) 0x380a, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Spanish (Paraguay)"), NULL, 0, 0, (void *) 0x3c0a, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -846,7 +859,7 @@ static GTextInfo ttfnameids[] = {
 /* slot 15 is reserved */
     { (unichar_t *) N_("Preferred Family"), NULL, 0, 0, (void *) 16, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Preferred Styles"), NULL, 0, 0, (void *) 17, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Compatable Full"), NULL, 0, 0, (void *) 18, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Compatible Full"), NULL, 0, 0, (void *) 18, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Sample Text"), NULL, 0, 0, (void *) 19, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("CID findfont Name"), NULL, 0, 0, (void *) 20, NULL, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
@@ -1544,19 +1557,19 @@ return( true );			/* Didn't change */
 	break;
 	if ( KnownPrivates[i].name!=NULL ) {
 	    if ( KnownPrivates[i].type==pt_array ) {
-		if ( *pt!='[' && gwwv_ask(_("Bad type"),(const char **) buts,0,1,_("Expected array\nProcede anyway?"))==1 )
+		if ( *pt!='[' && gwwv_ask(_("Bad type"),(const char **) buts,0,1,_("Expected array.\nProceed anyway?"))==1 )
 return( false );
 	    } else if ( KnownPrivates[i].type==pt_boolean ) {
 		if ( uc_strcmp(pt,"true")!=0 && uc_strcmp(pt,"false")!=0 &&
-			gwwv_ask(_("Bad type"),(const char **) buts,0,1,_("Expected boolean\nProcede anyway?"))==1 )
+			gwwv_ask(_("Bad type"),(const char **) buts,0,1,_("Expected boolean.\nProceed anyway?"))==1 )
 return( false );
 	    } else if ( KnownPrivates[i].type==pt_code ) {
-		if ( *pt!='{' && gwwv_ask(_("Bad type"),(const char **) buts,0,1,_("Expected code\nProcede anyway?"))==1 )
+		if ( *pt!='{' && gwwv_ask(_("Bad type"),(const char **) buts,0,1,_("Expected code.\nProceed anyway?"))==1 )
 return( false );
 	    } else if ( KnownPrivates[i].type==pt_number ) {
 		u_strtod(pt,&end);
 		while ( isspace(*end)) ++end;
-		if ( *end!='\0' && gwwv_ask(_("Bad type"),(const char **) buts,0,1,_("Expected number\nProcede anyway?"))==1 )
+		if ( *end!='\0' && gwwv_ask(_("Bad type"),(const char **) buts,0,1,_("Expected number.\nProceed anyway?"))==1 )
 return( false );
 	    }
 	}
@@ -3069,6 +3082,7 @@ static int GFI_AnchorNew(GGadget *g, GEvent *e) {
 	    break;
 	    }
 	    if ( i<len ) {
+/* GT: We have a name that appears twice in a list of names and that's bad */
 		gwwv_post_error(_("Duplicate Name"),_("Duplicate Name"));
 		free(newname);
 return( true );
@@ -3291,7 +3305,7 @@ return( false );
 		buts[1] = GTK_STOCK_CANCEL;
 #endif
 		buts[2] = NULL;
-		if ( gwwv_ask(_("Duplicate Name"),(const char **) buts,0,1,_("The name, %s, is already in use.\nIf you elect to continue these two anchor classes\nwill be merged when you press the OK button."),newname)==1 )
+		if ( gwwv_ask(_("Duplicate Name"),(const char **) buts,0,1,_("The name, %s, is already in use.\nIf you elect to continue, these two anchor classes\nwill be merged when you press the OK button."),newname)==1 )
 return( false );
 	    }
 	    new = gcalloc(len+1,sizeof(GTextInfo *));
@@ -5006,7 +5020,9 @@ static void BDFsSetAsDs(SplineFont *sf) {
 }
 
 static char *texparams[] = { N_("Slant:"), N_("Space:"), N_("Stretch:"),
-	N_("Shrink:"), N_("XHeight:"), N_("Quad:"), N_("Extra Sp: "), NULL };
+	N_("Shrink:"), N_("XHeight:"), N_("Quad:"),
+/* GT: Extra Space, see below for a full comment */
+	N_("Extra Sp:"), NULL };
 static char *texpopups[] = { N_("In an italic font the horizontal change per unit vertical change"),
     N_("The amount of space between words when using this font"),
     N_("The amount of strechable space between words when using this font"),
@@ -5889,28 +5905,40 @@ static void TTFSetup(struct gfi_data *d) {
     GGadgetSetTitle(GWidgetGetControl(d->gw,CID_HHeadDescent),ubuf);
 }
 
-static char *mathparams[] = { N_("Num1:"), N_("Num2:"),  N_("Num3:"), N_("Denom1:"),
+static char *mathparams[] = {
+/* GT: TeX parameters for math fonts. "Num" means numerator, "Denom" */
+/* GT: means denominator, "Sup" means superscript, "Sub" means subscript */
+    N_("Num1:"),
+    N_("Num2:"),  N_("Num3:"), N_("Denom1:"),
     N_("Denom2:"), N_("Sup1:"), N_("Sup2:"), N_("Sup3:"), N_("Sub1:"), N_("Sub2:"),
     N_("SupDrop:"), N_("SubDrop:"), N_("Delim1:"), N_("Delim2:"), N_("Axis Ht:"),
     0 };
 static char *mathpopups[] = { N_("Amount to raise baseline for numerators in display styles"),
     N_("Amount to raise baseline for numerators in non-display styles"),
     N_("Amount to raise baseline for numerators in non-display atop styles"),
-    N_("Amount to lower baseline for demoninators in display styles"),
-    N_("Amount to lower baseline for demoninators in non-display styles"),
+    N_("Amount to lower baseline for denominators in display styles"),
+    N_("Amount to lower baseline for denominators in non-display styles"),
     N_("Amount to raise baseline for superscripts in display styles"),
     N_("Amount to raise baseline for superscripts in non-display styles"),
     N_("Amount to raise baseline for superscripts in modified styles"),
     N_("Amount to lower baseline for subscripts in display styles"),
     N_("Amount to lower baseline for subscripts in non-display styles"),
-    N_("Amount to below top of large box to place baseline of superscripts"),
-    N_("Amount to below bottom of large box to place baseline of subscripts"),
+    N_("Amount above top of large box to place baseline of superscripts"),
+    N_("Amount below bottom of large box to place baseline of subscripts"),
     N_("Size of comb delimiters in display styles"), 
     N_("Size of comb delimiters in non-display styles"),
     N_("Height of fraction bar above base line"),
     0 };
-static char *extparams[] = { N_("Def Rule Thick:"), N_("Big Op Space1:"),  N_("Big Op Space2:"),
-	N_("Big Op Space3:"), N_("Big Op Space4:"), N_("Big Op Space5:"), 0 };
+/* GT: Default Rule Thickness. A rule being a typographic term for a straight */
+/* GT: black line on a printed page. */
+static char *extparams[] = { N_("Def Rule Thick:"),
+/* GT: I don't really understand these "Big Op Space" things. They have */
+/* GT: something to do with TeX and are roughly defined a few strings down */
+	N_("Big Op Space1:"),
+	N_("Big Op Space2:"),
+	N_("Big Op Space3:"),
+	N_("Big Op Space4:"),
+	N_("Big Op Space5:"), 0 };
 static char *extpopups[] = { N_("Default thickness of over and overline bars"),
 	N_("The minimum glue space above a large displayed operator"),
 	N_("The minimum glue space below a large displayed operator"),
@@ -5982,6 +6010,7 @@ return( true );
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
+/* GT: More Parameters */
 	wattrs.utf8_window_title = _("More Params");
 	pos.x = pos.y = 0;
 	pos.width =GDrawPointsToPixels(NULL,GGadgetScale(180));
@@ -6054,6 +6083,7 @@ static int GFI_TeXChanged(GGadget *g, GEvent *e) {
 	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	if ( GGadgetGetCid(g)==CID_TeXText ) {
 	    GGadgetSetTitle8(GWidgetGetControl(d->gw,CID_TeXExtraSpLabel),
+/* GT: Extra Space */
 		    _("Extra Sp:"));
 	    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_MoreParams),false);
 	} else {
@@ -6088,6 +6118,7 @@ static void DefaultTeX(struct gfi_data *d) {
     else {
 	GGadgetSetChecked(GWidgetGetControl(d->gw,CID_TeXText), true);
 	GGadgetSetTitle8(GWidgetGetControl(d->gw,CID_TeXExtraSpLabel),
+/* GT: Extra Space */
 		_("Extra Sp:"));
 	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_MoreParams),false);
     }
@@ -6246,9 +6277,25 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     FontRequest rq;
     GFont *font;
     int sbwidth;
-    static char *connames[] = { N_("Context Pos"), N_("Context Sub"), N_("Chain Pos"), N_("Chain Sub"), N_("Reverse Chain Sub"), NULL };
+    static char *connames[] = {
+/* GT: Contextual Positioning. For definition of these terms see */
+/* GT: http://partners.adobe.com/public/developer/opentype/index_table_formats2.html */
+	    N_("Context Pos"),
+/* GT: Contextual Substitution */
+	    N_("Context Sub"),
+/* GT: Contextual Chaining Positioning */
+	    N_("Chain Pos"),
+/* GT: Contextual Chaining Substitution */
+	    N_("Chain Sub"),
+	    N_("Reverse Chain Sub"), NULL };
     static int contypes[] = { pst_contextpos, pst_contextsub, pst_chainpos, pst_chainsub, pst_reversesub, 0 };
-    static char *smnames[] = { N_("Indic"), N_("Context Sub"), N_("Context Ins"), N_("Kerning"), NULL };
+    static char *smnames[] = {
+	    N_("Indic"),
+/* GT: Contextual Substitution */
+	    N_("Context Sub"),
+/* GT: Contextual Insertions */
+	    N_("Context Ins"),
+	    N_("Kerning"), NULL };
     static int smtypes[] = { asm_indic, asm_context, asm_insert, asm_kern };
     static int done = false;
     char **nlnames;
@@ -6871,7 +6918,7 @@ return;
     vlabel[6].text_in_resource = true;
     vgcd[6].gd.label = &vlabel[6];
     vgcd[6].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    vgcd[6].gd.popup_msg = (unichar_t *) _("Can this font be embedded in a downloadable (pdf)\ndocument and if so what behaviors are permitted on\nboth the document and the font.");
+    vgcd[6].gd.popup_msg = (unichar_t *) _("Can this font be embedded in a downloadable (pdf)\ndocument, and if so, what behaviors are permitted on\nboth the document and the font.");
     vgcd[6].creator = GLabelCreate;
 
     vgcd[7].gd.pos.x = 90; vgcd[7].gd.pos.y = vgcd[6].gd.pos.y-6;
@@ -6912,7 +6959,7 @@ return;
     vgcd[9].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( sf->pfminfo.fstype!=-1 && ( sf->pfminfo.fstype&0x200 ))
 	vgcd[9].gd.flags |= gg_cb_on;
-    vgcd[9].gd.popup_msg = (unichar_t *) _("Only Bitmaps may be embedded\nOutline descriptions may not be\n(if font file contains no bitmaps\nthen nothing may be embedded)");
+    vgcd[9].gd.popup_msg = (unichar_t *) _("Only Bitmaps may be embedded.\nOutline descriptions may not be\n(if font file contains no bitmaps\nthen nothing may be embedded).");
     vgcd[9].gd.cid = CID_OnlyBitmaps;
     vgcd[9].creator = GCheckBoxCreate;
 
@@ -6967,7 +7014,7 @@ return;
     metlabel[i].text_in_resource = true;
     metgcd[i].gd.label = &metlabel[i];
     metgcd[i].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    metgcd[i].gd.popup_msg = (unichar_t *) _("Anything outside the OS/2 WinAscent &\nWinDescent fields will be clipped by windows.\nThis includes marks, etc. that have been repositioned by GPOS.\n(The descent field is usually positive)\nIf the \"[] Is Offset\" checkbox is clear then\nany number you enter will be the value used in OS/2.\nIf set then any number you enter will be added to the\nfont's bounds. You should leave this\nfield 0 and check \"[*] Is Offset\" in most cases.");
+    metgcd[i].gd.popup_msg = (unichar_t *) _("Anything outside the OS/2 WinAscent &\nWinDescent fields will be clipped by windows.\nThis includes marks, etc. that have been repositioned by GPOS.\n(The descent field is usually positive.)\nIf the \"[] Is Offset\" checkbox is clear then\nany number you enter will be the value used in OS/2.\nIf set then any number you enter will be added to the\nfont's bounds. You should leave this\nfield 0 and check \"[*] Is Offset\" in most cases.");
     metgcd[i].gd.cid = CID_WinAscentLab;
     metgcd[i++].creator = GLabelCreate;
 
@@ -7025,7 +7072,7 @@ return;
     metlabel[i].text_in_resource = true;
     metgcd[i].gd.label = &metlabel[i];
     metgcd[i].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    metgcd[i].gd.popup_msg = (unichar_t *) _("The type ascent&descent fields are>supposed<\nto specify the line spacing on windows.\nIn fact usually the win ascent/descent fields do.\n(The descent field is usually negative)\nIf the \"[] Is Offset\" checkbox is clear then\nany number you enter will be the value used in OS/2.\nIf set then any number you enter will be added to the\nEm-size. You should leave this\nfield 0 and check \"[*] Is Offset\" in most cases.");
+    metgcd[i].gd.popup_msg = (unichar_t *) _("The type ascent&descent fields are>supposed<\nto specify the line spacing on windows.\nIn fact usually the win ascent/descent fields do.\n(The descent field is usually negative.)\nIf the \"[] Is Offset\" checkbox is clear then\nany number you enter will be the value used in OS/2.\nIf set then any number you enter will be added to the\nEm-size. You should leave this\nfield 0 and check \"[*] Is Offset\" in most cases.");
     metgcd[i].gd.cid = CID_TypoAscentLab;
     metgcd[i++].creator = GLabelCreate;
 
@@ -7100,7 +7147,7 @@ return;
     metlabel[i].text_in_resource = true;
     metgcd[i].gd.label = &metlabel[i];
     metgcd[i].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    metgcd[i].gd.popup_msg = (unichar_t *) _("This specifies the line spacing on the mac.\n(The descent field is usually negative)\nIf the \"[] Is Offset\" checkbox is clear then\nany number you enter will be the value used in hhea.\nIf set then any number you enter will be added to the\nfont's bounds. You should leave this\nfield 0 and check \"[*] Is Offset\" in most cases.");
+    metgcd[i].gd.popup_msg = (unichar_t *) _("This specifies the line spacing on the mac.\n(The descent field is usually negative.)\nIf the \"[] Is Offset\" checkbox is clear then\nany number you enter will be the value used in hhea.\nIf set then any number you enter will be added to the\nfont's bounds. You should leave this\nfield 0 and check \"[*] Is Offset\" in most cases.");
     metgcd[i].gd.cid = CID_HHeadAscentLab;
     metgcd[i++].creator = GLabelCreate;
 
@@ -7212,6 +7259,7 @@ return;
     ssgcd[i++].creator = GLabelCreate;
 
     ssgcd[i].gd.pos.x = 120; ssgcd[i].gd.pos.y = ssgcd[i-1].gd.pos.y-4;
+/* GT: X is a coordinate */
     sslabel[i].text = (unichar_t *) _("X");
     sslabel[i].text_is_1byte = true;
     ssgcd[i].gd.label = &sslabel[i];
@@ -7219,6 +7267,7 @@ return;
     ssgcd[i++].creator = GLabelCreate;
 
     ssgcd[i].gd.pos.x = 180; ssgcd[i].gd.pos.y = ssgcd[i-1].gd.pos.y;
+/* GT: Y is a coordinate */
     sslabel[i].text = (unichar_t *) _("Y");
     sslabel[i].text_is_1byte = true;
     ssgcd[i].gd.label = &sslabel[i];
@@ -7632,6 +7681,8 @@ return;
     atgcd[1].gd.pos.x = 10; atgcd[1].gd.pos.y = atgcd[0].gd.pos.y+atgcd[0].gd.pos.height+4;
     atgcd[1].gd.pos.width = -1;
     atgcd[1].gd.flags = gg_visible | gg_enabled;
+/* GT: See the long comment at "Property|New" */
+/* GT: The msgstr should contain a translation of "_New...", ignore "Anchor|" */
     atlabel[1].text = (unichar_t *) S_("Anchor|_New...");
     atlabel[1].text_is_1byte = true;
     atlabel[1].text_in_resource = true;
@@ -7695,6 +7746,8 @@ return;
     mkgcd[1].gd.pos.x = 10; mkgcd[1].gd.pos.y = mkgcd[0].gd.pos.y+mkgcd[0].gd.pos.height+4;
     mkgcd[1].gd.pos.width = -1;
     mkgcd[1].gd.flags = gg_visible | gg_enabled;
+/* GT: See the long comment at "Property|New" */
+/* GT: The msgstr should contain a translation of "_New...", ignore "Mark|" */
     mklabel[1].text = (unichar_t *) S_("Mark|_New...");
     mklabel[1].text_is_1byte = true;
     mklabel[1].text_in_resource = true;
@@ -7762,6 +7815,7 @@ return;
     }
     txgcd[k-2].gd.cid = CID_TeXExtraSpLabel;
 
+/* GT: More Parameters */
     txlabel[k].text = (unichar_t *) _("More Params");
     txlabel[k].text_is_1byte = true;
     txgcd[k].gd.label = &txlabel[k];
@@ -7862,7 +7916,7 @@ return;
     szgcd[k].gd.label = &szlabel[k];
     szgcd[k].gd.pos.x = 14; szgcd[k].gd.pos.y = GDrawPixelsToPoints(NULL,szgcd[k-5].gd.pos.y+szgcd[k-5].gd.pos.height)+10;
     szgcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    szgcd[k].gd.popup_msg = (unichar_t *) _("This is an identifying number shared by all members of\nthis font family with the same style. (Ie. 10pt Bold and\n24pt Bold would have the same id, but 10pt Italic would not");
+    szgcd[k].gd.popup_msg = (unichar_t *) _("This is an identifying number shared by all members of\nthis font family with the same style (I.e. 10pt Bold and\n24pt Bold would have the same id, but 10pt Italic would not");
     szgcd[k++].creator = GLabelCreate;
 
     sprintf(sibuf, "%d", sf->fontstyle_id);
@@ -7880,7 +7934,7 @@ return;
     szgcd[k].gd.label = &szlabel[k];
     szgcd[k].gd.pos.x = 14; szgcd[k].gd.pos.y = szgcd[k-2].gd.pos.y+22;
     szgcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    szgcd[k].gd.popup_msg = (unichar_t *) _("This provides a set of names used to identify the\nstyle of this font. Names may be translated into multiple\nlanguages (English is required, others are optional)\nAll fonts with the same Style ID should share this name");
+    szgcd[k].gd.popup_msg = (unichar_t *) _("This provides a set of names used to identify the\nstyle of this font. Names may be translated into multiple\nlanguages (English is required, others are optional)\nAll fonts with the same Style ID should share this name.");
     szgcd[k++].creator = GLabelCreate;
 
     szgcd[k].gd.pos.x = 10; szgcd[k].gd.pos.y = szgcd[k-1].gd.pos.y+14;
@@ -8201,6 +8255,7 @@ return;
     aspects[i].text_is_1byte = true;
     aspects[i++].gcd = mfgcd;
 
+/* GT: Mac State Machines. Please make this very short */
     aspects[i].text = (unichar_t *) _("Mac SM");
     aspects[i].text_is_1byte = true;
     aspects[i++].gcd = smgcd;

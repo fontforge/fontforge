@@ -1757,7 +1757,7 @@ return;
 	for ( i=0; glyphs[i]!=0xffff; ++i ) if ( glyphs[i]<info->glyph_cnt && info->chars[glyphs[i]]!=NULL ) {
 	    which = format==1 ? (uint16) (glyphs[i]+delta) : glyph2s[i];
 	    if ( which>=info->glyph_cnt ) {
-		LogError( _("Bad substitution glyph: %d not less than %d\n"),
+		LogError( _("Bad substitution glyph: GID %d not less than %d\n"),
 			which, info->glyph_cnt);
 		which = 0;
 	    }
@@ -1839,7 +1839,7 @@ return;
 	    }
 	    if ( glyph2s[j]>=info->glyph_cnt ) {
 		if ( !justinuse )
-		    LogError( _("Bad Multiple/Alternate substitution glyph %d not less than %d\n"),
+		    LogError( _("Bad Multiple/Alternate substitution glyph. GID %d not less than %d\n"),
 			    glyph2s[j], info->glyph_cnt );
 		if ( ++badcnt>20 )
 return;
@@ -1918,7 +1918,7 @@ return;
 	    fseek(ttf,stoffset+ls_offsets[i]+lig_offsets[j],SEEK_SET);
 	    lig = getushort(ttf);
 	    if ( lig>=info->glyph_cnt ) {
-		LogError( _("Bad ligature glyph %d not less than %d\n"),
+		LogError( _("Bad ligature glyph. GID %d not less than %d\n"),
 			lig, info->glyph_cnt );
 		lig = 0;
 	    }
@@ -1934,7 +1934,7 @@ return;
 		lig_glyphs[k] = getushort(ttf);
 		if ( lig_glyphs[k]>=info->glyph_cnt ) {
 		    if ( justinuse==git_normal )
-			LogError( _("Bad ligature component glyph %d not less than %d (in ligature %d)\n"),
+			LogError( _("Bad ligature component glyph. GID %d not less than %d (in ligature %d)\n"),
 				lig_glyphs[k], info->glyph_cnt, lig );
 		    lig_glyphs[k] = 0;
 		}
@@ -2128,7 +2128,7 @@ static void readttfsizeparameters(FILE *ttf,int32 pos,struct ttfinfo *info) {
 return;
 
     if ( info->last_size_pos!=0 ) {
-	LogError( _("This font, %s, has multiple GPOS 'size' features. I'm not sure how to interpret that. I shall pick one arbetrarily.\n"),
+	LogError( _("This font, %s, has multiple GPOS 'size' features. I'm not sure how to interpret that. I shall pick one arbitrarily.\n"),
 		info->fontname==NULL? _("<Untitled>") : info->fontname );
 return;
     }
@@ -2529,7 +2529,7 @@ static void gposExtensionSubTable(FILE *ttf, int stoffset,
 	gposChainingSubTable(ttf,st,info,sub,alllooks);
       break;
       case 9:
-	LogError( _("This font is erroneous it has a GPOS extension subtable that points to\nanother extension sub-table.\n") );
+	LogError( _("This font is erroneous: it has a GPOS extension subtable that points to\nanother extension sub-table.\n") );
       break;
 /* Any cases added here also need to go in the gposLookupSwitch */
       default:
@@ -2568,7 +2568,7 @@ static void gsubExtensionSubTable(FILE *ttf, int stoffset,
 	gsubChainingSubTable(ttf,st,info,sub,justinuse,alllooks);
       break;
       case 7:
-	LogError( _("This font is erroneous it has a GSUB extension subtable that points to\nanother extension sub-table.\n") );
+	LogError( _("This font is erroneous: it has a GSUB extension subtable that points to\nanother extension sub-table.\n") );
       break;
       case 8:
 	gsubReverseChainSubTable(ttf,st,info,sub,justinuse);
@@ -2957,7 +2957,7 @@ static void readttf_applelookup(FILE *ttf,struct ttfinfo *info,
 	    first = getushort(ttf);
 	    if ( last<first || last>=0xffff ||
 		    (!allow_out_of_bounds && last>=info->glyph_cnt )) {
-		LogError( _("Bad lookup table format=2 (%d/%d), first=%d last=%d total glyphs in font=%d\n"),
+		LogError( _("Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font=%d\n"),
 			i,cnt,first,last,info->glyph_cnt );
 	    } else {
 		if ( apply_default!=NULL )
@@ -2980,7 +2980,7 @@ static void readttf_applelookup(FILE *ttf,struct ttfinfo *info,
 	    data_off = getushort(ttf);
 	    if ( last<first || last>=0xffff ||
 		    (!allow_out_of_bounds && last>=info->glyph_cnt )) {
-		LogError( _("Bad lookup table format=4 (%d/%d), first=%d last=%d total glyphs in font=%d\n"),
+		LogError( _("Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d\n"),
 			i,cnt,first,last,info->glyph_cnt );
 	    } else {
 		here = ftell(ttf);
@@ -3003,7 +3003,7 @@ static void readttf_applelookup(FILE *ttf,struct ttfinfo *info,
 	for ( i=0; i<cnt; ++i ) {
 	    first = getushort(ttf);
 	    if ( first>=0xffff || (!allow_out_of_bounds && first>=info->glyph_cnt )) {
-		LogError( _("Bad lookup table format=6, first=%d total glyphs in font=%d\n"),
+		LogError( _("Bad lookup table: format=6, first=%d total glyphs in font=%d\n"),
 			first,info->glyph_cnt );
 	    } else {
 		if ( apply_default!=NULL )
@@ -3017,7 +3017,7 @@ static void readttf_applelookup(FILE *ttf,struct ttfinfo *info,
 	first = getushort(ttf);
 	cnt = getushort(ttf);
 	if ( first+cnt>=0xffff || (!allow_out_of_bounds && first+cnt>=info->glyph_cnt )) {
-	    LogError( _("Bad lookup table format=8, first=%d cnt=%d total glyphs in font=%d\n"),
+	    LogError( _("Bad lookup table: format=8, first=%d cnt=%d total glyphs in font=%d\n"),
 		    first,cnt,info->glyph_cnt );
 	} else {
 	    if ( apply_default!=NULL ) {
@@ -3456,6 +3456,8 @@ return;
     ++ sm->cnt;
     if ( sm->cnt>=10000 ) {
 	if ( sm->cnt==10000 )
+/* GT: This is a reference to "Much Ado About Nothing". The string should read */
+/* GT: "A ligature sub-table in Apple's 'mort'/'morx' table is too\ncomplex for me to understand. I shall give up on it.\nYour ligatures may not be complete." */
 	    LogError(_("In an attempt to process the ligatures of this font, I've concluded\nthat the state machine in Apple's mort/morx table is\n(like the learned constable) too cunning to be understood.\nI shall give up on it. Your ligatures may be incomplete.\n") );
 return;
     }
@@ -4467,7 +4469,7 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 			chars[left]->kerns = kp;
 		    }
 		} else
-		    LogError( _("Bad kern pair glyphs %d & %d must be less than %d\n"),
+		    LogError( _("Bad kern pair: glyphs %d & %d must be less than %d\n"),
 			    left, right, info->glyph_cnt );
 	    }
 	} else if ( flags_good && format==1 ) {
@@ -4477,15 +4479,9 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 	    /*  there is a special value which marks the end of the kerning */
 	    /*  lists. In fact there is no such value, the list is as long */
 	    /*  as there are things on the kern stack */
-#if 1
 	    readttf_mortx_asm(ttf,info,false,len-header_size,asm_kern,0,
 		isv ? 0x80000000 : 0 /* coverage doesn't really apply */);
 	    fseek(ttf,begin_table+len,SEEK_SET);
-#else
-	    fseek(ttf,len-header_size,SEEK_CUR);
-	    LogError( _("This font has a format 1 kerning table (a state machine).\nPfaEdit doesn't parse these\nCould you send a copy of %s to gww@silcom.com?  Thanks.\n"),
-		info->fontname );
-#endif
 	} else if ( flags_good && (format==2 || format==3 )) {
 	    /* two class based formats */
 	    KernClass **khead, **klast;

@@ -1525,7 +1525,7 @@ return;
 	    else if ( i<subrs->cnt ) {
 		findstring(fp,subrs,i,NULL,ept);
 	    } else if ( !fp->alreadycomplained ) {
-		LogError( _("Index too big (must be <%d) |%s"), subrs->cnt, rmbinary(line));
+		LogError( _("Index too big (must be <%d) \"%s"), subrs->cnt, rmbinary(line));
 		fp->alreadycomplained = true;
 	    }
 	} else if ( strncmp(line, "readonly put", 12)==0 || strncmp(line, "ND", 2)==0 || strncmp(line, "|-", 2)==0 ) {
@@ -1534,7 +1534,7 @@ return;
 	} else if ( *line=='\n' || *line=='\0' ) {
 	    /* Ignore blank lines */;
 	} else if ( !fp->alreadycomplained ) {
-	    LogError( _("Didn't understand |%s"), rmbinary(line) );
+	    LogError( _("Didn't understand \"%s"), rmbinary(line) );
 	    fp->alreadycomplained = true;
 	}
     } else if ( fp->inchars ) {
@@ -1545,12 +1545,12 @@ return;
 	else if ( *line=='\n' || *line=='\0' )
 	    /* Ignore it */;
 	else if ( *line!='/' || !(isalpha(line[1]) || line[1]=='.')) {
-	    LogError( _("No name for CharStrings dictionary |%s"), rmbinary(line) );
+	    LogError( _("No name for CharStrings dictionary \"%s"), rmbinary(line) );
 	    fp->alreadycomplained = true;
 	} else if ( fp->ignore ) {
 	    /* Do Nothing */;
 	} else if ( chars->next>=chars->cnt )
-	    LogError( _("Too many entries in CharStrings dictionary |%s"), rmbinary(line) );
+	    LogError( _("Too many entries in CharStrings dictionary \"%s"), rmbinary(line) );
 	else if ( fp->fd->fonttype==42 || fp->fd->fonttype==11 || fp->fd->cidfonttype==2 )
 	    findnumbers(fp,chars,line);
 	else {
@@ -1683,7 +1683,7 @@ return;
 	    fp->pending_parse = &fp->fd->fontinfo->blendaxistypes;
 	    AddValue(fp,NULL,line,endtok);
 	} else if ( !fp->alreadycomplained ) {
-	    LogError( _("Didn't understand |%s"), rmbinary(line) );
+	    LogError( _("Didn't understand \"%s"), rmbinary(line) );
 	    fp->alreadycomplained = true;
 	}
     } else if ( fp->inblend ) {
@@ -1942,7 +1942,7 @@ return;
 	} else if ( fp->skipping_mbf ) {	/* Skip over the makeblendedfont defn in a multimaster font */
 	    /* Do Nothing */
 	} else if ( !fp->alreadycomplained ) {
-	    LogError( _("Didn't understand |%s"), rmbinary(line) );
+	    LogError( _("Didn't understand \"%s"), rmbinary(line) );
 	    fp->alreadycomplained = true;
 	}
     }
@@ -1975,21 +1975,21 @@ return;
 		memcpy(chars->values[i],binstart,binlen);
 		if ( i>=chars->next ) chars->next = i+1;
 	    } else if ( !fp->alreadycomplained ) {
-		LogError( _("Index too big (must be <%d) |%s"), chars->cnt, rmbinary(line));
+		LogError( _("Index too big (must be <%d) \"%s"), chars->cnt, rmbinary(line));
 		fp->alreadycomplained = true;
 	    }
 	} else if ( !fp->alreadycomplained ) {
-	    LogError( _("Didn't understand |%s"), rmbinary(line) );
+	    LogError( _("Didn't understand \"%s"), rmbinary(line) );
 	    fp->alreadycomplained = true;
 	}
     } else if ( fp->inchars ) {
 	struct pschars *chars = fp->fd->chars;
 	if ( *tok=='\0' )
-	    LogError( _("No name for CharStrings dictionary |%s"), rmbinary(line) );
+	    LogError( _("No name for CharStrings dictionary \"%s"), rmbinary(line) );
 	else if ( fp->ignore )
 	    /* Do Nothing */;
 	else if ( chars->next>=chars->cnt )
-	    LogError( _("Too many entries in CharStrings dictionary |%s"), rmbinary(line) );
+	    LogError( _("Too many entries in CharStrings dictionary \"%s"), rmbinary(line) );
 	else {
 	    int i = chars->next;
 	    chars->lens[i] = binlen;
@@ -2027,7 +2027,7 @@ return;
 	    }
 return;
 	}
-	LogError( _("Shouldn't be in addinfo |%s"), rmbinary(line) );
+	LogError( _("Shouldn't be in addinfo \"%s"), rmbinary(line) );
 	fp->alreadycomplained = true;
     }
 }
@@ -2453,7 +2453,7 @@ static void dodata( struct fontparse *fp, FILE *in, FILE *temp) {
     }
     if ( fscanf( in, "%d", &len )!=1 || len<=0 ) {
 	len = 0;
-	LogError( _("Failed to parse the StartData command properly, bad cnt\n") );
+	LogError( _("Failed to parse the StartData command properly, bad count\n") );
     }
     cnt = len;
     while ( isspace(ch=getc(in)) );

@@ -168,6 +168,7 @@ static void FixIt(struct problems *p) {
     /*StemInfo *h;*/
     RefChar *r;
     int changed;
+    int ncp_changed, pcp_changed;
 
 #if 0	/* The ultimate cause (the thing we need to fix) for these two errors */
 	/* is that the stem is wrong, it's too hard to fix that here, so best */
@@ -253,10 +254,12 @@ return;
 */
 
     SCPreserveState(p->sc,false);
+    ncp_changed = pcp_changed = false;
     if ( p->explaining==_("The x coord of the selected point is near the specified value") || p->explaining==_("The selected point is near a vertical stem hint")) {
 	sp->prevcp.x += p->expected-sp->me.x;
 	sp->nextcp.x += p->expected-sp->me.x;
 	sp->me.x = p->expected;
+	ncp_changed = pcp_changed = true;
     } else if ( p->explaining==_("The y coord of the selected point is near the specified value") || p->explaining==_("The selected point is near a horizontal stem hint") ||
 	    p->explaining==_("The y coord of the selected point is near the baseline") || p->explaining==_("The y coord of the selected point is near the xheight") ||
 	    p->explaining==_("The y coord of the selected point is near the cap height") || p->explaining==_("The y coord of the selected point is near the ascender height") ||
@@ -264,6 +267,7 @@ return;
 	sp->prevcp.y += p->expected-sp->me.y;
 	sp->nextcp.y += p->expected-sp->me.y;
 	sp->me.y = p->expected;
+	ncp_changed = pcp_changed = true;
     } else if ( p->explaining==_("The selected line segment is nearly horizontal") ) {
 	if ( sp->me.y!=p->found ) {
 	    sp=sp->next->to;
@@ -275,6 +279,7 @@ return;
 	sp->prevcp.y += p->expected-sp->me.y;
 	sp->nextcp.y += p->expected-sp->me.y;
 	sp->me.y = p->expected;
+	ncp_changed = pcp_changed = true;
     } else if ( p->explaining==_("The control point above the selected point is nearly horizontal") || p->explaining==_("The control point below the selected point is nearly horizontal") ||
 	    p->explaining==_("The control point right of the selected point is nearly horizontal") || p->explaining==_("The control point left of the selected point is nearly horizontal") ) {
 	BasePoint *tofix, *other;
@@ -290,10 +295,16 @@ return;
 return;
 	}
 	tofix->y = p->expected;
+	ncp_changed = pcp_changed = true;
 	if ( sp->pointtype==pt_curve )
 	    other->y = p->expected;
-	else
+	else {
 	    sp->pointtype = pt_corner;
+	    if ( other==&sp->nextcp )
+		ncp_changed = false;
+	    else
+		pcp_changed = false;
+	}
     } else if ( p->explaining==_("The selected line segment is nearly vertical") ) {
 	if ( sp->me.x!=p->found ) {
 	    sp=sp->next->to;
@@ -305,6 +316,7 @@ return;
 	sp->prevcp.x += p->expected-sp->me.x;
 	sp->nextcp.x += p->expected-sp->me.x;
 	sp->me.x = p->expected;
+	ncp_changed = pcp_changed = true;
     } else if ( p->explaining==_("The control point above the selected point is nearly vertical") || p->explaining==_("The control point below the selected point is nearly vertical") ||
 	    p->explaining==_("The control point right of the selected point is nearly vertical") || p->explaining==_("The control point left of the selected point is nearly vertical") ) {
 	BasePoint *tofix, *other;
@@ -320,10 +332,16 @@ return;
 return;
 	}
 	tofix->x = p->expected;
+	ncp_changed = pcp_changed = true;
 	if ( sp->pointtype==pt_curve )
 	    other->x = p->expected;
-	else
+	else {
 	    sp->pointtype = pt_corner;
+	    if ( other==&sp->nextcp )
+		ncp_changed = false;
+	    else
+		pcp_changed = false;
+	}
     } else if ( p->explaining==_("This path should have been drawn in a counter-clockwise direction") || p->explaining==_("This path should have been drawn in a clockwise direction") ) {
 	SplineSetReverse(spl);
     } else if ( p->explaining==_("This glyph contains control points which are probably too close to the main points to alter the look of the spline") ) {
@@ -335,6 +353,7 @@ return;
 	    if ( cplen!=0 && cplen<p->irrelevantfactor*len ) {
 		sp->nextcp = sp->me;
 		sp->nonextcp = true;
+		ncp_changed = true;
 	    }
 	}
 	if ( sp->prev!=NULL ) {
@@ -345,10 +364,17 @@ return;
 	    if ( cplen!=0 && cplen<p->irrelevantfactor*len ) {
 		sp->prevcp = sp->me;
 		sp->noprevcp = true;
+		pcp_changed = true;
 	    }
 	}
     } else
 	IError("Did not fix: %d", p->explaining );
+    if ( p->sc->parent->order2 ) {
+	if ( ncp_changed )
+	    SplinePointNextCPChanged2(sp);
+	if ( pcp_changed )
+	    SplinePointPrevCPChanged2(sp);
+    }
     if ( sp->next!=NULL )
 	SplineRefigure(sp->next);
     if ( sp->prev!=NULL )
@@ -2392,6 +2418,7 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	if ( toomanyhints )
 	    p->hintsmax = hintsmax = GetInt8(gw,CID_HintsMax,_("_More hints than:"),&errs);
 	if ( toodeeprefs )
+/* GT: Refs is an abbreviation for References. Space is somewhat constrained here */
 	    p->refdepthmax = refdepthmax = GetInt8(gw,CID_RefDepthMax,_("Refs neste_d deeper than:"),&errs);
 	if ( irrelevantcp )
 	    p->irrelevantfactor = irrelevantfactor = GetReal8(gw,CID_IrrelevantFactor,_("Irrelevant _Factor:"),&errs)/100.0;
@@ -2548,7 +2575,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pgcd[5].gd.pos.x = 3; pgcd[5].gd.pos.y = pgcd[3].gd.pos.y+20; 
     pgcd[5].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( doynearstd ) pgcd[5].gd.flags |= gg_cb_on;
-    pgcd[5].gd.popup_msg = (unichar_t *) _("Allows you to find points which are slightly\noff from the baseline, xheight,cap height,\nascender, descender heights.");
+    pgcd[5].gd.popup_msg = (unichar_t *) _("Allows you to find points which are slightly\noff from the baseline, xheight, cap height,\nascender, descender heights.");
     pgcd[5].gd.cid = CID_YNearStd;
     pgcd[5].creator = GCheckBoxCreate;
 
@@ -2702,10 +2729,11 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rfgcd[0].gd.pos.x = 3; rfgcd[0].gd.pos.y = 6; 
     rfgcd[0].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( flippedrefs ) rfgcd[0].gd.flags |= gg_cb_on;
-    rfgcd[0].gd.popup_msg = (unichar_t *) _("Postscript and TrueType require that paths be drawn\nin a clockwise direction. If you have a reference\nthat has been flipped then the paths in that reference will\nprobably be counter-clockwise. You should unlink it and do\nCorect direction on it.");
+    rfgcd[0].gd.popup_msg = (unichar_t *) _("Postscript and TrueType require that paths be drawn\nin a clockwise direction. If you have a reference\nthat has been flipped then the paths in that reference will\nprobably be counter-clockwise. You should unlink it and do\nElement->Correct direction on it.");
     rfgcd[0].gd.cid = CID_FlippedRefs;
     rfgcd[0].creator = GCheckBoxCreate;
 
+/* GT: Refs is an abbreviation for References. Space is somewhat constrained here */
     rflabel[1].text = (unichar_t *) _("Refs neste_d deeper than:");
     rflabel[1].text_is_1byte = true;
     rflabel[1].text_in_resource = true;
@@ -2766,7 +2794,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     hgcd[2].gd.pos.x = 3; hgcd[2].gd.pos.y = hgcd[1].gd.pos.y+21;
     hgcd[2].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( hintwidth ) hgcd[2].gd.flags |= gg_cb_on;
-    hgcd[2].gd.popup_msg = (unichar_t *) _("Allows you to check that stems have consistant widths..");
+    hgcd[2].gd.popup_msg = (unichar_t *) _("Allows you to check that stems have consistent widths..");
     hgcd[2].gd.cid = CID_HintWidthNear;
     hgcd[2].creator = GCheckBoxCreate;
 
@@ -2924,7 +2952,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rgcd[7].gd.pos.x = 3; rgcd[7].gd.pos.y = rgcd[6].gd.pos.y+17; 
     rgcd[7].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( multname ) rgcd[7].gd.flags |= gg_cb_on;
-    rgcd[7].gd.popup_msg = (unichar_t *) _("Check for muliple characters which with the same name");
+    rgcd[7].gd.popup_msg = (unichar_t *) _("Check for multiple characters with the same name");
     rgcd[7].gd.cid = CID_MultName;
     rgcd[7].creator = GCheckBoxCreate;
 
@@ -2991,7 +3019,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     agcd[2].gd.pos.x = 3; agcd[2].gd.pos.y = agcd[1].gd.pos.y+17; 
     agcd[2].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( DFLTscript ) agcd[2].gd.flags |= gg_cb_on;
-    agcd[2].gd.popup_msg = (unichar_t *) _("Use of the 'DFLT' script is not very informative.\nFontForge will occasionally make create an entry with\nthis script if it doesn't know what better to use.");
+    agcd[2].gd.popup_msg = (unichar_t *) _("Use of the 'DFLT' script is not very informative.\nFontForge will occasionally create an entry with\nthis script if it doesn't know what better to use.");
     agcd[2].gd.cid = CID_DFLTScript;
     agcd[2].creator = GCheckBoxCreate;
 
@@ -3011,6 +3039,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     aspects[i].text_is_1byte = true;
     aspects[i++].gcd = pagcd;
 
+/* GT: Refs is an abbreviation for References. Space is tight here */
     aspects[i].text = (unichar_t *) _("Refs");
     aspects[i].text_is_1byte = true;
     aspects[i++].gcd = rfgcd;

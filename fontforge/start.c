@@ -215,16 +215,18 @@ struct delayed_event {
 
 static void splash_window_tooltip_fun( GtkWidget *splashw ) {
     static char *foolishness[] = {
-	"A free press discriminates\nagainst the illiterate.",
-	"A free press discriminates\nagainst the illiterate.",
-	"Gaudeamus Ligature!",
-	"Gaudeamus Ligature!",
-	"In the beginning was the letter..."
+/* GT: These strings are for fun. If they are offensive of incomprehensible */
+/* GT: simply translate them as something dull like: "FontForge" */
+	N_("A free press discriminates\nagainst the illiterate."),
+	N_("A free press discriminates\nagainst the illiterate."),
+	N_("Gaudeamus Ligature!"),
+	N_("Gaudeamus Ligature!"),
+	N_("In the beginning was the letter...")
     };
     GtkTooltips *tips;
 
     tips = gtk_tooltips_new();
-    gtk_tooltips_set_tip( tips, splashw, foolishness[rand()%(sizeof(foolishness)/sizeof(foolishness[0]))], NULL );
+    gtk_tooltips_set_tip( tips, splashw, _(foolishness[rand()%(sizeof(foolishness)/sizeof(foolishness[0]))]), NULL );
 }
 
 void ShowAboutScreen(void) {
@@ -440,6 +442,8 @@ static int splash_e_h(GWindow gw, GEvent *event) {
     GRect old;
     int i, y, x;
     static char *foolishness[] = {
+/* GT: These strings are for fun. If they are offensive of incomprehensible */
+/* GT: simply translate them as something dull like: "FontForge" */
 	    N_("A free press discriminates\nagainst the illiterate."),
 	    N_("A free press discriminates\nagainst the illiterate."),
 	    N_("Gaudeamus Ligature!"),

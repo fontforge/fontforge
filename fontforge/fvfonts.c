@@ -1369,9 +1369,9 @@ SplineFont *InterpolateFont(SplineFont *base, SplineFont *other, real amount,
 return( NULL );
     } else if ( base->order2!=other->order2 ) {
 #if defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_error(_("Interpolating Problem"),_("Interpolating between fonts with different spline orders (ie. between postscript and truetype)"));
+	gwwv_post_error(_("Interpolating Problem"),_("Interpolating between fonts with different spline orders (i.e. between postscript and truetype)"));
 #else
-	gwwv_post_error(_("Interpolating Problem"),_("Interpolating between fonts with different spline orders (ie. between postscript and truetype)"));
+	gwwv_post_error(_("Interpolating Problem"),_("Interpolating between fonts with different spline orders (i.e. between postscript and truetype)"));
 #endif
 return( NULL );
     }
@@ -1509,6 +1509,11 @@ void FVInterpolateFonts(FontView *fv) {
 
     gcd[3].gd.pos.x = 5; gcd[3].gd.pos.y = 51+6;
     gcd[3].gd.flags = gg_visible | gg_enabled;
+/* GT: The dialog looks like: */
+/* GT:   Interpolating between <fontname> and: */
+/* GT: <list of possible fonts> */
+/* GT:   by  <50>% */
+/* GT: So "by" means how much to interpolate. */
     label[3].text = (unichar_t *) _("by");
     label[3].text_is_1byte = true;
     gcd[3].gd.label = &label[3];

@@ -1298,7 +1298,16 @@ return;
 	gcd[j].creator = GRadioCreate;
 	++j;
 
-	label[j].text = (unichar_t *) _("CursEntry");
+/* GT: Cursive Entry. This defines a point on the glyph that should be matched */
+/* GT: with the "Cursive Exit" point of the preceding glyph.  */
+/* GT: This is a special way of joining letters which was developed for Urdu */
+/* GT: fonts. Essentially every glyph has an entry point and an exit point. */
+/* GT: When written the glyphs in sequence are aligned so that the exit point */
+/* GT: of each glyph matches the entry point of the following. It means you */
+/* GT: get a join such as might be expected for script. Urdu is odd because */
+/* GT: letters within a word crawl diagonally up the page, but with each word */
+/* GT: the writing point starts at the baseline.
+    label[j].text = (unichar_t *) _("CursEntry");
 	label[j].text_is_1byte = true;
 	gcd[j].gd.label = &label[j];
 	gcd[j].gd.pos.x = gcd[j-2].gd.pos.x; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+14;
@@ -1308,6 +1317,9 @@ return;
 	gcd[j].creator = GRadioCreate;
 	++j;
 
+/* GT: Cursive Exit. This defines a point on the glyph that should be matched */
+/* GT: with the "Cursive Entry" point of the following glyph. This allows */
+/* GT: scripts such as Urdu to work */
 	label[j].text = (unichar_t *) _("CursExit");
 	label[j].text_is_1byte = true;
 	gcd[j].gd.label = &label[j];

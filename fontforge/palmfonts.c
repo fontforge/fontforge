@@ -635,13 +635,8 @@ return( false );
 	temp = getbdfsize(sf,sizes[i]);
 	den = temp->pixelsize/base->pixelsize;
 	if ( temp->pixelsize!=base->pixelsize*den || den>4 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    gwwv_post_error(_("Unexpected density"),_("One of the bitmap fonts, %1$d, specified is not an integral scale up of the smallest font, %2$d (or is too large a factor)"),
+	    gwwv_post_error(_("Unexpected density"),_("One of the bitmap fonts specified, %1$d, is not an integral scale up of the smallest font, %2$d (or is too large a factor)"),
 		    temp->pixelsize,base->pixelsize);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_error(_("Unexpected density"),_("One of the bitmap fonts, %d, specified is not an integral scale up of the smallest font, %d (or is too large a factor)"),
-		    temp->pixelsize,base->pixelsize);
-#endif
 return( false );
 	}
 	densities[den-1] = temp;

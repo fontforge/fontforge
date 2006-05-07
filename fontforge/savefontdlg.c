@@ -123,22 +123,26 @@ static GTextInfo formattypes[] = {
     { (unichar_t *) N_("PS Type 3"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("PS Type 0"), NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("PS CID"), NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("CFF (Bare"), NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("CFF CID (Bare"), NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
+/* GT: "CFF (Bare)" means a CFF font without the normal OpenType wrapper */
+/* GT: CFF is a font format that normally lives inside an OpenType font */
+/* GT: but it is perfectly meaningful to remove all the OpenType complexity */
+/* GT: and just leave a bare CFF font */
+    { (unichar_t *) N_("CFF (Bare)"), NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("CFF CID (Bare)"), NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("Type42"), NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("Type42 CID"), NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("True Type"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("True Type (Symbol)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("TrueType"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("TrueType (Symbol)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
 #if __Mac
-    { (unichar_t *) N_("True Type (Resource)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("TrueType (Resource)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
 #else
-    { (unichar_t *) N_("True Type (MacBin)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("TrueType (MacBin)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
 #endif
-    { (unichar_t *) N_("True Type (Mac dfont)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("Open Type (CFF)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("Open Type (Mac dfont)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("Open Type CID"), NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("Open Type CID (dfont)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("TrueType (Mac dfont)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("OpenType (CFF)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("OpenType (Mac dfont)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("OpenType CID"), NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("OpenType CID (dfont)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("SVG font"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("No Outline Font"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }
@@ -869,7 +873,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.flags = gg_visible | gg_utf8_popup;
     label[k].text = (unichar_t *) _("PfaEdit Table");
     label[k].text_is_1byte = true;
-    gcd[k].gd.popup_msg = (unichar_t *) _("The PfaEdit table is an extension to the TrueType format\nand contains various data used by FontForge\n(It should be called the FontForge table,\nbut isn't for histerical reasons)");
+    gcd[k].gd.popup_msg = (unichar_t *) _("The PfaEdit table is an extension to the TrueType format\nand contains various data used by FontForge\n(It should be called the FontForge table,\nbut isn't for historical reasons)");
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_PfEd;
     gcd[k++].creator = GLabelCreate;
@@ -1509,7 +1513,7 @@ return( NULL );
 	    }
 	}
 	if ( thusfar>256 )
-	    LogError( _("More that 256 entries in subfont %s\n"), names[subfilecnt] );
+	    LogError( _("More than 256 entries in subfont %s\n"), names[subfilecnt] );
 	++subfilecnt;
 	if ( bpt!=buffer )
 	    free(bpt);
@@ -2248,7 +2252,7 @@ return;
 		(d->sf->glyphs[i]->layers[ly_fore].splines!=NULL || AnyRefs(d->sf->glyphs[i]->layers[ly_fore].refs )))
     break;
     if ( i>0 ) {
-	if ( gwwv_ask(_("Notdef name"),(const char **) buts,0,1,_("The glyph at encoding %d is named \".notdef\" but contains an outline. Because it is called \".notdef\" it will not be included in the generated font. You may give it a new name using Element->Char Info. Do you wish to continue font generation (and omit this character)?"),d->map->backmap[i])==1 )
+	if ( gwwv_ask(_("Notdef name"),(const char **) buts,0,1,_("The glyph at encoding %d is named \".notdef\" but contains an outline. Because it is called \".notdef\" it will not be included in the generated font. You may give it a new name using Element->Glyph Info. Do you wish to continue font generation (and omit this character)?"),d->map->backmap[i])==1 )
 return;
     }
 
@@ -2263,7 +2267,7 @@ return;
 
     if ( oldformatstate<=ff_cffcid || (oldformatstate>=ff_otf && oldformatstate<=ff_otfciddfont)) {
 	if ( d->sf->ascent+d->sf->descent!=1000 && !psscalewarned ) {
-	    if ( gwwv_ask(_("Non-standard Em-Size"),(const char **) buts,0,1,_("The convention is that PostScript fonts should have an Em-Size of 1000. But this font has a size of %d. This is not an error, but you might consider altering the Em-Size with the Element->Font Info->PS General dialog.\nDo you wish to continue to generate your font in spite of this?"),
+	    if ( gwwv_ask(_("Non-standard Em-Size"),(const char **) buts,0,1,_("The convention is that PostScript fonts should have an Em-Size of 1000. But this font has a size of %d. This is not an error, but you might consider altering the Em-Size with the Element->Font Info->General dialog.\nDo you wish to continue to generate your font in spite of this?"),
 		    d->sf->ascent+d->sf->descent)==1 )
 return;
 	    psscalewarned = true;
@@ -2280,7 +2284,7 @@ return;
 	    if ( bit==val )
 	break;
 	if ( bit==0 && !ttfscalewarned ) {
-	    if ( gwwv_ask(_("Non-standard Em-Size"),(const char **) buts,0,1,_("The convention is that TrueType fonts should have an Em-Size which is a power of 2. But this font has a size of %d. This is not an error, but you might consider altering the Em-Size with the Element->Font Info->PS General dialog.\nDo you wish to continue to generate your font in spite of this?"),val)==1 )
+	    if ( gwwv_ask(_("Non-standard Em-Size"),(const char **) buts,0,1,_("The convention is that TrueType fonts should have an Em-Size which is a power of 2. But this font has a size of %d. This is not an error, but you might consider altering the Em-Size with the Element->Font Info->General dialog.\nDo you wish to continue to generate your font in spite of this?"),val)==1 )
 return;
 	    ttfscalewarned = true;
 	}
@@ -2297,7 +2301,7 @@ return;
 #elif defined(FONTFORGE_CONFIG_GTK)
 	static char *buts[3] = { GTK_STOCK_YES, GTK_STOCK_CANCEL, NULL };
 #endif
-	if ( gwwv_ask(_("Encoding Too Large"),(const char **) buts,0,1,_("Your font has a 2 byte encoding, but you are attempting to save it in a format that only supports one byte encodings. This means that you won't be able to access anything after the first 256 characters without reencoding the font.\n\nDo you want to procede anyway?"))==1 )
+	if ( gwwv_ask(_("Encoding Too Large"),(const char **) buts,0,1,_("Your font has a 2 byte encoding, but you are attempting to save it in a format that only supports one byte encodings. This means that you won't be able to access anything after the first 256 characters without reencoding the font.\n\nDo you want to proceed anyway?"))==1 )
 return;
     }
 
@@ -2315,7 +2319,7 @@ return;
 return;
     } else if ( oldformatstate==ff_pfbmacbin && !post_warned) {
 	post_warned = true;
-	gwwv_post_notice(_("The 'POST' type1 format is probably depreciated"),_("The 'POST' type1 format is probably depreciated and may not work in future version of the mac."));
+	gwwv_post_notice(_("The 'POST' type1 format is probably deprecated"),_("The 'POST' type1 format is probably depreciated and may not work in future version of the mac."));
     }
 
     if ( d->family ) {

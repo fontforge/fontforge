@@ -1117,7 +1117,7 @@ void CVMouseUpPointer(CharView *cv ) {
     if ( cv->widthsel ) {
 	/* cv->widthsel = false; */
 	if ( cv->sc->width<0 && cv->oldwidth>=0 ) {
-	    if ( gwwv_ask(_("Negative Width"), (const char **) buts, 0, 1, _("Negative character widths are not allowed in TrueType\nDo you really want a negative width?") )==1 )
+	    if ( gwwv_ask(_("Negative Width"), (const char **) buts, 0, 1, _("Negative character widths are not allowed in TrueType.\nDo you really want a negative width?") )==1 )
 		cv->sc->width = cv->oldwidth;
 	}
 	SCSynchronizeWidth(cv->sc,cv->sc->width,cv->oldwidth,NULL);
@@ -1127,7 +1127,7 @@ void CVMouseUpPointer(CharView *cv ) {
     if ( cv->vwidthsel ) {
 	/* cv->vwidthsel = false; */
 	if ( cv->sc->vwidth<0 && cv->oldvwidth>=0 ) {
-	    if ( gwwv_ask(_("Negative Width"), (const char **) buts, 0, 1, _("Negative character widths are not allowed in TrueType\nDo you really want a negative width?") )==1 )
+	    if ( gwwv_ask(_("Negative Width"), (const char **) buts, 0, 1, _("Negative character widths are not allowed in TrueType.\nDo you really want a negative width?") )==1 )
 		cv->sc->vwidth = cv->oldvwidth;
 	}
 	cv->expandedge = ee_none;
@@ -1241,7 +1241,9 @@ static int SPA_OK(GGadget *g, GEvent *e) {
 	double fuzz;
 	int err = false, ret;
 
+/* GT: X is a coordinate */
 	base.x = GetReal8(gw,CID_X,_("X"),&err);
+/* GT: Y is a coordinate */
 	base.y = GetReal8(gw,CID_Y,_("Y"),&err);
 	if ( err )
 return( true );

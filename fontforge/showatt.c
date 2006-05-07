@@ -522,11 +522,11 @@ static void BuildFeatures(struct node *node,struct att_dlg *att,
 			if ( chars ) {
 			    strcpy(lbuf,sc->name);
 			    if ( pst->type==pst_position ) {
-				sprintf(lbuf+strlen(lbuf)," dx=%d dy=%d dx_adv=%d dy_adv=%d",
+				sprintf(lbuf+strlen(lbuf)," ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d",
 					pst->u.pos.xoff, pst->u.pos.yoff,
 					pst->u.pos.h_adv_off, pst->u.pos.v_adv_off );
 			    } else if ( pst->type==pst_pair ) {
-				sprintf(lbuf+strlen(lbuf)," %.50s dx=%d dy=%d dx_adv=%d dy_adv=%d | dx=%d dy=%d dx_adv=%d dy_adv=%d",
+				sprintf(lbuf+strlen(lbuf)," %.50s ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d | ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d",
 					pst->u.pair.paired,
 					pst->u.pair.vr[0].xoff, pst->u.pair.vr[0].yoff,
 					pst->u.pair.vr[0].h_adv_off, pst->u.pair.vr[0].v_adv_off,
@@ -976,6 +976,12 @@ static void BuildFPST(struct node *node,struct att_dlg *att) {
 	len = 0;
 
 	if ( i ) {
+/* GT: There are various broad classes of lookups here and the first string */
+/* GT: describes those: "Contextual Positioning", Contextual Substitution", etc. */
+/* GT: Each of those may be formated in 3 different ways: by (or perhaps using */
+/* GT: would be a better word) glyphs, classes or coverage tables. */
+/* GT: So this might look like: */
+/* GT:  Contextual Positioning by classes */
 	    sprintf(buf, _("%s by %s"), _(type[fpst->type-pst_contextpos]),
 		    _(format[fpst->format]));
 	    lines[len].label = copy(buf);
@@ -1083,6 +1089,9 @@ static void BuildASM(struct node *node,struct att_dlg *att) {
 	}
 	for ( j=0; j<sm->state_cnt; ++j ) {
 	    if ( i ) {
+/* GT: You're in a state machine, and this is describing the %4d'th state of */
+/* GT: that machine. From the state the next state will be a list of */
+/* GT: state-numbers which are appended to this string. */
 		sprintf(space, _("State %4d Next: "), j );
 		for ( k=0; k<sm->class_cnt; ++k )
 		    sprintf( space+strlen(space), "%5d", sm->state[j*sm->class_cnt+k].next_state );
@@ -1559,6 +1568,9 @@ static void BuildGDEF(struct node *node,struct att_dlg *att) {
 	    node->children[0].parent = node;
 	}
 	if ( lcar ) {
+/* GT: Here caret means where to place the cursor inside a ligature. So OpenType */
+/* GT: allows there to be a typing cursor inside a ligature (for instance you */
+/* GT: can have a cursor between f and i in the "fi" ligature) */
 	    node->children[gdef].label = copy(_("Ligature Caret Sub-Table"));
 	    node->children[gdef].build = BuildLcar;
 	    node->children[gdef].parent = node;
@@ -1669,12 +1681,12 @@ static void BuildProperties(struct node *node,struct att_dlg *att) {
 			(prop&0x7f)==1 ? _("Strong Right to Left"):
 			(prop&0x7f)==2 ? _("Arabic Right to Left"):
 			(prop&0x7f)==3 ? _("European Number"):
-			(prop&0x7f)==4 ? _("European Number Seperator"):
+			(prop&0x7f)==4 ? _("European Number Separator"):
 			(prop&0x7f)==5 ? _("European Number Terminator"):
 			(prop&0x7f)==6 ? _("Arabic Number"):
-			(prop&0x7f)==7 ? _("Common Number Seperator"):
-			(prop&0x7f)==8 ? _("Block Seperator"):
-			(prop&0x7f)==9 ? _("Segment Seperator"):
+			(prop&0x7f)==7 ? _("Common Number Separator"):
+			(prop&0x7f)==8 ? _("Block Separator"):
+			(prop&0x7f)==9 ? _("Segment Separator"):
 			(prop&0x7f)==10 ? _("White Space"):
 			(prop&0x7f)==11 ? _("Neutral"):
 			    _("<Unknown direction>") );
@@ -1880,6 +1892,10 @@ return;
 	    strcat(buf," ");
 	} else
 	    buf[7]='\0';
+/* GT: See the long comment at "Property|New" */
+/* GT: The msgstr should contain a translation of "Script", ignore "writing system|" */
+/* GT: English uses "script" to me a general writing style (latin, greek, kanji) */
+/* GT: and the cursive handwriting style. Here we mean the general writing system. */
 	strcat(buf,_("writing system|Script"));
 	scriptnodes[i].label = copy(buf);
 	scriptnodes[i].build = iskern ? BuildKernScript :
@@ -2089,7 +2105,7 @@ static void BuildTop(struct att_dlg *att) {
 		tables[i].children[j++].parent = &tables[i];
 	    }
 	    if ( hasmorx ) {
-		tables[i].children[j].label = copy(_("'morx' Glyph Extended Metamorphasis Table"));
+		tables[i].children[j].label = copy(_("'morx' Glyph Extended Metamorphosis Table"));
 		tables[i].children[j].tag = CHR('m','o','r','x');
 		tables[i].children[j].build = BuildTable;
 		tables[i].children[j++].parent = &tables[i];
@@ -3207,7 +3223,7 @@ void FontCompareDlg(FontView *fv) {
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.cid = CID_AddDiffs;
-	gcd[k].gd.popup_msg = (unichar_t *) _("If two glyphs differ, then add the outlines of the second glyph\nto the background layer of the first (So when opening the first\nthe differences will be visible)");
+	gcd[k].gd.popup_msg = (unichar_t *) _("If two glyphs differ, then add the outlines of the second glyph\nto the background layer of the first (So when opening the first\nthe differences will be visible).");
 	gcd[k++].creator = GCheckBoxCreate;
 
 	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
@@ -3220,7 +3236,7 @@ void FontCompareDlg(FontView *fv) {
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.cid = CID_AddMissing;
-	gcd[k].gd.popup_msg = (unichar_t *) _("If a glyph in the second font is missing from the first then\nadd it to the first with the outlines of the second font in\nthe background");
+	gcd[k].gd.popup_msg = (unichar_t *) _("If a glyph in the second font is missing from the first, then\nadd it to the first with the outlines of the second font in\nthe background");
 	gcd[k++].creator = GCheckBoxCreate;
 
 	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+16;

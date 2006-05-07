@@ -606,7 +606,7 @@ return( NULL );
 		pt += 3;
 		while ( *pt==' ' || *pt=='\t' ) ++pt;
 		if ( *pt!='(' ) {
-		    IVError(iv,_("Missing left paren in command to get a cvt index"),pt-text);
+		    IVError(iv,_("Missing left parenthesis in command to get a cvt index"),pt-text);
 return( NULL );
 		}
 		temp = strtol(pt+1,&end,0);

@@ -485,11 +485,7 @@ return( !evaluate_expr(c,e->op1) );
 	switch ( e->operator ) {
 	  case op_log:
 	    if ( val1<=0 ) {
-#if defined(FONTFORGE_CONFIG_GTK)
-		gwwv_post_error(_("Bad Value"),_("Attempt to take logarithem of %g in %.30s"), val1, c->sc->name );
-#else
-		gwwv_post_error(_("Bad Value"),_("Attempt to take logarithem of %1$g in %2$.30s"), val1, c->sc->name );
-#endif
+		gwwv_post_error(_("Bad Value"),_("Attempt to take logarithm of %1$g in %2$.30s"), val1, c->sc->name );
 		c->had_error = true;
 return( 0 );
 	    }
@@ -531,11 +527,7 @@ return( evaluate_expr(c,e->op1) * evaluate_expr(c,e->op2) );
       case op_div: case op_mod:
 	val2 = evaluate_expr(c,e->op2);
 	if ( val2==0 ) {
-#if defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_error(_("Bad Value"),_("Attempt divide by 0 in %.30s"), c->sc->name );
-#else
-	    gwwv_post_error(_("Bad Value"),_("Attempt divide by 0 in %.30s"), c->sc->name );
-#endif
+	    gwwv_post_error(_("Bad Value"),_("Attempt to divide by 0 in %.30s"), c->sc->name );
 	    c->had_error = true;
 return( 0 );
 	}
@@ -847,6 +839,7 @@ void NonLinearDlg(FontView *fv,CharView *cv) {
     memset(gcd,0,sizeof(gcd));
     memset(label,0,sizeof(label));
 
+/* GT: an expression describing the transformation applied to the X coordinate */
     label[0].text = (unichar_t *) _("X Expr:");
     label[0].text_is_1byte = true;
     gcd[0].gd.label = &label[0];
@@ -867,6 +860,7 @@ void NonLinearDlg(FontView *fv,CharView *cv) {
     gcd[1].gd.popup_msg = (unichar_t *) _("These expressions may contain the operators +,-,*,/,%,^ (which means raise to the power of here), and ?: It may also contain a few standard functions. Basic terms are real numbers, x and y.\nExamples:\n x^3+2.5*x^2+5\n (x-300)*(y-200)/100\n y+sin(100*x)");
     gcd[1].creator = GTextFieldCreate;
 
+/* GT: an expression describing the transformation applied to the Y coordinate */
     label[2].text = (unichar_t *) _("Y Expr:");
     label[2].text_is_1byte = true;
     gcd[2].gd.label = &label[2];
@@ -952,12 +946,14 @@ void NonLinearDlg(FontView *fv,CharView *cv) {
 static GTextInfo originx[] = {
     { (unichar_t *) N_("Glyph Origin"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("Center of Selection"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+/* GT: The (x,y) position on the window where the user last pressed a mouse button */
     { (unichar_t *) N_("Last Press"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("Value"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }};
 static GTextInfo originy[] = {
     { (unichar_t *) N_("Glyph Origin"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("Center of Selection"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+/* GT: The (x,y) position on the window where the user last pressed a mouse button */
     { (unichar_t *) N_("Last Press"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("Value"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }};

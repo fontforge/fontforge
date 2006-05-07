@@ -218,7 +218,7 @@ int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
     if ( oldstart )
 	gcd[k].gd.flags |= gg_cb_on;
     gcd[k].gd.cid = CID_Start;
-    gcd[k].gd.popup_msg = (unichar_t *) _("If the start point of a contour is not an extremum, find a new start point (on the contour) which is");
+    gcd[k].gd.popup_msg = (unichar_t *) _("If the start point of a contour is not an extremum, find a new start point (on the contour) which is.");
     gcd[k++].creator = GCheckBoxCreate;
 
     gcd[k].gd.pos.x = 15; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y + 20;
@@ -242,6 +242,7 @@ int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
     gcd[k].gd.cid = CID_Smooth;
     gcd[k++].creator = GCheckBoxCreate;
 
+/* GT: here "tan" means trigonometric tangent */
     label[k].text = (unichar_t *) _("if tan less than");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];

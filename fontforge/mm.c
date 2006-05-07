@@ -917,7 +917,7 @@ return( 0 );
     if ( any )
 return( _("This glyph contains a different number of references in different instances") );
     if ( diff )
-return( _("A references in this glyph refers to a different encoding in different instances") );
+return( _("A reference in this glyph refers to a different encoding in different instances") );
 
 	/* Blend Width */
     width = 0;
@@ -1870,6 +1870,10 @@ return;
 	memset(&label,0,sizeof(label));
 
 	k=0;
+/* GT: The following strings should be concatenated together, the result */
+/* GT: translated, and then broken into lines by hand. I'm sure it would */
+/* GT: be better to specify this all as one string, but my widgets won't support */
+/* GT: that */
 	label[k].text = (unichar_t *) (tonew ? _("You may specify the new instance of this font") : _("You may change the default instance of this font"));
 	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];

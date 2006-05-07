@@ -1,0 +1,14 @@
+--- fontforge.pot	2006-05-07 15:55:42.000000000 -0700
++++ FontForge.pot	2006-05-07 12:10:27.000000000 -0700
+@@ -1,6 +1,6 @@
+-# SOME DESCRIPTIVE TITLE.
+-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+-# This file is distributed under the same license as the PACKAGE package.
+-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
++# (American) English User Interface strings for FontForge.
++# Copyright (C) 2000-2006 by George Williams
++# This file is distributed under the same license as the FontForge package.
++# George Williams, <pfaedit@users.sourceforge.net>, 2006.
+ #
+ #, fuzzy
+ msgid ""

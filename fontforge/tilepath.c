@@ -789,7 +789,7 @@ static int TileAsk(void) {
     label[5].text_is_1byte = true;
     label[5].text_in_resource = true;
     gcd[5].gd.label = &label[5];
-    gcd[5].gd.popup_msg = (unichar_t *) _("An integral number of the selection will be used to cover the path\nAnd if the path length is not evenly divisible by the selection's\nheight then the selection should be scaled slightly.");
+    gcd[5].gd.popup_msg = (unichar_t *) _("An integral number of the selection will be used to cover the path.\nIf the path length is not evenly divisible by the selection's\nheight, then the selection should be scaled slightly.");
     gcd[5].gd.cid = CID_TileScale;
     gcd[5].creator = GRadioCreate;
 

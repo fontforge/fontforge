@@ -1712,7 +1712,7 @@ static void PasteNonExistantRefCheck(SplineChar *sc,Undoes *paster,RefChar *ref,
 #elif defined(FONTFORGE_CONFIG_GTK)
 	    buts[0] = _("Don't Warn Again"); buts[1] = GTK_STOCK_OK; buts[2] = NULL;
 #endif
-	    yes = gwwv_ask(_("Bad Reference"),(const char **) buts,1,1,_("You are attempting to paste a reference to %1$s into %2$s.\nBut %1$s does not exist in this font, nor can I find the original character refered to.\nIt will not be copied."),name,sc->name);
+	    yes = gwwv_ask(_("Bad Reference"),(const char **) buts,1,1,_("You are attempting to paste a reference to %1$s into %2$s.\nBut %1$s does not exist in this font, nor can I find the original character referred to.\nIt will not be copied."),name,sc->name);
 	    if ( yes==0 )
 		*refstate |= 0x4;
 	}
@@ -2073,9 +2073,9 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
       case ut_vwidth:
 	if ( !sc->parent->hasvmetrics )
 #if defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled\nUse Element->Font Info to enable them."));
+	    gwwv_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled.\nUse Element->Font Info to enable them."));
 #else
-	    gwwv_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled\nUse Element->Font Info to enable them."));
+	    gwwv_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled.\nUse Element->Font Info to enable them."));
 #endif
 	else {
 	    SCPreserveVWidth(sc);
@@ -2279,7 +2279,7 @@ return;
 	    if ( cvsc->layers[ly_fore].splines==NULL && cvsc->layers[ly_fore].refs!=NULL ) {
 		RefChar *r;
 		/* If we copied a glyph containing refs from a different font */
-		/*  then the glyphs refered to will be in this font, and the */
+		/*  then the glyphs referred to will be in this font, and the */
 		/*  width should not be the original width, but the width in */
 		/*  the current font */
 		for ( r=cvsc->layers[ly_fore].refs; r!=NULL; r=r->next )
@@ -2305,9 +2305,9 @@ return;
       case ut_vwidth:
 	if ( !cvsc->parent->hasvmetrics )
 #if defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled\nUse Element->Font Info to enable them."));
+	    gwwv_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled.\nUse Element->Font Info to enable them."));
 #else
-	    gwwv_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled\nUse Element->Font Info to enable them."));
+	    gwwv_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled.\nUse Element->Font Info to enable them."));
 #endif
 	else
 	    cvsc->vwidth = paster->u.state.vwidth;
@@ -2755,7 +2755,7 @@ return;
 	      case ut_layers:
 		if ( !sf->hasvmetrics && cur->undotype==ut_vwidth) {
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-		    gwwv_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled\nUse Element->Font Info to enable them."));
+		    gwwv_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled.\nUse Element->Font Info to enable them."));
 #endif
  goto err;
 		}
@@ -2802,9 +2802,9 @@ return;
     }
     /* If we copy glyphs from one font to another, and if some of those glyphs*/
     /*  contain references, and the width of the original glyph is the same as*/
-    /*  the width of the original refered character, then we should make sure */
+    /*  the width of the original referred character, then we should make sure */
     /*  that the new width of the glyph is the same as the current width of   */
-    /*  the refered char. We can't do this earlier because of foreward refs.  */
+    /*  the referred char. We can't do this earlier because of foreward refs.  */
     for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] ) {
 	SplineChar *sc = SFMakeChar(sf,fv->map,i);
 	if ( sc->layers[ly_fore].refs!=NULL && sc->layers[ly_fore].splines==NULL ) {
@@ -2851,9 +2851,9 @@ return;
       case ut_statehint: case ut_statename:
 	if ( !mv->fv->sf->hasvmetrics && cur->undotype==ut_vwidth) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	    gwwv_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled\nUse Element->Font Info to enable them."));
+	    gwwv_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled.\nUse Element->Font Info to enable them."));
 #elif defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled\nUse Element->Font Info to enable them."));
+	    gwwv_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled.\nUse Element->Font Info to enable them."));
 #endif
 return;
 	}

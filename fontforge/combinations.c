@@ -1066,7 +1066,7 @@ return( true );
 		KPKPCloseup(kpd);
 	    else
 		KPAC(kpd,true);
-return;
+return( true );
 	}
       /* Fall through... */
       case et_mousemove:

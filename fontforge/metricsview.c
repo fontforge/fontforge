@@ -964,10 +964,12 @@ static void MVMakeLabels(MetricsView *mv) {
     gd.pos.y += mv->fh+4;
     mv->widthlab = GLabelCreate(mv->gw,&gd,NULL);
 
+/* GT: Top/Left (side) bearing */
     label.text = (unichar_t *) (mv->vertical ? _("TBearing:") : _("LBearing:") );
     gd.pos.y += mv->fh+4;
     mv->lbearinglab = GLabelCreate(mv->gw,&gd,NULL);
 
+/* GT: Bottom/Right (side) bearing */
     label.text = (unichar_t *) (mv->vertical ? _("BBearing:") : _("RBearing:") );
     gd.pos.y += mv->fh+4;
     mv->rbearinglab = GLabelCreate(mv->gw,&gd,NULL);
@@ -1698,7 +1700,7 @@ return;
 	    buts[2] = GTK_STOCK_CANCEL;
 #endif
 	    buts[3] = NULL;
-	    yes = gwwv_ask(_("Bad Reference"),(const char **) buts,1,2,_("You are attempting to clear %.30s which is refered to by\nanother character. Are you sure you want to clear it?"),sc->name);
+	    yes = gwwv_ask(_("Bad Reference"),(const char **) buts,1,2,_("You are attempting to clear %.30s which is referred to by\nanother character. Are you sure you want to clear it?"),sc->name);
 	    if ( yes==2 )
 return;
 	    if ( yes==1 )

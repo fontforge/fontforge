@@ -313,7 +313,7 @@ static void FVSelectByName(FontView *fv) {
     SplineFont *sf = fv->sf;
     struct altuni *alt;
 
-    ret = gwwv_ask_string(_("Select all instances of named glyph"),".notdef",_("Select all instances of the named glyph"));
+    ret = gwwv_ask_string(_("Select all instances of the named glyph"),".notdef",_("Select all instances of the named glyph"));
     if ( ret==NULL )
 return;
     FVDeselectAll(fv);
@@ -1020,7 +1020,7 @@ void FontViewMenu_RevertGlyph(GtkMenuItem *menuitem, gpointer user_data) {
 	if ( tsc->namechanged ) {
 	    if ( nc_state==-1 ) {
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-		gwwv_post_error(_("Glyph Name Changed"),_("The the name of glyph %.40s has changed. This is what I use to find the glyph in the file, so I cannot revert this glyph.\n(You will not be warned for subsequent glyphs)"),tsc->name);
+		gwwv_post_error(_("Glyph Name Changed"),_("The name of glyph %.40s has changed. This is what I use to find the glyph in the file, so I cannot revert this glyph.\n(You will not be warned for subsequent glyphs.)"),tsc->name);
 #endif
 		nc_state = 0;
 	    }
@@ -2118,7 +2118,7 @@ static void FVClear(FontView *fv) {
 		    buts[2] = _("_Unlink All");
 		    buts[3] = _("No _to All");
 		    buts[5] = NULL;
-		    yes = gwwv_ask(_("Bad Reference"),(const char **) buts,2,4,_("You are attempting to clear %.30s which is refered to by\nanother character. Are you sure you want to clear it?"),fv->sf->glyphs[gid]->name);
+		    yes = gwwv_ask(_("Bad Reference"),(const char **) buts,2,4,_("You are attempting to clear %.30s which is referred to by\nanother character. Are you sure you want to clear it?"),fv->sf->glyphs[gid]->name);
 		    if ( yes==1 )
 			refstate = 1;
 		    else if ( yes==2 ) {
@@ -7423,11 +7423,12 @@ static void cdlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 }
 
 static GMenuItem mmlist[] = {
+/* GT: Here (and following) MM means "MultiMaster" */
     { { (unichar_t *) N_("_Create MM..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuCreateMM, MID_CreateMM },
     { { (unichar_t *) N_("MM _Validity Check"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuMMValid, MID_MMValid },
     { { (unichar_t *) N_("MM _Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuMMInfo, MID_MMInfo },
     { { (unichar_t *) N_("_Blend to New Font..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuBlendToNew, MID_BlendToNew },
-    { { (unichar_t *) N_("MM Change Def _Weights..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuChangeMMBlend, MID_ChangeMMBlend },
+    { { (unichar_t *) N_("MM Change Default _Weights..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuChangeMMBlend, MID_ChangeMMBlend },
     { NULL },				/* Extra room to show sub-font names */
 };
 
@@ -7561,6 +7562,7 @@ static GMenuItem mblist[] = {
     { { (unichar_t *) N_("_View"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'V' }, 0, 0, vwlist, vwlistcheck },
     { { (unichar_t *) N_("_Metrics"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, 0, 0, mtlist, mtlistcheck },
     { { (unichar_t *) N_("_CID"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, 0, 0, cdlist, cdlistcheck },
+/* GT: Here (and following) MM means "MultiMaster" */
     { { (unichar_t *) N_("MM"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, 0, 0, mmlist, mmlistcheck },
     { { (unichar_t *) N_("_Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'W' }, 0, 0, wnmenu, FVWindowMenuBuild, NULL },
     { { (unichar_t *) N_("_Help"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, 0, 0, helplist, NULL },
