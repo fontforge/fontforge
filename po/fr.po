@@ -1,7 +1,7 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as FontForge.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# (American) English User Interface strings for FontForge.
+# Copyright (C) 2000-2006 by George Williams
+# This file is distributed under the same license as the FontForge package.
+# George Williams, <pfaedit@users.sourceforge.net>, 2006.
 #
 #, fuzzy
 msgid ""
@@ -9,13 +9,25 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "POT-Creation-Date: 2005-10-13 17:43-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Last-Translator: Pierre Hanser <hanser@club-internet.fr> & Yannis Haralambous <yannis.haralambous@enst-bretagne.fr>\n"
 "Language-Team: LANGUAGE <fr.c@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n>1\n"
 
+# Modified by Yannis Haralambous
+# yannis.haralambous@enst-bretagne.fr 
+# on: 14/01/04, 00h26
+# 
+# Translated terminology based on:
+# 
+# @book{Haralambous:fec2004,
+# 	Author = {Yannis Haralambous},
+# 	Publisher = {O'Reilly France},
+# 	Title = {Fontes \& codages},
+# 	Year = {2004}}
+ 
 #: alignment.c:289 anchorsaway.c:851 combinations.c:1126 cvhints.c:283
 #: cvhints.c:483 cvhints.c:670 cvhints.c:768 displayfonts.c:339
 #: displayfonts.c:543
