@@ -871,6 +871,7 @@ void AnchorControl(SplineChar *sc,AnchorPoint *ap) {
     gcd[k++].creator = GListFieldCreate;
 #endif
 
+/* GT: Short for: Magnification */
     label[k].text = (unichar_t *) _("Mag:");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
@@ -905,6 +906,7 @@ void AnchorControl(SplineChar *sc,AnchorPoint *ap) {
     gcd[k++].creator = GTextFieldCreate;
 
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
+/* GT: Short for Correction */
     label[k].text = (unichar_t *) _("Cor:");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
@@ -944,6 +946,7 @@ void AnchorControl(SplineChar *sc,AnchorPoint *ap) {
     gcd[k++].creator = GTextFieldCreate;
 
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
+/* GT: Short for Correction */
     label[k].text = (unichar_t *) _("Cor:");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
