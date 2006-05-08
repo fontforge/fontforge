@@ -1,0 +1,144 @@
+# (American) English User Interface strings for FontForge.
+# Copyright (C) 2000-2006 by George Williams
+# This file is distributed under the same license as the FontForge package.
+# George Williams, <pfaedit@users.sourceforge.net>, 2006.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: 20060507\n"
+"POT-Creation-Date: 2006-05-07 20:02-0700\n"
+"PO-Revision-Date: 2006-05-07 20:02-0700\n"
+"Last-Translator: George Williams, <pfaedit@users.sourceforge.net>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n!=1\n"
+
+#: autotrace.c:434 autotrace.c:435 autotrace.c:682 autotrace.c:683
+msgid "Additional arguments for autotrace program:"
+msgstr "Additional arguments for autotrace programme:"
+
+#: autotrace.c:455 autotrace.c:523 autotrace.c:707
+msgid ""
+"Can't find autotrace program (set AUTOTRACE environment variable) or "
+"download from:\n"
+"  http://sf.net/projects/autotrace/"
+msgstr ""
+"Can't find autotrace programme (set AUTOTRACE environment variable) or "
+"download from:\n"
+"  http://sf.net/projects/autotrace/"
+
+#: autotrace.c:702
+msgid ""
+"Can't find mf program -- metafont (set MF environment variable) or download "
+"from:\n"
+"  http://www.tug.org/\n"
+"  http://www.ctan.org/\n"
+"It's part of the TeX distribution"
+msgstr ""
+"Can't find mf programme -- metafont (set MF environment variable) or download "
+"from:\n"
+"  http://www.tug.org/\n"
+"  http://www.ctan.org/\n"
+"It's part of the TeX distribution"
+
+#. CCW means counter clockwise
+#: bitmapview.c
+msgid "Rotate _90° CCW"
+msgstr "Rotate _90° ACW"
+
+#: charinfo.c:5695 cvstroke.c:1143 cvstroke.c:1219
+msgid "Color:"
+msgstr "Colour:"
+
+#: cvgetinfo.c:968
+msgid "This index is much larger than the closest neighbor"
+msgstr "This index is much larger than the closest neighbour"
+
+#: cvimages.c:205
+msgid ""
+"Certain programs use pens with white ink as erasers\n"
+"If you select (blacken) this checkbox, FontForge will\n"
+"attempt to simulate that."
+msgstr ""
+"Certain programmes use pens with white ink as erasers\n"
+"If you select (blacken) this checkbox, FontForge will\n"
+"attempt to simulate that."
+
+#: cvstroke.c:955 cvstroke.c:957
+msgid "Bad Color"
+msgstr "Bad Colour"
+
+#: fontinfo.c:6702
+msgid ""
+"Allow editing of multiple colors and shades, fills and strokes.\n"
+"Multi layered fonts can only be output as type3 or svg fonts."
+msgstr ""
+"Allow editing of multiple colours and shades, fills and strokes.\n"
+"Multi layered fonts can only be output as type3 or svg fonts."
+
+#: fontinfo.c:6921
+msgid ""
+"Can this font be embedded in a downloadable (pdf)\n"
+"document, and if so, what behaviors are permitted on\n"
+"both the document and the font."
+msgstr ""
+"Can this font be embedded in a downloadable (pdf)\n"
+"document, and if so, what behaviours are permitted on\n"
+"both the document and the font."
+
+#: fontview.c:2529
+msgid "Select Color"
+msgstr "Select Colour"
+
+#: fontview.c:6298
+msgid "_Select by Color"
+msgstr "_Select by Colour"
+
+#: parsettf.c:2122
+msgid ""
+"FontForge does not support type2 programs embedded in CFF dict indices.\n"
+msgstr ""
+"FontForge does not support type2 programmes embedded in CFF dict indices.\n"
+
+#: prefs.c:1822
+msgid "Prefs|App|to alter that behavior you may set an environment"
+msgstr "Prefs|App|to alter that behaviour you may set an environment"
+
+#: prefs.c:288
+msgid ""
+"Extra arguments for configuring the autotrace program\n"
+"(either autotrace or potrace)"
+msgstr ""
+"Extra arguments for configuring the autotrace programme\n"
+"(either autotrace or potrace)"
+
+#: prefs.c:290
+msgid ""
+"Commands to pass to mf (metafont) program, the filename will follow these"
+msgstr ""
+"Commands to pass to mf (metafont) programme, the filename will follow these"
+
+#: savefontdlg.c:892
+msgid "Save Colors"
+msgstr "Save Colours"
+
+#: savefontdlg.c:894
+msgid "Save glyph colors in the PfEd table"
+msgstr "Save glyph colours in the PfEd table"
+
+#: savefontdlg.c:2933
+msgid "Allows you to select optional behavior when generating the font"
+msgstr "Allows you to select optional behaviour when generating the font"
+
+#: svg.c:1769
+#, c-format
+msgid "Failed to parse color %s\n"
+msgstr "Failed to parse colour %s\n"
+
+#: uiutil.c:136
+#, c-format
+msgid "Failed to find program \"%s\"\n"
+msgstr "Failed to find programme \"%s\"\n"
