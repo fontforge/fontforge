@@ -1306,7 +1306,7 @@ return;
 /* GT: of each glyph matches the entry point of the following. It means you */
 /* GT: get a join such as might be expected for script. Urdu is odd because */
 /* GT: letters within a word crawl diagonally up the page, but with each word */
-/* GT: the writing point starts at the baseline.
+/* GT: the writing point starts at the baseline. */
     label[j].text = (unichar_t *) _("CursEntry");
 	label[j].text_is_1byte = true;
 	gcd[j].gd.label = &label[j];
