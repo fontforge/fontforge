@@ -1429,7 +1429,7 @@ return;
     gcd[0].creator = GScrollBarCreate;
     layer2.sb_start = gcd[0].gd.pos.x;
 
-/* GT: Abrieviation for "Visible" */
+/* GT: Abbreviation for "Visible" */
     label[1].text = (unichar_t *) _("V");
     label[1].text_is_1byte = true;
     gcd[1].gd.label = &label[1];
@@ -1760,7 +1760,7 @@ return( cvlayers );
     for ( i=0; i<sizeof(label)/sizeof(label[0]); ++i )
 	label[i].font = font;
 
-/* GT: Abrieviation for "Visible" */
+/* GT: Abbreviation for "Visible" */
     label[0].text = (unichar_t *) _("V");
     label[0].text_is_1byte = true;
     gcd[0].gd.label = &label[0];
@@ -1769,7 +1769,7 @@ return( cvlayers );
     gcd[0].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
     gcd[0].creator = GLabelCreate;
 
-/* GT: Abrieviation for "Editable" */
+/* GT: Abbreviation for "Editable" */
     label[1].text = (unichar_t *) _("E");
     label[1].text_is_1byte = true;
     gcd[1].gd.label = &label[1];
@@ -2356,7 +2356,7 @@ return(bvlayers);
     for ( i=0; i<sizeof(label)/sizeof(label[0]); ++i )
 	label[i].font = font;
 
-/* GT: Abrieviation for "Visible" */
+/* GT: Abbreviation for "Visible" */
     label[0].text = (unichar_t *) _("V");
     label[0].text_is_1byte = true;
     gcd[0].gd.label = &label[0];
