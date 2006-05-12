@@ -1,0 +1,46 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 8-May-2006 -->
+  <!-- AP: Last modified: 12-May-2006 -->
+  <TITLE>Uninstalling</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+  <H1 ALIGN=Center>
+    Uninstalling FontForge
+  </H1>
+  <P>
+  I've never bothered to make this easy.
+  <P>
+  If you installed in /usr/local (the default) then you type either:
+  <BLOCKQUOTE>
+    <PRE>$ su
+password:
+$ rm -rf /usr/local/bin/{fontforge,sfddiff} \
+/usr/local/lib/{libgdraw,libgunicode,libuninameslist}* \
+/usr/local/lib/pkgconfig/fontforge.pc \
+/usr/local/man/man1/{fontforge,sfddiff}.1 \
+/usr/local/share/doc/fontforge \
+/usr/local/share/locale/*/LC_MESSAGES/FontForge.mo
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  or if you are on a mac:
+  <BLOCKQUOTE>
+    <PRE>$ sudo rm -rf /usr/local/bin/{fontforge,sfddiff} \
+/usr/local/lib/{libgdraw,libgunicode,libuninameslist}* \
+/usr/local/lib/pkgconfig/fontforge.pc \
+/usr/local/man/man1/{fontforge,sfddiff}.1 \
+/usr/local/share/doc/fontforge \
+/usr/local/share/locale/*/LC_MESSAGES/FontForge.mo
+password:
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  If you've installed to a different prefix (/usr perhaps) then simply substitute
+  /usr for /usr/local above.
+</DIV>
+</BODY></HTML>
