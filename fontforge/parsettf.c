@@ -2119,7 +2119,8 @@ static void skipcfft2thing(FILE *ttf) {
     /*  cff stack, as there are no examples of this, it's hard to guess */
     int ch;
 
-    LogError( _("FontForge does not support type2 programs embedded in CFF dict indices.\n") );
+/* GT: DICT is a magic term inside CFF fonts, as is INDEX, and I guess CFF and type2 */
+    LogError( _("FontForge does not support type2 programs embedded in CFF DICT INDICES.\n") );
     forever {
 	ch = getc(ttf);
 	if ( ch>=247 && ch<=254 )
