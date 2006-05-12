@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 26-Oct-2005 -->
-  <!-- AP: Last modified: 8-Apr-2006 -->
+  <!-- AP: Last modified: 12-May-2006 -->
   <TITLE>Building FontForge from source</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -54,6 +54,8 @@
       </UL>
     <LI>
       <A HREF="running.html">Running FontForge</A>
+    <LI>
+      <A HREF="uninstall.html">Uninstalling</A>
   </UL>
   <H2>
     Before you build (on a <A NAME="src-mac">mac</A>)
@@ -157,8 +159,8 @@
   file release system </A>will contain a tarball (a file with the extension
   for .tar.bz2).<BR>
   Here is a direct link to a
-  <A HREF="fontforge_full-20060408.tar.bz2">tarball</A>, sometimes more recent
-  (Version 8-Apr-2006)
+  <A HREF="fontforge_full-20060507.tar.bz2">tarball</A>, sometimes more recent
+  (Version 7-May-2006)
   <P>
   After you have downloaded one of these packages, either copy the tarball
   to where you are, or move to the directory containing the tarball (I can't
@@ -179,9 +181,9 @@
   documentation), create a new directory, cd into it and type the following
   (do not type "$", when it asks for a password, just hit return):
   <BLOCKQUOTE>
-    <PRE><FONT COLOR="Gray">$ </FONT>cvs -d:pserver:anonymous@cvs1.sourceforge.net:/cvsroot/fontforge login
+    <PRE><FONT COLOR="Gray">$ </FONT>cvs -d:pserver:anonymous@fontforge.cvs.sourceforge.net:/cvsroot/fontforge login
 CVS password:
-<FONT COLOR="Gray">$ </FONT>cvs -d:pserver:anonymous@cvs1.sourceforge.net:/cvsroot/fontforge checkout fontforge
+<FONT COLOR="Gray">$ </FONT>cvs -d:pserver:anonymous@fontforge.cvs.sourceforge.net:/cvsroot/fontforge checkout fontforge
 <FONT COLOR="Gray">$ </FONT>cd fontforge
 </PRE>
   </BLOCKQUOTE>
@@ -190,18 +192,17 @@ CVS password:
   recent version of the source by typing:
   <BLOCKQUOTE>
     <PRE><FONT COLOR="Gray">$ </FONT>cd fontforge
-<FONT COLOR="Gray">$ </FONT>cvs -d:pserver:anonymous@cvs1.sourceforge.net:/cvsroot/fontforge login
+<FONT COLOR="Gray">$ </FONT>cvs -d:pserver:anonymous@fontforge.cvs.sourceforge.net:/cvsroot/fontforge login
 CVS password:
-<FONT COLOR="Gray">$ </FONT>cvs -d:pserver:anonymous@cvs1.sourceforge.net:/cvsroot/fontforge update
+<FONT COLOR="Gray">$ </FONT>cvs -d:pserver:anonymous@fontforge.cvs.sourceforge.net:/cvsroot/fontforge update
 </PRE>
   </BLOCKQUOTE>
   <P>
   You can also
-  <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/">browse
+  <A HREF="http://fontforge.cvs.sourceforge.net/fontforge/fontforge/">browse
   the CVS tree</A> online. Or see
   <A HREF="http://sourceforge.net/cvs/?group_id=103338">sourceforge's description
-  </A>for more information (their information is out of date, the correct server
-  is cvs1.sf.net not cvs.sf.net), or read the
+  </A>for more information, or read the
   <A HREF="http://www.cvshome.org/docs/manual/">CVS manual</A>.
   <H3>
     <A NAME="src-Building">Building</A> &amp; installing it
