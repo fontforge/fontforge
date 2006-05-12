@@ -2809,6 +2809,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     hgcd[3].data = (void *) CID_HintWidthNear;
     hgcd[3].creator = GTextFieldCreate;
 
+/* GT: The _3 is used to mark an accelerator */
     hlabel[4].text = (unichar_t *) _("Almost stem_3 hint");
     hlabel[4].text_is_1byte = true;
     hlabel[4].text_in_resource = true;
