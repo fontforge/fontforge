@@ -1464,7 +1464,8 @@ static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
     }
     for ( j=0; j<cnt; ++j ) {
 	for ( k=0, ac=_ac; k<classcnt; ac=ac->next ) {
-	    for ( ap = markglyphs[j]->anchor; ap!=NULL && ap->anchor!=ac; ap=ap->next );
+	    for ( ap = markglyphs[j]->anchor; ap!=NULL && (ap->anchor!=ac || ap->type!=at_mark);
+		    ap=ap->next );
 	    if ( ap!=NULL )
 	break;
 	}
