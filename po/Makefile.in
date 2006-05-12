@@ -3,7 +3,7 @@ localedir = $(prefix)/share/locale
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 
-MOFILES = es.mo fr.mo it.mo ja.mo ru.mo zh_TW.mo
+MOFILES = es.mo fr.mo it.mo ja.mo ru.mo zh_TW.mo vi.po
 
 .SUFFIXES:
 .SUFFIXES: .po .mo
@@ -25,3 +25,5 @@ install:
 	$(INSTALL_DATA) ru.mo $(localedir)/ru/LC_MESSAGES/FontForge.mo
 	mkdir -p $(localedir)/ja/LC_MESSAGES
 	$(INSTALL_DATA) ja.mo $(localedir)/ja/LC_MESSAGES/FontForge.mo
+	mkdir -p $(localedir)/vi/LC_MESSAGES
+	$(INSTALL_DATA) vi.mo $(localedir)/vi/LC_MESSAGES/FontForge.mo
