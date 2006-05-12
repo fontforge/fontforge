@@ -3316,6 +3316,27 @@ static void bGetMaxpValue(Context *c) {
     else
 	ScriptErrorString(c,"Unknown 'maxp' field: ", c->a.vals[1].u.sval );
 }
+
+static void bGetFontBoundingBox(Context *c) {
+    int i;
+    SplineFont *sf = c->curfv->sf;
+    DBounds b;
+
+    if ( c->a.argc!=1 )
+	ScriptError( c, "Wrong number of arguments");
+
+    SplineFontFindBounds(sf,&b);
+    c->return_val.type = v_arrfree;
+    c->return_val.u.aval = galloc(sizeof(Array));
+    c->return_val.u.aval->argc = 4;
+    c->return_val.u.aval->vals = galloc(4*sizeof(Val));
+    for ( i=0; i<4; ++i )
+	c->return_val.u.aval->vals[i].type = v_real;
+    c->return_val.u.aval->vals[0].u.fval = b.minx;
+    c->return_val.u.aval->vals[1].u.fval = b.miny;
+    c->return_val.u.aval->vals[2].u.fval = b.maxx;
+    c->return_val.u.aval->vals[3].u.fval = b.maxy;
+}
  
 static void bSetUniqueID(Context *c) {
 
@@ -6707,6 +6728,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "SetItalicAngle", bSetItalicAngle },
     { "SetMacStyle", bSetMacStyle },
     { "SetPanose", bSetPanose },
+    { "GetFontBoundingBox", bGetFontBoundingBox },
     { "SetOS2Value", bSetOS2Value },
     { "GetOS2Value", bGetOS2Value },
     { "SetMaxpValue", bSetMaxpValue },
