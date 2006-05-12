@@ -2656,6 +2656,22 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
     }
 
     for ( isv=0; isv<2; ++isv ) {
+	/* If we dump kern classes out first here, then kern pairs will end up*/
+	/*  first in the lookup. Which is where we want them so they can over-*/
+	/*  ride the class default */
+	for ( kc=isv ? sf->vkerns : sf->kerns; kc!=NULL; kc=kc->next ) {
+	    new = chunkalloc(sizeof(struct lookup));
+	    new->feature_tag = isv ? CHR('v','k','r','n') : CHR('k','e','r','n');
+	    new->flags = kc->flags;
+	    new->script_lang_index = kc->sli;
+	    new->lookup_type = 2;		/* Pair adjustment subtable type */
+	    new->offset[0] = ftell(lfile);
+	    new->next = lookups;
+	    lookups = new;
+	    dumpgposkernclass(lfile,sf,kc,at,isv);
+	    new->len = ftell(lfile)-new->offset[0];
+	}
+
 	/* Look for kerns */ /* kerns now store langs but not flags */
 	cnt = 0;
 	for ( i=0; i<sf->glyphcnt; i++ ) if ( sf->glyphs[i]!=NULL ) {
@@ -2684,19 +2700,6 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 	    new->next = lookups;
 	    lookups = new;
 	    dumpgposkerndata(lfile,sf,ligtags[j].script_lang_index,at,isv);
-	    new->len = ftell(lfile)-new->offset[0];
-	}
-
-	for ( kc=isv ? sf->vkerns : sf->kerns; kc!=NULL; kc=kc->next ) {
-	    new = chunkalloc(sizeof(struct lookup));
-	    new->feature_tag = isv ? CHR('v','k','r','n') : CHR('k','e','r','n');
-	    new->flags = kc->flags;
-	    new->script_lang_index = kc->sli;
-	    new->lookup_type = 2;		/* Pair adjustment subtable type */
-	    new->offset[0] = ftell(lfile);
-	    new->next = lookups;
-	    lookups = new;
-	    dumpgposkernclass(lfile,sf,kc,at,isv);
 	    new->len = ftell(lfile)-new->offset[0];
 	}
     }
