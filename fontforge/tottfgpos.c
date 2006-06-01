@@ -689,7 +689,7 @@ return( glyphs );
 
 static SplineChar **OrderedGlyphsFromNames(SplineFont *sf,char *names) {
     SplineChar **glyphs = SFGlyphsFromNames(sf,names);
-    int i,j;
+    int i,j, end;
 
     if ( glyphs==NULL || glyphs[0]==NULL )
 return( glyphs );
@@ -699,6 +699,15 @@ return( glyphs );
 	    SplineChar *sc = glyphs[i];
 	    glyphs[i] = glyphs[j];
 	    glyphs[j] = sc;
+	}
+    }
+    end = i;
+    if ( glyphs[0]!=NULL ) {		/* Glyphs should not appear twice in the name list, just just in case they do... */
+	for ( i=0; glyphs[i+1]!=NULL; ++i ) {
+	    if ( glyphs[i]==glyphs[i+1] ) {
+		for ( j=i+1; glyphs[j]!=NULL; ++j )
+		    glyphs[j] = glyphs[j+1];
+	    }
 	}
     }
 return( glyphs );
