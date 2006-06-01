@@ -2529,11 +2529,12 @@ static void AttHScroll(struct att_dlg *att,struct sbevent *sb) {
       case et_sb_uppage:
         newpos -= att->page_width;
       break;
+  /* I'd like to scroll by one character. .6*em is right for courier. */
       case et_sb_up:
-        --newpos;
+        newpos -= (6*att->fh)/10;
       break;
       case et_sb_down:
-        ++newpos;
+        newpos += (6*att->fh)/10;
       break;
       case et_sb_downpage:
         newpos += att->page_width;
