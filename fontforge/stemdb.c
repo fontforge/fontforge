@@ -783,9 +783,12 @@ static double NormalDist(BasePoint *to, BasePoint *from, BasePoint *perp) {
 return( len );
 }
 
-static int NewIsBetter(struct stemdata *stem,struct pointdata *pd, double width) {
+static int NewIsBetter(struct stemdata *stem,struct pointdata *pd,
+	struct pointdata *newcomer, double width) {
     double stemwidth;
     int i, cnt;
+    double newd, oldd;
+    struct pointdata *former;
 
     stemwidth = (stem->left.x-stem->right.x)*stem->unit.y -
 		(stem->left.y-stem->right.y)*stem->unit.x;
@@ -793,9 +796,31 @@ static int NewIsBetter(struct stemdata *stem,struct pointdata *pd, double width)
 
     if ( width>= stemwidth )
 return( false );
-    for ( i=cnt=0; i<stem->chunk_cnt; ++i )
+
+    for ( i=cnt=0; i<stem->chunk_cnt; ++i ) {
+	former = NULL;
+	if ( stem->chunks[i].r==pd || stem->chunks[i].rpotential==pd )
+	    former = stem->chunks[i].l==NULL ? stem->chunks[i].lpotential : stem->chunks[i].l;
+	else if ( stem->chunks[i].l==pd || stem->chunks[i].lpotential==pd )
+	    former = stem->chunks[i].r==NULL ? stem->chunks[i].rpotential : stem->chunks[i].r;
+	if ( former!=NULL ) {
+	    oldd = (former->sp->me.x-pd->sp->me.x)*stem->unit.x +
+			(former->sp->me.y-pd->sp->me.y)*stem->unit.y;
+	    newd = (newcomer->sp->me.x-pd->sp->me.x)*stem->unit.x +
+			(newcomer->sp->me.y-pd->sp->me.y)*stem->unit.y;
+	    if ( oldd<0 ) oldd = -oldd;
+	    if ( newd<0 ) newd = -newd;
+	    if ( newd>oldd ) {
+		/* The old stem is wider, but the points are closer */
+		/*  if they are much further appart than the improvement we get from making the width smaller... */
+		if ( (newd-oldd) > 4*(stemwidth-width) )
+return( false );
+	    }
+	}
 	if ( stem->chunks[i].r==pd || stem->chunks[i].l==pd )
 	    ++cnt;
+    }
+
     if ( cnt>=2 )
 return( false );
 return( true );
@@ -845,11 +870,11 @@ return( NULL );
 	stem2 = stem;
     else if ( pd2->prevstem==stem )
 	stem2 = stem;
-    else if ( is_next2 && pd2->nextstem!=NULL && NewIsBetter(pd2->nextstem,pd2,width) ) {
+    else if ( is_next2 && pd2->nextstem!=NULL && NewIsBetter(pd2->nextstem,pd2,pd,width) ) {
 	MakePDPotential(pd2->nextstem,pd2);
 	pd2->nextstem = NULL;
 	stem2 = stem;
-    } else if ( !is_next2 && pd2->prevstem!=NULL && NewIsBetter(pd2->prevstem,pd2,width) ) {
+    } else if ( !is_next2 && pd2->prevstem!=NULL && NewIsBetter(pd2->prevstem,pd2,pd,width) ) {
 	MakePDPotential(pd2->prevstem,pd2);
 	pd2->prevstem = NULL;
 	stem2 = stem;
