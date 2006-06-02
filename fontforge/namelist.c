@@ -29,6 +29,8 @@
 #include "ustring.h"
 #include <utype.h>
 
+extern int recognizePUA;
+
 static struct psaltnames {
     char *name;
     int unicode;
@@ -166,6 +168,8 @@ int UniFromName(const char *name,enum uni_interp interp,Encoding *encname) {
 	if ( buck!=NULL )
 	    i = buck->uni;
     }
+    if ( !recognizePUA && i>=0xe000 && i<=0xf8ff )
+	i = -1;
 return( i );
 }
 
