@@ -3,7 +3,7 @@ localedir = $(prefix)/share/locale
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 
-MOFILES = es.mo fr.mo it.mo ja.mo ru.mo zh_TW.mo vi.po
+MOFILES = es.mo fr.mo it.mo ja.mo ru.mo zh_TW.mo vi.mo
 
 .SUFFIXES:
 .SUFFIXES: .po .mo
