@@ -30,6 +30,7 @@
 #include <ustring.h>
 #include <math.h>
 #include <locale.h>
+#include <stdlib.h>
 #include "ttf.h"
 
 static int SLIFromInfo(struct ttfinfo *info,SplineChar *sc,uint32 lang) {
@@ -112,12 +113,33 @@ static int ClassFindCnt(uint16 *class,int tot) {
 return( max+1 );
 }
 
+static int cmpuint16(const void *u1, const void *u2) {
+return( ((int) *((const uint16 *) u1)) - ((int) *((const uint16 *) u2)) );
+}
+
 static char *GlyphsToNames(struct ttfinfo *info,uint16 *glyphs) {
-    int i, len;
+    int i, j, len, off;
     char *ret, *pt;
 
     if ( glyphs==NULL )
 return( copy(""));
+
+    /* Adobe produces coverage tables containing duplicate glyphs in */
+    /*  GaramondPremrPro.otf. We want unique glyphs, so enforce that */
+    for ( i=0 ; glyphs[i]!=0xffff; ++i );
+    qsort(glyphs,i,sizeof(uint16),cmpuint16);
+    for ( i=0; glyphs[i]!=0xffff; ++i ) {
+	if ( glyphs[i+1]==glyphs[i] ) {
+	    for ( j=i+1; glyphs[j]==glyphs[i]; ++j );
+	    off = j-i -1;
+	    for ( j=i+1; ; ++j ) {
+		glyphs[j] = glyphs[j+off];
+		if ( glyphs[j]==0xffff )
+	    break;
+	    }
+	}
+    }
+
     for ( i=len=0 ; glyphs[i]!=0xffff; ++i )
 	if ( info->chars[glyphs[i]]!=NULL )
 	    len += strlen(info->chars[glyphs[i]]->name)+1;
@@ -252,6 +274,7 @@ return( NULL );
 return( NULL );
     }
     glyphs[cnt] = 0xffff;
+
 return( glyphs );
 }
 
