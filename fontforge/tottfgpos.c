@@ -2608,7 +2608,7 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 	struct alltabs *at,struct lookup **nested) {
     /* When we find a feature, we split it out into various scripts */
     /*  dumping one lookup per script into the file */
-    struct lookup *lookups = NULL, *new;
+    struct lookup *lookups = NULL, *new, *kchead, *kclast;
     int i, j, cnt, max, isv;
     SplineChar ***map, **glyphs;
     AnchorClass *ac;
@@ -2668,6 +2668,8 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 	/* If we dump kern classes out first here, then kern pairs will end up*/
 	/*  first in the lookup. Which is where we want them so they can over-*/
 	/*  ride the class default */
+	/* The order of the kern classes matters too */
+	kchead = kclast = NULL;
 	for ( kc=isv ? sf->vkerns : sf->kerns; kc!=NULL; kc=kc->next ) {
 	    new = chunkalloc(sizeof(struct lookup));
 	    new->feature_tag = isv ? CHR('v','k','r','n') : CHR('k','e','r','n');
@@ -2675,10 +2677,17 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 	    new->script_lang_index = kc->sli;
 	    new->lookup_type = 2;		/* Pair adjustment subtable type */
 	    new->offset[0] = ftell(lfile);
-	    new->next = lookups;
-	    lookups = new;
+	    if ( kchead==NULL )
+		kchead = new;
+	    else
+		kclast->next = new;
+	    kclast = new;
 	    dumpgposkernclass(lfile,sf,kc,at,isv);
 	    new->len = ftell(lfile)-new->offset[0];
+	}
+	if ( kclast!=NULL ) {
+	    kclast->next = lookups;
+	    lookups = kchead;
 	}
 
 	/* Look for kerns */ /* kerns now store langs but not flags */
