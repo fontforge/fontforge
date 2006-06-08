@@ -52,6 +52,7 @@ static int nfnt_warned = false, post_warned = false;
 #define CID_PS_Restrict256	1008
 #define CID_PS_Round		1009
 #define CID_PS_OFM		1010
+#define CID_PS_AFMmarks		1011
 #define CID_TTF_Hints		1101
 #define CID_TTF_FullPS		1102
 #define CID_TTF_AppleMode	1103
@@ -225,7 +226,7 @@ return( sizes );
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-static int WriteAfmFile(char *filename,SplineFont *sf, int formattype, EncMap *map) {
+static int WriteAfmFile(char *filename,SplineFont *sf, int formattype, EncMap *map, int flags) {
     char *buf = galloc(strlen(filename)+6), *pt, *pt2;
     FILE *afm;
     int ret;
@@ -250,7 +251,7 @@ static int WriteAfmFile(char *filename,SplineFont *sf, int formattype, EncMap *m
     free(buf);
     if ( afm==NULL )
 return( false );
-    ret = AfmSplineFont(afm,sf,subtype,map,true);
+    ret = AfmSplineFont(afm,sf,subtype,map,flags&ps_flag_afmwithmarks);
     if ( fclose(afm)==-1 )
 return( false );
     if ( !ret )
@@ -273,7 +274,7 @@ return( false );
 	    free(buf);
 	    if ( afm==NULL )
 return( false );
-	    ret = AfmSplineFont(afm,sf,subtype,map,true);
+	    ret = AfmSplineFont(afm,sf,subtype,map,flags&ps_flag_afmwithmarks);
 	    if ( fclose(afm)==-1 )
 return( false );
 	    if ( !ret )
@@ -501,6 +502,8 @@ return( false );
 		d->ps_flags = 0;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_AFM)) )
 		    d->ps_flags |= ps_flag_afm;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_AFMmarks)) )
+		    d->ps_flags |= ps_flag_afmwithmarks;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_PFM)) )
 		    d->ps_flags |= ps_flag_pfm;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_TFM)) )
@@ -562,6 +565,8 @@ return( false );
 
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_AFM)) )
 		    d->otf_flags |= ps_flag_afm;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_AFMmarks)) )
+		    d->otf_flags |= ps_flag_afmwithmarks;
 		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_HintSubs)) )
 		    d->otf_flags |= ps_flag_nohintsubs;
 		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Flex)) )
@@ -572,8 +577,8 @@ return( false );
 		    d->otf_flags |= ps_flag_round;
 	    } else {				/* PS + OpenType Bitmap */
 		d->ps_flags = d->psotb_flags = 0;
-		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_AFM)) )
-		     d->psotb_flags = d->ps_flags |= ps_flag_afm;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_AFMmarks)) )
+		     d->psotb_flags = d->ps_flags |= ps_flag_afmwithmarks;
 		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_HintSubs)) )
 		     d->psotb_flags = d->ps_flags |= ps_flag_nohintsubs;
 		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Flex)) )
@@ -619,6 +624,7 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
     GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_Round),flags&ps_flag_round);
 
     GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_AFM),flags&ps_flag_afm);
+    GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_AFMmarks),flags&ps_flag_afmwithmarks);
     GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_PFM),(flags&ps_flag_pfm) && !iscid);
     GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_TFM),flags&ps_flag_tfm);
 
@@ -685,15 +691,15 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
 }
 
 #define OPT_Width	230
-#define OPT_Height	219
+#define OPT_Height	233
 
 static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     int flags;
     int k,group,group2;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[27];
-    GTextInfo label[27];
+    GGadgetCreateData gcd[28];
+    GTextInfo label[28];
     GRect pos;
 
     d->sod_done = false;
@@ -731,7 +737,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
 
     group = k;
     gcd[k].gd.pos.x = 4; gcd[k].gd.pos.y = 9;
-    gcd[k].gd.pos.width = OPT_Width-8; gcd[k].gd.pos.height = 58;
+    gcd[k].gd.pos.width = OPT_Width-8; gcd[k].gd.pos.height = 72;
     gcd[k].gd.flags = gg_enabled | gg_visible ;
     gcd[k++].creator = GGroupCreate;
 
@@ -790,7 +796,16 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.cid = CID_PS_AFM;
     gcd[k++].creator = GCheckBoxCreate;
 
-    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-5].gd.pos.y;
+    gcd[k].gd.pos.x = 112; gcd[k].gd.pos.y = gcd[k-5].gd.pos.y;
+    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+    label[k].text = (unichar_t *) _("Composites in AFM");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.popup_msg = (unichar_t *) U_("The AFM format allows some information about composites\n(roughly the same as mark to base anchor classes) to be\nincluded. However it tends to make AFM files huge as it\nis not stored in an efficient manner.");
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_PS_AFMmarks;
+    gcd[k++].creator = GCheckBoxCreate;
+
+    gcd[k].gd.pos.x = gcd[k-2].gd.pos.x; gcd[k].gd.pos.y = gcd[k-5].gd.pos.y;
     gcd[k].gd.flags = gg_visible | gg_utf8_popup;
     label[k].text = (unichar_t *) _("Output PFM");
     label[k].text_is_1byte = true;
@@ -799,7 +814,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.cid = CID_PS_PFM;
     gcd[k++].creator = GCheckBoxCreate;
 
-    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-5].gd.pos.y;
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
     gcd[k].gd.flags = gg_visible |gg_utf8_popup;
     label[k].text = (unichar_t *) _("Output TFM & ENC");
     label[k].text_is_1byte = true;
@@ -1661,7 +1676,7 @@ return( 0 );
 #else
     if ( !err && (old_ps_flags&ps_flag_afm)) {
 #endif
-	if ( !WriteAfmFile(filename,&temp,oldformatstate,&encmap)) {
+	if ( !WriteAfmFile(filename,&temp,oldformatstate,&encmap,old_ps_flags)) {
 	    gwwv_post_error(_("Afm Save Failed"),_("Afm Save Failed"));
 	    err = true;
 	}
@@ -1856,7 +1871,7 @@ return( true );
     }
     if ( !err && (flags&ps_flag_afm) ) {
 	gwwv_progress_increment(-sf->glyphcnt);
-	if ( !WriteAfmFile(newname,sf,oldformatstate,map)) {
+	if ( !WriteAfmFile(newname,sf,oldformatstate,map,flags)) {
 	    gwwv_post_error(_("Afm Save Failed"),_("Afm Save Failed"));
 	    err = true;
 	}
@@ -2075,6 +2090,7 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	    if ( fmflags&0x80000 ) old_ps_flags |= ps_flag_nohints;
 	    if ( fmflags&0x100000 ) old_ps_flags |= ps_flag_restrict256;
 	    if ( fmflags&0x200000 ) old_ps_flags |= ps_flag_round;
+	    if ( fmflags&0x400000 ) old_ps_flags |= ps_flag_afmwithmarks;
 	    if ( i==bf_otb ) {
 		old_ttf_flags = 0;
 		switch ( fmflags&0x90 ) {
@@ -2133,6 +2149,7 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	    if ( fmflags&0x40000 ) old_otf_flags |= ps_flag_noflex;
 	    if ( fmflags&0x80000 ) old_otf_flags |= ps_flag_nohints;
 	    if ( fmflags&0x200000 ) old_otf_flags |= ps_flag_round;
+	    if ( fmflags&0x400000 ) old_ps_flags |= ps_flag_afmwithmarks;
 		/* Applicable truetype flags */
 	    switch ( fmflags&0x90 ) {
 	      case 0x80:
