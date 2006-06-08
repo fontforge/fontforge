@@ -1175,6 +1175,7 @@ enum ps_flags { ps_flag_nohintsubs = 0x10000, ps_flag_noflex=0x20000,
 		    ps_flag_nocffsugar = 0x1000000,
 /* in type42 cid fonts we sometimes want an identity map from gid to cid */
 		    ps_flag_identitycidmap = 0x2000000,
+		    ps_flag_afmwithmarks = 0x4000000,
 		    ps_flag_mask = (ps_flag_nohintsubs|ps_flag_noflex|
 			ps_flag_afm|ps_flag_pfm|ps_flag_tfm|ps_flag_round)
 		};
