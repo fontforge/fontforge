@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 12-May-2006 -->
+  <!-- AP: Last modified: 10-Jun-2006 -->
   <TITLE>FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -295,9 +295,9 @@
   </H2>
   <P>
   I'm sure you'll find some. If you can isolate it and come up with a reproducible
-  minimal case, that would be great. The executable has symbols in it so if
-  you run it in gdb you should be able to get a stack trace... Give me a test
-  case if possible. Do what you can.
+  minimal case, that would be great. If your executable has symbols in it,
+  you could run it in gdb and get a stack trace... Give me a test case if possible.
+  Do what you can.
   <TABLE CELLPADDING="2">
     <TR>
       <TH><P ALIGN=Left>
@@ -310,6 +310,19 @@
       <TD><A HREF="mailto:fontforge-testcases@lists.sourceforge.net">fontforge-testcases@lists.sourceforge.net</A></TD>
     </TR>
   </TABLE>
+  <BLOCKQUOTE>
+    <B><SMALL>TEGEUS:</SMALL></B>
+    <BLOCKQUOTE>
+      &nbsp; &nbsp; &nbsp; Tell me,<BR>
+      What is your opinion of Progress? Does it, for example,<BR>
+      Exist? Is there ever progression without retrogression?<BR>
+      Therefore is it not true that mankind<BR>
+      Can more justly be said increasingly to Gress?
+      <P ALIGN=Right>
+      A Pheonix too Frequent<BR>
+      Christopher Fry, 1950
+    </BLOCKQUOTE>
+  </BLOCKQUOTE>
   <H2>
     <A NAME="assistance">How else you can help.</A>
   </H2>
@@ -321,9 +334,13 @@
       KANOU has a <A HREF="ja/index.html">Japanese version</A>)
     <LI>
       <I>I also have a brief tutorial in <A HREF="fontforge-tutorial.pdf">pdf
-      format</A>.</I> This could also be translated into other languages (and would
-      be a simpler job than trying to translate the entire website, here is the
+      format</A> and in <A HREF="editexample.html">html</A>.</I> This could also
+      be translated into other languages (and would be a simpler job than trying
+      to translate the entire website, here is the
       <A HREF="fontforge-tutorial.tex">TeX source</A> if you wish to attempt it).
+      The html has been translated into <A HREF="de/editexample.html">German</A>
+      and
+      <A HREF="http://edt1023.sayya.org/fontforge/editexample.html">Chinese</A>.
     <LI>
       <EM>The UI can be translated into different languages.</EM> FontForge now
       uses gnu gettext.
@@ -346,7 +363,9 @@
 	<LI>
 	  Spanish is provided by <A HREF="mailto:wecharri@yahoo.com">Walter Echarri</A>
 	<LI>
-	  Vietnamese is provided by Clytie Siddall.
+	  Vietnamese is provided by
+	  <A HREF="http://vnoss.net/dokuwiki/doku.php?id=projects:l10n">Clytie
+	  Siddall</A>.
 	<LI>
 	  A Catalan translation is being worked on by Javier Candeira.
 	<LI>
@@ -369,10 +388,13 @@
       and autotraces the result). It won't produce .mf files<BR>
       FontForge will read (but not produce) Ikarus files<BR>
       FontForge will read acorn font files with a helper app.<BR>
-      But there are other formats out there that I can't find descriptions of:
+      But there are other formats out there that I can't find descriptions of or
+      don't think are worth supporting
       <UL>
 	<LI>
-	  Microsoft FON files (bitmap font resource files for windows)
+	  Can you point me at documentation for other standards
+	<LI>
+	  Can you explain why that format is useful?
       </UL>
     <LI>
       There are certain c<EM>ommands which don't work very well </EM>and if someone
@@ -722,8 +744,8 @@ U+0066 + U+0069 =&gt; U+FB01 'liga'
 	  <A HREF="http://partners.adobe.com/asn/tech/type/otfdk/">Font Developer Kit</A>
 	  (mostly for setting opentype tables I think)
 	<LI>
-	  <A HREF="http://developer.apple.com/fonts/Tools/">And Apple does too</A>
-	  (mac only)
+	  <A HREF="http://developer.apple.com/textfonts/Fonttools/Index.html">And Apple
+	  does too</A> (mac only)
 	<LI>
 	  <A HREF="http://developer.apple.com/fonts/OSXTools.html">And some OS/X
 	  tools</A> (mac only)
