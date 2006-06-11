@@ -2984,21 +2984,33 @@ return;
 	}
 #endif	/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
+    if ( sc->instructions_out_of_date && !any_ptnumbers_shown )
+return;
     if ( instrs==NULL && sc->dependents==NULL && !any_ptnumbers_shown )
 return;
     /* If the points are no longer in order then the instructions are not valid */
     /*  (because they'll refer to the wrong points) and should be removed */
+    /* Except that annoys users who don't expect it */
     if ( !SCPointsNumberedProperly(sc)) {
+#if 0
 	free(sc->ttf_instrs); sc->ttf_instrs = NULL;
 	sc->ttf_instrs_len = 0;
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+# ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	SCMarkInstrDlgAsChanged(sc);
-#endif	/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+# endif	/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+#endif
+	sc->instructions_out_of_date = true;
 	for ( dep=sc->dependents; dep!=NULL; dep=dep->next ) {
 	    RefChar *ref;
+	    if ( dep->sc->ttf_instrs_len!=0 )
+		dep->sc->instructions_out_of_date = true;
 	    for ( ref=dep->sc->layers[ly_fore].refs; ref!=NULL && ref->sc!=sc; ref=ref->next );
 	    for ( ; ref!=NULL ; ref=ref->next )
+#if 0
 		ref->point_match = false;
+#endif
+		if ( ref->point_match )
+		    ref->point_match_out_of_date = true;
 	}
 	SCNumberPoints(sc);
     }
@@ -4655,6 +4667,7 @@ static void CVMenuClearInstrs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	free(cv->sc->ttf_instrs);
 	cv->sc->ttf_instrs = NULL;
 	cv->sc->ttf_instrs_len = 0;
+	cv->sc->instructions_out_of_date = false;
 	SCCharChangedUpdate(cv->sc);
 	SCMarkInstrDlgAsChanged(cv->sc);
     }

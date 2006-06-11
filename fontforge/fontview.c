@@ -2470,7 +2470,8 @@ void FontViewMenu_SelectUnhintedGlyphs(GtkMenuItem *menuitem, gpointer user_data
 	fv->selected[i] = ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL &&
 		((!order2 && sf->glyphs[gid]->changedsincelasthinted ) ||
 		 ( order2 && sf->glyphs[gid]->layers[ly_fore].splines!=NULL &&
-		     sf->glyphs[gid]->ttf_instrs_len<=0 )) );
+		     sf->glyphs[gid]->ttf_instrs_len<=0 ) ||
+		 ( order2 && sf->glyphs[gid]->instructions_out_of_date )) );
 # ifdef FONTFORGE_CONFIG_GDRAW
     GDrawRequestExpose(fv->v,NULL,false);
 # elif defined(FONTFORGE_CONFIG_GTK)
@@ -5149,6 +5150,7 @@ return;
 	    free(sc->ttf_instrs);
 	    sc->ttf_instrs = NULL;
 	    sc->ttf_instrs_len = 0;
+	    sc->instructions_out_of_date = false;
 	    SCCharChangedUpdate(sc);
 	}
     }
@@ -9111,10 +9113,10 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		bg = sc->color!=COLOR_DEFAULT?sc->color:0x808080;
 		GDrawFillRect(pixmap,&r,bg);
 	    }
-	    if ( !sc->changed &&
-		    ((!fv->sf->order2 && sc->changedsincelasthinted ) ||
+	    if ( (!fv->sf->order2 && sc->changedsincelasthinted ) ||
 		     ( fv->sf->order2 && sc->layers[ly_fore].splines!=NULL &&
-			sc->ttf_instrs_len<=0 )) ) {
+			sc->ttf_instrs_len<=0 ) ||
+		     ( fv->sf->order2 && sc->instructions_out_of_date ) ) {
 		Color hintcol = 0x0000ff;
 		GDrawDrawLine(pixmap,r.x,r.y,r.x,r.y+r.height-1,hintcol);
 		GDrawDrawLine(pixmap,r.x+1,r.y,r.x+1,r.y+r.height-1,hintcol);

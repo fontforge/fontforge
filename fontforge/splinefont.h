@@ -449,14 +449,11 @@ typedef struct undoes {
 	    struct splinepointlist *splines;
 	    struct refchar *refs;
 	    struct minimumdistance *md;
-#ifdef FONTFORGE_CONFIG_TYPE3
-	    struct {				/* In type3 we can have both at once */
-#else
-	    union {
-#endif
-		struct imagelist *images;
-		void *hints;			/* ut_statehint, ut_statename */
-	    } u;
+	    
+	    struct imagelist *images;
+	    void *hints;			/* ut_statehint, ut_statename */
+	    uint8 *instrs;
+	    int instrs_len;
 	    AnchorPoint *anchor;
 #ifdef FONTFORGE_CONFIG_TYPE3
 	    struct brush fill_brush;
@@ -719,6 +716,7 @@ typedef struct refchar {
 	/* important for glyphs with instructions which change the width used */
 	/* inside composites */
     unsigned int round_translation_to_grid: 1;	/* Retain the ttf "round_to_grid" info. */
+    unsigned int point_match_out_of_date: 1;	/* Someone has edited a base glyph */
     int16 adobe_enc;
     int orig_pos;
     int unicode_enc;		/* used by paste */
@@ -911,7 +909,8 @@ typedef struct splinechar {
     unsigned int unused_so_far: 1;
     unsigned int glyph_class: 3; /* 0=> fontforge determines class automagically, else one more than the class value in gdef */
     unsigned int numberpointsbackards: 1;
-    /* 12 bits left */
+    unsigned int instructions_out_of_date: 1;
+    /* 11 bits left (one more if we ignore compositionunit) */
 #if HANYANG
     unsigned int compositionunit: 1;
     int16 jamo, varient;
