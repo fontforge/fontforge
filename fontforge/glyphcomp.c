@@ -702,7 +702,7 @@ static int CompareSplines(Context *c,SplineChar *sc,const Undoes *cur,
 		failed |= SS_NoMatch|SS_WidthMismatch;
 	}
 	if ( cur->undotype==ut_statehint && (comp_hints&1) &&
-		!CompareHints( sc,cur->u.state.u.hints ))
+		!CompareHints( sc,cur->u.state.hints ))
 	    failed |= SS_NoMatch|SS_HintMismatch;
 	if ( cur->undotype==ut_statehint && (comp_hints&2) &&
 		(sc->hconflicts || sc->vconflicts || !(comp_hints&4)) &&

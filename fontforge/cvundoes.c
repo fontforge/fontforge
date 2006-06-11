@@ -381,16 +381,9 @@ void UndoesFree(Undoes *undo) {
 	    SplinePointListsFree(undo->u.state.splines);
 	    RefCharsFree(undo->u.state.refs);
 	    MinimumDistancesFree(undo->u.state.md);
-#ifdef FONTFORGE_CONFIG_TYPE3
-	    UHintListFree(undo->u.state.u.hints);
-	    ImageListsFree(undo->u.state.u.images);
-#else
-	    if ( undo->undotype==ut_statehint || undo->undotype==ut_statename ||
-		    undo->undotype==ut_hints )
-		UHintListFree(undo->u.state.u.hints);
-	    else
-		ImageListsFree(undo->u.state.u.images);
-#endif
+	    UHintListFree(undo->u.state.hints);
+	    free(undo->u.state.instrs);
+	    ImageListsFree(undo->u.state.images);
 	    if ( undo->undotype==ut_statename ) {
 		free( undo->u.state.charname );
 		free( undo->u.state.comment );
@@ -485,7 +478,7 @@ return(NULL);
 	undo->u.state.md = MDsCopyState(cv->sc,undo->u.state.splines);
 	undo->u.state.anchor = AnchorPointsCopy(cv->sc->anchor);
     }
-    undo->u.state.u.images = ImageListCopy(cv->layerheads[cv->drawmode]->images);
+    undo->u.state.images = ImageListCopy(cv->layerheads[cv->drawmode]->images);
 #ifdef FONTFORGE_CONFIG_TYPE3
     undo->u.state.fill_brush = cv->layerheads[cv->drawmode]->fill_brush;
     undo->u.state.stroke_pen = cv->layerheads[cv->drawmode]->stroke_pen;
@@ -500,7 +493,9 @@ Undoes *CVPreserveStateHints(CharView *cv) {
     Undoes *undo = CVPreserveState(cv);
     if ( CVLayer(cv)==ly_fore ) {
 	undo->undotype = ut_statehint;
-	undo->u.state.u.hints = UHintCopy(cv->sc,true);
+	undo->u.state.hints = UHintCopy(cv->sc,true);
+	undo->u.state.instrs = copyn(cv->sc->ttf_instrs, cv->sc->ttf_instrs_len);
+	undo->u.state.instrs_len = cv->sc->ttf_instrs_len;
     }
 return( undo );
 }
@@ -514,10 +509,11 @@ return(NULL);
 
     undo = chunkalloc(sizeof(Undoes));
 
-    undo->undotype = ut_state;
     undo->was_modified = sc->changed;
     undo->undotype = ut_hints;
-    undo->u.state.u.hints = UHintCopy(sc,true);
+    undo->u.state.hints = UHintCopy(sc,true);
+    undo->u.state.instrs = copyn(sc->ttf_instrs, sc->ttf_instrs_len);
+    undo->u.state.instrs_len = sc->ttf_instrs_len;
     undo->u.state.copied_from = sc->parent;
 return( AddUndo(undo,&sc->layers[ly_fore].undoes,&sc->layers[ly_fore].redoes));
 }
@@ -543,7 +539,9 @@ return(NULL);
     }
     if ( dohints ) {
 	undo->undotype = ut_statehint;
-	undo->u.state.u.hints = UHintCopy(sc,true);
+	undo->u.state.hints = UHintCopy(sc,true);
+	undo->u.state.instrs = copyn(sc->ttf_instrs, sc->ttf_instrs_len);
+	undo->u.state.instrs_len = sc->ttf_instrs_len;
 	if ( dohints==2 ) {
 	    undo->undotype = ut_statename;
 	    undo->u.state.unicodeenc = sc->unicodeenc;
@@ -552,10 +550,7 @@ return(NULL);
 	    undo->u.state.possub = PSTCopy(sc->possub,sc,sc->parent);
 	}
     }
-#ifndef FONTFORGE_CONFIG_TYPE3
-    else	/* In normal mode we save hints XOR images. In type3 we save both */
-#endif
-	undo->u.state.u.images = ImageListCopy(sc->layers[layer].images);
+    undo->u.state.images = ImageListCopy(sc->layers[layer].images);
 #ifdef FONTFORGE_CONFIG_TYPE3
     undo->u.state.fill_brush = sc->layers[layer].fill_brush;
     undo->u.state.stroke_pen = sc->layers[layer].stroke_pen;
@@ -719,8 +714,14 @@ static void SCUndoAct(SplineChar *sc,int layer, Undoes *undo) {
       } break;
       case ut_hints: {
 	void *hints = UHintCopy(sc,false);
-	ExtractHints(sc,undo->u.state.u.hints,false);
-	undo->u.state.u.hints = hints;
+	uint8 *instrs = sc->ttf_instrs;
+	int instrs_len = sc->ttf_instrs_len;
+	ExtractHints(sc,undo->u.state.hints,false);
+	sc->ttf_instrs = undo->u.state.instrs;
+	sc->ttf_instrs_len = undo->u.state.instrs_len;
+	undo->u.state.hints = hints;
+	undo->u.state.instrs = instrs;
+	undo->u.state.instrs_len = instrs_len;
 	SCOutOfDateBackground(sc);
       } break;
       case ut_state: case ut_tstate: case ut_statehint: case ut_statename: {
@@ -752,17 +753,19 @@ static void SCUndoAct(SplineChar *sc,int layer, Undoes *undo) {
 	} else if ( layer==ly_fore &&
 		(undo->undotype==ut_statehint || undo->undotype==ut_statename)) {
 	    void *hints = UHintCopy(sc,false);
-	    ExtractHints(sc,undo->u.state.u.hints,false);
-	    undo->u.state.u.hints = hints;
+	    uint8 *instrs = sc->ttf_instrs;
+	    int instrs_len = sc->ttf_instrs_len;
+	    ExtractHints(sc,undo->u.state.hints,false);
+	    sc->ttf_instrs = undo->u.state.instrs;
+	    sc->ttf_instrs_len = undo->u.state.instrs_len;
+	    undo->u.state.hints = hints;
+	    undo->u.state.instrs = instrs;
+	    undo->u.state.instrs_len = instrs_len;
 	}
-	if (
-#ifndef FONTFORGE_CONFIG_TYPE3
-		undo->undotype!=ut_statehint && undo->undotype!=ut_statename &&
-#endif	/* In normal mode we save hints XOR images. In type3 we save both */
-		!ImagesMatch(undo->u.state.u.images,head->images)) {
+	if ( !ImagesMatch(undo->u.state.images,head->images)) {
 	    ImageList *images = ImageListCopy(head->images);
-	    FixupImages(sc,undo->u.state.u.images,layer);
-	    undo->u.state.u.images = images;
+	    FixupImages(sc,undo->u.state.images,layer);
+	    undo->u.state.images = images;
 	    SCOutOfDateBackground(sc);
 	}
 	undo->u.state.splines = spl;
@@ -870,7 +873,7 @@ void CVRestoreTOriginalState(CharView *cv) {
 		    memcpy(&ref->transform,&uref->transform,sizeof(ref->transform));
 		}
     }
-    for ( img=cv->layerheads[cv->drawmode]->images, uimg=undo->u.state.u.images; uimg!=NULL;
+    for ( img=cv->layerheads[cv->drawmode]->images, uimg=undo->u.state.images; uimg!=NULL;
 	    img = img->next, uimg = uimg->next ) {
 	img->xoff = uimg->xoff;
 	img->yoff = uimg->yoff;
@@ -968,21 +971,16 @@ void CopyBufferFree(void) {
 
     switch( copybuffer.undotype ) {
       case ut_hints:
-	UHintListFree(copybuffer.u.state.u.hints);
+	UHintListFree(copybuffer.u.state.hints);
+	free(copybuffer.u.state.instrs);
       break;
       case ut_state: case ut_statehint:
 	SplinePointListsFree(copybuffer.u.state.splines);
 	RefCharsFree(copybuffer.u.state.refs);
 	AnchorPointsFree(copybuffer.u.state.anchor);
-#ifdef FONTFORGE_CONFIG_TYPE3
-	UHintListFree(copybuffer.u.state.u.hints);
-	ImageListsFree(copybuffer.u.state.u.images);
-#else
-	if ( copybuffer.undotype==ut_statehint )
-	    UHintListFree(copybuffer.u.state.u.hints);
-	else
-	    ImageListsFree(copybuffer.u.state.u.images);
-#endif
+	UHintListFree(copybuffer.u.state.hints);
+	free(copybuffer.u.state.instrs);
+	ImageListsFree(copybuffer.u.state.images);
       break;
       case ut_bitmapsel:
 	BDFFloatFree(copybuffer.u.bmpstate.selection);
@@ -1493,8 +1491,8 @@ void CopySelected(CharView *cv) {
 	for ( imgs = cv->layerheads[cv->drawmode]->images; imgs!=NULL; imgs = imgs->next ) if ( imgs->selected ) {
 	    new = chunkalloc(sizeof(ImageList));
 	    *new = *imgs;
-	    new->next = copybuffer.u.state.u.images;
-	    copybuffer.u.state.u.images = new;
+	    new->next = copybuffer.u.state.images;
+	    copybuffer.u.state.images = new;
 	}
     }
 #ifdef FONTFORGE_CONFIG_TYPE3
@@ -1552,7 +1550,9 @@ static Undoes *SCCopyAll(SplineChar *sc,int full) {
 	    cur->u.state.splines = SplinePointListCopy(sc->layers[layer].splines);
 	    cur->u.state.refs = RefCharsCopyState(sc,layer);
 	    cur->u.state.anchor = AnchorPointsCopy(sc->anchor);
-	    cur->u.state.u.hints = UHintCopy(sc,true);
+	    cur->u.state.hints = UHintCopy(sc,true);
+	    cur->u.state.instrs = copyn(sc->ttf_instrs, sc->ttf_instrs_len);
+	    cur->u.state.instrs_len = sc->ttf_instrs_len;
 	    cur->u.state.unicodeenc = sc->unicodeenc;
 	    if ( copymetadata && layer==ly_fore ) {
 		cur->u.state.charname = copy(sc->name);
@@ -1573,7 +1573,7 @@ static Undoes *SCCopyAll(SplineChar *sc,int full) {
 	}
 #ifdef FONTFORGE_CONFIG_TYPE3
 	if ( layer<sc->layer_cnt ) {
-	    cur->u.state.u.images = ImageListCopy(sc->layers[layer].images);
+	    cur->u.state.images = ImageListCopy(sc->layers[layer].images);
 	    cur->u.state.fill_brush = sc->layers[layer].fill_brush;
 	    cur->u.state.stroke_pen = sc->layers[layer].stroke_pen;
 	    cur->u.state.dofill = sc->layers[layer].dofill;
@@ -1879,6 +1879,35 @@ return;
     }
 }
 
+static int InstrsSameParent( SplineChar *sc, SplineFont *copied_from) {
+    static SplineFont *dontask_parent = NULL, *dontask_copied_from;
+    static int dontask_ret=0;
+    char *buts[5];
+    int ret;
+
+    if ( sc->parent==copied_from )
+return( true );
+    if ( sc->parent == dontask_parent && copied_from==dontask_copied_from )
+return( dontask_ret );
+    buts[4] = NULL;
+#if defined(FONTFORGE_CONFIG_GDRAW)
+    buts[0] = _("_Yes"); buts[3] = _("_No");
+#elif defined(FONTFORGE_CONFIG_GTK)
+    buts[0] = GTK_STOCK_YES; buts[3] = GTK_STOCK_NO;
+#endif
+    buts[1] = _("Yes to all");
+    buts[2] = _("No to all");
+    ret = gwwv_ask(_("Different Fonts"),(const char **) buts,0,3,_("You are attempting to paste glyph instructions from one font to another. Generally this will not work unless the 'prep', 'fpgm' and 'cvt ' tables are the same.\nDo you want to continue anyway?"));
+    if ( ret==0 )
+return( true );
+    if ( ret==3 )
+return( false );
+    dontask_parent = sc->parent;
+    dontask_copied_from = copied_from;
+    dontask_ret = ret==1;
+return( dontask_ret );
+}
+
 /* when pasting from the fontview we do a clear first */
 #ifdef FONTFORGE_CONFIG_TYPE3
 static void _PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
@@ -1988,9 +2017,9 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
 	if ( !sc->searcherdummy )
 	    APMerge(sc,paster->u.state.anchor);
 #ifdef FONTFORGE_CONFIG_TYPE3
-	if ( paster->u.state.u.images!=NULL && sc->parent->multilayer ) {
+	if ( paster->u.state.images!=NULL && sc->parent->multilayer ) {
 	    ImageList *new, *cimg;
-	    for ( cimg = paster->u.state.u.images; cimg!=NULL; cimg=cimg->next ) {
+	    for ( cimg = paster->u.state.images; cimg!=NULL; cimg=cimg->next ) {
 		new = galloc(sizeof(ImageList));
 		*new = *cimg;
 		new->selected = true;
@@ -2004,8 +2033,18 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
 	/* but might be hints */
 #endif
 	if ( paster->undotype==ut_statehint || paster->undotype==ut_statename )
-	    if ( !pasteinto )	/* Hints aren't meaningful unless we've cleared first */
-		ExtractHints(sc,paster->u.state.u.hints,true);
+	    if ( !pasteinto ) {	/* Hints aren't meaningful unless we've cleared first */
+		ExtractHints(sc,paster->u.state.hints,true);
+		free(sc->ttf_instrs);
+		if ( paster->u.state.instrs_len!=0 && sc->parent->order2 &&
+			InstrsSameParent(sc,paster->u.state.copied_from)) {
+		    sc->ttf_instrs = copyn(paster->u.state.instrs,paster->u.state.instrs_len);
+		    sc->ttf_instrs_len = paster->u.state.instrs_len;
+		} else {
+		    sc->ttf_instrs = NULL;
+		    sc->ttf_instrs_len = 0;
+		}
+	    }
 	if ( paster->undotype==ut_statename ) {
 	    SCSetMetaData(sc,paster->u.state.charname,
 		    paster->u.state.unicodeenc==0xffff?-1:paster->u.state.unicodeenc,
@@ -2191,7 +2230,7 @@ return;
 	    spl->next = cv->layerheads[cv->drawmode]->splines;
 	    cv->layerheads[cv->drawmode]->splines = new;
 	}
-	if ( paster->undotype==ut_state && paster->u.state.u.images!=NULL ) {
+	if ( paster->undotype==ut_state && paster->u.state.images!=NULL ) {
 #ifdef FONTFORGE_CONFIG_TYPE3
 	    int dm = cvsc->parent->multilayer ? cv->drawmode : dm_back;
 #else
@@ -2200,7 +2239,7 @@ return;
 	    /*  even if we aren't in background mode */
 #endif
 	    ImageList *new, *cimg;
-	    for ( cimg = paster->u.state.u.images; cimg!=NULL; cimg=cimg->next ) {
+	    for ( cimg = paster->u.state.images; cimg!=NULL; cimg=cimg->next ) {
 		new = galloc(sizeof(ImageList));
 		*new = *cimg;
 		new->selected = true;
@@ -2208,8 +2247,18 @@ return;
 		cv->layerheads[dm]->images = new;
 	    }
 	    SCOutOfDateBackground(cvsc);
-	} else if ( paster->undotype==ut_statehint && cv->searcher==NULL )
-	    ExtractHints(cvsc,paster->u.state.u.hints,true);
+	} else if ( paster->undotype==ut_statehint && cv->searcher==NULL ) {
+	    ExtractHints(cvsc,paster->u.state.hints,true);
+	    free(cvsc->ttf_instrs);
+	    if ( paster->u.state.instrs_len!=0 && cvsc->parent->order2 &&
+		    InstrsSameParent(cvsc,paster->u.state.copied_from)) {
+		cvsc->ttf_instrs = copyn(paster->u.state.instrs,paster->u.state.instrs_len);
+		cvsc->ttf_instrs_len = paster->u.state.instrs_len;
+	    } else {
+		cvsc->ttf_instrs = NULL;
+		cvsc->ttf_instrs_len = 0;
+	    }
+	}
 	if ( paster->u.state.anchor!=NULL && cv->drawmode==dm_fore && !cvsc->searcherdummy )
 	    APMerge(cvsc,paster->u.state.anchor);
 	if ( paster->u.state.refs!=NULL && cv->drawmode==dm_fore ) {

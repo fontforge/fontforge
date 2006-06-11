@@ -218,8 +218,10 @@ return( false );
 	    round==ref->round_translation_to_grid &&
 	    (basept!=-1)==ref->point_match &&
 	    (basept==-1 ||
-		(ref->match_pt_base==basept && ref->match_pt_ref==refpt)))
+		(ref->match_pt_base==basept && ref->match_pt_ref==refpt))) {
+	ref->point_match_out_of_date = false;
 return( true );		/* Didn't really change */
+    }
 
     for ( i=0; i<6; ++i )
 	ref->transform[i] = trans[i];
@@ -241,6 +243,7 @@ return( true );		/* Didn't really change */
     ref->round_translation_to_grid = round;
     ref->point_match = basept!=-1;
     ref->match_pt_base = basept; ref->match_pt_ref = refpt;
+    ref->point_match_out_of_date = false;
 
     SplineSetFindBounds(ref->layers[0].splines,&ref->bb);
     CVCharChangedUpdate(ci->cv);

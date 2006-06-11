@@ -778,6 +778,7 @@ static void IVOk(InstrDlg *iv) {
 	    }
 	    for ( cv=sc->views; cv!=NULL; cv=cv->next )
 		cv->showpointnumbers = false;
+	    sc->instructions_out_of_date = true;
 	    SCCharChangedUpdate(sc);
 	} else {
 	    struct ttf_table *tab, *prev;
