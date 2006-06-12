@@ -1536,7 +1536,7 @@ static Undoes *SCCopyAll(SplineChar *sc,int full) {
 #endif
     Undoes *cur;
     RefChar *ref;
-    extern int copymetadata;
+    extern int copymetadata, copyttfinstr;
 
     cur = chunkalloc(sizeof(Undoes));
     if ( sc==NULL ) {
@@ -1551,8 +1551,10 @@ static Undoes *SCCopyAll(SplineChar *sc,int full) {
 	    cur->u.state.refs = RefCharsCopyState(sc,layer);
 	    cur->u.state.anchor = AnchorPointsCopy(sc->anchor);
 	    cur->u.state.hints = UHintCopy(sc,true);
-	    cur->u.state.instrs = copyn(sc->ttf_instrs, sc->ttf_instrs_len);
-	    cur->u.state.instrs_len = sc->ttf_instrs_len;
+	    if ( copyttfinstr ) {
+		cur->u.state.instrs = copyn(sc->ttf_instrs, sc->ttf_instrs_len);
+		cur->u.state.instrs_len = sc->ttf_instrs_len;
+	    }
 	    cur->u.state.unicodeenc = sc->unicodeenc;
 	    if ( copymetadata && layer==ly_fore ) {
 		cur->u.state.charname = copy(sc->name);

@@ -42,6 +42,7 @@
 
 int onlycopydisplayed = 0;
 int copymetadata = 0;
+int copyttfinstr = 0;
 
 #define XOR_COLOR	0x505050
 #define	FV_LAB_HEIGHT	15
@@ -1632,6 +1633,7 @@ void FontViewMenu_Metafont(GtkMenuItem *menuitem, gpointer user_data) {
 #define MID_RplRef	2131
 #define MID_PasteAfter	2132
 #define MID_CopyFeatures	2133
+#define	MID_TTFInstr		2134
 #define MID_Convert2CID	2800
 #define MID_Flatten	2801
 #define MID_InsertFont	2802
@@ -1701,6 +1703,8 @@ static void FVMenuCopyFrom(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     if ( mi->mid==MID_CharName )
 	copymetadata = !copymetadata;
+    else if ( mi->mid==MID_TTFInstr )
+	copyttfinstr = !copyttfinstr;
     else
 	onlycopydisplayed = (mi->mid==MID_DisplayedFont);
     SavePrefs();
@@ -5863,6 +5867,9 @@ static void cflistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_CharName:
 	    mi->ti.checked = copymetadata;
 	  break;
+	  case MID_TTFInstr:
+	    mi->ti.checked = copyttfinstr;
+	  break;
 	}
     }
 }
@@ -6278,6 +6285,8 @@ static GMenuItem cflist[] = {
     { { (unichar_t *) N_("_Displayed Font"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'D' }, '\0', ksm_control, NULL, NULL, FVMenuCopyFrom, MID_DisplayedFont },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("Glyph _Metadata"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'N' }, '\0', ksm_control, NULL, NULL, FVMenuCopyFrom, MID_CharName },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) N_("_TrueType Instructions"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'N' }, '\0', ksm_control, NULL, NULL, FVMenuCopyFrom, MID_TTFInstr },
     { NULL }
 };
 
