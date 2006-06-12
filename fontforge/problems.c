@@ -71,6 +71,7 @@ struct problems {
     unsigned int ptmatchrefsoutofdate: 1;
     unsigned int refsbadtransformttf: 1;
     unsigned int refsbadtransformps: 1;
+    unsigned int mixedcontoursrefs: 1;
     unsigned int explain: 1;
     unsigned int done: 1;
     unsigned int doneexplain: 1;
@@ -112,6 +113,7 @@ static int badsubs=1, toomanypoints=1, pointsmax = 1500;
 static int multuni=1, multname=1;
 static int toomanyhints=1, hintsmax=96, toodeeprefs=1, refdepthmax=9;
 static int ptmatchrefsoutofdate=1, refsbadtransformttf=0, refsbadtransformps=0;
+static int mixedcontoursrefs=0;
 static int stem3=0, showexactstem3=0;
 static real near=3, xval=0, yval=0, widthval=50, advancewidthval=0, vadvancewidthval=0;
 static real irrelevantfactor = .005;
@@ -167,6 +169,7 @@ static real irrelevantfactor = .005;
 #define CID_PtMatchRefsOutOfDate 1042
 #define CID_RefBadTransformTTF	1043
 #define CID_RefBadTransformPS	1044
+#define CID_MixedContoursRefs	1045
 
 
 static void FixIt(struct problems *p) {
@@ -1488,6 +1491,31 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	}
     }
 
+    if ( p->mixedcontoursrefs && !p->finish ) {
+	RefChar *ref;
+	int hasref=0, hascontour = sc->layers[ly_fore].splines!=NULL;
+	for ( ref = sc->layers[ly_fore].refs; ref!=NULL ; ref = ref->next ) {
+	    ref->selected = false;
+	    if ( ref->transform[0]>=2 || ref->transform[0]<-2 ||
+		    ref->transform[1]>=2 || ref->transform[1]<-2 ||
+		    ref->transform[2]>=2 || ref->transform[2]<-2 ||
+		    ref->transform[3]>=2 || ref->transform[3]<-2 )
+		hascontour = true;
+	    else
+		hasref = true;
+	    if ( hascontour && hasref ) {
+		changed = true;
+		ref->selected = true;
+		ExplainIt(p,sc,_("This glyph contains both contours and references.\n(or contains a reference which has a bad transformation matrix and counts as a contour).\nThis cannot be expressed in the TrueType glyph format."),0,0);
+		ref->selected = false;
+		if ( p->ignorethis ) {
+		    p->mixedcontoursrefs = false;
+	break;
+		}
+	    }
+	}
+    }
+
     if ( p->refsbadtransformps && !p->finish ) {
 	RefChar *ref;
 	for ( ref = sc->layers[ly_fore].refs; ref!=NULL ; ref = ref->next )
@@ -2409,7 +2437,7 @@ static int Prob_DoAll(GGadget *g, GEvent *e) {
 	    CID_Stem3, CID_IrrelevantCP, CID_TooManyPoints,
 	    CID_TooManyHints, CID_TooDeepRefs, CID_DFLTScript,
 	    CID_MultUni, CID_MultName, CID_PtMatchRefsOutOfDate,
-	    CID_RefBadTransformTTF, CID_RefBadTransformPS,
+	    CID_RefBadTransformTTF, CID_RefBadTransformPS, CID_MixedContoursRefs,
 	    0 };
 	int i;
 	if ( p->fv->cidmaster!=NULL ) {
@@ -2459,6 +2487,7 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	ptmatchrefsoutofdate = p->ptmatchrefsoutofdate = GGadgetIsChecked(GWidgetGetControl(gw,CID_PtMatchRefsOutOfDate));
 	refsbadtransformttf = p->refsbadtransformttf = GGadgetIsChecked(GWidgetGetControl(gw,CID_RefBadTransformTTF));
 	refsbadtransformps = p->refsbadtransformps = GGadgetIsChecked(GWidgetGetControl(gw,CID_RefBadTransformPS));
+	mixedcontoursrefs = p->mixedcontoursrefs = GGadgetIsChecked(GWidgetGetControl(gw,CID_MixedContoursRefs));
 	toodeeprefs = p->toodeeprefs = GGadgetIsChecked(GWidgetGetControl(gw,CID_TooDeepRefs));
 	stem3 = p->stem3 = GGadgetIsChecked(GWidgetGetControl(gw,CID_Stem3));
 	multuni = p->multuni = GGadgetIsChecked(GWidgetGetControl(gw,CID_MultUni));
@@ -2507,7 +2536,7 @@ return( true );
 		p->missinglookuptag || p->toomanypoints || p->toomanyhints ||
 		p->toodeeprefs || p->DFLTscript || multuni || multname ||
 		p->ptmatchrefsoutofdate || p->refsbadtransformttf ||
-		p->refsbadtransformps ) {
+		p->mixedcontoursrefs || p->refsbadtransformps ) {
 	    DoProbs(p);
 	}
 	p->done = true;
@@ -2550,8 +2579,8 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData pgcd[13], pagcd[8], hgcd[9], rgcd[9], cgcd[5], mgcd[11], agcd[6], rfgcd[8];
-    GTextInfo plabel[13], palabel[8], hlabel[9], rlabel[9], clabel[5], mlabel[10], alabel[6], rflabel[8];
+    GGadgetCreateData pgcd[13], pagcd[8], hgcd[9], rgcd[9], cgcd[5], mgcd[11], agcd[6], rfgcd[9];
+    GTextInfo plabel[13], palabel[8], hlabel[9], rlabel[9], clabel[5], mlabel[10], alabel[6], rflabel[9];
     GTabInfo aspects[8];
     struct problems p;
     char xnbuf[20], ynbuf[20], widthbuf[20], nearbuf[20], awidthbuf[20],
@@ -2819,54 +2848,66 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rfgcd[1].gd.cid = CID_RefBadTransformTTF;
     rfgcd[1].creator = GCheckBoxCreate;
 
-/* GT: Refs is an abbreviation for References. Space is somewhat constrained here */
-    rflabel[2].text = (unichar_t *) _("Refs with bad ps transformation matrices");
+    rflabel[2].text = (unichar_t *) _("Mixed contours and references");
     rflabel[2].text_is_1byte = true;
     rflabel[2].text_in_resource = true;
     rfgcd[2].gd.label = &rflabel[2];
     rfgcd[2].gd.mnemonic = 'r';
     rfgcd[2].gd.pos.x = 3; rfgcd[2].gd.pos.y = rfgcd[1].gd.pos.y+17; 
     rfgcd[2].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    if ( refsbadtransformps ) rfgcd[2].gd.flags |= gg_cb_on;
-    rfgcd[2].gd.popup_msg = (unichar_t *) _("Type1 and 2 fonts only support translation of references.\nThe first four entries of the transformation matix should be\n[1 0 0 1].");
-    rfgcd[2].gd.cid = CID_RefBadTransformPS;
+    if ( mixedcontoursrefs ) rfgcd[2].gd.flags |= gg_cb_on;
+    rfgcd[2].gd.popup_msg = (unichar_t *) _("TrueType glyphs can either contain references or contours.\nNot both.");
+    rfgcd[2].gd.cid = CID_MixedContoursRefs;
     rfgcd[2].creator = GCheckBoxCreate;
 
 /* GT: Refs is an abbreviation for References. Space is somewhat constrained here */
-    rflabel[3].text = (unichar_t *) _("Refs neste_d deeper than:");
+    rflabel[3].text = (unichar_t *) _("Refs with bad ps transformation matrices");
     rflabel[3].text_is_1byte = true;
     rflabel[3].text_in_resource = true;
     rfgcd[3].gd.label = &rflabel[3];
     rfgcd[3].gd.mnemonic = 'r';
-    rfgcd[3].gd.pos.x = 3; rfgcd[3].gd.pos.y = rfgcd[2].gd.pos.y+21; 
+    rfgcd[3].gd.pos.x = 3; rfgcd[3].gd.pos.y = rfgcd[2].gd.pos.y+17; 
     rfgcd[3].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    if ( toodeeprefs ) rfgcd[3].gd.flags |= gg_cb_on;
-    rfgcd[3].gd.popup_msg = (unichar_t *) _("The Type 2 Charstring Reference (Appendix B) says that\nsubroutines may not be nested more than 10 deep. Each\nnesting level for references requires one subroutine\nlevel, and hints may require another level.");
-    rfgcd[3].gd.cid = CID_TooDeepRefs;
+    if ( refsbadtransformps ) rfgcd[3].gd.flags |= gg_cb_on;
+    rfgcd[3].gd.popup_msg = (unichar_t *) _("Type1 and 2 fonts only support translation of references.\nThe first four entries of the transformation matix should be\n[1 0 0 1].");
+    rfgcd[3].gd.cid = CID_RefBadTransformPS;
     rfgcd[3].creator = GCheckBoxCreate;
 
-    sprintf( rmax, "%d", refdepthmax );
-    rflabel[4].text = (unichar_t *) rmax;
+/* GT: Refs is an abbreviation for References. Space is somewhat constrained here */
+    rflabel[4].text = (unichar_t *) _("Refs neste_d deeper than:");
     rflabel[4].text_is_1byte = true;
+    rflabel[4].text_in_resource = true;
     rfgcd[4].gd.label = &rflabel[4];
-    rfgcd[4].gd.pos.x = 140; rfgcd[4].gd.pos.y = rfgcd[3].gd.pos.y-3;
-    rfgcd[4].gd.pos.width = 40; 
+    rfgcd[4].gd.mnemonic = 'r';
+    rfgcd[4].gd.pos.x = 3; rfgcd[4].gd.pos.y = rfgcd[3].gd.pos.y+21; 
     rfgcd[4].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    if ( toodeeprefs ) rfgcd[4].gd.flags |= gg_cb_on;
     rfgcd[4].gd.popup_msg = (unichar_t *) _("The Type 2 Charstring Reference (Appendix B) says that\nsubroutines may not be nested more than 10 deep. Each\nnesting level for references requires one subroutine\nlevel, and hints may require another level.");
-    rfgcd[4].gd.cid = CID_RefDepthMax;
-    rfgcd[4].creator = GTextFieldCreate;
+    rfgcd[4].gd.cid = CID_TooDeepRefs;
+    rfgcd[4].creator = GCheckBoxCreate;
 
-    rflabel[5].text = (unichar_t *) _("Refs with out of date point matching");
+    sprintf( rmax, "%d", refdepthmax );
+    rflabel[5].text = (unichar_t *) rmax;
     rflabel[5].text_is_1byte = true;
-    rflabel[5].text_in_resource = true;
     rfgcd[5].gd.label = &rflabel[5];
-    rfgcd[5].gd.mnemonic = 'r';
-    rfgcd[5].gd.pos.x = 3; rfgcd[5].gd.pos.y = rfgcd[4].gd.pos.y+24; 
+    rfgcd[5].gd.pos.x = 140; rfgcd[5].gd.pos.y = rfgcd[4].gd.pos.y-3;
+    rfgcd[5].gd.pos.width = 40; 
     rfgcd[5].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    if ( ptmatchrefsoutofdate ) rfgcd[5].gd.flags |= gg_cb_on;
-    rfgcd[5].gd.popup_msg = (unichar_t *) _("If a glyph has been edited so that it has a different\nnumber of points now, then any references\nwhich use point matching and depended on that glyph's\npoint count will be incorrect.");
-    rfgcd[5].gd.cid = CID_PtMatchRefsOutOfDate;
-    rfgcd[5].creator = GCheckBoxCreate;
+    rfgcd[5].gd.popup_msg = (unichar_t *) _("The Type 2 Charstring Reference (Appendix B) says that\nsubroutines may not be nested more than 10 deep. Each\nnesting level for references requires one subroutine\nlevel, and hints may require another level.");
+    rfgcd[5].gd.cid = CID_RefDepthMax;
+    rfgcd[5].creator = GTextFieldCreate;
+
+    rflabel[6].text = (unichar_t *) _("Refs with out of date point matching");
+    rflabel[6].text_is_1byte = true;
+    rflabel[6].text_in_resource = true;
+    rfgcd[6].gd.label = &rflabel[6];
+    rfgcd[6].gd.mnemonic = 'r';
+    rfgcd[6].gd.pos.x = 3; rfgcd[6].gd.pos.y = rfgcd[5].gd.pos.y+24; 
+    rfgcd[6].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    if ( ptmatchrefsoutofdate ) rfgcd[6].gd.flags |= gg_cb_on;
+    rfgcd[6].gd.popup_msg = (unichar_t *) _("If a glyph has been edited so that it has a different\nnumber of points now, then any references\nwhich use point matching and depended on that glyph's\npoint count will be incorrect.");
+    rfgcd[6].gd.cid = CID_PtMatchRefsOutOfDate;
+    rfgcd[6].creator = GCheckBoxCreate;
 
 /* ************************************************************************** */
 

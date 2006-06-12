@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Sep-2002 -->
-  <!-- AP: Last modified: 7-Mar-2006 -->
+  <!-- AP: Last modified: 12-Jun-2006 -->
   <TITLE>Generate Font Dialog</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -153,7 +153,7 @@
       None
   </UL>
   <P>
-  <IMG SRC="GenerateOptions.png" WIDTH="323" HEIGHT="335" ALIGN="Right">The
+  <IMG SRC="GenerateOptions.png" WIDTH="323" HEIGHT="355" ALIGN="Right">The
   <A NAME="Options">options</A> dialog provides the following check boxes.
   Not all are enabled at all times.
   <UL>
@@ -172,6 +172,13 @@
       this is not what you want, use the
       <A HREF="scripting-alpha.html#ControlAfmLigatureOutput">ControlAfmLigatureOutput</A>
       scripting command.
+    <LI>
+      [] Composites in AFM -- the AFM format includes a mechanism for building
+      composite glyphs out of components. It is roughly equivalent to the OpenType
+      mark-to-base feature. Almost nobody uses these data, and they can increase
+      the size of an AFM file enormously, but if you would like them check this
+      box (if your font does not include any anchor classes, this will have no
+      effect).
     <LI>
       [] PFM -- Generate a windows printer font metrics file
     <LI>
