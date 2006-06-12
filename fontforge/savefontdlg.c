@@ -671,6 +671,7 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Restrict256),(which==0 || which==3) && !iscid);
 
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_AFM),which!=1);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_AFMmarks),which!=1);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_PFM),which==0 || which==3);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_TFM),which==0 || which==3);
 
