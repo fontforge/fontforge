@@ -807,6 +807,13 @@ static void AI_Display(GIData *ci,AnchorPoint *ap) {
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_LigIndex),ap->type==at_baselig);
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_Next),ap->next!=NULL);
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_Prev),ci->sc->anchor!=ap);
+    if ( ap->has_ttf_pt )
+	sprintf(val,"%d",ap->ttf_pt_index);
+    else
+	val[0] = '\0';
+    GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_MatchPt),val);
+    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_X),!ap->has_ttf_pt);
+    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_Y),!ap->has_ttf_pt);
 
     AI_DisplayClass(ci,ap);
     AI_DisplayRadio(ci,ap->type);
