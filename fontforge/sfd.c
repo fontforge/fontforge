@@ -1414,8 +1414,12 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal) {
     }
     for ( isv=0; isv<2; ++isv ) {
 	for ( kc=isv ? sf->vkerns : sf->kerns; kc!=NULL; kc = kc->next ) {
-	    fprintf( sfd, "%s: %d %d %d %d\n", isv ? "VKernClass" : "KernClass",
-		    kc->first_cnt, kc->second_cnt, kc->sli, kc->flags );
+	    fprintf( sfd, "%s: %d%s %d %d %d\n", isv ? "VKernClass" : "KernClass",
+		    kc->first_cnt, kc->firsts[0]!=NULL?"+":"",
+		    kc->second_cnt, kc->sli, kc->flags );
+	    if ( kc->firsts[0]!=NULL )
+	      fprintf( sfd, " %d %s\n", (int)strlen(kc->firsts[0]),
+		       kc->firsts[0]);
 	    for ( i=1; i<kc->first_cnt; ++i )
 	      fprintf( sfd, " %d %s\n", (int)strlen(kc->firsts[i]),
 		       kc->firsts[i]);
@@ -4530,7 +4534,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 		fread(sf->mark_classes[i],1,temp,sfd);
 	    }
 	} else if ( strmatch(tok,"KernClass:")==0 || strmatch(tok,"VKernClass:")==0 ) {
-	    int temp;
+	    int temp, classstart=1;
 	    int isv = tok[0]=='V';
 	    kc = chunkalloc(sizeof(KernClass));
 	    if ( !isv ) {
@@ -4547,6 +4551,11 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 		lastvkc = kc;
 	    }
 	    getint(sfd,&kc->first_cnt);
+	    ch=getc(sfd);
+	    if ( ch=='+' )
+		classstart = 0;
+	    else
+		ungetc(ch,sfd);
 	    getint(sfd,&kc->second_cnt);
 	    getint(sfd,&temp); kc->sli = temp;
 	    getint(sfd,&temp); kc->flags = temp;
@@ -4557,7 +4566,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    kc->adjusts = gcalloc(kc->first_cnt*kc->second_cnt,sizeof(DeviceTable));
 #endif
 	    kc->firsts[0] = NULL;
-	    for ( i=1; i<kc->first_cnt; ++i ) {
+	    for ( i=classstart; i<kc->first_cnt; ++i ) {
 		getint(sfd,&temp);
 		kc->firsts[i] = galloc(temp+1); kc->firsts[i][temp] = '\0';
 		getc(sfd);	/* skip space */
