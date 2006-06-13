@@ -244,21 +244,40 @@ static int KCD_Prev(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static int isEverythingElse(unichar_t *text) {
+    /* GT: The string "{Everything Else}" is used in the context of a list */
+    /* GT: of classes (a set of kerning classes) where class 0 designates the */
+    /* GT: default class containing all glyphs not specified in the other classes */
+    unichar_t *everything_else = utf82u_copy( _("{Everything Else}") );
+    int ret = u_strcmp(text,everything_else);
+    free(everything_else);
+return( ret==0 );
+}
+
 static int KCD_Next(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	KernClassDlg *kcd = GDrawGetUserData(GGadgetGetWindow(g));
 	char *ret = GGadgetGetTitle8(GWidgetGetControl(kcd->gw,CID_GlyphList));
 	GGadget *list = GWidgetGetControl( kcd->gw, CID_ClassList+kcd->off );
 	int i;
+	char *pt;
+	int which = GGadgetGetFirstListSelectedItem(list);
 
-	if ( !CCD_NameListCheck(kcd->sf,ret,true,_("Bad Class")) ||
+	for ( pt=ret; *pt==' '; ++pt );
+
+	if ( which==0 && *pt=='\0' )
+	    /* Class 0 may contain no glyphs */;
+	else if ( !CCD_NameListCheck(kcd->sf,ret,true,_("Bad Class")) ||
 		CCD_InvalidClassList(ret,list,kcd->isedit)) {
 	    free(ret);
 return( true );
 	}
 
 	if ( kcd->isedit ) {
-	    GListChangeLine8(list,GGadgetGetFirstListSelectedItem(list),ret);
+	    if ( which==0 && *pt=='\0' )
+		GListChangeLine8(list,0,_("{Everything Else}"));
+	    else
+		GListChangeLine8(list,GGadgetGetFirstListSelectedItem(list),ret);
 	} else {
 	    GListAppendLine8(list,ret,false);
 	    if ( kcd->off==0 ) {
@@ -308,11 +327,15 @@ static void _KCD_DoEditNew(KernClassDlg *kcd,int isedit,int off) {
     kcd->isedit = isedit;
     kcd->off = off;
     if ( isedit ) {
-	GTextInfo *selected = GGadgetGetListItemSelected(GWidgetGetControl(
-		kcd->gw, CID_ClassList+off));
+	GGadget *list = GWidgetGetControl( kcd->gw, CID_ClassList+off);
+	GTextInfo *selected = GGadgetGetListItemSelected(list);
+	int which = GGadgetGetFirstListSelectedItem(list);
 	if ( selected==NULL )
 return;
-	GGadgetSetTitle(GWidgetGetControl(kcd->cw,CID_GlyphList),selected->text);
+	if ( off==0 && which==0 && isEverythingElse(selected->text))
+	    GGadgetSetTitle(GWidgetGetControl(kcd->cw,CID_GlyphList),nullstr);
+	else
+	    GGadgetSetTitle(GWidgetGetControl(kcd->cw,CID_GlyphList),selected->text);
     } else {
 	GGadgetSetTitle(GWidgetGetControl(kcd->cw,CID_GlyphList),nullstr);
     }
@@ -969,12 +992,8 @@ static void KCD_EditOffset(KernClassDlg *kcd) {
     GTextInfo **ti;
     static unichar_t nullstr[] = { 0 };
 
-    if ( first==0 || second==0 )
-#if defined(FONTFORGE_CONFIG_GDRAW)
+    if ( second==0 )
 	gwwv_post_notice(_("Class 0"),_("The kerning values for class 0 (\"Everything Else\") should always be 0"));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_notice(_("Class 0"),_("The kerning values for class 0 (\"Everything Else\") should always be 0"));
-#endif
     GGadgetSetList(GWidgetGetControl(kcd->kw,CID_First),
 	    ti = TiNamesFromClass(GWidgetGetControl(kcd->gw,CID_ClassList),first),false);
     GGadgetSetTitle(GWidgetGetControl(kcd->kw,CID_First),
@@ -1151,7 +1170,7 @@ static void _KCD_EnableButtons(KernClassDlg *kcd,int off) {
     for ( j=len-1; j>i; --j )
 	if ( ti[j]->selected )
     break;
-    GGadgetSetEnabled(GWidgetGetControl(kcd->gw,CID_ClassEdit+off),i>=1 && j==i);
+    GGadgetSetEnabled(GWidgetGetControl(kcd->gw,CID_ClassEdit+off),(i>=1 || off==0) && j==i);
     GGadgetSetEnabled(GWidgetGetControl(kcd->gw,CID_ClassUp+off),i>=2);
     GGadgetSetEnabled(GWidgetGetControl(kcd->gw,CID_ClassDown+off),i>=1 && j<len-1);
 }
@@ -1371,7 +1390,8 @@ static int KCD_ClassSelected(GGadget *g, GEvent *e) {
 	else
 	    KCD_HShow(kcd,GGadgetGetFirstListSelectedItem(g));
     } else if ( e->type==et_controlevent && e->u.control.subtype == et_listdoubleclick ) {
-	if ( GGadgetGetFirstListSelectedItem(g)>0 )
+	/* Class 0 can contain something real on the first character but not the second */
+	if ( off==0 || GGadgetGetFirstListSelectedItem(g)>0 )
 	    _KCD_DoEditNew(kcd,true,off);
     }
 return( true );
@@ -2288,7 +2308,14 @@ return;
 
     for ( i=0; i<2; ++i ) {
 	GGadget *list = GWidgetGetControl(kcd->gw,CID_ClassList+i*100);
-	GListAppendLine8(list,_("{Everything Else}"),false);
+	if ( i==0 && kcd->orig!=NULL && kcd->orig->firsts[0]!=NULL ) {
+	    /* OpenType can set class 0 of the first classes by using a coverage*/
+	    /*  table with more glyphs than are present in all the other classes */
+	    unichar_t *temp = uc_copy(kcd->orig->firsts[k]);
+	    GListAppendLine(list,temp,false);
+	    free(temp);
+	} else
+	    GListAppendLine8(list,_("{Everything Else}"),false);
 	if ( kcd->orig!=NULL ) {
 	    for ( k=1; k<(&kcd->first_cnt)[i]; ++k ) {
 		unichar_t *temp = uc_copy((&kcd->orig->firsts)[i][k]);

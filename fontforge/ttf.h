@@ -722,7 +722,7 @@ extern int SSAddPoints(SplineSet *ss,int ptcnt,BasePoint *bp, char *flags);
 
     /* Used by both otf and apple */
 extern uint16 *ClassesFromNames(SplineFont *sf,char **classnames,int class_cnt,
-	int numGlyphs, SplineChar ***glyphs);
+	int numGlyphs, SplineChar ***glyphs, int apple_kc);
 extern SplineChar **SFGlyphsFromNames(SplineFont *sf,char *names);
 
 
