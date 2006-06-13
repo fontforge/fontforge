@@ -1630,8 +1630,8 @@ struct freetype_raster *DebuggerCurrentRaster(TT_ExecContext exc,int depth) {
     struct freetype_raster *ret;
 
     outline.n_contours = exc->pts.n_contours;
-    outline.tags = exc->pts.tags;
-    outline.contours = exc->pts.contours;
+    outline.tags = (char *) exc->pts.tags;
+    outline.contours = (short *) exc->pts.contours;
     /* Rasterizer gets unhappy if we give it the phantom points */
     outline.n_points = /*exc->pts.n_points*/  outline.contours[outline.n_contours - 1] + 1;
     outline.points = exc->pts.cur;
