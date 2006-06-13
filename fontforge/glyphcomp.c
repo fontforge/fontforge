@@ -1658,6 +1658,14 @@ return( false );
 return( false );
     if ( memcmp(kc1->offsets,kc2->offsets,kc1->first_cnt*kc2->second_cnt*sizeof(int16))!=0 )
 return( false );
+
+    if ( kc1->firsts[0]==NULL && kc2->firsts[0]==NULL )
+	/* That's ok */;
+    else if ( kc1->firsts[0]!=NULL || kc2->firsts[0]!=NULL )
+return( false );
+    else if ( classcmp(kc1->firsts[0],kc2->firsts[0])!=0 )
+return( false );
+
     for ( i=1; i<kc1->first_cnt; ++i )
 	if ( classcmp(kc1->firsts[i],kc2->firsts[i])!=0 )
 return( false );
