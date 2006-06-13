@@ -5508,7 +5508,7 @@ echo $ECHO_N "checking trying to find the freetype source directory -- be patien
 fi;
  if test "$FreeType2_TT_BUILD_INC" \!= "" >/dev/null 2>&1 ; then
   if test -f $FreeType2_TT_BUILD_INC/ttdriver.h >/dev/null 2>&1 ; then
-   CFLAGS="$CFLAGS -I$FreeType2_TT_BUILD_INC -I$FreeType2_TT_BUILD_INC/../../include/freetype"
+   CFLAGS="$CFLAGS -I$FreeType2_TT_BUILD_INC -I$FreeType2_TT_BUILD_INC/../../include -I$FreeType2_TT_BUILD_INC/../../include/freetype"
    gww_hasbytecode="yes"
    cat >>confdefs.h <<\_ACEOF
 #define FREETYPE_HAS_DEBUGGER 1
