@@ -425,6 +425,11 @@ struct os2 {
 	/* 5=> 2b0-2ff, 6=>300-36f, ... */
     char achVendID[4];	/* can be zero */
     uint16 fsSel;	/* 1=> italic, 32=>bold, 64 => regular */
+			/* 2=>underscore, 4=>negative, 8->outlined, 16=>strikeout */
+			/* version 4 of OS/2 */
+			/* 128->don't use win_ascent/descent for line spacing */
+			/* 256=>family varies on weight width slope only */
+			/* 512=>oblique (as opposed to italic) */
     uint16 firstcharindex; /* minimum unicode encoding */
     uint16 lastcharindex;  /* maximum unicode encoding */
     uint16 ascender;	/* font ascender height (not ascent) */
