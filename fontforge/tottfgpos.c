@@ -991,15 +991,18 @@ static void dumpgposkerndata(FILE *gpos,SplineFont *sf,int sli,
 }
 
 uint16 *ClassesFromNames(SplineFont *sf,char **classnames,int class_cnt,
-	int numGlyphs, SplineChar ***glyphs) {
+	int numGlyphs, SplineChar ***glyphs, int apple_kc) {
     uint16 *class;
     int i;
     char *pt, *end, ch;
     SplineChar *sc, **gs=NULL;
+    int offset = (apple_kc && classnames[0]!=NULL);
 
     class = gcalloc(numGlyphs,sizeof(uint16));
     if ( glyphs ) *glyphs = gs = gcalloc(numGlyphs,sizeof(SplineChar *));
-    for ( i=1; i<class_cnt; ++i ) {
+    for ( i=0; i<class_cnt; ++i ) {
+	if ( i==0 && classnames[0]==NULL )
+    continue;
 	for ( pt = classnames[i]; *pt; pt = end+1 ) {
 	    while ( *pt==' ' ) ++pt;
 	    if ( *pt=='\0' )
@@ -1011,7 +1014,7 @@ uint16 *ClassesFromNames(SplineFont *sf,char **classnames,int class_cnt,
 	    *end = '\0';
 	    sc = SFGetChar(sf,-1,pt);
 	    if ( sc!=NULL && sc->ttf_glyph!=-1 ) {
-		class[sc->ttf_glyph] = i;
+		class[sc->ttf_glyph] = i+offset;
 		if ( gs!=NULL )
 		    gs[sc->ttf_glyph] = sc;
 	    }
@@ -1133,9 +1136,9 @@ static void dumpgposkernclass(FILE *gpos,SplineFont *sf,KernClass *kc,
 	putshort(gpos,anydevtab?0x0044:0x0004);	/* Alter XAdvance of first character */
 	putshort(gpos,0x0000);			/* leave second char alone */
     }
-    class1 = ClassesFromNames(sf,kc->firsts,kc->first_cnt,at->maxp.numGlyphs,&glyphs);
+    class1 = ClassesFromNames(sf,kc->firsts,kc->first_cnt,at->maxp.numGlyphs,&glyphs,false);
     glyphs = GlyphsFromClasses(glyphs,at->maxp.numGlyphs);
-    class2 = ClassesFromNames(sf,kc->seconds,kc->second_cnt,at->maxp.numGlyphs,NULL);
+    class2 = ClassesFromNames(sf,kc->seconds,kc->second_cnt,at->maxp.numGlyphs,NULL,false);
     putshort(gpos,0);		/* offset to first glyph classes */
     putshort(gpos,0);		/* offset to second glyph classes */
     putshort(gpos,kc->first_cnt);
@@ -2145,11 +2148,11 @@ static void dumpg___ContextChainClass(FILE *lfile,FPST *fpst,SplineFont *sf,
     for ( cnt=0; cnt<fpst->nccnt; ++cnt )
 	putshort(lfile,0);
 
-    iclass = ClassesFromNames(sf,fpst->nclass,fpst->nccnt,at->maxp.numGlyphs,&iglyphs);
+    iclass = ClassesFromNames(sf,fpst->nclass,fpst->nccnt,at->maxp.numGlyphs,&iglyphs,false);
     lglyphs = bglyphs = NULL; bclass = lclass = NULL;
     if ( !iscontext ) {
-	bclass = ClassesFromNames(sf,fpst->bclass,fpst->bccnt,at->maxp.numGlyphs,&bglyphs);
-	lclass = ClassesFromNames(sf,fpst->fclass,fpst->fccnt,at->maxp.numGlyphs,&lglyphs);
+	bclass = ClassesFromNames(sf,fpst->bclass,fpst->bccnt,at->maxp.numGlyphs,&bglyphs,false);
+	lclass = ClassesFromNames(sf,fpst->fclass,fpst->fccnt,at->maxp.numGlyphs,&lglyphs,false);
     }
     pos = ftell(lfile);
     fseek(lfile,base+sizeof(uint16),SEEK_SET);
@@ -4169,7 +4172,7 @@ return;					/* No anchor positioning, no ligature carets */
 
 	/* Mark Attachment Class Subtable */
     if ( sf->mark_class_cnt>0 ) {
-	uint16 *mclasses = ClassesFromNames(sf,sf->mark_classes,sf->mark_class_cnt,at->maxp.numGlyphs,NULL);
+	uint16 *mclasses = ClassesFromNames(sf,sf->mark_classes,sf->mark_class_cnt,at->maxp.numGlyphs,NULL,false);
 	pos = ftell(at->gdef);
 	fseek(at->gdef,10,SEEK_SET);		/* location of mark attach table offset */
 	putshort(at->gdef,pos);

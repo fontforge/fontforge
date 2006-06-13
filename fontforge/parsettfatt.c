@@ -105,6 +105,48 @@ static char **ClassToNames(struct ttfinfo *info,int class_cnt,uint16 *class,int 
 return( ret );
 }
 
+static char *CoverageMinusClasses(uint16 *coverageglyphs,uint16 *classed,
+	struct ttfinfo *info ) {
+    int i, j, len;
+    uint8 *glyphs = gcalloc(info->glyph_cnt,1);
+    char *ret;
+
+    for ( i=0; coverageglyphs[i]!=0xffff; ++i )
+	glyphs[coverageglyphs[i]] = 1;
+    for ( i=0; i<info->glyph_cnt; ++i )
+	if ( classed[i]!=0 )
+	    glyphs[i] = 0;
+    for ( i=0; i<info->glyph_cnt; ++i )
+	if ( glyphs[i]!=0 )
+    break;
+    /* coverage table matches glyphs in classes. No need for special treatment*/
+    if ( i==info->glyph_cnt ) {
+	free(glyphs);
+return( NULL );
+    }
+    /* Otherwise we need to generate a class string of glyph names in the coverage */
+    /*  table but not in any class. These become the glyphs in class 0 */
+    ret = NULL;
+    for ( j=0; j<2; ++j ) {
+	len = 0;
+	for ( i=0; i<info->glyph_cnt; ++i ) {
+	    if ( glyphs[i]!=0 ) {
+		if ( j ) {
+		    strcpy( ret+len, info->chars[i]->name );
+		    strcat( ret+len, " ");
+		}
+		len += strlen(info->chars[i]->name)+1;
+	    }
+	}
+	if ( j==0 )
+	    ret = galloc(len+1);
+	else
+	    ret[len-1] = '\0';
+    }
+    free(glyphs);
+return( ret );
+}
+
 static int ClassFindCnt(uint16 *class,int tot) {
     int i, max=0;
 
@@ -559,6 +601,7 @@ return;
 	foffset = ftell(ttf);
 	class1 = getClassDefTable(ttf, stoffset+cd1, info->glyph_cnt, info->g_bounds);
 	class2 = getClassDefTable(ttf, stoffset+cd2, info->glyph_cnt, info->g_bounds);
+	glyphs = getCoverageTable(ttf,stoffset+coverage,info);
 	fseek(ttf, foffset, SEEK_SET);	/* come back */
 	c1_cnt = getushort(ttf);
 	c2_cnt = getushort(ttf);
@@ -585,6 +628,10 @@ return;
 #endif
 	    kc->firsts = ClassToNames(info,c1_cnt,class1,info->glyph_cnt);
 	    kc->seconds = ClassToNames(info,c2_cnt,class2,info->glyph_cnt);
+	    /* Now if the coverage table contains entries which are not in */
+	    /*  the list of first classes, then those glyphs are the real */
+	    /*  values for kc->firsts[0] */
+	    kc->firsts[0] = CoverageMinusClasses(glyphs,class1,info);
 	    for ( i=0; i<c1_cnt; ++i) {
 		for ( j=0; j<c2_cnt; ++j) {
 		    readvaluerecord(&vr1,vf1,ttf);
@@ -609,7 +656,7 @@ return;
 #endif
 		}
 	    }
-	} else {
+	} else {	/* This happens when we have a feature which is neither 'kern' nor 'vkrn' we don't know what to do with it so we make it into kern pairs */
 	    int k,l;
 	    for ( i=0; i<c1_cnt; ++i) {
 		for ( j=0; j<c2_cnt; ++j) {
@@ -626,6 +673,7 @@ return;
 	    }
 	}
 	free(class1); free(class2);
+	free(glyphs);
     }
 }
 
