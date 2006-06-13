@@ -76,7 +76,7 @@ typedef struct kernclasslistdlg {
 #define KCL_Width	200
 #define KCL_Height	173
 #define KC_Width	400
-#define KC_Height	400
+#define KC_Height	424
 #define KC_CANCELDROP	33
 
 
@@ -98,12 +98,13 @@ typedef struct kernclasslistdlg {
 #define CID_ClassLabel	1011
 #define CID_ClassUp	1012
 #define CID_ClassDown	1013
+#define CID_ClassSelect	1014
 
-#define CID_OK		1014
-#define CID_Cancel	1015
-#define CID_Group	1016
-#define CID_Line1	1017
-#define CID_Line2	1018
+#define CID_OK		1015
+#define CID_Cancel	1016
+#define CID_Group	1017
+#define CID_Line1	1018
+#define CID_Line2	1019
 
 #define CID_Set		1020
 #define CID_Select	1021
@@ -1397,6 +1398,44 @@ static int KCD_ClassSelected(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static int KCD_TextSelect(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+	KernClassDlg *kcd = GDrawGetUserData(GGadgetGetWindow(g));
+	int off = GGadgetGetCid(g)-CID_ClassSelect;
+	const unichar_t *name = _GGadgetGetTitle(g);
+	GGadget *list = GWidgetGetControl(kcd->gw,CID_ClassList+off);
+	int32 len;
+	GTextInfo **ti = GGadgetGetList(list,&len);
+	int nlen=u_strlen(name);
+	unichar_t *start, *pt;
+	int i;
+
+	for ( i=0; i<len; ++i ) {
+	    for ( start = ti[i]->text; start!=NULL && *start!='\0'; ) {
+		while ( *start==' ' ) ++start;
+		for ( pt=start; *pt!='\0' && *pt!=' '; ++pt );
+		if ( pt-start == nlen && u_strncmp(name,start,nlen)==0 ) {
+		    GGadgetSelectOneListItem(list,i);
+		    GGadgetScrollListToPos(list,i);
+		    _KCD_EnableButtons(kcd,off);
+		    if ( off==0 )
+			KCD_VShow(kcd,i);
+		    else
+			KCD_HShow(kcd,i);
+return( true );
+		}
+		start = pt;
+	    }
+	}
+
+	/* Otherwise deselect everything */
+	if ( nlen!=0 )
+	    for ( i=0; i<len; ++i )
+		GGadgetSelectListItem(list,i,false);
+    }
+return( true );
+}
+
 static void KCD_Mouse(KernClassDlg *kcd,GEvent *event) {
     static unichar_t space[200];
     char buf[30];
@@ -1905,7 +1944,7 @@ static int AddClassList(GGadgetCreateData *gcd, GTextInfo *label, int k, int off
     gcd[k].gd.cid = CID_ClassList+off;
     gcd[k++].creator = GListCreate;
 
-    label[k].text = (unichar_t *) _("_New...");
+    label[k].text = (unichar_t *) _("New...");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
@@ -1916,7 +1955,7 @@ static int AddClassList(GGadgetCreateData *gcd, GTextInfo *label, int k, int off
     gcd[k].gd.cid = CID_ClassNew+off;
     gcd[k++].creator = GButtonCreate;
 
-    label[k].text = (unichar_t *) _("_Edit...");
+    label[k].text = (unichar_t *) _("Edit...");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
@@ -1927,7 +1966,7 @@ static int AddClassList(GGadgetCreateData *gcd, GTextInfo *label, int k, int off
     gcd[k].gd.cid = CID_ClassEdit+off;
     gcd[k++].creator = GButtonCreate;
 
-    label[k].text = (unichar_t *) _("_Delete");
+    label[k].text = (unichar_t *) _("Delete");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
@@ -1937,6 +1976,23 @@ static int AddClassList(GGadgetCreateData *gcd, GTextInfo *label, int k, int off
     gcd[k].gd.handle_controlevent = KCD_Delete;
     gcd[k].gd.cid = CID_ClassDel+off;
     gcd[k++].creator = GButtonCreate;
+
+    label[k].text = (unichar_t *) _("Select Glyph:");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = gcd[k-3].gd.pos.x+5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+26+4;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Select the class containing the named glyph");
+    gcd[k++].creator = GLabelCreate;
+
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+75; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;
+    gcd[k].gd.pos.width = 80;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Select the class containing the named glyph");
+    gcd[k].gd.handle_controlevent = KCD_TextSelect;
+    gcd[k].gd.cid = CID_ClassSelect+off;
+    gcd[k++].creator = GTextFieldCreate;
 return( k );
 }
 
@@ -2112,8 +2168,8 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class) {
 static void KernClassD(KernClassListDlg *kcld,KernClass *kc) {
     GRect pos, subpos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[34];
-    GTextInfo label[34];
+    GGadgetCreateData gcd[38];
+    GTextInfo label[38];
     KernClassDlg *kcd;
     int i,j, kc_width, vi, y, k;
     static unichar_t courier[] = { 'c', 'o', 'u', 'r', 'i', 'e', 'r', ',', 'm','o','n','o','s','p','a','c','e',',','c','l','e','a','r','l','y','u',',', 'u','n','i','f','o','n','t', '\0' };
@@ -2231,7 +2287,7 @@ return;
     i = AddClassList(gcd,label,i,0,5,y,(kc_width-20)/2);
     i = AddClassList(gcd,label,i,100,(kc_width-20)/2+10,y,(kc_width-20)/2);
 
-    gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = GDrawPointsToPixels(gw,gcd[i-3].gd.pos.y+27);
+    gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = GDrawPointsToPixels(gw,gcd[i-1].gd.pos.y+27);
     gcd[i].gd.pos.width = pos.width-20;
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
     gcd[i].gd.cid = CID_Line2;
@@ -2311,7 +2367,7 @@ return;
 	if ( i==0 && kcd->orig!=NULL && kcd->orig->firsts[0]!=NULL ) {
 	    /* OpenType can set class 0 of the first classes by using a coverage*/
 	    /*  table with more glyphs than are present in all the other classes */
-	    unichar_t *temp = uc_copy(kcd->orig->firsts[k]);
+	    unichar_t *temp = uc_copy(kcd->orig->firsts[0]);
 	    GListAppendLine(list,temp,false);
 	    free(temp);
 	} else
