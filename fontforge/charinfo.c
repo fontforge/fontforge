@@ -4591,17 +4591,26 @@ uint32 LigTagFromUnicode(int uni) {
 
     if (( uni>=0xbc && uni<=0xbe ) || (uni>=0x2153 && uni<=0x215f) )
 	tag = CHR('f','r','a','c');	/* Fraction */
-    else if ( uni==0xfb4f )
-	tag = CHR('h','l','i','g');
+    /* hebrew precomposed characters */
     else if ( uni>=0xfb2a && uni<=0xfb4e )
 	tag = CHR('c','c','m','p');
+    else if ( uni==0xfb4f )
+	tag = CHR('h','l','i','g');
+    /* armenian */
+    else if ( uni>=0xfb13 && uni<=0xfb17 )
+	tag = CHR('l','i','g','a');
+    /* devanagari ligatures */
     else if ( (uni>=0x0958 && uni<=0x095f) || uni==0x931 || uni==0x934 || uni==0x929 )
 	tag = CHR('n','u','k','t');
     else switch ( uni ) {
       case 0xfb05:		/* long-s t */
-	tag = CHR('h','l','i','g');
+	/* This should be 'liga' for long-s+t and 'hlig' for s+t */
+	tag = CHR('l','i','g','a');
       break;
-      case 0xfb06:		/* s t */
+      case 0x00c6: case 0x00e6:		/* ae, AE */
+      case 0x0152: case 0x0153:		/* oe, OE */
+      case 0x0132: case 0x0133:		/* ij, IJ */
+      case 0xfb06:			/* s t */
 	tag = CHR('d','l','i','g');
       break;
       case 0xfefb: case 0xfefc:	/* Lam & Alef, required ligs */
@@ -4722,6 +4731,23 @@ return( NULL );
 return( alt );
 }
 
+/* Adam Twardoch says:
+    That's right. In short:
+
+    liga: longs t -> longs_t
+    dlig: s t -> s_t, c t -> c_t
+    hlig: s t -> longs_t
+    hist: s -> longs
+
+    BTW, I'm also putting a e -> ae and o e -> oe into hlig (same for 
+    uppercase). While ae and oe are letters used Danish, French or 
+    Norwegian, they were used as ligatures in Latin, English and many other 
+    languages (including Polish). Therefore, I believe it's quite reasonable
+John Hudson replies
+    No, they're a perfect example of a discretionary ligature. :)
+Adam:
+    They are both
+*/
 static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
     /* This fills in default ligatures as the name suggests */
     /* it also builds up various other default gpos/gsub tables */
