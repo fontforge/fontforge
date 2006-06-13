@@ -3060,11 +3060,19 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *sf,
     if ( sf->fullname!=NULL && strstrmatch(sf->fullname,"outline")!=NULL )
 	os2->fsSel |= 8;
     if ( os2->fsSel==0 ) os2->fsSel = 64;		/* Regular */
+    if ( os2->version>=4 ) {
+	if ( strstrmatch(sf->fontname,"Obli")==0 ) {
+	    os2->fsSel &= ~1;		/* Turn off Italic */
+	    os2->fsSel |= 512;		/* Turn on Oblique */
+	}
+	os2->fsSel |= 128;		/* Don't use win ascent/descent for line spacing */
+	/* I haven't the foggiest idea how to guess whether the family varies on width weight slope only */
+    }
 /* David Lemon @Adobe.COM
 1)  The sTypoAscender and sTypoDescender values should sum to 2048 in 
 a 2048-unit font. They indicate the position of the em square 
 relative to the baseline.
-GWW: Nope, sTypoAscender-sTypoDescender == EmSize
+GWW: Almost, sTypoAscender-sTypoDescender == EmSize
 
 2)  The usWinAscent and usWinDescent values represent the maximum 
 height and depth of specific glyphs within the font, and some 
@@ -3180,7 +3188,7 @@ docs are wrong.
 	os2->maxContext = 1;	/* Kerning will set this to 2, ligature to whatever */
     }
 
-    if ( os2->version==3 && os2->v3_avgCharWid!=0 )
+    if ( os2->version>=3 && os2->v3_avgCharWid!=0 )
 	os2->avgCharWid = os2->v3_avgCharWid;
     else if ( os2->v1_avgCharWid!=0 )
 	os2->avgCharWid = os2->v1_avgCharWid;
