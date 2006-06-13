@@ -1977,7 +1977,7 @@ static int AddClassList(GGadgetCreateData *gcd, GTextInfo *label, int k, int off
     gcd[k].gd.cid = CID_ClassDel+off;
     gcd[k++].creator = GButtonCreate;
 
-    label[k].text = (unichar_t *) _("Select Glyph:");
+    label[k].text = (unichar_t *) _("Select Glyph Class:");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
@@ -1986,7 +1986,7 @@ static int AddClassList(GGadgetCreateData *gcd, GTextInfo *label, int k, int off
     gcd[k].gd.popup_msg = (unichar_t *) _("Select the class containing the named glyph");
     gcd[k++].creator = GLabelCreate;
 
-    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+75; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+100; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;
     gcd[k].gd.pos.width = 80;
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     gcd[k].gd.popup_msg = (unichar_t *) _("Select the class containing the named glyph");
