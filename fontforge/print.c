@@ -2121,7 +2121,7 @@ return;
     }
     for ( i=0; pointsizes[i]!=0; ++i ) {
 	if ( pi->printtype==pt_pdf ) {
-	    fprintf(pi->out,"/F%d %g Tf\n  <", pi->fonts[enc/256], pointsizes[i]);
+	    fprintf(pi->out,"/F%d %g Tf\n  <", pi->iscid?0:pi->fonts[enc/256], pointsizes[i]);
 	    outputchar(pi,sc);
 	    fprintf( pi->out, "> Tj\n" );
 	    /* Don't need to use TJ here, no possibility of kerning */
