@@ -488,6 +488,7 @@ struct glyphinfo {
     unsigned int dovariations: 1;
     unsigned int onlybitmaps: 1;
     unsigned int has_instrs: 1;
+    unsigned int is_ttf: 1;
     SplineFont *sf;
     int32 *pointcounts;
     int *bygid;			/* glyph list */

@@ -5483,6 +5483,7 @@ int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
 
     memset(&at,'\0',sizeof(struct alltabs));
     at.gi.flags = flags;
+    at.gi.is_ttf = format == ff_ttf || format==ff_ttfsym || format==ff_ttfmacbin || format==ff_ttfdfont;
     at.applemode = (flags&ttf_flag_applemode)?1:0;
     at.opentypemode = (flags&ttf_flag_otmode)?1:0;
     at.msbitmaps = bsizes!=NULL && !at.applemode && at.opentypemode;
