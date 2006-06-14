@@ -907,10 +907,12 @@ static void SFDDumpRefs(FILE *sfd,RefChar *refs, char *name,EncMap *map, int *ne
 		    ref->transform[3], ref->transform[4], ref->transform[5],
 		    ref->use_my_metrics|(ref->round_translation_to_grid<<1)|
 		     (ref->point_match<<2));
-	if ( ref->point_match )
-	    fprintf(sfd, " %d %d\n", ref->match_pt_base, ref->match_pt_ref );
-	else
-	    putc('\n',sfd);
+	if ( ref->point_match ) {
+	    fprintf(sfd, " %d %d", ref->match_pt_base, ref->match_pt_ref );
+	    if ( ref->point_match_out_of_date )
+		fprintf( sfd, " O" );
+	}
+	putc('\n',sfd);
     }
 }
 
@@ -945,11 +947,12 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
     if ( sc->glyph_class!=0 )
 	fprintf(sfd, "GlyphClass: %d\n", sc->glyph_class );
     if ( sc->changedsincelasthinted|| sc->manualhints || sc->widthset )
-	fprintf(sfd, "Flags: %s%s%s%s\n",
+	fprintf(sfd, "Flags: %s%s%s%s%s\n",
 		sc->changedsincelasthinted?"H":"",
 		sc->manualhints?"M":"",
 		sc->widthset?"W":"",
-		sc->views!=NULL?"O":"");
+		sc->views!=NULL?"O":"",
+		sc->instructions_out_of_date?"I":"");
     if ( sc->tex_height!=TEX_UNDEF || sc->tex_depth!=TEX_UNDEF ||
 	    sc->tex_sub_pos!=TEX_UNDEF || sc->tex_super_pos!=TEX_UNDEF )
 	fprintf( sfd, "TeX: %d %d %d %d\n", sc->tex_height, sc->tex_depth,
@@ -2752,6 +2755,11 @@ static RefChar *SFDGetRef(FILE *sfd, int was_enc) {
 	if ( rf->point_match ) {
 	    getsint(sfd,(int16 *) &rf->match_pt_base);
 	    getsint(sfd,(int16 *) &rf->match_pt_ref);
+	    while ( (ch=getc(sfd))==' ');
+	    if ( ch=='O' )
+		rf->point_match_out_of_date = true;
+	    else
+		ungetc(ch,sfd);
 	}
     }
 return( rf );
@@ -2949,6 +2957,7 @@ return( NULL );
 		else if ( ch=='M' ) sc->manualhints = true;
 		else if ( ch=='W' ) sc->widthset = true;
 		else if ( ch=='O' ) sc->wasopen = true;
+		else if ( ch=='I' ) sc->instructions_out_of_date = true;
 		ch = getc(sfd);
 	    }
 	    if ( sf->multilayer || sf->onlybitmaps || sf->strokedfont || sf->order2 )
