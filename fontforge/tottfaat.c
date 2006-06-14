@@ -268,6 +268,14 @@ return;
 	    /* If we are here, we must be using version 1 */
 	    uint32 len_pos = ftell(at->kern), pos;
 	    uint16 *class1, *class2;
+	    int first_cnt = kc->first_cnt;
+
+	    /* OpenType fonts can actually have a set of glyphs in class[0] of*/
+	    /*  the first class. This happens when there are glyphs in the */
+	    /*  coverage table which are not in any of the classes. Otherwise */
+	    /*  class 0 is sort of useless in opentype */
+	    if ( kc->firsts[0]!=NULL )
+		++first_cnt;
 
 	    putlong(at->kern,0); /* subtable length */
 	    putshort(at->kern,(isv?0x8002:2)|	/* format 2, horizontal/vertical flags (coverage) */
@@ -278,6 +286,13 @@ return;
 	    putshort(at->kern,0);		/* left classes */
 	    putshort(at->kern,0);		/* right classes */
 	    putshort(at->kern,16);		/* Offset to array, next byte */
+
+	    if ( kc->firsts[0]!=NULL ) {
+		/* Create a dummy class to correspond to the mac's class 0 */
+		/*  all entries will be 0 */
+		for ( i=0 ; i<kc->second_cnt; ++i )
+		    putshort(at->kern,0);
+	    }
 	    for ( i=0; i<kc->first_cnt*kc->second_cnt; ++i )
 		putshort(at->kern,kc->offsets[i]);
 
@@ -285,7 +300,7 @@ return;
 	    fseek(at->kern,len_pos+10,SEEK_SET);
 	    putshort(at->kern,pos-len_pos);
 	    fseek(at->kern,pos,SEEK_SET);
-	    class1 = ClassesFromNames(sf,kc->firsts,kc->first_cnt,at->maxp.numGlyphs,NULL);
+	    class1 = ClassesFromNames(sf,kc->firsts,kc->first_cnt,at->maxp.numGlyphs,NULL,true);
 	    DumpKernClass(at->kern,class1,at->maxp.numGlyphs,16,sizeof(uint16)*kc->second_cnt);
 	    free(class1);
 
@@ -293,7 +308,7 @@ return;
 	    fseek(at->kern,len_pos+12,SEEK_SET);
 	    putshort(at->kern,pos-len_pos);
 	    fseek(at->kern,pos,SEEK_SET);
-	    class2 = ClassesFromNames(sf,kc->seconds,kc->second_cnt,at->maxp.numGlyphs,NULL);
+	    class2 = ClassesFromNames(sf,kc->seconds,kc->second_cnt,at->maxp.numGlyphs,NULL,true);
 	    DumpKernClass(at->kern,class2,at->maxp.numGlyphs,0,sizeof(uint16));
 	    free(class2);
 
