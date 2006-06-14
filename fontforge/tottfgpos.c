@@ -1189,7 +1189,7 @@ static void dumpgposkernclass(FILE *gpos,SplineFont *sf,KernClass *kc,
     free(class2);
 }
 
-static void dumpanchor(FILE *gpos,AnchorPoint *ap) {
+static void dumpanchor(FILE *gpos,AnchorPoint *ap, int is_ttf ) {
     int base = ftell(gpos);
 
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
@@ -1197,7 +1197,7 @@ static void dumpanchor(FILE *gpos,AnchorPoint *ap) {
 	putshort(gpos,3);	/* format 3 w/ device tables */
     else
 #endif
-    if ( ap->has_ttf_pt )
+    if ( ap->has_ttf_pt && is_ttf )
 	putshort(gpos,2);	/* format 2 w/ a matching ttf point index */
     else
 	putshort(gpos,1);	/* Anchor format 1 just location*/
@@ -1213,7 +1213,7 @@ static void dumpanchor(FILE *gpos,AnchorPoint *ap) {
 	dumpgposdevicetable(gpos,&ap->yadjust);
     } else
 #endif
-    if ( ap->has_ttf_pt )
+    if ( ap->has_ttf_pt && is_ttf )
 	putshort(gpos,ap->ttf_pt_index);
 }
 
@@ -1279,9 +1279,9 @@ return( lookups );
 		if ( ap->anchor==ac && ap->type==at_cexit ) exit = ap;
 	    }
 	    if ( entry!=NULL )
-		dumpanchor(gpos,entry);
+		dumpanchor(gpos,entry,gi->is_ttf);
 	    if ( exit!=NULL )
-		dumpanchor(gpos,exit);
+		dumpanchor(gpos,exit,gi->is_ttf);
 	}
 	coverage_offset = ftell(gpos);
 	dumpcoveragetable(gpos,glyphs);
@@ -1326,7 +1326,8 @@ return( glyphs );
 
 static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
 	enum anchor_type at,
-	SplineChar ***marks,SplineChar **base,struct lookup *lookups, int classcnt) {
+	SplineChar ***marks,SplineChar **base,struct lookup *lookups,
+	int classcnt, struct glyphinfo *gi) {
     AnchorClass *ac=NULL;
     struct lookup *new;
     int j,cnt,k,l, pos, offset, suboffset, tot, max;
@@ -1372,7 +1373,7 @@ static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
 #endif
 		      break;
 		      case 2:
-			dumpanchor(gpos,ap);
+			dumpanchor(gpos,ap,gi->is_ttf);
 		      break;
 		    }
 		}
@@ -1432,7 +1433,7 @@ static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
 			/* !!! We could search through the character here to see */
 			/*  if there is any point with this coord, and if so connect */
 			/*  anchor to the point (anchor format 2) */
-			dumpanchor(gpos,aps[k*max+l]);
+			dumpanchor(gpos,aps[k*max+l],gi->is_ttf);
 		    }
 		}
 	    }
@@ -1481,7 +1482,7 @@ static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
 	    if ( ap!=NULL )
 	break;
 	}
-	dumpanchor(gpos,ap);
+	dumpanchor(gpos,ap,gi->is_ttf);
     }
     if ( markglyphs!=marks[0] )
 	free(markglyphs);
@@ -2450,11 +2451,11 @@ static struct lookup *AnchorsAway(FILE *lfile,SplineFont *sf,struct lookup *look
 		}
 		AnchorClassDecompose(sf,ac,classcnt,subcnts,marks,&base,&lig,&mkmk,gi);
 		if ( marks[0]!=NULL && base!=NULL )
-		    lookups = dumpgposAnchorData(lfile,ac,at_basechar,marks,base,lookups,classcnt);
+		    lookups = dumpgposAnchorData(lfile,ac,at_basechar,marks,base,lookups,classcnt,gi);
 		if ( marks[0]!=NULL && lig!=NULL )
-		    lookups = dumpgposAnchorData(lfile,ac,at_baselig,marks,lig,lookups,classcnt);
+		    lookups = dumpgposAnchorData(lfile,ac,at_baselig,marks,lig,lookups,classcnt,gi);
 		if ( marks[0]!=NULL && mkmk!=NULL )
-		    lookups = dumpgposAnchorData(lfile,ac,at_basemark,marks,mkmk,lookups,classcnt);
+		    lookups = dumpgposAnchorData(lfile,ac,at_basemark,marks,mkmk,lookups,classcnt,gi);
 		for ( i=0; i<classcnt; ++i )
 		    free(marks[i]);
 		free(base);
