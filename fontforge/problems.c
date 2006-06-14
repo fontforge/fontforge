@@ -2836,7 +2836,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rfgcd[0].creator = GCheckBoxCreate;
 
 /* GT: Refs is an abbreviation for References. Space is somewhat constrained here */
-    rflabel[1].text = (unichar_t *) _("Refs with bad ttf transformation matrices");
+    rflabel[1].text = (unichar_t *) _("Refs with bad tt transformation matrices");
     rflabel[1].text_is_1byte = true;
     rflabel[1].text_in_resource = true;
     rfgcd[1].gd.label = &rflabel[1];

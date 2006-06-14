@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 2-Sep-2002 -->
-  <!-- AP: Last modified: 25-Apr-2006 -->
+  <!-- AP: Last modified: 14-Jun-2006 -->
   <TITLE>Preferences Dialog</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -13,7 +13,7 @@
     Preferences Dialog
   </H1>
   <P>
-  <IMG SRC="prefs-generic.png" WIDTH="286" HEIGHT="379" ALIGN="Right">
+  <IMG SRC="prefs-generic.png" WIDTH="407" HEIGHT="545" ALIGN="Right">
   <DL>
     <DT>
       <A NAME="AutoHint">AutoHint</A>
@@ -46,11 +46,6 @@
       format they used in the font (that is quadratic for truetype fonts and cubic
       for postscript). If you set this flag then all loaded fonts will have the
       same file format as that specified by NewFontsQuadratic above.
-    <DT>
-      <A NAME="GreekNames">GreekNames</A>
-    <DD>
-      Will cause most new fonts to be created with a greek
-      <A HREF="fontinfo.html#Interpretation">interpretation</A>.
     <DT>
       <A NAME="ResourceFile">ResourceFile</A>
     <DD>
@@ -153,6 +148,8 @@
       window will shift to display that character, if Off typed characters will
       be ignored.<BR Clear=all>
   </DL>
+  <P>
+  <IMG SRC="prefs-accent.png" ALIGN="Right" WIDTH="407" HEIGHT="545">
   <DL>
     <DT>
       <A NAME="AccentOffsetPercent">AccentOffsetPercent</A>
@@ -174,7 +171,47 @@
       PreferSpacingAccents
     <DD>
       Whether to prefer spacing accents (Unicode 02C0-02FF) or combining accents
-      (0300-036F) when building accented glyphs.
+      (0300-036F) when building accented glyphs.<BR CLEAR=ALL>
+  </DL>
+  <P>
+  <IMG SRC="prefs-apps.png" WIDTH="282" HEIGHT="372" ALIGN="Right">
+  <DL>
+    <DT>
+      <A NAME="PreferPotrace">PreferPotrace</A>
+    <DD>
+      If you system has both potrace and autotrace installed this allows you to
+      specify which you'd prefer FontForge to use for autotracing.
+    <DT>
+      <A NAME="AutotraceArgs">AutotraceArgs</A>
+    <DD>
+      This allows you to specify any arguments you want passed to the autotrace
+      program. Don't try to pass something that will change the input or output
+      format or set input or output files.
+    <DT>
+      <A NAME="AutotraceAsk">AutotraceAsk</A>
+    <DD>
+      If this is set then each time autotrace is invoked it will ask you for arguments.
+    <DT>
+      <A NAME="MfArgs">MfArgs</A>
+    <DD>
+      This is the command passed to the mf (MetaFont) program which controls conversion
+      of .mf files into bitmaps.
+    <DT>
+      <A NAME="MfClearBg">MfClearBg</A>
+    <DD>
+      Loading a .mf font is a multi step process, first a bitmap font is generated,
+      it is loaded into the background, then autotrace is invoked to trace around
+      the backgrounds. These background bitmaps can take up a lot of space and
+      you may not want them after they have been autotraced. Selecting this entry
+      will remove those bitmaps from the font after they have been used.
+    <DT>
+      <A NAME="MfShowErr">MfShowErr</A>
+    <DD>
+      The mf program generates a fair amount of verbiage even when it is working
+      correctly. And if it is working correctly you don't want to see those words.
+      So normally FontForge suppresses messages from mf. But if something goes
+      wrong you do want to see mf's output and setting this will allow you to do
+      so.<BR Clear=all>
   </DL>
   <P>
   <IMG SRC="prefs-font.png" WIDTH="282" HEIGHT="372" ALIGN="Right">
@@ -254,43 +291,24 @@
       <A HREF="encodingmenu.html#namelist">namelists</A> for more
       information.<BR Clear=ALL>
   </DL>
+  <P>
+  <IMG SRC="prefs-tt.png" WIDTH="407" HEIGHT="545" ALIGN="Right">
   <DL>
     <DT>
-      <IMG SRC="prefs-apps.png" WIDTH="282" HEIGHT="372" ALIGN="Right"><A NAME="PreferPotrace">PreferPotrace</A>
+      <A NAME="ClearInstrsBigChanges">Clear Instructions on Big Changes</A>
     <DD>
-      If you system has both potrace and autotrace installed this allows you to
-      specify which you'd prefer FontForge to use for autotracing.
-    <DT>
-      <A NAME="AutotraceArgs">AutotraceArgs</A>
-    <DD>
-      This allows you to specify any arguments you want passed to the autotrace
-      program. Don't try to pass something that will change the input or output
-      format or set input or output files.
-    <DT>
-      <A NAME="AutotraceAsk">AutotraceAsk</A>
-    <DD>
-      If this is set then each time autotrace is invoked it will ask you for arguments.
-    <DT>
-      <A NAME="MfArgs">MfArgs</A>
-    <DD>
-      This is the command passed to the mf (MetaFont) program which controls conversion
-      of .mf files into bitmaps.
-    <DT>
-      <A NAME="MfClearBg">MfClearBg</A>
-    <DD>
-      Loading a .mf font is a multi step process, first a bitmap font is generated,
-      it is loaded into the background, then autotrace is invoked to trace around
-      the backgrounds. These background bitmaps can take up a lot of space and
-      you may not want them after they have been autotraced. Selecting this entry
-      will remove those bitmaps from the font after they have been used.
-    <DT>
-      <A NAME="MfShowErr">MfShowErr</A>
-    <DD>
-      The mf program generates a fair amount of verbiage even when it is working
-      correctly. And if it is working correctly you don't want to see those words.
-      So normally FontForge suppresses messages from mf. But if something goes
-      wrong you do want to see mf's output and setting this will allow you to do
-      so.<BR Clear=all>
+      TrueType instructions refer to points by number. So if you do any editing
+      that adds, removes or otherwise changes the point numbers then the instructions
+      will be applied to a different set of points.
+      <P>
+      Sometimes the results are amusing, but almost always they are ugly and wrong.
+      <P>
+      This is very different from having out of date PostScript Hints. There the
+      hints are probably just useless (as opposed to being actively bad, as here).
+      <P>
+      FontForge will normally delete all instructions to prevent this happening.
+      However, if you are prepared to fix up the instructions after a set of changes
+      you may prefer to have the instructions left. Be careful though! <BR CLEAR=ALL>
   </DL>
   <P>
   <IMG SRC="prefs-script.png" WIDTH="282" HEIGHT="372" ALIGN="Right"><A NAME="scripts">This

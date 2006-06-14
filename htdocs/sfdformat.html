@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 8-Jan-2006 -->
+  <!-- AP: Last modified: 14-Jun-2006 -->
   <TITLE>Spline Font Database File Format</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -271,18 +271,23 @@ EndPrivate
   the first character, and 64 for the second. It is active for entry 2 in the
   script lang list above. The <A HREF="charinfo.html#lookup-flags">OpenType
   flags </A>will be 0. The next line says that the first character class of
-  the first character (numbered 1, class 0 is reserved and never needs to be
-  defined) consists of only one character "F" (the number in front is the string
-  length of the line. It speeds up processing the sfd file but has no semantic
-  content). The next line is for class 2 of the first character, it has more
-  characters in it and a longer string length. After 30 entries we start on
-  the classes for the second character. They look exactly like classes for
-  the first character. After all the second character classes have been defined
-  we have an array of numbers, &lt;char1 class cnt&gt;*&lt;char2 class cnt&gt;
-  of them in fact. This specifies the amount of kerning that should be placed
-  between a characters of the given classes of left and right characters (ie.
-  if char1 was in left class 2 and char2 was in right class 4 then we would
-  index this array with 3*&lt;char2 class cnt&gt; + 4).
+  the first character (numbered 1, class 0 is reserved and usually is not defined)
+  consists of only one character "F" (the number in front is the string length
+  of the line. It speeds up processing the sfd file but has no semantic content).
+  The next line is for class 2 of the first character, it has more characters
+  in it and a longer string length. After 30 entries we start on the classes
+  for the second character. They look exactly like classes for the first character.
+  After all the second character classes have been defined we have an array
+  of numbers, &lt;char1 class cnt&gt;*&lt;char2 class cnt&gt; of them in fact.
+  This specifies the amount of kerning that should be placed between a characters
+  of the given classes of left and right characters (ie. if char1 was in left
+  class 2 and char2 was in right class 4 then we would index this array with
+  3*&lt;char2 class cnt&gt; + 4).
+  <P>
+  In some cases it is possible to specify class 0 of the first glyph in a kerning
+  by classes entry (but not class 0 of the second glyph). In this case there
+  will be a plus sign after the count of classes for the first glyph. Then
+  the first list of names will be class 0.
   <P>
   If your fontforge has been configured with device table support you may find
   <A HREF="#device-table">device</A> tables interspersed among the kerning
@@ -600,10 +605,11 @@ EndChar
   in the current font, then in unicode, and finally the original position (GID).
   Then the advance width.
   <P>
-  Then a set of flags (there are currently four flags: "H" =&gt; the character
+  Then a set of flags (there are currently five flags: "H" =&gt; the character
   has been changed since last hinted, "M" the character's hints have been adjusted
-  manually, "W" the width has been set explicitly, and "O" =&gt; the character
-  was open when last saved).
+  manually, "W" the width has been set explicitly, "O" =&gt; the character
+  was open when last saved, and "I" the character's instructions are out of
+  date).
   <P>
   Then horizontal and vertical (postscript) stem hints (set of several two
   number pairs, the first number in the pair is the location of the stem, the
@@ -750,6 +756,15 @@ EndChar
       If this is set there will be two additional numbers, the first indicating
       the point number in the base glyph, and the second the point number in the
       current reference.
+      <BLOCKQUOTE>
+	<PRE>Ref: 33 44 N 1 0 0 1 0 0 1
+Ref: 35 46 N 1 0 0 1 0 414 6 3 7 O
+</PRE>
+      </BLOCKQUOTE>
+      <P>
+      The bottom line indicates that point 3 and point 7 will be positioned together.
+      The optional "O" is a flag which indicates that this information is out of
+      date.
   </UL>
   <P>
   Old versions of sfd files will use the format:

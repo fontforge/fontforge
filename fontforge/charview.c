@@ -2972,6 +2972,10 @@ static void instrcheck(SplineChar *sc) {
     struct splinecharlist *dep;
     int any_ptnumbers_shown = false;
     CharView *cv;
+    extern int clear_tt_instructions_when_needed;
+    SplineSet *ss;
+    SplinePoint *sp;
+    AnchorPoint *ap;
 
     if ( !sc->parent->order2 )
 return;
@@ -2984,26 +2988,34 @@ return;
 	}
 #endif	/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-    if ( sc->instructions_out_of_date && !any_ptnumbers_shown )
+    if ( sc->instructions_out_of_date && !any_ptnumbers_shown && sc->anchor==NULL )
 return;
-    if ( instrs==NULL && sc->dependents==NULL && !any_ptnumbers_shown )
+    if ( instrs==NULL && sc->dependents==NULL && !any_ptnumbers_shown && sc->anchor==NULL )
 return;
     /* If the points are no longer in order then the instructions are not valid */
     /*  (because they'll refer to the wrong points) and should be removed */
     /* Except that annoys users who don't expect it */
     if ( !SCPointsNumberedProperly(sc)) {
-#if 0
-	free(sc->ttf_instrs); sc->ttf_instrs = NULL;
-	sc->ttf_instrs_len = 0;
+	if ( clear_tt_instructions_when_needed ) {
+	    free(sc->ttf_instrs); sc->ttf_instrs = NULL;
+	    sc->ttf_instrs_len = 0;
 # ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	SCMarkInstrDlgAsChanged(sc);
+	    SCMarkInstrDlgAsChanged(sc);
 # endif	/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-#endif
-	sc->instructions_out_of_date = true;
+	} else
+	    sc->instructions_out_of_date = true;
 	for ( dep=sc->dependents; dep!=NULL; dep=dep->next ) {
 	    RefChar *ref;
-	    if ( dep->sc->ttf_instrs_len!=0 )
-		dep->sc->instructions_out_of_date = true;
+	    if ( dep->sc->ttf_instrs_len!=0 ) {
+		if ( clear_tt_instructions_when_needed ) {
+		    free(dep->sc->ttf_instrs); dep->sc->ttf_instrs = NULL;
+		    dep->sc->ttf_instrs_len = 0;
+# ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+		    SCMarkInstrDlgAsChanged(dep->sc);
+# endif	/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+		} else
+		    dep->sc->instructions_out_of_date = true;
+	    }
 	    for ( ref=dep->sc->layers[ly_fore].refs; ref!=NULL && ref->sc!=sc; ref=ref->next );
 	    for ( ; ref!=NULL ; ref=ref->next )
 #if 0
@@ -3013,6 +3025,30 @@ return;
 		    ref->point_match_out_of_date = true;
 	}
 	SCNumberPoints(sc);
+	for ( ap=sc->anchor ; ap!=NULL; ap=ap->next ) {
+	    if ( ap->has_ttf_pt ) {
+		ap->has_ttf_pt = false;
+		for ( ss = sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
+		    for ( sp=ss->first; ; ) {
+			if ( sp->me.x==ap->me.x && sp->me.y==ap->me.y && sp->ttfindex!=0xffff ) {
+			    ap->has_ttf_pt = true;
+			    ap->ttf_pt_index = sp->ttfindex;
+		goto found;
+			} else if ( sp->nextcp.x==ap->me.x && sp->nextcp.y==ap->me.y && sp->nextcpindex!=0xffff ) {
+			    ap->has_ttf_pt = true;
+			    ap->ttf_pt_index = sp->nextcpindex;
+		goto found;
+			}
+			if ( sp->next==NULL )
+		    break;
+			sp = sp->next->to;
+			if ( sp==ss->first )
+		    break;
+		    }
+		}
+		found: ;
+	    }
+	}
     }
 }
 

@@ -78,7 +78,6 @@ extern int palettes_docked;		/* in cvpalettes */
 extern int cvvisible[2], bvvisible[3];	/* in cvpalettes.c */
 extern int maxundoes;			/* in cvundoes */
 extern int prefer_cjk_encodings;	/* in parsettf */
-int greeknames = false;
 extern int onlycopydisplayed, copymetadata, copyttfinstr;
 extern struct cvshows CVShows;
 extern int oldformatstate;		/* in savefontdlg.c */
@@ -117,6 +116,7 @@ extern MacFeat *default_mac_feature_map,	/* from macenc.c */
 		*user_mac_feature_map;
 int updateflex = false;
 int allow_utf8_glyphnames = false;
+int clear_tt_instructions_when_needed = true;
 
 extern int rectelipse, polystar, regular_star;	/* from cvpalettes.c */
 extern int center_out[2];			/* from cvpalettes.c */
@@ -255,7 +255,6 @@ static struct prefs_list {
 	{ N_("NewEmSize"), pr_int, &new_em_size, NULL, NULL, 'S', NULL, 0, N_("The default size of the Em-Square in a newly created font.") },
 	{ N_("NewFontsQuadratic"), pr_bool, &new_fonts_are_order2, NULL, NULL, 'Q', NULL, 0, N_("Whether new fonts should contain splines of quadratic (truetype)\nor cubic (postscript & opentype).") },
 	{ N_("LoadedFontsAsNew"), pr_bool, &loaded_fonts_same_as_new, NULL, NULL, 'L', NULL, 0, N_("Whether fonts loaded from the disk should retain their splines\nwith the original order (quadratic or cubic), or whether the\nsplines should be converted to the default order for new fonts\n(see NewFontsQuadratic).") },
-	{ N_("GreekNames"), pr_bool, &greeknames, NULL, NULL, 'G', NULL, 0, N_("Adobe has assigned the names Delta, Omega and mu\nto Increment, Ohm and micro signs respectively\nThis seems very odd to Greek font designers who use\nthe names to refer to letters of the alphabet.\nSetting this flags means that the alphabetic characters will\nbe named Delta.greek, Omega.greek and mu.greek.") },
 	{ N_("ResourceFile"), pr_file, &xdefs_filename, NULL, NULL, 'R', NULL, 0, N_("When FontForge starts up, it loads display related resources from a\nproperty on the screen. Sometimes it is useful to be able to store\nthese resources in a file. These resources are only read at start\nup, so changing this has no effect until the next time you start\nFontForge.") },
 	{ N_("HelpDir"), pr_file, &helpdir, NULL, NULL, 'R', NULL, 0, N_("The directory on your local system in which FontForge will search for help\nfiles.  If a file is not found there, then FontForge will look for it on the net.") },
 	{ N_("OtherSubrsFile"), pr_file, &othersubrsfile, NULL, NULL, 'O', NULL, 0, N_("If you wish to replace Adobe's OtherSubrs array (for Type1 fonts)\nwith an array of your own, set this to point to a file containing\na list of up to 14 PostScript subroutines. Each subroutine must\nbe preceded by a line starting with '%%%%' (any text before the\nfirst '%%%%' line will be treated as an initial copyright notice).\nThe first three subroutines are for flex hints, the next for hint\nsubstitution (this MUST be present), the 14th (or 13 as the\nnumbering actually starts with 0) is for counter hints.\nThe subroutines should not be enclosed in a [ ] pair.") },
@@ -307,6 +306,10 @@ static struct prefs_list {
 	{ N_("PreserveTables"), pr_string, &SaveTablesPref, NULL, NULL, 'P', NULL, 0, N_("Enter a list of 4 letter table tags, separated by commas.\nFontForge will make a binary copy of these tables when it\nloads a True/OpenType font, and will output them (unchanged)\nwhen it generates the font. Do not include table tags which\nFontForge thinks it understands.") },
 	{ N_("NewFontNameList"), pr_namelist, &namelist_for_new_fonts, NULL, NULL, '\0', NULL, 0, N_("FontForge will use this namelist when assigning\nglyph names to code points in a new font.") },
 	{ N_("RecognizePUANames"), pr_bool, &recognizePUA, NULL, NULL, 'U', NULL, 0, N_("Once upon a time, Adobe assigned PUA (public use area) encodings\nfor many stylistic variants of characters (small caps, old style\nnumerals, etc.). Adobe no longer believes this to be a good idea,\nand recommends that these encodings be ignored.\n\n The assignments were originally made because most applications\ncould not handle OpenType features for accessing variants. Adobe\nnow believes that all apps that matter can now do so. Applications\nlike Word and OpenOffice still can't handle these features, so\n fontforge's default behavior is to ignore Adobe's current\nrecommendations.\n\nNote: This does not affect figuring out unicode from the font's encoding,\nit just controls determining unicode from a name.") },
+	{ NULL }
+},
+ tt_list[] = {
+	{ N_("ClearInstrsBigChanges"), pr_bool, &clear_tt_instructions_when_needed, NULL, NULL, 'C', NULL, 0, N_("Instructions in a TrueType font refer to\npoints by number, so if you edit a glyph\nin such a way that some points have different\nnumbers (add points, remove them, etc.) then\nthe instructions will be applied to the wrong\npoints with disasterous results.\n  Normally FontForge will remove the instructions\nif it detects that the points have been renumbered\nin order to avoid the above problem. You may turn\nthis behavior off -- but be careful!") },
 	{ NULL }
 },
 /* These are hidden, so will never appear in ui, hence, no "N_(" */
@@ -364,8 +367,8 @@ static struct prefs_list {
 	{ "AcuteCenterBottom", pr_bool, &GraveAcuteCenterBottom, NULL, NULL, '\0', NULL, 1, N_("When placing grave and acute accents above letters, should\nFontForge center them based on their full width, or\nshould it just center based on the lowest point\nof the accent.") },
 	{ NULL }
 },
- *prefs_list[] = { general_list, editing_list, accent_list, args_list, generate_list, hidden_list, NULL },
- *load_prefs_list[] = { general_list, editing_list, accent_list, args_list, generate_list, hidden_list, oldnames, NULL };
+ *prefs_list[] = { general_list, editing_list, accent_list, args_list, generate_list, tt_list, hidden_list, NULL },
+ *load_prefs_list[] = { general_list, editing_list, accent_list, args_list, generate_list, tt_list, hidden_list, oldnames, NULL };
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 struct visible_prefs_list { char *tab_name; struct prefs_list *pl; } visible_prefs_list[] = {
@@ -374,6 +377,7 @@ struct visible_prefs_list { char *tab_name; struct prefs_list *pl; } visible_pre
     { N_("Accents"), accent_list},
     { N_("Apps"), args_list},
     { N_("Font Info"), generate_list},
+    { N_("TT"), tt_list},
     { 0 }
  };
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
