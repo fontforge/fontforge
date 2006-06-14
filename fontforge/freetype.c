@@ -188,8 +188,8 @@ return( true );
 # endif
 
 int hasFreeType(void) {
-    int done=false;
-    int ok=false;
+    static int done=false;
+    static int ok=false;
 
     if ( done )
 return(ok);
