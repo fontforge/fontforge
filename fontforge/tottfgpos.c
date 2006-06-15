@@ -1268,7 +1268,10 @@ return( lookups );
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 		if ( exit->xadjust.corrections!=NULL || exit->yadjust.corrections!=NULL )
 		    offset += 4 + DevTabLen(&exit->xadjust) + DevTabLen(&exit->yadjust);
+		else
 #endif
+		if ( gi->is_ttf && ap->has_ttf_pt )
+		    offset += 2;
 	    } else
 		putshort(gpos,0);
 	}
@@ -1370,7 +1373,10 @@ static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 			if ( ap->xadjust.corrections!=NULL || ap->yadjust.corrections!=NULL )
 			    offset += 4 + DevTabLen(&ap->xadjust) + DevTabLen(&ap->yadjust);
+			else
 #endif
+			if ( gi->is_ttf && ap->has_ttf_pt )
+			    offset += 2;
 		      break;
 		      case 2:
 			dumpanchor(gpos,ap,gi->is_ttf);
@@ -1423,7 +1429,10 @@ static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
 			if ( aps[k*max+l]->xadjust.corrections!=NULL || aps[k*max+l]->yadjust.corrections!=NULL )
 			    offset += 4 + DevTabLen(&aps[k*max+l]->xadjust) +
 					DevTabLen(&aps[k*max+l]->yadjust);
+			else
 #endif
+			if ( gi->is_ttf && ap->has_ttf_pt )
+			    offset += 2;
 		    }
 		}
 	    }
@@ -1473,7 +1482,10 @@ static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 	if ( ap!=NULL && (ap->xadjust.corrections!=NULL || ap->yadjust.corrections!=NULL ))
 	    offset += 4 + DevTabLen(&ap->xadjust) + DevTabLen(&ap->yadjust);
+	else
 #endif
+	if ( gi->is_ttf && ap->has_ttf_pt )
+	    offset += 2;
     }
     for ( j=0; j<cnt; ++j ) {
 	for ( k=0, ac=_ac; k<classcnt; ac=ac->next ) {
