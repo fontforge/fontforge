@@ -3368,10 +3368,24 @@ static int GXDrawRequestDeviceEvents(GWindow w,int devcnt,struct gdeveventmask *
     GXDisplay *gdisp = (GXDisplay *) (w->display);
     int i,j,k,cnt,foo, availdevcnt;
     XEventClass *classes;
+    GResStruct res[2];
 
     if ( !gdisp->devicesinit ) {
 	int ndevs=0;
-	XDeviceInfo *devs = XListInputDevices(gdisp->display,&ndevs);
+	XDeviceInfo *devs;
+	int dontopentemp = 0;
+
+	memset(res,0,sizeof(res));
+	i=0;
+	res[i].resname = "DontOpenXDevices"; res[i].type = rt_bool; res[i].val = &dontopentemp; ++i;
+	res[i].resname = NULL;
+	GResourceFind(res,NULL);
+	if ( dontopentemp ) {
+	    gdisp->devicesinit = true;
+return( 0 );
+	}
+	
+	devs = XListInputDevices(gdisp->display,&ndevs);
 	gdisp->devicesinit = true;
 	if ( ndevs==0 )
 return( 0 );
