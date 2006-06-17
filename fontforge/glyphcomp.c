@@ -543,6 +543,7 @@ return( failed == 0 ? BC_Match : failed );
 static int RefCheck(Context *c, const RefChar *ref1,const RefChar *ref2 ) {
     const RefChar *r1, *r2;
     int i;
+    int ptmatchdiff = 0;
 
     for ( r2 = ref2; r2!=NULL; r2=r2->next )
 	((RefChar *) r2)->checked = false;
@@ -561,20 +562,24 @@ static int RefCheck(Context *c, const RefChar *ref1,const RefChar *ref2 ) {
 	    ((RefChar *) r2)->checked = true;
 	else
 return( false );
+	if ( r1->point_match != r2->point_match ||
+		(r1->point_match &&
+		    (r1->match_pt_base!=r2->match_pt_base && r1->match_pt_ref!=r2->match_pt_ref)))
+	    ptmatchdiff = 1;
     }
 
     for ( r2 = ref2; r2!=NULL; r2=r2->next ) if ( !r2->checked ) {
 return( false );
     }
 
-return( true );
+return( true + ptmatchdiff );
 }
 
 static int CompareLayer(Context *c, const SplineSet *ss1,const SplineSet *ss2,
 	const RefChar *refs1, const RefChar *refs2,
 	real pt_err, real spline_err, const char *name, int diffs_are_errors,
 	SplinePoint **_hmfail) {
-    int val;
+    int val, refc;
 
     if ( pt_err<0 && spline_err<0 )
 return( SS_PointsMatch );
@@ -589,12 +594,14 @@ return( SS_PointsMatch );
 	val = SSsCompare(ss1,ss2, pt_err, spline_err,_hmfail);
 #else
     val = SSsCompare(ss1,ss2, pt_err, spline_err,_hmfail);
-    if ( !RefCheck( c,refs1,refs2 )) {
+    refc = RefCheck( c,refs1,refs2 );
+    if ( !refc ) {
 	if ( !(val&SS_NoMatch) )
 	    val = SS_NoMatch|SS_RefMismatch;
 	else
 	    val |= SS_RefMismatch;
-    }
+    } else if ( refc==2 )
+	val |= SS_RefPtMismatch;
 #endif
     if ( (val&SS_NoMatch) && diffs_are_errors ) {
 	if ( val & SS_DiffContourCount )
@@ -606,6 +613,8 @@ return( SS_PointsMatch );
 	else
 	    ScriptErrorString(c,"Spline mismatch in glyph", name);
     }
+    if ( (val & SS_RefPtMismatch) && diffs_are_errors )
+	ScriptErrorString(c,"References have different truetype point matching in glyph", name);
 return( val );
 }
 
@@ -920,9 +929,17 @@ static int fdRefCheck(struct font_diff *fd, SplineChar *sc1,
 	break;
 	    }
 	}
-	if ( r2!=NULL )
+	if ( r2!=NULL ) {
 	    r2->checked = true;
-	else {
+	    if ( r1->point_match != r2->point_match ||
+		    (r1->point_match &&
+			(r1->match_pt_base!=r2->match_pt_base && r1->match_pt_ref!=r2->match_pt_ref))) {
+		if ( complain )
+		    GlyphDiffSCError(fd,sc1,U_("Glyph “%s” refers to %s with a different truetype point matching scheme\n"),
+			    sc1->name, r1->sc->name );
+		ret = 2;
+	    }
+	} else {
 	    for ( r2 = ref2; r2!=NULL; r2=r2->next ) if ( !r2->checked ) {
 		if ( r1->sc->unicodeenc==r1->sc->unicodeenc &&
 			(r1->sc->unicodeenc!=-1 || strcmp(r1->sc->name,r1->sc->name)==0))
@@ -999,9 +1016,10 @@ static void SCCompare(SplineChar *sc1,SplineChar *sc2,struct font_diff *fd) {
 			sc1->name, layer );
 #endif
 	    if ( !(fd->flags&fcf_exact) ) {
-		int tdiff;
+		int tdiff, rd;
 		val = SS_NoMatch;
-		if ( !fdRefCheck(fd, sc1, sc1->layers[layer].refs, sc2->layers[layer].refs, false )) {
+		rd = fdRefCheck(fd, sc1, sc1->layers[layer].refs, sc2->layers[layer].refs, false );
+		if ( !rd ) {
 		    val = SSRefCompare(sc1->layers[layer].splines, sc2->layers[layer].splines,
 			    sc1->layers[layer].refs, sc2->layers[layer].refs,
 			    0,1.5 );
@@ -1012,6 +1030,9 @@ static void SCCompare(SplineChar *sc1,SplineChar *sc2,struct font_diff *fd) {
 			    0,1.5, &hmfail );
 		}
 		tdiff = fd->diff;
+		if ( rd==2 )
+		    GlyphDiffSCError(fd,sc1,U_("Glyph “%s” contains a reference which has different truetype point match specifications\n"),
+			    sc1->name );
 		if ( (val&SS_ContourMatch) && (fd->flags&fcf_warn_not_exact) )
 		    GlyphDiffSCError(fd,sc1,U_("Glyph “%s” does not have splines which match exactly, but they are close\n"),
 			    sc1->name );
@@ -1547,6 +1568,12 @@ static void complainapfeature(struct font_diff *fd,SplineChar *sc,
 	    sc->name, missingname, ap->me.x, ap->me.y, ap->anchor->name);
 }
 
+static void complainapfeature2(struct font_diff *fd,SplineChar *sc,
+	AnchorPoint *ap,char *missingname) {
+    complainscfeature(fd, sc, U_("“%s” in %s contains an anchor point (%g,%g) class %s which differs from its counterpart by point matching\n"),
+	    sc->name, missingname, ap->me.x, ap->me.y, ap->anchor->name);
+}
+
 static void complainpstfeature(struct font_diff *fd,SplineChar *sc,
 	PST *pst,char *missingname) {
     if ( pst->type==pst_position ) {
@@ -1927,6 +1954,9 @@ return( false );
 return( false );
     if ( ap1->me.x!=ap2->me.x || ap1->me.y!=ap2->me.y )
 return( false );
+    if ( ap1->has_ttf_pt!=ap2->has_ttf_pt ||
+	    (ap1->has_ttf_pt && ap1->ttf_pt_index!=ap2->ttf_pt_index))
+return( 2 );
 
 return( true );
 }
@@ -1960,7 +1990,7 @@ return( false );
 	    /* some pair-size features above */
 	    for ( ap1=sc1->anchor; ap1!=NULL; ap1=ap1->next ) if ( ap1->anchor->feature_tag==tag1 ) {
 		for ( ap2=sc2->anchor; ap2!=NULL; ap2=ap2->next ) if ( ap2->anchor->feature_tag==tag2 ) {
-		    if ( compareap(fd,ap1,ap2))
+		    if ( compareap(fd,ap1,ap2)!=true )
 		break;
 		}
 		if ( ap2==NULL )
@@ -1968,7 +1998,7 @@ return( false );
 	    }
 	    for ( ap2=sc2->anchor; ap2!=NULL; ap2=ap2->next ) if ( ap2->anchor->feature_tag==tag1 ) {
 		for ( ap1=sc1->anchor; ap1!=NULL; ap1=ap1->next ) if ( ap1->anchor->feature_tag==tag2 ) {
-		    if ( compareap(fd,ap1,ap2))
+		    if ( compareap(fd,ap1,ap2)!=true )
 		break;
 		}
 		if ( ap1==NULL )
@@ -2015,7 +2045,10 @@ static void comparefeature(struct font_diff *fd) {
 	if ( fd->is_gpos ) {
 	    for ( ap1=sc1->anchor; ap1!=NULL; ap1=ap1->next ) if ( ap1->anchor->feature_tag==fd->tag ) {
 		for ( ap2=sc2->anchor; ap2!=NULL; ap2=ap2->next ) if ( ap2->anchor->feature_tag==fd->tag ) {
-		    if ( compareap(fd,ap1,ap2))
+		    int apret= compareap(fd,ap1,ap2);
+		    if ( apret==2 )
+			complainapfeature2(fd,sc1,ap1,fd->name2);
+		    if ( apret )
 		break;
 		}
 		if ( ap2==NULL )
@@ -2023,6 +2056,7 @@ static void comparefeature(struct font_diff *fd) {
 	    }
 	    for ( ap2=sc2->anchor; ap2!=NULL; ap2=ap2->next ) if ( ap2->anchor->feature_tag==fd->tag ) {
 		for ( ap1=sc1->anchor; ap1!=NULL; ap1=ap1->next ) if ( ap1->anchor->feature_tag==fd->tag ) {
+		    /* don't need to check for point matching here, already done above */
 		    if ( compareap(fd,ap1,ap2))
 		break;
 		}
