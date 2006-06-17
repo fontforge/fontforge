@@ -759,14 +759,18 @@ static int myerrorhandler(Display *disp, XErrorEvent *err) {
 
     if (err->request_code>0 && err->request_code<128)
 	majorcode = XProtocalCodes[err->request_code];
+#if 0		/* This varies. it is 146 on my machine, but not on everyone's */
     else if ( err->request_code==146 )
 	majorcode = "XInputExtension";
+#endif
     else
 	majorcode = "";
     if ( err->request_code==45 && lastfontrequest!=NULL )
 	fprintf( stderr, "Error attempting to load font:\n  %s\nThe X Server clained the font existed, but when I asked for it,\nI got this error instead:\n\n", lastfontrequest );
+#if 0		/* This varies. it is 146 on my machine, but not on everyone's */
     else if ( err->request_code==146 && err->minor_code==3 )
 	fprintf( stderr, "Error connecting to wacom tablet. Sometimes linux fails to configure\n it properly. Try typing\n$ su\n# insmod wacom\n" );
+#endif
     XGetErrorText(disp,err->error_code,buffer,sizeof(buffer));
     fprintf( stderr, "X Error of failed request: %s\n", buffer );
     fprintf( stderr, "  Major opcode of failed request:  %d.%d (%s)\n",
@@ -3363,6 +3367,27 @@ return;
     }
 }
 
+static int devopen_failed;
+static char *device_name;
+
+static int devopenerror(Display *disp, XErrorEvent *err) {
+    /* Some ubuntu releases seem to give everybody wacom devices by default */
+    /*  in their xorg.conf file. However if the user has no wacom tablet then */
+    /*  an attempt to use one of those devices will cause X to return a */
+    /*  BadDevice error */
+    char buffer[200];
+
+    XGetErrorText(disp,err->error_code,buffer,sizeof(buffer));
+    if ( strcmp(buffer,"BadDevice")==0 ) {
+	devopen_failed = true;
+	fprintf( stderr, "X11 claims there exists a device called \"%s\", but an attempt to open it fails.\n  Rerun the program with the -dontopenxdevices argument.\n",
+		device_name );
+    } else {
+	myerrorhandler(disp,err);
+    }
+return( 1 );
+}
+
 static int GXDrawRequestDeviceEvents(GWindow w,int devcnt,struct gdeveventmask *de) {
 #ifndef _NO_XINPUT
     GXDisplay *gdisp = (GXDisplay *) (w->display);
@@ -3405,10 +3430,21 @@ return( 0 );
 		if ( strcmp(de[j].device_name,gdisp->inputdevices[i].name)==0 )
 	    break;
 	    if ( i<gdisp->n_inputdevices ) {
-		++availdevcnt;
-		if ( gdisp->inputdevices[i].dev==NULL )
+		if ( gdisp->inputdevices[i].dev==NULL ) {
+		    XSync(gdisp->display,false);
+		    GDrawProcessPendingEvents((GDisplay *) gdisp);
+		    XSetErrorHandler(/*gdisp->display,*/devopenerror);
+		    devopen_failed = false;
+		    device_name = gdisp->inputdevices[i].name;
 		    gdisp->inputdevices[i].dev = XOpenDevice(gdisp->display,gdisp->inputdevices[i].devid);
+		    XSync(gdisp->display,false);
+		    GDrawProcessPendingEvents((GDisplay *) gdisp);
+		    XSetErrorHandler(/*gdisp->display,*/myerrorhandler);
+		    if ( devopen_failed )
+			gdisp->inputdevices[i].dev = NULL;
+		}
 		if ( gdisp->inputdevices[i].dev!=NULL ) {
+		    ++availdevcnt;
 		    if ( de[j].event_mask & (1<<et_mousemove) ) {
 			if ( classes!=NULL )
 			    DeviceMotionNotify(gdisp->inputdevices[i].dev,gdisp->inputdevices[i].event_types[0],classes[cnt]);
