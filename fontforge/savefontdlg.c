@@ -2282,6 +2282,28 @@ return;
 	if ( gwwv_ask(_("Not a CID format"),(const char **) buts,0,1,_("You are attempting to save a CID font in a non-CID format. This is ok, but it means that only the current sub-font will be saved.\nIs that what you want?"))==1 )
 return;
     }
+    if ( oldformatstate == ff_ttf || oldformatstate==ff_ttfsym ||
+	    oldformatstate==ff_ttfmacbin || oldformatstate==ff_ttfdfont ) {
+	SplineChar *sc; RefChar *ref;
+	for ( i=0; i<d->sf->glyphcnt; ++i ) if ( (sc = d->sf->glyphs[i])!=NULL ) {
+	    if ( sc->ttf_instrs_len!=0 && sc->instructions_out_of_date ) {
+		if ( gwwv_ask(_("Instructions out of date"),(const char **) buts,0,1,_("The truetype instructions on glyph %s are out of date.\nDo you want to proceed anyway?"), sc->name)==1 ) {
+		    CharViewCreate(sc,d->sf->fv,-1);
+return;
+		} else
+	break;
+	    }
+	    for ( ref=sc->layers[ly_fore].refs; ref!=NULL ; ref=ref->next )
+		if ( ref->point_match_out_of_date && ref->point_match ) {
+		    if ( gwwv_ask(_("Reference point match out of date"),(const char **) buts,0,1,_("In glyph %s the reference to %s is positioned by point matching, and the point numbers may no longer reflect the original intent.\nDo you want to proceed anyway?"), sc->name, ref->sc->name)==1 ) {
+			CharViewCreate(sc,d->sf->fv,-1);
+return;
+		    } else
+	goto end_of_loop;
+		}
+	}
+	end_of_loop:;
+    }
 
     if ( oldformatstate<=ff_cffcid || (oldformatstate>=ff_otf && oldformatstate<=ff_otfciddfont)) {
 	if ( d->sf->ascent+d->sf->descent!=1000 && !psscalewarned ) {
