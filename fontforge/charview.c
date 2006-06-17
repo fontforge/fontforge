@@ -2976,6 +2976,7 @@ static void instrcheck(SplineChar *sc) {
     SplineSet *ss;
     SplinePoint *sp;
     AnchorPoint *ap;
+    int had_ap, had_dep, had_instrs;
 
     if ( !sc->parent->order2 )
 return;
@@ -2995,15 +2996,21 @@ return;
     /* If the points are no longer in order then the instructions are not valid */
     /*  (because they'll refer to the wrong points) and should be removed */
     /* Except that annoys users who don't expect it */
+    had_ap = had_dep = had_instrs = 0;
     if ( !SCPointsNumberedProperly(sc)) {
-	if ( clear_tt_instructions_when_needed ) {
-	    free(sc->ttf_instrs); sc->ttf_instrs = NULL;
-	    sc->ttf_instrs_len = 0;
+	if ( instrs!=NULL ) {
+	    if ( clear_tt_instructions_when_needed ) {
+		free(sc->ttf_instrs); sc->ttf_instrs = NULL;
+		sc->ttf_instrs_len = 0;
 # ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	    SCMarkInstrDlgAsChanged(sc);
+		SCMarkInstrDlgAsChanged(sc);
 # endif	/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-	} else
-	    sc->instructions_out_of_date = true;
+		had_instrs = 1;
+	    } else {
+		sc->instructions_out_of_date = true;
+		had_instrs = 2;
+	    }
+	}
 	for ( dep=sc->dependents; dep!=NULL; dep=dep->next ) {
 	    RefChar *ref;
 	    if ( dep->sc->ttf_instrs_len!=0 ) {
@@ -3013,20 +3020,26 @@ return;
 # ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 		    SCMarkInstrDlgAsChanged(dep->sc);
 # endif	/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-		} else
+		    had_instrs = 1;
+		} else {
 		    dep->sc->instructions_out_of_date = true;
+		    had_instrs = 2;
+		}
 	    }
 	    for ( ref=dep->sc->layers[ly_fore].refs; ref!=NULL && ref->sc!=sc; ref=ref->next );
-	    for ( ; ref!=NULL ; ref=ref->next )
+	    for ( ; ref!=NULL ; ref=ref->next ) {
 #if 0
 		ref->point_match = false;
 #endif
 		if ( ref->point_match )
 		    ref->point_match_out_of_date = true;
+		had_dep = true;
+	    }
 	}
 	SCNumberPoints(sc);
 	for ( ap=sc->anchor ; ap!=NULL; ap=ap->next ) {
 	    if ( ap->has_ttf_pt ) {
+		had_ap = true;
 		ap->has_ttf_pt = false;
 		for ( ss = sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
 		    for ( sp=ss->first; ; ) {
@@ -3050,6 +3063,16 @@ return;
 	    }
 	}
     }
+    if ( had_ap || had_dep || had_instrs )
+	gwwv_post_notice(_("You changed the point numbering"),
+		_("You have just changed the point numbering of this glyph.%s%s%s"),
+			had_instrs==0 ? "" :
+			had_instrs==1 ? _(" Instructions in this glyph (or one that refers to it) have been lost.") :
+			                _(" Instructions in this glyph (or one that refers to it) are now out of date."),
+			had_dep ? _(" At least one reference to this glyph used point matching. That match is now out of date.")
+				: "",
+			had_ap ? _(" At least one anchor point used point matching. It may be out of date now.")
+				: "" );
 }
 
 static void _SCHintsChanged(SplineChar *sc) {
