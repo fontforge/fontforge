@@ -3059,6 +3059,58 @@ struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds,int flags) {
 return( chrs );
 }
 
+static SplinePoint *LineTo(SplinePoint *last, int x, int y) {
+    SplinePoint *sp = SplinePointCreate(x,y);
+    SplineMake3(last,sp);
+return( sp );
+}
+
+static void Type2NotDefSplines(SplineFont *sf,SplineChar *sc) {
+    /* I'd always assumed that Type2 notdefs would look like type1 notdefs */
+    /*  but they don't, they look like truetype notdefs. And Ralf Stubner */
+    /*  points out that the spec says they should. So make a box here */
+    int stem, ymax;
+    SplineSet *inner, *ss;
+    StemInfo *h, *hints;
+
+    stem = (sf->ascent+sf->descent)/20;
+    ymax = 2*sf->ascent/3;
+
+    ss = chunkalloc(sizeof(SplineSet));
+    ss->first = ss->last = SplinePointCreate(stem,0);
+    ss->last = LineTo(ss->last,stem,ymax);
+    ss->last = LineTo(ss->last,sc->width-stem,ymax);
+    ss->last = LineTo(ss->last,sc->width-stem,0);
+    SplineMake3(ss->last,ss->first);
+    ss->last = ss->first;
+
+    ss->next = inner = chunkalloc(sizeof(SplineSet));
+    inner->first = inner->last = SplinePointCreate(2*stem,stem);
+    inner->last = LineTo(inner->last,sc->width-2*stem,stem);
+    inner->last = LineTo(inner->last,sc->width-2*stem,ymax-stem);
+    inner->last = LineTo(inner->last,2*stem,ymax-stem);
+    SplineMake3(inner->last,inner->first);
+    inner->last = inner->first;
+
+    sc->layers[ly_fore].splines = ss;
+
+    hints = chunkalloc(sizeof(StemInfo));
+    hints->start = stem;
+    hints->width = stem;
+    hints->next = h = chunkalloc(sizeof(StemInfo));
+    h->start = sc->width-2*stem;
+    h->width = stem;
+    sc->vstem = hints;
+
+    hints = chunkalloc(sizeof(StemInfo));
+    hints->start = 0;
+    hints->width = stem;
+    hints->next = h = chunkalloc(sizeof(StemInfo));
+    h->start = ymax-stem;
+    h->width = stem;
+    sc->hstem = hints;
+}
+
 struct pschars *SplineFont2ChrsSubrs2(SplineFont *sf, int nomwid, int defwid,
 	const int *bygid, int cnt, int flags, struct pschars **_subrs) {
     struct pschars *subrs, *chrs;
@@ -3096,6 +3148,7 @@ struct pschars *SplineFont2ChrsSubrs2(SplineFont *sf, int nomwid, int defwid,
 	    dummynotdef.width = SFOneWidth(sf);
 	    if ( dummynotdef.width==-1 )
 		dummynotdef.width = (sf->ascent+sf->descent)/2;
+	    Type2NotDefSplines(sf,&dummynotdef);
 	} else if ( gid!=-1 )
 	    sc = sf->glyphs[gid];
 	else
@@ -3216,6 +3269,11 @@ struct pschars *SplineFont2ChrsSubrs2(SplineFont *sf, int nomwid, int defwid,
 	    free(gi.gb[i].bits[j].data);
 	free(gi.gb[i].bits);
     }
+    if ( cnt>0 && gi.gb[0].sc == &dummynotdef ) {
+	SplinePointListsFree(dummynotdef.layers[ly_fore].splines);
+	StemInfoFree(dummynotdef.hstem);
+	StemInfoFree(dummynotdef.vstem);
+    }
     free(gi.gb);
     free(gi.psubrs);
     free(gi.bits);
@@ -3292,6 +3350,7 @@ struct pschars *CID2ChrsSubrs2(SplineFont *cidmaster,struct fd2data *fds,
 	    dummynotdef.width = SFOneWidth(sf);
 	    if ( dummynotdef.width==-1 )
 		dummynotdef.width = (sf->ascent+sf->descent);
+	    Type2NotDefSplines(sf,&dummynotdef);
 	    gi.gb[cnt].sc = sc;
 	    gi.gb[cnt].fd = i = cidmaster->subfontcnt-1;
 #if 0 && HANYANG			/* Too much stuff knows the glyph cnt, can't refigure it here at the end */
@@ -3425,6 +3484,11 @@ struct pschars *CID2ChrsSubrs2(SplineFont *cidmaster,struct fd2data *fds,
 	for ( j=0; j<gi.gb[i].bcnt; ++j )
 	    free(gi.gb[i].bits[j].data);
 	free(gi.gb[i].bits);
+    }
+    if ( cnt>0 && gi.gb[0].sc == &dummynotdef ) {
+	SplinePointListsFree(dummynotdef.layers[ly_fore].splines);
+	StemInfoFree(dummynotdef.hstem);
+	StemInfoFree(dummynotdef.vstem);
     }
     free(gi.gb);
     free(gi.psubrs);
