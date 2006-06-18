@@ -8137,12 +8137,14 @@ static int FeatureTrans(FontView *fv, int enc) {
     SplineChar *sc;
     PST *pst;
     char *pt;
+    int gid;
 
-    if ( fv->cur_feat_tag==0 )
-return( enc );
-    if ( enc<0 || enc>=fv->map->enccount || fv->map->map[enc]==-1 )
+    if ( enc<0 || enc>=fv->map->enccount || (gid = fv->map->map[enc])==-1 )
 return( -1 );
-    sc = fv->sf->glyphs[fv->map->map[enc]];
+    if ( fv->cur_feat_tag==0 )
+return( gid );
+
+    sc = fv->sf->glyphs[gid];
     if ( sc==NULL )
 return( -1 );
     for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
@@ -8155,7 +8157,10 @@ return( -1 );
     pt = strchr(pst->u.subs.variant,' ');
     if ( pt!=NULL )
 	*pt = '\0';
-return( SFFindExistingSlot(fv->sf, -1, pst->u.subs.variant ));
+    gid = SFFindExistingSlot(fv->sf, -1, pst->u.subs.variant );
+    if ( pt!=NULL )
+	*pt = ' ';
+return( gid );
 }
 
 void FVRefreshChar(FontView *fv,int gid) {
@@ -8528,12 +8533,12 @@ return( _SFMakeChar(sf,map,enc));
 SplineChar *FVMakeChar(FontView *fv,int enc) {
     SplineFont *sf = fv->sf;
     SplineChar *base_sc = SFMakeChar(sf,fv->map,enc), *feat_sc = NULL;
-    int feat_i = FeatureTrans(fv,enc);
+    int feat_gid = FeatureTrans(fv,enc);
 
     if ( fv->cur_feat_tag==0 )
 return( base_sc );
 
-    if ( feat_i==-1 ) {
+    if ( feat_gid==-1 ) {
 	int uni = -1;
 	if ( base_sc->unicodeenc>=0x600 && base_sc->unicodeenc<=0x6ff &&
 		(fv->cur_feat_tag == CHR('i','n','i','t') ||
@@ -8571,7 +8576,7 @@ return( feat_sc );
 		    fv->cur_feat_tag>>16,
 		    (fv->cur_feat_tag)&0xffff );
 	}
-	SFAddGlyphAndEncode(sf,feat_sc,fv->map,enc);
+	SFAddGlyphAndEncode(sf,feat_sc,fv->map,fv->map->enccount);
 	base_sc->possub = AddSubs(base_sc->possub,fv->cur_feat_tag,feat_sc->name,
 		0/* No flags */,fv->cur_sli,base_sc);
 return( feat_sc );
@@ -8959,15 +8964,16 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
     for ( i=event->u.expose.rect.y/fv->cbh; i<=fv->rowcnt && 
 	    (event->u.expose.rect.y+event->u.expose.rect.height+fv->cbh-1)/fv->cbh; ++i ) for ( j=0; j<fv->colcnt; ++j ) {
 	int index = (i+fv->rowoff)*fv->colcnt+j;
-	int feat_index;
+	int feat_gid;
 	styles = 0;
+	SplineChar *sc;
 	if ( fv->mapping!=NULL ) {
 	    if ( index>=fv->mapcnt ) index = fv->map->enccount;
 	    else
 		index = fv->mapping[index];
 	}
 	if ( index < fv->map->enccount && index!=-1 ) {
-	    SplineChar *sc = (gid=fv->map->map[index])!=-1 ? fv->sf->glyphs[gid]: NULL;
+	    sc = (gid=fv->map->map[index])!=-1 ? fv->sf->glyphs[gid]: NULL;
 	    unichar_t buf[60]; char cbuf[8];
 	    char utf8_buf[8];
 	    int use_utf8 = false;
@@ -9192,29 +9198,26 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 	    }
 	}
 
-	feat_index = FeatureTrans(fv,index);
-	if ( feat_index < fv->map->enccount && feat_index!=-1 ) {
-	    SplineChar *sc = (gid=fv->map->map[feat_index])!=-1 ? fv->sf->glyphs[gid]: NULL;
+	feat_gid = FeatureTrans(fv,index);
+	sc = feat_gid!=-1 ? fv->sf->glyphs[feat_gid]: NULL;
+	if ( sc!=NULL ) {
 	    BDFChar *bdfc;
 
-	    if ( sc==NULL )
-		sc = SCBuildDummy(&dummy,fv->sf,fv->map,feat_index);
-
 	    if ( fv->show!=NULL && fv->show->piecemeal &&
-		    gid!=-1 && fv->show->glyphs[gid]==NULL &&
-		    fv->sf->glyphs[gid]!=NULL )
-		BDFPieceMeal(fv->show,gid);
+		    feat_gid!=-1 && fv->show->glyphs[feat_gid]==NULL &&
+		    fv->sf->glyphs[feat_gid]!=NULL )
+		BDFPieceMeal(fv->show,feat_gid);
 
-	    if ( gid==-1 || !SCWorthOutputting(fv->sf->glyphs[gid]) ) {
+	    if ( feat_gid==-1 || !SCWorthOutputting(fv->sf->glyphs[feat_gid]) ) {
 		int x = j*fv->cbw+1, xend = x+fv->cbw-2;
 		int y = i*fv->cbh+14+2, yend = y+fv->cbw-1;
 		GDrawDrawLine(pixmap,x,y,xend,yend,0xd08080);
 		GDrawDrawLine(pixmap,x,yend,xend,y,0xd08080);
 	    }
-	    if ( fv->show!=NULL && gid!=-1 &&
-		    gid < fv->show->glyphcnt &&
-		    fv->show->glyphs[gid]==NULL &&
-		    SCWorthOutputting(fv->sf->glyphs[gid]) ) {
+	    if ( fv->show!=NULL && feat_gid!=-1 &&
+		    feat_gid < fv->show->glyphcnt &&
+		    fv->show->glyphs[feat_gid]==NULL &&
+		    SCWorthOutputting(fv->sf->glyphs[feat_gid]) ) {
 		/* If we have an outline but no bitmap for this slot */
 		box.x = j*fv->cbw+1; box.width = fv->cbw-2;
 		box.y = i*fv->cbh+14+2; box.height = box.width+1;
@@ -9222,9 +9225,9 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		++box.x; ++box.y; box.width -= 2; box.height -= 2;
 		GDrawDrawRect(pixmap,&box,0xff0000);
 /* When reencoding a font we can find times where index>=show->charcnt */
-	    } else if ( fv->show!=NULL && gid<fv->show->glyphcnt && gid!=-1 &&
-		    fv->show->glyphs[gid]!=NULL ) {
-		bdfc = fv->show->glyphs[gid];
+	    } else if ( fv->show!=NULL && feat_gid<fv->show->glyphcnt && feat_gid!=-1 &&
+		    fv->show->glyphs[feat_gid]!=NULL ) {
+		bdfc = fv->show->glyphs[feat_gid];
 		base.data = bdfc->bitmap;
 		base.bytes_per_line = bdfc->bytes_per_line;
 		base.width = bdfc->xmax-bdfc->xmin+1;
