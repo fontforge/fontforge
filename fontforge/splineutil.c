@@ -5030,10 +5030,27 @@ EncMap *EncMap1to1(int enccount) {
 return(map);
 }
 
+static void EncodingFree(Encoding *enc) {
+    int i;
+
+    if ( enc==NULL )
+return;
+    free(enc->enc_name);
+    free(enc->unicode);
+    if ( enc->psnames!=NULL ) {
+	for ( i=0; i<enc->char_cnt; ++i )
+	    free(enc->psnames[i]);
+	free(enc->psnames);
+    }
+    free(enc);
+}
+
 void EncMapFree(EncMap *map) {
     if ( map==NULL )
 return;
 
+    if ( map->enc->is_temporary )
+	EncodingFree(map->enc);
     free(map->map);
     free(map->backmap);
     free(map->remap);

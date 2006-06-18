@@ -270,7 +270,7 @@ struct groupdlg {
     int open_cnt, lines_page, off_top, off_left, page_width, bmargin;
     int maxl;
     GWindow gw,v;
-    GGadget *vsb, *hsb, *cancel, *ok;
+    GGadget *vsb, *hsb, *cancel, *ok, *compact;
     GGadget *newsub, *delete, *line1, *gpnamelab, *gpname, *glyphslab, *glyphs;
     GGadget *idlab, *idname, *iduni, *set, *select, *unique, *line2;
     int fh, as;
@@ -608,6 +608,9 @@ static void GroupResize(struct groupdlg *grp,GEvent *event) {
 	GGadgetMove(grp->unique,wsize.x,wsize.y+offy);
 	GGadgetGetSize(grp->line2,&wsize);
 	GGadgetMove(grp->line2,wsize.x,wsize.y+offy);
+    } else {
+	GGadgetGetSize(grp->compact,&wsize);
+	GGadgetMove(grp->compact,wsize.x,wsize.y+offy);
     }
     GDrawRequestExpose(grp->v,NULL,true);
     GDrawRequestExpose(grp->gw,NULL,true);
@@ -1461,16 +1464,36 @@ void DefineGroups(FontView *fv) {
     GDrawSetVisible(grp->gw,true);
 }
 
-static void MadAddGid(EncMap *map,int gid) {
-    if ( map->backmap[gid]==-1 )
+static void MapEncAddGid(EncMap *map,SplineFont *sf, int compacted,
+	int gid, int uni, char *name) {
+
+    if ( compacted && gid==-1 )
+return;
+
+    if ( gid!=-1 && map->backmap[gid]==-1 )
 	map->backmap[gid] = map->enccount;
     if ( map->enccount>=map->encmax )
 	map->map = grealloc(map->map,(map->encmax+=100)*sizeof(int));
     map->map[map->enccount++] = gid;
+    if ( !compacted ) {
+	Encoding *enc = map->enc;
+	if ( enc->char_cnt>=enc->char_max ) {
+	    enc->unicode = grealloc(enc->unicode,(enc->char_max+=256)*sizeof(int));
+	    enc->psnames = grealloc(enc->psnames,enc->char_max*sizeof(char *));
+	}
+	if ( uni==-1 && name!=NULL ) {
+	    if ( gid!=-1 && sf->glyphs[gid]!=NULL )
+		uni = sf->glyphs[gid]->unicodeenc;
+	    else
+		uni = UniFromName(name,ui_none,&custom);
+	}
+	enc->unicode[enc->char_cnt] = uni;
+	enc->psnames[enc->char_cnt++] = copy( name );
+    }
 }
 
-static void MapAddGroupGlyph(EncMap *map,SplineFont *sf,char *name) {
-    int i;
+static void MapAddGroupGlyph(EncMap *map,SplineFont *sf,char *name, int compacted) {
+    int gid;
 
     if ( (name[0]=='u' || name[0]=='U') && name[1]=='+' && ishexdigit(name[2])) {
 	char *end;
@@ -1481,29 +1504,23 @@ static void MapAddGroupGlyph(EncMap *map,SplineFont *sf,char *name) {
 	    val2 = strtol(end+1,NULL,16);
 	}
 	for ( ; val<=val2; ++val ) {
-	    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
-		if ( sf->glyphs[i]->unicodeenc==val ) {
-		    MadAddGid(map,i);
-		break;
-		}
+	    gid = SFFindExistingSlot(sf,val,NULL);
+	    MapEncAddGid(map,sf,compacted,gid,val,NULL);
 	}
     } else {
-	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
-	    if ( strcmp(sf->glyphs[i]->name,name)==0 ) {
-		MadAddGid(map,i);
-	    break;
-	    }
+	gid = SFFindExistingSlot(sf,-1,name);
+	MapEncAddGid(map,sf,compacted,gid,-1,name);
     }
 }
 
-static int MapAddSelectedGroups(EncMap *map,SplineFont *sf,Group *group) {
+static int MapAddSelectedGroups(EncMap *map,SplineFont *sf,Group *group, int compacted) {
     int i, cnt=0;
     char *start, *pt;
     int ch;
 
     if ( group->glyphs==NULL ) {
 	for ( i=0; i<group->kid_cnt; ++i )
-	    cnt += MapAddSelectedGroups(map,sf,group->kids[i]);
+	    cnt += MapAddSelectedGroups(map,sf,group->kids[i], compacted);
     } else if ( group->selected ) {
 	for ( pt=group->glyphs; *pt!='\0'; ) {
 	    while ( *pt==' ' ) ++pt;
@@ -1511,7 +1528,7 @@ static int MapAddSelectedGroups(EncMap *map,SplineFont *sf,Group *group) {
 	    while ( *pt!=' ' && *pt!='\0' ) ++pt;
 	    ch = *pt; *pt='\0';
 	    if ( *start!='\0' )
-		MapAddGroupGlyph(map,sf,start);
+		MapAddGroupGlyph(map,sf,start, compacted);
 	    *pt=ch;
 	}
 	++cnt;
@@ -1519,11 +1536,63 @@ static int MapAddSelectedGroups(EncMap *map,SplineFont *sf,Group *group) {
 return( cnt );
 }
 
-static void EncodeToGroups(FontView *fv,Group *group) {
-    SplineFont *sf = fv->sf;
-    EncMap *map = EncMapNew(0,sf->glyphcnt,&custom);
+static int GroupSelCnt(Group *group, Group **first, Group **second) {
+    int cnt = 0, i;
 
-    if ( MapAddSelectedGroups(map,sf,group)==0 ) {
+    if ( group->glyphs==NULL ) {
+	for ( i=0; i<group->kid_cnt; ++i )
+	    cnt += GroupSelCnt(group->kids[i],first,second);
+    } else if ( group->selected ) {
+	if ( *first==NULL )
+	    *first = group;
+	else if ( *second==NULL )
+	    *second = group;
+	++cnt;
+    }
+return( cnt );
+}
+
+static char *EncNameFromGroups(Group *group) {
+    Group *first = NULL, *second = NULL;
+    int cnt = GroupSelCnt(group,&first,&second);
+    char *prefix = P_("Group","Groups",cnt);
+    char *ret;
+
+    switch ( cnt ) {
+      case 0:
+return( copy( _("No Groups")) );
+      case 1:
+	ret = galloc(strlen(prefix) + strlen(first->name) + 3 );
+	sprintf( ret, "%s: %s", prefix, first->name);
+      break;
+      case 2:
+	ret = galloc(strlen(prefix) + strlen(first->name) + strlen(second->name) + 5 );
+	sprintf( ret, "%s: %s, %s", prefix, first->name, second->name );
+      break;
+      default:
+	ret = galloc(strlen(prefix) + strlen(first->name) + strlen(second->name) + 9 );
+	sprintf( ret, "%s: %s, %s ...", prefix, first->name, second->name );
+      break;
+    }
+return( ret );
+}
+
+static void EncodeToGroups(FontView *fv,Group *group, int compacted) {
+    SplineFont *sf = fv->sf;
+    EncMap *map;
+    if ( compacted )
+	map = EncMapNew(0,sf->glyphcnt,&custom);
+    else {
+	Encoding *enc = gcalloc(1,sizeof(Encoding));
+	enc->enc_name = EncNameFromGroups(group);
+	enc->is_temporary = true;
+	enc->char_max = 256;
+	enc->unicode = galloc(256*sizeof(int32));
+	enc->psnames = galloc(256*sizeof(char *));
+	map = EncMapNew(0,sf->glyphcnt,enc);
+    }
+
+    if ( MapAddSelectedGroups(map,sf,group,compacted)==0 ) {
 	gwwv_post_error(_("Nothing Selected"),_("Nothing Selected"));
 	EncMapFree(map);
     } else if ( map->enccount==0 ) {
@@ -1543,8 +1612,8 @@ void DisplayGroups(FontView *fv) {
     struct groupdlg grp;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[5];
-    GTextInfo label[4];
+    GGadgetCreateData gcd[6];
+    GTextInfo label[5];
     int h;
 
     memset( &grp,0,sizeof(grp));
@@ -1567,10 +1636,10 @@ void DisplayGroups(FontView *fv) {
     wattrs.utf8_window_title = _("Display By Groups...");
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,GGadgetScale(200));
-    pos.height = h = GDrawPointsToPixels(NULL,300);
+    pos.height = h = GDrawPointsToPixels(NULL,317);
     grp.gw = GDrawCreateTopWindow(NULL,&pos,displaygrp_e_h,&grp,&wattrs);
 
-    grp.bmargin = GDrawPointsToPixels(NULL,32)+GDrawPointsToPixels(grp.gw,_GScrollBar_Width);
+    grp.bmargin = GDrawPointsToPixels(NULL,50)+GDrawPointsToPixels(grp.gw,_GScrollBar_Width);
 
     GroupWCreate(&grp,&pos);
 
@@ -1597,9 +1666,20 @@ void DisplayGroups(FontView *fv) {
     gcd[1].gd.label = &label[1];
     gcd[1].creator = GButtonCreate;
 
+    gcd[2].gd.pos.width = -1;
+    gcd[2].gd.pos.x = 10;
+    gcd[2].gd.pos.y = gcd[0].gd.pos.y-GDrawPointsToPixels(NULL,17);
+    gcd[2].gd.flags = gg_visible | gg_enabled | gg_cb_on | gg_pos_in_pixels;
+    label[2].text = (unichar_t *) _("Compacted");
+    label[2].text_is_1byte = true;
+    label[2].text_in_resource = true;
+    gcd[2].gd.label = &label[2];
+    gcd[2].creator = GCheckBoxCreate;    
+
     GGadgetsCreate(grp.gw,gcd);
     grp.ok = gcd[0].ret;
     grp.cancel = gcd[1].ret;
+    grp.compact = gcd[2].ret;
 
     GroupSBSizes(&grp);
 
@@ -1609,7 +1689,7 @@ void DisplayGroups(FontView *fv) {
 	GDrawProcessOneEvent(NULL);
     GDrawSetUserData(grp.gw,NULL);
     if ( grp.oked )
-	EncodeToGroups(fv,grp.root);
+	EncodeToGroups(fv,grp.root, GGadgetIsChecked(gcd[2].ret));
     if ( grp.root!=group_root )
 	GroupFree(grp.root);
     GDrawDestroyWindow(grp.gw);
