@@ -543,6 +543,8 @@ typedef struct enc {
     iconv_t *fromunicode;
     int (*tounicode_func)(int);
     int (*fromunicode_func)(int);
+    unsigned int is_temporary: 1;	/* freed when the map gets freed */
+    int char_max;			/* Used by temporary encodings */
 } Encoding;
 
 typedef struct namelist {
