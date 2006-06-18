@@ -813,6 +813,7 @@ return;
 }
 
 static void dumpmissingglyph(SplineFont *sf,struct glyphinfo *gi,int fixedwidth) {
+    /* Or .notdef */
     struct glyphhead gh;
     BasePoint bp[10];
     uint8 instrs[50];
@@ -2360,7 +2361,7 @@ static int dumpcffhmtx(struct alltabs *at,SplineFont *sf,int bitmaps) {
 	    putshort(at->gi.vmtx,sf->vertical_origin-b.miny);
 	}
     } else {
-	putshort(at->gi.hmtx,width==-1?sf->ascent+sf->descent:width);
+	putshort(at->gi.hmtx,width==-1?(sf->ascent+sf->descent)/2:width);
 	putshort(at->gi.hmtx,0);
 	if ( dovmetrics ) {
 	    putshort(at->gi.vmtx,sf->ascent+sf->descent);
