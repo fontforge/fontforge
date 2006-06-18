@@ -892,6 +892,56 @@ return;
     sf->script_lang[1] = NULL;
 }
 
+static int SLContains(struct script_record *sr, uint32 script, uint32 lang) {
+    int i, j;
+
+    if ( script==DEFAULT_SCRIPT || script == 0 )
+return( true );
+    for ( i=0; sr[i].script!=0; ++i ) {
+	if ( sr[i].script==script ) {
+	    if ( lang==0 )
+return( true );
+	    for ( j=0; sr[i].langs[j]!=0; ++j )
+		if ( sr[i].langs[j]==lang )
+return( true );
+
+return( false );	/* this script entry didn't contain the language. won't be any other scripts to check */
+	}
+    }
+return( false );	/* Never found script */
+}
+
+static int SLCount(struct script_record *sr) {
+    int sl_cnt = 0;
+    int i,j;
+
+    for ( i=0; sr[i].script!=0; ++i ) {
+	for ( j=0; sr[i].langs[j]!=0; ++j )
+	    ++sl_cnt;
+    }
+return( sl_cnt );
+}
+
+int SFFindBiggestScriptLangIndex(SplineFont *sf,uint32 script,uint32 lang) {
+    int i, best_sli= -1, best_cnt= -1, cnt;
+
+    if ( sf->script_lang==NULL )
+	SFGuessScriptList(sf);
+    for ( i=0; sf->script_lang[i]!=NULL; ++i ) {
+	if ( SLContains(sf->script_lang[i],script,lang)) {
+	    cnt = SLCount(sf->script_lang[i]);
+	    if ( cnt>best_cnt ) {
+		best_sli = i;
+		best_cnt = cnt;
+	    }
+	}
+    }
+    if ( best_sli==-1 )
+return( SFAddScriptLangIndex(sf,script,lang) );
+
+return( best_sli );
+}
+
 int SRMatch(struct script_record *sr1,struct script_record *sr2) {
     int i, j;
 
@@ -1005,7 +1055,7 @@ return( line );
 }
 
 int SCDefaultSLI(SplineFont *sf, SplineChar *default_script) {
-    int i,j,k,l,best_sli,scnt,matched,def_sli;
+    int def_sli;
     uint32 script;
     PST *pst;
 
@@ -1020,7 +1070,7 @@ int SCDefaultSLI(SplineFont *sf, SplineChar *default_script) {
 	script = SCScriptFromUnicode(default_script);
 	if ( sf->script_lang==NULL ) {
 	    if ( script!=DEFAULT_SCRIPT && script!=0 )
-		SFAddScriptLangIndex(sf,script,DEFAULT_LANG);
+		SFFindBiggestScriptLangIndex(sf,script,DEFAULT_LANG);
 	    else
 		SFGuessScriptList(sf);
 	}
@@ -1035,36 +1085,8 @@ int SCDefaultSLI(SplineFont *sf, SplineChar *default_script) {
 	    if ( def_sli==-1 && default_script->kerns!=NULL )
 		def_sli = default_script->kerns->sli;
 	}
-	if ( def_sli==-1 ) {
-	    best_sli = -1; scnt=0;
-	    if ( script==DEFAULT_SCRIPT || script==0 ) {
-		/* Find the entry with the most scripts */
-		for ( i=0; sf->script_lang[i]!=NULL; ++i ) {
-		    for ( j=0; sf->script_lang[i][j].script!=0; ++j);
-		    if ( j>scnt ) {
-			scnt = j;
-			best_sli = i;
-		    }
-		}
-	    } else {
-		/* Find the entry with the most languages that includes this script */
-		for ( i=0; sf->script_lang[i]!=NULL; ++i ) {
-		    matched = false;
-		    for ( j=k=0; sf->script_lang[i][j].script!=0; ++j) {
-			if ( sf->script_lang[i][j].script==script ) matched = true;
-			for ( l=0; sf->script_lang[i][j].langs[l]!=0; ++l )
-			    ++k;
-		    }
-		    if ( matched && k>scnt ) {
-			scnt = k;
-			best_sli = i;
-		    }
-		}
-	    }
-	    if ( best_sli==-1 )
-		best_sli = SFAddScriptLangIndex(sf,script,DEFAULT_LANG);
-	    def_sli = best_sli;
-	}
+	if ( def_sli==-1 )
+	    def_sli = SFFindBiggestScriptLangIndex(sf,script,DEFAULT_LANG);
     }
 return( def_sli );
 }
@@ -4638,7 +4660,7 @@ static PST *AddPos(PST *last,uint32 tag,int dx, int dy, int dxa, int dya, uint16
     pos->flags = flags;
     pos->type = pst_position;
     pos->next = last;
-    pos->script_lang_index = SFAddScriptLangIndex(sc->parent,
+    pos->script_lang_index = SFFindBiggestScriptLangIndex(sc->parent,
 			SCScriptFromUnicode(sc),DEFAULT_LANG);
     pos->u.pos.xoff = dx;
     pos->u.pos.yoff = dy;
@@ -4656,7 +4678,7 @@ PST *AddSubs(PST *last,uint32 tag,char *name,uint16 flags,
     sub->flags = flags;
     sub->type = pst_substitution;
     if ( sli==SLI_UNKNOWN )
-	sub->script_lang_index = SFAddScriptLangIndex(sc->parent,
+	sub->script_lang_index = SFFindBiggestScriptLangIndex(sc->parent,
 			    SCScriptFromUnicode(sc),DEFAULT_LANG);
     else
 	sub->script_lang_index = sli;
@@ -4768,7 +4790,7 @@ static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
 	    lig = chunkalloc(sizeof(PST));
 	    lig->tag = LigTagFromUnicode(sc->unicodeenc);
 	    lig->flags = PSTDefaultFlags(pst_ligature,sc);
-	    lig->script_lang_index = SFAddScriptLangIndex(sc->parent,
+	    lig->script_lang_index = SFFindBiggestScriptLangIndex(sc->parent,
 			SCScriptFromUnicode(sc),DEFAULT_LANG);
 	    lig->type = pst_ligature;
 	    lig->next = last;
@@ -4800,7 +4822,7 @@ static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
 		    lig->tag = tag;
 		    lig->macfeature = true;
 		    lig->flags = PSTDefaultFlags(pst_ligature,sc);
-		    lig->script_lang_index = SFAddScriptLangIndex(sc->parent,
+		    lig->script_lang_index = SFFindBiggestScriptLangIndex(sc->parent,
 				SCScriptFromUnicode(sc),DEFAULT_LANG);
 		    lig->type = pst_ligature;
 		    lig->next = last;

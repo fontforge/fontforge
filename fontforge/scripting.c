@@ -5155,7 +5155,7 @@ return;		/* It already has a kern==0 with everything */
 	    if ( sli!=-1 )
 		kp->sli = sli;
 	    else
-		kp->sli = SFAddScriptLangIndex(sc1->parent,
+		kp->sli = SFFindBiggestScriptLangIndex(sc1->parent,
 			    SCScriptFromUnicode(sc1),DEFAULT_LANG);
 	}
     }

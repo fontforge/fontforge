@@ -1993,11 +1993,11 @@ static void BuildTop(struct att_dlg *att) {
 	    }
 	    if ( sc->kerns!=NULL && SCScriptFromUnicode(sc)!=DEFAULT_SCRIPT ) {
 		haskern = hasgpos = true;
-		SFAddScriptLangIndex(sf,SCScriptFromUnicode(sc),DEFAULT_LANG);
+		SFFindBiggestScriptLangIndex(sf,SCScriptFromUnicode(sc),DEFAULT_LANG);
 	    }
 	    if ( sc->vkerns!=NULL && SCScriptFromUnicode(sc)!=DEFAULT_SCRIPT ) {
 		hasvkern = hasgpos = true;
-		SFAddScriptLangIndex(sf,SCScriptFromUnicode(sc),DEFAULT_LANG);
+		SFFindBiggestScriptLangIndex(sf,SCScriptFromUnicode(sc),DEFAULT_LANG);
 	    }
 	}
 	++k;

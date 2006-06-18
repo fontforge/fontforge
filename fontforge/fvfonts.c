@@ -73,7 +73,7 @@ static int FixupSLI(int sli,SplineFont *from,SplineChar *sc) {
     /*  well, just make a reasonable guess */
 
     if ( from==NULL )
-return( SFAddScriptLangIndex(to,SCScriptFromUnicode(sc),DEFAULT_LANG));
+return( SFFindBiggestScriptLangIndex(to,SCScriptFromUnicode(sc),DEFAULT_LANG));
     if ( from->cidmaster ) from = from->cidmaster;
     else if ( from->mm!=NULL ) from = from->mm->normal;
     if ( to->cidmaster ) to = to->cidmaster;

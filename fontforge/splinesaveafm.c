@@ -91,7 +91,7 @@ static void KPInsert( SplineChar *sc1, SplineChar *sc2, int off, int isv ) {
 	    kp = chunkalloc(sizeof(KernPair));
 	    kp->sc = sc2;
 	    kp->off = off;
-	    kp->sli = SFAddScriptLangIndex(sc1->parent,
+	    kp->sli = SFFindBiggestScriptLangIndex(sc1->parent,
 			    SCScriptFromUnicode(sc1),DEFAULT_LANG);
 	    if ( isv ) {
 		kp->next = sc1->vkerns;
@@ -150,7 +150,7 @@ return( 0 );
 		if ( liga==NULL ) {
 		    liga = chunkalloc(sizeof(PST));
 		    liga->tag = CHR('l','i','g','a');
-		    liga->script_lang_index = SFAddScriptLangIndex(sf,
+		    liga->script_lang_index = SFFindBiggestScriptLangIndex(sf,
 			    SCScriptFromUnicode(sc2),DEFAULT_LANG);
 		    liga->type = pst_ligature;
 		    liga->next = sc1->possub;
