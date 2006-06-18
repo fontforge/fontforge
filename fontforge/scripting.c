@@ -5575,7 +5575,7 @@ static void bDefaultATT(Context *c) {
 	}
     }
     ftag = (tag[0]<<24)|(tag[1]<<16)|(tag[2]<<8)|tag[3];
-    if ( strcmp(str,"*"))
+    if ( strcmp(str,"*")==0 )
 	ftag = 0;			/* Everything */
 
     for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && fv->selected[i] )
