@@ -1510,6 +1510,8 @@ static int SV_OK(GGadget *g, GEvent *e) {
 		sv->table = NULL;
 	    }
 	} else {
+	    if ( !sfinishup(sv,true) )
+return( true );
 	    if ( sv->table!=NULL )
 		free(sv->table->data);
 	    else {
