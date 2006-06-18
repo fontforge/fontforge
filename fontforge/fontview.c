@@ -9127,10 +9127,14 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 			sc->ttf_instrs_len<=0 ) ||
 		     ( fv->sf->order2 && sc->instructions_out_of_date ) ) {
 		Color hintcol = 0x0000ff;
+		if ( fv->sf->order2 && sc->instructions_out_of_date && sc->ttf_instrs_len>0 )
+		    hintcol = 0xff0000;
 		GDrawDrawLine(pixmap,r.x,r.y,r.x,r.y+r.height-1,hintcol);
 		GDrawDrawLine(pixmap,r.x+1,r.y,r.x+1,r.y+r.height-1,hintcol);
+		GDrawDrawLine(pixmap,r.x+2,r.y,r.x+2,r.y+r.height-1,hintcol);
 		GDrawDrawLine(pixmap,r.x+r.width-1,r.y,r.x+r.width-1,r.y+r.height-1,hintcol);
 		GDrawDrawLine(pixmap,r.x+r.width-2,r.y,r.x+r.width-2,r.y+r.height-1,hintcol);
+		GDrawDrawLine(pixmap,r.x+r.width-3,r.y,r.x+r.width-3,r.y+r.height-1,hintcol);
 	    }
 	    if ( rotated!=NULL ) {
 		GDrawPushClip(pixmap,&r,&old2);
