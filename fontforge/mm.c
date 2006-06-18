@@ -327,7 +327,7 @@ return;
 		else {
 		    kp->off = diff;
 		    if ( sli==-1 )
-			sli = SFAddScriptLangIndex(cur,
+			sli = SFFindBiggestScriptLangIndex(cur,
 				    SCScriptFromUnicode(psc),DEFAULT_LANG);
 		    kp->sli = sli;
 		}

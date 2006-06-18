@@ -953,6 +953,10 @@ return( i );
 return( i );
 }
 
+int SFFindBiggestScriptLangIndex(SplineFont *sf,uint32 script,uint32 lang) {
+return( SFAddScriptLangIndex(sf,script,lang));
+}
+
 #if HANYANG
 void SFDDumpCompositionRules(FILE *sfd,struct compositionrules *rules) {
 }

@@ -370,11 +370,11 @@ return( sli );		/* It's from us. Yeah! that's easy */
 
     if ( fromsf==NULL ) {
 	if ( tosf->script_lang==NULL )
-	    sli = SFAddScriptLangIndex(tosf,SCScriptFromUnicode(default_script),DEFAULT_LANG);
+	    sli = SFFindBiggestScriptLangIndex(tosf,SCScriptFromUnicode(default_script),DEFAULT_LANG);
 	else {
 	    for ( i=0; tosf->script_lang[i]!=NULL; ++i );
 	    if ( sli>=i )
-		sli = SFAddScriptLangIndex(tosf,SCScriptFromUnicode(default_script),DEFAULT_LANG);
+		sli = SFFindBiggestScriptLangIndex(tosf,SCScriptFromUnicode(default_script),DEFAULT_LANG);
 	}
 return( sli );
     }

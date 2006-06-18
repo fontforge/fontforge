@@ -2110,7 +2110,7 @@ static PST *AddLig(PST *last,uint32 tag,char *components,SplineChar *first) {
     lig->tag = tag;
     lig->flags = PSTDefaultFlags(pst_ligature,first);
     lig->type = pst_ligature;
-    lig->script_lang_index = SFAddScriptLangIndex(first->parent,
+    lig->script_lang_index = SFFindBiggestScriptLangIndex(first->parent,
 			SCScriptFromUnicode(first),DEFAULT_LANG);
     lig->next = last;
     lig->u.lig.components = copy(components);

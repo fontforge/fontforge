@@ -3116,7 +3116,7 @@ return( NULL );
 		    (hassli==2 && fscanf(sfd,"%d %d %d %d", &index, &off, &sli, &flags )==4) ||
 		    (hassli==0 && fscanf(sfd,"%d %d", &index, &off )==2) ) {
 		if ( !hassli )
-		    sli = SFAddScriptLangIndex(sf,
+		    sli = SFFindBiggestScriptLangIndex(sf,
 			    script!=0?script:SCScriptFromUnicode(sc),DEFAULT_LANG);
 		if ( sli>=sli_sf->sli_cnt && sli!=SLI_NESTED) {
 		    static int complained=false;
@@ -3128,7 +3128,7 @@ return( NULL );
 			IError( "'%s' in %s has a script index out of bounds: %d",
 				isv ? "vkrn" : "kern",
 				sc->name, sli );
-		    sli = SFAddScriptLangIndex(sli_sf,
+		    sli = SFFindBiggestScriptLangIndex(sli_sf,
 			    SCScriptFromUnicode(sc),DEFAULT_LANG);
 		    complained = true;
 		}
@@ -3193,7 +3193,7 @@ return( NULL );
 		getusint(sfd,&liga->script_lang_index);
 		while ( (ch=getc(sfd))==' ' || ch=='\t' );
 	    } else
-		liga->script_lang_index = SFAddScriptLangIndex(sf,
+		liga->script_lang_index = SFFindBiggestScriptLangIndex(sf,
 			script!=0?script:SCScriptFromUnicode(sc),DEFAULT_LANG);
 	    if ( ch=='\'' ) {
 		liga->tag = getc(sfd)<<24;
@@ -3225,7 +3225,7 @@ return( NULL );
 		    IError( "'%c%c%c%c' in %s has a script index out of bounds: %d\n",
 			    (liga->tag>>24), (liga->tag>>16)&0xff, (liga->tag>>8)&0xff, liga->tag&0xff,
 			    sc->name, liga->script_lang_index );
-		liga->script_lang_index = SFAddScriptLangIndex(sli_sf,
+		liga->script_lang_index = SFFindBiggestScriptLangIndex(sli_sf,
 			SCScriptFromUnicode(sc),DEFAULT_LANG);
 		complained = true;
 	    }

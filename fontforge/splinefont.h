@@ -1793,6 +1793,7 @@ extern struct script_record *SRParse(const unichar_t *line);
 extern int SFFindScriptLangRecord(SplineFont *sf,struct script_record *sr);
 extern int SFAddScriptLangRecord(SplineFont *sf,struct script_record *sr);
 extern int SFAddScriptLangIndex(SplineFont *sf,uint32 script,uint32 lang);
+extern int SFFindBiggestScriptLangIndex(SplineFont *sf,uint32 script,uint32 lang);
 extern int ScriptLangMatch(struct script_record *sr,uint32 script,uint32 lang);
 extern int SRMatch(struct script_record *sr1,struct script_record *sr2);
 extern int SFConvertSLI(SplineFont *fromsf,int sli,SplineFont *tosf,
@@ -1966,7 +1967,9 @@ enum Compare_Ret {	SS_DiffContourCount	= 1,
 			BC_BoundingBoxMismatch	= 2<<16,
 			BC_BitmapMismatch	= 4<<16,
 			BC_NoMatch		= 8<<16,
-			BC_Match		= 16<<16
+			BC_Match		= 16<<16,
+
+			SS_RefPtMismatch	= 32<<16
 		};
 
 extern enum Compare_Ret BitmapCompare(BDFChar *bc1, BDFChar *bc2, int err, int bb_err);
