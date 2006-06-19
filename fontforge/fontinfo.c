@@ -6490,7 +6490,7 @@ return;
     xugcd[2].gd.flags = gg_visible | gg_enabled;
     xugcd[2].creator = GLabelCreate;
 
-    xugcd[3].gd.pos.x = xugcd[1].gd.pos.x; xugcd[3].gd.pos.y = xugcd[2].gd.pos.y-6; xugcd[3].gd.pos.width = xugcd[12].gd.pos.width;
+    xugcd[3].gd.pos.x = xugcd[1].gd.pos.x; xugcd[3].gd.pos.y = xugcd[2].gd.pos.y-6; xugcd[3].gd.pos.width = 80;
     xugcd[3].gd.flags = gg_visible | gg_enabled;
     xulabel[3].text = (unichar_t *) "";
     xulabel[3].text_is_1byte = true;
@@ -6502,7 +6502,7 @@ return;
     xugcd[3].gd.cid = CID_UniqueID;
     xugcd[3].creator = GTextFieldCreate;
 
-    xugcd[4].gd.pos.x = 12; xugcd[4].gd.pos.y = xugcd[3].gd.pos.y+26+6;
+    xugcd[4].gd.pos.x = 8; xugcd[4].gd.pos.y = xugcd[3].gd.pos.y+26+6;
     xulabel[4].text = (unichar_t *) _("(Adobe now considers XUID/UniqueID unnecessary)");
     xulabel[4].text_is_1byte = true;
     xulabel[4].text_in_resource = true;
