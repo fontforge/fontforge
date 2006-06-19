@@ -1361,6 +1361,10 @@ return( TT_Err_Execution_Too_Long );
 
     do {
 	exc->instruction_trap = 1;
+	if (exc->curRange==tt_coderange_glyph && exc->IP==exc->codeSize) {
+	    ret = TT_Err_Code_Overflow;
+    break;
+	}
 	ret = _TT_RunIns(exc);
 	if ( ret )
     break;
@@ -1435,7 +1439,7 @@ void DebuggerTerminate(struct debugger_context *dc) {
 	pthread_cond_destroy(&dc->child_cond);
 	pthread_cond_destroy(&dc->parent_cond);
 	pthread_mutex_destroy(&dc->child_mutex);
-	pthread_mutex_unlock(&dc->parent_mutex);
+	pthread_mutex_unlock(&dc->parent_mutex);	/* Is this actually needed? */
 	pthread_mutex_destroy(&dc->parent_mutex);
     }
     if ( dc->ftc!=NULL )
@@ -1472,6 +1476,7 @@ void DebuggerReset(struct debugger_context *dc,real ptsize,int dpi,int dbg_fpgm)
     dc->terminate = dc->has_finished = false;
     dc->initted_pts = false;
 
+    pthread_mutex_lock(&dc->parent_mutex);
     if ( pthread_create(&dc->thread,NULL,StartChar,(void *) dc)!=0 ) {
 	DebuggerTerminate(dc);
 return;

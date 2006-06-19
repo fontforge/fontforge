@@ -130,8 +130,8 @@ static const char *instrnames[] = {
     "SHZ[rp1]",
     "SHPIX",
     "IP",
-    "MSIRP[no set rp0]",
-    "MSIRP[set rp0]",
+    "MSIRP[no-rp0]",
+    "MSIRP[rp0]",
     "ALIGNRP",
     "RTDG",
     "MIAP[no-rnd]",
@@ -904,6 +904,7 @@ static void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
 		uc_strcpy(uname,val);
 	    } else if ( ii->instrdata->bts[i]==bt_impliedreturn ) {
 		uc_strcpy(uname,"<return>");
+		uins[0] = '\0';
 	    } else {
 		sprintf( ins, "%02x", ii->instrdata->instrs[i] ); uc_strcpy(uins,ins);
 		uc_strcpy(uname, instrnames[ii->instrdata->instrs[i]]);
