@@ -241,7 +241,6 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,EncMap *map,
     int pcnt;
     int em = font->sf->ascent + font->sf->descent;
     int i;
-    int has_reg, has_sets;
     struct xlfd_components components;
     int old_prop_cnt = font->prop_cnt;
     int resolution_mismatch = false;
@@ -336,13 +335,12 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,EncMap *map,
 		fprintf( file, "COMMENT \"%s\"\n", font->props[i].u.str );
     }
 
-    has_reg = has_sets = 0;
     for ( i=pcnt=0; i<font->prop_cnt; ++i ) {
 	if ( font->props[i].type&prt_property )
 	    ++pcnt;
     }
     if ( pcnt!=0 ) {
-	fprintf( file, "STARTPROPERTIES %d\n", pcnt+(!has_reg?2:0)+(!has_sets) );
+	fprintf( file, "STARTPROPERTIES %d\n", pcnt );
 	for ( i=pcnt=0; i<font->prop_cnt; ++i ) {
 	    if ( font->props[i].type&prt_property ) {
 		fprintf( file, "%s ", font->props[i].name );
