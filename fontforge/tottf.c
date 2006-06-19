@@ -2063,6 +2063,8 @@ static void dumpcfftopdict(SplineFont *sf,struct alltabs *at) {
 	pt = sf->xuid; if ( *pt=='[' ) ++pt;
 	while ( *pt && *pt!=']' ) {
 	    dumpint(cfff,strtol(pt,&end,10));
+	    if ( pt==end )	/* garbage in XUID */
+	break;
 	    for ( pt = end; *pt==' '; ++pt );
 	}
 	putc(14,cfff);
