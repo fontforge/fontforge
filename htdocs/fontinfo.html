@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 17-Apr-2006 -->
+  <!-- AP: Last modified: 19-Jun-2006 -->
   <TITLE>Font Info</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -27,6 +27,8 @@
       <A HREF="fontinfo.html#Names">Names</A>
     <LI>
       <A HREF="fontinfo.html#PS-General">General</A>
+    <LI>
+      <A HREF="#PSUID">PostScript Unique IDs</A>
     <LI>
       <A HREF="fontinfo.html#Private">PostScript Private Dictionary</A>
     <LI>
@@ -81,9 +83,10 @@
   In most fonts the version field is a string (and so has minimal constraints
   on it), but in CID keyed fonts it must be a floating point number.
   <P>
-  Many of these names are similar to the english names of the TTF Names section.
-  If nothing is specified in that section then the names specified here will
-  be used by default in ttf files.
+  Many of these names are similar to the english names of the
+  <A HREF="fontinfo.html#TTF-Names">TTF Names</A> section. If nothing is specified
+  in that section then the names specified here will be used by default in
+  ttf files.
   <H2>
     <IMG SRC="fontinfo-ps.png" WIDTH="376" HEIGHT="608" ALIGN="Right"><A NAME="PS-General">General</A>
   </H2>
@@ -102,7 +105,9 @@
   <P>
   If you change the size of the Em you may choose to have all the outlines
   (and kerning info) scaled to have the same proportion to the new value that
-  they had to the old.
+  they had to the old. Warning: <FONT COLOR="Red"><STRONG>If your font has
+  truetype instructions scaling may break the font as entries in the <CODE>'cvt
+  '</CODE> table will not be scaled.</STRONG></FONT>
   <P>
   The Italic Angle indicates the slant of the font. FontForge can attempt to
   guess a good value for you by looking at the stems of certain letters ("I"
@@ -111,27 +116,6 @@
   The underline position and height provide a program using this font a hint
   as to where it should place a line if it wants to underline text printed
   in this font.
-  <P>
-  <FONT COLOR="Red"><SMALL><STRONG>NOTE:</STRONG></SMALL></FONT>
-  <A HREF="UniqueID.html">Adobe now says</A> that both XUID and UniqueID are
-  unnecessary.
-  <P>
-  The XUID field is a collection of numbers separated by spaces and enclosed
-  in brackets. This allows you to specify the extended unique ID of the font.
-  If you have set the XUID preference entry then FontForge will assign values
-  to all new fonts (by appending a number unique to this font to the end of
-  your preference item). Adobe recommends that the XUID be changed every time
-  the font is changed, so each time you generate a postscript font, that font's
-  XUID (if present) will be incremented by 1 (This incrementing does not happen
-  in CID-keyed fonts, where the XUID behavior is too complex for this simple
-  trick). (The XUID field is only meaningful in PostScript fonts).
-  <P>
-  The UniqueID field is an older convention for the same purpose as XUID. If
-  you do not fill in this field then FontForge will pick a random number for
-  you in the allowable range. If you want your font to have no unique id then
-  give this the value of -1. If you have talked to Adobe and been assigned
-  a real UniqueID then you may use this field, otherwise leave it blank. (The
-  UniqueID field is only meaningful in PostScript fonts)
   <P>
   If you want your font to have <A NAME="vertical">vertical</A> metrics (generally
   this means you are working on a CJK font) then check the <CODE>[*] Has Vertical
@@ -168,6 +152,31 @@
   When you create a new glyph in a font, fontforge will assign it a name based
   on the current
   <A HREF="encodingmenu.html#namelist">namelist</A>.<BR Clear=ALL>
+  <H2>
+    <IMG SRC="fontinfo-psuid.png" WIDTH="376" HEIGHT="608" ALIGN="Right"><A NAME="PSUID">PostScript
+    Unique ID</A>
+  </H2>
+  <P>
+  <FONT COLOR="Red"><SMALL><STRONG>NOTE:</STRONG></SMALL></FONT>
+  <A HREF="UniqueID.html">Adobe now says</A> that both XUID and UniqueID are
+  unnecessary.
+  <P>
+  The XUID field is a collection of numbers separated by spaces and enclosed
+  in brackets. This allows you to specify the extended unique ID of the font.
+  If you have set the XUID preference entry then FontForge will assign values
+  to all new fonts (by appending a number unique to this font to the end of
+  your preference item). Adobe recommends that the XUID be changed every time
+  the font is changed, so each time you generate a postscript font, that font's
+  XUID (if present) will be incremented by 1 (This incrementing does not happen
+  in CID-keyed fonts, where the XUID behavior is too complex for this simple
+  trick). (The XUID field is only meaningful in PostScript fonts).
+  <P>
+  The UniqueID field is an older convention for the same purpose as XUID. If
+  you do not fill in this field then FontForge will pick a random number for
+  you in the allowable range. If you want your font to have no unique id then
+  give this the value of -1. If you have talked to Adobe and been assigned
+  a real UniqueID then you may use this field, otherwise leave it blank. (The
+  UniqueID field is only meaningful in PostScript fonts)<BR CLEAR=ALL>
   <H2>
     <A NAME="Private">Private</A> -- <SMALL>(font-wide postscript hinting)</SMALL>
   </H2>
@@ -393,7 +402,7 @@
   in a font menu, while a German user might see CaslonKursive. There are about
   20 different strings which may be customized into various different languages.
   Customizing one string does not mean that you must customize the others (indeed,
-  usually only the Style string is customized).
+  often only the Style string will be customized).
   <P>
   The image at right shows the dialog, displaying all the strings set for the
   given font. You may order these strings based on type of string (ordered
@@ -405,10 +414,11 @@
   Certain strings in English (Copyright, Family, Styles, Fullname, Version)
   will always be present. If you do not set them explicitly they will be taken
   (possibly with modifications) from the equivalent postscript strings on the
-  Names pane. You may not remove these strings, and if you wish to modify them
-  you must first detach them from the PostScript. In the example at right the
-  strings bound to PostScript are shown in red (Copyright, Family, Styles),
-  while Fullname and Version have been detached and modified.
+  <A HREF="fontinfo.html#Names">Names</A> pane. You may not remove these strings,
+  and if you wish to modify them you must first detach them from the PostScript.
+  In the example at right the strings bound to PostScript are shown in red
+  (Copyright, Family, Styles), while Fullname and Version have been detached
+  and modified.
   <P>
   You may change the language of a string by clicking the mouse on the language
   field of that string -- a popup menu will appear giving you a choice of all
