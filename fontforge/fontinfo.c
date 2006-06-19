@@ -6253,16 +6253,17 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GTabInfo aspects[17], conaspects[7], smaspects[5], vaspects[5];
-    GGadgetCreateData mgcd[10], ngcd[17], psgcd[30], tngcd[8],
+    GTabInfo aspects[18], conaspects[7], smaspects[5], vaspects[5];
+    GGadgetCreateData mgcd[10], ngcd[13], psgcd[30], tngcd[8],
 	pgcd[8], vgcd[16], pangcd[22], comgcd[3], atgcd[7], txgcd[23],
 	congcd[3], csubgcd[fpst_max-pst_contextpos][6], smgcd[3], smsubgcd[4][6],
-	mfgcd[8], mcgcd[8], szgcd[19], mkgcd[5], metgcd[28], vagcd[3], ssgcd[23];
-    GTextInfo mlabel[10], nlabel[17], pslabel[30], tnlabel[7],
+	mfgcd[8], mcgcd[8], szgcd[19], mkgcd[5], metgcd[28], vagcd[3], ssgcd[23],
+	xugcd[7];
+    GTextInfo mlabel[10], nlabel[12], pslabel[30], tnlabel[7],
 	plabel[8], vlabel[16], panlabel[22], comlabel[3], atlabel[7], txlabel[23],
 	csublabel[fpst_max-pst_contextpos][6], smsublabel[4][6],
 	mflabel[8], mclabel[8], szlabel[17], mklabel[5], metlabel[28],
-	sslabel[23];
+	sslabel[23], xulabel[6];
     GTextInfo *namelistnames;
     struct gfi_data *d;
     char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20],
@@ -6459,43 +6460,55 @@ return;
     ngcd[11].gd.cid = CID_Notice;
     ngcd[11].creator = GTextAreaCreate;
 
-    ngcd[12].gd.pos.x = 12; ngcd[12].gd.pos.y = ngcd[11].gd.pos.y+ngcd[11].gd.pos.height+6;
-    ngcd[12].gd.flags = gg_visible | gg_enabled;
-    nlabel[12].text = (unichar_t *) _("_XUID:");
-    nlabel[12].text_is_1byte = true;
-    nlabel[12].text_in_resource = true;
-    ngcd[12].gd.label = &nlabel[12];
-    ngcd[12].creator = GLabelCreate;
+/******************************************************************************/
+    memset(&xulabel,0,sizeof(xulabel));
+    memset(&xugcd,0,sizeof(xugcd));
 
-    ngcd[13].gd.pos.x = 103; ngcd[13].gd.pos.y = ngcd[12].gd.pos.y-6; ngcd[13].gd.pos.width = 142;
-    ngcd[13].gd.flags = gg_visible | gg_enabled;
+    xugcd[0].gd.pos.x = 12; xugcd[0].gd.pos.y = 10+6;
+    xugcd[0].gd.flags = gg_visible | gg_enabled;
+    xulabel[0].text = (unichar_t *) _("_XUID:");
+    xulabel[0].text_is_1byte = true;
+    xulabel[0].text_in_resource = true;
+    xugcd[0].gd.label = &xulabel[0];
+    xugcd[0].creator = GLabelCreate;
+
+    xugcd[1].gd.pos.x = 103; xugcd[1].gd.pos.y = xugcd[0].gd.pos.y-6; xugcd[1].gd.pos.width = 142;
+    xugcd[1].gd.flags = gg_visible | gg_enabled;
     if ( sf->xuid!=NULL ) {
-	nlabel[13].text = (unichar_t *) sf->xuid;
-	nlabel[13].text_is_1byte = true;
-	ngcd[13].gd.label = &nlabel[13];
+	xulabel[1].text = (unichar_t *) sf->xuid;
+	xulabel[1].text_is_1byte = true;
+	xugcd[1].gd.label = &xulabel[1];
     }
-    ngcd[13].gd.cid = CID_XUID;
-    ngcd[13].creator = GTextFieldCreate;
+    xugcd[1].gd.cid = CID_XUID;
+    xugcd[1].creator = GTextFieldCreate;
 
-    ngcd[14].gd.pos.x = 12; ngcd[14].gd.pos.y = ngcd[13].gd.pos.y+26+6;
-    nlabel[14].text = (unichar_t *) _("_UniqueID:");
-    nlabel[14].text_is_1byte = true;
-    nlabel[14].text_in_resource = true;
-    ngcd[14].gd.label = &nlabel[14];
-    ngcd[14].gd.flags = gg_visible | gg_enabled;
-    ngcd[14].creator = GLabelCreate;
+    xugcd[2].gd.pos.x = 12; xugcd[2].gd.pos.y = xugcd[1].gd.pos.y+26+6;
+    xulabel[2].text = (unichar_t *) _("_UniqueID:");
+    xulabel[2].text_is_1byte = true;
+    xulabel[2].text_in_resource = true;
+    xugcd[2].gd.label = &xulabel[2];
+    xugcd[2].gd.flags = gg_visible | gg_enabled;
+    xugcd[2].creator = GLabelCreate;
 
-    ngcd[15].gd.pos.x = ngcd[12].gd.pos.x; ngcd[15].gd.pos.y = ngcd[14].gd.pos.y-6; ngcd[15].gd.pos.width = ngcd[12].gd.pos.width;
-    ngcd[15].gd.flags = gg_visible | gg_enabled;
-    nlabel[15].text = (unichar_t *) "";
-    nlabel[15].text_is_1byte = true;
+    xugcd[3].gd.pos.x = xugcd[1].gd.pos.x; xugcd[3].gd.pos.y = xugcd[2].gd.pos.y-6; xugcd[3].gd.pos.width = xugcd[12].gd.pos.width;
+    xugcd[3].gd.flags = gg_visible | gg_enabled;
+    xulabel[3].text = (unichar_t *) "";
+    xulabel[3].text_is_1byte = true;
     if ( sf->uniqueid!=0 ) {
 	sprintf( uibuf, "%d", sf->uniqueid );
-	nlabel[15].text = (unichar_t *) uibuf;
+	xulabel[3].text = (unichar_t *) uibuf;
     }
-    ngcd[15].gd.label = &nlabel[15];
-    ngcd[15].gd.cid = CID_UniqueID;
-    ngcd[15].creator = GTextFieldCreate;
+    xugcd[3].gd.label = &xulabel[3];
+    xugcd[3].gd.cid = CID_UniqueID;
+    xugcd[3].creator = GTextFieldCreate;
+
+    xugcd[4].gd.pos.x = 12; xugcd[4].gd.pos.y = xugcd[3].gd.pos.y+26+6;
+    xulabel[4].text = (unichar_t *) _("(Adobe now considers XUID/UniqueID unnecessary)");
+    xulabel[4].text_is_1byte = true;
+    xulabel[4].text_in_resource = true;
+    xugcd[4].gd.label = &xulabel[4];
+    xugcd[4].gd.flags = gg_visible | gg_enabled;
+    xugcd[4].creator = GLabelCreate;
 
 /******************************************************************************/
     memset(&pslabel,0,sizeof(pslabel));
@@ -8203,6 +8216,10 @@ return;
     aspects[i].text = (unichar_t *) _("General");
     aspects[i].text_is_1byte = true;
     aspects[i++].gcd = psgcd;
+
+    aspects[i].text = (unichar_t *) _("PS UID");
+    aspects[i].text_is_1byte = true;
+    aspects[i++].gcd = xugcd;
 
     d->private_aspect = i;
     aspects[i].text = (unichar_t *) _("PS Private");

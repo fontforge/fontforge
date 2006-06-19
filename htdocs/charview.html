@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 2-May-2006 -->
+  <!-- AP: Last modified: 19-Jun-2006 -->
   <TITLE>Outline Glyph View</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -86,6 +86,13 @@
   <P>
   If you drag a glyph from the font view and drop it into a glyph view then
   FontForge will drop a reference to the dragged glyph into the view.
+  <P>
+  Warning: <FONT COLOR="Red"><STRONG>If your glyph has truetype instructions
+  then editing it may cause those instructions to behave very oddly. If your
+  glyph has anchor points which depend on truetype point matching then editing
+  the glyph may disconnect the points. If your glyph is used as a reference
+  in another glyph that positions references by point matching then editing
+  this glyph may reposition those references.</STRONG></FONT>
   <H2>
     <A NAME="Layers">Layers</A>
   </H2>
