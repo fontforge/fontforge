@@ -3375,10 +3375,14 @@ static int devopenerror(Display *disp, XErrorEvent *err) {
     /*  in their xorg.conf file. However if the user has no wacom tablet then */
     /*  an attempt to use one of those devices will cause X to return a */
     /*  BadDevice error */
-    char buffer[200];
+    /* Unfortunately there is no good way to test for BadDevice (at least */
+    /*  not that I am aware of). It's an extension error, so its numeric value*/
+    /*  varies from machine to machine. I could grab the error message as a */
+    /*  string, but it could be localized, and might change too. */
+    /* So I just assume that any error in the extension error range is likely */
+    /*  to be BadDevice */
 
-    XGetErrorText(disp,err->error_code,buffer,sizeof(buffer));
-    if ( strcmp(buffer,"BadDevice")==0 ) {
+    if ( err->error_code>=128 ) {
 	devopen_failed = true;
 	fprintf( stderr, "X11 claims there exists a device called \"%s\", but an attempt to open it fails.\n  Rerun the program with the -dontopenxdevices argument.\n",
 		device_name );
