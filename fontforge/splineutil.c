@@ -1599,7 +1599,7 @@ SplinePointList *SPLCopyTranslatedHintMasks(SplinePointList *base,
     transform[0] = transform[3] = 1; transform[1] = transform[2] = 0;
     transform[4] = trans->x; transform[5] = trans->y;
 
-    for ( spl = head, spl2=base; spl!=NULL; spl = spl->next ) {
+    for ( spl = head, spl2=base; spl!=NULL; spl = spl->next, spl2 = spl2->next ) {
 	pfirst = NULL;
 	for ( spt = spl->first, spt2 = spl2->first ; spt!=pfirst; spt = spt->next->to, spt2 = spt2->next->to ) {
 	    if ( pfirst==NULL ) pfirst = spt;
