@@ -30,6 +30,8 @@
 #include "chardata.h"
 #include <unistd.h>
 #include <time.h>
+#include <stdlib.h>
+#include <views.h>		/* For SCCharChangedUpdate */
 
 /*#define DEBUG	1*/
 
@@ -2455,6 +2457,132 @@ SplineSet *SplineCharSimplify(SplineChar *sc,SplineSet *head,
  printf( "nocnt=%d totcnt=%d curdif=%d incr=%d\n", nocnt_cnt, totcnt_cnt, curdiff_cnt, incr_cnt );
 #endif
 return( head );
+}
+
+/* If the start point of a contour to be the left most point on it.  If there */
+/*  are several points with that same value, use the one closest to the base */
+/*  line */
+void SPLStartToLeftmost(SplineChar *sc,SplinePointList *spl, int *changed) {
+    SplinePoint *sp;
+    SplinePoint *best;
+
+    if ( spl->first==spl->last ) {		/* It's closed */
+	best = spl->first;
+	for ( sp=spl->first; ; ) {
+	    if ( sp->me.x < best->me.x ||
+		    (sp->me.x==best->me.x && (fabs(sp->me.y)<fabs(best->me.y))) )
+		best = sp;
+	    sp = sp->next->to;
+	    if ( sp==spl->first )
+	break;
+	}
+	if ( best!=spl->first ) {
+	    if ( !*changed ) {
+		SCPreserveState(sc,false);
+		*changed = true;
+	    }
+	    spl->first = spl->last = best;
+	}
+    }
+}
+
+void SPLsStartToLeftmost(SplineChar *sc) {
+    int changed = 0;
+    int layer;
+    SplineSet *ss;
+
+    if ( sc==NULL )
+return;
+
+    for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+	for ( ss = sc->layers[layer].splines; ss!=NULL; ss=ss->next )
+	    SPLStartToLeftmost(sc,ss,&changed);
+    }
+    if ( changed )
+	SCCharChangedUpdate(sc);
+}
+
+struct contourinfo {
+    SplineSet *ss;
+    BasePoint *min;
+};
+
+static int order_contours(const void *_c1, const void *_c2) {
+    const struct contourinfo *c1 = _c1, *c2 = _c2;
+
+    if ( c1->min->x<c2->min->x )
+return( -1 );
+    else if ( c1->min->x>c2->min->x )
+return( 1 );
+    else if ( fabs(c1->min->y)<fabs(c2->min->y) )
+return( -1 );
+    else if ( fabs(c1->min->y)>fabs(c2->min->y) )
+return( 1 );
+    else
+return( 0 );
+}
+
+void CanonicalContours(SplineChar *sc) {
+    int changed;
+    int layer;
+    SplineSet *ss;
+    SplinePoint *sp, *best;
+    int contour_cnt, contour_max=0, i, diff;
+    struct contourinfo *ci;
+
+    if ( sc==NULL )
+return;
+
+    for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+	contour_cnt = 0;
+	for ( ss = sc->layers[layer].splines; ss!=NULL; ss=ss->next )
+	    ++contour_cnt;
+	if ( contour_cnt>contour_max )
+	    contour_max = contour_cnt;
+    }
+
+    if ( contour_max<=1 )	/* Can't be out of order */
+return;
+
+    changed = 0;
+    ci = gcalloc(contour_max,sizeof(struct contourinfo));
+    for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+	contour_cnt = 0;
+	for ( ss = sc->layers[layer].splines; ss!=NULL; ss=ss->next ) {
+	    best = ss->first;
+	    for ( sp=ss->first; ; ) {
+		if ( sp->me.x < best->me.x ||
+			(sp->me.x==best->me.x && (fabs(sp->me.y)<fabs(best->me.y))) )
+		    best = sp;
+		sp = sp->next->to;
+		if ( sp==ss->first )
+	    break;
+	    }
+	    ci[contour_cnt].ss = ss;
+	    ci[contour_cnt++].min = &best->me;
+	}
+	qsort(ci,contour_cnt,sizeof(struct contourinfo),order_contours);
+	diff = 0;
+	for ( i=0, ss = sc->layers[layer].splines; ss!=NULL; ss=ss->next ) {
+	    if ( ci[i].ss != ss ) {
+		diff = true;
+	break;
+	    }
+	}
+	if ( diff && !changed ) {
+	    SCPreserveState(sc,false);
+	    changed = true;
+	}
+	if ( diff ) {
+	    sc->layers[layer].splines = ci[0].ss;
+	    for ( i=1; i<contour_cnt; ++i )
+		ci[i-1].ss->next = ci[i].ss;
+	    ci[contour_cnt-1].ss->next = NULL;
+	}
+    }
+    free(ci);
+    if ( changed )
+	SCCharChangedUpdate(sc);
 }
 
 static int SplineSetMakeLoop(SplineSet *spl,real fudge) {

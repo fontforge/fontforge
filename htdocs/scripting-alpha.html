@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 9-Apr-2006 -->
-  <!-- AP: Last modified: 8-Jun-2006 -->
+  <!-- AP: Last modified: 23-Jun-2006 -->
   <TITLE>Scripting functions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -320,6 +320,20 @@ a[4][0] = "Nested array";
     <TR VALIGN=TOP>
       <TD BGCOLOR=yellow><A NAME="C">C</A></TD>
       <TD><DL>
+	  <DT>
+	    <A NAME="CanonicalContours">CanonicalContours</A>()
+	  <DD>
+	    Orders the contours in the currently selected glyph(s) by the x coordinate
+	    of their leftmost point. (This can reduce the size of the charstring needed
+	    to describe the glyph(s).
+	  <DT>
+	    <A NAME="CanonicalStart">CanonicalStart</A>()
+	  <DD>
+	    Sets the start point of all the contours of the currently selected glyph(s)
+	    to be the leftmost point on the contour. (If there are several points with
+	    that value then use the one which is closest to the baseline). This can reduce
+	    the size of the charstring needed to describe the glyph(s). By regularizing
+	    things it can also make more things available to be put in subroutines.
 	  <DT>
 	    <A NAME="Ceil">Ceil</A>(real)
 	  <DD>

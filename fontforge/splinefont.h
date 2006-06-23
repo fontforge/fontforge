@@ -1531,6 +1531,9 @@ extern void SplinePointListSimplify(SplineChar *sc,SplinePointList *spl,
 	struct simplifyinfo *smpl);
 extern SplineSet *SplineCharSimplify(SplineChar *sc,SplineSet *head,
 	struct simplifyinfo *smpl);
+extern void SPLStartToLeftmost(SplineChar *sc,SplinePointList *spl, int *changed);
+extern void SPLsStartToLeftmost(SplineChar *sc);
+extern void CanonicalContours(SplineChar *sc);
 extern SplineSet *SplineSetJoin(SplineSet *start,int doall,real fudge,int *changed);
 enum ae_type { ae_all, ae_between_selected, ae_only_good, ae_only_good_rm_later };
 extern Spline *SplineAddExtrema(Spline *s,int always,real lenbound,

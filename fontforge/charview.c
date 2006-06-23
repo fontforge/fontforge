@@ -4334,6 +4334,8 @@ return( true );
 #define MID_Last	2236
 #define MID_CharInfo	2240
 #define MID_ShowDependentSubs	2241
+#define MID_CanonicalStart	2242
+#define MID_CanonicalContours	2243
 #define MID_Corner	2301
 #define MID_Tangent	2302
 #define MID_Curve	2303
@@ -6256,6 +6258,44 @@ static void CVMenuCleanupGlyph(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CVSimplify(cv,-1);
 }
 
+static int SPLSelected(SplineSet *ss) {
+    SplinePoint *sp;
+
+    for ( sp=ss->first ;; ) {
+	if ( sp->selected )
+return( true );
+	if ( sp->next==NULL )
+return( false );
+	sp = sp->next->to;
+	if ( sp==ss->first )
+return( false );
+    }
+}
+
+static void CVCanonicalStart(CharView *cv) {
+    SplineSet *ss;
+    int changed = 0;
+
+    for ( ss = cv->layerheads[cv->drawmode]->splines; ss!=NULL; ss=ss->next )
+	if ( ss->first==ss->last && SPLSelected(ss))
+	    SPLStartToLeftmost(cv->sc,ss,&changed);
+}
+
+static void CVMenuCanonicalStart(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    CVCanonicalStart(cv);
+}
+
+static void CVCanonicalContour(CharView *cv) {
+    if ( cv->drawmode==dm_fore )
+	CanonicalContours(cv->sc);
+}
+
+static void CVMenuCanonicalContours(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    CVCanonicalContour(cv);
+}
+
 static void _CVMenuMakeFirst(CharView *cv) {
     SplinePoint *selpt = NULL;
     int anypoints = 0, splinepoints;
@@ -7340,6 +7380,8 @@ static GMenuItem smlist[] = {
     { { (unichar_t *) N_("_Simplify"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'S' }, 'M', ksm_control|ksm_shift, NULL, NULL, CVMenuSimplify, MID_Simplify },
     { { (unichar_t *) N_("Simplify More..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, 'M', ksm_control|ksm_shift|ksm_meta, NULL, NULL, CVMenuSimplifyMore, MID_SimplifyMore },
     { { (unichar_t *) N_("Clea_nup Glyph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'n' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuCleanupGlyph, MID_CleanupGlyph },
+    { { (unichar_t *) N_("Canonical Start _Point"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'n' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuCanonicalStart, MID_CanonicalStart },
+    { { (unichar_t *) N_("Canonical _Contours"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'n' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuCanonicalContours, MID_CanonicalContours },
     { NULL }
 };
 
@@ -7350,10 +7392,14 @@ static void smlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	switch ( mi->mid ) {
 	  case MID_Simplify:
 	  case MID_CleanupGlyph:
+	  case MID_SimplifyMore:
+	  case MID_CanonicalStart:
 	    mi->ti.disabled = cv->layerheads[cv->drawmode]->splines==NULL;
 	  break;
-	  case MID_SimplifyMore:
-	    mi->ti.disabled = cv->layerheads[cv->drawmode]->splines==NULL;
+	  case MID_CanonicalContours:
+	    mi->ti.disabled = cv->layerheads[cv->drawmode]->splines==NULL ||
+		cv->layerheads[cv->drawmode]->splines->next==NULL ||
+		cv->drawmode!=dm_fore;
 	  break;
 	}
     }
