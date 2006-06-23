@@ -1573,6 +1573,8 @@ void FontViewMenu_Metafont(GtkMenuItem *menuitem, gpointer user_data) {
 #define MID_BuildDuplicates	2237
 #define MID_StrikeInfo	2238
 #define MID_FontCompare	2239
+#define MID_CanonicalStart	2242
+#define MID_CanonicalContours	2243
 #define MID_Center	2600
 #define MID_Thirds	2601
 #define MID_SetWidth	2602
@@ -3567,6 +3569,40 @@ void FontViewMenu_SimplifyMore(GtkMenuItem *menuitem, gpointer user_data) {
 
 void FontViewMenu_Cleanup(GtkMenuItem *menuitem, gpointer user_data) {
     FVSimplify( (FontView *) FV_From_MI(menuitem), -1);
+}
+#endif
+
+static void FVCanonicalStart(FontView *fv) {
+    int i, gid;
+
+    for ( i=0; i<fv->map->enccount; ++i )
+	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 )
+	    SPLsStartToLeftmost(fv->sf->glyphs[gid]);
+}
+
+static void FVCanonicalContours(FontView *fv) {
+    int i, gid;
+
+    for ( i=0; i<fv->map->enccount; ++i )
+	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 )
+	    CanonicalContours(fv->sf->glyphs[gid]);
+}
+
+# if defined(FONTFORGE_CONFIG_GDRAW)
+static void FVMenuCanonicalStart(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FVCanonicalStart( (FontView *) GDrawGetUserData(gw) );
+}
+
+static void FVMenuCanonicalContours(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FVCanonicalContours( (FontView *) GDrawGetUserData(gw) );
+}
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_CanonicalStart(GtkMenuItem *menuitem, gpointer user_data) {
+    FVCanonicalStart( (FontView *) FV_From_MI(menuitem));
+}
+
+void FontViewMenu_CanonicalContours(GtkMenuItem *menuitem, gpointer user_data) {
+    FVCanonicalContours( (FontView *) FV_From_MI(menuitem));
 }
 #endif
 #endif
@@ -6390,6 +6426,8 @@ static GMenuItem smlist[] = {
     { { (unichar_t *) N_("_Simplify"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'S' }, 'M', ksm_control|ksm_shift, NULL, NULL, FVMenuSimplify, MID_Simplify },
     { { (unichar_t *) N_("Simplify More..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, 'M', ksm_control|ksm_shift|ksm_meta, NULL, NULL, FVMenuSimplifyMore, MID_SimplifyMore },
     { { (unichar_t *) N_("Clea_nup Glyph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'n' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuCleanup, MID_CleanupGlyph },
+    { { (unichar_t *) N_("Canonical Start _Point"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'n' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuCanonicalStart, MID_CanonicalStart },
+    { { (unichar_t *) N_("Canonical _Contours"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'n' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuCanonicalContours, MID_CanonicalContours },
     { NULL }
 };
 

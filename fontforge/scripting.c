@@ -4097,6 +4097,30 @@ static void bFindIntersections(Context *c) {
     FVFakeMenus(c->curfv,105);
 }
 
+static void bCanonicalStart(Context *c) {
+    FontView *fv = c->curfv;
+    EncMap *map = fv->map;
+    SplineFont *sf = fv->sf;
+    int i,gid;
+
+    if ( c->a.argc!=1 )
+	ScriptError( c, "Wrong number of arguments");
+    for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && fv->selected[i] )
+	SPLsStartToLeftmost(sf->glyphs[gid]);
+}
+
+static void bCanonicalContours(Context *c) {
+    FontView *fv = c->curfv;
+    EncMap *map = fv->map;
+    SplineFont *sf = fv->sf;
+    int i,gid;
+
+    if ( c->a.argc!=1 )
+	ScriptError( c, "Wrong number of arguments");
+    for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && fv->selected[i] )
+	CanonicalContours(sf->glyphs[gid]);
+}
+
 static void bSimplify(Context *c) {
     static struct simplifyinfo smpl = { sf_normal,.75,.2,10 };
     smpl.err = (c->curfv->sf->ascent+c->curfv->sf->descent)/1000.;
@@ -6768,6 +6792,8 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "RemoveOverlap", bRemoveOverlap },
     { "OverlapIntersect", bOverlapIntersect },
     { "FindIntersections", bFindIntersections },
+    { "CanonicalStart", bCanonicalStart },
+    { "CanonicalContours", bCanonicalContours },
     { "Simplify", bSimplify },
     { "NearlyHvCps", bNearlyHvCps },
     { "NearlyHvLines", bNearlyHvLines },

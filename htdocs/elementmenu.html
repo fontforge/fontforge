@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 9-Apr-2006 -->
+  <!-- AP: Last modified: 23-Jun-2006 -->
   <TITLE>The Element Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -94,9 +94,13 @@
 	<LI>
 	  <A HREF="#Simplify">Simplify</A>
 	<LI>
-	  Simplify More
+	  <A HREF="elementmenu.html#SimplifyMore">Simplify More</A>
 	<LI>
 	  <A HREF="#Cleanup">Cleanup Glyphs</A>
+	<LI>
+	  <A HREF="#CanonicalSP">Canonical Start Points</A>
+	<LI>
+	  <A HREF="#CanonicalContours">Canonical Contour Order</A>
       </UL>
     <LI>
       <A HREF="elementmenu.html#Add-Extrema">Add Extrema</A>
@@ -465,8 +469,8 @@
       allows the user to specify a non-linear transformation as a pair of expressions
       (the first specifies the transformation for the x coordinate, the second
       for the y coordinate). These expressions may be fairly general functions
-      of x and y. See the <A HREF="scripting-alpha.html#NonLinearTransform">scripting page</A>
-      for a description of the syntax.
+      of x and y. See the <A HREF="scripting-alpha.html#NonLinearTransform">scripting
+      page</A> for a description of the syntax.
     <DT>
       <A NAME="Expand">Expand</A> Stroke...
     <DD>
@@ -568,7 +572,7 @@
 	  <P>
 	  <A HREF="pfaeditmath.html#Approximating">How is this done?</A>
 	<DT>
-	  Simplify More
+	  <A NAME="SimplifyMore">Simplify More</A>
 	<DD>
 	  This is a variant of the simplify command. It brings up a dialog which gives
 	  you control over what sorts of errors this simplification is allowed to induce.
@@ -598,6 +602,28 @@
 	  a spline which actually traces out a line but none the less has control points,
 	  then this command will remove the control points. It will also cleanup zero
 	  length splines.
+	<DT>
+	  <A NAME="CanonicalSP">Canonical Start Points</A>
+	<DD>
+	  This will change the start point of the contour (or of all selected contours)
+	  to be the leftmost point on the contour. If there are several points with
+	  the same horizontal coordinate it will pick the one closest to the baseline.
+	  There are two reasons for doing this:
+	  <UL>
+	    <LI>
+	      In a PostScript Type1 or Type2 font it will (usually) reduce the size of
+	      the code expressing the glyph slightly. (I don't think it can increase the
+	      code, but there are certainly cases where the optimization will have no effect).
+	    <LI>
+	      It will enable FontForge to find more reusable bits of code which it can
+	      put in subroutines
+	  </UL>
+	<DT>
+	  <A NAME="CanonicalContours">Canonical Contour Order</A>
+	<DD>
+	  Order the contours so that the contour with the leftmost point comes first,
+	  then the contour whose leftmost point is a little further right and so forth.
+	  Again, this should decrease the code size slightly in a Type1 font.
       </DL>
     <DT>
       <A NAME="Add-Extrema">Add Extrema</A>
@@ -813,6 +839,9 @@
       for U+0391 will refer to the glyph named "A". Note that this is subtly different
       from refering to a glyph named "Alpha" which refers to another glyph named
       "A".
+      <P>
+      Adobe suggests that you use a reference rather than giving to unicode code
+      points to one glyph, but it is part of the font format.
     <DT>
       <A NAME="Merge">Merge</A> Fonts...
     <DD>
