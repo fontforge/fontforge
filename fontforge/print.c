@@ -1474,13 +1474,14 @@ static void SCPrintPage(PI *pi,SplineChar *sc) {
 }
 
 static void PIChars(PI *pi) {
-    int i;
+    int i, gid;
 
     dump_prologue(pi);
-    if ( pi->fv!=NULL ) {
-	for ( i=0; i<pi->sf->glyphcnt; ++i )
-	    if ( pi->fv->selected[i] && SCWorthOutputting(pi->sf->glyphs[i]) )
-		SCPrintPage(pi,pi->sf->glyphs[i]);
+    if ( pi->fv!=NULL )
+	for ( i=0; i<pi->map->enccount; ++i ) {
+	    if ( pi->fv->selected[i] && (gid=pi->map->map[i])!=-1 &&
+		    SCWorthOutputting(pi->sf->glyphs[gid]) )
+		SCPrintPage(pi,pi->sf->glyphs[gid]);
     } else if ( pi->sc!=NULL )
 	SCPrintPage(pi,pi->sc);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -2143,7 +2144,7 @@ return;
 }
 
 static void PIMultiSize(PI *pi) {
-    int i;
+    int i, gid;
 
     pi->pointsize = pointsizes[0];
     pi->extravspace = pi->pointsize/6;
@@ -2153,9 +2154,10 @@ return;
     samplestartpage(pi);
 
     if ( pi->fv!=NULL ) {
-	for ( i=0; i<pi->sf->glyphcnt; ++i )
-	    if ( pi->fv->selected[i] && SCWorthOutputting(pi->sf->glyphs[i]) )
-		SCPrintSizes(pi,pi->sf->glyphs[i]);
+	for ( i=0; i<pi->map->enccount; ++i )
+	    if ( pi->fv->selected[i] && (gid=pi->map->map[i])!=-1 &&
+		    SCWorthOutputting(pi->sf->glyphs[gid]) )
+		SCPrintSizes(pi,pi->sf->glyphs[gid]);
     } else if ( pi->sc!=NULL )
 	SCPrintSizes(pi,pi->sc);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -2628,9 +2630,11 @@ return( pi->printtype!=pt_unknown );
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 /* Slightly different from one in fontview */
 static int FVSelCount(FontView *fv) {
-    int i, cnt=0;
-    for ( i=0; i<fv->sf->glyphcnt; ++i )
-	if ( fv->selected[i] && SCWorthOutputting(fv->sf->glyphs[i])) ++cnt;
+    int i, cnt=0, gid;
+    for ( i=0; i<fv->map->enccount; ++i )
+	if ( fv->selected[i] && (gid=fv->map->map[i])!=-1 &&
+		SCWorthOutputting(fv->sf->glyphs[gid]))
+	    ++cnt;
 return( cnt);
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
