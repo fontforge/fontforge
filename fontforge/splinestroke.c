@@ -766,6 +766,30 @@ static void FreeOrigStuff(struct strokedspline *before) {
     before->origplusfrom = NULL;
 }
 
+static void SplineMakeRound(SplinePoint *from,SplinePoint *to, real radius) {
+    /* I believe this only gets called when we have a line join where the */
+    /*  contour makes a U-Turn (opposite of being colinear) */
+    BasePoint dir;
+    SplinePoint *center;
+
+    dir.x = (to->me.y-from->me.y)/2;
+    dir.y = -(to->me.x-from->me.x)/2;
+    center = SplinePointCreate((to->me.x+from->me.x)/2+dir.x,
+	    (to->me.y+from->me.y)/2+dir.y);
+    from->nextcp.x = from->me.x + .552*dir.x;
+    from->nextcp.y = from->me.y + .552*dir.y;
+    to->prevcp.x = to->me.x + .552*dir.x;
+    to->prevcp.y = to->me.y + .552*dir.y;
+    from->nonextcp = to->noprevcp = false;
+    center->prevcp.x = center->me.x + .552*dir.y;
+    center->nextcp.x = center->me.x - .552*dir.y;
+    center->prevcp.y = center->me.y - .552*dir.x;
+    center->nextcp.y = center->me.y + .552*dir.x;
+    center->nonextcp = center->noprevcp = false;
+    SplineMake3(from,center);
+    SplineMake3(center,to);
+}
+
 static int DoIntersect_Splines(struct strokedspline *before,
 	struct strokedspline *after, int doplus,StrokeInfo *si,SplineChar *sc,
 	int force_connect ) {
@@ -811,7 +835,10 @@ static int DoIntersect_Splines(struct strokedspline *before,
 	    /* No intersection everything can stay as it is */
 	    if ( force_connect && BasePtDistance(&after->plusto->me,&before->plusfrom->me)>3 ) {
 		beforeat = SplinePointCreate(after->plusto->me.x,after->plusto->me.y);
-		SplineMake3(beforeat,before->plusfrom);
+		if ( si->join==lj_round )
+		    SplineMakeRound(beforeat,before->plusfrom,si->radius);
+		else
+		    SplineMake3(beforeat,before->plusfrom);
 		before->plusfrom = beforeat;
 		toobig = true;
 	    }
@@ -857,7 +884,10 @@ static int DoIntersect_Splines(struct strokedspline *before,
 	    /* No intersection everything can stay as it is */
 	    if ( force_connect && BasePtDistance(&after->minusfrom->me,&before->minusto->me)>3 ) {
 		beforeat = SplinePointCreate(after->minusfrom->me.x,after->minusfrom->me.y);
-		SplineMake3(before->minusto,beforeat);
+		if ( si->join==lj_round )
+		    SplineMakeRound(before->minusto,beforeat,si->radius);
+		else
+		    SplineMake3(before->minusto,beforeat);
 		before->minusto = beforeat;
 		toobig = true;
 	    }
