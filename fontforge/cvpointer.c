@@ -572,7 +572,7 @@ return;
 	}
     } else if ( event->u.mouse.clicks<=1 && !(event->u.mouse.state&ksm_shift)) {
 	if ( fs->p->nextcp || fs->p->prevcp )
-	    /* Nothing to do */;
+	    CPStartInfo(cv,event);
 	else if ( fs->p->sp!=NULL ) {
 	    if ( !fs->p->sp->selected ) needsupdate = true;
 	    fs->p->sp->selected = true;
@@ -612,6 +612,7 @@ return;
 	    fs->p->ap->selected = !fs->p->ap->selected;
 	}
     } else if ( event->u.mouse.clicks==2 ) {
+	CPEndInfo(cv);
 	if ( fs->p->spl!=NULL ) {
 	    Spline *spline, *first;
 	    if ( !fs->p->spl->first->selected ) { needsupdate = true; fs->p->spl->first->selected = true; }
@@ -1081,10 +1082,12 @@ return( false );
     } else if ( cv->p.nextcp ) {
 	if ( !cv->recentchange ) CVPreserveState(cv);
 	CVAdjustControl(cv,&cv->p.sp->nextcp,&cv->info);
+	CPUpdateInfo(cv,event);
 	needsupdate = true;
     } else if ( cv->p.prevcp ) {
 	if ( !cv->recentchange ) CVPreserveState(cv);
 	CVAdjustControl(cv,&cv->p.sp->prevcp,&cv->info);
+	CPUpdateInfo(cv,event);
 	needsupdate = true;
     } else if ( cv->p.spline!=NULL ) {
 	if ( !cv->recentchange ) CVPreserveState(cv);
@@ -1148,6 +1151,7 @@ void CVMouseUpPointer(CharView *cv ) {
 	SCUndoSetLBearingChange(cv->sc,(int) rint(cv->info.x-cv->p.cx));
 	SCSynchronizeLBearing(cv->sc,cv->info.x-cv->p.cx);
     }
+    CPEndInfo(cv);
 }
 
 /* ************************************************************************** */

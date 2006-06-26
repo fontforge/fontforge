@@ -82,6 +82,9 @@ typedef struct gidata {
 /* Also use CID_Next, CID_Prev below */
 #define CID_NextC	2041
 #define CID_PrevC	2042
+#define CID_PrevCurvature	2043
+#define CID_NextCurvature	2044
+#define CID_DeltaCurvature	2045
 #define CID_TabSet	2100
 
 #define CID_X		3001
@@ -109,7 +112,7 @@ typedef struct gidata {
 #define II_Height	70
 
 #define PI_Width	228
-#define PI_Height	366
+#define PI_Height	394
 
 #define AI_Width	160
 #define AI_Height	258
@@ -1657,6 +1660,7 @@ static void mysprintf2( char *buffer, real v1, real v2) {
 static void PIFillup(GIData *ci, int except_cid) {
     char buffer[50];
     double dx, dy;
+    double kappa, kappa2;
 
     mysprintf(buffer, "%.2f", ci->cursp->me.x );
     if ( except_cid!=CID_BaseX )
@@ -1751,6 +1755,28 @@ static void PIFillup(GIData *ci, int except_cid) {
 
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_PrevTheta), ci->cursp->pointtype!=pt_tangent );
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_NextTheta), ci->cursp->pointtype!=pt_tangent );
+
+    kappa = curvature(ci->cursp->next,0);
+    kappa2 = curvature(ci->cursp->prev,1);
+    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_PrevCurvature), kappa2!=CURVATURE_ERROR );
+    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_NextCurvature), kappa!=CURVATURE_ERROR );
+    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_DeltaCurvature),
+	    kappa!=CURVATURE_ERROR && kappa2!=CURVATURE_ERROR );
+    if ( kappa!=CURVATURE_ERROR )
+	sprintf( buffer, _("Curvature: %g"), kappa );
+    else
+	strcpy( buffer, _("Curvature: ?"));
+    GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_NextCurvature),buffer);
+    if ( kappa2!=CURVATURE_ERROR )
+	sprintf( buffer, _("Curvature: %g"), kappa2 );
+    else
+	strcpy( buffer, _("Curvature: ?"));
+    GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_PrevCurvature),buffer);
+    if ( kappa!=CURVATURE_ERROR && kappa2!=CURVATURE_ERROR )
+	sprintf( buffer, _("∆: %g"), kappa-kappa2 );
+    else
+	strcpy( buffer, _("∆: ?"));
+    GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_DeltaCurvature),buffer);
 }
 
 static void PIShowHide(GIData *ci) {
@@ -2316,8 +2342,8 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
     static GIData gi;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[51], hgcd[2], h2gcd[2], mgcd[11];
-    GTextInfo label[51], mlabel[11];
+    GGadgetCreateData gcd[54], hgcd[2], h2gcd[2], mgcd[11];
+    GTextInfo label[54], mlabel[11];
     GTabInfo aspects[4];
     static GBox cur, nextcp, prevcp;
     extern Color nextcpcol, prevcpcol;
@@ -2512,14 +2538,23 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].creator = GLabelCreate;
 	++j;
 
+	label[j].text = (unichar_t *) _("Curvature: -0.00000000");
+	label[j].text_is_1byte = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = 9; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+20;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_PrevCurvature;
+	gcd[j].creator = GLabelCreate;
+	++j;
+
 	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[groupj].gd.pos.y-5;
-	gcd[j].gd.pos.width = PI_Width-20; gcd[j].gd.pos.height = 70;
+	gcd[j].gd.pos.width = PI_Width-20; gcd[j].gd.pos.height = 84;
 	gcd[j].gd.flags = gg_enabled | gg_visible;
 	gcd[j].creator = GGroupCreate;
 	++j;
 
 	groupj = j;
-	nextstarty = gcd[j-3].gd.pos.y+34;
+	nextstarty = gcd[j-2].gd.pos.y+28;
 	label[j].text = (unichar_t *) _("Next CP:");
 	label[j].text_is_1byte = true;
 	gcd[j].gd.label = &label[j];
@@ -2597,8 +2632,27 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].creator = GLabelCreate;
 	++j;
 
+	label[j].text = (unichar_t *) _("Curvature: -0.00000000");
+	label[j].text_is_1byte = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = 9; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+20;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_NextCurvature;
+	gcd[j].creator = GLabelCreate;
+	++j;
+
+	label[j].text = (unichar_t *) "∆: -0.00000000";
+	label[j].text_is_1byte = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = 130; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y;
+	gcd[j].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[j].gd.popup_msg = (unichar_t *) _("This is the difference of the curvature between\nthe next and previous splines. Contours often\nlook nicer as this number approaches 0." );
+	gcd[j].gd.cid = CID_DeltaCurvature;
+	gcd[j].creator = GLabelCreate;
+	++j;
+
 	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = nextstarty-5;
-	gcd[j].gd.pos.width = PI_Width-20; gcd[j].gd.pos.height = 70;
+	gcd[j].gd.pos.width = PI_Width-20; gcd[j].gd.pos.height = 84;
 	gcd[j].gd.flags = gg_enabled | gg_visible;
 	gcd[j].creator = GGroupCreate;
 	++j;
@@ -2671,7 +2725,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	label[j].text = (unichar_t *) _("Type:");
 	label[j].text_is_1byte = true;
 	gcd[j].gd.label = &label[j];
-	gcd[j].gd.pos.x = gcd[0].gd.pos.x; gcd[j].gd.pos.y = gcd[gi.normal_end-3].gd.pos.y+32;
+	gcd[j].gd.pos.x = gcd[0].gd.pos.x; gcd[j].gd.pos.y = gcd[gi.normal_end-2].gd.pos.y+26;
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].creator = GLabelCreate;
 	++j;
@@ -2790,13 +2844,13 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	mgcd[j].creator = GButtonCreate;
 	++j;
 
-	mgcd[j].gd.pos.x = 5; mgcd[j].gd.pos.y = mgcd[j-1].gd.pos.y+30;
+	mgcd[j].gd.pos.x = 5; mgcd[j].gd.pos.y = mgcd[j-1].gd.pos.y+28;
 	mgcd[j].gd.pos.width = PI_Width-10;
 	mgcd[j].gd.flags = gg_enabled|gg_visible;
 	mgcd[j].creator = GLineCreate;
 	++j;
 
-	mgcd[j].gd.pos.x = 20-3; mgcd[j].gd.pos.y = PI_Height-35-3;
+	mgcd[j].gd.pos.x = 20-3; mgcd[j].gd.pos.y = PI_Height-33-3;
 	mgcd[j].gd.pos.width = -1; mgcd[j].gd.pos.height = 0;
 	mgcd[j].gd.flags = gg_visible | gg_enabled | gg_but_default;
 	mlabel[j].text = (unichar_t *) _("_OK");
@@ -2808,7 +2862,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	mgcd[j].creator = GButtonCreate;
 	++j;
 
-	mgcd[j].gd.pos.x = -20; mgcd[j].gd.pos.y = PI_Height-35;
+	mgcd[j].gd.pos.x = -20; mgcd[j].gd.pos.y = PI_Height-33;
 	mgcd[j].gd.pos.width = -1; mgcd[j].gd.pos.height = 0;
 	mgcd[j].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
 	mlabel[j].text = (unichar_t *) _("_Cancel");
