@@ -566,6 +566,7 @@ return;
 	if ( active->next!=NULL )
 	    SplineRefigure(active->next);
     }
+    CPUpdateInfo(cv,event);
     SCUpdateAll(cv->sc);
 }
 
@@ -576,6 +577,7 @@ void CVMouseUpPoint(CharView *cv,GEvent *event) {
     cv->active_sp = NULL;
     cv->joinvalid = false;
     CVInfoDraw(cv,cv->gw);
+    CPEndInfo(cv);
     if ( event->u.mouse.clicks>1 )
 	CVGetInfo(cv);
 }

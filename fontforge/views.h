@@ -1057,6 +1057,9 @@ extern void CVChangeSC(CharView *cv, SplineChar *sc );
 extern void SCRefreshTitles(SplineChar *sc);
 extern void SPChangePointType(SplinePoint *sp, int pointtype);
 
+#define CURVATURE_ERROR	-1e9
+extern double curvature(Spline *s, double t);
+
 extern void CVAdjustPoint(CharView *cv, SplinePoint *sp);
 extern void CVMergeSplineSets(CharView *cv, SplinePoint *active, SplineSet *activess,
 	SplinePoint *merge, SplineSet *mergess);
@@ -1076,6 +1079,9 @@ extern void CVMouseDownFreeHand(CharView *cv, GEvent *event);
 extern void CVMouseMoveFreeHand(CharView *cv, GEvent *event);
 extern void CVMouseUpFreeHand(CharView *cv, GEvent *event);
 extern void CVMouseDownShape(CharView *cv,GEvent *event);
+extern void CPStartInfo(CharView *cv, GEvent *event);
+extern void CPUpdateInfo(CharView *cv, GEvent *event);
+extern void CPEndInfo(CharView *cv);
 extern void BVChar(BitmapView *cv, GEvent *event );
 #endif
 extern void CVMouseDownPoint(CharView *cv,GEvent *event);

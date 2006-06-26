@@ -199,4 +199,226 @@ return;
 	cv->ruler_w = NULL;
     }
 }
+
+/* ************************************************************************** */
+
+double curvature(Spline *s, double t) {
+	/* Kappa = (x'y'' - y'x'') / (x'^2 + y'^2)^(3/2) */
+    double dxdt, dydt, d2xdt2, d2ydt2, denom, numer;
+
+    if ( s==NULL )
+return( CURVATURE_ERROR );
+
+    dxdt = (3*s->splines[0].a*t+2*s->splines[0].b)*t+s->splines[0].c;
+    dydt = (3*s->splines[1].a*t+2*s->splines[1].b)*t+s->splines[1].c;
+    d2xdt2 = 6*s->splines[0].a*t + 2*s->splines[0].b;
+    d2ydt2 = 6*s->splines[1].a*t + 2*s->splines[1].b;
+    denom = pow( dxdt*dxdt + dydt*dydt, 3.0/2.0 );
+    numer = dxdt*d2ydt2 - dydt*d2xdt2;
+
+    if ( numer==0 )
+return( 0 );
+    if ( denom==0 )
+return( CURVATURE_ERROR );
+
+return( numer/denom );
+}
+
+static char *PtInfoText(CharView *cv, int lineno, int active, char *buffer, int blen) {
+    BasePoint *cp;
+    double t;
+    Spline *s;
+    SplinePoint *sp = cv->p.sp;
+    extern char *coord_sep;
+    double dx, dy, kappa, kappa2;
+
+    if ( !cv->p.prevcp && !cv->p.nextcp ) {
+	sp = cv->active_sp;
+	if ( sp==NULL )
+return( NULL );
+    }
+
+    if ( active==-1 ) {
+	if ( lineno>0 )
+return( NULL );
+	if ( sp->next==NULL || sp->prev==NULL )
+return( NULL );
+	kappa = curvature(sp->next,0);
+	kappa2 = curvature(sp->prev,1);
+	if ( kappa == CURVATURE_ERROR || kappa2 == CURVATURE_ERROR )
+	    strncpy(buffer,_("No curvature info"), blen);
+	else
+	    snprintf( buffer, blen, _("∆Curvature: %g"), kappa-kappa2);
+return( buffer );
+    }
+
+    if ( (!cv->p.prevcp && active ) || (!cv->p.nextcp && !active)) {
+	cp = &sp->nextcp;
+	t = 0;
+	s = sp->next;
+    } else {
+	cp = &sp->prevcp;
+	t = 1;
+	s = sp->prev;
+    }
+	
+    switch( lineno ) {
+      case 0:
+	if ( t==0 )
+	    strncpy( buffer, _(" Next CP"), blen);
+	else
+	    strncpy( buffer, _(" Prev CP"), blen);
+      break;
+      case 1:
+	snprintf( buffer, blen, "(%g%s%g)", cp->x, coord_sep, cp->y);
+      break;
+      case 2:
+	snprintf( buffer, blen, "∆ (%g%s%g)", cp->x-sp->me.x, coord_sep, cp->y-sp->me.y);
+      break;
+      case 3:
+	dx = cp->x - sp->me.x; dy = cp->y - sp->me.y;
+	if ( dx==0 && dy==0 )
+	    snprintf( buffer, blen, _("No Slope") );
+	else if ( dx==0 )
+	    snprintf( buffer, blen, "∆y/∆x= ∞" );
+	else
+	    snprintf( buffer, blen, "∆y/∆x= %g", dy/dx );
+      break;
+      case 4:
+	dx = cp->x - sp->me.x; dy = cp->y - sp->me.y;
+	snprintf( buffer, blen, "� %g°", atan2(dy,dx)*180/3.1415926535897932 );
+      break;
+      case 5:
+	if ( s==NULL )
+return( NULL );
+	kappa = curvature(s,t);
+	if ( kappa==CURVATURE_ERROR )
+return( NULL );
+	snprintf( buffer, blen, _("Curvature: %g"), kappa);
+      break;
+      default:
+return( NULL );
+    }
+return( buffer );
+}
+
+static int cpinfo_e_h(GWindow gw, GEvent *event) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    char buf[100];
+    int line, which, y;
+
+    switch ( event->type ) {
+      case et_expose:
+	y = cv->ras+1;
+	GDrawSetFont(gw,cv->rfont);
+	for ( which = 1; which>=0; --which ) {
+	    for ( line=0; PtInfoText(cv,line,which,buf,sizeof(buf))!=NULL; ++line ) {
+		GDrawDrawText8(gw,2,y,buf,-1,NULL,0x000000);
+		y += cv->rfh+1;
+	    }
+	    GDrawDrawLine(gw,0,y+2-cv->ras,2000,y+2-cv->ras,0x000000);
+	    y += 4;
+	}
+	if ( PtInfoText(cv,0,-1,buf,sizeof(buf))!=NULL )
+	    GDrawDrawText8(gw,2,y,buf,-1,NULL,0x000000);
+      break;
+    }
+return( true );
+}
+	
+static void CpInfoPlace(CharView *cv, GEvent *event) {
+    char buf[100];
+    int line, which;
+    int width, x;
+    GRect size;
+    GPoint pt;
+    int h,w;
+    GWindowAttrs wattrs;
+    GRect pos;
+    FontRequest rq;
+    static unichar_t fixed[] = { 'f','i','x','e','d', ',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
+    int as, ds, ld;
+
+    if ( cv->ruler_w==NULL ) {
+	memset(&wattrs,0,sizeof(wattrs));
+	wattrs.mask = wam_events|wam_cursor|wam_positioned|wam_nodecor|wam_backcol|wam_bordwidth;
+	wattrs.event_masks = (1<<et_expose)|(1<<et_resize)|(1<<et_mousedown);
+	wattrs.cursor = ct_mypointer;
+	wattrs.background_color = 0xe0e0c0;
+	wattrs.nodecoration = 1;
+	wattrs.border_width = 1;
+	pos.x = pos.y = 0; pos.width=pos.height = 20;
+	cv->ruler_w = GWidgetCreateTopWindow(NULL,&pos,cpinfo_e_h,cv,&wattrs);
+
+	memset(&rq,0,sizeof(rq));
+	rq.family_name = fixed;
+	rq.point_size = -12;
+	rq.weight = 400;
+	cv->rfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cv->ruler_w),&rq);
+	GDrawFontMetrics(cv->rfont,&as,&ds,&ld);
+	cv->rfh = as+ds; cv->ras = as;
+    } else
+	GDrawRaise(cv->ruler_w);
+
+    GDrawSetFont(cv->ruler_w,cv->rfont);
+    h = 0; width = 0;
+    for ( which = 0; which<2; ++which ) {
+	for ( line=0; PtInfoText(cv,line,which,buf,sizeof(buf))!=NULL; ++line ) {
+	    w = GDrawGetText8Width(cv->ruler_w,buf,-1,NULL);
+	    if ( w>width ) width = w;
+	    h += cv->rfh+1;
+	}
+	h += 4;
+    }
+    if ( PtInfoText(cv,0,-1,buf,sizeof(buf))!=NULL ) {
+	w = GDrawGetText8Width(cv->ruler_w,buf,-1,NULL);
+	if ( w>width ) width = w;
+	h += cv->rfh+1;
+    }
+    
+    GDrawGetSize(GDrawGetRoot(NULL),&size);
+    pt.x = event->u.mouse.x; pt.y = event->u.mouse.y;
+    GDrawTranslateCoordinates(cv->v,GDrawGetRoot(NULL),&pt);
+    x = pt.x + 26;
+    if ( x+width > size.width )
+	x = pt.x - width-30;
+    GDrawMoveResize(cv->ruler_w,x,pt.y-cv->ras-2,width+4,h+4);
+}
+
+void CPStartInfo(CharView *cv, GEvent *event) {
+
+    cv->autonomous_ruler_w = false;
+
+    CpInfoPlace(cv,event);
+    GDrawSetVisible(cv->ruler_w,true);
+}
+
+void CPUpdateInfo(CharView *cv, GEvent *event) {
+
+    if ( !cv->p.pressed ) {
+	if ( cv->ruler_w!=NULL && GDrawIsVisible(cv->ruler_w)) {
+	    GDrawDestroyWindow(cv->ruler_w);
+	    cv->ruler_w = NULL;
+	}
+return;
+    }
+    if ( cv->ruler_w==NULL )
+	CPStartInfo(cv,event);
+    else {
+	CpInfoPlace(cv,event);
+	GDrawSync(NULL);
+	GDrawProcessPendingEvents(NULL);		/* The resize needs to happen before the expose */
+	if ( !cv->p.pressed  ) /* but a mouse up might sneak in... */
+return;
+	GDrawRequestExpose(cv->ruler_w,NULL,false);
+    }
+}
+
+void CPEndInfo(CharView *cv) {
+    if ( cv->ruler_w!=NULL ) {
+	GDrawDestroyWindow(cv->ruler_w);
+	cv->ruler_w = NULL;
+    }
+}
+
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
