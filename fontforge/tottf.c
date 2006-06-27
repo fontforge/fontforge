@@ -2860,6 +2860,9 @@ void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *sf,char *fontname) {
 	    memcpy(pfminfo->panose,info.panose,sizeof(info.panose));
 	}
     } else {
+	struct pfminfo hold;
+	if ( pfminfo->hheadset || pfminfo->vheadset )
+	    hold = *pfminfo;
 	memset(pfminfo,'\0',sizeof(*pfminfo));
 	SFDefaultOS2Simple(pfminfo,sf);
 	samewid = CIDOneWidth(sf);
@@ -2916,6 +2919,18 @@ void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *sf,char *fontname) {
 	}
 	if ( samewid>0 )
 	    pfminfo->panose[3] = 9;
+	if ( hold.hheadset ) {
+	    pfminfo->hheadset = true;
+	    pfminfo->hheadascent_add = hold.hheadascent_add;
+	    pfminfo->hheaddescent_add = hold.hheaddescent_add;
+	    pfminfo->hhead_ascent = hold.hhead_ascent;
+	    pfminfo->hhead_descent = hold.hhead_descent;
+	    pfminfo->linegap = hold.linegap;
+	}
+	if ( hold.vheadset ) {
+	    pfminfo->vheadset = true;
+	    pfminfo->vlinegap = hold.vlinegap;
+	}
     }
     if ( !pfminfo->subsuper_set )
 	SFDefaultOS2SubSuper(pfminfo,sf->ascent+sf->descent);

@@ -634,6 +634,7 @@ static void readttfhhea(FILE *ttf,struct ttfinfo *info) {
     info->pfminfo.hhead_descent = (short) getushort(ttf);
     info->pfminfo.hheadascent_add = info->pfminfo.hheaddescent_add = false;
     info->pfminfo.linegap = getushort(ttf);
+    info->pfminfo.hheadset = true;
     /*info->ascent = info->pfminfo.hhead_ascent;*/
 
     info->ascent = .8*info->emsize;
@@ -3280,6 +3281,7 @@ static void readttfvwidths(FILE *ttf,struct ttfinfo *info) {
 
     fseek(ttf,info->vhea_start+4+4,SEEK_SET);		/* skip over the version number & typo right/left */
     info->pfminfo.vlinegap = getushort(ttf);
+    info->pfminfo.vheadset = true;
 
     for ( i=0; i<12; ++i )
 	getushort(ttf);
