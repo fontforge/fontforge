@@ -4905,7 +4905,7 @@ static PST *LigDefaultList(SplineChar *sc, uint32 tag) {
     if ( tag==0 || tag==CHR('s','u','b','s') ) {
 	alt = SuffixCheck(sc,"inferior");
 	if ( alt==NULL ) {
-	    for ( i=0x2080; i<0x2080; ++i ) {
+	    for ( i=0x2080; i<0x2090; ++i ) {
 		if ( unicode_alternates[i>>8]!=NULL &&
 			(variant = unicode_alternates[i>>8][i&0xff])!=NULL && variant[1]=='\0' &&
 			*variant == sc->unicodeenc )
