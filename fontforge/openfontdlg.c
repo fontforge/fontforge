@@ -158,7 +158,7 @@ return( false );
 	struct gfc_data *d = GDrawGetUserData(gw);
 return( GGadgetDispatchEvent((GGadget *) (d->gfc),event));
     } else if ( event->type == et_resize ) {
-	GRect r, size;;
+	GRect r, size;
 	struct gfc_data *d = GDrawGetUserData(gw);
 	GDrawGetSize(gw,&size);
 	GGadgetGetSize(d->gfc,&r);
