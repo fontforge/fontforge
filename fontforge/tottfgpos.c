@@ -1431,7 +1431,7 @@ static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
 					DevTabLen(&aps[k*max+l]->yadjust);
 			else
 #endif
-			if ( gi->is_ttf && ap->has_ttf_pt )
+			if ( gi->is_ttf && aps[k*max+l]->has_ttf_pt )
 			    offset += 2;
 		    }
 		}
