@@ -190,7 +190,7 @@ static void CheckMMAfmFile(SplineFont *sf,char *amfm_filename,char *fontname,Enc
 
 int LoadKerningDataFromAmfm(SplineFont *sf, char *filename,EncMap *map) {
     FILE *file=NULL;
-    char buffer[280], *pt, lastname[256];
+    char buffer[280], *pt, lastname[257];
     int index, i;
     MMSet *mm = sf->mm;
 

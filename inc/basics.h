@@ -32,6 +32,7 @@
 #endif
 
 #include <stdio.h>		/* for NULL */
+#include <stdint.h>
 #include <stdlib.h>		/* for free */
 #include <limits.h>
 
@@ -40,25 +41,15 @@
 
 #define forever for (;;)
 
-#if INT_MAX==2147483647
-typedef int		int32;
-typedef unsigned int	uint32;
-#else
-typedef long		int32;
-typedef unsigned long	uint32;
-#endif
-	/* I don't know of any systems where the following are not true */
-typedef short		int16;
-typedef unsigned short	uint16;
-typedef signed char	int8;
-typedef unsigned char	uint8;
+typedef int32_t		int32;
+typedef uint32_t	uint32;
+typedef int16_t		int16;
+typedef uint16_t	uint16;
+typedef int8_t		int8;
+typedef uint8_t		uint8;
 
 	/* An integral type which can hold a pointer */
-#if defined(__WORDSIZE) && __WORDSIZE==64
-typedef long		intpt;
-#else
-typedef int		intpt;
-#endif
+typedef intptr_t	intpt;
 
 typedef uint16 unichar_t;
 

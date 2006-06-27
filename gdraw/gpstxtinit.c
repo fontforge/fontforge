@@ -132,7 +132,7 @@ return( ch );
 
 static void parse_CharMetric_line(struct temp_font *tf, char *line) {
     int ch, ch2, wid; float a1, a2, a3, a4;
-    char name[200], *pt;
+    char name[201], *pt;
 
     while ( isspace(*line)) ++line;
     if ( *line=='\0' )
