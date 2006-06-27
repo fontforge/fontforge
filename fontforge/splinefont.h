@@ -1005,6 +1005,8 @@ typedef struct splinefont {
 	unsigned int typodescent_add: 1;
 	unsigned int subsuper_set: 1;
 	unsigned int panose_set: 1;
+	unsigned int hheadset: 1;
+	unsigned int vheadset: 1;
 	unsigned char pfmfamily;
 	int16 weight;
 	int16 width;
