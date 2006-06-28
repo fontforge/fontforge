@@ -192,15 +192,16 @@ static SplinePoint *StrokeEnd(SplinePoint *base, StrokeInfo *si, int isstart,
     from->nonextcp = to->nonextcp = from->noprevcp = to->noprevcp = true;
     from->pointtype = pt_corner; to->pointtype = pt_corner;
 
+    if ( isstart )
+	angle = SplineExpand(base->next,0,0,si,&from->me,&to->me)+ PI;
+    else
+	angle = SplineExpand(base->prev,1,0,si,&to->me,&from->me);
+
     if ( (len = to->me.x-from->me.x)<0 )
 	len = -len;
     len += ( to->me.y > from->me.y ) ? (to->me.y - from->me.y) : (from->me.y - to->me.y);
     off = (len==0) ? .05 : 2/len;
 
-    if ( isstart )
-	angle = SplineExpand(base->next,0,0,si,&from->me,&to->me)+ PI;
-    else
-	angle = SplineExpand(base->prev,1,0,si,&to->me,&from->me);
     if ( si->stroke_type == si_caligraphic ) {
 	int corner;
 	corner = PenCorner(angle,si);
@@ -1722,19 +1723,25 @@ static SplineSet *SSRemoveUTurns(SplineSet *base, StrokeInfo *si) {
 
 	offx = s->from->nextcp.x-s->from->me.x;
 	offy = s->from->nextcp.y-s->from->me.y;
-	if ( (l= offx*dx + offy*dy)<0 ) l = -l;
-	if ( (n= offx*dy - offy*dx)<0 ) n = -n;
-	len = offx*offx + offy*offy;
-	if ( (n/l>2*len/si->radius || (n>l/3 && s->from->prev==NULL )) && len<bound && len< slen/4 )
-	    bad = 1;
+	l= offx*dx + offy*dy;
+	if ( l<0 ) {
+	    l = -l;
+	    if ( (n= offx*dy - offy*dx)<0 ) n = -n;
+	    len = offx*offx + offy*offy;
+	    if ( (n/l>2*len/si->radius || (n>l/3 && s->from->prev==NULL )) && len<bound && len< slen/4 )
+		bad = 1;
+	}
 
 	offx = s->to->me.x-s->to->prevcp.x;
 	offy = s->to->me.y-s->to->prevcp.y;
-	if ( (l= offx*dx + offy*dy)<0 ) l = -l;
-	if ( (n= offx*dy - offy*dx)<0 ) n = -n;
-	len = offx*offx + offy*offy;
-	if ( (n/l>2*len/si->radius || (n>l/3 && s->to->next==NULL)) && len<bound && len< slen/4 )
-	    bad |= 2;
+	l= offx*dx + offy*dy;
+	if ( l<0 ) {
+	    l = -l;
+	    if ( (n= offx*dy - offy*dx)<0 ) n = -n;
+	    len = offx*offx + offy*offy;
+	    if ( (n/l>2*len/si->radius || (n>l/3 && s->to->next==NULL)) && len<bound && len< slen/4 )
+		bad |= 2;
+	}
 
 	if ( bad ) {
 	    fakefrom = *s->from; fakefrom.next = fakefrom.prev = NULL;
