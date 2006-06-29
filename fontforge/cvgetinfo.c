@@ -1777,9 +1777,9 @@ static void PIFillup(GIData *ci, int except_cid) {
 	strcpy( buffer, _("Curvature: ?"));
     GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_PrevCurvature),buffer);
     if ( kappa!=CURVATURE_ERROR && kappa2!=CURVATURE_ERROR )
-	sprintf( buffer, _("∆: %g"), (kappa-kappa2)*emsize );
+	sprintf( buffer, "∆: %g", (kappa-kappa2)*emsize );
     else
-	strcpy( buffer, _("∆: ?"));
+	strcpy( buffer, "∆: ?");
     GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_DeltaCurvature),buffer);
 }
 

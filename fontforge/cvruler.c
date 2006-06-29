@@ -228,7 +228,7 @@ return( NULL );
 	if ( kappa == CURVATURE_ERROR || kappa2 == CURVATURE_ERROR )
 	    strncpy(buffer,_("No curvature info"), blen);
 	else
-	    snprintf( buffer, blen, _("∆Curvature: %g"), (kappa-kappa2)*emsize );
+	    snprintf( buffer, blen, U_("∆Curvature: %g"), (kappa-kappa2)*emsize );
 return( buffer );
     }
 

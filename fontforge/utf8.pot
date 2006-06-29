@@ -307,3 +307,7 @@ msgstr ""
 #: glyphcomp.c
 msgid "No kerning between “%s” and %s in %s whilst it is %d in %s\n"
 msgstr ""
+
+#: cvruler.c
+msgid "∆Curvature: %g"
+msgstr ""
