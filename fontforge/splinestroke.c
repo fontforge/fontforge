@@ -1413,7 +1413,7 @@ static struct strokedspline *_SplineSetApprox(SplineSet *spl,StrokeInfo *si,Spli
 
 	    p_to = cur->plusto;
 	    m_from = cur->minusfrom;
-	    for ( i=0, j=1; i<approx; ++i ) {
+	    for ( i=0, j=0; i<approx; ++i ) {
 		if ( knots[i]&kt_knot ) {
 		    for ( k=i+1; k<approx && !(knots[k]&kt_knot); ++k );
 		    if ( i>0 && (knots[i-1]&kt_mgood) ) {
