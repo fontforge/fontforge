@@ -1757,8 +1757,8 @@ static void PIFillup(GIData *ci, int except_cid) {
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_PrevTheta), ci->cursp->pointtype!=pt_tangent );
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_NextTheta), ci->cursp->pointtype!=pt_tangent );
 
-    kappa = curvature(ci->cursp->next,0);
-    kappa2 = curvature(ci->cursp->prev,1);
+    kappa = SplineCurvature(ci->cursp->next,0);
+    kappa2 = SplineCurvature(ci->cursp->prev,1);
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_PrevCurvature), kappa2!=CURVATURE_ERROR );
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_NextCurvature), kappa!=CURVATURE_ERROR );
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_DeltaCurvature),
