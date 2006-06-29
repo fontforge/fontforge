@@ -52,6 +52,7 @@ extern struct cvshows {
     int markpoi;		/* Points of inflection */
     int showblues, showfamilyblues;
     int showanchor;
+    int showcpinfo;
 } CVShows;
 
 extern struct bvshows {
@@ -252,6 +253,7 @@ typedef struct charview {
     unsigned int show_ft_results: 1;	/* 32 */
     unsigned int coderange: 2;			/* For the debugger */
     unsigned int autonomous_ruler_w: 1;
+    unsigned int showcpinfo: 1;
     Layer *layerheads[dm_max];
     real scale;
 #if defined(FONTFORGE_CONFIG_GTK)

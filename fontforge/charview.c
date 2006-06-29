@@ -64,7 +64,8 @@ struct cvshows CVShows = {
 	0,		/* show points of inflection */
 	1,		/* show blue values */
 	1,		/* show family blues too */
-	1		/* show anchor points */
+	1,		/* show anchor points */
+	1		/* show control point info when moving them */
 };
 static Color pointcol = 0xff0000;
 static Color firstpointcol = 0x707000;
@@ -4265,6 +4266,7 @@ return( true );
 #define MID_Ligatures	2025
 #define MID_Former	2026
 #define MID_MarkPointsOfInflection	2027
+#define MID_ShowCPInfo	2028
 #define MID_Cut		2101
 #define MID_Copy	2102
 #define MID_Paste	2103
@@ -4661,6 +4663,15 @@ static void CVMenuMarkPointsOfInflection(GWindow gw,struct gmenuitem *mi,GEvent 
     CVShows.markpoi = cv->markpoi = !cv->markpoi;
     SavePrefs();
     GDrawRequestExpose(cv->v,NULL,false);
+}
+
+static void CVMenuShowCPInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    CVShows.showcpinfo = cv->showcpinfo = !cv->showcpinfo;
+    SavePrefs();
+    /* Nothing to update, only show this stuff in the user is moving a cp */
+    /*  which s/he is currently not, s/he is manipulating the menu */
 }
 
 static void _CVMenuShowHideRulers(CharView *cv) {
@@ -7108,6 +7119,9 @@ static void cv_vwlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	  case MID_MarkPointsOfInflection:
 	    mi->ti.checked = cv->markpoi;
 	  break;
+	  case MID_ShowCPInfo:
+	    mi->ti.checked = cv->showcpinfo;
+	  break;
 	  case MID_HidePoints:
 	    free(mi->ti.text);
 	    mi->ti.text = utf82u_copy(cv->showpoints?_("Hide Points"):_("Show Points"));
@@ -7607,13 +7621,14 @@ static GMenuItem vwlist[] = {
     { { (unichar_t *) N_("Hide Poin_ts"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, 'D', ksm_control, NULL, NULL, CVMenuShowHide, MID_HidePoints },
     { { (unichar_t *) N_("_Number Points"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, nplist, nplistcheck },
     { { (unichar_t *) N_("_Mark Extrema"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'M' }, '\0', ksm_control, NULL, NULL, CVMenuMarkExtrema, MID_MarkExtrema },
-    { { (unichar_t *) N_("_Mark Points of Inflection"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'M' }, '\0', ksm_control, NULL, NULL, CVMenuMarkPointsOfInflection, MID_MarkPointsOfInflection },
+    { { (unichar_t *) N_("M_ark Points of Inflection"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'M' }, '\0', ksm_control, NULL, NULL, CVMenuMarkPointsOfInflection, MID_MarkPointsOfInflection },
+    { { (unichar_t *) N_("Show _Control Point Info"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'M' }, '\0', ksm_control, NULL, NULL, CVMenuShowCPInfo, MID_ShowCPInfo },
     { { (unichar_t *) N_("Fi_ll"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'l' }, '\0', 0, NULL, NULL, CVMenuFill, MID_Fill },
     { { (unichar_t *) N_("Sho_w Grid Fit..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'l' }, '\0', 0, NULL, NULL, CVMenuShowGridFit, MID_ShowGridFit },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
     { { (unichar_t *) N_("Com_binations"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'b' }, '\0', ksm_shift|ksm_control, cblist, cblistcheck },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
-    { { (unichar_t *) N_("_Palettes"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, '\0', 0, pllist, pllistcheck },
+    { { (unichar_t *) N_("Palette_s"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, '\0', 0, pllist, pllistcheck },
     { { (unichar_t *) N_("Hide _Rulers"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'R' }, '\0', ksm_control, NULL, NULL, CVMenuShowHideRulers, MID_HideRulers },
     { NULL }
 };
@@ -7844,6 +7859,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
     cv->showblues = CVShows.showblues;
     cv->showfamilyblues = CVShows.showfamilyblues;
     cv->showanchor = CVShows.showanchor;
+    cv->showcpinfo = CVShows.showcpinfo;
 
     cv->infoh = 13;
     cv->rulerh = 13;
