@@ -231,6 +231,7 @@ static char *PtInfoText(CharView *cv, int lineno, int active, char *buffer, int 
     SplinePoint *sp = cv->p.sp;
     extern char *coord_sep;
     double dx, dy, kappa, kappa2;
+    int emsize;
 
     if ( !cv->p.prevcp && !cv->p.nextcp ) {
 	sp = cv->active_sp;
@@ -245,10 +246,11 @@ return( NULL );
 return( NULL );
 	kappa = curvature(sp->next,0);
 	kappa2 = curvature(sp->prev,1);
+	emsize = cv->sc->parent->ascent + cv->sc->parent->descent;
 	if ( kappa == CURVATURE_ERROR || kappa2 == CURVATURE_ERROR )
 	    strncpy(buffer,_("No curvature info"), blen);
 	else
-	    snprintf( buffer, blen, _("∆Curvature: %g"), kappa-kappa2);
+	    snprintf( buffer, blen, _("∆Curvature: %g"), (kappa-kappa2)*emsize );
 return( buffer );
     }
 
@@ -294,7 +296,10 @@ return( NULL );
 	kappa = curvature(s,t);
 	if ( kappa==CURVATURE_ERROR )
 return( NULL );
-	snprintf( buffer, blen, _("Curvature: %g"), kappa);
+	emsize = cv->sc->parent->ascent + cv->sc->parent->descent;
+	/* If we normalize by the em-size, the curvature is often more */
+	/*  readable */
+	snprintf( buffer, blen, _("Curvature: %g"), kappa*emsize);
       break;
       default:
 return( NULL );
@@ -329,15 +334,16 @@ return( true );
 static void CpInfoPlace(CharView *cv, GEvent *event) {
     char buf[100];
     int line, which;
-    int width, x;
+    int width, x, y;
     GRect size;
-    GPoint pt;
+    GPoint pt, pt2;
     int h,w;
     GWindowAttrs wattrs;
     GRect pos;
     FontRequest rq;
     static unichar_t fixed[] = { 'f','i','x','e','d', ',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
     int as, ds, ld;
+    SplinePoint *sp;
 
     if ( cv->ruler_w==NULL ) {
 	memset(&wattrs,0,sizeof(wattrs));
@@ -377,16 +383,47 @@ static void CpInfoPlace(CharView *cv, GEvent *event) {
     }
     
     GDrawGetSize(GDrawGetRoot(NULL),&size);
-    pt.x = event->u.mouse.x; pt.y = event->u.mouse.y;
+    pt.x = event->u.mouse.x; pt.y = event->u.mouse.y;	/* Address of cp */
     GDrawTranslateCoordinates(cv->v,GDrawGetRoot(NULL),&pt);
+
+    sp = cv->p.sp;
+    if ( !cv->p.prevcp && !cv->p.nextcp )
+	sp = cv->active_sp;
+    if ( sp!=NULL ) {
+	x =  cv->xoff + rint(sp->me.x*cv->scale);
+	y = -cv->yoff + cv->height - rint(sp->me.y*cv->scale);
+	if ( x>=0 && y>=0 && x<cv->width && y<cv->height ) {
+	    pt2.x = x; pt2.y = y;
+	    GDrawTranslateCoordinates(cv->v,GDrawGetRoot(NULL),&pt2);
+	} else
+	    sp = NULL;
+    }
+
     x = pt.x + 26;
-    if ( x+width > size.width )
+    y = pt.y - cv->ras-2;
+    if ( sp!=NULL && x<=pt2.x-4 && x+width>=pt2.x+4 && y<=pt2.y-4 && y+h>=pt2.y+4 )
+	x = pt2.x + 4;
+    if ( x+width > size.width ) {
 	x = pt.x - width-30;
+	if ( sp!=NULL && x<=pt2.x-4 && x+width>=pt2.x+4 && y<=pt2.y-4 && y+h>=pt2.y+4 )
+	    x = pt2.x - width - 4;
+	if ( x<0 ) {
+	    x = pt.x + 10;
+	    y = pt.y - h - 26;
+	    if ( sp!=NULL && x<=pt2.x-4 && x+width>=pt2.x+4 && y<=pt2.y-4 && y+h>=pt2.y+4 )
+		y = pt2.y - h - 4;
+	    if ( y<0 )
+		y = pt.y+26;	/* If this doesn't work we have nowhere else to */
+				/* try so don't check */
+	}
+    }
     GDrawMoveResize(cv->ruler_w,x,pt.y-cv->ras-2,width+4,h+4);
 }
 
 void CPStartInfo(CharView *cv, GEvent *event) {
 
+    if ( !cv->showcpinfo )
+return;
     cv->autonomous_ruler_w = false;
 
     CpInfoPlace(cv,event);
@@ -395,6 +432,8 @@ void CPStartInfo(CharView *cv, GEvent *event) {
 
 void CPUpdateInfo(CharView *cv, GEvent *event) {
 
+    if ( !cv->showcpinfo )
+return;
     if ( !cv->p.pressed ) {
 	if ( cv->ruler_w!=NULL && GDrawIsVisible(cv->ruler_w)) {
 	    GDrawDestroyWindow(cv->ruler_w);

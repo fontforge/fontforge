@@ -1661,6 +1661,7 @@ static void PIFillup(GIData *ci, int except_cid) {
     char buffer[50];
     double dx, dy;
     double kappa, kappa2;
+    int emsize;
 
     mysprintf(buffer, "%.2f", ci->cursp->me.x );
     if ( except_cid!=CID_BaseX )
@@ -1762,18 +1763,21 @@ static void PIFillup(GIData *ci, int except_cid) {
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_NextCurvature), kappa!=CURVATURE_ERROR );
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_DeltaCurvature),
 	    kappa!=CURVATURE_ERROR && kappa2!=CURVATURE_ERROR );
+    emsize = ci->cv->sc->parent->ascent + ci->cv->sc->parent->descent;
+    /* If we normalize by the em-size, the curvature is often more */
+    /*  readable */
     if ( kappa!=CURVATURE_ERROR )
-	sprintf( buffer, _("Curvature: %g"), kappa );
+	sprintf( buffer, _("Curvature: %g"), kappa*emsize );
     else
 	strcpy( buffer, _("Curvature: ?"));
     GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_NextCurvature),buffer);
     if ( kappa2!=CURVATURE_ERROR )
-	sprintf( buffer, _("Curvature: %g"), kappa2 );
+	sprintf( buffer, _("Curvature: %g"), kappa2*emsize );
     else
 	strcpy( buffer, _("Curvature: ?"));
     GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_PrevCurvature),buffer);
     if ( kappa!=CURVATURE_ERROR && kappa2!=CURVATURE_ERROR )
-	sprintf( buffer, _("∆: %g"), kappa-kappa2 );
+	sprintf( buffer, _("∆: %g"), (kappa-kappa2)*emsize );
     else
 	strcpy( buffer, _("∆: ?"));
     GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_DeltaCurvature),buffer);
