@@ -1501,6 +1501,10 @@ extern double IterateSplineSolve(const Spline1D *sp, double tmin, double tmax, d
 extern double SplineSolve(const Spline1D *sp, real tmin, real tmax, real sought_y, real err);
 extern int SplineSolveFull(const Spline1D *sp,double val, double ts[3]);
 extern void SplineFindExtrema(const Spline1D *sp, double *_t1, double *_t2 );
+
+#define CURVATURE_ERROR	-1e9
+extern double SplineCurvature(Spline *s, double t);
+
 extern int Spline2DFindExtrema(const Spline *sp, double extrema[4] );
 extern int Spline2DFindPointsOfInflection(const Spline *sp, double poi[2] );
 extern int SplineAtInflection(Spline1D *sp, double t );

@@ -3260,6 +3260,28 @@ void SplineFindExtrema(const Spline1D *sp, double *_t1, double *_t2 ) {
     *_t1 = t1; *_t2 = t2;
 }
 
+double SplineCurvature(Spline *s, double t) {
+	/* Kappa = (x'y'' - y'x'') / (x'^2 + y'^2)^(3/2) */
+    double dxdt, dydt, d2xdt2, d2ydt2, denom, numer;
+
+    if ( s==NULL )
+return( CURVATURE_ERROR );
+
+    dxdt = (3*s->splines[0].a*t+2*s->splines[0].b)*t+s->splines[0].c;
+    dydt = (3*s->splines[1].a*t+2*s->splines[1].b)*t+s->splines[1].c;
+    d2xdt2 = 6*s->splines[0].a*t + 2*s->splines[0].b;
+    d2ydt2 = 6*s->splines[1].a*t + 2*s->splines[1].b;
+    denom = pow( dxdt*dxdt + dydt*dydt, 3.0/2.0 );
+    numer = dxdt*d2ydt2 - dydt*d2xdt2;
+
+    if ( numer==0 )
+return( 0 );
+    if ( denom==0 )
+return( CURVATURE_ERROR );
+
+return( numer/denom );
+}
+
 int SplineAtInflection(Spline1D *sp, double t ) {
     /* It's a point of inflection if d sp/dt==0 and d2 sp/dt^2==0 */
 return ( RealNear( (3*sp->a*t + 2*sp->b)*t + sp->c,0) &&

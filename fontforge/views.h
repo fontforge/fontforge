@@ -1059,9 +1059,6 @@ extern void CVChangeSC(CharView *cv, SplineChar *sc );
 extern void SCRefreshTitles(SplineChar *sc);
 extern void SPChangePointType(SplinePoint *sp, int pointtype);
 
-#define CURVATURE_ERROR	-1e9
-extern double curvature(Spline *s, double t);
-
 extern void CVAdjustPoint(CharView *cv, SplinePoint *sp);
 extern void CVMergeSplineSets(CharView *cv, SplinePoint *active, SplineSet *activess,
 	SplinePoint *merge, SplineSet *mergess);
