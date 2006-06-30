@@ -1119,6 +1119,8 @@ return( SplineMake2(from,to));
 	}
     }
 
+    to->noprevcp = offp_==0;
+    from->nonextcp = offn_==0;
     to->prevcp.x = to->me.x + offp_*tounit.x; to->prevcp.y = to->me.y + offp_*tounit.y;
     from->nextcp.x = from->me.x + offn_*fromunit.x; from->nextcp.y = from->me.y + offn_*fromunit.y;
     /* I used to check for a spline very close to linear (and if so, make it */
