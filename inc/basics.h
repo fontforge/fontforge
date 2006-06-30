@@ -32,7 +32,11 @@
 #endif
 
 #include <stdio.h>		/* for NULL */
-#include <stdint.h>
+#ifdef __VMS
+# include <inttypes.h>
+#else
+# include <stdint.h>
+#endif
 #include <stdlib.h>		/* for free */
 #include <limits.h>
 
