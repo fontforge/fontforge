@@ -1310,10 +1310,7 @@ static void GTextFieldDrawLineSel(GWindow pixmap, GTextField *gt, int line, Colo
 	if ( gt->sel_end <= gt->lines[line+1] || gt->lines[line+1]==-1 )
 	    selr.width = GDrawGetTextWidth(pixmap,text+gt->lines[line],gt->sel_end-gt->lines[line],NULL)-
 		    gt->xoff_left - (selr.x-gt->g.inner.x);
-	if ( gt->g.has_focus )
-	    GDrawFillRect(pixmap,&selr,gt->g.box->active_border);
-	else
-	    GDrawDrawRect(pixmap,&selr,gt->g.box->active_border);
+	GDrawDrawRect(pixmap,&selr,gt->g.box->active_border);
 	if ( sel!=fg ) {
 	    GDrawDrawText(pixmap,selr.x,y+gt->as,
 		    text+s,e-s,NULL, sel );

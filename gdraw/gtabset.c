@@ -122,6 +122,7 @@ static int gtabset_expose(GWindow pixmap, GGadget *g, GEvent *event) {
     int x,y,i,rd, dsel;
     GRect old1, bounds;
     int yoff = (gts->rcnt==1?GBoxBorderWidth(pixmap,g->box):0);
+    Color fg;
 
     if ( g->state == gs_invisible )
 return( false );
@@ -135,51 +136,73 @@ return( false );
     GBoxDrawBorder(pixmap,&bounds,g->box,g->state,false);
     GDrawSetFont(pixmap,gts->font);
 
-    gts->haslarrow = gts->hasrarrow = false;
-    if ( gts->scrolled ) {
-	x = g->r.x + GBoxBorderWidth(pixmap,gts->g.box);
-	y = g->r.y+yoff;
-	dsel = 0;
-	if ( gts->toff!=0 )
-	    x = DrawLeftArrowTab(pixmap,gts,x,y);
-	for ( i=gts->toff;
-		(i==gts->tabcnt-1 && x+gts->tabs[i].width < g->r.width) ||
-		(i<gts->tabcnt-1 && x+gts->tabs[i].width < g->r.width-gts->arrow_width ) ;
-		++i ) {
-	    if ( i!=gts->sel )
-		x = DrawTab(pixmap,gts,i,x,y);
-	    else {
-		gts->tabs[i].x = x;
-		x += gts->tabs[i].width;
-		dsel = 1;
+    if ( gts->vertical ) {
+	x = g->r.x + GBoxBorderWidth(pixmap,g->box) + 5;
+	y = g->r.y + GBoxBorderWidth(pixmap,g->box) + 5;
+	for ( i=0; i<gts->tabcnt; ++i ) {
+	    fg = gts->tabs[i].disabled?gts->g.box->disabled_foreground:gts->g.box->main_foreground;
+	    if ( fg==COLOR_DEFAULT ) fg = GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap));
+	    if ( i==gts->sel ) {
+		GRect r;
+		r.x = x; r.y = y;
+		r.width = gts->vert_list_width-10; r.height = gts->fh;
+		GDrawFillRect(pixmap,&r,gts->g.box->active_border);
 	    }
+	    GDrawDrawBiText(pixmap,x,y + gts->as,gts->tabs[i].name,-1,NULL,fg);
+	    y += gts->fh;
 	}
-	if ( i!=gts->tabcnt ) {
-	    int p = gts->g.inner.x+gts->g.inner.width - gts->arrow_width;
-	    if ( p>x ) x=p;
-	    x = DrawRightArrowTab(pixmap,gts,x,y);
-	    gts->tabs[i].x = 0x7fff;
-	}
-	/* This one draws on top of the others, must come last */
-	if ( dsel )
-	    DrawTab(pixmap,gts,gts->sel,gts->tabs[gts->sel].x, g->r.y + (gts->rcnt-1) * gts->rowh + yoff );
+	fg = gts->g.box->main_foreground;
+	if ( fg==COLOR_DEFAULT ) fg = GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap));
+	GDrawDrawLine(pixmap,x-6+gts->vert_list_width,g->r.y + GBoxBorderWidth(pixmap,g->box),
+			     x-6+gts->vert_list_width,g->r.y + g->r.height -GBoxBorderWidth(pixmap,g->box),
+			     fg);
     } else {
-	/* r is real row, rd is drawn pos */
-	/* rd is 0 at the top of the ggadget */
-	/* r is 0 when it contains tabs[0], (the index in the rowstarts array) */
-	for ( rd = 0; rd<gts->rcnt; ++rd ) {
-	    int r = (gts->rcnt-1-rd+gts->active_row)%gts->rcnt;
-	    y = g->r.y + rd * gts->rowh + yoff;
-	    x = g->r.x + (gts->rcnt-1-rd) * gts->offset_per_row + GBoxBorderWidth(pixmap,gts->g.box);
-	    for ( i = gts->rowstarts[r]; i<gts->rowstarts[r+1]; ++i )
-		if ( i==gts->sel ) {
+	gts->haslarrow = gts->hasrarrow = false;
+	if ( gts->scrolled ) {
+	    x = g->r.x + GBoxBorderWidth(pixmap,gts->g.box);
+	    y = g->r.y+yoff;
+	    dsel = 0;
+	    if ( gts->toff!=0 )
+		x = DrawLeftArrowTab(pixmap,gts,x,y);
+	    for ( i=gts->toff;
+		    (i==gts->tabcnt-1 && x+gts->tabs[i].width < g->r.width) ||
+		    (i<gts->tabcnt-1 && x+gts->tabs[i].width < g->r.width-gts->arrow_width ) ;
+		    ++i ) {
+		if ( i!=gts->sel )
+		    x = DrawTab(pixmap,gts,i,x,y);
+		else {
 		    gts->tabs[i].x = x;
 		    x += gts->tabs[i].width;
-		} else
-		    x = DrawTab(pixmap,gts,i,x,y);
+		    dsel = 1;
+		}
+	    }
+	    if ( i!=gts->tabcnt ) {
+		int p = gts->g.inner.x+gts->g.inner.width - gts->arrow_width;
+		if ( p>x ) x=p;
+		x = DrawRightArrowTab(pixmap,gts,x,y);
+		gts->tabs[i].x = 0x7fff;
+	    }
+	    /* This one draws on top of the others, must come last */
+	    if ( dsel )
+		DrawTab(pixmap,gts,gts->sel,gts->tabs[gts->sel].x, g->r.y + (gts->rcnt-1) * gts->rowh + yoff );
+	} else {
+	    /* r is real row, rd is drawn pos */
+	    /* rd is 0 at the top of the ggadget */
+	    /* r is 0 when it contains tabs[0], (the index in the rowstarts array) */
+	    for ( rd = 0; rd<gts->rcnt; ++rd ) {
+		int r = (gts->rcnt-1-rd+gts->active_row)%gts->rcnt;
+		y = g->r.y + rd * gts->rowh + yoff;
+		x = g->r.x + (gts->rcnt-1-rd) * gts->offset_per_row + GBoxBorderWidth(pixmap,gts->g.box);
+		for ( i = gts->rowstarts[r]; i<gts->rowstarts[r+1]; ++i )
+		    if ( i==gts->sel ) {
+			gts->tabs[i].x = x;
+			x += gts->tabs[i].width;
+		    } else
+			x = DrawTab(pixmap,gts,i,x,y);
+	    }
+	    /* This one draws on top of the others, must come last */
+	    DrawTab(pixmap,gts,gts->sel,gts->tabs[gts->sel].x, g->r.y + (gts->rcnt-1) * gts->rowh + yoff );
 	}
-	/* This one draws on top of the others, must come last */
-	DrawTab(pixmap,gts,gts->sel,gts->tabs[gts->sel].x, g->r.y + (gts->rcnt-1) * gts->rowh + yoff );
     }
     if ( gts->nested_expose )
 	(gts->nested_expose)(pixmap,g,event);
@@ -274,17 +297,24 @@ static void GTabSetRemetric(GTabSet *gts) {
 
     GDrawSetFont(gts->g.base,gts->font);
     GDrawFontMetrics(gts->font,&as,&ds,&ld);
+    gts->as = as; gts->fh = as+ds;
     gts->rowh = as+ds + bbp+GDrawPointsToPixels(gts->g.base,3);
     gts->ds = ds + bbp+GDrawPointsToPixels(gts->g.base,1);
     gts->arrow_size = as+ds;
     gts->arrow_width = gts->arrow_size + 2*GBoxBorderWidth(gts->g.base,gts->g.box);
+    gts->vert_list_width = 0;
 
     for ( i=0; i<gts->tabcnt; ++i ) {
 	gts->tabs[i].tw = GDrawGetTextWidth(gts->g.base,gts->tabs[i].name,-1,NULL);
 	gts->tabs[i].width = gts->tabs[i].tw + 2*bp;
+	if ( gts->tabs[i].tw > gts->vert_list_width )
+	    gts->vert_list_width = gts->tabs[i].tw;
     }
+    gts->vert_list_width += 8;
 
-    if ( gts->scrolled ) {
+    if ( gts->vertical ) {
+	/* Nothing much to do */
+    } else if ( gts->scrolled ) {
 	free(gts->rowstarts);
 	gts->rowstarts = malloc(2*sizeof(16));
 	gts->rowstarts[0] = 0; gts->rowstarts[1] = gts->tabcnt;
@@ -327,33 +357,39 @@ static void GTabSetChangeSel(GTabSet *gts, int sel,int sendevent) {
     else if ( sel<0 || sel>=gts->tabcnt || gts->tabs[sel].disabled )
 return;
     else {
-	for ( i=0; i<gts->rcnt && sel>=gts->rowstarts[i+1]; ++i );
-	if ( gts->active_row != i ) {
-	    gts->active_row = i;
-	    if ( gts->rcnt>1 && (!gts->filllines || gts->offset_per_row!=0))
-		GTabSetFigureWidths(gts);
-	}
-	gts->sel = sel;
-	if ( sel<gts->toff )
-	    gts->toff = sel;
-	else if ( gts->scrolled ) {
-	    for ( i=gts->toff; i<sel && gts->tabs[i].x!=0x7fff; ++i );
-	    if ( gts->tabs[i].x==0x7fff ) {
-		width = gts->g.r.width-2*gts->arrow_width;	/* it will have a left arrow */
-		if ( sel!=gts->tabcnt )
-		    width -= gts->arrow_width;		/* it might have a right arrow */
-		for ( i=sel; i>=0 && width-gts->tabs[i].width>=0; --i )
-		    width -= gts->tabs[i].width;
-		if ( ++i>sel ) i = sel;
-		gts->toff = i;
+	if ( gts->vertical )
+	    gts->sel = sel;
+	else {
+	    for ( i=0; i<gts->rcnt && sel>=gts->rowstarts[i+1]; ++i );
+	    if ( gts->active_row != i ) {
+		gts->active_row = i;
+		if ( gts->rcnt>1 && (!gts->filllines || gts->offset_per_row!=0))
+		    GTabSetFigureWidths(gts);
+	    }
+	    gts->sel = sel;
+	    if ( sel<gts->toff )
+		gts->toff = sel;
+	    else if ( gts->scrolled ) {
+		for ( i=gts->toff; i<sel && gts->tabs[i].x!=0x7fff; ++i );
+		if ( gts->tabs[i].x==0x7fff ) {
+		    width = gts->g.r.width-2*gts->arrow_width;	/* it will have a left arrow */
+		    if ( sel!=gts->tabcnt )
+			width -= gts->arrow_width;		/* it might have a right arrow */
+		    for ( i=sel; i>=0 && width-gts->tabs[i].width>=0; --i )
+			width -= gts->tabs[i].width;
+		    if ( ++i>sel ) i = sel;
+		    gts->toff = i;
+		}
 	    }
 	}
-	if ( sendevent )
-	    GTabSetChanged(gts,oldsel);
-	if ( gts->tabs[oldsel].w!=NULL )
-	    GDrawSetVisible(gts->tabs[oldsel].w,false);
-	if ( gts->tabs[gts->sel].w!=NULL )
-	    GDrawSetVisible(gts->tabs[gts->sel].w,true);
+	if ( oldsel!=sel ) {
+	    if ( sendevent )
+		GTabSetChanged(gts,oldsel);
+	    if ( gts->tabs[oldsel].w!=NULL )
+		GDrawSetVisible(gts->tabs[oldsel].w,false);
+	    if ( gts->tabs[gts->sel].w!=NULL )
+		GDrawSetVisible(gts->tabs[gts->sel].w,true);
+	}
     }
     _ggadget_redraw(&gts->g);
 }
@@ -373,9 +409,16 @@ return( true );
 return( true );
     } else {
 	int i, sel= -1, l;
-	if ( event->u.mouse.y < gts->g.r.y || event->u.mouse.y >= gts->g.inner.y )
+	if ( event->u.mouse.y < gts->g.r.y ||
+		( !gts->vertical && event->u.mouse.y >= gts->g.inner.y ) ||
+		( gts->vertical && event->u.mouse.x >= gts->g.inner.x ))
 return( false );
-	else if ( gts->scrolled ) {
+	else if ( gts->vertical ) {
+	    int y = g->r.y + GBoxBorderWidth(g->base,g->box) + 5;
+	    sel = (event->u.mouse.y-y)/gts->fh;
+	    if ( sel<0 || sel>=gts->tabcnt )
+return(false);
+	} else if ( gts->scrolled ) {
 	    if ( gts->haslarrow && event->u.mouse.x<gts->tabs[gts->toff].x )
 		sel = -2;	/* left arrow */
 	    else {
@@ -424,11 +467,13 @@ return(false);
     if ( event->type == et_charup )
 return( true );
 
-    if (event->u.chr.keysym == GK_Left || event->u.chr.keysym == GK_KP_Left ) {
+    if (event->u.chr.keysym == GK_Left || event->u.chr.keysym == GK_KP_Left ||
+	    event->u.chr.keysym == GK_Up || event->u.chr.keysym == GK_KP_Up ) {
 	for ( i = gts->sel-1; i>0 && gts->tabs[i].disabled; --i );
 	GTabSetChangeSel(gts,i,true);
 return( true );
-    } else if (event->u.chr.keysym == GK_Right || event->u.chr.keysym == GK_KP_Right ) {
+    } else if (event->u.chr.keysym == GK_Right || event->u.chr.keysym == GK_KP_Right ||
+	    event->u.chr.keysym == GK_Down || event->u.chr.keysym == GK_KP_Down ) {
 	for ( i = gts->sel+1; i<gts->tabcnt-1 && gts->tabs[i].disabled; ++i );
 	GTabSetChangeSel(gts,i,true);
 return( true );
@@ -601,14 +646,20 @@ GGadget *GTabSetCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     if ( gd->flags&gg_tabset_scroll ) gts->scrolled = true;
     if ( gd->flags&gg_tabset_filllines ) gts->filllines = true;
     if ( gd->flags&gg_tabset_fill1line ) gts->fill1line = true;
+    if ( gd->flags&gg_tabset_vert ) gts->vertical = true;
     gts->offset_per_row = GDrawPointsToPixels(base,2);
     GTabSetRemetric(gts);
     _GGadget_FinalPosition(&gts->g,base,gd);
 
     bp = GBoxBorderWidth(base,gts->g.box);
     gts->g.inner = gts->g.r;
-    gts->g.inner.x += bp; gts->g.inner.width -= 2*bp;
-    gts->g.inner.y += gts->rcnt*gts->rowh; gts->g.inner.height -= bp+gts->rcnt*gts->rowh;
+    if ( gts->vertical ) {
+	gts->g.inner.x += bp+gts->vert_list_width; gts->g.inner.width -= 2*bp+gts->vert_list_width;
+	gts->g.inner.y += bp; gts->g.inner.height -= 2*bp;
+    } else {
+	gts->g.inner.x += bp; gts->g.inner.width -= 2*bp;
+	gts->g.inner.y += gts->rcnt*gts->rowh; gts->g.inner.height -= bp+gts->rcnt*gts->rowh;
+    }
     if ( gts->rcnt==1 ) {
 	gts->g.inner.y += bp; gts->g.inner.height -= bp;
     }
