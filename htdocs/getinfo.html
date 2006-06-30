@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 26-Mar-2006 -->
+  <!-- AP: Last modified: 29-Jun-2006 -->
   <TITLE>Get Info</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -25,7 +25,7 @@
     <A NAME="Point">Point</A> Info
   </H2>
   <P>
-  <IMG SRC="pointinfo.png" WIDTH="321" HEIGHT="539" ALIGN="Right"> This shows
+  <IMG SRC="pointinfo.png" WIDTH="321" HEIGHT="578" ALIGN="Right"> This shows
   information about the current point. The Base position is where the point
   itself is.
   <P>
@@ -41,6 +41,17 @@
   You may change any of these and the change is reflected in the outline view.
   Your changes are constrained by the point type (for instance with tangent
   points, you may not change the angle fields as these are fixed).
+  <P>
+  FontForge also shows you the curvature of the two splines on either side
+  of the point. In a perfect world these will be equal for curve points and
+  the join will appear smooth. It also shows the difference between the two.
+  The curvature is the reciprical of the radius of the circle tangent to the
+  curve (a straight line has curvature 0 because it is a circle with infinite
+  radius so its reciprical is 0). For most curves in letters this radius is
+  fairly large when expressed in em-units (and its reciprical is correspondingly
+  small). To make it easier to read, FontForge scales it by the em-size of
+  the font -- this is equivalent to expressing it in units where 1 corresponds
+  to an em (rather than 1000 or 2048).
   <P>
   You may also change whether a point is a curve, corner or tangent point (Caution:
   Changing from a corner point to a curve point and back to a corner point

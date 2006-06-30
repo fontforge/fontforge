@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 2-May-2006 -->
+  <!-- AP: Last modified: 29-Jun-2006 -->
   <TITLE>The View Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -117,6 +117,8 @@
       <A HREF="#Extrema">Mark Extrema</A>
     <LI>
       <A HREF="#PoI">Mark Points of Inflection</A>
+    <LI>
+      <A HREF="#CpInfo">Show Control Point Info</A>
     <LI>
       <A HREF="#Fill">Fill</A>
     <LI>
@@ -434,16 +436,17 @@
     <DT>
       Number <A NAME="NumPts">Points</A>
     <DD>
-      This small sub-menu allows you to control whether point numbers are displayed
-      next to points in the foreground view. This is primarily for TrueType, where
-      the instructions use these numbers to refer to the points when they do
-      grid-fitting. The numbering scheme is a little different depending on what
-      the expected output (input) will be, so we have a sub-menu listing output
-      types.
+      In the Outline view, this small sub-menu allows you to control whether point
+      numbers are displayed next to points in the foreground view. This is primarily
+      for TrueType, where the instructions use these numbers to refer to the points
+      when they do grid-fitting. The numbering scheme is a little different depending
+      on what the expected output (input) will be, so we have a sub-menu listing
+      output types.
     <DT>
       Mark <A NAME="Extrema">Extrema</A>
     <DD>
-      <IMG SRC="extrema-poi.png" WIDTH="204" HEIGHT="274" ALIGN="Right">In postscript
+      In the Outline view,
+      <IMG SRC="extrema-poi.png" WIDTH="204" HEIGHT="274" ALIGN="Right">in postscript
       and truetype fonts (in almost all cases) should have their horizontal and
       vertical extrema at the endpoints of splines. This setting will mark extremal
       endpoints by coloring them a dull purple to remind you that you should not
@@ -454,12 +457,18 @@
     <DT>
       Mark <A NAME="PoI">Points of Inflection</A>
     <DD>
-      Points of inflection occur where the change in the slope of the curve (second
-      derivative) changes sign. Quadratic splines (truetype) cannot represent points
-      of inflection. If you have a postscript font which you intend to convert
-      to truetype it can be helpful to know where these difficult points lie. (the
-      cubic-&gt;quadratic approximation routines will often add intermediate points
-      at these points of inflection)
+      In the Outline view, points of inflection occur where the change in the slope
+      of the curve (second derivative) changes sign. Quadratic splines (truetype)
+      cannot represent points of inflection. If you have a postscript font which
+      you intend to convert to truetype it can be helpful to know where these difficult
+      points lie. (the cubic-&gt;quadratic approximation routines will often add
+      intermediate points at these points of inflection)
+    <DT>
+      <A NAME="CpInfo">Show Control Point Info</A>
+    <DD>
+      In the Outline view, when you move a <A HREF="charview.html#CpInfo">control
+      point </A>this mode pops up a little window showing various bits of information
+      about the control point you are editing.
     <DT>
       <A NAME="Fill">Fill</A>
     <DD>
