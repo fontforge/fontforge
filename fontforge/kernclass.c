@@ -954,10 +954,12 @@ static GTextInfo **TiNamesFromClass(GGadget *list,int class_index) {
     /* Return a list containing all the names in this class */
     unichar_t *upt, *end;
     unichar_t *line;
+    GTextInfo *classti;
     GTextInfo **ti;
     int i, k;
 
-    if ( class_index==0 || GGadgetGetListItem(list,class_index)==NULL ) {
+    classti = GGadgetGetListItem(list,class_index);
+    if ( classti==NULL || uc_strcmp(classti->text,_("{Everything Else}"))==0 ) {
 	i=0;
 	ti = galloc((i+1)*sizeof(GTextInfo*));
     } else {
@@ -1107,6 +1109,8 @@ return( true );
 	kc->seconds = galloc(kc->second_cnt*sizeof(char *));
 	kc->firsts[0] = kc->seconds[0] = NULL;
 	ti = GGadgetGetList(GWidgetGetControl(kcd->gw,CID_ClassList),&len);
+	if ( uc_strcmp(ti[0]->text,_("{Everything Else}"))!=0 )
+	    kc->firsts[0] = cu_copy(ti[0]->text);
 	for ( i=1; i<kc->first_cnt; ++i )
 	    kc->firsts[i] = cu_copy(ti[i]->text);
 	ti = GGadgetGetList(GWidgetGetControl(kcd->gw,CID_ClassList+100),&len);
