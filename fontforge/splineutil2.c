@@ -2800,8 +2800,11 @@ return(s);
 	    /*  case */
 	    for ( i=0; i<p; ++i ) {
 		real x = ((s->splines[0].a*t[i]+s->splines[0].b)*t[i]+s->splines[0].c)*t[i]+s->splines[0].d;
-		int close_from = ( x-s->from->me.x<offsetbound && x-s->from->me.x>-offsetbound);
-		int close_to = ( x-s->to->me.x<offsetbound && x-s->to->me.x>-offsetbound);
+		real y = ((s->splines[1].a*t[i]+s->splines[1].b)*t[i]+s->splines[1].c)*t[i]+s->splines[1].d;
+		int close_from = ( x-s->from->me.x<offsetbound && x-s->from->me.x>-offsetbound) &&
+				( y-s->from->me.y<10*offsetbound && y-s->from->me.y>-10*offsetbound );
+		int close_to = ( x-s->to->me.x<offsetbound && x-s->to->me.x>-offsetbound) &&
+				( y-s->to->me.y<10*offsetbound && y-s->to->me.y>-10*offsetbound );
 		int remove_from = close_from  && GoodCurve(s->from,true);
 		int remove_to = close_to  && GoodCurve(s->to,false);
 		if (( x>b->minx && x<b->maxx  && len<lenbound ) ||
@@ -2829,9 +2832,12 @@ return(s);
 	    t[p++] = -s->splines[1].c/(2*s->splines[1].b);
 	if ( !always ) {
 	    for ( i=p_s; i<p; ++i ) {
+		real x = ((s->splines[0].a*t[i]+s->splines[0].b)*t[i]+s->splines[0].c)*t[i]+s->splines[0].d;
 		real y = ((s->splines[1].a*t[i]+s->splines[1].b)*t[i]+s->splines[1].c)*t[i]+s->splines[1].d;
-		int close_from =( y-s->from->me.y<offsetbound && y-s->from->me.y>-offsetbound );
-		int close_to = ( y-s->to->me.y<offsetbound && y-s->to->me.y>-offsetbound );
+		int close_from =( y-s->from->me.y<offsetbound && y-s->from->me.y>-offsetbound ) &&
+			( x-s->from->me.x<offsetbound && x-s->from->me.x>-offsetbound);
+		int close_to = ( y-s->to->me.y<offsetbound && y-s->to->me.y>-offsetbound ) &&
+			( x-s->to->me.x<offsetbound && x-s->to->me.x>-offsetbound);
 		int remove_from = close_from  && GoodCurve(s->from,true);
 		int remove_to = close_to  && GoodCurve(s->to,false);
 		if (( y>b->miny && y<b->maxy && len<lenbound ) ||
