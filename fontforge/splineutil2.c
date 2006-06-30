@@ -31,7 +31,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <stdlib.h>
-#include <views.h>		/* For SCCharChangedUpdate */
+#include "views.h"		/* For SCCharChangedUpdate */
 
 /*#define DEBUG	1*/
 
