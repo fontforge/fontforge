@@ -140,6 +140,7 @@ typedef struct ggadgetdata {
 	/* Reuse some flag values for different widgets */
 	gg_file_pulldown=gg_sb_vert, gg_file_multiple = gg_list_multiplesel,
 	gg_text_xim = gg_tabset_scroll,
+	gg_tabset_vert = gg_sb_vert,
 	gg_utf8_popup = gg_rowcol_displayonly
 	} flags;
     const unichar_t *popup_msg;		/* Brief help message */

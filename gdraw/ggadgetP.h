@@ -325,9 +325,12 @@ typedef struct gtabset {
     unsigned int pressed: 1;
     unsigned int filllines: 1;	/* If we have multiple lines then fill them so that each row takes up the entire width of the tabset */
     unsigned int fill1line: 1;
+    unsigned int vertical: 1;
     FontInstance *font;
     void (*nested_expose)(GWindow pixmap, GGadget *g, GEvent *event);
     int (*nested_mouse)(GGadget *g, GEvent *event);
+    int16 vert_list_width;
+    int16 as, fh;
 } GTabSet;
 
 struct gdirentry;
