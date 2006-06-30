@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 19-Jun-2006 -->
+  <!-- AP: Last modified: 29-Jun-2006 -->
   <TITLE>Outline Glyph View</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -210,12 +210,23 @@
   If a point has no visible control points, then they are at the same location
   as the point itself. If you want to select one of the control points then
   first select the point (to make the control points active) then hold down
-  the meta key and depress the mouse on the point. This should allow you to
-  drag one of the control points (if you get the wrong point the first time
-  drag it out of the way, repeat the process to get the other control and then
-  put the first one back). Sadly some window managers (gnome-sawtooth for one)
-  will steal meta-clicks. If this happens you will need to use Element-&gt;Get
-  Info to set the control points.
+  the meta key (use caps-lock on the mac) and depress the mouse on the point.
+  This should allow you to drag one of the control points (if you get the wrong
+  point the first time drag it out of the way, repeat the process to get the
+  other control and then put the first one back). Sadly some window managers
+  (gnome-sawtooth for one) will steal meta-clicks. If this happens you will
+  need to use Element-&gt;Get Info to set the control points.
+  <P>
+  <IMG SRC="cpinfo.png" WIDTH="296" HEIGHT="337" ALIGN="Right">When you move
+  a <A NAME="CpInfo">control point</A> you have the option
+  (<CODE><A HREF="viewmenu.html#CpInfo">View-&gt;Show Control Point
+  Info</A></CODE>) of getting a popup box showing information about the control
+  point (and its opposite number on the other side of the on-curve point).
+  You will be told whether this is the next or previous control point, the
+  absolute location of the point, the offset from the on-curve point, the slope
+  expressed as a ratio, and as an angle, and the curvature on this side of
+  the base point. At the very bottom is the difference between the two curvatures.
+  Try to make this number approach 0 for curved points.
   <P>
   Once something is selected you may drag it around. If you select something
   and drag the mouse then it and everything else selected will be moved. If
