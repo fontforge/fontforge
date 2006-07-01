@@ -582,7 +582,7 @@ static struct resource *BuildDummyNFNTlist(FILE *res, SplineFont *sf,
 	for ( bdf=sf->bitmaps; bdf!=NULL && (bdf->pixelsize!=(sizes[i]&0xffff) || BDFDepth(bdf)!=1); bdf=bdf->next );
 	if ( bdf==NULL )
     continue;
-	resstarts[i].id = baseresid++;
+	resstarts[i].id = baseresid+(sizes[i]&0xffff);
 	resstarts[i].pos = DummyNFNT(res,bdf,map);
 	/* NFNTs seem to have resource flags of 0 */
     }
