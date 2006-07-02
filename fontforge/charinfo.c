@@ -4325,13 +4325,13 @@ return( true );
 
 static int CI_NameCheck(const unichar_t *name) {
     int bad, questionable;
+    extern int allow_utf8_glyphnames;
 #if defined(FONTFORGE_CONFIG_GDRAW)
     char *buts[3];
     buts[0] = _("_Yes"); buts[1]=_("_No"); buts[2] = NULL;
 #elif defined(FONTFORGE_CONFIG_GTK)
     static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_CANCEL, NULL };
 #endif
-    extern int allow_utf8_glyphnames;
 
     if ( uc_strcmp(name,".notdef")==0 )		/* This name is a special case and doesn't follow conventions */
 return( true );
