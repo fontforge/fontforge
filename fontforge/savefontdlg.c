@@ -2240,6 +2240,13 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
     struct sflist *sfs=NULL, *cur, *last=NULL;
     static int psscalewarned=0, ttfscalewarned=0, psfnlenwarned=0;
     int flags;
+    struct sflist *sfl;
+    char **former;
+    NameList *rename_to;
+    GTextInfo *ti = GGadgetGetListItemSelected(d->rename);
+    char *nlname = u2utf8_copy(ti->text);
+    extern NameList *force_names_when_saving;
+    int notdef_pos = SFFindNotdef(d->sf,-1);
 #if defined(FONTFORGE_CONFIG_GDRAW)
     char *buts[3];
     buts[0] = _("_Yes");
@@ -2248,13 +2255,6 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
 #elif defined(FONTFORGE_CONFIG_GTK)
     static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_NO, NULL };
 #endif
-    struct sflist *sfl;
-    char **former;
-    NameList *rename_to;
-    GTextInfo *ti = GGadgetGetListItemSelected(d->rename);
-    char *nlname = u2utf8_copy(ti->text);
-    extern NameList *force_names_when_saving;
-    int notdef_pos = SFFindNotdef(d->sf,-1);
 
     rename_to = NameListByName(nlname);
     free(nlname);
