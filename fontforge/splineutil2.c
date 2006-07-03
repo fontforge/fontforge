@@ -715,11 +715,20 @@ static double ClosestSplineSolve(Spline1D *sp,double sought,double close_to_t) {
 return( t );
 }
 
-static double SigmaDeltas(Spline *spline,TPoint *mid, int cnt, DBounds *b) {
+struct dotbounds {
+    BasePoint unit;
+    BasePoint base;
+    double len;
+    double min,max;		/* If min<0 || max>len the spline extends beyond its endpoints */
+};
+
+static double SigmaDeltas(Spline *spline,TPoint *mid, int cnt, DBounds *b, struct dotbounds *db) {
     int i, lasti;
     double xdiff, ydiff, sum, temp, t, lastt;
     SplinePoint *to = spline->to, *from = spline->from;
-    double t1, t2, x,y;
+    double ts[2], x,y;
+    struct dotbounds db2;
+    double dot;
 
     if ( (xdiff = to->me.x-from->me.x)<0 ) xdiff = -xdiff;
     if ( (ydiff = to->me.y-from->me.y)<0 ) ydiff = -ydiff;
@@ -749,50 +758,65 @@ static double SigmaDeltas(Spline *spline,TPoint *mid, int cnt, DBounds *b) {
     /* Ok, we've got distances from a set of points on the old spline to the */
     /*  new one. Let's do the reverse: find the extrema of the new and see how*/
     /*  close they get to the bounding box of the old */
-    SplineFindExtrema(&spline->splines[0],&t1,&t2);
-    if ( t1!=-1 ) {
-	x = ((spline->splines[0].a*t1+spline->splines[0].b)*t1+spline->splines[0].c)*t1 + spline->splines[0].d;
-	if ( x<b->minx )
-	    sum += (x-b->minx)*(x-b->minx);
-	else if ( x>b->maxx )
-	    sum += (x-b->maxx)*(x-b->maxx);
+    /* And get really unhappy if the spline extends beyond the end-points */
+    db2.min = 0; db2.max = db->len;
+    SplineFindExtrema(&spline->splines[0],&ts[0],&ts[1]);
+    for ( i=0; i<2; ++i ) {
+	if ( ts[i]!=-1 ) {
+	    x = ((spline->splines[0].a*ts[i]+spline->splines[0].b)*ts[i]+spline->splines[0].c)*ts[i] + spline->splines[0].d;
+	    y = ((spline->splines[1].a*ts[i]+spline->splines[1].b)*ts[i]+spline->splines[1].c)*ts[i] + spline->splines[1].d;
+	    if ( x<b->minx )
+		sum += (x-b->minx)*(x-b->minx);
+	    else if ( x>b->maxx )
+		sum += (x-b->maxx)*(x-b->maxx);
+	    dot = (x-db->base.x)*db->unit.x + (y-db->base.y)*db->unit.y;
+	    if ( dot<db2.min ) db2.min = dot;
+	    if ( dot>db2.max ) db2.max = dot;
+	}
     }
-    if ( t2!=-1 ) {
-	x = ((spline->splines[0].a*t2+spline->splines[0].b)*t2+spline->splines[0].c)*t2 + spline->splines[0].d;
-	if ( x<b->minx )
-	    sum += (x-b->minx)*(x-b->minx);
-	else if ( x>b->maxx )
-	    sum += (x-b->maxx)*(x-b->maxx);
+    SplineFindExtrema(&spline->splines[1],&ts[0],&ts[1]);
+    for ( i=0; i<2; ++i ) {
+	if ( ts[i]!=-1 ) {
+	    x = ((spline->splines[0].a*ts[i]+spline->splines[0].b)*ts[i]+spline->splines[0].c)*ts[i] + spline->splines[0].d;
+	    y = ((spline->splines[1].a*ts[i]+spline->splines[1].b)*ts[i]+spline->splines[1].c)*ts[i] + spline->splines[1].d;
+	    if ( y<b->miny )
+		sum += (y-b->miny)*(y-b->miny);
+	    else if ( y>b->maxy )
+		sum += (y-b->maxy)*(y-b->maxy);
+	    dot = (x-db->base.x)*db->unit.x + (y-db->base.y)*db->unit.y;
+	    if ( dot<db2.min ) db2.min = dot;
+	    if ( dot>db2.max ) db2.max = dot;
+	}
     }
-    SplineFindExtrema(&spline->splines[1],&t1,&t2);
-    if ( t1!=-1 ) {
-	y = ((spline->splines[1].a*t1+spline->splines[1].b)*t1+spline->splines[1].c)*t1 + spline->splines[1].d;
-	if ( y<b->miny )
-	    sum += (y-b->miny)*(y-b->miny);
-	else if ( y>b->maxy )
-	    sum += (y-b->maxy)*(y-b->maxy);
-    }
-    if ( t2!=-1 ) {
-	y = ((spline->splines[1].a*t2+spline->splines[1].b)*t2+spline->splines[1].c)*t2 + spline->splines[1].d;
-	if ( y<b->miny )
-	    sum += (y-b->miny)*(y-b->miny);
-	else if ( y>b->maxy )
-	    sum += (y-b->maxy)*(y-b->maxy);
-    }
+
+    /* Big penalty for going beyond the range of the desired spline */
+    if ( db->min==0 && db2.min<0 )
+	sum += 10000 + db2.min*db2.min;
+    else if ( db2.min<db->min )
+	sum += 100 + (db2.min-db->min)*(db2.min-db->min);
+    if ( db->max==db->len && db2.max>db->len )
+	sum += 10000 + (db2.max-db->max)*(db2.max-db->max);
+    else if ( db2.max>db->max )
+	sum += 100 + (db2.max-db->max)*(db2.max-db->max);
 
 return( sum );
 }
 
-static void ApproxBounds(DBounds *b,TPoint *mid, int cnt) {
+static void ApproxBounds(DBounds *b,TPoint *mid, int cnt, struct dotbounds *db) {
     int i;
+    double dot;
 
     b->minx = b->maxx = mid[0].x;
     b->miny = b->maxy = mid[0].y;
+    db->min = 0; db->max = db->len;
     for ( i=1; i<cnt; ++i ) {
 	if ( mid[i].x>b->maxx ) b->maxx = mid[i].x;
 	if ( mid[i].x<b->minx ) b->minx = mid[i].x;
 	if ( mid[i].y>b->maxy ) b->maxy = mid[i].y;
 	if ( mid[i].y<b->miny ) b->miny = mid[i].y;
+	dot = (mid[i].x-db->base.x)*db->unit.x + (mid[i].y-db->base.y)*db->unit.y;
+	if ( dot<db->min ) db->min = dot;
+	if ( dot>db->max ) db->max = dot;
     }
 }
 
@@ -863,6 +887,7 @@ Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
     int i,j,besti[TRY_CNT],bestj[TRY_CNT],k,l;
     double fdiff, tdiff, fmax, tmax, fdotft, tdotft;
     DBounds b;
+    struct dotbounds db;
     double offn_, offp_, finaldiff;
 
     /* If all the selected points are at the same spot, and one of the */
@@ -976,7 +1001,14 @@ return( SplineMake2(from,to));
     /* At fmax, tmax the control points will stretch beyond the other endpoint*/
     /*  when projected along the line between the two endpoints */
 
-    ApproxBounds(&b,mid,cnt);
+    db.base = from->me;
+    db.unit.x = (to->me.x-from->me.x); db.unit.y = (to->me.y-from->me.y);
+    db.len = sqrt(db.unit.x*db.unit.x + db.unit.y*db.unit.y);
+    if ( db.len!=0 ) {
+	db.unit.x /= db.len;
+	db.unit.y /= db.len;
+    }
+    ApproxBounds(&b,mid,cnt,&db);
 
     for ( k=0; k<TRY_CNT; ++k ) {
 	bestdiff[k] = 1e20;
@@ -995,7 +1027,7 @@ return( SplineMake2(from,to));
 	for ( j=1; j<DECIMATION; ++j ) {
 	    to->prevcp.x += tdiff*tounit.x; to->prevcp.y += tdiff*tounit.y;
 	    SplineRefigure(&temp);
-	    curdiff = SigmaDeltas(&temp,mid,cnt,&b);
+	    curdiff = SigmaDeltas(&temp,mid,cnt,&b,&db);
 	    for ( k=0; k<TRY_CNT; ++k ) {
 		if ( curdiff<bestdiff[k] ) {
 		    for ( l=TRY_CNT-1; l>k; --l ) {
@@ -1034,7 +1066,7 @@ return( SplineMake2(from,to));
 	incrn = tdiff/2.0; incrp = fdiff/2.0;
 	offn = flen; offp = tlen;
 	nocnt = 0;
-	curdiff = SigmaDeltas(spline,mid,cnt,&b);
+	curdiff = SigmaDeltas(spline,mid,cnt,&b,&db);
 	totcnt = 0;
 	forever {
 	    double fadiff, fsdiff;
@@ -1043,18 +1075,18 @@ return( SplineMake2(from,to));
 	    from->nextcp.x = from->me.x + (offn+incrn)*fromunit.x; from->nextcp.y = from->me.y + (offn+incrn)*fromunit.y;
 	    to->prevcp.x = to->me.x + offp*tounit.x; to->prevcp.y = to->me.y + offp*tounit.y;
 	    SplineRefigure(spline);
-	    fadiff = SigmaDeltas(spline,mid,cnt,&b);
+	    fadiff = SigmaDeltas(spline,mid,cnt,&b,&db);
 	    from->nextcp.x = from->me.x + (offn-incrn)*fromunit.x; from->nextcp.y = from->me.y + (offn-incrn)*fromunit.y;
 	    SplineRefigure(spline);
-	    fsdiff = SigmaDeltas(spline,mid,cnt,&b);
+	    fsdiff = SigmaDeltas(spline,mid,cnt,&b,&db);
 	    from->nextcp.x = from->me.x + offn*fromunit.x; from->nextcp.y = from->me.y + offn*fromunit.y;
 
 	    to->prevcp.x = to->me.x + (offp+incrp)*tounit.x; to->prevcp.y = to->me.y + (offp+incrp)*tounit.y;
 	    SplineRefigure(spline);
-	    tadiff = SigmaDeltas(spline,mid,cnt,&b);
+	    tadiff = SigmaDeltas(spline,mid,cnt,&b,&db);
 	    to->prevcp.x = to->me.x + (offp-incrp)*tounit.x; to->prevcp.y = to->me.y + (offp-incrp)*tounit.y;
 	    SplineRefigure(spline);
-	    tsdiff = SigmaDeltas(spline,mid,cnt,&b);
+	    tsdiff = SigmaDeltas(spline,mid,cnt,&b,&db);
 	    to->prevcp.x = to->me.x + offp*tounit.x; to->prevcp.y = to->me.y + offp*tounit.y;
 
 	    if ( offn>=incrn && fsdiff<curdiff &&
@@ -2556,6 +2588,8 @@ return;
 		if ( sp->me.x < best->me.x ||
 			(sp->me.x==best->me.x && (fabs(sp->me.y)<fabs(best->me.y))) )
 		    best = sp;
+		if ( sp->next==NULL )
+	    break;
 		sp = sp->next->to;
 		if ( sp==ss->first )
 	    break;
