@@ -2453,13 +2453,17 @@ static void CvtPsSplineSet2(GrowBuf *gb, SplinePointList *spl,
 	    if ( spline->to->flexx || spline->to->flexy ) {
 		flexto2(gb,hdb,spline,round);	/* does two adjacent splines */
 		spline = spline->to->next->to->next;
-	    } else if ( spline->knownlinear )
+	    } else if ( spline->knownlinear && spline->to == spl->first )
+		/* In Type2 we don't even need a closepath to finish this off */
+		/*  (which is good, because there isn't a close path) */
+	break;
+	    else if ( spline->knownlinear )
 		spline = lineto2(gb,hdb,spline,first,round);
 	    else
 		spline = curveto2(gb,hdb,spline,first,round);
 	}
 	hdb->skiphm = false;
-	/* No closepath oper in type2 fonts, can't skip the last lineto */
+	/* No closepath oper in type2 fonts, it's implied */
 	SplineSetReverse(spl);
 	/* Of course, I have to Reverse again to get back to my convention after*/
 	/*  saving */
