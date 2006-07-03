@@ -450,7 +450,7 @@ static void svg_scdump(FILE *file, SplineChar *sc,int defwid, int encuni) {
 	    if ( univals[i]>='A' && univals[i]<'z' )
 		putc(univals[i],file);
 	    else
-		fprintf(file,"&#x%x;",univals[i]);
+		fprintf(file,"&#x%x;", (unsigned int) univals[i]);
 	fputs("\" ",file);
     } else if ( encuni!=-1 && encuni<0x110000 ) {
 	if ( encuni!=0x9 &&
@@ -2147,9 +2147,9 @@ static void SVGLigatureFixupCheck(SplineChar *sc,xmlNodePtr glyph) {
 		if ( chars[len]!=NULL )
 		    strcpy(pt,chars[len]->name);
 		else if ( u[len]<0x10000 )
-		    sprintf(pt,"uni%04X", u[len]);
+		    sprintf(pt,"uni%04X",  (unsigned int) u[len]);
 		else
-		    sprintf(pt,"u%04X", u[len]);
+		    sprintf(pt,"u%04X",  (unsigned int) u[len]);
 		pt += strlen(pt);
 		if ( u[len+1]!='\0' )
 		    *pt++ = ' ';

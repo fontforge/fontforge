@@ -450,10 +450,10 @@ static unichar_t *glistitem(struct fpst_rule *r) {
     *pt++ = 0x21d2;
     for ( i=0; i<r->lookup_cnt; ++i ) {
 	sprintf( buf," %d '%c%c%c%c',", r->lookups[i].seq,
-		r->lookups[i].lookup_tag>>24,
-		(r->lookups[i].lookup_tag>>16)&0xff,
-		(r->lookups[i].lookup_tag>>8)&0xff,
-		r->lookups[i].lookup_tag&0xff );
+		(int) (r->lookups[i].lookup_tag>>24),
+		(int) ((r->lookups[i].lookup_tag>>16)&0xff),
+		(int) ((r->lookups[i].lookup_tag>>8)&0xff),
+		(int) (r->lookups[i].lookup_tag&0xff) );
 	uc_strcpy(pt, buf);
 	pt += u_strlen(pt);
     }
@@ -559,10 +559,10 @@ static unichar_t *clslistitem(struct fpst_rule *r) {
     *pt++ = 0x21d2;
     for ( i=0; i<r->lookup_cnt; ++i ) {
 	sprintf( buf," %d '%c%c%c%c',", r->lookups[i].seq,
-		r->lookups[i].lookup_tag>>24,
-		(r->lookups[i].lookup_tag>>16)&0xff,
-		(r->lookups[i].lookup_tag>>8)&0xff,
-		r->lookups[i].lookup_tag&0xff );
+		(int) (r->lookups[i].lookup_tag>>24),
+		(int) ((r->lookups[i].lookup_tag>>16)&0xff),
+		(int) ((r->lookups[i].lookup_tag>>8)&0xff),
+		(int) (r->lookups[i].lookup_tag&0xff) );
 	uc_strcpy(pt, buf);
 	pt += u_strlen(pt);
     }
@@ -699,10 +699,10 @@ return(NULL);
     for ( i=0; i<r->lookup_cnt; ++i ) {
 	ti[i] = gcalloc(1,sizeof(GTextInfo));
 	sprintf( buf,"%d '%c%c%c%c'", r->lookups[i].seq,
-		r->lookups[i].lookup_tag>>24,
-		(r->lookups[i].lookup_tag>>16)&0xff,
-		(r->lookups[i].lookup_tag>>8)&0xff,
-		r->lookups[i].lookup_tag&0xff );
+		(int) (r->lookups[i].lookup_tag>>24),
+		(int) ((r->lookups[i].lookup_tag>>16)&0xff),
+		(int) ((r->lookups[i].lookup_tag>>8)&0xff),
+		(int) (r->lookups[i].lookup_tag&0xff) );
 	ti[i]->text = uc_copy(buf);
 	ti[i]->fg = ti[i]->bg = COLOR_DEFAULT;
     }
@@ -860,7 +860,7 @@ static int CCD_ReasonableClassNum(const unichar_t *match,GGadget *mlist,
 	const unichar_t *back, GGadget *blist,
 	const unichar_t *fore, GGadget *flist,
 	struct fpst_rule *r ) {
-    int mlen, blen, flen;
+    int32 mlen, blen, flen;
     GTextInfo **ti;
     const unichar_t *pt; unichar_t *end;
     int any;
@@ -1095,7 +1095,7 @@ static void _CCD_DoEditNew(struct contextchaindlg *ccd,int off,int isedit) {
 	    GGadget *list = GWidgetGetControl(ccd->gw,CID_GList+off);
 	    struct fpst_rule dummy;
 	    unichar_t *temp;
-	    int len;
+	    int32 len;
 	    GTextInfo **old = GGadgetGetList(list,&len);
 	    i = GGadgetGetFirstListSelectedItem(list);
 	    if ( i==-1 )
@@ -1134,7 +1134,7 @@ return;
 	int to_off = off>=300 ? 300 : 100;
 	if ( isedit ) {
 	    GGadget *list = GWidgetGetControl(ccd->gw,CID_GList+off);
-	    int len;
+	    int32 len;
 	    GTextInfo **old = GGadgetGetList(list,&len);
 	    i = GGadgetGetFirstListSelectedItem(list);
 	    if ( i==-1 )
@@ -1158,7 +1158,7 @@ return;
 	if ( isedit ) {
 	    struct fpst_rule dummy;
 	    GGadget *list = GWidgetGetControl(ccd->gw,CID_GList+off);
-	    int len, i;
+	    int32 len; int i;
 	    GTextInfo **old = GGadgetGetList(list,&len), **ti;
 	    i = GGadgetGetFirstListSelectedItem(list);
 	    if ( i==-1 )
@@ -1320,7 +1320,7 @@ static int CCD_Up(GGadget *g, GEvent *e) {
 	struct contextchaindlg *ccd = GDrawGetUserData(GGadgetGetWindow(g));
 	int off = GGadgetGetCid(g)-CID_Up;
 	GGadget *list = GWidgetGetControl(ccd->gw,CID_GList+off);
-	int len, i;
+	int32 len; int i;
 
 	(void) GGadgetGetList(list,&len);
 	GListMoveSelected(list,-1);
@@ -1336,7 +1336,7 @@ static int CCD_Down(GGadget *g, GEvent *e) {
 	struct contextchaindlg *ccd = GDrawGetUserData(GGadgetGetWindow(g));
 	int off = GGadgetGetCid(g)-CID_Down;
 	GGadget *list = GWidgetGetControl(ccd->gw,CID_GList+off);
-	int len, i;
+	int32 len; int i;
 
 	(void) GGadgetGetList(list,&len);
 	GListMoveSelected(list,1);
@@ -1369,7 +1369,7 @@ static int CCD_GlyphSelected(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
 	struct contextchaindlg *ccd = GDrawGetUserData(GGadgetGetWindow(g));
 	int off = GGadgetGetCid(g)-CID_GList;
-	int len, i;
+	int32 len; int i;
 
 	(void) GGadgetGetList(g,&len);
 	i = GGadgetGetFirstListSelectedItem(g);
@@ -1452,7 +1452,7 @@ static int CCD_LUp(GGadget *g, GEvent *e) {
 	struct contextchaindlg *ccd = GDrawGetUserData(GGadgetGetWindow(g));
 	int off = GGadgetGetCid(g)-CID_LUp;
 	GGadget *list = GWidgetGetControl(ccd->gw,CID_LookupList+off);
-	int len, i;
+	int32 len; int i;
 
 	(void) GGadgetGetList(list,&len);
 	GListMoveSelected(list,-1);
@@ -1468,7 +1468,7 @@ static int CCD_LDown(GGadget *g, GEvent *e) {
 	struct contextchaindlg *ccd = GDrawGetUserData(GGadgetGetWindow(g));
 	int off = GGadgetGetCid(g)-CID_LDown;
 	GGadget *list = GWidgetGetControl(ccd->gw,CID_LookupList+off);
-	int len, i;
+	int32 len; int i;
 
 	(void) GGadgetGetList(list,&len);
 	GListMoveSelected(list,1);
@@ -1516,7 +1516,7 @@ static void _CCD_DoLEditNew(struct contextchaindlg *ccd,int off,int isedit) {
 
     tagbuf[0] = 0; seq = 0;
     if ( isedit ) {
-	int len;
+	int32 len;
 	GTextInfo **ti = GGadgetGetList(list,&len);
 	selpos = GGadgetGetFirstListSelectedItem(list);
 	seq = u_strtol(ti[selpos]->text,&end,10);
@@ -1655,7 +1655,7 @@ static int CCD_LookupSelected(GGadget *g, GEvent *e) {
     struct contextchaindlg *ccd = GDrawGetUserData(GGadgetGetWindow(g));
     int off = GGadgetGetCid(g)-CID_LookupList;
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
-	int len, i;
+	int32 len; int i;
 
 	(void) GGadgetGetList(g,&len);
 	i = GGadgetGetFirstListSelectedItem(g);
@@ -1678,13 +1678,15 @@ void CCD_Close(struct contextchaindlg *ccd) {
 
 static char **CCD_ParseCoverageList(struct contextchaindlg *ccd,int cid,int *cnt) {
     int i;
-    GTextInfo **ti = GGadgetGetList(GWidgetGetControl(ccd->gw,cid),cnt);
+    int32 _cnt;
+    GTextInfo **ti = GGadgetGetList(GWidgetGetControl(ccd->gw,cid),&_cnt);
     char **ret;
 
-    if ( *cnt==0 )
+    *cnt = _cnt;
+    if ( _cnt==0 )
 return( NULL );
     ret = galloc(*cnt*sizeof(char *));
-    for ( i=0; i<*cnt; ++i )
+    for ( i=0; i<_cnt; ++i )
 	ret[i] = ccd_cu_copy(ti[i]->text);
 return( ret );
 }
@@ -1945,7 +1947,7 @@ static void CCD_Drop(struct contextchaindlg *ccd,GEvent *event) {
     unichar_t *unames, *pt;
     const unichar_t *ret;
     GGadget *g;
-    int len;
+    int32 len;
 
     if ( ccd->aw != aw_glyphs && ccd->aw != aw_cselect &&
 	    (ccd->aw != aw_coverage || ccd->fpst->format!=pst_reversecoverage)) {

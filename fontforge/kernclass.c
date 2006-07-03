@@ -2475,7 +2475,7 @@ return( true );
 }
 
 static int KCL_Delete(GGadget *g, GEvent *e) {
-    int len, i,j;
+    int32 len; int i,j;
     GTextInfo **old, **new;
     GGadget *list;
     KernClassListDlg *kcld;

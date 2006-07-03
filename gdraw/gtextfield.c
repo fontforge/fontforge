@@ -1971,7 +1971,7 @@ return( NULL );
 return(gl->ti[pos]);
 }
 
-static void GListFSet(GGadget *g,GTextInfo **ti,int docopy) {
+static void GListFSet(GGadget *g,GTextInfo **ti,int32 docopy) {
     GListField *gl = (GListField *) g;
 
     GTextInfoArrayFree(gl->ti);

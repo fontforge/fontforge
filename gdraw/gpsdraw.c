@@ -868,7 +868,7 @@ static void PSTrailer(GPSWindow ps) {
     fprintf( ps->output_file, "%%%%Trailer\n" );
     if ( !gdisp->eps )
 	fprintf( ps->output_file, "%%%%Pages: %d\n",
-		(ps->page_cnt+thumb_per_page-1)/thumb_per_page);
+		(int) (ps->page_cnt+thumb_per_page-1)/thumb_per_page);
     _GPSDraw_ListNeededFonts(ps);
     fprintf( ps->output_file, "%%%%EndTrailer\n" );
     fprintf( ps->output_file, "%%%%EOF\n" );
@@ -953,8 +953,8 @@ static void PSInitJob(GPSWindow ps, unichar_t *title) {
 	fprintf( ps->init_file, "  } if\n" );
 	fprintf( ps->init_file, "  save\n" );
 	fprintf( ps->init_file, "  g_thumbnum %d mod %d mul g_thumbnum %d idiv %d mul translate\n",
-		gdisp->linear_thumb_cnt, ps->pos.width,
-		gdisp->linear_thumb_cnt, -ps->pos.height );
+		gdisp->linear_thumb_cnt, (int) ps->pos.width,
+		gdisp->linear_thumb_cnt, (int) -ps->pos.height );
 	fprintf( ps->init_file, "  %g %g  %g %g  %g %g  %g %g g_quad clip newpath\n",
 		_GSPDraw_XPos(ps,0), _GSPDraw_YPos(ps,0),
 		_GSPDraw_XPos(ps,0), _GSPDraw_YPos(ps,ps->pos.height),

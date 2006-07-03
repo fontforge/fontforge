@@ -489,7 +489,7 @@ static unichar_t *GenText(int32 *sizes,real scale) {
 	    *pt = '\0';
 	}
 	if ( (sizes[i]>>16)!=1 ) {
-	    sprintf(pt,"@%d", sizes[i]>>16 );
+	    sprintf(pt,"@%d", (int) (sizes[i]>>16) );
 	    pt += strlen(pt);
 	}
     }

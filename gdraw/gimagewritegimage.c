@@ -39,7 +39,7 @@ static void WriteBase(FILE *file, struct _GImage *base, char *stem, int instance
 	    for ( j=0; j<base->width; ) {
 		fprintf( file, j==0?"    ":"\t");
 		for ( k=0; k<8 && j<base->width; ++k, ++j, ++ipt )
-		    fprintf( file, "0x%x%s", *ipt, j==base->width-1 && i==base->height-1?"":", ");
+		    fprintf( file, "0x%x%s", (unsigned int) *ipt, j==base->width-1 && i==base->height-1?"":", ");
 		fprintf( file, "\n");
 	    }
 	}
@@ -60,11 +60,11 @@ static void WriteBase(FILE *file, struct _GImage *base, char *stem, int instance
     if ( base->clut!=NULL ) {
 	fprintf(file, "\nstatic GClut %s%d_clut = { %d, %d, %d,\n",
 		stem, instance,
-		base->clut->clut_len, base->clut->is_grey, base->clut->trans_index );
+		base->clut->clut_len, base->clut->is_grey, (int) base->clut->trans_index );
 	for ( i=0; i<base->clut->clut_len; ) {
 	    fprintf( file, "    " );
 	    for ( k=0; k<8 && i<base->clut->clut_len; ++k, ++i )
-		fprintf( file, "0x%x%s", base->clut->clut[i], i==base->clut->clut_len-1?" };":", ");
+		fprintf( file, "0x%x%s", (int) base->clut->clut[i], i==base->clut->clut_len-1?" };":", ");
 	    fprintf( file, "\n");
 	}
     }
@@ -72,10 +72,10 @@ static void WriteBase(FILE *file, struct _GImage *base, char *stem, int instance
     fprintf(file,base->image_type==it_true?"    it_true,\n":
 		 base->image_type==it_index?"    it_index,\n":
 		 "    it_mono,\n" );
-    fprintf( file,"    %d,%d,%d,%d,\n",base->delay, base->width, base->height, base->bytes_per_line );
+    fprintf( file,"    %d,%d,%d,%d,\n",(int) base->delay, (int) base->width, (int) base->height, (int) base->bytes_per_line );
     fprintf( file,"    (uint8 *) %s%d_data,\n", stem,instance );
     fprintf( file,base->clut==NULL?"    NULL,\n":"    &%s%d_clut,\n", stem, instance );
-    fprintf( file,"    0x%x\n};\n\n", base->trans );
+    fprintf( file,"    0x%x\n};\n\n", (int) base->trans );
 }
 
 int GImageWriteGImage(GImage *gi, char *filename) {

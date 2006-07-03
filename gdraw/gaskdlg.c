@@ -837,7 +837,7 @@ int GWidgetChoicesBRM(int title, const unichar_t **choices,char *sel,
     va_list ap;
     GGadget *list;
     GTextInfo **lsel;
-    int i, len;
+    int i; int32 len;
 
     if ( screen_display==NULL )
 return( -2 );
@@ -1377,7 +1377,7 @@ int GWidgetChoicesBM8(char *title, const char **choices,char *sel,
     va_list ap;
     GGadget *list;
     GTextInfo **lsel;
-    int i, len;
+    int i; int32 len;
     char *buttons[3];
 
     if ( screen_display==NULL )

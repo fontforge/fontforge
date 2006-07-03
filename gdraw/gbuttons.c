@@ -359,7 +359,7 @@ return( NULL );
 return(gl->ti[pos]);
 }
 
-static void GListButSet(GGadget *g,GTextInfo **ti,int docopy) {
+static void GListButSet(GGadget *g,GTextInfo **ti,int32 docopy) {
     GListButton *gl = (GListButton *) g;
 
     GTextInfoArrayFree(gl->ti);

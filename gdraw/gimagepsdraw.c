@@ -154,14 +154,14 @@ static void PSDrawMonoImg(GPSWindow ps,struct _GImage *base,GRect *src, int usef
 	/*  given a 6 element decode matrix and my printer gives up in */
 	/*  the middle of the blt */
 	fprintf( ps->output_file, "[/Indexed /DeviceRGB 1 < %06X %06X >] setcolorspace\n",
-		col0, col1 );
+		(int) col0, (int) col1 );
     }
     fprintf(ps->output_file, "<<\n" );
     fprintf(ps->output_file, "  /ImageType 1\n" );
-    fprintf(ps->output_file, "  /Width %d\n", src->width );
-    fprintf(ps->output_file, "  /Height %d\n", src->height );
+    fprintf(ps->output_file, "  /Width %d\n", (int) src->width );
+    fprintf(ps->output_file, "  /Height %d\n", (int) src->height );
     fprintf(ps->output_file, "  /ImageMatrix [%d 0 0 %d 0 %d]\n",
-	    src->width, -src->height, src->height);
+	    (int) src->width, (int) -src->height, (int) src->height);
     fprintf(ps->output_file, "  /MultipleDataSources false\n" );
     fprintf(ps->output_file, "  /BitsPerComponent 1\n" );
     if ( base->trans != COLOR_UNKNOWN ) {
@@ -201,8 +201,10 @@ static void PSSetIndexColors(GPSWindow ps,GClut *clut) {
 
     fprintf( ps->output_file, "[/Indexed /DeviceRGB %d <\n", clut->clut_len-1 );
     for ( i=0; i<clut->clut_len; ++i )
-	fprintf(ps->output_file, "%02X%02X%02X%s", COLOR_RED(clut->clut[i]),
-		COLOR_GREEN(clut->clut[i]), COLOR_BLUE(clut->clut[i]),
+	fprintf(ps->output_file, "%02X%02X%02X%s",
+		(unsigned int) COLOR_RED(clut->clut[i]),
+		(unsigned int) COLOR_GREEN(clut->clut[i]),
+		(unsigned int) COLOR_BLUE(clut->clut[i]),
 		i%11==10?"\n":" ");
     fprintf(ps->output_file,">\n] setcolorspace\n");
 }
@@ -252,10 +254,10 @@ static void PSBuildImageIndexString(GPSWindow ps,struct _GImage *base,GRect *src
 static void PSBuildImageIndexDict(GPSWindow ps,struct _GImage *base,GRect *src, int usefile) {
     fprintf(ps->output_file, "<<\n" );
     fprintf(ps->output_file, "  /ImageType 1\n" );
-    fprintf(ps->output_file, "  /Width %d\n", src->width );
-    fprintf(ps->output_file, "  /Height %d\n", src->height );
+    fprintf(ps->output_file, "  /Width %d\n", (int) src->width );
+    fprintf(ps->output_file, "  /Height %d\n", (int) src->height );
     fprintf(ps->output_file, "  /ImageMatrix [%d 0 0 %d 0 %d]\n",
-	    src->width, -src->height, src->height);
+	    (int) src->width, (int) -src->height, (int) src->height);
     fprintf(ps->output_file, "  /MultipleDataSources false\n" );
     fprintf(ps->output_file, "  /BitsPerComponent 8\n" );
     fprintf(ps->output_file, "  /Decode [0 255]\n" );
@@ -437,7 +439,7 @@ static void PSDrawImage(GPSWindow ps,GImage *image, GRect *dest, GRect *src) {
 	fprintf( ps->output_file, "} >> matrix makepattern /TransPattern exch def\n" );
 	fprintf( ps->output_file, "    TransPattern setpattern\n");
 	fprintf(ps->output_file, "%d %d true [%d 0 0 %d 0 %d] currentfile /ASCII85Decode filter imagemask\n",
-		base->width, base->height,  base->width, -base->height, base->height);
+		(int) base->width, (int) base->height,  (int) base->width, (int) -base->height, (int) base->height);
 	if ( base->image_type==it_index )
 	    PSBuildImageClutMaskString(ps,base,src);
 	else
@@ -486,7 +488,7 @@ return( false );
     } else {
 	fprintf( ps->output_file, "    %s_Secondary setpattern\n", pattern_name);
 	fprintf(ps->output_file, "%d %d true [%d 0 0 %d 0 %d] <~",
-		base->width, base->height,  base->width, -base->height, base->height);
+		(int) base->width, (int) base->height,  (int) base->width, (int) -base->height, (int) base->height);
 	if ( base->image_type==it_index )
 	    PSBuildImageClutMaskString(ps,base,&src);
 	else

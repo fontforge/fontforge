@@ -46,8 +46,8 @@ return(false );
 
     if ((file=fopen(filename,"w"))==NULL )
 return(false);
-    fprintf(file,"#define %s_width %d\n", stem, base->width );
-    fprintf(file,"#define %s_height %d\n", stem, base->height );
+    fprintf(file,"#define %s_width %d\n", stem, (int) base->width );
+    fprintf(file,"#define %s_height %d\n", stem, (int) base->height );
     fprintf(file,"static unsigned char %s_bits[] = {\n", stem );
     for ( i=0; i<base->height; ++i ) {
 	fprintf(file,"  ");

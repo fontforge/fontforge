@@ -8603,16 +8603,16 @@ return( feat_sc );
 	    /* OpenType feature tag */
 	    feat_sc->name = galloc(strlen(base_sc->name)+6);
 	    sprintf( feat_sc->name,"%s.%c%c%c%c", base_sc->name,
-		    fv->cur_feat_tag>>24,
-		    (fv->cur_feat_tag>>16)&0xff,
-		    (fv->cur_feat_tag>>8)&0xff,
-		    (fv->cur_feat_tag)&0xff );
+		    (int) (fv->cur_feat_tag>>24),
+		    (int) ((fv->cur_feat_tag>>16)&0xff),
+		    (int) ((fv->cur_feat_tag>>8)&0xff),
+		    (int) ((fv->cur_feat_tag)&0xff) );
 	} else {
 	    /* mac feature/setting */
 	    feat_sc->name = galloc(strlen(base_sc->name)+14);
 	    sprintf( feat_sc->name,"%s.m%d_%d", base_sc->name,
-		    fv->cur_feat_tag>>16,
-		    (fv->cur_feat_tag)&0xffff );
+		    (int) (fv->cur_feat_tag>>16),
+		    (int) ((fv->cur_feat_tag)&0xffff) );
 	}
 	SFAddGlyphAndEncode(sf,feat_sc,fv->map,fv->map->enccount);
 	base_sc->possub = AddSubs(base_sc->possub,fv->cur_feat_tag,feat_sc->name,
@@ -9761,7 +9761,7 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 static void noop(void *_fv) {
 }
 
-static void *ddgencharlist(void *_fv,int *len) {
+static void *ddgencharlist(void *_fv,int32 *len) {
     int i,j,cnt, gid;
     FontView *fv = (FontView *) _fv;
     SplineFont *sf = fv->sf;

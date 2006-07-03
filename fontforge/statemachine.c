@@ -1317,7 +1317,7 @@ return( true );
 	    char buf[20];
 	    /* If they select something from the pulldown, don't show the human */
 	    /*  readable form, instead show the numeric feature/setting */
-	    sprintf( buf,"<%d,%d>", tag>>16, tag&0xffff );
+	    sprintf( buf,"<%d,%d>", (int) (tag>>16), (int) (tag&0xffff) );
 	    uc_strcpy(ubuf,buf);
 	    GGadgetSetTitle(e->u.control.g,ubuf);
 	}
@@ -2320,7 +2320,7 @@ static void _SMD_EnableButtons(SMD *smd) {
 }
 
 static void SMD_GListDelSelected(GGadget *list) {
-    int len, i,j;
+    int32 len; int i,j;
     GTextInfo **old, **new;
     unichar_t *upt;
 
@@ -2884,7 +2884,7 @@ return( false );
 		char buf[20];
 		/* If they select something from the pulldown, don't show the human */
 		/*  readable form, instead show the numeric feature/setting */
-		sprintf( buf,"<%d,%d>", tag>>16, tag&0xffff );
+		sprintf( buf,"<%d,%d>", (int) (tag>>16), (int) (tag&0xffff) );
 		uc_strcpy(ubuf,buf);
 		GGadgetSetTitle(event->u.control.g,ubuf);
 	    }

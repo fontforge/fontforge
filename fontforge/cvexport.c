@@ -183,7 +183,7 @@ int _ExportPDF(FILE *pdf,SplineChar *sc) {
     fprintf( pdf, "endobj\n" );
     objlocs[5] = ftell(pdf);
     fprintf( pdf, "5 0 obj\n" );
-    fprintf( pdf, " %d\n", streamlength );
+    fprintf( pdf, " %d\n", (int) streamlength );
     fprintf( pdf, "endobj\n" );
 
     /* Optional Info dict */
@@ -216,7 +216,7 @@ int _ExportPDF(FILE *pdf,SplineChar *sc) {
     fprintf( pdf, " 0 7\n" );
     fprintf( pdf, "0000000000 65535 f \n" );
     for ( i=1; i<7; ++i )
-	fprintf( pdf, "%010d %05d n \n", objlocs[i], 0 );
+	fprintf( pdf, "%010d %05d n \n", (int) objlocs[i], 0 );
     fprintf( pdf, "trailer\n" );
     fprintf( pdf, " <<\n" );
     fprintf( pdf, "    /Size 7\n" );
@@ -224,7 +224,7 @@ int _ExportPDF(FILE *pdf,SplineChar *sc) {
     fprintf( pdf, "    /Info 6 0 R\n" );
     fprintf( pdf, " >>\n" );
     fprintf( pdf, "startxref\n" );
-    fprintf( pdf, "%d\n",xrefloc );
+    fprintf( pdf, "%d\n", (int) xrefloc );
     fprintf( pdf, "%%%%EOF\n" );
 
     ret = !ferror(pdf);
@@ -713,7 +713,7 @@ static void MakeExportName(char *buffer, int blen,char *format_spec,
 		for ( pt=unicode; *pt!='\0' && buffer<bend; )
 		    *buffer++ = *pt++;
 	    } else if ( ch=='e' ) {
-		sprintf( unicode,"%d", map->backmap[sc->orig_pos] );
+		sprintf( unicode,"%d", (int) map->backmap[sc->orig_pos] );
 		for ( pt=unicode; *pt!='\0' && buffer<bend; )
 		    *buffer++ = *pt++;
 	    } else

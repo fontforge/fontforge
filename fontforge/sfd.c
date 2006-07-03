@@ -763,9 +763,9 @@ static void SFDDumpImage(FILE *sfd,ImageList *img) {
 
     rle = image2rle(base,&rlelen);
     fprintf(sfd, "Image: %d %d %d %d %d %x %g %g %g %g %d\n",
-	    base->width, base->height, base->image_type,
-	    base->image_type==it_true?3*base->width:base->bytes_per_line,
-	    base->clut==NULL?0:base->clut->clut_len,base->trans,
+	    (int) base->width, (int) base->height, base->image_type,
+	    (int) (base->image_type==it_true?3*base->width:base->bytes_per_line),
+	    base->clut==NULL?0:base->clut->clut_len,(int) base->trans,
 	    img->xoff, img->yoff, img->xscale, img->yscale, rlelen );
     memset(&enc,'\0',sizeof(enc));
     enc.sfd = sfd;
@@ -861,8 +861,8 @@ static void SFDDumpTtfTable(FILE *sfd,struct ttf_table *tab) {
     enc.sfd = sfd;
 
     fprintf( sfd, "TtfTable: %c%c%c%c %d\n",
-	    tab->tag>>24, (tab->tag>>16)&0xff, (tab->tag>>8)&0xff, tab->tag&0xff,
-	    tab->len );
+	    (int) (tab->tag>>24), (int) ((tab->tag>>16)&0xff), (int) ((tab->tag>>8)&0xff), (int) (tab->tag&0xff),
+	    (int) tab->len );
     for ( i=0; i<tab->len; ++i )
 	SFDEnc85(&enc,tab->data[i]);
     SFDEnc85EndEnc(&enc);
@@ -933,7 +933,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
 	IError("Bad reverse encoding");
 	map->backmap[sc->orig_pos] = -1;
     }
-    fprintf(sfd, "Encoding: %d %d %d\n", map->backmap[sc->orig_pos], sc->unicodeenc,
+    fprintf(sfd, "Encoding: %d %d %d\n", (int) map->backmap[sc->orig_pos], sc->unicodeenc,
 	    newgids!=NULL?newgids[sc->orig_pos]:sc->orig_pos);
     if ( sc->altuni ) {
 	fprintf( sfd, "AltUni:" );
@@ -1060,12 +1060,12 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
 		    liga->script_lang_index );
 	    if ( liga->macfeature )
 		fprintf( sfd, "<%d,%d> ",
-			liga->tag>>16,
-			liga->tag&0xffff);
+			(int) (liga->tag>>16),
+			(int) (liga->tag&0xffff));
 	    else
 		fprintf( sfd, "'%c%c%c%c' ",
-			liga->tag>>24, (liga->tag>>16)&0xff,
-			(liga->tag>>8)&0xff, liga->tag&0xff );
+			(int) (liga->tag>>24), (int) ((liga->tag>>16)&0xff),
+			(int) ((liga->tag>>8)&0xff), (int) (liga->tag&0xff) );
 	    if ( liga->type==pst_position ) {
 		fprintf( sfd, "dx=%d dy=%d dh=%d dv=%d",
 			liga->u.pos.xoff, liga->u.pos.yoff,
@@ -1105,7 +1105,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
 	putc('\n',sfd);
     }
     if ( sc->color!=COLOR_DEFAULT )
-	fprintf( sfd, "Colour: %x\n", sc->color );
+	fprintf( sfd, "Colour: %x\n", (int) sc->color );
     fprintf(sfd,"EndChar\n" );
 }
 
@@ -1389,17 +1389,17 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal) {
 	    for ( j=0; sf->script_lang[i][j].script!=0; ++j ) {
 		for ( k=0; sf->script_lang[i][j].langs[k]!=0 ; ++k );
 		fprintf( sfd, "%c%c%c%c %d ",
-			sf->script_lang[i][j].script>>24,
-			(sf->script_lang[i][j].script>>16)&0xff,
-			(sf->script_lang[i][j].script>>8)&0xff,
-			sf->script_lang[i][j].script&0xff,
+			(int) (sf->script_lang[i][j].script>>24),
+			(int) ((sf->script_lang[i][j].script>>16)&0xff),
+			(int) ((sf->script_lang[i][j].script>>8)&0xff),
+			(int) (sf->script_lang[i][j].script&0xff),
 			k );
 		for ( k=0; sf->script_lang[i][j].langs[k]!=0 ; ++k )
 		    fprintf( sfd, "%c%c%c%c ",
-			    sf->script_lang[i][j].langs[k]>>24,
-			    (sf->script_lang[i][j].langs[k]>>16)&0xff,
-			    (sf->script_lang[i][j].langs[k]>>8)&0xff,
-			    sf->script_lang[i][j].langs[k]&0xff );
+			    (int) (sf->script_lang[i][j].langs[k]>>24),
+			    (int) ((sf->script_lang[i][j].langs[k]>>16)&0xff),
+			    (int) ((sf->script_lang[i][j].langs[k]>>8)&0xff),
+			    (int) (sf->script_lang[i][j].langs[k]&0xff) );
 	    }
 	    fprintf( sfd,"\n");
 	}
@@ -1447,8 +1447,8 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal) {
 		formatkeys[fpst->format],
 		fpst->flags,
 		fpst->script_lang_index,
-		fpst->tag>>24, (fpst->tag>>16)&0xff,
-		(fpst->tag>>8)&0xff, fpst->tag&0xff,
+		(int) (fpst->tag>>24), (int) ((fpst->tag>>16)&0xff),
+		(int) ((fpst->tag>>8)&0xff), (int) (fpst->tag&0xff),
 		fpst->nccnt, fpst->bccnt, fpst->fccnt, fpst->rule_cnt );
 	for ( i=1; i<fpst->nccnt; ++i )
 	  fprintf( sfd, "  Class: %d %s\n", (int)strlen(fpst->nclass[i]),
@@ -1515,10 +1515,10 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal) {
 		for ( j=0; j<fpst->rules[i].lookup_cnt; ++j )
 		    fprintf( sfd, "  SeqLookup: %d '%c%c%c%c'\n",
 			    fpst->rules[i].lookups[j].seq,
-			    fpst->rules[i].lookups[j].lookup_tag>>24,
-			    (fpst->rules[i].lookups[j].lookup_tag>>16)&0xff,
-			    (fpst->rules[i].lookups[j].lookup_tag>>8)&0xff,
-			    (fpst->rules[i].lookups[j].lookup_tag)&0xff);
+			    (int) (fpst->rules[i].lookups[j].lookup_tag>>24),
+			    (int) ((fpst->rules[i].lookups[j].lookup_tag>>16)&0xff),
+			    (int) ((fpst->rules[i].lookups[j].lookup_tag>>8)&0xff),
+			    (int) ((fpst->rules[i].lookups[j].lookup_tag)&0xff));
 	      break;
 	      case pst_reversecoverage:
 		fprintf( sfd, "  Replace: %d %s\n",
@@ -1549,18 +1549,18 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal) {
 		    fprintf(sfd,"~ ");
 		else
 		    fprintf(sfd,"'%c%c%c%c' ",
-			sm->state[i].u.context.mark_tag>>24,
-			(sm->state[i].u.context.mark_tag>>16)&0xff,
-			(sm->state[i].u.context.mark_tag>>8)&0xff,
-			sm->state[i].u.context.mark_tag&0xff);
+			(int) (sm->state[i].u.context.mark_tag>>24),
+			(int) ((sm->state[i].u.context.mark_tag>>16)&0xff),
+			(int) ((sm->state[i].u.context.mark_tag>>8)&0xff),
+			(int) (sm->state[i].u.context.mark_tag&0xff));
 		if ( sm->state[i].u.context.cur_tag==0 )
 		    fprintf(sfd,"~ ");
 		else
 		    fprintf(sfd,"'%c%c%c%c' ",
-			sm->state[i].u.context.cur_tag>>24,
-			(sm->state[i].u.context.cur_tag>>16)&0xff,
-			(sm->state[i].u.context.cur_tag>>8)&0xff,
-			sm->state[i].u.context.cur_tag&0xff);
+			(int) (sm->state[i].u.context.cur_tag>>24),
+			(int) ((sm->state[i].u.context.cur_tag>>16)&0xff),
+			(int) ((sm->state[i].u.context.cur_tag>>8)&0xff),
+			(int) (sm->state[i].u.context.cur_tag&0xff));
 	    } else if ( sm->type == asm_insert ) {
 		if ( sm->state[i].u.insert.mark_ins==NULL )
 		    fprintf( sfd, "0 ");
@@ -1603,24 +1603,24 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal) {
 	      case pst_null:		fprintf(sfd," nl"); break;
 	    }
 	    fprintf(sfd,"'%c%c%c%c'",
-		    sf->gentags.tagtype[i].tag>>24,
-		    (sf->gentags.tagtype[i].tag>>16)&0xff,
-		    (sf->gentags.tagtype[i].tag>>8)&0xff,
-		    sf->gentags.tagtype[i].tag&0xff );
+		    (int) (sf->gentags.tagtype[i].tag>>24),
+		    (int) ((sf->gentags.tagtype[i].tag>>16)&0xff),
+		    (int) ((sf->gentags.tagtype[i].tag>>8)&0xff),
+		    (int) (sf->gentags.tagtype[i].tag&0xff) );
 	}
 	putc('\n',sfd);
     }
     for ( ord = sf->orders; ord!=NULL ; ord = ord->next ) {
 	for ( i=0; ord->ordered_features[i]!=0; ++i );
 	fprintf( sfd, "TableOrder: %c%c%c%c %d\n",
-		ord->table_tag>>24, (ord->table_tag>>16)&0xff, (ord->table_tag>>8)&0xff, ord->table_tag&0xff,
+		(int) (ord->table_tag>>24), (int) ((ord->table_tag>>16)&0xff), (int) ((ord->table_tag>>8)&0xff), (int) (ord->table_tag&0xff),
 		i );
 	for ( i=0; ord->ordered_features[i]!=0; ++i )
 	    if ( (ord->ordered_features[i]>>24)<' ' || (ord->ordered_features[i]>>24)>=0x7f )
-		fprintf( sfd, "\t<%d,%d>\n", ord->ordered_features[i]>>16, ord->ordered_features[i]&0xffff );
+		fprintf( sfd, "\t<%d,%d>\n", (int) (ord->ordered_features[i]>>16), (int) (ord->ordered_features[i]&0xffff) );
 	    else
 		fprintf( sfd, "\t'%c%c%c%c'\n",
-			ord->ordered_features[i]>>24, (ord->ordered_features[i]>>16)&0xff, (ord->ordered_features[i]>>8)&0xff, ord->ordered_features[i]&0xff );
+			(int) (ord->ordered_features[i]>>24), (int) ((ord->ordered_features[i]>>16)&0xff), (int) ((ord->ordered_features[i]>>8)&0xff), (int) (ord->ordered_features[i]&0xff) );
     }
     for ( tab = sf->ttf_tables; tab!=NULL ; tab = tab->next )
 	SFDDumpTtfTable(sfd,tab);
@@ -1649,7 +1649,7 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal) {
 	for ( n=0,remap = map->remap; remap->infont!=-1; ++n, ++remap );
 	fprintf( sfd, "RemapN: %d\n", n );
 	for ( remap = map->remap; remap->infont!=-1; ++remap )
-	    fprintf(sfd, "Remap: %x %x %d\n", remap->firstenc, remap->lastenc, remap->infont );
+	    fprintf(sfd, "Remap: %x %x %d\n", (int) remap->firstenc, (int) remap->lastenc, (int) remap->infont );
     }
     if ( sf->display_size!=0 )
 	fprintf( sfd, "DisplaySize: %d\n", sf->display_size );
@@ -1676,9 +1676,9 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal) {
 	SFDDumpSplineSet(sfd,sf->grid.splines);
     }
     if ( sf->texdata.type!=tex_unset ) {
-	fprintf(sfd, "TeXData: %d %d", sf->texdata.type, ((sf->design_size<<19)+2)/5 );
+	fprintf(sfd, "TeXData: %d %d", sf->texdata.type, (int) ((sf->design_size<<19)+2)/5 );
 	for ( i=0; i<22; ++i )
-	    fprintf(sfd, " %d", sf->texdata.params[i]);
+	    fprintf(sfd, " %d", (int) sf->texdata.params[i]);
 	putc('\n',sfd);
     }
     if ( sf->anchor!=NULL ) {
@@ -1690,8 +1690,8 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal) {
 		fprintf( sfd, "0 ");
 	    else
 		fprintf( sfd, "%c%c%c%c ",
-			an->feature_tag>>24, (an->feature_tag>>16)&0xff,
-			(an->feature_tag>>8)&0xff, an->feature_tag&0xff );
+			(int) (an->feature_tag>>24), (int) ((an->feature_tag>>16)&0xff),
+			(int) ((an->feature_tag>>8)&0xff), (int) (an->feature_tag&0xff) );
 	    fprintf( sfd, "%d %d %d %d ", an->flags, an->script_lang_index,
 		    an->merge_with, an->type );
 	}
@@ -1741,7 +1741,7 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal) {
 	    if ( map->map[i]!=-1 && map->backmap[map->map[i]]!=i &&
 		    !SFDOmit(sf->glyphs[map->map[i]]) )
 		fprintf( sfd, "DupEnc: %d %d\n", i,
-			newgids!=NULL?newgids[map->map[i]]: map->map[i]);
+			(int) (newgids!=NULL?newgids[map->map[i]]: map->map[i]));
 	}
     }
 
@@ -4625,8 +4625,11 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    sf->texdata.type = temp;
 	    getsint(sfd,(int16 *) &sf->design_size);
 	    sf->design_size = (5*sf->design_size+(1<<18))>>19;
-	    for ( i=0; i<22; ++i )
-		getint(sfd,&sf->texdata.params[i]);
+	    for ( i=0; i<22; ++i ) {
+		int foo;
+		getint(sfd,&foo);
+		sf->texdata.params[i]=foo;
+	    }
 	} else if ( strmatch(tok,"AnchorClass:")==0 ) {
 	    char *name;
 	    AnchorClass *lastan = NULL, *an;

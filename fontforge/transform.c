@@ -565,7 +565,8 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
     GGadgetCreateData gcd[9];
     GTextInfo label[8];
     static TransData td;
-    int i, len, y;
+    int i, y;
+    int32 len;
     GGadget *orig;
     BasePoint junk;
     GTextInfo **ti;

@@ -980,10 +980,10 @@ GTextInfo **SFGenTagListFromType(struct gentagtype *gentags,enum possub_type typ
 	for ( i=0; i<gentags->tt_cur; ++i )
 	    if ( typematch(gentags->tagtype[i].type,type) ) {
 		sprintf( buf, "%c%c%c%c",
-			gentags->tagtype[i].tag>>24,
-			(gentags->tagtype[i].tag>>16)&0xff,
-			(gentags->tagtype[i].tag>>8)&0xff,
-			gentags->tagtype[i].tag&0xff );
+			(int) (gentags->tagtype[i].tag>>24),
+			(int) ((gentags->tagtype[i].tag>>16)&0xff),
+			(int) ((gentags->tagtype[i].tag>>8)&0xff),
+			(int) (gentags->tagtype[i].tag&0xff) );
 		ti[len] = gcalloc(1,sizeof(GTextInfo));
 		ti[len]->userdata = (void *) (intpt) gentags->tagtype[i].tag;
 		ti[len]->text = uc_copy(buf);
@@ -1043,7 +1043,7 @@ static void SFD_MacTag(GWindow gw, GMenuItem *mi, GEvent *e) {
     unichar_t ubuf[20]; char buf[20];
     uint32 tag = (uint32) (intpt) (mi->ti.userdata);
 
-    sprintf(buf,"<%d,%d>", tag>>16, tag&0xff);
+    sprintf(buf,"<%d,%d>", (int) (tag>>16), (int) (tag&0xff));
     uc_strcpy(ubuf,buf);
     GGadgetSetTitle(d->active_tf,ubuf);
 }

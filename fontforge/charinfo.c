@@ -1887,7 +1887,7 @@ unichar_t *ClassName(const char *name,uint32 feature_tag,
 
     newname = galloc((strlen(name)+30+(mark_class_name==NULL?0:strlen(mark_class_name)+2)) );
     if ( macfeature ) {
-	sprintf(newname,"<%d,%d> ", feature_tag>>16, feature_tag&0xffff);
+	sprintf(newname,"<%d,%d> ", (int) (feature_tag>>16), (int) (feature_tag&0xffff));
 	upt = newname+strlen(newname);
     } else {
 	if ( (newname[0] = feature_tag>>24)==0 ) newname[0] = ' ';
@@ -2306,7 +2306,7 @@ return( false );
 		ubuf[3] = tag&0xff;
 		ubuf[4] = 0;
 	    } else {
-		sprintf( buf,"<%d,%d>", tag>>16, tag&0xffff );
+		sprintf( buf,"<%d,%d>", (int) (tag>>16), (int) (tag&0xffff) );
 		uc_strcpy(ubuf,buf);
 	    }
 	    GGadgetSetTitle(event->u.control.g,ubuf);
@@ -2327,7 +2327,7 @@ return( true );
 }
 
 static int GetSLI(GGadget *g) {
-    int len, sel = GGadgetGetFirstListSelectedItem(g);
+    int32 len, sel = GGadgetGetFirstListSelectedItem(g);
     GTextInfo **ti = GGadgetGetList(g,&len);
     if ( ti[sel]->userdata == (void *) SLI_NESTED )
 return( SLI_NESTED );
@@ -2431,7 +2431,7 @@ unichar_t *AskNameTag(char *title,unichar_t *def,uint32 def_tag, uint16 flags,
 	    mactags = AddMacFeatures(tags,type,sf);
 	acd.mactags = mactags;
 	if ( macfeature ) {
-	    sprintf(buf,"<%d,%d>", def_tag>>16, def_tag&0xffff );
+	    sprintf(buf,"<%d,%d>", (int) (def_tag>>16), (int) (def_tag&0xffff) );
 	    uc_strcpy(ubuf,buf);
 	} else {
 	    ubuf[0] = def_tag>>24; ubuf[1] = (def_tag>>16)&0xff; ubuf[2] = (def_tag>>8)&0xff; ubuf[3] = def_tag&0xff; ubuf[4] = 0;
@@ -3197,7 +3197,7 @@ static unichar_t *AskPosTag(char *title,unichar_t *def,uint32 def_tag, uint16 fl
 #else
 	    snprintf(buf,sizeof(buf), "%c%c%c%c %c%c%c%c %d %.50s ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d | ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d",
 #endif
-		    tag>>24, tag>>16, tag>>8, tag,
+		    (int) (tag>>24), (int) (tag>>16), (int) (tag>>8), (int) tag,
 		    flags&pst_r2l?'r':' ',
 		    flags&pst_ignorebaseglyphs?'b':' ',
 		    flags&pst_ignoreligatures?'l':' ',
@@ -3212,7 +3212,7 @@ static unichar_t *AskPosTag(char *title,unichar_t *def,uint32 def_tag, uint16 fl
 #else
 	    snprintf(buf,sizeof(buf), "%c%c%c%c %c%c%c%c %d ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d",
 #endif
-		    tag>>24, tag>>16, tag>>8, tag,
+		    (int) (tag>>24), (int) (tag>>16), (int) (tag>>8), (int) tag,
 		    flags&pst_r2l?'r':' ',
 		    flags&pst_ignorebaseglyphs?'b':' ',
 		    flags&pst_ignoreligatures?'l':' ',
@@ -3581,7 +3581,7 @@ return( ret );
 }
 
 static void CI_DoNew(CharInfo *ci, unichar_t *def) {
-    int len, i, sel;
+    int32 len; int i, sel;
     GTextInfo **old, **new;
     GGadget *list;
     unichar_t *newname, *upt;
@@ -3684,7 +3684,7 @@ return( true );
 }
 
 static int CI_Delete(GGadget *g, GEvent *e) {
-    int len, i,j, offset;
+    int32 len; int i,j, offset;
     GTextInfo **old, **new;
     GGadget *list;
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
@@ -3711,7 +3711,7 @@ return( true );
 }
 
 static int CI_Edit(GGadget *g, GEvent *e) {
-    int len, i;
+    int32 len; int i;
     GTextInfo **old, **new, *ti;
     GGadget *list;
     CharInfo *ci;
@@ -3794,7 +3794,8 @@ static void CI_CanPaste(CharInfo *ci) {
 
 static void CI_DoCopy(CharInfo *ci) {
     GGadget *list;
-    int sel, i, len, cnt;
+    int sel, i, cnt;
+    int32 len;
     GTextInfo **tis;
     char **data;
 
@@ -3827,7 +3828,8 @@ return( true );
 
 static void CI_DoPaste(CharInfo *ci,char **data, enum possub_type type,SplineFont *copied_from) {
     GGadget *list;
-    int sel, i,j,k, len, cnt;
+    int sel, i,j,k, cnt;
+    int32 len;
     uint32 tag;
     GTextInfo **tis, **newlist;
     char **tempdata, *paste;
@@ -3842,7 +3844,7 @@ static void CI_DoPaste(CharInfo *ci,char **data, enum possub_type type,SplineFon
 	if ( data==NULL && pst_depth!=0 )
 return;
 	if ( data==NULL ) {
-	    int plen;
+	    int32 plen;
 	    sel = GTabSetGetSel(GWidgetGetControl(ci->gw,CID_Tabs))-2;
 	    paste = GDrawRequestSelection(ci->gw,sn_clipboard,"STRING",&plen);
 	    if ( paste==NULL || plen==0 )
@@ -4287,7 +4289,8 @@ return( true );
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static int CI_ProcessPosSubs(CharInfo *ci) {
-    int i, j, len;
+    int i, j;
+    int32 len;
     GTextInfo **tis;
     PST *old = ci->sc->possub, *prev, *lcaret;
     char **data;

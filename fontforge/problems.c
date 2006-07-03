@@ -531,7 +531,7 @@ return;
     if ( explain==_("This glyph contains a substitution or ligature entry which refers to an empty char") ) {
 	snprintf(buf,sizeof(buf),
 		_("'%2$c%3$c%4$c%5$c' refers to an empty character \"%1$.20s\""), p->badsubsname,
-		(p->badsubstag>>24),(p->badsubstag>>16)&0xff,(p->badsubstag>>8)&0xff,p->badsubstag&0xff);
+		(int) (p->badsubstag>>24),(int) ((p->badsubstag>>16)&0xff),(int) ((p->badsubstag>>8)&0xff),(int) (p->badsubstag&0xff));
     } else if ( explain==_("This glyph has the same unicode code point as the glyph named") ) {
 	snprintf(buf,sizeof(buf), _("%.40s"), p->glyphname );
     } else if ( explain==_("This glyph has the same name as the glyph at encoding") ) {
@@ -1930,17 +1930,17 @@ static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32 tag,
 	    snprintf(buffer,sizeof(buffer),
 		    _("Glyph %1$.50s with a %2$s with feature <%3$d,%4$d>"),
 		    sc->name, _(pstnames[pst->type]),
-		    pst->tag>>16, pst->tag&0xffff);
+		    (int) (pst->tag>>16), (int) (pst->tag&0xffff));
 	else
 	    snprintf(buffer,sizeof(buffer),
 		    _("Glyph %1$.50s with a %2$s with tag '%3$c%4$c%5$c%6$c'"),
 		    sc->name, _(pstnames[pst->type]),
-		    pst->tag>>24, (pst->tag>>16)&0xff, (pst->tag>>8)&0xff, pst->tag&0xff);
+		    (int) (pst->tag>>24), (int) ((pst->tag>>16)&0xff), (int) ((pst->tag>>8)&0xff), (int) (pst->tag&0xff));
     } else if ( which == mg_fpst || which==mg_lookups )
 	snprintf(buffer,sizeof(buffer),
 		_("%1$s with tag '%2$c%3$c%4$c%5$c'"),
 		_(fpstnames[fpst->type-pst_contextpos]),
-		fpst->tag>>24, (fpst->tag>>16)&0xff, (fpst->tag>>8)&0xff, fpst->tag&0xff);
+		(int) (fpst->tag>>24), (int) ((fpst->tag>>16)&0xff), (int) ((fpst->tag>>8)&0xff), (int) (fpst->tag&0xff));
     else if ( which == mg_asm || which==mg_smlookups )
 	snprintf(buffer,sizeof(buffer),
 		_("%1$s with feature <%2$d,%3$d>"),

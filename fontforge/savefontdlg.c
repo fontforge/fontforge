@@ -1552,7 +1552,7 @@ static int SaveSubFont(SplineFont *sf,char *newname,int32 *sizes,int res,
     int err = 0;
     enum fontformat subtype = strstr(newname,".pfa")!=NULL ? ff_pfa : ff_pfb ;
     EncMap encmap;
-    int _mapping[256], _backmap[256];
+    int32 _mapping[256], _backmap[256];
 
     memset(&encmap,0,sizeof(encmap));
     encmap.enccount = encmap.encmax = encmap.backmax = 256;
@@ -2597,7 +2597,7 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	unichar_t *pt, *dup, *tpt, *ret;
 	int format = GGadgetGetFirstListSelectedItem(d->pstype);
-	int len, bf;
+	int32 len; int bf;
 	static unichar_t nullstr[] = { 0 };
 	GTextInfo **list;
 	SplineFont *temp;

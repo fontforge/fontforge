@@ -430,7 +430,7 @@ return( true );
 
 static unichar_t *GFileChooserGetCurDir(GFileChooser *gfc,int dirindex) {
     GTextInfo **ti;
-    int len, j, cnt;
+    int32 len; int j, cnt;
     unichar_t *dir, *pt;
 
     ti = GGadgetGetList(&gfc->directories->g,&len);
@@ -454,7 +454,7 @@ return( dir );
 /* Handle events from the directory dropdown list */
 static int GFileChooserDListChanged(GGadget *pl,GEvent *e) {
     GFileChooser *gfc;
-    int i, len;
+    int i; int32 len;
     unichar_t *dir;
     GTextInfo **ti;
 
@@ -478,7 +478,7 @@ return( true );
 static int GFileChooserFListSelected(GGadget *gl,GEvent *e) {
     GFileChooser *gfc;
     int i;
-    int listlen, len, cnt, dirpos, apos;
+    int32 listlen; int len, cnt, dirpos, apos;
     unichar_t *dir, *newdir;
     GTextInfo *ti, **all;
 
