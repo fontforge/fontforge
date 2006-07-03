@@ -180,7 +180,7 @@ SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into) {
 	layers = grealloc(layers,sc->layer_cnt*sizeof(Layer));
     memcpy(layers,sc->layers,sc->layer_cnt*sizeof(Layer));
     nsc->layers = layers;
-    for ( layer = ly_fore; layer<sc->layer_cnt; ++layer ) {
+    for ( layer = ly_back; layer<sc->layer_cnt; ++layer ) {
 	layers[layer].splines = SplinePointListCopy(layers[layer].splines);
 	layers[layer].refs = RefCharsCopy(layers[layer].refs);
 	layers[layer].images = ImageListCopy(layers[layer].images);
@@ -191,6 +191,8 @@ SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into) {
     *nsc = *sc;
     nsc->layers[ly_fore].splines = SplinePointListCopy(nsc->layers[ly_fore].splines);
     nsc->layers[ly_fore].refs = RefCharsCopy(nsc->layers[ly_fore].refs);
+    nsc->layers[ly_back].splines = SplinePointListCopy(nsc->layers[ly_back].splines);
+    nsc->layers[ly_back].splines = ImageListCopy(nsc->layers[ly_back].images);
 #endif
     nsc->parent = into;
     nsc->orig_pos = -2;
@@ -202,8 +204,6 @@ SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into) {
     nsc->views = NULL;
     nsc->changed = true;
     nsc->dependents = NULL;		/* Fix up later when we know more */
-    nsc->layers[ly_back].splines = NULL;
-    nsc->layers[ly_back].images = NULL;
     nsc->layers[ly_fore].undoes = nsc->layers[ly_back].undoes = NULL;
     nsc->layers[ly_fore].redoes = nsc->layers[ly_back].redoes = NULL;
     if ( nsc->ttf_instrs_len!=0 ) {
