@@ -9011,7 +9011,6 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		index = fv->mapping[index];
 	}
 	if ( index < fv->map->enccount && index!=-1 ) {
-	    sc = (gid=fv->map->map[index])!=-1 ? fv->sf->glyphs[gid]: NULL;
 	    unichar_t buf[60]; char cbuf[8];
 	    char utf8_buf[8];
 	    int use_utf8 = false;
@@ -9020,6 +9019,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 	    extern const int amspua[];
 	    int uni;
 	    struct cidmap *cidmap = NULL;
+	    sc = (gid=fv->map->map[index])!=-1 ? fv->sf->glyphs[gid]: NULL;
 
 	    if ( fv->cidmaster!=NULL )
 		cidmap = FindCidMap(fv->cidmaster->cidregistry,fv->cidmaster->ordering,fv->cidmaster->supplement,fv->cidmaster);
@@ -9329,14 +9329,14 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		}
 		GDrawPopClip(pixmap,&old2);
 	    }
-	    if ( fv->selected[index] ) {
-		box.x = j*fv->cbw+1; box.width = fv->cbw-1;
-		box.y = i*fv->cbh+fv->lab_height+1; box.height = fv->cbw;
-		GDrawSetXORMode(pixmap);
-		GDrawSetXORBase(pixmap,GDrawGetDefaultBackground(NULL));
-		GDrawFillRect(pixmap,&box,XOR_COLOR);
-		GDrawSetCopyMode(pixmap);
-	    }
+	}
+	if ( fv->selected[index] ) {
+	    box.x = j*fv->cbw+1; box.width = fv->cbw-1;
+	    box.y = i*fv->cbh+fv->lab_height+1; box.height = fv->cbw;
+	    GDrawSetXORMode(pixmap);
+	    GDrawSetXORBase(pixmap,GDrawGetDefaultBackground(NULL));
+	    GDrawFillRect(pixmap,&box,XOR_COLOR);
+	    GDrawSetCopyMode(pixmap);
 	}
     }
     if ( fv->showhmetrics&fvm_baseline ) {
