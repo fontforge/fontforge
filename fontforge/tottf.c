@@ -564,22 +564,22 @@ int ttfcopyfile(FILE *ttf, FILE *other, int pos, char *tab_name) {
 return( ret );
 }
 
-static void FigureFullMetricsEnd(SplineFont *sf,struct glyphinfo *gi) {
+static void FigureFullMetricsEnd(SplineFont *sf,struct glyphinfo *gi, int istt ) {
     /* We can reduce the size of the width array by removing a run at the end */
     /*  of the same width. So start at the end, find the width of the last */
     /*  character we'll output, then run backwards as long as we've got the */
     /*  same width */
     /* (do same thing for vertical metrics too */
-    int i, lasti, lastv;
+    int i, lasti, lastv, lastdefault = istt ? 3 : 1;
     int width, vwidth;
 
     lasti = lastv = gi->gcnt-1;
-    for ( i=gi->gcnt-1; i>3 && gi->bygid[i]==-1; --i );
-    if ( i>2 ) {
+    for ( i=gi->gcnt-1; i>lastdefault && gi->bygid[i]==-1; --i );
+    if ( i>=lastdefault ) {
 	width = sf->glyphs[gi->bygid[i]]->width;
 	vwidth = sf->glyphs[gi->bygid[i]]->vwidth;
 	lasti = lastv = i;
-	for ( i=lasti-1; i>3; --i ) {
+	for ( i=lasti-1; i>=lastdefault; --i ) {
 	    if ( SCWorthOutputting(sf->glyphs[gi->bygid[i]]) ) {
 		if ( sf->glyphs[gi->bygid[i]]->width!=width )
 	break;
@@ -589,7 +589,7 @@ static void FigureFullMetricsEnd(SplineFont *sf,struct glyphinfo *gi) {
 	}
 	gi->lasthwidth = lasti;
 	if ( sf->hasvmetrics ) {
-	    for ( i=lastv-1; i>3; --i ) {
+	    for ( i=lastv-1; i>=lastdefault; --i ) {
 		if ( SCWorthOutputting(sf->glyphs[gi->bygid[i]]) ) {
 		    if ( sf->glyphs[gi->bygid[i]]->vwidth!=vwidth )
 	    break;
@@ -1365,7 +1365,7 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
     gi->hmtx = tmpfile();
     if ( sf->hasvmetrics )
 	gi->vmtx = tmpfile();
-    FigureFullMetricsEnd(sf,gi);
+    FigureFullMetricsEnd(sf,gi,true);
 
     if ( fixed!=-1 ) {
 	gi->lasthwidth = 3;
@@ -2353,7 +2353,7 @@ static int dumpcffhmtx(struct alltabs *at,SplineFont *sf,int bitmaps) {
     at->gi.hmtx = tmpfile();
     if ( dovmetrics )
 	at->gi.vmtx = tmpfile();
-    FigureFullMetricsEnd(sf,&at->gi);
+    FigureFullMetricsEnd(sf,&at->gi,false);
     if ( at->gi.bygid[0]!=-1 && (sf->glyphs[at->gi.bygid[0]]->width==width || width==-1 )) {
 	putshort(at->gi.hmtx,sf->glyphs[at->gi.bygid[0]]->width);
 	SplineCharFindBounds(sf->glyphs[at->gi.bygid[0]],&b);
@@ -2428,7 +2428,7 @@ static void dumpcffcidhmtx(struct alltabs *at,SplineFont *_sf) {
     at->gi.hmtx = tmpfile();
     if ( dovmetrics )
 	at->gi.vmtx = tmpfile();
-    FigureFullMetricsEnd(_sf,&at->gi);
+    FigureFullMetricsEnd(_sf,&at->gi,false);
 
     max = 0;
     for ( i=0; i<_sf->subfontcnt; ++i )
