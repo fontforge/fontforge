@@ -2460,12 +2460,12 @@ return( map );
 
 EncMap *CompactEncMap(EncMap *map, SplineFont *sf) {
     int i, inuse, gid;
-    int *newmap;
+    int32 *newmap;
 
     for ( i=inuse=0; i<map->enccount ; ++i )
 	if ( (gid = map->map[i])!=-1 && SCWorthOutputting(sf->glyphs[gid]))
 	    ++inuse;
-    newmap = galloc(inuse*sizeof(int));
+    newmap = galloc(inuse*sizeof(int32));
     for ( i=inuse=0; i<map->enccount ; ++i )
 	if ( (gid = map->map[i])!=-1 && SCWorthOutputting(sf->glyphs[gid]))
 	    newmap[inuse++] = gid;

@@ -557,7 +557,7 @@ typedef struct searchview {
     SplineChar sc_srch, sc_rpl;
     SplineChar *chars[2];
     EncMap dummy_map;
-    int map[2], backmap[2];
+    int32 map[2], backmap[2];
     uint8 sel[2];
     CharView cv_srch, cv_rpl;
     CharView *lastcv;

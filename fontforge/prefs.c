@@ -916,10 +916,10 @@ return;
 	    fprintf( p, "MacMapping: %d,%d %c%c%c%c\n",
 		    user_macfeat_otftag[i].mac_feature_type,
 		    user_macfeat_otftag[i].mac_feature_setting,
-			user_macfeat_otftag[i].otf_tag>>24,
-			(user_macfeat_otftag[i].otf_tag>>16)&0xff,
-			(user_macfeat_otftag[i].otf_tag>>8)&0xff,
-			user_macfeat_otftag[i].otf_tag&0xff );
+			(int) (user_macfeat_otftag[i].otf_tag>>24),
+			(int) ((user_macfeat_otftag[i].otf_tag>>16)&0xff),
+			(int) ((user_macfeat_otftag[i].otf_tag>>8)&0xff),
+			(int) (user_macfeat_otftag[i].otf_tag&0xff) );
 	}
     }
 
@@ -989,7 +989,7 @@ static GTextInfo *Pref_MappingList(int use_user) {
     for ( i=0; msn[i].otf_tag!=0; ++i ) {
 	sprintf(buf,"%3d,%2d %c%c%c%c",
 	    msn[i].mac_feature_type, msn[i].mac_feature_setting,
-	    msn[i].otf_tag>>24, (msn[i].otf_tag>>16)&0xff, (msn[i].otf_tag>>8)&0xff, msn[i].otf_tag&0xff );
+	    (int) (msn[i].otf_tag>>24), (int) ((msn[i].otf_tag>>16)&0xff), (int) ((msn[i].otf_tag>>8)&0xff), (int) (msn[i].otf_tag&0xff) );
 	ti[i].text = uc_copy(buf);
     }
 return( ti );
@@ -1340,7 +1340,8 @@ static int Prefs_Ok(GGadget *g, GEvent *e) {
     const unichar_t *names[SCRIPT_MENU_MAX], *scripts[SCRIPT_MENU_MAX];
     struct prefs_list *pl;
     GTextInfo **list;
-    int len, maxl, t;
+    int32 len;
+    int maxl, t;
     char *str;
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
@@ -1527,7 +1528,8 @@ void DoPrefs(void) {
     GTextInfo *plabel, **list, label[5], slabel[45], *plabels[10], mflabels[9], mslabels[9];
     GTabInfo aspects[9], subaspects[3];
     struct pref_data p;
-    int i, gc, sgc, j, k, line, line_max, llen, y, y2, ii;
+    int i, gc, sgc, j, k, line, line_max, y, y2, ii;
+    int32 llen;
     char buf[20];
     int gcnt[20];
     static unichar_t nullstr[] = { 0 };

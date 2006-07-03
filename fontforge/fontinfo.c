@@ -1977,7 +1977,7 @@ static void GFI_CleanupContext(struct gfi_data *d) {
     /* Free any context which were created but got [Cancelled] */
     for ( i=0; i<fpst_max-pst_contextpos; ++i ) {
 	GGadget *list = GWidgetGetControl(d->gw,CID_ContextClasses+i*100);
-	int len;
+	int32 len;
 	GTextInfo **old = GGadgetGetList(list,&len);
 	for ( j=0; j<len; ++j ) {
 	    fpst = (FPST *) (old[j]->userdata);
@@ -1988,7 +1988,7 @@ static void GFI_CleanupContext(struct gfi_data *d) {
 	fpst->ticked = true;
     for ( i=0; i<fpst_max-pst_contextpos; ++i ) {
 	GGadget *list = GWidgetGetControl(d->gw,CID_ContextClasses+i*100);
-	int len;
+	int32 len;
 	GTextInfo **old = GGadgetGetList(list,&len);
 	for ( j=0; j<len; ++j ) {
 	    fpst = (FPST *) (old[j]->userdata);
@@ -2002,7 +2002,7 @@ static void GFI_CleanupContext(struct gfi_data *d) {
     /* Do the same thing for apple state machines */
     for ( i=0; i<3; ++i ) {
 	GGadget *list = GWidgetGetControl(d->gw,CID_SMList+i*100);
-	int len;
+	int32 len;
 	GTextInfo **old = GGadgetGetList(list,&len);
 	for ( j=0; j<len; ++j ) {
 	    sm = (ASM *) (old[j]->userdata);
@@ -2013,7 +2013,7 @@ static void GFI_CleanupContext(struct gfi_data *d) {
 	sm->ticked = true;
     for ( i=0; i<3; ++i ) {
 	GGadget *list = GWidgetGetControl(d->gw,CID_SMList+i*100);
-	int len;
+	int32 len;
 	GTextInfo **old = GGadgetGetList(list,&len);
 	for ( j=0; j<len; ++j ) {
 	    sm = (ASM *) (old[j]->userdata);
@@ -2035,7 +2035,7 @@ static void GFI_ProcessContexts(struct gfi_data *d) {
 	fpst->ticked = false;
     for ( i=0; i<fpst_max-pst_contextpos; ++i ) {
 	GGadget *list = GWidgetGetControl(d->gw,CID_ContextClasses+i*100);
-	int len;
+	int32 len;
 	GTextInfo **old = GGadgetGetList(list,&len);
 	for ( j=0; j<len; ++j ) {
 	    fpst = (FPST *) (old[j]->userdata);
@@ -2061,7 +2061,7 @@ static void GFI_ProcessContexts(struct gfi_data *d) {
     last = NULL;
     for ( i=0; i<fpst_max-pst_contextpos; ++i ) {
 	GGadget *list = GWidgetGetControl(d->gw,CID_ContextClasses+i*100);
-	int len;
+	int32 len;
 	GTextInfo **old = GGadgetGetList(list,&len);
 	for ( j=0; j<len; ++j ) {
 	    fpst = (FPST *) (old[j]->userdata);
@@ -2086,7 +2086,7 @@ static void GFI_ProcessContexts(struct gfi_data *d) {
 	sm->ticked = false;
     for ( i=0; i<3; ++i ) {
 	GGadget *list = GWidgetGetControl(d->gw,CID_SMList+i*100);
-	int len;
+	int32 len;
 	GTextInfo **old = GGadgetGetList(list,&len);
 	for ( j=0; j<len; ++j ) {
 	    sm = (ASM *) (old[j]->userdata);
@@ -2112,7 +2112,7 @@ static void GFI_ProcessContexts(struct gfi_data *d) {
     lastsm = NULL;
     for ( i=0; i<4; ++i ) {
 	GGadget *list = GWidgetGetControl(d->gw,CID_SMList+i*100);
-	int len;
+	int32 len;
 	GTextInfo **old = GGadgetGetList(list,&len);
 	for ( j=0; j<len; ++j ) {
 	    sm = (ASM *) (old[j]->userdata);
@@ -2386,7 +2386,7 @@ void DropChars2Text(GWindow gw, GGadget *glyphs,GEvent *event) {
     char *cnames;
     const unichar_t *old;
     unichar_t *new;
-    int len;
+    int32 len;
 
     if ( !GDrawSelectionHasType(gw,sn_drag_and_drop,"STRING"))
 return;
@@ -2642,7 +2642,8 @@ static void GFI_AnchorShow(GGadget *g, int index) {
     struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
     int i, start;
     GGadget *list = GWidgetGetControl(GGadgetGetWindow(g),CID_AnchorClasses);
-    int sel = GGadgetGetFirstListSelectedItem(list), len;
+    int sel = GGadgetGetFirstListSelectedItem(list);
+    int32 len;
     GTextInfo **old = GGadgetGetList(list,&len);
     AnchorClass *ac;
     SplineChar *sc;
@@ -2761,7 +2762,7 @@ static void AnchorClassNameDecompose(AnchorClass *ac,const unichar_t *line,
 
 static void GFI_GetAnchors(struct gfi_data *d) {
     GGadget *list = GWidgetGetControl(d->gw,CID_AnchorClasses);
-    int len;
+    int32 len;
     GTextInfo **old = GGadgetGetList(list,&len);
     AnchorClass *klast=NULL, *test;
     int i;
@@ -2841,7 +2842,7 @@ return( tis );
 }
 
 static struct otfname *OtfNameFromStyleNames(GGadget *list) {
-    int len, i;
+    int32 len; int i;
     GTextInfo **old = GGadgetGetList(list,&len);
     struct otfname *head=NULL, *last, *cur;
     unichar_t *pt, *temp;
@@ -2877,7 +2878,7 @@ return( true );
 }
 
 static void AskForLangName(GGadget *list,int sel) {
-    int len, i;
+    int32 len; int i;
     GTextInfo **old = GGadgetGetList(list,&len);
     unichar_t *name, *pt;
     char *cname;
@@ -3063,7 +3064,7 @@ return( true );
 }
 
 static int GFI_AnchorNew(GGadget *g, GEvent *e) {
-    int len, i;
+    int32 len; int i;
     GTextInfo **old, **new;
     GGadget *list;
     unichar_t *newname;
@@ -3116,7 +3117,7 @@ return( true );
 }
 
 void GListMoveSelected(GGadget *list,int offset) {
-    int len, i,j;
+    int32 len; int i,j;
     GTextInfo **old, **new;
 
     old = GGadgetGetList(list,&len);
@@ -3149,7 +3150,7 @@ void GListMoveSelected(GGadget *list,int offset) {
 }
 
 void GListDelSelected(GGadget *list) {
-    int len, i,j;
+    int32 len; int i,j;
     GTextInfo **old, **new;
 
     old = GGadgetGetList(list,&len);
@@ -3262,7 +3263,7 @@ return( true );
 }
 
 static int GFI_AnchorRename(GGadget *g, GEvent *e) {
-    int len, i;
+    int32 len; int i;
     GTextInfo **old, **new, *ti;
     GGadget *list;
     unichar_t *newname;
@@ -3328,7 +3329,7 @@ return( true );
 static int GFI_AnchorSelChanged(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
 	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-	int sel = GGadgetGetFirstListSelectedItem(g), len;
+	int32 sel = GGadgetGetFirstListSelectedItem(g), len;
 	GTextInfo **old = GGadgetGetList(g,&len);
 	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_AnchorDel),sel!=-1);
 	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_AnchorRename),sel!=-1);
@@ -3451,7 +3452,7 @@ return( true );
 }
 
 static int GFI_ContextEdit(GGadget *g, GEvent *e) {
-    int len, i;
+    int32 len; int i;
     GTextInfo **old, **new, *ti;
     GGadget *list;
     unichar_t *newname;
@@ -3497,7 +3498,7 @@ static int GFI_ContextEditData(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	GGadget *list = GWidgetGetControl(d->gw,GGadgetGetCid(g)-CID_ContextEditData+CID_ContextClasses);
-	int sel = GGadgetGetFirstListSelectedItem(list), len;
+	int32 sel = GGadgetGetFirstListSelectedItem(list), len;
 	GTextInfo **old = GGadgetGetList(list,&len);
 	int i;
 	if ( d->ccd )
@@ -4964,7 +4965,7 @@ return( true );
 
 static void GFI_ProcessAnchor(struct gfi_data *d) {
     GGadget *list = GWidgetGetControl(d->gw,CID_AnchorClasses);
-    int len;
+    int32 len;
     GTextInfo **old = GGadgetGetList(list,&len);
     AnchorClass *keep=NULL, *klast, *test, *prev, *next, *test2;
     int i;

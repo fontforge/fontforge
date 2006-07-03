@@ -1455,7 +1455,7 @@ static int SV_ChangeLength(GGadget *g, GEvent *e) {
 	char *ret, *e;
 	int val,i;
 
-	sprintf( buffer, "%d", sv->len/2 );
+	sprintf( buffer, "%d", (int) (sv->len/2) );
 	ret = gwwv_ask_string(_("Change Length"), buffer,_("How many entries should there be in the cvt table?"));
 	if ( ret==NULL )
 return( true );		/* Cancelled */

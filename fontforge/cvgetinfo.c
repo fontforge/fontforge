@@ -344,7 +344,7 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 
 	snprintf( namebuf, sizeof(namebuf),
 		_("Reference to character %1$.20s at %2$d"),
-		ref->sc->name, cv->fv->map->backmap[ref->sc->orig_pos]);
+		ref->sc->name, (int) cv->fv->map->backmap[ref->sc->orig_pos]);
 	label[0].text = (unichar_t *) namebuf;
 	label[0].text_is_1byte = true;
 	gcd[0].gd.label = &label[0];
@@ -3042,8 +3042,8 @@ return;
 			    if ( deps!=NULL ) {
 				snprintf(ubuf,sizeof(ubuf),
 					_("'%c%c%c%c' in glyph %.40s"),
-			                pst->tag>>24, (pst->tag>>16)&0xff,
-			                (pst->tag>>8)&0xff, pst->tag&0xff,
+			                (int) (pst->tag>>24), (int) ((pst->tag>>16)&0xff),
+			                (int) ((pst->tag>>8)&0xff), (int) (pst->tag&0xff),
 			                sf->glyphs[i]->name);
 				deps[tot] = copy(ubuf);
 			        depsc[tot] = sf->glyphs[i];

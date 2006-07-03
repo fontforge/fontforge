@@ -2122,7 +2122,7 @@ static void CompareNestedTags(struct font_diff *fd) {
 	fd->top_diff = fd->middle_diff = fd->diff = true;
 	fputs("  ",fd->diffs);
 	fprintf( fd->diffs, _("Nested feature '%c%c%c%c' is not in %s\n"),
-		fd->nesttag1[i]>>24, fd->nesttag1[i]>>16, fd->nesttag1[i]>>8, (fd->nesttag1[i]&0xff),
+		(int) (fd->nesttag1[i]>>24), (int) (fd->nesttag1[i]>>16), (int) (fd->nesttag1[i]>>8), (int) ((fd->nesttag1[i]&0xff)),
 		fd->name2 );
     }
 
@@ -2137,7 +2137,7 @@ static void CompareNestedTags(struct font_diff *fd) {
 	fd->top_diff = fd->middle_diff = fd->diff = true;
 	fputs("  ",fd->diffs);
 	fprintf( fd->diffs, _("Nested feature '%c%c%c%c' is not in %s\n"),
-		fd->nesttag2[i]>>24, fd->nesttag2[i]>>16, fd->nesttag2[i]>>8, (fd->nesttag2[i]&0xff),
+		(int) (fd->nesttag2[i]>>24), (int) (fd->nesttag2[i]>>16), (int) (fd->nesttag2[i]>>8), (int) ((fd->nesttag2[i]&0xff)),
 		fd->name1 );
     }
 }
@@ -2214,9 +2214,9 @@ static void compareg___(struct font_diff *fd) {
 	    }
 	    fputs("  ",fd->diffs);
 	    fprintf(fd->diffs, _("Nested feature '%c%c%c%c' in %s corresponds to '%c%c%c%c' in %s\n"),
-		fd->nesttag1[i]>>24, fd->nesttag1[i]>>16, fd->nesttag1[i]>>8, (fd->nesttag1[i]&0xff),
+		(int) (fd->nesttag1[i]>>24), (int) (fd->nesttag1[i]>>16), (int) (fd->nesttag1[i]>>8), (int) ((fd->nesttag1[i]&0xff)),
 		fd->name1,
-		fd->nmatches1[i]>>24, fd->nmatches1[i]>>16, fd->nmatches1[i]>>8, (fd->nmatches1[i]&0xff),
+		(int) (fd->nmatches1[i]>>24), (int) (fd->nmatches1[i]>>16), (int) (fd->nmatches1[i]>>8), (int) ((fd->nmatches1[i]&0xff)),
 		fd->name2 );
 	}
     }

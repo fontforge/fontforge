@@ -318,14 +318,14 @@ static int GListAdjustPos(GGadget *g,int pos) {
 return( newoff );
 }
 
-static void GListShowPos(GGadget *g,int pos) {
+static void GListShowPos(GGadget *g,int32 pos) {
     GList *gl = (GList *) g;
     int newoff = GListAdjustPos(g,pos);
     if ( newoff!=gl->loff )
 	GListScrollBy(gl,newoff-gl->loff,0);
 }
 
-static void GListScrollToText(GGadget *g,const unichar_t *text,int sel) {
+static void GListScrollToText(GGadget *g,const unichar_t *text,int32 sel) {
     GList *gl = (GList *) g;
     int pos;
 
@@ -399,7 +399,7 @@ static int GListFindXMax(GList *gl) {
 return( width );
 }
 
-static void GListSetList(GGadget *g,GTextInfo **ti,int docopy) {
+static void GListSetList(GGadget *g,GTextInfo **ti,int32 docopy) {
     GList *gl = (GList *) g;
     int same;
 

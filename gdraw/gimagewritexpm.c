@@ -67,12 +67,12 @@ return(false);
     fprintf(file,"static char *%s[] =\n", stem );
     fprintf(file,"{\n");
     fprintf(file,"/* width height ncolors chars_per_pixel */\n");
-    fprintf(file,"\"%d %d %d %d\"\n", base->width, base->height, base->clut->clut_len,
+    fprintf(file,"\"%d %d %d %d\"\n", (int) base->width, (int) base->height, base->clut->clut_len,
 	    base->clut->clut_len>95?2:1 );
     fprintf(file,"/* colors */\n");
     for ( i=0; i<base->clut->clut_len; ++i )
 	fprintf(file,"\"%s c #%06x\"\n", pixname(i,base->clut->clut_len),
-		base->clut->clut[i]);
+		(int) base->clut->clut[i]);
     fprintf(file,"/* image */\n");
     for ( i=0; i<base->height; ++i ) {
 	fprintf(file,"\"" );

@@ -191,7 +191,7 @@ static void DSP_ChangeFontCallback(void *context,SplineFont *sf,enum sftf_fontty
     }
     if ( di->sf!=sf ) {
 	GTextInfo **ti;
-	int i,len,set;
+	int i,set; int32 len;
 	ti = GGadgetGetList(GWidgetGetControl(di->gw,CID_Font),&len);
 	for ( i=0; i<len; ++i )
 	    if ( ti[i]->userdata == sf )

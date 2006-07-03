@@ -1753,7 +1753,7 @@ static void PasteNonExistantRefCheck(SplineChar *sc,Undoes *paster,RefChar *ref,
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void SCCheckXClipboard(GWindow awindow,SplineChar *sc,int layer,int doclear) {
-    int type, len;
+    int type; int32 len;
     char *paste;
     FILE *temp;
     GImage *image;

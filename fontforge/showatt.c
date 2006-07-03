@@ -585,7 +585,7 @@ char *TagFullName(SplineFont *sf,uint32 tag, int ismac) {
 	ismac = (tag>>24)<' ' || (tag>>24)>0x7e;
 
     if ( ismac ) {
-	sprintf( ubuf, "<%d,%d> ", tag>>16,tag&0xffff );
+	sprintf( ubuf, "<%d,%d> ", (int) (tag>>16),(int) (tag&0xffff) );
 	if ( (setname = PickNameFromMacName(FindMacSettingName(sf,tag>>16,tag&0xffff)))!=NULL ) {
 	    strcat( ubuf, setname );
 	    free( setname );
@@ -933,8 +933,8 @@ static void BuildFPSTRule(struct node *node,struct att_dlg *att) {
 	    for ( j=0; j<r->lookup_cnt; ++j ) {
 		if ( i ) {
 		    sprintf(buf, _("Apply at %d '%c%c%c%c'"), r->lookups[j].seq,
-			    r->lookups[j].lookup_tag>>24, (r->lookups[j].lookup_tag>>16)&0xff,
-			    (r->lookups[j].lookup_tag>>8)&0xff, r->lookups[j].lookup_tag&0xff );
+			    (int) (r->lookups[j].lookup_tag>>24), (int) ((r->lookups[j].lookup_tag>>16)&0xff),
+			    (int) ((r->lookups[j].lookup_tag>>8)&0xff), (int) (r->lookups[j].lookup_tag&0xff) );
 		    lines[len].label = copy(buf);
 		    lines[len].parent = node;
 		    lines[len].tag = r->lookups[j].lookup_tag;
@@ -1117,10 +1117,10 @@ static void BuildASM(struct node *node,struct att_dlg *att) {
 			    strcat(space,"     ");
 			else
 			    sprintf( space+strlen(space), " %c%c%c%c",
-				    sm->state[j*sm->class_cnt+k].u.context.mark_tag>>24,
-				    (sm->state[j*sm->class_cnt+k].u.context.mark_tag>>16)&0xff,
-				    (sm->state[j*sm->class_cnt+k].u.context.mark_tag>>8)&0xff,
-				    sm->state[j*sm->class_cnt+k].u.context.mark_tag&0xff );
+				    (int) (sm->state[j*sm->class_cnt+k].u.context.mark_tag>>24),
+				    (int) ((sm->state[j*sm->class_cnt+k].u.context.mark_tag>>16)&0xff),
+				    (int) ((sm->state[j*sm->class_cnt+k].u.context.mark_tag>>8)&0xff),
+				    (int) (sm->state[j*sm->class_cnt+k].u.context.mark_tag&0xff) );
 		    lines[len].label = copy(space);
 		    lines[len].parent = node;
 		    lines[len].monospace = true;
@@ -1133,10 +1133,10 @@ static void BuildASM(struct node *node,struct att_dlg *att) {
 			    strcat(space,"     ");
 			else
 			    sprintf( space+strlen(space), " %c%c%c%c",
-				    sm->state[j*sm->class_cnt+k].u.context.cur_tag>>24,
-				    (sm->state[j*sm->class_cnt+k].u.context.cur_tag>>16)&0xff,
-				    (sm->state[j*sm->class_cnt+k].u.context.cur_tag>>8)&0xff,
-				    sm->state[j*sm->class_cnt+k].u.context.cur_tag&0xff );
+				    (int) (sm->state[j*sm->class_cnt+k].u.context.cur_tag>>24),
+				    (int) ((sm->state[j*sm->class_cnt+k].u.context.cur_tag>>16)&0xff),
+				    (int) ((sm->state[j*sm->class_cnt+k].u.context.cur_tag>>8)&0xff),
+				    (int) (sm->state[j*sm->class_cnt+k].u.context.cur_tag&0xff) );
 		    lines[len].label = copy(space);
 		    lines[len].parent = node;
 		    lines[len].monospace = true;
@@ -1147,8 +1147,8 @@ static void BuildASM(struct node *node,struct att_dlg *att) {
 	for ( j=0; j<scnt; ++j ) {
 	    if ( i ) {
 		sprintf(buf, _("Nested Substitution '%c%c%c%c'"),
-			subs[j]>>24, (subs[j]>>16)&0xff,
-			(subs[j]>>8)&0xff, subs[j]&0xff );
+			(int) (subs[j]>>24), (int) ((subs[j]>>16)&0xff),
+			(int) ((subs[j]>>8)&0xff), (int) (subs[j]&0xff) );
 		lines[len].label = copy(buf);
 		lines[len].parent = node;
 		lines[len].tag = subs[j];

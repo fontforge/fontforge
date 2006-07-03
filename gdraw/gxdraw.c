@@ -3632,7 +3632,7 @@ static void GXDrawGrabSelection(GWindow w,enum selnames sel) {
 }
 
 static void GXDrawAddSelectionType(GWindow w,enum selnames sel,char *type,
-	void *data,int cnt,int unitsize, void *(*gendata)(void *,int32 *len),
+	void *data,int32 cnt,int32 unitsize, void *(*gendata)(void *,int32 *len),
 	void (*freedata)(void *)) {
     GXDisplay *gd = (GXDisplay *) (w->display);
     int typeatom = GXDrawGetAtom(gd,type);
