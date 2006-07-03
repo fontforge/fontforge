@@ -3187,9 +3187,12 @@ docs are wrong.
 	/*  and this is a work-around for windows. As far as I can tell	*/
 	/*  ff is setting the codepage field properly, it's just that	*/
 	/*  windows doesn't interpret that bit correctly		*/
+	/* GWW: Things get worse. Windows no longer accepts a version 0 */
+	/*  for OS/2. FontLab simply lies and says we have a latin1     */
+	/*  code page when we don't.					*/
 	if( format!=ff_ttfsym )
 	    if( (os2->ulCodePage[0]&~(1U<<31))==0 && os2->ulCodePage[1]==0 )
-                os2->version = 0;
+                os2->ulCodePage[0] |= 1;
     }
 
     if ( format==ff_otf || format==ff_otfcid ) {
