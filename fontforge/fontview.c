@@ -9330,7 +9330,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		GDrawPopClip(pixmap,&old2);
 	    }
 	}
-	if ( fv->selected[index] ) {
+	if ( index<fv->map->enccount && fv->selected[index] ) {
 	    box.x = j*fv->cbw+1; box.width = fv->cbw-1;
 	    box.y = i*fv->cbh+fv->lab_height+1; box.height = fv->cbw;
 	    GDrawSetXORMode(pixmap);
