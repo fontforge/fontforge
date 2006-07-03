@@ -2158,7 +2158,9 @@ static Spline *lineto2(GrowBuf *gb,struct hintdb *hdb,Spline *spline, Spline *do
 	++cnt;
 	lastgood = test;
 	test = test->to->next;
-	if ( test==done || test==NULL )
+	/* it will be smaller to use a closepath operator so ignore the */
+	/*  ultimate spline */
+	if ( test==done || test==NULL || test->to->next==done )
     break;
     }
 
