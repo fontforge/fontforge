@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 9-Apr-2006 -->
-  <!-- AP: Last modified: 23-Jun-2006 -->
+  <!-- AP: Last modified: 3-Jul-2006 -->
   <TITLE>Scripting functions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -1692,6 +1692,15 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	      Will move any acute or grave references 300 em-units horizontally from where
 	      they currently are
 	    </BLOCKQUOTE>
+	  <DT>
+	    <A NAME="MultipleEncodingsToReferences">M</A>ultipleEncodingsToReferences()
+	  <DD>
+	    If any selected glyphs have multiple encodings then one of these encodings
+	    will be chosen as the real one. For each of the others a new glyph will be
+	    created containing a reference to the base glyph. This sort of undoes the
+	    effect of <A HREF="#SameGlyphAs">SameGlyphAs</A>.
+	    <P>
+	    MetaData, such as advanced typographic features, are not copied.
 	</DL>
       </TD>
     </TR>

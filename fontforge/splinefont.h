@@ -1366,6 +1366,8 @@ extern void MinimumDistancesFree(MinimumDistance *md);
 extern void LayerDefault(Layer *);
 extern SplineChar *SplineCharCreate(void);
 extern RefChar *RefCharCreate(void);
+extern void SCAddRef(SplineChar *sc,SplineChar *rsc,real xoff, real yoff);
+extern void _SCAddRef(SplineChar *sc,SplineChar *rsc,real transform[6]);
 extern void ScriptRecordFree(struct script_record *sr);
 extern void ScriptRecordListFree(struct script_record **script_lang);
 extern KernClass *KernClassCopy(KernClass *kc);

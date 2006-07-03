@@ -1521,7 +1521,7 @@ return( (dbest->leftedgebottom.x+dbest->rightedgebottom.x)/2 - (rbb->maxx-rbb->m
 return( 0x70000000 );
 }
 
-static void _SCAddRef(SplineChar *sc,SplineChar *rsc,real transform[6]) {
+void _SCAddRef(SplineChar *sc,SplineChar *rsc,real transform[6]) {
     RefChar *ref = RefCharCreate();
 
     ref->sc = rsc;
@@ -1535,7 +1535,7 @@ static void _SCAddRef(SplineChar *sc,SplineChar *rsc,real transform[6]) {
     SCMakeDependent(sc,rsc);
 }
 
-static void SCAddRef(SplineChar *sc,SplineChar *rsc,real xoff, real yoff) {
+void SCAddRef(SplineChar *sc,SplineChar *rsc,real xoff, real yoff) {
     real transform[6];
     transform[0] = transform[3] = 1;
     transform[1] = transform[2] = 0;

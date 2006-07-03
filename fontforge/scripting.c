@@ -2144,6 +2144,50 @@ static void bSameGlyphAs(Context *c) {
     doEdit(c,14);
 }
 
+static void bMultipleEncodingsToReferences(Context *c) {
+    int i, gid;
+    FontView *fv = c->curfv;
+    SplineFont *sf = fv->sf;
+    EncMap *map = fv->map;
+    SplineChar *sc, *orig;
+    struct altuni *alt, *next;
+    int uni, enc;
+
+    if ( c->a.argc!=1 )
+	ScriptError( c, "Wrong number of arguments");
+    for ( i=0; i<map->enccount; ++i ) {
+	if ( (gid=map->map[i])!=-1 && fv->selected[i] &&
+		(orig = sf->glyphs[gid])!=NULL && orig->altuni!=NULL ) {
+	    for ( alt = orig->altuni; alt!=NULL; alt=next ) {
+		next = alt->next;
+		uni = alt->unienc;
+		orig->altuni = next;
+		AltUniFree(alt);
+		enc = EncFromUni(uni,map->enc);
+		if ( enc!=-1 ) {
+		    map->map[enc] = -1;
+		    sc = SFMakeChar(sf,map,enc);
+		    SCAddRef(sc,orig,0,0);
+		}
+	    }
+	}
+    }
+    /* Now suppose we had a duplicate encoding of a glyph with no unicode */
+    /*  so there will be no altuni to mark it */
+    for ( gid=0; gid<sf->glyphcnt; ++gid ) {
+	for ( i=0; i<map->enccount; ++i ) {
+	    if ( map->map[i]==gid && map->backmap[gid]!=i &&
+		    (fv->selected[i] || (map->backmap[gid]!=-1 && fv->selected[map->backmap[gid]]))) {
+		map->map[i] = -1;
+		sc = SFMakeChar(sf,map,i);
+		SCAddRef(sc,orig,0,0);
+		sc->width = orig->width;
+		sc->vwidth = orig->vwidth;
+	    }
+	}
+    }
+}
+
 static void bSelectAll(Context *c) {
     if ( c->a.argc!=1 )
 	ScriptError( c, "Wrong number of arguments");
@@ -6709,6 +6753,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "PasteInto", bPasteInto },
     { "PasteWithOffset", bPasteWithOffset },
     { "SameGlyphAs", bSameGlyphAs },
+    { "MultipleEncodingsToReferences", bMultipleEncodingsToReferences },
     { "Clear", bClear },
     { "ClearBackground", bClearBackground },
     { "CopyFgToBg", bCopyFgToBg },
