@@ -192,7 +192,7 @@ SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into) {
     nsc->layers[ly_fore].splines = SplinePointListCopy(nsc->layers[ly_fore].splines);
     nsc->layers[ly_fore].refs = RefCharsCopy(nsc->layers[ly_fore].refs);
     nsc->layers[ly_back].splines = SplinePointListCopy(nsc->layers[ly_back].splines);
-    nsc->layers[ly_back].splines = ImageListCopy(nsc->layers[ly_back].images);
+    nsc->layers[ly_back].images = ImageListCopy(nsc->layers[ly_back].images);
 #endif
     nsc->parent = into;
     nsc->orig_pos = -2;

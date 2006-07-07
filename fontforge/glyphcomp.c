@@ -921,8 +921,8 @@ static int fdRefCheck(struct font_diff *fd, SplineChar *sc1,
 
     for ( r1 = ref1; r1!=NULL; r1=r1->next ) {
 	for ( r2 = ref2; r2!=NULL; r2=r2->next ) if ( !r2->checked ) {
-	    if ( r1->sc->unicodeenc==r1->sc->unicodeenc &&
-		    (r1->sc->unicodeenc!=-1 || strcmp(r1->sc->name,r1->sc->name)==0)) {
+	    if ( r1->sc->unicodeenc==r2->sc->unicodeenc &&
+		    (r1->sc->unicodeenc!=-1 || strcmp(r1->sc->name,r2->sc->name)==0)) {
 		for ( i=0; i<6 &&
 		    RealNear(r1->transform[i],r2->transform[i]); ++i );
 		if ( i==6 )
@@ -941,8 +941,8 @@ static int fdRefCheck(struct font_diff *fd, SplineChar *sc1,
 	    }
 	} else {
 	    for ( r2 = ref2; r2!=NULL; r2=r2->next ) if ( !r2->checked ) {
-		if ( r1->sc->unicodeenc==r1->sc->unicodeenc &&
-			(r1->sc->unicodeenc!=-1 || strcmp(r1->sc->name,r1->sc->name)==0))
+		if ( r1->sc->unicodeenc==r2->sc->unicodeenc &&
+			(r1->sc->unicodeenc!=-1 || strcmp(r1->sc->name,r2->sc->name)==0))
 	    break;
 	    }
 	    if ( r2==NULL ) {
