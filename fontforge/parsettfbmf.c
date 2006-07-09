@@ -944,15 +944,17 @@ static void FillLineMetrics(struct bitmapSizeTable *size,BDFFont *bdf) {
     /*  But that's ok because different font files contain wildly different */
     /*  values for the same data, so they don't match each other either */
     /* GRRRRR */
+    /* Apple's ftxvalidator gets unhappy if there are no vertical line metrics*/
+    /*  so even though I've no idea what they should be, I'll include something*/
 #if 0
     size->vert.minoriginsb = size->hori.maxbeforebl;
     size->vert.minAdvancesb = size->hori.minafterbl;
+#endif
     /* Apple seems to say that the vertical ascender/descender are half the */
     /*  pixel size (which makes sense), but MS does something else */
     size->vert.ascender = bdf->pixelsize/2;
-    size->vert.descender = bdf->pixelsize/2;
+    size->vert.descender = -bdf->pixelsize/2;
     size->vert.widthMax = bdf->pixelsize;
-#endif
 }
 
 static struct bitmapSizeTable *ttfdumpstrikelocs(FILE *bloc,FILE *bdat,
