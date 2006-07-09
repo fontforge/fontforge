@@ -162,21 +162,20 @@ static void ExtendSF(SplineFont *sf, EncMap *map, int enc, int set) {
     }
 }
 
-static void MakeEncChar(SplineFont *sf,EncMap *map, int enc,char *name) {
+static SplineChar *MakeEncChar(SplineFont *sf,EncMap *map, int enc,char *name) {
     int uni;
     SplineChar *sc;
-    int gid;
 
     ExtendSF(sf,map,enc,false);
 
     sc = SFMakeChar(sf,map,enc);
-    gid = sc->orig_pos;
-    free(sf->glyphs[gid]->name);
-    sf->glyphs[gid]->name = cleancopy(name);
+    free(sc->name);
+    sc->name = cleancopy(name);
 
     uni = UniFromName(name,sf->uni_interp,map->enc);
     if ( uni!=-1 )
-	sf->glyphs[gid]->unicodeenc = uni;
+	sc->unicodeenc = uni;
+return( sc );
 }
 
 static int figureProperEncoding(SplineFont *sf,EncMap *map, BDFFont *b, int enc,
@@ -2148,14 +2147,29 @@ return( ret );
 
 static void SFSetupBitmap(SplineFont *sf,BDFFont *strike,EncMap *map) {
     int i;
+    SplineChar *sc;
 
     strike->sf = sf;
     if ( strike->glyphcnt>sf->glyphcnt )
 	ExtendSF(sf,map,strike->glyphcnt,true);
     for ( i=0; i<strike->glyphcnt; ++i ) if ( strike->glyphs[i]!=NULL ) {
-	if ( sf->glyphs[i]==NULL )
-	    MakeEncChar(sf,map,i,strike->glyphs[i]->sc->name);
-	strike->glyphs[i]->sc = sf->glyphs[i];
+	if ( sf->glyphs[i]==NULL ) {
+	    int enc=-1;
+	    if ( strike->glyphs[i]->sc->unicodeenc!=-1 )
+		enc = EncFromUni(strike->glyphs[i]->sc->unicodeenc,map->enc);
+	    if ( enc==-1 )
+		enc = EncFromName(strike->glyphs[i]->sc->name,sf->uni_interp,map->enc);
+	    if ( enc==-1 )
+		enc = map->enccount;
+	    sc = MakeEncChar(sf,map,enc,strike->glyphs[i]->sc->name);
+	    strike->glyphs[i]->sc = sc;
+	} else
+	    strike->glyphs[i]->sc = sf->glyphs[i];
+	sc = strike->glyphs[i]->sc;
+	if ( !sc->widthset ) {
+	    sc->widthset = true;
+	    sc->width = strike->glyphs[i]->width*(sf->ascent+sf->descent)/strike->pixelsize;
+	}
     }
 }
 

@@ -3881,19 +3881,6 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
     info->map = map;
 }
 
-static int EncFromName(const char *name,enum uni_interp interp,Encoding *encname) {
-    int i;
-    i = UniFromName(name,interp,encname);
-    if ( i==-1 && strlen(name)==4 ) {
-	/* MS says use this kind of name, Adobe says use the one above */
-	char *end;
-	i = strtol(name,&end,16);
-	if ( i>=0 && i<=0xffff && *end=='\0' )
-return( i );
-    }
-return( i );
-}
-
 static void readttfos2metrics(FILE *ttf,struct ttfinfo *info) {
     int i;
 

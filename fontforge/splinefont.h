@@ -1931,6 +1931,7 @@ extern struct macname *FindMacSettingName(SplineFont *sf, int feat, int set);
 
 extern int32 UniFromEnc(int enc, Encoding *encname);
 extern int32 EncFromUni(int32 uni, Encoding *encname);
+extern int32 EncFromName(const char *name,enum uni_interp interp,Encoding *encname);
 
 extern void MatInverse(real into[6], real orig[6]);
 
