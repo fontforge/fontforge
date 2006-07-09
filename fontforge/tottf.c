@@ -2863,6 +2863,8 @@ void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *sf,char *fontname) {
 	struct pfminfo hold;
 	if ( pfminfo->hheadset || pfminfo->vheadset )
 	    hold = *pfminfo;
+	else
+	    hold.hheadset = hold.vheadset = false;
 	memset(pfminfo,'\0',sizeof(*pfminfo));
 	SFDefaultOS2Simple(pfminfo,sf);
 	samewid = CIDOneWidth(sf);

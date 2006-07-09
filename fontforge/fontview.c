@@ -8418,6 +8418,24 @@ return( (enc->fromunicode_func)(uni) );
 return( -1 );
 }
 
+int32 EncFromName(const char *name,enum uni_interp interp,Encoding *encname) {
+    int i;
+    if ( encname->psnames!=NULL ) {
+	for ( i=0; i<encname->char_cnt; ++i )
+	    if ( encname->psnames[i]!=NULL && strcmp(name,encname->psnames[i])==0 )
+return( i );
+    }
+    i = UniFromName(name,interp,encname);
+    if ( i==-1 && strlen(name)==4 ) {
+	/* MS says use this kind of name, Adobe says use the one above */
+	char *end;
+	i = strtol(name,&end,16);
+	if ( i<0 || i>0xffff || *end!='\0' )
+return( -1 );
+    }
+return( EncFromUni(i,encname));
+}
+
 SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,EncMap *map,int i) {
     static char namebuf[100];
 #ifdef FONTFORGE_CONFIG_TYPE3
