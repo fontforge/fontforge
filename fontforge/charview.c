@@ -2516,6 +2516,15 @@ static void SetFS( FindSel *fs, PressedOn *p, CharView *cv, GEvent *event) {
     fs->yh = p->cy + fs->fudge;
 }
 
+int CVMouseAtSpline(CharView *cv,GEvent *event) {
+    FindSel fs;
+    int pressed = cv->p.pressed;
+
+    SetFS(&fs,&cv->p,cv,event);
+    cv->p.pressed = pressed;
+return( InSplineSet(&fs,cv->layerheads[cv->drawmode]->splines));
+}
+
 static GEvent *CVConstrainedMouseDown(CharView *cv,GEvent *event, GEvent *fake) {
     SplinePoint *base;
     int basex, basey, dx, dy;
