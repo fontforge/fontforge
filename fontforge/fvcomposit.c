@@ -1821,9 +1821,11 @@ static void _SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, SplineChar *rs
 	/*  If so then figure offsets relative to it. */
 	xoff = ap1->me.x-ap2->me.x + sc->layers[ly_fore].refs->transform[4];
 	yoff = ap1->me.y-ap2->me.y + sc->layers[ly_fore].refs->transform[5];
+	pos = ____utype2[1+ch];
     } else if ( AnchorClassMatch(basersc,rsc,(AnchorClass *) -1,&ap1,&ap2)!=NULL && ap2->type==at_mark ) {
 	xoff = ap1->me.x-ap2->me.x;
 	yoff = ap1->me.y-ap2->me.y;
+	pos = ____utype2[1+ch];
     } else {
  /* try to establish a common line on which all accents lie. The problem being*/
  /*  that an accent above a,e,o will usually be slightly higher than an accent */
@@ -1980,7 +1982,7 @@ static void _SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, SplineChar *rs
     transform[4] = xoff;
     /*if ( invert ) transform[5] -= yoff; else */transform[5] += yoff;
     _SCAddRef(sc,rsc,transform);
-    if ( pos&____RIGHT )
+    if ( pos!=-1 && (pos&____RIGHT) )
 	SCSynchronizeWidth(sc,sc->width + rbb.maxx-rbb.minx+spacing,sc->width,sf->fv);
 
     if ( copybmp ) {
