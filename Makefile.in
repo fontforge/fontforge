@@ -55,7 +55,7 @@ install_libs: libs
 	#cp .libs/*.so.*.* $(libdir)
 	$(LIBTOOL) --mode=finish $(libdir)
 	mkdir -p $(libdir)/pkgconfig
-	$(LIBTOOL) --mode=install $(INSTALL) -c fontforge.pc $(libdir)/pkgconfig
+	$(INSTALL_DATA) fontforge.pc $(libdir)/pkgconfig
 
 install_docs:
 	mkdir -p $(docdir)
