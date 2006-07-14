@@ -48,7 +48,10 @@ static void CurveToBuf(char *buf,CharView *cv,Spline *s, double t) {
 	strcpy(buf,_("No Curvature"));
     else {
 	emsize = cv->sc->parent->ascent + cv->sc->parent->descent;
-	sprintf(buf,_(" Curvature: %g"), kappa*emsize);
+	if ( kappa==0 )
+	    sprintf(buf,_(" Curvature: %g"), kappa*emsize);
+	else
+	    sprintf(buf,_(" Curvature: %g  Radius: %g"), kappa*emsize, 1.0/kappa );
     }
 }
 
@@ -200,6 +203,8 @@ static int ruler_e_h(GWindow gw, GEvent *event) {
       break;
       case et_mousedown:
 	cv->autonomous_ruler_w = false;
+	GDrawDestroyWindow(gw);
+	cv->ruler_w = NULL;
       break;
     }
 return( true );

@@ -789,6 +789,7 @@ void CVToolsSetCursor(CharView *cv, int state, char *device) {
     if ( shouldshow==cvt_magnify && (state&ksm_alt))
 	shouldshow = cvt_minify;
     if ( shouldshow!=cv->showing_tool ) {
+	CPEndInfo(cv);
 	GDrawSetCursor(cv->v,tools[shouldshow]);
 	if ( cvtools!=NULL )	/* Might happen if window owning docked palette destroyed */
 	    GDrawSetCursor(cvtools,tools[shouldshow]);
