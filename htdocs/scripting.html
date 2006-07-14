@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 3-Jul-2006 -->
+  <!-- AP: Last modified: 14-Jul-2006 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -379,7 +379,8 @@ endloop
     <LI>
       <CODE>$</CODE>&lt;<A NAME="Preference">Preference</A> Item&gt; (for example
       <CODE>$AutoHint</CODE>) allows you to examine the value of that preference
-      item (to set it use <CODE><A HREF="#SetPref">SetPref</A></CODE>)
+      item (to set it use
+      <CODE><A HREF="scripting-alpha.html#SetPref">SetPref</A></CODE>)
   </UL>
   <P>
   The following example will perform an action on all loaded fonts:
@@ -550,7 +551,7 @@ endloop
     <LI>
       <A HREF="scripting-alpha.html#SavePrefs">SavePrefs()</A>
     <LI>
-      <A HREF="scripting-alpha.html#SetPrefs">SetPrefs(str,val[,val2])</A>
+      <A HREF="scripting-alpha.html#SetPref">SetPref(str,val[,val2])</A>
     <LI>
       <A HREF="scripting-alpha.html#SizeOf">SizeOf(arr)</A>
     <LI>
@@ -1096,7 +1097,7 @@ endloop
     <LI>
       <A HREF="scripting-alpha.html#SavePrefs">SavePrefs()</A>
     <LI>
-      <A HREF="scripting-alpha.html#SetPrefs">SetPrefs(str,val[,val2])</A>
+      <A HREF="scripting-alpha.html#SetPref">SetPref(str,val[,val2])</A>
     <LI>
       It it also possible to get the value of a preference item by preceding its
       name with a dollar sign.

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 9-Apr-2006 -->
-  <!-- AP: Last modified: 3-Jul-2006 -->
+  <!-- AP: Last modified: 14-Jul-2006 -->
   <TITLE>Scripting functions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -2111,8 +2111,11 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	    and converts that copy into a reference to the appropriate glyph. Selection
 	    is changed to the set of glyphs which the command alters.
 	    <P>
-	    If specified the fudge argument specifie<B></B>s<B></B> the error allowed
-	    for coordinate differences.
+	    If specified the fudge argument specifies the error allowed for coordinate
+	    differences. The fudge argument may be either a real number or two integers
+	    where the first specifies the numerator and the second the denominator of
+	    the fudge (=arg1/arg2). Left over from the days when ff did not support real
+	    numbers.
 	  <DT>
 	    <A NAME="Rotate">R</A>otate(angle[,ox,oy])
 	  <DD>
@@ -2555,7 +2558,7 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	    integers and sets all the values, or it takes two integer arguments and sets
 	    <CODE>font.panose[index] = value</CODE>
 	  <DT>
-	    <A NAME="SetPrefs">SetPrefs</A>(str,val[,val2])
+	    <A NAME="SetPref">SetPref</A>(str,val[,val2])
 	  <DD>
 	    Sets the value of the preference item whose name is contained in str. If
 	    the preference item has a real type then a second argument may be passed
