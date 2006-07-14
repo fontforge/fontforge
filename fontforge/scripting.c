@@ -6690,6 +6690,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "SavePrefs", bSavePrefs, 1 },
     { "GetPref", bGetPrefs, 1 },
     { "SetPref", bSetPrefs, 1 },
+    { "SetPrefs", bSetPrefs, 1 },		/* The name was misdocumented, so accept that name too */
     { "DefaultOtherSubrs", bDefaultOtherSubrs, 1 },
     { "ReadOtherSubrsFile", bReadOtherSubrsFile, 1 },
     { "GetEnv", bGetEnv, 1 },
