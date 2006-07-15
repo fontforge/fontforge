@@ -1363,23 +1363,28 @@ static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
 		for ( k=0, ac=_ac; k<classcnt; ++k, ac=ac->next ) {
 		    for ( ap=base[j]->anchor; ap!=NULL && (ap->anchor!=ac || ap->type!=at);
 			    ap=ap->next );
-		    if ( ap!=NULL ) switch ( l ) {
+		    switch ( l ) {
 		      case 0:
 			offset += 2;
 		      break;
 		      case 1:
-			putshort(gpos,offset);
-			offset += 6;
+			if ( ap==NULL )
+			    putshort(gpos,0);
+			else {
+			    putshort(gpos,offset);
+			    offset += 6;
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
-			if ( ap->xadjust.corrections!=NULL || ap->yadjust.corrections!=NULL )
-			    offset += 4 + DevTabLen(&ap->xadjust) + DevTabLen(&ap->yadjust);
-			else
+			    if ( ap->xadjust.corrections!=NULL || ap->yadjust.corrections!=NULL )
+				offset += 4 + DevTabLen(&ap->xadjust) + DevTabLen(&ap->yadjust);
+			    else
 #endif
-			if ( gi->is_ttf && ap->has_ttf_pt )
-			    offset += 2;
+			    if ( gi->is_ttf && ap->has_ttf_pt )
+				offset += 2;
+			}
 		      break;
 		      case 2:
-			dumpanchor(gpos,ap,gi->is_ttf);
+			if ( ap!=NULL )
+			    dumpanchor(gpos,ap,gi->is_ttf);
 		      break;
 		    }
 		}
