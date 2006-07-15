@@ -2916,6 +2916,26 @@ return(s);
 	    }
 	}
 	sp = SplineBisect(s,min);
+/* On the mac we get rounding errors in the bisect routine */
+	{ double dx, dy;
+	    if ( (dx = sp->me.x - sp->prevcp.x)<0 ) dx=-dx;
+	    if ( (dy = sp->me.y - sp->prevcp.y)<0 ) dy=-dy;
+	    if ( dx!=0 && dy!=0 ) {
+		if ( dx<dy )
+		    sp->prevcp.x = sp->me.x;
+		else
+		    sp->prevcp.y = sp->me.y;
+	    }
+	    if ( (dx = sp->me.x - sp->nextcp.x)<0 ) dx=-dx;
+	    if ( (dy = sp->me.y - sp->nextcp.y)<0 ) dy=-dy;
+	    if ( dx!=0 && dy!=0 ) {
+		if ( dx<dy )
+		    sp->nextcp.x = sp->me.x;
+		else
+		    sp->nextcp.y = sp->me.y;
+	    }
+	}
+
 	if ( rmfrom[mini] ) sp->prev->from->ticked = true;
 	if ( rmto[mini] ) sp->next->to->ticked = true;
 	s = sp->next;
