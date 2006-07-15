@@ -1536,6 +1536,8 @@ static void aat_dumpfeat(struct alltabs *at, SplineFont *sf, struct feature *fea
     /* The mac documentation says that the features should be sorted by feature type */
     /*  This is a lie. Features should appear in the same order they appear */
     /*  in the morx table, otherwise WorldText goes blooie */
+    /* WorldText doesn't exist any more. Perhaps the morx table needs to be */
+    /*  sorted by feature id too? No, it can't be. Feature 0 must come last */
 
     if ( feature==NULL )
 return;
@@ -1543,6 +1545,31 @@ return;
 
     fcnt = scnt = 0;
     for ( k=0; k<3; ++k ) {
+	if ( k==1 ) {
+		/* FeatureName entry for All Typographics */
+	    mf = FindMacFeature(sf,0,&smf);
+	    if ( (mf!=NULL && mf->featname!=NULL) || (smf!=NULL && smf->featname!=NULL)) {
+		at->feat_name[fn].mn = mf!=NULL ? mf->featname : NULL;
+		at->feat_name[fn].smn = smf!=NULL ? smf->featname : NULL;
+		at->feat_name[fn++].strid = strid;
+	    }
+	    putshort(at->feat,0);
+	    putshort(at->feat,1);
+	    putlong(at->feat,offset);
+	    putshort(at->feat,0x0000);	/* non exclusive */
+	    putshort(at->feat,strid++);
+	    offset += 1*4;		/* (1 setting, 4 bytes) All Features */
+	} else if ( k==2 ) {
+		/* Setting Name Array for All Typographic Features */
+	    ms = FindMacSetting(sf,0,0,&sms);
+	    if ( (ms!=NULL && ms->setname!=NULL) || (sms!=NULL && sms->setname!=NULL)) {
+		at->feat_name[fn].mn = ms!=NULL ? ms->setname: NULL;
+		at->feat_name[fn].smn = sms!=NULL ? sms->setname: NULL;
+		at->feat_name[fn++].strid = strid;
+	    }
+	    putshort(at->feat,0);
+	    putshort(at->feat,strid++);
+	}
 	for ( f=feature; f!=NULL; f=n ) {
 	    cnt=1;
 	    if ( k!=2 ) {
@@ -1597,30 +1624,6 @@ return;
 	    putshort(at->feat,0);
 	    putlong(at->feat,0);
 	    offset = 12 /* header */ + fcnt*12;
-	} else if ( k==1 ) {
-		/* FeatureName entry for All Typographics */
-	    mf = FindMacFeature(sf,0,&smf);
-	    if ( (mf!=NULL && mf->featname!=NULL) || (smf!=NULL && smf->featname!=NULL)) {
-		at->feat_name[fn].mn = mf!=NULL ? mf->featname : NULL;
-		at->feat_name[fn].smn = smf!=NULL ? smf->featname : NULL;
-		at->feat_name[fn++].strid = strid;
-	    }
-	    putshort(at->feat,0);
-	    putshort(at->feat,1);
-	    putlong(at->feat,offset);
-	    putshort(at->feat,0x0000);	/* non exclusive */
-	    putshort(at->feat,strid++);
-	    offset += 1*4;		/* (1 setting, 4 bytes) All Features */
-	} else if ( k==2 ) {
-		/* Setting Name Array for All Typographic Features */
-	    ms = FindMacSetting(sf,0,0,&sms);
-	    if ( (ms!=NULL && ms->setname!=NULL) || (sms!=NULL && sms->setname!=NULL)) {
-		at->feat_name[fn].mn = ms!=NULL ? ms->setname: NULL;
-		at->feat_name[fn].smn = sms!=NULL ? sms->setname: NULL;
-		at->feat_name[fn++].strid = strid;
-	    }
-	    putshort(at->feat,0);
-	    putshort(at->feat,strid++);
 	}
     }
     memset( &at->feat_name[fn],0,sizeof(struct feat_name));
@@ -1741,14 +1744,12 @@ static void morxDumpChain(struct alltabs *at,struct feature *features,int chain,
 		if ( n->needsOff ) {
 		    putshort(at->morx,n->featureType);
 		    putshort(at->morx,n->featureSetting+1);
-		    putlong(at->morx,0);
-		    putlong(at->morx,~n->offFlags);
 		} else if ( n->singleMutex ) {		    
 		    putshort(at->morx,n->featureType);
 		    putshort(at->morx,n->featureSetting==0?1:0);
-		    putlong(at->morx,0);
-		    putlong(at->morx,~n->offFlags);
 		}
+		putlong(at->morx,0);
+		putlong(at->morx,~n->offFlags & ~n->flag );
 		if ( n->needsOff && n->next!=NULL && n->featureSetting+1==n->next->featureSetting )
 		    n = n->next;
 	    }
