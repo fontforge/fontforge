@@ -114,7 +114,7 @@ void SFDefaultAscent(SplineFont *sf) {
 	BDFFont *b;
 
 	for ( b=sf->bitmaps; b!=NULL; b=b->next ) {
-	    scaled_sum = (double) (em*b->ascent)/b->pixelsize;
+	    scaled_sum += (double) (em*b->ascent)/b->pixelsize;
 	    ++cnt;
 	}
 	if ( cnt!=0 )
