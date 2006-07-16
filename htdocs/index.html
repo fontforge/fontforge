@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 15-Jun-2006 -->
+  <!-- AP: Last modified: 15-Jul-2006 -->
   <TITLE>FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -71,7 +71,8 @@
       page</A> / SourceForge
       <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338">File
       Release System</A> /
-      <A HREF="http://sourceforge.net/project/project_donations.php?group_id=103338">Donate to FontForge</A>
+      <A HREF="http://sourceforge.net/project/project_donations.php?group_id=103338">Donate
+      to FontForge</A>
     <LI>
       <A HREF="source-build.html#Dependencies">Dependencies</A>
     <LI>
@@ -289,6 +290,9 @@
     <LI>
       FontForge only produces an approximation to the OS/2 Codepages fields.
     <LI>
+      Some <A HREF="index.html#badcommands">commands</A> don't work well in extreme
+      conditions.
+    <LI>
       ???
   </UL>
   <H2>
@@ -385,11 +389,16 @@
 	  Can you explain why that format is useful?
       </UL>
     <LI>
-      There are certain c<EM>ommands which don't work very well </EM>and if someone
-      else wanted to they might code them better than I...
+      There are certain <A NAME="badcommands">c<EM>ommands</EM></A><EM> which don't
+      work very well </EM>and if someone else wanted to they might code them better
+      than I...
       <UL>
 	<LI>
-	  Remove overlap (might be fixed now)
+	  Remove overlap (has problems with coincident splines)
+	<LI>
+	  Expand Stroke (has problems when there are sharp bends near the end of a
+	  contour -- a sharp bend is one where the radius of curvature is smaller than
+	  half the stroke-width)
 	<LI>
 	  Autokern (might be fixed now)
 	<LI>
@@ -455,7 +464,8 @@ U+0066 + U+0069 =&gt; U+FB01 'liga'
 	  </BLOCKQUOTE>
       </UL>
     <LI>
-      <A HREF="http://sourceforge.net/project/project_donations.php?group_id=103338">Donate to FontForge</A>
+      <A HREF="http://sourceforge.net/project/project_donations.php?group_id=103338">Donate
+      to FontForge</A>
   </UL>
   <H2>
     <A NAME="Acknowledgements">Acknowledgements</A>

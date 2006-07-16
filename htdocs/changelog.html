@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 15-Jun-2006 -->
+  <!-- AP: Last modified: 15-Jul-2006 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -35,6 +35,40 @@
     </TABLE>
   </BLOCKQUOTE>
   <UL>
+    <LI>
+      15-Jul-2006
+      <UL>
+	<LI>
+	  Apple's bitmap only fonts should not have an 'hhea' nor an 'hmtx'
+	  table<BR>
+	  Dummy up outline glyph widths when we don't have a 'hmtx' table by looking
+	  at bitmap widths for that glyph.<BR>
+	  ftxvalidate complains if the vertical line metrics are 0. Even in a strike
+	  with no vertical metrics information. So dummy something up.
+	<LI>
+	  Was getting the flags wrong for turning off features in an apple morx chain.
+	<LI>
+	  When outputing mark-to-base sub-tables with multiple marks I neglected to
+	  output an NUL offsets for the anchors that weren't there. So if a glyph had
+	  only one anchor (instead of two, or however many) then the offsets would
+	  be all wrong.
+	<LI>
+	  The SetPref() scripting function was misdocumented to be called SetPrefs()
+	  so accept both names.
+	<LI>
+	  When building an accented letter out of glyphs with an anchor class ff would
+	  increase the advance width of the accented glyph by the size (xmax-xmin)
+	  of the accent.
+	<LI>
+	  Expand the functionality of the ruler tool so that it also shows curvature.
+	<LI>
+	  When importing a bitmap font from a mac binary or an sfnt and the encodings
+	  of the destination and the bitmap did not match, then things got rather screwed
+	  up and might crash.
+	<LI>
+	  patch from KANOU. the ref check routine in glyphcomp compared one reference
+	  to itself.
+      </UL>
     <LI>
       03-Jul-2006
       <UL>
