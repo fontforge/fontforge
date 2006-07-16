@@ -506,6 +506,7 @@ struct feature {
     unsigned int r2l: 1;	/* I think this is the "descending" flag */
     unsigned int needsOff: 1;
     unsigned int singleMutex: 1;
+    unsigned int dummyOff: 1;
     uint8 subtable_type;
     int chain;
     int32 flag, offFlags;
@@ -1516,6 +1517,43 @@ return( features );
 return( features );
 }
 
+static struct feature *AddExclusiveNoops(SplineFont *sf, struct feature *features) {
+    struct feature *f, *n, *z, *p, *t;
+    int offFlags;
+    /* mutually exclusive features need to have a setting which does nothing */
+
+    for ( f=features; f!=NULL; f=n ) {
+	n= f->next;
+	if ( f->mf!=NULL && f->mf->ismutex ) {
+	    z = NULL;
+	    offFlags=0;
+	    for ( n=f; n!=NULL && n->featureType==f->featureType; n=n->next ) {
+		if ( n->featureSetting==0 )
+		    z = n;
+		offFlags |= n->flag;
+	    }
+	    if ( z==NULL ) {
+		if ( f==features )
+		    p = NULL;
+		else
+		    for ( p=features; p->next!=f; p=p->next );
+		t = chunkalloc(sizeof(struct feature));
+		*t = *f;
+		t->featureSetting = 0;
+		t->ms = FindMacSetting(sf,t->featureType,0,&t->sms);
+		t->flag = 0; t->offFlags = offFlags;
+		t->dummyOff = true;
+		t->next = f;
+		if ( p==NULL )
+		    features = t;
+		else
+		    p->next = t;
+	    }
+	}
+    }
+return( features );
+}
+
 static void aat_dumpfeat(struct alltabs *at, SplineFont *sf, struct feature *feature) {
     int scnt, fcnt, cnt;
     struct feature *f, *n, *p;
@@ -1655,14 +1693,18 @@ return( 0 );
 	    bit = 0;
 	}
 	for ( n=f; n!=NULL && n->featureType==f->featureType; ) {
-	    p = n;
-	    while ( n!=NULL && n->featureType==p->featureType &&
-		    n->featureSetting == p->featureSetting ) {
-		n->flag = 1<<bit;
-		n->chain = chain;
-		n = n->next;
+	    if ( n->dummyOff )
+		n=n->next;
+	    else {
+		p = n;
+		while ( n!=NULL && n->featureType==p->featureType &&
+			n->featureSetting == p->featureSetting ) {
+		    n->flag = 1<<bit;
+		    n->chain = chain;
+		    n = n->next;
+		}
+		++bit;
 	    }
-	    ++bit;
 	}
     }
     for ( f=feature; f!=NULL; f=n ) {
@@ -1700,7 +1742,7 @@ static void morxDumpChain(struct alltabs *at,struct feature *features,int chain,
 
     for ( f=features, cnt=0; f!=NULL; f=n ) {
 	if ( f->chain==chain ) {
-	    for ( n=f; n!=NULL && n->featureType==f->featureType; n=n->next ) {
+	    for ( n=f; n!=NULL && n->featureType==f->featureType; n=n->next ) if ( !n->dummyOff ) {
 		all[cnt++] = n;
 		++subcnt;
 		if ( n->ms!=NULL && n->ms->initially_enabled )
@@ -1736,7 +1778,7 @@ static void morxDumpChain(struct alltabs *at,struct feature *features,int chain,
     /* Features */
     for ( f=features; f!=NULL; f=n ) {
 	if ( f->chain==chain ) {
-	    for ( n=f; n!=NULL && n->featureType==f->featureType; n=n->next ) {
+	    for ( n=f; n!=NULL && n->featureType==f->featureType; n=n->next ) if ( !n->dummyOff ) {
 		putshort(at->morx,n->featureType);
 		putshort(at->morx,n->featureSetting);
 		putlong(at->morx,n->flag);
@@ -1816,6 +1858,7 @@ void aat_dumpmorx(struct alltabs *at, SplineFont *sf) {
 return;
     }
     features = featuresOrderByType(features);
+    features = AddExclusiveNoops(sf,features);
     aat_dumpfeat(at, sf, features);
     nchains = featuresAssignFlagsChains(features);
 
