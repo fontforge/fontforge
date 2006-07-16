@@ -3274,6 +3274,36 @@ static void readttfwidths(FILE *ttf,struct ttfinfo *info) {
     }
 }
 
+static void dummywidthsfromstrike(FILE *ttf,struct ttfinfo *info) {
+    BDFFont *bdf;
+    int i, cnt;
+    double scaled_sum;
+
+    if ( info->bitmaps==NULL )
+return;
+#if 0
+    for ( bdf=info->bitmaps; bdf->next!=NULL; bdf=bdf->next );
+    for ( i=0; i<bdf->glyphcnt; ++i ) if ( bdf->glyphs[i]!=NULL ) {
+	bdf->glyphs[i]->sc->width = info->emsize*bdf->glyphs[i]->width/bdf->pixelsize;
+	bdf->glyphs[i]->sc->widthset = true;
+    }
+#else
+    for ( i=0; i<info->glyph_cnt; ++i ) if ( info->chars[i]!=NULL ) {
+	cnt = 0; scaled_sum = 0;
+	for ( bdf=info->bitmaps; bdf->next!=NULL; bdf=bdf->next ) {
+	    if ( i<bdf->glyphcnt && bdf->glyphs[i]!=NULL ) {
+		scaled_sum += ((double) (info->emsize*bdf->glyphs[i]->width))/bdf->pixelsize;
+		++cnt;
+	    }
+	}
+	if ( cnt!=0 ) {
+	    info->chars[i]->width = scaled_sum/cnt;
+	    info->chars[i]->widthset = true;
+	}
+    }
+#endif
+}
+
 static void readttfvwidths(FILE *ttf,struct ttfinfo *info) {
     int i,j;
     int lastvwidth = info->emsize, vwidth_cnt, tsb, cnt=0;
@@ -4346,6 +4376,8 @@ return( 0 );
     }
     if ( info->hmetrics_start!=0 )
 	readttfwidths(ttf,info);
+    else if ( info->bitmapdata_start!=0 && info->bitmaploc_start!=0 )
+	dummywidthsfromstrike(ttf,info);
     if ( info->vmetrics_start!=0 && info->vhea_start!=0 )
 	readttfvwidths(ttf,info);
     /* 'cmap' is not meaningful for cid keyed fonts, and not supplied for */
