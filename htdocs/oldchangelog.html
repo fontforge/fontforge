@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 16-Sep-2001 -->
-  <!-- AP: Last modified: 8-Dec-2005 -->
+  <!-- AP: Last modified: 15-Jul-2006 -->
   <TITLE>Older changes to FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -909,24 +909,6 @@
 	  have both a GPOS and a GSUB. If it doesn't the font is not used. A latin
 	  font need not have either, but if it doesn't have GSUB then GPOS won't be
 	  used.
-	  <P>
-	  Sergey Malkin from MicroSoft tells me:
-	  <BLOCKQUOTE>
-	    Each shaping engine in Uniscribe can decide on its requirements for layout
-	    tables - some of them require both GSUB and GPOS, in some cases any table
-	    present is enough, or it can work without any table.
-	    <P>
-	    Sometimes, purpose of the check is to determine if font is supporting particular
-	    script - if required tables are not there font is just rejected by this shaping
-	    engine. Sometimes, shaping engine can not just reject the font because there
-	    are fonts using older shaping technologies we still have to support, so it
-	    uses some logic when to fallback to legacy layout code.
-	    <P>
-	    In your case this is Hebrew, where both tables are required to use OpenType
-	    processing. Arabic requires both tables too, Latin requires GSUB to execute
-	    GPOS. But in general, if you have both tables you should be safe with any
-	    script to get fully featured OpenType shaping.
-	  </BLOCKQUOTE>
 	  <P>
 	  So the script sub-table of both GPOS/GSUB should contain all scripts used
 	  in either (rather than just the scripts used in the current one).
