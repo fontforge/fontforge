@@ -4885,7 +4885,8 @@ return( false );
     else if ( format==ff_otfcid )
 	aborted = !dumpcidglyphs(sf,at);
     else if ( format==ff_none && at->applemode ) {
-	aborted = !dumpcffhmtx(at,sf,true);
+	aborted = !dumpcffhmtx(at,sf,true);	/* There is no 'hmtx' table for apple bitmap only fonts */
+		/* But we need some of the side effects of this */
     } else if ( format==ff_none && at->otbbitmaps ) {
 	aborted = !dumpcffhmtx(at,sf,true);
 	dumpnoglyphs(sf,&at->gi);
@@ -4942,7 +4943,8 @@ return( false );
     else if ( format!=ff_otf && format!=ff_otfcid && (format!=ff_none || (bsizes!=NULL && !at->applemode && at->opentypemode)) )
 	redoloca(at);
     redohead(at);
-    redohhead(at,false);
+    if ( format!=ff_none || !at->applemode )	/* No 'hhea' table for apple bitmap-only fonts */
+	redohhead(at,false);
     if ( sf->hasvmetrics ) {
 	redohhead(at,true);
 	redovorg(at);		/* I know, VORG is only meaningful in a otf font and I dump it out in ttf too. Well, it will help ME read the font back in, and it won't bother anyone else. So there. */
@@ -5163,13 +5165,20 @@ return( false );
 	at->tabdir.tabs[i++].length = at->headlen;
     }
 
-    at->tabdir.tabs[i].tag = CHR('h','h','e','a');
-    at->tabdir.tabs[i].data = at->hheadf;
-    at->tabdir.tabs[i++].length = at->hheadlen;
+    if ( format!=ff_none || !at->applemode ) {
+	at->tabdir.tabs[i].tag = CHR('h','h','e','a');
+	at->tabdir.tabs[i].data = at->hheadf;
+	at->tabdir.tabs[i++].length = at->hheadlen;
+    } else if ( at->hheadf!=NULL ) {
+	fclose(at->hheadf);
+	at->hheadf = NULL;
+    }
 
-    at->tabdir.tabs[i].tag = CHR('h','m','t','x');
-    at->tabdir.tabs[i].data = at->gi.hmtx;
-    at->tabdir.tabs[i++].length = at->gi.hmtxlen;
+    if ( format!=ff_none || !at->applemode ) {
+	at->tabdir.tabs[i].tag = CHR('h','m','t','x');
+	at->tabdir.tabs[i].data = at->gi.hmtx;
+	at->tabdir.tabs[i++].length = at->gi.hmtxlen;
+    }
 
     if ( at->kern!=NULL ) {
 	at->tabdir.tabs[i].tag = CHR('k','e','r','n');
