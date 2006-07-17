@@ -603,6 +603,7 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 	    for ( j=0; j<info->savecnt; ++j ) if ( info->savetab[j].tag == tag ) {
 		info->savetab[j].offset = offset;
 		info->savetab[j].len = length;
+	    break;
 	    }
 	}
     }
@@ -4841,12 +4842,13 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 		last[0]->next = tab;
 	    last[0] = tab;
 	} else {
-	    if ( last[0]==NULL )
+	    if ( last[1]==NULL )
 		sf->ttf_tab_saved = tab;
 	    else
 		last[1]->next = tab;
 	    last[1] = tab;
 	}
+	tab->next = NULL;
     }
 
     if ( info->twobytesymbol )
