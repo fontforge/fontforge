@@ -618,22 +618,22 @@ static GTextInfo mslanguages[] = {
 /* GT: See the long comment at "Property|New" */
 /* GT: The msgstr should contain a translation of "Malayalam", ignore "Lang|" */
     { (unichar_t *) N_("Lang|Amharic"), NULL, 0, 0, (void *) 0x45e, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Arabic Saudi Arabia"), NULL, 0, 0, (void *) 0x401, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Arabic Iraq"), NULL, 0, 0, (void *) 0x801, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Arabic Egypt"), NULL, 0, 0, (void *) 0xc01, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Arabic Libya"), NULL, 0, 0, (void *) 0x1001, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Arabic Algeria"), NULL, 0, 0, (void *) 0x1401, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Arabic Morocco"), NULL, 0, 0, (void *) 0x1801, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Arabic Tunisia"), NULL, 0, 0, (void *) 0x1C01, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Arabic Oman"), NULL, 0, 0, (void *) 0x2001, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Arabic Yemen"), NULL, 0, 0, (void *) 0x2401, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Arabic Syria"), NULL, 0, 0, (void *) 0x2801, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Arabic Jordan"), NULL, 0, 0, (void *) 0x2c01, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Arabic Lebanon"), NULL, 0, 0, (void *) 0x3001, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Arabic Kuwait"), NULL, 0, 0, (void *) 0x3401, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Arabic U.A.E."), NULL, 0, 0, (void *) 0x3801, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Arabic Bahrain"), NULL, 0, 0, (void *) 0x3c01, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Arabic Qatar"), NULL, 0, 0, (void *) 0x4001, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Arabic (Saudi Arabia)"), NULL, 0, 0, (void *) 0x401, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Arabic (Iraq)"), NULL, 0, 0, (void *) 0x801, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Arabic (Egypt)"), NULL, 0, 0, (void *) 0xc01, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Arabic (Libya)"), NULL, 0, 0, (void *) 0x1001, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Arabic (Algeria)"), NULL, 0, 0, (void *) 0x1401, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Arabic (Morocco)"), NULL, 0, 0, (void *) 0x1801, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Arabic (Tunisia)"), NULL, 0, 0, (void *) 0x1C01, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Arabic (Oman)"), NULL, 0, 0, (void *) 0x2001, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Arabic (Yemen)"), NULL, 0, 0, (void *) 0x2401, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Arabic (Syria)"), NULL, 0, 0, (void *) 0x2801, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Arabic (Jordan)"), NULL, 0, 0, (void *) 0x2c01, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Arabic (Lebanon)"), NULL, 0, 0, (void *) 0x3001, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Arabic (Kuwait)"), NULL, 0, 0, (void *) 0x3401, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Arabic (U.A.E.)"), NULL, 0, 0, (void *) 0x3801, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Arabic (Bahrain)"), NULL, 0, 0, (void *) 0x3c01, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Arabic (Qatar)"), NULL, 0, 0, (void *) 0x4001, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Lang|Armenian"), NULL, 0, 0, (void *) 0x42b, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Assamese"), NULL, 0, 0, (void *) 0x44d, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Azeri (Latin)"), NULL, 0, 0, (void *) 0x42c, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -4371,8 +4371,11 @@ static void TTFN_SetSBs(struct gfi_data *d) {
 	    freeme = NULL;
 	    if ( str==NULL )
 		freeme = str = tn_recalculatedef(d,d->ttfnames[i].strid);
-	    pt = strchr(str,'\n');
-	    len = GDrawGetText8Width(d->tn_v,str,pt==NULL ? -1 : pt-str,NULL);
+	    if ( str!=NULL ) {
+		pt = strchr(str,'\n');
+		len = GDrawGetText8Width(d->tn_v,str,pt==NULL ? -1 : pt-str,NULL);
+	    } else
+		len = 0;
 	    free(freeme);
 	    if ( len>strmax ) strmax = len;
 	}
@@ -4732,11 +4735,26 @@ static void TN_StrPopup(struct gfi_data *d,GEvent *event) {
     if ( d->ttfnames[d->tn_active].basedon ) {
 	mi[MID_MultiEdit-1].ti.disabled = true;
 	mi[MID_ToggleBase-1].ti.text = (unichar_t *) _("Detach from PostScript Names");
-    } else
+    } else {
+	char *temp;
 	mi[MID_ToggleBase-1].ti.text = (unichar_t *) _("Same as PostScript Names");
+	temp = tn_recalculatedef(d,d->ttfnames[d->tn_active].strid);
+	mi[MID_ToggleBase-1].ti.disabled = (temp==NULL);
+	free(temp);
+    }
     mi[MID_MultiEdit-1].ti.text = (unichar_t *) _("Multi-line edit");
     mi[MID_Delete-1].ti.text = (unichar_t *) _("Delete");
     GMenuCreatePopupMenu(d->tn_v,event, mi);
+}
+
+static int menusort(const void *m1, const void *m2) {
+    const GMenuItem *mi1 = m1, *mi2 = m2;
+
+    /* Should do a strcoll here, but I never wrote one */
+    if ( mi1->ti.text_is_1byte && mi2->ti.text_is_1byte )
+return( strcoll( (char *) (mi1->ti.text), (char *) (mi2->ti.text)) );
+    else
+return( u_strcmp(mi1->ti.text,mi2->ti.text));
 }
 
 static void TN_StrIDPopupDispatch(GWindow gw, GMenuItem *mi, GEvent *e) {
@@ -4765,11 +4783,13 @@ static void TN_StrIDPopup(struct gfi_data *d,GEvent *event) {
 	mi[i].mid = (intpt) ttfnameids[i].userdata;
 	mi[i].invoke = TN_StrIDPopupDispatch;
 	mi[i].ti = ttfnameids[i];
+	mi[i].ti.selected = false;
 	mi[i].ti.fg = COLOR_DEFAULT;
 	mi[i].ti.bg = COLOR_DEFAULT;
 	mi[i].ti.checkable = true;
 	mi[i].ti.checked = d->ttfnames[d->tn_active].strid==mi[i].mid;
     }
+    qsort(mi,i,sizeof(mi[0]),menusort);
     GMenuCreatePopupMenu(d->tn_v,event, mi);
 }
 
@@ -4814,13 +4834,6 @@ return;
     GDrawRequestExpose(d->tn_v,NULL,false);
 }
 
-static int menusort(const void *m1, const void *m2) {
-    const GMenuItem *mi1 = m1, *mi2 = m2;
-
-    /* Should do a strcoll here, but I never wrote one */
-return( u_strcmp(mi1->ti.text,mi2->ti.text));
-}
-
 static void TN_LangPopup(struct gfi_data *d,GEvent *event) {
     GMenuItem mi[250];
     int i;
@@ -4848,6 +4861,7 @@ static void TN_Popups(struct gfi_data *d,GEvent *event) {
     int line = event->u.mouse.y/d->tn_fh + d->tn_offtop;
     int x = event->u.mouse.x + d->tn_offleft;
 
+    GGadgetEndPopup();
     if ( d->tn_smallactive!=-1 ) {
 	TN_FinishSmallEdit(d);
 return;
@@ -4871,6 +4885,18 @@ return;
 	TN_StrSmallEdit(d);
 }
 
+static void TN_PopupHelp(struct gfi_data *d,GEvent *event) {
+
+    GGadgetPreparePopup8(d->gw,_(
+	"To create a new name, left click on the <New> button, and select a locale.\n"
+	"To change the locale, left click on it.\n"
+	"To change the string type, left click on it.\n"
+	"To change the text, left click in it and then type.\n"
+	"To delete a name, right click on the name & select Delete from the menu.\n"
+	"To associate or disassocate a truetype name right click and select the\n"
+	" appropriate menu item." ));
+}
+
 static int tn_e_h(GWindow gw, GEvent *event) {
     struct gfi_data *d = (struct gfi_data *) GDrawGetUserData(gw);
 
@@ -4890,6 +4916,7 @@ return( GGadgetDispatchEvent(GWidgetGetControl(d->gw,CID_TNVScroll),event));
 	TN_Popups(d,event);
       break;
       case et_mousemove:
+	TN_PopupHelp(d,event);
       break;
       case et_mouseup:
       break;
