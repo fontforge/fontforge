@@ -1928,8 +1928,9 @@ static void SMD_EditState(SMD *smd) {
 
     if ( smd->sm->type==asm_indic ) {
 	if ( !indicv_done ) {
-	    for ( k=0; indicverbs_list[k].text!=NULL; ++k )
-		indicverbs_list[k].text = (unichar_t *) _((char *) indicverbs_list[k].text );
+	    int i;
+	    for ( i=0; indicverbs_list[i].text!=NULL; ++i )
+		indicverbs_list[i].text = (unichar_t *) _((char *) indicverbs_list[i].text );
 	    indicv_done = true;
 	}
 	label[k].text = (unichar_t *) _("Mark Current Glyph As Last");
