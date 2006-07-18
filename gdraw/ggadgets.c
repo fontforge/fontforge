@@ -473,7 +473,7 @@ void GGadgetPreparePopupR(GWindow base,int msg) {
 }
 
 void GGadgetPreparePopup8(GWindow base,char *msg) {
-    static unichar_t popup_msg[300];
+    static unichar_t popup_msg[500];
     utf82u_strncpy(popup_msg,msg,sizeof(popup_msg)/sizeof(popup_msg[0]));
     popup_msg[sizeof(popup_msg)/sizeof(popup_msg[0])-1]=0;
     GGadgetPreparePopup(base,popup_msg);
