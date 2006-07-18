@@ -1767,11 +1767,11 @@ static void _CVFit(CharView *cv,DBounds *b) {
     hsc = cv->height / top;
     if ( wsc<hsc ) hsc = wsc;
 
-    cv->scale = hsc/1.2;
+    cv->scale = hsc;
     if ( cv->scale > 1.0 ) {
-	cv->scale = floor(cv->scale);
+	cv->scale = floor(2*cv->scale)/2;
     } else {
-	cv->scale = 1/ceil(1/cv->scale);
+	cv->scale = 2/ceil(2/cv->scale);
     }
 
     cv->xoff = -(left - (right/10))*cv->scale + offset;
@@ -1782,11 +1782,20 @@ static void _CVFit(CharView *cv,DBounds *b) {
 
 static void CVFit(CharView *cv) {
     DBounds b;
+    double center;
 
     SplineCharFindBounds(cv->sc,&b);
     if ( b.miny>=0 ) b.miny = -cv->sc->parent->descent;
     if ( b.minx>0 ) b.minx = 0;
     if ( b.maxx<cv->sc->width ) b.maxx = cv->sc->width;
+    /* Now give some extra space around the interesting stuff */
+    center = (b.maxx+b.minx)/2;
+    b.minx = center - (center - b.minx)*1.2;
+    b.maxx = center + (b.maxx - center)*1.2;
+    center = (b.maxy+b.miny)/2;
+    b.miny = center - (center - b.miny)*1.2;
+    b.maxy = center + (b.maxy - center)*1.2;
+
     _CVFit(cv,&b);
 }
 
@@ -2379,6 +2388,7 @@ static void CVCrossing(CharView *cv, GEvent *event ) {
     cv->info.x = (event->u.crossing.x-cv->xoff)/cv->scale;
     cv->info.y = (cv->height-event->u.crossing.y-cv->yoff)/cv->scale;
     CVInfoDraw(cv,cv->gw);
+    CPEndInfo(cv);
 }
 
 static int CheckPoint(FindSel *fs, SplinePoint *sp, SplineSet *spl) {
@@ -3569,6 +3579,7 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
 	    CVMagnify(cv,cx,cy,cv->active_tool==cvt_minify?-1:1);
         } else {
 	    DBounds b;
+	    double oldscale = cv->scale;
 	    if ( cv->p.cx>cv->info.x ) {
 		b.minx = cv->info.x;
 		b.maxx = cv->p.cx;
@@ -3584,6 +3595,10 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
 		b.maxy = cv->info.y;
 	    }
 	    _CVFit(cv,&b);
+	    if ( oldscale==cv->scale ) {
+		cv->scale += .5;
+		CVNewScale(cv);
+	    }
 	}
       break;
       case cvt_rotate: case cvt_flip: case cvt_scale: case cvt_skew:
