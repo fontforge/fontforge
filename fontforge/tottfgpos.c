@@ -3238,6 +3238,7 @@ static FILE *g___FigureExtensionSubTables(struct clookup *clookups,struct lookup
     int cnt, gotmore;
     FILE *efile;
     int i, offset;
+    int any= false;
 
     if ( clookups==NULL )
 return( NULL );
@@ -3250,6 +3251,15 @@ return( NULL );
 		if ( offset+cl->lookups[i]->offset[0]>65535 )
 	    break;
 	    if ( i>=0 ) {
+		if ( !any ) {
+		    gwwv_post_notice(_("Lookup potentially too big"),
+			    _("One of the lookups for the '%c%c%c%c' feature has an\noffset bigger than 65535 bytes. This means\nFontForge must use an extension lookup to output it.\nNot all applications support extension lookups."),
+			    (cl->lookups[i]->feature_tag>>24)&0xff,
+			    (cl->lookups[i]->feature_tag>>16)&0xff,
+			    (cl->lookups[i]->feature_tag>>8 )&0xff,
+			    (cl->lookups[i]->feature_tag    )&0xff );
+		    any = true;
+		}
 		cl->extension = true;
 		cl->lookup_type = is_gpos ? 9 : 7;
 		for ( i=cl->lcnt-1; i>=0; --i ) if ( !cl->lookups[i]->already_extended ) {
@@ -3274,7 +3284,7 @@ return( NULL );
 	if ( l->already_extended ) {
 	    putshort(efile,1);	/* exten subtable format (there's only one) */
 	    putshort(efile,l->lookup_type);
-	    putlong(efile,(cnt-i)*8 + l->offset[0]);
+	    putlong(efile,l->offset[0]-i*8);
 	    l->offset[1] = i*8;
 	    ++i;
 	}
