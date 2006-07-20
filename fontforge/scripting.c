@@ -3460,7 +3460,7 @@ static void bSetCharName(Context *c) {
 	uni = UniFromName(name,c->curfv->sf->uni_interp,c->curfv->map->enc);
     }
     SCSetMetaData(sc,name,uni,comment);
-    SCLigDefault(sc);
+    /* SCLigDefault(sc); */	/* Not appropriate for indic scripts. May not be appropriate anywhere. Seems to confuse people even when it is appropriate */
 }
 
 static void bSetUnicodeValue(Context *c) {
