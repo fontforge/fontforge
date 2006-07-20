@@ -4948,6 +4948,7 @@ static void InitTTFNames(struct gfi_data *d) {
 		    stn[cnt].strid = i;
 		    stn[cnt].lang = tln->lang;
 		    stn[cnt].basedon = false;
+		    stn[cnt].cantremove = false;
 		    stn[cnt].str = copy(tln->names[i]);
 		}
 		++cnt;
@@ -4960,6 +4961,7 @@ static void InitTTFNames(struct gfi_data *d) {
 		stn[cnt].strid = ttfspecials[i];
 		stn[cnt].lang = 0x409;
 		stn[cnt].basedon = true;
+		stn[cnt].cantremove = true;
 		stn[cnt].str = NULL;
 	    }
 	    ++cnt;
@@ -4971,8 +4973,7 @@ static void InitTTFNames(struct gfi_data *d) {
 	stn[i].thislocale = d->langlocalecode;
     for ( i=0; i<cnt; ++i ) if ( stn[i].lang==0x409 ) {
 	for ( j=0; ttfspecials[j]!=-1 && ttfspecials[j]!=stn[i].strid; ++j );
-	if ( ttfspecials[j]!=-1 )
-	    stn[i].cantremove = true;
+	stn[i].cantremove = ( ttfspecials[j]!=-1 );
     }
     d->ttfnames = stn;
     d->tn_cnt = cnt; d->tn_max = cnt+10;
