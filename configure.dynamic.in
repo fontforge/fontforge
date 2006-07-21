@@ -91,6 +91,8 @@ AC_DEFUN([AC_CHECK_LIB_LA],
  ;;
 esac
 
+AC_C_BIGENDIAN
+
 AC_PROG_LIBTOOL
 
 AC_ARG_WITH(capslock-for-alt,
@@ -205,7 +207,13 @@ if test "$gww_uselessiconv" = "no" ; then
  AC_CHECK_HEADERS([iconv.h])
 fi
 
+dnl linux has isnan in math.h, solaris puts it in ieeeefp.h
+
 AC_CHECK_HEADERS([ieeefp.h])
+
+dnl linux has integer types in stdint.h, solaris, vms in inttypes.h
+
+AC_CHECK_HEADERS([stdint.h])
 
 dnl many systems have freetype on /usr/X11R6/lib which isn't in the standard search path
 

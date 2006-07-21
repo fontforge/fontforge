@@ -2821,8 +2821,8 @@ return(s);
 	    double d = 4*s->splines[0].b*s->splines[0].b-4*3*s->splines[0].a*s->splines[0].c;
 	    if ( d>0 ) {
 		d = sqrt(d);
-		t[p++] = (-2*s->splines[0].b+d)/(2*3*s->splines[0].a);
-		t[p++] = (-2*s->splines[0].b-d)/(2*3*s->splines[0].a);
+		t[p++] = CheckExtremaForSingleBitErrors(&s->splines[0],(-2*s->splines[0].b+d)/(2*3*s->splines[0].a));
+		t[p++] = CheckExtremaForSingleBitErrors(&s->splines[0],(-2*s->splines[0].b-d)/(2*3*s->splines[0].a));
 	    }
 	} else if ( s->splines[0].b!=0 )
 	    t[p++] = -s->splines[0].c/(2*s->splines[0].b);
@@ -2861,8 +2861,8 @@ return(s);
 	    double d = 4*s->splines[1].b*s->splines[1].b-4*3*s->splines[1].a*s->splines[1].c;
 	    if ( d>0 ) {
 		d = sqrt(d);
-		t[p++] = (-2*s->splines[1].b+d)/(2*3*s->splines[1].a);
-		t[p++] = (-2*s->splines[1].b-d)/(2*3*s->splines[1].a);
+		t[p++] = CheckExtremaForSingleBitErrors(&s->splines[1],(-2*s->splines[1].b+d)/(2*3*s->splines[1].a));
+		t[p++] = CheckExtremaForSingleBitErrors(&s->splines[1],(-2*s->splines[1].b-d)/(2*3*s->splines[1].a));
 	    }
 	} else if ( s->splines[1].b!=0 )
 	    t[p++] = -s->splines[1].c/(2*s->splines[1].b);

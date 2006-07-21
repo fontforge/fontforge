@@ -3195,6 +3195,57 @@ return( ts[i] );
 return( -1 );
 }
 
+double CheckExtremaForSingleBitErrors(const Spline1D *sp, double t) {
+    union { double dval; int32 ival[2]; } u1, um1, temp;
+    double slope, slope1, slopem1;
+#ifdef WORDS_BIGENDIAN
+    const int index = 1;
+#else
+    const int index = 0;
+#endif
+
+    slope = (3*sp->a*t+2*sp->b)*t+sp->c;
+
+    u1.dval = t;
+    u1.ival[index] += 1;
+    slope1 = (3*sp->a*u1.dval+2*sp->b)*u1.dval+sp->c;
+
+    um1.dval = t;
+    um1.ival[index] -= 1;
+    slopem1 = (3*sp->a*um1.dval+2*sp->b)*um1.dval+sp->c;
+
+    if ( slope<0 ) slope = -slope;
+    if ( slope1<0 ) slope1 = -slope1;
+    if ( slopem1<0 ) slopem1 = -slope1;
+
+    if ( slope1<slope && slope1<=slopem1 ) {
+	 /* Ok, things got better when we added 1. */
+	 /*  Do they improve further if we add 1 more? */
+	temp = u1;
+	temp.ival[index] += 1;
+	slope = (3*sp->a*temp.dval+2*sp->b)*temp.dval+sp->c;
+	if ( slope<0 ) slope = -slope;
+	if ( slope<slope1 )
+return( temp.dval );
+	else
+return( u1.dval );
+    } else if ( slopem1<slope && slopem1<=slope ) {
+	 /* Ok, things got better when we subtracted 1. */
+	 /*  Do they improve further if we subtract 1 more? */
+	temp = um1;
+	temp.ival[index] -= 1;
+	slope = (3*sp->a*temp.dval+2*sp->b)*temp.dval+sp->c;
+	if ( slope<0 ) slope = -slope;
+	if ( slope<slopem1 )
+return( temp.dval );
+	else
+return( um1.dval );
+    }
+    /* that seems as good as it gets */
+
+return( t );
+}
+
 static void _SplineFindExtrema(const Spline1D *sp, double *_t1, double *_t2 ) {
     double t1= -1, t2= -1;
     double b2_fourac;
@@ -3212,6 +3263,8 @@ static void _SplineFindExtrema(const Spline1D *sp, double *_t1, double *_t2 ) {
 	    b2_fourac = sqrt(b2_fourac);
 	    t1 = (-2*sp->b - b2_fourac) / (6*sp->a);
 	    t2 = (-2*sp->b + b2_fourac) / (6*sp->a);
+	    t1 = CheckExtremaForSingleBitErrors(sp,t1);
+	    t2 = CheckExtremaForSingleBitErrors(sp,t2);
 	    if ( t1>t2 ) { double temp = t1; t1 = t2; t2 = temp; }
 	    else if ( t1==t2 ) t2 = -1;
 	    if ( RealNear(t1,0)) t1=0; else if ( RealNear(t1,1)) t1=1;
