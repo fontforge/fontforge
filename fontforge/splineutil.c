@@ -589,6 +589,8 @@ static void SplineFindBounds(const Spline *sp, DBounds *bounds) {
 	}
 
 	/* then try the extrema of the spline (assuming they are between t=(0,1) */
+	/* (I don't bother fixing up for tiny rounding errors here. they don't matter */
+	/* But we could call CheckExtremaForSingleBitErrors */
 	if ( sp1->a!=0 ) {
 	    b2_fourac = 4*sp1->b*sp1->b - 12*sp1->a*sp1->c;
 	    if ( b2_fourac>=0 ) {
