@@ -362,8 +362,8 @@ static void AddSpline(EdgeList *es, Spline *sp ) {
 	b2_fourac = 4*msp->b*msp->b - 12*msp->a*msp->c;
 	if ( b2_fourac>=0 ) {
 	    b2_fourac = sqrt(b2_fourac);
-	    t1 = (-2*msp->b - b2_fourac) / (6*msp->a);
-	    t2 = (-2*msp->b + b2_fourac) / (6*msp->a);
+	    t1 = CheckExtremaForSingleBitErrors(msp,(-2*msp->b - b2_fourac) / (6*msp->a));
+	    t2 = CheckExtremaForSingleBitErrors(msp,(-2*msp->b + b2_fourac) / (6*msp->a));
 	    if ( t1>t2 ) { real temp = t1; t1 = t2; t2 = temp; }
 	    else if ( t1==t2 ) t2 = 2.0;
 
