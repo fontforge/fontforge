@@ -1507,6 +1507,7 @@ extern void SplineFindExtrema(const Spline1D *sp, double *_t1, double *_t2 );
 #define CURVATURE_ERROR	-1e9
 extern double SplineCurvature(Spline *s, double t);
 
+extern double CheckExtremaForSingleBitErrors(const Spline1D *sp, double t);
 extern int Spline2DFindExtrema(const Spline *sp, double extrema[4] );
 extern int Spline2DFindPointsOfInflection(const Spline *sp, double poi[2] );
 extern int SplineAtInflection(Spline1D *sp, double t );

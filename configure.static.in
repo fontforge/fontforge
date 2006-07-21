@@ -38,6 +38,8 @@ gww_nodynamic="yes"
  ;;
 esac
 
+AC_C_BIGENDIAN
+
 AC_ARG_WITH(capslock-for-alt,
  [  --with-capslock-for-alt   Control whether to use capslock rather than alt/meta to alter behavior of tools in outline/bitmap windows],
  [
@@ -84,7 +86,13 @@ fi
 
 AC_CHECK_FUNC(tzset,:,AC_DEFINE(_NO_TZSET))
 
+dnl linux has isnan in math.h, solaris puts it in ieeeefp.h
+
 AC_CHECK_HEADERS([ieeefp.h])
+
+dnl linux has integer types in stdint.h, solaris, vms in inttypes.h
+
+AC_CHECK_HEADERS([stdint.h])
 
 dnl Is there a better way to add a directory to the include path?
 
