@@ -4562,7 +4562,7 @@ static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_Revert:
-	    mi->ti.disabled = cv->fv->sf->origname==NULL;
+	    mi->ti.disabled = cv->fv->sf->origname==NULL || cv->fv->sf->new;
 	  break;
 	  case MID_RevertGlyph:
 	    mi->ti.disabled = cv->fv->sf->filename==NULL ||
