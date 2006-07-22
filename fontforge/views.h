@@ -684,6 +684,7 @@ extern void FVMergeFonts(FontView *fv);
 extern SplineFont *InterpolateFont(SplineFont *base, SplineFont *other, real amount, Encoding *enc);
 extern void FVInterpolateFonts(FontView *fv);
 extern void FVRevert(FontView *fv);
+extern void FVRevertBackup(FontView *fv);
 
 extern void FVDeselectAll(FontView *fv);
 

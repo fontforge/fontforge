@@ -953,6 +953,7 @@ struct ttflangname {
     struct ttflangname *next;
 };
 
+enum backedup_state { bs_dontknow=0, bs_not=1, bs_backedup=2 };
 typedef struct splinefont {
     char *fontname, *fullname, *familyname, *weight;
     char *copyright;
@@ -983,7 +984,8 @@ typedef struct splinefont {
 						/*  I leave it in so as to avoid cluttering up code with #ifdefs */
     unsigned int strokedfont: 1;
     unsigned int new: 1;			/* A new and unsaved font */
-    unsigned int compacted: 1;	/* only used when opening a font */
+    unsigned int compacted: 1;			/* only used when opening a font */
+    unsigned int backedup: 2;			/* 0=>don't know, 1=>no, 2=>yes */
     struct fontview *fv;
     enum uni_interp uni_interp;
     NameList *for_new_glyphs;
