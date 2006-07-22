@@ -915,10 +915,24 @@ return;
 	if ( !RevertAskChanged(old->fontname,old->origname))
 return;
     if ( tobackup ) {
-	char *buf = galloc(strlen(fv->sf->origname)+10);
-	strcpy(buf,fv->sf->origname);
+	/* we can only revert to backup if it's an sfd file. So we use filename*/
+	/*  here. In the normal case we revert to whatever file we read it from*/
+	/*  (sfd or not) so we use origname */
+	char *buf = galloc(strlen(fv->sf->filename)+10);
+	strcpy(buf,fv->sf->filename);
 	strcat(buf,"~");
 	temp = ReadSplineFont(buf,0);
+	if ( temp!=NULL ) {
+	    char *pt;
+	    if ( temp->filename!=NULL ) {
+		pt = temp->filename+strlen(temp->filename)-1;
+		if ( *pt=='~' ) *pt = '\0';
+	    }
+	    if ( temp->origname!=NULL ) {
+		pt = temp->origname+strlen(temp->origname)-1;
+		if ( *pt=='~' ) *pt = '\0';
+	    }
+	}
 	free(buf);
     } else
 	temp = ReadSplineFont(old->origname,0);
@@ -5983,14 +5997,15 @@ static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_Revert:
-	    mi->ti.disabled = fv->sf->origname==NULL;
+	    mi->ti.disabled = fv->sf->origname==NULL || fv->sf->new;
 	  break;
 	  case MID_RevertToBackup:
+	    /* We really do want to use filename here and origname above */
 	    mi->ti.disabled = true;
-	    if ( fv->sf->origname!=NULL ) {
+	    if ( fv->sf->filename!=NULL ) {
 		if ( fv->sf->backedup == bs_dontknow ) {
-		    char *buf = galloc(strlen(fv->sf->origname)+10);
-		    strcpy(buf,fv->sf->origname);
+		    char *buf = galloc(strlen(fv->sf->filename)+10);
+		    strcpy(buf,fv->sf->filename);
 		    strcat(buf,"~");
 		    if ( access(buf,F_OK)==0 )
 			fv->sf->backedup = bs_backedup;
