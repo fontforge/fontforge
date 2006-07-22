@@ -1875,7 +1875,8 @@ int SFDWriteBak(SplineFont *sf,EncMap *map,EncMap *normal) {
     *bpt++ = '~';
     strcpy(bpt,pt);
 #endif
-    rename(sf->filename,buf);
+    if ( rename(sf->filename,buf)==0 )
+	sf->backedup = bs_backedup;
     free(buf);
 
 return( SFDWrite(sf->filename,sf,map,normal));

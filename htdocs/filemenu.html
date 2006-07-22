@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-Dec-2000 -->
-  <!-- AP: Last modified: 5-Feb-2006 -->
+  <!-- AP: Last modified: 22-Jul-2006 -->
   <TITLE>The File Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -33,6 +33,8 @@
       <A HREF="#GenerateMac">Generate Mac Family...</A>
     <LI>
       <A HREF="#Revert">Revert</A>
+    <LI>
+      <A HREF="#RevertBackup">Revert To Backup</A>
     <LI>
       <A HREF="#RevertGlyph">Revert Glyph</A>
     <LI>
@@ -170,6 +172,15 @@
       <A NAME="Revert">Revert</A>
     <DD>
       Rereads the font from the file on the disk. All changes are lost.
+    <DT>
+      <A NAME="RevertBackup">Revert To Backup</A>
+    <DD>
+      Only available in the font view. When FontForge saves an sfd file (with the
+      <A HREF="#Save">Save</A> command, not the <A HREF="#SaveAs">Save As</A> command)
+      it creates a backup version of the file containing the old data (this file
+      has the same name as the main branch with a "~" character appended to it).
+      This command will revert to the backuped version of the file (if there is
+      one).
     <DT>
       <A NAME="RevertGlyph">Revert Glyph</A>
     <DD>

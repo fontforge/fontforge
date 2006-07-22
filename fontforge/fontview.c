@@ -900,7 +900,7 @@ static void FVReattachCVs(SplineFont *old,SplineFont *new) {
     }
 }
 
-void FVRevert(FontView *fv) {
+static void _FVRevert(FontView *fv,int tobackup) {
     SplineFont *temp, *old = fv->cidmaster?fv->cidmaster:fv->sf;
     BDFFont *tbdf, *fbdf;
     BDFChar *bc;
@@ -914,7 +914,14 @@ return;
     if ( old->changed )
 	if ( !RevertAskChanged(old->fontname,old->origname))
 return;
-    temp = ReadSplineFont(old->origname,0);
+    if ( tobackup ) {
+	char *buf = galloc(strlen(fv->sf->origname)+10);
+	strcpy(buf,fv->sf->origname);
+	strcat(buf,"~");
+	temp = ReadSplineFont(buf,0);
+	free(buf);
+    } else
+	temp = ReadSplineFont(old->origname,0);
     if ( temp==NULL ) {
 return;
     }
@@ -987,6 +994,14 @@ return;
     SplineFontFree(old);
 }
 
+void FVRevert(FontView *fv) {
+    _FVRevert(fv,false);
+}
+
+void FVRevertBackup(FontView *fv) {
+    _FVRevert(fv,true);
+}
+
 # if defined(FONTFORGE_CONFIG_GDRAW)
 static void FVMenuRevert(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
@@ -995,6 +1010,16 @@ void FontViewMenu_RevertFile(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     FVRevert(fv);
+}
+
+# if defined(FONTFORGE_CONFIG_GDRAW)
+static void FVMenuRevertBackup(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_RevertBackup(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+    FVRevertBackup(fv);
 }
 
 # if defined(FONTFORGE_CONFIG_GDRAW)
@@ -1610,6 +1635,7 @@ void FontViewMenu_Metafont(GtkMenuItem *menuitem, gpointer user_data) {
 #define MID_ScriptMenu	2705
 #define MID_Display	2706
 #define MID_RevertGlyph	2707
+#define MID_RevertToBackup 2708
 #define MID_Cut		2101
 #define MID_Copy	2102
 #define MID_Paste	2103
@@ -5959,6 +5985,23 @@ static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_Revert:
 	    mi->ti.disabled = fv->sf->origname==NULL;
 	  break;
+	  case MID_RevertToBackup:
+	    mi->ti.disabled = true;
+	    if ( fv->sf->origname!=NULL ) {
+		if ( fv->sf->backedup == bs_dontknow ) {
+		    char *buf = galloc(strlen(fv->sf->origname)+10);
+		    strcpy(buf,fv->sf->origname);
+		    strcat(buf,"~");
+		    if ( access(buf,F_OK)==0 )
+			fv->sf->backedup = bs_backedup;
+		    else
+			fv->sf->backedup = bs_not;
+		    free(buf);
+		}
+		if ( fv->sf->backedup == bs_backedup )
+		    mi->ti.disabled = false;
+	    }
+	  break;
 	  case MID_RevertGlyph:
 	    mi->ti.disabled = fv->sf->origname==NULL || anychars==-1;
 	  break;
@@ -6302,6 +6345,7 @@ static GMenuItem fllist[] = {
     { { (unichar_t *) N_("_Import..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, 'I', ksm_control|ksm_shift, NULL, NULL, FVMenuImport },
     { { (unichar_t *) N_("_Merge Kern Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, 'K', ksm_meta|ksm_control|ksm_shift, NULL, NULL, FVMenuMergeKern },
     { { (unichar_t *) N_("_Revert File"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'R' }, 'R', ksm_control|ksm_shift, NULL, NULL, FVMenuRevert, MID_Revert },
+    { { (unichar_t *) N_("Revert To _Backup"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'R' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuRevertBackup, MID_RevertToBackup },
     { { (unichar_t *) N_("Revert Gl_yph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'R' }, 'R', ksm_control|ksm_meta, NULL, NULL, FVMenuRevertGlyph, MID_RevertGlyph },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Print..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, 'P', ksm_control, NULL, NULL, FVMenuPrint, MID_Print },
