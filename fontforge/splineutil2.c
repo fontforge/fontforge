@@ -1049,12 +1049,16 @@ return( SplineMake2(from,to));
     for ( k=-1; k<TRY_CNT; ++k ) {
 	if ( k<0 ) {
 	    BasePoint nextcp, prevcp;
+	    double temp1, temp2;
 	    int ret = _ApproximateSplineFromPoints(from,to,mid,cnt,&nextcp,&prevcp,false);
 	    /* sometimes least squares gives us the right answer */
 	    if ( !(ret&1) || !(ret&2))
     continue;
-	    tlen = (prevcp.x-to->me.x)*tounit.x + (prevcp.y-to->me.y)*tounit.y;
-	    flen = (nextcp.x-from->me.x)*fromunit.x + (nextcp.y-from->me.y)*fromunit.y;
+	    temp1 = (prevcp.x-to->me.x)*tounit.x + (prevcp.y-to->me.y)*tounit.y;
+	    temp2 = (nextcp.x-from->me.x)*fromunit.x + (nextcp.y-from->me.y)*fromunit.y;
+	    if ( temp1<=0 || temp2<=0 )		/* A nice solution... but the control points are diametrically opposed to what they should be */
+    continue;
+	    tlen = temp1; flen = temp2;
 	} else {
 	    tlen = bestj[k]*tdiff; flen = besti[k]*fdiff;
 	}
@@ -1080,6 +1084,8 @@ return( SplineMake2(from,to));
 	    SplineRefigure(spline);
 	    fsdiff = SigmaDeltas(spline,mid,cnt,&b,&db);
 	    from->nextcp.x = from->me.x + offn*fromunit.x; from->nextcp.y = from->me.y + offn*fromunit.y;
+	    if ( offn-incrn<=0 )
+		fsdiff += 1e10;
 
 	    to->prevcp.x = to->me.x + (offp+incrp)*tounit.x; to->prevcp.y = to->me.y + (offp+incrp)*tounit.y;
 	    SplineRefigure(spline);
@@ -1088,6 +1094,8 @@ return( SplineMake2(from,to));
 	    SplineRefigure(spline);
 	    tsdiff = SigmaDeltas(spline,mid,cnt,&b,&db);
 	    to->prevcp.x = to->me.x + offp*tounit.x; to->prevcp.y = to->me.y + offp*tounit.y;
+	    if ( offp-incrp<=0 )
+		tsdiff += 1e10;
 
 	    if ( offn>=incrn && fsdiff<curdiff &&
 		    (fsdiff<fadiff && fsdiff<tsdiff && fsdiff<tadiff)) {
@@ -1133,6 +1141,10 @@ return( SplineMake2(from,to));
 	break;
 	    if ( ++totcnt>200 )
 	break;
+	    if ( offn<0 || offp<0 ) {
+		IError("Approximation got inverse control points");
+	break;
+	    }
 	}
 #if 0
  if ( nocnt>6 )
