@@ -1433,6 +1433,7 @@ static struct feature *aat_dumpmorx_cvtopentype(struct alltabs *at, SplineFont *
 	    if ( sm!=NULL ) {
 		OTTagToMacFeature(fpst->tag,&featureType,&featureSetting);
 		sm->feature = featureType; sm->setting = featureSetting;
+		sm->opentype_tag = fpst->tag;
 		if ( last==NULL )
 		    sf->sm = sm;
 		else
@@ -1450,6 +1451,7 @@ static struct feature *aat_dumpmorx_cvtopentype(struct alltabs *at, SplineFont *
 		sm = ASMFromOpenTypeForms(sf,sliflags[i].sli,sliflags[i].flags);
 		if ( sm!=NULL ) {
 		    sm->feature = featureType; sm->setting = featureSetting;
+		    sm->opentype_tag = CHR('i','s','o','l');
 		    if ( last==NULL )
 			sf->sm = sm;
 		    else
@@ -1473,8 +1475,6 @@ static struct feature *featuresOrderByType(struct feature *features) {
 
     for ( cnt=0, f=features; f!=NULL; f=f->next, ++cnt );
     if ( cnt==1 ) {
-	if ( !features->needsOff )
-	    features->singleMutex = true;
 return( features );
     }
     all = galloc(cnt*sizeof(struct feature *));
@@ -1488,6 +1488,7 @@ return( features );
 	    all[j] = f;
 	}
     }
+#if 0
     for ( i=0; i<cnt; ++i ) {
 	if ( all[i]->mf!=NULL && all[i]->mf->ismutex && !all[i]->needsOff ) {
 	    /* mutexes with just 2 choices don't always follow the rule that 0 is off */
@@ -1509,6 +1510,7 @@ return( features );
 	    if ( i!=j ) --i;
 	}
     }
+#endif
     for ( i=0; i<cnt-1; ++i )
 	all[i]->next = all[i+1];
     all[cnt-1]->next = NULL;
@@ -1748,11 +1750,16 @@ static void morxDumpChain(struct alltabs *at,struct feature *features,int chain,
 		if ( n->ms!=NULL && n->ms->initially_enabled )
 		    def_flags |= n->flag;
 		++scnt;
+		/* There might be several statemachines (or whatever) for the */
+		/*  same feature/setting. They don't get multiple entries */
+		while ( n->next!=NULL && n->next->featureType==n->featureType &&
+			n->next->featureSetting == n->featureSetting )
+		    n=n->next;
 		if ( n->needsOff ) {
 		    ++scnt;
 		    if ( n->next!=NULL && n->next->featureSetting==n->featureSetting+1 )
 			n = n->next;
-		} else if ( n->singleMutex )
+		} else if ( n->mf->ismutex )
 		    ++scnt;
 	    }
 	} else
@@ -1783,13 +1790,17 @@ static void morxDumpChain(struct alltabs *at,struct feature *features,int chain,
 		putshort(at->morx,n->featureSetting);
 		putlong(at->morx,n->flag);
 		putlong(at->morx,n->flag | ~n->offFlags);
+		while ( n->next!=NULL && n->next->featureType==n->featureType &&
+			n->next->featureSetting == n->featureSetting )
+		    n=n->next;
 		if ( n->needsOff ) {
 		    putshort(at->morx,n->featureType);
 		    putshort(at->morx,n->featureSetting+1);
-		} else if ( n->singleMutex ) {		    
+		} else if ( n->mf->ismutex ) {		    
 		    putshort(at->morx,n->featureType);
 		    putshort(at->morx,n->featureSetting==0?1:0);
-		}
+		} else
+	    continue;
 		putlong(at->morx,0);
 		putlong(at->morx,~n->offFlags & ~n->flag );
 		if ( n->needsOff && n->next!=NULL && n->featureSetting+1==n->next->featureSetting )
