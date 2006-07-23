@@ -2808,82 +2808,29 @@ return;						/* In an MM font we may still need to resolve things like different
 	SCFigureSimpleCounterMasks(sc);
 }
 
-static int SpOnStemDataClear(SplinePoint *sp,struct stemdata *stem) {
-    int j;
+static HintInstance *StemAddHIFromActive(struct stemdata *stem,int major) {
+    int i;
+    HintInstance *head = NULL, *cur, *t;
+    double mino, maxo;
+    double dir = ((real *) &stem->unit.x)[major]<0 ? -1 : 1;
 
-    for ( j=0; j<stem->chunk_cnt; ++j ) {
-	if ( stem->chunks[j].l!=NULL && stem->chunks[j].l->sp == sp ) {
-	    stem->chunks[j].l = NULL;
-return( true );
-	} else if ( stem->chunks[j].r!=NULL && stem->chunks[j].r->sp == sp ) {
-	    stem->chunks[j].r = NULL;
-return( true );
-	}
-    }
-return( false );
-}
-
-static HintInstance *StemAddHIFromChunks(struct stemdata *stem,int major) {
-    int other = !major;
-    int j,k;
-    HintInstance *head = NULL, *cur, *p, *t;
-    double maxo, mino;
-    struct stem_chunk *chunk;
-
-    for ( j=0; j<stem->chunk_cnt; ++j ) {
-	chunk = &stem->chunks[j];
-	maxo = -1e10; mino = 1e10;
-	for ( k=0; k<2; ++k ) if ( (&chunk->l)[k]!=NULL ) {
-	    SplinePoint *sp = (&chunk->l)[k]->sp;
-	    double coord = (&sp->me.x)[major];
-	    if ( maxo<coord ) maxo = coord;
-	    if ( mino>coord ) mino = coord;
-	    if ( !sp->noprevcp && (&sp->me.x)[other] == (&sp->prevcp.x)[other] ) {
-		coord = ((&sp->prevcp.x)[major] + (&sp->me.x)[major])/2;
-		if ( maxo<coord ) maxo = coord;
-		if ( mino>coord ) mino = coord;
-	    }
-	    if ( !sp->nonextcp && (&sp->me.x)[other] == (&sp->nextcp.x)[other] ) {
-		coord = ((&sp->nextcp.x)[major] + (&sp->me.x)[major])/2;
-		if ( maxo<coord ) maxo = coord;
-		if ( mino>coord ) mino = coord;
-	    }
-	    if ( sp->prev!=NULL && sp->prev->knownlinear &&
-		    (&sp->me.x)[other] == (&sp->prev->from->me.x)[other] &&
-		    SpOnStemDataClear(sp->prev->from,stem)) {
-		coord = (&sp->prev->from->me.x)[major];
-		if ( maxo<coord ) maxo = coord;
-		if ( mino>coord ) mino = coord;
-	    }
-	    if ( sp->next!=NULL && sp->next->knownlinear &&
-		    (&sp->me.x)[other] == (&sp->next->to->me.x)[other] &&
-		    SpOnStemDataClear(sp->next->to,stem)) {
-		coord = (&sp->next->to->me.x)[major];
-		if ( maxo<coord ) maxo = coord;
-		if ( mino>coord ) mino = coord;
-	    }
-	}
-	if ( maxo == -1e10 )
-    continue;
-	for ( p=NULL, t=head; t!=NULL ; p=t, t=t->next ) {
-	    if ( mino<=t->end )
-	break;
-	}
-	if ( t!=NULL && ((mino>=t->begin && mino<=t->end) ||
-			 (maxo>=t->begin && maxo<=t->end) ||
-			 (t->begin>=mino && t->begin<=maxo) ||
-			 (t->end>=mino && t->end<=maxo)) ) {
-	    if ( maxo>t->end   ) t->end   = maxo;
-	    if ( mino<t->begin ) t->begin = mino;
-	} else {
-	    cur = chunkalloc(sizeof(HintInstance));
+    for ( i=0; i<stem->activecnt; ++i ) {
+	mino = dir*stem->active[i].start + ((real *) &stem->left.x)[major];
+	maxo = dir*stem->active[i].end + ((real *) &stem->left.x)[major];
+	cur = chunkalloc(sizeof(HintInstance));
+	if ( dir>0 ) {
 	    cur->begin = mino;
 	    cur->end = maxo;
-	    cur->next = t;
-	    if ( p==NULL )
+	    if ( head==NULL )
 		head = cur;
 	    else
-		p->next = cur;
+		t->next = cur;
+	    t = cur;
+	} else {
+	    cur->begin = maxo;
+	    cur->end = mino;
+	    cur->next = head;
+	    head = cur;
 	}
     }
 return( head );
@@ -3031,7 +2978,7 @@ static StemInfo *GDFindStems(struct glyphdata *gd, int major) {
 		head = cur;
 	    else
 		p->next = cur;
-	    cur->where = StemAddHIFromChunks(stem,major);
+	    cur->where = StemAddHIFromActive(stem,major);
 	}
     }
     head = StemRemoveFlexCandidates(head);

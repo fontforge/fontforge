@@ -55,6 +55,7 @@ struct glyphdata {
     DBounds size;
     struct pointdata **pspace;
     struct stembundle *bundles;
+    struct segment { double start, end, base; int curved; } *lspace, *rspace, *bothspace, *activespace;
 
     int only_hv;
 };
@@ -83,6 +84,7 @@ struct pointdata {
     BasePoint newpos;
     BasePoint newnext, newprev;
     BasePoint posdir;		/* If point has been positioned in 1 direction, this is that direction */
+    double projection;		/* temporary value */
 };
 
 struct linedata {
@@ -106,18 +108,12 @@ struct stemdata {
 	uint8 lnext, rnext;	/* are we using the next/prev side of the left/right points */
 	uint8 ltick, rtick;
     } *chunks;
-    struct splinebits {
-	struct splinebits *next;
-	Spline *s;
-	double tstart, tend;
-	double ustart, uend;	/* distance along unit from left */
-    } *lsb, *rsb;
     int activecnt;
-    double (*active)[2];
+    struct segment *active;
     uint8 toobig;		/* Stem is fatter than tall, unlikely to be a real stem */
     uint8 positioned;
     uint8 ticked;
-    double len, clen;
+    double len, clen;		/* Length of linear segments. clen adds "length" of curved bits */
     struct stembundle *bundle;
     double lpos, rpos;		/* When placed in a bundle, relative to the bundle's basepoint in l_to_r */
     double lnew, rnew;		/* New position of left, right edges relative to bp,l_to_r */
