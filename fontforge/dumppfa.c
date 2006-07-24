@@ -271,7 +271,7 @@ static void dumpblues(void (*dumpchar)(int ch,void *data), void *data,
     if ( len&1 ) ++len;
     dumpf( dumpchar,data,"/%s [",name);
     for ( i=0; i<len; ++i )
-	dumpf( dumpchar,data,"%g ", arr[i]);
+	dumpf( dumpchar,data,"%g ", (double) arr[i]);
     dumpf( dumpchar,data,"]%s\n",ND );
 }
 
@@ -282,7 +282,7 @@ static void dumpdblmaxarray(void (*dumpchar)(int ch,void *data), void *data,
     ++len;
     dumpf( dumpchar,data,"/%s [",name);
     for ( i=0; i<len; ++i )
-	dumpf( dumpchar,data,"%g ", arr[i]);
+	dumpf( dumpchar,data,"%g ", (double) arr[i]);
     dumpf( dumpchar,data,"]%s%s\n", modifiers, ND );
 }
 
@@ -364,16 +364,16 @@ static void dumpsplineset(void (*dumpchar)(int ch,void *data), void *data,
 	first = NULL;
 	for ( sp = spl->first; ; sp=sp->next->to ) {
 	    if ( first==NULL )
-		dumpf( dumpchar, data, "\t%g %g %s\n", sp->me.x, sp->me.y,
+		dumpf( dumpchar, data, "\t%g %g %s\n", (double) sp->me.x, (double) sp->me.y,
 			pdfopers ? "m" : "moveto" );
 	    else if ( sp->prev->knownlinear )
-		dumpf( dumpchar, data, "\t %g %g %s\n", sp->me.x, sp->me.y,
+		dumpf( dumpchar, data, "\t %g %g %s\n", (double) sp->me.x, (double) sp->me.y,
 			pdfopers ? "l" : "lineto" );
 	    else
 		dumpf( dumpchar, data, "\t %g %g %g %g %g %g %s\n",
-			sp->prev->from->nextcp.x, sp->prev->from->nextcp.y,
-			sp->prevcp.x, sp->prevcp.y,
-			sp->me.x, sp->me.y,
+			(double) sp->prev->from->nextcp.x, (double) sp->prev->from->nextcp.y,
+			(double) sp->prevcp.x, (double) sp->prevcp.y,
+			(double) sp->me.x, (double) sp->me.y,
 			pdfopers ? "c" : "curveto" );
 	    if ( sp==first )
 	break;
@@ -466,7 +466,7 @@ static void dumppen(void (*dumpchar)(int ch,void *data), void *data,
 	dumpf(dumpchar,data,(pdfopers ? "%d J\n": "%d setlinecap\n"), pen->linecap );
     if ( pen->trans[0]!=1.0 || pen->trans[3]!=1.0 || pen->trans[1]!=0 || pen->trans[2]!=0 )
 	dumpf(dumpchar,data,(pdfopers ? "[%g %g %g %g 0 0] cm\n" : "[%g %g %g %g 0 0] concat\n"),
-		pen->trans[0], pen->trans[1], pen->trans[2], pen->trans[3]);
+		(double) pen->trans[0], (double) pen->trans[1], (double) pen->trans[2], (double) pen->trans[3]);
     if ( pen->dashes[0]!=0 || pen->dashes[1]!=DASH_INHERITED ) {
 	int i;
 	dumpchar('[',data);
@@ -728,8 +728,8 @@ static void dumpimage(void (*dumpchar)(int ch,void *data), void *data,
 return;
 
     dumpf( dumpchar, data, "  gsave %g %g translate %g %g scale\n",
-	    imgl->xoff, imgl->yoff-imgl->yscale*base->height,
-	    imgl->xscale*base->width, imgl->yscale*base->height );
+	    (double) imgl->xoff, (double) (imgl->yoff-imgl->yscale*base->height),
+	    (double) (imgl->xscale*base->width), (double) (imgl->yscale*base->height) );
     if ( base->image_type==it_mono ) {
 	PSDrawMonoImg(dumpchar,data,base,use_imagemask);
     } else {
@@ -846,21 +846,21 @@ void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
 			    if ( ref->transform[0]!=1 || ref->transform[1]!=0 ||
 				    ref->transform[2]!=0 || ref->transform[3]!=1 )
 				dumpf(dumpchar,data, "    [ %g %g %g %g %g %g ] concat ",
-				    ref->transform[0], ref->transform[1], ref->transform[2],
-				    ref->transform[3], ref->transform[4], ref->transform[5]);
+				    (double) ref->transform[0], (double) ref->transform[1], (double) ref->transform[2],
+				    (double) ref->transform[3], (double) ref->transform[4], (double) ref->transform[5]);
 			    else
 				dumpf(dumpchar,data, "    %g %g translate ",
-				    ref->transform[4], ref->transform[5]);
+				    (double) ref->transform[4], (double) ref->transform[5]);
 			    dumpf(dumpchar,data, "1 index /CharProcs get /%s get exec ",
 				ref->sc->name );
 			    if ( inverse[0]!=1 || inverse[1]!=0 ||
 				    inverse[2]!=0 || inverse[3]!=1 )
 				dumpf(dumpchar,data, "[ %g %g %g %g %g %g ] concat \n",
-				    inverse[0], inverse[1], inverse[2], inverse[3], inverse[4], inverse[5]
+				    (double) inverse[0], (double) inverse[1], (double) inverse[2], (double) inverse[3], (double) inverse[4], (double) inverse[5]
 				    );
 			    else
 				dumpf(dumpchar,data, "%g %g translate\n",
-				    inverse[4], inverse[5] );
+				    (double) inverse[4], (double) inverse[5] );
 			}
 		    } else
 			dumpf(dumpchar,data, "    1 index /CharProcs get /%s get exec\n", ref->sc->name );
@@ -1317,13 +1317,13 @@ return( false );
     }
     if ( !hash ) {
 	if ( stdhw[0]!=0 )
-	    dumpf(dumpchar,data,"/StdHW [%g] %s\n", stdhw[0], ND );
+	    dumpf(dumpchar,data,"/StdHW [%g] %s\n", (double) stdhw[0], ND );
 	if ( stemsnaph[0]!=0 )
 	    dumpdblmaxarray(dumpchar,data,"StemSnapH",stemsnaph,12,"", ND);
     }
     if ( !hasv ) {
 	if ( stdvw[0]!=0 )
-	    dumpf(dumpchar,data,"/StdVW [%g] %s\n", stdvw[0],ND );
+	    dumpf(dumpchar,data,"/StdVW [%g] %s\n", (double) stdvw[0],ND );
 	if ( stemsnapv[0]!=0 )
 	    dumpdblmaxarray(dumpchar,data,"StemSnapV",stemsnapv,12,"", ND);
     }
@@ -1432,18 +1432,18 @@ static void dumpfontinfo(void (*dumpchar)(int ch,void *data), void *data, Spline
     if ( sf->pfminfo.fstype!=-1 ) 
 	dumpf(dumpchar,data," /FSType %d def\n", sf->pfminfo.fstype );
     if ( sf->subfontcnt==0 ) {
-	dumpf(dumpchar,data," /ItalicAngle %g def\n", sf->italicangle );
+	dumpf(dumpchar,data," /ItalicAngle %g def\n", (double) sf->italicangle );
 	dumpf(dumpchar,data," /isFixedPitch %s def\n", SFOneWidth(sf)!=-1?"true":"false" );
 	if ( format==ff_type42 || format==ff_type42cid ) {
 	    if ( sf->upos )
-		dumpf(dumpchar,data," /UnderlinePosition %g def\n", sf->upos/(sf->ascent+sf->descent) );
+		dumpf(dumpchar,data," /UnderlinePosition %g def\n", (double) (sf->upos/(sf->ascent+sf->descent)) );
 	    if ( sf->uwidth )
-		dumpf(dumpchar,data," /UnderlineThickness %g def\n", sf->uwidth/(sf->ascent+sf->descent) );
+		dumpf(dumpchar,data," /UnderlineThickness %g def\n", (double) (sf->uwidth/(sf->ascent+sf->descent)) );
 	} else {
 	    if ( sf->upos )
-		dumpf(dumpchar,data," /UnderlinePosition %g def\n", sf->upos );
+		dumpf(dumpchar,data," /UnderlinePosition %g def\n", (double) sf->upos );
 	    if ( sf->uwidth )
-		dumpf(dumpchar,data," /UnderlineThickness %g def\n", sf->uwidth );
+		dumpf(dumpchar,data," /UnderlineThickness %g def\n", (double) sf->uwidth );
 	}
 	if ( sf->ascent != 8*(sf->ascent+sf->descent)/10 )
 	    dumpf(dumpchar,data," /ascent %d def\n", sf->ascent );
@@ -1460,7 +1460,7 @@ static void dumpfontinfo(void (*dumpchar)(int ch,void *data), void *data, Spline
 	for ( j=0; j<mm->instance_count; ++j ) {
 	    dumpstr(dumpchar,data," [" );
 	    for ( k=0; k<mm->axis_count; ++k )
-		dumpf(dumpchar,data,"%g ", mm->positions[j*mm->axis_count+k]);
+		dumpf(dumpchar,data,"%g ", (double) mm->positions[j*mm->axis_count+k]);
 	    dumpstr(dumpchar,data,"]" );
 	}
 	dumpstr(dumpchar,data," ] def\n" );
@@ -1470,7 +1470,7 @@ static void dumpfontinfo(void (*dumpchar)(int ch,void *data), void *data, Spline
 	    dumpstr(dumpchar,data," [" );
 	    for ( j=0; j<mm->axismaps[k].points; ++j )
 		dumpf(dumpchar,data,"[%g %g] ",
-			mm->axismaps[k].designs[j], mm->axismaps[k].blends[j]);
+			(double) mm->axismaps[k].designs[j], (double) mm->axismaps[k].blends[j]);
 	    dumpstr(dumpchar,data,"]" );
 	}
 	dumpstr(dumpchar,data," ] def\n" );
@@ -1650,7 +1650,7 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
     }
     dumpf(dumpchar,data,"/PaintType %d def\n", sf->strokedfont?2:0 );
     if ( sf->strokedfont )
-	dumpf(dumpchar,data,"/StrokeWidth %g def\n", sf->strokewidth );
+	dumpf(dumpchar,data,"/StrokeWidth %g def\n", (double) sf->strokewidth );
     dumpfontinfo(dumpchar,data,sf,format);
     if ( format==ff_mma || format==ff_mmb ) {
 	MMSet *mm = sf->mm;
@@ -1660,18 +1660,18 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
 
 	dumpstr(dumpchar,data," /WeightVector [" );
 	for ( j=0; j<mm->instance_count; ++j ) {
-	    dumpf(dumpchar,data,"%g ", mm->defweights[j]);
+	    dumpf(dumpchar,data,"%g ", (double) mm->defweights[j]);
 	}
 	dumpstr(dumpchar,data," ] def\n" );
 
 	dumpstr(dumpchar,data," /$Blend {" );
 	if ( mm->instance_count==2 )
-	    dumpf(dumpchar,data,"%g mul add", mm->defweights[1]);
+	    dumpf(dumpchar,data,"%g mul add", (double) mm->defweights[1]);
 	else {
-	    dumpf(dumpchar,data,"%g mul exch", mm->defweights[1]);
+	    dumpf(dumpchar,data,"%g mul exch", (double) mm->defweights[1]);
 	    for ( j=2; j<mm->instance_count-1; ++j )
-		dumpf(dumpchar,data,"%g mul add exch", mm->defweights[j]);
-	    dumpf(dumpchar,data,"%g mul add add", mm->defweights[j]);
+		dumpf(dumpchar,data,"%g mul add exch", (double) mm->defweights[j]);
+	    dumpf(dumpchar,data,"%g mul add add", (double) mm->defweights[j]);
 	}
 	dumpstr(dumpchar,data," } bind def\n" );
 
@@ -1741,7 +1741,7 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
 	if ( sf->multilayer )
 	    *buffer = '\0';
 	else if ( sf->strokedfont )
-	    sprintf( buffer, "%g setlinewidth stroke", sf->strokewidth );
+	    sprintf( buffer, "%g setlinewidth stroke", (double) sf->strokewidth );
 	else
 	    strcpy(buffer, "fill");
 	dumpf(dumpchar,data,"/BuildGlyph { 2 copy exch /CharProcs get exch 2 copy known not { pop /.notdef} if get exch pop 0 exch exec pop pop %s} bind def\n",
@@ -2097,7 +2097,7 @@ static void dumptype0stuff(FILE *out,SplineFont *sf, EncMap *map) {
     fprintf( out, "/FontInfo /%sBase findfont /FontInfo get def\n", sf->fontname );
     fprintf( out, "/PaintType %d def\n", sf->strokedfont?2:0 );
     if ( sf->strokedfont )
-	fprintf( out, "/StrokeWidth %g def\n", sf->strokewidth );
+	fprintf( out, "/StrokeWidth %g def\n", (double) sf->strokewidth );
     fprintf( out, "/FontType 0 def\n" );
     fprintf( out, "/LanguageLevel 2 def\n" );
     fprintf( out, "/FontMatrix [1 0 0 1 0 0] readonly def\n" );
@@ -2351,7 +2351,7 @@ return( 0 );
 		factor, factor );
 	fprintf( out, "/PaintType %d def\n", sf->strokedfont?2:0 );
 	if ( sf->strokedfont )
-	    fprintf( out, "/StrokeWidth %g def\n", sf->strokewidth );
+	    fprintf( out, "/StrokeWidth %g def\n", (double) sf->strokewidth );
 	fprintf( out, "\n  %%ADOBeginPrivateDict\n" );
 	dumpprivatestuff((DumpChar) fputc,out,sf,&cidbytes.fds[i],flags,ff_cid,map);
 	fprintf( out, "\n  %%ADOEndPrivateDict\n" );

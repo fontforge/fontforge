@@ -109,13 +109,13 @@ static int svg_outfontheader(FILE *file, SplineFont *sf) {
 	info.panose[6], info.panose[7], info.panose[8], info.panose[9]);
     fprintf( file, "    ascent=\"%d\"\n", sf->ascent );
     fprintf( file, "    descent=\"%d\"\n", -sf->descent );
-    fprintf( file, "    x-height=\"%g\"\n", bd.xheight );
-    fprintf( file, "    cap-height=\"%g\"\n", bd.caph );
-    fprintf( file, "    bbox=\"%g %g %g %g\"\n", bb.minx, bb.miny, bb.maxx, bb.maxy );
-    fprintf( file, "    underline-thickness=\"%g\"\n", sf->uwidth );
-    fprintf( file, "    underline-position=\"%g\"\n", sf->upos );
+    fprintf( file, "    x-height=\"%g\"\n", (double) bd.xheight );
+    fprintf( file, "    cap-height=\"%g\"\n", (double) bd.caph );
+    fprintf( file, "    bbox=\"%g %g %g %g\"\n", (double) bb.minx, (double) bb.miny, (double) bb.maxx, (double) bb.maxy );
+    fprintf( file, "    underline-thickness=\"%g\"\n", (double) sf->uwidth );
+    fprintf( file, "    underline-position=\"%g\"\n", (double) sf->upos );
     if ( sf->italicangle!=0 )
-	fprintf(file, "    slope=\"%g\"\n", sf->italicangle );
+	fprintf(file, "    slope=\"%g\"\n", (double) sf->italicangle );
     hash = PSDictHasEntry(sf->private,"StdHW");
     hasv = PSDictHasEntry(sf->private,"StdVW");
     if ( hash!=NULL ) {
@@ -154,7 +154,7 @@ static int svg_pathdump(FILE *file, SplineSet *spl, int lineout, int forceclosed
 
     last.x = last.y = 0;
     while ( spl!=NULL ) {
-	sprintf( buffer, "M%g %g", spl->first->me.x, spl->first->me.y );
+	sprintf( buffer, "M%g %g", (double) spl->first->me.x, (double) spl->first->me.y );
 	if ( lineout+strlen(buffer)>=255 ) { putc('\n',file); lineout = 0; }
 	fputs( buffer,file );
 	lineout += strlen( buffer );
@@ -166,35 +166,35 @@ static int svg_pathdump(FILE *file, SplineSet *spl, int lineout, int forceclosed
 	    if ( first==NULL ) first=sp;
 	    if ( sp->knownlinear ) {
 		if ( sp->to->me.x==sp->from->me.x )
-		    sprintf( buffer,"v%g", sp->to->me.y-last.y );
+		    sprintf( buffer,"v%g", (double) (sp->to->me.y-last.y) );
 		else if ( sp->to->me.y==sp->from->me.y )
-		    sprintf( buffer,"h%g", sp->to->me.x-last.x );
+		    sprintf( buffer,"h%g", (double) (sp->to->me.x-last.x) );
 		else if ( sp->to->next==first ) {
 		    strcpy( buffer, "z");
 		    closed = true;
 		} else
-		    sprintf( buffer,"l%g %g", sp->to->me.x-last.x, sp->to->me.y-last.y );
+		    sprintf( buffer,"l%g %g", (double) (sp->to->me.x-last.x), (double) (sp->to->me.y-last.y) );
 	    } else if ( sp->order2 ) {
 		if ( sp->from->prev!=NULL && sp->from!=spl->first &&
 			sp->from->me.x-sp->from->prevcp.x == sp->from->nextcp.x-sp->from->me.x &&
 			sp->from->me.y-sp->from->prevcp.y == sp->from->nextcp.y-sp->from->me.y )
-		    sprintf( buffer,"t%g %g", sp->to->me.x-last.x, sp->to->me.y-last.y );
+		    sprintf( buffer,"t%g %g", (double) (sp->to->me.x-last.x), (double) (sp->to->me.y-last.y) );
 		else
 		    sprintf( buffer,"q%g %g %g %g",
-			    sp->to->prevcp.x-last.x, sp->to->prevcp.y-last.y,
-			    sp->to->me.x-last.x,sp->to->me.y-last.y);
+			    (double) (sp->to->prevcp.x-last.x), (double) (sp->to->prevcp.y-last.y),
+			    (double) (sp->to->me.x-last.x),(double) (sp->to->me.y-last.y));
 	    } else {
 		if ( sp->from->prev!=NULL && sp->from!=spl->first &&
 			sp->from->me.x-sp->from->prevcp.x == sp->from->nextcp.x-sp->from->me.x &&
 			sp->from->me.y-sp->from->prevcp.y == sp->from->nextcp.y-sp->from->me.y )
 		    sprintf( buffer,"s%g %g %g %g",
-			    sp->to->prevcp.x-last.x, sp->to->prevcp.y-last.y,
-			    sp->to->me.x-last.x,sp->to->me.y-last.y);
+			    (double) (sp->to->prevcp.x-last.x), (double) (sp->to->prevcp.y-last.y),
+			    (double) (sp->to->me.x-last.x),(double) (sp->to->me.y-last.y));
 		else
 		    sprintf( buffer,"c%g %g %g %g %g %g",
-			    sp->from->nextcp.x-last.x, sp->from->nextcp.y-last.y,
-			    sp->to->prevcp.x-last.x, sp->to->prevcp.y-last.y,
-			    sp->to->me.x-last.x,sp->to->me.y-last.y);
+			    (double) (sp->from->nextcp.x-last.x), (double) (sp->from->nextcp.y-last.y),
+			    (double) (sp->to->prevcp.x-last.x), (double) (sp->to->prevcp.y-last.y),
+			    (double) (sp->to->me.x-last.x),(double) (sp->to->me.y-last.y));
 	    }
 	    if ( lineout+strlen(buffer)>=255 ) { putc('\n',file); lineout = 0; }
 	    fputs( buffer,file );
@@ -327,7 +327,7 @@ static void svg_scpathdump(FILE *file, SplineChar *sc,char *endpath) {
 	fputs(" />\n",file);
     } else if ( sc->parent->strokedfont ) {
 	/* Can't be done with a path, requires nested elements (I think) */
-	fprintf(file,">\n  <g stroke=\"currentColor\" stroke-width=\"%g\" fill=\"none\">\n", sc->parent->strokewidth );
+	fprintf(file,">\n  <g stroke=\"currentColor\" stroke-width=\"%g\" fill=\"none\">\n", (double) sc->parent->strokewidth );
 	fprintf( file,"    <path d=\"");
 	lineout = svg_pathdump(file,sc->layers[ly_fore].splines,3,false);
 	for ( ref= sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
@@ -730,6 +730,7 @@ return( NULL );
 # undef iconv_close
 #endif
 
+#undef extended			/* used in xlink.h */
 #include <libxml/parser.h>
 
 /* Ok, this complication is here because:				    */

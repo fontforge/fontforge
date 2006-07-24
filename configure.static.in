@@ -253,6 +253,7 @@ else
  AC_CHECK_LIB(xkbui, XkbQueryExtension, X_11LIB="$X_11LIB -lxkbui" ,AC_DEFINE(_NO_XKB), $X_LIBS $X_PRE_LIBS $X_EXTRA_LIBS -lX11 -lm ) 
 fi
 
+AC_C_LONG_DOUBLE
 echo -n checking for long long ...
 AC_TRY_COMPILE(,[long long foo=0x400000000000;],[ AC_DEFINE(_HAS_LONGLONG)
     echo " " yes] , echo " " no )

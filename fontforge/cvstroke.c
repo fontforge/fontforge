@@ -657,7 +657,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff].gd.cid = CID_PenAngleTxt;
 	gcd[gcdoff++].creator = GLabelCreate;
 
-	sprintf( anglebuf, "%g", def->penangle*180/3.1415926535897932 );
+	sprintf( anglebuf, "%g", (double) (def->penangle*180/3.1415926535897932) );
 	label[gcdoff].text = (unichar_t *) anglebuf;
 	label[gcdoff].text_is_1byte = true;
 	gcd[gcdoff].gd.mnemonic = 'A';
@@ -678,7 +678,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff].gd.popup_msg = (unichar_t *) _("A calligraphic pen's nib has two dimensions, the width\n(which may be set by Stroke Width below) and the thickness\nor height. I express the height as a ratio to the width.");
 	gcd[gcdoff++].creator = GLabelCreate;
 
-	sprintf( ratiobuf, "%g", def->ratio );
+	sprintf( ratiobuf, "%g", (double) def->ratio );
 	label[gcdoff].text = (unichar_t *) ratiobuf;
 	label[gcdoff].text_is_1byte = true;
 	gcd[gcdoff].gd.mnemonic = 'H';
@@ -700,7 +700,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff].gd.cid = CID_PenAngle2Txt;
 	gcd[gcdoff++].creator = GLabelCreate;
 
-	sprintf( anglebuf, "%g", def->penangle*180/3.1415926535897932 );
+	sprintf( anglebuf, "%g", (double) (def->penangle*180/3.1415926535897932) );
 	label[gcdoff].text = (unichar_t *) anglebuf;
 	label[gcdoff].text_is_1byte = true;
 	gcd[gcdoff].gd.mnemonic = 'A';
@@ -720,7 +720,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff].gd.cid = CID_MinorAxisTxt;
 	gcd[gcdoff++].creator = GLabelCreate;
 
-	sprintf( axisbuf, "%g", def->minorradius );
+	sprintf( axisbuf, "%g", (double) def->minorradius );
 	label[gcdoff].text = (unichar_t *) axisbuf;
 	label[gcdoff].text_is_1byte = true;
 	gcd[gcdoff].gd.mnemonic = 'H';
@@ -743,7 +743,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	gcd[gcdoff].gd.cid = CID_WidthTxt;
 	gcd[gcdoff++].creator = GLabelCreate;
 
-	sprintf( widthbuf, "%g", 2*def->radius );
+	sprintf( widthbuf, "%g", (double) (2*def->radius) );
 	label[gcdoff].text = (unichar_t *) widthbuf;
 	label[gcdoff].text_is_1byte = true;
 	gcd[gcdoff].gd.mnemonic = 'W';
@@ -756,7 +756,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	if ( si!=NULL ) {
 	    gcd[gcdoff-1].gd.pos.width = 50;
 
-	    sprintf( width2buf, "%g", 2*def->radius2 );
+	    sprintf( width2buf, "%g", (double) (2*def->radius2) );
 	    label[gcdoff].text = (unichar_t *) width2buf;
 	    label[gcdoff].text_is_1byte = true;
 	    gcd[gcdoff].gd.label = &label[gcdoff];

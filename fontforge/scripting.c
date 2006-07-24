@@ -378,7 +378,7 @@ static void PrintVal(Val *val) {
     else if ( val->type==v_unicode )
 	printf( "0u%04X", val->u.ival );
     else if ( val->type==v_real )
-	printf( "%g", val->u.fval );
+	printf( "%g", (double) val->u.fval );
     else if ( val->type==v_void )
 	printf( "<void>");
     else
@@ -934,7 +934,7 @@ return( ret );
     else if ( val->type==v_unicode )
 	sprintf( buffer, "0u%04X", val->u.ival );
     else if ( val->type==v_real )
-	sprintf( buffer, "%g", val->u.fval );
+	sprintf( buffer, "%g", (double) val->u.fval );
     else if ( val->type==v_void )
 	sprintf( buffer, "<void>");
     else
@@ -6041,7 +6041,7 @@ return;
 
 static void FigureSplExt(SplineSet *spl,int pos,int xextrema, double minmax[2]) {
     Spline *s, *first;
-    double ts[3];
+    extended ts[3];
     int oth = !xextrema, i;
     double val;
 
@@ -7403,7 +7403,7 @@ static void docall(Context *c,char *name,Val *val) {
 		else if ( args[i].type == v_unicode )
 		    printf( "0u%x", args[i].u.ival );
 		else if ( args[i].type == v_real )
-		    printf( "%g", args[i].u.fval );
+		    printf( "%g", (double) args[i].u.fval );
 		else if ( args[i].type == v_str )
 		    printf( "\"%s\"", args[i].u.sval );
 		else if ( args[i].type == v_void )
@@ -8148,7 +8148,7 @@ static void assign(Context *c,Val *val) {
 		    sprintf(buffer,"%d", other.u.ival);
 		    temp = buffer;
 		} else if ( other.type == v_real ) {
-		    sprintf(buffer,"%g", other.u.fval);
+		    sprintf(buffer,"%g", (double) other.u.fval);
 		    temp = buffer;
 		} else
 		    temp = other.u.sval;

@@ -103,7 +103,7 @@ void CVMouseUpKnife(CharView *cv) {
     Spline dummy;
     SplinePoint dummyfrom, dummyto, *mid, *mid2;
     BasePoint inters[9];
-    double t1s[10], t2s[10];
+    extended t1s[10], t2s[10];
     int foundsomething = true, ever = false;
     int i;
 

@@ -808,7 +808,9 @@ static SplineSet * slurpspline(FILE *fig,SplineChar *sc, SplineSet *sofar) {
     xs.s = galloc((cnt+1)*sizeof(real));
     xs.closed = (sub&1);
     for ( i=0; i<cnt; ++i )
-#ifdef FONTFORGE_CONFIG_USE_DOUBLE
+#if defined( FONTFORGE_CONFIG_USE_LONGDOUBLE )
+	fscanf(fig,"%Lf",&xs.s[i]);
+#elif defined( FONTFORGE_CONFIG_USE_DOUBLE )
 	fscanf(fig,"%lf",&xs.s[i]);
 #else
 	fscanf(fig,"%f",&xs.s[i]);

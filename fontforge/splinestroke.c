@@ -661,7 +661,7 @@ static SplinePoint *Intersect_Splines(SplinePoint *from,SplinePoint *to,
 	SplinePoint **ret) {
     Spline *test1, *test2;
     BasePoint pts[9];
-    double t1s[9], t2s[9];
+    extended t1s[9], t2s[9];
 
     for ( test1=from->next; test1!=NULL; test1=test1->to->next ) {
 	for ( test2=to->prev; test2!=NULL; test2=test2->from->prev ) {
@@ -1225,12 +1225,28 @@ static void SPFigurePlusCP(SplinePoint *sp,double t,Spline *spline,int isnext) {
     }
 }
 
+static int Overlaps(TPoint *expanded,TPoint *inner,double rsq) {
+    double len;
+    BasePoint dir;
+    
+    dir.x = (expanded->x-inner->x); dir.y = (expanded->y-inner->y);
+    len = (dir.x*dir.x) + (dir.y*dir.y);
+    if ( len>=rsq )
+return( false );
+    len = sqrt(rsq/len);
+    expanded->x = inner->x + len*dir.x;
+    expanded->y = inner->y + len*dir.y;
+return( true );
+}
+
 #define Approx	10
 
 static struct strokedspline *_SplineSetApprox(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
     struct strokedspline *head=NULL, *last=NULL, *cur;
     int max=Approx;
-    TPoint *pmids=galloc(max*sizeof(TPoint)), *mmids=galloc(max*sizeof(TPoint));
+    TPoint *pmids=galloc(max*sizeof(TPoint)),
+	    *mmids=galloc(max*sizeof(TPoint)),
+	    *mids=galloc(max*sizeof(TPoint));
     uint8 *knots=galloc(max);
     BasePoint pto, mto, pfrom, mfrom;
     double approx, xdiff, ydiff, loopdiff;
@@ -1240,7 +1256,7 @@ static struct strokedspline *_SplineSetApprox(SplineSet *spl,StrokeInfo *si,Spli
     int cnt, anyknots;
     double ts[9];
     BasePoint m,p,temp;
-    double mt1, pt1, mt2, pt2;
+    double mt1, pt1, mt2, pt2, rsq;
     int pinners[10];
     int mwascovered, pwascovered;
     enum knot_type { kt_knot=1, kt_pgood=2, kt_mgood=4 };
@@ -1339,6 +1355,7 @@ static struct strokedspline *_SplineSetApprox(SplineSet *spl,StrokeInfo *si,Spli
 		max = approx+10;
 		pmids = grealloc(pmids,max*sizeof(TPoint));
 		mmids = grealloc(mmids,max*sizeof(TPoint));
+		mids = grealloc(mids,max*sizeof(TPoint));
 		knots = grealloc(knots,max);
 	    }
 
@@ -1365,10 +1382,24 @@ static struct strokedspline *_SplineSetApprox(SplineSet *spl,StrokeInfo *si,Spli
 		pmids[i].x = p.x; pmids[i].y = p.y;
 		mmids[i].t = (i+1)/(approx+1);
 		mmids[i].x = m.x; mmids[i].y = m.y;
+		mids[i].x = (m.x+p.x)/2; mids[i].y = (m.y+p.y)/2;
 		/*if ( !pwascovered )*/ knots[i] |= kt_pgood;
 		/*if ( !mwascovered )*/ knots[i] |= kt_mgood;
 		if ( pwascovered || mwascovered )
 		    toobig = true;
+	    }
+	    rsq = si->radius*si->radius;
+	    for ( i=0; i<approx; ++i ) {
+		for ( j=1; j<approx/2; ++j ) {
+		    if ( i+j<approx ) {
+			Overlaps(&mmids[i],&mids[i+j],rsq);
+			Overlaps(&pmids[i],&mids[i+j],rsq);
+		    }
+		    if ( i-j>0 ) {
+			Overlaps(&mmids[i],&mids[i-j],rsq);
+			Overlaps(&pmids[i],&mids[i-j],rsq);
+		    }
+		}
 	    }
 	    anyknots = false;
 	    for ( i=0; i<approx; ++i ) if ( knots[i]&kt_knot ) { anyknots=true; break; }
@@ -1376,11 +1407,7 @@ static struct strokedspline *_SplineSetApprox(SplineSet *spl,StrokeInfo *si,Spli
 		si->gottoobig = si->gottoobiglocal = true;
 		if ( !si->toobigwarn ) {
 		    si->toobigwarn = true;
-#if defined(FONTFORGE_CONFIG_GTK)
 		    gwwv_post_error( _("Bad Stroke"), _("The stroke width is so big that the generated path\nmay intersect itself in %.100s"),
-#else
-		    gwwv_post_error( _("Bad Stroke"), _("The stroke width is so big that the generated path\nmay intersect itself in %.100s"),
-#endif
 			    sc==NULL?"<nameless char>": sc->name );
 		}
 	    }
@@ -1413,7 +1440,7 @@ static struct strokedspline *_SplineSetApprox(SplineSet *spl,StrokeInfo *si,Spli
 
 	    p_to = cur->plusto;
 	    m_from = cur->minusfrom;
-	    for ( i=0, j=0; i<approx; ++i ) {
+	    for ( i=0, j=1; i<approx; ++i ) {
 		if ( knots[i]&kt_knot ) {
 		    for ( k=i+1; k<approx && !(knots[k]&kt_knot); ++k );
 		    if ( i>0 && (knots[i-1]&kt_mgood) ) {
@@ -1446,7 +1473,7 @@ static struct strokedspline *_SplineSetApprox(SplineSet *spl,StrokeInfo *si,Spli
 		}
 	    }
 
-	    if ( j!=0 ) {
+	    if ( j!=1 ) {
 		NormalizeT(pmids+j,i-j,0.0,pmids[j-1].t);
 		NormalizeT(mmids+j,i-j,mmids[j-1].t,1.0);
 		SPFigureCP(m_from,(j)/(approx+1),spline,true);

@@ -716,7 +716,7 @@ return;
 static void CVMarkInterestingLocations(CharView *cv, GWindow pixmap,
 	SplinePointList *spl) {
     Spline *s, *first;
-    double interesting[6];
+    extended interesting[6];
     int i, ecnt, cnt;
     GRect r;
 
@@ -976,7 +976,8 @@ return;
 
 static void dtos(char *buf,real val) {
     char *pt;
-    sprintf( buf,"%.1f", val);
+
+    sprintf( buf,"%.1f", (double) val);
     pt = buf+strlen(buf);
     if ( pt[-1]=='0' && pt[-2]=='.' ) pt[-2] = '\0';
 }
@@ -1921,7 +1922,7 @@ static char *CVMakeTitles(CharView *cv,char *buf) {
 	latin1_2_utf8_strcpy(buf+strlen(buf), _UnicodeNameAnnot[sc->unicodeenc>>16][(sc->unicodeenc>>8)&0xff][sc->unicodeenc&0xff].name);
     }
     if ( cv->show_ft_results || cv->dv )
-	sprintf(buf+strlen(buf), " (%gpt, %ddpi)", cv->ft_pointsize, cv->ft_dpi );
+	sprintf(buf+strlen(buf), " (%gpt, %ddpi)", (double) cv->ft_pointsize, cv->ft_dpi );
 return( title );
 }
 
@@ -2284,7 +2285,7 @@ static void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
 	if ( cv->info.x>=1000 || cv->info.x<=-1000 || cv->info.y>=1000 || cv->info.y<=-1000 )
 	    sprintf(buffer,"%d%s%d", (int) cv->info.x, coord_sep, (int) cv->info.y );
 	else
-	    sprintf(buffer,"%.4g%s%.4g", cv->info.x, coord_sep, cv->info.y );
+	    sprintf(buffer,"%.4g%s%.4g", (double) cv->info.x, coord_sep, (double) cv->info.y );
 	buffer[11] = '\0';
 	uc_strcpy(ubuffer,buffer);
 	GDrawDrawText(pixmap,RPT_DATA,ybase,ubuffer,-1,NULL,0);
@@ -2292,7 +2293,7 @@ static void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
     if ( cv->scale>=.25 )
 	sprintf( buffer, "%d%%", (int) (100*cv->scale));
     else
-	sprintf( buffer, "%.3g%%", (100*cv->scale));
+	sprintf( buffer, "%.3g%%", (double) (100*cv->scale));
     uc_strcpy(ubuffer,buffer);
     GDrawDrawText(pixmap,MAG_DATA,ybase,ubuffer,-1,NULL,0);
     GDrawDrawText8(pixmap,LAYER_DATA,ybase,
@@ -2329,7 +2330,7 @@ static void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
 	if ( selx>=1000 || selx<=-1000 || sely>=1000 || sely<=-1000 )
 	    sprintf(buffer,"%d%s%d", (int) selx, coord_sep, (int) sely );
 	else
-	    sprintf(buffer,"%.4g%s%.4g", selx, coord_sep, sely );
+	    sprintf(buffer,"%.4g%s%.4g", (double) selx, coord_sep, (double) sely );
 	buffer[11] = '\0';
 	uc_strcpy(ubuffer,buffer);
 	GDrawDrawText(pixmap,SPT_DATA,ybase,ubuffer,-1,NULL,0);
@@ -2347,7 +2348,7 @@ return;
     if ( xdiff>=1000 || xdiff<=-1000 || ydiff>=1000 || ydiff<=-1000 )
 	sprintf(buffer,"%d%s%d", (int) xdiff, coord_sep, (int) ydiff );
     else
-	sprintf(buffer,"%.4g%s%.4g", xdiff, coord_sep, ydiff );
+	sprintf(buffer,"%.4g%s%.4g", (double) xdiff, coord_sep, (double) ydiff );
     buffer[11] = '\0';
     uc_strcpy(ubuffer,buffer);
     GDrawDrawText(pixmap,SOF_DATA,ybase,ubuffer,-1,NULL,0);

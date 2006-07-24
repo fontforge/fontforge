@@ -529,7 +529,7 @@ static int Ask(char *rb1, char *rb2, int rb, char *lab, float *val, int *co,
 		gcd[10].gd.cid = CID_CentCornLab;
 		gcd[10].creator = GLabelCreate;
 
-		sprintf( cenx, "%g", cv->info.x );
+		sprintf( cenx, "%g", (double) cv->info.x );
 		label[11].text = (unichar_t *) cenx;
 		label[11].text_is_1byte = true;
 		gcd[11].gd.label = &label[11];
@@ -539,7 +539,7 @@ static int Ask(char *rb1, char *rb2, int rb, char *lab, float *val, int *co,
 		gcd[11].gd.cid = CID_CentCornX;
 		gcd[11].creator = GTextFieldCreate;
 
-		sprintf( ceny, "%g", cv->info.y );
+		sprintf( ceny, "%g", (double) cv->info.y );
 		label[12].text = (unichar_t *) ceny;
 		label[12].text_is_1byte = true;
 		gcd[12].gd.label = &label[12];
@@ -557,7 +557,7 @@ static int Ask(char *rb1, char *rb2, int rb, char *lab, float *val, int *co,
 		gcd[13].gd.cid = CID_RadDiamLab;
 		gcd[13].creator = GLabelCreate;
 
-		sprintf( radx, "%g", raddiam_x );
+		sprintf( radx, "%g", (double) raddiam_x );
 		label[14].text = (unichar_t *) radx;
 		label[14].text_is_1byte = true;
 		gcd[14].gd.label = &label[14];
@@ -567,7 +567,7 @@ static int Ask(char *rb1, char *rb2, int rb, char *lab, float *val, int *co,
 		gcd[14].gd.cid = CID_RadDiamX;
 		gcd[14].creator = GTextFieldCreate;
 
-		sprintf( rady, "%g", raddiam_y );
+		sprintf( rady, "%g", (double) raddiam_y );
 		label[15].text = (unichar_t *) rady;
 		label[15].text_is_1byte = true;
 		gcd[15].gd.label = &label[15];
@@ -584,7 +584,7 @@ static int Ask(char *rb1, char *rb2, int rb, char *lab, float *val, int *co,
 		gcd[16].gd.flags = gg_enabled|gg_visible;
 		gcd[16].creator = GLabelCreate;
 
-		sprintf( angle, "%g", rotate_by );
+		sprintf( angle, "%g", (double) rotate_by );
 		label[17].text = (unichar_t *) angle;
 		label[17].text_is_1byte = true;
 		gcd[17].gd.label = &label[17];

@@ -438,10 +438,10 @@ static void AnchorD_DrawPos(AnchorDlg *a) {
     char buffer[20];
     unichar_t ubuf[20];
 
-    sprintf( buffer, "%g", a->apos.x );
+    sprintf( buffer, "%g", (double) a->apos.x );
     uc_strcpy(ubuf,buffer);
     GGadgetSetTitle(GWidgetGetControl(a->gw,CID_X),ubuf);
-    sprintf( buffer, "%g", a->apos.y );
+    sprintf( buffer, "%g", (double) a->apos.y );
     uc_strcpy(ubuf,buffer);
     GGadgetSetTitle(GWidgetGetControl(a->gw,CID_Y),ubuf);
 

@@ -77,11 +77,11 @@ struct problems {
     unsigned int doneexplain: 1;
     unsigned int finish: 1;
     unsigned int ignorethis: 1;
-    real near, xval, yval, widthval;
+    double near, xval, yval, widthval;
     char *explaining;
-    real found, expected;
-    real xheight, caph, ascent, descent;
-    real irrelevantfactor;
+    double found, expected;
+    double xheight, caph, ascent, descent;
+    double irrelevantfactor;
     int advancewidthval, vadvancewidthval;
     int pointsmax, hintsmax, refdepthmax;
     GWindow explainw;
@@ -115,8 +115,8 @@ static int toomanyhints=1, hintsmax=96, toodeeprefs=1, refdepthmax=9;
 static int ptmatchrefsoutofdate=1, refsbadtransformttf=0, refsbadtransformps=0;
 static int mixedcontoursrefs=0;
 static int stem3=0, showexactstem3=0;
-static real near=3, xval=0, yval=0, widthval=50, advancewidthval=0, vadvancewidthval=0;
-static real irrelevantfactor = .005;
+static double near=3, xval=0, yval=0, widthval=50, advancewidthval=0, vadvancewidthval=0;
+static double irrelevantfactor = .005;
 
 #define CID_Stop		2001
 #define CID_Next		2002
@@ -539,7 +539,7 @@ return;
     } else if ( found==expected )
 	buf[0]='\0';
     else {
-	sprintf(buf,"Found %1$.4g, expected %2$.4g", found, expected );
+	sprintf(buf,_("Found %1$.4g, expected %2$.4g"), (double) found, (double) expected );
     }
     p->found = found; p->expected = expected;
     GGadgetSetTitle8(p->explainvals,buf);
@@ -959,7 +959,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 
     if ( p->intersectingpaths && !p->finish ) {
 	BasePoint pts[9];
-	double t1s[10], t2s[10];
+	extended t1s[10], t2s[10];
 	int found = false,i;
 	for ( test=spl; test!=NULL ; test=test->next ) {
 	    first = NULL;

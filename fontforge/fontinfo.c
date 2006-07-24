@@ -1960,7 +1960,7 @@ return( true );
 static int GFI_GuessItalic(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-	real val = SFGuessItalicAngle(d->sf);
+	double val = SFGuessItalicAngle(d->sf);
 	char buf[30]; unichar_t ubuf[30];
 	sprintf( buf, "%.1f", val);
 	uc_strcpy(ubuf,buf);
@@ -6627,7 +6627,7 @@ return;
     psgcd[7].gd.pos.x = 103; psgcd[7].gd.pos.y = psgcd[8].gd.pos.y-6;
     psgcd[7].gd.pos.width = 47;
     psgcd[7].gd.flags = gg_visible | gg_enabled;
-    sprintf( iabuf, "%g", sf->italicangle );
+    sprintf( iabuf, "%g", (double) sf->italicangle );
     pslabel[7].text = (unichar_t *) iabuf;
     pslabel[7].text_is_1byte = true;
     psgcd[7].gd.label = &pslabel[7];
@@ -6661,7 +6661,7 @@ return;
 
     psgcd[10].gd.pos.x = 103; psgcd[10].gd.pos.y = psgcd[11].gd.pos.y-6; psgcd[10].gd.pos.width = 47;
     psgcd[10].gd.flags = gg_visible | gg_enabled;
-    sprintf( upbuf, "%g", sf->upos );
+    sprintf( upbuf, "%g", (double) sf->upos );
     pslabel[10].text = (unichar_t *) upbuf;
     pslabel[10].text_is_1byte = true;
     psgcd[10].gd.label = &pslabel[10];
@@ -6678,7 +6678,7 @@ return;
 
     psgcd[13].gd.pos.x = 200; psgcd[13].gd.pos.y = psgcd[10].gd.pos.y; psgcd[13].gd.pos.width = 47;
     psgcd[13].gd.flags = gg_visible | gg_enabled;
-    sprintf( uwbuf, "%g", sf->uwidth );
+    sprintf( uwbuf, "%g", (double) sf->uwidth );
     pslabel[13].text = (unichar_t *) uwbuf;
     pslabel[13].text_is_1byte = true;
     psgcd[13].gd.label = &pslabel[13];
@@ -6781,7 +6781,7 @@ return;
     psgcd[k].gd.flags = gg_visible | gg_enabled;
     psgcd[k++].creator = GLabelCreate;
 
-    sprintf( swbuf,"%g", sf->strokewidth );
+    sprintf( swbuf,"%g", (double) sf->strokewidth );
     psgcd[k].gd.pos.x = 115; psgcd[k].gd.pos.y = psgcd[k-1].gd.pos.y-6; psgcd[k].gd.pos.width = 137;
     psgcd[k].gd.flags = gg_visible | gg_enabled;
     pslabel[k].text = (unichar_t *) swbuf;

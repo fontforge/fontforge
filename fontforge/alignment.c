@@ -272,7 +272,7 @@ struct rcd {
     DBounds *b;
     int cnt;
 };
-static real lastsize = 100;
+static double lastsize = 100;
 
 #define CID_Y		1001
 #define CID_X		1002

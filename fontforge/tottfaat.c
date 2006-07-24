@@ -1471,7 +1471,7 @@ return( features );
 
 static struct feature *featuresOrderByType(struct feature *features) {
     struct feature *f, **all;
-    int i, j, cnt, saw_default;
+    int i, j, cnt/*, saw_default*/;
 
     for ( cnt=0, f=features; f!=NULL; f=f->next, ++cnt );
     if ( cnt==1 ) {

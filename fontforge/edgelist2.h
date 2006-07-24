@@ -30,7 +30,7 @@
 
 typedef struct monotonic {
     Spline *s;
-    double tstart, tend;
+    extended tstart, tend;
     struct monotonic *next, *prev;	/* along original contour */
     uint8 xup;				/* increasing t => increasing x */
     uint8 yup;
@@ -40,7 +40,7 @@ typedef struct monotonic {
     struct intersection *start;
     struct intersection *end;
     DBounds b;
-    double other, t;
+    extended other, t;
     struct monotonic *linked;		/* singly linked list of all monotonic*/
     					/*  segments, no contour indication */
     double when_set;			/* Debugging */
@@ -49,6 +49,6 @@ typedef struct monotonic {
 extern void FreeMonotonics(Monotonic *m);
 extern Monotonic *SSsToMContours(SplineSet *spl, enum overlap_type ot);
 	/* overlap_type controls whether we look at selected splinesets or all splinesets */
-extern int MonotonicFindAt(Monotonic *ms,int which, double test, Monotonic **space );
+extern int MonotonicFindAt(Monotonic *ms,int which, extended test, Monotonic **space );
 
 #endif /* _EDGELIST2_H */

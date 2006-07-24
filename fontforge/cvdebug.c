@@ -385,12 +385,12 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 		me.x = (me.x+me2.x)/2;  me.y = (me.y+me2.y)/2;
 		if ( show_grid )
 		    sprintf(buffer, "   : I    %.2f,%.2f",
-			    me.x/dv->scale/64.0, me.y/dv->scale/64.0 );
+			    (double) (me.x/dv->scale/64.0), (double) (me.y/dv->scale/64.0) );
 		else if ( show_raw )
 		    sprintf(buffer, "   : I    %g,%g",
-			    (pts[i].x+pts[l].x)/2.0, (pts[i].y+pts[l].y)/2.0 );
+			    (double) ((pts[i].x+pts[l].x)/2.0), (double) ((pts[i].y+pts[l].y)/2.0) );
 		else
-		    sprintf(buffer, "   : I    %g,%g", me.x , me.y );
+		    sprintf(buffer, "   : I    %g,%g", (double) me.x , (double) me.y );
 		uc_strcpy(ubuffer,buffer);
 		if ( y>0 )
 		    GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
@@ -409,7 +409,7 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 		sprintf(buffer, "%3d: %c%c%c%c %.2f,%.2f", i,
 			show_twilight ? 'T' : i>=n-ph? 'F' : r->tags[i]&FT_Curve_Tag_On?'P':'C',
 			r->tags[i]&FT_Curve_Tag_Touch_X?'H':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'V':' ', watched,
-			me.x/dv->scale/64.0, me.y/dv->scale/64.0 );
+			(double) (me.x/dv->scale/64.0), (double) (me.y/dv->scale/64.0) );
 	    else if ( show_raw )
 		sprintf(buffer, "%3d: %c%c%c%c %d,%d", i,
 			r->tags[i]&FT_Curve_Tag_On?'P':'C', r->tags[i]&FT_Curve_Tag_Touch_X?'H':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'V':' ', watched,
@@ -417,7 +417,7 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 	    else
 		sprintf(buffer, "%3d: %c%c%c%c %g,%g", i,
 			r->tags[i]&FT_Curve_Tag_On?'P':'C', r->tags[i]&FT_Curve_Tag_Touch_X?'H':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'V':' ', watched,
-			me.x, me.y );
+			(double) me.x, (double) me.y );
 	    uc_strcpy(ubuffer,buffer);
 	    if ( y>0 )
 		GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
@@ -2155,7 +2155,7 @@ void CVDebugPointPopup(CharView *cv) {
 #else
     snprintf(cspace,sizeof(cspace),
 #endif
-		"%.2f, %.2f", cv->info.x/dv->scale/64.0, cv->info.y/dv->scale/64.0 );
+		"%.2f, %.2f", (double) (cv->info.x/dv->scale/64.0), (double) (cv->info.y/dv->scale/64.0) );
 
   showit:
     if ( cv->raster!=NULL && cv->raster->num_greys>2 ) {

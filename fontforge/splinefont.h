@@ -42,10 +42,23 @@
 #  define ICONV_CONST
 #endif
 
-#ifdef FONTFORGE_CONFIG_USE_DOUBLE
-# define real	double
+#if defined( FONTFORGE_CONFIG_USE_LONGDOUBLE )
+# define real		long double
+# define bigreal	long double
+#elif defined( FONTFORGE_CONFIG_USE_DOUBLE )
+# define real		double
+# define bigreal	double
 #else
-# define real	float
+# define real		float
+# define bigreal	double
+#endif
+
+#if defined( HAVE_LONG_DOUBLE ) && defined( This_does_not_seem_to_make_a_difference )
+# define extended	long double
+# define CheckExtremaForSingleBitErrors(sp,t)	(t)
+# define EXTENDED_IS_LONG_DOUBLE	1
+#else
+# define extended	double
 #endif
 
 #define CHR(ch1,ch2,ch3,ch4) (((ch1)<<24)|((ch2)<<16)|((ch3)<<8)|(ch4))
@@ -58,7 +71,7 @@ typedef struct val {
 	    v_int32pt, v_int16pt, v_int8pt, v_void } type;
     union {
 	int ival;
-	float fval;
+	real fval;
 	char *sval;
 	struct val *lval;
 	struct array *aval;
@@ -137,10 +150,10 @@ typedef struct strokeinfo {
     real radius2;
     int pressure1, pressure2;
 /* End freehand tool */
-    double c,s;
+    bigreal c,s;
     real xoff[8], yoff[8];
     void *data;
-    double (*factor)(void *data,struct spline *spline,real t);
+    bigreal (*factor)(void *data,struct spline *spline,real t);
 } StrokeInfo;
 
 enum overlap_type { over_remove, over_rmselected, over_intersect, over_intersel,
@@ -152,10 +165,10 @@ enum simpify_flags { sf_cleanup=-1, sf_normal=0, sf_ignoreslopes=1,
 	sf_mergelines=0x40, sf_setstart2extremum=0x80 };
 struct simplifyinfo {
     int flags;
-    double err;
-    double tan_bounds;
-    double linefixup;
-    double linelenmax;		/* Don't simplify any straight lines longer than this */
+    bigreal err;
+    bigreal tan_bounds;
+    bigreal linefixup;
+    bigreal linelenmax;		/* Don't simplify any straight lines longer than this */
     int set_as_default;
 };
 
@@ -1497,29 +1510,34 @@ extern void XLFD_CreateComponents(BDFFont *bdf,EncMap *map,int res,struct xlfd_c
 /* Two quadratics intersect in at most 4 points */
 /* Two cubics intersect in at most 9 points */ /* Plus an extra space for a trailing -1 */
 extern int SplinesIntersect(const Spline *s1, const Spline *s2, BasePoint pts[9],
-	double t1s[10], double t2s[10]);
-extern int LineTangentToSplineThroughPt(Spline *s, BasePoint *pt, double ts[4],
-	double tmin, double tmax);
-extern int CubicSolve(const Spline1D *sp,double ts[3]);
-extern double IterateSplineSolve(const Spline1D *sp, double tmin, double tmax, double sought_y, double err);
-extern double SplineSolve(const Spline1D *sp, real tmin, real tmax, real sought_y, real err);
-extern int SplineSolveFull(const Spline1D *sp,double val, double ts[3]);
-extern void SplineFindExtrema(const Spline1D *sp, double *_t1, double *_t2 );
+	extended t1s[10], extended t2s[10]);
+extern int LineTangentToSplineThroughPt(Spline *s, BasePoint *pt, extended ts[4],
+	extended tmin, extended tmax);
+extern int CubicSolve(const Spline1D *sp,extended ts[3]);
+extern extended IterateSplineSolve(const Spline1D *sp, extended tmin, extended tmax, extended sought_y, double err);
+extern extended SplineSolve(const Spline1D *sp, real tmin, real tmax, extended sought_y, real err);
+extern int SplineSolveFull(const Spline1D *sp,extended val, extended ts[3]);
+extern void SplineFindExtrema(const Spline1D *sp, extended *_t1, extended *_t2 );
 
 #define CURVATURE_ERROR	-1e9
 extern double SplineCurvature(Spline *s, double t);
 
+#ifndef EXTENDED_IS_LONG_DOUBLE
 extern double CheckExtremaForSingleBitErrors(const Spline1D *sp, double t);
-extern int Spline2DFindExtrema(const Spline *sp, double extrema[4] );
-extern int Spline2DFindPointsOfInflection(const Spline *sp, double poi[2] );
+#define esqrt(d)	sqrt(d)
+#else
+extern extended esqrt(extended e);
+#endif
+extern int Spline2DFindExtrema(const Spline *sp, extended extrema[4] );
+extern int Spline2DFindPointsOfInflection(const Spline *sp, extended poi[2] );
 extern int SplineAtInflection(Spline1D *sp, double t );
 extern int SplineAtMinMax(Spline1D *sp, double t );
-extern void SplineRemoveExtremaTooClose(Spline1D *sp, double *_t1, double *_t2 );
+extern void SplineRemoveExtremaTooClose(Spline1D *sp, extended *_t1, extended *_t2 );
 extern int NearSpline(struct findsel *fs, Spline *spline);
 extern real SplineNearPoint(Spline *spline, BasePoint *bp, real fudge);
 extern void SCMakeDependent(SplineChar *dependent,SplineChar *base);
-extern SplinePoint *SplineBisect(Spline *spline, double t);
-extern Spline *SplineSplit(Spline *spline, double ts[3]);
+extern SplinePoint *SplineBisect(Spline *spline, extended t);
+extern Spline *SplineSplit(Spline *spline, extended ts[3]);
 extern Spline *ApproximateSplineFromPoints(SplinePoint *from, SplinePoint *to,
 	TPoint *mid, int cnt,int order2);
 extern Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,

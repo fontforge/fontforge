@@ -96,10 +96,10 @@ return( RealWithin(a/b,1.0,fudge));
 }
 
 static int MinMaxWithin(Spline *spline) {
-    double dx, dy;
+    extended dx, dy;
     int which;
-    double t1, t2;
-    double w;
+    extended t1, t2;
+    extended w;
     /* We know that this "spline" is basically one dimensional. As long as its*/
     /*  extrema are between the start and end points on that line then we can */
     /*  treat it as a line. If the extrema are way outside the line segment */
@@ -229,8 +229,8 @@ typedef struct spline1 {
     real c0, c1;
 } Spline1;
 
-static void FigureSpline1(Spline1 *sp1,double t0, double t1, Spline1D *sp ) {
-    double s = (t1-t0);
+static void FigureSpline1(Spline1 *sp1,bigreal t0, bigreal t1, Spline1D *sp ) {
+    bigreal s = (t1-t0);
     if ( sp->a==0 && sp->b==0 ) {
 	sp1->sp.d = sp->d + t0*sp->c;
 	sp1->sp.c = s*sp->c;
@@ -251,7 +251,7 @@ static void FigureSpline1(Spline1 *sp1,double t0, double t1, Spline1D *sp ) {
     sp1->c1 = sp1->c0 + (sp1->sp.b+sp1->sp.c)/3;
 }
 
-SplinePoint *SplineBisect(Spline *spline, double t) {
+SplinePoint *SplineBisect(Spline *spline, extended t) {
     Spline1 xstart, xend;
     Spline1 ystart, yend;
     Spline *spline1, *spline2;
@@ -265,8 +265,8 @@ SplinePoint *SplineBisect(Spline *spline, double t) {
 	IError("Bisection to create a zero length spline");
 #endif
     xstart.s0 = xsp->d; ystart.s0 = ysp->d;
-    xend.s1 = (double) xsp->a+xsp->b+xsp->c+xsp->d;
-    yend.s1 = (double) ysp->a+ysp->b+ysp->c+ysp->d;
+    xend.s1 = (extended) xsp->a+xsp->b+xsp->c+xsp->d;
+    yend.s1 = (extended) ysp->a+ysp->b+ysp->c+ysp->d;
     xstart.s1 = xend.s0 = ((xsp->a*t+xsp->b)*t+xsp->c)*t + xsp->d;
     ystart.s1 = yend.s0 = ((ysp->a*t+ysp->b)*t+ysp->c)*t + ysp->d;
     FigureSpline1(&xstart,0,t,xsp);
@@ -334,11 +334,11 @@ SplinePoint *SplineBisect(Spline *spline, double t) {
 return( mid );
 }
 
-Spline *SplineSplit(Spline *spline, double ts[3]) {
+Spline *SplineSplit(Spline *spline, extended ts[3]) {
     /* Split the current spline in up to 3 places */
     Spline1 splines[2][4];
     int i,cnt;
-    double base;
+    bigreal base;
     SplinePoint *last, *sp;
     Spline *new;
     int order2 = spline->order2;
@@ -696,7 +696,7 @@ static double ClosestSplineSolve(Spline1D *sp,double sought,double close_to_t) {
     /*  find the value which is closest to close_to_t */
     /* on error return closetot */
     Spline1D temp;
-    double ts[3];
+    extended ts[3];
     int i;
     double t, best, test;
 
@@ -726,7 +726,7 @@ static double SigmaDeltas(Spline *spline,TPoint *mid, int cnt, DBounds *b, struc
     int i, lasti;
     double xdiff, ydiff, sum, temp, t, lastt;
     SplinePoint *to = spline->to, *from = spline->from;
-    double ts[2], x,y;
+    extended ts[2], x,y;
     struct dotbounds db2;
     double dot;
 
@@ -1060,6 +1060,8 @@ return( SplineMake2(from,to));
     continue;
 	    tlen = temp1; flen = temp2;
 	} else {
+	    if ( bestj[k]<0 || besti[k]<0 )
+    continue;
 	    tlen = bestj[k]*tdiff; flen = besti[k]*fdiff;
 	}
 	to->prevcp.x = to->me.x + tlen*tounit.x; to->prevcp.y = to->me.y + tlen*tounit.y;
@@ -2031,7 +2033,7 @@ void SPLNearlyHvLines(SplineChar *sc,SplineSet *ss,double err) {
 /*  check that that is less than err					      */
 static int SplineCloseToLinear(Spline *s, double err) {
     double angle;
-    double co,si, t1, t2, y;
+    extended co,si, t1, t2, y;
     SplinePoint from, to;
     Spline sp;
     BasePoint bp;
@@ -2804,7 +2806,7 @@ void SplineCharAddPointsOfInflection(SplineChar *sc, SplineSet *head) {
 Spline *SplineAddExtrema(Spline *s,int always,real lenbound, real offsetbound,
 	DBounds *b) {
     /* First find the extrema, if any */
-    double t[4], min;
+    bigreal t[4], min;
     uint8 rmfrom[4], rmto[4];
     int p, i,j, p_s, mini;
     SplinePoint *sp;

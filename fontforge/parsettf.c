@@ -2840,7 +2840,7 @@ return( NULL );
     ret = pt = galloc((i+1)*20+12);
     *pt++ = '[';
     for ( j=0; j<=i; ++j ) {
-	sprintf( pt, "%g ", array[j]);
+	sprintf( pt, "%g ", (double) array[j]);
 	pt += strlen(pt);
     }
     pt[-1]=']';
@@ -2870,7 +2870,7 @@ return;
     privateadd(private,key,copy(buf));
 }
 
-static void privateaddreal(struct psdict *private,char *key,real val) {
+static void privateaddreal(struct psdict *private,char *key,double val) {
     char buf[10];
     if ( val==0 )
 return;

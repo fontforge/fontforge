@@ -549,14 +549,14 @@ static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
 	first = NULL;
 	for ( sp = spl->first; ; sp=sp->next->to ) {
 	    if ( first==NULL )
-		fprintf( sfd, "%g %g m ", sp->me.x, sp->me.y );
+		fprintf( sfd, "%g %g m ", (double) sp->me.x, (double) sp->me.y );
 	    else if ( sp->prev->islinear )		/* Don't use known linear here. save control points if there are any */
-		fprintf( sfd, " %g %g l ", sp->me.x, sp->me.y );
+		fprintf( sfd, " %g %g l ", (double) sp->me.x, (double) sp->me.y );
 	    else
 		fprintf( sfd, " %g %g %g %g %g %g c ",
-			sp->prev->from->nextcp.x, sp->prev->from->nextcp.y,
-			sp->prevcp.x, sp->prevcp.y,
-			sp->me.x, sp->me.y );
+			(double) sp->prev->from->nextcp.x, (double) sp->prev->from->nextcp.y,
+			(double) sp->prevcp.x, (double) sp->prevcp.y,
+			(double) sp->me.x, (double) sp->me.y );
 	    fprintf(sfd, "%d", sp->pointtype|(sp->selected<<2)|
 			(sp->nextcpdef<<3)|(sp->prevcpdef<<4)|
 			(sp->roundx<<5)|(sp->roundy<<6)|
@@ -651,7 +651,7 @@ static void SFDDumpAnchorPoints(FILE *sfd,SplineChar *sc) {
 	fprintf( sfd, "AnchorPoint: " );
 	SFDDumpUTF7Str(sfd,ap->anchor->name);
 	fprintf( sfd, "%g %g %s %d",
-		ap->me.x, ap->me.y,
+		(double) ap->me.x, (double) ap->me.y,
 		ap->type==at_centry ? "entry" :
 		ap->type==at_cexit ? "exit" :
 		ap->type==at_mark ? "mark" :
@@ -766,7 +766,7 @@ static void SFDDumpImage(FILE *sfd,ImageList *img) {
 	    (int) base->width, (int) base->height, base->image_type,
 	    (int) (base->image_type==it_true?3*base->width:base->bytes_per_line),
 	    base->clut==NULL?0:base->clut->clut_len,(int) base->trans,
-	    img->xoff, img->yoff, img->xscale, img->yscale, rlelen );
+	    (double) img->xoff, (double) img->yoff, (double) img->xscale, (double) img->yscale, rlelen );
     memset(&enc,'\0',sizeof(enc));
     enc.sfd = sfd;
     if ( base->clut!=NULL ) {
@@ -813,12 +813,12 @@ static void SFDDumpHintList(FILE *sfd,char *key, StemInfo *h) {
 return;
     fprintf(sfd, "%s", key );
     for ( ; h!=NULL; h=h->next ) {
-	fprintf(sfd, "%g %g", h->start,h->width );
+	fprintf(sfd, "%g %g", (double) h->start,(double) h->width );
 	if ( h->ghost ) putc('G',sfd);
 	if ( h->where!=NULL ) {
 	    putc('<',sfd);
 	    for ( hi=h->where; hi!=NULL; hi=hi->next )
-		fprintf(sfd, "%g %g%c", hi->begin, hi->end, hi->next?' ':'>');
+		fprintf(sfd, "%g %g%c", (double) hi->begin, (double) hi->end, hi->next?' ':'>');
 	}
 	putc(h->next?' ':'\n',sfd);
     }
@@ -831,10 +831,10 @@ return;
     fprintf(sfd, "%s", key );
     for ( ; h!=NULL; h=h->next ) {
 	fprintf(sfd, "%g %g %g %g %g %g %g %g",
-		h->leftedgetop.x, h->leftedgetop.y,
-		h->rightedgetop.x, h->rightedgetop.y,
-		h->leftedgebottom.x, h->leftedgebottom.y,
-		h->rightedgebottom.x, h->rightedgebottom.y );
+		(double) h->leftedgetop.x, (double) h->leftedgetop.y,
+		(double) h->rightedgetop.x, (double) h->rightedgetop.y,
+		(double) h->leftedgebottom.x, (double) h->leftedgebottom.y,
+		(double) h->rightedgebottom.x, (double) h->rightedgebottom.y );
 	putc(h->next?' ':'\n',sfd);
     }
 }
@@ -903,8 +903,8 @@ static void SFDDumpRefs(FILE *sfd,RefChar *refs, char *name,EncMap *map, int *ne
 		    newgids!=NULL ? newgids[ref->sc->orig_pos]:ref->sc->orig_pos,
 		    ref->sc->unicodeenc,
 		    ref->selected?'S':'N',
-		    ref->transform[0], ref->transform[1], ref->transform[2],
-		    ref->transform[3], ref->transform[4], ref->transform[5],
+		    (double) ref->transform[0], (double) ref->transform[1], (double) ref->transform[2],
+		    (double) ref->transform[3], (double) ref->transform[4], (double) ref->transform[5],
 		    ref->use_my_metrics|(ref->round_translation_to_grid<<1)|
 		     (ref->point_match<<2));
 	if ( ref->point_match ) {
@@ -1309,10 +1309,10 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal) {
     if ( sf->fondname!=NULL )
 	fprintf(sfd, "FONDName: %s\n", sf->fondname );
     if ( sf->strokewidth!=0 )
-	fprintf(sfd, "StrokeWidth: %g\n", sf->strokewidth );
-    fprintf(sfd, "ItalicAngle: %g\n", sf->italicangle );
-    fprintf(sfd, "UnderlinePosition: %g\n", sf->upos );
-    fprintf(sfd, "UnderlineWidth: %g\n", sf->uwidth );
+	fprintf(sfd, "StrokeWidth: %g\n", (double) sf->strokewidth );
+    fprintf(sfd, "ItalicAngle: %g\n", (double) sf->italicangle );
+    fprintf(sfd, "UnderlinePosition: %g\n", (double) sf->upos );
+    fprintf(sfd, "UnderlineWidth: %g\n", (double) sf->uwidth );
     fprintf(sfd, "Ascent: %d\n", sf->ascent );
     fprintf(sfd, "Descent: %d\n", sf->descent );
     if ( sf->order2 )
@@ -1770,16 +1770,16 @@ static void SFD_MMDump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal) {
     putc('\n',sfd);
     fprintf( sfd, "MMPositions:" );
     for ( i=0; i<mm->axis_count*mm->instance_count; ++i )
-	fprintf( sfd, " %g", mm->positions[i]);
+	fprintf( sfd, " %g", (double) mm->positions[i]);
     putc('\n',sfd);
     fprintf( sfd, "MMWeights:" );
     for ( i=0; i<mm->instance_count; ++i )
-	fprintf( sfd, " %g", mm->defweights[i]);
+	fprintf( sfd, " %g", (double) mm->defweights[i]);
     putc('\n',sfd);
     for ( i=0; i<mm->axis_count; ++i ) {
 	fprintf( sfd, "MMAxisMap: %d %d", i, mm->axismaps[i].points );
 	for ( j=0; j<mm->axismaps[i].points; ++j )
-	    fprintf( sfd, " %g=>%g", mm->axismaps[i].blends[j], mm->axismaps[i].designs[j]);
+	    fprintf( sfd, " %g=>%g", (double) mm->axismaps[i].blends[j], (double) mm->axismaps[i].designs[j]);
 	fputc('\n',sfd);
 	SFDDumpMacName(sfd,mm->axismaps[i].axisnames);
     }
@@ -1796,7 +1796,7 @@ static void SFD_MMDump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal) {
     for ( i=0; i<mm->named_instance_count; ++i ) {
 	fprintf( sfd, "MMNamedInstance: %d ", i );
 	for ( j=0; j<mm->axis_count; ++j )
-	    fprintf( sfd, " %g", mm->named_instances[i].coords[j]);
+	    fprintf( sfd, " %g", (double) mm->named_instances[i].coords[j]);
 	fputc('\n',sfd);
 	SFDDumpMacName(sfd,mm->named_instances[i].names);
     }

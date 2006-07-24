@@ -798,7 +798,7 @@ static void printarray(struct pskeydict *dict) {
     for ( i=0; i<dict->cnt; ++i ) {
 	switch ( dict->entries[i].type ) {
 	  case ps_num:
-	    printf( "%g", dict->entries[i].u.val );
+	    printf( "%g", (double) dict->entries[i].u.val );
 	  break;
 	  case ps_bool:
 	    printf( "%s", dict->entries[i].u.tf ? "true" : "false" );
@@ -2631,7 +2631,7 @@ printf( "-%s-\n", toknames[tok]);
 		--sp;
 		switch ( stack[sp].type ) {
 		  case ps_num:
-		    printf( "%g", stack[sp].u.val );
+		    printf( "%g", (double) stack[sp].u.val );
 		  break;
 		  case ps_bool:
 		    printf( "%s", stack[sp].u.tf ? "true" : "false" );
@@ -2700,7 +2700,7 @@ printf( "-%s-\n", toknames[tok]);
 		else if ( stack[sp-2].u.val==16 )
 		    sprintf( stack[sp-1].u.str, "%X", (int) stack[sp-3].u.val );
 		else /* default to radix 10 no matter what they asked for */
-		    sprintf( stack[sp-1].u.str, "%g", stack[sp-3].u.val );
+		    sprintf( stack[sp-1].u.str, "%g", (double) stack[sp-3].u.val );
 		stack[sp-3] = stack[sp-1];
 		sp-=2;
 	    }
@@ -2709,7 +2709,7 @@ printf( "-%s-\n", toknames[tok]);
 	    if ( sp>=2 && stack[sp-1].type==ps_string ) {
 		switch ( stack[sp].type ) {
 		  case ps_num:
-		    sprintf( stack[sp-1].u.str, "%g", stack[sp-2].u.val );
+		    sprintf( stack[sp-1].u.str, "%g", (double) stack[sp-2].u.val );
 		  break;
 		  case ps_bool:
 		    sprintf( stack[sp-1].u.str, "%s", stack[sp-2].u.tf ? "true" : "false" );

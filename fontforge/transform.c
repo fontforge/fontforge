@@ -294,10 +294,10 @@ static int Trans_TypeChange(GGadget *g, GEvent *e) {
 	    GGadgetSelectOneListItem( g,index );
 	    mask &= ~0x400;
 	    if ( mask&1 ) {		/* Move */
-		sprintf( buf, "%.1f", xoff );
+		sprintf( buf, "%.1f", (double) xoff );
 		uc_strcpy(ubuf,buf);
 		GGadgetSetTitle(GWidgetGetControl(bw,CID_XMove), ubuf );
-		sprintf( buf, "%.1f", yoff );
+		sprintf( buf, "%.1f", (double) yoff );
 		uc_strcpy(ubuf,buf);
 		GGadgetSetTitle(GWidgetGetControl(bw,CID_YMove), ubuf );
 	    } else {
