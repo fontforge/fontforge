@@ -425,9 +425,9 @@ static void SCDefWidthVal(char *buf,SplineChar *sc, enum widthtype wtype) {
     else {
 	SplineCharFindBounds(sc,&bb);
 	if ( wtype==wt_lbearing )
-	    sprintf( buf, "%.4g", bb.minx );
+	    sprintf( buf, "%.4g", (double) bb.minx );
 	else
-	    sprintf( buf, "%.4g", sc->width-bb.maxx );
+	    sprintf( buf, "%.4g", sc->width-(double) bb.maxx );
     }
 }
 

@@ -150,9 +150,9 @@ static int GI_MatchPtChange(GGadget *g, GEvent *e) {
 	    if ( ttfFindPointInSC(ci->cv->sc,basept,&inbase,ci->rf)==-1 &&
 		    ttfFindPointInSC(ci->rf->sc,refpt,&inref,NULL)==-1 ) {
 		char buffer[40];
-		sprintf(buffer,"%g",inbase.x-inref.x);
+		sprintf(buffer,"%g",(double) (inbase.x-inref.x));
 		GGadgetSetTitle8(GWidgetGetControl(ci->gw,1004),buffer);
-		sprintf(buffer,"%g",inbase.y-inref.y);
+		sprintf(buffer,"%g",(double) (inbase.y-inref.y));
 		GGadgetSetTitle8(GWidgetGetControl(ci->gw,1005),buffer);
 	    }
 	}
@@ -374,7 +374,7 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	++j;
 
 	for ( i=0; i<6; ++i ) {
-	    sprintf(tbuf[i],"%g", ref->transform[i]);
+	    sprintf(tbuf[i],"%g", (double) ref->transform[i]);
 	    label[i+j].text = (unichar_t *) tbuf[i];
 	    label[i+j].text_is_1byte = true;
 	    gcd[i+j].gd.label = &label[i+j];
@@ -541,8 +541,8 @@ static void ImgGetInfo(CharView *cv, ImageList *img) {
 	memset(&gcd,0,sizeof(gcd));
 	memset(&label,0,sizeof(label));
 
-	sprintf( posbuf, "Image at: (%.0f,%.0f)", img->xoff,
-		img->yoff-GImageGetHeight(img->image)*img->yscale);
+	sprintf( posbuf, "Image at: (%.0f,%.0f)", (double) img->xoff,
+		(double) (img->yoff-GImageGetHeight(img->image)*img->yscale));
 	label[0].text = (unichar_t *) posbuf;
 	label[0].text_is_1byte = true;
 	gcd[0].gd.label = &label[0];
@@ -550,7 +550,7 @@ static void ImgGetInfo(CharView *cv, ImageList *img) {
 	gcd[0].gd.flags = gg_enabled|gg_visible;
 	gcd[0].creator = GLabelCreate;
 
-	sprintf( scalebuf, "Scaled by: (%.2f,%.2f)", img->xscale, img->yscale );
+	sprintf( scalebuf, "Scaled by: (%.2f,%.2f)", (double) img->xscale, (double) img->yscale );
 	label[1].text = (unichar_t *) scalebuf;
 	label[1].text_is_1byte = true;
 	gcd[1].gd.label = &label[1];
@@ -798,10 +798,10 @@ static void AI_Display(GIData *ci,AnchorPoint *ap) {
     for ( aps=ci->sc->anchor; aps!=NULL; aps=aps->next )
 	aps->selected = false;
     ap->selected = true;
-    sprintf(val,"%g",ap->me.x);
+    sprintf(val,"%g",(double) ap->me.x);
     uc_strcpy(uval,val);
     GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_X),uval);
-    sprintf(val,"%g",ap->me.y);
+    sprintf(val,"%g",(double) ap->me.y);
     uc_strcpy(uval,val);
     GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_Y),uval);
     sprintf(val,"%d",ap->type==at_baselig?ap->lig_index:0);
@@ -1107,9 +1107,9 @@ static int AI_MatchChanged(GGadget *g, GEvent *e) {
 	    pt = u_strtol(t1,&end,10);
 	    if ( *end=='\0' && ttfFindPointInSC(ci->cv->sc,pt,&here,NULL)==-1 ) {
 		char buffer[40];
-		sprintf(buffer,"%g",here.x);
+		sprintf(buffer,"%g",(double) here.x);
 		GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_X),buffer);
-		sprintf(buffer,"%g",here.y);
+		sprintf(buffer,"%g",(double) here.y);
 		GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_Y),buffer);
 		ap->me = here;
 		ap->has_ttf_pt = true;
@@ -1634,13 +1634,13 @@ static void mysprintf( char *buffer, char *format, real v) {
     char *pt;
 
     if ( v<.0001 && v>-.0001 && v!=0 )
-	sprintf( buffer, "%e", v );
+	sprintf( buffer, "%e", (double) v );
     else if ( v<1 && v>0 )
-	sprintf( buffer, "%f", v );
+	sprintf( buffer, "%f", (double) v );
     else if ( v<0 && v>-1 )
-	sprintf( buffer, "%.5f", v );
+	sprintf( buffer, "%.5f", (double) v );
     else
-	sprintf( buffer, format, v );
+	sprintf( buffer, format, (double) v );
     pt = buffer + strlen(buffer);
     while ( pt>buffer && pt[-1]=='0' )
 	*--pt = '\0';

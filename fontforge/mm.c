@@ -1136,7 +1136,7 @@ return( private );
 	    }
 	    if ( j!=mm->instance_count )
     continue;
-	    sprintf(buffer,"%g",sum);
+	    sprintf(buffer,"%g",(double) sum);
 	    PSDictChangeEntry(private,other->keys[i],buffer);
 	} else {
 	    /* Blend an array of numbers */
@@ -1159,7 +1159,7 @@ return( private );
 		    while ( *end==' ' ) ++end;
 		    values[j] = end;
 		}
-		sprintf( pt,"%g ", sum);
+		sprintf( pt,"%g ", (double) sum);
 		pt += strlen(pt);
 	    }
 	    if ( pt[-1]==' ' ) --pt;
@@ -1239,7 +1239,7 @@ static int ExecConvertDesignVector(real *designs, int dcnt, char *ndv, char *cdv
     oldloc = setlocale(LC_NUMERIC,"C");
     len = 0;
     for ( j=0; j<dcnt; ++j ) {
-	sprintf(dv+len, "%g ", designs[j]);
+	sprintf(dv+len, "%g ", (double) designs[j]);
 	len += strlen(dv+len);
     }
     setlocale(LC_NUMERIC,oldloc);
@@ -1591,7 +1591,7 @@ static int MMCB_PickedKnown(GGadget *g, GEvent *e) {
 	if ( which<0 )
 return( true );
 	for ( i=0; i<mmcb->mm->axis_count; ++i ) {
-	    sprintf( buffer, "%.4g", mmcb->mm->named_instances[which].coords[i]);
+	    sprintf( buffer, "%.4g", (double) mmcb->mm->named_instances[which].coords[i]);
 	    temp = uc_copy(buffer);
 	    GGadgetSetTitle(GWidgetGetControl(mmcb->gw,1000+i),temp);
 	    free(temp);
@@ -1784,15 +1784,15 @@ static int GCDFillupMacWeights(GGadgetCreateData *gcd, GTextInfo *label, int k,
     char axisrange[80];
 
     for ( i=0; i<axis_count; ++i ) {
-	sprintf( axisrange, " [%.4g %.4g %.4g]", mm->axismaps[i].min,
-		mm->axismaps[i].def, mm->axismaps[i].max );
+	sprintf( axisrange, " [%.4g %.4g %.4g]", (double) mm->axismaps[i].min,
+		(double) mm->axismaps[i].def, (double) mm->axismaps[i].max );
 	an = PickNameFromMacName(mm->axismaps[i].axisnames);
 	if ( an==NULL )
 	    an = copy(mm->axes[i]);
 	axisnames[i] = galloc(strlen(axisrange)+3+strlen(an));
 	strcpy(axisnames[i],an);
 	strcat(axisnames[i],axisrange);
-	sprintf(axisval[i],"%.4g", defcoords[i]);
+	sprintf(axisval[i],"%.4g", (double) defcoords[i]);
 	free(an);
     }
     for ( ; i<4; ++i ) {
@@ -1855,7 +1855,7 @@ return;
     if ( !mm->apple ) {
 	pt = buffer;
 	for ( i=0; i<mm->instance_count; ++i ) {
-	    sprintf( pt, "%g ", mm->defweights[i]);
+	    sprintf( pt, "%g ", (double) mm->defweights[i]);
 	    pt += strlen(pt);
 	}
 	if ( pt>buffer )
@@ -2182,7 +2182,7 @@ return( true );
 	}
 	pt = buffer; *pt++ = ' '; *pt++ = '[';
 	for ( i=0; i<axis_count; ++i ) {
-	    sprintf(pt, "%g ", coords[i]);
+	    sprintf(pt, "%g ", (double) coords[i]);
 	    pt += strlen(pt);
 	}
 	pt[-1] = ']';
@@ -2566,10 +2566,10 @@ static char *_ChooseFonts(char *buffer, SplineFont **sfs, real *positions,
 
     pos = 0;
     if ( positions[i]!=0 ) {
-	sprintf(buffer, "%g sub ", positions[i]);
+	sprintf(buffer, "%g sub ", (double) positions[i]);
 	pos += strlen(buffer);
     }
-    sprintf(buffer+pos, "%g div dup 1 sub exch ", positions[i+1]-positions[i]);
+    sprintf(buffer+pos, "%g div dup 1 sub exch ", (double) (positions[i+1]-positions[i]));
     pos += strlen( buffer+pos );
     for ( k=0; k<i; ++k ) {
 	strcpy(buffer+pos, "0 ");
@@ -2588,7 +2588,7 @@ static char *_ChooseFonts(char *buffer, SplineFont **sfs, real *positions,
 return( copy(buffer));
 
     ret = galloc(strlen(buffer)+strlen(elsepart)+40);
-    sprintf(ret,"dup %g le {%s} {%s} ifelse", positions[i+1], buffer, elsepart );
+    sprintf(ret,"dup %g le {%s} {%s} ifelse", (double) positions[i+1], buffer, elsepart );
     free(elsepart);
 return( ret );
 }
@@ -2627,18 +2627,18 @@ static char *_NormalizeAxis(char *buffer, struct axismap *axis, int i) {
 
     pos = 0;
     if ( axis->blends[i+1]==axis->blends[i] ) {
-	sprintf( buffer, "%g ", axis->blends[i] );
+	sprintf( buffer, "%g ", (double) axis->blends[i] );
 	pos = strlen(buffer);
     } else {
 	if ( axis->designs[i]!=0 ) {
-	    sprintf(buffer, "%g sub ", axis->designs[i]);
+	    sprintf(buffer, "%g sub ", (double) axis->designs[i]);
 	    pos += strlen(buffer);
 	}
-	sprintf(buffer+pos, "%g div ", (axis->designs[i+1]-axis->designs[i])/
-		    (axis->blends[i+1]-axis->blends[i]));
+	sprintf(buffer+pos, "%g div ", (double) ((axis->designs[i+1]-axis->designs[i])/
+		    (axis->blends[i+1]-axis->blends[i])));
 	pos += strlen( buffer+pos );
 	if ( axis->blends[i]!=0 ) {
-	    sprintf(buffer+pos, "%g add ", axis->blends[i]);
+	    sprintf(buffer+pos, "%g add ", (double) axis->blends[i]);
 	    pos += strlen(buffer+pos);
 	}
     }
@@ -2647,7 +2647,7 @@ static char *_NormalizeAxis(char *buffer, struct axismap *axis, int i) {
 return( copy(buffer));
 
     ret = galloc(strlen(buffer)+strlen(elsepart)+40);
-    sprintf(ret,"dup %g le {%s} {%s} ifelse", axis->designs[i+1], buffer, elsepart );
+    sprintf(ret,"dup %g le {%s} {%s} ifelse", (double) axis->designs[i+1], buffer, elsepart );
     free(elsepart);
 return( ret );
 }
@@ -2790,7 +2790,7 @@ static void MMW_WeightsValid(MMW *mmw) {
 	pos = 0;
 	if ( mmw->old!=NULL && mmw->instance_count==mmw->old->instance_count ) {
 	    for ( i=0; i<mmw->instance_count; ++i ) {
-		sprintf(temp+pos,"%g ", mmw->old->defweights[i] );
+		sprintf(temp+pos,"%g ", (double) mmw->old->defweights[i] );
 		pos += strlen(temp+pos);
 	    }
 	    utc = MMDesignCoords(mmw->old);
@@ -2816,7 +2816,7 @@ static void MMW_WeightsValid(MMW *mmw) {
 		utc = uc_copy("");
 	    } else {
 		for ( i=0; i<mmw->axis_count; ++i ) {
-		    sprintf(temp+pos,"%g ", axiscoords[i] );
+		    sprintf(temp+pos,"%g ", (double) axiscoords[i] );
 		    pos += strlen(temp+pos);
 		}
 		temp[pos-1] = '\0';
@@ -2824,7 +2824,7 @@ static void MMW_WeightsValid(MMW *mmw) {
 		pos = 0;
 	    }
 	    for ( i=0; i<mmw->instance_count; ++i ) {
-		sprintf(temp+pos,"%g ", weights[i] );
+		sprintf(temp+pos,"%g ", (double) weights[i] );
 		pos += strlen(temp+pos);
 	    }
 	}
@@ -2854,7 +2854,7 @@ return( NULL );
     for ( i=0; i<mmw->old->named_instance_count; ++i ) {
 	pt = buffer; *pt++='[';
 	for ( j=0; j<mmw->old->axis_count; ++j ) {
-	    sprintf( pt, "%.4g ", mmw->old->named_instances[i].coords[j]);
+	    sprintf( pt, "%.4g ", (double) mmw->old->named_instances[i].coords[j]);
 	    pt += strlen(pt);
 	}
 	pt[-1] = ']';
@@ -2953,7 +2953,7 @@ static void MMW_DesignsSetup(MMW *mmw) {
 	GGadgetSetTitle(list, ti[sel]->text);
 	pt = buffer;
 	for ( j=0; j<mmw->axis_count; ++j ) {
-	    sprintf(pt,"%g ",mmw->mm->positions[i*4+j]);
+	    sprintf(pt,"%g ",(double) mmw->mm->positions[i*4+j]);
 	    pt += strlen(pt);
 	}
 	if ( pt>buffer ) pt[-1] = '\0';
@@ -3137,7 +3137,7 @@ continue;
     if ( !isapple ) {
 	if ( fbt>0 && fbt<=1 ) {
 	    char buffer[20];
-	    sprintf(buffer,"%g", fbt );
+	    sprintf(buffer,"%g", (double) fbt );
 	    if ( oldprivate==NULL )
 		setto->normal->private = gcalloc(1,sizeof(struct psdict));
 	    PSDictChangeEntry(setto->normal->private,"ForceBoldThreshold",buffer);
@@ -3549,9 +3549,9 @@ static int MMW_CheckOptical(GGadget *g, GEvent *e) {
 
 	if ( mmw->old!=NULL && di<mmw->old->axis_count &&
 		uc_strcmp(ret,mmw->old->axes[di])==0 ) {
-	    sprintf(buf1,"%g", mmw->old->axismaps[di].designs[0]);
-	    sprintf(buf2,"%g", mmw->old->axismaps[di].designs[mmw->old->axismaps[di].points-1]);
-	    sprintf(buf3,"%g", mmw->old->axismaps[di].def);
+	    sprintf(buf1,"%g", (double) mmw->old->axismaps[di].designs[0]);
+	    sprintf(buf2,"%g", (double) mmw->old->axismaps[di].designs[mmw->old->axismaps[di].points-1]);
+	    sprintf(buf3,"%g", (double) mmw->old->axismaps[di].def);
 	    def = buf3;
 	    top = buf2;
 	    bottom = buf1;
@@ -3967,12 +3967,12 @@ void MMWizard(MMSet *mm) {
 	    strcpy(axisdefs[i],"400");
 	    strcpy(axisends[i],"999");
 	} else {
-	    sprintf(axisbegins[i],"%.4g", mmw.mm->axismaps[i].designs[0]);
-	    sprintf(axisends[i],"%.4g", mmw.mm->axismaps[i].designs[mmw.mm->axismaps[i].points-1]);
+	    sprintf(axisbegins[i],"%.4g", (double) mmw.mm->axismaps[i].designs[0]);
+	    sprintf(axisends[i],"%.4g", (double) mmw.mm->axismaps[i].designs[mmw.mm->axismaps[i].points-1]);
 	    if ( mmw.mm->apple )
-		sprintf(axisdefs[i],"%.4g", mmw.mm->axismaps[i].def );
+		sprintf(axisdefs[i],"%.4g", (double) mmw.mm->axismaps[i].def );
 	    else
-		sprintf(axisdefs[i],"%g", (mmw.mm->axismaps[i].designs[0]+
+		sprintf(axisdefs[i],"%g", (double) (mmw.mm->axismaps[i].designs[0]+
 			mmw.mm->axismaps[i].designs[mmw.mm->axismaps[i].points-1])/2);
 	}
 
@@ -4044,11 +4044,11 @@ void MMWizard(MMSet *mm) {
 		continue;
 		    /* I wanted to seperate things with commas, but that isn't*/
 		    /*  a good idea in Europe (comma==decimal point) */
-		    sprintf(buffer,"%g ",mmw.mm->axismaps[i].designs[j]);
+		    sprintf(buffer,"%g ",(double) mmw.mm->axismaps[i].designs[j]);
 		    if ( designs[i]!=NULL )
 			strcpy(designs[i]+len1, buffer );
 		    len1 += strlen(buffer);
-		    sprintf(buffer,"%g ",mmw.mm->axismaps[i].blends[j]);
+		    sprintf(buffer,"%g ",(double) mmw.mm->axismaps[i].blends[j]);
 		    if ( normalized[i]!=NULL )
 			strcpy(normalized[i]+len2, buffer );
 		    len2 += strlen(buffer);

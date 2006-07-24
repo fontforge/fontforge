@@ -428,7 +428,7 @@ return;
     }
 }
 
-static double Trace_Factor(void *_cv,Spline *spline, real t) {
+static bigreal Trace_Factor(void *_cv,Spline *spline, real t) {
     CharView *cv = (CharView *) _cv;
     TraceData *head = cv->freehand.head, *pt, *from=NULL, *to=NULL;
     int fromnum = spline->from->ptindex, tonum = spline->to->ptindex;

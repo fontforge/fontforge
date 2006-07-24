@@ -700,7 +700,7 @@ return( true );
 }
 
 static void EIAddSpline(Spline *spline, EIList *el) {
-    double ts[6], temp;
+    extended ts[6], temp;
     int i, j, base, last;
 
     ts[0] = 0; ts[5] = 1.0;

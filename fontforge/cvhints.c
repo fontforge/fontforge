@@ -174,11 +174,11 @@ static void RH_SetupHint(ReviewHintData *hd) {
 	GGadgetSetVisible(GWidgetGetControl(hd->gw,CID_Overlap),false);
     } else {
 	hd->active->active = true;
-	sprintf( buffer,"%g", !hd->active->ghost ? hd->active->start : hd->active->start+hd->active->width );
+	sprintf( buffer,"%g", (double) (!hd->active->ghost ? hd->active->start : hd->active->start+hd->active->width) );
 	uc_strcpy(ubuf,buffer);
 	GGadgetSetTitle(GWidgetGetControl(hd->gw,CID_Base),ubuf);
 	GTextFieldShow(GWidgetGetControl(hd->gw,CID_Base),0);
-	sprintf( buffer,"%g", !hd->active->ghost ? hd->active->width : -hd->active->width );
+	sprintf( buffer,"%g", (double) (!hd->active->ghost ? hd->active->width : -hd->active->width) );
 	uc_strcpy(ubuf,buffer);
 	GGadgetSetTitle(GWidgetGetControl(hd->gw,CID_Width),ubuf);
 	GTextFieldShow(GWidgetGetControl(hd->gw,CID_Width),0);
@@ -764,7 +764,7 @@ void CVCreateHint(CharView *cv,int ishstem,int preservehints) {
 	gcd[0].gd.flags = gg_enabled|gg_visible;
 	gcd[0].creator = GLabelCreate;
 
-	sprintf( buffer, "%g", ishstem ? cv->p.cy : cv->p.cx );
+	sprintf( buffer, "%g", (double) (ishstem ? cv->p.cy : cv->p.cx) );
 	label[1].text = (unichar_t *) buffer;
 	label[1].text_is_1byte = true;
 	gcd[1].gd.label = &label[1];
@@ -827,7 +827,7 @@ void CVCreateHint(CharView *cv,int ishstem,int preservehints) {
 	GGadgetsCreate(gw,gcd);
     } else {
 	gw = chd.gw;
-	sprintf( buffer, "%g", ishstem ? cv->p.cy : cv->p.cx );
+	sprintf( buffer, "%g", (double) (ishstem ? cv->p.cy : cv->p.cx) );
 	uc_strcpy(ubuf,buffer);
 	GGadgetSetTitle(GWidgetGetControl(gw,CID_Base),ubuf);
     }

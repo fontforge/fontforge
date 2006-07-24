@@ -1420,7 +1420,7 @@ return;
 }
 
 #define CID_Amount	1000
-static real last_amount=50;
+static double last_amount=50;
 
 static int IF_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {

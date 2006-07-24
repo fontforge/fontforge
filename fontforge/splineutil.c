@@ -52,8 +52,12 @@ typedef struct quartic {
 
 #ifndef chunkalloc
 #define ALLOC_CHUNK	100		/* Number of small chunks to malloc at a time */
-#define CHUNK_MAX	65		/* Maximum size (in chunk units) that we are prepared to allocate */
+#if !defined(FONTFORGE_CONFIG_USE_LONGDOUBLE) && !defined(FONTFORGE_CONFIG_USE_DOUBLE)
+# define CHUNK_MAX	65		/* Maximum size (in chunk units) that we are prepared to allocate */
 					/* The size of our data structures */
+#else
+# define CHUNK_MAX	129
+#endif
 # define CHUNK_UNIT	sizeof(void *)	/*  will vary with the word size of */
 					/*  the machine. if pointers are 64 bits*/
 					/*  we may need twice as much space as for 32 bits */
@@ -378,9 +382,9 @@ void RefCharsFree(RefChar *ref) {
     }
 }
 
-static double SolveCubic(double a, double b, double c, double d, double err, double t0) {
+static extended SolveCubic(extended a, extended b, extended c, extended d, double err, extended t0) {
     /* find t between t0 and .5 where at^3+bt^2+ct+d == +/- err */
-    double t, val, offset;
+    extended t, val, offset;
     int first;
 
     offset=a;
@@ -405,9 +409,9 @@ static double SolveCubic(double a, double b, double c, double d, double err, dou
 return( t );
 }
 
-static double SolveCubicBack(double a, double b, double c, double d, double err, double t0) {
+static extended SolveCubicBack(extended a, extended b, extended c, extended d, double err, extended t0) {
     /* find t between .5 and t0 where at^3+bt^2+ct+d == +/- err */
-    double t, val, offset;
+    extended t, val, offset;
     int first;
 
     offset=a;
@@ -1951,7 +1955,7 @@ return;		/* It's just the expected matrix */
 	SplinePointListTransform(sc->layers[ly_fore].splines,trans,true);
 	for ( refs=sc->layers[ly_fore].refs; refs!=NULL; refs=refs->next ) {
 	    /* Just scale the offsets. we'll do all the base characters */
-	    double temp = refs->transform[4]*trans[0] +
+	    real temp = refs->transform[4]*trans[0] +
 			refs->transform[5]*trans[2] +
 			/*transform[4]*/0;
 	    refs->transform[5] = refs->transform[4]*trans[1] +
@@ -2794,8 +2798,8 @@ void SCRefToSplines(SplineChar *sc,RefChar *rf) {
 /* This returns all real solutions, even those out of bounds */
 /* I use -999999 as an error flag, since we're really only interested in */
 /*  solns near 0 and 1 that should be ok. -1 is perhaps a little too close */
-static int _CubicSolve(const Spline1D *sp,double ts[3]) {
-    double d, xN, yN, delta2, temp, delta, h, t2, t3, theta;
+static int _CubicSolve(const Spline1D *sp,extended ts[3]) {
+    extended d, xN, yN, delta2, temp, delta, h, t2, t3, theta;
     int i=0;
 
     ts[0] = ts[1] = ts[2] = -999999;
@@ -2803,24 +2807,24 @@ static int _CubicSolve(const Spline1D *sp,double ts[3]) {
 	/* one of the roots is 0, the other two are the soln of a quadratic */
 	ts[0] = 0;
 	if ( sp->c==0 ) {
-	    ts[1] = -sp->b/sp->a;	/* two zero roots */
+	    ts[1] = -sp->b/(extended) sp->a;	/* two zero roots */
 	} else {
-	    temp = sp->b*sp->b-4*sp->a*sp->c;
+	    temp = sp->b*(extended) sp->b-4*(extended) sp->a*sp->c;
 	    if ( RealNear(temp,0))
-		ts[1] = -sp->b/(2*sp->a);
+		ts[1] = -sp->b/(2*(extended) sp->a);
 	    else if ( temp>=0 ) {
 		temp = sqrt(temp);
-		ts[1] = (-sp->b+temp)/(2*sp->a);
-		ts[2] = (-sp->b-temp)/(2*sp->a);
+		ts[1] = (-sp->b+temp)/(2*(extended) sp->a);
+		ts[2] = (-sp->b-temp)/(2*(extended) sp->a);
 	    }
 	}
     } else if ( sp->a!=0 ) {
     /* http://www.m-a.org.uk/eb/mg/mg077ch.pdf */
     /* this nifty solution to the cubic neatly avoids complex arithmatic */
-	xN = -sp->b/(3*sp->a);
+	xN = -sp->b/(3*(extended) sp->a);
 	yN = ((sp->a*xN + sp->b)*xN+sp->c)*xN + sp->d;
 
-	delta2 = (sp->b*sp->b-3*sp->a*sp->c)/(9*sp->a*sp->a);
+	delta2 = (sp->b*(extended) sp->b-3*(extended) sp->a*sp->c)/(9*(extended) sp->a*sp->a);
 	if ( RealNear(delta2,0) ) delta2 = 0;
 
 	/* the descriminant is yN^2-h^2, but delta might be <0 so avoid using h */
@@ -2856,23 +2860,23 @@ static int _CubicSolve(const Spline1D *sp,double ts[3]) {
 	    if ( xN>=-0.0001 && xN<=1.0001 ) ts[0] = xN;
 	}
     } else if ( sp->b!=0 ) {
-	double d = sp->c*sp->c-4*sp->b*sp->d;
+	extended d = sp->c*(extended) sp->c-4*(extended) sp->b*sp->d;
 	if ( RealNear(d,0)) d=0;
 	if ( d<0 )
 return(false);		/* All roots imaginary */
 	d = sqrt(d);
-	ts[0] = (-sp->c-d)/(2*sp->b);
-	ts[1] = (-sp->c+d)/(2*sp->b);
+	ts[0] = (-sp->c-d)/(2*(extended) sp->b);
+	ts[1] = (-sp->c+d)/(2*(extended) sp->b);
     } else if ( sp->c!=0 ) {
-	ts[0] = -sp->d/sp->c;
+	ts[0] = -sp->d/(extended) sp->c;
     } else {
 	/* If it's a point then either everything is a solution, or nothing */
     }
 return( ts[0]!=-999999 );
 }
 
-int CubicSolve(const Spline1D *sp,double ts[3]) {
-    double t;
+int CubicSolve(const Spline1D *sp,extended ts[3]) {
+    extended t;
     int i;
     /* This routine gives us all solutions between [0,1] with -1 as an error flag */
     /* http://mathforum.org/dr.math/faq/faq.cubic.equations.html */
@@ -3053,8 +3057,8 @@ return( QuarticAlternate(&work,ts,offset));
 return( i );
 }
 #else
-static int _QuarticSolve(Quartic *q,double ts[4]) {
-    double extrema[5];
+static int _QuarticSolve(Quartic *q,extended ts[4]) {
+    extended extrema[5];
     Spline1D sp;
     int ecnt = 0, i, zcnt;
 
@@ -3084,15 +3088,15 @@ return( _CubicSolve(&sp,ts+1)+1);
 	if ( extrema[1]!=-999999 ) {
 	    ecnt = 2;
 	    if ( extrema[1]<extrema[0] ) {
-		double temp = extrema[1]; extrema[1] = extrema[0]; extrema[0]=temp;
+		extended temp = extrema[1]; extrema[1] = extrema[0]; extrema[0]=temp;
 	    }
 	    if ( extrema[2]!=-999999 ) {
 		ecnt = 3;
 		if ( extrema[2]<extrema[0] ) {
-		    double temp = extrema[2]; extrema[2] = extrema[0]; extrema[0]=temp;
+		    extended temp = extrema[2]; extrema[2] = extrema[0]; extrema[0]=temp;
 		}
 		if ( extrema[2]<extrema[1] ) {
-		    double temp = extrema[2]; extrema[2] = extrema[1]; extrema[1]=temp;
+		    extended temp = extrema[2]; extrema[2] = extrema[1]; extrema[1]=temp;
 		}
 	    }
 	}
@@ -3105,14 +3109,14 @@ return( _CubicSolve(&sp,ts+1)+1);
     ecnt += 2;
     /* divide into monotonic sections & use binary search to find zeroes */
     for ( i=zcnt=0; i<ecnt-1; ++i ) {
-	double top, bottom, val;
-	double topt, bottomt, t;
+	extended top, bottom, val;
+	extended topt, bottomt, t;
 	topt = extrema[i+1];
 	bottomt = extrema[i];
 	top = (((q->a*topt+q->b)*topt+q->c)*topt+q->d)*topt+q->e;
 	bottom = (((q->a*bottomt+q->b)*bottomt+q->c)*bottomt+q->d)*bottomt+q->e;
 	if ( top<bottom ) {
-	    double temp = top; top = bottom; bottom = temp;
+	    extended temp = top; top = bottom; bottom = temp;
 	    temp = topt; topt = bottomt; bottomt = temp;
 	}
 	if ( bottom>.001 )	/* this monotonic is all above 0 */
@@ -3153,7 +3157,7 @@ return( zcnt );
 }
 #endif
 
-static int QuarticSolve(Quartic *q,double ts[4]) {
+static int QuarticSolve(Quartic *q,extended ts[4]) {
     int i,j,k;
 
     if ( _QuarticSolve(q,ts)==-1 )
@@ -3177,14 +3181,14 @@ return( -1 );
 return(i+1);
 }
 
-double SplineSolve(const Spline1D *sp, real tmin, real tmax, real sought,real err) {
+extended SplineSolve(const Spline1D *sp, real tmin, real tmax, extended sought,real err) {
     /* We want to find t so that spline(t) = sought */
     /*  the curve must be monotonic */
     /* returns t which is near sought or -1 */
     Spline1D temp;
-    double ts[3];
+    extended ts[3];
     int i;
-    double t;
+    extended t;
 
     temp = *sp;
     temp.d -= sought;
@@ -3197,6 +3201,7 @@ return( ts[i] );
 return( -1 );
 }
 
+#ifndef EXTENDED_IS_LONG_DOUBLE
 double CheckExtremaForSingleBitErrors(const Spline1D *sp, double t) {
     union { double dval; int32 ival[2]; } u1, um1, temp;
     double slope, slope1, slopem1;
@@ -3206,15 +3211,15 @@ double CheckExtremaForSingleBitErrors(const Spline1D *sp, double t) {
     const int index = 0;
 #endif
 
-    slope = (3*sp->a*t+2*sp->b)*t+sp->c;
+    slope = (3*(double) sp->a*t+2*sp->b)*t+sp->c;
 
     u1.dval = t;
     u1.ival[index] += 1;
-    slope1 = (3*sp->a*u1.dval+2*sp->b)*u1.dval+sp->c;
+    slope1 = (3*(double) sp->a*u1.dval+2*sp->b)*u1.dval+sp->c;
 
     um1.dval = t;
     um1.ival[index] -= 1;
-    slopem1 = (3*sp->a*um1.dval+2*sp->b)*um1.dval+sp->c;
+    slopem1 = (3*(double) sp->a*um1.dval+2*sp->b)*um1.dval+sp->c;
 
     if ( slope<0 ) slope = -slope;
     if ( slope1<0 ) slope1 = -slope1;
@@ -3225,7 +3230,7 @@ double CheckExtremaForSingleBitErrors(const Spline1D *sp, double t) {
 	 /*  Do they improve further if we add 1 more? */
 	temp = u1;
 	temp.ival[index] += 1;
-	slope = (3*sp->a*temp.dval+2*sp->b)*temp.dval+sp->c;
+	slope = (3*(double) sp->a*temp.dval+2*sp->b)*temp.dval+sp->c;
 	if ( slope<0 ) slope = -slope;
 	if ( slope<slope1 )
 return( temp.dval );
@@ -3236,7 +3241,7 @@ return( u1.dval );
 	 /*  Do they improve further if we subtract 1 more? */
 	temp = um1;
 	temp.ival[index] -= 1;
-	slope = (3*sp->a*temp.dval+2*sp->b)*temp.dval+sp->c;
+	slope = (3*(double) sp->a*temp.dval+2*sp->b)*temp.dval+sp->c;
 	if ( slope<0 ) slope = -slope;
 	if ( slope<slopem1 )
 return( temp.dval );
@@ -3247,10 +3252,25 @@ return( um1.dval );
 
 return( t );
 }
+#else
+extended esqrt(extended e) {
+    extended rt, temp;
 
-static void _SplineFindExtrema(const Spline1D *sp, double *_t1, double *_t2 ) {
-    double t1= -1, t2= -1;
-    double b2_fourac;
+    rt = sqrt( (double) e );
+    if ( e<=0 )
+return( rt );
+
+    temp = e/rt;
+    rt = (rt+temp)/2;
+    temp = e/rt;
+    rt = (rt+temp)/2;
+return( rt );
+}
+#endif
+
+static void _SplineFindExtrema(const Spline1D *sp, extended *_t1, extended *_t2 ) {
+    extended t1= -1, t2= -1;
+    extended b2_fourac;
 
     /* Find the extreme points on the curve */
     /*  Set to -1 if there are none or if they are outside the range [0,1] */
@@ -3260,30 +3280,30 @@ static void _SplineFindExtrema(const Spline1D *sp, double *_t1, double *_t2 ) {
     /*  (Does not check to see if d/dt==0 points are inflection points (rather than extrema) */
     if ( sp->a!=0 ) {
 	/* cubic, possibly 2 extrema (possibly none) */
-	b2_fourac = 4*sp->b*sp->b - 12*sp->a*sp->c;
+	b2_fourac = 4*(extended)sp->b*sp->b - 12*(extended)sp->a*sp->c;
 	if ( b2_fourac>=0 ) {
-	    b2_fourac = sqrt(b2_fourac);
+	    b2_fourac = esqrt(b2_fourac);
 	    t1 = (-2*sp->b - b2_fourac) / (6*sp->a);
 	    t2 = (-2*sp->b + b2_fourac) / (6*sp->a);
 	    t1 = CheckExtremaForSingleBitErrors(sp,t1);
 	    t2 = CheckExtremaForSingleBitErrors(sp,t2);
-	    if ( t1>t2 ) { double temp = t1; t1 = t2; t2 = temp; }
+	    if ( t1>t2 ) { extended temp = t1; t1 = t2; t2 = temp; }
 	    else if ( t1==t2 ) t2 = -1;
 	    if ( RealNear(t1,0)) t1=0; else if ( RealNear(t1,1)) t1=1;
 	    if ( RealNear(t2,0)) t2=0; else if ( RealNear(t2,1)) t2=1;
 	}
     } else if ( sp->b!=0 ) {
 	/* Quadratic, at most one extremum */
-	t1 = -sp->c/(2.0*sp->b);
+	t1 = -sp->c/(2.0*(extended) sp->b);
     } else /*if ( sp->c!=0 )*/ {
 	/* linear, no extrema */
     }
     *_t1 = t1; *_t2 = t2;
 }
 
-void SplineFindExtrema(const Spline1D *sp, double *_t1, double *_t2 ) {
-    double t1= -1, t2= -1;
-    double b2_fourac;
+void SplineFindExtrema(const Spline1D *sp, extended *_t1, extended *_t2 ) {
+    extended t1= -1, t2= -1;
+    extended b2_fourac;
 
     /* Find the extreme points on the curve */
     /*  Set to -1 if there are none or if they are outside the range [0,1] */
@@ -3293,12 +3313,14 @@ void SplineFindExtrema(const Spline1D *sp, double *_t1, double *_t2 ) {
     /*  (Does not check to see if d/dt==0 points are inflection points (rather than extrema) */
     if ( sp->a!=0 ) {
 	/* cubic, possibly 2 extrema (possibly none) */
-	b2_fourac = 4*sp->b*sp->b - 12*sp->a*sp->c;
+	b2_fourac = 4*(extended) sp->b*sp->b - 12*(extended) sp->a*sp->c;
 	if ( b2_fourac>=0 ) {
-	    b2_fourac = sqrt(b2_fourac);
+	    b2_fourac = esqrt(b2_fourac);
 	    t1 = (-2*sp->b - b2_fourac) / (6*sp->a);
 	    t2 = (-2*sp->b + b2_fourac) / (6*sp->a);
-	    if ( t1>t2 ) { double temp = t1; t1 = t2; t2 = temp; }
+	    t1 = CheckExtremaForSingleBitErrors(sp,t1);
+	    t2 = CheckExtremaForSingleBitErrors(sp,t2);
+	    if ( t1>t2 ) { extended temp = t1; t1 = t2; t2 = temp; }
 	    else if ( t1==t2 ) t2 = -1;
 	    if ( RealNear(t1,0)) t1=0; else if ( RealNear(t1,1)) t1=1;
 	    if ( RealNear(t2,0)) t2=0; else if ( RealNear(t2,1)) t2=1;
@@ -3307,7 +3329,7 @@ void SplineFindExtrema(const Spline1D *sp, double *_t1, double *_t2 ) {
 	}
     } else if ( sp->b!=0 ) {
 	/* Quadratic, at most one extremum */
-	t1 = -sp->c/(2.0*sp->b);
+	t1 = -sp->c/(2.0*(extended) sp->b);
 	if ( t1<=0 || t1>=1 ) t1 = -1;
     } else /*if ( sp->c!=0 )*/ {
 	/* linear, no extrema */
@@ -3349,7 +3371,7 @@ return ( RealNear( (3*sp->a*t + 2*sp->b)*t + sp->c,0) &&
 	    !RealNear( 6*sp->a*t + 2*sp->b, 0));
 }
 
-int Spline2DFindExtrema(const Spline *sp, double extrema[4] ) {
+int Spline2DFindExtrema(const Spline *sp, extended extrema[4] ) {
     int i,j;
     BasePoint last, cur, mid;
 
@@ -3358,7 +3380,7 @@ int Spline2DFindExtrema(const Spline *sp, double extrema[4] ) {
 
     for ( i=0; i<3; ++i ) for ( j=i+1; j<4; ++j ) {
 	if ( (extrema[i]==-1 && extrema[j]!=-1) || (extrema[i]>extrema[j] && extrema[j]!=-1) ) {
-	    double temp = extrema[i];
+	    extended temp = extrema[i];
 	    extrema[i] = extrema[j];
 	    extrema[j] = temp;
 	}
@@ -3398,9 +3420,9 @@ int Spline2DFindExtrema(const Spline *sp, double extrema[4] ) {
 return( i );
 }
 
-int Spline2DFindPointsOfInflection(const Spline *sp, double poi[2] ) {
+int Spline2DFindPointsOfInflection(const Spline *sp, extended poi[2] ) {
     int cnt=0;
-    double a, b, c, b2_fourac, t;
+    extended a, b, c, b2_fourac, t;
     /* A POI happens when d2 y/dx2 is zero. This is not the same as d2y/dt2 / d2x/dt2 */
     /* d2 y/dx^2 = d/dt ( dy/dt / dx/dt ) / dx/dt */
     /*		 = ( (dx/dt) * d2 y/dt2 - ((dy/dt) * d2 x/dt2) )/ (dx/dt)^3 */
@@ -3410,15 +3432,15 @@ int Spline2DFindPointsOfInflection(const Spline *sp, double poi[2] ) {
     /* -(9*ax*ay*t^3 + (3ay*bx+6by*ax)*t^2 + (2by*bx+3cy*ax)*t + cy*bx)==0 */
     /* 3*(ax*by-ay*bx)*t^2 + 3*(cx*ay-cy*ax)*t+ (cx*by-cy*bx) == 0	   */
 
-    a = 3*(sp->splines[1].a*sp->splines[0].b-sp->splines[0].a*sp->splines[1].b);
-    b = 3*(sp->splines[0].c*sp->splines[1].a - sp->splines[1].c*sp->splines[0].a);
-    c = sp->splines[0].c*sp->splines[1].b-sp->splines[1].c*sp->splines[0].b;
+    a = 3*((extended) sp->splines[1].a*sp->splines[0].b-(extended) sp->splines[0].a*sp->splines[1].b);
+    b = 3*((extended) sp->splines[0].c*sp->splines[1].a - (extended) sp->splines[1].c*sp->splines[0].a);
+    c = (extended) sp->splines[0].c*sp->splines[1].b-(extended) sp->splines[1].c*sp->splines[0].b;
     if ( !RealNear(a,0) ) {
 	b2_fourac = b*b - 4*a*c;
 	poi[0] = poi[1] = -1;
 	if ( b2_fourac<0 )
 return( 0 );
-	b2_fourac = sqrt( b2_fourac );
+	b2_fourac = esqrt( b2_fourac );
 	t = (-b+b2_fourac)/(2*a);
 	if ( t>=0 && t<=1.0 )
 	    poi[cnt++] = t;
@@ -3444,9 +3466,9 @@ return( cnt );
 /*  from an endpoint or another extremum, then many things are */
 /*  just going to skip over it, and other things will be confused by this */
 /*  so just remove it. It should be so close the difference won't matter */
-void SplineRemoveExtremaTooClose(Spline1D *sp, double *_t1, double *_t2 ) {
-    double last, test;
-    double t1= *_t1, t2 = *_t2;
+void SplineRemoveExtremaTooClose(Spline1D *sp, extended *_t1, extended *_t2 ) {
+    extended last, test;
+    extended t1= *_t1, t2 = *_t2;
 
     if ( t1>t2 && t2!=-1 ) {
 	t1 = t2;
@@ -3479,7 +3501,7 @@ void SplineRemoveExtremaTooClose(Spline1D *sp, double *_t1, double *_t2 ) {
     *_t1 = t1; *_t2 = t2;
 }
 
-int SplineSolveFull(const Spline1D *sp,double val, double ts[3]) {
+int SplineSolveFull(const Spline1D *sp,extended val, extended ts[3]) {
     Spline1D temp;
 
     temp = *sp;
@@ -3508,8 +3530,8 @@ return( soln+1 );
 }
 #endif
 
-static int AddPoint(double x,double y,double t,double s,BasePoint *pts,
-	double t1s[3],double t2s[3], int soln) {
+static int AddPoint(extended x,extended y,extended t,extended s,BasePoint *pts,
+	extended t1s[3],extended t2s[3], int soln) {
     int i;
 
     for ( i=0; i<soln; ++i )
@@ -3522,9 +3544,9 @@ return( soln );
 return( soln+1 );
 }
 
-static int AddQuadraticSoln(double s,const Spline *s1, const Spline *s2, BasePoint pts[3],
-	double t1s[3], double t2s[3], int soln ) {
-    double t, x, y, d;
+static int AddQuadraticSoln(extended s,const Spline *s1, const Spline *s2, BasePoint pts[3],
+	extended t1s[3], extended t2s[3], int soln ) {
+    extended t, x, y, d;
     int i;
 
     if ( s<-.0001 || s>1.0001 )
@@ -3538,7 +3560,7 @@ return( soln );
 	if ( x==pts[i].x && y==pts[i].y )
 return( soln );
 
-    d = s1->splines[0].c*s1->splines[0].c-4*s1->splines[0].a*(s1->splines[0].d-x);
+    d = s1->splines[0].c*(extended) s1->splines[0].c-4*(extended) s1->splines[0].a*(s1->splines[0].d-x);
     if ( RealNear(d,0)) d = 0;
     if ( d<0 )
 return( soln );
@@ -3559,14 +3581,14 @@ return( AddPoint(x,y,t,s,pts,t1s,t2s,soln));
 return( soln );
 }
 
-static void IterateSolve(const Spline1D *sp,double ts[3]) {
+static void IterateSolve(const Spline1D *sp,extended ts[3]) {
     /* The closed form solution has too many rounding errors for my taste... */
     int i,j;
 
     ts[0] = ts[1] = ts[2] = -1;
 
     if ( sp->a!=0 ) {
-	double e[4];
+	extended e[4];
 	e[0] = 0; e[1] = e[2] = e[3] = 1.0;
 	SplineFindExtrema(sp,&e[1],&e[2]);
 	if ( e[1]==-1 ) e[1] = 1;
@@ -3578,15 +3600,15 @@ static void IterateSolve(const Spline1D *sp,double ts[3]) {
 	break;
 	}
     } else if ( sp->b!=0 ) {
-	double b2_4ac = sp->c*sp->c - 4*sp->b*sp->d;
+	extended b2_4ac = sp->c*(extended) sp->c - 4*sp->b*(extended) sp->d;
 	if ( b2_4ac>=0 ) {
-	    b2_4ac = sqrt(b2_4ac);
+	    b2_4ac = esqrt(b2_4ac);
 	    ts[0] = (-sp->c-b2_4ac)/(2*sp->b);
 	    ts[1] = (-sp->c+b2_4ac)/(2*sp->b);
-	    if ( ts[0]>ts[1] ) { double t = ts[0]; ts[0] = ts[1]; ts[1] = t; }
+	    if ( ts[0]>ts[1] ) { bigreal t = ts[0]; ts[0] = ts[1]; ts[1] = t; }
 	}
     } else if ( sp->c!=0 ) {
-	ts[0] = -sp->d/sp->c;
+	ts[0] = -sp->d/(extended) sp->c;
     } else
 	/* No solutions, or all solutions */;
 
@@ -3602,16 +3624,16 @@ static void IterateSolve(const Spline1D *sp,double ts[3]) {
 	}
     if ( j!=0 ) {
 	if ( ts[0]!=0 ) {
-	    double d0 = sp->d;
-	    double dt = ((sp->a*ts[0]+sp->b)*ts[0]+sp->c)*ts[0]+sp->d;
+	    extended d0 = sp->d;
+	    extended dt = ((sp->a*ts[0]+sp->b)*ts[0]+sp->c)*ts[0]+sp->d;
 	    if ( d0<0 ) d0=-d0;
 	    if ( dt<0 ) dt=-dt;
 	    if ( d0<dt )
 		ts[0] = 0;
 	}
 	if ( ts[j-1]!=1.0 ) {
-	    double d1 = sp->a+sp->b+sp->c+sp->d;
-	    double dt = ((sp->a*ts[j-1]+sp->b)*ts[j-1]+sp->c)*ts[j-1]+sp->d;
+	    extended d1 = sp->a+(extended) sp->b+sp->c+sp->d;
+	    extended dt = ((sp->a*ts[j-1]+sp->b)*ts[j-1]+sp->c)*ts[j-1]+sp->d;
 	    if ( d1<0 ) d1=-d1;
 	    if ( dt<0 ) dt=-dt;
 	    if ( d1<dt )
@@ -3622,9 +3644,9 @@ static void IterateSolve(const Spline1D *sp,double ts[3]) {
 	ts[j] = -1;
 }
 
-static double ISolveWithin(const Spline1D *sp,double val,double tlow, double thigh) {
+static extended ISolveWithin(const Spline1D *sp,extended val,extended tlow, extended thigh) {
     Spline1D temp;
-    double ts[3];
+    extended ts[3];
     int i;
 
     temp = *sp;
@@ -3654,8 +3676,8 @@ return( tlow );
 return( -1 );
 }
 
-static int ICAddInter(int cnt,BasePoint *foundpos,double *foundt1,double *foundt2,
-	const Spline *s1,const Spline *s2,double t1,double t2) {
+static int ICAddInter(int cnt,BasePoint *foundpos,extended *foundt1,extended *foundt2,
+	const Spline *s1,const Spline *s2,extended t1,extended t2) {
     foundt1[cnt] = t1;
     foundt2[cnt] = t2;
     foundpos[cnt].x = ((s1->splines[0].a*t1+s1->splines[0].b)*t1+
@@ -3665,12 +3687,12 @@ static int ICAddInter(int cnt,BasePoint *foundpos,double *foundt1,double *foundt
 return( cnt+1 );
 }
 
-static int ICBinarySearch(int cnt,BasePoint *foundpos,double *foundt1,double *foundt2,
+static int ICBinarySearch(int cnt,BasePoint *foundpos,extended *foundt1,extended *foundt2,
 	int other,
-	const Spline *s1,const Spline *s2,double t1low,double t1high,double t2low,double t2high) {
+	const Spline *s1,const Spline *s2,extended t1low,extended t1high,extended t2low,extended t2high) {
     int major;
-    double t1, t2;
-    double o1o, o2o, o1n, o2n, m;
+    extended t1, t2;
+    extended o1o, o2o, o1n, o2n, m;
 
     major = !other;
     o1o = ((s1->splines[other].a*t1low+s1->splines[other].b)*t1low+
@@ -3702,13 +3724,13 @@ return( ICAddInter(cnt,foundpos,foundt1,foundt2,s1,s2,t1,t2));
     }
 }
 
-static int CubicsIntersect(const Spline *s1,double lowt1,double hight1,BasePoint *min1,BasePoint *max1,
-			    const Spline *s2,double lowt2,double hight2,BasePoint *min2,BasePoint *max2,
-			    BasePoint *foundpos,double *foundt1,double *foundt2) {
+static int CubicsIntersect(const Spline *s1,extended lowt1,extended hight1,BasePoint *min1,BasePoint *max1,
+			    const Spline *s2,extended lowt2,extended hight2,BasePoint *min2,BasePoint *max2,
+			    BasePoint *foundpos,extended *foundt1,extended *foundt2) {
     int major, other;
     BasePoint max, min;
-    double t1max, t1min, t2max, t2min, t1, t2, t1diff, oldt2;
-    double o1o, o2o, o1n, o2n, m;
+    extended t1max, t1min, t2max, t2min, t1, t2, t1diff, oldt2;
+    extended o1o, o2o, o1n, o2n, m;
     int cnt=0;
 
     if ( (min.x = min1->x)<min2->x ) min.x = min2->x;
@@ -3769,16 +3791,16 @@ return( cnt );
 /*  -1 => We couldn't figure it out in a closed form, have to do a numerical */
 /*  approximation */
 int SplinesIntersect(const Spline *s1, const Spline *s2, BasePoint pts[9],
-	double t1s[10], double t2s[10]) {	/* One extra for a trailing -1 */
+	extended t1s[10], extended t2s[10]) {	/* One extra for a trailing -1 */
     BasePoint min1, max1, min2, max2;
     int soln = 0;
-    double x,y,s,t, ac0, ac1;
-    double d;
+    extended x,y,s,t, ac0, ac1;
+    extended d;
     int i,j,found;
     Spline1D spline, temp;
     Quartic quad;
-    double tempts[4];	/* 3 solns for cubics, 4 for quartics */
-    double extrema1[6], extrema2[6];
+    extended tempts[4];	/* 3 solns for cubics, 4 for quartics */
+    extended extrema1[6], extrema2[6];
     int ecnt1, ecnt2;
 
     t1s[0] = t1s[1] = t1s[2] = t1s[3] = -1;
@@ -3838,7 +3860,7 @@ return( false );
 	/* Do Nothing */;
     else if ( s2->knownlinear || (!s1->isquadratic && s2->isquadratic)) {
 	const Spline *stemp = s1;
-	double *ts = t1s;
+	extended *ts = t1s;
 	t1s = t2s; t2s = ts;
 	s1 = s2; s2 = stemp;
     }
@@ -3957,8 +3979,8 @@ return( soln!=0 );
 		s1->splines[0].c)*extrema1[i+1]+s1->splines[0].d;
 	max1.y = ((s1->splines[1].a*extrema1[i+1]+s1->splines[1].b)*extrema1[i+1]+
 		s1->splines[1].c)*extrema1[i+1]+s1->splines[1].d;
-	if ( max1.x<min1.x ) { double temp = max1.x; max1.x = min1.x; min1.x = temp; }
-	if ( max1.y<min1.y ) { double temp = max1.y; max1.y = min1.y; min1.y = temp; }
+	if ( max1.x<min1.x ) { extended temp = max1.x; max1.x = min1.x; min1.x = temp; }
+	if ( max1.y<min1.y ) { extended temp = max1.y; max1.y = min1.y; min1.y = temp; }
 	for ( j=(s1==s2)?i+1:0; j<ecnt2; ++j ) {
 	    min2.x = ((s2->splines[0].a*extrema2[j]+s2->splines[0].b)*extrema2[j]+
 		    s2->splines[0].c)*extrema2[j]+s2->splines[0].d;
@@ -3968,8 +3990,8 @@ return( soln!=0 );
 		    s2->splines[0].c)*extrema2[j+1]+s2->splines[0].d;
 	    max2.y = ((s2->splines[1].a*extrema2[j+1]+s2->splines[1].b)*extrema2[j+1]+
 		    s2->splines[1].c)*extrema2[j+1]+s2->splines[1].d;
-	    if ( max2.x<min2.x ) { double temp = max2.x; max2.x = min2.x; min2.x = temp; }
-	    if ( max2.y<min2.y ) { double temp = max2.y; max2.y = min2.y; min2.y = temp; }
+	    if ( max2.x<min2.x ) { extended temp = max2.x; max2.x = min2.x; min2.x = temp; }
+	    if ( max2.y<min2.y ) { extended temp = max2.y; max2.y = min2.y; min2.y = temp; }
 	    if ( min1.x>max2.x || min2.x>max1.x || min1.y>max2.y || min2.y>max1.y )
 		/* No possible intersection */;
 	    else if ( s1!=s2 )
@@ -3999,8 +4021,8 @@ return( soln!=0 );
 return( found!=0 );
 }
 
-int LineTangentToSplineThroughPt(Spline *s, BasePoint *pt, double ts[4],
-	double tmin, double tmax) {
+int LineTangentToSplineThroughPt(Spline *s, BasePoint *pt, extended ts[4],
+	extended tmin, extended tmax) {
     /* attempt to find a line though the point pt which is tangent to the spline */
     /*  we return t of the tangent point on the spline (if any)		  */
     /* So the slope of the line through pt&tangent point must match slope */
@@ -4058,7 +4080,7 @@ return(i+1);
 
 static int XSolve(Spline *spline,real tmin, real tmax,FindSel *fs) {
     Spline1D *yspline = &spline->splines[1], *xspline = &spline->splines[0];
-    double t,x,y;
+    bigreal t,x,y;
 
     fs->p->t = t = SplineSolve(xspline,tmin,tmax,fs->p->cx,.001);
     if ( t>=0 && t<=1 ) {
@@ -4079,7 +4101,7 @@ return( false );
 
 static int YSolve(Spline *spline,real tmin, real tmax,FindSel *fs) {
     Spline1D *yspline = &spline->splines[1], *xspline = &spline->splines[0];
-    double t,x,y;
+    bigreal t,x,y;
 
     fs->p->t = t = SplineSolve(yspline,tmin,tmax,fs->p->cy,.001);
     if ( t>=0 && t<=1 ) {
@@ -4102,11 +4124,11 @@ static int NearXSpline(FindSel *fs, Spline *spline) {
     /* If we get here we've checked the bounding box and we're in it */
     /*  the y spline is a horizontal line */
     /*  the x spline is not linear */
-    double t,y;
+    bigreal t,y;
     Spline1D *yspline = &spline->splines[1], *xspline = &spline->splines[0];
 
     if ( xspline->a!=0 ) {
-	double t1, t2, tbase;
+	extended t1, t2, tbase;
 	SplineFindExtrema(xspline,&t1,&t2);
 	tbase = 0;
 	if ( t1!=-1 ) {
@@ -4122,7 +4144,7 @@ return( true );
 	if ( XSolve(spline,tbase,1.0,fs))
 return( true );
     } else if ( xspline->b!=0 ) {
-	double root = xspline->c*xspline->c - 4*xspline->b*(xspline->d-fs->p->cx);
+	bigreal root = xspline->c*xspline->c - 4*xspline->b*(xspline->d-fs->p->cx);
 	if ( root < 0 )
 return( false );
 	root = sqrt(root);
@@ -4148,9 +4170,9 @@ return( false );
 }
 
 int NearSpline(FindSel *fs, Spline *spline) {
-    double t,x,y;
+    bigreal t,x,y;
     Spline1D *yspline = &spline->splines[1], *xspline = &spline->splines[0];
-    double dx, dy;
+    bigreal dx, dy;
 
     if (( dx = spline->to->me.x-spline->from->me.x)<0 ) dx = -dx;
     if (( dy = spline->to->me.y-spline->from->me.y)<0 ) dy = -dy;
@@ -4202,7 +4224,7 @@ return( NearXSpline(fs,spline));
 	    if ( fs->xl<x && fs->xh>x && t>=0 && t<=1 )
 return( true );
 	} else if ( yspline->a==0 ) {
-	    double root = yspline->c*yspline->c - 4*yspline->b*(yspline->d-fs->p->cy);
+	    bigreal root = yspline->c*yspline->c - 4*yspline->b*(yspline->d-fs->p->cy);
 	    if ( root < 0 )
 return( false );
 	    root = sqrt(root);
@@ -4215,7 +4237,7 @@ return( true );
 	    if ( fs->xl<x && fs->xh>x && t>=0 && t<=1 )
 return( true );
 	} else {
-	    double t1, t2, tbase;
+	    extended t1, t2, tbase;
 	    SplineFindExtrema(yspline,&t1,&t2);
 	    tbase = 0;
 	    if ( t1!=-1 ) {
@@ -4282,9 +4304,9 @@ return( nup!=up );
 }
 
 static int Crossings(Spline *s,BasePoint *pt) {
-    double ext[4];
+    extended ext[4];
     int i, cnt=0;
-    double yi, yi1, t, x;
+    bigreal yi, yi1, t, x;
 
     ext[0] = 0; ext[3] = 1.0;
     SplineFindExtrema(&s->splines[1],&ext[1],&ext[2]);
@@ -5517,14 +5539,14 @@ static int SplineRemoveAnnoyingExtrema1(Spline *s,int which,double err_sq) {
     /* Remove extrema which are very close to one of the spline end-points */
     /*  and which are in the oposite direction (along the normal of the */
     /*  close end-point's cp) from the other end-point */
-    double ts[2], t1, t2;
-    double df, dt;
-    double dp, d_o;
+    extended ts[2], t1, t2;
+    bigreal df, dt;
+    bigreal dp, d_o;
     int i;
     BasePoint pos, norm;
     SplinePoint *close, *other;
     BasePoint *ccp, *ocp;
-    double c_, b_, nextcp, prevcp, prop;
+    bigreal c_, b_, nextcp, prevcp, prop;
     int changed = false;
 
     SplineFindExtrema(&s->splines[which],&ts[0],&ts[1]);

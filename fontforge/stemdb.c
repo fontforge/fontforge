@@ -291,7 +291,7 @@ static int MonotonicOrder(Spline **sspace,Spline *line,struct st *stspace) {
     Spline *s;
     int i,j,k,cnt;
     BasePoint pts[9];
-    double lts[10], sts[10];
+    extended lts[10], sts[10];
 
     for ( i=j=0; (s=sspace[j])!=NULL; ++j ) {
 	if ( BBoxIntersectsLine(s,line) ) {
@@ -1265,7 +1265,7 @@ static void FixupT(struct stemdata *stem,struct pointdata *pd,int isnext) {
     SplinePoint end1, end2;
     double width,t,sign, len, dot;
     BasePoint pts[9];
-    double lts[10], sts[10];
+    extended lts[10], sts[10];
     BasePoint diff;
 
     width = (stem->right.x-stem->left.x)*stem->unit.y - (stem->right.y-stem->left.y)*stem->unit.x;

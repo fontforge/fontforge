@@ -35,7 +35,7 @@
 /* ************************************************************************** */
 
 static double FindNewT(double pos,const Spline1D *s,double old_t) {
-    double ts[3];
+    extended ts[3];
     int i;
     double closest;
 
@@ -56,7 +56,8 @@ return( closest );
 static int NearSplineSet(BasePoint *here,const SplineSet *ss,
 	const Spline **last_found,double *last_t,double err) {
     const Spline *first, *s, *best_s;
-    double dx, dy, adx, ady, best, best_t, ts[3], t;
+    extended ts[3];
+    double dx, dy, adx, ady, best, best_t, t;
     BasePoint test;
     int i, j;
     static double offset[] = { 0, .5, -.5 };

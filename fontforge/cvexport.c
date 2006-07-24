@@ -86,7 +86,7 @@ int _ExportEPS(FILE *eps,SplineChar *sc, int preview) {
 
     fprintf( eps, "%%!PS-Adobe-3.0 EPSF-3.0\n" );
     SplineCharFindBounds(sc,&b);
-    fprintf( eps, "%%%%BoundingBox: %g %g %g %g\n", b.minx, b.miny, b.maxx, b.maxy );
+    fprintf( eps, "%%%%BoundingBox: %g %g %g %g\n", (double) b.minx, (double) b.miny, (double) b.maxx, (double) b.maxy );
     fprintf( eps, "%%%%Pages: 0\n" );
     fprintf( eps, "%%%%Title: %s from %s\n", sc->name, sc->parent->fontname );
     fprintf( eps, "%%%%Creator: FontForge\n" );
@@ -110,7 +110,7 @@ int _ExportEPS(FILE *eps,SplineChar *sc, int preview) {
     else
 #endif
     if ( sc->parent->strokedfont )
-	fprintf( eps, "%g setlinewidth stroke grestore\n", sc->parent->strokewidth );
+	fprintf( eps, "%g setlinewidth stroke grestore\n", (double) sc->parent->strokewidth );
     else
 	fprintf( eps, "fill grestore\n" );
     fprintf( eps, "%%%%EOF\n" );
@@ -158,7 +158,7 @@ int _ExportPDF(FILE *pdf,SplineChar *sc) {
     fprintf( pdf, "    /Parent 2 0 R\n" );
     fprintf( pdf, "    /Resources << >>\n" );
     SplineCharFindBounds(sc,&b);
-    fprintf( pdf, "    /MediaBox [%g %g %g %g]\n", b.minx, b.miny, b.maxx, b.maxy );
+    fprintf( pdf, "    /MediaBox [%g %g %g %g]\n", (double) b.minx, (double) b.miny, (double) b.maxx, (double) b.maxy );
     fprintf( pdf, "    /Contents 4 0 R\n" );
     fprintf( pdf, " >>\n" );
     fprintf( pdf, "endobj\n" );
@@ -175,7 +175,7 @@ int _ExportPDF(FILE *pdf,SplineChar *sc) {
     else
 #endif
     if ( sc->parent->strokedfont )
-	fprintf( pdf, "%g w S\n", sc->parent->strokewidth );
+	fprintf( pdf, "%g w S\n", (double) sc->parent->strokewidth );
     else
 	fprintf( pdf, "f\n" );
     streamlength = ftell(pdf)-streamstart;

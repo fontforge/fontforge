@@ -226,7 +226,7 @@ static void MVInline(MetricsView *mv, real width, real inset) {
     }
 }
 
-static real def_outline_width = 10, def_gap_width = 20;
+static double def_outline_width = 10, def_gap_width = 20;
 
 #define CID_Width	1000
 #define CID_Gap		1001
@@ -698,7 +698,7 @@ static void SSCleanup(SplineSet *spl) {
 }
 
 static double IntersectLine(Spline *spline1,Spline *spline2) {
-    double t1s[10], t2s[10];
+    extended t1s[10], t2s[10];
     BasePoint pts[9];
     double mint=1;
     int i;
@@ -745,16 +745,16 @@ return( false );
 
 /* finds all intersections between this spline and all the other splines in the */
 /*  character */
-static double *BottomFindIntersections(Spline *bottom,SplineSet *lines,SplineSet *spl) {
-    double *ts;
+static extended *BottomFindIntersections(Spline *bottom,SplineSet *lines,SplineSet *spl) {
+    extended *ts;
     int tcnt, tmax;
-    double t1s[26], t2s[26];
+    extended t1s[26], t2s[26];
     BasePoint pts[25];
     Spline *first, *s;
     int i,j;
 
     tmax = 100;
-    ts = galloc(tmax*sizeof(double));
+    ts = galloc(tmax*sizeof(extended));
     tcnt = 0;
 
     while ( spl!=NULL ) {
@@ -908,7 +908,7 @@ static SplineSet *ClipBottomTo3D(SplineSet *bottom,SplineSet *lines,SplineSet *s
 	double shadow_length) {
     SplineSet *head=NULL, *last=NULL, *cur, *next;
     Spline *s;
-    double *ts;
+    extended *ts;
     SplinePoint *sp;
     int i;
 
@@ -1125,7 +1125,7 @@ static void MVShadow(MetricsView *mv,real angle, real outline_width,
     }
 }
 
-static real def_shadow_len=100, def_sun_angle= -45;
+static double def_shadow_len=100, def_sun_angle= -45;
 
 #define CID_ShadowLen		1001
 #define CID_LightAngle		1002

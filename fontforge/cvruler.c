@@ -74,11 +74,11 @@ static int RulerText(CharView *cv, unichar_t *ubuf, int line) {
 
 	if ( !cv->autonomous_ruler_w && !cv->p.pressed )
 	    /* Give current location accurately */
-	    sprintf( buf, "%f,%f", cv->info.x, cv->info.y);
+	    sprintf( buf, "%f,%f", (double) cv->info.x, (double) cv->info.y);
 	else
-	    sprintf( buf, "%f %.0f° (%f,%f)", len,
+	    sprintf( buf, "%f %.0f° (%f,%f)", (double) len,
 		    atan2(yoff,xoff)*180/3.1415926535897932,
-		    xoff,yoff);
+		    (double) xoff,(double) yoff);
       break; }
       case 1:
 	if ( cv->p.pressed ) {
@@ -97,15 +97,15 @@ static int RulerText(CharView *cv, unichar_t *ubuf, int line) {
 return( false );
 	} else if ( cv->dv!=NULL || cv->gridfit!=NULL ) {
 	    double scale = scale = (cv->sc->parent->ascent+cv->sc->parent->descent)/(rint(cv->ft_pointsize*cv->ft_dpi/72.0));
-	    sprintf( buf, "%.2f,%.2f", cv->info.x/scale, cv->info.y/scale);
+	    sprintf( buf, "%.2f,%.2f", (double) (cv->info.x/scale), (double) (cv->info.y/scale));
 	} else if ( cv->p.spline!=NULL ) {
 	    s = cv->p.spline;
 	    t = cv->p.t;
 	    sprintf( buf, _("Near (%f,%f)"),
-		    ((s->splines[0].a*t+s->splines[0].b)*t+s->splines[0].c)*t+s->splines[0].d,
-		    ((s->splines[1].a*t+s->splines[1].b)*t+s->splines[1].c)*t+s->splines[1].d );
+		    (double) (((s->splines[0].a*t+s->splines[0].b)*t+s->splines[0].c)*t+s->splines[0].d),
+		    (double) (((s->splines[1].a*t+s->splines[1].b)*t+s->splines[1].c)*t+s->splines[1].d) );
 	} else if ( cv->p.sp!=NULL ) {
-	    sprintf( buf, _("Near (%f,%f)"),cv->p.sp->me.x,cv->p.sp->me.y );
+	    sprintf( buf, _("Near (%f,%f)"),(double) cv->p.sp->me.x,(double) cv->p.sp->me.y );
 	} else
 return( false );
       break;
@@ -122,7 +122,7 @@ return( false );
 	    if ( cv->p.sp->nonextcp )
 		strcpy(buf,_("No Next Control Point"));
 	    else
-		sprintf(buf,_("Next CP: (%f,%f)"), cv->p.sp->nextcp.x, cv->p.sp->nextcp.y);
+		sprintf(buf,_("Next CP: (%f,%f)"), (double) cv->p.sp->nextcp.x, (double) cv->p.sp->nextcp.y);
 	} else
 return( false );
       break;
@@ -140,7 +140,7 @@ return( false );
 	    if ( cv->p.sp->noprevcp )
 		strcpy(buf,_("No Previous Control Point"));
 	    else
-		sprintf(buf,_("Prev CP: (%f,%f)"), cv->p.sp->prevcp.x, cv->p.sp->prevcp.y);
+		sprintf(buf,_("Prev CP: (%f,%f)"), (double) cv->p.sp->prevcp.x, (double) cv->p.sp->prevcp.y);
 	} else
 return( false );
       break;
@@ -162,7 +162,7 @@ return( false );
 	    if ( cv->p.sp->noprevcp )
 		strcpy(buf,_("No Previous Control Point"));
 	    else
-		sprintf(buf,_("Prev CP: (%f,%f)"), cv->p.sp->prevcp.x, cv->p.sp->prevcp.y);
+		sprintf(buf,_("Prev CP: (%f,%f)"), (double) cv->p.sp->prevcp.x, (double) cv->p.sp->prevcp.y);
 	} else {
 	    CurveToBuf(buf,cv,cv->p.sp->prev,1);
 	}
@@ -357,10 +357,10 @@ return( buffer );
 	    strncpy( buffer, _(" Prev CP"), blen);
       break;
       case 1:
-	snprintf( buffer, blen, "(%g%s%g)", cp->x, coord_sep, cp->y);
+	snprintf( buffer, blen, "(%g%s%g)", (double) cp->x, coord_sep, (double) cp->y);
       break;
       case 2:
-	snprintf( buffer, blen, "∆ (%g%s%g)", cp->x-sp->me.x, coord_sep, cp->y-sp->me.y);
+	snprintf( buffer, blen, "∆ (%g%s%g)", (double) (cp->x-sp->me.x), coord_sep, (double) (cp->y-sp->me.y));
       break;
       case 3:
 	dx = cp->x - sp->me.x; dy = cp->y - sp->me.y;

@@ -555,7 +555,7 @@ static void MVRefreshValues(MetricsView *mv, int i, SplineChar *sc) {
     uc_strcpy(ubuf,buf);
     GGadgetSetTitle(mv->perchar[i].width,ubuf);
 
-    sprintf(buf,"%.2f",mv->vertical ? sc->parent->ascent-bb.maxy : bb.minx);
+    sprintf(buf,"%.2f",mv->vertical ? sc->parent->ascent-(double) bb.maxy : (double) bb.minx);
     if ( buf[strlen(buf)-1]=='0' ) {
 	buf[strlen(buf)-1] = '\0';
 	if ( buf[strlen(buf)-1]=='0' ) {
@@ -567,7 +567,7 @@ static void MVRefreshValues(MetricsView *mv, int i, SplineChar *sc) {
     uc_strcpy(ubuf,buf);
     GGadgetSetTitle(mv->perchar[i].lbearing,ubuf);
 
-    sprintf(buf,"%.2f",mv->vertical ? sc->vwidth-(sc->parent->ascent-bb.miny) : sc->width-bb.maxx);
+    sprintf(buf,"%.2f",(double) (mv->vertical ? sc->vwidth-(sc->parent->ascent-bb.miny) : sc->width-bb.maxx));
     if ( buf[strlen(buf)-1]=='0' ) {
 	buf[strlen(buf)-1] = '\0';
 	if ( buf[strlen(buf)-1]=='0' ) {

@@ -1186,11 +1186,11 @@ static void AfmSplineFontHeader(FILE *afm, SplineFont *sf, int formattype, EncMa
 	fprintf( afm, "IsBaseFont true\n" );
 	fprintf( afm, "IsCIDFont true\n" );
     }
-    fprintf( afm, "ItalicAngle %g\n", sf->italicangle );
+    fprintf( afm, "ItalicAngle %g\n", (double) sf->italicangle );
     width = CIDOneWidth(sf);
     fprintf( afm, "IsFixedPitch %s\n", width==-1?"false":"true" );
-    fprintf( afm, "UnderlinePosition %g\n", sf->upos );
-    fprintf( afm, "UnderlineThickness %g\n", sf->uwidth );
+    fprintf( afm, "UnderlinePosition %g\n", (double) sf->upos );
+    fprintf( afm, "UnderlineThickness %g\n", (double) sf->uwidth );
     if ( !iscid ) {
 	if ( sf->version!=NULL ) fprintf( afm, "Version %s\n", sf->version );
 	fprintf( afm, "EncodingScheme %s\n", EncodingName(map->enc));
@@ -1708,16 +1708,16 @@ int AmfmSplineFont(FILE *amfm, MMSet *mm, int formattype,EncMap *map) {
     fprintf( amfm, "Masters %d\n", mm->instance_count );
     fprintf( amfm, "Axes %d\n", mm->axis_count );
 
-    fprintf( amfm, "WeightVector [%g", mm->defweights[0] );
+    fprintf( amfm, "WeightVector [%g", (double) mm->defweights[0] );
     for ( i=1; i<mm->instance_count; ++i )
-	fprintf( amfm, " %g", mm->defweights[i]);
+	fprintf( amfm, " %g", (double) mm->defweights[i]);
     fprintf( amfm, "]\n" );
 
     fprintf( amfm, "BlendDesignPositions [" );
     for ( i=0; i<mm->instance_count; ++i ) {
-	fprintf(amfm, "[%g", mm->positions[i*mm->axis_count+0]);
+	fprintf(amfm, "[%g", (double) mm->positions[i*mm->axis_count+0]);
 	for ( j=1; j<mm->axis_count; ++j )
-	    fprintf( amfm, " %g", mm->positions[i*mm->axis_count+j]);
+	    fprintf( amfm, " %g", (double) mm->positions[i*mm->axis_count+j]);
 	fprintf(amfm, i==mm->instance_count-1 ? "]" : "] " );
     }
     fprintf( amfm, "]\n" );
@@ -1726,7 +1726,7 @@ int AmfmSplineFont(FILE *amfm, MMSet *mm, int formattype,EncMap *map) {
     for ( i=0; i<mm->axis_count; ++i ) {
 	putc('[',amfm);
 	for ( j=0; j<mm->axismaps[i].points; ++j )
-	    fprintf(amfm, "[%g %g]", mm->axismaps[i].designs[j], mm->axismaps[i].blends[j]);
+	    fprintf(amfm, "[%g %g]", (double) mm->axismaps[i].designs[j], (double) mm->axismaps[i].blends[j]);
 	fprintf(amfm, i==mm->axis_count-1 ? "]" : "] " );
     }
     fprintf( amfm, "]\n" );

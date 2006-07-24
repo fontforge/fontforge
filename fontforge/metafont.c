@@ -439,7 +439,8 @@ return( true );
 static int FindPerpDistance(real t1,Spline *spline1, Spline *spline2,
 	BasePoint *vec, real *len) {
     BasePoint pt, slope, pslope, end[3], ss2;
-    double x, y, slope1, slope2, ts[3], lens[3], angle;
+    bigreal x, y, slope1, slope2;
+    extended ts[3], lens[3], angle;
     Spline1D temp;
     int i,j;
 
@@ -1722,17 +1723,17 @@ return;		/* Debug !!!! */
 	nsp = sp->next->to;
 	if ( sp->me.x==nsp->me.x && sci->pts[i].newme.x!=sci->pts[nsp->ptindex].newme.x ) {
 	    fprintf(stderr, "Vertical line no longer vertical (%g,%g) <-> (%g,%g) becomes (%g,%g) <-> (%g,%g)\n",
-		    sp->me.x, sp->me.y, nsp->me.x, nsp->me.y,
-		    sci->pts[i].newme.x, sci->pts[i].newme.y,
-		    sci->pts[nsp->ptindex].newme.x, sci->pts[nsp->ptindex].newme.y );
+		    (double) sp->me.x, (double) sp->me.y, (double) nsp->me.x, (double) nsp->me.y,
+		    (double) sci->pts[i].newme.x, (double) sci->pts[i].newme.y,
+		    (double) sci->pts[nsp->ptindex].newme.x, (double) sci->pts[nsp->ptindex].newme.y );
 	    sci->pts[i].newme.x = sci->pts[nsp->ptindex].newme.x =
 		rint((sci->pts[i].newme.x + sci->pts[nsp->ptindex].newme.x)/2);
 	}
 	if ( sp->me.y==nsp->me.y && sci->pts[i].newme.y!=sci->pts[nsp->ptindex].newme.y ) {
 	    fprintf(stderr, "Horizontal line no longer horizontal (%g,%g) <-> (%g,%g) becomes (%g,%g) <-> (%g,%g)\n",
-		    sp->me.x, sp->me.y, nsp->me.x, nsp->me.y,
-		    sci->pts[i].newme.x, sci->pts[i].newme.y,
-		    sci->pts[nsp->ptindex].newme.x, sci->pts[nsp->ptindex].newme.y );
+		    (double) sp->me.x, (double) sp->me.y, (double) nsp->me.x, (double) nsp->me.y,
+		    (double) sci->pts[i].newme.x, (double) sci->pts[i].newme.y,
+		    (double) sci->pts[nsp->ptindex].newme.x, (double) sci->pts[nsp->ptindex].newme.y );
 	    sci->pts[i].newme.y = sci->pts[nsp->ptindex].newme.y =
 		rint((sci->pts[i].newme.y + sci->pts[nsp->ptindex].newme.y)/2);
 	}
@@ -1743,7 +1744,7 @@ static void MovePointToInter(SCI *sci,int i,int j, real val, int isvert) {
     /* Move the new version of point i to the place where the spline between */
     /*  it and point j intersects the horizontal/vertical line through val */
     SplinePoint pti, ptj, *midsp;
-    double ts[3], t;
+    extended ts[3], t;
     int k;
     Spline *spline;
 
@@ -1977,8 +1978,8 @@ return( true );
 
 static void FuncSet(MetaFontDlg *meta) {
     int func = GGadgetGetFirstListSelectedItem(GWidgetGetControl(meta->gw,CID_SimpleFuncs));
-    real stemval = func==0?170:func==1?70:100;
-    real counterval = func==0?110:func==1?95:func==2?75:125;
+    double stemval = func==0?170:func==1?70:100;
+    double counterval = func==0?110:func==1?95:func==2?75:125;
     char buffer[10];
     unichar_t ustem[10], ucounter[10];
 
@@ -2191,7 +2192,7 @@ void MetaFont(FontView *fv,CharView *cv,SplineChar *sc) {
     mgcd[9].gd.cid = CID_XH_From;
     mgcd[9].creator = GLabelCreate;
 
-    sprintf( buffer, "%g", bd.xheight );
+    sprintf( buffer, "%g", (double) bd.xheight );
     mgcd[10].gd.pos.x = mgcd[4].gd.pos.x; mgcd[10].gd.pos.y = mgcd[9].gd.pos.y;
     mgcd[10].gd.flags = gg_enabled;
     mlabel[10].text = (unichar_t *) buffer;

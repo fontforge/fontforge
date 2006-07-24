@@ -69,9 +69,9 @@ void FreeEdges(EdgeList *es) {
     HintsFree(es->vhints);
 }
 
-double IterateSplineSolve(const Spline1D *sp, double tmin, double tmax,
-	double sought,double err) {
-    double t, low, high, test;
+extended IterateSplineSolve(const Spline1D *sp, extended tmin, extended tmax,
+	extended sought,double err) {
+    extended t, low, high, test;
     Spline1D temp;
     int cnt;
 
@@ -82,7 +82,7 @@ double IterateSplineSolve(const Spline1D *sp, double tmin, double tmax,
     temp.d -= sought;
 
     if ( temp.a==0 && temp.b==0 && temp.c!=0 ) {
-	t = -temp.d/temp.c;
+	t = -temp.d/(extended) temp.c;
 	if ( t<0 || t>1 )
 return( -1 );
 return( t );
@@ -417,7 +417,7 @@ return;		/* Horizontal line, ignore it */
     AddEdge(es,sp,t,1.0);
     if ( es->interesting ) {
 	/* Also store up points of extrema in X as interesting (we got the endpoints, just internals now)*/
-	double ot1, ot2;
+	extended ot1, ot2;
 	int mpos;
 	SplineFindExtrema(osp,&ot1,&ot2);
 	if ( ot1>0 && ot1<1 ) {

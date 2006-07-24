@@ -376,7 +376,7 @@ static int figure_fontdesc(PI *pi, struct fontdesc *fd, int fonttype, int fontst
     fprintf( pi->out, "    /FontName /%s\n", sf->fontname );
     fprintf( pi->out, "    /Flags %d\n", fd->flags );
     fprintf( pi->out, "    /FontBBox [%g %g %g %g]\n",
-	    fd->bb.minx, fd->bb.miny, fd->bb.maxx, fd->bb.maxy );
+	    (double) fd->bb.minx, (double) fd->bb.miny, (double) fd->bb.maxx, (double) fd->bb.maxy );
     stemv = PSDictHasEntry(sf->private,"StdVW");
     if ( stemv!=NULL )		/* Said to be required, but meaningless for cid fonts where there should be multiple values */
 	fprintf( pi->out, "    /StemV %s\n", stemv );
@@ -385,7 +385,7 @@ static int figure_fontdesc(PI *pi, struct fontdesc *fd, int fonttype, int fontst
     stemv = PSDictHasEntry(sf->private,"StdHW");
     if ( stemv!=NULL )
 	fprintf( pi->out, "    /StemH %s\n", stemv );
-    fprintf( pi->out, "    /ItalicAngle %g\n", sf->italicangle );
+    fprintf( pi->out, "    /ItalicAngle %g\n", (double) sf->italicangle );
     fprintf( pi->out, "    /Ascent %g\n", fd->ascent );
     fprintf( pi->out, "    /Descent %g\n", fd->descent );
     if ( sf->pfminfo.pfmset )
@@ -1418,11 +1418,11 @@ static void SCPrintPage(PI *pi,SplineChar *sc) {
 
     if ( pi->printtype!=pt_pdf ) {
 	fprintf(pi->out,"MyFontDict /Times-Bold__12 get setfont\n" );
-	fprintf(pi->out,"(%s from %s) 80 %g n_show\n", sc->name, sc->parent->fullname, page.maxy-12 );
+	fprintf(pi->out,"(%s from %s) 80 %g n_show\n", sc->name, sc->parent->fullname, (double) (page.maxy-12) );
     } else {
 	fprintf( pi->out, "BT\n" );
 	fprintf( pi->out, "  /FTB 12 Tf\n" );
-	fprintf( pi->out, "  80 %g Td\n", page.maxy-12 );
+	fprintf( pi->out, "  80 %g Td\n", (double) (page.maxy-12) );
 	fprintf( pi->out, "  (%s from %s) Tj\n", sc->name, sc->parent->fullname );
 	fprintf( pi->out, "ET\n" );
     }
@@ -1436,37 +1436,37 @@ static void SCPrintPage(PI *pi,SplineChar *sc) {
 
     if ( pi->printtype!=pt_pdf ) {
 	fprintf(pi->out,"gsave .2 setlinewidth\n" );
-	fprintf(pi->out,"%g %g moveto %g %g lineto stroke\n", page.minx, pi->yoff, page.maxx, pi->yoff );
-	fprintf(pi->out,"%g %g moveto %g %g lineto stroke\n", pi->xoff, page.miny, pi->xoff, page.maxy );
-	fprintf(pi->out,"%g %g moveto %g %g lineto stroke\n", page.minx, sc->parent->ascent*pi->scale+pi->yoff, page.maxx, sc->parent->ascent*pi->scale+pi->yoff );
-	fprintf(pi->out,"%g %g moveto %g %g lineto stroke\n", page.minx, -sc->parent->descent*pi->scale+pi->yoff, page.maxx, -sc->parent->descent*pi->scale+pi->yoff );
-	fprintf(pi->out,"%g %g moveto %g %g lineto stroke\n", pi->xoff+sc->width*pi->scale, page.miny, pi->xoff+sc->width*pi->scale, page.maxy );
+	fprintf(pi->out,"%g %g moveto %g %g lineto stroke\n", (double) page.minx, (double) pi->yoff, (double) page.maxx, (double) pi->yoff );
+	fprintf(pi->out,"%g %g moveto %g %g lineto stroke\n", (double) pi->xoff, (double) page.miny, (double) pi->xoff, (double) page.maxy );
+	fprintf(pi->out,"%g %g moveto %g %g lineto stroke\n", (double) page.minx, (double) (sc->parent->ascent*pi->scale+pi->yoff), (double) page.maxx, (double) (sc->parent->ascent*pi->scale+pi->yoff) );
+	fprintf(pi->out,"%g %g moveto %g %g lineto stroke\n", (double) page.minx, (double) (-sc->parent->descent*pi->scale+pi->yoff), (double) page.maxx, (double) (-sc->parent->descent*pi->scale+pi->yoff) );
+	fprintf(pi->out,"%g %g moveto %g %g lineto stroke\n", (double) (pi->xoff+sc->width*pi->scale), (double) page.miny, (double) (pi->xoff+sc->width*pi->scale), (double) page.maxy );
 	fprintf(pi->out,"grestore\n" );
-	fprintf(pi->out,"gsave\n %g %g translate\n", pi->xoff, pi->yoff );
-	fprintf(pi->out," %g %g scale\n", pi->scale, pi->scale );
+	fprintf(pi->out,"gsave\n %g %g translate\n", (double) pi->xoff, (double) pi->yoff );
+	fprintf(pi->out," %g %g scale\n", (double) pi->scale, (double) pi->scale );
 	SC_PSDump((void (*)(int,void *)) fputc,pi->out,sc,true,false);
 	if ( sc->parent->multilayer )
 	    /* All done */;
 	else if ( sc->parent->strokedfont )
-	    fprintf( pi->out, "%g setlinewidth stroke\n", sc->parent->strokewidth );
+	    fprintf( pi->out, "%g setlinewidth stroke\n", (double) sc->parent->strokewidth );
 	else
 	    fprintf( pi->out, "fill\n" );
 	fprintf(pi->out,"grestore\n" );
     } else {
 	fprintf(pi->out,"q .2 w\n" );
-	fprintf(pi->out,"%g %g m %g %g l S\n", page.minx, pi->yoff, page.maxx, pi->yoff );
-	fprintf(pi->out,"%g %g m %g %g l S\n", pi->xoff, page.miny, pi->xoff, page.maxy );
-	fprintf(pi->out,"%g %g m %g %g l S\n", page.minx, sc->parent->ascent*pi->scale+pi->yoff, page.maxx, sc->parent->ascent*pi->scale+pi->yoff );
-	fprintf(pi->out,"%g %g m %g %g l S\n", page.minx, -sc->parent->descent*pi->scale+pi->yoff, page.maxx, -sc->parent->descent*pi->scale+pi->yoff );
-	fprintf(pi->out,"%g %g m %g %g l S\n", pi->xoff+sc->width*pi->scale, page.miny, pi->xoff+sc->width*pi->scale, page.maxy );
+	fprintf(pi->out,"%g %g m %g %g l S\n", (double) page.minx, (double) pi->yoff, (double) page.maxx, (double) pi->yoff );
+	fprintf(pi->out,"%g %g m %g %g l S\n", (double) pi->xoff, (double) page.miny, (double) pi->xoff, (double) page.maxy );
+	fprintf(pi->out,"%g %g m %g %g l S\n", (double) page.minx, (double) (sc->parent->ascent*pi->scale+pi->yoff), (double) page.maxx, (double) (sc->parent->ascent*pi->scale+pi->yoff) );
+	fprintf(pi->out,"%g %g m %g %g l S\n", (double) page.minx, (double) (-sc->parent->descent*pi->scale+pi->yoff), (double) page.maxx, (double) (-sc->parent->descent*pi->scale+pi->yoff) );
+	fprintf(pi->out,"%g %g m %g %g l S\n", (double) (pi->xoff+sc->width*pi->scale), (double) page.miny, (double) (pi->xoff+sc->width*pi->scale), (double) page.maxy );
 	fprintf(pi->out,"Q\n" );
-	fprintf(pi->out,"q \n %g 0 0 %g %g %g cm\n", pi->scale, pi->scale,
-		pi->xoff, pi->yoff );
+	fprintf(pi->out,"q \n %g 0 0 %g %g %g cm\n", (double) pi->scale, (double) pi->scale,
+		(double) pi->xoff, (double) pi->yoff );
 	SC_PSDump((void (*)(int,void *)) fputc,pi->out,sc,true,true);
 	if ( sc->parent->multilayer )
 	    /* All done */;
 	else if ( sc->parent->strokedfont )
-	    fprintf( pi->out, "%g w S\n", sc->parent->strokewidth );
+	    fprintf( pi->out, "%g w S\n", (double) sc->parent->strokewidth );
 	else
 	    fprintf( pi->out, "f\n" );
 	fprintf(pi->out,"Q\n" );
@@ -1734,20 +1734,20 @@ static void PIDoCombiners(PI *pi, SplineChar *sc, unichar_t *accents) {
 	    if ( pi->printtype==pt_pdf ) {
 		if ( yoff-ymove!=0 ) {
 		    if ( pi->intext ) { fprintf( pi->out, ">] TJ "); pi->intext = false; }
-		    fprintf( pi->out, " %g Ts ", yoff-ymove );
-		    fprintf( pi->out, "[ %g <", -(xoff-xmove) );
+		    fprintf( pi->out, " %g Ts ", (double) (yoff-ymove) );
+		    fprintf( pi->out, "[ %g <", (double) -(xoff-xmove) );
 		} else {
 		    if ( pi->intext )
-			fprintf( pi->out, "> %g <", -(xoff-xmove) );
+			fprintf( pi->out, "> %g <", (double) -(xoff-xmove) );
 		    else
-			fprintf( pi->out, "[%g <", -(xoff-xmove) );
+			fprintf( pi->out, "[%g <", (double) -(xoff-xmove) );
 		}
 		pi->intext = true;
 		checkrightfont(pi,asc);
 		outputchar(pi,asc);
 	    } else {
 		fprintf( pi->out, "%g %g rmoveto <",
-			(xoff-xmove)*pi->scale, (yoff-ymove)*pi->scale);
+			(double) ((xoff-xmove)*pi->scale), (double) ((yoff-ymove)*pi->scale));
 		outputchar(pi,asc);
 		fprintf( pi->out, "> show " );
 	    }
@@ -1764,17 +1764,17 @@ static void PIDoCombiners(PI *pi, SplineChar *sc, unichar_t *accents) {
 	if ( pi->printtype==pt_pdf ) {
 	    if ( ymove!=0 ) {
 		if ( pi->intext ) { fprintf( pi->out, ">] TJ "); pi->intext = false; }
-		fprintf( pi->out, " %g Ts ", -ymove );
-		fprintf( pi->out, "[ %g <", -(sc->width-xmove) );
+		fprintf( pi->out, " %g Ts ", (double) -ymove );
+		fprintf( pi->out, "[ %g <", (double) -(sc->width-xmove) );
 	    } else {
 		if ( pi->intext )
-		    fprintf( pi->out, "> %g <", sc->width-xmove );
+		    fprintf( pi->out, "> %g <", (double) (sc->width-xmove) );
 		else
-		    fprintf( pi->out, "[%g <", sc->width-xmove );
+		    fprintf( pi->out, "[%g <", (double) (sc->width-xmove) );
 	    }
 	    pi->intext = true;
 	} else
-	    fprintf( pi->out, "%g %g rmoveto <", (sc->width-xmove)*pi->scale, -ymove*pi->scale );
+	    fprintf( pi->out, "%g %g rmoveto <", (double) ((sc->width-xmove)*pi->scale), (double) (-ymove*pi->scale) );
     }
 }
 
@@ -1892,7 +1892,7 @@ static void PIDrawAnchors(PI *pi,SplineChar *sc, AnchorPos *apos) {
 	    pi->intext = true;
 	    checkrightfont(pi,apos->sc);
 	} else
-	    fprintf(pi->out,"> show %g %g rmoveto <", (xoff+apos->x)*pi->scale, (yoff+apos->y)*pi->scale );
+	    fprintf(pi->out,"> show %g %g rmoveto <", (double) ((xoff+apos->x)*pi->scale), (double) ((yoff+apos->y)*pi->scale) );
 	outputchar(pi,apos->sc);
 	yoff = -apos->y;
 	xoff = -apos->x-apos->sc->width;
@@ -1913,7 +1913,7 @@ static void PIDrawAnchors(PI *pi,SplineChar *sc, AnchorPos *apos) {
 	    }
 	    pi->intext = true;
 	} else
-	    fprintf(pi->out,"> show %g %g rmoveto <", xoff*pi->scale, yoff*pi->scale );
+	    fprintf(pi->out,"> show %g %g rmoveto <", (double) (xoff*pi->scale), (double) (yoff*pi->scale) );
     }
 }
 
@@ -1962,7 +1962,7 @@ static void PIDumpChars(PI *pi, unichar_t *pt, unichar_t *ept, int xstart) {
 		    } else
 			fprintf(pi->out,"> %d <", -off );
 		} else
-		    fprintf(pi->out,"> show %g 0 rmoveto <", off*pi->scale );
+		    fprintf(pi->out,"> show %g 0 rmoveto <", (double) (off*pi->scale) );
 	    }
 	}
 	pt = npt;
