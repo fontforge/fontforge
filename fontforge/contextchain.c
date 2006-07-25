@@ -68,7 +68,6 @@ static void FPSTRulesFree(struct fpst_rule *r, enum fpossub_format format, int r
     free(r);
 }
 
-#if 0
 static struct fpst_rule *RulesCopy(struct fpst_rule *from, int cnt,
 	enum fpossub_format format ) {
     int i, j;
@@ -133,7 +132,32 @@ return( NULL );
     }
 return( t );
 }
-#endif
+
+FPST *FPSTCopy(FPST *fpst) {
+    FPST *nfpst;
+    int i;
+
+    nfpst = chunkalloc(sizeof(FPST));
+    *nfpst = *fpst;
+    nfpst->next = NULL;
+    if ( nfpst->nccnt!=0 ) {
+	nfpst->nclass = galloc(nfpst->nccnt*sizeof(char *));
+	for ( i=0; i<nfpst->nccnt; ++i )
+	    nfpst->nclass[i] = copy(fpst->nclass[i]);
+    }
+    if ( nfpst->bccnt!=0 ) {
+	nfpst->bclass = galloc(nfpst->bccnt*sizeof(char *));
+	for ( i=0; i<nfpst->bccnt; ++i )
+	    nfpst->bclass[i] = copy(fpst->bclass[i]);
+    }
+    if ( nfpst->fccnt!=0 ) {
+	nfpst->fclass = galloc(nfpst->fccnt*sizeof(char *));
+	for ( i=0; i<nfpst->fccnt; ++i )
+	    nfpst->fclass[i] = copy(fpst->fclass[i]);
+    }
+    nfpst->rules = RulesCopy(fpst->rules,fpst->rule_cnt,fpst->format);
+return( nfpst );
+}
 
 void FPSTFree(FPST *fpst) {
     FPST *next;

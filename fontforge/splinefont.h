@@ -1388,6 +1388,7 @@ extern void ScriptRecordListFree(struct script_record **script_lang);
 extern KernClass *KernClassCopy(KernClass *kc);
 extern void KernClassListFree(KernClass *kc);
 extern int KernClassContains(KernClass *kc, char *name1, char *name2, int ordered );
+extern FPST *FPSTCopy(FPST *fpst);
 extern void FPSTFree(FPST *fpst);
 extern void ASMFree(ASM *sm);
 extern struct macname *MacNameCopy(struct macname *mn);
