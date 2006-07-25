@@ -64,16 +64,9 @@ return( rhead );
 }
 
 
-static int FixupSLI(int sli,SplineFont *from,SplineChar *sc) {
-    SplineFont *to = sc->parent;
+static int FixupSLI(int sli,SplineFont *from,SplineFont *to) {
     int i,j,k;
 
-    /* Find a script lang index in the new font which matches that of the old */
-    /*  font. There are some cases when we don't know what the old font was. */
-    /*  well, just make a reasonable guess */
-
-    if ( from==NULL )
-return( SFFindBiggestScriptLangIndex(to,SCScriptFromUnicode(sc),DEFAULT_LANG));
     if ( from->cidmaster ) from = from->cidmaster;
     else if ( from->mm!=NULL ) from = from->mm->normal;
     if ( to->cidmaster ) to = to->cidmaster;
@@ -118,6 +111,19 @@ return( i );
 return( i );
 }
 
+static int SCFixupSLI(int sli,SplineFont *from,SplineChar *sc) {
+    SplineFont *to = sc->parent;
+
+    /* Find a script lang index in the new font which matches that of the old */
+    /*  font. There are some cases when we don't know what the old font was. */
+    /*  well, just make a reasonable guess */
+
+    if ( from==NULL )
+return( SFFindBiggestScriptLangIndex(to,SCScriptFromUnicode(sc),DEFAULT_LANG));
+
+return( FixupSLI(sli,from,to));
+}
+
 PST *PSTCopy(PST *base,SplineChar *sc,SplineFont *from) {
     PST *head=NULL, *last=NULL, *cur;
 
@@ -125,7 +131,7 @@ PST *PSTCopy(PST *base,SplineChar *sc,SplineFont *from) {
 	cur = chunkalloc(sizeof(PST));
 	*cur = *base;
 	if ( from!=sc->parent && base->script_lang_index<SLI_NESTED )
-	    cur->script_lang_index = FixupSLI(cur->script_lang_index,from,sc);
+	    cur->script_lang_index = SCFixupSLI(cur->script_lang_index,from,sc);
 	if ( cur->type==pst_ligature ) {
 	    cur->u.lig.components = copy(cur->u.lig.components);
 	    cur->u.lig.lig = sc;
@@ -149,6 +155,64 @@ PST *PSTCopy(PST *base,SplineChar *sc,SplineFont *from) {
 	last = cur;
     }
 return( head );
+}
+
+static AnchorPoint *AnchorPointsDuplicate(AnchorPoint *base,SplineChar *sc) {
+    AnchorPoint *head=NULL, *last=NULL, *cur;
+    AnchorClass *ac;
+
+    for ( ; base!=NULL; base = base->next ) {
+	cur = chunkalloc(sizeof(AnchorPoint));
+	*cur = *base;
+	cur->next = NULL;
+	for ( ac=sc->parent->anchor; ac!=NULL; ac=ac->next )
+	    if ( strcmp(ac->name,base->anchor->name)==0 )
+	break;
+	cur->anchor = ac;
+	if ( ac==NULL ) {
+	    LogError( "No matching AnchorClass for %s", base->anchor->name);
+	    chunkfree(cur,sizeof(AnchorPoint));
+	} else {
+	    if ( head==NULL )
+		head = cur;
+	    else
+		last->next = cur;
+	    last = cur;
+	}
+    }
+return( head );
+}
+
+static void AnchorClassesAdd(SplineFont *into, SplineFont *from) {
+    AnchorClass *fac, *iac, *last, *cur;
+
+    if ( into->cidmaster!=NULL )
+	into = into->cidmaster;
+    if ( from->cidmaster!=NULL )
+	from = from->cidmaster;
+
+    for ( fac = from->anchor; fac!=NULL; fac=fac->next ) {
+	last = NULL;
+	for ( iac=into->anchor; iac!=NULL; iac=iac->next ) {
+	    if ( strcmp(iac->name,fac->name)==0 )
+	break;
+	    last = iac;
+	}
+	if ( iac==NULL ) {
+	    cur = chunkalloc(sizeof(AnchorClass));
+	    *cur = *fac;
+	    cur->next = NULL;
+	    cur->name = copy(cur->name);
+	    cur->script_lang_index = FixupSLI(cur->script_lang_index,from,into);
+	    if ( last==NULL )
+		into->anchor = cur;
+	    else
+		last->next = cur;
+	} else {
+	    /* Just use the one that's there and hope it's right. Not sure */
+	    /*  what else we can do... */
+	}
+    }
 }
 
 static struct altuni *AltUniCopy(struct altuni *altuni,SplineFont *noconflicts) {
@@ -201,6 +265,7 @@ SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into) {
     nsc->vstem = StemInfoCopy(nsc->vstem);
     nsc->dstem = DStemInfoCopy(nsc->dstem);
     nsc->md = MinimumDistanceCopy(nsc->md);
+    nsc->anchor = AnchorPointsDuplicate(nsc->anchor,nsc);
     nsc->views = NULL;
     nsc->changed = true;
     nsc->dependents = NULL;		/* Fix up later when we know more */
@@ -763,10 +828,19 @@ static void _MergeFont(SplineFont *into,SplineFont *other) {
     GlyphHashFree(into);
 }
 
+static void __MergeFont(SplineFont *into,SplineFont *other) {
+
+    AnchorClassesAdd(into,other);
+
+    _MergeFont(into,other);
+}
+
 static void CIDMergeFont(SplineFont *into,SplineFont *other) {
     int i,j,k;
     SplineFont *i_sf, *o_sf;
     FontView *fvs;
+
+    AnchorClassesAdd(into,other);
 
     k = 0;
     do {
@@ -835,7 +909,7 @@ return;
     if ( fv->sf->cidmaster!=NULL && other->subfonts!=NULL )
 	CIDMergeFont(fv->sf->cidmaster,other);
     else
-	_MergeFont(fv->sf,other);
+	__MergeFont(fv->sf,other);
 }
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
