@@ -215,6 +215,77 @@ static void AnchorClassesAdd(SplineFont *into, SplineFont *from) {
     }
 }
 
+static void FPSTsAdd(SplineFont *into, SplineFont *from) {
+}
+
+static void ASMsAdd(SplineFont *into, SplineFont *from) {
+    ASM *sm, *nsm, *last;
+    int i;
+
+    last = NULL;
+    if ( into->sm!=NULL )
+	for ( last = into->sm; last->next!=NULL; last=last->next );
+    for ( sm = from->sm; sm!=NULL; sm=sm->next ) {
+	nsm = chunkalloc(sizeof(ASM));
+	*nsm = *sm;
+	nsm->classes = galloc(nsm->class_cnt*sizeof(char *));
+	for ( i=0; i<nsm->class_cnt; ++i )
+	    nsm->classes[i] = copy(sm->classes[i]);
+	nsm->state = galloc(nsm->class_cnt*nsm->state_cnt*sizeof(struct asm_state));
+	memcpy(nsm->state,sm->state,nsm->class_cnt*nsm->state_cnt*sizeof(struct asm_state));
+	if ( nsm->type == asm_kern ) {
+	    for ( i=nsm->class_cnt*nsm->state_cnt-1; i>=0; --i ) {
+		nsm->state[i].u.kern.kerns = galloc(nsm->state[i].u.kern.kcnt*sizeof(int16));
+		memcpy(nsm->state[i].u.kern.kerns,sm->state[i].u.kern.kerns,nsm->state[i].u.kern.kcnt*sizeof(int16));
+	    }
+	} else if ( nsm->type == asm_insert ) {
+	    for ( i=nsm->class_cnt*nsm->state_cnt-1; i>=0; --i ) {
+		nsm->state[i].u.insert.mark_ins = copy(sm->state[i].u.insert.mark_ins);
+		nsm->state[i].u.insert.cur_ins = copy(sm->state[i].u.insert.cur_ins);
+	    }
+	}
+    }
+}
+
+static KernClass *_KernClassCopy(KernClass *kc,SplineFont *into,SplineFont *from) {
+    KernClass *nkc;
+
+    nkc = KernClassCopy(kc);
+    nkc->sli = FixupSLI(nkc->sli,from,into);
+return( nkc );
+}
+
+static void KernClassesAdd(SplineFont *into, SplineFont *from) {
+    /* Is this a good idea? We could end up with two kern classes that do */
+    /*  the same thing and strange sets of slis so that they didn't all fit */
+    /*  in one lookup... */
+    KernClass *kc, *last, *cur;
+
+    last = NULL;
+    if ( into->kerns!=NULL )
+	for ( last = into->kerns; last->next!=NULL; last=last->next );
+    for ( kc=from->kerns; kc!=NULL; kc=kc->next ) {
+	cur = _KernClassCopy(kc,into,from);
+	if ( last==NULL )
+	    into->kerns = cur;
+	else
+	    last->next = cur;
+	last = cur;
+    }
+
+    last = NULL;
+    if ( into->vkerns!=NULL )
+	for ( last = into->vkerns; last->next!=NULL; last=last->next )
+    for ( kc=from->vkerns; kc!=NULL; kc=kc->next ) {
+	cur = _KernClassCopy(kc,into,from);
+	if ( last==NULL )
+	    into->vkerns = cur;
+	else
+	    last->next = cur;
+	last = cur;
+    }
+}
+
 static struct altuni *AltUniCopy(struct altuni *altuni,SplineFont *noconflicts) {
     struct altuni *head=NULL, *last=NULL, *cur;
 
@@ -831,6 +902,9 @@ static void _MergeFont(SplineFont *into,SplineFont *other) {
 static void __MergeFont(SplineFont *into,SplineFont *other) {
 
     AnchorClassesAdd(into,other);
+    FPSTsAdd(into,other);
+    ASMsAdd(into,other);
+    KernClassesAdd(into,other);
 
     _MergeFont(into,other);
 }
@@ -841,6 +915,9 @@ static void CIDMergeFont(SplineFont *into,SplineFont *other) {
     FontView *fvs;
 
     AnchorClassesAdd(into,other);
+    FPSTsAdd(into,other);
+    ASMsAdd(into,other);
+    KernClassesAdd(into,other);
 
     k = 0;
     do {
