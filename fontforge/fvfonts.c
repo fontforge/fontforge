@@ -216,6 +216,20 @@ static void AnchorClassesAdd(SplineFont *into, SplineFont *from) {
 }
 
 static void FPSTsAdd(SplineFont *into, SplineFont *from) {
+    FPST *fpst, *nfpst, *last;
+
+    last = NULL;
+    if ( into->possub!=NULL )
+	for ( last = into->possub; last->next!=NULL; last=last->next );
+    for ( fpst = from->possub; fpst!=NULL; fpst=fpst->next ) {
+	nfpst = FPSTCopy(fpst);
+	nfpst->script_lang_index = FixupSLI(nfpst->script_lang_index,from,into);
+	if ( last==NULL )
+	    into->possub = nfpst;
+	else
+	    last->next = nfpst;
+	last = nfpst;
+    }
 }
 
 static void ASMsAdd(SplineFont *into, SplineFont *from) {
