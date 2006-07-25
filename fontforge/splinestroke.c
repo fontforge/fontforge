@@ -1492,7 +1492,7 @@ static struct strokedspline *_SplineSetApprox(SplineSet *spl,StrokeInfo *si,Spli
 	head->prev = last;
 	last->next = head;
     }
-    free(mmids); free(pmids); free(knots);
+    free(mmids); free(pmids); free(knots); free(mids);
 return( head );
 }
 
