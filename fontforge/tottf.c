@@ -1886,6 +1886,7 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at,int subfont,
     int hasblue=0, hash=0, hasv=0, bs;
     int nomwid, defwid;
     EncMap *map = at->map;
+    double bluescale;
 
     /* The private dict is not in an index, so no index header. Just the data */
 
@@ -1917,6 +1918,7 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at,int subfont,
 #endif
     }
 
+    otherblues[0] = otherblues[1] = bluevalues[0] = bluevalues[1] = 0;
     if ( !hasblue ) {
 	FindBlues(sf,bluevalues,otherblues);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -1956,10 +1958,13 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at,int subfont,
 	DumpDblArray(otherblues,sizeof(otherblues)/sizeof(otherblues[0]),private,7);
     if ( (pt=PSDictHasEntry(sf->private,"FamilyBlues"))!=NULL )
 	DumpStrArray(pt,private,8);
+    bluescale = BlueScaleFigure(sf->private,bluevalues,otherblues);
     if ( (pt=PSDictHasEntry(sf->private,"FamilyOtherBlues"))!=NULL )
 	DumpStrArray(pt,private,9);
     if ( (pt=PSDictHasEntry(sf->private,"BlueScale"))!=NULL )
 	DumpStrDouble(pt,private,(12<<8)+9);
+    else if ( bluescale!=-1 )
+	dumpdbloper(private,bluescale,(12<<8)+9);
     if ( (pt=PSDictHasEntry(sf->private,"BlueShift"))!=NULL )
 	DumpStrDouble(pt,private,(12<<8)+10);
     else
