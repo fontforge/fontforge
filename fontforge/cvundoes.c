@@ -29,6 +29,7 @@
 #include <math.h>
 #include <ustring.h>
 #include <utype.h>
+#include <unistd.h>
 
 extern char *coord_sep;
 
@@ -1140,6 +1141,111 @@ static RefChar *XCopyInstanciateRefs(RefChar *refs,SplineChar *container) {
 return( head );
 }
 
+#ifndef _NO_LIBXML
+static void *copybuffer2svg(void *_copybuffer,int32 *len) {
+    Undoes *cur = &copybuffer;
+    SplineChar dummy;
+#ifdef FONTFORGE_CONFIG_TYPE3
+    static Layer layers[2];
+#endif
+    FILE *svg;
+    char *ret;
+    int old_order2;
+    int lcnt;
+
+    while ( cur ) {
+	switch ( cur->undotype ) {
+	  case ut_multiple:
+	    cur = cur->u.multiple.mult;		/* will only handle one char in an "svg" file */
+	  break;
+	  case ut_composit:
+	    cur = cur->u.composit.state;
+	  break;
+	  case ut_state: case ut_statehint: case ut_layers:
+    goto out;
+	  default:
+	    cur = NULL;
+	  break;
+	}
+    }
+    out:
+    if ( cur==NULL || fv_list==NULL ) {
+	*len=0;
+return( copy(""));
+    }
+
+    memset(&dummy,0,sizeof(dummy));
+#ifdef FONTFORGE_CONFIG_TYPE3
+    dummy.layers = layers;
+#endif
+    dummy.layer_cnt = 2;
+    dummy.name = "dummy";
+    if ( cur->undotype!=ut_layers )
+	dummy.parent = cur->u.state.copied_from;
+    else if ( cur->u.multiple.mult!=NULL && cur->u.multiple.mult->undotype == ut_state )
+	dummy.parent = cur->u.multiple.mult->u.state.copied_from;
+    if ( dummy.parent==NULL )
+	dummy.parent = fv_list->sf;		/* Might not be right, but we need something */
+#ifdef FONTFORGE_CONFIG_TYPE3
+    if ( cur->undotype==ut_layers ) {
+	Undoes *ulayer;
+	for ( ulayer = cur->u.multiple.mult, lcnt=0; ulayer!=NULL; ulayer=ulayer->next, ++lcnt);
+	dummy.layer_cnt = lcnt+1;
+	if ( lcnt!=1 )
+	    dummy.layers = gcalloc((lcnt+1),sizeof(Layer));
+	for ( ulayer = cur->u.multiple.mult, lcnt=1; ulayer!=NULL; ulayer=ulayer->next, ++lcnt) {
+	    if ( ulayer->undotype==ut_state || ulayer->undotype==ut_statehint ) {
+		dummy.layers[lcnt].fill_brush = ulayer->u.state.fill_brush;
+		dummy.layers[lcnt].stroke_pen = ulayer->u.state.stroke_pen;
+		dummy.layers[lcnt].dofill = ulayer->u.state.dofill;
+		dummy.layers[lcnt].dostroke = ulayer->u.state.dostroke;
+		dummy.layers[lcnt].splines = ulayer->u.state.splines;
+		dummy.layers[lcnt].refs = XCopyInstanciateRefs(ulayer->u.state.refs,&dummy);
+	    }
+	}
+    } else
+#endif
+    {
+#ifdef FONTFORGE_CONFIG_TYPE3
+	dummy.layers[ly_fore].fill_brush = cur->u.state.fill_brush;
+	dummy.layers[ly_fore].stroke_pen = cur->u.state.stroke_pen;
+	dummy.layers[ly_fore].dofill = cur->u.state.dofill;
+	dummy.layers[ly_fore].dostroke = cur->u.state.dostroke;
+#endif
+	dummy.layers[ly_fore].splines = cur->u.state.splines;
+	dummy.layers[ly_fore].refs = XCopyInstanciateRefs(cur->u.state.refs,&dummy);
+    }
+
+    svg = tmpfile();
+    if ( svg==NULL ) {
+	*len=0;
+return( copy(""));
+    }
+
+    old_order2 = dummy.parent->order2;
+    dummy.parent->order2 = cur->was_order2;
+    /* Don't bother to generate a preview here, that can take too long and */
+    /*  cause the paster to time out */
+    _ExportSVG(svg,&dummy);
+    dummy.parent->order2 = old_order2;
+
+    for ( lcnt = ly_fore; lcnt<dummy.layer_cnt; ++lcnt )
+	RefCharsFree(dummy.layers[lcnt].refs);
+#ifdef FONTFORGE_CONFIG_TYPE3
+    if ( dummy.layer_cnt!=2 )
+	free( dummy.layers );
+#endif
+
+    fseek(svg,0,SEEK_END);
+    *len = ftell(svg);
+    ret = galloc(*len);
+    rewind(svg);
+    fread(ret,1,*len,svg);
+    fclose(svg);
+return( ret );
+}
+#endif
+
 static void *copybuffer2eps(void *_copybuffer,int32 *len) {
     Undoes *cur = &copybuffer;
     SplineChar dummy;
@@ -1262,6 +1368,10 @@ return;
 	  case ut_state: case ut_statehint: case ut_statename: case ut_layers:
 	    GDrawAddSelectionType(fv_list->gw,sn_clipboard,"image/eps",&copybuffer,0,sizeof(char),
 		    copybuffer2eps,noop);
+#ifndef _NO_LIBXML
+	    GDrawAddSelectionType(fv_list->gw,sn_clipboard,"image/svg",&copybuffer,0,sizeof(char),
+		    copybuffer2svg,noop);
+#endif
 	    /* If the selection is one point, then export the coordinates as a string */
 	    if ( cur->u.state.splines!=NULL && cur->u.state.refs==NULL &&
 		    cur->u.state.splines->next==NULL &&
@@ -1757,6 +1867,9 @@ static void SCCheckXClipboard(GWindow awindow,SplineChar *sc,int layer,int docle
     char *paste;
     FILE *temp;
     GImage *image;
+#ifndef _NO_LIBXML
+    char tempfilename[L_tmpnam+1];
+#endif
 
     if ( no_windowing_ui )
 return;
@@ -1766,25 +1879,47 @@ return;
 	type = 1;
     else
 #endif
-    if ( GDrawSelectionHasType(awindow,sn_clipboard,"image/bmp") )
+#ifndef _NO_LIBXML
+    if ( GDrawSelectionHasType(awindow,sn_clipboard,"image/svg") )
 	type = 2;
-    else if ( GDrawSelectionHasType(awindow,sn_clipboard,"image/eps") )
+    else
+#endif
+    if ( GDrawSelectionHasType(awindow,sn_clipboard,"image/bmp") )
 	type = 3;
+    else if ( GDrawSelectionHasType(awindow,sn_clipboard,"image/eps") )
+	type = 4;
+    else if ( GDrawSelectionHasType(awindow,sn_clipboard,"image/ps") )
+	type = 5;
 
     if ( type==0 )
 return;
 
     paste = GDrawRequestSelection(awindow,sn_clipboard,type==1?"image/png":
-		type==2?"image/bmp":"image/eps",&len);
+		type==2?"image/svg":
+		type==3?"image/bmp":
+		type==4?"image/eps":"image/ps",&len);
     if ( paste==NULL )
 return;
 
-    temp = tmpfile();
+#ifndef _NO_LIBXML
+    if ( type==2 ) {
+	if ( tmpnam(tempfilename)==NULL ) {	/* I know this is obsolete but libxml wants a filename */
+	    free(paste);
+return;
+	}
+	temp = fopen(tempfilename,"w+");
+    } else
+#endif
+	temp = tmpfile();
     if ( temp!=NULL ) {
 	fwrite(paste,1,len,temp);
 	rewind(temp);
-	if ( type==3 ) {
+	if ( type>=4 ) {	/* eps/ps */
 	    SCImportPSFile(sc,layer,temp,doclear,-1);
+#ifndef _NO_LIBXML
+	} else if ( type==2 ) {
+	    SCImportSVG(sc,layer,tempfilename,doclear);
+#endif
 	} else {
 #ifndef _NO_LIBPNG
 	    if ( type==1 )
@@ -1795,6 +1930,9 @@ return;
 	    SCAddScaleImage(sc,image,doclear,layer);
 	}
 	fclose(temp);
+#ifndef _NO_LIBXML
+	unlink(tempfilename);
+#endif
     }
     free(paste);
 }

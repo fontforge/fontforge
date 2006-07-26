@@ -6045,8 +6045,12 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #ifndef _NO_LIBPNG
 		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/png") &&
 #endif
+#ifndef _NO_LIBXML
+		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/svg") &&
+#endif
 		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/bmp") &&
-		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/eps"));
+		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/eps") &&
+		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/ps"));
     RefChar *base = CopyContainsRef(fv->sf);
     int base_enc = base!=NULL ? fv->map->backmap[base->orig_pos] : -1;
 
@@ -7739,6 +7743,7 @@ void FontViewMenu_ActivateEdit(GtkMenuItem *menuitem, gpointer user_data) {
     int not_pasteable = pos==-1 ||
 		    (!CopyContainsSomething() &&
 		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/png") &&
+		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/svg") &&
 		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/bmp") &&
 		    !GDrawSelectionHasType(fv->gw,sn_clipboard,"image/eps"));
 #endif

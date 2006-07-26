@@ -2923,7 +2923,11 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #ifndef _NO_LIBPNG
 		    !GDrawSelectionHasType(mv->gw,sn_clipboard,"image/png") &&
 #endif
+#ifndef _NO_LIBXML
+		    !GDrawSelectionHasType(mv->gw,sn_clipboard,"image/svg") &&
+#endif
 		    !GDrawSelectionHasType(mv->gw,sn_clipboard,"image/bmp") &&
+		    !GDrawSelectionHasType(mv->gw,sn_clipboard,"image/ps") &&
 		    !GDrawSelectionHasType(mv->gw,sn_clipboard,"image/eps"));
 	  break;
 	}
