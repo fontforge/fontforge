@@ -4996,7 +4996,7 @@ return( NULL );
 	new->seconds[i] = copy(kc->seconds[i]);
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
     new->adjusts = gcalloc(new->first_cnt*new->second_cnt,sizeof(DeviceTable));
-    memcpy(new->offsets,kc->offsets, new->first_cnt*new->second_cnt*sizeof(DeviceTable));
+    memcpy(new->adjusts,kc->adjusts, new->first_cnt*new->second_cnt*sizeof(DeviceTable));
     for ( i=new->first_cnt*new->second_cnt-1; i>=0 ; --i ) {
 	if ( new->adjusts[i].corrections!=NULL ) {
 	    int8 *old = new->adjusts[i].corrections;
