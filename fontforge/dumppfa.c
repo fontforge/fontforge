@@ -1153,6 +1153,63 @@ return;
     dumpstr(dumpchar,data,"end\n");
 }
 
+double BlueScaleFigure(struct psdict *private,real bluevalues[], real otherblues[]) {
+    double max_diff=0, p1, p2;;
+    char *pt, *end;
+    int i;
+
+    if ( PSDictHasEntry(private,"BlueScale")!=NULL )
+return( -1 );
+
+    pt = PSDictHasEntry(private,"BlueValues");
+    if ( pt!=NULL ) {
+	while ( *pt==' ' || *pt=='[' ) ++pt;
+	forever {
+	    p1 = strtod(pt,&end);
+	    if ( end==pt )
+	break;
+	    pt = end;
+	    p2 = strtod(pt,&end);
+	    if ( end==pt )
+	break;
+	    if ( p2-p1 >max_diff ) max_diff = p2-p2;
+	    pt = end;
+	}
+    } else {
+	for ( i=0; i<14 && (bluevalues[i]!=0 || bluevalues[i+1])!=0; i+=2 ) {
+	    if ( bluevalues[i+1] - bluevalues[i]>=max_diff )
+		max_diff = bluevalues[i+1] - bluevalues[i];
+	}
+    }
+
+    pt = PSDictHasEntry(private,"OtherBlues");
+    if ( pt!=NULL ) {
+	while ( *pt==' ' || *pt=='[' ) ++pt;
+	forever {
+	    p1 = strtod(pt,&end);
+	    if ( end==pt )
+	break;
+	    pt = end;
+	    p2 = strtod(pt,&end);
+	    if ( end==pt )
+	break;
+	    if ( p2-p1 >max_diff ) max_diff = p2-p2;
+	    pt = end;
+	}
+    } else {
+	for ( i=0; i<10 && (otherblues[i]!=0 || otherblues[i+1]!=0); i+=2 ) {
+	    if ( otherblues[i+1] - otherblues[i]>=max_diff )
+		max_diff = otherblues[i+1] - otherblues[i];
+	}
+    }
+    if ( max_diff<=0 )
+return( -1 );
+    if ( 1/max_diff > .039625 )
+return( -1 );
+
+return( 1.0/max_diff );
+}
+
 static int dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data,
 	SplineFont *sf, struct fddata *incid, int flags, enum fontformat format,
 	EncMap *map ) {
@@ -1169,6 +1226,7 @@ static int dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data,
     struct pschars *subrs, *chars;
     char *ND="def";
     MMSet *mm = (format==ff_mma || format==ff_mmb)? sf->mm : NULL;
+    double bluescale;
 
     if ( incid==NULL ) {
 	flex_max = SplineFontIsFlexible(sf,flags);
@@ -1215,6 +1273,7 @@ return( false );
 return( false );
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
+    otherblues[0] = otherblues[1] = bluevalues[0] = bluevalues[1] = 0;
     if ( !hasblue ) {
 	FindBlues(sf,bluevalues,otherblues);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -1226,6 +1285,7 @@ return( false );
 return( false );
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
+    bluescale = BlueScaleFigure(sf->private,bluevalues,otherblues);
 
     if ( !hash || !hasv )
     stdhw[0] = stdvw[0] = 0;
@@ -1270,6 +1330,7 @@ return( false );
     cnt = 0;
     if ( !hasblue ) ++cnt;	/* bluevalues is required, but might be in private */
     if ( !hasshift && flex_max>=7 ) ++cnt;	/* BlueShift needs to be specified if flex wants something bigger than default */
+    if ( bluescale!=-1 ) ++cnt;
     ++cnt;	/* minfeature is required */
     if ( !hasblue && (otherblues[0]!=0 || otherblues[1]!=0) ) ++cnt;
     ++cnt;	/* password is required */
@@ -1329,6 +1390,8 @@ return( false );
     }
     if ( !hasshift && flex_max>=7 )
 	dumpf(dumpchar,data,"/BlueShift %d def\n", flex_max+1 );
+    if ( bluescale!=-1 )
+	dumpf(dumpchar,data,"/BlueScale %g def\n", bluescale );
     if ( isbold && !hasbold )
 	dumpf(dumpchar,data,"/ForceBold true def\n" );
     if ( !haslg && iscjk ) 
