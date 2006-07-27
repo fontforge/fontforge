@@ -2,45 +2,45 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 1-Nov-2002 -->
-  <!-- AP: Last modified: 2-Mar-2004 -->
-  <LINK REL="icon" href="ffanvil16.png">
+  <!-- AP: Last modified: 26-Jul-2006 -->
   <TITLE>X Selections and the X Clipboard</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
 <DIV id="in">
-<H1 ALIGN=Center>
-  X Selections and the X Clipboard
-</H1>
-<P>
-The general description of how selections and the clipboard works under X
-is given in
-<A HREF="http://www.freedesktop.org/standards/clipboards.txt">clipboards.txt</A>.
-FontForge tries to follow this.
-<P>
-FontForge only supports the PRIMARY selection within textfields. Text is
-exported as
-<UL>
-  <LI>
-    STRING
-  <LI>
-    UTF8_STRING
-  <LI>
-    text/plain;charset=UTF8
-  <LI>
-    text/plain;charset=ISO-10646-USC2
-</UL>
-<P>
-Traditionally the PRIMARY selection is available for pasting by clicking
-on the middle mouse button.
-<P>
-After a Copy command FontForge will place data in the X CLIPBOARD. For text
-selections (in textfields) the above format types are supported. For contour
-data (ie. the contents of an outline character) the format "image/eps" will
-be used. As a special case, if a single point is in the clipboard then it
-will also be exported as a STRING containing the coordinates of the point
-(to make it easier for people to identify points when sending me email, or
-in the comment field). For bitmap image data either "image/bmp" or "image/png"
-(assuming you have libpng on your system).
+  <H1 ALIGN=Center>
+    X Selections and the X Clipboard
+  </H1>
+  <P>
+  The general description of how selections and the clipboard works under X
+  is given in
+  <A HREF="http://www.freedesktop.org/standards/clipboards.txt">clipboards.txt</A>.
+  FontForge tries to follow this.
+  <P>
+  FontForge only supports the PRIMARY selection within textfields. Text is
+  exported as
+  <UL>
+    <LI>
+      STRING
+    <LI>
+      UTF8_STRING
+    <LI>
+      text/plain;charset=UTF8
+    <LI>
+      text/plain;charset=ISO-10646-USC2
+  </UL>
+  <P>
+  Traditionally the PRIMARY selection is available for pasting by clicking
+  on the middle mouse button.
+  <P>
+  After a Copy command FontForge will place data in the X CLIPBOARD. For text
+  selections (in textfields) the above format types are supported. For contour
+  data (ie. the contents of an outline character) the format "image/eps" or
+  "image/svg" will be used. As a special case, if a single point is in the
+  clipboard then it will also be exported as a STRING containing the coordinates
+  of the point (to make it easier for people to identify points when sending
+  me email, or in the comment field). For bitmap image data either "image/bmp"
+  or "image/png" (assuming you have libpng on your system).
 </DIV>
 </BODY></HTML>

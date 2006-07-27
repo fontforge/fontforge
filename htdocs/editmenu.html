@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 26-Apr-2006 -->
+  <!-- AP: Last modified: 26-Jul-2006 -->
   <TITLE>The Edit Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -119,6 +119,8 @@
 	  <A HREF="#Displayed">Displayed Font</A>
 	<LI>
 	  <A HREF="#CharName">Char Metadata</A>
+	<LI>
+	  <A HREF="#TTInstr">TrueType Instructions</A>
       </UL>
     <LI>
       <A HREF="#Remove-Undoes">Remove Undoes</A>
@@ -251,14 +253,15 @@
     <DD>
       In the Font View this command will paste whatever is in the clipboard into
       the foregrounds of all selected glyphs (exception: if the clipboard contains
-      an image it will not go into the foreground), clearing out whatever was there.
-      If there are more selected glyphs than there is information in the clipboard
-      then the clipboard will be repeated until all selected glyphs have had something
-      pasted in them (that is if glyphs A and B were selected when the copy happened
-      and now glyphs C, D and E are selected, the C will get A, D will get B and
-      E will also get A). If exactly one glyph is selected but the clipboard contains
-      more that one glyph, the the selection will be extended so that enough glyphs
-      are selected that something may be pasted in each. <BR>
+      an image it will usually not go into the foreground), clearing out whatever
+      was there. If there are more selected glyphs than there is information in
+      the clipboard then the clipboard will be repeated until all selected glyphs
+      have had something pasted in them (that is if glyphs A and B were selected
+      when the copy happened and now glyphs C, D and E are selected, the C will
+      get A, D will get B and E will also get A). If exactly one glyph is selected
+      but the clipboard contains more that one glyph, the the selection will be
+      extended so that enough glyphs are selected that something may be pasted
+      in each. <BR>
       If the clipboard contains outline information then that information will
       go into the glyph outline regardless of the setting of Copy From. If the
       clipboard contains a bitmap and the display is set to outline then the bitmap
@@ -284,7 +287,7 @@
 	  <TD>background images</TD>
 	</TR>
 	<TR>
-	  <TD>"image/eps"</TD>
+	  <TD>"image/eps", "image/ps", "image/svg"</TD>
 	  <TD>as spline data</TD>
 	</TR>
       </TABLE>
@@ -525,6 +528,13 @@
 	<DD>
 	  Normally Copy does not copy the metadata (name, unicode encoding, comment,
 	  ligature info) associated with a glyph, but if this is checked then it will.
+	<DT>
+	  <A NAME="TTInstr">TrueType Instructions</A>
+	<DD>
+	  Controls whether truetype instructions should be copied with a glyph. If
+	  copying glyphs from one font to another it may not be appropriate to copy
+	  the truetype instructions (which may depend on subroutines or values in the
+	  'fpgm', 'prep' and 'cvt ' tables).
       </DL>
       <P>
       This also controls the behavior of the
