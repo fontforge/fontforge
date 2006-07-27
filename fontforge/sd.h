@@ -118,7 +118,7 @@ typedef struct splinedesign {
 } SplineDesign, Design;
 
 extern Entity *EntityInterpretPS(FILE *ps);
-extern Entity *EntityInterpretSVG(char *filename,int em_size,int ascent);
+extern Entity *EntityInterpretSVG(char *filename,char *memory, int memlen, int em_size,int ascent);
 extern SplinePointList *SplinesFromEntities(Entity *ent,int *flags,int is_stroked);
 extern void SCAppendEntityLayers(SplineChar *sc, Entity *ent);
 extern void EntityDefaultStrokeFill(Entity *ent);

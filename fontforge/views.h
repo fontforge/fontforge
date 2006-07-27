@@ -700,7 +700,8 @@ enum fvformats { fv_bdf, fv_ttf, fv_pk, fv_pcf, fv_mac, fv_win, fv_palm,
 	fv_image, fv_imgtemplate, fv_eps, fv_epstemplate,
 	fv_svg, fv_svgtemplate,
 	fv_fig };
-extern void SCImportSVG(SplineChar *sc,int layer,char *path,int doclear);
+extern int HasSVG(void);
+extern void SCImportSVG(SplineChar *sc,int layer,char *path,char  *memory, int memlen,int doclear);
 extern void SCImportPSFile(SplineChar *sc,int layer,FILE *ps,int doclear,int flags);
 extern void SCAddScaleImage(SplineChar *sc,GImage *image,int doclear,int layer);
 extern void SCInsertImage(SplineChar *sc,GImage *image,real scale,real yoff, real xoff, int layer);

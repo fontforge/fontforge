@@ -710,6 +710,10 @@ return( !ferror(svg));
 /* ************************************************************************** */
 
 #if _NO_LIBXML
+int HasSVG(void) {
+return( false );
+}
+
 SplineFont *SFReadSVG(char *filename, int flags) {
 return( NULL );
 }
@@ -718,7 +722,8 @@ char **NamesReadSVG(char *filename) {
 return( NULL );
 }
 
-SplineSet *SplinePointListInterpretSVG(char *filename,int em_size,int ascent,int is_stroked) {
+SplineSet *SplinePointListInterpretSVG(char *filename,char *memory, int memlen,
+	int em_size,int ascent,int is_stroked) {
 return( NULL );
 }
 #else
@@ -762,6 +767,7 @@ return( true );
 #  include <dynamic.h>
 
 static DL_CONST void *libxml;
+static xmlDocPtr (*_xmlParseMemory)(const char *memory,int memsize);
 static xmlDocPtr (*_xmlParseFile)(const char *filename);
 static xmlNodePtr (*_xmlDocGetRootElement)(xmlDocPtr doc);
 static void (*_xmlFreeDoc)(xmlDocPtr doc);
@@ -782,6 +788,7 @@ return( libxml!=NULL );
     if ( libxml==NULL )
 return( false );
 
+    _xmlParseMemory = (xmlDocPtr (*)(const char *,int)) dlsym(libxml,"xmlParseMemory");
     _xmlParseFile = (xmlDocPtr (*)(const char *)) dlsym(libxml,"xmlParseFile");
     _xmlDocGetRootElement = (xmlNodePtr (*)(xmlDocPtr )) dlsym(libxml,"xmlDocGetRootElement");
     _xmlFreeDoc = (void (*)(xmlDocPtr)) dlsym(libxml,"xmlFreeDoc");
@@ -2755,7 +2762,7 @@ return( NULL );
 return( ret );
 }
 
-Entity *EntityInterpretSVG(char *filename,int em_size,int ascent) {
+Entity *EntityInterpretSVG(char *filename,char *memory, int memlen,int em_size,int ascent) {
     xmlDocPtr doc;
     xmlNodePtr top;
     char *oldloc;
@@ -2766,7 +2773,10 @@ Entity *EntityInterpretSVG(char *filename,int em_size,int ascent) {
 	LogError( _("Can't find libxml2.\n") );
 return( NULL );
     }
-    doc = _xmlParseFile(filename);
+    if ( filename!=NULL )
+	doc = _xmlParseFile(filename);
+    else
+	doc = _xmlParseMemory(memory,memlen);
     if ( doc==NULL ) {
 	/* Can I get an error message from libxml???? */
 return( NULL );
@@ -2794,9 +2804,13 @@ return( NULL );
 return( ret );
 }
 
-SplineSet *SplinePointListInterpretSVG(char *filename,int em_size,int ascent,int is_stroked) {
-    Entity *ret = EntityInterpretSVG(filename, em_size, ascent);
+SplineSet *SplinePointListInterpretSVG(char *filename,char *memory, int memlen,int em_size,int ascent,int is_stroked) {
+    Entity *ret = EntityInterpretSVG(filename, memory, memlen, em_size, ascent);
     int flags = -1;
 return( SplinesFromEntities(ret,&flags,is_stroked));
+}
+
+int HasSVG(void) {
+return( libxml_init_base());
 }
 #endif

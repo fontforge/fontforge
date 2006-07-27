@@ -29,7 +29,6 @@
 #include <math.h>
 #include <ustring.h>
 #include <utype.h>
-#include <unistd.h>
 
 extern char *coord_sep;
 
@@ -1867,9 +1866,6 @@ static void SCCheckXClipboard(GWindow awindow,SplineChar *sc,int layer,int docle
     char *paste;
     FILE *temp;
     GImage *image;
-#ifndef _NO_LIBXML
-    char tempfilename[L_tmpnam+1];
-#endif
 
     if ( no_windowing_ui )
 return;
@@ -1880,7 +1876,9 @@ return;
     else
 #endif
 #ifndef _NO_LIBXML
-    if ( GDrawSelectionHasType(awindow,sn_clipboard,"image/svg") )
+    /* SVG is a better format (than eps) if we've got it because it doesn't */
+    /*  force conversion of quadratic to cubic and back */
+    if ( HasSVG() && GDrawSelectionHasType(awindow,sn_clipboard,"image/svg") )
 	type = 2;
     else
 #endif
@@ -1901,16 +1899,7 @@ return;
     if ( paste==NULL )
 return;
 
-#ifndef _NO_LIBXML
-    if ( type==2 ) {
-	if ( tmpnam(tempfilename)==NULL ) {	/* I know this is obsolete but libxml wants a filename */
-	    free(paste);
-return;
-	}
-	temp = fopen(tempfilename,"w+");
-    } else
-#endif
-	temp = tmpfile();
+    temp = tmpfile();
     if ( temp!=NULL ) {
 	fwrite(paste,1,len,temp);
 	rewind(temp);
@@ -1918,7 +1907,7 @@ return;
 	    SCImportPSFile(sc,layer,temp,doclear,-1);
 #ifndef _NO_LIBXML
 	} else if ( type==2 ) {
-	    SCImportSVG(sc,layer,tempfilename,doclear);
+	    SCImportSVG(sc,layer,NULL,paste,len,doclear);
 #endif
 	} else {
 #ifndef _NO_LIBPNG
@@ -1930,9 +1919,6 @@ return;
 	    SCAddScaleImage(sc,image,doclear,layer);
 	}
 	fclose(temp);
-#ifndef _NO_LIBXML
-	unlink(tempfilename);
-#endif
     }
     free(paste);
 }
