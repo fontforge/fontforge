@@ -1765,7 +1765,7 @@ extern int getAdobeEnc(char *name);
 
 extern void SFSplinesFromLayers(SplineFont *sf,int tostroke);
 extern void SFSetLayerWidthsStroked(SplineFont *sf, real strokewidth);
-extern SplineSet *SplinePointListInterpretSVG(char *filename,int em_size, int ascent,int stroked);
+extern SplineSet *SplinePointListInterpretSVG(char *filename,char *memory, int memlen, int em_size, int ascent,int stroked);
 extern SplinePointList *SplinePointListInterpretPS(FILE *ps,int flags,int stroked);
 extern void PSFontInterpretPS(FILE *ps,struct charprocs *cp,char **encoding);
 extern struct enc *PSSlurpEncodings(FILE *file);

@@ -363,17 +363,17 @@ return;
 }
 
 #ifndef _NO_LIBXML
-void SCImportSVG(SplineChar *sc,int layer,char *path,int doclear) {
+void SCImportSVG(SplineChar *sc,int layer,char *path,char *memory, int memlen, int doclear) {
     SplinePointList *spl, *espl, **head;
 
 #ifdef FONTFORGE_CONFIG_TYPE3
     if ( sc->parent->multilayer && layer>ly_back ) {
-	SCAppendEntityLayers(sc, EntityInterpretSVG(path,sc->parent->ascent+sc->parent->descent,
+	SCAppendEntityLayers(sc, EntityInterpretSVG(path,memory,memlen,sc->parent->ascent+sc->parent->descent,
 		sc->parent->ascent));
     } else
 #endif
     {
-	spl = SplinePointListInterpretSVG(path,sc->parent->ascent+sc->parent->descent,
+	spl = SplinePointListInterpretSVG(path,memory,memlen,sc->parent->ascent+sc->parent->descent,
 		sc->parent->ascent,sc->parent->strokedfont);
 	for ( espl = spl; espl!=NULL && espl->first->next==NULL; espl=espl->next );
 	if ( espl!=NULL )
@@ -402,7 +402,7 @@ return;
 
 # ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void ImportSVG(CharView *cv,char *path) {
-    SCImportSVG(cv->sc,CVLayer(cv),path,false);
+    SCImportSVG(cv->sc,CVLayer(cv),path,NULL,0,false);
 }
 # endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 #endif
@@ -1116,7 +1116,7 @@ return(false);
 #endif
 #ifndef _NO_LIBXML
 	} else if ( format==fv_svg ) {
-	    SCImportSVG(sc,toback?ly_back:ly_fore,start,flags&sf_clearbeforeinput);
+	    SCImportSVG(sc,toback?ly_back:ly_fore,start,NULL,0,flags&sf_clearbeforeinput);
 	    ++tot;
 #endif
 	} else if ( format==fv_eps ) {
@@ -1222,7 +1222,7 @@ return( false );
 #endif
 #ifndef _NO_LIBXML
 	} else if ( format==fv_svgtemplate ) {
-	    SCImportSVG(sc,toback?ly_back:ly_fore,start,flags&sf_clearbeforeinput);
+	    SCImportSVG(sc,toback?ly_back:ly_fore,start,NULL,0,flags&sf_clearbeforeinput);
 	    ++tot;
 #endif
 	} else {
