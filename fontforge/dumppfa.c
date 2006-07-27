@@ -1172,7 +1172,7 @@ return( -1 );
 	    p2 = strtod(pt,&end);
 	    if ( end==pt )
 	break;
-	    if ( p2-p1 >max_diff ) max_diff = p2-p2;
+	    if ( p2-p1 >max_diff ) max_diff = p2-p1;
 	    pt = end;
 	}
     } else {
@@ -1193,7 +1193,7 @@ return( -1 );
 	    p2 = strtod(pt,&end);
 	    if ( end==pt )
 	break;
-	    if ( p2-p1 >max_diff ) max_diff = p2-p2;
+	    if ( p2-p1 >max_diff ) max_diff = p2-p1;
 	    pt = end;
 	}
     } else {
@@ -1207,7 +1207,7 @@ return( -1 );
     if ( 1/max_diff > .039625 )
 return( -1 );
 
-return( 1.0/max_diff );
+return( .99/max_diff );
 }
 
 static int dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data,
