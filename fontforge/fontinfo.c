@@ -1726,8 +1726,10 @@ return( true );
 	    FindBlues(sf,bluevalues,otherblues);
 	    arraystring(buffer,bluevalues,14);
 	    PSDictChangeEntry(private,"BlueValues",buffer);
-	    arraystring(buffer,otherblues,10);
-	    PSDictChangeEntry(private,"OtherBlues",buffer);
+	    if ( otherblues[0]!=0 || otherblues[1]!=0 ) {
+		arraystring(buffer,otherblues,10);
+		PSDictChangeEntry(private,"OtherBlues",buffer);
+	    }
 	} else if ( strcmp(private->keys[sel],"StdHW")==0 ||
 		strcmp(private->keys[sel],"StemSnapH")==0 ) {
 	    if ( gwwv_ask(_("Guess"),(const char **) buts,0,1,_("This will change both StdHW and StemSnapH.\nDo you want to continue?"))==1 )
