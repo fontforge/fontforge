@@ -1520,28 +1520,28 @@ return( features );
 }
 
 static struct feature *AddExclusiveNoops(SplineFont *sf, struct feature *features) {
-    struct feature *f, *n, *z, *p, *t;
+    struct feature *f, *n, *def, *p, *t;
     int offFlags;
     /* mutually exclusive features need to have a setting which does nothing */
 
     for ( f=features; f!=NULL; f=n ) {
 	n= f->next;
 	if ( f->mf!=NULL && f->mf->ismutex ) {
-	    z = NULL;
+	    def = NULL;
 	    offFlags=0;
 	    for ( n=f; n!=NULL && n->featureType==f->featureType; n=n->next ) {
-		if ( n->featureSetting==0 )
-		    z = n;
+		if ( n->featureSetting==f->mf->default_setting )
+		    def = n;
 		offFlags |= n->flag;
 	    }
-	    if ( z==NULL ) {
+	    if ( def==NULL ) {
 		if ( f==features )
 		    p = NULL;
 		else
 		    for ( p=features; p->next!=f; p=p->next );
 		t = chunkalloc(sizeof(struct feature));
 		*t = *f;
-		t->featureSetting = 0;
+		t->featureSetting = f->mf->default_setting;
 		t->ms = FindMacSetting(sf,t->featureType,0,&t->sms);
 		t->flag = 0; t->offFlags = offFlags;
 		t->dummyOff = true;
