@@ -1542,14 +1542,25 @@ static struct feature *AddExclusiveNoops(SplineFont *sf, struct feature *feature
 		t = chunkalloc(sizeof(struct feature));
 		*t = *f;
 		t->featureSetting = f->mf->default_setting;
-		t->ms = FindMacSetting(sf,t->featureType,0,&t->sms);
+		t->ms = FindMacSetting(sf,t->featureType,f->mf->default_setting,&t->sms);
 		t->flag = 0; t->offFlags = offFlags;
 		t->dummyOff = true;
-		t->next = f;
+		if ( f==features )
+		    p = NULL;
+		else
+		    for ( p=features; p->next!=f; p=p->next );
+		n = f;
+		while ( n!=NULL && n->featureType==t->featureType && n->featureSetting<t->featureSetting ) {
+		    p = n;
+		    n = n->next;
+		}
+		t->next = n;
 		if ( p==NULL )
 		    features = t;
 		else
 		    p->next = t;
+		while ( n!=NULL && n->featureType==t->featureType )
+		    n=n->next;
 	    }
 	}
     }
