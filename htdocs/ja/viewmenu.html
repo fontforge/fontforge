@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 6-Mar-2006 -->
+  <!-- AP: Last modified: 29-Jun-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>The View Menu</TITLE>-->
     <TITLE>表示メニュー</TITLE>
@@ -161,6 +161,9 @@
     <LI>
 <!--  <A HREF="#PoI">Mark Points of Inflection</A> -->
       <A HREF="#PoI">変曲点を表示(<U>M</U>)</A>
+    <LI>
+<!--  <A HREF="#CpInfo">Show Control Point Info</A> -->
+      <A HREF="#CpInfo">制御点の情報を表示(<U>C</U>)</A>
     <LI>
 <!--  <A HREF="#Fill">Fill</A>-->
       <A HREF="#Fill">塗りつぶし(<U>L</U>)</A>
@@ -399,8 +402,11 @@
 	  ここには、このフォントが含んでいる全てのアンカークラスおよび項目“All”からなるサブメニューが含まれるはずです。特定のアンカークラスに含まれるすべてのグリフの組合せを見るか、すべてのアンカークラスに含まれるすべての組合せを見ることができます。
 	  <P>
 <!--	  If invoked from the outline glyph view it will provide a list of all anchored
-	  combinations involving that character. -->
-	  アウトライングリフビューから呼び出したときは、そのグリフに関するすべてのアンカーつき組合せを表示します。
+	  combinations involving that glyph.<BR>
+	  Selecting a combination and double clicking on it will bring up an
+	  <A HREF="anchorcontrol.html">Anchor Control </A>dialog.  -->
+	  アウトライングリフビューから呼び出したときは、そのグリフに関するすべてのアンカーつき組合せを表示します。<BR>
+	  組合せを選択し、その上でダブルクリックすると<A HREF="anchorcontrol.html">アンカーの制御</A>ダイアログが起動します。
         <DT>
 <!--	  <A NAME="Ligatures">Ligatures</A> -->
 	  <A NAME="Ligatures">合字(<U>L</U>)</A>
@@ -581,19 +587,20 @@
     <DT>
 <!--  Number <A NAME="NumPts">Points</A>-->
       <A NAME="NumPts">点番号を表示(<U>N</U>)</A>
-    <DD>
-<!--  This small sub-menu allows you to control whether point numbers are displayed
-      next to points in the foreground view. This is primarily for TrueType, where
-      the instructions use these numbers to refer to the points when they do
-      grid-fitting. The numbering scheme is a little different depending on what
-      the expected output (input) will be, so we have a sub-menu listing output
-      types.-->
-      この小さなサブメニューで、前面ビューの点のそばに点番号を表示するかしないかを切り替えることができます。これは主に、グリッド合わせを行うときに命令が点を参照するのにこの番号を使用する TrueType のために用意されたものです。番号づけの方式は、どの出力 (入力) を予定しているかによっていくぶん異なるため、表示タイプをリストするサブメニューを用意しています。
+   <DD>
+      In the Outline view, this small sub-menu allows you to control whether point
+      numbers are displayed next to points in the foreground view. This is primarily
+      for TrueType, where the instructions use these numbers to refer to the points
+      when they do grid-fitting. The numbering scheme is a little different depending
+      on what the expected output (input) will be, so we have a sub-menu listing
+      output types. -->
+      アウトラインビューでは、この小さなサブメニューを使って、前面ビューの点のそばに点番号を表示するかしないかを切り替えることができます。これは主に、グリッド合わせを行うときに命令が点を参照するのにこの番号を使用する TrueType のために用意されたものです。番号づけの方式は、どの出力 (入力) を予定しているかによっていくぶん異なるため、表示タイプをリストするサブメニューを用意しています。
     <DT>
 <!--  Mark <A NAME="Extrema">Extrema</A>-->
       <A NAME="Extrema">極大点を表示(<U>M</U>)</A>
     <DD>
-<!--  <IMG SRC="extrema-poi.png" WIDTH="285" HEIGHT="301" ALIGN="Right">In postscript
+<!--  In the Outline view,
+      <IMG SRC="extrema-poi.png" WIDTH="204" HEIGHT="274" ALIGN="Right">in postscript
       and truetype fonts (in almost all cases) should have their horizontal and
       vertical extrema at the endpoints of splines. This setting will mark extremal
       endpoints by coloring them a dull purple to remind you that you should not
@@ -601,18 +608,26 @@
       will be drawn around it. You might consider doing
       <A HREF="elementmenu.html#Add-Extrema">Element-&gt;Add Extrema </A>in this
       case (or you might not, this can be ok in some cases). -->
-      <IMG SRC="../extrema-poi.png" WIDTH="285" HEIGHT="301" ALIGN="Right">PostScript フォントおよび TrueType フォントでは (ほとんどの場合) 極大点にある水平または垂直になる点が端点でないようなスプラインが存在するべきではありません。これを設定すると、極大点にある端点を鈍い紫色で印づけ、その点を削除してはならないことを思い出させます。もし、極大値がどこか端点以外の場所に存在する場合、その点を中心に十字線が描画されます。この場合、<A HREF="elementmenu.html#Add-Extrema"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>端点を追加(<U>A</U>)</CODE></A>を実行することを検討すべきでしょう (それは許される場合もあるので、検討は不要かもしれません)。
+      <IMG SRC="../extrema-poi.png" WIDTH="204" HEIGHT="274" ALIGN="Right">アウトラインビューでは、PostScript フォントおよび TrueType フォントでは (ほとんどの場合) 極大点にある水平または垂直になる点が端点でないようなスプラインが存在するべきではありません。これを設定すると、極大点にある端点を鈍い紫色で印づけ、その点を削除してはならないことを思い出させます。もし、極大値がどこか端点以外の場所に存在する場合、その点を中心に十字線が描画されます。この場合、<A HREF="elementmenu.html#Add-Extrema"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>端点を追加(<U>A</U>)</CODE></A>を実行することを検討すべきでしょう (それは許される場合もあるので、検討は不要かもしれません)。
     <DT>
 <!--  Mark <A NAME="PoI">Points of Inflection</A> -->
       <A NAME="PoI">変曲点を表示(<U>M</U>)</A>
     <DD>
-<!--  Points of inflection occur where the change in the slope of the curve (second
-      derivative) changes sign. Quadratic splines (truetype) cannot represent points
-      of inflection. If you have a postscript font which you intend to convert
-      to truetype it can be helpful to know where these difficult points lie. (the
-      cubic-&gt;quadratic approximation routines will often add intermediate points
-      at these points of inflection)
-      変曲点は、曲線の傾きの変化率 (2 階微分) の符号が変わる箇所に発生します。2 次スプライン (TrueType) は変曲点を表現することができません。後で TrueType に変換するつもりで PostScript フォントを編集する場合には、この難しい点がある場所を知ることが役に立つ可能性があります。(3 次→ 2 次の近似ルーチンは、変曲点に中間点を加えることがよくあります)。
+<!--  In the Outline view, points of inflection occur where the change in the slope
+      of the curve (second derivative) changes sign. Quadratic splines (truetype)
+      cannot represent points of inflection. If you have a postscript font which
+      you intend to convert to truetype it can be helpful to know where these difficult
+      points lie. (the cubic-&gt;quadratic approximation routines will often add
+      intermediate points at these points of inflection) -->
+      アウトラインビューにおいて、変曲点は、曲線の傾きの変化率 (2 階微分) の符号が変わる箇所に発生します。2 次スプライン (TrueType) は変曲点を表現することができません。後で TrueType に変換するつもりで PostScript フォントを編集する場合には、この難しい点がある場所を知ることが役に立つ可能性があります。(3 次→ 2 次の近似ルーチンは、変曲点に中間点を加えることがよくあります)。
+    <DT>
+<!--  <A NAME="CpInfo">Show Control Point Info</A> -->
+      <A NAME="CpInfo">制御点の情報を表示(<U>C</U>)</A>
+    <DD>
+<!--  In the Outline view, when you move a <A HREF="charview.html#CpInfo">control
+      point </A>this mode pops up a little window showing various bits of information
+      about the control point you are editing. -->
+      アウトラインビューでこのモードを使用しているとき、<A HREF="charview.html#CpInfo">制御点</A>を移動すると編集中の制御点に関する各種の細かい情報を表示する小さなポップアップウィンドウが表示されます。
     <DT>
 <!--  <A NAME="Fill">Fill</A>-->
       <A NAME="Fill">塗りつぶし(<U>L</U>)</A>

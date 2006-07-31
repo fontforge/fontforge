@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 1-Feb-2006 -->
+  <!-- AP: Last modified: 2-May-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Frequently Asked Questions</TITLE>-->
     <TITLE>よくある質問</TITLE>
@@ -99,6 +99,11 @@
     <LI>
 <!--  <A HREF="#Minimum">Minimum requirements</A> -->
       <A HREF="#Minimum">システムの最小構成</A>
+      <UL>
+	<LI>
+<!--	  <A HREF="#excessive-memory">Why does FontForge use so much memory?</A> -->
+	  <A HREF="#excessive-memory">なぜ FontForge はメモリをこんなに大量に食うのですか?</A>
+      </UL>
     <LI>
 <!--  <A HREF="#font-install">How do I install the fonts once I've made them?</A>-->
       <A HREF="#font-install">自分が作ったフォントはどうやってインストールするのですか?</A>
@@ -238,6 +243,14 @@
 <!--  <A HREF="#mensis">How do I set a particular bit in the OS/2 table (or any
       other)?</A> -->
       <A HREF="#mensis">OS/2 テーブル (または別のどれか) の特定のビットをセットするにはどうすればいいですか?</A>
+    <LI>
+<!--  What's an sfd file? -->
+      SFD ファイルとは何ですか?
+      <UL>
+	<LI>
+<!--	  <A HREF="#excessive-memory">Why are they so big?</A> -->
+	  <A HREF="#excessive-memory">どうしてこんなに大きくなるのですか?</A>
+      </UL>
   </UL>
   <H2>
 <!--  Mathematical questions-->
@@ -711,6 +724,31 @@
 <!--  FontForge requires a color (or grey-scale) monitor - - black &amp; white will
       not suffice. -->
       FontForge はカラー (またはグレイスケール) モニタを必要とします―白黒 2 色だけでは足りません。
+    <DT>
+<!--  <A NAME="excessive-memory"><B>Why does FontForge use so much memory?</B></A> -->
+      <A NAME="excessive-memory"><B>なぜ FontForge はメモリをこんなに大量に食うのですか?</B></A>
+    <DD>
+<!--  Fonts are generally stored in a very compact representation. Font formats
+      are designed to be small and easily rasterized. They are not designed to
+      be edited. -->
+      一般に、フォントは非常にコンパクトな表現で格納されます。各種のフォントフォーマットはファイルが小さく、ラスタライズしやすいように設計されています。編集を考慮に入れて設計されてはいません。
+      <P>
+<!--  When it loads a font FontForge expands it into a more intuitive (well intuitive
+      to me) format which is much easier to edit. But is much bigger. -->
+      FontForge は、フォントの読み込み時により直観的で (私にとってですが) ずっと編集しやすいフォーマットに変換します。しかしそれによりサイズはずっと大きくなります。
+      <P>
+<!--  It would probably be possible to rewrite FontForge to use a more efficient
+      memory representation. But this would be an enormous amount of work and doesn't
+      interest me. -->
+      FontForge がもっと効率的なメモリ表現を用いるように FontForge を書き直すことは不可能ではないでしょう。しかしそれには莫大な手間がかかり、私の興味を惹きません。
+      <P>
+<!--  Sfd files are large because they are an ASCII representation of this same
+      expanded format. They weren't designed to be compact but to be legible. -->
+      SFD ファイルが大きいのは、それと同じフォーマットを ASCII 表現にした物だからです。コンパクトであるようにではなく読みやすいように設計されているのです。
+      <P>
+<!--  See also: <A HREF="#memory">My system keeps crashing because FontForge keeps
+      running out of memory. What can I do about it?</A> -->
+      以下も参照: <A HREF="#memory">FontForge がメモリを使い尽くしてクラッシュしてばかりいます。何か対処方法はありますか?</A>
     <DT>
 <!--  <A NAME="font-install"><B>How do I install the fonts once I've made
       them?</B></A> -->
@@ -2022,12 +2060,15 @@ $ xset fp+ `pwd`
       out of memory. What can I do about it?</B></A> -->
       <A NAME="memory"><B>FontForge がメモリを使い尽くしてクラッシュしてばかりいます。何か対処方法はありますか?</B></A>
     <DD>
+<!--  Buy more memory? -->
+      メモリを増設されては?
+      <P>
 <!--  If you are editing large fonts, FontForge may run out of memory. All too
       often when FF runs out of memory, the kernel will crash rather than report
       an error condition. FontForge does check for failure to allocate and attempts
-      to free up some chunks of memory when this happens - - I've never seen this
-      code activated though. -->
-      大きなフォントを編集していると、FontForge がメモリを使い尽くすことがあります。FF がメモリを使い果たすと、カーネルがエラー状態を報告しないでクラッシュしてしまう環境がほとんどです。FontForge は、メモリの割り付け失敗を検出し、それが発生したときには、メモリの塊をいくつか解放しようとします――ですが、これが実際に呼び出されるのを見たことがありません。
+      to free up some chunks of memory when the system returns an error - - I've
+      never seen this code activated though.
+      大きなフォントを編集していると、FontForge がメモリを使い尽くすことがあります。FF がメモリを使い果たすと、カーネルがエラー状態を報告しないでクラッシュしてしまう環境がほとんどです。FontForge は、メモリの割り付け失敗をチェックしており、システムがエラーを返したときにはメモリの塊をいくつか解放しようとします――ですが、これが実際に呼び出されるのを見たことがありません。
       <P>
 <!--  FontForge does provide a mechanism which might help you avoid this. FontForge
       generally wastes a lot of memory keeping undoes around. You can clear undoes

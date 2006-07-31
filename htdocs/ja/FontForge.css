@@ -12,4 +12,5 @@
  BLOCKQUOTE#lit { background: #ffd; color: #000; margin: 0em 40% 0em 5em; font: 80% serif; }
  BLOCKQUOTE#lit P { margin: .3em 0em .3em 0em; }
  BLOCKQUOTE PRE { background: #ffd; color: #000; }
+ BLOCKQUOTE#shell PRE { background: #ccf; color: #000; }
  H1 { display: inline; line-height:110% }

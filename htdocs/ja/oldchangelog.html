@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 16-Sep-2001 -->
-  <!-- AP: Last modified: 25-Aug-2005 -->
+  <!-- AP: Last modified: 15-Jul-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Older changes to FontForge</TITLE> -->
     <TITLE>FontForge への以前の変更点</TITLE>
@@ -1235,28 +1235,6 @@ FontForge)</A> -->
 	  font need not have either, but if it doesn't have GSUB then GPOS won't be
 	  used. -->
 	  Uniscribe (MS の Unicode テキストレイアウトルーチン) は、用字系によって GPOS または GSUB テーブルの存在を無視することがあり、場合によっては GPOS/GSUB に適切なデータがないとフォントの仕様を完全に拒否する可能性すらあります。ヘブライ語フォントは GPOS と GSUB の両方を含んでいる必要があります。どちらかがフォントに含まれていないとそれは使用されません。ラテン文字のフォントはどちらも含んでいる必要はありませんが、GSUB が含まれていないと、GPOS は使用されません。
-	  <P>
-<!--	  Sergey Malkin from MicroSoft tells me: -->
-	  Microsoft の Sergey Malkin は私にこう言いました:
-	  <BLOCKQUOTE>
-<!--	    Each shaping engine in Uniscribe can decide on its requirements for layout
-	    tables - some of them require both GSUB and GPOS, in some cases any table
-	    present is enough, or it can work without any table. -->
-	    Uniscribe の各字形エンジンはレイアウトテーブルに対する必要事項を決めることができます――いくつかのエンジンは GSUB と GPOS を必要とし、いくつかの場合にはどちらかのテーブルが存在するだけで十分であり、またはどちらのテーブルも無くても動作可能である場合もあります。
-	    <P>
-<!--	    Sometimes, purpose of the check is to determine if font is supporting particular
-	    script - if required tables are not there font is just rejected by this shaping
-	    engine. Sometimes, shaping engine can not just reject the font because there
-	    are fonts using older shaping technologies we still have to support, so it
-	    uses some logic when to fallback to legacy layout code. -->
-	    時には、チェックの目的はフォントが特定の用字系をサポートしているかを確かめることにあります――必要なテーブルが存在しなければ、それらのフォントはその字形処理エンジンによって拒絶されます。時には、字形処理エンジンは、我々がまだサポートを続ける必要がある古い字形処理技術を使用しているために、単純に拒絶するだけではすまない場合があり、そのような場合には旧式のレイアウトコードへのフォールバックを行う何らかのロジックを使用します。
-	    <P>
-<!--	    In your case this is Hebrew, where both tables are required to use OpenType
-	    processing. Arabic requires both tables too, Latin requires GSUB to execute
-	    GPOS. But in general, if you have both tables you should be safe with any
-	    script to get fully featured OpenType shaping. -->
-	    あなたの場合はこれはヘブライ文字であり、OpenType 処理を使用するには両方のテーブルが必要です。アラビア文字も、両方のテーブルを必要とします。ラテン文字は GPOS を実行するために GSUB が必要です。しかし一般に言って、OpenType 字形処理 の完全な機能を利用するためには両方のテーブルを含めておくのが完全です。
-	  </BLOCKQUOTE>
 	  <P>
 <!--	  So the script sub-table of both GPOS/GSUB should contain all scripts used
 	  in either (rather than just the scripts used in the current one). -->

@@ -1,7 +1,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 12-Dec-2005 -->
+  <!-- AP: Last modified: 13-Jul-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Outline Glyph View</TITLE>-->
     <TITLE>アウトライングリフビュー</TITLE>
@@ -63,8 +63,10 @@
   グリフを構成する点には 3 つのタイプがあります。角の点は塗りつぶされた正方形で、曲線上の点は塗りつぶされた円で、そして (曲線と直線の) 接点は塗りつぶされた三角形で表されます。点が選択されたときには白抜きの正方形・円・三角形になり、隣接する制御点がマゼンタと鈍いシアンの×印として、同じ色の直線の端に表示されます (曲線上の点の場合、制御点はちょうど反対方向になります)。（「次」の制御点が鈍いシアンで、前の制御点がマゼンタになります)。
   <P>
 <!--
-  In a TrueType font, an on-curve point can be implied between two control
-  points. FontForge will draw these with an open circle. -->
+  <IMG SRC="charview-quadratic.png" WIDTH="344" HEIGHT="392" ALT="A quadratic glyph"
+      ALIGN="Right">In a TrueType font, an on-curve point can be implied between
+  two control points. FontForge will draw these with an open circle. -->
+  <IMG SRC="../charview-quadratic.png" WIDTH="344" HEIGHT="392" ALT="2次曲線のグリフ" ALIGN="Right">
   TrueType フォントでは、曲線上の点が 2 個の制御点の中点にあるときは、暗黙の位置指定を行うことができます。FontForge はそれらの点を開いた円として描画します。
   <P>
 <!--
@@ -73,12 +75,15 @@
   輪郭の最初の点は緑色で描かれ、そのそばに輪郭の進行方向を示す小さな矢印が表示されます。
   <P>
 <!--
-  Sometimes it is important to know which points are at the extrema of splines
-  (postscript likes for there to be points at the extrema of all splines),
-  if this is important to you set the "Mark Extrema" flag in the View menu.
-  After that points at extrema will show up as dull purple. -->
+  <IMG SRC="extrema-poi.png" WIDTH="204" HEIGHT="274" ALT="Showing extrema"
+      ALIGN="Left">Sometimes it is important to know which points are at the extrema
+  of splines (postscript likes for there to be points at the extrema of all
+  splines), if this is important to you set the "Mark Extrema" flag in the
+  View menu. After that points at extrema will show up as dull purple. And
+  internal extrema will also be marked. -->
+  <IMG SRC="../extrema-poi.png" WIDTH="204" HEIGHT="274" ALT="極値を表示している様子" ALIGN="Left">
   スプラインの (水平・垂直に) 極大な点がどこかを知ることが重要であることがときどきあります。(PostScript では全てのスプラインに、極大値となる場所に点が置かれていることが望ましいとしています)。
-  これが必要な場合は、<CODE>表示(<U>V</U>)</CODE> メニューで <CODE>極大点を表示(<U>M</U>)</CODE> フラグをオンにしてください。これを行うと、極値にあたる点が鈍い紫色で表示されます。
+  これが必要な場合は、<CODE>表示(<U>V</U>)</CODE> メニューで <CODE>極大点を表示(<U>M</U>)</CODE> フラグをオンにしてください。これを行うと、極値にあたる点が鈍い紫色で表示されます。また、中間にある極大値も同時に表示されます。
   <P>
 <!--
   There are also two palettes, one, a layer palette, allowing you to control
@@ -112,6 +117,16 @@
   If you drag a glyph from the font view and drop it into a character view then
   FontForge will drop a reference to the dragged character into the view. -->
   フォントビューからグリフをドラッグしてグリフビューに置くと、FontForge はその文字への参照をビュー上に配置します。
+  <P>
+<!--
+  Warning: <FONT COLOR="Red"><STRONG>If your glyph has truetype instructions
+  then editing it may cause those instructions to behave very oddly. If your
+  glyph has anchor points which depend on truetype point matching then editing
+  the glyph may disconnect the points. If your glyph is used as a reference
+  in another glyph that positions references by point matching then editing
+  this glyph may reposition those references.</STRONG></FONT> -->
+  警告: <FONT COLOR="Red"><STRONG>
+編集中のグリフに TrueType 命令が含まれている場合、グリフ編集時にそれらの命令が非常に奇妙なふるまいをもたらすことがあります。TrueType の点の照合に依存するアンカーポイントがグリフに含まれている場合、そのグリフを編集することにより点の関連が途切れる可能性があります。編集中のグリフが、点の照合により参照の位置指定を行う他のグリフへの参照として使用されている場合、そのグリフを編集するとそれらの参照の位置が変更される可能性があります。</STRONG></FONT>
   <H2>
 <!--<A NAME="Layers">Layers</A>-->
     <A NAME="Layers">レイヤ</A>
@@ -143,22 +158,34 @@
   2 番目は背面レイヤで、ここには背景画像とスプラインが含まれます。これらはフォントには書き出されませんが、グリフのアウトラインをトレースする作業の助けになります。画像を背面に貼りつけることも可能です。MIME タイプによる選択が可能な画像操作プログラムがある場合、画像を背面に貼りつけることもできます (KDE ファミリーのアプリケーションはこれを行いますし、多分他にもあるでしょう)。このとき、FontForge は“image/png”または“image/bmp”のどちらかで画像を読み出すことができます。
   <P>
 <!--
+  When debugging truetype
+  (<CODE><A HREF="hintsmenu.html#Debug">Hints-&gt;Debug</A>)</CODE>, or showing
+  gritfit outlines (<A HREF="viewmenu.html#ShowGridFit"><CODE>View-&gt;Show
+  Gridfit</CODE></A>) the visibility of the gridfit outlines can be controlled
+  by the background layer's visibility. -->
+  TrueType のデバッグ (<A HREF="hintsmenu.html#Debug"><CODE>ヒント(<U>H</U>)</CODE>→<CODE>デバッグ(<U>D</U>)</CODE></A>) や、アウトラインのグリッド合わせ (
+<A HREF="viewmenu.html#ShowGridFit"><CODE>表示(<U>D</U>V<CODE>→<CODE>グリッド合わせを表示(<U>G</U>)</CODE></A>) を行っている時、グリッド合わせを行ったアウトラインの表示の有無はレイヤの表示の有無によって切り替えることができます。
+  <P>
+<!--
   The third layer is a set of guide lines/splines. These are common to all
   glyphs in the font. A few lines are provided for you (the x=0 line, the ascent,
   descent and baseline). Other handy lines might be the x-height of the font,
   the cap-height, ascender-height, descender-height, ... When you are working
-  +in any of the other layers, points will snap to splines in this layer (making
-  +it easy to force a consistent x-height for example).-->
+  in any of the other layers, points will snap to splines in this layer (making
+  it easy to force a consistent x-height for example).-->
   第 3 のレイヤはガイドライン/スプラインの集まりです。これはフォント内の全てのグリフで共通に使用されます。最初から表示されているのは少数しかありません (x=0 の線、アセント、ディセントとベースラインです)。その他の助けになる線はフォントの x ハイト、キャップハイト、アセンダハイト、ディセンダハイト等があります。その他のレイヤのどれかで作業をしているとき、ポインタはこのレイヤに置かれた線に吸着します (例えば、x ハイトを一定値に強制的に揃えたいときなどに役立ちます)。
   <P>
 <!--
   The next 4 entries control what hints for this glyph are visible. Most hints
-  may be created with the <CODE>Hints-&gt;AutoHint</CODE> command, the presence
-  of hints will sometimes improve rasterization. The blues entry displays the
-  BlueValues zones. These may be set with <CODE>Element-&gt;Font Info-&gt;PS
-  Private</CODE>. -->
+  may be created with the
+  <A HREF="hintsmenu.html#AutoHint"><CODE>Hints-&gt;AutoHint</CODE> </A>command,
+  the presence of hints will sometimes improve rasterization. The blues entry
+  displays the BlueValues zones. These may be set with
+  <CODE><A HREF="fontinfo.html#Private">Element-&gt;Font Info-&gt;PS
+  Private</A></CODE>. (The DHints layer is currently unused. I thought it would
+  be useful for instructing truetype but I haven't made it work yet). -->
   その下の 4 つの項目は、このグリフに対するどのヒントが表示されるかを制御します。
-  ほとんどのヒントは <CODE>ヒント(<U>H</U>)</CODE>→<CODE>自動ヒント(<U>A</U>)</CODE> コマンドで作成でき、ヒントが存在するとラスタライズを改善することがあります。項目 <CODE>Blue値</CODE> は BlueValues 領域を表示します。これらは <CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE>→<CODE>[PS Private辞書]</CODE> で表示できます。
+  ほとんどのヒントは <A HREF="hintsmenu.html#AutoHint"><CODE>ヒント(<U>H</U>)</CODE>→<CODE>自動ヒント(<U>A</U>)</CODE></A> コマンドで作成でき、ヒントが存在するとラスタライズを改善することがあります。項目 <CODE>Blue値</CODE> は BlueValues 領域を表示します。これらは <A HREF="fontinfo.html#Private"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE>→<CODE>[PS Private辞書]</CODE></A> で表示できます。(斜交ヒントレイヤは現在使用されていません。私見では、それが使用できれば TrueType のデバッグに有益だとは思いますが、現時点ではまだ使用可能になっていません)。
   <P>
 <!--
   The Anchors entry controls what whether anchor points are displayed. -->
@@ -252,13 +279,26 @@
   If a point has no visible control points, then they are at the same location
   as the point itself. If you want to select one of the control points then
   first select the point (to make the control points active) then hold down
-  the meta key and depress the mouse on the point. This should allow you to
-  drag one of the control points (if you get the wrong point the first time
-  drag it out of the way, repeat the process to get the other control and then
-  put the first one back). Sadly some window managers (gnome-sawtooth for one)
-  will steal meta-clicks. If this happens you will need to use Element-&gt;Get
-  Info to set the control points. -->
-  ある点に属する制御点が表示されていないときは、制御点はその点自身と重なる位置にあります。片方の制御点を選択したい場合は、まず (制御点をアクティブにするために) 点を選択して Meta キーを押したまま、点の上でマウスボタンを押します。この状態でドラッグすると、片方の制御点が引き出せます (間違った点を選択した場合、まずその制御点を引き出した後で、もう片方の制御点を引き出すためにもう一度同じ操作を繰り返し、それから最初の制御点を戻してください)。残念ながらいくつかのウィンドウマネージャ (gnome-sawtooth など) は Meta-クリック を奪い取ってしまいます。そうなる場合は、制御点を設定するには <CODE>エレメント(<U>L</U>)</CODE>→<CODE>情報を得る(<U>I</U>)</CODE> を使う必要があります。
+  the meta key (use caps-lock on the mac) and depress the mouse on the point.
+  This should allow you to drag one of the control points (if you get the wrong
+  point the first time drag it out of the way, repeat the process to get the
+  other control and then put the first one back). Sadly some window managers
+  (gnome-sawtooth for one) will steal meta-clicks. If this happens you will
+  need to use Element-&gt;Get Info to set the control points. -->
+  ある点に属する制御点が表示されていないときは、制御点はその点自身と重なる位置にあります。片方の制御点を選択したい場合は、まず (制御点をアクティブにするために) 点を選択して Meta キー (Mac では caps lock キー) を押したまま、点の上でマウスボタンを押します。この状態でドラッグすると、片方の制御点が引き出せます (間違った点を選択した場合、まずその制御点を引き出した後で、もう片方の制御点を引き出すためにもう一度同じ操作を繰り返し、それから最初の制御点を戻してください)。残念ながらいくつかのウィンドウマネージャ (gnome-sawtooth など) は Meta-クリック を奪い取ってしまいます。そうなる場合は、制御点を設定するには <CODE>エレメント(<U>L</U>)</CODE>→<CODE>情報を得る(<U>I</U>)</CODE> を使う必要があります。
+  <P>
+  <IMG SRC="../cpinfo.png" WIDTH="296" HEIGHT="337" ALIGN="Right"><!--When you move
+  a <A NAME="CpInfo">control point</A> you have the option
+  (<CODE><A HREF="viewmenu.html#CpInfo">View-&gt;Show Control Point
+  Info</A></CODE>) of getting a popup box showing information about the control
+  point (and its opposite number on the other side of the on-curve point).
+  You will be told whether this is the next or previous control point, the
+  absolute location of the point, the offset from the on-curve point, the slope
+  expressed as a ratio, and as an angle, and the curvature on this side of
+  the base point. At the very bottom is the difference between the two curvatures.
+  Try to make this number approach 0 for curved points. -->
+  制御点を移動したときには、
+(<CODE>表示(<U>V</U>)</CODE>→<CODE>制御点の情報を表示(<U>C</U>)</CODE> で) 制御点 (およびオンカーブ点の反対側の数値) に関する情報を表示するポップアップボックスを表示することができます。表示されるのは、制御点が後側か前側か、比率で表した傾き、角度および、基点と同じ側での曲率です。一番下にあるのは 2 個の曲率の差です。曲線上の点の場合、この値を 0 に近くなるようにしてみて下さい。
   <P>
 <!--
   Once something is selected you may drag it around. If you select something
@@ -505,19 +545,24 @@
     <A NAME="ruler">ものさし</A>ツール
   </H3>
   <P>
+  <IMG SRC="../ruler.png" WIDTH="234" HEIGHT="102" ALIGN="Right"><!--This tool tells
+  you current position of the mouse. If the mouse is near the outline it will
+  give the slope and curvature there. If the mouse is near a point on the outline
+  will give the slope and curvature on each side of the point. -->
+  このツールはマウスの現在位置を表示します。マウスがアウトラインに近い位置にある時、そこでの傾きと曲率を表示します。マウスがアウトライン上にある点の近くにある時、点の両側での傾きと曲率を表示します。
+  <P>
 <!--
-  This tool tells you the x-y offsets, distance and angle from the point where
-  you depressed the mouse to the mouse's current location. If you depress the
-  tool at the end point of a spline and move it to the other endpoint then
-  it will also show the length of that spline. -->
-  このツールは、マウスボタンを押した場所から現在のマウス位置までの x, y 両方向のオフセット、距離と角度を通知します。スプラインの端点でマウスボタンを押してもう片方の端点へ持って行ったときには、そのスプラインの長さも表示します。
+  If you depress the button and drag, the tool will show the x-y offsets, distance
+  and angle from the point where you depressed the mouse to the mouse's current
+  location. If you depress the tool at one end point of a spline and move it
+  to the other endpoint then it will also show the length of that spline. -->
+  ボタンを押してドラッグすると、現在のマウス位置までの x, y 両方向のオフセット、距離と角度を通知します。スプラインの端点でマウスボタンを押してもう片方の端点へ持って行ったときには、そのスプラインの長さも表示します。
   <P>
 <!--
   If you hold down the
-  <A HREF="charview.html#alt-meta-capslock">Meta/Alt/CapsLock </A>key when
-  the mouse button is up, then the current location will be shown more accurately
-  than on the status line. -->
-  マウスボタンが押されていないときに <A HREF="charview.html#alt-meta-capslock">Meta/Alt/CapsLock</A> キーを押したままにすると、ステータスラインの表示よりも精密な現在位置の値を表示します。
+  <A HREF="charview.html#alt-meta-capslock">Meta/Alt/CapsLock </A>key then
+  information will only be shown when the mouse is depressed. -->
+  <A HREF="charview.html#alt-meta-capslock">Meta/Alt/CapsLock</A> キーを押している場合、マウスボタンを押した時だけ情報を表示します。
   <P>
 <!--
   Finally if you hold down the
@@ -717,9 +762,10 @@
   If you have freetype's bytecode interpreter enabled you can also see how
   the truetype instructions in the glyph have moved the points around (if you
   don't have the bytecode interpreter enabled you will see what freetype's
-  autohinter does to points). This mode can be invoked with View-&gt;Show Grid
-  Fit... -->
-  FreeType ライブラリがインストールされているならば、作成中のグリフをラスタライズした結果を見ることができます。FreeType のバイトコードインタプリタが使用可能になっているなら、グリフ内の TrueType 命令が点を移動するのを見ることができます (バイトコードインタプリタが利用できない場合、FreeType の自動ヒントづけルーチンが点を移動します)。このモードは <CODE>表示(<U>V</U>)</CODE>→<CODE>グリッド合わせを表示(<U>W</U>)</CODE> で起動することができます。
+  autohinter does to points). This mode can be invoked with
+  <CODE><A HREF="viewmenu.html#ShowGridFit">View-&gt;Show Grid
+  Fit</A></CODE>... -->
+  FreeType ライブラリがインストールされているならば、作成中のグリフをラスタライズした結果を見ることができます。FreeType のバイトコードインタプリタが使用可能になっているなら、グリフ内の TrueType 命令が点を移動するのを見ることができます (バイトコードインタプリタが利用できない場合、FreeType の自動ヒントづけルーチンが点を移動します)。このモードは <A HREF="viewmenu.html#ShowGridFit"><CODE>表示(<U>V</U>)</CODE>→<CODE>グリッド合わせを表示(<U>W</U>)</CODE></A> で起動することができます。
   <P>
 <!--
   The Show Grid Fit command will ask you for some basic information first.
@@ -743,12 +789,12 @@
   <P>
 <!--
   The image to the right shows an example of this mode. You invoke it with
-  Hints-&gt;Debug, and as with the grid-fit view above you must establish a
-  pointsize and and resolution. The view divides into two panes, the left of
-  which is similar to the grid fit view above (except that it changes as you
-  step through the instructions), the right pane provides a list of the
-  instructions to be executed. -->
-  右の図はこのモードの例を示しています。<CODE>ヒント(<U>I</U>)</CODE>→<CODE>デバッグ(<U>D</U>)</CODE> でこれを起動し、グリッド合わせビューと同様にポイントサイズと解像度を確定する必要があります。このビューは 2 個のペーンに分かれています。左は上のグリッド合わせビューに似ています (ただし、命令をステップ実行すると表示が変わる点が異なります)。右のペーンは実行される命令をリスト表示します。
+  <CODE><A HREF="hintsmenu.html#Debug">Hints-&gt;Debug</A></CODE>, and as with
+  the grid-fit view above you must establish a pointsize and and resolution.
+  The view divides into two panes, the left of which is similar to the grid
+  fit view above (except that it changes as you step through the instructions),
+  the right pane provides a list of the instructions to be executed. -->
+  右の図はこのモードの例を示しています。<A HREF="hintsmenu.html#Debug"><CODE>ヒント(<U>I</U>)</CODE>→<CODE>デバッグ(<U>D</U>)</CODE></A> でこれを起動し、グリッド合わせビューと同様にポイントサイズと解像度を確定する必要があります。このビューは 2 個のペーンに分かれています。左は上のグリッド合わせビューに似ています (ただし、命令をステップ実行すると表示が変わる点が異なります)。右のペーンは実行される命令をリスト表示します。
   <P>
 <!--
   In addition to showing you all the points in your glyph there are either

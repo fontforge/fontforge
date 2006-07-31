@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 9-Apr-2006 -->
-  <!-- AP: Last modified: 15-Apr-2006 -->
+  <!-- AP: Last modified: 14-Jul-2006 -->
 <!--
   <TITLE>Scripting functions</TITLE> -->
   <TITLE>スクリプト関数一覧</TITLE>
@@ -397,6 +397,22 @@ a[4][0] = "Nested array";
       <TD BGCOLOR=yellow><A NAME="C">C</A></TD>
       <TD><DL>
 	  <DT>
+	    <A NAME="CanonicalContours">CanonicalContours</A>()
+	  <DD>
+<!--	    Orders the contours in the currently selected glyph(s) by the x coordinate
+	    of their leftmost point. (This can reduce the size of the charstring needed
+	    to describe the glyph(s). -->
+	    選択中のグリフの輪郭を、最も左の点の x 座標の順に並べ替えます。(これにより、グリフを表現するのに必要な charstrings のサイズが小さくなる可能性があります)
+	  <DT>
+	    <A NAME="CanonicalStart">CanonicalStart</A>()
+	  <DD>
+<!--	    Sets the start point of all the contours of the currently selected glyph(s)
+	    to be the leftmost point on the contour. (If there are several points with
+	    that value then use the one which is closest to the baseline). This can reduce
+	    the size of the charstring needed to describe the glyph(s). By regularizing
+	    things it can also make more things available to be put in subroutines. -->
+	    選択中のグリフのすべての輪郭の開始点を、輪郭の左端に位置する点に置き換えます (同じ値の複数の点がある場合、ベースラインに最も近いものを使用します)。これにより、グリフを表現するのに必要な charstrings のサイズが小さくなる可能性があります。正規化を行うことによって、サブルーチンに置くことができるデータが増える可能性があります。
+	  <DT>
 	    <A NAME="Ceil">C</A>eil(real)
 	  <DD>
 <!--	    Converts a real number to the smallest integer larger than the real. It can
@@ -790,8 +806,8 @@ a[4][0] = "Nested array";
 <!--	    All three arguments must be strings. The first two must be strings containing
 	    four or fewer characters, the third a string containing a comma separated
 	    list of 4 (or fewer) character strings. Ligatures will be placed in an AFM
-	    file only if -->
-	    3 つの引数は全て文字列でなければなりません。最初の 2 個はそれぞれ最大 4 文字を含む文字列、3 個目はカンマで区切られた 4 個以内の文字からなるリストでなければなりません。以下の条件を満たす場合のみ、AFM ファイル内に合字が作成されます。
+	    (tfm/ofm) file only if -->
+	    3 つの引数は全て文字列でなければなりません。最初の 2 個はそれぞれ最大 4 文字を含む文字列、3 個目はカンマで区切られた 4 個以内の文字からなるリストでなければなりません。以下の条件を満たす場合のみ、AFM (TFM/OFM) ファイル内に合字が作成されます。
 	    <UL>
 	      <LI>
 <!--	    	their tags match one of the entries in the list -->
@@ -933,6 +949,20 @@ a[4][0] = "Nested array";
 	    of those references has the same width as the current glyph, and has an identity
 	    transformation matrix, then set the bit on that reference. -->
 	    選択中のすべてのグリフを調べます。参照を含むグリフが存在し、その参照のどれもが“USE-MY-METRICS”ビットを含んでいない場合、もしもそれらの参照のうちのどれかが現在のグリフと幅が同じで、その文字の変換行列が恒等変換行列である場合、その参照にビットをセットします。
+	  <DT>
+	    <A NAME="DetachAndRemoveGlyph" HREF="encodingmenu.html#RemoveGlyphs">DetachAndRemoveGlyphs</A>()
+	  <DD>
+<!--	    Any selected encoding slots will have their glyph pointer nulled out. In
+	    addition, if this glyph is now unencoded it will remove the glyph from the
+	    font. -->
+	    選択中のすべてのエンコーディングスロットのグリフポインタを空にします。さらに、そのグリフが符号化されていない状態になったならばフォントからそのグリフを取り除きます。
+	  <DT>
+	    <A HREF="encodingmenu.html#Detach" NAME="DetachGlyphs">DetachGlyphs</A>()
+	  <DD>
+<!--	    Any selected encoding slots will have their glyph pointer nulled out. This
+	    does not remove the glyph from the font, it just makes it unreachable through
+	    this encoding slot. -->
+	    選択中のすべてのエンコーディングスロットのグリフポインタを空にします。この関数はフォントからグリフを取り除きません。指定したエンコーディングスロットからアクセスできなくするだけです。
 	  <DT>
 	    <A NAME="DontAutoHint" HREF="hintsmenu.html#DontAutoHint">DontAutoHint</A>()
 	  <DD>
@@ -1373,6 +1403,10 @@ a[4][0] = "Nested array";
 	      <LI>
 <!--	    	fmflags&amp;0x200000 =&gt; round postscript coordinates -->
 	    	fmflags&amp;0x200000 ⇒ PostScript の座標値を整数に丸めます。
+	      <LI>
+<!--		fmflags&amp;0x400000 =&gt; add composite (mark to base) information to the
+		afm file -->
+		fmflags&amp;0x400000 ⇒ (マークから基底文字への) 組合せ情報を AFM ファイルに追加します。
 	    </UL>
 	    <P>
 <!--	    res controls the resolution of generated bdf fonts. A value of -1 means fontforge
@@ -1422,6 +1456,12 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
 <!--	    Returns the value of the unix environment variable named by str. It can execute
 	    with no current font. -->
 	    名前 str をもつ環境変数の値を返します。カレントフォントがない状態でも実行できます。
+	  <DT>
+	    <A NAME="GetFontBoundingBox">G</A>etFontBoundingBox()
+	  <DD>
+<!--	    Returns a 4 element array containing [minimum-x-value, minimum-y-value,
+	    maximum-x-value, maximum-y-value] of the entire font. -->
+	     4 要素からなる、フォント全体の [x座標の最小値, y座標の最小値, x座標の最大値, y座標の最大値] を含んだ配列を返します。
 	  <DT>
 	    <A NAME="GetMaxpValue">G</A>etMaxpValue(field-name)
 	  <DD>
@@ -2064,6 +2104,17 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	      they currently are-->
 	      はすべての acute または grave への参照を、現在位置から 300 em ユニットだけ右に移動します。
 	    </BLOCKQUOTE>
+	  <DT>
+	    <A NAME="MultipleEncodingsToReferences">M</A>ultipleEncodingsToReferences()
+	  <DD>
+<!--	    If any selected glyphs have multiple encodings then one of these encodings
+	    will be chosen as the real one. For each of the others a new glyph will be
+	    created containing a reference to the base glyph. This sort of undoes the
+	    effect of <A HREF="#SameGlyphAs">SameGlyphAs</A>. -->
+	    選択中のグリフの中に複数のエンコーディングをもつ物がある場合、それらのエンコーディングのうちから 1 個を本物として選出します。その以外に対してはそれぞれに 1 個ずつ、元のグリフへの参照を含む新しいグリフを作成します。これは、<A HREF="#SameGlyphAs">SameGlyphAs</A> の操作に対するアンドゥの一種とも言えます。
+	    <P>
+<!--	    MetaData, such as advanced typographic features, are not copied. -->
+	    高度組版機能などのメタデータはコピーされません。
 	</DL>
       </TD>
     </TR>
@@ -2507,6 +2558,13 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	    "*" which will match anything). -->
 	    引数に一致する任意の機能タグを削除します (引数は基本的に <A HREF="#AddATT">AddAAT</A> と同じですが、何にでもマッチする "*" を使用できる点が異なります)
 	  <DT>
+	    <A NAME="RemoveDetachedGlyphs">RemoveDetachedGlyphs</A>()
+	  <DD>
+<!--	    If this font contains any glyphs which do not have an encoding slot then
+	    those glyphs will be removed from the font. In other words any glyph not
+	    displayed in the fontview will be removed. -->
+	    現在のフォントにエンコーディングスロットを含まないグリフがあるならば、それらのグリフをフォントから取り除きます。言い替えれば、フォントビューで表示されないフォントは削除されます。
+	  <DT>
 	    <A NAME="RemoveOverlap" HREF="elementmenu.html#Remove">RemoveOverlap</A>()
 	  <DD>
 <!--	    Does the obvious.-->
@@ -2556,9 +2614,12 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	    is changed to the set of glyphs which the command alters. -->
 	    選択中のグリフのインラインコピーを含むすべてのグリフを検出し、それらを適切なグリフへの参照に変換します。実行後、選択中の文字の一覧はコマンドによって変更された文字の一覧に切替えられます。
 	    <P>
-<!--	    If specified the fudge argument specifys the error allowed
-	    for coordinate differences.-->
-	    引数 fudge を指定すると、座標値の誤差として許される距離を指定することができます。
+<!--	    If specified the fudge argument specifies the error allowed for coordinate
+	    differences. The fudge argument may be either a real number or two integers
+	    where the first specifies the numerator and the second the denominator of
+	    the fudge (=arg1/arg2). Left over from the days when ff did not support real
+	    numbers. -->
+	    引数 fudge を指定すると、座標値の誤差として許される距離を指定することができます。引数 fudge は実数または 2 個の整数のどちらかの形で指定でき、公社の場合最初の整数が fudge の分子、2 番目の整数が分母となります (fudge = arg1/arg2)。実数をサポートしていなかった頃の名残です。
 	  <DT>
 	    <A NAME="Rotate">R</A>otate(angle[,ox,oy])
 	  <DD>
@@ -2704,6 +2765,13 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 <!--	    Selects all glyphs -->
 	    すべてのグリフを選択します。
 	  <DT>
+	    <A NAME="SelectAllInstancesOf" HREF="editmenu.html#SelectName">SelectAllInstancesOf</A>(name1[,...])
+	  <DD>
+<!--	    A glyph may be mapped to more than one encoding slot. This will select all
+	    encoding slots which refer to the named glyph(s). The name may be either
+	    a string containing a glyph name, or a unicode code point. -->
+	    1 個のグリフは 2 個以上のエンコーディングスロットに対応づけることができます。この関数は、名前で指定したグリフを参照するすべてのエンコーディングスロットを選択します。引数 name に指定するのはグリフ名、または Unicode の符号位置です。
+	  <DT>
 	    <A NAME="SelectBitmap">SelectBitmap</A>(size)
 	  <DD>
 <!--	    In a bitmap only font this selects which bitmap strike will be used for units
@@ -2847,7 +2915,7 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	    except it adds single glyphs from the current selection. -->
 	    <A HREF="scripting-alpha.html#SelectSingletons">SelectSingletons</A> と同じですが、現在の選択範囲に引数で指定した個々のグリフを追加する点が異なります。
 	  <DT>
-	    <A NAME="SelectNone" HREF="editmenu.html#Deselect">SelectNone</A>
+	    <A NAME="SelectNone" HREF="editmenu.html#Deselect">SelectNone</A>()
 	  <DD>
 <!--	    Deselects all glyphs -->
 	    すべてのグリフを選択解除します。
@@ -2856,6 +2924,11 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	  <DD>
 <!--	    Selects its arguments without looking for ranges. -->
 	    引数で指定された文字だけを選択します。
+	  <DT>
+	    <A NAME="SelectWorthOutputting">SelectWorthOutputting</A>()
+	  <DD>
+<!--	    Selects all glyphs <A HREF="#WorthOutputting">WorthOutputting</A> -->
+	    <A HREF="#WorthOutputting">WorthOutputting</A>() が真であるすべてのグリフを選択します。
 	  <DT>
 	    <A NAME="SetCharCnt">S</A>etCharCnt(cnt)
 	  <DD>
@@ -3085,7 +3158,7 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	    <CODE>font.panose[index] = value</CODE> -->
 	    フォントの panose 値を設定します。10 個の整数からなる配列 1 個を引数としてすべての panose 値を設定するか、2 個の整数を引数として <CODE>font.panose[index] = value</CODE> とする設定を行うかのどちらも可能です。
 	  <DT>
-	    <A NAME="SetPrefs">SetPrefs</A>(str,val[,val2])
+	    <A NAME="SetPref">SetPref</A>(str,val[,val2])
 	  <DD>
 <!--	    Sets the value of the preference item whose name is contained in str. If
 	    the preference item has a real type then a second argument may be passed
@@ -3342,6 +3415,41 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 <!--	    Each argument will be divided by 100. and then all selected glyphs will be
 	    transformed by this matrix -->
 	    各引数は 100 で割られます。その後、選択中のすべてのグリフをこの行列で変換します。
+	    <TABLE CELLPADDING="2">
+	      <TR>
+		<TD ROWSPAN=2><BIG><BIG><BIG>[</BIG></BIG></BIG></TD>
+		<TD>t1/100.</TD>
+		<TD>t2/100.</TD>
+		<TD>t3/100.</TD>
+		<TD ROWSPAN=2><BIG><BIG><BIG>]</BIG></BIG></BIG></TD>
+	      </TR>
+	      <TR>
+		<TD>t4/100.</TD>
+		<TD>t5/100.</TD>
+		<TD>t6/100.</TD>
+	      </TR>
+	    </TABLE>
+	    <P>
+<!--	    This is a standard PostScript transformation matrix where -->
+	    これは、以下の変換を行う標準 PostScript 変換行列です。
+	    <TABLE CELLPADDING="2">
+	      <TR>
+		<TD>x'</TD>
+		<TD>=</TD>
+		<TD>t1/100 * x + t2/100 * y + t3/100</TD>
+	      </TR>
+	      <TR>
+		<TD>y'</TD>
+		<TD>=</TD>
+		<TD>t4/100 * x + t5/100 * y + t6/100</TD>
+	      </TR>
+	    </TABLE>
+	    <P>
+<!--	    The peculiar notion of dividing by 100 was to overcome the fact that fontforge's
+	    scripting language formerly could not handle real numbers. We've overcome
+	    that limitation since, but it seemed best to leave the behavior of the function
+	    as it was. -->
+	    100 で割る特別な表記法を用いているのは、FontForge のスクリプト言語がかつて実数を扱うことができなかったためです。その後この制限は解消されましたが、関数のふるまいを当時のままにしておくに越したことはないと思います。
 	  <DT>
 	    <A NAME="TypeOf">T</A>ypeOf(any)
 	  <DD>

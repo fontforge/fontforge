@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 29-Mar-2006 -->
+  <!-- AP: Last modified: 26-Jul-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>The Edit Menu</TITLE>--> 
     <TITLE>編集メニュー</TITLE>
@@ -142,6 +142,9 @@
 	<LI>
 <!--	  <A HREF="#Color">Select Color&gt;</A>-->
 	  <A HREF="#Color">色で選択(<U>S</U>) &gt;</A>
+ 	<LI>
+<!--	  <A HREF="#SelectName">Select By Name</A> -->
++	  <A HREF="#SelectName">名前で選択(<U>N</U>)</A>
 	<LI>
 <!--	  <A HREF="#SelChanged">Changed Glyphs</A> -->
 	  <A HREF="#SelChanged">変更されたグリフ(<U>C</U>)</A>
@@ -171,6 +174,9 @@
 	<LI>
 <!--	  <A HREF="#Displayed">Displayed Font</A>-->
 	  <A HREF="#Displayed">表示されているフォント(<U>D</U>)</A>
+	<LI>
+<!--	  <A HREF="#TTInstr">TrueType Instructions</A> -->
+	  <A HREF="#TTInstr"><U>T</U>rueType 命令</A>
 	<LI>
 <!--	  <A HREF="#CharName">Char Metadata</A>-->
 	  <A HREF="#CharName">グリフのメタデータ(<U>M</U>)</A>
@@ -347,15 +353,16 @@
     <DD>
 <!--  In the Font View this command will paste whatever is in the clipboard into
       the foregrounds of all selected glyph (exception: if the clipboard contains
-      an image it will not go into the foreground), clearing out whatever was there.
-      If there are more selected glyphs than there is information in the clipboard
-      then the clipboard will be repeated until all selected glyphs have had something
-      pasted in them (that is if glyphs A and B were selected when the copy happened
-      and now glyphs C, D and E are selected, the C will get A, D will get B and
-      E will also get A). If exactly one glyph is selected but the clipboard contains
-      more that one glyph, the the selection will be extended so that enough glyphs
-      are selected that something may be pasted in each. <BR> -->
-      フォントビューではこのコマンドはクリップボードにある物を種類を問わず、選択中の各グリフの前面に貼り付け (例外: クリップボードに画像が含まれる場合は、その画像は前面に貼り付けられません)、元からあった物を消去します。クリップボード内の情報よりも選択中のグリフの方が多い場合、選択中のすべてのグリフにペーストが行われるまでデータを繰り返し使用します (例えば、グリフ A と B を選択してコピーを行い、C, D, E を選択して貼り付けを行った場合、C には A が、D には B がコピーされ、E にも A が再びコピーされます)。<BR>
+      an image it will usually not go into the foreground), clearing out whatever
+      was there. If there are more selected glyphs than there is information in
+      the clipboard then the clipboard will be repeated until all selected glyphs
+      have had something pasted in them (that is if glyphs A and B were selected
+      when the copy happened and now glyphs C, D and E are selected, the C will
+      get A, D will get B and E will also get A). If exactly one glyph is selected
+      but the clipboard contains more that one glyph, the the selection will be
+      extended so that enough glyphs are selected that something may be pasted
+      in each. <BR> -->
+      フォントビューではこのコマンドはクリップボードにある物を種類を問わず、選択中の各グリフの前面に貼り付け (例外: クリップボードに画像が含まれる場合は、その画像は通常前面には貼り付けられません)、元からあった物を消去します。クリップボード内の情報よりも選択中のグリフの方が多い場合、選択中のすべてのグリフにペーストが行われるまでデータを繰り返し使用します (例えば、グリフ A と B を選択してコピーを行い、C, D, E を選択して貼り付けを行った場合、C には A が、D には B がコピーされ、E にも A が再びコピーされます)。<BR>
 <!--  If the clipboard contains outline information then that information will
       go into the glyph outline regardless of the setting of Copy From. If the
       clipboard contains a bitmap and the display is set to outline then the bitmap
@@ -387,8 +394,8 @@
 	  <TD>背景画像</TD>
 	</TR>
 	<TR>
-<!--	  <TD>"image/eps"</TD> -->
-	  <TD>“image/eps”</TD>
+<!--	  <TD>"image/eps", "image/ps", "image/svg"</TD> -->
+	  <TD>“image/eps”,“image/ps”,“image/svg”</TD>
 <!--	  <TD>as spline data</TD> -->
 	  <TD>スプラインデータ</TD>
 	</TR>
@@ -618,6 +625,14 @@
 	  to the colored glyphs. -->
 	  フォントビューでのみ使用可能です。色の一覧を含むサブメニューが表示され、そこで色を選ぶと、グリフ情報ダイアログであらかじめ設定した色がそれに等しいすべてのグリフを選択することができます。通常は、色の指定されたグリフを選択する前に選択していたグリフは選択解除されますが、Shift キーを押しながら選択を行うことによって、色で指定したグリフを今までの選択内容に追加選択することができます。
 	<DT>
+<!--	  <A NAME="SelectName">Select By Name...</A> -->
+	  <A NAME="SelectName">名前で選択(<U>N</U>)...</A>
+	<DD>
+<!--	  A glyph may be mapped to more than one encoding slot. Select all encoding
+	  slots that refer to the named glyph. I think this is primarily useful for
+	  detaching .notdef. -->
+	  1 個のグリフを複数のエンコーディングスロットに対応づけることができます。名前で指定したグリフを参照しているすべてのエンコーディングスロットを選択します。これは主に、.notdef を切り離すのに役立つのではないかと思います。
+	<DT>
 <!--	  <A NAME="SelChanged">Changed</A> -->
 	  <A NAME="SelChanged">変更されたグリフ(<U>C</U>)</A>
 	<DD>
@@ -706,6 +721,15 @@
 <!--	  Normally Copy does not copy the metadata (name, unicode encoding, comment,
 	  ligature info) associated with a glyph, but if this is checked then it will.-->
 	  一般には <CODE>コピー(<U>C</U>)</CODE> ではグリフに付随するメタデータ (名前、Unicode のエンコーディング、コメント、合字情報) はコピーされませんが、これがチェックされているとそれらもコピーされます。
+	<DT>
+<!--	  <A NAME="TTInstr">TrueType Instructions</A> -->
+	  <A NAME="TTInstr"><U>T</U>rueType 命令</A>
+	<DD>
+<!--	  Controls whether truetype instructions should be copied with a glyph. If
+	  copying glyphs from one font to another it may not be appropriate to copy
+	  the truetype instructions (which may depend on subroutines or values in the
+	  'fpgm', 'prep' and 'cvt ' tables). -->
+	  これは TrueType 命令をグリフと一緒にコピーするかどうかを制御します。あるフォントから他のフォントへのグリフのコピーを行う場合には、(サブルーチンや‘fpgm’,‘prep’および‘cvt ’テーブル内の値に依存する可能性がある) TrueType 命令をコピーするのは適切ではないでしょう。
       </DL>
       <P>
 <!--  This also controls the behavior of the

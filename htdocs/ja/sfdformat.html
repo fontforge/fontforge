@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 8-Jan-2006 -->
+  <!-- AP: Last modified: 14-Jun-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Spline Font Database File Format</TITLE>-->
     <TITLE>スプラインフォントデータベースファイルフォーマット</TITLE>
@@ -318,19 +318,19 @@ EndPrivate
   the first character, and 64 for the second. It is active for entry 2 in the
   script lang list above. The <A HREF="charinfo.html#lookup-flags">OpenType
   flags </A>will be 0. The next line says that the first character class of
-  the first character (numbered 1, class 0 is reserved and never needs to be
-  defined) consists of only one character "F" (the number in front is the string
-  length of the line. It speeds up processing the sfd file but has no semantic
-  content). The next line is for class 2 of the first character, it has more
-  characters in it and a longer string length. After 30 entries we start on
-  the classes for the second character. They look exactly like classes for
-  the first character. After all the second character classes have been defined
-  we have an array of numbers, &lt;char1 class cnt&gt;*&lt;char2 class cnt&gt;
-  of them in fact. This specifies the amount of kerning that should be placed
-  between a characters of the given classes of left and right characters (ie.
-  if char1 was in left class 2 and char2 was in right class 4 then we would
-  index this array with 3*&lt;char2 class cnt&gt; + 4). -->
-  最初の行は、このカーニングクラスに含まれる先頭文字のクラスが 31 種類存在し、第二文字のクラスが 64 種類存在することを表しています。これは、上記の用字系・言語リストの項目 2 に対して有効になります。<A HREF="charinfo.html#lookup-flags">OpenType フラグ</A> は 0 となります。次の行は、最初の文字 (クラス 0 は予約済みで、決して定義する必要がないので、この番号は 1 となります) の先頭文字クラスは文字“F”1 文字からなることを表します (“F”の前にある数字は行の文字数です。これは SFD ファイルの処理速度の向上に役立ちますが、それ自体で意味を持つ情報ではありません)。次の行は、先頭文字のクラス 2 で、より多くの文字を含んでいるため文字列長も長くなっています。30 個の項目が続いた後に、第二文字のクラスが始まります。これは、先頭文字のクラスと全く同様です。第二文字のクラスを全部定義し終わった後に、多数(正確には &lt;先頭文字クラスの個数×第二文字クラスの個数&gt;) の数値からなる 1 個の配列が来ます。これは、該当するクラスの対における左右の文字間に施されるカーニングの量を指定しています (例えば、文字1 が先頭文字クラス 2 に属し、文字2 が第二文字クラス 4 に属している場合、この配列のインデックス 3×&lt;文字2 のクラス番号&gt; + 4 で指定することになります)
+  the first character (numbered 1, class 0 is reserved and usually is not defined)
+  consists of only one character "F" (the number in front is the string length
+  of the line. It speeds up processing the sfd file but has no semantic content).
+  The next line is for class 2 of the first character, it has more characters
+  in it and a longer string length. After 30 entries we start on the classes
+  for the second character. They look exactly like classes for the first character.
+  After all the second character classes have been defined we have an array
+  of numbers, &lt;char1 class cnt&gt;*&lt;char2 class cnt&gt; of them in fact.
+  This specifies the amount of kerning that should be placed between a characters
+  of the given classes of left and right characters (ie. if char1 was in left
+  class 2 and char2 was in right class 4 then we would index this array with
+  3*&lt;char2 class cnt&gt; + 4). -->
+  最初の行は、このカーニングクラスに含まれる先頭文字のクラスが 31 種類存在し、第二文字のクラスが 64 種類存在することを表しています。これは、上記の用字系・言語リストの項目 2 に対して有効になります。<A HREF="charinfo.html#lookup-flags">OpenType フラグ</A> は 0 となります。次の行は、最初の文字 (クラス 0 は予約済みで、通常は定義する必要がないので、この番号は 1 となります) の先頭文字クラスは文字“F”1 文字からなることを表します (“F”の前にある数字は行の文字数です。これは SFD ファイルの処理速度の向上に役立ちますが、それ自体で意味を持つ情報ではありません)。次の行は、先頭文字のクラス 2 で、より多くの文字を含んでいるため文字列長も長くなっています。30 個の項目が続いた後に、第二文字のクラスが始まります。これは、先頭文字のクラスと全く同様です。第二文字のクラスを全部定義し終わった後に、多数(正確には &lt;先頭文字クラスの個数×第二文字クラスの個数&gt;) の数値からなる 1 個の配列が来ます。これは、該当するクラスの対における左右の文字間に施されるカーニングの量を指定しています (例えば、文字1 が先頭文字クラス 2 に属し、文字2 が第二文字クラス 4 に属している場合、この配列のインデックス 3×&lt;文字2 のクラス番号&gt; + 4 で指定することになります)
   <P>
 <!--
   If your fontforge has been configured with device table support you may find
@@ -713,11 +713,12 @@ EndChar
   最初の行では文字名を定義しています。次の行では文字符号を定義していて、最初に現在のフォント内の符号値があり、次に Unicode での符号値がきて、最後にフォント独自の位置 (GID) が来ます。それから、次の行に送り幅が来ます。
   <P>
 <!--
-  Then a set of flags (there are currently four flags: "H" =&gt; the character
+  Then a set of flags (there are currently five flags: "H" =&gt; the character
   has been changed since last hinted, "M" the character's hints have been adjusted
-  manually, "W" the width has been set explicitly, and "O" =&gt; the character
-  was open when last saved). -->
-  その次の行にフラグ文字を並べた文字列が来ます (現在 4 つのフラグが定義されています:“H”⇒ 最後にヒント付けを行って以降文字が変更された、“M”⇒ 文字のヒントが手動で調整された、“W”⇒ 幅がユーザの指定で設定された、および“O”⇒ 最後に保存したときにその文字が開いていた)
+  manually, "W" the width has been set explicitly, "O" =&gt; the character
+  was open when last saved, and "I" the character's instructions are out of
+  date). -->
+  その次の行にフラグ文字を並べた文字列が来ます (現在 5 つのフラグが定義されています:“H”⇒ 最後にヒント付けを行って以降文字が変更された、“M”⇒ 文字のヒントが手動で調整された、“W”⇒ 幅がユーザの指定で設定された、および“O”⇒ 最後に保存したときにその文字が開いていた、“I”⇒その文字の命令が最新の状態と一致しない) 
   <P>
 <!--
   Then horizontal and vertical (postscript) stem hints (set of several two
@@ -901,6 +902,16 @@ EndChar
       current reference. -->
       4 ⇒ (オフセットでなく) 点の一致による位置参照<BR>
       このフラグがセットされている場合、2 個の数字が追加されます。最初の数字は基底グリフ内の点番号で、2 番目の数字は現在の参照における点番号です。
+      <BLOCKQUOTE>
+	<PRE>Ref: 33 44 N 1 0 0 1 0 0 1
+Ref: 35 46 N 1 0 0 1 0 414 6 3 7 O
+</PRE>
+      </BLOCKQUOTE>
+      <P>
+<!--  The bottom line indicates that point 3 and point 7 will be positioned together.
+      The optional "O" is a flag which indicates that this information is out of
+      date. -->
+      最後の行は、点 3 と点 7 が一緒には位置されることを示しています。最後の省略可能な “O”は、この情報が最新の状態と一致しないことを表します。
   </UL>
   <P>
 <!--

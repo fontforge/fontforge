@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 15-Apr-2006 -->
+  <!-- AP: Last modified: 14-Jul-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Writing scripts to change fonts in FontForge</TITLE>-->
     <TITLE>FontForge でフォントを変更するためのスクリプトの書き方</TITLE>
@@ -21,8 +21,11 @@
   FontForge はインタプリタを内蔵しているので、フォントを変更するためのスクリプトを書くことができます。
   <UL>
     <LI>
-<!--  <A HREF="#Starting">Starting a script</A> -->
-      <A HREF="#Starting">スクリプトの起動法</A>
+<!--  <A HREF="scripting-tutorial.html">Scripting tutorial</A> -->
+      <A HREF="scripting-tutorial.html">スクリプト処理のチュートリアル</A>
+    <LI>
+<!--  <A HREF="#Starting">Invoking a script</A> -->
+      <A HREF="#Starting">スクリプトの呼び出し方</A>
     <LI>
 <!--  <A HREF="#Language">Scripting language</A> -->
       <A HREF="#Language">スクリプト言語</A>
@@ -45,8 +48,8 @@
       <A HREF="#menu">「スクリプト」メニュー</A>
   </UL>
   <H2>
-<!--  <A NAME="Starting">Starting scripts</A> -->
-      <A NAME="Starting">スクリプトの起動法</A>
+<!--  <A NAME="Starting">Invoking scripts</A> -->
+      <A NAME="Starting">スクリプトの呼び出し方</A>
   </H2>
   <P>
 <!--
@@ -224,10 +227,10 @@
   </UL>
   <P>
 <!--
-  Expressions are similar to those in C, a few operators have been omitted,
-  a few added from shell scripts. Operator precedence has been simplified slightly.
-  So operators (and their precedences) are: -->
-  式は C とほぼ同じですが、二、三の演算子は省かれ、二、三がシェルスクリプトから追加されています。演算子の優先順位はわずかに単純化されています。
+  <A NAME="Expressions">Expressions</A> are similar to those in C, a few operators
+  have been omitted, a few added from shell scripts. Operator precedence has
+  been simplified slightly. So operators (and their precedences) are: -->
+  <A NAME="Expressions">式</A>は C とほぼ同じですが、二、三の演算子は省かれ、二、三がシェルスクリプトから追加されています。演算子の優先順位はわずかに単純化されています。
   その結果、演算子 (とそれらの優先順位) は以下のようになっています:
   <UL>
     <LI>
@@ -536,6 +539,20 @@ endloop
       (フォントデータベースにグレイマップが含まれる場合、その値は
       <CODE>(&lt;BitmapDepth&gt;&lt;&lt;16)|&lt;PixelSize&gt;</CODE> 
       という配列で表されます)。
+     <LI>
+<!--  <CODE>$order </CODE>returns an integer containing either 2 (for truetype
+      fonts) or 3 (for postscript fonts). This indicates whether the font uses
+      quadratic or cubic splines.
+      <CODE>$order</CODE> は 2 (TrueType フォントの場合) または 3 (PostScript フォントの場合) のどちらかの整数値を返します。これは、フォントが 2 次スプラインと 3 次スプラインのどちらを使用しているかを表します。
+    <LI>
+<!--  <CODE>$em</CODE> returns the number of em-units used by the font. -->
+      <CODE>$em</CODE> はフォントが使用する em ユニットの大きさを返します。
+    <LI>
+<!--  <CODE>$ascent </CODE>returns the ascent of the font -->
+      <CODE>$ascent</CODE> はフォントの高さを返します。
+    <LI>
+<!--  <CODE>$descent </CODE>returns the descent of the font. -->
+      <CODE>$descent</CODE> はフォントの深さを返します。
     <LI>
 <!--  <CODE>$selection</CODE> returns an array containing one entry for each glyph
       in the current font indicating whether that glyph is selected or not
@@ -558,7 +575,8 @@ endloop
     <LI>
 <!--  <CODE>$</CODE>&lt;<A NAME="Preference">Preference</A> Item&gt; (for example
       <CODE>$AutoHint</CODE>) allows you to examine the value of that preference
-      item (to set it use <CODE><A HREF="scripting-alpha.html#SetPref">SetPref</A></CODE>) -->
+      item (to set it use
+      <CODE><A HREF="scripting-alpha.html#SetPref">SetPref</A></CODE>) -->
       <CODE>$</CODE>&lt;<A NAME="Preference">環境設定</A>項目&gt; (例えば
       <CODE>$AutoHint</CODE>) により、その環境設定項目に対応する値を調べることができます (値の設定には
       <CODE><A HREF="scripting-alpha.html#SetPref">SetPref</A></CODE> を使用してください)
@@ -759,7 +777,7 @@ endloop
     <LI>
       <A HREF="scripting-alpha.html#SavePrefs">SavePrefs()</A>
     <LI>
-      <A HREF="scripting-alpha.html#SetPrefs">SetPrefs(str,val[,val2])</A>
+      <A HREF="scripting-alpha.html#SetPref">SetPref(str,val[,val2])</A>
     <LI>
       <A HREF="scripting-alpha.html#SizeOf">SizeOf(arr)</A>
     <LI>
@@ -893,6 +911,8 @@ endloop
     <LI>
       <A HREF="scripting-alpha.html#SelectAll">SelectAll</A>
     <LI>
+      <A HREF="scripting-alpha.html#SelectAllInstancesOf">SelectAllInstancesOf</A>(name1[,...])
+    <LI>
       <A HREF="scripting-alpha.html#SelectBitmap">SelectBitmap(size)</A>
     <LI>
       <A HREF="scripting-alpha.html#SelectByATT">SelectByATT(type,tags,contents,search-type)</A>
@@ -913,9 +933,11 @@ endloop
     <LI>
       <A HREF="scripting-alpha.html#SelectMoreSingletons">SelectMoreSingletons(arg1, ...)</A>
     <LI>
-      <A HREF="scripting-alpha.html#SelectNone">SelectNone
+      <A HREF="scripting-alpha.html#SelectNone">SelectNone()</A>
     <LI>
       <A HREF="scripting-alpha.html#SelectSingletons">SelectSingletons(arg1, ...)</A>
+    <LI>
+      <A HREF="scripting-alpha.html#SelectWorthOutputting">SelectWorthOutputting()</A>
  </UL>
 <!--
   <H3 ALIGN=Center>Built-in procedures that act like the <A NAME="element-menu">Element Menu</A></H3> -->
@@ -939,6 +961,10 @@ endloop
       <A HREF="scripting-alpha.html#BuildComposite">BuildComposite()</A>
     <LI>
       <A HREF="scripting-alpha.html#BuildDuplicate">BuildDuplicate()</A>
+    <LI>
+      <A HREF="scripting-alpha.html#CanonicalContours">CanonicalContours</A>()
+    <LI>
+      <A HREF="scripting-alpha.html#CanonicalStart">CanonicalStart</A>()
     <LI>
       <A HREF="scripting-alpha.html#CompareFonts">CompareFonts(other-font-filename,output-filename,flags)</A>
     <LI>
@@ -1012,6 +1038,8 @@ endloop
       <A HREF="scripting-alpha.html#ChangePrivateEntry">ChangePrivateEntry(key,val)</A>
     <LI>
       <A HREF="scripting-alpha.html#ClearPrivateEntry">ClearPrivateEntry(key)</A>
+    <LI>
+      <A HREF="scripting-alpha.html#GetFontBoundingBox">GetFontBoundingBox()</A>
     <LI>
       <A HREF="scripting-alpha.html#GetMaxpValue">GetMaxpValue(field-name)</A>
     <LI>
@@ -1117,11 +1145,21 @@ endloop
     <LI>
       <A HREF="scripting-alpha.html#CharCnt">CharCnt()</A>
     <LI>
+      <A HREF="scripting-alpha.html#DetachGlyphs">DetachGlyphs</A>
+    <LI>
+      <A HREF="scripting-alpha.html#DetachAndRemoveGlyphs">DetachAndRemoveGlyphs</A>
+    <LI>
       <A HREF="scripting-alpha.html#LoadEncodingFile">LoadEncodingFile(filename)</A>
+    <LI>
+      <A HREF="scripting-alpha.html#MultipleEncodingsToReferences">MultipleEncodingsToReferences()</A>
     <LI>
       <A HREF="scripting-alpha.html#Reencode">Reencode(encoding-name[,force])</A>
     <LI>
+      <A HREF="scripting-alpha.html#RemoveDetachedGlyphs">RemoveDetachedGlyphs</A>()
+    <LI>
       <A HREF="scripting-alpha.html#RenameGlyphs">RenameGlyphs(namelist-name)</A>
+    <LI>
+      <A HREF="scripting-alpha.html#SameGlyphAs">SameGlyphAs</A>
     <LI>
       <A HREF="scripting-alpha.html#SetCharCnt">SetCharCnt(cnt)</A>
   </UL>
@@ -1277,7 +1315,7 @@ endloop
     <LI>
       <A HREF="scripting-alpha.html#SavePrefs">SavePrefs()</A>
     <LI>
-      <A HREF="scripting-alpha.html#SetPrefs">SetPrefs(str,val[,val2])</A>
+      <A HREF="scripting-alpha.html#SetPref">SetPref(str,val[,val2])</A>
 <!--
     <LI>It it also possible to get the value of a preference item by preceding its
 name with a dollar sign. -->
@@ -1437,6 +1475,9 @@ name with a dollar sign. -->
 	<LI>
 	  <A HREF="http://sourceforge.net/projects/x-symbol/">x-symbol</A>
       </UL>
+    <LI>
+<!--  <A HREF="scripting-tutorial.html">the scripting tutorial</A> -->
+      <A HREF="scripting-tutorial.html">スクリプト処理のチュートリアル</A>
   </UL>
   <H3>
 <!--Example 1:-->

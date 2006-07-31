@@ -2,6 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-Dec-2000 -->
+  <!-- AP: Last modified: 22-Jul-2006 -->
   <!-- AP: Last modified: 5-Feb-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>The File Menu</TITLE>-->
@@ -46,6 +47,9 @@
     <LI>
 <!--  <A HREF="#Revert">Revert</A>-->
       <A HREF="#Revert">ファイルを再読込(<U>R</U>)</A>
+    <LI>
+<!--  <A HREF="#RevertBackup">Revert To Backup</A> -->
+      <A HREF="#RevertBackup">バックアップを復元(<U>B</U>)</A>
     <LI>
 <!--  <A HREF="#RevertGlyph">Revert Glyph</A>-->
       <A HREF="#RevertGlyph">グリフを戻す(<U>Y</U>)</A>
@@ -179,12 +183,12 @@
     <DD>
 <!--  Saves the current file. If it is associated with a spline font database it
       will be saved there and a backup file will be created. If it is a new font,
-      or if the font has been read from a postscript font file, then a Save As
-      dialog will pop up.-->
-      現在のファイルを閉じます。対応するスプラインフォントデータベースがある場合はそのファイルに保存され、バックアップファイルが作成されます。新規に作成したフォントの場合か、PostScript フォントファイルから読み込まれた場合は、<CODE>ファイル名を指定して保存</CODE> ダイアログが起動します。
+      or if the font has been read from a font file, then a Save As dialog will
+      pop up. -->
+      現在のファイルを閉じます。対応するスプラインフォントデータベースがある場合はそのファイルに保存され、バックアップファイルが作成されます。新規に作成したフォントの場合か、フォントファイルから読み込まれた場合は、<CODE>ファイル名を指定して保存</CODE> ダイアログが起動します。
       <P>
 <!--  If you are editing a font "Ambrosia.sfd" then the backup file will be called
-      "Ambrosia~.sfd".-->
+      "Ambrosia.sfd~".-->
       フォント“Ambrosia.sfd”を編集している場合、バックアップファイルは“Ambrosia.sfd~”となります。
     <DT>
 <!--  <A NAME="SaveAs">Save</A> As...-->
@@ -227,6 +231,17 @@
     <DD>
 <!--  Rereads the font from the file on the disk. All changes are lost.-->
       ディスクからフォントを読み込み直します。全ての変更は失われます。
+    <DT>
+<!--  <A NAME="RevertBackup">Revert To Backup</A> -->
+      <A NAME="RevertBackup">バックアップを復元(<U>B</U>)</A>
+    <DD>
+<!--  Only available in the font view. When FontForge saves an sfd file (with the
+      <A HREF="#Save">Save</A> command, not the <A HREF="#SaveAs">Save As</A> command)
+      it creates a backup version of the file containing the old data (this file
+      has the same name as the main branch with a "~" character appended to it).
+      This command will revert to the backuped version of the file (if there is
+      one). -->
+      フォントビューでのみ使用可能です。FontForge が SFD ファイルを (<A HREF="#SaveAs">ファイル名を指定して保存(<U>A</U>)</A> ではなく <A HREF="Save">保存(<U>S</U>)</A> コマンドで) 保存する時、古いデータを含むバックアップ版のファイルを作成します (このファイルの名前は本流のファイルと同じ名前に“~”を付け加えたものです)。このコマンドは、(バックアップがある場合)、ファイルをバックアップした版に復元します。
     <DT>
 <!--  <A NAME="RevertGlyph">Revert Glyph</A>-->
       <A NAME="RevertGlyph">グリフを戻す(<U>Y</U>)</A>

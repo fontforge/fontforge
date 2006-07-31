@@ -451,6 +451,17 @@
       1 個の真偽値です。<BR>
       Windows のキーボードでは、マウスボタン 2 (中ボタン) をシミュレートするのときに、そのフラグとなる修飾キーを使用します。そのキーが押しながらマウスボタンを押したり放したりしたときは、あたかもボタン 2 を押したり放したりしたかのようにふるまいます。
     <DT>
+      <CODE>Gdraw.DontOpenXDevices</CODE>
+    <DD>
+<!--  a boolean -->
+      1 個の真偽値です。
+    <DD>
+<!--  Various people have complained that when FontForge attempts to open the devices
+      of the wacom graphics tablet, the X server gives a BadDevice error. I can't
+      duplicate this, the open works fine on my system, but this resource allows
+      them to tell fontforge not to try to use the tablet. -->
+      FontForge がワコムのグラフィクスタブレットのデバイスを開こうとした時に X が BadDevice エラーを返すという苦情をいろいろな人から受けました。私はこれを再現できておらず、私のシステム上ではうまく開けるのですが、問題が生じる環境でも、このリソースを使用すれば FontForge がタブレットを使おうと試みないように指定することができます。
+    <DT>
       <CODE>Gdraw.MacOSXCmd</CODE>
     <DD>
 <!--  A boolean<BR>

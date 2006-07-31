@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 28-Mar-2006 -->
+  <!-- AP: Last modified: 17-Jul-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
   <TITLE>FontForge</TITLE>
   <LINK REL="icon" href="../ffanvil16.png">
@@ -31,18 +31,21 @@
   <P>
 <!--
   FontForge's user interface has been localized for: (English), Russian, Japanese,
-  French, Italian, Spanish.<BR>-->
-  FontForge のユーザインタフェースは以下の言語版が用意されています: (英語)・ロシア語・日本語・フランス語・イタリア語・スペイン語。<BR>
+  French, Italian, Spanish, Vietnamese.<BR> -->
+  FontForge のユーザインタフェースは以下の言語版が用意されています: (英語)・ロシア語・日本語・フランス語・イタリア語・スペイン語・ベトナム語。<BR>
 <!--  This website itself has been translated into Japanese
   <A HREF="ja/"><IMG SRC="flags/Nisshoki-Japan.png" WIDTH="39" HEIGHT="26"></A>
   and the tutorial into traditional Chinese
   <A HREF="http://edt1023.sayya.org/fontforge/editexample.html"><IMG SRC="flags/taiwan.png"
-      WIDTH="39" HEIGHT="26"></A> -->
+      WIDTH="39" HEIGHT="26"></A> and German
+  <A HREF="de/editexample.html"><IMG SRC="flags/GermanFlag.png" WIDTH="39"
+      HEIGHT="26"></A>. -->
   <a href="../index.html">この Web サイト</a>そのものは日本語
   <A HREF="index.html"><IMG SRC="../flags/Nisshoki-Japan.png" WIDTH="39" HEIGHT="26"></A>
   に翻訳されているほか、チュートリアルが繁体字中国語
   <A HREF="http://edt1023.sayya.org/fontforge/editexample.html"><IMG SRC="../flags/taiwan.png"
-      WIDTH="39" HEIGHT="26"></A> 
+      WIDTH="39" HEIGHT="26"></A> とドイツ語
+  <A HREF="http://fontforge.sourceforge.net/de/editexample.html"><IMG SRC="../flags/GermanFlag.png" WIDTH="39"></A>
   に翻訳されています。
   <P>
   <UL>
@@ -63,6 +66,8 @@
 	  <TD>&nbsp; &nbsp; &nbsp; <A HREF="vms-install.html">VMS</A></TD>
 <!--  	<TD>&nbsp; &nbsp; &nbsp; <A HREF="source-build.html">from source</A></TD> -->
 	  <TD>&nbsp; &nbsp; &nbsp; <A HREF="source-build.html">ソースの構築方法</A></TD>
+<!--	  <TD>&nbsp; &nbsp; &nbsp; <A HREF="uninstall.html">Uninstalling</A></TD> -->
+	  <TD>&nbsp; &nbsp; &nbsp; <A HREF="uninstall.html">削除方法</A></TD>
 	</TR>
       </TABLE>
     <LI>
@@ -83,8 +88,11 @@
 <!--  <A HREF="http://sourceforge.net/projects/fontforge/">SourceForge Project
       page</A> / SourceForge
       <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338">File
-      Release System</A> -->
-      <A HREF="http://sourceforge.net/projects/fontforge/">SourceForge のプロジェクトページ</A> / SourceForge の <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338">ファイルリリースシステム</A>
+      Release System</A> / -->
+      <A HREF="http://sourceforge.net/projects/fontforge/">SourceForge のプロジェクトページ</A> / SourceForge の <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338">ファイルリリースシステム</A> /
+<!-   <A HREF="http://sourceforge.net/project/project_donations.php?group_id=103338">Donate
+      to FontForge</A> -->
+      <A HREF="http://sourceforge.net/project/project_donations.php?group_id=103338">FontForge へ寄付する</A>
     <LI>
 <!--  <A HREF="source-build.html#Dependencies">Dependencies</A> -->
       <A HREF="source-build.html#Dependencies">依存するファイル群</A>
@@ -377,6 +385,10 @@
 <!--  FontForge only produces an approximation to the OS/2 Codepages fields.-->
       FontForge の出力する OS/2 テーブルの Codepages フィールドの値は厳密には正しくありません。
     <LI>
+<!--  Some <A HREF="index.html#badcommands">commands</A> don't work well in extreme
+      conditions. -->
+      いくつかの<A HREF="index.html#badcommands">コマンド</A>は、極端な条件の下ではうまく動作しません。
+    <LI>
       ???
   </UL>
   <H2>
@@ -386,11 +398,11 @@
   <P>
 <!--
   I'm sure you'll find some. If you can isolate it and come up with a reproducible
-  minimal case, that would be great. The executable has symbols in it so if
-  you run it in gdb you should be able to get a stack trace... Do what you
-  you run it in gdb you should be able to get a stack trace... Give me a test
-  case if possible. Do what you can. -->
-  あなたもいくつかのバグを見つけると思います。それを特定することができて、再現可能な最小の例を作ることができたならば素晴らしいことです。実行可能ファイルにはシンボルが含まれているので gdb で実行すればスタックトレースが得られるでしょう… 可能ならばテストケースを私にください。あなた自身で可能なことをしてください。
+  minimal case, that would be great. If your executable has symbols in it,
+  you could run it in gdb and get a stack trace... Give me a test case if possible.
+  Do what you can.
+
+  あなたもいくつかのバグを見つけると思います。それを特定することができて、再現可能な最小の例を作ることができたならば素晴らしいことです。実行可能ファイルにシンボルが含まれているならば、gdb で実行してスタックトレースが得ることができるでしょう… 可能ならばテストケースを私にください。あなた自身で可能なことをしてください。
   <TABLE CELLPADDING="2">
     <TR>
 <!-- <TH><P ALIGN=Left>
@@ -418,10 +430,15 @@
       <EM>私の書き物には不十分な点がたくさん残っています</EM>。私の文書をより読みやすくすることのできる人はどなたでも歓迎します。(または、別の言語に翻訳する人やより柔軟なフォーマットに変換したい人も。狩野は<A href="index.html">日本語版</A>を作っています)
     <LI>
 <!--  <I>I also have a brief tutorial in <A HREF="fontforge-tutorial.pdf">pdf
-      format</A>.</I> This could also be translated into other languages (and would
-      be a simpler job than trying to translate the entire website, here is the
-      <A HREF="fontforge-tutorial.tex">TeX source</A> if you wish to attempt it). -->
-      <I>私は簡単なチュートリアルの <A HREF="fontforge-tutorial.pdf">PDF 版</A> も作成しました。</I>これも翻訳できるでしょう (Web サイト全体を翻訳するよりはずっと楽な作業でしょう。翻訳をするつもりでしたら、ここに <a HREF="fontforge-tutorial.tex">TeX ソース</A>があります)。
+      format</A> and in <A HREF="editexample.html">html</A>.</I> This could also
+      be translated into other languages (and would be a simpler job than trying
+      to translate the entire website, here is the
+      <A HREF="fontforge-tutorial.tex">TeX source</A> if you wish to attempt it).
+      The html has been translated into <A HREF="de/editexample.html">German</A>
+      and
+      <A HREF="http://edt1023.sayya.org/fontforge/editexample.html">Chinese</A>.
+-->
+      <I>私は簡単なチュートリアルの <A HREF="fontforge-tutorial.pdf">PDF 版</A>と <A HREF="editexample.html">HTML 版</A>も作成しました。</I>これも他の言語に翻訳できるでしょう (Web サイト全体を翻訳するよりはずっと楽な作業でしょう。翻訳をするつもりでしたら、ここに <a HREF="fontforge-tutorial.tex">TeX ソース</A>があります)。HTML 版は<A HREF="de/editexample.html">ドイツ語</A>と<A HREF="http://edt1023.sayya.org/fontforge/editexample.html">中国語</A>に翻訳されています。
     <LI>
 <!--  <EM>The UI can be translated into different languages.</EM> FontForge now
       uses gnu gettext. -->
@@ -430,12 +447,18 @@
 	<LI>
 <!--  	English I take care of-->
 	  英語版は私が保守しています。
+	  <UL>
+	    <LI>
+<!--	      (I've even got an en_UK file for those differences I've noticed between British
+	      &amp; US spellings) -->
+	      (私は、英国と米国の綴りの違いに気づいた差分を含む en_UK 版のファイルまで作っています)
+	  </UL>
 	<LI>
 <!--  	Russian is provided by Valek Filippov.-->
 	  ロシア語版は Valek Filippov が提供しています。
 	<LI>
-<!--  	Japanese is provided by KANOU Hiroki.-->
-	  日本語版は狩野宏樹が提供しています。
+<!--  	Japanese is provided by KANOU Hiroki. (and has translated the entire website) -->
+	  日本語版は狩野宏樹が提供しています。(彼はそのうえ Web サイトを全部翻訳しています)
 	<LI>
 <!--  	French is provided by Pierre Hanser and Yannis Haralambous. -->
 	  フランス語版は Pierre Hanser と Yannis Haralambous が提供しています。
@@ -446,6 +469,11 @@
 <!--  	Spanish is provided by <A HREF="mailto:wecharri@yahoo.com">Walter Echarri</A> -->
 	  スペイン語版は <A HREF="mailto:wecharri@yahoo.com">Walter Echarri</A> が提供しています。
 	<LI>
+<!--	  Vietnamese is provided by
+	  <A HREF="http://vnoss.net/dokuwiki/doku.php?id=projects:l10n">Clytie
+	  Siddall</A>. -->
+	  ベトナム語版は <A HREF="http://vnoss.net/dokuwiki/doku.php?id=projects:l10n">Clytie Siddall</A> によって提供されています。
+	<LI>
 <!--	  A Catalan translation is being worked on by Javier Candeira. -->
 	  カタルーニャ語版の翻訳は Javier Candeira が作業中です。
 	<LI>
@@ -454,8 +482,11 @@
 	  do so. -->
 	  Gustavo Paolo が (ブラジルの) ポルトガル語への翻訳を開始しましたが、それにかける時間が無くなったそうです。誰かこれを引き継ぎたい人がいたら引き継いでください。
 	<LI>
-<!--	  Wei-ju Wu is working on a German translation. -->
-	  Wei-ju Wu がドイツ語訳の作業を進行中です。
+<!--	  Wei-ju Wu is working on a German translation. (and has translated the tutorial) -->
+	  Wei-ju Wu がドイツ語訳の作業を進行中です。(彼はまた、チュートリアルも翻訳しています)
+	<LI>
+<!--	  Apostolos Syropoulos is working on a Greek translation -->
+	  Apostolos Syropoulos がギリシャ語訳の作業を進行中です。
 	<LI>
 <!--  	Any other language additions would be great (the entire UI does not need
 	  to be translated, any subset is a help) -->
@@ -470,25 +501,36 @@
       and autotraces the result). It won't produce .mf files<BR>
       FontForge will read (but not produce) Ikarus files<BR>
       FontForge will read acorn font files with a helper app.<BR>
-      But there are other formats out there that I can't find descriptions of: -->
+      But there are other formats out there that I can't find descriptions of
+      But there are other formats out there that I can't find descriptions of or
+      don't think are worth supporting -->
       FontForge は Type1, TrueType, OpenType, CFF, Type42, CID フォントおよび SVG フォント、それに加えてビットマップでは BDF と NFNT をサポートしています。<BR>
       FontForge はある意味で METAFONT ファイルを読み込むことができます (本質的には METAFONT を実行して結果を自動トレースします)。.mf ファイルは出力しません。<BR>
       FontForge は Ikarus ファイルを読み込むことができます (が書き出しません)<BR>
       FontForge は補助アプリケーションを使って acorn フォントを読み込みます。<BR>
-      しかし私が解説を見つけることのできないその他のフォーマットがあります:
+      しかし私が解説を見つけることのできないか、サポートする価値が無いと考えているその他のフォーマットがあります。
       <UL>
 	<LI>
-<!--  	Microsoft FON files (bitmap font resource files for windows) -->
-	  Microsoft FON ファイル (Windows 用ビットマップフォントリソースファイル)
+<!--	  Can you point me at documentation for other standards -->
+	  その他の規格の文書を教えていただけませんか?
+	<LI>
+<!--	  Can you explain why that format is useful? -->
+	  そのフォーマットがなぜ有益なのか説明していただけませんか?
       </UL>
     <LI>
-<!--  There are certain c<EM>ommands which don't work very well </EM>and if someone
-      else wanted to they might code them better than I... -->
-      <EM>あまりよく動かないコマンド</EM>がいくつかあり、誰か他の人がやる気をだしてくれれば、私より上手なコードを書くでしょう……。
+<!--  There are certain <A NAME="badcommands">c<EM>ommands</EM></A><EM> which don't
+      work very well </EM>and if someone else wanted to they might code them better
+      than I... -->
+      <A NAME="badcommands"><EM>あまりよく動かないコマンド</EM></A>がいくつかあり、誰か他の人がやる気をだしてくれれば、私より上手なコードを書くでしょう……。
       <UL>
 	<LI>
-<!--  	Remove overlap (might be fixed now) -->
-	  重複除去 (現在は修正済みのはずです)
+<!--	  Remove overlap (has problems with coincident splines) -->
+	  重複除去 (一致するスプラインで問題を起こします)
+	<LI>
+<!--	  Expand Stroke (has problems when there are sharp bends near the end of a
+	  contour (or near a joint where the slope is discontinuous) - - a sharp bend
+	  is one where the radius of curvature is smaller than half the stroke-width) -->
+	  輪郭を太らせる (輪郭の端の近く (または傾きが不連続な接合部部分の近く) に鋭い折れ曲がりがある場合に問題が起こります――鋭い折れ曲がりとは、曲率半径がストローク幅の半分より小さい場合のことを言います)。
 	<LI>
 <!--  	Autokern (might be fixed now) -->
 	  自動カーニング (現在は修正済みのはずです)
@@ -569,6 +611,10 @@ U+0066 + U+0069 =&gt; U+FB01 'liga'
 	  </BLOCKQUOTE>
 	  のようなフォーマットでご提供いただけないでしょうか。
       </UL>
+    <LI>
+<!--  <A HREF="http://sourceforge.net/project/project_donations.php?group_id=103338">Donate
+      to FontForge</A> -->
+      <A HREF="http://sourceforge.net/project/project_donations.php?group_id=103338">FontForge へ寄付する</A>
   </UL>
   <H2>
 <!--<A NAME="Acknowledgements">Acknowledgements</A> -->
@@ -913,9 +959,9 @@ U+0066 + U+0069 =&gt; U+FB01 'liga'
 	  (mostly for setting opentype tables I think) -->
 	  Adobe も、<A HREF="http://partners.adobe.com/asn/tech/type/otfdk/">フォント開発者キット</A>を提供しています (ほとんどは OpenType のテーブルを設定するための物だと思います。)
 	<LI>
-<!--	  <A HREF="http://developer.apple.com/fonts/Tools/">And Apple does too</A>
-	  (mac only) -->
-	  <A HREF="http://developer.apple.com/fonts/Tools/">Apple もまた提供しています</A> (Mac 専用)
+<!--	  <A HREF="http://developer.apple.com/textfonts/Fonttools/Index.html">And Apple
+	  does too</A> (mac only) -->
+	  <A HREF="http://developer.apple.com/textfonts/Fonttools/Index.html">Apple もまた提供しています</A> (Mac 専用)
 	<LI>
 <!--	  <A HREF="http://developer.apple.com/fonts/OSXTools.html">And some OS/X
 	  tools</A> (mac only) -->

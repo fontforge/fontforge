@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 5-Feb-2006 -->
+  <!-- AP: Last modified: 3-Jul-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Font Info</TITLE>-->
     <TITLE>フォント情報</TITLE>
@@ -20,12 +20,14 @@
   <P>
 <!--
   The Font Info dialog is available from all views. It allows you to name your
-  font, to set its <A HREF="fontview.html#Encodings">encoding</A> and various
-  other useful bits of information. In a <A HREF="fontview.html#CID">CID keyed
-  font</A>, there is a <A HREF="cidmenu.html#FontInfo">separate command</A>
-  to access the information for the font as a whole, the dialog looks the same.
-  The dialog is composed of many different sub dialogs. -->
-  フォント情報ダイアログはすべてのビューから使用可能です。このメニューを使って様々な有用な情報の各ビットを設定することができます。<A HREF="fontview.html#CID">CID フォント</A>では、フォント全体の集合体の情報にアクセスするための<A HREF="cidmenu.html#FontInfo">独立したコマンド</A>がありますが、ダイアログの見た目は同じです。このダイアログは多数の別種のサブダイアログから構成されています。
+  font and various other useful bits of information. In a
+  <A HREF="fontview.html#CID">CID keyed font</A>, things are more complex.
+  Each CID keyed font is composed of man sub-fonts; this command works on the
+  current sub-font while there is a <A HREF="cidmenu.html#FontInfo">separate
+  command</A> to access the information for the font as a whole - - that dialog
+  looks the same. The dialog is composed of many different sub dialogs. -->
+  フォント情報ダイアログはすべてのビューから使用可能です。このメニューを使ってフォントに名前をつけたり、その他さまざまな有用な情報の各ビットを設定することができます。<A HREF="fontview.html#CID">CID キー指定フォント</A>では、事情はより複雑です。各々の CID キー指定フォントは多くのサブフォントから構成されています; 
+このコマンドは現在のサブフォントを操作するためのものであり、フォント全体の集合体の情報にアクセスするためには<A HREF="cidmenu.html#FontInfo">独立したコマンド</A>があります――このダイアログと見た目は同じです。このダイアログは多数の別種のサブダイアログから構成されています。
   <UL>
     <LI>
 <!--  <A HREF="fontinfo.html#Names">Names</A>-->
@@ -33,6 +35,9 @@
     <LI>
 <!--  <A HREF="fontinfo.html#PS-General">General</A>-->
       <A HREF="fontinfo.html#PS-General">一般情報</A>
+    <LI>
+<!--  <A HREF="#PSUID">PostScript Unique IDs</A> -->
+      <A HREF="#PSUID">PostScript ユニーク ID</A>
     <LI>
 <!--  <A HREF="fontinfo.html#Private">PostScript Private Dictionary</A>-->
       <A HREF="fontinfo.html#Private">PostScript の Private 辞書</A>
@@ -108,10 +113,11 @@
   ほとんどのフォントでは バージョン フィールドは文字列です (それには最低限の制限があります) が、CID フォントでは浮動小数点数でなければなりません。
   <P>
 <!--
-  Many of these names are similar to the english names of the TTF Names section.
-  If nothing is specified in that section then the names specified here will
-  be used by default in ttf files. -->
-  これらの名前の多くは TTF 名セクションの英語名に似ています。そのセクションで何も選択しなかった場合には、ここで指定した名前が TTF ファイルのデフォルトとして使用されます。
+  Many of these names are similar to the english names of the
+  <A HREF="fontinfo.html#TTF-Names">TTF Names</A> section. If nothing is specified
+  in that section then the names specified here will be used by default in
+  ttf files. -->
+  これらの名前の多くは <A HREF="fontinfo.html#TTF-Names">TTF 名</A>セクションの英語名に似ています。そのセクションで何も選択しなかった場合には、ここで指定した名前が TTF ファイルのデフォルトとして使用されます。
   <H2>
     <IMG SRC="fontinfo-ps.png" WIDTH="325" HEIGHT="454" ALIGN="Right"><!--<A NAME="PS-General">General</A>-->
     <A NAME="PS-General">一般情報</A>
@@ -136,8 +142,10 @@
 <!--
   If you change the size of the Em you may choose to have all the outlines
   (and kerning info) scaled to have the same proportion to the new value that
-  they had to the old. -->
-  EM のサイズを変更したときには、すべてのアウトライン (およびカーニング情報) を古い値から新しい値に変更したのと同じ比率で拡大・縮小します。
+  they had to the old. Warning: <FONT COLOR="Red"><STRONG>If your font has
+  truetype instructions scaling may break the font as entries in the <CODE>'cvt
+  '</CODE> table will not be scaled.</STRONG></FONT> -->
+  EM のサイズを変更したときには、すべてのアウトライン (およびカーニング情報) を古い値から新しい値に変更したのと同じ比率で拡大・縮小します。警告: <FONT COLOR="Red"><STRONG>フォントに TrueType 命令が含まれている場合、拡大・縮小を行うと、<CODE>'cvt '</CODE> テーブルは拡大・縮小されないままなので、フォントは壊れるでしょう。</STRONG></FONT>
   <P>
 <!--
   The Italic Angle indicates the slant of the font. FontForge can attempt to
@@ -150,34 +158,6 @@
   as to where it should place a line if it wants to underline text printed
   in this font. -->
   <CODE>下線の位置(<U>P</U>)</CODE> と <CODE>太さ(<U>H</U>)</CODE> は、このフォントを使うプログラムが下線つきテキストをこのフォントで印字しようとするときに、線をどこに引くかに関するヒントを提供します。
-  <P>
-<!--
-  <FONT COLOR="Red"><SMALL><STRONG>NOTE:</STRONG></SMALL></FONT>
-  <A HREF="UniqueID.html">Adobe now says</A> that both XUID and UniqueID are
-  unnecessary. -->
-  <FONT COLOR="Red"><SMALL><STRONG>注意:</STRONG></SMALL></FONT> Adobe は現在では XUID や UniqueID はどちらも<A HREF="UniqueID.html">不要だと言っています</A>。
-  <P>
-<!--
-  The XUID field is a collection of numbers separated by spaces and enclosed
-  in brackets. This allows you to specify the extended unique ID of the font.
-  If you have set the XUID preference entry then FontForge will assign values
-  to all new fonts (by appending a number unique to this font to the end of
-  your preference item). Adobe recommends that the XUID be changed every time
-  the font is changed, so each time you generate a postscript font, that font's
-  XUID (if present) will be incremented by 1 (This incrementing does not happen
-  in CID-keyed fonts, where the XUID behavior is too complex for this simple
-  trick). (The XUID field is only meaningful in PostScript fonts). -->
-  XUID フィールドは、空白で区切られた数値の集まりを括弧でくくったものです。フォントの拡張ユニーク ID はこれを用いて指定することができます。
-  XUID プリファレンス項目が既に設定されているならば、FontForge はすべての新しいフォントに対して (指定した値の後に各フォントに一意な数値を付け加えて) その値を設定します。Adobe は、フォントが変更されるたびに XUID を毎回変更することを推奨しているので、PostScript フォントを生成するたびごとにフォントの XUID (存在する場合) は 1ずつ加えられます (この増加は CID フォントでは行いません。CID フォントでは XUID の扱いがこの単純なトリックでは対処しきれないほど非常に複雑だからです)。(XUID フィールドは、PostScript フォントでのみ意味があります)。
-  <P>
-<!--
-  The UniqueID field is an older convention for the same purpose as XUID. If
-  you do not fill in this field then FontForge will pick a random number for
-  you in the allowable range. If you want your font to have no unique id then
-  give this the value of -1. If you have talked to Adobe and been assigned
-  a real UniqueID then you may use this field, otherwise leave it blank. (The
-  UniqueID field is only meaningful in PostScript fonts) -->
-  UniqueID フィールドは XUID と同じ目的をもつ、より以前からの慣習です。このフィールドに値が入っていない場合は、FontForge は許される範囲からランダムな値を選びます。フォントにユニーク ID を設定したくない場合は、この値を -1 にしてください。もしあなたが Adobe に連絡して正式なユニーク ID を割り当てられたならば、このフィールドを使うことができます。それ以外の場合は空白にしておいてください。(XUID フィールドは、PostScript フォントでのみ意味があります)。
   <P>
 <!--
   If you want your font to have <A NAME="vertical">vertical</A> metrics (generally
@@ -218,15 +198,46 @@
   for understanding the font's behavior. For example a unicode font designed
   for a chinese system will look very different from a unicode font for a japanese
   system (The same unicode character may map to very different chinese or japanese
-  glyphs). To handle this FontForge has the concept of "Interpretation".  -->
+  glyphs). To handle this FontForge has the concept of "Interpretation". -->
   <A NAME="Interpretation">残念ながら</A>エンコーディングは、フォントのふるまいを理解するのに常に十分なわけではありません。例えば、中国語の表記法に合わせて作られた Unicode フォントは、日本語の表記法に合わせて作られた Unicode フォントとは大きく異なる見かけをもつでしょう (中国語と日本語で大きく異なるグリフが同一の Unicode 文字に割り当てられています)。これを扱うために (および他のいくつかの目的のために) FontForge は「解釈」という概念をもっています。
   <P>
 <!--When you create a new glyph in a font, fontforge will assign it a name based
   on the current
   <A HREF="encodingmenu.html#namelist">namelist</A>.<BR Clear=ALL> -->
   フォント内に新しいグリフを作成すると、FontForge は現在の<A HREF="encodingmenu.html#namelist">名前リスト</A> に基づいて名前を割り当てます。<BR Clear=ALL>
-
-  <UL>
+   <H2>
+<!--
+    <IMG SRC="fontinfo-psuid.png" WIDTH="376" HEIGHT="608" ALIGN="Right"><A NAME="PSUID">PostScript
+    Unique ID</A> -->
+    <IMG SRC="../fontinfo-psuid.png" WIDTH="376" HEIGHT="608" ALIGN="Right"><A NAME="PSUID">PostScript ユニーク ID</A>
+  </H2>
+<!--
+  <FONT COLOR="Red"><SMALL><STRONG>NOTE:</STRONG></SMALL></FONT>
+  <A HREF="UniqueID.html">Adobe now says</A> that both XUID and UniqueID are
+  unnecessary. -->
+  <FONT COLOR="Red"><SMALL><STRONG>注意:</STRONG></SMALL></FONT> Adobe は現在では XUID や UniqueID はどちらも<A HREF="UniqueID.html">不要だと言っています</A>。
+  <P>
+<!--
+  The XUID field is a collection of numbers separated by spaces and enclosed
+  in brackets. This allows you to specify the extended unique ID of the font.
+  If you have set the XUID preference entry then FontForge will assign values
+  to all new fonts (by appending a number unique to this font to the end of
+  your preference item). Adobe recommends that the XUID be changed every time
+  the font is changed, so each time you generate a postscript font, that font's
+  XUID (if present) will be incremented by 1 (This incrementing does not happen
+  in CID-keyed fonts, where the XUID behavior is too complex for this simple
+  trick). (The XUID field is only meaningful in PostScript fonts). -->
+  XUID フィールドは、空白で区切られた数値の集まりを括弧でくくったものです。フォントの拡張ユニーク ID はこれを用いて指定することができます。
+  XUID プリファレンス項目が既に設定されているならば、FontForge はすべての新しいフォントに対して (指定した値の後に各フォントに一意な数値を付け加えて) その値を設定します。Adobe は、フォントが変更されるたびに XUID を毎回変更することを推奨しているので、PostScript フォントを生成するたびごとにフォントの XUID (存在する場合) は 1ずつ加えられます (この増加は CID フォントでは行いません。CID フォントでは XUID の扱いがこの単純なトリックでは対処しきれないほど非常に複雑だからです)。(XUID フィールドは、PostScript フォントでのみ意味があります)。
+  <P>
+<!--
+  The UniqueID field is an older convention for the same purpose as XUID. If
+  you do not fill in this field then FontForge will pick a random number for
+  you in the allowable range. If you want your font to have no unique id then
+  give this the value of -1. If you have talked to Adobe and been assigned
+  a real UniqueID then you may use this field, otherwise leave it blank. (The
+  UniqueID field is only meaningful in PostScript fonts) -->
+  UniqueID フィールドは XUID と同じ目的をもつ、より以前からの慣習です。このフィールドに値が入っていない場合は、FontForge は許される範囲からランダムな値を選びます。フォントにユニーク ID を設定したくない場合は、この値を -1 にしてください。もしあなたが Adobe に連絡して正式なユニーク ID を割り当てられたならば、このフィールドを使うことができます。それ以外の場合は空白にしておいてください。(XUID フィールドは、PostScript フォントでのみ意味があります)。
   <H2>
 <!--<A NAME="Private">Private</A> - - <SMALL>(font-wide postscript hinting)</SMALL>-->
     <A NAME="Private">PostScript の Private 辞書</A> ― <SMALL>(フォント全体に適用される PostScript のヒント)</SMALL>
@@ -532,8 +543,8 @@
   in a font menu, while a German user might see CaslonKursive. There are about
   20 different strings which may be customized into various different languages.
   Customizing one string does not mean that you must customize the others (indeed,
-  usually only the Style string is customized). -->
-  TrueType (および OpenType) フォントは複数の名前を各種の異なる言語で格納することができます。よってフランスのユーザーは CaslonItlic がフォントメニューで CaslonItalique と表示され、ドイツのユーザは CaslonKursive と表示されるのを見るでしょう。さまざまな異なる言語にカスタマイズすることができる 20 種類ほどの文字列が存在します。ある文字列をカスタマイズしたからといって、他のものもカスタマイズしないとならないわけでは (まったく) ありません。通常は Style 文字列のみをカスタマイズします。
+  often only the Style string will be customized). -->
+  TrueType (および OpenType) フォントは複数の名前を各種の異なる言語で格納することができます。よってフランスのユーザーは CaslonItlic がフォントメニューで CaslonItalique と表示され、ドイツのユーザは CaslonKursive と表示されるのを見るでしょう。さまざまな異なる言語にカスタマイズすることができる 20 種類ほどの文字列が存在します。ある文字列をカスタマイズしたからといって、他のものもカスタマイズしないとならないわけではありません。(Style 文字列のみをカスタマイズすることがしばしばあります)。
   <P>
 <!--
   The image at right shows the dialog, displaying all the strings set for the
@@ -548,11 +559,12 @@
   Certain strings in English (Copyright, Family, Styles, Fullname, Version)
   will always be present. If you do not set them explicitly they will be taken
   (possibly with modifications) from the equivalent postscript strings on the
-  Names pane. You may not remove these strings, and if you wish to modify them
-  you must first detach them from the PostScript. In the example at right the
-  strings bound to PostScript are shown in red (Copyright, Family, Styles),
-  while Fullname and Version have been detached and modified. -->
-  いくつかの英語の文字列 (Copyright, Family, Styles, Fullname, Version) は常に存在します。それらを明示的に設定していない場合、<CODE>[名前]</CODE> タブで設定された等価な PostScript 文字列から (おそらく変更を加えたうえで) コピーされます。これらの文字列は削除できません。また、これらを変更したい場合は、まず PostScript との対応を切り離す必要があります。右の例では PostScript と対応づけられた文字列 (Copyright, Family, Styles) は赤で表示されており、Fullname と Version は対応を切り離したうえで変更されています。
+  <A HREF="fontinfo.html#Names">Names</A> pane. You may not remove these strings,
+  and if you wish to modify them you must first detach them from the PostScript.
+  In the example at right the strings bound to PostScript are shown in red
+  (Copyright, Family, Styles), while Fullname and Version have been detached
+  and modified. -->
+  いくつかの英語の文字列 (Copyright, Family, Styles, Fullname, Version) は常に存在します。それらを明示的に設定していない場合、<A HREF="fontinfo.html#Names"><CODE>[名前]</CODE></A> タブで設定された等価な PostScript 文字列から (おそらく変更を加えたうえで) コピーされます。これらの文字列は削除できません。また、これらを変更したい場合は、まず PostScript との対応を切り離す必要があります。右の例では PostScript と対応づけられた文字列 (Copyright, Family, Styles) は赤で表示されており、Fullname と Version は対応を切り離したうえで変更されています。
   <P>
 <!--
   You may change the language of a string by clicking the mouse on the language

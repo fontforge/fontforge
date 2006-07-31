@@ -3,6 +3,7 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
   <!-- AP: Last modified: 9-Apr-2006 -->
+  <!-- AP: Last modified: 15-Jul-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Change log for FontForge</TITLE> -->
     <TITLE>FontForge の変更履歴</TITLE>
@@ -20,8 +21,379 @@
   Changes since the last release may be found by performing a "cvs log" command
   on the file stamp.c. -->
   最新のリリース以降の変更点は、ファイル stamp.c を“cvs log”コマンドで調べれば分かります。
-  <P>
+  <BLOCKQUOTE>
+    <TABLE BGCOLOR="#FFFFC0">
+      <TR>
+	<TD>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</TD>
+<!--	<TD><SMALL><B><SMALL>TEGEUS:</SMALL></B><BR>
+	  &nbsp; &nbsp; &nbsp; Tell me,<BR>
+	  What is your opinion of Progress? Does it, for example,<BR>
+	  Exist? Is there ever progression without retrogression?<BR>
+	  Therefore is it not true that mankind<BR>
+	  Can more justly be said increasingly to Gress?<BR>
+	  &nbsp;</SMALL></TD> -->
+	<TD><SMALL><B><SMALL>テゲウス:</SMALL></B><BR>
+	  &nbsp; &nbsp; &nbsp; 教えてくれ、<BR>
+	  きみは進歩を何だと考えているのかを。例えば、進歩の存在を<BR>
+	  信じているかね? 退歩なしに進歩だけしたためしがあったろうか?<BR>
+	  だから、人類はますます歩(ぽ)していると言った方が<BR>
+	  簡にして要を得ているんじゃないだろうか?</BR>
+	  &nbsp;</SMALL></TD>
+	<TD>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+	  &nbsp;</TD>
+	<TD VALIGN="Bottom"><P ALIGN=Right>
+	  ― <SMALL>A Pheonix too Frequent<BR>
+	  Christopher Fry, 1950</SMALL></TD>
+      </TR>
+    </TABLE>
+  </BLOCKQUOTE>
   <UL>
+    <LI>
+<!--  15-Jul-2006 -->
+      2006年7月15日
+      <UL>
+	<LI>
+<!--	  Apple's bitmap only fonts should not have an 'hhea' nor an 'hmtx'
+	  table<BR>
+	  Dummy up outline glyph widths when we don't have a 'hmtx' table by looking
+	  at bitmap widths for that glyph.<BR>
+	  ftxvalidate complains if the vertical line metrics are 0. Even in a strike
+	  with no vertical metrics information. So dummy something up. -->
+	  Apple のビットマップのみのフォントは 'hhea' と 'hmtx' の量テーブルを含んでいてはいけません<BR>
+	  'hmtx' テーブルが無い場合には、そのグリフのビットマップの幅を見てダミーのアウトライングリフを作成。<BR>
+	  ftxvalidate は、縦書きの行メトリクスが 0 だと文句を言います。縦書きメトリック情報を含まないストライクにおいてもそうなのです。そういうわけで何らかのダミーを作成するようにしました。
+	<LI>
+<!--	  Was getting the flags wrong for turning off features in an apple morx chain. -->
+	<LI>
+	  When outputing mark-to-base sub-tables with multiple marks I neglected to
+	  output an NUL offsets for the anchors that weren't there. So if a glyph had
+	  only one anchor (instead of two, or however many) then the offsets would
+	  be all wrong.
+	<LI>
+	  The SetPref() scripting function was misdocumented to be called SetPrefs()
+	  so accept both names.
+	<LI>
+	  When building an accented letter out of glyphs with an anchor class ff would
+	  increase the advance width of the accented glyph by the size (xmax-xmin)
+	  of the accent.
+	<LI>
+	  Expand the functionality of the ruler tool so that it also shows curvature.
+	<LI>
+	  When importing a bitmap font from a mac binary or an sfnt and the encodings
+	  of the destination and the bitmap did not match, then things got rather screwed
+	  up and might crash.
+	<LI>
+	  patch from KANOU. the ref check routine in glyphcomp compared one reference
+	  to itself.
+      </UL>
+    <LI>
+<!--  03-Jul-2006 -->
+      2006年7月3日
+      <UL>
+	<LI>
+	  Type2 charstrings have no closepath operator. I used to think that meant
+	  I could not omit the final vector. In fact it means I can omit the final
+	  vector AND the closepath operator.
+	<LI>
+	  If we had a font with no complete code pages we used to generate a version
+	  0 OS/2 table without codepage info. But now windows refuses to install such
+	  a font. Instead generate a bogus codepage field which claims to have latin1
+	  (even though it doesn't).
+	  <P>
+	  Windows won't use a font where the codepages field is 0.
+	<LI>
+	  When generating a FOND for a bitmap only sfnt, we created dummy 'NFNT' resources
+	  with the wrong resource ids. Which meant we got garbage when the font was
+	  used.
+	<LI>
+	  Make the TabSets in the font &amp; glyph info dialogs run vertically rather
+	  than hor izontally. (Add an option to get the old display back).
+	<LI>
+	  Approximate Spline from Point Slopes sometimes set the control point while
+	  leavi ng the nonextcp flag on.
+	<LI>
+	  Add Extrema only looked at how close a point was to the extrema in one dimension.
+	  While that dimension is more important, make a less stringent check on the
+	  other.
+	<LI>
+	  Expand Stroke removes "U-turns" from splines because they confuse it. But
+	  the routine that did that got a bit rambunctious and did the wrong thing
+	  on a circular arc.
+	<LI>
+	  If a font did not contain an OS/2 table then we didn't retain the 'hhea'
+	  ascent/ descent.
+	<LI>
+	  Various fixes from Matthias Kilian of OpenBSD.
+	<LI>
+	  When asking for default 'subs' features, every glyph gets assigned U+2080.
+	<LI>
+	  Display the curvature information at each point. In Point Info dlg, and in
+	  a pop up window when editing cps.
+	<LI>
+	  Add two new menu commands/scripting commands:
+	  <UL>
+	    <LI>
+	      Canonical Start Points (CanonicalStart())
+	    <LI>
+	      Canonical Contours (CanonicalContours())
+	  </UL>
+	  <P>
+	  The first sets the start point of each contour to the leftmost point, while
+	  the second orders the contours by their leftmost points. This will slightly
+	  reduce the size of output charstrings. It will also make more things available
+	  to be put in subroutines.
+	<LI>
+	  Print Multi-Size &amp; Full Page printed the wrong glyphs from the font view.
+	  Broken since the encoding change.
+	<LI>
+	  When stroking a contour that makes a 180degree turn, ff did not give it a
+	  semi-circle if linejoin was set to round.
+	<LI>
+	  SPLCopyTranslatedHintMasks didn't work if there were more than one contour
+	  being copied.
+	<LI>
+	  Nathan Summers points out that if the XUID is garbage the ff can go into
+	  an infinite loop when generating an otf/cff font.
+	<LI>
+	  Somehow the XUID and UniqueID fields crept off the bottom of the fontinfo
+	  Names p ane and weren't visible or modifyable. Give them their own pane now.
+	<LI>
+	  Apply some patches (with some changes) from Nathan Summers to the truetype
+	  debug ger.
+	<LI>
+	  The property count in BDF fonts is wrong.
+	<LI>
+	  Ralf Stubner points out that the notdef glyph in an otf font should look
+	  like that in a ttf font, and not like that in a type1 font. (that is there
+	  should be something in the glyph).
+	<LI>
+	  Add support for group "encodings" which have empty spaces for unused glyphs.
+	<LI>
+	  make another attempt to find a good default sli for glyphs with no default
+	  script.
+	<LI>
+	  Typo in scripting function DefaultATT.
+	<LI>
+	  The View-&gt;Display Substitutions has been broken since the encoding change
+	  last summer.
+	<LI>
+	  Mark glyphs with out of date instructions differently from those with no
+	  instructions.
+	<LI>
+	  The last change to the cvt table generally did not get made.
+	<LI>
+	  Make glyph compare check for point matching in anchor points and in references.
+	<LI>
+	  Add a warning message about out of date instructions when generating a font.
+	<LI>
+	  When generating a font with anchor points matched to ttf points, ff failed
+	  to allocate enough space for them and offsets got all confused.
+	<LI>
+	  Oops. Some variables which should have been static were dynamic. Which meant
+	  we kept dlopening libfreetype.
+	<LI>
+	  If we had an anchor point which positioned itself with point matching, and
+	  we ge nerated an otf font then we'd output a lookup which tried to do point
+	  matching i n postscript. Only do point matching if we are sure we're in a
+	  tt font.
+	<LI>
+	  Add a preference item to control clearing of tt instructions.
+	<LI>
+	  Printing a multi-size page of a truetype font crashed.
+	<LI>
+	  Anchor Point dlg didn't work well with matching tt points.
+	<LI>
+	  Add a field to allow users to search for a glyph name within a kerning class.
+	<LI>
+	  Interesting. In kerning by classes, if the coverage table does not match
+	  the glyphs specified in all the classes (for the first (left) glyph), then
+	  any glyphs in the coverage table but not in any class should be treated as
+	  being in class 0.
+	<LI>
+	  Add something to the font view's copy from menu to control whether truetype
+	  instructions are copied or not.
+	<LI>
+	  Add some more problems to find problems
+	  <UL>
+	    <LI>
+	      Check for glyphs with both contours and references.
+	    <LI>
+	      Find out of date point matched references.
+	    <LI>
+	      Find references with transformation matrices which can't be expressed (as
+	      refs) in truetype
+	    <LI>
+	      Find references with transformation matrices which aren't translations (and
+	      so can't be expressed (as refs) in type1/2 fonts.
+	  </UL>
+	<LI>
+	  Allow the user to turn off composite info in afm files.
+	<LI>
+	  otf kerning classes were dumped in the wrong order.
+	<LI>
+	  In GaramondPremrPro.otf (version 001.000) Adobe has coverage tables (for
+	  some context chaining subs) which have the glyphs mentioned multiple times.
+	  I suppose this is legal, but it is annoying. I want my strings to have each
+	  glyph appear at most once. So add a little thingy to remove duplicate glyphs
+	  when we generate a list of glyph names.
+	<LI>
+	  Adobe has depreciated the use of PUA to represent small caps, old style numerals,
+	  etc. Add a preference item so that ff will no longer recognize "a.sc" as
+	  having a PUA encoding.
+	<LI>
+	  The tool tip for the preference item "NameListForNewFonts" was wrong.
+	<LI>
+	  Horizontal scrolling in the show att dlg was too slow. It was by pixel. Make
+	  it be by something which approximates the width of a character.
+	<LI>
+	  Add a new scripting command to give a font's bounding box.
+	<LI>
+	  Sigh. Within a GPOS lookup, sub-tables are not additive. Only one will be
+	  applied at a time. So order the 'kern' lookup so that pair-wise kerning comes
+	  out first (to override class kerning).
+	<LI>
+	  Was sometimes outputting mkmk base-mark attachement points as the mark attachment
+	  point.
+	<LI>
+	  Clytie Siddall has many suggestions about how to make the translation process
+	  easier for translators. He also tells me how to insert contextual comments
+	  into the program source, and provides many fixes for typoes.
+	<LI>
+	  The OS/2 version 1,2 has a different defn of avgCharWidth than OS/2 version
+	  3(,4) does. Display of CJK fonts is supposed to break under windows if using
+	  the v3 defn.
+	  <P>
+	  Use the appropriate defn for the version we happen to be outputting.
+	<LI>
+	  Autohinting crashed on glyphs in an order2 font if the glyph contained both
+	  an outline and a reference.
+	<LI>
+	  Pressing the help key in the main windows went to the overview page, not
+	  to the contextual help for the window.
+	<LI>
+	  Add a warning when 'CFF ' widths and 'hmtx' widths differ.
+	<LI>
+	  Set the default and normative widths too late after the cff subroutine change.
+	<LI>
+	  Make double clicking in the list of kern pair/anchor combinations bring up
+	  either Kern Pair Closeup dlg or Anchors Away.
+	<LI>
+	  The Anchor control dlg didn't work after the encoding change.
+	<LI>
+	  Add a popup message to explain what "Cor:" means.
+	<LI>
+	  Doing a Close() from a script didn't work if the windowing system were open.
+	<LI>
+	  Yet another bug in type1 hinting output.
+	<LI>
+	  Some versions of realloc don't like allocating 0 bytes.
+	<LI>
+	  Users expect ff to recognize a glyph name "Diaeresis", even though Adobe
+	  (following standard American, but not European spelling) spells it "Dieresis".
+	<LI>
+	  GhostScript has canniptions when it gets a version 3 OS/2 table in a ttf
+	  file.
+	<LI>
+	  Can't add a flex hint when there's a hintmask at the mid point.
+	<LI>
+	  The hintmask part of PointInfo would not let you clear a hintmask.
+	<LI>
+	  Add a new command to the fontview: Edit-&gt;Select-&gt;Select by Name<BR>
+	  and a new scripting command: SelectAllInstancesOf
+	  <P>
+	  Both will select all encoding slots containing the named glyph (or unicode
+	  value)
+	<LI>
+	  Add scripting command: RemoveDetachedGlyphs
+	<LI>
+	  Was setting typo linegap to hhead linegap.
+	<LI>
+	  Using the X clipboard to paste into the character view has been broken at
+	  least since I added multi-layered editing.
+	<LI>
+	  Add a pref to control whether we prefer to use spacing or combining accents
+	  when building accented glyphs.
+	<LI>
+	  Spacing in the group dlg was sometimes off.
+	<LI>
+	  More hinting fixes. If the edges of a stem aren't quite parallel we had problems
+	<LI>
+	  Add some new built in variables: $order, $em, $ascent, $descent
+	<LI>
+	  The 'TeX ' table was output incorrectly if glyph's order wasn't the same
+	  in the sf as in the ttf.
+	<LI>
+	  Allow the [*] Back visibility checkbox to control whether the grid fit lines
+	  are visible or not.
+	<LI>
+	  If scripting is in verbose mode, flush the output buffer before calling a
+	  built in procedure (so any errors it generates will at least show the right
+	  line).
+	<LI>
+	  Ambrose LI points out that the master font in a cid keyed font should match
+	  the ascent/descent of at least one of its subfonts (so that the
+	  typoAscent/Descent f ields will default correctly).
+	<LI>
+<!--	  Spend some quality time with valgrind looking (oh, and fixing) memory leaks. -->
+	  valgrind でメモリリークを探し (ああ、そして修正し)、品質向上にいくらかの次間を費しました。
+	<LI>
+<!--	  Make ControlAfmLigatureOutput (scripting command) apply to ofm/tfm files
+	  too. -->
+	  (スクリプト関数) ControlAFMLigatureOutput を OFM/TFM ファイルにも適用するようにしました。
+	<LI>
+<!--	  Oops. When parsing mac state machines I was using sizeof(long) when I should
+	  have said sizeof(int32). It gave rather bad results on 64bit machines. -->
+	  ありゃ。Mac 状態機械の解析処理中に、sizeof(int32) を使用すべき所で sizeof(long) を使用していました。これは 64 ビットマシンでかなり酷い結果を引き起こしていました。
+	<LI>
+<!--	  Add a scripting function to load a user defined cidmap file. -->
+	  ユーザ定義の cidmap ファイルを読み込むスクリプト関数を追加。
+	<LI>
+<!--	  Hmm. sizeof(point)==8 on AMD64, but structures are aligned to 4. This means
+	  our chunk alloc routines complain. So if we're given something that isn't
+	  in units o f sizeof(pointer) then just round it up. -->
+	  うーむ。AMD64 では sizeof(point)==8 ですが、構造体のアラインメントは 4 バイト単位です。これにより、我々の chunkalloc ルーチン類が文句を言います。そう言うわけで、sizeof(pointer) の倍数でない物が与えられた場合、単純に切り上げるように丸めることにしました。
+	<LI>
+<!--	  lookup ordering within GSUB has been totally broken at least since I added
+	  the c ode to coalesce lookups for kerning. -->
+	  GSUB に含まれる照合の順序づけが、カーニング用の照合を合体するためのコードを追加して以来完全に壊れていました。
+	<LI>
+<!--	  Kanou suggests changing function name that includes Char to be Glyph. Well
+	  a few do really mean Char, but the rest should be Glyph. Leave the old names
+	  there bu t document them as deprecated. -->
+	  狩野が関数名に含まれる Char を Glyph に変更する事を提案しました。たしかに、本当に Char を意味している物はほとんど無いようで、残りは Glyph に置き換える事ができます。古い名前は残しておきますが、廃止済であることを文書化しておきます。
+	<LI>
+<!--	  Make CID keyed fonts use the new subroutine mechanism too. We can use global
+	  sub rs now too! -->
+	  CID キー指定フォントが新しいサブルーチンメカニズムも使用するようにしました。グローバルサブルーチンも使えるようになりました!
+	<LI>
+<!--	  Oops. Familyname can be NULL, and we were indescriminately checking to make
+	  sure its length was less than 31. -->
+	  ありゃ。Familyname が NULL になることがありました。それと、その長さが 31 文字いないになるように無差別のチェックを行っていました。
+	<LI>
+<!--	  Make a better use of subroutines when generating otf fonts. Doesn't work
+	  for CID fonts yet. -->
+	  OTF フォントの出力にサブルーチンをより良く使用するようにしました。CID フォントではまだ動作しません。
+	<LI>
+<!--	  We crashed if we changed from one cid sub-font to another when compacted. -->
+	  コンパクト表示にしたままで CID フォントのサブフォントを切り替えるとクラッシュしていました。
+	<LI>
+<!--	  Oops. I made ff work with ft22 if the debugger was being built... but it
+	  failed to compile if people didn't build the debugger. -->
+	  ありゃまあ。デバッガを組み込む設定では ff が ft22 で使えるようにしたのですが……デバッガが不要な時にはコンパイルが失敗していました。
+	<LI>
+<!--	  Oops a scripting function was marked as not needing a font when it did
+	  (HasPreservedTable &amp; friends). -->
+	  ありゃ、フォントが必要なスクリプト関数 (HasPreservedTable とその属) が「フォント不要」扱いになっていました。
+	<LI>
+<!--	  More for font compare. If there is a difference in a glyph in the two fonts
+	  add the option for including the outlines of the second glyph into the first.
+	  If the first font is missing a glyph, add an option to insert it with the
+	  outlines in the background. -->
+	  フォント比較について追加。2 つのフォント内のあるグリフに相違がある場合、後者のグリフのアウトラインを前者のグリフに取り込むかどうかを指定するオプションを追加しました。最初のフォントにグリフが内場合、背景のアウトラインとして取り込むオプションを追加しました。
+	<LI>
+<!--	  Good heavens, someone wants to play with acorn2sfd. Make it compile again. -->
+	  大変だ、acorn2sfd で遊びたいと誰かが考えました。またコンパイルできるようにしました。
+      </UL>
     <LI>
 <!--  08-Apr-2006 -->
       2006年4月8日

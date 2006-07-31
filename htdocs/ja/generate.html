@@ -3,6 +3,7 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Sep-2002 -->
   <!-- AP: Last modified: 7-Mar-2006 -->
++  <!-- AP: Last modified: 12-Jun-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Generate Font Dialog</TITLE>-->
     <TITLE>フォント出力ダイアログ</TITLE>
@@ -223,6 +224,14 @@
       scripting command. -->
       <CODE>[] AFMを出力</CODE> ― Adobe フォントメトリックファイルを出力します (マルチプルマスターフォントでは、.amfm ファイルの出力も制御します)<BR>
       注意: AFM ファイルに出力されるのは&lsquo;liga&rsquo;と&lsquo;rlig&rsquo;合字のみです。この動作を変更したいときは、スクリプト用コマンド <A HREF="scripting-alpha.html#ControlAfmLigatureOutput">ControlAfmLigatureOutput</A> を使用してください。
+    <LI>
+<!--  [] Composites in AFM - - the AFM format includes a mechanism for building
+      composite glyphs out of components. It is roughly equivalent to the OpenType
+      mark-to-base feature. Almost nobody uses these data, and they can increase
+      the size of an AFM file enormously, but if you would like them check this
+      box (if your font does not include any anchor classes, this will have no
+      effect). -->
+      <CODE>AFM で合成グリフを使用</CODE> ― AFM フォーマットには複合グリフを部品から構築する機能を含んでいます。ほとんど誰もそれらのデータを使っていないうえに、これを使うと AFM ファイルのサイズが恐ろしく巨大化しますが、それでもこの利用したいならばこのチェックボックスをオンにしてください (フォントにアンカークラスが含まれていない場合、これをチェックしても何の効果もありません)。
     <LI>
 <!--  [] PFM -- Generate a windows printer font metrics file -->
       <CODE>[] PFMを出力</CODE> ― Windows のプリンタフォントメトリックファイルを出力します。
