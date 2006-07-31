@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 9-Apr-2006 -->
+  <!-- AP: Last modified: 26-Jul-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>The Element Menu</TITLE>-->
     <TITLE>エレメントメニュー</TITLE>
@@ -132,11 +132,17 @@
 <!--	  <A HREF="#Simplify">Simplify</A> -->
 	  <A HREF="#Simplify">単純化(<U>S</U>)</A>
 	<LI>
-<!--	  Simplify More -->
-	  さらに単純化
+<!--	  <A HREF="elementmenu.html#SimplifyMore">Simplify More</A> -->
+	  <A HREF="elementmenu.html#SimplifyMore">さらに単純化</A>
 	<LI>
 <!--	  <A HREF="#Cleanup">Cleanup Glyphs</A> -->
 	  <A HREF="#Cleanup">不要な曲線を除去(<U>N</U>)</A>
+	<LI>
+<!--	  <A HREF="#CanonicalSP">Canonical Start Points</A> -->
+	  <A HREF="#CanonicalSP">開始点を正規化(<U>P</U>)</A>
+	<LI>
+<!--	  <A HREF="#CanonicalContours">Canonical Contour Order</A> -->
+	  <A HREF="#CanonicalContours">輪郭の順序を正規化(<U>C</U>)</A>
       </UL>
     <LI>
 <!--  <A HREF="elementmenu.html#Add-Extrema">Add Extrema</A>-->
@@ -611,8 +617,8 @@
       allows the user to specify a non-linear transformation as a pair of expressions
       (the first specifies the transformation for the x coordinate, the second
       for the y coordinate). These expressions may be fairly general functions
-      of x and y. See the <A HREF="scripting-alpha.html#NonLinearTransform">scripting page</A>
-      for a description of the syntax. -->
+      of x and y. See the <A HREF="scripting-alpha.html#NonLinearTransform">scripting
+      page</A> for a description of the syntax. -->
       このコマンドはデフォルトのビルドでは利用できません。<CODE>configure-fontforge.h</CODE> を修正して FontForge をビルドしなおす必要があります。このコマンドを使うと、非線形の座標変換を 2 個の数式として指定することができます (最初が x 座標の変換式を、2 番目が y 座標の変換式を表します)。これらの数式には x と y の非常に一般的な式を書くことができます。構文の説明については、<A HREF="scripting-alpha.html#NonLinearTransform">スクリプト処理のページ</A>を参照してください。
     <DT>
 <!--  <A NAME="Expand">Expand</A> Stroke...-->
@@ -735,8 +741,8 @@
 <!--	  <A HREF="pfaeditmath.html#Approximating">How is this done?</A> -->
 	  <A HREF="pfaeditmath.html#Approximating">どうやって処理しているのか?</A>
 	<DT>
-<!--	  Simplify More -->
-	  さらに単純化
+<!--	  <A NAME="SimplifyMore">Simplify More</A> -->
+	  <A NAME="SimplifyMore">さらに単純化</A>
 	<DD>
 <!--	  This is a variant of the simplify command. It brings up a dialog which gives
 	  you control over what sorts of errors this simplification is allowed to induce.
@@ -776,6 +782,34 @@
 	  then this command will remove the control points. It will also cleanup zero
 	  length splines. -->
 	  これは <CODE>単純化(<U>S</U>)</CODE> コマンドの特殊な場合です。この場合、実際には直線を描いているのに不要な制御点がある場合、このコマンドがそれらの制御点を取り除きます。また、長さ 0 のスプラインを取り除きます。
+	<DT>
+<!--	  <A NAME="CanonicalSP">Canonical Start Points</A> -->
+	  <A NAME="CanonicalSP">開始点を正規化(<U>P</U>)</A>
+	<DD>
+<!--	  This will change the start point of the contour (or of all selected contours)
+	  to be the leftmost point on the contour. If there are several points with
+	  the same horizontal coordinate it will pick the one closest to the baseline.
+	  There are two reasons for doing this: -->
+	  このコマンドは、輪郭の開始点 (または選択された輪郭) を輪郭上の左端の点をに置き換えます。水平座標が同じ点がいくつかある場合、ベースラインに最も近い点を選択します。これを行うのには 2 つの理由があります:
+	  <UL>
+	    <LI>
+<!--	      In a PostScript Type1 or Type2 font it will (usually) reduce the size of
+	      the code expressing the glyph slightly. (I don't think it can increase the
+	      code, but there are certainly cases where the optimization will have no effect). -->
+	      PostScript Type1 および Type2 フォントでは (通常) グリフを表現するコードのサイズを僅かに縮減します。(この処理がコードサイズを増やすような場合は無いと思いますが、最適化が意味をもたない場合があるのは確かです。
+	    <LI>
+<!--	      It will enable FontForge to find more reusable bits of code which it can
+	      put in subroutines -->
+	      FontForge が、再利用可能でサブルーチンに移動できるコード片をより多く発見することができます。
+	  </UL>
+	<DT>
+<!--	  <A NAME="CanonicalContours">Canonical Contour Order</A> -->
+	  <A NAME="CanonicalContours">輪郭の順序を正規化(<U>C</U>)</A>
+	<DD>
+<!--	  Order the contours so that the contour with the leftmost point comes first,
+	  then the contour whose leftmost point is a little further right and so forth.
+	  Again, this should decrease the code size slightly in a Type1 font. -->
+	  輪郭の順序を並べ替え、最初に左端の点が最初にある輪郭が、次に左端の点がその次に左側にある輪郭がという具合に並ぶようにします。これも Type1 フォントのサイズを僅かに縮小するはずです。
       </DL>
     <DT>
 <!--  <A NAME="Add-Extrema">Add Extrema</A>-->
@@ -1051,18 +1085,20 @@
       "A". -->
       フォントビューでのみ使用可能です。<BR>
       文字“Alpha”と“A”を考えてみましょう。これらはしばしば同一のグリフで表現されます。このコマンドはエンコーディングを微調整して、U+0391 の文字コードが“A”という名前のグリフを指し示すようにします。これは、“Alpha”というグリフが“A”という別のグリフを参照するのとは微妙に異なることに注意してください。
+      <P>
+<!--  Adobe suggests that you use a reference rather than giving to unicode code
+      points to one glyph, but it is part of the font format. -->
+      Adobe は、1 個のグリフに複数の符号位置を割り当てるのではなく、参照を使用するべきであると示唆していますが、この方法はフォントフォーマットに違反しているわけではありません。
     <DT>
 <!--  <A NAME="Merge">Merge</A> Fonts...-->
       フォントの<A NAME="Merge">統合(<U>M</U>)...</A>
     <DD>
 <!--  Only in the font view. If you are building a unicode font you will often
-      want to merge in fonts with other encodings. You can, of course, cut and
-      paste from one to the other, but usually that needs to be done one glyph
-      at a time (because the encoding may not be ordered the same as Unicode).
-      Instead, if your fonts are properly encoded (with proper unicode names),
-      then the Merge Fonts command will put them into the right places in the current
-      font. -->
-      フォントビューでのみ使用可能です。Unicode フォントを作成している時には、他のエンコーディングのフォントを併合したくなることがよくあります。もちろん、他のフォントからカット&amp;ペーストをすれば可能ですが、それを行うには通常はグリフ 1 個ずつ作業しなければなりません (なぜなら、そのエンコーディングは Unicode と並び順が異なるからです)。その代りに、フォントが (正しい Unicode 名をつけて) 正しくエンコードされている場合、<CODE>フォントの統合(<U>M</U>)</CODE> コマンドを実行すれば現在のフォント内の正しい位置にそれらのグリフが配置されます。
+
+      want to merge in other fonts. You can, of course, cut and paste from one
+      to the other, but that can be tedious, while this command will do it all
+      in one fell swoop. -->
+      フォントビューでのみ使用可能です。Unicode フォントを作成している時には、他のエフォントに併合したくなることがよくあるでしょう。もちろん、他のフォントからカット&amp;ペーストをすれば可能ですが、たいへん手間がかかるでしょう。それにひきかえ、このコマンドはすべてを一撃で片付けてしまいます。
       <P>
 <!--  FontForge does the following when merging CID-keyed fonts: -->
       FontForge は、CID フォントを統合する時には以下の処理を行います。
@@ -1101,6 +1137,10 @@
 <!--	  This strikes me as somewhat problematic, but I can't think of a better solution. -->
 	  これはいくぶん問題だと感じますが、より良い解決方法を思い付くことができません。
       </UL>
+      <P>
+<!--  FontForge will also copy advanced typographic features, kerning, ligatures,
+      etc. -->
+      FontForge は高度タイポグラフィ機能、カーニング、合字などもコピーします。
     <DT>
 <!--  <A NAME="Interpolate">Interpolate</A> Fonts...-->
       フォントの<A NAME="Interpolate">補間(<U>L</U>)...</A>

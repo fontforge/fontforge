@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 26-Oct-2005 -->
-  <!-- AP: Last modified: 8-Apr-2006 -->
+  <!-- AP: Last modified: 12-May-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Building FontForge from source</TITLE>-->
     <TITLE>ソースから FontForge を構築する方法</TITLE>
@@ -72,6 +72,9 @@
     <LI>
 <!--  <A HREF="running.html">Running FontForge</A>-->
       <A HREF="running.html">FontForge の起動方法</A>
+    <LI>
+<!--  <A HREF="uninstall.html">削除方法</A> -->
+      <A HREF="uninstall.html">Uninstalling</A>
   </UL>
   <H2>
 <!--Before you build (on a <A NAME="src-mac">mac</A>)-->
@@ -211,9 +214,9 @@
   <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=114328">Sourceforge のファイルリリースシステム</A>に tarball (.tar.bz2 という拡張子をもつファイル) があります。<BR>
 <!--
   Here is a direct link to a
-  <A HREF="fontforge_full-20060408.tar.bz2">tarball</A>, often more recent
-  (Version 8-Apr-2006)<BR> -->
-  より新しい版であることが多い <A HREF="http://fontforge.sourceforge.net/fontforge_full-20060408.tar.bz2">tarball</A> (2006年4月8日版) への直接リンクがここにあります。</BR>
+  <A HREF="fontforge_full-20060507.tar.bz2">tarball</A>, often more recent
+  (Version 7-May-2006)<BR> -->
+  より新しい版であることが多い <A HREF="http://fontforge.sourceforge.net/fontforge_full-20060507.tar.bz2">tarball</A> (2006年5月7日版) への直接リンクがここにあります。</BR>
   <P>
 <!--
   After you have downloaded one of these packages, either copy the tarball
@@ -239,9 +242,9 @@
   (do not type "$", when it asks for a password, just hit return): -->
   cvs は、多くのユーザがソースツリーを同時並行的に編集することができる便利な一連のユーティリティです。(ローカルな) あなた自身の (文書を含む) CVS ツリーのコピーを得るには、以下のようにタイプします (“$”をタイプしてはいけません。パスワードを聞かれたら、Returen キーだけを押してください):
   <BLOCKQUOTE>
-    <PRE><FONT COLOR="Gray">$ </FONT>cvs -d:pserver:anonymous@cvs1.sourceforge.net:/cvsroot/fontforge login
+    <PRE><FONT COLOR="Gray">$ </FONT>cvs -d:pserver:anonymous@fontforge.cvs.sourceforge.net:/cvsroot/fontforge login
 CVS password:
-<FONT COLOR="Gray">$ </FONT>cvs -d:pserver:anonymous@cvs1.sourceforge.net:/cvsroot/fontforge checkout fontforge
+<FONT COLOR="Gray">$ </FONT>cvs -d:pserver:anonymous@fontforge.cvs.sourceforge.net:/cvsroot/fontforge checkout fontforge
 <FONT COLOR="Gray">$ </FONT>cd fontforge
 </PRE>
   </BLOCKQUOTE>
@@ -252,21 +255,20 @@ CVS password:
   ディレクトリを一度作成したら、以下のようにタイプすれば最新のバージョンを得るための更新を行うことができます:
   <BLOCKQUOTE>
     <PRE><FONT COLOR="Gray">$ </FONT>cd fontforge
-<FONT COLOR="Gray">$ </FONT>cvs -d:pserver:anonymous@cvs1.sourceforge.net:/cvsroot/fontforge login
+<FONT COLOR="Gray">$ </FONT>cvs -d:pserver:anonymous@fontforge.cvs.sourceforge.net:/cvsroot/fontforge login
 CVS password:
-<FONT COLOR="Gray">$ </FONT>cvs -d:pserver:anonymous@cvs1.sourceforge.net:/cvsroot/fontforge update
+<FONT COLOR="Gray">$ </FONT>cvs -d:pserver:anonymous@fontforge.cvs.sourceforge.net:/cvsroot/fontforge update
 </PRE>
   </BLOCKQUOTE>
   <P>
 <!--
   You can also
-  <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/">browse
+  <A HREF="http://fontforge.cvs.sourceforge.net/fontforge/fontforge/">browse
   the CVS tree</A> online. Or see
   <A HREF="http://sourceforge.net/cvs/?group_id=103338">sourceforge's description
-  </A>for more information (their information is out of date, the correct server
-  is cvs1.sf.net not cvs.sf.net), or read the
+  </A>for more information, or read the
   <A HREF="http://www.cvshome.org/docs/manual/">CVS manual</A>. -->
-  それに加えて、<A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/">CVS ツリーをオンラインで閲覧</A> することもできます。また、より詳しい情報については、<A HREF="http://sourceforge.net/cvs/?group_id=103338">sourceforge の解説</A> (この情報は古くなっており、正しいサーバ名は cvs.sf.net ではなく cvs1.sf.net です) を参照するか、<A HREF="http://www.cvshome.org/docs/manual/">CVS のマニュアル</A>を参照してください。
+  それに加えて、<A HREF="http://fontforge.cvs.sourceforge.net/fontforge/fontforge/">CVS ツリーをオンラインで閲覧</A> することもできます。また、より詳しい情報については、<A HREF="http://sourceforge.net/cvs/?group_id=103338">sourceforge の解説</A>を参照するか、<A HREF="http://www.cvshome.org/docs/manual/">CVS のマニュアル</A>を参照してください。
   <H3>
 <!--<A NAME="src-Building">Building</A> &amp; installing it-->
     <A NAME="src-Building">構築</A>・インストールの手順

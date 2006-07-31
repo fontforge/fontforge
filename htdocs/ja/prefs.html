@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 2-Sep-2002 -->
-  <!-- AP: Last modified: 6-Mar-2006 -->
+  <!-- AP: Last modified: 14-Jun-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>Preferences Dialog</TITLE>-->
     <TITLE>環境設定ダイアログ</TITLE>
@@ -60,13 +60,6 @@
       for postscript). If you set this flag then all loaded fonts will have the
       same file format as that specified by NewFontsQuadratic above. -->
       FontForge がフォントを読み込むとき、一般的にはフォントで使用されているスプライン (TrueType では 2 次、PostScript では 3 次) を保持します。このフラグが設定されていると、読み込んだフォントのフォーマットはすべて、上記の NewFontsQuadratic の設定と同じになります。
-    <DT>
-<!--  <A NAME="GreekNames">GreekNames</A> -->
-      <A NAME="GreekNames">GreekNames</A> (<CODE>ギリシャ文字名を調整(<U>G</U>)</CODE>)
-    <DD>
-<!--  Will cause most new fonts to be created with a greek
-      <A HREF="fontinfo.html#Interpretation">interpretation</A>. -->
-      ほとんどの新規フォントを、ギリシャ語フォントとして<A HREF="fontinfo.html#Interpretation">解釈</A>するようになります。
     <DT>
 <!--  <A NAME="ResourceFile">ResourceFile</A> -->
       <A NAME="ResourceFile">ResourceFile</A> (<CODE>リソースファイル(<U>R</U>)</CODE>)
@@ -199,6 +192,8 @@
       be ignored.<BR Clear=all> -->
       グリフウィンドウでは、ユーザが通常文字を打鍵した時にどのように振舞うかをこの値が調節します。これが On になっていれば、通常文字が打鍵されるとグリフウィンドウはその文字に移動し、Off になっているとその文字は無視されます。<BR Clear=all>
   </DL>
+  <P>
+  <IMG SRC="../prefs-accent.png" ALIGN="Right" WIDTH="407" HEIGHT="545">
   <DL>
     <DT>
 <!--  <A NAME="AccentOffsetPercent">AccentOffsetPercent</A> -->
@@ -215,6 +210,65 @@
 <!--  Whether accents should be positioned over letters based on the center of
       the accent, or on the center of the bottom of the accent. -->
       アクセントを文字の上に配置するときに、アクセントの中心の下に文字を置くか、アクセントの下端の上に文字を置くかを指定します。
+    <DT>
+<!--  PreferSpacingAccents -->
+      PreferSpacingAccents (<CODE>幅のあるアクセントを優先</CODE>)
+    <DD>
+<!--  Whether to prefer spacing accents (Unicode 02C0-02FF) or combining accents
+      (0300-036F) when building accented glyphs.<BR CLEAR=ALL> -->
+      アクセントつきグリフを組み立てるときに、幅のあるアクセント (Unicode 02C0～02FF) を結合型アクセント (0300～036F) より優先するかどうかを指定します。<BR CLEAR=ALL>
+  </DL>
+  <P>
+  <IMG SRC="prefs-apps.png" WIDTH="282" HEIGHT="372" ALIGN="Right">
+  <DL>
+    <DT>
+<!--  <A NAME="PreferPotrace">PreferPotrace</A> -->
+      <A NAME="PreferPotrace">PreferPotrace</A> (<CODE>potrace を使用</CODE>)
+    <DD>
+<!--  If you system has both potrace and autotrace installed this allows you to
+      specify which you'd prefer FontForge to use for autotracing. -->
+      システムに potrace と autotrace 両方がインストールされている場合、FontForge が自動トレースにどちらを優先して使うかをこのオプションで指定することができます。
+    <DT>
+<!--  <A NAME="AutotraceArgs">AutotraceArgs</A> -->
+      <A NAME="AutotraceArgs">AutotraceArgs</A> (<CODE>自動トレースの引数</CODE>)
+    <DD>
+<!--  This allows you to specify any arguments you want passed to the autotrace
+      program. Don't try to pass something that will change the input or output
+      format or set input or output files. -->
+      autotrace プログラムに渡したい任意のコマンドライン引数を指定することができます。入出力ファイルのフォーマットを変更したり、入出力ファイル名を指定するような引数を設定しないようにご注意ください。
+    <DT>
+<!--  <A NAME="AutotraceAsk">AutotraceAsk</A> -->
+      <A NAME="AutotraceAsk">AutotraceAsk</A> (<CODE>トレースの引数</CODE>)
+    <DD>
+<!--  If this is set then each time autotrace is invoked it will ask you for arguments. -->
+      これが設定されている場合、autotrace を起動するたびに引数を入力するように求められます。
+    <DT>
+<!--  <A NAME="MfArgs">MfArgs</A> -->
+      <A NAME="MfArgs">MfArgs</A> (<CODE>MFの引数</CODE>)
+    <DD>
+<!--  This is the command passed to the mf (MetaFont) program which controls conversion
+      of .mf files into bitmaps. -->
+      これは、拡張子 .mf のファイルをビットマップに変換する mf (METAFONT) プログラムに渡されるコマンドライン引数です。
+    <DT>
+<!--  <A NAME="MfClearBg">MfClearBg</A> -->
+      <A NAME="MfClearBg">MfClearBg</A> (<CODE>MFの背景をクリア</CODE>)
+    <DD>
+<!--  Loading a .mf font is a multi step process, first a bitmap font is generated,
+      it is loaded into the background, then autotrace is invoked to trace around
+      the backgrounds. These background bitmaps can take up a lot of space and
+      you may not want them after they have been autotraced. Selecting this entry
+      will remove those bitmaps from the font after they have been used. -->
+      .mf フォントの読み込みは複数ステップのプロセスです。最初にビットマップフォントを生成し、それを背景に貼りつけ、それから背景画像をトレースするべく autotrace が起動されます。これらの背景ビットマップは多くのメモリを消費する可能性があり、自動トレースが終わった後は残しておく必要性が薄いものです。この項目を On に設定しておくと、ビットマップを使用したあとフォントから取り除きます。
+    <DT>
+<!--  <A NAME="MfShowErr">MfShowErr</A> -->
+      <A NAME="MfShowErr">MfShowErr</A> (<CODE>MFエラーを表示</CODE>)
+    <DD>
+<!--  The mf program generates a fair amount of verbiage even when it is working
+      correctly. And if it is working correctly you don't want to see those words.
+      So normally FontForge suppresses messages from mf. But if something goes
+      wrong you do want to see mf's output and setting this will allow you to do
+      so.<BR Clear=all> -->
+      mf プログラムは、正しく動作したときでも大量の冗長なメッセージを出力します。もし正常に動作しているのなら、それらの単語を見たくはないでしょう。そういうわけで、FontForge は通常は mf からのメッセージを表示しないようにしています。しかし何かうまくいかない事があるときは mf の出力を見る必要がありますので、これを設定するとそれを表示するようになっています。<BR Clear=all>
     <DT>
 <!--  <A NAME="CharCenterHighest">CharCenterHighest</A> -->
       <A NAME="CharCenterHighest">CharCenterHighest</A> (<CODE>文字の頂点を中心に</CODE>)
@@ -324,56 +378,30 @@
       information.<BR Clear=ALL> -->
       新しく作成されるすべてのフォントに付随することになる名前リストを指定します。このリストはそのフォント内で作成される任意のグリフに名前づけを行うのに用いられます。詳細については、<A HREF="encodingmenu.html#namelist">名前リスト</A>に関するセクションを参照してください。<BR Clear=ALL>
   </DL>
-  <DL>
-    <DT>
-<!--  <IMG SRC="prefs-apps.png" WIDTH="282" HEIGHT="372" ALIGN="Right"><A NAME="PreferPotrace">PreferPotrace</A> -->
-      <IMG SRC="prefs-apps.png" WIDTH="350" HEIGHT="401" ALIGN="Right"><A NAME="PreferPotrace">PreferPotrace</A> (<CODE>potrace を使用</CODE>)
-    <DD>
-<!--  If you system has both potrace and autotrace installed this allows you to
-      specify which you'd prefer FontForge to use for autotracing. -->
-      システムに potrace と autotrace の両方がインストールされている場合、FontForge がどちらを優先して自動トレースに用いるかを指定することができます。
-    <DT>
-<!--  <A NAME="AutotraceArgs">AutotraceArgs</A> -->
-      <A NAME="AutotraceArgs">AutotraceArgs</A> (<CODE>自動トレースの引数</CODE>)
-    <DD>
-<!--  This allows you to specify any arguments you want passed to the autotrace
-      program. Don't try to pass something that will change the input or output
-      format or set input or output files. -->
-      autotrace プログラムに渡したい任意のコマンドライン引数を指定することができます。入出力ファイルのフォーマットを変更したり、入出力ファイル名を指定するような引数を設定しないようにご注意ください。
-    <DT>
-<!--  <A NAME="AutotraceAsk">AutotraceAsk</A> -->
-      <A NAME="AutotraceAsk">AutotraceAsk</A> (<CODE>トレースの引数</CODE>)
-    <DD>
-<!--  If this is set then each time autotrace is invoked it will ask you for arguments. -->
-      これが設定されている場合、autotrace を起動するたびに引数を入力するように求められます。
-    <DT>
-<!--  <A NAME="MfArgs">MfArgs</A> -->
-      <A NAME="MfArgs">MfArgs</A> (<CODE>MFの引数</CODE>)
-    <DD>
-<!--  This is the command passed to the mf (MetaFont) program which controls conversion
-      of .mf files into bitmaps. -->
-      これは、拡張子 .mf のファイルをビットマップに変換する mf (METAFONT) プログラムに渡されるコマンドライン引数です。
-    <DT>
-<!--  <A NAME="MfClearBg">MfClearBg</A> -->
-      <A NAME="MfClearBg">MfClearBg</A> (<CODE>MFの背景をクリア</CODE>)
-    <DD>
-<!--  Loading a .mf font is a multi step process, first a bitmap font is generated,
-      it is loaded into the background, then autotrace is invoked to trace around
-      the backgrounds. These background bitmaps can take up a lot of space and
-      you may not want them after they have been autotraced. Selecting this entry
-      will remove those bitmaps from the font after they have been used. -->
-      .mf フォントの読み込みは複数ステップのプロセスです。最初にビットマップフォントを生成し、それを背景に貼りつけ、それから背景画像をトレースするべく autotrace が起動されます。これらの背景ビットマップは多くのメモリを消費する可能性があり、自動トレースが終わった後は残しておく必要性が薄いものです。この項目を On に設定しておくと、ビットマップを使用したあとフォントから取り除きます。
-    <DT>
-<!--  <A NAME="MfShowErr">MfShowErr</A> -->
-      <A NAME="MfShowErr">MfShowErr</A> (<CODE>MFエラーを表示</CODE>)
-    <DD>
-<!--  The mf program generates a fair amount of verbiage even when it is working
-      correctly. And if it is working correctly you don't want to see those words.
-      So normally FontForge suppresses messages from mf. But if something goes
-      wrong you do want to see mf's output and setting this will allow you to do
-      so.<BR Clear=all> -->
-      mf プログラムは、正しく動作したときでも大量の冗長なメッセージを出力します。もし正常に動作しているのなら、それらの単語を見たくはないでしょう。そういうわけで、FontForge は通常は mf からのメッセージを表示しないようにしています。しかし何かうまくいかない事があるときは mf の出力を見る必要がありますので、これを設定するとそれを表示するようになっています。<BR Clear=all>
-  </DL>
+  <P>
+  <IMG SRC="../prefs-tt.png" WIDTH="407" HEIGHT="545" ALIGN="Right">
+   <DL>
+     <DT>
+<!--  <A NAME="ClearInstrsBigChanges">Clear Instructions on Big Changes</A> -->
+      <A NAME="ClearInstrsBigChanges">Clear Instructions on Big Changes</A> (<CODE>大きな変更で命令を削除</CODE>)
+     <DD>
+<!--  TrueType instructions refer to points by number. So if you do any editing
+      that adds, removes or otherwise changes the point numbers then the instructions
+      will be applied to a different set of points. -->
+      TrueType 命令は点を番号で参照しています。ですから点の追加・削除やその他の点番号に関わる編集を行った場合、命令は元と異なる点集合に適用されます。
+      <P>
+<!--  Sometimes the results are amusing, but almost always they are ugly and wrong. -->
+      その結果、ときどき面白いことが起こりますが、ほとんどの場合は醜く間違ったものです。
+      <P>
+<!--  This is very different from having out of date PostScript Hints. There the
+      hints are probably just useless (as opposed to being actively bad, as here). -->
+      これは現状に合わない PostScript ヒントとは非常に異なります。単に役立たないヒントが存在するというだけの話です (反対に、この場合は積極的に害をなします)。
+      <P>
+<!--  FontForge will normally delete all instructions to prevent this happening.
+      However, if you are prepared to fix up the instructions after a set of changes
+      you may prefer to have the instructions left. Be careful though! <BR CLEAR=ALL> -->
+      FontForge は通常はこの現象を避けるためにすべての命令を削除します。しかしながら、変更をひとしきり行った後に命令を修復する準備があるならば、命令を残しておきたいとお考えになるでしょう。十分注意して使用してください!<BR CLEAR=ALL>
+   </DL>
   <P>
   <IMG SRC="prefs-script.png" WIDTH="350" HEIGHT="401" ALIGN="Right"><!-- <A NAME="scripts">This
   section </A>of the dialog allows you to define built in scripts that will

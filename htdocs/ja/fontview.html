@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 11-Dec-2005 -->
+  <!-- AP: Last modified: 17-Jun-2006 -->
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
 <!--<TITLE>The Font View</TITLE>-->
     <TITLE>フォントビュー</TITLE>
@@ -48,6 +48,14 @@
   for instance) there may not be room for the entire label, and it will appear
   truncated. -->
   フォント内の各グリフの画像の上には、グリフをある伝統的な書式で表示しているラベルがあります。通常はこれは単に、標準フォントで表示した小さなグリフの画像です (上の図のように) が、グリフ名や Unicode のコードポイントまたはエンコーディングを (16 進数で) 表示するように変更することができます。小さなビューでは (例えば 24 ピクセル表示では)ラベル全体を表示する余地がないので、それらは切り詰められるでしょう。
+  <P>
+<!--
+  <IMG SRC="fvOutOfDateHinting.png" WIDTH="99" HEIGHT="66" ALIGN="Left">If
+  a glyph has been changed since it was last hinted (PostScript), or if a glyph
+  contains contours but has no instructions (TrueType), then its label will
+  be edged with blue bars. If the glyph has out of date instructions (TrueType),
+  then its label will be edged with red. -->
+  <IMG SRC="../fvOutOfDateHinting.png" WIDTH="99" HEIGHT="66" ALIGN="Left">あるグリフに最後の (PostScript) ヒントを付け加えた後にグリフを変更しているか、グリフに輪郭が含まれているのに (TrueType) 命令が含まれていないならば、そのラベルは青い枠線で縁取り表示されます。グリフの (TrueType) ヒントが今のアウトラインよりも古いものであれば、ラベルは赤い枠線で縁取り表示されます。
   <P>
 <!--
   If one of your glyphs has something in its background layer then this will

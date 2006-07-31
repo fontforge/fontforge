@@ -200,6 +200,9 @@ msgstr "スクリプトを実行..."
 msgid "_Revert File"
 msgstr "ファイルを再読込(_R)"
 
+msgid "Revert To _Backup"
+msgstr "バックアップを復元(_B)"
+
 msgid "Revert Gl_yph"
 msgstr "グリフを戻す(_Y)"
 
@@ -1525,6 +1528,9 @@ msgstr "著作権(_R):"
 msgid "_XUID:"
 msgstr "_XUID:"
 
+msgid "(Adobe now considers XUID/UniqueID unnecessary)"
+msgstr "(Adobeは現在XUID/UniqueIDを不要だと考えています)"
+
 msgid "_Number of Glyphs:"
 msgstr "グリフの数(_N):"
 
@@ -1627,7 +1633,7 @@ msgid "General"
 msgstr "一般情報"
 
 msgid "PS UID"
-msgstr "PS 一意ID"
+msgstr "PS UniqueID"
 
 msgid "PS Private"
 msgstr "PS Private辞書"
@@ -2852,52 +2858,52 @@ msgstr "CID findfont名"
 msgid "Translate Style"
 msgstr "スタイル名を翻訳"
 
-msgid "Arabic Saudi Arabia"
+msgid "Arabic (Saudi Arabia)"
 msgstr "アラビア語(サウジアラビア)"
 
-msgid "Arabic Iraq"
+msgid "Arabic (Iraq)"
 msgstr "アラビア語(イラク)"
 
-msgid "Arabic Egypt"
+msgid "Arabic (Egypt)"
 msgstr "アラビア語(エジプト)"
 
-msgid "Arabic Libya"
+msgid "Arabic (Libya)"
 msgstr "アラビア語(リビア)"
 
-msgid "Arabic Algeria"
+msgid "Arabic (Algeria)"
 msgstr "アラビア語(アルジェリア)"
 
-msgid "Arabic Morocco"
+msgid "Arabic (Morocco)"
 msgstr "アラビア語(モロッコ)"
 
-msgid "Arabic Tunisia"
+msgid "Arabic (Tunisia)"
 msgstr "アラビア語(チュニジア)"
 
-msgid "Arabic Oman"
+msgid "Arabic (Oman)"
 msgstr "アラビア語(オマーン)"
 
-msgid "Arabic Yemen"
+msgid "Arabic (Yemen)"
 msgstr "アラビア語(イエメン)"
 
-msgid "Arabic Syria"
+msgid "Arabic (Syria)"
 msgstr "アラビア語(シリア)"
 
-msgid "Arabic Jordan"
+msgid "Arabic (Jordan)"
 msgstr "アラビア語(ヨルダン)"
 
-msgid "Arabic Lebanon"
+msgid "Arabic (Lebanon)"
 msgstr "アラビア語(レバノン)"
 
-msgid "Arabic Kuwait"
+msgid "Arabic (Kuwait)"
 msgstr "アラビア語(クウェート)"
 
-msgid "Arabic U.A.E."
+msgid "Arabic (U.A.E.)"
 msgstr "アラビア語(アラブ首長国連邦)"
 
-msgid "Arabic Bahrain"
+msgid "Arabic (Bahrain)"
 msgstr "アラビア語(バーレーン)"
 
-msgid "Arabic Qatar"
+msgid "Arabic (Qatar)"
 msgstr "アラビア語(カタール)"
 
 msgid "Azeri (Latin)"
@@ -3307,6 +3313,23 @@ msgstr "ΤεΧ数学拡張フォント"
 
 msgid "More Params"
 msgstr "追加パラメータ"
+
+msgid ""
+"To create a new name, left click on the <New> button, and select a locale.\n"
+"To change the locale, left click on it.\n"
+"To change the string type, left click on it.\n"
+"To change the text, left click in it and then type.\n"
+"To delete a name, right click on the name & select Delete from the menu.\n"
+"To associate or disassocate a truetype name right click and select the\n"
+" appropriate menu item."
+msgstr ""
+"新しい名前の作成: <新規>ボタンをクリックしてから,ロケールを選択します.\n"
+"ロケールの変更: ロケール名を左クリックします.\n"
+"文字列タイプの変更: 文字列を左クリックします.\n"
+"テキストの変更: テキストを左クリックしてから新しい文字列をタイプします.\n"
+"名前の削除: 名前を右クリックしてからメニューの[削除]を選択します。.\n"
+"TrueType名との関連付けの有効化・無効化: 名前を右クリックしてから\n"
+" 該当するメニュー項目を選択します."
 
 msgid "Slant:"
 msgstr "傾斜値:"
@@ -4439,6 +4462,9 @@ msgstr "オフセット"
 msgid "Dist"
 msgstr "距離"
 
+msgid " Prev "
+msgstr " 前 "
+
 msgid "Prev CP:"
 msgstr "前の制御点:"
 
@@ -4457,6 +4483,15 @@ msgstr "前制御点の距離"
 msgid "Prev CP Angle"
 msgstr "前制御点の角度"
 
+msgid "Prev CP: (%f,%f)"
+msgstr "前の制御点: (%f,%f)"
+
+msgid "No Previous Control Point"
+msgstr "前の制御点がありません"
+
+msgid " Next "
+msgstr " 次 "
+
 msgid "Next CP:"
 msgstr "次の制御点:"
 
@@ -4474,6 +4509,12 @@ msgstr "次制御点の距離"
 
 msgid "Next CP Angle"
 msgstr "次制御点の角度"
+
+msgid "Next CP: (%f,%f)"
+msgstr "次の制御点: (%f,%f)"
+
+msgid "No Next Control Point"
+msgstr "次の制御点がありません"
 
 msgid "Type:"
 msgstr "種類:"
@@ -7807,7 +7848,7 @@ msgid "Scaling Bitmaps"
 msgstr "ビットマップを拡大/縮小中"
 
 msgid "%1$.80s at %2$d size %3$d from %4$.80s"
-msgstr "%1$.80s (%2$d 番目, サイズ %3$d, フォント %4$.80s)"
+msgstr "%1$.80s (%4$.80s の %2$d 番目, サイズ %3$d)"
 
 msgid "Recalculate Bitmaps"
 msgstr "ビットマップを再計算"
@@ -7819,7 +7860,7 @@ msgid "Bad Number"
 msgstr "数値が間違っています."
 
 msgid "%1$.80s at %2$d from %3$.90s"
-msgstr "%1$.80s (%2$d 番目, サイズ %3$.90)"
+msgstr "%1$.80s (%3$.90s の %2$d 番目)"
 
 msgid "Can't Find Glyph"
 msgstr "グリフが見つかりません"
@@ -8424,7 +8465,7 @@ msgid "Are you sure you don't want to use the cidmap I found?"
 msgstr "見つかったcidmapファイルを使わないで本当にいいですか?"
 
 msgid "Find a cidmap file..."
-msgstr "cidmapファイルを発見しました..."
+msgstr "cidmapファイルを探す..."
 
 msgid "_Browse..."
 msgstr "ファイルを見る(_B)..."
@@ -8802,6 +8843,9 @@ msgstr "このグリフはどのCIDサブフォントでも定義されていま
 
 msgid "This glyph contains control points which are probably too close to the main points to alter the look of the spline"
 msgstr "このグリフには,あまりに端点に近すぎて曲線の形状を変える役に立たない制御点が含まれています."
+
+msgid "Found %1$.4g, expected %2$.4g"
+msgstr "実際の値は%1$.4gですが,%2$.4gではないでしょうか"
 
 msgid "This glyph contains a substitution or ligature entry which refers to an empty char"
 msgstr "このグリフには,空のグリフを参照する置換えまたは合字のエントリが含まれています."
@@ -9295,6 +9339,9 @@ msgstr "CID"
 msgid "Points"
 msgstr "点"
 
+msgid "Size|Points"
+msgstr "ポイント"
+
 msgid "Refs"
 msgstr "参照"
 
@@ -9496,6 +9543,20 @@ msgstr "表引きが存在しません"
 
 msgid "A nested lookup with tag '%s' could not be found. The generated font will not be useable. Try Element->Find Problems"
 msgstr "タグ'%s'をもつ,入れ子になった表引きは存在しません. 生成されたフォントは使用できません. 「エレメント」→「問題を発見」で調べてみてください"
+
+msgid "Lookup potentially too big"
+msgstr "照合が大き過ぎるかもしれません"
+
+msgid ""
+"One of the lookups for the '%c%c%c%c' feature has an\n"
+"offset bigger than 65535 bytes. This means\n"
+"FontForge must use an extension lookup to output it.\n"
+"Not all applications support extension lookups."
+msgstr ""
+"'%c%c%c%c'機能に対する照合の中に, 65535バイトを超える\n"
+"ものがあります. すなわち,FontForgeがそれを出力するには\n"
+"拡張照合を用いる必要があるということです. アプリケーショ\n"
+"ンによっては拡張照合をサポートしていない物もあります."
 
 msgid "Rasterizing..."
 msgstr "ラスタライズ中..."
