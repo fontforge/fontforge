@@ -7900,7 +7900,7 @@ return;
     szgcd[k].gd.cid = CID_DesignSize;
     szgcd[k++].creator = GTextFieldCreate;
 
-    szlabel[k].text = (unichar_t *) _("Points");
+    szlabel[k].text = (unichar_t *) S_("Size|Points");
     szlabel[k].text_is_1byte = true;
     szgcd[k].gd.label = &szlabel[k];
     szgcd[k].gd.pos.x = 134; szgcd[k].gd.pos.y = szgcd[k-2].gd.pos.y;
