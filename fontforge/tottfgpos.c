@@ -863,25 +863,22 @@ return( DevTabsSame(&vdt1->xadjust,&vdt2->xadjust) &&
 #endif
 
 static void dumpgposkerndata(FILE *gpos,SplineFont *sf,int sli,
-	    struct alltabs *at,int isv) {
+	    struct alltabs *at,int isv,
+	    SplineChar **glyphs, int cnt ) {
     int32 coverage_pos, next_val_pos, here;
-    int cnt, i, pcnt, max=100, j,k;
+    int i, pcnt, max=100, j,k;
     int *seconds = galloc(max*sizeof(int));
     int *changes = galloc(max*sizeof(int));
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
     int *devtabs = galloc(max*sizeof(int));
 #endif
     int16 *offsets=NULL;
-    SplineChar **glyphs;
     KernPair *kp;
     uint32 script = sf->script_lang[sli][0].script;
     int isr2l = ScriptIsRightToLeft(script);
     int anydevtab = false;
 
-    glyphs = generateGlyphList(sf,isv+1,sli,NULL,&at->gi);
-    cnt=0;
     if ( glyphs!=NULL ) {
-	for ( ; glyphs[cnt]!=NULL; ++cnt );
 	if ( at->os2.maxContext<2 )
 	    at->os2.maxContext = 2;
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
@@ -980,14 +977,95 @@ static void dumpgposkerndata(FILE *gpos,SplineFont *sf,int sli,
 	here = ftell(gpos);
 	fseek(gpos,coverage_pos,SEEK_SET);
 	putshort(gpos,here-coverage_pos+2);
+	if ( here-coverage_pos+2>65535 )
+	    IError( "Kerning table too big. Will not be useable.");
 	fseek(gpos,next_val_pos,SEEK_SET);
 	for ( i=0; i<cnt; ++i )
 	    putshort(gpos,offsets[i]);
 	fseek(gpos,here,SEEK_SET);
 	dumpcoveragetable(gpos,glyphs);
-	free(glyphs);
 	free(offsets);
     }
+}
+
+static struct lookup *dumpgposkerndatalookups(FILE *lfile,SplineFont *sf,int sli,
+	    struct alltabs *at,int isv,struct lookup *lookups,
+	    SplineChar **glyphs, int cnt ) {
+    struct lookup *new;
+    SplineChar *hold = glyphs[cnt];
+
+    glyphs[cnt] = NULL;
+
+    new = chunkalloc(sizeof(struct lookup));
+    new->feature_tag = isv ? CHR('v','k','r','n') : CHR('k','e','r','n');
+    /* new->flags = pst_ignorecombiningmarks; */	/* yudit doesn't like this flag to be set 2.7.2 */
+    if ( SLIContainsR2L(sf,sli))
+	new->flags = pst_r2l;
+    new->script_lang_index = sli;
+    new->lookup_type = 2;		/* Pair adjustment subtable type */
+    new->offset[0] = ftell(lfile);
+    new->next = lookups;
+    dumpgposkerndata(lfile,sf,sli,at,isv,glyphs,cnt);
+    new->len = ftell(lfile)-new->offset[0];
+
+    glyphs[cnt] = hold;
+return( new );
+}
+
+static struct lookup *dumpgposkernpairs(FILE *lfile,SplineFont *sf,int sli,
+	    struct alltabs *at,int isv,struct lookup *lookups ) {
+    SplineChar **glyphs;
+    int cnt, tot, start, i;
+    int anydevtab=0, devtabsize=0;
+    KernPair *kp;
+    /* Now it is perfectly possible to have more kern pairs than will fit */
+    /*  into one 65536 sized kerning sub-table. So be prepared to create */
+    /*  multiple sub-tables each with a small bit of data */
+
+    glyphs = generateGlyphList(sf,isv+1,sli,NULL,&at->gi);
+    cnt=tot=0;
+    start = 0;
+    if ( glyphs!=NULL ) {
+	for ( ; glyphs[cnt]!=NULL; ++cnt );
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	for ( i=0; i<cnt && !anydevtab; ++i ) {
+	    for ( kp = isv ? glyphs[i]->vkerns : glyphs[i]->kerns; kp!=NULL; kp=kp->next )
+		if ( kp->sli==sli && kp->adjust!=NULL ) {
+		    anydevtab = true;
+	    break;
+		}
+	}
+#endif
+	for ( i=0; i<cnt ; ++i ) {
+	    for ( kp = isv ? glyphs[i]->vkerns : glyphs[i]->kerns; kp!=NULL; kp=kp->next ) {
+		if ( kp->sli==sli ) {
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+		    if ( kp->adjust!=NULL )
+			devtabsize += DevTabLen(kp->adjust);
+#endif
+		    ++tot;
+		}
+	    }
+	    if ( 5*sizeof(short)+		/* header */
+		    (i-start)*sizeof(short)+	/* offset array */
+		    (i-start)*sizeof(short)+	/* number of PairValueCounts */
+		    tot*(2+anydevtab)*sizeof(short)+ /* One for each pair */
+		    devtabsize +		/* size of any device tables */
+		    100				/* Just in case I made a mistake */
+		    > 65536 ) {
+		if ( start==i )
+		    IError("Kerning data for one glyph too big to fit in a single sub-table");
+		else
+		    lookups = dumpgposkerndatalookups(lfile,sf,sli,at,isv,lookups,glyphs+start,i-start);
+		start = i;
+		tot = devtabsize = 0;
+		--i;		/* we didn't use it, so we must recount it */
+	    }
+	}
+    }
+    lookups = dumpgposkerndatalookups(lfile,sf,sli,at,isv,lookups,glyphs+start,cnt-start);
+    free(glyphs);
+return( lookups );
 }
 
 uint16 *ClassesFromNames(SplineFont *sf,char **classnames,int class_cnt,
@@ -2728,18 +2806,7 @@ static struct lookup *GPOSfigureLookups(FILE *lfile,SplineFont *sf,
 	    }
 	}
 	for ( j=0; j<cnt; ++j ) {
-	    new = chunkalloc(sizeof(struct lookup));
-	    new->feature_tag = isv ? CHR('v','k','r','n') : CHR('k','e','r','n');
-	    /* new->flags = pst_ignorecombiningmarks; */	/* yudit doesn't like this flag to be set 2.7.2 */
-	    if ( SLIContainsR2L(sf,ligtags[j].script_lang_index))
-		new->flags = pst_r2l;
-	    new->script_lang_index = ligtags[j].script_lang_index;
-	    new->lookup_type = 2;		/* Pair adjustment subtable type */
-	    new->offset[0] = ftell(lfile);
-	    new->next = lookups;
-	    lookups = new;
-	    dumpgposkerndata(lfile,sf,ligtags[j].script_lang_index,at,isv);
-	    new->len = ftell(lfile)-new->offset[0];
+	    lookups = dumpgposkernpairs(lfile,sf,ligtags[j].script_lang_index,at,isv,lookups);
 	}
     }
     free(ligtags);
