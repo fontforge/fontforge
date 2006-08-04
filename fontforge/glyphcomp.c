@@ -1784,13 +1784,19 @@ return( false );
     if ( fpst1->nccnt!=fpst2->nccnt || fpst1->bccnt!=fpst2->bccnt || fpst1->fccnt!=fpst2->fccnt )
 return( false );
     for ( i=0; i<fpst1->nccnt; ++i )
-	if ( classcmp(fpst1->nclass[i],fpst2->nclass[i])!=0 )
+	if ( !(fpst1->nclass[i]==NULL && fpst2->nclass[i]==NULL ) &&
+		((fpst1->nclass[i]==NULL || fpst2->nclass[i]==NULL ) ||
+	    classcmp(fpst1->nclass[i],fpst2->nclass[i])!=0 ))
 return( false );
     for ( i=0; i<fpst1->bccnt; ++i )
-	if ( classcmp(fpst1->bclass[i],fpst2->bclass[i])!=0 )
+	if ( !(fpst1->bclass[i]==NULL && fpst2->bclass[i]==NULL ) &&
+		((fpst1->bclass[i]==NULL || fpst2->bclass[i]==NULL ) ||
+	    classcmp(fpst1->bclass[i],fpst2->bclass[i])!=0 ))
 return( false );
     for ( i=0; i<fpst1->fccnt; ++i )
-	if ( classcmp(fpst1->fclass[i],fpst2->fclass[i])!=0 )
+	if ( !(fpst1->fclass[i]==NULL && fpst2->fclass[i]==NULL ) &&
+		((fpst1->fclass[i]==NULL || fpst2->fclass[i]==NULL ) ||
+	    classcmp(fpst1->fclass[i],fpst2->fclass[i])!=0 ))
 return( false );
 
     for ( i=0; i<fpst1->rule_cnt; ++i ) {
