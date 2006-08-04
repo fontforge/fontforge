@@ -176,6 +176,8 @@ struct ttfinfo {
     uint32 tex_start;
 		/* BDF  -- BDF properties, also non-standard */
     uint32 bdf_start;
+		/* FFTM -- FontForge timestamps */
+    uint32 fftm_start;
 
 		/* Apple Advanced Typography Tables */
     uint32 prop_start;
@@ -251,6 +253,13 @@ struct ttfinfo {
     uint8 warned_morx_out_of_bounds_glyph;
     int badgid_cnt, badgid_max;		/* Used when parsing apple morx tables*/
     SplineChar **badgids;		/* which use out of range glyph IDs as temporary flags */
+#ifdef _HAS_LONGLONG
+    long long creationtime;		/* seconds since 1970 */
+    long long modificationtime;
+#else
+    long creationtime;
+    long modificationtime;
+#endif
 };
 
 #define MAX_TAB	48
@@ -595,6 +604,8 @@ struct alltabs {
     int cvarlen;
     FILE *avar;
     int avarlen;
+    FILE *fftmf;
+    int fftmlen;
     int defwid, nomwid;
     int sidcnt;
     int lenpos;
@@ -740,6 +751,12 @@ extern void AnchorClassDecompose(SplineFont *sf,AnchorClass *_ac, int classcnt, 
 	SplineChar ***lig,SplineChar ***mkmk,
 	struct glyphinfo *gi);
 
+#ifdef _HAS_LONGLONG
+extern void cvt_unix_to_1904( long long time, int32 result[2]);
+#else
+extern void cvt_unix_to_1904( long time, int32 result[2]);
+#endif
+
 
     /* Non-standard tables */
 	/* My PfEd table for FontForge/PfaEdit specific info */
@@ -751,6 +768,8 @@ extern void tex_read(FILE *ttf,struct ttfinfo *info);
 	/* The BDF table, to contain bdf properties the X people want */
 extern int ttf_bdf_dump(SplineFont *sf,struct alltabs *at,int32 *sizes);
 extern void ttf_bdf_read(FILE *ttf,struct ttfinfo *info);
+	/* The FFTM table, to some timestamps I'd like */
+extern int ttf_fftm_dump(SplineFont *sf,struct alltabs *at);
 
 
     /* Parsing advanced typography */

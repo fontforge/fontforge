@@ -1897,6 +1897,10 @@ static void SplineFontMetaData(SplineFont *sf,struct fontdict *fd) {
     if ( sf->fullname==NULL ) sf->fullname = copy(sf->fontname);
     if ( sf->familyname==NULL ) sf->familyname = copy(sf->fontname);
     if ( sf->weight==NULL ) sf->weight = copy("");
+    if ( fd->modificationtime!=0 ) {
+	sf->modificationtime = fd->modificationtime;
+	sf->creationtime = fd->creationtime;
+    }
     sf->cidversion = fd->cidversion;
     sf->xuid = XUIDFromFD(fd->xuid);
     /*sf->wasbinary = fd->wasbinary;*/

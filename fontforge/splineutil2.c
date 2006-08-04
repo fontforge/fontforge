@@ -3027,7 +3027,9 @@ return( copy(buffer));
 
 SplineFont *SplineFontEmpty(void) {
     extern int default_fv_row_count, default_fv_col_count;
+    time_t now;
     SplineFont *sf;
+
     sf = gcalloc(1,sizeof(SplineFont));
     sf->pfminfo.fstype = -1;
     sf->top_enc = -1;
@@ -3044,6 +3046,8 @@ SplineFont *SplineFontEmpty(void) {
     else
 	memcpy(sf->pfminfo.os2_vendor,"PfEd",4);
     sf->for_new_glyphs = DefaultNameListForNewFonts();
+    time(&now);
+    sf->creationtime = sf->modificationtime = now;
 return( sf );
 }
 

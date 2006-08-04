@@ -3146,6 +3146,8 @@ void CVSetCharChanged(CharView *cv,int changed) {
     SplineChar *sc = cv->sc;
     int oldchanged = sf->changed;
 
+    if ( changed )
+	SFSetModTime(sf);
     if ( cv->drawmode==dm_grid ) {
 	if ( changed ) {
 	    sf->changed = true;
@@ -3244,6 +3246,7 @@ void _SCCharChangedUpdate(SplineChar *sc,int changed) {
     TTFPointMatches(sc,true);
     if ( changed != -1 ) {
 	sc->changed_since_autosave = true;
+	SFSetModTime(sf);
 	if ( sc->changed!=changed ) {
 	    sc->changed = changed;
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI

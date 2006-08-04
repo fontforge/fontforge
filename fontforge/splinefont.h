@@ -1114,6 +1114,13 @@ typedef struct splinefont {
     int mark_class_cnt;
     char **mark_classes;		/* glyph name list */
     char **mark_class_names;		/* used within ff, utf8 */
+#ifdef _HAS_LONGLONG
+    long long creationtime;		/* seconds since 1970 */
+    long long modificationtime;
+#else
+    long creationtime;
+    long modificationtime;
+#endif
 } SplineFont;
 
 /* I am going to simplify my life and not encourage intermediate designs */
@@ -2035,4 +2042,6 @@ extern int ReadOtherSubrsFile(char *filename);
 extern char *utf8toutf7_copy(const char *_str);
 extern char *utf7toutf8_copy(const char *_str);
 
+extern void SFSetModTime(SplineFont *sf);
+extern void SFTimesFromFile(SplineFont *sf,FILE *);
 #endif

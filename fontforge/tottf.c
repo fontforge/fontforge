@@ -2622,10 +2622,56 @@ return( true );
 return( false );
 }
 
+#ifdef _HAS_LONGLONG
+void cvt_unix_to_1904( long long time, int32 result[2]) {
+    uint32 date1970[4], tm[4];
+    uint32 year[2];
+    int i;
+
+    tm[0] =  time     &0xffff;
+    tm[1] = (time>>16)&0xffff;
+    tm[2] = (time>>32)&0xffff;
+    tm[3] = (time>>48)&0xffff;
+#else
+void cvt_unix_to_1904( long time, int32 result[2]) {
+    int32 date1970[4], tm[4];
+    uint32 year[2];
+    int i;
+
+    tm[0] =  time     &0xffff;
+    tm[1] = (time>>16)&0xffff;
+    tm[2] = 0;
+    tm[3] = 0;
+#endif
+    memset(date1970,0,sizeof(date1970));
+    year[0] = (60*60*24*365L)&0xffff;
+    year[1] = (60*60*24*365L)>>16;
+    for ( i=1904; i<1970; ++i ) {
+	date1970[0] += year[0];
+	date1970[1] += year[1];
+	if ( (i&3)==0 && (i%100!=0 || i%400==0))
+	    date1970[0] += 24*60*60L;		/* Leap year */
+	date1970[1] += (date1970[0]>>16);
+	date1970[0] &= 0xffff;
+	date1970[2] += date1970[1]>>16;
+	date1970[1] &= 0xffff;
+	date1970[3] += date1970[2]>>16;
+	date1970[2] &= 0xffff;
+    }
+
+    for ( i=0; i<3; ++i ) {
+	tm[i] += date1970[i];
+	tm[i+1] += tm[i]>>16;
+	tm[i] &= 0xffff;
+    }
+    tm[3] -= date1970[3];
+
+    result[0] = (tm[1]<<16) | tm[0];
+    result[1] = (tm[3]<<16) | tm[2];
+}
+
 static void sethead(struct head *head,SplineFont *sf,struct alltabs *at) {
     time_t now;
-    uint32 now1904[4];
-    uint32 year[2];
     int i, lr, rl;
 
     head->version = 0x00010000;
@@ -2679,27 +2725,8 @@ static void sethead(struct head *head,SplineFont *sf,struct alltabs *at) {
     /* if there are any indic characters, set bit 10 */
 
     time(&now);		/* seconds since 1970, need to convert to seconds since 1904 */
-    now1904[0] = now1904[1] = now1904[2] = now1904[3] = 0;
-    year[0] = 60*60*24*365;
-    year[1] = year[0]>>16; year[0] &= 0xffff;
-    for ( i=4; i<70; ++i ) {
-	now1904[3] += year[0];
-	now1904[2] += year[1];
-	if ( (i&3)==0 )
-	    now1904[3] += 60*60*24;
-	now1904[2] += now1904[3]>>16;
-	now1904[3] &= 0xffff;
-	now1904[1] += now1904[2]>>16;
-	now1904[2] &= 0xffff;
-    }
-    now1904[3] += now&0xffff;
-    now1904[2] += now>>16;
-    now1904[2] += now1904[3]>>16;
-    now1904[3] &= 0xffff;
-    now1904[1] += now1904[2]>>16;
-    now1904[2] &= 0xffff;
-    head->modtime[1] = head->createtime[1] = (now1904[2]<<16)|now1904[3];
-    head->modtime[0] = head->createtime[0] = (now1904[0]<<16)|now1904[1];
+    cvt_unix_to_1904(now,head->modtime);
+    memcpy(head->createtime,head->modtime,sizeof(head->modtime));
 }
 
 static void sethhead(struct hhead *hhead,struct hhead *vhead,struct alltabs *at, SplineFont *sf) {
@@ -3267,10 +3294,10 @@ static void redohead(struct alltabs *at) {
     putlong(at->headf,at->head.magicNum);
     putshort(at->headf,at->head.flags);
     putshort(at->headf,at->head.emunits);
-    putlong(at->headf,at->head.createtime[0]);
     putlong(at->headf,at->head.createtime[1]);
-    putlong(at->headf,at->head.modtime[0]);
+    putlong(at->headf,at->head.createtime[0]);
     putlong(at->headf,at->head.modtime[1]);
+    putlong(at->headf,at->head.modtime[0]);
     putshort(at->headf,at->head.xmin);
     putshort(at->headf,at->head.ymin);
     putshort(at->headf,at->head.xmax);
@@ -4955,6 +4982,7 @@ return( false );
 	redovorg(at);		/* I know, VORG is only meaningful in a otf font and I dump it out in ttf too. Well, it will help ME read the font back in, and it won't bother anyone else. So there. */
     }
     redomaxp(at,format);
+    ttf_fftm_dump(sf,at);
 
     if ( format!=ff_type42 && format!=ff_type42cid ) {
 	if ( at->opentypemode ) {
@@ -5039,6 +5067,12 @@ return( false );
 	at->tabdir.tabs[i].tag = CHR('E','B','S','C');
 	at->tabdir.tabs[i].data = at->ebsc;
 	at->tabdir.tabs[i++].length = at->ebsclen;
+    }
+
+    if ( at->fftmf!=NULL ) {
+	at->tabdir.tabs[i].tag = CHR('F','F','T','M');
+	at->tabdir.tabs[i].data = at->fftmf;
+	at->tabdir.tabs[i++].length = at->fftmlen;
     }
 
     if ( at->gdef!=NULL ) {

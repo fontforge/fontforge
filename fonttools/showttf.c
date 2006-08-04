@@ -3,6 +3,7 @@
 #else
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 typedef unsigned int uint32;
 typedef int int32;
 typedef short int16;
@@ -128,6 +129,9 @@ struct ttfinfo {
     int prep_start;
     int prep_length;
     int prop_start;
+
+		/* head */
+    int fftm_start;
 
     unsigned int *glyph_unicode;
     char **glyph_names;
@@ -310,6 +314,9 @@ exit ( 1 );
 	    info->cvt_start = offset;
 	    info->cvt_length = length;
 	  break;
+	  case CHR('F','F','T','M'):
+	    info->fftm_start = offset;
+	  break;
 	  case CHR('f','p','g','m'):
 	    info->fpgm_start = offset;
 	    info->fpgm_length = length;
@@ -441,8 +448,68 @@ exit ( 1 );
 return( true );
 }
 
+static time_t readdate(FILE *ttf) {
+    int date[4], date1970[4], year[2];
+    int i;
+    /* Dates in sfnt files are seconds since 1904. I adjust to unix time */
+    /*  seconds since 1970 by figuring out how many seconds were in between */
+
+    date[3] = getushort(ttf);
+    date[2] = getushort(ttf);
+    date[1] = getushort(ttf);
+    date[0] = getushort(ttf);
+    memset(date1970,0,sizeof(date1970));
+    year[0] = (60*60*24*365L)&0xffff;
+    year[1] = (60*60*24*365L)>>16;
+    for ( i=1904; i<1970; ++i ) {
+	date1970[0] += year[0];
+	date1970[1] += year[1];
+	if ( (i&3)==0 && (i%100!=0 || i%400==0))
+	    date1970[0] += 24*60*60L;		/* Leap year */
+	date1970[1] += (date1970[0]>>16);
+	date1970[0] &= 0xffff;
+	date1970[2] += date1970[1]>>16;
+	date1970[1] &= 0xffff;
+	date1970[3] += date1970[2]>>16;
+	date1970[2] &= 0xffff;
+    }
+
+    for ( i=0; i<3; ++i ) {
+	date[i] -= date1970[i];
+	date[i+1] += date[i]>>16;
+	date[i] &= 0xffff;
+    }
+    date[3] -= date1970[3];
+return( (date[1]<<16) | date[0] );
+}
+
+static void readttfFFTM(FILE *ttf, FILE *util, struct ttfinfo *info) {
+    time_t unix_date;
+    struct tm *tm;
+    static const char *months[] = { "Jan", "Feb", "March", "April", "May",
+	    "June", "July", "August", "Sept", "Oct", "Nov", "Dec", NULL };
+
+    fseek(ttf,info->fftm_start,SEEK_SET);
+    printf( "\n\nCreated by FontForge " );
+    if ( getlong(ttf)!=0x00000001 ) {
+	fprintf( stderr, "Unknown version for 'FFTM' table\n" );
+    } else {
+	unix_date = readdate(ttf);
+	tm = localtime(&unix_date);
+	printf( "%d:%02d %02d-%s-%d\n",
+		tm->tm_hour, tm->tm_min, tm->tm_mday, months[tm->tm_mon],
+		tm->tm_year+1900 );
+	unix_date = readdate(ttf);
+	printf( "\tFont created: %s", ctime(&unix_date));
+	unix_date = readdate(ttf);
+	printf( "\tFont modified: %s", ctime(&unix_date));
+    }
+    printf( "\n" );
+}
+
 static void readttfhead(FILE *ttf, FILE *util, struct ttfinfo *info) {
     int mn, flags, fd;
+    time_t unix_date;
 
     fseek(ttf,info->head_start,SEEK_SET);
     printf( "\nHEAD table (at %d)\n", info->head_start );
@@ -461,8 +528,14 @@ static void readttfhead(FILE *ttf, FILE *util, struct ttfinfo *info) {
     printf( "\tunitsPerEm=%d\n", getushort(ttf));
     printf( "\tcreate[0]=%x\n", getlong(ttf));
     printf( "\t create[1]=%x\n", getlong(ttf));
+    fseek(ttf,-8,SEEK_CUR);
+    unix_date = readdate(ttf);
+    printf( "\tFile created: %s", ctime(&unix_date));
     printf( "\tmodtime[0]=%x\n", getlong(ttf));
     printf( "\t modtime[1]=%x\n", getlong(ttf));
+    fseek(ttf,-8,SEEK_CUR);
+    unix_date = readdate(ttf);
+    printf( "\tFile modified: %s", ctime(&unix_date));
     printf( "\txmin=%d\n", (short) getushort(ttf));
     printf( "\tymin=%d\n", (short) getushort(ttf));
     printf( "\txmax=%d\n", (short) getushort(ttf));
@@ -2256,6 +2329,19 @@ static void readvaluerecord(int vf,FILE *ttf,char *label) {
     printf( "\n" );
 }
 
+static void PrintGlyphs(uint16 *glyphs, struct ttfinfo *info) {
+    if ( glyphs==NULL )
+	printf( "<Empty>\n" );
+    else if ( info->glyph_names!=NULL ) {
+	int i;
+	printf( "      " );
+	for ( i=0; glyphs[i]!=0xffff; ++i ) {
+	    printf( "%s ", info->glyph_names[glyphs[i]]);
+	}
+	printf("\n" );
+    }
+}
+
 static void gposPairSubTable(FILE *ttf, int which, int stoffset, struct ttfinfo *info) {
     int coverage, cnt, i, subformat, vf1, vf2, j, pair_cnt;
     uint16 *glyphs;
@@ -2304,8 +2390,11 @@ static void gposPairSubTable(FILE *ttf, int which, int stoffset, struct ttfinfo 
 	    }
 	}
 	free(ps_offsets);
-    } else {
+    } else if ( subformat==2 ) {
 	printf( "\t   Class based kerning (not displayed)\n" );
+	PrintGlyphs( showCoverageTable(ttf,stoffset+coverage),info);
+    } else {
+	printf( "\t   !!! unknown sub-table format !!!!\n" );
     }
 }
 
@@ -2515,7 +2604,7 @@ static void gsubChainingContextSubTable(FILE *ttf, int which, int stoffset, stru
 }
 
 static void showgpossublookups(FILE *ttf,int lookup_start, struct ttfinfo *info, int gpos ) {
-    int i, lu_cnt, lu_type, flags, cnt, j, st;
+    int i, lu_cnt, lu_type, flags, cnt, j, st, is_exten_lu;
     uint16 *lu_offsets, *st_offsets;
 
     fseek(ttf,lookup_start,SEEK_SET);
@@ -2543,7 +2632,8 @@ static void showgpossublookups(FILE *ttf,int lookup_start, struct ttfinfo *info,
 		    lu_type==8?"Chained Context positioning":
 		    lu_type==9?"Extension positioning":
 			"Reserved");
-	} else
+	    is_exten_lu = lu_type==9;
+	} else {
 	    printf( "\t  Type=%d %s\n", lu_type,
 		    lu_type==1?"Single":
 		    lu_type==2?"Multiple":
@@ -2551,7 +2641,11 @@ static void showgpossublookups(FILE *ttf,int lookup_start, struct ttfinfo *info,
 		    lu_type==4?"Ligature":
 		    lu_type==5?"Context":
 		    lu_type==6?"Chaining Context":
+		    lu_type==7?"Extension":
+		    lu_type==8?"Reverse chaining":
 			"Reserved");
+	    is_exten_lu = lu_type==7;
+	}
 	printf( "\t  Flags=0x%x %s|%s|%s|%s\n", flags,
 		(flags&0x1)?"RightToLeft":"LeftToRight",
 		(flags&0x2)?"IgnoreBaseGlyphs":"",
@@ -2564,12 +2658,52 @@ static void showgpossublookups(FILE *ttf,int lookup_start, struct ttfinfo *info,
 	for ( j=0; j<cnt; ++j ) {
 	    fseek(ttf,st = lookup_start+lu_offsets[i]+st_offsets[j],SEEK_SET);
 	    if ( gpos ) {
+		if ( is_exten_lu ) {	/* Extension lookup */
+		    int format = getushort(ttf);
+		    int subtype = getushort(ttf);
+		    int offset = getlong(ttf);
+		    printf( "\t    (extension format)=%d\n", format );
+		    lu_type = subtype;
+		    printf( "\t    (extension type)=%d %s\n", lu_type,
+			    lu_type==1?"Single adjustment":
+			    lu_type==2?"Pair adjustment":
+			    lu_type==3?"Cursive attachment":
+			    lu_type==4?"MarkToBase attachment":
+			    lu_type==5?"MarkToLigature attachment":
+			    lu_type==6?"MarkToMark attachment":
+			    lu_type==7?"Context positioning":
+			    lu_type==8?"Chained Context positioning":
+			    lu_type==9?"Extension !!! Illegal here !!!":
+				"Reserved");
+		    printf( "\t    (extension offset)=%d\n", offset );
+		    st += offset;
+		    fseek(ttf,st,SEEK_SET);
+		}
 		switch ( lu_type ) {
 		  case 2: gposPairSubTable(ttf,j,st,info); break;
 		  case 4: gposMarkToBaseSubTable(ttf,j,st,info,true); break;
 		  case 6: gposMarkToBaseSubTable(ttf,j,st,info,false); break;
 		}
 	    } else {
+		if ( is_exten_lu ) {	/* Extension lookup */
+		    int format = getushort(ttf);
+		    int subtype = getushort(ttf);
+		    int offset = getlong(ttf);
+		    printf( "\t    (extension format)=%d\n", format );
+		    lu_type = subtype;
+		    printf( "\t    (extension type)=%d %s\n", lu_type,
+			    lu_type==1?"Single":
+			    lu_type==2?"Multiple":
+			    lu_type==3?"Alternate":
+			    lu_type==4?"Ligature":
+			    lu_type==5?"Context":
+			    lu_type==6?"Chaining Context":
+			    lu_type==7?"Extension !!! Illegal here !!!":
+			    lu_type==8?"Reverse chaining":
+				"Reserved");
+		    st += offset;
+		    fseek(ttf,st,SEEK_SET);
+		}
 		switch ( lu_type ) {
 		  case 1: gsubSingleSubTable(ttf,j,st,info); break;
 		  case 2: gsubMultipleSubTable(ttf,j,st,info); break;
@@ -5795,6 +5929,8 @@ static void readit(FILE *ttf, FILE *util) {
 return;
     }
 
+    if ( info.fftm_start!=0 )
+	readttfFFTM(ttf,util,&info);
     if ( info.head_start!=0 )
 	readttfhead(ttf,util,&info);
     if ( info.hhea_start!=0 )
@@ -5847,6 +5983,23 @@ return;
 	readttfapplefvar(ttf,util,&info);
     if ( info.gvar_start!=0 )
 	readttfapplegvar(ttf,util,&info);
+    if ( info.glyphlocations_start!=0 ) {
+	int i, pos;
+	fseek(ttf,info.glyphlocations_start,SEEK_SET);
+	if ( info.index_to_loc_is_long ) {
+	    for ( i=0; 4*i<info.loca_length; ++i ) {
+		pos = getlong(ttf);
+		if ( pos&3 )
+		    fprintf( stderr, "Not aligned GID=%d, pos=0x%x\n", i, pos);
+	    }
+	} else {
+	    for ( i=0; 2*i<info.loca_length; ++i ) {
+		pos = getushort(ttf);
+		if ( pos&1 )
+		    fprintf( stderr, "Not aligned GID=%d, pos=0x%x\n", i, pos<<1 );
+	    }
+	}
+    }
 }
 
 int main(int argc, char **argv) {
