@@ -925,7 +925,8 @@ typedef struct splinechar {
     unsigned int glyph_class: 3; /* 0=> fontforge determines class automagically, else one more than the class value in gdef */
     unsigned int numberpointsbackards: 1;
     unsigned int instructions_out_of_date: 1;
-    /* 11 bits left (one more if we ignore compositionunit) */
+    unsigned int complained_about_ptnums: 1;
+    /* 10 bits left (one more if we ignore compositionunit below) */
 #if HANYANG
     unsigned int compositionunit: 1;
     int16 jamo, varient;
