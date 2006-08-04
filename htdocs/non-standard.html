@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 30-Jun-2003 -->
-  <!-- AP: Last modified: 13-Dec-2005 -->
+  <!-- AP: Last modified: 4-Aug-2006 -->
   <TITLE>Non standard extensions used by FontForge in True/Open Type</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -44,7 +44,9 @@
     <LI>
       <A HREF="#TeX">'TeX ' the TeX metrics table</A>
     <LI>
-      <A HREF="#BDF">'BDF ' the BDF properties table</A> 
+      <A HREF="#BDF">'BDF ' the BDF properties table</A>
+    <LI>
+      <A HREF="#FFTM">'FFTM' the FontForge time stamp table</A> 
 	<HR>
     <LI>
       (<A HREF="TrueOpenTables.html">standard tables</A>)
@@ -590,6 +592,51 @@
     </TABLE>
     <P>
     The string table is a series of ASCII bytes. Each string is NUL terminated.
+  </BLOCKQUOTE>
+  <H2>
+    '<A NAME="FFTM">FFTM</A>' the FontForge time stamp table
+  </H2>
+  <BLOCKQUOTE>
+    The table begins with a table header containing a version number and is followed
+    by a series of timestamps (same format as the timestamps in the head table
+    -- 64 bit times, seconds since 00:00:00, 1-Jan-1904).
+    <P>
+    I don't think this is a duplication of the information in the 'head' table.
+    Neither the Apple nor OpenType spec is clear: Does head.creationtime refer
+    to the creation time of the truetype/opentype file, or of the font itself.
+    After examining various fonts of Apple's, it appears that the 'head' entries
+    contain the dates for the font file and not the font. The times in this table
+    are specifically the creation time of the font (the sfd file), while the
+    times in the 'head' table contain the creation time of the truetype or opentype
+    font file.
+    <TABLE CELLPADDING="2" BGCOLOR="#8080ff">
+      <TR>
+	<TD>uint32</TD>
+	<TD>version</TD>
+	<TD>currently 0x00000001</TD>
+      </TR>
+      <TR>
+	<TD>int64</TD>
+	<TD>FontForge's own timestamp</TD>
+	<TD>(the date of the sources for fontforge)</TD>
+      </TR>
+      <TR>
+	<TD>int64</TD>
+	<TD>creation date of this font</TD>
+	<TD>Not the creation date of the tt/ot file,<BR>
+	  but the date the sfd file was created.<BR>
+	  (not always accurate).</TD>
+      </TR>
+      <TR>
+	<TD>int64</TD>
+	<TD>last modification date of this font</TD>
+	<TD>Not the modification date of the file,<BR>
+	  but the time a glyph, etc. was last<BR>
+	  changed in the font database.<BR>
+	  (not always accurate)</TD>
+      </TR>
+    </TABLE>
+    <P>
   </BLOCKQUOTE>
 </DIV>
 </BODY></HTML>

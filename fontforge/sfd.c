@@ -1331,6 +1331,13 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal) {
 	fprintf(sfd, "UniqueID: %d\n", sf->uniqueid );
     if ( sf->pfminfo.fstype!=-1 )
 	fprintf(sfd, "FSType: %d\n", sf->pfminfo.fstype );
+#ifdef _HAS_LONGLONG
+    fprintf(sfd, "CreationTime: %lld\n", sf->creationtime );
+    fprintf(sfd, "ModificationTime: %lld\n", sf->modificationtime );
+#else
+    fprintf(sfd, "CreationTime: %ld\n", sf->creationtime );
+    fprintf(sfd, "ModificationTime: %ld\n", sf->modificationtime );
+#endif
     if ( sf->pfminfo.pfmset ) {
 	fprintf(sfd, "PfmFamily: %d\n", sf->pfminfo.pfmfamily );
 	fprintf(sfd, "TTFWeight: %d\n", sf->pfminfo.weight );
@@ -1968,6 +1975,33 @@ static int getint(FILE *sfd, int *val) {
     *pt='\0';
     ungetc(ch,sfd);
     *val = strtol(tokbuf,NULL,10);
+return( pt!=tokbuf?1:ch==EOF?-1: 0 );
+}
+
+#ifdef _HAS_LONGLONG
+static int getlonglong(FILE *sfd, long long *val) {
+#else
+static int getlonglong(FILE *sfd, long *val) {
+#endif
+    char tokbuf[100]; int ch;
+    char *pt=tokbuf, *end = tokbuf+100-2;
+
+    while ( isspace(ch = getc(sfd)));
+    if ( ch=='-' || ch=='+' ) {
+	*pt++ = ch;
+	ch = getc(sfd);
+    }
+    while ( isdigit(ch)) {
+	if ( pt<end ) *pt++ = ch;
+	ch = getc(sfd);
+    }
+    *pt='\0';
+    ungetc(ch,sfd);
+#ifdef _HAS_LONGLONG
+    *val = strtoll(tokbuf,NULL,10);
+#else
+    *val = strtol(tokbuf,NULL,10);
+#endif
 return( pt!=tokbuf?1:ch==EOF?-1: 0 );
 }
 
@@ -4251,6 +4285,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
     int pushedbacktok = false;
     Encoding *enc = &custom;
     struct remap *remap = NULL;
+    int hadtimes=false;
 
     orig_pos = 0;		/* Only used for compatibility with extremely old sfd files */
 
@@ -4298,6 +4333,11 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    getreal(sfd,&sf->upos);
 	} else if ( strmatch(tok,"UnderlineWidth:")==0 ) {
 	    getreal(sfd,&sf->uwidth);
+	} else if ( strmatch(tok,"ModificationTime:")==0 ) {
+	    getlonglong(sfd,&sf->modificationtime);
+	} else if ( strmatch(tok,"CreationTime:")==0 ) {
+	    getlonglong(sfd,&sf->creationtime);
+	    hadtimes = true;
 	} else if ( strmatch(tok,"PfmFamily:")==0 ) {
 	    int temp;
 	    getint(sfd,&temp);
@@ -5004,7 +5044,19 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	}
     }
     SFDCleanupFont(sf);
+    if ( !hadtimes )
+	SFTimesFromFile(sf,sfd);
 return( sf );
+}
+
+#include <sys/types.h>
+#include <sys/stat.h>
+void SFTimesFromFile(SplineFont *sf,FILE *file) {
+    struct stat b;
+    if ( fstat(fileno(file),&b)!=-1 ) {
+	sf->modificationtime = b.st_mtime;
+	sf->creationtime = b.st_mtime;
+    }
 }
 
 static int SFDStartsCorrectly(FILE *sfd,char *tok) {

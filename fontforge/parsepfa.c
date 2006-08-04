@@ -31,6 +31,8 @@
 #include <ustring.h>
 #include <utype.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include "psfont.h"
 #include <locale.h>
 
@@ -2574,6 +2576,7 @@ FontDict *_ReadPSFont(FILE *in) {
     FILE *temp;
     struct fontparse fp;
     char *oldloc;
+    struct stat b;
 
     temp = tmpfile();
     if ( temp==NULL ) {
@@ -2591,6 +2594,11 @@ return(NULL);
     setlocale(LC_NUMERIC,oldloc);
 
     fclose(temp);
+
+    if ( fstat(fileno(in),&b)!=-1 ) {
+	fp.fd->modificationtime = b.st_mtime;
+	fp.fd->creationtime = b.st_mtime;
+    }
 return( fp.fd );
 }
 

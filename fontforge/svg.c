@@ -33,6 +33,8 @@
 #include <chardata.h>
 #include <ustring.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include "sd.h"
 
 /* ************************************************************************** */
@@ -2712,9 +2714,14 @@ return( NULL );
     _xmlFreeDoc(doc);
 
     if ( sf!=NULL ) {
+	struct stat b;
 	sf->order2 = SFFindOrder(sf);
 	SFSetOrder(sf,sf->order2);
 	sf->chosenname = chosenname;
+	if ( stat(filename,&b)!=-1 ) {
+	    sf->modificationtime = b.st_mtime;
+	    sf->creationtime = b.st_mtime;
+	}
     }
 return( sf );
 }

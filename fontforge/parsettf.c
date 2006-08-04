@@ -574,6 +574,9 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 	  case CHR('P','f','E','d'):
 	    info->pfed_start = offset;
 	  break;
+	  case CHR('F','F','T','M'):
+	    info->fftm_start = offset;
+	  break;
 	  case CHR('T','e','X',' '):
 	    info->tex_start = offset;
 	  break;
@@ -610,8 +613,51 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 return( true );
 }
 
+static void readdate(FILE *ttf,struct ttfinfo *info,int ismod) {
+    int date[4], date1970[4], year[2];
+    int i;
+    /* Dates in sfnt files are seconds since 1904. I adjust to unix time */
+    /*  seconds since 1970 by figuring out how many seconds were in between */
+
+    date[3] = getushort(ttf);
+    date[2] = getushort(ttf);
+    date[1] = getushort(ttf);
+    date[0] = getushort(ttf);
+    memset(date1970,0,sizeof(date1970));
+    year[0] = (60*60*24*365L)&0xffff;
+    year[1] = (60*60*24*365L)>>16;
+    for ( i=1904; i<1970; ++i ) {
+	date1970[0] += year[0];
+	date1970[1] += year[1];
+	if ( (i&3)==0 && (i%100!=0 || i%400==0))
+	    date1970[0] += 24*60*60L;		/* Leap year */
+	date1970[1] += (date1970[0]>>16);
+	date1970[0] &= 0xffff;
+	date1970[2] += date1970[1]>>16;
+	date1970[1] &= 0xffff;
+	date1970[3] += date1970[2]>>16;
+	date1970[2] &= 0xffff;
+    }
+
+    for ( i=0; i<3; ++i ) {
+	date[i] -= date1970[i];
+	date[i+1] += date[i]>>16;
+	date[i] &= 0xffff;
+    }
+    date[3] -= date1970[3];
+
+    *(ismod ? &info->modificationtime : &info->creationtime) =
+#ifdef _HAS_LONGLONG
+	    (((long long) date[3])<<48) |
+	    (((long long) date[2])<<32) |
+#endif
+	    (             date[1] <<16) |
+			  date[0];
+}
+
 static void readttfhead(FILE *ttf,struct ttfinfo *info) {
     /* Here I want units per em, and size of loca entries */
+    /* oh... also creation/modification times */
     int i;
     fseek(ttf,info->head_start+4*4+2,SEEK_SET);		/* skip over the version number and a bunch of junk */
     info->emsize = getushort(ttf);
@@ -624,6 +670,14 @@ static void readttfhead(FILE *ttf,struct ttfinfo *info) {
     if ( info->index_to_loc_is_long )
 	info->glyph_cnt = info->loca_length/4-1;
     if ( info->glyph_cnt<0 ) info->glyph_cnt = 0;
+
+    if ( info->fftm_start!=0 ) {
+	fseek(ttf,info->fftm_start+3*4,SEEK_SET);
+    } else {
+	fseek(ttf,info->head_start+4*4+2+2,SEEK_SET);
+    }
+    readdate(ttf,info,0);
+    readdate(ttf,info,1);
 }
 
 static void readttfhhea(FILE *ttf,struct ttfinfo *info) {
@@ -4746,6 +4800,9 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     sf->onlybitmaps = info->onlystrikes;
     sf->order2 = info->to_order2;
     sf->comments = info->fontcomments;
+
+    sf->creationtime = info->creationtime;
+    sf->modificationtime = info->modificationtime;
 
     sf->design_size = info->design_size;
     sf->design_range_bottom = info->design_range_bottom;

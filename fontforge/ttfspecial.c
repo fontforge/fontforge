@@ -1019,3 +1019,43 @@ return;
 	}
     }
 }
+
+
+/* ************************************************************************** */
+/* *************************    The 'FFTM' table    ************************* */
+/* *************************         Output         ************************* */
+/* ************************************************************************** */
+
+/* FontForge timestamp table */
+/* Contains: */
+/*  date of fontforge sources */
+/*  date of font's (not file's) creation */
+/*  date of font's modification */
+int ttf_fftm_dump(SplineFont *sf,struct alltabs *at) {
+    int32 results[2];
+    extern const time_t source_modtime;
+
+    at->fftmf = tmpfile();
+
+    putlong(at->fftmf,0x00000001);	/* Version */
+
+    cvt_unix_to_1904(source_modtime,results);
+    putlong(at->fftmf,results[1]);
+    putlong(at->fftmf,results[0]);
+
+    cvt_unix_to_1904(sf->creationtime,results);
+    putlong(at->fftmf,results[1]);
+    putlong(at->fftmf,results[0]);
+
+    cvt_unix_to_1904(sf->modificationtime,results);
+    putlong(at->fftmf,results[1]);
+    putlong(at->fftmf,results[0]);
+
+    at->fftmlen = ftell(at->fftmf);	/* had better be 7*4 */
+	    /* It will never be misaligned */
+    if ( (at->fftmlen&1)!=0 )
+	putc(0,at->fftmf);
+    if ( ((at->fftmlen+1)&2)!=0 )
+	putshort(at->fftmf,0);
+return( true );
+}

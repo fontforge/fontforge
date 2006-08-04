@@ -32,6 +32,8 @@
 extern int _GScrollBar_Width;
 #include <gkeysym.h>
 #include <math.h>
+#include <unistd.h>
+#include <time.h>
 
 static int last_aspect=0;
 
@@ -5234,6 +5236,12 @@ return;
     }
 }
 
+void SFSetModTime(SplineFont *sf) {
+    time_t now;
+    time(&now);
+    sf->modificationtime = now;
+}
+
 static int GFI_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GWindow gw = GGadgetGetWindow(g);
@@ -5609,6 +5617,7 @@ return(true);
 	if ( reformat_fv )
 	    FontViewReformatAll(sf);
 	sf->changed = true;
+	SFSetModTime(sf);
 	sf->changed_since_autosave = true;
 	sf->changed_since_xuidchanged = !xuidchanged;
 	/* Just in case they changed the blue values and we are showing blues */
@@ -6285,17 +6294,17 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GTabInfo aspects[18], conaspects[7], smaspects[5], vaspects[5];
+    GTabInfo aspects[19], conaspects[7], smaspects[5], vaspects[5];
     GGadgetCreateData mgcd[10], ngcd[13], psgcd[30], tngcd[8],
 	pgcd[8], vgcd[16], pangcd[22], comgcd[3], atgcd[7], txgcd[23],
 	congcd[3], csubgcd[fpst_max-pst_contextpos][6], smgcd[3], smsubgcd[4][6],
 	mfgcd[8], mcgcd[8], szgcd[19], mkgcd[5], metgcd[28], vagcd[3], ssgcd[23],
-	xugcd[7];
+	xugcd[7], dgcd[6];
     GTextInfo mlabel[10], nlabel[12], pslabel[30], tnlabel[7],
 	plabel[8], vlabel[16], panlabel[22], comlabel[3], atlabel[7], txlabel[23],
 	csublabel[fpst_max-pst_contextpos][6], smsublabel[4][6],
 	mflabel[8], mclabel[8], szlabel[17], mklabel[5], metlabel[28],
-	sslabel[23], xulabel[6];
+	sslabel[23], xulabel[6], dlabel[5];
     GTextInfo *namelistnames;
     struct gfi_data *d;
     char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20],
@@ -6332,6 +6341,9 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     static int smtypes[] = { asm_indic, asm_context, asm_insert, asm_kern };
     static int done = false;
     char **nlnames;
+    char createtime[200], modtime[200];
+    time_t t;
+    const struct tm *tm;
 
     FontInfoInit();
     if ( !done ) {
@@ -8238,6 +8250,47 @@ return;
 
 /******************************************************************************/
 
+    memset(&dlabel,0,sizeof(dlabel));
+    memset(&dgcd,0,sizeof(dgcd));
+
+    dlabel[0].text = (unichar_t *) _("Creation Date:");
+    dlabel[0].text_is_1byte = true;
+    dlabel[0].text_in_resource = true;
+    dgcd[0].gd.label = &dlabel[0];
+    dgcd[0].gd.pos.x = 12; dgcd[0].gd.pos.y = 6+6; 
+    dgcd[0].gd.flags = gg_visible | gg_enabled;
+    dgcd[0].creator = GLabelCreate;
+
+    t = sf->creationtime;
+    tm = localtime(&t);
+    strftime(createtime,sizeof(createtime),"%c",tm);
+    dgcd[1].gd.pos.x = 115; dgcd[1].gd.pos.y = dgcd[0].gd.pos.y;
+    dgcd[1].gd.flags = gg_visible | gg_enabled;
+    dlabel[1].text = (unichar_t *) createtime;
+    dlabel[1].text_is_1byte = true;
+    dgcd[1].gd.label = &dlabel[1];
+    dgcd[1].creator = GLabelCreate;
+
+    dlabel[2].text = (unichar_t *) _("Modification Date:");
+    dlabel[2].text_is_1byte = true;
+    dlabel[2].text_in_resource = true;
+    dgcd[2].gd.label = &dlabel[2];
+    dgcd[2].gd.pos.x = 12; dgcd[2].gd.pos.y = dgcd[0].gd.pos.y+14; 
+    dgcd[2].gd.flags = gg_visible | gg_enabled;
+    dgcd[2].creator = GLabelCreate;
+
+    t = sf->modificationtime;
+    tm = localtime(&t);
+    strftime(modtime,sizeof(modtime),"%c",tm);
+    dgcd[3].gd.pos.x = 115; dgcd[3].gd.pos.y = dgcd[2].gd.pos.y;
+    dgcd[3].gd.flags = gg_visible | gg_enabled;
+    dlabel[3].text = (unichar_t *) modtime;
+    dlabel[3].text_is_1byte = true;
+    dgcd[3].gd.label = &dlabel[3];
+    dgcd[3].creator = GLabelCreate;
+
+/******************************************************************************/
+
     memset(&mlabel,0,sizeof(mlabel));
     memset(&mgcd,0,sizeof(mgcd));
     memset(&aspects,'\0',sizeof(aspects));
@@ -8312,6 +8365,12 @@ return;
     aspects[i].text = (unichar_t *) _("Mac SM");
     aspects[i].text_is_1byte = true;
     aspects[i++].gcd = smgcd;
+
+#ifndef FONTFORGE_CONFIG_INFO_HORIZONTAL
+    aspects[i].text = (unichar_t *) _("Dates");
+    aspects[i].text_is_1byte = true;
+    aspects[i++].gcd = dgcd;
+#endif
 
     aspects[defaspect].selected = true;
 
