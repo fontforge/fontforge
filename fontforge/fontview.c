@@ -5232,6 +5232,7 @@ return;
 	    sc->ttf_instrs_len = 0;
 	    sc->instructions_out_of_date = false;
 	    SCCharChangedUpdate(sc);
+	    sc->complained_about_ptnums = false;
 	}
     }
 }

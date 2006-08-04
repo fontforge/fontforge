@@ -2972,7 +2972,7 @@ return( false );
 	    else if ( sp->nextcpindex==pnum )
 		++pnum;
 	    else if ( sp->nextcpindex==start_pnum && starts_with_cp &&
-		    sp->next->to==ss->first )
+		    (sp->next!=NULL && sp->next->to==ss->first) )
 		/* Ok */;
 	    else
 return( false );
@@ -3084,7 +3084,11 @@ return;
 	    }
 	}
     }
-    if ( had_ap || had_dep || had_instrs )
+    if ( no_windowing_ui )
+	/* If we're in a script it's annoying (and pointless) to get this message */;
+    else if ( sc->complained_about_ptnums )
+	/* It's annoying to get the same message over and over again as you edit a glyph */;
+    else if ( had_ap || had_dep || had_instrs ) {
 	gwwv_post_notice(_("You changed the point numbering"),
 		_("You have just changed the point numbering of this glyph.%s%s%s"),
 			had_instrs==0 ? "" :
@@ -3094,6 +3098,8 @@ return;
 				: "",
 			had_ap ? _(" At least one anchor point used point matching. It may be out of date now.")
 				: "" );
+	sc->complained_about_ptnums = true;
+    }
 }
 
 static void _SCHintsChanged(SplineChar *sc) {
@@ -4767,6 +4773,7 @@ static void CVMenuClearInstrs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	cv->sc->instructions_out_of_date = false;
 	SCCharChangedUpdate(cv->sc);
 	SCMarkInstrDlgAsChanged(cv->sc);
+	cv->sc->complained_about_ptnums = false;	/* Should be after CharChanged */
     }
 }
 

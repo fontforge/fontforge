@@ -1762,4 +1762,5 @@ return;
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     SCMarkInstrDlgAsChanged(sc);
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+    sc->complained_about_ptnums = false;
 }
