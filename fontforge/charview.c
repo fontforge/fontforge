@@ -2874,7 +2874,7 @@ int SSTtfNumberPoints(SplineSet *ss) {
 		sp->ttfindex = pnum++;
 	    if ( sp->nonextcp )
 		sp->nextcpindex = 0xffff;
-	    else if ( !starts_with_cp || sp->next->to!=ss->first )
+	    else if ( !starts_with_cp || (sp->next!=NULL && sp->next->to!=ss->first) )
 		sp->nextcpindex = pnum++;
 	    if ( sp->next==NULL )
 	break;
