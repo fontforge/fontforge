@@ -9320,6 +9320,12 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 
 	feat_gid = FeatureTrans(fv,index);
 	sc = feat_gid!=-1 ? fv->sf->glyphs[feat_gid]: NULL;
+	if ( !SCWorthOutputting(sc) ) {
+	    int x = j*fv->cbw+1, xend = x+fv->cbw-2;
+	    int y = i*fv->cbh+14+2, yend = y+fv->cbw-1;
+	    GDrawDrawLine(pixmap,x,y,xend,yend,0xd08080);
+	    GDrawDrawLine(pixmap,x,yend,xend,y,0xd08080);
+	}
 	if ( sc!=NULL ) {
 	    BDFChar *bdfc;
 
@@ -9328,12 +9334,6 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		    fv->sf->glyphs[feat_gid]!=NULL )
 		BDFPieceMeal(fv->show,feat_gid);
 
-	    if ( feat_gid==-1 || !SCWorthOutputting(fv->sf->glyphs[feat_gid]) ) {
-		int x = j*fv->cbw+1, xend = x+fv->cbw-2;
-		int y = i*fv->cbh+14+2, yend = y+fv->cbw-1;
-		GDrawDrawLine(pixmap,x,y,xend,yend,0xd08080);
-		GDrawDrawLine(pixmap,x,yend,xend,y,0xd08080);
-	    }
 	    if ( fv->show!=NULL && feat_gid!=-1 &&
 		    feat_gid < fv->show->glyphcnt &&
 		    fv->show->glyphs[feat_gid]==NULL &&
