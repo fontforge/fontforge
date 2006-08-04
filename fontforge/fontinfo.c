@@ -2366,7 +2366,7 @@ static int MCD_FromSelection(GGadget *g, GEvent *e) {
 	pt = vals = galloc((len+1)*sizeof(unichar_t));
 	*pt = '\0';
 	/* in a class the order of selection is irrelevant */
-	for ( i=0; i<fv->map->enccount; ++i ) {
+	for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i]) {
 	    gid = fv->map->map[i];
 	    if ( gid!=-1 && sf->glyphs[gid]!=NULL )
 		sc = sf->glyphs[gid];
