@@ -28,6 +28,7 @@
 #include <ustring.h>
 #include <chardata.h>
 #include <utype.h>
+#include "unicoderange.h"
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 extern int _GScrollBar_Width;
 #include <gkeysym.h>
@@ -55,7 +56,7 @@ struct gfi_data {
     int tn_width, tn_height;
     int tn_offleft, tn_offtop, tn_langstart, tn_stridstart, tn_strstart, tn_hend;
     int tn_active, tn_smallactive, tn_done;
-    int private_aspect, ttfv_aspect, tn_aspect, tx_aspect;
+    int private_aspect, ttfv_aspect, tn_aspect, tx_aspect, unicode_aspect;
     int old_sel, old_aspect, old_lang, old_strid;
     int ttf_set, names_set, tex_set;
     struct psdict *private;
@@ -1194,6 +1195,9 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_MacAutomatic	16000
 #define CID_MacStyles		16001
 #define CID_MacFOND		16002
+
+#define CID_Unicode		16100
+#define CID_UnicodeEmpties	16101
 
 const char *TTFNameIds(int id) {
     int i;
@@ -6190,6 +6194,50 @@ static int GFI_MacAutomatic(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static void FigureUnicode(struct gfi_data *d) {
+    int includeempties = GGadgetIsChecked(GWidgetGetControl(d->gw,CID_UnicodeEmpties));
+    GGadget *list = GWidgetGetControl(d->gw,CID_Unicode);
+    struct rangeinfo *ri;
+    int cnt, i;
+    GTextInfo **ti;
+    char buffer[200];
+
+    GGadgetClearList(list);
+    ri = SFUnicodeRanges(d->sf,(includeempties?ur_includeempty:0)|ur_sortbyunicode);
+    if ( ri==NULL ) cnt=0;
+    else
+	for ( cnt=0; ri[cnt].range!=NULL; ++cnt );
+
+    ti = galloc((cnt+1) * sizeof( GTextInfo * ));
+    for ( i=0; i<cnt; ++i ) {
+	if ( ri[i].range->first==-1 )
+	    snprintf( buffer, sizeof(buffer),
+		    "%s  %d/0", _(ri[i].range->name), ri[i].cnt);
+	else
+	    snprintf( buffer, sizeof(buffer),
+		    "%s  U+%04X-U+%04X %d/%d",
+		    _(ri[i].range->name),
+		    ri[i].range->first, ri[i].range->last,
+		    ri[i].cnt, (ri[i].range->first==-1)?0: (ri[i].range->last-ri[i].range->first+1));
+	ti[i] = gcalloc(1,sizeof(GTextInfo));
+	ti[i]->fg = ti[i]->bg = COLOR_DEFAULT;
+	ti[i]->text = utf82u_copy(buffer);
+    }
+    ti[i] = gcalloc(1,sizeof(GTextInfo));
+    GGadgetSetList(list,ti,false);
+}
+
+static int GFI_UnicodeEmptiesChange(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	FigureUnicode(d);
+	
+	int autom = GGadgetIsChecked(GWidgetGetControl(d->gw,CID_MacAutomatic));
+	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_MacStyles),!autom);
+    }
+return( true );
+}
+
 static int GFI_AspectChange(GGadget *g, GEvent *e) {
     if ( e==NULL || (e->type==et_controlevent && e->u.control.subtype == et_radiochanged )) {
 	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
@@ -6202,6 +6250,8 @@ static int GFI_AspectChange(GGadget *g, GEvent *e) {
 	    InitTTFNames(d);
 	} else if ( !d->tex_set && new_aspect == d->tx_aspect )
 	    DefaultTeX(d);
+	else if ( new_aspect == d->unicode_aspect )
+	    FigureUnicode(d);
 	d->old_aspect = new_aspect;
     }
 return( true );
@@ -6210,7 +6260,7 @@ return( true );
 static void GFI_Resize(struct gfi_data *d) {
     GRect size, temp, temp2, subsize;
     int yoff, xoff, xw, yh, i, okdown;
-    static int xy_cids[] = { CID_Notice, CID_Comment, CID_Contextual, CID_StateMachine, CID_TTFTabs, 0 };
+    static int xy_cids[] = { CID_Notice, CID_Comment, CID_Contextual, CID_StateMachine, CID_TTFTabs, CID_Unicode, 0 };
     static int x_cids[] = { CID_PrivateEntries, CID_PrivateValues, CID_MarkClasses, CID_AnchorClasses, 0 };
     int sbsize = GDrawPointsToPixels(d->gw,_GScrollBar_Width);
 
@@ -6230,7 +6280,7 @@ static void GFI_Resize(struct gfi_data *d) {
 	    temp.height+yoff);
     subsize.height = size.height- subsize.y- okdown-GDrawPointsToPixels(d->gw,8); subsize.width += xoff;
 
-    for ( i=0; xy_cids[i]!=0; ++i ) {
+    for ( i=0; xy_cids[i]!=0; ++i ) if (GWidgetGetControl(d->gw,xy_cids[i])!=NULL) {
 	GGadgetGetSize(GWidgetGetControl(d->gw,xy_cids[i]),&temp);
 	if ( (xw = subsize.width - temp.x - GDrawPointsToPixels(d->gw,3)) < 40 )
 	    xw = 40;
@@ -6310,17 +6360,17 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GTabInfo aspects[19], conaspects[7], smaspects[5], vaspects[5];
+    GTabInfo aspects[20], conaspects[7], smaspects[5], vaspects[5];
     GGadgetCreateData mgcd[10], ngcd[17], psgcd[30], tngcd[8],
 	pgcd[8], vgcd[16], pangcd[22], comgcd[3], atgcd[7], txgcd[23],
 	congcd[3], csubgcd[fpst_max-pst_contextpos][6], smgcd[3], smsubgcd[4][6],
 	mfgcd[8], mcgcd[8], szgcd[19], mkgcd[5], metgcd[28], vagcd[3], ssgcd[23],
-	xugcd[7], dgcd[6];
+	xugcd[7], dgcd[6], ugcd[4];
     GTextInfo mlabel[10], nlabel[16], pslabel[30], tnlabel[7],
 	plabel[8], vlabel[16], panlabel[22], comlabel[3], atlabel[7], txlabel[23],
 	csublabel[fpst_max-pst_contextpos][6], smsublabel[4][6],
 	mflabel[8], mclabel[8], szlabel[17], mklabel[5], metlabel[28],
-	sslabel[23], xulabel[6], dlabel[5];
+	sslabel[23], xulabel[6], dlabel[5], ulabel[1];
     GTextInfo *namelistnames;
     struct gfi_data *d;
     char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20],
@@ -8342,6 +8392,28 @@ return;
 
 /******************************************************************************/
 
+    memset(&ulabel,0,sizeof(ulabel));
+    memset(&ugcd,0,sizeof(ugcd));
+
+    ulabel[0].text = (unichar_t *) _("Include Empty Blocks");
+    ulabel[0].text_is_1byte = true;
+    ulabel[0].text_in_resource = true;
+    ugcd[0].gd.label = &ulabel[0];
+    ugcd[0].gd.pos.x = 12; ugcd[0].gd.pos.y = 10; 
+    ugcd[0].gd.flags = gg_visible | gg_enabled;
+    ugcd[0].gd.handle_controlevent = GFI_UnicodeEmptiesChange;
+    ugcd[0].gd.cid = CID_UnicodeEmpties;
+    ugcd[0].creator = GCheckBoxCreate;
+
+    ugcd[1].gd.pos.x = 12; ugcd[1].gd.pos.y = 30;
+    ugcd[1].gd.pos.width = ngcd[15].gd.pos.width;
+    ugcd[1].gd.pos.height = 200;
+    ugcd[1].gd.flags = gg_visible | gg_enabled;
+    ugcd[1].gd.cid = CID_Unicode;
+    ugcd[1].creator = GListCreate;
+
+/******************************************************************************/
+
     memset(&mlabel,0,sizeof(mlabel));
     memset(&mgcd,0,sizeof(mgcd));
     memset(&aspects,'\0',sizeof(aspects));
@@ -8421,6 +8493,11 @@ return;
     aspects[i].text = (unichar_t *) _("Dates");
     aspects[i].text_is_1byte = true;
     aspects[i++].gcd = dgcd;
+
+    d->unicode_aspect = i;
+    aspects[i].text = (unichar_t *) _("Unicode Ranges");
+    aspects[i].text_is_1byte = true;
+    aspects[i++].gcd = ugcd;
 #endif
 
     aspects[defaspect].selected = true;
