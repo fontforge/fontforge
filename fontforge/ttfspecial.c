@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaedit.h"
+#include <time.h>
 #include <utype.h>
 #include <ustring.h>
 #include <gdraw.h>		/* For COLOR_DEFAULT */
