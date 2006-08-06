@@ -1308,6 +1308,8 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal) {
 	fprintf(sfd, "Version: %s\n", sf->version );
     if ( sf->fondname!=NULL )
 	fprintf(sfd, "FONDName: %s\n", sf->fondname );
+    if ( sf->defbasefilename!=NULL )
+	fprintf(sfd, "DefaultBaseFilename: %s\n", sf->defbasefilename );
     if ( sf->strokewidth!=0 )
 	fprintf(sfd, "StrokeWidth: %g\n", (double) sf->strokewidth );
     fprintf(sfd, "ItalicAngle: %g\n", (double) sf->italicangle );
@@ -4312,6 +4314,9 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	} else if ( strmatch(tok,"FamilyName:")==0 ) {
 	    geteol(sfd,tok);
 	    sf->familyname = copy(tok);
+	} else if ( strmatch(tok,"DefaultBaseFilename:")==0 ) {
+	    geteol(sfd,tok);
+	    sf->defbasefilename = copy(tok);
 	} else if ( strmatch(tok,"Weight:")==0 ) {
 	    getprotectedname(sfd,tok);
 	    sf->weight = copy(tok);

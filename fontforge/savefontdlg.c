@@ -3216,7 +3216,9 @@ return( 0 );
 
     GFileChooserConnectButtons(gcd[0].ret,gcd[1].ret,gcd[2].ret);
     {
-	char *fn = sf->cidmaster==NULL? sf->fontname:sf->cidmaster->fontname;
+	SplineFont *master = sf->cidmaster ? sf->cidmaster : sf;
+	char *fn = master->defbasefilename!=NULL ? master->defbasefilename :
+		master->fontname;
 	unichar_t *temp = galloc(sizeof(unichar_t)*(strlen(fn)+30));
 	uc_strcpy(temp,fn);
 	uc_strcat(temp,extensions[ofs]!=NULL?extensions[ofs]:bitmapextensions[old]);
