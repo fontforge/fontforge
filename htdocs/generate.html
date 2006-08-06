@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Sep-2002 -->
-  <!-- AP: Last modified: 12-Jun-2006 -->
+  <!-- AP: Last modified: 5-Aug-2006 -->
   <TITLE>Generate Font Dialog</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -190,8 +190,7 @@
       generate bad truetype instructions, now it merely inserts whatever truetype
       instructions are stored with the glyph. If these have been read from another
       truetype font they will probably be reasonable. If they have been generated
-      with FontForge's AutoInstr menu command they will probably make your font
-      uglier.
+      with FontForge's AutoInstr menu command they may make your font uglier.
       <UL>
 	<LI>
 	  R C van Dalen's <A HREF="http://home.kabelfoon.nl/~slam/fonts/">truetype
@@ -257,12 +256,11 @@
   <P>
   TTF (and Open Type) fonts are usually generated in Unicode encoding, there
   will also be a tiny macintosh encoding of MacRoman (and a macintosh copy
-  of the unicode encoding) -- the exceptions are: symbol fonts will use the
-  symbol encoding, KSC5601 and Wansung fonts will use Wansung, Johab fonts
-  will use johab, JIS208 and SJIS fonts will use SJIS, Big5 will use big5 encoding.
-  Fonts with a "Full Unicode" encoding will have both a 2 byte unicode encoding
-  table and a 4 byte table. OpenType CID keyed fonts will be saved with Unicode
-  encoding.
+  of the unicode encoding) -- the exceptions are: KSC5601 and Wansung fonts
+  will use Wansung, Johab fonts will use johab, JIS208 and SJIS fonts will
+  use SJIS, Big5 will use big5 encoding. Fonts with a "Full Unicode" encoding
+  will have both a 2 byte unicode encoding table and a 4 byte table. OpenType
+  CID keyed fonts will be saved with Unicode encoding.
   <P>
   Postscript fonts are generated in whatever encoding the font is using (except
   if you take a two byte encoding and generate a Type1 font (rather than a
@@ -282,7 +280,7 @@
   SVG fonts don't really have the concept of an encoding other than Unicode.
   <P>
   TTF (and OpenType) fonts will produce vertical metrics tables if the font
-  has vertical metrics enabled. Postscript encodings will not produce Metrics2
+  has vertical metrics enabled. Postscript type1 fonts will not produce Metrics2
   dictionaries (If someone actually wants this let me know, it can be done,
   but I get the impression that nobody uses this any more).
   <P>

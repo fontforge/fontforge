@@ -1059,6 +1059,9 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_Namelist	1024
 #define CID_XUID	1113
 #define CID_Human	1114
+#define CID_SameAsFontname	1115
+#define CID_HasDefBase	1116
+#define CID_DefBaseName	1117
 
 #define CID_PrivateEntries	2001
 #define	CID_PrivateValues	2002
@@ -1891,6 +1894,15 @@ static int GFI_FamilyChange(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
 	struct gfi_data *gfi = GDrawGetUserData(GGadgetGetWindow(g));
 	gfi->family_untitled = false;
+    }
+return( true );
+}
+
+static int GFI_DefBaseChange(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+	struct gfi_data *gfi = GDrawGetUserData(GGadgetGetWindow(g));
+	GGadgetSetChecked(GWidgetGetControl(gfi->gw,*_GGadgetGetTitle(g)!='\0'?CID_HasDefBase:CID_SameAsFontname),
+		true);
     }
 return( true );
 }
@@ -5490,6 +5502,10 @@ return(true);
 	free(sf->copyright); sf->copyright = cu_copy(txt);
 	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Comment));
 	free(sf->comments); sf->comments = cu_copy(*txt?txt:NULL);
+	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_DefBaseName));
+	if ( *txt=='\0' || GGadgetIsChecked(GWidgetGetControl(gw,CID_SameAsFontname)) )
+	    txt = NULL;
+	free(sf->defbasefilename); sf->defbasefilename = u2utf8_copy(txt);
 	if ( sf->subfontcnt!=0 ) {
 	    sf->cidversion = cidversion;
 	} else {
@@ -6295,12 +6311,12 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     GWindow gw;
     GWindowAttrs wattrs;
     GTabInfo aspects[19], conaspects[7], smaspects[5], vaspects[5];
-    GGadgetCreateData mgcd[10], ngcd[13], psgcd[30], tngcd[8],
+    GGadgetCreateData mgcd[10], ngcd[17], psgcd[30], tngcd[8],
 	pgcd[8], vgcd[16], pangcd[22], comgcd[3], atgcd[7], txgcd[23],
 	congcd[3], csubgcd[fpst_max-pst_contextpos][6], smgcd[3], smsubgcd[4][6],
 	mfgcd[8], mcgcd[8], szgcd[19], mkgcd[5], metgcd[28], vagcd[3], ssgcd[23],
 	xugcd[7], dgcd[6];
-    GTextInfo mlabel[10], nlabel[12], pslabel[30], tnlabel[7],
+    GTextInfo mlabel[10], nlabel[16], pslabel[30], tnlabel[7],
 	plabel[8], vlabel[16], panlabel[22], comlabel[3], atlabel[7], txlabel[23],
 	csublabel[fpst_max-pst_contextpos][6], smsublabel[4][6],
 	mflabel[8], mclabel[8], szlabel[17], mklabel[5], metlabel[28],
@@ -6469,7 +6485,7 @@ return;
     ngcd[7].gd.cid = CID_Weight;
     ngcd[7].creator = GTextFieldCreate;
 
-    ngcd[8].gd.pos.x = 12; ngcd[8].gd.pos.y = ngcd[7].gd.pos.y+30+6;
+    ngcd[8].gd.pos.x = 12; ngcd[8].gd.pos.y = ngcd[6].gd.pos.y+26;
     nlabel[8].text = (unichar_t *) _("_Version:");
     nlabel[8].text_is_1byte = true;
     nlabel[8].text_in_resource = true;
@@ -6489,24 +6505,59 @@ return;
     ngcd[9].gd.cid = CID_Version;
     ngcd[9].creator = GTextFieldCreate;
 
-    ngcd[10].gd.pos.x = 12; ngcd[10].gd.pos.y = ngcd[8].gd.pos.y+22;
-    ngcd[10].gd.flags = gg_visible | gg_enabled;
-    nlabel[10].text = (unichar_t *) _("Copy_right:");
+    ngcd[10].gd.pos.x = 12; ngcd[10].gd.pos.y = ngcd[8].gd.pos.y+28;
+    nlabel[10].text = (unichar_t *) _("_Base Filename:");
     nlabel[10].text_is_1byte = true;
     nlabel[10].text_in_resource = true;
     ngcd[10].gd.label = &nlabel[10];
+    ngcd[10].gd.popup_msg = (unichar_t *) _("Use this as the default base for the filename\nwhen generating a font." );
+    ngcd[10].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     ngcd[10].creator = GLabelCreate;
 
-    ngcd[11].gd.pos.x = 12; ngcd[11].gd.pos.y = ngcd[10].gd.pos.y+14;
-    ngcd[11].gd.pos.width = ngcd[5].gd.pos.x+ngcd[5].gd.pos.width-26;
-    ngcd[11].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap;
+    ngcd[11].gd.pos.x = 95; ngcd[11].gd.pos.y = ngcd[10].gd.pos.y-11;
+/* GT: The space in front of "Same" makes things line up better */
+    nlabel[11].text = (unichar_t *) _(" Same as Fontname");
+    nlabel[11].text_is_1byte = true;
+    ngcd[11].gd.label = &nlabel[11];
+    ngcd[11].gd.flags = sf->defbasefilename==NULL ? (gg_visible | gg_enabled | gg_cb_on ) : (gg_visible | gg_enabled);
+    ngcd[11].gd.cid = CID_SameAsFontname;
+    ngcd[11].creator = GRadioCreate;
+
+    ngcd[12].gd.pos.x = 95; ngcd[12].gd.pos.y = ngcd[10].gd.pos.y+11;
+    nlabel[12].text = (unichar_t *) "";
+    nlabel[12].text_is_1byte = true;
+    ngcd[12].gd.label = &nlabel[12];
+    ngcd[12].gd.flags = sf->defbasefilename!=NULL ? (gg_visible | gg_enabled | gg_cb_on ) : (gg_visible | gg_enabled);
+    ngcd[12].gd.cid = CID_HasDefBase;
+    ngcd[12].creator = GRadioCreate;
+
+    ngcd[13].gd.pos.x = 115; ngcd[13].gd.pos.y = ngcd[12].gd.pos.y-4; ngcd[13].gd.pos.width = 137;
+    ngcd[13].gd.flags = gg_visible | gg_enabled;
+    nlabel[13].text = (unichar_t *) (sf->defbasefilename?sf->defbasefilename:"");
+    nlabel[13].text_is_1byte = true;
+    ngcd[13].gd.label = &nlabel[13];
+    ngcd[13].gd.cid = CID_DefBaseName;
+    ngcd[13].gd.handle_controlevent = GFI_DefBaseChange;
+    ngcd[13].creator = GTextFieldCreate;
+
+    ngcd[14].gd.pos.x = 12; ngcd[14].gd.pos.y = ngcd[10].gd.pos.y+22;
+    ngcd[14].gd.flags = gg_visible | gg_enabled;
+    nlabel[14].text = (unichar_t *) _("Copy_right:");
+    nlabel[14].text_is_1byte = true;
+    nlabel[14].text_in_resource = true;
+    ngcd[14].gd.label = &nlabel[14];
+    ngcd[14].creator = GLabelCreate;
+
+    ngcd[15].gd.pos.x = 12; ngcd[15].gd.pos.y = ngcd[14].gd.pos.y+14;
+    ngcd[15].gd.pos.width = ngcd[5].gd.pos.x+ngcd[5].gd.pos.width-26;
+    ngcd[15].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap;
     if ( sf->copyright!=NULL ) {
-	nlabel[11].text = (unichar_t *) sf->copyright;
-	nlabel[11].text_is_1byte = true;
-	ngcd[11].gd.label = &nlabel[11];
+	nlabel[15].text = (unichar_t *) sf->copyright;
+	nlabel[15].text_is_1byte = true;
+	ngcd[15].gd.label = &nlabel[15];
     }
-    ngcd[11].gd.cid = CID_Notice;
-    ngcd[11].creator = GTextAreaCreate;
+    ngcd[15].gd.cid = CID_Notice;
+    ngcd[15].creator = GTextAreaCreate;
 
 /******************************************************************************/
     memset(&xulabel,0,sizeof(xulabel));
@@ -7797,7 +7848,7 @@ return;
     memset(&mkgcd,0,sizeof(mkgcd));
 
     mkgcd[0].gd.pos.x = 10; mkgcd[0].gd.pos.y = 10;
-    mkgcd[0].gd.pos.width = ngcd[11].gd.pos.width; mkgcd[0].gd.pos.height = 200;
+    mkgcd[0].gd.pos.width = ngcd[15].gd.pos.width; mkgcd[0].gd.pos.height = 200;
     mkgcd[0].gd.flags = gg_visible | gg_enabled;
     mkgcd[0].gd.cid = CID_MarkClasses;
     mkgcd[0].gd.u.list = MarkClassesList(sf);
@@ -7999,7 +8050,7 @@ return;
     szgcd[k++].creator = GLabelCreate;
 
     szgcd[k].gd.pos.x = 10; szgcd[k].gd.pos.y = szgcd[k-1].gd.pos.y+14;
-    szgcd[k].gd.pos.width = ngcd[11].gd.pos.width; szgcd[k].gd.pos.height = 100;
+    szgcd[k].gd.pos.width = ngcd[15].gd.pos.width; szgcd[k].gd.pos.height = 100;
     szgcd[k].gd.flags = gg_visible | gg_enabled | gg_list_alphabetic;
     szgcd[k].gd.cid = CID_StyleName;
     szgcd[k].gd.handle_controlevent = GFI_StyleNameSelChanged;
@@ -8179,7 +8230,7 @@ return;
 	smaspects[i].gcd = smsubgcd[i];
 
 	smsubgcd[i][0].gd.pos.x = 10; smsubgcd[i][0].gd.pos.y = 10;
-	smsubgcd[i][0].gd.pos.width = ngcd[11].gd.pos.width;
+	smsubgcd[i][0].gd.pos.width = ngcd[15].gd.pos.width;
 	smsubgcd[i][0].gd.pos.height = 150;
 	smsubgcd[i][0].gd.flags = gg_visible | gg_enabled;
 	smsubgcd[i][0].gd.cid = CID_SMList+i*100;

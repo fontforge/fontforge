@@ -588,9 +588,12 @@ int _FVMenuSaveAs(FontView *fv) {
     else {
 	SplineFont *sf = fv->cidmaster?fv->cidmaster:
 		fv->sf->mm!=NULL?fv->sf->mm->normal:fv->sf;
-	temp = galloc((strlen(sf->fontname)+10));
-	strcpy(temp,sf->fontname);
-	if ( fv->cidmaster!=NULL )
+	char *fn = sf->defbasefilename ? sf->defbasefilename : sf->fontname;
+	temp = galloc((strlen(fn)+10));
+	strcpy(temp,fn);
+	if ( sf->defbasefilename!=NULL )
+	    /* Don't add a default suffix, they've already told us what name to use */;
+	else if ( fv->cidmaster!=NULL )
 	    strcat(temp,"CID");
 	else if ( sf->mm==NULL )
 	    ;

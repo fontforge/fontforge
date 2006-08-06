@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 4-Aug-2006 -->
+  <!-- AP: Last modified: 5-Aug-2006 -->
   <TITLE>Spline Font Database File Format</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -14,7 +14,7 @@
   </H1>
   <P>
   <FONT COLOR="Red"><STRONG>This page is often grievously out of date. It was
-  a fair approximation to reality on 4 August 2006.</STRONG></FONT> Even if
+  a fair approximation to reality on 5 August 2006.</STRONG></FONT> Even if
   out of date it should be helpful, but if you really need to know the current
   format look at
   <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/fontforge/sfd.c">sfd.c</A>
@@ -73,6 +73,7 @@
 FontName: Ambrosia
 FullName: Ambrosia
 FamilyName: Ambrosia
+DefaultBaseFilename: Ambrosia-1.0
 Weight: Medium
 Copyright: Copyright (C) 1995-2000 by George Williams
 Comments: This is a funny font.
@@ -143,14 +144,21 @@ ModificationTime: 11516487392
       For normal fonts this will be one of the names (or a close approximation
       thereto) that appears in the Encoding pulldown list. CID keyed fonts will
       not have encodings. Instead they'll have something like:
-  </DL>
-  <BLOCKQUOTE>
-    <PRE>Registry: Adobe
+      <BLOCKQUOTE>
+	<PRE>Registry: Adobe
 Ordering: japan1
 Supplement: 4
 CIDVersion: 1.2
 </PRE>
-  </BLOCKQUOTE>
+      </BLOCKQUOTE>
+    <DT>
+      CreationDate
+    <DT>
+      ModificationDate
+    <DD>
+      These two dates are expressed as seconds since 00:00:00, 1 January, 1970
+      -- standard unix dates.
+  </DL>
   <P>
   Some fonts will have some TrueType information in them too (look at the
   <A HREF="http://www.microsoft.com/typography/tt/tt.htm">truetype spec</A>

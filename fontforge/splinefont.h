@@ -972,6 +972,7 @@ typedef struct splinefont {
     char *fontname, *fullname, *familyname, *weight;
     char *copyright;
     char *filename;
+    char *defbasefilename;
     char *version;
     real italicangle, upos, uwidth;		/* In font info */
     int ascent, descent;
