@@ -31,13 +31,14 @@ extern struct unicoderange {
     			/* The first codepoint, last codepoint in the range */
 			/*  and a codepoint which actually has a character */
 			/*  associated with it */
-    int display;
+    uint8 display;
+    uint8 unassigned;	/* No characters in this range are assigned */
+    int actual;		/* Count of assigned codepoints in this range */
 } unicoderange[];
 
 struct rangeinfo {
     struct unicoderange *range;
     int cnt;
-    int holes;
     int actual;
 };
 

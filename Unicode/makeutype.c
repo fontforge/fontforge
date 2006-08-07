@@ -97,6 +97,7 @@ unsigned short mymirror[MAXC];
 unsigned int flags[MAXC];
 unsigned int flags2[MAXC];
 unichar_t alts[MAXC][MAXA+1];
+int assignedcodepoints[0x120000/32];
 
 static void FigureAlternates(unichar_t index, char *apt, int normative) {
     int alt, i;
@@ -135,6 +136,30 @@ static void FigureAlternates(unichar_t index, char *apt, int normative) {
 	alts[alts[index][0]][0] = index;
 }
 
+static void processAssignment(int index,char *pt) {
+    static int first=-1;
+    int i;
+
+    if ( index>0x11ffff )
+return;
+    ++pt;	/* semicolon */
+    if ( *pt!='<' ) {
+	assignedcodepoints[index/32] |= (1<<(index%32));
+    } else if ( strstr(pt,", First")!=NULL ) {
+	first = index;
+    } else if ( strstr(pt,", Last")!=NULL ) {
+	if ( first==-1 )
+	    fprintf( stderr,"Something went wrong, first isn't defined at last. %x\n", index );
+	else if ( first>=0xd800 && first<=0xdfff )
+	    /* surrogate pairs. Not assigned really */;
+	else {
+	    for ( i=first; i<=index; ++i )
+		assignedcodepoints[i/32] |= (1<<(i%32));
+	}
+	first = -1;
+    }
+}
+
 static void readin(void) {
     char buffer[300], buf2[300], oldname[100], *pt, *end, *pt1;
     int index, lc, uc, tc, flg, val, cc, indexend;
@@ -152,6 +177,7 @@ static void readin(void) {
 	flg = 0;
 	/* code */
 	index = strtol(buffer,&end,16);
+	processAssignment(index,end);
 	if ( index>0xffff )		/* For now can only deal with BMP !!!! */
     continue;
 	pt = end;
@@ -589,8 +615,9 @@ static void dump() {
     fprintf( header, "extern const unsigned short ____totitle[];\n" );
     fprintf( header, "extern const unsigned short ____tomirror[];\n" );
     fprintf( header, "extern const unsigned char ____digitval[];\n" );
-    fprintf( header, "extern const unsigned long ____utype[];\n\n" );
-    fprintf( header, "extern const unsigned long ____utype2[];\n\n" );
+    fprintf( header, "extern const unsigned int  ____utype[];\n\n" );
+    fprintf( header, "extern const unsigned int  ____utype2[];\n\n" );
+    fprintf( header, "extern const unsigned int  ____codepointassigned[];\n\n" );
 
     fprintf( header, "#define tolower(ch) (____tolower[(ch)+1])\n" );
     fprintf( header, "#define toupper(ch) (____toupper[(ch)+1])\n" );
@@ -625,6 +652,10 @@ static void dump() {
     fprintf( header, "#define isdecompositionnormative(ch) (____utype[(ch)+1]&____DECOMPNORM)\n\n" );
     fprintf( header, "#define combiningclass(ch) (____utype2[(ch)+1]&____COMBININGCLASS)\n" );
     fprintf( header, "#define combiningposmask(ch) (____utype2[(ch)+1]&____COMBININGPOSMASK)\n" );
+
+    fprintf( header, "\n" );
+
+    fprintf( header, "#define isunicodepointassigned(ch) (____codepointassigned[(ch)/32]&(1<<((ch)%%32)))\n" );
 
     fprintf( header, "\n" );
 
@@ -679,22 +710,33 @@ static void dump() {
 	} else
 	    fprintf( data, "\n ");
     }
-    fprintf( data, "const unsigned long ____utype[] = { 0,\n " );
+    fprintf( data, "const unsigned int ____utype[] = { 0,\n " );
     for ( i=0; i<MAXC; i+=j ) {
 	for ( j=0; j<8 && i+j<MAXC-1; ++j )
-	    fprintf(data, " 0x%02x,", flags[i+j]);
+	    fprintf(data, " 0x%08x,", flags[i+j]);
 	if ( i+j==MAXC-1 ) {
-	    fprintf(data, " 0x%02x\n};\n\n", flags[i+j]);
+	    fprintf(data, " 0x%08x\n};\n\n", flags[i+j]);
     break;
 	} else
 	    fprintf( data, "\n ");
     }
-    fprintf( data, "const unsigned long ____utype2[] = { 0,\n " );
+    fprintf( data, "const unsigned int ____utype2[] = { 0,\n " );
     for ( i=0; i<MAXC; i+=j ) {
 	for ( j=0; j<8 && i+j<MAXC-1; ++j )
-	    fprintf(data, " 0x%02x,", flags2[i+j]);
+	    fprintf(data, " 0x%08x,", flags2[i+j]);
 	if ( i+j==MAXC-1 ) {
-	    fprintf(data, " 0x%02x\n};\n\n", flags2[i+j]);
+	    fprintf(data, " 0x%08x\n};\n\n", flags2[i+j]);
+    break;
+	} else
+	    fprintf( data, "\n ");
+    }
+
+    fprintf( data, "const unsigned int ____codepointassigned[] = {\n " );
+    for ( i=0; i<0x120000/32; i+=j ) {
+	for ( j=0; j<8 && i+j<0x120000/32-1; ++j )
+	    fprintf(data, " 0x%08x,", assignedcodepoints[i+j]);
+	if ( i+j==0x120000/32-1 ) {
+	    fprintf(data, " 0x%08x\n};\n\n", assignedcodepoints[i+j]);
     break;
 	} else
 	    fprintf( data, "\n ");
