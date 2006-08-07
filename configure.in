@@ -515,8 +515,9 @@ fi
 if test "$no_x" = "yes"; then
  echo " *******************************************************************"
  echo " * This version of fontforge will only run scripts. No X libraries *"
- echo " * were found so there is NO user interface!!!!! If you want a UI  *"
- echo " * try installing X11 on your system.                              *"
+ echo " * (or X include files or some such) were found so there is NO user*"
+ echo " * interface!!!!! If you want a UI try installing X11 on your      *"
+ echo " * system.                                                         *"
  echo " * Caveat: You will probably need to install two packages, the     *"
  echo " *  base X11 package and the developer SDK package                 *"
  echo " *******************************************************************"
