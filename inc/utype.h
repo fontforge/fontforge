@@ -52,9 +52,11 @@ extern const unsigned short ____toupper[];
 extern const unsigned short ____totitle[];
 extern const unsigned short ____tomirror[];
 extern const unsigned char ____digitval[];
-extern const unsigned long ____utype[];
+extern const unsigned int  ____utype[];
 
-extern const unsigned long ____utype2[];
+extern const unsigned int  ____utype2[];
+
+extern const unsigned int  ____codepointassigned[];
 
 #define tolower(ch) (____tolower[(ch)+1])
 #define toupper(ch) (____toupper[(ch)+1])
@@ -91,6 +93,8 @@ extern const unsigned long ____utype2[];
 
 #define combiningclass(ch) (____utype2[(ch)+1]&____COMBININGCLASS)
 #define combiningposmask(ch) (____utype2[(ch)+1]&____COMBININGPOSMASK)
+
+#define isunicodepointassigned(ch) (____codepointassigned[(ch)/32]&(1<<((ch)%32)))
 
 
 extern struct arabicforms {

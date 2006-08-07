@@ -6218,22 +6218,79 @@ static void FigureUnicode(struct gfi_data *d) {
 		    "%s  U+%04X-U+%04X %d/%d",
 		    _(ri[i].range->name),
 		    ri[i].range->first, ri[i].range->last,
-		    ri[i].cnt, (ri[i].range->first==-1)?0: (ri[i].range->last-ri[i].range->first+1));
+		    ri[i].cnt, ri[i].range->actual );
 	ti[i] = gcalloc(1,sizeof(GTextInfo));
 	ti[i]->fg = ti[i]->bg = COLOR_DEFAULT;
 	ti[i]->text = utf82u_copy(buffer);
+	ti[i]->userdata = ri[i].range;
     }
     ti[i] = gcalloc(1,sizeof(GTextInfo));
     GGadgetSetList(list,ti,false);
+    free(ri);
+}
+
+static int GFI_UnicodeRangeChange(GGadget *g, GEvent *e) {
+    struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+    GTextInfo *ti = GGadgetGetListItemSelected(g);
+    struct unicoderange *r;
+    int gid, first=-1;
+    SplineFont *sf = d->sf;
+    FontView *fv = sf->fv;
+    EncMap *map = fv->map;
+    int i, enc;
+
+    if ( ti==NULL )
+return( true );
+    if ( e->type!=et_controlevent ||
+	    (e->u.control.subtype != et_listselected &&e->u.control.subtype != et_listdoubleclick))
+return( true );
+
+    r = ti->userdata;
+
+    for ( i=0; i<map->enccount; ++i )
+	fv->selected[i] = 0;
+
+    if ( e->u.control.subtype == et_listselected ) {
+	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( sf->glyphs[gid]!=NULL ) {
+	    enc = map->backmap[gid];
+	    if ( sf->glyphs[gid]->unicodeenc>=r->first && sf->glyphs[gid]->unicodeenc<=r->last &&
+		    enc!=-1 ) {
+		if ( first==-1 || enc<first ) first = enc;
+		fv->selected[enc] = true;
+	    }
+	}
+    } else if ( e->u.control.subtype == et_listdoubleclick && !r->unassigned ) {
+	char *found = gcalloc(r->last-r->first+1,1);
+	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( sf->glyphs[gid]!=NULL ) {
+	    int u = sf->glyphs[gid]->unicodeenc;
+	    if ( u>=r->first && u<=r->last ) {
+		found[u-r->first] = true;
+	    }
+	}
+	for ( i=0; i<=r->last-r->first; ++i ) {
+	    if ( isunicodepointassigned(i+r->first) && !found[i] ) {
+		enc = EncFromUni(i+r->first,map->enc);
+		if ( enc!=-1 ) {
+		    if ( first==-1 || enc<first ) first = enc;
+		    fv->selected[enc] = true;
+		}
+	    }
+	}
+	free(found);
+    }
+    if ( first==-1 ) {
+	GDrawBeep(NULL);
+    } else {
+	FVScrollToChar(fv,first);
+    }
+    GDrawRequestExpose(fv->v,NULL,false);
+return( true );
 }
 
 static int GFI_UnicodeEmptiesChange(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
 	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	FigureUnicode(d);
-	
-	int autom = GGadgetIsChecked(GWidgetGetControl(d->gw,CID_MacAutomatic));
-	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_MacStyles),!autom);
     }
 return( true );
 }
@@ -8408,8 +8465,10 @@ return;
     ugcd[1].gd.pos.x = 12; ugcd[1].gd.pos.y = 30;
     ugcd[1].gd.pos.width = ngcd[15].gd.pos.width;
     ugcd[1].gd.pos.height = 200;
-    ugcd[1].gd.flags = gg_visible | gg_enabled;
+    ugcd[1].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     ugcd[1].gd.cid = CID_Unicode;
+    ugcd[1].gd.handle_controlevent = GFI_UnicodeRangeChange;
+    ugcd[1].gd.popup_msg = (unichar_t *) _("Click on a range to select characters in that range.\nDouble click on a range to see characters that should be\nin the range but aren't.");
     ugcd[1].creator = GListCreate;
 
 /******************************************************************************/

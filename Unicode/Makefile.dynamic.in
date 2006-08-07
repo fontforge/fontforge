@@ -6,7 +6,7 @@ prefix = @prefix@
 bindir = @bindir@
 
 GU_VERSION=2
-GU_REVISION=2
+GU_REVISION=3
 GU_AGE=0
 
 LIBTOOL = @LIBTOOL@

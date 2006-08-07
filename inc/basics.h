@@ -32,10 +32,10 @@
 #endif
 
 #include <stdio.h>		/* for NULL */
-#ifdef __VMS
-# include <inttypes.h>
-#else
+#ifdef HAVE_STDINT_H
 # include <stdint.h>
+#else
+# include <inttypes.h>
 #endif
 #include <stdlib.h>		/* for free */
 #include <limits.h>

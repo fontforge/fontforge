@@ -29,6 +29,7 @@
 #include "unicoderange.h"
 #include <stdlib.h>
 #include <string.h>
+#include <utype.h>
 
 struct unicoderange unicoderange[] = {
     /* { N_("Unicode"), 0, 0x10ffff, ' ' }, */
@@ -251,19 +252,20 @@ struct unicoderange unicoderange[] = {
 };
 int unicoderange_cnt = sizeof(unicoderange)/sizeof(unicoderange[0])-1;
 
-static struct unicoderange nonunicode = { N_("Non-Unicode Glyphs"), -1, -1, -1, 2 };
+static struct unicoderange nonunicode = { N_("Non-Unicode Glyphs"), -1, -1, -1, 2, 1 };
+static struct unicoderange unassigned = { N_("Unassigned Code Points"), 0, 0x11ffff, -1, 2, 1 };
 static struct unicoderange unassignedplanes[] = {
-    { "<Unassigned Plane 3>",  0x30000, 0x3ffff, -1, 2 },
-    { "<Unassigned Plane 4>",  0x40000, 0x4ffff, -1, 2 },
-    { "<Unassigned Plane 5>",  0x50000, 0x5ffff, -1, 2 },
-    { "<Unassigned Plane 6>",  0x60000, 0x6ffff, -1, 2 },
-    { "<Unassigned Plane 7>",  0x70000, 0x7ffff, -1, 2 },
-    { "<Unassigned Plane 8>",  0x80000, 0x8ffff, -1, 2 },
-    { "<Unassigned Plane 9>",  0x90000, 0x9ffff, -1, 2 },
-    { "<Unassigned Plane 10>", 0xa0000, 0xaffff, -1, 2 },
-    { "<Unassigned Plane 11>", 0xb0000, 0xbffff, -1, 2 },
-    { "<Unassigned Plane 12>", 0xc0000, 0xcffff, -1, 2 },
-    { "<Unassigned Plane 13>", 0xd0000, 0xdffff, -1, 2 },
+    { "<Unassigned Plane 3>",  0x30000, 0x3ffff, -1, 2, 1 },
+    { "<Unassigned Plane 4>",  0x40000, 0x4ffff, -1, 2, 1 },
+    { "<Unassigned Plane 5>",  0x50000, 0x5ffff, -1, 2, 1 },
+    { "<Unassigned Plane 6>",  0x60000, 0x6ffff, -1, 2, 1 },
+    { "<Unassigned Plane 7>",  0x70000, 0x7ffff, -1, 2, 1 },
+    { "<Unassigned Plane 8>",  0x80000, 0x8ffff, -1, 2, 1 },
+    { "<Unassigned Plane 9>",  0x90000, 0x9ffff, -1, 2, 1 },
+    { "<Unassigned Plane 10>", 0xa0000, 0xaffff, -1, 2, 1 },
+    { "<Unassigned Plane 11>", 0xb0000, 0xbffff, -1, 2, 1 },
+    { "<Unassigned Plane 12>", 0xc0000, 0xcffff, -1, 2, 1 },
+    { "<Unassigned Plane 13>", 0xd0000, 0xdffff, -1, 2, 1 },
     { NULL }
 };
 
@@ -291,6 +293,23 @@ struct rangeinfo *SFUnicodeRanges(SplineFont *sf, enum ur_flags flags) {
     int cnt;
     int i,j, gid;
     struct rangeinfo *ri;
+    static int initialized = false;
+
+    if ( !initialized ) {
+	initialized = true;
+	for (i=cnt=0; unicoderange[i].name!=NULL; ++i ) if ( unicoderange[i].display ) {
+	    int top = unicoderange[i].last;
+	    int bottom = unicoderange[i].first;
+	    int cnt = 0;
+	    for ( j=bottom; j<=top; ++j ) {
+		if ( isunicodepointassigned(j) )
+		    ++cnt;
+	    }
+	    if ( cnt==0 )
+		unicoderange[i].unassigned = true;
+	    unicoderange[i].actual = cnt;
+	}
+    }
 
     for (i=cnt=0; unicoderange[i].name!=NULL; ++i )
 	if ( unicoderange[i].display )
@@ -298,7 +317,7 @@ struct rangeinfo *SFUnicodeRanges(SplineFont *sf, enum ur_flags flags) {
     for (i=0; unassignedplanes[i].name!=NULL; ++i )
 	if ( unassignedplanes[i].display )
 	    ++cnt;
-    ++cnt;		/* for nonunicode */
+    cnt+=2;		/* for nonunicode, unassigned codes */
 
     ri = gcalloc(cnt+1,sizeof(struct rangeinfo));
 
@@ -309,20 +328,32 @@ struct rangeinfo *SFUnicodeRanges(SplineFont *sf, enum ur_flags flags) {
 	if ( unassignedplanes[i].display )
 	    ri[cnt++].range = &unassignedplanes[i];
     ri[cnt++].range = &nonunicode;
+    ri[cnt++].range = &unassigned;
 
-    for ( j=0; j<cnt-1; ++j ) {
+    for ( j=0; j<cnt-2; ++j ) {
 	int top = ri[j].range->last;
 	int bottom = ri[j].range->first;
 	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( sf->glyphs[gid]!=NULL ) {
 	    int u=sf->glyphs[gid]->unicodeenc;
-	    if ( u>=bottom && u<=top )
+	    if ( u>=bottom && u<=top &&
+		    (ri[j].range->unassigned || isunicodepointassigned(u)) )
 		++ri[j].cnt;
 	}
     }
-    
+
+    /* non unicode glyphs (stylistic variations, etc.) */
     for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( sf->glyphs[gid]!=NULL ) {
 	int u=sf->glyphs[gid]->unicodeenc;
 	if ( u<0 || u>0x11ffff )
+	    ++ri[j].cnt;
+    }
+
+    /* glyphs attached to code points which have not been assigned in */
+    /*  the version of unicode I know about (4.1 when this was written) */
+    ++j;
+    for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( sf->glyphs[gid]!=NULL ) {
+	int u=sf->glyphs[gid]->unicodeenc;
+	if ( u>=0 && u<=0x11ffff && !isunicodepointassigned(u))
 	    ++ri[j].cnt;
     }
 
