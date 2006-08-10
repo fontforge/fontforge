@@ -113,6 +113,7 @@ typedef struct gxwindow /* :GWindow */ {
     unsigned int visible_request: 1;
     unsigned int is_dying: 1;
     unsigned int is_popup: 1;
+    unsigned int disable_expose_requests: 1;
     unsigned int is_dlg: 1;
     unsigned int not_restricted: 1;
     unsigned int was_positioned: 1;

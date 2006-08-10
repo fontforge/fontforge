@@ -87,6 +87,7 @@ static int gbutton_expose(GWindow pixmap, GGadget *g, GEvent *event) {
     int width;
     int marklen = GDrawPointsToPixels(pixmap,_GListMarkSize),
 	    spacing = GDrawPointsToPixels(pixmap,_GGadget_TextImageSkip);
+    int yoff = (g->inner.height-gb->fh)/2;
 
     if ( g->state == gs_invisible )
 return( false );
@@ -135,9 +136,9 @@ return( false );
 	Color fg = g->state==gs_disabled?g->box->disabled_foreground:
 			g->box->main_foreground==COLOR_DEFAULT?GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap)):
 			g->box->main_foreground;
-	_ggadget_underlineMnemonic(pixmap,x,g->inner.y + gb->as + gb->yoff + off,gb->label,
+	_ggadget_underlineMnemonic(pixmap,x,g->inner.y + gb->as + yoff + off,gb->label,
 		g->mnemonic,fg,g->inner.y+g->inner.height);
-	x += GDrawDrawBiText(pixmap,x,g->inner.y + gb->as + gb->yoff + off,gb->label,-1,NULL,
+	x += GDrawDrawBiText(pixmap,x,g->inner.y + gb->as + yoff + off,gb->label,-1,NULL,
 		fg );
 	x += spacing;
     }
@@ -373,6 +374,92 @@ static void GListButClear(GGadget *g) {
     GListButSet(g,NULL,true);
 }
 
+static int GButtonIsDefault(GGadget *g) {
+    GLabel *gl = (GLabel *) g;
+return( gl->is_default );
+}
+
+static void GButtonGetDesiredSize(GGadget *g, GRect *outer, GRect *inner) {
+    GLabel *gl = (GLabel *) g;
+    int iwidth=0, iheight=0;
+    GTextBounds bounds;
+    int as=0, ds, ld, fh=0, width=0;
+    GRect needed;
+    int i;
+
+    if ( gl->image!=NULL ) {
+	iwidth = GImageGetScaledWidth(gl->g.base,gl->image);
+	iheight = GImageGetScaledHeight(gl->g.base,gl->image);
+    }
+    GDrawFontMetrics(gl->font,&as, &ds, &ld);
+    if ( gl->label!=NULL ) {
+	FontInstance *old = GDrawSetFont(gl->g.base,gl->font);
+	width = GDrawGetTextBounds(gl->g.base,gl->label, -1, NULL, &bounds);
+	GDrawSetFont(gl->g.base,old);
+	if ( as<bounds.as ) as = bounds.as;
+	if ( ds<bounds.ds ) ds = bounds.ds;
+    }
+    fh = as+ds;
+
+    if ( width!=0 && iwidth!=0 )
+	width += GDrawPointsToPixels(gl->g.base,_GGadget_TextImageSkip);
+    width += iwidth;
+    if ( iheight<fh )
+	iheight = fh;
+
+    if ( gl->labeltype==2 ) {
+	GListButton *glb = (GListButton *) gl;
+	int temp;
+	for ( i=0; i<glb->ltot; ++i ) {
+	    temp = GTextInfoGetWidth(gl->g.base,glb->ti[i],gl->font);
+	    if ( temp>width ) width = temp;
+	    temp = GTextInfoGetHeight(gl->g.base,glb->ti[i],gl->font);
+	    if ( temp>iheight )
+		iheight = temp;
+	}
+	width += GDrawPointsToPixels(gl->g.base,_GGadget_TextImageSkip) +
+		GDrawPointsToPixels(gl->g.base,_GListMarkSize);
+    }
+
+    if ( gl->shiftonpress ) {
+	++width; ++iheight;		/* one pixel for movement when button is pushed */
+    }
+
+    width += gl->g.takes_input?2*GDrawPointsToPixels(gl->g.base,2):0;
+    needed.x = needed.y = 0;
+    needed.width = width;
+    needed.height = iheight;
+    if ( inner!=NULL ) {
+	inner->x = inner->y = 0;
+	inner->width = width;
+	inner->height = iheight;
+    }
+
+    _ggadgetFigureSize(gl->g.base,gl->g.box,&needed,gl->is_default);
+
+    if ( outer!=NULL ) {
+	outer->x = outer->y = 0;
+	outer->width = needed.width;
+	outer->height = needed.height;
+    }
+}
+
+void _gbutton_resize(GGadget *g, int32 width, int32 height ) {
+    GRect inner;
+    int bp = GBoxBorderWidth(g->base,g->box);
+
+    GButtonGetDesiredSize(g,NULL,&inner);
+    if ( inner.width<width-2*bp ) inner.width = width-2*bp;
+    if ( inner.height<height-2*bp ) inner.height = height-2*bp;
+    
+    g->inner.width = inner.width;
+    g->inner.height = inner.height;
+    g->inner.x = g->r.x + (width-inner.width)/2;
+    g->inner.y = g->r.y + (height-inner.height)/2;
+    g->r.width = width;
+    g->r.height = height;
+}
+
 struct gfuncs gbutton_funcs = {
     0,
     sizeof(struct gfuncs),
@@ -387,7 +474,7 @@ struct gfuncs gbutton_funcs = {
 
     _ggadget_redraw,
     _ggadget_move,
-    _ggadget_resize,
+    _gbutton_resize,
     _ggadget_setvisible,
     _ggadget_setenabled,
     _ggadget_getsize,
@@ -402,7 +489,24 @@ struct gfuncs gbutton_funcs = {
     GButtonGetImage,
 
     GButtonSetFont,
-    GButtonGetFont
+    GButtonGetFont,
+
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+
+    GButtonGetDesiredSize,
+    NULL,
+    NULL,
+    GButtonIsDefault
 };
 
 struct gfuncs glistbutton_funcs = {
@@ -443,7 +547,12 @@ struct gfuncs glistbutton_funcs = {
     NULL,
     GListBSelectOne,
     GListBIsSelected,
-    GListBGetFirst
+    GListBGetFirst,
+    NULL,
+    NULL,
+    NULL,
+
+    GButtonGetDesiredSize
 };
 
 void _GButton_SetDefault(GGadget *g,int32 is_default) {
@@ -491,11 +600,8 @@ static void GButtonInit() {
 }
 
 static void GLabelFit(GLabel *gl) {
-    int iwidth=0, iheight=0;
-    GTextBounds bounds;
-    int as=0, ds, ld, fh=0, width=0;
-    GRect needed;
-    int i;
+    int as=0, ds, ld;
+    GRect outer,inner;
 
     if ( gl->g.r.width == -1 ) {
 	gl->g.r.width = GDrawPointsToPixels(gl->g.base,GIntGetResource(_NUM_Buttonsize));
@@ -503,80 +609,12 @@ static void GLabelFit(GLabel *gl) {
 	    gl->g.r.width += 6;
     }
 
-    if ( gl->image!=NULL ) {
-	iwidth = GImageGetScaledWidth(gl->g.base,gl->image);
-	iheight = GImageGetScaledHeight(gl->g.base,gl->image);
-    }
     GDrawFontMetrics(gl->font,&as, &ds, &ld);
-    if ( gl->label!=NULL ) {
-	FontInstance *old = GDrawSetFont(gl->g.base,gl->font);
-	width = GDrawGetTextBounds(gl->g.base,gl->label, -1, NULL, &bounds);
-	GDrawSetFont(gl->g.base,old);
-	if ( as<bounds.as ) as = bounds.as;
-	if ( ds<bounds.ds ) ds = bounds.ds;
-    }
-    fh = as+ds;
+    GButtonGetDesiredSize(&gl->g,&outer, &inner);
+    _ggadgetSetRects(&gl->g,&outer, &inner, 0, 0);
 
-    if ( width!=0 && iwidth!=0 )
-	width += GDrawPointsToPixels(gl->g.base,_GGadget_TextImageSkip);
-    width += iwidth;
-    if ( iheight<fh )
-	iheight = fh;
-
-    if ( gl->labeltype==2 ) {
-	GListButton *glb = (GListButton *) gl;
-	int temp;
-	for ( i=0; i<glb->ltot; ++i ) {
-	    temp = GTextInfoGetWidth(gl->g.base,glb->ti[i],gl->font);
-	    if ( temp>width ) width = temp;
-	    temp = GTextInfoGetHeight(gl->g.base,glb->ti[i],gl->font);
-	    if ( temp>iheight )
-		iheight = temp;
-	}
-	width += GDrawPointsToPixels(gl->g.base,_GGadget_TextImageSkip) +
-		GDrawPointsToPixels(gl->g.base,_GListMarkSize);
-    }
-
-    if ( gl->shiftonpress ) {
-	++width; ++iheight;		/* one pixel for movement when button is pushed */
-    }
-    /*if ( gl->g.r.width==0 || gl->g.r.height==0 )*/ {
-	width += gl->g.takes_input?2*GDrawPointsToPixels(gl->g.base,2):0;
-	needed.x = needed.y = 0;
-	needed.width = width;
-	needed.height = iheight;
-	_ggadgetFigureSize(gl->g.base,gl->g.box,&needed,gl->is_default);
-	if ( gl->g.r.width==0 ) {
-	    gl->g.r.width = needed.width;
-	    gl->g.inner.x = gl->g.r.x + (needed.width-width)/2;
-	    gl->g.inner.width = width;
-	}
-	if ( gl->g.r.height==0 ) {
-	    gl->g.r.height = needed.height;
-	    gl->g.inner.y = gl->g.r.y + (needed.height-iheight)/2;
-	    gl->g.inner.height = iheight;
-	}
-    }
-    if ( gl->g.inner.width==0 ) {
-	if ( width<gl->g.r.width ) {
-	    gl->g.inner.x = gl->g.r.x + (needed.width-width)/2;
-	    gl->g.inner.width = gl->g.r.width - 2*((needed.width-width)/2);
-	} else {
-	    gl->g.inner.x = gl->g.r.x;
-	    gl->g.inner.width = gl->g.r.width;
-	}
-    }
-    if ( gl->g.inner.height==0 ) {
-	if ( iheight<gl->g.r.height ) {
-	    gl->g.inner.y = gl->g.r.y + (needed.height-iheight)/2;
-	    gl->g.inner.height = gl->g.r.height - 2*((needed.height-iheight)/2);
-	} else {
-	    gl->g.inner.y = gl->g.r.y;
-	    gl->g.inner.height = gl->g.r.height;
-	}
-    }
     gl->as = as;
-    gl->yoff = (iheight-fh)/2;
+    gl->fh = as+ds;
 }
 
 static GLabel *_GLabelCreate(GLabel *gl, struct gwindow *base, GGadgetData *gd,void *data, GBox *def) {

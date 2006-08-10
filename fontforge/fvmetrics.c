@@ -131,7 +131,7 @@ static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
 	enum widthtype wtype, char *def) {
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[11];
+    GGadgetCreateData gcd[11], boxes[2], topbox[2], *hvs[13], *varray[8], *buttons[6];
     GTextInfo label[11];
     static CreateWidthData cwd;
     static GWindow winds[3];
@@ -174,7 +174,7 @@ static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
 	label[1].text_is_1byte = true;
 	gcd[1].gd.label = &label[1];
 	gcd[1].gd.pos.x = 5; gcd[1].gd.pos.y = 32; 
-	gcd[1].gd.flags = gg_enabled|gg_visible;
+	gcd[1].gd.flags = gg_enabled|gg_visible|gg_rad_continueold ;
 	gcd[1].gd.cid = CID_Incr;
 	gcd[1].gd.handle_controlevent = CW_RadioChange;
 	gcd[1].data = (void *) CID_IncrVal;
@@ -184,7 +184,7 @@ static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
 	label[2].text_is_1byte = true;
 	gcd[2].gd.label = &label[2];
 	gcd[2].gd.pos.x = 5; gcd[2].gd.pos.y = 59; 
-	gcd[2].gd.flags = gg_enabled|gg_visible;
+	gcd[2].gd.flags = gg_enabled|gg_visible|gg_rad_continueold ;
 	gcd[2].gd.cid = CID_Scale;
 	gcd[2].gd.handle_controlevent = CW_RadioChange;
 	gcd[2].data = (void *) CID_ScaleVal;
@@ -255,9 +255,43 @@ static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
 	gcd[9].gd.flags = gg_enabled|gg_visible;
 	gcd[9].creator = GLabelCreate;
 
-	GGadgetsCreate(cwd.gw,gcd);
+	hvs[0] = &gcd[0]; hvs[1] = &gcd[3]; hvs[2] = GCD_Glue; hvs[3] = NULL;
+	hvs[4] = &gcd[1]; hvs[5] = &gcd[4]; hvs[6] = GCD_Glue; hvs[7] = NULL;
+	hvs[8] = &gcd[2]; hvs[9] = &gcd[5]; hvs[10] = &gcd[9]; hvs[11] = NULL;
+	hvs[12] = NULL;
+
+	buttons[0] = buttons[2] = buttons[4] = GCD_Glue; buttons[5] = NULL;
+	buttons[1] = &gcd[6]; buttons[3] = &gcd[7];
+
+	varray[0] = &boxes[1]; varray[1] = NULL;
+	varray[2] = GCD_Glue; varray[3] = NULL;
+	varray[4] = &boxes[0]; varray[5] = NULL;
+	varray[6] = NULL;
+
+	memset(boxes,0,sizeof(boxes));
+	boxes[0].gd.flags = gg_enabled|gg_visible;
+	boxes[0].gd.u.boxelements = buttons;
+	boxes[0].creator = GHBoxCreate;
+	
+	boxes[1].gd.flags = gg_enabled|gg_visible;
+	boxes[1].gd.u.boxelements = hvs;
+	boxes[1].creator = GHVBoxCreate;
+
+	memset(topbox,0,sizeof(topbox));
+	topbox[0].gd.pos.x = topbox[0].gd.pos.y = 2;
+	topbox[0].gd.pos.width = pos.width-4; topbox[0].gd.pos.height = pos.height-4;
+	topbox[0].gd.flags = gg_enabled|gg_visible;
+	topbox[0].gd.u.boxelements = varray;
+	topbox[0].creator = GHVGroupCreate;
+	
+
+	GGadgetsCreate(cwd.gw,topbox);
+	GHVBoxSetExpandableRow(topbox[0].ret,1);
+	GHVBoxSetExpandableCol(boxes[0].ret,gb_expandgluesame);
+	GHVBoxSetExpandableCol(boxes[1].ret,1);
 	GWidgetIndicateFocusGadget(GWidgetGetControl(cwd.gw,CID_SetVal));
 	GTextFieldSelect(GWidgetGetControl(cwd.gw,CID_SetVal),0,-1);
+	GHVBoxFitWindow(topbox[0].ret);
     } else {
 	unichar_t *temp = uc_copy(def);
 	GGadgetSetTitle(GWidgetGetControl(cwd.gw,CID_SetVal),temp);

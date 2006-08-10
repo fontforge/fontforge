@@ -340,6 +340,32 @@ return;
     _ggadget_destroy(g);
 }
 
+static void gscrollbar_get_desired_size(GGadget *g, GRect *outer, GRect *inner) {
+    int bp = GBoxBorderWidth(g->base,g->box);
+    GScrollBar *gsb = (GScrollBar *) g;
+    int width, height;
+    int minheight, sbw;
+
+    sbw = GDrawPointsToPixels(gsb->g.base,_GScrollBar_Width);
+    minheight = 2*(gsb->thumbborder+gsb->arrowsize) + GDrawPointsToPixels(gsb->g.base,2);
+    if ( g->vert ) {
+	width = sbw;
+	height = minheight;
+    } else {
+	width = minheight;
+	height = sbw;
+    }
+
+    if ( inner!=NULL ) {
+	inner->x = inner->y = 0;
+	inner->width = width; inner->height = height;
+    }
+    if ( outer!=NULL ) {
+	outer->x = outer->y = 0;
+	outer->width = width+2*bp; outer->height = height+2*bp;
+    }
+}
+
 struct gfuncs gscrollbar_funcs = {
     0,
     sizeof(struct gfuncs),
@@ -360,7 +386,30 @@ struct gfuncs gscrollbar_funcs = {
     _ggadget_getsize,
     _ggadget_getinnersize,
 
-    gscrollbar_destroy
+    gscrollbar_destroy,
+
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+
+    NULL,
+    NULL,
+
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+
+    gscrollbar_get_desired_size
 };
 
 static void GScrollBarInit() {

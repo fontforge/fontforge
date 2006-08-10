@@ -69,17 +69,10 @@ struct gfuncs {
     void (*scroll_list_to_text)(GGadget *g,const unichar_t *lab,int32 sel);
     void (*set_list_orderer)(GGadget *g,int (*orderer)(const void *, const void *));
 
-#if 0
-    void (*set_list_u(GGadget *g, unichar_t **li);
-    void (*prepend_to_list)(GGadget *g,unichar_t *text);
-    void (*append_to_list)(GGadget *g,unichar_t *text);
-    void (*add_to_list)(GGadget *g,int pos, unichar_t *text);
-    void (*add_to_list_ti)(GGadget *g,int pos, GTextInfo *ti);
-
-    void (*set_text_selection)(GGadget *g, int start, int end);
-    void (*get_text_selection)(GGadget *g, int *start, int *end);
-    void (*text_undo)(GGadget *g);
-#endif
+    void (*get_desired_size)(GGadget *g, GRect *outer, GRect *inner);
+    void (*set_desired_size)(GGadget *g, GRect *outer, GRect *inner);
+    int (*fills_window)(GGadget *g);
+    int (*is_default)(GGadget *g);
 };
 
 struct ggadget {
@@ -115,7 +108,7 @@ typedef struct ggadget GGroup;
 
 typedef struct glabel {		/* or simple text, or groupbox */
     GGadget g;
-    unsigned int yoff:8;
+    unsigned int fh:8;
     unsigned int as: 8;
     unsigned int image_precedes: 1;
     unsigned int is_default: 1;
@@ -131,7 +124,7 @@ typedef struct glabel {		/* or simple text, or groupbox */
 
 typedef struct gimagebutton {
     GGadget g;
-    unsigned int yoff:8;
+    unsigned int fh:8;
     unsigned int as: 8;
     unsigned int image_precedes: 1;
     unsigned int is_default: 1;
@@ -147,7 +140,7 @@ typedef struct gimagebutton {
 
 typedef struct glistbutton {
     GGadget g;
-    unsigned int yoff:8;
+    unsigned int fh:8;
     unsigned int as: 8;
     unsigned int image_precedes: 1;
     unsigned int is_default: 1;
@@ -166,7 +159,7 @@ typedef struct glistbutton {
 
 typedef struct gcheck {
     GGadget g;
-    unsigned int yoff:8;
+    unsigned int fh:8;
     unsigned int as: 8;
     unsigned int image_precedes: 1;
     unsigned int pressed: 1;
@@ -183,7 +176,7 @@ typedef struct gcheck {
 
 typedef struct gradio {
     GGadget g;
-    unsigned int yoff:8;
+    unsigned int fh:8;
     unsigned int as: 8;
     unsigned int image_precedes: 1;
     unsigned int pressed: 1;
@@ -280,6 +273,7 @@ typedef struct gtextfield {
     int32 bilen;		/* allocated size of bidata */
     int16 xmax;
     GIC *gic;
+    int16 desired_width, desired_height;
 } GTextField;
 
 typedef struct glistfield {
@@ -350,6 +344,16 @@ typedef struct gfilechooser {
     GButton *up, *home;
 } GFileChooser;
 
+typedef struct ghvbox {
+    GGadget g;
+    int rows, cols;
+    int hpad, vpad;			/* Internal padding */
+    int grow_col, grow_row;		/* -1 => all */
+    GGadget **children;			/* array of rows*cols */
+    GGadget *label;
+    int label_height;
+} GHVBox;
+
 typedef struct rowcol {
     GGadget g;
     int rows, cols;
@@ -398,6 +402,7 @@ extern void GGadgetInit(void);
 extern void _ggadget_underlineMnemonic(GWindow gw,int32 x,int32 y,unichar_t *label,
 	unichar_t mneumonic, Color fg,int ymax);
 extern void _ggadgetFigureSize(GWindow gw, GBox *design, GRect *r, int isdef);
+extern void _ggadgetSetRects(GGadget *g, GRect *outer, GRect *inner, int xjust, int yjust );
 extern void _GGadgetCloseGroup(GGadget *g);
 extern void _ggadget_redraw(GGadget *g);
 extern int _ggadget_noop(GGadget *g, GEvent *event);
@@ -420,6 +425,7 @@ extern void GBoxDrawTabOutline(GWindow pixmap, GGadget *g, int x, int y,
 extern int GBoxDrawHLine(GWindow gw,GRect *pos,GBox *design);
 extern int GBoxDrawVLine(GWindow gw,GRect *pos,GBox *design);
 extern int GBoxBorderWidth(GWindow gw, GBox *box);
+extern int GBoxExtraSpace(GGadget *g);
 extern int GBoxDrawnWidth(GWindow gw, GBox *box);
 
 extern int GGadgetWithin(GGadget *g, int x, int y);

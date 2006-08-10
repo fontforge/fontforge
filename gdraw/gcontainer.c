@@ -380,6 +380,20 @@ return( handled );
 	break;
 	    }
 	}
+    } else if ( event->type == et_resize ) {
+	gadget = gd->gadgets;
+	if ( gadget!=NULL ) {
+	    while ( gadget->prev!=NULL )
+		gadget=gadget->prev;
+	}
+	if ( gadget != NULL && GGadgetFillsWindow(gadget)) {
+	    GRect wsize;
+	    GDrawGetSize(gw, &wsize);
+	    /* Make any offset simmetrical */
+	    wsize.width -= 2*gadget->r.x;
+	    wsize.height -= 2*gadget->r.y;
+	    GGadgetResize(gadget,wsize.width,wsize.height);
+	}
     }
     if ( gd->e_h!=NULL && (!handled || event->type==et_mousemove ))
 	handled = (gd->e_h)(gw,event);
@@ -1008,7 +1022,7 @@ GGadget *GWidgetGetControl(GWindow gw, int cid) {
     GContainerD *gd = (GContainerD *) (gw->widget_data);
     GWidgetD *widg;
 
-    if ( gd==NULL )
+    if ( gd==NULL || !gd->iscontainer )
 return( NULL );
     for ( gadget = gd->gadgets; gadget!=NULL ; gadget=gadget->prev ) {
 	if ( gadget->cid == cid )
@@ -1022,6 +1036,15 @@ return( gadget );
 	}
     }
 return( NULL );
+}
+
+GGadget *_GWidgetGetGadgets(GWindow gw) {
+    GContainerD *gd = (GContainerD *) (gw->widget_data);
+
+    if ( gd==NULL || !gd->iscontainer )
+return( NULL );
+
+return( gd->gadgets );
 }
 
 GWindow GWidgetGetParent(GWindow gw) {

@@ -831,6 +831,41 @@ static void glist_setenabled(GGadget *g, int enabled ) {
     _ggadget_setenabled(g,enabled);
 }
 
+static void GListGetDesiredSize(GGadget *g,GRect *outer, GRect *inner) {
+    GList *gl = (GList *) g;
+    int width=0, height=0, temp;
+    int bp = GBoxBorderWidth(gl->g.base,gl->g.box);
+    int i;
+
+    /* can't deal with eliptical scrolling lists nor diamond ones. Just rects and roundrects */
+    GListFindXMax(gl);
+
+    width = gl->xmax;
+    temp = GDrawPointsToPixels(gl->g.base,50);
+    if ( width<temp ) width = temp;
+    width += GDrawPointsToPixels(gl->g.base,_GScrollBar_Width) +
+	    GDrawPointsToPixels(gl->g.base,1);
+
+    for ( i=0; i<gl->ltot && i<5; ++i ) {
+	height += GTextInfoGetHeight(gl->g.base,gl->ti[i],gl->font);
+    }
+    if ( i<4 ) {
+	int as, ds, ld;
+	GDrawFontMetrics(gl->font,&as, &ds, &ld);
+	height += (4-i)*(as+ds);
+    }
+    if ( inner!=NULL ) {
+	inner->x = inner->y = 0;
+	inner->width = width;
+	inner->height = height;
+    }
+    if ( outer!=NULL ) {
+	outer->x = outer->y = 0;
+	outer->width = width + 2*bp;
+	outer->height = height + 2*bp;
+    }
+}
+
 struct gfuncs GList_funcs = {
     0,
     sizeof(struct gfuncs),
@@ -871,7 +906,9 @@ struct gfuncs GList_funcs = {
     GListGetFirstSelPos,
     GListShowPos,
     GListScrollToText,
-    GListSetOrderer
+    GListSetOrderer,
+
+    GListGetDesiredSize
 };
 
 static GBox list_box = { /* Don't initialize here */ 0 };
@@ -886,29 +923,14 @@ static void GListInit() {
 }
 
 static void GListFit(GList *gl) {
-    int width=0, height=0;
     int bp = GBoxBorderWidth(gl->g.base,gl->g.box);
-    int i;
+    GRect inner, outer;
 
-    /* can't deal with eliptical scrolling lists nor diamond ones. Just rects and roundrects */
-    GListFindXMax(gl);
-    if ( gl->g.r.width==0 ) {
-	if ( width==0 ) width = GDrawPointsToPixels(gl->g.base,100);
-	width += GDrawPointsToPixels(gl->g.base,_GScrollBar_Width) +
-		GDrawPointsToPixels(gl->g.base,1);
-	gl->g.r.width = width + 2*bp;
-    }
-    if ( gl->g.r.height==0 ) {
-	for ( i=0; i<gl->ltot && i<5; ++i ) {
-	    height += GTextInfoGetHeight(gl->g.base,gl->ti[i],gl->font);
-	}
-	if ( i<5 ) {
-	    int as, ds, ld;
-	    GDrawFontMetrics(gl->font,&as, &ds, &ld);
-	    height += (5-i)*(as+ds);
-	}
-	gl->g.r.height = height + 2*bp;
-    }
+    GListGetDesiredSize(&gl->g,&outer,&inner);
+    if ( gl->g.r.width==0 )
+	gl->g.r.width = outer.width;
+    if ( gl->g.r.height==0 )
+	gl->g.r.height = outer.height;
     gl->g.inner = gl->g.r;
     gl->g.inner.x += bp; gl->g.inner.y += bp;
     gl->g.inner.width -= 2*bp; gl->g.inner.height -= 2*bp;

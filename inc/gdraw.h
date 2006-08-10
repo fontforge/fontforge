@@ -506,6 +506,7 @@ extern int GDrawSelectionHasType(GWindow w,enum selnames sn, char *typename);
 
 extern void GDrawPointerUngrab(GDisplay *disp);
 extern void GDrawPointerGrab(GWindow w);
+extern int GDrawEnableExposeRequests(GWindow w,int enabled);
 extern void GDrawRequestExpose(GWindow w, GRect *rect, int doclear);
 extern void GDrawSync(GDisplay *gdisp);
 extern void GDrawForceUpdate(GWindow w);

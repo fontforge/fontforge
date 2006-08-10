@@ -102,6 +102,7 @@ struct gwindow {
     unsigned int visible_request: 1;
     unsigned int is_dying: 1;
     unsigned int is_popup: 1;
+    unsigned int disable_expose_requests: 1;
 };
 
 struct ginput_context {
