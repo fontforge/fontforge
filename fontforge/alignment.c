@@ -192,14 +192,14 @@ static void AverageTwo(CharView *cv,SplinePoint *sp1, SplinePoint *sp2) {
 	sp2->nextcp.x += xpos-sp2->me.x;
 	sp1->me.x = sp2->me.x = xpos;
     } else if ( (xoff>0 && yoff>0) || (xoff<0 && yoff<0 ) ) {
-	if ( xoff<0 ) { xoff= -xoff; yoff= -ypos; }
+	/* if ( xoff<0 ) { xoff= -xoff; yoff= -ypos; } */
 	pos1 = rint((sp1->me.x+sp2->me.x-sp1->me.y-sp2->me.y)/4);
 	pos0 = (sp1->me.x+sp1->me.y)/2;
 	SpAdjustTo(sp1,pos0+pos1,pos0-pos1);
 	pos0 = (sp2->me.x+sp2->me.y)/2;
 	SpAdjustTo(sp2,pos0+pos1,pos0-pos1);
     } else {
-	if ( xoff<0 ) { xoff= -xoff; yoff= -ypos; }
+	/* if ( xoff<0 ) { xoff= -xoff; yoff= -ypos; } */
 	pos0 = rint((sp1->me.x+sp2->me.x+sp1->me.y+sp2->me.y)/4);
 	pos1 = (sp1->me.x-sp1->me.y)/2;
 	SpAdjustTo(sp1,pos0+pos1,pos0-pos1);
