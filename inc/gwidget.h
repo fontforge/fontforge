@@ -89,6 +89,7 @@ int GPaletteIsDocked(GWindow palette);
 void GWidgetReparentWindow(GWindow child,GWindow newparent, int x,int y);
 
 struct ggadget *GWidgetGetControl(GWindow gw, int cid);
+struct ggadget *_GWidgetGetGadgets(GWindow gw);
 GWindow GWidgetGetParent(GWindow gw);
 GWindow GWidgetGetTopWidget(GWindow gw);
 extern GDrawEH GWidgetGetEH(GWindow w);

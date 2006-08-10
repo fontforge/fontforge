@@ -27,6 +27,7 @@
 #include "gdraw.h"
 #include "gresource.h"
 #include "ggadgetP.h"
+#include "gwidget.h"
 #include "ustring.h"
 #include "gkeysym.h"
 
@@ -131,14 +132,17 @@ return( false );
 
     GBoxDrawBackground(pixmap,&g->r,g->box,
 	    g->state==gs_enabled? gs_pressedactive: g->state,false);
-    bounds = g->r; bounds.y += gts->rcnt*gts->rowh+yoff-1;
-    bounds.height -= gts->rcnt*gts->rowh+yoff-1;
+    bounds = g->r;
+    if ( !gts->vertical ) {
+	bounds.y += gts->rcnt*gts->rowh+yoff-1;
+	bounds.height -= gts->rcnt*gts->rowh+yoff-1;
+    }
     GBoxDrawBorder(pixmap,&bounds,g->box,g->state,false);
     GDrawSetFont(pixmap,gts->font);
 
     if ( gts->vertical ) {
-	x = g->r.x + GBoxBorderWidth(pixmap,g->box) + 5;
-	y = g->r.y + GBoxBorderWidth(pixmap,g->box) + 5;
+	x = g->r.x + GBoxBorderWidth(pixmap,g->box) + 3;
+	y = g->r.y + GBoxBorderWidth(pixmap,g->box) + 3;
 	for ( i=0; i<gts->tabcnt; ++i ) {
 	    fg = gts->tabs[i].disabled?gts->g.box->disabled_foreground:gts->g.box->main_foreground;
 	    if ( fg==COLOR_DEFAULT ) fg = GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap));
@@ -556,6 +560,54 @@ static void _gtabset_setvisible(GGadget *g,int visible) {
 	GDrawSetVisible(gts->tabs[gts->sel].w, visible);
 }
 
+static int gtabset_FillsWindow(GGadget *g) {
+return( g->prev==NULL && _GWidgetGetGadgets(g->base)==g );
+}
+
+static void gtabset_GetDesiredSize(GGadget *g, GRect *outer, GRect *inner) {
+    GTabSet *gts = (GTabSet *) g;
+    int bp = GBoxBorderWidth(g->base,g->box);
+    GRect nested, test;
+    int i;
+
+    memset(&nested,0,sizeof(nested));
+    for ( i=0; i<gts->tabcnt; ++i ) {
+	GGadget *last = _GWidgetGetGadgets(gts->tabs[i].w);
+	if ( last!=NULL ) {
+	    while ( last->prev!=NULL )
+		last=last->prev;
+	    GGadgetGetDesiredSize(last,&test,NULL);
+	    if ( GGadgetFillsWindow(last)) {
+		test.width += 2*last->r.x;
+		test.height += 2*last->r.y;
+	    }
+	    if ( test.width>nested.width ) nested.width = test.width;
+	    if ( test.height>nested.height ) nested.height = test.height;
+	}
+    }
+    if ( gts->vertical && gts->rcnt*gts->fh+10 > nested.height )
+	nested.height = gts->rcnt*gts->fh+10;
+	
+    if ( nested.width==0 ) nested.width = 100;
+    if ( nested.height==0 ) nested.height = 100;
+
+    if ( inner != NULL )
+	*inner = nested;
+    if ( gts->vertical ) {
+	if ( outer != NULL ) {
+	    *outer = nested;
+	    outer->width += gts->vert_list_width + 2*bp;
+	    outer->height += 2*bp;
+	}
+    } else {
+	if ( outer != NULL ) {
+	    *outer = nested;
+	    outer->width += 2*bp;
+	    outer->height += gts->rcnt*gts->rowh + bp;
+	}
+    }
+}
+
 struct gfuncs gtabset_funcs = {
     0,
     sizeof(struct gfuncs),
@@ -584,7 +636,23 @@ struct gfuncs gtabset_funcs = {
     NULL,
     NULL,
     GTabSetSetFont,
-    GTabSetGetFont
+    GTabSetGetFont,
+
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+
+    gtabset_GetDesiredSize,
+    NULL,
+    gtabset_FillsWindow
 };
 
 static int sendtoparent_eh(GWindow gw, GEvent *event) {

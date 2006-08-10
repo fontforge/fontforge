@@ -6315,43 +6315,10 @@ return( true );
 }
 
 static void GFI_Resize(struct gfi_data *d) {
-    GRect size, temp, temp2, subsize;
-    int yoff, xoff, xw, yh, i, okdown;
-    static int xy_cids[] = { CID_Notice, CID_Comment, CID_Contextual, CID_StateMachine, CID_TTFTabs, CID_Unicode, 0 };
-    static int x_cids[] = { CID_PrivateEntries, CID_PrivateValues, CID_MarkClasses, CID_AnchorClasses, 0 };
+    GRect temp, subsize;
     int sbsize = GDrawPointsToPixels(d->gw,_GScrollBar_Width);
 
-    GDrawGetSize(GGadgetGetWindow(GWidgetGetControl(d->gw,CID_TTFTabs)),&subsize);
-
-    GDrawGetSize(d->gw,&size);
-    GGadgetResize(GWidgetGetControl(d->gw,CID_MainGroup),size.width-4,size.height-4);
-    GGadgetGetSize(GWidgetGetControl(d->gw,CID_OK),&temp);
-    okdown = temp.height+GDrawPointsToPixels(d->gw,3)+2+GDrawPointsToPixels(d->gw,2);
-    yoff = (size.height - okdown) - temp.y;
-    GGadgetMove(GWidgetGetControl(d->gw,CID_OK),temp.x,temp.y+yoff);
-    GGadgetGetSize(GWidgetGetControl(d->gw,CID_Cancel),&temp2);
-    GGadgetMove(GWidgetGetControl(d->gw,CID_Cancel),size.width-temp2.width-temp.x,temp2.y+yoff);
-    GGadgetGetSize(GWidgetGetControl(d->gw,CID_Tabs),&temp);
-    xoff = size.width-2*GDrawPointsToPixels(d->gw,4) - temp.width;
-    GGadgetResize(GWidgetGetControl(d->gw,CID_Tabs),temp.width+xoff,
-	    temp.height+yoff);
-    subsize.height = size.height- subsize.y- okdown-GDrawPointsToPixels(d->gw,8); subsize.width += xoff;
-
-    for ( i=0; xy_cids[i]!=0; ++i ) if (GWidgetGetControl(d->gw,xy_cids[i])!=NULL) {
-	GGadgetGetSize(GWidgetGetControl(d->gw,xy_cids[i]),&temp);
-	if ( (xw = subsize.width - temp.x - GDrawPointsToPixels(d->gw,3)) < 40 )
-	    xw = 40;
-	if ( (yh = subsize.height - temp.y - GDrawPointsToPixels(d->gw,3)) < 40 )
-	    yh = 40;
-	GGadgetResize(GWidgetGetControl(d->gw,xy_cids[i]),xw,yh);
-    }
-
-    for ( i=0; x_cids[i]!=0; ++i ) {
-	GGadgetGetSize(GWidgetGetControl(d->gw,x_cids[i]),&temp);
-	if ( (xw = subsize.width - temp.x - GDrawPointsToPixels(d->gw,3)) < 40 )
-	    xw = 40;
-	GGadgetResize(GWidgetGetControl(d->gw,x_cids[i]),xw,temp.height);
-    }
+    GDrawGetSize(GDrawGetParentWindow(d->tn_v),&subsize);
 
     if ( d->tn_v!=NULL ) {
 	int len;
@@ -6369,8 +6336,6 @@ static void GFI_Resize(struct gfi_data *d) {
 	    len = 60;
 	GGadgetResize(d->tn_smalledit,len,d->tn_fh);
     }
-
-    GDrawRequestExpose(d->gw,NULL,false);
 }
 
 static int e_h(GWindow gw, GEvent *event) {
@@ -6382,7 +6347,7 @@ static int e_h(GWindow gw, GEvent *event) {
 	free(d);
     } else if ( event->type==et_resize ) {
 	struct gfi_data *d = GDrawGetUserData(gw);
-	GFI_Resize(d);
+	DelayEvent((void (*)(void *)) GFI_Resize,d);
     } else if ( event->type==et_char ) {
 return( GFI_Char(GDrawGetUserData(gw),event));
     }
@@ -6423,6 +6388,20 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
 	congcd[3], csubgcd[fpst_max-pst_contextpos][6], smgcd[3], smsubgcd[4][6],
 	mfgcd[8], mcgcd[8], szgcd[19], mkgcd[5], metgcd[28], vagcd[3], ssgcd[23],
 	xugcd[7], dgcd[6], ugcd[4];
+    GGadgetCreateData mb[2], mb2, nb[2], nb2, nb3, xub[2], psb[2], psb2[3], ppbox[3],
+	    vbox[4], metbox[2], ssbox[2], panbox[2], combox[2], atbox[4], mkbox[3],
+	    txbox[5], ubox[2], dbox[2], conbox[fpst_max-pst_contextpos][4],
+	    smbox[4][4], mcbox[3], mfbox[3], szbox[6];
+    GGadgetCreateData *marray[7], *marray2[9], *narray[26], *narray2[7], *narray3[3],
+	*xuarray[13], *psarray[10], *psarray2[21], *psarray3[3], *psarray4[10],
+	*ppbuttons[5], *pparray[4], *vradio[5], *vbutton[4], *varray[32], *metarray[42],
+	*ssarray[58], *panarray[38], *comarray[2], *atarray[6], *atarray2[6],
+	*atarray3[4], *mkarray[3], *mkarray2[4], *txarray[5], *txarray2[30],
+	*txarray3[6], *txarray4[6], *uarray[3], *darray[10], *conarray[fpst_max-pst_contextpos][4],
+	*conarray2[fpst_max-pst_contextpos][6], *conarray3[fpst_max-pst_contextpos][4],
+	*smarray[4][4], *smarray2[4][6], *smarray3[4][4], *mcarray[13], *mcarray2[7],
+	*mfarray[3], *mfarray2[8], *szarray[7], *szarray2[5], *szarray3[7],
+	*szarray4[4], *szarray5[6];
     GTextInfo mlabel[10], nlabel[16], pslabel[30], tnlabel[7],
 	plabel[8], vlabel[16], panlabel[22], comlabel[3], atlabel[7], txlabel[23],
 	csublabel[fpst_max-pst_contextpos][6], smsublabel[4][6],
@@ -6433,7 +6412,7 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20],
 	    vbuf[20], uibuf[12], vorig[20], embuf[20];
     char dszbuf[20], dsbbuf[20], dstbuf[21], sibuf[20], swbuf[20];
-    int i,k;
+    int i,j,k, psrow;
     int mcs;
     FontView *fvs;
     char title[130];
@@ -6634,7 +6613,9 @@ return;
     nlabel[12].text = (unichar_t *) "";
     nlabel[12].text_is_1byte = true;
     ngcd[12].gd.label = &nlabel[12];
-    ngcd[12].gd.flags = sf->defbasefilename!=NULL ? (gg_visible | gg_enabled | gg_cb_on ) : (gg_visible | gg_enabled);
+    ngcd[12].gd.flags = sf->defbasefilename!=NULL ?
+		(gg_visible | gg_enabled | gg_cb_on | gg_rad_continueold ) :
+		(gg_visible | gg_enabled | gg_rad_continueold);
     ngcd[12].gd.cid = CID_HasDefBase;
     ngcd[12].creator = GRadioCreate;
 
@@ -6665,6 +6646,36 @@ return;
     }
     ngcd[15].gd.cid = CID_Notice;
     ngcd[15].creator = GTextAreaCreate;
+
+    memset(&nb,0,sizeof(nb)); memset(&nb2,0,sizeof(nb2)); memset(&nb3,0,sizeof(nb3));
+
+    narray3[0] = &ngcd[12]; narray3[1] = &ngcd[13]; narray3[2] = NULL;
+
+    narray2[0] = &ngcd[10]; narray2[1] = &ngcd[11]; narray2[2] = NULL;
+    narray2[3] = GCD_RowSpan; narray2[4] = &nb3; narray2[5] = NULL;
+    narray2[6] = NULL;
+
+    narray[0] = &ngcd[0]; narray[1] = &ngcd[1]; narray[2] = NULL;
+    narray[3] = &ngcd[2]; narray[4] = &ngcd[3]; narray[5] = NULL;
+    narray[6] = &ngcd[4]; narray[7] = &ngcd[5]; narray[8] = NULL;
+    narray[9] = &ngcd[6]; narray[10] = &ngcd[7]; narray[11] = NULL;
+    narray[12] = &ngcd[8]; narray[13] = &ngcd[9]; narray[14] = NULL;
+    narray[15] = &nb2; narray[16] = GCD_ColSpan; narray[17] = NULL;
+    narray[18] = &ngcd[14]; narray[19] = GCD_ColSpan; narray[20] = NULL;
+    narray[21] = &ngcd[15]; narray[22] = GCD_ColSpan; narray[23] = NULL;
+    narray[24] = NULL;
+
+    nb3.gd.flags = gg_enabled|gg_visible;
+    nb3.gd.u.boxelements = narray3;
+    nb3.creator = GHBoxCreate;
+
+    nb2.gd.flags = gg_enabled|gg_visible;
+    nb2.gd.u.boxelements = narray2;
+    nb2.creator = GHVBoxCreate;
+
+    nb[0].gd.flags = gg_enabled|gg_visible;
+    nb[0].gd.u.boxelements = narray;
+    nb[0].creator = GHVBoxCreate;
 
 /******************************************************************************/
     memset(&xulabel,0,sizeof(xulabel));
@@ -6716,6 +6727,17 @@ return;
     xugcd[4].gd.flags = gg_visible | gg_enabled;
     xugcd[4].creator = GLabelCreate;
 
+    xuarray[0] = &xugcd[0]; xuarray[1] = &xugcd[1]; xuarray[2] = NULL;
+    xuarray[3] = &xugcd[2]; xuarray[4] = &xugcd[3]; xuarray[5] = NULL;
+    xuarray[6] = &xugcd[4]; xuarray[7] = GCD_ColSpan; xuarray[8] = NULL;
+    xuarray[9] = GCD_Glue; xuarray[10] = GCD_Glue; xuarray[11] = NULL;
+    xuarray[12] = NULL;
+
+    memset(xub,0,sizeof(xub));
+    xub[0].gd.flags = gg_enabled|gg_visible;
+    xub[0].gd.u.boxelements = xuarray;
+    xub[0].creator = GHVBoxCreate;
+
 /******************************************************************************/
     memset(&pslabel,0,sizeof(pslabel));
     memset(&psgcd,0,sizeof(psgcd));
@@ -6758,7 +6780,7 @@ return;
 
     psgcd[4].gd.pos.x = psgcd[0].gd.pos.x+5; psgcd[4].gd.pos.y = psgcd[0].gd.pos.y+24;
     psgcd[4].gd.flags = gg_visible | gg_enabled;
-    pslabel[4].text = (unichar_t *) _("_Em Size:");
+    pslabel[4].text = (unichar_t *) _(" _Em Size:");
     pslabel[4].text_is_1byte = true;
     pslabel[4].text_in_resource = true;
     psgcd[4].gd.label = &pslabel[4];
@@ -6915,7 +6937,7 @@ return;
     pslabel[19].text_is_1byte = true;
     pslabel[19].text_in_resource = true;
     psgcd[19].gd.label = &pslabel[19];
-    psgcd[19].gd.flags = sf->multilayer ? (gg_visible | gg_enabled | gg_utf8_popup | gg_cb_on) : (gg_visible | gg_enabled | gg_utf8_popup);
+    psgcd[19].gd.flags = sf->multilayer ? (gg_visible | gg_enabled | gg_utf8_popup | gg_cb_on | gg_rad_continueold) : (gg_visible | gg_enabled | gg_utf8_popup | gg_rad_continueold);
     psgcd[19].gd.cid = CID_IsMultiLayer;
     psgcd[19].creator = GRadioCreate;
     psgcd[19].gd.popup_msg = (unichar_t *) _("Allow editing of multiple colors and shades, fills and strokes.\nMulti layered fonts can only be output as type3 or svg fonts.");
@@ -7008,9 +7030,8 @@ return;
 	    psgcd[k].gd.label = &namelistnames[i];
 	}
     }
-    psgcd[k].gd.u.list = namelistnames;
+    psgcd[k++].gd.u.list = namelistnames;
     free(nlnames);
-    ++k;
 
 
     if ( sf->subfontcnt!=0 ) {
@@ -7020,6 +7041,54 @@ return;
 	for ( i=14; i<=16; ++i )
 	    psgcd[i].gd.flags &= ~gg_enabled;
     }
+
+    psarray[0] = &psb2[0];
+    psarray[1] = &psgcd[14];
+    psarray[2] = &psb2[1];
+    psarray[3] = &psgcd[17];
+    psarray[4] = &psgcd[18];
+#ifdef FONTFORGE_CONFIG_TYPE3
+    psarray[5] = &psgcd[19];
+    psarray[6] = &psgcd[20];
+    j=7;
+#else
+    j=5;
+#endif
+    psarray[j++] = &psb2[2];
+    psrow = j;
+    psarray[j++] = GCD_Glue;
+    psarray[j++] = NULL;
+
+    psarray2[0] = &psgcd[0]; psarray2[1] = &psgcd[1]; psarray2[2] = &psgcd[2]; psarray2[3] = &psgcd[3]; psarray2[4] = NULL;
+    psarray2[5] = &psgcd[4]; psarray2[6] = &psgcd[5]; psarray2[7] = &psgcd[6]; psarray2[8] = GCD_ColSpan; psarray2[9] = NULL;
+    psarray2[10] = &psgcd[8]; psarray2[11] = &psgcd[7]; psarray2[12] = &psgcd[9]; psarray2[13] = GCD_ColSpan; psarray2[14] = NULL;
+    psarray2[15] = &psgcd[11]; psarray2[16] = &psgcd[10]; psarray2[17] = &psgcd[12]; psarray2[18] = &psgcd[13]; psarray2[19] = NULL;
+    psarray2[20] = NULL;
+
+    psarray3[0] = &psgcd[15]; psarray3[1] = &psgcd[16]; psarray3[2] = NULL;
+
+    psarray4[0] = &psgcd[k-6]; psarray4[1] = &psgcd[k-5]; psarray4[2] = NULL;
+    psarray4[3] = &psgcd[k-4]; psarray4[4] = &psgcd[k-3]; psarray4[5] = NULL;
+    psarray4[6] = &psgcd[k-2]; psarray4[7] = &psgcd[k-1]; psarray4[8] = NULL;
+    psarray4[9] = NULL;
+
+    memset(psb,0,sizeof(psb));
+    psb[0].gd.flags = gg_enabled|gg_visible;
+    psb[0].gd.u.boxelements = psarray;
+    psb[0].creator = GVBoxCreate;
+
+    memset(psb2,0,sizeof(psb2));
+    psb2[0].gd.flags = gg_enabled|gg_visible;
+    psb2[0].gd.u.boxelements = psarray2;
+    psb2[0].creator = GHVBoxCreate;
+
+    psb2[1].gd.flags = gg_enabled|gg_visible;
+    psb2[1].gd.u.boxelements = psarray3;
+    psb2[1].creator = GHBoxCreate;
+
+    psb2[2].gd.flags = gg_enabled|gg_visible;
+    psb2[2].gd.u.boxelements = psarray4;
+    psb2[2].creator = GHVBoxCreate;
 /******************************************************************************/
 
     memset(&plabel,0,sizeof(plabel));
@@ -7066,7 +7135,8 @@ return;
     pgcd[4].gd.pos.y = pgcd[2].gd.pos.y;
     pgcd[4].gd.pos.width = -1; pgcd[4].gd.pos.height = 0;
     pgcd[4].gd.flags = gg_visible | gg_utf8_popup ;
-    plabel[4].text = (unichar_t *) _("_Hist");
+/* GT: This is an abbreviation for Histogram */
+    plabel[4].text = (unichar_t *) _("_Hist.");
     plabel[4].text_is_1byte = true;
     plabel[4].text_in_resource = true;
     pgcd[4].gd.label = &plabel[4];
@@ -7078,13 +7148,28 @@ return;
     pgcd[5].gd.pos.x = -10; pgcd[5].gd.pos.y = pgcd[2].gd.pos.y;
     pgcd[5].gd.pos.width = -1; pgcd[5].gd.pos.height = 0;
     pgcd[5].gd.flags = gg_visible | gg_enabled ;
-    plabel[5].text = (unichar_t *) _("Re_move");
+    plabel[5].text = (unichar_t *) _("_Remove");
     plabel[5].text_is_1byte = true;
     plabel[5].text_in_resource = true;
     pgcd[5].gd.label = &plabel[5];
     pgcd[5].gd.handle_controlevent = PI_Delete;
     pgcd[5].gd.cid = CID_Remove;
     pgcd[5].creator = GButtonCreate;
+
+    ppbuttons[0] = &pgcd[2]; ppbuttons[1] = &pgcd[3];
+    ppbuttons[2] = &pgcd[4]; ppbuttons[3] = &pgcd[5]; ppbuttons[4] = NULL;
+
+    pparray[0] = &pgcd[0]; pparray[1] = &pgcd[1]; pparray[2] = &ppbox[2];
+    pparray[3] = NULL;
+
+    memset(ppbox,0,sizeof(ppbox));
+    ppbox[0].gd.flags = gg_enabled|gg_visible;
+    ppbox[0].gd.u.boxelements = pparray;
+    ppbox[0].creator = GVBoxCreate;
+
+    ppbox[2].gd.flags = gg_enabled|gg_visible;
+    ppbox[2].gd.u.boxelements = ppbuttons;
+    ppbox[2].creator = GHBoxCreate;
 /******************************************************************************/
     memset(&vlabel,0,sizeof(vlabel));
     memset(&vgcd,0,sizeof(vgcd));
@@ -7219,13 +7304,39 @@ return;
     vgcd[14].gd.handle_controlevent = OrderGSUB;
     vgcd[14].creator = GButtonCreate;
 
+    vradio[0] = GCD_Glue; vradio[1] = &vgcd[8]; vradio[2] = &vgcd[9]; vradio[3] = GCD_Glue; vradio[4] = NULL;
+    vbutton[0] = GCD_Glue; vbutton[1] = &vgcd[14]; vbutton[2] = GCD_Glue; vbutton[3] = NULL;
 
+    varray[0] = &vgcd[0]; varray[1] = &vgcd[1]; varray[2] = NULL;
+    varray[3] = &vgcd[2]; varray[4] = &vgcd[3]; varray[5] = NULL;
+    varray[6] = &vgcd[4]; varray[7] = &vgcd[5]; varray[8] = NULL;
+    varray[9] = &vgcd[6]; varray[10] = &vgcd[7]; varray[11] = NULL;
+    varray[12] = &vbox[2]; varray[13] = GCD_ColSpan; varray[14] = NULL;
+    varray[15] = &vgcd[10]; varray[16] = &vgcd[11]; varray[17] = NULL;
+    varray[18] = &vgcd[12]; varray[19] = &vgcd[13]; varray[20] = NULL;
+    varray[21] = GCD_Glue; varray[22] = GCD_Glue; varray[23] = NULL;
+    varray[24] = &vbox[3]; varray[25] = GCD_ColSpan; varray[26] = NULL;
+    varray[27] = GCD_Glue; varray[28] = GCD_Glue; varray[29] = NULL;
+    varray[30] = varray[31] = NULL;
+
+    memset(vbox,0,sizeof(vbox));
+    vbox[0].gd.flags = gg_enabled|gg_visible;
+    vbox[0].gd.u.boxelements = varray;
+    vbox[0].creator = GHVBoxCreate;
+
+    vbox[2].gd.flags = gg_enabled|gg_visible;
+    vbox[2].gd.u.boxelements = vradio;
+    vbox[2].creator = GHBoxCreate;
+
+    vbox[3].gd.flags = gg_enabled|gg_visible;
+    vbox[3].gd.u.boxelements = vbutton;
+    vbox[3].creator = GHBoxCreate;
 /******************************************************************************/
 
     memset(&metgcd,0,sizeof(metgcd));
     memset(&metlabel,'\0',sizeof(metlabel));
 
-    i = 0;
+    i = j = 0;
 
     metgcd[i].gd.pos.x = 10; metgcd[i].gd.pos.y = 9;
     metlabel[i].text = (unichar_t *) _("Win _Ascent Offset:");
@@ -7235,6 +7346,7 @@ return;
     metgcd[i].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     metgcd[i].gd.popup_msg = (unichar_t *) _("Anything outside the OS/2 WinAscent &\nWinDescent fields will be clipped by windows.\nThis includes marks, etc. that have been repositioned by GPOS.\n(The descent field is usually positive.)\nIf the \"[] Is Offset\" checkbox is clear then\nany number you enter will be the value used in OS/2.\nIf set then any number you enter will be added to the\nfont's bounds. You should leave this\nfield 0 and check \"[*] Is Offset\" in most cases.");
     metgcd[i].gd.cid = CID_WinAscentLab;
+    metarray[j++] = &metgcd[i];
     metgcd[i++].creator = GLabelCreate;
 
     metgcd[i].gd.pos.x = 125; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y-4;
@@ -7243,6 +7355,7 @@ return;
 	/* value set later */
     metgcd[i].gd.cid = CID_WinAscent;
     metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
+    metarray[j++] = &metgcd[i];
     metgcd[i++].creator = GTextFieldCreate;
 
     metgcd[i].gd.pos.x = 178; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y;
@@ -7254,7 +7367,9 @@ return;
     metgcd[i].gd.cid = CID_WinAscentIsOff;
     metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
     metgcd[i].gd.handle_controlevent = GFI_AsDesIsOff;
+    metarray[j++] = &metgcd[i];
     metgcd[i++].creator = GCheckBoxCreate;
+    metarray[j++] = NULL;
 
     metgcd[i].gd.pos.x = 10; metgcd[i].gd.pos.y = metgcd[i-2].gd.pos.y+26+4;
     metlabel[i].text = (unichar_t *) _("Win _Descent Offset:");
@@ -7264,6 +7379,7 @@ return;
     metgcd[i].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
     metgcd[i].gd.cid = CID_WinDescentLab;
+    metarray[j++] = &metgcd[i];
     metgcd[i++].creator = GLabelCreate;
 
     metgcd[i].gd.pos.x = 125; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y-4;
@@ -7272,6 +7388,7 @@ return;
 	/* value set later */
     metgcd[i].gd.cid = CID_WinDescent;
     metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
+    metarray[j++] = &metgcd[i];
     metgcd[i++].creator = GTextFieldCreate;
 
     metgcd[i].gd.pos.x = 178; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y;
@@ -7283,7 +7400,9 @@ return;
     metgcd[i].gd.cid = CID_WinDescentIsOff;
     metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
     metgcd[i].gd.handle_controlevent = GFI_AsDesIsOff;
+    metarray[j++] = &metgcd[i];
     metgcd[i++].creator = GCheckBoxCreate;
+    metarray[j++] = NULL;
 
     metgcd[i].gd.pos.x = 10; metgcd[i].gd.pos.y = metgcd[i-2].gd.pos.y+26+4;
     metlabel[i].text = (unichar_t *) _("_Typo Ascent Offset:");
@@ -7293,6 +7412,7 @@ return;
     metgcd[i].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     metgcd[i].gd.popup_msg = (unichar_t *) _("The type ascent&descent fields are>supposed<\nto specify the line spacing on windows.\nIn fact usually the win ascent/descent fields do.\n(The descent field is usually negative.)\nIf the \"[] Is Offset\" checkbox is clear then\nany number you enter will be the value used in OS/2.\nIf set then any number you enter will be added to the\nEm-size. You should leave this\nfield 0 and check \"[*] Is Offset\" in most cases.");
     metgcd[i].gd.cid = CID_TypoAscentLab;
+    metarray[j++] = &metgcd[i];
     metgcd[i++].creator = GLabelCreate;
 
     metgcd[i].gd.pos.x = 125; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y-4;
@@ -7301,6 +7421,7 @@ return;
 	/* value set later */
     metgcd[i].gd.cid = CID_TypoAscent;
     metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
+    metarray[j++] = &metgcd[i];
     metgcd[i++].creator = GTextFieldCreate;
 
     metgcd[i].gd.pos.x = 178; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y;
@@ -7312,7 +7433,9 @@ return;
     metgcd[i].gd.cid = CID_TypoAscentIsOff;
     metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
     metgcd[i].gd.handle_controlevent = GFI_AsDesIsOff;
+    metarray[j++] = &metgcd[i];
     metgcd[i++].creator = GCheckBoxCreate;
+    metarray[j++] = NULL;
 
     metgcd[i].gd.pos.x = 10; metgcd[i].gd.pos.y = metgcd[i-2].gd.pos.y+26+4;
     metlabel[i].text = (unichar_t *) _("T_ypo Descent Offset:");
@@ -7322,6 +7445,7 @@ return;
     metgcd[i].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
     metgcd[i].gd.cid = CID_TypoDescentLab;
+    metarray[j++] = &metgcd[i];
     metgcd[i++].creator = GLabelCreate;
 
     metgcd[i].gd.pos.x = 125; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y-4;
@@ -7330,6 +7454,7 @@ return;
 	/* value set later */
     metgcd[i].gd.cid = CID_TypoDescent;
     metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
+    metarray[j++] = &metgcd[i];
     metgcd[i++].creator = GTextFieldCreate;
 
     metgcd[i].gd.pos.x = 178; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y;
@@ -7341,7 +7466,9 @@ return;
     metgcd[i].gd.cid = CID_TypoDescentIsOff;
     metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
     metgcd[i].gd.handle_controlevent = GFI_AsDesIsOff;
+    metarray[j++] = &metgcd[i];
     metgcd[i++].creator = GCheckBoxCreate;
+    metarray[j++] = NULL;
 
     metgcd[i].gd.pos.x = 10; metgcd[i].gd.pos.y = metgcd[i-2].gd.pos.y+26+4;
     metlabel[i].text = (unichar_t *) _("Typo Line _Gap:");
@@ -7350,6 +7477,7 @@ return;
     metgcd[i].gd.label = &metlabel[i];
     metgcd[i].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     metgcd[i].gd.popup_msg = (unichar_t *) _("Sets the TypoLinegap field in the OS/2 table, used on MS Windows");
+    metarray[j++] = &metgcd[i];
     metgcd[i++].creator = GLabelCreate;
 
     metgcd[i].gd.pos.x = 125; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y-4;
@@ -7358,7 +7486,10 @@ return;
 	/* Line gap value set later */
     metgcd[i].gd.cid = CID_TypoLineGap;
     metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
+    metarray[j++] = &metgcd[i];
     metgcd[i++].creator = GTextFieldCreate;
+    metarray[j++] = GCD_Glue;
+    metarray[j++] = NULL;
 
     metgcd[i].gd.pos.x = 10; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y+26+4;
     metlabel[i].text = (unichar_t *) _("_HHead Ascent Offset:");
@@ -7368,6 +7499,7 @@ return;
     metgcd[i].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     metgcd[i].gd.popup_msg = (unichar_t *) _("This specifies the line spacing on the mac.\n(The descent field is usually negative.)\nIf the \"[] Is Offset\" checkbox is clear then\nany number you enter will be the value used in hhea.\nIf set then any number you enter will be added to the\nfont's bounds. You should leave this\nfield 0 and check \"[*] Is Offset\" in most cases.");
     metgcd[i].gd.cid = CID_HHeadAscentLab;
+    metarray[j++] = &metgcd[i];
     metgcd[i++].creator = GLabelCreate;
 
     metgcd[i].gd.pos.x = 125; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y-4;
@@ -7376,6 +7508,7 @@ return;
 	/* value set later */
     metgcd[i].gd.cid = CID_HHeadAscent;
     metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
+    metarray[j++] = &metgcd[i];
     metgcd[i++].creator = GTextFieldCreate;
 
     metgcd[i].gd.pos.x = 178; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y;
@@ -7387,7 +7520,9 @@ return;
     metgcd[i].gd.cid = CID_HHeadAscentIsOff;
     metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
     metgcd[i].gd.handle_controlevent = GFI_AsDesIsOff;
+    metarray[j++] = &metgcd[i];
     metgcd[i++].creator = GCheckBoxCreate;
+    metarray[j++] = NULL;
 
     metgcd[i].gd.pos.x = 10; metgcd[i].gd.pos.y = metgcd[i-2].gd.pos.y+26+4;
     metlabel[i].text = (unichar_t *) _("HHead De_scent Offset:");
@@ -7397,6 +7532,7 @@ return;
     metgcd[i].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
     metgcd[i].gd.cid = CID_HHeadDescentLab;
+    metarray[j++] = &metgcd[i];
     metgcd[i++].creator = GLabelCreate;
 
     metgcd[i].gd.pos.x = 125; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y-4;
@@ -7405,6 +7541,7 @@ return;
 	/* value set later */
     metgcd[i].gd.cid = CID_HHeadDescent;
     metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
+    metarray[j++] = &metgcd[i];
     metgcd[i++].creator = GTextFieldCreate;
 
     metgcd[i].gd.pos.x = 178; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y;
@@ -7416,7 +7553,9 @@ return;
     metgcd[i].gd.cid = CID_HHeadDescentIsOff;
     metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
     metgcd[i].gd.handle_controlevent = GFI_AsDesIsOff;
+    metarray[j++] = &metgcd[i];
     metgcd[i++].creator = GCheckBoxCreate;
+    metarray[j++] = NULL;
 
     metgcd[i].gd.pos.x = 10; metgcd[i].gd.pos.y = metgcd[i-2].gd.pos.y+26+4;
     metlabel[i].text = (unichar_t *) _("HHead _Line Gap:");
@@ -7425,6 +7564,7 @@ return;
     metgcd[i].gd.label = &metlabel[i];
     metgcd[i].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     metgcd[i].gd.popup_msg = (unichar_t *) _("Sets the linegap field in the hhea table, used on the mac");
+    metarray[j++] = &metgcd[i];
     metgcd[i++].creator = GLabelCreate;
 
     metgcd[i].gd.pos.x = 125; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y-4;
@@ -7433,7 +7573,10 @@ return;
 	/* Line gap value set later */
     metgcd[i].gd.cid = CID_LineGap;
     metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
+    metarray[j++] = &metgcd[i];
     metgcd[i++].creator = GTextFieldCreate;
+    metarray[j++] = GCD_Glue;
+    metarray[j++] = NULL;
 
     metgcd[i].gd.pos.x = 10; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y+26+6;
     metlabel[i].text = (unichar_t *) _("VHead _Column Spacing:");
@@ -7443,6 +7586,7 @@ return;
     metgcd[i].gd.flags = sf->hasvmetrics ? (gg_visible | gg_enabled | gg_utf8_popup) : (gg_visible | gg_utf8_popup);
     metgcd[i].gd.popup_msg = (unichar_t *) _("Sets the linegap field in the vhea table.\nThis is the horizontal spacing between rows\nof vertically set text.");
     metgcd[i].gd.cid = CID_VLineGapLab;
+    metarray[j++] = &metgcd[i];
     metgcd[i++].creator = GLabelCreate;
 
     metgcd[i].gd.pos.x = 125; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y-6;
@@ -7451,14 +7595,24 @@ return;
 	/* V Line gap value set later */
     metgcd[i].gd.cid = CID_VLineGap;
     metgcd[i].gd.popup_msg = metgcd[17].gd.popup_msg;
+    metarray[j++] = &metgcd[i];
     metgcd[i++].creator = GTextFieldCreate;
+    metarray[j++] = GCD_Glue;
+    metarray[j++] = NULL;
+    metarray[j++] = GCD_Glue; metarray[j++] = GCD_Glue; metarray[j++] = GCD_Glue;
 
+    metarray[j++] = NULL; metarray[j++] = NULL;
+
+    memset(metbox,0,sizeof(metbox));
+    metbox[0].gd.flags = gg_enabled|gg_visible;
+    metbox[0].gd.u.boxelements = metarray;
+    metbox[0].creator = GHVBoxCreate;
 /******************************************************************************/
 
     memset(&ssgcd,0,sizeof(ssgcd));
     memset(&sslabel,'\0',sizeof(sslabel));
 
-    i = 0;
+    i = j = 0;
 
     ssgcd[i].gd.pos.x = 5; ssgcd[i].gd.pos.y = 5;
     sslabel[i].text = (unichar_t *) _("Default");
@@ -7468,36 +7622,44 @@ return;
 	/* value set later */
     ssgcd[i].gd.cid = CID_SubSuperDefault;
     ssgcd[i].gd.handle_controlevent = GFI_SubSuperDefault;
+    ssarray[j++] = &ssgcd[i];
     ssgcd[i++].creator = GCheckBoxCreate;
+    ssarray[j++] = GCD_Glue; ssarray[j++] = GCD_Glue; ssarray[j++] = GCD_Glue;
+    ssarray[j++] = NULL;
 
     ssgcd[i].gd.pos.x = 5; ssgcd[i].gd.pos.y = ssgcd[i-1].gd.pos.y+16;
     sslabel[i].text = (unichar_t *) _("Subscript");
     sslabel[i].text_is_1byte = true;
     ssgcd[i].gd.label = &sslabel[i];
     ssgcd[i].gd.flags = gg_visible | gg_enabled;
+    ssarray[j++] = &ssgcd[i];
     ssgcd[i++].creator = GLabelCreate;
 
     ssgcd[i].gd.pos.x = 120; ssgcd[i].gd.pos.y = ssgcd[i-1].gd.pos.y-4;
-/* GT: X is a coordinate */
-    sslabel[i].text = (unichar_t *) _("X");
+/* GT: X is a coordinate, the leading spaces help to align it */
+    sslabel[i].text = (unichar_t *) _("  X");
     sslabel[i].text_is_1byte = true;
     ssgcd[i].gd.label = &sslabel[i];
     ssgcd[i].gd.flags = gg_visible | gg_enabled;
+    ssarray[j++] = &ssgcd[i];
     ssgcd[i++].creator = GLabelCreate;
 
     ssgcd[i].gd.pos.x = 180; ssgcd[i].gd.pos.y = ssgcd[i-1].gd.pos.y;
-/* GT: Y is a coordinate */
+/* GT: Y is a coordinate, the leading spaces help to align it */
     sslabel[i].text = (unichar_t *) _("Y");
     sslabel[i].text_is_1byte = true;
     ssgcd[i].gd.label = &sslabel[i];
     ssgcd[i].gd.flags = gg_visible | gg_enabled;
+    ssarray[j++] = &ssgcd[i];
     ssgcd[i++].creator = GLabelCreate;
+    ssarray[j++] = GCD_Glue; ssarray[j++] = NULL;
 
     ssgcd[i].gd.pos.x = 10; ssgcd[i].gd.pos.y = ssgcd[i-3].gd.pos.y+14+4;
     sslabel[i].text = (unichar_t *) _("Size");
     sslabel[i].text_is_1byte = true;
     ssgcd[i].gd.label = &sslabel[i];
     ssgcd[i].gd.flags = gg_visible | gg_enabled;
+    ssarray[j++] = &ssgcd[i];
     ssgcd[i++].creator = GLabelCreate;
 
     ssgcd[i].gd.pos.x = 100; ssgcd[i].gd.pos.y = ssgcd[i-1].gd.pos.y-6;
@@ -7505,6 +7667,7 @@ return;
     ssgcd[i].gd.flags = gg_visible | gg_enabled;
 	/* set later */
     ssgcd[i].gd.cid = CID_SubXSize;
+    ssarray[j++] = &ssgcd[i];
     ssgcd[i++].creator = GTextFieldCreate;
 
     ssgcd[i].gd.pos.x = 160; ssgcd[i].gd.pos.y = ssgcd[i-1].gd.pos.y;
@@ -7512,13 +7675,16 @@ return;
     ssgcd[i].gd.flags = gg_visible | gg_enabled;
 	/* set later */
     ssgcd[i].gd.cid = CID_SubYSize;
+    ssarray[j++] = &ssgcd[i];
     ssgcd[i++].creator = GTextFieldCreate;
+    ssarray[j++] = GCD_Glue; ssarray[j++] = NULL;
 
     ssgcd[i].gd.pos.x = 10; ssgcd[i].gd.pos.y = ssgcd[i-3].gd.pos.y+26;
     sslabel[i].text = (unichar_t *) _("Offset");
     sslabel[i].text_is_1byte = true;
     ssgcd[i].gd.label = &sslabel[i];
     ssgcd[i].gd.flags = gg_visible | gg_enabled;
+    ssarray[j++] = &ssgcd[i];
     ssgcd[i++].creator = GLabelCreate;
 
     ssgcd[i].gd.pos.x = 100; ssgcd[i].gd.pos.y = ssgcd[i-1].gd.pos.y-6;
@@ -7526,6 +7692,7 @@ return;
     ssgcd[i].gd.flags = gg_visible | gg_enabled;
 	/* set later */
     ssgcd[i].gd.cid = CID_SubXOffset;
+    ssarray[j++] = &ssgcd[i];
     ssgcd[i++].creator = GTextFieldCreate;
 
     ssgcd[i].gd.pos.x = 160; ssgcd[i].gd.pos.y = ssgcd[i-1].gd.pos.y;
@@ -7533,7 +7700,9 @@ return;
     ssgcd[i].gd.flags = gg_visible | gg_enabled;
 	/* set later */
     ssgcd[i].gd.cid = CID_SubYOffset;
+    ssarray[j++] = &ssgcd[i];
     ssgcd[i++].creator = GTextFieldCreate;
+    ssarray[j++] = GCD_Glue; ssarray[j++] = NULL;
 
 
     ssgcd[i].gd.pos.x = 5; ssgcd[i].gd.pos.y = ssgcd[i-1].gd.pos.y+30;
@@ -7541,13 +7710,17 @@ return;
     sslabel[i].text_is_1byte = true;
     ssgcd[i].gd.label = &sslabel[i];
     ssgcd[i].gd.flags = gg_visible | gg_enabled;
+    ssarray[j++] = &ssgcd[i];
     ssgcd[i++].creator = GLabelCreate;
+    ssarray[j++] = GCD_Glue; ssarray[j++] = GCD_Glue; ssarray[j++] = GCD_Glue;
+    ssarray[j++] = NULL;
 
     ssgcd[i].gd.pos.x = 10; ssgcd[i].gd.pos.y = ssgcd[i-1].gd.pos.y+14+4;
     sslabel[i].text = (unichar_t *) _("Size");
     sslabel[i].text_is_1byte = true;
     ssgcd[i].gd.label = &sslabel[i];
     ssgcd[i].gd.flags = gg_visible | gg_enabled;
+    ssarray[j++] = &ssgcd[i];
     ssgcd[i++].creator = GLabelCreate;
 
     ssgcd[i].gd.pos.x = 100; ssgcd[i].gd.pos.y = ssgcd[i-1].gd.pos.y-6;
@@ -7555,6 +7728,7 @@ return;
     ssgcd[i].gd.flags = gg_visible | gg_enabled;
 	/* set later */
     ssgcd[i].gd.cid = CID_SuperXSize;
+    ssarray[j++] = &ssgcd[i];
     ssgcd[i++].creator = GTextFieldCreate;
 
     ssgcd[i].gd.pos.x = 160; ssgcd[i].gd.pos.y = ssgcd[i-1].gd.pos.y;
@@ -7562,13 +7736,16 @@ return;
     ssgcd[i].gd.flags = gg_visible | gg_enabled;
 	/* set later */
     ssgcd[i].gd.cid = CID_SuperYSize;
+    ssarray[j++] = &ssgcd[i];
     ssgcd[i++].creator = GTextFieldCreate;
+    ssarray[j++] = GCD_Glue; ssarray[j++] = NULL;
 
     ssgcd[i].gd.pos.x = 10; ssgcd[i].gd.pos.y = ssgcd[i-3].gd.pos.y+26;
     sslabel[i].text = (unichar_t *) _("Offset");
     sslabel[i].text_is_1byte = true;
     ssgcd[i].gd.label = &sslabel[i];
     ssgcd[i].gd.flags = gg_visible | gg_enabled;
+    ssarray[j++] = &ssgcd[i];
     ssgcd[i++].creator = GLabelCreate;
 
     ssgcd[i].gd.pos.x = 100; ssgcd[i].gd.pos.y = ssgcd[i-1].gd.pos.y-6;
@@ -7576,6 +7753,7 @@ return;
     ssgcd[i].gd.flags = gg_visible | gg_enabled;
 	/* set later */
     ssgcd[i].gd.cid = CID_SuperXOffset;
+    ssarray[j++] = &ssgcd[i];
     ssgcd[i++].creator = GTextFieldCreate;
 
     ssgcd[i].gd.pos.x = 160; ssgcd[i].gd.pos.y = ssgcd[i-1].gd.pos.y;
@@ -7583,7 +7761,9 @@ return;
     ssgcd[i].gd.flags = gg_visible | gg_enabled;
 	/* set later */
     ssgcd[i].gd.cid = CID_SuperYOffset;
+    ssarray[j++] = &ssgcd[i];
     ssgcd[i++].creator = GTextFieldCreate;
+    ssarray[j++] = GCD_Glue; ssarray[j++] = NULL;
 
 
     ssgcd[i].gd.pos.x = 5; ssgcd[i].gd.pos.y = ssgcd[i-1].gd.pos.y+30;
@@ -7591,41 +7771,60 @@ return;
     sslabel[i].text_is_1byte = true;
     ssgcd[i].gd.label = &sslabel[i];
     ssgcd[i].gd.flags = gg_visible | gg_enabled;
+    ssarray[j++] = &ssgcd[i];
     ssgcd[i++].creator = GLabelCreate;
+    ssarray[j++] = GCD_Glue; ssarray[j++] = GCD_Glue; ssarray[j++] = GCD_Glue;
+    ssarray[j++] = NULL;
 
     ssgcd[i].gd.pos.x = 10; ssgcd[i].gd.pos.y = ssgcd[i-1].gd.pos.y+14+4;
     sslabel[i].text = (unichar_t *) _("Size");
     sslabel[i].text_is_1byte = true;
     ssgcd[i].gd.label = &sslabel[i];
     ssgcd[i].gd.flags = gg_visible | gg_enabled;
+    ssarray[j++] = &ssgcd[i];
     ssgcd[i++].creator = GLabelCreate;
+    ssarray[j++] = GCD_Glue;
 
     ssgcd[i].gd.pos.x = 160; ssgcd[i].gd.pos.y = ssgcd[i-1].gd.pos.y-6;
     ssgcd[i].gd.pos.width = 50;
     ssgcd[i].gd.flags = gg_visible | gg_enabled;
 	/* set later */
     ssgcd[i].gd.cid = CID_StrikeoutSize;
+    ssarray[j++] = &ssgcd[i];
     ssgcd[i++].creator = GTextFieldCreate;
+    ssarray[j++] = GCD_Glue; ssarray[j++] = NULL;
 
     ssgcd[i].gd.pos.x = 10; ssgcd[i].gd.pos.y = ssgcd[i-2].gd.pos.y+26;
     sslabel[i].text = (unichar_t *) _("Pos");
     sslabel[i].text_is_1byte = true;
     ssgcd[i].gd.label = &sslabel[i];
     ssgcd[i].gd.flags = gg_visible | gg_enabled;
+    ssarray[j++] = &ssgcd[i];
     ssgcd[i++].creator = GLabelCreate;
+    ssarray[j++] = GCD_Glue;
 
     ssgcd[i].gd.pos.x = 160; ssgcd[i].gd.pos.y = ssgcd[i-1].gd.pos.y-6;
     ssgcd[i].gd.pos.width = 50;
     ssgcd[i].gd.flags = gg_visible | gg_enabled;
 	/* set later */
     ssgcd[i].gd.cid = CID_StrikeoutPos;
+    ssarray[j++] = &ssgcd[i];
     ssgcd[i++].creator = GTextFieldCreate;
-    
+    ssarray[j++] = GCD_Glue; ssarray[j++] = NULL;
+
+    ssarray[j++] = GCD_Glue; ssarray[j++] = GCD_Glue; ssarray[j++] = GCD_Glue; ssarray[j++] = GCD_Glue;
+
+    ssarray[j++] = NULL; ssarray[j++] = NULL;
+
+    memset(ssbox,0,sizeof(ssbox));
+    ssbox[0].gd.flags = gg_enabled|gg_visible;
+    ssbox[0].gd.u.boxelements = ssarray;
+    ssbox[0].creator = GHVBoxCreate;
 /******************************************************************************/
     memset(&panlabel,0,sizeof(panlabel));
     memset(&pangcd,0,sizeof(pangcd));
 
-    i = 0;
+    i = j = 0;
 
     pangcd[i].gd.pos.x = 5; pangcd[i].gd.pos.y = 5;
     panlabel[i].text = (unichar_t *) _("Default");
@@ -7636,7 +7835,9 @@ return;
     pangcd[i].gd.cid = CID_PanDefault;
     /*pangcd[i].gd.popup_msg = pangcd[i-1].gd.popup_msg;*/
     pangcd[i].gd.handle_controlevent = GFI_PanoseDefault;
+    panarray[j++] = &pangcd[i];
     pangcd[i++].creator = GCheckBoxCreate;
+    panarray[j++] = GCD_Glue; panarray[j++] = NULL;
 
     pangcd[i].gd.pos.x = 20; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y+14+4;
     panlabel[i].text = (unichar_t *) _("_Family");
@@ -7645,13 +7846,16 @@ return;
     pangcd[i].gd.label = &panlabel[i];
     pangcd[i].gd.cid = CID_PanFamilyLab;
     pangcd[i].gd.flags = gg_visible | gg_enabled;
+    panarray[j++] = &pangcd[i];
     pangcd[i++].creator = GLabelCreate;
 
     pangcd[i].gd.pos.x = 100; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y-6; pangcd[i].gd.pos.width = 120;
     pangcd[i].gd.flags = gg_visible | gg_enabled;
     pangcd[i].gd.cid = CID_PanFamily;
     pangcd[i].gd.u.list = panfamily;
+    panarray[j++] = &pangcd[i];
     pangcd[i++].creator = GListButtonCreate;
+    panarray[j++] = NULL;
 
     pangcd[i].gd.pos.x = 20; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y+26+5;
     panlabel[i].text = (unichar_t *) _("_Serifs");
@@ -7660,13 +7864,16 @@ return;
     pangcd[i].gd.label = &panlabel[i];
     pangcd[i].gd.cid = CID_PanSerifsLab;
     pangcd[i].gd.flags = gg_visible | gg_enabled;
+    panarray[j++] = &pangcd[i];
     pangcd[i++].creator = GLabelCreate;
 
     pangcd[i].gd.pos.x = 100; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y-6; pangcd[i].gd.pos.width = 120;
     pangcd[i].gd.flags = gg_visible | gg_enabled;
     pangcd[i].gd.cid = CID_PanSerifs;
     pangcd[i].gd.u.list = panserifs;
+    panarray[j++] = &pangcd[i];
     pangcd[i++].creator = GListButtonCreate;
+    panarray[j++] = NULL;
 
     pangcd[i].gd.pos.x = 20; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y+26+5;
     panlabel[i].text = (unichar_t *) _("_Weight");
@@ -7675,13 +7882,16 @@ return;
     pangcd[i].gd.label = &panlabel[i];
     pangcd[i].gd.cid = CID_PanWeightLab;
     pangcd[i].gd.flags = gg_visible | gg_enabled;
+    panarray[j++] = &pangcd[i];
     pangcd[i++].creator = GLabelCreate;
 
     pangcd[i].gd.pos.x = 100; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y-6; pangcd[i].gd.pos.width = 120;
     pangcd[i].gd.flags = gg_visible | gg_enabled;
     pangcd[i].gd.cid = CID_PanWeight;
     pangcd[i].gd.u.list = panweight;
+    panarray[j++] = &pangcd[i];
     pangcd[i++].creator = GListButtonCreate;
+    panarray[j++] = NULL;
 
     pangcd[i].gd.pos.x = 20; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y+26+5;
     panlabel[i].text = (unichar_t *) _("_Proportion");
@@ -7690,13 +7900,16 @@ return;
     pangcd[i].gd.label = &panlabel[i];
     pangcd[i].gd.cid = CID_PanPropLab;
     pangcd[i].gd.flags = gg_visible | gg_enabled;
+    panarray[j++] = &pangcd[i];
     pangcd[i++].creator = GLabelCreate;
 
     pangcd[i].gd.pos.x = 100; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y-6; pangcd[i].gd.pos.width = 120;
     pangcd[i].gd.flags = gg_visible | gg_enabled;
     pangcd[i].gd.cid = CID_PanProp;
     pangcd[i].gd.u.list = panprop;
+    panarray[j++] = &pangcd[i];
     pangcd[i++].creator = GListButtonCreate;
+    panarray[j++] = NULL;
 
     pangcd[i].gd.pos.x = 20; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y+26+5;
     panlabel[i].text = (unichar_t *) _("_Contrast");
@@ -7705,13 +7918,16 @@ return;
     pangcd[i].gd.label = &panlabel[i];
     pangcd[i].gd.cid = CID_PanContrastLab;
     pangcd[i].gd.flags = gg_visible | gg_enabled;
+    panarray[j++] = &pangcd[i];
     pangcd[i++].creator = GLabelCreate;
 
     pangcd[i].gd.pos.x = 100; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y-6; pangcd[i].gd.pos.width = 120;
     pangcd[i].gd.flags = gg_visible | gg_enabled;
     pangcd[i].gd.cid = CID_PanContrast;
     pangcd[i].gd.u.list = pancontrast;
+    panarray[j++] = &pangcd[i];
     pangcd[i++].creator = GListButtonCreate;
+    panarray[j++] = NULL;
 
     pangcd[i].gd.pos.x = 20; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y+26+5;
     panlabel[i].text = (unichar_t *) _("Stroke _Variation");
@@ -7720,13 +7936,16 @@ return;
     pangcd[i].gd.label = &panlabel[i];
     pangcd[i].gd.cid = CID_PanStrokeVarLab;
     pangcd[i].gd.flags = gg_visible | gg_enabled;
+    panarray[j++] = &pangcd[i];
     pangcd[i++].creator = GLabelCreate;
 
     pangcd[i].gd.pos.x = 100; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y-6; pangcd[i].gd.pos.width = 120;
     pangcd[i].gd.flags = gg_visible | gg_enabled;
     pangcd[i].gd.cid = CID_PanStrokeVar;
     pangcd[i].gd.u.list = panstrokevar;
+    panarray[j++] = &pangcd[i];
     pangcd[i++].creator = GListButtonCreate;
+    panarray[j++] = NULL;
 
     pangcd[i].gd.pos.x = 20; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y+26+5;
     panlabel[i].text = (unichar_t *) _("_Arm Style");
@@ -7735,13 +7954,16 @@ return;
     pangcd[i].gd.label = &panlabel[i];
     pangcd[i].gd.cid = CID_PanArmStyleLab;
     pangcd[i].gd.flags = gg_visible | gg_enabled;
+    panarray[j++] = &pangcd[i];
     pangcd[i++].creator = GLabelCreate;
 
     pangcd[i].gd.pos.x = 100; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y-6; pangcd[i].gd.pos.width = 120;
     pangcd[i].gd.flags = gg_visible | gg_enabled;
     pangcd[i].gd.cid = CID_PanArmStyle;
     pangcd[i].gd.u.list = panarmstyle;
+    panarray[j++] = &pangcd[i];
     pangcd[i++].creator = GListButtonCreate;
+    panarray[j++] = NULL;
 
     pangcd[i].gd.pos.x = 20; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y+26+5;
     panlabel[i].text = (unichar_t *) _("_Letterform");
@@ -7750,13 +7972,16 @@ return;
     pangcd[i].gd.label = &panlabel[i];
     pangcd[i].gd.cid = CID_PanLetterformLab;
     pangcd[i].gd.flags = gg_visible | gg_enabled;
+    panarray[j++] = &pangcd[i];
     pangcd[i++].creator = GLabelCreate;
 
     pangcd[i].gd.pos.x = 100; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y-6; pangcd[i].gd.pos.width = 120;
     pangcd[i].gd.flags = gg_visible | gg_enabled;
     pangcd[i].gd.cid = CID_PanLetterform;
     pangcd[i].gd.u.list = panletterform;
+    panarray[j++] = &pangcd[i];
     pangcd[i++].creator = GListButtonCreate;
+    panarray[j++] = NULL;
 
     pangcd[i].gd.pos.x = 20; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y+26+5;
     panlabel[i].text = (unichar_t *) _("_Midline");
@@ -7765,13 +7990,16 @@ return;
     pangcd[i].gd.label = &panlabel[i];
     pangcd[i].gd.cid = CID_PanMidLineLab;
     pangcd[i].gd.flags = gg_visible | gg_enabled;
+    panarray[j++] = &pangcd[i];
     pangcd[i++].creator = GLabelCreate;
 
     pangcd[i].gd.pos.x = 100; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y-6; pangcd[i].gd.pos.width = 120;
     pangcd[i].gd.flags = gg_visible | gg_enabled;
     pangcd[i].gd.cid = CID_PanMidLine;
     pangcd[i].gd.u.list = panmidline;
+    panarray[j++] = &pangcd[i];
     pangcd[i++].creator = GListButtonCreate;
+    panarray[j++] = NULL;
 
     pangcd[i].gd.pos.x = 20; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y+26+5;
     panlabel[i].text = (unichar_t *) _("_X-Height");
@@ -7780,14 +8008,25 @@ return;
     pangcd[i].gd.label = &panlabel[i];
     pangcd[i].gd.cid = CID_PanXHeightLab;
     pangcd[i].gd.flags = gg_visible | gg_enabled;
+    panarray[j++] = &pangcd[i];
     pangcd[i++].creator = GLabelCreate;
 
     pangcd[i].gd.pos.x = 100; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y-6; pangcd[i].gd.pos.width = 120;
     pangcd[i].gd.flags = gg_visible | gg_enabled;
     pangcd[i].gd.cid = CID_PanXHeight;
     pangcd[i].gd.u.list = panxheight;
+    panarray[j++] = &pangcd[i];
     pangcd[i++].creator = GListButtonCreate;
+    panarray[j++] = NULL;
 
+    panarray[j++] = GCD_Glue; panarray[j++] = GCD_Glue;
+
+    panarray[j++] = NULL; panarray[j++] = NULL;
+
+    memset(panbox,0,sizeof(panbox));
+    panbox[0].gd.flags = gg_enabled|gg_visible;
+    panbox[0].gd.u.boxelements = panarray;
+    panbox[0].creator = GHVBoxCreate;
 /******************************************************************************/
 
     memset(&vagcd,0,sizeof(vagcd));
@@ -7796,19 +8035,19 @@ return;
     i = 0;
     vaspects[i].text = (unichar_t *) _("Misc.");
     vaspects[i].text_is_1byte = true;
-    vaspects[i++].gcd = vgcd;
+    vaspects[i++].gcd = vbox;
 
     vaspects[i].text = (unichar_t *) _("Metrics");
     vaspects[i].text_is_1byte = true;
-    vaspects[i++].gcd = metgcd;
+    vaspects[i++].gcd = metbox;
 
     vaspects[i].text = (unichar_t *) _("Sub/Super");
     vaspects[i].text_is_1byte = true;
-    vaspects[i++].gcd = ssgcd;
+    vaspects[i++].gcd = ssbox;
 
     vaspects[i].text = (unichar_t *) _("Panose");
     vaspects[i].text_is_1byte = true;
-    vaspects[i++].gcd = pangcd;
+    vaspects[i++].gcd = panbox;
 
     vagcd[0].gd.pos.x = 4; vagcd[0].gd.pos.y = 6;
     vagcd[0].gd.pos.width = 252;
@@ -7841,7 +8080,7 @@ return;
     tngcd[1].gd.handle_controlevent = GFI_SortBy;
 
     tngcd[2].gd.pos.x = 120; tngcd[2].gd.pos.y = tngcd[1].gd.pos.y;
-    tngcd[2].gd.flags = gg_visible | gg_enabled;
+    tngcd[2].gd.flags = gg_visible | gg_enabled | gg_rad_continueold;
     tngcd[2].gd.cid = CID_TNStringSort;
     tnlabel[2].text = (unichar_t *) _("_String Type");
     tnlabel[2].text_is_1byte = true;
@@ -7851,7 +8090,7 @@ return;
     tngcd[2].gd.handle_controlevent = GFI_SortBy;
 
     tngcd[3].gd.pos.x = 195; tngcd[3].gd.pos.y = tngcd[1].gd.pos.y;
-    tngcd[3].gd.flags = gg_visible | gg_enabled | gg_cb_on;
+    tngcd[3].gd.flags = gg_visible | gg_enabled | gg_cb_on | gg_rad_continueold;
     tnlabel[3].text = (unichar_t *) _("Default");
     tnlabel[3].text_is_1byte = true;
     tngcd[3].gd.label = &tnlabel[3];
@@ -7885,6 +8124,12 @@ return;
     if ( comlabel[0].text==NULL ) comlabel[0].text = (unichar_t *) "";
     comgcd[0].gd.label = &comlabel[0];
     comgcd[0].creator = GTextAreaCreate;
+
+    comarray[0] = &comgcd[0]; comarray[1] = NULL;
+    memset(combox,0,sizeof(combox));
+    combox[0].gd.flags = gg_enabled|gg_visible;
+    combox[0].gd.u.boxelements = comarray;
+    combox[0].creator = GHBoxCreate;
 /******************************************************************************/
     memset(&atlabel,0,sizeof(atlabel));
     memset(&atgcd,0,sizeof(atgcd));
@@ -7950,6 +8195,23 @@ return;
     atgcd[5].gd.handle_controlevent = GFI_AnchorShowBase;
     atgcd[5].creator = GButtonCreate;
 
+    atarray[0] = &atgcd[0]; atarray[1] = &atbox[2]; atarray[2] = &atbox[3]; atarray[3] = NULL;
+    atarray2[0] = &atgcd[1]; atarray2[1] = GCD_Glue; atarray2[2] = &atgcd[2];
+     atarray2[3] = GCD_Glue; atarray2[4] = &atgcd[3]; atarray2[5] = NULL;
+    atarray3[0] = &atgcd[4]; atarray3[1] = GCD_Glue; atarray3[2] = &atgcd[5];
+     atarray3[3] = NULL;
+    memset(atbox,0,sizeof(atbox));
+    atbox[0].gd.flags = gg_enabled|gg_visible;
+    atbox[0].gd.u.boxelements = atarray;
+    atbox[0].creator = GVBoxCreate;
+
+    atbox[2].gd.flags = gg_enabled|gg_visible;
+    atbox[2].gd.u.boxelements = atarray2;
+    atbox[2].creator = GHBoxCreate;
+
+    atbox[3].gd.flags = gg_enabled|gg_visible;
+    atbox[3].gd.u.boxelements = atarray3;
+    atbox[3].creator = GHBoxCreate;
 /******************************************************************************/
     memset(&mklabel,0,sizeof(mklabel));
     memset(&mkgcd,0,sizeof(mkgcd));
@@ -7986,6 +8248,17 @@ return;
     mkgcd[2].gd.handle_controlevent = GFI_MarkEdit;
     mkgcd[2].creator = GButtonCreate;
 
+    mkarray[0] = &mkgcd[0]; mkarray[1] = &mkbox[2]; mkarray[2] = NULL;
+    mkarray2[0] = &mkgcd[1]; mkarray2[1] = GCD_Glue; mkarray2[2] = &mkgcd[2];
+     mkarray2[3] = NULL;
+    memset(mkbox,0,sizeof(mkbox));
+    mkbox[0].gd.flags = gg_enabled|gg_visible;
+    mkbox[0].gd.u.boxelements = mkarray;
+    mkbox[0].creator = GVBoxCreate;
+
+    mkbox[2].gd.flags = gg_enabled|gg_visible;
+    mkbox[2].gd.u.boxelements = mkarray2;
+    mkbox[2].creator = GHBoxCreate;
 /******************************************************************************/
     memset(&txlabel,0,sizeof(txlabel));
     memset(&txgcd,0,sizeof(txgcd));
@@ -8004,7 +8277,7 @@ return;
     txlabel[k].text_is_1byte = true;
     txgcd[k].gd.label = &txlabel[k];
     txgcd[k].gd.pos.x = 80; txgcd[k].gd.pos.y = txgcd[k-1].gd.pos.y;
-    txgcd[k].gd.flags = gg_visible | gg_enabled;
+    txgcd[k].gd.flags = gg_visible | gg_enabled | gg_rad_continueold;
     txgcd[k].gd.cid = CID_TeXMath;
     txgcd[k].gd.handle_controlevent = GFI_TeXChanged;
     txgcd[k++].creator = GRadioCreate;
@@ -8013,26 +8286,31 @@ return;
     txlabel[k].text_is_1byte = true;
     txgcd[k].gd.label = &txlabel[k];
     txgcd[k].gd.pos.x = 155; txgcd[k].gd.pos.y = txgcd[k-1].gd.pos.y;
-    txgcd[k].gd.flags = gg_visible | gg_enabled;
+    txgcd[k].gd.flags = gg_visible | gg_enabled | gg_rad_continueold;
     txgcd[k].gd.cid = CID_TeXMathExt;
     txgcd[k].gd.handle_controlevent = GFI_TeXChanged;
     txgcd[k++].creator = GRadioCreate;
 
-    for ( i=0; texparams[i]!=0; ++i ) {
+    for ( i=j=0; texparams[i]!=0; ++i ) {
 	txlabel[k].text = (unichar_t *) texparams[i];
 	txlabel[k].text_is_1byte = true;
 	txgcd[k].gd.label = &txlabel[k];
 	txgcd[k].gd.pos.x = 10; txgcd[k].gd.pos.y = txgcd[k-2].gd.pos.y+26;
 	txgcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
 	txgcd[k].gd.popup_msg = (unichar_t *) texpopups[i];
+	txarray2[j++] = &txgcd[k];
 	txgcd[k++].creator = GLabelCreate;
 
 	txgcd[k].gd.pos.x = 70; txgcd[k].gd.pos.y = txgcd[k-1].gd.pos.y-4;
 	txgcd[k].gd.flags = gg_visible | gg_enabled;
 	txgcd[k].gd.cid = CID_TeX + i;
+	txarray2[j++] = &txgcd[k];
 	txgcd[k++].creator = GTextFieldCreate;
+	txarray2[j++] = GCD_Glue;
+	txarray2[j++] = NULL;
     }
     txgcd[k-2].gd.cid = CID_TeXExtraSpLabel;
+    txarray2[j++] = NULL;
 
 /* GT: More Parameters */
     txlabel[k].text = (unichar_t *) _("More Params");
@@ -8044,7 +8322,27 @@ return;
     txgcd[k].gd.cid = CID_MoreParams;
     txgcd[k++].creator = GButtonCreate;
 
+    txarray[0] = &txbox[2]; txarray[1] = &txbox[3]; txarray[2] = &txbox[4]; txarray[3] = GCD_Glue; txarray[4] = NULL;
+    txarray3[0] = &txgcd[0]; txarray3[1] = GCD_Glue; txarray3[2] = &txgcd[1];
+     txarray3[3] = GCD_Glue; txarray3[4] = &txgcd[2]; txarray3[5] = NULL;
+    txarray4[0] = GCD_Glue; txarray4[1] = &txgcd[k-1];
+     txarray4[2] = txarray4[3] = txarray4[4] = GCD_Glue; txarray4[5] = NULL;
+    memset(txbox,0,sizeof(txbox));
+    txbox[0].gd.flags = gg_enabled|gg_visible;
+    txbox[0].gd.u.boxelements = txarray;
+    txbox[0].creator = GVBoxCreate;
 
+    txbox[2].gd.flags = gg_enabled|gg_visible;
+    txbox[2].gd.u.boxelements = txarray3;
+    txbox[2].creator = GHBoxCreate;
+
+    txbox[3].gd.flags = gg_enabled|gg_visible;
+    txbox[3].gd.u.boxelements = txarray2;
+    txbox[3].creator = GHVBoxCreate;
+
+    txbox[4].gd.flags = gg_enabled|gg_visible;
+    txbox[4].gd.u.boxelements = txarray4;
+    txbox[4].creator = GHBoxCreate;
 /******************************************************************************/
     memset(&szlabel,0,sizeof(szlabel));
     memset(&szgcd,0,sizeof(szgcd));
@@ -8198,16 +8496,54 @@ return;
     szgcd[k].gd.handle_controlevent = GFI_StyleNameRename;
     szgcd[k++].creator = GButtonCreate;
 
+    szarray[0] = &szbox[2];
+    szarray[1] = &szbox[3];
+    szarray[2] = &szbox[4];
+    szarray[3] = &szgcd[11];
+    szarray[4] = &szgcd[12];
+    szarray[5] = &szbox[5];
+    szarray[6] = NULL;
+
+    szarray2[0] = &szgcd[0]; szarray2[1] = &szgcd[1]; szarray2[2] = &szgcd[2]; szarray2[3] = GCD_Glue; szarray2[4] = NULL;
+    szarray3[0] = &szgcd[5]; szarray3[1] = &szgcd[6]; szarray3[2] = &szgcd[7]; szarray3[3] = &szgcd[8]; szarray3[4] = GCD_Glue; szarray3[5] = NULL;
+     szarray3[6] = NULL;
+    szarray4[0] = &szgcd[9]; szarray4[1] = &szgcd[10]; szarray4[2] = GCD_Glue; szarray4[3] = NULL;
+    szarray5[0] = &szgcd[13]; szarray5[1] = GCD_Glue;
+     szarray5[2] = &szgcd[14]; szarray5[3] = GCD_Glue;
+     szarray5[4] = &szgcd[15]; szarray5[5] = NULL;
+
+    memset(szbox,0,sizeof(szbox));
+    szbox[0].gd.flags = gg_enabled|gg_visible;
+    szbox[0].gd.u.boxelements = szarray;
+    szbox[0].creator = GVBoxCreate;
+
+    szbox[2].gd.flags = gg_enabled|gg_visible;
+    szbox[2].gd.u.boxelements = szarray2;
+    szbox[2].creator = GHBoxCreate;
+
+    szbox[3].gd.flags = gg_enabled|gg_visible;
+    szbox[3].gd.label = (GTextInfo *) &szgcd[3];
+    szbox[3].gd.u.boxelements = szarray3;
+    szbox[3].creator = GHVGroupCreate;
+
+    szbox[4].gd.flags = gg_enabled|gg_visible;
+    szbox[4].gd.u.boxelements = szarray4;
+    szbox[4].creator = GHBoxCreate;
+
+    szbox[5].gd.flags = gg_enabled|gg_visible;
+    szbox[5].gd.u.boxelements = szarray5;
+    szbox[5].creator = GHBoxCreate;
 /******************************************************************************/
     memset(&csublabel,0,sizeof(csublabel));
     memset(&csubgcd,0,sizeof(csubgcd));
     memset(&congcd,0,sizeof(congcd));
     memset(&conaspects,'\0',sizeof(conaspects));
+    memset(&conbox,'\0',sizeof(conbox));
 
     for ( i=0; i<fpst_max-pst_contextpos; ++i ) {
 	conaspects[i].text = (unichar_t *) connames[i];
 	conaspects[i].text_is_1byte = true;
-	conaspects[i].gcd = csubgcd[i];
+	conaspects[i].gcd = conbox[i];
 
 	csubgcd[i][0].gd.pos.x = 10; csubgcd[i][0].gd.pos.y = 10;
 	csubgcd[i][0].gd.pos.width = ngcd[11].gd.pos.width;
@@ -8259,6 +8595,25 @@ return;
 	csubgcd[i][4].gd.cid = CID_ContextEditData+i*100;
 	csubgcd[i][4].gd.handle_controlevent = GFI_ContextEditData;
 	csubgcd[i][4].creator = GButtonCreate;
+
+	conarray[i][0] = &csubgcd[i][0]; conarray[i][1] = &conbox[i][2]; conarray[i][2] = &conbox[i][3]; conarray[i][3] = NULL;
+	conarray2[i][0] = &csubgcd[i][1]; conarray2[i][1] = GCD_Glue;
+	 conarray2[i][2] = &csubgcd[i][2]; conarray2[i][3] = GCD_Glue;
+	 conarray2[i][4] = &csubgcd[i][3]; conarray2[i][5] = NULL;
+	conarray3[i][0] = GCD_Glue; conarray3[i][1] = &csubgcd[i][4];
+	 conarray3[i][2] = GCD_Glue; conarray3[i][3] = NULL;
+
+	conbox[i][0].gd.flags = gg_enabled|gg_visible;
+	conbox[i][0].gd.u.boxelements = conarray[i];
+	conbox[i][0].creator = GVBoxCreate;
+
+	conbox[i][2].gd.flags = gg_enabled|gg_visible;
+	conbox[i][2].gd.u.boxelements = conarray2[i];
+	conbox[i][2].creator = GHBoxCreate;
+
+	conbox[i][3].gd.flags = gg_enabled|gg_visible;
+	conbox[i][3].gd.u.boxelements = conarray3[i];
+	conbox[i][3].creator = GHBoxCreate;
     }
 
     conaspects[3].selected = true;	/* chaining subs is most likely to be used, so select it by default */
@@ -8294,7 +8649,7 @@ return;
     mcgcd[k++].creator = GRadioCreate;
 
     mcgcd[k].gd.pos.x = 90; mcgcd[k].gd.pos.y = 20;
-    mcgcd[k].gd.flags = (sf->macstyle!=-1) ? (gg_visible | gg_enabled | gg_cb_on) : (gg_visible | gg_enabled);
+    mcgcd[k].gd.flags = (sf->macstyle!=-1) ? (gg_visible | gg_enabled | gg_cb_on | gg_rad_continueold) : (gg_visible | gg_enabled | gg_rad_continueold);
     mcgcd[k].gd.handle_controlevent = GFI_MacAutomatic;
     mcgcd[k++].creator = GRadioCreate;
 
@@ -8325,16 +8680,34 @@ return;
     for ( i=0; macstyles[i].text!=NULL; ++i )
 	macstyles[i].selected = (mcs&(int) (intpt) macstyles[i].userdata)? 1 : 0;
 
+    mcarray[0] = &mcgcd[0]; mcarray[1] = GCD_Glue; mcarray[2] = NULL;
+    mcarray[3] = &mcbox[2]; mcarray[4] = &mcgcd[3]; mcarray[5] = NULL;
+    mcarray[6] = &mcgcd[4]; mcarray[7] = &mcgcd[5]; mcarray[8] = NULL;
+    mcarray[9] = GCD_Glue; mcarray[10] = GCD_Glue; mcarray[11] = NULL;
+    mcarray[12] = NULL;
+    mcarray2[0] = &mcgcd[1]; mcarray2[1] = &mcgcd[2]; mcarray2[2] = NULL;
+    mcarray2[3] = GCD_Glue; mcarray2[4] = GCD_Glue; mcarray2[5] = NULL;
+    mcarray2[6] = NULL;
+
+    memset(mcbox,0,sizeof(mcbox));
+    mcbox[0].gd.flags = gg_enabled|gg_visible;
+    mcbox[0].gd.u.boxelements = mcarray;
+    mcbox[0].creator = GHVBoxCreate;
+
+    mcbox[2].gd.flags = gg_enabled|gg_visible;
+    mcbox[2].gd.u.boxelements = mcarray2;
+    mcbox[2].creator = GHVBoxCreate;
 /******************************************************************************/
     memset(&smsublabel,0,sizeof(smsublabel));
     memset(&smsubgcd,0,sizeof(smsubgcd));
     memset(&smgcd,0,sizeof(smgcd));
     memset(&smaspects,'\0',sizeof(smaspects));
+    memset(&smbox,'\0',sizeof(smbox));
 
     for ( i=0; i<4; ++i ) {
 	smaspects[i].text = (unichar_t *) smnames[i];
 	smaspects[i].text_is_1byte = true;
-	smaspects[i].gcd = smsubgcd[i];
+	smaspects[i].gcd = smbox[i];
 
 	smsubgcd[i][0].gd.pos.x = 10; smsubgcd[i][0].gd.pos.y = 10;
 	smsubgcd[i][0].gd.pos.width = ngcd[15].gd.pos.width;
@@ -8387,6 +8760,25 @@ return;
 	    smsubgcd[i][4].gd.handle_controlevent = GFI_SMConvert;
 	    smsubgcd[i][4].creator = GButtonCreate;
 	}
+
+	smarray[i][0] = &smsubgcd[i][0]; smarray[i][1] = &smbox[i][2]; smarray[i][2] = &smbox[i][3]; smarray[i][3] = NULL;
+	smarray2[i][0] = &smsubgcd[i][1]; smarray2[i][1] = GCD_Glue;
+	 smarray2[i][2] = &smsubgcd[i][2]; smarray2[i][3] = GCD_Glue;
+	 smarray2[i][4] = &smsubgcd[i][3]; smarray2[i][5] = NULL;
+	smarray3[i][0] = i==1 ? &smsubgcd[i][4] : GCD_Glue ;
+	 smarray3[i][1] = GCD_Glue; smarray3[i][2] = NULL;
+
+	smbox[i][0].gd.flags = gg_enabled|gg_visible;
+	smbox[i][0].gd.u.boxelements = smarray[i];
+	smbox[i][0].creator = GVBoxCreate;
+
+	smbox[i][2].gd.flags = gg_enabled|gg_visible;
+	smbox[i][2].gd.u.boxelements = smarray2[i];
+	smbox[i][2].creator = GHBoxCreate;
+
+	smbox[i][3].gd.flags = gg_enabled|gg_visible;
+	smbox[i][3].gd.u.boxelements = smarray3[i];
+	smbox[i][3].creator = GHBoxCreate;
     }
 
     smaspects[1].selected = true;	/* Contextual glyph subs is most likely to be used, so select it by default */
@@ -8406,6 +8798,20 @@ return;
 
     GCDFillMacFeat(mfgcd,mflabel,250,sf->features, false);
 
+    mfarray[0] = &mfgcd[0]; mfarray[1] = &mfbox[2]; mfarray[2] = NULL;
+    mfarray2[0] = &mfgcd[1]; mfarray2[1] = GCD_Glue;
+     mfarray2[2] = &mfgcd[2]; mfarray2[3] = GCD_Glue;
+     mfarray2[4] = &mfgcd[3]; mfarray2[5] = GCD_Glue;
+     mfarray2[6] = &mfgcd[4]; mfarray2[7] = NULL;
+
+    memset(mfbox,0,sizeof(mfbox));
+    mfbox[0].gd.flags = gg_enabled|gg_visible;
+    mfbox[0].gd.u.boxelements = mfarray;
+    mfbox[0].creator = GVBoxCreate;
+
+    mfbox[2].gd.flags = gg_enabled|gg_visible;
+    mfbox[2].gd.u.boxelements = mfarray2;
+    mfbox[2].creator = GHBoxCreate;
 /******************************************************************************/
 
     memset(&dlabel,0,sizeof(dlabel));
@@ -8447,6 +8853,15 @@ return;
     dgcd[3].gd.label = &dlabel[3];
     dgcd[3].creator = GLabelCreate;
 
+    darray[0] = &dgcd[0]; darray[1] = &dgcd[1]; darray[2] = NULL;
+    darray[3] = &dgcd[2]; darray[4] = &dgcd[3]; darray[5] = NULL;
+    darray[6] = GCD_Glue; darray[7] = GCD_Glue; darray[8] = NULL;
+    darray[9] = NULL;
+
+    memset(dbox,0,sizeof(dbox));
+    dbox[0].gd.flags = gg_enabled|gg_visible;
+    dbox[0].gd.u.boxelements = darray;
+    dbox[0].creator = GHVBoxCreate;
 /******************************************************************************/
 
     memset(&ulabel,0,sizeof(ulabel));
@@ -8471,6 +8886,13 @@ return;
     ugcd[1].gd.popup_msg = (unichar_t *) _("Click on a range to select characters in that range.\nDouble click on a range to see characters that should be\nin the range but aren't.");
     ugcd[1].creator = GListCreate;
 
+    uarray[0] = &ugcd[0]; uarray[1] = &ugcd[1]; uarray[2] = NULL;
+
+    memset(ubox,0,sizeof(ubox));
+    ubox[0].gd.flags = gg_enabled|gg_visible;
+    ubox[0].gd.u.boxelements = uarray;
+    ubox[0].creator = GVBoxCreate;
+
 /******************************************************************************/
 
     memset(&mlabel,0,sizeof(mlabel));
@@ -8482,20 +8904,20 @@ return;
     aspects[i].text = (unichar_t *) _("Names");
     d->old_aspect = 0;
     aspects[i].text_is_1byte = true;
-    aspects[i++].gcd = ngcd;
+    aspects[i++].gcd = nb;
 
     aspects[i].text = (unichar_t *) _("General");
     aspects[i].text_is_1byte = true;
-    aspects[i++].gcd = psgcd;
+    aspects[i++].gcd = psb;
 
     aspects[i].text = (unichar_t *) _("PS UID");
     aspects[i].text_is_1byte = true;
-    aspects[i++].gcd = xugcd;
+    aspects[i++].gcd = xub;
 
     d->private_aspect = i;
     aspects[i].text = (unichar_t *) _("PS Private");
     aspects[i].text_is_1byte = true;
-    aspects[i++].gcd = pgcd;
+    aspects[i++].gcd = ppbox;
 
     d->ttfv_aspect = i;
     aspects[i].text = (unichar_t *) _("OS/2");
@@ -8513,23 +8935,23 @@ return;
 /* xgettext won't use non-ASCII messages */
     aspects[i].text = (unichar_t *) U_("ΤεΧ");	/* Tau epsilon Chi, in greek */
     aspects[i].text_is_1byte = true;
-    aspects[i++].gcd = txgcd;
+    aspects[i++].gcd = txbox;
 
     aspects[i].text = (unichar_t *) _("Size");
     aspects[i].text_is_1byte = true;
-    aspects[i++].gcd = szgcd;
+    aspects[i++].gcd = szbox;
 
     aspects[i].text = (unichar_t *) _("Comment");
     aspects[i].text_is_1byte = true;
-    aspects[i++].gcd = comgcd;
+    aspects[i++].gcd = combox;
 
     aspects[i].text = (unichar_t *) _("Mark Classes");
     aspects[i].text_is_1byte = true;
-    aspects[i++].gcd = mkgcd;
+    aspects[i++].gcd = mkbox;
 
     aspects[i].text = (unichar_t *) _("Anchor Classes");
     aspects[i].text_is_1byte = true;
-    aspects[i++].gcd = atgcd;
+    aspects[i++].gcd = atbox;
 
     aspects[i].text = (unichar_t *) _("Contextual");
     aspects[i].text_is_1byte = true;
@@ -8537,11 +8959,11 @@ return;
 
     aspects[i].text = (unichar_t *) _("Mac");
     aspects[i].text_is_1byte = true;
-    aspects[i++].gcd = mcgcd;
+    aspects[i++].gcd = mcbox;
 
     aspects[i].text = (unichar_t *) _("Mac Features");
     aspects[i].text_is_1byte = true;
-    aspects[i++].gcd = mfgcd;
+    aspects[i++].gcd = mfbox;
 
 /* GT: Mac State Machines. Please make this very short */
     aspects[i].text = (unichar_t *) _("Mac SM");
@@ -8551,12 +8973,12 @@ return;
 #ifndef FONTFORGE_CONFIG_INFO_HORIZONTAL
     aspects[i].text = (unichar_t *) _("Dates");
     aspects[i].text_is_1byte = true;
-    aspects[i++].gcd = dgcd;
+    aspects[i++].gcd = dbox;
 
     d->unicode_aspect = i;
     aspects[i].text = (unichar_t *) _("Unicode Ranges");
     aspects[i].text_is_1byte = true;
-    aspects[i++].gcd = ugcd;
+    aspects[i++].gcd = ubox;
 #endif
 
     aspects[defaspect].selected = true;
@@ -8604,7 +9026,105 @@ return;
     mgcd[3].gd.cid = CID_MainGroup;
     mgcd[3].creator = GGroupCreate;
 
-    GGadgetsCreate(gw,mgcd);
+    marray2[0] = marray2[2] = marray2[3] = marray2[4] = marray2[6] = GCD_Glue; marray2[7] = NULL;
+    marray2[1] = &mgcd[1]; marray2[5] = &mgcd[2];
+
+    marray[0] = &mgcd[0]; marray[1] = NULL;
+    marray[2] = &mb2; marray[3] = NULL;
+    marray[4] = GCD_Glue; marray[5] = NULL;
+    marray[6] = NULL;
+
+    memset(mb,0,sizeof(mb));
+    mb[0].gd.pos.x = mb[0].gd.pos.y = 2;
+    mb[0].gd.pos.width = pos.width-4; mb[0].gd.pos.height = pos.height-4;
+    mb[0].gd.flags = gg_enabled|gg_visible;
+    mb[0].gd.u.boxelements = marray;
+    mb[0].creator = GHVBoxCreate;
+
+    memset(&mb2,0,sizeof(mb2));
+    mb2.gd.flags = gg_enabled|gg_visible;
+    mb2.gd.u.boxelements = marray2;
+    mb2.creator = GHBoxCreate;
+
+    GGadgetsCreate(gw,mb);
+
+    GHVBoxSetExpandableRow(mb[0].ret,0);
+    GHVBoxSetExpandableCol(mb2.ret,gb_expandgluesame);
+
+    GHVBoxSetExpandableCol(nb[0].ret,1);
+    GHVBoxSetExpandableRow(nb[0].ret,7);
+    GHVBoxSetExpandableCol(nb2.ret,1);
+    GHVBoxSetExpandableCol(nb3.ret,1);
+
+    GHVBoxSetExpandableCol(xub[0].ret,1);
+    GHVBoxSetExpandableRow(xub[0].ret,3);
+
+    GHVBoxSetExpandableRow(psb[0].ret,psrow);
+    GHVBoxSetExpandableCol(psb2[0].ret,3);
+    GHVBoxSetExpandableCol(psb2[1].ret,1);
+    GHVBoxSetExpandableCol(psb2[2].ret,1);
+
+    GHVBoxSetExpandableRow(ppbox[0].ret,0);
+    GHVBoxSetExpandableCol(ppbox[2].ret,gb_samesize);
+
+    GHVBoxSetExpandableRow(vbox[0].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(vbox[0].ret,1);
+    GHVBoxSetExpandableCol(vbox[2].ret,gb_expandglue);
+
+    GHVBoxSetExpandableRow(metbox[0].ret,9);
+    GHVBoxSetExpandableCol(metbox[0].ret,1);
+
+    GHVBoxSetExpandableRow(ssbox[0].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(ssbox[0].ret,gb_expandglue);
+
+    GHVBoxSetExpandableRow(panbox[0].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(panbox[0].ret,1);
+
+    GHVBoxSetExpandableRow(atbox[0].ret,0);
+    GHVBoxSetExpandableCol(atbox[2].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(atbox[3].ret,gb_expandglue);
+
+    GHVBoxSetExpandableRow(mkbox[0].ret,0);
+    GHVBoxSetExpandableCol(mkbox[2].ret,gb_expandglue);
+
+    GHVBoxSetExpandableRow(txbox[0].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(txbox[2].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(txbox[3].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(txbox[4].ret,gb_expandglue);
+
+    GHVBoxSetExpandableRow(szbox[0].ret,4);
+    GHVBoxSetPadding(szbox[2].ret,6,2);
+    GHVBoxSetExpandableCol(szbox[2].ret,gb_expandglue);
+    GHVBoxSetPadding(szbox[3].ret,6,2);
+    GHVBoxSetExpandableCol(szbox[3].ret,gb_expandglue);
+    GHVBoxSetPadding(szbox[4].ret,6,2);
+    GHVBoxSetExpandableCol(szbox[4].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(szbox[5].ret,gb_expandglue);
+
+    for ( i=0; i<fpst_max-pst_contextpos; ++i ) {
+	GHVBoxSetExpandableRow(conbox[i][0].ret,0);
+	GHVBoxSetExpandableCol(conbox[i][2].ret,gb_expandglue);
+	GHVBoxSetExpandableCol(conbox[i][3].ret,gb_expandglue);
+    }
+
+    GHVBoxSetExpandableRow(mcbox[0].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(mcbox[0].ret,1);
+    GHVBoxSetExpandableRow(mcbox[2].ret,gb_expandglue);
+
+    GHVBoxSetExpandableRow(mfbox[0].ret,0);
+    GHVBoxSetExpandableRow(mcbox[2].ret,gb_expandglue);
+
+    for ( i=0; i<4; ++i ) {
+	GHVBoxSetExpandableRow(smbox[i][0].ret,0);
+	GHVBoxSetExpandableCol(smbox[i][2].ret,gb_expandglue);
+	GHVBoxSetExpandableCol(smbox[i][3].ret,gb_expandglue);
+    }
+
+    GHVBoxSetExpandableRow(dbox[0].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(dbox[0].ret,1);
+
+    GHVBoxSetExpandableRow(ubox[0].ret,1);
+
     memset(&rq,0,sizeof(rq));
     rq.family_name = monospace;
     rq.point_size = 12;
@@ -8614,10 +9134,14 @@ return;
     GTextInfoListFree(namelistnames);
     GTextInfoListFree(pgcd[0].gd.u.list);
     GTextInfoListFree(atgcd[0].gd.u.list);
+
+    GHVBoxFitWindow(mb[0].ret);
+#if 0
     if ( GTabSetGetTabLines(mgcd[0].ret)>3 ) {
 	int offset = (GTabSetGetTabLines(mgcd[0].ret)-2)*GDrawPointsToPixels(NULL,20);
 	GDrawResize(gw,pos.width,pos.height+offset);
     }
+#endif
 
     wattrs.mask = wam_events;
     GGadgetGetSize(tngcd[1].ret,&pos);

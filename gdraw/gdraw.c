@@ -579,8 +579,14 @@ int GDrawSelectionHasType(GWindow w,enum selnames sn, char *typename) {
 return( (w->display->funcs->selectionHasType)(w,sn,typename));
 }
 
+int GDrawEnableExposeRequests(GWindow w,int enabled) {
+    int old = w->disable_expose_requests;
+    w->disable_expose_requests = enabled;
+return( old );
+}
+
 void GDrawRequestExpose(GWindow w, GRect *rect, int doclear) {
-    if ( !GDrawIsVisible(w))
+    if ( !GDrawIsVisible(w) || w->disable_expose_requests )
 return;
     (w->display->funcs->requestExpose)(w,rect,doclear);
 }

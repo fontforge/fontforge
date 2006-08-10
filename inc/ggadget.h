@@ -116,16 +116,18 @@ typedef struct ggadgetdata {
     uint8 short_mask;
     uint8 cols;			/* for rowcol */
     short cid;
-    GTextInfo *label;
+    GTextInfo *label;		/* Overloaded with a GGadgetCreateData * for hvboxes (their label is a gadget) */
     union {
 	GTextInfo *list;	/* for List Widgets (and ListButtons, RowCols etc) */
 	GTabInfo *tabs;		/* for Tab Widgets */
 	GMenuItem *menu;	/* for menus */
+	struct ggadgetcreatedata **boxelements;	/* An array of things to go in the box */
     } u;
     enum gg_flags { gg_visible=1, gg_enabled=2, gg_pos_in_pixels=4,
 	gg_sb_vert=8, gg_line_vert=gg_sb_vert,
 	gg_but_default=0x10, gg_but_cancel=0x20,
 	gg_cb_on=0x40, gg_rad_startnew=0x80,
+	gg_rad_continueold=0x100,	/* even if not previous */
 	gg_list_alphabetic=0x100, gg_list_multiplesel=0x200,
 	gg_list_exactlyone=0x400, gg_list_internal=0x800,
 	gg_group_prevlabel=0x1000, gg_group_end=0x2000,
@@ -154,6 +156,12 @@ typedef struct ggadgetcreatedata {
     GGadget *ret;
 } GGadgetCreateData;
 
+#define GCD_Glue	((GGadgetCreateData *) -1)	/* Special entries */
+#define GCD_ColSpan	((GGadgetCreateData *) -2)	/* for box elements */
+#define GCD_RowSpan	((GGadgetCreateData *) -3)
+
+enum ghvbox_expand { gb_expandglue=-4, gb_expandgluesame=-3, gb_samesize=-2,
+	gb_expandall=-1 };
 enum editor_commands { ec_cut, ec_clear, ec_copy, ec_paste, ec_undo, ec_redo,
 	ec_selectall, ec_search, ec_backsearch, ec_backword, ec_deleteword,
 	ec_max };
@@ -213,11 +221,15 @@ void GGadgetSetUserData(GGadget *g, void *d);
 void GGadgetSetPopupMsg(GGadget *g, const unichar_t *msg);
 GRect *GGadgetGetInnerSize(GGadget *g,GRect *rct);
 GRect *GGadgetGetSize(GGadget *g,GRect *rct);
+void GGadgetGetDesiredSize(GGadget *g,GRect *outer, GRect *inner);
+void GGadgetSetDesiredSize(GGadget *g,GRect *outer, GRect *inner);
 int GGadgetGetCid(GGadget *g);
 void GGadgetResize(GGadget *g,int32 width, int32 height );
 void GGadgetMove(GGadget *g,int32 x, int32 y );
 void GGadgetRedraw(GGadget *g);
 void GGadgetsCreate(GWindow base, GGadgetCreateData *gcd);
+int  GGadgetFillsWindow(GGadget *g);
+int  GGadgetIsDefault(GGadget *g);
 
 void GGadgetSetTitle(GGadget *g,const unichar_t *title);
 void GGadgetSetTitle8(GGadget *g,const char *title);
@@ -289,6 +301,11 @@ void GFileChooserGetChildren(GGadget *g,GGadget **pulldown, GGadget **list, GGad
 int GFileChooserPosIsDir(GGadget *g, int pos);
 unichar_t *GFileChooserFileNameOfPos(GGadget *g, int pos);
 
+void GHVBoxSetExpandableCol(GGadget *g,int col);
+void GHVBoxSetExpandableRow(GGadget *g,int row);
+void GHVBoxSetPadding(GGadget *g,int hpad, int vpad);
+void GHVBoxFitWindow(GGadget *g);
+
 extern void GGadgetPreparePopup(GWindow base,const unichar_t *msg);
 extern void GGadgetPreparePopupR(GWindow base,int msg);
 extern void GGadgetPreparePopup8(GWindow base,char *msg);
@@ -321,6 +338,10 @@ GGadget *GListFieldCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GMenuBarCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GTabSetCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GFileChooserCreate(struct gwindow *base, GGadgetData *gd,void *data);
+GGadget *GHBoxCreate(struct gwindow *base, GGadgetData *gd,void *data);
+GGadget *GVBoxCreate(struct gwindow *base, GGadgetData *gd,void *data);
+GGadget *GHVBoxCreate(struct gwindow *base, GGadgetData *gd,void *data);
+GGadget *GHVGroupCreate(struct gwindow *base, GGadgetData *gd,void *data);
 
 GGadget *CreateSlider(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *CreateFileChooser(struct gwindow *base, GGadgetData *gd,void *data);

@@ -1996,11 +1996,25 @@ static void gtextfield_redraw(GGadget *g) {
 
 static void gtextfield_move(GGadget *g, int32 x, int32 y ) {
     GTextField *gt = (GTextField *) g;
+    int fxo=0, fyo=0, bxo, byo;
+
+    if ( gt->listfield ) {
+	fxo = ((GListField *) gt)->fieldrect.x - g->r.x;
+	fyo = ((GListField *) gt)->fieldrect.y - g->r.y;
+	bxo = ((GListField *) gt)->buttonrect.x - g->r.x;
+	byo = ((GListField *) gt)->buttonrect.y - g->r.y;
+    }
     if ( gt->vsb!=NULL )
 	_ggadget_move((GGadget *) (gt->vsb),x+(gt->vsb->g.r.x-g->r.x),y);
     if ( gt->hsb!=NULL )
 	_ggadget_move((GGadget *) (gt->hsb),x,y+(gt->hsb->g.r.y-g->r.y));
     _ggadget_move(g,x,y);
+    if ( gt->listfield ) {
+	((GListField *) gt)->fieldrect.x = g->r.x + fxo;
+	((GListField *) gt)->fieldrect.y = g->r.y + fyo;
+	((GListField *) gt)->buttonrect.x = g->r.x + bxo;
+	((GListField *) gt)->buttonrect.y = g->r.y + byo;
+    }
 }
 
 static void gtextfield_resize(GGadget *g, int32 width, int32 height ) {
@@ -2146,6 +2160,71 @@ static int gtextfield_hscroll(GGadget *g, GEvent *event) {
 return( true );
 }
 
+static void GTextFieldSetDesiredSize(GGadget *g,GRect *outer,GRect *inner) {
+    GTextField *gt = (GTextField *) g;
+
+    if ( outer!=NULL ) {
+	gt->desired_width = outer->width;
+	gt->desired_height = outer->height;
+    } else if ( inner!=NULL ) {
+	int bp = GBoxBorderWidth(g->base,g->box);
+	int extra=0;
+
+	if ( gt->listfield ) {
+	    extra = GDrawPointsToPixels(gt->g.base,_GListMarkSize) +
+		    2*GDrawPointsToPixels(gt->g.base,_GGadget_TextImageSkip) +
+		    GBoxBorderWidth(gt->g.base,&_GListMark_Box);
+	}
+	gt->desired_width = inner->width + 2*bp + extra;
+	gt->desired_height = inner->height + 2*bp;
+	if ( gt->multi_line ) {
+	    int sbadd = GDrawPointsToPixels(gt->g.base,_GScrollBar_Width) +
+		    GDrawPointsToPixels(gt->g.base,1);
+	    gt->desired_width += sbadd;
+	    if ( !gt->wrap )
+		gt->desired_height += sbadd;
+	}
+    }
+}
+
+static void GTextFieldGetDesiredSize(GGadget *g,GRect *outer,GRect *inner) {
+    GTextField *gt = (GTextField *) g;
+    int width=0, height;
+    int extra=0;
+    int bp = GBoxBorderWidth(g->base,g->box);
+
+    if ( gt->listfield ) {
+	extra = GDrawPointsToPixels(gt->g.base,_GListMarkSize) +
+		2*GDrawPointsToPixels(gt->g.base,_GGadget_TextImageSkip) +
+		GBoxBorderWidth(gt->g.base,&_GListMark_Box);
+    }
+
+    width = GGadgetScale(GDrawPointsToPixels(gt->g.base,80));
+    height = gt->multi_line? 4*gt->fh:gt->fh;
+
+    if ( gt->desired_width>extra+2*bp ) width = gt->desired_width - extra - 2*bp;
+    if ( gt->desired_height>2*bp ) height = gt->desired_height - 2*bp;
+
+    if ( gt->multi_line ) {
+	int sbadd = GDrawPointsToPixels(gt->g.base,_GScrollBar_Width) +
+		GDrawPointsToPixels(gt->g.base,1);
+	width += sbadd;
+	if ( !gt->wrap )
+	    height += sbadd;
+    }
+
+    if ( inner!=NULL ) {
+	inner->x = inner->y = 0;
+	inner->width = width;
+	inner->height = height;
+    }
+    if ( outer!=NULL ) {
+	outer->x = outer->y = 0;
+	outer->width = width + extra + 2*bp;
+	outer->height = height + 2*bp;
+    }
+}
+
 struct gfuncs gtextfield_funcs = {
     0,
     sizeof(struct gfuncs),
@@ -2174,7 +2253,22 @@ struct gfuncs gtextfield_funcs = {
     NULL,
     NULL,
     GTextFieldSetFont,
-    GTextFieldGetFont
+    GTextFieldGetFont,
+
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+
+    GTextFieldGetDesiredSize,
+    GTextFieldSetDesiredSize
 };
 
 struct gfuncs glistfield_funcs = {
@@ -2214,7 +2308,13 @@ struct gfuncs glistfield_funcs = {
     NULL,
     GListFSelectOne,
     GListFIsSelected,
-    GListFGetFirst
+    GListFGetFirst,
+    NULL,
+    NULL,
+    NULL,
+
+    GTextFieldGetDesiredSize,
+    GTextFieldSetDesiredSize
 };
 
 static void GTextFieldInit() {
@@ -2272,18 +2372,9 @@ static void GTextFieldAddHSb(GTextField *gt) {
 
 static void GTextFieldFit(GTextField *gt) {
     GTextBounds bounds;
-    int as=0, ds, ld, fh=0, width=0, temp;
-    GRect needed;
-    int extra=0;
-
-    needed.x = needed.y = 0;
-    needed.width = needed.height = 1;
-
-    if ( gt->listfield ) {
-	extra = GDrawPointsToPixels(gt->g.base,_GListMarkSize) +
-		2*GDrawPointsToPixels(gt->g.base,_GGadget_TextImageSkip) +
-		GBoxBorderWidth(gt->g.base,&_GListMark_Box);
-    }
+    int as=0, ds, ld, width=0;
+    GRect inner, outer;
+    int bp = GBoxBorderWidth(gt->g.base,gt->g.box);
 
     {
 	FontInstance *old = GDrawSetFont(gt->g.base,gt->font);
@@ -2291,54 +2382,32 @@ static void GTextFieldFit(GTextField *gt) {
 	GDrawFontMetrics(gt->font,&as, &ds, &ld);
 	if ( as<bounds.as ) as = bounds.as;
 	if ( ds<bounds.ds ) ds = bounds.ds;
-	gt->fh = fh = as+ds;
+	gt->fh = as+ds;
 	gt->as = as;
 	gt->nw = GDrawGetTextWidth(gt->g.base,nstr, 1, NULL );
 	GDrawSetFont(gt->g.base,old);
     }
 
-    temp = GGadgetScale(GDrawPointsToPixels(gt->g.base,80))+extra;
-
-    if ( gt->g.r.width==0 || gt->g.r.height==0 ) {
-	int bp = GBoxBorderWidth(gt->g.base,gt->g.box);
-	needed.x = needed.y = 0;
-	needed.width = temp;
-	needed.height = gt->multi_line? 4*fh:fh;
-	_ggadgetFigureSize(gt->g.base,gt->g.box,&needed,false);
-	if ( gt->g.r.width==0 ) {
-	    gt->g.r.width = needed.width;
-	    gt->g.inner.width = temp-extra;
-	    gt->g.inner.x = gt->g.r.x + (needed.width-temp)/2;
-	} else {
-	    gt->g.inner.x = gt->g.r.x + bp;
-	    gt->g.inner.width = gt->g.r.width - 2*bp;
-	}
-	if ( gt->g.r.height==0 ) {
-	    gt->g.r.height = needed.height;
-	    gt->g.inner.height = gt->multi_line? 4*fh:fh;
-	    gt->g.inner.y = gt->g.r.y + (needed.height-gt->g.inner.height)/2;
-	} else {
-	    gt->g.inner.y = gt->g.r.y + bp;
-	    gt->g.inner.height = gt->g.r.height - 2*bp;
-	}
-	if ( gt->multi_line ) {
-	    int sbadd = GDrawPointsToPixels(gt->g.base,_GScrollBar_Width) +
-		    GDrawPointsToPixels(gt->g.base,1);
-	    {
-		gt->g.r.width += sbadd;
-		gt->g.inner.width += sbadd;
-	    }
-	    if ( !gt->wrap ) {
-		gt->g.r.height += sbadd;
-		gt->g.inner.height += sbadd;
-	    }
-	}
+    GTextFieldGetDesiredSize(&gt->g,&outer,&inner);
+    if ( gt->g.r.width==0 ) {
+	gt->g.r.width = outer.width;
+	gt->g.inner.width = inner.width;
+	gt->g.inner.x = gt->g.r.x + (outer.width-inner.width)/2;
     } else {
-	int bp = GBoxBorderWidth(gt->g.base,gt->g.box);
-	gt->g.inner = gt->g.r;
-	gt->g.inner.x += bp; gt->g.inner.y += bp;
-	gt->g.inner.width -= 2*bp-extra; gt->g.inner.height -= 2*bp;
+	gt->g.inner.x = gt->g.r.x + bp;
+	gt->g.inner.width = gt->g.r.width - 2*bp;
+	gt->desired_width = gt->g.r.width;
     }
+    if ( gt->g.r.height==0 ) {
+	gt->g.r.height = outer.height;
+	gt->g.inner.height = inner.height;
+	gt->g.inner.y = gt->g.r.y + (outer.height-gt->g.inner.height)/2;
+    } else {
+	gt->g.inner.y = gt->g.r.y + bp;
+	gt->g.inner.height = gt->g.r.height - 2*bp;
+	gt->desired_height = gt->g.r.height;
+    }
+
     if ( gt->multi_line ) {
 	GTextFieldAddVSb(gt);
 	if ( !gt->wrap )
@@ -2346,6 +2415,10 @@ static void GTextFieldFit(GTextField *gt) {
     }
     if ( gt->listfield ) {
 	GListField *ge = (GListField *) gt;
+	int extra;
+	extra = GDrawPointsToPixels(gt->g.base,_GListMarkSize) +
+		2*GDrawPointsToPixels(gt->g.base,_GGadget_TextImageSkip) +
+		GBoxBorderWidth(gt->g.base,&_GListMark_Box);
 	ge->fieldrect = ge->buttonrect = gt->g.r;
 	ge->fieldrect.width -= extra;
 	extra -= GDrawPointsToPixels(gt->g.base,_GGadget_TextImageSkip)/2;

@@ -539,6 +539,44 @@ void _ggadgetFigureSize(GWindow gw, GBox *design, GRect *r, int isdef) {
     }
 }
 
+void _ggadgetSetRects(GGadget *g, GRect *outer, GRect *inner, int xjust, int yjust) {
+    int bp = GBoxBorderWidth(g->base,g->box);
+
+    if ( g->r.width==0 )
+	g->r.width = outer->width;
+    if ( g->r.height==0 )
+	g->r.height = outer->height;
+
+    if ( g->inner.width==0 ) {
+	if ( inner->width<g->r.width ) {
+	    if ( xjust==-1 )
+		g->inner.x = g->r.x + bp;
+	    else if ( xjust==0 )
+		g->inner.x = g->r.x + (g->r.width-inner->width)/2;
+	    else
+		g->inner.x = g->r.x + (g->r.width-bp-inner->width);
+	    g->inner.width = inner->width;
+	} else {
+	    g->inner.x = g->r.x;
+	    g->inner.width = g->r.width;
+	}
+    }
+    if ( g->inner.height==0 ) {
+	if ( inner->height<g->r.height ) {
+	    if ( yjust==-1 )
+		g->inner.y = g->r.y + bp;
+	    else if ( yjust==0 )
+		g->inner.y = g->r.y + (g->r.height-inner->height)/2;
+	    else
+		g->inner.y = g->r.y + (g->r.height-bp-inner->height);
+	    g->inner.height = inner->height;
+	} else {
+	    g->inner.y = g->r.y;
+	    g->inner.height = g->r.height;
+	}
+    }
+}
+
 static GGadget *GGadgetFindLastOpenGroup(GGadget *g) {
     for ( g=g->prev; g!=NULL && !g->opengroup; g = g->prev );
 return( g );
@@ -972,6 +1010,40 @@ void GGadgetScrollListToText(GGadget *g,const unichar_t *lab,int32 sel) {
 void GGadgetSetListOrderer(GGadget *g,int (*orderer)(const void *, const void *)) {
     if ( g->funcs->set_list_orderer!=NULL )
 	(g->funcs->set_list_orderer)(g,orderer);
+}
+
+void GGadgetGetDesiredSize(GGadget *g,GRect *outer, GRect *inner) {
+    if ( ((char *) &g->funcs->get_desired_size) - ((char *) g->funcs) < g->funcs->size &&
+	    g->funcs->get_desired_size!=NULL )
+	(g->funcs->get_desired_size)(g,outer,inner);
+    else {
+	if ( outer!=NULL )
+	    *outer = g->r;
+	if ( inner!=NULL )
+	    *inner = g->inner;
+    }
+}
+
+void GGadgetSetDesiredSize(GGadget *g,GRect *outer, GRect *inner) {
+    if ( ((char *) &g->funcs->set_desired_size) - ((char *) g->funcs) < g->funcs->size &&
+	    g->funcs->set_desired_size!=NULL )
+	(g->funcs->set_desired_size)(g,outer,inner);
+}
+
+int GGadgetFillsWindow(GGadget *g) {
+    if ( ((char *) &g->funcs->fills_window) - ((char *) g->funcs) < g->funcs->size &&
+	    g->funcs->fills_window!=NULL )
+return( (g->funcs->fills_window)(g) );
+
+return( false );
+}
+
+int GGadgetIsDefault(GGadget *g) {
+    if ( ((char *) &g->funcs->is_default) - ((char *) g->funcs) < g->funcs->size &&
+	    g->funcs->is_default!=NULL )
+return( (g->funcs->is_default)(g) );
+
+return( false );
 }
 
 void GGadgetsCreate(GWindow base, GGadgetCreateData *gcd) {

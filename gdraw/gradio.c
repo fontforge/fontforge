@@ -71,6 +71,7 @@ static int gradio_expose(GWindow pixmap, GGadget *g, GEvent *event) {
     int x;
     GImage *img = gr->image;
     GRect old1, old2, old3;
+    int yoff = (g->inner.height-(gr->fh))/2;
 
     if ( g->state == gs_invisible )
 return( false );
@@ -117,9 +118,9 @@ return( false );
 	Color fg = g->state==gs_disabled?g->box->disabled_foreground:
 			g->box->main_foreground==COLOR_DEFAULT?GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap)):
 			g->box->main_foreground;
-	_ggadget_underlineMnemonic(pixmap,x,g->inner.y + gr->as + gr->yoff,gr->label,
+	_ggadget_underlineMnemonic(pixmap,x,g->inner.y + gr->as + yoff,gr->label,
 		g->mnemonic,fg,g->inner.y+g->inner.height);
-	x += GDrawDrawBiText(pixmap,x,g->inner.y + gr->as + gr->yoff,gr->label,-1,NULL,
+	x += GDrawDrawBiText(pixmap,x,g->inner.y + gr->as + yoff,gr->label,-1,NULL,
 		fg );
 	x += GDrawPointsToPixels(pixmap,_GGadget_TextImageSkip);
     }
@@ -261,6 +262,47 @@ static void _gradio_move(GGadget *g, int32 x, int32 y ) {
     _ggadget_move(g,x,y);
 }
 
+static void GRadioGetDesiredSize(GGadget *g, GRect *outer, GRect *inner) {
+    GCheckBox *gl = (GCheckBox *) g;
+    int iwidth=0, iheight=0;
+    GTextBounds bounds;
+    int as=0, ds, ld, fh=0, width=0;
+
+    if ( gl->image!=NULL ) {
+	iwidth = GImageGetScaledWidth(gl->g.base,gl->image);
+	iheight = GImageGetScaledHeight(gl->g.base,gl->image);
+    }
+    GDrawFontMetrics(gl->font,&as, &ds, &ld);
+    if ( gl->label!=NULL ) {
+	FontInstance *old = GDrawSetFont(gl->g.base,gl->font);
+	width = GDrawGetTextBounds(gl->g.base,gl->label, -1, NULL, &bounds);
+	GDrawSetFont(gl->g.base,old);
+	if ( as<bounds.as ) as = bounds.as;
+	if ( ds<bounds.ds ) ds = bounds.ds;
+    }
+    fh = as+ds;
+
+    if ( width!=0 && iwidth!=0 )
+	width += GDrawPointsToPixels(gl->g.base,_GGadget_TextImageSkip);
+    width += iwidth;
+    if ( iheight<fh )
+	iheight = fh;
+    if ( iheight < gl->onoffrect.height )
+	iheight = gl->onoffrect.height;
+    width += gl->onoffrect.width + GDrawPointsToPixels(gl->g.base,5);
+    if ( inner!=NULL ) {
+	inner->x = inner->y = 0;
+	inner->width = width;
+	inner->height = iheight;
+    }
+    if ( outer!=NULL ) {
+	outer->x = outer->y = 0;
+	outer->width = width;
+	outer->height = iheight;
+	_ggadgetFigureSize(gl->g.base,gl->g.box,outer,false);
+    }
+}
+
 struct gfuncs gradio_funcs = {
     0,
     sizeof(struct gfuncs),
@@ -290,7 +332,21 @@ struct gfuncs gradio_funcs = {
     GRadioGetImage,
 
     GRadioSetFont,
-    GRadioGetFont
+    GRadioGetFont,
+
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+
+    GRadioGetDesiredSize
 };
 
 static void GRadioInit() {
@@ -331,10 +387,9 @@ static void GRadioInit() {
 }
 
 static void GCheckBoxFit(GCheckBox *gl) {
-    int iwidth=0, iheight=0;
-    GTextBounds bounds;
-    int as=0, ds, ld, fh=0, width=0;
-    GRect needed;
+    int as=0, ds, ld;
+    GRect outer, inner, needed;
+    int iwidth, iheight;
 
     needed.x = needed.y = 0;
     needed.width = needed.height = 1;
@@ -354,59 +409,12 @@ static void GCheckBoxFit(GCheckBox *gl) {
     _ggadgetFigureSize(gl->g.base,gl->onbox,&needed,false);
     gl->onoffrect = needed;
 
-
-    if ( gl->image!=NULL ) {
-	iwidth = GImageGetScaledWidth(gl->g.base,gl->image);
-	iheight = GImageGetScaledHeight(gl->g.base,gl->image);
-    }
     GDrawFontMetrics(gl->font,&as, &ds, &ld);
-    if ( gl->label!=NULL ) {
-	FontInstance *old = GDrawSetFont(gl->g.base,gl->font);
-	width = GDrawGetTextBounds(gl->g.base,gl->label, -1, NULL, &bounds);
-	GDrawSetFont(gl->g.base,old);
-	if ( as<bounds.as ) as = bounds.as;
-	if ( ds<bounds.ds ) ds = bounds.ds;
-    }
-    fh = as+ds;
+    GRadioGetDesiredSize(&gl->g,&outer,&inner);
+    _ggadgetSetRects(&gl->g,&outer, &inner, -1, 0);
 
-    if ( width!=0 && iwidth!=0 )
-	width += GDrawPointsToPixels(gl->g.base,_GGadget_TextImageSkip);
-    width += iwidth;
-    if ( iheight<fh )
-	iheight = fh;
-    if ( iheight < gl->onoffrect.height )
-	iheight = gl->onoffrect.height;
-    width += gl->onoffrect.width + GDrawPointsToPixels(gl->g.base,5);
-
-    if ( gl->g.r.width==0 || gl->g.r.height==0 ) {
-	needed.x = needed.y = 0;
-	needed.width = width;
-	needed.height = iheight;
-	_ggadgetFigureSize(gl->g.base,gl->g.box,&needed,false);
-	gl->g.r.width = needed.width;
-	gl->g.r.height = needed.height;
-	gl->g.inner.x = gl->g.r.x + (needed.width-width)/2;
-	gl->g.inner.y = gl->g.r.y + (needed.height-iheight)/2;
-	gl->g.inner.width = width;
-	gl->g.inner.height = iheight;
-    } else {
-	if ( width<gl->g.r.width ) {
-	    gl->g.inner.x = gl->g.r.x + (gl->g.r.width-width)/2;
-	    gl->g.inner.width = width;
-	} else {
-	    gl->g.inner.x = gl->g.r.x;
-	    gl->g.inner.width = gl->g.r.width;
-	}
-	if ( iheight<gl->g.r.height ) {
-	    gl->g.inner.y = gl->g.r.y + (gl->g.r.height-iheight)/2;
-	    gl->g.inner.height = iheight;
-	} else {
-	    gl->g.inner.y = gl->g.r.y;
-	    gl->g.inner.height = gl->g.r.height;
-	}
-    }
     gl->as = as;
-    gl->yoff = (iheight-fh)/2;
+    gl->fh = as+ds;
 
     gl->onoffrect.x = gl->g.inner.x;
     gl->onoffrect.y = (gl->as>gl->onoffrect.height)?gl->g.inner.y+gl->as-gl->onoffrect.height:
@@ -467,18 +475,26 @@ return( &gl->g );
 
 GGadget *GRadioCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     GRadio *gl = (GRadio *) gcalloc(1,sizeof(GRadio));
+    GGadget *gr;
 
     gl->isradio = true;
     _GCheckBoxCreate((GCheckBox *) gl,base,gd,data,&radio_box);
 
+    gl->post = gl;
     if ( gd->flags & gg_rad_startnew )
-	gl->post = gl;
+	/* Done */;
     else if ( gl->g.prev!=NULL && gl->g.prev->funcs==&gradio_funcs &&
 	    ((GRadio *) (gl->g.prev))->isradio ) {
 	gl->post = ((GRadio *) (gl->g.prev))->post;
 	((GRadio *) (gl->g.prev))->post = gl;
-    } else
-	gl->post = gl;
+    } else if ( gd->flags & gg_rad_continueold ) {
+	for ( gr=gl->g.prev; gr!=NULL && (gr->funcs!=&gradio_funcs ||
+		!((GRadio *) gr)->isradio); gr = gr->prev );
+	if ( gr!=NULL ) {
+	    gl->post = ((GRadio *) gr)->post;
+	    ((GRadio *) gr)->post = gl;
+	}
+    }
 
 return( &gl->g );
 }

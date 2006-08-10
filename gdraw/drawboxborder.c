@@ -1030,6 +1030,13 @@ int GBoxBorderWidth(GWindow gw, GBox *box) {
 return( bp );
 }
 
+int GBoxExtraSpace(GGadget *g) {
+    if ( !(g->box->flags & box_draw_default) || !GGadgetIsDefault(g))
+return( 0 );
+
+return( GDrawPointsToPixels(g->base,1) + GDrawPointsToPixels(g->base,2) );
+}
+
 /* Does not include the padding */
 int GBoxDrawnWidth(GWindow gw, GBox *box) {
     int scale = GDrawPointsToPixels(gw,1);
