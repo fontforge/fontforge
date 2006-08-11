@@ -1013,7 +1013,12 @@ void GGadgetSetListOrderer(GGadget *g,int (*orderer)(const void *, const void *)
 }
 
 void GGadgetGetDesiredSize(GGadget *g,GRect *outer, GRect *inner) {
-    if ( ((char *) &g->funcs->get_desired_size) - ((char *) g->funcs) < g->funcs->size &&
+    if ( g->state==gs_invisible ) {
+	if ( outer!=NULL )
+	    memset(outer,0,sizeof(*outer));
+	if ( inner!=NULL )
+	    memset(inner,0,sizeof(*inner));
+    } else if ( ((char *) &g->funcs->get_desired_size) - ((char *) g->funcs) < g->funcs->size &&
 	    g->funcs->get_desired_size!=NULL )
 	(g->funcs->get_desired_size)(g,outer,inner);
     else {

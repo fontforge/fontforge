@@ -496,10 +496,24 @@ int GIntGetResource(int index) {
 	static int gt_intarray[2];
 	if ( gt_intarray[0]==0 ) {
 	    char *pt, *end;
+/* GT: This is an unusual string. It is used to get around a limitation in */
+/* GT: FontForge's widget set. You should put a number here (do NOT translate */
+/* GT: "GGadget|ButtonSize|", that's only to provide context. The number should */
+/* GT: be the number of points used for a standard sized button. It should be */
+/* GT: big enough to contain "OK", "Cancel", "New...", "Edit...", "Delete" */
+/* GT: (in their translated forms of course). */
 	    pt = S_("GGadget|ButtonSize|55");
 	    gt_intarray[0] = strtol(pt,&end,10);
 	    if ( pt==end || gt_intarray[0]<20 || gt_intarray[0]>4000 )
 		gt_intarray[0]=55;
+/* GT: This is an unusual string. It is used to get around a limitation in */
+/* GT: FontForge's widget set. You should put a number here (do NOT translate */
+/* GT: "GGadget|ScaleFactor|", that's only to provide context. The number should */
+/* GT: be a percentage and indicates the the ratio of the length of a string in */
+/* GT: your language to the same string's length in English. */
+/* GT: Suppose it takes 116 pixels to say "Ne pas enregistrer" in French but */
+/* GT: only 67 pixels to say "Don't Save" in English. Then a value for ScaleFactor */
+/* GT: might be 116*100/67 = 173 */
 	    pt = S_("GGadget|ScaleFactor|100");
 	    gt_intarray[1] = strtol(pt,&end,10);
 	    if ( pt==end || gt_intarray[1]<20 || gt_intarray[1]>4000 )

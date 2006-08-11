@@ -381,19 +381,7 @@ return( handled );
 	    }
 	}
     } else if ( event->type == et_resize ) {
-	gadget = gd->gadgets;
-	if ( gadget!=NULL ) {
-	    while ( gadget->prev!=NULL )
-		gadget=gadget->prev;
-	}
-	if ( gadget != NULL && GGadgetFillsWindow(gadget)) {
-	    GRect wsize;
-	    GDrawGetSize(gw, &wsize);
-	    /* Make any offset simmetrical */
-	    wsize.width -= 2*gadget->r.x;
-	    wsize.height -= 2*gadget->r.y;
-	    GGadgetResize(gadget,wsize.width,wsize.height);
-	}
+	GWidgetFlowGadgets(gw);
     }
     if ( gd->e_h!=NULL && (!handled || event->type==et_mousemove ))
 	handled = (gd->e_h)(gw,event);
@@ -1164,4 +1152,27 @@ return( wd->gic );
 GIC *GWidgetGetInputContext(GWindow w) {
     GWidgetD *wd = (GWidgetD *) (w->widget_data);
 return( wd->gic );
+}
+
+void GWidgetFlowGadgets(GWindow gw) {
+    GGadget *gadget;
+    GContainerD *gd = (GContainerD *) (gw->widget_data);
+
+    if ( gd==NULL )
+return;
+
+    gadget = gd->gadgets;
+    if ( gadget!=NULL ) {
+	while ( gadget->prev!=NULL )
+	    gadget=gadget->prev;
+    }
+    if ( gadget != NULL && GGadgetFillsWindow(gadget)) {
+	GRect wsize;
+	GDrawGetSize(gw, &wsize);
+	/* Make any offset simmetrical */
+	wsize.width -= 2*gadget->r.x;
+	wsize.height -= 2*gadget->r.y;
+	GGadgetResize(gadget,wsize.width,wsize.height);
+	GDrawRequestExpose(gw,NULL,false);
+    }
 }
