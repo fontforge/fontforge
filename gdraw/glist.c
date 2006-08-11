@@ -866,6 +866,12 @@ static void GListGetDesiredSize(GGadget *g,GRect *outer, GRect *inner) {
     }
 }
 
+static int glist_FillsWindow(GGadget *g) {
+return( g->prev==NULL &&
+	(_GWidgetGetGadgets(g->base)==g ||
+	 _GWidgetGetGadgets(g->base)==(GGadget *) ((GList *) g)->vsb));
+}
+
 struct gfuncs GList_funcs = {
     0,
     sizeof(struct gfuncs),
@@ -908,7 +914,9 @@ struct gfuncs GList_funcs = {
     GListScrollToText,
     GListSetOrderer,
 
-    GListGetDesiredSize
+    GListGetDesiredSize,
+    NULL,
+    glist_FillsWindow
 };
 
 static GBox list_box = { /* Don't initialize here */ 0 };

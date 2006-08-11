@@ -350,7 +350,8 @@ static void GHVBoxResize(GGadget *g, int width, int height) {
 
     y = gb->g.inner.y;
     if ( gb->label!=NULL ) {
-	GGadgetResize( gb->label, si.label_width, si.label_height);
+	if ( gb->label->state!=gs_invisible )
+	    GGadgetResize( gb->label, si.label_width, si.label_height);
 	GGadgetMove( gb->label, gb->g.inner.x+10, y-si.label_height-bp/2);
     }
     for ( r=0; r<gb->rows; ++r ) {
@@ -374,7 +375,8 @@ static void GHVBoxResize(GGadget *g, int width, int height) {
 		es = GBoxExtraSpace(g);
 		xes = si.cols[c].extra_space - es;
 		yes = si.rows[r].extra_space - es;
-		GGadgetResize(g,totc-2*xes,totr-2*yes);
+		if ( g->state!=gs_invisible )
+		    GGadgetResize(g,totc-2*xes,totr-2*yes);
 		GGadgetMove(g,x+xes,y+yes);
 	    }
 	    x += si.cols[c].sized;
@@ -415,6 +417,9 @@ return( true );
 static int expose_nothing(GWindow pixmap, GGadget *g, GEvent *event) {
     GHVBox *gb = (GHVBox *) g;
     GRect r;
+
+    if ( g->state==gs_invisible )
+return( true );
 
     if ( gb->label==NULL )
 	GBoxDrawBorder(pixmap,&g->r,g->box,g->state,false);

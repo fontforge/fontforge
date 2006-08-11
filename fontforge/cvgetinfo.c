@@ -50,6 +50,7 @@ typedef struct gidata {
     int normal_start, normal_end;
     int interp_start, interp_end;
     GGadgetCreateData *gcd;
+    GGadget *group1ret, *group2ret;
 } GIData;
 
 #define CID_BaseX	2001
@@ -1788,9 +1789,14 @@ static void PIShowHide(GIData *ci) {
     int i;
 
     for ( i=ci->normal_start; i<ci->normal_end; ++i )
-	GGadgetSetVisible(ci->gcd[i].ret,normal);
+	if ( ci->gcd[i].ret!=NULL )
+	    GGadgetSetVisible(ci->gcd[i].ret,normal);
+    GGadgetSetVisible(ci->group1ret,normal);
+    GGadgetSetVisible(ci->group2ret,normal);
     for ( i=ci->interp_start; i<ci->interp_end; ++i )
-	GGadgetSetVisible(ci->gcd[i].ret,!normal);
+	if ( ci->gcd[i].ret!=NULL )
+	    GGadgetSetVisible(ci->gcd[i].ret,!normal);
+    GWidgetFlowGadgets(GGadgetGetWindow(GWidgetGetControl(ci->gw,CID_Normal)));
 }
 
 static void PIChangePoint(GIData *ci) {
@@ -2347,6 +2353,10 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
     GRect pos;
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[54], hgcd[2], h2gcd[2], mgcd[11];
+    GGadgetCreateData mb[5], pb[9];
+    GGadgetCreateData *marray[11], *marray2[5], *marray3[5], *marray4[7],
+	*varray[11], *harray1[4], *harray2[6], *hvarray1[25], *hvarray2[25],
+	*hvarray3[16], *harray3[11];
     GTextInfo label[54], mlabel[11];
     GTabInfo aspects[4];
     static GBox cur, nextcp, prevcp;
@@ -2354,7 +2364,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
     GWindow root;
     GRect screensize;
     GPoint pt;
-    int j, defxpos, nextstarty, groupj;
+    int j, defxpos, nextstarty, groupj, k, l;
 
     cur.main_background = nextcp.main_background = prevcp.main_background = COLOR_DEFAULT;
     cur.main_foreground = 0xff0000;
@@ -2401,8 +2411,9 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	memset(&mgcd,0,sizeof(mgcd));
 	memset(&mlabel,0,sizeof(mlabel));
 	memset(&aspects,0,sizeof(aspects));
+	memset(&pb,0,sizeof(pb));
 
-	j=0;
+	j=k=0;
 	gi.gcd = gcd;
 
 	label[j].text = (unichar_t *) _("_Normal");
@@ -2414,6 +2425,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.cid = CID_Normal;
 	gcd[j].gd.handle_controlevent = PI_InterpChanged;
 	gcd[j].creator = GRadioCreate;
+	harray1[0] = &gcd[j];
 	++j;
 
 	label[j].text = (unichar_t *) _("_Interpolated");
@@ -2425,7 +2437,13 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.cid = CID_Interpolated;
 	gcd[j].gd.handle_controlevent = PI_InterpChanged;
 	gcd[j].creator = GRadioCreate;
+	harray1[1] = &gcd[j]; harray1[2] = GCD_Glue; harray1[3] = NULL;
 	++j;
+
+	pb[2].gd.flags = gg_enabled|gg_visible;
+	pb[2].gd.u.boxelements = harray1;
+	pb[2].creator = GHBoxCreate;
+	varray[k++] = &pb[2];
 
 	label[j].text = (unichar_t *) _("N_ever Interpolate");
 	label[j].text_is_1byte = true;
@@ -2436,6 +2454,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.cid = CID_NeverInterpolate;
 	gcd[j].gd.handle_controlevent = PI_NeverInterpChanged;
 	gcd[j].creator = GCheckBoxCreate;
+	varray[k++] = &gcd[j];
 	++j;
 
 	gi.normal_start = j;
@@ -2447,6 +2466,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.flags = gg_enabled|gg_visible|gg_dontcopybox;
 	gcd[j].gd.box = &cur;
 	gcd[j].creator = GLabelCreate;
+	harray2[0] = &gcd[j]; harray2[1] = GCD_Glue;
 	++j;
 
 	gcd[j].gd.pos.x = 60; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y-6; gcd[j].gd.pos.width = 70;
@@ -2454,6 +2474,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.cid = CID_BaseX;
 	gcd[j].gd.handle_controlevent = PI_BaseChanged;
 	gcd[j].creator = GTextFieldCreate;
+	harray2[2] = &gcd[j];
 	++j;
 
 	gcd[j].gd.pos.x = 137; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y; gcd[j].gd.pos.width = 70;
@@ -2461,8 +2482,15 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.cid = CID_BaseY;
 	gcd[j].gd.handle_controlevent = PI_BaseChanged;
 	gcd[j].creator = GTextFieldCreate;
+	harray2[3] = &gcd[j]; harray2[4] = GCD_Glue; harray2[5] = NULL;
 	++j;
 
+	pb[3].gd.flags = gg_enabled|gg_visible;
+	pb[3].gd.u.boxelements = harray2;
+	pb[3].creator = GHBoxCreate;
+	varray[k++] = &pb[3];
+
+	l = 0;
 	groupj = j;
 	label[j].text = (unichar_t *) _("Prev CP:");
 	label[j].text_is_1byte = true;
@@ -2471,12 +2499,14 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.flags = gg_enabled|gg_visible|gg_dontcopybox;
 	gcd[j].gd.box = &prevcp;
 	gcd[j].creator = GLabelCreate;
+	hvarray1[l++] = &gcd[j]; hvarray1[l++] = GCD_Glue;
 	++j;
 
 	gcd[j].gd.pos.x = 60; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y; gcd[j].gd.pos.width = 65;
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].gd.cid = CID_PrevPos;
 	gcd[j].creator = GLabelCreate;
+	hvarray1[l++] = &gcd[j];
 	++j;
 
 	defxpos = 130;
@@ -2488,6 +2518,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.cid = CID_PrevDef;
 	gcd[j].gd.handle_controlevent = PI_PrevDefChanged;
 	gcd[j].creator = GCheckBoxCreate;
+	hvarray1[l++] = &gcd[j]; hvarray1[l++] = GCD_ColSpan; hvarray1[l++] = NULL;
 	++j;
 
 	label[j].text = (unichar_t *) _("Offset");
@@ -2496,6 +2527,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.pos.x = gcd[3].gd.pos.x+10; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+18+4; 
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].creator = GLabelCreate;
+	hvarray1[l++] = &gcd[j]; hvarray1[l++] = GCD_Glue;
 	++j;
 
 	gcd[j].gd.pos.x = 60; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y-4; gcd[j].gd.pos.width = 70;
@@ -2503,6 +2535,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.cid = CID_PrevXOff;
 	gcd[j].gd.handle_controlevent = PI_PrevChanged;
 	gcd[j].creator = GTextFieldCreate;
+	hvarray1[l++] = &gcd[j];
 	++j;
 
 	gcd[j].gd.pos.x = 137; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y; gcd[j].gd.pos.width = 70;
@@ -2510,6 +2543,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.cid = CID_PrevYOff;
 	gcd[j].gd.handle_controlevent = PI_PrevChanged;
 	gcd[j].creator = GTextFieldCreate;
+	hvarray1[l++] = &gcd[j]; hvarray1[l++] = GCD_ColSpan; hvarray1[l++] = NULL;
 	++j;
 
 	label[j].text = (unichar_t *) _("Dist");
@@ -2518,6 +2552,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.pos.x = gcd[3].gd.pos.x+10; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+28; 
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].creator = GLabelCreate;
+	hvarray1[l++] = &gcd[j]; hvarray1[l++] = GCD_Glue;
 	++j;
 
 	gcd[j].gd.pos.x = 60; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y-4; gcd[j].gd.pos.width = 70;
@@ -2525,6 +2560,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.cid = CID_PrevR;
 	gcd[j].gd.handle_controlevent = PI_PrevChanged;
 	gcd[j].creator = GTextFieldCreate;
+	hvarray1[l++] = &gcd[j];
 	++j;
 
 	gcd[j].gd.pos.x = 137; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y; gcd[j].gd.pos.width = 60;
@@ -2532,6 +2568,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.cid = CID_PrevTheta;
 	gcd[j].gd.handle_controlevent = PI_PrevChanged;
 	gcd[j].creator = GTextFieldCreate;
+	hvarray1[l++] = &gcd[j];
 	++j;
 
 	label[j].text = (unichar_t *) U_("°");
@@ -2540,6 +2577,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.pos.x = gcd[j-1].gd.pos.x+gcd[j-1].gd.pos.width+2; gcd[j].gd.pos.y = gcd[j-3].gd.pos.y; 
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].creator = GLabelCreate;
+	hvarray1[l++] = &gcd[j]; hvarray1[l++] = NULL;
 	++j;
 
 	label[j].text = (unichar_t *) _("Curvature: -0.00000000");
@@ -2549,7 +2587,15 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].gd.cid = CID_PrevCurvature;
 	gcd[j].creator = GLabelCreate;
+	hvarray1[l++] = &gcd[j]; hvarray1[l++] = GCD_ColSpan; hvarray1[l++] = GCD_ColSpan;
+	  hvarray1[l++] = GCD_Glue; hvarray1[l++] = GCD_Glue; hvarray1[l++] = NULL;
+	 hvarray1[l++] = NULL;
 	++j;
+
+	pb[4].gd.flags = gg_enabled|gg_visible;
+	pb[4].gd.u.boxelements = hvarray1;
+	pb[4].creator = GHVGroupCreate;
+	varray[k++] = &pb[4];
 
 	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[groupj].gd.pos.y-5;
 	gcd[j].gd.pos.width = PI_Width-20; gcd[j].gd.pos.height = 84;
@@ -2558,6 +2604,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	++j;
 
 	groupj = j;
+	l = 0;
 	nextstarty = gcd[j-2].gd.pos.y+28;
 	label[j].text = (unichar_t *) _("Next CP:");
 	label[j].text_is_1byte = true;
@@ -2566,12 +2613,14 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.flags = gg_enabled|gg_visible|gg_dontcopybox;
 	gcd[j].gd.box = &nextcp;
 	gcd[j].creator = GLabelCreate;
+	hvarray2[l++] = &gcd[j]; hvarray2[l++] = GCD_Glue;
 	++j;
 
 	gcd[j].gd.pos.x = 60; gcd[j].gd.pos.y = nextstarty;  gcd[j].gd.pos.width = 65;
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].gd.cid = CID_NextPos;
 	gcd[j].creator = GLabelCreate;
+	hvarray2[l++] = &gcd[j];
 	++j;
 
 	label[j].text = (unichar_t *) _("Default");
@@ -2582,6 +2631,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.cid = CID_NextDef;
 	gcd[j].gd.handle_controlevent = PI_NextDefChanged;
 	gcd[j].creator = GCheckBoxCreate;
+	hvarray2[l++] = &gcd[j]; hvarray2[l++] = GCD_ColSpan; hvarray2[l++] = NULL;
 	++j;
 
 	label[j].text = (unichar_t *) _("Offset");
@@ -2590,6 +2640,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.pos.x = gcd[3].gd.pos.x+10; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+18+4; 
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].creator = GLabelCreate;
+	hvarray2[l++] = &gcd[j]; hvarray2[l++] = GCD_Glue;
 	++j;
 
 	gcd[j].gd.pos.x = 60; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y-4; gcd[j].gd.pos.width = 70;
@@ -2597,6 +2648,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.cid = CID_NextXOff;
 	gcd[j].gd.handle_controlevent = PI_NextChanged;
 	gcd[j].creator = GTextFieldCreate;
+	hvarray2[l++] = &gcd[j];
 	++j;
 
 	gcd[j].gd.pos.x = 137; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y; gcd[j].gd.pos.width = 70;
@@ -2604,6 +2656,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.cid = CID_NextYOff;
 	gcd[j].gd.handle_controlevent = PI_NextChanged;
 	gcd[j].creator = GTextFieldCreate;
+	hvarray2[l++] = &gcd[j]; hvarray2[l++] = GCD_ColSpan; hvarray2[l++] = NULL;
 	++j;
 
 	label[j].text = (unichar_t *) _("Dist");
@@ -2612,6 +2665,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.pos.x = gcd[3].gd.pos.x+10; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+28; 
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].creator = GLabelCreate;
+	hvarray2[l++] = &gcd[j]; hvarray2[l++] = GCD_Glue;
 	++j;
 
 	gcd[j].gd.pos.x = 60; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y-4; gcd[j].gd.pos.width = 70;
@@ -2619,6 +2673,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.cid = CID_NextR;
 	gcd[j].gd.handle_controlevent = PI_NextChanged;
 	gcd[j].creator = GTextFieldCreate;
+	hvarray2[l++] = &gcd[j];
 	++j;
 
 	gcd[j].gd.pos.x = 137; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y; gcd[j].gd.pos.width = 60;
@@ -2626,6 +2681,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.cid = CID_NextTheta;
 	gcd[j].gd.handle_controlevent = PI_NextChanged;
 	gcd[j].creator = GTextFieldCreate;
+	hvarray2[l++] = &gcd[j];
 	++j;
 
 	label[j].text = (unichar_t *) U_("°");
@@ -2634,6 +2690,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.pos.x = gcd[j-1].gd.pos.x+gcd[j-1].gd.pos.width+2; gcd[j].gd.pos.y = gcd[j-3].gd.pos.y; 
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].creator = GLabelCreate;
+	hvarray2[l++] = &gcd[j]; hvarray2[l++] = NULL;
 	++j;
 
 	label[j].text = (unichar_t *) _("Curvature: -0.00000000");
@@ -2643,6 +2700,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].gd.cid = CID_NextCurvature;
 	gcd[j].creator = GLabelCreate;
+	hvarray2[l++] = &gcd[j]; hvarray2[l++] = GCD_ColSpan; hvarray2[l++] = GCD_ColSpan;
 	++j;
 
 	label[j].text = (unichar_t *) "∆: -0.00000000";
@@ -2653,7 +2711,14 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.popup_msg = (unichar_t *) _("This is the difference of the curvature between\nthe next and previous splines. Contours often\nlook nicer as this number approaches 0." );
 	gcd[j].gd.cid = CID_DeltaCurvature;
 	gcd[j].creator = GLabelCreate;
+	hvarray2[l++] = &gcd[j]; hvarray2[l++] = GCD_ColSpan; hvarray2[l++] = NULL;
+	hvarray2[l++] = NULL;
 	++j;
+
+	pb[5].gd.flags = gg_enabled|gg_visible;
+	pb[5].gd.u.boxelements = hvarray2;
+	pb[5].creator = GHVGroupCreate;
+	varray[k++] = &pb[5];
 
 	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = nextstarty-5;
 	gcd[j].gd.pos.width = PI_Width-20; gcd[j].gd.pos.height = 84;
@@ -2663,6 +2728,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gi.normal_end = j;
 
 	gi.interp_start = j;
+	l = 0;
 	label[j].text = (unichar_t *) _("_Base:");
 	label[j].text_is_1byte = true;
 	label[j].text_in_resource = true;
@@ -2671,12 +2737,14 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.flags = gg_enabled|gg_visible|gg_dontcopybox;
 	gcd[j].gd.box = &cur;
 	gcd[j].creator = GLabelCreate;
+	hvarray3[l++] = &gcd[j]; hvarray3[l++] = GCD_Glue;
 	++j;
 
 	gcd[j].gd.pos.x = 60; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y; gcd[j].gd.pos.width = 65;
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].gd.cid = CID_BasePos;
 	gcd[j].creator = GLabelCreate;
+	hvarray3[l++] = &gcd[j]; hvarray3[l++] = GCD_Glue; hvarray3[l++] = NULL;
 	++j;
 
 	label[j].text = (unichar_t *) _("Prev CP:");
@@ -2686,6 +2754,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.flags = gg_enabled|gg_visible|gg_dontcopybox;
 	gcd[j].gd.box = &prevcp;
 	gcd[j].creator = GLabelCreate;
+	hvarray3[l++] = &gcd[j]; hvarray3[l++] = GCD_Glue;
 	++j;
 
 	gcd[j].gd.pos.x = 60; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y-4; gcd[j].gd.pos.width = 70;
@@ -2693,6 +2762,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.cid = CID_PrevX;
 	gcd[j].gd.handle_controlevent = PI_PrevIntChanged;
 	gcd[j].creator = GTextFieldCreate;
+	hvarray3[l++] = &gcd[j];
 	++j;
 
 	gcd[j].gd.pos.x = 137; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y; gcd[j].gd.pos.width = 70;
@@ -2700,6 +2770,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.cid = CID_PrevY;
 	gcd[j].gd.handle_controlevent = PI_PrevIntChanged;
 	gcd[j].creator = GTextFieldCreate;
+	hvarray3[l++] = &gcd[j]; hvarray3[l++] = NULL;
 	++j;
 
 	label[j].text = (unichar_t *) _("Next CP:");
@@ -2709,6 +2780,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.flags = gg_enabled|gg_visible|gg_dontcopybox;
 	gcd[j].gd.box = &nextcp;
 	gcd[j].creator = GLabelCreate;
+	hvarray3[l++] = &gcd[j]; hvarray3[l++] = GCD_Glue;
 	++j;
 
 	gcd[j].gd.pos.x = 60; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y-4; gcd[j].gd.pos.width = 70;
@@ -2716,6 +2788,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.cid = CID_NextX;
 	gcd[j].gd.handle_controlevent = PI_NextIntChanged;
 	gcd[j].creator = GTextFieldCreate;
+	hvarray3[l++] = &gcd[j];
 	++j;
 
 	gcd[j].gd.pos.x = 137; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y; gcd[j].gd.pos.width = 70;
@@ -2723,8 +2796,15 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.cid = CID_NextY;
 	gcd[j].gd.handle_controlevent = PI_NextIntChanged;
 	gcd[j].creator = GTextFieldCreate;
+	hvarray3[l++] = &gcd[j]; hvarray3[l++] = NULL; hvarray3[l++] = NULL;
 	++j;
 	gi.interp_end = j;
+
+	pb[6].gd.flags = gg_enabled|gg_visible;
+	pb[6].gd.u.boxelements = hvarray3;
+	pb[6].creator = GHVBoxCreate;
+	varray[k++] = &pb[6];
+	varray[k++] = GCD_Glue;
 
 	label[j].text = (unichar_t *) _("Type:");
 	label[j].text_is_1byte = true;
@@ -2732,6 +2812,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.pos.x = gcd[0].gd.pos.x; gcd[j].gd.pos.y = gcd[gi.normal_end-2].gd.pos.y+26;
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].creator = GLabelCreate;
+	harray3[0] = &gcd[j]; harray3[1] = GCD_Glue; harray3[2] = GCD_Glue;
 	++j;
 
 	label[j].image = &GIcon_midcurve;
@@ -2741,6 +2822,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.cid = CID_Curve;
 	gcd[j].gd.handle_controlevent = PI_PTypeChanged;
 	gcd[j].creator = GRadioCreate;
+	harray3[3] = &gcd[j]; harray3[4] = GCD_Glue;
 	++j;
 
 	label[j].image = &GIcon_midcorner;
@@ -2750,6 +2832,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.cid = CID_Corner;
 	gcd[j].gd.handle_controlevent = PI_PTypeChanged;
 	gcd[j].creator = GRadioCreate;
+	harray3[5] = &gcd[j]; harray3[6] = GCD_Glue;
 	++j;
 
 	label[j].image = &GIcon_midtangent;
@@ -2759,7 +2842,19 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.cid = CID_Tangent;
 	gcd[j].gd.handle_controlevent = PI_PTypeChanged;
 	gcd[j].creator = GRadioCreate;
+	harray3[7] = &gcd[j]; harray3[8] = GCD_Glue; harray3[9] = GCD_Glue;
+	harray3[10] = NULL;
 	++j;
+
+	pb[7].gd.flags = gg_enabled|gg_visible;
+	pb[7].gd.u.boxelements = harray3;
+	pb[7].creator = GHBoxCreate;
+	varray[k++] = &pb[7];
+	varray[k++] = NULL;
+
+	pb[0].gd.flags = gg_enabled|gg_visible;
+	pb[0].gd.u.boxelements = varray;
+	pb[0].creator = GVBoxCreate;
 
 	hgcd[0].gd.pos.x = 5; hgcd[0].gd.pos.y = 5;
 	hgcd[0].gd.pos.width = PI_Width-20; hgcd[0].gd.pos.height = gcd[j-1].gd.pos.y+10;
@@ -2780,7 +2875,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 
 	aspects[j].text = (unichar_t *) _("Location");
 	aspects[j].text_is_1byte = true;
-	aspects[j++].gcd = gcd;
+	aspects[j++].gcd = pb;
 
 	aspects[j].text = (unichar_t *) _("Hint Mask");
 	aspects[j].text_is_1byte = true;
@@ -2884,11 +2979,54 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	mgcd[j].creator = GGroupCreate;
 	++j;
 
-	GGadgetsCreate(gi.gw,mgcd);
+	marray[0] = &mgcd[0]; marray[1] = NULL;
+	marray[2] = &mb[2]; marray[3] = NULL;
+	marray[4] = &mb[3]; marray[5] = NULL;
+	marray[6] = &mgcd[5]; marray[7] = NULL;
+	marray[8] = &mb[4]; marray[9] = NULL;
+	marray[10] = NULL;
+	marray2[0] = GCD_Glue; marray2[1] = &mgcd[1]; marray2[2] = &mgcd[2]; marray2[3] = GCD_Glue; marray2[4] = NULL;
+	marray3[0] = GCD_Glue; marray3[1] = &mgcd[3]; marray3[2] = &mgcd[4]; marray3[3] = GCD_Glue; marray3[4] = NULL;
+	marray4[0] = GCD_Glue; marray4[1] = &mgcd[6]; marray4[2] = GCD_Glue; marray4[3] = GCD_Glue; marray4[4] = &mgcd[7]; marray4[5] = GCD_Glue; marray4[6] = NULL;
+
+	memset(mb,0,sizeof(mb));
+	mb[0].gd.pos.x = mb[0].gd.pos.y = 2;
+	mb[0].gd.flags = gg_enabled|gg_visible;
+	mb[0].gd.u.boxelements = marray;
+	mb[0].creator = GHVGroupCreate;
+
+	mb[2].gd.flags = gg_enabled|gg_visible;
+	mb[2].gd.u.boxelements = marray2;
+	mb[2].creator = GHBoxCreate;
+
+	mb[3].gd.flags = gg_enabled|gg_visible;
+	mb[3].gd.u.boxelements = marray3;
+	mb[3].creator = GHBoxCreate;
+
+	mb[4].gd.flags = gg_enabled|gg_visible;
+	mb[4].gd.u.boxelements = marray4;
+	mb[4].creator = GHBoxCreate;
+
+	GGadgetsCreate(gi.gw,mb);
+	gi.group1ret = pb[4].ret; gi.group2ret = pb[5].ret;
 	GTextInfoListFree(hgcd[0].gd.u.list);
 	GTextInfoListFree(h2gcd[0].gd.u.list);
 
+	GHVBoxSetExpandableRow(mb[0].ret,0);
+	GHVBoxSetExpandableCol(mb[2].ret,gb_expandgluesame);
+	GHVBoxSetExpandableCol(mb[3].ret,gb_expandgluesame);
+	GHVBoxSetExpandableCol(mb[4].ret,gb_expandgluesame);
+	GHVBoxSetExpandableRow(pb[0].ret,gb_expandglue);
+	GHVBoxSetExpandableCol(pb[2].ret,gb_expandglue);
+	GHVBoxSetExpandableCol(pb[3].ret,gb_expandglue);
+	GHVBoxSetExpandableCol(pb[4].ret,gb_expandglue);
+	GHVBoxSetExpandableCol(pb[5].ret,gb_expandglue);
+	GHVBoxSetExpandableCol(pb[6].ret,gb_expandglue);
+	GHVBoxSetExpandableCol(pb[7].ret,gb_expandglue);
+
 	PIChangePoint(&gi);
+
+	GHVBoxFitWindow(mb[0].ret);
 
     GWidgetHidePalettes();
     GDrawSetVisible(gi.gw,true);

@@ -1346,7 +1346,7 @@ static int gtextfield_expose(GWindow pixmap, GGadget *g, GEvent *event) {
     GListField *ge = (GListField *) g;
     GRect old1, old2, *r = &g->r;
     Color fg,sel;
-    int y,ll,i;
+    int y,ll,i, last;
     unichar_t *bitext = gt->dobitext || gt->password?gt->bidata.text:gt->text;
 
     if ( g->state == gs_invisible || gt->dontdraw )
@@ -1367,7 +1367,8 @@ return( false );
 		    g->box->main_foreground==COLOR_DEFAULT?GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap)):
 		    g->box->main_foreground;
     ll = 0;
-    for ( i=gt->loff_top; i<gt->loff_top+gt->g.inner.height/gt->fh && gt->lines[i]!=-1; ++i ) {
+    if ( (last = gt->g.inner.height/gt->fh)==0 ) last = 1;
+    for ( i=gt->loff_top; i<gt->loff_top+last && gt->lines[i]!=-1; ++i ) {
 	/* there is an odd complication in drawing each line. */
 	/* normally we draw the selection rectangle(s) and then draw the text */
 	/*  on top of that all in one go. But that doesn't work if the select */
@@ -2225,6 +2226,13 @@ static void GTextFieldGetDesiredSize(GGadget *g,GRect *outer,GRect *inner) {
     }
 }
 
+static int gtextfield_FillsWindow(GGadget *g) {
+return( ((GTextField *) g)->multi_line && g->prev==NULL &&
+	(_GWidgetGetGadgets(g->base)==g ||
+	 _GWidgetGetGadgets(g->base)==(GGadget *) ((GTextField *) g)->vsb ||
+	 _GWidgetGetGadgets(g->base)==(GGadget *) ((GTextField *) g)->hsb ));
+}
+
 struct gfuncs gtextfield_funcs = {
     0,
     sizeof(struct gfuncs),
@@ -2268,7 +2276,8 @@ struct gfuncs gtextfield_funcs = {
     NULL,
 
     GTextFieldGetDesiredSize,
-    GTextFieldSetDesiredSize
+    GTextFieldSetDesiredSize,
+    gtextfield_FillsWindow
 };
 
 struct gfuncs glistfield_funcs = {
