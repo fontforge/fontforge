@@ -145,9 +145,14 @@ return( false );
     if ( !gb->image_precedes && img!=NULL )
 	GDrawDrawScaledImage(pixmap,img,x,g->inner.y + off);
 
+    if ( g->box->border_type!=bt_none ||
+	    (g->box->flags&(box_foreground_border_inner|box_foreground_border_outer|box_active_border_inner))!=0 )
+	GDrawPopClip(pixmap,&old2);
+
     if ( gb->labeltype==2 ) {
 	GRect r, old3;
-	r.x = g->inner.x + g->inner.width - marklen - spacing/2; r.width = marklen;
+	int bp = GBoxBorderWidth(g->base,g->box);
+	r.x = g->r.x + g->r.width - marklen - spacing/2 - bp; r.width = marklen;
 	r.height = 2*GDrawPointsToPixels(pixmap,_GListMark_Box.border_width) +
 		    GDrawPointsToPixels(pixmap,3);
 	r.y = g->inner.y + (g->inner.height-r.height)/2;
@@ -158,9 +163,6 @@ return( false );
 	GDrawPopClip(pixmap,&old3);
     }
 
-    if ( g->box->border_type!=bt_none ||
-	    (g->box->flags&(box_foreground_border_inner|box_foreground_border_outer|box_active_border_inner))!=0 )
-	GDrawPopClip(pixmap,&old2);
     GDrawPopClip(pixmap,&old1);
 return( true );
 }
@@ -268,12 +270,21 @@ return;
     _ggadget_destroy(g);
 }
 
+static int GButtonGetDesiredWidth(GLabel *gl);
 static void GButtonSetTitle(GGadget *g,const unichar_t *tit) {
     GButton *b = (GButton *) g;
+    int bp = GBoxBorderWidth(g->base,g->box), width;
+
     if ( b->g.free_box )
 	free( b->g.box );
     free(b->label);
     b->label = u_copy(tit);
+    width = GButtonGetDesiredWidth(b);
+    if ( width<=g->r.width-2*bp )
+	g->inner.width = width;
+    else
+	g->inner.width = g->r.width-2*bp;
+    g->inner.x = g->r.x + (g->r.width-g->inner.width)/2;
     _ggadget_redraw(g);
 }
 
@@ -379,6 +390,23 @@ static int GButtonIsDefault(GGadget *g) {
 return( gl->is_default );
 }
 
+static int GButtonGetDesiredWidth(GLabel *gl) {
+    int iwidth, width;
+    if ( gl->image!=NULL ) {
+	iwidth = GImageGetScaledWidth(gl->g.base,gl->image);
+    }
+    if ( gl->label!=NULL ) {
+	FontInstance *old = GDrawSetFont(gl->g.base,gl->font);
+	width = GDrawGetTextWidth(gl->g.base,gl->label, -1, NULL);
+	GDrawSetFont(gl->g.base,old);
+    }
+
+    if ( width!=0 && iwidth!=0 )
+	width += GDrawPointsToPixels(gl->g.base,_GGadget_TextImageSkip);
+    width += iwidth;
+return( width );
+}
+
 static void GButtonGetDesiredSize(GGadget *g, GRect *outer, GRect *inner) {
     GLabel *gl = (GLabel *) g;
     int iwidth=0, iheight=0;
@@ -444,7 +472,7 @@ static void GButtonGetDesiredSize(GGadget *g, GRect *outer, GRect *inner) {
     }
 }
 
-void _gbutton_resize(GGadget *g, int32 width, int32 height ) {
+static void _gbutton_resize(GGadget *g, int32 width, int32 height ) {
     GRect inner;
     int bp = GBoxBorderWidth(g->base,g->box);
 

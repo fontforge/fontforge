@@ -2021,8 +2021,16 @@ static void gtextfield_move(GGadget *g, int32 x, int32 y ) {
 static void gtextfield_resize(GGadget *g, int32 width, int32 height ) {
     GTextField *gt = (GTextField *) g;
     int gtwidth=width, gtheight=height, oldheight=0;
+    int fxo=0, fwo=0, fyo=0, bxo, byo;
     int l;
 
+    if ( gt->listfield ) {
+	fxo = ((GListField *) gt)->fieldrect.x - g->r.x;
+	fwo = g->r.width - ((GListField *) gt)->fieldrect.width;
+	fyo = ((GListField *) gt)->fieldrect.y - g->r.y;
+	bxo = g->r.x+g->r.width - ((GListField *) gt)->buttonrect.x;
+	byo = ((GListField *) gt)->buttonrect.y - g->r.y;
+    }
     if ( gt->hsb!=NULL ) {
 	oldheight = gt->hsb->g.r.y+gt->hsb->g.r.height-g->r.y;
 	gtheight = height - (oldheight-g->r.height);
@@ -2051,6 +2059,13 @@ static void gtextfield_resize(GGadget *g, int32 width, int32 height ) {
 	    GScrollBarSetPos(&gt->vsb->g,l);
 	    _ggadget_redraw(&gt->g);
 	}
+    }
+    if ( gt->listfield ) {
+	((GListField *) gt)->fieldrect.x = g->r.x + fxo;
+	((GListField *) gt)->fieldrect.width = g->r.width -fwo;
+	((GListField *) gt)->fieldrect.y = g->r.y + fyo;
+	((GListField *) gt)->buttonrect.x = g->r.x+g->r.width - bxo;
+	((GListField *) gt)->buttonrect.y = g->r.y + byo;
     }
 }
 
@@ -2399,9 +2414,15 @@ static void GTextFieldFit(GTextField *gt) {
 
     GTextFieldGetDesiredSize(&gt->g,&outer,&inner);
     if ( gt->g.r.width==0 ) {
+	int extra=0;
+	if ( gt->listfield ) {
+	    extra = GDrawPointsToPixels(gt->g.base,_GListMarkSize) +
+		    2*GDrawPointsToPixels(gt->g.base,_GGadget_TextImageSkip) +
+		    GBoxBorderWidth(gt->g.base,&_GListMark_Box);
+	}
 	gt->g.r.width = outer.width;
 	gt->g.inner.width = inner.width;
-	gt->g.inner.x = gt->g.r.x + (outer.width-inner.width)/2;
+	gt->g.inner.x = gt->g.r.x + (outer.width-inner.width-extra)/2;
     } else {
 	gt->g.inner.x = gt->g.r.x + bp;
 	gt->g.inner.width = gt->g.r.width - 2*bp;
