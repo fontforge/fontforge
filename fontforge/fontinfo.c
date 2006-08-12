@@ -1394,7 +1394,7 @@ static char *AskKey(SplineFont *sf) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[8];
+    GGadgetCreateData gcd[8], boxes[3], *varray[9], *harray[6];
     GTextInfo label[8];
     struct ask_data d;
     char *ret;
@@ -1447,6 +1447,7 @@ static char *AskKey(SplineFont *sf) {
     gcd[0].gd.pos.x = 10; gcd[0].gd.pos.y = 6;
     gcd[0].gd.flags = gg_visible | gg_enabled;
     gcd[0].creator = GLabelCreate;
+    varray[0] = &gcd[0]; varray[1] = NULL;
 
     gcd[1].gd.pos.x = 10; gcd[1].gd.pos.y = 18; gcd[1].gd.pos.width = ptwidth-20;
     gcd[1].gd.flags = gg_visible | gg_enabled;
@@ -1455,6 +1456,8 @@ static char *AskKey(SplineFont *sf) {
 	gcd[1].gd.u.list = ti;
 	gcd[1].creator = GListFieldCreate;
     }
+    varray[2] = &gcd[1]; varray[3] = NULL;
+    varray[4] = GCD_Glue; varray[5] = NULL;
 
     gcd[2].gd.pos.x = 20-3; gcd[2].gd.pos.y = 90-35-3;
     gcd[2].gd.pos.width = -1; gcd[2].gd.pos.height = 0;
@@ -1465,6 +1468,7 @@ static char *AskKey(SplineFont *sf) {
     gcd[2].gd.label = &label[2];
     gcd[2].gd.handle_controlevent = Ask_OK;
     gcd[2].creator = GButtonCreate;
+    harray[0] = GCD_Glue; harray[1] = &gcd[2]; harray[2] = GCD_Glue;
 
     gcd[3].gd.pos.x = -20; gcd[3].gd.pos.y = 90-35;
     gcd[3].gd.pos.width = -1; gcd[3].gd.pos.height = 0;
@@ -1475,13 +1479,30 @@ static char *AskKey(SplineFont *sf) {
     gcd[3].gd.label = &label[3];
     gcd[3].gd.handle_controlevent = Ask_Cancel;
     gcd[3].creator = GButtonCreate;
+    harray[3] = GCD_Glue; harray[4] = &gcd[3]; harray[5] = GCD_Glue;
+    harray[6] = NULL;
+    varray[6] = &boxes[2]; varray[7] = NULL;
+    varray[8] = NULL;
 
     gcd[4].gd.pos.x = 2; gcd[4].gd.pos.y = 2;
     gcd[4].gd.pos.width = pos.width-4; gcd[4].gd.pos.height = pos.height-2;
     gcd[4].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
     gcd[4].creator = GGroupCreate;
 
-    GGadgetsCreate(gw,gcd);
+    memset(boxes,0,sizeof(boxes));
+    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = varray;
+    boxes[0].creator = GHVGroupCreate;
+
+    boxes[2].gd.flags = gg_enabled|gg_visible;
+    boxes[2].gd.u.boxelements = harray;
+    boxes[2].creator = GHBoxCreate;
+
+    GGadgetsCreate(gw,boxes);
+    GHVBoxSetExpandableRow(boxes[0].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(boxes[2].ret,gb_expandgluesame);
+    GHVBoxFitWindow(boxes[0].ret);
     GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
     while ( !d.done )
