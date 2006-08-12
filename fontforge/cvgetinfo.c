@@ -312,13 +312,14 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
     static GIData gi;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[22];
+    GGadgetCreateData gcd[22], boxes[6];
+    GGadgetCreateData *varray[16], *hvarray[16], *harray1[6], *harray2[4], *harray3[7];
     GTextInfo label[22];
     char tbuf[6][40];
     char basebuf[20], refbuf[20];
     char namebuf[100];
     char ubuf[40];
-    int i,j;
+    int i,j,l;
 
     gi.cv = cv;
     gi.sc = cv->sc;
@@ -342,6 +343,7 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 
 	memset(&gcd,0,sizeof(gcd));
 	memset(&label,0,sizeof(label));
+	memset(&boxes,0,sizeof(boxes));
 
 	snprintf( namebuf, sizeof(namebuf),
 		_("Reference to character %1$.20s at %2$d"),
@@ -352,6 +354,8 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5; 
 	gcd[0].gd.flags = gg_enabled|gg_visible;
 	gcd[0].creator = GLabelCreate;
+	l = 0;
+	varray[l++] = &gcd[0];
 	j = 1;
 
 	if ( ref->sc->unicodeenc!=-1 ) {
@@ -362,6 +366,7 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	    gcd[1].gd.pos.x = 5; gcd[1].gd.pos.y = 17;
 	    gcd[1].gd.flags = gg_enabled|gg_visible;
 	    gcd[1].creator = GLabelCreate;
+	    varray[l++] = &gcd[1];
 	    j=2;
 	}
 
@@ -372,9 +377,11 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	gcd[j].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
 	gcd[j].gd.popup_msg = (unichar_t *) _("The transformation matrix specifies how the points in\nthe source glyph should be transformed before\nthey are drawn in the current glyph.\n x(new) = tm[1,1]*x + tm[2,1]*y + tm[3,1]\n y(new) = tm[1,2]*x + tm[2,2]*y + tm[3,2]");
 	gcd[j].creator = GLabelCreate;
+	varray[l++] = &gcd[j];
 	++j;
 
 	for ( i=0; i<6; ++i ) {
+	    if ( !(i&1) ) hvarray[5*(i/2)] = GCD_Glue;
 	    sprintf(tbuf[i],"%g", (double) ref->transform[i]);
 	    label[i+j].text = (unichar_t *) tbuf[i];
 	    label[i+j].text_is_1byte = true;
@@ -385,9 +392,17 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	    gcd[i+j].gd.cid = i+1000;
 	    gcd[i+j].gd.handle_controlevent = GI_TransChange;
 	    gcd[i+j].creator = GTextFieldCreate;
+	    hvarray[5*(i/2)+1+(i&1)] = &gcd[i+j];
+	    if ( (i&1) ) { hvarray[5*(i/2)+3] = GCD_Glue; hvarray[5*(i/2)+4] = NULL; }
 	}
 	if ( ref->point_match )
 	    gcd[4+j].gd.flags = gcd[5+j].gd.flags = gg_visible;
+	hvarray[15] = NULL;
+
+	boxes[2].gd.flags = gg_enabled|gg_visible;
+	boxes[2].gd.u.boxelements = hvarray;
+	boxes[2].creator = GHVBoxCreate;
+	varray[l++] = &boxes[2];
 
 	label[6+j].text = (unichar_t *) _("_Use My Metrics");
 	label[6+j].text_in_resource = true;
@@ -397,6 +412,7 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	gcd[6+j].gd.flags = gg_enabled|gg_visible|gg_utf8_popup | (ref->use_my_metrics?gg_cb_on:0);
 	gcd[i+j].gd.cid = 6+1000;
 	gcd[6+j].gd.popup_msg = (unichar_t *) _("Only relevant in a truetype font, this flag indicates that the width\nof the composite glyph should be the same as the width of this reference.");
+	varray[l++] = &gcd[6+j];
 	gcd[6+j++].creator = GCheckBoxCreate;
 
 	label[6+j].text = (unichar_t *) _("_Round To Grid");
@@ -407,6 +423,7 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	gcd[6+j].gd.flags = gg_enabled|gg_visible|gg_utf8_popup | (ref->round_translation_to_grid?gg_cb_on:0);
 	gcd[i+j].gd.cid = 7+1000;
 	gcd[6+j].gd.popup_msg = (unichar_t *) _("Only relevant in a truetype font, this flag indicates that if the reference\nis translated, then the translation should be rounded during grid fitting.");
+	varray[l++] = &gcd[6+j];
 	gcd[6+j++].creator = GCheckBoxCreate;
 
 	label[6+j].text = (unichar_t *) _("TrueType Point _Matching:");
@@ -416,6 +433,7 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	gcd[6+j].gd.pos.x = 5; gcd[6+j].gd.pos.y = gcd[6+j-1].gd.pos.y+17;
 	gcd[6+j].gd.flags = cv->sc->parent->order2 ? (gg_enabled|gg_visible|gg_utf8_popup) : (gg_visible|gg_utf8_popup);
 	gcd[6+j].gd.popup_msg = (unichar_t *) _("Only relevant in a truetype font, this flag indicates that this\nreference should not be translated normally, but rather its position\nshould be determined by moving the reference so that the indicated\npoint in the reference falls on top of the indicated point in the base\ncharacter.");
+	varray[l++] = &gcd[6+j];
 	gcd[6+j++].creator = GLabelCreate;
 
 	label[6+j].text = (unichar_t *) _("_Base:");
@@ -425,6 +443,7 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	gcd[6+j].gd.pos.x = 8; gcd[6+j].gd.pos.y = gcd[6+j-1].gd.pos.y+19;
 	gcd[6+j].gd.flags = cv->sc->parent->order2 ? (gg_enabled|gg_visible|gg_utf8_popup) : (gg_visible|gg_utf8_popup);
 	gcd[6+j].gd.popup_msg = (unichar_t *) _("Only relevant in a truetype font, this flag indicates that this\nreference should not be translated normally, but rather its position\nshould be determined by moving the reference so that the indicated\npoint in the reference falls on top of the indicated point in the base\ncharacter.");
+	harray1[0] = &gcd[6+j];
 	gcd[6+j++].creator = GLabelCreate;
 
 	if ( ref->point_match ) {
@@ -438,6 +457,7 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	gcd[6+j].gd.flags = gcd[6+j-1].gd.flags;
 	gcd[6+j].gd.cid = CID_Match_Pt_Base;
 	gcd[6+j].gd.handle_controlevent = GI_MatchPtChange;
+	harray1[1] = &gcd[6+j];
 	gcd[6+j++].creator = GTextFieldCreate;
 
 	label[6+j].text = (unichar_t *) _("Ref:");
@@ -446,6 +466,7 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	gcd[6+j].gd.pos.x = 95; gcd[6+j].gd.pos.y = gcd[6+j-2].gd.pos.y;
 	gcd[6+j].gd.flags = gcd[6+j-1].gd.flags;
 	gcd[6+j].gd.popup_msg = (unichar_t *) _("Only relevant in a truetype font, this flag indicates that this\nreference should not be translated normally, but rather its position\nshould be determined by moving the reference so that the indicated\npoint in the reference falls on top of the indicated point in the base\ncharacter.");
+	harray1[2] = &gcd[6+j];
 	gcd[6+j++].creator = GLabelCreate;
 
 	if ( ref->point_match ) {
@@ -459,10 +480,25 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	gcd[6+j].gd.flags = gcd[6+j-1].gd.flags;
 	gcd[6+j].gd.cid = CID_Match_Pt_Ref;
 	gcd[6+j].gd.handle_controlevent = GI_MatchPtChange;
+	harray1[3] = &gcd[6+j];
 	gcd[6+j++].creator = GTextFieldCreate;
+	harray1[4] = GCD_Glue; harray1[5] = NULL;
+
+	boxes[3].gd.flags = gg_enabled|gg_visible;
+	boxes[3].gd.u.boxelements = harray1;
+	boxes[3].creator = GHBoxCreate;
+	varray[l++] = &boxes[3];
+
+	varray[l++] = GCD_Glue;
+
+	gcd[6+j].gd.pos.x = 5; gcd[6+j].gd.pos.y = RI_Height+(j==10?12:0)-70;
+	gcd[6+j].gd.pos.width = RI_Width-10;
+	gcd[6+j].gd.flags = gg_visible | gg_enabled;
+	varray[l++] = &gcd[6+j];
+	gcd[6+j++].creator = GLineCreate;
 
 	gcd[6+j].gd.pos.x = (RI_Width-GIntGetResource(_NUM_Buttonsize))/2;
-	gcd[6+j].gd.pos.y = RI_Height+(j==10?12:0)-64;
+	gcd[6+j].gd.pos.y = gcd[6+j-1].gd.pos.y+6;
 	gcd[6+j].gd.pos.width = -1; gcd[6+j].gd.pos.height = 0;
 	gcd[6+j].gd.flags = gg_visible | gg_enabled ;
 	label[6+j].text = (unichar_t *) _("_Show");
@@ -471,40 +507,60 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	gcd[6+j].gd.mnemonic = 'S';
 	gcd[6+j].gd.label = &label[6+j];
 	gcd[6+j].gd.handle_controlevent = GI_Show;
+	harray2[0] = GCD_Glue; harray2[1] = &gcd[6+j]; harray2[2] = GCD_Glue; harray2[3] = NULL;
+	gcd[6+j++].creator = GButtonCreate;
+
+	boxes[4].gd.flags = gg_enabled|gg_visible;
+	boxes[4].gd.u.boxelements = harray2;
+	boxes[4].creator = GHBoxCreate;
+	varray[l++] = &boxes[4];
+
+	gcd[6+j] = gcd[6+j-2];
+	varray[l++] = &gcd[6+j++];
+
+	gcd[6+j].gd.pos.x = 30-3; gcd[6+j].gd.pos.y = RI_Height+(j==13?12:0)-30-3;
+	gcd[6+j].gd.pos.width = -1; gcd[6+j].gd.pos.height = 0;
+	gcd[6+j].gd.flags = gg_visible | gg_enabled | gg_but_default;
+	label[6+j].text = (unichar_t *) _("_OK");
+	label[6+j].text_is_1byte = true;
+	label[6+j].text_in_resource = true;
+	gcd[6+j].gd.mnemonic = 'O';
+	gcd[6+j].gd.label = &label[6+j];
+	gcd[6+j].gd.handle_controlevent = GI_ROK;
+	gcd[6+j++].creator = GButtonCreate;
+
+	gcd[6+j].gd.pos.x = -30; gcd[6+j].gd.pos.y = gcd[6+j-1].gd.pos.y+3;
+	gcd[6+j].gd.pos.width = -1; gcd[6+j].gd.pos.height = 0;
+	gcd[6+j].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+	label[6+j].text = (unichar_t *) _("_Cancel");
+	label[6+j].text_is_1byte = true;
+	label[6+j].text_in_resource = true;
+	gcd[6+j].gd.mnemonic = 'C';
+	gcd[6+j].gd.label = &label[6+j];
+	gcd[6+j].gd.handle_controlevent = GI_Cancel;
 	gcd[6+j].creator = GButtonCreate;
 
-	gcd[7+j].gd.pos.x = 30-3; gcd[7+j].gd.pos.y = RI_Height+(j==10?12:0)-30-3;
-	gcd[7+j].gd.pos.width = -1; gcd[7+j].gd.pos.height = 0;
-	gcd[7+j].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[7+j].text = (unichar_t *) _("_OK");
-	label[7+j].text_is_1byte = true;
-	label[7+j].text_in_resource = true;
-	gcd[7+j].gd.mnemonic = 'O';
-	gcd[7+j].gd.label = &label[7+j];
-	gcd[7+j].gd.handle_controlevent = GI_ROK;
-	gcd[7+j].creator = GButtonCreate;
+	harray3[0] = GCD_Glue; harray3[1] = &gcd[6+j-1]; harray3[2] = GCD_Glue;
+	 harray3[3] = GCD_Glue; harray3[4] = &gcd[6+j]; harray3[5] = GCD_Glue;
+	 harray3[6] = NULL;
+	boxes[5].gd.flags = gg_enabled|gg_visible;
+	boxes[5].gd.u.boxelements = harray3;
+	boxes[5].creator = GHBoxCreate;
+	varray[l++] = &boxes[5];
+	varray[l] = NULL;
 
-	gcd[8+j].gd.pos.x = -30; gcd[8+j].gd.pos.y = gcd[7+j].gd.pos.y+3;
-	gcd[8+j].gd.pos.width = -1; gcd[8+j].gd.pos.height = 0;
-	gcd[8+j].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[8+j].text = (unichar_t *) _("_Cancel");
-	label[8+j].text_is_1byte = true;
-	label[8+j].text_in_resource = true;
-	gcd[8+j].gd.mnemonic = 'C';
-	gcd[8+j].gd.label = &label[8+j];
-	gcd[8+j].gd.handle_controlevent = GI_Cancel;
-	gcd[8+j].creator = GButtonCreate;
+	boxes[0].gd.flags = gg_enabled|gg_visible;
+	boxes[0].gd.u.boxelements = varray;
+	boxes[0].creator = GVBoxCreate;
 
-	gcd[9+j].gd.pos.x = 5; gcd[9+j].gd.pos.y = gcd[6+j].gd.pos.y-6;
-	gcd[9+j].gd.pos.width = RI_Width-10;
-	gcd[9+j].gd.flags = gg_visible | gg_enabled;
-	gcd[9+j].creator = GLineCreate;
-
-	gcd[10+j] = gcd[9+j];
-	gcd[9+j].gd.pos.y = gcd[7+j].gd.pos.y-3;
-
-	GGadgetsCreate(gi.gw,gcd);
+	GGadgetsCreate(gi.gw,boxes);
 	GWidgetIndicateFocusGadget(gcd[j].ret);
+    GHVBoxSetExpandableRow(boxes[0].ret,0);
+    GHVBoxSetExpandableCol(boxes[2].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(boxes[3].ret,gb_expandglue);
+    GHVBoxSetPadding(boxes[3].ret,6,2);
+    GHVBoxSetExpandableCol(boxes[4].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(boxes[5].ret,gb_expandgluesame);
 
     GWidgetHidePalettes();
     GDrawSetVisible(gi.gw,true);
@@ -517,9 +573,11 @@ static void ImgGetInfo(CharView *cv, ImageList *img) {
     static GIData gi;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[12];
+    GGadgetCreateData gcd[12], boxes[3], *varray[11], *harray[6];
     GTextInfo label[12];
-    char posbuf[100], scalebuf[100];
+    char posbuf[100], scalebuf[100], sizebuf[100];
+    struct _GImage *base = img->image->list_len==0?
+	    img->image->u.image:img->image->u.images[0];
 
     gi.cv = cv;
     gi.sc = cv->sc;
@@ -542,7 +600,7 @@ static void ImgGetInfo(CharView *cv, ImageList *img) {
 	memset(&gcd,0,sizeof(gcd));
 	memset(&label,0,sizeof(label));
 
-	sprintf( posbuf, "Image at: (%.0f,%.0f)", (double) img->xoff,
+	sprintf( posbuf, _("Image at:      (%.0f,%.0f)"), (double) img->xoff,
 		(double) (img->yoff-GImageGetHeight(img->image)*img->yscale));
 	label[0].text = (unichar_t *) posbuf;
 	label[0].text_is_1byte = true;
@@ -550,27 +608,55 @@ static void ImgGetInfo(CharView *cv, ImageList *img) {
 	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5; 
 	gcd[0].gd.flags = gg_enabled|gg_visible;
 	gcd[0].creator = GLabelCreate;
+	varray[0] = &gcd[0]; varray[1] = NULL;
 
-	sprintf( scalebuf, "Scaled by: (%.2f,%.2f)", (double) img->xscale, (double) img->yscale );
+	sprintf( scalebuf, _("Scaled by:    (%.2f,%.2f)"), (double) img->xscale, (double) img->yscale );
 	label[1].text = (unichar_t *) scalebuf;
 	label[1].text_is_1byte = true;
 	gcd[1].gd.label = &label[1];
 	gcd[1].gd.pos.x = 5; gcd[1].gd.pos.y = 19; 
 	gcd[1].gd.flags = gg_enabled|gg_visible;
 	gcd[1].creator = GLabelCreate;
+	varray[2] = &gcd[1]; varray[3] = NULL;
 
-	gcd[2].gd.pos.x = (II_Width-GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor)-6)/2; gcd[2].gd.pos.y = II_Height-32-3;
-	gcd[2].gd.pos.width = -1; gcd[2].gd.pos.height = 0;
-	gcd[2].gd.flags = gg_visible | gg_enabled | gg_but_default | gg_but_cancel;
-	label[2].text = (unichar_t *) _("_OK");
+	sprintf( sizebuf, _("Image Size:  %d x %d  pixels"), base->width, base->height );
+	label[2].text = (unichar_t *) sizebuf;
 	label[2].text_is_1byte = true;
-	label[2].text_in_resource = true;
-	gcd[2].gd.mnemonic = 'O';
 	gcd[2].gd.label = &label[2];
-	gcd[2].gd.handle_controlevent = GI_Cancel;
-	gcd[2].creator = GButtonCreate;
+	gcd[2].gd.pos.x = 5; gcd[2].gd.pos.y = 19; 
+	gcd[2].gd.flags = gg_enabled|gg_visible;
+	gcd[2].creator = GLabelCreate;
+	varray[4] = &gcd[2]; varray[5] = NULL;
+	varray[6] = GCD_Glue; varray[7] = NULL;
 
-	GGadgetsCreate(gi.gw,gcd);
+	gcd[3].gd.pos.x = (II_Width-GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor)-6)/2; gcd[3].gd.pos.y = II_Height-32-3;
+	gcd[3].gd.pos.width = -1; gcd[3].gd.pos.height = 0;
+	gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_default | gg_but_cancel;
+	label[3].text = (unichar_t *) _("_OK");
+	label[3].text_is_1byte = true;
+	label[3].text_in_resource = true;
+	gcd[3].gd.mnemonic = 'O';
+	gcd[3].gd.label = &label[3];
+	gcd[3].gd.handle_controlevent = GI_Cancel;
+	gcd[3].creator = GButtonCreate;
+	harray[0] = GCD_Glue; harray[1] = &gcd[3]; harray[2] = GCD_Glue; harray[3] = NULL;
+	varray[8] = &boxes[2]; varray[9] = NULL;
+	varray[10] = NULL;
+
+	memset(boxes,0,sizeof(boxes));
+	boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+	boxes[0].gd.flags = gg_enabled|gg_visible;
+	boxes[0].gd.u.boxelements = varray;
+	boxes[0].creator = GHVGroupCreate;
+
+	boxes[2].gd.flags = gg_enabled|gg_visible;
+	boxes[2].gd.u.boxelements = harray;
+	boxes[2].creator = GHBoxCreate;
+
+	GGadgetsCreate(gi.gw,boxes);
+	GHVBoxSetExpandableRow(boxes[0].ret,gb_expandglue);
+	GHVBoxSetExpandableCol(boxes[2].ret,gb_expandglue);
+	GHVBoxFitWindow(boxes[0].ret);
 
     GWidgetHidePalettes();
     GDrawSetVisible(gi.gw,true);
@@ -1171,7 +1257,8 @@ void ApGetInfo(CharView *cv, AnchorPoint *ap) {
     static GIData gi;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[24];
+    GGadgetCreateData gcd[24], boxes[10], *varray[21], *harray1[5], *harray2[3],
+	*hvarray[13], *harray3[4], *harray4[4], *harray5[6], *harray6[7];
     GTextInfo label[24];
     int j;
     SplineFont *sf;
@@ -1206,6 +1293,7 @@ return;
 
 	memset(&gcd,0,sizeof(gcd));
 	memset(&label,0,sizeof(label));
+	memset(&boxes,0,sizeof(boxes));
 
 	j=0;
 	label[j].text = (unichar_t *) ap->anchor->name;
@@ -1220,6 +1308,7 @@ return;
 	gcd[j].gd.u.list = AnchorClassesList(sf);
 	gcd[j].gd.handle_controlevent = AI_ANameChanged;
 	gcd[j].creator = GListButtonCreate;
+	varray[0] = &gcd[j]; varray[1] = NULL;
 	++j;
 
 	label[j].text = (unichar_t *) _("_X:");
@@ -1229,6 +1318,7 @@ return;
 	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+34;
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].creator = GLabelCreate;
+	harray1[0] = &gcd[j];
 	++j;
 
 	gcd[j].gd.pos.x = 23; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y-4;
@@ -1237,6 +1327,7 @@ return;
 	gcd[j].gd.cid = CID_X;
 	gcd[j].gd.handle_controlevent = AI_PosChanged;
 	gcd[j].creator = GTextFieldCreate;
+	harray1[1] = &gcd[j];
 	++j;
 
 	label[j].text = (unichar_t *) _("_Y:");
@@ -1246,6 +1337,7 @@ return;
 	gcd[j].gd.pos.x = 85; gcd[j].gd.pos.y = gcd[j-2].gd.pos.y;
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].creator = GLabelCreate;
+	harray1[2] = &gcd[j];
 	++j;
 
 	gcd[j].gd.pos.x = 103; gcd[j].gd.pos.y = gcd[j-2].gd.pos.y;
@@ -1254,7 +1346,13 @@ return;
 	gcd[j].gd.cid = CID_Y;
 	gcd[j].gd.handle_controlevent = AI_PosChanged;
 	gcd[j].creator = GTextFieldCreate;
+	harray1[3] = &gcd[j]; harray1[4] = NULL;
 	++j;
+
+	boxes[2].gd.flags = gg_enabled|gg_visible;
+	boxes[2].gd.u.boxelements = harray1;
+	boxes[2].creator = GHBoxCreate;
+	varray[2] = &boxes[2]; varray[3] = NULL;
 
 	label[j].text = (unichar_t *) _("Matching TTF Point:");
 	label[j].text_is_1byte = true;
@@ -1262,6 +1360,7 @@ return;
 	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[j-2].gd.pos.y+24;
 	gcd[j].gd.flags = cv->sc->parent->order2 ? (gg_enabled|gg_visible) : gg_visible;
 	gcd[j].creator = GLabelCreate;
+	harray2[0] = &gcd[j];
 	++j;
 
 	gcd[j].gd.pos.x = 103; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y-2;
@@ -1270,7 +1369,13 @@ return;
 	gcd[j].gd.cid = CID_MatchPt;
 	gcd[j].gd.handle_controlevent = AI_MatchChanged;
 	gcd[j].creator = GTextFieldCreate;
+	harray2[1] = &gcd[j]; harray2[2] = NULL;
 	++j;
+
+	boxes[3].gd.flags = gg_enabled|gg_visible;
+	boxes[3].gd.u.boxelements = harray2;
+	boxes[3].creator = GHBoxCreate;
+	varray[4] = &boxes[3]; varray[5] = NULL;
 
 	label[j].text = (unichar_t *) _("Mark");
 	label[j].text_is_1byte = true;
@@ -1280,6 +1385,7 @@ return;
 	gcd[j].gd.cid = CID_Mark;
 	gcd[j].gd.handle_controlevent = AI_TypeChanged;
 	gcd[j].creator = GRadioCreate;
+	hvarray[0] = &gcd[j];
 	++j;
 
 	label[j].text = (unichar_t *) _("Base Glyph");
@@ -1290,6 +1396,7 @@ return;
 	gcd[j].gd.cid = CID_BaseChar;
 	gcd[j].gd.handle_controlevent = AI_TypeChanged;
 	gcd[j].creator = GRadioCreate;
+	hvarray[1] = &gcd[j]; hvarray[2] = NULL;
 	++j;
 
 	label[j].text = (unichar_t *) _("Base Lig");
@@ -1300,6 +1407,7 @@ return;
 	gcd[j].gd.cid = CID_BaseLig;
 	gcd[j].gd.handle_controlevent = AI_TypeChanged;
 	gcd[j].creator = GRadioCreate;
+	hvarray[3] = &gcd[j];
 	++j;
 
 	label[j].text = (unichar_t *) _("Base Mark");
@@ -1310,6 +1418,7 @@ return;
 	gcd[j].gd.cid = CID_BaseMark;
 	gcd[j].gd.handle_controlevent = AI_TypeChanged;
 	gcd[j].creator = GRadioCreate;
+	hvarray[4] = &gcd[j]; hvarray[5] = NULL;
 	++j;
 
 /* GT: Cursive Entry. This defines a point on the glyph that should be matched */
@@ -1321,7 +1430,7 @@ return;
 /* GT: get a join such as might be expected for script. Urdu is odd because */
 /* GT: letters within a word crawl diagonally up the page, but with each word */
 /* GT: the writing point starts at the baseline. */
-    label[j].text = (unichar_t *) _("CursEntry");
+	label[j].text = (unichar_t *) _("CursEntry");
 	label[j].text_is_1byte = true;
 	gcd[j].gd.label = &label[j];
 	gcd[j].gd.pos.x = gcd[j-2].gd.pos.x; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+14;
@@ -1329,6 +1438,7 @@ return;
 	gcd[j].gd.cid = CID_CursEntry;
 	gcd[j].gd.handle_controlevent = AI_TypeChanged;
 	gcd[j].creator = GRadioCreate;
+	hvarray[6] = &gcd[j];
 	++j;
 
 /* GT: Cursive Exit. This defines a point on the glyph that should be matched */
@@ -1342,7 +1452,13 @@ return;
 	gcd[j].gd.cid = CID_CursExit;
 	gcd[j].gd.handle_controlevent = AI_TypeChanged;
 	gcd[j].creator = GRadioCreate;
+	hvarray[7] = &gcd[j]; hvarray[8] = NULL; hvarray[9] = NULL;
 	++j;
+
+	boxes[4].gd.flags = gg_enabled|gg_visible;
+	boxes[4].gd.u.boxelements = hvarray;
+	boxes[4].creator = GHVBoxCreate;
+	varray[6] = &boxes[4]; varray[7] = NULL;
 
 	label[j].text = (unichar_t *) _("Lig Index:");
 	label[j].text_is_1byte = true;
@@ -1350,6 +1466,7 @@ return;
 	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+26;
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].creator = GLabelCreate;
+	harray3[0] = &gcd[j];
 	++j;
 
 	gcd[j].gd.pos.x = 65; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y-4;
@@ -1358,7 +1475,13 @@ return;
 	gcd[j].gd.cid = CID_LigIndex;
 	gcd[j].gd.handle_controlevent = AI_LigIndexChanged;
 	gcd[j].creator = GTextFieldCreate;
+	harray3[1] = &gcd[j]; harray3[2] = NULL;
 	++j;
+
+	boxes[5].gd.flags = gg_enabled|gg_visible;
+	boxes[5].gd.u.boxelements = harray3;
+	boxes[5].creator = GHBoxCreate;
+	varray[8] = &boxes[5]; varray[9] = NULL;
 
 	label[j].text = (unichar_t *) _("_New");
 	label[j].text_is_1byte = true;
@@ -1370,6 +1493,7 @@ return;
 	gcd[j].gd.cid = CID_New;
 	gcd[j].gd.handle_controlevent = AI_New;
 	gcd[j].creator = GButtonCreate;
+	harray4[0] = &gcd[j]; harray4[1] = GCD_Glue;
 	++j;
 
 	label[j].text = (unichar_t *) _("_Delete");
@@ -1382,7 +1506,13 @@ return;
 	gcd[j].gd.cid = CID_Delete;
 	gcd[j].gd.handle_controlevent = AI_Delete;
 	gcd[j].creator = GButtonCreate;
+	harray4[2] = &gcd[j]; harray4[3] = NULL;
 	++j;
+
+	boxes[6].gd.flags = gg_enabled|gg_visible;
+	boxes[6].gd.u.boxelements = harray4;
+	boxes[6].creator = GHBoxCreate;
+	varray[10] = &boxes[6]; varray[11] = NULL;
 
 	label[j].text = (unichar_t *) _("< _Prev");
 	label[j].text_is_1byte = true;
@@ -1394,6 +1524,7 @@ return;
 	gcd[j].gd.cid = CID_Prev;
 	gcd[j].gd.handle_controlevent = AI_Prev;
 	gcd[j].creator = GButtonCreate;
+	harray5[0] = GCD_Glue; harray5[1] = &gcd[j]; harray5[2] = GCD_Glue;
 	++j;
 
 	label[j].text = (unichar_t *) _("_Next >");
@@ -1406,12 +1537,20 @@ return;
 	gcd[j].gd.cid = CID_Next;
 	gcd[j].gd.handle_controlevent = AI_Next;
 	gcd[j].creator = GButtonCreate;
+	harray5[3] = &gcd[j]; harray5[4] = GCD_Glue; harray5[5] = NULL;
 	++j;
+
+	boxes[7].gd.flags = gg_enabled|gg_visible;
+	boxes[7].gd.u.boxelements = harray5;
+	boxes[7].creator = GHBoxCreate;
+	varray[12] = &boxes[7]; varray[13] = NULL;
 
 	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+26;
 	gcd[j].gd.pos.width = AI_Width-10;
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].creator = GLineCreate;
+	varray[14] = GCD_Glue; varray[15] = NULL;
+	varray[16] = &gcd[j]; varray[17] = NULL;
 	++j;
 
 	label[j].text = (unichar_t *) _("_OK");
@@ -1423,6 +1562,7 @@ return;
 	gcd[j].gd.flags = gg_enabled|gg_visible|gg_but_default;
 	gcd[j].gd.handle_controlevent = AI_Ok;
 	gcd[j].creator = GButtonCreate;
+	harray6[0] = &gcd[j]; harray6[1] = GCD_Glue;
 	++j;
 
 	label[j].text = (unichar_t *) _("_Cancel");
@@ -1434,15 +1574,27 @@ return;
 	gcd[j].gd.flags = gg_enabled|gg_visible|gg_but_cancel;
 	gcd[j].gd.handle_controlevent = AI_Cancel;
 	gcd[j].creator = GButtonCreate;
+	harray6[2] = &gcd[j]; harray6[3] = NULL;
 	++j;
 
-	gcd[j].gd.pos.x = 2; gcd[j].gd.pos.y = 2;
-	gcd[j].gd.pos.width = pos.width-4; gcd[j].gd.pos.height = pos.height-4;
-	gcd[j].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
-	gcd[j].creator = GLineCreate;
-	++j;
+	boxes[8].gd.flags = gg_enabled|gg_visible;
+	boxes[8].gd.u.boxelements = harray6;
+	boxes[8].creator = GHBoxCreate;
+	varray[18] = &boxes[8]; varray[19] = NULL;
+	varray[20] = NULL;
 
-	GGadgetsCreate(gi.gw,gcd);
+	boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+	boxes[0].gd.flags = gg_enabled|gg_visible;
+	boxes[0].gd.u.boxelements = varray;
+	boxes[0].creator = GHVGroupCreate;
+
+	GGadgetsCreate(gi.gw,boxes);
+	GHVBoxSetExpandableRow(boxes[0].ret,gb_expandglue);
+	GHVBoxSetExpandableCol(boxes[8].ret,gb_expandgluesame);
+	GHVBoxSetExpandableCol(boxes[7].ret,gb_expandgluesame);
+	GHVBoxSetExpandableCol(boxes[6].ret,gb_expandgluesame);
+	GHVBoxFitWindow(boxes[0].ret);
+
 	AI_Display(&gi,ap);
 	GWidgetIndicateFocusGadget(GWidgetGetControl(gi.gw,CID_X));
 
@@ -2433,7 +2585,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	label[j].text_in_resource = true;
 	gcd[j].gd.label = &label[j];
 	gcd[j].gd.pos.x = 70; gcd[j].gd.pos.y = 5;
-	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.flags = gg_enabled|gg_visible | gg_rad_continueold;
 	gcd[j].gd.cid = CID_Interpolated;
 	gcd[j].gd.handle_controlevent = PI_InterpChanged;
 	gcd[j].creator = GRadioCreate;
@@ -2828,7 +2980,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	label[j].image = &GIcon_midcorner;
 	gcd[j].gd.label = &label[j];
 	gcd[j].gd.pos.x = 100; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y;
-	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.flags = gg_enabled|gg_visible | gg_rad_continueold;
 	gcd[j].gd.cid = CID_Corner;
 	gcd[j].gd.handle_controlevent = PI_PTypeChanged;
 	gcd[j].creator = GRadioCreate;
@@ -2838,7 +2990,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	label[j].image = &GIcon_midtangent;
 	gcd[j].gd.label = &label[j];
 	gcd[j].gd.pos.x = 140; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y;
-	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.flags = gg_enabled|gg_visible | gg_rad_continueold;
 	gcd[j].gd.cid = CID_Tangent;
 	gcd[j].gd.handle_controlevent = PI_PTypeChanged;
 	gcd[j].creator = GRadioCreate;
