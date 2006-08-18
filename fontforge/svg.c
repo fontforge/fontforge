@@ -750,6 +750,7 @@ return( NULL );
 
 # if defined(_STATIC_LIBXML) || defined(NODYNAMIC)
 
+#define _xmlParseMemory		xmlParseMemory
 #define _xmlParseFile		xmlParseFile
 #define _xmlDocGetRootElement	xmlDocGetRootElement
 #define _xmlFreeDoc		xmlFreeDoc
