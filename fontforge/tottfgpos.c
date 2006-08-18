@@ -1552,11 +1552,14 @@ static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
 	    putshort(gpos,0);		/* Only one class */
 	    ap = NULL;
 	} else {
-	    for ( k=0, ac=_ac; k<classcnt; ++k, ac=ac->next ) {
-		for ( ap = markglyphs[j]->anchor; ap!=NULL && (ap->anchor!=ac || ap->type!=at_mark);
-			ap=ap->next );
-		if ( ap!=NULL )
+	    for ( k=0, ac=_ac; k<classcnt; ac=ac->next ) {
+		if ( ac->matches ) {
+		    for ( ap = markglyphs[j]->anchor; ap!=NULL && (ap->anchor!=ac || ap->type!=at_mark);
+			    ap=ap->next );
+		    if ( ap!=NULL )
 	    break;
+		    ++k;
+		}
 	    }
 	    putshort(gpos,k);
 	}
@@ -1572,10 +1575,13 @@ static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
     }
     for ( j=0; j<cnt; ++j ) {
 	for ( k=0, ac=_ac; k<classcnt; ac=ac->next ) {
-	    for ( ap = markglyphs[j]->anchor; ap!=NULL && (ap->anchor!=ac || ap->type!=at_mark);
-		    ap=ap->next );
-	    if ( ap!=NULL )
+	    if ( ac->matches ) {
+		for ( ap = markglyphs[j]->anchor; ap!=NULL && (ap->anchor!=ac || ap->type!=at_mark);
+			ap=ap->next );
+		if ( ap!=NULL )
 	break;
+		++k;
+	    }
 	}
 	dumpanchor(gpos,ap,gi->is_ttf);
     }
