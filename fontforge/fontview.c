@@ -1240,45 +1240,12 @@ void MenuExit(GWindow base,struct gmenuitem *mi,GEvent *e) {
 
 char *GetPostscriptFontName(char *dir, int mult) {
     /* Some people use pf3 as an extension for postscript type3 fonts */
-    static unichar_t fontmacsuit[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','m','a','c','-','s','u','i','t', '\0' };
-    static char wild[] = "*.{"
-	   "pfa,"
-	   "pfb,"
-	   "pt3,"
-	   "t42,"
-	   "sfd,"
-	   "ttf,"
-	   "bdf,"
-	   "otf,"
-	   "otb,"
-	   "cff,"
-	   "cef,"
-	   "gai,"
-#ifndef _NO_LIBXML
-	   "svg,"
-#endif
-	   "pf3,"
-	   "ttc,"
-	   "gsf,"
-	   "cid,"
-	   "bin,"
-	   "hqx,"
-	   "dfont,"
-	   "mf,"
-	   "ik,"
-	   "fon,"
-	   "fnt,"
-	   "pdb"
-	   "}"
-/* With any of these methods of compression */
-	     "{.gz,.Z,.bz2,}";
-    static unichar_t *mimes[] = { fontmacsuit, NULL };
     unichar_t *ret;
     char *u_dir;
     char *temp;
 
     u_dir = def2utf8_copy(dir);
-    ret = FVOpenFont(_("Open Font"), u_dir,wild,mimes,mult);
+    ret = FVOpenFont(_("Open Font"), u_dir,mult);
     temp = u2def_copy(ret);
 
     free(ret);

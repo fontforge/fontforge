@@ -129,19 +129,19 @@ return;
     }
     for ( top=g->base; top->parent!=NULL && !top->is_toplevel ; top=top->parent );
     td = (GTopLevelD *) (top->widget_data);
-    if ( td->gfocus==g && mf==mf_normal )
-return;
 
+    if ( td->gfocus!=g ) {
 /* Hmm. KDE doesn't give us a focus out event when we make a window invisible */
 /*  So to be on the save side lets send local focus out events even when not */
 /*  strictly needed */
-    if ( /*top == current_focus_window &&*/ td->gfocus!=NULL &&
-	    td->gfocus->funcs->handle_focus!=NULL ) {
-	e.type = et_focus;
-	e.w = top;
-	e.u.focus.gained_focus = false;
-	e.u.focus.mnemonic_focus = mf_normal;
-	(td->gfocus->funcs->handle_focus)(td->gfocus,&e);
+	if ( /*top == current_focus_window &&*/ td->gfocus!=NULL &&
+		td->gfocus->funcs->handle_focus!=NULL ) {
+	    e.type = et_focus;
+	    e.w = top;
+	    e.u.focus.gained_focus = false;
+	    e.u.focus.mnemonic_focus = mf_normal;
+	    (td->gfocus->funcs->handle_focus)(td->gfocus,&e);
+	}
     }
     td->gfocus = g; td->wfocus = NULL;
     if ( top == current_focus_window && g->funcs->handle_focus!=NULL ) {

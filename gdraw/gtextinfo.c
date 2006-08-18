@@ -155,6 +155,8 @@ int GTextInfoDraw(GWindow base,int x,int y,GTextInfo *ti,
     }
     if ( (height = fh)<iheight ) height = iheight;
 
+    r.y = y; r.height = height;
+    r.x = 0; r.width = 10000;
     if (( ti->selected && sel!=COLOR_DEFAULT ) || ( ti->bg!=COLOR_DEFAULT && ti->bg!=COLOR_UNKNOWN )) {
 	Color bg = ti->bg;
 	if ( ti->selected ) {
@@ -167,12 +169,11 @@ int GTextInfoDraw(GWindow base,int x,int y,GTextInfo *ti,
 		    fg = GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(base));
 	    }
 	}
-	r.y = y; r.height = height;
-	r.x = 0; r.width = 10000;
 	GDrawFillRect(base,&r,bg);
     }
 
     if ( ti->line ) {
+	_GGroup_Init();
 	GDrawGetClip(base,&r);
 	r.x += GDrawPointsToPixels(base,2); r.width -= 2*GDrawPointsToPixels(base,2);
 	GDrawPushClip(base,&r,&old);

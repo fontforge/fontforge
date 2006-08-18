@@ -128,6 +128,9 @@ NameList *force_names_when_opening=NULL;
 NameList *force_names_when_saving=NULL;
 extern NameList *namelist_for_new_fonts;
 
+int default_font_filter_index=0;
+struct openfilefilters *user_font_filters = NULL;
+
 static int pointless;
 
 #define CID_Features	101
@@ -362,6 +365,7 @@ static struct prefs_list {
 	{ "GridFitPointSize", pr_real, &gridfit_pointsize, NULL, NULL, '\0', NULL, 1 },
 	{ "ForceNamesWhenOpening", pr_namelist, &force_names_when_opening, NULL, NULL, '\0', NULL, 1 },
 	{ "ForceNamesWhenSaving", pr_namelist, &force_names_when_saving, NULL, NULL, '\0', NULL, 1 },
+	{ "DefaultFontFilterIndex", pr_int, &default_font_filter_index, NULL, NULL, '\0', NULL, 1 },
 	{ NULL }
 },
  oldnames[] = {
@@ -752,7 +756,7 @@ void LoadPrefs(void) {
     char *prefs = getPfaEditPrefs();
     FILE *p;
     char line[1100];
-    int i, j, ri=0, mn=0, ms=0;
+    int i, j, ri=0, mn=0, ms=0, fn=0, ff=0, filt_max=0;
     int msp=0, msc=0;
     char *pt;
     struct prefs_list *pl;
@@ -792,7 +796,16 @@ void LoadPrefs(void) {
 		    script_filenames[ms++] = copy(pt);
 		else if ( strncmp(line,"MenuName:",strlen("MenuName:"))==0 && mn<SCRIPT_MENU_MAX )
 		    script_menu_names[mn++] = utf82u_copy(pt);
-		else if ( strncmp(line,"MacMapCnt:",strlen("MacSetCnt:"))==0 ) {
+		else if ( strncmp(line,"FontFilterName:",strlen("FontFilterName:"))==0 ) {
+		    if ( fn>=filt_max )
+			user_font_filters = grealloc(user_font_filters,((filt_max+=10)+1)*sizeof( struct openfilefilters));
+		    user_font_filters[fn].filter = NULL;
+		    user_font_filters[fn++].name = copy(pt);
+		    user_font_filters[fn].name = NULL;
+		} else if ( strncmp(line,"FontFilter:",strlen("FontFilter:"))==0 ) {
+		    if ( ff<filt_max )
+			user_font_filters[ff++].filter = copy(pt);
+		} else if ( strncmp(line,"MacMapCnt:",strlen("MacSetCnt:"))==0 ) {
 		    sscanf( pt, "%d", &msc );
 		    msp = 0;
 		    user_macfeat_otftag = gcalloc(msc+1,sizeof(struct macsettingname));
@@ -908,6 +921,12 @@ return;
 	fprintf( p, "MenuScript:\t%s\n", script_filenames[i]);
 	fprintf( p, "MenuName:\t%s\n", temp = u2utf8_copy(script_menu_names[i]));
 	free(temp);
+    }
+    if ( user_font_filters!=NULL ) {
+	for ( i=0; user_font_filters[i].name!=NULL; ++i ) {
+	    fprintf( p, "FontFilterName:\t%s\n", user_font_filters[i].name);
+	    fprintf( p, "FontFilter:\t%s\n", user_font_filters[i].filter);
+	}
     }
     if ( user_macfeat_otftag!=NULL && UserSettingsDiffer()) {
 	for ( i=0; user_macfeat_otftag[i].otf_tag!=0; ++i );

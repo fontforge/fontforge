@@ -4518,7 +4518,7 @@ return;
     TTFN_SetSBs(d);
     GDrawRequestExpose(d->tn_v,NULL,false);
 }
-    
+
 static void CheckActiveStyleTranslation(struct gfi_data *d) {
     int i,j, eng_pos, other_pos;
     char *english, *new=NULL, *temp, *pt;

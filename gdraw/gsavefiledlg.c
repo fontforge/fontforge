@@ -196,7 +196,7 @@ unichar_t *GWidgetSaveAsFile(const unichar_t *title, const unichar_t *defaultfil
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[7];
+    GGadgetCreateData gcd[7], boxes[3], *varray[5], *harray[10];
     GTextInfo label[5];
     struct gfc_data d;
     GGadget *pulldown, *files, *tf;
@@ -219,10 +219,12 @@ unichar_t *GWidgetSaveAsFile(const unichar_t *title, const unichar_t *defaultfil
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
+    memset(&boxes,0,sizeof(boxes));
     gcd[0].gd.pos.x = 12; gcd[0].gd.pos.y = 6;
     gcd[0].gd.pos.width = 223-24; gcd[0].gd.pos.height = 180;
     gcd[0].gd.flags = gg_visible | gg_enabled;
     gcd[0].creator = GFileChooserCreate;
+    varray[0] = &gcd[0]; varray[1] = NULL;
 
     gcd[1].gd.pos.x = 12; gcd[1].gd.pos.y = 222-3;
     gcd[1].gd.pos.width = -1;
@@ -237,6 +239,7 @@ unichar_t *GWidgetSaveAsFile(const unichar_t *title, const unichar_t *defaultfil
     gcd[1].gd.label = &label[1];
     gcd[1].gd.handle_controlevent = GFD_SaveOk;
     gcd[1].creator = GButtonCreate;
+    harray[0] = GCD_Glue; harray[1] = &gcd[1];
 
     gcd[2].gd.pos.x = (totwid-bs)*100/GIntGetResource(_NUM_ScaleFactor)/2; gcd[2].gd.pos.y = 222;
     gcd[2].gd.pos.width = -1;
@@ -251,44 +254,61 @@ unichar_t *GWidgetSaveAsFile(const unichar_t *title, const unichar_t *defaultfil
     gcd[2].gd.label = &label[2];
     gcd[2].gd.handle_controlevent = GFileChooserFilterEh;
     gcd[2].creator = GButtonCreate;
+    harray[2] = GCD_Glue; harray[3] = &gcd[2];
 
-    gcd[3].gd.pos.x = -gcd[1].gd.pos.x; gcd[3].gd.pos.y = 222;
+    gcd[3].gd.pos.x = gcd[2].gd.pos.x; gcd[3].gd.pos.y = 192;
     gcd[3].gd.pos.width = -1;
-    gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    gcd[3].gd.flags = gg_visible | gg_enabled;
     if ( _ggadget_use_gettext ) {
-	label[3].text = (unichar_t *) _("_Cancel");
+	label[3].text = (unichar_t *) _("_New");
 	label[3].text_is_1byte = true;
     } else
-	label[3].text = (unichar_t *) _STR_Cancel;
+	label[3].text = (unichar_t *) _STR_New;
     label[3].text_in_resource = true;
+    label[3].image = &_GIcon_dir;
+    label[3].image_precedes = false;
+    gcd[3].gd.mnemonic = 'N';
     gcd[3].gd.label = &label[3];
-    gcd[3].gd.mnemonic = 'C';
-    gcd[3].gd.handle_controlevent = GFD_Cancel;
+    gcd[3].gd.handle_controlevent = GFD_NewDir;
     gcd[3].creator = GButtonCreate;
+    harray[4] = GCD_Glue; harray[5] = &gcd[3];
 
-    gcd[4].gd.pos.x = gcd[2].gd.pos.x; gcd[4].gd.pos.y = 192;
+    gcd[4].gd.pos.x = -gcd[1].gd.pos.x; gcd[4].gd.pos.y = 222;
     gcd[4].gd.pos.width = -1;
-    gcd[4].gd.flags = gg_visible | gg_enabled;
+    gcd[4].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
     if ( _ggadget_use_gettext ) {
-	label[4].text = (unichar_t *) _("_New");
+	label[4].text = (unichar_t *) _("_Cancel");
 	label[4].text_is_1byte = true;
     } else
-	label[4].text = (unichar_t *) _STR_New;
+	label[4].text = (unichar_t *) _STR_Cancel;
     label[4].text_in_resource = true;
-    label[4].image = &_GIcon_dir;
-    label[4].image_precedes = false;
-    gcd[4].gd.mnemonic = 'N';
     gcd[4].gd.label = &label[4];
-    gcd[4].gd.handle_controlevent = GFD_NewDir;
+    gcd[4].gd.mnemonic = 'C';
+    gcd[4].gd.handle_controlevent = GFD_Cancel;
     gcd[4].creator = GButtonCreate;
+    harray[6] = GCD_Glue; harray[7] = &gcd[4]; harray[8] = GCD_Glue; harray[9] = NULL;
+
+    boxes[2].gd.flags = gg_visible | gg_enabled;
+    boxes[2].gd.u.boxelements = harray;
+    boxes[2].creator = GHBoxCreate;
+    varray[2] = &boxes[2]; varray[3] = NULL;
+    varray[4] = NULL;
+
+    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+    boxes[0].gd.flags = gg_visible | gg_enabled;
+    boxes[0].gd.u.boxelements = varray;
+    boxes[0].creator = GHVGroupCreate;
 
     gcd[5].gd.pos.x = 2; gcd[5].gd.pos.y = 2;
     gcd[5].gd.pos.width = pos.width-4; gcd[5].gd.pos.height = pos.height-4;
     gcd[5].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
     gcd[5].creator = GGroupCreate;
 
-    GGadgetsCreate(gw,gcd);
+    GGadgetsCreate(gw,boxes);
     GGadgetSetUserData(gcd[2].ret,gcd[0].ret);
+    GHVBoxSetExpandableRow(boxes[0].ret,0);
+    GHVBoxSetExpandableCol(boxes[2].ret,gb_expandgluesame);
+    GHVBoxFitWindow(boxes[0].ret);
 
     GFileChooserConnectButtons(gcd[0].ret,gcd[1].ret,gcd[2].ret);
     GFileChooserSetFilterText(gcd[0].ret,initial_filter);
