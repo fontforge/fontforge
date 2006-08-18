@@ -846,7 +846,7 @@ static void GListGetDesiredSize(GGadget *g,GRect *outer, GRect *inner) {
     width += GDrawPointsToPixels(gl->g.base,_GScrollBar_Width) +
 	    GDrawPointsToPixels(gl->g.base,1);
 
-    for ( i=0; i<gl->ltot && i<5; ++i ) {
+    for ( i=0; i<gl->ltot && i<8; ++i ) {
 	height += GTextInfoGetHeight(gl->g.base,gl->ti[i],gl->font);
     }
     if ( i<4 ) {
@@ -1052,8 +1052,16 @@ static void GListPopupFigurePos(GGadget *owner,GTextInfo **ti,GRect *pos) {
     if ( pt.y+height > rsize.height ) {
 	pt.x = owner->r.x; pt.y = owner->r.y-height;
 	GDrawTranslateCoordinates(owner->base,root,&pt);
-	if ( pt.y<0 )
+	if ( pt.y<0 ) {
 	    pt.y = 0;
+	    /* Ok, it will overlap the base widget. not that good an idea */
+	    if ( pt.x+owner->r.width+width+3<rsize.width )
+		pt.x += owner->r.width+3;
+	    else if ( pt.x-width-3>=0 )
+		pt.x -= width+3;
+	    else
+		/* But there doesn't seem much we can do about it if we get here */;
+	}
     }
     pos->y = pt.y;
 
