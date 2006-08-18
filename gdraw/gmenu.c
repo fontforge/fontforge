@@ -296,9 +296,10 @@ static int gmenu_expose(struct gmenu *m, GEvent *event) {
 	    ++i ) {
 	if ( i==m->offtop && m->offtop!=0 )
 	    GMenuDrawUpArrow(m, m->bp+m->as);
-	else if ( m->lcnt!=m->mcnt && i==m->lcnt+m->offtop-1 )
+	else if ( m->lcnt!=m->mcnt && i==m->lcnt+m->offtop-1 ) {
 	    GMenuDrawDownArrow(m, m->bp+(i-m->offtop)*m->fh+m->as);
-	else
+    break;	/* Otherwise we get bits of the line after the last */
+	} else
 	    GMenuDrawMenuLine(m, &m->mi[i], m->bp+(i-m->offtop)*m->fh);
     }
     GDrawPopClip(m->w,&old2);
@@ -885,17 +886,29 @@ static GMenu *_GMenu_Create(GWindow owner,GMenuItem *mi, GPoint *where,
     }
 
     pos.x = where->x; pos.y = where->y;
+    if ( pos.y + pos.height > screen.height ) {
+	if ( where->y+aheight-pos.height >= 0 )
+	    pos.y = where->y+aheight-pos.height;
+	else {
+	    pos.y = 0;
+	    /* Ok, it's going to overlap the press point if we got here */
+	    /*  let's see if we can shift it left/right a bit so it won't */
+	    if ( awidth<0 )
+		/* Oh, well, I guess it won't. It's a submenu and we've already */
+		/*  moved off to the left */;
+	    else if ( pos.x+awidth+pos.width+3<screen.width )
+		pos.x += awidth+3;
+	    else if ( pos.x-pos.width-3>=0 )
+		pos.x -= pos.width+3;
+	    else
+		/* There doesn't seem much we can do in this case */;
+	}
+    }
     if ( pos.x+pos.width > screen.width ) {
 	if ( where->x+awidth-pos.width >= 0 )
 	    pos.x = where->x+awidth-pos.width;
 	else
 	    pos.x = 0;
-    }
-    if ( pos.y + pos.height > screen.height ) {
-	if ( where->y+aheight-pos.height >= 0 )
-	    pos.y = where->y+aheight-pos.height;
-	else
-	    pos.y = 0;
     }
 
 /* Mnemonics in menus don't work under gnome. Turning off nodecor makes them */
