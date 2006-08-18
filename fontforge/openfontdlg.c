@@ -450,6 +450,8 @@ static int GFD_FilterSelected(GGadget *g, GEvent *e) {
 	    temp = GFileChooserGetDir(d->gfc);
 	    GFileChooserSetDir(d->gfc,temp);
 	    free(temp);
+	    default_font_filter_index = GGadgetGetFirstListSelectedItem(g);
+	    SavePrefs();
 	}
     }
 return( true );
@@ -724,7 +726,7 @@ unichar_t *FVOpenFont(char *title, const char *defaultfile, int mult) {
     free(namelistnames);
     GGadgetSetUserData(gcd[filter].ret,gcd[0].ret);
 
-    GFileChooserConnectButtons(gcd[0].ret,gcd[3].ret,gcd[filter].ret);
+    GFileChooserConnectButtons(gcd[0].ret,harray3[1]->ret,gcd[filter].ret);
     temp = utf82u_copy(filts[default_font_filter_index]->userdata);
     GFileChooserSetFilterText(gcd[0].ret,temp);
     free(temp);
