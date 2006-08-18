@@ -134,7 +134,7 @@ static uint32 scripts[][15] = {
  /* I'm not sure what the difference is between the 'hang' tag and the 'jamo' */
  /*  tag. 'Jamo' is said to be the precomposed forms, but what's 'hang'? */
 /* CJKIdeogra */{ CHR('h','a','n','i'), 0x3300, 0x9fff, 0xf900, 0xfaff, 0x020000, 0x02ffff },
-/* Hebrew */	{ CHR('h','e','b','r'), 0x0590, 0x05ff, 0xfb1e, 0xfb4ff },
+/* Hebrew */	{ CHR('h','e','b','r'), 0x0590, 0x05ff, 0xfb1e, 0xfb4f },
 #if 0	/* Hiragana used to have its own tag, but has since been merged with katakana */
 /* Hiragana */	{ CHR('h','i','r','a'), 0x3040, 0x309f },
 #endif
