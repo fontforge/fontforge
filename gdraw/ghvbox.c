@@ -57,17 +57,13 @@ return;
 
 static void GHVBox_destroy(GGadget *g) {
     GHVBox *gb = (GHVBox *) g;
-
-#if 0		/* Bug here. closes window then children get destroyed first */
-		/* So we shouldn't. But if program explicitly destroys the box */
-		/* children hang around unless we kill them here. Sigh. */
-		/*  I don't do the latter, so I don't support it */
     int i;
 
+    if ( gb->label != NULL )
+	GGadgetDestroy( gb->label );
     for ( i=0; i<gb->rows*gb->cols; ++i )
 	if ( gb->children[i]!=GG_Glue && gb->children[i]!=GG_ColSpan && gb->children[i]!=GG_RowSpan )
 	    GGadgetDestroy(gb->children[i]);
-#endif
     free(gb->children);
     _ggadget_destroy(g);
 }
@@ -126,8 +122,10 @@ static void GHVBoxGatherSizeInfo(GHVBox *gb,struct sizeinfo *si) {
 	    else {
 		GGadgetGetDesiredSize(g,&outer,NULL);
 		es = GBoxExtraSpace(g);
-		if ( c+1!=gb->cols ) outer.width += gb->hpad;
-		if ( r+1!=gb->rows ) outer.height += gb->vpad;
+		if ( c+1!=gb->cols && g->state!=gs_invisible )
+		    outer.width += gb->hpad;
+		if ( r+1!=gb->rows && g->state!=gs_invisible )
+		    outer.height += gb->vpad;
 		si->cols[c].allglue = false;
 		if ( si->cols[c].extra_space<es ) si->cols[c].extra_space=es;
 		if ( si->cols[c].min<outer.width ) si->cols[c].min=outer.width;
@@ -161,8 +159,10 @@ static void GHVBoxGatherSizeInfo(GHVBox *gb,struct sizeinfo *si) {
 		}
 		GGadgetGetDesiredSize(g,&outer,NULL);
 		es = GBoxExtraSpace(g);
-		if ( c+spanc!=gb->cols ) outer.width += gb->hpad;
-		if ( r+spanr!=gb->rows ) outer.height += gb->vpad;
+		if ( c+spanc!=gb->cols && g->state!=gs_invisible )
+		    outer.width += gb->hpad;
+		if ( r+spanr!=gb->rows && g->state!=gs_invisible )
+		    outer.height += gb->vpad;
 		if ( outer.width>totc ) {
 		    plus = (outer.width-totc)/spanc;
 		    extra = (outer.width-totc-spanc*plus);
@@ -220,24 +220,28 @@ static void GHVBoxGatherSizeInfo(GHVBox *gb,struct sizeinfo *si) {
 	for ( max=c=0; c<gb->cols; ++c )
 	    if ( max<si->cols[c].sized ) max = si->cols[c].sized;
 	for ( c=0; c<gb->cols; ++c )
-	    si->cols[c].sized = max;
+	    if ( si->cols[c].min!=0 || si->cols[c].allglue )
+		si->cols[c].sized = max;
     } else if ( gb->grow_col==gb_expandgluesame ) {
 	for ( max=c=0; c<gb->cols; ++c )
 	    if ( max<si->cols[c].sized && !si->cols[c].allglue ) max = si->cols[c].sized;
 	for ( c=0; c<gb->cols; ++c )
-	    if ( !si->cols[c].allglue ) si->cols[c].sized = max;
+	    if ( !si->cols[c].allglue && si->cols[c].min!=0 )	/* Must have at least one visible element */
+		si->cols[c].sized = max;
     }
 
     if ( gb->grow_row==gb_samesize ) {
 	for ( max=r=0; r<gb->rows; ++r )
 	    if ( max<si->rows[r].sized ) max = si->rows[r].sized;
 	for ( r=0; r<gb->rows; ++r )
-	    si->rows[r].sized = max;
+	    if ( si->rows[r].min!=0 || si->rows[r].allglue )
+		si->rows[r].sized = max;
     } else if ( gb->grow_row==gb_expandgluesame ) {
 	for ( max=r=0; r<gb->rows; ++r )
 	    if ( max<si->rows[r].sized && !si->rows[r].allglue ) max = si->rows[r].sized;
 	for ( r=0; r<gb->rows; ++r )
-	    if ( !si->rows[r].allglue ) si->rows[r].sized = max;
+	    if ( !si->rows[r].allglue && si->rows[r].min>0 )
+		si->rows[r].sized = max;
     }
 
     for ( i=si->width = si->minwidth = 0; i<gb->cols; ++i ) {
@@ -513,13 +517,14 @@ static GHVBox *_GHVBoxCreate(struct gwindow *base, GGadgetData *gd,void *data,
     _GGadget_Create(&gb->g,base,gd,data,def_box);
     gb->rows = vcnt; gb->cols = hcnt;
     gb->grow_col = gb->grow_row = gb_expandall;
-    gb->hpad = gb->vpad = 2;
+    gb->hpad = gb->vpad = GDrawPointsToPixels(base,2);
 
     gb->g.takes_input = false; gb->g.takes_keyboard = false; gb->g.focusable = false;
 
     if ( label != NULL ) {
 	gb->label = label->ret =
 		(label->creator)(base,&label->gd,label->data);
+	gb->label->contained = true;
     }
 
     gb->children = galloc(vcnt*hcnt*sizeof(GGadget *));
@@ -534,6 +539,7 @@ static GHVBox *_GHVBoxCreate(struct gwindow *base, GGadgetData *gd,void *data,
 		gcd->gd.pos.x = gcd->gd.pos.y = 1;
 		gb->children[v*hcnt+h] = gcd->ret =
 			(gcd->creator)(base,&gcd->gd,gcd->data);
+		gcd->ret->contained = true;
 	    }
 	}
 	while ( h<hcnt )

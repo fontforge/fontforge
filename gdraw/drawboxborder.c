@@ -1031,7 +1031,8 @@ return( bp );
 }
 
 int GBoxExtraSpace(GGadget *g) {
-    if ( !(g->box->flags & box_draw_default) || !GGadgetIsDefault(g))
+    if ( g->state==gs_invisible || !(g->box->flags & box_draw_default) ||
+	    !GGadgetIsDefault(g))
 return( 0 );
 
 return( GDrawPointsToPixels(g->base,1) + GDrawPointsToPixels(g->base,2) );

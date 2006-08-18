@@ -893,6 +893,8 @@ static void gfilechooser_move(GGadget *g, int32 x, int32 y ) {
     GGadgetMove(&gfc->files->g,x+(gfc->files->g.r.x-g->r.x),y+(gfc->files->g.r.y-g->r.y));
     GGadgetMove(&gfc->directories->g,x+(gfc->directories->g.r.x-g->r.x),y+(gfc->directories->g.r.y-g->r.y));
     GGadgetMove(&gfc->name->g,x+(gfc->name->g.r.x-g->r.x),y+(gfc->name->g.r.y-g->r.y));
+    GGadgetMove(&gfc->up->g,x+(gfc->up->g.r.x-g->r.x),y+(gfc->up->g.r.y-g->r.y));
+    GGadgetMove(&gfc->home->g,x+(gfc->home->g.r.x-g->r.x),y+(gfc->home->g.r.y-g->r.y));
     _ggadget_move(g,x,y);
 }
 
@@ -900,6 +902,8 @@ static void gfilechooser_resize(GGadget *g, int32 width, int32 height ) {
     GFileChooser *gfc = (GFileChooser *) g;
 
     if ( width!=gfc->g.r.width ) {
+	int space = 8 + (width>100) ? (width-100)/12 : 0;
+	GGadgetResize(&gfc->directories->g,width-gfc->up->g.r.width-gfc->home->g.r.width-space,gfc->directories->g.r.height);
 	GGadgetMove(&gfc->directories->g,gfc->g.r.x+(width-gfc->directories->g.r.width)/2,gfc->g.r.y);
 	GGadgetMove(&gfc->up->g,gfc->g.r.x+width-gfc->up->g.r.width-2,gfc->up->g.r.y);
 
@@ -928,6 +932,40 @@ static void gfilechooser_setenabled(GGadget *g, int enabled ) {
     _ggadget_setenabled(g,enabled);
 }
 
+static void GFileChooserGetDesiredSize(GGadget *g,GRect *outer,GRect *inner) {
+    GFileChooser *gfc = (GFileChooser *) g;
+    if ( inner!=NULL ) {
+	int bp = GBoxBorderWidth(g->base,g->box);
+	inner->x = inner->y = 0;
+	inner->width = gfc->desired_width - 2*bp;
+	inner->height = gfc->desired_height - 2*bp;
+    }
+    if ( outer!=NULL ) {
+	outer->x = outer->y = 0;
+	outer->width = gfc->desired_width;
+	outer->height = gfc->desired_height;
+    }
+}
+
+static void GFileChooserSetDesiredSize(GGadget *g,GRect *outer,GRect *inner) {
+    GFileChooser *gfc = (GFileChooser *) g;
+
+    if ( outer!=NULL ) {
+	gfc->desired_width = outer->width;
+	gfc->desired_height = outer->height;
+    } else if ( inner!=NULL ) {
+	int bp = GBoxBorderWidth(g->base,g->box);
+	gfc->desired_width = inner->width + 2*bp;
+	gfc->desired_height = inner->height + 2*bp;
+    }
+}
+
+static int gfilechooser_FillsWindow(GGadget *g) {
+return( g->prev==NULL &&
+	(_GWidgetGetGadgets(g->base)==g ||
+	 _GWidgetGetGadgets(g->base)==(GGadget *) ((GFileChooser *) g)->up ));
+}
+
 struct gfuncs GFileChooser_funcs = {
     0,
     sizeof(struct gfuncs),
@@ -952,7 +990,27 @@ struct gfuncs GFileChooser_funcs = {
 
     GFileChooserSetTitle,
     NULL,
-    GFileChooserGetTitle
+    GFileChooserGetTitle,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+
+    GFileChooserGetDesiredSize,
+    GFileChooserSetDesiredSize,
+    gfilechooser_FillsWindow
 };
 
 static void GFileChooserCreateChildren(GFileChooser *gfc, int flags) {
@@ -1012,8 +1070,8 @@ static void GFileChooserCreateChildren(GFileChooser *gfc, int flags) {
 }
 
 GGadget *GFileChooserCreate(struct gwindow *base, GGadgetData *gd,void *data) {
-    GFileChooser *gfc = (GFileChooser *) gcalloc(1,sizeof(GFileChooser));;
-    
+    GFileChooser *gfc = (GFileChooser *) gcalloc(1,sizeof(GFileChooser));
+
     gfc->g.funcs = &GFileChooser_funcs;
     _GGadget_Create(&gfc->g,base,gd,data,&gfilechooser_box);
     gfc->g.takes_input = gfc->g.takes_keyboard = false; gfc->g.focusable = false;
@@ -1021,6 +1079,8 @@ GGadget *GFileChooserCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 	gfc->g.r.width = GGadgetScale(GDrawPointsToPixels(base,140));
     if ( gfc->g.r.height == 0 )
 	gfc->g.r.height = GDrawPointsToPixels(base,100);
+    gfc->desired_width = gfc->g.r.width;
+    gfc->desired_height = gfc->g.r.height;
     gfc->g.inner = gfc->g.r;
     _GGadget_FinalPosition(&gfc->g,base,gd);
 

@@ -1693,6 +1693,10 @@ return( true );
 
 static int gtextfield_focus(GGadget *g, GEvent *event) {
     GTextField *gt = (GTextField *) g;
+
+    if ( g->state == gs_invisible || g->state == gs_disabled )
+return( false );
+
     if ( gt->cursor!=NULL ) {
 	GDrawCancelTimer(gt->cursor);
 	gt->cursor = NULL;

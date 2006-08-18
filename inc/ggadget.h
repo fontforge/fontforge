@@ -122,6 +122,7 @@ typedef struct ggadgetdata {
 	GTabInfo *tabs;		/* for Tab Widgets */
 	GMenuItem *menu;	/* for menus */
 	struct ggadgetcreatedata **boxelements;	/* An array of things to go in the box */
+	struct matrixinit *matrix;
     } u;
     enum gg_flags { gg_visible=1, gg_enabled=2, gg_pos_in_pixels=4,
 	gg_sb_vert=8, gg_line_vert=gg_sb_vert,
@@ -168,6 +169,32 @@ enum editor_commands { ec_cut, ec_clear, ec_copy, ec_paste, ec_undo, ec_redo,
 
     /* return values from file chooser filter functions */
 enum fchooserret { fc_hide, fc_show, fc_showdisabled };
+
+struct matrixinit {
+    int col_cnt;
+    struct col_init {
+	enum me_type { me_int, me_enum, me_real, me_string, me_bigstr, me_func } me_type;
+	char *(*func)(GGadget *,int r,int c);
+	GTextInfo *enum_vals;
+	void (*enable_enum)(GGadget *,GMenuItem *, int r, int c);
+	char *title;
+    } *col_init;
+    int initial_row_cnt;
+    struct matrix_data {
+	union {
+	    int md_ival;
+	    double md_real;
+	    char *md_str;
+	} u;
+	uint8 frozen;
+    } *matrix_data;
+    void (*initrow)(GGadget *g,int row);
+    int  (*candelete)(GGadget *g,int row);
+    void (*enablemenu)(GGadget *g,GMenuItem *,int row,int col);
+    void (*popupmenu)(GGadget *g,GEvent *e,int row,int col);
+    int  (*handle_key)(GGadget *g,GEvent *e);
+    char *(*bigedittitle)(GGadget *g,int r, int c);
+};
 
 struct gdirentry;
 typedef enum fchooserret (*GFileChooserFilterType)(GGadget *g,struct gdirentry *ent,
@@ -306,6 +333,11 @@ void GHVBoxSetExpandableRow(GGadget *g,int row);
 void GHVBoxSetPadding(GGadget *g,int hpad, int vpad);
 void GHVBoxFitWindow(GGadget *g);
 
+void GMatrixEditSet(GGadget *g,struct matrix_data *data, int rows, int copy_it);
+struct matrix_data *GMatrixEditGet(GGadget *g, int *rows);
+void GMatrixEditDeleteRow(GGadget *g,int row);
+int GMatrixEditStringDlg(GGadget *g,int row,int col);
+
 extern void GGadgetPreparePopup(GWindow base,const unichar_t *msg);
 extern void GGadgetPreparePopupR(GWindow base,int msg);
 extern void GGadgetPreparePopup8(GWindow base,char *msg);
@@ -342,6 +374,7 @@ GGadget *GHBoxCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GVBoxCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GHVBoxCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GHVGroupCreate(struct gwindow *base, GGadgetData *gd,void *data);
+GGadget *GMatrixEditCreate(struct gwindow *base, GGadgetData *gd,void *data);
 
 GGadget *CreateSlider(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *CreateFileChooser(struct gwindow *base, GGadgetData *gd,void *data);

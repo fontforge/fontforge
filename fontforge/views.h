@@ -1166,8 +1166,7 @@ extern char *FVOpenFont(char *title, const char *defaultfile,
 	const char *initial_filter,int mult);
 #elif defined(FONTFORGE_CONFIG_GDRAW)
 extern void SCAutoTrace(SplineChar *sc,GWindow v,int ask);
-extern unichar_t *FVOpenFont(char *title, const char *defaultfile,
-	const char *initial_filter, unichar_t **mimetypes,int mult);
+extern unichar_t *FVOpenFont(char *title, const char *defaultfile, int mult);
 #endif
 
 

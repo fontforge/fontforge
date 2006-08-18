@@ -342,6 +342,7 @@ typedef struct gfilechooser {
     struct giocontrol *outstanding;
     GCursor old_cursor;
     GButton *up, *home;
+    int16 desired_width, desired_height;
 } GFileChooser;
 
 typedef struct ghvbox {
@@ -353,6 +354,43 @@ typedef struct ghvbox {
     GGadget *label;
     int label_height;
 } GHVBox;
+
+typedef struct gmatrixedit {
+    GGadget g;
+    int rows, cols;
+    int row_max;
+    struct col_data {
+	enum me_type me_type;
+	char *(*func)(GGadget *,int r,int c); /* Produces a string to display if md_str==NULL */
+	GMenuItem *enum_vals;
+	void (*enable_enum)(GGadget *,GMenuItem *, int r, int c);
+	char *title;
+	int16 width, x;			/* Relative to inner.x */
+	uint8 fixed;
+    } *col_data;
+    int hpad, vpad;			/* Internal padding */
+    unsigned int has_titles: 1;
+    unsigned int lr_pointer: 1;
+    unsigned int wasnew: 1;		/* So we need to call newafter when finished editing */
+    unsigned int big_done: 1;
+    unsigned int edit_active: 1;
+    int pressed_col;			/* For changing column spacing */
+    struct matrix_data *data;
+    int16 as, fh;
+    FontInstance *font;
+    FontInstance *titfont;
+    GGadget *tf;
+    int active_col, active_row;
+    int off_top, off_left;
+    GGadget *vsb, *hsb;
+    GGadget *del;
+    GWindow nested;
+    void (*initrow)(GGadget *g,int row);
+    int  (*candelete)(GGadget *g,int row);
+    void (*popupmenu)(GGadget *g,GEvent *e,int row,int col);
+    int  (*handle_key)(GGadget *g,GEvent *e);
+    char *(*bigedittitle)(GGadget *g,int r, int c);
+} GMatrixEdit;
 
 typedef struct rowcol {
     GGadget g;

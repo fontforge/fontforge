@@ -290,12 +290,22 @@ static void GButtonSetTitle(GGadget *g,const unichar_t *tit) {
 
 static void GButtonSetImageTitle(GGadget *g,GImage *img,const unichar_t *tit, int before) {
     GButton *b = (GButton *) g;
+    int bp = GBoxBorderWidth(g->base,g->box), width;
+
     if ( b->g.free_box )
 	free( b->g.box );
     free(b->label);
     b->label = u_copy(tit);
     b->image = img;
     b->image_precedes = before;
+
+    width = GButtonGetDesiredWidth(b);
+    if ( width<=g->r.width-2*bp )
+	g->inner.width = width;
+    else
+	g->inner.width = g->r.width-2*bp;
+    g->inner.x = g->r.x + (g->r.width-g->inner.width)/2;
+
     _ggadget_redraw(g);
 }
 
@@ -373,12 +383,19 @@ return(gl->ti[pos]);
 
 static void GListButSet(GGadget *g,GTextInfo **ti,int32 docopy) {
     GListButton *gl = (GListButton *) g;
+    int i;
 
     GTextInfoArrayFree(gl->ti);
     if ( docopy || ti==NULL )
 	ti = GTextInfoArrayCopy(ti);
     gl->ti = ti;
     gl->ltot = GTextInfoArrayCount(ti);
+    for ( i=0; ti[i]->text!=NULL || ti[i]->line; ++i ) {
+	if ( ti[i]->selected && ti[i]->text!=NULL ) {
+	    GGadgetSetTitle(g,ti[i]->text);
+    break;
+	}
+    }
 }
 
 static void GListButClear(GGadget *g) {
@@ -391,7 +408,7 @@ return( gl->is_default );
 }
 
 static int GButtonGetDesiredWidth(GLabel *gl) {
-    int iwidth, width;
+    int iwidth=0, width=0;
     if ( gl->image!=NULL ) {
 	iwidth = GImageGetScaledWidth(gl->g.base,gl->image);
     }
