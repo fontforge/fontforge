@@ -1452,7 +1452,7 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
 
     gcd[1].gd.pos.x = 12; gcd[1].gd.pos.y = 224-3; gcd[1].gd.pos.width = -1; gcd[1].gd.pos.height = 0;
     gcd[1].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[1].text = (unichar_t *) _("_Import...");
+    label[1].text = (unichar_t *) _("_Import");
     label[1].text_is_1byte = true;
     label[1].text_in_resource = true;
     gcd[1].gd.label = &label[1];
