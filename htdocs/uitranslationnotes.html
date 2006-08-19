@@ -1,0 +1,282 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 19-Aug-2006 -->
+  <!-- AP: Last modified: 19-Aug-2006 -->
+  <TITLE>User Interface Translation Notes</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV ID="in">
+  <H1>
+    User Interface Translation Notes
+  </H1>
+  <P>
+  FontForge uses a standard mechanism called gettext to provide translations
+  of user interface strings into different language. Gettext is described profusely
+  at the <A HREF="http://www.gnu.org/software/gettext/manual/">gettext site</A>,
+  the following are some brief notes on what you need to know to translate
+  FontForge's UI.
+  <UL>
+    <LI>
+      <A HREF="uitranslationnotes.html#Obtaining">Obtaining the strings</A>
+    <LI>
+      <A HREF="uitranslationnotes.html#Modifying">Creating and Modifying a "po"
+      file</A>
+    <LI>
+      <A HREF="uitranslationnotes.html#Updating">Updating an already existing "po"
+      file</A>
+    <LI>
+      <A HREF="uitranslationnotes.html#Testing">Testing a "po" file</A>
+  </UL>
+  <H2>
+    <A NAME="Obtaining">Obtaining</A> the strings
+  </H2>
+  <P>
+  In a gettext based package, the translatable strings live in a "pot" file.
+  In FontForge's case it is called "FontForge.pot".
+  <P>
+  Each source distribution I make contains the then current FontForge.pot file
+  in the top level directory of the distribution. You may find a copy of the
+  <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=114328">current
+  distribution on sourceforge</A>, it will be called something like
+  fontforge_full-20060817.tar.bz2.
+  <P>
+  After you have downloaded one of these packages, either copy the tarball
+  to where you are, or move to the directory containing the tarball (I can't
+  provide explicit instructions here, because I don't know where your browser
+  put the file) and type (do not type "$"):
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>bunzip2 fontforge*.tar.bz2
+<FONT COLOR="Gray">$ </FONT>tar xf fontforge*.tar
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  Then edit the file<CODE> fontforge-*/FontForge.pot</CODE>.
+  <H4>
+    from the <A NAME="src-cvs">cvs</A> tree
+  </H4>
+  <P>
+  This is a better solution because it gives you a current version of the pot
+  file. Create a cvs directory as described in the
+  <A HREF="source-build.html#src-cvs">section on building from source</A>.
+  Having done that type
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>cd fontforge/fontforge
+<FONT COLOR="Gray">$ </FONT>make -f Makefile.in FontForge.pot
+</PRE>
+  </BLOCKQUOTE>
+  <H2>
+    Creating and <A NAME="Modifying">Modifying</A> a "po" file
+  </H2>
+  <P>
+  You should now have a FontForge.pot file (if you don't see the
+  <A HREF="uitranslationnotes.html#Obtaining">above section</A> on how to get
+  one).
+  <P>
+  The pot file is in the same format as the "po" file which you need to generate.
+  Simply rename FontForge.pot to the language/locale that you are working on.
+  In most cases you will probably want to rename it just to the language
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>mv FontForge.pot <FONT COLOR="Red">fr</FONT>.po
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  But sometimes that will not be enough. For example, Traditional and simplified
+  chinese are sufficiently different that a locale must also be specified:
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>mv FontForge.pot <FONT COLOR="Red">zh_TW</FONT>.po
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  Once you have created your po file it is time to start modifying it. I shall
+  use French as an example in the following (because I almost speak French),
+  obviously you will need to make changes appropriate for your language.
+  <P>
+  The po file begins with some lines like:
+  <BLOCKQUOTE>
+    <PRE># (American) English User Interface strings for FontForge.
+# Copyright (C) 2000-2006 by George Williams
+# This file is distributed under the same license as the FontForge package.
+# George Williams, &lt;pfaedit@users.sourceforge.net&gt;, 2006.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2006-08-19 07:32-0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME &lt;EMAIL@ADDRESS&gt;\n"
+"Language-Team: LANGUAGE &lt;LL@li.org&gt;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  You should change this to:
+  <BLOCKQUOTE>
+    <PRE># <FONT COLOR="Red">(French) French</FONT> User Interface strings for FontForge.
+# Copyright (C) <FONT COLOR="Red">2004-2006 by Pierre Hanser &amp; Yannis Haralambous</FONT>
+# This file is distributed under the same license as the FontForge package.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: <FONT COLOR="Red">20060821</FONT>\n"
+"POT-Creation-Date: 2006-08-19 07:32-0700\n"
+"PO-Revision-Date: <FONT COLOR="Red">2006-08-20 14:46+0100</FONT>\n"
+"Last-Translator: <FONT COLOR="Red">Pierre Hanser</FONT>\n"
+"Language-Team: <FONT COLOR="Red">French</FONT> &lt;LL@li.org&gt;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=<FONT COLOR="Red">UTF-8</FONT>\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=<FONT COLOR="Red">2</FONT>; plural=<FONT COLOR="Red">n&gt;1</FONT>;\n"
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  Most of these are pretty self-explanatory. Fill in your name and email address
+  where appropriate, and the date on which you last worked on the file. The
+  plurals line is a little more complex, and I'll describe it
+  <A HREF="uitranslationnotes.html#plurals">later</A>.
+  <P>
+  Next there are thousands of string entries. They look something like this:
+  <BLOCKQUOTE>
+    <PRE>#: ttfinstrs.c:2184 typofeatures.c:1450 ../gdraw/gaskdlg.c:1076
+#: ../gdraw/gaskdlg.c:1332 ../gdraw/gaskdlg.c:1391 ../gdraw/gfiledlg.c:152
+#: ../gdraw/gmatrixedit.c:711 ../gdraw/gsavefiledlg.c:280
+msgid "_Cancel"
+msgstr ""
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  You should change these to:
+  <BLOCKQUOTE>
+    <PRE>#: ttfinstrs.c:2184 typofeatures.c:1450 ../gdraw/gaskdlg.c:1076
+#: ../gdraw/gaskdlg.c:1332 ../gdraw/gaskdlg.c:1391 ../gdraw/gfiledlg.c:152
+#: ../gdraw/gmatrixedit.c:711 ../gdraw/gsavefiledlg.c:280
+msgid "_Cancel"
+msgstr "<FONT COLOR="Red">_Annuler</FONT>"
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  So the translation goes into the msgstr line. (The comment lines above indicate
+  in what source files and on what lines the "_Cancel" string as used -- this
+  information may be helpful if you want more information about context).
+  <P>
+  Some strings contain mnemonics. The mnemonic is preceded by an underscore.
+  <P>
+  That seems fairly straight forward. But there are always complications. Sometimes
+  an English word might be translated by different French words depending on
+  context. For example in French the English word "New" might be translated
+  as either "Nouveau" or "Nouvelle" depending on the gender of the thing being
+  created. So to disambiguate some strings a little bit of context information
+  may appear before the actual string to be translated:
+  <BLOCKQUOTE>
+    <PRE>msgid "File|_New"
+msgstr "<FONT COLOR="Red">_Nouveau</FONT>"
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  or
+  <BLOCKQUOTE>
+    <PRE>msgid "Anchor|_New"
+msgstr "<FONT COLOR="Red">_Nouvelle</FONT>"
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  The context will be any text before an "|". It should not be translated.
+  Indeed both it and the "|" should be completely omitted.
+  <P>
+  Finally we have the problem of <A NAME="plurals">plurals</A>. Suppose we
+  have a string
+  <BLOCKQUOTE>
+    <PRE>msgid "%d Group"
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  We need to inflect the word "Group" depending on the number of groups we've
+  got -- and each language has different rules.
+  <P>
+  Remember, at the beginning of the file there was a line:
+  <BLOCKQUOTE>
+    <PRE>"Plural-Forms: nplurals=<FONT COLOR="Red">2</FONT>; plural=<FONT COLOR="Red">n&gt;1</FONT>;\n"
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  This says that this language has two plural forms, the singular form is used
+  when there are 0 or 1 entries (n&lt;=1), and the plural form is used for
+  n&gt;1 entries. That rule is correct for French. English looks like:
+  <BLOCKQUOTE>
+    <PRE>"Plural-Forms: nplurals=<FONT COLOR="Red">2</FONT>; plural=<FONT COLOR="Red">n!=1</FONT>;\n"
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  A language like Greek, which has a dual form, might look like
+  <BLOCKQUOTE>
+    <PRE>"Plural-Forms: nplurals=<FONT COLOR="Red">3</FONT>; plural=<FONT COLOR="Red">n&lt;=1?0:n==2?1:2</FONT>;\n"
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  The expression is a c language expression. When there is a string that might
+  be plural it has a slightly different form in the po file
+  <BLOCKQUOTE>
+    <PRE>#: groups.c:1558
+msgid "Group"
+msgid_plural "Groups"
+msgstr[0] "<FONT COLOR="Red">Groupe</FONT>"
+msgstr[1] "<FONT COLOR="Red">Groupes</FONT>"
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  Obviously, in a language with three forms there would be additional
+  <CODE>msgstr[n] </CODE>entries.
+  <H2>
+    <A NAME="Updating">Updating</A> an already existing "po" file
+  </H2>
+  <P>
+  After a few months, you will probably find that I've added some additional
+  strings to FontForge, and you may what to update your original po file.
+  <P>
+  Once again you grab a current "pot" file and you type:
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>msgmerge <FONT COLOR="Red">fr</FONT>.po FontForge.pot
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  This will update your po file to contain any new strings for you to translate.
+  It will also make guesses for these new strings. Some of these guesses are
+  correct, some are very strange, so you will want to examine the guessed strings
+  (they will be marked with the word "fuzzy")
+  <H2>
+    <A NAME="Testing">Testing</A> a "po" file
+  </H2>
+  <P>
+  Once you have completed your po file you will want to test it. First you
+  need to compile it:
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>msgfmt -o <FONT COLOR="Red">fr</FONT>.mo <FONT COLOR="Red">fr</FONT>.po
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  and create an "mo" file. This file you will want to rename and move to the
+  appropriate directory. If fontforge is installed in /usr/local/bin then you
+  would say
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>mv <FONT COLOR="Red">fr</FONT>.mo /usr/local/share/locale/<FONT COLOR="Red">fr</FONT>/LC_MESSAGES/FontForge.mo
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  Then make sure your locale is set properly and start fontforge. You should
+  see your messages
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>LANG=<FONT COLOR="Red">fr_FR.UTF-8</FONT>; export LANG
+<FONT COLOR="Gray">$ </FONT>fontforge -new
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  <IMG SRC="fontview.fr.png" WIDTH="423" HEIGHT="226">
+</DIV>
+</BODY></HTML>
