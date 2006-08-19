@@ -114,7 +114,6 @@ return( false );
 	GDrawSetFont(pixmap,gb->font);
 
     if ( gb->g.takes_input ) {
-	int mark = (gb->labeltype==2?marklen+spacing:0);
 	width = 0;
 	if ( img!=NULL ) {
 	    width = GImageGetScaledWidth(pixmap,img);
@@ -123,8 +122,8 @@ return( false );
 	}
 	if ( gb->label!=NULL )
 	    width += GDrawGetTextWidth(pixmap,gb->label,-1,NULL);
-	if ( width<=g->inner.width-mark )
-	    x += ( g->inner.width-mark-width )/2;
+	if ( width<=g->inner.width )
+	    x += ( g->inner.width-width )/2;
 	else
 	    x += (g->inner.y-g->r.y);
     }
@@ -271,26 +270,34 @@ return;
 }
 
 static int GButtonGetDesiredWidth(GLabel *gl);
+static void GButtonSetInner(GButton *b) {
+    int width, mark = 0;
+    int bp = GBoxBorderWidth(b->g.base,b->g.box);
+
+    if ( b->labeltype==2 )
+	mark = GDrawPointsToPixels(b->g.base,_GListMarkSize) +
+		GDrawPointsToPixels(b->g.base,_GGadget_TextImageSkip);
+    width = GButtonGetDesiredWidth(b);
+    if ( width<=b->g.r.width-2*bp-mark )
+	b->g.inner.width = width;
+    else
+	b->g.inner.width = b->g.r.width-2*bp;
+    b->g.inner.x = b->g.r.x + (b->g.r.width-b->g.inner.width-mark)/2;
+}
+
 static void GButtonSetTitle(GGadget *g,const unichar_t *tit) {
     GButton *b = (GButton *) g;
-    int bp = GBoxBorderWidth(g->base,g->box), width;
 
     if ( b->g.free_box )
 	free( b->g.box );
     free(b->label);
     b->label = u_copy(tit);
-    width = GButtonGetDesiredWidth(b);
-    if ( width<=g->r.width-2*bp )
-	g->inner.width = width;
-    else
-	g->inner.width = g->r.width-2*bp;
-    g->inner.x = g->r.x + (g->r.width-g->inner.width)/2;
+    GButtonSetInner(b);
     _ggadget_redraw(g);
 }
 
 static void GButtonSetImageTitle(GGadget *g,GImage *img,const unichar_t *tit, int before) {
     GButton *b = (GButton *) g;
-    int bp = GBoxBorderWidth(g->base,g->box), width;
 
     if ( b->g.free_box )
 	free( b->g.box );
@@ -299,12 +306,7 @@ static void GButtonSetImageTitle(GGadget *g,GImage *img,const unichar_t *tit, in
     b->image = img;
     b->image_precedes = before;
 
-    width = GButtonGetDesiredWidth(b);
-    if ( width<=g->r.width-2*bp )
-	g->inner.width = width;
-    else
-	g->inner.width = g->r.width-2*bp;
-    g->inner.x = g->r.x + (g->r.width-g->inner.width)/2;
+    GButtonSetInner(b);
 
     _ggadget_redraw(g);
 }
@@ -657,6 +659,8 @@ static void GLabelFit(GLabel *gl) {
     GDrawFontMetrics(gl->font,&as, &ds, &ld);
     GButtonGetDesiredSize(&gl->g,&outer, &inner);
     _ggadgetSetRects(&gl->g,&outer, &inner, 0, 0);
+    if ( gl->g.takes_input )
+	GButtonSetInner((GButton *) gl);
 
     gl->as = as;
     gl->fh = as+ds;
