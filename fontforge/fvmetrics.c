@@ -57,7 +57,7 @@ static char *rb3[] = { N_("Scale Width By:"), N_("Scale LBearing By:"), N_("Scal
 static int CW_OK(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	int err;
+	int err = false;
 	CreateWidthData *wd = GDrawGetUserData(GGadgetGetWindow(g));
 	if ( GGadgetIsChecked(GWidgetGetControl(wd->gw,CID_Set)) ) {
 	    wd->type = st_set;
@@ -82,6 +82,8 @@ return( true );
 	    wd->type = st_scale;
 	    wd->scale = GetReal8(wd->gw,CID_ScaleVal,rb2[wd->wtype],&err);
 	}
+	if ( err )
+return(true);
 	(wd->doit)(wd);
     }
 return( true );
@@ -272,7 +274,7 @@ static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
 	boxes[0].gd.flags = gg_enabled|gg_visible;
 	boxes[0].gd.u.boxelements = buttons;
 	boxes[0].creator = GHBoxCreate;
-	
+
 	boxes[1].gd.flags = gg_enabled|gg_visible;
 	boxes[1].gd.u.boxelements = hvs;
 	boxes[1].creator = GHVBoxCreate;
@@ -283,7 +285,6 @@ static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
 	topbox[0].gd.flags = gg_enabled|gg_visible;
 	topbox[0].gd.u.boxelements = varray;
 	topbox[0].creator = GHVGroupCreate;
-	
 
 	GGadgetsCreate(cwd.gw,topbox);
 	GHVBoxSetExpandableRow(topbox[0].ret,1);

@@ -4380,6 +4380,7 @@ return( true );
 #define MID_CenterCP	2306
 #define MID_ImplicitPt	2307
 #define MID_NoImplicitPt	2308
+#define MID_InsertPtOnSplineAt	2309
 #define MID_AddAnchor	2310
 #define MID_AutoHint	2400
 #define MID_ClearHStem	2401
@@ -5595,13 +5596,13 @@ static void CVMenuImplicit(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 static void cv_ptlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
-    int type = -2, cnt=0, ccp_cnt=0;
+    int type = -2, cnt=0, ccp_cnt=0, spline_selected=0;
     SplinePointList *spl, *sel=NULL;
     Spline *spline, *first;
     SplinePoint *selpt=NULL;
     int notimplicit = -1;
 
-    for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL && type!=-1; spl = spl->next ) {
+    for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
 	first = NULL;
 	if ( spl->first->selected ) {
 	    sel = spl;
@@ -5613,7 +5614,7 @@ static void cv_ptlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	    if ( notimplicit==-1 ) notimplicit = spl->first->dontinterpolate;
 	    else if ( notimplicit!=spl->first->dontinterpolate ) notimplicit = -2;
 	}
-	for ( spline=spl->first->next; spline!=NULL && spline!=first && type!=-1; spline = spline->to->next ) {
+	for ( spline=spl->first->next; spline!=NULL && spline!=first; spline = spline->to->next ) {
 	    if ( spline->to->selected ) {
 		if ( type==-2 ) type = spline->to->pointtype;
 		else if ( type!=spline->to->pointtype ) type = -1;
@@ -5623,6 +5624,8 @@ static void cv_ptlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 		    ++ccp_cnt;
 		if ( notimplicit==-1 ) notimplicit = spline->to->dontinterpolate;
 		else if ( notimplicit!=spline->to->dontinterpolate ) notimplicit = -2;
+		if ( spline->from->selected )
+		    ++spline_selected;
 	    }
 	    if ( first == NULL ) first = spline;
 	}
@@ -5647,6 +5650,9 @@ static void cv_ptlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_MakeLine:
 	    mi->ti.disabled = cnt==0;
+	  break;
+	  case MID_InsertPtOnSplineAt:
+	    mi->ti.disabled = spline_selected!=1;
 	  break;
 	  case MID_CenterCP:
 	    mi->ti.disabled = ccp_cnt==0;
@@ -6430,6 +6436,256 @@ static void _CVMenuMakeLine(CharView *cv) {
 static void CVMenuMakeLine(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     _CVMenuMakeLine(cv);
+}
+
+struct insertonsplineat {
+    int done;
+    GWindow gw;
+    Spline *s;
+    CharView *cv;
+};
+
+#define CID_X	1001
+#define CID_Y	1002
+#define CID_XR	1003
+#define CID_YR	1004
+
+static int IOSA_OK(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	int err = false;
+	struct insertonsplineat *iosa = GDrawGetUserData(GGadgetGetWindow(g));
+	double val;
+	extended ts[3];
+	int which;
+	SplinePoint *sp;
+
+	if ( GGadgetIsChecked(GWidgetGetControl(iosa->gw,CID_XR)) ) {
+	    val = GetReal8(iosa->gw,CID_X,"X",&err);
+	    which = 0;
+	} else {
+	    val = GetReal8(iosa->gw,CID_Y,"Y",&err);
+	    which = 1;
+	}
+	if ( err )
+return(true);
+	if ( SplineSolveFull(&iosa->s->splines[which],val,ts)==0 ) {
+	    gwwv_post_error(_("Out of Range"),_("The spline does not reach %g"), (double) val );
+return( true );
+	}
+	iosa->done = true;
+	CVPreserveState(iosa->cv);
+	forever {
+	    sp = SplineBisect(iosa->s,ts[0]);
+	    SplinePointCatagorize(sp);
+	    if ( which==0 ) {
+		double off = val-sp->me.x;
+		sp->me.x = val; sp->nextcp.x += off; sp->prevcp.x += off;
+	    } else {
+		double off = val-sp->me.y;
+		sp->me.y = val; sp->nextcp.y += off; sp->prevcp.y += off;
+	    }
+	    SplineRefigure(sp->prev); SplineRefigure(sp->next);
+	    if ( ts[1]==-1 ) {
+		CVCharChangedUpdate(iosa->cv);
+return( true );
+	    }
+	    iosa->s = sp->next;
+	    if ( SplineSolveFull(&iosa->s->splines[which],val,ts)==0 ) {
+		/* Odd. We found one earlier */
+		CVCharChangedUpdate(iosa->cv);
+return( true );
+	    }
+	}
+    }
+return( true );
+}
+
+static int IOSA_Cancel(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct insertonsplineat *iosa = GDrawGetUserData(GGadgetGetWindow(g));
+	iosa->done = true;
+    }
+return( true );
+}
+
+static int IOSA_FocusChange(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textfocuschanged ) {
+	struct insertonsplineat *iosa = GDrawGetUserData(GGadgetGetWindow(g));
+	int cid = (intpt) GGadgetGetUserData(g);
+	GGadgetSetChecked(GWidgetGetControl(iosa->gw,cid),true);
+    }
+return( true );
+}
+
+static int IOSA_RadioChange(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	struct insertonsplineat *iosa = GDrawGetUserData(GGadgetGetWindow(g));
+	int cid = (intpt) GGadgetGetUserData(g);
+	GWidgetIndicateFocusGadget(GWidgetGetControl(iosa->gw,cid));
+	GTextFieldSelect(GWidgetGetControl(iosa->gw,cid),0,-1);
+    }
+return( true );
+}
+
+static int iosa_e_h(GWindow gw, GEvent *event) {
+    if ( event->type==et_close ) {
+	struct insertonsplineat *iosa = GDrawGetUserData(gw);
+	iosa->done = true;
+    } else if ( event->type == et_char ) {
+return( false );
+    } else if ( event->type == et_map ) {
+	/* Above palettes */
+	GDrawRaise(gw);
+    }
+return( true );
+}
+static void _CVMenuInsertPt(CharView *cv) {
+    SplineSet *spl;
+    Spline *s, *found=NULL, *first;
+    struct insertonsplineat iosa;
+    GRect pos;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[11], boxes[2], topbox[2], *hvs[13], *varray[8], *buttons[6];
+    GTextInfo label[11];
+
+    for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
+	first = NULL;
+	for ( s=spl->first->next; s!=NULL && s!=first ; s = s->to->next ) {
+	    if ( first==NULL ) first=s;
+	    if ( s->from->selected && s->to->selected ) {
+		if ( found!=NULL )
+return;		/* Can only work with one spline */
+		found = s;
+	    }
+	}
+    }
+    if ( found==NULL )
+return;		/* Need a spline */
+
+    memset(&iosa,0,sizeof(iosa));
+    iosa.s = found;
+    iosa.cv = cv;
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.restrict_input_to_me = 1;
+    wattrs.undercursor = 1;
+    wattrs.cursor = ct_pointer;
+    wattrs.utf8_window_title = _("Insert a point on the given spline at either...");
+    wattrs.is_dlg = true;
+    pos.x = pos.y = 0;
+    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,210));
+    pos.height = GDrawPointsToPixels(NULL,120);
+    iosa.gw = GDrawCreateTopWindow(NULL,&pos,iosa_e_h,&iosa,&wattrs);
+
+    memset(&label,0,sizeof(label));
+    memset(&gcd,0,sizeof(gcd));
+
+    label[0].text = (unichar_t *) _("_X:");
+    label[0].text_is_1byte = true;
+    label[0].text_in_resource = true;
+    gcd[0].gd.label = &label[0];
+    gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5; 
+    gcd[0].gd.flags = gg_enabled|gg_visible|gg_cb_on;
+    gcd[0].gd.cid = CID_XR;
+    gcd[0].gd.handle_controlevent = IOSA_RadioChange;
+    gcd[0].data = (void *) CID_X;
+    gcd[0].creator = GRadioCreate;
+
+    label[1].text = (unichar_t *) _("_Y:");
+    label[1].text_is_1byte = true;
+    label[1].text_in_resource = true;
+    gcd[1].gd.label = &label[1];
+    gcd[1].gd.pos.x = 5; gcd[1].gd.pos.y = 32; 
+    gcd[1].gd.flags = gg_enabled|gg_visible|gg_rad_continueold ;
+    gcd[1].gd.cid = CID_YR;
+    gcd[1].gd.handle_controlevent = IOSA_RadioChange;
+    gcd[1].data = (void *) CID_Y;
+    gcd[1].creator = GRadioCreate;
+
+    gcd[2].gd.pos.x = 131; gcd[2].gd.pos.y = 5;  gcd[2].gd.pos.width = 60;
+    gcd[2].gd.flags = gg_enabled|gg_visible;
+    gcd[2].gd.cid = CID_X;
+    gcd[2].gd.handle_controlevent = IOSA_FocusChange;
+    gcd[2].data = (void *) CID_XR;
+    gcd[2].creator = GTextFieldCreate;
+
+    gcd[3].gd.pos.x = 131; gcd[3].gd.pos.y = 32;  gcd[3].gd.pos.width = 60;
+    gcd[3].gd.flags = gg_enabled|gg_visible;
+    gcd[3].gd.cid = CID_Y;
+    gcd[3].gd.handle_controlevent = IOSA_FocusChange;
+    gcd[3].data = (void *) CID_YR;
+    gcd[3].creator = GTextFieldCreate;
+
+    gcd[4].gd.pos.x = 20-3; gcd[4].gd.pos.y = 120-32-3;
+    gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
+    gcd[4].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    label[4].text = (unichar_t *) _("_OK");
+    label[4].text_is_1byte = true;
+    label[4].text_in_resource = true;
+    gcd[4].gd.mnemonic = 'O';
+    gcd[4].gd.label = &label[4];
+    gcd[4].gd.handle_controlevent = IOSA_OK;
+    gcd[4].creator = GButtonCreate;
+
+    gcd[5].gd.pos.x = -20; gcd[5].gd.pos.y = 120-32;
+    gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
+    gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    label[5].text = (unichar_t *) _("_Cancel");
+    label[5].text_is_1byte = true;
+    label[5].text_in_resource = true;
+    gcd[5].gd.label = &label[5];
+    gcd[5].gd.mnemonic = 'C';
+    gcd[5].gd.handle_controlevent = IOSA_Cancel;
+    gcd[5].creator = GButtonCreate;
+
+    hvs[0] = &gcd[0]; hvs[1] = &gcd[2]; hvs[2] = NULL;
+    hvs[3] = &gcd[1]; hvs[4] = &gcd[3]; hvs[5] = NULL;
+    hvs[6] = NULL;
+
+    buttons[0] = buttons[2] = buttons[4] = GCD_Glue; buttons[5] = NULL;
+    buttons[1] = &gcd[4]; buttons[3] = &gcd[5];
+
+    varray[0] = &boxes[1]; varray[1] = NULL;
+    varray[2] = GCD_Glue; varray[3] = NULL;
+    varray[4] = &boxes[0]; varray[5] = NULL;
+    varray[6] = NULL;
+
+    memset(boxes,0,sizeof(boxes));
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = buttons;
+    boxes[0].creator = GHBoxCreate;
+
+    boxes[1].gd.flags = gg_enabled|gg_visible;
+    boxes[1].gd.u.boxelements = hvs;
+    boxes[1].creator = GHVBoxCreate;
+
+    memset(topbox,0,sizeof(topbox));
+    topbox[0].gd.pos.x = topbox[0].gd.pos.y = 2;
+    topbox[0].gd.pos.width = pos.width-4; topbox[0].gd.pos.height = pos.height-4;
+    topbox[0].gd.flags = gg_enabled|gg_visible;
+    topbox[0].gd.u.boxelements = varray;
+    topbox[0].creator = GHVGroupCreate;
+	
+
+    GGadgetsCreate(iosa.gw,topbox);
+    GHVBoxSetExpandableRow(topbox[0].ret,1);
+    GHVBoxSetExpandableCol(boxes[0].ret,gb_expandgluesame);
+    GHVBoxSetExpandableCol(boxes[1].ret,1);
+    GWidgetIndicateFocusGadget(GWidgetGetControl(iosa.gw,CID_X));
+    GTextFieldSelect(GWidgetGetControl(iosa.gw,CID_X),0,-1);
+    GHVBoxFitWindow(topbox[0].ret);
+
+    GDrawSetVisible(iosa.gw,true);
+    while ( !iosa.done )
+	GDrawProcessOneEvent(NULL);
+    GDrawDestroyWindow(iosa.gw);
+}
+
+static void CVMenuInsertPt(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    _CVMenuInsertPt(cv);
 }
 
 static void _CVCenterCP(CharView *cv) {
@@ -7415,6 +7671,7 @@ static GMenuItem ptlist[] = {
     { { (unichar_t *) N_("_Add Anchor"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, '0', ksm_control, NULL, NULL, CVMenuAddAnchor, MID_AddAnchor },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("Make _Line"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, '\0', ksm_control, NULL, NULL, CVMenuMakeLine, MID_MakeLine },
+    { { (unichar_t *) N_("Insert Point On _Spline At..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, '\0', ksm_control, NULL, NULL, CVMenuInsertPt, MID_InsertPtOnSplineAt },
     { { (unichar_t *) N_("Center _Between Control Points"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, '\0', ksm_control, NULL, NULL, CVMenuCenterCP, MID_CenterCP },
     { NULL }
 };
