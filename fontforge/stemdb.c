@@ -460,6 +460,7 @@ static Spline *FindMatchingHVEdge(struct glyphdata *gd, struct pointdata *pd,
 
     if ( s==NULL )		/* Somehow we got an open contour? */
 return( NULL );
+
     test = ((s->splines[which].a*t+s->splines[which].b)*t+s->splines[which].c)*t+s->splines[which].d;
     MonotonicFindAt(gd->ms,which,test,space = gd->space);
 
@@ -1127,11 +1128,31 @@ return( NULL );		/* Zero width stems aren't interesting */
     AddToStem(stem,pd,NULL,is_next,false,NULL);
 return( stem );
 }
-	
+
+static int SmoothConnectsAcross(struct glyphdata *gd,SplinePoint *sp,int is_next,Spline *findme) {
+    struct pointdata *pd = &gd->points[sp->ttfindex];
+    Spline *other;
+
+    if ( is_next )
+	other = pd->nextedge;
+    else
+	other = pd->prevedge;
+
+    if ( other==findme )
+return( true );
+    if ( other->to->next==findme && other->to->pointtype == pt_curve )
+return( true );
+    if ( other->from->prev==findme && other->from->pointtype == pt_curve )
+return( true );
+
+return( false );
+}
+
 static struct stemdata *BuildStem(struct glyphdata *gd,struct pointdata *pd,int is_next ) {
     BasePoint *dir;
     Spline *other, *cur;
     double t;
+    double tod, fromd;
     struct stemdata *stem;
     int tp, fp;
     BasePoint opposite;
@@ -1161,10 +1182,16 @@ return( NULL );
     /* We have several conflicting metrics for getting the "better" stem */
     /* Generally we prefer the stem with the smaller width (but not always. See tilde) */
     /* Generally we prefer the stem formed by the point closer to the intersection */
-    if ( (tp && fp && (1-t)*NormalDist(&other->to->me,&pd->sp->me,dir)<t*NormalDist(&other->from->me,&pd->sp->me,dir)) ||
-	    (tp && !fp))
+    tod = (1-t)*NormalDist(&other->to->me,&pd->sp->me,dir);
+    fromd = t*NormalDist(&other->from->me,&pd->sp->me,dir);
+    stem = NULL;
+    if ( (tp && (tod<fromd)) ||
+	    (tp && !fp && (tod<2*fromd)) ||
+	    (tp && !fp && SmoothConnectsAcross(gd,other->to,false,cur)))
 	stem = TestStem(gd,pd,dir, other->to, is_next, false);
-    else
+    if ( stem==NULL && ((fp && (fromd<tod)) ||
+	    (fp && !tp && (fromd<2*tod)) ||
+	    (fp && !tp && SmoothConnectsAcross(gd,other->from,true,cur))))
 	stem = TestStem(gd,pd,dir, other->from, is_next,true);
     if ( stem==NULL && cur!=NULL && !other->knownlinear && !cur->knownlinear )
 	stem = HalfStem(gd,pd,dir,other,t,is_next);
