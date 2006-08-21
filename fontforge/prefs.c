@@ -97,6 +97,7 @@ extern int coverageformatsallowed;	/* in tottfgpos.c */
 extern int debug_wins;			/* in cvdebug.c */
 extern int gridfit_dpi, gridfit_depth;	/* in cvgridfit.c */
 extern float gridfit_pointsize;		/* in cvgridfit.c */
+extern int hintcontrolflags;		/* in stemdb.c */
 unichar_t *script_menu_names[SCRIPT_MENU_MAX];
 char *script_filenames[SCRIPT_MENU_MAX];
 static char *xdefs_filename;
@@ -366,6 +367,7 @@ static struct prefs_list {
 	{ "ForceNamesWhenOpening", pr_namelist, &force_names_when_opening, NULL, NULL, '\0', NULL, 1 },
 	{ "ForceNamesWhenSaving", pr_namelist, &force_names_when_saving, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultFontFilterIndex", pr_int, &default_font_filter_index, NULL, NULL, '\0', NULL, 1 },
+	{ "HintControlFlags", pr_int, &hintcontrolflags, NULL, NULL, '\0', NULL, 1 },
 	{ NULL }
 },
  oldnames[] = {

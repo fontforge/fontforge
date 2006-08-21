@@ -63,17 +63,22 @@ struct glyphdata {
 struct pointdata {
     SplinePoint *sp;
     SplineSet *ss;
-    BasePoint nextunit, prevunit;	/* unit vectors pointing in the next/prev directions */
+    BasePoint nextunit, prevunit;		/* unit vectors pointing in the next/prev directions */
     struct linedata *nextline, *prevline;	/* any other points lying on approximately the same line */
     Spline *nextedge, *prevedge;		/* There should always be a matching spline, which may end up as part of a stem, and may not */
+    Spline *bothedge;
     double next_e_t, prev_e_t;			/* Location on other edge where our normal hits it */
+    double both_e_t;
     struct stemdata *nextstem, *prevstem;
+    struct stemdata *bothstem;
     double nextlen, prevlen;
     unsigned int nextlinear: 1;
     unsigned int nextzero: 1;
     unsigned int prevlinear: 1;
     unsigned int prevzero: 1;
     unsigned int colinear: 1;
+    unsigned int symetrical_h: 1;			/* Are next & prev symetrical? */
+    unsigned int symetrical_v: 1;			/* Are next & prev symetrical? */
     unsigned int next_hor: 1;
     unsigned int next_ver: 1;
     unsigned int prev_hor: 1;
@@ -107,6 +112,7 @@ struct stemdata {
 	struct pointdata *lpotential, *rpotential;
 	uint8 lnext, rnext;	/* are we using the next/prev side of the left/right points */
 	uint8 ltick, rtick;
+	uint8 stemcheat;	/* It's not a real stem, but it's something we'd like PostScript to hint for us */
     } *chunks;
     int activecnt;
     struct segment *active;
