@@ -106,25 +106,32 @@ struct tagflaglang {
 };
 
 /* scripts (for opentype) that I understand */
+    /* see also list in charinfo.c */
 
 static uint32 scripts[][15] = {
 /* Arabic */	{ CHR('a','r','a','b'), 0x0600, 0x06ff, 0xfb50, 0xfdff, 0xfe70, 0xfeff },
+ /* Aramaic */	{ CHR('a','r','a','m'), 0x820, 0x83f },
 /* Armenian */	{ CHR('a','r','m','n'), 0x0530, 0x058f, 0xfb13, 0xfb17 },
+/* Balinese */	{ CHR('b','a','l','i'), 0x1b00, 0x1b7f },
 /* Bengali */	{ CHR('b','e','n','g'), 0x0980, 0x09ff },
 /* Bliss symb */{ CHR('b','l','i','s'), 0x12200, 0x124ff },
 /* Bopomofo */	{ CHR('b','o','p','o'), 0x3100, 0x312f, 0x31a0, 0x31bf },
 /* Braille */	{ CHR('b','r','a','i'), 0x2800, 0x28ff },
+/* Buginese */	{ CHR('b','u','g','i'), 0x1a00, 0x1a1f },
 /* Buhid */	{ CHR('b','u','h','d'), 0x1740, 0x1753 },
 /* Byzantine M*/{ CHR('b','y','z','m'), 0x1d000, 0x1d0ff },
 /* Canadian Syl*/{CHR('c','a','n','s'), 0x1400, 0x167f },
 /* Cherokee */	{ CHR('c','h','e','r'), 0x13a0, 0x13ff },
 /* Cirth */	{ CHR('c','i','r','t'), 0x12080, 0x120ff },
+/* CJKIdeogra */{ CHR('h','a','n','i'), 0x3300, 0x9fff, 0xf900, 0xfaff, 0x020000, 0x02ffff },
+/* Coptic */	{ CHR('c','o','p','t'), 0x2c80, 0x2cff },
 /* Cypriot */	{ CHR('c','p','m','n'), 0x10800, 0x1083f },
 /* Cyrillic */	{ CHR('c','y','r','l'), 0x0400, 0x052f },
 /* Deseret */	{ CHR('d','s','r','t'), 0x10400, 0x1044f },
 /* Devanagari */{ CHR('d','e','v','a'), 0x0900, 0x097f },
 /* Ethiopic */	{ CHR('e','t','h','i'), 0x1200, 0x139f },
 /* Georgian */	{ CHR('g','e','o','r'), 0x1080, 0x10ff },
+/* Glagolitic */{ CHR('g','l','a','g'), 0x1080, 0x10ff },
 /* Gothic */	{ CHR('g','o','t','h'), 0x10330, 0x1034a },
 /* Greek */	{ CHR('g','r','e','k'), 0x0370, 0x03ff, 0x1f00, 0x1fff },
 /* Gujarati */	{ CHR('g','u','j','r'), 0x0a80, 0x0aff },
@@ -133,14 +140,13 @@ static uint32 scripts[][15] = {
 /* Hanunoo */	{ CHR('h','a','n','o'), 0x1720, 0x1734 },
  /* I'm not sure what the difference is between the 'hang' tag and the 'jamo' */
  /*  tag. 'Jamo' is said to be the precomposed forms, but what's 'hang'? */
-/* CJKIdeogra */{ CHR('h','a','n','i'), 0x3300, 0x9fff, 0xf900, 0xfaff, 0x020000, 0x02ffff },
 /* Hebrew */	{ CHR('h','e','b','r'), 0x0590, 0x05ff, 0xfb1e, 0xfb4f },
 #if 0	/* Hiragana used to have its own tag, but has since been merged with katakana */
 /* Hiragana */	{ CHR('h','i','r','a'), 0x3040, 0x309f },
 #endif
-/* Old Italic */{ CHR('i','t','a','l'), 0x10300, 0x1031e },
 /* Hangul Jamo*/{ CHR('j','a','m','o'), 0x1100, 0x11ff, 0x3130, 0x319f, 0xffa0, 0xffdf },
 /* Katakana */	{ CHR('k','a','n','a'), 0x3040, 0x30ff, 0xff60, 0xff9f },
+/* Javanese */	{ CHR('j','a','v','a'), 0 },	/* MS has a tag, but there is no unicode range */
 /* Khmer */	{ CHR('k','h','m','r'), 0x1780, 0x17ff },
 /* Kannada */	{ CHR('k','n','d','a'), 0x0c80, 0x0cff },
 /* Kharosthi */	{ CHR('k','h','a','r'), 0x10a00, 0x10a5f },
@@ -151,27 +157,41 @@ static uint32 scripts[][15] = {
 /* Linear A */	{ CHR('l','i','n','a'), 0x10180, 0x102cf },
 /* Linear B */	{ CHR('l','i','n','b'), 0x10000, 0x100fa },
 /* Malayalam */	{ CHR('m','l','y','m'), 0x0d00, 0x0d7f },
+/* Mathematical Alphanumeric Symbols */
+		{ CHR('m','a','t','h'), 0x1d400, 0x1d7ff },
 /* Mongolian */	{ CHR('m','o','n','g'), 0x1800, 0x18af },
+/* Musical */	{ CHR('m','u','s','i'), 0x1d100, 0x1d1ff },
 /* Myanmar */	{ CHR('m','y','m','r'), 0x1000, 0x107f },
 /* N'Ko */	{ CHR('n','k','o',' '), 0x07c0, 0x07fa },
 /* Ogham */	{ CHR('o','g','a','m'), 0x1680, 0x169f },
+/* Old Italic */{ CHR('i','t','a','l'), 0x10300, 0x1031e },
+/* Old Permic */{ CHR('p','e','r','m'), 0x10350, 0x1037f },
+/* Old Persian cuneiform */
+		{ CHR('x','p','e','o'), 0x103a0, 0x103df },
 /* Oriya */	{ CHR('o','r','y','a'), 0x0b00, 0x0b7f },
 /* Osmanya */	{ CHR('o','s','m','a'), 0x10480, 0x104a9 },
-/* Old Permic */{ CHR('p','e','r','m'), 0x10350, 0x1037f },
+/* Phags-pa */	{ CHR('p','h','a','g'), 0xa840, 0xa87f },
+/* Phoenician */{ CHR('p','h','n','x'), 0x10900, 0x1091f },
 /* Pollard */	{ CHR('p','l','r','d'), 0x104b0, 0x104d9 },
 /* Runic */	{ CHR('r','u','n','r'), 0x16a0, 0x16ff },
 /* Shavian */	{ CHR('s','h','a','w'), 0x10450, 0x1047f },
 /* Sinhala */	{ CHR('s','i','n','h'), 0x0d80, 0x0dff },
+/* Sumero-Akkadian Cuneiform */
+		{ CHR('x','s','u','x'), 0x12000, 0x1236e },
+/* Syloti Nagri */
+		{ CHR('s','y','l','o'), 0xa800, 0xa82f },
 /* Syriac */	{ CHR('s','y','r','c'), 0x0700, 0x074f },
 /* Tagalog */	{ CHR('t','a','g','l'), 0x1700, 0x1714 },
 /* Tagbanwa */	{ CHR('t','a','g','b'), 0x1760, 0x1773 },
 /* Tai Le */	{ CHR('t','a','l','e'), 0x1950, 0x1974 },
+/* Tai Lu */	{ CHR('t','a','l','u'), 0x1980, 0x19df },
 /* Tamil */	{ CHR('t','a','m','l'), 0x0b80, 0x0bff },
 /* Telugu */	{ CHR('t','e','l','u'), 0x0c00, 0x0c7f },
 /* Tengwar */	{ CHR('t','e','n','g'), 0x12000, 0x1207f },
 /* Thaana */	{ CHR('t','h','a','a'), 0x0780, 0x07bf },
 /* Thai */	{ CHR('t','h','a','i'), 0x0e00, 0x0e7f },
 /* Tibetan */	{ CHR('t','i','b','t'), 0x0f00, 0x0fff },
+/* Tifinagh */	{ CHR('t','f','n','g'), 0x2d30, 0x2d7f },
 /* Ugaritic */	{ CHR('u','g','a','r'), 0x10380, 0x1039d },
 /* Yi */	{ CHR('y','i',' ',' '), 0xa000, 0xa73f },
 		{ 0 }
