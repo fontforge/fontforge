@@ -1129,9 +1129,10 @@ return( NULL );		/* Zero width stems aren't interesting */
 return( stem );
 }
 
-static int SmoothConnectsAcross(struct glyphdata *gd,SplinePoint *sp,int is_next,Spline *findme) {
+static int ConnectsAcross(struct glyphdata *gd,SplinePoint *sp,int is_next,Spline *findme) {
     struct pointdata *pd = &gd->points[sp->ttfindex];
-    Spline *other;
+    Spline *other, *test;
+    BasePoint *dir;
 
     if ( is_next )
 	other = pd->nextedge;
@@ -1140,10 +1141,28 @@ static int SmoothConnectsAcross(struct glyphdata *gd,SplinePoint *sp,int is_next
 
     if ( other==findme )
 return( true );
-    if ( other->to->next==findme && other->to->pointtype == pt_curve )
+    if ( other==NULL )
+return( false );
+
+    dir = &gd->points[other->to->ttfindex].nextunit;
+    test = other->to->next;
+    while ( test!=NULL &&
+	    gd->points[test->from->ttfindex].nextunit.x * dir->x +
+	    gd->points[test->from->ttfindex].nextunit.y * dir->y >= 0 ) {
+	if ( test==findme )
 return( true );
-    if ( other->from->prev==findme && other->from->pointtype == pt_curve )
+	test = test->to->next;
+    }
+	    
+    dir = &gd->points[other->from->ttfindex].prevunit;
+    test = other->from->prev;
+    while ( test!=NULL &&
+	    gd->points[test->to->ttfindex].prevunit.x * dir->x +
+	    gd->points[test->to->ttfindex].prevunit.y * dir->y >= 0 ) {
+	if ( test==findme )
 return( true );
+	test = test->from->prev;
+    }
 
 return( false );
 }
@@ -1187,11 +1206,11 @@ return( NULL );
     stem = NULL;
     if ( (tp && (tod<fromd)) ||
 	    (tp && !fp && (tod<2*fromd)) ||
-	    (tp && !fp && SmoothConnectsAcross(gd,other->to,false,cur)))
+	    (tp && !fp && ConnectsAcross(gd,other->to,false,cur)))
 	stem = TestStem(gd,pd,dir, other->to, is_next, false);
     if ( stem==NULL && ((fp && (fromd<tod)) ||
 	    (fp && !tp && (fromd<2*tod)) ||
-	    (fp && !tp && SmoothConnectsAcross(gd,other->from,true,cur))))
+	    (fp && !tp && ConnectsAcross(gd,other->from,true,cur))))
 	stem = TestStem(gd,pd,dir, other->from, is_next,true);
     if ( stem==NULL && cur!=NULL && !other->knownlinear && !cur->knownlinear )
 	stem = HalfStem(gd,pd,dir,other,t,is_next);
