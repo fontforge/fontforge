@@ -97,7 +97,9 @@ extern int coverageformatsallowed;	/* in tottfgpos.c */
 extern int debug_wins;			/* in cvdebug.c */
 extern int gridfit_dpi, gridfit_depth;	/* in cvgridfit.c */
 extern float gridfit_pointsize;		/* in cvgridfit.c */
-extern int hintcontrolflags;		/* in stemdb.c */
+extern int hint_diagonal_ends;		/* in stemdb.c */
+extern int hint_diagonal_intersections;	/* in stemdb.c */
+extern int hint_bounding_boxes;		/* in stemdb.c */
 unichar_t *script_menu_names[SCRIPT_MENU_MAX];
 char *script_filenames[SCRIPT_MENU_MAX];
 static char *xdefs_filename;
@@ -312,6 +314,12 @@ static struct prefs_list {
 	{ N_("RecognizePUANames"), pr_bool, &recognizePUA, NULL, NULL, 'U', NULL, 0, N_("Once upon a time, Adobe assigned PUA (public use area) encodings\nfor many stylistic variants of characters (small caps, old style\nnumerals, etc.). Adobe no longer believes this to be a good idea,\nand recommends that these encodings be ignored.\n\n The assignments were originally made because most applications\ncould not handle OpenType features for accessing variants. Adobe\nnow believes that all apps that matter can now do so. Applications\nlike Word and OpenOffice still can't handle these features, so\n fontforge's default behavior is to ignore Adobe's current\nrecommendations.\n\nNote: This does not affect figuring out unicode from the font's encoding,\nit just controls determining unicode from a name.") },
 	{ NULL }
 },
+ hints_list[] = {
+	{ N_("HintBoundingBoxes"), pr_bool, &hint_bounding_boxes, NULL, NULL, '\0', NULL, 0, N_("FontForge will place vertical or horizontal hints to describe the bounding boxes of suitable glyphs.") },
+	{ N_("HintDiagonalEnds"), pr_bool, &hint_diagonal_ends, NULL, NULL, '\0', NULL, 0, N_("FontForge will place vertical or horizontal hints at the ends of diagonal stems.") },
+	{ N_("HintDiagonalInter"), pr_bool, &hint_diagonal_intersections, NULL, NULL, '\0', NULL, 0, N_("FontForge will place vertical or horizontal hints at the intersections of diagonal stems.") },
+	{ NULL }
+},
  tt_list[] = {
 	{ N_("ClearInstrsBigChanges"), pr_bool, &clear_tt_instructions_when_needed, NULL, NULL, 'C', NULL, 0, N_("Instructions in a TrueType font refer to\npoints by number, so if you edit a glyph\nin such a way that some points have different\nnumbers (add points, remove them, etc.) then\nthe instructions will be applied to the wrong\npoints with disasterous results.\n  Normally FontForge will remove the instructions\nif it detects that the points have been renumbered\nin order to avoid the above problem. You may turn\nthis behavior off -- but be careful!") },
 	{ NULL }
@@ -367,7 +375,6 @@ static struct prefs_list {
 	{ "ForceNamesWhenOpening", pr_namelist, &force_names_when_opening, NULL, NULL, '\0', NULL, 1 },
 	{ "ForceNamesWhenSaving", pr_namelist, &force_names_when_saving, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultFontFilterIndex", pr_int, &default_font_filter_index, NULL, NULL, '\0', NULL, 1 },
-	{ "HintControlFlags", pr_int, &hintcontrolflags, NULL, NULL, '\0', NULL, 1 },
 	{ NULL }
 },
  oldnames[] = {
@@ -376,8 +383,8 @@ static struct prefs_list {
 	{ "AcuteCenterBottom", pr_bool, &GraveAcuteCenterBottom, NULL, NULL, '\0', NULL, 1, N_("When placing grave and acute accents above letters, should\nFontForge center them based on their full width, or\nshould it just center based on the lowest point\nof the accent.") },
 	{ NULL }
 },
- *prefs_list[] = { general_list, editing_list, accent_list, args_list, generate_list, tt_list, hidden_list, NULL },
- *load_prefs_list[] = { general_list, editing_list, accent_list, args_list, generate_list, tt_list, hidden_list, oldnames, NULL };
+ *prefs_list[] = { general_list, editing_list, accent_list, args_list, generate_list, tt_list, hints_list, hidden_list, NULL },
+ *load_prefs_list[] = { general_list, editing_list, accent_list, args_list, generate_list, tt_list, hints_list, hidden_list, oldnames, NULL };
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 struct visible_prefs_list { char *tab_name; struct prefs_list *pl; } visible_prefs_list[] = {
@@ -387,6 +394,7 @@ struct visible_prefs_list { char *tab_name; struct prefs_list *pl; } visible_pre
     { N_("Apps"), args_list},
     { N_("Font Info"), generate_list},
     { N_("TT"), tt_list},
+    { N_("PS Hints"), hints_list},
     { 0 }
  };
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
@@ -1547,7 +1555,7 @@ void DoPrefs(void) {
     GWindowAttrs wattrs;
     GGadgetCreateData *pgcd, gcd[5], sgcd[45], mgcd[3], mfgcd[9], msgcd[9];
     GTextInfo *plabel, **list, label[5], slabel[45], *plabels[10], mflabels[9], mslabels[9];
-    GTabInfo aspects[9], subaspects[3];
+    GTabInfo aspects[10], subaspects[3];
     struct pref_data p;
     int i, gc, sgc, j, k, line, line_max, y, y2, ii;
     int32 llen;
