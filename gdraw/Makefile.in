@@ -14,6 +14,10 @@ LIBTOOL = @LIBTOOL@
 CC = @CC@
 
 X_CFLAGS = @X_CFLAGS@
+X_LIBS = @X_LIBS@
+X_11LIB = @X_11LIB@
+X_EXTRA_LIBS = @X_EXTRA_LIBS@
+X_PRE_LIBS = @X_PRE_LIBS@
 STATIC_LIBS = @STATIC_LIBS@
 
 libgdraw_OBJECTS =  choosericons.lo divisors.lo drawboxborder.lo \
@@ -37,7 +41,7 @@ CFLAGS = @CFLAGS@ @CPPFLAGS@ $(Incs) @WFLAGS@ $(X_CFLAGS) -DNOTHREADS @DEFS@ -DL
 
 ../libgdraw.la: $(libgdraw_OBJECTS)
 	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) @LDFLAGS@ -o ../libgdraw.la $(libgdraw_OBJECTS) \
-	    $(STATIC_LIBS) \
+	    $(STATIC_LIBS) $(X_PRE_LIBS) $(X_11LIB) $(X_EXTRA_LIBS)  \
 	    -rpath $(libdir) -version-info $(GD_VERSION):$(GD_REVISION):$(GD_AGE)
 
 %.lo: %.c
