@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 15-Jul-2006 -->
+  <!-- AP: Last modified: 22-Aug-2006 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -34,13 +34,159 @@
       </TR>
     </TABLE>
   </BLOCKQUOTE>
+  <BLOCKQUOTE>
+    <TABLE BGCOLOR="#C0FFFF" WIDTH=460>
+      <TR>
+	<TD>"The trouble is," he said, "is that things <I>never</I> get better, they
+	  just stay the same, only more so.</TD>
+	<TD>&nbsp; &nbsp; &nbsp; &nbsp;</TD>
+	<TD VALIGN="Bottom"><P ALIGN=Right>
+	  -- <SMALL><STRIKE>Faust</STRIKE> <FONT COLOR="Red">Eric</FONT><BR>
+	  Terry Pratchett, 1990</SMALL></TD>
+      </TR>
+    </TABLE>
+  </BLOCKQUOTE>
   <UL>
+    <LI>
+      22-Aug-2006
+      <UL>
+	<LI>
+	  Add a pane to the Preference dlg allowing user to control some of fontforge's
+	  hint creation.
+	<LI>
+	  Someone complained that Find Problems-&gt;Path Direction got the wrong answer.
+	  It got the wrong answer because they had a self-intersecting path (which
+	  screws up all concepts of in/out-side. So try to make it clear that they
+	  should do a find intersecting paths first.
+	<LI>
+	  Update my opentype scripts list (in particular include music).
+	<LI>
+	  Due to a typo, ff thought pretty much everything outside unicode BMP was
+	  in the hebrew script.
+	<LI>
+	  Add a new command to the point menu which allows you to specify a spline
+	  and one coordinate (either X or Y) on that spline. FF will calculate the
+	  other coordinate and add a point there.
+	<LI>
+	  CODE2000 contains an anchor class with only base glyphs (no mark glyphs)
+	  as part of a set of anchor classes. FF crashed.
+	<LI>
+	  Patch by Nix. svg.c did not compile when designed to be linked directly with
+	  libxml (instead of dlopening it).
+	<LI>
+	  Redo the font open dlg so that there's a list of standard filters and a mechanism
+	  for changing that list. Remember the last filter used.
+	<LI>
+	  If a popup menu is huge it used to appear under the cursor. This meant that
+	  even if the user didn't mean to s/he would have selected something and
+	  press/release would not be a no-op. This was a problem with the Font Info
+	  -&gt;TTF Names
+	<LI>
+	  Patch from SUSE. Use of uninitialized local variable. But the result is never
+	  used, so just remove the offending lines.
+	<LI>
+	  Emulate gtk's boxes and use that to do automatic dialog layout. Get the font
+	  info dlg working (and then several others too). This means that the layout
+	  is no longer optimized for English, but will look better in other languages
+	  (I hope).
+	<LI>
+	  Add an information to Font Info to display what unicode character ranges
+	  are supplied by the font.
+	<LI>
+	  Philipp Poll points out that when generating versioned fonts (ie. Ambrosia-1.0
+	  rather than just Ambrosia) you don't want the filename to default to the
+	  fontname (the fontname will be Ambrosia), instead you want some way of specifying
+	  a default filename. So add that to the Names pane of the Font Info dlg.
+	<LI>
+	  Try to keep track of font creation and modification times. NOTE: This is
+	  different from file times (which is what appears to be stored in the 'head'
+	  table of an sfnt file). Add a new table 'FFTM' to our sfnt output with these
+	  timestamps (and the timestamp of fontforge itself, just in case we ever care).
+	<LI>
+	  Mark classes could not be set from the selection.
+	<LI>
+	  Ben Laenen points out that if an order2 glyph has a dependent which refers
+	  to it using point matching and we keep changing the point number on the glyph
+	  then we'll keep getting warning messages. He suggests one message.
+	<LI>
+	  Empty glyphs weren't marked with red Xs any more.
+	<LI>
+	  In font compare, when comparing two contextual/chaining lookups, I forgot
+	  that class[0] was always NULL.
+	<LI>
+	  Open contours caused the ttf point renumberer to crash.
+	<LI>
+	  A font can have many kerning pairs. More than will fit in one GPOS subtable
+	  (which essentially has a 64k data limit or a bit more than 10,000 kern pairs).
+	  So be prepared to generate many sub-tables each dealing with a subset of
+	  the (first) glyphs.
+	<LI>
+	  If an apple mutually exclusive feature had a default setting which wasn't
+	  0 then my previous patch didn't work.
+	<LI>
+	  If guessing bluevalues found no OtherBlues, fontinfo-&gt;PS Private would
+	  create an incorrect OtherBlues value [0]
+	<LI>
+	  Support clipboards containing image/svg
+	<LI>
+	  Ralf Stubner points out that the maximum zone size of bluezones is determined
+	  by 1/BlueScale. So adjust BlueScale if the max zone is too big.
+	<LI>
+	  Merge fonts didn't merge anchors and got into a terrible mess. Let's merge
+	  kern classes and state machines too. Merging kern classes may be a bad idea.
+	  We don't really merge them we just copy them so that if the same glyph is
+	  mentioned in two classes unexpected things might happen.
+	<LI>
+	  ff could crash on an sfd file containing erroneous anchors (such as might
+	  be generated by the merge fonts command).
+	<LI>
+	  Once upon a time, Apple was so concerned about accuracy of floating point
+	  operations that they required all operations be performed in IEEE extended
+	  (80bit). This had the interesting side effect that a program which conformed
+	  to Apple's standards could not also conform to ANSI C (which required operations
+	  use double temporaries for double values). I find it somewhat ironic, therefore,
+	  that gcc on the mac doesn't even promote floats to doubles. FF needs the
+	  extra accuracy provided by a double (an extended type doesn't seem to provide
+	  additional assistance unfortunately). So on the mac we got extrema that weren't,
+	  which meant that remove overlap didn't.
+	<LI>
+	  If we had a mac feature which had multiple subtables (ie. a state machine
+	  for a contextual substitution, and a non-contextual substitution too) then
+	  we produced a bad chain in the morx table.
+	<LI>
+	  Merge &amp; Simplify would sometimes generate solutions using control points
+	  which were diametrically opposed to what they should be.
+	<LI>
+	  Yet another attempt to do a better job of autohinting.
+	<LI>
+	  Add a "Revert to Backup" command.
+	<LI>
+	  Put code in to correct for single bit (sometimes double bit) errors when
+	  search from extrema. This is at a lower level than the previous patch.
+	<LI>
+	  Output of extension lookups wasn't working
+	<LI>
+	  Fixed a problem in the ttf names pane of Font Info.
+	<LI>
+	  A slight improvement to magnifying by dragging a rectangle.
+	<LI>
+	  The first time you click on a transition in a Font Info-&gt;Mac SM-&gt;Indic
+	  state machine, ff would crash.
+	<LI>
+	  Tihkomirov points out that it isn't clear how to delete a ttf name from the
+	  name pane of fontinfo. So add some popup help. The language &amp; string
+	  ID menus in that pane were sorted on the wrong key
+	<LI>
+	  Was not preserving (unparsed) tables properly. Several bugs.
+	<LI>
+	  When loading an apple bitmap font (with no hmtx tables) we need to dummy
+	  up widths for the outline glyphs.
+      </UL>
     <LI>
       15-Jul-2006
       <UL>
 	<LI>
-	  Apple's bitmap only fonts should not have an 'hhea' nor an 'hmtx'
-	  table<BR>
+	  Apple's bitmap only fonts should not have an 'hhea' nor an 'hmtx' table<BR>
 	  Dummy up outline glyph widths when we don't have a 'hmtx' table by looking
 	  at bitmap widths for that glyph.<BR>
 	  ftxvalidate complains if the vertical line metrics are 0. Even in a strike
