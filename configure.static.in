@@ -324,6 +324,7 @@ AC_ARG_WITH(gtk,
  [
     if test "$withval" != "no" >/dev/null 2>&1 ; then
 	AC_DEFINE(FONTFORGE_CONFIG_GTK)
+	echo "Configuring with gtk does not work. Please don't use this option."
     fi
  ], : )
 AC_ARG_WITH(gdraw,
