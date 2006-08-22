@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 28-Jun-2001 -->
-  <!-- AP: Last modified: 12-Jun-2006 -->
+  <!-- AP: Last modified: 21-Aug-2006 -->
   <TITLE>Finding common font problems automagically</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -135,7 +135,7 @@
   If FontForge detects any open paths it will select the entire path, and stop
   to let you fix things up.
   <P>
-  <STRONG><BIG>Intersecting Paths</BIG></STRONG>
+  <STRONG><BIG><A NAME="Intersecting">Intersecting</A> Paths</BIG></STRONG>
   <P>
   Both PostScript and TrueType discourage you from having intersecting paths
   in a font.
@@ -157,6 +157,10 @@
   fashion. This sometimes doesn't matter, but many rasterizers do a better
   job if this rule is obeyed. This command will detect whether this constraint
   is violated.
+  <P>
+  <STRONG>FontForge cannot determine path direction properly if there are
+  self-intersecting paths.</STRONG> <A HREF="problems.html#Intersecting">Do
+  that test first.</A>
   <P>
   Currently the command will report the same error several times if you do
   not fix the problem. That's sort of a bug, but I don't see an easy way around

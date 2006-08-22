@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 19-Aug-2006 -->
-  <!-- AP: Last modified: 19-Aug-2006 -->
+  <!-- AP: Last modified: 21-Aug-2006 -->
   <TITLE>User Interface Translation Notes</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -164,7 +164,18 @@ msgstr "<FONT COLOR="Red">_Annuler</FONT>"
   <P>
   So the translation goes into the msgstr line. (The comment lines above indicate
   in what source files and on what lines the "_Cancel" string as used -- this
-  information may be helpful if you want more information about context).
+  information may be helpful if you want more information about context). If
+  you don't want to translate a string just leave the msgstr as a null-string,
+  and the English text will be used ("OK" seems to be left untranslated in
+  many languages)
+  <BLOCKQUOTE>
+    <PRE>#: ttfinstrs.c:2184 typofeatures.c:1450 ../gdraw/gaskdlg.c:1076
+#: ../gdraw/gaskdlg.c:1332 ../gdraw/gaskdlg.c:1391 ../gdraw/gfiledlg.c:152
+#: ../gdraw/gmatrixedit.c:711 ../gdraw/gsavefiledlg.c:280
+msgid "_OK"
+msgstr ""
+</PRE>
+  </BLOCKQUOTE>
   <P>
   Some strings contain mnemonics. The mnemonic is preceded by an underscore.
   <P>
@@ -172,7 +183,8 @@ msgstr "<FONT COLOR="Red">_Annuler</FONT>"
   an English word might be translated by different French words depending on
   context. For example in French the English word "New" might be translated
   as either "Nouveau" or "Nouvelle" depending on the gender of the thing being
-  created. So to disambiguate some strings a little bit of context information
+  created. In Japanese the word for the latin language is different from the
+  latin script. So to disambiguate some strings a little bit of context information
   may appear before the actual string to be translated:
   <BLOCKQUOTE>
     <PRE>msgid "File|_New"
@@ -214,7 +226,7 @@ msgstr "<FONT COLOR="Red">_Nouvelle</FONT>"
 </PRE>
   </BLOCKQUOTE>
   <P>
-  A language like Greek, which has a dual form, might look like
+  A language like classical Greek, which has a dual form, might look like
   <BLOCKQUOTE>
     <PRE>"Plural-Forms: nplurals=<FONT COLOR="Red">3</FONT>; plural=<FONT COLOR="Red">n&lt;=1?0:n==2?1:2</FONT>;\n"
 </PRE>
@@ -224,10 +236,10 @@ msgstr "<FONT COLOR="Red">_Nouvelle</FONT>"
   be plural it has a slightly different form in the po file
   <BLOCKQUOTE>
     <PRE>#: groups.c:1558
-msgid "Group"
-msgid_plural "Groups"
-msgstr[0] "<FONT COLOR="Red">Groupe</FONT>"
-msgstr[1] "<FONT COLOR="Red">Groupes</FONT>"
+msgid "%d Group"
+msgid_plural "%d Groups"
+msgstr[0] "<FONT COLOR="Red">%d Groupe</FONT>"
+msgstr[1] "<FONT COLOR="Red">%d Groupes</FONT>"
 </PRE>
   </BLOCKQUOTE>
   <P>

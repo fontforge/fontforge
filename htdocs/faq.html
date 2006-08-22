@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 2-May-2006 -->
+  <!-- AP: Last modified: 12-Aug-2006 -->
   <TITLE>Frequently Asked Questions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -339,7 +339,57 @@
       As I was unaware of any widget sets that did that, I wrote my own.<BR>
       I also wanted a widget set where I could actually figure out whether the
       checkbox was checked or not checked. In far too many cases my eyes can't
-      work out which is which...
+      work out which is which...<BR>
+      I realize now that that there are essentially two free widget sets that are
+      far better at unicode support than mine. These are
+      <A HREF="http://www.trolltech.com/developer/downloads/qt">QT</A> and
+      <A HREF="http://www.gtk.org/">gtk</A>. I'm still not using either because:
+      <UL>
+	<LI>
+	  Converting from one set of widgets to another is tedious. And people send
+	  me bugs which distract me.
+	<LI>
+	  QT is written in C++, and, <A HREF="faq.html#C-plus-plus">as I explain
+	  below</A>, I don't like C++, so that's out.
+	<LI>
+	  The more I look at gtk the less I like it.
+	  <UL>
+	    <LI>
+	      The support for images is atrocious (which is odd, since it was written for
+	      gimp):
+	      <UL>
+		<LI>
+		  There is no support whatsoever for client side bitmaps (and I want to support
+		  bitmap fonts)
+		<LI>
+		  Colors are ordered RGB in color tables for index images, but BGR for 24bit
+		  color images
+		<LI>
+		  No simple support for transparent images without resorting to full RGBA images,
+		  which is a bit of overkill when I want to draw a simple bitmap.
+		<LI>
+		  There is no overarching format for images, so I can't have an image which
+		  itself knows whether it's bitmap, index or truecolor.
+		<LI>
+		  Fixing thesewais possible, but it involved a lot of very low level work on
+		  my part -- and I only know how to do that work on X.
+	      </UL>
+	    <LI>
+	      I find the file chooser dialog really ugly. And it's so complex I can't figure
+	      out how to modify it to make it look nice.
+	    <LI>
+	      I also can't figure out how to modify the file chooser to make it behave
+	      the way the fontforge's file chooser currently behaves (popup windows showing
+	      FontNames as you move the mouse over fontfiles, a pull down list of recently
+	      used files attached to the filename input box, etc.)
+	    <LI>
+	      gtk+2 doesn't run natively on Mac OS, and the only people porting gtk to
+	      the mac seem to be working on gtk-1
+	    <LI>
+	      So I tend to wrestle with it for a while and then decide than my current
+	      widgets are better after all.
+	  </UL>
+      </UL>
     <DT>
       <A NAME="C-plus-plus"><B>Why isn't FontForge written in C++ (or <I>Why C++
       is not my favorite language</I>)?</B></A>
@@ -388,8 +438,8 @@
 	  functions.".
       </UL>
       <P>
-      The above are my personal opinions based on my experience and are explain
-      why <I>I</I> do not use C++. Your opinions may differ, few people have spent
+      The above are my personal opinions based on my experience and explain why
+      <I>I</I> do not use C++. Your opinions may differ, few people have spent
       5 years writing C++ compilers.
     <DT>
       <A NAME="legal"><B>Is it legal to modify a font? Is it ethical?</B></A>
