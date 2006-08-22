@@ -31,8 +31,9 @@
 
 /* A diagonal end is like the top or bottom of a slash. Should we add a vertical stem at the end? */
 /* A diagonal corner is like the bottom of circumflex. Should we add a horizontal stem */
-enum { hint_diagonal_ends=1, hint_diagonal_corners=2 };
-int hintcontrolflags = -1;
+int hint_diagonal_ends = 0,
+    hint_diagonal_intersections = 0,
+    hint_bounding_boxes = 1;
 
 static const double slope_error = .05;
     /* If the dot vector of a slope and the normal of another slope is less */
@@ -191,7 +192,7 @@ return;
 	if ( same<-.95 )
 	    pd->colinear = true;
     }
-    if ( (hintcontrolflags&hint_diagonal_corners) ) {
+    if ( hint_diagonal_intersections ) {
 	if ( pd->prev_hor || pd->prev_ver )
 	    /* It IS horizontal or vertical. No need to fake it */;
 	else if ( RealNear(pd->nextunit.x,-pd->prevunit.x) &&
@@ -1226,7 +1227,7 @@ static struct stemdata *EdgeStem(struct glyphdata *gd,struct pointdata *pd) {
     struct stem_chunk *chunk;
     double width, length1, length2;
 
-    if ( !(hintcontrolflags&hint_diagonal_ends) )
+    if ( !hint_diagonal_ends )
 return( NULL );
 
     if ( !gd->only_hv ||
@@ -1926,6 +1927,23 @@ static void FigureStemActive(struct glyphdata *gd, struct stemdata *stem) {
 	    }
 	    activespace[acnt++].base = proj;
 	    ++i;
+	} else if ( chunk->stemcheat==4 && chunk->l!=NULL && chunk->r!=NULL ) {
+	    SplinePoint *sp = chunk->l->sp;
+	    SplinePoint *sp2 = chunk->r->sp;
+	    double proj = (sp->me.x - stem->left.x) *stem->unit.x +
+			  (sp->me.y - stem->left.y) *stem->unit.y;
+	    double proj2 = (sp2->me.x - stem->left.x) *stem->unit.x +
+			   (sp2->me.y - stem->left.y) *stem->unit.y;
+	    activespace[acnt  ].curved = false;
+	    if ( proj2<proj ) {
+		activespace[acnt  ].start = proj2;
+		activespace[acnt  ].end = proj;
+	    } else {
+		activespace[acnt  ].start = proj;
+		activespace[acnt  ].end = proj2;
+	    }
+	    activespace[acnt++].base = proj;
+	    ++i;
 	} else if ( chunk->stemcheat && chunk->l!=NULL && chunk->r!=NULL ) {
 	    SplinePoint *sp = chunk->l->sp;
 	    double proj = (sp->me.x - stem->left.x) *stem->unit.x +
@@ -2072,7 +2090,74 @@ static void AddOpposite(struct glyphdata *gd,struct stem_chunk *chunk,
 		*other = tpd;
 	}
     }
-}    
+}
+
+static void CheckForBoundingBoxHints(struct glyphdata *gd) {
+    /* Adobe seems to add hints at the bounding boxes of glyphs with no hints */
+    int hcnt=0, vcnt=0, i;
+    struct stemdata *stem;
+    SplinePoint *minx, *maxx, *miny, *maxy;
+    SplineFont *sf;
+    int emsize;
+    struct stem_chunk *chunk;
+
+    for ( i=0; i<gd->stemcnt; ++i ) {
+	stem = &gd->stems[i];
+	if ( stem->toobig )
+    break;
+	if ( stem->unit.x > .9 || stem->unit.x < -.9 )
+	    ++hcnt;
+	else
+	    ++vcnt;
+    }
+    if ( hcnt!=0 && vcnt!=0 )
+return;
+
+    minx = maxx = miny = maxy = NULL;
+    for ( i=0; i<gd->pcnt; ++i ) if ( gd->points[i].sp!=NULL ) {
+	SplinePoint *sp = gd->points[i].sp;
+	if ( minx==NULL )
+	    minx = maxx = miny = maxy = sp;
+	else {
+	    if ( minx->me.x>sp->me.x )
+		minx = sp;
+	    else if ( maxx->me.x<sp->me.x )
+		maxx = sp;
+	    if ( miny->me.y>sp->me.y )
+		miny = sp;
+	    else if ( maxy->me.y<sp->me.y )
+		maxy = sp;
+	}
+    }
+
+    if ( minx==NULL )		/* No contours */
+return;
+
+    sf = gd->sc->parent;
+    emsize = sf->ascent+sf->descent;
+
+    if ( hcnt==0 && maxy->me.y!=miny->me.y && maxy->me.y-miny->me.y<emsize/2 ) {
+	struct pointdata *pd = &gd->points[maxy->ttfindex],
+			 *pd2 = &gd->points[miny->ttfindex];
+	stem = FindOrMakeHVStem(gd,pd,pd2,true);
+	chunk = AddToStem(stem,pd,pd2,false,true,NULL);
+	chunk->stemcheat = 4;
+	FigureStemActive(gd,stem);
+	stem->toobig = false;
+	stem->clen += stem->width;
+    }
+
+    if ( vcnt==0 && maxx->me.x!=minx->me.x && maxx->me.x-minx->me.x<emsize/2 ) {
+	struct pointdata *pd = &gd->points[maxx->ttfindex],
+			 *pd2 = &gd->points[minx->ttfindex];
+	stem = FindOrMakeHVStem(gd,pd,pd2,false);
+	chunk = AddToStem(stem,pd,pd2,false,true,NULL);
+	chunk->stemcheat = 4;
+	FigureStemActive(gd,stem);
+	stem->toobig = false;
+	stem->clen += stem->width;
+    }
+}
 
 struct glyphdata *GlyphDataBuild(SplineChar *sc, int only_hv) {
     struct glyphdata *gd;
@@ -2277,6 +2362,9 @@ return( NULL );
     gd->activespace = galloc(3*gd->pcnt*sizeof(struct segment));
     for ( i=j=0; i<gd->stemcnt; ++i )
 	FigureStemActive(gd,&gd->stems[i]);
+
+    if ( only_hv && hint_bounding_boxes )
+	CheckForBoundingBoxHints(gd);
 
     FreeMonotonics(gd->ms);	gd->ms = NULL;
     free(gd->space);		gd->space = NULL;
