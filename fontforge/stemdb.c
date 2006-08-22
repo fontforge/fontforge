@@ -1287,6 +1287,8 @@ return( false );
 	if ( test==findme )
 return( true );
 	test = test->to->next;
+	if ( test==other )
+    break;
     }
 	    
     dir = &gd->points[other->from->ttfindex].prevunit;
@@ -1297,6 +1299,8 @@ return( true );
 	if ( test==findme )
 return( true );
 	test = test->from->prev;
+	if ( test==other )
+    break;
     }
 
 return( false );
