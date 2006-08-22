@@ -13595,6 +13595,7 @@ if test "${with_gtk+set}" = set; then
 #define FONTFORGE_CONFIG_GTK 1
 _ACEOF
 
+	echo "Configuring with gtk does not work. Please don't use this option."
     fi
 
 else
