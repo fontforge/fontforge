@@ -1,4 +1,4 @@
-# (American) English User Interface strings for FontForge.
+# (British) English User Interface strings for FontForge.
 # Copyright (C) 2000-2006 by George Williams
 # This file is distributed under the same license as the FontForge package.
 # George Williams, <pfaedit@users.sourceforge.net>, 2006.
@@ -78,6 +78,10 @@ msgid ""
 msgstr ""
 "Allow editing of multiple colours and shades, fills and strokes.\n"
 "Multi layered fonts can only be output as type3 or svg fonts."
+
+#: fontinfo.c:6744
+msgid "(Adobe now considers XUID/UniqueID unnecessary)"
+msgstr "(Adobe now consider XUID/UniqueID unnecessary)"
 
 #: fontinfo.c:6921
 msgid ""
