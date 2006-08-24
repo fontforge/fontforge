@@ -60,6 +60,8 @@
 #else
 # define extended	double
 #endif
+	/* Solaris wants to define extended to be unsigned [3] unless we do this*/
+#define _EXTENDED
 
 #define CHR(ch1,ch2,ch3,ch4) (((ch1)<<24)|((ch2)<<16)|((ch3)<<8)|(ch4))
 
