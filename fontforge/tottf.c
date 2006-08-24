@@ -2358,7 +2358,7 @@ static int dumpcffhmtx(struct alltabs *at,SplineFont *sf,int bitmaps) {
     at->gi.hmtx = tmpfile();
     if ( dovmetrics )
 	at->gi.vmtx = tmpfile();
-    FigureFullMetricsEnd(sf,&at->gi,false);
+    FigureFullMetricsEnd(sf,&at->gi,bitmaps);	/* Bitmap fonts use ttf convention of 3 magic glyphs */
     if ( at->gi.bygid[0]!=-1 && (sf->glyphs[at->gi.bygid[0]]->width==width || width==-1 )) {
 	putshort(at->gi.hmtx,sf->glyphs[at->gi.bygid[0]]->width);
 	SplineCharFindBounds(sf->glyphs[at->gi.bygid[0]],&b);
@@ -4916,7 +4916,7 @@ return( false );
 	aborted = !dumptype2glyphs(sf,at);
     else if ( format==ff_otfcid )
 	aborted = !dumpcidglyphs(sf,at);
-    else if ( format==ff_none && at->applemode ) {
+    else if ( format==ff_none && (at->applemode || bf==bf_sfnt_dfont)) {
 	aborted = !dumpcffhmtx(at,sf,true);	/* There is no 'hmtx' table for apple bitmap only fonts */
 		/* But we need some of the side effects of this */
     } else if ( format==ff_none && at->otbbitmaps ) {
@@ -4972,7 +4972,8 @@ return( false );
 	at->head.locais32 = 0;
     if ( format==ff_none && at->otbbitmaps )
 	dummyloca(at);
-    else if ( format!=ff_otf && format!=ff_otfcid && (format!=ff_none || (bsizes!=NULL && !at->applemode && at->opentypemode)) )
+    else if ( format!=ff_otf && format!=ff_otfcid && bf!=bf_sfnt_dfont &&
+	    (format!=ff_none || (bsizes!=NULL && !at->applemode && at->opentypemode)) )
 	redoloca(at);
     redohead(at);
     if ( format!=ff_none || !at->applemode )	/* No 'hhea' table for apple bitmap-only fonts */
@@ -5558,6 +5559,7 @@ int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
     at.applemode = (flags&ttf_flag_applemode)?1:0;
     at.opentypemode = (flags&ttf_flag_otmode)?1:0;
     at.msbitmaps = bsizes!=NULL && !at.applemode && at.opentypemode;
+    if ( bf==bf_sfnt_dfont ) at.msbitmaps = false;
     at.otbbitmaps = bsizes!=NULL && bf==bf_otb;
     at.gi.onlybitmaps = format==ff_none;
     at.gi.bsizes = bsizes;
