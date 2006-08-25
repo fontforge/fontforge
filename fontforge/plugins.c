@@ -29,12 +29,13 @@
 
 #include "plugins.h"
 #include "dynamic.h"
+#include <utype.h>
 
 #include <sys/types.h>
 #include <dirent.h>
 
 void LoadPlugin(char *dynamic_lib_name) {
-    void *plugin;
+    DL_CONST void *plugin;
     char *pt, *spt, *freeme = NULL;
     int (*init)(void);
 
@@ -45,7 +46,13 @@ void LoadPlugin(char *dynamic_lib_name) {
     if ( pt==NULL ) {
 	freeme = galloc(strlen(dynamic_lib_name)+strlen(SO_EXT)+4);
 	strcpy(freeme,dynamic_lib_name);
+#ifdef __Mac
+	/* Bless us and splash us my precious. libtool on the mac names */
+	/*  module shared libraries with ".so" and not ".dylib". Who'd u thunk it? */
+	strcat(freeme,".so");
+#else
 	strcat(freeme,SO_EXT);
+#endif
 	dynamic_lib_name = freeme;
     }
     plugin = dlopen(dynamic_lib_name,RTLD_LAZY);
@@ -73,10 +80,23 @@ static int isdyname(char *filename) {
     pt = strrchr(filename,'.');
     if ( pt==NULL )
 return( false );
+
+#ifdef __Mac
+    /* Libtool on the mac does version numbers the wrong way */
+    /*  and uses .so */
+    if ( strcmp(pt,".so")!=0 )
+return( false );
+    while ( pt-1>filename && isdigit(pt[-1])) --pt;
+    if ( pt-1>filename && pt[-1]=='.' )
+return( false );		/* Looks like a version number */
+
+return( true );
+#else
     if ( strcmp(pt,SO_EXT)==0 )
 return( true );
 
 return( false );
+#endif
 }
 
 void LoadPluginDir(char *dir) {
