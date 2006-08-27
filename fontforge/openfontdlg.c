@@ -63,6 +63,7 @@ struct openfilefilters def_font_filters[] = {
 	   "ik,"
 	   "fon,"
 	   "fnt,"
+	   "pcf,"
 	   "pdb"
 	   "}"
 /* With any of these methods of compression */
