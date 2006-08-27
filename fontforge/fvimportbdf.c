@@ -2319,13 +2319,13 @@ int FVImportMult(FontView *fv, char *filename, int toback, int bf) {
     gwwv_progress_enable_stop(false);
 
     if ( bf == bf_ttf )
-	strikeholder = SFReadTTF(filename,toback?ttf_onlyonestrike|ttf_onlystrikes:ttf_onlystrikes);
+	strikeholder = SFReadTTF(filename,toback?ttf_onlyonestrike|ttf_onlystrikes:ttf_onlystrikes,0);
     else if ( bf == bf_fon )
 	strikeholder = SFReadWinFON(filename,toback);
     else if ( bf == bf_fon )
 	strikeholder = SFReadPalmPdb(filename,toback);
     else
-	strikeholder = SFReadMacBinary(filename,toback?ttf_onlyonestrike|ttf_onlystrikes:ttf_onlystrikes);
+	strikeholder = SFReadMacBinary(filename,toback?ttf_onlyonestrike|ttf_onlystrikes:ttf_onlystrikes,0);
 
     if ( strikeholder==NULL || (strikes = strikeholder->bitmaps)==NULL ) {
 	SplineFontFree(strikeholder);

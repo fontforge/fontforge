@@ -3527,9 +3527,43 @@ return( ui_none );
 return( cnt>=2 ? ui_ams : ui_none );
 }
 
+struct cmap_encs {
+    int platform;
+    int specific;
+    int offset;
+    Encoding *enc;
+};
+
+static int PickCMap(struct cmap_encs *cmap_encs,int enccnt) {
+    char buffer[400];
+    char **choices;
+    int i, ret;
+
+    choices = galloc(enccnt*sizeof(char *));
+    for ( i=0; i<enccnt; ++i ) {
+	sprintf(buffer,"%d (%s) %d %s",
+		cmap_encs[i].platform,
+		    cmap_encs[i].platform==0 ? _("Apple Unicode") :
+		    cmap_encs[i].platform==1 ? _("Apple") :
+		    cmap_encs[i].platform==2 ? _("ISO (obsolete)") :
+		    cmap_encs[i].platform==3 ? _("MicroSoft") :
+		    cmap_encs[i].platform==7 ? _("FreeType internals") :
+					       _("Unknown"),
+		cmap_encs[i].specific,
+		cmap_encs[i].enc->enc_name );
+	choices[i] = copy(buffer);
+    }
+    ret = gwwv_choose(_("Pick a CMap subtable"),(const char **) choices,enccnt,-1,
+	    _("Pick a CMap subtable"));
+    for ( i=0; i<enccnt; ++i )
+	free(choices[i]);
+    free(choices);
+return( ret );
+}
+
 static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
     int i,j;
-    int nencs, version;
+    int nencs, version, usable_encs;
     Encoding *enc = &custom;
     const int32 *trans=NULL;
     enum uni_interp interp = ui_none;
@@ -3547,13 +3581,16 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
     int glyph_tot;
     Encoding *temp;
     EncMap *map;
+    struct cmap_encs *cmap_encs;
+    extern int ask_user_for_cmap;
 
     fseek(ttf,info->encoding_start,SEEK_SET);
     version = getushort(ttf);
     nencs = getushort(ttf);
     if ( version!=0 && nencs==0 )
 	nencs = version;		/* Sometimes they are backwards */
-    for ( i=0; i<nencs; ++i ) {
+    cmap_encs = galloc(nencs*sizeof(struct cmap_encs));
+    for ( i=usable_encs=0; i<nencs; ++i ) {
 	platform = getushort(ttf);
 	specific = getushort(ttf);
 	offset = getlong(ttf);
@@ -3561,7 +3598,27 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
     continue;
 	temp = enc_from_platspec(platform,specific);
 	if ( temp==NULL )	/* iconv doesn't support this. Some sun iconvs seem limited */
-    continue;
+	    temp = FindOrMakeEncoding("Custom");
+	cmap_encs[usable_encs].platform = platform;
+	cmap_encs[usable_encs].specific = specific;
+	cmap_encs[usable_encs].offset = offset;
+	cmap_encs[usable_encs++].enc = temp;
+    }
+    if ( ask_user_for_cmap && (i = PickCMap(cmap_encs,usable_encs))!=-1 ) {
+	enc = cmap_encs[i].enc;
+	info->platform = cmap_encs[i].platform;
+	info->specific = cmap_encs[i].specific;
+	encoff = cmap_encs[i].offset;
+	interp = interp_from_encoding(enc,interp);
+	mod = 0;
+	if ( info->platform==3 && (info->specific>=2 && info->specific<=6 ))
+	    mod = info->specific;
+    } else for ( i=0; i<usable_encs; ++i ) {
+	temp = cmap_encs[i].enc;
+	platform = cmap_encs[i].platform;
+	specific = cmap_encs[i].specific;
+	offset = cmap_encs[i].offset;
+
 	interp = interp_from_encoding(temp,interp);
 	if ( platform==3 && specific==10 ) { /* MS Unicode 4 byte */
 	    enc = temp;
@@ -3644,6 +3701,8 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    for ( i=0; i<len-6; ++i )
 		table[i] = getc(ttf);
 	    trans = enc->unicode;
+	    if ( trans==NULL && info->platform==1 )
+		trans = MacEncToUnicode(info->specific);
 	    for ( i=0; i<256 && i<len-6; ++i )
 		if ( !justinuse ) {
 		    if ( table[i]<info->glyph_cnt && info->chars[table[i]]!=NULL ) {
@@ -4997,7 +5056,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 return( sf );
 }
 
-SplineFont *_SFReadTTF(FILE *ttf, int flags,char *filename,struct fontdict *fd) {
+SplineFont *_SFReadTTF(FILE *ttf, int flags,enum openflags openflags, char *filename,struct fontdict *fd) {
     struct ttfinfo info;
     int ret;
 
@@ -5011,7 +5070,7 @@ return( NULL );
 return( SFFillFromTTF(&info));
 }
 
-SplineFont *SFReadTTF(char *filename, int flags) {
+SplineFont *SFReadTTF(char *filename, int flags, enum openflags openflags) {
     FILE *ttf;
     SplineFont *sf;
     char *temp=filename, *pt, *lparen;
@@ -5028,7 +5087,7 @@ SplineFont *SFReadTTF(char *filename, int flags) {
     if ( ttf==NULL )
 return( NULL );
 
-    sf = _SFReadTTF(ttf,flags,filename,NULL);
+    sf = _SFReadTTF(ttf,flags,openflags,filename,NULL);
     fclose(ttf);
 return( sf );
 }

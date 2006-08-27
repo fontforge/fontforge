@@ -3203,7 +3203,7 @@ docs are wrong.
 		if ( i<first ) first = i;
 		if ( i>last ) last = i;
 	    }
-	os2->firstcharindex = 0xf000 + first;
+	os2->firstcharindex = 0xf000 + first;	/* This gets mapped to space */
 	os2->lastcharindex  = 0xf000 + last;
     } else {
 	if ( first>13 && format!=ff_otf && format!=ff_otfcid ) first = 13;	/* We give the font an extra char mapped to cr (13) */
