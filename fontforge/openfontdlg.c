@@ -64,6 +64,8 @@ struct openfilefilters def_font_filters[] = {
 	   "fon,"
 	   "fnt,"
 	   "pcf,"
+	   "*pk,"
+	   "*gf,"
 	   "pdb"
 	   "}"
 /* With any of these methods of compression */
@@ -101,6 +103,8 @@ struct openfilefilters def_font_filters[] = {
 	   "hqx,"
 	   "fon,"
 	   "fnt,"
+	   "*pk,"
+	   "*gf,"
 	   "pdb"
 	   "}"
 	     "{.gz,.Z,.bz2,}",

@@ -44,24 +44,20 @@ static GBox gfilechooser_box = { 0 };	/* no box */
 static unichar_t *lastdir;
 static int showhidden = false;
 
-/* Handles *?{}[] wildcards */
-int GGadgetWildMatch(unichar_t *pattern, unichar_t *name,int ignorecase) {
-    unichar_t ch, *ppt, *npt, *ept;
+static unichar_t *SubMatch(unichar_t *pattern, unichar_t *eop, unichar_t *name,int ignorecase) {
+    unichar_t ch, *ppt, *npt, *ept, *eon;
 
-    if ( pattern==NULL )
-return( true );
-
-    while (( ch = *pattern)!='\0' ) {
+    while ( pattern<eop && ( ch = *pattern)!='\0' ) {
 	if ( ch=='*' ) {
 	    for ( npt=name; ; ++npt ) {
-		if ( GGadgetWildMatch(pattern+1,npt,ignorecase))
-return( true );
+		if ( (eon = SubMatch(pattern+1,eop,npt,ignorecase))!= NULL )
+return( eon );
 		if ( *npt=='\0' )
-return( false );
+return( NULL );
 	    }
 	} else if ( ch=='?' ) {
 	    if ( *name=='\0' )
-return( false );
+return( NULL );
 	    ++name;
 	} else if ( ch=='[' ) {
 	    /* [<char>...] matches the chars
@@ -108,7 +104,7 @@ return( false );
 		}
 	    }
 	    if ( !found )
-return( false );
+return( NULL );
 	    while ( *ppt!=']' && *ppt!='\0' ) ++ppt;
 	    pattern = ppt;
 	    ++name;
@@ -116,18 +112,15 @@ return( false );
 	    /* matches any of a comma seperated list of substrings */
 	    for ( ppt = pattern+1; *ppt!='\0' ; ppt = ept ) {
 		for ( ept=ppt; *ept!='}' && *ept!=',' && *ept!='\0'; ++ept );
-		for ( npt = name; ppt<ept; ++npt, ++ppt ) {
-		    if ( *ppt != *npt && (!ignorecase || tolower(*ppt)!=tolower(*npt)) )
-		break;
-		}
-		if ( ppt==ept ) {
+		npt = SubMatch(ppt,ept,name,ignorecase);
+		if ( npt!=NULL ) {
 		    unichar_t *ecurly = ept;
-		    while ( *ecurly!='}' && *ecurly!='\0' ) ++ecurly;
-		    if ( GGadgetWildMatch(ecurly+1,npt,ignorecase))
-return( true );
+		    while ( *ecurly!='}' && ecurly<eop && *ecurly!='\0' ) ++ecurly;
+		    if ( (eon=SubMatch(ecurly+1,eop,npt,ignorecase))!=NULL )
+return( eon );
 		}
 		if ( *ept=='}' )
-return( false );
+return( NULL );
 		if ( *ept==',' ) ++ept;
 	    }
 	} else if ( ch==*name ) {
@@ -135,9 +128,22 @@ return( false );
 	} else if ( ignorecase && tolower(ch)==tolower(*name)) {
 	    ++name;
 	} else
-return( false );
+return( NULL );
 	++pattern;
     }
+return( name );
+}
+
+/* Handles *?{}[] wildcards */
+int GGadgetWildMatch(unichar_t *pattern, unichar_t *name,int ignorecase) {
+    unichar_t *eop = pattern + u_strlen(pattern);
+
+    if ( pattern==NULL )
+return( true );
+
+    name = SubMatch(pattern,eop,name,ignorecase);
+    if ( name==NULL )
+return( false );
     if ( *name=='\0' )
 return( true );
 
