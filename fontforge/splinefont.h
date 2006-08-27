@@ -1193,7 +1193,7 @@ enum ttf_flags { ttf_flag_shortps = 1, ttf_flag_nohints = 2,
 		    ttf_flag_ofm=0x100,
 		    ttf_flag_oldkern=0x200	/* never set in conjunction with applemode */
 		};
-enum openflags { of_fstypepermitted=1 };
+enum openflags { of_fstypepermitted=1, of_askcmap=2 };
 enum ps_flags { ps_flag_nohintsubs = 0x10000, ps_flag_noflex=0x20000,
 		    ps_flag_nohints = 0x40000, ps_flag_restrict256=0x80000,
 		    ps_flag_afm = 0x100000, ps_flag_pfm = 0x200000,
@@ -1709,12 +1709,13 @@ extern SplineChar *SFDReadOneChar(SplineFont *sf,const char *name);
 extern char *TTFGetFontName(FILE *ttf,int32 offset,int32 off2);
 extern void TTFLoadBitmaps(FILE *ttf,struct ttfinfo *info, int onlyone);
 enum ttfflags { ttf_onlystrikes=1, ttf_onlyonestrike=2, ttf_onlykerns=4, ttf_onlynames=8 };
-extern SplineFont *_SFReadTTF(FILE *ttf,int flags,char *filename,struct fontdict *fd);
-extern SplineFont *SFReadTTF(char *filename,int flags);
+extern SplineFont *_SFReadTTF(FILE *ttf,int flags,enum openflags openflags,
+	char *filename,struct fontdict *fd);
+extern SplineFont *SFReadTTF(char *filename,int flags,enum openflags openflags);
 extern SplineFont *SFReadSVG(char *filename,int flags);
 extern SplineFont *_CFFParse(FILE *temp,int len,char *fontsetname);
 extern SplineFont *CFFParse(char *filename);
-extern SplineFont *SFReadMacBinary(char *filename,int flags);
+extern SplineFont *SFReadMacBinary(char *filename,int flags,enum openflags openflags);
 extern SplineFont *SFReadWinFON(char *filename,int toback);
 extern SplineFont *SFReadPalmPdb(char *filename,int toback);
 extern SplineFont *LoadSplineFont(char *filename,enum openflags);
@@ -1725,8 +1726,8 @@ extern void SFCheckPSBitmap(SplineFont *sf);
 extern uint16 _MacStyleCode( char *styles, SplineFont *sf, uint16 *psstyle );
 extern uint16 MacStyleCode( SplineFont *sf, uint16 *psstyle );
 extern SplineFont *SFReadIkarus(char *fontname);
-extern SplineFont *_SFReadPdfFont(FILE *ttf,char *filename,char *select_this_font);
-extern SplineFont *SFReadPdfFont(char *filename);
+extern SplineFont *_SFReadPdfFont(FILE *ttf,char *filename,char *select_this_font, enum openflags openflags);
+extern SplineFont *SFReadPdfFont(char *filename, enum openflags openflags);
 extern char **GetFontNames(char *filename);
 extern char **NamesReadSFD(char *filename);
 extern char **NamesReadTTF(char *filename);
@@ -1956,6 +1957,7 @@ extern uint8 MacEncFromMacLang(int maclang);
 extern uint16 WinLangFromMac(int maclang);
 extern uint16 WinLangToMac(int winlang);
 extern int CanEncodingWinLangAsMac(int winlang);
+extern const int32 *MacEncToUnicode(int script);
 extern int MacLangFromLocale(void);
 extern char *FindEnglishNameInMacName(struct macname *mn);
 extern char *PickNameFromMacName(struct macname *mn);

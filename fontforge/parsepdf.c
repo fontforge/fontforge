@@ -48,6 +48,7 @@ struct pdfcontext {
     long *fonts;
     char **fontnames;		/* theoretically in utf-8 */
     int fcnt;
+    enum openflags openflags;
 };
 
 static long FindXRef(FILE *pdf) {
@@ -1387,7 +1388,7 @@ return( NULL );
 	sf = SplineFontFromPSFont(fd);
 	PSFontFree(fd);
     } else if ( type==2 ) {
-	sf = _SFReadTTF(file,0,pc->fontnames[font_num],NULL);
+	sf = _SFReadTTF(file,0,pc->openflags,pc->fontnames[font_num],NULL);
     } else {
 	int len;
 	fseek(file,0,SEEK_END);
@@ -1415,7 +1416,8 @@ static void pcFree(struct pdfcontext *pc) {
     free(pc->tokbuf);
 }
 
-SplineFont *_SFReadPdfFont(FILE *pdf,char *filename,char *select_this_font) {
+SplineFont *_SFReadPdfFont(FILE *pdf,char *filename,char *select_this_font,
+	enum openflags openflags) {
     struct pdfcontext pc;
     SplineFont *sf = NULL;
     char *oldloc;
@@ -1424,6 +1426,7 @@ SplineFont *_SFReadPdfFont(FILE *pdf,char *filename,char *select_this_font) {
     oldloc = setlocale(LC_NUMERIC,"C");
     memset(&pc,0,sizeof(pc));
     pc.pdf = pdf;
+    pc.openflags = openflags;
     if ( (pc.objs = FindObjects(&pc))==NULL ) {
 	LogError( _("Doesn't look like a valid pdf file, couldn't find xref section") );
 	pcFree(&pc);
@@ -1478,7 +1481,7 @@ return( NULL );
 return( sf );
 }
 
-SplineFont *SFReadPdfFont(char *filename) {
+SplineFont *SFReadPdfFont(char *filename,enum openflags openflags) {
     char *pt, *freeme=NULL, *freeme2=NULL, *select_this_font=NULL;
     SplineFont *sf;
     FILE *pdf;
@@ -1494,7 +1497,7 @@ SplineFont *SFReadPdfFont(char *filename) {
     if ( pdf==NULL )
 	sf = NULL;
     else {
-	sf = _SFReadPdfFont(pdf,filename,select_this_font);
+	sf = _SFReadPdfFont(pdf,filename,select_this_font,openflags);
 	fclose(pdf);
     }
     free(freeme); free(freeme2);

@@ -1264,6 +1264,17 @@ return( false );
 return( true );
 }
 
+const int32 *MacEncToUnicode(int script) {
+    static int32 temp[256];
+    int i;
+
+    if ( macencodings[script]==NULL )
+return( NULL );
+    for ( i=0; i<256; ++i )
+	temp[i] = macencodings[script][i];
+return( temp );
+}
+
 int MacLangFromLocale(void) {
     /*const char *loc = setlocale(LC_MESSAGES,NULL);*/ /* This always returns "C" for me, even when it shouldn't be */
     const char *loc;

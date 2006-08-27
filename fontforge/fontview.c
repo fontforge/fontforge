@@ -10668,14 +10668,14 @@ return( NULL );
 		(ch1=='O' && ch2=='T' && ch3=='T' && ch4=='O') ||
 		(ch1=='t' && ch2=='r' && ch3=='u' && ch4=='e') ||
 		(ch1=='t' && ch2=='t' && ch3=='c' && ch4=='f') ) {
-	    sf = SFReadTTF(fullname,0);
+	    sf = SFReadTTF(fullname,0,openflags);
 	    checked = 't';
 	} else if (( ch1=='%' && ch2=='!' ) ||
 		    ( ch1==0x80 && ch2=='\01' ) ) {	/* PFB header */
 	    sf = SFReadPostscript(fullname);
 	    checked = 'p';
 	} else if ( ch1=='%' && ch2=='P' && ch3=='D' && ch4=='F' ) {
-	    sf = SFReadPdfFont(fullname);
+	    sf = SFReadPdfFont(fullname,openflags);
 	    checked = 'P';
 	} else if ( ch1==1 && ch2==0 && ch3==4 ) {
 	    sf = CFFParse(fullname);
@@ -10719,7 +10719,7 @@ return( NULL );
 		strmatch(fullname+strlen(fullname)-4, ".gai")==0 ||
 		strmatch(fullname+strlen(fullname)-4, ".otf")==0 ||
 		strmatch(fullname+strlen(fullname)-4, ".otb")==0 ) && checked!='t') {
-	sf = SFReadTTF(fullname,0);
+	sf = SFReadTTF(fullname,0,openflags);
     } else if ( strmatch(fullname+strlen(fullname)-4, ".svg")==0 && checked!='s' ) {
 	sf = SFReadSVG(fullname,0);
     } else if ( strmatch(fullname+strlen(fullname)-4, ".bdf")==0 && checked!='b' ) {
@@ -10733,7 +10733,7 @@ return( NULL );
     } else if ( strmatch(fullname+strlen(strippedname)-4, ".bin")==0 ||
 		strmatch(fullname+strlen(strippedname)-4, ".hqx")==0 ||
 		strmatch(fullname+strlen(strippedname)-6, ".dfont")==0 ) {
-	sf = SFReadMacBinary(fullname,0);
+	sf = SFReadMacBinary(fullname,0,openflags);
     } else if ( strmatch(fullname+strlen(strippedname)-4, ".fon")==0 ||
 		strmatch(fullname+strlen(strippedname)-4, ".fnt")==0 ) {
 	sf = SFReadWinFON(fullname,0);
@@ -10752,11 +10752,11 @@ return( NULL );
     } else if ( strmatch(fullname+strlen(fullname)-3, ".mf")==0 ) {
 	sf = SFFromMF(fullname);
     } else if ( strmatch(fullname+strlen(fullname)-4, ".pdf")==0 && checked!='P' ) {
-	sf = SFReadPdfFont(fullname);
+	sf = SFReadPdfFont(fullname,openflags);
     } else if ( strmatch(fullname+strlen(fullname)-3, ".ik")==0 && checked!='i' ) {
 	sf = SFReadIkarus(fullname);
     } else {
-	sf = SFReadMacBinary(fullname,0);
+	sf = SFReadMacBinary(fullname,0,openflags);
     }
     if ( strippedname!=filename && strippedname!=tmpfile )
 	free(strippedname);
