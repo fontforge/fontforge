@@ -103,6 +103,7 @@ struct openfilefilters def_font_filters[] = {
 	   "pdb"
 	   "}"
 	     "{.gz,.Z,.bz2,}",
+	NU_("ΤεΧ Bitmap Fonts"), "*{pk,gf}",
 	N_("PostScript"), "*.{pfa,pfb,t42,otf,cef,cff,gai,pf3,pt3,gsf,cid}{.gz,.Z,.bz2,}",
 	N_("TrueType"), "*.{ttf,t42,ttc}{.gz,.Z,.bz2,}",
 	N_("OpenType"), "*.{ttf,otf}{.gz,.Z,.bz2,}",
