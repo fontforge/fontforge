@@ -124,6 +124,10 @@ msgstr ""
 msgid "Are you sure you want to replace Å?\nThe ring will not join to the A."
 msgstr ""
 
+#: openfontdlg.c
+msgid "ΤεΧ Bitmap Fonts"
+msgstr ""
+
 #: problems.c
 msgid "_X near¹"
 msgstr ""
