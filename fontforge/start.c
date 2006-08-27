@@ -218,11 +218,18 @@ static void splash_window_tooltip_fun( GtkWidget *splashw ) {
     static char *foolishness[] = {
 /* GT: These strings are for fun. If they are offensive of incomprehensible */
 /* GT: simply translate them as something dull like: "FontForge" */
+/* GT: Someone said this first quote was a political slogan. If anything, it */
+/* GT: is intended as a satire */
 	N_("A free press discriminates\nagainst the illiterate."),
 	N_("A free press discriminates\nagainst the illiterate."),
 	N_("Gaudeamus Ligature!"),
 	N_("Gaudeamus Ligature!"),
 	N_("In the beginning was the letter...")
+	N_("All the world's a page,\n"
+	"And all the men and women merely letters;\n"
+	"They have their ligatures and hyphenations,\n"
+	"And one man in his time forms many words.");
+	/* As You Like It, II, vii, 139-143 */
     };
     GtkTooltips *tips;
 
