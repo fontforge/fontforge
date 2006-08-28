@@ -1095,8 +1095,26 @@ static char *LanguageCodesFromMacLang[] = {
 	NULL
 };
 
+static const unichar_t *MacEncLangToTable(int macenc,int maclang) {
+    const unichar_t *table = macencodings[macenc];
+
+    if ( maclang==15 /* Icelandic */ ||
+	    maclang==30 /* Faroese */ ||
+	    maclang==149 /* Greenlandic */ )
+	table = iceland;
+    else if ( maclang == 17 /* turkish */ )
+	table = turkish;
+    else if ( maclang == 18 /* croatian */ )
+	table = croatian;
+    else if ( maclang == 37 /* romanian */ )
+	table = romanian;
+    else if ( maclang == 31 /* Farsi/Persian */ )
+	table = farsi;
+return( table );
+}
+
 char *MacStrToUtf8(const char *str,int macenc,int maclang) {
-    unichar_t *table;
+    const unichar_t *table;
     char *ret, *rpt;
     const uint8 *ustr = (uint8 *) str;
 
@@ -1132,20 +1150,7 @@ return( ret );
 	IError( "Invalid mac encoding %d.\n", macenc );
 return( NULL );
     }
-    table = macencodings[macenc];
-
-    if ( maclang==15 /* Icelandic */ ||
-	    maclang==30 /* Faroese */ ||
-	    maclang==149 /* Greenlandic */ )
-	table = iceland;
-    else if ( maclang == 17 /* turkish */ )
-	table = turkish;
-    else if ( maclang == 18 /* croatian */ )
-	table = croatian;
-    else if ( maclang == 37 /* romanian */ )
-	table = romanian;
-    else if ( maclang == 31 /* Farsi/Persian */ )
-	table = farsi;
+    table = MacEncLangToTable(macenc,maclang);
 
     if ( table==NULL )
 return( NULL );
@@ -1264,14 +1269,16 @@ return( false );
 return( true );
 }
 
-const int32 *MacEncToUnicode(int script) {
+const int32 *MacEncToUnicode(int script,int lang) {
     static int32 temp[256];
     int i;
+    const unichar_t *table;
 
-    if ( macencodings[script]==NULL )
+    table = MacEncLangToTable(script,lang);
+    if ( table==NULL )
 return( NULL );
     for ( i=0; i<256; ++i )
-	temp[i] = macencodings[script][i];
+	temp[i] = table[i];
 return( temp );
 }
 
@@ -2326,6 +2333,31 @@ static GTextInfo maclanguages[] = {
     { (unichar_t *) N_("Azebaijani (roman)"), NULL, 0, 0, (void *) 150, NULL, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
 
+static void initmaclangs(void) {
+    static int inited = false;
+    int i;
+
+    if ( !inited ) {
+	inited = true;
+	for ( i=0; maclanguages[i].text!=NULL; ++i )
+	    maclanguages[i].text = (unichar_t *) S_( (char *) maclanguages[i].text);
+    }
+}
+
+char *MacLanguageFromCode(int code) {
+    int i;
+
+    if ( code==-1 )
+return( _("Unspecified Language") );
+
+    initmaclangs();
+    for ( i=0; maclanguages[i].text!=NULL; ++i )
+	if ( (void *) code == maclanguages[i].userdata )
+return( (char *) maclanguages[i].text );
+
+return( _("Unknown Language"));
+}
+
 #define CID_Features	101
 #define CID_FeatureDel	103
 #define CID_FeatureEdit	105
@@ -2355,6 +2387,8 @@ static GTextInfo *Pref_MacNamesList(struct macname *all) {
     struct macname *mn;
     char *temp, *full;
 
+    initmaclangs();
+
     for ( i=0, mn=all; mn!=NULL; mn=mn->next, ++i );
     ti = gcalloc(i+1,sizeof( GTextInfo ));
 
@@ -2364,7 +2398,7 @@ static GTextInfo *Pref_MacNamesList(struct macname *all) {
 	    if ( maclanguages[j].userdata == (void *) (intpt) (mn->lang ))
 	break;
 	if ( maclanguages[j].text!=0 ) {
-	    char *lang = _((char *) maclanguages[j].text );
+	    char *lang = (char *) maclanguages[j].text;
 	    full = galloc((strlen(lang)+strlen(temp)+strlen(spacer)+1));
 	    strcpy(full,lang);
 	} else {
@@ -2546,13 +2580,8 @@ static char *AskName(struct macname *changing,struct macname *all,GGadget *list,
     GTextInfo label[8];
     struct namedata nd;
     int i;
-    static int inited = false;
 
-    if ( !inited ) {
-	inited = true;
-	for ( i=0; maclanguages[i].text!=NULL; ++i )
-	    maclanguages[i].text = (unichar_t *) S_( (char *) maclanguages[i].text);
-    }
+    initmaclangs();
 
     memset(&nd,0,sizeof(nd));
     nd.namelist = list;
