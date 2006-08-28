@@ -1447,6 +1447,7 @@ return( true );
     FSCatalogInfo info;
     long len;
     unichar_t *filename;
+    ByteCount whocares;
     /* When on the mac let's just create a real resource fork. We do this by */
     /*  creating a mac file with a resource fork, opening that fork, and */
     /*  dumping all the data in the temporary file after the macbinary header */
@@ -1487,13 +1488,13 @@ return( false );
     ret = FSOpenFork(&ref,resforkname.length,resforkname.unicode,fsWrPerm,&macfile);
     if ( ret!=noErr )
 return( false );
-    SetEOF(macfile,0);		/* Truncate it just in case it existed... */
+    FSSetForkSize(macfile,fsFromStart,0);/* Truncate it just in case it existed... */
     fseek(res,128,SEEK_SET);	/* Everything after the mac binary header in */
 	/* the temp file is resource fork */
     buf = galloc(8*1024);
     while ( (len=fread(buf,1,8*1024,res))>0 )
-	FSWrite(macfile,&len,buf);
-    FSClose(macfile);
+	FSWriteFork(macfile,fsAtMark,0,len,buf,&whocares);
+    FSCloseFork(macfile);
     free(buf);
 return( true );
 #endif
