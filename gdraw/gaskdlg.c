@@ -1202,6 +1202,11 @@ static GWindow ChoiceDlgCreate8(struct dlg_info *d,const char *title,
     GDrawFontMetrics(_ggadget_default_font,&as,&ds,&ld);
     fh = as+ds;
     maxw = 220;
+    for ( i=0; i<cnt; ++i) {
+	w = GDrawGetText8Width(gw,llabels[i].text,-1,NULL);
+	if ( w>900 ) w = 900;
+	if ( w>maxw ) maxw = w;
+    }
     for ( i=0; i<lb; ++i ) {
 	w = GDrawGetTextWidth(gw,qlabels[i].text,-1,NULL);
 	if ( w>maxw ) maxw = w;
@@ -1217,6 +1222,7 @@ static GWindow ChoiceDlgCreate8(struct dlg_info *d,const char *title,
 	gcd[0].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_pos_use0;
 	gcd[0].gd.label = &qlabels[0];
 	gcd[0].creator = GLabelCreate;
+	i = 1;
     } else for ( i=0; i<lb; ++i ) {
 	gcd[i].gd.pos.x = GDrawPointsToPixels(gw,8);
 	gcd[i].gd.pos.y = GDrawPointsToPixels(gw,6)+i*fh;

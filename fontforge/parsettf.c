@@ -3476,28 +3476,39 @@ return( -1 );
 return( enc );
 }
 
-static int SubtableIsntSupported(FILE *ttf,uint32 offset,int platform,int specific) {
+struct cmap_encs {
+    int platform;
+    int specific;
+    int offset;
+    int lang;
+    int format;
+    Encoding *enc;
+};
+
+static int SubtableIsntSupported(FILE *ttf,uint32 offset,struct cmap_encs *cmap_enc) {
     uint32 here = ftell(ttf);
     int format, len, ret=false;
 
     fseek(ttf,offset,SEEK_SET);
 
-    format = getushort(ttf);
+    cmap_enc->format = format = getushort(ttf);
     if ( format<0 || (format&1) || format>12 ) {
 	LogError( _("Encoding subtable for platform=%d, specific=%d has an unsupported format %d.\n"),
-		platform, specific, format );
+		cmap_enc->platform, cmap_enc->specific, format );
 	ret = true;
     }
 
     if ( format!=12 && format!=10 && format!=8 ) {
 	len = getushort(ttf);
+	cmap_enc->lang = getushort(ttf);
     } else {
 	/* padding */ getushort(ttf);
 	len = getlong(ttf);
+	cmap_enc->lang = getlong(ttf);
     }
     if ( len==0 ) {
 	LogError( _("Encoding subtable for platform=%d, specific=%d has a 0 length subtable.\n"),
-		platform, specific );
+		cmap_enc->platform, cmap_enc->specific );
 	ret = true;
     }
     fseek(ttf,here,SEEK_SET);
@@ -3529,15 +3540,8 @@ return( ui_none );
 return( cnt>=2 ? ui_ams : ui_none );
 }
 
-struct cmap_encs {
-    int platform;
-    int specific;
-    int offset;
-    Encoding *enc;
-};
-
 static int PickCMap(struct cmap_encs *cmap_encs,int enccnt,int def) {
-    char buffer[400];
+    char buffer[500];
     char **choices, *encname;
     int i, ret;
     static char *macscripts[]= { N_("Script|Roman"), N_("Script|Japanese"), N_("Script|Traditional Chinese"), N_("Script|Korean"),
@@ -3561,26 +3565,27 @@ static int PickCMap(struct cmap_encs *cmap_encs,int enccnt,int def) {
 	} else if ( cmap_encs[i].platform==0 ) {
 	    switch ( cmap_encs[i].specific ) {
 	      case 0:
-		encname = "Unicode 1.0";
+		encname = N_("Unicode 1.0");
 	      break;
 	      case 1:
-		encname = "Unicode 1.1";
+		encname = N_("Unicode 1.1");
 	      break;
 	      case 2:
-		encname = "ISO 10646:1993";
+		encname = N_("ISO 10646:1993");
 	      break;
 	      case 3:
-		encname = "Unicode 2.0+, BMP only";
+		encname = N_("Unicode 2.0+, BMP only");
 	      break;
 	      case 4:
-		encname = "Unicode 2.0+, all planes";
+		encname = N_("Unicode 2.0+, all planes");
 	      break;
 	    }
-	}
+	} else if ( cmap_encs[i].platform==3 && cmap_encs[i].specific==0 )
+	    encname = N_("\"Symbol\"");
 	if ( encname==NULL )
 	    encname = cmap_encs[i].enc->enc_name;
 
-	sprintf(buffer,"%d (%s) %d %s",
+	sprintf(buffer,"%d (%s) %d %s %s  %s",
 		cmap_encs[i].platform,
 		    cmap_encs[i].platform==0 ? _("Apple Unicode") :
 		    cmap_encs[i].platform==1 ? _("Apple") :
@@ -3590,7 +3595,16 @@ static int PickCMap(struct cmap_encs *cmap_encs,int enccnt,int def) {
 		    cmap_encs[i].platform==7 ? _("FreeType internals") :
 					       _("Unknown"),
 		cmap_encs[i].specific,
-		encname );
+		encname,
+		cmap_encs[i].platform==1 && cmap_encs[i].lang!=0? MacLanguageFromCode(cmap_encs[i].lang-1) : "",
+		cmap_encs[i].format == 0 ? "Byte encoding table" :
+		cmap_encs[i].format == 2 ? "High-byte mapping through table" :
+		cmap_encs[i].format == 4 ? "Segment mapping to delta values" :
+		cmap_encs[i].format == 6 ? "Trimmed table mapping" :
+		cmap_encs[i].format == 8 ? "mixed 16-bit and 32-bit coverage" :
+		cmap_encs[i].format == 10 ? "Trimmed array" :
+		cmap_encs[i].format == 12 ? "Segmented coverage" :
+		    "Unknown format" );
 	choices[i] = copy(buffer);
     }
     ret = gwwv_choose(_("Pick a CMap subtable"),(const char **) choices,enccnt,def,
@@ -3631,18 +3645,17 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	nencs = version;		/* Sometimes they are backwards */
     cmap_encs = galloc(nencs*sizeof(struct cmap_encs));
     for ( i=usable_encs=0; i<nencs; ++i ) {
-	platform = getushort(ttf);
-	specific = getushort(ttf);
-	offset = getlong(ttf);
-	if ( SubtableIsntSupported(ttf,info->encoding_start+offset,platform,specific))
-    continue;
-	temp = enc_from_platspec(platform,specific);
+	cmap_encs[usable_encs].platform =  getushort(ttf);
+	cmap_encs[usable_encs].specific = getushort(ttf);
+	cmap_encs[usable_encs].offset = getlong(ttf);
+	temp = enc_from_platspec(cmap_encs[usable_encs].platform,cmap_encs[usable_encs].specific);
 	if ( temp==NULL )	/* iconv doesn't support this. Some sun iconvs seem limited */
 	    temp = FindOrMakeEncoding("Custom");
-	cmap_encs[usable_encs].platform = platform;
-	cmap_encs[usable_encs].specific = specific;
-	cmap_encs[usable_encs].offset = offset;
-	cmap_encs[usable_encs++].enc = temp;
+	cmap_encs[usable_encs].enc = temp;
+	if ( SubtableIsntSupported(ttf,info->encoding_start+cmap_encs[usable_encs].offset,
+		&cmap_encs[usable_encs]))
+    continue;
+	++usable_encs;
     }
     if ( usable_encs==0 ) {
 	LogError( _("Could not find any valid encoding tables" ));
@@ -3776,7 +3789,7 @@ return;
 		table[i] = getc(ttf);
 	    trans = enc->unicode;
 	    if ( trans==NULL && dcmap[dc].platform==1 )
-		trans = MacEncToUnicode(dcmap[dc].specific);
+		trans = MacEncToUnicode(dcmap[dc].specific,dcmap[dc].lang-1);
 	    for ( i=0; i<256 && i<len-6; ++i )
 		if ( !justinuse ) {
 		    if ( table[i]<info->glyph_cnt && info->chars[table[i]]!=NULL ) {
@@ -3911,7 +3924,7 @@ return;
 	    count = getushort(ttf);
 	    trans = enc->unicode;
 	    if ( trans==NULL && dcmap[dc].platform==1 && first+count<=256 )
-		trans = MacEncToUnicode(dcmap[dc].specific);
+		trans = MacEncToUnicode(dcmap[dc].specific,dcmap[dc].lang-1);
 	    if ( justinuse )
 		for ( i=0; i<count; ++i )
 		    info->inuse[getushort(ttf)]= 1;
