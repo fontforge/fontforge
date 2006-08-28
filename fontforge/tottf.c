@@ -4522,7 +4522,7 @@ static void dumpcmap(struct alltabs *at, SplineFont *sf,enum fontformat format) 
 	hasmac = 1;
 	enccnt = 3;
 	if ( format12!=NULL )
-	    enccnt = 4;
+	    enccnt = 5;
 	if ( format2!=NULL ) {
 	    if ( strstrmatch(map->enc->enc_name,"johab")!=NULL ) {
 		++enccnt;
@@ -4549,6 +4549,12 @@ static void dumpcmap(struct alltabs *at, SplineFont *sf,enum fontformat format) 
 	putshort(at->cmap,0);	/* mac unicode platform */
 	putshort(at->cmap,3);	/* Unicode 2.0 */
 	putlong(at->cmap,mspos);
+    }
+    if ( format12!=NULL ) {
+	/* full unicode mac table, just a copy of the ms table */
+	putshort(at->cmap,0);	/* mac unicode platform */
+	putshort(at->cmap,4);	/* Unicode 2.0, full unicode */
+	putlong(at->cmap,ucs4pos);
     }
     putshort(at->cmap,1);		/* mac platform */
     putshort(at->cmap,0);		/* plat specific enc, script=roman */

@@ -110,9 +110,11 @@ static Encoding *enc_from_platspec(int platform,int specific) {
     Encoding *e;
 
     enc = "Custom";
-    if ( platform==0 )
+    if ( platform==0 ) {
 	enc = "Unicode";
-    else if ( platform==1 ) {
+	if ( specific==4 )
+	    enc = "UnicodeFull";
+    } else if ( platform==1 ) {
 	if ( specific==0 )
 	    enc = "Mac";
 	else if ( specific==1 )
@@ -3534,26 +3536,64 @@ struct cmap_encs {
     Encoding *enc;
 };
 
-static int PickCMap(struct cmap_encs *cmap_encs,int enccnt) {
+static int PickCMap(struct cmap_encs *cmap_encs,int enccnt,int def) {
     char buffer[400];
-    char **choices;
+    char **choices, *encname;
     int i, ret;
+    static char *macscripts[]= { N_("Script|Roman"), N_("Script|Japanese"), N_("Script|Traditional Chinese"), N_("Script|Korean"),
+	N_("Script|Arabic"), N_("Script|Hebrew"),  N_("Script|Greek"),
+/* GT: Don't ask me what RSymbol means, I don't know either. It's in apple's */
+/* GT:  docs though */
+	N_("Script|Cyrillic"), N_("Script|RSymbol"), N_("Script|Devanagari"),
+/* 10*/ N_("Script|Gurmukhi"), N_("Script|Gujarati"), NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL,
+/* 20*/	NULL, N_("Script|Thai"), NULL, NULL, NULL, N_("Script|Simplified Chinese"),
+	NULL, NULL, NULL, N_("Script|Central European"),
+/* 30*/ NULL, NULL, NULL };
 
     choices = galloc(enccnt*sizeof(char *));
     for ( i=0; i<enccnt; ++i ) {
+	encname = NULL;
+	if ( cmap_encs[i].platform==1 && cmap_encs[i].specific<32 ) {
+	    encname = macscripts[cmap_encs[i].specific];
+	    if ( encname!=NULL )
+		encname = S_(encname);
+	} else if ( cmap_encs[i].platform==0 ) {
+	    switch ( cmap_encs[i].specific ) {
+	      case 0:
+		encname = "Unicode 1.0";
+	      break;
+	      case 1:
+		encname = "Unicode 1.1";
+	      break;
+	      case 2:
+		encname = "ISO 10646:1993";
+	      break;
+	      case 3:
+		encname = "Unicode 2.0+, BMP only";
+	      break;
+	      case 4:
+		encname = "Unicode 2.0+, all planes";
+	      break;
+	    }
+	}
+	if ( encname==NULL )
+	    encname = cmap_encs[i].enc->enc_name;
+
 	sprintf(buffer,"%d (%s) %d %s",
 		cmap_encs[i].platform,
 		    cmap_encs[i].platform==0 ? _("Apple Unicode") :
 		    cmap_encs[i].platform==1 ? _("Apple") :
-		    cmap_encs[i].platform==2 ? _("ISO (obsolete)") :
+		    cmap_encs[i].platform==2 ? _("ISO (Deprecated)") :
 		    cmap_encs[i].platform==3 ? _("MicroSoft") :
+		    cmap_encs[i].platform==4 ? _("Custom") :
 		    cmap_encs[i].platform==7 ? _("FreeType internals") :
 					       _("Unknown"),
 		cmap_encs[i].specific,
-		cmap_encs[i].enc->enc_name );
+		encname );
 	choices[i] = copy(buffer);
     }
-    ret = gwwv_choose(_("Pick a CMap subtable"),(const char **) choices,enccnt,-1,
+    ret = gwwv_choose(_("Pick a CMap subtable"),(const char **) choices,enccnt,def,
 	    _("Pick a CMap subtable"));
     for ( i=0; i<enccnt; ++i )
 	free(choices[i]);
@@ -3562,7 +3602,7 @@ return( ret );
 }
 
 static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
-    int i,j;
+    int i,j, def, unicode_cmap, unicode4_cmap, dcnt, dcmap_cnt, dc;
     int nencs, version, usable_encs;
     Encoding *enc = &custom;
     const int32 *trans=NULL;
@@ -3581,7 +3621,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
     int glyph_tot;
     Encoding *temp;
     EncMap *map;
-    struct cmap_encs *cmap_encs;
+    struct cmap_encs *cmap_encs, desired_cmaps[2], *dcmap;
     extern int ask_user_for_cmap;
 
     fseek(ttf,info->encoding_start,SEEK_SET);
@@ -3604,74 +3644,115 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	cmap_encs[usable_encs].offset = offset;
 	cmap_encs[usable_encs++].enc = temp;
     }
-    if ( ask_user_for_cmap && (i = PickCMap(cmap_encs,usable_encs))!=-1 ) {
-	enc = cmap_encs[i].enc;
-	info->platform = cmap_encs[i].platform;
-	info->specific = cmap_encs[i].specific;
-	encoff = cmap_encs[i].offset;
-	interp = interp_from_encoding(enc,interp);
-	mod = 0;
-	if ( info->platform==3 && (info->specific>=2 && info->specific<=6 ))
-	    mod = info->specific;
-    } else for ( i=0; i<usable_encs; ++i ) {
+    if ( usable_encs==0 ) {
+	LogError( _("Could not find any valid encoding tables" ));
+	free(cmap_encs);
+return;
+    }
+    def = -1;
+    enc = &custom;
+    unicode_cmap = unicode4_cmap = -1;
+    for ( i=0; i<usable_encs; ++i ) {
 	temp = cmap_encs[i].enc;
 	platform = cmap_encs[i].platform;
 	specific = cmap_encs[i].specific;
 	offset = cmap_encs[i].offset;
 
-	interp = interp_from_encoding(temp,interp);
-	if ( platform==3 && specific==10 ) { /* MS Unicode 4 byte */
+	if ( (platform==3 && specific==10) || (platform==0 && specific==4) ) { /* MS Unicode 4 byte */
 	    enc = temp;
-	    encoff = offset;
-	    mod = 0;
-	    info->platform = platform; info->specific = specific;
-	} else if ( (enc->is_unicodefull || (!prefer_cjk_encodings ||
+	    def = i;
+	    unicode4_cmap = i;
+	} else if ( !enc->is_unicodefull && (!prefer_cjk_encodings ||
 		(!enc->is_japanese && !enc->is_korean && !enc->is_tradchinese &&
-		    !enc->is_simplechinese))) &&
+		    !enc->is_simplechinese)) &&
 		(( platform==3 && specific==1 ) || /* MS Unicode */
 /* Well I should only deal with apple unicode specific==0 (default) and 3 (U2.0 semantics) */
 /*  but apple ships dfonts with specific==1 (Unicode 1.1 semantics) */
 /*  which is stupid of them */
 		( platform==0 /*&& (specific==0 || specific==3)*/ ))) {	/* Apple Unicode */
 	    enc = temp;
-	    encoff = offset;
-	    info->platform = platform; info->specific = specific;
-	    mod = 0;
+	    def = i;
 	} else if ( platform==3 && specific==0 && enc->is_custom ) {
 	    /* Only select symbol if we don't have something better */
 	    enc = temp;
-	    encoff = offset;
-	    info->platform = platform; info->specific = specific;
+	    def = i;
 	    /* Now I had assumed this would be a 1 byte encoding, but it turns*/
 	    /*  out to map into the unicode private use area at U+f000-U+F0FF */
 	    /*  so it's a 2 byte enc */
 /* Mac platform specific encodings are script numbers. 0=>roman, 1=>jap, 2=>big5, 3=>korean, 4=>arab, 5=>hebrew, 6=>greek, 7=>cyrillic, ... 25=>simplified chinese */
 	} else if ( platform==1 && specific==0 && enc->is_custom ) {
-	    info->platform = platform; info->specific = specific;
 	    enc = temp;
-	    encoff = offset;
+	    def = i;
 	} else if ( platform==1 && (specific==2 ||specific==1||specific==3||specific==25) &&
 		!enc->is_unicodefull &&
 		(prefer_cjk_encodings || !enc->is_unicodebmp) ) {
 	    enc = temp;
-	    mod = specific==1?2:specific==2?4:specific==3?5:3;		/* convert to ms specific */
-	    info->platform = platform; info->specific = specific;
-	    encoff = offset;
+	    def = i;
 	} else if ( platform==3 && (specific>=2 && specific<=6 ) &&
 		!enc->is_unicodefull &&
 		(prefer_cjk_encodings || !enc->is_unicodebmp) ) {
 	    /* Old ms docs say that specific==3 => big 5, new docs say specific==4 => big5 */
 	    /*  Ain't that jus' great? */
 	    enc = temp;
-	    info->platform = platform; info->specific = specific;
-	    mod = specific;
-	    encoff = offset;
+	    def = i;
 	}
-	if ( enc==NULL )
-	    enc = &custom;
+	if ( (platform==3 && specific==1) ||
+		(platform==0 && specific==3))
+	    unicode_cmap = i;
     }
 
-    if ( !enc->is_custom ) {
+    if ( justinuse || !ask_user_for_cmap || (i = PickCMap(cmap_encs,usable_encs,def))==-1 )
+	i = def;
+    info->platform = cmap_encs[i].platform;
+    info->specific = cmap_encs[i].specific;
+
+    desired_cmaps[0] = cmap_encs[i]; dcnt = 1;
+    if ( unicode4_cmap!=-1 ) {
+	if ( i!=unicode4_cmap ) {
+	    desired_cmaps[1] = cmap_encs[unicode4_cmap];
+	    ++dcnt;
+	}
+    } else if ( unicode_cmap!=-1 ) {
+	if ( i!=unicode_cmap ) {
+	    desired_cmaps[1] = cmap_encs[unicode_cmap];
+	    ++dcnt;
+	}
+    } else {
+	if ( i!=def ) {
+	    desired_cmaps[1] = cmap_encs[def];
+	    ++dcnt;
+	}
+    }
+
+    map = NULL;
+    if ( justinuse ) {
+	dcmap_cnt = usable_encs;
+	dcmap = cmap_encs;
+    } else {
+	dcmap_cnt = dcnt;
+	dcmap = desired_cmaps;
+    }
+    for ( dc=dcmap_cnt-1; dc>=0; --dc ) {
+	/* if justinuse then look at all cmaps and tick the glyphs they use */
+	/* otherwise dcmap_cnt will be either 1 or 2. If 1 then this subtable */
+	/* contains both the encoding and the source for unicode encodings */
+	/* if dcmap_cnt==2 then when dc==0 we are setting up the encoding */
+	/*  and when dc==1 we are setting up the unicode code points */
+	int dounicode = (dc==dcmap_cnt-1);
+	enc = dcmap[dc].enc;
+	encoff = dcmap[dc].offset;
+
+	if ( dc==0 && !justinuse ) {
+	    interp = interp_from_encoding(enc,ui_none);
+	    mod = 0;
+	    if ( dcmap[dc].platform==3 && (dcmap[dc].specific>=2 && dcmap[dc].specific<=6 ))
+		mod = dcmap[dc].specific;
+	    else if ( dcmap[dc].platform==1 && (dcmap[dc].specific==2 ||dcmap[dc].specific==1||dcmap[dc].specific==3||dcmap[dc].specific==25))
+		mod = dcmap[dc].specific==1?2:dcmap[dc].specific==2?4:dcmap[dc].specific==3?5:3;		/* convert to ms specific */
+	    info->map = map = EncMapNew(enc->char_cnt,info->glyph_cnt,enc);
+	    info->uni_interp = interp;
+	}
+
 	fseek(ttf,info->encoding_start+encoff,SEEK_SET);
 	format = getushort(ttf);
 	if ( format!=12 && format!=10 && format!=8 ) {
@@ -3684,16 +3765,9 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	}
 	if ( enc->is_unicodebmp && (format==8 || format==10 || format==12))
 	    enc = FindOrMakeEncoding("UnicodeFull");
-    }
-    if ( justinuse )
-	map = NULL;
-    else {
-	info->map = map = EncMapNew(enc->char_cnt,info->glyph_cnt,enc);
-	info->uni_interp = interp;
-    }
-    if ( !enc->is_custom ) {
+
 	if ( format==0 ) {
-	    if ( !justinuse && map->enccount<256 ) {
+	    if ( !justinuse && map!=NULL && map->enccount<256 ) {
 		map->map = grealloc(map->map,256*sizeof(int));
 		memset(map->map,-1,(256-map->enccount)*sizeof(int));
 		map->enccount = map->encmax = 256;
@@ -3701,22 +3775,19 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    for ( i=0; i<len-6; ++i )
 		table[i] = getc(ttf);
 	    trans = enc->unicode;
-	    if ( trans==NULL && info->platform==1 )
-		trans = MacEncToUnicode(info->specific);
+	    if ( trans==NULL && dcmap[dc].platform==1 )
+		trans = MacEncToUnicode(dcmap[dc].specific);
 	    for ( i=0; i<256 && i<len-6; ++i )
 		if ( !justinuse ) {
 		    if ( table[i]<info->glyph_cnt && info->chars[table[i]]!=NULL ) {
-			map->map[i] = table[i];
-			if ( trans!=NULL )
+			if ( map!=NULL )
+			    map->map[i] = table[i];
+			if ( dounicode && trans!=NULL )
 			    info->chars[table[i]]->unicodeenc = trans[i];
 		    }
 		} else if ( table[i]<info->glyph_cnt && info->chars[table[i]]!=NULL )
 		    info->inuse[table[i]] = 1;
 	} else if ( format==4 ) {
-	    if ( strmatch(enc->enc_name,"symbol")==0 ) {
-		enc=FindOrMakeEncoding("UnicodeBmp");
-		info->twobytesymbol=true;
-	    }
 	    segCount = getushort(ttf)/2;
 	    /* searchRange = */ getushort(ttf);
 	    /* entrySelector = */ getushort(ttf);
@@ -3767,10 +3838,10 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 			            badencwarned = true;
 				}
 			    } else {
-				if ( uenc!=-1 ) used[uenc] = true;
-				if ( info->chars[(uint16) (j+delta[i])]->unicodeenc==-1 )
+				if ( uenc!=-1 && dounicode ) used[uenc] = true;
+				if ( dounicode && info->chars[(uint16) (j+delta[i])]->unicodeenc==-1 )
 				    info->chars[(uint16) (j+delta[i])]->unicodeenc = uenc;
-			        if ( lenc<map->enccount )
+			        if ( map!=NULL && lenc<map->enccount )
 				    map->map[lenc] = (uint16) (j+delta[i]);
 			    }
 			}
@@ -3786,7 +3857,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 			    /* This happened in mingliu.ttc(PMingLiU) */
 			    if ( !justinuse )
 				LogError( _("Glyph index out of bounds. Was %d, must be less than %d.\n In attempt to associate a glyph with encoding %x in segment %d\n with platform=%d, specific=%d (in 'cmap')\n"),
-					temp, glyph_tot, j, i, info->platform, info->specific );
+					temp, glyph_tot, j, i, dcmap[dc].platform, dcmap[dc].specific );
 			    index = 0;
 			}
 			if ( index!=0 ) {
@@ -3812,10 +3883,10 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 					badencwarned = true;
 				    }
 				} else {
-				    if ( uenc!=-1 ) used[uenc] = true;
-				    if ( info->chars[index]->unicodeenc==-1 )
+				    if ( uenc!=-1 && dounicode ) used[uenc] = true;
+				    if ( dounicode && info->chars[index]->unicodeenc==-1 )
 					info->chars[index]->unicodeenc = uenc;
-				    if ( lenc<map->enccount )
+				    if ( map!=NULL && lenc<map->enccount )
 					map->map[lenc] = index;
 				}
 			    }
@@ -3836,20 +3907,20 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    /*  uses it for 1 byte encodings which don't fit into the require-*/
 	    /*  ments for a format 0 sub-table. See Zapfino.dfont */
 	    int first, count;
-	    if ( !enc->is_unicodebmp && !enc->is_unicodefull ) {
-		IError("I don't support truncated array encoding (format=6) except for unicode" );
-		enc = FindOrMakeEncoding("UnicodeBmp");
-	    }
 	    first = getushort(ttf);
 	    count = getushort(ttf);
+	    trans = enc->unicode;
+	    if ( trans==NULL && dcmap[dc].platform==1 && first+count<=256 )
+		trans = MacEncToUnicode(dcmap[dc].specific);
 	    if ( justinuse )
 		for ( i=0; i<count; ++i )
 		    info->inuse[getushort(ttf)]= 1;
 	    else {
 		for ( i=0; i<count; ++i ) {
 		    int gid = getushort(ttf);
-		    info->chars[gid]->unicodeenc = first+i;
-		    if ( first+i < map->enccount )
+		    if ( dounicode )
+			info->chars[gid]->unicodeenc = trans==NULL ? trans[first+1] : first+i;
+		    if ( map!=NULL && first+i < map->enccount )
 			map->map[first+i] = gid;
 		}
 	    }
@@ -3900,11 +3971,11 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 			    info->inuse[index] = 1;
 			else if ( info->chars[index]==NULL )
 			    /* Do Nothing */;
-			else if ( info->chars[index]->unicodeenc==-1 ) {
+			else {
 			    int lenc = modenc(i,mod);
-			    if ( info->chars[index]->unicodeenc==-1 )
+			    if ( dounicode && info->chars[index]->unicodeenc==-1 )
 				info->chars[index]->unicodeenc = i;
-			    if ( lenc<map->enccount )
+			    if ( map!=NULL && lenc<map->enccount )
 				map->map[lenc] = index;
 			}
 		    }
@@ -3924,9 +3995,9 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 			    else if ( info->chars[index]==NULL )
 				/* Do Nothing */;
 			    else {
-				if ( info->chars[index]->unicodeenc==-1 )
+				if ( dounicode && info->chars[index]->unicodeenc==-1 )
 				    info->chars[index]->unicodeenc = umodenc(enc,mod);
-				if ( lenc<map->enccount )
+				if ( map!=NULL && lenc<map->enccount )
 				    map->map[lenc] = index;
 			    }
 			}
@@ -3956,10 +4027,12 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 			info->inuse[startglyph+i-start]= 1;
 		else
 		    for ( i=start; i<=end; ++i ) {
-			(sc = info->chars[startglyph+i-start])->unicodeenc =
-				((i>>16)-0xd800)*0x400 + (i&0xffff)-0xdc00 + 0x10000;
-			if ( sc->unicodeenc < map->enccount )
-			    map->map[sc->unicodeenc] = startglyph+i-start;
+			int uenc = ((i>>16)-0xd800)*0x400 + (i&0xffff)-0xdc00 + 0x10000;
+			sc = info->chars[startglyph+i-start];
+			if ( dounicode && sc->unicodeenc==-1 )
+			    sc->unicodeenc = uenc;
+			if ( map!=NULL && sc->unicodeenc < map->enccount )
+			    map->map[uenc] = startglyph+i-start;
 		    }
 	    }
 	} else if ( format==10 ) {
@@ -3977,8 +4050,9 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 	    else
 		for ( i=0; i<count; ++i ) {
 		    int gid = getushort(ttf);
-		    info->chars[gid]->unicodeenc = first+i;
-		    if ( first+i < map->enccount )
+		    if ( dounicode )
+			info->chars[gid]->unicodeenc = first+i;
+		    if ( map!=NULL && first+i < map->enccount )
 			map->map[first+i] = gid;
 		}
 	} else if ( format==12 ) {
@@ -4005,14 +4079,16 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
 			    LogError( _("Bad font: Encoding data out of range.\n") );
 		    break;
 			} else {
-			    info->chars[startglyph+i-start]->unicodeenc = i;
-			    if ( i < map->enccount )
+			    if ( dounicode )
+				info->chars[startglyph+i-start]->unicodeenc = i;
+			    if ( map!=NULL && i < map->enccount )
 				map->map[i] = startglyph+i-start;
 			}
 		    }
 	    }
 	}
     }
+    free(cmap_encs);
     if ( info->chars!=NULL )
 	for ( i=0; i<info->glyph_cnt; ++i )
 	    if ( info->chars[i]!=NULL && info->chars[i]->unicodeenc==0xffff )
