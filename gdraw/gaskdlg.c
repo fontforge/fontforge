@@ -1203,7 +1203,7 @@ static GWindow ChoiceDlgCreate8(struct dlg_info *d,const char *title,
     fh = as+ds;
     maxw = 220;
     for ( i=0; i<cnt; ++i) {
-	w = GDrawGetText8Width(gw,llabels[i].text,-1,NULL);
+	w = GDrawGetText8Width(gw,(char *) llabels[i].text,-1,NULL);
 	if ( w>900 ) w = 900;
 	if ( w>maxw ) maxw = w;
     }

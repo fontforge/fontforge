@@ -6238,7 +6238,7 @@ static void FigureUnicode(struct gfi_data *d) {
 	    snprintf( buffer, sizeof(buffer),
 		    "%s  U+%04X-U+%04X %d/%d",
 		    _(ri[i].range->name),
-		    ri[i].range->first, ri[i].range->last,
+		    (int) ri[i].range->first, (int) ri[i].range->last,
 		    ri[i].cnt, ri[i].range->actual );
 	ti[i] = gcalloc(1,sizeof(GTextInfo));
 	ti[i]->fg = ti[i]->bg = COLOR_DEFAULT;

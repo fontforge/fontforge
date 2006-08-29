@@ -68,7 +68,7 @@ static void GHVBox_destroy(GGadget *g) {
     _ggadget_destroy(g);
 }
 
-static void GHVBoxMove(GGadget *g, int x, int y) {
+static void GHVBoxMove(GGadget *g, int32 x, int32 y) {
     GHVBox *gb = (GHVBox *) g;
     int offx = x-g->r.x, offy = y-g->r.y;
     int i;
@@ -254,7 +254,7 @@ static void GHVBoxGatherSizeInfo(GHVBox *gb,struct sizeinfo *si) {
     }
 }
 
-static void GHVBoxResize(GGadget *g, int width, int height) {
+static void GHVBoxResize(GGadget *g, int32 width, int32 height) {
     struct sizeinfo si;
     GHVBox *gb = (GHVBox *) g;
     int bp = GBoxBorderWidth(g->base,g->box);

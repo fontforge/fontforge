@@ -619,7 +619,7 @@ static void ImgGetInfo(CharView *cv, ImageList *img) {
 	gcd[1].creator = GLabelCreate;
 	varray[2] = &gcd[1]; varray[3] = NULL;
 
-	sprintf( sizebuf, _("Image Size:  %d x %d  pixels"), base->width, base->height );
+	sprintf( sizebuf, _("Image Size:  %d x %d  pixels"), (int) base->width, (int) base->height );
 	label[2].text = (unichar_t *) sizebuf;
 	label[2].text_is_1byte = true;
 	gcd[2].gd.label = &label[2];

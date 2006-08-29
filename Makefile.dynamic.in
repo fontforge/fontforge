@@ -50,9 +50,8 @@ install_libs: libs
 # You may need to be root to do the install
 	mkdir -p $(libdir)
 	#-rm $(libdir)/libgdraw.so* $(libdir)/libgunicode.so.*
-	$(LIBTOOL) --mode=install $(INSTALL) -c libgdraw.la $(libdir)/libgdraw.la
 	$(LIBTOOL) --mode=install $(INSTALL) -c libgunicode.la $(libdir)/libgunicode.la
-	#cp .libs/*.so.*.* $(libdir)
+	$(LIBTOOL) --mode=install $(INSTALL) -c libgdraw.la $(libdir)/libgdraw.la
 	$(LIBTOOL) --mode=finish $(libdir)
 	mkdir -p $(libdir)/pkgconfig
 	$(INSTALL_DATA) fontforge.pc $(libdir)/pkgconfig

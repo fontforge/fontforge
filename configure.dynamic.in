@@ -52,16 +52,6 @@ powerpc-*-*linux*)
  AC_DEFINE(_Keyboard,2)
  ;;
 *-pc-cygwin*)
- dnl building dynamic libraries on cygwin means marking each entry point
- dnl and each shared data item as exported. And marking anything borrowed
- dnl from another library as imported (stdout? strlen? fopen? malloc? X*)
- dnl Seems far too much work as I borrow freely from libc, X11, etc.
-
- ./configure.static
- exit
-
- AC_ENABLE_STATIC
- AC_DISABLE_SHARED
 
  AC_DEFINE(_BrokenBitmapImages)
  AC_DEFINE(_ModKeysAutoRepeat)
