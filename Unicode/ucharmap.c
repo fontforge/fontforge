@@ -29,6 +29,12 @@
 #include <utype.h>
 #include <charset.h>
 #include <chardata.h>
+#include <gwwiconv.h>
+
+int local_encoding = e_iso8859_1;
+#if HAVE_ICONV_H
+char *iconv_local_encoding_name = NULL;
+#endif
 
 static int bad_enc_warn = false;
 
@@ -401,7 +407,7 @@ unichar_t *def2u_strncpy(unichar_t *uto, const char *from, int n) {
     if ( my_iconv_setup() ) {
 	size_t in_left = n, out_left = 2*n;
 	char *cto = (char *) uto;
-	iconv(to_unicode, (char **) &from, &in_left, &cto, &out_left);
+	iconv(to_unicode, (iconv_arg2_t) &from, &in_left, &cto, &out_left);
 	if ( cto<((char *) uto)+2*n) *cto++ = '\0';
 	if ( cto<((char *) uto)+2*n) *cto++ = '\0';
 return( uto );
@@ -415,7 +421,7 @@ char *u2def_strncpy(char *to, const unichar_t *ufrom, int n) {
     if ( my_iconv_setup() ) {
 	size_t in_left = 2*n, out_left = n;
 	char *cfrom = (char *) ufrom, *cto=to;
-	iconv(from_unicode, &cfrom, &in_left, &cto, &out_left);
+	iconv(from_unicode, (iconv_arg2_t) &cfrom, &in_left, &cto, &out_left);
 	if ( cto<to+n ) *cto++ = '\0';
 	if ( cto<to+n ) *cto++ = '\0';
 return( to );
@@ -436,7 +442,7 @@ return( NULL );
     if ( my_iconv_setup() ) {
 	size_t in_left = len, out_left = 2*len;
 	char *cto = (char *) uto;
-	iconv(to_unicode, (char **) &from, &in_left, &cto, &out_left);
+	iconv(to_unicode, (iconv_arg2_t) &from, &in_left, &cto, &out_left);
 	*cto++ = '\0';
 	*cto++ = '\0';
 return( uto );
@@ -462,7 +468,7 @@ return( NULL );
 	size_t in_left = 2*len, out_left = 3*len;
 	char *cfrom = (char *) ufrom, *cto;
 	cto = to = galloc(3*len+2);
-	iconv(from_unicode, &cfrom, &in_left, &cto, &out_left);
+	iconv(from_unicode, (iconv_arg2_t) &cfrom, &in_left, &cto, &out_left);
 	*cto++ = '\0';
 	*cto++ = '\0';
 return( to );
@@ -497,7 +503,7 @@ return( NULL );
     if ( my_iconv_setup() ) {
 	size_t in_left = len, out_left = 2*len;
 	char *cto = (char *) galloc(3*(len+1)), *cret = cto;
-	iconv(to_utf8, (char **) &from, &in_left, &cto, &out_left);
+	iconv(to_utf8, (iconv_arg2_t) &from, &in_left, &cto, &out_left);
 	*cto++ = '\0';
 	*cto++ = '\0';
 return( cret );
@@ -528,7 +534,7 @@ return( NULL );
 	size_t in_left = 2*len, out_left = 3*len;
 	char *cfrom = (char *) ufrom, *cto, *to;
 	cto = to = galloc(3*len+2);
-	iconv(from_utf8, &cfrom, &in_left, &cto, &out_left);
+	iconv(from_utf8, (iconv_arg2_t) &cfrom, &in_left, &cto, &out_left);
 	*cto++ = '\0';
 	*cto++ = '\0';
 return( to );

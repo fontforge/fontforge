@@ -110,7 +110,7 @@ static void GME_FixScrollBars(GMatrixEdit *gme) {
     GScrollBarSetBounds(gme->hsb,0,width,gme->hsb->r.width);
 }
 
-static void GMatrixEdit_Move(GGadget *g, int x, int y) {
+static void GMatrixEdit_Move(GGadget *g, int32 x, int32 y) {
     GMatrixEdit *gme = (GMatrixEdit *) g;
 
     /* I don't need to move the textfieldbecause they is */

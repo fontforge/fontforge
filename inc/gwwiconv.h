@@ -44,5 +44,12 @@ extern size_t gww_iconv( gww_iconv_t cd,
 #define iconv_close	gww_iconv_close
 #define iconv		gww_iconv
 
+#  define iconv_arg2_t	char **
+# else		/* HAVE_ICONV_H */
+#  ifdef iconv			/* libiconv has a different calling convention */
+#   define iconv_arg2_t	const char **
+#  else
+#  define iconv_arg2_t	char **
+#  endif	/* iconv */
 # endif		/* HAVE_ICONV_H */
 #endif		/* _GWWICONV_H */
