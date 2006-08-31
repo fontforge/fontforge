@@ -4875,7 +4875,7 @@ static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
 
     at->gi.xmin = at->gi.ymin = 15000;
     at->gi.sf = sf;
-    if ( bf!=bf_ttf && bf!=bf_sfnt_dfont && bf!=bf_otb )
+    if ( bf!=bf_ttf && bf!=bf_sfnt_dfont && bf!=bf_otb && bf!=bf_sfnt_ms )
 	bsizes = NULL;
     if ( bsizes!=NULL ) {
 	for ( i=j=0; bsizes[i]!=0; ++i ) {
@@ -4922,7 +4922,7 @@ return( false );
 	aborted = !dumptype2glyphs(sf,at);
     else if ( format==ff_otfcid )
 	aborted = !dumpcidglyphs(sf,at);
-    else if ( format==ff_none && (at->applemode || bf==bf_sfnt_dfont)) {
+    else if ( format==ff_none && at->applebitmaps ) {
 	aborted = !dumpcffhmtx(at,sf,true);	/* There is no 'hmtx' table for apple bitmap only fonts */
 		/* But we need some of the side effects of this */
     } else if ( format==ff_none && at->otbbitmaps ) {
@@ -4951,7 +4951,7 @@ return( false );
     if ( format!=ff_type42 && format!=ff_type42cid ) {
 	if ( bsizes!=NULL && !aborted )
 	    ttfdumpbitmap(sf,at,bsizes);
-	if ( bsizes!=NULL && format==ff_none && !at->applemode )
+	if ( bsizes!=NULL && format==ff_none && at->msbitmaps )
 	    ttfdumpbitmapscaling(sf,at,bsizes);
     }
     if ( aborted ) {
@@ -5056,14 +5056,14 @@ return( false );
 	at->tabdir.tabs[i++].data = at->cfff;
     }
 
-    if ( at->bdat!=NULL && at->opentypemode ) {
+    if ( at->bdat!=NULL && (at->msbitmaps || at->otbbitmaps)) {
 	ebdtpos = i;
 	at->tabdir.tabs[i].tag = CHR('E','B','D','T');
 	at->tabdir.tabs[i].length = at->bdatlen;
 	at->tabdir.tabs[i++].data = at->bdat;
     }
 
-    if ( at->bloc!=NULL && at->opentypemode ) {
+    if ( at->bloc!=NULL && (at->msbitmaps || at->otbbitmaps)) {
 	eblcpos = i;
 	at->tabdir.tabs[i].tag = CHR('E','B','L','C');
 	at->tabdir.tabs[i].data = at->bloc;
@@ -5136,9 +5136,9 @@ return( false );
 	at->tabdir.tabs[i++].length = at->acntlen;
     }
 
-    if ( at->bdat!=NULL && at->applemode ) {
+    if ( at->bdat!=NULL && at->applebitmaps ) {
 	at->tabdir.tabs[i].tag = CHR('b','d','a','t');
-	if ( !at->opentypemode ) {
+	if ( !at->msbitmaps ) {
 	    at->tabdir.tabs[i].data = at->bdat;
 	    at->tabdir.tabs[i++].length = at->bdatlen;
 	} else {
@@ -5148,16 +5148,16 @@ return( false );
 	}
     }
 
-    if ( format==ff_none && at->applemode ) {
+    if ( format==ff_none && at->applebitmaps ) {
 	/* Bitmap only fonts get a bhed table rather than a head */
 	at->tabdir.tabs[i].tag = CHR('b','h','e','d');
 	at->tabdir.tabs[i].data = at->headf;
 	at->tabdir.tabs[i++].length = at->headlen;
     }
 
-    if ( at->bloc!=NULL && at->applemode ) {
+    if ( at->bloc!=NULL && at->applebitmaps ) {
 	at->tabdir.tabs[i].tag = CHR('b','l','o','c');
-	if ( !at->opentypemode ) {
+	if ( !at->msbitmaps ) {
 	    at->tabdir.tabs[i].data = at->bloc;
 	    at->tabdir.tabs[i++].length = at->bloclen;
 	} else {
@@ -5205,7 +5205,7 @@ return( false );
 	at->tabdir.tabs[i++].length = at->gi.glyph_len;
     }
 
-    if ( format!=ff_none || !at->applemode ) {
+    if ( format!=ff_none || !at->applebitmaps ) {
 	at->tabdir.tabs[i].tag = CHR('h','e','a','d');
 	at->tabdir.tabs[i].data = at->headf;
 	at->tabdir.tabs[i++].length = at->headlen;
@@ -5564,10 +5564,16 @@ int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
     at.gi.is_ttf = format == ff_ttf || format==ff_ttfsym || format==ff_ttfmacbin || format==ff_ttfdfont;
     at.applemode = (flags&ttf_flag_applemode)?1:0;
     at.opentypemode = (flags&ttf_flag_otmode)?1:0;
-    at.msbitmaps = bsizes!=NULL && !at.applemode && at.opentypemode;
-    if ( bf==bf_sfnt_dfont ) at.msbitmaps = false;
-    at.otbbitmaps = bsizes!=NULL && bf==bf_otb;
+    at.msbitmaps = bsizes!=NULL && at.opentypemode;
+    at.applebitmaps = bsizes!=NULL && at.applemode;
     at.gi.onlybitmaps = format==ff_none;
+
+    if ( bf==bf_sfnt_dfont ) { at.msbitmaps = false; at.applebitmaps=true; at.opentypemode=false; at.gi.onlybitmaps=true;}
+    if ( bf==bf_sfnt_ms ) { at.msbitmaps = true; at.applebitmaps=false; at.applemode=false; at.gi.onlybitmaps=true;}
+    if ( bf==bf_otb ) { at.otbbitmaps = true; at.applebitmaps=at.msbitmaps=false; at.applemode=false; at.gi.onlybitmaps=true;}
+
+    if ( bsizes!=NULL && !at.applebitmaps && !at.otbbitmaps && !at.msbitmaps )
+	at.msbitmaps = true;		/* They asked for bitmaps, but no bitmap type selected */
     at.gi.bsizes = bsizes;
     at.gi.fixed_width = CIDOneWidth(sf);
     at.isotf = format==ff_otf || format==ff_otfcid;

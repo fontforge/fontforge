@@ -97,7 +97,7 @@ static char *extensions[] = { ".pfa", ".pfb", ".res", "%s.pfb", ".pfa", ".pfb", 
 	".ttf", ".ttf", ".suit", ".dfont", ".otf", ".otf.dfont", ".otf",
 	".otf.dfont", ".svg", NULL };
 # ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-static char *bitmapextensions[] = { "-*.bdf", ".ttf", ".dfont", ".bmap", ".dfont", ".fon", "-*.fnt", ".otb", ".pdb", "-*.pt3", ".none", NULL };
+static char *bitmapextensions[] = { "-*.bdf", ".ttf", ".dfont", ".ttf", ".otb", ".bmap", ".dfont", ".fon", "-*.fnt", ".pdb", "-*.pt3", ".none", NULL };
 # endif
 #else
 static char *extensions[] = { ".pfa", ".pfb", ".bin", "%s.pfb", ".pfa", ".pfb", ".pt3", ".ps",
@@ -106,7 +106,7 @@ static char *extensions[] = { ".pfa", ".pfb", ".bin", "%s.pfb", ".pfa", ".pfb", 
 	".ttf", ".ttf", ".ttf.bin", ".dfont", ".otf", ".otf.dfont", ".otf",
 	".otf.dfont", ".svg", NULL };
 # ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-static char *bitmapextensions[] = { "-*.bdf", ".ttf", ".dfont", ".bmap.bin", ".fon", "-*.fnt", ".otb", ".pdb", "-*.pt3", ".none", NULL };
+static char *bitmapextensions[] = { "-*.bdf", ".ttf", ".dfont", ".ttf", ".otb", ".bmap.bin", ".fon", "-*.fnt", ".pdb", "-*.pt3", ".none", NULL };
 # endif
 #endif
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -151,7 +151,9 @@ static GTextInfo formattypes[] = {
 static GTextInfo bitmaptypes[] = {
     { (unichar_t *) N_("BDF"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("In TTF"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("sbits only (dfont)"), NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Apple bitmap only sfnt (dfont)"), NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("(faked) MS bitmap only sfnt (ttf)"), NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Linux bitmap only sfnt (otb)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
 #if __Mac
     { (unichar_t *) N_("NFNT (Resource)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
 #else
@@ -161,7 +163,6 @@ static GTextInfo bitmaptypes[] = {
 /*  { (unichar_t *) "NFNT (dfont)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },*/
     { (unichar_t *) N_("Win FON"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("Win FNT"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("OpenType Bitmap"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("Palm OS Bitmap"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("PS Type3 Bitmap"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("No Bitmap Fonts"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
@@ -1807,9 +1808,7 @@ return( WriteMultiplePSFont(sf,newname,sizes,res,NULL,map));
 		 _("Saving PostScript Font"),
 	    path,sf->glyphcnt,1);
     free(path);
-    if ( oldformatstate!=ff_none ||
-	    oldbitmapstate==bf_sfnt_dfont ||
-	    oldbitmapstate==bf_ttf ) {
+    if ( oldformatstate!=ff_none ) {
 	int oerr = 0;
 	int bmap = oldbitmapstate;
 	if ( bmap==bf_otb ) bmap = bt_none;
@@ -1844,14 +1843,6 @@ return( true );
 #endif
 	    oerr = !WriteSVGFont(newname,sf,oldformatstate,flags,map);
 	  break;
-	  case ff_none:		/* only if bitmaps, an sfnt wrapper for bitmaps */
-	    if ( bmap==bf_sfnt_dfont )
-		oerr = !WriteMacTTFFont(newname,sf,oldformatstate,sizes,
-			bmap,flags,map);
-	    else if ( bmap==bf_ttf )
-		oerr = !WriteTTFFont(newname,sf,oldformatstate,sizes,bmap,
-		    flags,map);
-	  break;
 	}
 	if ( oerr ) {
 	    gwwv_post_error(_("Save Failed"),_("Save Failed"));
@@ -1885,14 +1876,14 @@ return( true );
 	    err = true;
 	}
     }
-    if ( oldbitmapstate==bf_otb ) {
+    if ( oldbitmapstate==bf_otb || oldbitmapstate==bf_sfnt_ms ) {
 	char *temp = newname;
 	if ( newname[strlen(newname)-1]=='.' ) {
 	    temp = galloc(strlen(newname)+8);
 	    strcpy(temp,newname);
-	    strcat(temp,"otb");
+	    strcat(temp,oldbitmapstate==bf_otb ? "otb" : "ttf" );
 	}
-	if ( !WriteTTFFont(temp,sf,ff_none,sizes,bf_otb,flags,map) )
+	if ( !WriteTTFFont(temp,sf,ff_none,sizes,oldbitmapstate,flags,map) )
 	    err = true;
 	if ( temp!=newname )
 	    free(temp);
@@ -1953,7 +1944,7 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	int res, char *subfontdefinition, struct sflist *sfs,EncMap *map,
 	NameList *rename_to) {
     int i;
-    static char *bitmaps[] = {"bdf", "ttf", "sbit", "bin", /*"dfont", */"fon", "fnt", "otb", "pdb", "pt3", NULL };
+    static char *bitmaps[] = {"bdf", "ttf", "dfont", "ttf", "otb", "bin", "fon", "fnt", "pdb", "pt3", NULL };
     int32 *sizes=NULL;
     char *end = filename+strlen(filename);
     struct sflist *sfi;
@@ -1966,6 +1957,7 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
     else if ( strmatch(bitmaptype,"otf")==0 ) i = bf_ttf;
     else if ( strmatch(bitmaptype,"ms")==0 ) i = bf_ttf;
     else if ( strmatch(bitmaptype,"apple")==0 ) i = bf_ttf;
+    else if ( strmatch(bitmaptype,"sbit")==0 ) i = bf_sfnt_dfont;
     else if ( strmatch(bitmaptype,"nfnt")==0 ) i = bf_nfntmacbin;
     else if ( strmatch(bitmaptype,"ps")==0 ) i = bf_ptype3;
     else for ( i=0; bitmaps[i]!=NULL; ++i ) {
@@ -2025,6 +2017,8 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	if ( i==ff_otf ) i = ff_otfcid;
 	else if ( i==ff_otfdfont ) i = ff_otfciddfont;
     }
+    if ( i==ff_none && oldbitmapstate==bf_ttf )
+	oldbitmapstate = bf_sfnt_ms;
     oldformatstate = i;
 
     if ( oldformatstate==ff_none && end[-1]=='.' &&
@@ -2607,7 +2601,9 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	if ( format==ff_none ) {
 	    if ( temp->bitmaps!=NULL ) {
 		list[bf_sfnt_dfont]->disabled = false;
-		list[bf_ttf]->disabled = false;
+		list[bf_sfnt_ms]->disabled = false;
+		list[bf_otb]->disabled = false;
+		list[bf_ttf]->disabled = true;
 	    }
 	    BitmapName(d);
 return( true );
@@ -2647,20 +2643,26 @@ return( true );
 		format!=ff_ttfdfont && format!=ff_otfdfont && format!=ff_otfciddfont &&
 		format!=ff_otfcid && format!=ff_ttfmacbin && format!=ff_none ) {
 	    /* If we're not in a ttf format then we can't output ttf bitmaps */
-	    if ( bf==bf_ttf ||
-		    bf==bf_nfntmacbin /*|| bf==bf_nfntdfont*/ )
-		GGadgetSelectOneListItem(d->bmptype,bf_bdf);
+	    list[bf_ttf]->disabled = true;
+	    list[bf_sfnt_dfont]->disabled = false;
+	    list[bf_sfnt_ms]->disabled = false;
+	    list[bf_otb]->disabled = false;
+	    if ( bf==bf_ttf )
+		GGadgetSelectOneListItem(d->bmptype,bf_otb);
 	    if ( format==ff_pfbmacbin )
 		GGadgetSelectOneListItem(d->bmptype,bf_nfntmacbin);
-	    list[bf_ttf]->disabled = true;
 	    bf = GGadgetGetFirstListSelectedItem(d->bmptype);
 	    GGadgetSetEnabled(d->bmpsizes, format!=ff_multiple && bf!=bf_none );	/* We know there are bitmaps */
 	} else {
 	    list[bf_ttf]->disabled = false;
+	    list[bf_sfnt_dfont]->disabled = true;
+	    list[bf_sfnt_ms]->disabled = true;
+	    list[bf_otb]->disabled = true;
 	    if ( bf==bf_none )
 		/* Do nothing, always appropriate */;
 	    else if ( format==ff_ttf || format==ff_ttfsym || format==ff_otf ||
-		    format==ff_otfcid )
+		    format==ff_otfcid ||
+		    bf==bf_sfnt_dfont || bf == bf_sfnt_ms || bf == bf_otb )
 		GGadgetSelectOneListItem(d->bmptype,bf_ttf);
 	}
 #if __Mac
@@ -3098,15 +3100,26 @@ return( 0 );
 	bitmaptypes[bf_bdf].disabled = true;
 	bitmaptypes[bf_ttf].disabled = true;
 	bitmaptypes[bf_sfnt_dfont].disabled = true;
+	bitmaptypes[bf_sfnt_ms].disabled = true;
+	bitmaptypes[bf_otb].disabled = true;
 	bitmaptypes[bf_nfntmacbin].disabled = true;
-	/*bitmaptypes[bf_nfntdfont].disabled = true;*/
 	bitmaptypes[bf_fon].disabled = true;
 	bitmaptypes[bf_fnt].disabled = true;
-	bitmaptypes[bf_otb].disabled = true;
 	bitmaptypes[bf_palm].disabled = true;
 	bitmaptypes[bf_ptype3].disabled = true;
-    } else if ( ofs!=ff_none )
+    } else if ( ofs==ff_ttf || ofs==ff_ttfsym || ofs==ff_ttfmacbin ||
+	    ofs==ff_ttfdfont || ofs==ff_otf || ofs==ff_otfdfont || ofs==ff_otfcid ||
+	    ofs==ff_otfciddfont ) {
+	bitmaptypes[bf_ttf].disabled = false;
 	bitmaptypes[bf_sfnt_dfont].disabled = true;
+	bitmaptypes[bf_sfnt_ms].disabled = true;
+	bitmaptypes[bf_otb].disabled = true;
+    } else {
+	bitmaptypes[bf_ttf].disabled = true;
+	bitmaptypes[bf_sfnt_dfont].disabled = false;
+	bitmaptypes[bf_sfnt_ms].disabled = false;
+	bitmaptypes[bf_otb].disabled = false;
+    }
     bitmaptypes[old].selected = true;
     gcd[8].gd.label = &bitmaptypes[old];
     gcd[8].gd.handle_controlevent = GFD_BitmapFormat;
