@@ -739,6 +739,7 @@ return;
     free(gl->label); gl->label = u_copy(gl->ti[i]->text);
     gl->image = gl->ti[i]->image;
     gl->image_precedes = gl->ti[i]->image_precedes;
+    GButtonSetInner((GButton *) gl);
     _ggadget_redraw(g);
 
     e.type = et_controlevent;
