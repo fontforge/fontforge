@@ -258,8 +258,8 @@ return( b->font );
 static void _gradio_move(GGadget *g, int32 x, int32 y ) {
     GRadio *b = (GRadio *) g;
     b->onoffrect.x = x+(b->onoffrect.x-g->r.x);
-    b->onoffrect.y = y+(b->onoffrect.y-g->r.y);
     _ggadget_move(g,x,y);
+    b->onoffrect.y = g->r.y+(g->r.height-b->onoffrect.height)/2;
 }
 
 static void GRadioGetDesiredSize(GGadget *g, GRect *outer, GRect *inner) {
@@ -299,7 +299,7 @@ static void GRadioGetDesiredSize(GGadget *g, GRect *outer, GRect *inner) {
 	outer->x = outer->y = 0;
 	outer->width = width;
 	outer->height = iheight;
-	_ggadgetFigureSize(gl->g.base,gl->g.box,outer,false);
+	/*_ggadgetFigureSize(gl->g.base,gl->g.box,outer,false);*/
     }
 }
 
@@ -360,13 +360,13 @@ static void GRadioInit() {
     radio_on_box.border_type = bt_raised;
     radio_off_box.border_type = bt_lowered;
     radio_on_box.border_shape = radio_off_box.border_shape = bs_diamond;
-    radio_box.padding = 1;
+    radio_box.padding = 0;
     /*radio_box.flags = box_active_border_inner;*/
     radio_on_box.flags = radio_off_box.flags = box_do_depressed_background;
     checkbox_box.border_type = bt_none;
     checkbox_on_box.border_type = bt_raised;
     checkbox_off_box.border_type = bt_lowered;
-    checkbox_box.padding = 1;
+    checkbox_box.padding = 0;
     /*checkbox_box.flags = box_active_border_inner;*/
     checkbox_on_box.flags = checkbox_off_box.flags = box_do_depressed_background;
     checkbox_font = _GGadgetInitDefaultBox("GRadio.",&radio_box,NULL);

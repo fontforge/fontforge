@@ -150,10 +150,10 @@ static GTextInfo formattypes[] = {
 };
 static GTextInfo bitmaptypes[] = {
     { (unichar_t *) N_("BDF"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("In TTF"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("In TTF/OTF"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("Apple bitmap only sfnt (dfont)"), NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("(faked) MS bitmap only sfnt (ttf)"), NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("Linux bitmap only sfnt (otb)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("X11 bitmap only sfnt (otb)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
 #if __Mac
     { (unichar_t *) N_("NFNT (Resource)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
 #else
@@ -454,14 +454,14 @@ static int OPT_PSHints(GGadget *g, GEvent *e) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	if ( GGadgetIsChecked(g)) {
 	    int flags = (&d->ps_flags)[d->sod_which];
-	    GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_HintSubs),true);
+	    /*GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_HintSubs),true);*/
 	    GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Flex),true);
-	    GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_HintSubs),!(flags&ps_flag_nohintsubs));
+	    /*GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_HintSubs),!(flags&ps_flag_nohintsubs));*/
 	    GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_Flex),!(flags&ps_flag_noflex));
 	} else {
-	    GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_HintSubs),false);
+	    /*GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_HintSubs),false);*/
 	    GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Flex),false);
-	    GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_HintSubs),false);
+	    /*GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_HintSubs),false);*/
 	    GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_Flex),false);
 	}
     }
@@ -509,16 +509,16 @@ return( false );
 		    d->ps_flags |= ps_flag_pfm;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_TFM)) )
 		    d->ps_flags |= ps_flag_tfm;
-		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_HintSubs)) )
-		    d->ps_flags |= ps_flag_nohintsubs;
+		/*if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_HintSubs)) )*/
+		    /*d->ps_flags |= ps_flag_nohintsubs;*/
 		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Flex)) )
 		    d->ps_flags |= ps_flag_noflex;
 		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Hints)) )
 		    d->ps_flags |= ps_flag_nohints;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Round)) )
 		    d->ps_flags |= ps_flag_round;
-		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Restrict256)) )
-		    d->ps_flags |= ps_flag_restrict256;
+		/*if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Restrict256)) )*/
+		    /*d->ps_flags |= ps_flag_restrict256;*/
 	    } else if ( d->sod_which==1 ) {	/* TrueType */
 		d->ttf_flags = 0;
 		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_Hints)) )
@@ -568,8 +568,8 @@ return( false );
 		    d->otf_flags |= ps_flag_afm;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_AFMmarks)) )
 		    d->otf_flags |= ps_flag_afmwithmarks;
-		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_HintSubs)) )
-		    d->otf_flags |= ps_flag_nohintsubs;
+		/*if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_HintSubs)) )*/
+		    /*d->otf_flags |= ps_flag_nohintsubs;*/
 		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Flex)) )
 		    d->otf_flags |= ps_flag_noflex;
 		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Hints)) )
@@ -580,8 +580,8 @@ return( false );
 		d->ps_flags = d->psotb_flags = 0;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_AFMmarks)) )
 		     d->psotb_flags = d->ps_flags |= ps_flag_afmwithmarks;
-		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_HintSubs)) )
-		     d->psotb_flags = d->ps_flags |= ps_flag_nohintsubs;
+		/*if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_HintSubs)) )*/
+		     /*d->psotb_flags = d->ps_flags |= ps_flag_nohintsubs;*/
 		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Flex)) )
 		     d->psotb_flags = d->ps_flags |= ps_flag_noflex;
 		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Hints)) )
@@ -619,9 +619,9 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
     int bf = GGadgetGetFirstListSelectedItem(d->bmptype);
 
     GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_Hints),!(flags&ps_flag_nohints));
-    GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_HintSubs),!(flags&ps_flag_nohintsubs));
+    /*GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_HintSubs),!(flags&ps_flag_nohintsubs));*/
     GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_Flex),!(flags&ps_flag_noflex));
-    GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_Restrict256),flags&ps_flag_restrict256);
+    /*GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_Restrict256),flags&ps_flag_restrict256);*/
     GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_Round),flags&ps_flag_round);
 
     GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_AFM),flags&ps_flag_afm);
@@ -660,16 +660,16 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
 	    (flags&ttf_flag_oldkern) && !GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_AppleMode)));
 
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Hints),which!=1);
-    GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_HintSubs),which!=1);
+    /*GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_HintSubs),which!=1);*/
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Flex),which!=1);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Round),which!=1);
     if ( which!=1 && (flags&ps_flag_nohints)) {
-	GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_HintSubs),false);
+	/*GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_HintSubs),false);*/
 	GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Flex),false);
-	GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_HintSubs),false);
+	/*GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_HintSubs),false);*/
 	GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_Flex),false);
     }
-    GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Restrict256),(which==0 || which==3) && !iscid);
+    /*GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Restrict256),(which==0 || which==3) && !iscid);*/
 
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_AFM),which!=1);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_AFMmarks),which!=1);
@@ -697,12 +697,14 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
 
 static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     int flags;
-    int k,group,group2;
+    int k,group,group2,j;
     GWindow gw;
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[28];
     GTextInfo label[28];
     GRect pos;
+    GGadgetCreateData *hvarray1[21], *hvarray2[31], *harray[7], *varray[9];
+    GGadgetCreateData boxes[5];
 
     d->sod_done = false;
     d->sod_which = which;
@@ -723,8 +725,9 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
+    memset(boxes,0,sizeof(boxes));
 
-    k = 0;
+    k = j = 0;
     gcd[k].gd.pos.x = 2; gcd[k].gd.pos.y = 2;
     gcd[k].gd.pos.width = pos.width-4; gcd[k].gd.pos.height = pos.height-4;
     gcd[k].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
@@ -751,6 +754,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_PS_Round;
     gcd[k++].creator = GCheckBoxCreate;
+    hvarray1[0] = &gcd[k-1]; hvarray1[1] = GCD_ColSpan;
 
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
     gcd[k].gd.flags = gg_visible | gg_utf8_popup;
@@ -761,6 +765,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.handle_controlevent = OPT_PSHints;
     gcd[k].gd.cid = CID_PS_Hints;
     gcd[k++].creator = GCheckBoxCreate;
+    hvarray1[5] = &gcd[k-1]; hvarray1[6] = GCD_ColSpan;
 
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+4; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
     gcd[k].gd.flags = gg_visible | gg_utf8_popup;
@@ -770,6 +775,8 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_PS_Flex;
     gcd[k++].creator = GCheckBoxCreate;
+    hvarray1[10] = GCD_HPad10; hvarray1[11] = &gcd[k-1];
+    hvarray1[15] = GCD_Glue; hvarray1[16] = GCD_Glue;
 
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
     gcd[k].gd.flags = gg_utf8_popup ;
@@ -797,6 +804,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_PS_AFM;
     gcd[k++].creator = GCheckBoxCreate;
+    hvarray1[2] = &gcd[k-1]; hvarray1[3] = GCD_ColSpan; hvarray1[4] = NULL;
 
     gcd[k].gd.pos.x = 112; gcd[k].gd.pos.y = gcd[k-5].gd.pos.y;
     gcd[k].gd.flags = gg_visible | gg_utf8_popup;
@@ -806,6 +814,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_PS_AFMmarks;
     gcd[k++].creator = GCheckBoxCreate;
+    hvarray1[7] = GCD_HPad10; hvarray1[8] = &gcd[k-1]; hvarray1[9] = NULL;
 
     gcd[k].gd.pos.x = gcd[k-2].gd.pos.x; gcd[k].gd.pos.y = gcd[k-5].gd.pos.y;
     gcd[k].gd.flags = gg_visible | gg_utf8_popup;
@@ -815,6 +824,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_PS_PFM;
     gcd[k++].creator = GCheckBoxCreate;
+    hvarray1[12] = &gcd[k-1]; hvarray1[13] = GCD_ColSpan; hvarray1[14] = NULL;
 
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
     gcd[k].gd.flags = gg_visible |gg_utf8_popup;
@@ -824,6 +834,13 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_PS_TFM;
     gcd[k++].creator = GCheckBoxCreate;
+    hvarray1[17] = &gcd[k-1]; hvarray1[18] = GCD_ColSpan; hvarray1[19] = NULL;
+    hvarray1[20] = NULL;
+
+    boxes[2].gd.flags = gg_enabled|gg_visible;
+    boxes[2].gd.u.boxelements = hvarray1;
+    boxes[2].gd.label = (GTextInfo *) &gcd[1];
+    boxes[2].creator = GHVGroupCreate;
 
 
     label[k].text = (unichar_t *) _("TrueType");
@@ -847,6 +864,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_Hints;
     gcd[k++].creator = GCheckBoxCreate;
+    hvarray2[0] = &gcd[k-1]; hvarray2[1] = GCD_ColSpan;
 
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
     gcd[k].gd.flags = gg_visible | gg_utf8_popup;
@@ -856,6 +874,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_FullPS;
     gcd[k++].creator = GCheckBoxCreate;
+    hvarray2[5] = &gcd[k-1]; hvarray2[6] = GCD_ColSpan;
 
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
     gcd[k].gd.flags = gg_visible | gg_utf8_popup;
@@ -866,6 +885,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.cid = CID_TTF_AppleMode;
     gcd[k].gd.handle_controlevent = OPT_Applemode;
     gcd[k++].creator = GCheckBoxCreate;
+    hvarray2[10] = &gcd[k-1]; hvarray2[11] = GCD_ColSpan;
 
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
     gcd[k].gd.flags = gg_visible | gg_utf8_popup;
@@ -875,6 +895,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_OpenTypeMode;
     gcd[k++].creator = GCheckBoxCreate;
+    hvarray2[15] = &gcd[k-1]; hvarray2[16] = GCD_ColSpan;
 
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+4; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
     gcd[k].gd.flags = gg_visible | gg_utf8_popup;
@@ -885,6 +906,8 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.cid = CID_TTF_OldKern;
     gcd[k].gd.handle_controlevent = OPT_OldKern;
     gcd[k++].creator = GCheckBoxCreate;
+    hvarray2[20] = GCD_HPad10; hvarray2[21] = &gcd[k-1];
+    hvarray2[25] = GCD_Glue; hvarray2[26] = GCD_Glue;
 
     gcd[k].gd.pos.x = gcd[group+6].gd.pos.x; gcd[k].gd.pos.y = gcd[k-5].gd.pos.y;
     gcd[k].gd.flags = gg_visible | gg_utf8_popup;
@@ -894,6 +917,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_PfEd;
     gcd[k++].creator = GLabelCreate;
+    hvarray2[2] = &gcd[k-1]; hvarray2[3] = GCD_ColSpan; hvarray2[4] = NULL;
 
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+2; gcd[k].gd.pos.y = gcd[k-5].gd.pos.y-4;
     gcd[k].gd.flags = gg_visible | gg_utf8_popup;
@@ -903,6 +927,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_PfEdComments;
     gcd[k++].creator = GCheckBoxCreate;
+    hvarray2[7] = GCD_HPad10; hvarray2[8] = &gcd[k-1]; hvarray2[9] = NULL;
 
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-5].gd.pos.y-4;
     gcd[k].gd.flags = gg_visible | gg_utf8_popup;
@@ -912,6 +937,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_PfEdColors;
     gcd[k++].creator = GCheckBoxCreate;
+    hvarray2[12] = GCD_HPad10; hvarray2[13] = &gcd[k-1]; hvarray2[14] = NULL;
 
     gcd[k].gd.pos.x = gcd[k-3].gd.pos.x; gcd[k].gd.pos.y = gcd[k-5].gd.pos.y;
     gcd[k].gd.flags = gg_visible | gg_utf8_popup;
@@ -921,6 +947,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_TeXTable;
     gcd[k++].creator = GCheckBoxCreate;
+    hvarray2[17] = &gcd[k-1]; hvarray2[18] = GCD_ColSpan; hvarray2[19] = NULL;
 
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
     gcd[k].gd.flags = gg_visible | gg_utf8_popup;
@@ -930,6 +957,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_GlyphMap;
     gcd[k++].creator = GCheckBoxCreate;
+    hvarray2[22] = &gcd[k-1]; hvarray2[23] = GCD_ColSpan; hvarray2[24] = NULL;
 
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
     gcd[k].gd.flags = gg_visible | gg_utf8_popup;
@@ -939,6 +967,13 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_OFM;
     gcd[k++].creator = GCheckBoxCreate;
+    hvarray2[27] = &gcd[k-1]; hvarray2[28] = GCD_ColSpan; hvarray2[29] = NULL;
+    hvarray2[30] = NULL;
+
+    boxes[3].gd.flags = gg_enabled|gg_visible;
+    boxes[3].gd.u.boxelements = hvarray2;
+    boxes[3].gd.label = (GTextInfo *) &gcd[group2-1];
+    boxes[3].creator = GHVGroupCreate;
 
     gcd[k].gd.pos.x = 30-3; gcd[k].gd.pos.y = gcd[group2].gd.pos.y+gcd[group2].gd.pos.height+10-3;
     gcd[k].gd.pos.width = -1;
@@ -949,6 +984,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_OK;
     gcd[k++].creator = GButtonCreate;
+    harray[0] = GCD_Glue; harray[1] = &gcd[k-1]; harray[2] = GCD_Glue;
 
     gcd[k].gd.pos.x = -30; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+3;
     gcd[k].gd.pos.width = -1;
@@ -958,8 +994,28 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k++].creator = GButtonCreate;
+    harray[3] = GCD_Glue; harray[4] = &gcd[k-1]; harray[5] = GCD_Glue;
+    harray[6] = NULL;
 
-    GGadgetsCreate(gw,gcd);
+    boxes[4].gd.flags = gg_enabled|gg_visible;
+    boxes[4].gd.u.boxelements = harray;
+    boxes[4].creator = GHBoxCreate;
+
+    varray[0] = &boxes[2]; varray[1] = NULL;
+    varray[2] = &boxes[3]; varray[3] = NULL;
+    varray[4] = GCD_Glue; varray[5] = NULL;
+    varray[6] = &boxes[4]; varray[7] = NULL;
+    varray[8] = NULL;
+
+    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = varray;
+    boxes[0].creator = GHVGroupCreate;
+
+    GGadgetsCreate(gw,boxes);
+    GHVBoxSetExpandableRow(boxes[0].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(boxes[4].ret,gb_expandgluesame);
+    GHVBoxFitWindow(boxes[0].ret);
 
     OptSetDefaults(gw,d,which,iscid);
 
@@ -996,7 +1052,7 @@ static int AskResolution(int bf,BDFFont *bdf) {
     static GWindow bdf_gw, fon_gw;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[10];
+    GGadgetCreateData gcd[10], *varray[22], *harray[7], *harray2[4], boxes[4];
     GTextInfo label[10];
     int done=-3;
     int def_res = -1;
@@ -1029,6 +1085,7 @@ return( -1 );
 
 	memset(&label,0,sizeof(label));
 	memset(&gcd,0,sizeof(gcd));
+	memset(&boxes,0,sizeof(boxes));
 
 	label[0].text = (unichar_t *) _("BDF Resolution");
 	label[0].text_is_1byte = true;
@@ -1036,6 +1093,12 @@ return( -1 );
 	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 7; 
 	gcd[0].gd.flags = gg_enabled|gg_visible;
 	gcd[0].creator = GLabelCreate;
+	harray2[0] = GCD_Glue; harray2[1] = &gcd[0]; harray2[2] = GCD_Glue; harray2[3] = NULL;
+
+	boxes[3].gd.flags = gg_enabled|gg_visible;
+	boxes[3].gd.u.boxelements = harray2;
+	boxes[3].creator = GHBoxCreate;
+	varray[0] = &boxes[3]; varray[1] = GCD_ColSpan; varray[2] = NULL;
 
 	label[1].text = (unichar_t *) (bf==bf_bdf ? "75" : "96");
 	label[1].text_is_1byte = true;
@@ -1047,6 +1110,7 @@ return( -1 );
 	    gcd[1].gd.flags |= gg_cb_on;
 	gcd[1].gd.cid = 75;
 	gcd[1].creator = GRadioCreate;
+	varray[3] = &gcd[1]; varray[4] = GCD_Glue; varray[5] = NULL;
 
 	label[2].text = (unichar_t *) (bf==bf_bdf ? "100" : "120");
 	label[2].text_is_1byte = true;
@@ -1058,6 +1122,7 @@ return( -1 );
 	    gcd[2].gd.flags |= gg_cb_on;
 	gcd[2].gd.cid = 100;
 	gcd[2].creator = GRadioCreate;
+	varray[6] = &gcd[2]; varray[7] = GCD_Glue; varray[8] = NULL;
 
 	label[3].text = (unichar_t *) _("_Guess");
 	label[3].text_is_1byte = true;
@@ -1070,6 +1135,7 @@ return( -1 );
 	gcd[3].gd.cid = -1;
 	gcd[3].gd.popup_msg = (unichar_t *) _("Guess each font's resolution based on its pixel size");
 	gcd[3].creator = GRadioCreate;
+	varray[9] = &gcd[3]; varray[10] = GCD_Glue; varray[11] = NULL;
 
 	label[4].text = (unichar_t *) _("_Other");
 	label[4].text_is_1byte = true;
@@ -1091,6 +1157,8 @@ return( -1 );
 	gcd[5].gd.flags = gg_enabled|gg_visible;
 	gcd[5].gd.cid = 1003;
 	gcd[5].creator = GTextFieldCreate;
+	varray[12] = &gcd[4]; varray[13] = &gcd[5]; varray[14] = NULL;
+	varray[15] = GCD_Glue; varray[16] = GCD_Glue; varray[17] = NULL;
 
 	gcd[6].gd.pos.x = 15-3; gcd[6].gd.pos.y = gcd[4].gd.pos.y+24;
 	gcd[6].gd.pos.width = -1; gcd[6].gd.pos.height = 0;
@@ -1101,8 +1169,8 @@ return( -1 );
 	gcd[6].gd.mnemonic = 'O';
 	gcd[6].gd.label = &label[6];
 	gcd[6].gd.cid = 1001;
-	/*gcd[6].gd.handle_controlevent = CH_OK;*/
 	gcd[6].creator = GButtonCreate;
+	harray[0] = GCD_Glue; harray[1] = &gcd[6]; harray[2] = GCD_Glue;
 
 	gcd[7].gd.pos.x = -15; gcd[7].gd.pos.y = gcd[6].gd.pos.y+3;
 	gcd[7].gd.pos.width = -1; gcd[7].gd.pos.height = 0;
@@ -1115,13 +1183,28 @@ return( -1 );
 	/*gcd[7].gd.handle_controlevent = CH_Cancel;*/
 	gcd[7].gd.cid = 1002;
 	gcd[7].creator = GButtonCreate;
+	harray[3] = GCD_Glue; harray[4] = &gcd[7]; harray[5] = GCD_Glue;
+	harray[6] = NULL;
+
+	boxes[2].gd.flags = gg_enabled|gg_visible;
+	boxes[2].gd.u.boxelements = harray;
+	boxes[2].creator = GHBoxCreate;
+	varray[18] = &boxes[2]; varray[19] = GCD_ColSpan; varray[20] = NULL;
+	varray[21] = NULL;
+
+	boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+	boxes[0].gd.flags = gg_enabled|gg_visible;
+	boxes[0].gd.u.boxelements = varray;
+	boxes[0].creator = GHVGroupCreate;
 
 	gcd[8].gd.pos.x = 2; gcd[8].gd.pos.y = 2;
 	gcd[8].gd.pos.width = pos.width-4; gcd[8].gd.pos.height = pos.height-2;
 	gcd[8].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
 	gcd[8].creator = GGroupCreate;
 
-	GGadgetsCreate(gw,gcd);
+	GGadgetsCreate(gw,boxes);
+	GHVBoxSetExpandableRow(boxes[0].ret,gb_expandglue);
+	GHVBoxSetExpandableCol(boxes[2].ret,gb_expandgluesame);
     } else
 	GDrawSetUserData(gw,&done);
 
@@ -2776,11 +2859,12 @@ int SFGenerateFont(SplineFont *sf,int family,EncMap *map) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[18+2*48+2];
+    GGadgetCreateData gcd[18+2*48+2], *varray[13], *hvarray[13], *famarray[3*50+1],
+	    *harray[10], boxes[5];
     GTextInfo label[18+2*48+2];
     struct gfc_data d;
     GGadget *pulldown, *files, *tf;
-    int i, j, k, old, ofs, y, fc, dupfc, dupstyle;
+    int i, j, k, f, old, ofs, y, fc, dupfc, dupstyle;
     int bs = GIntGetResource(_NUM_Buttonsize), bsbigger, totwid, spacing;
     SplineFont *temp;
     int familycnt=0;
@@ -2916,9 +3000,11 @@ return( 0 );
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
+    memset(&boxes,0,sizeof(boxes));
     gcd[0].gd.pos.x = 12; gcd[0].gd.pos.y = 6; gcd[0].gd.pos.width = 100*totwid/GIntGetResource(_NUM_ScaleFactor)-24; gcd[0].gd.pos.height = 182;
     gcd[0].gd.flags = gg_visible | gg_enabled;
     gcd[0].creator = GFileChooserCreate;
+    varray[0] = &gcd[0]; varray[1] = NULL;
 
     y = 276;
     if ( family )
@@ -2934,6 +3020,7 @@ return( 0 );
     gcd[1].gd.label = &label[1];
     gcd[1].gd.handle_controlevent = GFD_SaveOk;
     gcd[1].creator = GButtonCreate;
+    harray[0] = GCD_Glue; harray[1] = &gcd[1]; 
 
     gcd[2].gd.pos.x = -(spacing+bs)*100/GIntGetResource(_NUM_ScaleFactor)-12; gcd[2].gd.pos.y = y;
     gcd[2].gd.pos.width = -1;
@@ -2945,6 +3032,7 @@ return( 0 );
     gcd[2].gd.label = &label[2];
     gcd[2].gd.handle_controlevent = GFileChooserFilterEh;
     gcd[2].creator = GButtonCreate;
+    harray[2] = GCD_Glue; harray[3] = &gcd[2]; 
 
     gcd[3].gd.pos.x = -12; gcd[3].gd.pos.y = y; gcd[3].gd.pos.width = -1; gcd[3].gd.pos.height = 0;
     gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
@@ -2955,6 +3043,7 @@ return( 0 );
     gcd[3].gd.mnemonic = 'C';
     gcd[3].gd.handle_controlevent = GFD_Cancel;
     gcd[3].creator = GButtonCreate;
+    harray[6] = GCD_Glue; harray[7] = &gcd[3]; harray[8] = GCD_Glue; harray[9] = NULL;
 
     gcd[4].gd.pos.x = (spacing+bs)*100/GIntGetResource(_NUM_ScaleFactor)+12; gcd[4].gd.pos.y = y; gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
     gcd[4].gd.flags = gg_visible | gg_enabled;
@@ -2967,6 +3056,11 @@ return( 0 );
     gcd[4].gd.label = &label[4];
     gcd[4].gd.handle_controlevent = GFD_NewDir;
     gcd[4].creator = GButtonCreate;
+    harray[4] = GCD_Glue; harray[5] = &gcd[4]; 
+
+    boxes[2].gd.flags = gg_enabled|gg_visible;
+    boxes[2].gd.u.boxelements = harray;
+    boxes[2].creator = GHBoxCreate;
 
     gcd[5].gd.pos.x = 12; gcd[5].gd.pos.y = 218; gcd[5].gd.pos.width = 0; gcd[5].gd.pos.height = 0;
     gcd[5].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
@@ -2976,11 +3070,13 @@ return( 0 );
     gcd[5].gd.label = &label[5];
     gcd[5].gd.handle_controlevent = GFD_Options;
     gcd[5].creator = GButtonCreate;
+    hvarray[4] = &gcd[5]; hvarray[5] = GCD_Glue;
 
     gcd[6].gd.pos.x = 12; gcd[6].gd.pos.y = 190; gcd[6].gd.pos.width = 0; gcd[6].gd.pos.height = 0;
     gcd[6].gd.flags = gg_visible | gg_enabled ;
     gcd[6].gd.u.list = formattypes;
     gcd[6].creator = GListButtonCreate;
+    hvarray[0] = &gcd[6]; hvarray[1] = GCD_ColSpan;
     for ( i=0; i<sizeof(formattypes)/sizeof(formattypes[0])-1; ++i )
 	formattypes[i].disabled = sf->onlybitmaps;
     formattypes[ff_ptype0].disabled = sf->onlybitmaps || map->enc->only_1byte;
@@ -3048,6 +3144,8 @@ return( 0 );
 	formattypes[ff_multiple].disabled = true;
 	formattypes[ff_ptype3].disabled = true;
 	formattypes[ff_ptype0].disabled = true;
+	formattypes[ff_type42].disabled = true;
+	formattypes[ff_type42cid].disabled = true;
 	formattypes[ff_ttf].disabled = true;
 	formattypes[ff_ttfsym].disabled = true;
 	formattypes[ff_otf].disabled = true;
@@ -3075,21 +3173,18 @@ return( 0 );
 	bitmaptypes[i].selected = false;
 	bitmaptypes[i].disabled = false;
     }
+    hvarray[2] = &gcd[8]; hvarray[3] = NULL;
     old = oldbitmapstate;
     if ( family ) {
-	if ( old==bf_bdf || old==bf_fon || old==bf_fnt ) {
+	if ( old==bf_bdf || old==bf_fon || old==bf_fnt || old==bf_sfnt_ms ||
+		old==bf_otb || old==bf_palm || old==bf_ptype3 ) {
 	    if ( ofs==ff_otfdfont || ofs==ff_otfciddfont || ofs==ff_ttfdfont )
 		old = bf_ttf;
 	    else
-		old = bf_nfntmacbin;
+		old = bf_sfnt_dfont;
 	} else if ( old==bf_nfntmacbin &&
 		    ( ofs==ff_otfdfont || ofs==ff_otfciddfont || ofs==ff_ttfdfont ))
 	    old = bf_ttf;
-#if 0
-	else if ( old==bf_nfntdfont &&
-		    ( ofs!=ff_otfdfont && ofs!=ff_otfciddfont && ofs!=ff_ttfdfont ))
-	    old = bf_nfntmacbin;
-#endif
 	bitmaptypes[bf_bdf].disabled = true;
 	bitmaptypes[bf_fon].disabled = true;
 	bitmaptypes[bf_fnt].disabled = true;
@@ -3131,6 +3226,7 @@ return( 0 );
     gcd[9].creator = GTextFieldCreate;
     label[9].text = BitmapList(temp);
     gcd[9].gd.label = &label[9];
+    hvarray[6] = &gcd[9]; hvarray[7] = NULL;
 
     k = 10;
     label[k].text = (unichar_t *) _("Force glyph names to:");
@@ -3140,6 +3236,7 @@ return( 0 );
     gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
     gcd[k].gd.popup_msg = (unichar_t *) _("In the saved font, force all glyph names to match those in the specified namelist");
     gcd[k++].creator = GLabelCreate;
+    hvarray[8] = &gcd[k-1]; hvarray[9] = GCD_ColSpan;
 
     gcd[k].gd.pos.x = gcd[k-2].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-6;
     gcd[k].gd.pos.width = gcd[k-2].gd.pos.width;
@@ -3167,14 +3264,27 @@ return( 0 );
     }
     gcd[k++].gd.u.list = namelistnames;
     free(nlnames);
+    hvarray[10] = &gcd[k-1]; hvarray[11] = NULL; hvarray[12] = NULL;
+
+    boxes[3].gd.flags = gg_enabled|gg_visible;
+    boxes[3].gd.u.boxelements = hvarray;
+    boxes[3].creator = GHVBoxCreate;
+    varray[2] = GCD_Glue; varray[3] = NULL;
+    varray[4] = &boxes[3]; varray[5] = NULL;
+    varray[6] = GCD_Glue; varray[7] = NULL;
+    varray[8] = GCD_Glue; varray[9] = NULL;
+    varray[10] = &boxes[2]; varray[11] = NULL;
+    varray[12] = NULL;
 
     if ( family ) {
 	y = 276;
 
+	f = 0;
 	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = y;
 	gcd[k].gd.pos.width = totwid-5-5;
 	gcd[k].gd.flags = gg_visible | gg_enabled ;
 	gcd[k++].creator = GLineCreate;
+	famarray[f++] = &gcd[k-1]; famarray[f++] = GCD_ColSpan; famarray[f++] = NULL;
 	y += 7;
 
 	for ( i=0, fc=0, j=1; i<familycnt && j<48 ; ++i ) {
@@ -3197,6 +3307,7 @@ return( 0 );
 	    gcd[k].data = familysfs[fc][j];
 	    gcd[k].gd.popup_msg = uStyleName(familysfs[fc][j]);
 	    gcd[k++].creator = GCheckBoxCreate;
+	    famarray[f++] = &gcd[k-1];
 
 	    gcd[k].gd.pos.x = gcd[8].gd.pos.x; gcd[k].gd.pos.y = y; gcd[k].gd.pos.width = gcd[8].gd.pos.width;
 	    gcd[k].gd.flags = gg_visible | gg_enabled;
@@ -3208,6 +3319,7 @@ return( 0 );
 	    gcd[k].gd.cid = CID_Family+i*10+1;
 	    gcd[k].data = familysfs[fc][j];
 	    gcd[k++].creator = GTextFieldCreate;
+	    famarray[f++] = &gcd[k-1]; famarray[f++] = NULL;
 	    y+=26;
 	    ++j;
 	}
@@ -3216,11 +3328,27 @@ return( 0 );
 	gcd[k].gd.pos.width = totwid-5-5;
 	gcd[k].gd.flags = gg_visible | gg_enabled ;
 	gcd[k++].creator = GLineCreate;
+	famarray[f++] = &gcd[k-1]; famarray[f++] = GCD_ColSpan; famarray[f++] = NULL;
+	famarray[f++] = NULL;
 
 	free(familysfs);
+
+	boxes[4].gd.flags = gg_enabled|gg_visible;
+	boxes[4].gd.u.boxelements = famarray;
+	boxes[4].creator = GHVBoxCreate;
+	varray[6] = &boxes[4];
     }
 
-    GGadgetsCreate(gw,gcd);
+    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = varray;
+    boxes[0].creator = GHVGroupCreate;
+
+    GGadgetsCreate(gw,boxes);
+    GHVBoxSetExpandableRow(boxes[0].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(boxes[2].ret,gb_expandgluesame);
+    GHVBoxFitWindow(boxes[0].ret);
+    
     GGadgetSetUserData(gcd[2].ret,gcd[0].ret);
     free(namelistnames);
     free(label[9].text);
