@@ -160,6 +160,7 @@ typedef struct ggadgetcreatedata {
 #define GCD_Glue	((GGadgetCreateData *) -1)	/* Special entries */
 #define GCD_ColSpan	((GGadgetCreateData *) -2)	/* for box elements */
 #define GCD_RowSpan	((GGadgetCreateData *) -3)
+#define GCD_HPad10	((GGadgetCreateData *) -4)
 
 enum ghvbox_expand { gb_expandglue=-4, gb_expandgluesame=-3, gb_samesize=-2,
 	gb_expandall=-1 };

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Sep-2002 -->
-  <!-- AP: Last modified: 5-Aug-2006 -->
+  <!-- AP: Last modified: 31-Aug-2006 -->
   <TITLE>Generate Font Dialog</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -118,13 +118,23 @@
       anti-aliased (greymap) fonts as well as bitmaps. A 12pixel high greymap font
       with 8 bits/pixel can be represented as 12@8).
     <LI>
-      In TTF -- Store the bitmap fonts inside the ttf file (the exact format will
-      depend on the settings of the Apple and OpenType bits in the Options dlg).
+      In TTF/OTF -- Store the bitmap fonts inside the ttf (or otf) file (the exact
+      format will depend on the settings of the Apple and OpenType bits in the
+      Options dlg).
     <LI>
-      In sfnt (dfont) -- Only available if no outline font is generated. Apple
-      allows bitmaps to be stored within a truetype file (sfnt) even if there is
-      no outline font. So this generates a ttf file that just contains bitmaps
-      and wraps it up in a dfont.
+      Apple bitmap only sfnt (dfont) -- Only available if no outline font is generated.
+      <A HREF="bitmaponlysfnt.html#Apple">Apple allows bitmaps to be stored within
+      a truetype file (sfnt)</A> even if there is no outline font. So this generates
+      a ttf file that just contains bitmaps and wraps it up in a dfont.
+    <LI>
+      (faked) MS bitmap only sfnt (ttf) -- <A HREF="bitmaponlysfnt.html#MS">Microsoft
+      does not support a bitmap only format for an sfnt</A>, but this option attempts
+      to fake one as best it can.
+    <LI>
+      X11 bitmap only sfnt (otb) -- this is the new
+      <A HREF="bitmaponlysfnt.html#X11">X11 bitmap format with bitmaps embedded
+      in an sfnt wrapper</A> (an opentype or truetype font) but with no outline
+      data.
     <LI>
       NFNT (MacBin) -- Converts the bitmap fonts into Macintosh NFNT resources
       and wraps them up in a mac binary file.<BR>
@@ -140,9 +150,6 @@
       Windows FON -- Windows resource based font format.
     <LI>
       Windows FNT -- Windows format, one bitmap font per file.
-    <LI>
-      OpenType Bitmap -- this is the new X11 bitmap format with bitmaps embedded
-      in an sfnt wrapper (an opentype or truetype font) but with no outline data.
     <LI>
       Palm fonts -- support for <A HREF="palmfonts.html">various palm bitmap font
       formats.</A>

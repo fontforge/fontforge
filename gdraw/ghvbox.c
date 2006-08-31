@@ -31,6 +31,7 @@
 #define GG_Glue		((GGadget *) -1)	/* Special entries */
 #define GG_ColSpan	((GGadget *) -2)	/* for box elements */
 #define GG_RowSpan	((GGadget *) -3)	/* Must match those in ggadget.h */
+#define GG_HPad10	((GGadget *) -4)
 
 static GBox hvgroup_box = { /* Don't initialize here */ 0 };
 static GBox hvbox_box = { /* Don't initialize here */ 0 };
@@ -62,7 +63,8 @@ static void GHVBox_destroy(GGadget *g) {
     if ( gb->label != NULL )
 	GGadgetDestroy( gb->label );
     for ( i=0; i<gb->rows*gb->cols; ++i )
-	if ( gb->children[i]!=GG_Glue && gb->children[i]!=GG_ColSpan && gb->children[i]!=GG_RowSpan )
+	if ( gb->children[i]!=GG_Glue && gb->children[i]!=GG_ColSpan &&
+		gb->children[i]!=GG_RowSpan && gb->children[i]!=GG_HPad10 )
 	    GGadgetDestroy(gb->children[i]);
     free(gb->children);
     _ggadget_destroy(g);
@@ -76,7 +78,8 @@ static void GHVBoxMove(GGadget *g, int32 x, int32 y) {
     if ( gb->label!=NULL )
 	GGadgetMove(gb->label,gb->label->inner.x+offx,gb->label->inner.y+offy);
     for ( i=0; i<gb->rows*gb->cols; ++i )
-	if ( gb->children[i]!=GG_Glue && gb->children[i]!=GG_ColSpan && gb->children[i]!=GG_RowSpan )
+	if ( gb->children[i]!=GG_Glue && gb->children[i]!=GG_ColSpan &&
+		gb->children[i]!=GG_RowSpan && gb->children[i]!=GG_HPad10 )
 	    GGadgetMove(gb->children[i],
 		    gb->children[i]->r.x+offx, gb->children[i]->r.y+offy);
     _ggadget_move(g,x,y);
@@ -101,6 +104,7 @@ struct sizeinfo {
 static void GHVBoxGatherSizeInfo(GHVBox *gb,struct sizeinfo *si) {
     int i,c,r,spanc, spanr, totc,totr, max, plus, extra, es;
     GRect outer;
+    int ten = GDrawPointsToPixels(gb->g.base,10);
 
     memset(si,0,sizeof(*si));
     si->cols = gcalloc(gb->cols,sizeof(struct sizedata));
@@ -113,6 +117,9 @@ static void GHVBoxGatherSizeInfo(GHVBox *gb,struct sizeinfo *si) {
 	    GGadget *g = gb->children[r*gb->cols+c];
 	    if ( g==GG_Glue ) {
 		if ( c+1!=gb->cols && si->cols[c].min<gb->hpad ) si->cols[c].min = gb->hpad;
+		if ( r+1!=gb->rows && si->rows[r].min<gb->vpad ) si->rows[r].min = gb->vpad;
+	    } else if ( g==GG_HPad10 ) {
+		if ( c+1!=gb->cols && si->cols[c].min<gb->hpad+ten ) si->cols[c].min = gb->hpad+ten;
 		if ( r+1!=gb->rows && si->rows[r].min<gb->vpad ) si->rows[r].min = gb->vpad;
 	    } else if ( g==GG_ColSpan || g==GG_RowSpan )
 		/* Skip it */;
@@ -139,7 +146,7 @@ static void GHVBoxGatherSizeInfo(GHVBox *gb,struct sizeinfo *si) {
     for ( r=0; r<gb->rows; ++r ) {
 	for ( c=0; c<gb->cols; ++c ) {
 	    GGadget *g = gb->children[r*gb->cols+c];
-	    if ( g==GG_Glue || g==GG_ColSpan || g==GG_RowSpan )
+	    if ( g==GG_Glue || g==GG_ColSpan || g==GG_RowSpan || g==GG_HPad10 )
 		/* Skip it */;
 	    else if ( (r+1<gb->rows && gb->children[(r+1)*gb->cols+c]==GG_RowSpan) ||
 		      (c+1<gb->cols && gb->children[r*gb->cols+c+1]==GG_ColSpan)) {
@@ -362,7 +369,7 @@ static void GHVBoxResize(GGadget *g, int32 width, int32 height) {
 	x = gb->g.inner.x;
 	for ( c=0; c<gb->cols; ++c ) {
 	    GGadget *g = gb->children[r*gb->cols+c];
-	    if ( g==GG_Glue || g==GG_ColSpan || g==GG_RowSpan )
+	    if ( g==GG_Glue || g==GG_ColSpan || g==GG_RowSpan || g==GG_HPad10 )
 		/* Skip it */;
 	    else {
 		int xes, yes, es;
@@ -533,7 +540,8 @@ static GHVBox *_GHVBoxCreate(struct gwindow *base, GGadgetData *gd,void *data,
 	    GGadgetCreateData *gcd = gd->u.boxelements[i];
 	    if ( gcd==GCD_Glue ||
 		    gcd==GCD_ColSpan ||
-		    gcd==GCD_RowSpan )
+		    gcd==GCD_RowSpan ||
+		    gcd==GCD_HPad10 )
 		gb->children[v*hcnt+h] = (GGadget *) gcd;
 	    else {
 		gcd->gd.pos.x = gcd->gd.pos.y = 1;

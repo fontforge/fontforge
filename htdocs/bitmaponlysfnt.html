@@ -1,0 +1,96 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 31-Aug-2006 -->
+  <!-- AP: Last modified: 31-Aug-2006 -->
+  <TITLE>Several formats for bitmap only sfnts (truetype files)</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+  <H1 ALIGN=Center>
+    Several formats for bitmap only sfnts<BR>
+    <SMALL><SMALL>(the file which holds a truetype or opentype
+    font)</SMALL></SMALL>
+  </H1>
+  <P>
+  Unfortunately every system has its own way of storing bitmap only fonts into
+  an sfnt wrapper (or the system just doesn't support it)
+  <UL>
+    <LI>
+      <A HREF="bitmaponlysfnt.html#Apple">Apple</A>
+    <LI>
+      <A HREF="bitmaponlysfnt.html#X11">X11 (Unix/Linux)</A>
+    <LI>
+      <A HREF="bitmaponlysfnt.html#MS">MS</A>
+  </UL>
+  <H2>
+    <A NAME="Apple">Apple</A>
+  </H2>
+  <P>
+  Apple documents the existance of a bitmap only format, and gives some hints
+  about the requirements of it. Their documentation is far from complete and
+  the following is determined in part by that documentation, in part by examining
+  the (few) bitmap only fonts of theirs I have found, and in part by error
+  messages given by some of their tools.
+  <UL>
+    <LI>
+      As is expected on Apple, the bitmap data reside in '<CODE>bloc</CODE>' and
+      '<CODE>bdat</CODE>' tables.
+    <LI>
+      The '<CODE>head</CODE>' table is replaced by a '<CODE>bhed</CODE>' table
+      which is byte for byte identical
+    <LI>
+      There are no '<CODE>glyf</CODE>', '<CODE>loca</CODE>' nor '<CODE>CFF</CODE>
+      ' tables.
+    <LI>
+      There is no '<CODE>hhea</CODE>' nor '<CODE>hmtx</CODE>' table (metrics data
+      are provided in the bitmap strikes themselves)
+    <LI>
+      (Presumably there are no '<CODE>vhea</CODE>' nor '<CODE>vmtx</CODE>' tables
+      either)
+  </UL>
+  <H2>
+    <A NAME="X11">X11</A> (Unix/Linux)
+  </H2>
+  <P>
+  The X consortium have divised their own format which they call "OpenType
+  Bitmap" with extension .otb.
+  <UL>
+    <LI>
+      The bitmap data reside in '<CODE>EBLC</CODE>' and '<CODE>EBDT</CODE>' tables.
+    <LI>
+      There is a zero length '<CODE>glyf</CODE>' table
+    <LI>
+      There is a '<CODE>loca</CODE>' table with one entry in it
+    <LI>
+      There is a '<CODE>head</CODE>' table (not a '<CODE>bhed</CODE>')
+	<HR>
+    <LI>
+      The fonts I generate also contain the metrics tables as appropriate
+  </UL>
+  <H2>
+    <A NAME="MS">MS</A>
+  </H2>
+  <P>
+  MicroSoft Windows provides no support for a bitmap only sfnt. So I have created
+  a faked up format which should work in most cases
+  <UL>
+    <LI>
+      The bitmap data reside in '<CODE>EBLC</CODE>' and '<CODE>EBDT</CODE>' tables.
+    <LI>
+      There are '<CODE>glyf</CODE>' / '<CODE>loca</CODE>' tables with entries for
+      every glyph. If used the entries will produce blank glyphs (spaces).
+    <LI>
+      There is an '<CODE>EBSC</CODE>' table which maps common pixel sizes to the
+      supplied pixel sizes. (so if a user asked for a 20 pixel strike s/he might
+      get an 18 pixel strike -- as opposed to getting a set of blanks.
+    <LI>
+      There is a '<CODE>head</CODE>' table (not a '<CODE>bhed</CODE>')
+    <LI>
+      Since these fonts try to look like scaleable fonts (to MS anyway) they contain
+      metrics tables.
+  </UL>
+</DIV>
+</BODY></HTML>

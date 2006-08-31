@@ -549,13 +549,14 @@ void _ggadgetSetRects(GGadget *g, GRect *outer, GRect *inner, int xjust, int yju
 
     if ( g->inner.width==0 ) {
 	if ( inner->width<g->r.width ) {
+	    g->inner.width = g->r.width - 2*bp;
 	    if ( xjust==-1 )
 		g->inner.x = g->r.x + bp;
-	    else if ( xjust==0 )
+	    else if ( xjust==0 ) {
 		g->inner.x = g->r.x + (g->r.width-inner->width)/2;
-	    else
-		g->inner.x = g->r.x + (g->r.width-bp-inner->width);
-	    g->inner.width = inner->width;
+		g->inner.width = inner->width;
+	    } else
+		g->inner.x = g->r.x + (g->r.width-bp-g->inner.width);
 	} else {
 	    g->inner.x = g->r.x;
 	    g->inner.width = g->r.width;
