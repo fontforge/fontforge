@@ -29,24 +29,37 @@
     <A NAME="Apple">Apple</A>
   </H2>
   <P>
-  Apple documents the existance of a bitmap only format, and gives some hints
+  Apple documents the existence of a bitmap only format, and gives some hints
   about the requirements of it. Their documentation is far from complete and
   the following is determined in part by that documentation, in part by examining
   the (few) bitmap only fonts of theirs I have found, and in part by error
   messages given by some of their tools.
   <UL>
     <LI>
-      As is expected on Apple, the bitmap data reside in '<CODE>bloc</CODE>' and
-      '<CODE>bdat</CODE>' tables.
+      As is expected on Apple, the bitmap data reside in
+      '<CODE><A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6bloc.html">bloc</A></CODE>'
+      and
+      '<CODE><A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6bdat.html">bdat</A></CODE>'
+      tables.<BR>
+      (These are identical in format to the
+      '<CODE><A HREF="http://partners.adobe.com/public/developer/opentype/index_eblc.html">EBLC</A></CODE>'
+      and
+      '<CODE><A HREF="http://partners.adobe.com/public/developer/opentype/index_ebdt.html">EBDT</A></CODE>'
+      tables used in OpenType)
     <LI>
-      The '<CODE>head</CODE>' table is replaced by a '<CODE>bhed</CODE>' table
-      which is byte for byte identical
+      The
+      '<CODE><A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6head.html">head</A></CODE>'
+      table is replaced by a
+      '<CODE><A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6head.html">bhed</A></CODE>'
+      table which is byte for byte identical
     <LI>
-      There are no '<CODE>glyf</CODE>', '<CODE>loca</CODE>' nor '<CODE>CFF</CODE>
-      ' tables.
+      There are no
+      '<CODE><A HREF="http://partners.adobe.com/public/developer/opentype/index_glyf.html">glyf</A></CODE>',
+      '<CODE><A HREF="http://partners.adobe.com/public/developer/opentype/index_loca.html">loca</A></CODE>'
+      nor '<CODE>CFF</CODE> ' tables.
     <LI>
-      There is no '<CODE>hhea</CODE>' nor '<CODE>hmtx</CODE>' table (metrics data
-      are provided in the bitmap strikes themselves)
+      There are no '<CODE>hhea</CODE>' nor '<CODE>hmtx</CODE>' tables (metrics
+      data are provided in the bitmap strikes themselves)
     <LI>
       (Presumably there are no '<CODE>vhea</CODE>' nor '<CODE>vmtx</CODE>' tables
       either)
@@ -55,17 +68,27 @@
     <A NAME="X11">X11</A> (Unix/Linux)
   </H2>
   <P>
-  The X consortium have divised their own format which they call "OpenType
+  The X consortium have devised their own format which they call "OpenType
   Bitmap" with extension .otb.
   <UL>
     <LI>
-      The bitmap data reside in '<CODE>EBLC</CODE>' and '<CODE>EBDT</CODE>' tables.
+      The bitmap data reside in
+      '<CODE><A HREF="http://partners.adobe.com/public/developer/opentype/index_eblc.html">EBLC</A></CODE>'
+      and
+      '<CODE><A HREF="http://partners.adobe.com/public/developer/opentype/index_ebdt.html">EBDT</A></CODE>'
+      tables.
     <LI>
-      There is a zero length '<CODE>glyf</CODE>' table
+      There is a zero length
+      '<CODE><A HREF="http://partners.adobe.com/public/developer/opentype/index_glyf.html">glyf</A></CODE>'
+      table
     <LI>
-      There is a '<CODE>loca</CODE>' table with one entry in it
+      There is a
+      '<CODE><A HREF="http://partners.adobe.com/public/developer/opentype/index_loca.html">loca</A></CODE>'
+      table with one entry in it
     <LI>
-      There is a '<CODE>head</CODE>' table (not a '<CODE>bhed</CODE>')
+      There is a
+      '<CODE><A HREF="http://partners.adobe.com/public/developer/opentype/index_head.html">head</A></CODE>'
+      table (not a '<CODE>bhed</CODE>') 
 	<HR>
     <LI>
       The fonts I generate also contain the metrics tables as appropriate
@@ -78,18 +101,30 @@
   a faked up format which should work in most cases
   <UL>
     <LI>
-      The bitmap data reside in '<CODE>EBLC</CODE>' and '<CODE>EBDT</CODE>' tables.
+      The bitmap data reside in
+      '<CODE><A HREF="http://partners.adobe.com/public/developer/opentype/index_eblc.html">EBLC</A></CODE>'
+      and
+      '<CODE><A HREF="http://partners.adobe.com/public/developer/opentype/index_ebdt.html">EBDT</A></CODE>'
+      tables.
     <LI>
-      There are '<CODE>glyf</CODE>' / '<CODE>loca</CODE>' tables with entries for
-      every glyph. If used the entries will produce blank glyphs (spaces).
+      There are
+      '<CODE><A HREF="http://partners.adobe.com/public/developer/opentype/index_glyf.html">glyf</A></CODE>'
+      /
+      '<CODE><A HREF="http://partners.adobe.com/public/developer/opentype/index_loca.html">loca</A></CODE>'
+      tables with entries for every glyph. If used the entries will produce blank
+      glyphs (spaces).
     <LI>
-      There is an '<CODE>EBSC</CODE>' table which maps common pixel sizes to the
-      supplied pixel sizes. (so if a user asked for a 20 pixel strike s/he might
-      get an 18 pixel strike -- as opposed to getting a set of blanks.
+      There is an
+      '<CODE><A HREF="http://partners.adobe.com/public/developer/opentype/index_ebsc.html">EBSC</A></CODE>'
+      table which maps common pixel sizes to the supplied pixel sizes. (so if a
+      user asked for a 20 pixel strike s/he might get an 18 pixel strike -- as
+      opposed to getting a set of blanks.
     <LI>
-      There is a '<CODE>head</CODE>' table (not a '<CODE>bhed</CODE>')
+      There is a
+      '<CODE><A HREF="http://partners.adobe.com/public/developer/opentype/index_head.html">head</A></CODE>'
+      table (not a '<CODE>bhed</CODE>')
     <LI>
-      Since these fonts try to look like scaleable fonts (to MS anyway) they contain
+      Since these fonts try to look like scalable fonts (to MS anyway) they contain
       metrics tables.
   </UL>
 </DIV>
