@@ -722,8 +722,8 @@ static void circlearcsto(real a1, real a2, real cx, real cy, real r,
     int a;
     real last;
 
-    while ( a1<0 ) a1 += 360; while ( a2<0 ) a2 += 360;
-    while ( a1>=360 ) a1 -= 360; while ( a2>=360 ) a2 -= 360;
+    while ( a1<0 ) { a1 += 360; a2 +=360;} while ( a2-a1<=-360 ) a2 += 360;
+    while ( a1>360 ) { a1 -= 360; a2 -= 360; } while ( a2-a1>360 ) a2 -= 360;
     if ( !clockwise ) {
 	if ( a1>a2 )
 	    a2 += 360;
