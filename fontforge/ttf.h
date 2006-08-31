@@ -617,6 +617,7 @@ struct alltabs {
     unsigned int opentypemode: 1;	/* Where apple & ms differ do things opentype's way (bitmaps, name table PostScript) */
 	    /* If both are set then try to generate both types of tables. Some things can't be fudged though (name table postscript) */
     unsigned int msbitmaps: 1;
+    unsigned int applebitmaps: 1;
     unsigned int otbbitmaps: 1;
     unsigned int isotf: 1;
     unsigned int dovariations: 1;	/* Output Apple *var tables (for mm fonts) */

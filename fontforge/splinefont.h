@@ -1261,8 +1261,8 @@ extern struct pschars *SplineFont2ChrsSubrs2(SplineFont *sf, int nomwid,
 extern struct pschars *CID2ChrsSubrs2(SplineFont *cidmaster,struct fd2data *fds,
 	int flags, struct pschars **_glbls);
 extern struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds,int flags);
-enum bitmapformat { bf_bdf, bf_ttf, bf_sfnt_dfont, 
-	bf_nfntmacbin, /*bf_nfntdfont, */bf_fon, bf_fnt, bf_otb, bf_palm,
+enum bitmapformat { bf_bdf, bf_ttf, bf_sfnt_dfont, bf_sfnt_ms, bf_otb,
+	bf_nfntmacbin, /*bf_nfntdfont, */bf_fon, bf_fnt, bf_palm,
 	bf_ptype3,
 	bf_none };
 extern const char *GetAuthor(void);
