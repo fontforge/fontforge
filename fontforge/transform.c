@@ -36,16 +36,15 @@ typedef struct transdata {
     void *userdata;
     void (*transfunc)(void *,real trans[6],int otype,BVTFunc *,enum fvtrans_flags);
     int  (*getorigin)(void *,BasePoint *bp,int otype);
-    GWindow tblock[TCnt];
     GWindow gw;
     int done;
 } TransData;
 
-#define CID_Origin		1101
-#define CID_DoBackground	1102
-#define CID_Round2Int		1103
-#define CID_DoKerns		1104
-#define CID_DoSimplePos		1105
+#define CID_Origin		3001
+#define CID_DoBackground	3002
+#define CID_Round2Int		3003
+#define CID_DoKerns		3004
+#define CID_DoSimplePos		3005
 
 #define CID_Type	1001
 #define CID_XMove	1002
@@ -71,10 +70,15 @@ typedef struct transdata {
 #define CID_First	CID_Type
 #define CID_Last	CID_YAxis
 
+#define CID_ClockBox	1021
+#define CID_HVBox	1022
+#define CID_HBox	1023
+
 #define TBlock_Width	270
 #define TBlock_Height	40
 #define TBlock_Top	32
 #define TBlock_XStart	130
+#define TBlock_CIDOffset	100
 
 static GTextInfo origin[] = {
     { (unichar_t *) N_("Glyph Origin"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
@@ -119,7 +123,6 @@ void skewselect(BVTFunc *bvtf,real t) {
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static int Trans_OK(GGadget *g, GEvent *e) {
-    GWindow tw;
     real transform[6], trans[6], t[6];
     double angle, angle2;
     int i, index, err;
@@ -150,8 +153,8 @@ static int Trans_OK(GGadget *g, GEvent *e) {
 	    transform[5] = -base.y;
 	}
 	for ( i=0; i<TCnt; ++i ) {
-	    tw = td->tblock[i];
-	    index =  GGadgetGetFirstListSelectedItem( GWidgetGetControl(tw,CID_Type));
+	    index =  GGadgetGetFirstListSelectedItem(
+		    GWidgetGetControl(td->gw,CID_Type+i*TBlock_CIDOffset));
 	    trans[0] = trans[3] = 1.0;
 	    trans[1] = trans[2] = trans[4] = trans[5] = 0;
 	    err = 0;
@@ -159,13 +162,13 @@ static int Trans_OK(GGadget *g, GEvent *e) {
 	      case 0:		/* Do Nothing */
 	      break;
 	      case 1:		/* Move */
-		trans[4] = GetReal8(tw,CID_XMove,_("X Movement"),&err);
-		trans[5] = GetReal8(tw,CID_YMove,_("Y Movement"),&err);
+		trans[4] = GetReal8(td->gw,CID_XMove+i*TBlock_CIDOffset,_("X Movement"),&err);
+		trans[5] = GetReal8(td->gw,CID_YMove+i*TBlock_CIDOffset,_("Y Movement"),&err);
 		bvts[bvpos].x = trans[4]; bvts[bvpos].y = trans[5]; bvts[bvpos++].func = bvt_transmove;
 	      break;
 	      case 2:		/* Rotate */
-		angle = GetReal8(tw,CID_Angle,_("Rotation Angle"),&err);
-		if ( GGadgetIsChecked( GWidgetGetControl(tw,CID_Clockwise)) )
+		angle = GetReal8(td->gw,CID_Angle+i*TBlock_CIDOffset,_("Rotation Angle"),&err);
+		if ( GGadgetIsChecked( GWidgetGetControl(td->gw,CID_Clockwise+i*TBlock_CIDOffset)) )
 		    angle = -angle;
 		if ( fmod(angle,90)!=0 )
 		    bvts[0].func = bvt_none;		/* Bad trans=> No trans */
@@ -181,16 +184,16 @@ static int Trans_OK(GGadget *g, GEvent *e) {
 		trans[2] = -(trans[1] = sin(angle));
 	      break;
 	      case 3:		/* Scale Uniformly */
-		trans[0] = trans[3] = GetReal8(tw,CID_Scale,_("Scale Factor"),&err)/100.0;
+		trans[0] = trans[3] = GetReal8(td->gw,CID_Scale+i*TBlock_CIDOffset,_("Scale Factor"),&err)/100.0;
 		bvts[0].func = bvt_none;		/* Bad trans=> No trans */
 	      break;
 	      case 4:		/* Scale */
-		trans[0] = GetReal8(tw,CID_XScale,_("X Scale Factor"),&err)/100.0;
-		trans[3] = GetReal8(tw,CID_YScale,_("Y Scale Factor"),&err)/100.0;
+		trans[0] = GetReal8(td->gw,CID_XScale+i*TBlock_CIDOffset,_("X Scale Factor"),&err)/100.0;
+		trans[3] = GetReal8(td->gw,CID_YScale+i*TBlock_CIDOffset,_("Y Scale Factor"),&err)/100.0;
 		bvts[0].func = bvt_none;		/* Bad trans=> No trans */
 	      break;
 	      case 5:		/* Flip */
-		if ( GGadgetIsChecked( GWidgetGetControl(tw,CID_Horizontal)) ) {
+		if ( GGadgetIsChecked( GWidgetGetControl(td->gw,CID_Horizontal+i*TBlock_CIDOffset)) ) {
 		    trans[0] = -1;
 		    bvts[bvpos++].func = bvt_fliph;
 		} else {
@@ -199,16 +202,16 @@ static int Trans_OK(GGadget *g, GEvent *e) {
 		}
 	      break;
 	      case 6:		/* Skew */
-		angle = GetReal8(tw,CID_SkewAng,_("Skew Angle"),&err);
-		if ( GGadgetIsChecked( GWidgetGetControl(tw,CID_Clockwise)) )
+		angle = GetReal8(td->gw,CID_SkewAng+i*TBlock_CIDOffset,_("Skew Angle"),&err);
+		if ( GGadgetIsChecked( GWidgetGetControl(td->gw,CID_Clockwise+i*TBlock_CIDOffset)) )
 		    angle = -angle;
 		angle *= 3.1415926535897932/180;
 		trans[2] = tan(angle);
 		skewselect(&bvts[bvpos],trans[2]); ++bvpos;
 	      break;
 	      case 7:		/* 3D rotate */
-		angle =  GetReal8(tw,CID_XAxis,_("Rotation about X Axis"),&err) * 3.1415926535897932/180;
-		angle2 = GetReal8(tw,CID_YAxis,_("Rotation about Y Axis"),&err) * 3.1415926535897932/180;
+		angle =  GetReal8(td->gw,CID_XAxis+i*TBlock_CIDOffset,_("Rotation about X Axis"),&err) * 3.1415926535897932/180;
+		angle2 = GetReal8(td->gw,CID_YAxis+i*TBlock_CIDOffset,_("Rotation about Y Axis"),&err) * 3.1415926535897932/180;
 		trans[0] = cos(angle2);
 		trans[3] = cos(angle );
 		bvts[0].func = bvt_none;		/* Bad trans=> No trans */
@@ -280,6 +283,7 @@ return( true );
 static int Trans_TypeChange(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
 	GWindow bw = GGadgetGetWindow(g);
+	int offset = GGadgetGetCid(g)-CID_Type;
 	int index = GGadgetGetFirstListSelectedItem(g);
 	int mask = (intpt) transformtypes[index].userdata;
 	int i;
@@ -296,29 +300,30 @@ static int Trans_TypeChange(GGadget *g, GEvent *e) {
 	    if ( mask&1 ) {		/* Move */
 		sprintf( buf, "%.1f", (double) xoff );
 		uc_strcpy(ubuf,buf);
-		GGadgetSetTitle(GWidgetGetControl(bw,CID_XMove), ubuf );
+		GGadgetSetTitle(GWidgetGetControl(bw,CID_XMove+offset), ubuf );
 		sprintf( buf, "%.1f", (double) yoff );
 		uc_strcpy(ubuf,buf);
-		GGadgetSetTitle(GWidgetGetControl(bw,CID_YMove), ubuf );
+		GGadgetSetTitle(GWidgetGetControl(bw,CID_YMove+offset), ubuf );
 	    } else {
 		sprintf( buf, "%.0f", atan2(yoff,xoff)*180/3.1415926535897932 );
 		uc_strcpy(ubuf,buf);
-		GGadgetSetTitle(GWidgetGetControl(bw,(mask&0x2)?CID_Angle:CID_SkewAng), ubuf );
-		GGadgetSetChecked(GWidgetGetControl(bw,CID_Clockwise), false );
-		GGadgetSetChecked(GWidgetGetControl(bw,CID_CounterClockwise), true );
+		GGadgetSetTitle(GWidgetGetControl(bw,((mask&0x2)?CID_Angle:CID_SkewAng)+offset), ubuf );
+		GGadgetSetChecked(GWidgetGetControl(bw,CID_Clockwise+offset), false );
+		GGadgetSetChecked(GWidgetGetControl(bw,CID_CounterClockwise+offset), true );
 	    }
 	}
 
 	for ( i=CID_First; i<=CID_Last; ++i ) {
 	    GGadget *sg;
-	    sg = GWidgetGetControl(bw,i);
+	    sg = GWidgetGetControl(bw,i+offset);
 	    GGadgetSetVisible(sg, ( ((intpt) GGadgetGetUserData(sg))&mask )?1:0);
 	}
 	if ( selcid[index]!=0 ) {
-	    GGadget *tf = GWidgetGetControl(bw,selcid[index]);
+	    GGadget *tf = GWidgetGetControl(bw,selcid[index]+offset);
 	    GWidgetIndicateFocusGadget(tf);
 	    GTextFieldSelect(tf,0,-1);
 	}
+	GWidgetToDesiredSize(bw);
 	GDrawRequestExpose(bw,NULL,false);
     }
 return( true );
@@ -341,35 +346,19 @@ return( false );
 return( true );
 }
 
-static void MakeTransBlock(TransData *td,int bnum) {
-    GRect pos;
-    GWindow gw;
-    GWindowAttrs wattrs;
-    GGadgetCreateData gcd[23];
-    GTextInfo label[23];
-
-    memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor;
-    wattrs.event_masks = ~(1<<et_charup);
-    wattrs.cursor = ct_pointer;
-    pos.x = 0; pos.y = GDrawPointsToPixels(NULL,TBlock_Top+bnum*TBlock_Height);
-    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,TBlock_Width));
-    pos.height = GDrawPointsToPixels(NULL,TBlock_Height);
-    td->tblock[bnum] = gw = GDrawCreateSubWindow(td->gw,&pos,NULL,td,&wattrs);
-
-    memset(&label,0,sizeof(label));
-    memset(&gcd,0,sizeof(gcd));
+static GGadgetCreateData *MakeTransBlock(TransData *td,int bnum,
+	GGadgetCreateData *gcd, GTextInfo *label, GGadgetCreateData **array) {
+    int offset = bnum*TBlock_CIDOffset;
 
     gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 9;
     gcd[0].gd.flags = gg_visible | gg_enabled;
-    gcd[0].gd.label = &transformtypes[bnum==0?1:0];
+    gcd[0].gd.label = &transformtypes[0];
     gcd[0].gd.u.list = transformtypes;
-    gcd[0].gd.cid = CID_Type;
+    gcd[0].gd.cid = CID_Type+offset;
     gcd[0].creator = GListButtonCreate;
     gcd[0].data = (void *) -1;
     gcd[0].gd.handle_controlevent = Trans_TypeChange;
-    transformtypes[bnum==0].selected = true;
-    transformtypes[bnum!=0].selected = false;
+    transformtypes[0].selected = true;
 
     label[1].text = (unichar_t *) _("_X");
     label[1].text_is_1byte = true;
@@ -378,7 +367,7 @@ static void MakeTransBlock(TransData *td,int bnum) {
     gcd[1].gd.pos.x = TBlock_XStart; gcd[1].gd.pos.y = 15; 
     gcd[1].gd.flags = bnum==0? (gg_enabled|gg_visible) : gg_enabled;
     gcd[1].data = (void *) 0x49;
-    gcd[1].gd.cid = CID_XLab;
+    gcd[1].gd.cid = CID_XLab+offset;
     gcd[1].creator = GLabelCreate;
 
     label[2].text = (unichar_t *) "0";
@@ -387,7 +376,7 @@ static void MakeTransBlock(TransData *td,int bnum) {
     gcd[2].gd.pos.x = TBlock_XStart+10; gcd[2].gd.pos.y = 9;  gcd[2].gd.pos.width = 40;
     gcd[2].gd.flags = bnum==0? (gg_enabled|gg_visible) : gg_enabled;
     gcd[2].data = (void *) 0x1;
-    gcd[2].gd.cid = CID_XMove;
+    gcd[2].gd.cid = CID_XMove+offset;
     gcd[2].creator = GTextFieldCreate;
 
     label[3].text = (unichar_t *) _("_Y");
@@ -397,7 +386,7 @@ static void MakeTransBlock(TransData *td,int bnum) {
     gcd[3].gd.pos.x = TBlock_XStart+70; gcd[3].gd.pos.y = 15; 
     gcd[3].gd.flags = bnum==0? (gg_enabled|gg_visible) : gg_enabled;
     gcd[3].data = (void *) 0x49;
-    gcd[3].gd.cid = CID_YLab;
+    gcd[3].gd.cid = CID_YLab+offset;
     gcd[3].creator = GLabelCreate;
 
     label[4].text = (unichar_t *) "0";
@@ -406,7 +395,7 @@ static void MakeTransBlock(TransData *td,int bnum) {
     gcd[4].gd.pos.x = TBlock_XStart+80; gcd[4].gd.pos.y = 9;  gcd[4].gd.pos.width = 40;
     gcd[4].gd.flags = bnum==0? (gg_enabled|gg_visible) : gg_enabled;
     gcd[4].data = (void *) 0x1;
-    gcd[4].gd.cid = CID_YMove;
+    gcd[4].gd.cid = CID_YMove+offset;
     gcd[4].creator = GTextFieldCreate;
 
     label[5].text = (unichar_t *) "100";
@@ -415,7 +404,7 @@ static void MakeTransBlock(TransData *td,int bnum) {
     gcd[5].gd.pos.x = TBlock_XStart+10; gcd[5].gd.pos.y = 9;  gcd[5].gd.pos.width = 40;
     gcd[5].gd.flags = gg_enabled;
     gcd[5].data = (void *) 0x8;
-    gcd[5].gd.cid = CID_XScale;
+    gcd[5].gd.cid = CID_XScale+offset;
     gcd[5].creator = GTextFieldCreate;
 
     label[6].text = (unichar_t *) "100";
@@ -424,7 +413,7 @@ static void MakeTransBlock(TransData *td,int bnum) {
     gcd[6].gd.pos.x = TBlock_XStart+80; gcd[6].gd.pos.y = 9;  gcd[6].gd.pos.width = 40;
     gcd[6].gd.flags = gg_enabled;
     gcd[6].data = (void *) 0x8;
-    gcd[6].gd.cid = CID_YScale;
+    gcd[6].gd.cid = CID_YScale+offset;
     gcd[6].creator = GTextFieldCreate;
 
     label[7].text = (unichar_t *) "100";
@@ -433,7 +422,7 @@ static void MakeTransBlock(TransData *td,int bnum) {
     gcd[7].gd.pos.x = TBlock_XStart+10; gcd[7].gd.pos.y = 9;  gcd[7].gd.pos.width = 40;
     gcd[7].gd.flags = gg_enabled;
     gcd[7].data = (void *) 0x4;
-    gcd[7].gd.cid = CID_Scale;
+    gcd[7].gd.cid = CID_Scale+offset;
     gcd[7].creator = GTextFieldCreate;
 
     label[8].text = (unichar_t *) U_("° Clockwise");
@@ -442,7 +431,7 @@ static void MakeTransBlock(TransData *td,int bnum) {
     gcd[8].gd.pos.x = TBlock_XStart+53; gcd[8].gd.pos.y = 2; gcd[8].gd.pos.height = 12;
     gcd[8].gd.flags = gg_enabled;
     gcd[8].data = (void *) 0x22;
-    gcd[8].gd.cid = CID_Clockwise;
+    gcd[8].gd.cid = CID_Clockwise+offset;
     gcd[8].creator = GRadioCreate;
 
 /* GT: Sometimes spelled Widdershins. An old word which means counter clockwise. */
@@ -453,7 +442,7 @@ static void MakeTransBlock(TransData *td,int bnum) {
     gcd[9].gd.pos.x = TBlock_XStart+53; gcd[9].gd.pos.y = 17; gcd[9].gd.pos.height = 12;
     gcd[9].gd.flags = gg_enabled | gg_cb_on;
     gcd[9].data = (void *) 0x22;
-    gcd[9].gd.cid = CID_CounterClockwise;
+    gcd[9].gd.cid = CID_CounterClockwise+offset;
     gcd[9].creator = GRadioCreate;
 
     label[10].text = (unichar_t *) "180";
@@ -462,7 +451,7 @@ static void MakeTransBlock(TransData *td,int bnum) {
     gcd[10].gd.pos.x = TBlock_XStart+10; gcd[10].gd.pos.y = 9;  gcd[10].gd.pos.width = 40;
     gcd[10].gd.flags = gg_enabled;
     gcd[10].data = (void *) 0x2;
-    gcd[10].gd.cid = CID_Angle;
+    gcd[10].gd.cid = CID_Angle+offset;
     gcd[10].creator = GTextFieldCreate;
 
     label[11].text = (unichar_t *) "10";	/* -10 if we default clockwise */
@@ -471,7 +460,7 @@ static void MakeTransBlock(TransData *td,int bnum) {
     gcd[11].gd.pos.x = TBlock_XStart+10; gcd[11].gd.pos.y = 9;  gcd[11].gd.pos.width = 40;
     gcd[11].gd.flags = gg_enabled;
     gcd[11].data = (void *) 0x20;
-    gcd[11].gd.cid = CID_SkewAng;
+    gcd[11].gd.cid = CID_SkewAng+offset;
     gcd[11].creator = GTextFieldCreate;
 
     label[12].text = (unichar_t *) _("Horizontal");
@@ -480,7 +469,7 @@ static void MakeTransBlock(TransData *td,int bnum) {
     gcd[12].gd.pos.x = TBlock_XStart; gcd[12].gd.pos.y = 2; gcd[12].gd.pos.height = 12;
     gcd[12].gd.flags = gg_enabled | gg_cb_on;
     gcd[12].data = (void *) 0x10;
-    gcd[12].gd.cid = CID_Horizontal;
+    gcd[12].gd.cid = CID_Horizontal+offset;
     gcd[12].creator = GRadioCreate;
 
     label[13].text = (unichar_t *) _("Vertical");
@@ -489,7 +478,7 @@ static void MakeTransBlock(TransData *td,int bnum) {
     gcd[13].gd.pos.x = TBlock_XStart; gcd[13].gd.pos.y = 17; gcd[13].gd.pos.height = 12;
     gcd[13].gd.flags = gg_enabled;
     gcd[13].data = (void *) 0x10;
-    gcd[13].gd.cid = CID_Vertical;
+    gcd[13].gd.cid = CID_Vertical+offset;
     gcd[13].creator = GRadioCreate;
 
     label[14].text = (unichar_t *) _("%");
@@ -498,7 +487,7 @@ static void MakeTransBlock(TransData *td,int bnum) {
     gcd[14].gd.pos.x = TBlock_XStart+51; gcd[14].gd.pos.y = 15; 
     gcd[14].gd.flags = gg_enabled;
     gcd[14].data = (void *) 0xc;
-    gcd[14].gd.cid = CID_XPercent;
+    gcd[14].gd.cid = CID_XPercent+offset;
     gcd[14].creator = GLabelCreate;
 
     label[15].text = (unichar_t *) _("%");
@@ -507,7 +496,7 @@ static void MakeTransBlock(TransData *td,int bnum) {
     gcd[15].gd.pos.x = TBlock_XStart+121; gcd[15].gd.pos.y = 15; 
     gcd[15].gd.flags = gg_enabled;
     gcd[15].data = (void *) 0x8;
-    gcd[15].gd.cid = CID_YPercent;
+    gcd[15].gd.cid = CID_YPercent+offset;
     gcd[15].creator = GLabelCreate;
 
     label[16].text = (unichar_t *) U_("°");
@@ -516,7 +505,7 @@ static void MakeTransBlock(TransData *td,int bnum) {
     gcd[16].gd.pos.x = TBlock_XStart+51; gcd[16].gd.pos.y = 15; 
     gcd[16].gd.flags = gg_enabled;
     gcd[16].data = (void *) 0x40;
-    gcd[16].gd.cid = CID_XDegree;
+    gcd[16].gd.cid = CID_XDegree+offset;
     gcd[16].creator = GLabelCreate;
 
     label[17].text = (unichar_t *) U_("°");
@@ -525,7 +514,7 @@ static void MakeTransBlock(TransData *td,int bnum) {
     gcd[17].gd.pos.x = TBlock_XStart+121; gcd[17].gd.pos.y = 15; 
     gcd[17].gd.flags = gg_enabled;
     gcd[17].data = (void *) 0x40;
-    gcd[17].gd.cid = CID_YDegree;
+    gcd[17].gd.cid = CID_YDegree+offset;
     gcd[17].creator = GLabelCreate;
 
     label[18].text = (unichar_t *) "45";
@@ -534,7 +523,7 @@ static void MakeTransBlock(TransData *td,int bnum) {
     gcd[18].gd.pos.x = TBlock_XStart+10; gcd[18].gd.pos.y = 9;  gcd[18].gd.pos.width = 40;
     gcd[18].gd.flags = gg_enabled;
     gcd[18].data = (void *) 0x40;
-    gcd[18].gd.cid = CID_XAxis;
+    gcd[18].gd.cid = CID_XAxis+offset;
     gcd[18].creator = GTextFieldCreate;
 
     label[19].text = (unichar_t *) "0";
@@ -543,17 +532,50 @@ static void MakeTransBlock(TransData *td,int bnum) {
     gcd[19].gd.pos.x = TBlock_XStart+80; gcd[19].gd.pos.y = 9;  gcd[19].gd.pos.width = 40;
     gcd[19].gd.flags = gg_enabled;
     gcd[19].data = (void *) 0x40;
-    gcd[19].gd.cid = CID_YAxis;
+    gcd[19].gd.cid = CID_YAxis+offset;
     gcd[19].creator = GTextFieldCreate;
 
-    gcd[20].gd.pos.x = 2; gcd[20].gd.pos.y = 1;
-    gcd[20].gd.pos.width = TBlock_Width-3; gcd[20].gd.pos.height = TBlock_Height-2;
-    gcd[20].gd.flags = gg_enabled | gg_visible;
-    gcd[20].data = (void *) -1;
-    gcd[20].creator = GGroupCreate;
 
-    GGadgetsCreate(gw,gcd);
-    GDrawSetVisible(gw,true);
+    array[0] = &gcd[12]; array[1] = &gcd[13]; array[2] = NULL;
+    array[3] = &gcd[8]; array[4] = &gcd[9]; array[5] = NULL;
+
+    gcd[20].gd.flags = gg_enabled|gg_visible;
+    gcd[20].gd.u.boxelements = array;
+    gcd[20].gd.cid = CID_HVBox+offset;
+    gcd[20].creator = GVBoxCreate;
+
+    gcd[21].gd.flags = gg_enabled|gg_visible;
+    gcd[21].gd.u.boxelements = array+3;
+    gcd[21].gd.cid = CID_ClockBox+offset;
+    gcd[21].creator = GVBoxCreate;
+
+    array[6] = &gcd[0];
+    array[7] = &gcd[20];
+    array[8] = &gcd[1];
+    array[9] = &gcd[2];
+    array[10] = &gcd[5];
+    array[11] = &gcd[7];
+    array[12] = &gcd[10];
+    array[13] = &gcd[11];
+    array[14] = &gcd[18];
+    array[15] = &gcd[14];
+    array[16] = &gcd[16];
+    array[17] = &gcd[21];
+    array[18] = &gcd[3];
+    array[19] = &gcd[4];
+    array[20] = &gcd[6];
+    array[21] = &gcd[19];
+    array[22] = &gcd[15];
+    array[23] = &gcd[17];
+    array[24] = GCD_Glue;
+    array[25] = NULL;
+    array[26] = NULL;
+
+    gcd[22].gd.flags = gg_enabled|gg_visible;
+    gcd[22].gd.u.boxelements = array+6;
+    gcd[22].gd.cid = CID_HBox+offset;
+    gcd[22].creator = GHVGroupCreate;
+return( gcd+22 );
 }
 
 void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *,enum fvtrans_flags),
@@ -562,10 +584,10 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[9];
-    GTextInfo label[8];
+    GGadgetCreateData gcd[10+TCnt*24], boxes[4], *subarray[TCnt*27], *array[2*(TCnt+7)+2], *buttons[9], *origarray[4];
+    GTextInfo label[8+TCnt*24];
     static TransData td;
-    int i, y;
+    int i, y, gci, subai, ai;
     int32 len;
     GGadget *orig;
     BasePoint junk;
@@ -602,85 +624,137 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 
 	memset(&label,0,sizeof(label));
 	memset(&gcd,0,sizeof(gcd));
+	memset(&boxes,0,sizeof(boxes));
 
+	label[0].text = (unichar_t *) _("Origin:");
+	label[0].text_is_1byte = true;
+	label[0].text_in_resource = true;
+	gcd[0].gd.label = &label[0];
 	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 4;
 	gcd[0].gd.flags = (getorigin==NULL) ? gg_visible : (gg_visible | gg_enabled);
-	gcd[0].gd.label = &origin[1];
-	gcd[0].gd.u.list = origin;
-	gcd[0].gd.cid = CID_Origin;
-	gcd[0].creator = GListButtonCreate;
+	gcd[0].creator = GLabelCreate;
+
+	gcd[1].gd.pos.x = 5; gcd[1].gd.pos.y = 4;
+	gcd[1].gd.flags = (getorigin==NULL) ? gg_visible : (gg_visible | gg_enabled);
+	gcd[1].gd.label = &origin[1];
+	gcd[1].gd.u.list = origin;
+	gcd[1].gd.cid = CID_Origin;
+	gcd[1].creator = GListButtonCreate;
 	origin[1].selected = true;
 
-	i = 1; y = TBlock_Top+TCnt*TBlock_Height+4;
+	origarray[0] = &gcd[0]; origarray[1] = &gcd[1]; origarray[2] = GCD_Glue; origarray[3] = NULL;
 
-	    gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = y;
-	    gcd[i].gd.flags = (enableback&1) ? (gg_visible | gg_enabled) : gg_visible;
-	    label[i].text = (unichar_t *) _("Transform _Background Too");
-	    label[i].text_is_1byte = true;
-	    label[i].text_in_resource = true;
-	    gcd[i].gd.label = &label[i];
-	    gcd[i].gd.cid = CID_DoBackground;
-	    gcd[i++].creator = GCheckBoxCreate;
+	boxes[3].gd.flags = gg_enabled|gg_visible;
+	boxes[3].gd.u.boxelements = origarray;
+	boxes[3].creator = GHBoxCreate;
+
+	array[0] = &boxes[3]; array[1] = NULL;
+
+	gci = 2; subai = 0; ai = 2;
+	for ( i=0; i<TCnt; ++i ) {
+	    array[ai++] = MakeTransBlock(&td,i,gcd+gci,label+gci,subarray+subai);
+	    array[ai++] = NULL;
+	    gci += 23; subai += 27;
+	}
+
+	y = TBlock_Top+TCnt*TBlock_Height+4;
+
+	    gcd[gci].gd.pos.x = 10; gcd[gci].gd.pos.y = y;
+	    gcd[gci].gd.flags = (enableback&1) ? (gg_visible | gg_enabled) : gg_visible;
+	    label[gci].text = (unichar_t *) _("Transform _Background Too");
+	    label[gci].text_is_1byte = true;
+	    label[gci].text_in_resource = true;
+	    gcd[gci].gd.label = &label[gci];
+	    gcd[gci].gd.cid = CID_DoBackground;
+	    gcd[gci++].creator = GCheckBoxCreate;
+	    array[ai++] = &gcd[gci-1]; array[ai++] = NULL;
 	    y += 16;
 
-	    gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = y;
-	    gcd[i].gd.flags = gg_visible | (enableback&2 ? gg_enabled : 0) |
+	    gcd[gci].gd.pos.x = 10; gcd[gci].gd.pos.y = y;
+	    gcd[gci].gd.flags = gg_visible | (enableback&2 ? gg_enabled : 0) |
 		    (enableback&4 ? gg_cb_on : 0);
-	    label[i].text = (unichar_t *) _("Transform kerning _classes too");
-	    label[i].text_is_1byte = true;
-	    label[i].text_in_resource = true;
-	    gcd[i].gd.label = &label[i];
-	    gcd[i].gd.cid = CID_DoKerns;
-	    gcd[i++].creator = GCheckBoxCreate;
+	    label[gci].text = (unichar_t *) _("Transform kerning _classes too");
+	    label[gci].text_is_1byte = true;
+	    label[gci].text_in_resource = true;
+	    gcd[gci].gd.label = &label[gci];
+	    gcd[gci].gd.cid = CID_DoKerns;
+	    gcd[gci++].creator = GCheckBoxCreate;
+	    array[ai++] = &gcd[gci-1]; array[ai++] = NULL;
 	    y += 16;
 
-	    gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = y;
-	    gcd[i].gd.flags = gg_visible |
+	    gcd[gci].gd.pos.x = 10; gcd[gci].gd.pos.y = y;
+	    gcd[gci].gd.flags = gg_visible |
 		    (enableback&1 ? gg_enabled : 0) |
 		    (enableback&2 ? gg_cb_on : 0);
-	    label[i].text = (unichar_t *) _("Transform simple positioning features & _kern pairs");
-	    label[i].text_is_1byte = true;
-	    gcd[i].gd.label = &label[i];
-	    gcd[i].gd.cid = CID_DoSimplePos;
-	    gcd[i++].creator = GCheckBoxCreate;
+	    label[gci].text = (unichar_t *) _("Transform simple positioning features & _kern pairs");
+	    label[gci].text_is_1byte = true;
+	    label[gci].text_in_resource = true;
+	    gcd[gci].gd.label = &label[gci];
+	    gcd[gci].gd.cid = CID_DoSimplePos;
+	    gcd[gci++].creator = GCheckBoxCreate;
+	    array[ai++] = &gcd[gci-1]; array[ai++] = NULL;
 	    y += 16;
 
-	    gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = y;
-	    gcd[i].gd.flags = gg_visible | gg_enabled;
-	    label[i].text = (unichar_t *) _("Round To _Int");
-	    label[i].text_is_1byte = true;
-	    label[i].text_in_resource = true;
-	    gcd[i].gd.label = &label[i];
-	    gcd[i].gd.cid = CID_Round2Int;
-	    gcd[i++].creator = GCheckBoxCreate;
+	    gcd[gci].gd.pos.x = 10; gcd[gci].gd.pos.y = y;
+	    gcd[gci].gd.flags = gg_visible | gg_enabled;
+	    label[gci].text = (unichar_t *) _("Round To _Int");
+	    label[gci].text_is_1byte = true;
+	    label[gci].text_in_resource = true;
+	    gcd[gci].gd.label = &label[gci];
+	    gcd[gci].gd.cid = CID_Round2Int;
+	    gcd[gci++].creator = GCheckBoxCreate;
+	    array[ai++] = &gcd[gci-1]; array[ai++] = NULL;
 	    y += 24;
 
-	gcd[i].gd.pos.x = 30-3; gcd[i].gd.pos.y = y;
-	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
-	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[i].text = (unichar_t *) _("_OK");
-	label[i].text_is_1byte = true;
-	label[i].text_in_resource = true;
-	gcd[i].gd.mnemonic = 'O';
-	gcd[i].gd.label = &label[i];
-	gcd[i].gd.handle_controlevent = Trans_OK;
-	gcd[i++].creator = GButtonCreate;
+	array[ai++] = GCD_Glue; array[ai++] = NULL;
 
-	gcd[i].gd.pos.x = -30; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+3;
-	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
-	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[i].text = (unichar_t *) _("_Cancel");
-	label[i].text_is_1byte = true;
-	label[i].text_in_resource = true;
-	gcd[i].gd.label = &label[i];
-	gcd[i].gd.mnemonic = 'C';
-	gcd[i].gd.handle_controlevent = Trans_Cancel;
-	gcd[i].creator = GButtonCreate;
+	gcd[gci].gd.pos.x = 30-3; gcd[gci].gd.pos.y = y;
+	gcd[gci].gd.pos.width = -1; gcd[gci].gd.pos.height = 0;
+	gcd[gci].gd.flags = gg_visible | gg_enabled | gg_but_default;
+	label[gci].text = (unichar_t *) _("_OK");
+	label[gci].text_is_1byte = true;
+	label[gci].text_in_resource = true;
+	gcd[gci].gd.mnemonic = 'O';
+	gcd[gci].gd.label = &label[gci];
+	gcd[gci].gd.handle_controlevent = Trans_OK;
+	gcd[gci++].creator = GButtonCreate;
+	buttons[0] = GCD_Glue; buttons[1] = &gcd[gci-1]; buttons[2] = GCD_Glue; buttons[3] = GCD_Glue;
 
-	GGadgetsCreate(gw,gcd);
+	gcd[gci].gd.pos.x = -30; gcd[gci].gd.pos.y = gcd[gci-1].gd.pos.y+3;
+	gcd[gci].gd.pos.width = -1; gcd[gci].gd.pos.height = 0;
+	gcd[gci].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+	label[gci].text = (unichar_t *) _("_Cancel");
+	label[gci].text_is_1byte = true;
+	label[gci].text_in_resource = true;
+	gcd[gci].gd.label = &label[gci];
+	gcd[gci].gd.mnemonic = 'C';
+	gcd[gci].gd.handle_controlevent = Trans_Cancel;
+	gcd[gci++].creator = GButtonCreate;
+	buttons[4] = GCD_Glue; buttons[5] = GCD_Glue; buttons[6] = &gcd[gci-1]; buttons[7] = GCD_Glue;
+	buttons[8] = NULL;
 
-	for ( i=0; i<TCnt; ++i )
-	    MakeTransBlock(&td,i);
+	boxes[2].gd.flags = gg_enabled|gg_visible;
+	boxes[2].gd.u.boxelements = buttons;
+	boxes[2].creator = GHBoxCreate;
+
+	array[ai++] = &boxes[2]; array[ai++] = NULL; array[ai++] = NULL;
+
+	boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+	boxes[0].gd.flags = gg_enabled|gg_visible;
+	boxes[0].gd.u.boxelements = array;
+	boxes[0].creator = GHVGroupCreate;
+
+	GGadgetsCreate(gw,boxes);
+	GHVBoxSetExpandableRow(boxes[0].ret,gb_expandglue);
+	GHVBoxSetExpandableCol(boxes[2].ret,gb_expandgluesame);
+	GHVBoxSetExpandableCol(boxes[3].ret,gb_expandglue);
+	for ( i=0; i<TCnt; ++i ) {
+	    GHVBoxSetPadding( GWidgetGetControl(gw,CID_ClockBox+i*TBlock_CIDOffset),0,0);
+	    GHVBoxSetPadding( GWidgetGetControl(gw,CID_HVBox+i*TBlock_CIDOffset),0,0);
+	    GHVBoxSetExpandableCol( GWidgetGetControl(gw,CID_HBox+i*TBlock_CIDOffset),gb_expandglue);
+	}
+	GGadgetSelectOneListItem( GWidgetGetControl(gw,CID_Type), 1);
+	GWidgetToDesiredSize(gw);
     }
     gw = td.gw;
 
@@ -705,7 +779,7 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 		    cvt == cvt_rotate ? 2 :
 		    cvt == cvt_skew   ? 6 :
 			   /* 3d rot*/  7 ;
-	GGadget *firstoption = GWidgetGetControl(td.tblock[0],CID_Type);
+	GGadget *firstoption = GWidgetGetControl(td.gw,CID_Type);
 	GEvent dummy;
 	GGadgetSelectOneListItem( firstoption, index );
 	memset(&dummy,0,sizeof(dummy));
@@ -714,9 +788,9 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
     }
 
     for ( i=0; i<TCnt; ++i ) {
-	int index = GGadgetGetFirstListSelectedItem(GWidgetGetControl(td.tblock[i],CID_Type));
+	int index = GGadgetGetFirstListSelectedItem(GWidgetGetControl(td.gw,CID_Type+i*TBlock_CIDOffset));
 	if ( selcid[index]!=0 ) {
-	    GGadget *tf = GWidgetGetControl(td.tblock[i],selcid[index]);
+	    GGadget *tf = GWidgetGetControl(td.gw,selcid[index]+i*TBlock_CIDOffset);
 	    GWidgetIndicateFocusGadget(tf);
 	    GTextFieldSelect(tf,0,-1);
     break;
