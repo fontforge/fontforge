@@ -1176,3 +1176,19 @@ return;
 	GDrawRequestExpose(gw,NULL,false);
     }
 }
+
+void GWidgetToDesiredSize(GWindow gw) {
+    GGadget *gadget;
+    GContainerD *gd = (GContainerD *) (gw->widget_data);
+
+    if ( gd==NULL )
+return;
+
+    gadget = gd->gadgets;
+    if ( gadget!=NULL ) {
+	while ( gadget->prev!=NULL )
+	    gadget=gadget->prev;
+    }
+    if ( gadget != NULL && GGadgetFillsWindow(gadget))
+	GHVBoxFitWindow(gadget);
+}
