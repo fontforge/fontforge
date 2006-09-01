@@ -51,6 +51,7 @@ _CFLAGS = -I$(top_srcdir)/inc -I$(srcdir) -I. @WFLAGS@ $(X_CFLAGS) \
 CFLAGS = @CFLAGS@ $(_CFLAGS)
 
 #I used to include -L/usr/lib explicitly after static_libs. Not sure why. Should be implied & breaks 64bit compiles
+LDFLAGS = @LDFLAGS@
 LIBS = -rpath $(libdir) $(X_LIBS) ../libgdraw.la ../libgunicode.la \
     $(X_PRE_LIBS) $(X_11LIB) $(X_EXTRA_LIBS) @LIBS@ $(STATIC_LIBS) -lm
 DLIBS = -rpath $(libdir) ../libgunicode.la @LIBS@ $(STATIC_LIBS) -lm
@@ -58,7 +59,7 @@ DLIBS = -rpath $(libdir) ../libgunicode.la @LIBS@ $(STATIC_LIBS) -lm
 all: fontforge sfddiff
 
 fontforge: main.o $(fontforge_LIBOBJECTS)
-	$(LIBTOOL) --mode=link $(CC) -export-dynamic -o fontforge main.o $(fontforge_LIBOBJECTS) $(LIBS)
+	$(LIBTOOL) --mode=link $(CC) -export-dynamic $(LDFLAGS) -o fontforge main.o $(fontforge_LIBOBJECTS) $(LIBS)
 
 sfddiff: sfddiff.pe
 	echo "#!$(bindir)/fontforge" >sfddiff

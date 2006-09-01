@@ -52,7 +52,7 @@ DLIBS = ../libs/libgunicode.a @LIBS@ $(STATIC_LIBS) -lm
 all: fontforge sfddiff
 
 fontforge: $(fontforge_OBJECTS)
-	$(CC) -o fontforge $(fontforge_OBJECTS) $(LIBS)
+	$(CC) -o fontforge $(LDFLAGS) $(fontforge_OBJECTS) $(LIBS)
 
 sfddiff: sfddiff.pe
 	echo "#!$(bindir)/fontforge" >sfddiff
