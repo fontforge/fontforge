@@ -75,15 +75,16 @@ acorn2sfd: $(ACORNOBJS)
 # The slight error introduced occasionally by optimization turns out to have
 # disasterous effects. This file may not be compiled with the optimizer.
 # On the other hand we do need CPPFLAGS to get the right includes...
-splinerefigure.o: $(srcdir)/splinerefigure.c
+splinerefigure.o: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
 	$(CC) -g -c -o splinerefigure.o $(_CFLAGS) $(srcdir)/splinerefigure.c
 
-splinerefigure.lo: $(srcdir)/splinerefigure.c
+splinerefigure.lo: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
 	$(LIBTOOL) --mode=compile $(CC) -g -c -o splinerefigure.lo $(_CFLAGS) $(srcdir)/splinerefigure.c
 
-#%.o: %.c
-#	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -c $<
+%.o: %.c
 
+%.o: %.c $(srcdir)/splinefont.h $(srcdir)/views.h $(srcdir)/stemdb.h $(srcdir)/ttf.h $(srcdir)/unicoderange.h $(srcdir)/psfont.h $(srcdir)/groups.h $(srcdir)/edgelist.h $(srcdir)/edgelist2.h
+	$(CC) $(CFLAGS) -c $<
 
 clean:
 	-rm -f *.o *.o fontforge sfddiff po/*.mo
