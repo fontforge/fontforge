@@ -496,15 +496,13 @@ static void _gbutton_resize(GGadget *g, int32 width, int32 height ) {
     int bp = GBoxBorderWidth(g->base,g->box);
 
     GButtonGetDesiredSize(g,NULL,&inner);
-    if ( inner.width<width-2*bp ) inner.width = width-2*bp;
     if ( inner.height<height-2*bp ) inner.height = height-2*bp;
     
-    g->inner.width = inner.width;
     g->inner.height = inner.height;
-    g->inner.x = g->r.x + (width-inner.width)/2;
     g->inner.y = g->r.y + (height-inner.height)/2;
     g->r.width = width;
     g->r.height = height;
+    GButtonSetInner((GButton *) g);
 }
 
 struct gfuncs gbutton_funcs = {
@@ -570,7 +568,7 @@ struct gfuncs glistbutton_funcs = {
 
     _ggadget_redraw,
     _ggadget_move,
-    _ggadget_resize,
+    _gbutton_resize,
     _ggadget_setvisible,
     _ggadget_setenabled,
     _ggadget_getsize,
