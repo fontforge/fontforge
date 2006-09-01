@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 27-Aug-2006 -->
+  <!-- AP: Last modified: 31-Aug-2006 -->
   <TITLE>Frequently Asked Questions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -267,6 +267,8 @@
       out of memory. What can I do about it?</A>
     <LI>
       <A HREF="#Unstable">Why is FontForge so unstable?</A>
+    <LI>
+      <A HREF="#Compiz">Why does FontForge look ugly under Xgl/Compiz?</A>
   </UL>
   <P>
     <HR>
@@ -1713,8 +1715,14 @@ $ xset fp+ `pwd`
       I don't bother much with doing QA. This is a problem. I don't enjoy doing
       it, and no one is paying me to do it, so little gets done.<BR>
       If you would like to volunteer to do
-      <A HREF="mailto:fontforge-devel@lists.sourceforge.net">QA let me know</A>.
-      It's a thankless job, but important!
+      <A HREF="mailto:fontforge-devel@lists.sourceforge.net">QA let me know</A>
+      (this is a public mailing list). It's a thankless job, but important!
+    <DT>
+      <B>Why does FontForge look ugly under Xgl/<A NAME="Compiz">Compiz</A>?</B>
+    <DD>
+      I haven't the foggiest idea, but I'm told you can fix it by setting:<BR>
+      <CODE>&nbsp; &nbsp; XLIB_SKIP_ARGB_VISUALS=1</CODE><BR>
+      for FontForge.
   </DL>
   <P>
   <P ALIGN=Center>
