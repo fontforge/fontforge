@@ -41,7 +41,7 @@ CFLAGS = @CFLAGS@ @CPPFLAGS@ $(Incs) @WFLAGS@ $(X_CFLAGS) -DNOTHREADS @DEFS@ -DL
 
 ../libgdraw.la: $(libgdraw_OBJECTS)
 	$(LIBTOOL) --mode=link $(CC) -no-undefined $(CFLAGS) @LDFLAGS@ -o ../libgdraw.la $(libgdraw_OBJECTS) \
-	    ../libgunicode.la \
+	    ../libgunicode.la @LIBS@ \
 	    $(STATIC_LIBS) $(X_LIBS) $(X_PRE_LIBS) $(X_11LIB) $(X_EXTRA_LIBS)  \
 	    -rpath $(libdir) -version-info $(GD_VERSION):$(GD_REVISION):$(GD_AGE)
 

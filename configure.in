@@ -472,7 +472,13 @@ else
   WFLAGS=""
 fi
 
-LIBS="$LIBS $gww_rpath"
+dnl LIBS="$LIBS $gww_rpath"
+dnl The above causes problems when creating shared libraries. The rpath option
+dnl is overloaded. When creating an executable it means directories to search
+dnl for shared libraries (at load time). When creating a shared library it means
+dnl the ultimate location of the library. There doesn't seem to be a way of
+dnl saying where to look for other libraries linked into this one. Which is
+dnl a pity.
 
 AC_SUBST(VERSION)
 VERSION=`cat VERSION`

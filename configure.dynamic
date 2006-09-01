@@ -24018,7 +24018,6 @@ else
   WFLAGS=""
 fi
 
-LIBS="$LIBS $gww_rpath"
 
 
 VERSION=`cat VERSION`
