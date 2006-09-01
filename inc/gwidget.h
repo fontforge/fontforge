@@ -95,6 +95,7 @@ GWindow GWidgetGetTopWidget(GWindow gw);
 extern GDrawEH GWidgetGetEH(GWindow w);
 extern void GWidgetSetEH(GWindow w,GDrawEH e_h);
 extern void GWidgetFlowGadgets(GWindow gw);
+extern void GWidgetToDesiredSize(GWindow gw);
 
 	/* Built in dialogs */
 unichar_t *GWidgetOpenFile(const unichar_t *title, const unichar_t *defaultfile,
