@@ -37,6 +37,7 @@
 #include <sys/time.h>		/* for timers & select */
 #include <unistd.h>		/* for timers & select */
 #include <signal.h>		/* error handler */
+#include <locale.h>		/* for setting the X locale properly */
 
 #ifndef NOTHREADS
 #include <sys/socket.h>
@@ -1090,21 +1091,21 @@ return( NULL );
 	}
 	XSetWMHints(display,nw->w,&wm_hints);
 	if ( (wattrs->mask&wam_wtitle) && wattrs->window_title!=NULL ) {
-	    XStoreName(display,nw->w,(pt = u2def_copy(wattrs->window_title)));
+	    XmbSetWMProperties(display,nw->w,(pt = u2def_copy(wattrs->window_title)),NULL,NULL,0,NULL,NULL,NULL);
 	    gfree(pt);
 	}
 	if ( (wattrs->mask&wam_ititle) && wattrs->icon_title!=NULL ) {
-	    XSetIconName(display,nw->w,(pt = u2def_copy(wattrs->icon_title)));
+	    XmbSetWMProperties(display,nw->w,NULL,(pt = u2def_copy(wattrs->icon_title)),NULL,0,NULL,NULL,NULL);
 	    gfree(pt);
 	}
 	if ( (wattrs->mask&wam_utf8_wtitle) && wattrs->utf8_window_title!=NULL ) {
 	    unichar_t *tit = utf82u_copy(wattrs->utf8_window_title);
-	    XStoreName(display,nw->w,(pt = u2def_copy(tit)));
+	    XmbSetWMProperties(display,nw->w,(pt = u2def_copy(tit)),NULL,NULL,0,NULL,NULL,NULL);
 	    gfree(pt); gfree(tit);
 	}
 	if ( (wattrs->mask&wam_utf8_ititle) && wattrs->utf8_icon_title!=NULL ) {
 	    unichar_t *tit = utf82u_copy(wattrs->utf8_icon_title);
-	    XSetIconName(display,nw->w,(pt = u2def_copy(tit)));
+	    XmbSetWMProperties(display,nw->w,NULL,(pt = u2def_copy(tit)),NULL,0,NULL,NULL,NULL);
 	    gfree(pt); gfree(tit);
 	}
 	s_h.x = pos->x; s_h.y = pos->y;
@@ -1570,33 +1571,25 @@ static void GXDrawLower(GWindow w) {
 static void GXDrawSetWindowTitles(GWindow w, const unichar_t *title, const unichar_t *icontit) {
     GXWindow gw = (GXWindow) w;
     Display *display = gw->display->display;
-    char *pt;
+    char *ipt, *tpt;
 
-    if ( title!=NULL ) {
-	XStoreName(display,gw->w,(pt = u2def_copy(title)));
-	gfree(pt);
-    }
-    if ( icontit!=NULL ) {
-	XSetIconName(display,gw->w,(pt = u2def_copy(icontit)));
-	gfree(pt);
-    }
+    XmbSetWMProperties(display,gw->w,(tpt = u2def_copy(title)),
+			(ipt = u2def_copy(icontit)),
+			NULL,0,NULL,NULL,NULL);
+    gfree(ipt); gfree(tpt);
 }
 
 static void GXDrawSetWindowTitles8(GWindow w, const char *title, const char *icontit) {
     GXWindow gw = (GXWindow) w;
     Display *display = gw->display->display;
-    char *pt;
+    unichar_t *tit = utf82u_copy(title), *itit = utf82u_copy(icontit);
+    char *ipt, *tpt;
 
-    if ( title!=NULL ) {
-	unichar_t *tit = utf82u_copy(title);
-	XStoreName(display,gw->w,(pt = u2def_copy(tit)));
-	gfree(pt);  gfree(tit);
-    }
-    if ( icontit!=NULL ) {
-	unichar_t *tit = utf82u_copy(icontit);
-	XSetIconName(display,gw->w,(pt = u2def_copy(tit)));
-	gfree(pt);  gfree(tit);
-    }
+    XmbSetWMProperties(display,gw->w,(tpt = u2def_copy(tit)),
+			(ipt = u2def_copy(itit)),
+			NULL,0,NULL,NULL,NULL);
+    gfree(tit); gfree(tpt);
+    gfree(itit); gfree(ipt);
 }
 
 static void GXDrawSetCursor(GWindow w, GCursor ct) {
@@ -4153,6 +4146,11 @@ GDisplay *_GXDraw_CreateDisplay(char *displayname,char *programname) {
     display = XOpenDisplay(displayname);
     if ( display==NULL )
 return( NULL );
+
+    setlocale(LC_ALL,"");
+    XSupportsLocale();
+    XSetLocaleModifiers("");
+
     gdisp = gcalloc(1,sizeof(GXDisplay));
     if ( gdisp==NULL ) {
 	XCloseDisplay(display);
