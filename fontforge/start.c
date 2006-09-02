@@ -222,14 +222,25 @@ static void splash_window_tooltip_fun( GtkWidget *splashw ) {
 /* GT: is intended as a satire */
 	N_("A free press discriminates\nagainst the illiterate."),
 	N_("A free press discriminates\nagainst the illiterate."),
+/* GT: The following are mostly misquotations of fairly well-known bits of */
+/* GT:  English literature. Trying to translate them literally may miss the */
+/* GT:  point. Finding something appropriate in the literature of your own */
+/* GT:  language and then twisting it might be closer to the original intent. */
+/* GT:  Or just translate them all as FontForge and don't worry about them. */
+/* GT: Misquotation of an old latin drinking song */
 	N_("Gaudeamus Ligature!"),
 	N_("Gaudeamus Ligature!"),
+/* GT: Misquotation of the Gospel of John */
 	N_("In the beginning was the letter...")
+/* GT: Misquotation of As You Like It, II, vii, 139-143 */
 	N_("All the world's a page,\n"
 	"And all the men and women merely letters;\n"
 	"They have their ligatures and hyphenations,\n"
-	"And one man in his time forms many words.");
-	/* As You Like It, II, vii, 139-143 */
+	"And one man in his time forms many words."),
+/* GT: Misquotation of The Wind in the Willows */
+	N_("There is nothing, absolutely nothing,\n"
+	"half so much worth doing\n"
+	"as simply messing about with fonts")
     };
     GtkTooltips *tips;
 
