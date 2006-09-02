@@ -240,7 +240,10 @@ static void splash_window_tooltip_fun( GtkWidget *splashw ) {
 /* GT: Misquotation of The Wind in the Willows */
 	N_("There is nothing, absolutely nothing,\n"
 	"half so much worth doing\n"
-	"as simply messing about with fonts")
+	"as simply messing about with fonts"),
+/* GT: The New Hacker's Dictionary attributes this to XEROX PARC */
+/* GT: A misquotation of "Ontogeny recapitulates phylogeny" */
+	N_("fontology recapitulates file-ogeny")
     };
     GtkTooltips *tips;
 
