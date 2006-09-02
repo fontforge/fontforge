@@ -625,5 +625,5 @@ return;
     if ( cur.width!=outer.width || cur.height!=outer.height )
 	GDrawResize(g->base, outer.width, outer.height );
     else
-	GGadgetResize(g, outer.width, outer.height );
+	GGadgetResize(g, outer.width-2*g->r.x, outer.height-2*g->r.y );
 }
