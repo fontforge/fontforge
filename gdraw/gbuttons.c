@@ -282,7 +282,10 @@ static void GButtonSetInner(GButton *b) {
 	b->g.inner.width = width;
     else
 	b->g.inner.width = b->g.r.width-2*bp;
-    b->g.inner.x = b->g.r.x + (b->g.r.width-b->g.inner.width-mark)/2;
+    if ( b->labeltype==0 )
+	b->g.inner.x = b->g.r.x + bp;
+    else
+	b->g.inner.x = b->g.r.x + (b->g.r.width-b->g.inner.width-mark)/2;
 }
 
 static void GButtonSetTitle(GGadget *g,const unichar_t *tit) {
