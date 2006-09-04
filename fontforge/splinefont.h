@@ -1269,8 +1269,8 @@ extern const char *GetAuthor(void);
 extern SplineChar *SFFindExistingCharMac(SplineFont *,EncMap *map, int unienc);
 extern void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
 	SplineChar *sc, int refs_to_splines, int pdfopers );
-extern int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format,int flags,EncMap *enc);
-extern int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format,int flags,EncMap *enc);
+extern int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format,int flags,EncMap *enc,SplineFont *fullsf);
+extern int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format,int flags,EncMap *enc,SplineFont *fullsf);
 extern int WriteMacPSFont(char *fontname,SplineFont *sf,enum fontformat format,
 	int flags,EncMap *enc);
 extern int _WriteTTFFont(FILE *ttf,SplineFont *sf, enum fontformat format,

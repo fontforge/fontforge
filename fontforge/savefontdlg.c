@@ -1753,7 +1753,7 @@ return( 0 );
 	strcat(pt,"]");
     }
 
-    err = !WritePSFont(filename,&temp,subtype,old_ps_flags,&encmap);
+    err = !WritePSFont(filename,&temp,subtype,old_ps_flags,&encmap,sf);
     if ( err )
 	gwwv_post_error(_("Save Failed"),_("Save Failed"));
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -1905,7 +1905,7 @@ return( WriteMultiplePSFont(sf,newname,sizes,res,NULL,map));
 	    if ( sf->multilayer && CheckIfTransparent(sf))
 return( true );
 #endif
-	    oerr = !WritePSFont(newname,sf,oldformatstate,flags,map);
+	    oerr = !WritePSFont(newname,sf,oldformatstate,flags,map,NULL);
 	  break;
 	  case ff_ttf: case ff_ttfsym: case ff_otf: case ff_otfcid:
 	  case ff_cff: case ff_cffcid:

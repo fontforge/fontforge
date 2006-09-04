@@ -1640,7 +1640,7 @@ static void dumpfontcomments(void (*dumpchar)(int ch,void *data), void *data,
 }
 
 static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data,
-	SplineFont *sf, int format, EncMap *map ) {
+	SplineFont *sf, int format, EncMap *map, SplineFont *fullsf ) {
     int cnt, i;
     double fm[6];
     char *encoding[256];
@@ -1698,7 +1698,7 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
     dumpdblarray(dumpchar,data,"FontMatrix",fm,6,"readonly ",false);
     if ( sf->fontname!=NULL )
 	dumpf(dumpchar,data,"/FontName /%s def\n", sf->fontname );
-    SplineFontFindBounds(sf,&b);
+    SplineFontFindBounds(fullsf==NULL?sf:fullsf,&b);
     fm[0] = floor( b.minx);
     fm[1] = floor( b.miny);
     fm[2] = ceil( b.maxx);
@@ -1813,8 +1813,8 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
 }
 
 static void dumpinitialascii(void (*dumpchar)(int ch,void *data), void *data,
-	SplineFont *sf, int format, EncMap *map ) {
-    dumprequiredfontinfo(dumpchar,data,sf,format,map);
+	SplineFont *sf, int format, EncMap *map, SplineFont *fullsf ) {
+    dumprequiredfontinfo(dumpchar,data,sf,format,map,fullsf);
     dumpstr(dumpchar,data,"currentdict end\ncurrentfile eexec\n" );
 }
 
@@ -2025,7 +2025,7 @@ static void dumptype42(FILE *out, SplineFont *sf, int format, int flags,
 }
 
 static void dumpfontdict(FILE *out, SplineFont *sf, int format, int flags,
-	EncMap *map ) {
+	EncMap *map, SplineFont *fullsf ) {
 
 /* a pfb header consists of 6 bytes, the first is 0200, the second is a */
 /*  binary/ascii flag where 1=>ascii, 2=>binary, 3=>eof??, the next four */
@@ -2034,7 +2034,7 @@ static void dumpfontdict(FILE *out, SplineFont *sf, int format, int flags,
     if ( format==ff_pfb || format==ff_mmb ) {
 	FILE *temp;
 	temp = tmpfile();
-	dumpinitialascii((DumpChar) fputc,temp,sf,format,map );
+	dumpinitialascii((DumpChar) fputc,temp,sf,format,map,fullsf );
 	mkheadercopyfile(temp,out,1);
 	temp = tmpfile();
 	dumpencodedstuff((DumpChar) fputc,temp,sf,format,flags,map);
@@ -2045,12 +2045,12 @@ static void dumpfontdict(FILE *out, SplineFont *sf, int format, int flags,
 /* final header, 3=>eof??? */
 	dumpstrn((DumpChar) fputc,out,"\200\003",2);
     } else if ( format==ff_ptype3 ) {
-	dumprequiredfontinfo((DumpChar) fputc,out,sf,ff_ptype3,map);
+	dumprequiredfontinfo((DumpChar) fputc,out,sf,ff_ptype3,map,NULL);
 	dumpcharprocs((DumpChar) fputc,out,sf);
     } else if ( format==ff_type42 || format==ff_type42cid ) {
 	dumptype42(out,sf,format,flags,map);
     } else {
-	dumpinitialascii((DumpChar) (fputc),out,sf,format,map );
+	dumpinitialascii((DumpChar) (fputc),out,sf,format,map,fullsf );
 	dumpencodedstuff((DumpChar) (fputc),out,sf,format,flags,map);
 	dumpfinalascii((DumpChar) (fputc),out,sf,format);
     }
@@ -2439,7 +2439,8 @@ return( 0 );
 return( !cidbytes.errors );
 }
 
-int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format,int flags,EncMap *map) {
+int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format,int flags,
+	EncMap *map, SplineFont *fullsf) {
     char *oldloc;
     int err = false;
     extern const char **othersubrs[];
@@ -2456,7 +2457,7 @@ int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format,int flags,EncMa
     if ( format==ff_cid )
 	err = !dumpcidstuff(out,sf->subfontcnt>0?sf:sf->cidmaster,flags,map);
     else {
-	dumpfontdict(out,sf,format,flags,map);
+	dumpfontdict(out,sf,format,flags,map,fullsf);
 	if ( format==ff_ptype0 )
 	    dumptype0stuff(out,sf,map);
     }
@@ -2481,13 +2482,14 @@ return( 0 );
 return( true );
 }
 
-int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format,int flags,EncMap *map) {
+int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format,int flags,
+	EncMap *map,SplineFont *fullsf) {
     FILE *out;
     int ret;
 
     if (( out=fopen(fontname,"wb"))==NULL )
 return( 0 );
-    ret = _WritePSFont(out,sf,format,flags,map);
+    ret = _WritePSFont(out,sf,format,flags,map,fullsf);
     if ( fclose(out)==-1 )
 	ret = 0;
 return( ret );
@@ -2532,7 +2534,7 @@ int PSBitmapDump(char *filename,BDFFont *font, EncMap *map) {
     if ( file==NULL )
 	LogError( _("Can't open %s\n"), filename );
     else {
-	dumprequiredfontinfo((DumpChar) fputc, file, sf, ff_ptype3, map);
+	dumprequiredfontinfo((DumpChar) fputc, file, sf, ff_ptype3, map,NULL);
 
 	cnt = 0;
 	notdefpos = SFFindNotdef(sf,-2);
