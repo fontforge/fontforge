@@ -1833,6 +1833,7 @@ return(NULL);
     new->descent = cidmaster->descent;
     new->changed = new->changed_since_autosave = true;
     new->display_antialias = cidmaster->display_antialias;
+    new->hasvmetrics = cidmaster->hasvmetrics;
     new->fv = cidmaster->fv;
     /* Don't copy the grid splines, there won't be anything meaningfull at top level */
     /*  and won't know which font to copy from below */
