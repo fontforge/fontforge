@@ -1087,7 +1087,8 @@ return( i );
 return( -1 );
 }
 
-static void AfmSplineFontHeader(FILE *afm, SplineFont *sf, int formattype, EncMap *map) {
+static void AfmSplineFontHeader(FILE *afm, SplineFont *sf, int formattype,
+	EncMap *map, SplineFont *fullsf) {
     extern const char *source_version_str;
     DBounds b;
     real width;
@@ -1195,7 +1196,7 @@ static void AfmSplineFontHeader(FILE *afm, SplineFont *sf, int formattype, EncMa
 	if ( sf->version!=NULL ) fprintf( afm, "Version %s\n", sf->version );
 	fprintf( afm, "EncodingScheme %s\n", EncodingName(map->enc));
     }
-    if ( iscid ) CIDFindBounds(sf,&b); else SplineFontFindBounds(sf,&b);
+    if ( iscid ) CIDFindBounds(sf,&b); else SplineFontFindBounds(fullsf!=NULL?fullsf:sf,&b);
     fprintf( afm, "FontBBox %d %d %d %d\n",
 	    (int) floor(b.minx*1000/em), (int) floor(b.miny*1000/em),
 	    (int) ceil(b.maxx*1000/em), (int) ceil(b.maxy*1000/em) );
@@ -1552,7 +1553,8 @@ static void AfmCompositeChar(FILE *afm,struct cc_data *cc) {
 
 static void LigatureClosure(SplineFont *sf);
 
-int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype,EncMap *map, int docc) {
+int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype,EncMap *map,
+	int docc, SplineFont *fullsf) {
     int i, j, cnt, vcnt;
     int type0 = ( formattype==ff_ptype0 );
     int otf = (formattype==ff_otf);
@@ -1572,7 +1574,7 @@ int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype,EncMap *map, int doc
 
     if ( iscid && sf->cidmaster!=NULL ) sf = sf->cidmaster;
 
-    AfmSplineFontHeader(afm,sf,formattype,map);
+    AfmSplineFontHeader(afm,sf,formattype,map,fullsf);
 
     cnt = 0;
     for ( i=0; i<map->enccount; ++i ) {
@@ -1704,7 +1706,7 @@ return( !ferror(afm));
 int AmfmSplineFont(FILE *amfm, MMSet *mm, int formattype,EncMap *map) {
     int i,j;
 
-    AfmSplineFontHeader(amfm,mm->normal,formattype,map);
+    AfmSplineFontHeader(amfm,mm->normal,formattype,map,NULL);
     fprintf( amfm, "Masters %d\n", mm->instance_count );
     fprintf( amfm, "Axes %d\n", mm->axis_count );
 
