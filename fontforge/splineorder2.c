@@ -467,6 +467,14 @@ static int comparedata(Spline *ps,QPoint *data,int qfirst,int qlast,
     if ( qfirst==qlast )		/* happened (was a bug) */
 return( false );
 
+    /* Control points diametrically opposed */
+    if ( (data[qlast-2].cp.x-ps->to->me.x)*(ps->to->prevcp.x-ps->to->me.x) +
+	    (data[qlast-2].cp.y-ps->to->me.y)*(ps->to->prevcp.y-ps->to->me.y)<0 )
+return( false );
+    if ( (data[qfirst-1].cp.x-ps->from->me.x)*(ps->from->nextcp.x-ps->from->me.x) +
+	    (data[qfirst-1].cp.y-ps->from->me.y)*(ps->from->nextcp.y-ps->from->me.y)<0 )
+return( false );
+
     memset(&ttf,0,sizeof(ttf));
     for ( i=qfirst; i<qlast; ++i ) {
 	ttf.splines[0].d = data[i-1].bp.x;
