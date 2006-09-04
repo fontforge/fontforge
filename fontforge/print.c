@@ -1131,7 +1131,7 @@ return(false);
 		pi->istype42cid?ff_type42cid:
 		pi->iscid?ff_cid:
 		pi->twobyte?ff_ptype0:
-		ff_pfa,ps_flag_identitycidmap,pi->map))
+		ff_pfa,ps_flag_identitycidmap,pi->map,NULL))
 	error = true;
 
     gwwv_progress_end_indicator();

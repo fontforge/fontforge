@@ -1575,7 +1575,7 @@ return( 0 );
     if ( islower(*sf->familyname)) { *sf->familyname = toupper(*sf->familyname); lcfam = true; }
     MakeMacPSName(buffer,sf);
 
-    ret = _WritePSFont(temppfb,sf,ff_pfb,flags,map);
+    ret = _WritePSFont(temppfb,sf,ff_pfb,flags,map,NULL);
     if ( lcfn ) *sf->fontname = tolower(*sf->fontname);
     if ( lcfam ) *sf->familyname = tolower(*sf->familyname);
     if ( ret==0 || ferror(temppfb) ) {
