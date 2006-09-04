@@ -227,7 +227,8 @@ return( sizes );
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-static int WriteAfmFile(char *filename,SplineFont *sf, int formattype, EncMap *map, int flags) {
+static int WriteAfmFile(char *filename,SplineFont *sf, int formattype,
+	EncMap *map, int flags, SplineFont *fullsf) {
     char *buf = galloc(strlen(filename)+6), *pt, *pt2;
     FILE *afm;
     int ret;
@@ -252,7 +253,7 @@ static int WriteAfmFile(char *filename,SplineFont *sf, int formattype, EncMap *m
     free(buf);
     if ( afm==NULL )
 return( false );
-    ret = AfmSplineFont(afm,sf,subtype,map,flags&ps_flag_afmwithmarks);
+    ret = AfmSplineFont(afm,sf,subtype,map,flags&ps_flag_afmwithmarks,fullsf);
     if ( fclose(afm)==-1 )
 return( false );
     if ( !ret )
@@ -275,7 +276,7 @@ return( false );
 	    free(buf);
 	    if ( afm==NULL )
 return( false );
-	    ret = AfmSplineFont(afm,sf,subtype,map,flags&ps_flag_afmwithmarks);
+	    ret = AfmSplineFont(afm,sf,subtype,map,flags&ps_flag_afmwithmarks,NULL);
 	    if ( fclose(afm)==-1 )
 return( false );
 	    if ( !ret )
@@ -1761,7 +1762,7 @@ return( 0 );
 #else
     if ( !err && (old_ps_flags&ps_flag_afm)) {
 #endif
-	if ( !WriteAfmFile(filename,&temp,oldformatstate,&encmap,old_ps_flags)) {
+	if ( !WriteAfmFile(filename,&temp,oldformatstate,&encmap,old_ps_flags,sf)) {
 	    gwwv_post_error(_("Afm Save Failed"),_("Afm Save Failed"));
 	    err = true;
 	}
@@ -1946,7 +1947,7 @@ return( true );
     }
     if ( !err && (flags&ps_flag_afm) ) {
 	gwwv_progress_increment(-sf->glyphcnt);
-	if ( !WriteAfmFile(newname,sf,oldformatstate,map,flags)) {
+	if ( !WriteAfmFile(newname,sf,oldformatstate,map,flags,NULL)) {
 	    gwwv_post_error(_("Afm Save Failed"),_("Afm Save Failed"));
 	    err = true;
 	}
