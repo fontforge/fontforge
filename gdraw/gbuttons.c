@@ -282,7 +282,7 @@ static void GButtonSetInner(GButton *b) {
 	b->g.inner.width = width;
     else
 	b->g.inner.width = b->g.r.width-2*bp;
-    if ( b->labeltype==0 )
+    if ( !b->g.takes_input )
 	b->g.inner.x = b->g.r.x + bp;
     else
 	b->g.inner.x = b->g.r.x + (b->g.r.width-b->g.inner.width-mark)/2;
