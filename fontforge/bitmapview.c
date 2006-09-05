@@ -168,9 +168,9 @@ BDFChar *BDFMakeGID(BDFFont *bdf,int gid) {
     if ( gid==-1 )
 return( NULL );
 
-    if ( sf->cidmaster!=NULL ) {
+    if ( sf->cidmaster!=NULL || sf->subfonts!=NULL ) {
 	int j = SFHasCID(sf,gid);
-	sf = sf->cidmaster;
+	if ( sf->cidmaster ) sf = sf->cidmaster;
 	if ( j==-1 ) {
 	    for ( j=0; j<sf->subfontcnt; ++j )
 		if ( gid<sf->subfonts[j]->glyphcnt )
@@ -794,10 +794,10 @@ static void BVSetWidth(BitmapView *bv, int x) {
     BDFFont *bdf;
     BDFChar *bc = bv->bc;
 
-    if ( bv->fv->sf->onlybitmaps ) {
+    if ( bv->bdf->sf->onlybitmaps ) {
 	bc->width = x;
 	tot=0; cnt=0;
-	for ( bdf = bv->fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
+	for ( bdf = bv->bdf->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 	    if ( bdf->glyphs[bc->orig_pos]) {
 		tot += bdf->glyphs[bc->orig_pos]->width*1000/(bdf->ascent+bdf->descent);
 		++cnt;
@@ -815,10 +815,10 @@ static void BVSetVWidth(BitmapView *bv, int y) {
     BDFFont *bdf;
     BDFChar *bc = bv->bc;
 
-    if ( bv->fv->sf->onlybitmaps && bv->fv->sf->hasvmetrics ) {
+    if ( bv->bdf->sf->onlybitmaps && bv->bdf->sf->hasvmetrics ) {
 	bc->vwidth = bv->bdf->ascent-y;
 	tot=0; cnt=0;
-	for ( bdf = bv->fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
+	for ( bdf = bv->bdf->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 	    if ( bdf->glyphs[bc->orig_pos]) {
 		tot += bdf->glyphs[bc->orig_pos]->vwidth*1000/(bdf->ascent+bdf->descent);
 		++cnt;
@@ -1281,7 +1281,7 @@ static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_Revert:
-	    mi->ti.disabled = bv->fv->sf->origname==NULL || bv->fv->sf->new;
+	    mi->ti.disabled = bv->bdf->sf->origname==NULL || bv->bdf->sf->new;
 	  break;
 	  case MID_Recent:
 	    mi->ti.disabled = !RecentFilesAny();
@@ -1359,7 +1359,7 @@ static void BVMenuChangePixelSize(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     if ( mi->mid == MID_Bigger ) {
 	best = bv->bdf->next;		/* I rely on the bitmap list being ordered */
     } else {
-	for ( bdf=bv->fv->sf->bitmaps; bdf!=NULL && bdf->next!=bv->bdf; bdf=bdf->next );
+	for ( bdf=bv->bdf->sf->bitmaps; bdf!=NULL && bdf->next!=bv->bdf; bdf=bdf->next );
 	best = bdf;
     }
     if ( best!=NULL && bv->bdf!=best ) {
@@ -1403,6 +1403,20 @@ return;
     BCDoUndo(bv->bc,bv->fv);
 }
 
+static SplineChar *SCofBV(BitmapView *bv) {
+    SplineFont *sf = bv->bdf->sf;
+    int i, cid = bv->bc->orig_pos;
+
+    if ( sf->subfonts ) {
+	for ( i=0; i<sf->subfontcnt; ++i )
+	    if ( cid<sf->subfonts[i]->glyphcnt && sf->subfonts[i]->glyphs[cid]!=NULL )
+return( sf->subfonts[i]->glyphs[cid] );
+
+return( NULL );
+    } else
+return( sf->glyphs[cid] );
+}
+
 static void BVMenuSetWidth(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
     char buffer[10];
@@ -1412,7 +1426,7 @@ static void BVMenuSetWidth(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     SplineChar *sc;
     int val;
 
-    if ( !bv->fv->sf->onlybitmaps )
+    if ( !bv->bdf->sf->onlybitmaps )
 return;
     if ( mi->mid==MID_SetWidth ) {
 	sprintf( buffer,"%d",bv->bc->width);
@@ -1432,10 +1446,10 @@ return;
     else
 	bv->bc->vwidth = val;
     BCCharChangedUpdate(bv->bc);
-    for ( bdf=bv->fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
+    for ( bdf=bv->bdf->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 	if ( bdf->pixelsize > mysize )
 return;
-    if ( (sc=bv->fv->sf->glyphs[bv->bc->orig_pos])!=NULL ) {
+    if ( (sc=SCofBV(bv))!=NULL ) {
 	if ( mi->mid==MID_SetWidth )
 	    sc->width = val*(sc->parent->ascent+sc->parent->descent)/mysize;
 	else
@@ -1505,7 +1519,7 @@ static void BVMenuFontInfo(GWindow gw,struct gmenuitem *mi,GEvent *g) {
 
 static void BVMenuBDFInfo(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
-    SFBdfProperties(bv->fv->sf,bv->fv->map,bv->bdf);
+    SFBdfProperties(bv->bdf->sf,bv->fv->map,bv->bdf);
 }
 
 static void BVMenuGetInfo(GWindow gw,struct gmenuitem *mi,GEvent *g) {
@@ -1529,7 +1543,7 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_RegenBitmaps:
-	    mi->ti.disabled = bv->fv->sf->onlybitmaps;
+	    mi->ti.disabled = bv->bdf->sf->onlybitmaps;
 	  break;
 	}
     }
@@ -1600,7 +1614,7 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = bv->bdf->next==NULL;
 	  break;
 	  case MID_Smaller:
-	    for ( bdf=bv->fv->sf->bitmaps; bdf!=NULL && bdf->next!=bv->bdf; bdf=bdf->next );
+	    for ( bdf=bv->bdf->sf->bitmaps; bdf!=NULL && bdf->next!=bv->bdf; bdf=bdf->next );
 	    mi->ti.disabled = bdf==NULL;
 	  break;
 	}
@@ -1613,10 +1627,10 @@ static void mtlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_SetWidth:
-	    mi->ti.disabled = !bv->fv->sf->onlybitmaps;
+	    mi->ti.disabled = !bv->bdf->sf->onlybitmaps;
 	  break;
 	  case MID_SetVWidth:
-	    mi->ti.disabled = !bv->fv->sf->onlybitmaps || !bv->fv->sf->hasvmetrics;
+	    mi->ti.disabled = !bv->bdf->sf->onlybitmaps || !bv->bdf->sf->hasvmetrics;
 	  break;
 	}
     }

@@ -298,7 +298,10 @@ static void BdfCleanup(BDFFont *bdf,struct ttfinfo  *info) {
 	    bdf->glyphcnt = info->glyph_cnt;
 	}
     } else {
-	cnt = info->map->enccount;
+	cnt = 0;
+	for ( i=0; i<info->subfontcnt; ++i )
+	    if ( info->subfonts[i]->glyphcnt > cnt )
+		cnt = info->subfonts[i]->glyphcnt;
 	glyphs = gcalloc(cnt,sizeof(BDFChar *));
 	for ( i=0; i<bdf->glyphcnt; ++i ) if ( (bdfc = bdf->glyphs[i])!=NULL ) {
 	    if ( bdfc->orig_pos<cnt )
@@ -427,7 +430,7 @@ static void readttfbitmapfont(FILE *ttf,struct ttfinfo *info,
 }
 
 void TTFLoadBitmaps(FILE *ttf,struct ttfinfo *info,int onlyone) {
-    int i, cnt, j, k, good;
+    int i, cnt, j, k, good, glyphcnt;;
     int bigval, biggest;
     struct ttfsizehead *sizes;
     BDFFont *bdf, *last;
@@ -541,10 +544,18 @@ return;
     gwwv_progress_change_stages(3+cnt);
 #endif
     info->bitmaps = last = NULL;
+    if ( info->subfonts==NULL )
+	glyphcnt = info->glyph_cnt;
+    else {
+	glyphcnt = 0;
+	for ( i=0; i<info->subfontcnt; ++i )
+	    if ( info->subfonts[i]->glyphcnt > glyphcnt )
+		glyphcnt = info->subfonts[i]->glyphcnt;
+    }
     for ( i=0; i<cnt; ++i ) {
 	bdf = gcalloc(1,sizeof(BDFFont));
 	/* In cid fonts fontforge stores things by cid rather than gid */
-	bdf->glyphcnt = info->subfonts!=NULL?info->map->enccount:info->glyph_cnt;
+	bdf->glyphcnt = glyphcnt;
 	if ( sizes[i].endglyph > bdf->glyphcnt )
 	    bdf->glyphcnt = sizes[i].endglyph+1;	/* Important if we have reference glyphs */
 	bdf->glyphmax = bdf->glyphcnt;

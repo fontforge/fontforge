@@ -5716,7 +5716,7 @@ return;
 
     for ( fvs=fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
 	if ( fvs->sf==sf )
-	    FVInsertInCID(fvs,replace);
+	    CIDSetEncMap(fvs,replace);
     }
     FontViewReformatAll(fv->sf);
     SplineFontFree(sf);
