@@ -894,7 +894,7 @@ static void dumpgposkerndata(FILE *gpos,SplineFont *sf,int sli,
 #endif
     int16 *offsets=NULL;
     KernPair *kp;
-    uint32 script = sf->script_lang[sli][0].script;
+    uint32 script = (sf->cidmaster?sf->cidmaster:sf)->script_lang[sli][0].script;
     int isr2l = ScriptIsRightToLeft(script);
     int anydevtab = false;
 
