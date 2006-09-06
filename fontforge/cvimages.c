@@ -1411,7 +1411,7 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[9];
+    GGadgetCreateData gcd[9], boxes[4], *varray[9], *harray[5], *buttons[10];
     GTextInfo label[9];
     struct gfc_data d;
     int i, format;
@@ -1444,11 +1444,13 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
+    memset(&boxes,0,sizeof(boxes));
     gcd[0].gd.pos.x = 12; gcd[0].gd.pos.y = 6; gcd[0].gd.pos.width = totwid-24; gcd[0].gd.pos.height = 182;
     gcd[0].gd.flags = gg_visible | gg_enabled;
     if ( fv!=NULL )
 	gcd[0].gd.flags |= gg_file_multiple;
     gcd[0].creator = GFileChooserCreate;
+    varray[0] = &gcd[0]; varray[1] = NULL;
 
     gcd[1].gd.pos.x = 12; gcd[1].gd.pos.y = 224-3; gcd[1].gd.pos.width = -1; gcd[1].gd.pos.height = 0;
     gcd[1].gd.flags = gg_visible | gg_enabled | gg_but_default;
@@ -1458,6 +1460,7 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
     gcd[1].gd.label = &label[1];
     gcd[1].gd.handle_controlevent = GFD_ImportOk;
     gcd[1].creator = GButtonCreate;
+    buttons[0] = GCD_Glue; buttons[1] = &gcd[1]; buttons[2] = GCD_Glue;
 
     gcd[2].gd.pos.x = (totwid-bs)*100/GIntGetResource(_NUM_ScaleFactor)/2; gcd[2].gd.pos.y = 224; gcd[2].gd.pos.width = -1; gcd[2].gd.pos.height = 0;
     gcd[2].gd.flags = gg_visible | gg_enabled;
@@ -1468,6 +1471,7 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
     gcd[2].gd.label = &label[2];
     gcd[2].gd.handle_controlevent = GFileChooserFilterEh;
     gcd[2].creator = GButtonCreate;
+    buttons[3] = GCD_Glue; buttons[4] = &gcd[2]; buttons[5] = GCD_Glue;
 
     gcd[3].gd.pos.x = -gcd[1].gd.pos.x; gcd[3].gd.pos.y = 224; gcd[3].gd.pos.width = -1; gcd[3].gd.pos.height = 0;
     gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
@@ -1477,6 +1481,8 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
     gcd[3].gd.label = &label[3];
     gcd[3].gd.handle_controlevent = GFD_Cancel;
     gcd[3].creator = GButtonCreate;
+    buttons[6] = GCD_Glue; buttons[7] = &gcd[3]; buttons[8] = GCD_Glue;
+    buttons[9] = NULL;
 
     gcd[4].gd.pos.x = 12; gcd[4].gd.pos.y = 200; gcd[4].gd.pos.width = 0; gcd[4].gd.pos.height = 0;
     gcd[4].gd.flags = gg_visible | gg_enabled;
@@ -1484,6 +1490,7 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
     label[4].text_is_1byte = true;
     gcd[4].gd.label = &label[4];
     gcd[4].creator = GLabelCreate;
+    harray[0] = &gcd[4];
 
     gcd[5].gd.pos.x = 55; gcd[5].gd.pos.y = 194; 
     gcd[5].gd.flags = gg_visible | gg_enabled ;
@@ -1499,9 +1506,10 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
     for ( i=0; i<sizeof(formats)/sizeof(formats[0]); ++i )
 	gcd[5].gd.u.list[i].selected = false;
     gcd[5].gd.u.list[format].selected = true;
+    harray[1] = &gcd[5];
 
     if ( fv!=NULL ) {
-	gcd[6].gd.pos.x = 180; gcd[6].gd.pos.y = gcd[5].gd.pos.y+4;
+	gcd[6].gd.pos.x = 185; gcd[6].gd.pos.y = gcd[5].gd.pos.y+4;
 	gcd[6].gd.flags = gg_visible | gg_enabled ;
 #ifdef FONTFORGE_CONFIG_TYPE3
 	if ( format==fv_pk || format==fv_image || format==fv_imgtemplate )
@@ -1516,14 +1524,38 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
 	label[6].text_is_1byte = true;
 	gcd[6].gd.label = &label[6];
 	gcd[6].creator = GCheckBoxCreate;
+	harray[2] = &gcd[6]; harray[3] = GCD_Glue; harray[4] = NULL;
+    } else {
+	harray[2] = GCD_Glue; harray[3] = NULL;
     }
 
-    GGadgetsCreate(gw,gcd);
+    boxes[2].gd.flags = gg_enabled|gg_visible;
+    boxes[2].gd.u.boxelements = harray;
+    boxes[2].creator = GHBoxCreate;
+    varray[2] = &boxes[2]; varray[3] = NULL;
+
+    boxes[3].gd.flags = gg_enabled|gg_visible;
+    boxes[3].gd.u.boxelements = buttons;
+    boxes[3].creator = GHBoxCreate;
+    varray[4] = GCD_Glue; varray[5] = NULL;
+    varray[6] = &boxes[3]; varray[7] = NULL;
+    varray[8] = NULL;
+
+    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = varray;
+    boxes[0].creator = GHVGroupCreate;
+
+    GGadgetsCreate(gw,boxes);
+    GHVBoxSetExpandableRow(boxes[0].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(boxes[3].ret,gb_expandgluesame);
+    GHVBoxSetExpandableCol(boxes[2].ret,gb_expandglue);
     GGadgetSetUserData(gcd[2].ret,gcd[0].ret);
 
     GFileChooserConnectButtons(gcd[0].ret,gcd[1].ret,gcd[2].ret);
     GFileChooserSetFilterText(gcd[0].ret,fv!=NULL?wildfnt[format]:wildchr[format]);
     GFileChooserRefreshList(gcd[0].ret);
+    GHVBoxFitWindow(boxes[0].ret);
 #if 0
     GFileChooserGetChildren(gcd[0].ret,&pulldown,&files,&tf);
     GWidgetIndicateFocusGadget(tf);
