@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 31-Aug-2006 -->
-  <!-- AP: Last modified: 31-Aug-2006 -->
+  <!-- AP: Last modified: 2-Sep-2006 -->
   <TITLE>Several formats for bitmap only sfnts (truetype files)</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -63,6 +63,9 @@
     <LI>
       (Presumably there are no '<CODE>vhea</CODE>' nor '<CODE>vmtx</CODE>' tables
       either)
+    <LI>
+      '<CODE><A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6maxp.html">maxp</A></CODE>'.<CODE>numGlyphs</CODE>
+      is set to the number of bitmap glyphs
   </UL>
   <H2>
     <A NAME="X11">X11</A> (Unix/Linux)
@@ -89,6 +92,11 @@
       There is a
       '<CODE><A HREF="http://partners.adobe.com/public/developer/opentype/index_head.html">head</A></CODE>'
       table (not a '<CODE>bhed</CODE>') 
+    <LI>
+      '<CODE><A HREF="http://partners.adobe.com/public/developer/opentype/index_maxp.html">maxp</A></CODE>'.<CODE>numGlyphs</CODE>
+      is set to the number of bitmap glyphs, not to the size of the
+      '<CODE><A HREF="http://partners.adobe.com/public/developer/opentype/index_loca.html">loca</A></CODE>'
+      table
 	<HR>
     <LI>
       The fonts I generate also contain the metrics tables as appropriate
