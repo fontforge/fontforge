@@ -1754,6 +1754,7 @@ extern Undoes *SCPreserveHints(SplineChar *sc);
 extern Undoes *SCPreserveLayer(SplineChar *sc,int layer,int dohints);
 extern Undoes *SCPreserveState(SplineChar *sc,int dohints);
 extern Undoes *SCPreserveBackground(SplineChar *sc);
+extern Undoes *SFPreserveGuide(SplineFont *sf);
 extern Undoes *SCPreserveWidth(SplineChar *sc);
 extern Undoes *SCPreserveVWidth(SplineChar *sc);
 extern Undoes *BCPreserveState(BDFChar *bc);

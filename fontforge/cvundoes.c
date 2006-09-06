@@ -576,6 +576,30 @@ Undoes *SCPreserveBackground(SplineChar *sc) {
 return( SCPreserveLayer(sc,ly_back,false));
 }
 
+Undoes *SFPreserveGuide(SplineFont *sf) {
+    Undoes *undo;
+
+    if ( no_windowing_ui || maxundoes==0 )		/* No use for undoes in scripting */
+return(NULL);
+
+    undo = chunkalloc(sizeof(Undoes));
+
+    undo->undotype = ut_state;
+    undo->was_modified = sf->changed;
+    undo->was_order2 = sf->order2;
+    undo->u.state.splines = SplinePointListCopy(sf->grid.splines);
+    undo->u.state.images = ImageListCopy(sf->grid.images);
+#ifdef FONTFORGE_CONFIG_TYPE3
+    undo->u.state.fill_brush = sf->grid.fill_brush;
+    undo->u.state.stroke_pen = sf->grid.stroke_pen;
+    undo->u.state.dofill = sf->grid.dofill;
+    undo->u.state.dostroke = sf->grid.dostroke;
+    undo->u.state.fillfirst = sf->grid.fillfirst;
+#endif
+    undo->u.state.copied_from = sf;
+return( AddUndo(undo,&sf->grid.undoes,&sf->grid.redoes));
+}
+
 void SCUndoSetLBearingChange(SplineChar *sc,int lbc) {
     Undoes *undo = sc->layers[ly_fore].undoes;
 

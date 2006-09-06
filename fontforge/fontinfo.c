@@ -5537,17 +5537,6 @@ return(true);
 	    txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Version));
 	    free(sf->version); sf->version = cu_copy(txt);
 	}
-	if ( as!=sf->ascent || des!=sf->descent ) {
-	    if ( as+des != sf->ascent+sf->descent && GGadgetIsChecked(GWidgetGetControl(gw,CID_Scale)) )
-		SFScaleToEm(sf,as,des);
-	    else {
-		sf->ascent = as;
-		sf->descent = des;
-	    }
-	    BDFsSetAsDs(sf);
-	    reformat_fv = true;
-	    CIDMasterAsDes(sf);
-	}
 	fond = _GGadgetGetTitle(GWidgetGetControl(gw,CID_MacFOND));
 	free(sf->fondname); sf->fondname = NULL;
 	if ( *fond )
@@ -5644,6 +5633,18 @@ return(true);
 		sf->pfminfo.os2_strikeysize = strike[0];
 		sf->pfminfo.os2_strikeypos = strike[1];
 	    }
+	}
+	/* must come after all scaleable fields (linegap, etc.) */
+	if ( as!=sf->ascent || des!=sf->descent ) {
+	    if ( as+des != sf->ascent+sf->descent && GGadgetIsChecked(GWidgetGetControl(gw,CID_Scale)) )
+		SFScaleToEm(sf,as,des);
+	    else {
+		sf->ascent = as;
+		sf->descent = des;
+	    }
+	    BDFsSetAsDs(sf);
+	    reformat_fv = true;
+	    CIDMasterAsDes(sf);
 	}
 	if ( order2!=sf->order2 ) {
 	    if ( order2 )

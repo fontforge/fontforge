@@ -3048,15 +3048,37 @@ void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
 		SCWorthOutputting(fv->sf->glyphs[gid]) )
 	    ++cnt;
 
-    if ( cnt>10 || cnt>fv->sf->glyphcnt/2 ) {
+#if 0	/* Do this in scaletoem */
+    if ( cnt>fv->sf->glyphcnt/2 ) {
 	if ( transform[3]!=1.0 ) {
-	    fv->sf->pfminfo.os2_typoascent = 0;		/* Value won't be valid after a masive scale */
-	    if ( transform[2]==0 )
-		fv->sf->pfminfo.linegap *= transform[3];
+	    if ( transform[2]==0 ) {
+		fv->sf->pfminfo.os2_typoascent = rint( fv->sf->pfminfo.os2_typoascent * transform[3]);
+		fv->sf->pfminfo.os2_typodescent = rint( fv->sf->pfminfo.os2_typodescent * transform[3]);
+		fv->sf->pfminfo.os2_typolinegap = rint( fv->sf->pfminfo.os2_typolinegap * transform[3]);
+		fv->sf->pfminfo.os2_winascent = rint( fv->sf->pfminfo.os2_winascent * transform[3]);
+		fv->sf->pfminfo.os2_windescent = rint( fv->sf->pfminfo.os2_windescent * transform[3]);
+		fv->sf->pfminfo.hhead_ascent = rint( fv->sf->pfminfo.hhead_ascent * transform[3]);
+		fv->sf->pfminfo.hhead_descent = rint( fv->sf->pfminfo.hhead_descent * transform[3]);
+		fv->sf->pfminfo.linegap = rint( fv->sf->pfminfo.linegap * transform[3]);
+		fv->sf->pfminfo.os2_subysize = rint( fv->sf->pfminfo.os2_subysize * transform[3]);
+		fv->sf->pfminfo.os2_subyoff = rint( fv->sf->pfminfo.os2_subyoff * transform[3]);
+		fv->sf->pfminfo.os2_supysize = rint( fv->sf->pfminfo.os2_supysize * transform[3]);
+		fv->sf->pfminfo.os2_supyoff = rint( fv->sf->pfminfo.os2_supyoff * transform[3]);
+		fv->sf->pfminfo.os2_strikeysize = rint( fv->sf->pfminfo.os2_strikeysize * transform[3]);
+		fv->sf->pfminfo.os2_strikeypos = rint( fv->sf->pfminfo.os2_strikeypos * transform[3]);
+		fv->sf->pfminfo.upos *= transform[3];
+		fv->sf->pfminfo.uwidth *= transform[3];
+	    }
 	}
-	if ( transform[1]==0 && transform[0]!=1.0 )
-	    fv->sf->pfminfo.vlinegap *= transform[0];
+	if ( transform[1]==0 && transform[0]!=1.0 ) {
+	    fv->sf->pfminfo.vlinegap = rint( fv->sf->pfminfo.vlinegap * transform[0]);
+	    fv->sf->pfminfo.os2_subxsize = rint( fv->sf->pfminfo.os2_subxsize * transform[0]);
+	    fv->sf->pfminfo.os2_subxoff = rint( fv->sf->pfminfo.os2_subxoff * transform[0]);
+	    fv->sf->pfminfo.os2_supxsize = rint( fv->sf->pfminfo.os2_supxsize * transform[0]);
+	    fv->sf->pfminfo.os2_supxoff = rint( fv->sf->pfminfo.os2_supxoff * transform[0]);
+	}
     }
+#endif
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_start_indicator(10,_("Transforming..."),_("Transforming..."),0,cnt,1);
@@ -3094,6 +3116,10 @@ void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
 	if ( !gwwv_progress_next())
     break;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+    }
+    if ( flags&fvt_dogrid ) {
+	SFPreserveGuide(fv->sf);
+	SplinePointListTransform(fv->sf->grid.splines,transform,true);
     }
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_end_indicator();
@@ -3225,26 +3251,26 @@ int SFScaleToEm(SplineFont *sf, int as, int des) {
     uint8 *oldselected = sf->fv->selected;
 
     scale = (as+des)/(double) (sf->ascent+sf->descent);
-    sf->pfminfo.hhead_ascent *= scale;
-    sf->pfminfo.hhead_descent *= scale;
-    sf->pfminfo.linegap *= scale;
-    sf->pfminfo.vlinegap *= scale;
-    sf->pfminfo.os2_winascent *= scale;
-    sf->pfminfo.os2_windescent *= scale;
-    sf->pfminfo.os2_typoascent *= scale;
-    sf->pfminfo.os2_typodescent *= scale;
-    sf->pfminfo.os2_typolinegap *= scale;
+    sf->pfminfo.hhead_ascent = rint( sf->pfminfo.hhead_ascent * scale);
+    sf->pfminfo.hhead_descent = rint( sf->pfminfo.hhead_descent * scale);
+    sf->pfminfo.linegap = rint( sf->pfminfo.linegap * scale);
+    sf->pfminfo.vlinegap = rint( sf->pfminfo.vlinegap * scale);
+    sf->pfminfo.os2_winascent = rint( sf->pfminfo.os2_winascent * scale);
+    sf->pfminfo.os2_windescent = rint( sf->pfminfo.os2_windescent * scale);
+    sf->pfminfo.os2_typoascent = rint( sf->pfminfo.os2_typoascent * scale);
+    sf->pfminfo.os2_typodescent = rint( sf->pfminfo.os2_typodescent * scale);
+    sf->pfminfo.os2_typolinegap = rint( sf->pfminfo.os2_typolinegap * scale);
 
-    sf->pfminfo.os2_subxsize *= scale;
-    sf->pfminfo.os2_subysize *= scale;
-    sf->pfminfo.os2_subxoff *= scale;
-    sf->pfminfo.os2_subyoff *= scale;
-    sf->pfminfo.os2_supxsize *= scale;
-    sf->pfminfo.os2_supysize *= scale;
-    sf->pfminfo.os2_supxoff *= scale;
-    sf->pfminfo.os2_supyoff *= scale;
-    sf->pfminfo.os2_strikeysize *= scale;
-    sf->pfminfo.os2_strikeypos *= scale;
+    sf->pfminfo.os2_subxsize = rint( sf->pfminfo.os2_subxsize * scale);
+    sf->pfminfo.os2_subysize = rint( sf->pfminfo.os2_subysize * scale);
+    sf->pfminfo.os2_subxoff = rint( sf->pfminfo.os2_subxoff * scale);
+    sf->pfminfo.os2_subyoff = rint( sf->pfminfo.os2_subyoff * scale);
+    sf->pfminfo.os2_supxsize = rint( sf->pfminfo.os2_supxsize * scale);
+    sf->pfminfo.os2_supysize = rint(sf->pfminfo.os2_supysize *  scale);
+    sf->pfminfo.os2_supxoff = rint( sf->pfminfo.os2_supxoff * scale);
+    sf->pfminfo.os2_supyoff = rint( sf->pfminfo.os2_supyoff * scale);
+    sf->pfminfo.os2_strikeysize = rint( sf->pfminfo.os2_strikeysize * scale);
+    sf->pfminfo.os2_strikeypos = rint( sf->pfminfo.os2_strikeypos * scale);
     sf->upos *= scale;
     sf->uwidth *= scale;
 
