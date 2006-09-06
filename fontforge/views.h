@@ -624,7 +624,7 @@ enum widthtype { wt_width, wt_lbearing, wt_rbearing, wt_vwidth };
 
 enum fvtrans_flags { fvt_dobackground=1, fvt_round_to_int=2,
 	fvt_dontsetwidth=4, fvt_dontmovewidth=8, fvt_scalekernclasses=0x10,
-	fvt_scalepstpos=0x20 };
+	fvt_scalepstpos=0x20, fvt_dogrid=0x40 };
 
 enum origins { or_zero, or_center, or_lastpress, or_value, or_undefined };
 struct pov_data {
