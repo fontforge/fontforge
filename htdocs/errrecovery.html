@@ -2,44 +2,44 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 17-Dec-2000 -->
-  <!-- AP: Last modified: 13-Oct-2004 -->
+  <!-- AP: Last modified: 5-Sep-2006 -->
   <TITLE>Error Recovery</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
 <DIV id="in">
-<H1 ALIGN=Center>
-  Error Recovery
-</H1>
-<P>
-All programs crash, and new programs (like this one) crash a lot.
-<P>
-Every minute or so FontForge looks around and sees if anything has changed
-since the last time it checked. If it finds a font that has had changes,
-it will save a small file in its private directory (~/.FontForge/autosave)
-which consists of all changed glyphs in the changed font.
-<P>
-When FontForge starts up it checks this directory, and if it finds anything
-there it attempts to apply those changes to the original font. So if FontForge
-crashes, or if your machine crashes, the next time you start FontForge it
-will figure out what you were doing and recover it as best it can.
-<P>
-When editing CID-keyed fonts there are a few potential gotchas:
-<UL>
-  <LI>
-    FontForge does not keep track of gross changes (like adding or removing a
-    sub font)
-  <LI>
-    FontForge does not keep track of which sub font a change occurred in, instead
-    at recovery time it will look for a subfont that is contains a glyph at the
-    CID that was changed. In almost all cases this will be right, but if you
-    add glyphs or if you have two sub-fonts defining the same CID, FontForge
-    may guess wrong.
-</UL>
-<P>
-<P ALIGN=Center>
--- <A HREF="locale.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
-<A HREF="xres.html">Next</A> --
+  <H1 ALIGN=Center>
+    Error Recovery
+  </H1>
+  <P>
+  All programs crash, and new programs (like this one) crash a lot.
+  <P>
+  Every minute or so FontForge looks around and sees if anything has changed
+  since the last time it checked. If it finds a font that has had changes,
+  it will save a small file in its private directory (~/.FontForge/autosave)
+  which consists of all changed glyphs in the changed font.
+  <P>
+  When FontForge starts up it checks this directory, and if it finds anything
+  there it attempts to apply those changes to the original font. So if FontForge
+  crashes, or if your machine crashes, the next time you start FontForge it
+  will figure out what you were doing and recover it as best it can.
+  <P>
+  When editing CID-keyed fonts there are a few potential gotchas:
+  <UL>
+    <LI>
+      FontForge does not keep track of gross changes (like adding or removing a
+      sub font)
+    <LI>
+      FontForge does not keep track of which sub font a change occurred in, instead
+      at recovery time it will look for a subfont that is contains a glyph at the
+      CID that was changed. In almost all cases this will be right, but if you
+      add glyphs or if you have two sub-fonts defining the same CID, FontForge
+      may guess wrong.
+  </UL>
+  <P>
+  <P ALIGN=Center>
+  -- <A HREF="PfaEdit-TeX.html">Prev</A> -- <A HREF="overview.html">TOC</A>
+  -- <A HREF="xres.html">Next</A> --
 </DIV>
 </BODY></HTML>
