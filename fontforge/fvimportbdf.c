@@ -448,6 +448,11 @@ static int default_ascent_descent(int *_as, int *_ds, int ascent, int descent,
 	    }
 	    LogError(_("Various specifications of PIXEL_SIZE do not match in %s"), filename );
 	}
+    } else if ( pixelsize!=-1 && ascent!=-1 && descent!=-1 ) {
+	if ( pixelsize!=ascent+descent ) {
+	    ascent = 8*pixelsize/10;
+	    descent = pixelsize-ascent;
+	}
     } else {
 	if ( pixelsize==-1 )
 	    pixelsize = pixel_size2;
@@ -1781,6 +1786,7 @@ static int PcfParse(FILE *file,struct toc *toc,SplineFont *sf,EncMap *map, BDFFo
     if ( metrics==NULL )
 return( false );
     b->glyphcnt = b->glyphmax = mcnt;
+    free(b->glyphs);
     b->glyphs = gcalloc(mcnt,sizeof(BDFChar *));
     for ( i=0; i<mcnt; ++i ) {
 	b->glyphs[i] = chunkalloc(sizeof(BDFChar));
@@ -1875,7 +1881,7 @@ static int alreadyexists(int pixelsize) {
 	_("The font database already contains a bitmap\012font with this pixelsize (%d)\012Do you want to overwrite it?"),
 	pixelsize);
 
-return( ret );
+return( ret==0 );
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
@@ -2025,7 +2031,7 @@ return( NULL );
 	if ( !alreadyexists(pixelsize)) {
 	    fclose(bdf); free(toc);
 	    BDFPropsFree(&dummy);
-return( NULL );
+return( (BDFFont *) -1 );
 	}
     }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
@@ -2356,8 +2362,9 @@ SplineFont *SFFromBDF(char *filename,int ispk,int toback) {
     sf->onlybitmaps = true;
     bdf = SFImportBDF(sf,filename,ispk,toback, map);
     sf->map = map;
-
-    if ( toback )
+    if ( bdf==(BDFFont *) -1 )
+	/* Do Nothing: User cancelled a load of a duplicate pixelsize */;
+    else if ( toback )
 	SFAddToBackground(sf,bdf);
     else
 	sf->changed = false;

@@ -329,7 +329,7 @@ static void readttfbitmapfont(FILE *ttf,struct ttfinfo *info,
 	last =  getushort(ttf);
 	moreoff = getlong(ttf);
 	if ( last<first ) {
-	    LogError( "Bad format of subtable %d (of %d) in strike with pixelsize=%d. First=%d, last=%d.\n",
+	    LogError( "Bad format of subtable %d (of %d) in bloc/EBLC of strike with pixelsize=%d. First=%d, last=%d.\n",
 		    j, head->numIndexSubTables, bdf->pixelsize, first, last );
     continue;
 	}
@@ -1020,7 +1020,7 @@ return(NULL);
 	    }
 	    if ( cnt>20 ) {		/* We must have at least, oh, 20 glyphs with the same metrics */
 		bc->widthgroup = true;
-		cnt = 1;
+		/*cnt = 1;*/
 		for ( j=i+1; j<gi->gcnt; ++j ) {
 		    if ( gi->bygid[j]==-1 )
 		continue;
@@ -1031,10 +1031,11 @@ return(NULL);
 			     bc2->sc->ttf_glyph!=bc->sc->ttf_glyph+cnt )
 		break;
 		    else {
-			++cnt;
+			/*++cnt;*/
 			bc2->widthgroup = true;
 		    }
 		}
+		i = j-1;
 	    }
 	}
     }
