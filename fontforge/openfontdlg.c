@@ -512,6 +512,7 @@ return( true );
 	msg[len-1] = '\0';
     }
     GGadgetPreparePopup(GGadgetGetWindow(d->gfc),msg);
+    free(file);
     free(d->lastpopupfontname);
     d->lastpopupfontname = msg;
 return( true );
