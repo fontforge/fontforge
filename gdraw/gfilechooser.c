@@ -861,6 +861,8 @@ static void GFileChooser_destroy(GGadget *g) {
     GGadgetDestroy(&gfc->name->g);
     GGadgetDestroy(&gfc->files->g);
     GGadgetDestroy(&gfc->directories->g);
+    GGadgetDestroy(&gfc->up->g);
+    GGadgetDestroy(&gfc->home->g);
     free(gfc->wildcard);
     free(gfc->lastname);
     if ( gfc->mimetypes ) {
