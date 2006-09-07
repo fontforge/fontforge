@@ -1757,6 +1757,16 @@ static SplineChar *GetGoodAccentGlyph(SplineFont *sf, int uni, int basech,
 return( rsc );
 }
 
+static void TurnOffUseMyMetrics(SplineChar *sc) {
+    /* When building greek polytonic glyphs, or any glyphs where the accents */
+    /*  change the metrics, we should turn off "use my metrics" on the base */
+    /*  reference */
+    RefChar *refs;
+
+    for ( refs = sc->layers[ly_fore].refs; refs!=NULL; refs = refs->next )
+	refs->use_my_metrics = false;
+}
+
 static void _SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, SplineChar *rsc,
 	int copybmp, real ia, int basech, int invert, int pos ) {
     real transform[6];
@@ -1984,6 +1994,8 @@ static void _SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, SplineChar *rs
     _SCAddRef(sc,rsc,transform);
     if ( pos!=-1 && (pos&____RIGHT) )
 	SCSynchronizeWidth(sc,sc->width + rbb.maxx-rbb.minx+spacing,sc->width,sf->fv);
+    if ( pos!=-1 && (pos&(____LEFT|____RIGHT|____CENTERLEFT|____LEFTEDGE|____CENTERRIGHT|____RIGHTEDGE)) )
+	TurnOffUseMyMetrics(sc);
 
     if ( copybmp ) {
 	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
@@ -2587,13 +2599,15 @@ return;
 	if ( !SCMakeBaseReference(sc,sf,ch,copybmp) )
 return;
 	base = sc->layers[ly_fore].refs;
+	if ( sc->width == base->sc->width )
+	    base->use_my_metrics = true;
 	while ( iscombining(*pt) || (ch!='l' && *pt==0xb7) ||	/* b7, centered dot is used as a combining accent for Ldot but as a lig for ldot */
 		*pt==0x384 || *pt==0x385 || (*pt>=0x1fbd && *pt<=0x1fff ))	/* Special greek accents */
 	    SCCenterAccent(sc,sf,*pt++,copybmp,ia, ch);
 	while ( *pt )
 	    SCPutRefAfter(sc,sf,*pt++,copybmp);
-	if ( sc->width == base->sc->width )
-	    base->use_my_metrics = true;
+	if ( sc->width != base->sc->width )
+	    base->use_my_metrics = false;
     }
     SCCharChangedUpdate(sc);
     if ( copybmp ) {
