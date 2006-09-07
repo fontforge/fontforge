@@ -885,6 +885,17 @@ static const unichar_t str_13df[] = { 0x0043, 0 };
 static const unichar_t str_13e2[] = { 0x0050, 0 };
 static const unichar_t str_13e6[] = { 0x004b, 0 };
 static const unichar_t str_13f4[] = { 0x0042, 0 };
+static const unichar_t str_1b06[] = { 0x1b05, 0x1b35, 0 };
+static const unichar_t str_1b08[] = { 0x1b07, 0x1b35, 0 };
+static const unichar_t str_1b0a[] = { 0x1b09, 0x1b35, 0 };
+static const unichar_t str_1b0c[] = { 0x1b0b, 0x1b35, 0 };
+static const unichar_t str_1b0e[] = { 0x1b0d, 0x1b35, 0 };
+static const unichar_t str_1b12[] = { 0x1b11, 0x1b35, 0 };
+static const unichar_t str_1b3b[] = { 0x1b3a, 0x1b35, 0 };
+static const unichar_t str_1b3d[] = { 0x1b3c, 0x1b35, 0 };
+static const unichar_t str_1b40[] = { 0x1b3e, 0x1b35, 0 };
+static const unichar_t str_1b41[] = { 0x1b3f, 0x1b35, 0 };
+static const unichar_t str_1b43[] = { 0x1b42, 0x1b35, 0 };
 static const unichar_t str_1d2c[] = { 0x0041, 0 };
 static const unichar_t str_1d2d[] = { 0x00c6, 0 };
 static const unichar_t str_1d2e[] = { 0x0042, 0 };
@@ -5272,6 +5283,20 @@ str_13df,
 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_13f4,
 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
+static const unichar_t * const tab_1b[] = {
+0, 0, 0, 0, 0, 0, str_1b06,
+0, str_1b08,
+0, str_1b0a,
+0, str_1b0c,
+0, str_1b0e,
+0, 0, 0, str_1b12,
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_1b3b,
+0, str_1b3d,
+0, 0, str_1b40,
+str_1b41,
+0, str_1b43,
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
 static const unichar_t * const tab_1d[] = {
 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_1d2c,
 str_1d2d,
@@ -8816,7 +8841,8 @@ tab_f,
 tab_10,
 tab_11,
 up_allzeros, tab_13,
-up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, tab_1d,
+up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, tab_1b,
+up_allzeros, tab_1d,
 tab_1e,
 tab_1f,
 tab_20,

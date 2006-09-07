@@ -1971,6 +1971,17 @@ return( true );
 	    err = true;
 	if ( temp!=newname )
 	    free(temp);
+    } else if ( oldbitmapstate==bf_sfnt_dfont ) {
+	char *temp = newname;
+	if ( newname[strlen(newname)-1]=='.' ) {
+	    temp = galloc(strlen(newname)+8);
+	    strcpy(temp,newname);
+	    strcat(temp,"dfont");
+	}
+	if ( !WriteMacTTFFont(temp,sf,ff_none,sizes,oldbitmapstate,flags,map) )
+	    err = true;
+	if ( temp!=newname )
+	    free(temp);
     } else if ( (oldbitmapstate==bf_bdf || oldbitmapstate==bf_fnt ||
 	    oldbitmapstate==bf_fnt ||
 	    oldbitmapstate==bf_ptype3 ) && !err ) {
