@@ -2543,6 +2543,38 @@ return( 0 );
 return( true );
 }
 
+static void SCSetReasonableLBearing(SplineChar *sc,SplineChar *base) {
+    DBounds full, b;
+    SplineFont *sf;
+    int emsize;
+    double xoff;
+    RefChar *ref;
+    real transform[6];
+
+    SplineCharFindBounds(sc,&full);
+    SplineCharFindBounds(base,&b);
+
+    sf = sc->parent;
+    emsize = sf->ascent+sf->descent;
+
+    /* Now don't get excited if we have a very thin glyph (I in a sans-serif) */
+    /*  and a centered accent spills off to the left a little */
+    if ( full.minx>=0 || full.minx>=b.minx || full.minx>=-(emsize/20) )
+return;
+    /* ok. let's say we want an lbearing that's the same as that of the base */
+    /*  glyph */
+    xoff = b.minx-full.minx;
+    memset(transform,0,sizeof(transform));
+    transform[0] = transform[3] = 1.0;
+    transform[4] = xoff;
+    for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
+	ref->bb.minx += xoff; ref->bb.maxx += xoff;
+	ref->transform[4] += xoff;
+	SplinePointListTransform(ref->layers[0].splines,transform,true);
+    }
+    SCSynchronizeWidth(sc,sc->width + xoff,sc->width,sc->parent->fv);
+}
+
 void SCBuildComposit(SplineFont *sf, SplineChar *sc, int copybmp,FontView *fv) {
     const unichar_t *pt, *apt; unichar_t ch;
     BDFFont *bdf;
@@ -2606,6 +2638,10 @@ return;
 	    SCCenterAccent(sc,sf,*pt++,copybmp,ia, ch);
 	while ( *pt )
 	    SCPutRefAfter(sc,sf,*pt++,copybmp);
+	/* All along we assumed the base glyph didn't move. This makes       */
+	/* positioning easier. But if we add accents to the left we now want */
+	/* to move the glyph so we don't have a negative lbearing */
+	SCSetReasonableLBearing(sc,base->sc);
 	if ( sc->width != base->sc->width )
 	    base->use_my_metrics = false;
     }
