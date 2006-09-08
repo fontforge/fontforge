@@ -2112,7 +2112,7 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	if ( i==ff_otf ) i = ff_otfcid;
 	else if ( i==ff_otfdfont ) i = ff_otfciddfont;
     }
-    if ( i==ff_none && oldbitmapstate==bf_ttf )
+    if ( (i==ff_none || sf->onlybitmaps) && oldbitmapstate==bf_ttf )
 	oldbitmapstate = bf_sfnt_ms;
     oldformatstate = i;
 
