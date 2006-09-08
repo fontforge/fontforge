@@ -3559,7 +3559,7 @@ static struct feature *CoalesceLookups(SplineFont *sf, struct lookup *lookups,
 	}
 	lcnt = 0; which = 0;
 	for ( l=lookups; l!=NULL && l->feature_tag==lookups->feature_tag; l = l->feature_next, ++which ) {
-	    struct script_record *sr = sf->script_lang[l->script_lang_index];
+	    struct script_record *sr = (sf->cidmaster?sf->cidmaster:sf)->script_lang[l->script_lang_index];
 	    for ( s=0; sr[s].script!=0; ++s ) for ( lang=0; sr[s].langs[lang]!=0; ++lang ) {
 		pos = FindSL(slu,lcnt,sr[s].script,sr[s].langs[lang]);
 		if ( pos==-1 ) {
