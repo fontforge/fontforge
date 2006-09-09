@@ -3979,7 +3979,7 @@ static FILE *_Gen816Enc(SplineFont *sf,int *tlen,EncMap *map) {
 	lbase = 0x31;
 	subheadcnt = basebound-base+1;
 	planesize = 0xfe -0x31+1;	/* Stupid gcc bug, thinks 0xfe- is ambiguous (exponant) */
-    } else if ( strstrmatch(encname,"sjis")!=NULL ) {
+    } else if ( strstrmatch(encname,"sjis")!=NULL  || strstrmatch(encname,"cp932")!=NULL ) {
 	base = 129;
 	basebound = 159;
 	lbase = 64;
