@@ -218,8 +218,24 @@ uint32 ScriptFromUnicode(int u,SplineFont *sf) {
 	    if ( scripts[s][k+1]!=0 )
 	break;
 	}
-	if ( scripts[s][0]!=0 )
-return( scripts[s][0] );
+	if ( scripts[s][0]!=0 ) {
+	    extern int use_second_indic_scripts;
+	    uint32 script = scripts[s][0];
+	    if ( use_second_indic_scripts ) {
+		/* MS has a parallel set of script tags for their new */
+		/*  Indic font shaper */
+		if ( script == CHR('b','e','n','g' )) script = CHR('b','n','g','2');
+		else if ( script == CHR('d','e','v','a' )) script = CHR('d','e','v','2');
+		else if ( script == CHR('g','u','j','r' )) script = CHR('g','j','r','2');
+		else if ( script == CHR('g','u','r','u' )) script = CHR('g','u','r','2');
+		else if ( script == CHR('k','n','d','a' )) script = CHR('k','n','d','2');
+		else if ( script == CHR('m','l','y','m' )) script = CHR('m','l','y','2');
+		else if ( script == CHR('o','r','y','a' )) script = CHR('o','r','y','2');
+		else if ( script == CHR('t','a','m','l' )) script = CHR('t','m','l','2');
+		else if ( script == CHR('t','e','l','u' )) script = CHR('t','e','l','2');
+	    }
+return( script );
+	}
     }
 
     if ( sf==NULL )
