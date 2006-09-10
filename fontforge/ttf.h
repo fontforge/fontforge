@@ -78,6 +78,8 @@ struct ttfinfo {
     unsigned int to_order2:1;			/* We are to leave the font as truetype (order2) splines, else convert to ps */
     unsigned int complainedmultname:1;	/* Don't complain about this more than once */
     unsigned int strokedfont: 1;		/* painttype==2 for otf */
+    unsigned int use_typo_metrics: 1;
+    unsigned int weight_width_slope_only: 1;
     enum openflags openflags;
     /* Mac fonts platform=0/1, platform specific enc id, roman=0, english is lang code 0 */
     /* iso platform=2, platform specific enc id, latin1=0/2, no language */
@@ -98,6 +100,7 @@ struct ttfinfo {
     EncMap *map;
     enum uni_interp uni_interp;
     struct pfminfo pfminfo;
+    short os2_version;
     int dupnamestate;
     struct ttflangname *names;
     char *fontcomments;

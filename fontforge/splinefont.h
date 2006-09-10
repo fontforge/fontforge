@@ -1003,6 +1003,11 @@ typedef struct splinefont {
     unsigned int new: 1;			/* A new and unsaved font */
     unsigned int compacted: 1;			/* only used when opening a font */
     unsigned int backedup: 2;			/* 0=>don't know, 1=>no, 2=>yes */
+    unsigned int use_typo_metrics: 1;		/* The standard says to. But MS */
+    						/* seems to feel that isn't good */
+			                        /* enough and has created a bit */
+			                        /* to mean "really use them" */
+    unsigned int weight_width_slope_only: 1;	/* This bit seems stupid to me */
     struct fontview *fv;
     enum uni_interp uni_interp;
     NameList *for_new_glyphs;
@@ -1124,6 +1129,7 @@ typedef struct splinefont {
     long creationtime;
     long modificationtime;
 #endif
+    short os2_version;			/* 0 means default rather than the real version 0 */
 } SplineFont;
 
 /* I am going to simplify my life and not encourage intermediate designs */

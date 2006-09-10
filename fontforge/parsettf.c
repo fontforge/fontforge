@@ -4115,10 +4115,10 @@ return;
 }
 
 static void readttfos2metrics(FILE *ttf,struct ttfinfo *info) {
-    int i;
+    int i, sel;
 
     fseek(ttf,info->os2_start,SEEK_SET);
-    /* version */ getushort(ttf);
+    info->os2_version = getushort(ttf);
     /* avgWidth */ getushort(ttf);
     info->pfminfo.weight = getushort(ttf);
     info->pfminfo.width = getushort(ttf);
@@ -4148,7 +4148,11 @@ static void readttfos2metrics(FILE *ttf,struct ttfinfo *info) {
     info->pfminfo.os2_vendor[1] = getc(ttf);
     info->pfminfo.os2_vendor[2] = getc(ttf);
     info->pfminfo.os2_vendor[3] = getc(ttf);
-    /* fsselection */ getushort(ttf);
+    sel = getushort(ttf);
+    if ( info->os2_version>=4 ) {
+	info->use_typo_metrics = (sel&128)?1:0;
+	info->weight_width_slope_only = (sel&256)?1:0;
+    }
     /* firstchar */ getushort(ttf);
     /* lastchar */ getushort(ttf);
     info->pfminfo.os2_typoascent = getushort(ttf);
@@ -5024,6 +5028,9 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     sf->xuid = info->xuid;
     sf->uniqueid = info->uniqueid;
     sf->pfminfo = info->pfminfo;
+    sf->os2_version = info->os2_version;
+    sf->use_typo_metrics = info->use_typo_metrics;
+    sf->weight_width_slope_only = info->weight_width_slope_only;
     sf->names = info->names;
     sf->anchor = info->ahead;
     sf->kerns = info->khead;
@@ -5152,6 +5159,7 @@ SplineFont *_SFReadTTF(FILE *ttf, int flags,enum openflags openflags, char *file
     memset(&info,'\0',sizeof(struct ttfinfo));
     info.onlystrikes = (flags&ttf_onlystrikes)?1:0;
     info.onlyonestrike = (flags&ttf_onlyonestrike)?1:0;
+    info.use_typo_metrics = true;
     info.fd = fd;
     ret = readttf(ttf,&info,filename);
     if ( !ret )
