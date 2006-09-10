@@ -3091,6 +3091,11 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *sf,
     EncMap *map;
 
     os2->version = 1;
+    if ( format==ff_otf || format==ff_otfcid )
+	os2->version = 3;
+    if ( sf->os2_version!=0 )
+	os2->version = sf->os2_version;
+
     os2->weightClass = sf->pfminfo.weight;
     os2->widthClass = sf->pfminfo.width;
     os2->fstype = 0x8;
@@ -3117,8 +3122,10 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *sf,
 	    os2->fsSel &= ~1;		/* Turn off Italic */
 	    os2->fsSel |= 512;		/* Turn on Oblique */
 	}
-	os2->fsSel |= 128;		/* Don't use win ascent/descent for line spacing */
-	/* I haven't the foggiest idea how to guess whether the family varies on width weight slope only */
+	if ( sf->use_typo_metrics )
+	    os2->fsSel |= 128;		/* Don't use win ascent/descent for line spacing */
+	if ( sf->weight_width_slope_only )
+	    os2->fsSel |= 256;
     }
 /* David Lemon @Adobe.COM
 1)  The sTypoAscender and sTypoDescender values should sum to 2048 in 
@@ -3229,13 +3236,10 @@ docs are wrong.
                 os2->ulCodePage[0] |= 1;
     }
 
-    if ( format==ff_otf || format==ff_otfcid ) {
+    if ( os2->version>=2 ) {
 	BlueData bd;
 
 	QuickBlues(sf,&bd);		/* This handles cid fonts properly */
-	/*os2->version = 2;*/		/* current version is 3. It added some bit defns but no fields */
-	if ( os2->version != 0 )
-	    os2->version = 3;
 	os2->xHeight = bd.xheight;
 	os2->capHeight = bd.caph;
 	os2->defChar = ' ';

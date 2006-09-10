@@ -219,6 +219,13 @@ static GTextInfo ibmfamily[] = {
     { (unichar_t *) N_("Sy Neo-grotesque Sans Serif"), NULL, 0, 0, (void *) 0xc07, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Sy Miscellaneous"), NULL, 0, 0, (void *) 0xc0f, NULL, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
+static GTextInfo os2versions[] = {
+    { (unichar_t *) N_("Automatic"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("1"), NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("2"), NULL, 0, 0, (void *) 2, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("3"), NULL, 0, 0, (void *) 3, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("4"), NULL, 0, 0, (void *) 4, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { NULL }};
 static GTextInfo panfamily[] = {
     { (unichar_t *) N_("Any"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("No Fit"), NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -1102,6 +1109,9 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_HHeadDescentIsOff	3028
 #define CID_Vendor		3029
 #define CID_IBMFamily		3030
+#define CID_OS2Version		3031
+#define CID_UseTypoMetrics	3032
+#define CID_WeightWidthSlopeOnly	3033
 
 #define CID_SubSuperDefault	3100
 #define CID_SubXSize		3101
@@ -5309,6 +5319,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	char os2_vendor[4];
 	NameList *nl;
 	extern int allow_utf8_glyphnames;
+	int os2version;
 
 	if ( d->tn_smallactive!=-1 )
 	    TN_FinishSmallEdit(d);
@@ -5368,7 +5379,14 @@ return(true);
 	}
 	if ( vmetrics )
 	    vorigin = GetInt8(gw,CID_VOrigin,_("Vertical _Origin:"),&err);
+	os2version = sf->os2_version;
 	if ( d->ttf_set ) {
+	    char *os2v = GGadgetGetTitle8(GWidgetGetControl(gw,CID_OS2Version));
+	    if ( strcasecmp(os2v,_( (char *) os2versions[0].text ))== 0 )
+		os2version = 0;
+	    else
+		os2version = GetInt8(gw,CID_OS2Version,_("Weight, Width, Slope Only"),&err);
+	    free(os2v);
 	    /* Only use the normal routine if we get no value, because */
 	    /*  "400 Book" is a reasonable setting, but would cause GetInt */
 	    /*  to complain */
@@ -5577,6 +5595,9 @@ return(true);
 	if ( d->names_set )
 	    SortableToTTFNames(d);
 	if ( d->ttf_set ) {
+	    sf->os2_version = os2version;
+	    sf->use_typo_metrics = GGadgetIsChecked(GWidgetGetControl(gw,CID_UseTypoMetrics));
+	    sf->weight_width_slope_only = GGadgetIsChecked(GWidgetGetControl(gw,CID_WeightWidthSlopeOnly));
 	    sf->pfminfo.weight = weight;
 	    sf->pfminfo.width = GGadgetGetFirstListSelectedItem(GWidgetGetControl(gw,CID_WidthClass))+1;
 	    pfmfam = GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_PFMFamily));
@@ -5913,6 +5934,16 @@ static void TTFSetup(struct gfi_data *d) {
 	    GGadgetSelectOneListItem(GWidgetGetControl(d->gw,CID_PFMFamily),i);
     break;
 	}
+
+    if ( d->sf->os2_version>=0 && d->sf->os2_version<=4 )
+	GGadgetSelectOneListItem(GWidgetGetControl(d->gw,CID_OS2Version),d->sf->os2_version);
+    else {
+	sprintf( buffer,"%d", d->sf->os2_version );
+	GGadgetSetTitle8(GWidgetGetControl(d->gw,CID_OS2Version),buffer);
+    }
+    GGadgetSetChecked(GWidgetGetControl(d->gw,CID_UseTypoMetrics),d->sf->use_typo_metrics);
+    GGadgetSetChecked(GWidgetGetControl(d->gw,CID_WeightWidthSlopeOnly),d->sf->weight_width_slope_only);
+    
     for ( i=0; ibmfamily[i].text!=NULL; ++i )
 	if ( (intpt) (ibmfamily[i].userdata)==info.os2_family_class ) {
 	    GGadgetSelectOneListItem(GWidgetGetControl(d->gw,CID_IBMFamily),i);
@@ -6406,9 +6437,9 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     GWindowAttrs wattrs;
     GTabInfo aspects[20], conaspects[7], smaspects[5], vaspects[5];
     GGadgetCreateData mgcd[10], ngcd[17], psgcd[30], tngcd[8],
-	pgcd[8], vgcd[16], pangcd[22], comgcd[3], atgcd[7], txgcd[23],
+	pgcd[8], vgcd[19], pangcd[22], comgcd[3], atgcd[7], txgcd[23],
 	congcd[3], csubgcd[fpst_max-pst_contextpos][6], smgcd[3], smsubgcd[4][6],
-	mfgcd[8], mcgcd[8], szgcd[19], mkgcd[5], metgcd[28], vagcd[3], ssgcd[23],
+	mfgcd[8], mcgcd[8], szgcd[19], mkgcd[5], metgcd[29], vagcd[3], ssgcd[23],
 	xugcd[7], dgcd[6], ugcd[4];
     GGadgetCreateData mb[2], mb2, nb[2], nb2, nb3, xub[2], psb[2], psb2[3], ppbox[3],
 	    vbox[4], metbox[2], ssbox[2], panbox[2], combox[2], atbox[4], mkbox[3],
@@ -6416,7 +6447,7 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
 	    smbox[4][4], mcbox[3], mfbox[3], szbox[6];
     GGadgetCreateData *marray[7], *marray2[9], *narray[26], *narray2[7], *narray3[3],
 	*xuarray[13], *psarray[10], *psarray2[21], *psarray3[3], *psarray4[10],
-	*ppbuttons[5], *pparray[4], *vradio[5], *vbutton[4], *varray[32], *metarray[42],
+	*ppbuttons[5], *pparray[4], *vradio[5], *vbutton[4], *varray[38], *metarray[46],
 	*ssarray[58], *panarray[38], *comarray[2], *atarray[6], *atarray2[6],
 	*atarray3[4], *mkarray[3], *mkarray2[4], *txarray[5], *txarray2[30],
 	*txarray3[6], *txarray4[6], *uarray[3], *darray[10], *conarray[fpst_max-pst_contextpos][4],
@@ -7317,29 +7348,56 @@ return;
     vgcd[13].gd.u.list = ibmfamily;
     vgcd[13].creator = GListButtonCreate;
 
-    vgcd[14].gd.pos.x = 10; vgcd[14].gd.pos.y = vgcd[13].gd.pos.y+56;
-    vlabel[14].text = (unichar_t *) _("_Set GSUB/morx Ordering");
+    vgcd[14].gd.pos.x = 10; vgcd[14].gd.pos.y = vgcd[13].gd.pos.y+24+6;
+    vlabel[14].text = (unichar_t *) _("Weight, Width, Slope Only");
     vlabel[14].text_is_1byte = true;
     vlabel[14].text_in_resource = true;
     vgcd[14].gd.label = &vlabel[14];
-    vgcd[14].gd.flags = gg_visible | gg_enabled;
-    vgcd[14].gd.handle_controlevent = OrderGSUB;
-    vgcd[14].creator = GButtonCreate;
+    vgcd[14].gd.cid = CID_WeightWidthSlopeOnly;
+    vgcd[14].gd.popup_msg = (unichar_t *) _("MS needs to know whether a font family's members differ\nonly in weight, width and slope (and not in other variables\nlike optical size)." );
+    vgcd[14].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    vgcd[14].creator = GCheckBoxCreate;
+
+    vgcd[15].gd.pos.x = 10; vgcd[15].gd.pos.y = vgcd[14].gd.pos.y+56;
+    vlabel[15].text = (unichar_t *) _("_Set GSUB/morx Ordering");
+    vlabel[15].text_is_1byte = true;
+    vlabel[15].text_in_resource = true;
+    vgcd[15].gd.label = &vlabel[15];
+    vgcd[15].gd.flags = gg_visible | gg_enabled;
+    vgcd[15].gd.handle_controlevent = OrderGSUB;
+    vgcd[15].creator = GButtonCreate;
+
+    vgcd[16].gd.pos.x = 10; vgcd[16].gd.pos.y = vgcd[11].gd.pos.y+24+6;
+    vlabel[16].text = (unichar_t *) _("_OS/2 Version");
+    vlabel[16].text_is_1byte = true;
+    vlabel[16].text_in_resource = true;
+    vgcd[16].gd.label = &vlabel[16];
+    vgcd[14].gd.popup_msg = (unichar_t *) _("The 'OS/2' table has changed slightly over the years,\nGenerally fields have been added, but occasionally their\nmeanings have been redefined." );
+    vgcd[16].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    vgcd[16].creator = GLabelCreate;
+
+    vgcd[17].gd.pos.x = 90; vgcd[17].gd.pos.y = vgcd[16].gd.pos.y-4; vgcd[17].gd.pos.width = vgcd[7].gd.pos.width;
+    vgcd[17].gd.flags = gg_visible | gg_enabled;
+    vgcd[17].gd.cid = CID_OS2Version;
+    vgcd[17].gd.u.list = os2versions;
+    vgcd[17].creator = GListFieldCreate;
 
     vradio[0] = GCD_Glue; vradio[1] = &vgcd[8]; vradio[2] = &vgcd[9]; vradio[3] = GCD_Glue; vradio[4] = NULL;
-    vbutton[0] = GCD_Glue; vbutton[1] = &vgcd[14]; vbutton[2] = GCD_Glue; vbutton[3] = NULL;
+    vbutton[0] = GCD_Glue; vbutton[1] = &vgcd[15]; vbutton[2] = GCD_Glue; vbutton[3] = NULL;
 
-    varray[0] = &vgcd[0]; varray[1] = &vgcd[1]; varray[2] = NULL;
-    varray[3] = &vgcd[2]; varray[4] = &vgcd[3]; varray[5] = NULL;
-    varray[6] = &vgcd[4]; varray[7] = &vgcd[5]; varray[8] = NULL;
-    varray[9] = &vgcd[6]; varray[10] = &vgcd[7]; varray[11] = NULL;
-    varray[12] = &vbox[2]; varray[13] = GCD_ColSpan; varray[14] = NULL;
-    varray[15] = &vgcd[10]; varray[16] = &vgcd[11]; varray[17] = NULL;
-    varray[18] = &vgcd[12]; varray[19] = &vgcd[13]; varray[20] = NULL;
-    varray[21] = GCD_Glue; varray[22] = GCD_Glue; varray[23] = NULL;
-    varray[24] = &vbox[3]; varray[25] = GCD_ColSpan; varray[26] = NULL;
+    varray[0] = &vgcd[16]; varray[1] = &vgcd[17]; varray[2] = NULL;
+    varray[3] = &vgcd[0]; varray[4] = &vgcd[1]; varray[5] = NULL;
+    varray[6] = &vgcd[2]; varray[7] = &vgcd[3]; varray[8] = NULL;
+    varray[9] = &vgcd[4]; varray[10] = &vgcd[5]; varray[11] = NULL;
+    varray[12] = &vgcd[6]; varray[13] = &vgcd[7]; varray[14] = NULL;
+    varray[15] = &vbox[2]; varray[16] = GCD_ColSpan; varray[17] = NULL;
+    varray[18] = &vgcd[10]; varray[19] = &vgcd[11]; varray[20] = NULL;
+    varray[21] = &vgcd[12]; varray[22] = &vgcd[13]; varray[23] = NULL;
+    varray[24] = &vgcd[14]; varray[25] = GCD_ColSpan; varray[26] = NULL;
     varray[27] = GCD_Glue; varray[28] = GCD_Glue; varray[29] = NULL;
-    varray[30] = varray[31] = NULL;
+    varray[30] = &vbox[3]; varray[31] = GCD_ColSpan; varray[32] = NULL;
+    varray[33] = GCD_Glue; varray[34] = GCD_Glue; varray[35] = NULL;
+    varray[36] = varray[37] = NULL;
 
     memset(vbox,0,sizeof(vbox));
     vbox[0].gd.flags = gg_enabled|gg_visible;
@@ -7456,6 +7514,18 @@ return;
     metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
     metgcd[i].gd.handle_controlevent = GFI_AsDesIsOff;
     metarray[j++] = &metgcd[i];
+    metgcd[i++].creator = GCheckBoxCreate;
+    metarray[j++] = NULL;
+
+    metgcd[i].gd.pos.x = 5; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y;
+    metlabel[i].text = (unichar_t *) _("Really use Typo metrics");
+    metlabel[i].text_is_1byte = true;
+    metgcd[i].gd.label = &metlabel[i];
+    metgcd[i].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+	/* value set later */
+    metgcd[i].gd.cid = CID_UseTypoMetrics;
+    metgcd[i].gd.popup_msg = (unichar_t *) _("The spec already says that the typeo metrics should be\nused to determine line spacing. But so many\nprograms fail to follow the spec that MS desided a bit\nwas needed to remind them to do so.");
+    metarray[j++] = &metgcd[i]; metarray[j++] = GCD_ColSpan; metarray[j++] = GCD_Glue;
     metgcd[i++].creator = GCheckBoxCreate;
     metarray[j++] = NULL;
 
@@ -9093,7 +9163,7 @@ return;
     GHVBoxSetExpandableCol(vbox[0].ret,1);
     GHVBoxSetExpandableCol(vbox[2].ret,gb_expandglue);
 
-    GHVBoxSetExpandableRow(metbox[0].ret,9);
+    GHVBoxSetExpandableRow(metbox[0].ret,10);
     GHVBoxSetExpandableCol(metbox[0].ret,1);
 
     GHVBoxSetExpandableRow(ssbox[0].ret,gb_expandglue);

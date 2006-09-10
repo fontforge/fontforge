@@ -3086,6 +3086,7 @@ SplineFont *SplineFontBlank(int charcnt) {
     sf->glyphs = gcalloc(charcnt,sizeof(SplineChar *));
     sf->pfminfo.fstype = -1;
     sf->order2 = false;
+    sf->use_typo_metrics = true;
 return( sf );
 }
 

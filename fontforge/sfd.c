@@ -1333,6 +1333,9 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal) {
 	fprintf(sfd, "UniqueID: %d\n", sf->uniqueid );
     if ( sf->pfminfo.fstype!=-1 )
 	fprintf(sfd, "FSType: %d\n", sf->pfminfo.fstype );
+    fprintf(sfd, "OS2Version: %d\n", sf->os2_version );
+    fprintf(sfd, "OS2_WeightWidthSlopeOnly: %d\n", sf->weight_width_slope_only );
+    fprintf(sfd, "OS2_UseTypoMetrics: %d\n", sf->use_typo_metrics );
 #ifdef _HAS_LONGLONG
     fprintf(sfd, "CreationTime: %lld\n", sf->creationtime );
     fprintf(sfd, "ModificationTime: %lld\n", sf->modificationtime );
@@ -4500,6 +4503,16 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    sf->hasvmetrics = true;
 	} else if ( strmatch(tok,"FSType:")==0 ) {
 	    getsint(sfd,&sf->pfminfo.fstype);
+	} else if ( strmatch(tok,"OS2Version:")==0 ) {
+	    getsint(sfd,&sf->os2_version);
+	} else if ( strmatch(tok,"OS2_WeightWidthSlopeOnly:")==0 ) {
+	    int temp;
+	    getint(sfd,&temp);
+	    sf->weight_width_slope_only = temp;
+	} else if ( strmatch(tok,"OS2_UseTypoMetrics:")==0 ) {
+	    int temp;
+	    getint(sfd,&temp);
+	    sf->use_typo_metrics = temp;
 	} else if ( strmatch(tok,"UniqueID:")==0 ) {
 	    getint(sfd,&sf->uniqueid);
 	} else if ( strmatch(tok,"XUID:")==0 ) {
