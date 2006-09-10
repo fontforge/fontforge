@@ -64,6 +64,7 @@ static int nfnt_warned = false, post_warned = false;
 #define CID_TTF_OldKern		1109
 #define CID_TTF_GlyphMap	1110
 #define CID_TTF_OFM		1111
+#define CID_TTF_BrokenSize	1112
 
 
 struct gfc_data {
@@ -533,6 +534,8 @@ return( false );
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_OldKern)) &&
 			!(d->ttf_flags&ttf_flag_applemode) )
 		    d->ttf_flags |= ttf_flag_oldkern;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_BrokenSize)) )
+		    d->ttf_flags |= ttf_flag_brokensize;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdComments)) )
 		    d->ttf_flags |= ttf_flag_pfed_comments;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdColors)) )
@@ -554,6 +557,8 @@ return( false );
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_OldKern)) &&
 			!(d->otf_flags&ttf_flag_applemode) )
 		    d->otf_flags |= ttf_flag_oldkern;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_BrokenSize)) )
+		    d->otf_flags |= ttf_flag_brokensize;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdComments)) )
 		    d->otf_flags |= ttf_flag_pfed_comments;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdColors)) )
@@ -618,6 +623,10 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
     int flags = (&d->ps_flags)[which];
     int fs = GGadgetGetFirstListSelectedItem(d->pstype);
     int bf = GGadgetGetFirstListSelectedItem(d->bmptype);
+    /* which==0 => pure postscript */
+    /* which==1 => truetype or bitmap in sfnt wrapper */
+    /* which==2 => opentype (ps) */
+    /* which==3 => generating an sfnt based bitmap only font with a postscript outline font */
 
     GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_Hints),!(flags&ps_flag_nohints));
     /*GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_HintSubs),!(flags&ps_flag_nohintsubs));*/
@@ -657,6 +666,7 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_PfEdColors),flags&ttf_flag_pfed_colors);
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_TeXTable),flags&ttf_flag_TeXtable);
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_GlyphMap),flags&ttf_flag_glyphmap);
+    GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_BrokenSize),flags&ttf_flag_brokensize);
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_OldKern),
 	    (flags&ttf_flag_oldkern) && !GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_AppleMode)));
 
@@ -681,7 +691,8 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_FullPS),which!=0);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_AppleMode),which!=0 && which!=3);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_OpenTypeMode),which!=0 && which!=3);
-    GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_OldKern),which!=0 && which!=3);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_OldKern),which!=0 );
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_BrokenSize),which!=0 );
 
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_PfEd),which!=0);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_PfEdComments),which!=0);
@@ -908,7 +919,16 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.handle_controlevent = OPT_OldKern;
     gcd[k++].creator = GCheckBoxCreate;
     hvarray2[20] = GCD_HPad10; hvarray2[21] = &gcd[k-1];
-    hvarray2[25] = GCD_Glue; hvarray2[26] = GCD_Glue;
+
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+4; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
+    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+    label[k].text = (unichar_t *) _("Broken 'size'");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.popup_msg = (unichar_t *) _("When Adobe first released fonts with a 'size' feature they did\nnot follow the opentype specification. In August of 2006 they\nannounced an incompatible change to bring fonts produced after\nthat date in line with the specification. Unfortunately there\nare programs which depend on the old, broken format.\n  Legacy programs will not work when given a font in the correct\nformat. New programs should be able to handle either correct or\nbroken 'size' features." );
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_TTF_BrokenSize;
+    gcd[k++].creator = GCheckBoxCreate;
+    hvarray2[25] = &gcd[k-1]; hvarray2[26] = GCD_ColSpan;
 
     gcd[k].gd.pos.x = gcd[group+6].gd.pos.x; gcd[k].gd.pos.y = gcd[k-5].gd.pos.y;
     gcd[k].gd.flags = gg_visible | gg_utf8_popup;
@@ -2204,6 +2224,7 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 		if ( fmflags&0x400 ) old_ttf_flags |= ttf_flag_ofm;
 		if ( (fmflags&0x800) && !(old_ttf_flags&ttf_flag_applemode) )
 		    old_ttf_flags |= ttf_flag_oldkern;
+		if ( fmflags&0x1000 ) old_ttf_flags |= ttf_flag_brokensize;
 	    }
 	} else if ( oldformatstate<=ff_ttfdfont || oldformatstate==ff_none ) {
 	    old_ttf_flags = 0;
@@ -2230,6 +2251,7 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	    if ( fmflags&0x400 ) old_ttf_flags |= ttf_flag_ofm;
 	    if ( (fmflags&0x800) && !(old_ttf_flags&ttf_flag_applemode) )
 		old_ttf_flags |= ttf_flag_oldkern;
+	    if ( fmflags&0x1000 ) old_ttf_flags |= ttf_flag_brokensize;
 	} else {
 	    old_otf_flags = 0;
 		/* Applicable postscript flags */
@@ -2263,6 +2285,7 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	    if ( fmflags&0x400 ) old_otf_flags |= ttf_flag_ofm;
 	    if ( (fmflags&0x800) && !(old_otf_flags&ttf_flag_applemode) )
 		old_otf_flags |= ttf_flag_oldkern;
+	    if ( fmflags&0x1000 ) old_otf_flags |= ttf_flag_brokensize;
 	}
     }
 

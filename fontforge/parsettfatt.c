@@ -2189,13 +2189,21 @@ return;		/* Don't understand this format type */
     free(bcoverage);
 }
 
-static void readttfsizeparameters(FILE *ttf,int32 pos,struct ttfinfo *info) {
+static void readttfsizeparameters(FILE *ttf,int32 broken_pos,int32 correct_pos,
+	struct ttfinfo *info) {
     int32 here;
     /* Both of the two fonts I've seen that contain a 'size' feature */
     /*  have multiple features all of which point to the same parameter */
     /*  area. Odd. */
+    /* When Adobe first released fonts containing the 'size' feature */
+    /*  they did not follow the spec, and the offset to the size parameters */
+    /*  was relative to the wrong location. They claim (Aug 2006) that */
+    /*  this has been fixed. Be prepared to read either style of 'size' */
+    /*  following the heuristics Adobe provides */
+    int32 test[2];
+    int i, nid;
 
-    if ( info->last_size_pos==pos )
+    if ( info->last_size_pos==broken_pos || info->last_size_pos==correct_pos )
 return;
 
     if ( info->last_size_pos!=0 ) {
@@ -2204,14 +2212,42 @@ return;
 return;
     }
 
+    test[0] = correct_pos; test[1] = broken_pos;
     here = ftell(ttf);
-    fseek(ttf,pos,SEEK_SET);
-    info->last_size_pos = pos;
-    info->design_size = getushort(ttf);
-    info->fontstyle_id = getushort(ttf);
-    info->fontstyle_name = FindAllLangEntries(ttf,info,getushort(ttf));
-    info->design_range_bottom = getushort(ttf);
-    info->design_range_top = getushort(ttf);
+    for ( i=0; i<2; ++i ) {
+	fseek(ttf,test[i],SEEK_SET);
+	info->last_size_pos = test[i];
+	info->design_size = getushort(ttf);
+	if ( info->design_size==0 )
+    continue;
+	info->fontstyle_id = getushort(ttf);
+	nid = getushort(ttf);
+	info->design_range_bottom = getushort(ttf);
+	info->design_range_top = getushort(ttf);
+	if ( info->fontstyle_id == 0 && nid==0 &&
+		info->design_range_bottom==0 && info->design_range_top==0 ) {
+	    /* Reasonable spec, only design size provided */
+	    info->fontstyle_name = NULL;
+    break;
+	}
+	if ( info->design_size < info->design_range_bottom ||
+		info->design_size > info->design_range_top ||
+		info->design_range_bottom > info->design_range_top ||
+		nid<256 || nid>32767 )
+    continue;
+	info->fontstyle_name = FindAllLangEntries(ttf,info,nid);
+	if ( info->fontstyle_name==NULL )
+    continue;
+	else
+    break;
+    }
+    if ( i==2 ) {
+	LogError(_("The 'size' feature does not seem to follow the standard,\nnor does it conform to Adobe's early misinterpretation of\nthe standard. I cannot parse it.") );
+	info->design_size = info->design_range_bottom = info->design_range_top = info->fontstyle_id = 0;
+	info->fontstyle_name = NULL;
+    } else if ( i==1 ) {
+	LogError(_("The 'size' feature of this font conforms to Adobe's early misinterpretation of the otf standard.") );
+    }
     fseek(ttf,here,SEEK_SET);
 
 #if 0
@@ -2299,7 +2335,8 @@ return( NULL );
 	fseek(ttf,pos+features[i].offset,SEEK_SET);
 	parameters = getushort(ttf);
 	if ( features[i].tag==CHR('s','i','z','e') && parameters!=0 )
-	    readttfsizeparameters(ttf,pos+parameters,info);
+	    readttfsizeparameters(ttf,pos+parameters,
+		    pos+parameters+features[i].offset,info);
 	features[i].lcnt = getushort(ttf);
 	if ( features[i].lcnt<0 ) {
 	    LogError(_("Bad lookup count in feature.\n") );

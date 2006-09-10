@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Sep-2002 -->
-  <!-- AP: Last modified: 31-Aug-2006 -->
+  <!-- AP: Last modified: 9-Sep-2006 -->
   <TITLE>Generate Font Dialog</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -160,7 +160,7 @@
       None
   </UL>
   <P>
-  <IMG SRC="GenerateOptions.png" WIDTH="323" HEIGHT="355" ALIGN="Right">The
+  <IMG SRC="GenerateOptions.png" WIDTH="310" HEIGHT="338" ALIGN="Right">The
   <A NAME="Options">options</A> dialog provides the following check boxes.
   Not all are enabled at all times.
   <UL>
@@ -243,6 +243,16 @@
       this a bad idea (some applications may add the kerning values from both tables
       they say), but it may be helpful for applications which don't support 'GPOS'
       kerning.
+    <LI>
+      [] Broken 'size' feature -- When Adobe first released fonts that included
+      design size information, they did not follow the opentype specification.
+      In August of 2006 they announced an incompatible change saying that fonts
+      released after that date would follow the specification.<BR>
+      There are some programs which use the 'size' information. Old versions of
+      these programs will not work with the corrected 'size' feature. New programs
+      should be able to work with either format.<BR>
+      Set this check box if you want to generate a font with and old (broken) 'size'
+      feature.
     <LI>
       [] Save Comments -- I have added my own table
       ('<A HREF="non-standard.html#PfEd">PfEd</A>') in the truetype format in which
