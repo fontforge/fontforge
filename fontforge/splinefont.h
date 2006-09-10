@@ -1191,7 +1191,8 @@ enum ttf_flags { ttf_flag_shortps = 1, ttf_flag_nohints = 2,
 		    ttf_flag_glyphmap=0x40,
 		    ttf_flag_TeXtable=0x80,
 		    ttf_flag_ofm=0x100,
-		    ttf_flag_oldkern=0x200	/* never set in conjunction with applemode */
+		    ttf_flag_oldkern=0x200,	/* never set in conjunction with applemode */
+		    ttf_flag_brokensize=0x400	/* Adobe originally issued fonts with a bug in the size feature. They now claim (Aug 2006) that this has been fixed. Legacy programs will do the wrong thing with the fixed feature though */
 		};
 enum openflags { of_fstypepermitted=1, of_askcmap=2 };
 enum ps_flags { ps_flag_nohintsubs = 0x10000, ps_flag_noflex=0x20000,

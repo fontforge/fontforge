@@ -3947,7 +3947,13 @@ return( NULL );
     if ( size_params_ptr!=0 ) {
 	size_params_loc = ftell(g___);
 	fseek(g___,size_params_ptr,SEEK_SET);
-	putshort(g___,size_params_loc-feature_list_table_start);
+	/* When Adobe first released fonts containing the 'size' feature */
+	/*  they did not follow the spec, and the offset to the size parameters */
+	/*  was relative to the wrong location. They claim (Aug 2006) that */
+	/*  this has been fixed. FF used to do what Adobe did. Many programs */
+	/*  expect broken sizes tables now. Therefore allow the user to chose */
+	/*  which kind to output */
+	putshort(g___,size_params_loc-((at->gi.flags&ttf_flag_brokensize)?feature_list_table_start:size_params_ptr));
 	fseek(g___,size_params_loc,SEEK_SET);
 	putshort(g___,sf->design_size);
 	if ( sf->fontstyle_id!=0 || sf->fontstyle_name!=NULL ||
