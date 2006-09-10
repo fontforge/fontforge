@@ -3960,7 +3960,7 @@ static FILE *_Gen816Enc(SplineFont *sf,int *tlen,EncMap *map) {
 	subheadcnt = basebound-base+1;
 	lbase = 0x40;
 	planesize = 191;
-    } else if ( map->enc->is_tradchinese || sf->uni_interp) {
+    } else if ( map->enc->is_tradchinese || sf->uni_interp==ui_trad_chinese) {
 	base = 0xa1;
 	basebound = 0xf9;	/* wcl-02.ttf's cmap claims to go up to fc, but everything after f9 is invalid (according to what I know of big5, f9 should be the end) */
 	subheadcnt = basebound-base+1;
