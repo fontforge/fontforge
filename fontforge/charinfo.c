@@ -111,6 +111,7 @@ GTextInfo scripts[] = {
     { (unichar_t *) N_("Script|Balinese"), NULL, 0, 0, (void *) CHR('b','a','l','i'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Script|Batak"), NULL, 0, 0, (void *) CHR('b','a','t','k'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Script|Bengali"), NULL, 0, 0, (void *) CHR('b','e','n','g'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Script|Bengali2"), NULL, 0, 0, (void *) CHR('b','n','g','2'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Bliss Symbolics"), NULL, 0, 0, (void *) CHR('b','l','i','s'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Bopomofo"), NULL, 0, 0, (void *) CHR('b','o','p','o'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) NU_("Brāhmī"), NULL, 0, 0, (void *) CHR('b','r','a','h'), NULL, false, false, false, false, false, false, true },
@@ -130,6 +131,7 @@ GTextInfo scripts[] = {
     { (unichar_t *) N_("Default"), NULL, 0, 0, (void *) CHR('D','F','L','T'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Deseret (Mormon)"), NULL, 0, 0, (void *) CHR('d','s','r','t'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Devanagari"), NULL, 0, 0, (void *) CHR('d','e','v','a'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Devanagari2"), NULL, 0, 0, (void *) CHR('d','e','v','2'), NULL, false, false, false, false, false, false, true },
 /*  { (unichar_t *) N_("Egyptian demotic"), NULL, 0, 0, (void *) CHR('e','g','y','d'), NULL, false, false, false, false, false, false, true }, */
 /*  { (unichar_t *) N_("Egyptian hieratic"), NULL, 0, 0, (void *) CHR('e','g','y','h'), NULL, false, false, false, false, false, false, true }, */
 /* GT: Someone asked if FontForge actually was prepared generate hieroglyph output */
@@ -143,7 +145,9 @@ GTextInfo scripts[] = {
     { (unichar_t *) N_("Gothic"), NULL, 0, 0, (void *) CHR('g','o','t','h'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Script|Greek"), NULL, 0, 0, (void *) CHR('g','r','e','k'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Script|Gujarati"), NULL, 0, 0, (void *) CHR('g','u','j','r'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Script|Gujarati2"), NULL, 0, 0, (void *) CHR('g','j','r','2'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Gurmukhi"), NULL, 0, 0, (void *) CHR('g','u','r','u'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Gurmukhi2"), NULL, 0, 0, (void *) CHR('g','u','r','2'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Hangul Jamo"), NULL, 0, 0, (void *) CHR('j','a','m','o'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Hangul"), NULL, 0, 0, (void *) CHR('h','a','n','g'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) NU_("Script|Hanunóo"), NULL, 0, 0, (void *) CHR('h','a','n','o'), NULL, false, false, false, false, false, false, true },
@@ -155,6 +159,7 @@ GTextInfo scripts[] = {
     { (unichar_t *) N_("Hiragana & Katakana"), NULL, 0, 0, (void *) CHR('k','a','n','a'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) NU_("Kharoṣṭhī"), NULL, 0, 0, (void *) CHR('k','h','a','r'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Script|Kannada"), NULL, 0, 0, (void *) CHR('k','n','d','a'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Script|Kannada2"), NULL, 0, 0, (void *) CHR('k','n','d','2'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Script|Khmer"), NULL, 0, 0, (void *) CHR('k','h','m','r'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Script|Kharosthi"), NULL, 0, 0, (void *) CHR('k','h','a','r'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Script|Lao") , NULL, 0, 0, (void *) CHR('l','a','o',' '), NULL, false, false, false, false, false, false, true },
@@ -166,6 +171,7 @@ GTextInfo scripts[] = {
     { (unichar_t *) N_("Script|Mandaean"), NULL, 0, 0, (void *) CHR('m','a','n','d'), NULL, false, false, false, false, false, false, true },
 /*  { (unichar_t *) N_("Mayan hieroglyphs"), NULL, 0, 0, (void *) CHR('m','a','y','a'), NULL, false, false, false, false, false, false, true },*/
     { (unichar_t *) NU_("Script|Malayālam"), NULL, 0, 0, (void *) CHR('m','l','y','m'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) NU_("Script|Malayālam2"), NULL, 0, 0, (void *) CHR('m','l','y','2'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) NU_("Mathematical Alphanumeric Symbols"), NULL, 0, 0, (void *) CHR('m','a','t','h'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Script|Mongolian"), NULL, 0, 0, (void *) CHR('m','o','n','g'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Musical"), NULL, 0, 0, (void *) CHR('m','u','s','i'), NULL, false, false, false, false, false, false, true },
@@ -176,6 +182,7 @@ GTextInfo scripts[] = {
     { (unichar_t *) N_("Script|Old Permic"), NULL, 0, 0, (void *) CHR('p','e','r','m'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Old Persian cuneiform"), NULL, 0, 0, (void *) CHR('x','p','e','o'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Script|Oriya"), NULL, 0, 0, (void *) CHR('o','r','y','a'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Script|Oriya2"), NULL, 0, 0, (void *) CHR('o','r','y','2'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Osmanya"), NULL, 0, 0, (void *) CHR('o','s','m','a'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Script|Pahlavi"), NULL, 0, 0, (void *) CHR('p','a','l','v'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Script|Phags-pa"), NULL, 0, 0, (void *) CHR('p','h','a','g'), NULL, false, false, false, false, false, false, true },
@@ -194,7 +201,9 @@ GTextInfo scripts[] = {
     { (unichar_t *) N_("Tai Le"), NULL, 0, 0, (void *) CHR('t','a','l','e'), NULL, false, false, false, false, false, false, true },	/* Not in ISO 15924 !!!!!, just guessing */
     { (unichar_t *) N_("Tai Lu"), NULL, 0, 0, (void *) CHR('t','a','l','a'), NULL, false, false, false, false, false, false, true },	/* Not in ISO 15924 !!!!!, just guessing */
     { (unichar_t *) N_("Script|Tamil"), NULL, 0, 0, (void *) CHR('t','a','m','l'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Script|Tamil2"), NULL, 0, 0, (void *) CHR('t','m','l','2'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Script|Telugu"), NULL, 0, 0, (void *) CHR('t','e','l','u'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Script|Telugu2"), NULL, 0, 0, (void *) CHR('t','e','l','2'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Tengwar"), NULL, 0, 0, (void *) CHR('t','e','n','g'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Thaana"), NULL, 0, 0, (void *) CHR('t','h','a','a'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Script|Thai"), NULL, 0, 0, (void *) CHR('t','h','a','i'), NULL, false, false, false, false, false, false, true },

@@ -113,6 +113,7 @@ int alwaysgenopentype = false;
 int alwaysgenapple = false;
 int alwaysgenopentype = true;
 #endif
+int use_second_indic_scripts = true;
 char *helpdir;
 char *othersubrsfile;
 extern MacFeat *default_mac_feature_map,	/* from macenc.c */
@@ -278,7 +279,6 @@ static struct prefs_list {
 	{ N_("SnapDistance"), pr_real, &snapdistance, NULL, NULL, '\0', NULL, 0, N_("When the mouse pointer is within this many pixels\nof one of the various interesting features (baseline,\nwidth, grid splines, etc.) the pointer will snap\nto that feature.") },
 	{ N_("JoinSnap"), pr_real, &joinsnap, NULL, NULL, '\0', NULL, 0, N_("The Edit->Join command will join points which are this close together\nA value of 0 means they must be coincident") },
 	{ N_("CopyMetaData"), pr_bool, &copymetadata, NULL, NULL, '\0', NULL, 0, N_("When copying glyphs from the font view, also copy the\nglyphs' metadata (name, encoding, comment, etc).") },
-	{ N_("CopyTTFInstrs"), pr_bool, &copyttfinstr, NULL, NULL, '\0', NULL, 0, N_("When copying glyphs from the font view, also copy the\nglyphs' metadata (name, encoding, comment, etc).") },
 	{ N_("UndoDepth"), pr_int, &maxundoes, NULL, NULL, '\0', NULL, 0, N_("The maximum number of Undoes/Redoes stored in a glyph") },
 	{ N_("StopAtJoin"), pr_bool, &stop_at_join, NULL, NULL, '\0', NULL, 0, N_("When dragging points in the outline view a join may occur\n(two open contours may connect at their endpoints). When\nthis is On a join will cause FontForge to stop moving the\nselection (as if the user had released the mouse button).\nThis is handy if your fingers are inclined to wiggle a bit.") },
 	{ N_("UpdateFlex"), pr_bool, &updateflex, NULL, NULL, '\0', NULL, 0, N_("Figure out flex hints after every change") },
@@ -302,18 +302,20 @@ static struct prefs_list {
 	{ N_("MfShowErr"), pr_bool, &mf_showerrors, NULL, NULL, '\0', NULL, 0, N_("MetaFont (mf) generates lots of verbiage to stdout.\nMost of the time I find it an annoyance but it is\nimportant to see if something goes wrong.") },
 	{ NULL }
 },
- generate_list[] = {
+ fontinfo_list[] = {
 	{ N_("FoundryName"), pr_string, &BDFFoundry, NULL, NULL, 'F', NULL, 0, N_("Name used for foundry field in bdf\nfont generation") },
 	{ N_("TTFFoundry"), pr_string, &TTFFoundry, NULL, NULL, 'T', NULL, 0, N_("Name used for Vendor ID field in\nttf (OS/2 table) font generation.\nMust be no more than 4 characters") },
-	{ N_("XUID-Base"), pr_string, &xuid, NULL, NULL, 'X', NULL, 0, N_("If specified this should be a space separated list of integers each\nless than 16777216 which uniquely identify your organization\nFontForge will generate a random number for the final component.") },
+	{ N_("PreserveTables"), pr_string, &SaveTablesPref, NULL, NULL, 'P', NULL, 0, N_("Enter a list of 4 letter table tags, separated by commas.\nFontForge will make a binary copy of these tables when it\nloads a True/OpenType font, and will output them (unchanged)\nwhen it generates the font. Do not include table tags which\nFontForge thinks it understands.") },
+	{ N_("NewFontNameList"), pr_namelist, &namelist_for_new_fonts, NULL, NULL, '\0', NULL, 0, N_("FontForge will use this namelist when assigning\nglyph names to code points in a new font.") },
+	{ N_("RecognizePUANames"), pr_bool, &recognizePUA, NULL, NULL, 'U', NULL, 0, N_("Once upon a time, Adobe assigned PUA (public use area) encodings\nfor many stylistic variants of characters (small caps, old style\nnumerals, etc.). Adobe no longer believes this to be a good idea,\nand recommends that these encodings be ignored.\n\n The assignments were originally made because most applications\ncould not handle OpenType features for accessing variants. Adobe\nnow believes that all apps that matter can now do so. Applications\nlike Word and OpenOffice still can't handle these features, so\n fontforge's default behavior is to ignore Adobe's current\nrecommendations.\n\nNote: This does not affect figuring out unicode from the font's encoding,\nit just controls determining unicode from a name.") },
+	{ NULL }
+},
+ generate_list[] = {
 	{ N_("AskBDFResolution"), pr_bool, &ask_user_for_resolution, NULL, NULL, 'B', NULL, 0, N_("When generating a set of BDF fonts ask the user\nto specify the screen resolution of the fonts\notherwise FontForge will guess depending on the pixel size.") },
 	{ N_("PreferCJKEncodings"), pr_bool, &prefer_cjk_encodings, NULL, NULL, 'C', NULL, 0, N_("When loading a truetype or opentype font which has both a unicode\nand a CJK encoding table, use this flag to specify which\nshould be loaded for the font.") },
 	{ N_("HintForGen"), pr_bool, &autohint_before_generate, NULL, NULL, 'H', NULL, 0, N_("AutoHint changed glyphs before generating a font") },
 	{ N_("AlwaysGenApple"), pr_bool, &alwaysgenapple, NULL, NULL, 'A', NULL, 0, N_("Apple and MS/Adobe differ about the format of truetype and opentype files.\nThis controls the default setting of the Apple checkbox in the\nFile->Generate Font dialog.\nThe main differences are:\n Bitmap data are stored in different tables\n Scaled composite glyphs are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop\nIf both this and OpenType are set, both formats are generated") },
 	{ N_("AlwaysGenOpenType"), pr_bool, &alwaysgenopentype, NULL, NULL, 'O', NULL, 0, N_("Apple and MS/Adobe differ about the format of truetype and opentype files.\nThis controls the default setting of the OpenType checkbox in the\nFile->Generate Font dialog.\nThe main differences are:\n Bitmap data are stored in different tables\n Scaled composite glyphs are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop\nIf both this and Apple are set, both formats are generated") },
-	{ N_("PreserveTables"), pr_string, &SaveTablesPref, NULL, NULL, 'P', NULL, 0, N_("Enter a list of 4 letter table tags, separated by commas.\nFontForge will make a binary copy of these tables when it\nloads a True/OpenType font, and will output them (unchanged)\nwhen it generates the font. Do not include table tags which\nFontForge thinks it understands.") },
-	{ N_("NewFontNameList"), pr_namelist, &namelist_for_new_fonts, NULL, NULL, '\0', NULL, 0, N_("FontForge will use this namelist when assigning\nglyph names to code points in a new font.") },
-	{ N_("RecognizePUANames"), pr_bool, &recognizePUA, NULL, NULL, 'U', NULL, 0, N_("Once upon a time, Adobe assigned PUA (public use area) encodings\nfor many stylistic variants of characters (small caps, old style\nnumerals, etc.). Adobe no longer believes this to be a good idea,\nand recommends that these encodings be ignored.\n\n The assignments were originally made because most applications\ncould not handle OpenType features for accessing variants. Adobe\nnow believes that all apps that matter can now do so. Applications\nlike Word and OpenOffice still can't handle these features, so\n fontforge's default behavior is to ignore Adobe's current\nrecommendations.\n\nNote: This does not affect figuring out unicode from the font's encoding,\nit just controls determining unicode from a name.") },
 	{ NULL }
 },
  hints_list[] = {
@@ -324,6 +326,11 @@ static struct prefs_list {
 },
  tt_list[] = {
 	{ N_("ClearInstrsBigChanges"), pr_bool, &clear_tt_instructions_when_needed, NULL, NULL, 'C', NULL, 0, N_("Instructions in a TrueType font refer to\npoints by number, so if you edit a glyph\nin such a way that some points have different\nnumbers (add points, remove them, etc.) then\nthe instructions will be applied to the wrong\npoints with disasterous results.\n  Normally FontForge will remove the instructions\nif it detects that the points have been renumbered\nin order to avoid the above problem. You may turn\nthis behavior off -- but be careful!") },
+	{ N_("CopyTTFInstrs"), pr_bool, &copyttfinstr, NULL, NULL, '\0', NULL, 0, N_("When copying glyphs from the font view, also copy the\nglyphs' metadata (name, encoding, comment, etc).") },
+	{ NULL }
+},
+ opentype_list[] = {
+	{ N_("UseNewIndicScripts"), pr_bool, &use_second_indic_scripts, NULL, NULL, 'C', NULL, 0, N_("MS has changed (in August 2006) the inner workings of their Indic shaping\nengine, and to disambiguate this change has created a parallel set of script\ntags (generally ending in '2') for Indic writing systems. If you are working\nwith the new system set this flag, if you are working with the old unset it.\n(if you aren't doing Indic work, this flag is irrelevant).") },
 	{ NULL }
 },
 /* These are hidden, so will never appear in ui, hence, no "N_(" */
@@ -385,8 +392,8 @@ static struct prefs_list {
 	{ "AcuteCenterBottom", pr_bool, &GraveAcuteCenterBottom, NULL, NULL, '\0', NULL, 1, N_("When placing grave and acute accents above letters, should\nFontForge center them based on their full width, or\nshould it just center based on the lowest point\nof the accent.") },
 	{ NULL }
 },
- *prefs_list[] = { general_list, editing_list, accent_list, args_list, generate_list, tt_list, hints_list, hidden_list, NULL },
- *load_prefs_list[] = { general_list, editing_list, accent_list, args_list, generate_list, tt_list, hints_list, hidden_list, oldnames, NULL };
+ *prefs_list[] = { general_list, editing_list, accent_list, args_list, fontinfo_list, generate_list, tt_list, opentype_list, hints_list, hidden_list, NULL },
+ *load_prefs_list[] = { general_list, editing_list, accent_list, args_list, fontinfo_list, generate_list, tt_list, opentype_list, hints_list, hidden_list, oldnames, NULL };
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 struct visible_prefs_list { char *tab_name; struct prefs_list *pl; } visible_prefs_list[] = {
@@ -394,9 +401,11 @@ struct visible_prefs_list { char *tab_name; struct prefs_list *pl; } visible_pre
     { N_("Editing"), editing_list},
     { N_("Accents"), accent_list},
     { N_("Apps"), args_list},
-    { N_("Font Info"), generate_list},
+    { N_("Font Info"), fontinfo_list},
+    { N_("Generate"), generate_list},
     { N_("TT"), tt_list},
     { N_("PS Hints"), hints_list},
+    { N_("OpenType"), opentype_list},
     { 0 }
  };
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
