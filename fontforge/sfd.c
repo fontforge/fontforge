@@ -1858,13 +1858,22 @@ static void SFDDump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal) {
 int SFDWrite(char *filename,SplineFont *sf,EncMap *map,EncMap *normal) {
     FILE *sfd = fopen(filename,"w");
     char *oldloc;
+    int i, gc;
 
     if ( sfd==NULL )
 return( 0 );
     oldloc = setlocale(LC_NUMERIC,"C");
-    if ( sf->cidmaster!=NULL )
+    if ( sf->cidmaster!=NULL ) {
 	sf=sf->cidmaster;
-    SFDDump(sfd,sf,map,normal);
+	gc = 1;
+	for ( i=0; i<sf->subfontcnt; ++i )
+	    if ( sf->subfonts[i]->glyphcnt > gc )
+		gc = sf->subfonts[i]->glyphcnt;
+	map = EncMap1to1(gc);
+	SFDDump(sfd,sf,map,NULL);
+	EncMapFree(map);
+    } else
+	SFDDump(sfd,sf,map,normal);
     setlocale(LC_NUMERIC,oldloc);
 return( !ferror(sfd) && fclose(sfd)==0 );
 }
