@@ -1879,28 +1879,50 @@ return( !ferror(sfd) && fclose(sfd)==0 );
 }
 
 int SFDWriteBak(SplineFont *sf,EncMap *map,EncMap *normal) {
-    char *buf/*, *pt, *bpt*/;
+    char *buf, *buf2=NULL/*, *pt, *bpt*/;
+    extern struct compressors compressors[];
+    int ret;
 
     if ( sf->cidmaster!=NULL )
 	sf=sf->cidmaster;
     buf = galloc(strlen(sf->filename)+10);
+    if ( sf->compression!=0 ) {
+	buf2 = galloc(strlen(sf->filename)+10);
+	strcpy(buf2,sf->filename);
+	strcat(buf2,compressors[sf->compression-1].ext);
+	strcpy(buf,buf2);
+	strcat(buf,"~");
+	if ( rename(buf2,buf)==0 )
+	    sf->backedup = bs_backedup;
+    } else {
 #if 1
-    strcpy(buf,sf->filename);
-    strcat(buf,"~");
+	strcpy(buf,sf->filename);
+	strcat(buf,"~");
 #else
-    pt = strrchr(sf->filename,'.');
-    if ( pt==NULL || pt<strrchr(sf->filename,'/'))
-	pt = sf->filename+strlen(sf->filename);
-    strcpy(buf,sf->filename);
-    bpt = buf + (pt-sf->filename);
-    *bpt++ = '~';
-    strcpy(bpt,pt);
+	pt = strrchr(sf->filename,'.');
+	if ( pt==NULL || pt<strrchr(sf->filename,'/'))
+	    pt = sf->filename+strlen(sf->filename);
+	strcpy(buf,sf->filename);
+	bpt = buf + (pt-sf->filename);
+	*bpt++ = '~';
+	strcpy(bpt,pt);
 #endif
-    if ( rename(sf->filename,buf)==0 )
-	sf->backedup = bs_backedup;
+	if ( rename(sf->filename,buf)==0 )
+	    sf->backedup = bs_backedup;
+    }
     free(buf);
 
-return( SFDWrite(sf->filename,sf,map,normal));
+    ret = SFDWrite(sf->filename,sf,map,normal);
+    if ( ret && sf->compression!=0 ) {
+	unlink(buf2);
+	buf = galloc(strlen(sf->filename)+40);
+	sprintf( buf, "%s %s", compressors[sf->compression-1].recomp, sf->filename );
+	if ( system( buf )!=0 )
+	    sf->compression = 0;
+	free(buf);
+    }
+    free(buf2);
+return( ret );
 }
 
 /* ********************************* INPUT ********************************** */
@@ -5349,6 +5371,7 @@ void SFAutoSave(SplineFont *sf,EncMap *map) {
     FILE *asfd;
     char *oldloc;
     SplineFont *ssf;
+    extern struct compressors compressors[];
 
     if ( no_windowing_ui )		/* No autosaves when just scripting */
 return;
@@ -5364,7 +5387,8 @@ return;
 
     oldloc = setlocale(LC_NUMERIC,"C");
     if ( !sf->new && sf->origname!=NULL )	/* might be a new file */
-	fprintf( asfd, "Base: %s\n", sf->origname );
+	fprintf( asfd, "Base: %s%s\n", sf->origname,
+		sf->compression==0?"":compressors[sf->compression-1].ext );
     fprintf( asfd, "Encoding: %s\n", map->enc->enc_name );
     fprintf( asfd, "UnicodeInterp: %s\n", unicode_interp_names[sf->uni_interp]);
     if ( sf->order2 )

@@ -44,6 +44,13 @@ int onlycopydisplayed = 0;
 int copymetadata = 0;
 int copyttfinstr = 0;
 
+struct compressors compressors[] = {
+    { ".gz", "gunzip", "gzip" },
+    { ".bz2", "bunzip2", "bzip2" },
+    { ".Z", "gunzip", "compress" },
+    NULL
+};
+
 #define XOR_COLOR	0x505050
 #define	FV_LAB_HEIGHT	15
 
@@ -614,6 +621,7 @@ return( 0 );
 #endif
     free(ret);
     FVFlattenAllBitmapSelections(fv);
+    fv->sf->compression = 0;
     ok = SFDWrite(filename,fv->sf,fv->map,fv->normal);
     if ( ok ) {
 	SplineFont *sf = fv->cidmaster?fv->cidmaster:fv->sf->mm!=NULL?fv->sf->mm->normal:fv->sf;
@@ -903,6 +911,28 @@ static void FVReattachCVs(SplineFont *old,SplineFont *new) {
     }
 }
 
+static char *Decompress(char *name, int compression) {
+    char *dir = getenv("TMPDIR");
+    char buf[1500];
+    char *tmpfile;
+
+    if ( dir==NULL ) dir = P_tmpdir;
+    tmpfile = galloc(strlen(dir)+strlen(GFileNameTail(name))+2);
+    strcpy(tmpfile,dir);
+    strcat(tmpfile,"/");
+    strcat(tmpfile,GFileNameTail(name));
+    *strrchr(tmpfile,'.') = '\0';
+#if defined( _NO_SNPRINTF ) || defined( __VMS )
+    sprintf( buf, "%s < %s > %s", compressors[compression].decomp, name, tmpfile );
+#else
+    snprintf( buf, sizeof(buf), "%s < %s > %s", compressors[compression].decomp, name, tmpfile );
+#endif
+    if ( system(buf)==0 )
+return( tmpfile );
+    free(tmpfile);
+return( NULL );
+}
+
 static void _FVRevert(FontView *fv,int tobackup) {
     SplineFont *temp, *old = fv->cidmaster?fv->cidmaster:fv->sf;
     BDFFont *tbdf, *fbdf;
@@ -921,27 +951,54 @@ return;
 	/* we can only revert to backup if it's an sfd file. So we use filename*/
 	/*  here. In the normal case we revert to whatever file we read it from*/
 	/*  (sfd or not) so we use origname */
-	char *buf = galloc(strlen(fv->sf->filename)+10);
-	strcpy(buf,fv->sf->filename);
-	strcat(buf,"~");
-	temp = ReadSplineFont(buf,0);
-	if ( temp!=NULL ) {
-	    char *pt;
-	    if ( temp->filename!=NULL ) {
-		pt = temp->filename+strlen(temp->filename)-1;
-		if ( *pt=='~' ) *pt = '\0';
+	char *buf = galloc(strlen(old->filename)+20);
+	strcpy(buf,old->filename);
+	if ( old->compression!=0 ) {
+	    char *tmpfile;
+	    strcat(buf,compressors[old->compression-1].ext);
+	    strcat(buf,"~");
+	    tmpfile = Decompress(buf,old->compression-1);
+	    if ( tmpfile==NULL )
+		temp = NULL;
+	    else {
+		temp = ReadSplineFont(tmpfile,0);
+		unlink(tmpfile);
+		free(tmpfile);
 	    }
-	    if ( temp->origname!=NULL ) {
-		pt = temp->origname+strlen(temp->origname)-1;
-		if ( *pt=='~' ) *pt = '\0';
-	    }
+	} else {
+	    strcat(buf,"~");
+	    temp = ReadSplineFont(buf,0);
 	}
 	free(buf);
-    } else
-	temp = ReadSplineFont(old->origname,0);
+    } else {
+	if ( old->compression!=0 ) {
+	    char *tmpfile;
+	    char *buf = galloc(strlen(old->filename)+20);
+	    strcpy(buf,old->filename);
+	    strcat(buf,compressors[old->compression-1].ext);
+	    tmpfile = Decompress(buf,old->compression-1);
+	    if ( tmpfile==NULL )
+		temp = NULL;
+	    else {
+		temp = ReadSplineFont(tmpfile,0);
+		unlink(tmpfile);
+		free(tmpfile);
+	    }
+	} else
+	    temp = ReadSplineFont(old->origname,0);
+    }
     if ( temp==NULL ) {
 return;
     }
+    if ( temp->filename!=NULL ) {
+	free(temp->filename);
+	temp->filename = copy(old->filename);
+    }
+    if ( temp->origname!=NULL ) {
+	free(temp->origname);
+	temp->origname = copy(old->origname);
+    }
+    temp->compression = old->compression;
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     FVReattachCVs(old,temp);
     for ( i=0; i<old->subfontcnt; ++i )
@@ -6005,8 +6062,10 @@ static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = true;
 	    if ( fv->sf->filename!=NULL ) {
 		if ( fv->sf->backedup == bs_dontknow ) {
-		    char *buf = galloc(strlen(fv->sf->filename)+10);
+		    char *buf = galloc(strlen(fv->sf->filename)+20);
 		    strcpy(buf,fv->sf->filename);
+		    if ( fv->sf->compression!=0 )
+			strcat(buf,compressors[fv->sf->compression-1].ext);
 		    strcat(buf,"~");
 		    if ( access(buf,F_OK)==0 )
 			fv->sf->backedup = bs_backedup;
@@ -6019,7 +6078,7 @@ static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    }
 	  break;
 	  case MID_RevertGlyph:
-	    mi->ti.disabled = fv->sf->origname==NULL || anychars==-1;
+	    mi->ti.disabled = fv->sf->origname==NULL || anychars==-1 || fv->sf->compression!=0;
 	  break;
 	  case MID_Recent:
 	    mi->ti.disabled = !RecentFilesAny();
@@ -10585,19 +10644,13 @@ return( sf );
 SplineFont *ReadSplineFont(char *filename,enum openflags openflags) {
     SplineFont *sf;
     char ubuf[250], *temp;
-    char buf[1500];
     int fromsfd = false;
-    static struct { char *ext, *decomp, *recomp; } compressors[] = {
-	{ "gz", "gunzip", "gzip" },
-	{ "bz2", "bunzip2", "bzip2" },
-	{ "Z", "gunzip", "compress" },
-	NULL
-    };
     int i;
-    char *pt, *strippedname, *tmpfile=NULL, *paren=NULL, *fullname=filename;
+    char *pt, *strippedname, *oldstrippedname, *tmpfile=NULL, *paren=NULL, *fullname=filename;
     int len;
     FILE *foo;
     int checked;
+    int compression=0;
 
     if ( filename==NULL )
 return( NULL );
@@ -10613,40 +10666,19 @@ return( NULL );
     pt = strrchr(strippedname,'.');
     i = -1;
     if ( pt!=NULL ) for ( i=0; compressors[i].ext!=NULL; ++i )
-	if ( strcmp(compressors[i].ext,pt+1)==0 )
+	if ( strcmp(compressors[i].ext,pt)==0 )
     break;
+    oldstrippedname = strippedname;
     if ( i==-1 || compressors[i].ext==NULL ) i=-1;
     else {
-#if defined( _NO_SNPRINTF ) || defined( __VMS )
-	sprintf( buf, "%s %s", compressors[i].decomp, strippedname );
-#else
-	snprintf( buf, sizeof(buf), "%s %s", compressors[i].decomp, strippedname );
-#endif
-	if ( system(buf)==0 ) {
-	    *pt='\0';
+	tmpfile = Decompress(strippedname,i);
+	if ( tmpfile!=NULL ) {
+	    strippedname = tmpfile;
 	} else {
-	    /* Assume no write access to file */
-	    char *dir = getenv("TMPDIR");
-	    if ( dir==NULL ) dir = P_tmpdir;
-	    tmpfile = galloc(strlen(dir)+strlen(GFileNameTail(strippedname))+2);
-	    strcpy(tmpfile,dir);
-	    strcat(tmpfile,"/");
-	    strcat(tmpfile,GFileNameTail(strippedname));
-	    *strrchr(tmpfile,'.') = '\0';
-#if defined( _NO_SNPRINTF ) || defined( __VMS )
-	    sprintf( buf, "%s -c %s > %s", compressors[i].decomp, strippedname, tmpfile );
-#else
-	    snprintf( buf, sizeof(buf), "%s -c %s > %s", compressors[i].decomp, strippedname, tmpfile );
-#endif
-	    if ( system(buf)==0 ) {
-		if ( strippedname!=filename ) free(strippedname);
-		strippedname = tmpfile;
-	    } else {
-		gwwv_post_error(_("Decompress Failed!"),_("Decompress Failed!"));
-		free(tmpfile);
+	    gwwv_post_error(_("Decompress Failed!"),_("Decompress Failed!"));
 return( NULL );
-	    }
 	}
+	compression = i+1;
 	if ( strippedname!=filename && paren!=NULL ) {
 	    fullname = galloc(strlen(strippedname)+strlen(paren)+1);
 	    strcpy(fullname,strippedname);
@@ -10788,16 +10820,19 @@ return( NULL );
     } else {
 	sf = SFReadMacBinary(fullname,0,openflags);
     }
-    if ( strippedname!=filename && strippedname!=tmpfile )
-	free(strippedname);
-    if ( fullname!=filename && fullname!=strippedname )
-	free(fullname);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_end_indicator();
 # endif
 
     if ( sf!=NULL ) {
 	SplineFont *norm = sf->mm!=NULL ? sf->mm->normal : sf;
+	if ( compression!=0 ) {
+	    free(sf->filename);
+	    *strrchr(oldstrippedname,'.') = '\0';
+	    sf->filename = copy( oldstrippedname );
+	}
+	if ( fromsfd )
+	    sf->compression = compression;
 	free( norm->origname );
 	if ( sf->chosenname!=NULL && strippedname==filename ) {
 	    norm->origname = galloc(strlen(filename)+strlen(sf->chosenname)+8);
@@ -10834,16 +10869,13 @@ return( NULL );
 	gwwv_post_error(_("Couldn't open font"),_("%.100s is not in a known format (or is so badly corrupted as to be unreadable)"),GFileNameTail(filename));
 #endif
 
+    if ( oldstrippedname!=filename )
+	free(oldstrippedname);
+    if ( fullname!=filename && fullname!=strippedname )
+	free(fullname);
     if ( tmpfile!=NULL ) {
 	unlink(tmpfile);
 	free(tmpfile);
-    } else if ( i!=-1 ) {
-#if defined( _NO_SNPRINTF ) || defined( __VMS )
-	sprintf( buf, "%s %s", compressors[i].recomp, filename );
-#else
-	snprintf( buf, sizeof(buf), "%s %s", compressors[i].recomp, filename );
-#endif
-	system(buf);
     }
     if ( (openflags&of_fstypepermitted) && sf!=NULL && (sf->pfminfo.fstype&0xff)==0x0002 ) {
 	/* Ok, they have told us from a script they have access to the font */
