@@ -193,6 +193,8 @@ static int FindFontDiff(struct font_data *try,FontRequest *rq) {
     int diff, temp;
     /* this routine is inlined in FindBest */
 
+    if ( try->configuration_error )
+return( 0x7ffffff );
     if (( diff = try->weight - rq->weight )<0 ) diff = -diff;
     diff *= 2;
     if ( (try->style & fs_italic) != ( rq->style & fs_italic )) diff += 500;
@@ -217,6 +219,8 @@ static struct font_data *FindBest(GDisplay *gdisp,struct font_name *fn,FontReque
 return( best );
     for ( try = fn->data[enc]; try!=NULL; try = try->next ) {
 	/* this is an inline version of FindFontDiff */
+	if ( try->configuration_error )
+    continue;
 	if (( diff = try->weight - rq->weight )<0 ) diff = -diff;
 	if ( (try->style & fs_italic) != ( rq->style & fs_italic )) diff += 500;
 	if ( (try->style & fs_smallcaps) != ( rq->style & fs_smallcaps )) diff += 200;
@@ -402,27 +406,13 @@ return;
     screen_display->fontstate->allow_scaling = old_scale;
 }
 
-FontInstance *GDrawInstanciateFont(GDisplay *disp, FontRequest *rq) {
-    FState *fs;
-    unichar_t *temp = NULL;
-    unichar_t *requested_families = normalize_font_names(rq->family_name!=NULL?
-	    rq->family_name :
-	    (temp = utf82u_copy(rq->utf8_family_name)));
-    struct family_info *fam;
-    struct font_instance *fi;
+static FontInstance *_GDrawBuildFontInstance(GDisplay *disp, FontRequest *rq,
+	struct family_info *fam, FontInstance *fi) {
     struct font_data *main[em_uplanemax], *smallcaps[em_uplanemax];
     int pos[em_uplanemax], val[em_uplanemax];
     FontRequest smallrq;
     struct font_data **unifonts=NULL;
     int i;
-
-    free(temp);
-
-    if ( disp==NULL ) disp = screen_display;
-    fs = disp->fontstate;
-
-    if ( rq->point_size<0 )	/* It's in pixels, not points, convert to points */
-	rq->point_size = PixelToPoint(-rq->point_size,fs->res);
 
     if ( rq->style & fs_smallcaps ) {
 	smallrq = *rq;
@@ -432,6 +422,90 @@ FontInstance *GDrawInstanciateFont(GDisplay *disp, FontRequest *rq) {
 	else if ( smallrq.point_size<=24 ) smallrq.point_size -= 4;
 	else smallrq.point_size -= smallrq.point_size/6;
     }
+
+    for ( i=0; i<em_uplanemax; ++i ) {
+	main[i] = smallcaps[i] = NULL;
+	pos[i] = 0x7fff;
+    }
+    for ( i=0; i<em_uplanemax; ++i ) {
+	main[i] = PickFontForEncoding(disp,fam,rq,i,pos,val);
+	if ( (rq->style&fs_smallcaps) && main[i]!=NULL && !(main[i]->style&fs_smallcaps)) {
+	    int old_size = smallrq.point_size;
+	    if ( main[i]->x_height!=0 && main[i]->cap_height!=0 )
+		smallrq.point_size = (rq->point_size*main[i]->x_height)/main[i]->cap_height;
+	    smallcaps[i] = PickMatchingSmallCaps(disp,main[i]->parent,&smallrq,i);
+	    if ( smallcaps[i]==main[i] )
+		smallcaps[i]=NULL;
+	    smallrq.point_size = old_size;
+	}
+    }
+    /* We have a special unicode hack here because we expect unicode fonts*/
+    /*  to be incomplete, and are prepared to try other fonts if they are */
+    /*  we expect other fonts to be complete (ie. supply all of their charset) */
+    /*  so we don't need alternates for them */
+    if ( main[em_unicode]!=NULL &&
+	    (unifonts = gcalloc(fam->name_cnt+ft_max,sizeof(struct font_data *)))!=NULL )
+	PickUnicodeFonts(disp,unifonts,fam,rq );
+
+    if ( fi==NULL ) {
+	fi = galloc(sizeof(struct font_instance));
+	if ( fi==NULL ) {
+	    gfree(unifonts);
+return( NULL );
+	}
+	if (( fi->level_masks = gcalloc(fam->name_cnt+4,sizeof(int32)) )==NULL ) {
+	    gfree(fi); gfree(unifonts);
+return( NULL );
+	}
+	fi->rq = *rq; fi->rq.family_name = NULL;
+	fi->fam = fam;
+	fi->next = fam->instanciations;
+	fam->instanciations = fi;
+    }
+
+    fi->smallcaps = NULL;
+    if ( rq->style&fs_smallcaps ) {
+	for ( i=0; i<em_uplanemax; ++i )
+	    if ( smallcaps[i]!=NULL )
+	break;
+	if ( i!=em_uplanemax ) fi->smallcaps = galloc(em_uplanemax*sizeof(struct font_data *));
+    }
+    for ( i=0; i<em_uplanemax; ++i ) {
+	fi->fonts[i] = main[i];
+	if ( fi->smallcaps ) fi->smallcaps[i] = smallcaps[i];
+	/* If unicode is a better match than the encoding then use it */
+	if ( pos[i]!=0x7fff && i<em_max ) {
+	    if ( i==em_unicode || pos[i]!=pos[em_unicode] || val[i]<=val[em_unicode] )
+		fi->level_masks[pos[i]] |= (1<<i);
+	    else
+		fi->level_masks[pos[i]+1] |= (1<<i);
+	}
+    }
+    if ( unifonts!=NULL )
+	for ( i=0; i<fam->name_cnt+3; ++i )
+	    if ( unifonts[i]!=NULL )
+		fi->level_masks[i] |= 1<<em_unicode;
+    fi->mapped_to = disp;
+    fi->unifonts = unifonts;
+return( fi );
+}
+
+FontInstance *GDrawInstanciateFont(GDisplay *disp, FontRequest *rq) {
+    FState *fs;
+    unichar_t *temp = NULL;
+    unichar_t *requested_families = normalize_font_names(rq->family_name!=NULL?
+	    rq->family_name :
+	    (temp = utf82u_copy(rq->utf8_family_name)));
+    struct family_info *fam;
+    struct font_instance *fi;
+
+    free(temp);
+
+    if ( disp==NULL ) disp = screen_display;
+    fs = disp->fontstate;
+
+    if ( rq->point_size<0 )	/* It's in pixels, not points, convert to points */
+	rq->point_size = PixelToPoint(-rq->point_size,fs->res);
 
     fam = FindFamily(fs,requested_families);
     if ( fam!=NULL )
@@ -447,67 +521,9 @@ return( NULL );
     break;
 
     if ( fi==NULL ) {
-	for ( i=0; i<em_uplanemax; ++i ) {
-	    main[i] = smallcaps[i] = NULL;
-	    pos[i] = 0x7fff;
-	}
-	for ( i=0; i<em_uplanemax; ++i ) {
-	    main[i] = PickFontForEncoding(disp,fam,rq,i,pos,val);
-	    if ( (rq->style&fs_smallcaps) && main[i]!=NULL && !(main[i]->style&fs_smallcaps)) {
-		int old_size = smallrq.point_size;
-		if ( main[i]->x_height!=0 && main[i]->cap_height!=0 )
-		    smallrq.point_size = (rq->point_size*main[i]->x_height)/main[i]->cap_height;
-		smallcaps[i] = PickMatchingSmallCaps(disp,main[i]->parent,&smallrq,i);
-		if ( smallcaps[i]==main[i] )
-		    smallcaps[i]=NULL;
-		smallrq.point_size = old_size;
-	    }
-	}
-	/* We have a special unicode hack here because we expect unicode fonts*/
-	/*  to be incomplete, and are prepared to try other fonts if they are */
-	/*  we expect other fonts to be complete (ie. supply all of their charset) */
-	/*  so we don't need alternates for them */
-	if ( main[em_unicode]!=NULL &&
-		(unifonts = gcalloc(fam->name_cnt+ft_max,sizeof(struct font_data *)))!=NULL )
-	    PickUnicodeFonts(disp,unifonts,fam,rq );
-
-	fi = galloc(sizeof(struct font_instance));
-	if ( fi==NULL ) {
-	    gfree(unifonts);
+	fi = _GDrawBuildFontInstance(disp,rq,fam,NULL);
+	if ( fi==NULL )
 return( NULL );
-	}
-	if (( fi->level_masks = gcalloc(fam->name_cnt+4,sizeof(int32)) )==NULL ) {
-	    gfree(fi); gfree(unifonts);
-return( NULL );
-	}
-	fi->rq = *rq; fi->rq.family_name = NULL;
-	fi->fam = fam;
-	fi->next = fam->instanciations;
-	fam->instanciations = fi;
-	fi->smallcaps = NULL;
-	if ( rq->style&fs_smallcaps ) {
-	    for ( i=0; i<em_uplanemax; ++i )
-		if ( smallcaps[i]!=NULL )
-	    break;
-	    if ( i!=em_uplanemax ) fi->smallcaps = galloc(em_uplanemax*sizeof(struct font_data *));
-	}
-	for ( i=0; i<em_uplanemax; ++i ) {
-	    fi->fonts[i] = main[i];
-	    if ( fi->smallcaps ) fi->smallcaps[i] = smallcaps[i];
-	    /* If unicode is a better match than the encoding then use it */
-	    if ( pos[i]!=0x7fff && i<em_max ) {
-		if ( i==em_unicode || pos[i]!=pos[em_unicode] || val[i]<=val[em_unicode] )
-		    fi->level_masks[pos[i]] |= (1<<i);
-		else
-		    fi->level_masks[pos[i]+1] |= (1<<i);
-	    }
-	}
-	if ( unifonts!=NULL )
-	    for ( i=0; i<fam->name_cnt+3; ++i )
-		if ( unifonts[i]!=NULL )
-		    fi->level_masks[i] |= 1<<em_unicode;
-	fi->mapped_to = disp;
-	fi->unifonts = unifonts;
     }
     if ( disp!=screen_display && disp->fontstate->use_screen_fonts )
 	GDrawFillInInstanciationFromScreen(disp,fi,rq);
@@ -529,7 +545,16 @@ return( rq );
 }
 /* ************************************************************************** */
 
-static int UnicodeCharExists(GDisplay *disp, struct font_data *fd, unichar_t ch) {
+static void *_loadFontMetrics(GDisplay *disp, struct font_data *fd, FontInstance *fi) {
+    void *ret;
+    ret = (disp->funcs->loadFontMetrics)(disp,fd);
+    if ( fd->configuration_error && fi!=NULL )
+	_GDrawBuildFontInstance(disp,&fi->rq,fi->fam,fi);
+return( ret );
+}
+
+static int UnicodeCharExists(GDisplay *disp, struct font_data *fd, unichar_t ch,
+	FontInstance *fi) {
     long minch, maxch;
     XFontStruct *fs;
 
@@ -539,7 +564,7 @@ return( true );
 return( false );
 
     if ( fd->info==NULL )
-	(disp->funcs->loadFontMetrics)(disp,fd);
+	_loadFontMetrics(disp,fd,fi);
 
     if (( fs = fd->info) == NULL )
 return( false );
@@ -655,7 +680,7 @@ return( i );
 	    unichar_t *curend = text;
 	    for ( text = strt; text<curend; ++text )
 		if ( !iscombining(*text) &&
-			!UnicodeCharExists(fi->mapped_to,fi->unifonts[level],*text ))
+			!UnicodeCharExists(fi->mapped_to,fi->unifonts[level],*text,fi ))
 	    break;
 	    if ( text!=strt ) {
 		if ( text<=any_nonu+1 ) {
@@ -711,8 +736,8 @@ return( i );
 	    if ( (plane = unicode_backtrans[ch>>8])!=NULL )
 		some = plane[ch&0xff];
 	    if ( (some&above) ||
-		    UnicodeCharExists(fi->mapped_to,fi->fonts[em_unicode],ch ) ||
-		    !UnicodeCharExists(fi->mapped_to,fi->unifonts[level],ch ))
+		    UnicodeCharExists(fi->mapped_to,fi->fonts[em_unicode],ch,fi ) ||
+		    !UnicodeCharExists(fi->mapped_to,fi->unifonts[level],ch,fi ))
 	break;
 	}
 	if ( text!=strt ) {
@@ -733,10 +758,10 @@ return( em_max+level );
 		some = plane[ch&0xff];
 	    if ( (some&above) )
 	break;
-	    if ( UnicodeCharExists(fi->mapped_to,fi->fonts[em_unicode],ch ))
+	    if ( UnicodeCharExists(fi->mapped_to,fi->fonts[em_unicode],ch,fi ))
 	break;
 	    if ( fi->unifonts!=NULL ) for ( level = 0; level<name_cnt; ++level ) {
-		if ( UnicodeCharExists(fi->mapped_to,fi->unifonts[level],ch ))
+		if ( UnicodeCharExists(fi->mapped_to,fi->unifonts[level],ch,fi ))
 	goto break_out;
 	    }
 	}
@@ -914,7 +939,7 @@ return( tryme );
 	some = unicode_backtrans[ch>>8][ch&0xff] | (1<<em_unicode);
 	some &= fi->level_masks[level];
 	if ( some==(1<<em_unicode) ) {
-	    if ( UnicodeCharExists(fi->mapped_to,fi->unifonts[level],ch)) {
+	    if ( UnicodeCharExists(fi->mapped_to,fi->unifonts[level],ch,fi)) {
 		*accent = ch;
 return( fi->unifonts[level]);
 	    }
@@ -932,7 +957,7 @@ return( fi->fonts[i]);
 		some = unicode_backtrans[ch>>8][ch&0xff] | (1<<em_unicode);
 		some &= fi->level_masks[level];
 		if ( some==(1<<em_unicode) &&
-			UnicodeCharExists(fi->mapped_to,fi->unifonts[level],*apt)) {
+			UnicodeCharExists(fi->mapped_to,fi->unifonts[level],*apt,fi)) {
 		    *accent = *apt;
 return( fi->unifonts[level]);
 		} else if ( some!=0 ) {
@@ -1022,12 +1047,12 @@ static struct font_data *UnicodeFontWithReplacementChar(FontInstance *fi) {
     int i;
 
     ufont = fi->fonts[em_unicode];
-    if ( ufont!=NULL && !UnicodeCharExists(fi->mapped_to, ufont, 0xfffd))
+    if ( ufont!=NULL && !UnicodeCharExists(fi->mapped_to, ufont, 0xfffd,fi))
 	ufont = NULL;
     if ( fi->unifonts!=NULL ) {
 	for ( i=0; i<fi->fam->name_cnt+ft_max-1 && ufont==NULL; ++i ) {
 	    ufont = fi->unifonts[i];
-	    if ( ufont!=NULL && !UnicodeCharExists(fi->mapped_to, ufont, 0xfffd))
+	    if ( ufont!=NULL && !UnicodeCharExists(fi->mapped_to, ufont, 0xfffd,fi))
 		ufont = NULL;
 	}
     }
@@ -1845,7 +1870,7 @@ static int32 ComposeCharacter(GWindow gw, struct font_instance *fi,
 	unichar_t ch = (*text=='i') ? 0x131 : 0xf6be;
 	afd = PickAccentFont(fi,fd,ch, &accent);
 	if ( afd!=NULL && afd->info==NULL )
-	    (gw->display->funcs->loadFontMetrics)(gw->display,afd);
+	    _loadFontMetrics(gw->display,afd,fi);
 	if ( afd==NULL || afd->info==NULL )
 	    afd = fd;
 	else
@@ -1946,9 +1971,9 @@ return( 0 );
 	    enc = em_unicode;
 	}
 	if ( fd!=NULL && fd->info==NULL )
-	    (disp->funcs->loadFontMetrics)(disp,fd);
+	    _loadFontMetrics(disp,fd,fi);
 	if ( sc!=NULL && sc->info==NULL ) {
-	    (disp->funcs->loadFontMetrics)(disp,sc);
+	    _loadFontMetrics(disp,sc,fi);
 	    if ( sc->info==NULL ) sc=NULL;
 	}
 
@@ -2123,7 +2148,7 @@ return( 0 );
 	    fd = fi->fonts[enc];
 
 	    if ( fd!=NULL && fd->info==NULL )
-		(disp->funcs->loadFontMetrics)(disp,fd);
+		_loadFontMetrics(disp,fd,fi);
 	    if ( fd!=NULL )
 		dist += _GDraw_Transform(gw,fd,NULL,enc,x+dist,y,ubuffer,upt,mods,col,drawit,arg);
 	    if ( drawit==tf_rect ) {
@@ -2224,7 +2249,7 @@ void GDrawFontMetrics(FontInstance *fi,int *as, int *ds, int *ld) {
 	if ( fi->level_masks[i]&(1<<em_unicode) )
 	    fd = fi->fonts[em_unicode];
 	if ( fd->info==NULL )
-	    (fi->mapped_to->funcs->loadFontMetrics)(fi->mapped_to,fd);
+	    _loadFontMetrics(fi->mapped_to,fd,fi);
 	fontinfo = fd->info;
 	*ld = 0;
 	*as = fontinfo->ascent;
