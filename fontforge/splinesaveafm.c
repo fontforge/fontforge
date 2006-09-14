@@ -2882,6 +2882,7 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map
     int anyITLC;
     int is_math = sf->texdata.type==tex_math || sf->texdata.type==tex_mathext;
     real scale = (1<<20)/(double) (sf->ascent+sf->descent);
+    int toobig_warn = false;
 
     if ( maxc==256 ) {
 	ligkerns = _ligkerns;
@@ -3045,6 +3046,22 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map
 	    if ( widths[i]<0 ) widths[i] = 0;
 	    if ( first==-1 ) first = i;
 	    last = i;
+	    if ( widths[i]>=(16<<20) || heights[i]>=(16<<20) ||
+		    depths[i]>=(16<<20) || italics[i]>=(16<<20) ) {
+		if ( !toobig_warn ) {
+		    gwwv_post_error(_("Value exceeds tfm limitations"),_("The width, height, depth or italic correction of %s is too big. Tfm files may not contain values bigger than 16 times the em-size of the font. Width=%g, height=%g, depth=%g, italic correction=%g"),
+			sc->name, widths[i]/(1<<20), heights[i]/(1<<20), depths[i]/(1<<20), italics[i]/(1<<20) );
+		    toobig_warn = true;
+		}
+		if ( widths[i]>(16<<20)-1 )
+		    widths[i] = (16<<20)-1;
+		if ( heights[i]>(16<<20)-1 )
+		    heights[i] = (16<<20)-1;
+		if ( depths[i]>(16<<20)-1 )
+		    depths[i] = (16<<20)-1;
+		if ( italics[i]>(16<<20)-1 )
+		    italics[i] = (16<<20)-1;
+	    }
 	}
     }
     widcnt = CoalesceValues(widths,maxc,widthindex,maxc);
