@@ -2961,6 +2961,10 @@ void FVTrans(FontView *fv,SplineChar *sc,real transform[6], uint8 *sel,
 	    else if ( pst->type==pst_pair ) {
 		VrTrans(&pst->u.pair.vr[0],transform);
 		VrTrans(&pst->u.pair.vr[1],transform);
+	    } else if ( pst->type == pst_lcaret ) {
+		int j;
+		for ( j=0; j<pst->u.lcaret.cnt; ++j )
+		    pst->u.lcaret.carets[j] = rint(pst->u.lcaret.carets[j]*transform[0]+transform[4]);
 	    }
 	}
     }
