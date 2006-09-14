@@ -2096,7 +2096,8 @@ static void *GXDrawLoadFontMetrics(GDisplay *gdisp, struct font_data *fd) {
     fd->info = fs = XLoadQueryFont(((GXDisplay *) gdisp)->display,fd->localname);
     lastfontrequest = NULL;
     if ( fs==NULL ) {
-	fprintf( stderr, "Help! Server claimed font\n\t%s\n existed in the font list, but when I asked for it there was nothing.\n I think I'll crash soon.\n",
+	fd->configuration_error = true;
+	fprintf( stderr, "Help! Server claimed font\n\t%s\n existed in the font list, but when I asked for it there was nothing.\n I may crash soon.\n",
 		fd->localname );
 return( NULL );
     }

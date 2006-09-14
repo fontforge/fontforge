@@ -154,6 +154,7 @@ struct font_data {
     unsigned int copy_from_screen: 1;	/* need to copy the bitmaps from the screen font */
     unsigned int was_scaled: 1;
     unsigned int is_scalable: 1;
+    unsigned int configuration_error: 1;/* Server thinks font exists, but when asked for it can't find it */
     struct font_data *screen_font;	/* if the printer doesn't have a font, see if we can do magic with a screen font instead */
     struct font_data *base;		/* of a scaled font */
     uint8 *exists;			/* Bit mask. set bits indicate contains a glyph for that index */
