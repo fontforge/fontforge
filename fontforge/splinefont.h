@@ -1130,6 +1130,7 @@ typedef struct splinefont {
     long modificationtime;
 #endif
     short os2_version;			/* 0 means default rather than the real version 0 */
+    short compression;			/* If we opened a compressed sfd file, then save it out compressed too */
 } SplineFont;
 
 /* I am going to simplify my life and not encourage intermediate designs */
@@ -1215,6 +1216,8 @@ enum ps_flags { ps_flag_nohintsubs = 0x10000, ps_flag_noflex=0x20000,
 		    ps_flag_mask = (ps_flag_nohintsubs|ps_flag_noflex|
 			ps_flag_afm|ps_flag_pfm|ps_flag_tfm|ps_flag_round)
 		};
+
+struct compressors { char *ext, *decomp, *recomp; };
 
 struct fontdict;
 struct pschars;
