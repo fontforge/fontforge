@@ -1650,6 +1650,8 @@ static SplinePointList *_SPLCopyTransformedHintMasks(SplineChar *subsc,real tran
 	    }
 	    if ( spt->next==NULL )
 	break;
+	    if ( spt2->next==NULL )	/* Oh dear... how did that happen? */
+	break;
 	}
 	first = NULL;
 	for ( s = spl->first->next; s!=NULL && s!=first; s=s->to->next ) {
