@@ -1639,7 +1639,7 @@ static SplinePointList *_SPLCopyTransformedHintMasks(SplineChar *subsc,real tran
     if ( head!=NULL )
 	for ( last = head; last->next!=NULL; last=last->next );
 
-    for ( spl = head, spl2=base; spl!=NULL; spl = spl->next ) {
+    for ( spl = head, spl2=base; spl!=NULL; spl = spl->next, spl2=spl2->next ) {
 	pfirst = NULL;
 	for ( spt = spl->first, spt2 = spl2->first ; spt!=pfirst; spt = spt->next->to, spt2 = spt2->next->to ) {
 	    if ( pfirst==NULL ) pfirst = spt;
@@ -1649,8 +1649,6 @@ static SplinePointList *_SPLCopyTransformedHintMasks(SplineChar *subsc,real tran
 		spt->hintmask = HintMaskTransform(spt2->hintmask,transform,basesc,subsc);
 	    }
 	    if ( spt->next==NULL )
-	break;
-	    if ( spt2->next==NULL )	/* Oh dear... how did that happen? */
 	break;
 	}
 	first = NULL;
