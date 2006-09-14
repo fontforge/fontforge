@@ -322,7 +322,7 @@ static KernPair *KernListMatch(KernPair *kerns,int sli) {
     KernPair *kp;
 
     for ( kp=kerns; kp!=NULL; kp=kp->next )
-	if ( kp->sli == sli )
+	if ( kp->sli == sli && SCWorthOutputting(kp->sc))
 return( kp );
 return( NULL );
 }
@@ -1074,7 +1074,7 @@ static struct lookup *dumpgposkernpairs(FILE *lfile,SplineFont *sf,int sli,
 #endif
 	for ( i=0; i<cnt ; ++i ) {
 	    for ( kp = isv ? glyphs[i]->vkerns : glyphs[i]->kerns; kp!=NULL; kp=kp->next ) {
-		if ( kp->sli==sli ) {
+		if ( kp->sli==sli && SCWorthOutputting(kp->sc)) {
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 		    if ( kp->adjust!=NULL )
 			devtabsize += DevTabLen(kp->adjust);
@@ -1099,7 +1099,8 @@ static struct lookup *dumpgposkernpairs(FILE *lfile,SplineFont *sf,int sli,
 	    }
 	}
     }
-    lookups = dumpgposkerndatalookups(lfile,sf,sli,at,isv,lookups,glyphs+start,cnt-start);
+    if ( cnt-start!=0 )
+	lookups = dumpgposkerndatalookups(lfile,sf,sli,at,isv,lookups,glyphs+start,cnt-start);
     free(glyphs);
 return( lookups );
 }
