@@ -3631,7 +3631,7 @@ static void SFDFixupRefs(SplineFont *sf) {
 		    else
 			index = map->map[(intpt) (kp->sc)];
 		}
-		if ( index>=sf->glyphcnt ) {
+		if ( index>=sf->glyphcnt || sf->glyphs[index]==NULL ) {
 		    IError( "Bad kerning information in glyph %s\n", sc->name );
 		    kp->sc = NULL;
 		} else
