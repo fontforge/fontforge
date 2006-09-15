@@ -94,7 +94,7 @@ void CVMouseMoveKnife(CharView *cv, PressedOn *p) {
 #endif
 }
 
-void CVMouseUpKnife(CharView *cv) {
+void CVMouseUpKnife(CharView *cv, GEvent *event) {
 #if !defined(KNIFE_CONTINUOUS)
     /* draw a line from (cv->p.cx,cv->p.cy) to (cv->info.x,cv->info.y) */
     /*  and cut anything intersected by it */
@@ -130,7 +130,28 @@ void CVMouseUpKnife(CharView *cv) {
 		    nexts = s->to->next;
 		if ( SplinesIntersect(s,&dummy,inters,t1s,t2s)>0 ) {
 		    for ( i=0; i<4 && t1s[i]!=-1 && (t1s[i]<.0001 || t1s[i]>1-.0001); ++i );
-		    if ( i<4 && t1s[i]!=-1 ) {
+		    if ( event->u.mouse.state&ksm_meta ) {
+			/* With meta down we just remove the spline rather than */
+			/* cutting it */
+			foundsomething = true;
+			nexts = NULL;
+			if ( !ever )
+			    CVPreserveState(cv);
+			ever = true;
+			if ( spl->first==spl->last ) {
+			    spl->first = s->to;
+			    spl->last = s->from;
+			} else {
+			    spl2 = chunkalloc(sizeof(SplineSet));
+			    spl2->next = spl->next;
+			    spl->next = spl2;
+			    spl2->first = s->to;
+			    spl2->last = spl->last;
+			    spl->last = s->from;
+			}
+			s->to->prev = s->from->next = NULL;
+			SplineFree(s);
+		    } else if ( i<4 && t1s[i]!=-1 ) {
 			/* There's at least one intersection point that isn't */
 			/*  too close to an end point. Cut here, and then */
 			/*  start all over again (we may need to alter the */
