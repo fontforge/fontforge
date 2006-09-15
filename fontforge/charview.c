@@ -3616,7 +3616,7 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
 	CVMouseUpTransform(cv);
       break;
       case cvt_knife:
-	CVMouseUpKnife(cv);
+	CVMouseUpKnife(cv,event);
       break;
       case cvt_rect: case cvt_elipse: case cvt_poly: case cvt_star:
 	CVMouseUpShape(cv);

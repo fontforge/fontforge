@@ -1097,7 +1097,7 @@ extern void CVMouseMoveTransform(CharView *cv);
 extern void CVMouseUpTransform(CharView *cv);
 extern void CVMouseDownKnife(CharView *cv);
 extern void CVMouseMoveKnife(CharView *cv,PressedOn *);
-extern void CVMouseUpKnife(CharView *cv);
+extern void CVMouseUpKnife(CharView *cv,GEvent *event);
 extern void CVMouseMoveShape(CharView *cv);
 extern void CVMouseUpShape(CharView *cv);
 #ifdef FONTFORGE_CONFIG_GDRAW
