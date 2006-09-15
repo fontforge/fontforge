@@ -6456,7 +6456,7 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
 	*mfarray[3], *mfarray2[8], *szarray[7], *szarray2[5], *szarray3[7],
 	*szarray4[4], *szarray5[6];
     GTextInfo mlabel[10], nlabel[16], pslabel[30], tnlabel[7],
-	plabel[8], vlabel[16], panlabel[22], comlabel[3], atlabel[7], txlabel[23],
+	plabel[8], vlabel[19], panlabel[22], comlabel[3], atlabel[7], txlabel[23],
 	csublabel[fpst_max-pst_contextpos][6], smsublabel[4][6],
 	mflabel[8], mclabel[8], szlabel[17], mklabel[5], metlabel[28],
 	sslabel[23], xulabel[6], dlabel[5], ulabel[1];
