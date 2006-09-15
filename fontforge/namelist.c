@@ -690,6 +690,8 @@ void LoadNamelistDir(char *dir) {
 
     if ( dir == NULL )
 	dir = getPfaEditDir(prefdir);
+    if ( dir == NULL )
+return;
 
     diro = opendir(dir);
     if ( diro==NULL )		/* It's ok not to have any */
