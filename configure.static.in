@@ -344,6 +344,40 @@ AC_ARG_WITH(noui,
 
 test -d libs || mkdir libs
 
+dnl Build a po/Makefile.in with appropriate instructions for installing all locales
+
+mofiles=""
+for localefile in po/*.po; do
+  locale=`echo $localefile | sed 's/po\/// ; s/\.po//'`
+  mofiles="$mofiles $locale.mo"
+done
+
+cat </dev/null >po/Makefile.in
+echo 'prefix = @prefix@' >> po/Makefile.in
+echo 'localedir = $(prefix)/share/locale' >> po/Makefile.in
+echo 'INSTALL = @INSTALL@' >> po/Makefile.in
+echo 'INSTALL_DATA = @INSTALL_DATA@' >> po/Makefile.in
+echo '' >> po/Makefile.in
+echo "MOFILES =" $mofiles >> po/Makefile.in
+echo '' >> po/Makefile.in
+echo '.SUFFIXES:' >> po/Makefile.in
+echo '.SUFFIXES: .po .mo' >> po/Makefile.in
+echo '' >> po/Makefile.in
+echo 'all: $(MOFILES)' >> po/Makefile.in
+echo '' >> po/Makefile.in
+echo '.po.mo:' >> po/Makefile.in
+echo '	msgfmt -o $@ $<' >> po/Makefile.in
+echo '' >> po/Makefile.in
+echo 'install:' >> po/Makefile.in
+
+for localefile in po/*.po; do
+  locale=`echo $localefile | sed 's/po\/// ; s/\.po//'`
+  echo '	mkdir -p $(localedir)/'$locale'/LC_MESSAGES' >> po/Makefile.in
+  echo '	$(INSTALL_DATA)' $locale.mo '$(localedir)/'$locale'/LC_MESSAGES/FontForge.mo' >> po/Makefile.in
+done
+
+dnl end code for locale files.
+
 AC_SUBST(VERSION)
 VERSION=`cat VERSION`
 
