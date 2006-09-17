@@ -272,12 +272,12 @@ msgstr "Chargement des paires de crénage"
 #: autowidth.c:1643
 #, fuzzy
 msgid "Auto Kern..."
-msgstr "Crénage auto...(_K)"
+msgstr "Crénage auto..."
 
 #: autowidth.c:1643
 #, fuzzy
 msgid "Auto Width..."
-msgstr "Ch_asse automatique..."
+msgstr "Chasse automatique..."
 
 #: autowidth.c:1654
 msgid "Enter two glyph ranges"
@@ -407,7 +407,7 @@ msgstr "Utiliser Freetype"
 #: bitmapview.c:234
 #, fuzzy, c-format
 msgid "%1$.80s at %2$d size %3$d from %4$.80s"
-msgstr "%1$.80s (%2$d) taille %3$d venant de %4$.80hs"
+msgstr "%1$.80s (%2$d) taille %3$d venant de %4$.80s"
 
 #: bitmapview.c:1360 bitmapview.c:1659 charview.c:7105 cvpalettes.c:2844
 #: fontview.c:6744 fontview.c:6963
@@ -3576,7 +3576,7 @@ msgstr "Sélection des résultats"
 #: charinfo.c:6525
 #, fuzzy
 msgid ""
-"Set the selection of the font view to the characters\n"
+"Set the selection of the font view to the glyphs\n"
 "found by this search"
 msgstr ""
 "Sélectionner dans la fenêtre de fonte les glyphes\n"
@@ -3590,7 +3590,7 @@ msgstr "Sélection augmentée"
 #, fuzzy
 msgid ""
 "Expand the selection of the font view to include\n"
-"all the characters found by this search"
+"all the glyphs found by this search"
 msgstr ""
 "Étendre la sélection dans la fenêtre de fonte avec tous les glyphes\n"
 "trouvés par cette recherche"
@@ -3602,7 +3602,7 @@ msgstr "Sélection restreinte"
 #: charinfo.c:6543
 #, fuzzy
 msgid ""
-"Only search the selected characters, and unselect\n"
+"Only search the selected glyphs, and unselect\n"
 "any characters which do not match this search"
 msgstr ""
 "Chercher seulement parmi les glyphes sélectionnés, et déselectionner\n"
@@ -3640,7 +3640,7 @@ msgstr "Sortie"
 #: charview.c:1811
 #, fuzzy, c-format
 msgid "%1$.80s at %2$d from %3$.90s"
-msgstr "%1$.80s (%2$d) venant de %3$.90hs"
+msgstr "%1$.80s (%2$d) venant de %3$.90s"
 
 #: charview.c:2193
 #, fuzzy
@@ -3861,7 +3861,7 @@ msgstr "Avant-plan -> arrière-plan(_F)"
 #: charview.c:6903
 #, fuzzy
 msgid "Cop_y Bg To Fg"
-msgstr "Avant-plan -> arrière-plan(_F)"
+msgstr "Arrière-plan -> avant-plan"
 
 #: charview.c:6905
 msgid "Copy Gri_d Fit"
@@ -4181,7 +4181,7 @@ msgstr "Supprimer crénage vertical"
 #: charview.c:7111 fontview.c:6754 kernclass.c:2675 metricsview.c:2859
 #, fuzzy
 msgid "Kern Pair Closeup..."
-msgstr "Crénage par classes..."
+msgstr "Crénage individuel..."
 
 #: charview.c:7113 fontview.c:6748 fontview.c:6964
 msgid "Set _Vertical Advance..."
@@ -4205,10 +4205,31 @@ msgstr "P_aires ancrées"
 msgid "_Ligatures"
 msgstr "_Ligatures"
 
-#: charview.c:7135 charview.c:7190 fontinfo.c:287 libnames.c:6
+#: charview.c:7135 
+#, fuzzy
+msgid "PointNumbers|_None"
+msgstr "_Aucun"
+
+#: charview.c:7190
+#, fuzzy
+msgid "SubFonts|_None"
+msgstr "_Aucun"
+
+#: fontinfo.c:287
+#, fuzzy
+msgid "Constrast|None"
+msgstr "Aucun"
+
+#: libnames.c:6
 #, fuzzy
 msgid "_None"
-msgstr "Au_cun"
+msgstr "A_ucun"
+
+#: charview.c:7950
+#, fuzzy
+msgid "SubFonts|_All"
+msgstr "_Tout"
+
 
 #: charview.c:7136 savefontdlg.c:778
 msgid "TrueType"
@@ -4354,13 +4375,13 @@ msgid ""
 "The coverage table member \"%.20s\" is not in this font,\n"
 "Is that what you want?"
 msgstr ""
-"Le membre de classe \"%.20s\" ne se trouve pas dans cette fonte,\n"
+"Le membre de la table de couvrage \"%.20s\" ne se trouve pas dans cette fonte,\n"
 "est-ce bien ce que vous souhaitez ?"
 
 #: contextchain.c:818
 #, fuzzy, c-format
 msgid ""
-"There is no glyph named \"%.20hs\" in this font,\n"
+"There is no glyph named \"%.20s\" in this font,\n"
 "Is that what you want?"
 msgstr ""
 "Il n'y a pas de glyphe \"%.20s\" dans cette fonte,\n"
@@ -4512,9 +4533,8 @@ msgstr "Sélectionner"
 #: statemachine.c:3145
 #, fuzzy
 msgid "Set the fontview's selection to be the characters named here"
-msgstr ""
-"Prendre les glyphes sélectionnés dans la fenêtre de fonte pour contenu de "
-"cette liste"
+msgstr "Les glyphes dans cet liste seront sélectionnés dans la fenêtre de fonte"
+
 
 #: contextchain.c:2213
 msgid "An ordered list of sequence positions and lookup tags"
@@ -5886,8 +5906,8 @@ msgid ""
 "refered to.\n"
 "It will not be copied."
 msgstr ""
-"Vous essayer de coller une référence vers %1$s dans %2$hs.\n"
-"Mais %1$hs n'existe pas dans cette fonte, et FontForge ne trouve pas le "
+"Vous essayer de coller une référence vers %1$s dans %2$s.\n"
+"Mais %1$s n'existe pas dans cette fonte, et FontForge ne trouve pas le "
 "glyphe auquel il se référait.\n"
 "Le glyphe ne sera pas copié."
 
@@ -5908,8 +5928,8 @@ msgid ""
 "But %1$s does not exist in this font.\n"
 "Would you like to copy the original splines (or delete the reference)?"
 msgstr ""
-"Vous essayer de coller une référence vers %1$s dans %2$hs.\n"
-"Mais %1$hs n'existe pas dans cette fonte.\n"
+"Vous essayer de coller une référence vers %1$s dans %2$s.\n"
+"Mais %1$s n'existe pas dans cette fonte.\n"
 "Voulez vous copier le contour d'origine, ou supprimer la référence ?"
 
 #: cvundoes.c:1847
@@ -5931,7 +5951,7 @@ msgstr "Ancre en double"
 #: cvundoes.c:1869
 #, fuzzy, c-format
 msgid "There is already an anchor point named %1$.40s in %2$.40s."
-msgstr "Il y a déjà une ancre appelée %1$.40s dans %2$.40hs."
+msgstr "Il y a déjà une ancre appelée %1$.40s dans %2$.40s."
 
 #: cvundoes.c:2024 cvundoes.c:2213 search.c:1025
 #, fuzzy
@@ -6191,8 +6211,8 @@ msgid ""
 "been able to find is %1$.20s-%2$.20s-%4$d.\n"
 "Shall I use that or let you search?"
 msgstr ""
-"Cette fonte est basée sur le jeu de caractères %1$.20s-%2$.20hs-%3$d, mais "
-"ce que j'ai trouvé de mieux c'est %1$.20hs-%2$.20hs-%4$d.\n"
+"Cette fonte est basée sur le jeu de caractères %1$.20s-%2$.20s-%3$d, mais "
+"ce que j'ai trouvé de mieux c'est %1$.20s-%2$.20s-%4$d.\n"
 "Utiliserai-je cette valeur ou préférez vous chercher ?"
 
 #: encoding.c:1255
@@ -6628,7 +6648,7 @@ msgstr "Italien"
 #: fontinfo.c:159
 #, fuzzy
 msgid "MS Script"
-msgstr "Système d'écriture"
+msgstr "MS Cursive"
 
 #: fontinfo.c:160
 msgid "MS Miscellaneous"
@@ -6658,7 +6678,7 @@ msgstr ""
 #: fontinfo.c:167
 #, fuzzy
 msgid "CS Monotone"
-msgstr "Continuer"
+msgstr ""
 
 #: fontinfo.c:168
 msgid "CS Typewriter"
@@ -6748,7 +6768,7 @@ msgstr ""
 #: fontinfo.c:196
 #, fuzzy
 msgid "Scripts"
-msgstr "Système d'écriture"
+msgstr "Systèmes d'écriture"
 
 #: fontinfo.c:197
 msgid "S Uncial"
@@ -7441,12 +7461,12 @@ msgstr ""
 #: fontinfo.c:748
 #, fuzzy
 msgid "Portugese Portugal"
-msgstr "Portugais portugais pt_PT"
+msgstr "Portugais portugais"
 
 #: fontinfo.c:749
 #, fuzzy
 msgid "Portuguese Brasil"
-msgstr "Portugais brésilien pt_BR"
+msgstr "Portugais brésilien"
 
 #: fontinfo.c:750
 msgid "Punjabi India"
@@ -7810,7 +7830,7 @@ msgstr ""
 #: fontinfo.c:2438 fontinfo.c:8066
 #, fuzzy
 msgid "Mark Classes"
-msgstr "Classes de pré-chaîne"
+msgstr "Classes de glyphe marque"
 
 #: fontinfo.c:2469 groups.c:1391
 msgid "Set this glyph list to be the glyphs selected in the fontview"
@@ -7865,7 +7885,7 @@ msgstr "_Nom :"
 #: fontinfo.c:2953 fontinfo.c:7760
 #, fuzzy
 msgid "Style Name:"
-msgstr "Ensemble des Styles Mac:"
+msgstr "Nom de Styles:"
 
 #: fontinfo.c:3056 fontinfo.c:3265 fontinfo.c:3278 fontinfo.c:4700
 #: fontinfo.c:4740 fontinfo.c:4757 groups.c:921 groups.c:928
@@ -7969,17 +7989,12 @@ msgstr ""
 #: fontinfo.c:4059
 #, fuzzy, c-format
 msgid "Version %.20s"
-msgstr "_Version"
-
-#: fontinfo.c:4359 mm.c:2923
-#, fuzzy
-msgid "New"
-msgstr "_Nouveau"
+msgstr "Version %.20s"
 
 #: fontinfo.c:4577
 #, fuzzy, c-format
 msgid "%1$.30s string for %2$.30s"
-msgstr "%1$.80s (%2$d) venant de %3$.90hs"
+msgstr ""
 
 #: fontinfo.c:4684
 msgid "Detach from PostScript Names"
@@ -7988,12 +8003,12 @@ msgstr ""
 #: fontinfo.c:4686
 #, fuzzy
 msgid "Same as PostScript Names"
-msgstr "Classes d'identité avec motif"
+msgstr ""
 
 #: fontinfo.c:4687
 #, fuzzy
 msgid "Multi-line edit"
-msgstr "Nouvelle substitution multiple"
+msgstr ""
 
 #: fontinfo.c:4688
 msgid "Delete"
@@ -8165,42 +8180,42 @@ msgstr "Win Descent:"
 #: fontinfo.c:5225 fontinfo.c:6905
 #, fuzzy
 msgid "_Typo Ascent Offset:"
-msgstr "Offset pour Win _Ascent:"
+msgstr "Offset pour Typo Ascent:"
 
 #: fontinfo.c:5225 fontinfo.c:5523
 #, fuzzy
 msgid "Typo Ascent:"
-msgstr "_Ascendantes :"
+msgstr "Typo Ascendantes :"
 
 #: fontinfo.c:5226 fontinfo.c:6934
 #, fuzzy
 msgid "T_ypo Descent Offset:"
-msgstr "Offset pour Win Descent:(_A)"
+msgstr "Offset pour Typo Descent:"
 
 #: fontinfo.c:5226 fontinfo.c:5528
 #, fuzzy
 msgid "Typo Descent:"
-msgstr "_Descendantes :"
+msgstr "Typo _Descendantes:"
 
 #: fontinfo.c:5229 fontinfo.c:6980
 #, fuzzy
 msgid "_HHead Ascent Offset:"
-msgstr "Offset pour Win _Ascent:"
+msgstr "Offset pour HHead Ascent:"
 
 #: fontinfo.c:5229 fontinfo.c:5532
 #, fuzzy
 msgid "HHead Ascent:"
-msgstr "_Ascendantes :"
+msgstr "HHead Ascendantes:"
 
 #: fontinfo.c:5230 fontinfo.c:7009
 #, fuzzy
 msgid "HHead De_scent Offset:"
-msgstr "Offset pour Win Descent:(_A)"
+msgstr "Offset pour HHead Descent:"
 
 #: fontinfo.c:5230 fontinfo.c:5537
 #, fuzzy
 msgid "HHead Descent:"
-msgstr "_Descendantes :"
+msgstr "HHead Descendantes :"
 
 #: fontinfo.c:5240 fontinfo.c:7204
 #, fuzzy
@@ -8210,7 +8225,7 @@ msgstr "_Trait"
 #: fontinfo.c:5246 fontinfo.c:5248
 #, fuzzy
 msgid "Bad IBM Family"
-msgstr "Famille Mac incorrecte"
+msgstr "Famille IBM incorrecte"
 
 #: fontinfo.c:5246 problems.c:1717 statemachine.c:1728 statemachine.c:1736
 #: typofeatures.c:1184 typofeatures.c:1186
@@ -8244,12 +8259,12 @@ msgstr ""
 #: fontinfo.c:5314
 #, fuzzy
 msgid "Change"
-msgstr "C_hanger"
+msgstr "Changer"
 
 #: fontinfo.c:5315
 #, fuzzy
 msgid "Retain"
-msgstr "Conse_rver"
+msgstr "Conserver"
 
 #: fontinfo.c:5322
 msgid "Change UniqueID?"
@@ -8270,32 +8285,32 @@ msgstr ""
 #: fontinfo.c:5514
 #, fuzzy
 msgid "Win Ascent Offset:"
-msgstr "Offset pour Win _Ascent:"
+msgstr "Offset pour Win Ascent:"
 
 #: fontinfo.c:5519
 #, fuzzy
 msgid "Win Descent Offset:"
-msgstr "Offset pour Win Descent:(_A)"
+msgstr "Offset pour Win Descent:"
 
 #: fontinfo.c:5523
 #, fuzzy
 msgid "Typo Ascent Offset:"
-msgstr "Offset pour Win _Ascent:"
+msgstr "Offset pour Typo Ascent:"
 
 #: fontinfo.c:5528
 #, fuzzy
 msgid "Typo Descent Offset:"
-msgstr "Offset pour Win Descent:(_A)"
+msgstr "Offset pour Typo Descent:"
 
 #: fontinfo.c:5532
 #, fuzzy
 msgid "HHead Ascent Offset:"
-msgstr "Offset pour Win _Ascent:"
+msgstr "Offset pour HHead Ascent:"
 
 #: fontinfo.c:5537
 #, fuzzy
 msgid "HHead Descent Offset:"
-msgstr "Offset pour Win Descent:(_A)"
+msgstr "Offset pour HHead Descent:"
 
 #: fontinfo.c:5803
 msgid "Num1:"
@@ -8480,7 +8495,7 @@ msgstr "Autres paramètres"
 #: fontinfo.c:5968 fontinfo.c:6002
 #, fuzzy
 msgid "Extra Sp:"
-msgstr "Extension d'espace :"
+msgstr "Extension d'espace:"
 
 #: fontinfo.c:5972
 msgid "Math Sp:"
@@ -8583,7 +8598,7 @@ msgstr ""
 #: fontinfo.c:6548
 #, fuzzy
 msgid "_Outline Font"
-msgstr "Aucune fonte de contour"
+msgstr "Fonte de contour"
 
 #: fontinfo.c:6557
 msgid "_Multi Layered Font"
@@ -8602,7 +8617,7 @@ msgstr ""
 #: fontinfo.c:6567 fontinfo.c:6579
 #, fuzzy
 msgid "_Stroked Font"
-msgstr "_Trait"
+msgstr "Font Trait"
 
 #: fontinfo.c:6574 fontinfo.c:6586
 msgid ""
@@ -8678,12 +8693,12 @@ msgstr ""
 #: fontinfo.c:6802
 #, fuzzy
 msgid "Vendor ID:"
-msgstr "URL du vendeur"
+msgstr "ID du vendeur"
 
 #: fontinfo.c:6816
 #, fuzzy
 msgid "_IBM Family:"
-msgstr "_Famille PFM"
+msgstr "Famille _IBM"
 
 #: fontinfo.c:6830
 msgid "_Set GSUB/morx Ordering"
@@ -8740,7 +8755,7 @@ msgstr ""
 #: fontinfo.c:6968
 #, fuzzy
 msgid "Sets the TypoLinegap field in the OS/2 table, used on MS Windows"
-msgstr "Définit l'interligne à la fois dans les tables 'OS/2' et 'hhea'"
+msgstr "Définit l'interligne à la fois dans la table 'OS/2'"
 
 #: fontinfo.c:6985
 #, fuzzy
@@ -8753,18 +8768,10 @@ msgid ""
 "font's bounds. You should leave this\n"
 "field 0 and check \"[*] Is Offset\" in most cases."
 msgstr ""
-"Tout ce qui déborde des champs OS/2 WinAscent & WinDescent sera ignoré\n"
-"par windows, y compris les marques, et autres, positionnées avec GPOS.\n"
-"Si la case \"[] Utiliser comme Offset\" n'est pas cochée, alors les valeurs\n"
-"indiquées seront utilisées comme valeurs OS/2. Si la case est coché,\n"
-"alors les valeurs indiquées seront ajoutées aux limites de la police.\n"
-"\n"
-"En général, vous devriez laisser ce champ à 0 et cocher  \"[*] Utiliser "
-"commes Offset\"."
 
 #: fontinfo.c:7043
 msgid "Sets the linegap field in the hhea table, used on the mac"
-msgstr "Définit l'interligne à la fois dans les tables 'OS/2' et 'hhea'"
+msgstr "Définit l'interligne à la fois dans la table 'hhea'"
 
 #: fontinfo.c:7060
 msgid ""
@@ -8778,12 +8785,12 @@ msgstr ""
 #: fontinfo.c:7104
 #, fuzzy
 msgid "Y"
-msgstr "Yi"
+msgstr "Y"
 
 #: fontinfo.c:7111 fontinfo.c:7161 fontinfo.c:7211 fontinfo.c:8058
 #, fuzzy
 msgid "Size"
-msgstr "Taille :(_S)"
+msgstr "Taille"
 
 #: fontinfo.c:7271
 msgid "_Serifs"
@@ -8820,12 +8827,12 @@ msgstr "H. _bas-de-casse"
 #: fontinfo.c:7411
 #, fuzzy
 msgid "Misc."
-msgstr "Mélange"
+msgstr ""
 
 #: fontinfo.c:7415
 #, fuzzy
 msgid "Metrics"
-msgstr "_Métriques"
+msgstr "Métriques"
 
 #: fontinfo.c:7419
 msgid "Sub/Super"
@@ -8838,20 +8845,11 @@ msgstr "Panose-1"
 #: fontinfo.c:7450
 #, fuzzy
 msgid "_Language"
-msgstr "_Langue :"
+msgstr "_Langue:"
 
 #: fontinfo.c:7460
 msgid "_String Type"
 msgstr ""
-
-#: fontinfo.c:7517
-#, fuzzy
-msgid "Anchor|_New..."
-msgstr "_Nouvelle..."
-
-#: fontinfo.c:7580
-msgid "Mark|_New..."
-msgstr "_Nouvelle..."
 
 #: fontinfo.c:7669 fontinfo.c:7687
 msgid "The size (in points) for which this face was designed"
@@ -8864,7 +8862,7 @@ msgstr "Points"
 #: fontinfo.c:7690
 #, fuzzy
 msgid "Design Range"
-msgstr "Dessinateur"
+msgstr ""
 
 #: fontinfo.c:7695 fontinfo.c:7709 fontinfo.c:7728
 msgid ""
@@ -8959,7 +8957,7 @@ msgid ""
 "Font %1$.40s in file %2$.40s has been changed.\n"
 "Do you want to save it?"
 msgstr ""
-"La fonte %1$.40s dans le fichier %2$.40hs a été modifiée.\n"
+"La fonte %1$.40s dans le fichier %2$.40s a été modifiée.\n"
 "Voulez vous l'enregistrer ?"
 
 #: fontview.c:470
@@ -8973,14 +8971,14 @@ msgid ""
 "Reverting the file will lose those changes.\n"
 "Is that what you want?"
 msgstr ""
-"La fonte %1$.40s dans le fichier %2$.40hs a été modifiée.\n"
+"La fonte %1$.40s dans le fichier %2$.40s a été modifiée.\n"
 "Revenir vous fera perdre toutes les modifications.\n"
 "Voulez vous vraiment revenir ?"
 
 #: fontview.c:541
 #, fuzzy
 msgid "Save as..."
-msgstr "Enregi_strer sous..."
+msgstr "Enregistrer sous..."
 
 #: fontview.c:958
 msgid "Glyph Name Changed"
@@ -9013,7 +9011,7 @@ msgstr "Échec du chargement des données de crénage depuis le fichier %s"
 #: fontview.c:1164
 #, fuzzy
 msgid "Open Font"
-msgstr "Seulement une fonte"
+msgstr "Ourvir une fonte"
 
 #: fontview.c:1187
 msgid "Load of Kerning Metrics Failed"
@@ -9057,7 +9055,7 @@ msgstr ""
 #: fontview.c:2379
 #, fuzzy
 msgid "Select Color"
-msgstr "Choi_sir la couleur"
+msgstr "Choisir la couleur"
 
 #: fontview.c:2585 fontview.c:2592 fontview.c:2610 fontview.c:2616
 #: typofeatures.c:1511 typofeatures.c:1513
@@ -9111,12 +9109,12 @@ msgstr "Montrer les S_ubstitutions..."
 #: fontview.c:4314
 #, fuzzy
 msgid "Show H. Metrics..."
-msgstr "Montrer métriques _horizontales"
+msgstr "Montrer métriques horizontales..."
 
 #: fontview.c:4314
 #, fuzzy
 msgid "Show V. Metrics..."
-msgstr "Montrer métriques _verticales"
+msgstr "Montrer métriques verticales..."
 
 #: fontview.c:4323
 msgid "Baseline"
@@ -9153,7 +9151,7 @@ msgstr ""
 #: fontview.c:4393
 #, fuzzy
 msgid "Show Vertical Metrics"
-msgstr "Pas de métriques verticales"
+msgstr "Montrer métriques verticales"
 
 #: fontview.c:4806
 msgid "Finding Substitution Points..."
@@ -9191,7 +9189,7 @@ msgid ""
 "Are you sure you wish to remove sub-font %1$.40s from the CID font %2$.40s"
 msgstr ""
 "Êtes-vous sûr(e) de vouloir supprimer la sous-fonte %1$.40s de la fonte CID %"
-"2$.40hs"
+"2$.40s"
 
 #: fontview.c:5457 fontview.c:6773
 msgid "_Change Supplement..."
@@ -9236,11 +9234,11 @@ msgstr "Scripts"
 
 #: fontview.c:6014
 msgid "_All Fonts"
-msgstr "Toutes les fontes(_A)"
+msgstr "Toutes les fontes"
 
 #: fontview.c:6015
 msgid "_Displayed Font"
-msgstr "Fonte courante(_V)"
+msgstr "Fonte courante"
 
 #: fontview.c:6017
 msgid "Glyph _Metadata"
@@ -9253,7 +9251,7 @@ msgstr "Choi_sir la couleur"
 #: fontview.c:6039
 #, fuzzy
 msgid "_Changed Glyphs"
-msgstr "Glyphes de base"
+msgstr "Glyphes Modifiés"
 
 #: fontview.c:6040
 msgid "_Hinting Needed"
@@ -9363,7 +9361,7 @@ msgstr ""
 #: fontview.c:6460 fontview.c:6525
 #, fuzzy
 msgid "Detach & Remo_ve Glyphs..."
-msgstr "_Remplacer glyphe..."
+msgstr ""
 
 #: fontview.c:6460
 msgid ""
@@ -9389,7 +9387,7 @@ msgstr "Codage incorrect"
 #: fontview.c:6518
 #, fuzzy
 msgid "_Reencode"
-msgstr "_Unicode"
+msgstr ""
 
 #: fontview.c:6519
 #, fuzzy
@@ -9408,7 +9406,7 @@ msgstr "Suppr_imer imbrications inutilisées"
 #: fontview.c:6524
 #, fuzzy
 msgid "_Detach Glyphs"
-msgstr "Glyphe _suivant"
+msgstr ""
 
 #: fontview.c:6528
 msgid "_Load Encoding..."
@@ -9425,7 +9423,7 @@ msgstr "Suppression du codage"
 #: fontview.c:6532
 #, fuzzy
 msgid "Display By _Groups..."
-msgstr "A_fficher..."
+msgstr "Afficher par groups..."
 
 #: fontview.c:6533
 msgid "D_efine Groups..."
@@ -9488,7 +9486,7 @@ msgstr "%d@%d pixel bitmap"
 #: fontview.c:6715
 #, fuzzy
 msgid "BlueValues"
-msgstr "Blues"
+msgstr ""
 
 #: fontview.c:6727
 msgid "Edit 'fpgm'..."
@@ -9501,7 +9499,7 @@ msgstr "Éditer 'prep'..."
 #: fontview.c:6729
 #, fuzzy
 msgid "Edit 'maxp'..."
-msgstr "Éditer 'fpgm'..."
+msgstr "Éditer 'maxp'..."
 
 #: fontview.c:6730
 msgid "Edit 'cvt '..."
@@ -9510,7 +9508,7 @@ msgstr "Éditer 'cvt '..."
 #: fontview.c:6731
 #, fuzzy
 msgid "Private to 'cvt'"
-msgstr "Zone privée 1"
+msgstr ""
 
 #: fontview.c:6733
 msgid "_Clear Hints"
@@ -9752,7 +9750,7 @@ msgstr "Autre ..."
 #: fvfonts.c:971
 #, fuzzy
 msgid "Merge Fonts..."
-msgstr "Fusionner fontes...(_M)"
+msgstr "Fusionner fontes..."
 
 #: fvfonts.c:980
 #, c-format
@@ -9982,27 +9980,27 @@ msgstr ""
 #: fvmetrics.c:138
 #, fuzzy
 msgid "Set Width..."
-msgstr "Définir chasse...(_L)"
+msgstr "Définir chasse..."
 
 #: fvmetrics.c:138
 #, fuzzy
 msgid "Set LBearing..."
-msgstr "Définir approche gauche...(_B)"
+msgstr "Définir approche gauche..."
 
 #: fvmetrics.c:138
 #, fuzzy
 msgid "Set RBearing..."
-msgstr "Défini_r approche droite..."
+msgstr "Définir approche droite..."
 
 #: fvmetrics.c:138
 #, fuzzy
 msgid "Set Vertical Advance..."
-msgstr "Définir chasse _verticale..."
+msgstr "Définir chasse verticale..."
 
 #: gotodlg.c:458 gotodlg.c:492 gotodlg.c:518
 #, fuzzy
 msgid "Goto"
-msgstr "_Aller au glyphe"
+msgstr "Aller au glyphe"
 
 #: gotodlg.c:485 gotodlg.c:526 gotodlg.c:541
 msgid "Enter the name of a glyph in the font"
@@ -10022,7 +10020,7 @@ msgstr "Les noms de glyphes doivent être des noms PostScript valides"
 #: groups.c:916
 #, fuzzy
 msgid "Bad Range"
-msgstr "Langue incorrecte"
+msgstr ""
 
 #: groups.c:916
 #, c-format
@@ -10038,7 +10036,7 @@ msgstr ""
 #, fuzzy, c-format
 msgid "The glyph name \"%1$.30s\" occurs in groups %2$.30s and %3$.30s"
 msgstr ""
-"Le glyphe %1$.30s est défini dans la fonte %2$.30hs mais pas dans %3$.30hs"
+"Le glyphe %1$.30s est défini dans la group %2$.30s et aussi dans %3$.30s"
 
 #: groups.c:1171
 msgid "UntitledGroup"
@@ -10059,12 +10057,12 @@ msgstr ""
 #: groups.c:1338
 #, fuzzy
 msgid "Group Name:"
-msgstr "Nom:"
+msgstr "Nom de Group:"
 
 #: groups.c:1351
 #, fuzzy
 msgid "Glyphs:"
-msgstr "Glyphe"
+msgstr "Glyphes:"
 
 #: groups.c:1364
 msgid "Identify by"
@@ -10083,12 +10081,12 @@ msgstr ""
 #: groups.c:1371
 #, fuzzy
 msgid "Name"
-msgstr "_Nom"
+msgstr "Nom"
 
 #: groups.c:1407
 #, fuzzy
 msgid "No Glyph Duplicates"
-msgstr "Aucun glyphe sélectionné."
+msgstr "Aucun glyphe double."
 
 #: groups.c:1411
 msgid ""
@@ -10105,7 +10103,7 @@ msgstr ""
 #: groups.c:1566
 #, fuzzy
 msgid "Display By Groups..."
-msgstr "A_fficher..."
+msgstr "Afficher par groups..."
 
 #: histograms.c:282
 #, c-format
@@ -10183,7 +10181,7 @@ msgstr ""
 #: histograms.c:752
 #, fuzzy
 msgid "HStem"
-msgstr "_HStem"
+msgstr "HStem"
 
 #: histograms.c:785
 msgid "Sum Around:"
@@ -10269,7 +10267,7 @@ msgstr "Valeur du crénage :"
 #: kernclass.c:2020
 #, fuzzy
 msgid "Device Table Correction:"
-msgstr "Correction italique"
+msgstr ""
 
 #: kernclass.c:2149 problems.c:1822
 msgid "Kerning Class"
@@ -10278,7 +10276,7 @@ msgstr "Classe de crénage"
 #: kernclass.c:2538
 #, fuzzy
 msgid "Kern By Classes..."
-msgstr "Cré_nage par classes..."
+msgstr "Crénage par classes..."
 
 #: libnames.c:8 problems.c:438
 msgid "_Stop"
@@ -10290,7 +10288,10 @@ msgid ""
 "Couldn't create directory: %1$s\n"
 "%2$s\n"
 "%3$s"
-msgstr "Impossible de créer répertoire"
+msgstr ""
+"Impossible de créer répertoire: %1$s\n"
+"%2$s\n"
+"%3$s"
 
 #: libnames.c:17 palmfonts.c:393
 #, fuzzy
@@ -10300,7 +10301,7 @@ msgstr "Lecture du fichier impossible"
 #: libnames.c:18 sftextfield.c:1016 sftextfield.c:1035
 #, fuzzy, c-format
 msgid "Could not open %.100s"
-msgstr "Impossible de lire le fichier %.200s"
+msgstr "Impossible de lire le fichier %.100s"
 
 #: libnames.c:23
 msgid "_Save in UTF8"
@@ -10357,7 +10358,7 @@ msgstr ""
 #: macbinary.c:2016
 #, fuzzy
 msgid "Out of memory\n"
-msgstr "Dans le désordre"
+msgstr ""
 
 #: macbinary.c:2100 macbinary.c:2597 parsepdf.c:1407 parsettf.c:337 svg.c:894
 msgid "Not in Collection"
@@ -10366,7 +10367,7 @@ msgstr "Pas dans la collection"
 #: macbinary.c:2100 macbinary.c:2597 parsepdf.c:1407 svg.c:894
 #, fuzzy, c-format
 msgid "%s is not in %.100s"
-msgstr "%s n'est pas dans %.100hs"
+msgstr "%s n'est pas dans %.100s"
 
 #: macbinary.c:2109 macbinary.c:2608 parsepdf.c:1425 parsettf.c:345
 #: parsettf.c:373 parsettf.c:4323 parsettf.c:4326 svg.c:902
@@ -10385,7 +10386,7 @@ msgstr ""
 #: macbinary.c:2730
 #, fuzzy, c-format
 msgid "No kerning table for %s\n"
-msgstr "Aucune paire de crénage trouvée dans %.200s"
+msgstr "Aucune table de crénage trouvée dans %.100s\n"
 
 #: macbinary.c:2972
 #, fuzzy
@@ -10395,7 +10396,7 @@ msgstr "Impossible de créer le répertoire temporaire"
 #: macbinary.c:3131
 #, fuzzy, c-format
 msgid "Couldn't find a font file named %s\n"
-msgstr "Pas de fonte bitmap dans %s"
+msgstr ""
 
 #: macbinary.c:3133
 #, c-format
@@ -10604,7 +10605,7 @@ msgid ""
 "with a 0 offset for this combination. Would you like to alter this kerning "
 "class entry (or create a kerning pair for just these two glyphs)?"
 msgstr ""
-"Cette paire de crénage (%.20s et %.20hs) est dans une classe de crénage\n"
+"Cette paire de crénage (%.20s et %.20s) est dans une classe de crénage\n"
 "avec un déplacement de 0 pour cette combinaison. Voulez-vous modifier cette "
 "partie\n"
 "de la classe de crénage (ou créer une nouvelle paire rien que pour ces 2 "
@@ -10654,7 +10655,7 @@ msgstr "Glyphe de substitution introuvable : %.40s"
 #: metricsview.c:2546
 #, fuzzy
 msgid "Revert Substitution"
-msgstr "Inve_rser substitution"
+msgstr "Inverser substitution"
 
 #: metricsview.c:2579
 msgid "Plain"
@@ -10687,7 +10688,7 @@ msgstr "_Vertical"
 #: metricsview.c:3008
 #, fuzzy
 msgid "Hide Grid"
-msgstr "Masquer _grille"
+msgstr "Masquer grille"
 
 #: metricsview.c:3008
 msgid "Show _Grid"
@@ -10748,7 +10749,7 @@ msgstr ""
 msgid ""
 "The fonts %1$.30s and %2$.30s have a different number of glyphs or different "
 "encodings"
-msgstr "Les fontes %1$.30s et %2$.30hs n'ont pas le même nombre de glyphes"
+msgstr "Les fontes %1$.30s et %2$.30s n'ont pas le même nombre de glyphes"
 
 #: mm.c:565 mm.c:567
 #, fuzzy, c-format
@@ -10756,7 +10757,7 @@ msgid ""
 "The fonts %1$.30s and %2$.30s use different types of splines (one quadratic, "
 "one cubic)"
 msgstr ""
-"Les fontes %1$.30s et %2$.30hs utilisent des courbes de Bézier d'ordres "
+"Les fontes %1$.30s et %2$.30s utilisent des courbes de Bézier d'ordres "
 "différents (quadratique et cubique)"
 
 #: mm.c:589 mm.c:591
@@ -10766,13 +10767,13 @@ msgid ""
 "$.30s and %3$.30s"
 msgstr ""
 "L'entrée \"%1$.20s\" manque à l'appel dans les dictionnaires privés de %2"
-"$.30hs et de %3$.30hs"
+"$.30s et de %3$.30s"
 
 #: mm.c:607 mm.c:609 mm.c:614 mm.c:616
 #, fuzzy, c-format
 msgid "The glyph %1$.30s is defined in font %2$.30s but not in %3$.30s"
 msgstr ""
-"Le glyphe %1$.30s est défini dans la fonte %2$.30hs mais pas dans %3$.30hs"
+"Le glyphe %1$.30s est défini dans la fonte %2$.30s mais pas dans %3$.30s"
 
 #: mm.c:628 mm.c:630 mm.c:642 mm.c:644
 #, fuzzy, c-format
@@ -10780,7 +10781,7 @@ msgid ""
 "The glyph %1$.30s in %2$.30s has both references and contours. This is not "
 "supported in a font with variations"
 msgstr ""
-"Le glyphe %1$.30s dans %2$.30hs a à la fois des références et des contours. "
+"Le glyphe %1$.30s dans %2$.30s a à la fois des références et des contours. "
 "Ceci n'est pas supporté dans une fonte MM"
 
 #: mm.c:654 mm.c:656
@@ -10789,8 +10790,8 @@ msgid ""
 "The glyph %1$.30s has a different number of contours in font %2$.30s than in "
 "%3$.30s"
 msgstr ""
-"Le glyphe %1$.30s n'a pas le même nombre de contours dans la fonte %2$.30hs "
-"que dans %3$.30hs"
+"Le glyphe %1$.30s n'a pas le même nombre de contours dans la fonte %2$.30s "
+"que dans %3$.30s"
 
 #: mm.c:665 mm.c:667
 #, fuzzy, c-format
@@ -10798,8 +10799,8 @@ msgid ""
 "The glyph %1$.30s in font %2$.30s has a different number of points (or "
 "control points) on its contours than in %3$.30s"
 msgstr ""
-"Le glyphe %1$.30s de la fonte %2$.30hs possède un nombre de points (ou de "
-"points contrôle) différent que dans %3$.30hs"
+"Le glyphe %1$.30s de la fonte %2$.30s possède un nombre de points (ou de "
+"points contrôle) différent que dans %3$.30s"
 
 #: mm.c:676 mm.c:678
 #, fuzzy, c-format
@@ -10807,8 +10808,8 @@ msgid ""
 "The glyph %1$.30s in font %2$.30s has contours running in a different "
 "direction than in %3$.30s"
 msgstr ""
-"Le glyphe %1$.30s de la fonte %2$.30hs possède des contours orientés de "
-"manière différente que ceux de %3$.30hs"
+"Le glyphe %1$.30s de la fonte %2$.30s possède des contours orientés de "
+"manière différente que ceux de %3$.30s"
 
 #: mm.c:687 mm.c:689
 #, fuzzy, c-format
@@ -10816,8 +10817,6 @@ msgid ""
 "The glyph %1$.30s in font %2$.30s has a different number of references than "
 "in %3$.30s"
 msgstr ""
-"Le glyphe %1$.30s de la fonte %2$.30hs possède des contours orientés de "
-"manière différente que dans %3$.30hs"
 
 #: mm.c:698 mm.c:700
 #, fuzzy, c-format
@@ -10825,8 +10824,8 @@ msgid ""
 "The glyph %1$.30s in font %2$.30s has references with different scaling or "
 "rotation (etc.) than in %3$.30s"
 msgstr ""
-"Le glyphe %1$.30s dans la police %2$.30hs a des références avec des échelles "
-"ou des rotations (etc.) que dans %3$.30hs"
+"Le glyphe %1$.30s dans la police %2$.30s a des références avec des échelles "
+"ou des rotations (etc.) que dans %3$.30s"
 
 #: mm.c:709 mm.c:711
 #, fuzzy, c-format
@@ -10834,8 +10833,8 @@ msgid ""
 "The glyph %1$.30s in font %2$.30s has a different set of kern pairs than in %"
 "3$.30s"
 msgstr ""
-"Le glyphe %1$.30s de la fonte %2$.30hs possède un nombre différent de paires "
-"de crénage que dans %3$.30hs"
+"Le glyphe %1$.30s de la fonte %2$.30s possède un nombre différent de paires "
+"de crénage que dans %3$.30s"
 
 #: mm.c:722 mm.c:724
 #, c-format
@@ -10852,8 +10851,8 @@ msgid ""
 "The %1$s hints in glyph \"%2$.30s\" in font %3$.30s do not match those in %4"
 "$.30s (different number or different overlap criteria)"
 msgstr ""
-"Les %1$s hints du glyphe \"%2$.30hs\" de la fonte %3$.30hs ne correspondent "
-"pas à ceux de %4$.30hs (le nombre est différent ou alors les critères de "
+"Les %1$s hints du glyphe \"%2$.30s\" de la fonte %3$.30s ne correspondent "
+"pas à ceux de %4$.30s (le nombre est différent ou alors les critères de "
 "recouvrement)"
 
 #: mm.c:761 mm.c:763
@@ -10862,8 +10861,8 @@ msgid ""
 "The glyph %1$.30s in font %2$.30s has a different hint mask on its contours "
 "than in %3$.30s"
 msgstr ""
-"Le glyphe %1$.30s dans la police %2$.30hs a une ensemble de hints différent "
-"que dans %3$.30hs"
+"Le glyphe %1$.30s dans la police %2$.30s a une ensemble de hints différent "
+"que dans %3$.30s"
 
 #: mm.c:781 mm.c:783
 #, c-format
@@ -10894,7 +10893,7 @@ msgstr ""
 #: mm.c:822
 #, fuzzy
 msgid "OK"
-msgstr "_OK"
+msgstr "OK"
 
 #: mm.c:822 mm.c:824
 msgid "No problems detected"
@@ -11226,7 +11225,7 @@ msgid ""
 "near ...%40s"
 msgstr ""
 "Mot-clé \"%.30s\" incorrect\n"
-"après ...%40hs"
+"après ...%40s"
 
 #: nonlineartrans.c:180 nonlineartrans.c:182 nonlineartrans.c:192
 #: nonlineartrans.c:194 nonlineartrans.c:204 nonlineartrans.c:206
@@ -11235,8 +11234,8 @@ msgid ""
 "Bad token. Expected \"%.10s\" got \"%.10s\"\n"
 "near ...%40s"
 msgstr ""
-"Mot-clé incorrect. J'attendais \"%.10s\" trouvé \"%.10hs\"\n"
-"près de ...%40hs"
+"Mot-clé incorrect. J'attendais \"%.10s\" trouvé \"%.10s\"\n"
+"près de ...%40s"
 
 #: nonlineartrans.c:216
 #, fuzzy, c-format
@@ -11245,7 +11244,7 @@ msgid ""
 "near ...%40s"
 msgstr ""
 "Mot-clé incorrect. J'ai trouvé \"%c\"\n"
-"près de ...%40hs"
+"près de ...%40s"
 
 #: nonlineartrans.c:218
 #, fuzzy, c-format
@@ -11253,8 +11252,8 @@ msgid ""
 "Bad token. got \"%1$c\"\n"
 "near ...%2$40s"
 msgstr ""
-"Mot-clé incorrect. J'ai trouvé \"%c\"\n"
-"près de ...%40hs"
+"Mot-clé incorrect. J'ai trouvé \"%1$c\"\n"
+"près de ...%2$40s"
 
 #: nonlineartrans.c:254 nonlineartrans.c:256 nonlineartrans.c:271
 #: nonlineartrans.c:273 nonlineartrans.c:282 nonlineartrans.c:284
@@ -11266,7 +11265,7 @@ msgid ""
 "near ...%40s"
 msgstr ""
 "Mot-clé incorrect. J'attendais \"%.10s\"\n"
-"près de ...%40hs"
+"près de ...%40s"
 
 #: nonlineartrans.c:309 nonlineartrans.c:311
 #, c-format
@@ -11289,22 +11288,22 @@ msgstr ""
 #: nonlineartrans.c:489
 #, fuzzy, c-format
 msgid "Attempt to take logarithem of %g in %.30s"
-msgstr "Essai de calcul du log de %g dans %.30hs"
+msgstr "Essai de calcul du log de %g dans %.30s"
 
 #: nonlineartrans.c:491
 #, fuzzy, c-format
 msgid "Attempt to take logarithem of %1$g in %2$.30s"
-msgstr "Essai de calcul du log de %g dans %.30hs"
+msgstr "Essai de calcul du log de %1$g dans %2$.30s"
 
 #: nonlineartrans.c:500
 #, fuzzy, c-format
 msgid "Attempt to take the square root of %g in %.30s"
-msgstr "Essai de calcul de la racine carrée de %g dans %.30hs"
+msgstr "Essai de calcul de la racine carrée de %g dans %.30s"
 
 #: nonlineartrans.c:502
 #, fuzzy, c-format
 msgid "Attempt to take the square root of %1$g in %2$.30s"
-msgstr "Essai de calcul de la racine carrée de %g dans %.30hs"
+msgstr "Essai de calcul de la racine carrée de %1$g dans %2$.30s"
 
 #: nonlineartrans.c:535 nonlineartrans.c:537
 #, c-format
@@ -11414,7 +11413,7 @@ msgstr "Impossible de lire le fichier %.200s"
 #: palmfonts.c:509 palmfonts.c:512
 #, fuzzy
 msgid "Bad Metrics"
-msgstr "_Métriques"
+msgstr "Métriques incorrect"
 
 #: palmfonts.c:467 palmfonts.c:469
 msgid "Only the first 256 glyphs in the encoding will be used"
@@ -11466,7 +11465,7 @@ msgstr ""
 #: palmfonts.c:636 palmfonts.c:639
 #, fuzzy
 msgid "Unexpected density"
-msgstr ", attendu "
+msgstr "Densité inattendu"
 
 #: palmfonts.c:636
 #, c-format
@@ -11485,7 +11484,7 @@ msgstr ""
 #: palmfonts.c:660
 #, fuzzy
 msgid "Multiple-Density Font"
-msgstr "Mauvaise fonte Multiple Master"
+msgstr ""
 
 #: palmfonts.c:661
 msgid "High-Density Font"
@@ -11494,7 +11493,7 @@ msgstr ""
 #: palmfonts.c:662
 #, fuzzy
 msgid "Single and Multi-Density Fonts"
-msgstr "Enregistrement en plusieurs fontes PostScript"
+msgstr ""
 
 #: palmfonts.c:663
 msgid "Single and High-Density Fonts"
@@ -11641,7 +11640,7 @@ msgstr ""
 #: parsettfatt.c:73
 #, fuzzy
 msgid "Bad Apple Kern Class\n"
-msgstr "Utiliser la classe de crénage ?"
+msgstr ""
 
 #: parsettfatt.c:96
 #, c-format
@@ -11655,12 +11654,12 @@ msgstr ""
 #: parsettfatt.c:203
 #, fuzzy
 msgid "Bad count.\n"
-msgstr "Fonte incorrecte"
+msgstr ""
 
 #: parsettfatt.c:206 parsettfatt.c:228
 #, fuzzy
 msgid "End of file found in coverage table.\n"
-msgstr " ou une liste de tables de couverture."
+msgstr ""
 
 #: parsettfatt.c:211
 #, c-format
@@ -11675,7 +11674,7 @@ msgstr ""
 #: parsettfatt.c:251
 #, fuzzy, c-format
 msgid "Bad format for coverage table %d\n"
-msgstr " ou une liste de tables de couverture."
+msgstr "Table de couverture incorrecte\n"
 
 #: parsettfatt.c:279
 #, c-format
@@ -11704,7 +11703,7 @@ msgstr ""
 #: parsettfatt.c:354
 #, fuzzy
 msgid "Bad device table\n"
-msgstr "Table de couverture incorrecte"
+msgstr ""
 
 #: parsettfatt.c:425
 #, c-format
@@ -11732,7 +11731,7 @@ msgstr ""
 #: parsettfatt.c:756
 #, fuzzy
 msgid "Bad base table.\n"
-msgstr "Table de couverture incorrecte"
+msgstr ""
 
 #: parsettfatt.c:785
 msgid "Bad ligature base table.\n"
@@ -11752,7 +11751,7 @@ msgstr ""
 #: parsettfatt.c:976 parsettfatt.c:1120
 #, fuzzy, c-format
 msgid "Bad contextual or chaining sub table. Glyph %d out of range [0,%d)\n"
-msgstr "Dans OpenType, les lookups contextuels peuvent prendre 3 formes"
+msgstr ""
 
 #: parsettfatt.c:988 parsettfatt.c:1138 parsettfatt.c:1261 parsettfatt.c:1406
 #, c-format
@@ -11854,7 +11853,7 @@ msgstr "Trop de tags spécifiés"
 #: parsettfatt.c:2211
 #, fuzzy, c-format
 msgid "Too many features %d\n"
-msgstr "Trop de crénages"
+msgstr ""
 
 #: parsettfatt.c:2230
 msgid "Bad lookup count in feature.\n"
@@ -11863,7 +11862,7 @@ msgstr ""
 #: parsettfatt.c:2250
 #, fuzzy, c-format
 msgid "Too many lookups %d\n"
-msgstr "Trop de glyphes"
+msgstr ""
 
 #: parsettfatt.c:2317
 msgid "Lookup out of bounds in feature table.\n"
@@ -11976,12 +11975,12 @@ msgstr ""
 #: parsettfatt.c:3365 parsettfatt.c:3477
 #, fuzzy
 msgid "Invalid ligature offset\n"
-msgstr "Taille de point invalide"
+msgstr ""
 
 #: parsettfatt.c:3370
 #, fuzzy, c-format
 msgid "Attempt to make a ligature for glyph %d out of "
-msgstr "Vous essayez de créer un glyphe qui se référence lui même"
+msgstr ""
 
 #: parsettfatt.c:3413
 #, c-format
@@ -12012,7 +12011,7 @@ msgstr ""
 #: parsettfatt.c:3696
 #, fuzzy
 msgid "Bad glyph count in mort table.\n"
-msgstr "Enregistrer les commentaires des glyphes dans la table 'PfEd'"
+msgstr ""
 
 #: parsettfatt.c:3740
 msgid ""
@@ -12055,7 +12054,7 @@ msgstr ""
 #: parsettfbmf.c:425 parsettfbmf.c:429
 #, fuzzy
 msgid "Load Bitmap Fonts"
-msgstr "Aucune fonte bitmap"
+msgstr ""
 
 #: parsettfbmf.c:426 parsettfbmf.c:430
 msgid ""
@@ -12084,7 +12083,7 @@ msgstr ""
 #: parsettf.c:337
 #, fuzzy, c-format
 msgid "%1$s is not in %2$.100s"
-msgstr "%s n'est pas dans %.100hs"
+msgstr "%s n'est pas dans %.100s"
 
 #: parsettf.c:436
 #, c-format
@@ -12158,12 +12157,12 @@ msgstr "_Premier"
 #: parsettf.c:912
 #, fuzzy
 msgid "First to _All"
-msgstr "_Oui à tout"
+msgstr ""
 
 #: parsettf.c:913
 #, fuzzy
 msgid "Second _to All"
-msgstr "_Non à tout"
+msgstr ""
 
 #: parsettf.c:914
 #, fuzzy
@@ -12294,7 +12293,7 @@ msgstr ""
 #: parsettf.c:2829
 #, fuzzy
 msgid "Bad fdselect\n"
-msgstr "Référence incorrecte"
+msgstr ""
 
 #: parsettf.c:2836
 #, c-format
@@ -12337,8 +12336,7 @@ msgid ""
 "Multiple glyphs map to the same unicode encoding U+%04X, only one will be "
 "used\n"
 msgstr ""
-"Des lookups multiples ont été produits pour l'ancre '%s', un seul sera "
-"utilisé"
+
 
 #: parsettf.c:3658
 #, c-format
@@ -12359,7 +12357,7 @@ msgstr ""
 #: parsettf.c:3983
 #, fuzzy, c-format
 msgid "Warning: Glyph %d has the same name (%s) as Glyph %d\n"
-msgstr "Ce glyphe a le même nom que le glyphe de code"
+msgstr "Ce glyphe a le même nom (%s) que le glyphe %d\n"
 
 #: parsettf.c:3986
 #, c-format
@@ -12511,7 +12509,7 @@ msgstr ""
 #: parsettfvar.c:673
 #, fuzzy
 msgid "Incorrect number of deltas in cvt\n"
-msgstr "Nombre d'entrées incorrect dans %s"
+msgstr ""
 
 #: parsettfvar.c:718
 msgid ""
@@ -12977,7 +12975,7 @@ msgstr "Script sans entrée dans le menu"
 #: prefs.c:1484
 #, fuzzy
 msgid "Preferences..."
-msgstr "Préfér_ences..."
+msgstr "Préférences..."
 
 #: prefs.c:1554
 msgid "Menu Name"
@@ -13007,12 +13005,12 @@ msgstr "..."
 
 #: prefs.c:1643
 msgid "On"
-msgstr ""
+msgstr "Oui"
 
 #: prefs.c:1650
 #, fuzzy
 msgid "Off"
-msgstr "_Off :"
+msgstr "Non"
 
 #: prefs.c:1721
 msgid "Prefs|App|Normally FontForge will find applications by searching for"
@@ -13129,7 +13127,7 @@ msgstr "Impossible d'ouvrir le fichier %s en écriture"
 #: print.c:3951
 #, fuzzy
 msgid "Print..."
-msgstr "Im_primer..."
+msgstr "Imprimer..."
 
 #: print.c:3960
 msgid "_Full Font Display"
@@ -13340,7 +13338,7 @@ msgstr ""
 #: problems.c:488
 #, fuzzy, c-format
 msgid "'%2$c%3$c%4$c%5$c' refers to an empty character \"%1$.20s\""
-msgstr "'%2$c%3$c%4$c%5$c' fait référence à un glyphe vide \"%1$.20hs\""
+msgstr "'%2$c%3$c%4$c%5$c' fait référence à un glyphe vide \"%1$.20s\""
 
 #: problems.c:490 problems.c:1538
 msgid "This glyph has the same unicode code point as the glyph named"
@@ -13491,7 +13489,7 @@ msgstr "Dépl. de paire"
 #: problems.c:1773
 #, fuzzy
 msgid "substitution"
-msgstr "_Substitutions"
+msgstr "Substitution"
 
 #: problems.c:1774
 #, fuzzy
@@ -13501,7 +13499,7 @@ msgstr "Substitution alternative"
 #: problems.c:1774
 #, fuzzy
 msgid "multiple subs"
-msgstr "Lookups multiples"
+msgstr "Substitution multiple"
 
 #: problems.c:1774
 #, fuzzy
@@ -13511,22 +13509,22 @@ msgstr "Ligature"
 #: problems.c:1775
 #, fuzzy
 msgid "Contextual position"
-msgstr "Nouveau dépl. cont."
+msgstr ""
 
 #: problems.c:1775 problems.c:1777
 #, fuzzy
 msgid "Contextual substitution"
-msgstr "Nouvelle subst. cont."
+msgstr ""
 
 #: problems.c:1776
 #, fuzzy
 msgid "Chaining position"
-msgstr "Nouveau dépl. étendu"
+msgstr ""
 
 #: problems.c:1776
 #, fuzzy
 msgid "Chaining substitution"
-msgstr "Nouvelle subst. étendue"
+msgstr ""
 
 #: problems.c:1776
 #, fuzzy
@@ -13540,22 +13538,22 @@ msgstr ""
 #: problems.c:1778
 #, fuzzy
 msgid "Lig"
-msgstr "Light"
+msgstr "Lig"
 
 #: problems.c:1778
 #, fuzzy
 msgid "Contextual insertion"
-msgstr "Nouvelle insertion"
+msgstr "Contextual insertion"
 
 #: problems.c:1801
 #, fuzzy, c-format
 msgid "Glyph %1$.50s with a %2$s with feature <%3$d,%4$d>"
-msgstr "Glyphe %1$.50s avec %2$hs et fonctionnalité <%3$d,%4$d>"
+msgstr "Glyphe %1$.50s avec %2$s et fonctionnalité <%3$d,%4$d>"
 
 #: problems.c:1806
 #, fuzzy, c-format
 msgid "Glyph %1$.50s with a %2$s with tag '%3$c%4$c%5$c%6$c'"
-msgstr "Le glyphe %1$.50s avec %2$hs et tag '%3$c%4$c%5$c%6$c'"
+msgstr "Le glyphe %1$.50s avec %2$s et tag '%3$c%4$c%5$c%6$c'"
 
 #: problems.c:1811 problems.c:1821
 #, c-format
@@ -13570,12 +13568,12 @@ msgstr "%1$s avec fonctionnalité <%2$d,%3$d>"
 #: problems.c:1822
 #, fuzzy
 msgid "Vertical Kerning Class"
-msgstr "Crénage vertical"
+msgstr "Classe de Crénage vertical"
 
 #: problems.c:1841
 #, fuzzy
 msgid "Check for missing glyph names"
-msgstr "Vérifier les _noms de glyphes manquants"
+msgstr "Vérifier les noms de glyphes manquants"
 
 #: problems.c:1860
 msgid " refers to a missing lookup tag"
@@ -13600,7 +13598,7 @@ msgstr "Remplacer"
 #: problems.c:1932
 #, fuzzy
 msgid "Remove"
-msgstr "Ôter(_M)"
+msgstr "Ôter"
 
 #: problems.c:1942
 msgid "Skip"
@@ -13609,7 +13607,7 @@ msgstr "Sauter"
 #: problems.c:2191
 #, fuzzy
 msgid "Check for use of 'DFLT' script"
-msgstr "Vérifier si le système _d'écriture 'DFLT' est utilisé"
+msgstr "Vérifier si le système d'écriture 'DFLT' n'est pas utilisé"
 
 #: problems.c:2191
 msgid ""
@@ -13660,7 +13658,7 @@ msgstr "Near"
 #: problems.c:2467
 #, fuzzy
 msgid "Find Problems..."
-msgstr "Rechercher pr_oblèmes..."
+msgstr "Rechercher problèmes..."
 
 #: problems.c:2476
 msgid "Poin_ts too close"
@@ -13985,7 +13983,7 @@ msgstr "Noms répétés"
 
 #: problems.c:2918
 #, fuzzy
-msgid "Check for muliple characters which with the same name"
+msgid "Check for muliple characters with the same name"
 msgstr "Chercher les glyphes ayant le même nom"
 
 #: problems.c:2927
@@ -14061,7 +14059,7 @@ msgstr "ATT"
 #: problems.c:3017
 #, fuzzy
 msgid "CID"
-msgstr "_CID"
+msgstr "CID"
 
 #: problems.c:3022
 msgid "Random"
@@ -14164,7 +14162,7 @@ msgstr ""
 #: psread.c:2654
 #, fuzzy
 msgid "Nothing on stack to print\n"
-msgstr "Rien à tracer"
+msgstr "Rien à imprinter"
 
 #: psread.c:2731
 #, c-format
@@ -14232,7 +14230,7 @@ msgstr ""
 #: psread.c:3851 psread.c:3915
 #, fuzzy, c-format
 msgid "Bad flex subroutine in %s\n"
-msgstr "numéro incorrect dans %s"
+msgstr ""
 
 #: psread.c:3893
 #, c-format
@@ -14278,12 +14276,12 @@ msgstr ""
 #: psread.c:4009
 #, fuzzy, c-format
 msgid "Index out of range in %s\n"
-msgstr "Valeur hors limites"
+msgstr "Valeur hors limites dans %s\n"
 
 #: psread.c:4020
 #, fuzzy, c-format
 msgid "roll out of range in %s\n"
-msgstr "Valeur hors limites"
+msgstr "Valeur hors limites dans %s"
 
 #: psread.c:4035
 #, c-format
@@ -14373,7 +14371,7 @@ msgstr ""
 #: psread.c:4486
 #, fuzzy, c-format
 msgid "Subroutine number out of bounds in %s\n"
-msgstr "Nombre d'entrées incorrect dans %s"
+msgstr ""
 
 #: psread.c:4499
 #, c-format
@@ -14426,22 +14424,22 @@ msgstr ""
 #: savefontdlg.c:119
 #, fuzzy
 msgid "PS Multiple Master(A)"
-msgstr "Mauvaise fonte Multiple Master"
+msgstr ""
 
 #: savefontdlg.c:120
 #, fuzzy
 msgid "PS Multiple Master(B)"
-msgstr "Mauvaise fonte Multiple Master"
+msgstr ""
 
 #: savefontdlg.c:121
 #, fuzzy
 msgid "PS Type 3"
-msgstr "Définition de forme"
+msgstr ""
 
 #: savefontdlg.c:122
 #, fuzzy
 msgid "PS Type 0"
-msgstr "Définition de forme"
+msgstr ""
 
 #: savefontdlg.c:123
 msgid "PS CID"
@@ -14458,7 +14456,7 @@ msgstr ""
 #: savefontdlg.c:126
 #, fuzzy
 msgid "Type42"
-msgstr "Type :"
+msgstr ""
 
 #: savefontdlg.c:127
 msgid "Type42 CID"
@@ -14472,7 +14470,7 @@ msgstr "TrueType"
 #: savefontdlg.c:129
 #, fuzzy
 msgid "True Type (Symbol)"
-msgstr "TrueType"
+msgstr "TrueType (Symbole)"
 
 #: savefontdlg.c:131
 msgid "True Type (Resource)"
@@ -14481,7 +14479,7 @@ msgstr ""
 #: savefontdlg.c:133
 #, fuzzy
 msgid "True Type (MacBin)"
-msgstr "TrueType"
+msgstr ""
 
 #: savefontdlg.c:135
 msgid "True Type (Mac dfont)"
@@ -14490,7 +14488,7 @@ msgstr ""
 #: savefontdlg.c:136
 #, fuzzy
 msgid "Open Type (CFF)"
-msgstr "Tables OpenType"
+msgstr ""
 
 #: savefontdlg.c:137
 msgid "Open Type (Mac dfont)"
@@ -14499,7 +14497,7 @@ msgstr ""
 #: savefontdlg.c:138
 #, fuzzy
 msgid "Open Type CID"
-msgstr "Tables OpenType"
+msgstr ""
 
 #: savefontdlg.c:139
 msgid "Open Type CID (dfont)"
@@ -14508,7 +14506,7 @@ msgstr ""
 #: savefontdlg.c:140
 #, fuzzy
 msgid "SVG font"
-msgstr "Enregistrement de la fonte"
+msgstr ""
 
 #: savefontdlg.c:141
 msgid "No Outline Font"
@@ -14537,17 +14535,17 @@ msgstr ""
 #: savefontdlg.c:156
 #, fuzzy
 msgid "OpenType Bitmap"
-msgstr "Bitmap TeX"
+msgstr ""
 
 #: savefontdlg.c:157
 #, fuzzy
 msgid "Palm OS Bitmap"
-msgstr "Bitmap Mac"
+msgstr ""
 
 #: savefontdlg.c:158
 #, fuzzy
 msgid "PS Type3 Bitmap"
-msgstr "Bitmap TeX"
+msgstr ""
 
 #: savefontdlg.c:159
 msgid "No Bitmap Fonts"
@@ -14568,7 +14566,7 @@ msgstr "Enregistrement du fichier TFM"
 #: savefontdlg.c:375
 #, fuzzy
 msgid "Saving OFM File"
-msgstr "Enregistrement du fichier AFM"
+msgstr "Enregistrement du fichier OFM"
 
 #: savefontdlg.c:675 savefontdlg.c:2770
 msgid "Options"
@@ -14736,8 +14734,6 @@ msgid ""
 "a tfm file (that isn't already stored elsewhere\n"
 "in the ttf file)\n"
 msgstr ""
-"'PfEd' est une table TrueType\n"
-"contenant diverses données utilisées par FontForge"
 
 #: savefontdlg.c:865
 msgid "Output Glyph Map"
@@ -14746,15 +14742,15 @@ msgstr "Enregistrer la map des Glyphes"
 #: savefontdlg.c:874
 #, fuzzy
 msgid "Output OFM & CFG"
-msgstr "Générer TFM & ENC"
+msgstr "Générer OFM & CFG"
 
 #: savefontdlg.c:876
 #, fuzzy
 msgid ""
 "The ofm and cfg files contain information Omega needs to process a font."
 msgstr ""
-"Les fichiers TFM et ENC contiennent les informations utilisées par TeX pour "
-"installer une fonte PostScript®."
+"Les fichiers OFM et CFG contiennent les informations utilisées par Omega pour "
+"installer une fonte."
 
 #: savefontdlg.c:952 savefontdlg.c:966
 msgid "BDF Resolution"
@@ -14875,12 +14871,12 @@ msgstr "Enregistrement fonte CID"
 #: savefontdlg.c:1727
 #, fuzzy
 msgid "Saving multi-master font"
-msgstr "Enregistrement en plusieurs fontes PostScript"
+msgstr "Enregistrement fonte MM"
 
 #: savefontdlg.c:1728
 #, fuzzy
 msgid "Saving SVG font"
-msgstr "Enregistrement de la fonte"
+msgstr "Enregistrement de font SVG"
 
 #: savefontdlg.c:1729
 #, fuzzy
@@ -14890,7 +14886,7 @@ msgstr "Enregistrement fonte PostScript"
 #: savefontdlg.c:1791
 #, fuzzy
 msgid "Ofm Save Failed"
-msgstr "Échec enregistrement de l'AFM"
+msgstr "Échec enregistrement de l'OFM"
 
 #: savefontdlg.c:1803
 msgid "Saving PFM File"
@@ -14904,18 +14900,6 @@ msgstr "Échec enregistrement du PFM"
 msgid "Notdef name"
 msgstr "Nom de glyphe '.notdef'"
 
-#: savefontdlg.c:2124
-#, fuzzy, c-format
-msgid ""
-"The glyph at encoding %d is named \".notdef\" but contains an outline. "
-"Because it is called \".notdef\" it will not be included in the generated "
-"font. You may give it a new name using Element->Char Info. Do you wish to "
-"continue font generation (and omit this character)?"
-msgstr ""
-"Le glyphe en position %d s'appelle '.notdef' mais contient un contour. De "
-"par son nom \".notdef\" il ne sera pas inclus dans la fonte en cours de "
-"création. Vous pouvez le renommer en utilisant 'Élément->Infos glyphe'. "
-"Voulez vous continuer à créer la fonte (sans ce glyphe) ?"
 
 #: savefontdlg.c:2133
 msgid "Not a CID format"
@@ -15042,22 +15026,17 @@ msgid ""
 "%.30s and %.30s"
 msgstr ""
 "Il y a 2 fontes ouvertes avec le même nom de famille et le même style. %.30s "
-"et %.30hs"
-
-#: savefontdlg.c:2689
-#, fuzzy, c-format
-msgid "The font %1$.30s has a different encoding than that of %2$.30s"
-msgstr "La fonte %1$.30s a le codage de celui de %2$.30hs"
+"et %.30s"
 
 #: savefontdlg.c:2702
 #, fuzzy
 msgid "Generate Mac Family..."
-msgstr "Générer famille pour _Mac..."
+msgstr "Générer famille pour Mac..."
 
 #: savefontdlg.c:2702
 #, fuzzy
 msgid "Generate Fonts..."
-msgstr "_Générer fonte(s)..."
+msgstr "Générer fonte(s)..."
 
 #: savefontdlg.c:2772
 msgid "Allows you to select optional behavior when generating the font"
@@ -15066,7 +15045,7 @@ msgstr "Pour optimiser les paramètres utilisés pour générer la fonte"
 #: scripting.c:249
 #, fuzzy
 msgid "Called from...\n"
-msgstr "_Chargement depuis..."
+msgstr ""
 
 #: scripting.c:250
 #, c-format
@@ -15081,7 +15060,7 @@ msgstr ""
 #: scripting.c:280
 #, fuzzy, c-format
 msgid "%1$s: %2$d. Expected %3$s got %4$s"
-msgstr "%1$.80s (%2$d) taille %3$d venant de %4$.80hs"
+msgstr ""
 
 #: scripting.c:289
 #, c-format
@@ -15135,7 +15114,7 @@ msgstr ""
 #: scripting.c:7570
 #, fuzzy
 msgid "Execute Script..."
-msgstr "E_xécuter un script..."
+msgstr "Exécuter un script..."
 
 #: scripting.c:7612
 msgid "C_all..."
@@ -15179,21 +15158,21 @@ msgstr "Trouver dans %.100s"
 #: search.c:1275
 #, fuzzy
 msgid "Yes"
-msgstr "_Oui"
+msgstr "Oui"
 
 #: search.c:1276
 #, fuzzy
 msgid "Cancel"
-msgstr "_Annuler"
+msgstr "Annuler"
 
 #: search.c:1284
 #, c-format
 msgid ""
-"The %1$s contains a reference to %2$.20hs which does not exist in the new "
+"The %1$s contains a reference to %2$.20s which does not exist in the new "
 "font.\n"
 "Should I remove the reference?"
 msgstr ""
-"Dans %1$s, il y a une référence vers %2$.20hs qui n'existe pas dans la "
+"Dans %1$s, il y a une référence vers %2$.20s qui n'existe pas dans la "
 "nouvelle fonte.\n"
 "Faut-il supprimer la référence ?"
 
@@ -15253,7 +15232,7 @@ msgstr "Remplacer avec les références"
 #, fuzzy, c-format
 msgid "The outlines of glyph %2$.30s were not found in the font %1$.60s"
 msgstr ""
-"Le contours du glyphe %2$.30s n'ont pas été trouvés dans la police %1$.60hs"
+"Le contours du glyphe %2$.30s n'ont pas été trouvés dans la police %1$.60s"
 
 #: sfd.c:1510 sfd.c:1512
 msgid "Saving Bitmaps"
@@ -15295,7 +15274,7 @@ msgstr ""
 #: sftextfield.c:1008
 #, fuzzy
 msgid "Open"
-msgstr "_Ouvrir"
+msgstr "Ouvrir"
 
 #: sftextfield.c:1016 sftextfield.c:1035
 #, fuzzy
@@ -15305,7 +15284,7 @@ msgstr "Lecture de la fonte impossible"
 #: sftextfield.c:1026 showatt.c:2240
 #, fuzzy
 msgid "Save"
-msgstr "_Enregistrer"
+msgstr "Enregistrer"
 
 #: showatt.c:117
 #, c-format
@@ -15360,7 +15339,7 @@ msgstr "Pré-chaîne"
 #: showatt.c:795
 #, fuzzy
 msgid "Match: "
-msgstr "Motif"
+msgstr ""
 
 #: showatt.c:804
 #, fuzzy
@@ -15371,32 +15350,32 @@ msgstr "Post-chaîne"
 #, fuzzy
 msgid "Backtrack class: "
 msgid_plural "Backtrack classes: "
-msgstr[0] "Numéro de classe de pré-chaîne incorrect"
-msgstr[1] "Numéro de classe de pré-chaîne incorrect"
+msgstr[0] "Classe pré-chaîne"
+msgstr[1] "Classes pré-chaînes"
 
 #: showatt.c:831
 #, fuzzy
 msgid "Class"
 msgid_plural "Classes"
-msgstr[0] "Classe 0"
-msgstr[1] "Classe 0"
+msgstr[0] "Classe"
+msgstr[1] "Classes"
 
 #: showatt.c:845
 #, fuzzy
 msgid "Lookahead class: "
 msgid_plural "Lookahead classes: "
-msgstr[0] "Numéro de classe de post-chaîne incorrect"
-msgstr[1] "Numéro de classe de post-chaîne incorrect"
+msgstr[0] "Classe post-chaîne"
+msgstr[1] "Classes post-chaînes"
 
 #: showatt.c:862
 #, fuzzy, c-format
 msgid "Back coverage %d: "
-msgstr "Une table de couverture :"
+msgstr ""
 
 #: showatt.c:872
 #, fuzzy, c-format
 msgid "Coverage %d: "
-msgstr "Par tables de couverture"
+msgstr ""
 
 #: showatt.c:882
 #, c-format
@@ -15411,7 +15390,7 @@ msgstr ""
 #: showatt.c:911
 #, fuzzy
 msgid "Replacement: "
-msgstr "Remplacements"
+msgstr "Remplacement:"
 
 #: showatt.c:932
 #, fuzzy
@@ -15441,12 +15420,12 @@ msgstr "Subst. cont. ét. à contresens"
 #: showatt.c:935
 #, fuzzy
 msgid "glyphs"
-msgstr "Glyphe"
+msgstr "glyphes"
 
 #: showatt.c:935
 #, fuzzy
 msgid "classes"
-msgstr "Classes"
+msgstr "classes"
 
 #: showatt.c:935
 #, fuzzy
@@ -15461,27 +15440,27 @@ msgstr ""
 #: showatt.c:951
 #, fuzzy, c-format
 msgid "Backtrack class %d: "
-msgstr "Numéro de classe de pré-chaîne incorrect"
+msgstr ""
 
 #: showatt.c:961 showatt.c:1039
 #, fuzzy, c-format
 msgid "Class %d: "
-msgstr "Classe %d"
+msgstr "Classe %d: "
 
 #: showatt.c:971
 #, fuzzy, c-format
 msgid "Lookahead class %d: "
-msgstr "Numéro de classe de post-chaîne incorrect"
+msgstr ""
 
 #: showatt.c:982
 #, fuzzy, c-format
 msgid "Rule %d"
-msgstr "Nb de règles :"
+msgstr "Règles %d"
 
 #: showatt.c:1002
 #, fuzzy
 msgid "Indic Reordering"
-msgstr "Nouveau changement d'ordre"
+msgstr ""
 
 #: showatt.c:1003 showatt.c:1004 showatt.c:1005 showatt.c:1006
 msgid "<undefined>"
@@ -15495,32 +15474,32 @@ msgstr "Nouvelle insertion"
 #: showatt.c:1007
 #, fuzzy
 msgid "Kern by State"
-msgstr "Valeur du crénage"
+msgstr "Crénage par état"
 
 #: showatt.c:1049
 #, fuzzy, c-format
 msgid "State %4d Next: "
-msgstr "État %d,  %.40s"
+msgstr "État %4d Prochain:"
 
 #: showatt.c:1058
 #, fuzzy, c-format
 msgid "State %4d Flags:"
-msgstr "État %d,  %.40s"
+msgstr ""
 
 #: showatt.c:1068
 #, fuzzy, c-format
 msgid "State %4d Mark: "
-msgstr "État %d,  %.40s"
+msgstr "État %4d Marque"
 
 #: showatt.c:1084
 #, fuzzy, c-format
 msgid "State %4d Cur:  "
-msgstr "État %d,  %.40s"
+msgstr "État %4d Cur:  "
 
 #: showatt.c:1103
 #, fuzzy, c-format
 msgid "Nested Substitution '%c%c%c%c'"
-msgstr "Substitution antéposées (IND)"
+msgstr ""
 
 #: showatt.c:1327
 msgid "Language"
@@ -15553,12 +15532,12 @@ msgstr "Classes de motif"
 #: showatt.c:1572
 #, fuzzy, c-format
 msgid "  Left Bound=%d"
-msgstr "Alignement optique à gauche"
+msgstr ""
 
 #: showatt.c:1575
 #, fuzzy, c-format
 msgid "  Right Bound=%d"
-msgstr "Alignement optique à droite"
+msgstr ""
 
 #: showatt.c:1631
 msgid "Strong Left to Right"
@@ -15572,12 +15551,12 @@ msgstr "Droite à gauche"
 #: showatt.c:1633
 #, fuzzy
 msgid "Arabic Right to Left"
-msgstr "Droite à gauche"
+msgstr "Arabique Droite à gauche"
 
 #: showatt.c:1634
 #, fuzzy
 msgid "European Number"
-msgstr "Indice dans la chaîne du motif :"
+msgstr ""
 
 #: showatt.c:1635
 msgid "European Number Seperator"
@@ -15590,7 +15569,7 @@ msgstr ""
 #: showatt.c:1637
 #, fuzzy
 msgid "Arabic Number"
-msgstr "Arabe yéménite"
+msgstr ""
 
 #: showatt.c:1638
 msgid "Common Number Seperator"
@@ -15670,37 +15649,37 @@ msgstr "Typographie avancée Apple"
 #: showatt.c:2021
 #, fuzzy
 msgid "'kern' Horizontal Kerning Sub-Table"
-msgstr "Crénage horizontal"
+msgstr "'kern' Crénage horizontal"
 
 #: showatt.c:2022
 #, fuzzy
 msgid "'kern' Horizontal Kerning Table"
-msgstr "Crénage horizontal"
+msgstr "'kern' Crénage horizontal"
 
 #: showatt.c:2028
 #, fuzzy
 msgid "'kern' Horizontal Kerning Class"
-msgstr "Crénage horizontal"
+msgstr "'kern' Classe crénage horizontal"
 
 #: showatt.c:2035
 #, fuzzy
-msgid "'kern' Vertical Kerning Sub-Table"
-msgstr "Crénage vertical"
+msgid "'vkrn' Vertical Kerning Sub-Table"
+msgstr "'vkrn' Crénage vertical"
 
 #: showatt.c:2036
 #, fuzzy
-msgid "'kern' Vertical Kerning Table"
-msgstr "Crénage vertical"
+msgid "'vkrn' Vertical Kerning Table"
+msgstr "'vkrn' Crénage vertical"
 
 #: showatt.c:2042
 #, fuzzy
-msgid "'kern' Vertical Kerning Class"
-msgstr "Crénage vertical"
+msgid "'vkrn' Vertical Kerning Class"
+msgstr "'vkrn' Classe crénage vertical"
 
 #: showatt.c:2049
 #, fuzzy
 msgid "'lcar' Ligature Caret Table"
-msgstr "Curseur de ligature"
+msgstr "'lcar' Curseur de ligature"
 
 #: showatt.c:2055
 msgid "'morx' Glyph Extended Metamorphasis Table"
@@ -15718,7 +15697,7 @@ msgstr ""
 #: showatt.c:2583
 #, fuzzy
 msgid "Show ATT"
-msgstr "_Montrer propriétés typo avancées"
+msgstr "Montrer Typograpie Avancé"
 
 #: simplifydlg.c:79 simplifydlg.c:155
 msgid "_Error Limit:"
@@ -15735,7 +15714,7 @@ msgstr ""
 #: simplifydlg.c:145
 #, fuzzy
 msgid "Simplify"
-msgstr "_Simplifier"
+msgstr "Simplifier"
 
 #: simplifydlg.c:181
 msgid "Allow _removal of extrema"
@@ -15802,12 +15781,12 @@ msgstr "Si inférieures à"
 #: simplifydlg.c:306
 #, fuzzy
 msgid "Don't smooth lines"
-msgstr "Pas assez de lignes"
+msgstr ""
 
 #: simplifydlg.c:313
 #, fuzzy
 msgid "longer than"
-msgstr "Si inférieures à"
+msgstr ""
 
 #: simplifydlg.c:340
 #, fuzzy
@@ -15817,7 +15796,7 @@ msgstr "Par défaut"
 #: splinefill.c:1280 splinefill.c:1678
 #, fuzzy, c-format
 msgid "%d pixels"
-msgstr " pixels"
+msgstr ""
 
 #: splinefill.c:1281
 msgid "Generating bitmap font"
@@ -16225,12 +16204,12 @@ msgstr ""
 #: svg.c:2489
 #, fuzzy
 msgid "This font does not specify font-face\n"
-msgstr "Ce hint n'est utilisé par aucun point"
+msgstr ""
 
 #: svg.c:2671 svg.c:2728 svg.c:2771
 #, fuzzy
 msgid "Can't find libxml2.\n"
-msgstr "METAFONT n'a pas été trouvé"
+msgstr "libxml2 n'a pas été trouvé.\n"
 
 #: svg.c:2692
 msgid "This file contains no SVG fonts.\n"
@@ -16244,7 +16223,7 @@ msgstr ""
 #: tilepath.c:727
 #, fuzzy
 msgid "Tile Path..."
-msgstr "Tui_ler chemin..."
+msgstr "Tuiler chemin..."
 
 #: tilepath.c:739
 msgid "_Left"
@@ -16383,7 +16362,7 @@ msgstr ""
 #: tottfgpos.c:4243
 #, fuzzy
 msgid "Set GSUB/morx Ordering"
-msgstr "Ordre de_s fonctionnalités GSUB/morx"
+msgstr "Ordre des fonctionnalités GSUB/morx"
 
 #: transform.c:87
 msgid "Do Nothing"
@@ -16497,7 +16476,7 @@ msgstr "%"
 #: transform.c:592
 #, fuzzy
 msgid "Transform..."
-msgstr "_Transformer..."
+msgstr "Transformer..."
 
 #: transform.c:614
 msgid "Transform _Background Too"
@@ -16594,7 +16573,7 @@ msgstr ""
 #: ttfinstrs.c:1915
 #, fuzzy
 msgid "Zones"
-msgstr "Bone"
+msgstr ""
 
 #: ttfinstrs.c:1916
 msgid "Twilight Zone Point Count"
@@ -16611,17 +16590,17 @@ msgstr ""
 #: ttfinstrs.c:1920
 #, fuzzy
 msgid "Max Instruction Defines"
-msgstr "Supprimer les instructions"
+msgstr ""
 
 #: ttfinstrs.c:2016
 #, fuzzy
 msgid "_Zones:"
-msgstr "_Fini"
+msgstr ""
 
 #: ttfinstrs.c:2034
 #, fuzzy
 msgid "_Twilight Pnt Cnt:"
-msgstr "Zone de pénombre"
+msgstr ""
 
 #: ttfinstrs.c:2052
 #, fuzzy
@@ -16677,7 +16656,7 @@ msgstr "Remplacer tag par..."
 #: typofeatures.c:1419
 #, fuzzy
 msgid "To Font:"
-msgstr "_Entier"
+msgstr ""
 
 #: typofeatures.c:1493 typofeatures.c:1495
 msgid "No Selected Font"
@@ -16701,7 +16680,7 @@ msgstr ""
 #: uiutil.c:136
 #, fuzzy, c-format
 msgid "Failed to find program \"%s\"\n"
-msgstr "Échec du chargement des données de crénage depuis le fichier %s"
+msgstr ""
 
 #: uiutil.c:140
 #, c-format
@@ -16852,7 +16831,7 @@ msgstr "ΤεΧ de base (8r)"
 #: fontinfo.c
 #, fuzzy
 msgid "French Réunion"
-msgstr "Français canadien fr_CA"
+msgstr "Français Réunion"
 
 #: fontinfo.c
 msgid "French Côte d'Ivoire"
@@ -16904,7 +16883,7 @@ msgstr "_Points proches d'un hint"
 
 #: problems.c
 #, fuzzy
-msgid "¹ \"_Near\" means within"
+msgid "¹ \"Near\" means within"
 msgstr "¹ 'proches' si à moins de "
 
 #: savefontdlg.c
@@ -16954,6 +16933,124 @@ msgstr "° Dans le sens de la montre"
 #: transform.c
 msgid "° Withershins"
 msgstr "° Contraire au sens de la montre"
+
+#: bdfinfo.c:1375
+msgid "Property|New..."
+msgstr "Nouvelle..."
+
+#: charinfo.c:1858
+msgid "ScriptLangList|_New..."
+msgstr "_Nouveau..."
+
+#: charinfo.c:6039
+msgid "Positioning|_New..."
+msgstr "_Nouveau..."
+
+#: charinfo.c:6040
+msgid "PairwisePositioning|_New..."
+msgstr "_Nouveau..."
+
+#: charinfo.c:6041
+msgid "Substitutions|_New..."
+msgstr "_Nouveau..."
+
+#: charinfo.c:6042
+msgid "AltSubstitutions|_New..."
+msgstr "_Nouveau..."
+
+#: charinfo.c:6043
+msgid "MultSubstitutions|_New..."
+msgstr "_Nouveau..."
+
+#: charinfo.c:6044
+msgid "Ligatures|_New..."
+msgstr "_Nouveau..."
+
+#. GT: See the long comment at "Property|New"
+#. GT: The msgstr should contain a translation of "_New...", ignore "Anchor|"
+#: fontinfo.c:8242
+msgid "Anchor|_New..."
+msgstr "_Nouveau..."
+
+#. GT: See the long comment at "Property|New"
+#. GT: The msgstr should contain a translation of "_New...", ignore "Mark|"
+#: fontinfo.c:8324
+msgid "Mark|_New..."
+msgstr "_Nouveau..."
+
+#: fontinfo.c:8559
+msgid "StyleName|_New..."
+msgstr "_Nouveau..."
+
+#: fontinfo.c:8652
+msgid "ContextualSubstitution|_New..."
+msgstr "_Nouveau..."
+
+#: fontinfo.c:8816
+msgid "StateMachine|_New..."
+msgstr "_Nouveau..."
+
+#: kernclass.c:1951
+msgid "Class|New..."
+msgstr "Nouvelle..."
+
+#: kernclass.c:2645
+msgid "KernClass|_New..."
+msgstr "Nouvelle..."
+
+#: macenc.c:2799
+msgid "MacName|_New..."
+msgstr "_Nouveau..."
+
+#: macenc.c:3332
+msgid "MacSetting|_New..."
+msgstr "_Nouveau..."
+
+#: macenc.c:3521
+msgid "MacFeature|_New..."
+msgstr "_Nouveau..."
+
+#: mm.c:4203
+msgid "Design|_New..."
+msgstr "_Nouveau..."
+
+#: prefs.c:1635
+msgid "MacMap|_New..."
+msgstr "_Nouveau..."
+
+#: bitmapview.c:1677 bitmapview.c:1679 charview.c:7580 charview.c:7582
+#: charview.c:8700 fontview.c:6408 fontview.c:6410 metricsview.c:2642
+#: metricsview.c:2644 openfontdlg.c:676
+msgid "Font|_New"
+msgstr "_Nouveau"
+
+#: contextchain.c:2141 statemachine.c:3018
+msgid "Class|_New"
+msgstr "_Nouvelle"
+
+#: contextchain.c:2255
+msgid "Lookup|_New"
+msgstr "_Nouveau"
+
+#: cvexport.c:1024 savefontdlg.c:3085 ../gdraw/gsavefiledlg.c:263
+msgid "Directory|_New"
+msgstr "_Nouveau"
+
+#: fontinfo.c:4463
+msgid "TrueTypeName|New"
+msgstr "Nouveau"
+
+#: cvgetinfo.c:1486
+msgid "AnchorPoint|_New"
+msgstr "_Nouveau"
+
+#: mm.c:2927
+msgid "Font|New"
+msgstr "Nouveau"
+
+#: ../gdraw/gmatrixedit.c:906
+msgid "Row|New"
+msgstr "Nouveau"
 
 #~ msgid "_Encoded View"
 #~ msgstr "Vu_e selon codage"
