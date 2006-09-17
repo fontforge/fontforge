@@ -972,6 +972,9 @@ void SFConvertToOrder2(SplineFont *_sf) {
 	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL && !sf->glyphs[i]->ticked )
 	    SCConvertRefs(sf->glyphs[i]);
 
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
+	    SCNumberPoints(sf->glyphs[i]);
+
 	new = SplineSetsTTFApprox(sf->grid.splines);
 	SplinePointListsFree(sf->grid.splines);
 	sf->grid.splines = new;
