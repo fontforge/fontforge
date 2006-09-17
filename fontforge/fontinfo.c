@@ -305,7 +305,7 @@ static GTextInfo panprop[] = {
 static GTextInfo pancontrast[] = {
     { (unichar_t *) N_("Any"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("No Fit"), NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("None"), NULL, 0, 0, (void *) 2, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Contrast|None"), NULL, 0, 0, (void *) 2, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Very Low"), NULL, 0, 0, (void *) 3, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Low"), NULL, 0, 0, (void *) 4, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Medium Low"), NULL, 0, 0, (void *) 5, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -4460,7 +4460,7 @@ static void TNExpose(struct gfi_data *d,GWindow pixmap,GEvent *event) {
 	     i+d->tn_offtop<=d->tn_cnt;
 	    ++i ) {
 	if ( i+d->tn_offtop==d->tn_cnt ) {
-	    strncpy(buf+1,_("New"),sizeof(buf)-2);
+	    strncpy(buf+1,_("TrueTypeName|New"),sizeof(buf)-2);
 	    buf[0] = '<';
 	    buf[18] = '\0';
 	    k = strlen(buf);
@@ -8556,7 +8556,7 @@ return;
     szgcd[k].gd.pos.x = 10; szgcd[k].gd.pos.y = szgcd[k-1].gd.pos.y+szgcd[k-1].gd.pos.height+4;
     szgcd[k].gd.pos.width = -1;
     szgcd[k].gd.flags = gg_visible | gg_enabled;
-    szlabel[k].text = (unichar_t *) _("_New...");
+    szlabel[k].text = (unichar_t *) _("StyleName|_New...");
     szlabel[k].text_is_1byte = true;
     szlabel[k].text_in_resource = true;
     szgcd[k].gd.label = &szlabel[k];
@@ -8649,7 +8649,7 @@ return;
 	csubgcd[i][1].gd.pos.x = 10; csubgcd[i][1].gd.pos.y = csubgcd[i][0].gd.pos.y+csubgcd[i][0].gd.pos.height+4;
 	csubgcd[i][1].gd.pos.width = -1;
 	csubgcd[i][1].gd.flags = gg_visible | gg_enabled;
-	csublabel[i][1].text = (unichar_t *) _("_New...");
+	csublabel[i][1].text = (unichar_t *) _("ContextualSubstitution|_New...");
 	csublabel[i][1].text_is_1byte = true;
 	csublabel[i][1].text_in_resource = true;
 	csubgcd[i][1].gd.label = &csublabel[i][1];
@@ -8813,7 +8813,7 @@ return;
 	smsubgcd[i][1].gd.pos.x = 10; smsubgcd[i][1].gd.pos.y = smsubgcd[i][0].gd.pos.y+smsubgcd[i][0].gd.pos.height+4;
 	smsubgcd[i][1].gd.pos.width = -1;
 	smsubgcd[i][1].gd.flags = gg_visible | gg_enabled;
-	smsublabel[i][1].text = (unichar_t *) _("_New...");
+	smsublabel[i][1].text = (unichar_t *) _("StateMachine|_New...");
 	smsublabel[i][1].text_is_1byte = true;
 	smsublabel[i][1].text_in_resource = true;
 	smsubgcd[i][1].gd.label = &smsublabel[i][1];

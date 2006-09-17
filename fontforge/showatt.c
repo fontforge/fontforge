@@ -2085,15 +2085,15 @@ static void BuildTop(struct att_dlg *att) {
 		tables[i].children[j++].parent = &tables[i];
 	    }
 	    if ( hasvkern ) {
-		tables[i].children[j].label = haskern ? copy(_("'kern' Vertical Kerning Sub-Table")) :
-				copy(_("'kern' Vertical Kerning Table"));
+		tables[i].children[j].label = haskern ? copy(_("'vkrn' Vertical Kerning Sub-Table")) :
+				copy(_("'vkrn' Vertical Kerning Table"));
 		tables[i].children[j].tag = CHR('v','k','r','n');
 		tables[i].children[j].build = BuildTable;
 		tables[i].children[j++].parent = &tables[i];
 	    }
 	    for ( kc = _sf->vkerns; kc!=NULL; kc=kc->next ) {
-		tables[i].children[j].label = copy(_("'kern' Vertical Kerning Class"));
-		tables[i].children[j].tag = CHR('k','e','r','n');
+		tables[i].children[j].label = copy(_("'vkrn' Vertical Kerning Class"));
+		tables[i].children[j].tag = CHR('v','k','r','n');
 		tables[i].children[j].u.kc = kc;
 		tables[i].children[j].build = BuildKC;
 		tables[i].children[j++].parent = &tables[i];

@@ -673,7 +673,7 @@ unichar_t *FVOpenFont(char *title, const char *defaultfile, int mult) {
     gcd[i].gd.pos.x = -(spacing+bs)*100/GIntGetResource(_NUM_ScaleFactor)-12; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+3;
     gcd[i].gd.pos.width = -1;
     gcd[i].gd.flags = gg_visible | gg_enabled;
-    label[i].text = (unichar_t *) _("_New");
+    label[i].text = (unichar_t *) _("Font|_New");
     label[i].text_is_1byte = true;
     label[i].text_in_resource = true;
     gcd[i].gd.mnemonic = 'N';

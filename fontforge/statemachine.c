@@ -3015,7 +3015,7 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     gcd[k].gd.cid = CID_Classes;
     gcd[k++].creator = GListCreate;
 
-    label[k].text = (unichar_t *) _("_New");
+    label[k].text = (unichar_t *) _("Class|_New");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];

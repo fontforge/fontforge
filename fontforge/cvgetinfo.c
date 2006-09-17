@@ -1483,7 +1483,7 @@ return;
 	boxes[5].creator = GHBoxCreate;
 	varray[8] = &boxes[5]; varray[9] = NULL;
 
-	label[j].text = (unichar_t *) _("_New");
+	label[j].text = (unichar_t *) _("AnchorPoint|_New");
 	label[j].text_is_1byte = true;
 	label[j].text_in_resource = true;
 	gcd[j].gd.label = &label[j];

@@ -3082,7 +3082,7 @@ return( 0 );
 
     gcd[4].gd.pos.x = (spacing+bs)*100/GIntGetResource(_NUM_ScaleFactor)+12; gcd[4].gd.pos.y = y; gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
     gcd[4].gd.flags = gg_visible | gg_enabled;
-    label[4].text = (unichar_t *) _("_New");
+    label[4].text = (unichar_t *) _("Directory|_New");
     label[4].text_is_1byte = true;
     label[4].text_in_resource = true;
     label[4].image = &_GIcon_dir;

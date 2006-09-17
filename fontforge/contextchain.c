@@ -2138,7 +2138,7 @@ static int CCD_AddGList(GGadgetCreateData *gcd, GTextInfo *label,int off,
     gcd[k++].creator = GListCreate;
 
     space = width==CCD_WIDTH-30 ? 7 : 10;
-    label[k].text = (unichar_t *) _("_New");
+    label[k].text = (unichar_t *) _("Class|_New");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
@@ -2252,7 +2252,7 @@ static void CCD_AddSeqLookup(GGadgetCreateData *gcd, GTextInfo *label,int off,
     gcd[k].gd.cid = CID_LookupList+off;
     gcd[k++].creator = GListCreate;
 
-    label[k].text = (unichar_t *) _("_New");
+    label[k].text = (unichar_t *) _("Lookup|_New");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];

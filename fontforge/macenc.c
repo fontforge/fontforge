@@ -2796,7 +2796,7 @@ int GCDBuildNames(GGadgetCreateData *gcd,GTextInfo *label,int pos,struct macname
 
     gcd[pos].gd.pos.x = 6; gcd[pos].gd.pos.y = gcd[pos-1].gd.pos.y+gcd[pos-1].gd.pos.height+10;
     gcd[pos].gd.flags = gg_visible | gg_enabled;
-    label[pos].text = (unichar_t *) _("_New...");
+    label[pos].text = (unichar_t *) _("MacName|_New...");
     label[pos].text_is_1byte = true;
     label[pos].text_in_resource = true;
     gcd[pos].gd.label = &label[pos];
@@ -3329,7 +3329,7 @@ static char *AskFeature(MacFeat *changing,MacFeat *all,GGadget *list, int index)
 
     gcd[i].gd.pos.x = 6; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+gcd[i-1].gd.pos.height+10;
     gcd[i].gd.flags = gg_visible | gg_enabled;
-    label[i].text = (unichar_t *) _("_New...");
+    label[i].text = (unichar_t *) _("MacSetting|_New...");
     label[i].text_is_1byte = true;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
@@ -3518,7 +3518,7 @@ void GCDFillMacFeat(GGadgetCreateData *mfgcd,GTextInfo *mflabels, int width,
 
     mfgcd[sgc].gd.pos.x = 6; mfgcd[sgc].gd.pos.y = mfgcd[sgc-1].gd.pos.y+mfgcd[sgc-1].gd.pos.height+10;
     mfgcd[sgc].gd.flags = gg_visible | gg_enabled;
-    mflabels[sgc].text = (unichar_t *) _("_New...");
+    mflabels[sgc].text = (unichar_t *) _("MacFeature|_New...");
     mflabels[sgc].text_is_1byte = true;
     mflabels[sgc].text_in_resource = true;
     mfgcd[sgc].gd.label = &mflabels[sgc];

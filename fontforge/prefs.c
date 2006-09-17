@@ -1632,11 +1632,10 @@ void DoPrefs(void) {
 
     msgcd[sgc].gd.pos.x = 6; msgcd[sgc].gd.pos.y = msgcd[sgc-1].gd.pos.y+msgcd[sgc-1].gd.pos.height+10;
     msgcd[sgc].gd.flags = gg_visible | gg_enabled;
-    mslabels[sgc].text = (unichar_t *) _("_New...");
+    mslabels[sgc].text = (unichar_t *) _("MacMap|_New...");
     mslabels[sgc].text_is_1byte = true;
     mslabels[sgc].text_in_resource = true;
     msgcd[sgc].gd.label = &mslabels[sgc];
-    /*msgcd[sgc].gd.cid = CID_AnchorRename;*/
     msgcd[sgc].gd.handle_controlevent = Pref_NewMapping;
     msgcd[sgc++].creator = GButtonCreate;
 

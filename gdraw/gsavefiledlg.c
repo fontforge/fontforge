@@ -260,7 +260,7 @@ unichar_t *GWidgetSaveAsFile(const unichar_t *title, const unichar_t *defaultfil
     gcd[3].gd.pos.width = -1;
     gcd[3].gd.flags = gg_visible | gg_enabled;
     if ( _ggadget_use_gettext ) {
-	label[3].text = (unichar_t *) _("_New");
+	label[3].text = (unichar_t *) _("Directory|_New");
 	label[3].text_is_1byte = true;
     } else
 	label[3].text = (unichar_t *) _STR_New;
