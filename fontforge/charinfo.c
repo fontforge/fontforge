@@ -1855,7 +1855,7 @@ return(true);
 	gcd[i].gd.pos.x = 30; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+gcd[i-1].gd.pos.height+5;
 	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
 	gcd[i].gd.flags = gg_visible | gg_enabled;
-	label[i].text = (unichar_t *) _("_New...");
+	label[i].text = (unichar_t *) _("ScriptLangList|_New...");
 	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
@@ -6036,7 +6036,13 @@ return;
 	    psgcd[i][1].gd.pos.x = 10; psgcd[i][1].gd.pos.y = psgcd[i][0].gd.pos.y+psgcd[i][0].gd.pos.height+4;
 	    psgcd[i][1].gd.pos.width = -1;
 	    psgcd[i][1].gd.flags = gg_visible | gg_enabled;
-	    pslabel[i][1].text = (unichar_t *) _("_New...");
+	    pslabel[i][1].text = (unichar_t *) (i==0 ? _("Positioning|_New...")
+					       :i==1 ? _("PairwisePositioning|_New...")
+					       :i==2 ? _("Substitutions|_New...")
+					       :i==3 ? _("AltSubstitutions|_New...")
+					       :i==4 ? _("MultSubstitutions|_New...")
+					       :i==5 ? _("Ligatures|_New...")
+			                       : _("_New..."));
 	    pslabel[i][1].text_is_1byte = true;
 	    pslabel[i][1].text_in_resource = true;
 	    psgcd[i][1].gd.label = &pslabel[i][1];
@@ -6824,7 +6830,7 @@ void FVSelectByPST(FontView *fv) {
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+26; 
 	gcd[i].gd.flags = gg_enabled|gg_visible|gg_cb_on|gg_utf8_popup;
-	gcd[i].gd.popup_msg = (unichar_t *) _("Set the selection of the font view to the characters\nfound by this search");
+	gcd[i].gd.popup_msg = (unichar_t *) _("Set the selection of the font view to the glyphs\nfound by this search");
 	gcd[i].gd.cid = CID_SelectResults;
 	gcd[i++].creator = GRadioCreate;
 
@@ -6833,7 +6839,7 @@ void FVSelectByPST(FontView *fv) {
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+15; 
 	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-	gcd[i].gd.popup_msg = (unichar_t *) _("Expand the selection of the font view to include\nall the characters found by this search");
+	gcd[i].gd.popup_msg = (unichar_t *) _("Expand the selection of the font view to include\nall the glyphs found by this search");
 	gcd[i].gd.cid = CID_MergeResults;
 	gcd[i++].creator = GRadioCreate;
 
@@ -6842,7 +6848,7 @@ void FVSelectByPST(FontView *fv) {
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+15; 
 	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-	gcd[i].gd.popup_msg = (unichar_t *) _("Only search the selected characters, and unselect\nany characters which do not match this search");
+	gcd[i].gd.popup_msg = (unichar_t *) _("Only search the selected glyphs, and unselect\nany characters which do not match this search");
 	gcd[i].gd.cid = CID_RestrictSelection;
 	gcd[i++].creator = GRadioCreate;
 

@@ -903,7 +903,7 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 	if ( r+gme->off_top==gme->rows ) {
 	    buf[0] = '<';
 	    if ( _ggadget_use_gettext )
-		strncpy(buf+1,_("New"),sizeof(buf)-2);
+		strncpy(buf+1,_("Row|New"),sizeof(buf)-2);
 	    else
 		u2utf8_strcpy(buf+1,GStringGetResource(_STR_New,NULL));
 	    buf[18] = '\0';
