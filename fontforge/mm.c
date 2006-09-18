@@ -2924,7 +2924,7 @@ static GTextInfo **FontList(MMW *mmw, int instance, int *sel) {
     }
     if ( pos==-1 ) pos=cnt;
     ti[cnt] = gcalloc(1,sizeof(GTextInfo));
-    ti[cnt]->text = utf82u_copy(_("Font|New"));
+    ti[cnt]->text = utf82u_copy(S_("Font|New"));
     ti[cnt]->bg = ti[cnt]->fg = COLOR_DEFAULT;
     ++cnt;
     ti[cnt] = gcalloc(1,sizeof(GTextInfo));
@@ -4200,7 +4200,7 @@ void MMWizard(MMSet *mm) {
     ngcd[2].gd.pos.x = 20; ngcd[2].gd.pos.y = ngcd[1].gd.pos.y + ngcd[1].gd.pos.height+5;
     ngcd[2].gd.pos.width = -1;
     ngcd[2].gd.flags = gg_visible | gg_enabled;
-    nlabel[2].text = (unichar_t *) _("Design|_New...");
+    nlabel[2].text = (unichar_t *) S_("Design|_New...");
     nlabel[2].text_is_1byte = true;
     nlabel[2].text_in_resource = true;
     ngcd[2].gd.label = &nlabel[2];

@@ -1948,7 +1948,7 @@ static int AddClassList(GGadgetCreateData *gcd, GTextInfo *label, int k, int off
     gcd[k].gd.cid = CID_ClassList+off;
     gcd[k++].creator = GListCreate;
 
-    label[k].text = (unichar_t *) _("Class|New...");
+    label[k].text = (unichar_t *) S_("Class|New...");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
@@ -2642,7 +2642,7 @@ return;
     gcd[1].gd.pos.x = 10; gcd[1].gd.pos.y = gcd[0].gd.pos.y+gcd[0].gd.pos.height+4;
     gcd[1].gd.pos.width = -1;
     gcd[1].gd.flags = gg_visible | gg_enabled;
-    label[1].text = (unichar_t *) _("KernClass|_New...");
+    label[1].text = (unichar_t *) S_("KernClass|_New...");
     label[1].text_is_1byte = true;
     label[1].text_in_resource = true;
     gcd[1].gd.label = &label[1];

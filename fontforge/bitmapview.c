@@ -1795,7 +1795,7 @@ return;
 
     mbDoGetText(mblist);
     for ( i=0; BVFlipNames[i]!=NULL ; ++i )
-	BVFlipNames[i] = _(BVFlipNames[i]);
+	BVFlipNames[i] = S_(BVFlipNames[i]);
 }
 
 BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv, int enc) {
