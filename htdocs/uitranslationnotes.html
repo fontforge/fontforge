@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 19-Aug-2006 -->
-  <!-- AP: Last modified: 26-Aug-2006 -->
+  <!-- AP: Last modified: 17-Sep-2006 -->
   <TITLE>User Interface Translation Notes</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -287,25 +287,54 @@ msgstr[1] "<FONT COLOR="Red">%d Groupes</FONT>"
   This will update your po file to contain any new strings for you to translate.
   It will also make guesses for these new strings. Some of these guesses are
   correct, some are very strange, so you will want to examine the guessed strings
-  (they will be marked with the word "fuzzy")
+  (they will be marked with the word "fuzzy" -- emacs has a mode that makes
+  checking these easy).
   <H2>
     <A NAME="Testing">Testing</A> a "po" file
   </H2>
   <P>
-  Once you have completed your po file you will want to test it. First you
-  need to compile it:
-  <BLOCKQUOTE>
-    <PRE><FONT COLOR="Gray">$ </FONT>msgfmt -o <FONT COLOR="Red">fr</FONT>.mo <FONT COLOR="Red">fr</FONT>.po
+  Once you have completed your po file you will want to test it.
+  <OL>
+    <LI>
+      If you have a copy of the fontforge source distribution you can test it by
+      <UL>
+	<LI>
+	  copying your new file into the fontforge/po directory:
+	  <BLOCKQUOTE>
+	    <PRE><FONT COLOR="Gray">$ </FONT>cp <FONT COLOR="Red">fr</FONT>.po fontforge-20060819/fontforge/po
 </PRE>
-  </BLOCKQUOTE>
-  <P>
-  and create an "mo" file. This file you will want to rename and move to the
-  appropriate directory. If fontforge is installed in /usr/local/bin then you
-  would say
-  <BLOCKQUOTE>
-    <PRE><FONT COLOR="Gray">$ </FONT>mv <FONT COLOR="Red">fr</FONT>.mo /usr/local/share/locale/<FONT COLOR="Red">fr</FONT>/LC_MESSAGES/FontForge.mo
+	  </BLOCKQUOTE>
+	<LI>
+	  Reconfiguring fontforge, and installing it
+	  <BLOCKQUOTE>
+	    <PRE><FONT COLOR="Gray">$ </FONT>cd fontforge-20060819
+<FONT COLOR="Gray">$ </FONT>./configure
+<FONT COLOR="Gray">$ </FONT>make
+<FONT COLOR="Gray">$ </FONT>su
+<FONT COLOR="Gray"># </FONT>make install
 </PRE>
-  </BLOCKQUOTE>
+	  </BLOCKQUOTE>
+      </UL>
+    <LI>
+      Or, if you want to do things manually:
+      <UL>
+	<LI>
+	  First you need to compile it:
+	  <BLOCKQUOTE>
+	    <PRE><FONT COLOR="Gray">$ </FONT>msgfmt -o <FONT COLOR="Red">fr</FONT>.mo <FONT COLOR="Red">fr</FONT>.po
+</PRE>
+	  </BLOCKQUOTE>
+	  <P>
+	  and create an "mo" file.
+	<LI>
+	  This file you will want to rename and move to the appropriate directory.
+	  If fontforge is installed in /usr/local/bin then you would say
+	  <BLOCKQUOTE>
+	    <PRE><FONT COLOR="Gray">$ </FONT>mv <FONT COLOR="Red">fr</FONT>.mo /usr/local/share/locale/<FONT COLOR="Red">fr</FONT>/LC_MESSAGES/FontForge.mo
+</PRE>
+	  </BLOCKQUOTE>
+      </UL>
+  </OL>
   <P>
   Then make sure your locale is set properly and start fontforge. You should
   see your messages
