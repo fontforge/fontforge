@@ -171,19 +171,13 @@ static GTextInfo bitmaptypes[] = {
 };
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-#if __Mac
-int old_ttf_flags = ttf_flag_applemode;
-int old_otf_flags = ttf_flag_applemode;
-#else
 int old_ttf_flags = ttf_flag_otmode;
 int old_otf_flags = ttf_flag_otmode;
-#endif
 int old_ps_flags = ps_flag_afm|ps_flag_round;
 int old_psotb_flags = ps_flag_afm;
 
 int oldformatstate = ff_pfb;
 int oldbitmapstate = 0;
-extern int alwaysgenapple, alwaysgenopentype;
 
 static const char *pfaeditflag = "SplineFontDB:";
 
@@ -646,12 +640,8 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
 	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_AppleMode),flags&ttf_flag_applemode);
     else if ( which==0 || which==3 )	/* Postscript */
 	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_AppleMode),false);
-    else if ( alwaysgenapple ||
-	    fs==ff_ttfmacbin || fs==ff_ttfdfont || fs==ff_otfdfont ||
-	    fs==ff_otfciddfont || d->family || (fs==ff_none && bf==bf_sfnt_dfont))
-	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_AppleMode),true);
     else
-	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_AppleMode),false);
+	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_AppleMode),(flags&ttf_flag_applemode));
     if ( d->optset[which] )
 	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_OpenTypeMode),flags&ttf_flag_otmode);
     else if ( which==0 )	/* Postscript */
@@ -660,7 +650,7 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
 	     fs==ff_otfciddfont || d->family || (fs==ff_none && bf==bf_sfnt_dfont)))
 	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_OpenTypeMode),false);
     else
-	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_OpenTypeMode),alwaysgenopentype);
+	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_OpenTypeMode),(flags&ttf_flag_otmode));
 
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_PfEdComments),flags&ttf_flag_pfed_comments);
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_PfEdColors),flags&ttf_flag_pfed_colors);
@@ -2162,33 +2152,7 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	oldformatstate = ff_none;
 
     if ( fmflags==-1 ) {
-	if ( alwaysgenapple && alwaysgenopentype ) {
-	    old_otf_flags |= ttf_flag_applemode | ttf_flag_otmode;
-	    old_ttf_flags |= ttf_flag_applemode | ttf_flag_otmode;
-	} else if ( alwaysgenapple ) {
-	    old_otf_flags |= ttf_flag_applemode;
-	    old_ttf_flags |= ttf_flag_applemode;
-	    old_otf_flags &=~ttf_flag_otmode;
-	    old_ttf_flags &=~ttf_flag_otmode;
-	} else if ( alwaysgenopentype ) {
-	    old_otf_flags |= ttf_flag_otmode;
-	    old_ttf_flags |= ttf_flag_otmode;
-	    old_otf_flags &=~ttf_flag_applemode;
-	    old_ttf_flags &=~ttf_flag_applemode;
-	}
-	if ( strmatch(bitmaptype,"apple")==0 || strmatch(bitmaptype,"sbit")==0 ||
-		oldformatstate==ff_ttfmacbin || oldformatstate==ff_ttfdfont ||
-		oldformatstate==ff_otfdfont || oldformatstate==ff_otfciddfont ) {
-	    old_otf_flags |= ttf_flag_applemode;
-	    old_ttf_flags |= ttf_flag_applemode;
-	    old_otf_flags &=~ttf_flag_otmode;
-	    old_ttf_flags &=~ttf_flag_otmode;
-	} else if ( strmatch(bitmaptype,"ms")==0 ) {
-	    old_otf_flags |= ttf_flag_otmode;
-	    old_ttf_flags |= ttf_flag_otmode;
-	    old_otf_flags &=~ttf_flag_applemode;
-	    old_ttf_flags &=~ttf_flag_applemode;
-	}
+	/* Default to what we did last time */
     } else {
 	if ( oldformatstate<=ff_cffcid ) {
 	    old_ps_flags = 0;
@@ -2504,19 +2468,9 @@ return;
       break;
       case 1:	/* TrueType */
 	flags = old_ttf_flags = d->ttf_flags;
-	if ( !d->sod_invoked ) {
-	    if ( oldformatstate==ff_ttfmacbin || oldformatstate==ff_ttfdfont || d->family ||
-		    (oldformatstate==ff_none && oldbitmapstate==bf_sfnt_dfont))
-		old_ttf_flags |= ttf_flag_applemode;
-	}
       break;
       case 2:	/* OpenType */
 	flags = old_otf_flags = d->otf_flags;
-	if ( !d->sod_invoked ) {
-	    if ( oldformatstate==ff_otfdfont || oldformatstate==ff_otfciddfont || d->family ||
-		    (oldformatstate==ff_none && oldbitmapstate==bf_sfnt_dfont))
-		old_ttf_flags |= ttf_flag_applemode;
-	}
       break;
       case 3:	/* PostScript & OpenType bitmaps */
 	old_ps_flags = d->ps_flags;
@@ -2920,19 +2874,11 @@ int SFGenerateFont(SplineFont *sf,int family,EncMap *map) {
 	    bitmaptypes[i].text = (unichar_t *) _((char *) bitmaptypes[i].text);
     }
 
-    if ( (alwaysgenapple || family ) && alwaysgenopentype ) {
-	old_otf_flags |= ttf_flag_applemode | ttf_flag_otmode;
-	old_ttf_flags |= ttf_flag_applemode | ttf_flag_otmode;
-    } else if ( alwaysgenapple || family ) {
+    if ( family ) {
 	old_otf_flags |= ttf_flag_applemode;
 	old_ttf_flags |= ttf_flag_applemode;
 	old_otf_flags &=~ttf_flag_otmode;
 	old_ttf_flags &=~ttf_flag_otmode;
-    } else if ( alwaysgenopentype ) {
-	old_otf_flags |= ttf_flag_otmode;
-	old_ttf_flags |= ttf_flag_otmode;
-	old_otf_flags &=~ttf_flag_applemode;
-	old_ttf_flags &=~ttf_flag_applemode;
     }
 
     if ( family ) {
@@ -3082,7 +3028,7 @@ return( 0 );
 
     gcd[4].gd.pos.x = (spacing+bs)*100/GIntGetResource(_NUM_ScaleFactor)+12; gcd[4].gd.pos.y = y; gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
     gcd[4].gd.flags = gg_visible | gg_enabled;
-    label[4].text = (unichar_t *) _("Directory|_New");
+    label[4].text = (unichar_t *) S_("Directory|_New");
     label[4].text_is_1byte = true;
     label[4].text_in_resource = true;
     label[4].image = &_GIcon_dir;

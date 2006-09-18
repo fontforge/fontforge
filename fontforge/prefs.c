@@ -106,13 +106,6 @@ static char *xdefs_filename;
 int new_em_size = 1000;
 int new_fonts_are_order2 = false;
 int loaded_fonts_same_as_new = false;
-#if __Mac
-int alwaysgenapple = true;
-int alwaysgenopentype = false;
-#else
-int alwaysgenapple = false;
-int alwaysgenopentype = true;
-#endif
 int use_second_indic_scripts = true;
 char *helpdir;
 char *othersubrsfile;
@@ -135,6 +128,7 @@ extern NameList *namelist_for_new_fonts;
 
 int default_font_filter_index=0;
 struct openfilefilters *user_font_filters = NULL;
+static int alwaysgenapple=false, alwaysgenopentype=false;
 
 static int pointless;
 
@@ -314,8 +308,6 @@ static struct prefs_list {
 	{ N_("AskBDFResolution"), pr_bool, &ask_user_for_resolution, NULL, NULL, 'B', NULL, 0, N_("When generating a set of BDF fonts ask the user\nto specify the screen resolution of the fonts\notherwise FontForge will guess depending on the pixel size.") },
 	{ N_("PreferCJKEncodings"), pr_bool, &prefer_cjk_encodings, NULL, NULL, 'C', NULL, 0, N_("When loading a truetype or opentype font which has both a unicode\nand a CJK encoding table, use this flag to specify which\nshould be loaded for the font.") },
 	{ N_("HintForGen"), pr_bool, &autohint_before_generate, NULL, NULL, 'H', NULL, 0, N_("AutoHint changed glyphs before generating a font") },
-	{ N_("AlwaysGenApple"), pr_bool, &alwaysgenapple, NULL, NULL, 'A', NULL, 0, N_("Apple and MS/Adobe differ about the format of truetype and opentype files.\nThis controls the default setting of the Apple checkbox in the\nFile->Generate Font dialog.\nThe main differences are:\n Bitmap data are stored in different tables\n Scaled composite glyphs are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop\nIf both this and OpenType are set, both formats are generated") },
-	{ N_("AlwaysGenOpenType"), pr_bool, &alwaysgenopentype, NULL, NULL, 'O', NULL, 0, N_("Apple and MS/Adobe differ about the format of truetype and opentype files.\nThis controls the default setting of the OpenType checkbox in the\nFile->Generate Font dialog.\nThe main differences are:\n Bitmap data are stored in different tables\n Scaled composite glyphs are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop\nIf both this and Apple are set, both formats are generated") },
 	{ NULL }
 },
  hints_list[] = {
@@ -390,6 +382,8 @@ static struct prefs_list {
 	{ "DumpGlyphMap", pr_bool, &glyph_2_name_map, NULL, NULL, '\0', NULL, 0, N_("When generating a truetype or opentype font it is occasionally\nuseful to know the mapping between truetype glyph ids and\nglyph names. Setting this option will cause FontForge to\nproduce a file (with extension .g2n) containing those data.") },
 	{ "DefaultTTFApple", pr_int, &pointless, NULL, NULL, '\0', NULL, 1 },
 	{ "AcuteCenterBottom", pr_bool, &GraveAcuteCenterBottom, NULL, NULL, '\0', NULL, 1, N_("When placing grave and acute accents above letters, should\nFontForge center them based on their full width, or\nshould it just center based on the lowest point\nof the accent.") },
+	{ "AlwaysGenApple", pr_bool, &alwaysgenapple, NULL, NULL, 'A', NULL, 0, N_("Apple and MS/Adobe differ about the format of truetype and opentype files.\nThis controls the default setting of the Apple checkbox in the\nFile->Generate Font dialog.\nThe main differences are:\n Bitmap data are stored in different tables\n Scaled composite glyphs are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop\nIf both this and OpenType are set, both formats are generated") },
+	{ "AlwaysGenOpenType", pr_bool, &alwaysgenopentype, NULL, NULL, 'O', NULL, 0, N_("Apple and MS/Adobe differ about the format of truetype and opentype files.\nThis controls the default setting of the OpenType checkbox in the\nFile->Generate Font dialog.\nThe main differences are:\n Bitmap data are stored in different tables\n Scaled composite glyphs are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop\nIf both this and Apple are set, both formats are generated") },
 	{ NULL }
 },
  *prefs_list[] = { general_list, editing_list, accent_list, args_list, fontinfo_list, generate_list, tt_list, opentype_list, hints_list, hidden_list, NULL },
@@ -413,6 +407,10 @@ struct visible_prefs_list { char *tab_name; struct prefs_list *pl; } visible_pre
 int GetPrefs(char *name,Val *val) {
     int i,j;
 
+    /* Support for obsolete preferences */
+    alwaysgenapple=(old_ttf_flags&ttf_flag_applemode)?1:0;
+    alwaysgenopentype=(old_ttf_flags&ttf_flag_otmode)?1:0;
+    
     for ( i=0; prefs_list[i]!=NULL; ++i ) for ( j=0; prefs_list[i][j].name!=NULL; ++j ) {
 	if ( strcmp(prefs_list[i][j].name,name)==0 ) {
 	    struct prefs_list *pf = &prefs_list[i][j];
@@ -443,8 +441,28 @@ return( true );
 return( false );
 }
 
+static void CheckObsoletePrefs(void) {
+    if ( alwaysgenapple==false ) {
+	old_ttf_flags &= ~ttf_flag_applemode;
+	old_otf_flags &= ~ttf_flag_applemode;
+    } else if ( alwaysgenapple==true ) {
+	old_ttf_flags |= ttf_flag_applemode;
+	old_otf_flags |= ttf_flag_applemode;
+    }
+    if ( alwaysgenopentype==false ) {
+	old_ttf_flags &= ~ttf_flag_otmode;
+	old_otf_flags &= ~ttf_flag_otmode;
+    } else if ( alwaysgenopentype==true ) {
+	old_ttf_flags |= ttf_flag_otmode;
+	old_otf_flags |= ttf_flag_otmode;
+    }
+}
+
 int SetPrefs(char *name,Val *val1, Val *val2) {
     int i,j;
+
+    /* Support for obsolete preferences */
+    alwaysgenapple=-1; alwaysgenopentype=-1;
 
     for ( i=0; prefs_list[i]!=NULL; ++i ) for ( j=0; prefs_list[i][j].name!=NULL; ++j ) {
 	if ( strcmp(prefs_list[i][j].name,name)==0 ) {
@@ -494,6 +512,7 @@ return( -1 );
 	    } else
 return( false );
 
+	    CheckObsoletePrefs();
 	    SavePrefs();
 return( true );
 	}
