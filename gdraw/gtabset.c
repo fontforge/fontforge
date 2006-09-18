@@ -35,6 +35,8 @@ static GBox gtabset_box = { /* Don't initialize here */ 0 };
 static FontInstance *gtabset_font = NULL;
 static int gtabset_inited = false;
 
+#define NEST_INDENT	4
+
 static void GTabSetInit() {
 
     GGadgetInit();
@@ -124,6 +126,7 @@ static int gtabset_expose(GWindow pixmap, GGadget *g, GEvent *event) {
     GRect old1, bounds;
     int yoff = (gts->rcnt==1?GBoxBorderWidth(pixmap,g->box):0);
     Color fg;
+    int ni = GDrawPointsToPixels(pixmap,NEST_INDENT);
 
     if ( g->state == gs_invisible )
 return( false );
@@ -152,7 +155,7 @@ return( false );
 		r.width = gts->vert_list_width-10; r.height = gts->fh;
 		GDrawFillRect(pixmap,&r,gts->g.box->active_border);
 	    }
-	    GDrawDrawBiText(pixmap,x,y + gts->as,gts->tabs[i].name,-1,NULL,fg);
+	    GDrawDrawBiText(pixmap,x+gts->tabs[i].nesting*ni,y + gts->as,gts->tabs[i].name,-1,NULL,fg);
 	    y += gts->fh;
 	}
 	fg = gts->g.box->main_foreground;
@@ -298,6 +301,7 @@ static void GTabSetRemetric(GTabSet *gts) {
     int bp = bbp + GDrawPointsToPixels(gts->g.base,5);
     int r, r2, width, i;
     int as, ds, ld;
+    int ni = GDrawPointsToPixels(gts->g.base,NEST_INDENT), in;
 
     GDrawSetFont(gts->g.base,gts->font);
     GDrawFontMetrics(gts->font,&as,&ds,&ld);
@@ -311,8 +315,9 @@ static void GTabSetRemetric(GTabSet *gts) {
     for ( i=0; i<gts->tabcnt; ++i ) {
 	gts->tabs[i].tw = GDrawGetTextWidth(gts->g.base,gts->tabs[i].name,-1,NULL);
 	gts->tabs[i].width = gts->tabs[i].tw + 2*bp;
-	if ( gts->tabs[i].tw > gts->vert_list_width )
-	    gts->vert_list_width = gts->tabs[i].tw;
+	in = gts->tabs[i].nesting*ni;
+	if ( gts->tabs[i].tw+in > gts->vert_list_width )
+	    gts->vert_list_width = gts->tabs[i].tw+in;
     }
     gts->vert_list_width += 8;
 
@@ -708,6 +713,7 @@ GGadget *GTabSetCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 	else
 	    gts->tabs[i].name = u_copy(gd->u.tabs[i].text);
 	gts->tabs[i].disabled = gd->u.tabs[i].disabled;
+	gts->tabs[i].nesting = gd->u.tabs[i].nesting;
 	if ( gd->u.tabs[i].selected && !gts->tabs[i].disabled )
 	    gts->sel = i;
     }

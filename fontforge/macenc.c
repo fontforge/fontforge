@@ -3500,8 +3500,10 @@ return( true );
 }
 
 void GCDFillMacFeat(GGadgetCreateData *mfgcd,GTextInfo *mflabels, int width,
-	MacFeat *all, int fromprefs) {
+	MacFeat *all, int fromprefs, GGadgetCreateData *boxes,
+	GGadgetCreateData **array) {
     int sgc;
+    GGadgetCreateData **butarray = array+4;
 
     all = MacFeatCopy(all);
 
@@ -3515,6 +3517,7 @@ void GCDFillMacFeat(GGadgetCreateData *mfgcd,GTextInfo *mflabels, int width,
     mfgcd[sgc].gd.handle_controlevent = Pref_FeatureSel;
     mfgcd[sgc].data = all;
     mfgcd[sgc++].creator = GListCreate;
+    array[0] = &mfgcd[sgc-1];
 
     mfgcd[sgc].gd.pos.x = 6; mfgcd[sgc].gd.pos.y = mfgcd[sgc-1].gd.pos.y+mfgcd[sgc-1].gd.pos.height+10;
     mfgcd[sgc].gd.flags = gg_visible | gg_enabled;
@@ -3525,6 +3528,7 @@ void GCDFillMacFeat(GGadgetCreateData *mfgcd,GTextInfo *mflabels, int width,
     /*mfgcd[sgc].gd.cid = CID_AnchorRename;*/
     mfgcd[sgc].gd.handle_controlevent = Pref_NewFeat;
     mfgcd[sgc++].creator = GButtonCreate;
+    butarray[0] = GCD_Glue; butarray[1] = &mfgcd[sgc-1];
 
     mfgcd[sgc].gd.pos.x = mfgcd[sgc-1].gd.pos.x+10+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor);
     mfgcd[sgc].gd.pos.y = mfgcd[sgc-1].gd.pos.y;
@@ -3536,6 +3540,7 @@ void GCDFillMacFeat(GGadgetCreateData *mfgcd,GTextInfo *mflabels, int width,
     mfgcd[sgc].gd.cid = CID_FeatureDel;
     mfgcd[sgc].gd.handle_controlevent = Pref_DelFeat;
     mfgcd[sgc++].creator = GButtonCreate;
+    butarray[2] = GCD_Glue; butarray[3] = &mfgcd[sgc-1];
 
     mfgcd[sgc].gd.pos.x = mfgcd[sgc-1].gd.pos.x+10+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor);
     mfgcd[sgc].gd.pos.y = mfgcd[sgc-1].gd.pos.y;
@@ -3547,6 +3552,7 @@ void GCDFillMacFeat(GGadgetCreateData *mfgcd,GTextInfo *mflabels, int width,
     mfgcd[sgc].gd.cid = CID_FeatureEdit;
     mfgcd[sgc].gd.handle_controlevent = Pref_EditFeat;
     mfgcd[sgc++].creator = GButtonCreate;
+    butarray[4] = GCD_Glue; butarray[5] = &mfgcd[sgc-1];
 
     mfgcd[sgc].gd.pos.x = mfgcd[sgc-1].gd.pos.x+10+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor);
     mfgcd[sgc].gd.pos.y = mfgcd[sgc-1].gd.pos.y;
@@ -3557,6 +3563,19 @@ void GCDFillMacFeat(GGadgetCreateData *mfgcd,GTextInfo *mflabels, int width,
     mfgcd[sgc].gd.handle_controlevent = Pref_DefaultFeat;
     mfgcd[sgc].data = (void *) (intpt) fromprefs;
     mfgcd[sgc++].creator = GButtonCreate;
+    butarray[6] = GCD_Glue; butarray[7] = &mfgcd[sgc-1];
+    butarray[8] = GCD_Glue; butarray[9] = NULL;
+
+    boxes[2].gd.flags = gg_enabled|gg_visible;
+    boxes[2].gd.u.boxelements = butarray;
+    boxes[2].creator = GHBoxCreate;
+    array[1] = GCD_Glue;
+    array[2] = &boxes[2];
+    array[3] = NULL;
+
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = array;
+    boxes[0].creator = GVBoxCreate;
 }
 
 void Prefs_ReplaceMacFeatures(GGadget *list) {

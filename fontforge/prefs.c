@@ -252,31 +252,49 @@ static struct prefs_list {
     unsigned int dontdisplay: 1;
     char *popup;
 } general_list[] = {
-	{ N_("AutoHint"), pr_bool, &autohint_before_rasterize, NULL, NULL, 'A', NULL, 0, N_("AutoHint before rasterizing") },
-	{ N_("NewCharset"), pr_encoding, &default_encoding, NULL, NULL, 'N', NULL, 0, N_("Default encoding for\nnew fonts") },
-	{ N_("NewEmSize"), pr_int, &new_em_size, NULL, NULL, 'S', NULL, 0, N_("The default size of the Em-Square in a newly created font.") },
-	{ N_("NewFontsQuadratic"), pr_bool, &new_fonts_are_order2, NULL, NULL, 'Q', NULL, 0, N_("Whether new fonts should contain splines of quadratic (truetype)\nor cubic (postscript & opentype).") },
-	{ N_("LoadedFontsAsNew"), pr_bool, &loaded_fonts_same_as_new, NULL, NULL, 'L', NULL, 0, N_("Whether fonts loaded from the disk should retain their splines\nwith the original order (quadratic or cubic), or whether the\nsplines should be converted to the default order for new fonts\n(see NewFontsQuadratic).") },
 	{ N_("ResourceFile"), pr_file, &xdefs_filename, NULL, NULL, 'R', NULL, 0, N_("When FontForge starts up, it loads display related resources from a\nproperty on the screen. Sometimes it is useful to be able to store\nthese resources in a file. These resources are only read at start\nup, so changing this has no effect until the next time you start\nFontForge.") },
 	{ N_("HelpDir"), pr_file, &helpdir, NULL, NULL, 'R', NULL, 0, N_("The directory on your local system in which FontForge will search for help\nfiles.  If a file is not found there, then FontForge will look for it on the net.") },
 	{ N_("OtherSubrsFile"), pr_file, &othersubrsfile, NULL, NULL, 'O', NULL, 0, N_("If you wish to replace Adobe's OtherSubrs array (for Type1 fonts)\nwith an array of your own, set this to point to a file containing\na list of up to 14 PostScript subroutines. Each subroutine must\nbe preceded by a line starting with '%%%%' (any text before the\nfirst '%%%%' line will be treated as an initial copyright notice).\nThe first three subroutines are for flex hints, the next for hint\nsubstitution (this MUST be present), the 14th (or 13 as the\nnumbering actually starts with 0) is for counter hints.\nThe subroutines should not be enclosed in a [ ] pair.") },
 	{ N_("FreeTypeInFontView"), pr_bool, &use_freetype_to_rasterize_fv, NULL, NULL, 'O', NULL, 0, N_("Use the FreeType rasterizer (when available)\nto rasterize glyphs in the font view.\nThis generally results in better quality.") },
-	{ N_("UnicodeGlyphNames"), pr_bool, &allow_utf8_glyphnames, NULL, NULL, 'O', NULL, 0, N_("Allow the full unicode character set in glyph names.\nThis does not conform to adobe's glyph name standard.\nSuch names should be for internal use only and\nshould NOT end up in production fonts." ) },
+	{ N_("AutoHint"), pr_bool, &autohint_before_rasterize, NULL, NULL, 'A', NULL, 0, N_("AutoHint before rasterizing") },
+	{ NULL }
+},
+  new_list[] = {
+	{ N_("NewCharset"), pr_encoding, &default_encoding, NULL, NULL, 'N', NULL, 0, N_("Default encoding for\nnew fonts") },
+	{ N_("NewEmSize"), pr_int, &new_em_size, NULL, NULL, 'S', NULL, 0, N_("The default size of the Em-Square in a newly created font.") },
+	{ N_("NewFontsQuadratic"), pr_bool, &new_fonts_are_order2, NULL, NULL, 'Q', NULL, 0, N_("Whether new fonts should contain splines of quadratic (truetype)\nor cubic (postscript & opentype).") },
+	{ N_("LoadedFontsAsNew"), pr_bool, &loaded_fonts_same_as_new, NULL, NULL, 'L', NULL, 0, N_("Whether fonts loaded from the disk should retain their splines\nwith the original order (quadratic or cubic), or whether the\nsplines should be converted to the default order for new fonts\n(see NewFontsQuadratic).") },
+	{ NULL }
+},
+  open_list[] = {
+	{ N_("PreferCJKEncodings"), pr_bool, &prefer_cjk_encodings, NULL, NULL, 'C', NULL, 0, N_("When loading a truetype or opentype font which has both a unicode\nand a CJK encoding table, use this flag to specify which\nshould be loaded for the font.") },
 	{ N_("AskUserForCMap"), pr_bool, &ask_user_for_cmap, NULL, NULL, 'O', NULL, 0, N_("When loading a font in sfnt format (TrueType, OpenType, etc.),\nask the user to specify which cmap to use initially.") },
+	{ N_("PreserveTables"), pr_string, &SaveTablesPref, NULL, NULL, 'P', NULL, 0, N_("Enter a list of 4 letter table tags, separated by commas.\nFontForge will make a binary copy of these tables when it\nloads a True/OpenType font, and will output them (unchanged)\nwhen it generates the font. Do not include table tags which\nFontForge thinks it understands.") },
+	{ NULL }
+},
+  navigation_list[] = {
+	{ N_("GlyphAutoGoto"), pr_bool, &cv_auto_goto, NULL, NULL, '\0', NULL, 0, N_("Typing a normal character in the glyph view window changes the window to look at that character") },
 	{ NULL }
 },
   editing_list[] = {
-	{ N_("AutoWidthSync"), pr_bool, &adjustwidth, NULL, NULL, '\0', NULL, 0, N_("Changing the width of a glyph\nchanges the widths of all accented\nglyphs based on it.") },
-	{ N_("AutoLBearingSync"), pr_bool, &adjustlbearing, NULL, NULL, '\0', NULL, 0, N_("Changing the left side bearing\nof a glyph adjusts the lbearing\nof other references in all accented\nglyphs based on it.") },
 	{ N_("ItalicConstrained"), pr_bool, &ItalicConstrained, NULL, NULL, '\0', NULL, 0, N_("In the Outline View, the Shift key constrains motion to be parallel to the ItalicAngle rather than constraining it to be vertical.") },
 	{ N_("ArrowMoveSize"), pr_real, &arrowAmount, NULL, NULL, '\0', NULL, 0, N_("The number of em-units by which an arrow key will move a selected point") },
 	{ N_("SnapDistance"), pr_real, &snapdistance, NULL, NULL, '\0', NULL, 0, N_("When the mouse pointer is within this many pixels\nof one of the various interesting features (baseline,\nwidth, grid splines, etc.) the pointer will snap\nto that feature.") },
 	{ N_("JoinSnap"), pr_real, &joinsnap, NULL, NULL, '\0', NULL, 0, N_("The Edit->Join command will join points which are this close together\nA value of 0 means they must be coincident") },
+	{ N_("StopAtJoin"), pr_bool, &stop_at_join, NULL, NULL, '\0', NULL, 0, N_("When dragging points in the outline view a join may occur\n(two open contours may connect at their endpoints). When\nthis is On a join will cause FontForge to stop moving the\nselection (as if the user had released the mouse button).\nThis is handy if your fingers are inclined to wiggle a bit.") },
 	{ N_("CopyMetaData"), pr_bool, &copymetadata, NULL, NULL, '\0', NULL, 0, N_("When copying glyphs from the font view, also copy the\nglyphs' metadata (name, encoding, comment, etc).") },
 	{ N_("UndoDepth"), pr_int, &maxundoes, NULL, NULL, '\0', NULL, 0, N_("The maximum number of Undoes/Redoes stored in a glyph") },
-	{ N_("StopAtJoin"), pr_bool, &stop_at_join, NULL, NULL, '\0', NULL, 0, N_("When dragging points in the outline view a join may occur\n(two open contours may connect at their endpoints). When\nthis is On a join will cause FontForge to stop moving the\nselection (as if the user had released the mouse button).\nThis is handy if your fingers are inclined to wiggle a bit.") },
 	{ N_("UpdateFlex"), pr_bool, &updateflex, NULL, NULL, '\0', NULL, 0, N_("Figure out flex hints after every change") },
-	{ N_("GlyphAutoGoto"), pr_bool, &cv_auto_goto, NULL, NULL, '\0', NULL, 0, N_("Typing a normal character in the glyph view window changes the window to look at that character") },
+	{ NULL }
+},
+  sync_list[] = {
+	{ N_("AutoWidthSync"), pr_bool, &adjustwidth, NULL, NULL, '\0', NULL, 0, N_("Changing the width of a glyph\nchanges the widths of all accented\nglyphs based on it.") },
+	{ N_("AutoLBearingSync"), pr_bool, &adjustlbearing, NULL, NULL, '\0', NULL, 0, N_("Changing the left side bearing\nof a glyph adjusts the lbearing\nof other references in all accented\nglyphs based on it.") },
+	{ NULL }
+},
+ tt_list[] = {
+	{ N_("ClearInstrsBigChanges"), pr_bool, &clear_tt_instructions_when_needed, NULL, NULL, 'C', NULL, 0, N_("Instructions in a TrueType font refer to\npoints by number, so if you edit a glyph\nin such a way that some points have different\nnumbers (add points, remove them, etc.) then\nthe instructions will be applied to the wrong\npoints with disasterous results.\n  Normally FontForge will remove the instructions\nif it detects that the points have been renumbered\nin order to avoid the above problem. You may turn\nthis behavior off -- but be careful!") },
+	{ N_("CopyTTFInstrs"), pr_bool, &copyttfinstr, NULL, NULL, '\0', NULL, 0, N_("When copying glyphs from the font view, also copy the\nglyphs' metadata (name, encoding, comment, etc).") },
 	{ NULL }
 },
   accent_list[] = {
@@ -299,14 +317,14 @@ static struct prefs_list {
  fontinfo_list[] = {
 	{ N_("FoundryName"), pr_string, &BDFFoundry, NULL, NULL, 'F', NULL, 0, N_("Name used for foundry field in bdf\nfont generation") },
 	{ N_("TTFFoundry"), pr_string, &TTFFoundry, NULL, NULL, 'T', NULL, 0, N_("Name used for Vendor ID field in\nttf (OS/2 table) font generation.\nMust be no more than 4 characters") },
-	{ N_("PreserveTables"), pr_string, &SaveTablesPref, NULL, NULL, 'P', NULL, 0, N_("Enter a list of 4 letter table tags, separated by commas.\nFontForge will make a binary copy of these tables when it\nloads a True/OpenType font, and will output them (unchanged)\nwhen it generates the font. Do not include table tags which\nFontForge thinks it understands.") },
 	{ N_("NewFontNameList"), pr_namelist, &namelist_for_new_fonts, NULL, NULL, '\0', NULL, 0, N_("FontForge will use this namelist when assigning\nglyph names to code points in a new font.") },
 	{ N_("RecognizePUANames"), pr_bool, &recognizePUA, NULL, NULL, 'U', NULL, 0, N_("Once upon a time, Adobe assigned PUA (public use area) encodings\nfor many stylistic variants of characters (small caps, old style\nnumerals, etc.). Adobe no longer believes this to be a good idea,\nand recommends that these encodings be ignored.\n\n The assignments were originally made because most applications\ncould not handle OpenType features for accessing variants. Adobe\nnow believes that all apps that matter can now do so. Applications\nlike Word and OpenOffice still can't handle these features, so\n fontforge's default behavior is to ignore Adobe's current\nrecommendations.\n\nNote: This does not affect figuring out unicode from the font's encoding,\nit just controls determining unicode from a name.") },
+	{ N_("UnicodeGlyphNames"), pr_bool, &allow_utf8_glyphnames, NULL, NULL, 'O', NULL, 0, N_("Allow the full unicode character set in glyph names.\nThis does not conform to adobe's glyph name standard.\nSuch names should be for internal use only and\nshould NOT end up in production fonts." ) },
+	{ N_("XUID-Base"), pr_string, &xuid, NULL, NULL, 'X', NULL, 0, N_("If specified this should be a space separated list of integers each\nless than 16777216 which uniquely identify your organization\nFontForge will generate a random number for the final component.") },
 	{ NULL }
 },
  generate_list[] = {
 	{ N_("AskBDFResolution"), pr_bool, &ask_user_for_resolution, NULL, NULL, 'B', NULL, 0, N_("When generating a set of BDF fonts ask the user\nto specify the screen resolution of the fonts\notherwise FontForge will guess depending on the pixel size.") },
-	{ N_("PreferCJKEncodings"), pr_bool, &prefer_cjk_encodings, NULL, NULL, 'C', NULL, 0, N_("When loading a truetype or opentype font which has both a unicode\nand a CJK encoding table, use this flag to specify which\nshould be loaded for the font.") },
 	{ N_("HintForGen"), pr_bool, &autohint_before_generate, NULL, NULL, 'H', NULL, 0, N_("AutoHint changed glyphs before generating a font") },
 	{ NULL }
 },
@@ -314,11 +332,6 @@ static struct prefs_list {
 	{ N_("HintBoundingBoxes"), pr_bool, &hint_bounding_boxes, NULL, NULL, '\0', NULL, 0, N_("FontForge will place vertical or horizontal hints to describe the bounding boxes of suitable glyphs.") },
 	{ N_("HintDiagonalEnds"), pr_bool, &hint_diagonal_ends, NULL, NULL, '\0', NULL, 0, N_("FontForge will place vertical or horizontal hints at the ends of diagonal stems.") },
 	{ N_("HintDiagonalInter"), pr_bool, &hint_diagonal_intersections, NULL, NULL, '\0', NULL, 0, N_("FontForge will place vertical or horizontal hints at the intersections of diagonal stems.") },
-	{ NULL }
-},
- tt_list[] = {
-	{ N_("ClearInstrsBigChanges"), pr_bool, &clear_tt_instructions_when_needed, NULL, NULL, 'C', NULL, 0, N_("Instructions in a TrueType font refer to\npoints by number, so if you edit a glyph\nin such a way that some points have different\nnumbers (add points, remove them, etc.) then\nthe instructions will be applied to the wrong\npoints with disasterous results.\n  Normally FontForge will remove the instructions\nif it detects that the points have been renumbered\nin order to avoid the above problem. You may turn\nthis behavior off -- but be careful!") },
-	{ N_("CopyTTFInstrs"), pr_bool, &copyttfinstr, NULL, NULL, '\0', NULL, 0, N_("When copying glyphs from the font view, also copy the\nglyphs' metadata (name, encoding, comment, etc).") },
 	{ NULL }
 },
  opentype_list[] = {
@@ -386,22 +399,28 @@ static struct prefs_list {
 	{ "AlwaysGenOpenType", pr_bool, &alwaysgenopentype, NULL, NULL, 'O', NULL, 0, N_("Apple and MS/Adobe differ about the format of truetype and opentype files.\nThis controls the default setting of the OpenType checkbox in the\nFile->Generate Font dialog.\nThe main differences are:\n Bitmap data are stored in different tables\n Scaled composite glyphs are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop\nIf both this and Apple are set, both formats are generated") },
 	{ NULL }
 },
- *prefs_list[] = { general_list, editing_list, accent_list, args_list, fontinfo_list, generate_list, tt_list, opentype_list, hints_list, hidden_list, NULL },
- *load_prefs_list[] = { general_list, editing_list, accent_list, args_list, fontinfo_list, generate_list, tt_list, opentype_list, hints_list, hidden_list, oldnames, NULL };
+ *prefs_list[] = { general_list, new_list, open_list, navigation_list, sync_list, editing_list, accent_list, args_list, fontinfo_list, generate_list, tt_list, opentype_list, hints_list, hidden_list, NULL },
+ *load_prefs_list[] = { general_list, new_list, open_list, navigation_list, sync_list, editing_list, accent_list, args_list, fontinfo_list, generate_list, tt_list, opentype_list, hints_list, hidden_list, oldnames, NULL };
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-struct visible_prefs_list { char *tab_name; struct prefs_list *pl; } visible_prefs_list[] = {
-    { N_("Generic"), general_list},
-    { N_("Editing"), editing_list},
-    { N_("Accents"), accent_list},
-    { N_("Apps"), args_list},
-    { N_("Font Info"), fontinfo_list},
-    { N_("Generate"), generate_list},
-    { N_("TT"), tt_list},
-    { N_("PS Hints"), hints_list},
-    { N_("OpenType"), opentype_list},
+struct visible_prefs_list { char *tab_name; int nest; struct prefs_list *pl; } visible_prefs_list[] = {
+    { N_("Generic"), 0, general_list},
+    { N_("New Font"), 0, new_list},
+    { N_("Open Font"), 0, open_list},
+    { N_("Navigation"), 0, navigation_list},
+    { N_("Editing"), 0, editing_list},
+    { N_("Synchronize"), 1, sync_list},
+    { N_("TT"), 1, tt_list},
+    { N_("Accents"), 1, accent_list},
+    { N_("Apps"), 1, args_list},
+    { N_("Font Info"), 0, fontinfo_list},
+    { N_("Generate"), 0, generate_list},
+    { N_("PS Hints"), 1, hints_list},
+    { N_("OpenType"), 1, opentype_list},
     { 0 }
  };
+
+#define TOPICS	(sizeof(visible_prefs_list)/sizeof(visible_prefs_list[0])-1)
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 int GetPrefs(char *name,Val *val) {
@@ -1584,10 +1603,15 @@ void DoPrefs(void) {
     GWindow gw;
     GWindowAttrs wattrs;
     GGadgetCreateData *pgcd, gcd[5], sgcd[45], mgcd[3], mfgcd[9], msgcd[9];
-    GTextInfo *plabel, **list, label[5], slabel[45], *plabels[10], mflabels[9], mslabels[9];
-    GTabInfo aspects[10], subaspects[3];
+    GGadgetCreateData mfboxes[3], *mfarray[14];
+    GGadgetCreateData mpboxes[3], *mparray[14];
+    GGadgetCreateData sboxes[2], *sarray[50];
+    GGadgetCreateData mboxes[3], *varray[5], *harray[8];
+    GTextInfo *plabel, **list, label[5], slabel[45], *plabels[TOPICS+5], mflabels[9], mslabels[9];
+    GTabInfo aspects[TOPICS+5], subaspects[3];
+    GGadgetCreateData **hvarray, boxes[2*TOPICS];
     struct pref_data p;
-    int i, gc, sgc, j, k, line, line_max, y, y2, ii;
+    int i, gc, sgc, j, k, line, line_max, y, y2, ii, si;
     int32 llen;
     char buf[20];
     int gcnt[20];
@@ -1636,8 +1660,12 @@ void DoPrefs(void) {
     memset(&msgcd,0,sizeof(msgcd));
     memset(&mflabels,0,sizeof(mflabels));
     memset(&mslabels,0,sizeof(mslabels));
+    memset(&mfboxes,0,sizeof(mfboxes));
+    memset(&mpboxes,0,sizeof(mpboxes));
+    memset(&sboxes,0,sizeof(sboxes));
+    memset(&boxes,0,sizeof(boxes));
 
-    GCDFillMacFeat(mfgcd,mflabels,250,default_mac_feature_map, true);
+    GCDFillMacFeat(mfgcd,mflabels,250,default_mac_feature_map, true, mfboxes, mfarray);
 
     sgc = 0;
 
@@ -1648,15 +1676,17 @@ void DoPrefs(void) {
     msgcd[sgc].gd.u.list = Pref_MappingList(true);
     msgcd[sgc].gd.handle_controlevent = Pref_MappingSel;
     msgcd[sgc++].creator = GListCreate;
+    mparray[0] = &msgcd[sgc-1];
 
     msgcd[sgc].gd.pos.x = 6; msgcd[sgc].gd.pos.y = msgcd[sgc-1].gd.pos.y+msgcd[sgc-1].gd.pos.height+10;
     msgcd[sgc].gd.flags = gg_visible | gg_enabled;
-    mslabels[sgc].text = (unichar_t *) _("MacMap|_New...");
+    mslabels[sgc].text = (unichar_t *) S_("MacMap|_New...");
     mslabels[sgc].text_is_1byte = true;
     mslabels[sgc].text_in_resource = true;
     msgcd[sgc].gd.label = &mslabels[sgc];
     msgcd[sgc].gd.handle_controlevent = Pref_NewMapping;
     msgcd[sgc++].creator = GButtonCreate;
+    mparray[4] = GCD_Glue; mparray[5] = &msgcd[sgc-1];
 
     msgcd[sgc].gd.pos.x = msgcd[sgc-1].gd.pos.x+10+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor);
     msgcd[sgc].gd.pos.y = msgcd[sgc-1].gd.pos.y;
@@ -1668,6 +1698,7 @@ void DoPrefs(void) {
     msgcd[sgc].gd.cid = CID_MappingDel;
     msgcd[sgc].gd.handle_controlevent = Pref_DelMapping;
     msgcd[sgc++].creator = GButtonCreate;
+    mparray[5] = GCD_Glue; mparray[6] = &msgcd[sgc-1];
 
     msgcd[sgc].gd.pos.x = msgcd[sgc-1].gd.pos.x+10+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor);
     msgcd[sgc].gd.pos.y = msgcd[sgc-1].gd.pos.y;
@@ -1679,6 +1710,7 @@ void DoPrefs(void) {
     msgcd[sgc].gd.cid = CID_MappingEdit;
     msgcd[sgc].gd.handle_controlevent = Pref_EditMapping;
     msgcd[sgc++].creator = GButtonCreate;
+    mparray[7] = GCD_Glue; mparray[8] = &msgcd[sgc-1];
 
     msgcd[sgc].gd.pos.x = msgcd[sgc-1].gd.pos.x+10+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor);
     msgcd[sgc].gd.pos.y = msgcd[sgc-1].gd.pos.y;
@@ -1689,9 +1721,23 @@ void DoPrefs(void) {
     msgcd[sgc].gd.label = &mslabels[sgc];
     msgcd[sgc].gd.handle_controlevent = Pref_DefaultMapping;
     msgcd[sgc++].creator = GButtonCreate;
+    mparray[9] = GCD_Glue; mparray[10] = &msgcd[sgc-1];
+    mparray[11] = GCD_Glue; mparray[12] = NULL;
+
+    mpboxes[2].gd.flags = gg_enabled|gg_visible;
+    mpboxes[2].gd.u.boxelements = mparray+4;
+    mpboxes[2].creator = GHBoxCreate;
+    mparray[1] = GCD_Glue;
+    mparray[2] = &mpboxes[2];
+    mparray[3] = NULL;
+
+    mpboxes[0].gd.flags = gg_enabled|gg_visible;
+    mpboxes[0].gd.u.boxelements = mparray;
+    mpboxes[0].creator = GVBoxCreate;
 
     sgc = 0;
     y2=5;
+    si = 0;
 
     slabel[sgc].text = (unichar_t *) _("Menu Name");
     slabel[sgc].text_is_1byte = true;
@@ -1701,6 +1747,7 @@ void DoPrefs(void) {
     sgcd[sgc].gd.pos.y = y2;
     sgcd[sgc].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     sgcd[sgc++].creator = GLabelCreate;
+    sarray[si++] = &sgcd[sgc-1];
 
     slabel[sgc].text = (unichar_t *) _("Script File");
     slabel[sgc].text_is_1byte = true;
@@ -1710,6 +1757,9 @@ void DoPrefs(void) {
     sgcd[sgc].gd.pos.y = y2;
     sgcd[sgc].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     sgcd[sgc++].creator = GLabelCreate;
+    sarray[si++] = &sgcd[sgc-1];
+    sarray[si++] = GCD_Glue;
+    sarray[si++] = NULL;
 
     y2 += 14;
 
@@ -1720,6 +1770,7 @@ void DoPrefs(void) {
 	sgcd[sgc].gd.label = &slabel[sgc];
 	sgcd[sgc].gd.cid = i+8000;
 	sgcd[sgc++].creator = GTextFieldCreate;
+	sarray[si++] = &sgcd[sgc-1];
 
 	sgcd[sgc].gd.pos.x = 110; sgcd[sgc].gd.pos.y = y2;
 	sgcd[sgc].gd.flags = gg_visible | gg_enabled;
@@ -1728,6 +1779,7 @@ void DoPrefs(void) {
 	sgcd[sgc].gd.label = &slabel[sgc];
 	sgcd[sgc].gd.cid = i+8100;
 	sgcd[sgc++].creator = GTextFieldCreate;
+	sarray[si++] = &sgcd[sgc-1];
 
 	sgcd[sgc].gd.pos.x = 210; sgcd[sgc].gd.pos.y = y2;
 	sgcd[sgc].gd.flags = gg_visible | gg_enabled;
@@ -1737,10 +1789,19 @@ void DoPrefs(void) {
 	sgcd[sgc].gd.cid = i+8200;
 	sgcd[sgc].gd.handle_controlevent = Prefs_ScriptBrowse;
 	sgcd[sgc++].creator = GButtonCreate;
+	sarray[si++] = &sgcd[sgc-1];
+	sarray[si++] = NULL;
 
 	y2 += 26;
     }
+    sarray[si++] = GCD_Glue; sarray[si++] = GCD_Glue; sarray[si++] = GCD_Glue;
+    sarray[si++] = NULL;
 
+    sboxes[0].gd.flags = gg_enabled|gg_visible;
+    sboxes[0].gd.u.boxelements = sarray;
+    sboxes[0].creator = GHVBoxCreate;
+
+    memset(&mgcd,0,sizeof(mgcd));
     memset(&mgcd,0,sizeof(mgcd));
     memset(&subaspects,'\0',sizeof(subaspects));
     memset(&label,0,sizeof(label));
@@ -1751,13 +1812,15 @@ void DoPrefs(void) {
     for ( k=0; visible_prefs_list[k].tab_name!=0; ++k ) {
 	pgcd = gcalloc(gcnt[k]+4,sizeof(GGadgetCreateData));
 	plabel = gcalloc(gcnt[k]+4,sizeof(GTextInfo));
+	hvarray = gcalloc((gcnt[k]+6)*5+2,sizeof(GGadgetCreateData *));
 
 	aspects[k].text = (unichar_t *) visible_prefs_list[k].tab_name;
 	aspects[k].text_is_1byte = true;
-	aspects[k].gcd = pgcd;
+	aspects[k].gcd = &boxes[2*k];
+	aspects[k].nesting = visible_prefs_list[k].nest;
 	plabels[k] = plabel;
 
-	gc = 0;
+	gc = si = 0;
 	for ( i=line=0, y=5; visible_prefs_list[k].pl[i].name!=NULL; ++i ) {
 	    pl = &visible_prefs_list[k].pl[i];
 	    if ( pl->dontdisplay )
@@ -1765,16 +1828,17 @@ void DoPrefs(void) {
 	    plabel[gc].text = (unichar_t *) _(pl->name);
 	    plabel[gc].text_is_1byte = true;
 	    pgcd[gc].gd.label = &plabel[gc];
-	    pgcd[gc].gd.mnemonic = pl->mn;
+	    pgcd[gc].gd.mnemonic = '\0';
 	    pgcd[gc].gd.popup_msg = (unichar_t *) _(pl->popup);
 	    pgcd[gc].gd.pos.x = 8;
 	    pgcd[gc].gd.pos.y = y + 6;
 	    pgcd[gc].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
 	    pgcd[gc++].creator = GLabelCreate;
+	    hvarray[si++] = &pgcd[gc-1];
 
 	    plabel[gc].text_is_1byte = true;
 	    pgcd[gc].gd.label = &plabel[gc];
-	    pgcd[gc].gd.mnemonic = pl->mn;
+	    pgcd[gc].gd.mnemonic = '\0';
 	    pgcd[gc].gd.popup_msg = (unichar_t *) _(pl->popup);
 	    pgcd[gc].gd.pos.x = 110;
 	    pgcd[gc].gd.pos.y = y;
@@ -1786,12 +1850,15 @@ void DoPrefs(void) {
 		plabel[gc].text = (unichar_t *) _("On");
 		pgcd[gc].gd.pos.y += 3;
 		pgcd[gc++].creator = GRadioCreate;
+		hvarray[si++] = &pgcd[gc-1];
 		pgcd[gc] = pgcd[gc-1];
 		pgcd[gc].gd.pos.x += 50;
 		pgcd[gc].gd.cid = 0;
 		pgcd[gc].gd.label = &plabel[gc];
 		plabel[gc].text = (unichar_t *) _("Off");
 		plabel[gc].text_is_1byte = true;
+		hvarray[si++] = &pgcd[gc];
+		hvarray[si++] = GCD_Glue;
 		if ( *((int *) pl->val))
 		    pgcd[gc-1].gd.flags |= gg_cb_on;
 		else
@@ -1803,12 +1870,16 @@ void DoPrefs(void) {
 		sprintf(buf,"%d", *((int *) pl->val));
 		plabel[gc].text = (unichar_t *) copy( buf );
 		pgcd[gc++].creator = GTextFieldCreate;
+		hvarray[si++] = &pgcd[gc-1];
+		hvarray[si++] = GCD_Glue; hvarray[si++] = GCD_Glue;
 		y += 26;
 	      break;
 	      case pr_real:
 		sprintf(buf,"%g", *((float *) pl->val));
 		plabel[gc].text = (unichar_t *) copy( buf );
 		pgcd[gc++].creator = GTextFieldCreate;
+		hvarray[si++] = &pgcd[gc-1];
+		hvarray[si++] = GCD_Glue; hvarray[si++] = GCD_Glue;
 		y += 26;
 	      break;
 	      case pr_encoding:
@@ -1824,6 +1895,8 @@ void DoPrefs(void) {
 		pgcd[gc].gd.pos.width = 160;
 		if ( pgcd[gc].gd.label==NULL ) pgcd[gc].gd.label = &encodingtypes[0];
 		++gc;
+		hvarray[si++] = &pgcd[gc-1];
+		hvarray[si++] = GCD_ColSpan; hvarray[si++] = GCD_ColSpan;
 		y += 28;
 	      break;
 	      case pr_namelist:
@@ -1844,6 +1917,8 @@ void DoPrefs(void) {
 		pgcd[gc].creator = GListButtonCreate;
 		pgcd[gc].gd.pos.width = 160;
 		++gc;
+		hvarray[si++] = &pgcd[gc-1];
+		hvarray[si++] = GCD_ColSpan; hvarray[si++] = GCD_ColSpan;
 		y += 28;
 	      } break;
 	      case pr_string: case pr_file:
@@ -1861,9 +1936,11 @@ void DoPrefs(void) {
 		    plabel[gc].text = /* def2u_*/ uc_copy( "" );
 		plabel[gc].text_is_1byte = false;
 		pgcd[gc++].creator = GTextFieldCreate;
+		hvarray[si++] = &pgcd[gc-1];
 		if ( pl->type==pr_file ) {
 		    pgcd[gc] = pgcd[gc-1];
 		    pgcd[gc-1].gd.pos.width = 140;
+		    hvarray[si++] = GCD_ColSpan;
 		    pgcd[gc].gd.pos.x += 145;
 		    pgcd[gc].gd.cid += 20000;
 		    pgcd[gc].gd.label = &plabel[gc];
@@ -1871,6 +1948,13 @@ void DoPrefs(void) {
 		    plabel[gc].text_is_1byte = true;
 		    pgcd[gc].gd.handle_controlevent = Prefs_BrowseFile;
 		    pgcd[gc++].creator = GButtonCreate;
+		    hvarray[si++] = &pgcd[gc-1];
+		} else if ( pl->set==SetAutoTraceArgs || ((char **) pl->val)==&mf_args ) {
+		    hvarray[si++] = GCD_ColSpan;
+		    hvarray[si++] = GCD_Glue;
+		} else {
+		    hvarray[si++] = GCD_Glue;
+		    hvarray[si++] = GCD_Glue;
 		}
 		y += 26;
 		if ( pl->val==NULL )
@@ -1878,6 +1962,7 @@ void DoPrefs(void) {
 	      break;
 	    }
 	    ++line;
+	    hvarray[si++] = NULL;
 	}
 	if ( visible_prefs_list[k].pl == args_list ) {
 	    static char *text[] = {
@@ -1903,23 +1988,33 @@ void DoPrefs(void) {
 		pgcd[gc].gd.pos.y = y;
 		pgcd[gc].gd.flags = gg_visible | gg_enabled;
 		pgcd[gc++].creator = GLabelCreate;
+		hvarray[si++] = &pgcd[gc-1];
+		hvarray[si++] = GCD_ColSpan; hvarray[si++] = GCD_ColSpan;
+		hvarray[si++] = NULL;
 		y += 12;
 	    }
 	}
 	if ( y>y2 ) y2 = y;
+	hvarray[si++] = GCD_Glue; hvarray[si++] = GCD_Glue;
+	hvarray[si++] = GCD_Glue; hvarray[si++] = GCD_Glue;
+	hvarray[si++] = NULL;
+	hvarray[si++] = NULL;
+	boxes[2*k].gd.flags = gg_enabled|gg_visible;
+	boxes[2*k].gd.u.boxelements = hvarray;
+	boxes[2*k].creator = GHVBoxCreate;
     }
 
     aspects[k].text = (unichar_t *) _("Script Menu");
     aspects[k].text_is_1byte = true;
-    aspects[k++].gcd = sgcd;
+    aspects[k++].gcd = sboxes;
 
     subaspects[0].text = (unichar_t *) _("Features");
     subaspects[0].text_is_1byte = true;
-    subaspects[0].gcd = mfgcd;
+    subaspects[0].gcd = mfboxes;
 
     subaspects[1].text = (unichar_t *) _("Mapping");
     subaspects[1].text_is_1byte = true;
-    subaspects[1].gcd = msgcd;
+    subaspects[1].gcd = mpboxes;
 
     mgcd[0].gd.pos.x = 4; gcd[0].gd.pos.y = 6;
     mgcd[0].gd.pos.width = GDrawPixelsToPoints(NULL,pos.width)-20;
@@ -1943,8 +2038,9 @@ void DoPrefs(void) {
     gcd[gc].gd.pos.width = GDrawPixelsToPoints(NULL,pos.width)-8;
     gcd[gc].gd.pos.height = y2+20+18+4;
     gcd[gc].gd.u.tabs = aspects;
-    gcd[gc].gd.flags = gg_visible | gg_enabled;
+    gcd[gc].gd.flags = gg_visible | gg_enabled | gg_tabset_vert;
     gcd[gc++].creator = GTabSetCreate;
+    varray[0] = &gcd[gc-1]; varray[1] = NULL;
 
     y = gcd[gc-1].gd.pos.y+gcd[gc-1].gd.pos.height;
 
@@ -1958,6 +2054,7 @@ void DoPrefs(void) {
     gcd[gc].gd.label = &label[gc];
     gcd[gc].gd.handle_controlevent = Prefs_Ok;
     gcd[gc++].creator = GButtonCreate;
+    harray[0] = GCD_Glue; harray[1] = &gcd[gc-1]; harray[2] = GCD_Glue; harray[3] = GCD_Glue;
 
     gcd[gc].gd.pos.x = -30; gcd[gc].gd.pos.y = gcd[gc-1].gd.pos.y+3;
     gcd[gc].gd.pos.width = -1; gcd[gc].gd.pos.height = 0;
@@ -1969,13 +2066,37 @@ void DoPrefs(void) {
     gcd[gc].gd.mnemonic = 'C';
     gcd[gc].gd.handle_controlevent = Prefs_Cancel;
     gcd[gc++].creator = GButtonCreate;
+    harray[4] = GCD_Glue; harray[5] = &gcd[gc-1]; harray[6] = GCD_Glue; harray[7] = NULL;
+
+    memset(mboxes,0,sizeof(mboxes));
+    mboxes[2].gd.flags = gg_enabled|gg_visible;
+    mboxes[2].gd.u.boxelements = harray;
+    mboxes[2].creator = GHBoxCreate;
+    varray[2] = &mboxes[2];
+    varray[3] = NULL;
+    varray[4] = NULL;
+
+    mboxes[0].gd.pos.x = mboxes[0].gd.pos.y = 2;
+    mboxes[0].gd.flags = gg_enabled|gg_visible;
+    mboxes[0].gd.u.boxelements = varray;
+    mboxes[0].creator = GHVGroupCreate;
 
     y = GDrawPointsToPixels(NULL,y+37);
     gcd[0].gd.pos.height = y-4;
 
-    GGadgetsCreate(gw,gcd);
+    GGadgetsCreate(gw,mboxes);
     GTextInfoListFree(mfgcd[0].gd.u.list);
     GTextInfoListFree(msgcd[0].gd.u.list);
+
+    GHVBoxSetExpandableRow(mboxes[0].ret,0);
+    GHVBoxSetExpandableCol(mboxes[2].ret,gb_expandgluesame);
+    GHVBoxSetExpandableRow(mfboxes[0].ret,0);
+    GHVBoxSetExpandableCol(mfboxes[2].ret,gb_expandgluesame);
+    GHVBoxSetExpandableRow(mpboxes[0].ret,0);
+    GHVBoxSetExpandableCol(mpboxes[2].ret,gb_expandgluesame);
+    GHVBoxSetExpandableRow(sboxes[0].ret,gb_expandglue);
+    for ( k=0; k<TOPICS; ++k )
+	GHVBoxSetExpandableRow(boxes[2*k].ret,gb_expandglue);
     
     memset(&rq,0,sizeof(rq));
     rq.family_name = monospace;
@@ -1984,10 +2105,10 @@ void DoPrefs(void) {
     font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
     GGadgetSetFont(mfgcd[0].ret,font);
     GGadgetSetFont(msgcd[0].ret,font);
-    if ( y!=pos.height )
-	GDrawResize(gw,pos.width,y );
+    GHVBoxFitWindow(mboxes[0].ret);
 
     for ( k=0; visible_prefs_list[k].tab_name!=0; ++k ) for ( gc=0,i=0; visible_prefs_list[k].pl[i].name!=NULL; ++i ) {
+	GGadgetCreateData *gcd = aspects[k].gcd[0].gd.u.boxelements[0];
 	pl = &visible_prefs_list[k].pl[i];
 	if ( pl->dontdisplay )
     continue;
@@ -1996,7 +2117,7 @@ void DoPrefs(void) {
 	    ++gc;
 	  break;
 	  case pr_encoding: {
-	    GGadget *g = aspects[k].gcd[gc+1].ret;
+	    GGadget *g = gcd[gc+1].ret;
 	    list = GGadgetGetList(g,&llen);
 	    for ( j=0; j<llen ; ++j ) {
 		if ( list[j]->text!=NULL &&
@@ -2005,11 +2126,11 @@ void DoPrefs(void) {
 		else
 		    list[j]->selected = false;
 	    }
-	    if ( aspects[k].gcd[gc+1].gd.u.list!=encodingtypes )
-		GTextInfoListFree(aspects[k].gcd[gc+1].gd.u.list);
+	    if ( gcd[gc+1].gd.u.list!=encodingtypes )
+		GTextInfoListFree(gcd[gc+1].gd.u.list);
 	  } break;
 	  case pr_namelist:
-	    free(aspects[k].gcd[gc+1].gd.u.list);
+	    free(gcd[gc+1].gd.u.list);
 	  break;
 	  case pr_string: case pr_file: case pr_int: case pr_real:
 	    free(plabels[k][gc+1].text);
@@ -2021,7 +2142,8 @@ void DoPrefs(void) {
     }
 
     for ( k=0; visible_prefs_list[k].tab_name!=0; ++k ) {
-	free(aspects[k].gcd);
+	free(aspects[k].gcd->gd.u.boxelements[0]);
+	free(aspects[k].gcd->gd.u.boxelements);
 	free(plabels[k]);
     }
 
