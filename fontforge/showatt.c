@@ -1896,7 +1896,7 @@ return;
 /* GT: The msgstr should contain a translation of "Script", ignore "writing system|" */
 /* GT: English uses "script" to me a general writing style (latin, greek, kanji) */
 /* GT: and the cursive handwriting style. Here we mean the general writing system. */
-	strcat(buf,_("writing system|Script"));
+	strcat(buf,S_("writing system|Script"));
 	scriptnodes[i].label = copy(buf);
 	scriptnodes[i].build = iskern ? BuildKernScript :
 				isvkern ? BuildVKernScript :

@@ -462,7 +462,7 @@ void mbDoGetText(GMenuItem *mb) {
 return;
     for ( i=0; mb[i].ti.text!=NULL || mb[i].ti.line || mb[i].ti.image!=NULL; ++i ) {
 	if ( mb[i].ti.text!=NULL ) {
-	    mb[i].ti.text = (unichar_t *) _((char *) mb[i].ti.text);
+	    mb[i].ti.text = (unichar_t *) S_((char *) mb[i].ti.text);
 	    if ( mb[i].sub!=NULL )
 		mbDoGetText(mb[i].sub);
 	}

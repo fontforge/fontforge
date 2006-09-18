@@ -1855,7 +1855,7 @@ return(true);
 	gcd[i].gd.pos.x = 30; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+gcd[i-1].gd.pos.height+5;
 	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
 	gcd[i].gd.flags = gg_visible | gg_enabled;
-	label[i].text = (unichar_t *) _("ScriptLangList|_New...");
+	label[i].text = (unichar_t *) S_("ScriptLangList|_New...");
 	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
@@ -6036,13 +6036,13 @@ return;
 	    psgcd[i][1].gd.pos.x = 10; psgcd[i][1].gd.pos.y = psgcd[i][0].gd.pos.y+psgcd[i][0].gd.pos.height+4;
 	    psgcd[i][1].gd.pos.width = -1;
 	    psgcd[i][1].gd.flags = gg_visible | gg_enabled;
-	    pslabel[i][1].text = (unichar_t *) (i==0 ? _("Positioning|_New...")
-					       :i==1 ? _("PairwisePositioning|_New...")
-					       :i==2 ? _("Substitutions|_New...")
-					       :i==3 ? _("AltSubstitutions|_New...")
-					       :i==4 ? _("MultSubstitutions|_New...")
-					       :i==5 ? _("Ligatures|_New...")
-			                       : _("_New..."));
+	    pslabel[i][1].text = (unichar_t *) (i==0 ? S_("Positioning|_New...")
+					       :i==1 ? S_("PairwisePositioning|_New...")
+					       :i==2 ? S_("Substitutions|_New...")
+					       :i==3 ? S_("AltSubstitutions|_New...")
+					       :i==4 ? S_("MultSubstitutions|_New...")
+					       :i==5 ? S_("Ligatures|_New...")
+			                       : S_("_New..."));
 	    pslabel[i][1].text_is_1byte = true;
 	    pslabel[i][1].text_in_resource = true;
 	    psgcd[i][1].gd.label = &pslabel[i][1];
