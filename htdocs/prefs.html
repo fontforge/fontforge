@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 2-Sep-2002 -->
-  <!-- AP: Last modified: 22-Aug-2006 -->
+  <!-- AP: Last modified: 18-Sep-2006 -->
   <TITLE>Preferences Dialog</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -12,14 +12,87 @@
   <H1 ALIGN=Center>
     Preferences Dialog
   </H1>
+  <UL>
+    <LI>
+      <IMG SRC="prefs-generic.png" WIDTH="502" HEIGHT="339" ALIGN="Right"><A HREF="prefs.html#ResourceFile">Generic</A>
+    <LI>
+      <A HREF="prefs.html#NewCharset">New Font</A>
+    <LI>
+      <A HREF="prefs.html#PreferCJKEncoding">Open Font</A>
+    <LI>
+      <A HREF="prefs.html#GlyphAutoGoto">Navigation</A>
+    <LI>
+      <A HREF="prefs.html#ItalicConstrained">Editing</A>
+      <UL>
+	<LI>
+	  <A HREF="prefs.html#AutoWidthSync">Synchronize</A>
+	<LI>
+	  <A HREF="prefs.html#ClearInstrsBigChanges">TT</A>
+	<LI>
+	  <A HREF="prefs.html#AccentOffsetPercent">Accents</A>
+	<LI>
+	  <A HREF="prefs.html#PreferPotrace">Apps</A>
+      </UL>
+    <LI>
+      <A HREF="prefs.html#FoundryName">Font Info</A>
+    <LI>
+      <A HREF="prefs.html#AskBDFResolution">Generate</A>
+      <UL>
+	<LI>
+	  <A HREF="prefs.html#Hints">PS Hints</A>
+	<LI>
+	  <A HREF="prefs.html#UseNewIndicScripts">OpenType</A>
+      </UL>
+    <LI>
+      <A HREF="prefs.html#scripts">Script Menu</A>
+    <LI>
+      Mac
+      <UL>
+	<LI>
+	  <A HREF="prefs.html#Mac">Features</A>
+	<LI>
+	  <A HREF="prefs.html#Mapping">Mapping to OpenType</A>
+      </UL>
+      <P>
+      <BR CLEAR=ALL>
+  </UL>
   <P>
-  <IMG SRC="prefs-generic.png" WIDTH="407" HEIGHT="545" ALIGN="Right">
+  <IMG SRC="prefs-generic.png" WIDTH="502" HEIGHT="339" ALIGN="Right">
   <DL>
+    <DT>
+      <A NAME="ResourceFile">ResourceFile</A>
+    <DD>
+      FontForge will read <A HREF="xres.html">X Resources</A> from a property on
+      the screen. But sometimes this isn't enough. You set this preference item
+      to specify a file from which these resources should be read (those on the
+      screen will also be read and will supersede those in the file).
+    <DT>
+      <A NAME="HelpDir">HelpDir</A>
+    <DD>
+      FontForge will search this directory for help files when the user presses
+      [F1].
+    <DT>
+      <A NAME="OtherSubrsFile">OtherSubrsFile</A>
+    <DD>
+      Allows you to redefine the OtherSubrs routines used in type1 fonts. The file
+      format is described at the scripting command
+      <A HREF="scripting-alpha.html#ReadOtherSubrsFile">ReadOtherSubrsFile</A>.
+    <DT>
+      <A NAME="FreeTypeInFontView">FreeTypeInFontView</A>
+    <DD>
+      Normally FontForge will use the freetype library to generate glyphs for display
+      in the fontview. This is a bit slower, but creates better images than using
+      FontForge's built-in rasterizer. This preference item allows you to control
+      whether to use freetype or FontForge's own rasterizer.
     <DT>
       <A NAME="AutoHint">AutoHint</A>
     <DD>
       Whether glyphs should be automagically hinted before a bitmap glyph is generated
-      (improves the quality of the bitmap)
+      (improves the quality of the bitmap)<BR Clear=all>
+  </DL>
+  <P>
+  <IMG SRC="prefs-newfont.png" WIDTH="502" HEIGHT="339" ALIGN="Right">
+  <DL>
     <DT>
       <A NAME="NewCharset">NewCharset</A>
     <DD>
@@ -45,55 +118,51 @@
       When FontForge reads in a font it will generally keep the splines in the
       format they used in the font (that is quadratic for truetype fonts and cubic
       for postscript). If you set this flag then all loaded fonts will have the
-      same file format as that specified by NewFontsQuadratic above.
+      same file format as that specified by NewFontsQuadratic above.<BR Clear=all>
     <DT>
-      <A NAME="ResourceFile">ResourceFile</A>
-    <DD>
-      FontForge will read <A HREF="xres.html">X Resources</A> from a property on
-      the screen. But sometimes this isn't enough. You set this preference item
-      to specify a file from which these resources should be read (those on the
-      screen will also be read and will supersede those in the file).
-    <DT>
-      <A NAME="HelpDir">HelpDir</A>
-    <DD>
-      FontForge will search this directory for help files when the user presses
-      [F1].
-    <DT>
-      <A NAME="OtherSubrsFile">OtherSubrsFile</A>
-    <DD>
-      Allows you to redefine the OtherSubrs routines used in type1 fonts. The file
-      format is described at the scripting command
-      <A HREF="scripting-alpha.html#ReadOtherSubrsFile">ReadOtherSubrsFile</A>.
-    <DT>
-      <A NAME="FreeTypeInFontView">FreeTypeInFontView</A>
-    <DD>
-      Normally FontForge will use the freetype library to generate glyphs for display
-      in the fontview. This is a bit slower, but creates better images than using
-      FontForge's built-in rasterizer. This preference item allows you to control
-      whether to use freetype or FontForge's own rasterizer.<BR Clear=all>
   </DL>
   <P>
-  <IMG SRC="prefs-editing.png" WIDTH="286" HEIGHT="379" ALIGN="Right">
+  <IMG SRC="prefs-openfont.png" WIDTH="502" HEIGHT="339" ALIGN="Right">
   <DL>
     <DT>
-      <A NAME="AutoWidthSync">AutoWidthSync</A>
+      <A NAME="PreferCJKEncoding">PreferCJKEncoding</A>
     <DD>
-      Whether you want the widths of accented glyphs to track the width of the
-      base glyph (so if you modify the width of A then the width of &Agrave; will
-      automagically change, if &Agrave; is built as a reference to A and a reference
-      to grave)
+      This controls the loading of truetype and opentype fonts. If a font contains
+      both an unicode encoding subtable and a cjk subtable, then this item allows
+      you to pick which one FontForge will choose to decode.
     <DT>
-      <A NAME="AutoLBearingSync">AutoLBearingSync</A>
+      AskUserForCMap
     <DD>
-      Whether you want left side bearings of accented glyphs to track the left
-      side bearing of base glyphs (so if you shift A left, then the accent in &Agrave;
-      will also be shifted left)
+      When loading an sfnt (truetype, opentype font file), ask the user which cmap
+      encoding s/he would like to use.
+    <DT>
+      <A NAME="PreserveTables">PreserveTables</A>
+    <DD>
+      A string containing a list of 4 letter table tags separated by commas. When
+      loading an SFNT (ttf/otf) file, any table in the font with one of these tags
+      will be preserved without interpretation. (Note: If FontForge thinks it
+      understands the table it will parse it rather than preserving
+      it).<BR CLEAR=ALL>
+  </DL>
+  <P>
+  <IMG SRC="prefs-navigation.png" WIDTH="502" HEIGHT="339" ALIGN="Right">
+  <DL>
+    <DT>
+      <A NAME="GlyphAutoGoto">GlyphAutoGoto</A>
+    <DD>
+      In the glyph window this controls how ff behaves when the user types a normal
+      character. If this is On then when a normal character is typed the glyph
+      window will shift to display that character, if Off typed characters will
+      be ignored.<BR Clear=all>
+  </DL>
+  <P>
+  <IMG SRC="prefs-editing.png" WIDTH="502" HEIGHT="339" ALIGN="Right">
+  <DL>
     <DT>
       <A NAME="ItalicConstrained">ItalicConstrained</A>
     <DD>
       Whether constrained motion in the glyph view should allow motion parallel
       to the italic angle as well as horizontal and vertical.
-    <DT>
     <DT>
       <A NAME="ArrowMoveSize">ArrowMoveSize</A>
     <DD>
@@ -112,6 +181,15 @@
       join with the Edit-&gt;Join command. This is measured in pixels in the char
       view and em-units elsewhere.
     <DT>
+      <A NAME="StopAtJoin">StopAtJoin</A>
+    <DD>
+      When dragging points in the outline view, if the end point of one open contour
+      is moved onto the end point of another open contour then those two contours
+      will join. If you leave this Off then further motion will continue to move
+      the points, if you set this to On then FontForge will stop noticing mouse
+      movements (it pretends that you released the mouse button). This is useful
+      if you hand jitters a little on the mouse.
+    <DT>
       <A NAME="CopyMetaData">CopyMetaData</A>
     <DD>
       Controls the behavior of Edit-&gt;Copy from the fontview. Normally Copy does
@@ -123,15 +201,6 @@
       Controls the maximum number of Undoes that may be retained in a glyph. (In
       some rare occasions an Undo will be stored even if this depth is 0)
     <DT>
-      <A NAME="StopAtJoin">StopAtJoin</A>
-    <DD>
-      When dragging points in the outline view, if the end point of one open contour
-      is moved onto the end point of another open contour then those two contours
-      will join. If you leave this Off then further motion will continue to move
-      the points, if you set this to On then FontForge will stop noticing mouse
-      movements (it pretends that you released the mouse button). This is useful
-      if you hand jitters a little on the mouse.
-    <DT>
       <A NAME="UpdateFlex">UpdateFlex</A>
     <DD>
       Figure out what points will be part of flex hints after every change to a
@@ -139,17 +208,56 @@
       drawn around them. The criteria for flex hints are given on pages 72-73 of
       Adobe's
       <A HREF="http://partners.adobe.com/asn/developer/PDFS/TN/T1_SPEC.PDF">T1_Spec.pdf</A>.
-      This setting can be used to show you when those criteria are not met.
-    <DT>
-      <A NAME="GlyphAutoGoto">GlyphAutoGoto</A>
-    <DD>
-      In the glyph window this controls how ff behaves when the user types a normal
-      character. If this is On then when a normal character is typed the glyph
-      window will shift to display that character, if Off typed characters will
-      be ignored.<BR Clear=all>
+      This setting can be used to show you when those criteria are not
+      met.<BR Clear=all>
   </DL>
   <P>
-  <IMG SRC="prefs-accent.png" ALIGN="Right" WIDTH="407" HEIGHT="545">
+  <IMG SRC="prefs-sync.png" ALIGN="Right" WIDTH="502" HEIGHT="339">
+  <DL>
+    <DT>
+      <A NAME="AutoWidthSync">AutoWidthSync</A>
+    <DD>
+      Whether you want the widths of accented glyphs to track the width of the
+      base glyph (so if you modify the width of A then the width of &Agrave; will
+      automagically change, if &Agrave; is built as a reference to A and a reference
+      to grave)
+    <DT>
+      <A NAME="AutoLBearingSync">AutoLBearingSync</A>
+    <DD>
+      Whether you want left side bearings of accented glyphs to track the left
+      side bearing of base glyphs (so if you shift A left, then the accent in &Agrave;
+      will also be shifted left)<BR CLEAR=ALL>
+  </DL>
+  <P>
+  <IMG SRC="prefs-tt.png" WIDTH="502" HEIGHT="339" ALIGN="Right">
+  <DL>
+    <DT>
+      <A NAME="ClearInstrsBigChanges">Clear Instructions on Big Changes</A>
+    <DD>
+      TrueType instructions refer to points by number. So if you do any editing
+      that adds, removes or otherwise changes the point numbers then the instructions
+      will be applied to a different set of points.
+      <P>
+      Sometimes the results are amusing, but almost always they are ugly and wrong.
+      <P>
+      This is very different from having out of date PostScript Hints. There the
+      hints are probably just useless (as opposed to being actively bad, as here).
+      <P>
+      FontForge will normally delete all instructions to prevent this happening.
+      However, if you are prepared to fix up the instructions after a set of changes
+      you may prefer to have the instructions left. Be careful though!
+    <DT>
+      CopyTTFInstrs
+    <DD>
+      When copying and pasting in the font view, copy and paste instructions as
+      well as the glyph outlines.
+      <FONT COLOR="Red"><STRONG>WARNING</STRONG></FONT>: If you copy a glyph from
+      one font to another its instructions will probably not work (it will make
+      assumptions about the control table and subroutines which do not hold in
+      the new font).<BR CLEAR=ALL>
+  </DL>
+  <P>
+  <IMG SRC="prefs-accent.png" ALIGN="Right" WIDTH="502" HEIGHT="339">
   <DL>
     <DT>
       <A NAME="AccentOffsetPercent">AccentOffsetPercent</A>
@@ -174,7 +282,7 @@
       (0300-036F) when building accented glyphs.<BR CLEAR=ALL>
   </DL>
   <P>
-  <IMG SRC="prefs-apps.png" WIDTH="282" HEIGHT="372" ALIGN="Right">
+  <IMG SRC="prefs-apps.png" WIDTH="502" HEIGHT="339" ALIGN="Right">
   <DL>
     <DT>
       <A NAME="PreferPotrace">PreferPotrace</A>
@@ -214,7 +322,7 @@
       so.<BR Clear=all>
   </DL>
   <P>
-  <IMG SRC="prefs-font.png" WIDTH="282" HEIGHT="372" ALIGN="Right">
+  <IMG SRC="prefs-font.png" WIDTH="502" HEIGHT="339" ALIGN="Right">
   <DL>
     <DT>
       <A NAME="FoundryName">Foundry Name</A>
@@ -225,6 +333,30 @@
     <DD>
       Similar to the above except that it is used inside ttf files (the achVendID
       field of the OS/2 table) and is limited to 4 characters.
+    <DT>
+      <A NAME="NewFontNameList">NewFontNameList</A>
+    <DD>
+      Specifies the namelist that will be attached to any new font. This list will
+      be used to name any glyphs created in that font. See the section on
+      <A HREF="encodingmenu.html#namelist">namelists</A> for more information.
+    <DT>
+      RecognizePUANames
+    <DD>
+      Originally Adobe used the PUA (public use area of unicode) to contain glyphs
+      for small caps, lower case numerals, etc. They have since changed their minds
+      and no longer recommend this usage. FontForge normally recognizes names like
+      "a.sc" as being mapped to the appropriate slot in Adobe's old view of the
+      PUA. If you don't like this behavior turn this item off and "a.sc" will not
+      have a unicode encoding.
+    <DT>
+      UnicodeGlyphNames
+    <DD>
+      Glyph names are supposed to be composed of ASCII letters and numbers (and
+      a few other characters). At least they are when they are stored in a font.
+      But when you are building a font and if you are not an English speaker, it
+      might be useful to have a wider range of letters available for glyph names.
+      You should never export these names when you generate a font (Use the Force
+      Glyph Names to field of the generate dialog).
     <DT>
       <A NAME="XUID-Base">XUID-Base</A>
     <DD>
@@ -247,7 +379,13 @@
       directly with Adobe</A> for your own XUID base.
       <P>
       See also Adobe's comments on
-      <A HREF="http://partners.adobe.com/asn/tech/type/uniqueid.jsp">UniqueID</A>s.
+      <A HREF="http://partners.adobe.com/asn/tech/type/uniqueid.jsp">UniqueID</A>s<BR
+	  Clear=ALL>
+      .
+  </DL>
+  <P>
+  <IMG SRC="prefs-generate.png" HEIGHT="339" ALIGN="Right">
+  <DL>
     <DT>
       <A NAME="AskBDFResolution">AskBDFResolution</A>
     <DD>
@@ -257,43 +395,15 @@
       desires. Setting this will give you more control, but you have to click through
       another dlg.
     <DT>
-      <A NAME="PreferCJKEncoding">PreferCJKEncoding</A>
-    <DD>
-      This controls the loading of truetype and opentype fonts. If a font contains
-      both an unicode encoding subtable and a cjk subtable, then this item allows
-      you to pick which one FontForge will choose to decode.
-    <DT>
       <A NAME="HintForGen">HintForGen</A>
     <DD>
-      Whether glyphs should be automagically hinted before a font is generated.
-    <DT>
-      <A NAME="AlwaysGenApple">AlwaysGenApple</A>
-    <DD>
-      If you always want to generate Apple style TTF fonts (and never windows ones)
-      then select this item.
-    <DT>
-      <A NAME="AlwaysGenOpenType">AlwaysGenOpenType</A>
-    <DD>
-      Conversely you may always want to include OpenType tables in a font. It is
-      permissible to set both this and AlwaysGenApple, or to set neither.
-    <DT>
-      <A NAME="PreserveTables">PreserveTables</A>
-    <DD>
-      A string containing a list of 4 letter table tags separated by commas. When
-      loading an SFNT (ttf/otf) file, any table in the font with one of these tags
-      will be preserved without interpretation. (Note: If FontForge thinks it
-      understands the table it will parse it rather than preserving it).
-    <DT>
-      <A NAME="NewFontNameList">NewFontNameList</A>
-    <DD>
-      Specifies the namelist that will be attached to any new font. This list will
-      be used to name any glyphs created in that font. See the section on
-      <A HREF="encodingmenu.html#namelist">namelists</A> for more
-      information.<BR Clear=ALL>
+      Whether glyphs should be automagically hinted before a font is
+      generated.<BR Clear=ALL>
   </DL>
   <P>
-  I am testing a few hinting options there are three radio button sets which
-  add the following hints:
+  <IMG SRC="prefs-pshints.png" WIDTH="407" HEIGHT="339" ALIGN="Right">I am
+  testing a few hinting options there are three radio button sets which add
+  the following hints:
   <TABLE BORDER CELLPADDING="2" WIDTH=500>
     <CAPTION>
       PS <A NAME="Hints">Hints</A>
@@ -316,27 +426,19 @@
     </TR>
   </TABLE>
   <P>
+  <BR CLEAR=ALL>
   <P>
-  <IMG SRC="prefs-tt.png" WIDTH="407" HEIGHT="545" ALIGN="Right">
+  <IMG SRC="prefs-opentype.png" HEIGHT="339" ALIGN="Right">
   <DL>
     <DT>
-      <A NAME="ClearInstrsBigChanges">Clear Instructions on Big Changes</A>
+      <A NAME="UseNewIndicScripts">UseNewIndicScripts</A>
     <DD>
-      TrueType instructions refer to points by number. So if you do any editing
-      that adds, removes or otherwise changes the point numbers then the instructions
-      will be applied to a different set of points.
-      <P>
-      Sometimes the results are amusing, but almost always they are ugly and wrong.
-      <P>
-      This is very different from having out of date PostScript Hints. There the
-      hints are probably just useless (as opposed to being actively bad, as here).
-      <P>
-      FontForge will normally delete all instructions to prevent this happening.
-      However, if you are prepared to fix up the instructions after a set of changes
-      you may prefer to have the instructions left. Be careful though! <BR CLEAR=ALL>
+      MS has changed the way it handles indic scripts and has created a parallel
+      set of script tags for the new method. Set this flag if you want to create
+      a font using the new Indic system.<BR Clear=ALL>
   </DL>
   <P>
-  <IMG SRC="prefs-script.png" WIDTH="282" HEIGHT="372" ALIGN="Right"><A NAME="scripts">This
+  <IMG SRC="prefs-script.png" WIDTH="502" HEIGHT="485" ALIGN="Right"><A NAME="scripts">This
   section </A>of the dialog allows you to define built in scripts that will
   show up in the <A HREF="filemenu.html#ScriptMenu">script menu</A>. Each entry
   has two things associated with it, the menu name and a script file. The menu
@@ -346,7 +448,7 @@
   I think have extension .pe (but which can have whatever extension you prefer
   if you don't like my conventions).<BR Clear=All>
   <P>
-  <IMG SRC="prefs-macfeat.png" WIDTH="282" HEIGHT="372" ALIGN="Right">The
+  <IMG SRC="prefs-macfeat.png" WIDTH="502" HEIGHT="485" ALIGN="Right">The
   <A NAME="Mac">Mac</A> Features dialog allows you to define a set of default
   names (in many languages) for mac features and settings. These names are
   placed in the 'name' table whenever a feature/setting is used in a generated
@@ -378,7 +480,7 @@
   <IMG SRC="MacFeatName.png" ALIGN="Right" WIDTH="263" HEIGHT="125"><IMG SRC="macFeatureSetting.png"
       WIDTH="263" HEIGHT="216" ALIGN="Left"><BR CLEAR=ALL>
   <P>
-  <IMG SRC="prefs-macmap.png" WIDTH="282" HEIGHT="372" ALIGN="Right">The Mac
+  <IMG SRC="prefs-macmap.png" WIDTH="502" HEIGHT="485" ALIGN="Right">The Mac
   <A NAME="Mapping">Mapping</A> dialog allows you to define a mapping between
   OTF <CODE>GSUB</CODE> feature tags and Apple's
   <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6morx.html"><CODE>mort/morx

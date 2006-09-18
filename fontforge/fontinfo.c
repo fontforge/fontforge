@@ -6453,7 +6453,7 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
 	*txarray3[6], *txarray4[6], *uarray[3], *darray[10], *conarray[fpst_max-pst_contextpos][4],
 	*conarray2[fpst_max-pst_contextpos][6], *conarray3[fpst_max-pst_contextpos][4],
 	*smarray[4][4], *smarray2[4][6], *smarray3[4][4], *mcarray[13], *mcarray2[7],
-	*mfarray[3], *mfarray2[8], *szarray[7], *szarray2[5], *szarray3[7],
+	*mfarray[14], *szarray[7], *szarray2[5], *szarray3[7],
 	*szarray4[4], *szarray5[6];
     GTextInfo mlabel[10], nlabel[16], pslabel[30], tnlabel[7],
 	plabel[8], vlabel[19], panlabel[22], comlabel[3], atlabel[7], txlabel[23],
@@ -8887,23 +8887,9 @@ return;
 /******************************************************************************/
     memset(&mfgcd,0,sizeof(mfgcd));
     memset(&mflabel,'\0',sizeof(mflabel));
-
-    GCDFillMacFeat(mfgcd,mflabel,250,sf->features, false);
-
-    mfarray[0] = &mfgcd[0]; mfarray[1] = &mfbox[2]; mfarray[2] = NULL;
-    mfarray2[0] = &mfgcd[1]; mfarray2[1] = GCD_Glue;
-     mfarray2[2] = &mfgcd[2]; mfarray2[3] = GCD_Glue;
-     mfarray2[4] = &mfgcd[3]; mfarray2[5] = GCD_Glue;
-     mfarray2[6] = &mfgcd[4]; mfarray2[7] = NULL;
-
     memset(mfbox,0,sizeof(mfbox));
-    mfbox[0].gd.flags = gg_enabled|gg_visible;
-    mfbox[0].gd.u.boxelements = mfarray;
-    mfbox[0].creator = GVBoxCreate;
 
-    mfbox[2].gd.flags = gg_enabled|gg_visible;
-    mfbox[2].gd.u.boxelements = mfarray2;
-    mfbox[2].creator = GHBoxCreate;
+    GCDFillMacFeat(mfgcd,mflabel,250,sf->features, false, mfbox, mfarray);
 /******************************************************************************/
 
     memset(&dlabel,0,sizeof(dlabel));
@@ -9204,7 +9190,7 @@ return;
     GHVBoxSetExpandableRow(mcbox[2].ret,gb_expandglue);
 
     GHVBoxSetExpandableRow(mfbox[0].ret,0);
-    GHVBoxSetExpandableRow(mcbox[2].ret,gb_expandglue);
+    GHVBoxSetExpandableRow(mfbox[2].ret,gb_expandglue);
 
     for ( i=0; i<4; ++i ) {
 	GHVBoxSetExpandableRow(smbox[i][0].ret,0);

@@ -68,6 +68,7 @@ typedef struct tabinfo {
     unsigned int selected: 1;
     unsigned int text_is_1byte: 1;		/* If passed in as 1byte (ie. iso-8859-1) text, will be converted */
     unsigned int text_in_resource: 1;		/* the text field is actually an index into the string resource table */
+    unsigned char nesting;
 } GTabInfo;
 
 enum border_type { bt_none, bt_box, bt_raised, bt_lowered, bt_engraved,
