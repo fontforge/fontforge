@@ -350,8 +350,15 @@ return( 0 );
 return( -1 );
     else if ( ti2->text==NULL )
 return( 1 );
-    else
-return( u_strmatch(ti1->text,ti2->text) );
+    else {
+	char *t1, *t2;
+	int ret;
+	t1 = u2utf8_copy(ti1->text);
+	t2 = u2utf8_copy(ti2->text);
+	ret = strcoll(t1,t2);
+	free(t1); free(t2);
+return( ret );
+    }
 }
 
 GTextInfo **GTextInfoFromChars(char **array, int len) {
