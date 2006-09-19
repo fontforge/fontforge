@@ -2813,7 +2813,8 @@ static int _SCRefNumberPoints2(SplineSet **_rss,SplineChar *sc,int pnum) {
 	if ( rss==NULL )		/* Can't happen */
     break;
 	starts_with_cp = !ss->first->noprevcp &&
-		((ss->first->ttfindex == pnum+1 && ss->first->prev->from->nextcpindex==pnum ) ||
+		((ss->first->ttfindex == pnum+1 && ss->first->prev!=NULL &&
+		    ss->first->prev->from->nextcpindex==pnum ) ||
 		 ((ss->first->ttfindex==0xffff || SPInterpolate( ss->first ))));
 	startcnt = pnum;
 	if ( starts_with_cp ) ++pnum;
@@ -2862,7 +2863,8 @@ int SSTtfNumberPoints(SplineSet *ss) {
 
     for ( ; ss!=NULL; ss=ss->next ) {
 	starts_with_cp = !ss->first->noprevcp &&
-		((ss->first->ttfindex == pnum+1 && ss->first->prev->from->nextcpindex==pnum ) ||
+		((ss->first->ttfindex == pnum+1 && ss->first->prev!=NULL &&
+		  ss->first->prev->from->nextcpindex==pnum ) ||
 		 SPInterpolate( ss->first ));
 	startcnt = pnum;
 	if ( starts_with_cp && ss->first->prev!=NULL )
