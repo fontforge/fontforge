@@ -120,7 +120,7 @@ struct openfilefilters def_font_filters[] = {
 #endif
 	 N_("FontForge's SFD"), "*.sfd{.gz,.Z,.bz2,}",
 	 "-", NULL,
-	 "All Files", "*",
+	 N_("All Files"), "*",
 	 NULL };
 
 static GTextInfo **StandardFilters(void) {
