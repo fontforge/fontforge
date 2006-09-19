@@ -2908,9 +2908,9 @@ return( true );
 }
 
 SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
-    static char *titles[2][3] = {
-	{ N_("Edit Indic Rearrangement"), N_("Edit Contextual Substitution"), N_("Edit Contextual Glyph Insertion") },
-	{ N_("New Indic Rearrangement"), N_("New Contextual Substitution"), N_("New Contextual Glyph Insertion") }};
+    static char *titles[2][4] = {
+	{ N_("Edit Indic Rearrangement"), N_("Edit Contextual Substitution"), N_("Edit Contextual Glyph Insertion"), N_("Edit Contextual Kerning") },
+	{ N_("New Indic Rearrangement"), N_("New Contextual Substitution"), N_("New Contextual Glyph Insertion"), N_("New Contextual Kerning") }};
     SMD *smd = gcalloc(1,sizeof(SMD));
     GRect pos, subpos;
     GWindow gw;
@@ -2942,7 +2942,7 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
 	smd->states = StateCopy(sm->state,sm->class_cnt,sm->state_cnt,
 		smd->class_cnt,smd->state_cnt,sm->type,false);
     }
-    smd->index = sm->type==asm_indic ? 0 : sm->type==asm_context ? 1 : 2;
+    smd->index = sm->type==asm_indic ? 0 : sm->type==asm_context ? 1 : sm->type==asm_insert ? 2 : 3;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
