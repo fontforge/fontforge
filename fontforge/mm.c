@@ -3298,7 +3298,7 @@ return;		    /* Failure */
 		    _("End:"),&err);
 	    if ( isapple ) {
 		def = rint(GetReal8(mmw->subwins[mmw_axes],CID_AxisDefault+i*100,
-			_("Default"),&err)*8096)/8096;
+			S_("AxisValue|Default"),&err)*8096)/8096;
 		start = rint(start*8096)/8096;
 		end = rint(end*8096)/8096;
 	    } else

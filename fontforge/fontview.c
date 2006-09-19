@@ -6450,7 +6450,7 @@ static GMenuItem cflist[] = {
 };
 
 static GMenuItem sclist[] = {
-    { { (unichar_t *)  N_("Default"), &def_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) COLOR_DEFAULT, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control, NULL, NULL, FVMenuSelectColor },
+    { { (unichar_t *)  N_("Color|Default"), &def_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) COLOR_DEFAULT, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control, NULL, NULL, FVMenuSelectColor },
     { { NULL, &white_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0xffffff, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, '\0', ksm_control, NULL, NULL, FVMenuSelectColor },
     { { NULL, &red_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0xff0000, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, '\0', ksm_control, NULL, NULL, FVMenuSelectColor },
     { { NULL, &green_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0x00ff00, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, '\0', ksm_control, NULL, NULL, FVMenuSelectColor },

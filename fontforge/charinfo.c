@@ -89,7 +89,7 @@ static GTextInfo glyphclasses[] = {
 };
 
 static GTextInfo std_colors[] = {
-    { (unichar_t *) N_("Default"), &def_image, 0, 0, (void *) COLOR_DEFAULT, NULL, false, true, false, false, false, false, true },
+    { (unichar_t *) N_("Color|Default"), &def_image, 0, 0, (void *) COLOR_DEFAULT, NULL, false, true, false, false, false, false, true },
     { NULL, &white_image, 0, 0, (void *) 0xffffff, NULL, false, true },
     { NULL, &red_image, 0, 0, (void *) 0xff0000, NULL, false, true },
     { NULL, &green_image, 0, 0, (void *) 0x00ff00, NULL, false, true },
@@ -128,7 +128,7 @@ GTextInfo scripts[] = {
     { (unichar_t *) N_("Cypro-Minoan"), NULL, 0, 0, (void *) CHR('c','p','r','t'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Cypriot syllabary"), NULL, 0, 0, (void *) CHR('c','p','m','n'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Cyrillic"), NULL, 0, 0, (void *) CHR('c','y','r','l'), NULL, false, false, false, false, false, false, true },
-    { (unichar_t *) N_("Default"), NULL, 0, 0, (void *) CHR('D','F','L','T'), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Script|Default"), NULL, 0, 0, (void *) CHR('D','F','L','T'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Deseret (Mormon)"), NULL, 0, 0, (void *) CHR('d','s','r','t'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Devanagari"), NULL, 0, 0, (void *) CHR('d','e','v','a'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Devanagari2"), NULL, 0, 0, (void *) CHR('d','e','v','2'), NULL, false, false, false, false, false, false, true },
@@ -287,14 +287,13 @@ GTextInfo languages[] = {
     { (unichar_t *) N_("Czech"), NULL, 0, 0, (void *) CHR('C','S','Y',' '), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Danish"), NULL, 0, 0, (void *) CHR('D','A','N',' '), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Dargwa"), NULL, 0, 0, (void *) CHR('D','A','R',' '), NULL, false, false, false, false, false, false, true },
-    { (unichar_t *) N_("Default"), NULL, 0, 0, (void *) DEFAULT_LANG, NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Lang|Default"), NULL, 0, 0, (void *) DEFAULT_LANG, NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Woods Cree"), NULL, 0, 0, (void *) CHR('D','C','R',' '), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("German (Standard)"), NULL, 0, 0, (void *) CHR('D','E','U',' '), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Dogri"), NULL, 0, 0, (void *) CHR('D','G','R',' '), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Dhivehi"), NULL, 0, 0, (void *) CHR('D','H','V',' '), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Djerma"), NULL, 0, 0, (void *) CHR('D','J','R',' '), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Dangme"), NULL, 0, 0, (void *) CHR('D','N','G',' '), NULL, false, false, false, false, false, false, true },
-    { (unichar_t *) N_("Default"), NULL, 0, 0, (void *) CHR('D','F','L','T'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Dinka"), NULL, 0, 0, (void *) CHR('D','N','K',' '), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Dungan"), NULL, 0, 0, (void *) CHR('D','U','N',' '), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Dzongkha"), NULL, 0, 0, (void *) CHR('D','Z','N',' '), NULL, false, false, false, false, false, false, true },
@@ -2628,7 +2627,7 @@ unichar_t *AskNameTag(char *title,unichar_t *def,uint32 def_tag, uint16 flags,
 
 	i = 12; k = 24;
 	if ( merge_with!=-1 ) {
-	    label[i].text = (unichar_t *) _("Default");
+	    label[i].text = (unichar_t *) S_("AnchorType|Default");
 	    label[i].text_is_1byte = true;
 	    gcd[i].gd.label = &label[i];
 	    gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[11].gd.pos.y+28;

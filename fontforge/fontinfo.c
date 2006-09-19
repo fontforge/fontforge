@@ -7707,7 +7707,7 @@ return;
     i = j = 0;
 
     ssgcd[i].gd.pos.x = 5; ssgcd[i].gd.pos.y = 5;
-    sslabel[i].text = (unichar_t *) _("Default");
+    sslabel[i].text = (unichar_t *) S_("SubscriptSuperUse|Default");
     sslabel[i].text_is_1byte = true;
     ssgcd[i].gd.label = &sslabel[i];
     ssgcd[i].gd.flags = gg_visible | gg_enabled;
@@ -7919,7 +7919,7 @@ return;
     i = j = 0;
 
     pangcd[i].gd.pos.x = 5; pangcd[i].gd.pos.y = 5;
-    panlabel[i].text = (unichar_t *) _("Default");
+    panlabel[i].text = (unichar_t *) S_("PanoseUse|Default");
     panlabel[i].text_is_1byte = true;
     pangcd[i].gd.label = &panlabel[i];
     pangcd[i].gd.flags = gg_visible | gg_enabled;
@@ -8183,7 +8183,7 @@ return;
 
     tngcd[3].gd.pos.x = 195; tngcd[3].gd.pos.y = tngcd[1].gd.pos.y;
     tngcd[3].gd.flags = gg_visible | gg_enabled | gg_cb_on | gg_rad_continueold;
-    tnlabel[3].text = (unichar_t *) _("Default");
+    tnlabel[3].text = (unichar_t *) S_("SortingScheme|Default");
     tnlabel[3].text_is_1byte = true;
     tngcd[3].gd.label = &tnlabel[3];
     tngcd[3].creator = GRadioCreate;
