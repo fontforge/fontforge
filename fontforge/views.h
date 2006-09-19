@@ -1157,7 +1157,8 @@ extern struct macname *NameGadgetsGetNames( GWindow gw );
 extern void NameGadgetsSetEnabled( GWindow gw, int enable );
 extern int GCDBuildNames(GGadgetCreateData *gcd,GTextInfo *label,int pos,struct macname *names);
 extern void GCDFillMacFeat(GGadgetCreateData *mfgcd,GTextInfo *mflabels, int width,
-	MacFeat *all, int fromprefs);
+	MacFeat *all, int fromprefs, GGadgetCreateData *boxes,
+	GGadgetCreateData **array);
 extern void Prefs_ReplaceMacFeatures(GGadget *list);
 #endif
 
