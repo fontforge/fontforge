@@ -3939,7 +3939,7 @@ static const char **agl_sans_p0[] = {
 
 static NameList agl_sans = {
 	NULL,
-	"AGL without afii",
+	N_("AGL without afii"),
 	{ agl_sans_p0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
 };
 /* ************************************************************************** */
