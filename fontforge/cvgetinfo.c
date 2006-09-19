@@ -2662,7 +2662,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	++j;
 
 	defxpos = 130;
-	label[j].text = (unichar_t *) _("Default");
+	label[j].text = (unichar_t *) S_("ControlPoint|Default");
 	label[j].text_is_1byte = true;
 	gcd[j].gd.label = &label[j];
 	gcd[j].gd.pos.x = defxpos; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y-3;
@@ -2775,7 +2775,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	hvarray2[l++] = &gcd[j];
 	++j;
 
-	label[j].text = (unichar_t *) _("Default");
+	label[j].text = (unichar_t *) S_("ControlPoint|Default");
 	label[j].text_is_1byte = true;
 	gcd[j].gd.label = &label[j];
 	gcd[j].gd.pos.x = defxpos; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y-3;

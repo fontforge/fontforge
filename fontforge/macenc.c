@@ -3557,7 +3557,7 @@ void GCDFillMacFeat(GGadgetCreateData *mfgcd,GTextInfo *mflabels, int width,
     mfgcd[sgc].gd.pos.x = mfgcd[sgc-1].gd.pos.x+10+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor);
     mfgcd[sgc].gd.pos.y = mfgcd[sgc-1].gd.pos.y;
     mfgcd[sgc].gd.flags = gg_visible|gg_enabled ;
-    mflabels[sgc].text = (unichar_t *) _("Default");
+    mflabels[sgc].text = (unichar_t *) S_("MacFeature|Default");
     mflabels[sgc].text_is_1byte = true;
     mfgcd[sgc].gd.label = &mflabels[sgc];
     mfgcd[sgc].gd.handle_controlevent = Pref_DefaultFeat;

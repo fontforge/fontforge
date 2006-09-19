@@ -1715,7 +1715,7 @@ void DoPrefs(void) {
     msgcd[sgc].gd.pos.x = msgcd[sgc-1].gd.pos.x+10+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor);
     msgcd[sgc].gd.pos.y = msgcd[sgc-1].gd.pos.y;
     msgcd[sgc].gd.flags = gg_visible | gg_enabled;
-    mslabels[sgc].text = (unichar_t *) _("Default");
+    mslabels[sgc].text = (unichar_t *) S_("MacMapping|Default");
     mslabels[sgc].text_is_1byte = true;
     mslabels[sgc].text_in_resource = true;
     msgcd[sgc].gd.label = &mslabels[sgc];
