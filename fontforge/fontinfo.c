@@ -674,7 +674,7 @@ static GTextInfo mslanguages[] = {
     { (unichar_t *) N_("English (US)"), NULL, 0, 0, (void *) 0x409, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("English (Canada)"), NULL, 0, 0, (void *) 0x1009, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("English (Australian)"), NULL, 0, 0, (void *) 0xc09, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("English (New Zeeland)"), NULL, 0, 0, (void *) 0x1409, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("English (New Zealand)"), NULL, 0, 0, (void *) 0x1409, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("English (Irish)"), NULL, 0, 0, (void *) 0x1809, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("English (South Africa)"), NULL, 0, 0, (void *) 0x1c09, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("English (Jamaica)"), NULL, 0, 0, (void *) 0x2009, NULL, 0, 0, 0, 0, 0, 0, 1},
