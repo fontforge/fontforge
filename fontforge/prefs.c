@@ -1796,6 +1796,7 @@ void DoPrefs(void) {
     }
     sarray[si++] = GCD_Glue; sarray[si++] = GCD_Glue; sarray[si++] = GCD_Glue;
     sarray[si++] = NULL;
+    sarray[si++] = NULL;
 
     sboxes[0].gd.flags = gg_enabled|gg_visible;
     sboxes[0].gd.u.boxelements = sarray;
