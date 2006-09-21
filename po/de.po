@@ -7,20 +7,21 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2005-08-29 17:43+0800\n"
+"POT-Creation-Date: 2006-09-06 05:18-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Last-Translator: Philipp Poll <Gillian.Tiefenlicht@web.de>\n"
 "Language-Team: LANGUAGE <de.c@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=n != 1\n"
+"Plural-Forms: nplurals=2; plural=n!=1\n"
+
 
 msgid "_Cancel"
 msgstr "_Abbrechen"
 
 msgid "_Open"
-msgstr "Ö_ffnen"
+msgstr "_Öffnen"
 
 msgid "_Save"
 msgstr "_Speichern"
@@ -28,29 +29,95 @@ msgstr "_Speichern"
 msgid "_New"
 msgstr "_Neu"
 
+msgid "Replace"
+msgstr "Ersetzen"
+
+msgid "File Exists"
+msgstr "Datei existiert"
+
+msgid "File, "
+msgstr "Datei, "
+
+msgid ", exists. Replace it?"
+msgstr ", existiert. Ersetzen?"
+
+msgid "Create directory..."
+msgstr "Verzeichnis erstellen"
+
+msgid "Directory name?"
+msgstr "Verzeichnisname?"
+
+msgid "Couldn't create directory"
+msgstr "Konnte kein Verz. erstellen"
+
 msgid "Select _All"
-msgstr "Alles auswähle_n"
+msgstr "_Alles auswählen"
+
+msgid "_None"
+msgstr "Kei_ns"
 
 msgid "_File"
-msgstr "_Datei"
+msgstr "Datei"
 
 msgid "_Edit"
-msgstr "_Bearbeiten"
+msgstr "B_earbeiten"
 
 msgid "_View"
-msgstr "_Ansicht"
+msgstr "Ansicht"
+
+msgid "_Metrics"
+msgstr "_Metrik"
+
+msgid "_Window"
+msgstr "Fenster"
 
 msgid "_Help"
 msgstr "_Hilfe"
 
+msgid "_About..."
+msgstr "Über..."
+
+msgid "_License..."
+msgstr "_Lizens..."
+
+msgid "Recen_t"
+msgstr "le_tzte"
+
+msgid "New O_utline Window"
+msgstr "Ne_ues Konturfenster"
+
+msgid "New _Bitmap Window"
+msgstr "Neues _Bitmapfenster"
+
+msgid "New _Metrics Window"
+msgstr "Neues _Metrikfenster"
+
+msgid "Warnings"
+msgstr "Warnungen"
+
 msgid "_Print..."
-msgstr "_Drucken..."
+msgstr "Drucken..."
+
+msgid "_Display..."
+msgstr "Vorschau..."
+
+msgid "E_xecute Script..."
+msgstr "Skript ausführen..."
 
 msgid "_Revert File"
-msgstr "Neu _laden"
+msgstr "Datei _zurücksetzen"
 
-msgid "S_ave as..."
-msgstr "Speichern _unter..."
+msgid "Revert Gl_yph"
+msgstr "Zeichen zurücksetzen"
+
+msgid "_Generate Fonts..."
+msgstr "Fonts herstellen..."
+
+msgid "Generate Mac _Family..."
+msgstr "Mac _Familie herstellen..."
+
+msgid "_Import..."
+msgstr "_Importieren..."
 
 msgid "_Close"
 msgstr "S_chließen"
@@ -61,44 +128,1524 @@ msgstr "_Einstellungen..."
 msgid "_Quit"
 msgstr "_Beenden"
 
+msgid "_Fit"
+msgstr "Einpassen"
+
+msgid "Zoom _in"
+msgstr "H_ineinzoomen"
+
+msgid "Z_oom out"
+msgstr "Herausz_oomen"
+
+msgid "_Next Glyph"
+msgstr "_Nächstes Zeichen"
+
+msgid "_Prev Glyph"
+msgstr "Voriges Zeichen"
+
+msgid "Next _Defined Glyph"
+msgstr "Nächstes _definiertes Zeichen"
+
+msgid "Prev Defined Gl_yph"
+msgstr "Voriges definiertes Zeichen"
+
+msgid "Form_er Glyph"
+msgstr "_ehemaliges Zeichen"
+
+msgid "_Substitutions"
+msgstr "Er_setzungen"
+
+msgid "_Revert Substitution"
+msgstr "E_rsetzungen zurücksetzen"
+
+msgid "_Goto"
+msgstr "_Gehe zu"
+
+msgid "_Reencode"
+msgstr "Encoding e_rsetzen"
+
+msgid "_Add Encoding Slots..."
+msgstr "Encodingpl_atz hinzufügen..."
+
+msgid "Remove _Unused Slots"
+msgstr "Entferne _unbenutzte Plätze"
+
+msgid "_Detach Glyphs"
+msgstr "Lös_e Zeichens"
+
+msgid "Detach & Remo_ve Glyphs..."
+msgstr "Löse und entferne Zeichens..."
+
+msgid "Add E_ncoding Name..."
+msgstr "E_ncoding-Name hinzufügen..."
+
+msgid "_Compact"
+msgstr "_Kompakt"
+
+msgid "Display By _Groups..."
+msgstr "Ansicht nach _Gruppen..."
+
+msgid "D_efine Groups..."
+msgstr "D_efiniere Gruppen..."
+
+msgid "Groups"
+msgstr "Gruppen"
+
+msgid "_Change Supplement..."
+msgstr "Unterstützung verändern..."
+
+msgid "Insert Glyph _Before..."
+msgstr "Zeichen einfügen vor..."
+
+msgid "Insert Glyph _After..."
+msgstr "Zeichen einfügen n_ach..."
+
+msgid "_Replace Glyph..."
+msgstr "Zeichen e_rsetzen..."
+
+msgid "Hide Poin_ts"
+msgstr "Punk_te ausblenden"
+
+msgid "Show Poin_ts"
+msgstr "Punk_te anzeigen"
+
+msgid "_Number Points"
+msgstr "Pu_nkte nummerieren"
+
+msgid "_Mark Extrema"
+msgstr "Extre_ma markieren"
+
+msgid "Hide _Rulers"
+msgstr "Lineale ausblenden"
+
+msgid "Show _Rulers"
+msgstr "Lineale anzeigen"
+
+msgid "S_how H. Metrics..."
+msgstr "Zeige _Horiz. Metrik..."
+
+msgid "Show _V. Metrics..."
+msgstr "Zeige _Vert. Metrik..."
+
+msgid "_Encoded View"
+msgstr "_Encoded Ansicht"
+
+msgid "_Compacted View"
+msgstr "Kompakte Ansi_cht"
+
+msgid "_Show ATT"
+msgstr "Zeige ATT"
+
+msgid "Display S_ubstitutions..."
+msgstr "Ersetz_ungen anzeigen..."
+
+msgid "Com_binations"
+msgstr "Kom_binationen"
+
+msgid "_Kern Pairs"
+msgstr "_Kern-Paare"
+
 msgid "_Ligatures"
 msgstr "_Ligaturen"
 
+msgid "_Anchored Pairs"
+msgstr "_Anker-Paare"
+
+msgid "Find In Font _View"
+msgstr "_Finde in Font-Ansicht"
+
+msgid "Fi_ll"
+msgstr "Fü_llen"
+
+msgid "Sho_w Grid Fit..."
+msgstr "Zeige Grid Fit..."
+
+msgid "_Select"
+msgstr "Au_swählen"
+
+msgid "_Deselect All"
+msgstr "Nichts auswählen"
+
+msgid "Select All _Points & Refs"
+msgstr "Alle _Punkte & Referenzen auswählen"
+
+msgid "_Invert Selection"
+msgstr "Auswahl _invertieren"
+
+msgid "_Changed Glyphs"
+msgstr "Zei_chen ändern"
+
+msgid "_Hinting Needed"
+msgstr "_Hinting nötig"
+
+msgid "Select Points Affected by HM"
+msgstr "HM-beeinflusste Punkte auswählen"
+
+msgid "Selec_t By ATT..."
+msgstr "Nach A_TT auswählen..."
+
+msgid "_Contours"
+msgstr "Konturen"
+
+msgid "_Next Point"
+msgstr "_Nächster Punkt"
+
+msgid "_Prev Point"
+msgstr "Voriger _Punkt"
+
+msgid "_Width"
+msgstr "Breite"
+
+msgid "_VWidth"
+msgstr "_VertBreite"
+
+msgid "Deselect _Width"
+msgstr "Breite deselektieren"
+
+msgid "Deselect _VWidth"
+msgstr "_VertBreite deselektieren"
+
 msgid "_Undo"
-msgstr "_Rückgängig machen"
+msgstr "Rückgängig"
 
 msgid "_Redo"
-msgstr "_Wieder herstellen"
+msgstr "Wiede_rholen"
 
 msgid "Cu_t"
-msgstr "_Ausschneiden"
+msgstr "Schneiden"
 
 msgid "_Copy"
-msgstr "_Kopieren"
+msgstr "Kopieren"
+
+msgid "Copy _Width"
+msgstr "Breite Kopieren"
+
+msgid "Copy _VWidth"
+msgstr "_VertBreite kopieren"
+
+msgid "Co_py LBearing"
+msgstr "l. Rand ko_pieren"
+
+msgid "Copy RBearin_g"
+msgstr "r. Rand kopieren"
+
+msgid "Copy Glyph Features..."
+msgstr "Kpieren Zeicheneigenschaften..."
+
+msgid "C_opy Reference"
+msgstr "Referenz k_opieren"
 
 msgid "_Paste"
-msgstr "Ein_fügen"
+msgstr "Einfügen"
+
+msgid "Paste Into"
+msgstr "Einfügen in"
+
+msgid "Paste After"
+msgstr "Einfügen nach"
+
+msgid "Sa_me Glyph As"
+msgstr "Selbes Zeichen wie"
+
+msgid "C_lear"
+msgstr "_löschen"
+
+msgid "Clear _Background"
+msgstr "Hintergrund löschen"
+
+msgid "Copy _Fg To Bg"
+msgstr "_Vordergr. nach Hintergr. kopieren"
+
+msgid "Cop_y Bg To Fg"
+msgstr "Hintergr. nach Vordergr. kopieren"
+
+msgid "Copy Gri_d Fit"
+msgstr "Raster kopieren"
+
+msgid "_Merge"
+msgstr "Ausbügeln"
+
+msgid "U_nlink Reference"
+msgstr "Refere_nz lösen"
+
+msgid "_Select by Color"
+msgstr "Nach Farbe au_swählen"
+
+msgid "Remo_ve Undoes"
+msgstr "Rückgängig machen löschen"
+
+msgid "_Font Info..."
+msgstr "_Font Eigenschaften..."
+
+msgid "Find Pr_oblems..."
+msgstr "Pr_obleme finden..."
+
+msgid "Get _Info..."
+msgstr "Ze_ige Info..."
+
+msgid "Open Reference"
+msgstr "Referenz öffnen"
+
+msgid "S_how Dependent"
+msgstr "Zeige Ab_hängige"
+
+msgid "_References..."
+msgstr "_Referenzen..."
+
+msgid "_Substitutions..."
+msgstr "Er_setzungen..."
+
+msgid "Bitm_aps Available..."
+msgstr "Bitm_aps vorhanden..."
+
+msgid "Regenerate _Bitmaps..."
+msgstr "_Bitmaps regenerieren..."
+
+msgid "_Transformations"
+msgstr "_Transformationen"
+
+msgid "_Transform..."
+msgstr "_Transformieren..."
+
+msgid "_Point of View Projection..."
+msgstr "_Punkt of Ansicht Projection..."
+
+msgid "_Non Linear Transform..."
+msgstr "_Nichtlineare Transformation..."
+
+msgid "_Expand Stroke..."
+msgstr "Strich v_erbreitern..."
+
+msgid "Center Line"
+msgstr "Linie zentrieren"
+
+msgid "Tile _Path..."
+msgstr "_Pfad teilen..."
+
+msgid "O_verlap"
+msgstr "Überlagerungen"
+
+msgid "_Remove Overlap"
+msgstr "Übe_rlagerungen entfernen"
+
+msgid "_Exclude"
+msgstr "Ausschli_eßen"
+
+msgid "_Simplify"
+msgstr "Vereinfachen"
+
+msgid "Simplify More..."
+msgstr "Stärker vereinfachen..."
+
+msgid "Clea_nup Glyph"
+msgstr "Zeiche_n aufräumen"
+
+msgid "Add E_xtrema"
+msgstr "E_xtrema zufügen"
+
+msgid "A_lign"
+msgstr "Ausrichten"
+
+msgid "_Average Points"
+msgstr "DurchschnittsPunkte"
+
+msgid "_Space Points"
+msgstr "_Space Punkte"
+
+msgid "Make _Parallel..."
+msgstr "_Paralellisieren..."
+
+msgid "_Round"
+msgstr "_Runden"
+
+msgid "To _Int"
+msgstr "auf _Integer"
+
+msgid "To _Hundredths"
+msgstr "auf 100stel"
+
+msgid "_Cluster"
+msgstr "Gruppieren"
+
+msgid "_Shadow"
+msgstr "_Schatten"
+
+msgid "_Wireframe"
+msgstr "Rahmen"
+
+msgid "B_uild"
+msgstr "Erstellen"
+
+msgid "_Build Accented Glyph"
+msgstr "Akzentuierte erstellen"
+
+msgid "Build _Composite Glyph"
+msgstr "Komposita erstellen"
+
+msgid "Buil_d Duplicate Glyph"
+msgstr "_Duplikate erstellen"
+
+msgid "Cl_ockwise"
+msgstr "rechtsherum"
+
+msgid "Cou_nter Clockwise"
+msgstr "li_nksherum"
+
+msgid "_Correct Direction"
+msgstr "Ri_chtung berichtigen"
+
+msgid "C_orner"
+msgstr "Ecke"
+
+msgid "_Curve"
+msgstr "Kurve"
+
+msgid "_Tangent"
+msgstr "_Tangente"
+
+msgid "Auto_Hint"
+msgstr "Auto_Hinten"
+
+msgid "Full Auto_Hint"
+msgstr "Volle Auto_Hinten"
+
+msgid "_Don't AutoHint"
+msgstr "Nicht AutoHinten"
+
+msgid "_Edit Instructions..."
+msgstr "Instruktion_en bearbeiten..."
+
+msgid "Edit 'fpgm'..."
+msgstr "'fpgm' bearbeiten..."
+
+msgid "Edit 'prep'..."
+msgstr "'prep' bearbeiten..."
+
+msgid "Edit 'maxp'..."
+msgstr "'maxp' bearbeiten..."
+
+msgid "Edit 'cvt '..."
+msgstr "'cvt' bearbeiten..."
+
+msgid "_Clear Hints"
+msgstr "Hints lös_chen"
+
+msgid "Clear Instructions"
+msgstr "Instruktionen löschen"
+
+msgid "_Clear HStem"
+msgstr "HStem lös_chen"
+
+msgid "Clear _VStem"
+msgstr "_VStem löschen"
+
+msgid "Clear _DStem"
+msgstr "_DStem löschen"
+
+msgid "Histograms"
+msgstr "Histogramme"
+
+msgid "Expor_t..."
+msgstr "Expor_tieren..."
+
+msgid "_Palettes"
+msgstr "_Paletten"
+
+msgid "_Tools"
+msgstr "Werkzeuge"
+
+msgid "_Layers"
+msgstr "Ebenen"
+
+msgid "_Docked Palettes"
+msgstr "Paletten an_docken"
+
+msgid "C_enter in Width"
+msgstr "Z_entrieren in Breite"
+
+msgid "_Thirds in Width"
+msgstr "Dri_tteln in Breite"
+
+msgid "Set _Width..."
+msgstr "Breite setzen"
+
+msgid "Set _LBearing..."
+msgstr "_l. Rand setzen..."
+
+msgid "Set _RBearing..."
+msgstr "_r. Rand setzen..."
+
+msgid "Remove Kern _Pairs"
+msgstr "Kern-_Paare entfernen"
+
+msgid "Remove VKern Pairs"
+msgstr "VKern Paare entfernen"
+
+msgid "_Anchor Control..."
+msgstr "_Anker kontrollieren..."
+
+msgid "_Label Glyph By"
+msgstr "Zeichen beschriften mit"
+
+msgid "_Glyph Image"
+msgstr "Zeichen Bild"
+
+msgid "_24 pixel outline"
+msgstr "_24 pixel Ansicht"
+
+msgid "_36 pixel outline"
+msgstr "_36 pixel Ansicht"
+
+msgid "_48 pixel outline"
+msgstr "_48 pixel Ansicht"
+
+msgid "_72 pixel outline"
+msgstr "_72 pixel Ansicht"
+
+msgid "_96 pixel outline"
+msgstr "_96 pixel Ansicht"
+
+msgid "_Fit to em"
+msgstr "in EM einpassen"
+
+msgid "Glyph _Info..."
+msgstr "Ze_ichen Info..."
+
+msgid "Glyph Info for %.40hs"
+msgstr "Zeichen Info for %.40hs"
+
+msgid "T_ypo. Features"
+msgstr "T_ypo. Eigenschaften"
+
+msgid "_Copy Feature(s) To Font..."
+msgstr "Eigens_chaften nach font kopieren..."
+
+msgid "_Default ATT"
+msgstr "Stan_dard ATT"
+
+msgid "_Remove All Features"
+msgstr "Alle Eigenschaften entfe_rnen"
+
+msgid "R_emove Feature(s)..."
+msgstr "_Eigenschaften entfernen..."
+
+msgid "Re_tag Feature(s)..."
+msgstr "Re_tag Eigenschaften..."
+
+msgid "_Merge Fonts..."
+msgstr "Fonts _mischen..."
+
+msgid "Interpo_late Fonts..."
+msgstr "Fonts interpo_lieren..."
+
+msgid "Copy _From"
+msgstr "Kopieren von"
 
 msgid "_All Fonts"
-msgstr "_Alle Schriften"
+msgstr "_Alle Fonts"
+
+msgid "_Displayed Font"
+msgstr "_Dargestellte Font"
+
+msgid "Glyph _Metadata"
+msgstr "Zeichen: _Metadata"
+
+msgid "Auto _Kern..."
+msgstr "Auto _Kerning..."
+
+msgid "Ker_n By Classes..."
+msgstr "Ker_n nach Klassen..."
+
+msgid "_Auto Width..."
+msgstr "_Auto-Breite..."
+
+msgid "Remove All Kern _Pairs"
+msgstr "Alle Kern-_Paare entfernen"
+
+msgid "Remove All VKern Pairs"
+msgstr "Alle VKern-Paare entfernen"
+
+msgid "Outline"
+msgstr "Kontur"
+
+msgid "_Outline"
+msgstr "K_ontur"
+
+msgid "_Vertical"
+msgstr "_Vertikal"
+
+msgid "Show _Grid"
+msgstr "Zei_ge Raster"
+
+msgid "Hide _Grid"
+msgstr "Verstecke Raster"
+
+msgid "_Bigger Pixel Size"
+msgstr "Größere Pixel"
+
+msgid "_Smaller Pixel Size"
+msgstr "kleinere Pixel"
+
+msgid "Flip _Horizontally"
+msgstr "_horizontal spiegeln"
+
+msgid "Flip _Vertically"
+msgstr "_vertikal spiegeln"
+
+msgid "_Rotate 90° CW"
+msgstr "90 CW _rotieren"
+
+msgid "Rotate _90° CCW"
+msgstr "_90 CCW rotieren"
+
+msgid "Rotate _180°"
+msgstr "_180° rotieren"
+
+msgid "_Skew..."
+msgstr "_Scheren..."
+
+msgid "Insert F_ont..."
+msgstr "F_ont einfügen..."
+
+msgid "Insert _Blank"
+msgstr "Leeren einfügen"
+
+msgid "_Remove Font"
+msgstr "Font entfe_rnen"
+
+msgid "_Blend to New Font..."
+msgstr "_Blend to Neu Font..."
+
+msgid "Custom"
+msgstr "Eigene"
+
+msgid "Compacted"
+msgstr "Kompakt"
+
+msgid "ISO 8859-5 (Cyrillic)"
+msgstr "ISO 8859-5 (Kyrillisch)"
+
+msgid "KOI8-R (Cyrillic)"
+msgstr "KOI8-R (Kyrillisch)"
+
+msgid "ISO 8859-6 (Arabic)"
+msgstr "ISO 8859-6 (Arabisch)"
+
+msgid "ISO 8859-7 (Greek)"
+msgstr "ISO 8859-7 (Griechisch)"
+
+msgid "ISO 8859-8 (Hebrew)"
+msgstr "ISO 8859-8 (Hebräisch)"
+
+msgid "ISO 10646-1 (Unicode, Full)"
+msgstr "ISO 10646-1 (Unicode, voll)"
+
+msgid "You are reducing the number of glyphs below the\012current number. This will delete some glyphs.\012Is that what you wish to do?"
+msgstr "Sie reduzieren die akuelle Zeichenanzahl\012unter den aktuellen Umfang. Dies wird ein paar Zeichen kosten.\012Wollen Sie das?"
+
+msgid "Too Few Glyphs"
+msgstr "Zu wenig Zeichen"
+
+msgid "Losing Undoes"
+msgstr "Rückgängig geht verloren"
+
+msgid "Changing the order of the splines in the font will lose all undoes.\nContinue anyway?"
+msgstr "Changing the order of the splines in the font will lose all undoes.\nTrotzdem fortfahren?"
+
+msgid "Bad Family Name, must begin with an alphabetic character."
+msgstr "Schlechter Familienname, muss mit einem Buchstaben beginnen."
+
+msgid "Bad Family Name"
+msgstr "Schlechter Familienname"
+
+msgid "Ascent and Descent must be positive and their sum less than 16384"
+msgstr "Oberlänge and Unterlänge müssen positiv sein und ihre Summe weniger als 16384 betragen"
+
+msgid "Bad Ascent/Descent"
+msgstr "Schlechte Ober-/Unterlänge"
+
+msgid "_Family Name:"
+msgstr "_Familienname:"
+
+msgid "Name For Human_s:"
+msgstr "Men_schlicher Name:"
+
+msgid "_Load"
+msgstr "_Laden"
+
+msgid "Ma_ke From Font..."
+msgstr "Aus Font erstellen..."
+
+msgid "Re_move"
+msgstr "Entfernen"
+
+msgid "_Force Encoding"
+msgstr "Encoding au_fdrücken"
+
+msgid "_Italic Angle:"
+msgstr "Kurs_ivwinkel:"
+
+msgid "Underline _Position:"
+msgstr "Unterstreichungs_position:"
+
+msgid "_Height:"
+msgstr "_Höhe:"
+
+msgid "_Ascent:"
+msgstr "Oberlänge:"
+
+msgid "_Descent:"
+msgstr "Unterlänge:"
+
+msgid "_Em Size:"
+msgstr "_Em Größe:"
+
+msgid "_Scale Outlines"
+msgstr "Konturen _skalieren"
+
+msgid "_Number of Glyphs:"
+msgstr "Zeiche_nanzahl:"
+
+msgid "_Guess"
+msgstr "Erraten"
+
+msgid "Histogram Dialog"
+msgstr "Histogrammdialog"
+
+msgid "Names"
+msgstr "Namen"
+
+msgid "General"
+msgstr "Allgemein"
+
+msgid "TTF Names"
+msgstr "TTF-Namen"
+
+msgid "Comment"
+msgstr "Kommentar"
+
+msgid "Invalid Encoding"
+msgstr "ungültiges Encoding"
+
+msgid "Has _Vertical Metrics"
+msgstr "Hat _vertikale Metrik"
+
+msgid "Vertical _Origin:"
+msgstr "Vertikaler Ursprung:"
+
+msgid "_Quadratic Splines"
+msgstr "_Quadratische ZiehPunkte"
+
+msgid "Glyphs will be composed of stroked lines rather than filled outlines.\nAll glyphs are stroked at the following width"
+msgstr "Zeichens will be composed of stroked lines rather than filled outlines.\nAll glyphs are stroked at the following width"
+
+msgid "Change UniqueID?"
+msgstr "UniqueID ändern?"
+
+msgid "C_hange"
+msgstr "Ändern"
+
+msgid "Ch_ange All"
+msgstr "_Alle ändern"
+
+msgid "Retain A_ll"
+msgstr "A_lle behalten"
+
+msgid "_Retain"
+msgstr "Behalten"
+
+msgid "_Rename..."
+msgstr "Umbenennen..."
+
+msgid "_New..."
+msgstr "_Neu..."
+
+msgid "_Edit..."
+msgstr "B_earbeiten..."
+
+msgid "Show First Mark"
+msgstr "Zeige erste Akzentuierung"
+
+msgid "Show Next Mark"
+msgstr "Zeige nächste Akzentuierung"
+
+msgid "Show First Base"
+msgstr "Zeige erste Grundzeichen"
+
+msgid "Show Next Base"
+msgstr "Zeige nächstes Grundzeichen"
+
+msgid "New anchor class"
+msgstr "Neu anchor class"
+
+msgid "C_ontinue"
+msgstr "F_ortsetzen"
+
+msgid "New Contextual Position"
+msgstr "Neu Contextual Position"
+
+msgid "New Contextual Substitution"
+msgstr "Neu Contextual Substitution"
+
+msgid "New Chaining Position"
+msgstr "Neu Chaining Position"
+
+msgid "New Chaining Substitution"
+msgstr "Neu Chaining Substitution"
+
+msgid "New Reverse Chaining Substitution"
+msgstr "Neu Reverse Chaining Substitution"
+
+msgid "New Indic Rearrangement"
+msgstr "Neu Indic Rearrangement"
+
+msgid "New Contextual Glyph Insertion"
+msgstr "Neu Contextual Zeichen Insertion"
+
+msgid "Edit Contextual Glyph Insertion"
+msgstr "Edit Contextual Zeichen Insertion"
+
+msgid "Underline"
+msgstr "Unterstrichen"
+
+msgid "Italic"
+msgstr "Kursiv"
+
+msgid "Shadow"
+msgstr "Schatten"
+
+msgid "_Language"
+msgstr "_Sprache"
+
+msgid "Ultra-Condensed (50%)"
+msgstr "Ultraschmal (50%)"
+
+msgid "Extra-Condensed (62.5%)"
+msgstr "Extraschmal (62.5%)"
+
+msgid "Condensed (75%)"
+msgstr "Schmal (75%)"
+
+msgid "Semi-Condensed (87.5%)"
+msgstr "Halbschmal (87.5%)"
+
+msgid "Medium (100%)"
+msgstr "Mittel (100%)"
+
+msgid "Semi-Expanded (112.5%)"
+msgstr "Halb verbreitertd (112.5%)"
+
+msgid "Expanded (125%)"
+msgstr "Verbreitert (125%)"
+
+msgid "Extra-Expanded (150%)"
+msgstr "Extraverbreitert (150%)"
+
+msgid "Ultra-Expanded (200%)"
+msgstr "Ultraverbreitert (200%)"
+
+msgid "100 Thin"
+msgstr "100 Dünn"
+
+msgid "200 Extra-Light"
+msgstr "200 Extra-Leicht"
+
+msgid "300 Light"
+msgstr "300 Leicht"
+
+msgid "400 Book"
+msgstr "400 Buch"
+
+msgid "500 Medium"
+msgstr "500 Mittel"
+
+msgid "600 Demi-Bold"
+msgstr "600 Halbfett"
+
+msgid "700 Bold"
+msgstr "700 Fett"
+
+msgid "800 Heavy"
+msgstr "800 Schwer"
+
+msgid "900 Black"
+msgstr "900 Schwarz"
+
+msgid "_Embeddable"
+msgstr "_Einbettbar"
+
+msgid "HHead _Line Gap:"
+msgstr "HHead Durchschuss:"
+
+msgid "Win Ascent:"
+msgstr "Win Oberlänge:"
+
+msgid "Win _Ascent Offset:"
+msgstr "Win Oberlänge _aus:"
+
+msgid "Win Descent:"
+msgstr "Win Unterlänge:"
+
+msgid "Win _Descent Offset:"
+msgstr "Win Unterlänge aus:"
+
+msgid "Is Offset"
+msgstr "Ist aus"
+
+msgid "Typo Ascent:"
+msgstr "Typo Oberlänge:"
+
+msgid "_Typo Ascent Offset:"
+msgstr "_Typo Oberlänge aus:"
+
+msgid "Typo Descent:"
+msgstr "Typo Unterlänge:"
+
+msgid "T_ypo Descent Offset:"
+msgstr "T_ypo Unterlänge aus:"
+
+msgid "Typo Line _Gap:"
+msgstr "Typo Durchschuss:"
+
+msgid "HHead Ascent:"
+msgstr "HHead Oberlänge:"
+
+msgid "_HHead Ascent Offset:"
+msgstr "_HHead Oberlänge Offset:"
+
+msgid "HHead Descent:"
+msgstr "HHead Unterlänge:"
+
+msgid "HHead De_scent Offset:"
+msgstr "HHead Unterlänge Off_set:"
+
+msgid "Metrics"
+msgstr "Metrik"
+
+msgid "_Top"
+msgstr "Open"
+
+msgid "_Bottom"
+msgstr "Unten"
+
+msgid "_Up"
+msgstr "Hoch"
+
+msgid "_Down"
+msgstr "Runter"
+
+msgid "Never Embed/No Editing"
+msgstr "nie einbetten / nicht bearbeiten"
+
+msgid "Printable Document"
+msgstr "Druckbares Dokument"
+
+msgid "Editable Document"
+msgstr "editierbares Dokument"
+
+msgid "Installable Font"
+msgstr "Installierbarer Font"
+
+msgid "_Family"
+msgstr "_Familie"
+
+msgid "_Serifs"
+msgstr "_Serifen"
+
+msgid "_Weight"
+msgstr "Ge_wicht"
+
+msgid "_Proportion"
+msgstr "_Proportionen"
+
+msgid "_Contrast"
+msgstr "Kontrast"
+
+msgid "_X-Height"
+msgstr "_X-Höhe"
+
+msgid "CS Newspaper"
+msgstr "CS Neuspaper"
 
 msgid "Styles (SubFamily)"
-msgstr "Schriftschnitte"
+msgstr "Stile (SubFamily)"
+
+msgid "Fullname"
+msgstr "Voller Name"
+
+msgid "Manufacturer"
+msgstr "Hersteller"
+
+msgid "Designer"
+msgstr "Gestalter"
+
+msgid "Descriptor"
+msgstr "Beschreibung"
+
+msgid "Vendor URL"
+msgstr "Hersteller URL"
+
+msgid "License"
+msgstr "Lizenz"
+
+msgid "License URL"
+msgstr "Lizenz URL"
+
+msgid "English (New Zeeland)"
+msgstr "English (Neu Zeeland)"
+
+msgid "French R�nion"
+msgstr "French R�nion"
+
+msgid "French C�e d'Ivoire"
+msgstr "French C�e d'Ivoire"
+
+msgid "German German"
+msgstr "Deutsch BRD"
+
+msgid "German Swiss"
+msgstr "Deutsch Schweiz"
+
+msgid "German Austrian"
+msgstr "Deutsch Österreich"
+
+msgid "German Luxembourg"
+msgstr "Deutsch Luxembourg"
+
+msgid "German Liechtenstein"
+msgstr "Deutsch Liechtenstein"
+
+msgid "Portuguese Portuguese"
+msgstr "Portugu� Portugu�"
+
+msgid "Portuguese Brasil"
+msgstr "Portugu� Brasil"
+
+msgid "The range of sizes (in points) to which this face applies.\nLower bound is exclusive, upper bound is inclusive."
+msgstr "The range of sizes (in Punkte) to which this face applies.\nLower bound is exclusive, upper bound is inclusive."
+
+msgid "Options"
+msgstr "Optionen"
+
+msgid "Output AFM"
+msgstr "AFM herstellen"
+
+msgid "Output PFM"
+msgstr "PFM herstellen"
+
+msgid "Output TFM & ENC"
+msgstr "TFM & ENC herstellen"
+
+msgid "Output OFM & CFG"
+msgstr "OFM & CFG herstellen"
+
+msgid "No Outline Font"
+msgstr "keine Kontur-Font"
+
+msgid "No Bitmap Fonts"
+msgstr "keine Bitmap-Fonts"
+
+msgid "Afm Save Failed"
+msgstr "Afm Speichern fehlgeschlagen"
+
+msgid "Pfm Save Failed"
+msgstr "Pfm Speichern fehlgeschlagen"
+
+msgid "Tfm Save Failed"
+msgstr "Tfm Speichern fehlgeschlagen"
+
+msgid "Ofm Save Failed"
+msgstr "Ofm Speichern fehlgeschlagen"
+
+msgid "Saving font"
+msgstr "Font abspeichern"
+
+msgid "Saving Postscript Font"
+msgstr "Postscript-font speichern"
+
+msgid "Saving TrueType Font"
+msgstr "TrueType-Font speichern"
+
+msgid "Saving AFM File"
+msgstr "Speichere AFM-Datei"
+
+msgid "Saving PFM File"
+msgstr "Speichere PFM-Datei"
+
+msgid "Saving TFM File"
+msgstr "Speichere TFM-Datei"
+
+msgid "Saving ENC File"
+msgstr "Speichere ENC-Datei"
+
+msgid "Saving OFM File"
+msgstr "Speichere OFM-Datei"
+
+msgid "Saving CFG File"
+msgstr "Speichere CFG-Datei"
+
+msgid "Saving Bitmap Font(s)"
+msgstr "Speichere Bitmap-Font(s)"
+
+msgid "PS Glyph Names"
+msgstr "PS Zeichen Names"
+
+msgid "PostScript®"
+msgstr "PostScript"
+
+msgid "Round"
+msgstr "Runden"
+
+msgid "Save Comments"
+msgstr "Kommentare sichern"
+
+msgid "Save glyph comments in the PfEd table"
+msgstr "Zeichenkommentare in der PfEd-Tabelle speichern"
+
+msgid "Save Colors"
+msgstr "Farben sichern"
+
+msgid "Save glyph colors in the PfEd table"
+msgstr "Speichern glyph colors in the PfEd table"
+
+msgid "TeX Table"
+msgstr "TeX Tabelle"
+
+msgid "Output Glyph Map"
+msgstr "Output Zeichen Map"
+
+msgid "_Don't Save"
+msgstr "Nicht speichern"
+
+msgid "Font changed"
+msgstr "Font geändert"
+
+msgid "Loading..."
+msgstr "Lade..."
+
+msgid "Reading Glyphs"
+msgstr "Reading Zeichens"
+
+msgid "Interpreting Glyphs"
+msgstr "Interpreting Zeichens"
+
+msgid "Transforming..."
+msgstr "Transformiere..."
+
+msgid "Simplifying..."
+msgstr "Vereinfache..."
+
+msgid "Adding points at Extrema..."
+msgstr "Adding Punkte at Extrema..."
+
+msgid "Rounding to integer..."
+msgstr "Integer-Runden..."
+
+msgid "Unlink All"
+msgstr "Alle Referenzen lösen"
+
+msgid "Unlink"
+msgstr "Referenzen lösen"
+
+msgid "Building accented glyphs"
+msgstr "Akzentuierte erstellen"
+
+msgid "Building duplicate encodings"
+msgstr "Duplikate erstellen"
+
+msgid "Replace �"
+msgstr "ersetzen �;"
+
+msgid "Are you sure you want to replace �?\012The ring will not join to the A."
+msgstr "Are you sure you want to replace �\012The ring will not join to the A."
 
 msgid "_Yes"
-msgstr "_Ja"
+msgstr "Ja"
 
 msgid "_No"
 msgstr "_Nein"
 
-msgid "Standard Ligatures"
-msgstr "Normale Ligaturen"
+msgid "Rectangle"
+msgstr "Rechteck"
 
-msgid "Anchor-%d"
-msgstr "Anker-%d"
+msgid "Filled Rectangle"
+msgstr "Gefülltes Rechteck"
 
-msgid "GGadget|ButtonSize|55"
-msgstr "60"
+msgid "Ellipse"
+msgstr "Elipse"
 
-msgid "GGadget|ScaleFactor|100"
-msgstr "120"
+msgid "Filled Ellipse"
+msgstr "Gefüllte Elipse"
+
+msgid "Glyph names are limitted to 31 characters"
+msgstr "Zeichen names are limitted to 31 characters"
+
+msgid "_Done"
+msgstr "Fertig"
+
+msgid "_Show"
+msgstr "Zeige"
+
+msgid "Image Info"
+msgstr "Bild-Info"
+
+msgid "Reference Info"
+msgstr "Referenz-Info"
+
+msgid "Reference to character %.20hs at %d"
+msgstr "Referenz to character %.20hs at %d"
+
+msgid "Both points must be specified, or neither"
+msgstr "Both Punkte must be specified, or neither"
+
+msgid "OT _Glyph Class:"
+msgstr "OT Zeichen Class:"
+
+msgid "Glyph composed of:"
+msgstr "Zeichen composed of:"
+
+msgid "Base Glyph"
+msgstr "Base Zeichen"
+
+msgid "Last Anchor Point"
+msgstr "Last Anchor Punkt"
+
+msgid "New Position Variant"
+msgstr "Neu Position Variant"
+
+msgid "New Pair Position"
+msgstr "Neu Pair Position"
+
+msgid "New Substitution Variant"
+msgstr "Neu Substitution Variant"
+
+msgid "New Alternate List"
+msgstr "Neu Alternate List"
+
+msgid "New Multiple List"
+msgstr "Neu Multiple List"
+
+msgid "New Ligature"
+msgstr "Neu Ligature"
+
+msgid "New Counter Mask"
+msgstr "Neu Counter Mask"
+
+msgid "Paired Glyph:"
+msgstr "Paired Zeichen:"
+
+msgid "Glyph Composition/Decomposition"
+msgstr "Zeichen Composition/Decomposition"
+
+msgid "TeX Glyphlist"
+msgstr "TeX Zeichenlist"
+
+msgid "Final Glyph On Line"
+msgstr "Final Zeichen On Line"
+
+msgid "Hanun�"
+msgstr "Hanun�"
+
+msgid "Lepcha (R�g)"
+msgstr "Lepcha (R�g)"
+
+msgid "Newari"
+msgstr "Neuari"
+
+msgid "Ignore Base Glyphs"
+msgstr "Ignore Base Zeichens"
+
+msgid "Kern Pairs with this as the initial glyph"
+msgstr "Kern Paare with this as the initial glyph"
+
+msgid "Vertical Kern Pairs with this as the initial glyph"
+msgstr "Vertical Kern Paare with this as the initial glyph"
+
+msgid "Kern Pairs with this as the final glyph"
+msgstr "Kern Paare with this as the final glyph"
+
+msgid "Vertical Kern Pairs with this as the final glyph"
+msgstr "Vertical Kern Paare with this as the final glyph"
+
+msgid "Display rulers in the Outline Glyph View"
+msgstr "Display rulers in the Outline Zeichen Ansicht"
+
+msgid "In the Outline View, the Shift key constrains motion to be parallel to the ItalicAngle rather than the vertical."
+msgstr "In the Outline Ansicht, the Shift key constrains motion to be parallel to the ItalicAngle rather than the vertical."
+
+msgid "The Edit->Join command will join points which are this close together\nA value of 0 means they must be coincident"
+msgstr "The Edit->Join command will join Punkte which are this close together\nA value of 0 means they must be coincident"
+
+msgid "When dragging points in the outline view a join may occur\n(two open contours may connect at their endpoints). When\nthis is On a join will cause FontForge to stop moving the\nselection (as if the user had released the mouse button).\nThis is handy if your fingers are inclined to wiggle a bit."
+msgstr "When dragging Punkte in the outline view a join may occur\n(two open contours may connect at their endpoints). When\nthis is On a join will cause FontForge to stop moving the\nselection (as if the user had released the mouse button).\nThis is handy if your fingers are inclined to wiggle a bit."
+
+msgid "Script File"
+msgstr "Script Datei"
+
+msgid "_Move Points"
+msgstr "_Move Punkte"
+
+msgid "When the hint's position is changed\nadjust the postion of any points\nwhich lie on that hint"
+msgstr "When the hint's position is changed\nadjust the postion of any Punkte\nwhich lie on that hint"
+
+msgid "Glyphs on Left"
+msgstr "Zeichens on Left"
+
+msgid "Glyphs on Right"
+msgstr "Zeichens on Right"
+
+msgid "Load Kern Pairs"
+msgstr "Load Kern Paare"
+
+msgid "No Kern Pairs"
+msgstr "No Kern Paare"
+
+msgid "All Glyphs"
+msgstr "All Zeichens"
+
+msgid "Selected Glyphs"
+msgstr "Selected Zeichens"
+
+msgid "Current Glyph"
+msgstr "Current Zeichen"
+
+msgid "Can't Find Glyph"
+msgstr "Can't Find Zeichen"
+
+msgid "Glyph Name Changed"
+msgstr "Zeichen Name Changed"
+
+msgid "More Images Than Selected Glyphs"
+msgstr "More Images Than Selected Zeichens"
+
+msgid "Size of Points"
+msgstr "Size of Punkte"
+
+msgid "Points:"
+msgstr "Punkte:"
+
+msgid "Number of star points/Polygon verteces"
+msgstr "Number of star Punkte/Polygon verteces"
+
+msgid "New Layer..."
+msgstr "Neu Layer..."
+
+msgid "Glyph"
+msgstr "Zeichen"
+
+msgid "Measure distance, angle between points"
+msgstr "Measure distance, angle between Punkte"
+
+msgid "Bad Cidmap File"
+msgstr "Bad Cidmap Datei"
+
+msgid "Missing Glyph..."
+msgstr "Missing Zeichen..."
+
+msgid "The two selected points are the endpoints of an open path"
+msgstr "The two selected Punkte are the endPunkte of an open path"
+
+msgid "The selected points are too close to each other"
+msgstr "The selected Punkte are too close to each other"
+
+msgid "This hint does not control any points"
+msgstr "This hint does not control any Punkte"
+
+msgid "There are more points in this glyph than the maximum allowed"
+msgstr "There are more Punkte in this glyph than the maximum allowed"
+
+msgid "This glyph contains control points which are probably too close to the main points to alter the look of the spline"
+msgstr "This glyph contains Kontrollpunkte which are probably too close to the main Punkte to alter the look of the spline"
+
+msgid "Glyph %1$.50hs with a %2$hs with tag '%3$c%4$c%5$c%6$c'"
+msgstr "Zeichen %1$.50hs with a %2$hs with tag '%3$c%4$c%5$c%6$c'"
+
+msgid "Glyph %1$.50hs with a %2$hs with feature <%3$d,%4$d>"
+msgstr "Zeichen %1$.50hs with a %2$hs with feature <%3$d,%4$d>"
+
+msgid "Poin_ts too close"
+msgstr "Punk_te too close"
+
+msgid "If two adjacent points on the same path are less than a few\nemunits apart they will cause problems for some of FontForge's\ncommands. PostScript shouldn't care though."
+msgstr "If two adjacent Punkte on the same path are less than a few\nemunits apart they will cause problems for some of FontForge's\ncommands. PostScript shouldn't care though."
+
+msgid "_X near¹"
+msgstr "_X near¹"
+
+msgid "_Y near¹"
+msgstr "_Y near¹"
+
+msgid "Y near¹ _standard heights"
+msgstr "Y near¹ _standard heights"
+
+msgid "Allows you to find points which are slightly\noff from the baseline, xheight,cap height,\nascender, descender heights."
+msgstr "Allows you to find Punkte which are slightly\noff from the baseline, xheight,cap height,\nascender, descender heights."
+
+msgid "_Control Points near horizontal/vertical"
+msgstr "Kontrollpunkte near horizontal/verti_cal"
+
+msgid "Control Points near horizontal/vertical/italic"
+msgstr "Kontrollpunkte near horizontal/vertical/italic"
+
+msgid "Allows you to find control points which are almost,\nbut not quite horizontal or vertical\nfrom their base point\n(or at the italic angle)."
+msgstr "Allows you to find Kontrollpunkte which are almost,\nbut not quite horizontal or vertical\nfrom their base point\n(or at the italic angle)."
+
+msgid "Control Points _beyond spline"
+msgstr "Kontrollpunkte _beyond spline"
+
+msgid "Allows you to find control points which when projected\nonto the line segment between the two end points lie\noutside of those end points"
+msgstr "Allows you to find Kontrollpunkte which when projected\nonto the line segment between the two end Punkte lie\noutside of those end Punkte"
+
+msgid "_Hints controlling no points"
+msgstr "_Hints controlling no Punkte"
+
+msgid "Ghostview (perhaps other interpreters) has a problem when a\nhint exists without any points that lie on it."
+msgstr "Ghostview (perhaps other interpreters) has a problem when a\nhint exists without any Punkte that lie on it."
+
+msgid "_Points near¹ hint edges"
+msgstr "_Punkte near¹ hint edges"
+
+msgid "Hint _Width Near¹"
+msgstr "Hint _Width Near¹"
+
+msgid "_Show Exact *stem3"
+msgstr "Zeige Exact *_stem3"
+
+msgid "Shows when this glyph is exactly a stem3 hint"
+msgstr "Zeiges when this glyph is exactly a stem3 hint"
+
+msgid "_More points than:"
+msgstr "_More Punkte than:"
+
+msgid "The PostScript Language Reference Manual (Appendix B) says that\nan interpreter need not support paths with more than 1500 points.\nI think this count includes control points. From PostScript's point\nof view, all the contours in a glyph make up one path. Modern\ninterpreters tend to support paths with more points than this limit.\n(Note a truetype font after conversion to PS will contain\ntwice as many control points)"
+msgstr "The PostScript Language Reference Manual (Appendix B) says that\nan interpreter need not support paths with more than 1500 points.\nI think this count includes Kontrollpunkte. From PostScript's point\nof view, all the contours in a glyph make up one path. Modern\ninterpreters tend to support paths with more Punkte than this limit.\n(Note a truetype font after conversion to PS will contain\ntwice as many Kontrollpunkte)"
+
+msgid "A control point is deemed irrelevant if the distance between it and the main\n(end) point is less than this times the distance between the two end points"
+msgstr "A control point is deemed irrelevant if the distance between it and the main\n(end) point is less than this times the distance between the two end Punkte"
+
+msgid "Check for _irrelevant control points"
+msgstr "Check for _irrelevant Kontrollpunkte"
+
+msgid "Control points are irrelevant if they are too close to the main\npoint to make a significant difference in the shape of the curve."
+msgstr "Kontrollpunkte are irrelevant if they are too close to the main\npoint to make a significant difference in the shape of the curve."
+
+msgid "Points"
+msgstr "Punkte"
+
+msgid "Finding Substitution Points..."
+msgstr "Finding Substitution Punkte..."
+
+msgid "No Encoded Glyphs"
+msgstr "No Encoded Zeichens"
+
+msgid "To _File"
+msgstr "To Datei"
+
+msgid "To P_DF File"
+msgstr "To P_DF Datei"
+
+msgid "Print To File..."
+msgstr "Print To Datei..."
+
+msgid "_Pointsize:"
+msgstr "_Punkteize:"
+
+msgid "Full Pa_ge Glyph"
+msgstr "Full Pa_ge Zeichen"
+
+msgid "Full Pa_ge Glyphs"
+msgstr "Full Pa_ge Zeichens"
+
+msgid "_Multi Size Glyph"
+msgstr "_Multi Size Zeichen"
+
+msgid "_Multi Size Glyphs"
+msgstr "_Multi Size Zeichens"
+
+msgid "_Maximum distance between points in a region"
+msgstr "_Maximum distance between Punkte in a region"
+
+msgid "Bad Glyph Count"
+msgstr "Bad Zeichen Count"
+
+msgid "_New Composition..."
+msgstr "_Neu Composition..."
+
+msgid "Glyph Origin"
+msgstr "Zeichen Origin"
+
+msgid "Normally simplify will not remove points at the extrema of curves\n(both PostScript and TrueType suggest you retain these points)"
+msgstr "Normally simplify will not remove Punkte at the extrema of curves\n(both PostScript and TrueType suggest you retain these Punkte)"
+
+msgid "Normally simplify will not change the slope of the contour at the points."
+msgstr "Normally simplify will not change the slope of the contour at the Punkte."
+
+msgid "Simplify will examine corner points whose control points are almost\ncolinear and smooth them into curve points"
+msgstr "Simplify will examine corner Punkte whose Kontrollpunkte are almost\ncolinear and smooth them into curve Punkte"
+
+msgid "Show _Grid Fit"
+msgstr "Zei_ge Grid Fit"
+
+msgid "Too Many Breakpoints"
+msgstr "Too Many BreakPunkte"
+
+msgid "No Watch Points"
+msgstr "No Watch Punkte"
+
+msgid "Watch Points not supported in glyphs with references"
+msgstr "Watch Punkte not supported in glyphs with references"
+
+msgid "Points (TrueType)"
+msgstr "Punkte (TrueType)"
+
+msgid "Base Glyphs"
+msgstr "Base Zeichens"
+
+msgid "By Glyphs"
+msgstr "By Zeichens"
+
+msgid "Bad Match Glyph List"
+msgstr "Bad Match Zeichen List"
+
+msgid "Bad Backtrack Glyph List"
+msgstr "Bad Backtrack Zeichen List"
+
+msgid "Bad Lookahead Glyph List"
+msgstr "Bad Lookahead Zeichen List"
+
+msgid "Glyph names must be valid postscript names"
+msgstr "Zeichen names must be valid postscript names"
+
+msgid "Class 2: {Deleted Glyph}"
+msgstr "Class 2: {Deleted Zeichen}"
+
+msgid "Advance To Next Glyph"
+msgstr "Advance To Next Zeichen"
+
+msgid "Mark Current Glyph"
+msgstr "Mark Current Zeichen"
+
+msgid "Push Current Glyph"
+msgstr "Push Current Zeichen"
+
+msgid "Mark Current Glyph As First"
+msgstr "Mark Current Zeichen As First"
+
+msgid "Mark Current Glyph As Last"
+msgstr "Mark Current Zeichen As Last"
+
+msgid "Current Glyph Is Kashida Like"
+msgstr "Current Zeichen Is Kashida Like"
+
+msgid "Marked Glyph Is Kashida Like"
+msgstr "Marked Zeichen Is Kashida Like"
+
+msgid "Insert Before Current Glyph"
+msgstr "Insert Before Current Zeichen"
+
+msgid "Insert Before Marked Glyph"
+msgstr "Insert Before Marked Zeichen"
+
+msgid "Too Many Glyphs"
+msgstr "Too Many Zeichens"
+
