@@ -385,11 +385,14 @@ typedef struct gmatrixedit {
     GGadget *vsb, *hsb;
     GGadget *del;
     GWindow nested;
+    int16 desired_width, desired_height;
+    char *newtext;
     void (*initrow)(GGadget *g,int row);
     int  (*candelete)(GGadget *g,int row);
     void (*popupmenu)(GGadget *g,GEvent *e,int row,int col);
     int  (*handle_key)(GGadget *g,GEvent *e);
     char *(*bigedittitle)(GGadget *g,int r, int c);
+    void (*finishedit)(GGadget *g,int r, int c, int wasnew);
 } GMatrixEdit;
 
 typedef struct rowcol {

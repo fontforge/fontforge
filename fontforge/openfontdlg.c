@@ -332,6 +332,7 @@ static void FilterDlg(void) {
     memset(&boxes,0,sizeof(boxes));
 
     gcd[0].gd.pos.x = 10; gcd[0].gd.pos.y = 6;
+    gcd[0].gd.pos.width = 300; gcd[0].gd.pos.height = 200;
     gcd[0].gd.flags = gg_visible | gg_enabled;
     gcd[0].creator = GMatrixEditCreate;
     gcd[0].gd.u.matrix = &mi;
@@ -376,6 +377,7 @@ static void FilterDlg(void) {
     GHVBoxSetExpandableRow(boxes[0].ret,0);
     GHVBoxSetExpandableCol(boxes[2].ret,gb_expandgluesame);
     GHVBoxFitWindow(boxes[0].ret);
+    GMatrixEditSetNewText(gcd[0].ret,S_("Filter|New"));
     d.gme = gcd[0].ret;
     
     GDrawSetVisible(gw,true);

@@ -38,31 +38,16 @@ extern int _GScrollBar_Width;
 
 static int last_aspect=0;
 
-struct sortablenames {
-    int strid;
-    int lang;
-    uint8 basedon;		/* Only for certain strids when lang is 0x409 (English US) */
-    uint8 cantremove;		/* Names based on PS values will always be output */
-    uint16 thislocale;
-    char *str;			/* utf8 */
-};
-
 struct gfi_data {
     SplineFont *sf;
-    GWindow gw, tn_v;
+    GWindow gw;
     GFont *tn_font;
-    GGadget *tn_smalledit;
-    int tn_fh, tn_as;
-    int tn_width, tn_height;
-    int tn_offleft, tn_offtop, tn_langstart, tn_stridstart, tn_strstart, tn_hend;
-    int tn_active, tn_smallactive, tn_done;
+    int tn_active;
     int private_aspect, ttfv_aspect, tn_aspect, tx_aspect, unicode_aspect;
     int old_sel, old_aspect, old_lang, old_strid;
     int ttf_set, names_set, tex_set;
     struct psdict *private;
-    int tn_cnt, tn_max;
     int langlocalecode;	/* MS code for the current locale */
-    struct sortablenames *ttfnames;
     unsigned int family_untitled: 1;
     unsigned int human_untitled: 1;
     unsigned int done: 1;
@@ -873,6 +858,14 @@ static GTextInfo ttfnameids[] = {
     { (unichar_t *) N_("Sample Text"), NULL, 0, 0, (void *) 19, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("CID findfont Name"), NULL, 0, 0, (void *) 20, NULL, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
+static char *TN_DefaultName(GGadget *g, int r, int c);
+static void TN_StrIDEnable(GGadget *g,GMenuItem *mi, int r, int c);
+static void TN_LangEnable(GGadget *g,GMenuItem *mi, int r, int c);
+static struct col_init ci[3] = {
+    { me_enum, NULL, mslanguages, TN_LangEnable, N_("Language") },
+    { me_enum, NULL, ttfnameids, TN_StrIDEnable, N_("String ID") },
+    { me_func, TN_DefaultName, NULL, NULL, N_("String") }
+    };
 
 struct langstyle { int lang; const char *str; };
 static const char regulareng[] = "Regular";
@@ -1151,7 +1144,7 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_TNStringSort	5002
 #define CID_TNVScroll		5003
 #define CID_TNHScroll		5004
-#define CID_TNEntryField	5005
+#define CID_TNames		5005
 
 #define CID_Language		5006	/* Used by AskForLangNames */
 
@@ -2185,17 +2178,6 @@ static void GFI_ProcessContexts(struct gfi_data *d) {
 
 static void MCD_Close(struct markclassdlg *mcd);
 
-static void SortableNamesFree(struct sortablenames *names,int cnt) {
-    int i;
-
-    if ( names==NULL )
-return;
-
-    for ( i=0; i<cnt; ++i )
-	free(names[i].str);
-    free(names);
-}
-
 static void GFI_Close(struct gfi_data *d) {
     FontView *fvs;
     SplineFont *sf = d->sf;
@@ -2209,7 +2191,6 @@ static void GFI_Close(struct gfi_data *d) {
 
     GFI_CleanupContext(d);
     PSDictFree(d->private);
-    SortableNamesFree(d->ttfnames,d->tn_cnt);
 
     GDrawDestroyWindow(d->gw);
     for ( fvs = d->sf->fv; fvs!=NULL; fvs = fvs->nextsame ) {
@@ -4166,6 +4147,17 @@ return( NULL );
     }
 }
 
+static char *TN_DefaultName(GGadget *g, int r, int c) {
+    struct gfi_data *d = GGadgetGetUserData(g);
+    int rows;
+    struct matrix_data *strings = GMatrixEditGet(g, &rows);
+
+    if ( strings==NULL || !strings[3*r+2].user_bits )
+return( NULL );
+
+return( tn_recalculatedef(d,strings[3*r+1].u.md_ival ));
+}
+
 static const char *langname(int lang,char *buffer) {
     int i;
     for ( i=0; mslanguages[i].text!=NULL; ++i )
@@ -4177,65 +4169,72 @@ return( buffer );
 }
 
 static int strid_sorter(const void *pt1, const void *pt2) {
-    const struct sortablenames *n1 = pt1, *n2 = pt2;
-    char ubuf1[20], ubuf2[20];
+    const struct matrix_data *n1 = pt1, *n2 = pt2;
+    char buf1[20], buf2[20];
     const char *l1, *l2;
 
-    if ( n1->strid!=n2->strid )
-return( n1->strid - n2->strid );
+    if ( n1[1].u.md_ival!=n2[1].u.md_ival )
+return( n1[1].u.md_ival - n2[1].u.md_ival );
 
-    l1 = langname(n1->lang,ubuf1);
-    l2 = langname(n2->lang,ubuf2);
-return( strcmp(l1,l2));
+    l1 = langname(n1[0].u.md_ival,buf1);
+    l2 = langname(n2[0].u.md_ival,buf2);
+return( strcoll(l1,l2));
 }
 
 static int lang_sorter(const void *pt1, const void *pt2) {
-    const struct sortablenames *n1 = pt1, *n2 = pt2;
-    char ubuf1[20], ubuf2[20];
+    const struct matrix_data *n1 = pt1, *n2 = pt2;
+    char buf1[20], buf2[20];
     const char *l1, *l2;
 
-    if ( n1->lang==n2->lang )
-return( n1->strid - n2->strid );
+    if ( n1[0].u.md_ival==n2[0].u.md_ival )
+return( n1[1].u.md_ival - n2[1].u.md_ival );
 
-    l1 = langname(n1->lang,ubuf1);
-    l2 = langname(n2->lang,ubuf2);
-return( strcmp(l1,l2));
+    l1 = langname(n1[0].u.md_ival,buf1);
+    l2 = langname(n2[0].u.md_ival,buf2);
+return( strcoll(l1,l2));
 }
 
-static int specialvals(const struct sortablenames *n) {
-    if ( n->lang == n->thislocale )
+static int ms_thislocale = 0;
+static int specialvals(const struct matrix_data *n) {
+    if ( n[0].u.md_ival == ms_thislocale )
 return( -10000000 );
-    else if ( (n->lang&0x3ff) == (n->thislocale&0x3ff) )
-return( -10000000 + (n->lang&~0x3ff) );
-    if ( n->lang == 0x409 )	/* English */
+    else if ( (n[0].u.md_ival&0x3ff) == (ms_thislocale&0x3ff) )
+return( -10000000 + (n[0].u.md_ival&~0x3ff) );
+    if ( n[0].u.md_ival == 0x409 )	/* English */
 return( -1000000 );
-    else if ( (n->lang&0x3ff) == 9 )
-return( -1000000 + (n->lang&~0x3ff) );
+    else if ( (n[0].u.md_ival&0x3ff) == 9 )
+return( -1000000 + (n[0].u.md_ival&~0x3ff) );
 
 return( 1 );
 }
 
 static int speciallang_sorter(const void *pt1, const void *pt2) {
-    const struct sortablenames *n1 = pt1, *n2 = pt2;
-    char ubuf1[20], ubuf2[20];
+    const struct matrix_data *n1 = pt1, *n2 = pt2;
+    char buf1[20], buf2[20];
     const char *l1, *l2;
     int pos1=1, pos2=1;
 
     /* sort so that entries for the current language are first, then English */
     /*  then alphabetical order */
-    if ( n1->lang==n2->lang )
-return( n1->strid - n2->strid );
+    if ( n1[0].u.md_ival==n2[0].u.md_ival )
+return( n1[1].u.md_ival - n2[1].u.md_ival );
 
     pos1 = specialvals(n1); pos2 = specialvals(n2);
     if ( pos1<0 || pos2<0 )
 return( pos1-pos2 );
-    l1 = langname(n1->lang,ubuf1);
-    l2 = langname(n2->lang,ubuf2);
-return( strcmp(l1,l2));
+    l1 = langname(n1[0].u.md_ival,buf1);
+    l2 = langname(n2[0].u.md_ival,buf2);
+return( strcoll(l1,l2));
 }
 
 static void TTFNames_Resort(struct gfi_data *d) {
     int(*compar)(const void *, const void *);
+    GGadget *edit = GWidgetGetControl(d->gw,CID_TNames);
+    int rows;
+    struct matrix_data *strings = GMatrixEditGet(edit, &rows);
+
+    if ( strings==NULL )
+return;
 
     if ( GGadgetIsChecked(GWidgetGetControl(d->gw,CID_TNLangSort)) )
 	compar = lang_sorter;
@@ -4243,7 +4242,8 @@ static void TTFNames_Resort(struct gfi_data *d) {
 	compar = strid_sorter;
     else
 	compar = speciallang_sorter;
-    qsort(d->ttfnames,d->tn_cnt,sizeof(struct sortablenames),compar);
+    ms_thislocale = d->langlocalecode;
+    qsort(strings,rows,3*sizeof(struct matrix_data),compar);
 }
 
 static void DefaultLanguage(struct gfi_data *d) {
@@ -4286,215 +4286,6 @@ static void DefaultLanguage(struct gfi_data *d) {
     d->langlocalecode = langlocalecode==-1 ? (langcode|0x400) : langlocalecode;
 }
 
-static void TN_HScroll(struct gfi_data *d,struct sbevent *sb) {
-    int newpos = d->tn_offleft;
-
-    switch( sb->type ) {
-      case et_sb_top:
-        newpos = 0;
-      break;
-      case et_sb_uppage:
-        newpos -= 9*d->tn_width/10;
-      break;
-      case et_sb_up:
-        newpos -= d->tn_width/15;
-      break;
-      case et_sb_down:
-        newpos += d->tn_width/15;
-      break;
-      case et_sb_downpage:
-        newpos += 9*d->tn_width/10;
-      break;
-      case et_sb_bottom:
-        newpos = d->tn_hend;
-      break;
-      case et_sb_thumb:
-      case et_sb_thumbrelease:
-        newpos = sb->pos;
-      break;
-    }
-    if ( newpos + d->tn_width > d->tn_hend )
-	newpos = d->tn_hend - d->tn_width;
-    if ( newpos<0 )
-	newpos = 0;
-    if ( newpos!=d->tn_offleft ) {
-	int diff = d->tn_offleft-newpos;
-	GRect r;
-	d->tn_offleft = newpos;
-	GScrollBarSetPos(GWidgetGetControl(d->gw,CID_TNHScroll),newpos);
-	r.x = 1; r.y = 1; r.width = d->tn_width-1; r.height = d->tn_height-1;
-	GDrawScroll(d->tn_v,&r,diff,0);
-    }
-}
-
-static void TN_VScroll(struct gfi_data *d,struct sbevent *sb) {
-    int newpos = d->tn_offtop;
-    int page = d->tn_height/d->tn_fh;
-
-    switch( sb->type ) {
-      case et_sb_top:
-        newpos = 0;
-      break;
-      case et_sb_uppage:
-        newpos -= 9*page/10;
-      break;
-      case et_sb_up:
-        newpos--;
-      break;
-      case et_sb_down:
-        newpos++;
-      break;
-      case et_sb_downpage:
-        newpos += 9*page/10;
-      break;
-      case et_sb_bottom:
-        newpos = d->tn_cnt+1;
-      break;
-      case et_sb_thumb:
-      case et_sb_thumbrelease:
-        newpos = sb->pos;
-      break;
-    }
-    if ( newpos + page > d->tn_cnt+1 )
-	newpos = d->tn_cnt+1 - page;
-    if ( newpos<0 )
-	newpos = 0;
-    if ( newpos!=d->tn_offtop ) {
-	int diff = (newpos-d->tn_offtop)*d->tn_fh;
-	GRect r;
-	d->tn_offtop = newpos;
-	GScrollBarSetPos(GWidgetGetControl(d->gw,CID_TNVScroll),newpos);
-	r.x = 1; r.y = 1; r.width = d->tn_width-1; r.height = d->tn_height-1;
-	GDrawScroll(d->tn_v,&r,0,diff);
-    }
-}
-
-static int _TN_HScroll(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_scrollbarchange ) {
-	struct gfi_data *d = (struct gfi_data *) GDrawGetUserData(GGadgetGetWindow(g));
-	TN_HScroll(d,&e->u.control.u.sb);
-    }
-return( true );
-}
-
-static int _TN_VScroll(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_scrollbarchange ) {
-	struct gfi_data *d = (struct gfi_data *) GDrawGetUserData(GGadgetGetWindow(g));
-	TN_VScroll(d,&e->u.control.u.sb);
-    }
-return( true );
-}
-
-static void TTFN_SetSBs(struct gfi_data *d) {
-    GGadget *vsb, *hsb;
-    int langmax,stridmax,strmax, i,k;
-    char buf[20];
-    int len;
-    const char *l;
-    char *str, *freeme, *pt;
-
-    vsb = GWidgetGetControl(d->gw,CID_TNVScroll);
-    hsb = GWidgetGetControl(d->gw,CID_TNHScroll);
-
-    GScrollBarSetBounds(vsb,0,d->tn_cnt+1,d->tn_height/d->tn_fh);
-    if ( d->tn_offtop + d->tn_height/d->tn_fh > d->tn_cnt+1 )
-	d->tn_offtop = d->tn_cnt+1 - d->tn_height/d->tn_fh;
-    if ( d->tn_offtop<0 ) d->tn_offtop = 0;
-    GScrollBarSetPos(vsb,d->tn_offtop);
-
-    GDrawSetFont(d->tn_v,d->tn_font);
-    langmax = stridmax = strmax = 0;
-    if ( d->tn_cnt>0 ) {
-	for ( i=0; i<d->tn_cnt; ++i ) {
-	    for ( k=0; ttfnameids[k].text!=NULL && ttfnameids[k].userdata!=(void *) (intpt) d->ttfnames[i].strid;
-		    ++k );
-	    if ( ttfnameids[k].text!=NULL ) {
-		const char *strid = (char *) ttfnameids[k].text;
-		len = GDrawGetText8Width(d->tn_v,strid,-1,NULL);
-		if ( len>stridmax ) stridmax = len;
-	    }
-
-	    l = langname( d->ttfnames[i].lang,buf );
-	    len = GDrawGetText8Width(d->tn_v,l,-1,NULL);
-	    if ( len>langmax ) langmax = len;
-
-	    str = d->ttfnames[i].str;
-	    freeme = NULL;
-	    if ( str==NULL )
-		freeme = str = tn_recalculatedef(d,d->ttfnames[i].strid);
-	    if ( str!=NULL ) {
-		pt = strchr(str,'\n');
-		len = GDrawGetText8Width(d->tn_v,str,pt==NULL ? -1 : pt-str,NULL);
-	    } else
-		len = 0;
-	    free(freeme);
-	    if ( len>strmax ) strmax = len;
-	}
-    }
-    d->tn_langstart = 3;
-    d->tn_stridstart = d->tn_langstart+langmax+6;
-    d->tn_strstart = d->tn_stridstart+stridmax+6;
-    d->tn_hend = d->tn_strstart+strmax+3;
-
-    GScrollBarSetBounds(hsb,0,d->tn_hend,d->tn_width);
-    if ( d->tn_offleft + d->tn_width > d->tn_hend )
-	d->tn_offleft = d->tn_hend - d->tn_width;
-    if ( d->tn_offleft<0 ) d->tn_offleft = 0;
-    GScrollBarSetPos(hsb,d->tn_offleft);
-}
-
-static void TNExpose(struct gfi_data *d,GWindow pixmap,GEvent *event) {
-    int i,k;
-    const char *l, *strid;
-    char buf[20];
-    char *str, *freeme, *pt;
-
-    GDrawDrawLine(pixmap,0,0,0,d->tn_height,0x000000);
-    GDrawDrawLine(pixmap,d->tn_stridstart-3-d->tn_offleft,0,d->tn_stridstart-3-d->tn_offleft,d->tn_height,0x000000);
-    GDrawDrawLine(pixmap,d->tn_strstart-3-d->tn_offleft,0,d->tn_strstart-3-d->tn_offleft,d->tn_height,0x000000);
-    GDrawDrawLine(pixmap,0,0,d->tn_width,0,0x000000);
-
-    GDrawSetFont(pixmap,d->tn_font);
-    for ( i=event->u.expose.rect.y/d->tn_fh;
-	    i<=(event->u.expose.rect.y+event->u.expose.rect.height+d->tn_fh-1)/d->tn_fh &&
-	     i+d->tn_offtop<=d->tn_cnt;
-	    ++i ) {
-	if ( i+d->tn_offtop==d->tn_cnt ) {
-	    strncpy(buf+1,S_("TrueTypeName|New"),sizeof(buf)-2);
-	    buf[0] = '<';
-	    buf[18] = '\0';
-	    k = strlen(buf);
-	    buf[k] = '>'; buf[k+1] = '\0';
-	    GDrawDrawText8(pixmap,d->tn_langstart-d->tn_offleft,i*d->tn_fh+d->tn_as,
-		    buf,-1,NULL,0xff0000);
-    break;
-	}
-	if ( d->tn_stridstart-3 > d->tn_offleft ) {
-	    l = langname( d->ttfnames[i+d->tn_offtop].lang,buf );
-	    GDrawDrawText8(pixmap,d->tn_langstart-d->tn_offleft,i*d->tn_fh+d->tn_as,
-		    l,-1,NULL,0x000000);
-	}
-	if ( d->tn_strstart-3 > d->tn_offleft ) {
-	    for ( k=0; ttfnameids[k].text!=NULL && ttfnameids[k].userdata!=(void *) (intpt) d->ttfnames[i+d->tn_offtop].strid;
-		    ++k );
-	    if ( ttfnameids[k].text!=NULL ) {
-		strid = (char *) ttfnameids[k].text;
-		GDrawDrawText8(pixmap,d->tn_stridstart-d->tn_offleft,i*d->tn_fh+d->tn_as,
-			strid,-1,NULL,0x000000);
-	    }
-	}
-
-	str = d->ttfnames[i+d->tn_offtop].str;
-	freeme = NULL;
-	if ( str==NULL )
-	    freeme = str = tn_recalculatedef(d,d->ttfnames[i+d->tn_offtop].strid);
-	pt = strchr(str,'\n');
-	GDrawDrawText8(pixmap,d->tn_strstart-d->tn_offleft,i*d->tn_fh+d->tn_as,
-		str,pt==NULL ? -1 : pt-str,NULL,freeme==NULL ? 0x000000 : 0xff0000);
-	free(freeme);
-    }
-}
-
 static int GFI_Char(struct gfi_data *d,GEvent *event) {
     if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
 	help("fontinfo.html");
@@ -4514,38 +4305,18 @@ return( true );
 return( false );
 }
 
-static void TN_DeleteActive(struct gfi_data *d) {
-    int i;
-
-    if ( d->ttfnames[d->tn_active].cantremove ) {
-	GDrawBeep(NULL);
-return;
-    }
-    free(d->ttfnames[d->tn_active].str);
-    --d->tn_cnt;
-    for ( i=d->tn_active; i<d->tn_cnt; ++i )
-	d->ttfnames[i] = d->ttfnames[i+1];
-    TTFN_SetSBs(d);
-    GDrawRequestExpose(d->tn_v,NULL,false);
-}
-
-static void CheckActiveStyleTranslation(struct gfi_data *d) {
+static int CheckActiveStyleTranslation(struct gfi_data *d,
+	struct matrix_data *strings,int r, int rows) {
     int i,j, eng_pos, other_pos;
     char *english, *new=NULL, *temp, *pt;
-    int other_lang = d->ttfnames[d->tn_active].lang;
+    int other_lang = strings[3*r].u.md_ival;
     int changed = false;
 
-    if ( d->ttfnames[d->tn_active].strid!=ttf_subfamily ||
-	    other_lang==0x409 ||
-	    (d->ttfnames[d->tn_active].str!=NULL &&
-	     *d->ttfnames[d->tn_active].str!='\0' ))
-return;
-
-    for ( i=d->tn_cnt-1; i>=0 ; --i )
-	if ( d->ttfnames[i].strid==ttf_subfamily &&
-		d->ttfnames[i].lang == 0x409 )
+    for ( i=rows-1; i>=0 ; --i )
+	if ( strings[3*i+1].u.md_ival==ttf_subfamily &&
+		strings[3*i].u.md_ival == 0x409 )
     break;
-    if ( i<0 || (english = d->ttfnames[i].str)==NULL )
+    if ( i<0 || (english = strings[3*i+2].u.md_str)==NULL )
 	new = tn_recalculatedef(d,ttf_subfamily);
     else
 	new = copy(english);
@@ -4564,9 +4335,9 @@ return;
 		    (pt = strstrmatch(new,stylelist[i][j].str))!=NULL ) {
 		if ( pt==new && strlen(stylelist[i][j].str)==strlen(new) ) {
 		    free(new);
-		    free(d->ttfnames[d->tn_active].str);
-		    d->ttfnames[d->tn_active].str = copy(stylelist[i][other_pos].str);
-return;
+		    free(strings[3*r+2].u.md_str);
+		    strings[3*r+2].u.md_str = copy(stylelist[i][other_pos].str);
+return( true );
 		}
 		temp = galloc((strlen(new)
 			+ strlen(stylelist[i][other_pos].str)
@@ -4583,162 +4354,11 @@ return;
 	}
     }
     if ( changed ) {
-	free(d->ttfnames[d->tn_active].str);
-	d->ttfnames[d->tn_active].str = new;
+	free(strings[3*r+2].u.md_str);
+	strings[3*r+2].u.md_str = new;
     } else
 	free(new);
-}
-
-static void TN_StrSmallEdit(struct gfi_data *d) {
-    int len;
-
-    if ( d->tn_active < 0 || d->tn_active >= d->tn_cnt ) {
-	d->tn_active = -1;
-return;
-    }
-    d->tn_smallactive = d->tn_active;
-    CheckActiveStyleTranslation(d);
-    GGadgetSetTitle8(d->tn_smalledit,
-	    d->ttfnames[d->tn_smallactive].str!=NULL
-		    ? d->ttfnames[d->tn_smallactive].str
-		    : "" );
-    len = d->tn_width - d->tn_strstart + 1;
-    if ( len<60 )
-	len = 60;
-    GGadgetResize(d->tn_smalledit,len,d->tn_fh);
-    GGadgetMove(d->tn_smalledit,d->tn_width-len,d->tn_offtop+d->tn_smallactive*d->tn_fh);
-    GGadgetSetVisible(d->tn_smalledit,true);
-    GGadgetSetEnabled(d->tn_smalledit,true);
-    GWidgetIndicateFocusGadget(d->tn_smalledit);
-}
-
-static void TN_FinishSmallEdit(struct gfi_data *d) {
-    if ( d->tn_smallactive < 0 || d->tn_smallactive >= d->tn_cnt ) {
-	d->tn_smallactive = -1;
-return;
-    }
-    free(d->ttfnames[d->tn_smallactive].str);
-    d->ttfnames[d->tn_smallactive].str = GGadgetGetTitle8(d->tn_smalledit);
-    GGadgetSetVisible(d->tn_smalledit,false);
-    if ( *d->ttfnames[d->tn_smallactive].str=='\0' && !d->ttfnames[d->tn_smallactive].cantremove ) {
-	d->tn_active = d->tn_smallactive;
-	TN_DeleteActive(d);
-    }
-    d->tn_active = d->tn_smallactive = -1;
-}
-
-static int big_e_h(GWindow gw, GEvent *event) {
-    struct gfi_data *d = GDrawGetUserData(gw);
-    if ( event->type==et_close ) {
-	d->tn_done = true;
-    } else if ( event->type == et_char ) {
-return( false );
-    } else if ( event->type == et_resize ) {
-	GRect size, temp, temp2;
-	GDrawGetSize(gw,&size);
-	GGadgetGetSize(GWidgetGetControl(gw,CID_TNEntryField),&temp);
-	GGadgetResize(GWidgetGetControl(gw,CID_TNEntryField),size.width-2*temp.x,
-		size.height-GDrawPointsToPixels(gw,46));
-	GGadgetResize(GWidgetGetControl(gw,CID_MainGroup),size.width-4,
-		size.height-4);
-	GGadgetGetSize(GWidgetGetControl(gw,CID_OK),&temp);
-	GGadgetMove(GWidgetGetControl(gw,CID_OK),temp.x,
-		size.height-GDrawPointsToPixels(gw,34+3));
-	GGadgetGetSize(GWidgetGetControl(gw,CID_Cancel),&temp2);
-	GGadgetMove(GWidgetGetControl(gw,CID_Cancel),size.width-temp.x-temp2.width,
-		size.height-GDrawPointsToPixels(gw,34));
-	GDrawRequestExpose(gw,NULL,false);
-    } else if ( event->type == et_controlevent && event->u.control.subtype == et_buttonactivate ) {
-	d->tn_done = true;
-	if ( GGadgetGetCid(event->u.control.g)==CID_OK ) {
-	    free(d->ttfnames[d->tn_active].str);
-	    d->ttfnames[d->tn_active].str = GGadgetGetTitle8(GWidgetGetControl(gw,CID_TNEntryField));
-	    if ( *d->ttfnames[d->tn_active].str=='\0' && !d->ttfnames[d->tn_active].cantremove )
-		TN_DeleteActive(d);
-	}
-    }
-return( true );
-}
-
-static void TN_StrBigEdit(struct gfi_data *d) {
-    GRect pos;
-    GWindow gw;
-    GWindowAttrs wattrs;
-    GGadgetCreateData mgcd[6];
-    GTextInfo mlabel[6];
-    char buf[100], buf2[20];
-    const char *lang;
-    int k;
-
-    if ( d->tn_active < 0 || d->tn_active >= d->tn_cnt ) {
-	d->tn_active = -1;
-return;
-    }
-
-    lang = langname(d->ttfnames[d->tn_active].lang,buf2);
-    for ( k=0; ttfnameids[k].text!=NULL && ttfnameids[k].userdata!=(void *) (intpt) d->ttfnames[d->tn_active].strid;
-	    ++k );
-    snprintf(buf,sizeof(buf),_("%1$.30s string for %2$.30s"),
-	    lang, (char *) ttfnameids[k].text );
-
-    memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
-    wattrs.event_masks = ~(1<<et_charup);
-    wattrs.is_dlg = true;
-    wattrs.restrict_input_to_me = 1;
-    wattrs.undercursor = 1;
-    wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = buf;
-    pos.x = pos.y = 0;
-    pos.width =GDrawPointsToPixels(NULL,GGadgetScale(200));
-    pos.height = GDrawPointsToPixels(NULL,300);
-    d->tn_done = 0;
-    gw = GDrawCreateTopWindow(NULL,&pos,big_e_h,d,&wattrs);
-
-    memset(&mgcd,0,sizeof(mgcd));
-    memset(&mlabel,0,sizeof(mlabel));
-    mgcd[0].gd.pos.x = 4; mgcd[0].gd.pos.y = 6;
-    mgcd[0].gd.pos.width = 192;
-    mgcd[0].gd.pos.height = 260;
-    mgcd[0].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap | gg_text_xim;
-    mgcd[0].gd.cid = CID_TNEntryField;
-    mgcd[0].creator = GTextAreaCreate;
-
-    mgcd[1].gd.pos.x = 30-3; mgcd[1].gd.pos.y = GDrawPixelsToPoints(NULL,pos.height)-35-3;
-    mgcd[1].gd.pos.width = -1; mgcd[1].gd.pos.height = 0;
-    mgcd[1].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    mlabel[1].text = (unichar_t *) _("_OK");
-    mlabel[1].text_is_1byte = true;
-    mlabel[1].text_in_resource = true;
-    mgcd[1].gd.label = &mlabel[1];
-    mgcd[1].gd.cid = CID_OK;
-    mgcd[1].creator = GButtonCreate;
-
-    mgcd[2].gd.pos.x = -30; mgcd[2].gd.pos.y = mgcd[1].gd.pos.y+3;
-    mgcd[2].gd.pos.width = -1; mgcd[2].gd.pos.height = 0;
-    mgcd[2].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    mlabel[2].text = (unichar_t *) _("_Cancel");
-    mlabel[2].text_is_1byte = true;
-    mlabel[2].text_in_resource = true;
-    mgcd[2].gd.label = &mlabel[2];
-    mgcd[2].gd.cid = CID_Cancel;
-    mgcd[2].creator = GButtonCreate;
-
-    mgcd[3].gd.pos.x = 2; mgcd[3].gd.pos.y = 2;
-    mgcd[3].gd.pos.width = pos.width-4; mgcd[3].gd.pos.height = pos.height-4;
-    mgcd[3].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
-    mgcd[3].gd.cid = CID_MainGroup;
-    mgcd[3].creator = GGroupCreate;
-
-    GGadgetsCreate(gw,mgcd);
-    CheckActiveStyleTranslation(d);
-    if ( d->ttfnames[d->tn_active].str!=NULL )
-	GGadgetSetTitle8(mgcd[0].ret,d->ttfnames[d->tn_active].str);
-    GDrawSetVisible(gw,true);
-    while ( !d->tn_done )
-	GDrawProcessOneEvent(NULL);
-    GDrawDestroyWindow(gw);
-    GDrawRequestExpose(d->tn_v,NULL,false);
+return( changed );
 }
 
 #define MID_ToggleBase	1
@@ -4746,56 +4366,29 @@ return;
 #define MID_Delete	3
 
 static void TN_StrPopupDispatch(GWindow gw, GMenuItem *mi, GEvent *e) {
-    struct gfi_data *d = GDrawGetUserData(gw);
+    struct gfi_data *d = GDrawGetUserData(GDrawGetParentWindow(gw));
+    GGadget *g = GWidgetGetControl(d->gw,CID_TNames);
 
     switch ( mi->mid ) {
-      case MID_ToggleBase:
-	d->ttfnames[d->tn_active].basedon = !d->ttfnames[d->tn_active].basedon;
-	if ( d->ttfnames[d->tn_active].basedon ) {
-	    free( d->ttfnames[d->tn_active].str);
-	    d->ttfnames[d->tn_active].str = NULL;
+      case MID_ToggleBase: {
+	int rows;
+	struct matrix_data *strings = GMatrixEditGet(g, &rows);
+	strings[3*d->tn_active+2].frozen = !strings[3*d->tn_active+2].frozen;
+	if ( strings[3*d->tn_active+2].frozen ) {
+	    free( strings[3*d->tn_active+2].u.md_str );
+	    strings[3*d->tn_active+2].u.md_str = NULL;
 	} else {
-	    d->ttfnames[d->tn_active].str = tn_recalculatedef(d,d->ttfnames[d->tn_active].strid);
+	    strings[3*d->tn_active+2].u.md_str = tn_recalculatedef(d,strings[3*d->tn_active+1].u.md_ival);
 	}
-      break;
+	GGadgetRedraw(g);
+      } break;
       case MID_MultiEdit:
-	TN_StrBigEdit(d);
+	GMatrixEditStringDlg(g,d->tn_active,2);
       break;
       case MID_Delete:
-	TN_DeleteActive(d);
+	GMatrixEditDeleteRow(g,d->tn_active);
       break;
     }
-    TTFN_SetSBs(d);
-    GDrawRequestExpose(d->tn_v,NULL,false);
-}
-
-static void TN_StrPopup(struct gfi_data *d,GEvent *event) {
-    GMenuItem mi[5];
-    int i;
-
-    memset(mi,'\0',sizeof(mi));
-    for ( i=0; i<3; ++i ) {
-	mi[i].ti.fg = COLOR_DEFAULT;
-	mi[i].ti.bg = COLOR_DEFAULT;
-	mi[i].mid = i+1;
-	mi[i].invoke = TN_StrPopupDispatch;
-	mi[i].ti.text_is_1byte = true;
-    }
-    mi[MID_Delete-1].ti.disabled = d->ttfnames[d->tn_active].cantremove;
-    mi[MID_ToggleBase-1].ti.disabled = !d->ttfnames[d->tn_active].cantremove;
-    if ( d->ttfnames[d->tn_active].basedon ) {
-	mi[MID_MultiEdit-1].ti.disabled = true;
-	mi[MID_ToggleBase-1].ti.text = (unichar_t *) _("Detach from PostScript Names");
-    } else {
-	char *temp;
-	mi[MID_ToggleBase-1].ti.text = (unichar_t *) _("Same as PostScript Names");
-	temp = tn_recalculatedef(d,d->ttfnames[d->tn_active].strid);
-	mi[MID_ToggleBase-1].ti.disabled = (temp==NULL);
-	free(temp);
-    }
-    mi[MID_MultiEdit-1].ti.text = (unichar_t *) _("Multi-line edit");
-    mi[MID_Delete-1].ti.text = (unichar_t *) _("Delete");
-    GMenuCreatePopupMenu(d->tn_v,event, mi);
 }
 
 static int menusort(const void *m1, const void *m2) {
@@ -4808,199 +4401,186 @@ return( strcoll( (char *) (mi1->ti.text), (char *) (mi2->ti.text)) );
 return( u_strcmp(mi1->ti.text,mi2->ti.text));
 }
 
-static void TN_StrIDPopupDispatch(GWindow gw, GMenuItem *mi, GEvent *e) {
-    struct gfi_data *d = GDrawGetUserData(gw);
-    int lang = d->ttfnames[d->tn_active].lang;
-    int strid = mi->mid;
-    int i;
+static void TN_StrIDEnable(GGadget *g,GMenuItem *mi, int r, int c) {
+    int rows, i, j;
+    struct matrix_data *strings = GMatrixEditGet(g, &rows);
 
-    for ( i=0; i<d->tn_cnt; ++i ) if ( i!=d->tn_active ) {
-	if ( d->ttfnames[i].lang == lang && d->ttfnames[i].strid == strid ) {
-	    gwwv_post_error(_("Duplicate Name"),_("This combination of StrID and Language is already in use"));
-return;
-	}
-    }
-    d->ttfnames[d->tn_active].strid=strid;
-    TTFN_SetSBs(d);
-    GDrawRequestExpose(d->tn_v,NULL,false);
-}
-
-static void TN_StrIDPopup(struct gfi_data *d,GEvent *event) {
-    GMenuItem mi[ttf_namemax+2];
-    int i;
-
-    memset(mi,'\0',sizeof(mi));
-    for ( i=0; ttfnameids[i].text!=NULL; ++i ) {
-	mi[i].mid = (intpt) ttfnameids[i].userdata;
-	mi[i].invoke = TN_StrIDPopupDispatch;
-	mi[i].ti = ttfnameids[i];
-	mi[i].ti.selected = false;
-	mi[i].ti.fg = COLOR_DEFAULT;
-	mi[i].ti.bg = COLOR_DEFAULT;
-	mi[i].ti.checkable = true;
-	mi[i].ti.checked = d->ttfnames[d->tn_active].strid==mi[i].mid;
+    for ( i=0; mi[i].ti.text!=NULL; ++i ) {
+	int strid = (intpt) mi[i].ti.userdata;
+	for ( j=0; j<rows; ++j ) if ( j!=r )
+	    if ( strings[3*j].u.md_ival == strings[3*r].u.md_ival &&
+		    strings[3*j+1].u.md_ival == strid ) {
+		mi[i].ti.disabled = true;
+	break;
+	    }
     }
     qsort(mi,i,sizeof(mi[0]),menusort);
-    GMenuCreatePopupMenu(d->tn_v,event, mi);
-}
+}    
 
-static void TN_LangPopupDispatch(GWindow gw, GMenuItem *mi, GEvent *e) {
-    struct gfi_data *d = GDrawGetUserData(gw);
-    int lang = mi->mid;
-    int strid;
+static void TN_LangEnable(GGadget *g,GMenuItem *mi, int r, int c) {
     int i;
 
-    if ( d->tn_active==d->tn_cnt ) {
-	strid = 0;
-	for ( i=0; i<d->tn_cnt; ++i ) {
-	    if ( d->ttfnames[i].lang == lang && d->ttfnames[i].strid == strid ) {
-		++strid;
-		if ( strid==ttf_postscriptname ) ++strid;
-		if ( strid==ttf_idontknow ) ++strid;
-		if ( strid==ttf_namemax ) {
-		    gwwv_post_error(_("Duplicate Name"),_("All strings for this language have been assigned, you mayn't create another"));
-return;
+    for ( i=0; mi[i].ti.text!=NULL; ++i )
+    qsort(mi,i,sizeof(mi[0]),menusort);
+}    
+
+static void TN_NewName(GGadget *g,int row) {
+    int rows;
+    struct matrix_data *strings = GMatrixEditGet(g, &rows);
+
+    strings[3*row+1].u.md_ival = ttf_subfamily;
+}
+
+static void TN_FinishEdit(GGadget *g,int row,int col,int wasnew) {
+    int i,rows;
+    struct matrix_data *strings = GMatrixEditGet(g, &rows);
+    uint8 found[ttf_namemax];
+    struct gfi_data *d = (struct gfi_data *) GGadgetGetUserData(g);
+    int ret = false;
+
+    if ( col==2 ) {
+	if ( strings[3*row+2].u.md_str==NULL || *strings[3*row+2].u.md_str=='\0' ) {
+	    GMatrixEditDeleteRow(g,row);
+	    ret = true;
+	}
+    } else {
+	if ( col==0 ) {
+	    memset(found,0,sizeof(found));
+	    found[ttf_idontknow] = true;	/* reserved name id */
+	    for ( i=0; i<rows; ++i ) if ( i!=row ) {
+		if ( strings[3*i].u.md_ival == strings[3*row].u.md_ival )	/* Same language */
+		    found[strings[3*i+1].u.md_ival] = true;
+	    }
+	    if ( found[ strings[3*row+1].u.md_ival ] ) {
+		/* This language already has an entry for this strid */
+		/* pick another */
+		if ( !found[ttf_subfamily] ) {
+		    strings[3*row+1].u.md_ival = ttf_subfamily;
+		    ret = true;
+		} else {
+		    for ( i=0; i<ttf_namemax; ++i )
+			if ( !found[i] ) {
+			    strings[3*row+1].u.md_ival = i;
+			    ret = true;
+		    break;
+			}
 		}
 	    }
 	}
-	if ( d->tn_cnt>=d->tn_max )
-	    d->ttfnames = grealloc(d->ttfnames,(d->tn_max+=10)*sizeof(struct sortablenames));
-	memset(&d->ttfnames[d->tn_cnt],0,sizeof(struct sortablenames));
-	d->ttfnames[d->tn_cnt].lang = lang;
-	d->ttfnames[d->tn_cnt].strid = strid;
-	d->ttfnames[d->tn_cnt].thislocale = d->langlocalecode;
-	d->ttfnames[d->tn_cnt].str = copy("");
-	++d->tn_cnt;
-    } else {
-	strid = d->ttfnames[d->tn_active].strid;
-	for ( i=0; i<d->tn_cnt; ++i ) if ( i!=d->tn_active ) {
-	    if ( d->ttfnames[i].lang == lang && d->ttfnames[i].strid == strid ) {
-		gwwv_post_error(_("Duplicate Name"),_("This combination of StrID and Language is already in use"));
-return;
+	if ( (strings[3*row+2].u.md_str==NULL || *strings[3*row+2].u.md_str=='\0') ) {
+	    for ( i=0; i<rows; ++i ) if ( i!=row ) {
+		if ( strings[3*row+1].u.md_ival == strings[3*i+1].u.md_ival &&
+			(strings[3*row].u.md_ival&0xff) == (strings[3*i].u.md_ival&0xff)) {
+		    /* Same string, same language, different locale */
+		    /* first guess is the same as the other string. */
+		    if ( strings[3*i+2].u.md_str==NULL )
+			strings[3*row+2].u.md_str = tn_recalculatedef(d,strings[3*row+1].u.md_ival );
+		    else
+			strings[3*row+2].u.md_str = copy(strings[3*i+2].u.md_str);
+		    ret = true;
+	    break;
+		}
 	    }
+	    /* If we didn't find anything above, and if we've got a style */
+	    /*  (subfamily) see if we can guess a translation from the english */
+	    if ( i==rows && strings[3*row+1].u.md_ival == ttf_subfamily )
+		ret |= CheckActiveStyleTranslation(d,strings,row,rows);
 	}
-	d->ttfnames[d->tn_active].lang = lang;
     }
-    TTFN_SetSBs(d);
-    GDrawRequestExpose(d->tn_v,NULL,false);
+    if ( ret )
+	GGadgetRedraw(g);
 }
 
-static void TN_LangPopup(struct gfi_data *d,GEvent *event) {
-    GMenuItem mi[250];
+static int TN_CanDelete(GGadget *g,int row) {
+    int rows;
+    struct matrix_data *strings = GMatrixEditGet(g, &rows);
+    if ( strings==NULL )
+return( false );
+
+return( !strings[3*row+2].user_bits );
+}
+
+static void TN_PopupMenu(GGadget *g,GEvent *event,int r,int c) {
+    struct gfi_data *d = (struct gfi_data *) GGadgetGetUserData(g);
+    int rows;
+    struct matrix_data *strings = GMatrixEditGet(g, &rows);
+    GMenuItem mi[5];
     int i;
 
-    if ( sizeof(mi)/sizeof(mi[0]) < sizeof(mslanguages)/sizeof(mslanguages[0])) {
-	IError( "Too many locales" );
+    if ( strings==NULL )
 return;
-    }
+
+    d->tn_active = r;
 
     memset(mi,'\0',sizeof(mi));
-    for ( i=0; mslanguages[i].text!=NULL; ++i ) {
-	mi[i].mid = (intpt) mslanguages[i].userdata;
-	mi[i].invoke = TN_LangPopupDispatch;
-	mi[i].ti = mslanguages[i];
+    for ( i=0; i<3; ++i ) {
 	mi[i].ti.fg = COLOR_DEFAULT;
 	mi[i].ti.bg = COLOR_DEFAULT;
-	mi[i].ti.checkable = true;
-	mi[i].ti.checked = d->tn_active<d->tn_cnt && d->ttfnames[d->tn_active].lang==mi[i].mid;
+	mi[i].mid = i+1;
+	mi[i].invoke = TN_StrPopupDispatch;
+	mi[i].ti.text_is_1byte = true;
     }
-    qsort(mi,i,sizeof(mi[0]),menusort);
-    GMenuCreatePopupMenu(d->tn_v,event, mi);
+    mi[MID_Delete-1].ti.disabled = strings[3*r+2].user_bits;
+    mi[MID_ToggleBase-1].ti.disabled = !strings[3*r+2].user_bits;
+    if ( strings[3*r+2].frozen ) {
+	mi[MID_MultiEdit-1].ti.disabled = true;
+	mi[MID_ToggleBase-1].ti.text = (unichar_t *) _("Detach from PostScript Names");
+    } else {
+	char *temp;
+	mi[MID_ToggleBase-1].ti.text = (unichar_t *) _("Same as PostScript Names");
+	temp = tn_recalculatedef(d,strings[3*r+1].u.md_ival);
+	mi[MID_ToggleBase-1].ti.disabled = (temp==NULL);
+	free(temp);
+    }
+    if ( c!=2 )
+	mi[MID_MultiEdit-1].ti.disabled = true;
+    mi[MID_MultiEdit-1].ti.text = (unichar_t *) _("Multi-line edit");
+    mi[MID_Delete-1].ti.text = (unichar_t *) _("Delete");
+    GMenuCreatePopupMenu(event->w,event, mi);
 }
 
-static void TN_Popups(struct gfi_data *d,GEvent *event) {
-    int line = event->u.mouse.y/d->tn_fh + d->tn_offtop;
-    int x = event->u.mouse.x + d->tn_offleft;
-
-    GGadgetEndPopup();
-    if ( d->tn_smallactive!=-1 ) {
-	TN_FinishSmallEdit(d);
-return;
-    }
-    if ( line<0 )
-return;
-    d->tn_active = line;
-    if ( event->u.mouse.button==3 && line<d->tn_cnt )
-	TN_StrPopup(d,event);
-    else if ( line<d->tn_cnt && d->ttfnames[line].basedon ) {
-	GDrawBeep(NULL);
-    } else if ( line>=d->tn_cnt || x<d->tn_stridstart-3 )
-	TN_LangPopup(d,event);
-    else if ( x<d->tn_strstart-3 )
-	TN_StrIDPopup(d,event);
-    else if ( d->ttfnames[line].str!=NULL &&
-	    (strlen(d->ttfnames[line].str)>40 ||
-	     strchr(d->ttfnames[line].str,'\n')!=NULL )) {
-	TN_StrBigEdit(d);
-    } else
-	TN_StrSmallEdit(d);
+static int TN_PassChar(GGadget *g,GEvent *e) {
+return( GFI_Char(GGadgetGetUserData(g),e));
 }
 
-static void TN_PopupHelp(struct gfi_data *d,GEvent *event) {
+static char *TN_BigEditTitle(GGadget *g,int r, int c) {
+    char buf[100], buf2[20];
+    const char *lang;
+    int k;
+    int rows;
+    struct matrix_data *strings = GMatrixEditGet(g, &rows);
 
-    GGadgetPreparePopup8(d->gw,_(
-	"To create a new name, left click on the <New> button, and select a locale.\n"
-	"To change the locale, left click on it.\n"
-	"To change the string type, left click on it.\n"
-	"To change the text, left click in it and then type.\n"
-	"To delete a name, right click on the name & select Delete from the menu.\n"
-	"To associate or disassocate a truetype name right click and select the\n"
-	" appropriate menu item." ));
+    lang = langname(strings[3*r].u.md_ival,buf2);
+    for ( k=0; ttfnameids[k].text!=NULL && ttfnameids[k].userdata!=(void *) (intpt) strings[3*r+2].u.md_str ;
+	    ++k );
+    snprintf(buf,sizeof(buf),_("%1$.30s string for %2$.30s"),
+	    lang, (char *) ttfnameids[k].text );
+return( copy( buf ));
 }
 
-static int tn_e_h(GWindow gw, GEvent *event) {
-    struct gfi_data *d = (struct gfi_data *) GDrawGetUserData(gw);
-
-    GGadgetPopupExternalEvent(event);
-    if (( event->type==et_mouseup || event->type==et_mousedown ) &&
-	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
-	if ( !(event->u.mouse.state&(ksm_shift|ksm_control)) )	/* bind shift to magnify/minify */
-return( GGadgetDispatchEvent(GWidgetGetControl(d->gw,CID_TNVScroll),event));
-    }
-
-    switch ( event->type ) {
-      case et_expose:
-	GDrawSetLineWidth(gw,0);
-	TNExpose(d,gw,event);
-      break;
-      case et_mousedown:
-	TN_Popups(d,event);
-      break;
-      case et_mousemove:
-	TN_PopupHelp(d,event);
-      break;
-      case et_mouseup:
-      break;
-      case et_char:
-return( GFI_Char(d,event));
-      break;
-      case et_timer:
-      break;
-    }
-return( true );
-}
-
-static void InitTTFNames(struct gfi_data *d) {
+static void TNMatrixInit(struct matrixinit *mi,struct gfi_data *d) {
     SplineFont *sf = d->sf;
     int i,j,k,cnt;
     uint8 sawEnglishUS[ttf_namemax];
     struct ttflangname *tln;
-    struct sortablenames *stn;
+    struct matrix_data *md;
 
     DefaultLanguage(d);
 
-    stn = NULL;
+    memset(mi,0,sizeof(*mi));
+    mi->col_cnt = 3;
+    mi->col_init = ci;
+
+    md = NULL;
     for ( k=0; k<2; ++k ) {
 	memset(sawEnglishUS,0,sizeof(sawEnglishUS));
 	cnt = 0;
 	for ( tln = sf->names; tln!=NULL; tln = tln->next ) {
 	    for ( i=0; i<ttf_namemax; ++i ) if ( i!=ttf_postscriptname && tln->names[i]!=NULL ) {
-		if ( stn!=NULL ) {
-		    stn[cnt].strid = i;
-		    stn[cnt].lang = tln->lang;
-		    stn[cnt].basedon = false;
-		    stn[cnt].cantremove = false;
-		    stn[cnt].str = copy(tln->names[i]);
+		if ( md!=NULL ) {
+		    md[3*cnt  ].u.md_ival = tln->lang;
+		    md[3*cnt+1].u.md_ival = i;
+		    md[3*cnt+2].u.md_str = copy(tln->names[i]);
 		}
 		++cnt;
 		if ( tln->lang==0x409 )
@@ -5008,36 +4588,41 @@ static void InitTTFNames(struct gfi_data *d) {
 	    }
 	}
 	for ( i=0; ttfspecials[i]!=-1; ++i ) if ( !sawEnglishUS[ttfspecials[i]] ) {
-	    if ( stn!=NULL ) {
-		stn[cnt].strid = ttfspecials[i];
-		stn[cnt].lang = 0x409;
-		stn[cnt].basedon = true;
-		stn[cnt].cantremove = true;
-		stn[cnt].str = NULL;
+	    if ( md!=NULL ) {
+		md[3*cnt  ].u.md_ival = 0x409;
+		md[3*cnt+1].u.md_ival = ttfspecials[i];
+		md[3*cnt+2].u.md_str = NULL;
+/* if frozen is set then can't remove or edit. (old basedon bit) */
+		md[3*cnt].frozen = md[3*cnt+1].frozen = md[3*cnt+2].frozen = true;
+/* if user_bits is set then can't remove. (old cantremove bit) */
+		md[3*cnt].user_bits = md[3*cnt+1].user_bits = md[3*cnt+2].user_bits = true;
 	    }
 	    ++cnt;
 	}
-	if ( stn==NULL )
-	    stn = galloc((cnt+10)*sizeof(struct sortablenames));
+	if ( md==NULL )
+	    md = gcalloc(3*(cnt+10),sizeof(struct matrix_data));
     }
-    for ( i=0; i<cnt; ++i )
-	stn[i].thislocale = d->langlocalecode;
-    for ( i=0; i<cnt; ++i ) if ( stn[i].lang==0x409 ) {
-	for ( j=0; ttfspecials[j]!=-1 && ttfspecials[j]!=stn[i].strid; ++j );
-	stn[i].cantremove = ( ttfspecials[j]!=-1 );
+    for ( i=0; i<cnt; ++i ) if ( md[3*cnt].u.md_ival==0x409 ) {
+	for ( j=0; ttfspecials[j]!=-1 && ttfspecials[j]!=md[3*cnt+1].u.md_ival; ++j );
+	md[3*i].user_bits = md[3*i+1].user_bits = md[3*i+2].user_bits = 
+		( ttfspecials[j]!=-1 );
     }
-    d->ttfnames = stn;
-    d->tn_cnt = cnt; d->tn_max = cnt+10;
-    TTFNames_Resort(d);
-    TTFN_SetSBs(d);
-    d->names_set = true;
+    mi->matrix_data = md;
+    mi->initial_row_cnt = cnt;
+
+    mi->initrow = TN_NewName;
+    mi->finishedit = TN_FinishEdit;
+    mi->candelete = TN_CanDelete;
+    mi->popupmenu = TN_PopupMenu;
+    mi->handle_key = TN_PassChar;
+    mi->bigedittitle = TN_BigEditTitle;
 }
 
 static int GFI_SortBy(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
 	struct gfi_data *d = (struct gfi_data *) GDrawGetUserData(GGadgetGetWindow(g));
 	TTFNames_Resort(d);
-	GDrawRequestExpose(d->tn_v,NULL,false);
+	GGadgetRedraw(GWidgetGetControl(d->gw,CID_TNames));
     }
 return( true );
 }
@@ -5135,8 +4720,11 @@ static int ttfmultuniqueids(SplineFont *sf,struct gfi_data *d) {
     int i;
 
     if ( d->names_set ) {
-	for ( i=0; i<d->tn_cnt; ++i )
-	    if ( d->ttfnames[i].strid==ttf_uniqueid ) {
+	GGadget *edit = GWidgetGetControl(d->gw,CID_TNames);
+	int rows;
+	struct matrix_data *strings = GMatrixEditGet(edit, &rows);
+	for ( i=0; i<rows; ++i )
+	    if ( strings[3*i+1].u.md_ival==ttf_uniqueid ) {
 		if ( found )
 return( true );
 		found = true;
@@ -5164,16 +4752,20 @@ return( false );
 	    if ( tln->names[ttf_uniqueid]!=NULL )
 return( true );
     } else {
+	GGadget *edit = GWidgetGetControl(d->gw,CID_TNames);
+	int rows;
+	struct matrix_data *strings = GMatrixEditGet(edit, &rows);
+
 	for ( tln = sf->names; tln!=NULL; tln=tln->next ) {
 	    if ( tln->names[ttf_uniqueid]==NULL )
 	continue;		/* Not set, so if it has been given a new value */
 				/*  that's a change, and if it hasn't that's ok */
-	    for ( i=0; i<d->tn_cnt; ++i )
-		if ( d->ttfnames[i].strid==ttf_uniqueid && d->ttfnames[i].lang==tln->lang )
+	    for ( i=0; i<rows; ++i )
+		if ( strings[3*i+1].u.md_ival==ttf_uniqueid && strings[3*i].u.md_ival==tln->lang )
 	    break;
-	    if ( i==d->tn_cnt )
+	    if ( i==rows )
 	continue;		/* removed. That's a change */
-	    if ( strcmp(tln->names[ttf_uniqueid],d->ttfnames[i].str)==0 )
+	    if ( strcmp(tln->names[ttf_uniqueid],strings[3*i+2].u.md_str )==0 )
 return( true );		/* name unchanged */
 	}
     }
@@ -5194,33 +4786,36 @@ return;
 	    tln->names[ttf_uniqueid] = NULL;
 	}
     } else {
+	GGadget *edit = GWidgetGetControl(d->gw,CID_TNames);
+	int rows;
+	struct matrix_data *strings = GMatrixEditGet(edit, &rows);
+
 	/* see if any instances of the name have changed */
 	for ( tln = sf->names; tln!=NULL; tln=tln->next ) {
 	    if ( tln->names[ttf_uniqueid]==NULL )
 	continue;
-	    for ( i=0; i<d->tn_cnt; ++i )
-		if ( d->ttfnames[i].strid==ttf_uniqueid && d->ttfnames[i].lang==tln->lang )
+	    for ( i=0; i<rows; ++i )
+		if ( strings[3*i+1].u.md_ival==ttf_uniqueid && strings[3*i].u.md_ival==tln->lang )
 	    break;
-	    if ( i==d->tn_cnt )
+	    if ( i==rows )
 	continue;
-	    if ( strcmp(tln->names[ttf_uniqueid],d->ttfnames[i].str)!=0 ) {
-		changed = copy(d->ttfnames[i].str);
+	    if ( strcmp(tln->names[ttf_uniqueid],strings[3*i+2].u.md_str )!=0 )
+		changed = copy(strings[3*i+2].u.md_str );
 	break;
-	    }
 	}
 	/* All unique ids should be the same, if any changed set the unchanged */
 	/*  ones to the one that did (or the first of many if several changed) */
 	for ( tln = sf->names; tln!=NULL; tln=tln->next ) {
 	    if ( tln->names[ttf_uniqueid]==NULL )
 	continue;
-	    for ( i=0; i<d->tn_cnt; ++i )
-		if ( d->ttfnames[i].strid==ttf_uniqueid && d->ttfnames[i].lang==tln->lang )
+	    for ( i=0; i<rows; ++i )
+		if ( strings[3*i+1].u.md_ival==ttf_uniqueid && strings[3*i].u.md_ival==tln->lang )
 	    break;
-	    if ( i==d->tn_cnt )
+	    if ( i==rows )
 	continue;
-	    if ( strcmp(tln->names[ttf_uniqueid],d->ttfnames[i].str)==0 ) {
-		free(d->ttfnames[i].str);
-		d->ttfnames[i].str = changed!=NULL
+	    if ( strcmp(tln->names[ttf_uniqueid],strings[3*i+2].u.md_str)==0 ) {
+		free(strings[3*i+2].u.md_str);
+		strings[3*i+2].u.md_str = changed!=NULL
 			? copy( changed )
 			: NULL;
 	    }
@@ -5228,25 +4823,27 @@ return;
     }
 }
 
-static void SortableToTTFNames(struct gfi_data *d) {
+static void StoreTTFNames(struct gfi_data *d) {
     struct ttflangname *tln;
     SplineFont *sf = d->sf;
     int i;
+    GGadget *edit = GWidgetGetControl(d->gw,CID_TNames);
+    int rows;
+    struct matrix_data *strings = GMatrixEditGet(edit, &rows);
 
     TTFLangNamesFree(sf->names); sf->names = NULL;
 
-    for ( i=0; i<d->tn_cnt; ++i ) {
-	for ( tln=sf->names; tln!=NULL && tln->lang!=d->ttfnames[i].lang; tln=tln->next );
+    for ( i=0; i<rows; ++i ) {
+	for ( tln=sf->names; tln!=NULL && tln->lang!=strings[3*i].u.md_ival; tln=tln->next );
 	if ( tln==NULL ) {
 	    tln = chunkalloc(sizeof(struct ttflangname));
-	    tln->lang = d->ttfnames[i].lang;
+	    tln->lang = strings[3*i].u.md_ival;
 	    tln->next = sf->names;
 	    sf->names = tln;
 	}
-	tln->names[d->ttfnames[i].strid] = d->ttfnames[i].str;
+	tln->names[strings[3*i+1].u.md_ival] = copy(strings[3*i+2].u.md_str );
     }
     TTF_PSDupsDefault(sf);
-    free(d->ttfnames); d->ttfnames = NULL;
 }
 
 /* If we change the ascent/descent of a sub font then consider changing the */
@@ -5320,9 +4917,11 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	NameList *nl;
 	extern int allow_utf8_glyphnames;
 	int os2version;
+	int rows;
+	struct matrix_data *strings = GMatrixEditGet(GWidgetGetControl(d->gw,CID_TNames), &rows);
 
-	if ( d->tn_smallactive!=-1 )
-	    TN_FinishSmallEdit(d);
+	if ( strings==NULL )
+return( true );
 	if ( !CheckNames(d))
 return( true );
 	if ( !PIFinishFormer(d))
@@ -5593,7 +5192,7 @@ return(true);
 	    d->private = NULL;
 	}
 	if ( d->names_set )
-	    SortableToTTFNames(d);
+	    StoreTTFNames(d);
 	if ( d->ttf_set ) {
 	    sf->os2_version = os2version;
 	    sf->use_typo_metrics = GGadgetIsChecked(GWidgetGetControl(gw,CID_UseTypoMetrics));
@@ -6352,12 +5951,15 @@ static int GFI_AspectChange(GGadget *g, GEvent *e) {
     if ( e==NULL || (e->type==et_controlevent && e->u.control.subtype == et_radiochanged )) {
 	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	int new_aspect = GTabSetGetSel(g);
-	if ( d->tn_smallactive!=-1 )
-	    TN_FinishSmallEdit(d);
+	int rows;
+
+	if ( d->old_aspect == d->tn_aspect )
+	    GMatrixEditGet(GWidgetGetControl(d->gw,CID_TNames), &rows);
 	if ( !d->ttf_set && new_aspect == d->ttfv_aspect )
 	    TTFSetup(d);
 	else if ( !d->names_set && new_aspect == d->tn_aspect ) {
-	    InitTTFNames(d);
+	    TTFNames_Resort(d);
+	    d->names_set = true;
 	} else if ( !d->tex_set && new_aspect == d->tx_aspect )
 	    DefaultTeX(d);
 	else if ( new_aspect == d->unicode_aspect )
@@ -6367,30 +5969,6 @@ static int GFI_AspectChange(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static void GFI_Resize(struct gfi_data *d) {
-    GRect temp, subsize;
-    int sbsize = GDrawPointsToPixels(d->gw,_GScrollBar_Width);
-
-    GDrawGetSize(GDrawGetParentWindow(d->tn_v),&subsize);
-
-    if ( d->tn_v!=NULL ) {
-	int len;
-	GDrawGetSize(d->tn_v,&temp);
-	d->tn_width = subsize.width-2*temp.x-sbsize;
-	d->tn_height = subsize.height-temp.y-GDrawPointsToPixels(d->gw,3)-sbsize;
-	GDrawResize(d->tn_v,d->tn_width,d->tn_height);
-	GGadgetResize(GWidgetGetControl(d->gw,CID_TNVScroll),sbsize,d->tn_height);
-	GGadgetResize(GWidgetGetControl(d->gw,CID_TNHScroll),d->tn_width,sbsize);
-	GGadgetMove(GWidgetGetControl(d->gw,CID_TNVScroll),temp.x+d->tn_width,temp.y);
-	GGadgetMove(GWidgetGetControl(d->gw,CID_TNHScroll),temp.x,temp.y+d->tn_height);
-	TTFN_SetSBs(d);
-	len = d->tn_width - d->tn_strstart + 1;
-	if ( len<60 )
-	    len = 60;
-	GGadgetResize(d->tn_smalledit,len,d->tn_fh);
-    }
-}
-
 static int e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	struct gfi_data *d = GDrawGetUserData(gw);
@@ -6398,9 +5976,6 @@ static int e_h(GWindow gw, GEvent *event) {
     } else if ( event->type==et_destroy ) {
 	struct gfi_data *d = GDrawGetUserData(gw);
 	free(d);
-    } else if ( event->type==et_resize ) {
-	struct gfi_data *d = GDrawGetUserData(gw);
-	DelayEvent((void (*)(void *)) GFI_Resize,d);
     } else if ( event->type==et_char ) {
 return( GFI_Char(GDrawGetUserData(gw),event));
     }
@@ -6444,7 +6019,7 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     GGadgetCreateData mb[2], mb2, nb[2], nb2, nb3, xub[2], psb[2], psb2[3], ppbox[3],
 	    vbox[4], metbox[2], ssbox[2], panbox[2], combox[2], atbox[4], mkbox[3],
 	    txbox[5], ubox[2], dbox[2], conbox[fpst_max-pst_contextpos][4],
-	    smbox[4][4], mcbox[3], mfbox[3], szbox[6];
+	    smbox[4][4], mcbox[3], mfbox[3], szbox[6], tnboxes[3];
     GGadgetCreateData *marray[7], *marray2[9], *narray[26], *narray2[7], *narray3[3],
 	*xuarray[13], *psarray[10], *psarray2[21], *psarray3[3], *psarray4[10],
 	*ppbuttons[5], *pparray[4], *vradio[5], *vbutton[4], *varray[38], *metarray[46],
@@ -6454,7 +6029,7 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
 	*conarray2[fpst_max-pst_contextpos][6], *conarray3[fpst_max-pst_contextpos][4],
 	*smarray[4][4], *smarray2[4][6], *smarray3[4][4], *mcarray[13], *mcarray2[7],
 	*mfarray[14], *szarray[7], *szarray2[5], *szarray3[7],
-	*szarray4[4], *szarray5[6];
+	*szarray4[4], *szarray5[6], *tnvarray[4], *tnharray[5];
     GTextInfo mlabel[10], nlabel[16], pslabel[30], tnlabel[7],
 	plabel[8], vlabel[19], panlabel[22], comlabel[3], atlabel[7], txlabel[23],
 	csublabel[fpst_max-pst_contextpos][6], smsublabel[4][6],
@@ -6470,10 +6045,9 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     FontView *fvs;
     char title[130];
     static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
-    static unichar_t sans[] = { 'h','e','l','v','e','t','i','c','a',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
+    /*static unichar_t sans[] = { 'h','e','l','v','e','t','i','c','a',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };*/
     FontRequest rq;
     GFont *font;
-    int sbwidth;
     static char *connames[] = {
 /* GT: Contextual Positioning. For definition of these terms see */
 /* GT: http://partners.adobe.com/public/developer/opentype/index_table_formats2.html */
@@ -6499,6 +6073,7 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     char createtime[200], modtime[200];
     time_t t;
     const struct tm *tm;
+    struct matrixinit mi;
 
     FontInfoInit();
     if ( !done ) {
@@ -8153,6 +7728,9 @@ return;
 /******************************************************************************/
     memset(&tnlabel,0,sizeof(tnlabel));
     memset(&tngcd,0,sizeof(tngcd));
+    memset(&tnboxes,0,sizeof(tnboxes));
+
+    TNMatrixInit(&mi,d);
 
     tngcd[0].gd.pos.x = 5; tngcd[0].gd.pos.y = 6;
     tngcd[0].gd.flags = gg_visible | gg_enabled;
@@ -8160,6 +7738,7 @@ return;
     tnlabel[0].text_is_1byte = true;
     tngcd[0].gd.label = &tnlabel[0];
     tngcd[0].creator = GLabelCreate;
+    tnharray[0] = &tngcd[0];
 
     tngcd[1].gd.pos.x = 50; tngcd[1].gd.pos.y = tngcd[0].gd.pos.y-4;
     tngcd[1].gd.flags = gg_enabled | gg_visible;
@@ -8170,6 +7749,7 @@ return;
     tngcd[1].gd.label = &tnlabel[1];
     tngcd[1].creator = GRadioCreate;
     tngcd[1].gd.handle_controlevent = GFI_SortBy;
+    tnharray[1] = &tngcd[1];
 
     tngcd[2].gd.pos.x = 120; tngcd[2].gd.pos.y = tngcd[1].gd.pos.y;
     tngcd[2].gd.flags = gg_visible | gg_enabled | gg_rad_continueold;
@@ -8180,6 +7760,7 @@ return;
     tngcd[2].gd.label = &tnlabel[2];
     tngcd[2].creator = GRadioCreate;
     tngcd[2].gd.handle_controlevent = GFI_SortBy;
+    tnharray[2] = &tngcd[2];
 
     tngcd[3].gd.pos.x = 195; tngcd[3].gd.pos.y = tngcd[1].gd.pos.y;
     tngcd[3].gd.flags = gg_visible | gg_enabled | gg_cb_on | gg_rad_continueold;
@@ -8188,21 +7769,32 @@ return;
     tngcd[3].gd.label = &tnlabel[3];
     tngcd[3].creator = GRadioCreate;
     tngcd[3].gd.handle_controlevent = GFI_SortBy;
+    tnharray[3] = &tngcd[3]; tnharray[4] = NULL;
 
-    sbwidth = GDrawPointsToPixels(d->gw,_GScrollBar_Width);
-    tngcd[4].gd.pos.x = 114; tngcd[4].gd.pos.y = tngcd[1].gd.pos.y+14;
-    tngcd[4].gd.pos.width = sbwidth; tngcd[4].gd.pos.height = 100;
-    tngcd[4].gd.flags = gg_enabled | gg_visible | gg_sb_vert;
-    tngcd[4].gd.cid = CID_TNVScroll;
-    tngcd[4].gd.handle_controlevent = _TN_VScroll;
-    tngcd[4].creator = GScrollBarCreate;
+    tngcd[4].gd.pos.x = 10; tngcd[4].gd.pos.y = tngcd[1].gd.pos.y+14;
+    tngcd[4].gd.pos.width = 300; tngcd[4].gd.pos.height = 200;
+    tngcd[4].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    tngcd[4].gd.cid = CID_TNames;
+    tngcd[4].gd.u.matrix = &mi;
+    tngcd[4].gd.popup_msg = (unichar_t *) _(
+	"To create a new name, left click on the <New> button, and select a locale.\n"
+	"To change the locale, left click on it.\n"
+	"To change the string type, left click on it.\n"
+	"To change the text, left click in it and then type.\n"
+	"To delete a name, right click on the name & select Delete from the menu.\n"
+	"To associate or disassocate a truetype name to its postscript equivalent\n"
+	"right click and select the appropriate menu item." );
+    tngcd[4].data = d;
+    tngcd[4].creator = GMatrixEditCreate;
+    tnvarray[0] = &tnboxes[2]; tnvarray[1] = &tngcd[4]; tnvarray[2] = NULL;
 
-    tngcd[5].gd.pos.x = 14; tngcd[5].gd.pos.y = tngcd[4].gd.pos.y+100;
-    tngcd[5].gd.pos.width = 100; tngcd[5].gd.pos.height = sbwidth;
-    tngcd[5].gd.flags = gg_visible | gg_enabled;
-    tngcd[5].gd.cid = CID_TNHScroll;
-    tngcd[5].gd.handle_controlevent = _TN_HScroll;
-    tngcd[5].creator = GScrollBarCreate;
+    tnboxes[0].gd.flags = gg_enabled|gg_visible;
+    tnboxes[0].gd.u.boxelements = tnvarray;
+    tnboxes[0].creator = GVBoxCreate;
+    
+    tnboxes[2].gd.flags = gg_enabled|gg_visible;
+    tnboxes[2].gd.u.boxelements = tnharray;
+    tnboxes[2].creator = GHBoxCreate;
 /******************************************************************************/
     memset(&comlabel,0,sizeof(comlabel));
     memset(&comgcd,0,sizeof(comgcd));
@@ -9007,7 +8599,7 @@ return;
     if ( sf->cidmaster!=NULL ) aspects[i].disabled = true;
     aspects[i].text = (unichar_t *) _("TTF Names");
     aspects[i].text_is_1byte = true;
-    aspects[i++].gcd = tngcd;
+    aspects[i++].gcd = tnboxes;
 
     d->tx_aspect = i;
 /* xgettext won't use non-ASCII messages */
@@ -9125,6 +8717,7 @@ return;
     mb2.creator = GHBoxCreate;
 
     GGadgetsCreate(gw,mb);
+    GMatrixEditSetNewText(tngcd[4].ret,S_("TrueTypeName|New"));
 
     GHVBoxSetExpandableRow(mb[0].ret,0);
     GHVBoxSetExpandableCol(mb2.ret,gb_expandgluesame);
@@ -9185,6 +8778,8 @@ return;
 	GHVBoxSetExpandableCol(conbox[i][3].ret,gb_expandglue);
     }
 
+    GHVBoxSetExpandableRow(tnboxes[0].ret,1);
+
     GHVBoxSetExpandableRow(mcbox[0].ret,gb_expandglue);
     GHVBoxSetExpandableCol(mcbox[0].ret,1);
     GHVBoxSetExpandableRow(mcbox[2].ret,gb_expandglue);
@@ -9209,9 +8804,14 @@ return;
     rq.weight = 400;
     font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
     GGadgetSetFont(atgcd[0].ret,font);
+
     GTextInfoListFree(namelistnames);
     GTextInfoListFree(pgcd[0].gd.u.list);
     GTextInfoListFree(atgcd[0].gd.u.list);
+
+    for ( i=0; i<mi.initial_row_cnt; ++i )
+	free( mi.matrix_data[3*i+2].u.md_str );
+    free( mi.matrix_data );
 
     GHVBoxFitWindow(mb[0].ret);
 #if 0
@@ -9221,47 +8821,11 @@ return;
     }
 #endif
 
-    wattrs.mask = wam_events;
-    GGadgetGetSize(tngcd[1].ret,&pos);
-    pos.y += pos.height + GDrawPointsToPixels(NULL,3);
-    pos.x = 5; pos.width = pos.height = d->tn_height = d->tn_width = 100;
-    d->tn_v = GWidgetCreateSubWindow(GGadgetGetWindow(tngcd[1].ret),&pos,tn_e_h,d,&wattrs);	/* Will be resized later */
-    d->tn_smallactive = -1;
-    rq.family_name = sans;
-    rq.point_size = 10;
-    d->tn_font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
-    {
-	int as, ds, ld;
-	GDrawFontMetrics(d->tn_font,&as,&ds,&ld);
-	d->tn_as = as; d->tn_fh = as+ds;
-    }
-    {
-	static GBox small = { 0 };
-	GGadgetData gd;
-	GTextInfo label;
-	static unichar_t nullstr[1] = { 0 };
-
-	small.main_background = small.main_foreground = COLOR_DEFAULT;
-	small.main_foreground = 0x0000ff;
-	memset(&gd,'\0',sizeof(gd));
-	memset(&label,'\0',sizeof(label));
-
-	label.text = nullstr;
-	label.font = d->tn_font;
-	gd.pos.height = d->tn_fh;
-	gd.pos.width = 40;
-	gd.label = &label;
-	gd.box = &small;
-	gd.flags = gg_enabled | gg_pos_in_pixels | gg_dontcopybox | gg_text_xim;
-	d->tn_smalledit = GTextFieldCreate(d->tn_v,&gd,d);
-    }
-
     GWidgetIndicateFocusGadget(ngcd[1].ret);
     ProcessListSel(d);
     GFI_AspectChange(mgcd[0].ret,NULL);
     GFI_InitMarkClasses(d);
     GGadgetSetList(GWidgetGetControl(gw,CID_StyleName),StyleNames(sf->fontstyle_name),false);
-    GDrawSetVisible(d->tn_v,true);
 
     GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
@@ -9306,5 +8870,8 @@ return;
 	for ( i=0; needswork2[j][i]!=NULL; ++i )
 	    needswork2[j][i] = _(needswork2[j][i]);
     }
+    ci[0].title = _(ci[0].title);
+    ci[1].title = _(ci[1].title);
+    ci[2].title = _(ci[2].title);
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

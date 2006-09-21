@@ -7,7 +7,7 @@ bindir = @bindir@
 libdir = @libdir@
 
 GD_VERSION=1
-GD_REVISION=10
+GD_REVISION=11
 GD_AGE=0
 
 LIBTOOL = @LIBTOOL@
